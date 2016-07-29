@@ -1,0 +1,4 @@
+This directory contains scripts that configure acvp_app to work
+with well-known ACVP servers.  The acvp_app program reads configuration
+from environment variables.  These scripts set the appropriate 
+environment variables that acvp_app requires.
