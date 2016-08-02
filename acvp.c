@@ -34,17 +34,34 @@
 #include "parson.h"
 
 /*
+ * **************** ALERT *****************
+ * This array must stay aligned with ACVP_SYM_CIPHER in acvp.h
+ */
+char *sym_ciph_name[] = {
+    ACVP_ALG_AES_ECB,
+    ACVP_ALG_AES_CBC,
+    ACVP_ALG_AES_CTR,
+    ACVP_ALG_AES_GCM,
+    ACVP_ALG_AES_CCM,
+    ACVP_ALG_AES_XTS,
+    ACVP_ALG_AES_KW,
+    ACVP_ALG_AES_KWP,
+    ACVP_ALG_TDES_ECB,
+    ACVP_ALG_TDES_CBC,
+    ACVP_ALG_TDES_CTR
+};
+    
+/*
  * Forward prototypes for local functions
  */
 static ACVP_RESULT acvp_parse_register(ACVP_CTX *ctx);
 static ACVP_RESULT acvp_process_vsid(ACVP_CTX *ctx, int vs_id);
 static ACVP_RESULT acvp_process_vector_set(ACVP_CTX *ctx, JSON_Object *obj);
 static ACVP_RESULT acvp_dispatch_vector_set(ACVP_CTX *ctx, JSON_Object *obj);
-static ACVP_RESULT acvp_append_caps_entry(ACVP_CTX *ctx,
-                                          ACVP_CIPHER cipher,
-                                          ACVP_CIPHER_MODE mode,
-                                          ACVP_CIPHER_OP op,
-                                          ACVP_RESULT (*crypto_handler)(ACVP_CIPHER_TC *test_case));
+static ACVP_RESULT acvp_append_sym_cipher_caps_entry(
+    ACVP_CTX *ctx,
+    ACVP_SYM_CIPHER_CAP *cap,
+    ACVP_RESULT (*crypto_handler)(ACVP_CIPHER_TC *test_case));
 
 
 /*
@@ -57,12 +74,13 @@ static ACVP_RESULT acvp_append_caps_entry(ACVP_CTX *ctx,
  * WARNING:
  * This table is not sparse, it must contain ACVP_OP_MAX entries.
  */
+#define ACVP_ALG_MAX 5
 static ACVP_ALG_HANDLER alg_tbl[ACVP_ALG_MAX] = {
-    {ACVP_ALG_AES_GCM,         &acvp_aes_kat_handler},
-    {ACVP_ALG_AES_CCM,         &acvp_aes_kat_handler},
-    {ACVP_ALG_AES_CTR,         &acvp_aes_kat_handler},
-    {ACVP_ALG_AES_CBC,         &acvp_aes_kat_handler},
-    {ACVP_ALG_AES_EBC,         &acvp_aes_kat_handler},
+    {ACVP_AES_GCM,         &acvp_aes_kat_handler},
+    {ACVP_AES_CCM,         &acvp_aes_kat_handler},
+    {ACVP_AES_ECB,         &acvp_aes_kat_handler},
+    {ACVP_AES_CBC,         &acvp_aes_kat_handler},
+    {ACVP_AES_CTR,         &acvp_aes_kat_handler},
 };
 
 
@@ -119,6 +137,8 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx)
             cap_entry = ctx->caps_list;
             while (cap_entry) {
                 cap_e2 = cap_entry->next;
+		free(cap_entry->cap.sym_cap);
+		//FIXME: need to free all the supported length lists
                 free(cap_entry);
                 cap_entry = cap_e2;
             }
@@ -130,9 +150,45 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx)
 }
 
 /*
+ * Adds the length provided to the linked list of
+ * supported lengths.
+ */
+static ACVP_RESULT acvp_cap_add_length(ACVP_SL_LIST **list, int len)
+{
+    ACVP_SL_LIST *l = *list;
+    ACVP_SL_LIST *new;
+
+    /*
+     * Allocate some space for the new entry
+     */
+    new = calloc(1, sizeof(ACVP_SL_LIST));
+    if (!new) {
+	return ACVP_MALLOC_FAIL;
+    }
+    new->length = len;
+
+    /*
+     * See if we need to create the list first
+     */
+    if (!l) {
+	*list = new;
+    } else {
+	/*
+	 * Find the end of the list and add the new entry there
+	 */
+	while (l->next) {
+	    l = l->next;
+	}
+	l->next = new;
+    }
+    return ACVP_SUCCESS;
+}
+
+/*
  * This function is called by the application to register a crypto
- * capability, along with a handler that the application implements
- * when that particular crypto operation is needed by libacvp.
+ * capability for symmetric ciphers, along with a handler that the 
+ * application implements when that particular crypto operation is 
+ * needed by libacvp.
  *
  * This function should be called one or more times for each crypto
  * capability supported by the crypto module being validated.  This
@@ -140,20 +196,87 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx)
  * calling acvp_register().
  *
  */
-ACVP_RESULT acvp_enable_capability(ACVP_CTX *ctx,
-                                   ACVP_CIPHER cipher,
-                                   ACVP_CIPHER_MODE mode,
-                                   ACVP_CIPHER_OP op,
-                                   ACVP_RESULT (*crypto_handler)(ACVP_CIPHER_TC *test_case))
+ACVP_RESULT acvp_enable_sym_cipher_cap(
+	ACVP_CTX *ctx, 
+	ACVP_SYM_CIPHER cipher, 
+	ACVP_SYM_CIPH_DIR dir,
+	ACVP_SYM_CIPH_IVGEN_SRC ivgen_source,
+	ACVP_SYM_CIPH_IVGEN_MODE ivgen_mode,
+        ACVP_RESULT (*crypto_handler)(ACVP_CIPHER_TC *test_case))
 {
+    ACVP_SYM_CIPHER_CAP *cap;
+
     if (!ctx) {
         return ACVP_NO_CTX;
     }
     if (!crypto_handler) {
         return ACVP_INVALID_ARG;
     }
-    //TODO: need to validate that cipher, mode, and op are valid values
-    return (acvp_append_caps_entry(ctx, cipher, mode, op, crypto_handler));
+
+    cap = calloc(1, sizeof(ACVP_SYM_CIPHER_CAP));
+    if (!cap) {
+	return ACVP_MALLOC_FAIL;
+    }
+
+    //TODO: need to validate that cipher, mode, etc. are valid values
+    //      we also need to make sure we're not adding a duplicate
+    cap->cipher = cipher;
+    cap->direction = dir;
+    cap->ivgen_source = ivgen_source;
+    cap->ivgen_mode = ivgen_mode;
+
+    return (acvp_append_sym_cipher_caps_entry(ctx, cap, crypto_handler));
+}
+
+/*
+ * The user should call this after invoking acvp_enable_sym_cipher_cap()
+ * to specify the supported key lengths, PT lengths, AAD lengths, IV
+ * lengths, and tag lengths.  This is call multipe times, once for each
+ * length supported.
+ */
+ACVP_RESULT acvp_enable_sym_cipher_cap_parm(
+	ACVP_CTX *ctx, 
+	ACVP_SYM_CIPHER cipher, 
+	ACVP_SYM_CIPH_PARM parm,
+	int length) {
+
+    ACVP_CAPS_LIST *cap;
+
+    /*
+     * Locate this cipher in the caps array
+     */
+    cap = acvp_locate_cap_entry(ctx, cipher);
+    if (!cap) {
+        acvp_log_msg(ctx, "Cap entry not found, use acvp_enable_sym_cipher_cap() first.");
+	return ACVP_NO_CAP;
+    }
+
+    /*
+     * Add the length to the cap
+     */
+    //TODO: need to add validation logic to verify incoming length
+    //      is within range for each length type
+    switch (parm) {
+    case ACVP_SYM_CIPH_KEYLEN: 
+	acvp_cap_add_length(&cap->cap.sym_cap->keylen, length);
+	break;
+    case ACVP_SYM_CIPH_TAGLEN:
+	acvp_cap_add_length(&cap->cap.sym_cap->taglen, length);
+	break;
+    case ACVP_SYM_CIPH_IVLEN:
+	acvp_cap_add_length(&cap->cap.sym_cap->ivlen, length);
+	break;
+    case ACVP_SYM_CIPH_PTLEN:
+	acvp_cap_add_length(&cap->cap.sym_cap->ptlen, length);
+	break;
+    case ACVP_SYM_CIPH_AADLEN:
+	acvp_cap_add_length(&cap->cap.sym_cap->aadlen, length);
+	break;
+    default:
+	return ACVP_INVALID_ARG;
+    }
+
+    return ACVP_SUCCESS;
 }
 
 /*
@@ -235,8 +358,11 @@ ACVP_RESULT acvp_set_certkey(ACVP_CTX *ctx, char *cert_file, char *key_file)
     return ACVP_SUCCESS;
 }
 
-static ACVP_RESULT acvp_build_register(char **reg)
+static ACVP_RESULT acvp_build_register(ACVP_CTX *ctx, char **reg)
 {
+    ACVP_CAPS_LIST *cap_entry;
+    ACVP_SL_LIST *sl_list;
+
     JSON_Value *val = NULL;
     JSON_Object *obj = NULL;
     JSON_Value *oe_val = NULL;
@@ -284,43 +410,80 @@ static ACVP_RESULT acvp_build_register(char **reg)
     json_object_set_value(caps_obj, "algorithms", json_value_init_array());
     caps_arr = json_object_get_array(caps_obj, "algorithms");
 
+    /*
+     * Iterate through all the capabilities the user has enabled
+     */
+    if (ctx->caps_list) {
+        cap_entry = ctx->caps_list;
+        while (cap_entry) {
+	    cap_val = json_value_init_object();
+	    cap_obj = json_value_get_object(cap_val);
 
-    //TODO: hardcoded AES-GCM for now
-    cap_val = json_value_init_object();
-    cap_obj = json_value_get_object(cap_val);
-    json_object_set_string(cap_obj, "algorithm", ACVP_ALG_AES_GCM);
-    json_object_set_value(cap_obj, "mode", json_value_init_array());
-    mode_arr = json_object_get_array(cap_obj, "mode");
-    json_array_append_string(mode_arr, "encrypt");
-    //json_array_append_string(mode_arr, "decrypt");
-    json_object_set_string(cap_obj, "ivgen", "internal");
-    json_object_set_string(cap_obj, "ivgenmode", "8.2.1");
-    json_object_set_value(cap_obj, "keylen", json_value_init_array());
-    opts_arr = json_object_get_array(cap_obj, "keylen");
-    json_array_append_number(opts_arr, 128);
-    json_array_append_number(opts_arr, 192);
-    json_array_append_number(opts_arr, 256);
-    json_object_set_value(cap_obj, "taglen", json_value_init_array());
-    opts_arr = json_object_get_array(cap_obj, "taglen");
-    json_array_append_number(opts_arr, 96);
-    json_array_append_number(opts_arr, 128);
-    json_object_set_value(cap_obj, "ivlen", json_value_init_array());
-    opts_arr = json_object_get_array(cap_obj, "ivlen");
-    json_array_append_number(opts_arr, 96);
-    json_object_set_value(cap_obj, "ptlen", json_value_init_array());
-    opts_arr = json_object_get_array(cap_obj, "ptlen");
-    json_array_append_number(opts_arr, 0);
-    json_array_append_number(opts_arr, 128);
-    json_array_append_number(opts_arr, 136);
-    json_array_append_number(opts_arr, 256);
-    json_array_append_number(opts_arr, 264);
-    json_object_set_value(cap_obj, "aadlen", json_value_init_array());
-    opts_arr = json_object_get_array(cap_obj, "aadlen");
-    json_array_append_number(opts_arr, 128);
-    json_array_append_number(opts_arr, 136);
-    json_array_append_number(opts_arr, 256);
-    json_array_append_number(opts_arr, 264);
-    json_array_append_value(caps_arr, cap_val);
+	    json_object_set_string(cap_obj, "algorithm", sym_ciph_name[cap_entry->cap.sym_cap->cipher]);
+
+	    //FIXME: mode is now called 'direction' in the spec 
+	    json_object_set_value(cap_obj, "mode", json_value_init_array());
+	    mode_arr = json_object_get_array(cap_obj, "mode");
+	    if (cap_entry->cap.sym_cap->direction == ACVP_DIR_ENCRYPT ||
+	        cap_entry->cap.sym_cap->direction == ACVP_DIR_BOTH) {
+		json_array_append_string(mode_arr, "encrypt");
+	    }
+	    if (cap_entry->cap.sym_cap->direction == ACVP_DIR_DECRYPT ||
+	        cap_entry->cap.sym_cap->direction == ACVP_DIR_BOTH) {
+		json_array_append_string(mode_arr, "decrypt");
+	    }
+
+	    //TODO: remove hardcode here, ivgen and mode needs to come from cap_entry
+	    json_object_set_string(cap_obj, "ivgen", "internal");
+	    json_object_set_string(cap_obj, "ivgenmode", "8.2.1");
+
+	    json_object_set_value(cap_obj, "keylen", json_value_init_array());
+	    opts_arr = json_object_get_array(cap_obj, "keylen");
+	    sl_list = cap_entry->cap.sym_cap->keylen;
+	    while (sl_list) {
+		json_array_append_number(opts_arr, sl_list->length);
+		sl_list = sl_list->next;
+	    }
+
+	    json_object_set_value(cap_obj, "taglen", json_value_init_array());
+	    opts_arr = json_object_get_array(cap_obj, "taglen");
+	    sl_list = cap_entry->cap.sym_cap->taglen;
+	    while (sl_list) {
+		json_array_append_number(opts_arr, sl_list->length);
+		sl_list = sl_list->next;
+	    }
+
+
+	    json_object_set_value(cap_obj, "ivlen", json_value_init_array());
+	    opts_arr = json_object_get_array(cap_obj, "ivlen");
+	    sl_list = cap_entry->cap.sym_cap->ivlen;
+	    while (sl_list) {
+		json_array_append_number(opts_arr, sl_list->length);
+		sl_list = sl_list->next;
+	    }
+
+	    json_object_set_value(cap_obj, "ptlen", json_value_init_array());
+	    opts_arr = json_object_get_array(cap_obj, "ptlen");
+	    sl_list = cap_entry->cap.sym_cap->ptlen;
+	    while (sl_list) {
+		json_array_append_number(opts_arr, sl_list->length);
+		sl_list = sl_list->next;
+	    }
+
+	    json_object_set_value(cap_obj, "aadlen", json_value_init_array());
+	    opts_arr = json_object_get_array(cap_obj, "aadlen");
+	    sl_list = cap_entry->cap.sym_cap->aadlen;
+	    while (sl_list) {
+		json_array_append_number(opts_arr, sl_list->length);
+		sl_list = sl_list->next;
+	    }
+
+	    json_array_append_value(caps_arr, cap_val);
+	    
+	    /* Advance to next cap entry */
+            cap_entry = cap_entry->next;
+        }
+    } 
 
     /*
      * Add the entire caps exchange section to the top object
@@ -348,7 +511,7 @@ ACVP_RESULT acvp_register(ACVP_CTX *ctx)
         return ACVP_NO_CTX;
     }
 
-    rv = acvp_build_register(&reg);
+    rv = acvp_build_register(ctx, &reg);
     if (rv != ACVP_SUCCESS) {
         acvp_log_msg(ctx, "Unable to build register message");
         return rv;
@@ -368,22 +531,18 @@ ACVP_RESULT acvp_register(ACVP_CTX *ctx)
     return (rv);
 }
 
-static ACVP_RESULT acvp_append_caps_entry(ACVP_CTX *ctx,
-                                          ACVP_CIPHER cipher,
-                                          ACVP_CIPHER_MODE mode,
-                                          ACVP_CIPHER_OP op,
-                                          ACVP_RESULT (*crypto_handler)(ACVP_CIPHER_TC *test_case))
+static ACVP_RESULT acvp_append_sym_cipher_caps_entry(
+	ACVP_CTX *ctx,
+	ACVP_SYM_CIPHER_CAP *cap,
+        ACVP_RESULT (*crypto_handler)(ACVP_CIPHER_TC *test_case))
 {
     ACVP_CAPS_LIST *cap_entry, *cap_e2;
 
-    cap_entry = malloc(sizeof(ACVP_CAPS_LIST));
+    cap_entry = calloc(1, sizeof(ACVP_CAPS_LIST));
     if (!cap_entry) {
         return ACVP_MALLOC_FAIL;
     }
-    memset(cap_entry, 0x0, sizeof(ACVP_CAPS_LIST));
-    cap_entry->cipher = cipher;
-    cap_entry->mode = mode;
-    cap_entry->op = op;
+    cap_entry->cap.sym_cap = cap;
     cap_entry->crypto_handler = crypto_handler;
 
     if (!ctx->caps_list) {
@@ -474,9 +633,6 @@ static ACVP_RESULT acvp_parse_register(ACVP_CTX *ctx)
             json_value_free(val);
             return rv;
         }
-
-        //FIXME: need a better logging facility
-        //snprintf(tbuf, 255, "Received vs_id=%d", vs_id);
         acvp_log_msg(ctx, "Received vs_id=%d", vs_id);
     }
 
@@ -637,7 +793,7 @@ static ACVP_RESULT acvp_dispatch_vector_set(ACVP_CTX *ctx, JSON_Object *obj)
     acvp_log_msg(ctx, "ACV version: %s", json_object_get_string(obj, "acvp_version_string"));
 
     for (i = 0; i < ACVP_ALG_MAX; i++) {
-        if (!strncmp(alg, alg_tbl[i].algorithm, strlen(alg_tbl[i].algorithm))) {
+        if (!strncmp(alg, sym_ciph_name[alg_tbl[i].cipher], strlen(sym_ciph_name[alg_tbl[i].cipher]))) {
             rv = (alg_tbl[i].handler)(ctx, obj);
             return rv;
         }

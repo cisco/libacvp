@@ -30,21 +30,17 @@
 
 #define ACVP_VERSION    "0.2"
 
-/*
- * These are the operations that are in the ACVP KAT data.
- * Each vector set will have an operation associated with it,
- * such as RSA encrypt, AES encrypt, etc.
- *
- * Hopefully these will be in the ACVP spec some day. For now
- * these values are proprietary.
- */
+#define ACVP_ALG_AES_ECB             "AES-ECB"
+#define ACVP_ALG_AES_CBC             "AES-CBC"
+#define ACVP_ALG_AES_CTR             "AES-CTR"
 #define ACVP_ALG_AES_GCM             "AES-GCM"
 #define ACVP_ALG_AES_CCM             "AES-CCM"
-#define ACVP_ALG_AES_CTR             "AES-CTR"
-#define ACVP_ALG_AES_CBC             "AES-CBC"
-#define ACVP_ALG_AES_EBC             "AES-EBC"
-#define ACVP_ALG_ENTROPY             "ENTROPY"
-#define ACVP_ALG_MAX                 6
+#define ACVP_ALG_AES_XTS             "AES-XTS"
+#define ACVP_ALG_AES_KW              "AES-KW"
+#define ACVP_ALG_AES_KWP             "AES-KWP"
+#define ACVP_ALG_TDES_ECB            "TDES-ECB"
+#define ACVP_ALG_TDES_CBC            "TDES-CBC"
+#define ACVP_ALG_TDES_CTR            "TDES-CTR"
 
 #define ACVP_KAT_BUF_MAX        1024*1024
 #define ACVP_REG_BUF_MAX        1024*65
@@ -56,7 +52,7 @@
 typedef struct acvp_alg_handler_t ACVP_ALG_HANDLER;
 
 struct acvp_alg_handler_t {
-    char        *algorithm;
+    ACVP_SYM_CIPHER        cipher;
     ACVP_RESULT (*handler)(ACVP_CTX *ctx, JSON_Object *obj);
 };
 
@@ -65,10 +61,31 @@ typedef struct acvp_vs_list_t {
     struct acvp_vs_list_t   *next;
 } ACVP_VS_LIST;
 
+/*
+ * Supported length list
+ */
+typedef struct acvp_sl_list_t {
+    int length;
+    struct acvp_sl_list_t *next;
+} ACVP_SL_LIST;
+
+typedef struct acvp_sym_cipher_capability {
+    ACVP_SYM_CIPHER cipher;
+    ACVP_SYM_CIPH_DIR direction;
+    ACVP_SYM_CIPH_IVGEN_SRC ivgen_source;
+    ACVP_SYM_CIPH_IVGEN_MODE ivgen_mode;
+    ACVP_SL_LIST *keylen;
+    ACVP_SL_LIST *ptlen;
+    ACVP_SL_LIST *ivlen;
+    ACVP_SL_LIST *aadlen;
+    ACVP_SL_LIST *taglen;
+} ACVP_SYM_CIPHER_CAP;
+
 typedef struct acvp_caps_list_t {
-    ACVP_CIPHER cipher;
-    ACVP_CIPHER_MODE mode;
-    ACVP_CIPHER_OP op;
+    union {
+	ACVP_SYM_CIPHER_CAP *sym_cap;
+	//TODO: add other cipher types: asymmetric, DRBG, hash, etc.
+    } cap;
     ACVP_RESULT (*crypto_handler)(ACVP_CIPHER_TC *test_case);
     struct acvp_caps_list_t *next;
 } ACVP_CAPS_LIST;
@@ -123,5 +140,5 @@ ACVP_RESULT acvp_entropy_handler(ACVP_CTX *ctx, JSON_Object *obj);
 /*
  * ACVP utility functions used internally
  */
-ACVP_CAPS_LIST* acvp_locate_cap_entry(ACVP_CTX *ctx, ACVP_CIPHER cipher, ACVP_CIPHER_MODE mode, ACVP_CIPHER_OP op);
+ACVP_CAPS_LIST* acvp_locate_cap_entry(ACVP_CTX *ctx, ACVP_SYM_CIPHER cipher);
 #endif

@@ -72,7 +72,7 @@ void acvp_cleanup(void)
  * This function is used to locate the callback function that's needed
  * when a particular crypto operation is needby by libacvp.
  */
-ACVP_CAPS_LIST* acvp_locate_cap_entry(ACVP_CTX *ctx, ACVP_CIPHER cipher, ACVP_CIPHER_MODE mode, ACVP_CIPHER_OP op)
+ACVP_CAPS_LIST* acvp_locate_cap_entry(ACVP_CTX *ctx, ACVP_SYM_CIPHER cipher)
 {
     ACVP_CAPS_LIST *cap;
 
@@ -82,9 +82,7 @@ ACVP_CAPS_LIST* acvp_locate_cap_entry(ACVP_CTX *ctx, ACVP_CIPHER cipher, ACVP_CI
 
     cap = ctx->caps_list;
     while (cap) {
-        if (cap->cipher == cipher &&
-            cap->mode == mode &&
-            cap->op == op) {
+        if (cap->cap.sym_cap->cipher == cipher) {
             return cap;
         }
         cap = cap->next;

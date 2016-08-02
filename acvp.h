@@ -66,9 +66,7 @@ typedef enum acvp_result ACVP_RESULT;
  * of the crypto module being validated.
  */
 typedef enum acvp_cipher {
-    ACVP_AES = 0,
-    ACVP_DES,
-    ACVP_RSA,
+    ACVP_RSA = 0,
     ACVP_DSA,
     ACVP_ECDSA,
     ACVP_SHA,
@@ -81,30 +79,66 @@ typedef enum acvp_cipher {
 } ACVP_CIPHER;
 
 /*
- * These are the cipher modes used with symmetric ciphers.
+ * These are the available symmetric algorithms that libacvp supports.  The application
+ * layer will need to register one or more of these based on the capabilities
+ * of the crypto module being validated.
+ *
+ * **************** ALERT *****************
+ * This enum must stay aligned with sym_ciph_name[] in acvp.c
  */
-typedef enum acvp_cipher_mode {
-    ACVP_GCM = 0,
-    ACVP_CCM,
-    ACVP_CBC,
-    ACVP_EBC,
-    ACVP_CTR,
-    ACVP_NA  /* Not applicable */
-} ACVP_CIPHER_MODE;
+typedef enum acvp_sym_cipher {
+    ACVP_AES_ECB = 0,
+    ACVP_AES_CBC,
+    ACVP_AES_CTR,
+    ACVP_AES_GCM,
+    ACVP_AES_CCM,
+    ACVP_AES_XTS,
+    ACVP_AES_KW,
+    ACVP_AES_KWP,
+    ACVP_TDES_ECB,
+    ACVP_TDES_CBC,
+    ACVP_TDES_CTR,
+} ACVP_SYM_CIPHER;
 
 /*
- * These are the algorithm operations supported by libacvp.  These are used in
- * conjunction with ACVP_CIPHER and ACVP_CIPHER_MODE when registering the
+ * The IV generation source for AEAD ciphers.
+ * This can be internal, external, or not applicable.
+ */
+typedef enum acvp_sym_cipher_ivgen_source {
+    ACVP_IVGEN_SRC_INT = 0,
+    ACVP_IVGEN_SRC_EXT,
+    ACVP_IVGEN_SRC_NA
+} ACVP_SYM_CIPH_IVGEN_SRC; 
+
+/*
+ * The IV generation mode.  It can comply with 8.2.1,
+ * 8.2.2, or may not be applicable for some ciphers.
+ */
+typedef enum acvp_sym_cipher_ivgen_mode {
+    ACVP_IVGEN_MODE_821 = 0,
+    ACVP_IVGEN_MODE_822,
+    ACVP_IVGEN_MODE_NA
+} ACVP_SYM_CIPH_IVGEN_MODE;
+
+
+/*
+ * These are the algorithm direction suppported by libacvp.  These are used in
+ * conjunction with ACVP_SYM_CIPH when registering the
  * crypto module capabilities with libacvp.
  */
-typedef enum acvp_cipher_op {
-    ACVP_ENCRYPT = 0,
-    ACVP_DECRYPT,
-    ACVP_SIGN,
-    ACVP_VERIFY,
-    ACVP_COMPUTE, /* Diffie-Hellman */
-    ACVP_GENERATE /* keygen, entropy, random data */
-} ACVP_CIPHER_OP;
+typedef enum acvp_sym_cipher_direction {
+    ACVP_DIR_ENCRYPT = 0,
+    ACVP_DIR_DECRYPT,
+    ACVP_DIR_BOTH
+} ACVP_SYM_CIPH_DIR;
+
+typedef enum acvp_sym_cipher_parameter {
+    ACVP_SYM_CIPH_KEYLEN = 0,
+    ACVP_SYM_CIPH_TAGLEN,
+    ACVP_SYM_CIPH_IVLEN,
+    ACVP_SYM_CIPH_PTLEN,
+    ACVP_SYM_CIPH_AADLEN,
+} ACVP_SYM_CIPH_PARM;
 
 /*
  * This struct holds data that represents a single test case for
@@ -119,9 +153,10 @@ typedef enum acvp_cipher_op {
  * encoded vector response.
  */
 typedef struct acvp_sym_cipher_tc_t {
-    ACVP_CIPHER cipher;
-    ACVP_CIPHER_MODE mode;
-    ACVP_CIPHER_OP direction;   /* encrypt or decrypt */
+    ACVP_SYM_CIPHER cipher;
+    ACVP_SYM_CIPH_DIR direction;   /* encrypt or decrypt */
+    ACVP_SYM_CIPH_IVGEN_SRC ivgen_source;
+    ACVP_SYM_CIPH_IVGEN_MODE ivgen_mode;
     unsigned int tc_id;    /* Test case id */
     unsigned char   *key; /* Aes symmetric key */
     unsigned char   *pt; /* Plaintext */
@@ -147,8 +182,6 @@ typedef struct acvp_sym_cipher_tc_t {
  */
 typedef struct acvp_asym_cipher_tc_t {
     ACVP_CIPHER cipher;
-    ACVP_CIPHER_MODE mode;
-    ACVP_CIPHER_OP direction;   /* encrypt or decrypt */
     unsigned int tc_id;    /* Test case id */
     //TODO: need to add support for RSA, ECDSA, etc.
 } ACVP_ASYM_CIPHER_TC;
@@ -194,43 +227,74 @@ enum acvp_result {
     ACVP_INVALID_ARG,
     ACVP_CRYPTO_MODULE_FAIL,
     ACVP_NO_TOKEN,
+    ACVP_NO_CAP, 
     ACVP_RESULT_MAX,
 };
 
-/*! @brief acvp_enable_capability() allows an application to specify the 
-       crypto algorithms it supports and would like to validate with the
-       ACVP server. 
+/*! @brief acvp_enable_sym_cipher_cap() allows an application to specify a
+       symmetric cipher capability to be tested by the ACVP server. 
 
-    This function should be called to enable crypto capabilities that will
-    be tested by the ACVP server.  At least one crypto capability needs to
-    be specified to register a new test session.  This function should be
-    called at least one time prior to invoking acvp_register().  
-
-    This function may be called multiple times to specify more than one
-    crypto capability.  Crytpo capabilities include symmetric algorithms,
-    asymmetric algorithms, hash algorithms, random number generators,
-    and more.  
+    This function should be called to enable crypto capabilities for
+    symmetric ciphers that will be tested by the ACVP server.  This
+    includes AES and 3DES.  This function may be called multiple times 
+    to specify more than one crypto capability, such as AES-CBC, AES-CTR,
+    AES-GCM, etc.  
 
     When the application enables a crypto capability, such as AES-GCM, it
     also needs to specify a callback function that will be used by libacvp
     when that crypto capability is needed during a test session.  
 
-    Note: It is anticipated that this API will be changing as the ACVP
-          specification evolves.
-
     @param ctx Address of pointer to a previously allocated ACVP_CTX. 
-    @param cipher ACVP_CIPHER enum value identifying the crypto capability.
-    @param mode ACVP_CIPHER_MODE enum value identifying the cipher mode.
-    @param op ACVP_CIPHER_OP enum value identifying the crypto operation
-       (e.g. encrypt, decrypt, sign, verify).
+    @param cipher ACVP_SYM_CIPHER enum value identifying the crypto capability.
+    @param dir ACVP_SYM_CIPH_DIR enum value identifying the crypto operation
+       (e.g. encrypt or decrypt).
+    @param ivgen_source The source of the IV used by the crypto module
+        (e.g. internal or external)
+    @param ivgen_mode The IV generation mode
     @param crypto_handler Address of function implemented by application that
        is invoked by libacvp when the crypto capablity is needed during
        a test session.
 
     @return ACVP_RESULT
  */
-ACVP_RESULT acvp_enable_capability(ACVP_CTX *ctx, ACVP_CIPHER cipher, ACVP_CIPHER_MODE mode, ACVP_CIPHER_OP op,
-                                   ACVP_RESULT (*crypto_handler)(ACVP_CIPHER_TC *test_case));
+ACVP_RESULT acvp_enable_sym_cipher_cap(
+	ACVP_CTX *ctx, 
+	ACVP_SYM_CIPHER cipher, 
+	ACVP_SYM_CIPH_DIR dir,
+	ACVP_SYM_CIPH_IVGEN_SRC ivgen_source,
+	ACVP_SYM_CIPH_IVGEN_MODE ivgen_mode,
+        ACVP_RESULT (*crypto_handler)(ACVP_CIPHER_TC *test_case));
+
+
+/*! @brief acvp_enable_sym_cipher_cap_parm() allows an application to specify
+       operational parameters to be used for a given cipher during a
+       test session with the ACVP server. 
+
+    This function should be called to enable crypto capabilities for
+    symmetric ciphers that will be tested by the ACVP server.  This
+    includes AES and 3DES. 
+
+    This function may be called multiple times to specify more than one
+    crypto parameter value for the cipher.  For instance, if cipher supports
+    plaintext lengths of 0, 128, and 136 bits, then this function would
+    be called three times.  Once for 0, once for 128, and once again
+    for 136. The ACVP_SYM_CIPHER value passed to this function should
+    already have been setup by invoking acvp_enable_sym_cipher_cap() for
+    that cipher earlier.
+
+    @param ctx Address of pointer to a previously allocated ACVP_CTX. 
+    @param cipher ACVP_SYM_CIPHER enum value identifying the crypto capability.
+    @param parm ACVP_SYM_CIPH_PARM enum value identifying the algorithm parameter
+       that is being specified.  An example would be the supported plaintext
+       length of the algorithm. 
+
+    @return ACVP_RESULT
+ */
+ACVP_RESULT acvp_enable_sym_cipher_cap_parm(
+	ACVP_CTX *ctx, 
+	ACVP_SYM_CIPHER cipher, 
+	ACVP_SYM_CIPH_PARM parm,
+	int length);
 
 /*! @brief acvp_create_test_session() creates a context that can be used to
       commence a test session with an ACVP server.

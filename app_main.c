@@ -64,6 +64,12 @@ char *cert_file;
 char *key_file;
 char *path_segment;
 
+#define CHECK_ENABLE_CAP_RV(rv) \
+    if (rv != ACVP_SUCCESS) { \
+        printf("Failed to register AES GCM capability with libacvp (rv=%d)\n", rv); \
+        exit(1); \
+    }
+
 static void setup_session_parameters()
 {
     char *tmp;
@@ -187,13 +193,33 @@ int main(int argc, char **argv)
 
     /*
      * We need to register all the crypto module capabilities that will be
-     * validated.  For now we just register AES-GCM mode for encrypt.
+     * validated.  For now we just register AES-GCM mode for encrypt using
+     * a handful of key sizes and plaintext lengths.
      */
-    rv = acvp_enable_capability(ctx, ACVP_AES, ACVP_GCM, ACVP_ENCRYPT, &app_aes_handler);
-    if (rv != ACVP_SUCCESS) {
-        printf("Failed to register AES GCM capability with libacvp (rv=%d)\n", rv);
-        exit(1);
-    }
+    rv = acvp_enable_sym_cipher_cap(ctx, ACVP_AES_GCM, ACVP_DIR_ENCRYPT, ACVP_IVGEN_SRC_INT, ACVP_IVGEN_MODE_821, &app_aes_handler);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_GCM, ACVP_SYM_CIPH_KEYLEN, 128);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_GCM, ACVP_SYM_CIPH_KEYLEN, 256);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_GCM, ACVP_SYM_CIPH_TAGLEN, 96);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_GCM, ACVP_SYM_CIPH_TAGLEN, 128);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_GCM, ACVP_SYM_CIPH_IVLEN, 96);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_GCM, ACVP_SYM_CIPH_PTLEN, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_GCM, ACVP_SYM_CIPH_PTLEN, 128);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_GCM, ACVP_SYM_CIPH_PTLEN, 136);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_GCM, ACVP_SYM_CIPH_AADLEN, 128);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_GCM, ACVP_SYM_CIPH_AADLEN, 136);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_GCM, ACVP_SYM_CIPH_AADLEN, 256);
+    CHECK_ENABLE_CAP_RV(rv);
 
     /*
      * Now that we have a test session, we register with

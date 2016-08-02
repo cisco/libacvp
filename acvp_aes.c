@@ -38,6 +38,8 @@
 #define ACVP_SYM_TAG_MAX    64
 #define ACVP_SYM_AAD_MAX    128
 
+extern char *sym_ciph_name[];
+
 /*
  * Forward prototypes for local functions
  */
@@ -91,7 +93,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
      * Get the crypto module handler for AES-GCM mode
      */
     //TODO: need to support more modes such as CBC, CTR, EBC, etc.
-    cap = acvp_locate_cap_entry(ctx, ACVP_AES, ACVP_GCM, ACVP_ENCRYPT);
+    cap = acvp_locate_cap_entry(ctx, ACVP_AES_GCM);
     if (!cap) {
         acvp_log_msg(ctx, "ERROR: ACVP server requesting unsupported capability");
         return (ACVP_UNSUPPORTED_OP);
@@ -108,7 +110,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
     r_vs = json_value_get_object(ctx->kat_resp);
     json_object_set_string(r_vs, "acv_version", ACVP_VERSION);
     json_object_set_number(r_vs, "vs_id", ctx->vs_id);
-    json_object_set_string(r_vs, "algorithm", ACVP_ALG_AES_GCM);
+    json_object_set_string(r_vs, "algorithm", sym_ciph_name[ACVP_AES_GCM]);
     json_object_set_string(r_vs, "mode", "encrypt");
     json_object_set_value(r_vs, "test_results", json_value_init_array());
     r_tarr = json_object_get_array(r_vs, "test_results");
@@ -306,9 +308,8 @@ static ACVP_RESULT acvp_aes_init_tc(ACVP_CTX *ctx,
     stc->aad_len = aad_len/8;
 
     //TODO: for now we only support this mode
-    stc->cipher = ACVP_AES;
-    stc->mode = ACVP_GCM;
-    stc->direction = ACVP_ENCRYPT;
+    stc->cipher = ACVP_AES_GCM;
+    stc->direction = ACVP_DIR_ENCRYPT;
 
     return ACVP_SUCCESS;
 }
