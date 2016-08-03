@@ -62,6 +62,7 @@ static ACVP_RESULT acvp_append_sym_cipher_caps_entry(
     ACVP_CTX *ctx,
     ACVP_SYM_CIPHER_CAP *cap,
     ACVP_RESULT (*crypto_handler)(ACVP_CIPHER_TC *test_case));
+static void acvp_cap_free_sl(ACVP_SL_LIST *list); 
 
 
 /*
@@ -138,7 +139,11 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx)
             while (cap_entry) {
                 cap_e2 = cap_entry->next;
 		free(cap_entry->cap.sym_cap);
-		//FIXME: need to free all the supported length lists
+		acvp_cap_free_sl(cap_entry->cap.sym_cap->keylen);
+		acvp_cap_free_sl(cap_entry->cap.sym_cap->ptlen);
+		acvp_cap_free_sl(cap_entry->cap.sym_cap->ivlen);
+		acvp_cap_free_sl(cap_entry->cap.sym_cap->aadlen);
+		acvp_cap_free_sl(cap_entry->cap.sym_cap->taglen);
                 free(cap_entry);
                 cap_entry = cap_e2;
             }
@@ -182,6 +187,22 @@ static ACVP_RESULT acvp_cap_add_length(ACVP_SL_LIST **list, int len)
 	l->next = new;
     }
     return ACVP_SUCCESS;
+}
+
+/*
+ * Simple utility function to free a supported length
+ * list from the capabilities structure.
+ */
+static void acvp_cap_free_sl(ACVP_SL_LIST *list) 
+{
+    ACVP_SL_LIST *top = list;
+    ACVP_SL_LIST *tmp;
+
+    while(top) {
+	tmp = top;
+	top = top->next;	
+	free(tmp);
+    }
 }
 
 /*
