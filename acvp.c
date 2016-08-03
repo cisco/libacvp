@@ -400,7 +400,6 @@ static ACVP_RESULT acvp_build_register(ACVP_CTX *ctx, char **reg)
 
     val = json_value_init_object();
     obj = json_value_get_object(val);
-    //json_object_set_string(obj, "operation", "register");
     json_object_set_string(obj, "acv_version", "0.2");
 
     oe_val = json_value_init_object();
@@ -433,6 +432,9 @@ static ACVP_RESULT acvp_build_register(ACVP_CTX *ctx, char **reg)
 
     /*
      * Iterate through all the capabilities the user has enabled
+     * TODO: This logic is written for the symmetric cipher sub-spec.
+     *       This will need rework when implementing the other
+     *       sub-specifications.
      */
     if (ctx->caps_list) {
         cap_entry = ctx->caps_list;
@@ -442,9 +444,11 @@ static ACVP_RESULT acvp_build_register(ACVP_CTX *ctx, char **reg)
 
 	    json_object_set_string(cap_obj, "algorithm", sym_ciph_name[cap_entry->cap.sym_cap->cipher]);
 
-	    //FIXME: mode is now called 'direction' in the spec 
-	    json_object_set_value(cap_obj, "mode", json_value_init_array());
-	    mode_arr = json_object_get_array(cap_obj, "mode");
+	    /*
+	     * Set the direction capability
+	     */
+	    json_object_set_value(cap_obj, "direction", json_value_init_array());
+	    mode_arr = json_object_get_array(cap_obj, "direction");
 	    if (cap_entry->cap.sym_cap->direction == ACVP_DIR_ENCRYPT ||
 	        cap_entry->cap.sym_cap->direction == ACVP_DIR_BOTH) {
 		json_array_append_string(mode_arr, "encrypt");
@@ -454,10 +458,39 @@ static ACVP_RESULT acvp_build_register(ACVP_CTX *ctx, char **reg)
 		json_array_append_string(mode_arr, "decrypt");
 	    }
 
-	    //TODO: remove hardcode here, ivgen and mode needs to come from cap_entry
-	    json_object_set_string(cap_obj, "ivgen", "internal");
-	    json_object_set_string(cap_obj, "ivgenmode", "8.2.1");
+	    /*
+	     * Set the IV generation source if applicable 
+	     */
+	    switch(cap_entry->cap.sym_cap->ivgen_source) {
+	    case ACVP_IVGEN_SRC_INT:
+		json_object_set_string(cap_obj, "ivgen", "internal");
+		break;
+	    case ACVP_IVGEN_SRC_EXT:
+		json_object_set_string(cap_obj, "ivgen", "external");
+		break;
+	    default:
+		/* do nothing, this is an optional capability */
+		break;
+	    }
 
+	    /*
+	     * Set the IV generation mode if applicable
+	     */
+	    switch(cap_entry->cap.sym_cap->ivgen_mode) {
+	    case ACVP_IVGEN_MODE_821:
+		json_object_set_string(cap_obj, "ivgenmode", "8.2.1");
+		break;
+	    case ACVP_IVGEN_MODE_822:
+		json_object_set_string(cap_obj, "ivgenmode", "8.2.2");
+		break;
+	    default:
+		/* do nothing, this is an optional capability */
+		break;
+	    }
+
+	    /*
+	     * Set the supported key lengths
+	     */
 	    json_object_set_value(cap_obj, "keylen", json_value_init_array());
 	    opts_arr = json_object_get_array(cap_obj, "keylen");
 	    sl_list = cap_entry->cap.sym_cap->keylen;
@@ -466,6 +499,9 @@ static ACVP_RESULT acvp_build_register(ACVP_CTX *ctx, char **reg)
 		sl_list = sl_list->next;
 	    }
 
+	    /*
+	     * Set the supported tag lengths (for AEAD ciphers)
+	     */
 	    json_object_set_value(cap_obj, "taglen", json_value_init_array());
 	    opts_arr = json_object_get_array(cap_obj, "taglen");
 	    sl_list = cap_entry->cap.sym_cap->taglen;
@@ -475,6 +511,9 @@ static ACVP_RESULT acvp_build_register(ACVP_CTX *ctx, char **reg)
 	    }
 
 
+	    /*
+	     * Set the supported IV lengths
+	     */
 	    json_object_set_value(cap_obj, "ivlen", json_value_init_array());
 	    opts_arr = json_object_get_array(cap_obj, "ivlen");
 	    sl_list = cap_entry->cap.sym_cap->ivlen;
@@ -483,6 +522,9 @@ static ACVP_RESULT acvp_build_register(ACVP_CTX *ctx, char **reg)
 		sl_list = sl_list->next;
 	    }
 
+	    /*
+	     * Set the supported plaintext lengths
+	     */
 	    json_object_set_value(cap_obj, "ptlen", json_value_init_array());
 	    opts_arr = json_object_get_array(cap_obj, "ptlen");
 	    sl_list = cap_entry->cap.sym_cap->ptlen;
@@ -491,6 +533,9 @@ static ACVP_RESULT acvp_build_register(ACVP_CTX *ctx, char **reg)
 		sl_list = sl_list->next;
 	    }
 
+	    /*
+	     * Set the supported AAD lengths (for AEAD ciphers)
+	     */
 	    json_object_set_value(cap_obj, "aadlen", json_value_init_array());
 	    opts_arr = json_object_get_array(cap_obj, "aadlen");
 	    sl_list = cap_entry->cap.sym_cap->aadlen;
