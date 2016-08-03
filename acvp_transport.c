@@ -34,15 +34,6 @@
 #include "acvp.h"
 #include "acvp_lcl.h"
 
-/*
- * FIXME: this callback is currently not needed, but maybe some day we'll
- *        need it.
- */
-size_t header_callback(char *buffer, size_t size, size_t nitems, void *userdata)
-{
-    //printf("\n\nHEADER: buffer=%x size=%d nitems=%d userdata=%x\n", buffer, size, nitems, userdata);
-    return nitems * size;
-}
 
 /*
  * This function uses libcurl to send a simple HTTP GET
@@ -199,8 +190,6 @@ static long acvp_curl_http_post (ACVP_CTX *ctx, char *url, char *data, void *wri
         curl_easy_setopt(hnd, CURLOPT_WRITEDATA, ctx);
         curl_easy_setopt(hnd, CURLOPT_WRITEFUNCTION, writefunc);
     }
-    curl_easy_setopt(hnd, CURLOPT_HEADERDATA, ctx);
-    curl_easy_setopt(hnd, CURLOPT_HEADERFUNCTION, &header_callback);
 
     /*
      * Send the HTTP POST request
@@ -306,11 +295,9 @@ static size_t acvp_curl_write_register_func(void *ptr, size_t size, size_t nmemb
 ACVP_RESULT acvp_send_register(ACVP_CTX *ctx, char *reg)
 {
     ACVP_RESULT rv;
-    char url[512];
+    char url[512]; //TODO: 512 is an arbitrary limit
 
     memset(url, 0x0, 512);
-    //TODO: how will the ACVP server identifiy the DUT?
-    //      Need to advertise our capabilities here.
     snprintf(url, 511, "https://%s:%d/%svalidation/acvp/register", ctx->server_name, ctx->server_port, ctx->path_segment);
 
     rv = acvp_curl_http_post(ctx, url, reg, &acvp_curl_write_register_func);
@@ -334,7 +321,7 @@ ACVP_RESULT acvp_send_register(ACVP_CTX *ctx, char *reg)
 ACVP_RESULT acvp_retrieve_vector_set(ACVP_CTX *ctx, int vs_id)
 {
     ACVP_RESULT rv;
-    char url[512];
+    char url[512]; //TODO: 512 is an arbitrary limit
 
     memset(url, 0x0, 512);
     snprintf(url, 511, "https://%s:%d/%svalidation/acvp/vectors?vs_id=%d", ctx->server_name, ctx->server_port, ctx->path_segment, vs_id);
@@ -364,14 +351,12 @@ ACVP_RESULT acvp_retrieve_vector_set(ACVP_CTX *ctx, int vs_id)
 ACVP_RESULT acvp_submit_vector_responses(ACVP_CTX *ctx)
 {
     ACVP_RESULT rv;
-    char url[512];
+    char url[512]; //TODO: 512 is an arbitrary limit
     char *resp;
 
     memset(url, 0x0, 512);
-    //TODO: how will the ACVP server identifiy the DUT?  Will we use JWT?
     snprintf(url, 511, "https://%s:%d/%svalidation/acvp/vectors?vs_id=%d", ctx->server_name, ctx->server_port, ctx->path_segment, ctx->vs_id);
 
-    //FIXME: no writefunc callback provided here, do we need one?
     resp = json_serialize_to_string_pretty(ctx->kat_resp);
     rv = acvp_curl_http_post(ctx, url, resp, NULL);
     json_value_free(ctx->kat_resp);

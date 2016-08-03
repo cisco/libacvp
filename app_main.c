@@ -28,10 +28,7 @@
  * demonstrates how to use libacvp. Software that use libacvp
  * will need to implement a similar module.
  *
- * Usage:
- *	./acvp_app <server IP> <port#>
- *
- * It will default to 127.0.0.1 port 8443 if no arguments are given.
+ * It will default to 127.0.0.1 port 443 if no arguments are given.
  */
 #include <stdio.h>
 #include <string.h>
@@ -70,6 +67,11 @@ char *path_segment;
         exit(1); \
     }
 
+
+/*
+ * Read the operational parameters from the various environment
+ * variables.
+ */
 static void setup_session_parameters()
 {
     char *tmp;
@@ -183,7 +185,6 @@ int main(int argc, char **argv)
     /*
      * Specify the certificate and private key the client should used
      * for TLS client auth.
-     * TODO: replace hardcoded cert/key with user configurable cert/key
      */
     rv = acvp_set_certkey(ctx, cert_file, key_file);
     if (rv != ACVP_SUCCESS) {
@@ -344,7 +345,8 @@ static ACVP_RESULT app_aes_handler(ACVP_CIPHER_TC *test_case)
 #else
 /*
  * This flavor of the handler uses libgcrypt instead of OpenSSL, which was used
- * for testing TASM-264.
+ * for testing TASM-264.  This code is here for demonstration only.  This
+ * function lacks proper error handling.
  */
 static ACVP_RESULT app_aes_handler(ACVP_CIPHER_TC *test_case)
 {
@@ -373,7 +375,6 @@ static ACVP_RESULT app_aes_handler(ACVP_CIPHER_TC *test_case)
         return ACVP_UNSUPPORTED_OP;
         break;
     }
-    //TODO: this code lacks any kind of error checks
 
     gcry_cipher_open(&hd, algo, GCRY_CIPHER_MODE_GCM, 0);
     gcry_cipher_setkey(hd, tc->key, tc->key_len/8);
@@ -386,8 +387,10 @@ static ACVP_RESULT app_aes_handler(ACVP_CIPHER_TC *test_case)
 
     gcry_cipher_gettag(hd, tc->tag, tc->tag_len);
 
-    //FIXME: IV source is hardcoded and uses length of only 16
-    //       This may lead to test case failures
+    /*
+       WARNING: The IV source is hardcoded above and uses length of only 16.
+                This may lead to test case failures.
+     */
     memcpy(tc->iv, iv, tc->iv_len);
 
     gcry_cipher_close(hd);

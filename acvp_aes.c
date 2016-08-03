@@ -200,18 +200,23 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
     return ACVP_SUCCESS;
 }
 
+/*
+ * After the test case has been processed by the DUT, the results
+ * need to be JSON formated to be included in the vector set results
+ * file that will be uploaded to the server.  This routine handles
+ * the JSON processing for a single test case.
+ */
 static ACVP_RESULT acvp_aes_output_tc(ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *stc, JSON_Object *tc_rsp)
 {
     ACVP_RESULT rv;
     char *tmp;
 
-    tmp = malloc(ACVP_SYM_CT_MAX);
+    tmp = calloc(1, ACVP_SYM_CT_MAX);
     if (!tmp) {
         acvp_log_msg(ctx, "Unable to malloc in acvp_aes_output_tc");
         return ACVP_MALLOC_FAIL;
     }
 
-    memset(tmp, 0x0, ACVP_SYM_CT_MAX);
     rv = acvp_bin_to_hexstr(stc->iv, stc->iv_len, (unsigned char*)tmp);
     if (rv != ACVP_SUCCESS) {
         acvp_log_msg(ctx, "hex conversion failure (iv)");
@@ -267,13 +272,19 @@ static ACVP_RESULT acvp_aes_init_tc(ACVP_CTX *ctx,
     //FIXME:  check lengths do not exceed MAX values below
 
     memset(stc, 0x0, sizeof(ACVP_SYM_CIPHER_TC));
-    //FIXME: need malloc failure checks
-    stc->key = malloc(ACVP_SYM_KEY_MAX);
-    stc->pt = malloc(ACVP_SYM_PT_MAX);
-    stc->ct = malloc(ACVP_SYM_CT_MAX);
-    stc->tag = malloc(ACVP_SYM_TAG_MAX);
-    stc->iv = malloc(ACVP_SYM_IV_MAX);
-    stc->aad = malloc(ACVP_SYM_AAD_MAX);
+
+    stc->key = calloc(1, ACVP_SYM_KEY_MAX);
+    if (!stc->key) return ACVP_MALLOC_FAIL;
+    stc->pt = calloc(1, ACVP_SYM_PT_MAX);
+    if (!stc->pt) return ACVP_MALLOC_FAIL;
+    stc->ct = calloc(1, ACVP_SYM_CT_MAX);
+    if (!stc->ct) return ACVP_MALLOC_FAIL;
+    stc->tag = calloc(1, ACVP_SYM_TAG_MAX);
+    if (!stc->tag) return ACVP_MALLOC_FAIL;
+    stc->iv = calloc(1, ACVP_SYM_IV_MAX);
+    if (!stc->iv) return ACVP_MALLOC_FAIL;
+    stc->aad = calloc(1, ACVP_SYM_AAD_MAX);
+    if (!stc->aad) return ACVP_MALLOC_FAIL;
 
     //FIXME: need to sanity check input lengths, or we'll crash if input is too large
     rv = acvp_hexstr_to_bin((const unsigned char *)j_key, stc->key);

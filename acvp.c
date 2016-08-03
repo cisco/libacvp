@@ -93,11 +93,10 @@ static ACVP_ALG_HANDLER alg_tbl[ACVP_ALG_MAX] = {
 ACVP_RESULT acvp_create_test_session(ACVP_CTX **ctx,
                                      ACVP_RESULT (*progress_cb)(char *msg))
 {
-    *ctx = malloc(sizeof(ACVP_CTX));
+    *ctx = calloc(1, sizeof(ACVP_CTX));
     if (!*ctx) {
         return ACVP_MALLOC_FAIL;
     }
-    memset(*ctx, 0x0, sizeof(ACVP_CTX));
     (*ctx)->path_segment = strdup(ACVP_PATH_SEGMENT_DEFAULT);
 
     if (progress_cb) {
@@ -252,8 +251,8 @@ ACVP_RESULT acvp_enable_sym_cipher_cap(
 /*
  * The user should call this after invoking acvp_enable_sym_cipher_cap()
  * to specify the supported key lengths, PT lengths, AAD lengths, IV
- * lengths, and tag lengths.  This is call multipe times, once for each
- * length supported.
+ * lengths, and tag lengths.  This is called by the user multiple times, 
+ * once for each length supported.
  */
 ACVP_RESULT acvp_enable_sym_cipher_cap_parm(
 	ACVP_CTX *ctx, 
@@ -276,7 +275,9 @@ ACVP_RESULT acvp_enable_sym_cipher_cap_parm(
      * Add the length to the cap
      */
     //TODO: need to add validation logic to verify incoming length
-    //      is within range for each length type
+    //      is within range for each length type.  Once the symmetric
+    //      cipher sub-spec is reviewed, we should have the valid
+    //      ranges.
     switch (parm) {
     case ACVP_SYM_CIPH_KEYLEN: 
 	acvp_cap_add_length(&cap->cap.sym_cap->keylen, length);
@@ -302,7 +303,7 @@ ACVP_RESULT acvp_enable_sym_cipher_cap_parm(
 
 /*
  * This function is used by the application to specify the
- * ACVP server address and port#.
+ * ACVP server address and TCP port#.
  */
 ACVP_RESULT acvp_set_server(ACVP_CTX *ctx, char *server_name, int port)
 {
@@ -379,6 +380,11 @@ ACVP_RESULT acvp_set_certkey(ACVP_CTX *ctx, char *cert_file, char *key_file)
     return ACVP_SUCCESS;
 }
 
+/*
+ * This function builds the JSON register message that
+ * will be sent to the ACVP server to advertised the crypto
+ * capabilities of the module under test.
+ */
 static ACVP_RESULT acvp_build_register(ACVP_CTX *ctx, char **reg)
 {
     ACVP_CAPS_LIST *cap_entry;
@@ -577,6 +583,10 @@ ACVP_RESULT acvp_register(ACVP_CTX *ctx)
         return ACVP_NO_CTX;
     }
 
+    /*
+     * Construct the registration message based on the capabilities
+     * the user has enabled.
+     */
     rv = acvp_build_register(ctx, &reg);
     if (rv != ACVP_SUCCESS) {
         acvp_log_msg(ctx, "Unable to build register message");
@@ -586,6 +596,11 @@ ACVP_RESULT acvp_register(ACVP_CTX *ctx)
     //FIXME
     printf("%s\n", reg);
 
+    /*
+     * Send the capabilities to the ACVP server and get the response,
+     * which should be a list of VS identifiers that will need
+     * to be downloaded and processed.
+     */
     rv = acvp_send_register(ctx, reg);
     if (rv == ACVP_SUCCESS) {
         printf("\n%s\n", ctx->reg_buf);
@@ -597,6 +612,11 @@ ACVP_RESULT acvp_register(ACVP_CTX *ctx)
     return (rv);
 }
 
+/*
+ * Append a symmetric cipher capabilitiy to the 
+ * capabilities list.  This list is later used to build
+ * the register message.
+ */
 static ACVP_RESULT acvp_append_sym_cipher_caps_entry(
 	ACVP_CTX *ctx,
 	ACVP_SYM_CIPHER_CAP *cap,
@@ -623,15 +643,18 @@ static ACVP_RESULT acvp_append_sym_cipher_caps_entry(
     return (ACVP_SUCCESS);
 }
 
+/*
+ * Append a VS identifier to the list of VS identifiers
+ * that will need to be downloaded and processed later.
+ */
 static ACVP_RESULT acvp_append_vs_entry(ACVP_CTX *ctx, int vs_id)
 {
     ACVP_VS_LIST *vs_entry, *vs_e2;
 
-    vs_entry = malloc(sizeof(ACVP_VS_LIST));
+    vs_entry = calloc(1, sizeof(ACVP_VS_LIST));
     if (!vs_entry) {
         return ACVP_MALLOC_FAIL;
     }
-    memset(vs_entry, 0x0, sizeof(ACVP_VS_LIST));
     vs_entry->vs_id = vs_id;
 
     if (!ctx->vs_list) {
@@ -646,6 +669,12 @@ static ACVP_RESULT acvp_append_vs_entry(ACVP_CTX *ctx, int vs_id)
     return (ACVP_SUCCESS);
 }
 
+/*
+ * This routine performs the JSON parsing of the registration response
+ * from the ACVP server.  The response should contain a list of vector
+ * set (VS) identifiers that will need to be downloaded and processed 
+ * by the DUT.
+ */
 static ACVP_RESULT acvp_parse_register(ACVP_CTX *ctx)
 {
     JSON_Value *val;
@@ -660,6 +689,9 @@ static ACVP_RESULT acvp_parse_register(ACVP_CTX *ctx)
     int vs_id;
     const char *jwt;
 
+    /*
+     * Parse the JSON
+     */
     val = json_parse_string_with_comments(json_buf);
     if (!val) {
         acvp_log_msg(ctx, "JSON parse error");
@@ -667,6 +699,11 @@ static ACVP_RESULT acvp_parse_register(ACVP_CTX *ctx)
     }
     obj = json_value_get_object(val);
 
+    /*
+     * Get the JWT assigned to this session by the server.  This will need
+     * to be included when sending the vector responses back to the server
+     * later.
+     */
     jwt = json_object_get_string(obj, "access_token");
     if (!jwt) {
         json_value_free(val);
@@ -679,12 +716,16 @@ static ACVP_RESULT acvp_parse_register(ACVP_CTX *ctx)
             acvp_log_msg(ctx, "access_token too large");
             return ACVP_NO_TOKEN;
         }
-        ctx->jwt_token = malloc(i+1);
+        ctx->jwt_token = calloc(1, i+1);
         strncpy(ctx->jwt_token, jwt, i);
         ctx->jwt_token[i] = 0;
         acvp_log_msg(ctx, "JWT: %s", ctx->jwt_token);
     }
 
+    /*
+     * Identify the VS identifiers provided by the server, save them for
+     * processing later.
+     */
     cap_obj = json_object_get_object(obj, "capability_response");
     //const char *op = json_object_get_string(obj, "operation");
     vect_sets = json_object_get_array(cap_obj, "vector_sets");
@@ -725,6 +766,11 @@ ACVP_RESULT acvp_process_tests(ACVP_CTX *ctx)
         return ACVP_NO_CTX;
     }
 
+    /*
+     * Iterate through the VS identifiers the server sent to us
+     * in the regisration response.  Process each vector set and
+     * return the results to the server.
+     */
     vs_entry = ctx->vs_list;
     while (vs_entry) {
         rv = acvp_process_vsid(ctx, vs_entry->vs_id);
@@ -734,6 +780,11 @@ ACVP_RESULT acvp_process_tests(ACVP_CTX *ctx)
     return (rv);
 }
 
+/*
+ * This is a minimal retry handler, which pauses for a specific time. 
+ * This allows the server time to generate the vectors on behalf of
+ * the client.
+ */
 ACVP_RESULT acvp_retry_handler(ACVP_CTX *ctx, unsigned int retry_period)
 {
     acvp_log_msg(ctx, "KAT values not ready, server requests we wait and try again...");
@@ -747,7 +798,8 @@ ACVP_RESULT acvp_retry_handler(ACVP_CTX *ctx, unsigned int retry_period)
 }
 
 
-//TODO
+//TODO - eventually libacvp will query the server to get the results of the 
+//       vector test.
 //ACVP_RESULT acvp_check_test_results(ACVP_CTX *ctx);
 
 
