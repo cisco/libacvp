@@ -49,7 +49,7 @@
  * Return value is the HTTP status value from the server
  *	    (e.g. 200 for HTTP OK)
  */
-#define MAX_TOKEN_LEN 1024
+#define MAX_TOKEN_LEN 512
 static long acvp_curl_http_get (ACVP_CTX *ctx, char *url, void *writefunc)
 {
     long http_code = 0;
