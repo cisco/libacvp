@@ -35,6 +35,29 @@
 #include "acvp_lcl.h"
 
 
+#define MAX_TOKEN_LEN 512 
+static struct curl_slist* acvp_add_auth_hdr (ACVP_CTX *ctx, struct curl_slist *slist)
+{
+    int bearer_size;
+    char *bearer;
+
+    /*
+     * Create the Authorzation header if needed
+     */
+    if (ctx->jwt_token) {
+    	bearer_size = strnlen(ctx->jwt_token, MAX_TOKEN_LEN) + 23;
+    	bearer = calloc(1, bearer_size);
+	if (!bearer) {
+	    acvp_log_msg(ctx, "ERROR: unable to allocate memory.");
+	    return slist;
+	}
+        snprintf(bearer, bearer_size + 1, "Authorization: Bearer %s", ctx->jwt_token);
+        slist = curl_slist_append(slist, bearer);
+        free(bearer);
+    }
+    return slist;
+}
+
 /*
  * This function uses libcurl to send a simple HTTP GET
  * request with no Content-Type header.
@@ -49,7 +72,6 @@
  * Return value is the HTTP status value from the server
  *	    (e.g. 200 for HTTP OK)
  */
-#define MAX_TOKEN_LEN 512
 static long acvp_curl_http_get (ACVP_CTX *ctx, char *url, void *writefunc)
 {
     long http_code = 0;
@@ -57,13 +79,10 @@ static long acvp_curl_http_get (ACVP_CTX *ctx, char *url, void *writefunc)
     struct curl_slist *slist;
 
     slist = NULL;
-    if (ctx->jwt_token) {
-    	int buf_size = strnlen(ctx->jwt_token, MAX_TOKEN_LEN) + 22;
-    	char *bearer = calloc(buf_size, sizeof(char));
-        snprintf(bearer, buf_size, "Authorization: Bearer %s", ctx->jwt_token);
-        slist = curl_slist_append(slist, bearer);
-        free(bearer);
-    }
+    /*
+     * Create the Authorzation header if needed
+     */
+    slist = acvp_add_auth_hdr(ctx, slist);
 
     ctx->read_ctr = 0;
 
@@ -149,13 +168,11 @@ static long acvp_curl_http_post (ACVP_CTX *ctx, char *url, char *data, void *wri
     slist = curl_slist_append(slist, "Content-Type:application/octet-stream");
     //FIXME: v0.2 spec says to use application/json
     //slist = curl_slist_append(slist, "Content-Type:application/json");
-    if (ctx->jwt_token) {
-    	int buf_size = strnlen(ctx->jwt_token, MAX_TOKEN_LEN) + 22;
-    	char *bearer = calloc(buf_size, sizeof(char));
-        snprintf(bearer, buf_size, "Authorization: Bearer %s", ctx->jwt_token);
-        slist = curl_slist_append(slist, bearer);
-        free(bearer);
-    }
+    
+    /*
+     * Create the Authorzation header if needed
+     */
+    slist = acvp_add_auth_hdr(ctx, slist);
 
     ctx->read_ctr = 0;
 
