@@ -49,17 +49,20 @@
  * Return value is the HTTP status value from the server
  *	    (e.g. 200 for HTTP OK)
  */
+#define MAX_TOKEN_LEN 512
 static long acvp_curl_http_get (ACVP_CTX *ctx, char *url, void *writefunc)
 {
     long http_code = 0;
     CURL *hnd;
     struct curl_slist *slist;
-    char bearer[1048]; //TODO: remove this from the stack
 
     slist = NULL;
     if (ctx->jwt_token) {
-        snprintf(bearer, 1048, "Authorization: Bearer %s", ctx->jwt_token);
+    	int buf_size = strnlen(ctx->jwt_token, MAX_TOKEN_LEN) + 22;
+    	char *bearer = calloc(buf_size, sizeof(char));
+        snprintf(bearer, buf_size, "Authorization: Bearer %s", ctx->jwt_token);
         slist = curl_slist_append(slist, bearer);
+        free(bearer);
     }
 
     ctx->read_ctr = 0;
@@ -138,7 +141,6 @@ static long acvp_curl_http_post (ACVP_CTX *ctx, char *url, char *data, void *wri
     CURL *hnd;
     CURLcode crv;
     struct curl_slist *slist;
-    char bearer[1048]; //TODO: remove this from the stack
 
     /*
      * Set the Content-Type header in the HTTP request
@@ -148,8 +150,11 @@ static long acvp_curl_http_post (ACVP_CTX *ctx, char *url, char *data, void *wri
     //FIXME: v0.2 spec says to use application/json
     //slist = curl_slist_append(slist, "Content-Type:application/json");
     if (ctx->jwt_token) {
-        snprintf(bearer, 1048, "Authorization: Bearer %s", ctx->jwt_token);
+    	int buf_size = strnlen(ctx->jwt_token, MAX_TOKEN_LEN) + 22;
+    	char *bearer = calloc(buf_size, sizeof(char));
+        snprintf(bearer, buf_size, "Authorization: Bearer %s", ctx->jwt_token);
         slist = curl_slist_append(slist, bearer);
+        free(bearer);
     }
 
     ctx->read_ctr = 0;
