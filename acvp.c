@@ -119,6 +119,7 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx)
     if (ctx) {
         if (ctx->reg_buf) free(ctx->reg_buf);
         if (ctx->kat_buf) free(ctx->kat_buf);
+        if (ctx->upld_buf) free(ctx->upld_buf);
         if (ctx->kat_resp) json_value_free(ctx->kat_resp);
         if (ctx->server_name) free(ctx->server_name);
         if (ctx->path_segment) free(ctx->path_segment);

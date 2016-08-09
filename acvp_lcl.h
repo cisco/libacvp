@@ -118,6 +118,7 @@ struct acvp_ctx_t {
     /* Transitory values */
     char        *reg_buf;    /* holds the JSON registration response */
     char        *kat_buf;    /* holds the current set of vectors being processed */
+    char        *upld_buf;   /* holds the HTTP response from server when uploading results */
     JSON_Value      *kat_resp;   /* holds the current set of vector responses */
     int read_ctr;            /* used during curl processing */
     int vs_id;               /* vs_id currently being processed */

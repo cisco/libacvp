@@ -129,6 +129,10 @@ static long acvp_curl_http_get (ACVP_CTX *ctx, char *url, void *writefunc)
      */
     curl_easy_getinfo (hnd, CURLINFO_RESPONSE_CODE, &http_code);
 
+    if (http_code != 200) {
+	acvp_log_msg(ctx, "HTTP response: %d\n", (int)http_code);
+    }
+
     curl_easy_cleanup(hnd);
     hnd = NULL;
     if (slist) {
@@ -226,6 +230,10 @@ static long acvp_curl_http_post (ACVP_CTX *ctx, char *url, char *data, void *wri
      */
     curl_easy_getinfo (hnd, CURLINFO_RESPONSE_CODE, &http_code);
 
+    if (http_code != 200) {
+	acvp_log_msg(ctx, "HTTP response: %d\n", (int)http_code);
+    }
+
     curl_easy_cleanup(hnd);
     hnd = NULL;
     curl_slist_free_all(slist);
@@ -233,6 +241,43 @@ static long acvp_curl_http_post (ACVP_CTX *ctx, char *url, char *data, void *wri
 
     return (http_code);
 }
+
+/*
+ * This is a callback used by curl to send the HTTP body
+ * to the application (us).  We will store the HTTP body
+ * on the ACVP_CTX in one of the transitory fields.
+ */
+static size_t acvp_curl_write_upld_func(void *ptr, size_t size, size_t nmemb, void *userdata)
+{
+    ACVP_CTX *ctx = (ACVP_CTX*)userdata;
+    char *http_buf;
+
+    if (size != 1) {
+        fprintf(stderr, "\ncurl size not 1\n");
+        return 0;
+    }
+
+    if (!ctx->upld_buf) {
+        ctx->upld_buf = calloc(1, ACVP_KAT_BUF_MAX);
+        if (!ctx->upld_buf) {
+            fprintf(stderr, "\nmalloc failed in curl write upld func\n");
+            return 0;
+        }
+    }
+    http_buf = ctx->upld_buf;
+
+    if ((ctx->read_ctr + nmemb) > ACVP_KAT_BUF_MAX) {
+        fprintf(stderr, "\nKAT is too large\n");
+        return 0;
+    }
+
+    memcpy(&http_buf[ctx->read_ctr], ptr, nmemb);
+    http_buf[ctx->read_ctr+nmemb] = 0;
+    ctx->read_ctr += nmemb;
+
+    return nmemb;
+}
+
 
 /*
  * This is a callback used by curl to send the HTTP body
@@ -325,6 +370,7 @@ ACVP_RESULT acvp_send_register(ACVP_CTX *ctx, char *reg)
     rv = acvp_curl_http_post(ctx, url, reg, &acvp_curl_write_register_func);
     if (rv != 200) {
         acvp_log_msg(ctx, "Unable to register with ACVP server. curl rv=%d\n", rv);
+	acvp_log_msg(ctx, "%s\n", ctx->reg_buf);
         return ACVP_TRANSPORT_FAIL;
     }
 
@@ -354,6 +400,7 @@ ACVP_RESULT acvp_retrieve_vector_set(ACVP_CTX *ctx, int vs_id)
     rv = acvp_curl_http_get(ctx, url, &acvp_curl_write_kat_func);
     if (rv != 200) {
         acvp_log_msg(ctx, "Unable to get vectors from server. curl rv=%d\n", rv);
+	acvp_log_msg(ctx, "%s\n", ctx->kat_buf);
         return ACVP_TRANSPORT_FAIL;
     }
 
@@ -380,12 +427,13 @@ ACVP_RESULT acvp_submit_vector_responses(ACVP_CTX *ctx)
     snprintf(url, 511, "https://%s:%d/%svalidation/acvp/vectors?vs_id=%d", ctx->server_name, ctx->server_port, ctx->path_segment, ctx->vs_id);
 
     resp = json_serialize_to_string_pretty(ctx->kat_resp);
-    rv = acvp_curl_http_post(ctx, url, resp, NULL);
+    rv = acvp_curl_http_post(ctx, url, resp, &acvp_curl_write_upld_func);
     json_value_free(ctx->kat_resp);
     ctx->kat_resp = NULL;
     json_free_serialized_string(resp);
     if (rv != 200) {
         acvp_log_msg(ctx, "Unable to upload vector set to ACVP server. curl rv=%d\n", rv);
+	acvp_log_msg(ctx, "%s\n", ctx->upld_buf);
         return ACVP_TRANSPORT_FAIL;
     }
 
