@@ -1,0 +1,52 @@
+Murl is a "minimal" Curl emulator.  Because Curl has a significant number
+of dependencies on other libraries, it's difficult to cross-compile for
+non-Linux platforms.  While Curl can be compiled, some of the dependencies
+it uses can be challenging to compile for targets such as Android. 
+
+Murl was developed to provide minimal HTTPS support to be used by libacvp.
+This is experimental code for libacvp users that don't want to use Curl.
+The only dependency used by Murl is OpenSSL, which is used for TLS support.
+Only HTTP GET and POST operations are supported.  
+
+The following Curl functions are implemented, but not necessarily fully 
+compliant with Curl.  Specifically, HTTPS is the only supported protocol.  
+Many of the Curl options used with curl_easy_setopt() are not supported.
+
+    curl_easy_init()
+    curl_easy_perform()
+    curl_easy_cleanup()
+    curl_easy_getinfo()
+    curl_global_cleanup()
+    curl_slist_append()
+    curl_slist_free_all()
+    curl_easy_strerror();
+    curl_easy_setopt()
+
+The following Curl options are supported in some capacity:
+
+    CURLOPT_USERAGENT
+    CURLOPT_URL
+    CURLOPT_POSTFIELDS
+    CURLOPT_POSTFIELDSIZE_LARGE
+    CURLOPT_CAINFO
+    CURLOPT_SSL_VERIFYPEER
+    CURLOPT_SSLCERT
+    CURLOPT_SSLCERTTYPE
+    CURLOPT_SSLKEY
+    CURLOPT_SSLKEYTYPE
+    CURLOPT_WRITEDATA
+    CURLOPT_WRITEFUNCTION
+
+
+Limitations:
+    * Murl is not thread-safe.  It should only be used by a single-threaded
+      process.
+    * Murl only provides HTTPS support for GET and POST.  Any other
+      protocol or HTTP method will fail.
+
+
+Murl CLI:
+    A sample program is provided to show how to use Murl.  After doing 'make',
+    the following example shows how to run the sample program.
+
+    ./murl ../certs/mozzila_trust_anchors.pem https://www.cisco.com/
