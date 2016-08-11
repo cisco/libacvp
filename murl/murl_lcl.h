@@ -32,7 +32,12 @@ extern "C" {
 #include <openssl/ssl.h>
 #include "murl.h"
 
-#define MURL_BUF_MAX	64*1024*1024
+/* Maximum size of data that can be in HTTP POST */
+#define MURL_POST_MAX	64*1024*1024
+/* Maximum size of HTTP request, minus the POST data */
+#define MURL_HDR_MAX	64*1024
+#define MURL_RCV_MAX	MURL_POST_MAX
+
 /*
  * Local murl context for a session
  */
@@ -63,7 +68,7 @@ typedef struct SessionHandle_ {
     int			server_port;
 } SessionHandle;
 
-void murl_http_parse_response(SessionHandle *ctx, const char *buf);
+int murl_http_parse_response(SessionHandle *ctx, const char *buf);
 
 #ifdef  __cplusplus
 }

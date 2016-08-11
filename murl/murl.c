@@ -24,7 +24,7 @@
    USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 /***************************************************************************
-* Most of this code is derived from Curl.  The Curl license is retained
+* Some of this code is derived from Curl.  The Curl license is retained
 * here...
 *
 * Copyright (C) 1998 - 2008, Daniel Stenberg, <daniel@haxx.se>, et al.
@@ -532,22 +532,43 @@ static CURLcode parseurl(SessionHandle *data)
 }
 
 
+#define TBUF_MAX 1024
+#define READ_CHUNK_SZ 16384
 CURLcode curl_easy_perform(CURL *curl)
 {
     BIO *conn;
     int rv;
     int ssl_err;
     int read_cnt = 0;
-    char *rbuf;
-    char tbuf[1024];
-    SSL *ssl;
+    char *rbuf = NULL;
+    char tbuf[TBUF_MAX];
+    SSL *ssl = NULL;
     SSL_CTX *ssl_ctx = NULL;
     int cl;
     SessionHandle *ctx = (SessionHandle*)curl;
     struct curl_slist *hdrs;
     unsigned long ossl_err;
+    CURLcode crv;
 
-    rbuf = calloc(1, MURL_BUF_MAX);
+    if (!ctx) {
+	return CURLE_UNKNOWN_OPTION;
+    }
+
+    /*
+     * Allocate some space to build the HTTP request
+     */
+    if (ctx->http_post && ctx->post_field_size) {
+        cl = ctx->post_field_size; 
+    } else if (ctx->http_post && ctx->post_fields) {
+        cl = strlen(ctx->post_fields); //FIXME: this is not safe
+    } else {
+        cl = 0;
+    }
+    if (cl > MURL_POST_MAX) {
+	fprintf(stderr, "POST data exceeds %d byte limit\n", MURL_POST_MAX);
+	return CURLE_FILESIZE_EXCEEDED;
+    }
+    rbuf = calloc(1, cl+MURL_HDR_MAX);
     if (!rbuf) {
         fprintf(stderr, "calloc failed.\n");
         return CURLE_OUT_OF_MEMORY;
@@ -556,7 +577,8 @@ CURLcode curl_easy_perform(CURL *curl)
     /*
      * Split the URL into it's parts
      */
-    parseurl(ctx);
+    crv = parseurl(ctx);
+    if (crv != CURLE_OK) goto easy_perform_cleanup;
 
     /*
      * Setup OpenSSL API
@@ -565,7 +587,8 @@ CURLcode curl_easy_perform(CURL *curl)
     if (!ssl_ctx) {
         fprintf(stderr, "Failed to create SSL context.\n");
         ERR_print_errors_fp(stderr);
-        return CURLE_SSL_CONNECT_ERROR;
+        crv = CURLE_SSL_CONNECT_ERROR;
+	goto easy_perform_cleanup;
     }
     /*
      * This is optional.
@@ -576,13 +599,16 @@ CURLcode curl_easy_perform(CURL *curl)
      */
     SSL_CTX_set_mode(ssl_ctx, SSL_MODE_AUTO_RETRY);
 
-    //FIXME: we should always to TLS peer auth
 
+    /*
+     * Enable TLS peer verification if requested and CA certs were provided
+     */
     if (ctx->ssl_verify_peer && ctx->ca_file) {
         if (!SSL_CTX_load_verify_locations(ssl_ctx, ctx->ca_file, NULL)) {
             fprintf(stderr, "Failed to set trust anchors.\n");
             ERR_print_errors_fp(stderr);
-            return CURLE_SSL_CACERT_BADFILE;
+            crv = CURLE_SSL_CACERT_BADFILE;
+	    goto easy_perform_cleanup;
         }
         SSL_CTX_set_verify(ssl_ctx, SSL_VERIFY_PEER|SSL_VERIFY_FAIL_IF_NO_PEER_CERT, NULL);
     }
@@ -592,12 +618,14 @@ CURLcode curl_easy_perform(CURL *curl)
         if (SSL_CTX_use_certificate_chain_file(ssl_ctx, ctx->ssl_cert_file) != 1) {
             fprintf(stderr,"Failed to load client certificate\n");
             ERR_print_errors_fp(stderr);
-            return CURLE_SSL_CERTPROBLEM;
+            crv = CURLE_SSL_CERTPROBLEM;
+	    goto easy_perform_cleanup;
         }
         if (SSL_CTX_use_PrivateKey_file(ssl_ctx, ctx->ssl_key_file, SSL_FILETYPE_PEM) != 1) {
             fprintf(stderr, "Failed to load client private key\n");
             ERR_print_errors_fp(stderr);
-            return CURLE_SSL_CERTPROBLEM;
+            crv = CURLE_SSL_CERTPROBLEM;
+	    goto easy_perform_cleanup;
         }
     }
 
@@ -607,7 +635,8 @@ CURLcode curl_easy_perform(CURL *curl)
     conn = create_connection(ctx->host_name, ctx->server_port);
     if (conn == NULL) {
         fprintf(stderr, "Unable to open socket with server.\n");
-        return CURLE_COULDNT_CONNECT;
+        crv = CURLE_COULDNT_CONNECT;
+	goto easy_perform_cleanup;
     }
     ssl = SSL_new(ssl_ctx);
     SSL_set_bio(ssl, conn, conn);
@@ -615,22 +644,15 @@ CURLcode curl_easy_perform(CURL *curl)
     if (rv <= 0) {
         fprintf(stderr, "TLS handshake failed.\n");
         ERR_print_errors_fp(stderr);
-        return CURLE_SSL_CONNECT_ERROR;
+        crv = CURLE_SSL_CONNECT_ERROR;
+	goto easy_perform_cleanup;
     }
 
     /*
      * Build HTTP request
      */
-    if (ctx->http_post && ctx->post_field_size) {
-        cl = ctx->post_field_size; //FIXME: do we want to sanity check this against some max?
-    } else if (ctx->http_post && ctx->post_fields) {
-        cl = strlen(ctx->post_fields); //FIXME: this is not safe
-    } else {
-        cl = 0;
-    }
-
     memset(tbuf, 0, sizeof(tbuf));
-    sprintf(tbuf, "%s %s HTTP/1.0\r\n"
+    snprintf(tbuf, TBUF_MAX, "%s %s HTTP/1.0\r\n"
             "Host: %s:%d\r\n"
             "User-Agent: %s\r\n",
             (ctx->http_post ? "POST" : "GET"),
@@ -638,41 +660,62 @@ CURLcode curl_easy_perform(CURL *curl)
             (ctx->user_agent ? ctx->user_agent : "Murl"));
     strcat(rbuf, tbuf); //FIXME: safe string handling needed
 
+    /*
+     * Add any custom headers requested by the user
+     */
     if (ctx->headers) {
         hdrs = ctx->headers;
         while (hdrs) {
             memset(tbuf, 0, sizeof(tbuf));
-            sprintf(tbuf, "%s\r\n", hdrs->data);
+            snprintf(tbuf, TBUF_MAX, "%s\r\n", hdrs->data);
             strcat(rbuf, tbuf); //FIXME: safe string handling needed
             hdrs = hdrs->next;
         }
     }
 
+    /*
+     * Set the Content-length header
+     */
     memset(tbuf, 0, sizeof(tbuf));
-    sprintf(tbuf, "Content-Length: %d\r\n" "Accept: */*\r\n\r\n", cl);
+    snprintf(tbuf, TBUF_MAX, "Content-Length: %d\r\n" "Accept: */*\r\n\r\n", cl);
     strcat(rbuf, tbuf); //FIXME: safe string handling needed
 
     /*
      * Send the HTTP request
      */
-    //fprintf(stderr, "%s", rbuf);
     SSL_write(ssl, rbuf, strlen(rbuf));
     SSL_write(ssl, ctx->post_fields, cl);
 
     ERR_clear_error();
+    free(rbuf);
+    rbuf = NULL;
 
     /*
      * Read the HTTP response
      */
     rv = 1;
     while (rv) {
-        rv = SSL_read(ssl, rbuf+read_cnt, 16384);
+	/*
+	 * Allocate some space to receive the response from the server
+	 */
+	rbuf = realloc(rbuf, read_cnt + READ_CHUNK_SZ);
+	if (!rbuf) {
+	    fprintf(stderr, "realloc failed (%s).\n", __FUNCTION__);
+	    crv = CURLE_OUT_OF_MEMORY;
+	    goto easy_perform_cleanup;
+	}
+	memset(rbuf+read_cnt, 0x0, READ_CHUNK_SZ);
+	
+	/*
+	 * Read the next chunk from the server
+	 */
+        rv = SSL_read(ssl, rbuf+read_cnt, READ_CHUNK_SZ);
         if (rv <= 0) {
             ssl_err = SSL_get_error(ssl, rv);
             switch (ssl_err) {
             case SSL_ERROR_NONE:
             case SSL_ERROR_ZERO_RETURN:
-                fprintf(stderr, "SSL_read finished\n");
+                //fprintf(stderr, "SSL_read finished\n");
                 break;
             default:
                 ossl_err = ERR_get_error();
@@ -680,32 +723,35 @@ CURLcode curl_easy_perform(CURL *curl)
                     fprintf(stderr, "SSL_read failed, rv=%d ssl_err=%d ossl_err=%d.\n",
                             rv, ssl_err, (int)ossl_err);
                     ERR_print_errors_fp(stderr);
-                    return CURLE_USE_SSL_FAILED;
+                    crv = CURLE_USE_SSL_FAILED;
+	            goto easy_perform_cleanup;
                 }
                 break;
             }
         }
         read_cnt += rv;
-        //TODO: check for overflow on rbuf
+	
+	/*
+	 * Make sure we're not receving too much data from the server.
+	 */
+	if (read_cnt > MURL_RCV_MAX) {
+	    crv = CURLE_FILESIZE_EXCEEDED;
+	    goto easy_perform_cleanup;
+	}
     }
 
     /*
      * make sure the data is null terminated
      */
     rbuf[read_cnt] = 0;
-    //fprintf(stderr,"Received text: %s\n", rbuf);
-
-    /*
-     * Close the TLS connection
-     */
-    SSL_shutdown(ssl);
-    SSL_free(ssl);
-    SSL_CTX_free(ssl_ctx);
 
     /*
      * Parse the HTTP response
      */
-    murl_http_parse_response(ctx, rbuf);
+    if (murl_http_parse_response(ctx, rbuf)) {
+        crv = CURLE_HTTP2;
+	goto easy_perform_cleanup;
+    }
 
     /*
      * Send the data back to the user
@@ -714,13 +760,15 @@ CURLcode curl_easy_perform(CURL *curl)
         (ctx->write_func)(ctx->recv_buf, 1, ctx->recv_ctr, ctx->write_ctx);
     }
 
-    /*
-     * Update user with status
-     */
-    //fprintf(stderr,"MURL: Successfully received response from server\n");
-    free(rbuf);
-
-    return CURLE_OK;
+    crv = CURLE_OK;
+easy_perform_cleanup:
+    if (ssl) {
+	SSL_shutdown(ssl);
+	SSL_free(ssl);
+    }
+    if (ssl_ctx) SSL_CTX_free(ssl_ctx);
+    if (rbuf) free(rbuf);
+    return crv;
 }
 
 static CURLcode getinfo_long(SessionHandle *data, CURLINFO info, long *param_longp)

@@ -63,9 +63,11 @@
 #define MAX_ELEMENT_SIZE 64*1024
 #define MAX_BODY_SIZE 64*1024*1024
 
-//TODO: not sure if we really need this EOF variable, need to investigate
-//      why the http-parser code used this in it's test harness.
-//      can we eliminate this?
+/*
+ * Using this global variable to track when all the HTTP data has been 
+ * parsed.  This will need to be addressed if/when thread-safety is
+ * desired.
+ */
 static int currently_parsing_eof;
 
 typedef struct message {
@@ -169,7 +171,6 @@ int body_cb (http_parser *p, const char *buf, size_t len)
     }
     strncat(msg->body, buf, len);
     msg->body_size += len;
-    //fprintf(stderr, "body_cb: '%s'\n", msg->body);
     return 0;
 }
 
@@ -211,7 +212,7 @@ int message_complete_cb (http_parser *p)
         fprintf(stderr, "\n\n *** Error http_should_keep_alive() should have same "
                 "value in both on_message_complete and on_headers_complete "
                 "but it doesn't! ***\n\n");
-        exit(1);
+        return 1;
     }
     msg->message_complete_cb_called = 1;
 
@@ -239,8 +240,11 @@ http_parser * murl_http_parser_init (enum http_parser_type type, http_msg *msg)
 {
     http_parser *parser;
 
-    //FIXME: check for memory allocation failures
     parser = calloc(1, sizeof(http_parser));
+    if (!parser) {
+        fprintf(stderr, "malloc failed (%s)\n", __FUNCTION__);
+	return NULL;
+    }
     http_parser_init(parser, type);
     parser->data = msg;
 
@@ -260,50 +264,81 @@ size_t murl_http_parse (http_parser *parser, const char *buf, size_t len)
     return nparsed;
 }
 
-void murl_http_parse_response (SessionHandle *ctx, const char *buf)
+/*
+ * This routine will perform HTTP parsing on the data provided.
+ *
+ * Returns 0 on success, non-zero on error.
+ */
+int murl_http_parse_response (SessionHandle *ctx, const char *buf)
 {
     size_t parsed;
     int rv;
-    char *tbuf;
     int len;
     http_parser *parser;
     http_msg *msg;
 
-    //FIXME: check for memory allocation failures
     msg = calloc(1, sizeof(http_msg));
+    if (!msg) {
+        fprintf(stderr, "malloc failed (%s)\n", __FUNCTION__);
+	return 1;
+    }
+
+    /*
+     * Initialize the parser
+     */
     parser = murl_http_parser_init(HTTP_RESPONSE, msg);
+    if (!parser) {
+        fprintf(stderr, "murl_http_parser_init failed (%s)\n", __FUNCTION__);
+	free(msg);
+	return 1;
+    }
+
+    /*
+     * Parse the data
+     */
     parsed = murl_http_parse(parser, buf, strlen(buf));
+
+    /*
+     * check that all of it was parsed
+     */
     rv = (parsed == strlen(buf));
     parsed = murl_http_parse(parser, NULL, 0);
     rv &= (parsed == 0);
+
+    /*
+     * Save the HTTP status code sent by the server
+     */
     ctx->http_status_code = parser->status_code;
     murl_http_parser_free(parser);
 
     if (!rv) {
         fprintf(stderr, "HTTP parsing failed\n");
-        //FIXME: need to remove the exit() calls in this code and do real error handling
-        exit(1);
+	free(msg);
+        return 1;
     }
 
     len = msg->body_size;
+    if (ctx->recv_buf) {
+	free(ctx->recv_buf); 
+	ctx->recv_buf = NULL;
+	ctx->recv_ctr = 0;
+    }
+    ctx->recv_buf = calloc(1, len+1);
     if (!ctx->recv_buf) {
-        ctx->recv_buf = calloc(1, MURL_BUF_MAX);
-        if (!ctx->recv_buf) {
-            fprintf(stderr, "\nmalloc failed in curl write reg func\n");
-            exit(1);
-        }
-    }
-    tbuf = ctx->recv_buf;
-
-    if ((ctx->recv_ctr + len) > MURL_BUF_MAX) {
-        fprintf(stderr, "\nRegister response is too large\n");
-        exit(1);
+        fprintf(stderr, "\nmalloc failed in curl write reg func\n");
+	free(msg);
+        return 1;
     }
 
-    memcpy(&tbuf[ctx->recv_ctr], msg->body, len);
-    tbuf[ctx->recv_ctr+len] = 0;
+    /*
+     * Copy the data to the Murl context
+     */
+    memcpy(ctx->recv_buf, msg->body, len);
+    ctx->recv_buf[len] = 0;
     ctx->recv_ctr += len;
     free(msg);
+
+    return 0;
 }
 
 
