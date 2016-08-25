@@ -18,14 +18,42 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "ut_lcl.h"
 
 
+#define MAX_ARG_LEN 16
+typedef struct test_args {
+    char    arg_name[MAX_ARG_LEN];
+    char    arg_val[MAX_ARG_LEN];
+} TEST_ARGS;
+#define TEST_ARG_CNT	8
+static TEST_ARGS test_args[TEST_ARG_CNT] = {
+    { "arg1", "arg1value" },
+    { "argument2", "arg2value" },
+    { "testarg3", "arg3test" },
+    { "t4", "t4value" },
+    { "anotherarg5", "yetanothervalue" },
+    { "arg", "textarg" },
+    { "z", "zvalue" },
+    { "last8", "8lastvalue" },
+};
+
 /*
  * For now we'll just use a global variable to stash the HTTP response
  * from the server for all test cases.
  */
 static char *http_response = NULL;
+static int dumby_ctx = 0;
+#define DUMBY_CTX_TEST_VAL 12311999
 
-static size_t test_murl_post_body_cb(void *ptr, size_t size, size_t nmemb, void *userdata)
+
+static size_t test_murl_get_body_cb(void *ptr, size_t size, size_t nmemb, void *userdata)
 {
+    int *usr_ctx = (int *)userdata;
+
+    /*
+     * Set the user context to a non-zero value.  Later this is checked to
+     * confirm the userdata facility is working.
+     */
+    *usr_ctx = DUMBY_CTX_TEST_VAL;
+
     if (size != 1) {
         fprintf(stderr, "ERROR: murl size not 1 (%s)\n", __FUNCTION__);
         return 0;
@@ -50,29 +78,46 @@ static size_t test_murl_post_body_cb(void *ptr, size_t size, size_t nmemb, void 
  * This function performs an HTTP POST using libmurl.
  * The return value is the HTTP status code from the
  * server.
+ *
+ * Returns 200 on success
  */
-static int test_murl_post_http_post(char *url, char *post_data)
+static int test_murl_http_get(char *url)
 {
     long http_code = 0;
     CURL *hnd;
+    int i;
+    char *new_url = NULL;
+    char tmp[128];
+
+    new_url = malloc(strlen(url) + (TEST_ARG_CNT*(2*MAX_ARG_LEN+2)) + 2);
+    if (!new_url) {
+	fprintf(stderr, "malloc failed in %s\n", __FUNCTION__);
+	return 1;
+    }
+    sprintf(new_url, "%s\?", url);
+
+    /*
+     * Add the test arguments to the URL
+     */
+    for (i=0; i<TEST_ARG_CNT; i++) {
+	sprintf(tmp, "%s=%s&", test_args[i].arg_name, test_args[i].arg_val); 
+	new_url = strcat(new_url, tmp);  
+    }
 
     /*
      * Setup Murl
      */
     hnd = curl_easy_init();
-    curl_easy_setopt(hnd, CURLOPT_URL, url);
+    curl_easy_setopt(hnd, CURLOPT_URL, new_url);
     curl_easy_setopt(hnd, CURLOPT_USERAGENT, "murl");
     curl_easy_setopt(hnd, CURLOPT_CAINFO, PUBLIC_ROOTS);
     curl_easy_setopt(hnd, CURLOPT_SSL_VERIFYPEER, 1L);
-    curl_easy_setopt(hnd, CURLOPT_CUSTOMREQUEST, "POST");
-    curl_easy_setopt(hnd, CURLOPT_POST, 1L);
-    curl_easy_setopt(hnd, CURLOPT_POSTFIELDS, post_data);
-    curl_easy_setopt(hnd, CURLOPT_POSTFIELDSIZE_LARGE, (curl_off_t)strlen(post_data));
     /*
      * If the caller wants the HTTP data from the server
      * set the callback function
      */
-    curl_easy_setopt(hnd, CURLOPT_WRITEFUNCTION, &test_murl_post_body_cb);
+    curl_easy_setopt(hnd, CURLOPT_WRITEDATA, &dumby_ctx);
+    curl_easy_setopt(hnd, CURLOPT_WRITEFUNCTION, &test_murl_get_body_cb);
 
     /*
      * Send the HTTP GET request
@@ -89,6 +134,16 @@ static int test_murl_post_http_post(char *url, char *post_data)
 
     printf("HTTP status from server: %d\n", (int)http_code);
 
+    if (new_url) free(new_url);
+
+    /*
+     * Verify dumby context was set by the Murl handler
+     */
+    if (dumby_ctx != DUMBY_CTX_TEST_VAL) {
+	fprintf(stderr, "CURLOPT_WRITEDATA facility failed (%s)\n", __FUNCTION__);
+	return -1;
+    }
+
     return http_code;
 }
 
@@ -99,21 +154,16 @@ static int test_murl_post_http_post(char *url, char *post_data)
  * server.  If they match, this routine returns zero. Otherwise
  * it fails.
  *
- * Arguments:
- *
- *  *match   Value to match against the received response from the server
- *
  * returns 0 on success, non-zero on failure
  */
-static int test_murl_parse_http_response (char *match)
+static int test_murl_parse_http_response ()
 {
     JSON_Value *val;
     JSON_Object *obj = NULL;
-    JSON_Object *hdr_obj = NULL;
-    const char *data;
-    const char *content_len;
-    int cl;
+    JSON_Object *args_obj = NULL;
+    const char *arg;
     int rv = 1;
+    int i;
 
     val = json_parse_string_with_comments(http_response);
     if (!val) {
@@ -121,138 +171,75 @@ static int test_murl_parse_http_response (char *match)
         return rv;
     }
     obj = json_value_get_object(val);
-    data = json_object_get_string(obj, "data");
-    if (!data) {
-	fprintf(stderr, "No data in JSON object in %s\n", __FUNCTION__);
+    args_obj = json_object_get_object(obj, "args");
+    if (!args_obj) {
+	fprintf(stderr, "No args in JSON object in %s\n", __FUNCTION__);
 	rv = 1;
 	goto json_parse_cleanup;
     }
 
-    hdr_obj = json_object_get_object(obj, "headers");
-    if (!hdr_obj) {
-	fprintf(stderr, "No headers in JSON object in %s\n", __FUNCTION__);
-	rv = 1;
-	goto json_parse_cleanup;
+    for (i=0; i<TEST_ARG_CNT; i++) {
+	arg = json_object_get_string(args_obj, test_args[i].arg_name);
+	if (!arg) {
+	    fprintf(stderr, "Unable to find arg %s in HTTP response (%s)\n", test_args[i].arg_name, __FUNCTION__);
+	    rv = 1;
+	    goto json_parse_cleanup;
+	}
+	if (strcmp(arg, test_args[i].arg_val)) {
+	    fprintf(stderr, "%s is mismatched value for arg %s in HTTP response (%s)\n", arg, test_args[i].arg_name, __FUNCTION__);
+	    rv = 1;
+	    goto json_parse_cleanup;
+	}
     }
-    content_len = json_object_get_string(hdr_obj, "Content-Length");
-    if (!content_len) {
-	fprintf(stderr, "No Content-Length in JSON header object (%s)\n", __FUNCTION__);
-	rv = 1;
-	goto json_parse_cleanup;
-    }
-    cl = atoi(content_len);
-    printf("Returned Content-Length is %d\n", cl);
+    rv = 0;
 
-    if (memcmp(data, match, cl)) {
-	fprintf(stderr, "POST data response from server did not match\n");
-	rv = 1;
-    } else {
-	rv = 0;
-    }
 json_parse_cleanup:
     json_value_free(val);
     return rv;
 }
 
 /*
- * Performs a simple HTTP POST operation.
+ * Performs a simple HTTP GET operation.
  * 
  * returns 0 on success, non-zero on failure.
  */
-#define TEST_POST_VALUE1 "value1=1,value2=two"
-static int test_murl_simple_post ()
+static int test_murl_simple_get ()
 {
     int http_resp;
     int rv = 1;
 
-    printf("Starting simple HTTP POST test...\n");
+    printf("Starting simple HTTP GET test...\n");
     
-    http_resp = test_murl_post_http_post("https://httpbin.org/post", TEST_POST_VALUE1);
+    http_resp = test_murl_http_get("https://httpbin.org/get");
 
     if (http_resp != 200) {
-	printf("HTTP post failed with response %d\n", http_resp);
+	printf("HTTP GET failed with response %d\n", http_resp);
 	return rv;
     }
 
     /*
-     * JSON parse the response from the server and extract the POST data.
+     * JSON parse the response from the server and extract the GET data.
      * It should match what we originally sent to the server.
      */
-    rv = test_murl_parse_http_response(TEST_POST_VALUE1);
+    rv = test_murl_parse_http_response();
 
     if (!rv) {
-	printf("Simple HTTP POST test passed\n");
+	printf("Simple HTTP GET test passed\n");
     } else {
-	printf("Simple HTTP POST test failed.  Reponse from server:\n%s\n", http_response);
+	printf("Simple HTTP GET test failed.  Reponse from server:\n%s\n", http_response);
     }
 
     return rv;
 }
 
 /*
- * Performs a HTTP POST operation with large data.
- * 
- * returns 0 on success, non-zero on failure.
- */
-//httpbin.org appears to support large POST, we'll limit to 1MB for now to avoid
-//abusing their server.
-#define LARGE_DATA_SZ	1024*1024//*63
-static int test_murl_large_post ()
-{
-    int http_resp;
-    char *data = NULL;
-    int i;
-    int rv = 1;
-
-    printf("Starting large HTTP POST test (%d bytes)...\n", LARGE_DATA_SZ);
-    /*
-     * Create a blob to POST do the server
-     */
-    data = malloc(LARGE_DATA_SZ+1);
-    if (!data) {
-	printf("malloc failed in %s\n", __FUNCTION__);
-	goto large_post_cleanup;
-    }
-    for (i=0; i<LARGE_DATA_SZ; i++) {
-	data[i] = 65+(i%26);
-    }
-    data[LARGE_DATA_SZ] = 0;
-
-    /*
-     * POST the data to the server and collect the response
-     */
-    http_resp = test_murl_post_http_post("https://httpbin.org/post", data);
-
-
-    if (http_resp != 200) {
-	printf("HTTP post failed with response %d\n", http_resp);
-	goto large_post_cleanup; 
-    }
- 
-    /*
-     * JSON parse the response from the server and extract the POST data.
-     * It should match what we originally sent to the server.
-     */
-    rv = test_murl_parse_http_response(data);
-
-    if (!rv) {
-	printf("Large HTTP POST test passed\n");
-    } else {
-	printf("Large HTTP POST test failed.  Reponse from server:\n%s\n", http_response);
-    }
-large_post_cleanup:
-    if (data) free(data);
-    return rv;
-}
-
-/*
- * This is the main entry point into the HTTPS POST
+ * This is the main entry point into the HTTPS GET
  * test suite.
  *
  * Returns zero on success, non-zero on any test
  * failure.
  */
-int test_murl_post (void)
+int test_murl_get (void)
 {
     int rv;
     int any_failures = 0;
@@ -260,13 +247,7 @@ int test_murl_post (void)
     /*
      * First test case is a simple HTTP POST
      */
-    rv = test_murl_simple_post();
-    if (rv) any_failures = 1;
-
-    /*
-     * Next test case is a HTTP POST of a large amount of data
-     */
-    rv = test_murl_large_post();
+    rv = test_murl_simple_get();
     if (rv) any_failures = 1;
 
     if (http_response) free(http_response);

@@ -10,31 +10,17 @@ Redistribution and use in source and binary forms, with or without modification,
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-#include <murl/murl.h>
-#include "ut_lcl.h"
+
+#ifndef UT_LCL_H
+#define UT_LCL_H
+
+//TODO: this assumes the unit test will be run from the 
+//      top level murl directory
+#define PUBLIC_ROOTS "../certs/mozzila_trust_anchors.pem"
+
+int test_murl_post(void);
+int test_murl_get(void);
+
+#endif
 
 
-/*
- * Sample test app that shows how to use Murl
- */
-int main(int argc, char **argv)
-{
-    int rv;
-
-    /*
-     * Invoke HTTPS POST unit test suite 
-     */
-    rv = test_murl_post();
-
-    /*
-     * Invoke HTTPS GET unit test suite 
-     */
-    rv = test_murl_get();
-
-    /*
-     * TODO: Invoke other unit test suites
-     */
-
-    curl_global_cleanup();
-    return rv;
-}
