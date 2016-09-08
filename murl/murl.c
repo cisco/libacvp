@@ -47,6 +47,8 @@
 #include <openssl/ssl.h>
 #include <openssl/bio.h>
 #include <openssl/engine.h>
+#include <openssl/x509v3.h>
+#include <openssl/x509_vfy.h>
 #include "murl.h"
 #include "murl_lcl.h"
 
@@ -544,6 +546,7 @@ CURLcode curl_easy_perform(CURL *curl)
     char tbuf[TBUF_MAX];
     SSL *ssl = NULL;
     SSL_CTX *ssl_ctx = NULL;
+    X509_VERIFY_PARAM *vpm = NULL;
     int cl;
     SessionHandle *ctx = (SessionHandle*)curl;
     struct curl_slist *hdrs;
@@ -612,7 +615,24 @@ CURLcode curl_easy_perform(CURL *curl)
         }
         SSL_CTX_set_verify(ssl_ctx, SSL_VERIFY_PEER|SSL_VERIFY_FAIL_IF_NO_PEER_CERT, NULL);
     }
-    //TODO: Need to set verify depth and enable X509_PURPOSE_SSL_SERVER
+
+    vpm = X509_VERIFY_PARAM_new();
+    if (vpm == NULL) {
+        fprintf(stderr, "Unable to allocate a verify parameter structure.\n");
+        ERR_print_errors_fp(stderr);
+        crv = CURLE_SSL_CONNECT_ERROR;
+	goto easy_perform_cleanup;
+    }
+#if 0
+    /* TODO: Enable CRL checks */
+    X509_VERIFY_PARAM_set_flags(vpm, X509_V_FLAG_CRL_CHECK |
+                                X509_V_FLAG_CRL_CHECK_ALL);
+#endif
+    X509_VERIFY_PARAM_set_depth(vpm, 7);
+    X509_VERIFY_PARAM_set_purpose(vpm, X509_PURPOSE_SSL_SERVER);
+    X509_VERIFY_PARAM_set1_host(vpm, ctx->host_name, strnlen(ctx->host_name, MURL_HOSTNAME_MAX));
+    SSL_CTX_set1_param(ssl_ctx, vpm);
+    X509_VERIFY_PARAM_free(vpm);
 
     if (ctx->ssl_cert_file && ctx->ssl_key_file) {
         if (SSL_CTX_use_certificate_chain_file(ssl_ctx, ctx->ssl_cert_file) != 1) {

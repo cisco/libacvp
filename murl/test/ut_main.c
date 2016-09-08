@@ -19,17 +19,28 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
  */
 int main(int argc, char **argv)
 {
-    int rv;
+    int rv = 0;
+
+    /*
+     * Invoke HTTPS TLS unit test suite 
+     */
+    if (test_murl_tls()) {
+	rv = 1;
+    }
 
     /*
      * Invoke HTTPS POST unit test suite 
      */
-    rv = test_murl_post();
+    if (test_murl_post()) {
+	rv = 1;
+    }
 
     /*
      * Invoke HTTPS GET unit test suite 
      */
-    rv = test_murl_get();
+    if (test_murl_get()) {
+	rv = 1;
+    }
 
     /*
      * TODO: Invoke other unit test suites

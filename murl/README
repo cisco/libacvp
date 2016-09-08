@@ -5,8 +5,8 @@ it uses can be challenging to compile for targets such as Android.
 
 Murl was developed to provide minimal HTTPS support to be used by libacvp.
 This is experimental code for libacvp users that don't want to use Curl.
-The only dependency used by Murl is OpenSSL, which is used for TLS support.
-Only HTTP GET and POST operations are supported.  
+The only dependency used by Murl is OpenSSL 1.0.2, which is used for 
+TLS support.  Only HTTP GET and POST operations are supported.  
 
 The following Curl functions are implemented, but not necessarily fully 
 compliant with Curl.  Specifically, HTTPS is the only supported protocol.  

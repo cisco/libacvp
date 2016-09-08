@@ -38,6 +38,8 @@ extern "C" {
 #define MURL_HDR_MAX	64*1024
 #define MURL_RCV_MAX	MURL_POST_MAX
 
+#define MURL_HOSTNAME_MAX   256
+
 /*
  * Local murl context for a session
  */
@@ -64,7 +66,7 @@ typedef struct SessionHandle_ {
     char		*recv_buf;
     int			recv_ctr;
     char		path_segment[256]; //FIXME: use a pointer
-    char		host_name[256]; //FIXME: use a pointer
+    char		host_name[MURL_HOSTNAME_MAX]; //FIXME: use a pointer
     int			server_port;
 } SessionHandle;
 

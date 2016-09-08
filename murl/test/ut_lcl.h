@@ -20,6 +20,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 int test_murl_post(void);
 int test_murl_get(void);
+int test_murl_tls(void);
 
 #endif
 

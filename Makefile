@@ -1,7 +1,7 @@
 CC = gcc
-CFLAGS?=-g -O0 -fPIC -Wall
-LDFLAGS?=
-INCDIRS?=
+CFLAGS+=-g -O0 -fPIC -Wall
+LDFLAGS+=
+INCDIRS+=
 
 SOURCES=acvp.c acvp_aes.c acvp_transport.c acvp_util.c parson.c 
 OBJECTS=$(SOURCES:.c=.o)
