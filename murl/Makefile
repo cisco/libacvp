@@ -32,5 +32,5 @@ clean:
 	rm -f *.[ao]
 	rm -f libmurl.so.1.0.0
 	rm -f libmurl.so
-	rm -r murl
-	rm -r ut-murl
+	rm -f murl
+	rm -f ut-murl
