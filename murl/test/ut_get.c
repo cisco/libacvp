@@ -229,6 +229,98 @@ static int test_murl_simple_get ()
 	printf("Simple HTTP GET test failed.  Reponse from server:\n%s\n", http_response);
     }
 
+    if (http_response) {
+	free(http_response);
+	http_response = NULL;
+    }
+    return rv;
+}
+
+/*
+ * Performs a simple HTTP GET operation with
+ * custom headers.
+ * 
+ * returns 0 on success, non-zero on failure.
+ */
+static int test_murl_headers_get()
+{
+    int rv = 1;
+    long http_code = 0;
+    CURL *hnd;
+    struct curl_slist *slist = NULL;
+
+    printf("\nStarting HTTP headers GET test...\n");
+
+    slist = curl_slist_append(slist, "Content-Type: text/html");
+    slist = curl_slist_append(slist, "Authorization: Bearer");
+
+    /*
+     * Setup Murl
+     */
+    hnd = curl_easy_init();
+    curl_easy_setopt(hnd, CURLOPT_URL, "https://httpbin.org/headers");
+    curl_easy_setopt(hnd, CURLOPT_USERAGENT, "murl");
+    curl_easy_setopt(hnd, CURLOPT_CAINFO, PUBLIC_ROOTS);
+    curl_easy_setopt(hnd, CURLOPT_SSL_VERIFYPEER, 1L);
+    curl_easy_setopt(hnd, CURLOPT_HTTPHEADER, slist);
+    //Note: the httpbin.org server doesn't support POST using the /headers URI
+    //curl_easy_setopt(hnd, CURLOPT_POST, 1L);
+    //curl_easy_setopt(hnd, CURLOPT_POSTFIELDS, TEST_POST_VALUE1);
+    //curl_easy_setopt(hnd, CURLOPT_POSTFIELDSIZE_LARGE, (curl_off_t)strlen(TEST_POST_VALUE1));
+    /*
+     * If the caller wants the HTTP data from the server
+     * set the callback function
+     */
+    curl_easy_setopt(hnd, CURLOPT_WRITEDATA, &dumby_ctx);
+    curl_easy_setopt(hnd, CURLOPT_WRITEFUNCTION, &test_murl_get_body_cb);
+
+    /*
+     * Send the HTTP GET request
+     */
+    curl_easy_perform(hnd);
+
+    /*
+     * Get the HTTP reponse status code from the server
+     */
+    curl_easy_getinfo (hnd, CURLINFO_RESPONSE_CODE, &http_code);
+    printf("HTTP status from server: %d\n", (int)http_code);
+
+    /*
+     * Check the response from the server
+     */
+    if (http_code == 200) {
+	printf("%s", http_response);
+	/*
+	 * See if our headers are in the server response
+	 */
+	if (strstr(http_response, "Authorization") &&
+	    strstr(http_response, "Bearer") &&
+	    strstr(http_response, "Content-Type") &&
+	    strstr(http_response, "text/html")) {
+	    /*
+	     * Signal success for this test
+	     */
+	    rv = 0;
+	}
+    }
+
+    curl_easy_cleanup(hnd);
+    hnd = NULL;
+    if (slist) {
+        curl_slist_free_all(slist);
+        slist = NULL;
+    }
+    if (http_response) {
+	free(http_response);
+	http_response = NULL;
+    }
+
+    if (rv) {
+	printf("HTTP headers GET test failed\n");
+    } else {
+	printf("HTTP headers GET test passed\n");
+    }
+
     return rv;
 }
 
@@ -245,12 +337,13 @@ int test_murl_get (void)
     int any_failures = 0;
 
     /*
-     * First test case is a simple HTTP POST
+     * First test case is a simple HTTP GET
      */
     rv = test_murl_simple_get();
     if (rv) any_failures = 1;
 
-    if (http_response) free(http_response);
+    rv = test_murl_headers_get();
+    if (rv) any_failures = 1;
 
     return any_failures;
 }
