@@ -43,6 +43,10 @@
 ***************************************************************************/
 
 #include <stdlib.h>
+#include <unistd.h>
+#include <sys/socket.h>
+#include <netdb.h>
+#include <arpa/inet.h>
 #include <openssl/err.h>
 #include <openssl/ssl.h>
 #include <openssl/bio.h>
@@ -120,6 +124,7 @@ CURL *curl_easy_init(void)
         return NULL;
     }
     data->server_port = 443; /* default to HTTPS port */
+    data->ssl_verify_hostname = 1; /* default to verify server hostname */
 
     return data;
 }
@@ -221,6 +226,12 @@ CURLcode Curl_setopt(CURL *ctx, CURLoption option, va_list param)
     case CURLOPT_WRITEFUNCTION:
         data->write_func = va_arg(param, curl_write_callback);
         break;
+    case CURLOPT_SSL_VERIFY_HOSTNAME:
+        /*
+         * Enable peer hostname verification.
+         */
+        data->ssl_verify_hostname = (0 != va_arg(param, long)) ? 1 : 0;
+        break;
 
     default:
         /* Silent failure since we don't support most Curl options */
@@ -250,11 +261,12 @@ CURLcode curl_easy_setopt(CURL *curl, CURLoption tag, ...)
 
 /*
  * This function simply opens a TCP connection using
- * the BIO interface.
+ * the BIO interface. Returns the file descriptor for
+ * the socket.
  */
 static BIO *create_connection(char *server, int port)
 {
-    BIO *b;
+    BIO *b = NULL;
     char pbuf[64];
 
     b = BIO_new_connect(server);
@@ -274,12 +286,73 @@ static BIO *create_connection(char *server, int port)
 }
 
 /*
+ * This function simply opens a TCP connection given an
+ * IPv6 address.  The address should be enclosed in square
+ * brackets. Example:
+ *	[2001:db8:85a3:8d3:1319:8a2e:370:7348]
+ */
+#define IPV6_ADDRESS_MAX    41
+static BIO *create_connection_v6(char *address, int port)
+{
+    BIO		    *conn = NULL;
+    struct sockaddr_in6 si6;
+    char	    *host = &address[1];  /* Removes first square bracket */
+    int		    rc;
+    int		    sock;
+
+    /*
+     * Strip off trailing bracket 
+     */
+    host[strnlen(host, IPV6_ADDRESS_MAX)-1] = 0;
+
+    /*
+     * Setup destination address/port 
+     */
+    memset((char *) &si6, 0, sizeof(si6));
+    si6.sin6_flowinfo = 0;
+    si6.sin6_family = AF_INET6;    
+    si6.sin6_port = htons(port);
+    rc = inet_pton(AF_INET6, host, &si6.sin6_addr);
+    if (rc != 1) {
+	fprintf(stderr, "Unable to resolve v6 address: %s\n", host);
+	return(NULL);
+    }
+
+    /*
+     * Create and connect to the socket
+     */
+    if ((sock = socket(AF_INET6, SOCK_STREAM, 0)) < 0 ) {
+	fprintf(stderr, "Unable to create v6 socket for address: %s\n", host);
+	return(NULL);
+    }
+    if (connect(sock, (struct sockaddr *) &si6, sizeof(si6)) < 0 ) {
+	fprintf(stderr, "Unable to connect v6 socket to address: %s  [%s]\n", host, strerror(errno));
+	close(sock);
+	return(NULL);
+    }
+
+    /*
+     * Pass the socket to the BIO interface, which OpenSSL uses
+     * to create the TLS session.
+     */
+    conn = BIO_new_socket(sock, BIO_CLOSE);
+    if (conn == NULL) {
+        fprintf(stderr, "OpenSSL error creating IP socket\n");
+        //ossl_dump_ssl_errors();
+        return(NULL);
+    }        
+
+    return(conn);
+}
+
+/*
  * Parse URL and fill in the relevant members of the connection struct.
- * FIXME: This function was rapidly ported from Curl.  Not all paths through
- *        this function have been tested.  It likely has a memory leak.
+ * This code was adapted from Curl.  It now only supports HTTPS with
+ * either a hostname, IPv4 address or IPv6 address in the URI.
  *
  * This code was taken from Curl's parseurlandfillconn()
  */
+#define MURL_URI_MAX	512
 static CURLcode parseurl(SessionHandle *data)
 {
     char *at;
@@ -338,7 +411,7 @@ static CURLcode parseurl(SessionHandle *data)
     /*
      * Murl only supports http
      */
-    protop = "http";
+    protop = "https";
 
     /* We search for '?' in the host name (but only on the right side of a
      * @-letter to allow ?-letters in username and password) to handle things
@@ -359,8 +432,8 @@ static CURLcode parseurl(SessionHandle *data)
            the path. And have it all prefixed with a slash.
          */
 
-        size_t hostlen = strlen(query);
-        size_t pathlen = strlen(path);
+        size_t hostlen = strnlen(query, MURL_URI_MAX);
+        size_t pathlen = strnlen(path, MURL_URI_MAX);
 
         /* move the existing path plus the zero byte forward, to make room for
            the host-name part */
@@ -388,7 +461,7 @@ static CURLcode parseurl(SessionHandle *data)
         /* We need this function to deal with overlapping memory areas. We know
            that the memory area 'path' points to is 'urllen' bytes big and that
            is bigger than the path. Use +1 to move the zero byte too. */
-        memmove(&path[1], path, strlen(path)+1);
+        memmove(&path[1], path, strnlen(path, MURL_URI_MAX)+1);
         path[0] = '/';
         rebuild_url = 1;
     }
@@ -402,11 +475,11 @@ static CURLcode parseurl(SessionHandle *data)
     if (rebuild_url) {
         char *reurl;
 
-        size_t plen = strlen(path); /* new path, should be 1 byte longer than
+        size_t plen = strnlen(path, MURL_URI_MAX); /* new path, should be 1 byte longer than
                                        the original */
-        size_t urllen = strlen(data->url); /* original URL length */
+        size_t urllen = strnlen(data->url, MURL_URI_MAX); /* original URL length */
 
-        size_t prefixlen = strlen(host_name);
+        size_t prefixlen = strnlen(host_name, MURL_URI_MAX);
 
         prefixlen += strlen(protop) + strlen("://");
 
@@ -422,7 +495,7 @@ static CURLcode parseurl(SessionHandle *data)
 
         fprintf(stdout, "Rebuilt URL to: %s\n", reurl);
 
-        memcpy(data->url, reurl, strlen(reurl)); //FIXME: safe string handling
+        memcpy(data->url, reurl, strnlen(reurl, urllen+2));
     }
 
 #if 0
@@ -436,9 +509,13 @@ static CURLcode parseurl(SessionHandle *data)
         return result;
 #endif
 
-#if 0
-    //TODO: IPv6
+    /*
+     * Check for an IPv6 address as the host name
+     */
     if (host_name[0] == '[') {
+	data->use_ipv6 = 1;
+#if 0
+	//TODO: libmurl currently doesn't support IPv6 scopes
         /* This looks like an IPv6 address literal.  See if there is an address
            scope if there is no location header */
         char *percent = strchr(host_name, '%');
@@ -447,8 +524,7 @@ static CURLcode parseurl(SessionHandle *data)
             char *endp;
             unsigned long scope;
             if (strncmp("%25", percent, 3) != 0) {
-                infof(data,
-                      "Please URL encode %% as %%25, see RFC 6874.\n");
+                fprintf(stderr, "Please URL encode %% as %%25, see RFC 6874.\n");
                 identifier_offset = 1;
             }
             scope = strtoul(percent + identifier_offset, &endp, 10);
@@ -473,8 +549,7 @@ static CURLcode parseurl(SessionHandle *data)
                     *square_bracket = '\0';
                     scopeidx = if_nametoindex(ifname);
                     if (scopeidx == 0) {
-                        infof(data, "Invalid network interface: %s; %s\n", ifname,
-                              strerror(errno));
+                        fprintf(stderr, "Invalid network interface: %s; %s\n", ifname, strerror(errno));
                     }
                 }
                 if (scopeidx > 0) {
@@ -482,19 +557,24 @@ static CURLcode parseurl(SessionHandle *data)
 
                     /* Remove zone identifier from hostname */
                     memmove(percent, p, strlen(p) + 1);
-                    conn->scope_id = scopeidx;
                 }
                 else
 #endif /* HAVE_NET_IF_H && IFNAMSIZ */
-                infof(data, "Invalid IPv6 address format\n");
+                fprintf(stderr, "Invalid IPv6 address format\n");
             }
         }
+#endif
+	/*
+	 * Finally, check if the host_name has a TCP port number
+	 */
+	at = strrchr(host_name, ':');
+    } else {
+	/*
+	 * Finally, check if the host_name has a TCP port number
+	 */
+	at = strchr(host_name, ':');
     }
 
-    if (data->set.scope_id)
-        /* Override any scope that was set above.  */
-        conn->scope_id = data->set.scope_id;
-#endif
 
     /* Remove the fragment part of the path. Per RFC 2396, this is always the
        last part of the URI. We are looking for the first '#' so that we deal
@@ -517,18 +597,14 @@ static CURLcode parseurl(SessionHandle *data)
      *   host_name is B
      *   path is /C
      */
-
-    /*
-     * Finally, check if the host_name has a TCP port number
-     */
-    at = strchr(host_name, ':');
     if (at) {
-        /*
-         * The port number needs to be stripped off
-         */
-        data->server_port = atoi(at+1);
-        *at = 0;
+	/*
+	 * The port number needs to be stripped off
+	 */
+	data->server_port = atoi(at+1);
+	*at = 0;
     }
+
 
     return CURLE_OK;
 }
@@ -630,7 +706,9 @@ CURLcode curl_easy_perform(CURL *curl)
 #endif
     X509_VERIFY_PARAM_set_depth(vpm, 7);
     X509_VERIFY_PARAM_set_purpose(vpm, X509_PURPOSE_SSL_SERVER);
-    X509_VERIFY_PARAM_set1_host(vpm, ctx->host_name, strnlen(ctx->host_name, MURL_HOSTNAME_MAX));
+    if (ctx->ssl_verify_hostname) {
+	X509_VERIFY_PARAM_set1_host(vpm, ctx->host_name, strnlen(ctx->host_name, MURL_HOSTNAME_MAX));
+    }
     SSL_CTX_set1_param(ssl_ctx, vpm);
     X509_VERIFY_PARAM_free(vpm);
 
@@ -652,7 +730,12 @@ CURLcode curl_easy_perform(CURL *curl)
     /*
      * Open TCP connection with server
      */
-    conn = create_connection(ctx->host_name, ctx->server_port);
+    if (ctx->use_ipv6) {
+	conn = create_connection_v6(ctx->host_name, ctx->server_port);
+    } else {
+	conn = create_connection(ctx->host_name, ctx->server_port);
+    }
+    //FIXME: do we need to free conn, or is this handled by SSL_free?
     if (conn == NULL) {
         fprintf(stderr, "Unable to open socket with server.\n");
         crv = CURLE_COULDNT_CONNECT;

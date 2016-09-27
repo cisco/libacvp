@@ -55,6 +55,7 @@ static int server_running;
 static char *server_cert;
 static char *server_key;
 static int server_sock;
+static int server_ip_family = AF_INET;
 
 
 
@@ -72,7 +73,7 @@ static int create_server_connection()
      * Lookup the local address we'll use to bind too
      */
     memset(&hints, '\0', sizeof(struct addrinfo));
-    hints.ai_family = AF_INET;
+    hints.ai_family = server_ip_family; 
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_flags = AI_PASSIVE; 
     snprintf(portstr, sizeof(portstr), "%u", SERVER_PORT);
@@ -83,7 +84,7 @@ static int create_server_connection()
         exit(1);
     }
     for (ai = aiptr; ai; ai = ai->ai_next) {
-        server_sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+        server_sock = socket(server_ip_family, SOCK_STREAM, IPPROTO_TCP);
         if (server_sock == -1) {
 	    /* If we can't create a socket using this address, then
 	     * try the next address */
@@ -261,9 +262,11 @@ cleanup:
  * a TLS server on that thread.  This server is used with
  * the various test cases in this module.
  *
+ * family parameter should be AF_INET or AF_INET6
+ *
  * returns zero on success, non-zero on failure
  */
-static int test_murl_start_server(char *cert, char *key)
+static int test_murl_start_server(char *cert, char *key, int family)
 {
     pthread_t thread;
 
@@ -272,6 +275,7 @@ static int test_murl_start_server(char *cert, char *key)
 	return -1;
     }
 
+    server_ip_family = family;
     server_cert = cert;
     server_key = key;
 
@@ -343,7 +347,7 @@ static int test_murl_key_usage(void)
     /*
      * start the simple test server
      */
-    if (test_murl_start_server(SERVER_CERT_BADUSAGE, SERVER_KEY_BADUSAGE)) {
+    if (test_murl_start_server(SERVER_CERT_BADUSAGE, SERVER_KEY_BADUSAGE, AF_INET)) {
 	printf("Unable to start test server, test case failed!\n");
 	return rv;
     }
@@ -401,7 +405,7 @@ static int test_murl_rfc6125(void)
     /*
      * start the simple test server
      */
-    if (test_murl_start_server(SERVER_CERT_BADNAME, SERVER_KEY_BADNAME)) {
+    if (test_murl_start_server(SERVER_CERT_BADNAME, SERVER_KEY_BADNAME, AF_INET)) {
 	printf("Unable to start test server, test case failed!\n");
 	return rv;
     }
@@ -461,7 +465,7 @@ static int test_murl_chain_depth(void)
     /*
      * start the simple test server
      */
-    if (test_murl_start_server(SERVER_CERT_LVL7, SERVER_KEY_LVL7)) {
+    if (test_murl_start_server(SERVER_CERT_LVL7, SERVER_KEY_LVL7, AF_INET)) {
 	printf("Unable to start test server, test case failed!\n");
 	return rv;
     }
@@ -501,6 +505,90 @@ static int test_murl_chain_depth(void)
     return rv;
 }
 
+/*
+ * This function performs an HTTP GET using a local server 
+ * listening on an IPv6 address. 
+ *
+ * Returns zero on success, non-zero on failure
+ */
+static int test_murl_ipv6_address(void)
+{
+    CURL *hnd;
+    int rv = -1;
+    CURLcode crv;
+    char v6_addr[50];
+    char uri[250];
+    long http_code = 0;
+
+    printf("\nTesting Murl with IPv6 address...\n");
+    if (test_murl_locate_ipv6_address (v6_addr, 50)) {
+	printf("No IPv6 interfaces found, test skipped.\n");
+	return 0;
+    }
+    printf("\t using address: %s\n", v6_addr);
+
+    /*
+     * start the simple test server
+     */
+    if (test_murl_start_server(SERVER_CERT_LVL1, SERVER_KEY_LVL1, AF_INET6)) {
+	printf("Unable to start test server, test case failed!\n");
+	return rv;
+    }
+    while (!server_running) {
+	printf("waiting for TLS server startup...\n");
+	sleep(1);
+    }
+
+    /*
+     * Build the URL with the v6 address
+     */
+    sprintf(uri, "https://[%s]:%d/index.html", v6_addr, SERVER_PORT);
+
+    /*
+     * Setup Murl
+     */
+    hnd = curl_easy_init();
+    curl_easy_setopt(hnd, CURLOPT_URL, uri);
+    curl_easy_setopt(hnd, CURLOPT_USERAGENT, "murl");
+    curl_easy_setopt(hnd, CURLOPT_CAINFO, COMMON_ROOT);
+    curl_easy_setopt(hnd, CURLOPT_SSL_VERIFYPEER, 1L);
+
+    /*
+     * Disable hostname check since the certs only have IPv4 addresses
+     */
+    curl_easy_setopt(hnd, CURLOPT_SSL_VERIFY_HOSTNAME, 0L);
+
+    /*
+     * Send the HTTP GET request
+     */
+    crv = curl_easy_perform(hnd);
+    if (crv == CURLE_OK) {
+	rv = 0;
+    } else {
+	printf("test failed, crv=%d\n", crv);
+    }
+
+    /*
+     * Get the HTTP reponse status code from the server
+     * Our little dummy server should always return a 404.
+     */
+    curl_easy_getinfo (hnd, CURLINFO_RESPONSE_CODE, &http_code);
+    if (http_code != 404) {
+	printf("Invalid HTTP response from server: %d\n", (int)http_code);
+	rv = -1;
+    }
+
+    /*
+     * Stop the test server
+     */
+    test_murl_stop_server();
+
+    curl_easy_cleanup(hnd);
+    hnd = NULL;
+
+    LOG_RESULT(rv);
+    return rv;
+}
 
 /*
  * This is the main entry point into the HTTPS GET
@@ -513,7 +601,6 @@ int test_murl_tls (void)
 {
     int rv;
     int any_failures = 0;
-
     /*
      * First test case is a simple HTTP GET
      * using an trust anchor that can't validate the server cert
@@ -541,6 +628,12 @@ int test_murl_tls (void)
      * by Murl.
      */
     rv = test_murl_chain_depth();
+    if (rv) any_failures = 1;
+
+    /*
+     * Test IPv6 address in URI
+     */
+    rv = test_murl_ipv6_address();
     if (rv) any_failures = 1;
 
     return any_failures;

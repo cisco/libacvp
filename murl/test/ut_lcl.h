@@ -22,6 +22,11 @@ int test_murl_post(void);
 int test_murl_get(void);
 int test_murl_tls(void);
 
+/*
+ * Utility functions 
+ */
+int test_murl_locate_ipv6_address(char *address, int max_addr);
+
 #endif
 
 

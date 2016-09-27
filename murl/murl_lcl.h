@@ -45,12 +45,14 @@ extern "C" {
  */
 typedef struct SessionHandle_ {
     char		    *url;
+    int                     use_ipv6;
     char		    *user_agent;
     int			    http_post; /* 1 to do POST, zero for GET */
     char		    *post_fields;
     int			    post_field_size;
     char		    *ca_file;
     int			    ssl_verify_peer; /* 1 to verify, zero to skip verification at SSL layer */
+    int			    ssl_verify_hostname; /* 1 to verify server hostname against certfication */
     char		    *ssl_cert_file;
     char		    *ssl_cert_type;  /* "PEM" and "DER" are valid values */
     char		    *ssl_key_file;

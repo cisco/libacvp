@@ -298,6 +298,9 @@ typedef enum {
 
     CINIT(TCP_KEEPALIVE, LONG, 213),
 
+    /* Set if we should verify the server hostname against it's certificate (RFC6125) */
+    CINIT(SSL_VERIFY_HOSTNAME, LONG, 901),
+
     CURLOPT_LASTENTRY /* the last unused */
 } CURLoption;
 
