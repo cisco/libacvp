@@ -80,6 +80,7 @@ int main(int argc, char **argv)
     hnd = NULL;
 
     printf("\nHTTP status from server: %d\n", (int)http_code);
+    curl_global_cleanup();
 
     return (http_code==200?0:1);
 }
