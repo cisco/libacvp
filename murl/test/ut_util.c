@@ -49,6 +49,8 @@ int test_murl_locate_ipv6_address (char *address, int max_addr)
 		continue;
 	    }
 	    sin6 = (struct sockaddr_in6 *)ifa->ifa_addr;
+            /* Attempt to skip link local addresses */
+            if (sin6->sin6_scope_id) continue;
 	    memset(address, 0, max_addr);
 	    if (!inet_ntop(AF_INET6, &sin6->sin6_addr, address, max_addr)) {
 		fprintf(stderr, "inet_ntop failed!!!\n");
