@@ -493,9 +493,8 @@ static CURLcode parseurl(SessionHandle *data)
         /* append the trailing piece + zerobyte */
         memcpy(&reurl[prefixlen], path, plen + 1);
 
-        fprintf(stdout, "Rebuilt URL to: %s\n", reurl);
-
-        memcpy(data->url, reurl, strnlen(reurl, urllen+2));
+	if (data->url) free(data->url);
+	data->url = reurl;
     }
 
 #if 0
