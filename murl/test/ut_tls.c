@@ -41,9 +41,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #define TEST_LOCAL_URL "https://127.0.0.1:29516/index.html"
 #define SELFSIGN_CERT "../certs/cisco_cert.pem"
 
-#define LOG_RESULT(rv) \
-    if (!rv) { printf("test passed. :-)\n"); } \
-    else { printf("test failed!!!\n"); }
 
 /*
  * Some globals for our little internal TLS server that's used

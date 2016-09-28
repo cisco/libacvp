@@ -325,6 +325,58 @@ static int test_murl_headers_get()
 }
 
 /*
+ * This function performs an HTTP GET using httpbin.org 
+ * while omitting the trailing slash on the URL.
+ * This improves code coverage of the URL parser in libmurl. 
+ *
+ * Returns zero on success, non-zero on failure
+ */
+static int test_murl_missing_slash(void)
+{
+    CURL *hnd;
+    int rv = -1;
+    CURLcode crv;
+    long http_code = 0;
+
+    printf("\nTesting Murl with omitted trailing slash in URL...\n");
+
+    /*
+     * Setup Murl
+     */
+    hnd = curl_easy_init();
+    curl_easy_setopt(hnd, CURLOPT_URL, "https://httpbin.org");
+    curl_easy_setopt(hnd, CURLOPT_USERAGENT, "murl");
+    curl_easy_setopt(hnd, CURLOPT_CAINFO, PUBLIC_ROOTS);
+    curl_easy_setopt(hnd, CURLOPT_SSL_VERIFYPEER, 1L);
+
+    /*
+     * Send the HTTP GET request
+     */
+    crv = curl_easy_perform(hnd);
+    if (crv == CURLE_OK) {
+	rv = 0;
+    } else {
+	printf("test failed, crv=%d\n", crv);
+    }
+
+    /*
+     * Get the HTTP reponse status code from the server
+     */
+    curl_easy_getinfo (hnd, CURLINFO_RESPONSE_CODE, &http_code);
+    if (http_code != 200) {
+	printf("Invalid HTTP response from server: %d\n", (int)http_code);
+	rv = -1;
+    }
+
+    curl_easy_cleanup(hnd);
+    hnd = NULL;
+
+    LOG_RESULT(rv);
+    return rv;
+}
+
+
+/*
  * This is the main entry point into the HTTPS GET
  * test suite.
  *
@@ -343,6 +395,12 @@ int test_murl_get (void)
     if (rv) any_failures = 1;
 
     rv = test_murl_headers_get();
+    if (rv) any_failures = 1;
+
+    /*
+     * Test missing trailing slash in URL
+     */
+    rv = test_murl_missing_slash();
     if (rv) any_failures = 1;
 
     return any_failures;

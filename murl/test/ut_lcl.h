@@ -17,6 +17,9 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 //TODO: this assumes the unit test will be run from the 
 //      top level murl directory
 #define PUBLIC_ROOTS "../certs/mozzila_trust_anchors.pem"
+#define LOG_RESULT(rv) \
+    if (!rv) { printf("test passed. :-)\n"); } \
+    else { printf("test failed!!!\n"); }
 
 int test_murl_post(void);
 int test_murl_get(void);
