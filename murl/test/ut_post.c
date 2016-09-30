@@ -56,6 +56,8 @@ static int test_murl_post_http_post(char *url, char *post_data)
     long http_code = 0;
     CURL *hnd;
 
+    printf("\tPOST URL: %s\n", url);
+
     /*
      * Setup Murl
      */

@@ -104,6 +104,8 @@ static int test_murl_http_get(char *url)
 	new_url = strcat(new_url, tmp);  
     }
 
+    printf("\tGET URL: %s\n", new_url);
+
     /*
      * Setup Murl
      */

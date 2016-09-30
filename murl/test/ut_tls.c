@@ -300,6 +300,8 @@ static int test_murl_untrusted_server(void)
 
     printf("\nTesting untrusted server cert fails TLS connection...\n");
 
+    printf("\tGET URL: %s\n", TEST_GET_URL);
+
     /*
      * Setup Murl
      */
@@ -352,6 +354,8 @@ static int test_murl_key_usage(void)
 	printf("waiting for TLS server startup...\n");
 	sleep(1);
     }
+
+    printf("\tGET URL: %s\n", TEST_LOCAL_URL);
 
     /*
      * Setup Murl
@@ -410,6 +414,8 @@ static int test_murl_rfc6125(void)
 	printf("waiting for TLS server startup...\n");
 	sleep(1);
     }
+
+    printf("\tGET URL: %s\n", TEST_LOCAL_URL);
 
     /*
      * Setup Murl
@@ -471,6 +477,8 @@ static int test_murl_chain_depth(void)
 	sleep(1);
     }
 
+    printf("\tGET URL: %s\n", TEST_LOCAL_URL);
+
     /*
      * Setup Murl
      */
@@ -522,7 +530,6 @@ static int test_murl_ipv6_address(void)
 	printf("No IPv6 interfaces found, test skipped.\n");
 	return 0;
     }
-    printf("\t using address: %s\n", v6_addr);
 
     /*
      * start the simple test server
@@ -540,6 +547,7 @@ static int test_murl_ipv6_address(void)
      * Build the URL with the v6 address
      */
     sprintf(uri, "https://[%s]:%d/index.html", v6_addr, SERVER_PORT);
+    printf("\tGET URL: %s\n", uri);
 
     /*
      * Setup Murl
