@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS+=-g -O0 -fPIC -Wall
+CFLAGS+=-g -DUSE_MURL -O0 -fPIC -Wall
 LDFLAGS+=-Lmurl
 INCDIRS+=-I.
 
