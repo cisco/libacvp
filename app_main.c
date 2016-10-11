@@ -197,7 +197,7 @@ int main(int argc, char **argv)
      * validated.  For now we just register AES-GCM mode for encrypt using
      * a handful of key sizes and plaintext lengths.
      */
-    rv = acvp_enable_sym_cipher_cap(ctx, ACVP_AES_GCM, ACVP_DIR_ENCRYPT, ACVP_IVGEN_SRC_INT, ACVP_IVGEN_MODE_821, &app_aes_handler);
+    rv = acvp_enable_sym_cipher_cap(ctx, ACVP_AES_GCM, ACVP_DIR_BOTH, ACVP_IVGEN_SRC_INT, ACVP_IVGEN_MODE_821, &app_aes_handler);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_GCM, ACVP_SYM_CIPH_KEYLEN, 128);
     CHECK_ENABLE_CAP_RV(rv);
