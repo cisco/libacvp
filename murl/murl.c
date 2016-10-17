@@ -741,6 +741,9 @@ CURLcode curl_easy_perform(CURL *curl)
 	goto easy_perform_cleanup;
     }
     ssl = SSL_new(ssl_ctx);
+    if (!SSL_set_tlsext_host_name(ssl, ctx->host_name)) {
+        fprintf(stderr, "Warning: SNI extension not set.\n");
+    }
     SSL_set_bio(ssl, conn, conn);
     rv = SSL_connect(ssl);
     if (rv <= 0) {
