@@ -91,7 +91,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
     ACVP_SYM_CIPHER_TC stc;
     ACVP_CIPHER_TC tc;
     ACVP_RESULT rv;
-    const char		*dir_str = json_object_get_string(obj, "mode"); //FIXME: spec says to use 'direction', not 'mode'
+    const char		*dir_str = json_object_get_string(obj, "direction"); 
     ACVP_SYM_CIPH_DIR	dir;
 
     /*
@@ -133,7 +133,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
     json_object_set_string(r_vs, "acv_version", ACVP_VERSION);
     json_object_set_number(r_vs, "vs_id", ctx->vs_id);
     json_object_set_string(r_vs, "algorithm", sym_ciph_name[ACVP_AES_GCM]);
-    json_object_set_string(r_vs, "mode", dir_str); //FIXME: spec says to use 'direction', not 'mode'
+    json_object_set_string(r_vs, "direction", dir_str); 
     json_object_set_value(r_vs, "test_results", json_value_init_array());
     r_tarr = json_object_get_array(r_vs, "test_results");
 
