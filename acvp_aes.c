@@ -49,13 +49,21 @@ static ACVP_RESULT acvp_aes_init_tc(ACVP_CTX *ctx,
                                     unsigned int tc_id,
                                     unsigned char *j_key,
                                     unsigned char *j_pt,
+                                    unsigned char *j_ct,
+                                    unsigned char *j_iv,
+                                    unsigned char *j_tag,
                                     unsigned char *j_aad,
                                     unsigned int key_len,
                                     unsigned int iv_len,
                                     unsigned int pt_len,
                                     unsigned int aad_len,
-                                    unsigned int tag_len);
+                                    unsigned int tag_len,
+				    ACVP_SYM_CIPH_DIR dir);
 static ACVP_RESULT acvp_aes_release_tc(ACVP_SYM_CIPHER_TC *stc);
+
+
+
+
 
 /*
  * This is the handler for AES-GCM KAT values.  This will parse
@@ -66,7 +74,7 @@ static ACVP_RESULT acvp_aes_release_tc(ACVP_SYM_CIPHER_TC *stc);
 ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
 {
     unsigned int tc_id, keylen, ivlen, ptlen, aadlen, taglen;
-    unsigned char *     key, *pt, *aad;
+    unsigned char *     key, *pt = NULL, *ct = NULL, *aad = NULL, *iv = NULL, *tag = NULL;
     JSON_Value *        groupval;
     JSON_Object         *groupobj = NULL;
     JSON_Value          *testval;
@@ -83,6 +91,20 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
     ACVP_SYM_CIPHER_TC stc;
     ACVP_CIPHER_TC tc;
     ACVP_RESULT rv;
+    const char		*dir_str = json_object_get_string(obj, "mode"); //FIXME: spec says to use 'direction', not 'mode'
+    ACVP_SYM_CIPH_DIR	dir;
+
+    /*
+     * verify the direction is valid 
+     */
+    if (!strncmp(dir_str, "encrypt", 7)) {
+	dir = ACVP_DIR_ENCRYPT;
+    } else if (!strncmp(dir_str, "decrypt", 7)) {
+	dir = ACVP_DIR_DECRYPT;
+    } else {
+        acvp_log_msg(ctx, "ERROR: unsupported direction requested from server (%s)", dir_str);
+        return (ACVP_UNSUPPORTED_OP);
+    }
 
     /*
      * Get a reference to the abstracted test case
@@ -111,7 +133,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
     json_object_set_string(r_vs, "acv_version", ACVP_VERSION);
     json_object_set_number(r_vs, "vs_id", ctx->vs_id);
     json_object_set_string(r_vs, "algorithm", sym_ciph_name[ACVP_AES_GCM]);
-    json_object_set_string(r_vs, "mode", "encrypt");
+    json_object_set_string(r_vs, "mode", dir_str); //FIXME: spec says to use 'direction', not 'mode'
     json_object_set_value(r_vs, "test_results", json_value_init_array());
     r_tarr = json_object_get_array(r_vs, "test_results");
 
@@ -143,13 +165,22 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
 
             tc_id = (unsigned int)json_object_get_number(testobj, "tc_id");
             key = (unsigned char *)json_object_get_string(testobj, "key");
-            pt = (unsigned char *)json_object_get_string(testobj, "pt");
+	    if (dir == ACVP_DIR_ENCRYPT) { 
+		pt = (unsigned char *)json_object_get_string(testobj, "pt");
+            } else {
+		ct = (unsigned char *)json_object_get_string(testobj, "ct");
+		iv = (unsigned char *)json_object_get_string(testobj, "iv");
+		tag = (unsigned char *)json_object_get_string(testobj, "tag");
+            }
             aad = (unsigned char *)json_object_get_string(testobj, "aad");
 
             acvp_log_msg(ctx, "        Test case: %d", j);
             acvp_log_msg(ctx, "            tc_id: %d", tc_id);
             acvp_log_msg(ctx, "              key: %s", key);
             acvp_log_msg(ctx, "               pt: %s", pt);
+            acvp_log_msg(ctx, "               ct: %s", ct);
+            acvp_log_msg(ctx, "               iv: %s", iv);
+            acvp_log_msg(ctx, "              tag: %s", tag);
             acvp_log_msg(ctx, "              aad: %s", aad);
 
             /*
@@ -166,7 +197,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
              * TODO: this does mallocs, we can probably do the mallocs once for
              *       the entire vector set to be more efficient
              */
-            acvp_aes_init_tc(ctx, &stc, tc_id, key, pt, aad, keylen, ivlen, ptlen, aadlen, taglen);
+            acvp_aes_init_tc(ctx, &stc, tc_id, key, pt, ct, iv, tag, aad, keylen, ivlen, ptlen, aadlen, taglen, dir);
 
             /* Process the current AES encrypt test vector... */
             rv = (cap->crypto_handler)(&tc);
@@ -217,28 +248,37 @@ static ACVP_RESULT acvp_aes_output_tc(ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *stc, JS
         return ACVP_MALLOC_FAIL;
     }
 
-    rv = acvp_bin_to_hexstr(stc->iv, stc->iv_len, (unsigned char*)tmp);
-    if (rv != ACVP_SUCCESS) {
-        acvp_log_msg(ctx, "hex conversion failure (iv)");
-        return rv;
-    }
-    json_object_set_string(tc_rsp, "iv", tmp);
+    if (stc->direction == ACVP_DIR_ENCRYPT) {
+	rv = acvp_bin_to_hexstr(stc->iv, stc->iv_len, (unsigned char*)tmp);
+	if (rv != ACVP_SUCCESS) {
+	    acvp_log_msg(ctx, "hex conversion failure (iv)");
+	    return rv;
+	}
+	json_object_set_string(tc_rsp, "iv", tmp);
 
-    memset(tmp, 0x0, ACVP_SYM_CT_MAX);
-    rv = acvp_bin_to_hexstr(stc->ct, stc->ct_len, (unsigned char*)tmp);
-    if (rv != ACVP_SUCCESS) {
-        acvp_log_msg(ctx, "hex conversion failure (ct)");
-        return rv;
-    }
-    json_object_set_string(tc_rsp, "ct", tmp);
+	memset(tmp, 0x0, ACVP_SYM_CT_MAX);
+	rv = acvp_bin_to_hexstr(stc->ct, stc->ct_len, (unsigned char*)tmp);
+	if (rv != ACVP_SUCCESS) {
+	    acvp_log_msg(ctx, "hex conversion failure (ct)");
+	    return rv;
+	}
+	json_object_set_string(tc_rsp, "ct", tmp);
 
-    memset(tmp, 0x0, ACVP_SYM_CT_MAX);
-    rv = acvp_bin_to_hexstr(stc->tag, stc->tag_len, (unsigned char*)tmp);
-    if (rv != ACVP_SUCCESS) {
-        acvp_log_msg(ctx, "hex conversion failure (tag)");
-        return rv;
+	memset(tmp, 0x0, ACVP_SYM_CT_MAX);
+	rv = acvp_bin_to_hexstr(stc->tag, stc->tag_len, (unsigned char*)tmp);
+	if (rv != ACVP_SUCCESS) {
+	    acvp_log_msg(ctx, "hex conversion failure (tag)");
+	    return rv;
+	}
+	json_object_set_string(tc_rsp, "tag", tmp);
+    } else {
+	rv = acvp_bin_to_hexstr(stc->pt, stc->pt_len, (unsigned char*)tmp);
+	if (rv != ACVP_SUCCESS) {
+	    acvp_log_msg(ctx, "hex conversion failure (pt)");
+	    return rv;
+	}
+	json_object_set_string(tc_rsp, "pt", tmp);
     }
-    json_object_set_string(tc_rsp, "tag", tmp);
 
     free(tmp);
 
@@ -260,12 +300,16 @@ static ACVP_RESULT acvp_aes_init_tc(ACVP_CTX *ctx,
                                     unsigned int tc_id,
                                     unsigned char *j_key,
                                     unsigned char *j_pt,
+                                    unsigned char *j_ct,
+                                    unsigned char *j_iv,
+                                    unsigned char *j_tag,
                                     unsigned char *j_aad,
                                     unsigned int key_len,
                                     unsigned int iv_len,
                                     unsigned int pt_len,
                                     unsigned int aad_len,
-                                    unsigned int tag_len)
+                                    unsigned int tag_len,
+				    ACVP_SYM_CIPH_DIR dir)
 {
     ACVP_RESULT rv;
 
@@ -293,10 +337,36 @@ static ACVP_RESULT acvp_aes_init_tc(ACVP_CTX *ctx,
         return rv;
     }
 
-    rv = acvp_hexstr_to_bin((const unsigned char *)j_pt, stc->pt);
-    if (rv != ACVP_SUCCESS) {
-        acvp_log_msg(ctx, "Hex converstion failure (pt)");
-        return rv;
+    if (j_pt) {
+	rv = acvp_hexstr_to_bin((const unsigned char *)j_pt, stc->pt);
+	if (rv != ACVP_SUCCESS) {
+	    acvp_log_msg(ctx, "Hex converstion failure (pt)");
+	    return rv;
+	}
+    }
+
+    if (j_ct) {
+	rv = acvp_hexstr_to_bin((const unsigned char *)j_ct, stc->ct);
+	if (rv != ACVP_SUCCESS) {
+	    acvp_log_msg(ctx, "Hex converstion failure (ct)");
+	    return rv;
+	}
+    }
+
+    if (j_iv) {
+	rv = acvp_hexstr_to_bin((const unsigned char *)j_iv, stc->iv);
+	if (rv != ACVP_SUCCESS) {
+	    acvp_log_msg(ctx, "Hex converstion failure (iv)");
+	    return rv;
+	}
+    }
+
+    if (j_tag) {
+	rv = acvp_hexstr_to_bin((const unsigned char *)j_tag, stc->tag);
+	if (rv != ACVP_SUCCESS) {
+	    acvp_log_msg(ctx, "Hex converstion failure (tag)");
+	    return rv;
+	}
     }
 
     rv = acvp_hexstr_to_bin((const unsigned char *)j_aad, stc->aad);
@@ -320,7 +390,7 @@ static ACVP_RESULT acvp_aes_init_tc(ACVP_CTX *ctx,
 
     //TODO: for now we only support this mode
     stc->cipher = ACVP_AES_GCM;
-    stc->direction = ACVP_DIR_ENCRYPT;
+    stc->direction = dir;
 
     return ACVP_SUCCESS;
 }
