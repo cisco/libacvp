@@ -407,7 +407,7 @@ static ACVP_RESULT acvp_build_register(ACVP_CTX *ctx, char **reg)
 
     val = json_value_init_object();
     obj = json_value_get_object(val);
-    json_object_set_string(obj, "acv_version", "0.2");
+    json_object_set_string(obj, "acv_version", ACVP_VERSION);
 
     oe_val = json_value_init_object();
     oe_obj = json_value_get_object(oe_val);

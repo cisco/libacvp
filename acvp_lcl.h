@@ -28,7 +28,7 @@
 
 #include "parson.h"
 
-#define ACVP_VERSION    "0.2"
+#define ACVP_VERSION    "0.3"
 
 #define ACVP_ALG_AES_ECB             "AES-ECB"
 #define ACVP_ALG_AES_CBC             "AES-CBC"
