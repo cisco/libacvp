@@ -47,6 +47,7 @@
 # include <gcrypt.h>
 #endif
 
+static ACVP_RESULT app_aes_handler_aead(ACVP_CIPHER_TC *test_case);
 static ACVP_RESULT app_aes_handler(ACVP_CIPHER_TC *test_case);
 
 #define DEFAULT_SERVER "127.0.0.1"
@@ -197,7 +198,7 @@ int main(int argc, char **argv)
      * validated.  For now we just register AES-GCM mode for encrypt using
      * a handful of key sizes and plaintext lengths.
      */
-    rv = acvp_enable_sym_cipher_cap(ctx, ACVP_AES_GCM, ACVP_DIR_BOTH, ACVP_IVGEN_SRC_INT, ACVP_IVGEN_MODE_821, &app_aes_handler);
+    rv = acvp_enable_sym_cipher_cap(ctx, ACVP_AES_GCM, ACVP_DIR_BOTH, ACVP_IVGEN_SRC_INT, ACVP_IVGEN_MODE_821, &app_aes_handler_aead);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_GCM, ACVP_SYM_CIPH_KEYLEN, 128);
     CHECK_ENABLE_CAP_RV(rv);
@@ -220,6 +221,16 @@ int main(int argc, char **argv)
     rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_GCM, ACVP_SYM_CIPH_AADLEN, 136);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_GCM, ACVP_SYM_CIPH_AADLEN, 256);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    /*
+     * Enable AES-CBC 128 bit key encrypt only
+     */
+    rv = acvp_enable_sym_cipher_cap(ctx, ACVP_AES_CBC, ACVP_DIR_ENCRYPT, ACVP_IVGEN_SRC_NA, ACVP_IVGEN_MODE_NA, &app_aes_handler);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CBC, ACVP_SYM_CIPH_KEYLEN, 128);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CBC, ACVP_SYM_CIPH_PTLEN, 128);
     CHECK_ENABLE_CAP_RV(rv);
 
     /*
@@ -257,6 +268,60 @@ int main(int argc, char **argv)
 }
 
 #ifndef USE_LIBGCRYPT
+static ACVP_RESULT app_aes_handler(ACVP_CIPHER_TC *test_case)
+{
+    ACVP_SYM_CIPHER_TC      *tc;
+    EVP_CIPHER_CTX cipher_ctx;
+    const EVP_CIPHER        *cipher;
+    int ct_len;
+
+    if (!test_case) {
+        return ACVP_INVALID_ARG;
+    }
+
+    tc = test_case->tc.symmetric;
+
+    printf("%s: enter (tc_id=%d)\n", __FUNCTION__, tc->tc_id);
+
+    /* Validate key length and assign OpenSSL EVP cipher */
+    //TODO: we assume CBC mode for now, need support for other modes
+    switch (tc->key_len) {
+    case 128:
+        cipher = EVP_aes_128_cbc();
+        break;
+    case 192:
+        cipher = EVP_aes_192_cbc();
+        break;
+    case 256:
+        cipher = EVP_aes_256_cbc();
+        break;
+    default:
+        printf("Unsupported AES key length\n");
+        return ACVP_UNSUPPORTED_OP;
+        break;
+    }
+
+    /* Begin encrypt code section */
+    EVP_CIPHER_CTX_init(&cipher_ctx);
+
+    if (tc->direction == ACVP_DIR_ENCRYPT) {
+	EVP_EncryptInit_ex(&cipher_ctx, cipher, NULL, tc->key, tc->iv);
+        EVP_EncryptUpdate(&cipher_ctx, tc->ct, &ct_len, tc->pt, tc->pt_len);
+	tc->ct_len = ct_len;
+	EVP_EncryptFinal_ex(&cipher_ctx, tc->ct + ct_len, &ct_len);
+	tc->ct_len += ct_len;
+    } else if (tc->direction == ACVP_DIR_DECRYPT) {
+	//TODO
+    } else {
+        printf("Unsupported direction\n");
+        return ACVP_UNSUPPORTED_OP;
+    }
+
+    EVP_CIPHER_CTX_cleanup(&cipher_ctx);
+
+    return ACVP_SUCCESS;
+}
+
 /*
  * This fuction is invoked by libacvp when an AES crypto
  * operation is needed from the crypto module being
@@ -270,7 +335,7 @@ int main(int argc, char **argv)
 //      application layer code outside of libacvp.  Should we
 //      return a simple pass/fail?  Should we provide a separate
 //      enum that applications can use?
-static ACVP_RESULT app_aes_handler(ACVP_CIPHER_TC *test_case)
+static ACVP_RESULT app_aes_handler_aead(ACVP_CIPHER_TC *test_case)
 {
     ACVP_SYM_CIPHER_TC      *tc;
     EVP_CIPHER_CTX cipher_ctx;
@@ -286,7 +351,8 @@ static ACVP_RESULT app_aes_handler(ACVP_CIPHER_TC *test_case)
 
     printf("%s: enter (tc_id=%d)\n", __FUNCTION__, tc->tc_id);
 
-    /* Validate key length */
+    /* Validate key length and assign OpenSSL EVP cipher */
+    //TODO: need support for CCM mode
     switch (tc->key_len) {
     case 128:
         cipher = EVP_aes_128_gcm();
@@ -370,7 +436,7 @@ static ACVP_RESULT app_aes_handler(ACVP_CIPHER_TC *test_case)
  * for testing TASM-264.  This code is here for demonstration only.  This
  * function lacks proper error handling.
  */
-static ACVP_RESULT app_aes_handler(ACVP_CIPHER_TC *test_case)
+static ACVP_RESULT app_aes_handler_aead(ACVP_CIPHER_TC *test_case)
 {
     gcry_cipher_hd_t hd;
     int algo = -1;
