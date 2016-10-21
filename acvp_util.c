@@ -34,6 +34,7 @@
 #include <curl/curl.h>
 #endif
 
+extern ACVP_ALG_HANDLER alg_tbl[];
 static int acvp_char_to_int(char ch);
 
 /*
@@ -70,7 +71,7 @@ void acvp_cleanup(void)
 
 /*
  * This function is used to locate the callback function that's needed
- * when a particular crypto operation is needby by libacvp.
+ * when a particular crypto operation is needed by libacvp.
  */
 ACVP_CAPS_LIST* acvp_locate_cap_entry(ACVP_CTX *ctx, ACVP_SYM_CIPHER cipher)
 {
@@ -89,6 +90,41 @@ ACVP_CAPS_LIST* acvp_locate_cap_entry(ACVP_CTX *ctx, ACVP_SYM_CIPHER cipher)
     }
     return NULL;
 }
+
+/*
+ * This function returns the name of an algorithm given
+ * a ACVP_SYM_CIPHER value.  It looks for the cipher in
+ * the master algorithm table, returns NULL if none match.
+ */
+char * acvp_lookup_sym_cipher_name(ACVP_SYM_CIPHER alg)
+{
+    int i;
+
+    for (i = 0; i < ACVP_ALG_MAX; i++) {
+        if (alg_tbl[i].cipher == alg) {
+            return alg_tbl[i].name;
+        }
+    }
+    return NULL;
+}
+
+/*
+ * This function returns the ID of a cipher given an
+ * algorithm name (as defined in the ACVP spec).  It
+ * returns -1 if none match.
+ */
+ACVP_SYM_CIPHER acvp_lookup_sym_cipher_index(const char *algorithm)
+{
+    int i;
+
+    for (i = 0; i < ACVP_ALG_MAX; i++) {
+        if (!strncmp(algorithm, alg_tbl[i].name, strlen(alg_tbl[i].name))) {
+            return alg_tbl[i].cipher;
+        }
+    }
+    return -1;
+}
+
 
 //TODO: the next 3 functions could possibly be replaced using OpenSSL bignum,
 //      which has support for reading/writing hex strings.  But do we want

@@ -30,6 +30,8 @@
 
 #define ACVP_VERSION    "0.3"
 
+#define ACVP_ALG_MAX 5  /* Used by alg_tbl[] */
+
 #define ACVP_ALG_AES_ECB             "AES-ECB"
 #define ACVP_ALG_AES_CBC             "AES-CBC"
 #define ACVP_ALG_AES_CTR             "AES-CTR"
@@ -54,6 +56,7 @@ typedef struct acvp_alg_handler_t ACVP_ALG_HANDLER;
 struct acvp_alg_handler_t {
     ACVP_SYM_CIPHER        cipher;
     ACVP_RESULT (*handler)(ACVP_CTX *ctx, JSON_Object *obj);
+    char		   *name;
 };
 
 typedef struct acvp_vs_list_t {
@@ -142,4 +145,6 @@ ACVP_RESULT acvp_entropy_handler(ACVP_CTX *ctx, JSON_Object *obj);
  * ACVP utility functions used internally
  */
 ACVP_CAPS_LIST* acvp_locate_cap_entry(ACVP_CTX *ctx, ACVP_SYM_CIPHER cipher);
+char * acvp_lookup_sym_cipher_name(ACVP_SYM_CIPHER alg);
+ACVP_SYM_CIPHER acvp_lookup_sym_cipher_index(const char *algorithm);
 #endif

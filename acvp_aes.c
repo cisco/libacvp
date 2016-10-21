@@ -38,8 +38,6 @@
 #define ACVP_SYM_TAG_MAX    64
 #define ACVP_SYM_AAD_MAX    128
 
-extern char *sym_ciph_name[];
-
 /*
  * Forward prototypes for local functions
  */
@@ -58,6 +56,7 @@ static ACVP_RESULT acvp_aes_init_tc(ACVP_CTX *ctx,
                                     unsigned int pt_len,
                                     unsigned int aad_len,
                                     unsigned int tag_len,
+                                    ACVP_SYM_CIPHER alg_id,
 				    ACVP_SYM_CIPH_DIR dir);
 static ACVP_RESULT acvp_aes_release_tc(ACVP_SYM_CIPHER_TC *stc);
 
@@ -92,7 +91,14 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
     ACVP_CIPHER_TC tc;
     ACVP_RESULT rv;
     const char		*dir_str = json_object_get_string(obj, "direction"); 
+    const char		*alg_str = json_object_get_string(obj, "algorithm"); 
     ACVP_SYM_CIPH_DIR	dir;
+    ACVP_SYM_CIPHER	alg_id;
+
+    if (!alg_str) {
+        acvp_log_msg(ctx, "ERROR: unable to parse 'algorithm' from JSON");
+	return (ACVP_MALFORMED_JSON);
+    }
 
     /*
      * verify the direction is valid 
@@ -114,8 +120,12 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
     /*
      * Get the crypto module handler for AES-GCM mode
      */
-    //TODO: need to support more modes such as CBC, CTR, EBC, etc.
-    cap = acvp_locate_cap_entry(ctx, ACVP_AES_GCM);
+    alg_id = acvp_lookup_sym_cipher_index(alg_str);
+    if (alg_id < 0) {
+        acvp_log_msg(ctx, "ERROR: unsupported algorithm (%s)", alg_str);
+        return (ACVP_UNSUPPORTED_OP);
+    }
+    cap = acvp_locate_cap_entry(ctx, alg_id);
     if (!cap) {
         acvp_log_msg(ctx, "ERROR: ACVP server requesting unsupported capability");
         return (ACVP_UNSUPPORTED_OP);
@@ -132,7 +142,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
     r_vs = json_value_get_object(ctx->kat_resp);
     json_object_set_string(r_vs, "acv_version", ACVP_VERSION);
     json_object_set_number(r_vs, "vs_id", ctx->vs_id);
-    json_object_set_string(r_vs, "algorithm", sym_ciph_name[ACVP_AES_GCM]);
+    json_object_set_string(r_vs, "algorithm", alg_str);
     json_object_set_string(r_vs, "direction", dir_str); 
     json_object_set_value(r_vs, "test_results", json_value_init_array());
     r_tarr = json_object_get_array(r_vs, "test_results");
@@ -197,7 +207,8 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
              * TODO: this does mallocs, we can probably do the mallocs once for
              *       the entire vector set to be more efficient
              */
-            acvp_aes_init_tc(ctx, &stc, tc_id, key, pt, ct, iv, tag, aad, keylen, ivlen, ptlen, aadlen, taglen, dir);
+            acvp_aes_init_tc(ctx, &stc, tc_id, key, pt, ct, iv, tag, aad, 
+		             keylen, ivlen, ptlen, aadlen, taglen, alg_id, dir);
 
             /* Process the current AES encrypt test vector... */
             rv = (cap->crypto_handler)(&tc);
@@ -264,13 +275,18 @@ static ACVP_RESULT acvp_aes_output_tc(ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *stc, JS
 	}
 	json_object_set_string(tc_rsp, "ct", tmp);
 
-	memset(tmp, 0x0, ACVP_SYM_CT_MAX);
-	rv = acvp_bin_to_hexstr(stc->tag, stc->tag_len, (unsigned char*)tmp);
-	if (rv != ACVP_SUCCESS) {
-	    acvp_log_msg(ctx, "hex conversion failure (tag)");
-	    return rv;
+	/*
+	 * AEAD ciphers need to include the tag 
+	 */
+	if (stc->cipher == ACVP_AES_GCM) {
+	    memset(tmp, 0x0, ACVP_SYM_CT_MAX);
+	    rv = acvp_bin_to_hexstr(stc->tag, stc->tag_len, (unsigned char*)tmp);
+	    if (rv != ACVP_SUCCESS) {
+		acvp_log_msg(ctx, "hex conversion failure (tag)");
+		return rv;
+	    }
+	    json_object_set_string(tc_rsp, "tag", tmp);
 	}
-	json_object_set_string(tc_rsp, "tag", tmp);
     } else {
 	rv = acvp_bin_to_hexstr(stc->pt, stc->pt_len, (unsigned char*)tmp);
 	if (rv != ACVP_SUCCESS) {
@@ -309,6 +325,7 @@ static ACVP_RESULT acvp_aes_init_tc(ACVP_CTX *ctx,
                                     unsigned int pt_len,
                                     unsigned int aad_len,
                                     unsigned int tag_len,
+                                    ACVP_SYM_CIPHER alg_id,
 				    ACVP_SYM_CIPH_DIR dir)
 {
     ACVP_RESULT rv;
@@ -389,7 +406,7 @@ static ACVP_RESULT acvp_aes_init_tc(ACVP_CTX *ctx,
     stc->aad_len = aad_len/8;
 
     //TODO: for now we only support this mode
-    stc->cipher = ACVP_AES_GCM;
+    stc->cipher = alg_id;
     stc->direction = dir;
 
     return ACVP_SUCCESS;

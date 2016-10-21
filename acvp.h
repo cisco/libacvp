@@ -228,6 +228,7 @@ enum acvp_result {
     ACVP_CRYPTO_MODULE_FAIL,
     ACVP_NO_TOKEN,
     ACVP_NO_CAP, 
+    ACVP_MALFORMED_JSON, 
     ACVP_RESULT_MAX,
 };
 

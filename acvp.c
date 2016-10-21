@@ -34,24 +34,6 @@
 #include "parson.h"
 
 /*
- * **************** ALERT *****************
- * This array must stay aligned with ACVP_SYM_CIPHER in acvp.h
- */
-char *sym_ciph_name[] = {
-    ACVP_ALG_AES_ECB,
-    ACVP_ALG_AES_CBC,
-    ACVP_ALG_AES_CTR,
-    ACVP_ALG_AES_GCM,
-    ACVP_ALG_AES_CCM,
-    ACVP_ALG_AES_XTS,
-    ACVP_ALG_AES_KW,
-    ACVP_ALG_AES_KWP,
-    ACVP_ALG_TDES_ECB,
-    ACVP_ALG_TDES_CBC,
-    ACVP_ALG_TDES_CTR
-};
-    
-/*
  * Forward prototypes for local functions
  */
 static ACVP_RESULT acvp_parse_register(ACVP_CTX *ctx);
@@ -75,13 +57,12 @@ static void acvp_cap_free_sl(ACVP_SL_LIST *list);
  * WARNING:
  * This table is not sparse, it must contain ACVP_OP_MAX entries.
  */
-#define ACVP_ALG_MAX 5
-static ACVP_ALG_HANDLER alg_tbl[ACVP_ALG_MAX] = {
-    {ACVP_AES_GCM,         &acvp_aes_kat_handler},
-    {ACVP_AES_CCM,         &acvp_aes_kat_handler},
-    {ACVP_AES_ECB,         &acvp_aes_kat_handler},
-    {ACVP_AES_CBC,         &acvp_aes_kat_handler},
-    {ACVP_AES_CTR,         &acvp_aes_kat_handler},
+ACVP_ALG_HANDLER alg_tbl[ACVP_ALG_MAX] = {
+    {ACVP_AES_GCM,         &acvp_aes_kat_handler,   ACVP_ALG_AES_GCM},
+    {ACVP_AES_CCM,         &acvp_aes_kat_handler,   ACVP_ALG_AES_CCM},
+    {ACVP_AES_ECB,         &acvp_aes_kat_handler,   ACVP_ALG_AES_ECB},
+    {ACVP_AES_CBC,         &acvp_aes_kat_handler,   ACVP_ALG_AES_CBC},
+    {ACVP_AES_CTR,         &acvp_aes_kat_handler,   ACVP_ALG_AES_CTR},
 };
 
 
@@ -449,7 +430,7 @@ static ACVP_RESULT acvp_build_register(ACVP_CTX *ctx, char **reg)
 	    cap_val = json_value_init_object();
 	    cap_obj = json_value_get_object(cap_val);
 
-	    json_object_set_string(cap_obj, "algorithm", sym_ciph_name[cap_entry->cap.sym_cap->cipher]);
+	    json_object_set_string(cap_obj, "algorithm", acvp_lookup_sym_cipher_name(cap_entry->cap.sym_cap->cipher));
 
 	    /*
 	     * Set the direction capability
@@ -912,7 +893,7 @@ static ACVP_RESULT acvp_dispatch_vector_set(ACVP_CTX *ctx, JSON_Object *obj)
     acvp_log_msg(ctx, "ACV version: %s", json_object_get_string(obj, "acvp_version_string"));
 
     for (i = 0; i < ACVP_ALG_MAX; i++) {
-        if (!strncmp(alg, sym_ciph_name[alg_tbl[i].cipher], strlen(sym_ciph_name[alg_tbl[i].cipher]))) {
+        if (!strncmp(alg, alg_tbl[i].name, strlen(alg_tbl[i].name))) {
             rv = (alg_tbl[i].handler)(ctx, obj);
             return rv;
         }
