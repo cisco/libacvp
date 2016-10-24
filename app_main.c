@@ -226,7 +226,7 @@ int main(int argc, char **argv)
     /*
      * Enable AES-CBC 128 bit key encrypt only
      */
-    rv = acvp_enable_sym_cipher_cap(ctx, ACVP_AES_CBC, ACVP_DIR_ENCRYPT, ACVP_IVGEN_SRC_NA, ACVP_IVGEN_MODE_NA, &app_aes_handler);
+    rv = acvp_enable_sym_cipher_cap(ctx, ACVP_AES_CBC, ACVP_DIR_BOTH, ACVP_IVGEN_SRC_NA, ACVP_IVGEN_MODE_NA, &app_aes_handler);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CBC, ACVP_SYM_CIPH_KEYLEN, 128);
     CHECK_ENABLE_CAP_RV(rv);
@@ -273,7 +273,7 @@ static ACVP_RESULT app_aes_handler(ACVP_CIPHER_TC *test_case)
     ACVP_SYM_CIPHER_TC      *tc;
     EVP_CIPHER_CTX cipher_ctx;
     const EVP_CIPHER        *cipher;
-    int ct_len;
+    int ct_len, pt_len;
 
     if (!test_case) {
         return ACVP_INVALID_ARG;
@@ -311,7 +311,11 @@ static ACVP_RESULT app_aes_handler(ACVP_CIPHER_TC *test_case)
 	EVP_EncryptFinal_ex(&cipher_ctx, tc->ct + ct_len, &ct_len);
 	tc->ct_len += ct_len;
     } else if (tc->direction == ACVP_DIR_DECRYPT) {
-	//TODO
+	EVP_DecryptInit_ex(&cipher_ctx, cipher, NULL, tc->key, tc->iv);
+        EVP_DecryptUpdate(&cipher_ctx, tc->pt, &pt_len, tc->ct, tc->ct_len + tc->iv_len);
+	tc->pt_len = pt_len;
+	EVP_DecryptFinal_ex(&cipher_ctx, tc->pt + pt_len, &pt_len);
+	tc->pt_len += pt_len;
     } else {
         printf("Unsupported direction\n");
         return ACVP_UNSUPPORTED_OP;
