@@ -224,6 +224,22 @@ int main(int argc, char **argv)
     CHECK_ENABLE_CAP_RV(rv);
 
     /*
+     * Register AES CCM capabilities
+     */
+    rv = acvp_enable_sym_cipher_cap(ctx, ACVP_AES_CCM, ACVP_DIR_BOTH, ACVP_IVGEN_SRC_INT, ACVP_IVGEN_MODE_821, &app_aes_handler_aead);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CCM, ACVP_SYM_CIPH_KEYLEN, 128);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CCM, ACVP_SYM_CIPH_TAGLEN, 128);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CCM, ACVP_SYM_CIPH_IVLEN, 96);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CCM, ACVP_SYM_CIPH_PTLEN, 256);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CCM, ACVP_SYM_CIPH_AADLEN, 128);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    /*
      * Enable AES-CBC 128 bit key encrypt only
      */
     rv = acvp_enable_sym_cipher_cap(ctx, ACVP_AES_CBC, ACVP_DIR_BOTH, ACVP_IVGEN_SRC_NA, ACVP_IVGEN_MODE_NA, &app_aes_handler);
@@ -395,79 +411,132 @@ static ACVP_RESULT app_aes_handler_aead(ACVP_CIPHER_TC *test_case)
 
     printf("%s: enter (tc_id=%d)\n", __FUNCTION__, tc->tc_id);
 
-    /* Validate key length and assign OpenSSL EVP cipher */
-    //TODO: need support for CCM mode
-    switch (tc->key_len) {
-    case 128:
-        cipher = EVP_aes_128_gcm();
-        break;
-    case 192:
-        cipher = EVP_aes_192_gcm();
-        break;
-    case 256:
-        cipher = EVP_aes_256_gcm();
-        break;
-    default:
-        printf("Unsupported AES-GCM key length\n");
+    if (tc->direction != ACVP_DIR_ENCRYPT && tc->direction != ACVP_DIR_DECRYPT) {
+        printf("Unsupported direction\n");
         return ACVP_UNSUPPORTED_OP;
-        break;
     }
 
     /* Begin encrypt code section */
     EVP_CIPHER_CTX_init(&cipher_ctx);
 
-    if (tc->direction == ACVP_DIR_ENCRYPT) {
-	EVP_CipherInit(&cipher_ctx, cipher, NULL, NULL, 1);
-	EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_GCM_SET_IVLEN, tc->iv_len, 0);
-	EVP_CipherInit(&cipher_ctx, NULL, tc->key, NULL, 1);
-	/* TODO: there are new rules for IV generation with GCM mode, this needs another look */
-	EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_GCM_SET_IV_FIXED, 4, iv_fixed);
-	if (!EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_GCM_IV_GEN, 0, tc->iv)) {
-	    printf("acvp_aes_encrypt: iv gen error\n");
-	    return ACVP_CRYPTO_MODULE_FAIL;
+    /* Validate key length and assign OpenSSL EVP cipher */
+    //TODO: need support for CCM mode
+    switch (tc->cipher) { 
+    case ACVP_AES_GCM:
+	switch (tc->key_len) {
+	case 128:
+	    cipher = EVP_aes_128_gcm();
+	    break;
+	case 192:
+	    cipher = EVP_aes_192_gcm();
+	    break;
+	case 256:
+	    cipher = EVP_aes_256_gcm();
+	    break;
+	default:
+	    printf("Unsupported AES-GCM key length\n");
+	    return ACVP_UNSUPPORTED_OP;
 	}
-	if (tc->aad_len) {
-	    EVP_Cipher(&cipher_ctx, NULL, tc->aad, tc->aad_len);
-	}
-        EVP_Cipher(&cipher_ctx, tc->ct, tc->pt, tc->pt_len);
-	EVP_Cipher(&cipher_ctx, NULL, NULL, 0);
-	EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_GCM_GET_TAG, tc->tag_len, tc->tag);
-    } else if (tc->direction == ACVP_DIR_DECRYPT) {
-	EVP_CipherInit_ex(&cipher_ctx, cipher, NULL, tc->key, NULL, 0);
-	EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_GCM_SET_IVLEN, tc->iv_len, 0);
-	EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_GCM_SET_IV_FIXED, -1, tc->iv);
-	if(!EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_GCM_IV_GEN, 0, tc->iv)) {
-	    printf("\nFailed to set IV");;
-	    return ACVP_CRYPTO_MODULE_FAIL;
-	}        
-	if (tc->aad_len) {
+	if (tc->direction == ACVP_DIR_ENCRYPT) {
+	    EVP_CipherInit(&cipher_ctx, cipher, NULL, NULL, 1);
+	    EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_GCM_SET_IVLEN, tc->iv_len, 0);
+	    EVP_CipherInit(&cipher_ctx, NULL, tc->key, NULL, 1);
+	    /* TODO: there are new rules for IV generation with GCM mode, this needs another look */
+	    EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_GCM_SET_IV_FIXED, 4, iv_fixed);
+	    if (!EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_GCM_IV_GEN, 0, tc->iv)) {
+		printf("acvp_aes_encrypt: iv gen error\n");
+		return ACVP_CRYPTO_MODULE_FAIL;
+	    }
+	    if (tc->aad_len) {
+		EVP_Cipher(&cipher_ctx, NULL, tc->aad, tc->aad_len);
+	    }
+	    EVP_Cipher(&cipher_ctx, tc->ct, tc->pt, tc->pt_len);
+	    EVP_Cipher(&cipher_ctx, NULL, NULL, 0);
+	    EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_GCM_GET_TAG, tc->tag_len, tc->tag);
+	} else if (tc->direction == ACVP_DIR_DECRYPT) {
+	    EVP_CipherInit_ex(&cipher_ctx, cipher, NULL, tc->key, NULL, 0);
+	    EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_GCM_SET_IVLEN, tc->iv_len, 0);
+	    EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_GCM_SET_IV_FIXED, -1, tc->iv);
+	    if(!EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_GCM_IV_GEN, 0, tc->iv)) {
+		printf("\nFailed to set IV");;
+		return ACVP_CRYPTO_MODULE_FAIL;
+	    }        
+	    if (tc->aad_len) {
+		/*
+		 * Set dummy tag before processing AAD.  Otherwise the AAD can
+		 * not be processed.  
+		 */
+		EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_GCM_SET_TAG, tc->tag_len, tc->tag);
+		EVP_Cipher(&cipher_ctx, NULL, tc->aad, tc->aad_len);
+	    }
 	    /*
-	     * Set dummy tag before processing AAD.  Otherwise the AAD can
-	     * not be processed.  
+	     * Set the tag when decrypting 
 	     */
 	    EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_GCM_SET_TAG, tc->tag_len, tc->tag);
-	    EVP_Cipher(&cipher_ctx, NULL, tc->aad, tc->aad_len);
-	}
-	/*
-	 * Set the tag when decrypting 
-	 */
-	EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_GCM_SET_TAG, tc->tag_len, tc->tag);
 	
-	/*
-	 * Decrypt the CT
-	 */
-	EVP_Cipher(&cipher_ctx, tc->pt, tc->ct, tc->pt_len);
-	/*
-	 * Check the tag
-	 */
-	rv = EVP_Cipher(&cipher_ctx, NULL, NULL, 0);
-	if (rv) {
-	    printf("\nGCM decrypt failed due to tag mismatch (%d)\n", rv); 
-	    return ACVP_CRYPTO_MODULE_FAIL;
+	    /*
+	     * Decrypt the CT
+	     */
+	    EVP_Cipher(&cipher_ctx, tc->pt, tc->ct, tc->pt_len);
+	    /*
+	     * Check the tag
+	     */
+	    rv = EVP_Cipher(&cipher_ctx, NULL, NULL, 0);
+	    if (rv) {
+		printf("\nGCM decrypt failed due to tag mismatch (%d)\n", rv); 
+		return ACVP_CRYPTO_MODULE_FAIL;
+	    }
 	}
-    } else {
-        printf("Unsupported direction\n");
-        return ACVP_UNSUPPORTED_OP;
+	break;
+    case ACVP_AES_CCM:
+	switch (tc->key_len) {
+	case 128:
+	    cipher = EVP_aes_128_ccm();
+	    break;
+	case 192:
+	    cipher = EVP_aes_192_ccm();
+	    break;
+	case 256:
+	    cipher = EVP_aes_256_ccm();
+	    break;
+	default:
+	    printf("Unsupported AES-CCM key length\n");
+	    return ACVP_UNSUPPORTED_OP;
+	}
+	if (tc->direction == ACVP_DIR_ENCRYPT) {
+	    EVP_CipherInit(&cipher_ctx, cipher, NULL, NULL, 1);
+	    EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_CCM_SET_IVLEN, tc->iv_len, 0);
+	    EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_CCM_SET_TAG, tc->tag_len, 0);
+	    EVP_CipherInit(&cipher_ctx, NULL, tc->key, tc->iv, 1);
+	    if (tc->aad_len) {
+		EVP_Cipher(&cipher_ctx, NULL, NULL, tc->pt_len);
+		EVP_Cipher(&cipher_ctx, NULL, tc->aad, tc->aad_len);
+	    }
+	    EVP_Cipher(&cipher_ctx, tc->ct, tc->pt, tc->pt_len);
+	    EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_CCM_GET_TAG, tc->tag_len, tc->tag);
+	} else if (tc->direction == ACVP_DIR_DECRYPT) {
+	    //TODO: this code isn't tested, need a server with CCM support
+	    EVP_CipherInit(&cipher_ctx, cipher, NULL, NULL, 0);
+	    EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_CCM_SET_IVLEN, tc->iv_len, 0);
+	    if (tc->aad_len) {
+		EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_CCM_SET_TAG, tc->tag_len, tc->tag);
+	    }
+	    EVP_CipherInit(&cipher_ctx, NULL, tc->key, tc->iv, 1);
+	    EVP_Cipher(&cipher_ctx, tc->pt, tc->ct, tc->pt_len);
+	    /*
+	     * Check the tag
+	     */
+	    rv = EVP_Cipher(&cipher_ctx, NULL, NULL, 0);
+	    if (rv) {
+		printf("\nCCM decrypt failed due to tag mismatch (%d)\n", rv); 
+		return ACVP_CRYPTO_MODULE_FAIL;
+	    }
+	}
+	break;
+    default:
+	printf("Error: Unsupported AES AEAD mode requested by ACVP server\n");
+	return ACVP_NO_CAP;
+	break;
     }
 
     EVP_CIPHER_CTX_cleanup(&cipher_ctx);

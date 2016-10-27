@@ -177,6 +177,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
             key = (unsigned char *)json_object_get_string(testobj, "key");
 	    if (dir == ACVP_DIR_ENCRYPT) { 
 		pt = (unsigned char *)json_object_get_string(testobj, "pt");
+		iv = (unsigned char *)json_object_get_string(testobj, "iv");
             } else {
 		ct = (unsigned char *)json_object_get_string(testobj, "ct");
 		iv = (unsigned char *)json_object_get_string(testobj, "iv");
@@ -278,7 +279,7 @@ static ACVP_RESULT acvp_aes_output_tc(ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *stc, JS
 	/*
 	 * AEAD ciphers need to include the tag 
 	 */
-	if (stc->cipher == ACVP_AES_GCM) {
+	if (stc->cipher == ACVP_AES_GCM || stc->cipher == ACVP_AES_CCM) {
 	    memset(tmp, 0x0, ACVP_SYM_CT_MAX);
 	    rv = acvp_bin_to_hexstr(stc->tag, stc->tag_len, (unsigned char*)tmp);
 	    if (rv != ACVP_SUCCESS) {
