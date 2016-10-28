@@ -48,6 +48,7 @@
 #endif
 
 static ACVP_RESULT app_aes_handler_aead(ACVP_CIPHER_TC *test_case);
+static ACVP_RESULT app_aes_keywrap_handler(ACVP_CIPHER_TC *test_case);
 static ACVP_RESULT app_aes_handler(ACVP_CIPHER_TC *test_case);
 
 #define DEFAULT_SERVER "127.0.0.1"
@@ -260,6 +261,26 @@ int main(int argc, char **argv)
     CHECK_ENABLE_CAP_RV(rv);
 
     /*
+     * Enable AES keywrap for various key sizes and PT lengths 
+     * Note: this is with padding disabled, minimum PT length is 128 bits and must be
+     *       a multiple of 64 bits.
+     */
+    rv = acvp_enable_sym_cipher_cap(ctx, ACVP_AES_KW, ACVP_DIR_BOTH, ACVP_IVGEN_SRC_NA, ACVP_IVGEN_MODE_NA, &app_aes_keywrap_handler);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_KW, ACVP_SYM_CIPH_KEYLEN, 128);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_KW, ACVP_SYM_CIPH_KEYLEN, 192);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_KW, ACVP_SYM_CIPH_KEYLEN, 256);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_KW, ACVP_SYM_CIPH_PTLEN, 512);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_KW, ACVP_SYM_CIPH_PTLEN, 192);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_KW, ACVP_SYM_CIPH_PTLEN, 128);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    /*
      * Now that we have a test session, we register with
      * the server to advertise our capabilities and receive
      * the KAT vector sets the server demands that we process.
@@ -372,6 +393,77 @@ static ACVP_RESULT app_aes_handler(ACVP_CIPHER_TC *test_case)
 	tc->pt_len = pt_len;
 	EVP_DecryptFinal_ex(&cipher_ctx, tc->pt + pt_len, &pt_len);
 	tc->pt_len += pt_len;
+    } else {
+        printf("Unsupported direction\n");
+        return ACVP_UNSUPPORTED_OP;
+    }
+
+    EVP_CIPHER_CTX_cleanup(&cipher_ctx);
+
+    return ACVP_SUCCESS;
+}
+
+static ACVP_RESULT app_aes_keywrap_handler(ACVP_CIPHER_TC *test_case)
+{
+    ACVP_SYM_CIPHER_TC      *tc;
+    EVP_CIPHER_CTX cipher_ctx;
+    const EVP_CIPHER        *cipher;
+    int c_len;
+
+    if (!test_case) {
+        return ACVP_INVALID_ARG;
+    }
+
+    tc = test_case->tc.symmetric;
+
+    printf("%s: enter (tc_id=%d)\n", __FUNCTION__, tc->tc_id);
+
+    /* Begin encrypt code section */
+    EVP_CIPHER_CTX_init(&cipher_ctx);
+
+    switch (tc->cipher) { 
+    case ACVP_AES_KW:
+	switch (tc->key_len) {
+	case 128:
+	    cipher = EVP_aes_128_wrap();
+	    break;
+	case 192:
+	    cipher = EVP_aes_192_wrap();
+	    break;
+	case 256:
+	    cipher = EVP_aes_256_wrap();
+	    break;
+	default:
+	    printf("Unsupported AES keywrap key length\n");
+	    return ACVP_NO_CAP;
+	    break;
+	}
+	break;
+    default:
+	printf("Error: Unsupported AES keywrap mode requested by ACVP server\n");
+	return ACVP_NO_CAP;
+	break;
+    }
+
+
+    if (tc->direction == ACVP_DIR_ENCRYPT) {
+	EVP_CIPHER_CTX_set_flags(&cipher_ctx, EVP_CIPHER_CTX_FLAG_WRAP_ALLOW);
+	EVP_CipherInit_ex(&cipher_ctx, cipher, NULL, tc->key, NULL, 1);
+	c_len = EVP_Cipher(&cipher_ctx, tc->ct, tc->pt, tc->pt_len);
+	if (c_len <= 0) {
+	    printf("Error: key wrap operation failed (%d)\n", c_len);
+	    return ACVP_CRYPTO_MODULE_FAIL;
+	} else {
+	    tc->ct_len = c_len;
+	}
+    } else if (tc->direction == ACVP_DIR_DECRYPT) {
+	EVP_CIPHER_CTX_set_flags(&cipher_ctx, EVP_CIPHER_CTX_FLAG_WRAP_ALLOW);
+	EVP_CipherInit_ex(&cipher_ctx, cipher, NULL, tc->key, NULL, 0);
+	c_len = EVP_Cipher(&cipher_ctx, tc->pt, tc->ct, tc->ct_len + 8);
+	if (c_len <= 0) {
+	    printf("Error: key wrap operation failed (%d)\n", c_len);
+	    return ACVP_CRYPTO_MODULE_FAIL;
+	}
     } else {
         printf("Unsupported direction\n");
         return ACVP_UNSUPPORTED_OP;

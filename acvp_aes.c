@@ -261,12 +261,17 @@ static ACVP_RESULT acvp_aes_output_tc(ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *stc, JS
     }
 
     if (stc->direction == ACVP_DIR_ENCRYPT) {
-	rv = acvp_bin_to_hexstr(stc->iv, stc->iv_len, (unsigned char*)tmp);
-	if (rv != ACVP_SUCCESS) {
-	    acvp_log_msg(ctx, "hex conversion failure (iv)");
-	    return rv;
+	/*
+	 * Keywrap doesn't use an IV
+	 */
+	if (stc->cipher != ACVP_AES_KW) {
+	    rv = acvp_bin_to_hexstr(stc->iv, stc->iv_len, (unsigned char*)tmp);
+	    if (rv != ACVP_SUCCESS) {
+		acvp_log_msg(ctx, "hex conversion failure (iv)");
+		return rv;
+	    }
+	    json_object_set_string(tc_rsp, "iv", tmp);
 	}
-	json_object_set_string(tc_rsp, "iv", tmp);
 
 	memset(tmp, 0x0, ACVP_SYM_CT_MAX);
 	rv = acvp_bin_to_hexstr(stc->ct, stc->ct_len, (unsigned char*)tmp);
@@ -402,11 +407,10 @@ static ACVP_RESULT acvp_aes_init_tc(ACVP_CTX *ctx,
     stc->key_len = key_len;
     stc->iv_len = iv_len/8;
     stc->pt_len = pt_len/8;
-    stc->ct_len = pt_len/8;
+    stc->ct_len = pt_len/8; 
     stc->tag_len = tag_len/8;
     stc->aad_len = aad_len/8;
 
-    //TODO: for now we only support this mode
     stc->cipher = alg_id;
     stc->direction = dir;
 

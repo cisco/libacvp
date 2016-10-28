@@ -19,6 +19,18 @@ Overview
 	as part of libacvp.  libcurl is not included, and must be installed 
 	separately on your Linux host, including the Curl header files.
 
+	This code uses features in OpenSSL 1.0.2, but not present in OpenSSL 1.0.1.
+	Many Linux distros still ship with OpenSSL 1.0.1.  Under this situation
+	you will need to download, compile and install OpenSSL 1.0.2 on your system.
+	This would typically be installed into /usr/local/ssl to avoid 
+	overwriting the OpenSSL that comes with your distro.  When doing this, the
+	next problem is the libcurl on the Linux distro may be linked against
+	OpenSSL 1.0.1.  This will result in linker failures when trying to use
+	libcurl with libacvp and OpenSSL 1.0.2.  Therefore, you may need to
+	download the Curl source, compile it against the OpenSSL 1.0.2
+	header files, and link libcurl against OpenSSL 1.0.2.  OpenSSL 1.0.2
+	is used for AES keywrap support.
+
         libacvp will register with the ACVP server, advertising capabilities to
 	the server.  Currently only AES-GCM is supported.  The server will 
 	respond with a list of vector set identifiers that need to be 
