@@ -241,7 +241,7 @@ int main(int argc, char **argv)
     CHECK_ENABLE_CAP_RV(rv);
 
     /*
-     * Enable AES-CBC 128 bit key encrypt only
+     * Enable AES-CBC 128 bit key 
      */
     rv = acvp_enable_sym_cipher_cap(ctx, ACVP_AES_CBC, ACVP_DIR_BOTH, ACVP_IVGEN_SRC_NA, ACVP_IVGEN_MODE_NA, &app_aes_handler);
     CHECK_ENABLE_CAP_RV(rv);
@@ -251,7 +251,7 @@ int main(int argc, char **argv)
     CHECK_ENABLE_CAP_RV(rv);
 
     /*
-     * Enable AES-ECB 256 bit key encrypt only
+     * Enable AES-ECB 256 bit key 
      */
     rv = acvp_enable_sym_cipher_cap(ctx, ACVP_AES_ECB, ACVP_DIR_BOTH, ACVP_IVGEN_SRC_NA, ACVP_IVGEN_MODE_NA, &app_aes_handler);
     CHECK_ENABLE_CAP_RV(rv);
@@ -278,6 +278,16 @@ int main(int argc, char **argv)
     rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_KW, ACVP_SYM_CIPH_PTLEN, 192);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_KW, ACVP_SYM_CIPH_PTLEN, 128);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    /*
+     * Enable AES-CTR 128 bit key 
+     */
+    rv = acvp_enable_sym_cipher_cap(ctx, ACVP_AES_CTR, ACVP_DIR_BOTH, ACVP_IVGEN_SRC_NA, ACVP_IVGEN_MODE_NA, &app_aes_handler);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CTR, ACVP_SYM_CIPH_KEYLEN, 128);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CTR, ACVP_SYM_CIPH_PTLEN, 128);
     CHECK_ENABLE_CAP_RV(rv);
 
     /*
@@ -346,6 +356,25 @@ static ACVP_RESULT app_aes_handler(ACVP_CIPHER_TC *test_case)
 	    break;
 	case 256:
 	    cipher = EVP_aes_256_ecb();
+	    break;
+	default:
+	    printf("Unsupported AES key length\n");
+	    return ACVP_NO_CAP;
+	    break;
+	}
+	break;
+    case ACVP_AES_CTR:
+	iv = tc->iv;
+	iv_len = tc->iv_len;
+	switch (tc->key_len) {
+	case 128:
+	    cipher = EVP_aes_128_ctr();
+	    break;
+	case 192:
+	    cipher = EVP_aes_192_ctr();
+	    break;
+	case 256:
+	    cipher = EVP_aes_256_ctr();
 	    break;
 	default:
 	    printf("Unsupported AES key length\n");
