@@ -140,24 +140,24 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
     }
     ctx->kat_resp = json_value_init_object();
     r_vs = json_value_get_object(ctx->kat_resp);
-    json_object_set_string(r_vs, "acv_version", ACVP_VERSION);
-    json_object_set_number(r_vs, "vs_id", ctx->vs_id);
+    json_object_set_string(r_vs, "acvVersion", ACVP_VERSION);
+    json_object_set_number(r_vs, "vsId", ctx->vs_id);
     json_object_set_string(r_vs, "algorithm", alg_str);
     json_object_set_string(r_vs, "direction", dir_str); 
-    json_object_set_value(r_vs, "test_results", json_value_init_array());
-    r_tarr = json_object_get_array(r_vs, "test_results");
+    json_object_set_value(r_vs, "testResults", json_value_init_array());
+    r_tarr = json_object_get_array(r_vs, "testResults");
 
-    groups = json_object_get_array(obj, "test_groups");
+    groups = json_object_get_array(obj, "testGroups");
     g_cnt = json_array_get_count(groups);
     for (i = 0; i < g_cnt; i++) {
         groupval = json_array_get_value(groups, i);
         groupobj = json_value_get_object(groupval);
 
-        keylen = (unsigned int)json_object_get_number(groupobj, "keylen");
-        ivlen = (unsigned int)json_object_get_number(groupobj, "ivlen");
-        ptlen = (unsigned int)json_object_get_number(groupobj, "ptlen");
-        aadlen = (unsigned int)json_object_get_number(groupobj, "aadlen");
-        taglen = (unsigned int)json_object_get_number(groupobj, "taglen");
+        keylen = (unsigned int)json_object_get_number(groupobj, "keyLen");
+        ivlen = (unsigned int)json_object_get_number(groupobj, "ivLen");
+        ptlen = (unsigned int)json_object_get_number(groupobj, "ptLen");
+        aadlen = (unsigned int)json_object_get_number(groupobj, "aadLen");
+        taglen = (unsigned int)json_object_get_number(groupobj, "tagLen");
 
         acvp_log_msg(ctx, "    Test group: %d", i);
         acvp_log_msg(ctx, "        keylen: %d", keylen);
@@ -173,7 +173,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
 
-            tc_id = (unsigned int)json_object_get_number(testobj, "tc_id");
+            tc_id = (unsigned int)json_object_get_number(testobj, "tcId");
             key = (unsigned char *)json_object_get_string(testobj, "key");
 	    if (dir == ACVP_DIR_ENCRYPT) { 
 		pt = (unsigned char *)json_object_get_string(testobj, "pt");
@@ -186,7 +186,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
             aad = (unsigned char *)json_object_get_string(testobj, "aad");
 
             acvp_log_msg(ctx, "        Test case: %d", j);
-            acvp_log_msg(ctx, "            tc_id: %d", tc_id);
+            acvp_log_msg(ctx, "            tcId: %d", tc_id);
             acvp_log_msg(ctx, "              key: %s", key);
             acvp_log_msg(ctx, "               pt: %s", pt);
             acvp_log_msg(ctx, "               ct: %s", ct);
@@ -200,7 +200,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
             r_tval = json_value_init_object();
             r_tobj = json_value_get_object(r_tval);
 
-            json_object_set_number(r_tobj, "tc_id", tc_id);
+            json_object_set_number(r_tobj, "tcId", tc_id);
 
             /*
              * Setup the test case data that will be passed down to

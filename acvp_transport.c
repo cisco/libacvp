@@ -392,7 +392,7 @@ ACVP_RESULT acvp_retrieve_vector_set(ACVP_CTX *ctx, int vs_id)
     char url[512]; //TODO: 512 is an arbitrary limit
 
     memset(url, 0x0, 512);
-    snprintf(url, 511, "https://%s:%d/%svalidation/acvp/vectors?vs_id=%d", ctx->server_name, ctx->server_port, ctx->path_segment, vs_id);
+    snprintf(url, 511, "https://%s:%d/%svalidation/acvp/vectors?vsId=%d", ctx->server_name, ctx->server_port, ctx->path_segment, vs_id);
 
     if (ctx->kat_buf) {
         memset(ctx->kat_buf, 0x0, ACVP_KAT_BUF_MAX);
@@ -424,7 +424,7 @@ ACVP_RESULT acvp_submit_vector_responses(ACVP_CTX *ctx)
     char *resp;
 
     memset(url, 0x0, 512);
-    snprintf(url, 511, "https://%s:%d/%svalidation/acvp/vectors?vs_id=%d", ctx->server_name, ctx->server_port, ctx->path_segment, ctx->vs_id);
+    snprintf(url, 511, "https://%s:%d/%svalidation/acvp/vectors?vsId=%d", ctx->server_name, ctx->server_port, ctx->path_segment, ctx->vs_id);
 
     resp = json_serialize_to_string_pretty(ctx->kat_resp);
     rv = acvp_curl_http_post(ctx, url, resp, &acvp_curl_write_upld_func);

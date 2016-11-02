@@ -389,27 +389,28 @@ static ACVP_RESULT acvp_build_register(ACVP_CTX *ctx, char **reg)
 
     val = json_value_init_object();
     obj = json_value_get_object(val);
-    json_object_set_string(obj, "acv_version", ACVP_VERSION);
+    json_object_set_string(obj, "acvVersion", ACVP_VERSION);
+    json_object_set_string(obj, "certificateRequest", "yes");
 
     oe_val = json_value_init_object();
     oe_obj = json_value_get_object(oe_val);
     //TODO: need public API to allow app to specify some of these values
-    json_object_set_string(oe_obj, "vendor_name", "VendorName");
-    json_object_set_string(oe_obj, "vendor_url", "www.vendor.org");
+    json_object_set_string(oe_obj, "vendorName", "VendorName");
+    json_object_set_string(oe_obj, "vendorURL", "www.vendor.org");
     json_object_set_string(oe_obj, "contact", "John Doe");
-    json_object_set_string(oe_obj, "contact_email", "jdoe@vendor.org");
-    json_object_set_string(oe_obj, "module_name", "Crypto Module 1.0");
-    json_object_set_string(oe_obj, "module_type", "Software");
+    json_object_set_string(oe_obj, "contactEmail", "jdoe@vendor.org");
+    json_object_set_string(oe_obj, "moduleName", "Crypto Module 1.0");
+    json_object_set_string(oe_obj, "moduleType", "Software");
 
     oee_val = json_value_init_object();
     oee_obj = json_value_get_object(oee_val);
-    json_object_set_string(oee_obj, "module_version", "1.0");
+    json_object_set_string(oee_obj, "moduleVersion", "1.0");
     json_object_set_string(oee_obj, "processor", "Intel Woodcrest");
-    json_object_set_string(oee_obj, "operating_system", "Linux 3.1");
+    json_object_set_string(oee_obj, "operatingSystem", "Linux 3.1");
     json_object_set_value(oe_obj, "operational_environment", oee_val);
 
-    json_object_set_string(oe_obj, "implementation_description", "Sample crypto module for demonstrating ACV protocol.");
-    json_object_set_value(obj, "oe_information", oe_val);
+    json_object_set_string(oe_obj, "implementationDescription", "Sample crypto module for demonstrating ACV protocol.");
+    json_object_set_value(obj, "oeInformation", oe_val);
 
     /*
      * Start the capabilities advertisement
@@ -452,10 +453,10 @@ static ACVP_RESULT acvp_build_register(ACVP_CTX *ctx, char **reg)
 	     */
 	    switch(cap_entry->cap.sym_cap->ivgen_source) {
 	    case ACVP_IVGEN_SRC_INT:
-		json_object_set_string(cap_obj, "ivgen", "internal");
+		json_object_set_string(cap_obj, "ivGen", "internal");
 		break;
 	    case ACVP_IVGEN_SRC_EXT:
-		json_object_set_string(cap_obj, "ivgen", "external");
+		json_object_set_string(cap_obj, "ivGen", "external");
 		break;
 	    default:
 		/* do nothing, this is an optional capability */
@@ -467,10 +468,10 @@ static ACVP_RESULT acvp_build_register(ACVP_CTX *ctx, char **reg)
 	     */
 	    switch(cap_entry->cap.sym_cap->ivgen_mode) {
 	    case ACVP_IVGEN_MODE_821:
-		json_object_set_string(cap_obj, "ivgenmode", "8.2.1");
+		json_object_set_string(cap_obj, "ivGenMode", "8.2.1");
 		break;
 	    case ACVP_IVGEN_MODE_822:
-		json_object_set_string(cap_obj, "ivgenmode", "8.2.2");
+		json_object_set_string(cap_obj, "ivGenMode", "8.2.2");
 		break;
 	    default:
 		/* do nothing, this is an optional capability */
@@ -480,8 +481,8 @@ static ACVP_RESULT acvp_build_register(ACVP_CTX *ctx, char **reg)
 	    /*
 	     * Set the supported key lengths
 	     */
-	    json_object_set_value(cap_obj, "keylen", json_value_init_array());
-	    opts_arr = json_object_get_array(cap_obj, "keylen");
+	    json_object_set_value(cap_obj, "keyLen", json_value_init_array());
+	    opts_arr = json_object_get_array(cap_obj, "keyLen");
 	    sl_list = cap_entry->cap.sym_cap->keylen;
 	    while (sl_list) {
 		json_array_append_number(opts_arr, sl_list->length);
@@ -491,8 +492,8 @@ static ACVP_RESULT acvp_build_register(ACVP_CTX *ctx, char **reg)
 	    /*
 	     * Set the supported tag lengths (for AEAD ciphers)
 	     */
-	    json_object_set_value(cap_obj, "taglen", json_value_init_array());
-	    opts_arr = json_object_get_array(cap_obj, "taglen");
+	    json_object_set_value(cap_obj, "tagLen", json_value_init_array());
+	    opts_arr = json_object_get_array(cap_obj, "tagLen");
 	    sl_list = cap_entry->cap.sym_cap->taglen;
 	    while (sl_list) {
 		json_array_append_number(opts_arr, sl_list->length);
@@ -503,8 +504,8 @@ static ACVP_RESULT acvp_build_register(ACVP_CTX *ctx, char **reg)
 	    /*
 	     * Set the supported IV lengths
 	     */
-	    json_object_set_value(cap_obj, "ivlen", json_value_init_array());
-	    opts_arr = json_object_get_array(cap_obj, "ivlen");
+	    json_object_set_value(cap_obj, "ivLen", json_value_init_array());
+	    opts_arr = json_object_get_array(cap_obj, "ivLen");
 	    sl_list = cap_entry->cap.sym_cap->ivlen;
 	    while (sl_list) {
 		json_array_append_number(opts_arr, sl_list->length);
@@ -514,8 +515,8 @@ static ACVP_RESULT acvp_build_register(ACVP_CTX *ctx, char **reg)
 	    /*
 	     * Set the supported plaintext lengths
 	     */
-	    json_object_set_value(cap_obj, "ptlen", json_value_init_array());
-	    opts_arr = json_object_get_array(cap_obj, "ptlen");
+	    json_object_set_value(cap_obj, "ptLen", json_value_init_array());
+	    opts_arr = json_object_get_array(cap_obj, "ptLen");
 	    sl_list = cap_entry->cap.sym_cap->ptlen;
 	    while (sl_list) {
 		json_array_append_number(opts_arr, sl_list->length);
@@ -525,8 +526,8 @@ static ACVP_RESULT acvp_build_register(ACVP_CTX *ctx, char **reg)
 	    /*
 	     * Set the supported AAD lengths (for AEAD ciphers)
 	     */
-	    json_object_set_value(cap_obj, "aadlen", json_value_init_array());
-	    opts_arr = json_object_get_array(cap_obj, "aadlen");
+	    json_object_set_value(cap_obj, "aadLen", json_value_init_array());
+	    opts_arr = json_object_get_array(cap_obj, "aadLen");
 	    sl_list = cap_entry->cap.sym_cap->aadlen;
 	    while (sl_list) {
 		json_array_append_number(opts_arr, sl_list->length);
@@ -716,7 +717,7 @@ static ACVP_RESULT acvp_parse_register(ACVP_CTX *ctx)
     for (i = 0; i < vs_cnt; i++) {
         vs_val = json_array_get_value(vect_sets, i);
         vs_obj = json_value_get_object(vs_val);
-        vs_id = json_object_get_number(vs_obj, "vs_id");
+        vs_id = json_object_get_number(vs_obj, "vsId");
 
         rv = acvp_append_vs_entry(ctx, vs_id);
         if (rv != ACVP_SUCCESS) {
