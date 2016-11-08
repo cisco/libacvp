@@ -50,6 +50,7 @@
 static ACVP_RESULT app_aes_handler_aead(ACVP_CIPHER_TC *test_case);
 static ACVP_RESULT app_aes_keywrap_handler(ACVP_CIPHER_TC *test_case);
 static ACVP_RESULT app_aes_handler(ACVP_CIPHER_TC *test_case);
+static ACVP_RESULT app_des_handler(ACVP_CIPHER_TC *test_case);
 
 #define DEFAULT_SERVER "127.0.0.1"
 #define DEFAULT_PORT 443
@@ -291,6 +292,16 @@ int main(int argc, char **argv)
     CHECK_ENABLE_CAP_RV(rv);
 
     /*
+     * Enable 3DES-ECB 
+     */
+    rv = acvp_enable_sym_cipher_cap(ctx, ACVP_TDES_ECB, ACVP_DIR_BOTH, ACVP_IVGEN_SRC_NA, ACVP_IVGEN_MODE_NA, &app_des_handler);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_TDES_ECB, ACVP_SYM_CIPH_KEYLEN, 192);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_TDES_ECB, ACVP_SYM_CIPH_PTLEN, 16*8*4);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    /*
      * Now that we have a test session, we register with
      * the server to advertise our capabilities and receive
      * the KAT vector sets the server demands that we process.
@@ -325,6 +336,68 @@ int main(int argc, char **argv)
 }
 
 #ifndef USE_LIBGCRYPT
+static ACVP_RESULT app_des_handler(ACVP_CIPHER_TC *test_case)
+{
+    ACVP_SYM_CIPHER_TC      *tc;
+    EVP_CIPHER_CTX cipher_ctx;
+    const EVP_CIPHER        *cipher;
+    int ct_len, pt_len;
+    unsigned char *iv = 0;
+    int iv_len = 0;
+
+    if (!test_case) {
+        return ACVP_INVALID_ARG;
+    }
+
+    tc = test_case->tc.symmetric;
+
+    printf("%s: enter (tc_id=%d)\n", __FUNCTION__, tc->tc_id);
+
+    /*
+     * We only support 3 key DES
+     */
+    if (tc->key_len != 192) {
+	printf("Unsupported DES key length\n");
+	return ACVP_NO_CAP;
+    }
+
+    /* Begin encrypt code section */
+    EVP_CIPHER_CTX_init(&cipher_ctx);
+
+    switch (tc->cipher) { 
+    case ACVP_TDES_ECB:
+	cipher = EVP_des_ede3_ecb();
+	break;
+    default:
+	printf("Error: Unsupported DES mode requested by ACVP server\n");
+	return ACVP_NO_CAP;
+	break;
+    }
+
+    if (tc->direction == ACVP_DIR_ENCRYPT) {
+	EVP_EncryptInit_ex(&cipher_ctx, cipher, NULL, tc->key, iv);
+        EVP_CIPHER_CTX_set_padding(&cipher_ctx, 0);
+        EVP_EncryptUpdate(&cipher_ctx, tc->ct, &ct_len, tc->pt, tc->pt_len);
+	tc->ct_len = ct_len;
+	EVP_EncryptFinal_ex(&cipher_ctx, tc->ct + ct_len, &ct_len);
+	tc->ct_len += ct_len;
+    } else if (tc->direction == ACVP_DIR_DECRYPT) {
+	EVP_DecryptInit_ex(&cipher_ctx, cipher, NULL, tc->key, iv);
+        EVP_CIPHER_CTX_set_padding(&cipher_ctx, 0);
+        EVP_DecryptUpdate(&cipher_ctx, tc->pt, &pt_len, tc->ct, tc->ct_len + iv_len);
+	tc->pt_len = pt_len;
+	EVP_DecryptFinal_ex(&cipher_ctx, tc->pt + pt_len, &pt_len);
+	tc->pt_len += pt_len;
+    } else {
+        printf("Unsupported direction\n");
+        return ACVP_UNSUPPORTED_OP;
+    }
+
+    EVP_CIPHER_CTX_cleanup(&cipher_ctx);
+
+    return ACVP_SUCCESS;
+}
+
 static ACVP_RESULT app_aes_handler(ACVP_CIPHER_TC *test_case)
 {
     ACVP_SYM_CIPHER_TC      *tc;

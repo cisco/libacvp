@@ -34,39 +34,35 @@
 /*
  * Forward prototypes for local functions
  */
-static ACVP_RESULT acvp_aes_output_tc(ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *stc, JSON_Object *tc_rsp);
-static ACVP_RESULT acvp_aes_init_tc(ACVP_CTX *ctx,
+static ACVP_RESULT acvp_des_output_tc(ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *stc, JSON_Object *tc_rsp);
+static ACVP_RESULT acvp_des_init_tc(ACVP_CTX *ctx,
                                     ACVP_SYM_CIPHER_TC *stc,
                                     unsigned int tc_id,
                                     unsigned char *j_key,
                                     unsigned char *j_pt,
                                     unsigned char *j_ct,
                                     unsigned char *j_iv,
-                                    unsigned char *j_tag,
-                                    unsigned char *j_aad,
                                     unsigned int key_len,
                                     unsigned int iv_len,
                                     unsigned int pt_len,
-                                    unsigned int aad_len,
-                                    unsigned int tag_len,
                                     ACVP_SYM_CIPHER alg_id,
 				    ACVP_SYM_CIPH_DIR dir);
-static ACVP_RESULT acvp_aes_release_tc(ACVP_SYM_CIPHER_TC *stc);
+static ACVP_RESULT acvp_des_release_tc(ACVP_SYM_CIPHER_TC *stc);
 
 
 
 
 
 /*
- * This is the handler for AES-GCM KAT values.  This will parse
- * a JSON encoded vector set for AES-GCM.  Each test case is
+ * This is the handler for 3DES values.  This will parse
+ * a JSON encoded vector set for 3DES.  Each test case is
  * parsed, processed, and a response is generated to be sent
  * back to the ACV server by the transport layer.
  */
-ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
+ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
 {
-    unsigned int tc_id, keylen, ivlen, ptlen, aadlen, taglen;
-    unsigned char *     key, *pt = NULL, *ct = NULL, *aad = NULL, *iv = NULL, *tag = NULL;
+    unsigned int tc_id, keylen, ivlen, ptlen;
+    unsigned char *     key, *pt = NULL, *ct = NULL, *iv = NULL;
     JSON_Value *        groupval;
     JSON_Object         *groupobj = NULL;
     JSON_Value          *testval;
@@ -111,7 +107,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
     tc.tc.symmetric = &stc;
 
     /*
-     * Get the crypto module handler for AES-GCM mode
+     * Get the crypto module handler for DES mode
      */
     alg_id = acvp_lookup_sym_cipher_index(alg_str);
     if (alg_id < 0) {
@@ -149,20 +145,16 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
         keylen = (unsigned int)json_object_get_number(groupobj, "keyLen");
         ivlen = (unsigned int)json_object_get_number(groupobj, "ivLen");
         ptlen = (unsigned int)json_object_get_number(groupobj, "ptLen");
-        aadlen = (unsigned int)json_object_get_number(groupobj, "aadLen");
-        taglen = (unsigned int)json_object_get_number(groupobj, "tagLen");
 
         acvp_log_msg(ctx, "    Test group: %d", i);
         acvp_log_msg(ctx, "        keylen: %d", keylen);
         acvp_log_msg(ctx, "         ivlen: %d", ivlen);
         acvp_log_msg(ctx, "         ptlen: %d", ptlen);
-        acvp_log_msg(ctx, "        aadlen: %d", aadlen);
-        acvp_log_msg(ctx, "        taglen: %d", taglen);
 
         tests = json_object_get_array(groupobj, "tests");
         t_cnt = json_array_get_count(tests);
         for (j = 0; j < t_cnt; j++) {
-            acvp_log_msg(ctx, "Found new AES test vector...");
+            acvp_log_msg(ctx, "Found new 3DES test vector...");
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
 
@@ -174,9 +166,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
             } else {
 		ct = (unsigned char *)json_object_get_string(testobj, "ct");
 		iv = (unsigned char *)json_object_get_string(testobj, "iv");
-		tag = (unsigned char *)json_object_get_string(testobj, "tag");
             }
-            aad = (unsigned char *)json_object_get_string(testobj, "aad");
 
             acvp_log_msg(ctx, "        Test case: %d", j);
             acvp_log_msg(ctx, "            tcId: %d", tc_id);
@@ -184,8 +174,6 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
             acvp_log_msg(ctx, "               pt: %s", pt);
             acvp_log_msg(ctx, "               ct: %s", ct);
             acvp_log_msg(ctx, "               iv: %s", iv);
-            acvp_log_msg(ctx, "              tag: %s", tag);
-            acvp_log_msg(ctx, "              aad: %s", aad);
 
             /*
              * Create a new test case in the response
@@ -201,10 +189,10 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
              * TODO: this does mallocs, we can probably do the mallocs once for
              *       the entire vector set to be more efficient
              */
-            acvp_aes_init_tc(ctx, &stc, tc_id, key, pt, ct, iv, tag, aad, 
-		             keylen, ivlen, ptlen, aadlen, taglen, alg_id, dir);
+            acvp_des_init_tc(ctx, &stc, tc_id, key, pt, ct, iv,  
+		             keylen, ivlen, ptlen, alg_id, dir);
 
-            /* Process the current AES encrypt test vector... */
+            /* Process the current DES encrypt test vector... */
             rv = (cap->crypto_handler)(&tc);
             if (rv != ACVP_SUCCESS) {
                 acvp_log_msg(ctx, "ERROR: crypto module failed the operation");
@@ -214,16 +202,16 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
             /*
              * Output the test case results using JSON
              */
-            rv = acvp_aes_output_tc(ctx, &stc, r_tobj);
+            rv = acvp_des_output_tc(ctx, &stc, r_tobj);
             if (rv != ACVP_SUCCESS) {
-                acvp_log_msg(ctx, "ERROR: JSON output failure in AES module");
+                acvp_log_msg(ctx, "ERROR: JSON output failure in 3DES module");
                 return rv;
             }
 
             /*
              * Release all the memory associated with the test case
              */
-            acvp_aes_release_tc(&stc);
+            acvp_des_release_tc(&stc);
 
             /* Append the test response value to array */
             json_array_append_value(r_tarr, r_tval);
@@ -242,29 +230,24 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
  * file that will be uploaded to the server.  This routine handles
  * the JSON processing for a single test case.
  */
-static ACVP_RESULT acvp_aes_output_tc(ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *stc, JSON_Object *tc_rsp)
+static ACVP_RESULT acvp_des_output_tc(ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *stc, JSON_Object *tc_rsp)
 {
     ACVP_RESULT rv;
     char *tmp;
 
     tmp = calloc(1, ACVP_SYM_CT_MAX);
     if (!tmp) {
-        acvp_log_msg(ctx, "Unable to malloc in acvp_aes_output_tc");
+        acvp_log_msg(ctx, "Unable to malloc in acvp_des_output_tc");
         return ACVP_MALLOC_FAIL;
     }
 
     if (stc->direction == ACVP_DIR_ENCRYPT) {
-	/*
-	 * Keywrap doesn't use an IV
-	 */
-	if (stc->cipher != ACVP_AES_KW) {
-	    rv = acvp_bin_to_hexstr(stc->iv, stc->iv_len, (unsigned char*)tmp);
-	    if (rv != ACVP_SUCCESS) {
-		acvp_log_msg(ctx, "hex conversion failure (iv)");
-		return rv;
-	    }
-	    json_object_set_string(tc_rsp, "iv", tmp);
+	rv = acvp_bin_to_hexstr(stc->iv, stc->iv_len, (unsigned char*)tmp);
+	if (rv != ACVP_SUCCESS) {
+	    acvp_log_msg(ctx, "hex conversion failure (iv)");
+	    return rv;
 	}
+	json_object_set_string(tc_rsp, "iv", tmp);
 
 	memset(tmp, 0x0, ACVP_SYM_CT_MAX);
 	rv = acvp_bin_to_hexstr(stc->ct, stc->ct_len, (unsigned char*)tmp);
@@ -273,19 +256,6 @@ static ACVP_RESULT acvp_aes_output_tc(ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *stc, JS
 	    return rv;
 	}
 	json_object_set_string(tc_rsp, "ct", tmp);
-
-	/*
-	 * AEAD ciphers need to include the tag 
-	 */
-	if (stc->cipher == ACVP_AES_GCM || stc->cipher == ACVP_AES_CCM) {
-	    memset(tmp, 0x0, ACVP_SYM_CT_MAX);
-	    rv = acvp_bin_to_hexstr(stc->tag, stc->tag_len, (unsigned char*)tmp);
-	    if (rv != ACVP_SUCCESS) {
-		acvp_log_msg(ctx, "hex conversion failure (tag)");
-		return rv;
-	    }
-	    json_object_set_string(tc_rsp, "tag", tmp);
-	}
     } else {
 	rv = acvp_bin_to_hexstr(stc->pt, stc->pt_len, (unsigned char*)tmp);
 	if (rv != ACVP_SUCCESS) {
@@ -302,7 +272,7 @@ static ACVP_RESULT acvp_aes_output_tc(ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *stc, JS
 
 
 /*
- * This function is used to fill-in the data for an AES
+ * This function is used to fill-in the data for a 3DES
  * test case.  The JSON parsing logic invokes this after the
  * plaintext, key, etc. have been parsed from the vector set.
  * The ACVP_SYM_CIPHER_TC struct will hold all the data for
@@ -310,20 +280,16 @@ static ACVP_RESULT acvp_aes_output_tc(ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *stc, JS
  * module to perform the actual encryption/decryption for
  * the test case.
  */
-static ACVP_RESULT acvp_aes_init_tc(ACVP_CTX *ctx,
+static ACVP_RESULT acvp_des_init_tc(ACVP_CTX *ctx,
                                     ACVP_SYM_CIPHER_TC *stc,
                                     unsigned int tc_id,
                                     unsigned char *j_key,
                                     unsigned char *j_pt,
                                     unsigned char *j_ct,
                                     unsigned char *j_iv,
-                                    unsigned char *j_tag,
-                                    unsigned char *j_aad,
                                     unsigned int key_len,
                                     unsigned int iv_len,
                                     unsigned int pt_len,
-                                    unsigned int aad_len,
-                                    unsigned int tag_len,
                                     ACVP_SYM_CIPHER alg_id,
 				    ACVP_SYM_CIPH_DIR dir)
 {
@@ -339,12 +305,8 @@ static ACVP_RESULT acvp_aes_init_tc(ACVP_CTX *ctx,
     if (!stc->pt) return ACVP_MALLOC_FAIL;
     stc->ct = calloc(1, ACVP_SYM_CT_MAX);
     if (!stc->ct) return ACVP_MALLOC_FAIL;
-    stc->tag = calloc(1, ACVP_SYM_TAG_MAX);
-    if (!stc->tag) return ACVP_MALLOC_FAIL;
     stc->iv = calloc(1, ACVP_SYM_IV_MAX);
     if (!stc->iv) return ACVP_MALLOC_FAIL;
-    stc->aad = calloc(1, ACVP_SYM_AAD_MAX);
-    if (!stc->aad) return ACVP_MALLOC_FAIL;
 
     //FIXME: need to sanity check input lengths, or we'll crash if input is too large
     rv = acvp_hexstr_to_bin((const unsigned char *)j_key, stc->key);
@@ -377,20 +339,6 @@ static ACVP_RESULT acvp_aes_init_tc(ACVP_CTX *ctx,
 	}
     }
 
-    if (j_tag) {
-	rv = acvp_hexstr_to_bin((const unsigned char *)j_tag, stc->tag);
-	if (rv != ACVP_SUCCESS) {
-	    acvp_log_msg(ctx, "Hex converstion failure (tag)");
-	    return rv;
-	}
-    }
-
-    rv = acvp_hexstr_to_bin((const unsigned char *)j_aad, stc->aad);
-    if (rv != ACVP_SUCCESS) {
-        acvp_log_msg(ctx, "Hex converstion failure (aad)");
-        return rv;
-    }
-
     /*
      * These lengths come in as bit lengths from the ACVP server.
      * We convert to bytes.
@@ -401,8 +349,6 @@ static ACVP_RESULT acvp_aes_init_tc(ACVP_CTX *ctx,
     stc->iv_len = iv_len/8;
     stc->pt_len = pt_len/8;
     stc->ct_len = pt_len/8; 
-    stc->tag_len = tag_len/8;
-    stc->aad_len = aad_len/8;
 
     stc->cipher = alg_id;
     stc->direction = dir;
@@ -414,14 +360,12 @@ static ACVP_RESULT acvp_aes_init_tc(ACVP_CTX *ctx,
  * This function simply releases the data associated with
  * a test case.
  */
-static ACVP_RESULT acvp_aes_release_tc(ACVP_SYM_CIPHER_TC *stc)
+static ACVP_RESULT acvp_des_release_tc(ACVP_SYM_CIPHER_TC *stc)
 {
     free(stc->key);
     free(stc->pt);
     free(stc->ct);
-    free(stc->tag);
     free(stc->iv);
-    free(stc->aad);
     memset(stc, 0x0, sizeof(ACVP_SYM_CIPHER_TC));
 
     return ACVP_SUCCESS;

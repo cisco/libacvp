@@ -30,7 +30,7 @@
 
 #define ACVP_VERSION    "0.3"
 
-#define ACVP_ALG_MAX 6  /* Used by alg_tbl[] */
+#define ACVP_ALG_MAX 7  /* Used by alg_tbl[] */
 
 #define ACVP_ALG_AES_ECB             "AES-ECB"
 #define ACVP_ALG_AES_CBC             "AES-CBC"
@@ -40,9 +40,21 @@
 #define ACVP_ALG_AES_XTS             "AES-XTS"
 #define ACVP_ALG_AES_KW              "AES-KW"
 #define ACVP_ALG_AES_KWP             "AES-KWP"
+#define ACVP_ALG_TDES_OFB            "TDES-OFB"
+#define ACVP_ALG_TDES_CFB1           "TDES-CFB1"
+#define ACVP_ALG_TDES_CFB8           "TDES-CFB8"
+#define ACVP_ALG_TDES_CFB64          "TDES-CFB64"
 #define ACVP_ALG_TDES_ECB            "TDES-ECB"
 #define ACVP_ALG_TDES_CBC            "TDES-CBC"
 #define ACVP_ALG_TDES_CTR            "TDES-CTR"
+#define ACVP_ALG_TDES_KW             "TDES-KW"
+
+#define ACVP_SYM_KEY_MAX    64
+#define ACVP_SYM_PT_MAX     1024
+#define ACVP_SYM_CT_MAX     1024
+#define ACVP_SYM_IV_MAX     64
+#define ACVP_SYM_TAG_MAX    64
+#define ACVP_SYM_AAD_MAX    128
 
 #define ACVP_KAT_BUF_MAX        1024*1024
 #define ACVP_REG_BUF_MAX        1024*65
@@ -139,6 +151,7 @@ ACVP_RESULT acvp_bin_to_hexstr(const unsigned char *src, unsigned int src_len, u
  */
 ACVP_RESULT acvp_retry_handler(ACVP_CTX *ctx, unsigned int retry_period);
 ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
+ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 ACVP_RESULT acvp_entropy_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
 /*

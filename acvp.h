@@ -95,9 +95,14 @@ typedef enum acvp_sym_cipher {
     ACVP_AES_XTS,
     ACVP_AES_KW,
     ACVP_AES_KWP,
+    ACVP_TDES_OFB,
+    ACVP_TDES_CFB1,
+    ACVP_TDES_CFB8,
+    ACVP_TDES_CFB64,
     ACVP_TDES_ECB,
     ACVP_TDES_CBC,
     ACVP_TDES_CTR,
+    ACVP_TDES_KW,
 } ACVP_SYM_CIPHER;
 
 /*
