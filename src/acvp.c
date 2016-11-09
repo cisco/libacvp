@@ -883,7 +883,8 @@ static ACVP_RESULT acvp_dispatch_vector_set(ACVP_CTX *ctx, JSON_Object *obj)
 {
     int i;
     const char *alg = json_object_get_string(obj, "algorithm");
-    const char *mode = json_object_get_string(obj, "mode"); //TODO: not using this yet
+    const char *dir = json_object_get_string(obj, "direction"); 
+    int vs_id = json_object_get_number(obj, "vsId"); 
     ACVP_RESULT rv;
 
     if (!alg) {
@@ -891,9 +892,10 @@ static ACVP_RESULT acvp_dispatch_vector_set(ACVP_CTX *ctx, JSON_Object *obj)
         return ACVP_JSON_ERR;
     }
 
+    acvp_log_msg(ctx, "vsId: %d", vs_id);
     acvp_log_msg(ctx, "ACV Operation: %s", alg);
-    acvp_log_msg(ctx, "ACV Mode: %s", mode);
-    acvp_log_msg(ctx, "ACV version: %s", json_object_get_string(obj, "acvp_version_string"));
+    acvp_log_msg(ctx, "ACV Direction: %s", dir);
+    acvp_log_msg(ctx, "ACV version: %s", json_object_get_string(obj, "acvVersion"));
 
     for (i = 0; i < ACVP_ALG_MAX; i++) {
         if (!strncmp(alg, alg_tbl[i].name, strlen(alg_tbl[i].name))) {
