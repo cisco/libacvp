@@ -29,7 +29,7 @@ Overview
 	libcurl with libacvp and OpenSSL 1.0.2.  Therefore, you may need to
 	download the Curl source, compile it against the OpenSSL 1.0.2
 	header files, and link libcurl against OpenSSL 1.0.2.  OpenSSL 1.0.2
-	is used for AES keywrap support.
+	is used for AES keywrap support, which isn't available in OpenSSL 1.0.1.
 
         libacvp will register with the ACVP server, advertising capabilities to
 	the server.  Currently only AES-GCM is supported.  The server will 
@@ -37,7 +37,7 @@ Overview
 	processed.  libacvp will download each vector set, process the vectors,
 	and send the results back to the server.
 
-        acvp_app.c is a sample application that uses libacvp.  The software 
+        The app directory contains a sample application that uses libacvp.  The software 
 	that uses libacvp for crypto validation will be responsible for writing
 	a similar app for their platform.  acvp_app is only provided here for 
 	unit testing and demonstrating how to use libacvp.  The application 
@@ -59,8 +59,7 @@ Overview
         dependency.  This may be useful for target platforms that don't support
         Curl, such as Android or iOS.  Murl is a "minimal" Curl implementation.
         It implements a handful of the Curl API entry points used by libacvp.
-        The Murl code is currently in a proof-of-concept stage and needs a lot
-        of work before it should be used for any purpose beyond experimentation.
+        The Murl code is currently in an experimental stage. 
 
 Credits
 

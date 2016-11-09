@@ -1,0 +1,2 @@
+This directory contains a sample application that uses libacvp.  This
+sample application uses OpenSSL as the crypto module.
