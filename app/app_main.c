@@ -41,11 +41,7 @@
 #else
 #include <curl/curl.h>
 #endif
-#ifndef USE_LIBGCRYPT
-# include <openssl/evp.h>
-#else
-# include <gcrypt.h>
-#endif
+#include <openssl/evp.h>
 
 static ACVP_RESULT app_aes_handler_aead(ACVP_CIPHER_TC *test_case);
 static ACVP_RESULT app_aes_keywrap_handler(ACVP_CIPHER_TC *test_case);
@@ -335,7 +331,6 @@ int main(int argc, char **argv)
     return (0);
 }
 
-#ifndef USE_LIBGCRYPT
 static ACVP_RESULT app_des_handler(ACVP_CIPHER_TC *test_case)
 {
     ACVP_SYM_CIPHER_TC      *tc;
@@ -737,58 +732,3 @@ static ACVP_RESULT app_aes_handler_aead(ACVP_CIPHER_TC *test_case)
 
     return ACVP_SUCCESS;
 }
-#else
-/*
- * This flavor of the handler uses libgcrypt instead of OpenSSL, which was used
- * for testing TASM-264.  This code is here for demonstration only.  This
- * function lacks proper error handling.
- */
-static ACVP_RESULT app_aes_handler_aead(ACVP_CIPHER_TC *test_case)
-{
-    gcry_cipher_hd_t hd;
-    int algo = -1;
-    ACVP_SYM_CIPHER_TC      *tc;
-    unsigned char iv[16] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
-
-    printf("************************ Using gcrypt...\n");
-
-    tc = test_case->tc.symmetric;
-
-    /* Validate key length */
-    switch (tc->key_len) {
-    case 128:
-        algo = gcry_cipher_map_name("aes128");
-        break;
-    case 192:
-        algo = gcry_cipher_map_name("aes192");
-        break;
-    case 256:
-        algo = gcry_cipher_map_name("aes256");
-        break;
-    default:
-        printf("Unsupported AES-GCM key length\n");
-        return ACVP_UNSUPPORTED_OP;
-        break;
-    }
-
-    gcry_cipher_open(&hd, algo, GCRY_CIPHER_MODE_GCM, 0);
-    gcry_cipher_setkey(hd, tc->key, tc->key_len/8);
-    gcry_cipher_setiv(hd, iv, tc->iv_len);
-    gcry_cipher_authenticate(hd, tc->aad, tc->aad_len);
-
-    if (tc->pt_len > 0) {
-        gcry_cipher_encrypt(hd, tc->ct, tc->ct_len, tc->pt, tc->pt_len);
-    }
-
-    gcry_cipher_gettag(hd, tc->tag, tc->tag_len);
-
-    /*
-       WARNING: The IV source is hardcoded above and uses length of only 16.
-                This may lead to test case failures.
-     */
-    memcpy(tc->iv, iv, tc->iv_len);
-
-    gcry_cipher_close(hd);
-    return ACVP_SUCCESS;
-}
-#endif
