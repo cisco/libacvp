@@ -67,6 +67,8 @@ ACVP_ALG_HANDLER alg_tbl[ACVP_ALG_MAX] = {
     {ACVP_TDES_ECB,        &acvp_des_kat_handler,   ACVP_ALG_TDES_ECB},
     {ACVP_TDES_CBC,        &acvp_des_kat_handler,   ACVP_ALG_TDES_CBC},
     {ACVP_TDES_OFB,        &acvp_des_kat_handler,   ACVP_ALG_TDES_OFB},
+    {ACVP_TDES_CFB8,       &acvp_des_kat_handler,   ACVP_ALG_TDES_CFB8},
+    {ACVP_TDES_CFB64,      &acvp_des_kat_handler,   ACVP_ALG_TDES_CFB64},
 };
 
 

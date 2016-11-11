@@ -328,6 +328,32 @@ int main(int argc, char **argv)
     CHECK_ENABLE_CAP_RV(rv);
 
     /*
+     * Enable 3DES-CFB64 
+     */
+    rv = acvp_enable_sym_cipher_cap(ctx, ACVP_TDES_CFB64, ACVP_DIR_BOTH, ACVP_IVGEN_SRC_NA, ACVP_IVGEN_MODE_NA, &app_des_handler);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_TDES_CFB64, ACVP_SYM_CIPH_KEYLEN, 192);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_TDES_CFB64, ACVP_SYM_CIPH_IVLEN, 192/3);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_TDES_CFB64, ACVP_SYM_CIPH_PTLEN, 64 * 5);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    /*
+     * Enable 3DES-CFB8 
+     */
+    rv = acvp_enable_sym_cipher_cap(ctx, ACVP_TDES_CFB8, ACVP_DIR_BOTH, ACVP_IVGEN_SRC_NA, ACVP_IVGEN_MODE_NA, &app_des_handler);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_TDES_CFB8, ACVP_SYM_CIPH_KEYLEN, 192);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_TDES_CFB8, ACVP_SYM_CIPH_IVLEN, 192/3);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_TDES_CFB8, ACVP_SYM_CIPH_PTLEN, 64);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_TDES_CFB8, ACVP_SYM_CIPH_PTLEN, 64 * 4);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    /*
      * Now that we have a test session, we register with
      * the server to advertise our capabilities and receive
      * the KAT vector sets the server demands that we process.
@@ -399,6 +425,14 @@ static ACVP_RESULT app_des_handler(ACVP_CIPHER_TC *test_case)
     case ACVP_TDES_OFB:
 	iv = tc->iv;
 	cipher = EVP_des_ede3_ofb();
+	break;
+    case ACVP_TDES_CFB64:
+	iv = tc->iv;
+	cipher = EVP_des_ede3_cfb64();
+	break;
+    case ACVP_TDES_CFB8:
+	iv = tc->iv;
+	cipher = EVP_des_ede3_cfb8();
 	break;
     default:
 	printf("Error: Unsupported DES mode requested by ACVP server\n");
