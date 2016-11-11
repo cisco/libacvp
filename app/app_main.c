@@ -298,6 +298,24 @@ int main(int argc, char **argv)
     CHECK_ENABLE_CAP_RV(rv);
 
     /*
+     * Enable 3DES-CBC 
+     */
+    rv = acvp_enable_sym_cipher_cap(ctx, ACVP_TDES_CBC, ACVP_DIR_BOTH, ACVP_IVGEN_SRC_NA, ACVP_IVGEN_MODE_NA, &app_des_handler);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_TDES_CBC, ACVP_SYM_CIPH_KEYLEN, 192);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_TDES_CBC, ACVP_SYM_CIPH_IVLEN, 192/3);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_TDES_CBC, ACVP_SYM_CIPH_PTLEN, 64);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_TDES_CBC, ACVP_SYM_CIPH_PTLEN, 64*2);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_TDES_CBC, ACVP_SYM_CIPH_PTLEN, 64*3);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_TDES_CBC, ACVP_SYM_CIPH_PTLEN, 64*12);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    /*
      * Now that we have a test session, we register with
      * the server to advertise our capabilities and receive
      * the KAT vector sets the server demands that we process.
@@ -338,7 +356,6 @@ static ACVP_RESULT app_des_handler(ACVP_CIPHER_TC *test_case)
     const EVP_CIPHER        *cipher;
     int ct_len, pt_len;
     unsigned char *iv = 0;
-    int iv_len = 0;
 
     if (!test_case) {
         return ACVP_INVALID_ARG;
@@ -363,6 +380,10 @@ static ACVP_RESULT app_des_handler(ACVP_CIPHER_TC *test_case)
     case ACVP_TDES_ECB:
 	cipher = EVP_des_ede3_ecb();
 	break;
+    case ACVP_TDES_CBC:
+	iv = tc->iv;
+	cipher = EVP_des_ede3_cbc();
+	break;
     default:
 	printf("Error: Unsupported DES mode requested by ACVP server\n");
 	return ACVP_NO_CAP;
@@ -379,7 +400,7 @@ static ACVP_RESULT app_des_handler(ACVP_CIPHER_TC *test_case)
     } else if (tc->direction == ACVP_DIR_DECRYPT) {
 	EVP_DecryptInit_ex(&cipher_ctx, cipher, NULL, tc->key, iv);
         EVP_CIPHER_CTX_set_padding(&cipher_ctx, 0);
-        EVP_DecryptUpdate(&cipher_ctx, tc->pt, &pt_len, tc->ct, tc->ct_len + iv_len);
+        EVP_DecryptUpdate(&cipher_ctx, tc->pt, &pt_len, tc->ct, tc->ct_len);
 	tc->pt_len = pt_len;
 	EVP_DecryptFinal_ex(&cipher_ctx, tc->pt + pt_len, &pt_len);
 	tc->pt_len += pt_len;
