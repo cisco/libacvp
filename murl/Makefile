@@ -6,7 +6,7 @@ INCDIRS+=
 SOURCES=http_parser.c murl.c murl_http.c 
 OBJECTS=$(SOURCES:.c=.o)
 
-TEST_SOURCES=test/ut_main.c test/ut_tls.c test/ut_get.c test/ut_post.c test/ut_util.c ../parson.c
+TEST_SOURCES=test/ut_main.c test/ut_tls.c test/ut_get.c test/ut_post.c test/ut_util.c ../src/parson.c
 TEST_OBJECTS=$(TEST_SOURCES:.c=.o)
 
 all: murl test libmurl.a libmurl.so
