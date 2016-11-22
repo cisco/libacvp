@@ -386,6 +386,12 @@ int main(int argc, char **argv)
         exit(1);
     }
 
+    rv = acvp_check_test_results(ctx);
+    if (rv != ACVP_SUCCESS) {
+        printf("Unable to retrieve test results (%d)\n", rv);
+        exit(1);
+    }
+
     /*
      * Finally, we free the test session context and cleanup
      */

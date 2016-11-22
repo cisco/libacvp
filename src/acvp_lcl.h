@@ -141,6 +141,7 @@ struct acvp_ctx_t {
 
 ACVP_RESULT acvp_send_register(ACVP_CTX *ctx, char *reg);
 ACVP_RESULT acvp_retrieve_vector_set(ACVP_CTX *ctx, int vs_id);
+ACVP_RESULT acvp_retrieve_vector_set_result(ACVP_CTX *ctx, int vs_id);
 ACVP_RESULT acvp_submit_vector_responses(ACVP_CTX *ctx);
 void acvp_log_msg (ACVP_CTX *ctx, const char *format, ...);
 ACVP_RESULT acvp_hexstr_to_bin(const unsigned char *src, unsigned char *dest);

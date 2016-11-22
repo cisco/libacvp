@@ -45,6 +45,7 @@ static ACVP_RESULT acvp_append_sym_cipher_caps_entry(
     ACVP_SYM_CIPHER_CAP *cap,
     ACVP_RESULT (*crypto_handler)(ACVP_CIPHER_TC *test_case));
 static void acvp_cap_free_sl(ACVP_SL_LIST *list); 
+static ACVP_RESULT acvp_get_result_vsid(ACVP_CTX *ctx, int vs_id);
 
 
 /*
@@ -788,9 +789,32 @@ ACVP_RESULT acvp_retry_handler(ACVP_CTX *ctx, unsigned int retry_period)
 }
 
 
-//TODO - eventually libacvp will query the server to get the results of the 
-//       vector test.
-//ACVP_RESULT acvp_check_test_results(ACVP_CTX *ctx);
+/*
+ * This routine will iterate through all the vector sets, requesting
+ * the test result from the server for each set.
+ */
+ACVP_RESULT acvp_check_test_results(ACVP_CTX *ctx)
+{
+    ACVP_RESULT rv;
+    ACVP_VS_LIST *vs_entry;
+
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+
+    /*
+     * Iterate through the VS identifiers the server sent to us
+     * in the regisration response.  Attempt to download the result
+     * for each vector set. 
+     */
+    vs_entry = ctx->vs_list;
+    while (vs_entry) {
+        rv = acvp_get_result_vsid(ctx, vs_entry->vs_id);
+        vs_entry = vs_entry->next;
+    }
+
+    return (rv);
+}
 
 
 
@@ -939,3 +963,67 @@ static ACVP_RESULT acvp_process_vector_set(ACVP_CTX *ctx, JSON_Object *obj)
     return ACVP_SUCCESS;
 
 }
+
+
+/*
+ * This function will get the test results for a single KAT vector set.  
+ */
+static ACVP_RESULT acvp_get_result_vsid(ACVP_CTX *ctx, int vs_id)
+{
+    ACVP_RESULT rv;
+    JSON_Value *val;
+    JSON_Object *obj = NULL;
+    char *json_buf;
+    int retry = 1;
+
+    //TODO: do we want to limit the number of retries?
+    while (retry) {
+        /*
+         * Get the KAT vector set
+         */
+        rv = acvp_retrieve_vector_set_result(ctx, vs_id);
+        if (rv != ACVP_SUCCESS) {
+            return (rv);
+        }
+        json_buf = ctx->kat_buf;
+        printf("\n%s\n", ctx->kat_buf);
+        val = json_parse_string_with_comments(json_buf);
+        if (!val) {
+            acvp_log_msg(ctx, "JSON parse error");
+            return ACVP_JSON_ERR;
+        }
+        obj = json_value_get_object(val);
+        ctx->vs_id = vs_id;
+
+        /*
+         * Check if we received a retry response
+         */
+        unsigned int retry_period = json_object_get_number(obj, "retry");
+        if (retry_period) {
+            rv = acvp_retry_handler(ctx, retry_period);
+        } else {
+	    /*
+	     * Parse the JSON response from the server, if the vector set failed,
+	     * then pull out the reason code and log it.
+	     */
+	    //TODO
+        }
+        json_value_free(val);
+
+        /*
+         * Check if we need to retry the download because
+         * the KAT values were not ready
+         */
+        if (ACVP_KAT_DOWNLOAD_RETRY == rv) {
+            retry = 1;
+        } else if (rv != ACVP_SUCCESS) {
+            return (rv);
+        } else {
+            retry = 0;
+        }
+    }
+
+    return ACVP_SUCCESS;
+}
+
+

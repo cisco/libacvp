@@ -441,3 +441,34 @@ ACVP_RESULT acvp_submit_vector_responses(ACVP_CTX *ctx)
     return ACVP_SUCCESS;
 }
 
+/*
+ * This is the top level function used within libacvp to retrieve
+ * the test result for a given KAT vector set from the ACVP server.
+ */
+ACVP_RESULT acvp_retrieve_vector_set_result(ACVP_CTX *ctx, int vs_id)
+{
+    ACVP_RESULT rv;
+    char url[512]; //TODO: 512 is an arbitrary limit
+
+    memset(url, 0x0, 512);
+    snprintf(url, 511, "https://%s:%d/%svalidation/acvp/results?vsId=%d", ctx->server_name, ctx->server_port, ctx->path_segment, vs_id);
+
+    if (ctx->kat_buf) {
+        memset(ctx->kat_buf, 0x0, ACVP_KAT_BUF_MAX);
+    }
+    rv = acvp_curl_http_get(ctx, url, &acvp_curl_write_kat_func);
+    if (rv != 200) {
+        acvp_log_msg(ctx, "Unable to get vector result from server. curl rv=%d\n", rv);
+	acvp_log_msg(ctx, "%s\n", ctx->kat_buf);
+        return ACVP_TRANSPORT_FAIL;
+    }
+
+    /*
+     * Update user with status
+     */
+    acvp_log_msg(ctx,"Successfully retrieved KAT vector set response");
+
+    return ACVP_SUCCESS;
+}
+
+
