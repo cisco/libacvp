@@ -51,6 +51,7 @@
 #include <openssl/ssl.h>
 #include <openssl/bio.h>
 #include <openssl/engine.h>
+#include <openssl/x509.h>
 #include <openssl/x509v3.h>
 #include <openssl/x509_vfy.h>
 #include "murl.h"
@@ -195,6 +196,12 @@ CURLcode Curl_setopt(CURL *ctx, CURLoption option, va_list param)
          * Enable peer SSL verifying.
          */
         data->ssl_verify_peer = (0 != va_arg(param, long)) ? 1 : 0;
+        break;
+    case CURLOPT_CERTINFO:
+        /*
+         * Enable certification info logging.
+         */
+        data->ssl_certinfo = (0 != va_arg(param, long)) ? 1 : 0;
         break;
     case CURLOPT_SSLCERT:
         /*
@@ -608,6 +615,35 @@ static CURLcode parseurl(SessionHandle *data)
     return CURLE_OK;
 }
 
+/*
+ * This function will log the X509 distinguished name of the TLS
+ * peer certificate.
+ */
+static void murl_log_peer_cert(SSL *ssl)
+{
+    X509 *cert;
+    X509_NAME *subject;
+    BIO *out = NULL;
+    BUF_MEM *bptr = NULL;
+
+    cert = SSL_get_peer_certificate(ssl);
+    if (cert) {
+	subject = X509_get_subject_name(cert);
+	if (subject) {
+	    out = BIO_new(BIO_s_mem());
+	    if (!out) {
+		fprintf(stderr, "Unable to allocation OpenSSL BIO\n");
+		return;
+	    }
+	    X509_NAME_print(out, subject, 0);
+	    (void)BIO_flush(out);
+	    BIO_get_mem_ptr(out, &bptr);
+	    fprintf(stdout, "TLS peer subject name: %s\n", bptr->data); 
+	    BIO_free_all(out);
+	}
+    }
+}
+
 
 #define TBUF_MAX 1024
 #define READ_CHUNK_SZ 16384
@@ -751,6 +787,13 @@ CURLcode curl_easy_perform(CURL *curl)
         ERR_print_errors_fp(stderr);
         crv = CURLE_SSL_CONNECT_ERROR;
 	goto easy_perform_cleanup;
+    }
+
+    /*
+     * PSB requires we log the X509 distinguished name of the peer
+     */
+    if (ctx->ssl_verify_peer) {
+	murl_log_peer_cert(ssl);
     }
 
     /*

@@ -58,6 +58,35 @@ static struct curl_slist* acvp_add_auth_hdr (ACVP_CTX *ctx, struct curl_slist *s
     return slist;
 }
 
+
+/*
+ * This routine will log the TLS peer certificate chain, which
+ * allows auditing the peer identity by inspecting the logs.
+ */
+static void acvp_curl_log_peer_cert (ACVP_CTX *ctx, CURL *hnd) 
+{
+    int rv; 
+    union {
+        struct curl_slist    *to_info;
+        struct curl_certinfo *to_certinfo;
+    } ptr;
+    int i;
+    struct curl_slist *slist;
+ 
+    ptr.to_info = NULL;
+ 
+    rv = curl_easy_getinfo(hnd, CURLINFO_CERTINFO, &ptr.to_info);
+ 
+    if(!rv && ptr.to_info) {
+	acvp_log_msg(ctx, "TLS peer presented the following %d certificates...", ptr.to_certinfo->num_of_certs);
+        for(i = 0; i < ptr.to_certinfo->num_of_certs; i++) {
+            for(slist = ptr.to_certinfo->certinfo[i]; slist; slist = slist->next) {
+		acvp_log_msg(ctx, "%s", slist->data);
+	    }
+        }
+    }
+}
+
 /*
  * This function uses libcurl to send a simple HTTP GET
  * request with no Content-Type header.
@@ -99,6 +128,7 @@ static long acvp_curl_http_get (ACVP_CTX *ctx, char *url, void *writefunc)
     if (ctx->verify_peer && ctx->cacerts_file) {
         curl_easy_setopt(hnd, CURLOPT_CAINFO, ctx->cacerts_file);
         curl_easy_setopt(hnd, CURLOPT_SSL_VERIFYPEER, 1L);
+	curl_easy_setopt(hnd, CURLOPT_CERTINFO, 1L);
     } else {
         curl_easy_setopt(hnd, CURLOPT_SSL_VERIFYPEER, 0L);
         acvp_log_msg(ctx, "WARNING: TLS peer verification has not been enabled.");
@@ -125,13 +155,20 @@ static long acvp_curl_http_get (ACVP_CTX *ctx, char *url, void *writefunc)
     curl_easy_perform(hnd);
 
     /*
+     * Get the cert info from the TLS peer
+     */
+    if (ctx->verify_peer) {
+	acvp_curl_log_peer_cert(ctx, hnd); 
+    }
+
+    /*
      * Get the HTTP reponse status code from the server
      */
     curl_easy_getinfo (hnd, CURLINFO_RESPONSE_CODE, &http_code);
 
     if (http_code != 200) {
 	acvp_log_msg(ctx, "HTTP response: %d\n", (int)http_code);
-    }
+    } 
 
     curl_easy_cleanup(hnd);
     hnd = NULL;
@@ -196,6 +233,7 @@ static long acvp_curl_http_post (ACVP_CTX *ctx, char *url, char *data, void *wri
     if (ctx->verify_peer && ctx->cacerts_file) {
         curl_easy_setopt(hnd, CURLOPT_CAINFO, ctx->cacerts_file);
         curl_easy_setopt(hnd, CURLOPT_SSL_VERIFYPEER, 1L);
+	curl_easy_setopt(hnd, CURLOPT_CERTINFO, 1L);
     } else {
         curl_easy_setopt(hnd, CURLOPT_SSL_VERIFYPEER, 0L);
         acvp_log_msg(ctx, "WARNING: TLS peer verification has not been enabled.");
@@ -223,6 +261,13 @@ static long acvp_curl_http_post (ACVP_CTX *ctx, char *url, char *data, void *wri
     crv = curl_easy_perform(hnd);
     if (crv != CURLE_OK) {
         acvp_log_msg(ctx, "Curl failed with code %d (%s)\n", crv, curl_easy_strerror(crv));
+    }
+
+    /*
+     * Get the cert info from the TLS peer
+     */
+    if (ctx->verify_peer) {
+	acvp_curl_log_peer_cert(ctx, hnd); 
     }
 
     /*

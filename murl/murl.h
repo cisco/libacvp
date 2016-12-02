@@ -296,6 +296,10 @@ typedef enum {
     /* CRL file */
     CINIT(CRLFILE, OBJECTPOINT, 169),
 
+    /* Collect certificate chain info and allow it to get retrievable with
+     CURLINFO_CERTINFO after the transfer is complete. */
+    CINIT(CERTINFO, LONG, 172),
+
     CINIT(TCP_KEEPALIVE, LONG, 213),
 
     /* Set if we should verify the server hostname against it's certificate (RFC6125) */
@@ -368,6 +372,16 @@ struct curl_slist {
     char *data;
     struct curl_slist *next;
 };
+
+/* info about the certificate chain, only for OpenSSL builds. Asked
+   for with CURLOPT_CERTINFO / CURLINFO_CERTINFO */
+struct curl_certinfo {
+  int num_of_certs;             /* number of certificates with information */
+  struct curl_slist **certinfo; /* for each index in this array, there's a
+                                   linked list with textual information in the
+                                   format "name: value" */
+};
+
 
 /* CURLINFO_RESPONSE_CODE is the new name for the option previously known as
    CURLINFO_HTTP_CODE */
