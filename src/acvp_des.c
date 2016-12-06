@@ -308,15 +308,14 @@ static ACVP_RESULT acvp_des_init_tc(ACVP_CTX *ctx,
     stc->iv = calloc(1, ACVP_SYM_IV_MAX);
     if (!stc->iv) return ACVP_MALLOC_FAIL;
 
-    //FIXME: need to sanity check input lengths, or we'll crash if input is too large
-    rv = acvp_hexstr_to_bin((const unsigned char *)j_key, stc->key);
+    rv = acvp_hexstr_to_bin((const unsigned char *)j_key, stc->key, ACVP_SYM_KEY_MAX);
     if (rv != ACVP_SUCCESS) {
         acvp_log_msg(ctx, "Hex converstion failure (key)");
         return rv;
     }
 
     if (j_pt) {
-	rv = acvp_hexstr_to_bin((const unsigned char *)j_pt, stc->pt);
+	rv = acvp_hexstr_to_bin((const unsigned char *)j_pt, stc->pt, ACVP_SYM_PT_MAX);
 	if (rv != ACVP_SUCCESS) {
 	    acvp_log_msg(ctx, "Hex converstion failure (pt)");
 	    return rv;
@@ -324,7 +323,7 @@ static ACVP_RESULT acvp_des_init_tc(ACVP_CTX *ctx,
     }
 
     if (j_ct) {
-	rv = acvp_hexstr_to_bin((const unsigned char *)j_ct, stc->ct);
+	rv = acvp_hexstr_to_bin((const unsigned char *)j_ct, stc->ct, ACVP_SYM_CT_MAX);
 	if (rv != ACVP_SUCCESS) {
 	    acvp_log_msg(ctx, "Hex converstion failure (ct)");
 	    return rv;
@@ -332,7 +331,7 @@ static ACVP_RESULT acvp_des_init_tc(ACVP_CTX *ctx,
     }
 
     if (j_iv) {
-	rv = acvp_hexstr_to_bin((const unsigned char *)j_iv, stc->iv);
+	rv = acvp_hexstr_to_bin((const unsigned char *)j_iv, stc->iv, ACVP_SYM_IV_MAX);
 	if (rv != ACVP_SUCCESS) {
 	    acvp_log_msg(ctx, "Hex converstion failure (iv)");
 	    return rv;

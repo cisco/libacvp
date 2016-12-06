@@ -234,6 +234,7 @@ enum acvp_result {
     ACVP_NO_TOKEN,
     ACVP_NO_CAP, 
     ACVP_MALFORMED_JSON, 
+    ACVP_DATA_TOO_LARGE,
     ACVP_RESULT_MAX,
 };
 

@@ -161,17 +161,25 @@ ACVP_RESULT acvp_bin_to_hexstr(const unsigned char *src,
  * in the destination.
  * TODO: Enable the function to handle odd number of hex characters
  */
-ACVP_RESULT acvp_hexstr_to_bin(const unsigned char *src, unsigned char *dest)
+ACVP_RESULT acvp_hexstr_to_bin(const unsigned char *src, unsigned char *dest, int dest_max)
 {
     int src_len;
     int byte_a, byte_b;
     int is_odd = 0;
 
     if (!src || !dest) {
-        return 0;
+        return ACVP_INVALID_ARG;
     }
 
     src_len = (int)strlen((char*)src);
+
+    /*
+     * Make sure the hex value isn't too large
+     */
+    if (src_len > (2 * dest_max)) {
+	return ACVP_DATA_TOO_LARGE;
+    }
+
     if (src_len & 1) {
         is_odd = 1;
     }
@@ -187,7 +195,7 @@ ACVP_RESULT acvp_hexstr_to_bin(const unsigned char *src, unsigned char *dest)
             src += 2;
         }
     } else {
-        return 1;
+        return ACVP_UNSUPPORTED_OP;
     }
 
     return ACVP_SUCCESS;
