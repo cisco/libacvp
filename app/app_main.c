@@ -161,6 +161,15 @@ int main(int argc, char **argv)
     }
 
     /*
+     * Setup the vendor attributes
+     */
+    rv = acvp_set_vendor_info(ctx, "ACME company", "looneytunes.org", "Porky Pig", "pp@looneytunes.org"); 
+    if (rv != ACVP_SUCCESS) {
+        printf("Failed to set vendor info\n");
+        exit(1);
+    }
+
+    /*
      * Set the path segment prefix if needed
      */
      if (strnlen(path_segment, 255) > 0) {

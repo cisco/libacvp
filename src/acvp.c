@@ -111,6 +111,10 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx)
         if (ctx->upld_buf) free(ctx->upld_buf);
         if (ctx->kat_resp) json_value_free(ctx->kat_resp);
         if (ctx->server_name) free(ctx->server_name);
+        if (ctx->vendor_name) free(ctx->vendor_name);
+        if (ctx->vendor_url) free(ctx->vendor_url);
+        if (ctx->contact_name) free(ctx->contact_name);
+        if (ctx->contact_email) free(ctx->contact_email);
         if (ctx->path_segment) free(ctx->path_segment);
         if (ctx->cacerts_file) free(ctx->cacerts_file);
         if (ctx->tls_cert) free(ctx->tls_cert);
@@ -292,6 +296,33 @@ ACVP_RESULT acvp_enable_sym_cipher_cap_parm(
 }
 
 /*
+ * Allows application to specify the vendor attributes for
+ * the test session.
+ */
+ACVP_RESULT acvp_set_vendor_info(ACVP_CTX *ctx, 
+				 char *vendor_name,
+				 char *vendor_url,
+				 char *contact_name,
+				 char *contact_email)
+{
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+
+    if (ctx->vendor_name) free (ctx->vendor_name);
+    if (ctx->vendor_url) free (ctx->vendor_url);
+    if (ctx->contact_name) free (ctx->contact_name);
+    if (ctx->contact_email) free (ctx->contact_email);
+
+    ctx->vendor_name = strdup(vendor_name);
+    ctx->vendor_url = strdup(vendor_url);
+    ctx->contact_name = strdup(contact_name);
+    ctx->contact_email = strdup(contact_email);
+
+    return ACVP_SUCCESS;
+}
+
+/*
  * This function is used by the application to specify the
  * ACVP server address and TCP port#.
  */
@@ -401,11 +432,10 @@ static ACVP_RESULT acvp_build_register(ACVP_CTX *ctx, char **reg)
 
     oe_val = json_value_init_object();
     oe_obj = json_value_get_object(oe_val);
-    //TODO: need public API to allow app to specify some of these values
-    json_object_set_string(oe_obj, "vendorName", "VendorName");
-    json_object_set_string(oe_obj, "vendorURL", "www.vendor.org");
-    json_object_set_string(oe_obj, "contact", "John Doe");
-    json_object_set_string(oe_obj, "contactEmail", "jdoe@vendor.org");
+    json_object_set_string(oe_obj, "vendorName", ctx->vendor_name);
+    json_object_set_string(oe_obj, "vendorURL", ctx->vendor_url);
+    json_object_set_string(oe_obj, "contact", ctx->contact_name);
+    json_object_set_string(oe_obj, "contactEmail", ctx->contact_email);
     json_object_set_string(oe_obj, "moduleName", "Crypto Module 1.0");
     json_object_set_string(oe_obj, "moduleType", "Software");
 

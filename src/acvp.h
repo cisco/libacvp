@@ -440,6 +440,24 @@ ACVP_RESULT acvp_register(ACVP_CTX *ctx);
  */
 ACVP_RESULT acvp_process_tests(ACVP_CTX *ctx);
 
+/*! @brief acvp_set_vendor_info() specifies the vendor attributes
+    for the test session.
+
+    @param ctx Pointer to ACVP_CTX that was previously created by
+        calling acvp_create_test_session.
+    @param vendor_name Name of the vendor that owns the crypto module.
+    @param vendor_url The Vendor's URL.
+    @param contact_name Name of contact at Vendor.
+    @param contact_email Email of vendor contact.
+
+    @return ACVP_RESULT
+ */
+ACVP_RESULT acvp_set_vendor_info(ACVP_CTX *ctx, 
+				 char *vendor_name,
+				 char *vendor_url,
+				 char *contact_name,
+				 char *contact_email);
+
 ACVP_RESULT acvp_check_test_results(ACVP_CTX *ctx);
 void acvp_cleanup(void);
 

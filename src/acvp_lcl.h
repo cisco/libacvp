@@ -119,6 +119,10 @@ struct acvp_ctx_t {
     int verify_peer;           /* enables TLS peer verification via Curl */
     char        *tls_cert;     /* Location of PEM encoded X509 cert to use for TLS client auth */
     char        *tls_key;      /* Location of PEM encoded priv key to use for TLS client auth */
+    char	*vendor_name;
+    char	*vendor_url;
+    char	*contact_name;
+    char	*contact_email;
 
     /* test session data */
     ACVP_VS_LIST    *vs_list;
