@@ -170,6 +170,15 @@ int main(int argc, char **argv)
     }
 
     /*
+     * Setup the crypto module attributes
+     */
+    rv = acvp_set_module_info(ctx, "OpenSSL", "software", "0.9.6", "OpenSSL FIPS object module"); 
+    if (rv != ACVP_SUCCESS) {
+        printf("Failed to set module info\n");
+        exit(1);
+    }
+
+    /*
      * Set the path segment prefix if needed
      */
      if (strnlen(path_segment, 255) > 0) {

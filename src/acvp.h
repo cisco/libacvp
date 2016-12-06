@@ -458,6 +458,24 @@ ACVP_RESULT acvp_set_vendor_info(ACVP_CTX *ctx,
 				 char *contact_name,
 				 char *contact_email);
 
+/*! @brief acvp_set_module_info() specifies the crypto module attributes
+    for the test session.
+
+    @param ctx Pointer to ACVP_CTX that was previously created by
+        calling acvp_create_test_session.
+    @param module_name Name of the crypto module under test.
+    @param module_type The crypto module type: software, hardware, or hybrid.
+    @param module_version The version# of the crypto module under test. 
+    @param module_description A brief description of the crypto module under test.
+
+    @return ACVP_RESULT
+ */
+ACVP_RESULT acvp_set_module_info(ACVP_CTX *ctx, 
+				 char *module_name,
+				 char *module_type,
+				 char *module_version,
+				 char *module_description);
+
 ACVP_RESULT acvp_check_test_results(ACVP_CTX *ctx);
 void acvp_cleanup(void);
 

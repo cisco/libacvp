@@ -115,6 +115,10 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx)
         if (ctx->vendor_url) free(ctx->vendor_url);
         if (ctx->contact_name) free(ctx->contact_name);
         if (ctx->contact_email) free(ctx->contact_email);
+        if (ctx->module_name) free(ctx->module_name);
+        if (ctx->module_version) free(ctx->module_version);
+        if (ctx->module_type) free(ctx->module_type);
+        if (ctx->module_desc) free(ctx->module_desc);
         if (ctx->path_segment) free(ctx->path_segment);
         if (ctx->cacerts_file) free(ctx->cacerts_file);
         if (ctx->tls_cert) free(ctx->tls_cert);
@@ -323,6 +327,33 @@ ACVP_RESULT acvp_set_vendor_info(ACVP_CTX *ctx,
 }
 
 /*
+ * Allows application to specify the crypto module attributes for
+ * the test session.
+ */
+ACVP_RESULT acvp_set_module_info(ACVP_CTX *ctx, 
+				 char *module_name,
+				 char *module_type,
+				 char *module_version,
+				 char *module_description)
+{
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+
+    if (ctx->module_name) free (ctx->module_name);
+    if (ctx->module_type) free (ctx->module_type);
+    if (ctx->module_version) free (ctx->module_version);
+    if (ctx->module_desc) free (ctx->module_desc);
+
+    ctx->module_name = strdup(module_name);
+    ctx->module_type = strdup(module_type);
+    ctx->module_version = strdup(module_version);
+    ctx->module_desc = strdup(module_description);
+
+    return ACVP_SUCCESS;
+}
+
+/*
  * This function is used by the application to specify the
  * ACVP server address and TCP port#.
  */
@@ -436,17 +467,17 @@ static ACVP_RESULT acvp_build_register(ACVP_CTX *ctx, char **reg)
     json_object_set_string(oe_obj, "vendorURL", ctx->vendor_url);
     json_object_set_string(oe_obj, "contact", ctx->contact_name);
     json_object_set_string(oe_obj, "contactEmail", ctx->contact_email);
-    json_object_set_string(oe_obj, "moduleName", "Crypto Module 1.0");
-    json_object_set_string(oe_obj, "moduleType", "Software");
+    json_object_set_string(oe_obj, "moduleName", ctx->module_name);
+    json_object_set_string(oe_obj, "moduleType", ctx->module_type);
 
     oee_val = json_value_init_object();
     oee_obj = json_value_get_object(oee_val);
-    json_object_set_string(oee_obj, "moduleVersion", "1.0");
+    json_object_set_string(oee_obj, "moduleVersion", ctx->module_version);
     json_object_set_string(oee_obj, "processor", "Intel Woodcrest");
     json_object_set_string(oee_obj, "operatingSystem", "Linux 3.1");
     json_object_set_value(oe_obj, "operational_environment", oee_val);
 
-    json_object_set_string(oe_obj, "implementationDescription", "Sample crypto module for demonstrating ACV protocol.");
+    json_object_set_string(oe_obj, "implementationDescription", ctx->module_desc);
     json_object_set_value(obj, "oeInformation", oe_val);
 
     /*

@@ -123,6 +123,10 @@ struct acvp_ctx_t {
     char	*vendor_url;
     char	*contact_name;
     char	*contact_email;
+    char	*module_name;
+    char	*module_type;
+    char	*module_version;
+    char	*module_desc;
 
     /* test session data */
     ACVP_VS_LIST    *vs_list;
