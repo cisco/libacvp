@@ -348,14 +348,14 @@ static ACVP_RESULT acvp_aes_init_tc(ACVP_CTX *ctx,
 
     rv = acvp_hexstr_to_bin((const unsigned char *)j_key, stc->key, ACVP_SYM_KEY_MAX);
     if (rv != ACVP_SUCCESS) {
-        acvp_log_msg(ctx, "Hex converstion failure (key)");
+        acvp_log_msg(ctx, "Hex conversion failure (key)");
         return rv;
     }
 
     if (j_pt) {
 	rv = acvp_hexstr_to_bin((const unsigned char *)j_pt, stc->pt, ACVP_SYM_PT_MAX);
 	if (rv != ACVP_SUCCESS) {
-	    acvp_log_msg(ctx, "Hex converstion failure (pt)");
+	    acvp_log_msg(ctx, "Hex conversion failure (pt)");
 	    return rv;
 	}
     }
@@ -363,7 +363,7 @@ static ACVP_RESULT acvp_aes_init_tc(ACVP_CTX *ctx,
     if (j_ct) {
 	rv = acvp_hexstr_to_bin((const unsigned char *)j_ct, stc->ct, ACVP_SYM_CT_MAX);
 	if (rv != ACVP_SUCCESS) {
-	    acvp_log_msg(ctx, "Hex converstion failure (ct)");
+	    acvp_log_msg(ctx, "Hex conversion failure (ct)");
 	    return rv;
 	}
     }
@@ -371,7 +371,7 @@ static ACVP_RESULT acvp_aes_init_tc(ACVP_CTX *ctx,
     if (j_iv) {
 	rv = acvp_hexstr_to_bin((const unsigned char *)j_iv, stc->iv, ACVP_SYM_IV_MAX);
 	if (rv != ACVP_SUCCESS) {
-	    acvp_log_msg(ctx, "Hex converstion failure (iv)");
+	    acvp_log_msg(ctx, "Hex conversion failure (iv)");
 	    return rv;
 	}
     }
@@ -379,15 +379,17 @@ static ACVP_RESULT acvp_aes_init_tc(ACVP_CTX *ctx,
     if (j_tag) {
 	rv = acvp_hexstr_to_bin((const unsigned char *)j_tag, stc->tag, ACVP_SYM_TAG_MAX);
 	if (rv != ACVP_SUCCESS) {
-	    acvp_log_msg(ctx, "Hex converstion failure (tag)");
+	    acvp_log_msg(ctx, "Hex conversion failure (tag)");
 	    return rv;
 	}
     }
 
-    rv = acvp_hexstr_to_bin((const unsigned char *)j_aad, stc->aad, ACVP_SYM_AAD_MAX);
-    if (rv != ACVP_SUCCESS) {
-        acvp_log_msg(ctx, "Hex converstion failure (aad)");
-        return rv;
+    if (j_aad) {
+	rv = acvp_hexstr_to_bin((const unsigned char *)j_aad, stc->aad, ACVP_SYM_AAD_MAX);
+	if (rv != ACVP_SUCCESS) {
+	    acvp_log_msg(ctx, "Hex conversion failure (aad)");
+	    return rv;
+	}
     }
 
     /*
