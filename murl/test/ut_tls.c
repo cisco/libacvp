@@ -39,7 +39,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #define SERVER_KEY_LVL7 "test/certs/key7.pem"
 #define TEST_GET_URL "https://httpbin.org/get"
 #define TEST_LOCAL_URL "https://127.0.0.1:29516/index.html"
-#define SELFSIGN_CERT "../certs/cisco_cert.pem"
+#define SELFSIGN_CERT "../certs/acvp.nist.gov.crt"
 
 
 /*
