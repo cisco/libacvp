@@ -21,7 +21,7 @@ libacvp.so: $(OBJECTS)
 	ln -fs libacvp.so.1.0.0 libacvp.so
 
 acvp_app: app/app_main.c libacvp.a
-	$(CC) $(INCDIRS) $(CFLAGS) -o $@ app/app_main.c -L. $(LDFLAGS) -lacvp -lssl -lcrypto -lcurl -ldl
+	$(CC) $(INCDIRS) -pie $(CFLAGS) -o $@ app/app_main.c -L. $(LDFLAGS) -lacvp -lssl -lcrypto -lcurl -ldl
 
 clean:
 	rm -f *.[ao]
