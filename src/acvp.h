@@ -454,10 +454,10 @@ ACVP_RESULT acvp_process_tests(ACVP_CTX *ctx);
     @return ACVP_RESULT
  */
 ACVP_RESULT acvp_set_vendor_info(ACVP_CTX *ctx, 
-				 char *vendor_name,
-				 char *vendor_url,
-				 char *contact_name,
-				 char *contact_email);
+				 const char *vendor_name,
+				 const char *vendor_url,
+				 const char *contact_name,
+				 const char *contact_email);
 
 /*! @brief acvp_set_module_info() specifies the crypto module attributes
     for the test session.
@@ -472,10 +472,10 @@ ACVP_RESULT acvp_set_vendor_info(ACVP_CTX *ctx,
     @return ACVP_RESULT
  */
 ACVP_RESULT acvp_set_module_info(ACVP_CTX *ctx, 
-				 char *module_name,
-				 char *module_type,
-				 char *module_version,
-				 char *module_description);
+				 const char *module_name,
+				 const char *module_type,
+				 const char *module_version,
+				 const char *module_description);
 
 ACVP_RESULT acvp_check_test_results(ACVP_CTX *ctx);
 void acvp_cleanup(void);

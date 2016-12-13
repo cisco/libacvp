@@ -133,6 +133,7 @@ int main(int argc, char **argv)
 {
     ACVP_RESULT rv;
     ACVP_CTX *ctx;
+    char ssl_version[10];
 
     if (argc != 1) {
         print_usage();
@@ -172,7 +173,8 @@ int main(int argc, char **argv)
     /*
      * Setup the crypto module attributes
      */
-    rv = acvp_set_module_info(ctx, "OpenSSL", "software", "0.9.6", "OpenSSL FIPS object module"); 
+    snprintf(ssl_version, 10, "%08x", (unsigned int)SSLeay());
+    rv = acvp_set_module_info(ctx, "OpenSSL", "software", ssl_version, SSLeay_version(SSLEAY_VERSION)); 
     if (rv != ACVP_SUCCESS) {
         printf("Failed to set module info\n");
         exit(1);
