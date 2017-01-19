@@ -73,7 +73,7 @@ void acvp_cleanup(void)
  * This function is used to locate the callback function that's needed
  * when a particular crypto operation is needed by libacvp.
  */
-ACVP_CAPS_LIST* acvp_locate_cap_entry(ACVP_CTX *ctx, ACVP_SYM_CIPHER cipher)
+ACVP_CAPS_LIST* acvp_locate_cap_entry(ACVP_CTX *ctx, ACVP_CIPHER cipher)
 {
     ACVP_CAPS_LIST *cap;
 
@@ -93,10 +93,10 @@ ACVP_CAPS_LIST* acvp_locate_cap_entry(ACVP_CTX *ctx, ACVP_SYM_CIPHER cipher)
 
 /*
  * This function returns the name of an algorithm given
- * a ACVP_SYM_CIPHER value.  It looks for the cipher in
+ * a ACVP_CIPHER value.  It looks for the cipher in
  * the master algorithm table, returns NULL if none match.
  */
-char * acvp_lookup_sym_cipher_name(ACVP_SYM_CIPHER alg)
+char * acvp_lookup_cipher_name(ACVP_CIPHER alg)
 {
     int i;
 
@@ -113,7 +113,7 @@ char * acvp_lookup_sym_cipher_name(ACVP_SYM_CIPHER alg)
  * algorithm name (as defined in the ACVP spec).  It
  * returns -1 if none match.
  */
-ACVP_SYM_CIPHER acvp_lookup_sym_cipher_index(const char *algorithm)
+ACVP_CIPHER acvp_lookup_cipher_index(const char *algorithm)
 {
     int i;
 

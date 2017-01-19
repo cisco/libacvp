@@ -61,30 +61,12 @@ typedef struct acvp_ctx_t ACVP_CTX;
 typedef enum acvp_result ACVP_RESULT;
 
 /*
- * These are the available algorithms that libacvp supports.  The application
- * layer will need to register one or more of these based on the capabilities
- * of the crypto module being validated.
- */
-typedef enum acvp_cipher {
-    ACVP_RSA = 0,
-    ACVP_DSA,
-    ACVP_ECDSA,
-    ACVP_SHA,
-    ACVP_SHA2_256,
-    ACVP_SHA2_384,
-    ACVP_SHA2_512,
-    ACVP_DH,
-    ACVP_ECDH,
-    ACVP_ENTROPY
-} ACVP_CIPHER;
-
-/*
  * These are the available symmetric algorithms that libacvp supports.  The application
  * layer will need to register one or more of these based on the capabilities
  * of the crypto module being validated.
  *
  * **************** ALERT *****************
- * This enum must stay aligned with sym_ciph_name[] in acvp.c
+ * This enum must stay aligned with alg_tbl[] in acvp.c
  */
 typedef enum acvp_sym_cipher {
     ACVP_AES_ECB = 0,
@@ -103,7 +85,12 @@ typedef enum acvp_sym_cipher {
     ACVP_TDES_CBC,
     ACVP_TDES_CTR,
     ACVP_TDES_KW,
-} ACVP_SYM_CIPHER;
+    ACVP_SHA1,
+    ACVP_SHA224,
+    ACVP_SHA256,
+    ACVP_SHA384,
+    ACVP_SHA512,
+} ACVP_CIPHER;
 
 /*
  * The IV generation source for AEAD ciphers.
@@ -158,7 +145,7 @@ typedef enum acvp_sym_cipher_parameter {
  * encoded vector response.
  */
 typedef struct acvp_sym_cipher_tc_t {
-    ACVP_SYM_CIPHER cipher;
+    ACVP_CIPHER       cipher;
     ACVP_SYM_CIPH_DIR direction;   /* encrypt or decrypt */
     ACVP_SYM_CIPH_IVGEN_SRC ivgen_source;
     ACVP_SYM_CIPH_IVGEN_MODE ivgen_mode;
@@ -268,7 +255,7 @@ enum acvp_result {
     when that crypto capability is needed during a test session.  
 
     @param ctx Address of pointer to a previously allocated ACVP_CTX. 
-    @param cipher ACVP_SYM_CIPHER enum value identifying the crypto capability.
+    @param cipher ACVP_CIPHER enum value identifying the crypto capability.
     @param dir ACVP_SYM_CIPH_DIR enum value identifying the crypto operation
        (e.g. encrypt or decrypt).
     @param ivgen_source The source of the IV used by the crypto module
@@ -282,7 +269,7 @@ enum acvp_result {
  */
 ACVP_RESULT acvp_enable_sym_cipher_cap(
 	ACVP_CTX *ctx, 
-	ACVP_SYM_CIPHER cipher, 
+	ACVP_CIPHER cipher, 
 	ACVP_SYM_CIPH_DIR dir,
 	ACVP_SYM_CIPH_IVGEN_SRC ivgen_source,
 	ACVP_SYM_CIPH_IVGEN_MODE ivgen_mode,
@@ -301,12 +288,12 @@ ACVP_RESULT acvp_enable_sym_cipher_cap(
     crypto parameter value for the cipher.  For instance, if cipher supports
     plaintext lengths of 0, 128, and 136 bits, then this function would
     be called three times.  Once for 0, once for 128, and once again
-    for 136. The ACVP_SYM_CIPHER value passed to this function should
+    for 136. The ACVP_CIPHER value passed to this function should
     already have been setup by invoking acvp_enable_sym_cipher_cap() for
     that cipher earlier.
 
     @param ctx Address of pointer to a previously allocated ACVP_CTX. 
-    @param cipher ACVP_SYM_CIPHER enum value identifying the crypto capability.
+    @param cipher ACVP_CIPHER enum value identifying the crypto capability.
     @param parm ACVP_SYM_CIPH_PARM enum value identifying the algorithm parameter
        that is being specified.  An example would be the supported plaintext
        length of the algorithm. 
@@ -315,7 +302,7 @@ ACVP_RESULT acvp_enable_sym_cipher_cap(
  */
 ACVP_RESULT acvp_enable_sym_cipher_cap_parm(
 	ACVP_CTX *ctx, 
-	ACVP_SYM_CIPHER cipher, 
+	ACVP_CIPHER cipher, 
 	ACVP_SYM_CIPH_PARM parm,
 	int length);
 

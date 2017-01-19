@@ -49,7 +49,7 @@ static ACVP_RESULT acvp_aes_init_tc(ACVP_CTX *ctx,
                                     unsigned int pt_len,
                                     unsigned int aad_len,
                                     unsigned int tag_len,
-                                    ACVP_SYM_CIPHER alg_id,
+                                    ACVP_CIPHER alg_id,
 				    ACVP_SYM_CIPH_DIR dir);
 static ACVP_RESULT acvp_aes_release_tc(ACVP_SYM_CIPHER_TC *stc);
 
@@ -86,7 +86,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
     const char		*dir_str = json_object_get_string(obj, "direction"); 
     const char		*alg_str = json_object_get_string(obj, "algorithm"); 
     ACVP_SYM_CIPH_DIR	dir;
-    ACVP_SYM_CIPHER	alg_id;
+    ACVP_CIPHER	alg_id;
 
     if (!alg_str) {
         acvp_log_msg(ctx, "ERROR: unable to parse 'algorithm' from JSON");
@@ -113,7 +113,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
     /*
      * Get the crypto module handler for AES-GCM mode
      */
-    alg_id = acvp_lookup_sym_cipher_index(alg_str);
+    alg_id = acvp_lookup_cipher_index(alg_str);
     if (alg_id < 0) {
         acvp_log_msg(ctx, "ERROR: unsupported algorithm (%s)", alg_str);
         return (ACVP_UNSUPPORTED_OP);
@@ -324,7 +324,7 @@ static ACVP_RESULT acvp_aes_init_tc(ACVP_CTX *ctx,
                                     unsigned int pt_len,
                                     unsigned int aad_len,
                                     unsigned int tag_len,
-                                    ACVP_SYM_CIPHER alg_id,
+                                    ACVP_CIPHER alg_id,
 				    ACVP_SYM_CIPH_DIR dir)
 {
     ACVP_RESULT rv;

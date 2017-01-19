@@ -30,7 +30,7 @@
 
 #define ACVP_VERSION    "0.3"
 
-#define ACVP_ALG_MAX 12  /* Used by alg_tbl[] */
+#define ACVP_ALG_MAX 17  /* Used by alg_tbl[] */
 
 #define ACVP_ALG_AES_ECB             "AES-ECB"
 #define ACVP_ALG_AES_CBC             "AES-CBC"
@@ -48,6 +48,11 @@
 #define ACVP_ALG_TDES_CBC            "TDES-CBC"
 #define ACVP_ALG_TDES_CTR            "TDES-CTR"
 #define ACVP_ALG_TDES_KW             "TDES-KW"
+#define ACVP_ALG_SHA1                "SHA-1"
+#define ACVP_ALG_SHA224              "SHA-224"
+#define ACVP_ALG_SHA256              "SHA-256"
+#define ACVP_ALG_SHA384              "SHA-384"
+#define ACVP_ALG_SHA512              "SHA-512"
 
 #define ACVP_SYM_KEY_MAX    64
 #define ACVP_SYM_PT_MAX     1024
@@ -57,6 +62,7 @@
 #define ACVP_SYM_AAD_MAX    128
 
 #define ACVP_HASH_MSG_MAX       1024
+#define ACVP_HASH_MD_MAX        64
 
 #define ACVP_KAT_BUF_MAX        1024*1024
 #define ACVP_REG_BUF_MAX        1024*65
@@ -68,7 +74,7 @@
 typedef struct acvp_alg_handler_t ACVP_ALG_HANDLER;
 
 struct acvp_alg_handler_t {
-    ACVP_SYM_CIPHER        cipher;
+    ACVP_CIPHER            cipher;
     ACVP_RESULT (*handler)(ACVP_CTX *ctx, JSON_Object *obj);
     char		   *name;
 };
@@ -87,7 +93,7 @@ typedef struct acvp_sl_list_t {
 } ACVP_SL_LIST;
 
 typedef struct acvp_sym_cipher_capability {
-    ACVP_SYM_CIPHER cipher;
+    ACVP_CIPHER       cipher;
     ACVP_SYM_CIPH_DIR direction;
     ACVP_SYM_CIPH_IVGEN_SRC ivgen_source;
     ACVP_SYM_CIPH_IVGEN_MODE ivgen_mode;
@@ -164,11 +170,12 @@ ACVP_RESULT acvp_retry_handler(ACVP_CTX *ctx, unsigned int retry_period);
 ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 ACVP_RESULT acvp_entropy_handler(ACVP_CTX *ctx, JSON_Object *obj);
+ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
 /*
  * ACVP utility functions used internally
  */
-ACVP_CAPS_LIST* acvp_locate_cap_entry(ACVP_CTX *ctx, ACVP_SYM_CIPHER cipher);
-char * acvp_lookup_sym_cipher_name(ACVP_SYM_CIPHER alg);
-ACVP_SYM_CIPHER acvp_lookup_sym_cipher_index(const char *algorithm);
+ACVP_CAPS_LIST* acvp_locate_cap_entry(ACVP_CTX *ctx, ACVP_CIPHER cipher);
+char * acvp_lookup_cipher_name(ACVP_CIPHER alg);
+ACVP_CIPHER acvp_lookup_cipher_index(const char *algorithm);
 #endif

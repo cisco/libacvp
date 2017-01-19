@@ -71,6 +71,11 @@ ACVP_ALG_HANDLER alg_tbl[ACVP_ALG_MAX] = {
     {ACVP_TDES_CFB1,       &acvp_des_kat_handler,   ACVP_ALG_TDES_CFB1},
     {ACVP_TDES_CFB8,       &acvp_des_kat_handler,   ACVP_ALG_TDES_CFB8},
     {ACVP_TDES_CFB64,      &acvp_des_kat_handler,   ACVP_ALG_TDES_CFB64},
+    {ACVP_SHA1,            &acvp_hash_kat_handler,  ACVP_ALG_SHA1},
+    {ACVP_SHA224,          &acvp_hash_kat_handler,  ACVP_ALG_SHA224},
+    {ACVP_SHA256,          &acvp_hash_kat_handler,  ACVP_ALG_SHA256},
+    {ACVP_SHA384,          &acvp_hash_kat_handler,  ACVP_ALG_SHA384},
+    {ACVP_SHA512,          &acvp_hash_kat_handler,  ACVP_ALG_SHA512},
 };
 
 
@@ -216,7 +221,7 @@ static void acvp_cap_free_sl(ACVP_SL_LIST *list)
  */
 ACVP_RESULT acvp_enable_sym_cipher_cap(
 	ACVP_CTX *ctx, 
-	ACVP_SYM_CIPHER cipher, 
+	ACVP_CIPHER cipher, 
 	ACVP_SYM_CIPH_DIR dir,
 	ACVP_SYM_CIPH_IVGEN_SRC ivgen_source,
 	ACVP_SYM_CIPH_IVGEN_MODE ivgen_mode,
@@ -254,7 +259,7 @@ ACVP_RESULT acvp_enable_sym_cipher_cap(
  */
 ACVP_RESULT acvp_enable_sym_cipher_cap_parm(
 	ACVP_CTX *ctx, 
-	ACVP_SYM_CIPHER cipher, 
+	ACVP_CIPHER cipher, 
 	ACVP_SYM_CIPH_PARM parm,
 	int length) {
 
@@ -500,7 +505,7 @@ static ACVP_RESULT acvp_build_register(ACVP_CTX *ctx, char **reg)
 	    cap_val = json_value_init_object();
 	    cap_obj = json_value_get_object(cap_val);
 
-	    json_object_set_string(cap_obj, "algorithm", acvp_lookup_sym_cipher_name(cap_entry->cap.sym_cap->cipher));
+	    json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cap.sym_cap->cipher));
 
 	    /*
 	     * Set the direction capability
