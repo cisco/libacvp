@@ -56,6 +56,8 @@
 #define ACVP_SYM_TAG_MAX    64
 #define ACVP_SYM_AAD_MAX    128
 
+#define ACVP_HASH_MSG_MAX       1024
+
 #define ACVP_KAT_BUF_MAX        1024*1024
 #define ACVP_REG_BUF_MAX        1024*65
 #define ACVP_RETRY_TIME_MAX         60 /* seconds */

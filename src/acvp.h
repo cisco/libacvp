@@ -204,6 +204,21 @@ typedef struct acvp_entropy_tc_t {
 } ACVP_ENTROPY_TC;
 
 /*
+ * This struct holds data that represents a single test case
+ * for hash testing.  This data is
+ * passed between libacvp and the crypto module.
+ */
+typedef struct acvp_hash_tc_t {
+    ACVP_CIPHER cipher;
+    unsigned int  tc_id;    /* Test case id */
+    unsigned char *msg;
+    unsigned int  msg_len;
+    unsigned char *md; /* The resulting digest calculated for the test case */
+    unsigned int  md_len;
+} ACVP_HASH_TC;
+
+
+/*
  * This is the abstracted test case representation used for
  * passing test case data to/from the crypto module. Because the
  * callback prototype is generic to all algorithms, we abstract
@@ -216,6 +231,7 @@ typedef struct acvp_cipher_tc_t {
         ACVP_SYM_CIPHER_TC  *symmetric;
         ACVP_ASYM_CIPHER_TC *asymmetric;
         ACVP_ENTROPY_TC     *entropy;
+        ACVP_HASH_TC        *hash;
         //TODO: need more types for hashes, DRBG, etc.
     } tc;
 } ACVP_CIPHER_TC;
