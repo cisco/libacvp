@@ -83,7 +83,7 @@ ACVP_CAPS_LIST* acvp_locate_cap_entry(ACVP_CTX *ctx, ACVP_CIPHER cipher)
 
     cap = ctx->caps_list;
     while (cap) {
-        if (cap->cap.sym_cap->cipher == cipher) {
+        if (cap->cipher == cipher) {
             return cap;
         }
         cap = cap->next;

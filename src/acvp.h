@@ -221,7 +221,7 @@ typedef struct acvp_cipher_tc_t {
         ACVP_HASH_TC        *hash;
         //TODO: need more types for hashes, DRBG, etc.
     } tc;
-} ACVP_CIPHER_TC;
+} ACVP_TEST_CASE;
 
 enum acvp_result {
     ACVP_SUCCESS = 0,
@@ -273,7 +273,7 @@ ACVP_RESULT acvp_enable_sym_cipher_cap(
 	ACVP_SYM_CIPH_DIR dir,
 	ACVP_SYM_CIPH_IVGEN_SRC ivgen_source,
 	ACVP_SYM_CIPH_IVGEN_MODE ivgen_mode,
-        ACVP_RESULT (*crypto_handler)(ACVP_CIPHER_TC *test_case));
+        ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case));
 
 
 /*! @brief acvp_enable_sym_cipher_cap_parm() allows an application to specify
@@ -305,6 +305,33 @@ ACVP_RESULT acvp_enable_sym_cipher_cap_parm(
 	ACVP_CIPHER cipher, 
 	ACVP_SYM_CIPH_PARM parm,
 	int length);
+
+
+/*! @brief acvp_enable_hash_cap() allows an application to specify a
+       hash capability to be tested by the ACVP server. 
+
+    This function should be called to enable crypto capabilities for
+    hash algorithms that will be tested by the ACVP server.  This
+    includes SHA-1, SHA-256, SHA-384, etc.  This function may be called 
+    multiple times to specify more than one crypto capability.
+
+    When the application enables a crypto capability, such as SHA-1, it
+    also needs to specify a callback function that will be used by libacvp
+    when that crypto capability is needed during a test session.  
+
+    @param ctx Address of pointer to a previously allocated ACVP_CTX. 
+    @param cipher ACVP_CIPHER enum value identifying the crypto capability.
+    @param crypto_handler Address of function implemented by application that
+       is invoked by libacvp when the crypto capablity is needed during
+       a test session.
+
+    @return ACVP_RESULT
+ */
+ACVP_RESULT acvp_enable_hash_cap(
+	ACVP_CTX *ctx, 
+	ACVP_CIPHER cipher, 
+        ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case));
+
 
 /*! @brief acvp_create_test_session() creates a context that can be used to
       commence a test session with an ACVP server.

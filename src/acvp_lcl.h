@@ -93,7 +93,6 @@ typedef struct acvp_sl_list_t {
 } ACVP_SL_LIST;
 
 typedef struct acvp_sym_cipher_capability {
-    ACVP_CIPHER       cipher;
     ACVP_SYM_CIPH_DIR direction;
     ACVP_SYM_CIPH_IVGEN_SRC ivgen_source;
     ACVP_SYM_CIPH_IVGEN_MODE ivgen_mode;
@@ -104,12 +103,22 @@ typedef struct acvp_sym_cipher_capability {
     ACVP_SL_LIST *taglen;
 } ACVP_SYM_CIPHER_CAP;
 
+typedef struct acvp_hash_capability {
+    int               in_byte;
+    int               out_byte;
+    int               in_empty;
+    int               in_len;
+    int               out_len;
+} ACVP_HASH_CAP;
+
 typedef struct acvp_caps_list_t {
+    ACVP_CIPHER       cipher;
     union {
 	ACVP_SYM_CIPHER_CAP *sym_cap;
+        ACVP_HASH_CAP       *hash_cap;
 	//TODO: add other cipher types: asymmetric, DRBG, hash, etc.
     } cap;
-    ACVP_RESULT (*crypto_handler)(ACVP_CIPHER_TC *test_case);
+    ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case);
     struct acvp_caps_list_t *next;
 } ACVP_CAPS_LIST;
 /*

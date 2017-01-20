@@ -81,7 +81,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
     JSON_Object         *r_tobj = NULL; /* Response testobj */
     ACVP_CAPS_LIST      *cap;
     ACVP_SYM_CIPHER_TC stc;
-    ACVP_CIPHER_TC tc;
+    ACVP_TEST_CASE tc;
     ACVP_RESULT rv;
     const char		*dir_str = json_object_get_string(obj, "direction"); 
     const char		*alg_str = json_object_get_string(obj, "algorithm"); 

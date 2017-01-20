@@ -43,10 +43,11 @@
 #endif
 #include <openssl/evp.h>
 
-static ACVP_RESULT app_aes_handler_aead(ACVP_CIPHER_TC *test_case);
-static ACVP_RESULT app_aes_keywrap_handler(ACVP_CIPHER_TC *test_case);
-static ACVP_RESULT app_aes_handler(ACVP_CIPHER_TC *test_case);
-static ACVP_RESULT app_des_handler(ACVP_CIPHER_TC *test_case);
+static ACVP_RESULT app_aes_handler_aead(ACVP_TEST_CASE *test_case);
+static ACVP_RESULT app_aes_keywrap_handler(ACVP_TEST_CASE *test_case);
+static ACVP_RESULT app_aes_handler(ACVP_TEST_CASE *test_case);
+static ACVP_RESULT app_des_handler(ACVP_TEST_CASE *test_case);
+static ACVP_RESULT app_sha_handler(ACVP_TEST_CASE *test_case);
 
 #define DEFAULT_SERVER "127.0.0.1"
 #define DEFAULT_PORT 443
@@ -386,6 +387,11 @@ int main(int argc, char **argv)
     CHECK_ENABLE_CAP_RV(rv);
 
     /*
+     * Enable SHA-1 
+     */
+    rv = acvp_enable_hash_cap(ctx, ACVP_SHA256, &app_sha_handler);
+
+    /*
      * Now that we have a test session, we register with
      * the server to advertise our capabilities and receive
      * the KAT vector sets the server demands that we process.
@@ -425,7 +431,7 @@ int main(int argc, char **argv)
     return (0);
 }
 
-static ACVP_RESULT app_des_handler(ACVP_CIPHER_TC *test_case)
+static ACVP_RESULT app_des_handler(ACVP_TEST_CASE *test_case)
 {
     ACVP_SYM_CIPHER_TC      *tc;
     EVP_CIPHER_CTX cipher_ctx;
@@ -506,7 +512,7 @@ static ACVP_RESULT app_des_handler(ACVP_CIPHER_TC *test_case)
     return ACVP_SUCCESS;
 }
 
-static ACVP_RESULT app_aes_handler(ACVP_CIPHER_TC *test_case)
+static ACVP_RESULT app_aes_handler(ACVP_TEST_CASE *test_case)
 {
     ACVP_SYM_CIPHER_TC      *tc;
     EVP_CIPHER_CTX cipher_ctx;
@@ -613,7 +619,7 @@ static ACVP_RESULT app_aes_handler(ACVP_CIPHER_TC *test_case)
     return ACVP_SUCCESS;
 }
 
-static ACVP_RESULT app_aes_keywrap_handler(ACVP_CIPHER_TC *test_case)
+static ACVP_RESULT app_aes_keywrap_handler(ACVP_TEST_CASE *test_case)
 {
     ACVP_SYM_CIPHER_TC      *tc;
     EVP_CIPHER_CTX cipher_ctx;
@@ -697,7 +703,7 @@ static ACVP_RESULT app_aes_keywrap_handler(ACVP_CIPHER_TC *test_case)
 //      application layer code outside of libacvp.  Should we
 //      return a simple pass/fail?  Should we provide a separate
 //      enum that applications can use?
-static ACVP_RESULT app_aes_handler_aead(ACVP_CIPHER_TC *test_case)
+static ACVP_RESULT app_aes_handler_aead(ACVP_TEST_CASE *test_case)
 {
     ACVP_SYM_CIPHER_TC      *tc;
     EVP_CIPHER_CTX cipher_ctx;
@@ -843,5 +849,11 @@ static ACVP_RESULT app_aes_handler_aead(ACVP_CIPHER_TC *test_case)
 
     EVP_CIPHER_CTX_cleanup(&cipher_ctx);
 
+    return ACVP_SUCCESS;
+}
+
+static ACVP_RESULT app_sha_handler(ACVP_TEST_CASE *test_case)
+{
+    //TODO
     return ACVP_SUCCESS;
 }
