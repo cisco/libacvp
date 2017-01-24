@@ -389,7 +389,10 @@ int main(int argc, char **argv)
     /*
      * Enable SHA-1 
      */
+#if 0
+//FIXME: this algorithm is un-tested.  Waiting on server implementation to test it
     rv = acvp_enable_hash_cap(ctx, ACVP_SHA256, &app_sha_handler);
+#endif
 
     /*
      * Now that we have a test session, we register with
@@ -854,6 +857,54 @@ static ACVP_RESULT app_aes_handler_aead(ACVP_TEST_CASE *test_case)
 
 static ACVP_RESULT app_sha_handler(ACVP_TEST_CASE *test_case)
 {
-    //TODO
+    ACVP_HASH_TC	*tc;
+    const EVP_MD	*md;
+    EVP_MD_CTX          md_ctx;
+
+    if (!test_case) {
+        return ACVP_INVALID_ARG;
+    }
+
+    tc = test_case->tc.hash;
+
+    printf("%s: enter (tc_id=%d)\n", __FUNCTION__, tc->tc_id);
+
+    switch (tc->cipher) { 
+    case ACVP_SHA1:
+	md = EVP_sha1();
+	break;
+    case ACVP_SHA224:
+	md = EVP_sha224();
+	break;
+    case ACVP_SHA256:
+	md = EVP_sha256();
+	break;
+    case ACVP_SHA384:
+	md = EVP_sha384();
+	break;
+    case ACVP_SHA512:
+	md = EVP_sha512();
+	break;
+    default:
+	printf("Error: Unsupported hash algorithm requested by ACVP server\n");
+	return ACVP_NO_CAP;
+	break;
+    }
+
+    EVP_MD_CTX_init(&md_ctx);
+    if (!EVP_DigestInit_ex(&md_ctx, md, NULL)) {
+	printf("\nCrypto module error, EVP_DigestInit_ex failed\n"); 
+	return ACVP_CRYPTO_MODULE_FAIL;
+    }
+    if (!EVP_DigestUpdate(&md_ctx, tc->msg, tc->msg_len)) {
+	printf("\nCrypto module error, EVP_DigestUpdate failed\n"); 
+	return ACVP_CRYPTO_MODULE_FAIL;
+    }
+    if (!EVP_DigestFinal(&md_ctx, tc->md, &tc->md_len)) {
+	printf("\nCrypto module error, EVP_DigestFinal failed\n"); 
+	return ACVP_CRYPTO_MODULE_FAIL;
+    }
+    EVP_MD_CTX_cleanup(&md_ctx);
+
     return ACVP_SUCCESS;
 }
