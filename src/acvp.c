@@ -888,7 +888,7 @@ static ACVP_RESULT acvp_parse_register(ACVP_CTX *ctx)
      * to be included when sending the vector responses back to the server
      * later.
      */
-    jwt = json_object_get_string(obj, "access_token");
+    jwt = json_object_get_string(obj, "accessToken");
     if (!jwt) {
         json_value_free(val);
         acvp_log_msg(ctx, "No access_token provided in registration response");
@@ -910,9 +910,9 @@ static ACVP_RESULT acvp_parse_register(ACVP_CTX *ctx)
      * Identify the VS identifiers provided by the server, save them for
      * processing later.
      */
-    cap_obj = json_object_get_object(obj, "capability_response");
+    cap_obj = json_object_get_object(obj, "capabilityResponse");
     //const char *op = json_object_get_string(obj, "operation");
-    vect_sets = json_object_get_array(cap_obj, "vector_sets");
+    vect_sets = json_object_get_array(cap_obj, "vectorSets");
     vs_cnt = json_array_get_count(vect_sets);
     for (i = 0; i < vs_cnt; i++) {
         vs_val = json_array_get_value(vect_sets, i);
