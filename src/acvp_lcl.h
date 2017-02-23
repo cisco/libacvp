@@ -30,10 +30,14 @@
 
 #define ACVP_VERSION    "0.3"
 
-#define ACVP_ALG_MAX 17  /* Used by alg_tbl[] */
+#define ACVP_ALG_MAX 21  /* Used by alg_tbl[] */
 
 #define ACVP_ALG_AES_ECB             "AES-ECB"
 #define ACVP_ALG_AES_CBC             "AES-CBC"
+#define ACVP_ALG_AES_CFB1            "AES-CFB1"
+#define ACVP_ALG_AES_CFB8            "AES-CFB8"
+#define ACVP_ALG_AES_CFB128          "AES-CFB128"
+#define ACVP_ALG_AES_OFB             "AES-OFB"
 #define ACVP_ALG_AES_CTR             "AES-CTR"
 #define ACVP_ALG_AES_GCM             "AES-GCM"
 #define ACVP_ALG_AES_CCM             "AES-CCM"

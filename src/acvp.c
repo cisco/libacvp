@@ -69,6 +69,10 @@ ACVP_ALG_HANDLER alg_tbl[ACVP_ALG_MAX] = {
     {ACVP_AES_CCM,         &acvp_aes_kat_handler,   ACVP_ALG_AES_CCM},
     {ACVP_AES_ECB,         &acvp_aes_kat_handler,   ACVP_ALG_AES_ECB},
     {ACVP_AES_CBC,         &acvp_aes_kat_handler,   ACVP_ALG_AES_CBC},
+    {ACVP_AES_CFB1,        &acvp_aes_kat_handler,   ACVP_ALG_AES_CFB1},
+    {ACVP_AES_CFB8,        &acvp_aes_kat_handler,   ACVP_ALG_AES_CFB8},
+    {ACVP_AES_CFB128,      &acvp_aes_kat_handler,   ACVP_ALG_AES_CFB128},
+    {ACVP_AES_OFB,         &acvp_aes_kat_handler,   ACVP_ALG_AES_OFB},
     {ACVP_AES_CTR,         &acvp_aes_kat_handler,   ACVP_ALG_AES_CTR},
     {ACVP_AES_KW,          &acvp_aes_kat_handler,   ACVP_ALG_AES_KW},
     {ACVP_TDES_ECB,        &acvp_des_kat_handler,   ACVP_ALG_TDES_ECB},
@@ -673,6 +677,10 @@ static ACVP_RESULT acvp_build_register(ACVP_CTX *ctx, char **reg)
             case ACVP_AES_GCM:
             case ACVP_AES_CCM:
             case ACVP_AES_ECB:
+            case ACVP_AES_CFB1:
+            case ACVP_AES_CFB8:
+            case ACVP_AES_CFB128:
+            case ACVP_AES_OFB:
             case ACVP_AES_CBC:
             case ACVP_AES_KW:
             case ACVP_AES_CTR:

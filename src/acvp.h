@@ -72,6 +72,10 @@ typedef enum acvp_sym_cipher {
     ACVP_CIPHER_START = 0,
     ACVP_AES_ECB,
     ACVP_AES_CBC,
+    ACVP_AES_CFB1,
+    ACVP_AES_CFB8,
+    ACVP_AES_CFB128,
+    ACVP_AES_OFB,
     ACVP_AES_CTR,
     ACVP_AES_GCM,
     ACVP_AES_CCM,
@@ -134,6 +138,12 @@ typedef enum acvp_sym_cipher_parameter {
     ACVP_SYM_CIPH_AADLEN,
 } ACVP_SYM_CIPH_PARM;
 
+typedef enum acvp_sym_cipher_testtype {
+    ACVP_SYM_TEST_TYPE_NONE = 0,
+    ACVP_SYM_TEST_TYPE_KAT,
+    ACVP_SYM_TEST_TYPE_MCT
+} ACVP_SYM_CIPH_TESTTYPE;
+
 /*
  * This struct holds data that represents a single test case for
  * a symmetric cipher, such as AES or DES.  This data is passed
@@ -148,6 +158,7 @@ typedef enum acvp_sym_cipher_parameter {
  */
 typedef struct acvp_sym_cipher_tc_t {
     ACVP_CIPHER       cipher;
+    ACVP_SYM_CIPH_TESTTYPE test_type; /* KAT or MCT */
     ACVP_SYM_CIPH_DIR direction;   /* encrypt or decrypt */
     ACVP_SYM_CIPH_IVGEN_SRC ivgen_source;
     ACVP_SYM_CIPH_IVGEN_MODE ivgen_mode;
@@ -164,6 +175,7 @@ typedef struct acvp_sym_cipher_tc_t {
     unsigned int iv_len;
     unsigned int ct_len;
     unsigned int tag_len;
+    unsigned int mct_index;  /* used to identify init vs. update */
 } ACVP_SYM_CIPHER_TC;
 
 /*

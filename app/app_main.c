@@ -42,6 +42,7 @@
 #include <curl/curl.h>
 #endif
 #include <openssl/evp.h>
+#include <openssl/aes.h>
 
 static ACVP_RESULT app_aes_handler_aead(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_aes_keywrap_handler(ACVP_TEST_CASE *test_case);
@@ -515,10 +516,11 @@ static ACVP_RESULT app_des_handler(ACVP_TEST_CASE *test_case)
     return ACVP_SUCCESS;
 }
 
+static EVP_CIPHER_CTX cipher_ctx;  /* need to maintain across calls for MCT */
+
 static ACVP_RESULT app_aes_handler(ACVP_TEST_CASE *test_case)
 {
     ACVP_SYM_CIPHER_TC      *tc;
-    EVP_CIPHER_CTX cipher_ctx;
     const EVP_CIPHER        *cipher;
     int ct_len, pt_len;
     unsigned char *iv = 0;
@@ -530,10 +532,13 @@ static ACVP_RESULT app_aes_handler(ACVP_TEST_CASE *test_case)
 
     tc = test_case->tc.symmetric;
 
-    printf("%s: enter (tc_id=%d)\n", __FUNCTION__, tc->tc_id);
+    //printf("%s: enter (tc_id=%d)\n", __FUNCTION__, tc->tc_id);
 
     /* Begin encrypt code section */
-    EVP_CIPHER_CTX_init(&cipher_ctx);
+    /* Begin encrypt code section */
+    if (cipher_ctx.cipher == NULL) {
+	EVP_CIPHER_CTX_init(&cipher_ctx);
+    }
 
     switch (tc->cipher) { 
     case ACVP_AES_ECB:
@@ -572,6 +577,82 @@ static ACVP_RESULT app_aes_handler(ACVP_TEST_CASE *test_case)
 	    break;
 	}
 	break;
+    case ACVP_AES_CFB1:
+	iv = tc->iv;
+	iv_len = tc->iv_len;
+	switch (tc->key_len) {
+	case 128:
+	    cipher = EVP_aes_128_cfb1();
+	    break;
+	case 192:
+	    cipher = EVP_aes_192_cfb1();
+	    break;
+	case 256:
+	    cipher = EVP_aes_256_cfb1();
+	    break;
+	default:
+	    printf("Unsupported AES key length\n");
+	    return ACVP_NO_CAP;
+	    break;
+	}
+	break;
+    case ACVP_AES_CFB8:
+	iv = tc->iv;
+	iv_len = tc->iv_len;
+	switch (tc->key_len) {
+	case 128:
+	    cipher = EVP_aes_128_cfb8();
+	    break;
+	case 192:
+	    cipher = EVP_aes_192_cfb8();
+	    break;
+	case 256:
+	    cipher = EVP_aes_256_cfb8();
+	    break;
+	default:
+	    printf("Unsupported AES key length\n");
+	    return ACVP_NO_CAP;
+	    break;
+	}
+	break;
+    case ACVP_AES_CFB128:
+	iv = tc->iv;
+	iv_len = tc->iv_len;
+	switch (tc->key_len) {
+	case 128:
+	    cipher = EVP_aes_128_cfb128();
+	    break;
+	case 192:
+	    cipher = EVP_aes_192_cfb128();
+	    break;
+	case 256:
+	    cipher = EVP_aes_256_cfb128();
+	    break;
+	default:
+	    printf("Unsupported AES key length\n");
+	    return ACVP_NO_CAP;
+	    break;
+	}
+	break;
+    case ACVP_AES_OFB:
+	iv = tc->iv;
+	iv_len = tc->iv_len;
+	switch (tc->key_len) {
+	case 128:
+	    cipher = EVP_aes_128_ofb();
+	    break;
+	case 192:
+	    cipher = EVP_aes_192_ofb();
+	    break;
+	case 256:
+	    cipher = EVP_aes_256_ofb();
+	    break;
+	default:
+	    printf("Unsupported AES key length\n");
+	    return ACVP_NO_CAP;
+	    break;
+	}
+	break;
     case ACVP_AES_CBC:
 	iv = tc->iv;
 	iv_len = tc->iv_len;
@@ -597,27 +678,53 @@ static ACVP_RESULT app_aes_handler(ACVP_TEST_CASE *test_case)
 	break;
     }
 
+    /* If Monte Carlo we need to be able to init and then update
+     * one thousand times before we complete each iteration.
+     */
+    if (tc->test_type == ACVP_SYM_TEST_TYPE_MCT) {
+        if (tc->direction == ACVP_DIR_ENCRYPT) {
+            if (tc->mct_index == 0) {
+	        EVP_EncryptInit_ex(&cipher_ctx, cipher, NULL, tc->key, iv);
+		if (tc->cipher == ACVP_AES_ECB) EVP_CIPHER_CTX_set_padding(&cipher_ctx, 0);
+            }
+	    EVP_EncryptUpdate(&cipher_ctx, tc->ct, &ct_len, tc->pt, tc->pt_len);
+	    tc->ct_len = ct_len;
+        } else if (tc->direction == ACVP_DIR_DECRYPT) {
+            if (tc->mct_index == 0) {
+	        EVP_DecryptInit_ex(&cipher_ctx, cipher, NULL, tc->key, iv);
+	        if (tc->cipher == ACVP_AES_ECB) EVP_CIPHER_CTX_set_padding(&cipher_ctx, 0);
+            }
+	    EVP_DecryptUpdate(&cipher_ctx, tc->pt, &pt_len, tc->ct, tc->ct_len + iv_len);
+	    tc->pt_len = pt_len;
+        } else {
+            printf("Unsupported direction\n");
+	    return ACVP_UNSUPPORTED_OP;
+        }
+        if (tc->mct_index == 1000) {
+            EVP_CIPHER_CTX_cleanup(&cipher_ctx);
+        }
 
-    if (tc->direction == ACVP_DIR_ENCRYPT) {
-	EVP_EncryptInit_ex(&cipher_ctx, cipher, NULL, tc->key, iv);
-	if (tc->cipher == ACVP_AES_ECB) EVP_CIPHER_CTX_set_padding(&cipher_ctx, 0);
-        EVP_EncryptUpdate(&cipher_ctx, tc->ct, &ct_len, tc->pt, tc->pt_len);
-	tc->ct_len = ct_len;
-	EVP_EncryptFinal_ex(&cipher_ctx, tc->ct + ct_len, &ct_len);
-	tc->ct_len += ct_len;
-    } else if (tc->direction == ACVP_DIR_DECRYPT) {
-	EVP_DecryptInit_ex(&cipher_ctx, cipher, NULL, tc->key, iv);
-	if (tc->cipher == ACVP_AES_ECB) EVP_CIPHER_CTX_set_padding(&cipher_ctx, 0);
-        EVP_DecryptUpdate(&cipher_ctx, tc->pt, &pt_len, tc->ct, tc->ct_len + iv_len);
-	tc->pt_len = pt_len;
-	EVP_DecryptFinal_ex(&cipher_ctx, tc->pt + pt_len, &pt_len);
-	tc->pt_len += pt_len;
     } else {
-        printf("Unsupported direction\n");
-        return ACVP_UNSUPPORTED_OP;
+        if (tc->direction == ACVP_DIR_ENCRYPT) {
+	    EVP_EncryptInit_ex(&cipher_ctx, cipher, NULL, tc->key, iv);
+	    if (tc->cipher == ACVP_AES_ECB) EVP_CIPHER_CTX_set_padding(&cipher_ctx, 0);
+	    EVP_EncryptUpdate(&cipher_ctx, tc->ct, &ct_len, tc->pt, tc->pt_len);
+	    tc->ct_len = ct_len;
+	    EVP_EncryptFinal_ex(&cipher_ctx, tc->ct + ct_len, &ct_len);
+	    tc->ct_len += ct_len;
+        } else if (tc->direction == ACVP_DIR_DECRYPT) {
+	    EVP_DecryptInit_ex(&cipher_ctx, cipher, NULL, tc->key, iv);
+	    if (tc->cipher == ACVP_AES_ECB) EVP_CIPHER_CTX_set_padding(&cipher_ctx, 0);
+	    EVP_DecryptUpdate(&cipher_ctx, tc->pt, &pt_len, tc->ct, tc->ct_len + iv_len);
+	    tc->pt_len = pt_len;
+	    EVP_DecryptFinal_ex(&cipher_ctx, tc->pt + pt_len, &pt_len);
+	    tc->pt_len += pt_len;
+        } else {
+            printf("Unsupported direction\n");
+	    return ACVP_UNSUPPORTED_OP;
+       }
+       EVP_CIPHER_CTX_cleanup(&cipher_ctx);
     }
-
-    EVP_CIPHER_CTX_cleanup(&cipher_ctx);
 
     return ACVP_SUCCESS;
 }
