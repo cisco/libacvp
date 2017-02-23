@@ -30,7 +30,7 @@
 
 #define ACVP_VERSION    "0.3"
 
-#define ACVP_ALG_MAX 21  /* Used by alg_tbl[] */
+#define ACVP_ALG_MAX 31  /* Used by alg_tbl[] */
 
 #define ACVP_ALG_AES_ECB             "AES-ECB"
 #define ACVP_ALG_AES_CBC             "AES-CBC"
@@ -45,11 +45,16 @@
 #define ACVP_ALG_AES_KW              "AES-KW"
 #define ACVP_ALG_AES_KWP             "AES-KWP"
 #define ACVP_ALG_TDES_OFB            "TDES-OFB"
+#define ACVP_ALG_TDES_OFBI           "TDES-OFBI"
 #define ACVP_ALG_TDES_CFB1           "TDES-CFB1"
 #define ACVP_ALG_TDES_CFB8           "TDES-CFB8"
 #define ACVP_ALG_TDES_CFB64          "TDES-CFB64"
+#define ACVP_ALG_TDES_CFBP1          "TDES-CFBP1"
+#define ACVP_ALG_TDES_CFBP8          "TDES-CFBP8"
+#define ACVP_ALG_TDES_CFBP64         "TDES-CFBP64"
 #define ACVP_ALG_TDES_ECB            "TDES-ECB"
 #define ACVP_ALG_TDES_CBC            "TDES-CBC"
+#define ACVP_ALG_TDES_CBCI           "TDES-CBCI"
 #define ACVP_ALG_TDES_CTR            "TDES-CTR"
 #define ACVP_ALG_TDES_KW             "TDES-KW"
 #define ACVP_ALG_SHA1                "SHA-1"

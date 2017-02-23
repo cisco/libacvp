@@ -74,13 +74,22 @@ ACVP_ALG_HANDLER alg_tbl[ACVP_ALG_MAX] = {
     {ACVP_AES_CFB128,      &acvp_aes_kat_handler,   ACVP_ALG_AES_CFB128},
     {ACVP_AES_OFB,         &acvp_aes_kat_handler,   ACVP_ALG_AES_OFB},
     {ACVP_AES_CTR,         &acvp_aes_kat_handler,   ACVP_ALG_AES_CTR},
+    {ACVP_AES_XTS,         &acvp_aes_kat_handler,   ACVP_ALG_AES_XTS},
     {ACVP_AES_KW,          &acvp_aes_kat_handler,   ACVP_ALG_AES_KW},
+    {ACVP_AES_KWP,         &acvp_aes_kat_handler,   ACVP_ALG_AES_KWP},
     {ACVP_TDES_ECB,        &acvp_des_kat_handler,   ACVP_ALG_TDES_ECB},
     {ACVP_TDES_CBC,        &acvp_des_kat_handler,   ACVP_ALG_TDES_CBC},
+    {ACVP_TDES_CBCI,       &acvp_des_kat_handler,   ACVP_ALG_TDES_CBCI},
     {ACVP_TDES_OFB,        &acvp_des_kat_handler,   ACVP_ALG_TDES_OFB},
+    {ACVP_TDES_OFBI,       &acvp_des_kat_handler,   ACVP_ALG_TDES_OFBI},
     {ACVP_TDES_CFB1,       &acvp_des_kat_handler,   ACVP_ALG_TDES_CFB1},
     {ACVP_TDES_CFB8,       &acvp_des_kat_handler,   ACVP_ALG_TDES_CFB8},
     {ACVP_TDES_CFB64,      &acvp_des_kat_handler,   ACVP_ALG_TDES_CFB64},
+    {ACVP_TDES_CFBP1,      &acvp_des_kat_handler,   ACVP_ALG_TDES_CFBP1},
+    {ACVP_TDES_CFBP8,      &acvp_des_kat_handler,   ACVP_ALG_TDES_CFBP8},
+    {ACVP_TDES_CFBP64,     &acvp_des_kat_handler,   ACVP_ALG_TDES_CFBP64},
+    {ACVP_TDES_CTR,        &acvp_des_kat_handler,   ACVP_ALG_TDES_CTR},
+    {ACVP_TDES_KW,         &acvp_des_kat_handler,   ACVP_ALG_TDES_KW},
     {ACVP_SHA1,            &acvp_hash_kat_handler,  ACVP_ALG_SHA1},
     {ACVP_SHA224,          &acvp_hash_kat_handler,  ACVP_ALG_SHA224},
     {ACVP_SHA256,          &acvp_hash_kat_handler,  ACVP_ALG_SHA256},
@@ -700,6 +709,7 @@ static ACVP_RESULT acvp_build_register(ACVP_CTX *ctx, char **reg)
 		acvp_build_hash_register_cap(cap_obj, cap_entry);
                 break;
             default:
+	        acvp_log_msg(ctx, "Cap entry not found, %d.", cap_entry->cipher);
                 return ACVP_NO_CAP;
             }
 
