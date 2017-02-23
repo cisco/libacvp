@@ -69,7 +69,8 @@ typedef enum acvp_result ACVP_RESULT;
  * This enum must stay aligned with alg_tbl[] in acvp.c
  */
 typedef enum acvp_sym_cipher {
-    ACVP_AES_ECB = 0,
+    ACVP_CIPHER_START = 0,
+    ACVP_AES_ECB,
     ACVP_AES_CBC,
     ACVP_AES_CTR,
     ACVP_AES_GCM,
@@ -90,6 +91,7 @@ typedef enum acvp_sym_cipher {
     ACVP_SHA256,
     ACVP_SHA384,
     ACVP_SHA512,
+    ACVP_CIPHER_END
 } ACVP_CIPHER;
 
 /*

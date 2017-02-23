@@ -34,6 +34,7 @@
 #include "acvp.h"
 #include "acvp_lcl.h"
 
+#define HTTP_OK    200
 
 #define MAX_TOKEN_LEN 512 
 static struct curl_slist* acvp_add_auth_hdr (ACVP_CTX *ctx, struct curl_slist *slist)
@@ -166,7 +167,7 @@ static long acvp_curl_http_get (ACVP_CTX *ctx, char *url, void *writefunc)
      */
     curl_easy_getinfo (hnd, CURLINFO_RESPONSE_CODE, &http_code);
 
-    if (http_code != 200) {
+    if (http_code != HTTP_OK) {
 	acvp_log_msg(ctx, "HTTP response: %d\n", (int)http_code);
     } 
 
@@ -275,7 +276,7 @@ static long acvp_curl_http_post (ACVP_CTX *ctx, char *url, char *data, void *wri
      */
     curl_easy_getinfo (hnd, CURLINFO_RESPONSE_CODE, &http_code);
 
-    if (http_code != 200) {
+    if (http_code != HTTP_OK) {
 	acvp_log_msg(ctx, "HTTP response: %d\n", (int)http_code);
     }
 
@@ -406,14 +407,14 @@ static size_t acvp_curl_write_register_func(void *ptr, size_t size, size_t nmemb
  */
 ACVP_RESULT acvp_send_register(ACVP_CTX *ctx, char *reg)
 {
-    ACVP_RESULT rv;
+    int rv;
     char url[512]; //TODO: 512 is an arbitrary limit
 
     memset(url, 0x0, 512);
     snprintf(url, 511, "https://%s:%d/%svalidation/acvp/register", ctx->server_name, ctx->server_port, ctx->path_segment);
 
     rv = acvp_curl_http_post(ctx, url, reg, &acvp_curl_write_register_func);
-    if (rv != 200) {
+    if (rv != HTTP_OK) {
         acvp_log_msg(ctx, "Unable to register with ACVP server. curl rv=%d\n", rv);
 	acvp_log_msg(ctx, "%s\n", ctx->reg_buf);
         return ACVP_TRANSPORT_FAIL;
@@ -433,7 +434,7 @@ ACVP_RESULT acvp_send_register(ACVP_CTX *ctx, char *reg)
  */
 ACVP_RESULT acvp_retrieve_vector_set(ACVP_CTX *ctx, int vs_id)
 {
-    ACVP_RESULT rv;
+    int rv;
     char url[512]; //TODO: 512 is an arbitrary limit
 
     memset(url, 0x0, 512);
@@ -443,7 +444,7 @@ ACVP_RESULT acvp_retrieve_vector_set(ACVP_CTX *ctx, int vs_id)
         memset(ctx->kat_buf, 0x0, ACVP_KAT_BUF_MAX);
     }
     rv = acvp_curl_http_get(ctx, url, &acvp_curl_write_kat_func);
-    if (rv != 200) {
+    if (rv != HTTP_OK) {
         acvp_log_msg(ctx, "Unable to get vectors from server. curl rv=%d\n", rv);
 	acvp_log_msg(ctx, "%s\n", ctx->kat_buf);
         return ACVP_TRANSPORT_FAIL;
@@ -464,7 +465,7 @@ ACVP_RESULT acvp_retrieve_vector_set(ACVP_CTX *ctx, int vs_id)
  */
 ACVP_RESULT acvp_submit_vector_responses(ACVP_CTX *ctx)
 {
-    ACVP_RESULT rv;
+    int rv;
     char url[512]; //TODO: 512 is an arbitrary limit
     char *resp;
 
@@ -476,7 +477,7 @@ ACVP_RESULT acvp_submit_vector_responses(ACVP_CTX *ctx)
     json_value_free(ctx->kat_resp);
     ctx->kat_resp = NULL;
     json_free_serialized_string(resp);
-    if (rv != 200) {
+    if (rv != HTTP_OK) {
         acvp_log_msg(ctx, "Unable to upload vector set to ACVP server. curl rv=%d\n", rv);
 	acvp_log_msg(ctx, "%s\n", ctx->upld_buf);
         return ACVP_TRANSPORT_FAIL;
@@ -492,7 +493,7 @@ ACVP_RESULT acvp_submit_vector_responses(ACVP_CTX *ctx)
  */
 ACVP_RESULT acvp_retrieve_vector_set_result(ACVP_CTX *ctx, int vs_id)
 {
-    ACVP_RESULT rv;
+    int rv;
     char url[512]; //TODO: 512 is an arbitrary limit
 
     memset(url, 0x0, 512);
@@ -502,7 +503,7 @@ ACVP_RESULT acvp_retrieve_vector_set_result(ACVP_CTX *ctx, int vs_id)
         memset(ctx->kat_buf, 0x0, ACVP_KAT_BUF_MAX);
     }
     rv = acvp_curl_http_get(ctx, url, &acvp_curl_write_kat_func);
-    if (rv != 200) {
+    if (rv != HTTP_OK) {
         acvp_log_msg(ctx, "Unable to get vector result from server. curl rv=%d\n", rv);
 	acvp_log_msg(ctx, "%s\n", ctx->kat_buf);
         return ACVP_TRANSPORT_FAIL;

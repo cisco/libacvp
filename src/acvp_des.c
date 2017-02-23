@@ -110,7 +110,7 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
      * Get the crypto module handler for DES mode
      */
     alg_id = acvp_lookup_cipher_index(alg_str);
-    if (alg_id < 0) {
+    if (alg_id < ACVP_CIPHER_START) {
         acvp_log_msg(ctx, "ERROR: unsupported algorithm (%s)", alg_str);
         return (ACVP_UNSUPPORTED_OP);
     }

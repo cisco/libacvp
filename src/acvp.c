@@ -476,7 +476,12 @@ ACVP_RESULT acvp_set_certkey(ACVP_CTX *ctx, char *cert_file, char *key_file)
 static ACVP_RESULT acvp_build_hash_register_cap(JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry)
 {
     json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
-    //TODO: need to add the rest of the hash caps
+    json_object_set_string(cap_obj, "inByte", cap_entry->cap.hash_cap->in_byte ? "yes" : "no" );
+    json_object_set_string(cap_obj, "inEmpty", cap_entry->cap.hash_cap->in_empty ? "yes" : "no" );
+    json_object_set_string(cap_obj, "outByte", cap_entry->cap.hash_cap->out_byte ? "yes" : "no" );
+    json_object_set_number(cap_obj, "inLen", cap_entry->cap.hash_cap->in_len );
+    json_object_set_number(cap_obj, "outLen", cap_entry->cap.hash_cap->out_len );
+
     return ACVP_SUCCESS;
 }
 
@@ -883,7 +888,7 @@ static ACVP_RESULT acvp_parse_register(ACVP_CTX *ctx)
      * to be included when sending the vector responses back to the server
      * later.
      */
-    jwt = json_object_get_string(obj, "access_token");
+    jwt = json_object_get_string(obj, "accessToken");
     if (!jwt) {
         json_value_free(val);
         acvp_log_msg(ctx, "No access_token provided in registration response");
@@ -905,9 +910,9 @@ static ACVP_RESULT acvp_parse_register(ACVP_CTX *ctx)
      * Identify the VS identifiers provided by the server, save them for
      * processing later.
      */
-    cap_obj = json_object_get_object(obj, "capability_response");
+    cap_obj = json_object_get_object(obj, "capabilityResponse");
     //const char *op = json_object_get_string(obj, "operation");
-    vect_sets = json_object_get_array(cap_obj, "vector_sets");
+    vect_sets = json_object_get_array(cap_obj, "vectorSets");
     vs_cnt = json_array_get_count(vect_sets);
     for (i = 0; i < vs_cnt; i++) {
         vs_val = json_array_get_value(vect_sets, i);
