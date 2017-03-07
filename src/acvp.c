@@ -50,7 +50,12 @@ static ACVP_RESULT acvp_append_hash_caps_entry(
     ACVP_HASH_CAP *cap,
     ACVP_CIPHER cipher,
     ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case));
-static void acvp_cap_free_sl(ACVP_SL_LIST *list); 
+    static ACVP_RESULT acvp_append_drbg_caps_entry(
+        ACVP_CTX *ctx,
+        ACVP_DRBG_CAP *cap,
+        ACVP_CIPHER cipher,
+        ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case));
+static void acvp_cap_free_sl(ACVP_SL_LIST *list);
 static ACVP_RESULT acvp_get_result_vsid(ACVP_CTX *ctx, int vs_id);
 
 
@@ -95,6 +100,10 @@ ACVP_ALG_HANDLER alg_tbl[ACVP_ALG_MAX] = {
     {ACVP_SHA256,          &acvp_hash_kat_handler,  ACVP_ALG_SHA256},
     {ACVP_SHA384,          &acvp_hash_kat_handler,  ACVP_ALG_SHA384},
     {ACVP_SHA512,          &acvp_hash_kat_handler,  ACVP_ALG_SHA512},
+
+    {ACVP_HASHDRBG,        &acvp_drbg_kat_handler,  ACVP_ALG_HASHDRBG},
+    {ACVP_HMACDRBG,        &acvp_drbg_kat_handler,  ACVP_ALG_HMACDRBG},
+    {ACVP_CTRDRBG,         &acvp_drbg_kat_handler,  ACVP_ALG_CTRDRBG},
 };
 
 
@@ -119,6 +128,44 @@ ACVP_RESULT acvp_create_test_session(ACVP_CTX **ctx,
     return ACVP_SUCCESS;
 }
 
+
+/*
+ * Free Internal memory for DRBG Data struct
+ */
+static void acvp_free_drgb_struct(ACVP_CAPS_LIST* cap_list)
+{
+    ACVP_DRBG_CAP       *drbg_cap = cap_list->cap.drbg_cap;
+    if (drbg_cap) {
+        ACVP_DRBG_CAP_MODE_LIST *mode_list = drbg_cap->drbg_cap_mode_list;
+        ACVP_DRBG_CAP_MODE_LIST *next_mode_list;
+        ACVP_DRBG_PREREQ_VALS   *current_pre_req_vals;
+        ACVP_DRBG_PREREQ_VALS   *next_pre_req_vals;
+
+        if (mode_list) {
+            do {
+                //Top of list
+                current_pre_req_vals = mode_list->cap_mode.prereq_vals;
+                /*
+                 * Delete all pre_req
+                 */
+                if (current_pre_req_vals) {
+                    do {
+                        next_pre_req_vals = current_pre_req_vals->next;
+                        free(current_pre_req_vals);
+                        current_pre_req_vals = next_pre_req_vals;
+                    } while (current_pre_req_vals);
+                }
+                next_mode_list = mode_list->next;
+                free(mode_list);
+                mode_list = next_mode_list;
+
+            } while (mode_list);
+        }
+        free(drbg_cap);
+        drbg_cap = NULL;
+        cap_list->cap.drbg_cap = NULL;
+    }
+}
 
 /*
  * The application will invoke this to free the ACVP context
@@ -159,14 +206,28 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx)
             cap_entry = ctx->caps_list;
             while (cap_entry) {
                 cap_e2 = cap_entry->next;
-		free(cap_entry->cap.sym_cap);
-		acvp_cap_free_sl(cap_entry->cap.sym_cap->keylen);
-		acvp_cap_free_sl(cap_entry->cap.sym_cap->ptlen);
-		acvp_cap_free_sl(cap_entry->cap.sym_cap->ivlen);
-		acvp_cap_free_sl(cap_entry->cap.sym_cap->aadlen);
-		acvp_cap_free_sl(cap_entry->cap.sym_cap->taglen);
-                free(cap_entry);
-                cap_entry = cap_e2;
+                switch (cap_entry->cap_type) {
+                        case ACVP_SYM_TYPE:
+                            free(cap_entry->cap.sym_cap);
+                            acvp_cap_free_sl(cap_entry->cap.sym_cap->keylen);
+                            acvp_cap_free_sl(cap_entry->cap.sym_cap->ptlen);
+                            acvp_cap_free_sl(cap_entry->cap.sym_cap->ivlen);
+                            acvp_cap_free_sl(cap_entry->cap.sym_cap->aadlen);
+                            acvp_cap_free_sl(cap_entry->cap.sym_cap->taglen);
+                            free(cap_entry);
+                            cap_entry = cap_e2;
+                            break;
+                        case ACVP_HASH_TYPE:
+                            break;
+                        case ACVP_DRBG_TYPE:
+                            cap_e2 = cap_entry->next;
+                            acvp_free_drgb_struct(cap_entry);
+                            free(cap_entry);
+                            cap_entry = cap_e2;
+                            break;
+                        default:
+                            break;
+                }
             }
         }
         if (ctx->jwt_token) free(ctx->jwt_token);
@@ -214,22 +275,22 @@ static ACVP_RESULT acvp_cap_add_length(ACVP_SL_LIST **list, int len)
  * Simple utility function to free a supported length
  * list from the capabilities structure.
  */
-static void acvp_cap_free_sl(ACVP_SL_LIST *list) 
+static void acvp_cap_free_sl(ACVP_SL_LIST *list)
 {
     ACVP_SL_LIST *top = list;
     ACVP_SL_LIST *tmp;
 
     while(top) {
 	tmp = top;
-	top = top->next;	
+	top = top->next;
 	free(tmp);
     }
 }
 
 /*
  * This function is called by the application to register a crypto
- * capability for symmetric ciphers, along with a handler that the 
- * application implements when that particular crypto operation is 
+ * capability for symmetric ciphers, along with a handler that the
+ * application implements when that particular crypto operation is
  * needed by libacvp.
  *
  * This function should be called one or more times for each crypto
@@ -239,8 +300,8 @@ static void acvp_cap_free_sl(ACVP_SL_LIST *list)
  *
  */
 ACVP_RESULT acvp_enable_sym_cipher_cap(
-	ACVP_CTX *ctx, 
-	ACVP_CIPHER cipher, 
+	ACVP_CTX *ctx,
+	ACVP_CIPHER cipher,
 	ACVP_SYM_CIPH_DIR dir,
 	ACVP_SYM_CIPH_IVGEN_SRC ivgen_source,
 	ACVP_SYM_CIPH_IVGEN_MODE ivgen_mode,
@@ -272,12 +333,12 @@ ACVP_RESULT acvp_enable_sym_cipher_cap(
 /*
  * The user should call this after invoking acvp_enable_sym_cipher_cap()
  * to specify the supported key lengths, PT lengths, AAD lengths, IV
- * lengths, and tag lengths.  This is called by the user multiple times, 
+ * lengths, and tag lengths.  This is called by the user multiple times,
  * once for each length supported.
  */
 ACVP_RESULT acvp_enable_sym_cipher_cap_parm(
-	ACVP_CTX *ctx, 
-	ACVP_CIPHER cipher, 
+	ACVP_CTX *ctx,
+	ACVP_CIPHER cipher,
 	ACVP_SYM_CIPH_PARM parm,
 	int length) {
 
@@ -300,7 +361,7 @@ ACVP_RESULT acvp_enable_sym_cipher_cap_parm(
     //      cipher sub-spec is reviewed, we should have the valid
     //      ranges.
     switch (parm) {
-    case ACVP_SYM_CIPH_KEYLEN: 
+    case ACVP_SYM_CIPH_KEYLEN:
 	acvp_cap_add_length(&cap->cap.sym_cap->keylen, length);
 	break;
     case ACVP_SYM_CIPH_TAGLEN:
@@ -323,8 +384,8 @@ ACVP_RESULT acvp_enable_sym_cipher_cap_parm(
 }
 
 ACVP_RESULT acvp_enable_hash_cap(
-	ACVP_CTX *ctx, 
-	ACVP_CIPHER cipher, 
+	ACVP_CTX *ctx,
+	ACVP_CIPHER cipher,
         ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case))
 {
     ACVP_HASH_CAP *cap;
@@ -352,11 +413,377 @@ ACVP_RESULT acvp_enable_hash_cap(
     return (acvp_append_hash_caps_entry(ctx, cap, cipher, crypto_handler));
 }
 
+
+/*
+ * Add CTR DRBG parameters
+ */
+static ACVP_RESULT acvp_add_ctr_drbg_cap_parm (
+                             ACVP_DRBG_CAP_MODE  *drbg_cap_mode,
+                             ACVP_DRBG_MODE       mode,
+                             ACVP_DRBG_PARM       param,
+                             int value
+                             )
+{
+    if (!drbg_cap_mode) {
+        return ACVP_INVALID_ARG;
+    }
+    switch (mode) {
+    case ACVP_DRBG_3KEYTDEA:
+    case ACVP_DRBG_AES_128:
+    case ACVP_DRBG_AES_192:
+    case ACVP_DRBG_AES_256:
+        drbg_cap_mode->mode = mode;
+        switch (param) {
+        case ACVP_DRBG_DER_FUNC_ENABLED:
+            drbg_cap_mode->der_func_enabled = value;
+            break;
+        case ACVP_DRBG_PRED_RESIST_ENABLED:
+            drbg_cap_mode->pred_resist_enabled = value;
+            break;
+        case ACVP_DRBG_RESEED_ENABLED:
+            drbg_cap_mode->reseed_implemented = value;
+            break;
+        case ACVP_DRBG_ENTROPY_LEN:
+            drbg_cap_mode->entropy_input_len = value;
+            break;
+        case ACVP_DRBG_NONCE_LEN:
+            drbg_cap_mode->nonce_len = value;
+            break;
+        case ACVP_DRBG_PERSO_LEN:
+            drbg_cap_mode->perso_string_len = value;
+            break;
+        case ACVP_DRBG_ADD_IN_LEN:
+            drbg_cap_mode->additional_input_len = value;
+            break;
+        case ACVP_DRBG_RET_BITS_LEN:
+            drbg_cap_mode->returned_bits_len = value;
+            break;
+        case ACVP_DRBG_PRE_REQ_VALS:
+        default:
+            break;
+        }
+        break;
+
+
+    default:
+        return ACVP_INVALID_ARG;
+        break;
+    }
+
+    return ACVP_SUCCESS;
+}
+
+/*
+ * Add HASH DRBG parameters
+ */
+static ACVP_RESULT acvp_add_hash_drbg_cap_parm (
+                             ACVP_DRBG_CAP_MODE  *drbg_cap_mode,
+                             ACVP_DRBG_MODE       mode,
+                             ACVP_DRBG_PARM       param,
+                             int                  value
+                             )
+{
+    switch (mode) {
+    case ACVP_DRBG_SHA_1:
+    case ACVP_DRBG_SHA_224:
+    case ACVP_DRBG_SHA_256:
+    case ACVP_DRBG_SHA_384:
+    case ACVP_DRBG_SHA_512:
+        drbg_cap_mode->mode = mode;
+        switch (param) {
+        case ACVP_DRBG_DER_FUNC_ENABLED:
+            drbg_cap_mode->der_func_enabled = value;
+            break;
+        case ACVP_DRBG_PRED_RESIST_ENABLED:
+            drbg_cap_mode->pred_resist_enabled = value;
+            break;
+        case ACVP_DRBG_RESEED_ENABLED:
+            drbg_cap_mode->reseed_implemented = value;
+            break;
+        case ACVP_DRBG_ENTROPY_LEN:
+            drbg_cap_mode->entropy_input_len = value;
+            break;
+        case ACVP_DRBG_NONCE_LEN:
+            drbg_cap_mode->nonce_len = value;
+            break;
+        case ACVP_DRBG_PERSO_LEN:
+            drbg_cap_mode->perso_string_len = value;
+            break;
+        case ACVP_DRBG_ADD_IN_LEN:
+            drbg_cap_mode->additional_input_len = value;
+            break;
+        case ACVP_DRBG_RET_BITS_LEN:
+            drbg_cap_mode->returned_bits_len = value;
+            break;
+        case ACVP_DRBG_PRE_REQ_VALS:
+        default:
+            return ACVP_INVALID_ARG;
+            break;
+        }
+        break;
+    case ACVP_DRBG_SHA_512_224:
+    case ACVP_DRBG_SHA_512_256:
+    default:
+        return ACVP_INVALID_ARG;
+        break;
+    }
+    return ACVP_SUCCESS;
+}
+
+/*
+ * Add HMAC DRBG parameters
+ */
+static ACVP_RESULT acvp_add_hmac_drbg_cap_parm (
+                             ACVP_DRBG_CAP_MODE  *drbg_cap_mode,
+                             ACVP_DRBG_MODE       mode,
+                             ACVP_DRBG_PARM       param,
+                             int                  value
+                             )
+{
+    switch (mode) {
+    case ACVP_DRBG_SHA_1:
+    case ACVP_DRBG_SHA_224:
+    case ACVP_DRBG_SHA_256:
+    case ACVP_DRBG_SHA_384:
+    case ACVP_DRBG_SHA_512:
+        drbg_cap_mode->mode = mode;
+        switch (param) {
+        case ACVP_DRBG_DER_FUNC_ENABLED:
+            drbg_cap_mode->der_func_enabled = value;
+            break;
+        case ACVP_DRBG_PRED_RESIST_ENABLED:
+            drbg_cap_mode->pred_resist_enabled = value;
+            break;
+        case ACVP_DRBG_RESEED_ENABLED:
+            drbg_cap_mode->reseed_implemented = value;
+            break;
+        case ACVP_DRBG_ENTROPY_LEN:
+            drbg_cap_mode->entropy_input_len = value;
+            break;
+        case ACVP_DRBG_NONCE_LEN:
+            drbg_cap_mode->nonce_len = value;
+            break;
+        case ACVP_DRBG_PERSO_LEN:
+            drbg_cap_mode->perso_string_len = value;
+            break;
+        case ACVP_DRBG_ADD_IN_LEN:
+            drbg_cap_mode->additional_input_len = value;
+            break;
+        case ACVP_DRBG_RET_BITS_LEN:
+            drbg_cap_mode->returned_bits_len = value;
+            break;
+        case ACVP_DRBG_PRE_REQ_VALS:
+        default:
+            return ACVP_INVALID_ARG;
+        }
+        break;
+
+    case ACVP_DRBG_SHA_512_224:
+    case ACVP_DRBG_SHA_512_256:
+    default:
+        return ACVP_INVALID_ARG;
+        break;
+    }
+
+    return ACVP_SUCCESS;
+}
+
+/*
+ * Append a DRBG pre req val to the
+ */
+static ACVP_RESULT acvp_add_drbg_prereq_val(ACVP_DRBG_CAP_MODE *drbg_cap_mode,
+                   ACVP_DRBG_MODE mode, ACVP_DRBG_PRE_REQ pre_req, char *value)
+{
+    ACVP_DRBG_PREREQ_VALS *prereq_entry, *prereq_entry_2;
+
+    prereq_entry = calloc(1, sizeof(ACVP_DRBG_PREREQ_VALS));
+    if (!prereq_entry) {
+        return ACVP_MALLOC_FAIL;
+    }
+    prereq_entry->prereq_alg_val.alg = pre_req;
+    prereq_entry->prereq_alg_val.val = value;
+
+    /*
+     * 1st entry
+     */
+    if (!drbg_cap_mode->prereq_vals) {
+        drbg_cap_mode->prereq_vals= prereq_entry;
+    } else {
+        /*
+         * append to the last in the list
+         */
+        prereq_entry_2 = drbg_cap_mode->prereq_vals;
+        while (prereq_entry_2->next) {
+            prereq_entry_2 = prereq_entry_2->next;
+        }
+        prereq_entry_2->next = prereq_entry;
+    }
+    return (ACVP_SUCCESS);
+}
+
+/*
+ * The user should call this after invoking acvp_enable_drbg_cap_parm().
+ */
+ACVP_RESULT acvp_enable_drbg_cap_parm (ACVP_CTX *ctx,
+                             ACVP_CIPHER cipher,
+                             ACVP_DRBG_MODE mode,
+                             ACVP_DRBG_PARM param,
+                             int value
+                             )
+{
+    ACVP_DRBG_CAP_MODE_LIST *drbg_cap_mode_list;
+    ACVP_CAPS_LIST          *cap_list;
+    ACVP_RESULT              result;
+
+    /*
+     * Validate input
+     */
+    if (!ctx) {
+        return ACVP_INVALID_ARG;
+    }
+
+    switch (cipher) {
+    case ACVP_HASHDRBG:
+    case ACVP_HMACDRBG:
+    case ACVP_CTRDRBG:
+        break;
+    default:
+        return ACVP_INVALID_ARG;
+    }
+
+    /*
+     * Locate this cipher in the caps array
+     */
+    cap_list = acvp_locate_cap_entry(ctx, cipher);
+    if (!cap_list) {
+        acvp_log_msg(ctx, "Cap entry not found.");
+        return ACVP_NO_CAP;
+    }
+
+    /*
+     * Locate cap mode from array
+     * if the mode does not exist yet then create it.
+     */
+    if (!cap_list->cap.drbg_cap) {
+        acvp_log_msg(ctx, "DRBG Cap entry not found.");
+        return ACVP_NO_CAP;
+    }
+
+    drbg_cap_mode_list = acvp_locate_drbg_mode_entry(cap_list, mode);
+    if (!drbg_cap_mode_list) {
+        drbg_cap_mode_list = calloc(1, sizeof(ACVP_DRBG_CAP_MODE_LIST));
+        if (!drbg_cap_mode_list) {
+            acvp_log_msg(ctx, "Malloc Failed.");
+            return ACVP_MALLOC_FAIL;
+        }
+
+        drbg_cap_mode_list->cap_mode.mode = mode;
+        cap_list->cap.drbg_cap->drbg_cap_mode_list = drbg_cap_mode_list;
+    }
+
+    /*
+     * Add the value to the cap
+     */
+    switch (cipher) {
+    case ACVP_HASHDRBG:
+        result = acvp_add_hash_drbg_cap_parm(&drbg_cap_mode_list->cap_mode, mode, param, value);
+        break;
+    case ACVP_HMACDRBG:
+        result = acvp_add_hmac_drbg_cap_parm(&drbg_cap_mode_list->cap_mode, mode, param, value);
+        break;
+    case ACVP_CTRDRBG:
+        result = acvp_add_ctr_drbg_cap_parm(&drbg_cap_mode_list->cap_mode, mode, param, value);
+        break;
+    default:
+        return ACVP_INVALID_ARG;
+    }
+
+    return (result);
+}
+
+ACVP_RESULT acvp_enable_drbg_prereq_cap(ACVP_CTX          *ctx,
+                             ACVP_CIPHER       cipher,
+                             ACVP_DRBG_MODE    mode,
+                             ACVP_DRBG_PRE_REQ pre_req,
+                             char              *value)
+{
+    ACVP_DRBG_CAP_MODE_LIST *drbg_cap_mode_list;
+    ACVP_CAPS_LIST          *cap_list;
+
+    if (!ctx) {
+        return ACVP_INVALID_ARG;
+    }
+
+    /*
+     * Locate this cipher in the caps array
+     */
+    cap_list = acvp_locate_cap_entry(ctx, cipher);
+    if (!cap_list) {
+        acvp_log_msg(ctx, "Cap entry not found.");
+        return ACVP_NO_CAP;
+    }
+
+    /*
+     * Locate cap mode from array
+     * if the mode does not exist yet then create it.
+     */
+    drbg_cap_mode_list = acvp_locate_drbg_mode_entry(cap_list, mode);
+    if (!drbg_cap_mode_list) {
+        drbg_cap_mode_list = calloc(1, sizeof(ACVP_DRBG_CAP_MODE_LIST));
+        if (!drbg_cap_mode_list) {
+            acvp_log_msg(ctx, "Malloc Failed.");
+            return ACVP_MALLOC_FAIL;
+        }
+        drbg_cap_mode_list->cap_mode.mode = mode;
+        cap_list->cap.drbg_cap->drbg_cap_mode_list = drbg_cap_mode_list;
+    }
+
+    /*
+     * Add the value to the cap
+     */
+
+    return (acvp_add_drbg_prereq_val(&drbg_cap_mode_list->cap_mode, mode, pre_req, value));
+}
+
+ACVP_RESULT acvp_enable_drbg_cap(
+     ACVP_CTX *ctx,
+     ACVP_CIPHER cipher,
+     ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case))
+{
+    ACVP_DRBG_CAP *drbg_cap;
+    ACVP_RESULT result;
+
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+    if (!crypto_handler) {
+        return ACVP_INVALID_ARG;
+    }
+
+    //Check for duplicate entry
+    if (acvp_locate_cap_entry(ctx, cipher)) {
+        return ACVP_DUP_CIPHER;
+    }
+
+    drbg_cap = calloc(1, sizeof(ACVP_DRBG_CAP));
+    if (!drbg_cap) {
+        return ACVP_MALLOC_FAIL;
+    }
+
+    drbg_cap->cipher = cipher;
+    result = acvp_append_drbg_caps_entry(ctx, drbg_cap, cipher, crypto_handler);
+    if (result != ACVP_SUCCESS) {
+        free(drbg_cap);
+        drbg_cap = NULL;
+    }
+    return result;
+}
+
 /*
  * Allows application to specify the vendor attributes for
  * the test session.
  */
-ACVP_RESULT acvp_set_vendor_info(ACVP_CTX *ctx, 
+ACVP_RESULT acvp_set_vendor_info(ACVP_CTX *ctx,
 				 const char *vendor_name,
 				 const char *vendor_url,
 				 const char *contact_name,
@@ -383,7 +810,7 @@ ACVP_RESULT acvp_set_vendor_info(ACVP_CTX *ctx,
  * Allows application to specify the crypto module attributes for
  * the test session.
  */
-ACVP_RESULT acvp_set_module_info(ACVP_CTX *ctx, 
+ACVP_RESULT acvp_set_module_info(ACVP_CTX *ctx,
 				 const char *module_name,
 				 const char *module_type,
 				 const char *module_version,
@@ -446,7 +873,7 @@ ACVP_RESULT acvp_set_path_segment(ACVP_CTX *ctx, char *path_segment)
  * the ACVP server during the TLS handshake.  If this function is
  * not called by the application, then peer verification is not
  * enabled, which is not recommended (but provided as an operational
- * mode for testing).  
+ * mode for testing).
  */
 ACVP_RESULT acvp_set_cacerts(ACVP_CTX *ctx, char *ca_file)
 {
@@ -521,7 +948,7 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
     }
 
     /*
-     * Set the IV generation source if applicable 
+     * Set the IV generation source if applicable
      */
     switch(cap_entry->cap.sym_cap->ivgen_source) {
     case ACVP_IVGEN_SRC_INT:
@@ -610,6 +1037,143 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
 }
 
 
+static char *acvp_lookup_drbg_mode_string (ACVP_CAPS_LIST *cap_entry)
+{
+    char *mode_str = NULL;
+    if(!cap_entry) return NULL;
+    if(!cap_entry->cap.drbg_cap) return NULL;
+    if(!cap_entry->cap.drbg_cap->drbg_cap_mode_list) return NULL;
+//    if(!cap_entry->cap.drbg_cap->drbg_cap_mode_list->cap_mode) return NULL;
+
+    switch (cap_entry->cap.drbg_cap->drbg_cap_mode_list->cap_mode.mode) {
+    case ACVP_DRBG_SHA_1:
+        mode_str = ACVP_DRBG_MODE_SHA_1;
+        break;
+    case ACVP_DRBG_SHA_224:
+        mode_str = ACVP_DRBG_MODE_SHA_224;
+        break;
+    case ACVP_DRBG_SHA_256:
+        mode_str = ACVP_DRBG_MODE_SHA_256;
+        break;
+    case ACVP_DRBG_SHA_384:
+        mode_str = ACVP_DRBG_MODE_SHA_384;
+        break;
+    case ACVP_DRBG_SHA_512:
+        mode_str = ACVP_DRBG_MODE_SHA_512;
+        break;
+    case ACVP_DRBG_SHA_512_224:
+        mode_str = ACVP_DRBG_MODE_SHA_512_224;
+        break;
+    case ACVP_DRBG_SHA_512_256:
+        mode_str = ACVP_DRBG_MODE_SHA_512_256;
+        break;
+    case ACVP_DRBG_3KEYTDEA:
+        mode_str = ACVP_DRBG_MODE_3KEYTDEA;
+        break;
+    case ACVP_DRBG_AES_128:
+        mode_str = ACVP_DRBG_MODE_AES_128;
+        break;
+    case ACVP_DRBG_AES_192:
+        mode_str = ACVP_DRBG_MODE_AES_192;
+        break;
+    case ACVP_DRBG_AES_256:
+        mode_str = ACVP_DRBG_MODE_AES_256;
+        break;
+    default:
+        return NULL;
+    }
+    return mode_str;
+}
+
+static ACVP_RESULT acvp_lookup_drbg_prereqVals (JSON_Object *cap_obj, ACVP_DRBG_CAP_MODE *drbg_cap_mode)
+{
+    JSON_Array *prereq_array = NULL;
+
+    ACVP_DRBG_PREREQ_VALS *prereq_vals;
+    ACVP_DRBG_PREREQ_VALS *next_pre_req;
+    ACVP_DRBG_PREREQ_ALG_VAL *pre_req;
+    char *alg_str;
+
+    if(!drbg_cap_mode) return ACVP_INVALID_ARG;
+
+    /*
+     * Init json array
+     */
+    json_object_set_value(cap_obj, "prereqVals", json_value_init_array());
+    prereq_array = json_object_get_array(cap_obj, "prereqVals");
+
+    /*
+     * return OK if nothing present
+     */
+    prereq_vals = drbg_cap_mode->prereq_vals;
+    if(!prereq_vals) {
+        return ACVP_SUCCESS;
+    }
+
+
+    while (prereq_vals) {
+        JSON_Value *val = NULL;
+        JSON_Object *obj = NULL;
+        val = json_value_init_object();
+        obj = json_value_get_object(val);
+        pre_req = &prereq_vals->prereq_alg_val;
+
+        switch(pre_req->alg) {
+        case DRBG_SHA:
+            alg_str = ACVP_DRBG_PREREQ_SHA;
+            json_object_set_string(obj, "algorithm", alg_str);
+            json_object_set_string(obj, "value", pre_req->val);
+            break;
+        case DRBG_HMAC:
+            alg_str = ACVP_DRBG_PREREQ_HMAC;
+            json_object_set_string(obj, "algorithm", alg_str);
+            json_object_set_string(obj, "value", pre_req->val);
+            break;
+        case DRBG_AES:
+            alg_str = ACVP_DRBG_PREREQ_AES;
+            json_object_set_string(obj, "algorithm", alg_str);
+            json_object_set_string(obj, "value", pre_req->val);
+            break;
+        case DRBG_TDES:
+        default:
+            return ACVP_INVALID_ARG;
+        }
+
+        json_array_append_value(prereq_array, val);
+        next_pre_req = prereq_vals->next;
+        prereq_vals = next_pre_req;
+    }
+    return ACVP_SUCCESS;
+}
+
+
+static ACVP_RESULT acvp_build_drbg_register_cap(JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry)
+{
+    ACVP_RESULT result;
+    ACVP_DRBG_CAP_MODE *drbg_cap_mode = NULL;
+
+    char *mode_str = acvp_lookup_drbg_mode_string(cap_entry);
+    if (!mode_str) return ACVP_INVALID_ARG;
+
+    drbg_cap_mode = &cap_entry->cap.drbg_cap->drbg_cap_mode_list->cap_mode;
+    json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
+    json_object_set_string(cap_obj, "mode", mode_str);
+    json_object_set_string(cap_obj, "derFuncEnabled", drbg_cap_mode->der_func_enabled ? "yes" : "no" );
+
+    result = acvp_lookup_drbg_prereqVals(cap_obj, drbg_cap_mode);
+    if (result != ACVP_SUCCESS) return result;
+
+    json_object_set_string(cap_obj, "predResistanceEnabled", drbg_cap_mode->pred_resist_enabled  ? "yes" : "no" );
+    json_object_set_string(cap_obj, "reseedImplemented",     drbg_cap_mode->reseed_implemented  ? "yes" : "no" );
+
+    json_object_set_number(cap_obj, "entropyInputLen",       drbg_cap_mode->entropy_input_len);
+    json_object_set_number(cap_obj, "nonceLen",              drbg_cap_mode->nonce_len);
+    json_object_set_number(cap_obj, "persoStringLen",        drbg_cap_mode->perso_string_len);
+    json_object_set_number(cap_obj, "additionalInputLen",    drbg_cap_mode->additional_input_len);
+    json_object_set_number(cap_obj, "returnedBitsLen",       drbg_cap_mode->returned_bits_len);
+    return ACVP_SUCCESS;
+}
+
 /*
  * This function builds the JSON register message that
  * will be sent to the ACVP server to advertised the crypto
@@ -674,13 +1238,13 @@ static ACVP_RESULT acvp_build_register(ACVP_CTX *ctx, char **reg)
         while (cap_entry) {
             /*
              * Create a new capability to be advertised in the JSON
-             * registration message 
+             * registration message
              */
 	    cap_val = json_value_init_object();
 	    cap_obj = json_value_get_object(cap_val);
 
             /*
-             * Build up the capability JSON based on the cipher type 
+             * Build up the capability JSON based on the cipher type
              */
             switch(cap_entry->cipher) {
             case ACVP_AES_GCM:
@@ -699,17 +1263,22 @@ static ACVP_RESULT acvp_build_register(ACVP_CTX *ctx, char **reg)
             case ACVP_TDES_CFB64:
             case ACVP_TDES_CFB8:
             case ACVP_TDES_CFB1:
-		acvp_build_sym_cipher_register_cap(cap_obj, cap_entry);
+		        acvp_build_sym_cipher_register_cap(cap_obj, cap_entry);
                 break;
             case ACVP_SHA1:
             case ACVP_SHA224:
             case ACVP_SHA256:
             case ACVP_SHA384:
             case ACVP_SHA512:
-		acvp_build_hash_register_cap(cap_obj, cap_entry);
+		        acvp_build_hash_register_cap(cap_obj, cap_entry);
+                break;
+            case ACVP_HASHDRBG:
+            case ACVP_HMACDRBG:
+            case ACVP_CTRDRBG:
+                acvp_build_drbg_register_cap(cap_obj, cap_entry);
                 break;
             default:
-	        acvp_log_msg(ctx, "Cap entry not found, %d.", cap_entry->cipher);
+	            acvp_log_msg(ctx, "Cap entry not found, %d.", cap_entry->cipher);
                 return ACVP_NO_CAP;
             }
 
@@ -718,11 +1287,11 @@ static ACVP_RESULT acvp_build_register(ACVP_CTX *ctx, char **reg)
              * add it to the array of capabilities on the register message.
              */
 	    json_array_append_value(caps_arr, cap_val);
-	    
+
 	    /* Advance to next cap entry */
             cap_entry = cap_entry->next;
         }
-    } 
+    }
 
     /*
      * Add the entire caps exchange section to the top object
@@ -780,7 +1349,7 @@ ACVP_RESULT acvp_register(ACVP_CTX *ctx)
 }
 
 /*
- * Append a symmetric cipher capabilitiy to the 
+ * Append a symmetric cipher capabilitiy to the
  * capabilities list.  This list is later used to build
  * the register message.
  */
@@ -813,7 +1382,7 @@ static ACVP_RESULT acvp_append_sym_cipher_caps_entry(
 }
 
 /*
- * Append a hash capabilitiy to the 
+ * Append a hash capabilitiy to the
  * capabilities list.  This list is later used to build
  * the register message.
  */
@@ -832,6 +1401,41 @@ static ACVP_RESULT acvp_append_hash_caps_entry(
     cap_entry->cipher = cipher;
     cap_entry->cap.hash_cap = cap;
     cap_entry->crypto_handler = crypto_handler;
+
+    if (!ctx->caps_list) {
+        ctx->caps_list = cap_entry;
+    } else {
+        cap_e2 = ctx->caps_list;
+        while (cap_e2->next) {
+            cap_e2 = cap_e2->next;
+        }
+        cap_e2->next = cap_entry;
+    }
+    return (ACVP_SUCCESS);
+}
+
+
+/*
+ * Append a DRBG capability to the
+ * capabilities list.  This list is later used to build
+ * the register message.
+ */
+static ACVP_RESULT acvp_append_drbg_caps_entry(
+        ACVP_CTX *ctx,
+        ACVP_DRBG_CAP *cap,
+        ACVP_CIPHER cipher,
+        ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case))
+{
+    ACVP_CAPS_LIST *cap_entry, *cap_e2;
+
+    cap_entry = calloc(1, sizeof(ACVP_CAPS_LIST));
+    if (!cap_entry) {
+        return ACVP_MALLOC_FAIL;
+    }
+    cap_entry->cipher = cipher;
+    cap_entry->cap.drbg_cap = cap;
+    cap_entry->crypto_handler = crypto_handler;
+    cap_entry->cap_type = ACVP_DRBG_TYPE;
 
     if (!ctx->caps_list) {
         ctx->caps_list = cap_entry;
@@ -874,7 +1478,7 @@ static ACVP_RESULT acvp_append_vs_entry(ACVP_CTX *ctx, int vs_id)
 /*
  * This routine performs the JSON parsing of the registration response
  * from the ACVP server.  The response should contain a list of vector
- * set (VS) identifiers that will need to be downloaded and processed 
+ * set (VS) identifiers that will need to be downloaded and processed
  * by the DUT.
  */
 static ACVP_RESULT acvp_parse_register(ACVP_CTX *ctx)
@@ -983,7 +1587,7 @@ ACVP_RESULT acvp_process_tests(ACVP_CTX *ctx)
 }
 
 /*
- * This is a minimal retry handler, which pauses for a specific time. 
+ * This is a minimal retry handler, which pauses for a specific time.
  * This allows the server time to generate the vectors on behalf of
  * the client.
  */
@@ -1016,7 +1620,7 @@ ACVP_RESULT acvp_check_test_results(ACVP_CTX *ctx)
     /*
      * Iterate through the VS identifiers the server sent to us
      * in the regisration response.  Attempt to download the result
-     * for each vector set. 
+     * for each vector set.
      */
     vs_entry = ctx->vs_list;
     while (vs_entry) {
@@ -1123,8 +1727,8 @@ static ACVP_RESULT acvp_dispatch_vector_set(ACVP_CTX *ctx, JSON_Object *obj)
 {
     int i;
     const char *alg = json_object_get_string(obj, "algorithm");
-    const char *dir = json_object_get_string(obj, "direction"); 
-    int vs_id = json_object_get_number(obj, "vsId"); 
+    const char *dir = json_object_get_string(obj, "direction");
+    int vs_id = json_object_get_number(obj, "vsId");
     ACVP_RESULT rv;
 
     if (!alg) {
@@ -1177,7 +1781,7 @@ static ACVP_RESULT acvp_process_vector_set(ACVP_CTX *ctx, JSON_Object *obj)
 
 
 /*
- * This function will get the test results for a single KAT vector set.  
+ * This function will get the test results for a single KAT vector set.
  */
 static ACVP_RESULT acvp_get_result_vsid(ACVP_CTX *ctx, int vs_id)
 {
@@ -1236,5 +1840,3 @@ static ACVP_RESULT acvp_get_result_vsid(ACVP_CTX *ctx, int vs_id)
 
     return ACVP_SUCCESS;
 }
-
-
