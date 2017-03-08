@@ -3,7 +3,7 @@ CFLAGS+=-g -DUSE_MURL -O0 -fPIC -Wall
 LDFLAGS+=-Lmurl
 INCDIRS+=-I. -Isrc
 
-SOURCES=src/acvp.c src/acvp_aes.c src/acvp_des.c src/acvp_hash.c src/acvp_transport.c src/acvp_util.c src/parson.c 
+SOURCES=src/acvp.c src/acvp_aes.c src/acvp_des.c src/acvp_hash.c src/acvp_drbg.c src/acvp_transport.c src/acvp_util.c src/parson.c 
 OBJECTS=$(SOURCES:.c=.o)
 
 all: libacvp.a acvp_app
