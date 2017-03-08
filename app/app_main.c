@@ -46,9 +46,9 @@
 #include <openssl/obj_mac.h>
 #include <openssl/err.h>
 
-#include "include/openssl/fips_rand.h"
-#include "include/openssl/fips.h"
-#include "fips/rand/fips_rand_lcl.h"
+//#include "include/openssl/fips_rand.h"
+//#include "include/openssl/fips.h"
+//#include "fips/rand/fips_rand_lcl.h"
 
 static ACVP_RESULT app_aes_handler_aead(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_aes_keywrap_handler(ACVP_TEST_CASE *test_case);
@@ -67,6 +67,7 @@ char *ca_chain_file;
 char *cert_file;
 char *key_file;
 char *path_segment;
+static EVP_CIPHER_CTX cipher_ctx;  /* need to maintain across calls for MCT */
 
 #define CHECK_ENABLE_CAP_RV(rv) \
     if (rv != ACVP_SUCCESS) { \
@@ -224,7 +225,7 @@ int main(int argc, char **argv)
      * validated.  For now we just register AES-GCM mode for encrypt using
      * a handful of key sizes and plaintext lengths.
      */
-    rv = acvp_enable_sym_cipher_cap(ctx, ACVP_AES_GCM, ACVP_DIR_BOTH, ACVP_IVGEN_SRC_INT, ACVP_IVGEN_MODE_821, &app_aes_handler_aead);
+    rv = acvp_enable_sym_cipher_cap(ctx, ACVP_AES_GCM, ACVP_DIR_BOTH, ACVP_KO_NA, ACVP_IVGEN_SRC_INT, ACVP_IVGEN_MODE_821, &app_aes_handler_aead);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_GCM, ACVP_SYM_CIPH_KEYLEN, 128);
     CHECK_ENABLE_CAP_RV(rv);
@@ -252,7 +253,7 @@ int main(int argc, char **argv)
     /*
      * Register AES CCM capabilities
      */
-    rv = acvp_enable_sym_cipher_cap(ctx, ACVP_AES_CCM, ACVP_DIR_BOTH, ACVP_IVGEN_SRC_INT, ACVP_IVGEN_MODE_821, &app_aes_handler_aead);
+    rv = acvp_enable_sym_cipher_cap(ctx, ACVP_AES_CCM, ACVP_DIR_BOTH, ACVP_KO_NA, ACVP_IVGEN_SRC_INT, ACVP_IVGEN_MODE_821, &app_aes_handler_aead);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CCM, ACVP_SYM_CIPH_KEYLEN, 128);
     CHECK_ENABLE_CAP_RV(rv);
@@ -268,7 +269,7 @@ int main(int argc, char **argv)
     /*
      * Enable AES-CBC 128 bit key
      */
-    rv = acvp_enable_sym_cipher_cap(ctx, ACVP_AES_CBC, ACVP_DIR_BOTH, ACVP_IVGEN_SRC_NA, ACVP_IVGEN_MODE_NA, &app_aes_handler);
+    rv = acvp_enable_sym_cipher_cap(ctx, ACVP_AES_CBC, ACVP_DIR_BOTH, ACVP_KO_NA, ACVP_IVGEN_SRC_NA, ACVP_IVGEN_MODE_NA, &app_aes_handler);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CBC, ACVP_SYM_CIPH_KEYLEN, 128);
     CHECK_ENABLE_CAP_RV(rv);
@@ -278,7 +279,7 @@ int main(int argc, char **argv)
     /*
      * Enable AES-ECB 256 bit key
      */
-    rv = acvp_enable_sym_cipher_cap(ctx, ACVP_AES_ECB, ACVP_DIR_BOTH, ACVP_IVGEN_SRC_NA, ACVP_IVGEN_MODE_NA, &app_aes_handler);
+    rv = acvp_enable_sym_cipher_cap(ctx, ACVP_AES_ECB, ACVP_DIR_BOTH, ACVP_KO_NA, ACVP_IVGEN_SRC_NA, ACVP_IVGEN_MODE_NA, &app_aes_handler);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_ECB, ACVP_SYM_CIPH_KEYLEN, 256);
     CHECK_ENABLE_CAP_RV(rv);
@@ -290,7 +291,7 @@ int main(int argc, char **argv)
      * Note: this is with padding disabled, minimum PT length is 128 bits and must be
      *       a multiple of 64 bits.
      */
-    rv = acvp_enable_sym_cipher_cap(ctx, ACVP_AES_KW, ACVP_DIR_BOTH, ACVP_IVGEN_SRC_NA, ACVP_IVGEN_MODE_NA, &app_aes_keywrap_handler);
+    rv = acvp_enable_sym_cipher_cap(ctx, ACVP_AES_KW, ACVP_DIR_BOTH, ACVP_KO_NA, ACVP_IVGEN_SRC_NA, ACVP_IVGEN_MODE_NA, &app_aes_keywrap_handler);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_KW, ACVP_SYM_CIPH_KEYLEN, 128);
     CHECK_ENABLE_CAP_RV(rv);
@@ -308,7 +309,7 @@ int main(int argc, char **argv)
     /*
      * Enable AES-CTR 128 bit key
      */
-    rv = acvp_enable_sym_cipher_cap(ctx, ACVP_AES_CTR, ACVP_DIR_BOTH, ACVP_IVGEN_SRC_NA, ACVP_IVGEN_MODE_NA, &app_aes_handler);
+    rv = acvp_enable_sym_cipher_cap(ctx, ACVP_AES_CTR, ACVP_DIR_BOTH, ACVP_KO_NA, ACVP_IVGEN_SRC_NA, ACVP_IVGEN_MODE_NA, &app_aes_handler);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CTR, ACVP_SYM_CIPH_KEYLEN, 128);
     CHECK_ENABLE_CAP_RV(rv);
@@ -318,7 +319,7 @@ int main(int argc, char **argv)
     /*
      * Enable 3DES-ECB
      */
-    rv = acvp_enable_sym_cipher_cap(ctx, ACVP_TDES_ECB, ACVP_DIR_BOTH, ACVP_IVGEN_SRC_NA, ACVP_IVGEN_MODE_NA, &app_des_handler);
+    rv = acvp_enable_sym_cipher_cap(ctx, ACVP_TDES_ECB, ACVP_DIR_BOTH, ACVP_KO_NA, ACVP_IVGEN_SRC_NA, ACVP_IVGEN_MODE_NA, &app_des_handler);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_TDES_ECB, ACVP_SYM_CIPH_KEYLEN, 192);
     CHECK_ENABLE_CAP_RV(rv);
@@ -328,7 +329,7 @@ int main(int argc, char **argv)
     /*
      * Enable 3DES-CBC
      */
-    rv = acvp_enable_sym_cipher_cap(ctx, ACVP_TDES_CBC, ACVP_DIR_BOTH, ACVP_IVGEN_SRC_NA, ACVP_IVGEN_MODE_NA, &app_des_handler);
+    rv = acvp_enable_sym_cipher_cap(ctx, ACVP_TDES_CBC, ACVP_DIR_BOTH, ACVP_KO_NA, ACVP_IVGEN_SRC_NA, ACVP_IVGEN_MODE_NA, &app_des_handler);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_TDES_CBC, ACVP_SYM_CIPH_KEYLEN, 192);
     CHECK_ENABLE_CAP_RV(rv);
@@ -346,7 +347,7 @@ int main(int argc, char **argv)
     /*
      * Enable 3DES-OFB
      */
-    rv = acvp_enable_sym_cipher_cap(ctx, ACVP_TDES_OFB, ACVP_DIR_BOTH, ACVP_IVGEN_SRC_NA, ACVP_IVGEN_MODE_NA, &app_des_handler);
+    rv = acvp_enable_sym_cipher_cap(ctx, ACVP_TDES_OFB, ACVP_DIR_BOTH, ACVP_KO_NA, ACVP_IVGEN_SRC_NA, ACVP_IVGEN_MODE_NA, &app_des_handler);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_TDES_OFB, ACVP_SYM_CIPH_KEYLEN, 192);
     CHECK_ENABLE_CAP_RV(rv);
@@ -358,7 +359,7 @@ int main(int argc, char **argv)
     /*
      * Enable 3DES-CFB64
      */
-    rv = acvp_enable_sym_cipher_cap(ctx, ACVP_TDES_CFB64, ACVP_DIR_BOTH, ACVP_IVGEN_SRC_NA, ACVP_IVGEN_MODE_NA, &app_des_handler);
+    rv = acvp_enable_sym_cipher_cap(ctx, ACVP_TDES_CFB64, ACVP_DIR_BOTH, ACVP_KO_NA, ACVP_IVGEN_SRC_NA, ACVP_IVGEN_MODE_NA, &app_des_handler);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_TDES_CFB64, ACVP_SYM_CIPH_KEYLEN, 192);
     CHECK_ENABLE_CAP_RV(rv);
@@ -370,7 +371,7 @@ int main(int argc, char **argv)
     /*
      * Enable 3DES-CFB8
      */
-    rv = acvp_enable_sym_cipher_cap(ctx, ACVP_TDES_CFB8, ACVP_DIR_BOTH, ACVP_IVGEN_SRC_NA, ACVP_IVGEN_MODE_NA, &app_des_handler);
+    rv = acvp_enable_sym_cipher_cap(ctx, ACVP_TDES_CFB8, ACVP_DIR_BOTH, ACVP_KO_NA, ACVP_IVGEN_SRC_NA, ACVP_IVGEN_MODE_NA, &app_des_handler);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_TDES_CFB8, ACVP_SYM_CIPH_KEYLEN, 192);
     CHECK_ENABLE_CAP_RV(rv);
@@ -384,7 +385,7 @@ int main(int argc, char **argv)
     /*
      * Enable 3DES-CFB1
      */
-    rv = acvp_enable_sym_cipher_cap(ctx, ACVP_TDES_CFB1, ACVP_DIR_BOTH, ACVP_IVGEN_SRC_NA, ACVP_IVGEN_MODE_NA, &app_des_handler);
+    rv = acvp_enable_sym_cipher_cap(ctx, ACVP_TDES_CFB1, ACVP_DIR_BOTH, ACVP_KO_NA, ACVP_IVGEN_SRC_NA, ACVP_IVGEN_MODE_NA, &app_des_handler);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_TDES_CFB1, ACVP_SYM_CIPH_KEYLEN, 192);
     CHECK_ENABLE_CAP_RV(rv);
@@ -588,7 +589,6 @@ int main(int argc, char **argv)
 static ACVP_RESULT app_des_handler(ACVP_TEST_CASE *test_case)
 {
     ACVP_SYM_CIPHER_TC      *tc;
-    EVP_CIPHER_CTX cipher_ctx;
     const EVP_CIPHER        *cipher;
     int ct_len, pt_len;
     unsigned char *iv = 0;
@@ -599,7 +599,7 @@ static ACVP_RESULT app_des_handler(ACVP_TEST_CASE *test_case)
 
     tc = test_case->tc.symmetric;
 
-    printf("%s: enter (tc_id=%d)\n", __FUNCTION__, tc->tc_id);
+    //printf("%s: enter (tc_id=%d)\n", __FUNCTION__, tc->tc_id);
 
     /*
      * We only support 3 key DES
@@ -610,8 +610,10 @@ static ACVP_RESULT app_des_handler(ACVP_TEST_CASE *test_case)
     }
 
     /* Begin encrypt code section */
-    EVP_CIPHER_CTX_init(&cipher_ctx);
-
+    if (cipher_ctx.cipher == NULL) {
+	EVP_CIPHER_CTX_init(&cipher_ctx);
+    }
+ 
     switch (tc->cipher) {
     case ACVP_TDES_ECB:
 	cipher = EVP_des_ede3_ecb();
@@ -642,26 +644,53 @@ static ACVP_RESULT app_des_handler(ACVP_TEST_CASE *test_case)
 	break;
     }
 
-    if (tc->direction == ACVP_DIR_ENCRYPT) {
-	EVP_EncryptInit_ex(&cipher_ctx, cipher, NULL, tc->key, iv);
-        EVP_CIPHER_CTX_set_padding(&cipher_ctx, 0);
-        EVP_EncryptUpdate(&cipher_ctx, tc->ct, &ct_len, tc->pt, tc->pt_len);
-	tc->ct_len = ct_len;
-	EVP_EncryptFinal_ex(&cipher_ctx, tc->ct + ct_len, &ct_len);
-	tc->ct_len += ct_len;
-    } else if (tc->direction == ACVP_DIR_DECRYPT) {
-	EVP_DecryptInit_ex(&cipher_ctx, cipher, NULL, tc->key, iv);
-        EVP_CIPHER_CTX_set_padding(&cipher_ctx, 0);
-        EVP_DecryptUpdate(&cipher_ctx, tc->pt, &pt_len, tc->ct, tc->ct_len);
-	tc->pt_len = pt_len;
-	EVP_DecryptFinal_ex(&cipher_ctx, tc->pt + pt_len, &pt_len);
-	tc->pt_len += pt_len;
+    /* If Monte Carlo we need to be able to init and then update
+     * one thousand times before we complete each iteration.
+     */
+    if (tc->test_type == ACVP_SYM_TEST_TYPE_MCT) {
+        if (tc->direction == ACVP_DIR_ENCRYPT) {
+            if (tc->mct_index == 0) {
+	        EVP_EncryptInit_ex(&cipher_ctx, cipher, NULL, tc->key, iv);
+        	EVP_CIPHER_CTX_set_padding(&cipher_ctx, 0);
+            }
+	    EVP_EncryptUpdate(&cipher_ctx, tc->ct, &ct_len, tc->pt, tc->pt_len);
+	    tc->ct_len = ct_len;
+        } else if (tc->direction == ACVP_DIR_DECRYPT) {
+            if (tc->mct_index == 0) {
+	        EVP_DecryptInit_ex(&cipher_ctx, cipher, NULL, tc->key, iv);
+        	EVP_CIPHER_CTX_set_padding(&cipher_ctx, 0);
+            }
+	    EVP_DecryptUpdate(&cipher_ctx, tc->pt, &pt_len, tc->ct, tc->ct_len);
+	    tc->pt_len = pt_len;
+        } else {
+            printf("Unsupported direction\n");
+	    return ACVP_UNSUPPORTED_OP;
+        }
+        if (tc->mct_index == 9999) {
+            EVP_CIPHER_CTX_cleanup(&cipher_ctx);
+        }
     } else {
-        printf("Unsupported direction\n");
-        return ACVP_UNSUPPORTED_OP;
-    }
+        if (tc->direction == ACVP_DIR_ENCRYPT) {
+	    EVP_EncryptInit_ex(&cipher_ctx, cipher, NULL, tc->key, iv);
+	    EVP_CIPHER_CTX_set_padding(&cipher_ctx, 0);
+	    EVP_EncryptUpdate(&cipher_ctx, tc->ct, &ct_len, tc->pt, tc->pt_len);
+	    tc->ct_len = ct_len;
+	    EVP_EncryptFinal_ex(&cipher_ctx, tc->ct + ct_len, &ct_len);
+	    tc->ct_len += ct_len;
+        } else if (tc->direction == ACVP_DIR_DECRYPT) {
+	    EVP_DecryptInit_ex(&cipher_ctx, cipher, NULL, tc->key, iv);
+	    EVP_CIPHER_CTX_set_padding(&cipher_ctx, 0);
+	    EVP_DecryptUpdate(&cipher_ctx, tc->pt, &pt_len, tc->ct, tc->ct_len);
+	    tc->pt_len = pt_len;
+	    EVP_DecryptFinal_ex(&cipher_ctx, tc->pt + pt_len, &pt_len);
+	    tc->pt_len += pt_len;
+        } else {
+            printf("Unsupported direction\n");
+	    return ACVP_UNSUPPORTED_OP;
+        }
 
-    EVP_CIPHER_CTX_cleanup(&cipher_ctx);
+        EVP_CIPHER_CTX_cleanup(&cipher_ctx);
+    }
 
     return ACVP_SUCCESS;
 }
@@ -684,7 +713,6 @@ static ACVP_RESULT app_aes_handler(ACVP_TEST_CASE *test_case)
 
     //printf("%s: enter (tc_id=%d)\n", __FUNCTION__, tc->tc_id);
 
-    /* Begin encrypt code section */
     /* Begin encrypt code section */
     if (cipher_ctx.cipher == NULL) {
 	EVP_CIPHER_CTX_init(&cipher_ctx);
@@ -850,7 +878,7 @@ static ACVP_RESULT app_aes_handler(ACVP_TEST_CASE *test_case)
             printf("Unsupported direction\n");
 	    return ACVP_UNSUPPORTED_OP;
         }
-        if (tc->mct_index == 1000) {
+        if (tc->mct_index == 999) {
             EVP_CIPHER_CTX_cleanup(&cipher_ctx);
         }
 
@@ -1175,7 +1203,7 @@ typedef struct
     size_t noncelen;
     unsigned int der_funct;
 } DRBG_TEST_ENT;
-
+#if 0
 static size_t drbg_test_entropy(DRBG_CTX *dctx, unsigned char **pout,
         int entropy, size_t min_len, size_t max_len)
 {
@@ -1421,3 +1449,4 @@ end:
 
     return result;
 }
+#endif

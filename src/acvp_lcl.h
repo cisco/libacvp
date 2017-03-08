@@ -129,6 +129,7 @@ typedef struct acvp_sl_list_t {
 
 typedef struct acvp_sym_cipher_capability {
     ACVP_SYM_CIPH_DIR direction;
+    ACVP_SYM_CIPH_KO keying_option;
     ACVP_SYM_CIPH_IVGEN_SRC ivgen_source;
     ACVP_SYM_CIPH_IVGEN_MODE ivgen_mode;
     ACVP_SL_LIST *keylen;
