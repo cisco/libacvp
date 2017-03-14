@@ -61,7 +61,8 @@ static unsigned char ctext[10001][8];
  * and/or pt/ct information may need to be modified.  This function
  * performs the iteration depdedent upon the cipher type and direction.
  */
-static ACVP_RESULT acvp_des_mct_iterate_tc(ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *stc, int i, JSON_Object         *r_tobj)
+static ACVP_RESULT acvp_des_mct_iterate_tc(ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *stc, 
+                                           int i, JSON_Object *r_tobj)
 {
     int j = stc->mct_index;
     int n;
@@ -140,7 +141,8 @@ static ACVP_RESULT acvp_des_mct_iterate_tc(ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *st
  * file that will be uploaded to the server.  This routine handles
  * the JSON processing for a single test case for MCT.
  */
-static ACVP_RESULT acvp_des_output_mct_tc(ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *stc, JSON_Object *r_tobj)
+static ACVP_RESULT acvp_des_output_mct_tc(ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *stc, 
+                                          JSON_Object *r_tobj)
 {
     ACVP_RESULT rv;
     char *tmp;

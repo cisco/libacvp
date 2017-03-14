@@ -149,6 +149,7 @@ int main(int argc, char **argv)
         return 1;
     }
 
+    EVP_CIPHER_CTX_cleanup(&cipher_ctx);
     setup_session_parameters();
 
     /*
@@ -695,7 +696,6 @@ static ACVP_RESULT app_des_handler(ACVP_TEST_CASE *test_case)
     return ACVP_SUCCESS;
 }
 
-static EVP_CIPHER_CTX cipher_ctx;  /* need to maintain across calls for MCT */
 
 static ACVP_RESULT app_aes_handler(ACVP_TEST_CASE *test_case)
 {
@@ -1152,7 +1152,7 @@ static ACVP_RESULT app_sha_handler(ACVP_TEST_CASE *test_case)
 
     tc = test_case->tc.hash;
 
-    printf("%s: enter (tc_id=%d)\n", __FUNCTION__, tc->tc_id);
+    //printf("%s: enter (tc_id=%d)\n", __FUNCTION__, tc->tc_id);
 
     switch (tc->cipher) {
     case ACVP_SHA1:
@@ -1177,19 +1177,49 @@ static ACVP_RESULT app_sha_handler(ACVP_TEST_CASE *test_case)
     }
 
     EVP_MD_CTX_init(&md_ctx);
-    if (!EVP_DigestInit_ex(&md_ctx, md, NULL)) {
-	printf("\nCrypto module error, EVP_DigestInit_ex failed\n");
-	return ACVP_CRYPTO_MODULE_FAIL;
-    }
-    if (!EVP_DigestUpdate(&md_ctx, tc->msg, tc->msg_len)) {
-	printf("\nCrypto module error, EVP_DigestUpdate failed\n");
-	return ACVP_CRYPTO_MODULE_FAIL;
-    }
-    if (!EVP_DigestFinal(&md_ctx, tc->md, &tc->md_len)) {
-	printf("\nCrypto module error, EVP_DigestFinal failed\n");
-	return ACVP_CRYPTO_MODULE_FAIL;
-    }
-    EVP_MD_CTX_cleanup(&md_ctx);
+
+    /* If Monte Carlo we need to be able to init and then update
+     * one thousand times before we complete each iteration.
+     */
+    if (tc->test_type == ACVP_HASH_TEST_TYPE_MCT) {
+    
+        if (!EVP_DigestInit_ex(&md_ctx, md, NULL)) {
+            printf("\nCrypto module error, EVP_DigestInit_ex failed\n");
+	    return ACVP_CRYPTO_MODULE_FAIL;
+        }
+        if (!EVP_DigestUpdate(&md_ctx, tc->m1, tc->msg_len)) {
+	    printf("\nCrypto module error, EVP_DigestUpdate failed\n");
+	    return ACVP_CRYPTO_MODULE_FAIL;
+        }
+	if (!EVP_DigestUpdate(&md_ctx, tc->m2, tc->msg_len)) {
+	    printf("\nCrypto module error, EVP_DigestUpdate failed\n");
+	    return ACVP_CRYPTO_MODULE_FAIL;
+        }
+	if (!EVP_DigestUpdate(&md_ctx, tc->m3, tc->msg_len)) {
+	    printf("\nCrypto module error, EVP_DigestUpdate failed\n");
+	    return ACVP_CRYPTO_MODULE_FAIL;
+        }
+	if (!EVP_DigestFinal(&md_ctx, tc->md, &tc->md_len)) {
+	    printf("\nCrypto module error, EVP_DigestFinal failed\n");
+	    return ACVP_CRYPTO_MODULE_FAIL;
+        }
+
+   } else { 
+        if (!EVP_DigestInit_ex(&md_ctx, md, NULL)) {
+            printf("\nCrypto module error, EVP_DigestInit_ex failed\n");
+	    return ACVP_CRYPTO_MODULE_FAIL;
+        }
+
+	if (!EVP_DigestUpdate(&md_ctx, tc->msg, tc->msg_len)) {
+	    printf("\nCrypto module error, EVP_DigestUpdate failed\n");
+	    return ACVP_CRYPTO_MODULE_FAIL;
+        }
+	if (!EVP_DigestFinal(&md_ctx, tc->md, &tc->md_len)) {
+	    printf("\nCrypto module error, EVP_DigestFinal failed\n");
+	    return ACVP_CRYPTO_MODULE_FAIL;
+        }
+	EVP_MD_CTX_cleanup(&md_ctx);
+   }
 
     return ACVP_SUCCESS;
 }

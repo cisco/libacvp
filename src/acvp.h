@@ -223,9 +223,16 @@ typedef enum acvp_sym_cipher_parameter {
 
 typedef enum acvp_sym_cipher_testtype {
     ACVP_SYM_TEST_TYPE_NONE = 0,
-    ACVP_SYM_TEST_TYPE_KAT,
+    ACVP_SYM_TEST_TYPE_AFT,
     ACVP_SYM_TEST_TYPE_MCT
 } ACVP_SYM_CIPH_TESTTYPE;
+
+
+typedef enum acvp_hash_testtype {
+    ACVP_HASH_TEST_TYPE_NONE = 0,
+    ACVP_HASH_TEST_TYPE_AFT,
+    ACVP_HASH_TEST_TYPE_MCT
+} ACVP_HASH_TESTTYPE;
 
 /*
  * This struct holds data that represents a single test case for
@@ -296,9 +303,13 @@ typedef struct acvp_hash_tc_t {
     ACVP_CIPHER cipher;
     unsigned int  tc_id;    /* Test case id */
     unsigned char *msg;
+    unsigned char *m1;
+    unsigned char *m2;
+    unsigned char *m3;
     unsigned int  msg_len;
     unsigned char *md; /* The resulting digest calculated for the test case */
     unsigned int  md_len;
+    unsigned int  test_type;
 } ACVP_HASH_TC;
 
 /*

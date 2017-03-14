@@ -982,17 +982,18 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
     /*
      * Set the TDES keyingOptions  if applicable 
      */
-    json_object_set_value(cap_obj, "keyingOption", json_value_init_array());
-    opts_arr = json_object_get_array(cap_obj, "keyingOption");
-    if (cap_entry->cap.sym_cap->keying_option == ACVP_KO_THREE ||
-        cap_entry->cap.sym_cap->keying_option == ACVP_KO_BOTH) {
-	json_array_append_number(opts_arr, 1);
+    if (cap_entry->cap.sym_cap->keying_option != ACVP_KO_NA) {
+        json_object_set_value(cap_obj, "keyingOption", json_value_init_array());
+    	opts_arr = json_object_get_array(cap_obj, "keyingOption");
+        if (cap_entry->cap.sym_cap->keying_option == ACVP_KO_THREE ||
+            cap_entry->cap.sym_cap->keying_option == ACVP_KO_BOTH) {
+	    json_array_append_number(opts_arr, 1);
+        }
+    	if (cap_entry->cap.sym_cap->keying_option == ACVP_KO_TWO ||
+            cap_entry->cap.sym_cap->keying_option == ACVP_KO_BOTH) {
+	    json_array_append_number(opts_arr, 2);
+        }
     }
-    if (cap_entry->cap.sym_cap->keying_option == ACVP_KO_TWO ||
-        cap_entry->cap.sym_cap->keying_option == ACVP_KO_BOTH) {
-	json_array_append_number(opts_arr, 2);
-    }
-
     /*
      * Set the supported key lengths
      */
