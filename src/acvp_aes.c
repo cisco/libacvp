@@ -231,7 +231,6 @@ static ACVP_RESULT acvp_aes_mct_tc(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap,
          */
         r_tval = json_value_init_object();
         r_tobj = json_value_get_object(r_tval);
-        json_object_set_number(r_tobj, "count", i);
 
         /*
          * Output the test case request values using JSON

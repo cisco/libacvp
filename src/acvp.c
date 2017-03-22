@@ -303,6 +303,7 @@ ACVP_RESULT acvp_enable_sym_cipher_cap(
 	ACVP_CTX *ctx,
 	ACVP_CIPHER cipher,
 	ACVP_SYM_CIPH_DIR dir,
+	ACVP_SYM_CIPH_KO keying_option,
 	ACVP_SYM_CIPH_IVGEN_SRC ivgen_source,
 	ACVP_SYM_CIPH_IVGEN_MODE ivgen_mode,
         ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case))
@@ -324,6 +325,7 @@ ACVP_RESULT acvp_enable_sym_cipher_cap(
     //TODO: need to validate that cipher, mode, etc. are valid values
     //      we also need to make sure we're not adding a duplicate
     cap->direction = dir;
+    cap->keying_option = keying_option;
     cap->ivgen_source = ivgen_source;
     cap->ivgen_mode = ivgen_mode;
 
@@ -978,6 +980,21 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
     }
 
     /*
+     * Set the TDES keyingOptions  if applicable 
+     */
+    if (cap_entry->cap.sym_cap->keying_option != ACVP_KO_NA) {
+        json_object_set_value(cap_obj, "keyingOption", json_value_init_array());
+    	opts_arr = json_object_get_array(cap_obj, "keyingOption");
+        if (cap_entry->cap.sym_cap->keying_option == ACVP_KO_THREE ||
+            cap_entry->cap.sym_cap->keying_option == ACVP_KO_BOTH) {
+	    json_array_append_number(opts_arr, 1);
+        }
+    	if (cap_entry->cap.sym_cap->keying_option == ACVP_KO_TWO ||
+            cap_entry->cap.sym_cap->keying_option == ACVP_KO_BOTH) {
+	    json_array_append_number(opts_arr, 2);
+        }
+    }
+    /*
      * Set the supported key lengths
      */
     json_object_set_value(cap_obj, "keyLen", json_value_init_array());
@@ -1368,6 +1385,7 @@ static ACVP_RESULT acvp_append_sym_cipher_caps_entry(
     cap_entry->cipher = cipher;
     cap_entry->cap.sym_cap = cap;
     cap_entry->crypto_handler = crypto_handler;
+    cap_entry->cap_type = ACVP_SYM_TYPE;
 
     if (!ctx->caps_list) {
         ctx->caps_list = cap_entry;
@@ -1401,6 +1419,7 @@ static ACVP_RESULT acvp_append_hash_caps_entry(
     cap_entry->cipher = cipher;
     cap_entry->cap.hash_cap = cap;
     cap_entry->crypto_handler = crypto_handler;
+    cap_entry->cap_type = ACVP_HASH_TYPE;
 
     if (!ctx->caps_list) {
         ctx->caps_list = cap_entry;

@@ -115,6 +115,13 @@ typedef enum acvp_capability_type {
     ACVP_DRBG_TYPE
 } ACVP_CAP_TYPE;
 
+typedef enum acvp_sym_cipher_keying_option {
+    ACVP_KO_NA = 0,
+    ACVP_KO_THREE,
+    ACVP_KO_TWO,
+    ACVP_KO_BOTH
+} ACVP_SYM_CIPH_KO;
+
 /*
  * The IV generation source for AEAD ciphers.
  * This can be internal, external, or not applicable.
@@ -216,9 +223,16 @@ typedef enum acvp_sym_cipher_parameter {
 
 typedef enum acvp_sym_cipher_testtype {
     ACVP_SYM_TEST_TYPE_NONE = 0,
-    ACVP_SYM_TEST_TYPE_KAT,
+    ACVP_SYM_TEST_TYPE_AFT,
     ACVP_SYM_TEST_TYPE_MCT
 } ACVP_SYM_CIPH_TESTTYPE;
+
+
+typedef enum acvp_hash_testtype {
+    ACVP_HASH_TEST_TYPE_NONE = 0,
+    ACVP_HASH_TEST_TYPE_AFT,
+    ACVP_HASH_TEST_TYPE_MCT
+} ACVP_HASH_TESTTYPE;
 
 /*
  * This struct holds data that represents a single test case for
@@ -289,9 +303,13 @@ typedef struct acvp_hash_tc_t {
     ACVP_CIPHER cipher;
     unsigned int  tc_id;    /* Test case id */
     unsigned char *msg;
+    unsigned char *m1;
+    unsigned char *m2;
+    unsigned char *m3;
     unsigned int  msg_len;
     unsigned char *md; /* The resulting digest calculated for the test case */
     unsigned int  md_len;
+    unsigned int  test_type;
 } ACVP_HASH_TC;
 
 /*
@@ -376,6 +394,7 @@ enum acvp_result {
     @param cipher ACVP_CIPHER enum value identifying the crypto capability.
     @param dir ACVP_SYM_CIPH_DIR enum value identifying the crypto operation
        (e.g. encrypt or decrypt).
+    @param keying_option ACVP_SYM_CIPH_KO enum value identifying the TDES keying options
     @param ivgen_source The source of the IV used by the crypto module
         (e.g. internal or external)
     @param ivgen_mode The IV generation mode
@@ -389,6 +408,7 @@ ACVP_RESULT acvp_enable_sym_cipher_cap(
 	ACVP_CTX *ctx,
 	ACVP_CIPHER cipher,
 	ACVP_SYM_CIPH_DIR dir,
+	ACVP_SYM_CIPH_KO keying_options,
 	ACVP_SYM_CIPH_IVGEN_SRC ivgen_source,
 	ACVP_SYM_CIPH_IVGEN_MODE ivgen_mode,
         ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case));
