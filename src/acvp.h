@@ -324,13 +324,14 @@ typedef struct acvp_drbg_tc_t {
 
     unsigned char  *additional_input;
     unsigned char  *entropy_input_pr;
+    unsigned char  *additional_input_1;
+    unsigned char  *entropy_input_pr_1;
     unsigned char  *perso_string;
     unsigned char  *entropy;
     unsigned char  *nonce;
     unsigned char  *drb; /* The resulting pseudo random generated for the test case */
 
     unsigned int  additional_input_len;
-    unsigned int  entropy_input_pr_len;
     unsigned int  pred_resist_enabled;
     unsigned int  perso_string_len;
     unsigned int  der_func_enabled;
@@ -510,6 +511,15 @@ ACVP_RESULT acvp_enable_hash_cap(
                                      ACVP_DRBG_PRE_REQ pre_req,
                                      char *value
                                      );
+
+        ACVP_RESULT acvp_enable_drbg_length_cap(
+                                     ACVP_CTX         *ctx,
+                                     ACVP_CIPHER       cipher,
+                                     ACVP_DRBG_MODE    mode,
+                                     ACVP_DRBG_PARM    param,
+                                     int               min,
+                                     int               step,
+                                     int               max);
 
 /*! @brief acvp_create_test_session() creates a context that can be used to
       commence a test session with an ACVP server.

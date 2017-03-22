@@ -46,15 +46,17 @@
 #include <openssl/obj_mac.h>
 #include <openssl/err.h>
 
-//#include "include/openssl/fips_rand.h"
-//#include "include/openssl/fips.h"
-//#include "fips/rand/fips_rand_lcl.h"
+#if 0
+#include "include/openssl/fips_rand.h"
+#include "include/openssl/fips.h"
+#endif
 
 static ACVP_RESULT app_aes_handler_aead(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_aes_keywrap_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_aes_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_des_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_sha_handler(ACVP_TEST_CASE *test_case);
+static ACVP_RESULT app_drbg_handler(ACVP_TEST_CASE *test_case);
 
 #define DEFAULT_SERVER "127.0.0.1"
 #define DEFAULT_PORT 443
@@ -414,6 +416,8 @@ int main(int argc, char **argv)
           exit(1);
       }
 
+    char value[] = "same";
+    char value2[] = "123456";
     rv = acvp_enable_drbg_cap(ctx, ACVP_HASHDRBG, app_drbg_handler);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_drbg_cap_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1,
@@ -500,10 +504,50 @@ int main(int argc, char **argv)
             ACVP_DRBG_RET_BITS_LEN, 512);
     CHECK_ENABLE_CAP_RV(rv);
 
+    //Add length range
+    rv = acvp_enable_drbg_length_cap(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224,
+            ACVP_DRBG_ENTROPY_LEN, (int)0, (int)128,(int) 256);
+    CHECK_ENABLE_CAP_RV(rv);
 
+    rv = acvp_enable_drbg_length_cap(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224,
+            ACVP_DRBG_NONCE_LEN, (int)0, (int)128,(int) 256);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    rv = acvp_enable_drbg_length_cap(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224,
+            ACVP_DRBG_PERSO_LEN, (int)0, (int)128,(int) 256);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    rv = acvp_enable_drbg_length_cap(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224,
+            ACVP_DRBG_PERSO_LEN, (int)0, (int)128,(int) 256);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    rv = acvp_enable_drbg_length_cap(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224,
+            ACVP_DRBG_ADD_IN_LEN, (int)0, (int)128,(int) 256);
+    CHECK_ENABLE_CAP_RV(rv);
 
     // ACVP_CTRDRBG
     rv = acvp_enable_drbg_cap(ctx, ACVP_CTRDRBG, app_drbg_handler);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    //Add length range
+    rv = acvp_enable_drbg_length_cap(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128,
+            ACVP_DRBG_ENTROPY_LEN, (int)0, (int)128,(int) 256);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    rv = acvp_enable_drbg_length_cap(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128,
+            ACVP_DRBG_NONCE_LEN, (int)0, (int)128,(int) 256);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    rv = acvp_enable_drbg_length_cap(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128,
+            ACVP_DRBG_PERSO_LEN, (int)0, (int)128,(int) 256);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    rv = acvp_enable_drbg_length_cap(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128,
+            ACVP_DRBG_PERSO_LEN, (int)0, (int)128,(int) 256);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    rv = acvp_enable_drbg_length_cap(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128,
+            ACVP_DRBG_ADD_IN_LEN, (int)0, (int)128,(int) 256);
     CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_enable_drbg_cap_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128,
@@ -1231,36 +1275,19 @@ typedef struct
     size_t entlen;
     unsigned char *nonce;
     size_t noncelen;
-    unsigned int der_funct;
 } DRBG_TEST_ENT;
 #if 0
 static size_t drbg_test_entropy(DRBG_CTX *dctx, unsigned char **pout,
         int entropy, size_t min_len, size_t max_len)
 {
-    unsigned int ent_len = 0;
     if (!dctx || !pout) return 0;
     DRBG_TEST_ENT *t = (DRBG_TEST_ENT *)FIPS_drbg_get_app_data(dctx);
     if (!t) return 0;
 
-    ent_len = t->entlen;
-    /**
-     * Note 5: All DRBGs are tested at their maximum supported security
-     * strength so this is the minimum bit length of the entropy input that
-     * ACVP will accept.  The maximum supported security strength is also
-     * the default value for this input.  Longer entropy inputs are
-     * permitted, with the following exception: for ctrDRBG with no df, the
-     * bit length must equal the seed length.
-     **/
-    if (t->entlen < min_len) printf("entropy data len < min_len: %zu\n", min_len);
-    if (!t->der_funct) {
-        if (t->entlen < dctx->seedlen) {
-            return 0;
-        } else {
-            ent_len = dctx->seedlen;
-        }
-    }
+    if (t->entlen < min_len) printf("entropy data len < min_len: %zu\n", t->entlen);
+    if (t->entlen > max_len) printf("entropy data len > max_len: %zu\n", t->entlen);
     *pout = (unsigned char *)t->ent;
-    return ent_len;
+    return t->entlen;
 }
 
 static size_t drbg_test_nonce(DRBG_CTX *dctx, unsigned char **pout,
@@ -1269,7 +1296,8 @@ static size_t drbg_test_nonce(DRBG_CTX *dctx, unsigned char **pout,
     if (!dctx || !pout) return 0;
     DRBG_TEST_ENT *t = (DRBG_TEST_ENT *)FIPS_drbg_get_app_data(dctx);
 
-    if (t->noncelen < min_len) printf("nonce data len < min_len: %zu\n", min_len);
+    if (t->noncelen < min_len) printf("nonce data len < min_len: %zu\n", t->noncelen);
+    if (t->noncelen > max_len) printf("nonce data len > max_len: %zu\n", t->noncelen);
     *pout = (unsigned char *)t->nonce;
     return t->noncelen;
 }
@@ -1280,6 +1308,7 @@ static ACVP_RESULT app_drbg_handler(ACVP_TEST_CASE *test_case)
     ACVP_DRBG_TC    *tc;
     unsigned int    nid;
     int             der_func = 0;
+    unsigned int    drbg_entropy_len;
     int             fips_rc;
 
     unsigned char   *nonce = NULL;
@@ -1289,6 +1318,10 @@ static ACVP_RESULT app_drbg_handler(ACVP_TEST_CASE *test_case)
     }
 
     tc = test_case->tc.drbg;
+    /*
+     * Init entropy length
+     */
+    drbg_entropy_len = tc->entropy_len;
 
     printf("%s: enter (tc_id=%d)\n", __FUNCTION__, tc->tc_id);
 
@@ -1358,8 +1391,18 @@ static ACVP_RESULT app_drbg_handler(ACVP_TEST_CASE *test_case)
              * if not set nonce is ignored
              */
             if (tc->der_func_enabled) {
-                der_func = 0x1;
+                der_func = DRBG_FLAG_CTR_USE_DF;
                 nonce = tc->nonce;
+            } else {
+                /**
+                 * Note 5: All DRBGs are tested at their maximum supported security
+                 * strength so this is the minimum bit length of the entropy input that
+                 * ACVP will accept.  The maximum supported security strength is also
+                 * the default value for this input.  Longer entropy inputs are
+                 * permitted, with the following exception: for ctrDRBG with no df, the
+                 * bit length must equal the seed length.
+                 **/
+                drbg_entropy_len = 0;
             }
 
             switch(tc->mode) {
@@ -1392,38 +1435,20 @@ static ACVP_RESULT app_drbg_handler(ACVP_TEST_CASE *test_case)
     DRBG_CTX *drbg_ctx = NULL;
     DRBG_TEST_ENT entropy_nonce;
     memset(&entropy_nonce, 0, sizeof(DRBG_TEST_ENT));
-    drbg_ctx = FIPS_drbg_new(nid, der_func);
+    drbg_ctx = FIPS_drbg_new(nid, der_func | DRBG_FLAG_TEST);
     if (!drbg_ctx) {
         progress("ERROR: failed to create DRBG Context.");
         return ACVP_MALLOC_FAIL;
     }
 
-    fips_rc = FIPS_drbg_init(drbg_ctx, nid, der_func | DRBG_FLAG_TEST);
-    if (!fips_rc) {
-        progress("ERROR: failed to init DRBG ctx");
-        long l;
-        char buf[2048]  = {0};
-        while ((l = ERR_get_error()))
-            printf( "ERROR:%s\n", ERR_error_string(l, buf));
-
-        result = ACVP_CRYPTO_MODULE_FAIL;
-        goto end;
-    }
-
     /*
      * Set entropy and nonce
      */
+    entropy_nonce.ent = tc->entropy;
+    entropy_nonce.entlen = tc->entropy_len/8;
 
-    if (tc->pred_resist_enabled) {
-        entropy_nonce.ent = tc->entropy_input_pr;
-        entropy_nonce.entlen = tc->entropy_input_pr_len/8;
-    } else {
-        entropy_nonce.ent = tc->entropy;
-        entropy_nonce.entlen = tc->entropy_len/8;
-    }
     entropy_nonce.nonce = nonce;
     entropy_nonce.noncelen = tc->nonce_len/8;
-    entropy_nonce.der_funct = der_func;
 
     FIPS_drbg_set_app_data(drbg_ctx, &entropy_nonce);
 
@@ -1434,7 +1459,7 @@ static ACVP_RESULT app_drbg_handler(ACVP_TEST_CASE *test_case)
                                       0);
     if (!fips_rc) {
         progress("ERROR: failed to Set callback DRBG ctx");
-        long l;
+        long l = 9;
         char buf[2048]  = {0};
         while ((l = ERR_get_error()))
             printf( "ERROR:%s\n", ERR_error_string(l, buf));
@@ -1447,7 +1472,7 @@ static ACVP_RESULT app_drbg_handler(ACVP_TEST_CASE *test_case)
                                     (size_t) tc->perso_string_len/8);
     if (!fips_rc) {
         progress("ERROR: failed to instantiate DRBG ctx");
-        long l;
+        long l = 9;
         char buf[2048]  = {0};
         while ((l = ERR_get_error()))
             printf( "ERROR:%s\n", ERR_error_string(l, buf));
@@ -1456,21 +1481,57 @@ static ACVP_RESULT app_drbg_handler(ACVP_TEST_CASE *test_case)
         goto end;
     }
 
-    int drbg_stength = FIPS_drbg_get_strength(drbg_ctx);
-    printf("drbg strength = %d\n", drbg_stength);
+    /*
+     * Process predictive resistance flag
+     */
+    if (tc->pred_resist_enabled) {
+        entropy_nonce.ent = tc->entropy_input_pr;
+        entropy_nonce.entlen = tc->entropy_len/8;
 
-    fips_rc =  FIPS_drbg_generate(drbg_ctx, (unsigned char *)tc->drb,
-                              (size_t) (tc->drb_len/8),
-                              (int) tc->pred_resist_enabled,
-                              (const unsigned char *)tc->additional_input,
-                              (size_t) (tc->additional_input_len/8));
-    if (!fips_rc) {
-        progress("ERROR: failed to generate drb");
-        long l;
-        while ((l = ERR_get_error()))
-            printf( "ERROR:%s\n", ERR_error_string(l, NULL));
-        result = ACVP_CRYPTO_MODULE_FAIL;
-        goto end;
+        fips_rc =  FIPS_drbg_generate(drbg_ctx, (unsigned char *)tc->drb,
+                                  (size_t) (tc->drb_len/8),
+                                  (int) 1,
+                                  (const unsigned char *)tc->additional_input,
+                                  (size_t) (tc->additional_input_len/8));
+        if (!fips_rc) {
+            progress("ERROR: failed to generate drb");
+            long l;
+            while ((l = ERR_get_error()))
+                printf( "ERROR:%s\n", ERR_error_string(l, NULL));
+            result = ACVP_CRYPTO_MODULE_FAIL;
+            goto end;
+        }
+
+        entropy_nonce.ent = tc->entropy_input_pr_1;
+        entropy_nonce.entlen = tc->entropy_len/8;
+
+        fips_rc =  FIPS_drbg_generate(drbg_ctx, (unsigned char *)tc->drb,
+                                  (size_t) (tc->drb_len/8),
+                                  (int) 1,
+                                  (const unsigned char *)tc->additional_input_1,
+                                  (size_t) (tc->additional_input_len/8));
+        if (!fips_rc) {
+            progress("ERROR: failed to generate drb");
+            long l;
+            while ((l = ERR_get_error()))
+                printf( "ERROR:%s\n", ERR_error_string(l, NULL));
+            result = ACVP_CRYPTO_MODULE_FAIL;
+            goto end;
+        }
+    } else {
+        fips_rc = FIPS_drbg_generate(drbg_ctx, (unsigned char *)tc->drb,
+                                     (size_t) (tc->drb_len/8),
+                                     (int) 0,
+                                     (const unsigned char *)tc->additional_input,
+                                     (size_t) (tc->additional_input_len/8));
+        if (!fips_rc) {
+            progress("ERROR: failed to generate drb");
+            long l;
+            while ((l = ERR_get_error()))
+                printf( "ERROR:%s\n", ERR_error_string(l, NULL));
+            result = ACVP_CRYPTO_MODULE_FAIL;
+            goto end;
+        }
     }
 
 end:

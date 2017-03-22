@@ -164,9 +164,21 @@ typedef struct acvp_drbg_cap_mode {
     int              pred_resist_enabled;    //": "yes",
     int              reseed_implemented;     //" : "yes",
     int              entropy_input_len;      //":"112",
+    int              entropy_len_max;
+    int              entropy_len_min;
+    int              entropy_len_step;
     int              nonce_len;              //":"56",
+    int              nonce_len_max;
+    int              nonce_len_min;
+    int              nonce_len_step;
     int              perso_string_len;       //":"0",
+    int              perso_len_max;
+    int              perso_len_min;
+    int              perso_len_step;
     int              additional_input_len;   //":"0",
+    int              additional_in_len_max;
+    int              additional_in_len_min;
+    int              additional_in_len_step;
     int              returned_bits_len;      //":"256"
 } ACVP_DRBG_CAP_MODE;
 

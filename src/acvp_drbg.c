@@ -41,13 +41,14 @@ static ACVP_RESULT acvp_drbg_init_tc(ACVP_CTX *ctx,
         unsigned int tc_id,
         unsigned char  *additional_input,
         unsigned char  *entropy_input_pr,
+        unsigned char  *additional_input_1,
+        unsigned char  *entropy_input_pr_1,
         unsigned char  *perso_string,
         unsigned char  *entropy,
         unsigned char  *nonce,
         unsigned int    der_func_enabled,
         unsigned int    pred_resist_enabled,
         unsigned int    additional_input_len,
-        unsigned int    entropy_input_pr_len,
         unsigned int    perso_string_len,
         unsigned int    entropy_len,
         unsigned int    nonce_len,
@@ -56,24 +57,22 @@ static ACVP_RESULT acvp_drbg_init_tc(ACVP_CTX *ctx,
         ACVP_CIPHER     alg_id);
 static ACVP_RESULT acvp_drbg_release_tc(ACVP_DRBG_TC *stc);
 
-
-//TODO: NMA
-//need to determine input lengths
 //handle array values
 ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
 {
     unsigned int tc_id;
-    unsigned char  *additional_input;
-    unsigned char  *entropy_input_pr;
+    unsigned char  *additional_input   = NULL;
+    unsigned char  *entropy_input_pr   = NULL;
+    unsigned char  *additional_input_1 = NULL;
+    unsigned char  *entropy_input_pr_1 = NULL;
     unsigned char  *perso_string;
     unsigned char  *entropy;
     unsigned char  *nonce;
-    unsigned int    additional_input_len;
-    unsigned int    entropy_input_pr_len;
+    unsigned int    additional_input_len   = 0;
     unsigned int    perso_string_len;
-    unsigned int    entropy_len;
-    unsigned int    nonce_len;
-    unsigned int    drb_len;
+    unsigned int    entropy_len = 0;
+    unsigned int    nonce_len = 0;
+    unsigned int    drb_len = 0;
     unsigned int    der_func_enabled;
     unsigned int    pred_resist_enabled;
 
@@ -144,29 +143,6 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
     }
 
     mode_str              = (char*)json_object_get_string(obj, "mode");
-    der_func_str          = (char*)json_object_get_string(obj, "derFunc");
-    pred_resist_str       = (char*)json_object_get_string(obj, "predResistance");
-    entropy_len           = (unsigned int)json_object_get_number(obj, "entropyInputLen");
-    nonce_len             = (unsigned int)json_object_get_number(obj, "nonceLen");
-    perso_string_len      = (unsigned int)json_object_get_number(obj, "persoStringLen");
-    additional_input_len  = json_object_get_number(obj, "additonalInputLen");
-    drb_len               = (unsigned int)json_object_get_number(obj, "returnedBitsLen");
-
-    der_func_enabled      = yes_or_no(ctx, der_func_str);
-    pred_resist_enabled   = yes_or_no(ctx, pred_resist_str);
-
-    acvp_log_msg(ctx, "    Test group:");
-    acvp_log_msg(ctx, "    DRBG mode: %s", mode_str);
-    acvp_log_msg(ctx, "    derFunc: %s", der_func_str);
-    acvp_log_msg(ctx, "    predResistance: %s", pred_resist_str);
-    acvp_log_msg(ctx, "    entropyInputLen: %d", entropy_len);
-    acvp_log_msg(ctx, "    additionalInputLen: %d", additional_input_len);
-    acvp_log_msg(ctx, "    persoStringLen: %d", perso_string_len);
-    acvp_log_msg(ctx, "    nonceLen: %d", nonce_len);
-    acvp_log_msg(ctx, "    returnedBitsLen: %d", drb_len);
-
-
-    //TODO: Sanity check alg/mode mismatch
 
     /*
      * Start to build the JSON response
@@ -194,6 +170,41 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
         printf("json groupval count: %d\n %s\n", i, reg);
 
         /*
+         * Handle Group Params
+         */
+        der_func_str          = (char*)json_object_get_string(groupobj, "derFunc");
+        pred_resist_str       = (char*)json_object_get_string(groupobj, "predResistance");
+        entropy_len           = (unsigned int)json_object_get_number(groupobj, "entropyInputLen");
+        nonce_len             = (unsigned int)json_object_get_number(groupobj, "nonceLen");
+        perso_string_len      = (unsigned int)json_object_get_number(groupobj, "persoStringLen");
+        drb_len               = (unsigned int)json_object_get_number(groupobj, "returnedBitsLen");
+
+        if ((!der_func_str) || (!pred_resist_str))
+        {
+            acvp_log_msg(ctx, "ERROR: ACVP server requesting unsupported PR or DF capability");
+            return (ACVP_UNSUPPORTED_OP);
+        }
+
+        der_func_enabled      = yes_or_no(ctx, der_func_str);
+        pred_resist_enabled   = yes_or_no(ctx, pred_resist_str);
+
+
+        if (pred_resist_enabled) {
+            additional_input_len  = json_object_get_number(groupobj, "additionalInputLen");
+        }
+
+        acvp_log_msg(ctx, "    Test group:");
+        acvp_log_msg(ctx, "    DRBG mode: %s", mode_str);
+        acvp_log_msg(ctx, "    derFunc: %s", der_func_str);
+        acvp_log_msg(ctx, "    predResistance: %s", pred_resist_str);
+        acvp_log_msg(ctx, "    entropyInputLen: %d", entropy_len);
+        acvp_log_msg(ctx, "    additionalInputLen: %d", additional_input_len);
+        acvp_log_msg(ctx, "    persoStringLen: %d", perso_string_len);
+        acvp_log_msg(ctx, "    nonceLen: %d", nonce_len);
+        acvp_log_msg(ctx, "    returnedBitsLen: %d", drb_len);
+        //TODO: Sanity check alg/mode mismatch
+
+        /*
          * Handle test array
          */
         tests = json_object_get_array(groupobj, "tests");
@@ -205,7 +216,6 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
             testobj = json_value_get_object(testval);
 
             reg = json_serialize_to_string_pretty(testval);
-            printf("json tests: %d\n %s\n",j,  reg);
 
             tc_id = (unsigned int)json_object_get_number(testobj, "tcId");
 
@@ -216,87 +226,91 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
             acvp_log_msg(ctx, "        Test case: %d", j);
             acvp_log_msg(ctx, "             tcId: %d", tc_id);
             acvp_log_msg(ctx, "             entropyInput: %s", entropy);
-//            acvp_log_msg(ctx, "             entropyInputPR: %s", entropy_input_pr);
             acvp_log_msg(ctx, "             perso_string: %s", perso_string);
             acvp_log_msg(ctx, "             nonce: %s", nonce);
 
             /*
-             * Handle pred_resist_input array
+             * Handle pred_resist_input array. Has at most 2 elements
              */
             pred_resist_input = json_object_get_array(testobj, "predResistanceInput");
             int pr_input_cnt = json_array_get_count(pred_resist_input);
             JSON_Value   *pr_input_val;
             JSON_Object  *pr_input_obj;
-            int pr_i;
-            for (pr_i = 0; pr_i < pr_input_cnt; pr_i++) {
-                acvp_log_msg(ctx, "Found new DRBG Prediction Input...");
+
+            int pr_i = 0;
+            acvp_log_msg(ctx, "Found new DRBG Prediction Input...");
+            pr_input_val = json_array_get_value(pred_resist_input, pr_i);
+            pr_input_obj = json_value_get_object(pr_input_val);
+
+            additional_input = (unsigned char *)json_object_get_string(pr_input_obj, "additionalInput");
+            entropy_input_pr = (unsigned char *)json_object_get_string(pr_input_obj, "entropyInputPR");
+
+            /*
+             * Get 2nd element from the array
+             */
+            if (pr_input_cnt == 2) {
+                pr_i = pr_i + 1;
                 pr_input_val = json_array_get_value(pred_resist_input, pr_i);
                 pr_input_obj = json_value_get_object(pr_input_val);
-
-                reg = json_serialize_to_string_pretty(pr_input_val);
-                printf("json pred_resist_input: %d\n %s\n",pr_i,  reg);
-
-                additional_input = (unsigned char *)json_object_get_string(pr_input_obj, "additionalInput");
-                entropy_input_pr = (unsigned char *)json_object_get_string(pr_input_obj, "entropyInputPR");
-
-                //TODO: Can we get this length from the spec, bits
-                entropy_input_pr_len = (unsigned int)(strnlen((const char *)entropy_input_pr, ACVP_DRBG_ENTPY_IN_MAX) * 8);
-
-                /*
-                 * Create a new test case in the response
-                 */
-                r_tval = json_value_init_object();
-                r_tobj = json_value_get_object(r_tval);
-
-                json_object_set_number(r_tobj, "tcId", tc_id);
-
-                /*
-                 * Setup the test case data that will be passed down to
-                 * the crypto module.
-                 * TODO: this does mallocs, we can probably do the mallocs once for
-                 *       the entire vector set to be more efficient
-                 */
-                acvp_drbg_init_tc(ctx, &stc, tc_id, additional_input,
-                        entropy_input_pr,
-                        perso_string,
-                        entropy,
-                        nonce,
-                        der_func_enabled,
-                        pred_resist_enabled,
-                        additional_input_len,
-                        entropy_input_pr_len,
-                        perso_string_len,
-                        entropy_len,
-                        nonce_len,
-                        drb_len,
-                        mode_id,
-                        alg_id);
-
-                /* Process the current test vector... */
-                rv = (cap->crypto_handler)(&tc);
-                if (rv != ACVP_SUCCESS) {
-                    acvp_log_msg(ctx, "ERROR: crypto module failed the operation");
-                    return ACVP_CRYPTO_MODULE_FAIL;
-                }
-
-                /*
-                 * Output the test case results using JSON
-                 */
-                rv = acvp_drbg_output_tc(ctx, &stc, r_tobj);
-                if (rv != ACVP_SUCCESS) {
-                    acvp_log_msg(ctx, "ERROR: JSON output failure in DRBG module");
-                    return rv;
-                }
-
-                /*
-                 * Release all the memory associated with the test case
-                 */
-                acvp_drbg_release_tc(&stc);
-
-                /* Append the test response value to array */
-                json_array_append_value(r_tarr, r_tval);
-
+                additional_input_1 = (unsigned char *)json_object_get_string(pr_input_obj, "additionalInput");
+                entropy_input_pr_1 = (unsigned char *)json_object_get_string(pr_input_obj, "entropyInputPR");
             }
+
+            /*
+             * Create a new test case in the response
+             */
+            r_tval = json_value_init_object();
+            r_tobj = json_value_get_object(r_tval);
+
+            json_object_set_number(r_tobj, "tcId", tc_id);
+
+            /*
+             * Setup the test case data that will be passed down to
+             * the crypto module.
+             * TODO: this does mallocs, we can probably do the mallocs once for
+             *       the entire vector set to be more efficient
+             */
+            acvp_drbg_init_tc(ctx, &stc, tc_id, additional_input,
+                    entropy_input_pr,
+                    additional_input_1,
+                    entropy_input_pr_1,
+                    perso_string,
+                    entropy,
+                    nonce,
+                    der_func_enabled,
+                    pred_resist_enabled,
+                    additional_input_len,
+                    perso_string_len,
+                    entropy_len,
+                    nonce_len,
+                    drb_len,
+                    mode_id,
+                    alg_id);
+
+            /* Process the current test vector... */
+            rv = (cap->crypto_handler)(&tc);
+            if (rv != ACVP_SUCCESS) {
+                acvp_log_msg(ctx, "ERROR: crypto module failed the operation");
+                return ACVP_CRYPTO_MODULE_FAIL;
+            }
+
+            /*
+             * Output the test case results using JSON
+             */
+            rv = acvp_drbg_output_tc(ctx, &stc, r_tobj);
+            if (rv != ACVP_SUCCESS) {
+                acvp_log_msg(ctx, "ERROR: JSON output failure in DRBG module");
+                return rv;
+            }
+
+            /*
+             * Release all the memory associated with the test case
+             */
+            acvp_drbg_release_tc(&stc);
+
+            /* Append the test response value to array */
+            json_array_append_value(r_tarr, r_tval);
+
         }
     }
 
@@ -312,7 +326,7 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
  * file that will be uploaded to the server.  This routine handles
  * the JSON processing for a single test case.
  */
-/*static*/ ACVP_RESULT acvp_drbg_output_tc(ACVP_CTX *ctx, ACVP_DRBG_TC *stc, JSON_Object *tc_rsp)
+static ACVP_RESULT acvp_drbg_output_tc(ACVP_CTX *ctx, ACVP_DRBG_TC *stc, JSON_Object *tc_rsp)
 {
     ACVP_RESULT rv;
     char *tmp = NULL;
@@ -340,13 +354,14 @@ static ACVP_RESULT acvp_drbg_init_tc(ACVP_CTX *ctx,
         unsigned int tc_id,
         unsigned char  *additional_input,
         unsigned char  *entropy_input_pr,
+        unsigned char  *additional_input_1,
+        unsigned char  *entropy_input_pr_1,
         unsigned char  *perso_string,
         unsigned char  *entropy,
         unsigned char  *nonce,
         unsigned int    der_func_enabled,
         unsigned int    pred_resist_enabled,
         unsigned int    additional_input_len,
-        unsigned int    entropy_input_pr_len,
         unsigned int    perso_string_len,
         unsigned int    entropy_len,
         unsigned int    nonce_len,
@@ -363,10 +378,14 @@ static ACVP_RESULT acvp_drbg_init_tc(ACVP_CTX *ctx,
     if (!stc->drb) return ACVP_MALLOC_FAIL;
     stc->additional_input = calloc(1, ACVP_DRBG_ADDI_IN_MAX);
     if (!stc->additional_input) return ACVP_MALLOC_FAIL;
+    stc->additional_input_1 = calloc(1, ACVP_DRBG_ADDI_IN_MAX);
+    if (!stc->additional_input_1) return ACVP_MALLOC_FAIL;
     stc->entropy = calloc(1, ACVP_DRBG_ENTPY_IN_MAX);
     if (!stc->entropy) return ACVP_MALLOC_FAIL;
     stc->entropy_input_pr = calloc(1, ACVP_DRBG_ENTPY_IN_MAX);
     if (!stc->entropy_input_pr) return ACVP_MALLOC_FAIL;
+    stc->entropy_input_pr_1 = calloc(1, ACVP_DRBG_ENTPY_IN_MAX);
+    if (!stc->entropy_input_pr_1) return ACVP_MALLOC_FAIL;
     stc->nonce = calloc(1, ACVP_DRBG_NONCE_MAX);
     if (!stc->nonce) return ACVP_MALLOC_FAIL;
     stc->perso_string = calloc(1, ACVP_DRBG_PER_SO_MAX);
@@ -387,6 +406,24 @@ static ACVP_RESULT acvp_drbg_init_tc(ACVP_CTX *ctx,
                 stc->entropy_input_pr, ACVP_DRBG_ENTPY_IN_MAX);
         if (rv != ACVP_SUCCESS) {
             acvp_log_msg(ctx, "Hex conversion failure (entropy_input_pr)");
+            return rv;
+        }
+    }
+
+    if (additional_input_1) {
+        rv = acvp_hexstr_to_bin((const unsigned char *)additional_input_1,
+                stc->additional_input_1, ACVP_DRBG_ADDI_IN_MAX);
+        if (rv != ACVP_SUCCESS) {
+            acvp_log_msg(ctx, "Hex conversion failure (2nd additional_input)");
+            return rv;
+        }
+    }
+
+    if (entropy_input_pr_1) {
+        rv = acvp_hexstr_to_bin((const unsigned char *)entropy_input_pr_1,
+                stc->entropy_input_pr_1, ACVP_DRBG_ENTPY_IN_MAX);
+        if (rv != ACVP_SUCCESS) {
+            acvp_log_msg(ctx, "Hex conversion failure (2nd entropy_input_pr)");
             return rv;
         }
     }
@@ -419,7 +456,6 @@ static ACVP_RESULT acvp_drbg_init_tc(ACVP_CTX *ctx,
     }
 
     stc->additional_input_len = additional_input_len;
-    stc->entropy_input_pr_len = entropy_input_pr_len;
     stc->pred_resist_enabled = pred_resist_enabled;
     stc->perso_string_len = perso_string_len;
     stc->der_func_enabled = der_func_enabled;
@@ -441,11 +477,13 @@ static ACVP_RESULT acvp_drbg_release_tc(ACVP_DRBG_TC *stc)
 {
     free(stc->drb);
     free(stc->additional_input);
+    free(stc->additional_input_1);
     free(stc->entropy);
     free(stc->entropy_input_pr);
+    free(stc->entropy_input_pr_1);
     free(stc->nonce);
     free(stc->perso_string);
-    memset(stc, 0x0, sizeof(ACVP_DRBG_TC));
 
+    memset(stc, 0x0, sizeof(ACVP_DRBG_TC));
     return ACVP_SUCCESS;
 }

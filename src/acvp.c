@@ -624,6 +624,57 @@ static ACVP_RESULT acvp_add_drbg_prereq_val(ACVP_DRBG_CAP_MODE *drbg_cap_mode,
 }
 
 /*
+ * Add DRBG Length Range
+ */
+static ACVP_RESULT acvp_add_drbg_length_range (
+                             ACVP_DRBG_CAP_MODE  *drbg_cap_mode,
+                             ACVP_DRBG_PARM       param,
+                             int                  min,
+                             int                  step,
+                             int                  max
+                             )
+{
+    if (!drbg_cap_mode) {
+        return ACVP_INVALID_ARG;
+    }
+
+    switch (param) {
+    case ACVP_DRBG_ENTROPY_LEN:
+        drbg_cap_mode->entropy_len_min  = min;
+        drbg_cap_mode->entropy_len_step = step;
+        drbg_cap_mode->entropy_len_max  = max;
+        break;
+    case ACVP_DRBG_NONCE_LEN:
+        drbg_cap_mode->nonce_len_min  = min;
+        drbg_cap_mode->nonce_len_step = step;
+        drbg_cap_mode->nonce_len_max  = max;
+        break;
+    case ACVP_DRBG_PERSO_LEN:
+        drbg_cap_mode->perso_len_min  = min;
+        drbg_cap_mode->perso_len_step = step;
+        drbg_cap_mode->perso_len_max  = max;
+        break;
+    case ACVP_DRBG_ADD_IN_LEN:
+        drbg_cap_mode->additional_in_len_min = min;
+        drbg_cap_mode->additional_in_len_step = step;
+        drbg_cap_mode->additional_in_len_max = max;
+        break;
+    case ACVP_DRBG_RET_BITS_LEN:
+    case ACVP_DRBG_PRE_REQ_VALS:
+    case ACVP_DRBG_DER_FUNC_ENABLED:
+    case ACVP_DRBG_PRED_RESIST_ENABLED:
+    case ACVP_DRBG_RESEED_ENABLED:
+    default:
+        return ACVP_INVALID_ARG;
+        break;
+    }
+
+    return ACVP_SUCCESS;
+}
+
+
+
+/*
  * The user should call this after invoking acvp_enable_drbg_cap_parm().
  */
 ACVP_RESULT acvp_enable_drbg_cap_parm (ACVP_CTX *ctx,
@@ -745,6 +796,52 @@ ACVP_RESULT acvp_enable_drbg_prereq_cap(ACVP_CTX          *ctx,
      */
 
     return (acvp_add_drbg_prereq_val(&drbg_cap_mode_list->cap_mode, mode, pre_req, value));
+}
+
+ACVP_RESULT acvp_enable_drbg_length_cap(ACVP_CTX            *ctx,
+                                        ACVP_CIPHER          cipher,
+                                        ACVP_DRBG_MODE       mode,
+                                        ACVP_DRBG_PARM       param,
+                                        int                  min,
+                                        int                  step,
+                                        int                  max)
+{
+    ACVP_DRBG_CAP_MODE_LIST *drbg_cap_mode_list;
+    ACVP_CAPS_LIST          *cap_list;
+
+    if (!ctx) {
+        return ACVP_INVALID_ARG;
+    }
+
+    /*
+     * Locate this cipher in the caps array
+     */
+    cap_list = acvp_locate_cap_entry(ctx, cipher);
+    if (!cap_list) {
+        acvp_log_msg(ctx, "Cap entry not found.");
+        return ACVP_NO_CAP;
+    }
+
+    /*
+     * Locate cap mode from array
+     * if the mode does not exist yet then create it.
+     */
+    drbg_cap_mode_list = acvp_locate_drbg_mode_entry(cap_list, mode);
+    if (!drbg_cap_mode_list) {
+        drbg_cap_mode_list = calloc(1, sizeof(ACVP_DRBG_CAP_MODE_LIST));
+        if (!drbg_cap_mode_list) {
+            acvp_log_msg(ctx, "Malloc Failed.");
+            return ACVP_MALLOC_FAIL;
+        }
+        drbg_cap_mode_list->cap_mode.mode = mode;
+        cap_list->cap.drbg_cap->drbg_cap_mode_list = drbg_cap_mode_list;
+    }
+
+    /*
+     * Add the length range to the cap
+     */
+    return(acvp_add_drbg_length_range(&drbg_cap_mode_list->cap_mode,
+           param, min, step, max));
 }
 
 ACVP_RESULT acvp_enable_drbg_cap(
@@ -1168,6 +1265,8 @@ static ACVP_RESULT acvp_build_drbg_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
 {
     ACVP_RESULT result;
     ACVP_DRBG_CAP_MODE *drbg_cap_mode = NULL;
+    JSON_Object *len_obj = NULL;
+    JSON_Value  *len_val = NULL;
 
     char *mode_str = acvp_lookup_drbg_mode_string(cap_entry);
     if (!mode_str) return ACVP_INVALID_ARG;
@@ -1183,11 +1282,40 @@ static ACVP_RESULT acvp_build_drbg_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
     json_object_set_string(cap_obj, "predResistanceEnabled", drbg_cap_mode->pred_resist_enabled  ? "yes" : "no" );
     json_object_set_string(cap_obj, "reseedImplemented",     drbg_cap_mode->reseed_implemented  ? "yes" : "no" );
 
-    json_object_set_number(cap_obj, "entropyInputLen",       drbg_cap_mode->entropy_input_len);
-    json_object_set_number(cap_obj, "nonceLen",              drbg_cap_mode->nonce_len);
-    json_object_set_number(cap_obj, "persoStringLen",        drbg_cap_mode->perso_string_len);
-    json_object_set_number(cap_obj, "additionalInputLen",    drbg_cap_mode->additional_input_len);
-    json_object_set_number(cap_obj, "returnedBitsLen",       drbg_cap_mode->returned_bits_len);
+    //Set entropy range
+    len_val = json_value_init_object();
+    len_obj = json_value_get_object(len_val);
+    json_object_set_number(len_obj, "max", drbg_cap_mode->entropy_len_max);
+    json_object_set_number(len_obj, "min", drbg_cap_mode->entropy_len_min);
+    json_object_set_number(len_obj, "step", drbg_cap_mode->entropy_len_step);
+    json_object_set_value(cap_obj, "entropyInputRange", len_val);
+
+    //Set nonce range
+    len_val = json_value_init_object();
+    len_obj = json_value_get_object(len_val);
+    json_object_set_number(len_obj, "max", drbg_cap_mode->nonce_len_max);
+    json_object_set_number(len_obj, "min", drbg_cap_mode->nonce_len_min);
+    json_object_set_number(len_obj, "step", drbg_cap_mode->nonce_len_step);
+    json_object_set_value(cap_obj, "nonceLenRange", len_val);
+
+    //Set persoString range
+    len_val = json_value_init_object();
+    len_obj = json_value_get_object(len_val);
+    json_object_set_number(len_obj, "max", drbg_cap_mode->perso_len_max);
+    json_object_set_number(len_obj, "min", drbg_cap_mode->perso_len_min);
+    json_object_set_number(len_obj, "step", drbg_cap_mode->perso_len_step);
+    json_object_set_value(cap_obj, "persoStringLenRange", len_val);
+
+    //Set additionalInputLen Range
+    len_val = json_value_init_object();
+    len_obj = json_value_get_object(len_val);
+    json_object_set_number(len_obj, "max", drbg_cap_mode->additional_in_len_max);
+    json_object_set_number(len_obj, "min", drbg_cap_mode->additional_in_len_min);
+    json_object_set_number(len_obj, "step", drbg_cap_mode->additional_in_len_step);
+    json_object_set_value(cap_obj, "additionalInputLenRange", len_val);
+
+    //Set DRBG Length
+    json_object_set_number(cap_obj, "returnedBitsLen", drbg_cap_mode->returned_bits_len);
     return ACVP_SUCCESS;
 }
 
