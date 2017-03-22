@@ -294,6 +294,7 @@ ACVP_DRBG_CAP_MODE_LIST* acvp_locate_drbg_mode_entry(ACVP_CAPS_LIST *cap, ACVP_D
 unsigned int yes_or_no(ACVP_CTX *ctx, const char *text)
 {
     unsigned int result;
+    if (!ctx || !text) return 0;
     if (!strncmp(text, "yes", 3)) {
         result = 1;
     } else if (!strncmp(text, "no", 2)) {
