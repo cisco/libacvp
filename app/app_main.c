@@ -57,7 +57,7 @@ static ACVP_RESULT app_aes_keywrap_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_aes_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_des_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_sha_handler(ACVP_TEST_CASE *test_case);
-#ifdef ACVP_NO_RUNTIME
+#ifdef ACVP_NO_RUNTIME2
 static ACVP_RESULT app_drbg_handler(ACVP_TEST_CASE *test_case);
 #endif
 
@@ -408,7 +408,7 @@ int main(int argc, char **argv)
     rv = acvp_enable_hash_cap(ctx, ACVP_SHA256, &app_sha_handler);
 #endif
 
-#ifdef ACVP_NO_RUNTIME
+#ifdef ACVP_NO_RUNTIME2
     /*
      * Register DRBG
      */
@@ -1084,9 +1084,9 @@ static ACVP_RESULT app_aes_handler_aead(ACVP_TEST_CASE *test_case)
 	    EVP_CipherInit(&cipher_ctx, cipher, NULL, NULL, 1);
 	    EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_GCM_SET_IVLEN, tc->iv_len, 0);
 	    EVP_CipherInit(&cipher_ctx, NULL, tc->key, NULL, 1);
-	    /* TODO: there are new rules for IV generation with GCM mode, this needs another look */
+
 	    EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_GCM_SET_IV_FIXED, 4, iv_fixed);
-	    if (!EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_GCM_IV_GEN, 0, tc->iv)) {
+	    if (!EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_GCM_IV_GEN, tc->iv_len, tc->iv)) {
 		printf("acvp_aes_encrypt: iv gen error\n");
 		return ACVP_CRYPTO_MODULE_FAIL;
 	    }
@@ -1272,7 +1272,7 @@ static ACVP_RESULT app_sha_handler(ACVP_TEST_CASE *test_case)
 }
 
 
-#ifdef ACVP_NO_RUNTIME
+#ifdef ACVP_NO_RUNTIME2
 typedef struct
 {
     unsigned char *ent;
