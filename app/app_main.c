@@ -35,7 +35,6 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include "app_lcl.h"
 #include "acvp.h"
 #ifdef USE_MURL
 #include <murl/murl.h>
@@ -48,6 +47,7 @@
 #include <openssl/err.h>
 
 #ifdef ACVP_NO_RUNTIME
+#include "app_lcl.h"
 #include <openssl/fips_rand.h>
 #include <openssl/fips.h>
 #endif
