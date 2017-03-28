@@ -35,6 +35,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include "app_lcl.h"
 #include "acvp.h"
 #ifdef USE_MURL
 #include <murl/murl.h>
@@ -46,9 +47,9 @@
 #include <openssl/obj_mac.h>
 #include <openssl/err.h>
 
-#if 0
-#include "include/openssl/fips_rand.h"
-#include "include/openssl/fips.h"
+#ifdef ACVP_NO_RUNTIME
+#include <openssl/fips_rand.h>
+#include <openssl/fips.h>
 #endif
 
 static ACVP_RESULT app_aes_handler_aead(ACVP_TEST_CASE *test_case);
@@ -56,7 +57,9 @@ static ACVP_RESULT app_aes_keywrap_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_aes_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_des_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_sha_handler(ACVP_TEST_CASE *test_case);
+#ifdef ACVP_NO_RUNTIME
 static ACVP_RESULT app_drbg_handler(ACVP_TEST_CASE *test_case);
+#endif
 
 #define DEFAULT_SERVER "127.0.0.1"
 #define DEFAULT_PORT 443
@@ -405,7 +408,7 @@ int main(int argc, char **argv)
     rv = acvp_enable_hash_cap(ctx, ACVP_SHA256, &app_sha_handler);
 #endif
 
-#if 0
+#ifdef ACVP_NO_RUNTIME
     /*
      * Register DRBG
      */
@@ -1269,6 +1272,7 @@ static ACVP_RESULT app_sha_handler(ACVP_TEST_CASE *test_case)
 }
 
 
+#ifdef ACVP_NO_RUNTIME
 typedef struct
 {
     unsigned char *ent;
@@ -1276,7 +1280,7 @@ typedef struct
     unsigned char *nonce;
     size_t noncelen;
 } DRBG_TEST_ENT;
-#if 0
+
 static size_t drbg_test_entropy(DRBG_CTX *dctx, unsigned char **pout,
         int entropy, size_t min_len, size_t max_len)
 {
