@@ -57,7 +57,7 @@ static ACVP_RESULT app_aes_keywrap_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_aes_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_des_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_sha_handler(ACVP_TEST_CASE *test_case);
-#ifdef ACVP_NO_RUNTIME2
+#ifdef ACVP_NO_RUNTIME
 static ACVP_RESULT app_drbg_handler(ACVP_TEST_CASE *test_case);
 #endif
 
@@ -408,7 +408,7 @@ int main(int argc, char **argv)
     rv = acvp_enable_hash_cap(ctx, ACVP_SHA256, &app_sha_handler);
 #endif
 
-#ifdef ACVP_NO_RUNTIME2
+#ifdef ACVP_NO_RUNTIME
     /*
      * Register DRBG
      */
@@ -1272,7 +1272,7 @@ static ACVP_RESULT app_sha_handler(ACVP_TEST_CASE *test_case)
 }
 
 
-#ifdef ACVP_NO_RUNTIME2
+#ifdef ACVP_NO_RUNTIME
 typedef struct
 {
     unsigned char *ent;
