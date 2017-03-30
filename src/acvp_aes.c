@@ -391,7 +391,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
     }
 
     /*
-     * verify the direction is valid 
+     * verify the direction is valid - 0.2 version only
      */
     if (!strncmp(dir_str, "encrypt", 7)) {
 	dir = ACVP_DIR_ENCRYPT;
@@ -399,7 +399,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
 	dir = ACVP_DIR_DECRYPT;
     } else {
         acvp_log_msg(ctx, "ERROR: unsupported direction requested from server (%s)", dir_str);
-        return (ACVP_UNSUPPORTED_OP);
+        //return (ACVP_UNSUPPORTED_OP);
     }
 
     /*
@@ -433,7 +433,8 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
     json_object_set_string(r_vs, "acvVersion", ACVP_VERSION);
     json_object_set_number(r_vs, "vsId", ctx->vs_id);
     json_object_set_string(r_vs, "algorithm", alg_str);
-    json_object_set_string(r_vs, "direction", dir_str); 
+    if (dir_str != NULL)
+        json_object_set_string(r_vs, "direction", dir_str); 
     json_object_set_value(r_vs, "testResults", json_value_init_array());
     r_tarr = json_object_get_array(r_vs, "testResults");
 
@@ -443,6 +444,21 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
         groupval = json_array_get_value(groups, i);
         groupobj = json_value_get_object(groupval);
 
+	/* version 0.3 direction */
+	if (dir_str == NULL) {
+            dir_str = json_object_get_string(groupobj, "direction");
+    	    /*
+    	     * verify the direction is valid 
+     	     */
+    	    if (!strncmp(dir_str, "encrypt", 7)) {
+	        dir = ACVP_DIR_ENCRYPT;
+    	    } else if (!strncmp(dir_str, "decrypt", 7)) {
+	        dir = ACVP_DIR_DECRYPT;
+    	    } else {
+                acvp_log_msg(ctx, "ERROR: unsupported direction requested from server (%s)", dir_str);
+                return (ACVP_UNSUPPORTED_OP);
+            }
+        }
         keylen = (unsigned int)json_object_get_number(groupobj, "keyLen");
         ivlen = (unsigned int)json_object_get_number(groupobj, "ivLen");
         ptlen = (unsigned int)json_object_get_number(groupobj, "ptLen");
@@ -456,6 +472,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
         acvp_log_msg(ctx, "         ptlen: %d", ptlen);
         acvp_log_msg(ctx, "        aadlen: %d", aadlen);
         acvp_log_msg(ctx, "        taglen: %d", taglen);
+        acvp_log_msg(ctx, "         dir:   %s", dir_str);
         acvp_log_msg(ctx, "      testtype: %d", test_type);
 
 

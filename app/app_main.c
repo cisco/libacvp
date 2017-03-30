@@ -57,7 +57,7 @@ static ACVP_RESULT app_aes_keywrap_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_aes_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_des_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_sha_handler(ACVP_TEST_CASE *test_case);
-#ifdef ACVP_NO_RUNTIME
+#ifdef ACVP_NO_RUNTIME2
 static ACVP_RESULT app_drbg_handler(ACVP_TEST_CASE *test_case);
 #endif
 
@@ -408,7 +408,7 @@ int main(int argc, char **argv)
     rv = acvp_enable_hash_cap(ctx, ACVP_SHA256, &app_sha_handler);
 #endif
 
-#ifdef ACVP_NO_RUNTIME
+#ifdef ACVP_NO_RUNTIME2
     /*
      * Register DRBG
      */
@@ -1081,6 +1081,7 @@ static ACVP_RESULT app_aes_handler_aead(ACVP_TEST_CASE *test_case)
 	    return ACVP_UNSUPPORTED_OP;
 	}
 	if (tc->direction == ACVP_DIR_ENCRYPT) {
+	    EVP_CIPHER_CTX_set_flags(&cipher_ctx, EVP_CIPH_FLAG_NON_FIPS_ALLOW);
 	    EVP_CipherInit(&cipher_ctx, cipher, NULL, NULL, 1);
 	    EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_GCM_SET_IVLEN, tc->iv_len, 0);
 	    EVP_CipherInit(&cipher_ctx, NULL, tc->key, NULL, 1);
@@ -1097,6 +1098,7 @@ static ACVP_RESULT app_aes_handler_aead(ACVP_TEST_CASE *test_case)
 	    EVP_Cipher(&cipher_ctx, NULL, NULL, 0);
 	    EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_GCM_GET_TAG, tc->tag_len, tc->tag);
 	} else if (tc->direction == ACVP_DIR_DECRYPT) {
+	    EVP_CIPHER_CTX_set_flags(&cipher_ctx, EVP_CIPH_FLAG_NON_FIPS_ALLOW);
 	    EVP_CipherInit_ex(&cipher_ctx, cipher, NULL, tc->key, NULL, 0);
 	    EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_GCM_SET_IVLEN, tc->iv_len, 0);
 	    EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_GCM_SET_IV_FIXED, -1, tc->iv);
@@ -1272,7 +1274,7 @@ static ACVP_RESULT app_sha_handler(ACVP_TEST_CASE *test_case)
 }
 
 
-#ifdef ACVP_NO_RUNTIME
+#ifdef ACVP_NO_RUNTIME2
 typedef struct
 {
     unsigned char *ent;
