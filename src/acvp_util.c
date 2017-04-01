@@ -305,3 +305,34 @@ unsigned int yes_or_no(ACVP_CTX *ctx, const char *text)
     }
     return result;
 }
+
+/*
+ * Creates a JSON acvp array which consists of
+ * [{preamble}, {object}]
+ * preamble is populated with the version string
+ * returns ACVP_SUCCESS or ACVP_JSON_ERR
+ */
+ACVP_RESULT acvp_create_array (JSON_Object **obj, JSON_Value **val, JSON_Array **arry)
+{
+    ACVP_RESULT result = ACVP_SUCCESS;
+    JSON_Value          *reg_arry_val  = NULL;
+    JSON_Object         *reg_obj       = NULL;
+    JSON_Value          *ver_val       = NULL;
+    JSON_Object         *ver_obj       = NULL;
+    JSON_Array          *reg_arry      = NULL;
+
+    reg_arry_val = json_value_init_array();
+    reg_obj = json_value_get_object(reg_arry_val);
+    reg_arry = json_array((const JSON_Value *)reg_arry_val);
+
+    ver_val = json_value_init_object();
+    ver_obj = json_value_get_object(ver_val);
+
+    json_object_set_string(ver_obj, "acvVersion", ACVP_VERSION);
+    json_array_append_value(reg_arry, ver_val);
+
+    *obj = reg_obj;
+    *val = reg_arry_val;
+    *arry = reg_arry;
+    return(result);
+}
