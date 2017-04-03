@@ -148,8 +148,15 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
     JSON_Object         *testobj = NULL;
     JSON_Array          *groups;
     JSON_Array          *tests;
+
+    JSON_Value          *reg_arry_val  = NULL;
+    JSON_Object         *reg_obj       = NULL;
+    JSON_Array          *reg_arry      = NULL;
+
     int i, g_cnt;
     int j, t_cnt;
+
+    JSON_Value          *r_vs_val = NULL;
     JSON_Object         *r_vs = NULL;
     JSON_Array          *r_tarr = NULL; /* Response testarray */
     JSON_Value          *r_tval = NULL; /* Response testval */
@@ -188,15 +195,25 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
     }
 
     /*
+     * Create ACVP array for response
+     */
+    rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
+    if (rv != ACVP_SUCCESS) {
+        acvp_log_msg(ctx, "ERROR: Failed to create JSON response struct. ");
+        return(rv);
+    }
+
+    /*
      * Start to build the JSON response
      * TODO: This code will likely be common to all the algorithms, need to move this
      */
     if (ctx->kat_resp) {
         json_value_free(ctx->kat_resp);
     }
-    ctx->kat_resp = json_value_init_object();
-    r_vs = json_value_get_object(ctx->kat_resp);
-    json_object_set_string(r_vs, "acvVersion", ACVP_VERSION);
+    ctx->kat_resp = reg_arry_val;
+    r_vs_val = json_value_init_object();
+    r_vs = json_value_get_object(r_vs_val);
+
     json_object_set_number(r_vs, "vsId", ctx->vs_id);
     json_object_set_string(r_vs, "algorithm", alg_str);
     json_object_set_value(r_vs, "testResults", json_value_init_array());
@@ -282,6 +299,7 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
         }
     }
 
+    json_array_append_value(reg_arry, r_vs_val);
     //FIXME
     printf("\n\n%s\n\n", json_serialize_to_string_pretty(ctx->kat_resp));
 

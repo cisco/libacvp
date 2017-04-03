@@ -1328,6 +1328,13 @@ static ACVP_RESULT acvp_build_register(ACVP_CTX *ctx, char **reg)
 {
     ACVP_CAPS_LIST *cap_entry;
 
+    JSON_Value *reg_arry_val  = NULL;
+    JSON_Object *reg_obj = NULL;
+    JSON_Value *ver_val  = NULL;
+    JSON_Object *ver_obj = NULL;
+
+    JSON_Array *reg_arry = NULL;
+
     JSON_Value *val = NULL;
     JSON_Object *obj = NULL;
     JSON_Value *oe_val = NULL;
@@ -1340,9 +1347,21 @@ static ACVP_RESULT acvp_build_register(ACVP_CTX *ctx, char **reg)
     JSON_Value *cap_val = NULL;
     JSON_Object *cap_obj = NULL;
 
+    /*
+     * Start the registration array
+     */
+    reg_arry_val = json_value_init_array();
+    reg_obj = json_value_get_object(reg_arry_val);
+    reg_arry = json_array  ((const JSON_Value *)reg_arry_val);
+
+    ver_val = json_value_init_object();
+    ver_obj = json_value_get_object(ver_val);
+
+    json_object_set_string(ver_obj, "acvVersion", ACVP_VERSION);
+    json_array_append_value(reg_arry, ver_val);
+
     val = json_value_init_object();
     obj = json_value_get_object(val);
-    json_object_set_string(obj, "acvVersion", ACVP_VERSION);
     json_object_set_string(obj, "certificateRequest", "yes");
 
     oe_val = json_value_init_object();
@@ -1443,9 +1462,11 @@ static ACVP_RESULT acvp_build_register(ACVP_CTX *ctx, char **reg)
      */
     json_object_set_value(obj, "capability_exchange", caps_val);
 
+    json_array_append_value(reg_arry, val);
     //*reg = json_serialize_to_string(val);
-    *reg = json_serialize_to_string_pretty(val);
-    json_value_free(val);
+    *reg = json_serialize_to_string_pretty(reg_arry_val);
+    json_value_free(reg_arry_val);
+
     return ACVP_SUCCESS;
 }
 
@@ -1623,6 +1644,45 @@ static ACVP_RESULT acvp_append_vs_entry(ACVP_CTX *ctx, int vs_id)
 }
 
 /*
+ * get version from response
+ */
+static char* acvp_get_version_from_rsp(JSON_Value *arry_val)
+{
+    char *version = NULL;
+    JSON_Object *ver_obj = NULL;
+
+    JSON_Array  *reg_array;
+
+    reg_array = json_value_get_array(arry_val);
+    ver_obj = json_array_get_object(reg_array, 0);
+    version = (char *)json_object_get_string(ver_obj, "acvVersion");
+    if (version == NULL) {
+        return NULL;
+    }
+
+    return(version);
+}
+
+/*
+ * get JASON Object from response
+ */
+static JSON_Object* acvp_get_obj_from_rsp(JSON_Value *arry_val)
+{
+    JSON_Object *obj = NULL;
+    JSON_Array  *reg_array;
+    char        *ver = NULL;
+
+    reg_array = json_value_get_array(arry_val);
+    ver = acvp_get_version_from_rsp(arry_val);
+    if (ver == NULL) {
+        return NULL;
+    }
+
+    obj = json_array_get_object(reg_array, 1);
+    return(obj);
+}
+
+/*
  * This routine performs the JSON parsing of the registration response
  * from the ACVP server.  The response should contain a list of vector
  * set (VS) identifiers that will need to be downloaded and processed
@@ -1650,7 +1710,8 @@ static ACVP_RESULT acvp_parse_register(ACVP_CTX *ctx)
         acvp_log_msg(ctx, "JSON parse error");
         return ACVP_JSON_ERR;
     }
-    obj = json_value_get_object(val);
+
+    obj = acvp_get_obj_from_rsp(val);
 
     /*
      * Get the JWT assigned to this session by the server.  This will need
@@ -1822,7 +1883,7 @@ static ACVP_RESULT acvp_process_vsid(ACVP_CTX *ctx, int vs_id)
             acvp_log_msg(ctx, "JSON parse error");
             return ACVP_JSON_ERR;
         }
-        obj = json_value_get_object(val);
+        obj = acvp_get_obj_from_rsp(val);
         ctx->vs_id = vs_id;
 
         /*
@@ -1954,7 +2015,7 @@ static ACVP_RESULT acvp_get_result_vsid(ACVP_CTX *ctx, int vs_id)
             acvp_log_msg(ctx, "JSON parse error");
             return ACVP_JSON_ERR;
         }
-        obj = json_value_get_object(val);
+        obj = acvp_get_obj_from_rsp(val);
         ctx->vs_id = vs_id;
 
         /*
