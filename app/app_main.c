@@ -50,6 +50,8 @@
 #include "app_lcl.h"
 #include <openssl/fips_rand.h>
 #include <openssl/fips.h>
+extern int fips_selftest_fail;
+extern int fips_mode;
 #endif
 
 static ACVP_RESULT app_aes_handler_aead(ACVP_TEST_CASE *test_case);
@@ -57,7 +59,7 @@ static ACVP_RESULT app_aes_keywrap_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_aes_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_des_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_sha_handler(ACVP_TEST_CASE *test_case);
-#ifdef ACVP_NO_RUNTIME2
+#ifdef ACVP_NO_RUNTIME
 static ACVP_RESULT app_drbg_handler(ACVP_TEST_CASE *test_case);
 #endif
 
@@ -153,6 +155,12 @@ int main(int argc, char **argv)
         print_usage();
         return 1;
     }
+
+#ifdef ACVP_NO_RUNTIME
+    fips_selftest_fail = 0;
+    fips_mode = 0;
+    fips_algtest_init_nofips();
+#endif
 
     EVP_CIPHER_CTX_cleanup(&cipher_ctx);
     setup_session_parameters();
@@ -408,11 +416,14 @@ int main(int argc, char **argv)
     rv = acvp_enable_hash_cap(ctx, ACVP_SHA256, &app_sha_handler);
 #endif
 
-#ifdef ACVP_NO_RUNTIME2
+#ifdef ACVP_NO_RUNTIME
+
+#if 0  /* until drbg is supported by the server */
     /*
      * Register DRBG
      */
       ERR_load_crypto_strings() ;
+      
       int fips_rc = FIPS_mode_set(1);
       if(!fips_rc) {
           (printf("Failed to enable FIPS mode.\n"));
@@ -592,6 +603,7 @@ int main(int argc, char **argv)
             ACVP_DRBG_RET_BITS_LEN, 512);
     CHECK_ENABLE_CAP_RV(rv);
 
+#endif
 #endif
 
     /*
@@ -1274,7 +1286,7 @@ static ACVP_RESULT app_sha_handler(ACVP_TEST_CASE *test_case)
 }
 
 
-#ifdef ACVP_NO_RUNTIME2
+#ifdef ACVP_NO_RUNTIME
 typedef struct
 {
     unsigned char *ent;
