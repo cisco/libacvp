@@ -1,0 +1,24 @@
+The pkcs #11 version of the ACVP test client is meant to allow modules
+which have a PKCS #11 interface to be tested with little or no modification
+to the test client itself. This app has been built to work in NSS softoken, 
+but it has been put together so that it should work with most tokens, 
+automatically querying the token's capabilities and registering only those
+tests that the module can do. The app has been built to test the NSS softoken
+PKCS #11 module by default.
+
+Because curl on RHEL7 uses PKCS #11 under the covers (and my be using the 
+PKCS #11 module we want to test), the module under test is loaded in a 
+separate process.  The code to make this transparent is in pkcs11_server.c.
+It handles transfering parameters and buffers between the two processes.
+
+
+- Only initial the setup has been tested
+- AEAD has not been implemented
+    - This will use the new PKCS #11 Message interface if available
+- DRBG has not been implemented
+    - This will be module specific, so only NSS will be implemented. FIPS
+      tests lower level access to the DRBG than PKCS #11 provides.
+- AES_KEY_WRAP has not been implemented
+    - 
+
+
