@@ -409,12 +409,13 @@ int main(int argc, char **argv)
     CHECK_ENABLE_CAP_RV(rv);
 
     /*
-     * Enable SHA-1
+     * Enable SHA-1 and SHA-2
      */
-#if 0
-//FIXME: this algorithm is un-tested.  Waiting on server implementation to test it
+    rv = acvp_enable_hash_cap(ctx, ACVP_SHA1, &app_sha_handler);
+    rv = acvp_enable_hash_cap(ctx, ACVP_SHA224, &app_sha_handler);
     rv = acvp_enable_hash_cap(ctx, ACVP_SHA256, &app_sha_handler);
-#endif
+    rv = acvp_enable_hash_cap(ctx, ACVP_SHA384, &app_sha_handler);
+    rv = acvp_enable_hash_cap(ctx, ACVP_SHA512, &app_sha_handler);
 
 #ifdef ACVP_NO_RUNTIME
 
@@ -1206,6 +1207,7 @@ static ACVP_RESULT app_sha_handler(ACVP_TEST_CASE *test_case)
     ACVP_HASH_TC	*tc;
     const EVP_MD	*md;
     EVP_MD_CTX          md_ctx;
+    int msg_len;
 
     if (!test_case) {
         return ACVP_INVALID_ARG;
@@ -1266,12 +1268,14 @@ static ACVP_RESULT app_sha_handler(ACVP_TEST_CASE *test_case)
         }
 
    } else { 
+        /* AFT hashes are bit lengths not bytes */
+        msg_len = tc->msg_len/8;
         if (!EVP_DigestInit_ex(&md_ctx, md, NULL)) {
             printf("\nCrypto module error, EVP_DigestInit_ex failed\n");
 	    return ACVP_CRYPTO_MODULE_FAIL;
         }
 
-	if (!EVP_DigestUpdate(&md_ctx, tc->msg, tc->msg_len)) {
+	if (!EVP_DigestUpdate(&md_ctx, tc->msg, msg_len)) {
 	    printf("\nCrypto module error, EVP_DigestUpdate failed\n");
 	    return ACVP_CRYPTO_MODULE_FAIL;
         }

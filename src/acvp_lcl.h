@@ -140,11 +140,8 @@ typedef struct acvp_sym_cipher_capability {
 } ACVP_SYM_CIPHER_CAP;
 
 typedef struct acvp_hash_capability {
-    int               in_byte;
-    int               out_byte;
+    int               in_bit;
     int               in_empty;
-    int               in_len;
-    int               out_len;
 } ACVP_HASH_CAP;
 
 typedef struct acvp_drbg_prereq_alg_val {

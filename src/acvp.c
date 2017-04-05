@@ -406,11 +406,8 @@ ACVP_RESULT acvp_enable_hash_cap(
 
     //TODO: need to validate that cipher, mode, etc. are valid values
     //      we also need to make sure we're not adding a duplicate
-    cap->in_byte = 1;
-    cap->out_byte = 1;
+    cap->in_bit = 1;
     cap->in_empty = 1;
-    cap->in_len = 1;
-    cap->out_len = 65536;
 
     return (acvp_append_hash_caps_entry(ctx, cap, cipher, crypto_handler));
 }
@@ -1015,11 +1012,8 @@ ACVP_RESULT acvp_set_certkey(ACVP_CTX *ctx, char *cert_file, char *key_file)
 static ACVP_RESULT acvp_build_hash_register_cap(JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry)
 {
     json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
-    json_object_set_string(cap_obj, "inByte", cap_entry->cap.hash_cap->in_byte ? "yes" : "no" );
+    json_object_set_string(cap_obj, "inBit", cap_entry->cap.hash_cap->in_bit ? "yes" : "no" );
     json_object_set_string(cap_obj, "inEmpty", cap_entry->cap.hash_cap->in_empty ? "yes" : "no" );
-    json_object_set_string(cap_obj, "outByte", cap_entry->cap.hash_cap->out_byte ? "yes" : "no" );
-    json_object_set_number(cap_obj, "inLen", cap_entry->cap.hash_cap->in_len );
-    json_object_set_number(cap_obj, "outLen", cap_entry->cap.hash_cap->out_len );
 
     return ACVP_SUCCESS;
 }
