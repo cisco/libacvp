@@ -1323,7 +1323,7 @@ static ACVP_RESULT acvp_build_register(ACVP_CTX *ctx, char **reg)
     ACVP_CAPS_LIST *cap_entry;
 
     JSON_Value *reg_arry_val  = NULL;
-    JSON_Object *reg_obj = NULL;
+    //JSON_Object *reg_obj = NULL;
     JSON_Value *ver_val  = NULL;
     JSON_Object *ver_obj = NULL;
 
@@ -1340,12 +1340,21 @@ static ACVP_RESULT acvp_build_register(ACVP_CTX *ctx, char **reg)
     JSON_Object *caps_obj = NULL;
     JSON_Value *cap_val = NULL;
     JSON_Object *cap_obj = NULL;
+    JSON_Value *vendor_val = NULL;
+    JSON_Object *vendor_obj = NULL;
+    JSON_Value *con_val  = NULL;
+    JSON_Object *con_obj = NULL;
+    JSON_Value *mod_val  = NULL;
+    JSON_Object *mod_obj = NULL;
+    JSON_Value *dep_val  = NULL;
+    JSON_Object *dep_obj = NULL;
+
 
     /*
      * Start the registration array
      */
     reg_arry_val = json_value_init_array();
-    reg_obj = json_value_get_object(reg_arry_val);
+    //reg_obj = json_value_get_object(reg_arry_val);
     reg_arry = json_array  ((const JSON_Value *)reg_arry_val);
 
     ver_val = json_value_init_object();
@@ -1356,23 +1365,49 @@ static ACVP_RESULT acvp_build_register(ACVP_CTX *ctx, char **reg)
 
     val = json_value_init_object();
     obj = json_value_get_object(val);
+    json_object_set_string(obj, "operation", "register");
     json_object_set_string(obj, "certificateRequest", "yes");
+    json_object_set_string(obj, "debugRequest", "no");
+    json_object_set_string(obj, "production", "no");
+    json_object_set_string(obj, "encryptAtRest", "yes");
 
     oe_val = json_value_init_object();
     oe_obj = json_value_get_object(oe_val);
-    json_object_set_string(oe_obj, "vendorName", ctx->vendor_name);
-    json_object_set_string(oe_obj, "vendorURL", ctx->vendor_url);
-    json_object_set_string(oe_obj, "contact", ctx->contact_name);
-    json_object_set_string(oe_obj, "contactEmail", ctx->contact_email);
-    json_object_set_string(oe_obj, "moduleName", ctx->module_name);
-    json_object_set_string(oe_obj, "moduleType", ctx->module_type);
+
+    vendor_val = json_value_init_object();
+    vendor_obj = json_value_get_object(vendor_val);
+
+    json_object_set_string(vendor_obj, "name", ctx->vendor_name);
+    json_object_set_string(vendor_obj, "website", ctx->vendor_url);
+
+    con_val = json_value_init_object();
+    con_obj = json_value_get_object(con_val);
+
+    json_object_set_string(con_obj, "name", ctx->contact_name);
+    json_object_set_string(con_obj, "email", ctx->contact_email);
+    json_object_set_value(vendor_obj, "contact", con_val);
+    json_object_set_value(oe_obj, "vendor", vendor_val);
+
+    mod_val = json_value_init_object();
+    mod_obj = json_value_get_object(mod_val);
+
+    json_object_set_string(mod_obj, "name", ctx->module_name);
+    json_object_set_string(mod_obj, "version", "1.0");
+    json_object_set_string(mod_obj, "type", ctx->module_type);
+    json_object_set_value(oe_obj, "module", mod_val);
 
     oee_val = json_value_init_object();
     oee_obj = json_value_get_object(oee_val);
-    json_object_set_string(oee_obj, "moduleVersion", ctx->module_version);
-    json_object_set_string(oee_obj, "processor", "Intel Woodcrest");
-    json_object_set_string(oee_obj, "operatingSystem", "Linux 3.1");
-    json_object_set_value(oe_obj, "operational_environment", oee_val);
+
+    dep_val = json_value_init_object();
+    dep_obj = json_value_get_object(dep_val);
+
+
+    json_object_set_string(dep_obj, "type", "software");
+    json_object_set_string(dep_obj, "name", "Linux 3.1");
+    json_object_set_string(dep_obj, "cpe", "cpe-2.3:o:ubuntu:linux:3.1");
+    json_object_set_value(oee_obj, "dependencies", dep_val);
+    json_object_set_value(oe_obj, "operationalEnvironment", oee_val);
 
     json_object_set_string(oe_obj, "implementationDescription", ctx->module_desc);
     json_object_set_value(obj, "oeInformation", oe_val);
