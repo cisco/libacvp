@@ -2,11 +2,12 @@ CC = gcc
 CFLAGS+=-g -O0 -fPIC -Wall
 LDFLAGS+=
 INCDIRS+=-I. -Isrc
+PKCS11_INCDIRS+=-I/usr/include/nss3 -I/usr/include/nspr4
 
 SOURCES=src/acvp.c src/acvp_aes.c src/acvp_des.c src/acvp_hash.c src/acvp_transport.c src/acvp_util.c src/parson.c src/acvp_drbg.c src/acvp_hmac.c
 OBJECTS=$(SOURCES:.c=.o)
 
-all: libacvp.a acvp_app
+all: libacvp.a acvp_app pkcs11_app
 
 .PHONY: test testcpp
 
@@ -22,6 +23,9 @@ libacvp.so: $(OBJECTS)
 
 acvp_app: app/app_main.c libacvp.a
 	$(CC) $(INCDIRS) -pie $(CFLAGS) -o $@ app/app_main.c -L. $(LDFLAGS) -lacvp -lssl -lcrypto -lcurl -ldl
+
+pkcs11_app: app/app_pkcs11.c app/pkcs11_server.c libacvp.a
+	$(CC) $(INCDIRS) $(PKCS11_INCDIRS) -pie $(CFLAGS) -o $@ app/app_pkcs11.c app/pkcs11_server.c -L. $(LDFLAGS) -lacvp -lcurl -ldl
 
 clean:
 	rm -f *.[ao]
