@@ -406,7 +406,7 @@ ACVP_RESULT acvp_enable_hash_cap(
 
     //TODO: need to validate that cipher, mode, etc. are valid values
     //      we also need to make sure we're not adding a duplicate
-    cap->in_bit = 1;
+    cap->in_bit = 0;
     cap->in_empty = 1;
 
     return (acvp_append_hash_caps_entry(ctx, cap, cipher, crypto_handler));
