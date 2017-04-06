@@ -1518,7 +1518,7 @@ static ACVP_RESULT acvp_build_register(ACVP_CTX *ctx, char **reg)
     /*
      * Add the entire caps exchange section to the top object
      */
-    json_object_set_value(obj, "capability_exchange", caps_val);
+    json_object_set_value(obj, "capabilityExchange", caps_val);
 
     json_array_append_value(reg_arry, val);
     //*reg = json_serialize_to_string(val);
