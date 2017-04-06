@@ -399,15 +399,16 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
     /*
      * verify the direction is valid - 0.2 version only
      */
-    if (!strncmp(dir_str, "encrypt", 7)) {
-	dir = ACVP_DIR_ENCRYPT;
-    } else if (!strncmp(dir_str, "decrypt", 7)) {
-	dir = ACVP_DIR_DECRYPT;
-    } else {
-        acvp_log_msg(ctx, "ERROR: unsupported direction requested from server (%s)", dir_str);
-        //return (ACVP_UNSUPPORTED_OP);
+    if (dir_str != NULL) {
+        if (!strncmp(dir_str, "encrypt", 7)) {
+	    dir = ACVP_DIR_ENCRYPT;
+        } else if (!strncmp(dir_str, "decrypt", 7)) {
+	    dir = ACVP_DIR_DECRYPT;
+        } else {
+            acvp_log_msg(ctx, "ERROR: unsupported direction requested from server (%s)", dir_str);
+            //return (ACVP_UNSUPPORTED_OP);
+        }
     }
-
     /*
      * Get a reference to the abstracted test case
      */
