@@ -385,6 +385,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
     ACVP_SYM_CIPHER_TC stc;
     ACVP_TEST_CASE tc;
     ACVP_RESULT rv;
+    const char		*dir_str2 = NULL;
     const char		*dir_str = json_object_get_string(obj, "direction"); 
     const char		*alg_str = json_object_get_string(obj, "algorithm"); 
     ACVP_SYM_CIPH_DIR	dir;
@@ -459,19 +460,19 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
     for (i = 0; i < g_cnt; i++) {
         groupval = json_array_get_value(groups, i);
         groupobj = json_value_get_object(groupval);
+        dir_str2 = json_object_get_string(groupobj, "direction");
 
-	/* version 0.3 direction */
-	if (dir_str == NULL) {
-            dir_str = json_object_get_string(groupobj, "direction");
+	/* version 0.3 direction will override 0.2 if there */
+	if (dir_str2 != NULL) {
     	    /*
     	     * verify the direction is valid 
      	     */
-    	    if (!strncmp(dir_str, "encrypt", 7)) {
+    	    if (!strncmp(dir_str2, "encrypt", 7)) {
 	        dir = ACVP_DIR_ENCRYPT;
-    	    } else if (!strncmp(dir_str, "decrypt", 7)) {
+    	    } else if (!strncmp(dir_str2, "decrypt", 7)) {
 	        dir = ACVP_DIR_DECRYPT;
     	    } else {
-                acvp_log_msg(ctx, "ERROR: unsupported direction requested from server (%s)", dir_str);
+                acvp_log_msg(ctx, "ERROR: unsupported direction requested from server (%s)", dir_str2);
                 return (ACVP_UNSUPPORTED_OP);
             }
         }
