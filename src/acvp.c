@@ -1350,14 +1350,6 @@ static ACVP_RESULT acvp_build_register(ACVP_CTX *ctx, char **reg)
     JSON_Object *dep_obj = NULL;
     JSON_Value *con_val  = NULL;
     JSON_Object *con_obj = NULL;
-#if 0
-    JSON_Object *dep_array_obj = NULL;
-    JSON_Array *fea_array_val  = NULL;
-    JSON_Object *fea_array_obj = NULL;
-    JSON_Value *fea_val  = NULL;
-    JSON_Object *fea_obj = NULL;
-    JSON_Object *con_array_obj = NULL;
-#endif
 
     /*
      * Start the registration array
@@ -1374,6 +1366,10 @@ static ACVP_RESULT acvp_build_register(ACVP_CTX *ctx, char **reg)
 
     val = json_value_init_object();
     obj = json_value_get_object(val);
+
+    /* TODO: Type of request are under construction, hardcoded for now
+     * will need a function acvp_set_request_info() to init
+     */
     json_object_set_string(obj, "operation", "register");
     json_object_set_string(obj, "certificateRequest", "yes");
     json_object_set_string(obj, "debugRequest", "no");
@@ -1406,13 +1402,16 @@ static ACVP_RESULT acvp_build_register(ACVP_CTX *ctx, char **reg)
     mod_obj = json_value_get_object(mod_val);
 
     json_object_set_string(mod_obj, "name", ctx->module_name);
-    json_object_set_string(mod_obj, "version", "1.0");
+    json_object_set_string(mod_obj, "version", ctx->module_version);
     json_object_set_string(mod_obj, "type", ctx->module_type);
     json_object_set_value(oe_obj, "module", mod_val);
 
     oee_val = json_value_init_object();
     oee_obj = json_value_get_object(oee_val);
 
+    /* TODO: dependencies are under construction, hardcoded for now
+     * will need a function acvp_set_depedency_info() to init
+     */
     json_object_set_value(oee_obj, "dependencies", json_value_init_array());
     dep_array_val = json_object_get_array(oee_obj, "dependencies");
 
@@ -1436,14 +1435,7 @@ static ACVP_RESULT acvp_build_register(ACVP_CTX *ctx, char **reg)
 
     dep_val = json_value_init_object();
     dep_obj = json_value_get_object(dep_val);
-#if 0
-    fea_array_val = json_value_init_array();
-    fea_array_obj = json_value_get_object(reg_arry_val);
 
-    json_array_append_string(fea_array_val, "rdrand");
-
-    json_object_set_value(dep_obj, "features", fea_array_val);
-#endif
     json_object_set_value(oe_obj, "operationalEnvironment", oee_val);
 
     json_object_set_string(oe_obj, "implementationDescription", ctx->module_desc);
