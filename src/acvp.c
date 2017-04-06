@@ -1342,13 +1342,22 @@ static ACVP_RESULT acvp_build_register(ACVP_CTX *ctx, char **reg)
     JSON_Object *cap_obj = NULL;
     JSON_Value *vendor_val = NULL;
     JSON_Object *vendor_obj = NULL;
-    JSON_Value *con_val  = NULL;
-    JSON_Object *con_obj = NULL;
+    JSON_Array *con_array_val  = NULL;
+    JSON_Array *dep_array_val  = NULL;
     JSON_Value *mod_val  = NULL;
     JSON_Object *mod_obj = NULL;
     JSON_Value *dep_val  = NULL;
     JSON_Object *dep_obj = NULL;
-
+    JSON_Value *con_val  = NULL;
+    JSON_Object *con_obj = NULL;
+#if 0
+    JSON_Object *dep_array_obj = NULL;
+    JSON_Array *fea_array_val  = NULL;
+    JSON_Object *fea_array_obj = NULL;
+    JSON_Value *fea_val  = NULL;
+    JSON_Object *fea_obj = NULL;
+    JSON_Object *con_array_obj = NULL;
+#endif
 
     /*
      * Start the registration array
@@ -1380,12 +1389,17 @@ static ACVP_RESULT acvp_build_register(ACVP_CTX *ctx, char **reg)
     json_object_set_string(vendor_obj, "name", ctx->vendor_name);
     json_object_set_string(vendor_obj, "website", ctx->vendor_url);
 
+
+    json_object_set_value(vendor_obj, "contact", json_value_init_array());
+    con_array_val = json_object_get_array(vendor_obj, "contact");
+
     con_val = json_value_init_object();
     con_obj = json_value_get_object(con_val);
 
     json_object_set_string(con_obj, "name", ctx->contact_name);
     json_object_set_string(con_obj, "email", ctx->contact_email);
-    json_object_set_value(vendor_obj, "contact", con_val);
+    json_array_append_value(con_array_val, con_val);
+
     json_object_set_value(oe_obj, "vendor", vendor_val);
 
     mod_val = json_value_init_object();
@@ -1399,6 +1413,9 @@ static ACVP_RESULT acvp_build_register(ACVP_CTX *ctx, char **reg)
     oee_val = json_value_init_object();
     oee_obj = json_value_get_object(oee_val);
 
+    json_object_set_value(oee_obj, "dependencies", json_value_init_array());
+    dep_array_val = json_object_get_array(oee_obj, "dependencies");
+
     dep_val = json_value_init_object();
     dep_obj = json_value_get_object(dep_val);
 
@@ -1406,7 +1423,27 @@ static ACVP_RESULT acvp_build_register(ACVP_CTX *ctx, char **reg)
     json_object_set_string(dep_obj, "type", "software");
     json_object_set_string(dep_obj, "name", "Linux 3.1");
     json_object_set_string(dep_obj, "cpe", "cpe-2.3:o:ubuntu:linux:3.1");
-    json_object_set_value(oee_obj, "dependencies", dep_val);
+    json_array_append_value(dep_array_val, dep_val);
+
+    dep_val = json_value_init_object();
+    dep_obj = json_value_get_object(dep_val);
+    json_object_set_string(dep_obj, "type", "processor");
+    json_object_set_string(dep_obj, "manufacturer", "Intel");
+    json_object_set_string(dep_obj, "family", "ARK");
+    json_object_set_string(dep_obj, "name", "Xeon");
+    json_object_set_string(dep_obj, "series", "5100");
+    json_array_append_value(dep_array_val, dep_val);
+
+    dep_val = json_value_init_object();
+    dep_obj = json_value_get_object(dep_val);
+#if 0
+    fea_array_val = json_value_init_array();
+    fea_array_obj = json_value_get_object(reg_arry_val);
+
+    json_array_append_string(fea_array_val, "rdrand");
+
+    json_object_set_value(dep_obj, "features", fea_array_val);
+#endif
     json_object_set_value(oe_obj, "operationalEnvironment", oee_val);
 
     json_object_set_string(oe_obj, "implementationDescription", ctx->module_desc);
