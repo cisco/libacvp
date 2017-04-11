@@ -30,7 +30,7 @@
 
 #define ACVP_VERSION    "0.3"
 
-#define ACVP_ALG_MAX 34  /* Used by alg_tbl[] */
+#define ACVP_ALG_MAX 42  /* Used by alg_tbl[] */
 
 #define ACVP_ALG_AES_ECB             "AES-ECB"
 #define ACVP_ALG_AES_CBC             "AES-CBC"
@@ -65,6 +65,15 @@
 #define ACVP_ALG_HASHDRBG            "hashDRBG"
 #define ACVP_ALG_HMACDRBG            "hmacDRBG"
 #define ACVP_ALG_CTRDRBG             "ctrDRBG"
+#define ACVP_ALG_HMAC_SHA1           "HMAC-SHA1"
+#define ACVP_ALG_HMAC_SHA2_224       "HMAC-SHA2-224"
+#define ACVP_ALG_HMAC_SHA2_256       "HMAC-SHA2-256"
+#define ACVP_ALG_HMAC_SHA2_384       "HMAC-SHA2-384"
+#define ACVP_ALG_HMAC_SHA2_512       "HMAC-SHA2-512"
+#define ACVP_ALG_HMAC_SHA3_224       "HMAC-SHA3-224"
+#define ACVP_ALG_HMAC_SHA3_256       "HMAC-SHA3-256"
+#define ACVP_ALG_HMAC_SHA3_384       "HMAC-SHA3-384"
+#define ACVP_ALG_HMAC_SHA3_512       "HMAC-SHA3-512"
 
 #define ACVP_DRBG_MODE_SHA_1         "SHA-1"
 #define ACVP_DRBG_MODE_SHA_224       "SHA-224"
@@ -98,6 +107,9 @@
 
 #define ACVP_HASH_MSG_MAX       1024
 #define ACVP_HASH_MD_MAX        64
+
+#define ACVP_HMAC_MSG_MAX       1024
+#define ACVP_HMAC_MD_MAX        64
 
 #define ACVP_KAT_BUF_MAX        1024*1024
 #define ACVP_REG_BUF_MAX        1024*65
@@ -143,6 +155,14 @@ typedef struct acvp_hash_capability {
     int               in_bit;
     int               in_empty;
 } ACVP_HASH_CAP;
+
+typedef struct acvp_hmac_capability {
+    int               in_byte;
+    int               in_empty;
+    int               out_byte;
+    int               in_len;
+    int               out_len;
+} ACVP_HMAC_CAP;
 
 typedef struct acvp_drbg_prereq_alg_val {
     ACVP_DRBG_PRE_REQ alg;
@@ -201,6 +221,7 @@ typedef struct acvp_caps_list_t {
 	ACVP_SYM_CIPHER_CAP *sym_cap;
     ACVP_HASH_CAP       *hash_cap;
     ACVP_DRBG_CAP       *drbg_cap;
+    ACVP_HMAC_CAP       *hmac_cap;
 	//TODO: add other cipher types: asymmetric, DRBG, hash, etc.
     } cap;
     ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case);
@@ -266,6 +287,7 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 ACVP_RESULT acvp_entropy_handler(ACVP_CTX *ctx, JSON_Object *obj);
 ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
+ACVP_RESULT acvp_hmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
 /*
  * ACVP utility functions used internally

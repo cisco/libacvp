@@ -100,6 +100,15 @@ typedef enum acvp_sym_cipher {
     ACVP_SHA256,
     ACVP_SHA384,
     ACVP_SHA512,
+	ACVP_HMAC_SHA1,
+	ACVP_HMAC_SHA2_224,
+	ACVP_HMAC_SHA2_256,
+	ACVP_HMAC_SHA2_384,
+	ACVP_HMAC_SHA2_512,
+	ACVP_HMAC_SHA3_224,
+	ACVP_HMAC_SHA3_256,
+	ACVP_HMAC_SHA3_384,
+	ACVP_HMAC_SHA3_512,
     ACVP_HASHDRBG,
     ACVP_HMACDRBG,
     ACVP_CTRDRBG,
@@ -112,7 +121,8 @@ typedef enum acvp_sym_cipher {
 typedef enum acvp_capability_type {
     ACVP_SYM_TYPE = 1,
     ACVP_HASH_TYPE,
-    ACVP_DRBG_TYPE
+    ACVP_DRBG_TYPE,
+	ACVP_HMAC_TYPE
 } ACVP_CAP_TYPE;
 
 typedef enum acvp_sym_cipher_keying_option {
@@ -311,6 +321,24 @@ typedef struct acvp_hash_tc_t {
     unsigned int  md_len;
     unsigned int  test_type;
 } ACVP_HASH_TC;
+
+/*
+ * This struct holds data that represents a single test case
+ * for hmac testing.  This data is
+ * passed between libacvp and the crypto module.
+ */
+typedef struct acvp_hmac_tc_t {
+    ACVP_CIPHER cipher;
+    unsigned int  tc_id;    /* Test case id */
+    unsigned char *msg;
+    unsigned char *m1;
+    unsigned char *m2;
+    unsigned char *m3;
+    unsigned int  msg_len;
+    unsigned char *md; /* The resulting digest calculated for the test case */
+    unsigned int  md_len;
+    unsigned int  test_type;
+} ACVP_HMAC_TC;
 
 /*
  * This struct holds data that represents a single test case
@@ -520,6 +548,31 @@ ACVP_RESULT acvp_enable_hash_cap(
                                      int               min,
                                      int               step,
                                      int               max);
+
+/*! @brief acvp_enable_hash_cap() allows an application to specify a
+	   hash capability to be tested by the ACVP server.
+
+	This function should be called to enable crypto capabilities for
+	hash algorithms that will be tested by the ACVP server.  This
+	includes SHA-1, SHA-256, SHA-384, etc.  This function may be called
+	multiple times to specify more than one crypto capability.
+
+	When the application enables a crypto capability, such as SHA-1, it
+	also needs to specify a callback function that will be used by libacvp
+	when that crypto capability is needed during a test session.
+
+	@param ctx Address of pointer to a previously allocated ACVP_CTX.
+	@param cipher ACVP_CIPHER enum value identifying the crypto capability.
+	@param crypto_handler Address of function implemented by application that
+	   is invoked by libacvp when the crypto capablity is needed during
+	   a test session.
+
+	@return ACVP_RESULT
+ */
+ACVP_RESULT acvp_enable_hmac_cap(
+						ACVP_CTX *ctx,
+						ACVP_CIPHER cipher,
+						ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case));
 
 /*! @brief acvp_create_test_session() creates a context that can be used to
       commence a test session with an ACVP server.

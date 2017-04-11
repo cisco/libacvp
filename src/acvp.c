@@ -50,11 +50,16 @@ static ACVP_RESULT acvp_append_hash_caps_entry(
     ACVP_HASH_CAP *cap,
     ACVP_CIPHER cipher,
     ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case));
-    static ACVP_RESULT acvp_append_drbg_caps_entry(
-        ACVP_CTX *ctx,
-        ACVP_DRBG_CAP *cap,
-        ACVP_CIPHER cipher,
-        ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case));
+static ACVP_RESULT acvp_append_drbg_caps_entry(
+	ACVP_CTX *ctx,
+	ACVP_DRBG_CAP *cap,
+	ACVP_CIPHER cipher,
+	ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case));
+static ACVP_RESULT acvp_append_hmac_caps_entry(
+	ACVP_CTX *ctx,
+	ACVP_HMAC_CAP *cap,
+	ACVP_CIPHER cipher,
+	ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case));
 static void acvp_cap_free_sl(ACVP_SL_LIST *list);
 static ACVP_RESULT acvp_get_result_vsid(ACVP_CTX *ctx, int vs_id);
 
@@ -100,7 +105,15 @@ ACVP_ALG_HANDLER alg_tbl[ACVP_ALG_MAX] = {
     {ACVP_SHA256,          &acvp_hash_kat_handler,  ACVP_ALG_SHA256},
     {ACVP_SHA384,          &acvp_hash_kat_handler,  ACVP_ALG_SHA384},
     {ACVP_SHA512,          &acvp_hash_kat_handler,  ACVP_ALG_SHA512},
-
+	{ACVP_HMAC_SHA1,       &acvp_hmac_kat_handler,  ACVP_ALG_HMAC_SHA1},
+	{ACVP_HMAC_SHA2_224,   &acvp_hmac_kat_handler,  ACVP_ALG_HMAC_SHA2_224},
+	{ACVP_HMAC_SHA2_256,   &acvp_hmac_kat_handler,  ACVP_ALG_HMAC_SHA2_256},
+	{ACVP_HMAC_SHA2_384,   &acvp_hmac_kat_handler,  ACVP_ALG_HMAC_SHA2_384},
+	{ACVP_HMAC_SHA2_512,   &acvp_hmac_kat_handler,  ACVP_ALG_HMAC_SHA2_512},
+	{ACVP_HMAC_SHA3_224,   &acvp_hmac_kat_handler,  ACVP_ALG_HMAC_SHA3_224},
+	{ACVP_HMAC_SHA3_256,   &acvp_hmac_kat_handler,  ACVP_ALG_HMAC_SHA3_256},
+	{ACVP_HMAC_SHA3_384,   &acvp_hmac_kat_handler,  ACVP_ALG_HMAC_SHA3_384},
+	{ACVP_HMAC_SHA3_512,   &acvp_hmac_kat_handler,  ACVP_ALG_HMAC_SHA3_512},
     {ACVP_HASHDRBG,        &acvp_drbg_kat_handler,  ACVP_ALG_HASHDRBG},
     {ACVP_HMACDRBG,        &acvp_drbg_kat_handler,  ACVP_ALG_HMACDRBG},
     {ACVP_CTRDRBG,         &acvp_drbg_kat_handler,  ACVP_ALG_CTRDRBG},
@@ -388,7 +401,7 @@ ACVP_RESULT acvp_enable_sym_cipher_cap_parm(
 ACVP_RESULT acvp_enable_hash_cap(
 	ACVP_CTX *ctx,
 	ACVP_CIPHER cipher,
-        ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case))
+	ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case))
 {
     ACVP_HASH_CAP *cap;
 
@@ -410,6 +423,34 @@ ACVP_RESULT acvp_enable_hash_cap(
     cap->in_empty = 1;
 
     return (acvp_append_hash_caps_entry(ctx, cap, cipher, crypto_handler));
+}
+
+ACVP_RESULT acvp_enable_hmac_cap(
+	ACVP_CTX *ctx,
+	ACVP_CIPHER cipher,
+	ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case))
+{
+    ACVP_HMAC_CAP *cap;
+
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+    if (!crypto_handler) {
+        return ACVP_INVALID_ARG;
+    }
+
+    cap = calloc(1, sizeof(ACVP_HMAC_CAP));
+    if (!cap) {
+	return ACVP_MALLOC_FAIL;
+    }
+
+    //TODO: need to validate that cipher, mode, etc. are valid values
+    //      we also need to make sure we're not adding a duplicate
+    cap->in_byte = 0;
+    cap->in_empty = 1;
+    // NEED TO DO THE REST OF THE VALUES HERE?
+
+    return (acvp_append_hmac_caps_entry(ctx, cap, cipher, crypto_handler));
 }
 
 
@@ -1018,6 +1059,18 @@ static ACVP_RESULT acvp_build_hash_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
     return ACVP_SUCCESS;
 }
 
+static ACVP_RESULT acvp_build_hmac_register_cap(JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry)
+{
+    json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
+    json_object_set_string(cap_obj, "inByte", cap_entry->cap.hmac_cap->in_byte ? "yes" : "no" );
+    json_object_set_string(cap_obj, "inEmpty", cap_entry->cap.hmac_cap->in_empty ? "yes" : "no" );
+    json_object_set_string(cap_obj, "outByte", cap_entry->cap.hmac_cap->out_byte ? "yes" : "no" );
+    json_object_set_string(cap_obj, "inLen", cap_entry->cap.hmac_cap->in_len ? "yes" : "no" );
+    json_object_set_string(cap_obj, "outLen", cap_entry->cap.hmac_cap->out_len ? "yes" : "no" );
+
+    return ACVP_SUCCESS;
+}
+
 static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry)
 {
     JSON_Array *mode_arr = NULL;
@@ -1499,6 +1552,17 @@ static ACVP_RESULT acvp_build_register(ACVP_CTX *ctx, char **reg)
             case ACVP_CTRDRBG:
                 acvp_build_drbg_register_cap(cap_obj, cap_entry);
                 break;
+            case ACVP_HMAC_SHA1:
+            case ACVP_HMAC_SHA2_224:
+            case ACVP_HMAC_SHA2_256:
+            case ACVP_HMAC_SHA2_384:
+            case ACVP_HMAC_SHA2_512:
+            case ACVP_HMAC_SHA3_224:
+            case ACVP_HMAC_SHA3_256:
+            case ACVP_HMAC_SHA3_384:
+            case ACVP_HMAC_SHA3_512:
+            	acvp_build_hmac_register_cap(cap_obj, cap_entry);
+            	break;
             default:
 	            acvp_log_msg(ctx, "Cap entry not found, %d.", cap_entry->cipher);
                 return ACVP_NO_CAP;
@@ -1607,7 +1671,7 @@ static ACVP_RESULT acvp_append_sym_cipher_caps_entry(
 }
 
 /*
- * Append a hash capabilitiy to the
+ * Append a hash capability to the
  * capabilities list.  This list is later used to build
  * the register message.
  */
@@ -1662,6 +1726,40 @@ static ACVP_RESULT acvp_append_drbg_caps_entry(
     cap_entry->cap.drbg_cap = cap;
     cap_entry->crypto_handler = crypto_handler;
     cap_entry->cap_type = ACVP_DRBG_TYPE;
+
+    if (!ctx->caps_list) {
+        ctx->caps_list = cap_entry;
+    } else {
+        cap_e2 = ctx->caps_list;
+        while (cap_e2->next) {
+            cap_e2 = cap_e2->next;
+        }
+        cap_e2->next = cap_entry;
+    }
+    return (ACVP_SUCCESS);
+}
+
+/*
+ * Append hmac capability to the capabilities
+ * list.  This list is later used to build
+ * the register message.
+ */
+static ACVP_RESULT acvp_append_hmac_caps_entry(
+	ACVP_CTX *ctx,
+	ACVP_HMAC_CAP *cap,
+        ACVP_CIPHER cipher,
+        ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case))
+{
+    ACVP_CAPS_LIST *cap_entry, *cap_e2;
+
+    cap_entry = calloc(1, sizeof(ACVP_CAPS_LIST));
+    if (!cap_entry) {
+        return ACVP_MALLOC_FAIL;
+    }
+    cap_entry->cipher = cipher;
+    cap_entry->cap.hash_cap = cap;
+    cap_entry->crypto_handler = crypto_handler;
+    cap_entry->cap_type = ACVP_HMAC_TYPE;
 
     if (!ctx->caps_list) {
         ctx->caps_list = cap_entry;
