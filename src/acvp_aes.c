@@ -477,7 +477,10 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
             }
         }
         keylen = (unsigned int)json_object_get_number(groupobj, "keyLen");
-        ivlen = (unsigned int)json_object_get_number(groupobj, "ivLen");
+        ivlen = keylen;
+	if (alg_id == ACVP_AES_GCM || alg_id == ACVP_AES_CCM) {
+            ivlen = (unsigned int)json_object_get_number(groupobj, "ivLen");
+        }
         ptlen = (unsigned int)json_object_get_number(groupobj, "ptLen");
         aadlen = (unsigned int)json_object_get_number(groupobj, "aadLen");
         taglen = (unsigned int)json_object_get_number(groupobj, "tagLen");
