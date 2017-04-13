@@ -10,7 +10,13 @@
 #include <sys/wait.h>
 #include <dlfcn.h>
 
+
 #include "pkcs11_lcl.h"
+#ifdef ENABLE_NSS_DRBG
+#include "loader.h"
+#else
+#define FREEBLVector void 
+#endif
 #include "pkcs11_server.h"
 
 /* Command codes to select the function between the client and the server */
@@ -83,6 +89,10 @@
 #define SC_GET_FUNCTION_STATUS	0x42
 #define SC_CANCEL_FUNCTION	0x43
 #define SC_WAIT_FOR_SLOT_EVENT	0x44
+#define FREEBL_DRBG_INSTANIATE  0x80
+#define FREEBL_DRBG_RESEED      0x81
+#define FREEBL_DRBG_GENERATE    0x82
+#define FREEBL_DRBG_UNINSTANTIATE 0x83
 
 /*************************************************************************
  *                          marshalling helpers                          *
@@ -137,9 +147,9 @@ void *readbuf(int fd, size_t *plen)
    return buf;
 }
 
-void writebuf(int fd, void *in, size_t len)
+void writebuf(int fd, const void *in, size_t len)
 {
-   unsigned char *buf = in;
+   const unsigned char *buf = in;
    WRITEVAR(fd,len);
    if (len == 0) {
 	return ;
@@ -162,6 +172,7 @@ CK_ATTRIBUTE *readtemplate(int fd, CK_ULONG *pcount)
 	template[i].pValue = readbuf(fd,&len);
 	template[i].ulValueLen = len;
     }
+    *pcount = count;
     return template;
 }
 
@@ -190,9 +201,28 @@ writetemplate(int fd, CK_ATTRIBUTE *template, CK_ULONG count)
 void readmechanism(int fd, CK_MECHANISM *mech)
 {
     size_t len;
+    CK_GCM_PARAMS *gcm_params;
+    CK_CCM_PARAMS *ccm_params;
     READVAR(fd,mech->mechanism);
     switch (mech->mechanism) {
-    /* when we add mechanisms that have params other then IVs, add them here */
+    case CKM_AES_GCM:
+	gcm_params = readbuf(fd, &len);
+	mech->pParameter = gcm_params;
+	mech->ulParameterLen = len;
+	gcm_params->pIv = readbuf(fd, &len);
+	gcm_params->ulIvLen = len;
+	gcm_params->pAAD = readbuf(fd, &len);
+	gcm_params->ulAADLen = len;
+	break;
+    case CKM_AES_CCM:
+	ccm_params = readbuf(fd, &len);
+	mech->pParameter = ccm_params;
+	mech->ulParameterLen = len;
+	ccm_params->pNonce = readbuf(fd, &len);
+	ccm_params->ulNonceLen = len;
+	ccm_params->pAAD = readbuf(fd, &len);
+	ccm_params->ulAADLen = len;
+	break;
     default:
 	mech->pParameter = readbuf(fd,&len);
 	mech->ulParameterLen = len;
@@ -203,8 +233,21 @@ void readmechanism(int fd, CK_MECHANISM *mech)
 
 void freemechanism(CK_MECHANISM *mech)
 {
+    CK_GCM_PARAMS *gcm_params;
+    CK_CCM_PARAMS *ccm_params;
     switch (mech->mechanism) {
-    /* when we add mechanisms that have params other then IVs, add them here */
+    case CKM_AES_GCM:
+	gcm_params = (CK_GCM_PARAMS *)mech->pParameter;
+	free(gcm_params->pIv);
+	free(gcm_params->pAAD);
+	free(gcm_params);
+	break;
+    case CKM_AES_CCM:
+	ccm_params = (CK_CCM_PARAMS *)mech->pParameter;
+	free(ccm_params->pNonce);
+	free(ccm_params->pAAD);
+	free(ccm_params);
+	break;
     default:
 	free(mech->pParameter);
 	break;
@@ -213,9 +256,22 @@ void freemechanism(CK_MECHANISM *mech)
 
 void writemechanism(int fd, CK_MECHANISM *mech)
 {
+    CK_GCM_PARAMS *gcm_params;
+    CK_CCM_PARAMS *ccm_params;
     WRITEVAR(fd,mech->mechanism);
     switch (mech->mechanism) {
-    /* when we add mechanisms that have params other then IVs, add them here */
+    case CKM_AES_GCM:
+	gcm_params = (CK_GCM_PARAMS *)mech->pParameter;
+	writebuf(fd,mech->pParameter,mech->ulParameterLen);
+	writebuf(fd,gcm_params->pIv, gcm_params->ulIvLen);
+	writebuf(fd,gcm_params->pAAD, gcm_params->ulAADLen);
+	break;
+    case CKM_AES_CCM:
+	ccm_params = (CK_CCM_PARAMS *)mech->pParameter;
+	writebuf(fd,mech->pParameter,mech->ulParameterLen);
+	writebuf(fd,ccm_params->pNonce, ccm_params->ulNonceLen);
+	writebuf(fd,ccm_params->pAAD, ccm_params->ulAADLen);
+	break;
     default:
 	writebuf(fd,mech->pParameter,mech->ulParameterLen);
 	break;
@@ -274,15 +330,77 @@ void pkcs11_client_set_fd(int request_fd, int reply_fd)
 }
 
 /* close down the server */
-void pkcs11_client_close(int pid)
+int pkcs11_client_close(int pid)
 {
     int status;
     unsigned char command = LIBRARY_CLOSE;
     WRITEVAR(request, command);
     waitpid(pid, &status, 0);
+    return status;
 }
 
-/******************** client marshalling functions **********************/
+/******************** client freebl marshalling functions ********************/
+#ifdef ENABLE_NSS_DRBG
+SECStatus freebl_drbg_instantiate(const PRUint8 *entropy,
+                                   unsigned int entropy_len,
+                                   const PRUint8 *nonce,
+                                   unsigned int nonce_len,
+                                   const PRUint8 *personal_string,
+                                   unsigned int ps_len)
+{
+    unsigned char command = FREEBL_DRBG_INSTANIATE;
+    SECStatus rv;
+    WRITEVAR(request, command);
+    writebuf(request, entropy, entropy_len);
+    writebuf(request, nonce, nonce_len);
+    writebuf(request, personal_string, ps_len);
+    READVAR(reply, rv);
+    return rv;
+}
+
+SECStatus freebl_drbg_reseed(const PRUint8 *entropy,
+                               unsigned int entropy_len,
+                               const PRUint8 *additional,
+                               unsigned int additional_len)
+{
+    unsigned char command = FREEBL_DRBG_RESEED;
+    SECStatus rv;
+    WRITEVAR(request, command);
+    writebuf(request, entropy, entropy_len);
+    writebuf(request, additional, additional_len);
+    READVAR(reply, rv);
+    return rv;
+}
+
+SECStatus freebl_drbg_generate(PRUint8 *bytes,
+                                 unsigned int bytes_len,
+                                 const PRUint8 *additional,
+                                 unsigned int additional_len)
+{
+    unsigned char command = FREEBL_DRBG_GENERATE;
+    SECStatus rv;
+    WRITEVAR(request, command);
+    WRITEVAR(request, bytes_len);
+    writebuf(request, additional, additional_len);
+    READVAR(reply, rv);
+    if (rv != SECSuccess) {
+	return rv;
+    }
+    read(reply, bytes, bytes_len);
+    return rv;
+}
+
+SECStatus freebl_drbg_uninstantiate()
+{
+    unsigned char command = FREEBL_DRBG_UNINSTANTIATE;
+    SECStatus rv;
+    WRITEVAR(request, command);
+    READVAR(reply, rv);
+    return rv;
+}
+#endif
+
+/******************** client pkcs11 marshalling functions ********************/
 CK_RV CCC_Initialize(CK_VOID_PTR pInitArgs)
 {
     unsigned char command = SC_INITIALIZE;
@@ -1087,7 +1205,9 @@ CK_RV CCC_WaitForSlotEvent(CK_FLAGS flags, CK_SLOT_ID_PTR pSlot,
  *************************************************************************/
 void
 pkcs11_server(int request_fd, int reply_fd, 
-		CK_FUNCTION_LIST *pkcs11_function_list, void *library_handle)
+		const CK_FUNCTION_LIST *pkcs11_function_list, 
+		const FREEBLVector *freebl_function_list,
+		void *library_handle, void *freebl_library_handle)
 {
     int exit=0;
     unsigned char command;
@@ -1108,8 +1228,100 @@ pkcs11_server(int request_fd, int reply_fd,
 	switch (command) {
 	case LIBRARY_CLOSE:
 	    dlclose(library_handle);
-	    exit = 1;
+	    if (freebl_library_handle) {
+		dlclose(freebl_library_handle);
+	    }
+	    /* should check the status dlclose and return it here */
+	    exit = 0;
 	    break;
+
+#ifdef ENABLE_NSS_DRBG
+	case FREEBL_DRBG_INSTANIATE:
+	    {
+		PRUint8 *entropy;
+                size_t entropy_len;
+                PRUint8 *nonce;
+                size_t nonce_len;
+                PRUint8 *personal_string;
+                size_t  ps_len;
+		SECStatus rv;
+
+		entropy = readbuf(request, &entropy_len);
+		nonce = readbuf(request, &nonce_len);
+		personal_string = readbuf(request, &ps_len);
+		if (freebl_function_list) {
+		    rv = (*freebl_function_list->p_PRNGTEST_Instantiate)(
+				entropy, entropy_len, nonce, 
+				nonce_len, personal_string, ps_len);
+		} else {
+		    rv = SECFailure;
+		}
+		free(entropy);
+		free(nonce);
+		free(personal_string);
+		WRITEVAR(reply, rv);
+	    }
+	    break;
+	case FREEBL_DRBG_RESEED:
+	    {
+		PRUint8 *entropy;
+                size_t entropy_len;
+                PRUint8 *additional;
+                size_t  additional_len;
+		SECStatus rv;
+
+		entropy = readbuf(request, &entropy_len);
+		additional = readbuf(request, &additional_len);
+		if (freebl_function_list) {
+		    rv = (*freebl_function_list->p_PRNGTEST_Reseed)(
+			entropy, entropy_len, additional, additional_len);
+		} else {
+		    rv = SECFailure;
+		}
+		free(entropy);
+		free(additional);
+		WRITEVAR(reply, rv);
+	    }
+	    break;
+	case FREEBL_DRBG_GENERATE:
+	    {
+		PRUint8 *bytes;
+                unsigned int bytes_len;
+                PRUint8 *additional;
+                size_t additional_len;
+		SECStatus rv;
+
+		READVAR(request, bytes_len);
+		additional = readbuf(request, &additional_len);
+		bytes = malloc(bytes_len);
+		if (freebl_function_list) {
+		    rv = (*freebl_function_list->p_PRNGTEST_Generate)(
+			bytes, bytes_len, additional, additional_len);
+		} else {
+		    rv = SECFailure;
+		}
+		free(additional);
+		WRITEVAR(reply, rv);
+		if (rv == SECSuccess) {
+		    write(reply, bytes, bytes_len);
+		}
+		free(bytes);
+	    }
+	    break;
+	case FREEBL_DRBG_UNINSTANTIATE:
+	    {
+		SECStatus rv;
+
+		if (freebl_function_list) {
+		    rv = (*freebl_function_list->p_PRNGTEST_Uninstantiate)();
+		} else {
+		    rv = SECFailure;
+		}
+		WRITEVAR(reply, rv);
+	    }
+	    break;
+#endif
+
 	case SC_INITIALIZE:
 	    {
 		CK_C_INITIALIZE_ARGS initargs;

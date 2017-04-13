@@ -35,6 +35,10 @@ extern "C"
 {
 #endif
 
+/* configuration defines */
+#define ENABLE_NSS_DRBG 1 
+/*#define ENABLE_ALL_TESTS 1  */
+
 #include <pkcs11.h>
 #ifndef CKM_INVALID_MECHANISM
 #define CKM_INVALID_MECHANISM 0xffffffffL

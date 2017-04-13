@@ -14,6 +14,7 @@ all: libacvp.a acvp_app pkcs11_app
 libacvp.a: $(OBJECTS)
 	ar rcs libacvp.a $(OBJECTS)
 
+
 .c.o:
 	$(CC) $(INCDIRS) $(CFLAGS) -c $< -o $@
 
@@ -24,8 +25,14 @@ libacvp.so: $(OBJECTS)
 acvp_app: app/app_main.c libacvp.a
 	$(CC) $(INCDIRS) -pie $(CFLAGS) -o $@ app/app_main.c -L. $(LDFLAGS) -lacvp -lssl -lcrypto -lcurl -ldl
 
-pkcs11_app: app/app_pkcs11.c app/pkcs11_server.c libacvp.a
-	$(CC) $(INCDIRS) $(PKCS11_INCDIRS) -pie $(CFLAGS) -o $@ app/app_pkcs11.c app/pkcs11_server.c -L. $(LDFLAGS) -lacvp -lcurl -ldl
+app/app_pkcs11.o: app/app_pkcs11.c
+	$(CC) $(INCDIRS) $(PKCS11_INCDIRS) $(CFLAGS) -c $< -o $@
+
+app/pkcs11_server.o: app/pkcs11_server.c
+	$(CC) $(INCDIRS) $(PKCS11_INCDIRS) $(CFLAGS) -c $< -o $@
+
+pkcs11_app: app/app_pkcs11.o app/pkcs11_server.o libacvp.a
+	$(CC) $(INCDIRS) $(PKCS11_INCDIRS) -pie $(CFLAGS) -o $@ app/app_pkcs11.o app/pkcs11_server.o -L. $(LDFLAGS) -lacvp -lcurl -ldl
 
 clean:
 	rm -f *.[ao]

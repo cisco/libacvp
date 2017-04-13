@@ -44,12 +44,19 @@
 
 
 #include "pkcs11_lcl.h"
+#ifdef ENABLE_NSS_DRBG
+#include "loader.h"
+#else
+#define FREEBLVector void 
+#endif
 
 static ACVP_RESULT pkcs11_aead_handler(ACVP_TEST_CASE *test_case);
-static ACVP_RESULT pkcs11_aes_keywrap_handler(ACVP_TEST_CASE *test_case);
+#ifdef ENABLE_ALL_TESTS
+static ACVP_RESULT pkcs11_keywrap_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT pkcs11_symetric_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT pkcs11_digest_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_drbg_handler(ACVP_TEST_CASE *test_case);
+#endif
 
 #define DEFAULT_SERVER "127.0.0.1"
 #define DEFAULT_PORT 443
@@ -62,6 +69,7 @@ int port;
 char *ca_chain_file;
 char *cert_file; char *key_file; char *pkcs11_lib;
 char *path_segment;
+static int has_nss = 0;
 CK_FUNCTION_LIST *pkcs11_function_list = NULL;
 CK_SLOT_ID slot_id = -1;
 char *slot_description = NULL;
@@ -134,7 +142,6 @@ static void setup_session_parameters()
 #include "pkcs11_server.h"
 #include <sys/types.h>
 #include <sys/wait.h>
-static void *library_handle = NULL;
 static int pid = -1;
 static int reply[2];
 static int request[2];
@@ -145,10 +152,15 @@ static int request[2];
 ACVP_RESULT load_pkcs11(char *library_name)
 {
     CK_C_GetFunctionList lc_GetFunctionList;
+    void *library_handle = NULL;
+    void *freebl_library_handle = NULL;
+    const FREEBLVector *freebl_function_list = NULL;
     CK_RV crv;
     int rv = 0;
     ACVP_RESULT result;
-
+#ifdef ENABLE_NSS_DRBG
+    char *softoken;
+#endif
 
     /* we fork in case we need to use the PKCS #11 module under test
      * to complete the curl function.
@@ -172,6 +184,10 @@ ACVP_RESULT load_pkcs11(char *library_name)
         return ACVP_CRYPTO_MODULE_FAIL;
     }
     if (pid == 0) {
+	/* close the parent's side of the pipe */
+	close(request[1]);
+	close(reply[0]);
+
 	/* Child becomes the server, do all the PKCS #11 work */
     	library_handle = dlopen(library_name,RTLD_LOCAL|RTLD_NOW);
     	if (library_handle == NULL) {
@@ -201,12 +217,73 @@ ACVP_RESULT load_pkcs11(char *library_name)
 	    write(reply[1],&result, sizeof(result));
             exit(1);
         }
+
+
+	/* handle the freebl case for NSS */
+	has_nss = 0;
+#ifdef ENABLE_NSS_DRBG
+#define SOFTOKEN_NAME "softokn3"
+#define FREEBL_NAME "freeblpriv3"
+	if ((softoken = strstr(library_name,SOFTOKEN_NAME)) != NULL) {
+	    /* we're opening softoken, we also need to attach to freebl
+	     * to test the drbg */
+	    int softoken_name_start = softoken - library_name;
+	    int softoken_name_size = sizeof(SOFTOKEN_NAME)-1;
+	    int freebl_name_size = sizeof(FREEBL_NAME)-1;
+	    int tail_start = softoken_name_start + softoken_name_size;
+	    int library_name_size = strlen(library_name);
+	    int tail_size = library_name_size - tail_start;
+	    int freebl_size = library_name_size + freebl_name_size +
+				- softoken_name_size;
+	    char *freebl;
+            FREEBLGetVectorFn *lfreebl_GetVector;
+
+
+	    freebl =  malloc(freebl_size+1);
+	    memcpy(freebl, library_name, softoken_name_start);
+	    memcpy(&freebl[softoken_name_start], FREEBL_NAME, freebl_name_size);
+	    memcpy(&freebl[softoken_name_start+freebl_name_size], 
+					&library_name[tail_start], tail_size);
+	    freebl[freebl_size] = 0;	
+    	    freebl_library_handle = dlopen(freebl,RTLD_LOCAL|RTLD_NOW);
+	    if (freebl_library_handle == NULL) {
+		perror(library_name);
+        	fprintf(stderr,"%s: %s\n",freebl,dlerror());
+		fprintf(stderr,"turning off DRBG tests \n");
+		goto done;
+	    }
+            lfreebl_GetVector=dlsym(freebl_library_handle,"FREEBL_GetVector");
+            if (lc_GetFunctionList == NULL) {
+        	perror(freebl);
+        	fprintf(stderr,"%s fetching FREEBL_GetVector: %s\n",
+                                	freebl,dlerror());
+		fprintf(stderr,"turning off DRBG tests \n");
+        	dlclose(freebl_library_handle);
+        	freebl_library_handle = NULL;
+		goto done;
+	    }
+            freebl_function_list = (*lfreebl_GetVector)();
+	    if (freebl_function_list == NULL) {
+        	fprintf(stderr,"FREEBL_GetVector() failed.\n");
+		fprintf(stderr,"turning off DRBG tests \n");
+        	dlclose(freebl_library_handle);
+        	freebl_library_handle = NULL;
+		goto done;
+	    }
+	    has_nss = 1;
+	}
+done:
+#endif
 	result = ACVP_SUCCESS;
 	write(reply[1],&result, sizeof(result));
-	pkcs11_server(request[0],reply[1], 
-			pkcs11_function_list, library_handle);
+	write(reply[1],&has_nss, sizeof(has_nss));
+	pkcs11_server(request[0],reply[1], pkcs11_function_list, 
+		freebl_function_list, library_handle, freebl_library_handle);
 	exit(0);
     }
+    /* close the child's side of the pipe */
+    close(reply[1]);
+    close(request[0]);
     /* parent process becomes the client */
     read(reply[0],&result, sizeof(result));
     if (result != ACVP_SUCCESS) {
@@ -214,6 +291,7 @@ ACVP_RESULT load_pkcs11(char *library_name)
 	waitpid(pid, &status, 0);
 	return result;
     }
+    read(reply[0],&has_nss, sizeof(has_nss));
     pkcs11_client_set_fd(request[1],reply[0]);
     pkcs11_function_list = pkcs11_client_get_function_list();
 	
@@ -222,8 +300,7 @@ ACVP_RESULT load_pkcs11(char *library_name)
 
 ACVP_RESULT unload_pkcs11()
 {
-    pkcs11_client_close(pid);
-    return ACVP_SUCCESS;
+    return pkcs11_client_close(pid);
 }
 
 /*
@@ -256,7 +333,7 @@ ACVP_RESULT pkcs11_init()
     return ACVP_SUCCESS;
 }
 
-bool has_nss_drbg() { return false; }
+bool has_nss_drbg() { return has_nss; }
 
 ACVP_RESULT pkcs11_get_info(CK_INFO *info)
 {
@@ -444,10 +521,13 @@ ACVP_SYM_CIPH_DIR pkcs11_get_direction(CK_ULONG flags)
     return ACVP_DIR_DECRYPT;
 }
 
-bool pkcs11_supports_key(CK_MECHANISM_INFO *mech_info, CK_ULONG key_len)
+#define BYTES 8
+#define BITS 1
+bool pkcs11_supports_key(CK_MECHANISM_INFO *mech_info, CK_ULONG key_len, 
+			unsigned int scale)
 {
-     return (mech_info->ulMinKeySize <= key_len) &&
-     		(mech_info->ulMaxKeySize >= key_len);
+     return (mech_info->ulMinKeySize*scale <= key_len) &&
+     		(mech_info->ulMaxKeySize*scale >= key_len);
 }
 
 ACVP_RESULT pkcs11_open_session(CK_SLOT_ID slot_id, CK_SESSION_HANDLE *session)
@@ -475,7 +555,7 @@ ACVP_RESULT pkcs11_close_session(CK_SESSION_HANDLE session)
     return ACVP_SUCCESS;
 }
 
-static const CK_OBJECT_CLASS pkcs11_cko_key = CKO_PRIVATE_KEY;
+static const CK_OBJECT_CLASS pkcs11_cko_key = CKO_SECRET_KEY;
 static const CK_BBOOL pkcs11_ck_true = CK_TRUE;
 static const CK_BBOOL pkcs11_ck_false = CK_FALSE;
 
@@ -487,7 +567,7 @@ CK_OBJECT_HANDLE pkcs11_import_sym_key(CK_SESSION_HANDLE session,
     CK_OBJECT_HANDLE key = CK_INVALID_HANDLE;
     CK_RV crv;
 
-    CK_ATTRIBUTE template[4];
+    CK_ATTRIBUTE template[5];
 
     template[0].type = CKA_CLASS;
     template[0].pValue = (CK_OBJECT_CLASS *)&pkcs11_cko_key;
@@ -506,7 +586,7 @@ CK_OBJECT_HANDLE pkcs11_import_sym_key(CK_SESSION_HANDLE session,
     template[4].ulValueLen = key_len;
 
     crv = (*pkcs11_function_list->C_CreateObject)(session, 
-					&template[0], 4, &key);
+					&template[0], 5, &key);
     if (crv != CKR_OK) {
 	printf("C_CreateObject failed ckrv=0x%lx\n",crv);
         return CK_INVALID_HANDLE;
@@ -544,16 +624,42 @@ ACVP_RESULT pkcs11_encrypt_update(CK_SESSION_HANDLE session,
     return ACVP_SUCCESS;
 }
 
-typedef ACVP_RESULT (*pkcs11_final) (CK_SESSION_HANDLE session);
+ACVP_RESULT pkcs11_encrypt(CK_SESSION_HANDLE session, 
+		unsigned char *pt, unsigned int pt_len,
+		unsigned char *ct, unsigned int *ct_len)
+{
+    CK_RV crv;
+    CK_ULONG ct_local = *ct_len;
 
-ACVP_RESULT pkcs11_encrypt_final(CK_SESSION_HANDLE session )
+    crv = (*pkcs11_function_list->C_Encrypt)(session,
+		pt, pt_len, ct, &ct_local);
+    *ct_len = ct_local;
+    if (crv != CKR_OK) {
+	printf("C_Encrypt failed ckrv=0x%lx\n",crv);
+        return ACVP_CRYPTO_MODULE_FAIL;
+    }
+    return ACVP_SUCCESS;
+}
+
+typedef ACVP_RESULT (*pkcs11_final) (CK_SESSION_HANDLE session,
+		unsigned char *, unsigned int *);
+
+ACVP_RESULT pkcs11_encrypt_final(CK_SESSION_HANDLE session,
+	unsigned char *buf, unsigned int *len_ptr)
 {
     CK_RV crv;
     unsigned char dummy[128];
     CK_ULONG dummy_len = sizeof(dummy);
 
+    if (len_ptr) {
+	buf = dummy;
+    } else {
+	dummy_len = *len_ptr;
+    }
+	
     crv = (*pkcs11_function_list->C_EncryptFinal)(session, 
 			&dummy[0], &dummy_len);
+    if (len_ptr) *len_ptr = dummy_len;
     if (crv != CKR_OK) {
 	printf("C_EncryptFinal failed ckrv=0x%lx\n",crv);
         return ACVP_CRYPTO_MODULE_FAIL;
@@ -591,14 +697,38 @@ ACVP_RESULT pkcs11_decrypt_update(CK_SESSION_HANDLE session,
     return ACVP_SUCCESS;
 }
 
-ACVP_RESULT pkcs11_decrypt_final(CK_SESSION_HANDLE session )
+ACVP_RESULT pkcs11_decrypt(CK_SESSION_HANDLE session, 
+		unsigned char *ct, unsigned int ct_len,
+		unsigned char *pt, unsigned int *pt_len)
+{
+    CK_RV crv;
+    CK_ULONG pt_local = *pt_len;
+
+    crv = (*pkcs11_function_list->C_Decrypt)(session,
+		ct, ct_len, pt, &pt_local);
+    *pt_len = pt_local;
+    if (crv != CKR_OK) {
+	printf("C_Decrypt failed ckrv=0x%lx\n",crv);
+        return ACVP_CRYPTO_MODULE_FAIL;
+    }
+    return ACVP_SUCCESS;
+}
+
+ACVP_RESULT pkcs11_decrypt_final(CK_SESSION_HANDLE session,
+	unsigned char *buf, unsigned int *len_ptr)
 {
     CK_RV crv;
     unsigned char dummy[128];
     CK_ULONG dummy_len = sizeof(dummy);
 
+    if (len_ptr) {
+	buf = dummy;
+    } else {
+	dummy_len = *len_ptr;
+    }
     crv = (*pkcs11_function_list->C_DecryptFinal)(session, 
 			&dummy[0], &dummy_len);
+    if (len_ptr) *len_ptr = dummy_len;
     if (crv != CKR_OK) {
 	printf("C_DecryptFinal failed ckrv=0x%lx\n",crv);
         return ACVP_CRYPTO_MODULE_FAIL;
@@ -819,12 +949,12 @@ int main(int argc, char **argv)
 		&pkcs11_aead_handler);
         CHECK_ENABLE_CAP_RV(rv, "AES GCM");
 
-	if (pkcs11_supports_key(&mech_info,128)) {
+	if (pkcs11_supports_key(&mech_info,128,BYTES)) {
             rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_GCM,
 		 ACVP_SYM_CIPH_KEYLEN, 128);
             CHECK_ENABLE_CAP_RV(rv, "AES GCM keysize 128");
 	}
-	if (pkcs11_supports_key(&mech_info,256)) {
+	if (pkcs11_supports_key(&mech_info,256,BYTES)) {
             rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_GCM,
 		ACVP_SYM_CIPH_KEYLEN, 256);
             CHECK_ENABLE_CAP_RV(rv, "AES GCM keysize 256");
@@ -838,26 +968,33 @@ int main(int argc, char **argv)
         rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_GCM,
 		ACVP_SYM_CIPH_IVLEN, 96);
         CHECK_ENABLE_CAP_RV(rv, "AES GCM IV Length 96");
+#ifdef ENABLE_ALL_TESTS /* only pt_len == 128 currenly supported */
         rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_GCM,
 		ACVP_SYM_CIPH_PTLEN, 0);
         CHECK_ENABLE_CAP_RV(rv, "AES GCM Plain Text Length 0");
+#endif
         rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_GCM,
 		ACVP_SYM_CIPH_PTLEN, 128);
         CHECK_ENABLE_CAP_RV(rv, "AES GCM Plain Text Length 128");
+#ifdef ENABLE_ALL_TESTS /* only pt_len == 128 currenly supported */
         rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_GCM,
 		ACVP_SYM_CIPH_PTLEN, 136);
         CHECK_ENABLE_CAP_RV(rv, "AES GCM Plain Text Length 136");
+#endif
         rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_GCM,
 		ACVP_SYM_CIPH_AADLEN, 128);
         CHECK_ENABLE_CAP_RV(rv, "AES GCM AAD Length 128");
+#ifdef ENABLE_ALL_TESTS /* only aad_len == 128 currenly supported */
         rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_GCM,
 		ACVP_SYM_CIPH_AADLEN, 136);
         CHECK_ENABLE_CAP_RV(rv, "AES GCM AAD Length 136");
         rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_GCM,
 		ACVP_SYM_CIPH_AADLEN, 256);
         CHECK_ENABLE_CAP_RV(rv, "AES GCM AAD Length 256");
+#endif
     }
 
+#ifdef ENABLE_ALL_TESTS /* only AES_GCM supported */
     /*
      * Register AES CCM capabilities
      */
@@ -878,7 +1015,7 @@ int main(int argc, char **argv)
 		ACVP_KO_NA, ivgen_src, ACVP_IVGEN_MODE_822,
 		&pkcs11_aead_handler);
         CHECK_ENABLE_CAP_RV(rv, "AES CCM");
-	if (pkcs11_supports_key(&mech_info,128)) {
+	if (pkcs11_supports_key(&mech_info,128,BYTES)) {
             rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CCM,
 				ACVP_SYM_CIPH_KEYLEN, 128);
             CHECK_ENABLE_CAP_RV(rv, "AES CCM");
@@ -912,12 +1049,12 @@ int main(int argc, char **argv)
 		&pkcs11_symetric_handler);
         CHECK_ENABLE_CAP_RV(rv, "AES CBC");
 
-	if (pkcs11_supports_key(&mech_info,128)) {
+	if (pkcs11_supports_key(&mech_info,128, BYTES)) {
              rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CBC,
 		ACVP_SYM_CIPH_KEYLEN, 128);
              CHECK_ENABLE_CAP_RV(rv, "AES CBC");
 	}
-	if (pkcs11_supports_key(&mech_info,256)) {
+	if (pkcs11_supports_key(&mech_info,256, BYTES)) {
              rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CBC,
 		ACVP_SYM_CIPH_KEYLEN, 256);
              CHECK_ENABLE_CAP_RV(rv, "AES CBC");
@@ -941,12 +1078,12 @@ int main(int argc, char **argv)
 		ACVP_KO_NA, ACVP_IVGEN_SRC_NA, ACVP_IVGEN_MODE_NA,
 		&pkcs11_symetric_handler);
         CHECK_ENABLE_CAP_RV(rv, "AES ECB");
-	if (pkcs11_supports_key(&mech_info,128)) {
+	if (pkcs11_supports_key(&mech_info,128, BYTES)) {
             rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_ECB,
 		ACVP_SYM_CIPH_KEYLEN, 128);
             CHECK_ENABLE_CAP_RV(rv, "AES ECB");
  	}
-	if (pkcs11_supports_key(&mech_info,256)) {
+	if (pkcs11_supports_key(&mech_info,256, BYTES)) {
             rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_ECB,
 		ACVP_SYM_CIPH_KEYLEN, 256);
             CHECK_ENABLE_CAP_RV(rv, "AES ECB");
@@ -970,19 +1107,19 @@ int main(int argc, char **argv)
         rv = acvp_enable_sym_cipher_cap(ctx, ACVP_AES_KW,
 		pkcs11_get_direction(mech_info.flags),
 		ACVP_KO_NA, ACVP_IVGEN_SRC_NA, ACVP_IVGEN_MODE_NA,
-		&pkcs11_aes_keywrap_handler);
+		&pkcs11_keywrap_handler);
         CHECK_ENABLE_CAP_RV(rv, "AES KEY WRAP");
-	if (pkcs11_supports_key(&mech_info,128)) {
+	if (pkcs11_supports_key(&mech_info,128, BYTES)) {
             rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_KW,
 		ACVP_SYM_CIPH_KEYLEN, 128);
             CHECK_ENABLE_CAP_RV(rv, "AES KEY WRAP");
  	}
-	if (pkcs11_supports_key(&mech_info,192)) {
+	if (pkcs11_supports_key(&mech_info,192, BYTES)) {
             rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_KW,
 		ACVP_SYM_CIPH_KEYLEN, 192);
             CHECK_ENABLE_CAP_RV(rv, "AES KEY WRAP");
  	}
-	if (pkcs11_supports_key(&mech_info,256)) {
+	if (pkcs11_supports_key(&mech_info,256, BYTES)) {
             rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_KW,
 		ACVP_SYM_CIPH_KEYLEN, 256);
             CHECK_ENABLE_CAP_RV(rv, "AES KEY WRAP");
@@ -1012,12 +1149,12 @@ int main(int argc, char **argv)
 		ACVP_KO_NA, ACVP_IVGEN_SRC_NA, ACVP_IVGEN_MODE_NA,
 		&pkcs11_symetric_handler);
         CHECK_ENABLE_CAP_RV(rv, "AES CTR");
-	if (pkcs11_supports_key(&mech_info,128)) {
+	if (pkcs11_supports_key(&mech_info,128, BYTES)) {
             rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CTR,
 		ACVP_SYM_CIPH_KEYLEN, 128);
             CHECK_ENABLE_CAP_RV(rv, "AES CTR");
  	}
-	if (pkcs11_supports_key(&mech_info,256)) {
+	if (pkcs11_supports_key(&mech_info,256, BYTES)) {
             rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CTR,
 		ACVP_SYM_CIPH_KEYLEN, 256);
             CHECK_ENABLE_CAP_RV(rv, "AES CTR");
@@ -1252,6 +1389,7 @@ int main(int argc, char **argv)
             ACVP_DRBG_RET_BITS_LEN, 512);
         CHECK_ENABLE_CAP_RV(rv, "DRBG");
     }
+#endif
 
     /*
      * Now that we have a test session, we register with
@@ -1261,6 +1399,7 @@ int main(int argc, char **argv)
     rv = acvp_register(ctx);
     if (rv != ACVP_SUCCESS) {
         printf("Failed to register with ACVP server (rv=%d)\n", rv);
+        unload_pkcs11();
         exit(1);
     }
 
@@ -1271,12 +1410,14 @@ int main(int argc, char **argv)
     rv = acvp_process_tests(ctx);
     if (rv != ACVP_SUCCESS) {
         printf("Failed to process vectors (%d)\n", rv);
+        unload_pkcs11();
         exit(1);
     }
 
     rv = acvp_check_test_results(ctx);
     if (rv != ACVP_SUCCESS) {
         printf("Unable to retrieve test results (%d)\n", rv);
+        unload_pkcs11();
         exit(1);
     }
 
@@ -1286,13 +1427,16 @@ int main(int argc, char **argv)
     rv = acvp_free_test_session(ctx);
     if (rv != ACVP_SUCCESS) {
         printf("Failed to free ACVP context\n");
+        unload_pkcs11();
         exit(1);
     }
+    unload_pkcs11();
     acvp_cleanup();
 
     return (0);
 }
 
+#ifdef ENABLE_ALL_TESTS 
 static ACVP_RESULT pkcs11_symetric_handler(ACVP_TEST_CASE *test_case)
 {
     ACVP_SYM_CIPHER_TC      *tc;
@@ -1394,16 +1538,16 @@ static ACVP_RESULT pkcs11_symetric_handler(ACVP_TEST_CASE *test_case)
         return ACVP_NO_CAP;
         break;
     }
+
     /*
      * validate the key size
      */
-
     rv = pkcs11_get_mechanism_info(mech.mechanism, &mech_info);
     if (rv != ACVP_SUCCESS) {
 	printf("Error: Couldn't get mechanism info\n");
 	return rv;
     }
-    if (!pkcs11_supports_key(&mech_info, tc->key_len)) {
+    if (!pkcs11_supports_key(&mech_info, tc->key_len, BYTES)) {
         printf("Unsupported key length\n");
         return ACVP_NO_CAP;
     }
@@ -1413,7 +1557,7 @@ static ACVP_RESULT pkcs11_symetric_handler(ACVP_TEST_CASE *test_case)
 	CHECK_CRYPTO_RV(rv, "Couldn't get session");
 	key_handle = pkcs11_import_sym_key(session,key_type,
 		tc->direction == ACVP_DIR_ENCRYPT? CKA_ENCRYPT : CKA_DECRYPT,
-		tc->key,tc->key_len);
+		tc->key,tc->key_len/BYTES);
 	if (key_handle == CK_INVALID_HANDLE) {
             return ACVP_CRYPTO_MODULE_FAIL;
 	}
@@ -1449,7 +1593,7 @@ static ACVP_RESULT pkcs11_symetric_handler(ACVP_TEST_CASE *test_case)
             return ACVP_UNSUPPORTED_OP;
         }
         if (tc->mct_index == 9999) {
-	   (*final)(session);
+	   (*final)(session, NULL, NULL);
 	   pkcs11_close_session(session);
 	   session = CK_INVALID_SESSION;
         }
@@ -1460,7 +1604,7 @@ static ACVP_RESULT pkcs11_symetric_handler(ACVP_TEST_CASE *test_case)
 	    rv = pkcs11_encrypt_update(session, tc->pt, tc->pt_len,
 					tc->ct, &ct_len);
 	    CHECK_CRYPTO_RV(rv, "in C_EncryptUpdate");
-	    pkcs11_encrypt_final(session);
+	    pkcs11_encrypt_final(session, NULL, NULL);
             tc->ct_len = ct_len;
             /*EVP_EncryptFinal_ex(&cipher_ctx, tc->ct + ct_len, &ct_len);
             tc->ct_len += ct_len; */
@@ -1471,7 +1615,7 @@ static ACVP_RESULT pkcs11_symetric_handler(ACVP_TEST_CASE *test_case)
 					tc->pt, &pt_len);
 	    CHECK_CRYPTO_RV(rv, "in C_DecryptUpdate");
             tc->pt_len = pt_len;
-	    pkcs11_decrypt_final(session);
+	    pkcs11_decrypt_final(session, NULL, NULL);
             /*EVP_DecryptFinal_ex(&cipher_ctx, tc->pt + pt_len, &pt_len);
             tc->pt_len += pt_len;*/
         } else {
@@ -1486,13 +1630,16 @@ static ACVP_RESULT pkcs11_symetric_handler(ACVP_TEST_CASE *test_case)
 }
 
 
-static ACVP_RESULT pkcs11_aes_keywrap_handler(ACVP_TEST_CASE *test_case)
+static ACVP_RESULT pkcs11_keywrap_handler(ACVP_TEST_CASE *test_case)
 {
-#ifdef notdef
     ACVP_SYM_CIPHER_TC      *tc;
-    EVP_CIPHER_CTX cipher_ctx;
-    const EVP_CIPHER        *cipher;
-    int c_len;
+    unsigned int ct_len, pt_len;
+    CK_SESSION_HANDLE session = CK_INVALID_SESSION;
+    CK_MECHANISM_INFO mech_info;
+    CK_MECHANISM mech = {CKM_INVALID_MECHANISM, NULL, 0};
+    CK_KEY_TYPE key_type = 0;
+    CK_OBJECT_HANDLE key_handle;
+    ACVP_RESULT rv;
 
     if (!test_case) {
         return ACVP_INVALID_ARG;
@@ -1502,64 +1649,63 @@ static ACVP_RESULT pkcs11_aes_keywrap_handler(ACVP_TEST_CASE *test_case)
 
     printf("%s: enter (tc_id=%d)\n", __FUNCTION__, tc->tc_id);
 
-    /* Begin encrypt code section */
-    EVP_CIPHER_CTX_init(&cipher_ctx);
-
     switch (tc->cipher) {
     case ACVP_AES_KW:
-        switch (tc->key_len) {
-        case 128:
-            cipher = EVP_aes_128_wrap();
-            break;
-        case 192:
-            cipher = EVP_aes_192_wrap();
-            break;
-        case 256:
-            cipher = EVP_aes_256_wrap();
-            break;
-        default:
-            printf("Unsupported AES keywrap key length\n");
-            return ACVP_NO_CAP;
-            break;
-        }
+	mech.mechanism = CKM_AES_KEY_WRAP;
+	key_type = CKK_AES;
         break;
     default:
-        printf("Error: Unsupported AES keywrap mode requested by ACVP server\n");
+        printf("Error: Unsupported keywrap mode requested by ACVP server\n");
         return ACVP_NO_CAP;
         break;
     }
 
+    /*
+     * validate the key size
+     */
+    rv = pkcs11_get_mechanism_info(mech.mechanism, &mech_info);
+    if (rv != ACVP_SUCCESS) {
+	printf("Error: Couldn't get mechanism info\n");
+	return rv;
+    }
+    if (!pkcs11_supports_key(&mech_info, tc->key_len, BYTES)) {
+        printf("Unsupported key length\n");
+        return ACVP_NO_CAP;
+    }
+
+    rv = pkcs11_open_session(slot_id,&session);
+    CHECK_CRYPTO_RV(rv, "Couldn't get session");
+    key_handle = pkcs11_import_sym_key(session,key_type,
+		tc->direction == ACVP_DIR_ENCRYPT? CKA_ENCRYPT : CKA_DECRYPT,
+		tc->key,tc->key_len/BYTES);
+    if (key_handle == CK_INVALID_HANDLE) {
+        return ACVP_CRYPTO_MODULE_FAIL;
+    }
+
 
     if (tc->direction == ACVP_DIR_ENCRYPT) {
-        EVP_CIPHER_CTX_set_flags(&cipher_ctx, EVP_CIPHER_CTX_FLAG_WRAP_ALLOW);
-        EVP_CipherInit_ex(&cipher_ctx, cipher, NULL, tc->key, NULL, 1);
-        c_len = EVP_Cipher(&cipher_ctx, tc->ct, tc->pt, tc->pt_len);
-        if (c_len <= 0) {
-            printf("Error: key wrap operation failed (%d)\n", c_len);
-            return ACVP_CRYPTO_MODULE_FAIL;
-        } else {
-            tc->ct_len = c_len;
-        }
+        rv = pkcs11_encrypt_init(session, &mech, key_handle);
+	CHECK_CRYPTO_RV(rv, "in C_EncryptInit");
+        rv = pkcs11_encrypt(session, tc->pt, tc->pt_len, tc->ct, &ct_len);
+	CHECK_CRYPTO_RV(rv, "in C_Encrypt (Keywrapping)");
+        tc->ct_len = ct_len;
     } else if (tc->direction == ACVP_DIR_DECRYPT) {
-        EVP_CIPHER_CTX_set_flags(&cipher_ctx, EVP_CIPHER_CTX_FLAG_WRAP_ALLOW);
-        EVP_CipherInit_ex(&cipher_ctx, cipher, NULL, tc->key, NULL, 0);
-        c_len = EVP_Cipher(&cipher_ctx, tc->pt, tc->ct, tc->ct_len + 8);
-        if (c_len <= 0) {
-            printf("Error: key wrap operation failed (%d)\n", c_len);
-            return ACVP_CRYPTO_MODULE_FAIL;
-        }
+        rv = pkcs11_decrypt_init(session, &mech, key_handle);
+	CHECK_CRYPTO_RV(rv, "in C_EncryptInit");
+        rv = pkcs11_decrypt(session, tc->ct, tc->ct_len, tc->pt, &pt_len);
+	CHECK_CRYPTO_RV(rv, "in C_Encrypt (Keywrapping)");
+        tc->pt_len = pt_len;
     } else {
         printf("Unsupported direction\n");
         return ACVP_UNSUPPORTED_OP;
     }
 
-    EVP_CIPHER_CTX_cleanup(&cipher_ctx);
 
+    pkcs11_close_session(session);
+    session = CK_INVALID_SESSION;
     return ACVP_SUCCESS;
-#else
-    return ACVP_UNSUPPORTED_OP;
-#endif
 }
+#endif
 
 /*
  * This fuction is invoked by libacvp when an AES crypto
@@ -1576,16 +1722,24 @@ static ACVP_RESULT pkcs11_aes_keywrap_handler(ACVP_TEST_CASE *test_case)
 //      enum that applications can use?
 static ACVP_RESULT pkcs11_aead_handler(ACVP_TEST_CASE *test_case)
 {
-#ifdef notdef
     ACVP_SYM_CIPHER_TC      *tc;
-    EVP_CIPHER_CTX cipher_ctx;
-    const EVP_CIPHER        *cipher;
-    unsigned char iv_fixed[4] = {1,2,3,4};
-    int rv;
+    unsigned int pt_len;
+    CK_SESSION_HANDLE session = CK_INVALID_SESSION;
+    CK_MECHANISM_INFO mech_info;
+    CK_MECHANISM mech = {CKM_INVALID_MECHANISM, NULL, 0};
+    CK_KEY_TYPE key_type = 0;
+    CK_OBJECT_HANDLE key_handle;
+    CK_GCM_PARAMS gcm_params;
+    CK_CCM_PARAMS ccm_params;
+    unsigned char *tbuf;
+    unsigned int tbuf_len;
+    ACVP_RESULT rv;
 
     if (!test_case) {
         return ACVP_INVALID_ARG;
     }
+
+    /* for now, just use the single part PKCS #11 interface of v2.0 */
 
     tc = test_case->tc.symmetric;
 
@@ -1596,144 +1750,94 @@ static ACVP_RESULT pkcs11_aead_handler(ACVP_TEST_CASE *test_case)
         return ACVP_UNSUPPORTED_OP;
     }
 
-    /* Begin encrypt code section */
-    EVP_CIPHER_CTX_init(&cipher_ctx);
 
     /* Validate key length and assign OpenSSL EVP cipher */
     //TODO: need support for CCM mode
     switch (tc->cipher) {
     case ACVP_AES_GCM:
-        switch (tc->key_len) {
-        case 128:
-            cipher = EVP_aes_128_gcm();
-            break;
-        case 192:
-            cipher = EVP_aes_192_gcm();
-            break;
-        case 256:
-            cipher = EVP_aes_256_gcm();
-            break;
-        default:
-            printf("Unsupported AES-GCM key length\n");
-            return ACVP_UNSUPPORTED_OP;
-        }
-        if (tc->direction == ACVP_DIR_ENCRYPT) {
-            EVP_CIPHER_CTX_set_flags(&cipher_ctx, EVP_CIPH_FLAG_NON_FIPS_ALLOW);
-            EVP_CipherInit(&cipher_ctx, cipher, NULL, NULL, 1);
-            EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_GCM_SET_IVLEN, tc->iv_len, 0);
-            EVP_CipherInit(&cipher_ctx, NULL, tc->key, NULL, 1);
-
-            EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_GCM_SET_IV_FIXED, 4, iv_fixed);
-            if (!EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_GCM_IV_GEN, tc->iv_len, tc->iv)) {
-                printf("acvp_aes_encrypt: iv gen error\n");
-                return ACVP_CRYPTO_MODULE_FAIL;
-            }
-            if (tc->aad_len) {
-                EVP_Cipher(&cipher_ctx, NULL, tc->aad, tc->aad_len);
-            }
-            EVP_Cipher(&cipher_ctx, tc->ct, tc->pt, tc->pt_len);
-            EVP_Cipher(&cipher_ctx, NULL, NULL, 0);
-            EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_GCM_GET_TAG, tc->tag_len, tc->tag);
-        } else if (tc->direction == ACVP_DIR_DECRYPT) {
-            EVP_CIPHER_CTX_set_flags(&cipher_ctx, EVP_CIPH_FLAG_NON_FIPS_ALLOW);
-            EVP_CipherInit_ex(&cipher_ctx, cipher, NULL, tc->key, NULL, 0);
-            EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_GCM_SET_IVLEN, tc->iv_len, 0);
-            EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_GCM_SET_IV_FIXED, -1, tc->iv);
-            if(!EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_GCM_IV_GEN, 0, tc->iv)) {
-                printf("\nFailed to set IV");;
-                return ACVP_CRYPTO_MODULE_FAIL;
-            }
-            if (tc->aad_len) {
-                /*
-                 * Set dummy tag before processing AAD.  Otherwise the AAD can
-                 * not be processed.
-                 */
-                EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_GCM_SET_TAG, tc->tag_len, tc->tag);
-                EVP_Cipher(&cipher_ctx, NULL, tc->aad, tc->aad_len);
-            }
-            /*
-             * Set the tag when decrypting
-             */
-            EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_GCM_SET_TAG, tc->tag_len, tc->tag);
-
-            /*
-             * Decrypt the CT
-             */
-            EVP_Cipher(&cipher_ctx, tc->pt, tc->ct, tc->pt_len);
-            /*
-             * Check the tag
-             */
-            rv = EVP_Cipher(&cipher_ctx, NULL, NULL, 0);
-            if (rv) {
-                printf("\nGCM decrypt failed due to tag mismatch (%d)\n", rv);
-                return ACVP_CRYPTO_MODULE_FAIL;
-            }
-        }
-        break;
+	mech.mechanism = CKM_AES_GCM;
+	mech.pParameter = &gcm_params;
+	mech.ulParameterLen = sizeof(gcm_params);
+	key_type = CKK_AES;
+	gcm_params.pIv = tc->iv;
+	gcm_params.ulIvLen = tc->iv_len;
+	gcm_params.pAAD = tc->aad;
+	gcm_params.ulAADLen = tc->aad_len;
+	gcm_params.ulTagBits = tc->tag_len*8;
+	break;
     case ACVP_AES_CCM:
-        switch (tc->key_len) {
-        case 128:
-            cipher = EVP_aes_128_ccm();
-            break;
-        case 192:
-            cipher = EVP_aes_192_ccm();
-            break;
-        case 256:
-            cipher = EVP_aes_256_ccm();
-            break;
-        default:
-            printf("Unsupported AES-CCM key length\n");
-            return ACVP_UNSUPPORTED_OP;
-        }
-        if (tc->direction == ACVP_DIR_ENCRYPT) {
-            EVP_CipherInit(&cipher_ctx, cipher, NULL, NULL, 1);
-            EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_CCM_SET_IVLEN, tc->iv_len, 0);
-            EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_CCM_SET_TAG, tc->tag_len, 0);
-            EVP_CipherInit(&cipher_ctx, NULL, tc->key, tc->iv, 1);
-            if (tc->aad_len) {
-                EVP_Cipher(&cipher_ctx, NULL, NULL, tc->pt_len);
-                EVP_Cipher(&cipher_ctx, NULL, tc->aad, tc->aad_len);
-            }
-            EVP_Cipher(&cipher_ctx, tc->ct, tc->pt, tc->pt_len);
-            EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_CCM_GET_TAG, tc->tag_len, tc->tag);
-        } else if (tc->direction == ACVP_DIR_DECRYPT) {
-            //TODO: this code isn't tested, need a server with CCM support
-            EVP_CipherInit(&cipher_ctx, cipher, NULL, NULL, 0);
-            EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_CCM_SET_IVLEN, tc->iv_len, 0);
-            if (tc->aad_len) {
-                EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_CCM_SET_TAG, tc->tag_len, tc->tag);
-            }
-            EVP_CipherInit(&cipher_ctx, NULL, tc->key, tc->iv, 1);
-            EVP_Cipher(&cipher_ctx, tc->pt, tc->ct, tc->pt_len);
-            /*
-             * Check the tag
-             */
-            rv = EVP_Cipher(&cipher_ctx, NULL, NULL, 0);
-            if (rv) {
-                printf("\nCCM decrypt failed due to tag mismatch (%d)\n", rv);
-                return ACVP_CRYPTO_MODULE_FAIL;
-            }
-        }
-        break;
+	mech.mechanism = CKM_AES_CCM;
+	mech.pParameter = &ccm_params;
+	mech.ulParameterLen = sizeof(ccm_params);
+	key_type = CKK_AES;
+	ccm_params.pNonce = tc->iv;
+	ccm_params.ulNonceLen = tc->iv_len;
+	ccm_params.pAAD = tc->aad;
+	ccm_params.ulAADLen = tc->aad_len;
+	ccm_params.ulMACLen = tc->tag_len;
+	break;
+
     default:
-        printf("Error: Unsupported AES AEAD mode requested by ACVP server\n");
+        printf("Error: Unsupported AEAD mode requested by ACVP server\n");
         return ACVP_NO_CAP;
         break;
     }
 
-    EVP_CIPHER_CTX_cleanup(&cipher_ctx);
+    rv = pkcs11_get_mechanism_info(mech.mechanism, &mech_info);
+    if (rv != ACVP_SUCCESS) {
+	printf("Error: Couldn't get mechanism info\n");
+	return rv;
+    }
+    if (!pkcs11_supports_key(&mech_info, tc->key_len, BYTES)) {
+        printf("Unsupported key length\n");
+        return ACVP_NO_CAP;
+    }
+
+    rv = pkcs11_open_session(slot_id,&session);
+    CHECK_CRYPTO_RV(rv, "Couldn't get session");
+    key_handle = pkcs11_import_sym_key(session,key_type,
+		tc->direction == ACVP_DIR_ENCRYPT? CKA_ENCRYPT : CKA_DECRYPT,
+		tc->key,tc->key_len/BYTES);
+    if (key_handle == CK_INVALID_HANDLE) {
+        return ACVP_CRYPTO_MODULE_FAIL;
+    }
+
+    tbuf_len = tc->ct_len + tc->tag_len;
+    tbuf = malloc(tbuf_len);
+    if (tc->direction == ACVP_DIR_ENCRYPT) {
+        rv = pkcs11_encrypt_init(session, &mech, key_handle);
+	CHECK_CRYPTO_RV(rv, "in C_EncryptInit");
+        rv = pkcs11_encrypt(session, tc->pt, tc->pt_len, tbuf, &tbuf_len);
+	CHECK_CRYPTO_RV(rv, "in C_Encrypt (Keywrapping)");
+	if (tbuf_len < tc->tag_len) {
+	    printf("AEAD failed to generate Tag\n");
+            return ACVP_CRYPTO_MODULE_FAIL;
+	}
+	tc->ct_len = tbuf_len - tc->tag_len;
+	memcpy(tc->ct, tbuf, tc->ct_len);
+	memcpy(tc->tag, tbuf+tc->ct_len, tc->tag_len);
+     } else if (tc->direction == ACVP_DIR_DECRYPT) {
+	memcpy(tbuf, tc->ct, tc->ct_len);
+	memcpy(tbuf+tc->ct_len, tc->tag, tc->tag_len);
+        rv = pkcs11_decrypt_init(session, &mech, key_handle);
+	CHECK_CRYPTO_RV(rv, "in C_EncryptInit");
+        rv = pkcs11_decrypt(session, tbuf, tbuf_len, tc->pt, &pt_len);
+	CHECK_CRYPTO_RV(rv, "in C_Encrypt (Keywrapping)");
+	tc->pt_len = pt_len;
+    }
+    free(tbuf);
+    pkcs11_close_session(session);
+    session = CK_INVALID_SESSION;
 
     return ACVP_SUCCESS;
-#else
-    return ACVP_UNSUPPORTED_OP;
-#endif
 }
 
+#ifdef ENABLE_ALL_TESTS 
 static ACVP_RESULT pkcs11_digest_handler(ACVP_TEST_CASE *test_case)
 {
     ACVP_HASH_TC        *tc;
     CK_SESSION_HANDLE session;
-    CK_MECHANISM mech;
+    CK_MECHANISM mech = {CKM_INVALID_MECHANISM, NULL, 0};
     ACVP_RESULT rv;
 
     if (!test_case) {
@@ -1801,54 +1905,15 @@ static ACVP_RESULT pkcs11_digest_handler(ACVP_TEST_CASE *test_case)
     return ACVP_SUCCESS;
 }
 
-
-#ifdef notdef
-typedef struct
-{
-    unsigned char *ent;
-    size_t entlen;
-    unsigned char *nonce;
-    size_t noncelen;
-} DRBG_TEST_ENT;
-
-static size_t drbg_test_entropy(DRBG_CTX *dctx, unsigned char **pout,
-        int entropy, size_t min_len, size_t max_len)
-{
-    if (!dctx || !pout) return 0;
-    DRBG_TEST_ENT *t = (DRBG_TEST_ENT *)FIPS_drbg_get_app_data(dctx);
-    if (!t) return 0;
-
-    if (t->entlen < min_len) printf("entropy data len < min_len: %zu\n", t->entlen);
-    if (t->entlen > max_len) printf("entropy data len > max_len: %zu\n", t->entlen);
-    *pout = (unsigned char *)t->ent;
-    return t->entlen;
-}
-
-static size_t drbg_test_nonce(DRBG_CTX *dctx, unsigned char **pout,
-        int entropy, size_t min_len, size_t max_len)
-{
-    if (!dctx || !pout) return 0;
-    DRBG_TEST_ENT *t = (DRBG_TEST_ENT *)FIPS_drbg_get_app_data(dctx);
-
-    if (t->noncelen < min_len) printf("nonce data len < min_len: %zu\n", t->noncelen);
-    if (t->noncelen > max_len) printf("nonce data len > max_len: %zu\n", t->noncelen);
-    *pout = (unsigned char *)t->nonce;
-    return t->noncelen;
-}
-#endif
-
 static ACVP_RESULT app_drbg_handler(ACVP_TEST_CASE *test_case)
 {
-#ifdef notdef
 /* There isn't a PKCS #11 interface for drbg tests, Use the private NSS interface for freebl */
+#ifndef ENABLE_NSS_DRBG
+    return ACVP_UNSUPPORTED_OP;
+#else
     ACVP_RESULT     result = ACVP_SUCCESS;
     ACVP_DRBG_TC    *tc;
-    unsigned int    nid;
-    int             der_func = 0;
-    unsigned int    drbg_entropy_len;
-    int             fips_rc;
-
-    unsigned char   *nonce = NULL;
+    SECStatus rv;
 
     if (!test_case) {
         return ACVP_INVALID_ARG;
@@ -1858,30 +1923,17 @@ static ACVP_RESULT app_drbg_handler(ACVP_TEST_CASE *test_case)
     /*
      * Init entropy length
      */
-    drbg_entropy_len = tc->entropy_len;
-
     printf("%s: enter (tc_id=%d)\n", __FUNCTION__, tc->tc_id);
 
     switch(tc->cipher) {
     case ACVP_HASHDRBG:
-        nonce = tc->nonce;
         switch(tc->mode) {
-        case ACVP_DRBG_SHA_1:
-            nid = NID_sha1;
-            break;
-        case ACVP_DRBG_SHA_224:
-            nid = NID_sha256;
-            break;
         case ACVP_DRBG_SHA_256:
-            nid = NID_sha256;
             break;
+        case ACVP_DRBG_SHA_1:
         case ACVP_DRBG_SHA_384:
-            nid = NID_sha384;
-            break;
         case ACVP_DRBG_SHA_512:
-            nid = NID_sha512;
-            break;
-
+        case ACVP_DRBG_SHA_224:
         case ACVP_DRBG_SHA_512_224:
         case ACVP_DRBG_SHA_512_256:
         default:
@@ -1890,130 +1942,24 @@ static ACVP_RESULT app_drbg_handler(ACVP_TEST_CASE *test_case)
                     tc->cipher, tc->mode);
             return (result);
             break;
-    }
-    break;
-
-        case ACVP_HMACDRBG:
-            nonce = tc->nonce;
-            switch(tc->mode) {
-            case ACVP_DRBG_SHA_1:
-                nid =   NID_hmacWithSHA1;
-                break;
-            case ACVP_DRBG_SHA_224:
-                nid =   NID_hmacWithSHA224;
-                break;
-            case ACVP_DRBG_SHA_256:
-                nid =   NID_hmacWithSHA256;
-                break;
-            case ACVP_DRBG_SHA_384:
-                nid =   NID_hmacWithSHA384;
-                break;
-            case ACVP_DRBG_SHA_512:
-                nid =   NID_hmacWithSHA512;
-                break;
-            case ACVP_DRBG_SHA_512_224:
-            case ACVP_DRBG_SHA_512_256:
-            default:
-                result = ACVP_UNSUPPORTED_OP;
-                printf("%s: Unsupported algorithm/mode %d/%d (tc_id=%d)\n", __FUNCTION__, tc->tc_id,
-                        tc->cipher, tc->mode);
-                return (result);
-                break;
-            }
+        }
         break;
 
-        case ACVP_CTRDRBG:
-            /*
-             * DR function Only valid in CTR mode
-             * if not set nonce is ignored
-             */
-            if (tc->der_func_enabled) {
-                der_func = DRBG_FLAG_CTR_USE_DF;
-                nonce = tc->nonce;
-            } else {
-                /**
-                 * Note 5: All DRBGs are tested at their maximum supported security
-                 * strength so this is the minimum bit length of the entropy input that
-                 * ACVP will accept.  The maximum supported security strength is also
-                 * the default value for this input.  Longer entropy inputs are
-                 * permitted, with the following exception: for ctrDRBG with no df, the
-                 * bit length must equal the seed length.
-                 **/
-                drbg_entropy_len = 0;
-            }
-
-            switch(tc->mode) {
-            case ACVP_DRBG_AES_128:
-                nid = NID_aes_128_ctr;
-                break;
-            case ACVP_DRBG_AES_192:
-                nid = NID_aes_192_ctr;
-                break;
-            case ACVP_DRBG_AES_256:
-                nid = NID_aes_256_ctr;
-                break;
-            case ACVP_DRBG_3KEYTDEA:
-            default:
-                result = ACVP_UNSUPPORTED_OP;
-                printf("%s: Unsupported algorithm/mode %d/%d (tc_id=%d)\n", __FUNCTION__, tc->tc_id,
-                        tc->cipher, tc->mode);
-                return (result);
-                break;
-            }
+    case ACVP_HMACDRBG:
+    case ACVP_CTRDRBG:
+    default:
+        result = ACVP_UNSUPPORTED_OP;
+        printf("%s: Unsupported algorithm %d (tc_id=%d)\n", 
+		__FUNCTION__, tc->tc_id, tc->cipher);
+        return (result);
         break;
-        default:
-            result = ACVP_UNSUPPORTED_OP;
-            printf("%s: Unsupported algorithm %d (tc_id=%d)\n", __FUNCTION__, tc->tc_id,
-                    tc->cipher);
-            return (result);
-            break;
     }
 
-    DRBG_CTX *drbg_ctx = NULL;
-    DRBG_TEST_ENT entropy_nonce;
-    memset(&entropy_nonce, 0, sizeof(DRBG_TEST_ENT));
-    drbg_ctx = FIPS_drbg_new(nid, der_func | DRBG_FLAG_TEST);
-    if (!drbg_ctx) {
-        progress("ERROR: failed to create DRBG Context.");
-        return ACVP_MALLOC_FAIL;
-    }
-
-    /*
-     * Set entropy and nonce
-     */
-    entropy_nonce.ent = tc->entropy;
-    entropy_nonce.entlen = tc->entropy_len/8;
-
-    entropy_nonce.nonce = nonce;
-    entropy_nonce.noncelen = tc->nonce_len/8;
-
-    FIPS_drbg_set_app_data(drbg_ctx, &entropy_nonce);
-
-    fips_rc = FIPS_drbg_set_callbacks(drbg_ctx,
-                                      drbg_test_entropy,
-                                      0, 0,
-                                      drbg_test_nonce,
-                                      0);
-    if (!fips_rc) {
-        progress("ERROR: failed to Set callback DRBG ctx");
-        long l = 9;
-        char buf[2048]  = {0};
-        while ((l = ERR_get_error()))
-            printf( "ERROR:%s\n", ERR_error_string(l, buf));
-
-        result = ACVP_CRYPTO_MODULE_FAIL;
-        goto end;
-    }
-
-    fips_rc = FIPS_drbg_instantiate(drbg_ctx, (const unsigned char *)tc->perso_string,
-                                    (size_t) tc->perso_string_len/8);
-    if (!fips_rc) {
-        progress("ERROR: failed to instantiate DRBG ctx");
-        long l = 9;
-        char buf[2048]  = {0};
-        while ((l = ERR_get_error()))
-            printf( "ERROR:%s\n", ERR_error_string(l, buf));
-
+    rv = freebl_drbg_instantiate(tc->entropy, tc->entropy_len/8,
+		tc->nonce, tc->nonce_len/8, 
+		tc->perso_string, tc->perso_string_len/8);
+    if (rv != SECSuccess) {
+        progress("ERROR: failed to instantiate DRBG");
         result = ACVP_CRYPTO_MODULE_FAIL;
         goto end;
     }
@@ -2022,61 +1968,50 @@ static ACVP_RESULT app_drbg_handler(ACVP_TEST_CASE *test_case)
      * Process predictive resistance flag
      */
     if (tc->pred_resist_enabled) {
-        entropy_nonce.ent = tc->entropy_input_pr;
-        entropy_nonce.entlen = tc->entropy_len/8;
-
-        fips_rc =  FIPS_drbg_generate(drbg_ctx, (unsigned char *)tc->drb,
-                                  (size_t) (tc->drb_len/8),
-                                  (int) 1,
-                                  (const unsigned char *)tc->additional_input,
-                                  (size_t) (tc->additional_input_len/8));
-        if (!fips_rc) {
-            progress("ERROR: failed to generate drb");
-            long l;
-            while ((l = ERR_get_error()))
-                printf( "ERROR:%s\n", ERR_error_string(l, NULL));
+        rv = freebl_drbg_reseed(tc->entropy_input_pr, tc->entropy_len/8,
+                         tc->additional_input, tc->additional_input_len/8);
+        if (rv != SECSuccess) {
+            progress("ERROR: failed to reseed drb");
             result = ACVP_CRYPTO_MODULE_FAIL;
             goto end;
         }
 
-        entropy_nonce.ent = tc->entropy_input_pr_1;
-        entropy_nonce.entlen = tc->entropy_len/8;
-
-        fips_rc =  FIPS_drbg_generate(drbg_ctx, (unsigned char *)tc->drb,
-                                  (size_t) (tc->drb_len/8),
-                                  (int) 1,
-                                  (const unsigned char *)tc->additional_input_1,
-                                  (size_t) (tc->additional_input_len/8));
-        if (!fips_rc) {
+        rv = freebl_drbg_generate(tc->drb, tc->drb_len/8, NULL, 0);
+        if (rv != SECSuccess) {
             progress("ERROR: failed to generate drb");
-            long l;
-            while ((l = ERR_get_error()))
-                printf( "ERROR:%s\n", ERR_error_string(l, NULL));
             result = ACVP_CRYPTO_MODULE_FAIL;
             goto end;
         }
+
+        rv = freebl_drbg_reseed(tc->entropy_input_pr_1, tc->entropy_len/8,
+                         tc->additional_input, tc->additional_input_len/8);
+        if (rv != SECSuccess) {
+            progress("ERROR: failed to reseed drb");
+            result = ACVP_CRYPTO_MODULE_FAIL;
+            goto end;
+        }
+
+        rv = freebl_drbg_generate(tc->drb, tc->drb_len/8, NULL, 0);
+        if (rv != SECSuccess) {
+            progress("ERROR: failed to generate drb");
+            result = ACVP_CRYPTO_MODULE_FAIL;
+            goto end;
+        }
+
+
     } else {
-        fips_rc = FIPS_drbg_generate(drbg_ctx, (unsigned char *)tc->drb,
-                                     (size_t) (tc->drb_len/8),
-                                     (int) 0,
-                                     (const unsigned char *)tc->additional_input,
-                                     (size_t) (tc->additional_input_len/8));
-        if (!fips_rc) {
+        rv = freebl_drbg_generate(tc->drb, tc->drb_len/8,
+                              tc->additional_input,tc->additional_input_len/8);
+        if (rv != SECSuccess) {
             progress("ERROR: failed to generate drb");
-            long l;
-            while ((l = ERR_get_error()))
-                printf( "ERROR:%s\n", ERR_error_string(l, NULL));
             result = ACVP_CRYPTO_MODULE_FAIL;
             goto end;
         }
     }
 
 end:
-    FIPS_drbg_uninstantiate(drbg_ctx);
-    FIPS_drbg_free(drbg_ctx);
-
+    freebl_drbg_uninstantiate();
     return result;
-#else
-    return ACVP_UNSUPPORTED_OP;
 #endif
 }
+#endif
