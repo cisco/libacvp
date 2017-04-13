@@ -27,6 +27,8 @@
 *.i*86
 *.x86_64
 *.hex
+acvp_app
+pkcs11_app
 
 # Debug files
 *.dSYM/
