@@ -46,6 +46,15 @@ Overview
 	libcrypto.so as a new dependency when compiling the app.  The OpenSSL
 	development package needs to be installed on your Linux system.  
 
+	There is also a FOM Makefile which provides an example on how a
+	standalone module could be tested.  In this case it uses the openssl
+	FOM canister.  The FOM canister has a few algorithms that can only
+	be tested when not running in a final product, and they are compiled
+	in using -DACVP_NO_RUNTIME. These algorithms can be tested under this 
+	configuration. The FOM build also requires the path to the canister
+	header files and object which is defined using the environment
+	variable MODULE_ROOT.
+
         The certs directory contains the certificates used to establish a TLS
         session with well-known ACVP servers.  libacvp requires one or more  
 	trust anchor certificates that can verify the identity of the ACVP 
