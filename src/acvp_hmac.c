@@ -11,6 +11,8 @@ static ACVP_RESULT acvp_hmac_init_tc(ACVP_CTX *ctx,
                                     unsigned int tc_id,
                                     unsigned int msg_len,
                                     unsigned char *msg,
+                                    unsigned int key_len,
+                                    unsigned char *key,
                                     ACVP_CIPHER alg_id)
 {
     ACVP_RESULT rv;
@@ -21,16 +23,17 @@ static ACVP_RESULT acvp_hmac_init_tc(ACVP_CTX *ctx,
     if (!stc->msg) return ACVP_MALLOC_FAIL;
     stc->md = calloc(1, ACVP_HMAC_MD_MAX);
     if (!stc->md) return ACVP_MALLOC_FAIL;
-    stc->m1 = calloc(1, ACVP_HMAC_MD_MAX);
-    if (!stc->m1) return ACVP_MALLOC_FAIL;
-    stc->m2 = calloc(1, ACVP_HMAC_MD_MAX);
-    if (!stc->m2) return ACVP_MALLOC_FAIL;
-    stc->m3 = calloc(1, ACVP_HMAC_MD_MAX);
-    if (!stc->m3) return ACVP_MALLOC_FAIL;
+    stc->key = calloc(1, ACVP_HMAC_KEY_MAX);
+    if (!stc->key) return ACVP_MALLOC_FAIL;
 
     rv = acvp_hexstr_to_bin((const unsigned char *)msg, stc->msg, ACVP_HMAC_MSG_MAX);
     if (rv != ACVP_SUCCESS) {
         acvp_log_msg(ctx, "Hex converstion failure (msg)");
+        return rv;
+    }
+    rv = acvp_hexstr_to_bin((const unsigned char *)key, stc->key, ACVP_HMAC_KEY_MAX);
+    if (rv != ACVP_SUCCESS) {
+        acvp_log_msg(ctx, "Hex converstion failure (key)");
         return rv;
     }
 
@@ -54,7 +57,7 @@ static ACVP_RESULT acvp_hmac_output_tc(ACVP_CTX *ctx, ACVP_HMAC_TC *stc, JSON_Ob
 
     tmp = calloc(1, ACVP_HMAC_MSG_MAX);
     if (!tmp) {
-        acvp_log_msg(ctx, "Unable to malloc in acvp_hash_output_tc");
+        acvp_log_msg(ctx, "Unable to malloc in acvp_hmac_output_tc");
         return ACVP_MALLOC_FAIL;
     }
 
@@ -78,9 +81,7 @@ static ACVP_RESULT acvp_hmac_release_tc(ACVP_HMAC_TC *stc)
 {
     free(stc->msg);
     free(stc->md);
-    free(stc->m1);
-    free(stc->m2);
-    free(stc->m3);
+    free(stc->key);
     memset(stc, 0x0, sizeof(ACVP_HMAC_TC));
 
     return ACVP_SUCCESS;
@@ -88,8 +89,8 @@ static ACVP_RESULT acvp_hmac_release_tc(ACVP_HMAC_TC *stc)
 
 ACVP_RESULT acvp_hmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
 {
-    unsigned int tc_id, msglen;
-    unsigned char       *msg = NULL;
+    unsigned int tc_id, msglen, keyLen;
+    unsigned char       *msg = NULL, *key = NULL;
     JSON_Value          *groupval;
     JSON_Object         *groupobj = NULL;
     JSON_Value          *testval;
@@ -112,21 +113,19 @@ ACVP_RESULT acvp_hmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
     ACVP_CAPS_LIST      *cap;
     ACVP_HMAC_TC stc;
     ACVP_TEST_CASE tc;
-    ACVP_HASH_TESTTYPE test_type;
-    JSON_Array          *res_tarr = NULL; /* Response resultsArray */
     ACVP_RESULT rv;
     const char		*alg_str = json_object_get_string(obj, "algorithm");
     ACVP_CIPHER	        alg_id;
 
     if (!alg_str) {
         acvp_log_msg(ctx, "ERROR: unable to parse 'algorithm' from JSON");
-	return (ACVP_MALFORMED_JSON);
+        return (ACVP_MALFORMED_JSON);
     }
 
     /*
      * Get a reference to the abstracted test case
      */
-    tc.tc.hash = &stc;
+    tc.tc.hmac = &stc;
 
     /*
      * Get the crypto module handler for this hash algorithm
@@ -185,15 +184,18 @@ ACVP_RESULT acvp_hmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
             testobj = json_value_get_object(testval);
 
             tc_id = (unsigned int)json_object_get_number(testobj, "tcId");
-            msglen = (unsigned int)json_object_get_number(testobj, "len");
-	    msg = (unsigned char *)json_object_get_string(testobj, "msg");
-	    test_type = (unsigned int)json_object_get_number(groupobj, "testType");
+            msglen = (unsigned int)json_object_get_number(testobj, "msgLen");
+            msg = (unsigned char *)json_object_get_string(testobj, "msg");
+            keyLen = (unsigned int)json_object_get_number(testobj, "keyLen");
+            key = (unsigned char *)json_object_get_string(testobj, "key");
+            // test_type = (unsigned int)json_object_get_number(groupobj, "testType");
 
             acvp_log_msg(ctx, "        Test case: %d", j);
             acvp_log_msg(ctx, "             tcId: %d", tc_id);
-            acvp_log_msg(ctx, "              len: %d", msglen);
+            acvp_log_msg(ctx, "           msgLen: %d", msglen);
             acvp_log_msg(ctx, "              msg: %s", msg);
-	    acvp_log_msg(ctx, "      testtype: %d", test_type);
+            acvp_log_msg(ctx, "           keyLen: %d", keyLen);
+            acvp_log_msg(ctx, "              key: %s", key);
 
             /*
              * Create a new test case in the response
@@ -209,23 +211,23 @@ ACVP_RESULT acvp_hmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
              * TODO: this does mallocs, we can probably do the mallocs once for
              *       the entire vector set to be more efficient
              */
-            acvp_hmac_init_tc(ctx, &stc, tc_id, msglen, msg, alg_id);
+            acvp_hmac_init_tc(ctx, &stc, tc_id, msglen, msg, keyLen, key, alg_id);
 
-			/* Process the current test vector... */
-			rv = (cap->crypto_handler)(&tc);
-			if (rv != ACVP_SUCCESS) {
-				acvp_log_msg(ctx, "ERROR: crypto module failed the operation");
-				return ACVP_CRYPTO_MODULE_FAIL;
-			}
+            /* Process the current test vector... */
+            rv = (cap->crypto_handler)(&tc);
+            if (rv != ACVP_SUCCESS) {
+                acvp_log_msg(ctx, "ERROR: crypto module failed the operation");
+                return ACVP_CRYPTO_MODULE_FAIL;
+            }
 
-			/*
-			 * Output the test case results using JSON
-			 */
-			rv = acvp_hmac_output_tc(ctx, &stc, r_tobj);
-			if (rv != ACVP_SUCCESS) {
-				acvp_log_msg(ctx, "ERROR: JSON output failure in hash module");
-				return rv;
-			}
+            /*
+             * Output the test case results using JSON
+             */
+            rv = acvp_hmac_output_tc(ctx, &stc, r_tobj);
+            if (rv != ACVP_SUCCESS) {
+                acvp_log_msg(ctx, "ERROR: JSON output failure in hash module");
+                return rv;
+            }
             /*
              * Release all the memory associated with the test case
              */

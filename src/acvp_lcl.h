@@ -70,6 +70,8 @@
 #define ACVP_ALG_HMAC_SHA2_256       "HMAC-SHA2-256"
 #define ACVP_ALG_HMAC_SHA2_384       "HMAC-SHA2-384"
 #define ACVP_ALG_HMAC_SHA2_512       "HMAC-SHA2-512"
+#define ACVP_ALG_HMAC_SHA2_512_224   "HMAC-SHA2-512/224"
+#define ACVP_ALG_HMAC_SHA2_512_256   "HMAC-SHA2-512/256"
 #define ACVP_ALG_HMAC_SHA3_224       "HMAC-SHA3-224"
 #define ACVP_ALG_HMAC_SHA3_256       "HMAC-SHA3-256"
 #define ACVP_ALG_HMAC_SHA3_384       "HMAC-SHA3-384"
@@ -110,6 +112,7 @@
 
 #define ACVP_HMAC_MSG_MAX       1024
 #define ACVP_HMAC_MD_MAX        64
+#define ACVP_HMAC_KEY_MAX       256
 
 #define ACVP_KAT_BUF_MAX        1024*1024
 #define ACVP_REG_BUF_MAX        1024*65
@@ -156,12 +159,28 @@ typedef struct acvp_hash_capability {
     int               in_empty;
 } ACVP_HASH_CAP;
 
+typedef struct acvp_hmac_prereq_alg_val {
+    ACVP_HMAC_PRE_REQ alg;
+    char *val;
+} ACVP_HMAC_PREREQ_ALG_VAL;
+
+typedef struct acvp_hmac_prereq_vals {
+    ACVP_HMAC_PREREQ_ALG_VAL prereq_alg_val;
+    struct acvp_hmac_prereq_vals *next;
+} ACVP_HMAC_PREREQ_VALS;
+
+typedef struct acvp_hmac_mac_len_vals {
+    int           supported_len; //":"65536"
+    struct acvp_hmac_mac_len_vals *next;
+} ACVP_HMAC_MAC_LEN_VALS;
+
 typedef struct acvp_hmac_capability {
-    int               in_byte;
-    int               in_empty;
-    int               out_byte;
-    int               in_len;
-    int               out_len;
+    ACVP_HMAC_PREREQ_VALS     *prereq_vals;
+    int                       key_range_1[2];      //":"65536"
+    int                       key_range_2[2];      //":"65536"
+    int                       key_block;        //":"yes"
+    int                       in_empty;         //":"yes"
+    ACVP_HMAC_MAC_LEN_VALS    *mac_len;
 } ACVP_HMAC_CAP;
 
 typedef struct acvp_drbg_prereq_alg_val {
@@ -218,11 +237,11 @@ typedef struct acvp_caps_list_t {
     ACVP_CIPHER       cipher;
     ACVP_CAP_TYPE     cap_type;
     union {
-	ACVP_SYM_CIPHER_CAP *sym_cap;
-    ACVP_HASH_CAP       *hash_cap;
-    ACVP_DRBG_CAP       *drbg_cap;
-    ACVP_HMAC_CAP       *hmac_cap;
-	//TODO: add other cipher types: asymmetric, DRBG, hash, etc.
+      ACVP_SYM_CIPHER_CAP *sym_cap;
+      ACVP_HASH_CAP       *hash_cap;
+      ACVP_DRBG_CAP       *drbg_cap;
+      ACVP_HMAC_CAP       *hmac_cap;
+    //TODO: add other cipher types: asymmetric, DRBG, hash, etc.
     } cap;
     ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case);
     struct acvp_caps_list_t *next;

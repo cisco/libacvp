@@ -100,19 +100,19 @@ typedef enum acvp_sym_cipher {
     ACVP_SHA256,
     ACVP_SHA384,
     ACVP_SHA512,
-	ACVP_HMAC_SHA1,
-	ACVP_HMAC_SHA2_224,
-	ACVP_HMAC_SHA2_256,
-	ACVP_HMAC_SHA2_384,
-	ACVP_HMAC_SHA2_512,
-	ACVP_HMAC_SHA3_224,
-	ACVP_HMAC_SHA3_256,
-	ACVP_HMAC_SHA3_384,
-	ACVP_HMAC_SHA3_512,
     ACVP_HASHDRBG,
     ACVP_HMACDRBG,
     ACVP_CTRDRBG,
-    ACVP_CIPHER_END
+    ACVP_HMAC_SHA1,
+    ACVP_HMAC_SHA2_224,
+    ACVP_HMAC_SHA2_256,
+    ACVP_HMAC_SHA2_384,
+    ACVP_HMAC_SHA2_512,
+    ACVP_HMAC_SHA3_224,
+    ACVP_HMAC_SHA3_256,
+    ACVP_HMAC_SHA3_384,
+    ACVP_HMAC_SHA3_512,
+    ACVP_CIPHER_END,
 } ACVP_CIPHER;
 
 /*
@@ -122,7 +122,7 @@ typedef enum acvp_capability_type {
     ACVP_SYM_TYPE = 1,
     ACVP_HASH_TYPE,
     ACVP_DRBG_TYPE,
-	ACVP_HMAC_TYPE
+    ACVP_HMAC_TYPE
 } ACVP_CAP_TYPE;
 
 typedef enum acvp_sym_cipher_keying_option {
@@ -244,6 +244,10 @@ typedef enum acvp_hash_testtype {
     ACVP_HASH_TEST_TYPE_MCT
 } ACVP_HASH_TESTTYPE;
 
+#define ACVP_HMAC_PREREQ_SHA      "SHA"
+typedef enum acvp_hmac_pre_req {
+    HMAC_SHA = 1
+} ACVP_HMAC_PRE_REQ;
 /*
  * This struct holds data that represents a single test case for
  * a symmetric cipher, such as AES or DES.  This data is passed
@@ -331,13 +335,11 @@ typedef struct acvp_hmac_tc_t {
     ACVP_CIPHER cipher;
     unsigned int  tc_id;    /* Test case id */
     unsigned char *msg;
-    unsigned char *m1;
-    unsigned char *m2;
-    unsigned char *m3;
     unsigned int  msg_len;
     unsigned char *md; /* The resulting digest calculated for the test case */
     unsigned int  md_len;
-    unsigned int  test_type;
+    unsigned int  key_len;
+    unsigned char *key;
 } ACVP_HMAC_TC;
 
 /*
@@ -383,6 +385,7 @@ typedef struct acvp_cipher_tc_t {
         ACVP_ENTROPY_TC     *entropy;
         ACVP_HASH_TC        *hash;
         ACVP_DRBG_TC        *drbg;
+        ACVP_HMAC_TC        *hmac;
         //TODO: need more types for hashes, etc.
     } tc;
 } ACVP_TEST_CASE;
