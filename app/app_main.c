@@ -415,11 +415,17 @@ int main(int argc, char **argv)
     * Enable SHA-1 and SHA-2
     */
    rv = acvp_enable_hash_cap(ctx, ACVP_SHA1, &app_sha_handler);
+   CHECK_ENABLE_CAP_RV(rv);
    rv = acvp_enable_hash_cap(ctx, ACVP_SHA224, &app_sha_handler);
+   CHECK_ENABLE_CAP_RV(rv);
    rv = acvp_enable_hash_cap(ctx, ACVP_SHA256, &app_sha_handler);
+   CHECK_ENABLE_CAP_RV(rv);
    rv = acvp_enable_hash_cap(ctx, ACVP_SHA384, &app_sha_handler);
+   CHECK_ENABLE_CAP_RV(rv);
    rv = acvp_enable_hash_cap(ctx, ACVP_SHA512, &app_sha_handler);
+   CHECK_ENABLE_CAP_RV(rv);
 
+#if 0
     /*
      * Enable HMAC
      */
@@ -433,7 +439,7 @@ int main(int argc, char **argv)
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_hmac_cap(ctx, ACVP_HMAC_SHA2_512, &app_hmac_handler);
     CHECK_ENABLE_CAP_RV(rv);
-
+#endif
 
 #ifdef ACVP_NO_RUNTIME
 
