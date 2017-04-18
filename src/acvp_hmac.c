@@ -188,7 +188,6 @@ ACVP_RESULT acvp_hmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
             msg = (unsigned char *)json_object_get_string(testobj, "msg");
             keyLen = (unsigned int)json_object_get_number(testobj, "keyLen");
             key = (unsigned char *)json_object_get_string(testobj, "key");
-            // test_type = (unsigned int)json_object_get_number(groupobj, "testType");
 
             acvp_log_msg(ctx, "        Test case: %d", j);
             acvp_log_msg(ctx, "             tcId: %d", tc_id);

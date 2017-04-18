@@ -552,15 +552,15 @@ ACVP_RESULT acvp_enable_hash_cap(
                                      int               step,
                                      int               max);
 
-/*! @brief acvp_enable_hash_cap() allows an application to specify a
-	   hash capability to be tested by the ACVP server.
+/*! @brief acvp_enable_hmac_cap() allows an application to specify an
+	   HMAC capability to be tested by the ACVP server.
 
 	This function should be called to enable crypto capabilities for
 	hash algorithms that will be tested by the ACVP server.  This
-	includes SHA-1, SHA-256, SHA-384, etc.  This function may be called
+	includes HMAC-SHA-1, HMAC-SHA2-256, HMAC-SHA2-384, etc.  This function may be called
 	multiple times to specify more than one crypto capability.
 
-	When the application enables a crypto capability, such as SHA-1, it
+	When the application enables a crypto capability, such as HMAC-SHA-1, it
 	also needs to specify a callback function that will be used by libacvp
 	when that crypto capability is needed during a test session.
 
