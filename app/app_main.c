@@ -424,14 +424,15 @@ int main(int argc, char **argv)
      * Enable HMAC
      */
     rv = acvp_enable_hmac_cap(ctx, ACVP_HMAC_SHA1, &app_hmac_handler);
+    CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_hmac_cap(ctx, ACVP_HMAC_SHA2_224, &app_hmac_handler);
+    CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_hmac_cap(ctx, ACVP_HMAC_SHA2_256, &app_hmac_handler);
+    CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_hmac_cap(ctx, ACVP_HMAC_SHA2_384, &app_hmac_handler);
+    CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_hmac_cap(ctx, ACVP_HMAC_SHA2_512, &app_hmac_handler);
-    rv = acvp_enable_hmac_cap(ctx, ACVP_HMAC_SHA3_224, &app_hmac_handler);
-    rv = acvp_enable_hmac_cap(ctx, ACVP_HMAC_SHA3_256, &app_hmac_handler);
-    rv = acvp_enable_hmac_cap(ctx, ACVP_HMAC_SHA3_384, &app_hmac_handler);
-    rv = acvp_enable_hmac_cap(ctx, ACVP_HMAC_SHA3_512, &app_hmac_handler);
+    CHECK_ENABLE_CAP_RV(rv);
 
 
 #ifdef ACVP_NO_RUNTIME

@@ -113,6 +113,8 @@ ACVP_ALG_HANDLER alg_tbl[ACVP_ALG_MAX] = {
     {ACVP_HMAC_SHA2_256,   &acvp_hmac_kat_handler,  ACVP_ALG_HMAC_SHA2_256},
     {ACVP_HMAC_SHA2_384,   &acvp_hmac_kat_handler,  ACVP_ALG_HMAC_SHA2_384},
     {ACVP_HMAC_SHA2_512,   &acvp_hmac_kat_handler,  ACVP_ALG_HMAC_SHA2_512},
+    {ACVP_HMAC_SHA2_512_224, &acvp_hmac_kat_handler, ACVP_ALG_HMAC_SHA2_512_224},
+    {ACVP_HMAC_SHA2_512_256, &acvp_hmac_kat_handler, ACVP_ALG_HMAC_SHA2_512_256},
     {ACVP_HMAC_SHA3_224,   &acvp_hmac_kat_handler,  ACVP_ALG_HMAC_SHA3_224},
     {ACVP_HMAC_SHA3_256,   &acvp_hmac_kat_handler,  ACVP_ALG_HMAC_SHA3_256},
     {ACVP_HMAC_SHA3_384,   &acvp_hmac_kat_handler,  ACVP_ALG_HMAC_SHA3_384},
@@ -1585,14 +1587,14 @@ static ACVP_RESULT acvp_build_register(ACVP_CTX *ctx, char **reg)
             case ACVP_TDES_CFB64:
             case ACVP_TDES_CFB8:
             case ACVP_TDES_CFB1:
-		        acvp_build_sym_cipher_register_cap(cap_obj, cap_entry);
+                acvp_build_sym_cipher_register_cap(cap_obj, cap_entry);
                 break;
             case ACVP_SHA1:
             case ACVP_SHA224:
             case ACVP_SHA256:
             case ACVP_SHA384:
             case ACVP_SHA512:
-		        acvp_build_hash_register_cap(cap_obj, cap_entry);
+                acvp_build_hash_register_cap(cap_obj, cap_entry);
                 break;
             case ACVP_HASHDRBG:
             case ACVP_HMACDRBG:
@@ -1604,14 +1606,10 @@ static ACVP_RESULT acvp_build_register(ACVP_CTX *ctx, char **reg)
             case ACVP_HMAC_SHA2_256:
             case ACVP_HMAC_SHA2_384:
             case ACVP_HMAC_SHA2_512:
-            case ACVP_HMAC_SHA3_224:
-            case ACVP_HMAC_SHA3_256:
-            case ACVP_HMAC_SHA3_384:
-            case ACVP_HMAC_SHA3_512:
-            	acvp_build_hmac_register_cap(cap_obj, cap_entry);
-            	break;
+                acvp_build_hmac_register_cap(cap_obj, cap_entry);
+                break;
             default:
-	            acvp_log_msg(ctx, "Cap entry not found, %d.", cap_entry->cipher);
+                acvp_log_msg(ctx, "Cap entry not found, %d.", cap_entry->cipher);
                 return ACVP_NO_CAP;
             }
 
