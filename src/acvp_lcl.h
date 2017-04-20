@@ -169,18 +169,13 @@ typedef struct acvp_hmac_prereq_vals {
     struct acvp_hmac_prereq_vals *next;
 } ACVP_HMAC_PREREQ_VALS;
 
-typedef struct acvp_hmac_mac_len_vals {
-    int           supported_len; //":"65536"
-    struct acvp_hmac_mac_len_vals *next;
-} ACVP_HMAC_MAC_LEN_VALS;
-
 typedef struct acvp_hmac_capability {
     ACVP_HMAC_PREREQ_VALS     *prereq_vals;
     int                       key_range_1[2];      //":"65536"
     int                       key_range_2[2];      //":"65536"
     int                       key_block;        //":"yes"
     int                       in_empty;         //":"yes"
-    ACVP_HMAC_MAC_LEN_VALS    *mac_len;
+    ACVP_SL_LIST              *mac_len;
 } ACVP_HMAC_CAP;
 
 typedef struct acvp_drbg_prereq_alg_val {

@@ -265,7 +265,7 @@ static ACVP_RESULT acvp_cap_add_length(ACVP_SL_LIST **list, int len)
      */
     new = calloc(1, sizeof(ACVP_SL_LIST));
     if (!new) {
-	return ACVP_MALLOC_FAIL;
+      return ACVP_MALLOC_FAIL;
     }
     new->length = len;
 
@@ -273,15 +273,15 @@ static ACVP_RESULT acvp_cap_add_length(ACVP_SL_LIST **list, int len)
      * See if we need to create the list first
      */
     if (!l) {
-	*list = new;
+      *list = new;
     } else {
-	/*
-	 * Find the end of the list and add the new entry there
-	 */
-	while (l->next) {
-	    l = l->next;
-	}
-	l->next = new;
+      /*
+       * Find the end of the list and add the new entry there
+       */
+      while (l->next) {
+          l = l->next;
+      }
+      l->next = new;
     }
     return ACVP_SUCCESS;
 }
@@ -427,6 +427,30 @@ ACVP_RESULT acvp_enable_hash_cap(
     return (acvp_append_hash_caps_entry(ctx, cap, cipher, crypto_handler));
 }
 
+ACVP_RESULT acvp_validate_hmac_parm_value(ACVP_HMAC_PARM parm, int value) {
+  ACVP_RESULT retval = ACVP_INVALID_ARG;
+
+  switch(parm){
+    case ACVP_HMAC_KEYRANGE1_MIN:
+    case ACVP_HMAC_KEYRANGE1_MAX:
+    case ACVP_HMAC_KEYRANGE2_MIN:
+    case ACVP_HMAC_KEYRANGE2_MAX:
+    case ACVP_HMAC_MACLEN:
+      if (value >= 0 && value <= 65536) {
+        retval = ACVP_SUCCESS;
+      }
+    case ACVP_HMAC_KEYBLOCK:
+    case ACVP_HMAC_IN_EMPTY:
+      if (value == 0 || value == 1) {
+        retval = ACVP_SUCCESS;
+      }
+    default:
+      break;
+  }
+
+  return retval;
+}
+
 ACVP_RESULT acvp_enable_hmac_cap(
           ACVP_CTX *ctx,
           ACVP_CIPHER cipher,
@@ -447,6 +471,110 @@ ACVP_RESULT acvp_enable_hmac_cap(
     }
 
     return (acvp_append_hmac_caps_entry(ctx, cap, cipher, crypto_handler));
+}
+
+/*
+ * The user should call this after invoking acvp_enable_hmac_cap()
+ * to specify the supported key ranges, keyblock value, in_empty value, and
+ * suuported mac lengths. This is called by the user multiple times,
+ * once for each length supported.
+ */
+ACVP_RESULT acvp_enable_hmac_cap_parm(
+                          ACVP_CTX *ctx,
+                          ACVP_CIPHER cipher,
+                          ACVP_HMAC_PARM parm,
+                          int value) {
+
+    ACVP_CAPS_LIST *cap;
+
+    /*
+     * Locate this cipher in the caps array
+     */
+    cap = acvp_locate_cap_entry(ctx, cipher);
+    if (!cap) {
+        acvp_log_msg(ctx, "Cap entry not found, use acvp_enable_hmac_cipher_cap() first.");
+        return ACVP_NO_CAP;
+    }
+
+    if (acvp_validate_hmac_parm_value(parm, value) != ACVP_SUCCESS) {
+      acvp_log_msg(ctx, "Invalid hmac parm value");
+      return ACVP_INVALID_ARG;
+    }
+
+    switch (parm) {
+    case ACVP_HMAC_KEYRANGE1_MIN:
+      cap->cap.hmac_cap->key_range_1[0] = value;
+      break;
+    case ACVP_HMAC_KEYRANGE1_MAX:
+      cap->cap.hmac_cap->key_range_1[1] = value;
+      break;
+    case ACVP_HMAC_KEYRANGE2_MIN:
+      cap->cap.hmac_cap->key_range_2[0] = value;
+      break;
+    case ACVP_HMAC_KEYRANGE2_MAX:
+      cap->cap.hmac_cap->key_range_2[1] = value;
+      break;
+    case ACVP_HMAC_KEYBLOCK:
+      cap->cap.hmac_cap->key_block = value;
+      break;
+    case ACVP_HMAC_IN_EMPTY:
+      cap->cap.hmac_cap->in_empty = value;
+      break;
+    case ACVP_HMAC_MACLEN:
+      acvp_cap_add_length(&cap->cap.hmac_cap->mac_len, value);
+      break;
+    default:
+      return ACVP_INVALID_ARG;
+    }
+
+    return ACVP_SUCCESS;
+}
+
+ACVP_RESULT acvp_enable_hmac_prereq_cap(ACVP_CTX       *ctx,
+                                     ACVP_CIPHER       cipher,
+                                     ACVP_HMAC_PRE_REQ pre_req,
+                                     char              *value)
+{
+    ACVP_CAPS_LIST          *cap_list;
+
+    if (!ctx) {
+        return ACVP_INVALID_ARG;
+    }
+
+    /*
+     * Locate this cipher in the caps array
+     */
+    cap_list = acvp_locate_cap_entry(ctx, cipher);
+    if (!cap_list) {
+        acvp_log_msg(ctx, "Cap entry not found.");
+        return ACVP_NO_CAP;
+    }
+
+    ACVP_HMAC_PREREQ_VALS *prereq_entry, *prereq_entry_2;
+
+    prereq_entry = calloc(1, sizeof(ACVP_HMAC_PREREQ_VALS));
+    if (!prereq_entry) {
+        return ACVP_MALLOC_FAIL;
+    }
+    prereq_entry->prereq_alg_val.alg = pre_req;
+    prereq_entry->prereq_alg_val.val = value;
+
+    /*
+     * 1st entry
+     */
+    if (!cap_list->cap.hmac_cap->prereq_vals) {
+        cap_list->cap.hmac_cap->prereq_vals= prereq_entry;
+    } else {
+        /*
+         * append to the last in the list
+         */
+        prereq_entry_2 = cap_list->cap.hmac_cap->prereq_vals;
+        while (prereq_entry_2->next) {
+            prereq_entry_2 = prereq_entry_2->next;
+        }
+        prereq_entry_2->next = prereq_entry;
+    }
+    return ACVP_SUCCESS;
 }
 
 
@@ -1058,20 +1186,32 @@ static ACVP_RESULT acvp_build_hash_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
 static ACVP_RESULT acvp_build_hmac_register_cap(JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry)
 {
     JSON_Array *temp_arr = NULL;
+    ACVP_SL_LIST *sl_list;
 
     json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
-    json_object_set_string(cap_obj, "key_block", cap_entry->cap.hmac_cap->key_block ? "yes" : "no" );
-    json_object_set_string(cap_obj, "in_empty", cap_entry->cap.hmac_cap->in_empty ? "yes" : "no" );
+    json_object_set_value(cap_obj, "keyRange1", json_value_init_array());
+    temp_arr = json_object_get_array(cap_obj, "keyRange1");
+    json_array_append_number(temp_arr, cap_entry->cap.hmac_cap->key_range_1[0]);
+    json_array_append_number(temp_arr, cap_entry->cap.hmac_cap->key_range_1[1]);
 
-    json_object_set_value(cap_obj, "key_range_1", json_value_init_array());
-    temp_arr = json_object_get_array(cap_obj, "key_range_1");
-    if(cap_entry->cap.hmac_cap->key_range_1[0]) json_array_append_number(temp_arr, cap_entry->cap.hmac_cap->key_range_1[0]);
-    if(cap_entry->cap.hmac_cap->key_range_1[1]) json_array_append_number(temp_arr, cap_entry->cap.hmac_cap->key_range_1[1]);
+    json_object_set_value(cap_obj, "keyRange2", json_value_init_array());
+    temp_arr = json_object_get_array(cap_obj, "keyRange2");
+    json_array_append_number(temp_arr, cap_entry->cap.hmac_cap->key_range_2[0]);
+    json_array_append_number(temp_arr, cap_entry->cap.hmac_cap->key_range_2[1]);
 
-    json_object_set_value(cap_obj, "key_range_2", json_value_init_array());
-    temp_arr = json_object_get_array(cap_obj, "key_range_2");
-    if(cap_entry->cap.hmac_cap->key_range_2[0]) json_array_append_number(temp_arr, cap_entry->cap.hmac_cap->key_range_2[0]);
-    if(cap_entry->cap.hmac_cap->key_range_2[1]) json_array_append_number(temp_arr, cap_entry->cap.hmac_cap->key_range_2[1]);
+    json_object_set_string(cap_obj, "keyBlock", cap_entry->cap.hmac_cap->key_block ? "yes" : "no" );
+    json_object_set_string(cap_obj, "inEmpty", cap_entry->cap.hmac_cap->in_empty ? "yes" : "no" );
+
+    /*
+     * Set the supported mac lengths
+     */
+    json_object_set_value(cap_obj, "macLen", json_value_init_array());
+    temp_arr = json_object_get_array(cap_obj, "macLen");
+    sl_list = cap_entry->cap.hmac_cap->mac_len;
+    while (sl_list) {
+      json_array_append_number(temp_arr, sl_list->length);
+      sl_list = sl_list->next;
+    }
 
     JSON_Array *prereq_array = NULL;
 

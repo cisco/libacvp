@@ -250,6 +250,16 @@ typedef enum acvp_hash_testtype {
 typedef enum acvp_hmac_pre_req {
     HMAC_SHA = 1
 } ACVP_HMAC_PRE_REQ;
+
+typedef enum acvp_hmac_parameter {
+    ACVP_HMAC_KEYRANGE1_MIN = 0,
+    ACVP_HMAC_KEYRANGE1_MAX,
+    ACVP_HMAC_KEYRANGE2_MIN,
+    ACVP_HMAC_KEYRANGE2_MAX,
+    ACVP_HMAC_KEYBLOCK,
+    ACVP_HMAC_IN_EMPTY,
+    ACVP_HMAC_MACLEN
+} ACVP_HMAC_PARM;
 /*
  * This struct holds data that represents a single test case for
  * a symmetric cipher, such as AES or DES.  This data is passed
@@ -578,6 +588,18 @@ ACVP_RESULT acvp_enable_hmac_cap(
 						ACVP_CTX *ctx,
 						ACVP_CIPHER cipher,
 						ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case));
+
+ACVP_RESULT acvp_enable_hmac_cap_parm(
+                          ACVP_CTX *ctx,
+                          ACVP_CIPHER cipher,
+                          ACVP_HMAC_PARM parm,
+                          int value);
+
+ACVP_RESULT acvp_enable_hmac_prereq_cap(
+                          ACVP_CTX       *ctx,
+                          ACVP_CIPHER       cipher,
+                          ACVP_HMAC_PRE_REQ pre_req,
+                          char              *value);
 
 /*! @brief acvp_create_test_session() creates a context that can be used to
       commence a test session with an ACVP server.
