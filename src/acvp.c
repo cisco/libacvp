@@ -474,7 +474,7 @@ ACVP_RESULT acvp_enable_hmac_cap(
 }
 
 /*
- * The user should call this after invoking acvp_enable_sym_cipher_cap()
+ * The user should call this after invoking acvp_enable_hmac_cap()
  * to specify the supported key ranges, keyblock value, in_empty value, and
  * suuported mac lengths. This is called by the user multiple times,
  * once for each length supported.
@@ -1203,7 +1203,7 @@ static ACVP_RESULT acvp_build_hmac_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
     json_object_set_string(cap_obj, "inEmpty", cap_entry->cap.hmac_cap->in_empty ? "yes" : "no" );
 
     /*
-     * Set the supported AAD lengths (for AEAD ciphers)
+     * Set the supported mac lengths
      */
     json_object_set_value(cap_obj, "macLen", json_value_init_array());
     temp_arr = json_object_get_array(cap_obj, "macLen");

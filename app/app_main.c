@@ -429,7 +429,7 @@ int main(int argc, char **argv)
     /*
      * Enable HMAC
      */
-     char value[] = "test_prereq_val";
+     char value[] = "same";
 
     rv = acvp_enable_hmac_cap(ctx, ACVP_HMAC_SHA1, &app_hmac_handler);
     CHECK_ENABLE_CAP_RV(rv);
