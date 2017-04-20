@@ -492,7 +492,7 @@ ACVP_RESULT acvp_enable_hmac_cap_parm(
      */
     cap = acvp_locate_cap_entry(ctx, cipher);
     if (!cap) {
-        acvp_log_msg(ctx, "Cap entry not found, use acvp_enable_sym_cipher_cap() first.");
+        acvp_log_msg(ctx, "Cap entry not found, use acvp_enable_hmac_cipher_cap() first.");
         return ACVP_NO_CAP;
     }
 
