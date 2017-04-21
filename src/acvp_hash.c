@@ -49,13 +49,13 @@ static ACVP_RESULT acvp_hash_output_mct_tc(ACVP_CTX *ctx, ACVP_HASH_TC *stc, JSO
 
     tmp = calloc(1, ACVP_HASH_MSG_MAX);
     if (!tmp) {
-        acvp_log_msg(ctx, "Unable to malloc in acvp_hash_output_tc");
+        ACVP_LOG_ERR("Unable to malloc in acvp_hash_output_tc");
         return ACVP_MALLOC_FAIL;
     }
 
     rv = acvp_bin_to_hexstr(stc->md, stc->md_len, (unsigned char*)tmp);
     if (rv != ACVP_SUCCESS) {
-        acvp_log_msg(ctx, "hex conversion failure (msg)");
+        ACVP_LOG_ERR("hex conversion failure (msg)");
         return rv;
     }
     json_object_set_string(r_tobj, "md", tmp);
@@ -83,7 +83,7 @@ static ACVP_RESULT acvp_hash_mct_tc(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap,
 
     tmp = calloc(1, ACVP_SYM_CT_MAX);
     if (!tmp) {
-        acvp_log_msg(ctx, "Unable to malloc in acvp_des_output_tc");
+        ACVP_LOG_ERR("Unable to malloc in acvp_des_output_tc");
         return ACVP_MALLOC_FAIL;
     }
 
@@ -104,7 +104,7 @@ static ACVP_RESULT acvp_hash_mct_tc(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap,
             /* Process the current SHA test vector... */
             rv = (cap->crypto_handler)(tc);
             if (rv != ACVP_SUCCESS) {
-                acvp_log_msg(ctx, "ERROR: crypto module failed the operation");
+                ACVP_LOG_ERR("crypto module failed the operation");
                 return ACVP_CRYPTO_MODULE_FAIL;
             }
 
@@ -113,7 +113,7 @@ static ACVP_RESULT acvp_hash_mct_tc(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap,
 	     */
 	    rv = acvp_hash_mct_iterate_tc(ctx, stc, i, r_tobj);
 	    if (rv != ACVP_SUCCESS) {
-                acvp_log_msg(ctx, "ERROR: Failed the MCT iteration changes");
+                ACVP_LOG_ERR("Failed the MCT iteration changes");
                 return rv;
 	    }
         }
@@ -122,7 +122,7 @@ static ACVP_RESULT acvp_hash_mct_tc(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap,
          */
         rv = acvp_hash_output_mct_tc(ctx, stc, r_tobj);
 	if (rv != ACVP_SUCCESS) {
-            acvp_log_msg(ctx, "ERROR: JSON output failure in HASH module");
+            ACVP_LOG_ERR("JSON output failure in HASH module");
             return rv;
         }
 
@@ -171,7 +171,7 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
     ACVP_CIPHER	        alg_id;
 
     if (!alg_str) {
-        acvp_log_msg(ctx, "ERROR: unable to parse 'algorithm' from JSON");
+        ACVP_LOG_ERR("unable to parse 'algorithm' from JSON");
 	return (ACVP_MALFORMED_JSON);
     }
 
@@ -185,12 +185,12 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
      */
     alg_id = acvp_lookup_cipher_index(alg_str);
     if (alg_id < ACVP_CIPHER_START) {
-        acvp_log_msg(ctx, "ERROR: unsupported algorithm (%s)", alg_str);
+        ACVP_LOG_ERR("unsupported algorithm (%s)", alg_str);
         return (ACVP_UNSUPPORTED_OP);
     }
     cap = acvp_locate_cap_entry(ctx, alg_id);
     if (!cap) {
-        acvp_log_msg(ctx, "ERROR: ACVP server requesting unsupported capability");
+        ACVP_LOG_ERR("ACVP server requesting unsupported capability");
         return (ACVP_UNSUPPORTED_OP);
     }
 
@@ -199,7 +199,7 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
      */
     rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
     if (rv != ACVP_SUCCESS) {
-        acvp_log_msg(ctx, "ERROR: Failed to create JSON response struct. ");
+        ACVP_LOG_ERR("Failed to create JSON response struct. ");
         return(rv);
     }
 
@@ -226,13 +226,13 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
         groupobj = json_value_get_object(groupval);
 
 
-        acvp_log_msg(ctx, "    Test group: %d", i);
-        acvp_log_msg(ctx, "        msglen: %d", msglen);
+        ACVP_LOG_INFO("    Test group: %d", i);
+        ACVP_LOG_INFO("        msglen: %d", msglen);
 
         tests = json_object_get_array(groupobj, "tests");
         t_cnt = json_array_get_count(tests);
         for (j = 0; j < t_cnt; j++) {
-            acvp_log_msg(ctx, "Found new hash test vector...");
+            ACVP_LOG_INFO("Found new hash test vector...");
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
 
@@ -241,11 +241,11 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
 	    msg = (unsigned char *)json_object_get_string(testobj, "msg");
 	    test_type = (unsigned int)json_object_get_number(groupobj, "testType");
 
-            acvp_log_msg(ctx, "        Test case: %d", j);
-            acvp_log_msg(ctx, "             tcId: %d", tc_id);
-            acvp_log_msg(ctx, "              len: %d", msglen);
-            acvp_log_msg(ctx, "              msg: %s", msg);
-	    acvp_log_msg(ctx, "      testtype: %d", test_type);
+            ACVP_LOG_INFO("        Test case: %d", j);
+            ACVP_LOG_INFO("             tcId: %d", tc_id);
+            ACVP_LOG_INFO("              len: %d", msglen);
+            ACVP_LOG_INFO("              msg: %s", msg);
+	    ACVP_LOG_INFO("      testtype: %d", test_type);
 
             /*
              * Create a new test case in the response
@@ -269,14 +269,14 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
 		res_tarr = json_object_get_array(r_tobj, "resultsArray");
 	        rv = acvp_hash_mct_tc(ctx, cap, &tc, &stc, res_tarr);
 		if (rv != ACVP_SUCCESS) {
-		    acvp_log_msg(ctx, "ERROR: crypto module failed the HASH MCT operation");
+		    ACVP_LOG_ERR("crypto module failed the HASH MCT operation");
 		    return ACVP_CRYPTO_MODULE_FAIL;
                 }
 	    } else {
                 /* Process the current test vector... */
 		rv = (cap->crypto_handler)(&tc);
 		if (rv != ACVP_SUCCESS) {
-                    acvp_log_msg(ctx, "ERROR: crypto module failed the operation");
+                    ACVP_LOG_ERR("crypto module failed the operation");
                     return ACVP_CRYPTO_MODULE_FAIL;
                 }
 
@@ -285,7 +285,7 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
 		 */
 		rv = acvp_hash_output_tc(ctx, &stc, r_tobj);
 		if (rv != ACVP_SUCCESS) {
-                    acvp_log_msg(ctx, "ERROR: JSON output failure in hash module");
+                    ACVP_LOG_ERR("JSON output failure in hash module");
                     return rv;
                 }
             }
@@ -300,8 +300,8 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
     }
 
     json_array_append_value(reg_arry, r_vs_val);
-    //FIXME
-    printf("\n\n%s\n\n", json_serialize_to_string_pretty(ctx->kat_resp));
+
+    ACVP_LOG_INFO("\n\n%s\n\n", json_serialize_to_string_pretty(ctx->kat_resp));
 
     return ACVP_SUCCESS;
 }
@@ -319,13 +319,13 @@ static ACVP_RESULT acvp_hash_output_tc(ACVP_CTX *ctx, ACVP_HASH_TC *stc, JSON_Ob
 
     tmp = calloc(1, ACVP_HASH_MSG_MAX);
     if (!tmp) {
-        acvp_log_msg(ctx, "Unable to malloc in acvp_hash_output_tc");
+        ACVP_LOG_ERR("Unable to malloc in acvp_hash_output_tc");
         return ACVP_MALLOC_FAIL;
     }
 
     rv = acvp_bin_to_hexstr(stc->md, stc->md_len, (unsigned char*)tmp);
     if (rv != ACVP_SUCCESS) {
-        acvp_log_msg(ctx, "hex conversion failure (msg)");
+        ACVP_LOG_ERR("hex conversion failure (msg)");
         return rv;
     }
     json_object_set_string(tc_rsp, "md", tmp);
@@ -359,7 +359,7 @@ static ACVP_RESULT acvp_hash_init_tc(ACVP_CTX *ctx,
 
     rv = acvp_hexstr_to_bin((const unsigned char *)msg, stc->msg, ACVP_HASH_MSG_MAX);
     if (rv != ACVP_SUCCESS) {
-        acvp_log_msg(ctx, "Hex converstion failure (msg)");
+        ACVP_LOG_ERR("Hex converstion failure (msg)");
         return rv;
     }
 

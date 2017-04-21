@@ -49,7 +49,7 @@ static struct curl_slist* acvp_add_auth_hdr (ACVP_CTX *ctx, struct curl_slist *s
     	bearer_size = strnlen(ctx->jwt_token, MAX_TOKEN_LEN) + 23;
     	bearer = calloc(1, bearer_size);
 	if (!bearer) {
-	    acvp_log_msg(ctx, "ERROR: unable to allocate memory.");
+	    ACVP_LOG_ERR("unable to allocate memory.");
 	    return slist;
 	}
         snprintf(bearer, bearer_size + 1, "Authorization: Bearer %s", ctx->jwt_token);
@@ -79,10 +79,10 @@ static void acvp_curl_log_peer_cert (ACVP_CTX *ctx, CURL *hnd)
     rv = curl_easy_getinfo(hnd, CURLINFO_CERTINFO, &ptr.to_info);
  
     if(!rv && ptr.to_info) {
-	acvp_log_msg(ctx, "TLS peer presented the following %d certificates...", ptr.to_certinfo->num_of_certs);
+	ACVP_LOG_INFO("TLS peer presented the following %d certificates...", ptr.to_certinfo->num_of_certs);
         for(i = 0; i < ptr.to_certinfo->num_of_certs; i++) {
             for(slist = ptr.to_certinfo->certinfo[i]; slist; slist = slist->next) {
-		acvp_log_msg(ctx, "%s", slist->data);
+		ACVP_LOG_INFO("%s", slist->data);
 	    }
         }
     }
@@ -132,7 +132,7 @@ static long acvp_curl_http_get (ACVP_CTX *ctx, char *url, void *writefunc)
 	curl_easy_setopt(hnd, CURLOPT_CERTINFO, 1L);
     } else {
         curl_easy_setopt(hnd, CURLOPT_SSL_VERIFYPEER, 0L);
-        acvp_log_msg(ctx, "WARNING: TLS peer verification has not been enabled.");
+        ACVP_LOG_WARN("TLS peer verification has not been enabled.\n");
     }
     curl_easy_setopt(hnd, CURLOPT_TCP_KEEPALIVE, 1L);
     if (ctx->tls_cert && ctx->tls_key) {
@@ -168,7 +168,7 @@ static long acvp_curl_http_get (ACVP_CTX *ctx, char *url, void *writefunc)
     curl_easy_getinfo (hnd, CURLINFO_RESPONSE_CODE, &http_code);
 
     if (http_code != HTTP_OK) {
-	acvp_log_msg(ctx, "HTTP response: %d\n", (int)http_code);
+	ACVP_LOG_ERR("HTTP response: %d\n", (int)http_code);
     } 
 
     curl_easy_cleanup(hnd);
@@ -237,7 +237,7 @@ static long acvp_curl_http_post (ACVP_CTX *ctx, char *url, char *data, void *wri
 	curl_easy_setopt(hnd, CURLOPT_CERTINFO, 1L);
     } else {
         curl_easy_setopt(hnd, CURLOPT_SSL_VERIFYPEER, 0L);
-        acvp_log_msg(ctx, "WARNING: TLS peer verification has not been enabled.");
+        ACVP_LOG_WARN("TLS peer verification has not been enabled.");
     }
     curl_easy_setopt(hnd, CURLOPT_TCP_KEEPALIVE, 1L);
     if (ctx->tls_cert && ctx->tls_key) {
@@ -261,7 +261,7 @@ static long acvp_curl_http_post (ACVP_CTX *ctx, char *url, char *data, void *wri
      */
     crv = curl_easy_perform(hnd);
     if (crv != CURLE_OK) {
-        acvp_log_msg(ctx, "Curl failed with code %d (%s)\n", crv, curl_easy_strerror(crv));
+        ACVP_LOG_ERR("Curl failed with code %d (%s)\n", crv, curl_easy_strerror(crv));
     }
 
     /*
@@ -277,7 +277,7 @@ static long acvp_curl_http_post (ACVP_CTX *ctx, char *url, char *data, void *wri
     curl_easy_getinfo (hnd, CURLINFO_RESPONSE_CODE, &http_code);
 
     if (http_code != HTTP_OK) {
-	acvp_log_msg(ctx, "HTTP response: %d\n", (int)http_code);
+	ACVP_LOG_ERR("HTTP response: %d\n", (int)http_code);
     }
 
     curl_easy_cleanup(hnd);
@@ -415,15 +415,15 @@ ACVP_RESULT acvp_send_register(ACVP_CTX *ctx, char *reg)
 
     rv = acvp_curl_http_post(ctx, url, reg, &acvp_curl_write_register_func);
     if (rv != HTTP_OK) {
-        acvp_log_msg(ctx, "Unable to register with ACVP server. curl rv=%d\n", rv);
-	acvp_log_msg(ctx, "%s\n", ctx->reg_buf);
+        ACVP_LOG_ERR("Unable to register with ACVP server. curl rv=%d\n", rv);
+	ACVP_LOG_ERR("%s\n", ctx->reg_buf);
         return ACVP_TRANSPORT_FAIL;
     }
 
     /*
      * Update user with status
-     */
-    acvp_log_msg(ctx,"Successfully received registration response from ACVP server");
+     */ 
+    ACVP_LOG_STATUS("Successfully received registration response from ACVP server");
 
     return ACVP_SUCCESS;
 }
@@ -445,15 +445,15 @@ ACVP_RESULT acvp_retrieve_vector_set(ACVP_CTX *ctx, int vs_id)
     }
     rv = acvp_curl_http_get(ctx, url, &acvp_curl_write_kat_func);
     if (rv != HTTP_OK) {
-        acvp_log_msg(ctx, "Unable to get vectors from server. curl rv=%d\n", rv);
-	acvp_log_msg(ctx, "%s\n", ctx->kat_buf);
+        ACVP_LOG_ERR("Unable to get vectors from server. curl rv=%d\n", rv);
+	ACVP_LOG_ERR("%s\n", ctx->kat_buf);
         return ACVP_TRANSPORT_FAIL;
     }
 
     /*
      * Update user with status
      */
-    acvp_log_msg(ctx,"Successfully retrieved KAT vector set");
+    ACVP_LOG_STATUS("Successfully retrieved KAT vector set");
 
     return ACVP_SUCCESS;
 }
@@ -478,12 +478,12 @@ ACVP_RESULT acvp_submit_vector_responses(ACVP_CTX *ctx)
     ctx->kat_resp = NULL;
     json_free_serialized_string(resp);
     if (rv != HTTP_OK) {
-        acvp_log_msg(ctx, "Unable to upload vector set to ACVP server. curl rv=%d\n", rv);
-	acvp_log_msg(ctx, "%s\n", ctx->upld_buf);
+        ACVP_LOG_ERR("Unable to upload vector set to ACVP server. curl rv=%d\n", rv);
+	ACVP_LOG_ERR("%s\n", ctx->upld_buf);
         return ACVP_TRANSPORT_FAIL;
     }
 
-    acvp_log_msg(ctx, "Successfully submitted KAT vector responses");
+    ACVP_LOG_STATUS("Successfully submitted KAT vector responses");
     return ACVP_SUCCESS;
 }
 
@@ -504,15 +504,15 @@ ACVP_RESULT acvp_retrieve_vector_set_result(ACVP_CTX *ctx, int vs_id)
     }
     rv = acvp_curl_http_get(ctx, url, &acvp_curl_write_kat_func);
     if (rv != HTTP_OK) {
-        acvp_log_msg(ctx, "Unable to get vector result from server. curl rv=%d\n", rv);
-	acvp_log_msg(ctx, "%s\n", ctx->kat_buf);
+        ACVP_LOG_ERR("Unable to get vector result from server. curl rv=%d\n", rv);
+	ACVP_LOG_ERR("%s\n", ctx->kat_buf);
         return ACVP_TRANSPORT_FAIL;
     }
 
     /*
      * Update user with status
      */
-    acvp_log_msg(ctx,"Successfully retrieved KAT vector set response");
+    ACVP_LOG_STATUS("Successfully retrieved KAT vector set response");
 
     return ACVP_SUCCESS;
 }

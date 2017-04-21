@@ -41,18 +41,18 @@ static int acvp_char_to_int(char ch);
  * This is a rudimentary logging facility for libacvp.
  * We will need more when moving beyond the PoC phase.
  */
-void acvp_log_msg (ACVP_CTX *ctx, const char *format, ...)
+void acvp_log_msg (ACVP_CTX *ctx, ACVP_LOG_LVL level, const char *format, ...)
 {
     va_list arguments;
-    char tmp[1024];
+    char tmp[16384];
 
-    if (ctx && ctx->test_progress_cb) {
+    if (ctx && ctx->test_progress_cb && (ctx->debug >= level)) {
         /*
          * Pull the arguments from the stack and invoke
          * the logger function
          */
         va_start(arguments, format);
-        vsnprintf(tmp, 1023, format, arguments);
+        vsnprintf(tmp, 16383, format, arguments);
         ctx->test_progress_cb(tmp);
         va_end(arguments);
         fflush(stdout);
@@ -300,7 +300,7 @@ unsigned int yes_or_no(ACVP_CTX *ctx, const char *text)
     } else if (!strncmp(text, "no", 2)) {
         result = 0;
     } else {
-        acvp_log_msg(ctx, "ERROR: unsupported yes/no value from server treated as 'no': (%s)", text);
+        ACVP_LOG_ERR("ERROR: unsupported yes/no value from server treated as 'no': (%s)", text);
         result = 0;
     }
     return result;
