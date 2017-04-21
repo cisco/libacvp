@@ -35,6 +35,14 @@ extern "C"
 {
 #endif
 
+typedef enum acvp_log_lvl {
+    ACVP_LOG_LVL_NONE = 0,
+    ACVP_LOG_LVL_ERR,
+    ACVP_LOG_LVL_WARN,
+    ACVP_LOG_LVL_STATUS,
+    ACVP_LOG_LVL_INFO,
+} ACVP_LOG_LVL;
+
 /*! @struct ACVP_CTX
  *  @brief This opaque structure is used to maintain the state of a test session
  *         with an ACVP server.  A single instance of this context
@@ -117,6 +125,13 @@ typedef enum acvp_sym_cipher {
     ACVP_CIPHER_END,
 } ACVP_CIPHER;
 
+#define ACVP_SYM_PREREQ_AES_STR      "AES"
+#define ACVP_SYM_PREREQ_DRBG_STR     "DRBG"
+typedef enum acvp_sym_pre_req {
+    ACVP_SYM_PREREQ_AES = 1,
+    ACVP_SYM_PREREQ_DRBG
+} ACVP_SYM_PRE_REQ;
+
 /*
  * Used to help manage capability structures
  */
@@ -165,6 +180,11 @@ typedef enum acvp_sym_cipher_direction {
     ACVP_DIR_DECRYPT,
     ACVP_DIR_BOTH
 } ACVP_SYM_CIPH_DIR;
+
+typedef enum acvp_hash_param {
+    ACVP_HASH_IN_BIT = 0,
+    ACVP_HASH_IN_EMPTY
+} ACVP_HASH_PARM;
 
 /*
  * These are the available DRBG algorithms that libacvp supports.  The application
@@ -488,6 +508,10 @@ ACVP_RESULT acvp_enable_sym_cipher_cap_parm(
 	ACVP_SYM_CIPH_PARM parm,
 	int length);
 
+ACVP_RESULT acvp_enable_sym_prereq_cap(ACVP_CTX *ctx,
+                                       ACVP_CIPHER      cipher,
+                              	       ACVP_SYM_PRE_REQ pre_req_cap,
+                              	       char              *value);
 
 /*! @brief acvp_enable_hash_cap() allows an application to specify a
        hash capability to be tested by the ACVP server.
@@ -513,6 +537,14 @@ ACVP_RESULT acvp_enable_hash_cap(
 	ACVP_CTX *ctx,
 	ACVP_CIPHER cipher,
         ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case));
+
+ACVP_RESULT acvp_enable_hash_cap_parm (
+		   ACVP_CTX *ctx,
+		   ACVP_CIPHER cipher,
+                   ACVP_HASH_PARM       param,
+                   int                  value);
+
+
 
         /*! @brief acvp_enable_drbg_cap() allows an application to specify a
                hash capability to be tested by the ACVP server.
@@ -618,7 +650,8 @@ ACVP_RESULT acvp_enable_hmac_prereq_cap(
 
     @return ACVP_RESULT
  */
-ACVP_RESULT acvp_create_test_session(ACVP_CTX **ctx, ACVP_RESULT (*progress_cb)(char *msg));
+ACVP_RESULT acvp_create_test_session(ACVP_CTX **ctx, ACVP_RESULT (*progress_cb)(char *msg),
+	                             ACVP_LOG_LVL level);
 
 /*! @brief acvp_free_test_session() releases the memory associated with
        an ACVP_CTX.
@@ -630,6 +663,7 @@ ACVP_RESULT acvp_create_test_session(ACVP_CTX **ctx, ACVP_RESULT (*progress_cb)(
 
     @param ctx Pointer to ACVP_CTX that was previously created by
         calling acvp_create_test_session.
+    @param level Select the debug level, see ACVP_LOG_LVL
 
     @return ACVP_RESULT
  */

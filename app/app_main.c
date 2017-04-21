@@ -129,15 +129,23 @@ static void setup_session_parameters()
  */
 ACVP_RESULT progress(char *msg)
 {
-    printf("ACVP Log: %s\n", msg);
+    printf("%s", msg);
     return ACVP_SUCCESS;
 }
 
 static void print_usage(void)
 {
     printf("\nInvalid usage...\n");
-    printf("acvp_app does not require any arguments.  Options are passed to acvp_app\n");
-    printf("using environment variables.  The following variables can be set:\n\n");
+    printf("acvp_app does not require any argument, however logging level can be\n");
+    printf("controlled using:\n");
+    printf("      -none\n");
+    printf("      -error(default)\n");
+    printf("      -warn\n");
+    printf("      -status\n");
+    printf("      -info\n");
+    printf("\n");
+    printf("In addition some options are passed to acvp_app using\n");
+    printf("environment variables.  The following variables can be set:\n\n");
     printf("    ACV_SERVER (when not set, defaults to %s)\n", DEFAULT_SERVER);
     printf("    ACV_PORT (when not set, defaults to %d)\n", DEFAULT_PORT);
     printf("    ACV_URI_PREFIX (when not set, defaults to null)\n");
@@ -153,10 +161,33 @@ int main(int argc, char **argv)
     ACVP_RESULT rv;
     ACVP_CTX *ctx;
     char ssl_version[10];
+    ACVP_LOG_LVL level = ACVP_LOG_LVL_ERR;
 
-    if (argc != 1) {
+    if (argc > 2) {
         print_usage();
         return 1;
+    }
+
+    argv++;
+    argc--;
+    while (argc >= 1) {
+        if (strcmp(*argv, "-info") == 0) {
+            level = ACVP_LOG_LVL_INFO;
+        }
+        if (strcmp(*argv, "-status") == 0) {
+            level = ACVP_LOG_LVL_STATUS;
+        }
+        if (strcmp(*argv, "-warn") == 0) {
+            level = ACVP_LOG_LVL_WARN;
+        }
+        if (strcmp(*argv, "-error") == 0) {
+            level = ACVP_LOG_LVL_ERR;
+        }
+        if (strcmp(*argv, "-none") == 0) {
+            level = ACVP_LOG_LVL_NONE;
+        }
+    argv++;
+    argc--;
     }
 
 #ifdef ACVP_NO_RUNTIME
@@ -172,7 +203,7 @@ int main(int argc, char **argv)
      * We begin the libacvp usage flow here.
      * First, we create a test session context.
      */
-    rv = acvp_create_test_session(&ctx, &progress);
+    rv = acvp_create_test_session(&ctx, &progress, level);
     if (rv != ACVP_SUCCESS) {
         printf("Failed to create ACVP context\n");
         exit(1);
@@ -416,20 +447,44 @@ int main(int argc, char **argv)
     */
    rv = acvp_enable_hash_cap(ctx, ACVP_SHA1, &app_sha_handler);
    CHECK_ENABLE_CAP_RV(rv);
+   rv = acvp_enable_hash_cap_parm(ctx, ACVP_SHA1, ACVP_HASH_IN_BIT, 0);
+   CHECK_ENABLE_CAP_RV(rv);
+   rv = acvp_enable_hash_cap_parm(ctx, ACVP_SHA1, ACVP_HASH_IN_EMPTY, 1);
+   CHECK_ENABLE_CAP_RV(rv);
+
    rv = acvp_enable_hash_cap(ctx, ACVP_SHA224, &app_sha_handler);
    CHECK_ENABLE_CAP_RV(rv);
+   rv = acvp_enable_hash_cap_parm(ctx, ACVP_SHA224, ACVP_HASH_IN_BIT, 0);
+   CHECK_ENABLE_CAP_RV(rv);
+   rv = acvp_enable_hash_cap_parm(ctx, ACVP_SHA224, ACVP_HASH_IN_EMPTY, 1);
+   CHECK_ENABLE_CAP_RV(rv);
+
    rv = acvp_enable_hash_cap(ctx, ACVP_SHA256, &app_sha_handler);
    CHECK_ENABLE_CAP_RV(rv);
+   rv = acvp_enable_hash_cap_parm(ctx, ACVP_SHA256, ACVP_HASH_IN_BIT, 0);
+   CHECK_ENABLE_CAP_RV(rv);
+   rv = acvp_enable_hash_cap_parm(ctx, ACVP_SHA256, ACVP_HASH_IN_EMPTY, 1);
+   CHECK_ENABLE_CAP_RV(rv);
+
    rv = acvp_enable_hash_cap(ctx, ACVP_SHA384, &app_sha_handler);
    CHECK_ENABLE_CAP_RV(rv);
+   rv = acvp_enable_hash_cap_parm(ctx, ACVP_SHA384, ACVP_HASH_IN_BIT, 0);
+   CHECK_ENABLE_CAP_RV(rv);
+   rv = acvp_enable_hash_cap_parm(ctx, ACVP_SHA384, ACVP_HASH_IN_EMPTY, 1);
+   CHECK_ENABLE_CAP_RV(rv);
+
    rv = acvp_enable_hash_cap(ctx, ACVP_SHA512, &app_sha_handler);
+   CHECK_ENABLE_CAP_RV(rv);
+   rv = acvp_enable_hash_cap_parm(ctx, ACVP_SHA512, ACVP_HASH_IN_BIT, 0);
+   CHECK_ENABLE_CAP_RV(rv);
+   rv = acvp_enable_hash_cap_parm(ctx, ACVP_SHA512, ACVP_HASH_IN_EMPTY, 1);
    CHECK_ENABLE_CAP_RV(rv);
 
 #if 0
     /*
      * Enable HMAC
      */
-     char value[] = "same";
+    char value[] = "same";
 
     rv = acvp_enable_hmac_cap(ctx, ACVP_HMAC_SHA1, &app_hmac_handler);
     CHECK_ENABLE_CAP_RV(rv);
@@ -738,6 +793,7 @@ int main(int argc, char **argv)
         exit(1);
     }
 
+    printf("\nTests complete, checking results...\n");
     rv = acvp_check_test_results(ctx);
     if (rv != ACVP_SUCCESS) {
         printf("Unable to retrieve test results (%d)\n", rv);
@@ -769,8 +825,6 @@ static ACVP_RESULT app_des_handler(ACVP_TEST_CASE *test_case)
     }
 
     tc = test_case->tc.symmetric;
-
-    //printf("%s: enter (tc_id=%d)\n", __FUNCTION__, tc->tc_id);
 
     /*
      * We only support 3 key DES
@@ -880,8 +934,6 @@ static ACVP_RESULT app_aes_handler(ACVP_TEST_CASE *test_case)
     }
 
     tc = test_case->tc.symmetric;
-
-    //printf("%s: enter (tc_id=%d)\n", __FUNCTION__, tc->tc_id);
 
     /* Begin encrypt code section */
     if (cipher_ctx.cipher == NULL) {
@@ -1090,8 +1142,6 @@ static ACVP_RESULT app_aes_keywrap_handler(ACVP_TEST_CASE *test_case)
 
     tc = test_case->tc.symmetric;
 
-    printf("%s: enter (tc_id=%d)\n", __FUNCTION__, tc->tc_id);
-
     /* Begin encrypt code section */
     EVP_CIPHER_CTX_init(&cipher_ctx);
 
@@ -1174,8 +1224,6 @@ static ACVP_RESULT app_aes_handler_aead(ACVP_TEST_CASE *test_case)
     }
 
     tc = test_case->tc.symmetric;
-
-    printf("%s: enter (tc_id=%d)\n", __FUNCTION__, tc->tc_id);
 
     if (tc->direction != ACVP_DIR_ENCRYPT && tc->direction != ACVP_DIR_DECRYPT) {
         printf("Unsupported direction\n");
@@ -1325,8 +1373,6 @@ static ACVP_RESULT app_sha_handler(ACVP_TEST_CASE *test_case)
 
     tc = test_case->tc.hash;
 
-    //printf("%s: enter (tc_id=%d)\n", __FUNCTION__, tc->tc_id);
-
     switch (tc->cipher) {
     case ACVP_SHA1:
 	md = EVP_sha1();
@@ -1411,8 +1457,6 @@ static ACVP_RESULT app_hmac_handler(ACVP_TEST_CASE *test_case)
     }
 
     tc = test_case->tc.hmac;
-
-    //printf("%s: enter (tc_id=%d)\n", __FUNCTION__, tc->tc_id);
 
     switch (tc->cipher) {
     case ACVP_HMAC_SHA1:
@@ -1513,8 +1557,6 @@ static ACVP_RESULT app_drbg_handler(ACVP_TEST_CASE *test_case)
      * Init entropy length
      */
     drbg_entropy_len = tc->entropy_len;
-
-    printf("%s: enter (tc_id=%d)\n", __FUNCTION__, tc->tc_id);
 
     switch(tc->cipher) {
     case ACVP_HASHDRBG:

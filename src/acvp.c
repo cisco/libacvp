@@ -128,7 +128,8 @@ ACVP_ALG_HANDLER alg_tbl[ACVP_ALG_MAX] = {
  * a new context to be used for the test session.
  */
 ACVP_RESULT acvp_create_test_session(ACVP_CTX **ctx,
-                                     ACVP_RESULT (*progress_cb)(char *msg))
+                                     ACVP_RESULT (*progress_cb)(char *msg),
+				     ACVP_LOG_LVL level)
 {
     *ctx = calloc(1, sizeof(ACVP_CTX));
     if (!*ctx) {
@@ -139,6 +140,8 @@ ACVP_RESULT acvp_create_test_session(ACVP_CTX **ctx,
     if (progress_cb) {
         (*ctx)->test_progress_cb = progress_cb;
     }
+
+    (*ctx)->debug = level;
 
     return ACVP_SUCCESS;
 }
@@ -366,7 +369,7 @@ ACVP_RESULT acvp_enable_sym_cipher_cap_parm(
      */
     cap = acvp_locate_cap_entry(ctx, cipher);
     if (!cap) {
-        acvp_log_msg(ctx, "Cap entry not found, use acvp_enable_sym_cipher_cap() first.");
+        ACVP_LOG_ERR("Cap entry not found, use acvp_enable_sym_cipher_cap() first.");
 	return ACVP_NO_CAP;
     }
 
@@ -400,6 +403,66 @@ ACVP_RESULT acvp_enable_sym_cipher_cap_parm(
     return ACVP_SUCCESS;
 }
 
+/*
+ * Append a SYM pre req val to the capabilities
+ */
+static ACVP_RESULT acvp_add_sym_prereq_val(ACVP_SYM_CIPHER_CAP  *sym_cap,
+                                           ACVP_SYM_PRE_REQ pre_req, char *value)
+{
+    ACVP_SYM_PREREQ_VALS *prereq_entry, *prereq_entry_2;
+
+    prereq_entry = calloc(1, sizeof(ACVP_SYM_PREREQ_VALS));
+    if (!prereq_entry) {
+        return ACVP_MALLOC_FAIL;
+    }
+    prereq_entry->prereq_alg_val.alg = pre_req;
+    prereq_entry->prereq_alg_val.val = value;
+
+    /*
+     * 1st entry
+     */
+    if (!sym_cap->prereq_vals) {
+        sym_cap->prereq_vals= prereq_entry;
+    } else {
+        /*
+         * append to the last in the list
+         */
+        prereq_entry_2 = sym_cap->prereq_vals;
+        while (prereq_entry_2->next) {
+            prereq_entry_2 = prereq_entry_2->next;
+        }
+        prereq_entry_2->next = prereq_entry;
+    }
+    return (ACVP_SUCCESS);
+}
+
+ACVP_RESULT acvp_enable_sym_prereq_cap(ACVP_CTX *ctx,
+                                       ACVP_CIPHER      cipher,
+                            	       ACVP_SYM_PRE_REQ pre_req_cap,
+                             	       char              *value)
+{
+    ACVP_CAPS_LIST          *cap_list;
+
+    if (!ctx) {
+        return ACVP_INVALID_ARG;
+    }
+
+    /*
+     * Locate this cipher in the caps array
+     */
+    cap_list = acvp_locate_cap_entry(ctx, cipher);
+    if (!cap_list) {
+        ACVP_LOG_ERR("Cap entry not found.");
+        return ACVP_NO_CAP;
+    }
+
+    /*
+     * Add the value to the cap
+     */
+
+    return (acvp_add_sym_prereq_val(cap_list->cap.sym_cap, pre_req_cap, value));
+}
+
 ACVP_RESULT acvp_enable_hash_cap(
 	ACVP_CTX *ctx,
 	ACVP_CIPHER cipher,
@@ -421,10 +484,60 @@ ACVP_RESULT acvp_enable_hash_cap(
 
     //TODO: need to validate that cipher, mode, etc. are valid values
     //      we also need to make sure we're not adding a duplicate
-    cap->in_bit = 0;
-    cap->in_empty = 1;
 
     return (acvp_append_hash_caps_entry(ctx, cap, cipher, crypto_handler));
+}
+
+/*
+ * Add HASH(SHA) parameters
+ */
+ACVP_RESULT acvp_enable_hash_cap_parm (
+		   ACVP_CTX *ctx,
+		   ACVP_CIPHER cipher,
+                   ACVP_HASH_PARM       param,
+                   int                  value
+                   )
+{
+    ACVP_CAPS_LIST *cap;
+    ACVP_HASH_CAP *hash_cap;
+
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+
+    cap = acvp_locate_cap_entry(ctx, cipher);
+    if (!cap) {
+        return ACVP_NO_CAP;
+    }
+
+    hash_cap = cap->cap.hash_cap;
+    if (!hash_cap) {
+        return ACVP_NO_CAP;
+    }
+
+    switch (cipher) {
+    case ACVP_SHA1:
+    case ACVP_SHA224:
+    case ACVP_SHA256:
+    case ACVP_SHA384:
+    case ACVP_SHA512:
+        switch (param) {
+        case ACVP_HASH_IN_BIT:
+            hash_cap->in_bit = value;
+            break;
+        case ACVP_HASH_IN_EMPTY:
+            hash_cap->in_empty = value;
+	    break;
+        default:
+            return ACVP_INVALID_ARG;
+            break;
+        }
+        break;
+    default:
+        return ACVP_INVALID_ARG;
+        break;
+    }
+    return ACVP_SUCCESS;
 }
 
 ACVP_RESULT acvp_validate_hmac_parm_value(ACVP_HMAC_PARM parm, int value) {
@@ -492,12 +605,12 @@ ACVP_RESULT acvp_enable_hmac_cap_parm(
      */
     cap = acvp_locate_cap_entry(ctx, cipher);
     if (!cap) {
-        acvp_log_msg(ctx, "Cap entry not found, use acvp_enable_hmac_cipher_cap() first.");
+        ACVP_LOG_ERR("Cap entry not found, use acvp_enable_hmac_cipher_cap() first.");
         return ACVP_NO_CAP;
     }
 
     if (acvp_validate_hmac_parm_value(parm, value) != ACVP_SUCCESS) {
-      acvp_log_msg(ctx, "Invalid hmac parm value");
+      ACVP_LOG_ERR("Invalid hmac parm value");
       return ACVP_INVALID_ARG;
     }
 
@@ -546,7 +659,7 @@ ACVP_RESULT acvp_enable_hmac_prereq_cap(ACVP_CTX       *ctx,
      */
     cap_list = acvp_locate_cap_entry(ctx, cipher);
     if (!cap_list) {
-        acvp_log_msg(ctx, "Cap entry not found.");
+        ACVP_LOG_ERR("Cap entry not found.");
         return ACVP_NO_CAP;
     }
 
@@ -871,7 +984,7 @@ ACVP_RESULT acvp_enable_drbg_cap_parm (ACVP_CTX *ctx,
      */
     cap_list = acvp_locate_cap_entry(ctx, cipher);
     if (!cap_list) {
-        acvp_log_msg(ctx, "Cap entry not found.");
+        ACVP_LOG_ERR("Cap entry not found.");
         return ACVP_NO_CAP;
     }
 
@@ -880,7 +993,7 @@ ACVP_RESULT acvp_enable_drbg_cap_parm (ACVP_CTX *ctx,
      * if the mode does not exist yet then create it.
      */
     if (!cap_list->cap.drbg_cap) {
-        acvp_log_msg(ctx, "DRBG Cap entry not found.");
+        ACVP_LOG_ERR("DRBG Cap entry not found.");
         return ACVP_NO_CAP;
     }
 
@@ -888,7 +1001,7 @@ ACVP_RESULT acvp_enable_drbg_cap_parm (ACVP_CTX *ctx,
     if (!drbg_cap_mode_list) {
         drbg_cap_mode_list = calloc(1, sizeof(ACVP_DRBG_CAP_MODE_LIST));
         if (!drbg_cap_mode_list) {
-            acvp_log_msg(ctx, "Malloc Failed.");
+            ACVP_LOG_ERR("Malloc Failed.");
             return ACVP_MALLOC_FAIL;
         }
 
@@ -934,7 +1047,7 @@ ACVP_RESULT acvp_enable_drbg_prereq_cap(ACVP_CTX          *ctx,
      */
     cap_list = acvp_locate_cap_entry(ctx, cipher);
     if (!cap_list) {
-        acvp_log_msg(ctx, "Cap entry not found.");
+        ACVP_LOG_ERR("Cap entry not found.");
         return ACVP_NO_CAP;
     }
 
@@ -946,7 +1059,7 @@ ACVP_RESULT acvp_enable_drbg_prereq_cap(ACVP_CTX          *ctx,
     if (!drbg_cap_mode_list) {
         drbg_cap_mode_list = calloc(1, sizeof(ACVP_DRBG_CAP_MODE_LIST));
         if (!drbg_cap_mode_list) {
-            acvp_log_msg(ctx, "Malloc Failed.");
+            ACVP_LOG_ERR("Malloc Failed.");
             return ACVP_MALLOC_FAIL;
         }
         drbg_cap_mode_list->cap_mode.mode = mode;
@@ -980,7 +1093,7 @@ ACVP_RESULT acvp_enable_drbg_length_cap(ACVP_CTX            *ctx,
      */
     cap_list = acvp_locate_cap_entry(ctx, cipher);
     if (!cap_list) {
-        acvp_log_msg(ctx, "Cap entry not found.");
+        ACVP_LOG_ERR("Cap entry not found.");
         return ACVP_NO_CAP;
     }
 
@@ -992,7 +1105,7 @@ ACVP_RESULT acvp_enable_drbg_length_cap(ACVP_CTX            *ctx,
     if (!drbg_cap_mode_list) {
         drbg_cap_mode_list = calloc(1, sizeof(ACVP_DRBG_CAP_MODE_LIST));
         if (!drbg_cap_mode_list) {
-            acvp_log_msg(ctx, "Malloc Failed.");
+            ACVP_LOG_ERR("Malloc Failed.");
             return ACVP_MALLOC_FAIL;
         }
         drbg_cap_mode_list->cap_mode.mode = mode;
@@ -1260,13 +1373,72 @@ static ACVP_RESULT acvp_build_hmac_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
     return ACVP_SUCCESS;
 }
 
+static ACVP_RESULT acvp_lookup_sym_prereqVals (JSON_Object *cap_obj, ACVP_SYM_CIPHER_CAP *sym_cap)
+{
+    JSON_Array *prereq_array = NULL;
+    ACVP_SYM_PREREQ_VALS *prereq_vals;
+    ACVP_SYM_PREREQ_ALG_VAL *pre_req;
+    ACVP_SYM_PREREQ_VALS *next_pre_req;
+    char *alg_str;
+
+    if(!sym_cap) return ACVP_INVALID_ARG;
+
+    /*
+     * Init json array
+     */
+    json_object_set_value(cap_obj, "prereqVals", json_value_init_array());
+    prereq_array = json_object_get_array(cap_obj, "prereqVals");
+
+    /*
+     * return OK if nothing present
+     */
+    prereq_vals = sym_cap->prereq_vals;
+    if(!prereq_vals) {
+        return ACVP_SUCCESS;
+    }
+
+    while (prereq_vals) {
+        JSON_Value *val = NULL;
+        JSON_Object *obj = NULL;
+        val = json_value_init_object();
+        obj = json_value_get_object(val);
+        pre_req = &prereq_vals->prereq_alg_val;
+
+        switch(pre_req->alg) {
+        case ACVP_SYM_PREREQ_AES:
+            alg_str = ACVP_SYM_PREREQ_AES_STR;
+            json_object_set_string(obj, "algorithm", alg_str);
+            json_object_set_string(obj, "value", pre_req->val);
+            break;
+        case ACVP_SYM_PREREQ_DRBG:
+            alg_str = ACVP_SYM_PREREQ_DRBG_STR;
+            json_object_set_string(obj, "algorithm", alg_str);
+            json_object_set_string(obj, "value", pre_req->val);
+            break;
+        default:
+            return ACVP_INVALID_ARG;
+        }
+        json_array_append_value(prereq_array, val);
+        next_pre_req = prereq_vals->next;
+        prereq_vals = next_pre_req;
+    }
+
+    return ACVP_SUCCESS;
+}
+
 static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry)
 {
     JSON_Array *mode_arr = NULL;
     JSON_Array *opts_arr = NULL;
     ACVP_SL_LIST *sl_list;
+    ACVP_RESULT result;
+    ACVP_SYM_CIPHER_CAP *sym_cap;
 
     json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
+
+    sym_cap = cap_entry->cap.sym_cap;
+    result = acvp_lookup_sym_prereqVals(cap_obj, sym_cap);
+    if (result != ACVP_SUCCESS) return result;
 
     /*
      * Set the direction capability
@@ -1497,6 +1669,7 @@ static ACVP_RESULT acvp_lookup_drbg_prereqVals (JSON_Object *cap_obj, ACVP_DRBG_
 }
 
 
+
 static ACVP_RESULT acvp_build_drbg_register_cap(JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry)
 {
     ACVP_RESULT result;
@@ -1660,6 +1833,10 @@ static ACVP_RESULT acvp_build_register(ACVP_CTX *ctx, char **reg)
     dep_val = json_value_init_object();
     dep_obj = json_value_get_object(dep_val);
 
+    /* TODO: some of this stuff could be pulled from the processor(/proc/cpuinfo) and
+     * O/S internals (uname -a) and then populated - maybe an API to the DUT to
+     * return some of the environment info.
+     */
 
     json_object_set_string(dep_obj, "type", "software");
     json_object_set_string(dep_obj, "name", "Linux 3.1");
@@ -1727,14 +1904,14 @@ static ACVP_RESULT acvp_build_register(ACVP_CTX *ctx, char **reg)
             case ACVP_TDES_CFB64:
             case ACVP_TDES_CFB8:
             case ACVP_TDES_CFB1:
-                acvp_build_sym_cipher_register_cap(cap_obj, cap_entry);
+		acvp_build_sym_cipher_register_cap(cap_obj, cap_entry);
                 break;
             case ACVP_SHA1:
             case ACVP_SHA224:
             case ACVP_SHA256:
             case ACVP_SHA384:
             case ACVP_SHA512:
-                acvp_build_hash_register_cap(cap_obj, cap_entry);
+		acvp_build_hash_register_cap(cap_obj, cap_entry);
                 break;
             case ACVP_HASHDRBG:
             case ACVP_HMACDRBG:
@@ -1749,7 +1926,7 @@ static ACVP_RESULT acvp_build_register(ACVP_CTX *ctx, char **reg)
                 acvp_build_hmac_register_cap(cap_obj, cap_entry);
                 break;
             default:
-                acvp_log_msg(ctx, "Cap entry not found, %d.", cap_entry->cipher);
+	        ACVP_LOG_ERR("Cap entry not found, %d.", cap_entry->cipher);
                 return ACVP_NO_CAP;
             }
 
@@ -1798,12 +1975,11 @@ ACVP_RESULT acvp_register(ACVP_CTX *ctx)
      */
     rv = acvp_build_register(ctx, &reg);
     if (rv != ACVP_SUCCESS) {
-        acvp_log_msg(ctx, "Unable to build register message");
+        ACVP_LOG_ERR("Unable to build register message");
         return rv;
     }
 
-    //FIXME
-    printf("%s\n", reg);
+    ACVP_LOG_STATUS("%s", reg);
 
     /*
      * Send the capabilities to the ACVP server and get the response,
@@ -1812,7 +1988,7 @@ ACVP_RESULT acvp_register(ACVP_CTX *ctx)
      */
     rv = acvp_send_register(ctx, reg);
     if (rv == ACVP_SUCCESS) {
-        printf("\n%s\n", ctx->reg_buf);
+        ACVP_LOG_STATUS("%s", ctx->reg_buf);
         rv = acvp_parse_register(ctx);
     }
 
@@ -1856,7 +2032,7 @@ static ACVP_RESULT acvp_append_sym_cipher_caps_entry(
 }
 
 /*
- * Append a hash capability to the
+ * Append a hash capabilitiy to the
  * capabilities list.  This list is later used to build
  * the register message.
  */
@@ -2048,7 +2224,7 @@ static ACVP_RESULT acvp_parse_register(ACVP_CTX *ctx)
      */
     val = json_parse_string_with_comments(json_buf);
     if (!val) {
-        acvp_log_msg(ctx, "JSON parse error");
+        ACVP_LOG_ERR("JSON parse error");
         return ACVP_JSON_ERR;
     }
 
@@ -2062,19 +2238,19 @@ static ACVP_RESULT acvp_parse_register(ACVP_CTX *ctx)
     jwt = json_object_get_string(obj, "accessToken");
     if (!jwt) {
         json_value_free(val);
-        acvp_log_msg(ctx, "No access_token provided in registration response");
+        ACVP_LOG_ERR("No access_token provided in registration response");
         return ACVP_NO_TOKEN;
     } else {
         i = strnlen(jwt, ACVP_JWT_TOKEN_MAX+1);
         if (i > ACVP_JWT_TOKEN_MAX) {
             json_value_free(val);
-            acvp_log_msg(ctx, "access_token too large");
+            ACVP_LOG_ERR("access_token too large");
             return ACVP_NO_TOKEN;
         }
         ctx->jwt_token = calloc(1, i+1);
         strncpy(ctx->jwt_token, jwt, i);
         ctx->jwt_token[i] = 0;
-        acvp_log_msg(ctx, "JWT: %s", ctx->jwt_token);
+        ACVP_LOG_STATUS("JWT: %s", ctx->jwt_token);
     }
 
     /*
@@ -2095,12 +2271,12 @@ static ACVP_RESULT acvp_parse_register(ACVP_CTX *ctx)
             json_value_free(val);
             return rv;
         }
-        acvp_log_msg(ctx, "Received vs_id=%d", vs_id);
+        ACVP_LOG_INFO("Received vs_id=%d", vs_id);
     }
 
     json_value_free(val);
 
-    acvp_log_msg(ctx, "Successfully processed registration response from server");
+    ACVP_LOG_STATUS("Successfully processed registration response from server");
 
     return ACVP_SUCCESS;
 
@@ -2142,10 +2318,10 @@ ACVP_RESULT acvp_process_tests(ACVP_CTX *ctx)
  */
 ACVP_RESULT acvp_retry_handler(ACVP_CTX *ctx, unsigned int retry_period)
 {
-    acvp_log_msg(ctx, "KAT values not ready, server requests we wait and try again...");
+    ACVP_LOG_STATUS("KAT values not ready, server requests we wait and try again...");
     if (retry_period <= 0 || retry_period > ACVP_RETRY_TIME_MAX) {
         retry_period = ACVP_RETRY_TIME_MAX;
-        acvp_log_msg(ctx, "Warning: retry_period not found, using max retry period!");
+        ACVP_LOG_WARN("retry_period not found, using max retry period!");
     }
     sleep(retry_period);
 
@@ -2218,10 +2394,10 @@ static ACVP_RESULT acvp_process_vsid(ACVP_CTX *ctx, int vs_id)
             return (rv);
         }
         json_buf = ctx->kat_buf;
-        printf("\n%s\n", ctx->kat_buf);
+        ACVP_LOG_INFO("\n%s\n", ctx->kat_buf);
         val = json_parse_string_with_comments(json_buf);
         if (!val) {
-            acvp_log_msg(ctx, "JSON parse error");
+            ACVP_LOG_ERR("JSON parse error");
             return ACVP_JSON_ERR;
         }
         obj = acvp_get_obj_from_rsp(val);
@@ -2281,14 +2457,14 @@ static ACVP_RESULT acvp_dispatch_vector_set(ACVP_CTX *ctx, JSON_Object *obj)
     ACVP_RESULT rv;
 
     if (!alg) {
-        acvp_log_msg(ctx, "JSON parse error: ACV algorithm not found");
+        ACVP_LOG_ERR("JSON parse error: ACV algorithm not found");
         return ACVP_JSON_ERR;
     }
 
-    acvp_log_msg(ctx, "vsId: %d", vs_id);
-    acvp_log_msg(ctx, "ACV Operation: %s", alg);
-    acvp_log_msg(ctx, "ACV Direction: %s", dir);
-    acvp_log_msg(ctx, "ACV version: %s", json_object_get_string(obj, "acvVersion"));
+    ACVP_LOG_STATUS("vsId: %d", vs_id);
+    ACVP_LOG_STATUS("ACV Operation: %s", alg);
+    ACVP_LOG_INFO("ACV Direction: %s", dir);
+    ACVP_LOG_INFO("ACV version: %s", json_object_get_string(obj, "acvVersion"));
 
     for (i = 0; i < ACVP_ALG_MAX; i++) {
         if (!strncmp(alg, alg_tbl[i].name, strlen(alg_tbl[i].name))) {
@@ -2322,7 +2498,7 @@ static ACVP_RESULT acvp_process_vector_set(ACVP_CTX *ctx, JSON_Object *obj)
         return rv;
     }
 
-    acvp_log_msg(ctx, "Successfully processed KAT vector set");
+    ACVP_LOG_STATUS("Successfully processed KAT vector set");
 
     return ACVP_SUCCESS;
 
@@ -2350,10 +2526,10 @@ static ACVP_RESULT acvp_get_result_vsid(ACVP_CTX *ctx, int vs_id)
             return (rv);
         }
         json_buf = ctx->kat_buf;
-        printf("\n%s\n", ctx->kat_buf);
+        ACVP_LOG_ERR("%s", ctx->kat_buf);
         val = json_parse_string_with_comments(json_buf);
         if (!val) {
-            acvp_log_msg(ctx, "JSON parse error");
+            ACVP_LOG_ERR("JSON parse error");
             return ACVP_JSON_ERR;
         }
         obj = acvp_get_obj_from_rsp(val);
@@ -2389,3 +2565,4 @@ static ACVP_RESULT acvp_get_result_vsid(ACVP_CTX *ctx, int vs_id)
 
     return ACVP_SUCCESS;
 }
+

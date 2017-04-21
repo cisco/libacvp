@@ -30,6 +30,34 @@
 
 #define ACVP_VERSION    "0.3"
 
+#ifndef ACVP_LOG_INFO
+#define ACVP_LOG_INFO(format, args ...) do { \
+        acvp_log_msg(ctx, ACVP_LOG_LVL_INFO, "***ACVP [INFO][%s:%d]--> " format "\n", \
+                __func__, __LINE__, ##args); \
+} while (0)
+#endif
+
+#ifndef ACVP_LOG_ERR
+#define ACVP_LOG_ERR(format, args ...) do { \
+        acvp_log_msg(ctx, ACVP_LOG_LVL_ERR, "***ACVP [ERR][%s:%d]--> " format "\n", \
+                __func__, __LINE__, ##args); \
+} while (0)
+#endif
+
+#ifndef ACVP_LOG_STATUS
+#define ACVP_LOG_STATUS(format, args ...) do { \
+        acvp_log_msg(ctx, ACVP_LOG_LVL_STATUS, "***ACVP [STATUS][%s:%d]--> " format "\n", \
+                __func__, __LINE__, ##args); \
+} while (0)
+#endif
+
+#ifndef ACVP_LOG_WARN
+#define ACVP_LOG_WARN(format, args ...) do { \
+        acvp_log_msg(ctx, ACVP_LOG_LVL_WARN, "***ACVP [WARN][%s:%d]--> " format "\n", \
+                __func__, __LINE__, ##args); \
+} while (0)
+#endif
+
 #define ACVP_ALG_MAX 44  /* Used by alg_tbl[] */
 
 #define ACVP_ALG_AES_ECB             "AES-ECB"
@@ -142,7 +170,18 @@ typedef struct acvp_sl_list_t {
     struct acvp_sl_list_t *next;
 } ACVP_SL_LIST;
 
+typedef struct acvp_sym_prereq_alg_val {
+    ACVP_SYM_PRE_REQ alg;
+    char *val;
+} ACVP_SYM_PREREQ_ALG_VAL;
+
+typedef struct acvp_sym_prereq_vals {
+    ACVP_SYM_PREREQ_ALG_VAL prereq_alg_val;
+    struct acvp_sym_prereq_vals *next;
+} ACVP_SYM_PREREQ_VALS;
+
 typedef struct acvp_sym_cipher_capability {
+    ACVP_SYM_PREREQ_VALS *prereq_vals;
     ACVP_SYM_CIPH_DIR direction;
     ACVP_SYM_CIPH_KO keying_option;
     ACVP_SYM_CIPH_IVGEN_SRC ivgen_source;
@@ -249,6 +288,7 @@ typedef struct acvp_caps_list_t {
  */
 struct acvp_ctx_t {
     /* Global config values for the session */
+    ACVP_LOG_LVL debug;
     char        *server_name;
     char        *path_segment;
     int server_port;
@@ -288,7 +328,7 @@ ACVP_RESULT acvp_send_register(ACVP_CTX *ctx, char *reg);
 ACVP_RESULT acvp_retrieve_vector_set(ACVP_CTX *ctx, int vs_id);
 ACVP_RESULT acvp_retrieve_vector_set_result(ACVP_CTX *ctx, int vs_id);
 ACVP_RESULT acvp_submit_vector_responses(ACVP_CTX *ctx);
-void acvp_log_msg (ACVP_CTX *ctx, const char *format, ...);
+void acvp_log_msg (ACVP_CTX *ctx, ACVP_LOG_LVL level, const char *format, ...);
 ACVP_RESULT acvp_hexstr_to_bin(const unsigned char *src, unsigned char *dest, int dest_max);
 ACVP_RESULT acvp_bin_to_hexstr(const unsigned char *src, unsigned int src_len, unsigned char *dest);
 
