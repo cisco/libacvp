@@ -401,7 +401,7 @@ ACVP_RESULT acvp_enable_sym_cipher_cap_parm(
 	return ACVP_NO_CAP;
     }
 
-    if (acvp_validate_sym_cipher_parm_value(parm, value) != ACVP_SUCCESS) {
+    if (acvp_validate_sym_cipher_parm_value(parm, length) != ACVP_SUCCESS) {
       ACVP_LOG_ERR("Invalid sym cipher parm value");
       return ACVP_INVALID_ARG;
     }
@@ -557,7 +557,7 @@ ACVP_RESULT acvp_enable_hash_cap_parm (
         return ACVP_NO_CAP;
     }
 
-    if (acvp_validate_hash_parm_value(parm, value) != ACVP_SUCCESS) {
+    if (acvp_validate_hash_parm_value(param, value) != ACVP_SUCCESS) {
       ACVP_LOG_ERR("Invalid hash parm value");
       return ACVP_INVALID_ARG;
     }
@@ -754,6 +754,9 @@ ACVP_RESULT acvp_validate_drbg_parm_value(ACVP_DRBG_PARM parm, int value) {
     case ACVP_DRBG_ADD_IN_LEN:
     case ACVP_DRBG_RET_BITS_LEN:
     case ACVP_DRBG_PRE_REQ_VALS:
+      // TODO: add proper validation for these parameters
+      retval = ACVP_SUCCESS;
+      break;
     default:
       break;
   }
@@ -775,8 +778,7 @@ static ACVP_RESULT acvp_add_ctr_drbg_cap_parm (
         return ACVP_INVALID_ARG;
     }
 
-    if (acvp_validate_drbg_parm_value(parm, value) != ACVP_SUCCESS) {
-      ACVP_LOG_ERR("Invalid drbg parm value");
+    if (acvp_validate_drbg_parm_value(param, value) != ACVP_SUCCESS) {
       return ACVP_INVALID_ARG;
     }
 
