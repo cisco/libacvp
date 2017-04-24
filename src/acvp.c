@@ -350,6 +350,34 @@ ACVP_RESULT acvp_enable_sym_cipher_cap(
     return (acvp_append_sym_cipher_caps_entry(ctx, cap, cipher, crypto_handler));
 }
 
+ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_SYM_CIPH_PARM parm, int value) {
+  ACVP_RESULT retval = ACVP_INVALID_ARG;
+
+  switch(parm){
+    case ACVP_SYM_CIPH_KEYLEN:
+      if (value == 128 || value == 168 || value == 192 || value == 256) {
+        retval = ACVP_SUCCESS;
+      }
+    case ACVP_SYM_CIPH_TAGLEN:
+      if (value >= 4 && value <= 128) {
+        retval = ACVP_SUCCESS;
+      }
+    case ACVP_SYM_CIPH_IVLEN:
+      if (value >= 8 && value <= 1024) {
+        retval = ACVP_SUCCESS;
+      }
+    case ACVP_SYM_CIPH_AADLEN:
+    case ACVP_SYM_CIPH_PTLEN:
+      if (value >= 0 && value <= 65536) {
+        retval = ACVP_SUCCESS;
+      }
+    default:
+      break;
+  }
+
+  return retval;
+}
+
 /*
  * The user should call this after invoking acvp_enable_sym_cipher_cap()
  * to specify the supported key lengths, PT lengths, AAD lengths, IV
@@ -373,31 +401,28 @@ ACVP_RESULT acvp_enable_sym_cipher_cap_parm(
 	return ACVP_NO_CAP;
     }
 
-    /*
-     * Add the length to the cap
-     */
-    //TODO: need to add validation logic to verify incoming length
-    //      is within range for each length type.  Once the symmetric
-    //      cipher sub-spec is reviewed, we should have the valid
-    //      ranges.
+    if (acvp_validate_sym_cipher_parm_value(parm, length) != ACVP_SUCCESS) {
+      return ACVP_INVALID_ARG;
+    }
+
     switch (parm) {
     case ACVP_SYM_CIPH_KEYLEN:
-	acvp_cap_add_length(&cap->cap.sym_cap->keylen, length);
-	break;
+      acvp_cap_add_length(&cap->cap.sym_cap->keylen, length);
+      break;
     case ACVP_SYM_CIPH_TAGLEN:
-	acvp_cap_add_length(&cap->cap.sym_cap->taglen, length);
-	break;
+      acvp_cap_add_length(&cap->cap.sym_cap->taglen, length);
+      break;
     case ACVP_SYM_CIPH_IVLEN:
-	acvp_cap_add_length(&cap->cap.sym_cap->ivlen, length);
-	break;
+      acvp_cap_add_length(&cap->cap.sym_cap->ivlen, length);
+      break;
     case ACVP_SYM_CIPH_PTLEN:
-	acvp_cap_add_length(&cap->cap.sym_cap->ptlen, length);
-	break;
+      acvp_cap_add_length(&cap->cap.sym_cap->ptlen, length);
+      break;
     case ACVP_SYM_CIPH_AADLEN:
-	acvp_cap_add_length(&cap->cap.sym_cap->aadlen, length);
-	break;
+      acvp_cap_add_length(&cap->cap.sym_cap->aadlen, length);
+      break;
     default:
-	return ACVP_INVALID_ARG;
+      return ACVP_INVALID_ARG;
     }
 
     return ACVP_SUCCESS;
@@ -488,6 +513,22 @@ ACVP_RESULT acvp_enable_hash_cap(
     return (acvp_append_hash_caps_entry(ctx, cap, cipher, crypto_handler));
 }
 
+ACVP_RESULT acvp_validate_hash_parm_value(ACVP_HASH_PARM parm, int value) {
+  ACVP_RESULT retval = ACVP_INVALID_ARG;
+
+  switch(parm){
+    case ACVP_HASH_IN_BIT:
+    case ACVP_HASH_IN_EMPTY:
+      if (value == 0 || value == 1) {
+        retval = ACVP_SUCCESS;
+      }
+    default:
+      break;
+  }
+
+  return retval;
+}
+
 /*
  * Add HASH(SHA) parameters
  */
@@ -513,6 +554,10 @@ ACVP_RESULT acvp_enable_hash_cap_parm (
     hash_cap = cap->cap.hash_cap;
     if (!hash_cap) {
         return ACVP_NO_CAP;
+    }
+
+    if (acvp_validate_hash_parm_value(param, value) != ACVP_SUCCESS) {
+      return ACVP_INVALID_ARG;
     }
 
     switch (cipher) {
@@ -610,7 +655,6 @@ ACVP_RESULT acvp_enable_hmac_cap_parm(
     }
 
     if (acvp_validate_hmac_parm_value(parm, value) != ACVP_SUCCESS) {
-      ACVP_LOG_ERR("Invalid hmac parm value");
       return ACVP_INVALID_ARG;
     }
 
@@ -690,6 +734,30 @@ ACVP_RESULT acvp_enable_hmac_prereq_cap(ACVP_CTX       *ctx,
     return ACVP_SUCCESS;
 }
 
+ACVP_RESULT acvp_validate_drbg_parm_value(ACVP_DRBG_PARM parm, int value) {
+  ACVP_RESULT retval = ACVP_INVALID_ARG;
+
+  switch(parm){
+    case ACVP_DRBG_DER_FUNC_ENABLED:
+    case ACVP_DRBG_PRED_RESIST_ENABLED:
+    case ACVP_DRBG_RESEED_ENABLED:
+      if (value == 0 || value == 1) {
+        retval = ACVP_SUCCESS;
+      }
+    case ACVP_DRBG_ENTROPY_LEN:
+    case ACVP_DRBG_NONCE_LEN:
+    case ACVP_DRBG_PERSO_LEN:
+    case ACVP_DRBG_ADD_IN_LEN:
+    case ACVP_DRBG_RET_BITS_LEN:
+    case ACVP_DRBG_PRE_REQ_VALS:
+      // TODO: add proper validation for these parameters
+      retval = ACVP_SUCCESS;
+    default:
+      break;
+  }
+
+  return retval;
+}
 
 /*
  * Add CTR DRBG parameters
@@ -704,6 +772,11 @@ static ACVP_RESULT acvp_add_ctr_drbg_cap_parm (
     if (!drbg_cap_mode) {
         return ACVP_INVALID_ARG;
     }
+
+    if (acvp_validate_drbg_parm_value(param, value) != ACVP_SUCCESS) {
+      return ACVP_INVALID_ARG;
+    }
+
     switch (mode) {
     case ACVP_DRBG_3KEYTDEA:
     case ACVP_DRBG_AES_128:
@@ -2565,4 +2638,3 @@ static ACVP_RESULT acvp_get_result_vsid(ACVP_CTX *ctx, int vs_id)
 
     return ACVP_SUCCESS;
 }
-
