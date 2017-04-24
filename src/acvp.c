@@ -355,22 +355,22 @@ ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_SYM_CIPH_PARM parm, int val
 
   switch(parm){
     case ACVP_SYM_CIPH_KEYLEN:
-      if (value == 128 || value == 168 || value == 192 || value == 256)
+      if (value == 128 || value == 168 || value == 192 || value == 256) {
         retval = ACVP_SUCCESS;
-      break;
+      }
     case ACVP_SYM_CIPH_TAGLEN:
-      if (value >= 4 && value <= 128)
+      if (value >= 4 && value <= 128) {
         retval = ACVP_SUCCESS;
-      break;
+      }
     case ACVP_SYM_CIPH_IVLEN:
-      if (value >= 8 && value <= 1024)
+      if (value >= 8 && value <= 1024) {
         retval = ACVP_SUCCESS;
-      break;
+      }
     case ACVP_SYM_CIPH_AADLEN:
     case ACVP_SYM_CIPH_PTLEN:
-      if (value >= 0 && value <= 65536)
+      if (value >= 0 && value <= 65536) {
         retval = ACVP_SUCCESS;
-      break;
+      }
     default:
       break;
   }
@@ -402,7 +402,6 @@ ACVP_RESULT acvp_enable_sym_cipher_cap_parm(
     }
 
     if (acvp_validate_sym_cipher_parm_value(parm, length) != ACVP_SUCCESS) {
-      ACVP_LOG_ERR("Invalid sym cipher parm value");
       return ACVP_INVALID_ARG;
     }
 
@@ -558,7 +557,6 @@ ACVP_RESULT acvp_enable_hash_cap_parm (
     }
 
     if (acvp_validate_hash_parm_value(param, value) != ACVP_SUCCESS) {
-      ACVP_LOG_ERR("Invalid hash parm value");
       return ACVP_INVALID_ARG;
     }
 
@@ -657,7 +655,6 @@ ACVP_RESULT acvp_enable_hmac_cap_parm(
     }
 
     if (acvp_validate_hmac_parm_value(parm, value) != ACVP_SUCCESS) {
-      ACVP_LOG_ERR("Invalid hmac parm value");
       return ACVP_INVALID_ARG;
     }
 
@@ -747,7 +744,6 @@ ACVP_RESULT acvp_validate_drbg_parm_value(ACVP_DRBG_PARM parm, int value) {
       if (value == 0 || value == 1) {
         retval = ACVP_SUCCESS;
       }
-      break;
     case ACVP_DRBG_ENTROPY_LEN:
     case ACVP_DRBG_NONCE_LEN:
     case ACVP_DRBG_PERSO_LEN:
@@ -756,7 +752,6 @@ ACVP_RESULT acvp_validate_drbg_parm_value(ACVP_DRBG_PARM parm, int value) {
     case ACVP_DRBG_PRE_REQ_VALS:
       // TODO: add proper validation for these parameters
       retval = ACVP_SUCCESS;
-      break;
     default:
       break;
   }
