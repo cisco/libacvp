@@ -34,7 +34,8 @@
 /*
  * Forward prototypes for local functions
  */
-static ACVP_RESULT acvp_aes_output_tc(ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *stc, JSON_Object *tc_rsp);
+static ACVP_RESULT acvp_aes_output_tc(ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *stc, JSON_Object *tc_rsp,
+       		   		      ACVP_RESULT tag_rv);
 static ACVP_RESULT acvp_aes_init_tc(ACVP_CTX *ctx,
                                     ACVP_SYM_CIPHER_TC *stc,
                                     ACVP_SYM_CIPH_TESTTYPE test_type,
@@ -477,7 +478,10 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
             }
         }
         keylen = (unsigned int)json_object_get_number(groupobj, "keyLen");
-        ivlen = keylen;
+        ivlen = 0;
+        if ((alg_id != ACVP_AES_ECB) && (alg_id != ACVP_AES_KW)) {
+            ivlen = keylen;
+        }
 	if (alg_id == ACVP_AES_GCM || alg_id == ACVP_AES_CCM) {
             ivlen = (unsigned int)json_object_get_number(groupobj, "ivLen");
         }
@@ -492,7 +496,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
         ACVP_LOG_INFO("         ptlen: %d", ptlen);
         ACVP_LOG_INFO("        aadlen: %d", aadlen);
         ACVP_LOG_INFO("        taglen: %d", taglen);
-        ACVP_LOG_INFO("         dir:   %s", dir_str);
+        ACVP_LOG_INFO("         dir:   %s", dir_str2);
         ACVP_LOG_INFO("      testtype: %d", test_type);
 
 
@@ -557,14 +561,17 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
                 /* Process the current AES KAT test vector... */
 		rv = (cap->crypto_handler)(&tc);
 		if (rv != ACVP_SUCCESS) {
-		    ACVP_LOG_ERR("crypto module failed the operation");
-		    return ACVP_CRYPTO_MODULE_FAIL;
+		    if (rv != ACVP_CRYPTO_TAG_FAIL) {
+		        ACVP_LOG_ERR("ERROR: crypto module failed the operation");
+		    	return ACVP_CRYPTO_MODULE_FAIL;
+		    }
                 }
+
 
                 /*
 		 * Output the test case results using JSON
 		 */
-		rv = acvp_aes_output_tc(ctx, &stc, r_tobj);
+		rv = acvp_aes_output_tc(ctx, &stc, r_tobj, rv);
 		if (rv != ACVP_SUCCESS) {
                     ACVP_LOG_ERR("JSON output failure in AES module");
                     return rv;
@@ -593,7 +600,8 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
  * file that will be uploaded to the server.  This routine handles
  * the JSON processing for a single test case.
  */
-static ACVP_RESULT acvp_aes_output_tc(ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *stc, JSON_Object *tc_rsp)
+static ACVP_RESULT acvp_aes_output_tc(ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *stc, 
+       		                      JSON_Object *tc_rsp, ACVP_RESULT tag_rv)
 {
     ACVP_RESULT rv;
     char *tmp;
@@ -638,6 +646,11 @@ static ACVP_RESULT acvp_aes_output_tc(ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *stc, JS
 	    json_object_set_string(tc_rsp, "tag", tmp);
 	}
     } else {
+	if ((stc->cipher == ACVP_AES_GCM || stc->cipher == ACVP_AES_CCM) && 
+	    (tag_rv == ACVP_CRYPTO_TAG_FAIL)) {
+	    	json_object_set_boolean(tc_rsp, "decryptFail", 1);
+		return ACVP_SUCCESS;
+	}
 	rv = acvp_bin_to_hexstr(stc->pt, stc->pt_len, (unsigned char*)tmp);
 	if (rv != ACVP_SUCCESS) {
 	    ACVP_LOG_ERR("hex conversion failure (pt)");

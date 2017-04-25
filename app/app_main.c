@@ -1299,8 +1299,7 @@ static ACVP_RESULT app_aes_handler_aead(ACVP_TEST_CASE *test_case)
 	     */
 	    rv = EVP_Cipher(&cipher_ctx, NULL, NULL, 0);
 	    if (rv) {
-		printf("\nGCM decrypt failed due to tag mismatch (%d)\n", rv);
-		return ACVP_CRYPTO_MODULE_FAIL;
+		return ACVP_CRYPTO_TAG_FAIL;
 	    }
 	}
 	break;
@@ -1344,8 +1343,7 @@ static ACVP_RESULT app_aes_handler_aead(ACVP_TEST_CASE *test_case)
 	     */
 	    rv = EVP_Cipher(&cipher_ctx, NULL, NULL, 0);
 	    if (rv) {
-		printf("\nCCM decrypt failed due to tag mismatch (%d)\n", rv);
-		return ACVP_CRYPTO_MODULE_FAIL;
+		return ACVP_CRYPTO_TAG_FAIL;
 	    }
 	}
 	break;
