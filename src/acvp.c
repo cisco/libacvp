@@ -1908,7 +1908,7 @@ static ACVP_RESULT acvp_build_register(ACVP_CTX *ctx, char **reg)
 
     /* TODO: some of this stuff could be pulled from the processor(/proc/cpuinfo) and
      * O/S internals (uname -a) and then populated - maybe an API to the DUT to
-     * return some of the environment info.
+     * return some of the environment info.  Needs to be moved to app code ?
      */
 
     json_object_set_string(dep_obj, "type", "software");
@@ -2391,7 +2391,7 @@ ACVP_RESULT acvp_process_tests(ACVP_CTX *ctx)
  */
 ACVP_RESULT acvp_retry_handler(ACVP_CTX *ctx, unsigned int retry_period)
 {
-    ACVP_LOG_STATUS("KAT values not ready, server requests we wait and try again...");
+    ACVP_LOG_INFO("KAT values not ready, server requests we wait and try again...");
     if (retry_period <= 0 || retry_period > ACVP_RETRY_TIME_MAX) {
         retry_period = ACVP_RETRY_TIME_MAX;
         ACVP_LOG_WARN("retry_period not found, using max retry period!");

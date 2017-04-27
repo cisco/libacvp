@@ -221,7 +221,7 @@ int main(int argc, char **argv)
     /*
      * Setup the vendor attributes
      */
-    rv = acvp_set_vendor_info(ctx, "ACME company", "looneytunes.org", "Porky Pig", "pp@looneytunes.org");
+    rv = acvp_set_vendor_info(ctx, "Cisco Systems", "www.cisco.com", "Barry Fussell", "bfussell@cisco.com");
     if (rv != ACVP_SUCCESS) {
         printf("Failed to set vendor info\n");
         exit(1);
@@ -231,7 +231,7 @@ int main(int argc, char **argv)
      * Setup the crypto module attributes
      */
     snprintf(ssl_version, 10, "%08x", (unsigned int)SSLeay());
-    rv = acvp_set_module_info(ctx, "OpenSSL", "software", ssl_version, SSLeay_version(SSLEAY_VERSION));
+    rv = acvp_set_module_info(ctx, "OpenSSL", "software", ssl_version, "FOM 6.2a");
     if (rv != ACVP_SUCCESS) {
         printf("Failed to set module info\n");
         exit(1);
