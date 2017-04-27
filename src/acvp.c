@@ -2052,7 +2052,7 @@ ACVP_RESULT acvp_register(ACVP_CTX *ctx)
         return rv;
     }
 
-    ACVP_LOG_STATUS("%s", reg);
+    ACVP_LOG_STATUS("POST %s", reg);
 
     /*
      * Send the capabilities to the ACVP server and get the response,
@@ -2061,7 +2061,7 @@ ACVP_RESULT acvp_register(ACVP_CTX *ctx)
      */
     rv = acvp_send_register(ctx, reg);
     if (rv == ACVP_SUCCESS) {
-        ACVP_LOG_STATUS("%s", ctx->reg_buf);
+        ACVP_LOG_STATUS("200 OK %s", ctx->reg_buf);
         rv = acvp_parse_register(ctx);
     }
 
@@ -2349,7 +2349,7 @@ static ACVP_RESULT acvp_parse_register(ACVP_CTX *ctx)
 
     json_value_free(val);
 
-    ACVP_LOG_STATUS("Successfully processed registration response from server");
+    ACVP_LOG_INFO("Successfully processed registration response from server");
 
     return ACVP_SUCCESS;
 
@@ -2391,7 +2391,7 @@ ACVP_RESULT acvp_process_tests(ACVP_CTX *ctx)
  */
 ACVP_RESULT acvp_retry_handler(ACVP_CTX *ctx, unsigned int retry_period)
 {
-    ACVP_LOG_INFO("KAT values not ready, server requests we wait and try again...");
+    ACVP_LOG_STATUS("200 OK KAT values not ready, server requests we wait and try again...");
     if (retry_period <= 0 || retry_period > ACVP_RETRY_TIME_MAX) {
         retry_period = ACVP_RETRY_TIME_MAX;
         ACVP_LOG_WARN("retry_period not found, using max retry period!");
@@ -2467,7 +2467,7 @@ static ACVP_RESULT acvp_process_vsid(ACVP_CTX *ctx, int vs_id)
             return (rv);
         }
         json_buf = ctx->kat_buf;
-        ACVP_LOG_INFO("\n%s\n", ctx->kat_buf);
+        ACVP_LOG_STATUS("200 OK %s\n", ctx->kat_buf);
         val = json_parse_string_with_comments(json_buf);
         if (!val) {
             ACVP_LOG_ERR("JSON parse error");
@@ -2506,6 +2506,7 @@ static ACVP_RESULT acvp_process_vsid(ACVP_CTX *ctx, int vs_id)
     /*
      * Send the responses to the ACVP server
      */
+    ACVP_LOG_STATUS("POST vector set response vsId: %d", vs_id);
     rv = acvp_submit_vector_responses(ctx);
     if (rv != ACVP_SUCCESS) {
         return (rv);

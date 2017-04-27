@@ -638,7 +638,7 @@ static void murl_log_peer_cert(SSL *ssl)
 	    X509_NAME_print(out, subject, 0);
 	    (void)BIO_flush(out);
 	    BIO_get_mem_ptr(out, &bptr);
-	    fprintf(stdout, "TLS peer subject name: %s\n", bptr->data); 
+	    //fprintf(stdout, "TLS peer subject name: %s\n", bptr->data); 
 	    BIO_free_all(out);
 	}
     }

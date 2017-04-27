@@ -44,7 +44,7 @@ static int acvp_char_to_int(char ch);
 void acvp_log_msg (ACVP_CTX *ctx, ACVP_LOG_LVL level, const char *format, ...)
 {
     va_list arguments;
-    char tmp[16384];
+    char tmp[1024*2];
 
     if (ctx && ctx->test_progress_cb && (ctx->debug >= level)) {
         /*
@@ -52,7 +52,7 @@ void acvp_log_msg (ACVP_CTX *ctx, ACVP_LOG_LVL level, const char *format, ...)
          * the logger function
          */
         va_start(arguments, format);
-        vsnprintf(tmp, 16383, format, arguments);
+        vsnprintf(tmp, 1023*2, format, arguments);
         ctx->test_progress_cb(tmp);
         va_end(arguments);
         fflush(stdout);

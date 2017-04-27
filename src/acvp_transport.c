@@ -440,6 +440,7 @@ ACVP_RESULT acvp_retrieve_vector_set(ACVP_CTX *ctx, int vs_id)
     memset(url, 0x0, 512);
     snprintf(url, 511, "https://%s:%d/%svalidation/acvp/vectors?vsId=%d", ctx->server_name, ctx->server_port, ctx->path_segment, vs_id);
 
+    ACVP_LOG_STATUS("GET acvp/validation/acvp/vectors?vsId=%d", vs_id);
     if (ctx->kat_buf) {
         memset(ctx->kat_buf, 0x0, ACVP_KAT_BUF_MAX);
     }
@@ -453,7 +454,7 @@ ACVP_RESULT acvp_retrieve_vector_set(ACVP_CTX *ctx, int vs_id)
     /*
      * Update user with status
      */
-    ACVP_LOG_STATUS("Successfully retrieved KAT vector set");
+    ACVP_LOG_STATUS("KAT vector set response received");
 
     return ACVP_SUCCESS;
 }
