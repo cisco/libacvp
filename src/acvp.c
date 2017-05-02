@@ -2052,8 +2052,11 @@ ACVP_RESULT acvp_register(ACVP_CTX *ctx)
         return rv;
     }
 
-    ACVP_LOG_STATUS("POST %s", reg);
-
+    if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
+        printf("\nPOST %s\n", reg);
+    } else {
+        ACVP_LOG_STATUS("POST %s", reg);
+    }
     /*
      * Send the capabilities to the ACVP server and get the response,
      * which should be a list of VS identifiers that will need
@@ -2467,7 +2470,11 @@ static ACVP_RESULT acvp_process_vsid(ACVP_CTX *ctx, int vs_id)
             return (rv);
         }
         json_buf = ctx->kat_buf;
-        ACVP_LOG_STATUS("200 OK %s\n", ctx->kat_buf);
+    	if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
+            printf("\n200 OK %s\n", ctx->kat_buf);
+        } else {
+            ACVP_LOG_STATUS("200 OK %s\n", ctx->kat_buf);
+        }
         val = json_parse_string_with_comments(json_buf);
         if (!val) {
             ACVP_LOG_ERR("JSON parse error");

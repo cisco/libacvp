@@ -589,8 +589,11 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
     }
     json_array_append_value(reg_arry, r_vs_val);
 
-    ACVP_LOG_INFO("\n\n%s\n\n", json_serialize_to_string_pretty(ctx->kat_resp));
-
+    if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
+        printf("\n\n%s\n\n", json_serialize_to_string_pretty(ctx->kat_resp));
+    } else {
+        ACVP_LOG_INFO("\n\n%s\n\n", json_serialize_to_string_pretty(ctx->kat_resp));
+    }
     return ACVP_SUCCESS;
 }
 

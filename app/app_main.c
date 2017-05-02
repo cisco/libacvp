@@ -186,6 +186,9 @@ int main(int argc, char **argv)
         if (strcmp(*argv, "-none") == 0) {
             level = ACVP_LOG_LVL_NONE;
         }
+        if (strcmp(*argv, "-verbose") == 0) {
+            level = ACVP_LOG_LVL_VERBOSE;
+        }
         if (strcmp(*argv, "-help") == 0) {
             print_usage();
             return 1;
