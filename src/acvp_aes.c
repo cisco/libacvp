@@ -38,8 +38,8 @@ static ACVP_RESULT acvp_aes_output_tc(ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *stc, JS
        		   		      ACVP_RESULT tag_rv);
 static ACVP_RESULT acvp_aes_init_tc(ACVP_CTX *ctx,
                                     ACVP_SYM_CIPHER_TC *stc,
-                                    ACVP_SYM_CIPH_TESTTYPE test_type,
                                     unsigned int tc_id,
+                                    char *test_type,
                                     unsigned char *j_key,
                                     unsigned char *j_pt,
                                     unsigned char *j_ct,
@@ -391,7 +391,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
     const char		*alg_str = json_object_get_string(obj, "algorithm"); 
     ACVP_SYM_CIPH_DIR	dir;
     ACVP_CIPHER	alg_id;
-    ACVP_SYM_CIPH_TESTTYPE test_type;
+    char  *test_type;
 
     if (!alg_str) {
         ACVP_LOG_ERR("unable to parse 'algorithm' from JSON");
@@ -488,7 +488,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
         ptlen = (unsigned int)json_object_get_number(groupobj, "ptLen");
         aadlen = (unsigned int)json_object_get_number(groupobj, "aadLen");
         taglen = (unsigned int)json_object_get_number(groupobj, "tagLen");
-        test_type = (unsigned int)json_object_get_number(groupobj, "testType");
+        test_type = (char *)json_object_get_string(groupobj, "testType");
 
         ACVP_LOG_INFO("    Test group: %d", i);
         ACVP_LOG_INFO("        keylen: %d", keylen);
@@ -497,7 +497,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
         ACVP_LOG_INFO("        aadlen: %d", aadlen);
         ACVP_LOG_INFO("        taglen: %d", taglen);
         ACVP_LOG_INFO("         dir:   %s", dir_str2);
-        ACVP_LOG_INFO("      testtype: %d", test_type);
+        ACVP_LOG_INFO("      testtype: %s", test_type);
 
 
         tests = json_object_get_array(groupobj, "tests");
@@ -547,7 +547,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
 		             keylen, ivlen, ptlen, aadlen, taglen, alg_id, dir);
 
 	    /* If Monte Carlo start that here */
-	    if (test_type == ACVP_SYM_TEST_TYPE_MCT) {
+	    if (stc.test_type == ACVP_SYM_TEST_TYPE_MCT) {
 	        json_object_set_value(r_tobj, "resultsArray", json_value_init_array());
 		res_tarr = json_object_get_array(r_tobj, "resultsArray");
 	        rv = acvp_aes_mct_tc(ctx, cap, &tc, &stc, res_tarr);
@@ -616,7 +616,7 @@ static ACVP_RESULT acvp_aes_output_tc(ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *stc,
 	/*
 	 * Keywrap doesn't use an IV
 	 */
-	if (stc->cipher != ACVP_AES_KW) {
+	if ((stc->cipher != ACVP_AES_KW) && (stc->cipher != ACVP_AES_ECB)) {
 	    rv = acvp_bin_to_hexstr(stc->iv, stc->iv_len, (unsigned char*)tmp);
 	    if (rv != ACVP_SUCCESS) {
 		ACVP_LOG_ERR("hex conversion failure (iv)");
@@ -676,8 +676,8 @@ static ACVP_RESULT acvp_aes_output_tc(ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *stc,
  */
 static ACVP_RESULT acvp_aes_init_tc(ACVP_CTX *ctx,
                                     ACVP_SYM_CIPHER_TC *stc,
-                                    ACVP_SYM_CIPH_TESTTYPE test_type,
                                     unsigned int tc_id,
+                                    char *test_type,
                                     unsigned char *j_key,
                                     unsigned char *j_pt,
                                     unsigned char *j_ct,
@@ -710,6 +710,13 @@ static ACVP_RESULT acvp_aes_init_tc(ACVP_CTX *ctx,
     if (!stc->iv) return ACVP_MALLOC_FAIL;
     stc->aad = calloc(1, ACVP_SYM_AAD_MAX);
     if (!stc->aad) return ACVP_MALLOC_FAIL;
+
+    /* Assume KAT if not MCT */
+    if (test_type && !strcmp(test_type, "MCT")) {
+        stc->test_type = ACVP_SYM_TEST_TYPE_MCT;
+    } else {
+        stc->test_type = ACVP_SYM_TEST_TYPE_AFT;
+    }
 
     rv = acvp_hexstr_to_bin((const unsigned char *)j_key, stc->key, ACVP_SYM_KEY_MAX);
     if (rv != ACVP_SUCCESS) {
