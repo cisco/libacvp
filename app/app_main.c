@@ -143,6 +143,7 @@ static void print_usage(void)
     printf("      -warn\n");
     printf("      -status\n");
     printf("      -info\n");
+    printf("      -verbose\n");
     printf("\n");
     printf("In addition some options are passed to acvp_app using\n");
     printf("environment variables.  The following variables can be set:\n\n");
