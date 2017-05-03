@@ -1818,26 +1818,44 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
     /*
      * Set the supported tag lengths (for AEAD ciphers)
      */
-    json_object_set_value(cap_obj, "tagLen", json_value_init_array());
-    opts_arr = json_object_get_array(cap_obj, "tagLen");
-    sl_list = cap_entry->cap.sym_cap->taglen;
-    while (sl_list) {
-	json_array_append_number(opts_arr, sl_list->length);
-	sl_list = sl_list->next;
+    if ((cap_entry->cipher == ACVP_AES_GCM) || (cap_entry->cipher == ACVP_AES_CCM)) {
+        json_object_set_value(cap_obj, "tagLen", json_value_init_array());
+    	opts_arr = json_object_get_array(cap_obj, "tagLen");
+    	sl_list = cap_entry->cap.sym_cap->taglen;
+    	while (sl_list) {
+	   json_array_append_number(opts_arr, sl_list->length);
+	   sl_list = sl_list->next;
+        }
     }
-
 
     /*
      * Set the supported IV lengths
      */
-    json_object_set_value(cap_obj, "ivLen", json_value_init_array());
-    opts_arr = json_object_get_array(cap_obj, "ivLen");
-    sl_list = cap_entry->cap.sym_cap->ivlen;
-    while (sl_list) {
-	json_array_append_number(opts_arr, sl_list->length);
-	sl_list = sl_list->next;
-    }
-
+    switch (cap_entry->cipher) 
+        {
+        case ACVP_TDES_ECB:
+        case ACVP_TDES_CBC:
+        case ACVP_TDES_CBCI:
+        case ACVP_TDES_OFB:
+        case ACVP_TDES_OFBI:
+        case ACVP_TDES_CFB1:
+        case ACVP_TDES_CFB8:
+        case ACVP_TDES_CFB64:
+        case ACVP_TDES_CFBP1:
+        case ACVP_TDES_CFBP8:
+        case ACVP_TDES_CFBP64:
+        case ACVP_TDES_CTR:
+    	case ACVP_TDES_KW:
+	    break;
+	default:
+    	    json_object_set_value(cap_obj, "ivLen", json_value_init_array());
+    	    opts_arr = json_object_get_array(cap_obj, "ivLen");
+    	    sl_list = cap_entry->cap.sym_cap->ivlen;
+    	    while (sl_list) {
+	        json_array_append_number(opts_arr, sl_list->length);
+		sl_list = sl_list->next;
+            }
+        }
     /*
      * Set the supported plaintext lengths
      */
@@ -1852,14 +1870,15 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
     /*
      * Set the supported AAD lengths (for AEAD ciphers)
      */
-    json_object_set_value(cap_obj, "aadLen", json_value_init_array());
-    opts_arr = json_object_get_array(cap_obj, "aadLen");
-    sl_list = cap_entry->cap.sym_cap->aadlen;
-    while (sl_list) {
-	json_array_append_number(opts_arr, sl_list->length);
-	sl_list = sl_list->next;
+    if ((cap_entry->cipher == ACVP_AES_GCM) || (cap_entry->cipher == ACVP_AES_CCM)) {
+        json_object_set_value(cap_obj, "aadLen", json_value_init_array());
+    	opts_arr = json_object_get_array(cap_obj, "aadLen");
+    	sl_list = cap_entry->cap.sym_cap->aadlen;
+    	while (sl_list) {
+	    json_array_append_number(opts_arr, sl_list->length);
+	    sl_list = sl_list->next;
+        }
     }
-
     return ACVP_SUCCESS;
 }
 

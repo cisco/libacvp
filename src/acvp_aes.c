@@ -74,7 +74,6 @@ static ACVP_RESULT acvp_aes_mct_iterate_tc(ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *st
     int n1, n2;
     int j = stc->mct_index;
 
-
     memcpy(ctext[j], stc->ct, stc->ct_len);
     memcpy(ptext[j], stc->pt, stc->pt_len);
     if (j == 0) {
@@ -88,7 +87,7 @@ static ACVP_RESULT acvp_aes_mct_iterate_tc(ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *st
         if (stc->direction == ACVP_DIR_ENCRYPT) {
             memcpy(stc->pt, ctext[j], stc->ct_len);
         } else {
-           memcpy(stc->ct, ptext[j], stc->ct_len);
+            memcpy(stc->ct, ptext[j], stc->ct_len);
         }
 	break;
 
@@ -96,7 +95,11 @@ static ACVP_RESULT acvp_aes_mct_iterate_tc(ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *st
     case ACVP_AES_OFB:
     case ACVP_AES_CFB128:
 	if (j == 0) {
-	    memcpy(stc->pt, stc->iv, stc->ct_len);
+            if (stc->direction == ACVP_DIR_ENCRYPT) {
+	        memcpy(stc->pt, stc->iv, stc->ct_len);
+            } else {
+	        memcpy(stc->ct, stc->iv, stc->ct_len);
+            }
 	} else {
 
             if (stc->direction == ACVP_DIR_ENCRYPT) {
