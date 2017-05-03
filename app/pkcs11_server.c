@@ -1232,7 +1232,7 @@ pkcs11_server(int request_fd, int reply_fd,
 		dlclose(freebl_library_handle);
 	    }
 	    /* should check the status dlclose and return it here */
-	    exit = 0;
+	    exit = 1;
 	    break;
 
 #ifdef ENABLE_NSS_DRBG
