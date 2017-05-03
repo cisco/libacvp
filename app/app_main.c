@@ -46,6 +46,7 @@
 #include <openssl/obj_mac.h>
 #include <openssl/err.h>
 #include <openssl/hmac.h>
+#include <openssl/cmac.h>
 
 #ifdef ACVP_NO_RUNTIME
 #include "app_lcl.h"
@@ -61,15 +62,22 @@ static ACVP_RESULT app_aes_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_des_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_sha_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_hmac_handler(ACVP_TEST_CASE *test_case);
+static ACVP_RESULT app_cmac_handler(ACVP_TEST_CASE *test_case);
 #ifdef ACVP_NO_RUNTIME
 static ACVP_RESULT app_drbg_handler(ACVP_TEST_CASE *test_case);
 #endif
 
-#define DEFAULT_SERVER "127.0.0.1"
-#define DEFAULT_PORT 443
-#define DEFAULT_CA_CHAIN "certs/acvp-private-root-ca.crt.pem"
-#define DEFAULT_CERT "certs/sto-labsrv2-client-cert.pem"
-#define DEFAULT_KEY "certs/sto-labsrv2-client-key.pem"
+// #define DEFAULT_SERVER "127.0.0.1"
+// #define DEFAULT_PORT 443
+// #define DEFAULT_CA_CHAIN "certs/acvp-private-root-ca.crt.pem"
+// #define DEFAULT_CERT "certs/sto-labsrv2-client-cert.pem"
+// #define DEFAULT_KEY "certs/sto-labsrv2-client-key.pem"
+
+#define DEFAULT_SERVER "172.18.152.183"
+#define DEFAULT_PORT 8043
+#define DEFAULT_CA_CHAIN "certs/mozzila_trust_anchors.pem"
+#define DEFAULT_CERT "certs/sto-labsrv1-server.crt.pem"
+#define DEFAULT_KEY "certs/sto-labsrv1-server.key.pem"
 
 char *server;
 int port;
@@ -277,6 +285,9 @@ int main(int argc, char **argv)
      * validated.  For now we just register AES-GCM mode for encrypt using
      * a handful of key sizes and plaintext lengths.
      */
+
+// ----- FOR DEMO PURPOSES (IF) --------
+#if 0
    rv = acvp_enable_sym_cipher_cap(ctx, ACVP_AES_GCM, ACVP_DIR_BOTH, ACVP_KO_NA, ACVP_IVGEN_SRC_INT, ACVP_IVGEN_MODE_821, &app_aes_handler_aead);
    CHECK_ENABLE_CAP_RV(rv);
    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_GCM, ACVP_SYM_CIPH_KEYLEN, 128);
@@ -483,6 +494,53 @@ int main(int argc, char **argv)
    CHECK_ENABLE_CAP_RV(rv);
    rv = acvp_enable_hash_cap_parm(ctx, ACVP_SHA512, ACVP_HASH_IN_EMPTY, 1);
    CHECK_ENABLE_CAP_RV(rv);
+#endif
+
+#if 0 // ------------------- FOR CMAC DEMO PURPOSES ---------------------------
+rv = acvp_enable_sym_cipher_cap(ctx, ACVP_AES_GCM, ACVP_DIR_BOTH, ACVP_KO_NA, ACVP_IVGEN_SRC_INT, ACVP_IVGEN_MODE_821, &app_cmac_handler);
+CHECK_ENABLE_CAP_RV(rv);
+rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_GCM, ACVP_SYM_CIPH_KEYLEN, 128);
+CHECK_ENABLE_CAP_RV(rv);
+rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_GCM, ACVP_SYM_CIPH_KEYLEN, 256);
+CHECK_ENABLE_CAP_RV(rv);
+rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_GCM, ACVP_SYM_CIPH_TAGLEN, 96);
+CHECK_ENABLE_CAP_RV(rv);
+rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_GCM, ACVP_SYM_CIPH_TAGLEN, 128);
+CHECK_ENABLE_CAP_RV(rv);
+rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_GCM, ACVP_SYM_CIPH_IVLEN, 96);
+CHECK_ENABLE_CAP_RV(rv);
+rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_GCM, ACVP_SYM_CIPH_PTLEN, 0);
+CHECK_ENABLE_CAP_RV(rv);
+rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_GCM, ACVP_SYM_CIPH_PTLEN, 128);
+CHECK_ENABLE_CAP_RV(rv);
+rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_GCM, ACVP_SYM_CIPH_PTLEN, 136);
+CHECK_ENABLE_CAP_RV(rv);
+rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_GCM, ACVP_SYM_CIPH_AADLEN, 128);
+CHECK_ENABLE_CAP_RV(rv);
+rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_GCM, ACVP_SYM_CIPH_AADLEN, 136);
+CHECK_ENABLE_CAP_RV(rv);
+rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_GCM, ACVP_SYM_CIPH_AADLEN, 256);
+CHECK_ENABLE_CAP_RV(rv);
+#endif
+
+// ------------------------- FOR CMAC DEMO PURPOSES ---------------------------
+#if 1
+char value[] = "same";
+rv = acvp_enable_cmac_cap(ctx, ACVP_CMAC_AES_128, &app_cmac_handler);
+CHECK_ENABLE_CAP_RV(rv);
+rv = acvp_enable_cmac_cap_parm(ctx, ACVP_CMAC_AES_128, ACVP_CMAC_BLK_DIVISIBLE_1, 1024);
+CHECK_ENABLE_CAP_RV(rv);
+rv = acvp_enable_cmac_cap_parm(ctx, ACVP_CMAC_AES_128, ACVP_CMAC_BLK_NOT_DIVISIBLE_1, 2048);
+CHECK_ENABLE_CAP_RV(rv);
+rv = acvp_enable_cmac_cap_parm(ctx, ACVP_CMAC_AES_128, ACVP_CMAC_IN_EMPTY, 1);
+CHECK_ENABLE_CAP_RV(rv);
+rv = acvp_enable_cmac_cap_parm(ctx, ACVP_CMAC_AES_128, ACVP_CMAC_MACLEN, 64);
+CHECK_ENABLE_CAP_RV(rv);
+rv = acvp_enable_cmac_cap_parm(ctx, ACVP_CMAC_AES_128, ACVP_CMAC_MACLEN, 256);
+CHECK_ENABLE_CAP_RV(rv);
+rv = acvp_enable_hmac_prereq_cap(ctx, ACVP_CMAC_AES_128, CMAC_AES, value);
+CHECK_ENABLE_CAP_RV(rv);
+#endif
 
 #if 0
     /*
@@ -1500,6 +1558,105 @@ static ACVP_RESULT app_hmac_handler(ACVP_TEST_CASE *test_case)
         return ACVP_CRYPTO_MODULE_FAIL;
     }
     HMAC_CTX_cleanup(&hmac_ctx);
+
+    return ACVP_SUCCESS;
+}
+
+// --------------------- FOR DEMO PURPOSES -----------------------------
+// void printBytes(unsigned char *buf, size_t len) {
+//   int i;
+//   for(i=0; i<len; i++) {
+//     printf("%02x ", buf[i]);
+//   }
+//   printf("\n");
+// }
+
+static ACVP_RESULT app_cmac_handler(ACVP_TEST_CASE *test_case)
+{
+    ACVP_CMAC_TC	*tc;
+    const EVP_CIPHER	*c;
+    CMAC_CTX       *cmac_ctx;
+    int msg_len;
+
+    if (!test_case) {
+        return ACVP_INVALID_ARG;
+    }
+
+    tc = test_case->tc.cmac;
+
+    switch (tc->cipher) {
+    case ACVP_CMAC_AES_128:
+      c = EVP_aes_128_cbc();
+      break;
+    case ACVP_CMAC_AES_192:
+      c = EVP_aes_192_cbc();
+      break;
+    case ACVP_CMAC_AES_256:
+      c = EVP_aes_256_cbc();
+      break;
+    case ACVP_CMAC_TDES:
+      c = EVP_des_ede3_cbc();
+      break;
+    default:
+    	printf("Error: Unsupported hash algorithm requested by ACVP server\n");
+    	return ACVP_NO_CAP;
+    	break;
+    }
+
+    cmac_ctx = CMAC_CTX_new();
+    msg_len = tc->msg_len;
+
+    if (!CMAC_Init(cmac_ctx, tc->key, tc->key_len, c, NULL)) {
+        printf("\nCrypto module error, HMAC_Init_ex failed\n");
+        return ACVP_CRYPTO_MODULE_FAIL;
+    }
+
+    if (!CMAC_Update(cmac_ctx, tc->msg, msg_len)) {
+        printf("\nCrypto module error, HMAC_Update failed\n");
+        return ACVP_CRYPTO_MODULE_FAIL;
+    }
+
+    if (!CMAC_Final(cmac_ctx, tc->mac, (size_t *)&tc->mac_len)) {
+        printf("\nCrypto module error, HMAC_Final failed\n");
+        return ACVP_CRYPTO_MODULE_FAIL;
+    }
+    CMAC_CTX_cleanup(cmac_ctx);
+
+
+// ----------------- FOR DEMO PURPOSES ---------------------
+    // c = EVP_aes_128_cbc();
+    //
+    // cmac_ctx = CMAC_CTX_new();
+    //
+    // unsigned char result[16] = {0};
+    // unsigned int macLen;
+    //
+    // // EXAMPLE 1 -- empty message
+    // unsigned int key_len = 16;
+    // unsigned char key[] = {0xd8,0xa6,0xaf,0xeb,0x1f,0xfa,0x72,0xa0,0x43,0x07,0x25,0x3b,0x95,0xe4,0x51,0xb1};
+    // unsigned char msg[] = {};
+    //
+    // // EXAMPLE 2 -- non-empty message
+    // // unsigned int key_len = 16;
+    // // unsigned char key[] = {0xc9,0xac,0xfa,0x1e,0xbd,0x2a,0xb5,0x90,0xbb,0x72,0x55,0x83,0xa3,0xb5,0xdb,0x49};
+    // // unsigned char msg[] = {0x0a,0xf5,0x8e,0x69,0xd1,0xdd,0x60,0x96,0xa9,0x7f,0x3d,0xf3,0xed,0xd9,0xfc,0x93,0xbe,0x99,0x60,0xb5,0xa6,0x32,0xe2,0x84,0x7b,0x30,0xb1,0x01,0x87,0xc8,0xf8,0x3d,0xe5,0xb4,0x5f,0xcb,0x2e,0x3e,0xd4,0x75,0x56,0x9a,0x8b,0x2e,0xd0,0x78,0x43,0x48,0xf9,0xda,0xcc,0xe7,0xb3,0x23,0xc6,0xb6,0x50,0x71,0xab,0xd8,0xb3,0x2d,0x10,0x22};
+    //
+    // if (!CMAC_Init(cmac_ctx, key, key_len, c, NULL)) {
+    //     printf("\nCrypto module error, CMAC_Init failed\n");
+    //     return ACVP_CRYPTO_MODULE_FAIL;
+    // }
+    //
+    // if (!CMAC_Update(cmac_ctx, msg, sizeof(msg))) {
+    //     printf("\nCrypto module error, CMAC_Update failed\n");
+    //     return ACVP_CRYPTO_MODULE_FAIL;
+    // }
+    //
+    // if (!CMAC_Final(cmac_ctx, result, (size_t *)&macLen)) {
+    //     printf("\nCrypto module error, CMAC_Final failed\n");
+    //     return ACVP_CRYPTO_MODULE_FAIL;
+    // }
+    // printBytes(result, (size_t)macLen);
+    // CMAC_CTX_cleanup(cmac_ctx);
 
     return ACVP_SUCCESS;
 }

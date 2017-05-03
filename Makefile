@@ -3,7 +3,7 @@ CFLAGS+=-g -O0 -fPIC -Wall
 LDFLAGS+=
 INCDIRS+=-I. -Isrc
 
-SOURCES=src/acvp.c src/acvp_aes.c src/acvp_des.c src/acvp_hash.c src/acvp_transport.c src/acvp_util.c src/parson.c src/acvp_drbg.c src/acvp_hmac.c
+SOURCES=src/acvp.c src/acvp_aes.c src/acvp_des.c src/acvp_hash.c src/acvp_transport.c src/acvp_util.c src/parson.c src/acvp_drbg.c src/acvp_hmac.c src/acvp_cmac.c
 OBJECTS=$(SOURCES:.c=.o)
 
 all: libacvp.a acvp_app
