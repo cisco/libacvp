@@ -1528,15 +1528,6 @@ static ACVP_RESULT app_hmac_handler(ACVP_TEST_CASE *test_case)
     return ACVP_SUCCESS;
 }
 
-// --------------------- FOR DEMO PURPOSES -----------------------------
-// void printBytes(unsigned char *buf, size_t len) {
-//   int i;
-//   for(i=0; i<len; i++) {
-//     printf("%02x ", buf[i]);
-//   }
-//   printf("\n");
-// }
-
 static ACVP_RESULT app_cmac_handler(ACVP_TEST_CASE *test_case)
 {
     ACVP_CMAC_TC	*tc;

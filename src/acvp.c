@@ -1613,8 +1613,8 @@ static ACVP_RESULT acvp_build_cmac_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
     json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
     json_object_set_value(cap_obj, "msgLen", json_value_init_array());
     temp_arr = json_object_get_array(cap_obj, "msgLen");
-    // THIS HARD CODED VALUE
-    for (i = 0; i < 5; i++) {
+
+    for (i = 0; i < CMAC_MSG_LEN_NUM_ITEMS; i++) {
       json_array_append_number(temp_arr, cap_entry->cap.cmac_cap->msg_len[i]);
     }
 
