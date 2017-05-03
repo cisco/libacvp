@@ -145,6 +145,7 @@ static void print_usage(void)
     printf("      -warn\n");
     printf("      -status\n");
     printf("      -info\n");
+    printf("      -verbose\n");
     printf("\n");
     printf("In addition some options are passed to acvp_app using\n");
     printf("environment variables.  The following variables can be set:\n\n");
@@ -187,6 +188,9 @@ int main(int argc, char **argv)
         }
         if (strcmp(*argv, "-none") == 0) {
             level = ACVP_LOG_LVL_NONE;
+        }
+        if (strcmp(*argv, "-verbose") == 0) {
+            level = ACVP_LOG_LVL_VERBOSE;
         }
         if (strcmp(*argv, "-help") == 0) {
             print_usage();
@@ -276,13 +280,28 @@ int main(int argc, char **argv)
 
     /*
      * We need to register all the crypto module capabilities that will be
-     * validated.  For now we just register AES-GCM mode for encrypt using
-     * a handful of key sizes and plaintext lengths.
+     * validated.
      */
+
+   /*
+    * Enable AES-ECB 128,192,256 bit key
+    */
+   rv = acvp_enable_sym_cipher_cap(ctx, ACVP_AES_ECB, ACVP_DIR_BOTH, ACVP_KO_NA, ACVP_IVGEN_SRC_NA, ACVP_IVGEN_MODE_NA, &app_aes_handler);
+   CHECK_ENABLE_CAP_RV(rv);
+   rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_ECB, ACVP_SYM_CIPH_KEYLEN, 128);
+   CHECK_ENABLE_CAP_RV(rv);
+   rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_ECB, ACVP_SYM_CIPH_KEYLEN, 192);
+   CHECK_ENABLE_CAP_RV(rv);
+   rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_ECB, ACVP_SYM_CIPH_KEYLEN, 256);
+   CHECK_ENABLE_CAP_RV(rv);
+   rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_ECB, ACVP_SYM_CIPH_PTLEN, 1536);
+   CHECK_ENABLE_CAP_RV(rv);
 
    rv = acvp_enable_sym_cipher_cap(ctx, ACVP_AES_GCM, ACVP_DIR_BOTH, ACVP_KO_NA, ACVP_IVGEN_SRC_INT, ACVP_IVGEN_MODE_821, &app_aes_handler_aead);
    CHECK_ENABLE_CAP_RV(rv);
    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_GCM, ACVP_SYM_CIPH_KEYLEN, 128);
+   CHECK_ENABLE_CAP_RV(rv);
+   rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_GCM, ACVP_SYM_CIPH_KEYLEN, 192);
    CHECK_ENABLE_CAP_RV(rv);
    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_GCM, ACVP_SYM_CIPH_KEYLEN, 256);
    CHECK_ENABLE_CAP_RV(rv);
@@ -322,24 +341,33 @@ int main(int argc, char **argv)
    CHECK_ENABLE_CAP_RV(rv);
 
    /*
+    * Enable AES-CFB128 128,192,256 bit key
+    */
+   rv = acvp_enable_sym_cipher_cap(ctx, ACVP_AES_CFB128, ACVP_DIR_BOTH, ACVP_KO_NA, ACVP_IVGEN_SRC_NA, ACVP_IVGEN_MODE_NA, &app_aes_handler);
+   CHECK_ENABLE_CAP_RV(rv);
+   rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CFB128, ACVP_SYM_CIPH_KEYLEN, 128);
+   CHECK_ENABLE_CAP_RV(rv);
+   rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CFB128, ACVP_SYM_CIPH_KEYLEN, 192);
+   CHECK_ENABLE_CAP_RV(rv);
+   rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CFB128, ACVP_SYM_CIPH_KEYLEN, 256);
+   CHECK_ENABLE_CAP_RV(rv);
+   rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CFB128, ACVP_SYM_CIPH_PTLEN, 1536);
+   CHECK_ENABLE_CAP_RV(rv);
+
+   /*
     * Enable AES-CBC 128 bit key
     */
    rv = acvp_enable_sym_cipher_cap(ctx, ACVP_AES_CBC, ACVP_DIR_BOTH, ACVP_KO_NA, ACVP_IVGEN_SRC_NA, ACVP_IVGEN_MODE_NA, &app_aes_handler);
    CHECK_ENABLE_CAP_RV(rv);
    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CBC, ACVP_SYM_CIPH_KEYLEN, 128);
    CHECK_ENABLE_CAP_RV(rv);
+   rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CBC, ACVP_SYM_CIPH_KEYLEN, 192);
+   CHECK_ENABLE_CAP_RV(rv);
+   rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CBC, ACVP_SYM_CIPH_KEYLEN, 256);
+   CHECK_ENABLE_CAP_RV(rv);
    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CBC, ACVP_SYM_CIPH_PTLEN, 128);
    CHECK_ENABLE_CAP_RV(rv);
 
-   /*
-    * Enable AES-ECB 256 bit key
-    */
-   rv = acvp_enable_sym_cipher_cap(ctx, ACVP_AES_ECB, ACVP_DIR_BOTH, ACVP_KO_NA, ACVP_IVGEN_SRC_NA, ACVP_IVGEN_MODE_NA, &app_aes_handler);
-   CHECK_ENABLE_CAP_RV(rv);
-   rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_ECB, ACVP_SYM_CIPH_KEYLEN, 256);
-   CHECK_ENABLE_CAP_RV(rv);
-   rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_ECB, ACVP_SYM_CIPH_PTLEN, 1536);
-   CHECK_ENABLE_CAP_RV(rv);
 
    /*
     * Enable AES keywrap for various key sizes and PT lengths
@@ -370,6 +398,23 @@ int main(int argc, char **argv)
    CHECK_ENABLE_CAP_RV(rv);
    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CTR, ACVP_SYM_CIPH_PTLEN, 128);
    CHECK_ENABLE_CAP_RV(rv);
+
+
+
+   /*
+    * Enable AES-OFB 128, 192, 256 bit key
+    */
+   rv = acvp_enable_sym_cipher_cap(ctx, ACVP_AES_OFB, ACVP_DIR_BOTH, ACVP_KO_NA, ACVP_IVGEN_SRC_NA, ACVP_IVGEN_MODE_NA, &app_aes_handler);
+   CHECK_ENABLE_CAP_RV(rv);
+   rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_OFB, ACVP_SYM_CIPH_KEYLEN, 128);
+   CHECK_ENABLE_CAP_RV(rv);
+   rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_OFB, ACVP_SYM_CIPH_KEYLEN, 192);
+   CHECK_ENABLE_CAP_RV(rv);
+   rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_OFB, ACVP_SYM_CIPH_KEYLEN, 256);
+   CHECK_ENABLE_CAP_RV(rv);
+   rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_OFB, ACVP_SYM_CIPH_PTLEN, 128);
+   CHECK_ENABLE_CAP_RV(rv);
+
 
    /*
     * Enable 3DES-ECB
@@ -964,7 +1009,7 @@ static ACVP_RESULT app_aes_handler(ACVP_TEST_CASE *test_case)
     tc = test_case->tc.symmetric;
 
     /* Begin encrypt code section */
-    if (cipher_ctx.cipher == NULL) {
+    if ((cipher_ctx.cipher == NULL) || (tc->test_type != ACVP_SYM_TEST_TYPE_MCT)) {
 	EVP_CIPHER_CTX_init(&cipher_ctx);
     }
 
@@ -1135,7 +1180,8 @@ static ACVP_RESULT app_aes_handler(ACVP_TEST_CASE *test_case)
     } else {
         if (tc->direction == ACVP_DIR_ENCRYPT) {
 	    EVP_EncryptInit_ex(&cipher_ctx, cipher, NULL, tc->key, iv);
-	    if (tc->cipher == ACVP_AES_ECB) EVP_CIPHER_CTX_set_padding(&cipher_ctx, 0);
+	    //if (tc->cipher == ACVP_AES_ECB) EVP_CIPHER_CTX_set_padding(&cipher_ctx, 0);
+   	    EVP_CIPHER_CTX_set_padding(&cipher_ctx, 0);
 	    EVP_EncryptUpdate(&cipher_ctx, tc->ct, &ct_len, tc->pt, tc->pt_len);
 	    tc->ct_len = ct_len;
 	    EVP_EncryptFinal_ex(&cipher_ctx, tc->ct + ct_len, &ct_len);
@@ -1262,7 +1308,6 @@ static ACVP_RESULT app_aes_handler_aead(ACVP_TEST_CASE *test_case)
     EVP_CIPHER_CTX_init(&cipher_ctx);
 
     /* Validate key length and assign OpenSSL EVP cipher */
-    //TODO: need support for CCM mode
     switch (tc->cipher) {
     case ACVP_AES_GCM:
 	switch (tc->key_len) {

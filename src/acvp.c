@@ -2290,8 +2290,11 @@ ACVP_RESULT acvp_register(ACVP_CTX *ctx)
         return rv;
     }
 
-    ACVP_LOG_STATUS("POST %s", reg);
-
+    if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
+        printf("\nPOST %s\n", reg);
+    } else {
+        ACVP_LOG_STATUS("POST %s", reg);
+    }
     /*
      * Send the capabilities to the ACVP server and get the response,
      * which should be a list of VS identifiers that will need
@@ -2739,7 +2742,11 @@ static ACVP_RESULT acvp_process_vsid(ACVP_CTX *ctx, int vs_id)
             return (rv);
         }
         json_buf = ctx->kat_buf;
-        ACVP_LOG_STATUS("200 OK %s\n", ctx->kat_buf);
+    	if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
+            printf("\n200 OK %s\n", ctx->kat_buf);
+        } else {
+            ACVP_LOG_STATUS("200 OK %s\n", ctx->kat_buf);
+        }
         val = json_parse_string_with_comments(json_buf);
         if (!val) {
             ACVP_LOG_ERR("JSON parse error");
@@ -2860,10 +2867,12 @@ static ACVP_RESULT acvp_get_result_vsid(ACVP_CTX *ctx, int vs_id)
     JSON_Value *val;
     JSON_Object *obj = NULL;
     char *json_buf;
+    int retry_count = 10;
     int retry = 1;
+    JSON_Object *resobj = NULL;
 
     //TODO: do we want to limit the number of retries?
-    while (retry) {
+    while (retry && retry_count) {
         /*
          * Get the KAT vector set
          */
@@ -2872,7 +2881,12 @@ static ACVP_RESULT acvp_get_result_vsid(ACVP_CTX *ctx, int vs_id)
             return (rv);
         }
         json_buf = ctx->kat_buf;
-        ACVP_LOG_ERR("%s", ctx->kat_buf);
+ 
+    	if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
+            printf("\n%s\n", ctx->kat_buf);
+    	} else {
+            ACVP_LOG_ERR("%s", ctx->kat_buf);
+        }
         val = json_parse_string_with_comments(json_buf);
         if (!val) {
             ACVP_LOG_ERR("JSON parse error");
@@ -2888,6 +2902,17 @@ static ACVP_RESULT acvp_get_result_vsid(ACVP_CTX *ctx, int vs_id)
         if (retry_period) {
             rv = acvp_retry_handler(ctx, retry_period);
         } else {
+
+            resobj = json_object_get_object(obj, "results");
+
+	    /* treat incomplete as retry for now */
+            char *disposition = (char *)json_object_get_string(resobj, "disposition");
+	    if (disposition && !strcmp(disposition, "incomplete")) {
+	        rv = ACVP_KAT_DOWNLOAD_RETRY;
+	    	ACVP_LOG_STATUS("\nVector Set results incomplete, sleep and retry");
+	    	sleep(30);
+	    	retry_count--;
+            }
 	    /*
 	     * Parse the JSON response from the server, if the vector set failed,
 	     * then pull out the reason code and log it.

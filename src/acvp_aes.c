@@ -154,7 +154,7 @@ static ACVP_RESULT acvp_aes_output_mct_tc(ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *stc
 
     tmp = calloc(1, ACVP_SYM_CT_MAX);
     if (!tmp) {
-        ACVP_LOG_ERR("Unable to malloc in acvp_aes_output_tc");
+        ACVP_LOG_ERR("Unable to malloc in acvp_aes_mct_output_tc");
         return ACVP_MALLOC_FAIL;
     }
 
@@ -220,7 +220,7 @@ static ACVP_RESULT acvp_aes_mct_tc(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap,
 
     tmp = calloc(1, ACVP_SYM_CT_MAX);
     if (!tmp) {
-        ACVP_LOG_ERR("Unable to malloc in acvp_aes_output_tc");
+        ACVP_LOG_ERR("Unable to malloc in acvp_aes_mct_tc");
         return ACVP_MALLOC_FAIL;
     }
 
@@ -480,7 +480,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
         keylen = (unsigned int)json_object_get_number(groupobj, "keyLen");
         ivlen = 0;
         if ((alg_id != ACVP_AES_ECB) && (alg_id != ACVP_AES_KW)) {
-            ivlen = keylen;
+            ivlen = 128;
         }
 	if (alg_id == ACVP_AES_GCM || alg_id == ACVP_AES_CCM) {
             ivlen = (unsigned int)json_object_get_number(groupobj, "ivLen");
@@ -513,11 +513,18 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
 	    if (dir == ACVP_DIR_ENCRYPT) { 
 		pt = (unsigned char *)json_object_get_string(testobj, "pt");
 		iv = (unsigned char *)json_object_get_string(testobj, "iv");
+	    	if (alg_id != ACVP_AES_GCM && alg_id != ACVP_AES_CCM) {
+    	    	    ptlen = strlen((char *)pt)*(8/2);
+		}
             } else {
 		ct = (unsigned char *)json_object_get_string(testobj, "ct");
 		iv = (unsigned char *)json_object_get_string(testobj, "iv");
 		tag = (unsigned char *)json_object_get_string(testobj, "tag");
+	    	if (alg_id != ACVP_AES_GCM && alg_id != ACVP_AES_CCM) {
+    	    	    ptlen = strlen((char *)ct)*(8/2);
+                }
             }
+
             aad = (unsigned char *)json_object_get_string(testobj, "aad");
 
             ACVP_LOG_INFO("        Test case: %d", j);
@@ -589,8 +596,11 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
     }
     json_array_append_value(reg_arry, r_vs_val);
 
-    ACVP_LOG_INFO("\n\n%s\n\n", json_serialize_to_string_pretty(ctx->kat_resp));
-
+    if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
+        printf("\n\n%s\n\n", json_serialize_to_string_pretty(ctx->kat_resp));
+    } else {
+        ACVP_LOG_INFO("\n\n%s\n\n", json_serialize_to_string_pretty(ctx->kat_resp));
+    }
     return ACVP_SUCCESS;
 }
 
@@ -614,9 +624,9 @@ static ACVP_RESULT acvp_aes_output_tc(ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *stc,
 
     if (stc->direction == ACVP_DIR_ENCRYPT) {
 	/*
-	 * Keywrap doesn't use an IV
+	 * Only return IV on AEAD ciphers
 	 */
-	if ((stc->cipher != ACVP_AES_KW) && (stc->cipher != ACVP_AES_ECB)) {
+	if ((stc->cipher == ACVP_AES_GCM) || (stc->cipher == ACVP_AES_CCM)) {
 	    rv = acvp_bin_to_hexstr(stc->iv, stc->iv_len, (unsigned char*)tmp);
 	    if (rv != ACVP_SUCCESS) {
 		ACVP_LOG_ERR("hex conversion failure (iv)");
