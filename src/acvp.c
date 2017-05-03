@@ -60,6 +60,11 @@ static ACVP_RESULT acvp_append_hmac_caps_entry(
 	ACVP_HMAC_CAP *cap,
 	ACVP_CIPHER cipher,
 	ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case));
+static ACVP_RESULT acvp_append_cmac_caps_entry(
+	ACVP_CTX *ctx,
+	ACVP_CMAC_CAP *cap,
+	ACVP_CIPHER cipher,
+	ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case));
 static void acvp_cap_free_sl(ACVP_SL_LIST *list);
 static ACVP_RESULT acvp_get_result_vsid(ACVP_CTX *ctx, int vs_id);
 
@@ -118,7 +123,11 @@ ACVP_ALG_HANDLER alg_tbl[ACVP_ALG_MAX] = {
     {ACVP_HMAC_SHA3_224,   &acvp_hmac_kat_handler,  ACVP_ALG_HMAC_SHA3_224},
     {ACVP_HMAC_SHA3_256,   &acvp_hmac_kat_handler,  ACVP_ALG_HMAC_SHA3_256},
     {ACVP_HMAC_SHA3_384,   &acvp_hmac_kat_handler,  ACVP_ALG_HMAC_SHA3_384},
-    {ACVP_HMAC_SHA3_512,   &acvp_hmac_kat_handler,  ACVP_ALG_HMAC_SHA3_512}
+    {ACVP_HMAC_SHA3_512,   &acvp_hmac_kat_handler,  ACVP_ALG_HMAC_SHA3_512},
+    {ACVP_CMAC_AES_128,    &acvp_cmac_kat_handler,  ACVP_ALG_CMAC_AES_128},
+    {ACVP_CMAC_AES_192,    &acvp_cmac_kat_handler,  ACVP_ALG_CMAC_AES_192},
+    {ACVP_CMAC_AES_256,    &acvp_cmac_kat_handler,  ACVP_ALG_CMAC_AES_256},
+    {ACVP_CMAC_TDES,       &acvp_cmac_kat_handler,  ACVP_ALG_CMAC_TDES}
 };
 
 
@@ -726,6 +735,155 @@ ACVP_RESULT acvp_enable_hmac_prereq_cap(ACVP_CTX       *ctx,
          * append to the last in the list
          */
         prereq_entry_2 = cap_list->cap.hmac_cap->prereq_vals;
+        while (prereq_entry_2->next) {
+            prereq_entry_2 = prereq_entry_2->next;
+        }
+        prereq_entry_2->next = prereq_entry;
+    }
+    return ACVP_SUCCESS;
+}
+
+ACVP_RESULT acvp_validate_cmac_parm_value(ACVP_CMAC_PARM parm, int value) {
+  ACVP_RESULT retval = ACVP_INVALID_ARG;
+
+  switch(parm){
+    case ACVP_CMAC_BLK_DIVISIBLE_1:
+    case ACVP_CMAC_BLK_DIVISIBLE_2:
+    case ACVP_CMAC_BLK_NOT_DIVISIBLE_1:
+    case ACVP_CMAC_BLK_NOT_DIVISIBLE_2:
+    case ACVP_CMAC_MSG_LEN_MAX:
+    case ACVP_CMAC_MACLEN:
+      if (value >= 0 && value <= 65536) {
+        retval = ACVP_SUCCESS;
+      }
+    case ACVP_CMAC_IN_EMPTY:
+      if (value == 0 || value == 1) {
+        retval = ACVP_SUCCESS;
+      }
+    default:
+      break;
+  }
+
+  return retval;
+}
+
+ACVP_RESULT acvp_enable_cmac_cap(
+          ACVP_CTX *ctx,
+          ACVP_CIPHER cipher,
+          ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case))
+{
+    ACVP_CMAC_CAP *cap;
+
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+    if (!crypto_handler) {
+        return ACVP_INVALID_ARG;
+    }
+
+    cap = calloc(1, sizeof(ACVP_CMAC_CAP));
+    if (!cap) {
+      return ACVP_MALLOC_FAIL;
+    }
+
+    return (acvp_append_cmac_caps_entry(ctx, cap, cipher, crypto_handler));
+}
+
+/*
+ * The user should call this after invoking acvp_enable_cmac_cap()
+ * to specify the supported msg lengths, mac lengths, and in_empty value.
+ * This is called by the user multiple times,
+ * once for each length supported.
+ */
+ACVP_RESULT acvp_enable_cmac_cap_parm(
+                          ACVP_CTX *ctx,
+                          ACVP_CIPHER cipher,
+                          ACVP_CMAC_PARM parm,
+                          int value) {
+
+    ACVP_CAPS_LIST *cap;
+
+    /*
+     * Locate this cipher in the caps array
+     */
+    cap = acvp_locate_cap_entry(ctx, cipher);
+    if (!cap) {
+        ACVP_LOG_ERR("Cap entry not found, use acvp_enable_cmac_cipher_cap() first.");
+        return ACVP_NO_CAP;
+    }
+
+    if (acvp_validate_cmac_parm_value(parm, value) != ACVP_SUCCESS) {
+      return ACVP_INVALID_ARG;
+    }
+
+    switch (parm) {
+    case ACVP_CMAC_BLK_DIVISIBLE_1:
+      cap->cap.cmac_cap->msg_len[CMAC_BLK_DIVISIBLE_1] = value;
+      break;
+    case ACVP_CMAC_BLK_DIVISIBLE_2:
+      cap->cap.cmac_cap->msg_len[CMAC_BLK_DIVISIBLE_2] = value;
+      break;
+    case ACVP_CMAC_BLK_NOT_DIVISIBLE_1:
+      cap->cap.cmac_cap->msg_len[CMAC_BLK_NOT_DIVISIBLE_1] = value;
+      break;
+    case ACVP_CMAC_BLK_NOT_DIVISIBLE_2:
+      cap->cap.cmac_cap->msg_len[CMAC_BLK_NOT_DIVISIBLE_2] = value;
+      break;
+    case ACVP_CMAC_MSG_LEN_MAX:
+      cap->cap.cmac_cap->msg_len[CMAC_MSG_LEN_MAX] = value;
+      break;
+    case ACVP_CMAC_IN_EMPTY:
+      cap->cap.cmac_cap->in_empty = value;
+      break;
+    case ACVP_CMAC_MACLEN:
+      acvp_cap_add_length(&cap->cap.cmac_cap->mac_len, value);
+      break;
+    default:
+      return ACVP_INVALID_ARG;
+    }
+
+    return ACVP_SUCCESS;
+}
+
+ACVP_RESULT acvp_enable_cmac_prereq_cap(ACVP_CTX       *ctx,
+                                     ACVP_CIPHER       cipher,
+                                     ACVP_CMAC_PRE_REQ pre_req,
+                                     char              *value)
+{
+    ACVP_CAPS_LIST          *cap_list;
+
+    if (!ctx) {
+        return ACVP_INVALID_ARG;
+    }
+
+    /*
+     * Locate this cipher in the caps array
+     */
+    cap_list = acvp_locate_cap_entry(ctx, cipher);
+    if (!cap_list) {
+        ACVP_LOG_ERR("Cap entry not found.");
+        return ACVP_NO_CAP;
+    }
+
+    ACVP_CMAC_PREREQ_VALS *prereq_entry, *prereq_entry_2;
+
+    prereq_entry = calloc(1, sizeof(ACVP_CMAC_PREREQ_VALS));
+    if (!prereq_entry) {
+        return ACVP_MALLOC_FAIL;
+    }
+    prereq_entry->prereq_alg_val.alg = pre_req;
+    prereq_entry->prereq_alg_val.val = value;
+
+    /*
+     * 1st entry
+     */
+    if (!cap_list->cap.cmac_cap->prereq_vals) {
+        cap_list->cap.cmac_cap->prereq_vals = prereq_entry;
+    } else {
+        /*
+         * append to the last in the list
+         */
+        prereq_entry_2 = cap_list->cap.cmac_cap->prereq_vals;
         while (prereq_entry_2->next) {
             prereq_entry_2 = prereq_entry_2->next;
         }
@@ -1446,6 +1604,80 @@ static ACVP_RESULT acvp_build_hmac_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
     return ACVP_SUCCESS;
 }
 
+static ACVP_RESULT acvp_build_cmac_register_cap(JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry)
+{
+    JSON_Array *temp_arr = NULL;
+    ACVP_SL_LIST *sl_list;
+    int i;
+
+    json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
+    json_object_set_value(cap_obj, "msgLen", json_value_init_array());
+    temp_arr = json_object_get_array(cap_obj, "msgLen");
+
+    for (i = 0; i < CMAC_MSG_LEN_NUM_ITEMS; i++) {
+      json_array_append_number(temp_arr, cap_entry->cap.cmac_cap->msg_len[i]);
+    }
+
+    json_object_set_string(cap_obj, "inEmpty", cap_entry->cap.cmac_cap->in_empty ? "yes" : "no" );
+
+    /*
+     * Set the supported mac lengths
+     */
+    json_object_set_value(cap_obj, "macLen", json_value_init_array());
+    temp_arr = json_object_get_array(cap_obj, "macLen");
+    sl_list = cap_entry->cap.cmac_cap->mac_len;
+    while (sl_list) {
+      json_array_append_number(temp_arr, sl_list->length);
+      sl_list = sl_list->next;
+    }
+
+    JSON_Array *prereq_array = NULL;
+
+    ACVP_CMAC_PREREQ_VALS *prereq_vals;
+    ACVP_CMAC_PREREQ_VALS *next_pre_req;
+    ACVP_CMAC_PREREQ_ALG_VAL *pre_req;
+    char *alg_str;
+    /*
+     * Init json array
+     */
+    json_object_set_value(cap_obj, "prereqVals", json_value_init_array());
+    prereq_array = json_object_get_array(cap_obj, "prereqVals");
+
+    /*
+     * return OK if nothing present
+     */
+    prereq_vals = cap_entry->cap.cmac_cap->prereq_vals;
+    if(!prereq_vals) {
+        goto end;
+    }
+
+
+    while (prereq_vals) {
+        JSON_Value *val = NULL;
+        JSON_Object *obj = NULL;
+        val = json_value_init_object();
+        obj = json_value_get_object(val);
+        pre_req = &prereq_vals->prereq_alg_val;
+
+        switch(pre_req->alg) {
+        case CMAC_AES:
+            alg_str = ACVP_CMAC_PREREQ_AES;
+            json_object_set_string(obj, "algorithm", alg_str);
+            json_object_set_string(obj, "value", pre_req->val);
+            break;
+        default:
+            return ACVP_INVALID_ARG;
+        }
+
+        json_array_append_value(prereq_array, val);
+        next_pre_req = prereq_vals->next;
+        prereq_vals = next_pre_req;
+    }
+
+    end:
+    return ACVP_SUCCESS;
+}
+
 static ACVP_RESULT acvp_lookup_sym_prereqVals (JSON_Object *cap_obj, ACVP_SYM_CIPHER_CAP *sym_cap)
 {
     JSON_Array *prereq_array = NULL;
@@ -1586,26 +1818,44 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
     /*
      * Set the supported tag lengths (for AEAD ciphers)
      */
-    json_object_set_value(cap_obj, "tagLen", json_value_init_array());
-    opts_arr = json_object_get_array(cap_obj, "tagLen");
-    sl_list = cap_entry->cap.sym_cap->taglen;
-    while (sl_list) {
-	json_array_append_number(opts_arr, sl_list->length);
-	sl_list = sl_list->next;
+    if ((cap_entry->cipher == ACVP_AES_GCM) || (cap_entry->cipher == ACVP_AES_CCM)) {
+        json_object_set_value(cap_obj, "tagLen", json_value_init_array());
+    	opts_arr = json_object_get_array(cap_obj, "tagLen");
+    	sl_list = cap_entry->cap.sym_cap->taglen;
+    	while (sl_list) {
+	   json_array_append_number(opts_arr, sl_list->length);
+	   sl_list = sl_list->next;
+        }
     }
-
 
     /*
      * Set the supported IV lengths
      */
-    json_object_set_value(cap_obj, "ivLen", json_value_init_array());
-    opts_arr = json_object_get_array(cap_obj, "ivLen");
-    sl_list = cap_entry->cap.sym_cap->ivlen;
-    while (sl_list) {
-	json_array_append_number(opts_arr, sl_list->length);
-	sl_list = sl_list->next;
-    }
-
+    switch (cap_entry->cipher) 
+        {
+        case ACVP_TDES_ECB:
+        case ACVP_TDES_CBC:
+        case ACVP_TDES_CBCI:
+        case ACVP_TDES_OFB:
+        case ACVP_TDES_OFBI:
+        case ACVP_TDES_CFB1:
+        case ACVP_TDES_CFB8:
+        case ACVP_TDES_CFB64:
+        case ACVP_TDES_CFBP1:
+        case ACVP_TDES_CFBP8:
+        case ACVP_TDES_CFBP64:
+        case ACVP_TDES_CTR:
+    	case ACVP_TDES_KW:
+	    break;
+	default:
+    	    json_object_set_value(cap_obj, "ivLen", json_value_init_array());
+    	    opts_arr = json_object_get_array(cap_obj, "ivLen");
+    	    sl_list = cap_entry->cap.sym_cap->ivlen;
+    	    while (sl_list) {
+	        json_array_append_number(opts_arr, sl_list->length);
+		sl_list = sl_list->next;
+            }
+        }
     /*
      * Set the supported plaintext lengths
      */
@@ -1620,14 +1870,15 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
     /*
      * Set the supported AAD lengths (for AEAD ciphers)
      */
-    json_object_set_value(cap_obj, "aadLen", json_value_init_array());
-    opts_arr = json_object_get_array(cap_obj, "aadLen");
-    sl_list = cap_entry->cap.sym_cap->aadlen;
-    while (sl_list) {
-	json_array_append_number(opts_arr, sl_list->length);
-	sl_list = sl_list->next;
+    if ((cap_entry->cipher == ACVP_AES_GCM) || (cap_entry->cipher == ACVP_AES_CCM)) {
+        json_object_set_value(cap_obj, "aadLen", json_value_init_array());
+    	opts_arr = json_object_get_array(cap_obj, "aadLen");
+    	sl_list = cap_entry->cap.sym_cap->aadlen;
+    	while (sl_list) {
+	    json_array_append_number(opts_arr, sl_list->length);
+	    sl_list = sl_list->next;
+        }
     }
-
     return ACVP_SUCCESS;
 }
 
@@ -1954,8 +2205,8 @@ static ACVP_RESULT acvp_build_register(ACVP_CTX *ctx, char **reg)
              * Create a new capability to be advertised in the JSON
              * registration message
              */
-	    cap_val = json_value_init_object();
-	    cap_obj = json_value_get_object(cap_val);
+            cap_val = json_value_init_object();
+            cap_obj = json_value_get_object(cap_val);
 
             /*
              * Build up the capability JSON based on the cipher type
@@ -1977,14 +2228,14 @@ static ACVP_RESULT acvp_build_register(ACVP_CTX *ctx, char **reg)
             case ACVP_TDES_CFB64:
             case ACVP_TDES_CFB8:
             case ACVP_TDES_CFB1:
-		acvp_build_sym_cipher_register_cap(cap_obj, cap_entry);
+                acvp_build_sym_cipher_register_cap(cap_obj, cap_entry);
                 break;
             case ACVP_SHA1:
             case ACVP_SHA224:
             case ACVP_SHA256:
             case ACVP_SHA384:
             case ACVP_SHA512:
-		acvp_build_hash_register_cap(cap_obj, cap_entry);
+                acvp_build_hash_register_cap(cap_obj, cap_entry);
                 break;
             case ACVP_HASHDRBG:
             case ACVP_HMACDRBG:
@@ -1997,6 +2248,12 @@ static ACVP_RESULT acvp_build_register(ACVP_CTX *ctx, char **reg)
             case ACVP_HMAC_SHA2_384:
             case ACVP_HMAC_SHA2_512:
                 acvp_build_hmac_register_cap(cap_obj, cap_entry);
+                break;
+            case ACVP_CMAC_AES_128:
+            case ACVP_CMAC_AES_192:
+            case ACVP_CMAC_AES_256:
+            case ACVP_CMAC_TDES:
+                acvp_build_cmac_register_cap(cap_obj, cap_entry);
                 break;
             default:
 	        ACVP_LOG_ERR("Cap entry not found, %d.", cap_entry->cipher);
@@ -2197,6 +2454,40 @@ static ACVP_RESULT acvp_append_hmac_caps_entry(
     cap_entry->cap.hmac_cap = cap;
     cap_entry->crypto_handler = crypto_handler;
     cap_entry->cap_type = ACVP_HMAC_TYPE;
+
+    if (!ctx->caps_list) {
+        ctx->caps_list = cap_entry;
+    } else {
+        cap_e2 = ctx->caps_list;
+        while (cap_e2->next) {
+            cap_e2 = cap_e2->next;
+        }
+        cap_e2->next = cap_entry;
+    }
+    return (ACVP_SUCCESS);
+}
+
+/*
+ * Append cmac capability to the capabilities
+ * list.  This list is later used to build
+ * the register message.
+ */
+static ACVP_RESULT acvp_append_cmac_caps_entry(
+        ACVP_CTX *ctx,
+        ACVP_CMAC_CAP *cap,
+        ACVP_CIPHER cipher,
+        ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case))
+{
+    ACVP_CAPS_LIST *cap_entry, *cap_e2;
+
+    cap_entry = calloc(1, sizeof(ACVP_CAPS_LIST));
+    if (!cap_entry) {
+        return ACVP_MALLOC_FAIL;
+    }
+    cap_entry->cipher = cipher;
+    cap_entry->cap.cmac_cap = cap;
+    cap_entry->crypto_handler = crypto_handler;
+    cap_entry->cap_type = ACVP_CMAC_TYPE;
 
     if (!ctx->caps_list) {
         ctx->caps_list = cap_entry;
@@ -2595,10 +2886,12 @@ static ACVP_RESULT acvp_get_result_vsid(ACVP_CTX *ctx, int vs_id)
     JSON_Value *val;
     JSON_Object *obj = NULL;
     char *json_buf;
+    int retry_count = 10;
     int retry = 1;
+    JSON_Object *resobj = NULL;
 
     //TODO: do we want to limit the number of retries?
-    while (retry) {
+    while (retry && retry_count) {
         /*
          * Get the KAT vector set
          */
@@ -2607,7 +2900,12 @@ static ACVP_RESULT acvp_get_result_vsid(ACVP_CTX *ctx, int vs_id)
             return (rv);
         }
         json_buf = ctx->kat_buf;
-        ACVP_LOG_ERR("%s", ctx->kat_buf);
+ 
+    	if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
+            printf("\n%s\n", ctx->kat_buf);
+    	} else {
+            ACVP_LOG_ERR("%s", ctx->kat_buf);
+        }
         val = json_parse_string_with_comments(json_buf);
         if (!val) {
             ACVP_LOG_ERR("JSON parse error");
@@ -2623,6 +2921,17 @@ static ACVP_RESULT acvp_get_result_vsid(ACVP_CTX *ctx, int vs_id)
         if (retry_period) {
             rv = acvp_retry_handler(ctx, retry_period);
         } else {
+
+            resobj = json_object_get_object(obj, "results");
+
+	    /* treat incomplete as retry for now */
+            char *disposition = (char *)json_object_get_string(resobj, "disposition");
+	    if (disposition && !strcmp(disposition, "incomplete")) {
+	        rv = ACVP_KAT_DOWNLOAD_RETRY;
+	    	ACVP_LOG_STATUS("\nVector Set results incomplete, sleep and retry");
+	    	sleep(30);
+	    	retry_count--;
+            }
 	    /*
 	     * Parse the JSON response from the server, if the vector set failed,
 	     * then pull out the reason code and log it.

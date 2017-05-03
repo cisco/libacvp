@@ -118,7 +118,8 @@ ACVP_CIPHER acvp_lookup_cipher_index(const char *algorithm)
     int i;
 
     for (i = 0; i < ACVP_ALG_MAX; i++) {
-        if (!strncmp(algorithm, alg_tbl[i].name, strlen(alg_tbl[i].name))) {
+        if (!strncmp(algorithm, alg_tbl[i].name, strlen(alg_tbl[i].name)) &&
+	    (strlen(alg_tbl[i].name) == strlen(algorithm))) {
             return alg_tbl[i].cipher;
         }
     }
