@@ -58,7 +58,7 @@
 } while (0)
 #endif
 
-#define ACVP_ALG_MAX 44  /* Used by alg_tbl[] */
+#define ACVP_ALG_MAX 48  /* Used by alg_tbl[] */
 
 #define ACVP_ALG_AES_ECB             "AES-ECB"
 #define ACVP_ALG_AES_CBC             "AES-CBC"
@@ -105,6 +105,11 @@
 #define ACVP_ALG_HMAC_SHA3_384       "HMAC-SHA3-384"
 #define ACVP_ALG_HMAC_SHA3_512       "HMAC-SHA3-512"
 
+#define ACVP_ALG_CMAC_AES_128        "CMAC-AES-128"
+#define ACVP_ALG_CMAC_AES_192        "CMAC-AES-192"
+#define ACVP_ALG_CMAC_AES_256        "CMAC-AES-256"
+#define ACVP_ALG_CMAC_TDES           "CMAC-TDES"
+
 #define ACVP_DRBG_MODE_SHA_1         "SHA-1"
 #define ACVP_DRBG_MODE_SHA_224       "SHA-224"
 #define ACVP_DRBG_MODE_SHA_256       "SHA-256"
@@ -141,6 +146,10 @@
 #define ACVP_HMAC_MSG_MAX       1024
 #define ACVP_HMAC_MD_MAX        64
 #define ACVP_HMAC_KEY_MAX       256
+
+#define ACVP_CMAC_MSG_MAX       1024
+#define ACVP_CMAC_MAC_MAX       64
+#define ACVP_CMAC_KEY_MAX       256
 
 #define ACVP_KAT_BUF_MAX        1024*1024
 #define ACVP_REG_BUF_MAX        1024*65
@@ -217,6 +226,23 @@ typedef struct acvp_hmac_capability {
     ACVP_SL_LIST              *mac_len;
 } ACVP_HMAC_CAP;
 
+typedef struct acvp_cmac_prereq_alg_val {
+    ACVP_CMAC_PRE_REQ alg;
+    char *val;
+} ACVP_CMAC_PREREQ_ALG_VAL;
+
+typedef struct acvp_cmac_prereq_vals {
+    ACVP_CMAC_PREREQ_ALG_VAL prereq_alg_val;
+    struct acvp_cmac_prereq_vals *next;
+} ACVP_CMAC_PREREQ_VALS;
+
+typedef struct acvp_cmac_capability {
+    ACVP_CMAC_PREREQ_VALS     *prereq_vals;
+    int                       in_empty;         //":"yes"
+    ACVP_SL_LIST              *mac_len;
+    int                       msg_len[5];
+} ACVP_CMAC_CAP;
+
 typedef struct acvp_drbg_prereq_alg_val {
     ACVP_DRBG_PRE_REQ alg;
     char *val;
@@ -275,6 +301,7 @@ typedef struct acvp_caps_list_t {
       ACVP_HASH_CAP       *hash_cap;
       ACVP_DRBG_CAP       *drbg_cap;
       ACVP_HMAC_CAP       *hmac_cap;
+      ACVP_CMAC_CAP       *cmac_cap;
     //TODO: add other cipher types: asymmetric, DRBG, hash, etc.
     } cap;
     ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case);
@@ -342,6 +369,7 @@ ACVP_RESULT acvp_entropy_handler(ACVP_CTX *ctx, JSON_Object *obj);
 ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 ACVP_RESULT acvp_hmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
+ACVP_RESULT acvp_cmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
 /*
  * ACVP utility functions used internally
