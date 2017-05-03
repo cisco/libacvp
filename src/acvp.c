@@ -1491,8 +1491,7 @@ ACVP_RESULT acvp_set_cacerts(ACVP_CTX *ctx, char *ca_file)
     /*
      * Enable peer verification when CA certs are provided.
      */
-     // ------------ FOR DEMO PURPOSES -------------
-    ctx->verify_peer = 0;
+    ctx->verify_peer = 1;
 
     return ACVP_SUCCESS;
 }
@@ -2290,9 +2289,6 @@ ACVP_RESULT acvp_register(ACVP_CTX *ctx)
         ACVP_LOG_ERR("Unable to build register message");
         return rv;
     }
-
-// ---------------- FOR DEMO PURPOSES ------------------
-    printf("%s\n", reg);
 
     ACVP_LOG_STATUS("POST %s", reg);
 
