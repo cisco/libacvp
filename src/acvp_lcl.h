@@ -140,7 +140,7 @@
 #define ACVP_DRBG_PER_SO_MAX     256
 #define ACVP_DRBG_ADDI_IN_MAX    256
 
-#define ACVP_HASH_MSG_MAX       12800
+#define ACVP_HASH_MSG_MAX       1024*64
 #define ACVP_HASH_MD_MAX        64
 
 #define ACVP_HMAC_MSG_MAX       1024

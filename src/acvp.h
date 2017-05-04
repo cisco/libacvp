@@ -379,6 +379,7 @@ typedef struct acvp_entropy_tc_t {
 typedef struct acvp_hash_tc_t {
     ACVP_CIPHER cipher;
     unsigned int  tc_id;    /* Test case id */
+    ACVP_HASH_TESTTYPE test_type; /* KAT or MCT */
     unsigned char *msg;
     unsigned char *m1;
     unsigned char *m2;
@@ -386,7 +387,6 @@ typedef struct acvp_hash_tc_t {
     unsigned int  msg_len;
     unsigned char *md; /* The resulting digest calculated for the test case */
     unsigned int  md_len;
-    unsigned int  test_type;
 } ACVP_HASH_TC;
 
 /*
