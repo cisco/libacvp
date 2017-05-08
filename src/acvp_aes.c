@@ -114,15 +114,18 @@ static ACVP_RESULT acvp_aes_mct_iterate_tc(ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *st
 
     case ACVP_AES_CFB8:
         if (stc->direction == ACVP_DIR_ENCRYPT) {
-		/* IV[i+1] = ct */
-		for (n1 = 0, n2 = 15; n1 < 16; ++n1, --n2)
-		    iv[i+1][n1] = ctext[j-n2][0];
-		ptext[0][0] = ctext[j-16][0];
-	} else {
-		for (n1 = 0, n2 = 15; n1 < 16; ++n1, --n2)
-		    iv[i+1][n1] = ptext[j-n2][0];
-		ctext[0][0] = ptext[j-16][0];
-        }
+	    if (j < 16) {
+		memcpy(stc->pt,  &stc->iv[j], stc->pt_len);
+	    } else {
+		memcpy(stc->pt, ctext[j-16], stc->pt_len);
+	    }
+        } else {
+	    if (j < 16) {
+		memcpy(stc->ct, &stc->iv[j], stc->ct_len);
+	    } else {
+		memcpy(stc->ct, ptext[j-16], stc->ct_len);
+	    }
+	}
 	break;
 
     case ACVP_AES_CFB1:
@@ -227,7 +230,7 @@ static ACVP_RESULT acvp_aes_mct_tc(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap,
         return ACVP_MALLOC_FAIL;
     }
 
-
+    memcpy(iv[0], stc->iv, stc->iv_len);
     for (i = 0; i < 100; ++i) {
 
         /*
@@ -276,6 +279,25 @@ static ACVP_RESULT acvp_aes_mct_tc(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap,
 	    }
 	    json_object_set_string(r_tobj, "ct", tmp);
 
+            if (stc->cipher == ACVP_AES_CFB8) { 
+		/* ct = CT[j-15] || CT[j-14] || ... || CT[j] */
+		for (n1 = 0, n2 = stc->key_len/8-1; n1 < stc->key_len/8; ++n1, --n2)
+		    ciphertext[n1] = ctext[j-n2][0];
+
+		/* IV[i+1] = ct */
+		for (n1 = 0, n2 = 15; n1 < 16; ++n1, --n2)
+		    stc->iv[n1] = ctext[j-n2][0];
+		ptext[0][0] = ctext[j-16][0];
+
+	    } else if (stc->cipher == ACVP_AES_CFB1) {
+		for(n1=0,n2=stc->key_len/8-1 ; n1 < stc->key_len/8 ; ++n1,--n2)
+		    sb(ciphertext,n1,gb(ctext[j-n2],0));
+
+		for(n1=0,n2=127 ; n1 < 128 ; ++n1,--n2)
+		    sb(stc->iv,n1,gb(ctext[j-n2],0));
+		ptext[0][0]=ctext[j-128][0]&0x80;
+	    } else {
+
 	    switch (stc->key_len)
 	    {
 	    case 128:
@@ -290,17 +312,7 @@ static ACVP_RESULT acvp_aes_mct_tc(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap,
 	        memcpy(ciphertext+16, ctext[j], 16);
 	        break;
             }
-
-            if (stc->cipher == ACVP_AES_CFB8)
-		{ /* ct = CT[j-15] || CT[j-14] || ... || CT[j] */
-		for (n1 = 0, n2 = stc->key_len/8-1; n1 < stc->key_len/8; ++n1, --n2)
-		    ciphertext[n1] = ctext[j-n2][0];
-		}
-            if (stc->cipher == ACVP_AES_CFB1)
-		{
-		for(n1=0,n2=stc->key_len-1 ; n1 < stc->key_len ; ++n1,--n2)
-		    sb(ciphertext,n1,gb(ctext[j-n2],0));
-		}
+         }
 
 	} else {
 
@@ -311,6 +323,26 @@ static ACVP_RESULT acvp_aes_mct_tc(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap,
 		return rv;
 	    }
 	    json_object_set_string(r_tobj, "pt", tmp);
+
+	    if (stc->cipher == ACVP_AES_CFB8) {
+		/* ct = CT[j-15] || CT[j-14] || ... || CT[j] */
+		for (n1 = 0, n2 = stc->key_len/8-1; n1 < stc->key_len/8; ++n1, --n2)
+		    ciphertext[n1] = ptext[j-n2][0];
+
+		for (n1 = 0, n2 = 15; n1 < 16; ++n1, --n2)
+		    stc->iv[n1] = ptext[j-n2][0];
+		ctext[0][0] = ptext[j-16][0];
+
+
+	    } else if (stc->cipher == ACVP_AES_CFB1) {
+		for(n1=0,n2=stc->key_len/-1 ; n1 < stc->key_len/8 ; ++n1,--n2)
+		    sb(ciphertext,n1,gb(ptext[j-n2],0));
+
+		for(n1=0,n2=127 ; n1 < 128 ; ++n1,--n2)
+		    sb(stc->iv,n1,gb(ptext[j-n2],0));
+		ctext[0][0]=ptext[j-128][0]&0x80;
+
+	    } else {
 
 	    switch (stc->key_len)
 	    {
@@ -326,17 +358,7 @@ static ACVP_RESULT acvp_aes_mct_tc(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap,
 		memcpy(ciphertext+16, ptext[j], 16);
 		break;
             }
-	    if (stc->cipher == ACVP_AES_CFB8)
-		{ /* ct = CT[j-15] || CT[j-14] || ... || CT[j] */
-		for (n1 = 0, n2 = stc->key_len/8-1; n1 < stc->key_len/8; ++n1, --n2)
-		    ciphertext[n1] = ptext[j-n2][0];
-		}
-	    if (stc->cipher == ACVP_AES_CFB1)
-		{
-		for(n1=0,n2=stc->key_len-1 ; n1 < stc->key_len ; ++n1,--n2)
-		    sb(ciphertext,n1,gb(ptext[j-n2],0));
-		}
-
+          }
         }
 
 
@@ -627,9 +649,9 @@ static ACVP_RESULT acvp_aes_output_tc(ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *stc,
 
     if (stc->direction == ACVP_DIR_ENCRYPT) {
 	/*
-	 * Only return IV on AEAD ciphers
+	 * Only return IV on AES-GCM ciphers
 	 */
-	if ((stc->cipher == ACVP_AES_GCM) || (stc->cipher == ACVP_AES_CCM)) {
+	if (stc->cipher == ACVP_AES_GCM) {
 	    rv = acvp_bin_to_hexstr(stc->iv, stc->iv_len, (unsigned char*)tmp);
 	    if (rv != ACVP_SUCCESS) {
 		ACVP_LOG_ERR("hex conversion failure (iv)");
@@ -647,9 +669,9 @@ static ACVP_RESULT acvp_aes_output_tc(ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *stc,
 	json_object_set_string(tc_rsp, "ct", tmp);
 
 	/*
-	 * AEAD ciphers need to include the tag 
+	 * AES-GCM ciphers need to include the tag 
 	 */
-	if (stc->cipher == ACVP_AES_GCM || stc->cipher == ACVP_AES_CCM) {
+	if (stc->cipher == ACVP_AES_GCM) {
 	    memset(tmp, 0x0, ACVP_SYM_CT_MAX);
 	    rv = acvp_bin_to_hexstr(stc->tag, stc->tag_len, (unsigned char*)tmp);
 	    if (rv != ACVP_SUCCESS) {
@@ -664,6 +686,11 @@ static ACVP_RESULT acvp_aes_output_tc(ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *stc,
 	    	json_object_set_boolean(tc_rsp, "decryptFail", 1);
 		return ACVP_SUCCESS;
 	}
+	/* TODO: fix this, kludge for now */
+	if ((stc->cipher == ACVP_AES_CCM) && (stc->pt_len == 0)) {
+	    stc->pt_len = 1;
+	    stc->pt[0] = 0;
+        }
 	rv = acvp_bin_to_hexstr(stc->pt, stc->pt_len, (unsigned char*)tmp);
 	if (rv != ACVP_SUCCESS) {
 	    ACVP_LOG_ERR("hex conversion failure (pt)");

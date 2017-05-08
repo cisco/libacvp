@@ -282,21 +282,6 @@ int main(int argc, char **argv)
      * We need to register all the crypto module capabilities that will be
      * validated.
      */
-
-   /*
-    * Enable AES-ECB 128,192,256 bit key
-    */
-   rv = acvp_enable_sym_cipher_cap(ctx, ACVP_AES_ECB, ACVP_DIR_BOTH, ACVP_KO_NA, ACVP_IVGEN_SRC_NA, ACVP_IVGEN_MODE_NA, &app_aes_handler);
-   CHECK_ENABLE_CAP_RV(rv);
-   rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_ECB, ACVP_SYM_CIPH_KEYLEN, 128);
-   CHECK_ENABLE_CAP_RV(rv);
-   rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_ECB, ACVP_SYM_CIPH_KEYLEN, 192);
-   CHECK_ENABLE_CAP_RV(rv);
-   rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_ECB, ACVP_SYM_CIPH_KEYLEN, 256);
-   CHECK_ENABLE_CAP_RV(rv);
-   rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_ECB, ACVP_SYM_CIPH_PTLEN, 1536);
-   CHECK_ENABLE_CAP_RV(rv);
-
    rv = acvp_enable_sym_cipher_cap(ctx, ACVP_AES_GCM, ACVP_DIR_BOTH, ACVP_KO_NA, ACVP_IVGEN_SRC_INT, ACVP_IVGEN_MODE_821, &app_aes_handler_aead);
    CHECK_ENABLE_CAP_RV(rv);
    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_GCM, ACVP_SYM_CIPH_KEYLEN, 128);
@@ -325,45 +310,17 @@ int main(int argc, char **argv)
    CHECK_ENABLE_CAP_RV(rv);
 
    /*
-    * Enable AES-CFB128 128,192,256 bit key
+    * Enable AES-ECB 128,192,256 bit key
     */
-   rv = acvp_enable_sym_cipher_cap(ctx, ACVP_AES_CFB128, ACVP_DIR_BOTH, ACVP_KO_NA, ACVP_IVGEN_SRC_NA, ACVP_IVGEN_MODE_NA, &app_aes_handler);
+   rv = acvp_enable_sym_cipher_cap(ctx, ACVP_AES_ECB, ACVP_DIR_BOTH, ACVP_KO_NA, ACVP_IVGEN_SRC_NA, ACVP_IVGEN_MODE_NA, &app_aes_handler);
    CHECK_ENABLE_CAP_RV(rv);
-   rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CFB128, ACVP_SYM_CIPH_KEYLEN, 128);
+   rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_ECB, ACVP_SYM_CIPH_KEYLEN, 128);
    CHECK_ENABLE_CAP_RV(rv);
-   rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CFB128, ACVP_SYM_CIPH_KEYLEN, 192);
+   rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_ECB, ACVP_SYM_CIPH_KEYLEN, 192);
    CHECK_ENABLE_CAP_RV(rv);
-   rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CFB128, ACVP_SYM_CIPH_KEYLEN, 256);
+   rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_ECB, ACVP_SYM_CIPH_KEYLEN, 256);
    CHECK_ENABLE_CAP_RV(rv);
-   rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CFB128, ACVP_SYM_CIPH_PTLEN, 1536);
-   CHECK_ENABLE_CAP_RV(rv);
-
-   /*
-    * Enable AES-CFB1 128,192,256 bit key
-    */
-   rv = acvp_enable_sym_cipher_cap(ctx, ACVP_AES_CFB1, ACVP_DIR_BOTH, ACVP_KO_NA, ACVP_IVGEN_SRC_NA, ACVP_IVGEN_MODE_NA, &app_aes_handler);
-   CHECK_ENABLE_CAP_RV(rv);
-   rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CFB1, ACVP_SYM_CIPH_KEYLEN, 128);
-   CHECK_ENABLE_CAP_RV(rv);
-   rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CFB1, ACVP_SYM_CIPH_KEYLEN, 192);
-   CHECK_ENABLE_CAP_RV(rv);
-   rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CFB1, ACVP_SYM_CIPH_KEYLEN, 256);
-   CHECK_ENABLE_CAP_RV(rv);
-   rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CFB1, ACVP_SYM_CIPH_PTLEN, 1536);
-   CHECK_ENABLE_CAP_RV(rv);
-
-   /*
-    * Enable AES-CFB8 128,192,256 bit key
-    */
-   rv = acvp_enable_sym_cipher_cap(ctx, ACVP_AES_CFB8, ACVP_DIR_BOTH, ACVP_KO_NA, ACVP_IVGEN_SRC_NA, ACVP_IVGEN_MODE_NA, &app_aes_handler);
-   CHECK_ENABLE_CAP_RV(rv);
-   rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CFB8, ACVP_SYM_CIPH_KEYLEN, 128);
-   CHECK_ENABLE_CAP_RV(rv);
-   rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CFB8, ACVP_SYM_CIPH_KEYLEN, 192);
-   CHECK_ENABLE_CAP_RV(rv);
-   rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CFB8, ACVP_SYM_CIPH_KEYLEN, 256);
-   CHECK_ENABLE_CAP_RV(rv);
-   rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CFB8, ACVP_SYM_CIPH_PTLEN, 1536);
+   rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_ECB, ACVP_SYM_CIPH_PTLEN, 1536);
    CHECK_ENABLE_CAP_RV(rv);
 
    /*
@@ -378,6 +335,33 @@ int main(int argc, char **argv)
    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CBC, ACVP_SYM_CIPH_KEYLEN, 256);
    CHECK_ENABLE_CAP_RV(rv);
    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CBC, ACVP_SYM_CIPH_PTLEN, 128);
+   CHECK_ENABLE_CAP_RV(rv);
+   /*
+    * Enable AES-CFB8 128,192,256 bit key
+    */
+   rv = acvp_enable_sym_cipher_cap(ctx, ACVP_AES_CFB8, ACVP_DIR_BOTH, ACVP_KO_NA, ACVP_IVGEN_SRC_NA, ACVP_IVGEN_MODE_NA, &app_aes_handler);
+   CHECK_ENABLE_CAP_RV(rv);
+   rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CFB8, ACVP_SYM_CIPH_KEYLEN, 128);
+   CHECK_ENABLE_CAP_RV(rv);
+   rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CFB8, ACVP_SYM_CIPH_KEYLEN, 192);
+   CHECK_ENABLE_CAP_RV(rv);
+   rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CFB8, ACVP_SYM_CIPH_KEYLEN, 256);
+   CHECK_ENABLE_CAP_RV(rv);
+   rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CFB8, ACVP_SYM_CIPH_PTLEN, 256);
+   CHECK_ENABLE_CAP_RV(rv);
+
+   /*
+    * Enable AES-CFB128 128,192,256 bit key
+    */
+   rv = acvp_enable_sym_cipher_cap(ctx, ACVP_AES_CFB128, ACVP_DIR_BOTH, ACVP_KO_NA, ACVP_IVGEN_SRC_NA, ACVP_IVGEN_MODE_NA, &app_aes_handler);
+   CHECK_ENABLE_CAP_RV(rv);
+   rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CFB128, ACVP_SYM_CIPH_KEYLEN, 128);
+   CHECK_ENABLE_CAP_RV(rv);
+   rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CFB128, ACVP_SYM_CIPH_KEYLEN, 192);
+   CHECK_ENABLE_CAP_RV(rv);
+   rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CFB128, ACVP_SYM_CIPH_KEYLEN, 256);
+   CHECK_ENABLE_CAP_RV(rv);
+   rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CFB128, ACVP_SYM_CIPH_PTLEN, 1536);
    CHECK_ENABLE_CAP_RV(rv);
 
    /*
@@ -397,17 +381,36 @@ int main(int argc, char **argv)
    /*
     * Register AES CCM capabilities
     */
-   rv = acvp_enable_sym_cipher_cap(ctx, ACVP_AES_CCM, ACVP_DIR_BOTH, ACVP_KO_NA, ACVP_IVGEN_SRC_INT, ACVP_IVGEN_MODE_821, &app_aes_handler_aead);
+   rv = acvp_enable_sym_cipher_cap(ctx, ACVP_AES_CCM, ACVP_DIR_BOTH, ACVP_KO_NA, ACVP_IVGEN_SRC_NA, ACVP_IVGEN_MODE_NA, &app_aes_handler_aead);
    CHECK_ENABLE_CAP_RV(rv);
    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CCM, ACVP_SYM_CIPH_KEYLEN, 128);
    CHECK_ENABLE_CAP_RV(rv);
-   rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CCM, ACVP_SYM_CIPH_TAGLEN, 128);
-   CHECK_ENABLE_CAP_RV(rv);
-   rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CCM, ACVP_SYM_CIPH_IVLEN, 96);
+   rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CCM, ACVP_SYM_CIPH_PTLEN, 0);
    CHECK_ENABLE_CAP_RV(rv);
    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CCM, ACVP_SYM_CIPH_PTLEN, 256);
    CHECK_ENABLE_CAP_RV(rv);
-   rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CCM, ACVP_SYM_CIPH_AADLEN, 128);
+   rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CCM, ACVP_SYM_CIPH_TAGLEN, 128);
+   CHECK_ENABLE_CAP_RV(rv);
+   rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CCM, ACVP_SYM_CIPH_IVLEN, 56);
+   CHECK_ENABLE_CAP_RV(rv);
+   rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CCM, ACVP_SYM_CIPH_AADLEN, 0);
+   CHECK_ENABLE_CAP_RV(rv);
+   rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CCM, ACVP_SYM_CIPH_AADLEN, 65536);
+   CHECK_ENABLE_CAP_RV(rv);
+
+#ifdef ACVP_V04
+   /*
+    * Enable AES-CFB1 128,192,256 bit key
+    */
+   rv = acvp_enable_sym_cipher_cap(ctx, ACVP_AES_CFB1, ACVP_DIR_BOTH, ACVP_KO_NA, ACVP_IVGEN_SRC_NA, ACVP_IVGEN_MODE_NA, &app_aes_handler);
+   CHECK_ENABLE_CAP_RV(rv);
+   rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CFB1, ACVP_SYM_CIPH_KEYLEN, 128);
+   CHECK_ENABLE_CAP_RV(rv);
+   //rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CFB1, ACVP_SYM_CIPH_KEYLEN, 192);
+   //CHECK_ENABLE_CAP_RV(rv);
+   //rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CFB1, ACVP_SYM_CIPH_KEYLEN, 256);
+   //CHECK_ENABLE_CAP_RV(rv);
+   rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CFB1, ACVP_SYM_CIPH_PTLEN, 1536);
    CHECK_ENABLE_CAP_RV(rv);
 
    /*
@@ -439,7 +442,7 @@ int main(int argc, char **argv)
    CHECK_ENABLE_CAP_RV(rv);
    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CTR, ACVP_SYM_CIPH_PTLEN, 128);
    CHECK_ENABLE_CAP_RV(rv);
-
+#endif
    /*
     * Enable 3DES-ECB
     */
@@ -467,7 +470,7 @@ int main(int argc, char **argv)
    CHECK_ENABLE_CAP_RV(rv);
    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_TDES_CBC, ACVP_SYM_CIPH_PTLEN, 64*12);
    CHECK_ENABLE_CAP_RV(rv);
-
+#ifdef ACVP_V04
    /*
     * Enable 3DES-OFB
     */
@@ -517,10 +520,12 @@ int main(int argc, char **argv)
    CHECK_ENABLE_CAP_RV(rv);
    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_TDES_CFB1, ACVP_SYM_CIPH_PTLEN, 64);
    CHECK_ENABLE_CAP_RV(rv);
+#endif
 
    /*
     * Enable SHA-1 and SHA-2
     */
+
    rv = acvp_enable_hash_cap(ctx, ACVP_SHA1, &app_sha_handler);
    CHECK_ENABLE_CAP_RV(rv);
    rv = acvp_enable_hash_cap_parm(ctx, ACVP_SHA1, ACVP_HASH_IN_BIT, 0);
@@ -556,7 +561,8 @@ int main(int argc, char **argv)
    rv = acvp_enable_hash_cap_parm(ctx, ACVP_SHA512, ACVP_HASH_IN_EMPTY, 1);
    CHECK_ENABLE_CAP_RV(rv);
 
-#if 0
+#ifdef ACVP_V04
+
 /*
  * Enable CMAC
  */
@@ -575,9 +581,8 @@ rv = acvp_enable_cmac_cap_parm(ctx, ACVP_CMAC_AES_128, ACVP_CMAC_MACLEN, 256);
 CHECK_ENABLE_CAP_RV(rv);
 rv = acvp_enable_hmac_prereq_cap(ctx, ACVP_CMAC_AES_128, CMAC_AES, value);
 CHECK_ENABLE_CAP_RV(rv);
-#endif
 
-#if 0
+
     /*
      * Enable HMAC
      */
@@ -1182,7 +1187,7 @@ static ACVP_RESULT app_aes_handler(ACVP_TEST_CASE *test_case)
         if (tc->direction == ACVP_DIR_ENCRYPT) {
             if (tc->mct_index == 0) {
 	        EVP_EncryptInit_ex(&cipher_ctx, cipher, NULL, tc->key, iv);
-		if (tc->cipher == ACVP_AES_ECB) EVP_CIPHER_CTX_set_padding(&cipher_ctx, 0);
+		EVP_CIPHER_CTX_set_padding(&cipher_ctx, 0);
             }
 	    EVP_EncryptUpdate(&cipher_ctx, tc->ct, &ct_len, tc->pt, tc->pt_len);
 	    tc->ct_len = ct_len;
@@ -1419,26 +1424,23 @@ static ACVP_RESULT app_aes_handler_aead(ACVP_TEST_CASE *test_case)
 	    EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_CCM_SET_IVLEN, tc->iv_len, 0);
 	    EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_CCM_SET_TAG, tc->tag_len, 0);
 	    EVP_CipherInit(&cipher_ctx, NULL, tc->key, tc->iv, 1);
-	    if (tc->aad_len) {
-		EVP_Cipher(&cipher_ctx, NULL, NULL, tc->pt_len);
-		EVP_Cipher(&cipher_ctx, NULL, tc->aad, tc->aad_len);
-	    }
+	    EVP_Cipher(&cipher_ctx, NULL, NULL, tc->pt_len);
+	    EVP_Cipher(&cipher_ctx, NULL, tc->aad, tc->aad_len);
 	    EVP_Cipher(&cipher_ctx, tc->ct, tc->pt, tc->pt_len);
-	    EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_CCM_GET_TAG, tc->tag_len, tc->tag);
+	    EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_CCM_GET_TAG, tc->tag_len, tc->ct + tc->ct_len);
+	    tc->ct_len += tc->tag_len;
 	} else if (tc->direction == ACVP_DIR_DECRYPT) {
-	    //TODO: this code isn't tested, need a server with CCM support
 	    EVP_CipherInit(&cipher_ctx, cipher, NULL, NULL, 0);
 	    EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_CCM_SET_IVLEN, tc->iv_len, 0);
-	    if (tc->aad_len) {
-		EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_CCM_SET_TAG, tc->tag_len, tc->tag);
-	    }
-	    EVP_CipherInit(&cipher_ctx, NULL, tc->key, tc->iv, 1);
-	    EVP_Cipher(&cipher_ctx, tc->pt, tc->ct, tc->pt_len);
+	    EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_CCM_SET_TAG, tc->tag_len, tc->ct + tc->pt_len);
+	    EVP_CipherInit(&cipher_ctx, NULL, tc->key, tc->iv, 0);
+	    EVP_Cipher(&cipher_ctx, NULL, NULL, tc->pt_len);
+	    EVP_Cipher(&cipher_ctx, NULL, tc->aad, tc->aad_len);
 	    /*
-	     * Check the tag
+	     * Decrypt and check the tag
 	     */
-	    rv = EVP_Cipher(&cipher_ctx, NULL, NULL, 0);
-	    if (rv) {
+	    rv = EVP_Cipher(&cipher_ctx, tc->pt, tc->ct, tc->pt_len);
+	    if (rv < 0) {
 		return ACVP_CRYPTO_TAG_FAIL;
 	    }
 	}
@@ -1459,7 +1461,6 @@ static ACVP_RESULT app_sha_handler(ACVP_TEST_CASE *test_case)
     ACVP_HASH_TC	*tc;
     const EVP_MD	*md;
     EVP_MD_CTX          md_ctx;
-    int msg_len;
 
     if (!test_case) {
         return ACVP_INVALID_ARG;
@@ -1518,14 +1519,12 @@ static ACVP_RESULT app_sha_handler(ACVP_TEST_CASE *test_case)
         }
 
    } else {
-        /* AFT hashes are bit lengths not bytes */
-        msg_len = tc->msg_len/8;
         if (!EVP_DigestInit_ex(&md_ctx, md, NULL)) {
             printf("\nCrypto module error, EVP_DigestInit_ex failed\n");
 	    return ACVP_CRYPTO_MODULE_FAIL;
         }
 
-	if (!EVP_DigestUpdate(&md_ctx, tc->msg, msg_len)) {
+	if (!EVP_DigestUpdate(&md_ctx, tc->msg, tc->msg_len)) {
 	    printf("\nCrypto module error, EVP_DigestUpdate failed\n");
 	    return ACVP_CRYPTO_MODULE_FAIL;
         }

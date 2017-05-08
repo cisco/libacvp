@@ -46,17 +46,16 @@ static ACVP_RESULT acvp_hash_mct_iterate_tc(ACVP_CTX *ctx, ACVP_HASH_TC *stc, in
 static ACVP_RESULT acvp_hash_output_mct_tc(ACVP_CTX *ctx, ACVP_HASH_TC *stc, JSON_Object *r_tobj)
 {
     ACVP_RESULT rv;
-    char *tmp;
+    char *tmp; 
 
     tmp = calloc(1, ACVP_HASH_MSG_MAX);
     if (!tmp) {
         ACVP_LOG_ERR("Unable to malloc in acvp_hash_output_tc");
         return ACVP_MALLOC_FAIL;
     }
-
     rv = acvp_bin_to_hexstr(stc->md, stc->md_len, (unsigned char*)tmp);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("hex conversion failure (msg)");
+        ACVP_LOG_ERR("hex conversion failure (md)");
         return rv;
     }
     json_object_set_string(r_tobj, "md", tmp);
@@ -81,6 +80,7 @@ static ACVP_RESULT acvp_hash_mct_tc(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap,
     JSON_Value          *r_tval = NULL; /* Response testval */
     JSON_Object         *r_tobj = NULL; /* Response testobj */
     char *tmp;
+    unsigned char *msg;
 
     tmp = calloc(1, ACVP_SYM_CT_MAX);
     if (!tmp) {
@@ -99,6 +99,24 @@ static ACVP_RESULT acvp_hash_mct_tc(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap,
          */
         r_tval = json_value_init_object();
         r_tobj = json_value_get_object(r_tval);
+
+    msg = calloc(1, ACVP_HASH_MSG_MAX);
+    if (!msg) {
+        ACVP_LOG_ERR("Unable to malloc in acvp_hash_output_tc");
+        return ACVP_MALLOC_FAIL;
+    }
+
+    memcpy(msg, stc->m1, stc->msg_len);
+    memcpy(msg + stc->msg_len, stc->m2, stc->msg_len);
+    memcpy(msg + (stc->msg_len * 2), stc->m3, stc->msg_len);
+
+    rv = acvp_bin_to_hexstr(msg, stc->msg_len * 3, (unsigned char*)tmp);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("hex conversion failure (msg)");
+        return rv;
+    }
+    json_object_set_string(r_tobj, "msg", tmp);
+
 
 	for (j = 0; j < 1000; ++j) {
 
@@ -135,6 +153,7 @@ static ACVP_RESULT acvp_hash_mct_tc(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap,
     }
 
     free(tmp);
+    free(msg);
 
     return ACVP_SUCCESS;
 }
@@ -240,7 +259,7 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
 
             tc_id = (unsigned int)json_object_get_number(testobj, "tcId");
 	    msg = (unsigned char *)json_object_get_string(testobj, "msg");
-	    msglen = strlen((char *)msg)*(8/2);
+            msglen = (unsigned int)json_object_get_number(testobj, "len");
 
             ACVP_LOG_INFO("        Test case: %d", j);
             ACVP_LOG_INFO("             tcId: %d", tc_id);
@@ -365,6 +384,7 @@ static ACVP_RESULT acvp_hash_init_tc(ACVP_CTX *ctx,
     /* Assume KAT if not MCT */
     if (test_type && !strcmp(test_type, "MCT")) {
         stc->test_type = ACVP_HASH_TEST_TYPE_MCT;
+        msg_len = (strlen((char *)msg)/2) * 8;
     } else {
         stc->test_type = ACVP_HASH_TEST_TYPE_AFT;
     }
