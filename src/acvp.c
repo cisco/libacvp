@@ -2886,12 +2886,10 @@ static ACVP_RESULT acvp_get_result_vsid(ACVP_CTX *ctx, int vs_id)
     JSON_Value *val;
     JSON_Object *obj = NULL;
     char *json_buf;
-    int retry_count = 10;
+    int retry_count = 900; /* 15 minutes*/
     int retry = 1;
-    JSON_Object *resobj = NULL;
 
-    //TODO: do we want to limit the number of retries?
-    while (retry && retry_count) {
+    while (retry && (retry_count > 0)) {
         /*
          * Get the KAT vector set
          */
@@ -2920,18 +2918,8 @@ static ACVP_RESULT acvp_get_result_vsid(ACVP_CTX *ctx, int vs_id)
         unsigned int retry_period = json_object_get_number(obj, "retry");
         if (retry_period) {
             rv = acvp_retry_handler(ctx, retry_period);
+    	    retry_count -= retry_period;
         } else {
-
-            resobj = json_object_get_object(obj, "results");
-
-	    /* treat incomplete as retry for now */
-            char *disposition = (char *)json_object_get_string(resobj, "disposition");
-	    if (disposition && !strcmp(disposition, "incomplete")) {
-	        rv = ACVP_KAT_DOWNLOAD_RETRY;
-	    	ACVP_LOG_STATUS("\nVector Set results incomplete, sleep and retry");
-	    	sleep(30);
-	    	retry_count--;
-            }
 	    /*
 	     * Parse the JSON response from the server, if the vector set failed,
 	     * then pull out the reason code and log it.
