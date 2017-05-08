@@ -9,6 +9,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <dlfcn.h>
+#include <errno.h>
 
 
 #include "pkcs11_lcl.h"
@@ -99,10 +100,49 @@
  *   Client and server are on the same machine, so we only need to       *
  *   marshal pointers.                                                   *
  *************************************************************************/
-#define READVAR(fd,v) read(fd,&v,sizeof(v))
-#define WRITEVAR(fd,v) write(fd,&v,sizeof(v))
-#define READPTRVAR(fd,v) read(fd,v,sizeof(*v))
-#define WRITEPTRVAR(fd,v) write(fd,v,sizeof(*v))
+
+
+#define READVAR(fd,v) readrv(fd,&v,sizeof(v))
+#define WRITEVAR(fd,v) writerv(fd,&v,sizeof(v))
+#define READPTRVAR(fd,v) readrv(fd,v,sizeof(*v))
+#define WRITEPTRVAR(fd,v) writerv(fd,v,sizeof(*v))
+
+ssize_t readrv(int fd, void *ptr, size_t len)
+{
+    ssize_t ret;
+    ret = read(fd, ptr, len);
+    if (ret < 0) {
+	if (errno == EPIPE) {
+	    exit(1);
+	}
+	perror("readrv failed");
+	return ret;
+    }
+    if (ret != len) {
+	fprintf(stderr,"readrv short read, expected %ld got %ld\n", len,ret);
+    }
+    return ret;
+}
+
+ssize_t writerv(int fd, const void *ptr, size_t len)
+{
+    ssize_t ret;
+    ret = write(fd, ptr, len);
+    if (ret < 0) {
+	if (errno == EPIPE) {
+	    exit(1);
+	}
+	perror("writerv failed");
+	return ret;
+    }
+    if (ret != len) {
+	fprintf(stderr,"writerv short write, expected %ld got %ld\n", len, ret);
+    }
+    return ret;
+}
+
+#define read(fd,ptr,len) readrv(fd,ptr,len);
+#define write(fd,ptr,len) writerv(fd,ptr,len);
 
 char *readstring(int fd)
 {
@@ -744,10 +784,11 @@ CK_RV CCC_Encrypt( CK_SESSION_HANDLE hSession,
     WRITEVAR(request, command);
     WRITEVAR(request, hSession);
     writebuf(request, pData, ulDataLen);
+    WRITEVAR(request,pEncryptedData);
     WRITEPTRVAR(request,pulEncryptedDataLen);
     READVAR(reply, crv);
     READPTRVAR(reply, pulEncryptedDataLen);
-    if (crv == CKR_OK) {
+    if ((crv == CKR_OK) && (pEncryptedData != NULL)) {
         read(reply, pEncryptedData, *pulEncryptedDataLen);
     }
     return crv;
@@ -762,10 +803,11 @@ CK_RV CCC_EncryptUpdate( CK_SESSION_HANDLE hSession,
     WRITEVAR(request, command);
     WRITEVAR(request, hSession);
     writebuf(request, pPart, ulPartLen);
+    WRITEVAR(request,pEncryptedPart);
     WRITEPTRVAR(request, pulEncryptedPartLen);
     READVAR(reply, crv);
     READPTRVAR(reply, pulEncryptedPartLen);
-    if (crv == CKR_OK) {
+    if ((crv == CKR_OK)  && (pEncryptedPart != NULL)) {
         read(reply, pEncryptedPart, *pulEncryptedPartLen);
     }
     return crv;
@@ -778,10 +820,11 @@ CK_RV CCC_EncryptFinal( CK_SESSION_HANDLE hSession,
     CK_RV crv;
     WRITEVAR(request, command);
     WRITEVAR(request, hSession);
+    WRITEVAR(request,pLastEncryptedPart);
     WRITEPTRVAR(request, pulLastEncryptedPartLen);
     READVAR(reply, crv);
     READPTRVAR(reply, pulLastEncryptedPartLen);
-    if (crv == CKR_OK) {
+    if ((crv == CKR_OK) && (pLastEncryptedPart != NULL)) {
         read(reply, pLastEncryptedPart, *pulLastEncryptedPartLen);
     }
     return crv;
@@ -809,10 +852,11 @@ CK_RV CCC_Decrypt( CK_SESSION_HANDLE hSession,
     WRITEVAR(request, command);
     WRITEVAR(request, hSession);
     writebuf(request, pEncryptedData, ulEncryptedDataLen);
+    WRITEVAR(request, pData);
     WRITEPTRVAR(request, pulDataLen);
     READVAR(reply, crv);
     READPTRVAR(reply, pulDataLen);
-    if (crv == CKR_OK) {
+    if ((crv == CKR_OK) && (pData != NULL)) {
         read(reply, pData, *pulDataLen);
     }
     return crv;
@@ -827,10 +871,11 @@ CK_RV CCC_DecryptUpdate(CK_SESSION_HANDLE hSession,
     WRITEVAR(request, command);
     WRITEVAR(request, hSession);
     writebuf(request, pEncryptedPart, ulEncryptedPartLen);
+    WRITEVAR(request, pPart);
     WRITEPTRVAR(request, pulPartLen);
     READVAR(reply, crv);
     READPTRVAR(reply, pulPartLen);
-    if (crv == CKR_OK) {
+    if ((crv == CKR_OK) && (pPart != NULL)) {
         read(reply, pPart, *pulPartLen);
     }
     return crv;
@@ -843,10 +888,11 @@ CK_RV CCC_DecryptFinal( CK_SESSION_HANDLE hSession,
     CK_RV crv;
     WRITEVAR(request, command);
     WRITEVAR(request, hSession);
+    WRITEVAR(request, pLastPart);
     WRITEPTRVAR(request, pulLastPartLen);
     READVAR(reply, crv);
     READPTRVAR(reply, pulLastPartLen);
-    if (crv == CKR_OK) {
+    if ((crv == CKR_OK) && (pLastPart != NULL)) {
         read(reply, pLastPart, *pulLastPartLen);
     }
     return crv;
@@ -872,10 +918,11 @@ CK_RV CCC_Digest( CK_SESSION_HANDLE hSession,
     WRITEVAR(request, command);
     WRITEVAR(request, hSession);
     writebuf(request, pData, ulDataLen);
+    WRITEVAR(request, pDigest);
     WRITEPTRVAR(request, pulDigestLen);
     READVAR(reply, crv);
     READPTRVAR(reply, pulDigestLen);
-    if (crv == CKR_OK) {
+    if ((crv == CKR_OK) && (pDigest != NULL)) {
         read(reply, pDigest, *pulDigestLen);
     }
     return crv;
@@ -911,10 +958,11 @@ CK_RV CCC_DigestFinal(CK_SESSION_HANDLE hSession,
     CK_RV crv;
     WRITEVAR(request, command);
     WRITEVAR(request, hSession);
+    WRITEVAR(request, pDigest);
     WRITEPTRVAR(request, pulDigestLen);
     READVAR(reply, crv);
     READPTRVAR(reply, pulDigestLen);
-    if (crv == CKR_OK) {
+    if ((crv == CKR_OK) && (pDigest != NULL)) {
         read(reply, pDigest, *pulDigestLen);
     }
     return crv;
@@ -942,10 +990,11 @@ CK_RV CCC_Sign(CK_SESSION_HANDLE hSession,
     WRITEVAR(request, command);
     WRITEVAR(request, hSession);
     writebuf(request, pData, ulDataLen);
+    WRITEVAR(request, pSignature);
     WRITEPTRVAR(request, pulSignatureLen);
     READVAR(reply, crv);
     READPTRVAR(reply, pulSignatureLen);
-    if (crv == CKR_OK) {
+    if ((crv == CKR_OK) && (pSignature != NULL)) {
         read(reply, pSignature, *pulSignatureLen);
     }
     return crv;
@@ -970,10 +1019,11 @@ CK_RV CCC_SignFinal( CK_SESSION_HANDLE hSession,
     CK_RV crv;
     WRITEVAR(request, command);
     WRITEVAR(request, hSession);
+    WRITEVAR(request, pSignature);
     WRITEPTRVAR(request, pulSignatureLen);
     READVAR(reply, crv);
     READPTRVAR(reply, pulSignatureLen);
-    if (crv == CKR_OK) {
+    if ((crv == CKR_OK) && (pSignature != NULL)) {
         read(reply, pSignature, *pulSignatureLen);
     }
     return crv;
@@ -1001,10 +1051,11 @@ CK_RV CCC_SignRecover(CK_SESSION_HANDLE hSession,
     WRITEVAR(request, command);
     WRITEVAR(request, hSession);
     writebuf(request, pData, ulDataLen);
+    WRITEVAR(request, pSignature);
     WRITEPTRVAR(request, pulSignatureLen);
     READVAR(reply, crv);
     READPTRVAR(reply, pulSignatureLen);
-    if (crv == CKR_OK) {
+    if ((crv == CKR_OK) && (pSignature != NULL)) {
         read(reply, pSignature, *pulSignatureLen);
     }
     return crv;
@@ -1083,10 +1134,11 @@ CK_RV CCC_VerifyRecover(CK_SESSION_HANDLE hSession,
     WRITEVAR(request, command);
     WRITEVAR(request, hSession);
     writebuf(request, pSignature, ulSignatureLen);
+    WRITEVAR(request, pData);
     WRITEPTRVAR(request, pulDataLen);
     READVAR(reply, crv);
     READPTRVAR(reply, pulDataLen);
-    if (crv == CKR_OK) {
+    if ((crv == CKR_OK) && (pData != NULL)) {
         read(reply, pData, *pulDataLen);
     }
     return crv;
@@ -1382,6 +1434,7 @@ pkcs11_server(int request_fd, int reply_fd,
 		if (slotList && crv == CKR_OK) {
 		    writebuf(reply_fd, slotList, slotListLen);
 		}
+		free(slotList);
 	    }
 	    break;
 	case SC_GET_SLOT_INFO:
@@ -1431,6 +1484,7 @@ pkcs11_server(int request_fd, int reply_fd,
 		if (mechList && crv == CKR_OK) {
 		    writebuf(reply_fd, mechList, mechListLen);
 		}
+		free(mechList);
 	    }
 	    break;
 	case SC_GET_MECHANISM_INFO:
@@ -1603,17 +1657,20 @@ pkcs11_server(int request_fd, int reply_fd,
 		READVAR(request_fd, session);
 		inData=readbuf(request_fd,&len);
 		inDataLen = len;
+		READVAR(request_fd,outData);
 		READVAR(request_fd,outDataLen);
-		if (outDataLen) {
+		if (outData) {
 		    outData = malloc(outDataLen);
 		}
 		crv = (*pkcs11_function_list->C_Encrypt)(
 			session, inData, inDataLen, outData, &outDataLen);
+		free(inData);
 		WRITEVAR(reply_fd, crv);
 		WRITEVAR(reply_fd, outDataLen);
-		if (crv == CKR_OK) {
+		if ((crv == CKR_OK) && (outData != NULL)) {
 		    write(reply_fd, outData, outDataLen);
 		}
+		free(outData);
 	    }
 	    break;
 	case SC_ENCRYPT_UPDATE:
@@ -1627,17 +1684,20 @@ pkcs11_server(int request_fd, int reply_fd,
 		READVAR(request_fd, session);
 		inData=readbuf(request_fd,&len);
 		inDataLen = len;
+		READVAR(request_fd,outData);
 		READVAR(request_fd,outDataLen);
-		if (outDataLen) {
+		if (outData) {
 		    outData = malloc(outDataLen);
 		}
 		crv = (*pkcs11_function_list->C_EncryptUpdate)(
 			session, inData, inDataLen, outData, &outDataLen);
+		free(inData);
 		WRITEVAR(reply_fd, crv);
 		WRITEVAR(reply_fd, outDataLen);
-		if (crv == CKR_OK) {
+		if ((crv == CKR_OK) && (outData != NULL)) {
 		    write(reply_fd, outData, outDataLen);
 		}
+		free(outData);
 	    }
 	    break;
 	case SC_ENCRYPT_FINAL:
@@ -1646,17 +1706,19 @@ pkcs11_server(int request_fd, int reply_fd,
 		CK_BYTE *outData = NULL;
 		CK_ULONG outDataLen;
 		READVAR(request_fd, session);
+		READVAR(request_fd,outData);
 		READVAR(request_fd,outDataLen);
-		if (outDataLen) {
+		if (outData) {
 		    outData = malloc(outDataLen);
 		}
 		crv = (*pkcs11_function_list->C_EncryptFinal)(
 			session, outData, &outDataLen);
 		WRITEVAR(reply_fd, crv);
 		WRITEVAR(reply_fd, outDataLen);
-		if (crv == CKR_OK) {
+		if ((crv == CKR_OK) && (outData != NULL)) {
 		    write(reply_fd, outData, outDataLen);
 		}
+		free(outData);
 	    }
 	    break;
 	case SC_DECRYPT_INIT:
@@ -1684,17 +1746,20 @@ pkcs11_server(int request_fd, int reply_fd,
 		READVAR(request_fd, session);
 		inData=readbuf(request_fd,&len);
 		inDataLen = len;
+		READVAR(request_fd,outData);
 		READVAR(request_fd,outDataLen);
-		if (outDataLen) {
+		if (outData) {
 		    outData = malloc(outDataLen);
 		}
 		crv = (*pkcs11_function_list->C_Decrypt)(
 			session, inData, inDataLen, outData, &outDataLen);
+		free(inData);
 		WRITEVAR(reply_fd, crv);
 		WRITEVAR(reply_fd, outDataLen);
-		if (crv == CKR_OK) {
+		if ((crv == CKR_OK) && (outData != NULL)) {
 		    write(reply_fd, outData, outDataLen);
 		}
+		free(outData);
 	    }
 	    break;
 	case SC_DECRYPT_UPDATE:
@@ -1708,17 +1773,20 @@ pkcs11_server(int request_fd, int reply_fd,
 		READVAR(request_fd, session);
 		inData=readbuf(request_fd,&len);
 		inDataLen = len;
+		READVAR(request_fd,outData);
 		READVAR(request_fd,outDataLen);
-		if (outDataLen) {
+		if (outData) {
 		    outData = malloc(outDataLen);
 		}
 		crv = (*pkcs11_function_list->C_DecryptUpdate)(
 			session, inData, inDataLen, outData, &outDataLen);
+		free(inData);
 		WRITEVAR(reply_fd, crv);
 		WRITEVAR(reply_fd, outDataLen);
-		if (crv == CKR_OK) {
+		if ((crv == CKR_OK) && (outData != NULL)) {
 		    write(reply_fd, outData, outDataLen);
 		}
+		free(outData);
 	    }
 	    break;
 	case SC_DECRYPT_FINAL:
@@ -1727,17 +1795,19 @@ pkcs11_server(int request_fd, int reply_fd,
 		CK_BYTE *outData = NULL;
 		CK_ULONG outDataLen;
 		READVAR(request_fd, session);
+		READVAR(request_fd,outData);
 		READVAR(request_fd,outDataLen);
-		if (outDataLen) {
+		if (outData) {
 		    outData = malloc(outDataLen);
 		}
 		crv = (*pkcs11_function_list->C_DecryptFinal)(
 			session, outData, &outDataLen);
 		WRITEVAR(reply_fd, crv);
 		WRITEVAR(reply_fd, outDataLen);
-		if (crv == CKR_OK) {
+		if ((crv == CKR_OK) && (outData != NULL)) {
 		    write(reply_fd, outData, outDataLen);
 		}
+		free(outData);
 	    }
 	    break;
 	case SC_DIGEST_INIT:
@@ -1763,17 +1833,20 @@ pkcs11_server(int request_fd, int reply_fd,
 		READVAR(request_fd, session);
 		inData=readbuf(request_fd,&len);
 		inDataLen = len;
+		READVAR(request_fd,outData);
 		READVAR(request_fd,outDataLen);
-		if (outDataLen) {
+		if (outData) {
 		    outData = malloc(outDataLen);
 		}
 		crv = (*pkcs11_function_list->C_Digest)(
 			session, inData, inDataLen, outData, &outDataLen);
+		free(inData);
 		WRITEVAR(reply_fd, crv);
 		WRITEVAR(reply_fd, outDataLen);
-		if (crv == CKR_OK) {
+		if ((crv == CKR_OK) && (outData != NULL)) {
 		    write(reply_fd, outData, outDataLen);
 		}
+		free(outData);
 	    }
 	    break;
 	case SC_DIGEST_UPDATE:
@@ -1787,6 +1860,7 @@ pkcs11_server(int request_fd, int reply_fd,
 		inDataLen = len;
 		crv = (*pkcs11_function_list->C_DigestUpdate)( session, 
 					inData, inDataLen);
+		free(inData);
 		WRITEVAR(reply_fd, crv);
 	    }
 	    break;
@@ -1806,17 +1880,19 @@ pkcs11_server(int request_fd, int reply_fd,
 		CK_BYTE *outData = NULL;
 		CK_ULONG outDataLen;
 		READVAR(request_fd, session);
+		READVAR(request_fd,outData);
 		READVAR(request_fd,outDataLen);
-		if (outDataLen) {
+		if (outData) {
 		    outData = malloc(outDataLen);
 		}
 		crv = (*pkcs11_function_list->C_DigestFinal)(
 			session, outData, &outDataLen);
 		WRITEVAR(reply_fd, crv);
 		WRITEVAR(reply_fd, outDataLen);
-		if (crv == CKR_OK) {
+		if ((crv == CKR_OK) && (outData != NULL)) {
 		    write(reply_fd, outData, outDataLen);
 		}
+		free(outData);
 	    }
 	    break;
 	case SC_SIGN_INIT:
@@ -1844,17 +1920,20 @@ pkcs11_server(int request_fd, int reply_fd,
 		READVAR(request_fd, session);
 		inData=readbuf(request_fd,&len);
 		inDataLen = len;
+		READVAR(request_fd,outData);
 		READVAR(request_fd,outDataLen);
-		if (outDataLen) {
+		if (outData) {
 		    outData = malloc(outDataLen);
 		}
 		crv = (*pkcs11_function_list->C_Sign)(
 			session, inData, inDataLen, outData, &outDataLen);
+		free(inData);
 		WRITEVAR(reply_fd, crv);
 		WRITEVAR(reply_fd, outDataLen);
-		if (crv == CKR_OK) {
+		if ((crv == CKR_OK) && (outData != NULL)) {
 		    write(reply_fd, outData, outDataLen);
 		}
+		free(outData);
 	    }
 	    break;
 	case SC_SIGN_UPDATE:
@@ -1868,6 +1947,7 @@ pkcs11_server(int request_fd, int reply_fd,
 		inDataLen = len;
 		crv = (*pkcs11_function_list->C_SignUpdate)(
 			session, inData, inDataLen);
+		free(inData);
 		WRITEVAR(reply_fd, crv);
 	    }
 	    break;
@@ -1877,17 +1957,19 @@ pkcs11_server(int request_fd, int reply_fd,
 		CK_BYTE *outData = NULL;
 		CK_ULONG outDataLen;
 		READVAR(request_fd, session);
+		READVAR(request_fd,outData);
 		READVAR(request_fd,outDataLen);
-		if (outDataLen) {
+		if (outData) {
 		    outData = malloc(outDataLen);
 		}
 		crv = (*pkcs11_function_list->C_SignFinal)(
 			session, outData, &outDataLen);
 		WRITEVAR(reply_fd, crv);
 		WRITEVAR(reply_fd, outDataLen);
-		if (crv == CKR_OK) {
+		if ((crv == CKR_OK) && (outData != NULL)) {
 		    write(reply_fd, outData, outDataLen);
 		}
+		free(outData);
 	    }
 	    break;
 	case SC_SIGN_RECOVER_INIT:
@@ -1915,17 +1997,20 @@ pkcs11_server(int request_fd, int reply_fd,
 		READVAR(request_fd, session);
 		inData=readbuf(request_fd,&len);
 		inDataLen = len;
+		READVAR(request_fd,outData);
 		READVAR(request_fd,outDataLen);
-		if (outDataLen) {
+		if (outData) {
 		    outData = malloc(outDataLen);
 		}
 		crv = (*pkcs11_function_list->C_SignRecover)(
 			session, inData, inDataLen, outData, &outDataLen);
+		free(inData);
 		WRITEVAR(reply_fd, crv);
 		WRITEVAR(reply_fd, outDataLen);
-		if (crv == CKR_OK) {
+		if ((crv == CKR_OK) && (outData != NULL)) {
 		    write(reply_fd, outData, outDataLen);
 		}
+		free(outData);
 	    }
 	    break;
 	case SC_VERIFY_INIT:
@@ -1957,6 +2042,8 @@ pkcs11_server(int request_fd, int reply_fd,
 		sigDataLen = len;
 		crv = (*pkcs11_function_list->C_Verify)(
 			session, inData, inDataLen, sigData, sigDataLen);
+		free(inData);
+		free(sigData);
 		WRITEVAR(reply_fd, crv);
 	    }
 	    break;
@@ -1971,6 +2058,7 @@ pkcs11_server(int request_fd, int reply_fd,
 		inDataLen = len;
 		crv = (*pkcs11_function_list->C_VerifyUpdate)(
 			session, inData, inDataLen);
+		free(inData);
 		WRITEVAR(reply_fd, crv);
 	    }
 	    break;
@@ -1985,6 +2073,7 @@ pkcs11_server(int request_fd, int reply_fd,
 		sigDataLen = len;
 		crv = (*pkcs11_function_list->C_VerifyFinal)(
 			session, sigData, sigDataLen);
+		free(sigData);
 		WRITEVAR(reply_fd, crv);
 	    }
 	    break;
@@ -2013,17 +2102,20 @@ pkcs11_server(int request_fd, int reply_fd,
 		READVAR(request_fd, session);
 		inData=readbuf(request_fd,&len);
 		inDataLen = len;
+		READVAR(request_fd,outData);
 		READVAR(request_fd,outDataLen);
-		if (outDataLen) {
+		if (outData) {
 		    outData = malloc(outDataLen);
 		}
 		crv = (*pkcs11_function_list->C_VerifyRecover)(
 			session, inData, inDataLen, outData, &outDataLen);
+		free(inData);
 		WRITEVAR(reply_fd, crv);
 		WRITEVAR(reply_fd, outDataLen);
-		if (crv == CKR_OK) {
+		if ((crv == CKR_OK) && (outData != NULL)) {
 		    write(reply_fd, outData, outDataLen);
 		}
+		free(outData);
 	    }
 	    break;
 	

@@ -96,6 +96,14 @@ typedef enum {false=0, true=1 } bool;
         goto cleanup; \
     }
 
+/* sometimes we expect certain failures. If so drop out as normal, but don't
+ * be noisy about it */
+#define CHECK_CRYPTO_RV_EXPECTED_CLEANUP(rv, expected, string) \
+    if (rv != ACVP_SUCCESS) { \
+	if (rv != expected) printf("Failed "#string" (rv=%d)\n", rv); \
+        goto cleanup; \
+    }
+
 /*
  * Read the operational parameters from the various environment
  * variables.
@@ -485,6 +493,7 @@ ACVP_RESULT pkcs11_get_mechanism_info(CK_MECHANISM_TYPE mech,
     CK_RV crv;
     crv = (*pkcs11_function_list->C_GetMechanismInfo)(slot_id, mech, mech_info);
     if (crv != CKR_OK) {
+	printf("C_GetMechanismInfo failed mech=%lx crv=%lx\n",mech, crv);
 	return ACVP_CRYPTO_MODULE_FAIL;
     }
     return ACVP_SUCCESS;
@@ -1206,7 +1215,6 @@ int main(int argc, char **argv)
     }
 #endif
 
-#ifdef ENABLE_ALL_TESTS /* No HASH, HMAC, or DRBG yet */
     /*
      * Enable 3DES-ECB
      */
@@ -1365,6 +1373,7 @@ int main(int argc, char **argv)
         CHECK_ENABLE_CAP_RV(rv, "TDES CFB 1");
     }
 
+#ifdef ENABLE_ALL_TESTS /* No HASH, HMAC, or DRBG yet */
     /*
      * Enable SHA-256
      */
@@ -1617,6 +1626,7 @@ static ACVP_RESULT pkcs11_symetric_handler(ACVP_TEST_CASE *test_case)
 		rv = pkcs11_encrypt_init(session, &mech, key_handle);
 		CHECK_CRYPTO_RV_CLEANUP(rv, "in C_EncryptInit");
             }
+	    ct_len = tc->ct_len;
 	    rv = pkcs11_encrypt_update(session, tc->pt, tc->pt_len,
 					tc->ct, &ct_len);
 	    CHECK_CRYPTO_RV_CLEANUP(rv, "in C_EncryptUpdate");
@@ -1627,6 +1637,7 @@ static ACVP_RESULT pkcs11_symetric_handler(ACVP_TEST_CASE *test_case)
 		rv = pkcs11_decrypt_init(session, &mech, key_handle);
 		CHECK_CRYPTO_RV_CLEANUP(rv, "in C_DecryptInit");
             }
+	    pt_len = tc->pt_len;
             rv = pkcs11_decrypt_update(session, tc->ct, tc->ct_len, 
 					tc->pt, &pt_len);
 	    CHECK_CRYPTO_RV_CLEANUP(rv, "in C_DecryptUpdate");
@@ -1647,6 +1658,7 @@ static ACVP_RESULT pkcs11_symetric_handler(ACVP_TEST_CASE *test_case)
         if (tc->direction == ACVP_DIR_ENCRYPT) {
 	    rv = pkcs11_encrypt_init(session, &mech, key_handle);
 	    CHECK_CRYPTO_RV_CLEANUP(rv, "in C_EncryptInit");
+	    ct_len = tc->ct_len;
 	    rv = pkcs11_encrypt_update(session, tc->pt, tc->pt_len,
 					tc->ct, &ct_len);
 	    CHECK_CRYPTO_RV_CLEANUP(rv, "in C_EncryptUpdate");
@@ -1657,6 +1669,7 @@ static ACVP_RESULT pkcs11_symetric_handler(ACVP_TEST_CASE *test_case)
         } else if (tc->direction == ACVP_DIR_DECRYPT) {
 	    rv = pkcs11_decrypt_init(session, &mech, key_handle);
 	    CHECK_CRYPTO_RV_CLEANUP(rv, "in C_DecryptInit");
+	    pt_len = tc->pt_len;
             rv = pkcs11_decrypt_update(session, tc->ct, tc->ct_len, 
 					tc->pt, &pt_len);
 	    CHECK_CRYPTO_RV_CLEANUP(rv, "in C_DecryptUpdate");
@@ -1739,12 +1752,14 @@ static ACVP_RESULT pkcs11_keywrap_handler(ACVP_TEST_CASE *test_case)
     if (tc->direction == ACVP_DIR_ENCRYPT) {
         rv = pkcs11_encrypt_init(session, &mech, key_handle);
 	CHECK_CRYPTO_RV_CLEANUP(rv, "in C_EncryptInit (Keywrapping)");
+	ct_len = tc->ct_len;
         rv = pkcs11_encrypt(session, tc->pt, tc->pt_len, tc->ct, &ct_len);
 	CHECK_CRYPTO_RV_CLEANUP(rv, "in C_Encrypt (Keywrapping)");
         tc->ct_len = ct_len;
     } else if (tc->direction == ACVP_DIR_DECRYPT) {
         rv = pkcs11_decrypt_init(session, &mech, key_handle);
 	CHECK_CRYPTO_RV_CLEANUP(rv, "in C_DecryptInit (Keywrapping)");
+	pt_len = tc->pt_len;
         rv = pkcs11_decrypt(session, tc->ct, tc->ct_len, tc->pt, &pt_len);
 	CHECK_CRYPTO_RV_CLEANUP(rv, "in C_Decrypt (Keywrapping)");
         tc->pt_len = pt_len;
@@ -1797,7 +1812,7 @@ static ACVP_RESULT pkcs11_aead_handler(ACVP_TEST_CASE *test_case)
 
     tc = test_case->tc.symmetric;
 
-    printf("%s: enter (tc_id=%d)\n", __FUNCTION__, tc->tc_id);
+    /* printf("%s: enter (tc_id=%d)\n", __FUNCTION__, tc->tc_id); */
 
     if (tc->direction != ACVP_DIR_ENCRYPT && tc->direction != ACVP_DIR_DECRYPT) {
         printf("Unsupported direction\n");
@@ -1876,8 +1891,11 @@ static ACVP_RESULT pkcs11_aead_handler(ACVP_TEST_CASE *test_case)
 	memcpy(tbuf+tc->ct_len, tc->tag, tc->tag_len);
         rv = pkcs11_decrypt_init(session, &mech, key_handle);
 	CHECK_CRYPTO_RV_CLEANUP(rv, "in C_DecryptInit (AEAD)");
+	pt_len = tbuf_len; /* sigh */
+	tc->ct_len,tc->pt_len, tbuf_len, tc->tag_len);
         rv = pkcs11_decrypt(session, tbuf, tbuf_len, tc->pt, &pt_len);
-	CHECK_CRYPTO_RV_CLEANUP(rv, "in C_Decrypt (AEAD)");
+	CHECK_CRYPTO_RV_EXPECTED_CLEANUP(rv, ACVP_CRYPTO_TAG_FAIL, 
+					"in C_Decrypt (AEAD)");
 	tc->pt_len = pt_len;
     }
     rv = ACVP_SUCCESS;
