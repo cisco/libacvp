@@ -245,6 +245,8 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx)
                             cap_entry = cap_e2;
                             break;
                         case ACVP_HASH_TYPE:
+			    free(cap_entry);
+                            cap_entry = cap_e2;
                             break;
                         case ACVP_DRBG_TYPE:
                             cap_e2 = cap_entry->next;
@@ -2309,10 +2311,10 @@ ACVP_RESULT acvp_register(ACVP_CTX *ctx)
         return rv;
     }
 
-    if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
+    if (ctx->debug == ACVP_LOG_LVL_STATUS) {
         printf("\nPOST %s\n", reg);
     } else {
-        ACVP_LOG_STATUS("POST %s", reg);
+        ACVP_LOG_INFO("POST %s", reg);
     }
     /*
      * Send the capabilities to the ACVP server and get the response,

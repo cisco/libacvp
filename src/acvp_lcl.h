@@ -151,8 +151,8 @@
 #define ACVP_CMAC_MAC_MAX       64
 #define ACVP_CMAC_KEY_MAX       256
 
-#define ACVP_KAT_BUF_MAX        1024*1024
-#define ACVP_REG_BUF_MAX        1024*65
+#define ACVP_KAT_BUF_MAX        1024*1024*4
+#define ACVP_REG_BUF_MAX        1024*128
 #define ACVP_RETRY_TIME_MAX         60 /* seconds */
 #define ACVP_JWT_TOKEN_MAX      1024
 
