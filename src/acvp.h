@@ -894,6 +894,9 @@ ACVP_RESULT acvp_set_module_info(ACVP_CTX *ctx,
 ACVP_RESULT acvp_check_test_results(ACVP_CTX *ctx);
 void acvp_cleanup(void);
 
+/* some utilities */
+char * acvp_lookup_cipher_name(ACVP_CIPHER alg);
+
 #ifdef __cplusplus
 }
 #endif

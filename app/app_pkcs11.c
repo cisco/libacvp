@@ -52,9 +52,9 @@
 
 static ACVP_RESULT pkcs11_aead_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT pkcs11_symetric_handler(ACVP_TEST_CASE *test_case);
+static ACVP_RESULT pkcs11_digest_handler(ACVP_TEST_CASE *test_case);
 #ifdef ENABLE_ALL_TESTS
 static ACVP_RESULT pkcs11_keywrap_handler(ACVP_TEST_CASE *test_case);
-static ACVP_RESULT pkcs11_digest_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_drbg_handler(ACVP_TEST_CASE *test_case);
 #endif
 
@@ -74,25 +74,34 @@ CK_FUNCTION_LIST *pkcs11_function_list = NULL;
 CK_SLOT_ID slot_id = -1;
 char *slot_description = NULL;
 
+static void
+dump(FILE *file, unsigned char *c, int len) { 
+    int i;
+    for (i=0; i < len ;i++) {
+        fprintf(file, "%02x",c[i]);
+    }
+}
+
 typedef enum {false=0, true=1 } bool;
 
 
 #define CHECK_ENABLE_CAP_RV(rv, string) \
     if (rv != ACVP_SUCCESS) { \
-        printf("Failed to register " \
+        fprintf(stderr,"Failed to register " \
                #string" capability with libacvp (rv=%d)\n", rv); \
+        unload_pkcs11(); \
         exit(1); \
     }
 
 #define CHECK_CRYPTO_RV(rv, string) \
     if (rv != ACVP_SUCCESS) { \
-        printf("Failed "#string" (rv=%d)\n", rv); \
+        fprintf(stderr,"Failed "#string" (rv=%d)\n", rv); \
         return(rv); \
     }
 
 #define CHECK_CRYPTO_RV_CLEANUP(rv, string) \
     if (rv != ACVP_SUCCESS) { \
-        printf("Failed "#string" (rv=%d)\n", rv); \
+        fprintf(stderr,"Failed "#string" (rv=%d)\n", rv); \
         goto cleanup; \
     }
 
@@ -100,7 +109,7 @@ typedef enum {false=0, true=1 } bool;
  * be noisy about it */
 #define CHECK_CRYPTO_RV_EXPECTED_CLEANUP(rv, expected, string) \
     if (rv != ACVP_SUCCESS) { \
-	if (rv != expected) printf("Failed "#string" (rv=%d)\n", rv); \
+	if (rv != expected) fprintf(stderr,"Failed "#string" (rv=%d)\n", rv); \
         goto cleanup; \
     }
 
@@ -147,7 +156,10 @@ static void setup_session_parameters()
     printf("    ACV_URI_PREFIX: %s\n", path_segment);
     printf("    ACV_CA_FILE:    %s\n", ca_chain_file);
     printf("    ACV_CERT_FILE:  %s\n", cert_file);
-    printf("    ACV_KEY_FILE:   %s\n\n", key_file);
+    printf("    ACV_KEY_FILE:   %s\n", key_file);
+    printf("    ACV_PKCS11_LIB: %s\n", pkcs11_lib);
+    printf("    ACV_PKCS11_SLOT_ID: %ld\n", (long)slot_id);
+    printf("    ACV_PKCS11_SLOT_DESCRIPTION: %s\n", slot_description);
 }
 
 /* For Windows, Use windows specific library loading and
@@ -336,11 +348,12 @@ ACVP_RESULT pkcs11_init()
 
     crv = (*pkcs11_function_list->C_Initialize)(&init_args);
     if (crv != CKR_OK) {
+	/* this one is just informational */
 	printf("NSS style init failed ckrv=0x%lx\nTrying traditional\n",crv);
 	init_args.LibraryParameters = NULL;
         crv = (*pkcs11_function_list->C_Initialize)(&init_args);
         if (crv != CKR_OK) {
-	    printf("C_Initialize failed ckrv=0x%lx\n",crv);
+	    fprintf(stderr,"C_Initialize failed ckrv=0x%lx\n",crv);
             return ACVP_CRYPTO_MODULE_FAIL;
         }
     }
@@ -493,7 +506,8 @@ ACVP_RESULT pkcs11_get_mechanism_info(CK_MECHANISM_TYPE mech,
     CK_RV crv;
     crv = (*pkcs11_function_list->C_GetMechanismInfo)(slot_id, mech, mech_info);
     if (crv != CKR_OK) {
-	printf("C_GetMechanismInfo failed mech=%lx crv=%lx\n",mech, crv);
+	fprintf(stderr,
+		"C_GetMechanismInfo failed mech=%lx crv=%lx\n",mech, crv);
 	return ACVP_CRYPTO_MODULE_FAIL;
     }
     return ACVP_SUCCESS;
@@ -532,7 +546,7 @@ ACVP_SYM_CIPH_DIR pkcs11_get_direction(CK_ULONG flags)
     default:
 	break;
     }
-    printf("Invalid encrypt/decrypt flags. Using just decrypt\n");
+    fprintf(stderr,"Invalid encrypt/decrypt flags. Using just decrypt\n");
     return ACVP_DIR_DECRYPT;
 }
 
@@ -552,7 +566,7 @@ ACVP_RESULT pkcs11_open_session(CK_SLOT_ID slot_id, CK_SESSION_HANDLE *session)
     crv = (*pkcs11_function_list->C_OpenSession)(slot_id, 0, NULL, NULL,
 	 			session);
     if (crv != CKR_OK) {
-	printf("C_OpenSession failed ckrv=0x%lx\n",crv);
+	fprintf(stderr,"C_OpenSession failed ckrv=0x%lx\n",crv);
         return ACVP_CRYPTO_MODULE_FAIL;
     }
     return ACVP_SUCCESS;
@@ -564,7 +578,7 @@ ACVP_RESULT pkcs11_close_session(CK_SESSION_HANDLE session)
 
     crv = (*pkcs11_function_list->C_CloseSession)(session);
     if (crv != CKR_OK) {
-	printf("C_CloseSession failed ckrv=0x%lx\n",crv);
+	fprintf(stderr,"C_CloseSession failed ckrv=0x%lx\n",crv);
         return ACVP_CRYPTO_MODULE_FAIL;
     }
     return ACVP_SUCCESS;
@@ -603,9 +617,16 @@ CK_OBJECT_HANDLE pkcs11_import_sym_key(CK_SESSION_HANDLE session,
     crv = (*pkcs11_function_list->C_CreateObject)(session, 
 					&template[0], 5, &key);
     if (crv != CKR_OK) {
-	printf("Failed to create key class=0x%lx type=0x%lx operation=0x%lx len=%d\n", pkcs11_cko_key, 
-								key_type, operation, key_len);
-	printf("C_CreateObject failed ckrv=0x%lx\n",crv);
+	fprintf(stderr,
+	"Failed to create key:\n"
+	"    class=0x%lx\n"
+        "    type=0x%lx\n"
+        "    operation=0x%lx\n"
+        "    key_data=", pkcs11_cko_key, key_type, operation);
+	dump(stderr,key_data,key_len);
+	fprintf(stderr, "\n    key_len=%d\n",key_len);
+	
+	fprintf(stderr,"C_CreateObject failed ckrv=0x%lx\n",crv);
         return CK_INVALID_HANDLE;
     }
     return key;
@@ -618,7 +639,7 @@ ACVP_RESULT pkcs11_encrypt_init(CK_SESSION_HANDLE session,
 
     crv = (*pkcs11_function_list->C_EncryptInit)(session, mech, key);
     if (crv != CKR_OK) {
-	printf("C_EncryptInit failed ckrv=0x%lx\n",crv);
+	fprintf(stderr,"C_EncryptInit failed ckrv=0x%lx\n",crv);
         return ACVP_CRYPTO_MODULE_FAIL;
     }
     return ACVP_SUCCESS;
@@ -635,7 +656,7 @@ ACVP_RESULT pkcs11_encrypt_update(CK_SESSION_HANDLE session,
 		pt, pt_len, ct, &ct_local);
     *ct_len = ct_local;
     if (crv != CKR_OK) {
-	printf("C_EncryptUpdate failed ckrv=0x%lx\n",crv);
+	fprintf(stderr,"C_EncryptUpdate failed ckrv=0x%lx\n",crv);
         return ACVP_CRYPTO_MODULE_FAIL;
     }
     return ACVP_SUCCESS;
@@ -652,7 +673,7 @@ ACVP_RESULT pkcs11_encrypt(CK_SESSION_HANDLE session,
 		pt, pt_len, ct, &ct_local);
     *ct_len = ct_local;
     if (crv != CKR_OK) {
-	printf("C_Encrypt failed ckrv=0x%lx\n",crv);
+	fprintf(stderr,"C_Encrypt failed ckrv=0x%lx\n",crv);
         return ACVP_CRYPTO_MODULE_FAIL;
     }
     return ACVP_SUCCESS;
@@ -678,7 +699,7 @@ ACVP_RESULT pkcs11_encrypt_final(CK_SESSION_HANDLE session,
 			&dummy[0], &dummy_len);
     if (len_ptr) *len_ptr = dummy_len;
     if (crv != CKR_OK) {
-	printf("C_EncryptFinal failed ckrv=0x%lx\n",crv);
+	fprintf(stderr,"C_EncryptFinal failed ckrv=0x%lx\n",crv);
         return ACVP_CRYPTO_MODULE_FAIL;
     }
     return ACVP_SUCCESS;
@@ -691,7 +712,7 @@ ACVP_RESULT pkcs11_decrypt_init(CK_SESSION_HANDLE session,
 
     crv = (*pkcs11_function_list->C_DecryptInit)(session, mech, key);
     if (crv != CKR_OK) {
-	printf("C_DecryptInit failed ckrv=0x%lx\n",crv);
+	fprintf(stderr,"C_DecryptInit failed ckrv=0x%lx\n",crv);
         return ACVP_CRYPTO_MODULE_FAIL;
     }
     return ACVP_SUCCESS;
@@ -708,7 +729,7 @@ ACVP_RESULT pkcs11_decrypt_update(CK_SESSION_HANDLE session,
 		ct, ct_len, pt, &pt_local);
     *pt_len = pt_local;
     if (crv != CKR_OK) {
-	printf("C_DecryptUpdate failed ckrv=0x%lx\n",crv);
+	fprintf(stderr,"C_DecryptUpdate failed ckrv=0x%lx\n",crv);
         return ACVP_CRYPTO_MODULE_FAIL;
     }
     return ACVP_SUCCESS;
@@ -728,7 +749,7 @@ ACVP_RESULT pkcs11_decrypt(CK_SESSION_HANDLE session,
 	return ACVP_CRYPTO_TAG_FAIL;
     }
     if (crv != CKR_OK) {
-	printf("C_Decrypt failed ckrv=0x%lx\n",crv);
+	fprintf(stderr,"C_Decrypt failed ckrv=0x%lx\n",crv);
         return ACVP_CRYPTO_MODULE_FAIL;
     }
     return ACVP_SUCCESS;
@@ -750,7 +771,7 @@ ACVP_RESULT pkcs11_decrypt_final(CK_SESSION_HANDLE session,
 			&dummy[0], &dummy_len);
     if (len_ptr) *len_ptr = dummy_len;
     if (crv != CKR_OK) {
-	printf("C_DecryptFinal failed ckrv=0x%lx\n",crv);
+	fprintf(stderr,"C_DecryptFinal failed ckrv=0x%lx\n",crv);
         return ACVP_CRYPTO_MODULE_FAIL;
     }
     return ACVP_SUCCESS;
@@ -762,7 +783,7 @@ ACVP_RESULT pkcs11_digest_init(CK_SESSION_HANDLE session, CK_MECHANISM *mech)
 
     crv = (*pkcs11_function_list->C_DigestInit)(session, mech);
     if (crv != CKR_OK) {
-	printf("C_DigestInit failed ckrv=0x%lx\n",crv);
+	fprintf(stderr,"C_DigestInit failed ckrv=0x%lx\n",crv);
         return ACVP_CRYPTO_MODULE_FAIL;
     }
     return ACVP_SUCCESS;
@@ -775,7 +796,7 @@ ACVP_RESULT pkcs11_digest_update(CK_SESSION_HANDLE session,
 
     crv = (*pkcs11_function_list->C_DigestUpdate)(session, dt, dt_len);
     if (crv != CKR_OK) {
-	printf("C_DigestUpdate failed ckrv=0x%lx\n",crv);
+	fprintf(stderr,"C_DigestUpdate failed ckrv=0x%lx\n",crv);
         return ACVP_CRYPTO_MODULE_FAIL;
     }
     return ACVP_SUCCESS;
@@ -790,7 +811,7 @@ ACVP_RESULT pkcs11_digest_final(CK_SESSION_HANDLE session,
     crv = (*pkcs11_function_list->C_DigestFinal)(session, d, &d_local);
     *d_len = d_local;
     if (crv != CKR_OK) {
-	printf("C_DigestFinal failed ckrv=0x%lx\n",crv);
+	fprintf(stderr,"C_DigestFinal failed ckrv=0x%lx\n",crv);
         return ACVP_CRYPTO_MODULE_FAIL;
     }
     return ACVP_SUCCESS;
@@ -810,7 +831,6 @@ ACVP_RESULT progress(char *msg)
 static void print_usage(char *prog)
 {
     printf("\nInvalid usage...\n");
-    printf("\nInvalid usage...\n");
     printf("%s does not require any argument, however logging level can be\n",prog);
     printf("controlled using:\n");
     printf("      -none\n");
@@ -827,7 +847,10 @@ static void print_usage(char *prog)
     printf("    ACV_URI_PREFIX (when not set, defaults to null)\n");
     printf("    ACV_CA_FILE (when not set, defaults to %s)\n", DEFAULT_CA_CHAIN);
     printf("    ACV_CERT_FILE (when not set, defaults to %s)\n", DEFAULT_CERT);
-    printf("    ACV_KEY_FILE (when not set, defaults to %s)\n\n", DEFAULT_KEY);
+    printf("    ACV_KEY_FILE (when not set, defaults to %s)\n", DEFAULT_KEY);
+    printf("    ACV_PKCS11_LIB (when not set, defaults to %s)\n", DEFAULT_PKCS11_LIB);
+    printf("    ACV_PKCS11_SLOT_ID (when not set default AVC_PKCS11_SLOT_DESCRIPTION\n");
+    printf("    ACV_PKCS11_SLOT_DESCRIPTION (when not set defaults to the first slot)\n\n");
     printf("The CA certificates, cert and key should be PEM encoded. There should be no\n");
     printf("password on the key file.\n");
 }
@@ -877,18 +900,19 @@ int main(int argc, char **argv)
 
     rv = load_pkcs11(pkcs11_lib);
     if (rv != ACVP_SUCCESS) {
-        printf("Failed to load library %s\n",pkcs11_lib);
+        fprintf(stderr,"Failed to load library %s\n",pkcs11_lib);
         exit(1);
     }
     rv = pkcs11_init();
     if (rv != ACVP_SUCCESS) {
-        printf("Failed to init library %s\n",pkcs11_lib);
+        fprintf(stderr,"Failed to init library %s\n",pkcs11_lib);
         exit(1);
     }
 
     rv = pkcs11_get_info(&info);
     if (rv != ACVP_SUCCESS) {
-        printf("get info failed\n");
+        fprintf(stderr,"Failed to get module infor for token %s\n", pkcs11_lib);
+        unload_pkcs11();
         exit(1);
     }
 
@@ -898,7 +922,8 @@ int main(int argc, char **argv)
      */
     rv = acvp_create_test_session(&ctx, &progress, level);
     if (rv != ACVP_SUCCESS) {
-        printf("Failed to create ACVP context\n");
+        fprintf(stderr,"Failed to create ACVP context\n");
+        unload_pkcs11();
         exit(1);
     }
 
@@ -907,7 +932,8 @@ int main(int argc, char **argv)
      */
     rv = acvp_set_server(ctx, server, port);
     if (rv != ACVP_SUCCESS) {
-        printf("Failed to set server/port\n");
+        fprintf(stderr,"Failed to set server/port\n");
+        unload_pkcs11();
         exit(1);
     }
 
@@ -919,7 +945,8 @@ int main(int argc, char **argv)
         /* get these from the environment */
         "www.redhat.com", "Robert Relyea", "rrelyea@redhat.com");
     if (rv != ACVP_SUCCESS) {
-        printf("Failed to set vendor info\n");
+        fprintf(stderr,"Failed to set vendor info\n");
+        unload_pkcs11();
         exit(1);
     }
 
@@ -933,7 +960,8 @@ int main(int argc, char **argv)
     rv = acvp_set_module_info(ctx, library_name, "software", 
 				library_version, library_name);
     if (rv != ACVP_SUCCESS) {
-        printf("Failed to set module info\n");
+        fprintf(stderr,"Failed to set module info\n");
+        unload_pkcs11();
         exit(1);
     }
 
@@ -943,7 +971,8 @@ int main(int argc, char **argv)
      if (strnlen(path_segment, 255) > 0) {
         rv = acvp_set_path_segment(ctx, path_segment);
         if (rv != ACVP_SUCCESS) {
-            printf("Failed to set URI prefix\n");
+            fprintf(stderr,"Failed to set URI prefix\n");
+            unload_pkcs11();
             exit(1);
         }
      }
@@ -954,7 +983,8 @@ int main(int argc, char **argv)
      */
     rv = acvp_set_cacerts(ctx, ca_chain_file);
     if (rv != ACVP_SUCCESS) {
-        printf("Failed to set CA certs\n");
+        fprintf(stderr,"Failed to set CA certs\n");
+        unload_pkcs11();
         exit(1);
     }
 
@@ -964,27 +994,30 @@ int main(int argc, char **argv)
      */
     rv = acvp_set_certkey(ctx, cert_file, key_file);
     if (rv != ACVP_SUCCESS) {
-        printf("Failed to set TLS cert/key\n");
+        fprintf(stderr,"Failed to set TLS cert/key\n");
+        unload_pkcs11();
         exit(1);
     }
 
 
     rv = pkcs11_get_slot();
     if (rv != ACVP_SUCCESS) {
-        printf("couldn't find slot\n");
+        fprintf(stderr, "Couldn't find requested slot\n");
+        unload_pkcs11();
         exit(1);
     }
 
     mech_list = pkcs11_get_mechanism();
     if (mech_list == NULL) {
-        printf("no mechanism found \n");
+        fprintf(stderr, "No mechanism found \n");
+        unload_pkcs11();
         exit(1);
     }
 
+#ifdef notdef
     /*
      * We need to register all the crypto module capabilities that will be
-     * validated.  For now we just register AES-GCM mode for encrypt using
-     * a handful of key sizes and plaintext lengths.
+     * validated.  
      */
     if (pkcs11_has_mechanism(mech_list, CKM_AES_GCM)) {
 	ACVP_SYM_CIPH_IVGEN_SRC ivgen_src = ACVP_IVGEN_SRC_EXT;
@@ -1213,8 +1246,8 @@ int main(int argc, char **argv)
 		ACVP_SYM_CIPH_PTLEN, 128);
         CHECK_ENABLE_CAP_RV(rv, "AES CTR");
     }
-#endif
 
+#endif
     /*
      * Enable 3DES-ECB
      */
@@ -1372,23 +1405,50 @@ int main(int argc, char **argv)
 		ACVP_SYM_CIPH_PTLEN, 64);
         CHECK_ENABLE_CAP_RV(rv, "TDES CFB 1");
     }
+#endif
 
-#ifdef ENABLE_ALL_TESTS /* No HASH, HMAC, or DRBG yet */
     /*
-     * Enable SHA-256
+     * Enable SHA-1 and SHA-2
      */
-//FIXME: this algorithm is un-tested.  Waiting on server implementation to test it
-    if (pkcs11_has_mechanism(mech_list, CKM_SHA256)) {
+    if (pkcs11_has_mechanism(mech_list, CKM_SHA_1)) {
+        rv = acvp_enable_hash_cap(ctx, ACVP_SHA1, &pkcs11_digest_handler);
+        CHECK_ENABLE_CAP_RV(rv, "SHA 1");
+        rv = acvp_enable_hash_cap_parm(ctx, ACVP_SHA1, ACVP_HASH_IN_BIT, 0);
+        CHECK_ENABLE_CAP_RV(rv, "SHA 1");
+        rv = acvp_enable_hash_cap_parm(ctx, ACVP_SHA1, ACVP_HASH_IN_EMPTY, 1);
+        CHECK_ENABLE_CAP_RV(rv, "SHA 1");
+    }
+    if (0 && pkcs11_has_mechanism(mech_list, CKM_SHA224)) {
+        rv = acvp_enable_hash_cap(ctx, ACVP_SHA224, &pkcs11_digest_handler);
+        CHECK_ENABLE_CAP_RV(rv, "SHA 224");
+        rv = acvp_enable_hash_cap_parm(ctx, ACVP_SHA224, ACVP_HASH_IN_BIT, 0);
+        CHECK_ENABLE_CAP_RV(rv, "SHA 224");
+        rv = acvp_enable_hash_cap_parm(ctx, ACVP_SHA224, ACVP_HASH_IN_EMPTY, 1);
+        CHECK_ENABLE_CAP_RV(rv, "SHA 224");
+    }
+    if (0 && pkcs11_has_mechanism(mech_list, CKM_SHA256)) {
         rv = acvp_enable_hash_cap(ctx, ACVP_SHA256, &pkcs11_digest_handler);
+        CHECK_ENABLE_CAP_RV(rv, "SHA 256");
+        rv = acvp_enable_hash_cap_parm(ctx, ACVP_SHA256, ACVP_HASH_IN_BIT, 0);
+        CHECK_ENABLE_CAP_RV(rv, "SHA 256");
+        rv = acvp_enable_hash_cap_parm(ctx, ACVP_SHA256, ACVP_HASH_IN_EMPTY, 1);
         CHECK_ENABLE_CAP_RV(rv, "SHA 256");
     }
 
-    if (pkcs11_has_mechanism(mech_list, CKM_SHA384)) {
+    if (0 && pkcs11_has_mechanism(mech_list, CKM_SHA384)) {
         rv = acvp_enable_hash_cap(ctx, ACVP_SHA384, &pkcs11_digest_handler);
         CHECK_ENABLE_CAP_RV(rv, "SHA 384");
+        rv = acvp_enable_hash_cap_parm(ctx, ACVP_SHA384, ACVP_HASH_IN_BIT, 0);
+        CHECK_ENABLE_CAP_RV(rv, "SHA 384");
+        rv = acvp_enable_hash_cap_parm(ctx, ACVP_SHA384, ACVP_HASH_IN_EMPTY, 1);
+        CHECK_ENABLE_CAP_RV(rv, "SHA 384");
     }
-    if (pkcs11_has_mechanism(mech_list, CKM_SHA512)) {
+    if (0 && pkcs11_has_mechanism(mech_list, CKM_SHA512)) {
         rv = acvp_enable_hash_cap(ctx, ACVP_SHA512, &pkcs11_digest_handler);
+        CHECK_ENABLE_CAP_RV(rv, "SHA 512");
+        rv = acvp_enable_hash_cap_parm(ctx, ACVP_SHA512, ACVP_HASH_IN_BIT, 0);
+        CHECK_ENABLE_CAP_RV(rv, "SHA 512");
+        rv = acvp_enable_hash_cap_parm(ctx, ACVP_SHA512, ACVP_HASH_IN_EMPTY, 1);
         CHECK_ENABLE_CAP_RV(rv, "SHA 512");
     }
 
@@ -1397,6 +1457,7 @@ int main(int argc, char **argv)
      * drbg interface. Only set these up if we've found the interface in
      * freebl
      */
+#ifdef ENABLE_ALL_TESTS /* No  HMAC, or DRBG yet */
     if (has_nss_drbg()) {
         char value[] = "same";
         char value2[] = "123456";
@@ -1450,7 +1511,7 @@ int main(int argc, char **argv)
      */
     rv = acvp_register(ctx);
     if (rv != ACVP_SUCCESS) {
-        printf("Failed to register with ACVP server (rv=%d)\n", rv);
+        fprintf(stderr,"Failed to register with ACVP server (rv=%d)\n", rv);
         unload_pkcs11();
         exit(1);
     }
@@ -1461,14 +1522,14 @@ int main(int argc, char **argv)
      */
     rv = acvp_process_tests(ctx);
     if (rv != ACVP_SUCCESS) {
-        printf("Failed to process vectors (%d)\n", rv);
+        fprintf(stderr,"Failed to process vectors (%d)\n", rv);
         unload_pkcs11();
         exit(1);
     }
 
     rv = acvp_check_test_results(ctx);
     if (rv != ACVP_SUCCESS) {
-        printf("Unable to retrieve test results (%d)\n", rv);
+        fprintf(stderr, "Unable to retrieve test results (%d)\n", rv);
         unload_pkcs11();
         exit(1);
     }
@@ -1488,6 +1549,7 @@ int main(int argc, char **argv)
     return (0);
 }
 
+
 static ACVP_RESULT pkcs11_symetric_handler(ACVP_TEST_CASE *test_case)
 {
     ACVP_SYM_CIPHER_TC      *tc;
@@ -1498,6 +1560,9 @@ static ACVP_RESULT pkcs11_symetric_handler(ACVP_TEST_CASE *test_case)
     CK_KEY_TYPE key_type = 0;
     CK_OBJECT_HANDLE key_handle;
     ACVP_RESULT rv;
+    int last = 9999; /* sigh, the library doesn't explicitly 
+                      * say which iteration is the last, so we just have to
+                      * know. It varies depending on algorithm */
 
     if (!test_case) {
         return ACVP_INVALID_ARG;
@@ -1505,7 +1570,10 @@ static ACVP_RESULT pkcs11_symetric_handler(ACVP_TEST_CASE *test_case)
 
     tc = test_case->tc.symmetric;
 
-    /*printf("%s: enter (tc_id=%d) cipher=%d\n", __FUNCTION__, tc->tc_id, tc->cipher); */
+    /*printf("%s: enter (tc_id=%d) cipher=%d test=%s mct_index=%d\n", 
+     __FUNCTION__, tc->tc_id, tc->cipher, 
+     (tc->test_type == ACVP_SYM_TEST_TYPE_MCT) ? "MCT" : "AFT",
+     tc->mct_index);  */
 
     switch (tc->cipher) {
     case ACVP_AES_ECB:
@@ -1513,42 +1581,49 @@ static ACVP_RESULT pkcs11_symetric_handler(ACVP_TEST_CASE *test_case)
 	mech.pParameter = NULL;
 	mech.ulParameterLen = 0;
 	key_type = CKK_AES;
+	last=999;
         break;
     case ACVP_AES_CTR:
 	mech.mechanism = CKM_AES_CTR;
 	mech.pParameter = tc->iv;
 	mech.ulParameterLen = tc->iv_len;
 	key_type = CKK_AES;
+	last=999;
         break;
     case ACVP_AES_CFB1:
 	mech.mechanism = CKM_AES_CFB1;
 	mech.pParameter = tc->iv;
 	mech.ulParameterLen = tc->iv_len;
 	key_type = CKK_AES;
+	last=999;
         break;
     case ACVP_AES_CFB8:
 	mech.mechanism = CKM_AES_CFB8;
 	mech.pParameter = tc->iv;
 	mech.ulParameterLen = tc->iv_len;
 	key_type = CKK_AES;
+	last=999;
         break;
     case ACVP_AES_CFB128:
 	mech.mechanism = CKM_AES_CFB128;
 	mech.pParameter = tc->iv;
 	mech.ulParameterLen = tc->iv_len;
 	key_type = CKK_AES;
+	last=999;
         break;
     case ACVP_AES_OFB:
 	mech.mechanism = CKM_AES_OFB;
 	mech.pParameter = tc->iv;
 	mech.ulParameterLen = tc->iv_len;
 	key_type = CKK_AES;
+	last=999;
         break;
     case ACVP_AES_CBC:
 	mech.mechanism = CKM_AES_CBC;
 	mech.pParameter = tc->iv;
 	mech.ulParameterLen = tc->iv_len;
 	key_type = CKK_AES;
+	last=999;
         break;
     case ACVP_TDES_ECB:
 	mech.mechanism = CKM_DES3_ECB;
@@ -1557,7 +1632,7 @@ static ACVP_RESULT pkcs11_symetric_handler(ACVP_TEST_CASE *test_case)
 	key_type = CKK_DES3;
         break;
     case ACVP_TDES_CBC:
-	mech.mechanism = CKM_DES3_ECB;
+	mech.mechanism = CKM_DES3_CBC;
 	mech.pParameter = tc->iv;
 	mech.ulParameterLen = 8;
 	key_type = CKK_DES3;
@@ -1585,7 +1660,9 @@ static ACVP_RESULT pkcs11_symetric_handler(ACVP_TEST_CASE *test_case)
 	key_type = CKK_DES3;
         break;
     default:
-        printf("Error: Unsupported Crypto mode requested by ACVP server\n");
+        fprintf(stderr, 
+"Error: Unsupported Crypto mode requested by ACVP server %s(%d)\n",
+	acvp_lookup_cipher_name(tc->cipher),tc->cipher);
         return ACVP_NO_CAP;
         break;
     }
@@ -1595,11 +1672,14 @@ static ACVP_RESULT pkcs11_symetric_handler(ACVP_TEST_CASE *test_case)
      */
     rv = pkcs11_get_mechanism_info(mech.mechanism, &mech_info);
     if (rv != ACVP_SUCCESS) {
-	printf("Error: Couldn't get mechanism info\n");
+	fprintf(stderr, "Error: Couldn't get mechanism info for %s, (0x%lx)\n",
+		acvp_lookup_cipher_name(tc->cipher), mech.mechanism);
 	return rv;
     }
     if (!pkcs11_supports_key(&mech_info, tc->key_len, BYTES)) {
-        printf("Unsupported key length\n");
+        fprintf(stderr,"Error: Unsupported key length (%d) for %s (0x%lx)\n",
+		tc->key_len, acvp_lookup_cipher_name(tc->cipher), 
+		mech.mechanism);
         return ACVP_NO_CAP;
     }
 
@@ -1644,12 +1724,12 @@ static ACVP_RESULT pkcs11_symetric_handler(ACVP_TEST_CASE *test_case)
             tc->pt_len = pt_len;
 	    final = pkcs11_decrypt_final;
         } else {
-            printf("Unsupported direction\n");
+            fprintf(stderr,"Unsupported direction %d\n",tc->direction);
 	    pkcs11_close_session(session);
 	    session = CK_INVALID_SESSION;
             return ACVP_UNSUPPORTED_OP;
         }
-        if (tc->mct_index == 999) {
+        if (tc->mct_index == last) {
 	   (*final)(session, NULL, NULL);
 	   pkcs11_close_session(session);
 	   session = CK_INVALID_SESSION;
@@ -1678,7 +1758,7 @@ static ACVP_RESULT pkcs11_symetric_handler(ACVP_TEST_CASE *test_case)
             /*EVP_DecryptFinal_ex(&cipher_ctx, tc->pt + pt_len, &pt_len);
             tc->pt_len += pt_len;*/
         } else {
-            printf("Unsupported direction\n");
+            fprintf(stderr,"Unsupported direction %d\n",tc->direction);
             return ACVP_UNSUPPORTED_OP;
         }
 	pkcs11_close_session(session);
@@ -1720,7 +1800,9 @@ static ACVP_RESULT pkcs11_keywrap_handler(ACVP_TEST_CASE *test_case)
 	key_type = CKK_AES;
         break;
     default:
-        printf("Error: Unsupported keywrap mode requested by ACVP server\n");
+        fprintf(stderr, 
+"Error: Unsupported keywrap mode requested by ACVP server %s(%d)\n",
+	acvp_lookup_cipher_name(tc->cipher),tc->cipher);
         return ACVP_NO_CAP;
         break;
     }
@@ -1730,11 +1812,13 @@ static ACVP_RESULT pkcs11_keywrap_handler(ACVP_TEST_CASE *test_case)
      */
     rv = pkcs11_get_mechanism_info(mech.mechanism, &mech_info);
     if (rv != ACVP_SUCCESS) {
-	printf("Error: Couldn't get mechanism info\n");
+	fprintf(stderr, "Error: Couldn't get mechanism info for %s, (0x%lx)\n",
+		acvp_lookup_cipher_name(tc->cipher), mech.mechanism);
 	return rv;
     }
     if (!pkcs11_supports_key(&mech_info, tc->key_len, BYTES)) {
-        printf("Unsupported key length\n");
+        fprintf(stderr,"Error: Unsupported key length (%d) for %s (0x%lx)\n",
+		tc->key_len, acvp_lookup_cipher_name(tc->cipher), 
         return ACVP_NO_CAP;
     }
 
@@ -1764,7 +1848,7 @@ static ACVP_RESULT pkcs11_keywrap_handler(ACVP_TEST_CASE *test_case)
 	CHECK_CRYPTO_RV_CLEANUP(rv, "in C_Decrypt (Keywrapping)");
         tc->pt_len = pt_len;
     } else {
-        printf("Unsupported direction\n");
+        fprintf(stderr,"Unsupported direction %d\n",tc->direction);
         return ACVP_UNSUPPORTED_OP;
     }
 
@@ -1815,7 +1899,7 @@ static ACVP_RESULT pkcs11_aead_handler(ACVP_TEST_CASE *test_case)
     /* printf("%s: enter (tc_id=%d)\n", __FUNCTION__, tc->tc_id); */
 
     if (tc->direction != ACVP_DIR_ENCRYPT && tc->direction != ACVP_DIR_DECRYPT) {
-        printf("Unsupported direction\n");
+        fprintf(stderr,"Unsupported direction %d\n",tc->direction);
         return ACVP_UNSUPPORTED_OP;
     }
 
@@ -1846,18 +1930,22 @@ static ACVP_RESULT pkcs11_aead_handler(ACVP_TEST_CASE *test_case)
 	break;
 
     default:
-        printf("Error: Unsupported AEAD mode requested by ACVP server\n");
+        fprintf(stderr, 
+"Error: Unsupported AEAD mode requested by ACVP server %s(%d)\n",
+	acvp_lookup_cipher_name(tc->cipher),tc->cipher);
         return ACVP_NO_CAP;
         break;
     }
 
     rv = pkcs11_get_mechanism_info(mech.mechanism, &mech_info);
     if (rv != ACVP_SUCCESS) {
-	printf("Error: Couldn't get mechanism info\n");
+	fprintf(stderr, "Error: Couldn't get mechanism info for %s, (0x%lx)\n",
+		acvp_lookup_cipher_name(tc->cipher), mech.mechanism);
 	return rv;
     }
     if (!pkcs11_supports_key(&mech_info, tc->key_len, BYTES)) {
-        printf("Unsupported key length\n");
+        fprintf(stderr,"Error: Unsupported key length (%d) for %s (0x%lx)\n",
+		tc->key_len, acvp_lookup_cipher_name(tc->cipher), mech.mechanism);
         return ACVP_NO_CAP;
     }
 
@@ -1878,7 +1966,7 @@ static ACVP_RESULT pkcs11_aead_handler(ACVP_TEST_CASE *test_case)
         rv = pkcs11_encrypt(session, tc->pt, tc->pt_len, tbuf, &tbuf_len);
 	CHECK_CRYPTO_RV_CLEANUP(rv, "in C_Encrypt (AEAD)");
 	if (tbuf_len < tc->tag_len) {
-	    printf("AEAD failed to generate Tag\n");
+	    fprintf(stderr,"AEAD failed to generate Tag\n");
 	    free(tbuf);
 	    pkcs11_close_session(session);
             return ACVP_CRYPTO_MODULE_FAIL;
@@ -1892,7 +1980,6 @@ static ACVP_RESULT pkcs11_aead_handler(ACVP_TEST_CASE *test_case)
         rv = pkcs11_decrypt_init(session, &mech, key_handle);
 	CHECK_CRYPTO_RV_CLEANUP(rv, "in C_DecryptInit (AEAD)");
 	pt_len = tbuf_len; /* sigh */
-	tc->ct_len,tc->pt_len, tbuf_len, tc->tag_len);
         rv = pkcs11_decrypt(session, tbuf, tbuf_len, tc->pt, &pt_len);
 	CHECK_CRYPTO_RV_EXPECTED_CLEANUP(rv, ACVP_CRYPTO_TAG_FAIL, 
 					"in C_Decrypt (AEAD)");
@@ -1907,7 +1994,6 @@ cleanup:
     return rv;
 }
 
-#ifdef ENABLE_ALL_TESTS 
 static ACVP_RESULT pkcs11_digest_handler(ACVP_TEST_CASE *test_case)
 {
     ACVP_HASH_TC        *tc;
@@ -1921,7 +2007,7 @@ static ACVP_RESULT pkcs11_digest_handler(ACVP_TEST_CASE *test_case)
 
     tc = test_case->tc.hash;
 
-    //printf("%s: enter (tc_id=%d)\n", __FUNCTION__, tc->tc_id);
+    printf("%s: enter (tc_id=%d)\n", __FUNCTION__, tc->tc_id);
 
     switch (tc->cipher) {
     case ACVP_SHA1:
@@ -1940,12 +2026,12 @@ static ACVP_RESULT pkcs11_digest_handler(ACVP_TEST_CASE *test_case)
         mech.mechanism = CKM_SHA512;
         break;
     default:
-        printf("Error: Unsupported hash algorithm requested by ACVP server\n");
+        fprintf(stderr, 
+"Error: Unsupported hash algorithm requested by ACVP server %s(%d)\n",
+	acvp_lookup_cipher_name(tc->cipher),tc->cipher);
         return ACVP_NO_CAP;
         break;
     }
-
-    /*EVP_MD_CTX_init(&md_ctx); */
 
     rv = pkcs11_open_session(slot_id,&session);
     CHECK_CRYPTO_RV(rv, "Couldn't get session");
@@ -1955,6 +2041,7 @@ static ACVP_RESULT pkcs11_digest_handler(ACVP_TEST_CASE *test_case)
      * <Q: what does 'complete each iteration' mean? I'm following
      * app_main, which finishes each digest after 3 update messages>
      */
+    tc->md_len = 64; /* max hash length */
     if (tc->test_type == ACVP_HASH_TEST_TYPE_MCT) {
 	rv = pkcs11_digest_init(session, &mech);
     	CHECK_CRYPTO_RV_CLEANUP(rv, "C_DigestInit failed\n");
@@ -1968,11 +2055,18 @@ static ACVP_RESULT pkcs11_digest_handler(ACVP_TEST_CASE *test_case)
     	CHECK_CRYPTO_RV_CLEANUP(rv, "C_DigestFinal failed\n");
 
     } else {
+printf("hash init 0x%lx\n",mech.mechanism);
 	rv = pkcs11_digest_init(session, &mech);
     	CHECK_CRYPTO_RV_CLEANUP(rv, "C_DigestInit failed\n");
+printf("hash update data=\n");
+dump(stdout,tc->msg,tc->msg_len);
+printf(" len=%d bits (%d bytes)\n",tc->msg_len*BYTES, tc->msg_len);
 	rv = pkcs11_digest_update(session, tc->msg, tc->msg_len);
     	CHECK_CRYPTO_RV_CLEANUP(rv, "C_DigestUpdate failed\n");
 	rv = pkcs11_digest_final(session, tc->md, &tc->md_len);
+printf("hash result digest=\n");
+dump(stdout,tc->md, tc->md_len);
+printf(" len=%d bits (%d bytes)\n",tc->md_len*BYTES,tc->md_len);
     	CHECK_CRYPTO_RV_CLEANUP(rv, "C_DigestFinal failed\n");
     }
     rv = ACVP_SUCCESS;
@@ -1982,6 +2076,7 @@ cleanup:
     return rv;
 }
 
+#ifdef ENABLE_ALL_TESTS 
 static ACVP_RESULT app_drbg_handler(ACVP_TEST_CASE *test_case)
 {
 /* There isn't a PKCS #11 interface for drbg tests, Use the private NSS interface for freebl */
@@ -2015,8 +2110,9 @@ static ACVP_RESULT app_drbg_handler(ACVP_TEST_CASE *test_case)
         case ACVP_DRBG_SHA_512_256:
         default:
             result = ACVP_UNSUPPORTED_OP;
-            printf("%s: Unsupported algorithm/mode %d/%d (tc_id=%d)\n", __FUNCTION__, tc->tc_id,
-                    tc->cipher, tc->mode);
+            fprintf(stderr, 
+"Error: Unsupported drbg algorithm mode requested by ACVP server %s(%d/%d)\n",
+	acvp_lookup_cipher_name(tc->cipher),tc->cipher,tc->mode);
             return (result);
             break;
         }
@@ -2026,8 +2122,9 @@ static ACVP_RESULT app_drbg_handler(ACVP_TEST_CASE *test_case)
     case ACVP_CTRDRBG:
     default:
         result = ACVP_UNSUPPORTED_OP;
-        printf("%s: Unsupported algorithm %d (tc_id=%d)\n", 
-		__FUNCTION__, tc->tc_id, tc->cipher);
+       fprintf(stderr, 
+"Error: Unsupported drbg algorithm requested by ACVP server %s(%d)\n",
+	acvp_lookup_cipher_name(tc->cipher),tc->cipher);
         return (result);
         break;
     }
