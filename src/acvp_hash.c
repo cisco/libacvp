@@ -22,10 +22,10 @@ static ACVP_RESULT acvp_hash_release_tc(ACVP_HASH_TC *stc);
 /*
  * After each hash for a Monte Carlo input
  * information may need to be modified.  This function
- * performs the iteration depdedent upon the hash type 
+ * performs the iteration depdedent upon the hash type
  * and direction.
  */
-static ACVP_RESULT acvp_hash_mct_iterate_tc(ACVP_CTX *ctx, ACVP_HASH_TC *stc, int i, 
+static ACVP_RESULT acvp_hash_mct_iterate_tc(ACVP_CTX *ctx, ACVP_HASH_TC *stc, int i,
                                             JSON_Object *r_tobj)
 {
     /* feed hash into the next message for MCT */
@@ -71,8 +71,8 @@ static ACVP_RESULT acvp_hash_output_mct_tc(ACVP_CTX *ctx, ACVP_HASH_TC *stc, JSO
  * parsed, processed, and a response is generated to be sent
  * back to the ACV server by the transport layer.
  */
-static ACVP_RESULT acvp_hash_mct_tc(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap, 
-		                   ACVP_TEST_CASE *tc, ACVP_HASH_TC *stc, 
+static ACVP_RESULT acvp_hash_mct_tc(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap,
+		                   ACVP_TEST_CASE *tc, ACVP_HASH_TC *stc,
 				   JSON_Array *res_array)
 {
     int i, j;
@@ -167,8 +167,9 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
     ACVP_HASH_TESTTYPE test_type;
     JSON_Array          *res_tarr = NULL; /* Response resultsArray */
     ACVP_RESULT rv;
-    const char		*alg_str = json_object_get_string(obj, "algorithm"); 
+    const char		*alg_str = json_object_get_string(obj, "algorithm");
     ACVP_CIPHER	        alg_id;
+    char *json_result;
 
     if (!alg_str) {
         ACVP_LOG_ERR("unable to parse 'algorithm' from JSON");
@@ -301,11 +302,14 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
 
     json_array_append_value(reg_arry, r_vs_val);
 
+    json_result = json_serialize_to_string_pretty(ctx->kat_resp);
     if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
-        printf("\n\n%s\n\n", json_serialize_to_string_pretty(ctx->kat_resp));
+        printf("\n\n%s\n\n", json_result);
     } else {
-        ACVP_LOG_INFO("\n\n%s\n\n", json_serialize_to_string_pretty(ctx->kat_resp));
+        ACVP_LOG_INFO("\n\n%s\n\n", json_result);
     }
+    json_free_serialized_string(json_result);
+
     return ACVP_SUCCESS;
 }
 

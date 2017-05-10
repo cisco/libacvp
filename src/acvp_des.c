@@ -2,23 +2,23 @@
 * Copyright (c) 2016, Cisco Systems, Inc.
 * All rights reserved.
 
-* Redistribution and use in source and binary forms, with or without modification, 
+* Redistribution and use in source and binary forms, with or without modification,
 * are permitted provided that the following conditions are met:
 *
-* 1. Redistributions of source code must retain the above copyright notice, 
+* 1. Redistributions of source code must retain the above copyright notice,
 *    this list of conditions and the following disclaimer.
 *
 * 2. Redistributions in binary form must reproduce the above copyright notice,
-*    this list of conditions and the following disclaimer in the documentation 
+*    this list of conditions and the following disclaimer in the documentation
 *    and/or other materials provided with the distribution.
 *
 * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
+* AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-* DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE 
-* FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
-* DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR 
-* SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER 
+* DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+* FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+* DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+* SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
 * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -61,7 +61,7 @@ static unsigned char ctext[10001][8];
  * and/or pt/ct information may need to be modified.  This function
  * performs the iteration depdedent upon the cipher type and direction.
  */
-static ACVP_RESULT acvp_des_mct_iterate_tc(ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *stc, 
+static ACVP_RESULT acvp_des_mct_iterate_tc(ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *stc,
                                            int i, JSON_Object *r_tobj)
 {
     int j = stc->mct_index;
@@ -118,7 +118,7 @@ static ACVP_RESULT acvp_des_mct_iterate_tc(ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *st
             for(n=0 ; n < 8 ; ++n) {
                 stc->iv[n] = stc->pt[n] ^ stc->ct[n];
 	    }
-        } 
+        }
         break;
     case ACVP_TDES_ECB:
         if (stc->direction == ACVP_DIR_ENCRYPT) {
@@ -129,7 +129,7 @@ static ACVP_RESULT acvp_des_mct_iterate_tc(ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *st
 	break;
     default:
         break;
-    }    
+    }
 
     return ACVP_SUCCESS;
 }
@@ -141,7 +141,7 @@ static ACVP_RESULT acvp_des_mct_iterate_tc(ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *st
  * file that will be uploaded to the server.  This routine handles
  * the JSON processing for a single test case for MCT.
  */
-static ACVP_RESULT acvp_des_output_mct_tc(ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *stc, 
+static ACVP_RESULT acvp_des_output_mct_tc(ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *stc,
                                           JSON_Object *r_tobj)
 {
     ACVP_RESULT rv;
@@ -228,8 +228,8 @@ void acvp_des_set_odd_parity(unsigned char *key)
  * parsed, processed, and a response is generated to be sent
  * back to the ACV server by the transport layer.
  */
-static ACVP_RESULT acvp_des_mct_tc(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap, 
-		                   ACVP_TEST_CASE *tc, ACVP_SYM_CIPHER_TC *stc, 
+static ACVP_RESULT acvp_des_mct_tc(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap,
+		                   ACVP_TEST_CASE *tc, ACVP_SYM_CIPHER_TC *stc,
 				   JSON_Array *res_array)
 {
     int i, j, n;
@@ -384,11 +384,12 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
     ACVP_TEST_CASE tc;
     ACVP_RESULT rv;
     const char		*dir_str2 = NULL;
-    const char		*dir_str = json_object_get_string(obj, "direction"); 
-    const char		*alg_str = json_object_get_string(obj, "algorithm"); 
+    const char		*dir_str = json_object_get_string(obj, "direction");
+    const char		*alg_str = json_object_get_string(obj, "algorithm");
     ACVP_SYM_CIPH_DIR	dir;
     ACVP_CIPHER	alg_id;
     ACVP_SYM_CIPH_TESTTYPE test_type;
+    char *json_result;
 
     if (!alg_str) {
         ACVP_LOG_ERR("unable to parse 'algorithm' from JSON");
@@ -451,7 +452,7 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
     json_object_set_number(r_vs, "vsId", ctx->vs_id);
     json_object_set_string(r_vs, "algorithm", alg_str);
     if (dir_str != NULL)
-        json_object_set_string(r_vs, "direction", dir_str); 
+        json_object_set_string(r_vs, "direction", dir_str);
     json_object_set_value(r_vs, "testResults", json_value_init_array());
     r_tarr = json_object_get_array(r_vs, "testResults");
 
@@ -465,7 +466,7 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
 	/* version 0.3 direction */
 	if (dir_str2 != NULL) {
     	    /*
-    	     * verify the direction is valid 
+    	     * verify the direction is valid
      	     */
     	    if (!strncmp(dir_str2, "encrypt", 7)) {
 	        dir = ACVP_DIR_ENCRYPT;
@@ -498,7 +499,7 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
 
             tc_id = (unsigned int)json_object_get_number(testobj, "tcId");
             key = (unsigned char *)json_object_get_string(testobj, "key");
-	    if (dir == ACVP_DIR_ENCRYPT) { 
+	    if (dir == ACVP_DIR_ENCRYPT) {
 		pt = (unsigned char *)json_object_get_string(testobj, "pt");
 		iv = (unsigned char *)json_object_get_string(testobj, "iv");
             } else {
@@ -527,7 +528,7 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
              * TODO: this does mallocs, we can probably do the mallocs once for
              *       the entire vector set to be more efficient
              */
-            acvp_des_init_tc(ctx, &stc, tc_id, key, pt, ct, iv,  
+            acvp_des_init_tc(ctx, &stc, tc_id, key, pt, ct, iv,
 		             keylen, ivlen, ptlen, alg_id, dir);
 
 	    /* If Monte Carlo start that here */
@@ -571,11 +572,14 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
 
     json_array_append_value(reg_arry, r_vs_val);
 
+    json_result = json_serialize_to_string_pretty(ctx->kat_resp);
     if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
-        printf("\n\n%s\n\n", json_serialize_to_string_pretty(ctx->kat_resp));
+        printf("\n\n%s\n\n", json_result);
     } else {
-        ACVP_LOG_INFO("\n\n%s\n\n", json_serialize_to_string_pretty(ctx->kat_resp));
+        ACVP_LOG_INFO("\n\n%s\n\n", json_result);
     }
+    json_free_serialized_string(json_result);
+
     return ACVP_SUCCESS;
 }
 
@@ -702,7 +706,7 @@ static ACVP_RESULT acvp_des_init_tc(ACVP_CTX *ctx,
     stc->key_len = key_len;
     stc->iv_len = iv_len/8;
     stc->pt_len = pt_len/8;
-    stc->ct_len = pt_len/8; 
+    stc->ct_len = pt_len/8;
 
     stc->cipher = alg_id;
     stc->direction = dir;

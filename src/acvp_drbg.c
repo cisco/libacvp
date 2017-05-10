@@ -78,6 +78,7 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
 
     char            *der_func_str;
     char            *pred_resist_str;
+    char            *json_result;
 
     JSON_Value          *reg_arry_val  = NULL;
     JSON_Object         *reg_obj       = NULL;
@@ -181,8 +182,8 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
         groupval = json_array_get_value(groups, i);
         groupobj = json_value_get_object(groupval);
 
-        char *reg = json_serialize_to_string_pretty(groupval);
-        ACVP_LOG_INFO("json groupval count: %d\n %s\n", i, reg);
+        json_result = json_serialize_to_string_pretty(groupval);
+        ACVP_LOG_INFO("json groupval count: %d\n %s\n", i, json_result);
 
         /*
          * Handle Group Params
@@ -230,7 +231,7 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
 
-            reg = json_serialize_to_string_pretty(testval);
+            json_result = json_serialize_to_string_pretty(testval);
 
             tc_id = (unsigned int)json_object_get_number(testobj, "tcId");
 
@@ -330,11 +331,14 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
     }
     json_array_append_value(reg_arry, r_vs_val);
 
+    json_result = json_serialize_to_string_pretty(ctx->kat_resp);
     if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
-        printf("\n\n%s\n\n", json_serialize_to_string_pretty(ctx->kat_resp));
+        printf("\n\n%s\n\n", json_result);
     } else {
-        ACVP_LOG_INFO("\n\n%s\n\n", json_serialize_to_string_pretty(ctx->kat_resp));
+        ACVP_LOG_INFO("\n\n%s\n\n", json_result);
     }
+    json_free_serialized_string(json_result);
+
     return ACVP_SUCCESS;
 }
 
