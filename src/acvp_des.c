@@ -421,8 +421,7 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
     ACVP_SYM_CIPHER_TC stc;
     ACVP_TEST_CASE tc;
     ACVP_RESULT rv;
-    const char		*dir_str2 = NULL;
-    const char		*dir_str = json_object_get_string(obj, "direction"); 
+    const char		*dir_str = NULL;
     const char		*alg_str = json_object_get_string(obj, "algorithm"); 
     ACVP_SYM_CIPH_DIR	dir;
     ACVP_CIPHER	alg_id;
@@ -431,20 +430,6 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
     if (!alg_str) {
         ACVP_LOG_ERR("unable to parse 'algorithm' from JSON");
 	return (ACVP_MALFORMED_JSON);
-    }
-
-    /*
-     * verify the direction is valid - version 0.2 only
-     */
-    if (dir_str != NULL) {
-        if (!strncmp(dir_str, "encrypt", 7)) {
-	    dir = ACVP_DIR_ENCRYPT;
-        } else if (!strncmp(dir_str, "decrypt", 7)) {
-	    dir = ACVP_DIR_DECRYPT;
-        } else {
-            ACVP_LOG_ERR("unsupported direction requested from server (%s)", dir_str);
-            //return (ACVP_UNSUPPORTED_OP);
-        }
     }
 
     /*
@@ -488,8 +473,6 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
 
     json_object_set_number(r_vs, "vsId", ctx->vs_id);
     json_object_set_string(r_vs, "algorithm", alg_str);
-    if (dir_str != NULL)
-        json_object_set_string(r_vs, "direction", dir_str); 
     json_object_set_value(r_vs, "testResults", json_value_init_array());
     r_tarr = json_object_get_array(r_vs, "testResults");
 
@@ -498,23 +481,25 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
     for (i = 0; i < g_cnt; i++) {
         groupval = json_array_get_value(groups, i);
         groupobj = json_value_get_object(groupval);
-        dir_str2 = json_object_get_string(groupobj, "direction");
+        dir_str = json_object_get_string(groupobj, "direction");
 
 	/* version 0.3 direction */
-	if (dir_str2 != NULL) {
+	if (dir_str != NULL) {
     	    /*
     	     * verify the direction is valid 
      	     */
-    	    if (!strncmp(dir_str2, "encrypt", 7)) {
+    	    if (!strncmp(dir_str, "encrypt", 7)) {
 	        dir = ACVP_DIR_ENCRYPT;
-    	    } else if (!strncmp(dir_str2, "decrypt", 7)) {
+    	    } else if (!strncmp(dir_str, "decrypt", 7)) {
 	        dir = ACVP_DIR_DECRYPT;
     	    } else {
-                ACVP_LOG_ERR("unsupported direction requested from server (%s)", dir_str2);
+                ACVP_LOG_ERR("unsupported direction requested from server (%s)", dir_str);
                 return (ACVP_UNSUPPORTED_OP);
             }
+        } else {
+            ACVP_LOG_ERR("unsupported direction requested from server (%s)", dir_str);
+            return (ACVP_UNSUPPORTED_OP);
         }
-
         keylen = (unsigned int)json_object_get_number(groupobj, "keyLen");
         ivlen = (unsigned int)json_object_get_number(groupobj, "ivLen");
         //ptlen = (unsigned int)json_object_get_number(groupobj, "ptLen");
@@ -543,17 +528,20 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
             key2 = (unsigned char *)json_object_get_string(testobj, "key2");
             key3 = (unsigned char *)json_object_get_string(testobj, "key3");
 
-       	    key = calloc(1, ACVP_SYM_KEY_MAX);
-    	    if (!key) {
-                ACVP_LOG_ERR("Unable to malloc");
-        	return ACVP_MALLOC_FAIL;
+	    /* TODO: remove this its there to work with our server */
+            key = (unsigned char *)json_object_get_string(testobj, "key");
+	    if (key == NULL) {
+       	        key = calloc(1, ACVP_SYM_KEY_MAX);
+    	    	if (!key) {
+                    ACVP_LOG_ERR("Unable to malloc");
+        	    return ACVP_MALLOC_FAIL;
+                }
+	    	memset(key, 0x0, ACVP_SYM_KEY_MAX);
+
+	    	memcpy(key, key1, 16);
+	    	memcpy(key+16, key2, 16);
+	    	memcpy(key+32, key3, 16);
             }
-	    memset(key, 0x0, ACVP_SYM_KEY_MAX);
-
-	    memcpy(key, key1, 16);
-	    memcpy(key+16, key2, 16);
-	    memcpy(key+32, key3, 16);
-
 	    if (dir == ACVP_DIR_ENCRYPT) { 
 		pt = (unsigned char *)json_object_get_string(testobj, "pt");
 		iv = (unsigned char *)json_object_get_string(testobj, "iv");
@@ -570,7 +558,7 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
             ACVP_LOG_INFO("               pt: %s", pt);
             ACVP_LOG_INFO("               ct: %s", ct);
             ACVP_LOG_INFO("               iv: %s", iv);
-            ACVP_LOG_INFO("              dir: %s", dir_str2);
+            ACVP_LOG_INFO("              dir: %s", dir_str);
             /*
              * Create a new test case in the response
              */
@@ -718,8 +706,10 @@ static ACVP_RESULT acvp_des_init_tc(ACVP_CTX *ctx,
     /* Assume KAT if not MCT */
     if (test_type && !strcmp(test_type, "MCT")) {
         stc->test_type = ACVP_SYM_TEST_TYPE_MCT;
-    } else {
+    } else if (test_type && !strcmp(test_type, "AFT")) {
         stc->test_type = ACVP_SYM_TEST_TYPE_AFT;
+    } else {
+        return ACVP_UNSUPPORTED_OP;
     }
 
     rv = acvp_hexstr_to_bin((const unsigned char *)j_key, stc->key, ACVP_SYM_KEY_MAX);

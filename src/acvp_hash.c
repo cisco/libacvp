@@ -385,10 +385,11 @@ static ACVP_RESULT acvp_hash_init_tc(ACVP_CTX *ctx,
     if (test_type && !strcmp(test_type, "MCT")) {
         stc->test_type = ACVP_HASH_TEST_TYPE_MCT;
         msg_len = (strlen((char *)msg)/2) * 8;
-    } else {
+    } else if (test_type && !strcmp(test_type, "AFT")) {
         stc->test_type = ACVP_HASH_TEST_TYPE_AFT;
+    } else {
+        return ACVP_UNSUPPORTED_OP;
     }
-
 
     rv = acvp_hexstr_to_bin((const unsigned char *)msg, stc->msg, ACVP_HASH_MSG_MAX);
     if (rv != ACVP_SUCCESS) {
