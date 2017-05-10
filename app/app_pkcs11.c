@@ -1014,7 +1014,6 @@ int main(int argc, char **argv)
         exit(1);
     }
 
-#ifdef notdef
     /*
      * We need to register all the crypto module capabilities that will be
      * validated.  
@@ -1405,7 +1404,6 @@ int main(int argc, char **argv)
 		ACVP_SYM_CIPH_PTLEN, 64);
         CHECK_ENABLE_CAP_RV(rv, "TDES CFB 1");
     }
-#endif
 
     /*
      * Enable SHA-1 and SHA-2
@@ -1418,7 +1416,7 @@ int main(int argc, char **argv)
         rv = acvp_enable_hash_cap_parm(ctx, ACVP_SHA1, ACVP_HASH_IN_EMPTY, 1);
         CHECK_ENABLE_CAP_RV(rv, "SHA 1");
     }
-    if (0 && pkcs11_has_mechanism(mech_list, CKM_SHA224)) {
+    if (pkcs11_has_mechanism(mech_list, CKM_SHA224)) {
         rv = acvp_enable_hash_cap(ctx, ACVP_SHA224, &pkcs11_digest_handler);
         CHECK_ENABLE_CAP_RV(rv, "SHA 224");
         rv = acvp_enable_hash_cap_parm(ctx, ACVP_SHA224, ACVP_HASH_IN_BIT, 0);
@@ -1426,7 +1424,7 @@ int main(int argc, char **argv)
         rv = acvp_enable_hash_cap_parm(ctx, ACVP_SHA224, ACVP_HASH_IN_EMPTY, 1);
         CHECK_ENABLE_CAP_RV(rv, "SHA 224");
     }
-    if (0 && pkcs11_has_mechanism(mech_list, CKM_SHA256)) {
+    if (pkcs11_has_mechanism(mech_list, CKM_SHA256)) {
         rv = acvp_enable_hash_cap(ctx, ACVP_SHA256, &pkcs11_digest_handler);
         CHECK_ENABLE_CAP_RV(rv, "SHA 256");
         rv = acvp_enable_hash_cap_parm(ctx, ACVP_SHA256, ACVP_HASH_IN_BIT, 0);
@@ -1435,7 +1433,7 @@ int main(int argc, char **argv)
         CHECK_ENABLE_CAP_RV(rv, "SHA 256");
     }
 
-    if (0 && pkcs11_has_mechanism(mech_list, CKM_SHA384)) {
+    if (pkcs11_has_mechanism(mech_list, CKM_SHA384)) {
         rv = acvp_enable_hash_cap(ctx, ACVP_SHA384, &pkcs11_digest_handler);
         CHECK_ENABLE_CAP_RV(rv, "SHA 384");
         rv = acvp_enable_hash_cap_parm(ctx, ACVP_SHA384, ACVP_HASH_IN_BIT, 0);
@@ -1443,7 +1441,7 @@ int main(int argc, char **argv)
         rv = acvp_enable_hash_cap_parm(ctx, ACVP_SHA384, ACVP_HASH_IN_EMPTY, 1);
         CHECK_ENABLE_CAP_RV(rv, "SHA 384");
     }
-    if (0 && pkcs11_has_mechanism(mech_list, CKM_SHA512)) {
+    if (pkcs11_has_mechanism(mech_list, CKM_SHA512)) {
         rv = acvp_enable_hash_cap(ctx, ACVP_SHA512, &pkcs11_digest_handler);
         CHECK_ENABLE_CAP_RV(rv, "SHA 512");
         rv = acvp_enable_hash_cap_parm(ctx, ACVP_SHA512, ACVP_HASH_IN_BIT, 0);
@@ -2007,7 +2005,7 @@ static ACVP_RESULT pkcs11_digest_handler(ACVP_TEST_CASE *test_case)
 
     tc = test_case->tc.hash;
 
-    printf("%s: enter (tc_id=%d)\n", __FUNCTION__, tc->tc_id);
+    /*printf("%s: enter (tc_id=%d)\n", __FUNCTION__, tc->tc_id); */
 
     switch (tc->cipher) {
     case ACVP_SHA1:
@@ -2055,18 +2053,11 @@ static ACVP_RESULT pkcs11_digest_handler(ACVP_TEST_CASE *test_case)
     	CHECK_CRYPTO_RV_CLEANUP(rv, "C_DigestFinal failed\n");
 
     } else {
-printf("hash init 0x%lx\n",mech.mechanism);
 	rv = pkcs11_digest_init(session, &mech);
     	CHECK_CRYPTO_RV_CLEANUP(rv, "C_DigestInit failed\n");
-printf("hash update data=\n");
-dump(stdout,tc->msg,tc->msg_len);
-printf(" len=%d bits (%d bytes)\n",tc->msg_len*BYTES, tc->msg_len);
 	rv = pkcs11_digest_update(session, tc->msg, tc->msg_len);
     	CHECK_CRYPTO_RV_CLEANUP(rv, "C_DigestUpdate failed\n");
 	rv = pkcs11_digest_final(session, tc->md, &tc->md_len);
-printf("hash result digest=\n");
-dump(stdout,tc->md, tc->md_len);
-printf(" len=%d bits (%d bytes)\n",tc->md_len*BYTES,tc->md_len);
     	CHECK_CRYPTO_RV_CLEANUP(rv, "C_DigestFinal failed\n");
     }
     rv = ACVP_SUCCESS;
