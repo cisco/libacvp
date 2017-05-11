@@ -39,6 +39,15 @@ extern "C"
 #include <openssl/fips_rand.h>
 #include <openssl/fips.h>
 
+/* TODO: These need to be put in fips.h */
+void FIPS_cipher_ctx_init(EVP_CIPHER_CTX *ctx);
+const EVP_CIPHER *FIPS_evp_aes_128_wrap(void);
+const EVP_CIPHER *FIPS_evp_aes_192_wrap(void);
+const EVP_CIPHER *FIPS_evp_aes_256_wrap(void);
+void FIPS_md_ctx_init(EVP_MD_CTX *ctx);
+int FIPS_cipher_ctx_ctrl(EVP_CIPHER_CTX *ctx, int type, int arg, void *ptr);
+void FIPS_hmac_ctx_init(HMAC_CTX *ctx);
+CMAC_CTX *FIPS_cmac_ctx_new(void);
 
 static int no_err;
 static void put_err_cb(int lib, int func,int reason,const char *file,int line)
