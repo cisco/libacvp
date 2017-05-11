@@ -184,6 +184,7 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
 
         json_result = json_serialize_to_string_pretty(groupval);
         ACVP_LOG_INFO("json groupval count: %d\n %s\n", i, json_result);
+        json_free_serialized_string(json_result);
 
         /*
          * Handle Group Params
@@ -232,6 +233,8 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
             testobj = json_value_get_object(testval);
 
             json_result = json_serialize_to_string_pretty(testval);
+            ACVP_LOG_INFO("json testval count: %d\n %s\n", i, json_result);
+            json_free_serialized_string(json_result);
 
             tc_id = (unsigned int)json_object_get_number(testobj, "tcId");
 
