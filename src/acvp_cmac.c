@@ -135,6 +135,7 @@ ACVP_RESULT acvp_cmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
     ACVP_RESULT rv;
     const char		*alg_str = json_object_get_string(obj, "algorithm");
     ACVP_CIPHER	        alg_id;
+    char *json_result;
 
     if (!alg_str) {
         ACVP_LOG_ERR("ERROR: unable to parse 'algorithm' from JSON");
@@ -261,8 +262,14 @@ ACVP_RESULT acvp_cmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
     }
 
     json_array_append_value(reg_arry, r_vs_val);
-    //FIXME
-    printf("\n\n%s\n\n", json_serialize_to_string_pretty(ctx->kat_resp));
+
+    json_result = json_serialize_to_string_pretty(ctx->kat_resp);
+    if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
+        printf("\n\n%s\n\n", json_result);
+    } else {
+        ACVP_LOG_INFO("\n\n%s\n\n", json_result);
+    }
+    json_free_serialized_string(json_result);
 
     return ACVP_SUCCESS;
 }

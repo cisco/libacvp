@@ -2,23 +2,23 @@
 * Copyright (c) 2016, Cisco Systems, Inc.
 * All rights reserved.
 
-* Redistribution and use in source and binary forms, with or without modification, 
+* Redistribution and use in source and binary forms, with or without modification,
 * are permitted provided that the following conditions are met:
 *
-* 1. Redistributions of source code must retain the above copyright notice, 
+* 1. Redistributions of source code must retain the above copyright notice,
 *    this list of conditions and the following disclaimer.
 *
 * 2. Redistributions in binary form must reproduce the above copyright notice,
-*    this list of conditions and the following disclaimer in the documentation 
+*    this list of conditions and the following disclaimer in the documentation
 *    and/or other materials provided with the distribution.
 *
 * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
+* AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-* DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE 
-* FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
-* DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR 
-* SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER 
+* DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+* FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+* DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+* SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
 * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -60,7 +60,7 @@ static unsigned char key[101][32];
 static unsigned char iv[101][16];
 static unsigned char ptext[1001][32];
 static unsigned char ctext[1001][32];
- 
+
 #define gb(a,b) (((a)[(b)/8] >> (7-(b)%8))&1)
 #define sb(a,b,v) ((a)[(b)/8]=((a)[(b)/8]&~(1 << (7-(b)%8)))|(!!(v) << (7-(b)%8)))
 
@@ -141,7 +141,7 @@ static ACVP_RESULT acvp_aes_mct_iterate_tc(ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *st
 	break;
     default:
         break;
-    }    
+    }
 
     return ACVP_SUCCESS;
 }
@@ -213,8 +213,8 @@ static ACVP_RESULT acvp_aes_output_mct_tc(ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *stc
  * parsed, processed, and a response is generated to be sent
  * back to the ACV server by the transport layer.
  */
-static ACVP_RESULT acvp_aes_mct_tc(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap, 
-		                   ACVP_TEST_CASE *tc, ACVP_SYM_CIPHER_TC *stc, 
+static ACVP_RESULT acvp_aes_mct_tc(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap,
+		                   ACVP_TEST_CASE *tc, ACVP_SYM_CIPHER_TC *stc,
 				   JSON_Array *res_array)
 {
     int i, j, n, n1, n2;
@@ -279,7 +279,7 @@ static ACVP_RESULT acvp_aes_mct_tc(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap,
 	    }
 	    json_object_set_string(r_tobj, "ct", tmp);
 
-            if (stc->cipher == ACVP_AES_CFB8) { 
+            if (stc->cipher == ACVP_AES_CFB8) {
 		/* ct = CT[j-15] || CT[j-14] || ... || CT[j] */
 		for (n1 = 0, n2 = stc->key_len/8-1; n1 < stc->key_len/8; ++n1, --n2)
 		    ciphertext[n1] = ctext[j-n2][0];
@@ -411,20 +411,19 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
     ACVP_SYM_CIPHER_TC stc;
     ACVP_TEST_CASE tc;
     ACVP_RESULT rv;
+
     const char		*dir_str = NULL;
-    const char		*alg_str = json_object_get_string(obj, "algorithm"); 
+    const char		*alg_str = json_object_get_string(obj, "algorithm");
+
     ACVP_SYM_CIPH_DIR	dir;
     ACVP_CIPHER	alg_id;
-    char  *test_type;
+    char  *test_type, *json_result;
 
     if (!alg_str) {
         ACVP_LOG_ERR("unable to parse 'algorithm' from JSON");
-	return (ACVP_MALFORMED_JSON);
+        return (ACVP_MALFORMED_JSON);
     }
 
-    /*
-     * Get a reference to the abstracted test case
-     */
     tc.tc.symmetric = &stc;
 
     /*
@@ -472,15 +471,15 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
         groupobj = json_value_get_object(groupval);
         dir_str = json_object_get_string(groupobj, "direction");
 
-	/* version 0.3 direction */
-	if (dir_str != NULL) {
+	      /* version 0.3 direction */
+        if (dir_str != NULL) {
     	    /*
-    	     * verify the direction is valid 
+    	     * verify the direction is valid
      	     */
     	    if (!strncmp(dir_str, "encrypt", 7)) {
-	        dir = ACVP_DIR_ENCRYPT;
+    	        dir = ACVP_DIR_ENCRYPT;
     	    } else if (!strncmp(dir_str, "decrypt", 7)) {
-	        dir = ACVP_DIR_DECRYPT;
+    	        dir = ACVP_DIR_DECRYPT;
     	    } else {
                 ACVP_LOG_ERR("unsupported direction requested from server (%s)", dir_str);
                 return (ACVP_UNSUPPORTED_OP);
@@ -495,7 +494,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
         if ((alg_id != ACVP_AES_ECB) && (alg_id != ACVP_AES_KW)) {
             ivlen = 128;
         }
-	if (alg_id == ACVP_AES_GCM || alg_id == ACVP_AES_CCM) {
+      	if (alg_id == ACVP_AES_GCM || alg_id == ACVP_AES_CCM) {
             ivlen = (unsigned int)json_object_get_number(groupobj, "ivLen");
         }
         ptlen = (unsigned int)json_object_get_number(groupobj, "ptLen");
@@ -522,7 +521,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
 
             tc_id = (unsigned int)json_object_get_number(testobj, "tcId");
             key = (unsigned char *)json_object_get_string(testobj, "key");
-	    if (dir == ACVP_DIR_ENCRYPT) { 
+	    if (dir == ACVP_DIR_ENCRYPT) {
 		pt = (unsigned char *)json_object_get_string(testobj, "pt");
 		iv = (unsigned char *)json_object_get_string(testobj, "iv");
 	    	if (alg_id != ACVP_AES_GCM && alg_id != ACVP_AES_CCM) {
@@ -562,7 +561,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
              * TODO: this does mallocs, we can probably do the mallocs once for
              *       the entire vector set to be more efficient
              */
-            acvp_aes_init_tc(ctx, &stc, tc_id, test_type, key, pt, ct, iv, tag, aad, 
+            acvp_aes_init_tc(ctx, &stc, tc_id, test_type, key, pt, ct, iv, tag, aad,
 		             keylen, ivlen, ptlen, aadlen, taglen, alg_id, dir);
 
 	    /* If Monte Carlo start that here */
@@ -608,11 +607,14 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
     }
     json_array_append_value(reg_arry, r_vs_val);
 
+    json_result = json_serialize_to_string_pretty(ctx->kat_resp);
     if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
-        printf("\n\n%s\n\n", json_serialize_to_string_pretty(ctx->kat_resp));
+        printf("\n\n%s\n\n", json_result);
     } else {
-        ACVP_LOG_INFO("\n\n%s\n\n", json_serialize_to_string_pretty(ctx->kat_resp));
+        ACVP_LOG_INFO("\n\n%s\n\n", json_result);
     }
+    json_free_serialized_string(json_result);
+
     return ACVP_SUCCESS;
 }
 
@@ -622,7 +624,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
  * file that will be uploaded to the server.  This routine handles
  * the JSON processing for a single test case.
  */
-static ACVP_RESULT acvp_aes_output_tc(ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *stc, 
+static ACVP_RESULT acvp_aes_output_tc(ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *stc,
        		                      JSON_Object *tc_rsp, ACVP_RESULT tag_rv)
 {
     ACVP_RESULT rv;
@@ -656,7 +658,7 @@ static ACVP_RESULT acvp_aes_output_tc(ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *stc,
 	json_object_set_string(tc_rsp, "ct", tmp);
 
 	/*
-	 * AES-GCM ciphers need to include the tag 
+	 * AES-GCM ciphers need to include the tag
 	 */
 	if (stc->cipher == ACVP_AES_GCM) {
 	    memset(tmp, 0x0, ACVP_SYM_CT_MAX);
@@ -668,7 +670,7 @@ static ACVP_RESULT acvp_aes_output_tc(ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *stc,
 	    json_object_set_string(tc_rsp, "tag", tmp);
 	}
     } else {
-	if ((stc->cipher == ACVP_AES_GCM || stc->cipher == ACVP_AES_CCM) && 
+	if ((stc->cipher == ACVP_AES_GCM || stc->cipher == ACVP_AES_CCM) &&
 	    (tag_rv == ACVP_CRYPTO_TAG_FAIL)) {
 	    	json_object_set_boolean(tc_rsp, "decryptFail", 1);
 		return ACVP_SUCCESS;
@@ -798,7 +800,7 @@ static ACVP_RESULT acvp_aes_init_tc(ACVP_CTX *ctx,
     stc->key_len = key_len;
     stc->iv_len = iv_len/8;
     stc->pt_len = pt_len/8;
-    stc->ct_len = pt_len/8; 
+    stc->ct_len = pt_len/8;
     stc->tag_len = tag_len/8;
     stc->aad_len = aad_len/8;
 
