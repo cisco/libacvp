@@ -245,6 +245,8 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx)
                             cap_entry = cap_e2;
                             break;
                         case ACVP_HASH_TYPE:
+			    free(cap_entry);
+                            cap_entry = cap_e2;
                             break;
                         case ACVP_DRBG_TYPE:
                             cap_e2 = cap_entry->next;
@@ -1818,26 +1820,44 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
     /*
      * Set the supported tag lengths (for AEAD ciphers)
      */
-    json_object_set_value(cap_obj, "tagLen", json_value_init_array());
-    opts_arr = json_object_get_array(cap_obj, "tagLen");
-    sl_list = cap_entry->cap.sym_cap->taglen;
-    while (sl_list) {
-	json_array_append_number(opts_arr, sl_list->length);
-	sl_list = sl_list->next;
+    if ((cap_entry->cipher == ACVP_AES_GCM) || (cap_entry->cipher == ACVP_AES_CCM)) {
+        json_object_set_value(cap_obj, "tagLen", json_value_init_array());
+    	opts_arr = json_object_get_array(cap_obj, "tagLen");
+    	sl_list = cap_entry->cap.sym_cap->taglen;
+    	while (sl_list) {
+	   json_array_append_number(opts_arr, sl_list->length);
+	   sl_list = sl_list->next;
+        }
     }
-
 
     /*
      * Set the supported IV lengths
      */
-    json_object_set_value(cap_obj, "ivLen", json_value_init_array());
-    opts_arr = json_object_get_array(cap_obj, "ivLen");
-    sl_list = cap_entry->cap.sym_cap->ivlen;
-    while (sl_list) {
-	json_array_append_number(opts_arr, sl_list->length);
-	sl_list = sl_list->next;
-    }
-
+    switch (cap_entry->cipher) 
+        {
+        case ACVP_TDES_ECB:
+        case ACVP_TDES_CBC:
+        case ACVP_TDES_CBCI:
+        case ACVP_TDES_OFB:
+        case ACVP_TDES_OFBI:
+        case ACVP_TDES_CFB1:
+        case ACVP_TDES_CFB8:
+        case ACVP_TDES_CFB64:
+        case ACVP_TDES_CFBP1:
+        case ACVP_TDES_CFBP8:
+        case ACVP_TDES_CFBP64:
+        case ACVP_TDES_CTR:
+    	case ACVP_TDES_KW:
+	    break;
+	default:
+    	    json_object_set_value(cap_obj, "ivLen", json_value_init_array());
+    	    opts_arr = json_object_get_array(cap_obj, "ivLen");
+    	    sl_list = cap_entry->cap.sym_cap->ivlen;
+    	    while (sl_list) {
+	        json_array_append_number(opts_arr, sl_list->length);
+		sl_list = sl_list->next;
+            }
+        }
     /*
      * Set the supported plaintext lengths
      */
@@ -1852,14 +1872,15 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
     /*
      * Set the supported AAD lengths (for AEAD ciphers)
      */
-    json_object_set_value(cap_obj, "aadLen", json_value_init_array());
-    opts_arr = json_object_get_array(cap_obj, "aadLen");
-    sl_list = cap_entry->cap.sym_cap->aadlen;
-    while (sl_list) {
-	json_array_append_number(opts_arr, sl_list->length);
-	sl_list = sl_list->next;
+    if ((cap_entry->cipher == ACVP_AES_GCM) || (cap_entry->cipher == ACVP_AES_CCM)) {
+        json_object_set_value(cap_obj, "aadLen", json_value_init_array());
+    	opts_arr = json_object_get_array(cap_obj, "aadLen");
+    	sl_list = cap_entry->cap.sym_cap->aadlen;
+    	while (sl_list) {
+	    json_array_append_number(opts_arr, sl_list->length);
+	    sl_list = sl_list->next;
+        }
     }
-
     return ACVP_SUCCESS;
 }
 
@@ -2290,10 +2311,10 @@ ACVP_RESULT acvp_register(ACVP_CTX *ctx)
         return rv;
     }
 
-    if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
+    if (ctx->debug == ACVP_LOG_LVL_STATUS) {
         printf("\nPOST %s\n", reg);
     } else {
-        ACVP_LOG_STATUS("POST %s", reg);
+        ACVP_LOG_INFO("POST %s", reg);
     }
     /*
      * Send the capabilities to the ACVP server and get the response,
@@ -2867,12 +2888,10 @@ static ACVP_RESULT acvp_get_result_vsid(ACVP_CTX *ctx, int vs_id)
     JSON_Value *val;
     JSON_Object *obj = NULL;
     char *json_buf;
-    int retry_count = 10;
+    int retry_count = 900; /* 15 minutes*/
     int retry = 1;
-    JSON_Object *resobj = NULL;
 
-    //TODO: do we want to limit the number of retries?
-    while (retry && retry_count) {
+    while (retry && (retry_count > 0)) {
         /*
          * Get the KAT vector set
          */
@@ -2901,18 +2920,8 @@ static ACVP_RESULT acvp_get_result_vsid(ACVP_CTX *ctx, int vs_id)
         unsigned int retry_period = json_object_get_number(obj, "retry");
         if (retry_period) {
             rv = acvp_retry_handler(ctx, retry_period);
+    	    retry_count -= retry_period;
         } else {
-
-            resobj = json_object_get_object(obj, "results");
-
-	    /* treat incomplete as retry for now */
-            char *disposition = (char *)json_object_get_string(resobj, "disposition");
-	    if (disposition && !strcmp(disposition, "incomplete")) {
-	        rv = ACVP_KAT_DOWNLOAD_RETRY;
-	    	ACVP_LOG_STATUS("\nVector Set results incomplete, sleep and retry");
-	    	sleep(30);
-	    	retry_count--;
-            }
 	    /*
 	     * Parse the JSON response from the server, if the vector set failed,
 	     * then pull out the reason code and log it.
