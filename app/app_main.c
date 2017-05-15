@@ -1542,7 +1542,7 @@ static ACVP_RESULT app_sha_handler(ACVP_TEST_CASE *test_case)
 static ACVP_RESULT app_hmac_handler(ACVP_TEST_CASE *test_case)
 {
     ACVP_HMAC_TC	*tc;
-    const EVP_MD	*mac;
+    const EVP_MD	*md;
     HMAC_CTX       hmac_ctx;
     int msg_len;
 
@@ -1554,19 +1554,19 @@ static ACVP_RESULT app_hmac_handler(ACVP_TEST_CASE *test_case)
 
     switch (tc->cipher) {
     case ACVP_HMAC_SHA1:
-      mac = EVP_sha1();
+      md = EVP_sha1();
       break;
     case ACVP_HMAC_SHA2_224:
-      mac = EVP_sha224();
+      md = EVP_sha224();
       break;
     case ACVP_HMAC_SHA2_256:
-      mac = EVP_sha256();
+      md = EVP_sha256();
       break;
     case ACVP_HMAC_SHA2_384:
-      mac = EVP_sha384();
+      md = EVP_sha384();
       break;
     case ACVP_HMAC_SHA2_512:
-      mac = EVP_sha512();
+      md = EVP_sha512();
       break;
     default:
     	printf("Error: Unsupported hash algorithm requested by ACVP server\n");
@@ -1577,7 +1577,7 @@ static ACVP_RESULT app_hmac_handler(ACVP_TEST_CASE *test_case)
     HMAC_CTX_init(&hmac_ctx);
     msg_len = tc->msg_len;
 
-    if (!HMAC_Init_ex(&hmac_ctx, tc->key, tc->key_len, mac, NULL)) {
+    if (!HMAC_Init_ex(&hmac_ctx, tc->key, tc->key_len, md, NULL)) {
         printf("\nCrypto module error, HMAC_Init_ex failed\n");
         return ACVP_CRYPTO_MODULE_FAIL;
     }
