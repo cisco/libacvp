@@ -212,7 +212,9 @@ ACVP_RESULT acvp_hmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
              * TODO: this does mallocs, we can probably do the mallocs once for
              *       the entire vector set to be more efficient
              */
-            msglen = strnlen((const char *)msg, ACVP_HMAC_MSG_MAX) / 2;
+            if (msglen == 0) {
+                msglen = strnlen((const char *)msg, ACVP_HMAC_MSG_MAX) / 2;
+            }
             acvp_hmac_init_tc(ctx, &stc, tc_id, msglen, msg, keyLen, key, alg_id);
 
             /* Process the current test vector... */
