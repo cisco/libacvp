@@ -21,8 +21,8 @@ static ACVP_RESULT acvp_hmac_init_tc(ACVP_CTX *ctx,
 
     stc->msg = calloc(1, ACVP_HMAC_MSG_MAX);
     if (!stc->msg) return ACVP_MALLOC_FAIL;
-    stc->md = calloc(1, ACVP_HMAC_MD_MAX);
-    if (!stc->md) return ACVP_MALLOC_FAIL;
+    stc->mac = calloc(1, ACVP_HMAC_MAC_MAX);
+    if (!stc->mac) return ACVP_MALLOC_FAIL;
     stc->key = calloc(1, ACVP_HMAC_KEY_MAX);
     if (!stc->key) return ACVP_MALLOC_FAIL;
 
@@ -62,12 +62,12 @@ static ACVP_RESULT acvp_hmac_output_tc(ACVP_CTX *ctx, ACVP_HMAC_TC *stc, JSON_Ob
         return ACVP_MALLOC_FAIL;
     }
 
-    rv = acvp_bin_to_hexstr(stc->md, stc->md_len, (unsigned char*)tmp);
+    rv = acvp_bin_to_hexstr(stc->mac, stc->mac_len, (unsigned char*)tmp);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("hex conversion failure (md)");
+        ACVP_LOG_ERR("hex conversion failure (mac)");
         return rv;
     }
-    json_object_set_string(tc_rsp, "md", tmp);
+    json_object_set_string(tc_rsp, "mac", tmp);
 
     free(tmp);
 
@@ -81,7 +81,7 @@ static ACVP_RESULT acvp_hmac_output_tc(ACVP_CTX *ctx, ACVP_HMAC_TC *stc, JSON_Ob
 static ACVP_RESULT acvp_hmac_release_tc(ACVP_HMAC_TC *stc)
 {
     free(stc->msg);
-    free(stc->md);
+    free(stc->mac);
     free(stc->key);
     memset(stc, 0x0, sizeof(ACVP_HMAC_TC));
 
@@ -212,6 +212,7 @@ ACVP_RESULT acvp_hmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
              * TODO: this does mallocs, we can probably do the mallocs once for
              *       the entire vector set to be more efficient
              */
+            msglen = strnlen((const char *)msg, ACVP_HMAC_MSG_MAX) / 2;
             acvp_hmac_init_tc(ctx, &stc, tc_id, msglen, msg, keyLen, key, alg_id);
 
             /* Process the current test vector... */
