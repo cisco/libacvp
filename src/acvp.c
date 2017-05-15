@@ -159,7 +159,7 @@ ACVP_RESULT acvp_create_test_session(ACVP_CTX **ctx,
 /*
  * Free Internal memory for DRBG Data struct
  */
-static void acvp_free_drgb_struct(ACVP_CAPS_LIST* cap_list)
+static void acvp_free_drbg_struct(ACVP_CAPS_LIST* cap_list)
 {
     ACVP_DRBG_CAP       *drbg_cap = cap_list->cap.drbg_cap;
     if (drbg_cap) {
@@ -191,6 +191,39 @@ static void acvp_free_drgb_struct(ACVP_CAPS_LIST* cap_list)
         free(drbg_cap);
         drbg_cap = NULL;
         cap_list->cap.drbg_cap = NULL;
+    }
+}
+
+static void acvp_free_prereqs(ACVP_CAPS_LIST* cap_list) {
+    switch (cap_list->cap_type) {
+        case ACVP_SYM_TYPE:
+            while (cap_list->cap.sym_cap->prereq_vals) {
+                ACVP_SYM_PREREQ_VALS *temp_ptr;
+                temp_ptr = cap_list->cap.sym_cap->prereq_vals;
+                cap_list->cap.sym_cap->prereq_vals = cap_list->cap.sym_cap->prereq_vals->next;
+                free(temp_ptr);
+            }
+            break;
+        case ACVP_HMAC_TYPE:
+            while (cap_list->cap.hmac_cap->prereq_vals) {
+                ACVP_HMAC_PREREQ_VALS *temp_ptr;
+                temp_ptr = cap_list->cap.hmac_cap->prereq_vals;
+                cap_list->cap.hmac_cap->prereq_vals = cap_list->cap.hmac_cap->prereq_vals->next;
+                free(temp_ptr);
+            }
+            break;
+        case ACVP_CMAC_TYPE:
+            while (cap_list->cap.cmac_cap->prereq_vals) {
+                ACVP_CMAC_PREREQ_VALS *temp_ptr;
+                temp_ptr = cap_list->cap.cmac_cap->prereq_vals;
+                cap_list->cap.cmac_cap->prereq_vals = cap_list->cap.cmac_cap->prereq_vals->next;
+                free(temp_ptr);
+            }
+            break;
+        case ACVP_DRBG_TYPE:
+        case ACVP_HASH_TYPE:
+        default:
+            break;
     }
 }
 
@@ -235,22 +268,40 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx)
                 cap_e2 = cap_entry->next;
                 switch (cap_entry->cap_type) {
                         case ACVP_SYM_TYPE:
-                            free(cap_entry->cap.sym_cap);
+                            if (cap_entry->cap.sym_cap->prereq_vals) {
+                                acvp_free_prereqs(cap_entry);
+                            }
                             acvp_cap_free_sl(cap_entry->cap.sym_cap->keylen);
                             acvp_cap_free_sl(cap_entry->cap.sym_cap->ptlen);
                             acvp_cap_free_sl(cap_entry->cap.sym_cap->ivlen);
                             acvp_cap_free_sl(cap_entry->cap.sym_cap->aadlen);
                             acvp_cap_free_sl(cap_entry->cap.sym_cap->taglen);
+                            free(cap_entry->cap.sym_cap);
                             free(cap_entry);
                             cap_entry = cap_e2;
                             break;
                         case ACVP_HASH_TYPE:
-			    free(cap_entry);
+                            free(cap_entry);
                             cap_entry = cap_e2;
                             break;
                         case ACVP_DRBG_TYPE:
-                            cap_e2 = cap_entry->next;
-                            acvp_free_drgb_struct(cap_entry);
+                            acvp_free_drbg_struct(cap_entry);
+                            free(cap_entry);
+                            cap_entry = cap_e2;
+                            break;
+                        case ACVP_HMAC_TYPE:
+                            if (cap_entry->cap.hmac_cap->prereq_vals) {
+                                acvp_free_prereqs(cap_entry);
+                            }
+                            acvp_cap_free_sl(cap_entry->cap.hmac_cap->mac_len);
+                            free(cap_entry);
+                            cap_entry = cap_e2;
+                            break;
+                        case ACVP_CMAC_TYPE:
+                            if (cap_entry->cap.cmac_cap->prereq_vals) {
+                                acvp_free_prereqs(cap_entry);
+                            }
+                            acvp_cap_free_sl(cap_entry->cap.cmac_cap->mac_len);
                             free(cap_entry);
                             cap_entry = cap_e2;
                             break;
@@ -348,7 +399,7 @@ ACVP_RESULT acvp_enable_sym_cipher_cap(
 
     cap = calloc(1, sizeof(ACVP_SYM_CIPHER_CAP));
     if (!cap) {
-	return ACVP_MALLOC_FAIL;
+        return ACVP_MALLOC_FAIL;
     }
 
     //TODO: need to validate that cipher, mode, etc. are valid values
@@ -515,7 +566,7 @@ ACVP_RESULT acvp_enable_hash_cap(
 
     cap = calloc(1, sizeof(ACVP_HASH_CAP));
     if (!cap) {
-	return ACVP_MALLOC_FAIL;
+        return ACVP_MALLOC_FAIL;
     }
 
     //TODO: need to validate that cipher, mode, etc. are valid values
@@ -1833,7 +1884,7 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
     /*
      * Set the supported IV lengths
      */
-    switch (cap_entry->cipher) 
+    switch (cap_entry->cipher)
         {
         case ACVP_TDES_ECB:
         case ACVP_TDES_CBC:
@@ -2168,6 +2219,7 @@ static ACVP_RESULT acvp_build_register(ACVP_CTX *ctx, char **reg)
     json_object_set_string(dep_obj, "name", "Linux 3.1");
     json_object_set_string(dep_obj, "cpe", "cpe-2.3:o:ubuntu:linux:3.1");
     json_array_append_value(dep_array_val, dep_val);
+    json_value_free(dep_obj);
 
     dep_val = json_value_init_object();
     dep_obj = json_value_get_object(dep_val);
@@ -2177,6 +2229,7 @@ static ACVP_RESULT acvp_build_register(ACVP_CTX *ctx, char **reg)
     json_object_set_string(dep_obj, "name", "Xeon");
     json_object_set_string(dep_obj, "series", "5100");
     json_array_append_value(dep_array_val, dep_val);
+    json_value_free(dep_obj);
 
     dep_val = json_value_init_object();
     dep_obj = json_value_get_object(dep_val);
@@ -2258,7 +2311,7 @@ static ACVP_RESULT acvp_build_register(ACVP_CTX *ctx, char **reg)
                 acvp_build_cmac_register_cap(cap_obj, cap_entry);
                 break;
             default:
-	        ACVP_LOG_ERR("Cap entry not found, %d.", cap_entry->cipher);
+                ACVP_LOG_ERR("Cap entry not found, %d.", cap_entry->cipher);
                 return ACVP_NO_CAP;
             }
 
@@ -2266,9 +2319,9 @@ static ACVP_RESULT acvp_build_register(ACVP_CTX *ctx, char **reg)
              * Now that we've built up the JSON for this capability,
              * add it to the array of capabilities on the register message.
              */
-	    json_array_append_value(caps_arr, cap_val);
+            json_array_append_value(caps_arr, cap_val);
 
-	    /* Advance to next cap entry */
+            /* Advance to next cap entry */
             cap_entry = cap_entry->next;
         }
     }
@@ -2282,6 +2335,8 @@ static ACVP_RESULT acvp_build_register(ACVP_CTX *ctx, char **reg)
     //*reg = json_serialize_to_string(val);
     *reg = json_serialize_to_string_pretty(reg_arry_val);
     json_value_free(reg_arry_val);
+    json_value_free(dep_val);
+    json_value_free(dep_obj);
 
     return ACVP_SUCCESS;
 }
@@ -2900,7 +2955,7 @@ static ACVP_RESULT acvp_get_result_vsid(ACVP_CTX *ctx, int vs_id)
             return (rv);
         }
         json_buf = ctx->kat_buf;
- 
+
     	if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
             printf("\n%s\n", ctx->kat_buf);
     	} else {
