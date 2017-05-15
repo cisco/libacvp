@@ -1587,7 +1587,7 @@ static ACVP_RESULT app_hmac_handler(ACVP_TEST_CASE *test_case)
         return ACVP_CRYPTO_MODULE_FAIL;
     }
 
-    if (!HMAC_Final(&hmac_ctx, tc->md, &tc->md_len)) {
+    if (!HMAC_Final(&hmac_ctx, tc->mac, &tc->mac_len)) {
         printf("\nCrypto module error, HMAC_Final failed\n");
         return ACVP_CRYPTO_MODULE_FAIL;
     }
