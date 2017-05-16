@@ -361,9 +361,9 @@ static void acvp_cap_free_sl(ACVP_SL_LIST *list)
     ACVP_SL_LIST *tmp;
 
     while(top) {
-	tmp = top;
-	top = top->next;
-	free(tmp);
+        tmp = top;
+        top = top->next;
+        free(tmp);
     }
 }
 
@@ -2229,7 +2229,6 @@ static ACVP_RESULT acvp_build_register(ACVP_CTX *ctx, char **reg)
     json_object_set_string(dep_obj, "name", "Linux 3.1");
     json_object_set_string(dep_obj, "cpe", "cpe-2.3:o:ubuntu:linux:3.1");
     json_array_append_value(dep_array_val, dep_val);
-    json_value_free(dep_obj);
 
     dep_val = json_value_init_object();
     dep_obj = json_value_get_object(dep_val);
@@ -2239,7 +2238,6 @@ static ACVP_RESULT acvp_build_register(ACVP_CTX *ctx, char **reg)
     json_object_set_string(dep_obj, "name", "Xeon");
     json_object_set_string(dep_obj, "series", "5100");
     json_array_append_value(dep_array_val, dep_val);
-    json_value_free(dep_obj);
 
     dep_val = json_value_init_object();
     dep_obj = json_value_get_object(dep_val);
@@ -2346,7 +2344,6 @@ static ACVP_RESULT acvp_build_register(ACVP_CTX *ctx, char **reg)
     *reg = json_serialize_to_string_pretty(reg_arry_val);
     json_value_free(reg_arry_val);
     json_value_free(dep_val);
-    json_value_free(dep_obj);
 
     return ACVP_SUCCESS;
 }

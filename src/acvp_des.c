@@ -613,10 +613,6 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
 
             /* Append the test response value to array */
             json_array_append_value(r_tarr, r_tval);
-            free(key);
-            free(key1);
-            free(key2);
-            free(key3);
         }
     }
 
