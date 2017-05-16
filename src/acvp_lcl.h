@@ -144,7 +144,7 @@
 #define ACVP_HASH_MD_MAX        64
 
 #define ACVP_HMAC_MSG_MAX       1024
-#define ACVP_HMAC_MD_MAX        64
+#define ACVP_HMAC_MAC_MAX       64
 #define ACVP_HMAC_KEY_MAX       256
 
 #define ACVP_CMAC_MSG_MAX       1024

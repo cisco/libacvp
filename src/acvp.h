@@ -399,8 +399,8 @@ typedef struct acvp_hmac_tc_t {
     unsigned int  tc_id;    /* Test case id */
     unsigned char *msg;
     unsigned int  msg_len;
-    unsigned char *md; /* The resulting digest calculated for the test case */
-    unsigned int  md_len;
+    unsigned char *mac; /* The resulting digest calculated for the test case */
+    unsigned int  mac_len;
     unsigned int  key_len;
     unsigned char *key;
 } ACVP_HMAC_TC;
