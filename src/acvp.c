@@ -281,6 +281,7 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx)
                             cap_entry = cap_e2;
                             break;
                         case ACVP_HASH_TYPE:
+                            free(cap_entry->cap.hash_cap);
                             free(cap_entry);
                             cap_entry = cap_e2;
                             break;
@@ -294,6 +295,7 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx)
                                 acvp_free_prereqs(cap_entry);
                             }
                             acvp_cap_free_sl(cap_entry->cap.hmac_cap->mac_len);
+                            free(cap_entry->cap.hmac_cap);
                             free(cap_entry);
                             cap_entry = cap_e2;
                             break;
@@ -302,6 +304,7 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx)
                                 acvp_free_prereqs(cap_entry);
                             }
                             acvp_cap_free_sl(cap_entry->cap.cmac_cap->mac_len);
+                            free(cap_entry->cap.cmac_cap);
                             free(cap_entry);
                             cap_entry = cap_e2;
                             break;
