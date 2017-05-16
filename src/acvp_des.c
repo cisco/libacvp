@@ -146,10 +146,10 @@ static ACVP_RESULT acvp_des_output_mct_tc(ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *stc
                                           JSON_Object *r_tobj)
 {
     ACVP_RESULT rv;
-    char *tmp;
-    char *tmp1;
-    char *tmp2;
-    char *tmp3;
+    char *tmp = NULL;
+    char *tmp1 = NULL;
+    char *tmp2 = NULL;
+    char *tmp3 = NULL;
 
     tmp = calloc(1, ACVP_SYM_CT_MAX);
     if (!tmp) {
@@ -396,7 +396,7 @@ static ACVP_RESULT acvp_des_mct_tc(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap,
 ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
 {
     unsigned int tc_id, keylen, ivlen, ptlen;
-    unsigned char *     key, *pt = NULL, *ct = NULL, *iv = NULL;
+    unsigned char *     key = NULL, *pt = NULL, *ct = NULL, *iv = NULL;
     unsigned char 	*key1, *key2, *key3;
     JSON_Value *        groupval;
     JSON_Object         *groupobj = NULL;
@@ -589,22 +589,22 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
                 }
             } else {
 
-            /* Process the current DES encrypt test vector... */
-            rv = (cap->crypto_handler)(&tc);
-            if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("crypto module failed the operation");
-                return ACVP_CRYPTO_MODULE_FAIL;
-            }
+                /* Process the current DES encrypt test vector... */
+                rv = (cap->crypto_handler)(&tc);
+                if (rv != ACVP_SUCCESS) {
+                    ACVP_LOG_ERR("crypto module failed the operation");
+                    return ACVP_CRYPTO_MODULE_FAIL;
+                }
 
-            /*
-             * Output the test case results using JSON
-             */
-            rv = acvp_des_output_tc(ctx, &stc, r_tobj);
-            if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("JSON output failure in 3DES module");
-                return rv;
+                /*
+                 * Output the test case results using JSON
+                 */
+                rv = acvp_des_output_tc(ctx, &stc, r_tobj);
+                if (rv != ACVP_SUCCESS) {
+                    ACVP_LOG_ERR("JSON output failure in 3DES module");
+                    return rv;
+                }
             }
-	}
 
             /*
              * Release all the memory associated with the test case
@@ -613,6 +613,10 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
 
             /* Append the test response value to array */
             json_array_append_value(r_tarr, r_tval);
+            free(key);
+            free(key1);
+            free(key2);
+            free(key3);
         }
     }
 

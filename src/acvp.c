@@ -420,19 +420,23 @@ ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_SYM_CIPH_PARM parm, int val
       if (value == 128 || value == 168 || value == 192 || value == 256) {
         retval = ACVP_SUCCESS;
       }
+      break;
     case ACVP_SYM_CIPH_TAGLEN:
       if (value >= 4 && value <= 128) {
         retval = ACVP_SUCCESS;
       }
+      break;
     case ACVP_SYM_CIPH_IVLEN:
       if (value >= 8 && value <= 1024) {
         retval = ACVP_SUCCESS;
       }
+      break;
     case ACVP_SYM_CIPH_AADLEN:
     case ACVP_SYM_CIPH_PTLEN:
       if (value >= 0 && value <= 65536) {
         retval = ACVP_SUCCESS;
       }
+      break;
     default:
       break;
   }
@@ -659,11 +663,13 @@ ACVP_RESULT acvp_validate_hmac_parm_value(ACVP_HMAC_PARM parm, int value) {
       if (value >= 0 && value <= 65536) {
         retval = ACVP_SUCCESS;
       }
+      break;
     case ACVP_HMAC_KEYBLOCK:
     case ACVP_HMAC_IN_EMPTY:
       if (value == 0 || value == 1) {
         retval = ACVP_SUCCESS;
       }
+      break;
     default:
       break;
   }
@@ -809,10 +815,12 @@ ACVP_RESULT acvp_validate_cmac_parm_value(ACVP_CMAC_PARM parm, int value) {
       if (value >= 0 && value <= 65536) {
         retval = ACVP_SUCCESS;
       }
+      break;
     case ACVP_CMAC_IN_EMPTY:
       if (value == 0 || value == 1) {
         retval = ACVP_SUCCESS;
       }
+      break;
     default:
       break;
   }
@@ -955,6 +963,7 @@ ACVP_RESULT acvp_validate_drbg_parm_value(ACVP_DRBG_PARM parm, int value) {
       if (value == 0 || value == 1) {
         retval = ACVP_SUCCESS;
       }
+      break;
     case ACVP_DRBG_ENTROPY_LEN:
     case ACVP_DRBG_NONCE_LEN:
     case ACVP_DRBG_PERSO_LEN:
@@ -963,6 +972,7 @@ ACVP_RESULT acvp_validate_drbg_parm_value(ACVP_DRBG_PARM parm, int value) {
     case ACVP_DRBG_PRE_REQ_VALS:
       // TODO: add proper validation for these parameters
       retval = ACVP_SUCCESS;
+      break;
     default:
       break;
   }
