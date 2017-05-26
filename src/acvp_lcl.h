@@ -93,7 +93,7 @@
 #define ACVP_ALG_HASHDRBG            "hashDRBG"
 #define ACVP_ALG_HMACDRBG            "hmacDRBG"
 #define ACVP_ALG_CTRDRBG             "ctrDRBG"
-#define ACVP_ALG_HMAC_SHA1           "HMAC-SHA1"
+#define ACVP_ALG_HMAC_SHA1           "HMAC-SHA-1"
 #define ACVP_ALG_HMAC_SHA2_224       "HMAC-SHA2-224"
 #define ACVP_ALG_HMAC_SHA2_256       "HMAC-SHA2-256"
 #define ACVP_ALG_HMAC_SHA2_384       "HMAC-SHA2-384"
