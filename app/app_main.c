@@ -599,13 +599,13 @@ int main(int argc, char **argv)
      */
     rv = acvp_enable_hmac_cap(ctx, ACVP_HMAC_SHA1, &app_hmac_handler);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA1, ACVP_HMAC_KEYRANGE1_MIN, 0);
+    rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA1, ACVP_HMAC_KEYRANGE1_MIN, 32);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA1, ACVP_HMAC_KEYRANGE1_MAX, 65536);
+    rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA1, ACVP_HMAC_KEYRANGE1_MAX, 56);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA1, ACVP_HMAC_KEYRANGE2_MIN, 0);
+    rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA1, ACVP_HMAC_KEYRANGE2_MIN, 192);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA1, ACVP_HMAC_KEYRANGE2_MAX, 65536);
+    rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA1, ACVP_HMAC_KEYRANGE2_MAX, 256);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA1, ACVP_HMAC_KEYBLOCK, 0);
     CHECK_ENABLE_CAP_RV(rv);
@@ -618,13 +618,13 @@ int main(int argc, char **argv)
 
     rv = acvp_enable_hmac_cap(ctx, ACVP_HMAC_SHA2_224, &app_hmac_handler);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA2_224, ACVP_HMAC_KEYRANGE1_MIN, 0);
+    rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA2_224, ACVP_HMAC_KEYRANGE1_MIN, 32);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA2_224, ACVP_HMAC_KEYRANGE1_MAX, 65536);
+    rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA2_224, ACVP_HMAC_KEYRANGE1_MAX, 56);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA2_224, ACVP_HMAC_KEYRANGE2_MIN, 0);
+    rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA2_224, ACVP_HMAC_KEYRANGE2_MIN, 192);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA2_224, ACVP_HMAC_KEYRANGE2_MAX, 65536);
+    rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA2_224, ACVP_HMAC_KEYRANGE2_MAX, 256);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA2_224, ACVP_HMAC_KEYBLOCK, 0);
     CHECK_ENABLE_CAP_RV(rv);
@@ -637,13 +637,13 @@ int main(int argc, char **argv)
 
     rv = acvp_enable_hmac_cap(ctx, ACVP_HMAC_SHA2_256, &app_hmac_handler);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA2_256, ACVP_HMAC_KEYRANGE1_MIN, 0);
+    rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA2_256, ACVP_HMAC_KEYRANGE1_MIN, 32);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA2_256, ACVP_HMAC_KEYRANGE1_MAX, 65536);
+    rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA2_256, ACVP_HMAC_KEYRANGE1_MAX, 56);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA2_256, ACVP_HMAC_KEYRANGE2_MIN, 0);
+    rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA2_256, ACVP_HMAC_KEYRANGE2_MIN, 192);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA2_256, ACVP_HMAC_KEYRANGE2_MAX, 65536);
+    rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA2_256, ACVP_HMAC_KEYRANGE2_MAX, 256);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA2_256, ACVP_HMAC_KEYBLOCK, 0);
     CHECK_ENABLE_CAP_RV(rv);
@@ -656,13 +656,13 @@ int main(int argc, char **argv)
 
     rv = acvp_enable_hmac_cap(ctx, ACVP_HMAC_SHA2_384, &app_hmac_handler);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA2_384, ACVP_HMAC_KEYRANGE1_MIN, 0);
+    rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA2_384, ACVP_HMAC_KEYRANGE1_MIN, 32);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA2_384, ACVP_HMAC_KEYRANGE1_MAX, 65536);
+    rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA2_384, ACVP_HMAC_KEYRANGE1_MAX, 56);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA2_384, ACVP_HMAC_KEYRANGE2_MIN, 0);
+    rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA2_384, ACVP_HMAC_KEYRANGE2_MIN, 192);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA2_384, ACVP_HMAC_KEYRANGE2_MAX, 65536);
+    rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA2_384, ACVP_HMAC_KEYRANGE2_MAX, 256);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA2_384, ACVP_HMAC_KEYBLOCK, 0);
     CHECK_ENABLE_CAP_RV(rv);
@@ -675,13 +675,13 @@ int main(int argc, char **argv)
 
     rv = acvp_enable_hmac_cap(ctx, ACVP_HMAC_SHA2_512, &app_hmac_handler);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA2_512, ACVP_HMAC_KEYRANGE1_MIN, 0);
+    rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA2_512, ACVP_HMAC_KEYRANGE1_MIN, 32);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA2_512, ACVP_HMAC_KEYRANGE1_MAX, 65536);
+    rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA2_512, ACVP_HMAC_KEYRANGE1_MAX, 56);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA2_512, ACVP_HMAC_KEYRANGE2_MIN, 0);
+    rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA2_512, ACVP_HMAC_KEYRANGE2_MIN, 192);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA2_512, ACVP_HMAC_KEYRANGE2_MAX, 65536);
+    rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA2_512, ACVP_HMAC_KEYRANGE2_MAX, 256);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA2_512, ACVP_HMAC_KEYBLOCK, 0);
     CHECK_ENABLE_CAP_RV(rv);
