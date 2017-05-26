@@ -53,6 +53,7 @@ typedef struct SessionHandle_ {
     char		    *ca_file;
     int			    ssl_verify_peer; /* 1 to verify, zero to skip verification at SSL layer */
     int			    ssl_verify_hostname; /* 1 to verify server hostname against certfication */
+    int			    ssl_certinfo; /* 1 to collect TLS peer certificate info */
     char		    *ssl_cert_file;
     char		    *ssl_cert_type;  /* "PEM" and "DER" are valid values */
     char		    *ssl_key_file;
