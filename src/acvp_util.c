@@ -292,6 +292,41 @@ ACVP_DRBG_CAP_MODE_LIST* acvp_locate_drbg_mode_entry(ACVP_CAPS_LIST *cap, ACVP_D
     return NULL;
 }
 
+/*
+ * This function is used to locate the callback function that's needed
+ * when a particular crypto operation is needed by libacvp.
+ */
+ACVP_RSA_CAP_MODE_LIST* acvp_locate_rsa_mode_entry(ACVP_CAPS_LIST *cap, ACVP_RSA_MODE mode)
+{
+    ACVP_RSA_CAP_MODE_LIST *cap_mode_list;
+    ACVP_RSA_MODE          *cap_mode;
+    ACVP_RSA_CAP           *rsa_cap;
+
+    rsa_cap = cap->cap.rsa_cap;
+
+    /*
+     * No entires yet
+     */
+    cap_mode_list = rsa_cap->rsa_cap_mode_list;
+    if (!cap_mode_list) {
+        return NULL;
+    }
+
+    cap_mode = &cap_mode_list->cap_mode;
+    if (!cap_mode) {
+        return NULL;
+    }
+
+    while (cap_mode_list) {
+        if (*cap_mode == mode) {
+            return cap_mode_list;
+        }
+        cap_mode_list = rsa_cap->rsa_cap_mode_list->next;
+        cap_mode = &cap_mode_list->cap_mode;
+    }
+    return NULL;
+}
+
 unsigned int yes_or_no(ACVP_CTX *ctx, const char *text)
 {
     unsigned int result;

@@ -47,6 +47,7 @@
 #include <openssl/err.h>
 #include <openssl/hmac.h>
 #include <openssl/cmac.h>
+#include <openssl/rsa.h>
 
 #ifdef ACVP_NO_RUNTIME
 #include "app_lcl.h"
@@ -63,15 +64,22 @@ static ACVP_RESULT app_des_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_sha_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_hmac_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_cmac_handler(ACVP_TEST_CASE *test_case);
+static ACVP_RESULT app_rsa_handler(ACVP_TEST_CASE *test_case);
 #ifdef ACVP_NO_RUNTIME
 static ACVP_RESULT app_drbg_handler(ACVP_TEST_CASE *test_case);
 #endif
 
-#define DEFAULT_SERVER "127.0.0.1"
-#define DEFAULT_PORT 443
-#define DEFAULT_CA_CHAIN "certs/acvp-private-root-ca.crt.pem"
-#define DEFAULT_CERT "certs/sto-labsrv2-client-cert.pem"
-#define DEFAULT_KEY "certs/sto-labsrv2-client-key.pem"
+// #define DEFAULT_SERVER "127.0.0.1"
+// #define DEFAULT_PORT 443
+// #define DEFAULT_CA_CHAIN "certs/acvp-private-root-ca.crt.pem"
+// #define DEFAULT_CERT "certs/sto-labsrv2-client-cert.pem"
+// #define DEFAULT_KEY "certs/sto-labsrv2-client-key.pem"
+
+#define DEFAULT_SERVER "172.18.152.183"
+#define DEFAULT_PORT 8043
+#define DEFAULT_CA_CHAIN "certs/mozzila_trust_anchors.pem"
+#define DEFAULT_CERT "certs/sto-labsrv1-server.crt.pem"
+#define DEFAULT_KEY "certs/sto-labsrv1-server.key.pem"
 
 char *server;
 int port;
@@ -279,6 +287,36 @@ int main(int argc, char **argv)
         exit(1);
     }
 
+    // add fourth param for mode
+    rv = acvp_enable_rsa_cap(ctx, ACVP_RSA, &app_rsa_handler);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_rsa_prereq_cap(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, RSA_SHA, value);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_rsa_cap_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_RAND_PUB_EXP, 1);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_rsa_cap_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_FIXED_PUB_EXP, 1);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_rsa_cap_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_FIXED_PUB_EXP_VAL, 0x10001);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_rsa_cap_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_RAND_PQ, 2);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    rv = acvp_enable_rsa_prov_primes_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_CAPS_PROV_PRIME, MOD_PROV_PRIME_2048, ACVP_RSA_PRIME_SHA_1);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_rsa_prov_primes_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_CAPS_PROV_PRIME, MOD_PROV_PRIME_2048, ACVP_RSA_PRIME_SHA_224);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_rsa_prov_primes_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_CAPS_PROV_PRIME, MOD_PROV_PRIME_2048, ACVP_RSA_PRIME_SHA_512);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_rsa_prov_primes_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_CAPS_PROV_PRIME, MOD_PROV_PRIME_4096, ACVP_RSA_PRIME_SHA_1);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_rsa_prov_primes_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_CAPS_PROV_PRIME, MOD_PROV_PRIME_4096, ACVP_RSA_PRIME_SHA_224);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    rv = acvp_enable_rsa_prob_primes_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_CAPS_PROB_PRIME, MOD_PROB_PRIME_2048);
+    CHECK_ENABLE_CAP_RV(rv);
+
+
+#if 0
     /*
      * We need to register all the crypto module capabilities that will be
      * validated.
@@ -409,7 +447,8 @@ int main(int argc, char **argv)
    CHECK_ENABLE_CAP_RV(rv);
    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CCM, ACVP_SYM_CIPH_AADLEN, 65536);
    CHECK_ENABLE_CAP_RV(rv);
-
+   #endif
+#if 0
 #ifdef ACVP_V04
    /*
     * Enable AES-CFB1 128,192,256 bit key
@@ -691,6 +730,7 @@ int main(int argc, char **argv)
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_hmac_prereq_cap(ctx, ACVP_HMAC_SHA2_512, HMAC_SHA, value);
     CHECK_ENABLE_CAP_RV(rv);
+#endif
 #endif
 
 #ifdef ACVP_NO_RUNTIME
@@ -1646,6 +1686,81 @@ static ACVP_RESULT app_cmac_handler(ACVP_TEST_CASE *test_case)
         return ACVP_CRYPTO_MODULE_FAIL;
     }
     CMAC_CTX_cleanup(cmac_ctx);
+
+    return ACVP_SUCCESS;
+}
+
+static ACVP_RESULT app_rsa_handler(ACVP_TEST_CASE *test_case)
+{
+    ACVP_RSA_TC	*tc;
+    const EVP_MD	*c; // hash alg to use
+    RSA       *rsa;
+    unsigned int mod, e, bitlen1, bitlen2, bitlen3, bitlen4, seed_len;
+    // ACVP_RSA_PRIME_METHOD *prime_method;
+
+    if (!test_case) {
+        return ACVP_INVALID_ARG;
+    }
+
+    // tc = test_case->tc.rsa->mode_tc.keygen;
+    tc = test_case->tc.rsa;
+
+    switch (tc->cipher) {
+    case ACVP_HMAC_SHA1:
+      c = EVP_sha1();
+      break;
+    case ACVP_HMAC_SHA2_224:
+      c = EVP_sha224();
+      break;
+    case ACVP_HMAC_SHA2_256:
+      c = EVP_sha256();
+      break;
+    case ACVP_HMAC_SHA2_384:
+      c = EVP_sha384();
+      break;
+    case ACVP_HMAC_SHA2_512:
+      c = EVP_sha512();
+      break;
+    default:
+    	printf("Error: Unsupported hash algorithm requested by ACVP server\n");
+    	return ACVP_NO_CAP;
+    	break;
+    }
+
+    rsa = RSA_new();
+    mod = tc->mod;
+    e = tc->e;
+    bitlen1 = tc->bitlen1;
+    bitlen2 = tc->bitlen2;
+    bitlen3 = tc->bitlen3;
+    bitlen4 = tc->bitlen4;
+
+    seed_len = tc->seed_len;
+    unsigned int keylen = 32; // UM
+
+    if(!rsa) return ACVP_CRYPTO_MODULE_FAIL;
+    // if(!rsa_generate_key_internal(&rsa->p, &rsa->q, &rsa->n, &rsa->d,
+    //                               tc->seed, seed_len,
+    //                               bitlen1, bitlen2, bitlen3, bitlen4,
+    //                               e, keylen, NULL)) {
+    //   return ACVP_CRYPTO_MODULE_FAIL;
+    // }
+
+    // if (!CMAC_Init(cmac_ctx, tc->key, tc->key_len, c, NULL)) {
+    //     printf("\nCrypto module error, HMAC_Init_ex failed\n");
+    //     return ACVP_CRYPTO_MODULE_FAIL;
+    // }
+    //
+    // if (!CMAC_Update(cmac_ctx, tc->msg, msg_len)) {
+    //     printf("\nCrypto module error, HMAC_Update failed\n");
+    //     return ACVP_CRYPTO_MODULE_FAIL;
+    // }
+    //
+    // if (!CMAC_Final(cmac_ctx, tc->mac, (size_t *)&tc->mac_len)) {
+    //     printf("\nCrypto module error, HMAC_Final failed\n");
+    //     return ACVP_CRYPTO_MODULE_FAIL;
+    // }
+    RSA_free(rsa);
 
     return ACVP_SUCCESS;
 }
