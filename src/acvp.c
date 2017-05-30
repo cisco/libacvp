@@ -1437,7 +1437,7 @@ ACVP_RESULT acvp_enable_rsa_prov_primes_parm (ACVP_CTX *ctx,
     // }
 
     // TODO CHECK PARAMS BEFORE DOING ALL THIS LOOKUP
-    int found = 0;
+    // int found = 0;
     ACVP_RSA_PROV_PRIMES_LIST *current_prime = NULL;
     if(!rsa_cap_mode_list->cap_mode_attrs.keygen->cap_prov_primes_list) {
       rsa_cap_mode_list->cap_mode_attrs.keygen->cap_prov_primes_list = calloc(1, sizeof(ACVP_RSA_PROV_PRIMES_LIST));

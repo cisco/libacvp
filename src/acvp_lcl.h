@@ -111,7 +111,7 @@
 #define ACVP_ALG_CMAC_TDES           "CMAC-TDES"
 
 #define ACVP_ALG_RSA                 "RSA"
-#define ACVP_RSA_KEYGEN         "keyGen"
+#define ACVP_RSA_KEYGEN              "keyGen"
 // TODO CAN PROBABLY CONSOLIDATE THESE STRING algs
 // #define ACVP_RSA_PRIME_SHA_1         "SHA-1"
 // #define ACVP_RSA_PRIME_SHA_224       "SHA-224"
@@ -306,6 +306,11 @@ typedef struct acvp_drbg_capability {
 
 struct acvp_drbg_mode_name_t {
     ACVP_DRBG_MODE  mode;
+    char           *name;
+};
+
+struct acvp_rsa_mode_name_t {
+    ACVP_RSA_MODE  mode;
     char           *name;
 };
 

@@ -1728,14 +1728,14 @@ static ACVP_RESULT app_rsa_handler(ACVP_TEST_CASE *test_case)
     }
 
     rsa = RSA_new();
-    mod = tc->mod;
-    e = tc->e;
-    bitlen1 = tc->bitlen1;
-    bitlen2 = tc->bitlen2;
-    bitlen3 = tc->bitlen3;
-    bitlen4 = tc->bitlen4;
+    mod = tc->keygen_tc->mod;
+    e = tc->keygen_tc->e;
+    bitlen1 = tc->keygen_tc->bitlen1;
+    bitlen2 = tc->keygen_tc->bitlen2;
+    bitlen3 = tc->keygen_tc->bitlen3;
+    bitlen4 = tc->keygen_tc->bitlen4;
 
-    seed_len = tc->seed_len;
+    seed_len = tc->keygen_tc->seed_len;
     unsigned int keylen = 32; // UM
 
     if(!rsa) return ACVP_CRYPTO_MODULE_FAIL;

@@ -472,30 +472,9 @@ typedef struct acvp_cmac_tc_t {
  * for cmac testing.  This data is
  * passed between libacvp and the crypto module.
  */
-// typedef struct acvp_rsa_keygen_tc_t {
-//     ACVP_CIPHER cipher; /* hash algorithm TODO: need to validate that
-//                            this is one of the hashes when we check parms */
-//     unsigned int  tc_id;    /* Test case id */
-//     unsigned int e;
-//     unsigned char *seed;
-//     unsigned int bitlen1;
-//     unsigned int bitlen2;
-//     unsigned int bitlen3;
-//     unsigned int bitlen4;
-//
-//     // ACVP_RSA_PRIME_METHOD prime_method;
-//     unsigned int mod;
-// } ACVP_RSA_KEYGEN_TC;
+typedef struct acvp_rsa_keygen_tc_t {
+    ACVP_RSA_MODE mode; // "keyGen"
 
-typedef struct acvp_rsa_tc_t {
-    // union {
-    //     ACVP_RSA_KEYGEN_TC  *keygen;
-    // } mode_tc;
-    // MAYBE CAN SPLIT THIS OUT later
-
-    ACVP_CIPHER cipher; /* hash algorithm TODO: need to validate that
-                           this is one of the hashes when we check parms */
-    ACVP_RSA_MODE mode;
     unsigned int  tc_id;    /* Test case id */
     unsigned int e;
     unsigned char *seed;
@@ -507,6 +486,18 @@ typedef struct acvp_rsa_tc_t {
 
     // ACVP_RSA_PRIME_METHOD prime_method;
     unsigned int mod;
+} ACVP_RSA_KEYGEN_TC;
+
+typedef struct acvp_rsa_tc_t {
+    // union {
+    //     ACVP_RSA_KEYGEN_TC  *keygen;
+    // } mode_tc;
+    // MAYBE CAN SPLIT THIS OUT later
+
+    ACVP_CIPHER cipher; /* hash algorithm TODO: need to validate that
+                           this is one of the hashes when we check parms */
+    ACVP_RSA_MODE mode; // "keyGen"
+    ACVP_RSA_KEYGEN_TC *keygen_tc;
 } ACVP_RSA_TC;
 
 // typedef struct acvp_rsa_keygen_specs_t {
