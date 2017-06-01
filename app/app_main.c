@@ -48,6 +48,7 @@
 #include <openssl/hmac.h>
 #include <openssl/cmac.h>
 #include <openssl/rsa.h>
+#include <openssl/bn.h>
 
 #ifdef ACVP_NO_RUNTIME
 #include "app_lcl.h"
@@ -287,18 +288,33 @@ int main(int argc, char **argv)
         exit(1);
     }
 
+    BIGNUM *exponent = BN_new();
+    unsigned long m = RSA_F4;
+    if (!BN_set_word(exponent, m)) {
+        printf("Bignum API fail\n");
+        exit(1);
+    }
+
+    char *seed = "fake seed";
+
     // add fourth param for mode
     rv = acvp_enable_rsa_cap(ctx, ACVP_RSA, &app_rsa_handler);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_rsa_prereq_cap(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, RSA_SHA, value);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_cap_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_RAND_PUB_EXP, 1);
-    CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_rsa_cap_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_FIXED_PUB_EXP, 1);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_cap_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_FIXED_PUB_EXP_VAL, 0x10001);
+    rv = acvp_enable_rsa_bignum_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_FIXED_PUB_EXP_VAL, exponent);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_cap_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_RAND_PQ, 2);
+    rv = acvp_enable_rsa_cap_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_KG_BITLEN1, 2);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_rsa_cap_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_KG_BITLEN2, 2);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_rsa_cap_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_KG_BITLEN3, 2);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_rsa_cap_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_KG_BITLEN4, 2);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_rsa_str_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_KG_SEED, seed);
     CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_enable_rsa_prov_primes_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_CAPS_PROV_PRIME, MOD_PROV_PRIME_2048, ACVP_RSA_PRIME_SHA_1);
@@ -313,6 +329,8 @@ int main(int argc, char **argv)
     CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_enable_rsa_prob_primes_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_CAPS_PROB_PRIME, MOD_PROB_PRIME_2048);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_rsa_prob_primes_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_CAPS_PROB_PRIME, PROB_PRIME_TEST_2);
     CHECK_ENABLE_CAP_RV(rv);
 
 
@@ -1695,7 +1713,8 @@ static ACVP_RESULT app_rsa_handler(ACVP_TEST_CASE *test_case)
     ACVP_RSA_TC	*tc;
     const EVP_MD	*c; // hash alg to use
     RSA       *rsa;
-    unsigned int mod, e, bitlen1, bitlen2, bitlen3, bitlen4, seed_len;
+    unsigned int mod, bitlen1, bitlen2, bitlen3, bitlen4, seed_len;
+    BIGNUM e;
     // ACVP_RSA_PRIME_METHOD *prime_method;
 
     if (!test_case) {
@@ -1704,41 +1723,46 @@ static ACVP_RESULT app_rsa_handler(ACVP_TEST_CASE *test_case)
 
     // tc = test_case->tc.rsa->mode_tc.keygen;
     tc = test_case->tc.rsa;
+    switch(tc->mode) {
+    case ACVP_RSA_MODE_KEYGEN:
+        switch (tc->cipher) {
+        case ACVP_HMAC_SHA1:
+          c = EVP_sha1();
+          break;
+        case ACVP_HMAC_SHA2_224:
+          c = EVP_sha224();
+          break;
+        case ACVP_HMAC_SHA2_256:
+          c = EVP_sha256();
+          break;
+        case ACVP_HMAC_SHA2_384:
+          c = EVP_sha384();
+          break;
+        case ACVP_HMAC_SHA2_512:
+          c = EVP_sha512();
+          break;
+        default:
+          printf("Error: Unsupported hash algorithm requested by ACVP server\n");
+          return ACVP_NO_CAP;
+          break;
+        }
 
-    switch (tc->cipher) {
-    case ACVP_HMAC_SHA1:
-      c = EVP_sha1();
-      break;
-    case ACVP_HMAC_SHA2_224:
-      c = EVP_sha224();
-      break;
-    case ACVP_HMAC_SHA2_256:
-      c = EVP_sha256();
-      break;
-    case ACVP_HMAC_SHA2_384:
-      c = EVP_sha384();
-      break;
-    case ACVP_HMAC_SHA2_512:
-      c = EVP_sha512();
-      break;
+        rsa = RSA_new();
+        mod = tc->keygen_tc->mod;
+        e = tc->keygen_tc->e;
+        bitlen1 = tc->keygen_tc->bitlen1;
+        bitlen2 = tc->keygen_tc->bitlen2;
+        bitlen3 = tc->keygen_tc->bitlen3;
+        bitlen4 = tc->keygen_tc->bitlen4;
+
+        seed_len = tc->keygen_tc->seed_len;
+
+        if(!RSA_generate_key_ex(rsa, bitlen1, &e, NULL)) return ACVP_CRYPTO_MODULE_FAIL;
+        break;
     default:
-    	printf("Error: Unsupported hash algorithm requested by ACVP server\n");
-    	return ACVP_NO_CAP;
-    	break;
+        break;
     }
 
-    rsa = RSA_new();
-    mod = tc->keygen_tc->mod;
-    e = tc->keygen_tc->e;
-    bitlen1 = tc->keygen_tc->bitlen1;
-    bitlen2 = tc->keygen_tc->bitlen2;
-    bitlen3 = tc->keygen_tc->bitlen3;
-    bitlen4 = tc->keygen_tc->bitlen4;
-
-    seed_len = tc->keygen_tc->seed_len;
-    unsigned int keylen = 32; // UM
-
-    if(!rsa) return ACVP_CRYPTO_MODULE_FAIL;
     // if(!rsa_generate_key_internal(&rsa->p, &rsa->q, &rsa->n, &rsa->d,
     //                               tc->seed, seed_len,
     //                               bitlen1, bitlen2, bitlen3, bitlen4,
@@ -1746,20 +1770,6 @@ static ACVP_RESULT app_rsa_handler(ACVP_TEST_CASE *test_case)
     //   return ACVP_CRYPTO_MODULE_FAIL;
     // }
 
-    // if (!CMAC_Init(cmac_ctx, tc->key, tc->key_len, c, NULL)) {
-    //     printf("\nCrypto module error, HMAC_Init_ex failed\n");
-    //     return ACVP_CRYPTO_MODULE_FAIL;
-    // }
-    //
-    // if (!CMAC_Update(cmac_ctx, tc->msg, msg_len)) {
-    //     printf("\nCrypto module error, HMAC_Update failed\n");
-    //     return ACVP_CRYPTO_MODULE_FAIL;
-    // }
-    //
-    // if (!CMAC_Final(cmac_ctx, tc->mac, (size_t *)&tc->mac_len)) {
-    //     printf("\nCrypto module error, HMAC_Final failed\n");
-    //     return ACVP_CRYPTO_MODULE_FAIL;
-    // }
     RSA_free(rsa);
 
     return ACVP_SUCCESS;

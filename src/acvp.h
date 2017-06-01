@@ -27,6 +27,7 @@
 * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *****************************************************************************/
+#include <openssl/bn.h>
 #ifndef acvp_h
 #define acvp_h
 
@@ -270,9 +271,14 @@ typedef enum acvp_rsa_param {
     ACVP_RAND_PUB_EXP = 0,
     ACVP_FIXED_PUB_EXP,
     ACVP_FIXED_PUB_EXP_VAL,
+    ACVP_KG_BITLEN1,
+    ACVP_KG_BITLEN2,
+    ACVP_KG_BITLEN3,
+    ACVP_KG_BITLEN4,
     ACVP_RAND_PQ,
     ACVP_CAPS_PROV_PRIME,
-    ACVP_CAPS_PROB_PRIME
+    ACVP_CAPS_PROB_PRIME,
+    ACVP_KG_SEED
 } ACVP_RSA_PARM;
 
 // TODO not sure if these even go here.....
@@ -283,6 +289,12 @@ typedef enum acvp_rsa_param {
 #define MOD_PROB_PRIME_2048     2048
 #define MOD_PROB_PRIME_3072     3072
 #define MOD_PROB_PRIME_4096     4096
+
+#define PROB_PRIME_TEST_2       2
+#define PROB_PRIME_TEST_3       3
+
+#define PROB_PRIME_TEST_2_NAME "tblC2"
+#define PROB_PRIME_TEST_3_NAME "tblC3"
 
 #define ACVP_RSA_PREREQ_SHA      "SHA"
 typedef enum acvp_rsa_pre_req {
@@ -476,7 +488,7 @@ typedef struct acvp_rsa_keygen_tc_t {
     ACVP_RSA_MODE mode; // "keyGen"
 
     unsigned int  tc_id;    /* Test case id */
-    unsigned int e;
+    BIGNUM e;
     unsigned char *seed;
     unsigned int seed_len;
     unsigned int bitlen1;
@@ -763,6 +775,20 @@ ACVP_RESULT acvp_enable_rsa_cap_parm(
                             ACVP_RSA_PARM param,
                             int value
                             );
+
+ACVP_RESULT acvp_enable_rsa_bignum_parm (ACVP_CTX *ctx,
+                             ACVP_CIPHER cipher,
+                             ACVP_RSA_MODE mode,
+                             ACVP_RSA_PARM param,
+                             BIGNUM *value
+                           );
+
+ACVP_RESULT acvp_enable_rsa_str_parm (ACVP_CTX *ctx,
+                            ACVP_CIPHER cipher,
+                            ACVP_RSA_MODE mode,
+                            ACVP_RSA_PARM param,
+                            char *value
+                          );
 
 ACVP_RESULT acvp_enable_rsa_prereq_cap(
                             ACVP_CTX *ctx,

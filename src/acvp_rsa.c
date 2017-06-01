@@ -10,7 +10,7 @@ static ACVP_RESULT acvp_rsa_init_tc(ACVP_CTX *ctx,
                                     ACVP_RSA_TC *stc,
                                     unsigned int tc_id,
                                     unsigned char *seed,
-                                    unsigned int e,
+                                    BIGNUM e,
                                     unsigned int bitlen1,
                                     unsigned int bitlen2,
                                     unsigned int bitlen3,
@@ -121,7 +121,9 @@ ACVP_RESULT acvp_rsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
     ACVP_RSA_MODE       mode_id;
     char *json_result;
 
-    unsigned int e, bitlen1, bitlen2, bitlen3, bitlen4;
+    unsigned int bitlen1, bitlen2, bitlen3, bitlen4;
+    BIGNUM *e;
+    const char *exponent;
 
     if (!alg_str) {
         ACVP_LOG_ERR("ERROR: unable to parse 'algorithm' from JSON");
@@ -208,7 +210,8 @@ ACVP_RESULT acvp_rsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
 
             tc_id = (unsigned int)json_object_get_number(testobj, "tcId");
             seed = (unsigned char *)json_object_get_string(testobj, "seed");
-            e = (unsigned int)json_object_get_number(testobj, "e");
+            exponent = json_object_get_string(testobj, "e");
+            BN_hex2bn(&e, exponent);
             bitlen1 = (unsigned int)json_object_get_number(testobj, "bitlen1");
             bitlen2 = (unsigned int)json_object_get_number(testobj, "bitlen2");
             bitlen3 = (unsigned int)json_object_get_number(testobj, "bitlen3");
@@ -241,7 +244,7 @@ ACVP_RESULT acvp_rsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
             }
             // acvp_rsa_init_tc(ctx, &stc, tc_id, alg_id);
             acvp_rsa_init_tc(ctx, &stc, tc_id, seed,
-                             e, bitlen1, bitlen2, bitlen3, bitlen4,
+                             *e, bitlen1, bitlen2, bitlen3, bitlen4,
                              alg_id);
 
             /* Process the current test vector... */

@@ -156,6 +156,13 @@ ACVP_DRBG_MODE acvp_lookup_drbg_mode_index(const char *mode)
     return ACVP_DRBG_MODE_END;
 }
 
+/* This function checks to see if the value is a valid
+   true / false param */
+ACVP_RESULT is_valid_tf_param(unsigned int value) {
+  if (value == 0 || value == 1) return ACVP_SUCCESS;
+  else return ACVP_INVALID_ARG;
+}
+
 /*
  * This function returns the ID of a DRBG mode given an
  * algorithm name (as defined in the ACVP spec).  It
@@ -165,7 +172,7 @@ ACVP_RSA_MODE acvp_lookup_rsa_mode_index(char *mode)
 {
     int i;
     struct acvp_rsa_mode_name_t rsa_mode_tbl[ACVP_RSA_MODE_END] = {
-            // YIKES THIS IS BACKWARDS FROM DRBG 
+            // YIKES THIS IS BACKWARDS FROM DRBG
             {ACVP_RSA_MODE_KEYGEN, ACVP_RSA_KEYGEN}
     };
 
