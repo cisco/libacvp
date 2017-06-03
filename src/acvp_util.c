@@ -159,8 +159,8 @@ ACVP_DRBG_MODE acvp_lookup_drbg_mode_index(const char *mode)
 /* This function checks to see if the value is a valid
    true / false param */
 ACVP_RESULT is_valid_tf_param(unsigned int value) {
-  if (value == 0 || value == 1) return ACVP_SUCCESS;
-  else return ACVP_INVALID_ARG;
+    if (value == 0 || value == 1) return ACVP_SUCCESS;
+    else return ACVP_INVALID_ARG;
 }
 
 /*

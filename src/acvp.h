@@ -271,14 +271,10 @@ typedef enum acvp_rsa_param {
     ACVP_RAND_PUB_EXP = 0,
     ACVP_FIXED_PUB_EXP,
     ACVP_FIXED_PUB_EXP_VAL,
-    ACVP_KG_BITLEN1,
-    ACVP_KG_BITLEN2,
-    ACVP_KG_BITLEN3,
-    ACVP_KG_BITLEN4,
     ACVP_RAND_PQ,
     ACVP_CAPS_PROV_PRIME,
     ACVP_CAPS_PROB_PRIME,
-    ACVP_KG_SEED
+    ACVP_RSA_INFO_GEN_BY_SERVER
 } ACVP_RSA_PARM;
 
 // TODO not sure if these even go here.....
@@ -509,6 +505,7 @@ typedef struct acvp_rsa_tc_t {
     ACVP_CIPHER cipher; /* hash algorithm TODO: need to validate that
                            this is one of the hashes when we check parms */
     ACVP_RSA_MODE mode; // "keyGen"
+    int info_gen_by_server;
     ACVP_RSA_KEYGEN_TC *keygen_tc;
 } ACVP_RSA_TC;
 

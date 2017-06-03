@@ -70,17 +70,11 @@ static ACVP_RESULT app_rsa_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_drbg_handler(ACVP_TEST_CASE *test_case);
 #endif
 
-// #define DEFAULT_SERVER "127.0.0.1"
-// #define DEFAULT_PORT 443
-// #define DEFAULT_CA_CHAIN "certs/acvp-private-root-ca.crt.pem"
-// #define DEFAULT_CERT "certs/sto-labsrv2-client-cert.pem"
-// #define DEFAULT_KEY "certs/sto-labsrv2-client-key.pem"
-
-#define DEFAULT_SERVER "172.18.152.183"
-#define DEFAULT_PORT 8043
-#define DEFAULT_CA_CHAIN "certs/mozzila_trust_anchors.pem"
-#define DEFAULT_CERT "certs/sto-labsrv1-server.crt.pem"
-#define DEFAULT_KEY "certs/sto-labsrv1-server.key.pem"
+#define DEFAULT_SERVER "127.0.0.1"
+#define DEFAULT_PORT 443
+#define DEFAULT_CA_CHAIN "certs/acvp-private-root-ca.crt.pem"
+#define DEFAULT_CERT "certs/sto-labsrv2-client-cert.pem"
+#define DEFAULT_KEY "certs/sto-labsrv2-client-key.pem"
 
 char *server;
 int port;
@@ -288,15 +282,6 @@ int main(int argc, char **argv)
         exit(1);
     }
 
-    BIGNUM *exponent = BN_new();
-    unsigned long m = RSA_F4;
-    if (!BN_set_word(exponent, m)) {
-        printf("Bignum API fail\n");
-        exit(1);
-    }
-
-    char *seed = "fake seed";
-
     // add fourth param for mode
     rv = acvp_enable_rsa_cap(ctx, ACVP_RSA, &app_rsa_handler);
     CHECK_ENABLE_CAP_RV(rv);
@@ -304,17 +289,18 @@ int main(int argc, char **argv)
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_rsa_cap_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_FIXED_PUB_EXP, 1);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_bignum_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_FIXED_PUB_EXP_VAL, exponent);
+    rv = acvp_enable_rsa_cap_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_RSA_INFO_GEN_BY_SERVER, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_cap_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_KG_BITLEN1, 2);
+    rv = acvp_enable_rsa_cap_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_RAND_PQ, 3);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_cap_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_KG_BITLEN2, 2);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_cap_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_KG_BITLEN3, 2);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_cap_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_KG_BITLEN4, 2);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_str_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_KG_SEED, seed);
+
+    BIGNUM *expo = BN_new();
+    unsigned long mm = RSA_F4;
+    if (!BN_set_word(expo, mm)) {
+        printf("Bignum API fail\n");
+        return ACVP_CRYPTO_MODULE_FAIL;
+    }
+    rv = acvp_enable_rsa_bignum_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_FIXED_PUB_EXP_VAL, expo);
     CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_enable_rsa_prov_primes_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_CAPS_PROV_PRIME, MOD_PROV_PRIME_2048, ACVP_RSA_PRIME_SHA_1);
@@ -332,7 +318,6 @@ int main(int argc, char **argv)
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_rsa_prob_primes_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_CAPS_PROB_PRIME, PROB_PRIME_TEST_2);
     CHECK_ENABLE_CAP_RV(rv);
-
 
 #if 0
     /*
@@ -1714,14 +1699,12 @@ static ACVP_RESULT app_rsa_handler(ACVP_TEST_CASE *test_case)
     const EVP_MD	*c; // hash alg to use
     RSA       *rsa;
     unsigned int mod, bitlen1, bitlen2, bitlen3, bitlen4, seed_len;
-    BIGNUM e;
-    // ACVP_RSA_PRIME_METHOD *prime_method;
-
+    BIGNUM *exponent;
+    char *seed;
     if (!test_case) {
         return ACVP_INVALID_ARG;
     }
 
-    // tc = test_case->tc.rsa->mode_tc.keygen;
     tc = test_case->tc.rsa;
     switch(tc->mode) {
     case ACVP_RSA_MODE_KEYGEN:
@@ -1748,16 +1731,29 @@ static ACVP_RESULT app_rsa_handler(ACVP_TEST_CASE *test_case)
         }
 
         rsa = RSA_new();
-        mod = tc->keygen_tc->mod;
-        e = tc->keygen_tc->e;
-        bitlen1 = tc->keygen_tc->bitlen1;
-        bitlen2 = tc->keygen_tc->bitlen2;
-        bitlen3 = tc->keygen_tc->bitlen3;
-        bitlen4 = tc->keygen_tc->bitlen4;
-
-        seed_len = tc->keygen_tc->seed_len;
-
-        if(!RSA_generate_key_ex(rsa, bitlen1, &e, NULL)) return ACVP_CRYPTO_MODULE_FAIL;
+        if(tc->info_gen_by_server) {
+            mod = tc->keygen_tc->mod;
+            exponent = &(tc->keygen_tc->e);
+            bitlen1 = tc->keygen_tc->bitlen1;
+            bitlen2 = tc->keygen_tc->bitlen2;
+            bitlen3 = tc->keygen_tc->bitlen3;
+            bitlen4 = tc->keygen_tc->bitlen4;
+            seed = tc->keygen_tc->seed;
+            seed_len = strnlen(tc->keygen_tc->seed, 64);
+        } else {
+            exponent = BN_new();
+            unsigned long m = RSA_F4;
+            if (!BN_set_word(exponent, m)) {
+                printf("Bignum API fail\n");
+                return ACVP_CRYPTO_MODULE_FAIL;
+            }
+            seed = "fake seed";
+            bitlen1 = 2;
+            bitlen2 = 2;
+            bitlen3 = 3;
+            bitlen4 = 4;
+        }
+        if(!RSA_generate_key_ex(rsa, bitlen1, exponent, NULL)) return ACVP_CRYPTO_MODULE_FAIL;
         break;
     default:
         break;

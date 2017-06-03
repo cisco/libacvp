@@ -355,29 +355,10 @@ typedef struct acvp_rsa_prereq_vals {
     struct acvp_rsa_prereq_vals *next;
 } ACVP_RSA_PREREQ_VALS;
 
-// typedef struct acvp_rsa_cap_mode {
-//     ACVP_RSA_MODE   mode;  // "keyGen"
-//     int mod;
-//     int fixed_pub_exp; // "yes" or "no"
-//     int fixed_pub_exp_val; // hex value of e
-//     int rand_pub_exp; // "yes" or "no"
-//     int rand_pq; // 1, 2, 3, 4, 5 as defined in FIPS186-4
-//     union {
-//         ACVP_RSA_MODE_KEYGEN *keygen;
-//     } mode;
-//
-// } ACVP_RSA_CAP_MODE;
-
-typedef struct acvp_rsa_mode_keygen_t {
+typedef struct acvp_rsa_keygen_attrs_t {
     ACVP_RSA_MODE   mode;  // "keyGen"
-    int mod;
     int fixed_pub_exp; // "yes" or "no"
     BIGNUM *fixed_pub_exp_val; // hex value of e
-    int bitlen1;
-    int bitlen2;
-    int bitlen3;
-    int bitlen4;
-    char *seed;
     int rand_pub_exp; // "yes" or "no"
     int rand_pq; // 1, 2, 3, 4, 5 as defined in FIPS186-4
     ACVP_RSA_PROV_PRIMES_LIST *cap_prov_primes_list;
@@ -395,6 +376,7 @@ typedef struct acvp_rsa_cap_mode_list_t {
 typedef struct acvp_rsa_capability {
   ACVP_CIPHER               cipher;
   ACVP_RSA_PREREQ_VALS *prereq_vals;
+  int info_gen_by_server; // "yes" or "no"
   ACVP_RSA_CAP_MODE_LIST *rsa_cap_mode_list;
 } ACVP_RSA_CAP;
 
