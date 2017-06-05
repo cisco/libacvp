@@ -484,7 +484,24 @@ typedef struct acvp_rsa_keygen_tc_t {
     ACVP_RSA_MODE mode; // "keyGen"
 
     unsigned int  tc_id;    /* Test case id */
-    BIGNUM e;
+    BIGNUM *e;
+    unsigned char *p_rand;
+    unsigned char *q_rand;
+
+    unsigned char *xp1;
+    unsigned char *xp2;
+    unsigned char *xp;
+
+    unsigned char *xq1;
+    unsigned char *xq2;
+    unsigned char *xq;
+
+    BIGNUM *p;
+    BIGNUM *q;
+    BIGNUM *n;
+    BIGNUM *d;
+    BIGNUM *s;
+
     unsigned char *seed;
     unsigned int seed_len;
     unsigned int bitlen1;
@@ -492,8 +509,13 @@ typedef struct acvp_rsa_keygen_tc_t {
     unsigned int bitlen3;
     unsigned int bitlen4;
 
-    // ACVP_RSA_PRIME_METHOD prime_method;
+    unsigned char *prime_seed_p2;
+    unsigned char *prime_seed_q1;
+    unsigned char *prime_seed_q2;
+
     unsigned int mod;
+    unsigned char *prime_result; // "prime" or "composite"
+    unsigned char *sig_result; // "pass" or "fail"
 } ACVP_RSA_KEYGEN_TC;
 
 typedef struct acvp_rsa_tc_t {
@@ -765,6 +787,11 @@ ACVP_RESULT acvp_enable_rsa_cap(
                                 ACVP_CIPHER cipher,
                                 ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case));
 
+ACVP_RESULT acvp_set_rsa_info_gen_by_server_flag (ACVP_CTX *ctx,
+                             ACVP_CIPHER cipher,
+                             int value
+                           );
+
 ACVP_RESULT acvp_enable_rsa_cap_parm(
                             ACVP_CTX *ctx,
                             ACVP_CIPHER cipher,
@@ -790,7 +817,6 @@ ACVP_RESULT acvp_enable_rsa_str_parm (ACVP_CTX *ctx,
 ACVP_RESULT acvp_enable_rsa_prereq_cap(
                             ACVP_CTX *ctx,
                             ACVP_CIPHER cipher,
-                            ACVP_RSA_MODE mode,
                             ACVP_RSA_PRE_REQ pre_req,
                             char *value
                             );

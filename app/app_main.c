@@ -285,11 +285,11 @@ int main(int argc, char **argv)
     // add fourth param for mode
     rv = acvp_enable_rsa_cap(ctx, ACVP_RSA, &app_rsa_handler);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_prereq_cap(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, RSA_SHA, value);
+    rv = acvp_enable_rsa_prereq_cap(ctx, ACVP_RSA, RSA_SHA, value);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_rsa_cap_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_FIXED_PUB_EXP, 1);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_cap_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_RSA_INFO_GEN_BY_SERVER, 0);
+    rv = acvp_set_rsa_info_gen_by_server_flag(ctx, ACVP_RSA, 0);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_rsa_cap_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_RAND_PQ, 3);
     CHECK_ENABLE_CAP_RV(rv);
@@ -1696,11 +1696,11 @@ static ACVP_RESULT app_cmac_handler(ACVP_TEST_CASE *test_case)
 static ACVP_RESULT app_rsa_handler(ACVP_TEST_CASE *test_case)
 {
     ACVP_RSA_TC	*tc;
-    const EVP_MD	*c; // hash alg to use
+    // const EVP_MD	*c; // hash alg to use
     RSA       *rsa;
-    unsigned int mod, bitlen1, bitlen2, bitlen3, bitlen4, seed_len;
+    unsigned int mod, bitlen1, bitlen2, bitlen3, bitlen4, seed_len, keylen;
     BIGNUM *exponent;
-    char *seed;
+    unsigned char *seed;
     if (!test_case) {
         return ACVP_INVALID_ARG;
     }
@@ -1708,38 +1708,19 @@ static ACVP_RESULT app_rsa_handler(ACVP_TEST_CASE *test_case)
     tc = test_case->tc.rsa;
     switch(tc->mode) {
     case ACVP_RSA_MODE_KEYGEN:
-        switch (tc->cipher) {
-        case ACVP_HMAC_SHA1:
-          c = EVP_sha1();
-          break;
-        case ACVP_HMAC_SHA2_224:
-          c = EVP_sha224();
-          break;
-        case ACVP_HMAC_SHA2_256:
-          c = EVP_sha256();
-          break;
-        case ACVP_HMAC_SHA2_384:
-          c = EVP_sha384();
-          break;
-        case ACVP_HMAC_SHA2_512:
-          c = EVP_sha512();
-          break;
-        default:
-          printf("Error: Unsupported hash algorithm requested by ACVP server\n");
-          return ACVP_NO_CAP;
-          break;
-        }
+
 
         rsa = RSA_new();
         if(tc->info_gen_by_server) {
             mod = tc->keygen_tc->mod;
-            exponent = &(tc->keygen_tc->e);
+            exponent = tc->keygen_tc->e;
             bitlen1 = tc->keygen_tc->bitlen1;
             bitlen2 = tc->keygen_tc->bitlen2;
             bitlen3 = tc->keygen_tc->bitlen3;
             bitlen4 = tc->keygen_tc->bitlen4;
             seed = tc->keygen_tc->seed;
-            seed_len = strnlen(tc->keygen_tc->seed, 64);
+            seed_len = tc->keygen_tc->seed_len;
+            keylen = tc->keygen_tc->mod;
         } else {
             exponent = BN_new();
             unsigned long m = RSA_F4;
@@ -1747,24 +1728,29 @@ static ACVP_RESULT app_rsa_handler(ACVP_TEST_CASE *test_case)
                 printf("Bignum API fail\n");
                 return ACVP_CRYPTO_MODULE_FAIL;
             }
-            seed = "fake seed";
+            seed = (unsigned char *)"fake seed";
             bitlen1 = 2;
             bitlen2 = 2;
             bitlen3 = 3;
             bitlen4 = 4;
+            keylen = 2048;
         }
         if(!RSA_generate_key_ex(rsa, bitlen1, exponent, NULL)) return ACVP_CRYPTO_MODULE_FAIL;
+        // if(!rsa_generate_key_internal(&rsa->p, &rsa->q, &rsa->n, &rsa->d,
+        //                               seed, seed_len,
+        //                               bitlen1, bitlen2, bitlen3, bitlen4,
+        //                               exponent, keylen, NULL)) {
+        //     return ACVP_CRYPTO_MODULE_FAIL;
+        // }
+        tc->keygen_tc->p = rsa->p;
+        tc->keygen_tc->q = rsa->q; // does the s match with the q?
+        tc->keygen_tc->n = rsa->n;
+        tc->keygen_tc->d = rsa->d;
+
         break;
     default:
         break;
     }
-
-    // if(!rsa_generate_key_internal(&rsa->p, &rsa->q, &rsa->n, &rsa->d,
-    //                               tc->seed, seed_len,
-    //                               bitlen1, bitlen2, bitlen3, bitlen4,
-    //                               e, keylen, NULL)) {
-    //   return ACVP_CRYPTO_MODULE_FAIL;
-    // }
 
     RSA_free(rsa);
 

@@ -326,8 +326,8 @@ typedef struct acvp_sa_list_t {
 
 typedef struct acvp_rsa_prov_primes_list {
   //  ACVP_RSA_PROV_PRIME prov_prime_cap;
-   int mod_prov_prime; // 2048, 3072, 4096 -- defined as macros
-   ACVP_SA_LIST *compatible_hashes;
+   int modulo; // 2048, 3072, 4096 -- defined as macros
+   ACVP_SA_LIST *hash_alg;
    struct acvp_rsa_prov_primes_list *next;
 } ACVP_RSA_PROV_PRIMES_LIST;
 
