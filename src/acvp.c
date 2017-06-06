@@ -594,9 +594,8 @@ ACVP_RESULT acvp_validate_hash_parm_value(ACVP_HASH_PARM parm, int value) {
   switch(parm){
     case ACVP_HASH_IN_BIT:
     case ACVP_HASH_IN_EMPTY:
-      if (value == 0 || value == 1) {
-        retval = ACVP_SUCCESS;
-      }
+        retval = is_valid_tf_param(value);
+        break;
     default:
       break;
   }
@@ -675,9 +674,7 @@ ACVP_RESULT acvp_validate_hmac_parm_value(ACVP_HMAC_PARM parm, int value) {
       break;
     case ACVP_HMAC_KEYBLOCK:
     case ACVP_HMAC_IN_EMPTY:
-      if (value == 0 || value == 1) {
-        retval = ACVP_SUCCESS;
-      }
+      retval = is_valid_tf_param(value);
       break;
     default:
       break;
@@ -826,9 +823,7 @@ ACVP_RESULT acvp_validate_cmac_parm_value(ACVP_CMAC_PARM parm, int value) {
       }
       break;
     case ACVP_CMAC_IN_EMPTY:
-      if (value == 0 || value == 1) {
-        retval = ACVP_SUCCESS;
-      }
+      retval = is_valid_tf_param(value);
       break;
     default:
       break;
@@ -969,9 +964,7 @@ ACVP_RESULT acvp_validate_drbg_parm_value(ACVP_DRBG_PARM parm, int value) {
     case ACVP_DRBG_DER_FUNC_ENABLED:
     case ACVP_DRBG_PRED_RESIST_ENABLED:
     case ACVP_DRBG_RESEED_ENABLED:
-      if (value == 0 || value == 1) {
-        retval = ACVP_SUCCESS;
-      }
+      retval = is_valid_tf_param(value);
       break;
     case ACVP_DRBG_ENTROPY_LEN:
     case ACVP_DRBG_NONCE_LEN:
@@ -1210,17 +1203,17 @@ static ACVP_RESULT acvp_add_rsa_keygen_parm (
                              int                  value
                              )
 {
-
-    // TODO: NEED TO ADD VALIDATION here
-
     switch (param) {
     case ACVP_RAND_PUB_EXP:
+        if(rsa_cap_mode_list->cap_mode_attrs.keygen->fixed_pub_exp) {
+            return ACVP_INVALID_ARG;
+        }
         rsa_cap_mode_list->cap_mode_attrs.keygen->rand_pub_exp = value;
         break;
-    case ACVP_FIXED_PUB_EXP_VAL:
-        rsa_cap_mode_list->cap_mode_attrs.keygen->fixed_pub_exp_val = value;
-        break;
     case ACVP_FIXED_PUB_EXP:
+        if(rsa_cap_mode_list->cap_mode_attrs.keygen->rand_pub_exp) {
+            return ACVP_INVALID_ARG;
+        }
         rsa_cap_mode_list->cap_mode_attrs.keygen->fixed_pub_exp = value;
         break;
     case ACVP_RAND_PQ:
@@ -1246,7 +1239,7 @@ static ACVP_RESULT acvp_add_rsa_siggen_parm (
 {
 
 //    // TODO: NEED TO ADD VALIDATION here
-//
+
 	printf("\n inside acvp_add_rsa_siggen_parm\n\n");
     switch (param) {
     case ACVP_SIG_TYPE:
@@ -1306,21 +1299,123 @@ static ACVP_RESULT acvp_add_rsa_prereq_val(ACVP_RSA_CAP *rsa_cap, ACVP_RSA_PRE_R
     return (ACVP_SUCCESS);
 }
 
+ACVP_RESULT acvp_rsa_prepare_to_add_param(ACVP_CTX *ctx, ACVP_CIPHER cipher,
+                                          ACVP_RSA_MODE mode,
+                                          ACVP_CAPS_LIST **cap_list,
+                                          ACVP_RSA_CAP_MODE_LIST      **rsa_cap_mode_list) {
+
+	ACVP_RSA_CAP_MODE_LIST      *rsa_cap_mode_list_next;
+	/*
+     * Validate input
+     */
+    if (!ctx) {
+        return ACVP_INVALID_ARG;
+    }
+
+    switch (cipher) {
+    case ACVP_RSA:
+        break;
+    default:
+        return ACVP_INVALID_ARG;
+    }
+
+    /*
+     * Locate this cipher in the caps array
+     */
+    *cap_list = acvp_locate_cap_entry(ctx, cipher);
+    if (!*cap_list) {
+        ACVP_LOG_ERR("Cap entry not found.");
+        return ACVP_NO_CAP;
+    }
+
+    /*
+     * Locate cap mode from array
+     * if the mode does not exist yet then create it.
+     */
+    if (!(*cap_list)->cap.rsa_cap) {
+        ACVP_LOG_ERR("RSA Cap entry not found.");
+        return ACVP_NO_CAP;
+    }
+
+    *rsa_cap_mode_list = acvp_locate_rsa_mode_entry(*cap_list, mode);
+    if (!*rsa_cap_mode_list) {
+        *rsa_cap_mode_list = calloc(1, sizeof(ACVP_RSA_CAP_MODE_LIST));
+        if (!*rsa_cap_mode_list) {
+            ACVP_LOG_ERR("Malloc Failed -- enable rsa cap parm");
+            return ACVP_MALLOC_FAIL;
+        }
+
+        (*rsa_cap_mode_list)->cap_mode = mode;
+
+        switch(mode) {
+        case ACVP_RSA_MODE_KEYGEN:
+            (*rsa_cap_mode_list)->cap_mode_attrs.keygen = calloc(1, sizeof(ACVP_RSA_KEYGEN_ATTRS));
+            if (!(*rsa_cap_mode_list)->cap_mode_attrs.keygen) {
+                ACVP_LOG_ERR("Malloc Failed -- enable rsa cap parm");
+                return ACVP_MALLOC_FAIL;
+            }
+            break;
+        case ACVP_RSA_MODE_SIGGEN:
+			(*rsa_cap_mode_list)->cap_mode_attrs.siggen = calloc(1, sizeof(ACVP_RSA_SIGGEN_ATTRS));
+			if (!(*rsa_cap_mode_list)->cap_mode_attrs.siggen) {
+				ACVP_LOG_ERR("Malloc Failed -- enable rsa cap parm");
+				return ACVP_MALLOC_FAIL;
+			}
+			break;
+        default:
+            break;
+        }
+
+        while ((*cap_list)->cap.rsa_cap->rsa_cap_mode_list) {
+			rsa_cap_mode_list_next = (*cap_list)->cap.rsa_cap->rsa_cap_mode_list->next;
+			(*cap_list)->cap.rsa_cap->rsa_cap_mode_list = rsa_cap_mode_list_next;
+		}
+		(*cap_list)->cap.rsa_cap->rsa_cap_mode_list = *rsa_cap_mode_list;
+
+    }
+    return ACVP_SUCCESS;
+}
+
+
+ACVP_RESULT acvp_validate_rsa_parm_value(ACVP_RSA_PARM parm, int value) {
+  ACVP_RESULT retval = ACVP_INVALID_ARG;
+
+  switch(parm){
+    case ACVP_RAND_PUB_EXP:
+    case ACVP_FIXED_PUB_EXP:
+    case ACVP_RSA_INFO_GEN_BY_SERVER:
+        retval = is_valid_tf_param(value);
+        break;
+    case ACVP_RAND_PQ:
+        if (value > 0 && value < 6) {
+            retval = ACVP_SUCCESS;
+        }
+        break;
+    case ACVP_CAPS_PROV_PRIME:
+    case ACVP_CAPS_PROB_PRIME:
+    case ACVP_SIG_TYPE:
+    case ACVP_CAP_SIG_TYPE:
+      // TODO: add proper validation for these parameters
+      retval = ACVP_SUCCESS;
+      break;
+    default:
+      break;
+  }
+
+  return retval;
+}
+
+
 
 /*
  * The user should call this after invoking acvp_enable_rsa_cap_parm().
  */
-ACVP_RESULT acvp_enable_rsa_cap_parm (ACVP_CTX *ctx,
+ACVP_RESULT acvp_set_rsa_info_gen_by_server_flag (ACVP_CTX *ctx,
                              ACVP_CIPHER cipher,
-                             ACVP_RSA_MODE mode,
-                             ACVP_RSA_PARM param,
                              int value
                              )
 {
-    ACVP_RSA_CAP_MODE_LIST      *rsa_cap_mode_list;
-    ACVP_RSA_CAP_MODE_LIST      *rsa_cap_mode_list_next;/********for trial**********/
     ACVP_CAPS_LIST              *cap_list;
-    ACVP_RESULT                 result;
 
     /*
      * Validate input
@@ -1345,59 +1440,41 @@ ACVP_RESULT acvp_enable_rsa_cap_parm (ACVP_CTX *ctx,
         return ACVP_NO_CAP;
     }
 
-    /*
-     * Locate cap mode from array
-     * if the mode does not exist yet then create it.
-     */
-    if (!cap_list->cap.rsa_cap) {
-        ACVP_LOG_ERR("DRBG Cap entry not found.");
-        return ACVP_NO_CAP;
+    if (acvp_validate_rsa_parm_value(ACVP_RSA_INFO_GEN_BY_SERVER, value) != ACVP_SUCCESS) {
+        return ACVP_INVALID_ARG;
     }
 
-    rsa_cap_mode_list = acvp_locate_rsa_mode_entry(cap_list, mode);
-    if (!rsa_cap_mode_list) {
-        rsa_cap_mode_list = calloc(1, sizeof(ACVP_RSA_CAP_MODE_LIST));
-        if (!rsa_cap_mode_list) {
-            ACVP_LOG_ERR("Malloc Failed -- enable rsa cap parm");
-            return ACVP_MALLOC_FAIL;
-        }
+    cap_list->cap.rsa_cap->info_gen_by_server = value;
+    return ACVP_SUCCESS;
 
-        rsa_cap_mode_list->cap_mode = mode;
+}
 
-        switch(mode) {
-        case ACVP_RSA_MODE_KEYGEN:
-            rsa_cap_mode_list->cap_mode_attrs.keygen = calloc(1, sizeof(ACVP_RSA_KEYGEN_ATTRS));
-            if (!rsa_cap_mode_list->cap_mode_attrs.keygen) {
-                ACVP_LOG_ERR("Malloc Failed -- enable rsa cap parm");
-                return ACVP_MALLOC_FAIL;
-            }
-            break;
-        case ACVP_RSA_MODE_SIGGEN:
-			rsa_cap_mode_list->cap_mode_attrs.siggen = calloc(1, sizeof(ACVP_RSA_SIGGEN_ATTRS));
-			if (!rsa_cap_mode_list->cap_mode_attrs.siggen) {
-				ACVP_LOG_ERR("Malloc Failed -- enable rsa cap parm");
-				return ACVP_MALLOC_FAIL;
-			}
-            break;
-        default:
-            break;
-        }
+/*
+ * The user should call this after invoking acvp_enable_rsa_cap_parm().
+ */
+ACVP_RESULT acvp_enable_rsa_cap_parm (ACVP_CTX *ctx,
+                             ACVP_CIPHER cipher,
+                             ACVP_RSA_MODE mode,
+                             ACVP_RSA_PARM param,
+                             int value
+                             )
+{
+    ACVP_RSA_CAP_MODE_LIST      *rsa_cap_mode_list;
+    ACVP_CAPS_LIST              *cap_list;
+    ACVP_RESULT                 result;
 
-        /*************/
-        while (cap_list->cap.rsa_cap->rsa_cap_mode_list) {
-        	rsa_cap_mode_list_next = cap_list->cap.rsa_cap->rsa_cap_mode_list->next;
-        	cap_list->cap.rsa_cap->rsa_cap_mode_list = rsa_cap_mode_list_next;
-        }
-        cap_list->cap.rsa_cap->rsa_cap_mode_list = rsa_cap_mode_list;
+    result = acvp_rsa_prepare_to_add_param(ctx, cipher, mode, &cap_list,
+                                               &rsa_cap_mode_list);
+    if(result != ACVP_SUCCESS) return result;
 
+	if (acvp_validate_rsa_parm_value(param, value) != ACVP_SUCCESS) {
+		return ACVP_INVALID_ARG;
+	}
 
-        /*
-        if(!cap_list->cap.rsa_cap->rsa_cap_mode_list) {
-        	cap_list->cap.rsa_cap->rsa_cap_mode_list = rsa_cap_mode_list;
-        } else {
-        	cap_list->cap.rsa_cap->rsa_cap_mode_list->next = rsa_cap_mode_list;
-        }*/
-    }
+	if (param == ACVP_RSA_INFO_GEN_BY_SERVER) {
+		cap_list->cap.rsa_cap->info_gen_by_server = value;
+		return ACVP_SUCCESS;
+	}
 
     printf("\n before switch mode \n\n");
     /*
@@ -1408,14 +1485,16 @@ ACVP_RESULT acvp_enable_rsa_cap_parm (ACVP_CTX *ctx,
         result = acvp_add_rsa_keygen_parm(rsa_cap_mode_list, param, value);
         break;
     case ACVP_RSA_MODE_SIGGEN:
+    	printf("\n inside siggen\n\n");
 		result = acvp_add_rsa_siggen_parm(rsa_cap_mode_list, param, value);
 		break;
     default:
-        return ACVP_INVALID_ARG;
-    }
+    	return ACVP_INVALID_ARG;
+      }
 
-    return (result);
+  return result;
 }
+
 
 /*
  * The user should call this after invoking acvp_enable_rsa_cap_parm().
@@ -1559,6 +1638,140 @@ ACVP_RESULT acvp_enable_rsa_cap_sig_type_parm (ACVP_CTX *ctx,
 
     return (ACVP_SUCCESS);
 }
+//
+///*
+// * The user should call this after invoking acvp_enable_rsa_cap_parm().
+// */
+//ACVP_RESULT acvp_enable_rsa_prov_primes_parm (ACVP_CTX *ctx,
+//                             ACVP_CIPHER cipher,
+//                             ACVP_RSA_MODE mode,
+//                             ACVP_RSA_PARM param,
+//                             int mod,
+//                             char *hash
+//                             )
+//{
+//    ACVP_RSA_CAP_MODE_LIST      *rsa_cap_mode_list;
+//    ACVP_CAPS_LIST              *cap_list;
+//    ACVP_RESULT                 result;
+//
+//    result = acvp_rsa_prepare_to_add_param(ctx, cipher, mode, &cap_list,
+//                                           &rsa_cap_mode_list);
+//    if(result != ACVP_SUCCESS) return result;
+//
+//    /*
+//     * Add the value to the cap
+//     */
+//     // TODO the enable methods for rsa might need to be split based on mode so this wouldn't even be necessary....... ?????
+//    // switch (mode) {
+//    // case ACVP_RSA_MODE_KEYGEN:
+//    //     result = acvp_add_rsa_keygen_parm(rsa_cap_mode_list, param, value);
+//    //     break;
+//    // default:
+//    //     return ACVP_INVALID_ARG;
+//    // }
+//
+//    // TODO CHECK PARAMS BEFORE DOING ALL THIS LOOKUP
+//    // int found = 0;
+//    ACVP_RSA_PROV_PRIMES_LIST *current_prime = NULL;
+//    if(!rsa_cap_mode_list->cap_mode_attrs.keygen->cap_prov_primes_list) {
+//      rsa_cap_mode_list->cap_mode_attrs.keygen->cap_prov_primes_list = calloc(1, sizeof(ACVP_RSA_PROV_PRIMES_LIST));
+//      if(!rsa_cap_mode_list->cap_mode_attrs.keygen->cap_prov_primes_list) {
+//          ACVP_LOG_ERR("Malloc Failed -- enable rsa cap parm");
+//          return ACVP_MALLOC_FAIL;
+//      }
+//      rsa_cap_mode_list->cap_mode_attrs.keygen->cap_prov_primes_list->modulo = mod;
+//      current_prime = rsa_cap_mode_list->cap_mode_attrs.keygen->cap_prov_primes_list;
+//
+//    } else {
+//        current_prime = rsa_cap_mode_list->cap_mode_attrs.keygen->cap_prov_primes_list;
+//
+//        int found = 0;
+//        do {
+//            if(current_prime->modulo != mod) {
+//                if(current_prime->next == NULL) {
+//                    current_prime->next = calloc(1, sizeof(ACVP_RSA_PROV_PRIMES_LIST));
+//                    if(!current_prime->next) {
+//                        ACVP_LOG_ERR("Malloc Failed -- enable rsa cap parm");
+//                        return ACVP_MALLOC_FAIL;
+//                    }
+//                    current_prime = current_prime->next;
+//                    current_prime->modulo = mod;
+//                    found = 1;
+//                } else {
+//                    current_prime = current_prime->next;
+//                }
+//            } else {
+//                found = 1;
+//            }
+//        } while (!found);
+//    }
+//
+//    ACVP_SA_LIST *current_hash = NULL;
+//    if(!current_prime->hash_alg) {
+//        current_prime->hash_alg = calloc(1, sizeof(ACVP_SA_LIST));
+//        if(!current_prime->hash_alg) {
+//            ACVP_LOG_ERR("Malloc Failed -- enable rsa cap parm");
+//            return ACVP_MALLOC_FAIL;
+//        }
+//        current_prime->hash_alg->name = hash;
+//    } else {
+//        current_hash = current_prime->hash_alg;
+//        while(current_hash->next != NULL) {
+//            current_hash = current_hash->next;
+//        }
+//        current_hash->next = calloc(1, sizeof(ACVP_SA_LIST));
+//        if(!current_hash->next) {
+//            ACVP_LOG_ERR("Malloc Failed -- enable rsa cap parm");
+//            return ACVP_MALLOC_FAIL;
+//        }
+//        current_hash->next->name = hash;
+//    }
+//
+//    return (ACVP_SUCCESS);
+//}
+
+
+/*
+ * The user should call this after invoking acvp_enable_rsa_cap_parm().
+ */
+ACVP_RESULT acvp_enable_rsa_bignum_parm (ACVP_CTX *ctx,
+                             ACVP_CIPHER cipher,
+                             ACVP_RSA_MODE mode,
+                             ACVP_RSA_PARM param,
+                             BIGNUM *value
+                             )
+{
+    ACVP_RSA_CAP_MODE_LIST      *rsa_cap_mode_list;
+    ACVP_CAPS_LIST              *cap_list;
+    ACVP_RESULT                 result;
+
+    result = acvp_rsa_prepare_to_add_param(ctx, cipher, mode, &cap_list,
+                                           &rsa_cap_mode_list);
+    if(result != ACVP_SUCCESS) return result;
+
+    printf("\n\n\n\nafter prepare in bignum\n\n\n");
+
+    /*
+     * Add the value to the cap
+     */
+    switch (mode) {
+    case ACVP_RSA_MODE_KEYGEN:
+        switch(param) {
+        case ACVP_FIXED_PUB_EXP_VAL:
+            rsa_cap_mode_list->cap_mode_attrs.keygen->fixed_pub_exp_val = value;
+            break;
+        default:
+            return ACVP_INVALID_ARG;
+            break;
+        }
+        break;
+    default:
+        return ACVP_INVALID_ARG;
+    }
+
+    return ACVP_SUCCESS;
+}
+
 
 /*
  * The user should call this after invoking acvp_enable_rsa_cap_parm().
@@ -1573,63 +1786,11 @@ ACVP_RESULT acvp_enable_rsa_prov_primes_parm (ACVP_CTX *ctx,
 {
     ACVP_RSA_CAP_MODE_LIST      *rsa_cap_mode_list;
     ACVP_CAPS_LIST              *cap_list;
+    ACVP_RESULT                 result;
 
-    /*
-     * Validate input
-     */
-    if (!ctx) {
-        return ACVP_INVALID_ARG;
-    }
-
-    switch (cipher) {
-    case ACVP_RSA:
-        break;
-    default:
-        return ACVP_INVALID_ARG;
-    }
-
-    /*
-     * Locate this cipher in the caps array
-     */
-    cap_list = acvp_locate_cap_entry(ctx, cipher);
-    if (!cap_list) {
-        ACVP_LOG_ERR("Cap entry not found.");
-        return ACVP_NO_CAP;
-    }
-
-    /*
-     * Locate cap mode from array
-     * if the mode does not exist yet then create it.
-     */
-    if (!cap_list->cap.rsa_cap) {
-        ACVP_LOG_ERR("DRBG Cap entry not found.");
-        return ACVP_NO_CAP;
-    }
-
-    rsa_cap_mode_list = acvp_locate_rsa_mode_entry(cap_list, mode);
-    if (!rsa_cap_mode_list) {
-        rsa_cap_mode_list = calloc(1, sizeof(ACVP_RSA_CAP_MODE_LIST));
-        if (!rsa_cap_mode_list) {
-            ACVP_LOG_ERR("Malloc Failed -- enable rsa cap parm");
-            return ACVP_MALLOC_FAIL;
-        }
-
-        rsa_cap_mode_list->cap_mode = mode;
-
-        switch(mode) {
-        case ACVP_RSA_MODE_KEYGEN:
-            rsa_cap_mode_list->cap_mode_attrs.keygen = calloc(1, sizeof(ACVP_RSA_KEYGEN_ATTRS));
-            if (!rsa_cap_mode_list->cap_mode_attrs.keygen) {
-                ACVP_LOG_ERR("Malloc Failed -- enable rsa cap parm");
-                return ACVP_MALLOC_FAIL;
-            }
-            break;
-        default:
-            break;
-        }
-
-        cap_list->cap.rsa_cap->rsa_cap_mode_list = rsa_cap_mode_list;
-    }
+    result = acvp_rsa_prepare_to_add_param(ctx, cipher, mode, &cap_list,
+                                           &rsa_cap_mode_list);
+    if(result != ACVP_SUCCESS) return result;
 
     /*
      * Add the value to the cap
@@ -1644,7 +1805,7 @@ ACVP_RESULT acvp_enable_rsa_prov_primes_parm (ACVP_CTX *ctx,
     // }
 
     // TODO CHECK PARAMS BEFORE DOING ALL THIS LOOKUP
-    int found = 0;
+    // int found = 0;
     ACVP_RSA_PROV_PRIMES_LIST *current_prime = NULL;
     if(!rsa_cap_mode_list->cap_mode_attrs.keygen->cap_prov_primes_list) {
       rsa_cap_mode_list->cap_mode_attrs.keygen->cap_prov_primes_list = calloc(1, sizeof(ACVP_RSA_PROV_PRIMES_LIST));
@@ -1652,7 +1813,7 @@ ACVP_RESULT acvp_enable_rsa_prov_primes_parm (ACVP_CTX *ctx,
           ACVP_LOG_ERR("Malloc Failed -- enable rsa cap parm");
           return ACVP_MALLOC_FAIL;
       }
-      rsa_cap_mode_list->cap_mode_attrs.keygen->cap_prov_primes_list->mod_prov_prime = mod;
+      rsa_cap_mode_list->cap_mode_attrs.keygen->cap_prov_primes_list->modulo = mod;
       current_prime = rsa_cap_mode_list->cap_mode_attrs.keygen->cap_prov_primes_list;
 
     } else {
@@ -1660,7 +1821,7 @@ ACVP_RESULT acvp_enable_rsa_prov_primes_parm (ACVP_CTX *ctx,
 
         int found = 0;
         do {
-            if(current_prime->mod_prov_prime != mod) {
+            if(current_prime->modulo != mod) {
                 if(current_prime->next == NULL) {
                     current_prime->next = calloc(1, sizeof(ACVP_RSA_PROV_PRIMES_LIST));
                     if(!current_prime->next) {
@@ -1668,7 +1829,7 @@ ACVP_RESULT acvp_enable_rsa_prov_primes_parm (ACVP_CTX *ctx,
                         return ACVP_MALLOC_FAIL;
                     }
                     current_prime = current_prime->next;
-                    current_prime->mod_prov_prime = mod;
+                    current_prime->modulo = mod;
                     found = 1;
                 } else {
                     current_prime = current_prime->next;
@@ -1680,15 +1841,15 @@ ACVP_RESULT acvp_enable_rsa_prov_primes_parm (ACVP_CTX *ctx,
     }
 
     ACVP_SA_LIST *current_hash = NULL;
-    if(!current_prime->compatible_hashes) {
-        current_prime->compatible_hashes = calloc(1, sizeof(ACVP_SA_LIST));
-        if(!current_prime->compatible_hashes) {
+    if(!current_prime->hash_alg) {
+        current_prime->hash_alg = calloc(1, sizeof(ACVP_SA_LIST));
+        if(!current_prime->hash_alg) {
             ACVP_LOG_ERR("Malloc Failed -- enable rsa cap parm");
             return ACVP_MALLOC_FAIL;
         }
-        current_prime->compatible_hashes->name = hash;
+        current_prime->hash_alg->name = hash;
     } else {
-        current_hash = current_prime->compatible_hashes;
+        current_hash = current_prime->hash_alg;
         while(current_hash->next != NULL) {
             current_hash = current_hash->next;
         }
@@ -1805,6 +1966,12 @@ ACVP_RESULT acvp_enable_rsa_prob_primes_parm (ACVP_CTX *ctx,
         break;
     case MOD_PROB_PRIME_4096:
         primes->mod_prob_prime_3 = MOD_PROB_PRIME_4096;
+        break;
+    case PROB_PRIME_TEST_2:
+        primes->prime_test = PROB_PRIME_TEST_2_NAME;
+        break;
+    case PROB_PRIME_TEST_3:
+        primes->prime_test = PROB_PRIME_TEST_3_NAME;
         break;
     default:
         break;
@@ -2842,11 +3009,11 @@ static ACVP_RESULT acvp_lookup_rsa_prob_primes(JSON_Object *cap_obj, ACVP_RSA_CA
         return ACVP_SUCCESS;
     }
 
-    json_object_set_value(object, "modProbPrime", json_value_init_array());
-    vals_array = json_object_get_array(object, "modProbPrime");
-    json_array_append_number(vals_array, primes->mod_prob_prime_1);
-    json_array_append_number(vals_array, primes->mod_prob_prime_2);
-    json_array_append_number(vals_array, primes->mod_prob_prime_3);
+    json_object_set_value(object, "modulo", json_value_init_array());
+    vals_array = json_object_get_array(object, "modulo");
+    if (primes->mod_prob_prime_1) json_array_append_number(vals_array, primes->mod_prob_prime_1);
+    if (primes->mod_prob_prime_2) json_array_append_number(vals_array, primes->mod_prob_prime_2);
+    if (primes->mod_prob_prime_3) json_array_append_number(vals_array, primes->mod_prob_prime_3);
     json_object_set_string(object, "primeTest", primes->prime_test);
 
     json_object_set_value(cap_obj, "capProbPrime", val);
@@ -2877,7 +3044,6 @@ static ACVP_RESULT acvp_lookup_rsa_prov_primes(JSON_Object *cap_obj, ACVP_RSA_CA
         return ACVP_SUCCESS;
     }
 
-
     while (primes) {
         JSON_Value *val = NULL;
         JSON_Object *obj = NULL;
@@ -2885,10 +3051,10 @@ static ACVP_RESULT acvp_lookup_rsa_prov_primes(JSON_Object *cap_obj, ACVP_RSA_CA
         obj = json_value_get_object(val);
         // prime = &primes->prov_prime_cap;
 
-        json_object_set_number(obj, "modProvPrime", primes->mod_prov_prime);
+        json_object_set_number(obj, "modProvPrime", primes->modulo);
         json_object_set_value(obj, "hashProvPrime", json_value_init_array());
         hash_array = json_object_get_array(obj, "hashProvPrime");
-        comp_hash = primes->compatible_hashes;
+        comp_hash = primes->hash_alg;
 
         while(comp_hash) {
             json_array_append_string(hash_array, comp_hash->name);
@@ -2953,11 +3119,8 @@ static ACVP_RESULT acvp_lookup_rsa_cap_sig_type(JSON_Object *cap_obj, ACVP_RSA_C
     return ACVP_SUCCESS;
 }
 
-// static ACVP_RESULT acvp_lookup_rsa_prereqVals (JSON_Object *cap_obj)
 
 static ACVP_RESULT acvp_lookup_rsa_prereqVals (JSON_Object *cap_obj, ACVP_RSA_CAP *rsa_cap)
-// static ACVP_RESULT acvp_lookup_rsa_prereqVals (JSON_Object *cap_obj, ACVP_RSA_CAP_MODE *rsa_cap_mode)
-
 {
     JSON_Array *prereq_array = NULL;
 
@@ -3031,55 +3194,60 @@ static char *acvp_lookup_rsa_mode_string (ACVP_CAPS_LIST *cap_entry)
     return mode_str;
 }
 
+static ACVP_RESULT acvp_build_rsa_keygen_register(JSON_Object **cap_specs_obj, ACVP_CAPS_LIST *cap_entry) {
+    ACVP_RESULT result;
+    ACVP_RSA_KEYGEN_ATTRS *rsa_cap_mode = NULL;
+    rsa_cap_mode = cap_entry->cap.rsa_cap->rsa_cap_mode_list->cap_mode_attrs.keygen;
+    if (rsa_cap_mode->rand_pub_exp) {
+        json_object_set_string(*cap_specs_obj, "randPubExp", "yes");
+    } else {
+        json_object_set_string(*cap_specs_obj, "fixedPubExp", rsa_cap_mode->fixed_pub_exp ? "yes" : "no");
+        json_object_set_string(*cap_specs_obj, "fixedPubExpVal", BN_bn2hex(rsa_cap_mode->fixed_pub_exp_val));
+    }
+    json_object_set_number(*cap_specs_obj, "randPQ", rsa_cap_mode->rand_pq);
 
-/****************************************/
+    result = acvp_lookup_rsa_prov_primes(*cap_specs_obj, cap_entry->cap.rsa_cap);
+    if (result != ACVP_SUCCESS) return result;
+
+    result = acvp_lookup_rsa_prob_primes(*cap_specs_obj, cap_entry->cap.rsa_cap);
+    if (result != ACVP_SUCCESS) return result;
+
+    return ACVP_SUCCESS;
+}
 
 static ACVP_RESULT acvp_build_rsa_register_cap(JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry)
 {
     ACVP_RESULT result;
-    // ACVP_RSA_CAP_MODE *rsa_cap_mode = NULL;
-    ACVP_RSA_KEYGEN_ATTRS *rsa_cap_mode = NULL;
     ACVP_RSA_SIGGEN_ATTRS *rsa_siggen_mode = NULL;
 
     printf("\n beginning\n\n");
-
 
     JSON_Array *specs_array = NULL;
     JSON_Value *mode_specs_outer_val = NULL, *mode_specs_val = NULL, *cap_specs_val = NULL;
     JSON_Object *mode_specs_outer_obj = NULL, *mode_specs_obj = NULL, *cap_specs_obj = NULL;
 
     ACVP_RSA_MODE mode;
-    mode = cap_entry->cap.rsa_cap->rsa_cap_mode_list->cap_mode;
-    switch(mode) {
-    case ACVP_RSA_MODE_KEYGEN:
-        rsa_cap_mode = cap_entry->cap.rsa_cap->rsa_cap_mode_list->cap_mode_attrs.keygen;
-        break;
-    case ACVP_RSA_MODE_SIGGEN:
-		rsa_siggen_mode = cap_entry->cap.rsa_cap->rsa_cap_mode_list->cap_mode_attrs.siggen;
-		break;
-    default:
-        break;
-    }
+//    switch(mode) {
+//    case ACVP_RSA_MODE_KEYGEN:
+//        rsa_cap_mode = cap_entry->cap.rsa_cap->rsa_cap_mode_list->cap_mode_attrs.keygen;
+//        break;
+//    case ACVP_RSA_MODE_SIGGEN:
+//		rsa_siggen_mode = cap_entry->cap.rsa_cap->rsa_cap_mode_list->cap_mode_attrs.siggen;
+//		break;
+//    default:
+//        break;
+//    }
 
     printf("\n after switch\n\n");
 
     char *mode_str = acvp_lookup_rsa_mode_string(cap_entry);
     if (!mode_str) return ACVP_INVALID_ARG;
 
-
-    printf("\n after mode string\n\n");
-    // switch(&cap_entry->cap.rsa_cap->rsa_cap_mode_list->cap_mode) {
-    //   case ACVP_RSA_KEYGEN:
-    // }
-    // rsa_cap_mode = &cap_entry->cap.rsa_cap->rsa_cap_mode_list->cap_mode_attrs;
-
     json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
     result = acvp_lookup_rsa_prereqVals(cap_obj, cap_entry->cap.rsa_cap);
-    // result = acvp_lookup_rsa_prereqVals(cap_obj);
-
     if (result != ACVP_SUCCESS) return result;
 
-    printf("\n found prereqs\n\n");
+    json_object_set_string(cap_obj, "infoGeneratedByServer", cap_entry->cap.rsa_cap->info_gen_by_server ? "true" : "false");
 
     json_object_set_value(cap_obj, "algSpecs", json_value_init_array());
     specs_array = json_object_get_array(cap_obj, "algSpecs");
@@ -3091,57 +3259,38 @@ static ACVP_RESULT acvp_build_rsa_register_cap(JSON_Object *cap_obj, ACVP_CAPS_L
     mode_specs_obj = json_value_get_object(mode_specs_val);
 
     json_object_set_string(mode_specs_obj, "mode", mode_str);
-
     cap_specs_val = json_value_init_object();
     cap_specs_obj = json_value_get_object(cap_specs_val);
 
+    mode = cap_entry->cap.rsa_cap->rsa_cap_mode_list->cap_mode;
+
     switch(mode){
     case ACVP_RSA_MODE_KEYGEN:
-
-    	printf("\n inside keygen\n\n");
-		json_object_set_string(cap_specs_obj, "randPubExp", rsa_cap_mode->rand_pub_exp ? "yes" : "no");
-		json_object_set_string(cap_specs_obj, "fixedPubExp", rsa_cap_mode->fixed_pub_exp ? "yes" : "no");
-		json_object_set_number(cap_specs_obj, "fixedPubExpVal", rsa_cap_mode->fixed_pub_exp_val);
-		json_object_set_number(cap_specs_obj, "randPQ", rsa_cap_mode->rand_pq);
-
-		result = acvp_lookup_rsa_prov_primes(cap_specs_obj, cap_entry->cap.rsa_cap);
+    	 result = acvp_build_rsa_keygen_register(&cap_specs_obj, cap_entry);
 		if (result != ACVP_SUCCESS) return result;
-
-		result = acvp_lookup_rsa_prob_primes(cap_specs_obj, cap_entry->cap.rsa_cap);
-		if (result != ACVP_SUCCESS) return result;
-
-		json_object_set_value(mode_specs_obj, "capSpecs", cap_specs_val);
-
-		json_object_set_value(mode_specs_outer_obj, "modeSpecs", mode_specs_val);
-		json_array_append_value(specs_array, mode_specs_outer_val);
-
-		//Set entropy range
-		// cap_val = json_value_init_object();
-		// cap_specs_obj = json_value_get_object(cap_val);
-		// cap_val2 = json_value_init_object();
-		// cap_prime_obj = json_value_get_object(cap_val2);
-		// json_object_set_value(cap_prime_obj, "modProbPrime", rsa_cap_mode->mod);
-		// json_object_set_value(cap_specs_obj, "capProbPrime", cap_prime_obj);
-		// json_object_set_value(cap_specs_obj, "randPubExp", cap_val2);
 		break;
     case ACVP_RSA_MODE_SIGGEN:
-    	printf("\n inside siggen\n\n");
+    	printf("\n inside siggen2\n\n");
+
+    	rsa_siggen_mode = cap_entry->cap.rsa_cap->rsa_cap_mode_list->cap_mode_attrs.siggen;
 
     	json_object_set_string(cap_specs_obj, "sigType", rsa_siggen_mode->sig_type);
 
     	printf("\n printed sigtype???\n\n");
 
     	result = acvp_lookup_rsa_cap_sig_type(cap_specs_obj, cap_entry->cap.rsa_cap);
+
+
     	if (result != ACVP_SUCCESS) return result;
-
-    	json_object_set_value(mode_specs_obj, "capSpecs", cap_specs_val);
-
-    	json_object_set_value(mode_specs_outer_obj, "modeSpecs", mode_specs_val);
-		json_array_append_value(specs_array, mode_specs_outer_val);
     	break;
     default:
     	break;
     }
+
+    json_object_set_value(mode_specs_obj, "capSpecs", cap_specs_val);
+    json_object_set_value(mode_specs_outer_obj, "modeSpecs", mode_specs_val);
+    json_array_append_value(specs_array, mode_specs_outer_val);
+
     return ACVP_SUCCESS;
 }
 

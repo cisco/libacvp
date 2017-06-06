@@ -156,6 +156,34 @@ ACVP_DRBG_MODE acvp_lookup_drbg_mode_index(const char *mode)
     return ACVP_DRBG_MODE_END;
 }
 
+/* This function checks to see if the value is a valid
+   true / false param */
+ACVP_RESULT is_valid_tf_param(unsigned int value) {
+    if (value == 0 || value == 1) return ACVP_SUCCESS;
+    else return ACVP_INVALID_ARG;
+}
+
+/*
+ * This function returns the ID of a DRBG mode given an
+ * algorithm name (as defined in the ACVP spec).  It
+ * returns ACVP_DRBG_MODE_END if none match.
+ */
+ACVP_RSA_MODE acvp_lookup_rsa_mode_index(char *mode)
+{
+    int i;
+    struct acvp_rsa_mode_name_t rsa_mode_tbl[ACVP_RSA_MODE_END] = {
+            // YIKES THIS IS BACKWARDS FROM DRBG
+            {ACVP_RSA_MODE_KEYGEN, ACVP_RSA_KEYGEN}
+    };
+
+    for (i = 0; i < ACVP_RSA_MODE_END; i++) {
+        if (!strncmp(mode, rsa_mode_tbl[i].name, strlen(rsa_mode_tbl[i].name))) {
+            return rsa_mode_tbl[i].mode;
+        }
+    }
+    return ACVP_RSA_MODE_END;
+}
+
 //TODO: the next 3 functions could possibly be replaced using OpenSSL bignum,
 //      which has support for reading/writing hex strings.  But do we want
 //      to include a new dependency on OpenSSL?

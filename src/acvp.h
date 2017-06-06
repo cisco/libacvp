@@ -27,6 +27,7 @@
 * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *****************************************************************************/
+#include <openssl/bn.h>
 #ifndef acvp_h
 #define acvp_h
 
@@ -274,7 +275,8 @@ typedef enum acvp_rsa_param {
     ACVP_CAPS_PROV_PRIME,
     ACVP_CAPS_PROB_PRIME,
 	ACVP_SIG_TYPE,
-	ACVP_CAP_SIG_TYPE
+	ACVP_CAP_SIG_TYPE,
+    ACVP_RSA_INFO_GEN_BY_SERVER
 } ACVP_RSA_PARM;
 
 // TODO not sure if these even go here.....
@@ -293,6 +295,12 @@ typedef enum acvp_rsa_param {
 #define RSA_SIG_TYPE_X931_NAME      "X9.31"
 #define RSA_SIG_TYPE_PKCS1v15_NAME  "PKCS1v1.5"
 #define RSA_SIG_TYPE_PKCS1PSS_NAME  "PKCS1PSS"
+
+#define PROB_PRIME_TEST_2       2
+#define PROB_PRIME_TEST_3       3
+
+#define PROB_PRIME_TEST_2_NAME "tblC2"
+#define PROB_PRIME_TEST_3_NAME "tblC3"
 
 #define ACVP_RSA_PREREQ_DRBG     "DRBG"
 #define ACVP_RSA_PREREQ_SHA      "SHA"
@@ -491,20 +499,43 @@ typedef struct acvp_cmac_tc_t {
  * for cmac testing.  This data is
  * passed between libacvp and the crypto module.
  */
-// typedef struct acvp_rsa_keygen_tc_t {
-//     ACVP_CIPHER cipher; /* hash algorithm TODO: need to validate that
-//                            this is one of the hashes when we check parms */
-//     unsigned int  tc_id;    /* Test case id */
-//     unsigned int e;
-//     unsigned char *seed;
-//     unsigned int bitlen1;
-//     unsigned int bitlen2;
-//     unsigned int bitlen3;
-//     unsigned int bitlen4;
-//
-//     // ACVP_RSA_PRIME_METHOD prime_method;
-//     unsigned int mod;
-// } ACVP_RSA_KEYGEN_TC;
+typedef struct acvp_rsa_keygen_tc_t {
+    ACVP_RSA_MODE mode; // "keyGen"
+
+    unsigned int  tc_id;    /* Test case id */
+    BIGNUM *e;
+    unsigned char *p_rand;
+    unsigned char *q_rand;
+
+    unsigned char *xp1;
+    unsigned char *xp2;
+    unsigned char *xp;
+
+    unsigned char *xq1;
+    unsigned char *xq2;
+    unsigned char *xq;
+
+    BIGNUM *p;
+    BIGNUM *q;
+    BIGNUM *n;
+    BIGNUM *d;
+    BIGNUM *s;
+
+    unsigned char *seed;
+    unsigned int seed_len;
+    unsigned int bitlen1;
+    unsigned int bitlen2;
+    unsigned int bitlen3;
+    unsigned int bitlen4;
+
+    unsigned char *prime_seed_p2;
+    unsigned char *prime_seed_q1;
+    unsigned char *prime_seed_q2;
+
+    unsigned int mod;
+    unsigned char *prime_result; // "prime" or "composite"
+    unsigned char *sig_result; // "pass" or "fail"
+} ACVP_RSA_KEYGEN_TC;
 
 typedef struct acvp_rsa_tc_t {
     // union {
@@ -514,18 +545,9 @@ typedef struct acvp_rsa_tc_t {
 
     ACVP_CIPHER cipher; /* hash algorithm TODO: need to validate that
                            this is one of the hashes when we check parms */
-    ACVP_RSA_MODE mode;
-    unsigned int  tc_id;    /* Test case id */
-    unsigned int e;
-    unsigned char *seed;
-    unsigned int seed_len;
-    unsigned int bitlen1;
-    unsigned int bitlen2;
-    unsigned int bitlen3;
-    unsigned int bitlen4;
-
-    // ACVP_RSA_PRIME_METHOD prime_method;
-    unsigned int mod;
+    ACVP_RSA_MODE mode; // "keyGen"
+    int info_gen_by_server;
+    ACVP_RSA_KEYGEN_TC *keygen_tc;
 } ACVP_RSA_TC;
 
 // typedef struct acvp_rsa_keygen_specs_t {
@@ -784,6 +806,11 @@ ACVP_RESULT acvp_enable_rsa_cap(
                                 ACVP_CIPHER cipher,
                                 ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case));
 
+ACVP_RESULT acvp_set_rsa_info_gen_by_server_flag (ACVP_CTX *ctx,
+                             ACVP_CIPHER cipher,
+                             int value
+                           );
+
 ACVP_RESULT acvp_enable_rsa_cap_parm(
                             ACVP_CTX *ctx,
                             ACVP_CIPHER cipher,
@@ -791,6 +818,20 @@ ACVP_RESULT acvp_enable_rsa_cap_parm(
                             ACVP_RSA_PARM param,
                             int value
                             );
+
+ACVP_RESULT acvp_enable_rsa_bignum_parm (ACVP_CTX *ctx,
+                             ACVP_CIPHER cipher,
+                             ACVP_RSA_MODE mode,
+                             ACVP_RSA_PARM param,
+                             BIGNUM *value
+                           );
+
+ACVP_RESULT acvp_enable_rsa_str_parm (ACVP_CTX *ctx,
+                            ACVP_CIPHER cipher,
+                            ACVP_RSA_MODE mode,
+                            ACVP_RSA_PARM param,
+                            char *value
+                          );
 
 ACVP_RESULT acvp_enable_rsa_prereq_cap(
                             ACVP_CTX *ctx,
