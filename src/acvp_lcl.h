@@ -111,7 +111,8 @@
 #define ACVP_ALG_CMAC_TDES           "CMAC-TDES"
 
 #define ACVP_ALG_RSA                 "RSA"
-#define ACVP_RSA_KEYGEN         "keyGen"
+#define ACVP_RSA_KEYGEN         	 "keyGen"
+#define ACVP_RSA_SIGGEN         	 "sigGen"
 // TODO CAN PROBABLY CONSOLIDATE THESE STRING algs
 // #define ACVP_RSA_PRIME_SHA_1         "SHA-1"
 // #define ACVP_RSA_PRIME_SHA_224       "SHA-224"
@@ -340,6 +341,14 @@ typedef struct acvp_rsa_prob_primes {
     char *prime_test;
 } ACVP_RSA_PROB_PRIMES;
 
+/*************************************/
+typedef struct acvp_rsa_cap_sig_type {
+   int mod_rsa_siggen; // 2048, 3072, 4096 -- defined as macros
+   ACVP_SA_LIST *compatible_hashes_siggen;
+   int *salt_siggen; // 28, 32, 64 -- when sigType = "PKCS1PSS"
+   struct acvp_rsa_cap_sig_type *next;
+} ACVP_RSA_CAP_SIG_TYPE;
+
 typedef struct acvp_rsa_prereq_alg_val {
     ACVP_RSA_PRE_REQ alg;
     char *val;
@@ -374,10 +383,18 @@ typedef struct acvp_rsa_mode_keygen_t {
     ACVP_RSA_PROB_PRIMES *cap_prob_primes;
 } ACVP_RSA_KEYGEN_ATTRS;
 
+/**************************************/
+typedef struct acvp_rsa_mode_siggen_t {
+    ACVP_RSA_MODE   mode;  // "sigGen"
+    char *sig_type; // "X9.31", "PKCS1v1.5", "PKCS1PSS"
+    ACVP_RSA_CAP_SIG_TYPE *cap_sig_type; //holds modRSASigGen (int) and hashSigGen (list)
+} ACVP_RSA_SIGGEN_ATTRS;
+
 typedef struct acvp_rsa_cap_mode_list_t {
     ACVP_RSA_MODE cap_mode;
     union {
         ACVP_RSA_KEYGEN_ATTRS *keygen;
+        ACVP_RSA_SIGGEN_ATTRS *siggen;
     } cap_mode_attrs;
     struct acvp_rsa_cap_mode_list_t *next;
 } ACVP_RSA_CAP_MODE_LIST;

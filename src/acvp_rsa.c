@@ -17,6 +17,9 @@ static ACVP_RESULT acvp_rsa_init_tc(ACVP_CTX *ctx,
     case ACVP_RSA_MODE_KEYGEN:
         printf("\n\n\n\n rsa init tc rsa keygen case \n\n\n");
         break;
+    case ACVP_RSA_MODE_SIGGEN:
+		printf("\n\n\n\n rsa init tc rsa siggen case \n\n\n");
+		break;
     default:
         break;
     }

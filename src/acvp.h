@@ -272,10 +272,16 @@ typedef enum acvp_rsa_param {
     ACVP_FIXED_PUB_EXP_VAL,
     ACVP_RAND_PQ,
     ACVP_CAPS_PROV_PRIME,
-    ACVP_CAPS_PROB_PRIME
+    ACVP_CAPS_PROB_PRIME,
+	ACVP_SIG_TYPE,
+	ACVP_CAP_SIG_TYPE
 } ACVP_RSA_PARM;
 
 // TODO not sure if these even go here.....
+#define MOD_RSA_SIGGEN_2048     2048
+#define MOD_RSA_SIGGEN_3072     3072
+#define MOD_RSA_SIGGEN_4096     4096
+
 #define MOD_PROV_PRIME_2048     2048
 #define MOD_PROV_PRIME_3072     3072
 #define MOD_PROV_PRIME_4096     4096
@@ -284,16 +290,29 @@ typedef enum acvp_rsa_param {
 #define MOD_PROB_PRIME_3072     3072
 #define MOD_PROB_PRIME_4096     4096
 
+#define RSA_SIG_TYPE_X931_NAME      "X9.31"
+#define RSA_SIG_TYPE_PKCS1v15_NAME  "PKCS1v1.5"
+#define RSA_SIG_TYPE_PKCS1PSS_NAME  "PKCS1PSS"
+
+#define ACVP_RSA_PREREQ_DRBG     "DRBG"
 #define ACVP_RSA_PREREQ_SHA      "SHA"
 typedef enum acvp_rsa_pre_req {
-    RSA_SHA = 1,
+	RSA_DRBG = 1,
+	RSA_SHA
 } ACVP_RSA_PRE_REQ;
 
 typedef enum acvp_rsa_mode {
     ACVP_RSA_MODE_START = 0,
     ACVP_RSA_MODE_KEYGEN,
+	ACVP_RSA_MODE_SIGGEN,
     ACVP_RSA_MODE_END
 } ACVP_RSA_MODE;
+
+typedef enum acvp_rsa_sig_type {
+	RSA_SIG_TYPE_X931 = 0,
+	RSA_SIG_TYPE_PKCS1V15,
+	RSA_SIG_TYPE_PKCS1PSS
+} ACVP_RSA_SIG_TYPE;
 
 typedef enum acvp_sym_cipher_parameter {
     ACVP_SYM_CIPH_KEYLEN = 0,
@@ -776,7 +795,6 @@ ACVP_RESULT acvp_enable_rsa_cap_parm(
 ACVP_RESULT acvp_enable_rsa_prereq_cap(
                             ACVP_CTX *ctx,
                             ACVP_CIPHER cipher,
-                            ACVP_RSA_MODE mode,
                             ACVP_RSA_PRE_REQ pre_req,
                             char *value
                             );
@@ -795,6 +813,14 @@ ACVP_RESULT acvp_enable_rsa_prob_primes_parm (ACVP_CTX *ctx,
                             ACVP_RSA_PARM param,
                             int mod
                           );
+
+ACVP_RESULT acvp_enable_rsa_cap_sig_type_parm (ACVP_CTX *ctx,
+                             ACVP_CIPHER cipher,
+                             ACVP_RSA_MODE mode,
+                             ACVP_RSA_PARM param,
+                             int mod,
+                             char *hash
+                             );
 
 // ACVP_RESULT acvp_enable_drbg_length_cap(
 //                             ACVP_CTX         *ctx,
