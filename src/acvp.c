@@ -1316,7 +1316,6 @@ ACVP_RESULT acvp_rsa_prepare_to_add_param(ACVP_CTX *ctx, ACVP_CIPHER cipher,
                 ACVP_LOG_ERR("Malloc Failed -- enable rsa cap parm");
                 return ACVP_MALLOC_FAIL;
             }
-            (*rsa_cap_mode_list)->cap_mode_attrs.keygen->rand_pq = 0;
             break;
         default:
             break;
@@ -1619,7 +1618,6 @@ ACVP_RESULT acvp_enable_rsa_prob_primes_parm (ACVP_CTX *ctx,
                 ACVP_LOG_ERR("Malloc Failed -- enable rsa cap parm");
                 return ACVP_MALLOC_FAIL;
             }
-            rsa_cap_mode_list->cap_mode_attrs.keygen->rand_pq = 0;
             break;
         default:
             break;

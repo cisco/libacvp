@@ -82,7 +82,7 @@ static ACVP_RESULT acvp_rsa_init_tc(ACVP_CTX *ctx,
                 if (info_gen_by_server) {
                     stc->keygen_tc->e = e;
                     stc->keygen_tc->seed = seed;
-                    stc->keygen_tc->seed_len = strnlen(seed, ACVP_RSA_SEEDLEN_MAX);
+                    stc->keygen_tc->seed_len = (unsigned int)strnlen((char *)seed, ACVP_RSA_SEEDLEN_MAX);
                     set_bitlens();
                 }
                 break;
@@ -96,7 +96,7 @@ static ACVP_RESULT acvp_rsa_init_tc(ACVP_CTX *ctx,
                 if (info_gen_by_server) {
                     stc->keygen_tc->e = e;
                     stc->keygen_tc->seed = seed;
-                    stc->keygen_tc->seed_len = strnlen(seed, ACVP_RSA_SEEDLEN_MAX);
+                    stc->keygen_tc->seed_len = (unsigned int)strnlen((char *)seed, ACVP_RSA_SEEDLEN_MAX);
                     set_bitlens();
                 }
                 break;
@@ -108,7 +108,7 @@ static ACVP_RESULT acvp_rsa_init_tc(ACVP_CTX *ctx,
                 if (info_gen_by_server) {
                     stc->keygen_tc->e = e;
                     stc->keygen_tc->seed = seed;
-                    stc->keygen_tc->seed_len = strnlen(seed, ACVP_RSA_SEEDLEN_MAX);
+                    stc->keygen_tc->seed_len = (unsigned int)strnlen((char *)seed, ACVP_RSA_SEEDLEN_MAX);
                     set_bitlens();
                     stc->keygen_tc->xp1 = xp1;
                     stc->keygen_tc->xp2 = xp2;

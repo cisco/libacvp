@@ -349,13 +349,7 @@ ACVP_RSA_CAP_MODE_LIST* acvp_locate_rsa_mode_entry(ACVP_CAPS_LIST *cap,
 
     while (cap_mode_list) {
         if (*cap_mode == mode) {
-            if (mode == ACVP_RSA_MODE_KEYGEN) {
-                // if there is a keygen mode_spec obj AND rand_pq hasn't been set
-                // (since rand_pq is the differentiating attribute in these objs)
-                if (cap_mode_list->cap_mode_attrs.keygen->rand_pq == 0) {
-                    return cap_mode_list;
-                }
-            }
+            return cap_mode_list;
         }
         cap_mode_list = cap_mode_list->next;
         cap_mode = &cap_mode_list->cap_mode;

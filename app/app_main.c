@@ -302,6 +302,8 @@ int main(int argc, char **argv)
     }
     rv = acvp_enable_rsa_bignum_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_FIXED_PUB_EXP_VAL, expo);
     CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_rsa_cap_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_RAND_PQ, 3);
+    CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_enable_rsa_prov_primes_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_CAPS_PROV_PRIME, MOD_PROV_PRIME_2048, ACVP_RSA_PRIME_SHA_1);
     CHECK_ENABLE_CAP_RV(rv);
@@ -317,9 +319,6 @@ int main(int argc, char **argv)
     rv = acvp_enable_rsa_prob_primes_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_CAPS_PROB_PRIME, MOD_PROB_PRIME_2048);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_rsa_prob_primes_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_CAPS_PROB_PRIME, PROB_PRIME_TEST_2);
-    CHECK_ENABLE_CAP_RV(rv);
-
-    rv = acvp_enable_rsa_cap_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_RAND_PQ, 3);
     CHECK_ENABLE_CAP_RV(rv);
 
 
@@ -1733,7 +1732,7 @@ static ACVP_RESULT app_rsa_handler(ACVP_TEST_CASE *test_case)
                     return ACVP_CRYPTO_MODULE_FAIL;
                 }
                 if (RAND_bytes(seed, seed_len) <= 0) {
-                    fprintf("RAND API fail\n");
+                    printf("RAND API fail\n");
                     return ACVP_CRYPTO_MODULE_FAIL;
                 }
                 bitlen1 = 2;
