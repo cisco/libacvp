@@ -255,7 +255,7 @@ typedef enum acvp_drbg_pre_req {
 } ACVP_DRBG_PRE_REQ;
 
 
-// TODO CAN PROBABLY CONSOLIDATE THESE STRING algs --124 in acvp_lcl or do it like drbg did modes above.......
+// TODO might be able to consolidate these
 #define ACVP_RSA_PRIME_SHA_1         "SHA-1"
 #define ACVP_RSA_PRIME_SHA_224       "SHA-224"
 #define ACVP_RSA_PRIME_SHA_256       "SHA-256"
@@ -263,9 +263,6 @@ typedef enum acvp_drbg_pre_req {
 #define ACVP_RSA_PRIME_SHA_512       "SHA-512"
 #define ACVP_RSA_PRIME_SHA_512_224   "SHA-512/224"
 #define ACVP_RSA_PRIME_SHA_512_256   "SHA-512/256"
-#define ACVP_RSA_PRIME_TEST_TBLC2 "tblC2"
-#define ACVP_RSA_PRIME_TEST_TBLC3 "tblC3"
-
 
 typedef enum acvp_rsa_param {
     ACVP_RAND_PUB_EXP = 0,
@@ -277,7 +274,7 @@ typedef enum acvp_rsa_param {
     ACVP_RSA_INFO_GEN_BY_SERVER
 } ACVP_RSA_PARM;
 
-// TODO not sure if these even go here.....
+// TODO there might be a better spot for these
 #define MOD_PROV_PRIME_2048     2048
 #define MOD_PROV_PRIME_3072     3072
 #define MOD_PROV_PRIME_4096     4096
@@ -477,12 +474,13 @@ typedef struct acvp_cmac_tc_t {
 
 /*
  * This struct holds data that represents a single test case
- * for cmac testing.  This data is
+ * for RSA testing.  This data is
  * passed between libacvp and the crypto module.
  */
 typedef struct acvp_rsa_keygen_tc_t {
     ACVP_RSA_MODE mode; // "keyGen"
 
+    char *hash_alg;
     unsigned int  tc_id;    /* Test case id */
     BIGNUM *e;
     unsigned char *p_rand;
@@ -491,16 +489,19 @@ typedef struct acvp_rsa_keygen_tc_t {
     unsigned char *xp1;
     unsigned char *xp2;
     unsigned char *xp;
+    unsigned char *p;
+    unsigned char *p1;
+    unsigned char *p2;
 
     unsigned char *xq1;
     unsigned char *xq2;
     unsigned char *xq;
+    unsigned char *q;
+    unsigned char *q1;
+    unsigned char *q2;
 
-    BIGNUM *p;
-    BIGNUM *q;
     BIGNUM *n;
     BIGNUM *d;
-    BIGNUM *s;
 
     unsigned char *seed;
     unsigned int seed_len;
@@ -513,35 +514,18 @@ typedef struct acvp_rsa_keygen_tc_t {
     unsigned char *prime_seed_q1;
     unsigned char *prime_seed_q2;
 
-    unsigned int mod;
     unsigned char *prime_result; // "prime" or "composite"
-    unsigned char *sig_result; // "pass" or "fail"
 } ACVP_RSA_KEYGEN_TC;
 
 typedef struct acvp_rsa_tc_t {
-    // union {
-    //     ACVP_RSA_KEYGEN_TC  *keygen;
-    // } mode_tc;
-    // MAYBE CAN SPLIT THIS OUT later
-
     ACVP_CIPHER cipher; /* hash algorithm TODO: need to validate that
                            this is one of the hashes when we check parms */
     ACVP_RSA_MODE mode; // "keyGen"
     int info_gen_by_server;
+    unsigned int rand_pq;
+    unsigned int mod;
     ACVP_RSA_KEYGEN_TC *keygen_tc;
 } ACVP_RSA_TC;
-
-// typedef struct acvp_rsa_keygen_specs_t {
-//     unsigned int randPubExp; /* "yes" or "no" */
-//     unsigned int randPQ;
-//
-// } ACVP_RSA_KEYGEN_SPECS;
-//
-// typedef struct acvp_rsa_keygen_probprime_t {
-//     unsigned int randPubExp; /* "yes" or "no" */
-//     unsigned int randPQ;
-//
-// } ACVP_RSA_KEYGEN_PROBPRIME;
 
 /*
  * This struct holds data that represents a single test case
@@ -807,13 +791,6 @@ ACVP_RESULT acvp_enable_rsa_bignum_parm (ACVP_CTX *ctx,
                              BIGNUM *value
                            );
 
-ACVP_RESULT acvp_enable_rsa_str_parm (ACVP_CTX *ctx,
-                            ACVP_CIPHER cipher,
-                            ACVP_RSA_MODE mode,
-                            ACVP_RSA_PARM param,
-                            char *value
-                          );
-
 ACVP_RESULT acvp_enable_rsa_prereq_cap(
                             ACVP_CTX *ctx,
                             ACVP_CIPHER cipher,
@@ -835,15 +812,6 @@ ACVP_RESULT acvp_enable_rsa_prob_primes_parm (ACVP_CTX *ctx,
                             ACVP_RSA_PARM param,
                             int mod
                           );
-
-// ACVP_RESULT acvp_enable_drbg_length_cap(
-//                             ACVP_CTX         *ctx,
-//                             ACVP_CIPHER       cipher,
-//                             ACVP_DRBG_MODE    mode,
-//                             ACVP_DRBG_PARM    param,
-//                             int               min,
-//                             int               step,
-//                             int               max);
 
 /*! @brief acvp_enable_hmac_cap() allows an application to specify an
 	   HMAC capability to be tested by the ACVP server.

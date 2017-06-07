@@ -314,17 +314,19 @@ ACVP_DRBG_CAP_MODE_LIST* acvp_locate_drbg_mode_entry(ACVP_CAPS_LIST *cap, ACVP_D
         if (cap_mode->mode == mode) {
             return cap_mode_list;
         }
-        cap_mode_list = drbg_cap->drbg_cap_mode_list->next;
+        cap_mode_list = cap_mode_list->next;
         cap_mode = &cap_mode_list->cap_mode;
     }
     return NULL;
 }
 
 /*
- * This function is used to locate the callback function that's needed
- * when a particular crypto operation is needed by libacvp.
+ * This function is used to locate the corresponding rsa capability needed
+ * when adding parameters to a registration
  */
-ACVP_RSA_CAP_MODE_LIST* acvp_locate_rsa_mode_entry(ACVP_CAPS_LIST *cap, ACVP_RSA_MODE mode)
+ACVP_RSA_CAP_MODE_LIST* acvp_locate_rsa_mode_entry(ACVP_CAPS_LIST *cap,
+                                                   ACVP_RSA_MODE mode,
+                                                   ACVP_RSA_PARM param )
 {
     ACVP_RSA_CAP_MODE_LIST *cap_mode_list;
     ACVP_RSA_MODE          *cap_mode;
@@ -347,10 +349,17 @@ ACVP_RSA_CAP_MODE_LIST* acvp_locate_rsa_mode_entry(ACVP_CAPS_LIST *cap, ACVP_RSA
 
     while (cap_mode_list) {
         if (*cap_mode == mode) {
-            return cap_mode_list;
+            if (mode == ACVP_RSA_MODE_KEYGEN) {
+                // if there is a keygen mode_spec obj AND rand_pq hasn't been set
+                // (since rand_pq is the differentiating attribute in these objs)
+                if (cap_mode_list->cap_mode_attrs.keygen->rand_pq == 0) {
+                    return cap_mode_list;
+                }
+            }
         }
-        cap_mode_list = rsa_cap->rsa_cap_mode_list->next;
+        cap_mode_list = cap_mode_list->next;
         cap_mode = &cap_mode_list->cap_mode;
+
     }
     return NULL;
 }
