@@ -165,6 +165,8 @@
 #define ACVP_CMAC_KEY_MAX       256
 
 #define ACVP_RSA_SEEDLEN_MAX    64
+
+#define RSA_SIG_TYPE_MAX_LEN   	9
 // #define MOD_PROV_PRIME_2048     2048
 // #define MOD_PROV_PRIME_3072     3072
 // #define MOD_PROV_PRIME_4096     4096
@@ -321,6 +323,12 @@ typedef struct acvp_sa_list_t {
    struct acvp_sa_list_t *next;
 } ACVP_SA_LIST; // supported algs list
 
+/*************/
+typedef struct acvp_salt_t {
+   int saltVal;
+   struct acvp_salt_t *next;
+} ACVP_SALT_SIZES; // supported salt sizes list
+
 // typedef struct acvp_rsa_prov_prime_t {
 //     int mod_prov_prime; // 2048, 3072, 4096
 //     ACVP_SA_LIST *compatible_hashes;
@@ -351,7 +359,7 @@ typedef struct acvp_rsa_prob_primes {
 typedef struct acvp_rsa_cap_sig_type {
    int mod_rsa_siggen; // 2048, 3072, 4096 -- defined as macros
    ACVP_SA_LIST *compatible_hashes_siggen;
-   int *salt_siggen; // 28, 32, 64 -- when sigType = "PKCS1PSS"
+   ACVP_SALT_SIZES *salt_siggen; // 28, 32, 64 -- when sigType = "PKCS1PSS"
    struct acvp_rsa_cap_sig_type *next;
 } ACVP_RSA_CAP_SIG_TYPE;
 

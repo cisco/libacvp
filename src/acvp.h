@@ -284,6 +284,10 @@ typedef enum acvp_rsa_param {
 #define MOD_RSA_SIGGEN_3072     3072
 #define MOD_RSA_SIGGEN_4096     4096
 
+#define RSA_SALT_SIGGEN_28      28
+#define RSA_SALT_SIGGEN_32      32
+#define RSA_SALT_SIGGEN_64      64
+
 #define MOD_PROV_PRIME_2048     2048
 #define MOD_PROV_PRIME_3072     3072
 #define MOD_PROV_PRIME_4096     4096
@@ -293,7 +297,7 @@ typedef enum acvp_rsa_param {
 #define MOD_PROB_PRIME_4096     4096
 
 #define RSA_SIG_TYPE_X931_NAME      "X9.31"
-#define RSA_SIG_TYPE_PKCS1v15_NAME  "PKCS1v1.5"
+#define RSA_SIG_TYPE_PKCS1V15_NAME  "PKCS1v1.5"
 #define RSA_SIG_TYPE_PKCS1PSS_NAME  "PKCS1PSS"
 
 #define PROB_PRIME_TEST_2       2
@@ -861,6 +865,15 @@ ACVP_RESULT acvp_enable_rsa_cap_sig_type_parm (ACVP_CTX *ctx,
                              ACVP_RSA_PARM param,
                              int mod,
                              char *hash
+                             );
+
+ACVP_RESULT acvp_enable_rsa_cap_sig_type_salt_parm (ACVP_CTX *ctx,
+                             ACVP_CIPHER cipher,
+                             ACVP_RSA_MODE mode,
+                             ACVP_RSA_PARM param,
+                             int mod,
+                             char *hash,
+							 int salt
                              );
 
 // ACVP_RESULT acvp_enable_drbg_length_cap(
