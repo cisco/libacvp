@@ -49,6 +49,7 @@
 #include <openssl/cmac.h>
 #include <openssl/rsa.h>
 #include <openssl/bn.h>
+#include <openssl/rand.h>
 
 #ifdef ACVP_NO_RUNTIME
 #include "app_lcl.h"
@@ -302,24 +303,54 @@ int main(int argc, char **argv)
     }
     rv = acvp_enable_rsa_bignum_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_FIXED_PUB_EXP_VAL, expo);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_cap_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_RAND_PQ, 3);
+    // ENABLES RAND PQ VALUE 1 or 3 -- "provPC" or "provRP"
+    // not to be used in conjunction with other randPQ values
+    // rv = acvp_enable_rsa_cap_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_RAND_PQ, 3);
+    // CHECK_ENABLE_CAP_RV(rv);
+    // rv = acvp_enable_rsa_primes_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_CAPS_PROV_PRIME, MOD_PRIME_2048, ACVP_RSA_PRIME_SHA_1);
+    // CHECK_ENABLE_CAP_RV(rv);
+    // rv = acvp_enable_rsa_primes_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_CAPS_PROV_PRIME, MOD_PRIME_2048, ACVP_RSA_PRIME_SHA_224);
+    // CHECK_ENABLE_CAP_RV(rv);
+    // rv = acvp_enable_rsa_primes_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_CAPS_PROV_PRIME, MOD_PRIME_2048, ACVP_RSA_PRIME_SHA_512);
+    // CHECK_ENABLE_CAP_RV(rv);
+    // rv = acvp_enable_rsa_primes_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_CAPS_PROV_PRIME, MOD_PRIME_4096, ACVP_RSA_PRIME_SHA_1);
+    // CHECK_ENABLE_CAP_RV(rv);
+    // rv = acvp_enable_rsa_primes_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_CAPS_PROV_PRIME, MOD_PRIME_4096, ACVP_RSA_PRIME_SHA_224);
+    // CHECK_ENABLE_CAP_RV(rv);
+
+    // ENABLES RAND PQ VALUE 2 or 5 -- "probPC" or "probRP"
+    // not to be used in conjunction with other randPQ values
+    // rv = acvp_enable_rsa_cap_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_RAND_PQ, 2);
+    // CHECK_ENABLE_CAP_RV(rv);
+    // rv = acvp_enable_rsa_primes_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_CAPS_PROB_PRIME, MOD_PRIME_2048, PRIME_TEST_TBLC2_NAME);
+    // CHECK_ENABLE_CAP_RV(rv);
+    // rv = acvp_enable_rsa_primes_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_CAPS_PROB_PRIME, MOD_PRIME_4096, PRIME_TEST_TBLC3_NAME);
+    // CHECK_ENABLE_CAP_RV(rv);
+    // rv = acvp_enable_rsa_primes_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_CAPS_PROB_PRIME, MOD_PRIME_4096, PRIME_TEST_TBLC2_NAME);
+    // CHECK_ENABLE_CAP_RV(rv);
+
+    // ENABLES RAND PQ VALUE 4 -- "bothPC"
+    // not to be used in conjunction with other randPQ values
+    rv = acvp_enable_rsa_cap_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_RAND_PQ, 4);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_rsa_primes_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_CAPS_PROV_PROB_PRIME, MOD_PRIME_2048, PRIME_TEST_TBLC2_NAME);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_rsa_primes_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_CAPS_PROV_PROB_PRIME, MOD_PRIME_2048, ACVP_RSA_PRIME_SHA_224);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_rsa_primes_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_CAPS_PROV_PROB_PRIME, MOD_PRIME_2048, ACVP_RSA_PRIME_SHA_512);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_rsa_primes_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_CAPS_PROV_PROB_PRIME, MOD_PRIME_3072, PRIME_TEST_TBLC2_NAME);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_rsa_primes_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_CAPS_PROV_PROB_PRIME, MOD_PRIME_3072, ACVP_RSA_PRIME_SHA_1);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_rsa_primes_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_CAPS_PROV_PROB_PRIME, MOD_PRIME_4096, ACVP_RSA_PRIME_SHA_224);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_rsa_primes_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_CAPS_PROV_PROB_PRIME, MOD_PRIME_4096, PRIME_TEST_TBLC3_NAME);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_rsa_primes_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_CAPS_PROV_PROB_PRIME, MOD_PRIME_4096, PRIME_TEST_TBLC2_NAME);
     CHECK_ENABLE_CAP_RV(rv);
 
-    rv = acvp_enable_rsa_prov_primes_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_CAPS_PROV_PRIME, MOD_PROV_PRIME_2048, ACVP_RSA_PRIME_SHA_1);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_prov_primes_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_CAPS_PROV_PRIME, MOD_PROV_PRIME_2048, ACVP_RSA_PRIME_SHA_224);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_prov_primes_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_CAPS_PROV_PRIME, MOD_PROV_PRIME_2048, ACVP_RSA_PRIME_SHA_512);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_prov_primes_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_CAPS_PROV_PRIME, MOD_PROV_PRIME_4096, ACVP_RSA_PRIME_SHA_1);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_prov_primes_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_CAPS_PROV_PRIME, MOD_PROV_PRIME_4096, ACVP_RSA_PRIME_SHA_224);
-    CHECK_ENABLE_CAP_RV(rv);
-
-    rv = acvp_enable_rsa_prob_primes_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_CAPS_PROB_PRIME, MOD_PROB_PRIME_2048);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_prob_primes_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_CAPS_PROB_PRIME, PROB_PRIME_TEST_2);
-    CHECK_ENABLE_CAP_RV(rv);
+    // BN_free(expo);
 
 
 #if 0
@@ -965,6 +996,7 @@ int main(int argc, char **argv)
         exit(1);
     }
     acvp_cleanup();
+    BN_free(expo);
 
     return (0);
 }
@@ -1699,12 +1731,12 @@ static ACVP_RESULT app_cmac_handler(ACVP_TEST_CASE *test_case)
 static ACVP_RESULT app_rsa_handler(ACVP_TEST_CASE *test_case)
 {
     ACVP_RSA_TC	*tc;
-    //const EVP_MD	*c; // hash alg to use
+    const EVP_MD	*c; // hash alg to use
     RSA       *rsa;
     unsigned int mod, bitlen1, bitlen2, bitlen3, bitlen4, seed_len, keylen;
     BIGNUM *exponent;
     unsigned long m;
-    unsigned char *seed;
+    unsigned char *seed = NULL;
     if (!test_case) {
         return ACVP_INVALID_ARG;
     }

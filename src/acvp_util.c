@@ -163,6 +163,39 @@ ACVP_RESULT is_valid_tf_param(unsigned int value) {
     else return ACVP_INVALID_ARG;
 }
 
+/* This function checks to see if the value is a hash alg */
+ACVP_RESULT is_valid_hash_alg(char *value) {
+    if (!value) return ACVP_INVALID_ARG;
+    if (strncmp(value, ACVP_RSA_PRIME_SHA_1, 5) == 0 ||
+        strncmp(value, ACVP_RSA_PRIME_SHA_224, 7) == 0 ||
+        strncmp(value, ACVP_RSA_PRIME_SHA_256, 7) == 0 ||
+        strncmp(value, ACVP_RSA_PRIME_SHA_384, 7) == 0 ||
+        strncmp(value, ACVP_RSA_PRIME_SHA_512, 7) == 0 ||
+        strncmp(value, ACVP_RSA_PRIME_SHA_512_224, 11) == 0 ||
+        strncmp(value, ACVP_RSA_PRIME_SHA_512_256, 11) == 0)
+            return ACVP_SUCCESS;
+    else return ACVP_INVALID_ARG;
+}
+
+/* This function checks to see if the value is a valid prime test (RSA) */
+ACVP_RESULT is_valid_prime_test(char *value) {
+    if (!value) return ACVP_INVALID_ARG;
+    if (strncmp(value, PRIME_TEST_TBLC2_NAME, 5) != 0 &&
+        strncmp(value, PRIME_TEST_TBLC3_NAME, 5) != 0)
+            return ACVP_INVALID_ARG;
+    else return ACVP_SUCCESS;
+}
+
+/* This function checks to see if the value is a valid prime test (RSA) */
+ACVP_RESULT is_valid_rsa_mod(int value) {
+    if (value != MOD_PRIME_2048 &&
+        value != MOD_PRIME_3072 &&
+        value != MOD_PRIME_4096)
+            return ACVP_INVALID_ARG;
+    else return ACVP_SUCCESS;
+}
+
+
 /*
  * This function returns the ID of a DRBG mode given an
  * algorithm name (as defined in the ACVP spec).  It
@@ -325,8 +358,7 @@ ACVP_DRBG_CAP_MODE_LIST* acvp_locate_drbg_mode_entry(ACVP_CAPS_LIST *cap, ACVP_D
  * when adding parameters to a registration
  */
 ACVP_RSA_CAP_MODE_LIST* acvp_locate_rsa_mode_entry(ACVP_CAPS_LIST *cap,
-                                                   ACVP_RSA_MODE mode,
-                                                   ACVP_RSA_PARM param )
+                                                   ACVP_RSA_MODE mode)
 {
     ACVP_RSA_CAP_MODE_LIST *cap_mode_list;
     ACVP_RSA_MODE          *cap_mode;

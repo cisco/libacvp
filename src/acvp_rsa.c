@@ -49,8 +49,8 @@ static ACVP_RESULT acvp_rsa_init_tc(ACVP_CTX *ctx,
         stc->keygen_tc->e = calloc(1, sizeof(BIGNUM));
         stc->keygen_tc->seed = calloc(1, sizeof(ACVP_RSA_SEEDLEN_MAX));
         if (rand_pq == 1 || rand_pq == 3 || stc->rand_pq == 4 || rand_pq == 5) {
-            stc->keygen_tc->p = calloc(512, sizeof(char));
-            stc->keygen_tc->q = calloc(512, sizeof(char));
+            stc->keygen_tc->p = calloc(1, sizeof(BIGNUM));
+            stc->keygen_tc->q = calloc(1, sizeof(BIGNUM));
             stc->keygen_tc->n = calloc(1, sizeof(BIGNUM));
             stc->keygen_tc->d = calloc(1, sizeof(BIGNUM));
         }
@@ -140,8 +140,8 @@ static ACVP_RESULT acvp_rsa_output_tc(ACVP_CTX *ctx, ACVP_RSA_TC *stc, JSON_Obje
     void populate_common_fields() {
         json_object_set_string(tc_rsp, "seed", (char *)stc->keygen_tc->seed);
         json_object_set_string(tc_rsp, "e", BN_bn2hex(stc->keygen_tc->e));
-        json_object_set_string(tc_rsp, "p", (char *)stc->keygen_tc->p);
-        json_object_set_string(tc_rsp, "q", (char *)stc->keygen_tc->q);
+        json_object_set_string(tc_rsp, "p", BN_bn2hex(stc->keygen_tc->p));
+        json_object_set_string(tc_rsp, "q", BN_bn2hex(stc->keygen_tc->q));
         json_object_set_string(tc_rsp, "n", BN_bn2hex(stc->keygen_tc->n));
         json_object_set_string(tc_rsp, "d", BN_bn2hex(stc->keygen_tc->d));
     }
