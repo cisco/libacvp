@@ -11,7 +11,7 @@ static ACVP_RESULT acvp_rsa_init_tc(ACVP_CTX *ctx,
                                     unsigned int tc_id,
                                     ACVP_CIPHER alg_id,
                                     int info_gen_by_server,
-                                    unsigned int rand_pq,
+                                    int rand_pq,
                                     unsigned int mod,
                                     // char *hash_alg,
                                     // char *prime_test,
@@ -48,7 +48,7 @@ static ACVP_RESULT acvp_rsa_init_tc(ACVP_CTX *ctx,
         if (!stc->keygen_tc) return ACVP_MALLOC_FAIL;
         stc->keygen_tc->e = calloc(1, sizeof(BIGNUM));
         stc->keygen_tc->seed = calloc(1, sizeof(ACVP_RSA_SEEDLEN_MAX));
-        if (rand_pq == 1 || rand_pq == 3 || stc->rand_pq == 4 || rand_pq == 5) {
+        if (rand_pq == 1 || rand_pq == 3 || rand_pq == 4 || rand_pq == 5) {
             stc->keygen_tc->p = calloc(1, sizeof(BIGNUM));
             stc->keygen_tc->q = calloc(1, sizeof(BIGNUM));
             stc->keygen_tc->n = calloc(1, sizeof(BIGNUM));
@@ -262,7 +262,7 @@ ACVP_RESULT acvp_rsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
     char                *mode_str = NULL;
     ACVP_CIPHER	        alg_id;
     ACVP_RSA_MODE       mode_id;
-    char *json_result;
+    char *json_result, *rand_pq_str;
 
     int info_gen_by_server, rand_pq;
     // TODO need to handle char *hash_alg, *prime_test, *pub_exp
@@ -311,8 +311,6 @@ ACVP_RESULT acvp_rsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
         return (ACVP_UNSUPPORTED_OP);
     }
 
-    info_gen_by_server = cap->cap.rsa_cap->info_gen_by_server;
-
     /*
      * Create ACVP array for response
      */
@@ -357,7 +355,8 @@ ACVP_RESULT acvp_rsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
         }
 
         // TODO should switch on mode here and process the vector that way... otherwise this is about to get long...
-        rand_pq = json_object_get_number(groupobj, "randPQ");
+        rand_pq_str = (char *)json_object_get_string(groupobj, "randPQ");
+        rand_pq = acvp_lookup_rsa_randpq_index(rand_pq_str);
         mod = json_object_get_number(groupobj, "modRSA");
         // hash_alg = (char *)json_object_get_string(groupobj, "hashAlg");
         // prime_test = (char *)json_object_get_string(groupobj, "primeTest");
@@ -381,7 +380,7 @@ ACVP_RESULT acvp_rsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
 
             switch(mode_id) {
             case ACVP_RSA_MODE_KEYGEN:
-
+                info_gen_by_server = cap->cap.rsa_cap->rsa_cap_mode_list->cap_mode_attrs.keygen->info_gen_by_server;
                 if (!info_gen_by_server) {
                     if (rand_pq == 2) { // "ProbRP"
                         get_e();

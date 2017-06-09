@@ -1204,20 +1204,14 @@ static ACVP_RESULT acvp_add_rsa_keygen_parm (
                              )
 {
     switch (param) {
-    case ACVP_RAND_PUB_EXP:
-        if(rsa_cap_mode_list->cap_mode_attrs.keygen->fixed_pub_exp) {
-            return ACVP_INVALID_ARG;
-        }
-        rsa_cap_mode_list->cap_mode_attrs.keygen->rand_pub_exp = value;
-        break;
-    case ACVP_FIXED_PUB_EXP:
-        if(rsa_cap_mode_list->cap_mode_attrs.keygen->rand_pub_exp) {
-            return ACVP_INVALID_ARG;
-        }
-        rsa_cap_mode_list->cap_mode_attrs.keygen->fixed_pub_exp = value;
+    case ACVP_PUB_EXP:
+        rsa_cap_mode_list->cap_mode_attrs.keygen->pub_exp = value;
         break;
     case ACVP_RAND_PQ:
         rsa_cap_mode_list->cap_mode_attrs.keygen->rand_pq = value;
+        break;
+    case ACVP_RSA_INFO_GEN_BY_SERVER:
+        rsa_cap_mode_list->cap_mode_attrs.keygen->info_gen_by_server = value;
         break;
     default:
         return ACVP_INVALID_ARG;
@@ -1341,8 +1335,7 @@ ACVP_RESULT acvp_validate_rsa_parm_value(ACVP_RSA_PARM parm, int value,
   ACVP_RESULT retval = ACVP_INVALID_ARG;
 
   switch(parm){
-    case ACVP_RAND_PUB_EXP:
-    case ACVP_FIXED_PUB_EXP:
+    case ACVP_PUB_EXP:
     case ACVP_RSA_INFO_GEN_BY_SERVER:
         retval = is_valid_tf_param(value);
         break;
@@ -1409,48 +1402,6 @@ ACVP_RESULT acvp_validate_rsa_primes_parm(ACVP_RSA_PARM parm, int mod, char *nam
     }
 
     return retval;
-}
-
-/*
- * The user should call this after invoking acvp_enable_rsa_cap_parm().
- */
-ACVP_RESULT acvp_set_rsa_info_gen_by_server_flag (ACVP_CTX *ctx,
-                             ACVP_CIPHER cipher,
-                             int value
-                             )
-{
-    ACVP_CAPS_LIST              *cap_list;
-
-    /*
-     * Validate input
-     */
-    if (!ctx) {
-        return ACVP_INVALID_ARG;
-    }
-
-    switch (cipher) {
-    case ACVP_RSA:
-        break;
-    default:
-        return ACVP_INVALID_ARG;
-    }
-
-    /*
-     * Locate this cipher in the caps array
-     */
-    cap_list = acvp_locate_cap_entry(ctx, cipher);
-    if (!cap_list) {
-        ACVP_LOG_ERR("Cap entry not found.");
-        return ACVP_NO_CAP;
-    }
-
-    if (acvp_validate_rsa_parm_value(ACVP_RSA_INFO_GEN_BY_SERVER, value, NULL) != ACVP_SUCCESS) {
-        return ACVP_INVALID_ARG;
-    }
-
-    cap_list->cap.rsa_cap->info_gen_by_server = value;
-    return ACVP_SUCCESS;
-
 }
 
 /*
@@ -2773,13 +2724,14 @@ static ACVP_RESULT acvp_build_rsa_keygen_register(JSON_Object **cap_specs_obj, A
 
     rsa_cap_mode = cap_entry->cap.rsa_cap->rsa_cap_mode_list->cap_mode_attrs.keygen;
 
-    if (rsa_cap_mode->rand_pub_exp) {
-        json_object_set_string(*cap_specs_obj, "randPubExp", "yes");
-    } else {
-        json_object_set_string(*cap_specs_obj, "fixedPubExp", rsa_cap_mode->fixed_pub_exp ? "yes" : "no");
+    json_object_set_string(*cap_specs_obj, "pubExp", rsa_cap_mode->pub_exp ? "fixed" : "random");
+
+    if (rsa_cap_mode->pub_exp) {
         json_object_set_string(*cap_specs_obj, "fixedPubExpVal", BN_bn2hex(rsa_cap_mode->fixed_pub_exp_val));
     }
-    json_object_set_number(*cap_specs_obj, "randPQ", rsa_cap_mode->rand_pq);
+
+    json_object_set_boolean(*cap_specs_obj, "infoGeneratedByServer", rsa_cap_mode->info_gen_by_server);
+    json_object_set_string(*cap_specs_obj, "randPQ", acvp_lookup_rsa_randpq_name(rsa_cap_mode->rand_pq));
     result = acvp_lookup_rsa_primes(*cap_specs_obj, cap_entry->cap.rsa_cap);
 
     return result;
@@ -2791,20 +2743,15 @@ static ACVP_RESULT acvp_build_rsa_register_cap(JSON_Object *cap_obj, ACVP_CAPS_L
     ACVP_RSA_MODE mode;
 
     JSON_Array *specs_array = NULL;
-    JSON_Value *mode_specs_outer_val = NULL, *mode_specs_val = NULL, *cap_specs_val = NULL;
-    JSON_Object *mode_specs_outer_obj = NULL, *mode_specs_obj = NULL, *cap_specs_obj = NULL;
+    JSON_Value *mode_specs_val = NULL, *cap_specs_val = NULL;
+    JSON_Object *mode_specs_obj = NULL, *cap_specs_obj = NULL;
 
     json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
     result = acvp_lookup_rsa_prereqVals(cap_obj, cap_entry->cap.rsa_cap);
     if (result != ACVP_SUCCESS) return result;
 
-    json_object_set_string(cap_obj, "infoGeneratedByServer", cap_entry->cap.rsa_cap->info_gen_by_server ? "true" : "false");
-
     json_object_set_value(cap_obj, "algSpecs", json_value_init_array());
     specs_array = json_object_get_array(cap_obj, "algSpecs");
-
-    mode_specs_outer_val = json_value_init_object();
-    mode_specs_outer_obj = json_value_get_object(mode_specs_outer_val);
 
     mode_specs_val = json_value_init_object();
     mode_specs_obj = json_value_get_object(mode_specs_val);
@@ -2815,7 +2762,6 @@ static ACVP_RESULT acvp_build_rsa_register_cap(JSON_Object *cap_obj, ACVP_CAPS_L
     char *mode_str = acvp_lookup_rsa_mode_string(mode);
     if (!mode_str) return ACVP_INVALID_ARG;
 
-    json_object_set_string(mode_specs_obj, "mode", mode_str);
     cap_specs_val = json_value_init_object();
     cap_specs_obj = json_value_get_object(cap_specs_val);
 
@@ -2828,9 +2774,8 @@ static ACVP_RESULT acvp_build_rsa_register_cap(JSON_Object *cap_obj, ACVP_CAPS_L
         break;
     }
 
-    json_object_set_value(mode_specs_obj, "capSpecs", cap_specs_val);
-    json_object_set_value(mode_specs_outer_obj, "modeSpecs", mode_specs_val);
-    json_array_append_value(specs_array, mode_specs_outer_val);
+    json_object_set_value(mode_specs_obj, mode_str, cap_specs_val);
+    json_array_append_value(specs_array, mode_specs_val);
 
     return ACVP_SUCCESS;
 }

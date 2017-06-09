@@ -327,10 +327,10 @@ typedef struct acvp_rsa_prereq_vals {
 
 typedef struct acvp_rsa_keygen_attrs_t {
     ACVP_RSA_MODE   mode;  // "keyGen"
-    int fixed_pub_exp; // "yes" or "no"
+    int pub_exp; // 0 - random, 1 - fixed
     BIGNUM *fixed_pub_exp_val; // hex value of e
-    int rand_pub_exp; // "yes" or "no"
     int rand_pq; // 1, 2, 3, 4, 5 as defined in FIPS186-4
+    int info_gen_by_server; // "yes" or "no"
     ACVP_RSA_PRIMES_LIST *cap_primes_list;
 } ACVP_RSA_KEYGEN_ATTRS;
 
@@ -345,7 +345,6 @@ typedef struct acvp_rsa_cap_mode_list_t {
 typedef struct acvp_rsa_capability {
   ACVP_CIPHER               cipher;
   ACVP_RSA_PREREQ_VALS *prereq_vals;
-  int info_gen_by_server; // "yes" or "no"
   ACVP_RSA_CAP_MODE_LIST *rsa_cap_mode_list;
 } ACVP_RSA_CAP;
 
@@ -439,6 +438,8 @@ ACVP_DRBG_MODE acvp_lookup_drbg_mode_index(const char *mode);
 ACVP_DRBG_CAP_MODE_LIST* acvp_locate_drbg_mode_entry(ACVP_CAPS_LIST *cap, ACVP_DRBG_MODE mode);
 ACVP_RSA_MODE acvp_lookup_rsa_mode_index(char *mode);
 ACVP_RSA_CAP_MODE_LIST* acvp_locate_rsa_mode_entry(ACVP_CAPS_LIST *cap, ACVP_RSA_MODE mode);
+char *acvp_lookup_rsa_randpq_name(int value);
+int acvp_lookup_rsa_randpq_index(char *value);
 unsigned int yes_or_no(ACVP_CTX *ctx, const char *text);
 ACVP_RESULT acvp_create_array (JSON_Object **obj, JSON_Value **val, JSON_Array **arry);
 ACVP_RESULT is_valid_tf_param(unsigned int value);

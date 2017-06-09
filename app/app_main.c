@@ -290,9 +290,9 @@ int main(int argc, char **argv)
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_rsa_prereq_cap(ctx, ACVP_RSA, RSA_SHA, value);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_set_rsa_info_gen_by_server_flag(ctx, ACVP_RSA, 0);
+    rv = acvp_enable_rsa_cap_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_PUB_EXP, RSA_PUB_EXP_FIXED);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_cap_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_FIXED_PUB_EXP, 1);
+    rv = acvp_enable_rsa_cap_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_RSA_INFO_GEN_BY_SERVER, 0);
     CHECK_ENABLE_CAP_RV(rv);
 
     BIGNUM *expo = BN_new();
@@ -305,7 +305,7 @@ int main(int argc, char **argv)
     CHECK_ENABLE_CAP_RV(rv);
     // ENABLES RAND PQ VALUE 1 or 3 -- "provPC" or "provRP"
     // not to be used in conjunction with other randPQ values
-    // rv = acvp_enable_rsa_cap_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_RAND_PQ, 3);
+    // rv = acvp_enable_rsa_cap_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_RAND_PQ, RSA_RAND_PQ_B34);
     // CHECK_ENABLE_CAP_RV(rv);
     // rv = acvp_enable_rsa_primes_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_CAPS_PROV_PRIME, MOD_PRIME_2048, ACVP_RSA_PRIME_SHA_1);
     // CHECK_ENABLE_CAP_RV(rv);
@@ -320,7 +320,7 @@ int main(int argc, char **argv)
 
     // ENABLES RAND PQ VALUE 2 or 5 -- "probPC" or "probRP"
     // not to be used in conjunction with other randPQ values
-    // rv = acvp_enable_rsa_cap_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_RAND_PQ, 2);
+    // rv = acvp_enable_rsa_cap_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_RAND_PQ, RSA_RAND_PQ_B33);
     // CHECK_ENABLE_CAP_RV(rv);
     // rv = acvp_enable_rsa_primes_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_CAPS_PROB_PRIME, MOD_PRIME_2048, PRIME_TEST_TBLC2_NAME);
     // CHECK_ENABLE_CAP_RV(rv);
@@ -331,7 +331,7 @@ int main(int argc, char **argv)
 
     // ENABLES RAND PQ VALUE 4 -- "bothPC"
     // not to be used in conjunction with other randPQ values
-    rv = acvp_enable_rsa_cap_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_RAND_PQ, 4);
+    rv = acvp_enable_rsa_cap_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_RAND_PQ, RSA_RAND_PQ_B35);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_rsa_primes_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_CAPS_PROV_PROB_PRIME, MOD_PRIME_2048, PRIME_TEST_TBLC2_NAME);
     CHECK_ENABLE_CAP_RV(rv);

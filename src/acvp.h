@@ -264,8 +264,7 @@ typedef enum acvp_drbg_pre_req {
 #define ACVP_RSA_PRIME_SHA_512_256   "SHA-512/256"
 
 typedef enum acvp_rsa_param {
-    ACVP_RAND_PUB_EXP = 0,
-    ACVP_FIXED_PUB_EXP,
+    ACVP_PUB_EXP = 0,
     ACVP_FIXED_PUB_EXP_VAL,
     ACVP_RAND_PQ,
     ACVP_CAPS_PROV_PRIME,
@@ -283,6 +282,14 @@ typedef enum acvp_rsa_param {
 
 #define PRIME_TEST_TBLC2_NAME "tblC2"
 #define PRIME_TEST_TBLC3_NAME "tblC3"
+
+#define RSA_RAND_PQ_B32    1
+#define RSA_RAND_PQ_B33    2
+#define RSA_RAND_PQ_B34    3
+#define RSA_RAND_PQ_B35    4
+#define RSA_RAND_PQ_B36    5
+#define RSA_PUB_EXP_FIXED  1
+#define RSA_PUB_EXP_RANDOM 0
 
 #define ACVP_RSA_PREREQ_SHA      "SHA"
 typedef enum acvp_rsa_pre_req {
@@ -765,11 +772,6 @@ ACVP_RESULT acvp_enable_rsa_cap(
                                 ACVP_CTX *ctx,
                                 ACVP_CIPHER cipher,
                                 ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case));
-
-ACVP_RESULT acvp_set_rsa_info_gen_by_server_flag (ACVP_CTX *ctx,
-                             ACVP_CIPHER cipher,
-                             int value
-                           );
 
 ACVP_RESULT acvp_enable_rsa_cap_parm(
                             ACVP_CTX *ctx,

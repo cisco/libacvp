@@ -127,6 +127,38 @@ ACVP_CIPHER acvp_lookup_cipher_index(const char *algorithm)
 }
 
 /*
+ * This method returns the string that corresponds to a randPQ
+ * index value
+ */
+char *acvp_lookup_rsa_randpq_name(int value)
+{
+    switch(value) {
+    case 1:
+        return "B.3.2"; // "provRP"
+    case 2:
+        return "B.3.3"; // "probRP"
+    case 3:
+        return "B.3.4"; // "provPC"
+    case 4:
+        return "B.3.5"; // "bothPC"
+    case 5:
+        return "B.3.6"; // "probPC"
+    default:
+        return NULL;
+    }
+}
+
+int acvp_lookup_rsa_randpq_index(char *value)
+{
+    if (strncmp(value, "B.3.2", 5) == 0) return 1;
+    if (strncmp(value, "B.3.3", 5) == 0) return 2;
+    if (strncmp(value, "B.3.4", 5) == 0) return 3;
+    if (strncmp(value, "B.3.5", 5) == 0) return 4;
+    if (strncmp(value, "B.3.6", 5) == 0) return 5;
+    return 0;
+}
+
+/*
  * This function returns the ID of a DRBG mode given an
  * algorithm name (as defined in the ACVP spec).  It
  * returns ACVP_DRBG_MODE_END if none match.
