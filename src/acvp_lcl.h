@@ -111,17 +111,9 @@
 #define ACVP_ALG_CMAC_TDES           "CMAC-TDES"
 
 #define ACVP_ALG_RSA                 "RSA"
+
 #define ACVP_RSA_KEYGEN         	 "keyGen"
 #define ACVP_RSA_SIGGEN         	 "sigGen"
-
-// TODO CAN PROBABLY CONSOLIDATE THESE STRING algs
-// #define ACVP_RSA_PRIME_SHA_1         "SHA-1"
-// #define ACVP_RSA_PRIME_SHA_224       "SHA-224"
-// #define ACVP_RSA_PRIME_SHA_256       "SHA-256"
-// #define ACVP_RSA_PRIME_SHA_384       "SHA-384"
-// #define ACVP_RSA_PRIME_SHA_512       "SHA-512"
-// #define ACVP_RSA_PRIME_SHA_512_224   "SHA-512/224"
-// #define ACVP_RSA_PRIME_SHA_512_256   "SHA-512/256"
 
 #define ACVP_DRBG_MODE_SHA_1         "SHA-1"
 #define ACVP_DRBG_MODE_SHA_224       "SHA-224"
@@ -167,9 +159,6 @@
 #define ACVP_RSA_SEEDLEN_MAX    64
 
 #define RSA_SIG_TYPE_MAX_LEN   	9
-// #define MOD_PROV_PRIME_2048     2048
-// #define MOD_PROV_PRIME_3072     3072
-// #define MOD_PROV_PRIME_4096     4096
 
 #define ACVP_KAT_BUF_MAX        1024*1024*4
 #define ACVP_REG_BUF_MAX        1024*128
@@ -318,10 +307,10 @@ struct acvp_rsa_mode_name_t {
     char           *name;
 };
 
-typedef struct acvp_sa_list_t {
+typedef struct acvp_name_list_t {
    char *name;
-   struct acvp_sa_list_t *next;
-} ACVP_SA_LIST; // supported algs list
+   struct acvp_name_list_t *next;
+} ACVP_NAME_LIST; // supported algs list
 
 /*************/
 typedef struct acvp_salt_t {
@@ -329,36 +318,17 @@ typedef struct acvp_salt_t {
    struct acvp_salt_t *next;
 } ACVP_SALT_SIZES; // supported salt sizes list
 
-// typedef struct acvp_rsa_prov_prime_t {
-//     int mod_prov_prime; // 2048, 3072, 4096
-//     ACVP_SA_LIST *compatible_hashes;
-// } ACVP_RSA_PROV_PRIME;
-
-typedef struct acvp_rsa_prov_primes_list {
-  //  ACVP_RSA_PROV_PRIME prov_prime_cap;
+typedef struct acvp_rsa_primes_list {
    int modulo; // 2048, 3072, 4096 -- defined as macros
-   ACVP_SA_LIST *hash_alg;
-   struct acvp_rsa_prov_primes_list *next;
-} ACVP_RSA_PROV_PRIMES_LIST;
-
-// typedef struct acvp_rsa_prob_prime_t {
-//     int mod_prob_prime; // 2048, 3072, 4096
-//     char *prime_test; // "tblC2", "tblC3"
-// } ACVP_RSA_PROB_PRIME;
-
-typedef struct acvp_rsa_prob_primes {
-  //  ACVP_RSA_PROB_PRIME prob_prime_cap;
-  //  struct acvp_rsa_prob_primes *next;
-    int mod_prob_prime_1;
-    int mod_prob_prime_2;
-    int mod_prob_prime_3;
-    char *prime_test;
-} ACVP_RSA_PROB_PRIMES;
+   ACVP_NAME_LIST *hash_algs;
+   ACVP_NAME_LIST *prime_tests;
+   struct acvp_rsa_primes_list *next;
+} ACVP_RSA_PRIMES_LIST;
 
 /*************************************/
 typedef struct acvp_rsa_cap_sig_type {
    int mod_rsa_siggen; // 2048, 3072, 4096 -- defined as macros
-   ACVP_SA_LIST *compatible_hashes_siggen;
+   ACVP_NAME_LIST *compatible_hashes_siggen;
    ACVP_SALT_SIZES *salt_siggen; // 28, 32, 64 -- when sigType = "PKCS1PSS"
    struct acvp_rsa_cap_sig_type *next;
 } ACVP_RSA_CAP_SIG_TYPE;
@@ -375,12 +345,11 @@ typedef struct acvp_rsa_prereq_vals {
 
 typedef struct acvp_rsa_keygen_attrs_t {
     ACVP_RSA_MODE   mode;  // "keyGen"
-    int fixed_pub_exp; // "yes" or "no"
+    int pub_exp; // 0 - random, 1 - fixed
     BIGNUM *fixed_pub_exp_val; // hex value of e
-    int rand_pub_exp; // "yes" or "no"
     int rand_pq; // 1, 2, 3, 4, 5 as defined in FIPS186-4
-    ACVP_RSA_PROV_PRIMES_LIST *cap_prov_primes_list;
-    ACVP_RSA_PROB_PRIMES *cap_prob_primes;
+    int info_gen_by_server; // "yes" or "no"
+    ACVP_RSA_PRIMES_LIST *cap_primes_list;
 } ACVP_RSA_KEYGEN_ATTRS;
 
 /**************************************/
@@ -402,7 +371,6 @@ typedef struct acvp_rsa_cap_mode_list_t {
 typedef struct acvp_rsa_capability {
   ACVP_CIPHER               cipher;
   ACVP_RSA_PREREQ_VALS *prereq_vals;
-  int info_gen_by_server; // "yes" or "no"
   ACVP_RSA_CAP_MODE_LIST *rsa_cap_mode_list;
 } ACVP_RSA_CAP;
 
@@ -416,7 +384,7 @@ typedef struct acvp_caps_list_t {
       ACVP_HMAC_CAP       *hmac_cap;
       ACVP_CMAC_CAP       *cmac_cap;
       ACVP_RSA_CAP        *rsa_cap;
-    //TODO: add other cipher types: asymmetric, DRBG, hash, etc.
+    //TODO: add other cipher types
     } cap;
     ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case);
     struct acvp_caps_list_t *next;
@@ -496,7 +464,12 @@ ACVP_DRBG_MODE acvp_lookup_drbg_mode_index(const char *mode);
 ACVP_DRBG_CAP_MODE_LIST* acvp_locate_drbg_mode_entry(ACVP_CAPS_LIST *cap, ACVP_DRBG_MODE mode);
 ACVP_RSA_MODE acvp_lookup_rsa_mode_index(char *mode);
 ACVP_RSA_CAP_MODE_LIST* acvp_locate_rsa_mode_entry(ACVP_CAPS_LIST *cap, ACVP_RSA_MODE mode);
+char *acvp_lookup_rsa_randpq_name(int value);
+int acvp_lookup_rsa_randpq_index(char *value);
 unsigned int yes_or_no(ACVP_CTX *ctx, const char *text);
 ACVP_RESULT acvp_create_array (JSON_Object **obj, JSON_Value **val, JSON_Array **arry);
 ACVP_RESULT is_valid_tf_param(unsigned int value);
+ACVP_RESULT is_valid_hash_alg(char *value);
+ACVP_RESULT is_valid_prime_test(char *value);
+ACVP_RESULT is_valid_rsa_mod(int value);
 #endif

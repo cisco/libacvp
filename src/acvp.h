@@ -255,7 +255,6 @@ typedef enum acvp_drbg_pre_req {
 } ACVP_DRBG_PRE_REQ;
 
 
-// TODO CAN PROBABLY CONSOLIDATE THESE STRING algs --124 in acvp_lcl or do it like drbg did modes above.......
 #define ACVP_RSA_PRIME_SHA_1         "SHA-1"
 #define ACVP_RSA_PRIME_SHA_224       "SHA-224"
 #define ACVP_RSA_PRIME_SHA_256       "SHA-256"
@@ -263,20 +262,17 @@ typedef enum acvp_drbg_pre_req {
 #define ACVP_RSA_PRIME_SHA_512       "SHA-512"
 #define ACVP_RSA_PRIME_SHA_512_224   "SHA-512/224"
 #define ACVP_RSA_PRIME_SHA_512_256   "SHA-512/256"
-#define ACVP_RSA_PRIME_TEST_TBLC2 "tblC2"
-#define ACVP_RSA_PRIME_TEST_TBLC3 "tblC3"
-
 
 typedef enum acvp_rsa_param {
-    ACVP_RAND_PUB_EXP = 0,
-    ACVP_FIXED_PUB_EXP,
+    ACVP_PUB_EXP = 0,
     ACVP_FIXED_PUB_EXP_VAL,
     ACVP_RAND_PQ,
     ACVP_CAPS_PROV_PRIME,
     ACVP_CAPS_PROB_PRIME,
+	ACVP_CAPS_PROV_PROB_PRIME,
+	ACVP_RSA_INFO_GEN_BY_SERVER,
 	ACVP_SIG_TYPE,
-	ACVP_CAP_SIG_TYPE,
-    ACVP_RSA_INFO_GEN_BY_SERVER
+	ACVP_CAP_SIG_TYPE
 } ACVP_RSA_PARM;
 
 // TODO not sure if these even go here.....
@@ -296,6 +292,10 @@ typedef enum acvp_rsa_param {
 #define MOD_PROB_PRIME_3072     3072
 #define MOD_PROB_PRIME_4096     4096
 
+#define MOD_PRIME_2048     2048
+#define MOD_PRIME_3072     3072
+#define MOD_PRIME_4096     4096
+
 #define RSA_SIG_TYPE_X931_NAME      "X9.31"
 #define RSA_SIG_TYPE_PKCS1V15_NAME  "PKCS1v1.5"
 #define RSA_SIG_TYPE_PKCS1PSS_NAME  "PKCS1PSS"
@@ -303,8 +303,16 @@ typedef enum acvp_rsa_param {
 #define PROB_PRIME_TEST_2       2
 #define PROB_PRIME_TEST_3       3
 
-#define PROB_PRIME_TEST_2_NAME "tblC2"
-#define PROB_PRIME_TEST_3_NAME "tblC3"
+#define PRIME_TEST_TBLC2_NAME "tblC2"
+#define PRIME_TEST_TBLC3_NAME "tblC3"
+
+#define RSA_RAND_PQ_B32    1
+#define RSA_RAND_PQ_B33    2
+#define RSA_RAND_PQ_B34    3
+#define RSA_RAND_PQ_B35    4
+#define RSA_RAND_PQ_B36    5
+#define RSA_PUB_EXP_FIXED  1
+#define RSA_PUB_EXP_RANDOM 0
 
 #define ACVP_RSA_PREREQ_DRBG     "DRBG"
 #define ACVP_RSA_PREREQ_SHA      "SHA"
@@ -500,13 +508,17 @@ typedef struct acvp_cmac_tc_t {
 
 /*
  * This struct holds data that represents a single test case
- * for cmac testing.  This data is
+ * for RSA testing.  This data is
  * passed between libacvp and the crypto module.
  */
 typedef struct acvp_rsa_keygen_tc_t {
     ACVP_RSA_MODE mode; // "keyGen"
 
+    char *hash_alg;
     unsigned int  tc_id;    /* Test case id */
+    char *pub_exp;
+    char *prime_test;
+    
     BIGNUM *e;
     unsigned char *p_rand;
     unsigned char *q_rand;
@@ -514,16 +526,19 @@ typedef struct acvp_rsa_keygen_tc_t {
     unsigned char *xp1;
     unsigned char *xp2;
     unsigned char *xp;
+    unsigned char *p1;
+    unsigned char *p2;
 
     unsigned char *xq1;
     unsigned char *xq2;
     unsigned char *xq;
+    unsigned char *q1;
+    unsigned char *q2;
 
-    BIGNUM *p;
-    BIGNUM *q;
     BIGNUM *n;
     BIGNUM *d;
-    BIGNUM *s;
+    BIGNUM *p;
+    BIGNUM *q;
 
     unsigned char *seed;
     unsigned int seed_len;
@@ -536,35 +551,18 @@ typedef struct acvp_rsa_keygen_tc_t {
     unsigned char *prime_seed_q1;
     unsigned char *prime_seed_q2;
 
-    unsigned int mod;
     unsigned char *prime_result; // "prime" or "composite"
-    unsigned char *sig_result; // "pass" or "fail"
 } ACVP_RSA_KEYGEN_TC;
 
 typedef struct acvp_rsa_tc_t {
-    // union {
-    //     ACVP_RSA_KEYGEN_TC  *keygen;
-    // } mode_tc;
-    // MAYBE CAN SPLIT THIS OUT later
-
     ACVP_CIPHER cipher; /* hash algorithm TODO: need to validate that
                            this is one of the hashes when we check parms */
     ACVP_RSA_MODE mode; // "keyGen"
     int info_gen_by_server;
+    unsigned int rand_pq;
+    unsigned int mod;
     ACVP_RSA_KEYGEN_TC *keygen_tc;
 } ACVP_RSA_TC;
-
-// typedef struct acvp_rsa_keygen_specs_t {
-//     unsigned int randPubExp; /* "yes" or "no" */
-//     unsigned int randPQ;
-//
-// } ACVP_RSA_KEYGEN_SPECS;
-//
-// typedef struct acvp_rsa_keygen_probprime_t {
-//     unsigned int randPubExp; /* "yes" or "no" */
-//     unsigned int randPQ;
-//
-// } ACVP_RSA_KEYGEN_PROBPRIME;
 
 /*
  * This struct holds data that represents a single test case
@@ -810,11 +808,6 @@ ACVP_RESULT acvp_enable_rsa_cap(
                                 ACVP_CIPHER cipher,
                                 ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case));
 
-ACVP_RESULT acvp_set_rsa_info_gen_by_server_flag (ACVP_CTX *ctx,
-                             ACVP_CIPHER cipher,
-                             int value
-                           );
-
 ACVP_RESULT acvp_enable_rsa_cap_parm(
                             ACVP_CTX *ctx,
                             ACVP_CIPHER cipher,
@@ -830,13 +823,6 @@ ACVP_RESULT acvp_enable_rsa_bignum_parm (ACVP_CTX *ctx,
                              BIGNUM *value
                            );
 
-ACVP_RESULT acvp_enable_rsa_str_parm (ACVP_CTX *ctx,
-                            ACVP_CIPHER cipher,
-                            ACVP_RSA_MODE mode,
-                            ACVP_RSA_PARM param,
-                            char *value
-                          );
-
 ACVP_RESULT acvp_enable_rsa_prereq_cap(
                             ACVP_CTX *ctx,
                             ACVP_CIPHER cipher,
@@ -844,20 +830,13 @@ ACVP_RESULT acvp_enable_rsa_prereq_cap(
                             char *value
                             );
 
-ACVP_RESULT acvp_enable_rsa_prov_primes_parm (ACVP_CTX *ctx,
+ACVP_RESULT acvp_enable_rsa_primes_parm (ACVP_CTX *ctx,
                              ACVP_CIPHER cipher,
                              ACVP_RSA_MODE mode,
                              ACVP_RSA_PARM param,
                              int mod,
                              char *hash
                            );
-
-ACVP_RESULT acvp_enable_rsa_prob_primes_parm (ACVP_CTX *ctx,
-                            ACVP_CIPHER cipher,
-                            ACVP_RSA_MODE mode,
-                            ACVP_RSA_PARM param,
-                            int mod
-                          );
 
 ACVP_RESULT acvp_enable_rsa_cap_sig_type_parm (ACVP_CTX *ctx,
                              ACVP_CIPHER cipher,
@@ -875,15 +854,6 @@ ACVP_RESULT acvp_enable_rsa_cap_sig_type_salt_parm (ACVP_CTX *ctx,
                              char *hash,
 							 int salt
                              );
-
-// ACVP_RESULT acvp_enable_drbg_length_cap(
-//                             ACVP_CTX         *ctx,
-//                             ACVP_CIPHER       cipher,
-//                             ACVP_DRBG_MODE    mode,
-//                             ACVP_DRBG_PARM    param,
-//                             int               min,
-//                             int               step,
-//                             int               max);
 
 /*! @brief acvp_enable_hmac_cap() allows an application to specify an
 	   HMAC capability to be tested by the ACVP server.
