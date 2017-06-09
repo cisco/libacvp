@@ -1465,7 +1465,8 @@ ACVP_RESULT acvp_enable_rsa_bignum_parm (ACVP_CTX *ctx,
     case ACVP_RSA_MODE_KEYGEN:
         switch(param) {
         case ACVP_FIXED_PUB_EXP_VAL:
-            rsa_cap_mode_list->cap_mode_attrs.keygen->fixed_pub_exp_val = value;
+            if (rsa_cap_mode_list->cap_mode_attrs.keygen->pub_exp == 1) // corresponds to 'fixed'
+                rsa_cap_mode_list->cap_mode_attrs.keygen->fixed_pub_exp_val = value;
             break;
         default:
             return ACVP_INVALID_ARG;

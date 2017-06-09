@@ -484,6 +484,9 @@ typedef struct acvp_rsa_keygen_tc_t {
 
     char *hash_alg;
     unsigned int  tc_id;    /* Test case id */
+    char *pub_exp;
+    char *prime_test;
+    
     BIGNUM *e;
     unsigned char *p_rand;
     unsigned char *q_rand;

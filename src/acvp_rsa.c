@@ -13,9 +13,9 @@ static ACVP_RESULT acvp_rsa_init_tc(ACVP_CTX *ctx,
                                     int info_gen_by_server,
                                     int rand_pq,
                                     unsigned int mod,
-                                    // char *hash_alg,
-                                    // char *prime_test,
-                                    // char *pub_exp,
+                                    char *hash_alg,
+                                    char *prime_test,
+                                    char *pub_exp,
                                     unsigned char *seed,
                                     BIGNUM *e,
                                     unsigned int bitlen1,
@@ -48,6 +48,9 @@ static ACVP_RESULT acvp_rsa_init_tc(ACVP_CTX *ctx,
         if (!stc->keygen_tc) return ACVP_MALLOC_FAIL;
         stc->keygen_tc->e = calloc(1, sizeof(BIGNUM));
         stc->keygen_tc->seed = calloc(1, sizeof(ACVP_RSA_SEEDLEN_MAX));
+        stc->keygen_tc->hash_alg = calloc(12, sizeof(char));
+        stc->keygen_tc->pub_exp = calloc(6, sizeof(char));
+        stc->keygen_tc->prime_test = calloc(5, sizeof(char));
         if (rand_pq == 1 || rand_pq == 3 || rand_pq == 4 || rand_pq == 5) {
             stc->keygen_tc->p = calloc(1, sizeof(BIGNUM));
             stc->keygen_tc->q = calloc(1, sizeof(BIGNUM));
@@ -265,7 +268,7 @@ ACVP_RESULT acvp_rsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
     char *json_result, *rand_pq_str;
 
     int info_gen_by_server, rand_pq;
-    // TODO need to handle char *hash_alg, *prime_test, *pub_exp
+    char *hash_alg, *prime_test, *pub_exp;
 
     /*
      * keygen attrs
@@ -354,16 +357,15 @@ ACVP_RESULT acvp_rsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
             return (ACVP_UNSUPPORTED_OP);
         }
 
-        // TODO should switch on mode here and process the vector that way... otherwise this is about to get long...
         rand_pq_str = (char *)json_object_get_string(groupobj, "randPQ");
         rand_pq = acvp_lookup_rsa_randpq_index(rand_pq_str);
         mod = json_object_get_number(groupobj, "modRSA");
-        // hash_alg = (char *)json_object_get_string(groupobj, "hashAlg");
-        // prime_test = (char *)json_object_get_string(groupobj, "primeTest");
-        // pub_exp = (char *)json_object_get_string(groupobj, "pubExp");
+        hash_alg = (char *)json_object_get_string(groupobj, "hashAlg");
+        if (rand_pq == 2 || rand_pq == 4 || rand_pq == 5)
+            prime_test = (char *)json_object_get_string(groupobj, "primeTest");
+        pub_exp = (char *)json_object_get_string(groupobj, "pubExp");
 
         ACVP_LOG_INFO("    Test group: %d", i);
-        // ACVP_LOG_INFO("        msglen: %d", msglen);
 
         tests = json_object_get_array(groupobj, "tests");
         t_cnt = json_array_get_count(tests);
@@ -441,7 +443,9 @@ ACVP_RESULT acvp_rsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
              *       the entire vector set to be more efficient
              */
 
-            acvp_rsa_init_tc(ctx, &stc, tc_id, alg_id, info_gen_by_server, rand_pq, mod,
+            acvp_rsa_init_tc(ctx, &stc, tc_id, alg_id,
+                            /* group info */
+                             info_gen_by_server, rand_pq, mod, hash_alg, prime_test, pub_exp,
                             /* keygen params... TODO this might be able to be consolidated */
                              seed, e, bitlen1, bitlen2, bitlen3, bitlen4, p_rand, q_rand,
                              xp, xp1, xp2, xq, xq1, xq2);
