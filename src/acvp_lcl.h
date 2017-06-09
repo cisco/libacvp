@@ -303,10 +303,14 @@ struct acvp_rsa_mode_name_t {
     char           *name;
 };
 
+/*
+ * list of strings to be used for supported algs,
+ * prime_tests, etc.
+ */
 typedef struct acvp_name_list_t {
    char *name;
    struct acvp_name_list_t *next;
-} ACVP_NAME_LIST; // supported algs list
+} ACVP_NAME_LIST;
 
 typedef struct acvp_rsa_primes_list {
    int modulo; // 2048, 3072, 4096 -- defined as macros
@@ -326,11 +330,11 @@ typedef struct acvp_rsa_prereq_vals {
 } ACVP_RSA_PREREQ_VALS;
 
 typedef struct acvp_rsa_keygen_attrs_t {
-    ACVP_RSA_MODE   mode;  // "keyGen"
-    int pub_exp; // 0 - random, 1 - fixed
-    BIGNUM *fixed_pub_exp_val; // hex value of e
-    int rand_pq; // 1, 2, 3, 4, 5 as defined in FIPS186-4
-    int info_gen_by_server; // "yes" or "no"
+    ACVP_RSA_MODE   mode;                    // "keyGen"
+    int pub_exp;                             // 0 - random, 1 - fixed
+    BIGNUM *fixed_pub_exp_val;               // hex value of e
+    int rand_pq;                             // as defined in FIPS186-4
+    int info_gen_by_server;                  // "yes" or "no"
     ACVP_RSA_PRIMES_LIST *cap_primes_list;
 } ACVP_RSA_KEYGEN_ATTRS;
 

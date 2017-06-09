@@ -283,13 +283,13 @@ typedef enum acvp_rsa_param {
 #define PRIME_TEST_TBLC2_NAME "tblC2"
 #define PRIME_TEST_TBLC3_NAME "tblC3"
 
-#define RSA_RAND_PQ_B32    1
-#define RSA_RAND_PQ_B33    2
-#define RSA_RAND_PQ_B34    3
-#define RSA_RAND_PQ_B35    4
-#define RSA_RAND_PQ_B36    5
-#define RSA_PUB_EXP_FIXED  1
-#define RSA_PUB_EXP_RANDOM 0
+#define RSA_RAND_PQ_B32        1
+#define RSA_RAND_PQ_B33        2
+#define RSA_RAND_PQ_B34        3
+#define RSA_RAND_PQ_B35        4
+#define RSA_RAND_PQ_B36        5
+#define RSA_PUB_EXP_FIXED      1
+#define RSA_PUB_EXP_RANDOM     0
 
 #define ACVP_RSA_PREREQ_SHA      "SHA"
 typedef enum acvp_rsa_pre_req {
@@ -486,7 +486,7 @@ typedef struct acvp_rsa_keygen_tc_t {
     unsigned int  tc_id;    /* Test case id */
     char *pub_exp;
     char *prime_test;
-    
+
     BIGNUM *e;
     unsigned char *p_rand;
     unsigned char *q_rand;
@@ -523,8 +523,7 @@ typedef struct acvp_rsa_keygen_tc_t {
 } ACVP_RSA_KEYGEN_TC;
 
 typedef struct acvp_rsa_tc_t {
-    ACVP_CIPHER cipher; /* hash algorithm TODO: need to validate that
-                           this is one of the hashes when we check parms */
+    ACVP_CIPHER cipher;
     ACVP_RSA_MODE mode; // "keyGen"
     int info_gen_by_server;
     unsigned int rand_pq;
@@ -759,7 +758,11 @@ ACVP_RESULT acvp_enable_drbg_length_cap(
 
 /*! @brief acvp_enable_rsa_cap()
 
-   When the application enables a crypto capability, such as SHA-1, it
+  This function should be used to enable RSA capabilities. Specific modes
+  and parameters can use acvp_enable_rsa_cap_parm, acvp_enable_rsa_bignum_parm,
+  acvp_enable_rsa_primes_parm depending on the need.
+
+   When the application enables a crypto capability, such as RSA, it
    also needs to specify a callback function that will be used by libacvp
    when that crypto capability is needed during a test session.
 

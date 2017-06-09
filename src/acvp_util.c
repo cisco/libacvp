@@ -133,15 +133,15 @@ ACVP_CIPHER acvp_lookup_cipher_index(const char *algorithm)
 char *acvp_lookup_rsa_randpq_name(int value)
 {
     switch(value) {
-    case 1:
+    case RSA_RAND_PQ_B32:
         return "B.3.2"; // "provRP"
-    case 2:
+    case RSA_RAND_PQ_B33:
         return "B.3.3"; // "probRP"
-    case 3:
+    case RSA_RAND_PQ_B34:
         return "B.3.4"; // "provPC"
-    case 4:
+    case RSA_RAND_PQ_B35:
         return "B.3.5"; // "bothPC"
-    case 5:
+    case RSA_RAND_PQ_B36:
         return "B.3.6"; // "probPC"
     default:
         return NULL;
@@ -150,11 +150,11 @@ char *acvp_lookup_rsa_randpq_name(int value)
 
 int acvp_lookup_rsa_randpq_index(char *value)
 {
-    if (strncmp(value, "B.3.2", 5) == 0) return 1;
-    if (strncmp(value, "B.3.3", 5) == 0) return 2;
-    if (strncmp(value, "B.3.4", 5) == 0) return 3;
-    if (strncmp(value, "B.3.5", 5) == 0) return 4;
-    if (strncmp(value, "B.3.6", 5) == 0) return 5;
+    if (strncmp(value, "B.3.2", 5) == 0) return RSA_RAND_PQ_B32;
+    if (strncmp(value, "B.3.3", 5) == 0) return RSA_RAND_PQ_B33;
+    if (strncmp(value, "B.3.4", 5) == 0) return RSA_RAND_PQ_B34;
+    if (strncmp(value, "B.3.5", 5) == 0) return RSA_RAND_PQ_B35;
+    if (strncmp(value, "B.3.6", 5) == 0) return RSA_RAND_PQ_B36;
     return 0;
 }
 

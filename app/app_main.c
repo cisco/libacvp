@@ -1754,11 +1754,11 @@ static ACVP_RESULT app_rsa_handler(ACVP_TEST_CASE *test_case)
     switch(tc->mode) {
     case ACVP_RSA_MODE_KEYGEN:
         switch (tc->rand_pq) {
-        case 1: // "provRP"
-        case 2: // "probRP"
-        case 3: // "provPC"
-        case 4: // "bothPC"
-        case 5: // "probPC"
+        case RSA_RAND_PQ_B32: // "provRP"
+        case RSA_RAND_PQ_B33: // "probRP"
+        case RSA_RAND_PQ_B34: // "provPC"
+        case RSA_RAND_PQ_B35: // "bothPC"
+        case RSA_RAND_PQ_B36: // "probPC"
         default:
             break;
         }
