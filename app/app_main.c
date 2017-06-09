@@ -284,77 +284,6 @@ int main(int argc, char **argv)
     }
 
     /*
-     * Enable RSA keygen... RandPQ has to be the last param enabled for now...
-     */
-    rv = acvp_enable_rsa_cap(ctx, ACVP_RSA, &app_rsa_handler);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_prereq_cap(ctx, ACVP_RSA, RSA_SHA, value);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_cap_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_PUB_EXP, RSA_PUB_EXP_FIXED);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_cap_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_RSA_INFO_GEN_BY_SERVER, 0);
-    CHECK_ENABLE_CAP_RV(rv);
-
-    BIGNUM *expo = BN_new();
-    unsigned long mm = RSA_F4;
-    if (!BN_set_word(expo, mm)) {
-        printf("Bignum API fail\n");
-        return ACVP_CRYPTO_MODULE_FAIL;
-    }
-    rv = acvp_enable_rsa_bignum_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_FIXED_PUB_EXP_VAL, expo);
-    CHECK_ENABLE_CAP_RV(rv);
-    // ENABLES RAND PQ VALUE 1 or 3 -- "provPC" or "provRP"
-    // not to be used in conjunction with other randPQ values
-    // rv = acvp_enable_rsa_cap_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_RAND_PQ, RSA_RAND_PQ_B34);
-    // CHECK_ENABLE_CAP_RV(rv);
-    // rv = acvp_enable_rsa_primes_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_CAPS_PROV_PRIME, MOD_PRIME_2048, ACVP_RSA_PRIME_SHA_1);
-    // CHECK_ENABLE_CAP_RV(rv);
-    // rv = acvp_enable_rsa_primes_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_CAPS_PROV_PRIME, MOD_PRIME_2048, ACVP_RSA_PRIME_SHA_224);
-    // CHECK_ENABLE_CAP_RV(rv);
-    // rv = acvp_enable_rsa_primes_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_CAPS_PROV_PRIME, MOD_PRIME_2048, ACVP_RSA_PRIME_SHA_512);
-    // CHECK_ENABLE_CAP_RV(rv);
-    // rv = acvp_enable_rsa_primes_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_CAPS_PROV_PRIME, MOD_PRIME_4096, ACVP_RSA_PRIME_SHA_1);
-    // CHECK_ENABLE_CAP_RV(rv);
-    // rv = acvp_enable_rsa_primes_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_CAPS_PROV_PRIME, MOD_PRIME_4096, ACVP_RSA_PRIME_SHA_224);
-    // CHECK_ENABLE_CAP_RV(rv);
-
-    // ENABLES RAND PQ VALUE 2 or 5 -- "probPC" or "probRP"
-    // not to be used in conjunction with other randPQ values
-    // rv = acvp_enable_rsa_cap_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_RAND_PQ, RSA_RAND_PQ_B33);
-    // CHECK_ENABLE_CAP_RV(rv);
-    // rv = acvp_enable_rsa_primes_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_CAPS_PROB_PRIME, MOD_PRIME_2048, PRIME_TEST_TBLC2_NAME);
-    // CHECK_ENABLE_CAP_RV(rv);
-    // rv = acvp_enable_rsa_primes_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_CAPS_PROB_PRIME, MOD_PRIME_4096, PRIME_TEST_TBLC3_NAME);
-    // CHECK_ENABLE_CAP_RV(rv);
-    // rv = acvp_enable_rsa_primes_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_CAPS_PROB_PRIME, MOD_PRIME_4096, PRIME_TEST_TBLC2_NAME);
-    // CHECK_ENABLE_CAP_RV(rv);
-
-    // ENABLES RAND PQ VALUE 4 -- "bothPC"
-    // not to be used in conjunction with other randPQ values
-    rv = acvp_enable_rsa_cap_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_RAND_PQ, RSA_RAND_PQ_B35);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_primes_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_CAPS_PROV_PROB_PRIME, MOD_PRIME_2048, PRIME_TEST_TBLC2_NAME);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_primes_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_CAPS_PROV_PROB_PRIME, MOD_PRIME_2048, ACVP_RSA_PRIME_SHA_224);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_primes_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_CAPS_PROV_PROB_PRIME, MOD_PRIME_2048, ACVP_RSA_PRIME_SHA_512);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_primes_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_CAPS_PROV_PROB_PRIME, MOD_PRIME_3072, PRIME_TEST_TBLC2_NAME);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_primes_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_CAPS_PROV_PROB_PRIME, MOD_PRIME_3072, ACVP_RSA_PRIME_SHA_1);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_primes_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_CAPS_PROV_PROB_PRIME, MOD_PRIME_4096, ACVP_RSA_PRIME_SHA_224);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_primes_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_CAPS_PROV_PROB_PRIME, MOD_PRIME_4096, PRIME_TEST_TBLC3_NAME);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_primes_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_CAPS_PROV_PROB_PRIME, MOD_PRIME_4096, PRIME_TEST_TBLC2_NAME);
-    CHECK_ENABLE_CAP_RV(rv);
-
-    // BN_free(expo);
-
-
-#if 0
-    /*
      * We need to register all the crypto module capabilities that will be
      * validated.
      */
@@ -484,8 +413,7 @@ int main(int argc, char **argv)
    CHECK_ENABLE_CAP_RV(rv);
    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CCM, ACVP_SYM_CIPH_AADLEN, 65536);
    CHECK_ENABLE_CAP_RV(rv);
-   #endif
-#if 0
+
 #ifdef ACVP_V04
    /*
     * Enable AES-CFB1 128,192,256 bit key
@@ -768,9 +696,84 @@ int main(int argc, char **argv)
     rv = acvp_enable_hmac_prereq_cap(ctx, ACVP_HMAC_SHA2_512, HMAC_SHA, value);
     CHECK_ENABLE_CAP_RV(rv);
 #endif
-#endif
+
 
 #ifdef ACVP_NO_RUNTIME
+
+#if 0 /* until RSA is supported on the server side */
+    /*
+     * Enable RSA keygen...
+     */
+    rv = acvp_enable_rsa_cap(ctx, ACVP_RSA, &app_rsa_handler);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_rsa_prereq_cap(ctx, ACVP_RSA, RSA_SHA, value);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_rsa_cap_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_PUB_EXP, RSA_PUB_EXP_FIXED);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_rsa_cap_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_RSA_INFO_GEN_BY_SERVER, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    BIGNUM *expo = BN_new();
+    unsigned long mm = RSA_F4;
+    if (!BN_set_word(expo, mm)) {
+        printf("Bignum API fail\n");
+        return ACVP_CRYPTO_MODULE_FAIL;
+    }
+    rv = acvp_enable_rsa_bignum_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_FIXED_PUB_EXP_VAL, expo);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    /*
+     * Only one of following three chunks should be used at a time
+     * This is because only one randPQ value registration is currently supported
+     */
+
+    // ENABLES RAND PQ VALUE 1 or 3 -- "provPC" or "provRP"
+    // not to be used in conjunction with other randPQ values
+    // rv = acvp_enable_rsa_cap_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_RAND_PQ, RSA_RAND_PQ_B34);
+    // CHECK_ENABLE_CAP_RV(rv);
+    // rv = acvp_enable_rsa_primes_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_CAPS_PROV_PRIME, MOD_PRIME_2048, ACVP_RSA_PRIME_SHA_1);
+    // CHECK_ENABLE_CAP_RV(rv);
+    // rv = acvp_enable_rsa_primes_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_CAPS_PROV_PRIME, MOD_PRIME_2048, ACVP_RSA_PRIME_SHA_224);
+    // CHECK_ENABLE_CAP_RV(rv);
+    // rv = acvp_enable_rsa_primes_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_CAPS_PROV_PRIME, MOD_PRIME_2048, ACVP_RSA_PRIME_SHA_512);
+    // CHECK_ENABLE_CAP_RV(rv);
+    // rv = acvp_enable_rsa_primes_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_CAPS_PROV_PRIME, MOD_PRIME_4096, ACVP_RSA_PRIME_SHA_1);
+    // CHECK_ENABLE_CAP_RV(rv);
+    // rv = acvp_enable_rsa_primes_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_CAPS_PROV_PRIME, MOD_PRIME_4096, ACVP_RSA_PRIME_SHA_224);
+    // CHECK_ENABLE_CAP_RV(rv);
+
+    // ENABLES RAND PQ VALUE 2 or 5 -- "probPC" or "probRP"
+    // not to be used in conjunction with other randPQ values
+    // rv = acvp_enable_rsa_cap_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_RAND_PQ, RSA_RAND_PQ_B33);
+    // CHECK_ENABLE_CAP_RV(rv);
+    // rv = acvp_enable_rsa_primes_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_CAPS_PROB_PRIME, MOD_PRIME_2048, PRIME_TEST_TBLC2_NAME);
+    // CHECK_ENABLE_CAP_RV(rv);
+    // rv = acvp_enable_rsa_primes_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_CAPS_PROB_PRIME, MOD_PRIME_4096, PRIME_TEST_TBLC3_NAME);
+    // CHECK_ENABLE_CAP_RV(rv);
+    // rv = acvp_enable_rsa_primes_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_CAPS_PROB_PRIME, MOD_PRIME_4096, PRIME_TEST_TBLC2_NAME);
+    // CHECK_ENABLE_CAP_RV(rv);
+
+    // ENABLES RAND PQ VALUE 4 -- "bothPC"
+    // not to be used in conjunction with other randPQ values
+    rv = acvp_enable_rsa_cap_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_RAND_PQ, RSA_RAND_PQ_B35);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_rsa_primes_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_CAPS_PROV_PROB_PRIME, MOD_PRIME_2048, PRIME_TEST_TBLC2_NAME);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_rsa_primes_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_CAPS_PROV_PROB_PRIME, MOD_PRIME_2048, ACVP_RSA_PRIME_SHA_224);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_rsa_primes_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_CAPS_PROV_PROB_PRIME, MOD_PRIME_2048, ACVP_RSA_PRIME_SHA_512);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_rsa_primes_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_CAPS_PROV_PROB_PRIME, MOD_PRIME_3072, PRIME_TEST_TBLC2_NAME);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_rsa_primes_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_CAPS_PROV_PROB_PRIME, MOD_PRIME_3072, ACVP_RSA_PRIME_SHA_1);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_rsa_primes_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_CAPS_PROV_PROB_PRIME, MOD_PRIME_4096, ACVP_RSA_PRIME_SHA_224);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_rsa_primes_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_CAPS_PROV_PROB_PRIME, MOD_PRIME_4096, PRIME_TEST_TBLC3_NAME);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_rsa_primes_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_CAPS_PROV_PROB_PRIME, MOD_PRIME_4096, PRIME_TEST_TBLC2_NAME);
+    CHECK_ENABLE_CAP_RV(rv);
+#endif
 
 #if 0  /* until drbg is supported by the server */
     /*
@@ -996,7 +999,8 @@ int main(int argc, char **argv)
         exit(1);
     }
     acvp_cleanup();
-    BN_free(expo);
+
+    // BN_free(expo); /* needed when passing bignum arg to rsa keygen from app */
 
     return (0);
 }
@@ -1730,6 +1734,11 @@ static ACVP_RESULT app_cmac_handler(ACVP_TEST_CASE *test_case)
 
 static ACVP_RESULT app_rsa_handler(ACVP_TEST_CASE *test_case)
 {
+    /*
+     * custom crypto module handler
+     * to be filled in
+     */
+
     ACVP_RSA_TC	*tc;
     const EVP_MD	*c; // hash alg to use
     RSA       *rsa;
@@ -1745,63 +1754,18 @@ static ACVP_RESULT app_rsa_handler(ACVP_TEST_CASE *test_case)
     switch(tc->mode) {
     case ACVP_RSA_MODE_KEYGEN:
         switch (tc->rand_pq) {
-        case 3: // "provPC"
-            rsa = RSA_new();
-            if(tc->info_gen_by_server) {
-                exponent = tc->keygen_tc->e;
-                bitlen1 = tc->keygen_tc->bitlen1;
-                bitlen2 = tc->keygen_tc->bitlen2;
-                bitlen3 = tc->keygen_tc->bitlen3;
-                bitlen4 = tc->keygen_tc->bitlen4;
-                seed = tc->keygen_tc->seed;
-                seed_len = tc->keygen_tc->seed_len;
-            } else {
-                exponent = BN_new();
-                m = RSA_F4;
-                seed_len = 32;
-                if (!BN_set_word(exponent, m)) {
-                    printf("Bignum API fail\n");
-                    return ACVP_CRYPTO_MODULE_FAIL;
-                }
-                if (RAND_bytes(seed, seed_len) <= 0) {
-                    printf("RAND API fail\n");
-                    return ACVP_CRYPTO_MODULE_FAIL;
-                }
-                bitlen1 = 2;
-                bitlen2 = 2;
-                bitlen3 = 3;
-                bitlen4 = 4;
-                keylen = 2048;
-            }
-            break;
         case 1: // "provRP"
         case 2: // "probRP"
+        case 3: // "provPC"
         case 4: // "bothPC"
         case 5: // "probPC"
         default:
             break;
         }
-
-        if(!RSA_generate_key_ex(rsa, bitlen1, exponent, NULL)) return ACVP_CRYPTO_MODULE_FAIL;
-        // if(!rsa_generate_key_internal(&rsa->p, &rsa->q, &rsa->n, &rsa->d,
-        //                               seed, seed_len,
-        //                               bitlen1, bitlen2, bitlen3, bitlen4,
-        //                               exponent, keylen, NULL)) {
-        //     return ACVP_CRYPTO_MODULE_FAIL;
-        // }
-        tc->keygen_tc->p = rsa->p;
-        tc->keygen_tc->q = rsa->q;
-        tc->keygen_tc->n = rsa->n;
-        tc->keygen_tc->d = rsa->d;
-
-        BN_free(exponent);
-        RSA_free(rsa);
         break;
     default:
         break;
     }
-
-    RSA_free(rsa);
 
     return ACVP_SUCCESS;
 }
