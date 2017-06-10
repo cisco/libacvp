@@ -127,6 +127,38 @@ ACVP_CIPHER acvp_lookup_cipher_index(const char *algorithm)
 }
 
 /*
+ * This method returns the string that corresponds to a randPQ
+ * index value
+ */
+char *acvp_lookup_rsa_randpq_name(int value)
+{
+    switch(value) {
+    case RSA_RAND_PQ_B32:
+        return "B.3.2"; // "provRP"
+    case RSA_RAND_PQ_B33:
+        return "B.3.3"; // "probRP"
+    case RSA_RAND_PQ_B34:
+        return "B.3.4"; // "provPC"
+    case RSA_RAND_PQ_B35:
+        return "B.3.5"; // "bothPC"
+    case RSA_RAND_PQ_B36:
+        return "B.3.6"; // "probPC"
+    default:
+        return NULL;
+    }
+}
+
+int acvp_lookup_rsa_randpq_index(char *value)
+{
+    if (strncmp(value, "B.3.2", 5) == 0) return RSA_RAND_PQ_B32;
+    if (strncmp(value, "B.3.3", 5) == 0) return RSA_RAND_PQ_B33;
+    if (strncmp(value, "B.3.4", 5) == 0) return RSA_RAND_PQ_B34;
+    if (strncmp(value, "B.3.5", 5) == 0) return RSA_RAND_PQ_B35;
+    if (strncmp(value, "B.3.6", 5) == 0) return RSA_RAND_PQ_B36;
+    return 0;
+}
+
+/*
  * This function returns the ID of a DRBG mode given an
  * algorithm name (as defined in the ACVP spec).  It
  * returns ACVP_DRBG_MODE_END if none match.
@@ -154,6 +186,66 @@ ACVP_DRBG_MODE acvp_lookup_drbg_mode_index(const char *mode)
         }
     }
     return ACVP_DRBG_MODE_END;
+}
+
+/* This function checks to see if the value is a valid
+   true / false param */
+ACVP_RESULT is_valid_tf_param(unsigned int value) {
+    if (value == 0 || value == 1) return ACVP_SUCCESS;
+    else return ACVP_INVALID_ARG;
+}
+
+/* This function checks to see if the value is a hash alg */
+ACVP_RESULT is_valid_hash_alg(char *value) {
+    if (!value) return ACVP_INVALID_ARG;
+    if (strncmp(value, ACVP_RSA_PRIME_SHA_1, 5) == 0 ||
+        strncmp(value, ACVP_RSA_PRIME_SHA_224, 7) == 0 ||
+        strncmp(value, ACVP_RSA_PRIME_SHA_256, 7) == 0 ||
+        strncmp(value, ACVP_RSA_PRIME_SHA_384, 7) == 0 ||
+        strncmp(value, ACVP_RSA_PRIME_SHA_512, 7) == 0 ||
+        strncmp(value, ACVP_RSA_PRIME_SHA_512_224, 11) == 0 ||
+        strncmp(value, ACVP_RSA_PRIME_SHA_512_256, 11) == 0)
+            return ACVP_SUCCESS;
+    else return ACVP_INVALID_ARG;
+}
+
+/* This function checks to see if the value is a valid prime test (RSA) */
+ACVP_RESULT is_valid_prime_test(char *value) {
+    if (!value) return ACVP_INVALID_ARG;
+    if (strncmp(value, PRIME_TEST_TBLC2_NAME, 5) != 0 &&
+        strncmp(value, PRIME_TEST_TBLC3_NAME, 5) != 0)
+            return ACVP_INVALID_ARG;
+    else return ACVP_SUCCESS;
+}
+
+/* This function checks to see if the value is a valid prime test (RSA) */
+ACVP_RESULT is_valid_rsa_mod(int value) {
+    if (value != MOD_PRIME_2048 &&
+        value != MOD_PRIME_3072 &&
+        value != MOD_PRIME_4096)
+            return ACVP_INVALID_ARG;
+    else return ACVP_SUCCESS;
+}
+
+
+/*
+ * This function returns the ID of a DRBG mode given an
+ * algorithm name (as defined in the ACVP spec).  It
+ * returns ACVP_DRBG_MODE_END if none match.
+ */
+ACVP_RSA_MODE acvp_lookup_rsa_mode_index(char *mode)
+{
+    int i;
+    struct acvp_rsa_mode_name_t rsa_mode_tbl[ACVP_RSA_MODE_END] = {
+            {ACVP_RSA_MODE_KEYGEN, ACVP_RSA_KEYGEN}
+    };
+
+    for (i = 0; i < ACVP_RSA_MODE_END; i++) {
+        if (!strncmp(mode, rsa_mode_tbl[i].name, strlen(rsa_mode_tbl[i].name))) {
+            return rsa_mode_tbl[i].mode;
+        }
+    }
+    return ACVP_RSA_MODE_END;
 }
 
 //TODO: the next 3 functions could possibly be replaced using OpenSSL bignum,
@@ -286,8 +378,45 @@ ACVP_DRBG_CAP_MODE_LIST* acvp_locate_drbg_mode_entry(ACVP_CAPS_LIST *cap, ACVP_D
         if (cap_mode->mode == mode) {
             return cap_mode_list;
         }
-        cap_mode_list = drbg_cap->drbg_cap_mode_list->next;
+        cap_mode_list = cap_mode_list->next;
         cap_mode = &cap_mode_list->cap_mode;
+    }
+    return NULL;
+}
+
+/*
+ * This function is used to locate the corresponding rsa capability needed
+ * when adding parameters to a registration
+ */
+ACVP_RSA_CAP_MODE_LIST* acvp_locate_rsa_mode_entry(ACVP_CAPS_LIST *cap,
+                                                   ACVP_RSA_MODE mode)
+{
+    ACVP_RSA_CAP_MODE_LIST *cap_mode_list;
+    ACVP_RSA_MODE          *cap_mode;
+    ACVP_RSA_CAP           *rsa_cap;
+
+    rsa_cap = cap->cap.rsa_cap;
+
+    /*
+     * No entires yet
+     */
+    cap_mode_list = rsa_cap->rsa_cap_mode_list;
+    if (!cap_mode_list) {
+        return NULL;
+    }
+
+    cap_mode = &cap_mode_list->cap_mode;
+    if (!cap_mode) {
+        return NULL;
+    }
+
+    while (cap_mode_list) {
+        if (*cap_mode == mode) {
+            return cap_mode_list;
+        }
+        cap_mode_list = cap_mode_list->next;
+        cap_mode = &cap_mode_list->cap_mode;
+
     }
     return NULL;
 }
