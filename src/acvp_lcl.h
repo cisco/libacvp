@@ -58,7 +58,7 @@
 } while (0)
 #endif
 
-#define ACVP_ALG_MAX 48  /* Used by alg_tbl[] */
+#define ACVP_ALG_MAX 49  /* Used by alg_tbl[] */
 
 #define ACVP_ALG_AES_ECB             "AES-ECB"
 #define ACVP_ALG_AES_CBC             "AES-CBC"
@@ -110,6 +110,9 @@
 #define ACVP_ALG_CMAC_AES_256        "CMAC-AES-256"
 #define ACVP_ALG_CMAC_TDES           "CMAC-TDES"
 
+#define ACVP_ALG_RSA                 "RSA"
+#define ACVP_RSA_KEYGEN              "keyGen"
+
 #define ACVP_DRBG_MODE_SHA_1         "SHA-1"
 #define ACVP_DRBG_MODE_SHA_224       "SHA-224"
 #define ACVP_DRBG_MODE_SHA_256       "SHA-256"
@@ -150,6 +153,8 @@
 #define ACVP_CMAC_MSG_MAX       1024
 #define ACVP_CMAC_MAC_MAX       64
 #define ACVP_CMAC_KEY_MAX       256
+
+#define ACVP_RSA_SEEDLEN_MAX    64
 
 #define ACVP_KAT_BUF_MAX        1024*1024*4
 #define ACVP_REG_BUF_MAX        1024*128
@@ -293,6 +298,60 @@ struct acvp_drbg_mode_name_t {
     char           *name;
 };
 
+struct acvp_rsa_mode_name_t {
+    ACVP_RSA_MODE  mode;
+    char           *name;
+};
+
+/*
+ * list of strings to be used for supported algs,
+ * prime_tests, etc.
+ */
+typedef struct acvp_name_list_t {
+   char *name;
+   struct acvp_name_list_t *next;
+} ACVP_NAME_LIST;
+
+typedef struct acvp_rsa_primes_list {
+   int modulo; // 2048, 3072, 4096 -- defined as macros
+   ACVP_NAME_LIST *hash_algs;
+   ACVP_NAME_LIST *prime_tests;
+   struct acvp_rsa_primes_list *next;
+} ACVP_RSA_PRIMES_LIST;
+
+typedef struct acvp_rsa_prereq_alg_val {
+    ACVP_RSA_PRE_REQ alg;
+    char *val;
+} ACVP_RSA_PREREQ_ALG_VAL;
+
+typedef struct acvp_rsa_prereq_vals {
+    ACVP_RSA_PREREQ_ALG_VAL prereq_alg_val;
+    struct acvp_rsa_prereq_vals *next;
+} ACVP_RSA_PREREQ_VALS;
+
+typedef struct acvp_rsa_keygen_attrs_t {
+    ACVP_RSA_MODE   mode;                    // "keyGen"
+    int pub_exp;                             // 0 - random, 1 - fixed
+    BIGNUM *fixed_pub_exp_val;               // hex value of e
+    int rand_pq;                             // as defined in FIPS186-4
+    int info_gen_by_server;                  // "yes" or "no"
+    ACVP_RSA_PRIMES_LIST *cap_primes_list;
+} ACVP_RSA_KEYGEN_ATTRS;
+
+typedef struct acvp_rsa_cap_mode_list_t {
+    ACVP_RSA_MODE cap_mode;
+    union {
+        ACVP_RSA_KEYGEN_ATTRS *keygen;
+    } cap_mode_attrs;
+    struct acvp_rsa_cap_mode_list_t *next;
+} ACVP_RSA_CAP_MODE_LIST;
+
+typedef struct acvp_rsa_capability {
+  ACVP_CIPHER               cipher;
+  ACVP_RSA_PREREQ_VALS *prereq_vals;
+  ACVP_RSA_CAP_MODE_LIST *rsa_cap_mode_list;
+} ACVP_RSA_CAP;
+
 typedef struct acvp_caps_list_t {
     ACVP_CIPHER       cipher;
     ACVP_CAP_TYPE     cap_type;
@@ -302,7 +361,8 @@ typedef struct acvp_caps_list_t {
       ACVP_DRBG_CAP       *drbg_cap;
       ACVP_HMAC_CAP       *hmac_cap;
       ACVP_CMAC_CAP       *cmac_cap;
-    //TODO: add other cipher types: asymmetric, DRBG, hash, etc.
+      ACVP_RSA_CAP        *rsa_cap;
+    //TODO: add other cipher types
     } cap;
     ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case);
     struct acvp_caps_list_t *next;
@@ -370,6 +430,7 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 ACVP_RESULT acvp_hmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 ACVP_RESULT acvp_cmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
+ACVP_RESULT acvp_rsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
 /*
  * ACVP utility functions used internally
@@ -379,6 +440,14 @@ char * acvp_lookup_cipher_name(ACVP_CIPHER alg);
 ACVP_CIPHER acvp_lookup_cipher_index(const char *algorithm);
 ACVP_DRBG_MODE acvp_lookup_drbg_mode_index(const char *mode);
 ACVP_DRBG_CAP_MODE_LIST* acvp_locate_drbg_mode_entry(ACVP_CAPS_LIST *cap, ACVP_DRBG_MODE mode);
+ACVP_RSA_MODE acvp_lookup_rsa_mode_index(char *mode);
+ACVP_RSA_CAP_MODE_LIST* acvp_locate_rsa_mode_entry(ACVP_CAPS_LIST *cap, ACVP_RSA_MODE mode);
+char *acvp_lookup_rsa_randpq_name(int value);
+int acvp_lookup_rsa_randpq_index(char *value);
 unsigned int yes_or_no(ACVP_CTX *ctx, const char *text);
 ACVP_RESULT acvp_create_array (JSON_Object **obj, JSON_Value **val, JSON_Array **arry);
+ACVP_RESULT is_valid_tf_param(unsigned int value);
+ACVP_RESULT is_valid_hash_alg(char *value);
+ACVP_RESULT is_valid_prime_test(char *value);
+ACVP_RESULT is_valid_rsa_mod(int value);
 #endif
