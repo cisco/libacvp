@@ -3148,10 +3148,21 @@ static ACVP_RESULT acvp_build_rsa_keygen_register(JSON_Object **cap_specs_obj, A
     return result;
 }
 
+static ACVP_RESULT acvp_build_rsa_siggen_register(JSON_Object **cap_specs_obj, ACVP_CAPS_LIST *cap_entry) {
+    ACVP_RESULT result = ACVP_SUCCESS;
+    ACVP_RSA_SIGGEN_ATTRS *rsa_cap_mode = NULL;
+
+    rsa_cap_mode = cap_entry->cap.rsa_cap->rsa_cap_mode_list->cap_mode_attrs.siggen;
+    json_object_set_string(*cap_specs_obj, "sigType", rsa_cap_mode->sig_type);
+
+    result = acvp_lookup_rsa_cap_sig_type(*cap_specs_obj, cap_entry->cap.rsa_cap);
+
+    return result; /***why bother with result variable / acvp_success? takes up space***/
+}
+
 static ACVP_RESULT acvp_build_rsa_register_cap(JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry)
 {
     ACVP_RESULT result;
-    ACVP_RSA_SIGGEN_ATTRS *rsa_siggen_mode = NULL;
 
     JSON_Array *specs_array = NULL;
     ACVP_RSA_MODE mode;
@@ -3183,11 +3194,7 @@ static ACVP_RESULT acvp_build_rsa_register_cap(JSON_Object *cap_obj, ACVP_CAPS_L
 		if (result != ACVP_SUCCESS) return result;
 		break;
     case ACVP_RSA_MODE_SIGGEN:
-    	/******take out into own function to avoid space ****/
-    	rsa_siggen_mode = cap_entry->cap.rsa_cap->rsa_cap_mode_list->cap_mode_attrs.siggen;
-    	json_object_set_string(cap_specs_obj, "sigType", rsa_siggen_mode->sig_type);
-    	result = acvp_lookup_rsa_cap_sig_type(cap_specs_obj, cap_entry->cap.rsa_cap);
-
+    	result = acvp_build_rsa_siggen_register(&cap_specs_obj, cap_entry);
     	if (result != ACVP_SUCCESS) return result;
     	break;
     default:
