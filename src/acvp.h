@@ -280,6 +280,10 @@ typedef enum acvp_rsa_param {
 #define MOD_RSA_SIGGEN_3072     3072
 #define MOD_RSA_SIGGEN_4096     4096
 
+#define ACVP_RSA_SIGGEN_SHA_224     "SHA-224"
+#define ACVP_RSA_SIGGEN_SHA_256     "SHA-256"
+#define ACVP_RSA_SIGGEN_SHA_512     "SHA-512"
+
 #define RSA_SALT_SIGGEN_28      28
 #define RSA_SALT_SIGGEN_32      32
 #define RSA_SALT_SIGGEN_64      64

@@ -3026,7 +3026,7 @@ static ACVP_RESULT acvp_lookup_rsa_cap_sig_type(JSON_Object *cap_obj, ACVP_RSA_C
 
         json_object_set_number(obj, "modulo", type->mod_rsa_siggen);
         json_object_set_value(obj, "hashAlg", json_value_init_array());
-        hash_siggen_array = json_object_get_array(obj, "hashSigGen");
+        hash_siggen_array = json_object_get_array(obj, "hashAlg");
         comp_hash = type->compatible_hashes_siggen;
 
         while(comp_hash) {
