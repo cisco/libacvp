@@ -330,6 +330,12 @@ static ACVP_RESULT acvp_kdf135_tls_init_tc(ACVP_CTX *ctx,
     stc->kblock2 = calloc(1, ACVP_KDF135_TLS_MSG_MAX);
     if (!stc->kblock2) return ACVP_MALLOC_FAIL;
 
+    memset(stc->msecret1, 0, ACVP_KDF135_TLS_MSG_MAX); 
+    memset(stc->msecret2, 0, ACVP_KDF135_TLS_MSG_MAX); 
+    memset(stc->kblock1, 0, ACVP_KDF135_TLS_MSG_MAX);
+    memset(stc->kblock2, 0, ACVP_KDF135_TLS_MSG_MAX);
+ 
+
 
     stc->tc_id = tc_id;
     stc->cipher = alg_id;

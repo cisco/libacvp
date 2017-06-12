@@ -1738,7 +1738,7 @@ static ACVP_RESULT app_kdf135_tls_handler(ACVP_TEST_CASE *test_case)
 	break;
     default:
         printf("\nCrypto module error, Bad SHA type\n");
-        return ACVP_CRYPTO_MODULE_FAIL;
+        return ACVP_INVALID_ARG;
     }
 
     count = 1;
@@ -1746,8 +1746,6 @@ static ACVP_RESULT app_kdf135_tls_handler(ACVP_TEST_CASE *test_case)
     if (count == 1)
           psm_len = 0;
 
-    memset(master_secret1, 0, 4096);
- 
     ret = kdf_tls12_P_hash(evp_md1, (const unsigned char *)tc->pm_secret, len + (psm_len & 1), 
 	                   TLS_MD_MASTER_SECRET_CONST, TLS_MD_MASTER_SECRET_CONST_SIZE,
 			   tc->ch_rnd, strlen((char *)tc->ch_rnd),
@@ -1781,7 +1779,6 @@ static ACVP_RESULT app_kdf135_tls_handler(ACVP_TEST_CASE *test_case)
     }
 
 
-    memset(key_block1, 0, 4096);
     len1 = olen1;
     len = len1 / count;
     if (count == 1)
