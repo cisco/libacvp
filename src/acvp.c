@@ -544,7 +544,7 @@ ACVP_RESULT acvp_enable_sym_prereq_cap(ACVP_CTX *ctx,
     ACVP_CAPS_LIST          *cap_list;
 
     if (!ctx) {
-        return ACVP_INVALID_ARG;
+        return ACVP_NO_CTX;
     }
 
     /*
@@ -769,7 +769,7 @@ ACVP_RESULT acvp_enable_hmac_prereq_cap(ACVP_CTX       *ctx,
     ACVP_CAPS_LIST          *cap_list;
 
     if (!ctx) {
-        return ACVP_INVALID_ARG;
+        return ACVP_NO_CTX;
     }
 
     /*
@@ -918,7 +918,7 @@ ACVP_RESULT acvp_enable_cmac_prereq_cap(ACVP_CTX       *ctx,
     ACVP_CAPS_LIST          *cap_list;
 
     if (!ctx) {
-        return ACVP_INVALID_ARG;
+        return ACVP_NO_CTX;
     }
 
     /*
@@ -1264,15 +1264,10 @@ ACVP_RESULT acvp_rsa_prepare_to_add_param(ACVP_CTX *ctx, ACVP_CIPHER cipher,
      * Validate input
      */
     if (!ctx) {
-        return ACVP_INVALID_ARG;
+        return ACVP_NO_CTX;
     }
 
-    switch (cipher) {
-    case ACVP_RSA:
-        break;
-    default:
-        return ACVP_INVALID_ARG;
-    }
+    if (cipher != ACVP_RSA) return ACVP_INVALID_ARG;
 
     /*
      * Locate this cipher in the caps array
@@ -1423,6 +1418,7 @@ ACVP_RESULT acvp_enable_rsa_cap_parm (ACVP_CTX *ctx,
     if(result != ACVP_SUCCESS) return result;
 
     if (acvp_validate_rsa_parm_value(param, value, rsa_cap_mode_list) != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Invalid value for specified RSA param");
         return ACVP_INVALID_ARG;
     }
     /*
@@ -1431,7 +1427,8 @@ ACVP_RESULT acvp_enable_rsa_cap_parm (ACVP_CTX *ctx,
     switch (mode) {
     case ACVP_RSA_MODE_KEYGEN:
         result = acvp_add_rsa_keygen_parm(rsa_cap_mode_list, param, value);
-        if (result != ACVP_SUCCESS) break;
+        if (result != ACVP_SUCCESS)
+            ACVP_LOG_ERR("Invalid param to enable_rsa_cap_parm. If registering primes, use enable_rsa_primes instead");
         break;
     default:
         return ACVP_INVALID_ARG;
@@ -1503,7 +1500,7 @@ ACVP_RESULT acvp_enable_rsa_primes_parm (ACVP_CTX *ctx,
 
     result = acvp_validate_rsa_primes_parm(param, mod, name, rsa_cap_mode_list);
     if (result != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("RSA primes param validation failed");
+        ACVP_LOG_ERR("RSA primes param validation failed, invalid values");
         return result;
     }
 
@@ -1659,7 +1656,7 @@ ACVP_RESULT acvp_enable_drbg_cap_parm (ACVP_CTX *ctx,
      * Validate input
      */
     if (!ctx) {
-        return ACVP_INVALID_ARG;
+        return ACVP_NO_CTX;
     }
 
     switch (cipher) {
@@ -1731,7 +1728,7 @@ ACVP_RESULT acvp_enable_drbg_prereq_cap(ACVP_CTX          *ctx,
     ACVP_CAPS_LIST          *cap_list;
 
     if (!ctx) {
-        return ACVP_INVALID_ARG;
+        return ACVP_NO_CTX;
     }
 
     /*
@@ -1777,7 +1774,7 @@ ACVP_RESULT acvp_enable_drbg_length_cap(ACVP_CTX            *ctx,
     ACVP_CAPS_LIST          *cap_list;
 
     if (!ctx) {
-        return ACVP_INVALID_ARG;
+        return ACVP_NO_CTX;
     }
 
     /*
@@ -1853,7 +1850,7 @@ ACVP_RESULT acvp_enable_rsa_prereq_cap(ACVP_CTX          *ctx,
     ACVP_CAPS_LIST          *cap_list;
 
     if (!ctx) {
-        return ACVP_INVALID_ARG;
+        return ACVP_NO_CTX;
     }
 
     /*
