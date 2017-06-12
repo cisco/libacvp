@@ -50,6 +50,7 @@
 #include <openssl/rsa.h>
 #include <openssl/bn.h>
 #include <openssl/rand.h>
+#include <openssl/kdf.h>
 
 #ifdef ACVP_NO_RUNTIME
 #include "app_lcl.h"
@@ -67,6 +68,7 @@ static ACVP_RESULT app_sha_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_hmac_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_cmac_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_rsa_handler(ACVP_TEST_CASE *test_case);
+static ACVP_RESULT app_kdf135_tls_handler(ACVP_TEST_CASE *test_case);
 #ifdef ACVP_NO_RUNTIME
 static ACVP_RESULT app_drbg_handler(ACVP_TEST_CASE *test_case);
 #endif
@@ -76,6 +78,11 @@ static ACVP_RESULT app_drbg_handler(ACVP_TEST_CASE *test_case);
 #define DEFAULT_CA_CHAIN "certs/acvp-private-root-ca.crt.pem"
 #define DEFAULT_CERT "certs/sto-labsrv2-client-cert.pem"
 #define DEFAULT_KEY "certs/sto-labsrv2-client-key.pem"
+
+#define TLS_MD_MASTER_SECRET_CONST              "master secret"
+#define TLS_MD_MASTER_SECRET_CONST_SIZE         13
+#define TLS_MD_KEY_EXPANSION_CONST              "key expansion"
+#define TLS_MD_KEY_EXPANSION_CONST_SIZE         13
 
 char *server;
 int port;
@@ -577,6 +584,20 @@ int main(int argc, char **argv)
    CHECK_ENABLE_CAP_RV(rv);
    rv = acvp_enable_hash_cap_parm(ctx, ACVP_SHA512, ACVP_HASH_IN_EMPTY, 1);
    CHECK_ENABLE_CAP_RV(rv);
+
+   /*
+    * Enable KDF-135 
+    */
+
+   rv = acvp_enable_kdf135_tls_cap(ctx, ACVP_KDF135_TLS, &app_kdf135_tls_handler);
+   CHECK_ENABLE_CAP_RV(rv);
+   rv = acvp_enable_kdf135_tls_prereq_cap(ctx, ACVP_KDF135_TLS, ACVP_KDF135_TLS_PREREQ_SHA, value);
+   CHECK_ENABLE_CAP_RV(rv);
+   rv = acvp_enable_kdf135_tls_prereq_cap(ctx, ACVP_KDF135_TLS, ACVP_KDF135_TLS_PREREQ_HMAC, value);
+   CHECK_ENABLE_CAP_RV(rv);
+   rv = acvp_enable_kdf135_tls_cap_parm(ctx, ACVP_KDF135_TLS, ACVP_KDF135_TLS12, ACVP_KDF135_TLS_CAP_SHA256 | ACVP_KDF135_TLS_CAP_SHA384 | ACVP_KDF135_TLS_CAP_SHA512);
+   CHECK_ENABLE_CAP_RV(rv);
+
 
 #ifdef ACVP_V04
 
@@ -1674,6 +1695,129 @@ static ACVP_RESULT app_hmac_handler(ACVP_TEST_CASE *test_case)
         return ACVP_CRYPTO_MODULE_FAIL;
     }
     HMAC_CTX_cleanup(&hmac_ctx);
+
+    return ACVP_SUCCESS;
+}
+
+static ACVP_RESULT app_kdf135_tls_handler(ACVP_TEST_CASE *test_case)
+{
+    ACVP_KDF135_TLS_TC	*tc;
+    unsigned char *key_block1, *key_block2, *master_secret1, *master_secret2;
+    int olen1 = 0, olen2 = 0, len1, ret, i, len, count, psm_len;
+    const EVP_MD *evp_md1 = NULL, *evp_md2 = NULL;
+
+    tc = test_case->tc.kdf135_tls;
+    /* We only support TLS12 for now */
+    if (tc->method != ACVP_KDF135_TLS12) {
+        printf("\nCrypto module error, Bad TLS type\n");
+        return ACVP_CRYPTO_MODULE_FAIL;
+    }
+
+    olen1 = tc->pm_len;
+    olen2 = tc->kb_len;
+    key_block1 = tc->kblock1;
+    key_block2 = tc->kblock2;
+    master_secret1 = tc->msecret1;
+    master_secret2 = tc->msecret2;
+
+    if (!key_block1 || !key_block2 || !master_secret1 || !master_secret2) {
+        printf("\nCrypto module error, malloc failure\n");
+        return ACVP_CRYPTO_MODULE_FAIL;
+    }
+
+    switch (tc->md) 
+    {
+    case ACVP_KDF135_TLS_CAP_SHA256:
+        evp_md1 = evp_md2 = EVP_sha256();
+	break;
+    case ACVP_KDF135_TLS_CAP_SHA384:
+        evp_md1 = evp_md2 = EVP_sha384();
+	break;
+    case ACVP_KDF135_TLS_CAP_SHA512:
+        evp_md1 = evp_md2 = EVP_sha512();
+	break;
+    default:
+        printf("\nCrypto module error, Bad SHA type\n");
+        return ACVP_CRYPTO_MODULE_FAIL;
+    }
+
+    count = 1;
+    len = tc->pm_len / count;
+    if (count == 1)
+          psm_len = 0;
+
+    memset(master_secret1, 0, 4096);
+ 
+    ret = kdf_tls12_P_hash(evp_md1, (const unsigned char *)tc->pm_secret, len + (psm_len & 1), 
+	                   TLS_MD_MASTER_SECRET_CONST, TLS_MD_MASTER_SECRET_CONST_SIZE,
+			   tc->ch_rnd, strlen((char *)tc->ch_rnd),
+			   tc->sh_rnd, strlen((char *)tc->sh_rnd),
+			   NULL, 0,
+			   NULL, 0,
+			   master_secret1, olen1);
+    if (ret == 0) {
+        printf("\nCrypto module error, TLS kdf failure\n");
+        return ACVP_CRYPTO_MODULE_FAIL;
+    }
+    for (i = 0; i < olen1; i++) {
+         master_secret1[i] ^= master_secret2[i];
+    }    
+
+    if (evp_md1 != evp_md2) {
+        ret = kdf_tls12_P_hash(evp_md2, (const unsigned char *)tc->pm_secret + len, len + (psm_len & 1), 
+	                       TLS_MD_MASTER_SECRET_CONST, TLS_MD_MASTER_SECRET_CONST_SIZE,
+			       tc->ch_rnd, strlen((char *)tc->ch_rnd),
+			       tc->sh_rnd, strlen((char *)tc->sh_rnd),
+			       NULL, 0,
+			       NULL, 0,
+			       master_secret2, olen1);
+	if (ret == 0) {
+            printf("\nCrypto module error, TLS kdf failure\n");
+            return ACVP_CRYPTO_MODULE_FAIL;
+        }
+        for (i = 0; i < olen1; i++) {
+            master_secret1[i] ^= master_secret2[i];
+        }
+    }
+
+
+    memset(key_block1, 0, 4096);
+    len1 = olen1;
+    len = len1 / count;
+    if (count == 1)
+        len1 = 0;
+    ret = kdf_tls12_P_hash(evp_md1, (const unsigned char *)master_secret1, 
+		           len + (len1 & 1),
+		           TLS_MD_KEY_EXPANSION_CONST, TLS_MD_KEY_EXPANSION_CONST_SIZE,
+		           tc->s_rnd, strlen((char *)tc->s_rnd),
+			   tc->c_rnd, strlen((char *)tc->c_rnd),
+			   NULL, 0,
+			   NULL, 0,
+			   key_block2, olen2);
+    if (ret == 0) {
+        printf("\nCrypto module error, TLS kdf failure\n");
+        return ACVP_CRYPTO_MODULE_FAIL;
+    }
+    for (i = 0; i < olen2; i++) {
+        key_block1[i] ^= key_block2[i];
+    }    
+    if (evp_md1 != evp_md2) {
+	ret = kdf_tls12_P_hash(evp_md2, (const unsigned char *)master_secret1 + len,
+			       len + (len1 & 1),
+	                       TLS_MD_KEY_EXPANSION_CONST, TLS_MD_KEY_EXPANSION_CONST_SIZE,
+		               tc->s_rnd, strlen((char *)tc->s_rnd),
+			       tc->c_rnd, strlen((char *)tc->c_rnd),
+			       NULL, 0,
+			       NULL, 0,
+			       key_block2, olen2);
+	if (ret == 0) {
+            printf("\nCrypto module error, TLS kdf failure\n");	    
+            return ACVP_CRYPTO_MODULE_FAIL;
+        }
+        for (i = 0; i < olen2; i++) {
+            key_block1[i] ^= key_block2[i];
+	}    
+    }
 
     return ACVP_SUCCESS;
 }

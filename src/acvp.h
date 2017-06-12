@@ -129,7 +129,8 @@ typedef enum acvp_sym_cipher {
     ACVP_CMAC_AES_256,
     ACVP_CMAC_TDES,
     ACVP_RSA,
-    ACVP_CIPHER_END,
+    ACVP_KDF135_TLS,
+    ACVP_CIPHER_END
 } ACVP_CIPHER;
 
 #define ACVP_SYM_PREREQ_AES_STR      "AES"
@@ -138,6 +139,22 @@ typedef enum acvp_sym_pre_req {
     ACVP_SYM_PREREQ_AES = 1,
     ACVP_SYM_PREREQ_DRBG
 } ACVP_SYM_PRE_REQ;
+
+#define ACVP_KDF135_TLS_PREREQ_HMAC_STR    "HMAC"
+#define ACVP_KDF135_TLS_PREREQ_SHA_STR     "SHA"
+
+typedef enum acvp_kdf135_tls_pre_req {
+    ACVP_KDF135_TLS_PREREQ_HMAC = 1,
+    ACVP_KDF135_TLS_PREREQ_SHA
+} ACVP_KDF135_TLS_PRE_REQ;
+
+/* these are bit flags */
+typedef enum acvp_kdf135_tls_cap_parm {
+    ACVP_KDF135_TLS_CAP_SHA256 = 1,
+    ACVP_KDF135_TLS_CAP_SHA384,
+    ACVP_KDF135_TLS_CAP_SHA512,
+    ACVP_KDF135_TLS_CAP_MAX
+} ACVP_KDF135_TLS_CAP_PARM;
 
 /*
  * Used to help manage capability structures
@@ -148,7 +165,8 @@ typedef enum acvp_capability_type {
     ACVP_DRBG_TYPE,
     ACVP_HMAC_TYPE,
     ACVP_CMAC_TYPE,
-    ACVP_RSA_TYPE
+    ACVP_RSA_TYPE,
+    ACVP_KDF135_TLS_TYPE
 } ACVP_CAP_TYPE;
 
 typedef enum acvp_sym_cipher_keying_option {
@@ -189,6 +207,11 @@ typedef enum acvp_sym_cipher_direction {
     ACVP_DIR_DECRYPT,
     ACVP_DIR_BOTH
 } ACVP_SYM_CIPH_DIR;
+
+typedef enum acvp_kdf135_tls_method {
+    ACVP_KDF135_TLS10_TLS11 = 1,
+    ACVP_KDF135_TLS12
+} ACVP_KDF135_TLS_METHOD;
 
 typedef enum acvp_hash_param {
     ACVP_HASH_IN_BIT = 0,
@@ -442,6 +465,29 @@ typedef struct acvp_hash_tc_t {
 
 /*
  * This struct holds data that represents a single test case
+ * for kdf135 TLS testing.  This data is
+ * passed between libacvp and the crypto module.
+ */
+typedef struct acvp_kdf135_tls_tc_t {
+    ACVP_CIPHER cipher;
+    unsigned int  tc_id;    /* Test case id */
+    unsigned int method;
+    unsigned int md;
+    unsigned int pm_len;
+    unsigned int kb_len;
+    unsigned char *pm_secret;
+    unsigned char *sh_rnd;
+    unsigned char *ch_rnd;
+    unsigned char *s_rnd;
+    unsigned char *c_rnd;
+    unsigned char *msecret1; /* The resulting data calculated for the test case */
+    unsigned char *msecret2;
+    unsigned char *kblock1;  /* The resulting data calculated for the test case */
+    unsigned char *kblock2;
+} ACVP_KDF135_TLS_TC;
+
+/*
+ * This struct holds data that represents a single test case
  * for hmac testing.  This data is
  * passed between libacvp and the crypto module.
  */
@@ -577,6 +623,7 @@ typedef struct acvp_cipher_tc_t {
         ACVP_HMAC_TC        *hmac;
         ACVP_CMAC_TC        *cmac;
         ACVP_RSA_TC         *rsa;
+        ACVP_KDF135_TLS_TC  *kdf135_tls;
         //TODO: need more types for hashes, etc.
     } tc;
 } ACVP_TEST_CASE;
@@ -876,6 +923,49 @@ ACVP_RESULT acvp_enable_cmac_cap_parm(
                           ACVP_CIPHER cipher,
                           ACVP_CMAC_PARM parm,
                           int value);
+
+/*! @brief acvp_enable_kdf135_tls_cap() allows an application to specify a
+       symmetric cipher capability to be tested by the ACVP server.
+
+    This function should be called to enable crypto capabilities for
+    symmetric ciphers that will be tested by the ACVP server.  This
+    includes AES and 3DES.  This function may be called multiple times
+    to specify more than one crypto capability, such as AES-CBC, AES-CTR,
+    AES-GCM, etc.
+
+    When the application enables a crypto capability, such as AES-GCM, it
+    also needs to specify a callback function that will be used by libacvp
+    when that crypto capability is needed during a test session.
+
+    @param ctx Address of pointer to a previously allocated ACVP_CTX.
+    @param cipher ACVP_CIPHER enum value identifying the crypto capability.
+    @param dir ACVP_SYM_CIPH_DIR enum value identifying the crypto operation
+       (e.g. encrypt or decrypt).
+    @param keying_option ACVP_SYM_CIPH_KO enum value identifying the TDES keying options
+    @param ivgen_source The source of the IV used by the crypto module
+        (e.g. internal or external)
+    @param ivgen_mode The IV generation mode
+    @param crypto_handler Address of function implemented by application that
+       is invoked by libacvp when the crypto capablity is needed during
+       a test session.
+
+    @return ACVP_RESULT
+ */
+ACVP_RESULT acvp_enable_kdf135_tls_cap(
+          ACVP_CTX *ctx,
+          ACVP_KDF135_TLS_METHOD method,
+          ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case));
+
+ACVP_RESULT acvp_enable_kdf135_tls_prereq_cap(
+                          ACVP_CTX       *ctx,
+                          ACVP_KDF135_TLS_METHOD method,
+                          ACVP_KDF135_TLS_PRE_REQ pre_req,
+                          char              *value);
+ACVP_RESULT acvp_enable_kdf135_tls_cap_parm(
+                          ACVP_CTX *ctx,
+                          ACVP_CIPHER cap,
+                          ACVP_KDF135_TLS_METHOD method,
+			  ACVP_KDF135_TLS_CAP_PARM param);
 
 /*! @brief acvp_create_test_session() creates a context that can be used to
       commence a test session with an ACVP server.

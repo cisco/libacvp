@@ -70,6 +70,11 @@ static ACVP_RESULT acvp_append_cmac_caps_entry(
 	ACVP_CMAC_CAP *cap,
 	ACVP_CIPHER cipher,
 	ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case));
+static ACVP_RESULT acvp_append_kdf135_tls_caps_entry(
+    ACVP_CTX *ctx,
+    ACVP_KDF135_TLS_CAP *cap,
+    ACVP_KDF135_TLS_METHOD method,
+    ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case));
 static void acvp_cap_free_sl(ACVP_SL_LIST *list);
 static ACVP_RESULT acvp_get_result_vsid(ACVP_CTX *ctx, int vs_id);
 
@@ -133,7 +138,8 @@ ACVP_ALG_HANDLER alg_tbl[ACVP_ALG_MAX] = {
     {ACVP_CMAC_AES_192,    &acvp_cmac_kat_handler,  ACVP_ALG_CMAC_AES_192},
     {ACVP_CMAC_AES_256,    &acvp_cmac_kat_handler,  ACVP_ALG_CMAC_AES_256},
     {ACVP_CMAC_TDES,       &acvp_cmac_kat_handler,  ACVP_ALG_CMAC_TDES},
-    {ACVP_RSA,             &acvp_rsa_kat_handler,   ACVP_ALG_RSA}
+    {ACVP_RSA,             &acvp_rsa_kat_handler,   ACVP_ALG_RSA},
+    {ACVP_KDF135_TLS,      &acvp_kdf135_tls_kat_handler,  ACVP_ALG_KDF135_TLS}
 };
 
 
@@ -226,6 +232,13 @@ static void acvp_free_prereqs(ACVP_CAPS_LIST* cap_list) {
                 free(temp_ptr);
             }
             break;
+        case ACVP_KDF135_TLS_TYPE:
+            while (cap_list->cap.kdf135_tls_cap->prereq_vals) {
+                ACVP_KDF135_TLS_PREREQ_VALS *temp_ptr;
+                temp_ptr = cap_list->cap.kdf135_tls_cap->prereq_vals;
+                cap_list->cap.kdf135_tls_cap->prereq_vals = cap_list->cap.kdf135_tls_cap->prereq_vals->next;
+                free(temp_ptr);
+            }
         case ACVP_DRBG_TYPE:
         case ACVP_HASH_TYPE:
         default:
@@ -2784,6 +2797,86 @@ static ACVP_RESULT acvp_build_rsa_register_cap(JSON_Object *cap_obj, ACVP_CAPS_L
     return ACVP_SUCCESS;
 }
 
+static ACVP_RESULT acvp_build_kdf135_tls_register_cap(JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry)
+{
+    JSON_Array *temp_arr = NULL;
+
+    json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
+    json_object_set_value(cap_obj, "methods", json_value_init_array());
+    temp_arr = json_object_get_array(cap_obj, "methods");
+    if (cap_entry->cap.kdf135_tls_cap->method[0] == ACVP_KDF135_TLS10_TLS11) 
+        json_array_append_string(temp_arr, "TLS1.0-1.1");
+    else if (cap_entry->cap.kdf135_tls_cap->method[0] == ACVP_KDF135_TLS12) 
+        json_array_append_string(temp_arr, "TLS1.2");
+
+    if (cap_entry->cap.kdf135_tls_cap->method[1] == ACVP_KDF135_TLS10_TLS11) 
+        json_array_append_string(temp_arr, "TLS1.0-1.1");
+    else if (cap_entry->cap.kdf135_tls_cap->method[1] == ACVP_KDF135_TLS12) 
+        json_array_append_string(temp_arr, "TLS1.2");
+
+    json_object_set_value(cap_obj, "sha", json_value_init_array());
+    temp_arr = json_object_get_array(cap_obj, "sha");
+    if (cap_entry->cap.kdf135_tls_cap->sha || ACVP_KDF135_TLS_CAP_SHA256)
+        json_array_append_string(temp_arr, "SHA-256");
+    if (cap_entry->cap.kdf135_tls_cap->sha || ACVP_KDF135_TLS_CAP_SHA384)
+        json_array_append_string(temp_arr, "SHA-384");
+    if (cap_entry->cap.kdf135_tls_cap->sha || ACVP_KDF135_TLS_CAP_SHA512)
+        json_array_append_string(temp_arr, "SHA-512");
+
+
+    JSON_Array *prereq_array = NULL;
+
+    ACVP_KDF135_TLS_PREREQ_VALS *prereq_vals;
+    ACVP_KDF135_TLS_PREREQ_VALS *next_pre_req;
+    ACVP_KDF135_TLS_PREREQ_ALG_VAL *pre_req;
+    char *alg_str;
+    /*
+     * Init json array
+     */
+    json_object_set_value(cap_obj, "prereqVals", json_value_init_array());
+    prereq_array = json_object_get_array(cap_obj, "prereqVals");
+
+    /*
+     * return OK if nothing present
+     */
+    prereq_vals = cap_entry->cap.kdf135_tls_cap->prereq_vals;
+    if(!prereq_vals) {
+        goto end;
+    }
+
+
+    while (prereq_vals) {
+        JSON_Value *val = NULL;
+        JSON_Object *obj = NULL;
+        val = json_value_init_object();
+        obj = json_value_get_object(val);
+        pre_req = &prereq_vals->prereq_alg_val;
+
+        switch(pre_req->alg) {
+        case ACVP_KDF135_TLS_PREREQ_SHA:
+            alg_str = ACVP_KDF135_TLS_PREREQ_SHA_STR;
+            json_object_set_string(obj, "algorithm", alg_str);
+            json_object_set_string(obj, "value", pre_req->val);
+            break;
+        case ACVP_KDF135_TLS_PREREQ_HMAC:
+            alg_str = ACVP_KDF135_TLS_PREREQ_HMAC_STR;
+            json_object_set_string(obj, "algorithm", alg_str);
+            json_object_set_string(obj, "value", pre_req->val);
+            break;
+        default:
+            return ACVP_INVALID_ARG;
+        }
+
+        json_array_append_value(prereq_array, val);
+        next_pre_req = prereq_vals->next;
+        prereq_vals = next_pre_req;
+    }
+
+    end:
+
+    return ACVP_SUCCESS;
+}
+
 /*
  * This function builds the JSON register message that
  * will be sent to the ACVP server to advertised the crypto
@@ -2988,6 +3081,9 @@ static ACVP_RESULT acvp_build_register(ACVP_CTX *ctx, char **reg)
             case ACVP_RSA:
                 acvp_build_rsa_register_cap(cap_obj, cap_entry);
                 break;
+	    case ACVP_KDF135_TLS:
+                acvp_build_kdf135_tls_register_cap(cap_obj, cap_entry);
+	        break;
             default:
                 ACVP_LOG_ERR("Cap entry not found, %d.", cap_entry->cipher);
                 return ACVP_NO_CAP;
@@ -3711,3 +3807,167 @@ static ACVP_RESULT acvp_get_result_vsid(ACVP_CTX *ctx, int vs_id)
 
     return ACVP_SUCCESS;
 }
+
+static 
+ACVP_RESULT acvp_validate_kdf135_tls_param_value(ACVP_KDF135_TLS_METHOD method, ACVP_KDF135_TLS_CAP_PARM param) {
+    ACVP_RESULT retval = ACVP_INVALID_ARG;
+
+    switch (method){
+
+      case ACVP_KDF135_TLS12:
+          if ((param < ACVP_KDF135_TLS_CAP_MAX) && (param > 0)) {
+              retval = ACVP_SUCCESS;
+          }
+	  break;
+      case ACVP_KDF135_TLS10_TLS11:
+          if (param == 0) {
+              retval = ACVP_SUCCESS;
+	  }
+	  break;
+      default:
+          break;
+    }
+
+    return retval;
+}
+
+static ACVP_RESULT acvp_append_kdf135_tls_caps_entry(
+       ACVP_CTX *ctx,
+       ACVP_KDF135_TLS_CAP *cap,
+       ACVP_KDF135_TLS_METHOD method,
+       ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case))
+{
+    ACVP_CAPS_LIST *cap_entry, *cap_e2;
+
+    cap_entry = calloc(1, sizeof(ACVP_CAPS_LIST));
+    if (!cap_entry) {
+        return ACVP_MALLOC_FAIL;
+    }
+    cap_entry->cipher = method;
+    cap_entry->cap.kdf135_tls_cap = cap;
+    cap_entry->crypto_handler = crypto_handler;
+    cap_entry->cap_type = ACVP_KDF135_TLS;
+
+    if (!ctx->caps_list) {
+        ctx->caps_list = cap_entry;
+    } else {
+        cap_e2 = ctx->caps_list;
+        while (cap_e2->next) {
+            cap_e2 = cap_e2->next;
+        }
+        cap_e2->next = cap_entry;
+    }
+    return ACVP_SUCCESS;
+}
+
+ACVP_RESULT acvp_enable_kdf135_tls_cap(
+          ACVP_CTX *ctx,
+          ACVP_KDF135_TLS_METHOD method,
+          ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case))
+{
+    ACVP_KDF135_TLS_CAP *cap;
+
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+    if (!crypto_handler) {
+        return ACVP_INVALID_ARG;
+    }
+
+    cap = calloc(1, sizeof(ACVP_KDF135_TLS_CAP));
+    if (!cap) {
+        return ACVP_MALLOC_FAIL;
+    }
+
+    return (acvp_append_kdf135_tls_caps_entry(ctx, cap, method, crypto_handler));
+}
+
+/*
+ * The user should call this after invoking acvp_enable_kdf135_tls_cap()
+ * to specify the kdf parameters.
+ */
+ACVP_RESULT acvp_enable_kdf135_tls_cap_parm(
+                          ACVP_CTX *ctx,
+                          ACVP_CIPHER kcap,
+                          ACVP_KDF135_TLS_METHOD method,
+			  ACVP_KDF135_TLS_CAP_PARM param) {
+
+    ACVP_CAPS_LIST *cap;
+    ACVP_KDF135_TLS_CAP *kdf135_tls_cap;
+
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+
+    cap = acvp_locate_cap_entry(ctx, kcap);
+    if (!cap) {
+        return ACVP_NO_CAP;
+    }
+
+    kdf135_tls_cap = cap->cap.kdf135_tls_cap;
+    if (!kdf135_tls_cap) {
+        return ACVP_NO_CAP;
+    }
+
+    if (acvp_validate_kdf135_tls_param_value(method, param) != ACVP_SUCCESS) {
+        return ACVP_INVALID_ARG;
+    }
+
+    /* only support two method types so just use whichever is available */
+    if (!kdf135_tls_cap->method[0]) {
+        kdf135_tls_cap->method[0] = method;
+    } else {
+        kdf135_tls_cap->method[1] = method;
+    }
+
+    return ACVP_SUCCESS;
+}
+
+ACVP_RESULT acvp_enable_kdf135_tls_prereq_cap(ACVP_CTX       *ctx,
+                                          ACVP_KDF135_TLS_METHOD method,
+                                          ACVP_KDF135_TLS_PRE_REQ pre_req,
+                                          char              *value)
+{
+    ACVP_CAPS_LIST          *cap_list;
+
+    if (!ctx) {
+        return ACVP_INVALID_ARG;
+    }
+
+    /*
+     * Locate this cipher in the caps array
+     */
+    cap_list = acvp_locate_cap_entry(ctx, ACVP_KDF135_TLS);
+    if (!cap_list) {
+        ACVP_LOG_ERR("Cap entry not found.");
+        return ACVP_NO_CAP;
+    }
+
+    ACVP_KDF135_TLS_PREREQ_VALS *prereq_entry, *prereq_entry_2;
+
+    prereq_entry = calloc(1, sizeof(ACVP_KDF135_TLS_PREREQ_VALS));
+    if (!prereq_entry) {
+        return ACVP_MALLOC_FAIL;
+    }
+    prereq_entry->prereq_alg_val.alg = pre_req;
+    prereq_entry->prereq_alg_val.val = value;
+
+    /*
+     * 1st entry
+     */
+    if (!cap_list->cap.kdf135_tls_cap->prereq_vals) {
+        cap_list->cap.kdf135_tls_cap->prereq_vals= prereq_entry;
+    } else {
+        /*
+         * append to the last in the list
+         */
+        prereq_entry_2 = cap_list->cap.kdf135_tls_cap->prereq_vals;
+        while (prereq_entry_2->next) {
+            prereq_entry_2 = prereq_entry_2->next;
+        }
+        prereq_entry_2->next = prereq_entry;
+    }
+
+    return ACVP_SUCCESS;
+}
+

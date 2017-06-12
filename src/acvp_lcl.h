@@ -58,7 +58,7 @@
 } while (0)
 #endif
 
-#define ACVP_ALG_MAX 49  /* Used by alg_tbl[] */
+#define ACVP_ALG_MAX 50  /* Used by alg_tbl[] */
 
 #define ACVP_ALG_AES_ECB             "AES-ECB"
 #define ACVP_ALG_AES_CBC             "AES-CBC"
@@ -130,6 +130,8 @@
 #define ACVP_DRBG_PR_ALG_SHA         "SHA"
 #define ACVP_DRBG_PR_ALG_TDES        "TDES"
 
+#define ACVP_ALG_KDF135_TLS	     "KDF-TLS"
+
 #define ACVP_SYM_KEY_MAX    64
 #define ACVP_SYM_PT_MAX     1024
 #define ACVP_SYM_CT_MAX     1024
@@ -145,6 +147,8 @@
 
 #define ACVP_HASH_MSG_MAX       1024*64
 #define ACVP_HASH_MD_MAX        64
+
+#define ACVP_KDF135_TLS_MSG_MAX 1024*4
 
 #define ACVP_HMAC_MSG_MAX       1024
 #define ACVP_HMAC_MAC_MAX       64
@@ -211,6 +215,22 @@ typedef struct acvp_hash_capability {
     int               in_bit;
     int               in_empty;
 } ACVP_HASH_CAP;
+
+typedef struct acvp_kdf135_tls_prereq_alg_val {
+    ACVP_KDF135_TLS_PRE_REQ alg;
+    char *val;
+} ACVP_KDF135_TLS_PREREQ_ALG_VAL;
+
+typedef struct acvp_kdf135_tls_prereq_vals {
+    ACVP_KDF135_TLS_PREREQ_ALG_VAL prereq_alg_val;
+    struct acvp_kdf135_tls_prereq_vals *next;
+} ACVP_KDF135_TLS_PREREQ_VALS;
+
+typedef struct acvp_kdf135_tls_capability {
+    ACVP_KDF135_TLS_PREREQ_VALS     *prereq_vals;
+    int                   method[2];
+    int    	  	  sha;
+} ACVP_KDF135_TLS_CAP;
 
 typedef struct acvp_hmac_prereq_alg_val {
     ACVP_HMAC_PRE_REQ alg;
@@ -362,6 +382,7 @@ typedef struct acvp_caps_list_t {
       ACVP_HMAC_CAP       *hmac_cap;
       ACVP_CMAC_CAP       *cmac_cap;
       ACVP_RSA_CAP        *rsa_cap;
+      ACVP_KDF135_TLS_CAP *kdf135_tls_cap;
     //TODO: add other cipher types
     } cap;
     ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case);
@@ -431,6 +452,7 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 ACVP_RESULT acvp_hmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 ACVP_RESULT acvp_cmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 ACVP_RESULT acvp_rsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
+ACVP_RESULT acvp_kdf135_tls_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
 /*
  * ACVP utility functions used internally
