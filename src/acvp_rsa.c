@@ -271,7 +271,8 @@ ACVP_RESULT acvp_rsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
     char *json_result, *rand_pq_str;
 
     int info_gen_by_server, rand_pq;
-    char *hash_alg, *prime_test, *pub_exp;
+    /****/
+    char *hash_alg, *prime_test, *pub_exp, *sig_type, *test_type;
 
     /*
      * keygen attrs
@@ -280,6 +281,14 @@ ACVP_RESULT acvp_rsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
     unsigned int bitlen1, bitlen2, bitlen3, bitlen4, mod;
     BIGNUM *e;
     const char *exponent;
+
+    /****/
+    /*
+     * siggen attrs
+     */
+    unsigned int modulo, salt_len;
+    unsigned char *msg; /***unsigned char *?***/
+    //hashAlg is at line 275 since keygen has it outside of "tests"
 
     void get_bitlens() {
         bitlen1 = (unsigned int)json_object_get_number(testobj, "bitlen1");
@@ -349,20 +358,26 @@ ACVP_RESULT acvp_rsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
         groupobj = json_value_get_object(groupval);
 
         mode_str = (char *)json_object_get_string(groupobj, "mode");
+
+        /***perhaps not needed?***/
+        /***put in own case/if?***/
+        test_type = (char *)json_object_get_string(groupobj, "testType");
+        sig_type = (char *)json_object_get_string(groupobj, "sigType");
+
         if (!mode_str) {
             ACVP_LOG_ERR("ERROR: unable to parse 'mode' from JSON");
             return (ACVP_MALFORMED_JSON);
         }
         ACVP_LOG_INFO("    RSA mode: %s", mode_str);
-        mode_id = acvp_lookup_rsa_mode_index(mode_str);
+        mode_id = acvp_lookup_rsa_mode_index(mode_str);  /***in acvp_util.c:236, need to add siggen things***/
         if (mode_id >= ACVP_RSA_MODE_END) {
             ACVP_LOG_ERR("unsupported RSA mode (%s)", mode_str);
             return (ACVP_UNSUPPORTED_OP);
         }
 
-        rand_pq_str = (char *)json_object_get_string(groupobj, "randPQ");
-        rand_pq = acvp_lookup_rsa_randpq_index(rand_pq_str);
-        mod = json_object_get_number(groupobj, "modRSA");
+        rand_pq_str = (char *)json_object_get_string(groupobj, "randPQ"); /***does this just not get set if json obj string doesn't exist?***/
+        rand_pq = acvp_lookup_rsa_randpq_index(rand_pq_str); /***or do we need a case/if wrap?***/
+        mod = json_object_get_number(groupobj, "modRSA"); /***because siggen does not have these things here***/
         hash_alg = (char *)json_object_get_string(groupobj, "hashAlg");
         if (rand_pq == 2 || rand_pq == 4 || rand_pq == 5)
             prime_test = (char *)json_object_get_string(groupobj, "primeTest");
@@ -381,7 +396,7 @@ ACVP_RESULT acvp_rsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
             ACVP_LOG_INFO("             tcId: %d", tc_id);
             ACVP_LOG_INFO("             mode: %s", mode_str);
 
-            tc_id = (unsigned int)json_object_get_number(testobj, "tcId");
+            tc_id = (unsigned int)json_object_get_number(testobj, "tcId"); /***Set this before log calls it?***/
 
             switch(mode_id) {
             case ACVP_RSA_MODE_KEYGEN:
@@ -427,6 +442,13 @@ ACVP_RESULT acvp_rsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
                     }
                 }
                 break;
+            case ACVP_RSA_MODE_SIGGEN:
+            	modulo = (unsigned int)json_object_get_number(testobj, "modulo");
+            	hash_alg = (char *)json_object_get_string(testobj, "hashAlg");
+            	msg = (unsigned char *)json_object_get_string(testobj, "msg");
+            	if(strncmp(sig_type, RSA_SIG_TYPE_PKCS1PSS_NAME, RSA_SIG_TYPE_MAX_LEN ) == 0 ) {
+            		salt_len = (unsigned int)json_object_get_number(testobj, "saltLen");
+            	}
             default:
                 break;
             }
@@ -446,6 +468,7 @@ ACVP_RESULT acvp_rsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
              *       the entire vector set to be more efficient
              */
 
+            /***create separate init_tc function for siggen?***/
             acvp_rsa_init_tc(ctx, &stc, tc_id, alg_id,
                             /* group info */
                              info_gen_by_server, rand_pq, mod, hash_alg, prime_test, pub_exp,
