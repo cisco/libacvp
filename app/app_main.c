@@ -585,20 +585,6 @@ int main(int argc, char **argv)
    rv = acvp_enable_hash_cap_parm(ctx, ACVP_SHA512, ACVP_HASH_IN_EMPTY, 1);
    CHECK_ENABLE_CAP_RV(rv);
 
-   /*
-    * Enable KDF-135 
-    */
-
-   rv = acvp_enable_kdf135_tls_cap(ctx, ACVP_KDF135_TLS, &app_kdf135_tls_handler);
-   CHECK_ENABLE_CAP_RV(rv);
-   rv = acvp_enable_kdf135_tls_prereq_cap(ctx, ACVP_KDF135_TLS, ACVP_KDF135_TLS_PREREQ_SHA, value);
-   CHECK_ENABLE_CAP_RV(rv);
-   rv = acvp_enable_kdf135_tls_prereq_cap(ctx, ACVP_KDF135_TLS, ACVP_KDF135_TLS_PREREQ_HMAC, value);
-   CHECK_ENABLE_CAP_RV(rv);
-   rv = acvp_enable_kdf135_tls_cap_parm(ctx, ACVP_KDF135_TLS, ACVP_KDF135_TLS12, ACVP_KDF135_TLS_CAP_SHA256 | ACVP_KDF135_TLS_CAP_SHA384 | ACVP_KDF135_TLS_CAP_SHA512);
-   CHECK_ENABLE_CAP_RV(rv);
-
-
 #ifdef ACVP_V04
 
     /*
@@ -718,6 +704,21 @@ int main(int argc, char **argv)
     CHECK_ENABLE_CAP_RV(rv);
 #endif
 
+
+#if 0 /* until supported on the server */
+   /*
+    * Enable KDF-135 
+    */
+
+   rv = acvp_enable_kdf135_tls_cap(ctx, ACVP_KDF135_TLS, &app_kdf135_tls_handler);
+   CHECK_ENABLE_CAP_RV(rv);
+   rv = acvp_enable_kdf135_tls_prereq_cap(ctx, ACVP_KDF135_TLS, ACVP_KDF135_TLS_PREREQ_SHA, value);
+   CHECK_ENABLE_CAP_RV(rv);
+   rv = acvp_enable_kdf135_tls_prereq_cap(ctx, ACVP_KDF135_TLS, ACVP_KDF135_TLS_PREREQ_HMAC, value);
+   CHECK_ENABLE_CAP_RV(rv);
+   rv = acvp_enable_kdf135_tls_cap_parm(ctx, ACVP_KDF135_TLS, ACVP_KDF135_TLS12, ACVP_KDF135_TLS_CAP_SHA256 | ACVP_KDF135_TLS_CAP_SHA384 | ACVP_KDF135_TLS_CAP_SHA512);
+   CHECK_ENABLE_CAP_RV(rv);
+#endif
 
 #ifdef ACVP_NO_RUNTIME
 
