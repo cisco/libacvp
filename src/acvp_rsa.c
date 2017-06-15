@@ -284,8 +284,8 @@ acvp_kat_rsa_keygen(int info_gen_by_server, int rand_pq, ACVP_CAPS_LIST* cap,
     return info_gen_by_server;
 }
 
-ACVP_RESULT
-acvp_process_keygen(int rand_pq, unsigned int mod, int info_gen_by_server,
+static ACVP_RESULT
+acvp_prep_keygen(int rand_pq, unsigned int mod, int info_gen_by_server,
         unsigned int tc_id, ACVP_CIPHER alg_id,
         char* rand_pq_str, JSON_Object* groupobj, char* hash_alg,
         char* prime_test, char* pub_exp, JSON_Object* testobj,
@@ -464,7 +464,7 @@ ACVP_RESULT acvp_rsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
                 /*
                  * keygen attrs
                  */
-                rv = acvp_process_keygen(rand_pq, mod, info_gen_by_server,
+                rv = acvp_prep_keygen(rand_pq, mod, info_gen_by_server,
                         tc_id, alg_id, rand_pq_str, groupobj, hash_alg,
                         prime_test, pub_exp, testobj, cap, ctx, &stc);
             }
