@@ -299,6 +299,7 @@ typedef enum acvp_rsa_pre_req {
 typedef enum acvp_rsa_mode {
     ACVP_RSA_MODE_START = 0,
     ACVP_RSA_MODE_KEYGEN,
+    ACVP_RSA_MODE_SIGVER,
     ACVP_RSA_MODE_END
 } ACVP_RSA_MODE;
 

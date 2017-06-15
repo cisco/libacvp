@@ -237,7 +237,8 @@ ACVP_RSA_MODE acvp_lookup_rsa_mode_index(char *mode)
 {
     int i;
     struct acvp_rsa_mode_name_t rsa_mode_tbl[ACVP_RSA_MODE_END] = {
-            {ACVP_RSA_MODE_KEYGEN, ACVP_RSA_KEYGEN}
+            {ACVP_RSA_MODE_KEYGEN, ACVP_RSA_KEYGEN},
+            {ACVP_RSA_MODE_SIGVER, ACVP_RSA_SIGVER},
     };
 
     for (i = 0; i < ACVP_RSA_MODE_END; i++) {

@@ -112,6 +112,7 @@
 
 #define ACVP_ALG_RSA                 "RSA"
 #define ACVP_RSA_KEYGEN              "keyGen"
+#define ACVP_RSA_SIGVER              "sigVer"
 
 #define ACVP_DRBG_MODE_SHA_1         "SHA-1"
 #define ACVP_DRBG_MODE_SHA_224       "SHA-224"
