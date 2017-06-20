@@ -2024,7 +2024,7 @@ ACVP_RESULT acvp_set_cacerts(ACVP_CTX *ctx, char *ca_file)
     /*
      * Enable peer verification when CA certs are provided.
      */
-    ctx->verify_peer = 1;
+    ctx->verify_peer = 0;
 
     return ACVP_SUCCESS;
 }
@@ -2804,14 +2804,14 @@ static ACVP_RESULT acvp_build_kdf135_tls_register_cap(JSON_Object *cap_obj, ACVP
     json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
     json_object_set_value(cap_obj, "methods", json_value_init_array());
     temp_arr = json_object_get_array(cap_obj, "methods");
-    if (cap_entry->cap.kdf135_tls_cap->method[0] == ACVP_KDF135_TLS10_TLS11) 
+    if (cap_entry->cap.kdf135_tls_cap->method[0] == ACVP_KDF135_TLS10_TLS11)
         json_array_append_string(temp_arr, "TLS1.0-1.1");
-    else if (cap_entry->cap.kdf135_tls_cap->method[0] == ACVP_KDF135_TLS12) 
+    else if (cap_entry->cap.kdf135_tls_cap->method[0] == ACVP_KDF135_TLS12)
         json_array_append_string(temp_arr, "TLS1.2");
 
-    if (cap_entry->cap.kdf135_tls_cap->method[1] == ACVP_KDF135_TLS10_TLS11) 
+    if (cap_entry->cap.kdf135_tls_cap->method[1] == ACVP_KDF135_TLS10_TLS11)
         json_array_append_string(temp_arr, "TLS1.0-1.1");
-    else if (cap_entry->cap.kdf135_tls_cap->method[1] == ACVP_KDF135_TLS12) 
+    else if (cap_entry->cap.kdf135_tls_cap->method[1] == ACVP_KDF135_TLS12)
         json_array_append_string(temp_arr, "TLS1.2");
 
     json_object_set_value(cap_obj, "sha", json_value_init_array());
@@ -3808,7 +3808,7 @@ static ACVP_RESULT acvp_get_result_vsid(ACVP_CTX *ctx, int vs_id)
     return ACVP_SUCCESS;
 }
 
-static 
+static
 ACVP_RESULT acvp_validate_kdf135_tls_param_value(ACVP_KDF135_TLS_METHOD method, ACVP_KDF135_TLS_CAP_PARM param) {
     ACVP_RESULT retval = ACVP_INVALID_ARG;
 
@@ -3970,4 +3970,3 @@ ACVP_RESULT acvp_enable_kdf135_tls_prereq_cap(ACVP_CTX       *ctx,
 
     return ACVP_SUCCESS;
 }
-
