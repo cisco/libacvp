@@ -233,6 +233,10 @@ typedef struct acvp_kdf135_tls_capability {
     int    	  	  sha;
 } ACVP_KDF135_TLS_CAP;
 
+typedef struct acvp_kdf135_snmp_capability {
+    ACVP_KDF135_SNMP_PREREQ_VALS     *prereq_vals;
+} ACVP_KDF135_SNMP_CAP;
+
 typedef struct acvp_hmac_prereq_alg_val {
     ACVP_HMAC_PRE_REQ alg;
     char *val;

@@ -130,6 +130,7 @@ typedef enum acvp_sym_cipher {
     ACVP_CMAC_TDES,
     ACVP_RSA,
     ACVP_KDF135_TLS,
+    ACVP_KDF135_SNMP,
     ACVP_CIPHER_END
 } ACVP_CIPHER;
 
@@ -147,6 +148,11 @@ typedef enum acvp_kdf135_tls_pre_req {
     ACVP_KDF135_TLS_PREREQ_HMAC = 1,
     ACVP_KDF135_TLS_PREREQ_SHA
 } ACVP_KDF135_TLS_PRE_REQ;
+
+#define ACVP_KDF135_SNMP_PREREQ_SHA_STR     "SHA"
+typedef enum acvp_kdf135_snmp_pre_req {
+    ACVP_KDF135_SNMP_PREREQ_SHA = 1
+} ACVP_KDF135_SNMP_PRE_REQ;
 
 /* these are bit flags */
 typedef enum acvp_kdf135_tls_cap_parm {
