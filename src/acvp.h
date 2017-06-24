@@ -172,7 +172,8 @@ typedef enum acvp_capability_type {
     ACVP_HMAC_TYPE,
     ACVP_CMAC_TYPE,
     ACVP_RSA_TYPE,
-    ACVP_KDF135_TLS_TYPE
+    ACVP_KDF135_TLS_TYPE,
+    ACVP_KDF135_SNMP_TYPE
 } ACVP_CAP_TYPE;
 
 typedef enum acvp_sym_cipher_keying_option {
@@ -495,6 +496,21 @@ typedef struct acvp_kdf135_tls_tc_t {
 
 /*
  * This struct holds data that represents a single test case
+ * for kdf135 TLS testing.  This data is
+ * passed between libacvp and the crypto module.
+ */
+typedef struct acvp_kdf135_snmp_tc_t {
+    ACVP_CIPHER cipher;
+    unsigned int  tc_id;    /* Test case id */
+    unsigned int md;
+    unsigned char *password;
+    unsigned char *s_key;
+    unsigned int p_len;
+    unsigned char *engine_id;
+} ACVP_KDF135_SNMP_TC;
+
+/*
+ * This struct holds data that represents a single test case
  * for hmac testing.  This data is
  * passed between libacvp and the crypto module.
  */
@@ -631,6 +647,7 @@ typedef struct acvp_cipher_tc_t {
         ACVP_CMAC_TC        *cmac;
         ACVP_RSA_TC         *rsa;
         ACVP_KDF135_TLS_TC  *kdf135_tls;
+        ACVP_KDF135_SNMP_TC *kdf135_snmp;
         //TODO: need more types for hashes, etc.
     } tc;
 } ACVP_TEST_CASE;
@@ -973,6 +990,20 @@ ACVP_RESULT acvp_enable_kdf135_tls_cap_parm(
                           ACVP_CIPHER cap,
                           ACVP_KDF135_TLS_METHOD method,
 			  ACVP_KDF135_TLS_CAP_PARM param);
+
+ACVP_RESULT acvp_enable_kdf135_snmp_cap(
+          ACVP_CTX *ctx,
+          ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case));
+
+ACVP_RESULT acvp_enable_kdf135_snmp_prereq_cap(
+                          ACVP_CTX       *ctx,
+                          ACVP_KDF135_SNMP_PRE_REQ pre_req,
+                          char              *value);
+// ACVP_RESULT acvp_enable_kdf135_tls_cap_parm(
+//                           ACVP_CTX *ctx,
+//                           ACVP_CIPHER cap,
+//                           ACVP_KDF135_TLS_METHOD method,
+// 			  ACVP_KDF135_TLS_CAP_PARM param);
 
 /*! @brief acvp_create_test_session() creates a context that can be used to
       commence a test session with an ACVP server.

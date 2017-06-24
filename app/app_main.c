@@ -51,8 +51,15 @@
 #include <openssl/bn.h>
 #include <openssl/rand.h>
 #include <openssl/kdf.h>
+// #include <openssl/fipssyms.h>
+#include <openssl/fips_rand.h>
+#include <openssl/fips.h>
+#include "app_lcl.h"
 
-#ifdef ACVP_NO_RUNTIME
+// #include <openssl/fips.h>
+
+// #ifdef ACVP_NO_RUNTIME
+#if 0
 #include "app_lcl.h"
 #include <openssl/fips_rand.h>
 #include <openssl/fips.h>
@@ -69,6 +76,7 @@ static ACVP_RESULT app_hmac_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_cmac_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_rsa_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_kdf135_tls_handler(ACVP_TEST_CASE *test_case);
+static ACVP_RESULT app_kdf135_snmp_handler(ACVP_TEST_CASE *test_case);
 #ifdef ACVP_NO_RUNTIME
 static ACVP_RESULT app_drbg_handler(ACVP_TEST_CASE *test_case);
 #endif
@@ -718,20 +726,18 @@ int main(int argc, char **argv)
     * Enable KDF-135
     */
 
-   rv = acvp_enable_kdf135_tls_cap(ctx, ACVP_KDF135_TLS, &app_kdf135_tls_handler);
-   CHECK_ENABLE_CAP_RV(rv);
-   rv = acvp_enable_kdf135_tls_prereq_cap(ctx, ACVP_KDF135_TLS, ACVP_KDF135_TLS_PREREQ_SHA, value);
-   CHECK_ENABLE_CAP_RV(rv);
-   rv = acvp_enable_kdf135_tls_prereq_cap(ctx, ACVP_KDF135_TLS, ACVP_KDF135_TLS_PREREQ_HMAC, value);
-   CHECK_ENABLE_CAP_RV(rv);
-   rv = acvp_enable_kdf135_tls_cap_parm(ctx, ACVP_KDF135_TLS, ACVP_KDF135_TLS12, ACVP_KDF135_TLS_CAP_SHA256 | ACVP_KDF135_TLS_CAP_SHA384 | ACVP_KDF135_TLS_CAP_SHA512);
-   CHECK_ENABLE_CAP_RV(rv);
+  //  rv = acvp_enable_kdf135_tls_cap(ctx, ACVP_KDF135_TLS, &app_kdf135_tls_handler);
+  //  CHECK_ENABLE_CAP_RV(rv);
+  //  rv = acvp_enable_kdf135_tls_prereq_cap(ctx, ACVP_KDF135_TLS, ACVP_KDF135_TLS_PREREQ_SHA, value);
+  //  CHECK_ENABLE_CAP_RV(rv);
+  //  rv = acvp_enable_kdf135_tls_prereq_cap(ctx, ACVP_KDF135_TLS, ACVP_KDF135_TLS_PREREQ_HMAC, value);
+  //  CHECK_ENABLE_CAP_RV(rv);
+  //  rv = acvp_enable_kdf135_tls_cap_parm(ctx, ACVP_KDF135_TLS, ACVP_KDF135_TLS12, ACVP_KDF135_TLS_CAP_SHA256 | ACVP_KDF135_TLS_CAP_SHA384 | ACVP_KDF135_TLS_CAP_SHA512);
+  //  CHECK_ENABLE_CAP_RV(rv);
 
    rv = acvp_enable_kdf135_snmp_cap(ctx, &app_kdf135_snmp_handler);
    CHECK_ENABLE_CAP_RV(rv);
    rv = acvp_enable_kdf135_snmp_prereq_cap(ctx, ACVP_KDF135_TLS_PREREQ_SHA, value);
-   CHECK_ENABLE_CAP_RV(rv);
-   rv = acvp_enable_kdf135_snmp_prereq_cap(ctx, ACVP_KDF135_TLS_PREREQ_HMAC, value);
    CHECK_ENABLE_CAP_RV(rv);
 #endif
 
@@ -2054,7 +2060,8 @@ static ACVP_RESULT app_rsa_handler(ACVP_TEST_CASE *test_case)
 }
 
 
-#ifdef ACVP_NO_RUNTIME
+// #ifdef ACVP_NO_RUNTIME
+#if 0
 typedef struct
 {
     unsigned char *ent;

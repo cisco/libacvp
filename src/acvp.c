@@ -139,7 +139,8 @@ ACVP_ALG_HANDLER alg_tbl[ACVP_ALG_MAX] = {
     {ACVP_CMAC_AES_256,    &acvp_cmac_kat_handler,  ACVP_ALG_CMAC_AES_256},
     {ACVP_CMAC_TDES,       &acvp_cmac_kat_handler,  ACVP_ALG_CMAC_TDES},
     {ACVP_RSA,             &acvp_rsa_kat_handler,   ACVP_ALG_RSA},
-    {ACVP_KDF135_TLS,      &acvp_kdf135_tls_kat_handler,  ACVP_ALG_KDF135_TLS}
+    {ACVP_KDF135_TLS,      &acvp_kdf135_tls_kat_handler,  ACVP_ALG_KDF135_TLS},
+    {ACVP_KDF135_SNMP,     &acvp_kdf135_snmp_kat_handler, ACVP_ALG_KDF135_SNMP}
 };
 
 
@@ -2877,6 +2878,65 @@ static ACVP_RESULT acvp_build_kdf135_tls_register_cap(JSON_Object *cap_obj, ACVP
     return ACVP_SUCCESS;
 }
 
+static ACVP_RESULT acvp_build_kdf135_snmp_register_cap(JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry)
+{
+    JSON_Array *temp_arr = NULL;
+
+    json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
+
+    JSON_Array *prereq_array = NULL;
+
+    ACVP_KDF135_SNMP_PREREQ_VALS *prereq_vals;
+    ACVP_KDF135_SNMP_PREREQ_VALS *next_pre_req;
+    ACVP_KDF135_SNMP_PREREQ_ALG_VAL *pre_req;
+    char *alg_str;
+    /*
+     * Init json array
+     */
+    json_object_set_value(cap_obj, "prereqVals", json_value_init_array());
+    prereq_array = json_object_get_array(cap_obj, "prereqVals");
+
+    /*
+     * return OK if nothing present
+     */
+    prereq_vals = cap_entry->cap.kdf135_snmp_cap->prereq_vals;
+    if(!prereq_vals) {
+        goto end;
+    }
+
+
+    while (prereq_vals) {
+        JSON_Value *val = NULL;
+        JSON_Object *obj = NULL;
+        val = json_value_init_object();
+        obj = json_value_get_object(val);
+        pre_req = &prereq_vals->prereq_alg_val;
+
+        switch(pre_req->alg) {
+        case ACVP_KDF135_TLS_PREREQ_SHA:
+            alg_str = ACVP_KDF135_TLS_PREREQ_SHA_STR;
+            json_object_set_string(obj, "algorithm", alg_str);
+            json_object_set_string(obj, "value", pre_req->val);
+            break;
+        case ACVP_KDF135_TLS_PREREQ_HMAC:
+            alg_str = ACVP_KDF135_TLS_PREREQ_HMAC_STR;
+            json_object_set_string(obj, "algorithm", alg_str);
+            json_object_set_string(obj, "value", pre_req->val);
+            break;
+        default:
+            return ACVP_INVALID_ARG;
+        }
+
+        json_array_append_value(prereq_array, val);
+        next_pre_req = prereq_vals->next;
+        prereq_vals = next_pre_req;
+    }
+
+    end:
+
+    return ACVP_SUCCESS;
+}
+
 /*
  * This function builds the JSON register message that
  * will be sent to the ACVP server to advertised the crypto
@@ -3081,9 +3141,12 @@ static ACVP_RESULT acvp_build_register(ACVP_CTX *ctx, char **reg)
             case ACVP_RSA:
                 acvp_build_rsa_register_cap(cap_obj, cap_entry);
                 break;
-	    case ACVP_KDF135_TLS:
+            case ACVP_KDF135_TLS:
                 acvp_build_kdf135_tls_register_cap(cap_obj, cap_entry);
-	        break;
+                break;
+            case ACVP_KDF135_SNMP:
+                acvp_build_kdf135_snmp_register_cap(cap_obj, cap_entry);
+                break;
             default:
                 ACVP_LOG_ERR("Cap entry not found, %d.", cap_entry->cipher);
                 return ACVP_NO_CAP;
@@ -3968,6 +4031,34 @@ ACVP_RESULT acvp_enable_kdf135_tls_prereq_cap(ACVP_CTX       *ctx,
         prereq_entry_2->next = prereq_entry;
     }
 
+    return ACVP_SUCCESS;
+}
+
+static ACVP_RESULT acvp_append_kdf135_snmp_caps_entry(
+       ACVP_CTX *ctx,
+       ACVP_KDF135_SNMP_CAP *cap,
+       ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case))
+{
+    ACVP_CAPS_LIST *cap_entry, *cap_e2;
+
+    cap_entry = calloc(1, sizeof(ACVP_CAPS_LIST));
+    if (!cap_entry) {
+        return ACVP_MALLOC_FAIL;
+    }
+    cap_entry->cap.kdf135_snmp_cap = cap;
+    cap_entry->crypto_handler = crypto_handler;
+    cap_entry->cipher = ACVP_KDF135_SNMP;
+    cap_entry->cap_type = ACVP_KDF135_SNMP_TYPE;
+
+    if (!ctx->caps_list) {
+        ctx->caps_list = cap_entry;
+    } else {
+        cap_e2 = ctx->caps_list;
+        while (cap_e2->next) {
+            cap_e2 = cap_e2->next;
+        }
+        cap_e2->next = cap_entry;
+    }
     return ACVP_SUCCESS;
 }
 
