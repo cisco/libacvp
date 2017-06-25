@@ -302,7 +302,6 @@ int main(int argc, char **argv)
      * We need to register all the crypto module capabilities that will be
      * validated.
      */
-     #if 0
    rv = acvp_enable_sym_cipher_cap(ctx, ACVP_AES_GCM, ACVP_DIR_BOTH, ACVP_KO_NA, ACVP_IVGEN_SRC_INT, ACVP_IVGEN_MODE_821, &app_aes_handler_aead);
    CHECK_ENABLE_CAP_RV(rv);
    rv = acvp_enable_sym_prereq_cap(ctx, ACVP_AES_GCM, ACVP_SYM_PREREQ_AES, value);
@@ -714,37 +713,25 @@ int main(int argc, char **argv)
 #endif
 
 
-#endif
-
-
-
-
-
-
-#if 1 /* until supported on the server */
+#if 0 /* until supported on the server */
    /*
     * Enable KDF-135
     */
 
-  //  rv = acvp_enable_kdf135_tls_cap(ctx, ACVP_KDF135_TLS, &app_kdf135_tls_handler);
-  //  CHECK_ENABLE_CAP_RV(rv);
-  //  rv = acvp_enable_kdf135_tls_prereq_cap(ctx, ACVP_KDF135_TLS, ACVP_KDF135_TLS_PREREQ_SHA, value);
-  //  CHECK_ENABLE_CAP_RV(rv);
-  //  rv = acvp_enable_kdf135_tls_prereq_cap(ctx, ACVP_KDF135_TLS, ACVP_KDF135_TLS_PREREQ_HMAC, value);
-  //  CHECK_ENABLE_CAP_RV(rv);
-  //  rv = acvp_enable_kdf135_tls_cap_parm(ctx, ACVP_KDF135_TLS, ACVP_KDF135_TLS12, ACVP_KDF135_TLS_CAP_SHA256 | ACVP_KDF135_TLS_CAP_SHA384 | ACVP_KDF135_TLS_CAP_SHA512);
-  //  CHECK_ENABLE_CAP_RV(rv);
+   rv = acvp_enable_kdf135_tls_cap(ctx, ACVP_KDF135_TLS, &app_kdf135_tls_handler);
+   CHECK_ENABLE_CAP_RV(rv);
+   rv = acvp_enable_kdf135_tls_prereq_cap(ctx, ACVP_KDF135_TLS, ACVP_KDF135_TLS_PREREQ_SHA, value);
+   CHECK_ENABLE_CAP_RV(rv);
+   rv = acvp_enable_kdf135_tls_prereq_cap(ctx, ACVP_KDF135_TLS, ACVP_KDF135_TLS_PREREQ_HMAC, value);
+   CHECK_ENABLE_CAP_RV(rv);
+   rv = acvp_enable_kdf135_tls_cap_parm(ctx, ACVP_KDF135_TLS, ACVP_KDF135_TLS12, ACVP_KDF135_TLS_CAP_SHA256 | ACVP_KDF135_TLS_CAP_SHA384 | ACVP_KDF135_TLS_CAP_SHA512);
+   CHECK_ENABLE_CAP_RV(rv);
 
    rv = acvp_enable_kdf135_snmp_cap(ctx, &app_kdf135_snmp_handler);
    CHECK_ENABLE_CAP_RV(rv);
    rv = acvp_enable_kdf135_snmp_prereq_cap(ctx, ACVP_KDF135_TLS_PREREQ_SHA, value);
    CHECK_ENABLE_CAP_RV(rv);
 #endif
-
-
-
-
-
 
 
 #ifdef ACVP_NO_RUNTIME
@@ -1849,120 +1836,24 @@ static ACVP_RESULT app_kdf135_tls_handler(ACVP_TEST_CASE *test_case)
 
 static ACVP_RESULT app_kdf135_snmp_handler(ACVP_TEST_CASE *test_case)
 {
-  //   ACVP_KDF135_TLS_TC	*tc;
-  //   unsigned char *key_block1, *key_block2, *master_secret1, *master_secret2;
-  //   int olen1 = 0, olen2 = 0, len1, ret, i, len, count, psm_len;
-  //   const EVP_MD *evp_md1 = NULL, *evp_md2 = NULL;
-  //
-  //   tc = test_case->tc.kdf135_tls;
-  //   /* We only support TLS12 for now */
-  //   if (tc->method != ACVP_KDF135_TLS12) {
-  //       printf("\nCrypto module error, Bad TLS type\n");
-  //       return ACVP_CRYPTO_MODULE_FAIL;
-  //   }
-  //
-  //   olen1 = tc->pm_len;
-  //   olen2 = tc->kb_len;
-  //   key_block1 = tc->kblock1;
-  //   key_block2 = tc->kblock2;
-  //   master_secret1 = tc->msecret1;
-  //   master_secret2 = tc->msecret2;
-  //
-  //   if (!key_block1 || !key_block2 || !master_secret1 || !master_secret2) {
-  //       printf("\nCrypto module error, malloc failure\n");
-  //       return ACVP_CRYPTO_MODULE_FAIL;
-  //   }
-  //
-  //   switch (tc->md)
-  //   {
-  //   case ACVP_KDF135_TLS_CAP_SHA256:
-  //       evp_md1 = evp_md2 = EVP_sha256();
-  //       break;
-  //   case ACVP_KDF135_TLS_CAP_SHA384:
-  //       evp_md1 = evp_md2 = EVP_sha384();
-  //       break;
-  //   case ACVP_KDF135_TLS_CAP_SHA512:
-  //       evp_md1 = evp_md2 = EVP_sha512();
-  //       break;
-  //   default:
-  //       printf("\nCrypto module error, Bad SHA type\n");
-  //       return ACVP_INVALID_ARG;
-  //   }
-  //
-  //   count = 1;
-  //   len = tc->pm_len / count;
-  //   if (count == 1)
-  //         psm_len = 0;
-  //
-  //   ret = kdf_tls12_P_hash(evp_md1, (const unsigned char *)tc->pm_secret, len + (psm_len & 1),
-  //                    TLS_MD_MASTER_SECRET_CONST, TLS_MD_MASTER_SECRET_CONST_SIZE,
-  //    tc->ch_rnd, strlen((char *)tc->ch_rnd),
-  //    tc->sh_rnd, strlen((char *)tc->sh_rnd),
-  //    NULL, 0,
-  //    NULL, 0,
-  //    master_secret1, olen1);
-  //   if (ret == 0) {
-  //       printf("\nCrypto module error, TLS kdf failure\n");
-  //       return ACVP_CRYPTO_MODULE_FAIL;
-  //   }
-  //   for (i = 0; i < olen1; i++) {
-  //        master_secret1[i] ^= master_secret2[i];
-  //   }
-  //
-  //   if (evp_md1 != evp_md2) {
-  //       ret = kdf_tls12_P_hash(evp_md2, (const unsigned char *)tc->pm_secret + len, len + (psm_len & 1),
-  //                        TLS_MD_MASTER_SECRET_CONST, TLS_MD_MASTER_SECRET_CONST_SIZE,
-  //        tc->ch_rnd, strlen((char *)tc->ch_rnd),
-  //        tc->sh_rnd, strlen((char *)tc->sh_rnd),
-  //        NULL, 0,
-  //        NULL, 0,
-  //        master_secret2, olen1);
-  // if (ret == 0) {
-  //           printf("\nCrypto module error, TLS kdf failure\n");
-  //           return ACVP_CRYPTO_MODULE_FAIL;
-  //       }
-  //       for (i = 0; i < olen1; i++) {
-  //           master_secret1[i] ^= master_secret2[i];
-  //       }
-  //   }
-  //
-  //
-  //   len1 = olen1;
-  //   len = len1 / count;
-  //   if (count == 1)
-  //       len1 = 0;
-  //   ret = kdf_tls12_P_hash(evp_md1, (const unsigned char *)master_secret1,
-  //            len + (len1 & 1),
-  //            TLS_MD_KEY_EXPANSION_CONST, TLS_MD_KEY_EXPANSION_CONST_SIZE,
-  //            tc->s_rnd, strlen((char *)tc->s_rnd),
-  //    tc->c_rnd, strlen((char *)tc->c_rnd),
-  //    NULL, 0,
-  //    NULL, 0,
-  //    key_block2, olen2);
-  //   if (ret == 0) {
-  //       printf("\nCrypto module error, TLS kdf failure\n");
-  //       return ACVP_CRYPTO_MODULE_FAIL;
-  //   }
-  //   for (i = 0; i < olen2; i++) {
-  //       key_block1[i] ^= key_block2[i];
-  //   }
-  //   if (evp_md1 != evp_md2) {
-  // ret = kdf_tls12_P_hash(evp_md2, (const unsigned char *)master_secret1 + len,
-  //        len + (len1 & 1),
-  //                        TLS_MD_KEY_EXPANSION_CONST, TLS_MD_KEY_EXPANSION_CONST_SIZE,
-  //                tc->s_rnd, strlen((char *)tc->s_rnd),
-  //        tc->c_rnd, strlen((char *)tc->c_rnd),
-  //        NULL, 0,
-  //        NULL, 0,
-  //        key_block2, olen2);
-  // if (ret == 0) {
-  //           printf("\nCrypto module error, TLS kdf failure\n");
-  //           return ACVP_CRYPTO_MODULE_FAIL;
-  //       }
-  //       for (i = 0; i < olen2; i++) {
-  //           key_block1[i] ^= key_block2[i];
-  // }
-  //   }
+    ACVP_KDF135_SNMP_TC	*tc;
+    unsigned char *s_key;
+    int p_len, ret;
+
+    tc = test_case->tc.kdf135_snmp;
+    s_key = tc->s_key;
+    p_len = tc->p_len;
+
+    if (!s_key) {
+        printf("\nCrypto module error, malloc failure\n");
+        return ACVP_CRYPTO_MODULE_FAIL;
+    }
+
+    ret = kdf_snmp(tc->engine_id, strnlen((const char *)tc->engine_id, ACVP_KDF135_SNMP_ENGID_MAX), tc->password, p_len, s_key);
+    if (!ret) {
+        printf("\nCrypto module error, kdf snmp failure\n");
+        return ACVP_CRYPTO_MODULE_FAIL;
+    }
 
     return ACVP_SUCCESS;
 }

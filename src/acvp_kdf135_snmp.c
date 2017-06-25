@@ -48,7 +48,7 @@ static ACVP_RESULT acvp_kdf135_snmp_release_tc(ACVP_KDF135_SNMP_TC *stc);
 
 ACVP_RESULT acvp_kdf135_snmp_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
 {
-    unsigned int tc_id, meth, md;
+    unsigned int        tc_id;
     JSON_Value          *groupval;
     JSON_Object         *groupobj = NULL;
     JSON_Value          *testval;
@@ -71,7 +71,6 @@ ACVP_RESULT acvp_kdf135_snmp_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
     ACVP_CAPS_LIST      *cap;
     ACVP_KDF135_SNMP_TC stc;
     ACVP_TEST_CASE tc;
-    ACVP_HASH_TESTTYPE  test_type;
     ACVP_RESULT         rv;
     const char          *alg_str = json_object_get_string(obj, "algorithm");
     ACVP_CIPHER	        alg_id;
@@ -218,8 +217,7 @@ ACVP_RESULT acvp_kdf135_snmp_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
  */
 static ACVP_RESULT acvp_kdf135_snmp_output_tc(ACVP_CTX *ctx, ACVP_KDF135_SNMP_TC *stc, JSON_Object *tc_rsp)
 {
-    ACVP_RESULT rv;
-    json_object_set_string(tc_rsp, "sKey", stc->s_key);
+    json_object_set_string(tc_rsp, "sKey", (const char *)stc->s_key);
     return ACVP_SUCCESS;
 }
 
@@ -230,14 +228,12 @@ static ACVP_RESULT acvp_kdf135_snmp_init_tc(ACVP_CTX *ctx,
                                     const char *password,
                                     unsigned int p_len)
 {
-    ACVP_RESULT rv;
-
     memset(stc, 0x0, sizeof(ACVP_KDF135_SNMP_TC));
 
-    stc->password = calloc(1, ACVP_KDF135_SNMP_PASS_MAX);
+    stc->password = calloc(1, p_len);
     if (!stc->password) return ACVP_MALLOC_FAIL;
 
-    stc->s_key = calloc(1, ACVP_KDF135_SNMP_SKEY_MAX);
+    stc->s_key = calloc(1, p_len);
     if (!stc->s_key) return ACVP_MALLOC_FAIL;
 
     memset(stc->s_key, 0, ACVP_KDF135_TLS_MSG_MAX);
@@ -245,7 +241,6 @@ static ACVP_RESULT acvp_kdf135_snmp_init_tc(ACVP_CTX *ctx,
     stc->tc_id = tc_id;
     stc->cipher = alg_id;
     stc->p_len = p_len;
-
     stc->password = password;
 
     return ACVP_SUCCESS;
@@ -257,8 +252,7 @@ static ACVP_RESULT acvp_kdf135_snmp_init_tc(ACVP_CTX *ctx,
  */
 static ACVP_RESULT acvp_kdf135_snmp_release_tc(ACVP_KDF135_SNMP_TC *stc)
 {
-
-    free(stc->password);
+    free((void *)stc->password);
     free(stc->s_key);
 
     memset(stc, 0x0, sizeof(ACVP_KDF135_SNMP_TC));

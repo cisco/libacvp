@@ -2880,8 +2880,6 @@ static ACVP_RESULT acvp_build_kdf135_tls_register_cap(JSON_Object *cap_obj, ACVP
 
 static ACVP_RESULT acvp_build_kdf135_snmp_register_cap(JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry)
 {
-    JSON_Array *temp_arr = NULL;
-
     json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
 
     JSON_Array *prereq_array = NULL;
@@ -2913,13 +2911,8 @@ static ACVP_RESULT acvp_build_kdf135_snmp_register_cap(JSON_Object *cap_obj, ACV
         pre_req = &prereq_vals->prereq_alg_val;
 
         switch(pre_req->alg) {
-        case ACVP_KDF135_TLS_PREREQ_SHA:
-            alg_str = ACVP_KDF135_TLS_PREREQ_SHA_STR;
-            json_object_set_string(obj, "algorithm", alg_str);
-            json_object_set_string(obj, "value", pre_req->val);
-            break;
-        case ACVP_KDF135_TLS_PREREQ_HMAC:
-            alg_str = ACVP_KDF135_TLS_PREREQ_HMAC_STR;
+        case ACVP_KDF135_SNMP_PREREQ_SHA:
+            alg_str = ACVP_KDF135_SNMP_PREREQ_SHA_STR;
             json_object_set_string(obj, "algorithm", alg_str);
             json_object_set_string(obj, "value", pre_req->val);
             break;

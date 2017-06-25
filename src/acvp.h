@@ -149,6 +149,7 @@ typedef enum acvp_kdf135_tls_pre_req {
     ACVP_KDF135_TLS_PREREQ_SHA
 } ACVP_KDF135_TLS_PRE_REQ;
 
+#define ACVP_KDF135_SNMP_ENGID_MAX 32
 #define ACVP_KDF135_SNMP_PREREQ_SHA_STR     "SHA"
 typedef enum acvp_kdf135_snmp_pre_req {
     ACVP_KDF135_SNMP_PREREQ_SHA = 1
@@ -503,7 +504,7 @@ typedef struct acvp_kdf135_snmp_tc_t {
     ACVP_CIPHER cipher;
     unsigned int  tc_id;    /* Test case id */
     unsigned int md;
-    unsigned char *password;
+    const char *password;
     unsigned char *s_key;
     unsigned int p_len;
     unsigned char *engine_id;
