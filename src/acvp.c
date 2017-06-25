@@ -240,6 +240,13 @@ static void acvp_free_prereqs(ACVP_CAPS_LIST* cap_list) {
                 cap_list->cap.kdf135_tls_cap->prereq_vals = cap_list->cap.kdf135_tls_cap->prereq_vals->next;
                 free(temp_ptr);
             }
+        case ACVP_KDF135_SNMP_TYPE:
+            while (cap_list->cap.kdf135_snmp_cap->prereq_vals) {
+                ACVP_KDF135_SNMP_PREREQ_VALS *temp_ptr;
+                temp_ptr = cap_list->cap.kdf135_snmp_cap->prereq_vals;
+                cap_list->cap.kdf135_snmp_cap->prereq_vals = cap_list->cap.kdf135_snmp_cap->prereq_vals->next;
+                free(temp_ptr);
+            }
         case ACVP_DRBG_TYPE:
         case ACVP_HASH_TYPE:
         default:
@@ -2025,7 +2032,7 @@ ACVP_RESULT acvp_set_cacerts(ACVP_CTX *ctx, char *ca_file)
     /*
      * Enable peer verification when CA certs are provided.
      */
-    ctx->verify_peer = 0;
+    ctx->verify_peer = 1;
 
     return ACVP_SUCCESS;
 }

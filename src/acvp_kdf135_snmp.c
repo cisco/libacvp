@@ -1,5 +1,5 @@
 /*****************************************************************************
-* Copyright (c) 2016, Cisco Systems, Inc.
+* Copyright (c) 2017, Cisco Systems, Inc.
 * All rights reserved.
 
 * Redistribution and use in source and binary forms, with or without modification,
@@ -217,7 +217,21 @@ ACVP_RESULT acvp_kdf135_snmp_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
  */
 static ACVP_RESULT acvp_kdf135_snmp_output_tc(ACVP_CTX *ctx, ACVP_KDF135_SNMP_TC *stc, JSON_Object *tc_rsp)
 {
-    json_object_set_string(tc_rsp, "sKey", (const char *)stc->s_key);
+    ACVP_RESULT rv;
+    char *tmp;
+
+    tmp = calloc(1, ACVP_KDF135_SNMP_SKEY_MAX);
+    if (!tmp) {
+        ACVP_LOG_ERR("Unable to malloc in acvp_hmac_output_tc");
+        return ACVP_MALLOC_FAIL;
+    }
+
+    rv = acvp_bin_to_hexstr(stc->s_key, stc->skey_len, (unsigned char*)tmp);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("hex conversion failure (mac)");
+        return rv;
+    }
+    json_object_set_string(tc_rsp, "sKey", tmp);
     return ACVP_SUCCESS;
 }
 
@@ -236,7 +250,7 @@ static ACVP_RESULT acvp_kdf135_snmp_init_tc(ACVP_CTX *ctx,
     stc->s_key = calloc(1, p_len);
     if (!stc->s_key) return ACVP_MALLOC_FAIL;
 
-    memset(stc->s_key, 0, ACVP_KDF135_TLS_MSG_MAX);
+    memset(stc->s_key, 0, ACVP_KDF135_SNMP_SKEY_MAX);
 
     stc->tc_id = tc_id;
     stc->cipher = alg_id;

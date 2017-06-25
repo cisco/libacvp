@@ -1855,6 +1855,8 @@ static ACVP_RESULT app_kdf135_snmp_handler(ACVP_TEST_CASE *test_case)
         return ACVP_CRYPTO_MODULE_FAIL;
     }
 
+    tc->skey_len = strnlen(s_key, ACVP_KDF135_SNMP_SKEY_MAX);
+
     return ACVP_SUCCESS;
 }
 

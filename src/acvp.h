@@ -150,6 +150,7 @@ typedef enum acvp_kdf135_tls_pre_req {
 } ACVP_KDF135_TLS_PRE_REQ;
 
 #define ACVP_KDF135_SNMP_ENGID_MAX 32
+#define ACVP_KDF135_SNMP_SKEY_MAX 32
 #define ACVP_KDF135_SNMP_PREREQ_SHA_STR     "SHA"
 typedef enum acvp_kdf135_snmp_pre_req {
     ACVP_KDF135_SNMP_PREREQ_SHA = 1
@@ -503,10 +504,10 @@ typedef struct acvp_kdf135_tls_tc_t {
 typedef struct acvp_kdf135_snmp_tc_t {
     ACVP_CIPHER cipher;
     unsigned int  tc_id;    /* Test case id */
-    unsigned int md;
     const char *password;
-    unsigned char *s_key;
     unsigned int p_len;
+    unsigned char *s_key;
+    unsigned int skey_len;
     unsigned char *engine_id;
 } ACVP_KDF135_SNMP_TC;
 
@@ -950,26 +951,14 @@ ACVP_RESULT acvp_enable_cmac_cap_parm(
                           int value);
 
 /*! @brief acvp_enable_kdf135_tls_cap() allows an application to specify a
-       symmetric cipher capability to be tested by the ACVP server.
+       kdf cipher capability to be tested by the ACVP server.
 
-    This function should be called to enable crypto capabilities for
-    symmetric ciphers that will be tested by the ACVP server.  This
-    includes AES and 3DES.  This function may be called multiple times
-    to specify more than one crypto capability, such as AES-CBC, AES-CTR,
-    AES-GCM, etc.
-
-    When the application enables a crypto capability, such as AES-GCM, it
+    When the application enables a crypto capability, such as KDF135_TLS, it
     also needs to specify a callback function that will be used by libacvp
     when that crypto capability is needed during a test session.
 
     @param ctx Address of pointer to a previously allocated ACVP_CTX.
     @param cipher ACVP_CIPHER enum value identifying the crypto capability.
-    @param dir ACVP_SYM_CIPH_DIR enum value identifying the crypto operation
-       (e.g. encrypt or decrypt).
-    @param keying_option ACVP_SYM_CIPH_KO enum value identifying the TDES keying options
-    @param ivgen_source The source of the IV used by the crypto module
-        (e.g. internal or external)
-    @param ivgen_mode The IV generation mode
     @param crypto_handler Address of function implemented by application that
        is invoked by libacvp when the crypto capablity is needed during
        a test session.
@@ -992,6 +981,7 @@ ACVP_RESULT acvp_enable_kdf135_tls_cap_parm(
                           ACVP_KDF135_TLS_METHOD method,
 			  ACVP_KDF135_TLS_CAP_PARM param);
 
+
 ACVP_RESULT acvp_enable_kdf135_snmp_cap(
           ACVP_CTX *ctx,
           ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case));
@@ -1000,11 +990,6 @@ ACVP_RESULT acvp_enable_kdf135_snmp_prereq_cap(
                           ACVP_CTX       *ctx,
                           ACVP_KDF135_SNMP_PRE_REQ pre_req,
                           char              *value);
-// ACVP_RESULT acvp_enable_kdf135_tls_cap_parm(
-//                           ACVP_CTX *ctx,
-//                           ACVP_CIPHER cap,
-//                           ACVP_KDF135_TLS_METHOD method,
-// 			  ACVP_KDF135_TLS_CAP_PARM param);
 
 /*! @brief acvp_create_test_session() creates a context that can be used to
       commence a test session with an ACVP server.
