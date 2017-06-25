@@ -294,7 +294,6 @@ int main(int argc, char **argv)
      * We need to register all the crypto module capabilities that will be
      * validated.
      */
-     #if 0
    rv = acvp_enable_sym_cipher_cap(ctx, ACVP_AES_GCM, ACVP_DIR_BOTH, ACVP_KO_NA, ACVP_IVGEN_SRC_INT, ACVP_IVGEN_MODE_821, &app_aes_handler_aead);
    CHECK_ENABLE_CAP_RV(rv);
    rv = acvp_enable_sym_prereq_cap(ctx, ACVP_AES_GCM, ACVP_SYM_PREREQ_AES, value);
@@ -580,14 +579,6 @@ int main(int argc, char **argv)
    CHECK_ENABLE_CAP_RV(rv);
 
    rv = acvp_enable_hash_cap(ctx, ACVP_SHA512, &app_sha_handler);
-   CHECK_ENABLE_CAP_RV(rv);
-   rv = acvp_enable_hash_cap_parm(ctx, ACVP_SHA512, ACVP_HASH_IN_BIT, 0);
-   CHECK_ENABLE_CAP_RV(rv);
-   rv = acvp_enable_hash_cap_parm(ctx, ACVP_SHA512, ACVP_HASH_IN_EMPTY, 1);
-   CHECK_ENABLE_CAP_RV(rv);
-#endif
-
-   rv = acvp_enable_hash_cap(ctx, ACVP_SHA512, &app_rsa_handler);
    CHECK_ENABLE_CAP_RV(rv);
    rv = acvp_enable_hash_cap_parm(ctx, ACVP_SHA512, ACVP_HASH_IN_BIT, 0);
    CHECK_ENABLE_CAP_RV(rv);
@@ -1889,11 +1880,9 @@ static ACVP_RESULT app_rsa_handler(ACVP_TEST_CASE *test_case)
      * custom crypto module handler
      * to be filled in
      */
-#if 0 // commented out for testing purposes
     ACVP_RSA_TC	*tc;
-    const EVP_MD	*c; // hash alg to use
     RSA       *rsa;
-    unsigned int mod, bitlen1, bitlen2, bitlen3, bitlen4, seed_len, keylen;
+    unsigned int bitlen1, bitlen2, bitlen3, bitlen4, seed_len, keylen;
     BIGNUM *exponent;
     unsigned long m;
     unsigned char *seed = NULL;
@@ -1913,12 +1902,13 @@ static ACVP_RESULT app_rsa_handler(ACVP_TEST_CASE *test_case)
                 bitlen2 = tc->keygen_tc->bitlen2;
                 bitlen3 = tc->keygen_tc->bitlen3;
                 bitlen4 = tc->keygen_tc->bitlen4;
-                seed = tc->keygen_tc->seed;
                 seed_len = tc->keygen_tc->seed_len;
+                seed = tc->keygen_tc->seed;
             } else {
                 exponent = BN_new();
                 m = RSA_F4;
-                seed_len = 32;
+                seed_len = 28;
+                seed = calloc(seed_len, sizeof(char));
                 if (!BN_set_word(exponent, m)) {
                     printf("Bignum API fail\n");
                     return ACVP_CRYPTO_MODULE_FAIL;
@@ -1927,10 +1917,10 @@ static ACVP_RESULT app_rsa_handler(ACVP_TEST_CASE *test_case)
                     printf("RAND API fail\n");
                     return ACVP_CRYPTO_MODULE_FAIL;
                 }
-                bitlen1 = 2;
-                bitlen2 = 2;
-                bitlen3 = 3;
-                bitlen4 = 4;
+                bitlen1 = 160;
+                bitlen2 = 272;
+                bitlen3 = 240;
+                bitlen4 = 184;
                 keylen = 2048;
             }
             break;
@@ -1943,11 +1933,10 @@ static ACVP_RESULT app_rsa_handler(ACVP_TEST_CASE *test_case)
         }
         break;
 
-        // if(!RSA_generate_key_ex(rsa, bitlen1, exponent, NULL)) return ACVP_CRYPTO_MODULE_FAIL;
-        if(!rsa_generate_key_internal(&rsa->p, &rsa->q, &rsa->n, &rsa->d,
+        if(rsa_generate_key_internal(&rsa->p, &rsa->q, &rsa->n, &rsa->d,
                                       seed, seed_len,
                                       bitlen1, bitlen2, bitlen3, bitlen4,
-                                      exponent, keylen, NULL)) {
+                                      exponent, keylen, NULL) != 1) {
             return ACVP_CRYPTO_MODULE_FAIL;
         }
         tc->keygen_tc->p = rsa->p;
@@ -1961,68 +1950,6 @@ static ACVP_RESULT app_rsa_handler(ACVP_TEST_CASE *test_case)
     default:
         break;
     }
-    #endif
-
-    ACVP_RSA_TC	*tc;
-    const EVP_MD	*c; // hash alg to use
-    RSA       *rsa;
-    unsigned int mod, bitlen1, bitlen2, bitlen3, bitlen4, seed_len, keylen;
-    BIGNUM *exponent;
-    unsigned long m;
-    unsigned char *seed = NULL;
-    if (!test_case) {
-        return ACVP_INVALID_ARG;
-    }
-
-    tc = test_case->tc.rsa;
-
-    rsa = RSA_new();
-    if(tc->info_gen_by_server) {
-        exponent = tc->keygen_tc->e;
-        bitlen1 = tc->keygen_tc->bitlen1;
-        bitlen2 = tc->keygen_tc->bitlen2;
-        bitlen3 = tc->keygen_tc->bitlen3;
-        bitlen4 = tc->keygen_tc->bitlen4;
-        seed = tc->keygen_tc->seed;
-        seed_len = tc->keygen_tc->seed_len;
-    } else {
-        exponent = BN_new();
-        m = RSA_F4;
-        seed_len = 32;
-        if (!BN_set_word(exponent, m)) {
-            printf("Bignum API fail\n");
-            return ACVP_CRYPTO_MODULE_FAIL;
-        }
-        if (RAND_bytes(seed, seed_len) <= 0) {
-            printf("RAND API fail\n");
-            return ACVP_CRYPTO_MODULE_FAIL;
-        }
-        bitlen1 = 2;
-        bitlen2 = 2;
-        bitlen3 = 3;
-        bitlen4 = 4;
-        keylen = 2048;
-    }
-
-
-    // if(!RSA_generate_key_ex(rsa, bitlen1, exponent, NULL)) return ACVP_CRYPTO_MODULE_FAIL;
-    if(!rsa_generate_key_internal(&rsa->p, &rsa->q, &rsa->n, &rsa->d,
-                                  seed, seed_len,
-                                  bitlen1, bitlen2, bitlen3, bitlen4,
-                                  exponent, keylen, NULL)) {
-        return ACVP_CRYPTO_MODULE_FAIL;
-    }
-    tc->keygen_tc->p = rsa->p;
-    tc->keygen_tc->q = rsa->q;
-    tc->keygen_tc->n = rsa->n;
-    tc->keygen_tc->d = rsa->d;
-
-    printf("%s", tc);
-
-    BN_free(exponent);
-    RSA_free(rsa);
-
-
     return ACVP_SUCCESS;
 }
 

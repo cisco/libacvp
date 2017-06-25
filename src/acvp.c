@@ -2024,7 +2024,7 @@ ACVP_RESULT acvp_set_cacerts(ACVP_CTX *ctx, char *ca_file)
     /*
      * Enable peer verification when CA certs are provided.
      */
-    ctx->verify_peer = 0;
+    ctx->verify_peer = 1;
 
     return ACVP_SUCCESS;
 }
