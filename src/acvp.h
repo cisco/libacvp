@@ -282,7 +282,10 @@ typedef enum acvp_rsa_param {
 
 #define ACVP_RSA_SIGGEN_SHA_224     "SHA-224"
 #define ACVP_RSA_SIGGEN_SHA_256     "SHA-256"
+#define ACVP_RSA_SIGGEN_SHA_384     "SHA-384"
 #define ACVP_RSA_SIGGEN_SHA_512     "SHA-512"
+#define ACVP_RSA_SIGEEN_SHA_512_224 "SHA-512/224"
+#define ACVP_RSA_SIGGEN_SHA_512_256 "SHA-512/256"
 
 #define RSA_SALT_SIGGEN_28      28
 #define RSA_SALT_SIGGEN_32      32
@@ -515,7 +518,7 @@ typedef struct acvp_cmac_tc_t {
  * for RSA testing.  This data is
  * passed between libacvp and the crypto module.
  */
-typedef struct acvp_rsa_keygen_tc_t {
+typedef struct acvp_rsa_keygen_attrs_tc_t {
     ACVP_RSA_MODE mode; // "keyGen"
 
     char *hash_alg;
@@ -556,17 +559,38 @@ typedef struct acvp_rsa_keygen_tc_t {
     unsigned char *prime_seed_q2;
 
     unsigned char *prime_result; // "prime" or "composite"
-} ACVP_RSA_KEYGEN_TC;
+} ACVP_RSA_KEYGEN_ATTRS_TC;
 
-typedef struct acvp_rsa_tc_t {
+typedef struct acvp_rsa_keygen_tc_t {
     ACVP_CIPHER cipher; /* hash algorithm TODO: need to validate that
                            this is one of the hashes when we check parms */
     ACVP_RSA_MODE mode; // "keyGen"
     int info_gen_by_server;
     unsigned int rand_pq;
     unsigned int mod;
-    ACVP_RSA_KEYGEN_TC *keygen_tc;
-} ACVP_RSA_TC;
+    ACVP_RSA_KEYGEN_ATTRS_TC *keygen_tc;
+} ACVP_RSA_KEYGEN_TC;
+
+/*
+ * This struct holds data that represents a single test case
+ * for RSA testing.  This data is
+ * passed between libacvp and the crypto module.
+ */
+typedef struct acvp_rsa_sig_attrs_tc_t {
+    ACVP_RSA_MODE mode; // "sigGen" /***necessary in here?***/
+    unsigned int  tc_id;    /* Test case id */
+    unsigned int  modulo;
+    char *hash_alg;
+    unsigned char *msg;
+    unsigned int salt_len; // only for sigType PKCSS1PSS
+} ACVP_RSA_SIG_ATTRS_TC;
+
+typedef struct acvp_rsa_sig_tc_t {
+    ACVP_RSA_MODE mode; // "sigGen" "sigVer"
+    char *test_type; // "AFT"
+    char *sig_type; // "X9.31"
+    ACVP_RSA_SIG_ATTRS_TC *sig_tc;
+} ACVP_RSA_SIG_TC;
 
 /*
  * This struct holds data that represents a single test case

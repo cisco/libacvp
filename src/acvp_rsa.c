@@ -6,8 +6,76 @@
 #include "acvp_lcl.h"
 #include "parson.h"
 
-static ACVP_RESULT acvp_rsa_init_tc(ACVP_CTX *ctx,
-                                    ACVP_RSA_TC *stc,
+static void set_bitlens(ACVP_RSA_TC *stc, int bitlen1, int bitlen2, int bitlen3, int bitlen4) {
+    stc->keygen_tc->bitlen1 = bitlen1;
+    stc->keygen_tc->bitlen2 = bitlen2;
+    stc->keygen_tc->bitlen3 = bitlen3;
+    stc->keygen_tc->bitlen4 = bitlen4;
+}
+static void populate_common_fields(ACVP_RSA_TC *stc, JSON_Object *tc_rsp) {
+    json_object_set_string(tc_rsp, "seed", (char *)stc->keygen_tc->seed);
+    json_object_set_string(tc_rsp, "e", BN_bn2hex(stc->keygen_tc->e));
+    json_object_set_string(tc_rsp, "p", BN_bn2hex(stc->keygen_tc->p));
+    json_object_set_string(tc_rsp, "q", BN_bn2hex(stc->keygen_tc->q));
+    json_object_set_string(tc_rsp, "n", BN_bn2hex(stc->keygen_tc->n));
+    json_object_set_string(tc_rsp, "d", BN_bn2hex(stc->keygen_tc->d));
+}
+
+static void populate_bitlens(ACVP_RSA_TC *stc, JSON_Object *tc_rsp) {
+    json_object_set_number(tc_rsp, "bitlen1", stc->keygen_tc->bitlen1);
+    json_object_set_number(tc_rsp, "bitlen2", stc->keygen_tc->bitlen2);
+    json_object_set_number(tc_rsp, "bitlen3", stc->keygen_tc->bitlen3);
+    json_object_set_number(tc_rsp, "bitlen4", stc->keygen_tc->bitlen4);
+}
+
+static ACVP_RESULT acvp_rsa_init_tc_sig(ACVP_CTX *ctx,
+                                    ACVP_RSA_TC *sigtc,
+                                    unsigned int tc_id,
+                                    ACVP_CIPHER alg_id,
+									char *test_type,
+									char *sig_type,
+									unsigned int modulo,
+                                    char *hash_alg,
+                                    unsigned char *msg,
+									unsigned int salt_len
+                                    )
+{
+    memset(sigtc, 0x0, sizeof(ACVP_RSA_SIG_TC)); /** idk what this is ***/
+
+    switch(sigtc->mode) {
+    case ACVP_RSA_MODE_SIGGEN:
+		sigtc->test_type = calloc(/***/, sizeof(char));
+		sigtc->sig_type = calloc(/***/, sizeof(char));
+		sigtc->sig_tc = calloc(1, sizeof(ACVP_RSA_SIG_TC));
+		if (!sigtc->sig_tc) return ACVP_MALLOC_FAIL;
+		sigtc->sig_tc->tc_id = calloc(/***/, sizeof(unsigned int)); /** where is this in keygen?***/
+		sigtc->sig_tc->modulo = calloc(/***/, sizeof(unsigned int));
+		sigtc->sig_tc->hash_alg = calloc(/***/, sizeof(char));
+		sigtc->sig_tc->msg = calloc(/***/, sizeof(unsigned char));
+
+		if(strncmp(sig_type, RSA_SIG_TYPE_PKCS1PSS_NAME, RSA_SIG_TYPE_MAX_LEN ) == 0 ) {
+			sigtc->sig_tc->salt_len = calloc(/***/, sizeof(unsigned int));
+			sigtc->sig_tc->salt_len = salt_len;
+		}
+
+		sigtc->test_type = test_type);
+		sigtc->sig_type = sig_type;
+		sigtc->sig_tc->tc_id = tc_id; /** where is this in keygen?***/
+		sigtc->sig_tc->modulo = modulo;
+		sigtc->sig_tc->hash_alg = hash_alg;
+		sigtc->sig_tc->msg = msg;
+	case ACVP_RSA_MODE_SIGVER:
+		//do the things for sigver!!!
+	default:
+		break;
+    }
+
+    return ACVP_SUCCESS;
+}
+
+
+static ACVP_RESULT acvp_rsa_init_tc_keygen(ACVP_CTX *ctx,
+                                    ACVP_RSA_KEYGEN_TC *stc,
                                     unsigned int tc_id,
                                     ACVP_CIPHER alg_id,
                                     int info_gen_by_server,
@@ -32,44 +100,38 @@ static ACVP_RESULT acvp_rsa_init_tc(ACVP_CTX *ctx,
                                     unsigned char *xq2
                                     )
 {
-    memset(stc, 0x0, sizeof(ACVP_RSA_TC));
+    memset(stc, 0x0, sizeof(ACVP_RSA_KEYGEN_TC));
     stc->rand_pq = rand_pq;
-
-    void set_bitlens() {
-        stc->keygen_tc->bitlen1 = bitlen1;
-        stc->keygen_tc->bitlen2 = bitlen2;
-        stc->keygen_tc->bitlen3 = bitlen3;
-        stc->keygen_tc->bitlen4 = bitlen4;
-    }
 
     switch(stc->mode) {
     case ACVP_RSA_MODE_KEYGEN:
-        stc->keygen_tc = calloc(1, sizeof(ACVP_RSA_KEYGEN_TC));
+        stc->keygen_tc = calloc(1, sizeof(ACVP_RSA_KEYGEN_ATTRS_TC));
         if (!stc->keygen_tc) return ACVP_MALLOC_FAIL;
         stc->keygen_tc->e = calloc(1, sizeof(BIGNUM));
         stc->keygen_tc->seed = calloc(1, sizeof(ACVP_RSA_SEEDLEN_MAX));
         stc->keygen_tc->hash_alg = calloc(12, sizeof(char));
         stc->keygen_tc->pub_exp = calloc(6, sizeof(char));
         stc->keygen_tc->prime_test = calloc(5, sizeof(char));
-        if (rand_pq == 1 || rand_pq == 3 || rand_pq == 4 || rand_pq == 5) {
+        if (rand_pq == RSA_RAND_PQ_B32 || rand_pq == RSA_RAND_PQ_B34 ||
+            rand_pq == RSA_RAND_PQ_B35 || rand_pq == RSA_RAND_PQ_B36) {
             stc->keygen_tc->p = calloc(1, sizeof(BIGNUM));
             stc->keygen_tc->q = calloc(1, sizeof(BIGNUM));
             stc->keygen_tc->n = calloc(1, sizeof(BIGNUM));
             stc->keygen_tc->d = calloc(1, sizeof(BIGNUM));
         }
-        if (rand_pq == 4 || rand_pq == 5) {
+        if (rand_pq == RSA_RAND_PQ_B35 || rand_pq == RSA_RAND_PQ_B36) {
             stc->keygen_tc->prime_seed_p2 = calloc(1, sizeof(ACVP_RSA_SEEDLEN_MAX));
             stc->keygen_tc->prime_seed_q1 = calloc(1, sizeof(ACVP_RSA_SEEDLEN_MAX));
             stc->keygen_tc->prime_seed_q2 = calloc(1, sizeof(ACVP_RSA_SEEDLEN_MAX));
         }
         switch(rand_pq) {
-            case 1:
+            case RSA_RAND_PQ_B32:
                 if (info_gen_by_server) {
                     stc->keygen_tc->e = e;
                     stc->keygen_tc->seed = seed;
                 }
                 break;
-            case 2:
+            case RSA_RAND_PQ_B33:
                 stc->keygen_tc->prime_result = calloc(10, sizeof(char));
                 stc->keygen_tc->e = e;
                 stc->keygen_tc->p_rand = calloc(512, sizeof(char));
@@ -81,15 +143,15 @@ static ACVP_RESULT acvp_rsa_init_tc(ACVP_CTX *ctx,
                     // are the same either way
                 }
                 break;
-            case 3:
+            case RSA_RAND_PQ_B34:
                 if (info_gen_by_server) {
                     stc->keygen_tc->e = e;
                     stc->keygen_tc->seed = seed;
                     stc->keygen_tc->seed_len = (unsigned int)strnlen((char *)seed, ACVP_RSA_SEEDLEN_MAX);
-                    set_bitlens();
+                    set_bitlens(stc, bitlen1, bitlen2, bitlen3, bitlen4);
                 }
                 break;
-            case 4:
+            case RSA_RAND_PQ_B35:
                 stc->keygen_tc->p1 = calloc(512, sizeof(char));
                 stc->keygen_tc->p2 = calloc(512, sizeof(char));
                 stc->keygen_tc->q1 = calloc(512, sizeof(char));
@@ -100,10 +162,9 @@ static ACVP_RESULT acvp_rsa_init_tc(ACVP_CTX *ctx,
                     stc->keygen_tc->e = e;
                     stc->keygen_tc->seed = seed;
                     stc->keygen_tc->seed_len = (unsigned int)strnlen((char *)seed, ACVP_RSA_SEEDLEN_MAX);
-                    set_bitlens();
-                }
+                    set_bitlens(stc, bitlen1, bitlen2, bitlen3, bitlen4);                }
                 break;
-            case 5:
+            case RSA_RAND_PQ_B36:
                 stc->keygen_tc->xp1 = calloc(512, sizeof(char));
                 stc->keygen_tc->xp2 = calloc(512, sizeof(char));
                 stc->keygen_tc->xq1 = calloc(512, sizeof(char));
@@ -112,7 +173,10 @@ static ACVP_RESULT acvp_rsa_init_tc(ACVP_CTX *ctx,
                     stc->keygen_tc->e = e;
                     stc->keygen_tc->seed = seed;
                     stc->keygen_tc->seed_len = (unsigned int)strnlen((char *)seed, ACVP_RSA_SEEDLEN_MAX);
-                    set_bitlens();
+                    stc->keygen_tc->bitlen1 = bitlen1;
+                    stc->keygen_tc->bitlen2 = bitlen2;
+                    stc->keygen_tc->bitlen3 = bitlen3;
+                    stc->keygen_tc->bitlen4 = bitlen4;
                     stc->keygen_tc->xp1 = xp1;
                     stc->keygen_tc->xp2 = xp2;
                     stc->keygen_tc->xq1 = xq1;
@@ -123,9 +187,6 @@ static ACVP_RESULT acvp_rsa_init_tc(ACVP_CTX *ctx,
                 break;
         }
         break;
-    case ACVP_RSA_MODE_SIGGEN:
-		printf("\n\n\n\n rsa init tc rsa siggen case \n\n\n");
-		break;
     default:
         break;
     }
@@ -135,46 +196,32 @@ static ACVP_RESULT acvp_rsa_init_tc(ACVP_CTX *ctx,
     return ACVP_SUCCESS;
 }
 
+
+
 /*
  * After the test case has been processed by the DUT, the results
  * need to be JSON formated to be included in the vector set results
  * file that will be uploaded to the server.  This routine handles
  * the JSON processing for a single test case.
  */
-static ACVP_RESULT acvp_rsa_output_tc(ACVP_CTX *ctx, ACVP_RSA_TC *stc, JSON_Object *tc_rsp)
+static ACVP_RESULT acvp_rsa_output_tc(ACVP_CTX *ctx, ACVP_RSA_KEYGEN_TC *stc, JSON_Object *tc_rsp)
 {
-    void populate_common_fields() {
-        json_object_set_string(tc_rsp, "seed", (char *)stc->keygen_tc->seed);
-        json_object_set_string(tc_rsp, "e", BN_bn2hex(stc->keygen_tc->e));
-        json_object_set_string(tc_rsp, "p", BN_bn2hex(stc->keygen_tc->p));
-        json_object_set_string(tc_rsp, "q", BN_bn2hex(stc->keygen_tc->q));
-        json_object_set_string(tc_rsp, "n", BN_bn2hex(stc->keygen_tc->n));
-        json_object_set_string(tc_rsp, "d", BN_bn2hex(stc->keygen_tc->d));
-    }
-
-    void populate_bitlens() {
-        json_object_set_number(tc_rsp, "bitlen1", stc->keygen_tc->bitlen1);
-        json_object_set_number(tc_rsp, "bitlen2", stc->keygen_tc->bitlen2);
-        json_object_set_number(tc_rsp, "bitlen3", stc->keygen_tc->bitlen3);
-        json_object_set_number(tc_rsp, "bitlen4", stc->keygen_tc->bitlen4);
-    }
-
     switch(stc->mode) {
         case ACVP_RSA_MODE_KEYGEN:
         switch(stc->rand_pq) {
-            case 2:
+            case RSA_RAND_PQ_B33:
                 json_object_set_string(tc_rsp, "primeResult", (char *)stc->keygen_tc->prime_result);
                 break;
-            case 1:
-                populate_common_fields();
+            case RSA_RAND_PQ_B32:
+                populate_common_fields(stc, tc_rsp);
                 break;
-            case 3:
-                populate_common_fields();
-                populate_bitlens();
+            case RSA_RAND_PQ_B34:
+                populate_common_fields(stc, tc_rsp);
+                populate_bitlens(stc, tc_rsp);
                 break;
-            case 4:
-                populate_common_fields();
-                populate_bitlens();
+            case RSA_RAND_PQ_B35:
+                populate_common_fields(stc, tc_rsp);
+                populate_bitlens(stc, tc_rsp);
                 json_object_set_string(tc_rsp, "primeSeedP2", (char *)stc->keygen_tc->prime_seed_p2);
                 json_object_set_string(tc_rsp, "p1", (char *)stc->keygen_tc->p1);
                 json_object_set_string(tc_rsp, "p2", (char *)stc->keygen_tc->p2);
@@ -185,9 +232,9 @@ static ACVP_RESULT acvp_rsa_output_tc(ACVP_CTX *ctx, ACVP_RSA_TC *stc, JSON_Obje
                 json_object_set_string(tc_rsp, "q2", (char *)stc->keygen_tc->q2);
                 json_object_set_string(tc_rsp, "xQ", (char *)stc->keygen_tc->xq);
                 break;
-            case 5:
-                populate_common_fields();
-                populate_bitlens();
+            case RSA_RAND_PQ_B36:
+                populate_common_fields(stc, tc_rsp);
+                populate_bitlens(stc, tc_rsp);
                 json_object_set_string(tc_rsp, "xP1", (char *)stc->keygen_tc->xp1);
                 json_object_set_string(tc_rsp, "xP2", (char *)stc->keygen_tc->xp2);
                 json_object_set_string(tc_rsp, "xQ1", (char *)stc->keygen_tc->xq1);
@@ -208,7 +255,7 @@ static ACVP_RESULT acvp_rsa_output_tc(ACVP_CTX *ctx, ACVP_RSA_TC *stc, JSON_Obje
  * This function simply releases the data associated with
  * a test case.
  */
-static ACVP_RESULT acvp_rsa_release_tc(ACVP_RSA_TC *stc)
+static ACVP_RESULT acvp_rsa_release_tc(ACVP_RSA_KEYGEN_TC *stc)
 {
     if(stc->keygen_tc->e) free(stc->keygen_tc->e);
     if(stc->keygen_tc->seed) free(stc->keygen_tc->seed);
@@ -238,6 +285,168 @@ static ACVP_RESULT acvp_rsa_release_tc(ACVP_RSA_TC *stc)
     return ACVP_SUCCESS;
 }
 
+static int
+acvp_kat_rsa_keygen(int info_gen_by_server, int rand_pq, ACVP_CAPS_LIST* cap,
+        unsigned char** p_rand, JSON_Object* testobj, unsigned char** q_rand,
+        unsigned char** seed, unsigned char** xp, unsigned char** xq,
+        unsigned char** xp1, unsigned char** xq1, unsigned char** xp2,
+        unsigned char** xq2)
+{
+    info_gen_by_server =
+            cap->cap.rsa_cap->rsa_cap_mode_list->cap_mode_attrs.keygen->info_gen_by_server;
+    if (!info_gen_by_server) {
+        if (rand_pq == RSA_RAND_PQ_B33) {
+            // "probRP"
+            *p_rand = (unsigned char*) json_object_get_string(testobj, "pRand");
+            *q_rand = (unsigned char*) json_object_get_string(testobj, "qRand");
+        }
+    }
+    else {
+        switch (rand_pq)
+        {
+        case RSA_RAND_PQ_B32: // "provRP"
+            *seed = (unsigned char*) json_object_get_string(testobj, "seed");
+            break;
+        case RSA_RAND_PQ_B34: // "provPC"
+            *seed = (unsigned char*) json_object_get_string(testobj, "seed");
+            break;
+        case RSA_RAND_PQ_B35: // "bothPC"
+            *seed = (unsigned char*) json_object_get_string(testobj, "seed");
+            *xp = (unsigned char*) json_object_get_string(testobj, "xP");
+            *xq = (unsigned char*) json_object_get_string(testobj, "xQ");
+            break;
+        case RSA_RAND_PQ_B36: // "probPC"
+            *seed = (unsigned char*) json_object_get_string(testobj, "seed");
+            *xp = (unsigned char*) json_object_get_string(testobj, "xP");
+            *xq = (unsigned char*) json_object_get_string(testobj, "xQ");
+            *xp1 = (unsigned char*) json_object_get_string(testobj, "xP1");
+            *xq1 = (unsigned char*) json_object_get_string(testobj, "xQ1");
+            *xp2 = (unsigned char*) json_object_get_string(testobj, "xP2");
+            *xq2 = (unsigned char*) json_object_get_string(testobj, "xQ2");
+            break;
+        case RSA_RAND_PQ_B33:
+        default:
+            break;
+        }
+    }
+    return info_gen_by_server;
+}
+
+static ACVP_RESULT
+acvp_prep_keygen(int rand_pq, unsigned int mod, int info_gen_by_server,
+        unsigned int tc_id, ACVP_CIPHER alg_id,
+        char* rand_pq_str, JSON_Object* groupobj, char* hash_alg,
+        char* prime_test, char* pub_exp, JSON_Object* testobj,
+        ACVP_CAPS_LIST* cap, ACVP_CTX* ctx, ACVP_RSA_KEYGEN_TC* stc)
+{
+    ACVP_RESULT rv;
+    /*
+     * keygen attrs
+     */
+    unsigned char *p_rand, *q_rand, *seed, *xp, *xp1, *xp2, *xq, *xq1, *xq2;
+    unsigned int bitlen1, bitlen2, bitlen3, bitlen4;
+    BIGNUM* e;
+    const char* exponent;
+    rand_pq_str = (char*) json_object_get_string(groupobj, "randPQ");
+    rand_pq = acvp_lookup_rsa_randpq_index(rand_pq_str);
+    mod = json_object_get_number(groupobj, "modRSA");
+    hash_alg = (char*) json_object_get_string(groupobj, "hashAlg");
+    if (rand_pq == RSA_RAND_PQ_B33 || rand_pq == RSA_RAND_PQ_B35
+            || rand_pq == RSA_RAND_PQ_B36)
+        prime_test = (char *) json_object_get_string(groupobj, "primeTest");
+
+    pub_exp = (char*) json_object_get_string(groupobj, "pubExp");
+    exponent = json_object_get_string(testobj, "e");
+    BN_hex2bn(&e, exponent);
+    bitlen1 = (unsigned int) json_object_get_number(testobj, "bitlen1");
+    bitlen2 = (unsigned int) json_object_get_number(testobj, "bitlen2");
+    bitlen3 = (unsigned int) json_object_get_number(testobj, "bitlen3");
+    bitlen4 = (unsigned int) json_object_get_number(testobj, "bitlen4");
+    info_gen_by_server = acvp_kat_rsa_keygen(info_gen_by_server, rand_pq, cap,
+            &p_rand, testobj, &q_rand, &seed, &xp, &xq, &xp1, &xq1, &xp2, &xq2);
+    /*
+     * Setup the test case data that will be passed down to
+     * the crypto module.
+     * TODO: this does mallocs, we can probably do the mallocs once for
+     *       the entire vector set to be more efficient
+     */
+    rv = acvp_rsa_init_tc_keygen(ctx, &*stc, tc_id, alg_id, /* group info */
+    info_gen_by_server, rand_pq, mod, hash_alg, prime_test, pub_exp, /* keygen params */
+    seed, e, bitlen1, bitlen2, bitlen3, bitlen4, p_rand, q_rand, xp, xp1, xp2,
+            xq, xq1, xq2);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("ERROR: RSA Key Gen testcase Init failed.");
+    }
+    return rv;
+}
+
+static ACVP_RESULT acvp_kat_rsa_sig(unsigned int tc_id, ACVP_CIPHER alg_id,
+		JSON_Object* groupobj, JSON_Object* testobj, ACVP_CAPS_LIST* cap,
+		ACVP_CTX* ctx, ACVP_RSA_SIG_TC* sigtc)
+{
+    ACVP_RESULT rv;
+
+    /*
+     * Sig attrs for group obj
+     */
+    char *test_type, *sig_type;
+
+
+    /*
+     * siggen attrs for test obj
+     */
+    unsigned int modulo, salt_len;
+	unsigned char *msg; /***reg char *?***/
+	char *hash_alg;
+
+	/*
+	 * sigver attrs for test obj
+	 */
+	//they go here!!!
+
+	/*
+	 * set group obj -- common to siggen and sigver
+	 */
+	test_type = (char *)json_object_get_string(groupobj, "testType");
+	sig_type = (char *)json_object_get_string(groupobj, "sigType");
+
+	/*
+	 * set test obj
+	 */
+	switch(sigtc->mode) {
+	case ACVP_RSA_MODE_SIGGEN:
+	{
+		modulo = (unsigned int)json_object_get_number(testobj, "modulo");
+		hash_alg = (char *)json_object_get_string(testobj, "hashAlg");
+		msg = (unsigned char *)json_object_get_string(testobj, "msg");
+		salt_len = 0; /*** is technically valid to be 0, what do here??? ***/
+		if(strncmp(sig_type, RSA_SIG_TYPE_PKCS1PSS_NAME, RSA_SIG_TYPE_MAX_LEN ) == 0 ) {
+			salt_len = (unsigned int)json_object_get_number(testobj, "saltLen");
+		}
+		/*
+		 * Setup the test case data that will be passed down to
+		 * the crypto module.
+		 * TODO: this does mallocs, we can probably do the mallocs once for
+		 *       the entire vector set to be more efficient
+		 */
+		rv = acvp_rsa_init_tc_sig(ctx, &*sigtc, tc_id, alg_id, /* note: mode is set in kat_handler */
+			    test_type, sig_type, modulo, hash_alg, msg, salt_len); /* siggen attrs */
+		break;
+	}
+	case ACVP_RSA_MODE_SIGVER:
+	{
+		//set sigver test obj attrs here!!!
+		break;
+	}
+	default:
+		break;
+	}
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("ERROR: RSA Sig testcase Init failed.");
+    }
+    return rv;
+}
+
 ACVP_RESULT acvp_rsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
 {
     unsigned int        tc_id;
@@ -261,55 +470,29 @@ ACVP_RESULT acvp_rsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
     JSON_Value          *r_tval = NULL; /* Response testval */
     JSON_Object         *r_tobj = NULL; /* Response testobj */
     ACVP_CAPS_LIST      *cap;
-    ACVP_RSA_TC stc;
+    ACVP_RSA_KEYGEN_TC  stc;
+    ACVP_RSA_SIG_TC     sigtc;
     ACVP_TEST_CASE tc;
     ACVP_RESULT rv;
     const char          *alg_str = json_object_get_string(obj, "algorithm");
+    ACVP_RSA_MODE       mode_id;
     char                *mode_str = NULL;
     ACVP_CIPHER	        alg_id;
-    ACVP_RSA_MODE       mode_id;
+
+    /*
+     * keygen group attributes
+     */
     char *json_result, *rand_pq_str;
+    unsigned int mod;
 
     int info_gen_by_server, rand_pq;
-    /****/
-    char *hash_alg, *prime_test, *pub_exp, *sig_type, *test_type;
-
-    /*
-     * keygen attrs
-     */
-    unsigned char *p_rand, *q_rand, *seed, *xp, *xp1, *xp2, *xq, *xq1, *xq2;
-    unsigned int bitlen1, bitlen2, bitlen3, bitlen4, mod;
-    BIGNUM *e;
-    const char *exponent;
-
-    /****/
-    /*
-     * siggen attrs
-     */
-    unsigned int modulo, salt_len;
-    unsigned char *msg; /***unsigned char *?***/
-    //hashAlg is at line 275 since keygen has it outside of "tests"
-
-    void get_bitlens() {
-        bitlen1 = (unsigned int)json_object_get_number(testobj, "bitlen1");
-        bitlen2 = (unsigned int)json_object_get_number(testobj, "bitlen2");
-        bitlen3 = (unsigned int)json_object_get_number(testobj, "bitlen3");
-        bitlen4 = (unsigned int)json_object_get_number(testobj, "bitlen4");
-    }
-    void get_e() {
-        exponent = json_object_get_string(testobj, "e");
-        BN_hex2bn(&e, exponent);
-    }
+    char *hash_alg, *prime_test, *pub_exp;
 
     if (!alg_str) {
         ACVP_LOG_ERR("ERROR: unable to parse 'algorithm' from JSON");
         return (ACVP_MALFORMED_JSON);
     }
 
-    /*
-     * Get a reference to the abstracted test case
-     */
-    tc.tc.rsa = &stc;
 
     /*
      * Get the crypto module handler for this hash algorithm
@@ -358,35 +541,22 @@ ACVP_RESULT acvp_rsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
         groupobj = json_value_get_object(groupval);
 
         mode_str = (char *)json_object_get_string(groupobj, "mode");
-
-        /***perhaps not needed?***/
-        /***put in own case/if?***/
-        test_type = (char *)json_object_get_string(groupobj, "testType");
-        sig_type = (char *)json_object_get_string(groupobj, "sigType");
-
         if (!mode_str) {
             ACVP_LOG_ERR("ERROR: unable to parse 'mode' from JSON");
             return (ACVP_MALFORMED_JSON);
         }
         ACVP_LOG_INFO("    RSA mode: %s", mode_str);
-        mode_id = acvp_lookup_rsa_mode_index(mode_str);  /***in acvp_util.c:236, need to add siggen things***/
+        mode_id = acvp_lookup_rsa_mode_index(mode_str); /***in acvp_util.c:236, need to add siggen things***/
         if (mode_id >= ACVP_RSA_MODE_END) {
             ACVP_LOG_ERR("unsupported RSA mode (%s)", mode_str);
             return (ACVP_UNSUPPORTED_OP);
         }
 
-        rand_pq_str = (char *)json_object_get_string(groupobj, "randPQ"); /***does this just not get set if json obj string doesn't exist?***/
-        rand_pq = acvp_lookup_rsa_randpq_index(rand_pq_str); /***or do we need a case/if wrap?***/
-        mod = json_object_get_number(groupobj, "modRSA"); /***because siggen does not have these things here***/
-        hash_alg = (char *)json_object_get_string(groupobj, "hashAlg");
-        if (rand_pq == 2 || rand_pq == 4 || rand_pq == 5)
-            prime_test = (char *)json_object_get_string(groupobj, "primeTest");
-        pub_exp = (char *)json_object_get_string(groupobj, "pubExp");
-
         ACVP_LOG_INFO("    Test group: %d", i);
 
         tests = json_object_get_array(groupobj, "tests");
         t_cnt = json_array_get_count(tests);
+
         for (j = 0; j < t_cnt; j++) {
             ACVP_LOG_INFO("Found new RSA test vector...");
             testval = json_array_get_value(tests, j);
@@ -397,62 +567,6 @@ ACVP_RESULT acvp_rsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
             ACVP_LOG_INFO("             mode: %s", mode_str);
 
             tc_id = (unsigned int)json_object_get_number(testobj, "tcId"); /***Set this before log calls it?***/
-
-            switch(mode_id) {
-            case ACVP_RSA_MODE_KEYGEN:
-                info_gen_by_server = cap->cap.rsa_cap->rsa_cap_mode_list->cap_mode_attrs.keygen->info_gen_by_server;
-                if (!info_gen_by_server) {
-                    if (rand_pq == 2) { // "ProbRP"
-                        get_e();
-                        p_rand = (unsigned char *)json_object_get_string(testobj, "pRand");
-                        q_rand = (unsigned char *)json_object_get_string(testobj, "qRand");
-                    }
-                } else {
-                    switch(rand_pq) {
-                    case 1: // "provRP"
-                        get_e();
-                        seed = (unsigned char *)json_object_get_string(testobj, "seed");
-                        break;
-                    case 3: // "provPC"
-                        get_e();
-                        seed = (unsigned char *)json_object_get_string(testobj, "seed");
-                        get_bitlens();
-                        break;
-                    case 4: // "bothPC"
-                        get_e();
-                        seed = (unsigned char *)json_object_get_string(testobj, "seed");
-                        get_bitlens();
-                        xp = (unsigned char *)json_object_get_string(testobj, "xP");
-                        xq = (unsigned char *)json_object_get_string(testobj, "xQ");
-                        break;
-                    case 5: // "probPC"
-                        get_e();
-                        seed = (unsigned char *)json_object_get_string(testobj, "seed");
-                        get_bitlens();
-                        xp = (unsigned char *)json_object_get_string(testobj, "xP");
-                        xq = (unsigned char *)json_object_get_string(testobj, "xQ");
-                        xp1 = (unsigned char *)json_object_get_string(testobj, "xP1");
-                        xq1 = (unsigned char *)json_object_get_string(testobj, "xQ1");
-                        xp2 = (unsigned char *)json_object_get_string(testobj, "xP2");
-                        xq2 = (unsigned char *)json_object_get_string(testobj, "xQ2");
-                        break;
-                    case 2:
-                    default:
-                        break;
-                    }
-                }
-                break;
-            case ACVP_RSA_MODE_SIGGEN:
-            	modulo = (unsigned int)json_object_get_number(testobj, "modulo");
-            	hash_alg = (char *)json_object_get_string(testobj, "hashAlg");
-            	msg = (unsigned char *)json_object_get_string(testobj, "msg");
-            	if(strncmp(sig_type, RSA_SIG_TYPE_PKCS1PSS_NAME, RSA_SIG_TYPE_MAX_LEN ) == 0 ) {
-            		salt_len = (unsigned int)json_object_get_number(testobj, "saltLen");
-            	}
-            default:
-                break;
-            }
-
             /*
              * Create a new test case in the response
              */
@@ -461,26 +575,45 @@ ACVP_RESULT acvp_rsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
 
             json_object_set_number(r_tobj, "tcId", tc_id);
 
-            /*
-             * Setup the test case data that will be passed down to
-             * the crypto module.
-             * TODO: this does mallocs, we can probably do the mallocs once for
-             *       the entire vector set to be more efficient
-             */
+            switch(mode_id) {
+            case ACVP_RSA_MODE_KEYGEN:
+            {
+                /*
+                 * Get a reference to the abstracted test case
+                 */
+                tc.tc.rsa = &stc;
+                /*** callod for mode?***/
+                stc->mode = mode_id;
 
-            /***create separate init_tc function for siggen?***/
-            acvp_rsa_init_tc(ctx, &stc, tc_id, alg_id,
-                            /* group info */
-                             info_gen_by_server, rand_pq, mod, hash_alg, prime_test, pub_exp,
-                            /* keygen params... TODO this might be able to be consolidated */
-                             seed, e, bitlen1, bitlen2, bitlen3, bitlen4, p_rand, q_rand,
-                             xp, xp1, xp2, xq, xq1, xq2);
+                rv = acvp_prep_keygen(rand_pq, mod, info_gen_by_server,
+                        tc_id, alg_id, rand_pq_str, groupobj, hash_alg,
+                        prime_test, pub_exp, testobj, cap, ctx, &stc);
+            }
+                break;
+            case ACVP_RSA_MODE_SIGGEN: /**these both will call same function?**/
+            case ACVP_RSA_MODE_SIGVER:
+            {
+            	/*
+				 * Get a reference to the abstracted test case
+				 */
+				tc.tc.rsa = &sigtc;
+				/*** calloc for mode? ***/
+				sigtc->mode =  mode_id;
+
+            	rv = acvp_kat_rsa_sig(tc_id, alg_id, groupobj, testobj, cap, ctx, &sigtc);
+            }
+                break;
+            default:
+                break;
+            }
 
             /* Process the current test vector... */
-            rv = (cap->crypto_handler)(&tc);
-            if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("ERROR: crypto module failed the operation");
-                return ACVP_CRYPTO_MODULE_FAIL;
+            if (rv == ACVP_SUCCESS) {
+                rv = (cap->crypto_handler)(&tc);
+                if (rv != ACVP_SUCCESS) {
+                    ACVP_LOG_ERR("ERROR: crypto module failed the operation");
+                    return ACVP_CRYPTO_MODULE_FAIL;
+                }
             }
 
             /*
