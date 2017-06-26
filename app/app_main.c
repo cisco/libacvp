@@ -1762,12 +1762,12 @@ static ACVP_RESULT app_kdf135_tls_handler(ACVP_TEST_CASE *test_case)
           psm_len = 0;
 
     ret = kdf_tls12_P_hash(evp_md1, (const unsigned char *)tc->pm_secret, len + (psm_len & 1),
-                     TLS_MD_MASTER_SECRET_CONST, TLS_MD_MASTER_SECRET_CONST_SIZE,
-     tc->ch_rnd, strlen((char *)tc->ch_rnd),
-     tc->sh_rnd, strlen((char *)tc->sh_rnd),
-     NULL, 0,
-     NULL, 0,
-     master_secret1, olen1);
+	                   TLS_MD_MASTER_SECRET_CONST, TLS_MD_MASTER_SECRET_CONST_SIZE,
+                     tc->ch_rnd, strlen((char *)tc->ch_rnd),
+                     tc->sh_rnd, strlen((char *)tc->sh_rnd),
+                     NULL, 0,
+                     NULL, 0,
+                     master_secret1, olen1);
     if (ret == 0) {
         printf("\nCrypto module error, TLS kdf failure\n");
         return ACVP_CRYPTO_MODULE_FAIL;
@@ -1778,13 +1778,13 @@ static ACVP_RESULT app_kdf135_tls_handler(ACVP_TEST_CASE *test_case)
 
     if (evp_md1 != evp_md2) {
         ret = kdf_tls12_P_hash(evp_md2, (const unsigned char *)tc->pm_secret + len, len + (psm_len & 1),
-                         TLS_MD_MASTER_SECRET_CONST, TLS_MD_MASTER_SECRET_CONST_SIZE,
-         tc->ch_rnd, strlen((char *)tc->ch_rnd),
-         tc->sh_rnd, strlen((char *)tc->sh_rnd),
-         NULL, 0,
-         NULL, 0,
-         master_secret2, olen1);
-  if (ret == 0) {
+	                       TLS_MD_MASTER_SECRET_CONST, TLS_MD_MASTER_SECRET_CONST_SIZE,
+                         tc->ch_rnd, strlen((char *)tc->ch_rnd),
+                         tc->sh_rnd, strlen((char *)tc->sh_rnd),
+                         NULL, 0,
+                         NULL, 0,
+                         master_secret2, olen1);
+	if (ret == 0) {
             printf("\nCrypto module error, TLS kdf failure\n");
             return ACVP_CRYPTO_MODULE_FAIL;
         }
@@ -1799,13 +1799,13 @@ static ACVP_RESULT app_kdf135_tls_handler(ACVP_TEST_CASE *test_case)
     if (count == 1)
         len1 = 0;
     ret = kdf_tls12_P_hash(evp_md1, (const unsigned char *)master_secret1,
-             len + (len1 & 1),
-             TLS_MD_KEY_EXPANSION_CONST, TLS_MD_KEY_EXPANSION_CONST_SIZE,
-             tc->s_rnd, strlen((char *)tc->s_rnd),
-     tc->c_rnd, strlen((char *)tc->c_rnd),
-     NULL, 0,
-     NULL, 0,
-     key_block2, olen2);
+		           len + (len1 & 1),
+		           TLS_MD_KEY_EXPANSION_CONST, TLS_MD_KEY_EXPANSION_CONST_SIZE,
+		           tc->s_rnd, strlen((char *)tc->s_rnd),
+               tc->c_rnd, strlen((char *)tc->c_rnd),
+               NULL, 0,
+               NULL, 0,
+               key_block2, olen2);
     if (ret == 0) {
         printf("\nCrypto module error, TLS kdf failure\n");
         return ACVP_CRYPTO_MODULE_FAIL;
@@ -1814,21 +1814,22 @@ static ACVP_RESULT app_kdf135_tls_handler(ACVP_TEST_CASE *test_case)
         key_block1[i] ^= key_block2[i];
     }
     if (evp_md1 != evp_md2) {
-  ret = kdf_tls12_P_hash(evp_md2, (const unsigned char *)master_secret1 + len,
-         len + (len1 & 1),
-                         TLS_MD_KEY_EXPANSION_CONST, TLS_MD_KEY_EXPANSION_CONST_SIZE,
-                 tc->s_rnd, strlen((char *)tc->s_rnd),
-         tc->c_rnd, strlen((char *)tc->c_rnd),
-         NULL, 0,
-         NULL, 0,
-         key_block2, olen2);
-  if (ret == 0) {
+
+	ret = kdf_tls12_P_hash(evp_md2, (const unsigned char *)master_secret1 + len,
+			       len + (len1 & 1),
+	                       TLS_MD_KEY_EXPANSION_CONST, TLS_MD_KEY_EXPANSION_CONST_SIZE,
+		               tc->s_rnd, strlen((char *)tc->s_rnd),
+			       tc->c_rnd, strlen((char *)tc->c_rnd),
+			       NULL, 0,
+			       NULL, 0,
+			       key_block2, olen2);
+	if (ret == 0) {
             printf("\nCrypto module error, TLS kdf failure\n");
             return ACVP_CRYPTO_MODULE_FAIL;
         }
         for (i = 0; i < olen2; i++) {
             key_block1[i] ^= key_block2[i];
-  }
+        }
     }
 
     return ACVP_SUCCESS;
@@ -1920,11 +1921,9 @@ static ACVP_RESULT app_rsa_handler(ACVP_TEST_CASE *test_case)
      * custom crypto module handler
      * to be filled in
      */
-
     ACVP_RSA_TC	*tc;
-    const EVP_MD	*c; // hash alg to use
     RSA       *rsa;
-    unsigned int mod, bitlen1, bitlen2, bitlen3, bitlen4, seed_len, keylen;
+    unsigned int bitlen1, bitlen2, bitlen3, bitlen4, seed_len, keylen;
     BIGNUM *exponent;
     unsigned long m;
     unsigned char *seed = NULL;
@@ -1936,19 +1935,62 @@ static ACVP_RESULT app_rsa_handler(ACVP_TEST_CASE *test_case)
     switch(tc->mode) {
     case ACVP_RSA_MODE_KEYGEN:
         switch (tc->rand_pq) {
+        case RSA_RAND_PQ_B34: // "provPC"
+            rsa = RSA_new();
+            if(tc->info_gen_by_server) {
+                exponent = tc->keygen_tc->e;
+                bitlen1 = tc->keygen_tc->bitlen1;
+                bitlen2 = tc->keygen_tc->bitlen2;
+                bitlen3 = tc->keygen_tc->bitlen3;
+                bitlen4 = tc->keygen_tc->bitlen4;
+                seed_len = tc->keygen_tc->seed_len;
+                seed = tc->keygen_tc->seed;
+            } else {
+                exponent = BN_new();
+                m = RSA_F4;
+                seed_len = 28;
+                seed = calloc(seed_len, sizeof(char));
+                if (!BN_set_word(exponent, m)) {
+                    printf("Bignum API fail\n");
+                    return ACVP_CRYPTO_MODULE_FAIL;
+                }
+                if (RAND_bytes(seed, seed_len) <= 0) {
+                    printf("RAND API fail\n");
+                    return ACVP_CRYPTO_MODULE_FAIL;
+                }
+                bitlen1 = 160;
+                bitlen2 = 272;
+                bitlen3 = 240;
+                bitlen4 = 184;
+                keylen = 2048;
+            }
+            break;
         case RSA_RAND_PQ_B32: // "provRP"
         case RSA_RAND_PQ_B33: // "probRP"
-        case RSA_RAND_PQ_B34: // "provPC"
         case RSA_RAND_PQ_B35: // "bothPC"
         case RSA_RAND_PQ_B36: // "probPC"
         default:
             break;
         }
         break;
+
+        if(rsa_generate_key_internal(&rsa->p, &rsa->q, &rsa->n, &rsa->d,
+                                      seed, seed_len,
+                                      bitlen1, bitlen2, bitlen3, bitlen4,
+                                      exponent, keylen, NULL) != 1) {
+            return ACVP_CRYPTO_MODULE_FAIL;
+        }
+        tc->keygen_tc->p = rsa->p;
+        tc->keygen_tc->q = rsa->q;
+        tc->keygen_tc->n = rsa->n;
+        tc->keygen_tc->d = rsa->d;
+
+        BN_free(exponent);
+        RSA_free(rsa);
+        break;
     default:
         break;
     }
-
     return ACVP_SUCCESS;
 }
 
