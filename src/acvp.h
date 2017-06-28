@@ -130,6 +130,7 @@ typedef enum acvp_sym_cipher {
     ACVP_CMAC_TDES,
     ACVP_RSA,
     ACVP_KDF135_TLS,
+    ACVP_KDF135_SNMP,
     ACVP_CIPHER_END
 } ACVP_CIPHER;
 
@@ -147,6 +148,13 @@ typedef enum acvp_kdf135_tls_pre_req {
     ACVP_KDF135_TLS_PREREQ_HMAC = 1,
     ACVP_KDF135_TLS_PREREQ_SHA
 } ACVP_KDF135_TLS_PRE_REQ;
+
+#define ACVP_KDF135_SNMP_ENGID_MAX 32
+#define ACVP_KDF135_SNMP_SKEY_MAX 32
+#define ACVP_KDF135_SNMP_PREREQ_SHA_STR     "SHA"
+typedef enum acvp_kdf135_snmp_pre_req {
+    ACVP_KDF135_SNMP_PREREQ_SHA = 1
+} ACVP_KDF135_SNMP_PRE_REQ;
 
 /* these are bit flags */
 typedef enum acvp_kdf135_tls_cap_parm {
@@ -166,7 +174,8 @@ typedef enum acvp_capability_type {
     ACVP_HMAC_TYPE,
     ACVP_CMAC_TYPE,
     ACVP_RSA_TYPE,
-    ACVP_KDF135_TLS_TYPE
+    ACVP_KDF135_TLS_TYPE,
+    ACVP_KDF135_SNMP_TYPE
 } ACVP_CAP_TYPE;
 
 typedef enum acvp_sym_cipher_keying_option {
@@ -489,6 +498,21 @@ typedef struct acvp_kdf135_tls_tc_t {
 
 /*
  * This struct holds data that represents a single test case
+ * for kdf135 TLS testing.  This data is
+ * passed between libacvp and the crypto module.
+ */
+typedef struct acvp_kdf135_snmp_tc_t {
+    ACVP_CIPHER cipher;
+    unsigned int  tc_id;    /* Test case id */
+    const char *password;
+    unsigned int p_len;
+    unsigned char *s_key;
+    unsigned int skey_len;
+    unsigned char *engine_id;
+} ACVP_KDF135_SNMP_TC;
+
+/*
+ * This struct holds data that represents a single test case
  * for hmac testing.  This data is
  * passed between libacvp and the crypto module.
  */
@@ -625,6 +649,7 @@ typedef struct acvp_cipher_tc_t {
         ACVP_CMAC_TC        *cmac;
         ACVP_RSA_TC         *rsa;
         ACVP_KDF135_TLS_TC  *kdf135_tls;
+        ACVP_KDF135_SNMP_TC *kdf135_snmp;
         //TODO: need more types for hashes, etc.
     } tc;
 } ACVP_TEST_CASE;
@@ -926,26 +951,14 @@ ACVP_RESULT acvp_enable_cmac_cap_parm(
                           int value);
 
 /*! @brief acvp_enable_kdf135_tls_cap() allows an application to specify a
-       symmetric cipher capability to be tested by the ACVP server.
+       kdf cipher capability to be tested by the ACVP server.
 
-    This function should be called to enable crypto capabilities for
-    symmetric ciphers that will be tested by the ACVP server.  This
-    includes AES and 3DES.  This function may be called multiple times
-    to specify more than one crypto capability, such as AES-CBC, AES-CTR,
-    AES-GCM, etc.
-
-    When the application enables a crypto capability, such as AES-GCM, it
+    When the application enables a crypto capability, such as KDF135_TLS, it
     also needs to specify a callback function that will be used by libacvp
     when that crypto capability is needed during a test session.
 
     @param ctx Address of pointer to a previously allocated ACVP_CTX.
     @param cipher ACVP_CIPHER enum value identifying the crypto capability.
-    @param dir ACVP_SYM_CIPH_DIR enum value identifying the crypto operation
-       (e.g. encrypt or decrypt).
-    @param keying_option ACVP_SYM_CIPH_KO enum value identifying the TDES keying options
-    @param ivgen_source The source of the IV used by the crypto module
-        (e.g. internal or external)
-    @param ivgen_mode The IV generation mode
     @param crypto_handler Address of function implemented by application that
        is invoked by libacvp when the crypto capablity is needed during
        a test session.
@@ -967,6 +980,16 @@ ACVP_RESULT acvp_enable_kdf135_tls_cap_parm(
                           ACVP_CIPHER cap,
                           ACVP_KDF135_TLS_METHOD method,
 			  ACVP_KDF135_TLS_CAP_PARM param);
+
+
+ACVP_RESULT acvp_enable_kdf135_snmp_cap(
+          ACVP_CTX *ctx,
+          ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case));
+
+ACVP_RESULT acvp_enable_kdf135_snmp_prereq_cap(
+                          ACVP_CTX       *ctx,
+                          ACVP_KDF135_SNMP_PRE_REQ pre_req,
+                          char              *value);
 
 /*! @brief acvp_create_test_session() creates a context that can be used to
       commence a test session with an ACVP server.

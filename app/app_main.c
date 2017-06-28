@@ -69,6 +69,7 @@ static ACVP_RESULT app_hmac_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_cmac_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_rsa_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_kdf135_tls_handler(ACVP_TEST_CASE *test_case);
+static ACVP_RESULT app_kdf135_snmp_handler(ACVP_TEST_CASE *test_case);
 #ifdef ACVP_NO_RUNTIME
 static ACVP_RESULT app_drbg_handler(ACVP_TEST_CASE *test_case);
 #endif
@@ -718,7 +719,13 @@ int main(int argc, char **argv)
    CHECK_ENABLE_CAP_RV(rv);
    rv = acvp_enable_kdf135_tls_cap_parm(ctx, ACVP_KDF135_TLS, ACVP_KDF135_TLS12, ACVP_KDF135_TLS_CAP_SHA256 | ACVP_KDF135_TLS_CAP_SHA384 | ACVP_KDF135_TLS_CAP_SHA512);
    CHECK_ENABLE_CAP_RV(rv);
+
+   rv = acvp_enable_kdf135_snmp_cap(ctx, &app_kdf135_snmp_handler);
+   CHECK_ENABLE_CAP_RV(rv);
+   rv = acvp_enable_kdf135_snmp_prereq_cap(ctx, ACVP_KDF135_TLS_PREREQ_SHA, value);
+   CHECK_ENABLE_CAP_RV(rv);
 #endif
+
 
 #ifdef ACVP_NO_RUNTIME
 
@@ -1044,43 +1051,43 @@ static ACVP_RESULT app_des_handler(ACVP_TEST_CASE *test_case)
      * We only support 3 key DES
      */
     if (tc->key_len != 192) {
-	printf("Unsupported DES key length\n");
-	return ACVP_NO_CAP;
+  printf("Unsupported DES key length\n");
+  return ACVP_NO_CAP;
     }
 
     /* Begin encrypt code section */
     if (cipher_ctx.cipher == NULL) {
-	EVP_CIPHER_CTX_init(&cipher_ctx);
+  EVP_CIPHER_CTX_init(&cipher_ctx);
     }
 
     switch (tc->cipher) {
     case ACVP_TDES_ECB:
-	cipher = EVP_des_ede3_ecb();
-	break;
+  cipher = EVP_des_ede3_ecb();
+  break;
     case ACVP_TDES_CBC:
-	iv = tc->iv;
-	cipher = EVP_des_ede3_cbc();
-	break;
+  iv = tc->iv;
+  cipher = EVP_des_ede3_cbc();
+  break;
     case ACVP_TDES_OFB:
-	iv = tc->iv;
-	cipher = EVP_des_ede3_ofb();
-	break;
+  iv = tc->iv;
+  cipher = EVP_des_ede3_ofb();
+  break;
     case ACVP_TDES_CFB64:
-	iv = tc->iv;
-	cipher = EVP_des_ede3_cfb64();
-	break;
+  iv = tc->iv;
+  cipher = EVP_des_ede3_cfb64();
+  break;
     case ACVP_TDES_CFB8:
-	iv = tc->iv;
-	cipher = EVP_des_ede3_cfb8();
-	break;
+  iv = tc->iv;
+  cipher = EVP_des_ede3_cfb8();
+  break;
     case ACVP_TDES_CFB1:
-	iv = tc->iv;
-	cipher = EVP_des_ede3_cfb1();
-	break;
+  iv = tc->iv;
+  cipher = EVP_des_ede3_cfb1();
+  break;
     default:
-	printf("Error: Unsupported DES mode requested by ACVP server\n");
-	return ACVP_NO_CAP;
-	break;
+  printf("Error: Unsupported DES mode requested by ACVP server\n");
+  return ACVP_NO_CAP;
+  break;
     }
 
     /* If Monte Carlo we need to be able to init and then update
@@ -1089,43 +1096,43 @@ static ACVP_RESULT app_des_handler(ACVP_TEST_CASE *test_case)
     if (tc->test_type == ACVP_SYM_TEST_TYPE_MCT) {
         if (tc->direction == ACVP_DIR_ENCRYPT) {
             if (tc->mct_index == 0) {
-	        EVP_EncryptInit_ex(&cipher_ctx, cipher, NULL, tc->key, iv);
+          EVP_EncryptInit_ex(&cipher_ctx, cipher, NULL, tc->key, iv);
         	EVP_CIPHER_CTX_set_padding(&cipher_ctx, 0);
             }
-	    EVP_EncryptUpdate(&cipher_ctx, tc->ct, &ct_len, tc->pt, tc->pt_len);
-	    tc->ct_len = ct_len;
+      EVP_EncryptUpdate(&cipher_ctx, tc->ct, &ct_len, tc->pt, tc->pt_len);
+      tc->ct_len = ct_len;
         } else if (tc->direction == ACVP_DIR_DECRYPT) {
             if (tc->mct_index == 0) {
-	        EVP_DecryptInit_ex(&cipher_ctx, cipher, NULL, tc->key, iv);
+          EVP_DecryptInit_ex(&cipher_ctx, cipher, NULL, tc->key, iv);
         	EVP_CIPHER_CTX_set_padding(&cipher_ctx, 0);
             }
-	    EVP_DecryptUpdate(&cipher_ctx, tc->pt, &pt_len, tc->ct, tc->ct_len);
-	    tc->pt_len = pt_len;
+      EVP_DecryptUpdate(&cipher_ctx, tc->pt, &pt_len, tc->ct, tc->ct_len);
+      tc->pt_len = pt_len;
         } else {
             printf("Unsupported direction\n");
-	    return ACVP_UNSUPPORTED_OP;
+      return ACVP_UNSUPPORTED_OP;
         }
         if (tc->mct_index == 9999) {
             EVP_CIPHER_CTX_cleanup(&cipher_ctx);
         }
     } else {
         if (tc->direction == ACVP_DIR_ENCRYPT) {
-	    EVP_EncryptInit_ex(&cipher_ctx, cipher, NULL, tc->key, iv);
-	    EVP_CIPHER_CTX_set_padding(&cipher_ctx, 0);
-	    EVP_EncryptUpdate(&cipher_ctx, tc->ct, &ct_len, tc->pt, tc->pt_len);
-	    tc->ct_len = ct_len;
-	    EVP_EncryptFinal_ex(&cipher_ctx, tc->ct + ct_len, &ct_len);
-	    tc->ct_len += ct_len;
+      EVP_EncryptInit_ex(&cipher_ctx, cipher, NULL, tc->key, iv);
+      EVP_CIPHER_CTX_set_padding(&cipher_ctx, 0);
+      EVP_EncryptUpdate(&cipher_ctx, tc->ct, &ct_len, tc->pt, tc->pt_len);
+      tc->ct_len = ct_len;
+      EVP_EncryptFinal_ex(&cipher_ctx, tc->ct + ct_len, &ct_len);
+      tc->ct_len += ct_len;
         } else if (tc->direction == ACVP_DIR_DECRYPT) {
-	    EVP_DecryptInit_ex(&cipher_ctx, cipher, NULL, tc->key, iv);
-	    EVP_CIPHER_CTX_set_padding(&cipher_ctx, 0);
-	    EVP_DecryptUpdate(&cipher_ctx, tc->pt, &pt_len, tc->ct, tc->ct_len);
-	    tc->pt_len = pt_len;
-	    EVP_DecryptFinal_ex(&cipher_ctx, tc->pt + pt_len, &pt_len);
-	    tc->pt_len += pt_len;
+      EVP_DecryptInit_ex(&cipher_ctx, cipher, NULL, tc->key, iv);
+      EVP_CIPHER_CTX_set_padding(&cipher_ctx, 0);
+      EVP_DecryptUpdate(&cipher_ctx, tc->pt, &pt_len, tc->ct, tc->ct_len);
+      tc->pt_len = pt_len;
+      EVP_DecryptFinal_ex(&cipher_ctx, tc->pt + pt_len, &pt_len);
+      tc->pt_len += pt_len;
         } else {
             printf("Unsupported direction\n");
-	    return ACVP_UNSUPPORTED_OP;
+      return ACVP_UNSUPPORTED_OP;
         }
 
         EVP_CIPHER_CTX_cleanup(&cipher_ctx);
@@ -1150,139 +1157,139 @@ static ACVP_RESULT app_aes_handler(ACVP_TEST_CASE *test_case)
 
     /* Begin encrypt code section */
     if ((cipher_ctx.cipher == NULL) || (tc->test_type != ACVP_SYM_TEST_TYPE_MCT)) {
-	EVP_CIPHER_CTX_init(&cipher_ctx);
+  EVP_CIPHER_CTX_init(&cipher_ctx);
     }
 
     switch (tc->cipher) {
     case ACVP_AES_ECB:
-	switch (tc->key_len) {
-	case 128:
-	    cipher = EVP_aes_128_ecb();
-	    break;
-	case 192:
-	    cipher = EVP_aes_192_ecb();
-	    break;
-	case 256:
-	    cipher = EVP_aes_256_ecb();
-	    break;
-	default:
-	    printf("Unsupported AES key length\n");
-	    return ACVP_NO_CAP;
-	    break;
-	}
-	break;
+  switch (tc->key_len) {
+  case 128:
+      cipher = EVP_aes_128_ecb();
+      break;
+  case 192:
+      cipher = EVP_aes_192_ecb();
+      break;
+  case 256:
+      cipher = EVP_aes_256_ecb();
+      break;
+  default:
+      printf("Unsupported AES key length\n");
+      return ACVP_NO_CAP;
+      break;
+  }
+  break;
     case ACVP_AES_CTR:
-	iv = tc->iv;
-	switch (tc->key_len) {
-	case 128:
-	    cipher = EVP_aes_128_ctr();
-	    break;
-	case 192:
-	    cipher = EVP_aes_192_ctr();
-	    break;
-	case 256:
-	    cipher = EVP_aes_256_ctr();
-	    break;
-	default:
-	    printf("Unsupported AES key length\n");
-	    return ACVP_NO_CAP;
-	    break;
-	}
-	break;
+  iv = tc->iv;
+  switch (tc->key_len) {
+  case 128:
+      cipher = EVP_aes_128_ctr();
+      break;
+  case 192:
+      cipher = EVP_aes_192_ctr();
+      break;
+  case 256:
+      cipher = EVP_aes_256_ctr();
+      break;
+  default:
+      printf("Unsupported AES key length\n");
+      return ACVP_NO_CAP;
+      break;
+  }
+  break;
     case ACVP_AES_CFB1:
-	iv = tc->iv;
-	switch (tc->key_len) {
-	case 128:
-	    cipher = EVP_aes_128_cfb1();
-	    break;
-	case 192:
-	    cipher = EVP_aes_192_cfb1();
-	    break;
-	case 256:
-	    cipher = EVP_aes_256_cfb1();
-	    break;
-	default:
-	    printf("Unsupported AES key length\n");
-	    return ACVP_NO_CAP;
-	    break;
-	}
-	break;
+  iv = tc->iv;
+  switch (tc->key_len) {
+  case 128:
+      cipher = EVP_aes_128_cfb1();
+      break;
+  case 192:
+      cipher = EVP_aes_192_cfb1();
+      break;
+  case 256:
+      cipher = EVP_aes_256_cfb1();
+      break;
+  default:
+      printf("Unsupported AES key length\n");
+      return ACVP_NO_CAP;
+      break;
+  }
+  break;
     case ACVP_AES_CFB8:
-	iv = tc->iv;
-	switch (tc->key_len) {
-	case 128:
-	    cipher = EVP_aes_128_cfb8();
-	    break;
-	case 192:
-	    cipher = EVP_aes_192_cfb8();
-	    break;
-	case 256:
-	    cipher = EVP_aes_256_cfb8();
-	    break;
-	default:
-	    printf("Unsupported AES key length\n");
-	    return ACVP_NO_CAP;
-	    break;
-	}
-	break;
+  iv = tc->iv;
+  switch (tc->key_len) {
+  case 128:
+      cipher = EVP_aes_128_cfb8();
+      break;
+  case 192:
+      cipher = EVP_aes_192_cfb8();
+      break;
+  case 256:
+      cipher = EVP_aes_256_cfb8();
+      break;
+  default:
+      printf("Unsupported AES key length\n");
+      return ACVP_NO_CAP;
+      break;
+  }
+  break;
     case ACVP_AES_CFB128:
-	iv = tc->iv;
-	switch (tc->key_len) {
-	case 128:
-	    cipher = EVP_aes_128_cfb128();
-	    break;
-	case 192:
-	    cipher = EVP_aes_192_cfb128();
-	    break;
-	case 256:
-	    cipher = EVP_aes_256_cfb128();
-	    break;
-	default:
-	    printf("Unsupported AES key length\n");
-	    return ACVP_NO_CAP;
-	    break;
-	}
-	break;
+  iv = tc->iv;
+  switch (tc->key_len) {
+  case 128:
+      cipher = EVP_aes_128_cfb128();
+      break;
+  case 192:
+      cipher = EVP_aes_192_cfb128();
+      break;
+  case 256:
+      cipher = EVP_aes_256_cfb128();
+      break;
+  default:
+      printf("Unsupported AES key length\n");
+      return ACVP_NO_CAP;
+      break;
+  }
+  break;
     case ACVP_AES_OFB:
-	iv = tc->iv;
-	switch (tc->key_len) {
-	case 128:
-	    cipher = EVP_aes_128_ofb();
-	    break;
-	case 192:
-	    cipher = EVP_aes_192_ofb();
-	    break;
-	case 256:
-	    cipher = EVP_aes_256_ofb();
-	    break;
-	default:
-	    printf("Unsupported AES key length\n");
-	    return ACVP_NO_CAP;
-	    break;
-	}
-	break;
+  iv = tc->iv;
+  switch (tc->key_len) {
+  case 128:
+      cipher = EVP_aes_128_ofb();
+      break;
+  case 192:
+      cipher = EVP_aes_192_ofb();
+      break;
+  case 256:
+      cipher = EVP_aes_256_ofb();
+      break;
+  default:
+      printf("Unsupported AES key length\n");
+      return ACVP_NO_CAP;
+      break;
+  }
+  break;
     case ACVP_AES_CBC:
-	iv = tc->iv;
-	switch (tc->key_len) {
-	case 128:
-	    cipher = EVP_aes_128_cbc();
-	    break;
-	case 192:
-	    cipher = EVP_aes_192_cbc();
-	    break;
-	case 256:
-	    cipher = EVP_aes_256_cbc();
-	    break;
-	default:
-	    printf("Unsupported AES key length\n");
-	    return ACVP_NO_CAP;
-	    break;
-	}
-	break;
+  iv = tc->iv;
+  switch (tc->key_len) {
+  case 128:
+      cipher = EVP_aes_128_cbc();
+      break;
+  case 192:
+      cipher = EVP_aes_192_cbc();
+      break;
+  case 256:
+      cipher = EVP_aes_256_cbc();
+      break;
+  default:
+      printf("Unsupported AES key length\n");
+      return ACVP_NO_CAP;
+      break;
+  }
+  break;
     default:
-	printf("Error: Unsupported AES mode requested by ACVP server\n");
-	return ACVP_NO_CAP;
-	break;
+  printf("Error: Unsupported AES mode requested by ACVP server\n");
+  return ACVP_NO_CAP;
+  break;
     }
 
     /* If Monte Carlo we need to be able to init and then update
@@ -1291,21 +1298,21 @@ static ACVP_RESULT app_aes_handler(ACVP_TEST_CASE *test_case)
     if (tc->test_type == ACVP_SYM_TEST_TYPE_MCT) {
         if (tc->direction == ACVP_DIR_ENCRYPT) {
             if (tc->mct_index == 0) {
-	        EVP_EncryptInit_ex(&cipher_ctx, cipher, NULL, tc->key, iv);
-		EVP_CIPHER_CTX_set_padding(&cipher_ctx, 0);
+          EVP_EncryptInit_ex(&cipher_ctx, cipher, NULL, tc->key, iv);
+  EVP_CIPHER_CTX_set_padding(&cipher_ctx, 0);
             }
-	    EVP_EncryptUpdate(&cipher_ctx, tc->ct, &ct_len, tc->pt, tc->pt_len);
-	    tc->ct_len = ct_len;
+      EVP_EncryptUpdate(&cipher_ctx, tc->ct, &ct_len, tc->pt, tc->pt_len);
+      tc->ct_len = ct_len;
         } else if (tc->direction == ACVP_DIR_DECRYPT) {
             if (tc->mct_index == 0) {
-	        EVP_DecryptInit_ex(&cipher_ctx, cipher, NULL, tc->key, iv);
-	        EVP_CIPHER_CTX_set_padding(&cipher_ctx, 0);
+          EVP_DecryptInit_ex(&cipher_ctx, cipher, NULL, tc->key, iv);
+          EVP_CIPHER_CTX_set_padding(&cipher_ctx, 0);
             }
-	    EVP_DecryptUpdate(&cipher_ctx, tc->pt, &pt_len, tc->ct, tc->ct_len);
-	    tc->pt_len = pt_len;
+      EVP_DecryptUpdate(&cipher_ctx, tc->pt, &pt_len, tc->ct, tc->ct_len);
+      tc->pt_len = pt_len;
         } else {
             printf("Unsupported direction\n");
-	    return ACVP_UNSUPPORTED_OP;
+      return ACVP_UNSUPPORTED_OP;
         }
         if (tc->mct_index == 999) {
             EVP_CIPHER_CTX_cleanup(&cipher_ctx);
@@ -1313,22 +1320,22 @@ static ACVP_RESULT app_aes_handler(ACVP_TEST_CASE *test_case)
 
     } else {
         if (tc->direction == ACVP_DIR_ENCRYPT) {
-	    EVP_EncryptInit_ex(&cipher_ctx, cipher, NULL, tc->key, iv);
+      EVP_EncryptInit_ex(&cipher_ctx, cipher, NULL, tc->key, iv);
    	    EVP_CIPHER_CTX_set_padding(&cipher_ctx, 0);
-	    EVP_EncryptUpdate(&cipher_ctx, tc->ct, &ct_len, tc->pt, tc->pt_len);
-	    tc->ct_len = ct_len;
-	    EVP_EncryptFinal_ex(&cipher_ctx, tc->ct + ct_len, &ct_len);
-	    tc->ct_len += ct_len;
+      EVP_EncryptUpdate(&cipher_ctx, tc->ct, &ct_len, tc->pt, tc->pt_len);
+      tc->ct_len = ct_len;
+      EVP_EncryptFinal_ex(&cipher_ctx, tc->ct + ct_len, &ct_len);
+      tc->ct_len += ct_len;
         } else if (tc->direction == ACVP_DIR_DECRYPT) {
-	    EVP_DecryptInit_ex(&cipher_ctx, cipher, NULL, tc->key, iv);
-	    EVP_CIPHER_CTX_set_padding(&cipher_ctx, 0);
-	    EVP_DecryptUpdate(&cipher_ctx, tc->pt, &pt_len, tc->ct, tc->ct_len);
-	    tc->pt_len = pt_len;
-	    EVP_DecryptFinal_ex(&cipher_ctx, tc->pt + pt_len, &pt_len);
-	    tc->pt_len += pt_len;
+      EVP_DecryptInit_ex(&cipher_ctx, cipher, NULL, tc->key, iv);
+      EVP_CIPHER_CTX_set_padding(&cipher_ctx, 0);
+      EVP_DecryptUpdate(&cipher_ctx, tc->pt, &pt_len, tc->ct, tc->ct_len);
+      tc->pt_len = pt_len;
+      EVP_DecryptFinal_ex(&cipher_ctx, tc->pt + pt_len, &pt_len);
+      tc->pt_len += pt_len;
         } else {
             printf("Unsupported direction\n");
-	    return ACVP_UNSUPPORTED_OP;
+      return ACVP_UNSUPPORTED_OP;
        }
        EVP_CIPHER_CTX_cleanup(&cipher_ctx);
     }
@@ -1354,47 +1361,47 @@ static ACVP_RESULT app_aes_keywrap_handler(ACVP_TEST_CASE *test_case)
 
     switch (tc->cipher) {
     case ACVP_AES_KW:
-	switch (tc->key_len) {
-	case 128:
-	    cipher = EVP_aes_128_wrap();
-	    break;
-	case 192:
-	    cipher = EVP_aes_192_wrap();
-	    break;
-	case 256:
-	    cipher = EVP_aes_256_wrap();
-	    break;
-	default:
-	    printf("Unsupported AES keywrap key length\n");
-	    return ACVP_NO_CAP;
-	    break;
-	}
-	break;
+  switch (tc->key_len) {
+  case 128:
+      cipher = EVP_aes_128_wrap();
+      break;
+  case 192:
+      cipher = EVP_aes_192_wrap();
+      break;
+  case 256:
+      cipher = EVP_aes_256_wrap();
+      break;
+  default:
+      printf("Unsupported AES keywrap key length\n");
+      return ACVP_NO_CAP;
+      break;
+  }
+  break;
     default:
-	printf("Error: Unsupported AES keywrap mode requested by ACVP server\n");
-	return ACVP_NO_CAP;
-	break;
+  printf("Error: Unsupported AES keywrap mode requested by ACVP server\n");
+  return ACVP_NO_CAP;
+  break;
     }
 
 
     if (tc->direction == ACVP_DIR_ENCRYPT) {
-	EVP_CIPHER_CTX_set_flags(&cipher_ctx, EVP_CIPHER_CTX_FLAG_WRAP_ALLOW);
-	EVP_CipherInit_ex(&cipher_ctx, cipher, NULL, tc->key, NULL, 1);
-	c_len = EVP_Cipher(&cipher_ctx, tc->ct, tc->pt, tc->pt_len);
-	if (c_len <= 0) {
-	    printf("Error: key wrap operation failed (%d)\n", c_len);
-	    return ACVP_CRYPTO_MODULE_FAIL;
-	} else {
-	    tc->ct_len = c_len;
-	}
+  EVP_CIPHER_CTX_set_flags(&cipher_ctx, EVP_CIPHER_CTX_FLAG_WRAP_ALLOW);
+  EVP_CipherInit_ex(&cipher_ctx, cipher, NULL, tc->key, NULL, 1);
+  c_len = EVP_Cipher(&cipher_ctx, tc->ct, tc->pt, tc->pt_len);
+  if (c_len <= 0) {
+      printf("Error: key wrap operation failed (%d)\n", c_len);
+      return ACVP_CRYPTO_MODULE_FAIL;
+  } else {
+      tc->ct_len = c_len;
+  }
     } else if (tc->direction == ACVP_DIR_DECRYPT) {
-	EVP_CIPHER_CTX_set_flags(&cipher_ctx, EVP_CIPHER_CTX_FLAG_WRAP_ALLOW);
-	EVP_CipherInit_ex(&cipher_ctx, cipher, NULL, tc->key, NULL, 0);
-	c_len = EVP_Cipher(&cipher_ctx, tc->pt, tc->ct, tc->ct_len + 8);
-	if (c_len <= 0) {
-	    printf("Error: key wrap operation failed (%d)\n", c_len);
-	    return ACVP_CRYPTO_MODULE_FAIL;
-	}
+  EVP_CIPHER_CTX_set_flags(&cipher_ctx, EVP_CIPHER_CTX_FLAG_WRAP_ALLOW);
+  EVP_CipherInit_ex(&cipher_ctx, cipher, NULL, tc->key, NULL, 0);
+  c_len = EVP_Cipher(&cipher_ctx, tc->pt, tc->ct, tc->ct_len + 8);
+  if (c_len <= 0) {
+      printf("Error: key wrap operation failed (%d)\n", c_len);
+      return ACVP_CRYPTO_MODULE_FAIL;
+  }
     } else {
         printf("Unsupported direction\n");
         return ACVP_UNSUPPORTED_OP;
@@ -1443,117 +1450,117 @@ static ACVP_RESULT app_aes_handler_aead(ACVP_TEST_CASE *test_case)
     /* Validate key length and assign OpenSSL EVP cipher */
     switch (tc->cipher) {
     case ACVP_AES_GCM:
-	switch (tc->key_len) {
-	case 128:
-	    cipher = EVP_aes_128_gcm();
-	    break;
-	case 192:
-	    cipher = EVP_aes_192_gcm();
-	    break;
-	case 256:
-	    cipher = EVP_aes_256_gcm();
-	    break;
-	default:
-	    printf("Unsupported AES-GCM key length\n");
-	    return ACVP_UNSUPPORTED_OP;
-	}
-	if (tc->direction == ACVP_DIR_ENCRYPT) {
-	    EVP_CIPHER_CTX_set_flags(&cipher_ctx, EVP_CIPH_FLAG_NON_FIPS_ALLOW);
-	    EVP_CipherInit(&cipher_ctx, cipher, NULL, NULL, 1);
-	    EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_GCM_SET_IVLEN, tc->iv_len, 0);
-	    EVP_CipherInit(&cipher_ctx, NULL, tc->key, NULL, 1);
+  switch (tc->key_len) {
+  case 128:
+      cipher = EVP_aes_128_gcm();
+      break;
+  case 192:
+      cipher = EVP_aes_192_gcm();
+      break;
+  case 256:
+      cipher = EVP_aes_256_gcm();
+      break;
+  default:
+      printf("Unsupported AES-GCM key length\n");
+      return ACVP_UNSUPPORTED_OP;
+  }
+  if (tc->direction == ACVP_DIR_ENCRYPT) {
+      EVP_CIPHER_CTX_set_flags(&cipher_ctx, EVP_CIPH_FLAG_NON_FIPS_ALLOW);
+      EVP_CipherInit(&cipher_ctx, cipher, NULL, NULL, 1);
+      EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_GCM_SET_IVLEN, tc->iv_len, 0);
+      EVP_CipherInit(&cipher_ctx, NULL, tc->key, NULL, 1);
 
-	    EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_GCM_SET_IV_FIXED, 4, iv_fixed);
-	    if (!EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_GCM_IV_GEN, tc->iv_len, tc->iv)) {
-		printf("acvp_aes_encrypt: iv gen error\n");
-		return ACVP_CRYPTO_MODULE_FAIL;
-	    }
-	    if (tc->aad_len) {
-		EVP_Cipher(&cipher_ctx, NULL, tc->aad, tc->aad_len);
-	    }
-	    EVP_Cipher(&cipher_ctx, tc->ct, tc->pt, tc->pt_len);
-	    EVP_Cipher(&cipher_ctx, NULL, NULL, 0);
-	    EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_GCM_GET_TAG, tc->tag_len, tc->tag);
-	} else if (tc->direction == ACVP_DIR_DECRYPT) {
-	    EVP_CIPHER_CTX_set_flags(&cipher_ctx, EVP_CIPH_FLAG_NON_FIPS_ALLOW);
-	    EVP_CipherInit_ex(&cipher_ctx, cipher, NULL, tc->key, NULL, 0);
-	    EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_GCM_SET_IVLEN, tc->iv_len, 0);
-	    EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_GCM_SET_IV_FIXED, -1, tc->iv);
-	    if(!EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_GCM_IV_GEN, tc->iv_len, tc->iv)) {
-		printf("\nFailed to set IV");;
-		return ACVP_CRYPTO_MODULE_FAIL;
-	    }
-	    if (tc->aad_len) {
-		/*
-		 * Set dummy tag before processing AAD.  Otherwise the AAD can
-		 * not be processed.
-		 */
-		EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_GCM_SET_TAG, tc->tag_len, tc->tag);
-		EVP_Cipher(&cipher_ctx, NULL, tc->aad, tc->aad_len);
-	    }
-	    /*
-	     * Set the tag when decrypting
-	     */
-	    EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_GCM_SET_TAG, tc->tag_len, tc->tag);
+      EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_GCM_SET_IV_FIXED, 4, iv_fixed);
+      if (!EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_GCM_IV_GEN, tc->iv_len, tc->iv)) {
+  printf("acvp_aes_encrypt: iv gen error\n");
+  return ACVP_CRYPTO_MODULE_FAIL;
+      }
+      if (tc->aad_len) {
+  EVP_Cipher(&cipher_ctx, NULL, tc->aad, tc->aad_len);
+      }
+      EVP_Cipher(&cipher_ctx, tc->ct, tc->pt, tc->pt_len);
+      EVP_Cipher(&cipher_ctx, NULL, NULL, 0);
+      EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_GCM_GET_TAG, tc->tag_len, tc->tag);
+  } else if (tc->direction == ACVP_DIR_DECRYPT) {
+      EVP_CIPHER_CTX_set_flags(&cipher_ctx, EVP_CIPH_FLAG_NON_FIPS_ALLOW);
+      EVP_CipherInit_ex(&cipher_ctx, cipher, NULL, tc->key, NULL, 0);
+      EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_GCM_SET_IVLEN, tc->iv_len, 0);
+      EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_GCM_SET_IV_FIXED, -1, tc->iv);
+      if(!EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_GCM_IV_GEN, tc->iv_len, tc->iv)) {
+  printf("\nFailed to set IV");;
+  return ACVP_CRYPTO_MODULE_FAIL;
+      }
+      if (tc->aad_len) {
+  /*
+   * Set dummy tag before processing AAD.  Otherwise the AAD can
+   * not be processed.
+   */
+  EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_GCM_SET_TAG, tc->tag_len, tc->tag);
+  EVP_Cipher(&cipher_ctx, NULL, tc->aad, tc->aad_len);
+      }
+      /*
+       * Set the tag when decrypting
+       */
+      EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_GCM_SET_TAG, tc->tag_len, tc->tag);
 
-	    /*
-	     * Decrypt the CT
-	     */
-	    EVP_Cipher(&cipher_ctx, tc->pt, tc->ct, tc->pt_len);
-	    /*
-	     * Check the tag
-	     */
-	    rv = EVP_Cipher(&cipher_ctx, NULL, NULL, 0);
-	    if (rv) {
-		return ACVP_CRYPTO_TAG_FAIL;
-	    }
-	}
-	break;
+      /*
+       * Decrypt the CT
+       */
+      EVP_Cipher(&cipher_ctx, tc->pt, tc->ct, tc->pt_len);
+      /*
+       * Check the tag
+       */
+      rv = EVP_Cipher(&cipher_ctx, NULL, NULL, 0);
+      if (rv) {
+  return ACVP_CRYPTO_TAG_FAIL;
+      }
+  }
+  break;
     case ACVP_AES_CCM:
-	switch (tc->key_len) {
-	case 128:
-	    cipher = EVP_aes_128_ccm();
-	    break;
-	case 192:
-	    cipher = EVP_aes_192_ccm();
-	    break;
-	case 256:
-	    cipher = EVP_aes_256_ccm();
-	    break;
-	default:
-	    printf("Unsupported AES-CCM key length\n");
-	    return ACVP_UNSUPPORTED_OP;
-	}
-	if (tc->direction == ACVP_DIR_ENCRYPT) {
-	    EVP_CipherInit(&cipher_ctx, cipher, NULL, NULL, 1);
-	    EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_CCM_SET_IVLEN, tc->iv_len, 0);
-	    EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_CCM_SET_TAG, tc->tag_len, 0);
-	    EVP_CipherInit(&cipher_ctx, NULL, tc->key, tc->iv, 1);
-	    EVP_Cipher(&cipher_ctx, NULL, NULL, tc->pt_len);
-	    EVP_Cipher(&cipher_ctx, NULL, tc->aad, tc->aad_len);
-	    EVP_Cipher(&cipher_ctx, tc->ct, tc->pt, tc->pt_len);
-	    EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_CCM_GET_TAG, tc->tag_len, tc->ct + tc->ct_len);
-	    tc->ct_len += tc->tag_len;
-	} else if (tc->direction == ACVP_DIR_DECRYPT) {
-	    EVP_CipherInit(&cipher_ctx, cipher, NULL, NULL, 0);
-	    EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_CCM_SET_IVLEN, tc->iv_len, 0);
-	    EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_CCM_SET_TAG, tc->tag_len, tc->ct + tc->pt_len);
-	    EVP_CipherInit(&cipher_ctx, NULL, tc->key, tc->iv, 0);
-	    EVP_Cipher(&cipher_ctx, NULL, NULL, tc->pt_len);
-	    EVP_Cipher(&cipher_ctx, NULL, tc->aad, tc->aad_len);
-	    /*
-	     * Decrypt and check the tag
-	     */
-	    rv = EVP_Cipher(&cipher_ctx, tc->pt, tc->ct, tc->pt_len);
-	    if (rv < 0) {
-		return ACVP_CRYPTO_TAG_FAIL;
-	    }
-	}
-	break;
+  switch (tc->key_len) {
+  case 128:
+      cipher = EVP_aes_128_ccm();
+      break;
+  case 192:
+      cipher = EVP_aes_192_ccm();
+      break;
+  case 256:
+      cipher = EVP_aes_256_ccm();
+      break;
+  default:
+      printf("Unsupported AES-CCM key length\n");
+      return ACVP_UNSUPPORTED_OP;
+  }
+  if (tc->direction == ACVP_DIR_ENCRYPT) {
+      EVP_CipherInit(&cipher_ctx, cipher, NULL, NULL, 1);
+      EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_CCM_SET_IVLEN, tc->iv_len, 0);
+      EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_CCM_SET_TAG, tc->tag_len, 0);
+      EVP_CipherInit(&cipher_ctx, NULL, tc->key, tc->iv, 1);
+      EVP_Cipher(&cipher_ctx, NULL, NULL, tc->pt_len);
+      EVP_Cipher(&cipher_ctx, NULL, tc->aad, tc->aad_len);
+      EVP_Cipher(&cipher_ctx, tc->ct, tc->pt, tc->pt_len);
+      EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_CCM_GET_TAG, tc->tag_len, tc->ct + tc->ct_len);
+      tc->ct_len += tc->tag_len;
+  } else if (tc->direction == ACVP_DIR_DECRYPT) {
+      EVP_CipherInit(&cipher_ctx, cipher, NULL, NULL, 0);
+      EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_CCM_SET_IVLEN, tc->iv_len, 0);
+      EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_CCM_SET_TAG, tc->tag_len, tc->ct + tc->pt_len);
+      EVP_CipherInit(&cipher_ctx, NULL, tc->key, tc->iv, 0);
+      EVP_Cipher(&cipher_ctx, NULL, NULL, tc->pt_len);
+      EVP_Cipher(&cipher_ctx, NULL, tc->aad, tc->aad_len);
+      /*
+       * Decrypt and check the tag
+       */
+      rv = EVP_Cipher(&cipher_ctx, tc->pt, tc->ct, tc->pt_len);
+      if (rv < 0) {
+  return ACVP_CRYPTO_TAG_FAIL;
+      }
+  }
+  break;
     default:
-	printf("Error: Unsupported AES AEAD mode requested by ACVP server\n");
-	return ACVP_NO_CAP;
-	break;
+  printf("Error: Unsupported AES AEAD mode requested by ACVP server\n");
+  return ACVP_NO_CAP;
+  break;
     }
 
     EVP_CIPHER_CTX_cleanup(&cipher_ctx);
@@ -1575,24 +1582,24 @@ static ACVP_RESULT app_sha_handler(ACVP_TEST_CASE *test_case)
 
     switch (tc->cipher) {
     case ACVP_SHA1:
-	md = EVP_sha1();
-	break;
+  md = EVP_sha1();
+  break;
     case ACVP_SHA224:
-	md = EVP_sha224();
-	break;
+  md = EVP_sha224();
+  break;
     case ACVP_SHA256:
-	md = EVP_sha256();
-	break;
+  md = EVP_sha256();
+  break;
     case ACVP_SHA384:
-	md = EVP_sha384();
-	break;
+  md = EVP_sha384();
+  break;
     case ACVP_SHA512:
-	md = EVP_sha512();
-	break;
+  md = EVP_sha512();
+  break;
     default:
-	printf("Error: Unsupported hash algorithm requested by ACVP server\n");
-	return ACVP_NO_CAP;
-	break;
+  printf("Error: Unsupported hash algorithm requested by ACVP server\n");
+  return ACVP_NO_CAP;
+  break;
     }
 
     EVP_MD_CTX_init(&md_ctx);
@@ -1604,40 +1611,40 @@ static ACVP_RESULT app_sha_handler(ACVP_TEST_CASE *test_case)
 
         if (!EVP_DigestInit_ex(&md_ctx, md, NULL)) {
             printf("\nCrypto module error, EVP_DigestInit_ex failed\n");
-	    return ACVP_CRYPTO_MODULE_FAIL;
+      return ACVP_CRYPTO_MODULE_FAIL;
         }
         if (!EVP_DigestUpdate(&md_ctx, tc->m1, tc->msg_len)) {
-	    printf("\nCrypto module error, EVP_DigestUpdate failed\n");
-	    return ACVP_CRYPTO_MODULE_FAIL;
+      printf("\nCrypto module error, EVP_DigestUpdate failed\n");
+      return ACVP_CRYPTO_MODULE_FAIL;
         }
-	if (!EVP_DigestUpdate(&md_ctx, tc->m2, tc->msg_len)) {
-	    printf("\nCrypto module error, EVP_DigestUpdate failed\n");
-	    return ACVP_CRYPTO_MODULE_FAIL;
+  if (!EVP_DigestUpdate(&md_ctx, tc->m2, tc->msg_len)) {
+      printf("\nCrypto module error, EVP_DigestUpdate failed\n");
+      return ACVP_CRYPTO_MODULE_FAIL;
         }
-	if (!EVP_DigestUpdate(&md_ctx, tc->m3, tc->msg_len)) {
-	    printf("\nCrypto module error, EVP_DigestUpdate failed\n");
-	    return ACVP_CRYPTO_MODULE_FAIL;
+  if (!EVP_DigestUpdate(&md_ctx, tc->m3, tc->msg_len)) {
+      printf("\nCrypto module error, EVP_DigestUpdate failed\n");
+      return ACVP_CRYPTO_MODULE_FAIL;
         }
-	if (!EVP_DigestFinal(&md_ctx, tc->md, &tc->md_len)) {
-	    printf("\nCrypto module error, EVP_DigestFinal failed\n");
-	    return ACVP_CRYPTO_MODULE_FAIL;
+  if (!EVP_DigestFinal(&md_ctx, tc->md, &tc->md_len)) {
+      printf("\nCrypto module error, EVP_DigestFinal failed\n");
+      return ACVP_CRYPTO_MODULE_FAIL;
         }
 
    } else {
         if (!EVP_DigestInit_ex(&md_ctx, md, NULL)) {
             printf("\nCrypto module error, EVP_DigestInit_ex failed\n");
-	    return ACVP_CRYPTO_MODULE_FAIL;
+      return ACVP_CRYPTO_MODULE_FAIL;
         }
 
-	if (!EVP_DigestUpdate(&md_ctx, tc->msg, tc->msg_len)) {
-	    printf("\nCrypto module error, EVP_DigestUpdate failed\n");
-	    return ACVP_CRYPTO_MODULE_FAIL;
+  if (!EVP_DigestUpdate(&md_ctx, tc->msg, tc->msg_len)) {
+      printf("\nCrypto module error, EVP_DigestUpdate failed\n");
+      return ACVP_CRYPTO_MODULE_FAIL;
         }
-	if (!EVP_DigestFinal(&md_ctx, tc->md, &tc->md_len)) {
-	    printf("\nCrypto module error, EVP_DigestFinal failed\n");
-	    return ACVP_CRYPTO_MODULE_FAIL;
+  if (!EVP_DigestFinal(&md_ctx, tc->md, &tc->md_len)) {
+      printf("\nCrypto module error, EVP_DigestFinal failed\n");
+      return ACVP_CRYPTO_MODULE_FAIL;
         }
-	EVP_MD_CTX_cleanup(&md_ctx);
+  EVP_MD_CTX_cleanup(&md_ctx);
    }
 
     return ACVP_SUCCESS;
@@ -1730,13 +1737,13 @@ static ACVP_RESULT app_kdf135_tls_handler(ACVP_TEST_CASE *test_case)
     {
     case ACVP_KDF135_TLS_CAP_SHA256:
         evp_md1 = evp_md2 = EVP_sha256();
-	break;
+  break;
     case ACVP_KDF135_TLS_CAP_SHA384:
         evp_md1 = evp_md2 = EVP_sha384();
-	break;
+  break;
     case ACVP_KDF135_TLS_CAP_SHA512:
         evp_md1 = evp_md2 = EVP_sha512();
-	break;
+  break;
     default:
         printf("\nCrypto module error, Bad SHA type\n");
         return ACVP_INVALID_ARG;
@@ -1749,11 +1756,11 @@ static ACVP_RESULT app_kdf135_tls_handler(ACVP_TEST_CASE *test_case)
 
     ret = kdf_tls12_P_hash(evp_md1, (const unsigned char *)tc->pm_secret, len + (psm_len & 1),
 	                   TLS_MD_MASTER_SECRET_CONST, TLS_MD_MASTER_SECRET_CONST_SIZE,
-			   tc->ch_rnd, strlen((char *)tc->ch_rnd),
-			   tc->sh_rnd, strlen((char *)tc->sh_rnd),
-			   NULL, 0,
-			   NULL, 0,
-			   master_secret1, olen1);
+                     tc->ch_rnd, strlen((char *)tc->ch_rnd),
+                     tc->sh_rnd, strlen((char *)tc->sh_rnd),
+                     NULL, 0,
+                     NULL, 0,
+                     master_secret1, olen1);
     if (ret == 0) {
         printf("\nCrypto module error, TLS kdf failure\n");
         return ACVP_CRYPTO_MODULE_FAIL;
@@ -1765,11 +1772,11 @@ static ACVP_RESULT app_kdf135_tls_handler(ACVP_TEST_CASE *test_case)
     if (evp_md1 != evp_md2) {
         ret = kdf_tls12_P_hash(evp_md2, (const unsigned char *)tc->pm_secret + len, len + (psm_len & 1),
 	                       TLS_MD_MASTER_SECRET_CONST, TLS_MD_MASTER_SECRET_CONST_SIZE,
-			       tc->ch_rnd, strlen((char *)tc->ch_rnd),
-			       tc->sh_rnd, strlen((char *)tc->sh_rnd),
-			       NULL, 0,
-			       NULL, 0,
-			       master_secret2, olen1);
+                         tc->ch_rnd, strlen((char *)tc->ch_rnd),
+                         tc->sh_rnd, strlen((char *)tc->sh_rnd),
+                         NULL, 0,
+                         NULL, 0,
+                         master_secret2, olen1);
 	if (ret == 0) {
             printf("\nCrypto module error, TLS kdf failure\n");
             return ACVP_CRYPTO_MODULE_FAIL;
@@ -1788,10 +1795,10 @@ static ACVP_RESULT app_kdf135_tls_handler(ACVP_TEST_CASE *test_case)
 		           len + (len1 & 1),
 		           TLS_MD_KEY_EXPANSION_CONST, TLS_MD_KEY_EXPANSION_CONST_SIZE,
 		           tc->s_rnd, strlen((char *)tc->s_rnd),
-			   tc->c_rnd, strlen((char *)tc->c_rnd),
-			   NULL, 0,
-			   NULL, 0,
-			   key_block2, olen2);
+               tc->c_rnd, strlen((char *)tc->c_rnd),
+               NULL, 0,
+               NULL, 0,
+               key_block2, olen2);
     if (ret == 0) {
         printf("\nCrypto module error, TLS kdf failure\n");
         return ACVP_CRYPTO_MODULE_FAIL;
@@ -1800,6 +1807,7 @@ static ACVP_RESULT app_kdf135_tls_handler(ACVP_TEST_CASE *test_case)
         key_block1[i] ^= key_block2[i];
     }
     if (evp_md1 != evp_md2) {
+
 	ret = kdf_tls12_P_hash(evp_md2, (const unsigned char *)master_secret1 + len,
 			       len + (len1 & 1),
 	                       TLS_MD_KEY_EXPANSION_CONST, TLS_MD_KEY_EXPANSION_CONST_SIZE,
@@ -1814,8 +1822,34 @@ static ACVP_RESULT app_kdf135_tls_handler(ACVP_TEST_CASE *test_case)
         }
         for (i = 0; i < olen2; i++) {
             key_block1[i] ^= key_block2[i];
-	}
+        }
     }
+
+    return ACVP_SUCCESS;
+}
+
+static ACVP_RESULT app_kdf135_snmp_handler(ACVP_TEST_CASE *test_case)
+{
+    ACVP_KDF135_SNMP_TC	*tc;
+    unsigned char *s_key;
+    int p_len, ret;
+
+    tc = test_case->tc.kdf135_snmp;
+    s_key = tc->s_key;
+    p_len = tc->p_len;
+
+    if (!s_key) {
+        printf("\nCrypto module error, malloc failure\n");
+        return ACVP_CRYPTO_MODULE_FAIL;
+    }
+
+    ret = kdf_snmp(tc->engine_id, strnlen((const char *)tc->engine_id, ACVP_KDF135_SNMP_ENGID_MAX), tc->password, p_len, s_key);
+    if (!ret) {
+        printf("\nCrypto module error, kdf snmp failure\n");
+        return ACVP_CRYPTO_MODULE_FAIL;
+    }
+
+    tc->skey_len = strnlen(s_key, ACVP_KDF135_SNMP_SKEY_MAX);
 
     return ACVP_SUCCESS;
 }
@@ -1954,7 +1988,8 @@ static ACVP_RESULT app_rsa_handler(ACVP_TEST_CASE *test_case)
 }
 
 
-#ifdef ACVP_NO_RUNTIME
+// #ifdef ACVP_NO_RUNTIME
+#if 0
 typedef struct
 {
     unsigned char *ent;
