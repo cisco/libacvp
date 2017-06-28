@@ -51,15 +51,8 @@
 #include <openssl/bn.h>
 #include <openssl/rand.h>
 #include <openssl/kdf.h>
-// #include <openssl/fipssyms.h>
-#include <openssl/fips_rand.h>
-#include <openssl/fips.h>
-#include "app_lcl.h"
 
-// #include <openssl/fips.h>
-
-// #ifdef ACVP_NO_RUNTIME
-#if 0
+#ifdef ACVP_NO_RUNTIME
 #include "app_lcl.h"
 #include <openssl/fips_rand.h>
 #include <openssl/fips.h>
