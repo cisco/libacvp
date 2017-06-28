@@ -568,7 +568,7 @@ typedef struct acvp_rsa_keygen_tc_t {
     int info_gen_by_server;
     unsigned int rand_pq;
     unsigned int mod;
-    ACVP_RSA_KEYGEN_ATTRS_TC *keygen_tc;
+    ACVP_RSA_KEYGEN_ATTRS_TC *keygen_attrs_tc;
 } ACVP_RSA_KEYGEN_TC;
 
 /*
@@ -583,14 +583,24 @@ typedef struct acvp_rsa_sig_attrs_tc_t {
     char *hash_alg;
     unsigned char *msg;
     unsigned int salt_len; // only for sigType PKCSS1PSS
+
+    BIGNUM *e;
+    BIGNUM *n; /***unsigned char *???***/
+    BIGNUM *s;
 } ACVP_RSA_SIG_ATTRS_TC;
 
 typedef struct acvp_rsa_sig_tc_t {
     ACVP_RSA_MODE mode; // "sigGen" "sigVer"
     char *test_type; // "AFT"
     char *sig_type; // "X9.31"
-    ACVP_RSA_SIG_ATTRS_TC *sig_tc;
+    ACVP_RSA_SIG_ATTRS_TC *sig_attrs_tc;
 } ACVP_RSA_SIG_TC;
+
+typedef struct acvp_rsa_tc_t {
+	ACVP_RSA_MODE mode;
+    ACVP_RSA_KEYGEN_TC *keygen_tc;
+    ACVP_RSA_SIG_TC *sig_tc;
+} ACVP_RSA_TC;
 
 /*
  * This struct holds data that represents a single test case

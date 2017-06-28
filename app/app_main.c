@@ -1798,35 +1798,39 @@ static ACVP_RESULT app_cmac_handler(ACVP_TEST_CASE *test_case)
 
 static ACVP_RESULT app_rsa_handler(ACVP_TEST_CASE *test_case)
 {
+    /*
+     * custom crypto module handler
+     * to be filled in
+     */
     ACVP_RSA_TC	*tc;
-    //const EVP_MD	*c; // hash alg to use
     RSA       *rsa;
-    unsigned int mod, bitlen1, bitlen2, bitlen3, bitlen4, seed_len, keylen;
+    unsigned int bitlen1, bitlen2, bitlen3, bitlen4, seed_len, keylen;
     BIGNUM *exponent;
     unsigned long m;
-    unsigned char *seed;
+    unsigned char *seed = NULL;
     if (!test_case) {
         return ACVP_INVALID_ARG;
     }
 
-    tc = test_case->tc.rsa;
+    tc = test_case->tc.rsa->keygen_tc;
     switch(tc->mode) {
     case ACVP_RSA_MODE_KEYGEN:
-        switch (tc->rand_pq) {
-        case 3: // "provPC"
+        switch (tc->keygen_tc->rand_pq) {
+        case RSA_RAND_PQ_B34: // "provPC"
             rsa = RSA_new();
-            if(tc->info_gen_by_server) {
-                exponent = tc->keygen_tc->e;
-                bitlen1 = tc->keygen_tc->bitlen1;
-                bitlen2 = tc->keygen_tc->bitlen2;
-                bitlen3 = tc->keygen_tc->bitlen3;
-                bitlen4 = tc->keygen_tc->bitlen4;
-                seed = tc->keygen_tc->seed;
-                seed_len = tc->keygen_tc->seed_len;
+            if(tc->keygen_tc->info_gen_by_server) {
+                exponent = tc->keygen_tc->keygen_attrs_tc->e;
+                bitlen1 = tc->keygen_tc->keygen_attrs_tc->bitlen1;
+                bitlen2 = tc->keygen_tc->keygen_attrs_tc->bitlen2;
+                bitlen3 = tc->keygen_tc->keygen_attrs_tc->bitlen3;
+                bitlen4 = tc->keygen_tc->keygen_attrs_tc->bitlen4;
+                seed_len = tc->keygen_tc->keygen_attrs_tc->seed_len;
+                seed = tc->keygen_tc->keygen_attrs_tc->seed;
             } else {
                 exponent = BN_new();
                 m = RSA_F4;
-                seed_len = 32;
+                seed_len = 28;
+                seed = calloc(seed_len, sizeof(char));
                 if (!BN_set_word(exponent, m)) {
                     printf("Bignum API fail\n");
                     return ACVP_CRYPTO_MODULE_FAIL;
@@ -1835,32 +1839,32 @@ static ACVP_RESULT app_rsa_handler(ACVP_TEST_CASE *test_case)
                     printf("RAND API fail\n");
                     return ACVP_CRYPTO_MODULE_FAIL;
                 }
-                bitlen1 = 2;
-                bitlen2 = 2;
-                bitlen3 = 3;
-                bitlen4 = 4;
+                bitlen1 = 160;
+                bitlen2 = 272;
+                bitlen3 = 240;
+                bitlen4 = 184;
                 keylen = 2048;
             }
             break;
-        case 1: // "provRP"
-        case 2: // "probRP"
-        case 4: // "bothPC"
-        case 5: // "probPC"
+        case RSA_RAND_PQ_B32: // "provRP"
+        case RSA_RAND_PQ_B33: // "probRP"
+        case RSA_RAND_PQ_B35: // "bothPC"
+        case RSA_RAND_PQ_B36: // "probPC"
         default:
             break;
         }
+        break;
 
-        if(!RSA_generate_key_ex(rsa, bitlen1, exponent, NULL)) return ACVP_CRYPTO_MODULE_FAIL;
-        // if(!rsa_generate_key_internal(&rsa->p, &rsa->q, &rsa->n, &rsa->d,
-        //                               seed, seed_len,
-        //                               bitlen1, bitlen2, bitlen3, bitlen4,
-        //                               exponent, keylen, NULL)) {
-        //     return ACVP_CRYPTO_MODULE_FAIL;
-        // }
-        tc->keygen_tc->p = rsa->p;
-        tc->keygen_tc->q = rsa->q;
-        tc->keygen_tc->n = rsa->n;
-        tc->keygen_tc->d = rsa->d;
+        if(rsa_generate_key_internal(&rsa->p, &rsa->q, &rsa->n, &rsa->d,
+                                      seed, seed_len,
+                                      bitlen1, bitlen2, bitlen3, bitlen4,
+                                      exponent, keylen, NULL) != 1) {
+            return ACVP_CRYPTO_MODULE_FAIL;
+        }
+        tc->keygen_tc->keygen_attrs_tc->p = rsa->p;
+        tc->keygen_tc->keygen_attrs_tc->q = rsa->q;
+        tc->keygen_tc->keygen_attrs_tc->n = rsa->n;
+        tc->keygen_tc->keygen_attrs_tc->d = rsa->d;
 
         BN_free(exponent);
         RSA_free(rsa);
@@ -1868,9 +1872,6 @@ static ACVP_RESULT app_rsa_handler(ACVP_TEST_CASE *test_case)
     default:
         break;
     }
-
-    RSA_free(rsa);
-
     return ACVP_SUCCESS;
 }
 
