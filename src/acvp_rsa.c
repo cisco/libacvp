@@ -40,15 +40,15 @@ static ACVP_RESULT acvp_rsa_init_sig_tc(ACVP_CTX *ctx,
 									unsigned int salt_len
                                     )
 {
-    memset(sigtc, 0x0, sizeof(ACVP_RSA_SIG_TC)); /** idk what this is ***/
+    memset(sigtc, 0x0, sizeof(ACVP_RSA_SIG_TC));
 
     switch(sigtc->mode) {
     case ACVP_RSA_MODE_SIGGEN:
     	/*
     	 * make room for all items
     	 */
-		sigtc->test_type = calloc(4, sizeof(char));
-		sigtc->sig_type = calloc(16, sizeof(char)); /***make macros***/
+		sigtc->test_type = calloc(RSA_TEST_TYPE_MAX, sizeof(char));
+		sigtc->sig_type = calloc(RSA_SIG_TYPE_MAX, sizeof(char)); /***make macros***/
 		sigtc->sig_attrs_tc = calloc(1, sizeof(ACVP_RSA_SIG_TC));
 		if (!sigtc->sig_attrs_tc) return ACVP_MALLOC_FAIL;
 		sigtc->sig_attrs_tc->hash_alg = calloc(1, sizeof(char));
@@ -452,7 +452,7 @@ static ACVP_RESULT acvp_kat_rsa_sig(unsigned int tc_id, ACVP_CIPHER alg_id,
      * siggen attrs for test obj
      */
     unsigned int modulo, salt_len;
-	unsigned char *msg; /***reg char *?***/
+	unsigned char *msg;
 	char *hash_alg;
 
 	salt_len = 0; /*** is technically valid to be 0, what do here??? ***/
@@ -532,7 +532,6 @@ ACVP_RESULT acvp_rsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
     ACVP_TEST_CASE tc;
     ACVP_RESULT rv;
     const char          *alg_str = json_object_get_string(obj, "algorithm");
-    ACVP_RSA_MODE       mode_id;
     char                *mode_str = NULL;
     ACVP_CIPHER	        alg_id;
 
@@ -603,8 +602,8 @@ ACVP_RESULT acvp_rsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
             return (ACVP_MALFORMED_JSON);
         }
         ACVP_LOG_INFO("    RSA mode: %s", mode_str);
-        mode_id = acvp_lookup_rsa_mode_index(mode_str); /***in acvp_util.c:236, need to add siggen things***/
-        if (mode_id >= ACVP_RSA_MODE_END) {
+        tc.tc.rsa->mode = acvp_lookup_rsa_mode_index(mode_str);
+        if (tc.tc.rsa->mode >= ACVP_RSA_MODE_END) {
             ACVP_LOG_ERR("unsupported RSA mode (%s)", mode_str);
             return (ACVP_UNSUPPORTED_OP);
         }
@@ -618,12 +617,12 @@ ACVP_RESULT acvp_rsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
             ACVP_LOG_INFO("Found new RSA test vector...");
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
+            tc_id = (unsigned int)json_object_get_number(testobj, "tcId");
 
             ACVP_LOG_INFO("        Test case: %d", j);
             ACVP_LOG_INFO("             tcId: %d", tc_id);
             ACVP_LOG_INFO("             mode: %s", mode_str);
 
-            tc_id = (unsigned int)json_object_get_number(testobj, "tcId"); /***Set this before log calls it?***/
             /*
              * Create a new test case in the response
              */
@@ -632,14 +631,14 @@ ACVP_RESULT acvp_rsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
 
             json_object_set_number(r_tobj, "tcId", tc_id);
 
-            switch(mode_id) {
+            switch(tc.tc.rsa->mode) {
             case ACVP_RSA_MODE_KEYGEN:
             {
                 /*
                  * Get a reference to the abstracted test case
                  */
                 tc.tc.rsa->keygen_tc = &stc;
-                stc.mode = mode_id;
+                stc.mode = tc.tc.rsa->mode;
 
                 /*
                  * Retrieve values from JSON and initialize the tc
@@ -671,14 +670,14 @@ ACVP_RESULT acvp_rsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
 				acvp_rsa_release_keygen_tc(&stc);
             }
                 break;
-            case ACVP_RSA_MODE_SIGGEN: /**these both will call same function?**/
+            case ACVP_RSA_MODE_SIGGEN:
             //case ACVP_RSA_MODE_SIGVER:
             {
             	/*
 				 * Get a reference to the abstracted test case
 				 */
 				tc.tc.rsa->sig_tc = &sigtc;
-				sigtc.mode =  mode_id;
+				sigtc.mode =  tc.tc.rsa->mode;
 
 				/*
 				 * Retrieve values from JSON and init tc
@@ -705,7 +704,7 @@ ACVP_RESULT acvp_rsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
 				/*
 				 * Release all the memory associated with the test case
 				 */
-				acvp_rsa_release_sig_tc(&sigtc); /***needs to be changed***/
+				acvp_rsa_release_sig_tc(&sigtc);
             }
                 break;
             default:

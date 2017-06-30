@@ -198,13 +198,13 @@ ACVP_RESULT is_valid_tf_param(unsigned int value) {
 /* This function checks to see if the value is a hash alg */
 ACVP_RESULT is_valid_hash_alg(char *value) {
     if (!value) return ACVP_INVALID_ARG;
-    if (strncmp(value, ACVP_RSA_PRIME_SHA_1, 5) == 0 ||
-        strncmp(value, ACVP_RSA_PRIME_SHA_224, 7) == 0 ||
-        strncmp(value, ACVP_RSA_PRIME_SHA_256, 7) == 0 ||
-        strncmp(value, ACVP_RSA_PRIME_SHA_384, 7) == 0 ||
-        strncmp(value, ACVP_RSA_PRIME_SHA_512, 7) == 0 ||
-        strncmp(value, ACVP_RSA_PRIME_SHA_512_224, 11) == 0 ||
-        strncmp(value, ACVP_RSA_PRIME_SHA_512_256, 11) == 0)
+    if (strncmp(value, ACVP_RSA_SHA_1, 5) == 0 ||
+        strncmp(value, ACVP_RSA_SHA_224, 7) == 0 ||
+        strncmp(value, ACVP_RSA_SHA_256, 7) == 0 ||
+        strncmp(value, ACVP_RSA_SHA_384, 7) == 0 ||
+        strncmp(value, ACVP_RSA_SHA_512, 7) == 0 ||
+        strncmp(value, ACVP_RSA_SHA_512_224, 11) == 0 ||
+        strncmp(value, ACVP_RSA_SHA_512_256, 11) == 0)
             return ACVP_SUCCESS;
     else return ACVP_INVALID_ARG;
 }
@@ -220,9 +220,9 @@ ACVP_RESULT is_valid_prime_test(char *value) {
 
 /* This function checks to see if the value is a valid prime test (RSA) */
 ACVP_RESULT is_valid_rsa_mod(int value) {
-    if (value != MOD_PRIME_2048 &&
-        value != MOD_PRIME_3072 &&
-        value != MOD_PRIME_4096)
+    if (value != MOD_RSA_2048 &&
+        value != MOD_RSA_3072 &&
+        value != MOD_RSA_4096)
             return ACVP_INVALID_ARG;
     else return ACVP_SUCCESS;
 }
@@ -238,7 +238,8 @@ ACVP_RSA_MODE acvp_lookup_rsa_mode_index(char *mode)
     int i;
     struct acvp_rsa_mode_name_t rsa_mode_tbl[ACVP_RSA_MODE_END] = {
             // YIKES THIS IS BACKWARDS FROM DRBG
-            {ACVP_RSA_MODE_KEYGEN, ACVP_RSA_KEYGEN}
+            {ACVP_RSA_MODE_KEYGEN, ACVP_RSA_KEYGEN},
+			{ACVP_RSA_MODE_SIGGEN, ACVP_RSA_SIGGEN}
     };
 
     for (i = 0; i < ACVP_RSA_MODE_END; i++) {

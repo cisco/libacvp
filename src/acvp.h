@@ -255,13 +255,13 @@ typedef enum acvp_drbg_pre_req {
 } ACVP_DRBG_PRE_REQ;
 
 
-#define ACVP_RSA_PRIME_SHA_1         "SHA-1"
-#define ACVP_RSA_PRIME_SHA_224       "SHA-224"
-#define ACVP_RSA_PRIME_SHA_256       "SHA-256"
-#define ACVP_RSA_PRIME_SHA_384       "SHA-384"
-#define ACVP_RSA_PRIME_SHA_512       "SHA-512"
-#define ACVP_RSA_PRIME_SHA_512_224   "SHA-512/224"
-#define ACVP_RSA_PRIME_SHA_512_256   "SHA-512/256"
+#define ACVP_RSA_SHA_1         "SHA-1"
+#define ACVP_RSA_SHA_224       "SHA-224"
+#define ACVP_RSA_SHA_256       "SHA-256"
+#define ACVP_RSA_SHA_384       "SHA-384"
+#define ACVP_RSA_SHA_512       "SHA-512"
+#define ACVP_RSA_SHA_512_224   "SHA-512/224"
+#define ACVP_RSA_SHA_512_256   "SHA-512/256"
 
 typedef enum acvp_rsa_param {
     ACVP_PUB_EXP = 0,
@@ -276,32 +276,27 @@ typedef enum acvp_rsa_param {
 } ACVP_RSA_PARM;
 
 // TODO not sure if these even go here.....
-#define MOD_RSA_SIGGEN_2048     2048
-#define MOD_RSA_SIGGEN_3072     3072
-#define MOD_RSA_SIGGEN_4096     4096
-
-#define ACVP_RSA_SIGGEN_SHA_224     "SHA-224"
-#define ACVP_RSA_SIGGEN_SHA_256     "SHA-256"
-#define ACVP_RSA_SIGGEN_SHA_384     "SHA-384"
-#define ACVP_RSA_SIGGEN_SHA_512     "SHA-512"
-#define ACVP_RSA_SIGEEN_SHA_512_224 "SHA-512/224"
-#define ACVP_RSA_SIGGEN_SHA_512_256 "SHA-512/256"
+#define MOD_RSA_2048     2048
+#define MOD_RSA_3072     3072
+#define MOD_RSA_4096     4096
 
 #define RSA_SALT_SIGGEN_28      28
 #define RSA_SALT_SIGGEN_32      32
 #define RSA_SALT_SIGGEN_64      64
 
-#define MOD_PROV_PRIME_2048     2048
-#define MOD_PROV_PRIME_3072     3072
-#define MOD_PROV_PRIME_4096     4096
-
-#define MOD_PROB_PRIME_2048     2048
-#define MOD_PROB_PRIME_3072     3072
-#define MOD_PROB_PRIME_4096     4096
-
-#define MOD_PRIME_2048     2048
-#define MOD_PRIME_3072     3072
-#define MOD_PRIME_4096     4096
+#define RSA_TEST_TYPE_MAX        4
+#define RSA_SIG_TYPE_MAX        16
+//#define MOD_PROV_PRIME_2048     2048
+//#define MOD_PROV_PRIME_3072     3072
+//#define MOD_PROV_PRIME_4096     4096
+//
+//#define MOD_PROB_PRIME_2048     2048
+//#define MOD_PROB_PRIME_3072     3072
+//#define MOD_PROB_PRIME_4096     4096
+//
+//#define MOD_PRIME_2048     2048
+//#define MOD_PRIME_3072     3072
+//#define MOD_PRIME_4096     4096
 
 #define RSA_SIG_TYPE_X931_NAME      "X9.31"
 #define RSA_SIG_TYPE_PKCS1V15_NAME  "PKCS1v1.5"
