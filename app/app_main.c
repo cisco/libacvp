@@ -1987,6 +1987,148 @@ static ACVP_RESULT app_rsa_handler(ACVP_TEST_CASE *test_case)
     return ACVP_SUCCESS;
 }
 
+/* RSA SigVer handler
+ * msg and sig are binary format
+ * exponent and modulus are hex values
+ */
+static ACVP_RESULT app_rsa_sigver_handler(const unsigned char* msg, const int msg_len, const unsigned char* sig,
+                                          const int sig_len, const char* exponent, const char* modulus,
+                                          int rsa_sig_type, int hash)
+{
+    int ret = -1;
+    int padding;
+    BIGNUM *tc_modulus = NULL;
+    BIGNUM *tc_exponent = NULL;
+    EVP_MD_CTX *tc_mdctx = NULL;
+    EVP_MD *tc_md = NULL;
+    BN_hex2bn(&tc_exponent, exponent);
+    BN_hex2bn(&tc_modulus, modulus);
+
+    RSA *rsa_key = NULL;
+    EVP_PKEY *rsa_evpkey = NULL;
+    EVP_PKEY_CTX *rsa_pkctx = NULL;
+
+
+    //TODO replace numerics when defined
+    switch(rsa_sig_type){
+    case 0:  //    RSA_SIG_TYPE_X931 = 0,
+        padding = RSA_X931_PADDING;
+        break;
+    case 1:  //    RSA_SIG_TYPE_PKCS1V15
+        padding = RSA_PKCS1_PADDING;
+        break;
+    case 2: //RSA_SIG_TYPE_PKCS1PSS
+        padding = RSA_PKCS1_PSS_PADDING;
+        break;
+    default:
+        printf( "ERROR: Unsupported RSA padding.\n");
+        goto err;
+    }
+
+    switch (hash) {
+    case ACVP_SHA1:
+        tc_md = (EVP_MD *)EVP_sha1();
+        break;
+    case ACVP_SHA224:
+        tc_md = (EVP_MD *)EVP_sha224();
+        break;
+    case ACVP_SHA256:
+        tc_md = (EVP_MD *)EVP_sha256();
+        break;
+    case ACVP_SHA384:
+        tc_md = (EVP_MD *)EVP_sha384();
+        break;
+    case ACVP_SHA512:
+        tc_md = (EVP_MD *)EVP_sha512();
+        break;
+    default:
+        printf( "ERROR: Unsupported hash.\n");
+        goto err;
+    }
+
+    ERR_load_crypto_strings();
+
+    /* Create RSA Public key from input */
+    rsa_key = RSA_new();
+    if (rsa_key) {
+        rsa_key->n    = BN_dup(tc_modulus);
+        rsa_key->e    = BN_dup(tc_exponent);
+        rsa_key->iqmp = NULL;
+        rsa_key->d    = NULL;
+        rsa_key->p    = NULL;
+        rsa_key->q    = NULL;
+
+        rsa_evpkey = EVP_PKEY_new();
+        if (!rsa_evpkey) {
+            printf( "ERROR: EVP_PKEY_new() failed\n");
+            goto err;
+        }
+        EVP_PKEY_assign_RSA(rsa_evpkey, rsa_key);
+
+
+        /* Create the Message Digest Context */
+        if (!(tc_mdctx = EVP_MD_CTX_create())) {
+            printf( "ERROR: EVP_MD_CTX_create() failed\n");
+            goto err;
+        }
+
+        rsa_pkctx = EVP_PKEY_CTX_new(rsa_evpkey, NULL);
+        if (!rsa_pkctx) {
+            printf( "ERROR: EVP_PKEY_CTX_new() failed\n");
+            goto err;
+        }
+
+        long lerr;
+        /* Initialize operation  */
+        ret = EVP_DigestVerifyInit(tc_mdctx, &rsa_pkctx, tc_md, NULL, rsa_evpkey);
+        if (ret != 1) {
+            printf("ERROR: EVP_DigestVerifyInit failed.\n");
+            while ((lerr = ERR_get_error()))
+                printf( "ERROR:%s\n", ERR_error_string(lerr, NULL));
+            goto err;
+        }
+
+        /* set padding */
+        ret = EVP_PKEY_CTX_set_rsa_padding(rsa_pkctx, padding);
+        if (ret != 1) {
+            printf("ERROR: EVP_PKEY_CTX_set_rsa_padding failed.\n");
+            while ((lerr = ERR_get_error()))
+                printf( "ERROR:%s\n", ERR_error_string(lerr, NULL));
+            goto err;
+        }
+
+        /* update the message */
+        ret = EVP_DigestVerifyUpdate(tc_mdctx, msg, msg_len);
+        if (ret != 1) {
+            printf("ERROR: EVP_DigestVerifyUpdate failed.\n");
+            while ((lerr = ERR_get_error()))
+                printf( "ERROR:%s\n", ERR_error_string(lerr, NULL));
+            goto err;
+        }
+
+        /* Finalize */
+        ret = EVP_DigestVerifyFinal(tc_mdctx, sig, sig_len);
+        if (ret != 1) {
+            printf("ERROR: RSA Digest verify failed.\n");
+            while ((lerr = ERR_get_error()))
+                printf( "ERROR:%s\n", ERR_error_string(lerr, NULL));
+            goto err;
+        }
+    }
+
+err:
+    if (rsa_key) RSA_free(rsa_key);
+    if (rsa_evpkey) EVP_PKEY_free(rsa_evpkey);
+    if (tc_mdctx) EVP_MD_CTX_destroy(tc_mdctx);
+    if (rsa_pkctx) EVP_PKEY_CTX_free(rsa_pkctx);
+    if (tc_modulus) BN_free(tc_modulus);
+    if (tc_exponent) BN_free(tc_exponent);
+
+    if (ret == 1)
+        return ACVP_SUCCESS;
+    else
+        return ACVP_UNSUPPORTED_OP;
+}
 
 // #ifdef ACVP_NO_RUNTIME
 #if 0
