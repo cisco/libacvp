@@ -2046,8 +2046,6 @@ static ACVP_RESULT app_rsa_sigver_handler(const unsigned char* msg, const int ms
         goto err;
     }
 
-    ERR_load_crypto_strings();
-
     /* Create RSA Public key from input */
     rsa_key = RSA_new();
     if (rsa_key) {
