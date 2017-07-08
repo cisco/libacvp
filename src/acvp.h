@@ -146,7 +146,7 @@ typedef enum acvp_prereq_mode_t {
 typedef struct acvp_prereqs_mode_name_t {
     ACVP_PREREQ_ALG alg;
     char *name;
-};
+} ACVP_PREREQ_MODE_NAME;
 
 #define ACVP_KDF135_SNMP_ENGID_MAX 32
 #define ACVP_KDF135_SNMP_SKEY_MAX 32
