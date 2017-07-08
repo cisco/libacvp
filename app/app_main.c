@@ -297,9 +297,9 @@ int main(int argc, char **argv)
      */
    rv = acvp_enable_sym_cipher_cap(ctx, ACVP_AES_GCM, ACVP_DIR_BOTH, ACVP_KO_NA, ACVP_IVGEN_SRC_INT, ACVP_IVGEN_MODE_821, &app_aes_handler_aead);
    CHECK_ENABLE_CAP_RV(rv);
-   rv = acvp_enable_sym_prereq_cap(ctx, ACVP_AES_GCM, ACVP_SYM_PREREQ_AES, value);
+   rv = acvp_enable_prereq_cap(ctx, ACVP_AES_GCM, ACVP_SYM_PREREQ_AES, value);
    CHECK_ENABLE_CAP_RV(rv);
-   rv = acvp_enable_sym_prereq_cap(ctx, ACVP_AES_GCM, ACVP_SYM_PREREQ_DRBG, value);
+   rv = acvp_enable_prereq_cap(ctx, ACVP_AES_GCM, ACVP_SYM_PREREQ_DRBG, value);
    CHECK_ENABLE_CAP_RV(rv);
    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_GCM, ACVP_SYM_CIPH_KEYLEN, 128);
    CHECK_ENABLE_CAP_RV(rv);
@@ -401,7 +401,7 @@ int main(int argc, char **argv)
     */
    rv = acvp_enable_sym_cipher_cap(ctx, ACVP_AES_CCM, ACVP_DIR_BOTH, ACVP_KO_NA, ACVP_IVGEN_SRC_NA, ACVP_IVGEN_MODE_NA, &app_aes_handler_aead);
    CHECK_ENABLE_CAP_RV(rv);
-   rv = acvp_enable_sym_prereq_cap(ctx, ACVP_AES_CCM, ACVP_SYM_PREREQ_AES, value);
+   rv = acvp_enable_prereq_cap(ctx, ACVP_AES_CCM, ACVP_SYM_PREREQ_AES, value);
    CHECK_ENABLE_CAP_RV(rv);
    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CCM, ACVP_SYM_CIPH_KEYLEN, 128);
    CHECK_ENABLE_CAP_RV(rv);
@@ -603,7 +603,7 @@ int main(int argc, char **argv)
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_cmac_cap_parm(ctx, ACVP_CMAC_AES_128, ACVP_CMAC_MACLEN, 256);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_hmac_prereq_cap(ctx, ACVP_CMAC_AES_128, CMAC_AES, value);
+    rv = acvp_enable_prereq_cap(ctx, ACVP_CMAC_AES_128, CMAC_AES, value);
     CHECK_ENABLE_CAP_RV(rv);
 
     /*
@@ -625,7 +625,7 @@ int main(int argc, char **argv)
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA1, ACVP_HMAC_MACLEN, 20);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_hmac_prereq_cap(ctx, ACVP_HMAC_SHA1, HMAC_SHA, value);
+    rv = acvp_enable_prereq_cap(ctx, ACVP_HMAC_SHA1, HMAC_SHA, value);
     CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_enable_hmac_cap(ctx, ACVP_HMAC_SHA2_224, &app_hmac_handler);
@@ -644,7 +644,7 @@ int main(int argc, char **argv)
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA2_224, ACVP_HMAC_MACLEN, 28);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_hmac_prereq_cap(ctx, ACVP_HMAC_SHA2_224, HMAC_SHA, value);
+    rv = acvp_enable_prereq_cap(ctx, ACVP_HMAC_SHA2_224, HMAC_SHA, value);
     CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_enable_hmac_cap(ctx, ACVP_HMAC_SHA2_256, &app_hmac_handler);
@@ -663,7 +663,7 @@ int main(int argc, char **argv)
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA2_256, ACVP_HMAC_MACLEN, 32);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_hmac_prereq_cap(ctx, ACVP_HMAC_SHA2_256, HMAC_SHA, value);
+    rv = acvp_enable_prereq_cap(ctx, ACVP_HMAC_SHA2_256, HMAC_SHA, value);
     CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_enable_hmac_cap(ctx, ACVP_HMAC_SHA2_384, &app_hmac_handler);
@@ -682,7 +682,7 @@ int main(int argc, char **argv)
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA2_384, ACVP_HMAC_MACLEN, 48);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_hmac_prereq_cap(ctx, ACVP_HMAC_SHA2_384, HMAC_SHA, value);
+    rv = acvp_enable_prereq_cap(ctx, ACVP_HMAC_SHA2_384, HMAC_SHA, value);
     CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_enable_hmac_cap(ctx, ACVP_HMAC_SHA2_512, &app_hmac_handler);
@@ -701,10 +701,9 @@ int main(int argc, char **argv)
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA2_512, ACVP_HMAC_MACLEN, 64);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_hmac_prereq_cap(ctx, ACVP_HMAC_SHA2_512, HMAC_SHA, value);
+    rv = acvp_enable_prereq_cap(ctx, ACVP_HMAC_SHA2_512, HMAC_SHA, value);
     CHECK_ENABLE_CAP_RV(rv);
 #endif
-
 
 #if 0 /* until supported on the server */
    /*
@@ -735,7 +734,7 @@ int main(int argc, char **argv)
      */
     rv = acvp_enable_rsa_cap(ctx, ACVP_RSA, &app_rsa_handler);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_prereq_cap(ctx, ACVP_RSA, RSA_SHA, value);
+    rv = acvp_enable_prereq_cap(ctx, ACVP_RSA, RSA_SHA, value);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_rsa_cap_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_PUB_EXP, RSA_PUB_EXP_FIXED);
     CHECK_ENABLE_CAP_RV(rv);
@@ -1988,8 +1987,7 @@ static ACVP_RESULT app_rsa_handler(ACVP_TEST_CASE *test_case)
 }
 
 
-// #ifdef ACVP_NO_RUNTIME
-#if 0
+#ifdef ACVP_NO_RUNTIME
 typedef struct
 {
     unsigned char *ent;
