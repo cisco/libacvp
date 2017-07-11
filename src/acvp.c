@@ -2505,8 +2505,8 @@ static ACVP_RESULT acvp_build_rsa_register_cap(JSON_Object *cap_obj, ACVP_CAPS_L
     ACVP_RSA_MODE mode;
 
     JSON_Array *specs_array = NULL;
-    JSON_Value *mode_specs_val = NULL, *cap_specs_val = NULL;
-    JSON_Object *mode_specs_obj = NULL, *cap_specs_obj = NULL;
+    JSON_Value *mode_specs_val = NULL, *cap_specs_val = NULL, *mode_val = NULL;
+    JSON_Object *mode_specs_obj = NULL, *cap_specs_obj = NULL, *mode_obj = NULL;
 
     json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
     result = acvp_lookup_prereqVals(cap_obj, cap_entry);
@@ -2517,6 +2517,9 @@ static ACVP_RESULT acvp_build_rsa_register_cap(JSON_Object *cap_obj, ACVP_CAPS_L
 
     mode_specs_val = json_value_init_object();
     mode_specs_obj = json_value_get_object(mode_specs_val);
+
+    mode_val = json_value_init_object();
+    mode_obj = json_value_get_object(mode_val);
 
     // TODO : this chunk here only prints out one keygen capability...
     // this assumes there is only one item in rsa_cap_mode_list
@@ -2536,7 +2539,9 @@ static ACVP_RESULT acvp_build_rsa_register_cap(JSON_Object *cap_obj, ACVP_CAPS_L
         break;
     }
 
-    json_object_set_value(mode_specs_obj, mode_str, cap_specs_val);
+    json_object_set_string(mode_obj, "mode", mode_str);
+    json_object_set_value(mode_obj, "capSpecs", cap_specs_val);
+    json_object_set_value(mode_specs_obj, "modeSpecs", mode_val);
     json_array_append_value(specs_array, mode_specs_val);
 
     return ACVP_SUCCESS;
