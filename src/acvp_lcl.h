@@ -58,7 +58,7 @@
 } while (0)
 #endif
 
-#define ACVP_ALG_MAX 49  /* Used by alg_tbl[] */
+#define ACVP_ALG_MAX 51  /* Used by alg_tbl[] */
 
 #define ACVP_ALG_AES_ECB             "AES-ECB"
 #define ACVP_ALG_AES_CBC             "AES-CBC"
@@ -93,7 +93,7 @@
 #define ACVP_ALG_HASHDRBG            "hashDRBG"
 #define ACVP_ALG_HMACDRBG            "hmacDRBG"
 #define ACVP_ALG_CTRDRBG             "ctrDRBG"
-#define ACVP_ALG_HMAC_SHA1           "HMAC-SHA1"
+#define ACVP_ALG_HMAC_SHA1           "HMAC-SHA-1"
 #define ACVP_ALG_HMAC_SHA2_224       "HMAC-SHA2-224"
 #define ACVP_ALG_HMAC_SHA2_256       "HMAC-SHA2-256"
 #define ACVP_ALG_HMAC_SHA2_384       "HMAC-SHA2-384"
@@ -114,6 +114,7 @@
 
 #define ACVP_RSA_KEYGEN         	 "keyGen"
 #define ACVP_RSA_SIGGEN         	 "sigGen"
+#define ACVP_RSA_SIGVER              "sigVer"
 
 #define ACVP_DRBG_MODE_SHA_1         "SHA-1"
 #define ACVP_DRBG_MODE_SHA_224       "SHA-224"
@@ -132,6 +133,9 @@
 #define ACVP_DRBG_PR_ALG_SHA         "SHA"
 #define ACVP_DRBG_PR_ALG_TDES        "TDES"
 
+#define ACVP_ALG_KDF135_TLS	     "KDF-TLS"
+#define ACVP_ALG_KDF135_SNMP     "KDF-SNMP"
+
 #define ACVP_SYM_KEY_MAX    64
 #define ACVP_SYM_PT_MAX     1024
 #define ACVP_SYM_CT_MAX     1024
@@ -147,6 +151,8 @@
 
 #define ACVP_HASH_MSG_MAX       1024*64
 #define ACVP_HASH_MD_MAX        64
+
+#define ACVP_KDF135_TLS_MSG_MAX 1024*4
 
 #define ACVP_HMAC_MSG_MAX       1024
 #define ACVP_HMAC_MAC_MAX       64
@@ -188,18 +194,17 @@ typedef struct acvp_sl_list_t {
     struct acvp_sl_list_t *next;
 } ACVP_SL_LIST;
 
-typedef struct acvp_sym_prereq_alg_val {
-    ACVP_SYM_PRE_REQ alg;
+typedef struct acvp_prereq_alg_val {
+    ACVP_PREREQ_ALG alg;
     char *val;
-} ACVP_SYM_PREREQ_ALG_VAL;
+} ACVP_PREREQ_ALG_VAL;
 
-typedef struct acvp_sym_prereq_vals {
-    ACVP_SYM_PREREQ_ALG_VAL prereq_alg_val;
-    struct acvp_sym_prereq_vals *next;
-} ACVP_SYM_PREREQ_VALS;
+typedef struct acvp_prereq_list {
+    ACVP_PREREQ_ALG_VAL prereq_alg_val;
+    struct acvp_prereq_list *next;
+} ACVP_PREREQ_LIST;
 
 typedef struct acvp_sym_cipher_capability {
-    ACVP_SYM_PREREQ_VALS *prereq_vals;
     ACVP_SYM_CIPH_DIR direction;
     ACVP_SYM_CIPH_KO keying_option;
     ACVP_SYM_CIPH_IVGEN_SRC ivgen_source;
@@ -216,18 +221,16 @@ typedef struct acvp_hash_capability {
     int               in_empty;
 } ACVP_HASH_CAP;
 
-typedef struct acvp_hmac_prereq_alg_val {
-    ACVP_HMAC_PRE_REQ alg;
-    char *val;
-} ACVP_HMAC_PREREQ_ALG_VAL;
+typedef struct acvp_kdf135_tls_capability {
+    int                   method[2];
+    int    	  	  sha;
+} ACVP_KDF135_TLS_CAP;
 
-typedef struct acvp_hmac_prereq_vals {
-    ACVP_HMAC_PREREQ_ALG_VAL prereq_alg_val;
-    struct acvp_hmac_prereq_vals *next;
-} ACVP_HMAC_PREREQ_VALS;
+typedef struct acvp_kdf135_snmp_capability {
+
+} ACVP_KDF135_SNMP_CAP;
 
 typedef struct acvp_hmac_capability {
-    ACVP_HMAC_PREREQ_VALS     *prereq_vals;
     int                       key_range_1[2];      //":"65536"
     int                       key_range_2[2];      //":"65536"
     int                       key_block;        //":"yes"
@@ -235,37 +238,16 @@ typedef struct acvp_hmac_capability {
     ACVP_SL_LIST              *mac_len;
 } ACVP_HMAC_CAP;
 
-typedef struct acvp_cmac_prereq_alg_val {
-    ACVP_CMAC_PRE_REQ alg;
-    char *val;
-} ACVP_CMAC_PREREQ_ALG_VAL;
-
-typedef struct acvp_cmac_prereq_vals {
-    ACVP_CMAC_PREREQ_ALG_VAL prereq_alg_val;
-    struct acvp_cmac_prereq_vals *next;
-} ACVP_CMAC_PREREQ_VALS;
-
 typedef struct acvp_cmac_capability {
-    ACVP_CMAC_PREREQ_VALS     *prereq_vals;
     int                       in_empty;         //":"yes"
     ACVP_SL_LIST              *mac_len;
     int                       msg_len[5];
 } ACVP_CMAC_CAP;
 
-typedef struct acvp_drbg_prereq_alg_val {
-    ACVP_DRBG_PRE_REQ alg;
-    char *val;
-} ACVP_DRBG_PREREQ_ALG_VAL;
-
-typedef struct acvp_drbg_prereq_vals {
-    ACVP_DRBG_PREREQ_ALG_VAL prereq_alg_val;
-    struct acvp_drbg_prereq_vals *next;
-} ACVP_DRBG_PREREQ_VALS;
-
 typedef struct acvp_drbg_cap_mode {
     ACVP_DRBG_MODE   mode;                   //"3KeyTDEA",
     int              der_func_enabled;       //":"yes",
-    ACVP_DRBG_PREREQ_VALS *prereq_vals;
+    ACVP_PREREQ_LIST *prereq_vals;
     int              pred_resist_enabled;    //": "yes",
     int              reseed_implemented;     //" : "yes",
     int              entropy_input_len;      //":"112",
@@ -307,12 +289,15 @@ struct acvp_rsa_mode_name_t {
     char           *name;
 };
 
+/*
+ * list of strings to be used for supported algs,
+ * prime_tests, etc.
+ */
 typedef struct acvp_name_list_t {
    char *name;
    struct acvp_name_list_t *next;
-} ACVP_NAME_LIST; // supported algs list
+} ACVP_NAME_LIST;
 
-/*************/
 typedef struct acvp_salt_t {
    int saltVal;
    struct acvp_salt_t *next;
@@ -325,7 +310,6 @@ typedef struct acvp_rsa_primes_list {
    struct acvp_rsa_primes_list *next;
 } ACVP_RSA_PRIMES_LIST;
 
-/*************************************/
 typedef struct acvp_rsa_cap_sig_type {
    int mod_rsa_siggen; // 2048, 3072, 4096 -- defined as macros
    ACVP_NAME_LIST *compatible_hashes_siggen;
@@ -333,26 +317,15 @@ typedef struct acvp_rsa_cap_sig_type {
    struct acvp_rsa_cap_sig_type *next;
 } ACVP_RSA_CAP_SIG_TYPE;
 
-typedef struct acvp_rsa_prereq_alg_val {
-    ACVP_RSA_PRE_REQ alg;
-    char *val;
-} ACVP_RSA_PREREQ_ALG_VAL;
-
-typedef struct acvp_rsa_prereq_vals {
-    ACVP_RSA_PREREQ_ALG_VAL prereq_alg_val;
-    struct acvp_rsa_prereq_vals *next;
-} ACVP_RSA_PREREQ_VALS;
-
 typedef struct acvp_rsa_keygen_attrs_t {
-    ACVP_RSA_MODE   mode;  // "keyGen"
-    int pub_exp; // 0 - random, 1 - fixed
-    BIGNUM *fixed_pub_exp_val; // hex value of e
-    int rand_pq; // 1, 2, 3, 4, 5 as defined in FIPS186-4
-    int info_gen_by_server; // "yes" or "no"
+    ACVP_RSA_MODE   mode;                    // "keyGen"
+    int pub_exp;                             // 0 - random, 1 - fixed
+    BIGNUM *fixed_pub_exp_val;               // hex value of e
+    int rand_pq;                             // as defined in FIPS186-4
+    int info_gen_by_server;                  // "yes" or "no"
     ACVP_RSA_PRIMES_LIST *cap_primes_list;
 } ACVP_RSA_KEYGEN_ATTRS;
 
-/**************************************/
 typedef struct acvp_rsa_mode_siggen_t {
     ACVP_RSA_MODE   mode;  // "sigGen"
     char *sig_type; // "X9.31", "PKCS1v1.5", "PKCS1PSS"
@@ -370,20 +343,22 @@ typedef struct acvp_rsa_cap_mode_list_t {
 
 typedef struct acvp_rsa_capability {
   ACVP_CIPHER               cipher;
-  ACVP_RSA_PREREQ_VALS *prereq_vals;
   ACVP_RSA_CAP_MODE_LIST *rsa_cap_mode_list;
 } ACVP_RSA_CAP;
 
 typedef struct acvp_caps_list_t {
     ACVP_CIPHER       cipher;
     ACVP_CAP_TYPE     cap_type;
+    ACVP_PREREQ_LIST *prereq_vals;
     union {
-      ACVP_SYM_CIPHER_CAP *sym_cap;
-      ACVP_HASH_CAP       *hash_cap;
-      ACVP_DRBG_CAP       *drbg_cap;
-      ACVP_HMAC_CAP       *hmac_cap;
-      ACVP_CMAC_CAP       *cmac_cap;
-      ACVP_RSA_CAP        *rsa_cap;
+      ACVP_SYM_CIPHER_CAP   *sym_cap;
+      ACVP_HASH_CAP         *hash_cap;
+      ACVP_DRBG_CAP         *drbg_cap;
+      ACVP_HMAC_CAP         *hmac_cap;
+      ACVP_CMAC_CAP         *cmac_cap;
+      ACVP_RSA_CAP          *rsa_cap;
+      ACVP_KDF135_TLS_CAP   *kdf135_tls_cap;
+      ACVP_KDF135_SNMP_CAP  *kdf135_snmp_cap;
     //TODO: add other cipher types
     } cap;
     ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case);
@@ -453,6 +428,8 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 ACVP_RESULT acvp_hmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 ACVP_RESULT acvp_cmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 ACVP_RESULT acvp_rsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
+ACVP_RESULT acvp_kdf135_tls_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
+ACVP_RESULT acvp_kdf135_snmp_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
 /*
  * ACVP utility functions used internally

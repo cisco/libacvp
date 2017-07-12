@@ -129,15 +129,35 @@ typedef enum acvp_sym_cipher {
     ACVP_CMAC_AES_256,
     ACVP_CMAC_TDES,
     ACVP_RSA,
-    ACVP_CIPHER_END,
+    ACVP_KDF135_TLS,
+    ACVP_KDF135_SNMP,
+    ACVP_CIPHER_END
 } ACVP_CIPHER;
 
-#define ACVP_SYM_PREREQ_AES_STR      "AES"
-#define ACVP_SYM_PREREQ_DRBG_STR     "DRBG"
-typedef enum acvp_sym_pre_req {
-    ACVP_SYM_PREREQ_AES = 1,
-    ACVP_SYM_PREREQ_DRBG
-} ACVP_SYM_PRE_REQ;
+
+typedef enum acvp_prereq_mode_t {
+  ACVP_PREREQ_AES = 1,
+  ACVP_PREREQ_TDES,
+  ACVP_PREREQ_DRBG,
+  ACVP_PREREQ_HMAC,
+  ACVP_PREREQ_SHA
+} ACVP_PREREQ_ALG;
+
+typedef struct acvp_prereqs_mode_name_t {
+    ACVP_PREREQ_ALG alg;
+    char *name;
+} ACVP_PREREQ_MODE_NAME;
+
+#define ACVP_KDF135_SNMP_ENGID_MAX 32
+#define ACVP_KDF135_SNMP_SKEY_MAX 32
+
+/* these are bit flags */
+typedef enum acvp_kdf135_tls_cap_parm {
+    ACVP_KDF135_TLS_CAP_SHA256 = 1,
+    ACVP_KDF135_TLS_CAP_SHA384,
+    ACVP_KDF135_TLS_CAP_SHA512,
+    ACVP_KDF135_TLS_CAP_MAX
+} ACVP_KDF135_TLS_CAP_PARM;
 
 /*
  * Used to help manage capability structures
@@ -148,7 +168,9 @@ typedef enum acvp_capability_type {
     ACVP_DRBG_TYPE,
     ACVP_HMAC_TYPE,
     ACVP_CMAC_TYPE,
-    ACVP_RSA_TYPE
+    ACVP_RSA_TYPE,
+    ACVP_KDF135_TLS_TYPE,
+    ACVP_KDF135_SNMP_TYPE
 } ACVP_CAP_TYPE;
 
 typedef enum acvp_sym_cipher_keying_option {
@@ -189,6 +211,11 @@ typedef enum acvp_sym_cipher_direction {
     ACVP_DIR_DECRYPT,
     ACVP_DIR_BOTH
 } ACVP_SYM_CIPH_DIR;
+
+typedef enum acvp_kdf135_tls_method {
+    ACVP_KDF135_TLS10_TLS11 = 1,
+    ACVP_KDF135_TLS12
+} ACVP_KDF135_TLS_METHOD;
 
 typedef enum acvp_hash_param {
     ACVP_HASH_IN_BIT = 0,
@@ -308,25 +335,19 @@ typedef enum acvp_rsa_param {
 #define PRIME_TEST_TBLC2_NAME "tblC2"
 #define PRIME_TEST_TBLC3_NAME "tblC3"
 
-#define RSA_RAND_PQ_B32    1
-#define RSA_RAND_PQ_B33    2
-#define RSA_RAND_PQ_B34    3
-#define RSA_RAND_PQ_B35    4
-#define RSA_RAND_PQ_B36    5
-#define RSA_PUB_EXP_FIXED  1
-#define RSA_PUB_EXP_RANDOM 0
-
-#define ACVP_RSA_PREREQ_DRBG     "DRBG"
-#define ACVP_RSA_PREREQ_SHA      "SHA"
-typedef enum acvp_rsa_pre_req {
-	RSA_DRBG = 1,
-	RSA_SHA
-} ACVP_RSA_PRE_REQ;
+#define RSA_RAND_PQ_B32        1
+#define RSA_RAND_PQ_B33        2
+#define RSA_RAND_PQ_B34        3
+#define RSA_RAND_PQ_B35        4
+#define RSA_RAND_PQ_B36        5
+#define RSA_PUB_EXP_FIXED      1
+#define RSA_PUB_EXP_RANDOM     0
 
 typedef enum acvp_rsa_mode {
     ACVP_RSA_MODE_START = 0,
     ACVP_RSA_MODE_KEYGEN,
 	ACVP_RSA_MODE_SIGGEN,
+    ACVP_RSA_MODE_SIGVER,
     ACVP_RSA_MODE_END
 } ACVP_RSA_MODE;
 
@@ -357,11 +378,6 @@ typedef enum acvp_hash_testtype {
     ACVP_HASH_TEST_TYPE_MCT
 } ACVP_HASH_TESTTYPE;
 
-#define ACVP_HMAC_PREREQ_SHA      "SHA"
-typedef enum acvp_hmac_pre_req {
-    HMAC_SHA = 1
-} ACVP_HMAC_PRE_REQ;
-
 typedef enum acvp_hmac_parameter {
     ACVP_HMAC_KEYRANGE1_MIN = 0,
     ACVP_HMAC_KEYRANGE1_MAX,
@@ -371,11 +387,6 @@ typedef enum acvp_hmac_parameter {
     ACVP_HMAC_IN_EMPTY,
     ACVP_HMAC_MACLEN
 } ACVP_HMAC_PARM;
-
-#define ACVP_CMAC_PREREQ_AES      "AES"
-typedef enum acvp_cmac_pre_req {
-    CMAC_AES = 1
-} ACVP_CMAC_PRE_REQ;
 
 typedef enum acvp_cmac_parameter {
     ACVP_CMAC_MACLEN,
@@ -476,6 +487,44 @@ typedef struct acvp_hash_tc_t {
 
 /*
  * This struct holds data that represents a single test case
+ * for kdf135 TLS testing.  This data is
+ * passed between libacvp and the crypto module.
+ */
+typedef struct acvp_kdf135_tls_tc_t {
+    ACVP_CIPHER cipher;
+    unsigned int  tc_id;    /* Test case id */
+    unsigned int method;
+    unsigned int md;
+    unsigned int pm_len;
+    unsigned int kb_len;
+    unsigned char *pm_secret;
+    unsigned char *sh_rnd;
+    unsigned char *ch_rnd;
+    unsigned char *s_rnd;
+    unsigned char *c_rnd;
+    unsigned char *msecret1; /* The resulting data calculated for the test case */
+    unsigned char *msecret2;
+    unsigned char *kblock1;  /* The resulting data calculated for the test case */
+    unsigned char *kblock2;
+} ACVP_KDF135_TLS_TC;
+
+/*
+ * This struct holds data that represents a single test case
+ * for kdf135 TLS testing.  This data is
+ * passed between libacvp and the crypto module.
+ */
+typedef struct acvp_kdf135_snmp_tc_t {
+    ACVP_CIPHER cipher;
+    unsigned int  tc_id;    /* Test case id */
+    const char *password;
+    unsigned int p_len;
+    unsigned char *s_key;
+    unsigned int skey_len;
+    unsigned char *engine_id;
+} ACVP_KDF135_SNMP_TC;
+
+/*
+ * This struct holds data that represents a single test case
  * for hmac testing.  This data is
  * passed between libacvp and the crypto module.
  */
@@ -520,7 +569,7 @@ typedef struct acvp_rsa_keygen_attrs_tc_t {
     unsigned int  tc_id;    /* Test case id */
     char *pub_exp;
     char *prime_test;
-    
+
     BIGNUM *e;
     unsigned char *p_rand;
     unsigned char *q_rand;
@@ -580,7 +629,7 @@ typedef struct acvp_rsa_sig_attrs_tc_t {
     unsigned int salt_len; // only for sigType PKCSS1PSS
 
     BIGNUM *e;
-    BIGNUM *n; /***unsigned char *???***/
+    BIGNUM *n;
     BIGNUM *s;
 } ACVP_RSA_SIG_ATTRS_TC;
 
@@ -643,6 +692,8 @@ typedef struct acvp_cipher_tc_t {
         ACVP_HMAC_TC        *hmac;
         ACVP_CMAC_TC        *cmac;
         ACVP_RSA_TC         *rsa;
+        ACVP_KDF135_TLS_TC  *kdf135_tls;
+        ACVP_KDF135_SNMP_TC *kdf135_snmp;
         //TODO: need more types for hashes, etc.
     } tc;
 } ACVP_TEST_CASE;
@@ -734,11 +785,6 @@ ACVP_RESULT acvp_enable_sym_cipher_cap_parm(
 	ACVP_SYM_CIPH_PARM parm,
 	int length);
 
-ACVP_RESULT acvp_enable_sym_prereq_cap(ACVP_CTX *ctx,
-                                       ACVP_CIPHER      cipher,
-                              	       ACVP_SYM_PRE_REQ pre_req_cap,
-                              	       char              *value);
-
 /*! @brief acvp_enable_hash_cap() allows an application to specify a
        hash capability to be tested by the ACVP server.
 
@@ -769,8 +815,6 @@ ACVP_RESULT acvp_enable_hash_cap_parm (
 		   ACVP_CIPHER cipher,
                    ACVP_HASH_PARM       param,
                    int                  value);
-
-
 
 /*! @brief acvp_enable_drbg_cap() allows an application to specify a
        hash capability to be tested by the ACVP server.
@@ -809,7 +853,7 @@ ACVP_RESULT acvp_enable_drbg_prereq_cap(
                              ACVP_CTX *ctx,
                              ACVP_CIPHER cipher,
                              ACVP_DRBG_MODE mode,
-                             ACVP_DRBG_PRE_REQ pre_req,
+                             ACVP_PREREQ_ALG pre_req,
                              char *value
                              );
 
@@ -824,7 +868,11 @@ ACVP_RESULT acvp_enable_drbg_length_cap(
 
 /*! @brief acvp_enable_rsa_cap()
 
-   When the application enables a crypto capability, such as SHA-1, it
+  This function should be used to enable RSA capabilities. Specific modes
+  and parameters can use acvp_enable_rsa_cap_parm, acvp_enable_rsa_bignum_parm,
+  acvp_enable_rsa_primes_parm depending on the need.
+
+   When the application enables a crypto capability, such as RSA, it
    also needs to specify a callback function that will be used by libacvp
    when that crypto capability is needed during a test session.
 
@@ -855,13 +903,6 @@ ACVP_RESULT acvp_enable_rsa_bignum_parm (ACVP_CTX *ctx,
                              ACVP_RSA_PARM param,
                              BIGNUM *value
                            );
-
-ACVP_RESULT acvp_enable_rsa_prereq_cap(
-                            ACVP_CTX *ctx,
-                            ACVP_CIPHER cipher,
-                            ACVP_RSA_PRE_REQ pre_req,
-                            char *value
-                            );
 
 ACVP_RESULT acvp_enable_rsa_primes_parm (ACVP_CTX *ctx,
                              ACVP_CIPHER cipher,
@@ -919,12 +960,6 @@ ACVP_RESULT acvp_enable_hmac_cap_parm(
                           ACVP_HMAC_PARM parm,
                           int value);
 
-ACVP_RESULT acvp_enable_hmac_prereq_cap(
-                          ACVP_CTX       *ctx,
-                          ACVP_CIPHER       cipher,
-                          ACVP_HMAC_PRE_REQ pre_req,
-                          char              *value);
-
 /*! @brief acvp_enable_cmac_cap() allows an application to specify an
 	   CMAC capability to be tested by the ACVP server.
 
@@ -955,6 +990,54 @@ ACVP_RESULT acvp_enable_cmac_cap_parm(
                           ACVP_CIPHER cipher,
                           ACVP_CMAC_PARM parm,
                           int value);
+
+/*! @brief acvp_enable_kdf135_*_cap() allows an application to specify a
+       kdf cipher capability to be tested by the ACVP server.
+
+    When the application enables a crypto capability, such as KDF135_TLS, it
+    also needs to specify a callback function that will be used by libacvp
+    when that crypto capability is needed during a test session.
+
+    @param ctx Address of pointer to a previously allocated ACVP_CTX.
+    @param cipher ACVP_CIPHER enum value identifying the crypto capability.
+    @param crypto_handler Address of function implemented by application that
+       is invoked by libacvp when the crypto capablity is needed during
+       a test session.
+
+    @return ACVP_RESULT
+ */
+ACVP_RESULT acvp_enable_kdf135_tls_cap(
+          ACVP_CTX *ctx,
+          ACVP_KDF135_TLS_METHOD method,
+          ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case));
+
+ACVP_RESULT acvp_enable_kdf135_tls_cap_parm(
+                          ACVP_CTX *ctx,
+                          ACVP_CIPHER cap,
+                          ACVP_KDF135_TLS_METHOD method,
+			  ACVP_KDF135_TLS_CAP_PARM param);
+
+
+ACVP_RESULT acvp_enable_kdf135_snmp_cap(
+          ACVP_CTX *ctx,
+          ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case));
+
+/*! @brief acvp_enable_prereq_cap() allows an application to specify a
+       prerequisite for a cipher capability that was previously registered.
+
+    @param ctx Address of pointer to a previously allocated ACVP_CTX.
+    @param cipher ACVP_CIPHER enum value identifying the crypto capability that has a prerequisite
+    @param pre_req_alg ACVP_PREREQ_ALG enum identifying the prerequisite
+    @param value value for specified prerequisite
+
+    @return ACVP_RESULT
+ */
+
+ACVP_RESULT acvp_enable_prereq_cap(
+                ACVP_CTX *ctx,
+                ACVP_CIPHER cipher,
+                ACVP_PREREQ_ALG pre_req_cap,
+                char *value);
 
 /*! @brief acvp_create_test_session() creates a context that can be used to
       commence a test session with an ACVP server.

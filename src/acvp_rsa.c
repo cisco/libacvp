@@ -48,7 +48,7 @@ static ACVP_RESULT acvp_rsa_init_sig_tc(ACVP_CTX *ctx,
     	 * make room for all items
     	 */
 		sigtc->test_type = calloc(RSA_TEST_TYPE_MAX, sizeof(char));
-		sigtc->sig_type = calloc(RSA_SIG_TYPE_MAX, sizeof(char)); /***make macros***/
+		sigtc->sig_type = calloc(RSA_SIG_TYPE_MAX, sizeof(char));
 		sigtc->sig_attrs_tc = calloc(1, sizeof(ACVP_RSA_SIG_TC));
 		if (!sigtc->sig_attrs_tc) return ACVP_MALLOC_FAIL;
 		sigtc->sig_attrs_tc->hash_alg = calloc(1, sizeof(char));
@@ -58,7 +58,7 @@ static ACVP_RESULT acvp_rsa_init_sig_tc(ACVP_CTX *ctx,
 		 * only make room and assign value to saltLen if sigType is PKCS1PSS
 		 */
 		if(strncmp(sig_type, RSA_SIG_TYPE_PKCS1PSS_NAME, RSA_SIG_TYPE_MAX_LEN ) == 0 ) {
-			sigtc->sig_attrs_tc->salt_len = salt_len; /*** what do about if 0 and meant to be 0? ***/
+			sigtc->sig_attrs_tc->salt_len = salt_len;
 		}
 
 		/*
@@ -210,7 +210,7 @@ static ACVP_RESULT acvp_rsa_init_keygen_tc(ACVP_CTX *ctx,
  * file that will be uploaded to the server.  This routine handles
  * the JSON processing for a single test case.
  */
-static ACVP_RESULT acvp_rsa_output_sig_tc(ACVP_CTX *ctx, ACVP_RSA_SIG_TC *sigtc, JSON_Object *tc_rsp) /*** why need ctx?***/
+static ACVP_RESULT acvp_rsa_output_sig_tc(ACVP_CTX *ctx, ACVP_RSA_SIG_TC *sigtc, JSON_Object *tc_rsp)
 {
     switch(sigtc->mode) {
         case ACVP_RSA_MODE_SIGGEN:
@@ -300,7 +300,6 @@ static ACVP_RESULT acvp_rsa_release_sig_tc(ACVP_RSA_SIG_TC *sigtc)
 
     if(sigtc->sig_attrs_tc->hash_alg) free(sigtc->sig_attrs_tc->hash_alg);
     if(sigtc->sig_attrs_tc->msg) free(sigtc->sig_attrs_tc->msg);
-    /***tc_id && mode???***/
 
     free(sigtc->sig_attrs_tc);
 
@@ -455,7 +454,7 @@ static ACVP_RESULT acvp_kat_rsa_sig(unsigned int tc_id, ACVP_CIPHER alg_id,
 	unsigned char *msg;
 	char *hash_alg;
 
-	salt_len = 0; /*** is technically valid to be 0, what do here??? ***/
+	salt_len = 0;
 
 	/*
 	 * sigver attrs for test obj
@@ -622,7 +621,6 @@ ACVP_RESULT acvp_rsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
             ACVP_LOG_INFO("        Test case: %d", j);
             ACVP_LOG_INFO("             tcId: %d", tc_id);
             ACVP_LOG_INFO("             mode: %s", mode_str);
-
             /*
              * Create a new test case in the response
              */
@@ -633,7 +631,6 @@ ACVP_RESULT acvp_rsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
 
             switch(tc.tc.rsa->mode) {
             case ACVP_RSA_MODE_KEYGEN:
-            {
                 /*
                  * Get a reference to the abstracted test case
                  */
@@ -668,11 +665,9 @@ ACVP_RESULT acvp_rsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
 				 * Release all the memory associated with the test case
 				 */
 				acvp_rsa_release_keygen_tc(&stc);
-            }
                 break;
             case ACVP_RSA_MODE_SIGGEN:
             //case ACVP_RSA_MODE_SIGVER:
-            {
             	/*
 				 * Get a reference to the abstracted test case
 				 */
@@ -705,7 +700,8 @@ ACVP_RESULT acvp_rsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
 				 * Release all the memory associated with the test case
 				 */
 				acvp_rsa_release_sig_tc(&sigtc);
-            }
+                break;
+            case ACVP_RSA_MODE_SIGVER:
                 break;
             default:
                 break;
@@ -728,3 +724,4 @@ ACVP_RESULT acvp_rsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
 
     return ACVP_SUCCESS;
 }
+
