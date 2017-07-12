@@ -50,7 +50,9 @@
 #include <openssl/rsa.h>
 #include <openssl/bn.h>
 #include <openssl/rand.h>
+#ifdef OPENSSL_KDF_SUPPORT
 #include <openssl/kdf.h>
+#endif
 
 #ifdef ACVP_NO_RUNTIME
 #include "app_lcl.h"
@@ -68,8 +70,10 @@ static ACVP_RESULT app_sha_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_hmac_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_cmac_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_rsa_handler(ACVP_TEST_CASE *test_case);
+#ifdef OPENSSL_KDF_SUPPORT
 static ACVP_RESULT app_kdf135_tls_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_kdf135_snmp_handler(ACVP_TEST_CASE *test_case);
+#endif
 #ifdef ACVP_NO_RUNTIME
 static ACVP_RESULT app_drbg_handler(ACVP_TEST_CASE *test_case);
 #endif
@@ -705,7 +709,7 @@ int main(int argc, char **argv)
     CHECK_ENABLE_CAP_RV(rv);
 #endif
 
-#if 0 /* until supported on the server */
+#ifdef OPENSSL_KDF_SUPPORT
    /*
     * Enable KDF-135
     */
@@ -1706,6 +1710,7 @@ static ACVP_RESULT app_hmac_handler(ACVP_TEST_CASE *test_case)
     return ACVP_SUCCESS;
 }
 
+#ifdef OPENSSL_KDF_SUPPORT
 static ACVP_RESULT app_kdf135_tls_handler(ACVP_TEST_CASE *test_case)
 {
     ACVP_KDF135_TLS_TC	*tc;
@@ -1906,6 +1911,7 @@ static ACVP_RESULT app_cmac_handler(ACVP_TEST_CASE *test_case)
 
     return ACVP_SUCCESS;
 }
+#endif 
 
 static ACVP_RESULT app_rsa_handler(ACVP_TEST_CASE *test_case)
 {
