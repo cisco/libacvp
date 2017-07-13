@@ -143,7 +143,7 @@ ACVP_ALG_HANDLER alg_tbl[ACVP_ALG_MAX] = {
     {ACVP_CMAC_TDES,       &acvp_cmac_kat_handler,  ACVP_ALG_CMAC_TDES},
     {ACVP_RSA,             &acvp_rsa_kat_handler,   ACVP_ALG_RSA},
     {ACVP_KDF135_TLS,      &acvp_kdf135_tls_kat_handler,  ACVP_ALG_KDF135_TLS},
-    {ACVP_KDF135_SNMP,     &acvp_kdf135_snmp_kat_handler, ACVP_ALG_KDF135_SNMP}
+    {ACVP_KDF135_SNMP,     &acvp_kdf135_tls_kat_handler, ACVP_ALG_KDF135_SNMP}
 };
 
 #define ACVP_NUM_PREREQS 5
@@ -1993,8 +1993,8 @@ static ACVP_RESULT acvp_lookup_prereqVals (JSON_Object *cap_obj, ACVP_CAPS_LIST 
 static ACVP_RESULT acvp_build_hash_register_cap(JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry)
 {
     json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
-    json_object_set_string(cap_obj, "inBit", cap_entry->cap.hash_cap->in_bit ? "yes" : "no" );
-    json_object_set_string(cap_obj, "inEmpty", cap_entry->cap.hash_cap->in_empty ? "yes" : "no" );
+    json_object_set_boolean(cap_obj, "inBit", cap_entry->cap.hash_cap->in_bit);
+    json_object_set_boolean(cap_obj, "inEmpty", cap_entry->cap.hash_cap->in_empty);
 
     return ACVP_SUCCESS;
 }
@@ -2016,8 +2016,8 @@ static ACVP_RESULT acvp_build_hmac_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
     json_array_append_number(temp_arr, cap_entry->cap.hmac_cap->key_range_2[0]);
     json_array_append_number(temp_arr, cap_entry->cap.hmac_cap->key_range_2[1]);
 
-    json_object_set_string(cap_obj, "keyBlock", cap_entry->cap.hmac_cap->key_block ? "yes" : "no" );
-    json_object_set_string(cap_obj, "inEmpty", cap_entry->cap.hmac_cap->in_empty ? "yes" : "no" );
+    json_object_set_boolean(cap_obj, "keyBlock", cap_entry->cap.hmac_cap->key_block);
+    json_object_set_boolean(cap_obj, "inEmpty", cap_entry->cap.hmac_cap->in_empty);
 
     /*
      * Set the supported mac lengths
@@ -2051,7 +2051,7 @@ static ACVP_RESULT acvp_build_cmac_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
       json_array_append_number(temp_arr, cap_entry->cap.cmac_cap->msg_len[i]);
     }
 
-    json_object_set_string(cap_obj, "inEmpty", cap_entry->cap.cmac_cap->in_empty ? "yes" : "no" );
+    json_object_set_boolean(cap_obj, "inEmpty", cap_entry->cap.cmac_cap->in_empty);
 
     /*
      * Set the supported mac lengths
@@ -2092,11 +2092,11 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
     mode_arr = json_object_get_array(cap_obj, "direction");
     if (sym_cap->direction == ACVP_DIR_ENCRYPT ||
         sym_cap->direction == ACVP_DIR_BOTH) {
-	json_array_append_string(mode_arr, "encrypt");
+        json_array_append_string(mode_arr, "encrypt");
     }
     if (sym_cap->direction == ACVP_DIR_DECRYPT ||
         sym_cap->direction == ACVP_DIR_BOTH) {
-	json_array_append_string(mode_arr, "decrypt");
+        json_array_append_string(mode_arr, "decrypt");
     }
 
     /*
@@ -2104,14 +2104,14 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
      */
     switch(sym_cap->ivgen_source) {
     case ACVP_IVGEN_SRC_INT:
-	json_object_set_string(cap_obj, "ivGen", "internal");
-	break;
+        json_object_set_string(cap_obj, "ivGen", "internal");
+        break;
     case ACVP_IVGEN_SRC_EXT:
-	json_object_set_string(cap_obj, "ivGen", "external");
-	break;
+        json_object_set_string(cap_obj, "ivGen", "external");
+        break;
     default:
-	/* do nothing, this is an optional capability */
-	break;
+        /* do nothing, this is an optional capability */
+        break;
     }
 
     /*
@@ -2119,14 +2119,14 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
      */
     switch(sym_cap->ivgen_mode) {
     case ACVP_IVGEN_MODE_821:
-	json_object_set_string(cap_obj, "ivGenMode", "8.2.1");
-	break;
+        json_object_set_string(cap_obj, "ivGenMode", "8.2.1");
+        break;
     case ACVP_IVGEN_MODE_822:
-	json_object_set_string(cap_obj, "ivGenMode", "8.2.2");
-	break;
+        json_object_set_string(cap_obj, "ivGenMode", "8.2.2");
+        break;
     default:
-	/* do nothing, this is an optional capability */
-	break;
+        /* do nothing, this is an optional capability */
+        break;
     }
 
     /*
@@ -2134,14 +2134,14 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
      */
     if (sym_cap->keying_option != ACVP_KO_NA) {
         json_object_set_value(cap_obj, "keyingOption", json_value_init_array());
-    	opts_arr = json_object_get_array(cap_obj, "keyingOption");
+      	opts_arr = json_object_get_array(cap_obj, "keyingOption");
         if (sym_cap->keying_option == ACVP_KO_THREE ||
             sym_cap->keying_option == ACVP_KO_BOTH) {
-	    json_array_append_number(opts_arr, 1);
+            json_array_append_number(opts_arr, 1);
         }
     	if (sym_cap->keying_option == ACVP_KO_TWO ||
             sym_cap->keying_option == ACVP_KO_BOTH) {
-	    json_array_append_number(opts_arr, 2);
+            json_array_append_number(opts_arr, 2);
         }
     }
     /*
@@ -2151,8 +2151,8 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
     opts_arr = json_object_get_array(cap_obj, "keyLen");
     sl_list = sym_cap->keylen;
     while (sl_list) {
-	json_array_append_number(opts_arr, sl_list->length);
-	sl_list = sl_list->next;
+        json_array_append_number(opts_arr, sl_list->length);
+        sl_list = sl_list->next;
     }
 
     /*
@@ -2160,11 +2160,11 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
      */
     if ((cap_entry->cipher == ACVP_AES_GCM) || (cap_entry->cipher == ACVP_AES_CCM)) {
         json_object_set_value(cap_obj, "tagLen", json_value_init_array());
-    	opts_arr = json_object_get_array(cap_obj, "tagLen");
-    	sl_list = sym_cap->taglen;
-    	while (sl_list) {
-	   json_array_append_number(opts_arr, sl_list->length);
-	   sl_list = sl_list->next;
+        opts_arr = json_object_get_array(cap_obj, "tagLen");
+        sl_list = sym_cap->taglen;
+        while (sl_list) {
+           json_array_append_number(opts_arr, sl_list->length);
+           sl_list = sl_list->next;
         }
     }
 
@@ -2172,30 +2172,30 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
      * Set the supported IV lengths
      */
     switch (cap_entry->cipher)
-        {
-        case ACVP_TDES_ECB:
-        case ACVP_TDES_CBC:
-        case ACVP_TDES_CBCI:
-        case ACVP_TDES_OFB:
-        case ACVP_TDES_OFBI:
-        case ACVP_TDES_CFB1:
-        case ACVP_TDES_CFB8:
-        case ACVP_TDES_CFB64:
-        case ACVP_TDES_CFBP1:
-        case ACVP_TDES_CFBP8:
-        case ACVP_TDES_CFBP64:
-        case ACVP_TDES_CTR:
-    	case ACVP_TDES_KW:
-	    break;
-	default:
-    	    json_object_set_value(cap_obj, "ivLen", json_value_init_array());
-    	    opts_arr = json_object_get_array(cap_obj, "ivLen");
-    	    sl_list = sym_cap->ivlen;
-    	    while (sl_list) {
-	        json_array_append_number(opts_arr, sl_list->length);
-		sl_list = sl_list->next;
-            }
+    {
+    case ACVP_TDES_ECB:
+    case ACVP_TDES_CBC:
+    case ACVP_TDES_CBCI:
+    case ACVP_TDES_OFB:
+    case ACVP_TDES_OFBI:
+    case ACVP_TDES_CFB1:
+    case ACVP_TDES_CFB8:
+    case ACVP_TDES_CFB64:
+    case ACVP_TDES_CFBP1:
+    case ACVP_TDES_CFBP8:
+    case ACVP_TDES_CFBP64:
+    case ACVP_TDES_CTR:
+  	case ACVP_TDES_KW:
+        break;
+    default:
+        json_object_set_value(cap_obj, "ivLen", json_value_init_array());
+        opts_arr = json_object_get_array(cap_obj, "ivLen");
+        sl_list = sym_cap->ivlen;
+        while (sl_list) {
+            json_array_append_number(opts_arr, sl_list->length);
+            sl_list = sl_list->next;
         }
+    }
     /*
      * Set the supported plaintext lengths
      */
@@ -2203,8 +2203,8 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
     opts_arr = json_object_get_array(cap_obj, "ptLen");
     sl_list = sym_cap->ptlen;
     while (sl_list) {
-	json_array_append_number(opts_arr, sl_list->length);
-	sl_list = sl_list->next;
+        json_array_append_number(opts_arr, sl_list->length);
+        sl_list = sl_list->next;
     }
 
     /*
@@ -2212,11 +2212,11 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
      */
     if ((cap_entry->cipher == ACVP_AES_GCM) || (cap_entry->cipher == ACVP_AES_CCM)) {
         json_object_set_value(cap_obj, "aadLen", json_value_init_array());
-    	opts_arr = json_object_get_array(cap_obj, "aadLen");
-    	sl_list = sym_cap->aadlen;
-    	while (sl_list) {
-	    json_array_append_number(opts_arr, sl_list->length);
-	    sl_list = sl_list->next;
+        opts_arr = json_object_get_array(cap_obj, "aadLen");
+        sl_list = sym_cap->aadlen;
+        while (sl_list) {
+            json_array_append_number(opts_arr, sl_list->length);
+            sl_list = sl_list->next;
         }
     }
     return ACVP_SUCCESS;
@@ -2333,13 +2333,13 @@ static ACVP_RESULT acvp_build_drbg_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
     drbg_cap_mode = &cap_entry->cap.drbg_cap->drbg_cap_mode_list->cap_mode;
     json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
     json_object_set_string(cap_obj, "mode", mode_str);
-    json_object_set_string(cap_obj, "derFuncEnabled", drbg_cap_mode->der_func_enabled ? "yes" : "no" );
+    json_object_set_boolean(cap_obj, "derFuncEnabled", drbg_cap_mode->der_func_enabled);
 
     result = acvp_lookup_drbg_prereqVals(cap_obj, drbg_cap_mode);
     if (result != ACVP_SUCCESS) return result;
 
-    json_object_set_string(cap_obj, "predResistanceEnabled", drbg_cap_mode->pred_resist_enabled  ? "yes" : "no" );
-    json_object_set_string(cap_obj, "reseedImplemented",     drbg_cap_mode->reseed_implemented  ? "yes" : "no" );
+    json_object_set_boolean(cap_obj, "predResistanceEnabled", drbg_cap_mode->pred_resist_enabled);
+    json_object_set_boolean(cap_obj, "reseedImplemented",     drbg_cap_mode->reseed_implemented);
 
     //Set entropy range
     len_val = json_value_init_object();
