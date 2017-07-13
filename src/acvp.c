@@ -628,7 +628,6 @@ ACVP_RESULT acvp_validate_hmac_parm_value(ACVP_HMAC_PARM parm, int value) {
       }
       break;
     case ACVP_HMAC_KEYBLOCK:
-    case ACVP_HMAC_IN_EMPTY:
       retval = is_valid_tf_param(value);
       break;
     default:
@@ -662,7 +661,7 @@ ACVP_RESULT acvp_enable_hmac_cap(
 
 /*
  * The user should call this after invoking acvp_enable_hmac_cap()
- * to specify the supported key ranges, keyblock value, in_empty value, and
+ * to specify the supported key ranges, keyblock value, and
  * suuported mac lengths. This is called by the user multiple times,
  * once for each length supported.
  */
@@ -703,9 +702,6 @@ ACVP_RESULT acvp_enable_hmac_cap_parm(
     case ACVP_HMAC_KEYBLOCK:
       cap->cap.hmac_cap->key_block = value;
       break;
-    case ACVP_HMAC_IN_EMPTY:
-      cap->cap.hmac_cap->in_empty = value;
-      break;
     case ACVP_HMAC_MACLEN:
       acvp_cap_add_length(&cap->cap.hmac_cap->mac_len, value);
       break;
@@ -726,16 +722,21 @@ ACVP_RESULT acvp_validate_cmac_parm_value(ACVP_CMAC_PARM parm, int value) {
     case ACVP_CMAC_BLK_NOT_DIVISIBLE_1:
     case ACVP_CMAC_BLK_NOT_DIVISIBLE_2:
     case ACVP_CMAC_MSG_LEN_MAX:
+        if (value >= 0 && value <= 524288 && value % 8 == 0) {
+          retval = ACVP_SUCCESS;
+        }
+        break;
     case ACVP_CMAC_MACLEN:
-      if (value >= 0 && value <= 65536) {
-        retval = ACVP_SUCCESS;
-      }
-      break;
-    case ACVP_CMAC_IN_EMPTY:
-      retval = is_valid_tf_param(value);
-      break;
+        if (value >= 8 && value <= 524288 && value % 8 == 0) {
+          retval = ACVP_SUCCESS;
+        }
+        break;
+    case ACVP_CMAC_DIRECTION_GEN:
+    case ACVP_CMAC_DIRECTION_VER:
+        retval = is_valid_tf_param(value);
+        break;
     default:
-      break;
+        break;
   }
 
   return retval;
@@ -765,7 +766,7 @@ ACVP_RESULT acvp_enable_cmac_cap(
 
 /*
  * The user should call this after invoking acvp_enable_cmac_cap()
- * to specify the supported msg lengths, mac lengths, and in_empty value.
+ * to specify the supported msg lengths, mac lengths, and diretion.
  * This is called by the user multiple times,
  * once for each length supported.
  */
@@ -806,8 +807,11 @@ ACVP_RESULT acvp_enable_cmac_cap_parm(
     case ACVP_CMAC_MSG_LEN_MAX:
       cap->cap.cmac_cap->msg_len[CMAC_MSG_LEN_MAX] = value;
       break;
-    case ACVP_CMAC_IN_EMPTY:
-      cap->cap.cmac_cap->in_empty = value;
+    case ACVP_CMAC_DIRECTION_GEN:
+      cap->cap.cmac_cap->direction_gen = value;
+      break;
+    case ACVP_CMAC_DIRECTION_VER:
+      cap->cap.cmac_cap->direction_ver = value;
       break;
     case ACVP_CMAC_MACLEN:
       acvp_cap_add_length(&cap->cap.cmac_cap->mac_len, value);
@@ -1993,8 +1997,8 @@ static ACVP_RESULT acvp_lookup_prereqVals (JSON_Object *cap_obj, ACVP_CAPS_LIST 
 static ACVP_RESULT acvp_build_hash_register_cap(JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry)
 {
     json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
-    json_object_set_string(cap_obj, "inBit", cap_entry->cap.hash_cap->in_bit ? "yes" : "no" );
-    json_object_set_string(cap_obj, "inEmpty", cap_entry->cap.hash_cap->in_empty ? "yes" : "no" );
+    json_object_set_boolean(cap_obj, "inBit", cap_entry->cap.hash_cap->in_bit);
+    json_object_set_boolean(cap_obj, "inEmpty", cap_entry->cap.hash_cap->in_empty);
 
     return ACVP_SUCCESS;
 }
@@ -2006,6 +2010,9 @@ static ACVP_RESULT acvp_build_hmac_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
     ACVP_RESULT result;
 
     json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
+    result = acvp_lookup_prereqVals(cap_obj, cap_entry);
+    if (result != ACVP_SUCCESS) return result;
+
     json_object_set_value(cap_obj, "keyRange1", json_value_init_array());
     temp_arr = json_object_get_array(cap_obj, "keyRange1");
     json_array_append_number(temp_arr, cap_entry->cap.hmac_cap->key_range_1[0]);
@@ -2016,8 +2023,7 @@ static ACVP_RESULT acvp_build_hmac_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
     json_array_append_number(temp_arr, cap_entry->cap.hmac_cap->key_range_2[0]);
     json_array_append_number(temp_arr, cap_entry->cap.hmac_cap->key_range_2[1]);
 
-    json_object_set_string(cap_obj, "keyBlock", cap_entry->cap.hmac_cap->key_block ? "yes" : "no" );
-    json_object_set_string(cap_obj, "inEmpty", cap_entry->cap.hmac_cap->in_empty ? "yes" : "no" );
+    json_object_set_boolean(cap_obj, "keyBlock", cap_entry->cap.hmac_cap->key_block);
 
     /*
      * Set the supported mac lengths
@@ -2030,9 +2036,6 @@ static ACVP_RESULT acvp_build_hmac_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
       sl_list = sl_list->next;
     }
 
-    result = acvp_lookup_prereqVals(cap_obj, cap_entry);
-    if (result != ACVP_SUCCESS) return result;
-
     return ACVP_SUCCESS;
 }
 
@@ -2044,14 +2047,19 @@ static ACVP_RESULT acvp_build_cmac_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
     ACVP_RESULT result;
 
     json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
+    result = acvp_lookup_prereqVals(cap_obj, cap_entry);
+    if(result != ACVP_SUCCESS) return result;
+
+    json_object_set_value(cap_obj, "direction", json_value_init_array());
+    temp_arr = json_object_get_array(cap_obj, "direction");
+    if (cap_entry->cap.cmac_cap->direction_gen) json_array_append_string(temp_arr, "gen");
+    if (cap_entry->cap.cmac_cap->direction_ver) json_array_append_string(temp_arr, "ver");
+
     json_object_set_value(cap_obj, "msgLen", json_value_init_array());
     temp_arr = json_object_get_array(cap_obj, "msgLen");
-
     for (i = 0; i < CMAC_MSG_LEN_NUM_ITEMS; i++) {
       json_array_append_number(temp_arr, cap_entry->cap.cmac_cap->msg_len[i]);
     }
-
-    json_object_set_string(cap_obj, "inEmpty", cap_entry->cap.cmac_cap->in_empty ? "yes" : "no" );
 
     /*
      * Set the supported mac lengths
@@ -2063,9 +2071,6 @@ static ACVP_RESULT acvp_build_cmac_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
       json_array_append_number(temp_arr, sl_list->length);
       sl_list = sl_list->next;
     }
-
-    result = acvp_lookup_prereqVals(cap_obj, cap_entry);
-    if(result != ACVP_SUCCESS) return result;
 
     return ACVP_SUCCESS;
 }
@@ -2092,11 +2097,11 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
     mode_arr = json_object_get_array(cap_obj, "direction");
     if (sym_cap->direction == ACVP_DIR_ENCRYPT ||
         sym_cap->direction == ACVP_DIR_BOTH) {
-	json_array_append_string(mode_arr, "encrypt");
+        json_array_append_string(mode_arr, "encrypt");
     }
     if (sym_cap->direction == ACVP_DIR_DECRYPT ||
         sym_cap->direction == ACVP_DIR_BOTH) {
-	json_array_append_string(mode_arr, "decrypt");
+        json_array_append_string(mode_arr, "decrypt");
     }
 
     /*
@@ -2104,14 +2109,14 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
      */
     switch(sym_cap->ivgen_source) {
     case ACVP_IVGEN_SRC_INT:
-	json_object_set_string(cap_obj, "ivGen", "internal");
-	break;
+        json_object_set_string(cap_obj, "ivGen", "internal");
+        break;
     case ACVP_IVGEN_SRC_EXT:
-	json_object_set_string(cap_obj, "ivGen", "external");
-	break;
+        json_object_set_string(cap_obj, "ivGen", "external");
+        break;
     default:
-	/* do nothing, this is an optional capability */
-	break;
+        /* do nothing, this is an optional capability */
+        break;
     }
 
     /*
@@ -2119,14 +2124,14 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
      */
     switch(sym_cap->ivgen_mode) {
     case ACVP_IVGEN_MODE_821:
-	json_object_set_string(cap_obj, "ivGenMode", "8.2.1");
-	break;
+        json_object_set_string(cap_obj, "ivGenMode", "8.2.1");
+        break;
     case ACVP_IVGEN_MODE_822:
-	json_object_set_string(cap_obj, "ivGenMode", "8.2.2");
-	break;
+        json_object_set_string(cap_obj, "ivGenMode", "8.2.2");
+        break;
     default:
-	/* do nothing, this is an optional capability */
-	break;
+        /* do nothing, this is an optional capability */
+        break;
     }
 
     /*
@@ -2134,14 +2139,14 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
      */
     if (sym_cap->keying_option != ACVP_KO_NA) {
         json_object_set_value(cap_obj, "keyingOption", json_value_init_array());
-    	opts_arr = json_object_get_array(cap_obj, "keyingOption");
+      	opts_arr = json_object_get_array(cap_obj, "keyingOption");
         if (sym_cap->keying_option == ACVP_KO_THREE ||
             sym_cap->keying_option == ACVP_KO_BOTH) {
-	    json_array_append_number(opts_arr, 1);
+            json_array_append_number(opts_arr, 1);
         }
     	if (sym_cap->keying_option == ACVP_KO_TWO ||
             sym_cap->keying_option == ACVP_KO_BOTH) {
-	    json_array_append_number(opts_arr, 2);
+            json_array_append_number(opts_arr, 2);
         }
     }
     /*
@@ -2151,8 +2156,8 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
     opts_arr = json_object_get_array(cap_obj, "keyLen");
     sl_list = sym_cap->keylen;
     while (sl_list) {
-	json_array_append_number(opts_arr, sl_list->length);
-	sl_list = sl_list->next;
+        json_array_append_number(opts_arr, sl_list->length);
+        sl_list = sl_list->next;
     }
 
     /*
@@ -2160,11 +2165,11 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
      */
     if ((cap_entry->cipher == ACVP_AES_GCM) || (cap_entry->cipher == ACVP_AES_CCM)) {
         json_object_set_value(cap_obj, "tagLen", json_value_init_array());
-    	opts_arr = json_object_get_array(cap_obj, "tagLen");
-    	sl_list = sym_cap->taglen;
-    	while (sl_list) {
-	   json_array_append_number(opts_arr, sl_list->length);
-	   sl_list = sl_list->next;
+        opts_arr = json_object_get_array(cap_obj, "tagLen");
+        sl_list = sym_cap->taglen;
+        while (sl_list) {
+           json_array_append_number(opts_arr, sl_list->length);
+           sl_list = sl_list->next;
         }
     }
 
@@ -2172,30 +2177,30 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
      * Set the supported IV lengths
      */
     switch (cap_entry->cipher)
-        {
-        case ACVP_TDES_ECB:
-        case ACVP_TDES_CBC:
-        case ACVP_TDES_CBCI:
-        case ACVP_TDES_OFB:
-        case ACVP_TDES_OFBI:
-        case ACVP_TDES_CFB1:
-        case ACVP_TDES_CFB8:
-        case ACVP_TDES_CFB64:
-        case ACVP_TDES_CFBP1:
-        case ACVP_TDES_CFBP8:
-        case ACVP_TDES_CFBP64:
-        case ACVP_TDES_CTR:
-    	case ACVP_TDES_KW:
-	    break;
-	default:
-    	    json_object_set_value(cap_obj, "ivLen", json_value_init_array());
-    	    opts_arr = json_object_get_array(cap_obj, "ivLen");
-    	    sl_list = sym_cap->ivlen;
-    	    while (sl_list) {
-	        json_array_append_number(opts_arr, sl_list->length);
-		sl_list = sl_list->next;
-            }
+    {
+    case ACVP_TDES_ECB:
+    case ACVP_TDES_CBC:
+    case ACVP_TDES_CBCI:
+    case ACVP_TDES_OFB:
+    case ACVP_TDES_OFBI:
+    case ACVP_TDES_CFB1:
+    case ACVP_TDES_CFB8:
+    case ACVP_TDES_CFB64:
+    case ACVP_TDES_CFBP1:
+    case ACVP_TDES_CFBP8:
+    case ACVP_TDES_CFBP64:
+    case ACVP_TDES_CTR:
+  	case ACVP_TDES_KW:
+        break;
+    default:
+        json_object_set_value(cap_obj, "ivLen", json_value_init_array());
+        opts_arr = json_object_get_array(cap_obj, "ivLen");
+        sl_list = sym_cap->ivlen;
+        while (sl_list) {
+            json_array_append_number(opts_arr, sl_list->length);
+            sl_list = sl_list->next;
         }
+    }
     /*
      * Set the supported plaintext lengths
      */
@@ -2203,8 +2208,8 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
     opts_arr = json_object_get_array(cap_obj, "ptLen");
     sl_list = sym_cap->ptlen;
     while (sl_list) {
-	json_array_append_number(opts_arr, sl_list->length);
-	sl_list = sl_list->next;
+        json_array_append_number(opts_arr, sl_list->length);
+        sl_list = sl_list->next;
     }
 
     /*
@@ -2212,11 +2217,11 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
      */
     if ((cap_entry->cipher == ACVP_AES_GCM) || (cap_entry->cipher == ACVP_AES_CCM)) {
         json_object_set_value(cap_obj, "aadLen", json_value_init_array());
-    	opts_arr = json_object_get_array(cap_obj, "aadLen");
-    	sl_list = sym_cap->aadlen;
-    	while (sl_list) {
-	    json_array_append_number(opts_arr, sl_list->length);
-	    sl_list = sl_list->next;
+        opts_arr = json_object_get_array(cap_obj, "aadLen");
+        sl_list = sym_cap->aadlen;
+        while (sl_list) {
+            json_array_append_number(opts_arr, sl_list->length);
+            sl_list = sl_list->next;
         }
     }
     return ACVP_SUCCESS;
@@ -2333,13 +2338,13 @@ static ACVP_RESULT acvp_build_drbg_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
     drbg_cap_mode = &cap_entry->cap.drbg_cap->drbg_cap_mode_list->cap_mode;
     json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
     json_object_set_string(cap_obj, "mode", mode_str);
-    json_object_set_string(cap_obj, "derFuncEnabled", drbg_cap_mode->der_func_enabled ? "yes" : "no" );
+    json_object_set_boolean(cap_obj, "derFuncEnabled", drbg_cap_mode->der_func_enabled);
 
     result = acvp_lookup_drbg_prereqVals(cap_obj, drbg_cap_mode);
     if (result != ACVP_SUCCESS) return result;
 
-    json_object_set_string(cap_obj, "predResistanceEnabled", drbg_cap_mode->pred_resist_enabled  ? "yes" : "no" );
-    json_object_set_string(cap_obj, "reseedImplemented",     drbg_cap_mode->reseed_implemented  ? "yes" : "no" );
+    json_object_set_boolean(cap_obj, "predResistanceEnabled", drbg_cap_mode->pred_resist_enabled);
+    json_object_set_boolean(cap_obj, "reseedImplemented",     drbg_cap_mode->reseed_implemented);
 
     //Set entropy range
     len_val = json_value_init_object();
