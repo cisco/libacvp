@@ -230,12 +230,12 @@ typedef struct acvp_hmac_capability {
     int                       key_range_1[2];      //":"65536"
     int                       key_range_2[2];      //":"65536"
     int                       key_block;        // boolean
-    int                       in_empty;         // boolean
     ACVP_SL_LIST              *mac_len;
 } ACVP_HMAC_CAP;
 
 typedef struct acvp_cmac_capability {
-    int                       in_empty;         // boolean
+    int                       direction_gen; // boolean
+    int                       direction_ver; // boolean
     ACVP_SL_LIST              *mac_len;
     int                       msg_len[5];
 } ACVP_CMAC_CAP;
