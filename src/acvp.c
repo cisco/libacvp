@@ -143,7 +143,7 @@ ACVP_ALG_HANDLER alg_tbl[ACVP_ALG_MAX] = {
     {ACVP_CMAC_TDES,       &acvp_cmac_kat_handler,  ACVP_ALG_CMAC_TDES},
     {ACVP_RSA,             &acvp_rsa_kat_handler,   ACVP_ALG_RSA},
     {ACVP_KDF135_TLS,      &acvp_kdf135_tls_kat_handler,  ACVP_ALG_KDF135_TLS},
-    {ACVP_KDF135_SNMP,     &acvp_kdf135_tls_kat_handler, ACVP_ALG_KDF135_SNMP}
+    {ACVP_KDF135_SNMP,     &acvp_kdf135_snmp_kat_handler, ACVP_ALG_KDF135_SNMP}
 };
 
 #define ACVP_NUM_PREREQS 5
