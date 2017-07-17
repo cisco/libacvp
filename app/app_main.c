@@ -50,7 +50,9 @@
 #include <openssl/rsa.h>
 #include <openssl/bn.h>
 #include <openssl/rand.h>
+#ifdef OPENSSL_KDF_SUPPORT
 #include <openssl/kdf.h>
+#endif
 #include <openssl/dsa.h>
 
 #ifdef ACVP_NO_RUNTIME
@@ -78,8 +80,10 @@ static ACVP_RESULT app_hmac_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_cmac_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_rsa_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_dsa_handler(ACVP_TEST_CASE *test_case);
+#ifdef OPENSSL_KDF_SUPPORT
 static ACVP_RESULT app_kdf135_tls_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_kdf135_snmp_handler(ACVP_TEST_CASE *test_case);
+#endif
 #ifdef ACVP_NO_RUNTIME
 static ACVP_RESULT app_drbg_handler(ACVP_TEST_CASE *test_case);
 #endif
@@ -607,11 +611,13 @@ int main(int argc, char **argv)
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_cmac_cap_parm(ctx, ACVP_CMAC_AES_128, ACVP_CMAC_BLK_NOT_DIVISIBLE_1, 2048);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_cmac_cap_parm(ctx, ACVP_CMAC_AES_128, ACVP_CMAC_IN_EMPTY, 1);
-    CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_cmac_cap_parm(ctx, ACVP_CMAC_AES_128, ACVP_CMAC_MACLEN, 64);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_cmac_cap_parm(ctx, ACVP_CMAC_AES_128, ACVP_CMAC_MACLEN, 256);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_cmac_cap_parm(ctx, ACVP_CMAC_AES_128, ACVP_CMAC_DIRECTION_GEN, 1);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_cmac_cap_parm(ctx, ACVP_CMAC_AES_128, ACVP_CMAC_DIRECTION_VER, 1);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_prereq_cap(ctx, ACVP_CMAC_AES_128, ACVP_PREREQ_AES, value);
     CHECK_ENABLE_CAP_RV(rv);
@@ -631,8 +637,6 @@ int main(int argc, char **argv)
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA1, ACVP_HMAC_KEYBLOCK, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA1, ACVP_HMAC_IN_EMPTY, 1);
-    CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA1, ACVP_HMAC_MACLEN, 20);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_prereq_cap(ctx, ACVP_HMAC_SHA1, ACVP_PREREQ_SHA, value);
@@ -649,8 +653,6 @@ int main(int argc, char **argv)
     rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA2_224, ACVP_HMAC_KEYRANGE2_MAX, 256);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA2_224, ACVP_HMAC_KEYBLOCK, 0);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA2_224, ACVP_HMAC_IN_EMPTY, 1);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA2_224, ACVP_HMAC_MACLEN, 28);
     CHECK_ENABLE_CAP_RV(rv);
@@ -669,8 +671,6 @@ int main(int argc, char **argv)
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA2_256, ACVP_HMAC_KEYBLOCK, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA2_256, ACVP_HMAC_IN_EMPTY, 1);
-    CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA2_256, ACVP_HMAC_MACLEN, 32);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_prereq_cap(ctx, ACVP_HMAC_SHA2_256, ACVP_PREREQ_SHA, value);
@@ -687,8 +687,6 @@ int main(int argc, char **argv)
     rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA2_384, ACVP_HMAC_KEYRANGE2_MAX, 256);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA2_384, ACVP_HMAC_KEYBLOCK, 0);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA2_384, ACVP_HMAC_IN_EMPTY, 1);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA2_384, ACVP_HMAC_MACLEN, 48);
     CHECK_ENABLE_CAP_RV(rv);
@@ -707,15 +705,13 @@ int main(int argc, char **argv)
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA2_512, ACVP_HMAC_KEYBLOCK, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA2_512, ACVP_HMAC_IN_EMPTY, 1);
-    CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA2_512, ACVP_HMAC_MACLEN, 64);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_prereq_cap(ctx, ACVP_HMAC_SHA2_512, ACVP_PREREQ_SHA, value);
     CHECK_ENABLE_CAP_RV(rv);
 #endif
 
-#if 0 /* until supported on the server */
+#ifdef OPENSSL_KDF_SUPPORT
    /*
     * Enable KDF-135
     */
@@ -1751,6 +1747,7 @@ static ACVP_RESULT app_hmac_handler(ACVP_TEST_CASE *test_case)
     return ACVP_SUCCESS;
 }
 
+#ifdef OPENSSL_KDF_SUPPORT
 static ACVP_RESULT app_kdf135_tls_handler(ACVP_TEST_CASE *test_case)
 {
     ACVP_KDF135_TLS_TC	*tc;
@@ -1897,6 +1894,7 @@ static ACVP_RESULT app_kdf135_snmp_handler(ACVP_TEST_CASE *test_case)
 
     return ACVP_SUCCESS;
 }
+#endif
 
 static ACVP_RESULT app_cmac_handler(ACVP_TEST_CASE *test_case)
 {

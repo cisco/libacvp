@@ -235,23 +235,23 @@ typedef struct acvp_kdf135_snmp_capability {
 typedef struct acvp_hmac_capability {
     int                       key_range_1[2];      //":"65536"
     int                       key_range_2[2];      //":"65536"
-    int                       key_block;        //":"yes"
-    int                       in_empty;         //":"yes"
+    int                       key_block;        // boolean
     ACVP_SL_LIST              *mac_len;
 } ACVP_HMAC_CAP;
 
 typedef struct acvp_cmac_capability {
-    int                       in_empty;         //":"yes"
+    int                       direction_gen; // boolean
+    int                       direction_ver; // boolean
     ACVP_SL_LIST              *mac_len;
     int                       msg_len[5];
 } ACVP_CMAC_CAP;
 
 typedef struct acvp_drbg_cap_mode {
     ACVP_DRBG_MODE   mode;                   //"3KeyTDEA",
-    int              der_func_enabled;       //":"yes",
+    int              der_func_enabled;       // boolean
     ACVP_PREREQ_LIST *prereq_vals;
-    int              pred_resist_enabled;    //": "yes",
-    int              reseed_implemented;     //" : "yes",
+    int              pred_resist_enabled;    // boolean
+    int              reseed_implemented;     // boolean
     int              entropy_input_len;      //":"112",
     int              entropy_len_max;
     int              entropy_len_min;
@@ -312,7 +312,7 @@ typedef struct acvp_rsa_keygen_attrs_t {
     int pub_exp;                             // 0 - random, 1 - fixed
     BIGNUM *fixed_pub_exp_val;               // hex value of e
     int rand_pq;                             // as defined in FIPS186-4
-    int info_gen_by_server;                  // "yes" or "no"
+    int info_gen_by_server;                  // boolean
     ACVP_RSA_PRIMES_LIST *cap_primes_list;
 } ACVP_RSA_KEYGEN_ATTRS;
 
@@ -328,6 +328,7 @@ typedef struct acvp_rsa_capability {
   ACVP_CIPHER               cipher;
   ACVP_RSA_CAP_MODE_LIST *rsa_cap_mode_list;
 } ACVP_RSA_CAP;
+
 
 typedef struct acvp_dsa_pqggen_attrs {
    int modulo;
