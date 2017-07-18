@@ -58,7 +58,7 @@
 } while (0)
 #endif
 
-#define ACVP_ALG_MAX 51  /* Used by alg_tbl[] */
+#define ACVP_ALG_MAX 52  /* Used by alg_tbl[] */
 
 #define ACVP_ALG_AES_ECB             "AES-ECB"
 #define ACVP_ALG_AES_CBC             "AES-CBC"
@@ -110,6 +110,9 @@
 #define ACVP_ALG_CMAC_AES_256        "CMAC-AES-256"
 #define ACVP_ALG_CMAC_TDES           "CMAC-TDES"
 
+#define ACVP_ALG_DSA                 "DSA2"
+#define ACVP_DSA_PQGGEN              "pqgGen"
+
 #define ACVP_ALG_RSA                 "RSA"
 #define ACVP_RSA_KEYGEN              "keyGen"
 #define ACVP_RSA_SIGVER              "sigVer"
@@ -159,6 +162,9 @@
 #define ACVP_CMAC_MSG_MAX       1024
 #define ACVP_CMAC_MAC_MAX       64
 #define ACVP_CMAC_KEY_MAX       256
+
+#define ACVP_DSA_PQG_MAX        4096
+#define ACVP_DSA_SEED_MAX       128
 
 #define ACVP_RSA_SEEDLEN_MAX    64
 
@@ -323,6 +329,31 @@ typedef struct acvp_rsa_capability {
   ACVP_RSA_CAP_MODE_LIST *rsa_cap_mode_list;
 } ACVP_RSA_CAP;
 
+
+typedef struct acvp_dsa_pqggen_attrs {
+   int modulo;
+   int sha;
+   struct acvp_dsa_pqggen_attrs *next;
+} ACVP_DSA_PQGGEN_ATTRS;
+
+#define ACVP_DSA_MAX_MODES 5
+typedef struct acvp_dsa_cap_mode_t {
+    ACVP_DSA_MODE cap_mode;
+    int gen_pq_prob;
+    int gen_pq_prov;
+    int gen_g_unv;
+    int gen_g_can;
+    union {
+        ACVP_DSA_PQGGEN_ATTRS *pqggen;
+    } cap_mode_attrs;
+} ACVP_DSA_CAP_MODE;
+
+
+typedef struct acvp_dsa_capability {
+  ACVP_CIPHER               cipher;
+  ACVP_DSA_CAP_MODE *dsa_cap_mode;
+} ACVP_DSA_CAP;
+
 typedef struct acvp_caps_list_t {
     ACVP_CIPHER       cipher;
     ACVP_CAP_TYPE     cap_type;
@@ -331,6 +362,7 @@ typedef struct acvp_caps_list_t {
       ACVP_SYM_CIPHER_CAP   *sym_cap;
       ACVP_HASH_CAP         *hash_cap;
       ACVP_DRBG_CAP         *drbg_cap;
+      ACVP_DSA_CAP          *dsa_cap;
       ACVP_HMAC_CAP         *hmac_cap;
       ACVP_CMAC_CAP         *cmac_cap;
       ACVP_RSA_CAP          *rsa_cap;
@@ -407,6 +439,7 @@ ACVP_RESULT acvp_cmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 ACVP_RESULT acvp_rsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 ACVP_RESULT acvp_kdf135_tls_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 ACVP_RESULT acvp_kdf135_snmp_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
+ACVP_RESULT acvp_dsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
 /*
  * ACVP utility functions used internally

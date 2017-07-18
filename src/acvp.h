@@ -129,6 +129,7 @@ typedef enum acvp_sym_cipher {
     ACVP_CMAC_AES_256,
     ACVP_CMAC_TDES,
     ACVP_RSA,
+    ACVP_DSA,
     ACVP_KDF135_TLS,
     ACVP_KDF135_SNMP,
     ACVP_CIPHER_END
@@ -169,6 +170,7 @@ typedef enum acvp_capability_type {
     ACVP_HMAC_TYPE,
     ACVP_CMAC_TYPE,
     ACVP_RSA_TYPE,
+    ACVP_DSA_TYPE,
     ACVP_KDF135_TLS_TYPE,
     ACVP_KDF135_SNMP_TYPE
 } ACVP_CAP_TYPE;
@@ -570,6 +572,65 @@ typedef struct acvp_rsa_tc_t {
     ACVP_RSA_KEYGEN_TC *keygen_tc;
 } ACVP_RSA_TC;
 
+typedef enum acvp_dsa_mode {
+    ACVP_DSA_MODE_PQGGEN = 1
+} ACVP_DSA_MODE;
+
+/* These are used as bit flags */
+typedef enum acvp_dsa_sha {
+    ACVP_DSA_SHA1 = 1,
+    ACVP_DSA_SHA224 = 2,
+    ACVP_DSA_SHA256 = 4,
+    ACVP_DSA_SHA384 = 8,
+    ACVP_DSA_SHA512 = 16,
+    ACVP_DSA_SHA512_224 = 32,
+    ACVP_DSA_SHA512_256 = 64,
+} ACVP_DSA_SHA;
+
+typedef enum acvp_dsa_parm {
+    ACVP_DSA_LN2048_224 = 1,
+    ACVP_DSA_LN2048_256,
+    ACVP_DSA_LN3072_256,
+    ACVP_DSA_GENPQ,
+    ACVP_DSA_GENG
+} ACVP_DSA_PARM;
+
+typedef enum acvp_dsa_gen_parm {
+    ACVP_DSA_PROVABLE = 1,
+    ACVP_DSA_PROBABLE,
+    ACVP_DSA_CANONICAL,
+    ACVP_DSA_UNVERIFIABLE
+} ACVP_DSA_GEN_PARM;
+
+/*
+ * This struct holds data that represents a single test case
+ * for DSA testing.  This data is
+ * passed between libacvp and the crypto module.
+ */
+typedef struct acvp_dsa_pqggen_tc_t {
+    int l;
+    int n;
+    int h;
+    int sha;
+    int gen_pq;
+    int num;
+    int index;
+    int seedlen;
+    unsigned char *p;
+    unsigned char *q;
+    unsigned char *g;
+    unsigned char *seed;
+    int counter;
+} ACVP_DSA_PQGGEN_TC;
+
+typedef struct acvp_dsa_tc_t {
+    ACVP_CIPHER cipher;
+    ACVP_DSA_MODE mode; // "pqgGen", "pqgVer", etc.
+    union {
+        ACVP_DSA_PQGGEN_TC *pqggen;
+    } mode_tc;
+} ACVP_DSA_TC;
+
 /*
  * This struct holds data that represents a single test case
  * for DRBG testing.  This data is
@@ -613,6 +674,7 @@ typedef struct acvp_cipher_tc_t {
         ACVP_ENTROPY_TC     *entropy;
         ACVP_HASH_TC        *hash;
         ACVP_DRBG_TC        *drbg;
+        ACVP_DSA_TC         *dsa;
         ACVP_HMAC_TC        *hmac;
         ACVP_CMAC_TC        *cmac;
         ACVP_RSA_TC         *rsa;
@@ -789,6 +851,35 @@ ACVP_RESULT acvp_enable_drbg_length_cap(
                              int               min,
                              int               step,
                              int               max);
+
+/*! @brief acvp_enable_dsa_cap()
+
+  This function should be used to enable DSA capabilities. Specific modes
+  and parameters can use acvp_enable_rsa_cap_parm, acvp_enable_rsa_bignum_parm,
+  acvp_enable_rsa_primes_parm depending on the need.
+
+   When the application enables a crypto capability, such as RSA, it
+   also needs to specify a callback function that will be used by libacvp
+   when that crypto capability is needed during a test session.
+
+   @param ctx Address of pointer to a previously allocated ACVP_CTX.
+   @param cipher ACVP_CIPHER enum value identifying the crypto capability.
+   @param crypto_handler Address of function implemented by application that
+      is invoked by libacvp when the crypto capablity is needed during
+      a test session.
+
+   @return ACVP_RESULT
+*/
+ACVP_RESULT acvp_enable_dsa_cap(
+                                ACVP_CTX *ctx,
+                                ACVP_CIPHER cipher,
+                                ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case));
+
+ACVP_RESULT acvp_enable_dsa_cap_parm(ACVP_CTX *ctx,
+                             ACVP_CIPHER cipher,
+                             ACVP_DSA_MODE mode,
+                             ACVP_DSA_PARM param,
+                             int value);
 
 /*! @brief acvp_enable_rsa_cap()
 
