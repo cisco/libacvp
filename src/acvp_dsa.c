@@ -202,7 +202,7 @@ static ACVP_RESULT acvp_dsa_release_tc(ACVP_DSA_TC *stc)
 ACVP_RESULT acvp_dsa_pqggen_handler (ACVP_CTX *ctx, ACVP_TEST_CASE tc, ACVP_CAPS_LIST *cap,
                                      JSON_Array *r_tarr, JSON_Object *groupobj)
 {
-    unsigned char       *ln, *gen_pq, *sha, *index;
+    unsigned char       *ln = NULL, *gen_pq = NULL, *sha = NULL, *index = NULL, *gen_g = NULL;
     JSON_Array          *tests;
     JSON_Value          *testval;
     JSON_Object         *testobj = NULL;
@@ -220,10 +220,16 @@ ACVP_RESULT acvp_dsa_pqggen_handler (ACVP_CTX *ctx, ACVP_TEST_CASE tc, ACVP_CAPS
     ACVP_DSA_TC         *stc;
 
     gen_pq = (unsigned char *)json_object_get_string(groupobj, "genPQ");   
+    gen_g = (unsigned char *)json_object_get_string(groupobj, "genG");   
     ln = (unsigned char *)json_object_get_string(groupobj, "ln");   
     sha = (unsigned char *)json_object_get_string(groupobj, "sha");   
 
-    ACVP_LOG_INFO("         genPQ: %s", gen_pq);
+    if (gen_pq) {
+        ACVP_LOG_INFO("         genPQ: %s", gen_pq);
+    }
+    if (gen_g) {
+        ACVP_LOG_INFO("          genG: %s", gen_g);
+    }
     ACVP_LOG_INFO("            ln: %s", ln);
     ACVP_LOG_INFO("           sha: %s", sha);
 
@@ -241,7 +247,7 @@ ACVP_RESULT acvp_dsa_pqggen_handler (ACVP_CTX *ctx, ACVP_TEST_CASE tc, ACVP_CAPS
 
         ACVP_LOG_INFO("       Test case: %d", j);
         ACVP_LOG_INFO("            tcId: %d", tc_id);
-        if (!strncmp((char *)gen_pq, "canonical", 9)) {
+        if (!strncmp((char *)gen_g, "canonical", 9)) {
             p = (unsigned char *)json_object_get_string(testobj, "p");
             q = (unsigned char *)json_object_get_string(testobj, "q");
             seed = (unsigned char *)json_object_get_string(testobj, "seed");
@@ -254,7 +260,7 @@ ACVP_RESULT acvp_dsa_pqggen_handler (ACVP_CTX *ctx, ACVP_TEST_CASE tc, ACVP_CAPS
         }
 
         /* find the mode */
-        if (!strncmp((char *)gen_pq, "unverifiable", 12)) {
+        if (!strncmp((char *)gen_g, "unverifiable", 12)) {
             p = (unsigned char *)json_object_get_string(testobj, "p");
             q = (unsigned char *)json_object_get_string(testobj, "q");
             gpq = ACVP_DSA_UNVERIFIABLE;
