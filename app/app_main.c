@@ -80,6 +80,7 @@ static ACVP_RESULT app_hmac_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_cmac_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_rsa_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_dsa_handler(ACVP_TEST_CASE *test_case);
+
 #ifdef OPENSSL_KDF_SUPPORT
 static ACVP_RESULT app_kdf135_tls_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_kdf135_snmp_handler(ACVP_TEST_CASE *test_case);
@@ -765,7 +766,6 @@ int main(int argc, char **argv)
     rv = acvp_enable_dsa_cap_parm(ctx, ACVP_DSA, ACVP_DSA_MODE_PQGGEN, ACVP_DSA_LN3072_256, ACVP_DSA_SHA256);
     CHECK_ENABLE_CAP_RV(rv);
 #endif
-
 
 #ifdef ACVP_NO_RUNTIME
 
@@ -1949,6 +1949,7 @@ static ACVP_RESULT app_cmac_handler(ACVP_TEST_CASE *test_case)
 
     return ACVP_SUCCESS;
 }
+#endif 
 
 static ACVP_RESULT app_dsa_handler(ACVP_TEST_CASE *test_case)
 {
