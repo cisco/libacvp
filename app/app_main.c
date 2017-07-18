@@ -719,16 +719,16 @@ int main(int argc, char **argv)
 
    rv = acvp_enable_kdf135_tls_cap(ctx, ACVP_KDF135_TLS, &app_kdf135_tls_handler);
    CHECK_ENABLE_CAP_RV(rv);
-   rv = acvp_enable_kdf135_tls_prereq_cap(ctx, ACVP_KDF135_TLS, ACVP_KDF135_TLS_PREREQ_SHA, value);
+   rv = acvp_enable_prereq_cap(ctx, ACVP_KDF135_TLS, ACVP_PREREQ_SHA, value);
    CHECK_ENABLE_CAP_RV(rv);
-   rv = acvp_enable_kdf135_tls_prereq_cap(ctx, ACVP_KDF135_TLS, ACVP_KDF135_TLS_PREREQ_HMAC, value);
+   rv = acvp_enable_prereq_cap(ctx, ACVP_KDF135_TLS, ACVP_PREREQ_HMAC, value);
    CHECK_ENABLE_CAP_RV(rv);
    rv = acvp_enable_kdf135_tls_cap_parm(ctx, ACVP_KDF135_TLS, ACVP_KDF135_TLS12, ACVP_KDF135_TLS_CAP_SHA256 | ACVP_KDF135_TLS_CAP_SHA384 | ACVP_KDF135_TLS_CAP_SHA512);
    CHECK_ENABLE_CAP_RV(rv);
 
    rv = acvp_enable_kdf135_snmp_cap(ctx, &app_kdf135_snmp_handler);
    CHECK_ENABLE_CAP_RV(rv);
-   rv = acvp_enable_kdf135_snmp_prereq_cap(ctx, ACVP_KDF135_TLS_PREREQ_SHA, value);
+   rv = acvp_enable_prereq_cap(ctx, ACVP_KDF135_SNMP, ACVP_PREREQ_SHA, value);
    CHECK_ENABLE_CAP_RV(rv);
 #endif
 
@@ -1949,7 +1949,6 @@ static ACVP_RESULT app_cmac_handler(ACVP_TEST_CASE *test_case)
 
     return ACVP_SUCCESS;
 }
-#endif 
 
 static ACVP_RESULT app_dsa_handler(ACVP_TEST_CASE *test_case)
 {
