@@ -521,6 +521,7 @@ ACVP_RESULT acvp_enable_prereq_cap(ACVP_CTX *ctx,
         return ACVP_NO_CAP;
     }
 
+    cap_list->has_prereq = 1;     /* make sure this is set */
     /*
      * Add the value to the cap
      */
@@ -1974,6 +1975,7 @@ static ACVP_RESULT acvp_lookup_prereqVals (JSON_Object *cap_obj, ACVP_CAPS_LIST 
 
     if(!cap_entry) return ACVP_INVALID_ARG;
 
+    if (!cap_entry->has_prereq) return ACVP_SUCCESS;
     /*
      * Init json array
      */
@@ -2205,7 +2207,15 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
     case ACVP_TDES_CFBP8:
     case ACVP_TDES_CFBP64:
     case ACVP_TDES_CTR:
-  	case ACVP_TDES_KW:
+    case ACVP_TDES_KW:
+    case ACVP_AES_ECB:
+    case ACVP_AES_CFB1:
+    case ACVP_AES_CFB8:
+    case ACVP_AES_CFB128:
+    case ACVP_AES_OFB:
+    case ACVP_AES_CBC:
+    case ACVP_AES_KW:
+    case ACVP_AES_CTR:
         break;
     default:
         json_object_set_value(cap_obj, "ivLen", json_value_init_array());

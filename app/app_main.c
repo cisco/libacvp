@@ -562,10 +562,10 @@ int main(int argc, char **argv)
    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_TDES_CFB1, ACVP_SYM_CIPH_PTLEN, 64);
    CHECK_ENABLE_CAP_RV(rv);
 #endif
+
    /*
     * Enable SHA-1 and SHA-2
     */
-
    rv = acvp_enable_hash_cap(ctx, ACVP_SHA1, &app_sha_handler);
    CHECK_ENABLE_CAP_RV(rv);
    rv = acvp_enable_hash_cap_parm(ctx, ACVP_SHA1, ACVP_HASH_IN_BIT, 0);
@@ -1139,6 +1139,10 @@ static ACVP_RESULT app_des_handler(ACVP_TEST_CASE *test_case)
           EVP_EncryptInit_ex(&cipher_ctx, cipher, NULL, tc->key, iv);
         	EVP_CIPHER_CTX_set_padding(&cipher_ctx, 0);
             }
+     if (tc->cipher == ACVP_TDES_CFB1) {
+           EVP_CIPHER_CTX_set_flags(&cipher_ctx, EVP_CIPH_FLAG_LENGTH_BITS);
+     }
+
       EVP_EncryptUpdate(&cipher_ctx, tc->ct, &ct_len, tc->pt, tc->pt_len);
       tc->ct_len = ct_len;
         } else if (tc->direction == ACVP_DIR_DECRYPT) {
@@ -1146,6 +1150,9 @@ static ACVP_RESULT app_des_handler(ACVP_TEST_CASE *test_case)
           EVP_DecryptInit_ex(&cipher_ctx, cipher, NULL, tc->key, iv);
         	EVP_CIPHER_CTX_set_padding(&cipher_ctx, 0);
             }
+     if (tc->cipher == ACVP_TDES_CFB1) {
+           EVP_CIPHER_CTX_set_flags(&cipher_ctx, EVP_CIPH_FLAG_LENGTH_BITS);
+     }
       EVP_DecryptUpdate(&cipher_ctx, tc->pt, &pt_len, tc->ct, tc->ct_len);
       tc->pt_len = pt_len;
         } else {
@@ -1159,6 +1166,9 @@ static ACVP_RESULT app_des_handler(ACVP_TEST_CASE *test_case)
         if (tc->direction == ACVP_DIR_ENCRYPT) {
       EVP_EncryptInit_ex(&cipher_ctx, cipher, NULL, tc->key, iv);
       EVP_CIPHER_CTX_set_padding(&cipher_ctx, 0);
+     if (tc->cipher == ACVP_TDES_CFB1) {
+           EVP_CIPHER_CTX_set_flags(&cipher_ctx, EVP_CIPH_FLAG_LENGTH_BITS);
+     }
       EVP_EncryptUpdate(&cipher_ctx, tc->ct, &ct_len, tc->pt, tc->pt_len);
       tc->ct_len = ct_len;
       EVP_EncryptFinal_ex(&cipher_ctx, tc->ct + ct_len, &ct_len);
@@ -1166,6 +1176,9 @@ static ACVP_RESULT app_des_handler(ACVP_TEST_CASE *test_case)
         } else if (tc->direction == ACVP_DIR_DECRYPT) {
       EVP_DecryptInit_ex(&cipher_ctx, cipher, NULL, tc->key, iv);
       EVP_CIPHER_CTX_set_padding(&cipher_ctx, 0);
+     if (tc->cipher == ACVP_TDES_CFB1) {
+           EVP_CIPHER_CTX_set_flags(&cipher_ctx, EVP_CIPH_FLAG_LENGTH_BITS);
+     }
       EVP_DecryptUpdate(&cipher_ctx, tc->pt, &pt_len, tc->ct, tc->ct_len);
       tc->pt_len = pt_len;
       EVP_DecryptFinal_ex(&cipher_ctx, tc->pt + pt_len, &pt_len);
@@ -1340,6 +1353,9 @@ static ACVP_RESULT app_aes_handler(ACVP_TEST_CASE *test_case)
             if (tc->mct_index == 0) {
           EVP_EncryptInit_ex(&cipher_ctx, cipher, NULL, tc->key, iv);
   EVP_CIPHER_CTX_set_padding(&cipher_ctx, 0);
+     if (tc->cipher == ACVP_AES_CFB1) {
+           EVP_CIPHER_CTX_set_flags(&cipher_ctx, EVP_CIPH_FLAG_LENGTH_BITS);
+     }
             }
       EVP_EncryptUpdate(&cipher_ctx, tc->ct, &ct_len, tc->pt, tc->pt_len);
       tc->ct_len = ct_len;
@@ -1347,6 +1363,9 @@ static ACVP_RESULT app_aes_handler(ACVP_TEST_CASE *test_case)
             if (tc->mct_index == 0) {
           EVP_DecryptInit_ex(&cipher_ctx, cipher, NULL, tc->key, iv);
           EVP_CIPHER_CTX_set_padding(&cipher_ctx, 0);
+     if (tc->cipher == ACVP_AES_CFB1) {
+           EVP_CIPHER_CTX_set_flags(&cipher_ctx, EVP_CIPH_FLAG_LENGTH_BITS);
+     }
             }
       EVP_DecryptUpdate(&cipher_ctx, tc->pt, &pt_len, tc->ct, tc->ct_len);
       tc->pt_len = pt_len;
@@ -1362,6 +1381,9 @@ static ACVP_RESULT app_aes_handler(ACVP_TEST_CASE *test_case)
         if (tc->direction == ACVP_DIR_ENCRYPT) {
       EVP_EncryptInit_ex(&cipher_ctx, cipher, NULL, tc->key, iv);
    	    EVP_CIPHER_CTX_set_padding(&cipher_ctx, 0);
+     if (tc->cipher == ACVP_AES_CFB1) {
+           EVP_CIPHER_CTX_set_flags(&cipher_ctx, EVP_CIPH_FLAG_LENGTH_BITS);
+     }
       EVP_EncryptUpdate(&cipher_ctx, tc->ct, &ct_len, tc->pt, tc->pt_len);
       tc->ct_len = ct_len;
       EVP_EncryptFinal_ex(&cipher_ctx, tc->ct + ct_len, &ct_len);
@@ -1369,6 +1391,9 @@ static ACVP_RESULT app_aes_handler(ACVP_TEST_CASE *test_case)
         } else if (tc->direction == ACVP_DIR_DECRYPT) {
       EVP_DecryptInit_ex(&cipher_ctx, cipher, NULL, tc->key, iv);
       EVP_CIPHER_CTX_set_padding(&cipher_ctx, 0);
+     if (tc->cipher == ACVP_AES_CFB1) {
+           EVP_CIPHER_CTX_set_flags(&cipher_ctx, EVP_CIPH_FLAG_LENGTH_BITS);
+     }
       EVP_DecryptUpdate(&cipher_ctx, tc->pt, &pt_len, tc->ct, tc->ct_len);
       tc->pt_len = pt_len;
       EVP_DecryptFinal_ex(&cipher_ctx, tc->pt + pt_len, &pt_len);
