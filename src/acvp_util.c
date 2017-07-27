@@ -279,6 +279,46 @@ ACVP_RESULT acvp_bin_to_hexstr(const unsigned char *src,
     return ACVP_SUCCESS;
 }
 
+
+
+
+/*
+ * Convert a bit character string from *char ptr to
+ * the destination as a concatenated bit value with bit0 = 0x80
+ */
+ACVP_RESULT acvp_bit_to_bin(const unsigned char *in, int len, unsigned char *out)
+{
+    int n;
+
+    if (!len || !out || !in) {
+        return ACVP_INVALID_ARG;
+    }
+
+    memset(out,0,len);
+    for(n=0 ; n < len ; ++n)
+	if(in[n] == '1')
+	    out[n/8]|=(0x80 >> (n%8));
+
+    return ACVP_SUCCESS;
+}
+
+/*
+ * Convert characters in hexidecimal format from a *char ptr to a 
+ * the destination as a binary bit string
+ */
+ACVP_RESULT acvp_bin_to_bit(const unsigned char *in, int len, unsigned char *out)
+{
+    int n;
+
+    if (!len || !out || !in) {
+        return ACVP_INVALID_ARG;
+    }
+    for(n=0 ; n < len ; ++n)
+	out[n]=(in[n/8]&(0x80 >> (n%8))) ? '1' : '0';
+
+    return ACVP_SUCCESS;
+}
+
 /*
  * Convert a source hexadecimal string to a byte array which is stored
  * in the destination.
