@@ -32,7 +32,6 @@ static ACVP_RESULT acvp_rsa_init_sig_tc(ACVP_CTX *ctx,
                                     ACVP_RSA_SIG_TC *sigtc,
                                     unsigned int tc_id,
                                     ACVP_CIPHER alg_id,
-									char *test_type,
 									char *sig_type,
 									unsigned int modulo,
                                     char *hash_alg,
@@ -47,7 +46,6 @@ static ACVP_RESULT acvp_rsa_init_sig_tc(ACVP_CTX *ctx,
     	/*
     	 * make room for all items
     	 */
-		sigtc->test_type = calloc(RSA_TEST_TYPE_MAX, sizeof(char));
 		sigtc->sig_type = calloc(RSA_SIG_TYPE_MAX, sizeof(char));
 		sigtc->sig_attrs_tc = calloc(1, sizeof(ACVP_RSA_SIG_TC));
 		if (!sigtc->sig_attrs_tc) return ACVP_MALLOC_FAIL;
@@ -64,7 +62,6 @@ static ACVP_RESULT acvp_rsa_init_sig_tc(ACVP_CTX *ctx,
 		/*
 		 * assign value to all items
 		 */
-		sigtc->test_type = test_type;
 		sigtc->sig_type = sig_type;
 		sigtc->sig_attrs_tc->tc_id = tc_id; /***init tc_id in keygen***/
 		sigtc->sig_attrs_tc->modulo = modulo;
@@ -444,7 +441,7 @@ static ACVP_RESULT acvp_kat_rsa_sig(unsigned int tc_id, ACVP_CIPHER alg_id,
     /*
      * Sig attrs for group obj
      */
-    char *test_type, *sig_type;
+    char *sig_type;
 
 
     /*
@@ -464,7 +461,6 @@ static ACVP_RESULT acvp_kat_rsa_sig(unsigned int tc_id, ACVP_CIPHER alg_id,
 	/*
 	 * set group obj -- common to siggen and sigver
 	 */
-	test_type = (char *)json_object_get_string(groupobj, "testType");
 	sig_type = (char *)json_object_get_string(groupobj, "sigType");
 
 	/*
@@ -486,7 +482,7 @@ static ACVP_RESULT acvp_kat_rsa_sig(unsigned int tc_id, ACVP_CIPHER alg_id,
 		 *       the entire vector set to be more efficient
 		 */
 		rv = acvp_rsa_init_sig_tc(ctx, &*sigtc, tc_id, alg_id, /* note: mode is set in kat_handler */
-			    test_type, sig_type, modulo, hash_alg, msg, salt_len); /* siggen attrs */
+			    sig_type, modulo, hash_alg, msg, salt_len); /* siggen attrs */
 		break;
 	}
 //	case ACVP_RSA_MODE_SIGVER:

@@ -1111,7 +1111,8 @@ static ACVP_RESULT acvp_validate_prereq_val(ACVP_CIPHER cipher, ACVP_PREREQ_ALG 
             return ACVP_SUCCESS;
         break;
     case ACVP_RSA:
-        if (pre_req == ACVP_PREREQ_SHA)
+        if (pre_req == ACVP_PREREQ_SHA ||
+        	pre_req == ACVP_PREREQ_DRBG)
             return ACVP_SUCCESS;
         break;
     case ACVP_KDF135_TLS:
@@ -1336,7 +1337,14 @@ ACVP_RESULT acvp_validate_rsa_parm_value(ACVP_RSA_PARM parm, int value,
               retval = ACVP_SUCCESS;
         }
         break;
-
+    case ACVP_SIG_TYPE:
+    	switch (value) {
+		case RSA_SIG_TYPE_X931:
+		case RSA_SIG_TYPE_PKCS1V15:
+		case RSA_SIG_TYPE_PKCS1PSS:
+			retval = ACVP_SUCCESS;
+		}
+		break;
     default:
       break;
   }
@@ -2912,51 +2920,103 @@ static ACVP_RESULT acvp_build_rsa_siggen_register(JSON_Object **cap_specs_obj, A
     return result; /***why bother with result variable / acvp_success? takes up space***/
 }
 
+//static ACVP_RESULT acvp_build_rsa_register_cap(JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry)
+//{
+//    ACVP_RESULT result;
+//
+//    JSON_Array *specs_array = NULL;
+//    ACVP_RSA_MODE mode;
+//    JSON_Value *mode_specs_val = NULL, *cap_specs_val = NULL;
+//    JSON_Object *mode_specs_obj = NULL, *cap_specs_obj = NULL;
+//
+//    json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
+//    result = acvp_lookup_prereqVals(cap_obj, cap_entry);
+//    if (result != ACVP_SUCCESS) return result;
+//
+//    json_object_set_value(cap_obj, "algSpecs", json_value_init_array());
+//    specs_array = json_object_get_array(cap_obj, "algSpecs");
+//
+//    mode_specs_val = json_value_init_object();
+//    mode_specs_obj = json_value_get_object(mode_specs_val);
+//
+//    // TODO : this chunk here only prints out one keygen capability...
+//    // this assumes there is only one item in rsa_cap_mode_list
+//    mode = cap_entry->cap.rsa_cap->rsa_cap_mode_list->cap_mode;
+//    char *mode_str = acvp_lookup_rsa_mode_string(mode);
+//    if (!mode_str) return ACVP_INVALID_ARG;
+//
+//    cap_specs_val = json_value_init_object();
+//    cap_specs_obj = json_value_get_object(cap_specs_val);
+//
+//    switch(mode) {
+//    case ACVP_RSA_MODE_KEYGEN:
+//    	 result = acvp_build_rsa_keygen_register(&cap_specs_obj, cap_entry);
+//		if (result != ACVP_SUCCESS) return result;
+//		break;
+//    case ACVP_RSA_MODE_SIGGEN:
+//    	result = acvp_build_rsa_siggen_register(&cap_specs_obj, cap_entry);
+//    	if (result != ACVP_SUCCESS) return result;
+//    	break;
+//    default:
+//    	break;
+//    }
+//
+//    json_object_set_value(mode_specs_obj, mode_str, cap_specs_val);
+//    json_array_append_value(specs_array, mode_specs_val);
+//
+//    return ACVP_SUCCESS;
+//}
+
 static ACVP_RESULT acvp_build_rsa_register_cap(JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry)
 {
-    ACVP_RESULT result;
+	ACVP_RESULT result;
+	ACVP_RSA_MODE mode;
 
-    JSON_Array *specs_array = NULL;
-    ACVP_RSA_MODE mode;
-    JSON_Value *mode_specs_val = NULL, *cap_specs_val = NULL;
-    JSON_Object *mode_specs_obj = NULL, *cap_specs_obj = NULL;
+	JSON_Array *specs_array = NULL;
+	JSON_Value *mode_specs_val = NULL, *cap_specs_val = NULL, *mode_val = NULL;
+	JSON_Object *mode_specs_obj = NULL, *cap_specs_obj = NULL, *mode_obj = NULL;
 
-    json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
-    result = acvp_lookup_prereqVals(cap_obj, cap_entry);
-    if (result != ACVP_SUCCESS) return result;
+	json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
+	result = acvp_lookup_prereqVals(cap_obj, cap_entry);
+	if (result != ACVP_SUCCESS) return result;
 
-    json_object_set_value(cap_obj, "algSpecs", json_value_init_array());
-    specs_array = json_object_get_array(cap_obj, "algSpecs");
+	json_object_set_value(cap_obj, "algSpecs", json_value_init_array());
+	specs_array = json_object_get_array(cap_obj, "algSpecs");
 
-    mode_specs_val = json_value_init_object();
-    mode_specs_obj = json_value_get_object(mode_specs_val);
+	mode_specs_val = json_value_init_object();
+	mode_specs_obj = json_value_get_object(mode_specs_val);
 
-    // TODO : this chunk here only prints out one keygen capability...
-    // this assumes there is only one item in rsa_cap_mode_list
-    mode = cap_entry->cap.rsa_cap->rsa_cap_mode_list->cap_mode;
-    char *mode_str = acvp_lookup_rsa_mode_string(mode);
-    if (!mode_str) return ACVP_INVALID_ARG;
+	mode_val = json_value_init_object();
+	mode_obj = json_value_get_object(mode_val);
 
-    cap_specs_val = json_value_init_object();
-    cap_specs_obj = json_value_get_object(cap_specs_val);
+	// TODO : this chunk here only prints out one keygen capability...
+	// this assumes there is only one item in rsa_cap_mode_list
+	mode = cap_entry->cap.rsa_cap->rsa_cap_mode_list->cap_mode;
+	char *mode_str = acvp_lookup_rsa_mode_string(mode);
+	if (!mode_str) return ACVP_INVALID_ARG;
 
-    switch(mode) {
-    case ACVP_RSA_MODE_KEYGEN:
-    	 result = acvp_build_rsa_keygen_register(&cap_specs_obj, cap_entry);
+	cap_specs_val = json_value_init_object();
+	cap_specs_obj = json_value_get_object(cap_specs_val);
+
+	switch(mode) {
+	case ACVP_RSA_MODE_KEYGEN:
+		result = acvp_build_rsa_keygen_register(&cap_specs_obj, cap_entry);
 		if (result != ACVP_SUCCESS) return result;
 		break;
-    case ACVP_RSA_MODE_SIGGEN:
-    	result = acvp_build_rsa_siggen_register(&cap_specs_obj, cap_entry);
-    	if (result != ACVP_SUCCESS) return result;
-    	break;
-    default:
-    	break;
-    }
+	case ACVP_RSA_MODE_SIGGEN:
+		result = acvp_build_rsa_siggen_register(&cap_specs_obj, cap_entry);
+		if (result != ACVP_SUCCESS) return result;
+		break;
+	default:
+		break;
+	}
 
-    json_object_set_value(mode_specs_obj, mode_str, cap_specs_val);
-    json_array_append_value(specs_array, mode_specs_val);
+	json_object_set_string(mode_obj, "mode", mode_str);
+	json_object_set_value(mode_obj, "capSpecs", cap_specs_val);
+	json_object_set_value(mode_specs_obj, "modeSpecs", mode_val);
+	json_array_append_value(specs_array, mode_specs_val);
 
-    return ACVP_SUCCESS;
+	return ACVP_SUCCESS;
 }
 
 static ACVP_RESULT acvp_build_kdf135_tls_register_cap(JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry)

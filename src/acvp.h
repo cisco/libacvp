@@ -311,7 +311,7 @@ typedef enum acvp_rsa_param {
 #define RSA_SALT_SIGGEN_32      32
 #define RSA_SALT_SIGGEN_64      64
 
-#define RSA_TEST_TYPE_MAX        4
+#define RSA_HASH_ALG_MAX_LEN    12
 #define RSA_SIG_TYPE_MAX        16
 //#define MOD_PROV_PRIME_2048     2048
 //#define MOD_PROV_PRIME_3072     3072
@@ -635,7 +635,6 @@ typedef struct acvp_rsa_sig_attrs_tc_t {
 
 typedef struct acvp_rsa_sig_tc_t {
     ACVP_RSA_MODE mode; // "sigGen" "sigVer"
-    char *test_type; // "AFT"
     char *sig_type; // "X9.31"
     ACVP_RSA_SIG_ATTRS_TC *sig_attrs_tc;
 } ACVP_RSA_SIG_TC;
