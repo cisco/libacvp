@@ -1091,43 +1091,43 @@ static ACVP_RESULT app_des_handler(ACVP_TEST_CASE *test_case)
      * We only support 3 key DES
      */
     if (tc->key_len != 192) {
-  printf("Unsupported DES key length\n");
-  return ACVP_NO_CAP;
+        printf("Unsupported DES key length\n");
+        return ACVP_NO_CAP;
     }
 
     /* Begin encrypt code section */
     if (cipher_ctx.cipher == NULL) {
-  EVP_CIPHER_CTX_init(&cipher_ctx);
+        EVP_CIPHER_CTX_init(&cipher_ctx);
     }
 
     switch (tc->cipher) {
     case ACVP_TDES_ECB:
-  cipher = EVP_des_ede3_ecb();
-  break;
+        cipher = EVP_des_ede3_ecb();
+        break;
     case ACVP_TDES_CBC:
-  iv = tc->iv;
-  cipher = EVP_des_ede3_cbc();
-  break;
+        iv = tc->iv;
+        cipher = EVP_des_ede3_cbc();
+        break;
     case ACVP_TDES_OFB:
-  iv = tc->iv;
-  cipher = EVP_des_ede3_ofb();
-  break;
+        iv = tc->iv;
+        cipher = EVP_des_ede3_ofb();
+        break;
     case ACVP_TDES_CFB64:
-  iv = tc->iv;
-  cipher = EVP_des_ede3_cfb64();
-  break;
+        iv = tc->iv;
+        cipher = EVP_des_ede3_cfb64();
+        break;
     case ACVP_TDES_CFB8:
-  iv = tc->iv;
-  cipher = EVP_des_ede3_cfb8();
-  break;
+        iv = tc->iv;
+        cipher = EVP_des_ede3_cfb8();
+        break;
     case ACVP_TDES_CFB1:
-  iv = tc->iv;
-  cipher = EVP_des_ede3_cfb1();
-  break;
+        iv = tc->iv;
+        cipher = EVP_des_ede3_cfb1();
+        break;
     default:
-  printf("Error: Unsupported DES mode requested by ACVP server\n");
-  return ACVP_NO_CAP;
-  break;
+        printf("Error: Unsupported DES mode requested by ACVP server\n");
+        return ACVP_NO_CAP;
+        break;
     }
 
     /* If Monte Carlo we need to be able to init and then update
@@ -1136,56 +1136,66 @@ static ACVP_RESULT app_des_handler(ACVP_TEST_CASE *test_case)
     if (tc->test_type == ACVP_SYM_TEST_TYPE_MCT) {
         if (tc->direction == ACVP_DIR_ENCRYPT) {
             if (tc->mct_index == 0) {
-          EVP_EncryptInit_ex(&cipher_ctx, cipher, NULL, tc->key, iv);
+                EVP_EncryptInit_ex(&cipher_ctx, cipher, NULL, tc->key, iv);
         	EVP_CIPHER_CTX_set_padding(&cipher_ctx, 0);
+            } else {
+                /* TDES needs the pre-operation IV returned */
+                memcpy(tc->iv_ret, cipher_ctx.iv, 8);
             }
-     if (tc->cipher == ACVP_TDES_CFB1) {
-           EVP_CIPHER_CTX_set_flags(&cipher_ctx, EVP_CIPH_FLAG_LENGTH_BITS);
-     }
+            if (tc->cipher == ACVP_TDES_CFB1) {
+                EVP_CIPHER_CTX_set_flags(&cipher_ctx, EVP_CIPH_FLAG_LENGTH_BITS);
+            }
 
-      EVP_EncryptUpdate(&cipher_ctx, tc->ct, &ct_len, tc->pt, tc->pt_len);
-      tc->ct_len = ct_len;
+            EVP_EncryptUpdate(&cipher_ctx, tc->ct, &ct_len, tc->pt, tc->pt_len);
+            tc->ct_len = ct_len;
+            /* TDES needs the post-operation IV returned */
+            memcpy(tc->iv_ret_after, cipher_ctx.iv, 8);
         } else if (tc->direction == ACVP_DIR_DECRYPT) {
             if (tc->mct_index == 0) {
-          EVP_DecryptInit_ex(&cipher_ctx, cipher, NULL, tc->key, iv);
+                EVP_DecryptInit_ex(&cipher_ctx, cipher, NULL, tc->key, iv);
         	EVP_CIPHER_CTX_set_padding(&cipher_ctx, 0);
+            } else {
+                /* TDES needs the pre-operation IV returned */
+                memcpy(tc->iv_ret, cipher_ctx.iv, 8);
             }
-     if (tc->cipher == ACVP_TDES_CFB1) {
-           EVP_CIPHER_CTX_set_flags(&cipher_ctx, EVP_CIPH_FLAG_LENGTH_BITS);
-     }
-      EVP_DecryptUpdate(&cipher_ctx, tc->pt, &pt_len, tc->ct, tc->ct_len);
-      tc->pt_len = pt_len;
+            if (tc->cipher == ACVP_TDES_CFB1) {
+                EVP_CIPHER_CTX_set_flags(&cipher_ctx, EVP_CIPH_FLAG_LENGTH_BITS);
+            }
+            EVP_DecryptUpdate(&cipher_ctx, tc->pt, &pt_len, tc->ct, tc->ct_len);
+            tc->pt_len = pt_len;
+            /* TDES needs the post-operation IV returned */
+            memcpy(tc->iv_ret_after, cipher_ctx.iv, 8);
         } else {
             printf("Unsupported direction\n");
-      return ACVP_UNSUPPORTED_OP;
+            return ACVP_UNSUPPORTED_OP;
         }
         if (tc->mct_index == 9999) {
             EVP_CIPHER_CTX_cleanup(&cipher_ctx);
         }
     } else {
         if (tc->direction == ACVP_DIR_ENCRYPT) {
-      EVP_EncryptInit_ex(&cipher_ctx, cipher, NULL, tc->key, iv);
-      EVP_CIPHER_CTX_set_padding(&cipher_ctx, 0);
-     if (tc->cipher == ACVP_TDES_CFB1) {
-           EVP_CIPHER_CTX_set_flags(&cipher_ctx, EVP_CIPH_FLAG_LENGTH_BITS);
-     }
-      EVP_EncryptUpdate(&cipher_ctx, tc->ct, &ct_len, tc->pt, tc->pt_len);
-      tc->ct_len = ct_len;
-      EVP_EncryptFinal_ex(&cipher_ctx, tc->ct + ct_len, &ct_len);
-      tc->ct_len += ct_len;
+            EVP_EncryptInit_ex(&cipher_ctx, cipher, NULL, tc->key, iv);
+            EVP_CIPHER_CTX_set_padding(&cipher_ctx, 0);
+            if (tc->cipher == ACVP_TDES_CFB1) {
+                EVP_CIPHER_CTX_set_flags(&cipher_ctx, EVP_CIPH_FLAG_LENGTH_BITS);
+            }
+            EVP_EncryptUpdate(&cipher_ctx, tc->ct, &ct_len, tc->pt, tc->pt_len);
+            tc->ct_len = ct_len;
+            EVP_EncryptFinal_ex(&cipher_ctx, tc->ct + ct_len, &ct_len);
+            tc->ct_len += ct_len;
         } else if (tc->direction == ACVP_DIR_DECRYPT) {
-      EVP_DecryptInit_ex(&cipher_ctx, cipher, NULL, tc->key, iv);
-      EVP_CIPHER_CTX_set_padding(&cipher_ctx, 0);
-     if (tc->cipher == ACVP_TDES_CFB1) {
-           EVP_CIPHER_CTX_set_flags(&cipher_ctx, EVP_CIPH_FLAG_LENGTH_BITS);
-     }
-      EVP_DecryptUpdate(&cipher_ctx, tc->pt, &pt_len, tc->ct, tc->ct_len);
-      tc->pt_len = pt_len;
-      EVP_DecryptFinal_ex(&cipher_ctx, tc->pt + pt_len, &pt_len);
-      tc->pt_len += pt_len;
+            EVP_DecryptInit_ex(&cipher_ctx, cipher, NULL, tc->key, iv);
+            EVP_CIPHER_CTX_set_padding(&cipher_ctx, 0);
+            if (tc->cipher == ACVP_TDES_CFB1) {
+                EVP_CIPHER_CTX_set_flags(&cipher_ctx, EVP_CIPH_FLAG_LENGTH_BITS);
+            }
+            EVP_DecryptUpdate(&cipher_ctx, tc->pt, &pt_len, tc->ct, tc->ct_len);
+            tc->pt_len = pt_len;
+            EVP_DecryptFinal_ex(&cipher_ctx, tc->pt + pt_len, &pt_len);
+            tc->pt_len += pt_len;
         } else {
             printf("Unsupported direction\n");
-      return ACVP_UNSUPPORTED_OP;
+            return ACVP_UNSUPPORTED_OP;
         }
 
         EVP_CIPHER_CTX_cleanup(&cipher_ctx);
