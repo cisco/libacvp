@@ -30,25 +30,28 @@
  *
  * It will default to 127.0.0.1 port 443 if no arguments are given.
  */
+//#define OPENSSL_FIPSAPI
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include "acvp.h"
-#ifdef USE_MURL
-#include <murl/murl.h>
-#else
 #include <curl/curl.h>
-#endif
 #include <openssl/evp.h>
 #include <openssl/aes.h>
+#include <openssl/bio.h>
 #include <openssl/obj_mac.h>
 #include <openssl/err.h>
 #include <openssl/hmac.h>
 #include <openssl/cmac.h>
 #include <openssl/rsa.h>
 #include <openssl/bn.h>
+#include <openssl/rsa.h>
+#include <openssl/fips.h>
+#include <fipssyms.h>
+//#include "fips_utl.h"
 
 #ifdef ACVP_NO_RUNTIME
 #include "app_lcl.h"
@@ -66,6 +69,7 @@ static ACVP_RESULT app_sha_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_hmac_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_cmac_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_rsa_handler(ACVP_TEST_CASE *test_case);
+static ACVP_RESULT app_rsa_siggen_handler(ACVP_TEST_CASE *test_case);
 #ifdef ACVP_NO_RUNTIME
 static ACVP_RESULT app_drbg_handler(ACVP_TEST_CASE *test_case);
 #endif
@@ -287,12 +291,13 @@ int main(int argc, char **argv)
     /*
 	 * Enable RSA keygen...
 	 */
-	rv = acvp_enable_rsa_cap(ctx, ACVP_RSA, &app_rsa_handler);
+	rv = acvp_enable_rsa_cap(ctx, ACVP_RSA, &app_rsa_siggen_handler);
 	CHECK_ENABLE_CAP_RV(rv);
 	rv = acvp_enable_prereq_cap(ctx, ACVP_RSA, ACVP_PREREQ_DRBG, value);
 	CHECK_ENABLE_CAP_RV(rv);
 	rv = acvp_enable_prereq_cap(ctx, ACVP_RSA, ACVP_PREREQ_SHA, value);
 	CHECK_ENABLE_CAP_RV(rv);
+
 //	rv = acvp_enable_rsa_cap_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_PUB_EXP, RSA_PUB_EXP_FIXED);
 //	CHECK_ENABLE_CAP_RV(rv);
 //	rv = acvp_enable_rsa_cap_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_KEYGEN, ACVP_RSA_INFO_GEN_BY_SERVER, 0);
@@ -1876,166 +1881,216 @@ static ACVP_RESULT app_rsa_handler(ACVP_TEST_CASE *test_case)
     return ACVP_SUCCESS;
 }
 
-
-//	case ACVP_RSA_MODE_SIGGEN:
-//		modulo = 2048;
-//		hash_alg = ACVP_RSA_SHA_256;
-//		msg = "\xf6\x48\xff\xc4\xed\x74\x84\x58\x03\xfe\xc5\x3b\xa8\x65\xd3\x88\x9b\x38\x92\xe4\x02\xd9"
-//				   "\x6c\x5e\xba\x81\x46\x98\xec\x84\xb3\x2c\xe1\xd7\x68\x49\x17\xcf\xf1\x9d\x94\x2b\xa2\x78"
-//				   "\x7a\x55\xcf\x2e\xdc\xe5\x40\xbd\xd0\x67\xdf\xaf\xc5\x5e\xb4\x42\x17\x89\x13\xc7\xe1\x64"
-//				   "\x14\x48\x13\xf2\x44\x6d\xc4\xba\x9a\xa0\xc9\x0f\xad\x70\x86\x95\x23\x33\x04\x01\x6d\xf0"
-//				   "\x44\x20\xb2\x7c\xd3\x1b\x08\xe2\x9f\xf9\xea\x08\x09\x65\xe7\x90\x3b\xb2\x97\xfd\xbc\x1c"
-//				   "\xd3\x17\x41\x51\x25\x90\xc7\x30\x7e\xe7\xde\xd0\x27\x8d\x48\xc4\xfa\x47";
-//		salt_len = 0;
-
-//	   if(rsa_generate_key_internal(&rsa->p, &rsa->q, &rsa->n, &rsa->d,
-//																 seed, seed_len,
-//																 bitlen1, bitlen2, bitlen3, bitlen4,
-//																 exponent, keylen, NULL) != 1) {
-//		   return ACVP_CRYPTO_MODULE_FAIL;
-//	   }
-
-//	   RSA_free(rsa);
-//	   break;
-
-
-/* RSA SigGen handler
- * msg and sig are binary format
- * exponent and modulus are hex values
+/**
+ * copied from ciscossl-fom fips_utl.h
  */
-//static ACVP_RESULT app_rsa_siggen_handler(ACVP_TEST_CASE *test_case)
-//{
-//	RSA *rsa = NULL;
-//	EVP_MD *tc_md = NULL;
-////	long Msglen = -1;
-////	int keylen = -1, current_keylen = -1;
-////	int ret = 0;
-//
-//	ACVP_RSA_TC	*tc;
-//
-//	if (!test_case) {
-//		return ACVP_INVALID_ARG;
-//	}
-//	tc = test_case->tc.rsa;
-//
-//	/*
-//	 * Set the message digest to the appropriate sha
-//	 */
-//	if(strncmp(tc->sig_tc->sig_attrs_tc->hash_alg, ACVP_RSA_SHA_1, RSA_HASH_ALG_MAX_LEN ) == 0 ) {
-//		tc_md = (EVP_MD *)EVP_sha1();
-//	} else if(strncmp(tc->sig_tc->sig_attrs_tc->hash_alg, ACVP_RSA_SHA_224, RSA_HASH_ALG_MAX_LEN ) == 0 ) {
-//		tc_md = (EVP_MD *)EVP_sha224();
-//	} else if(strncmp(tc->sig_tc->sig_attrs_tc->hash_alg, ACVP_RSA_SHA_256, RSA_HASH_ALG_MAX_LEN ) == 0 ) {
-//		tc_md = (EVP_MD *)EVP_sha256();
-//	} else if(strncmp(tc->sig_tc->sig_attrs_tc->hash_alg, ACVP_RSA_SHA_384, RSA_HASH_ALG_MAX_LEN ) == 0 ) {
-//		tc_md = (EVP_MD *)EVP_sha384();
-//	} else if(strncmp(tc->sig_tc->sig_attrs_tc->hash_alg, ACVP_RSA_SHA_512, RSA_HASH_ALG_MAX_LEN ) == 0 ) {
-//		tc_md = (EVP_MD *)EVP_sha512();
-////	} else if(strncmp(tc->sig_tc->sig_attrs_tc->hash_alg, ACVP_RSA_SHA_512_224, RSA_HASH_ALG_MAX_LEN ) == 0 ) {
-////		tc_md = (EVP_MD *)EVP_sha512224(); /*** what is this function for this hash? ***/
-////	} else if(strncmp(tc->sig_tc->sig_attrs_tc->hash_alg, ACVP_RSA_SHA_512_256, RSA_HASH_ALG_MAX_LEN ) == 0 ) {
-////		tc_md = (EVP_MD *)EVP_sha512256(); /*** what is this function for this hash? ***/
-//	} else {
-//		printf("\nError: hashAlg not supported\n");
-//		return ACVP_INVALID_ARG;
-//	}
-//
-//	/*
-//	 * Set the message given from tc to binary form
-//	 */
-//	msg = hex2bin_m(msg, &Msglen /*sizeof(msg)*/);
-//
-//
-//	/* If key length has changed, generate and output public
-//	 * key components of new RSA private key.
-//	 */
-//
-////	if (keylen != current_keylen)
-////			{
-//			BIGNUM *bn_e;
-//			if (rsa) {
-//				FIPS_rsa_free(rsa);
-//			}
-//			rsa = FIPS_rsa_new();
-//			if (!rsa) {
-//				printf("\nError: Issue with RSA obj\n");
-//				return ACVP_CRYPTO_MODULE_FAIL;
-//			}
-//			bn_e = BN_new();
-//			if (!bn_e || !BN_set_word(bn_e, 0x1001)) {
-//				printf("\nError: Issue with exponent\n");
-//				return ACVP_CRYPTO_MODULE_FAIL;
-//			}
-//
-//			if(strncmp(tc->sig_tc->sig_attrs_tc->hash_alg, ACVP_RSA_SHA_1, RSA_HASH_ALG_MAX_LEN ) == 0 ) {
-//				tc_md = (EVP_MD *)EVP_sha1();
-//			} else if(strncmp(tc->sig_tc->sig_attrs_tc->hash_alg, ACVP_RSA_SHA_224, RSA_HASH_ALG_MAX_LEN ) == 0 ) {
-//				tc_md = (EVP_MD *)EVP_sha224();
-//			} else if(strncmp(tc->sig_tc->sig_attrs_tc->hash_alg, ACVP_RSA_SHA_256, RSA_HASH_ALG_MAX_LEN ) == 0 ) {
-//				tc_md = (EVP_MD *)EVP_sha256();
-//			} else if(strncmp(tc->sig_tc->sig_attrs_tc->hash_alg, ACVP_RSA_SHA_384, RSA_HASH_ALG_MAX_LEN ) == 0 ) {
-//				tc_md = (EVP_MD *)EVP_sha384();
-//			} else if(strncmp(tc->sig_tc->sig_attrs_tc->hash_alg, ACVP_RSA_SHA_512, RSA_HASH_ALG_MAX_LEN ) == 0 ) {
-//				tc_md = (EVP_MD *)EVP_sha512();
-//		//	} else if(strncmp(tc->sig_tc->sig_attrs_tc->hash_alg, ACVP_RSA_SHA_512_224, RSA_HASH_ALG_MAX_LEN ) == 0 ) {
-//		//		tc_md = (EVP_MD *)EVP_sha512224(); /*** what is this function for this hash? ***/
-//		//	} else if(strncmp(tc->sig_tc->sig_attrs_tc->hash_alg, ACVP_RSA_SHA_512_256, RSA_HASH_ALG_MAX_LEN ) == 0 ) {
-//		//		tc_md = (EVP_MD *)EVP_sha512256(); /*** what is this function for this hash? ***/
-//			} else {
-//				printf("\nError: hashAlg not supported\n");
-//				return ACVP_INVALID_ARG;
-//			}
-//
-//			if (!RSA_X931_generate_key_ex(rsa, keylen, bn_e, NULL))
-//					goto error;
-//			BN_free(bn_e);
-//			fputs("n = ", out);
-//			do_bn_print(out, rsa->n);
-//			fputs(RESP_EOL "e = ", out);
-//			do_bn_print(out, rsa->e);
-//			fputs(RESP_EOL, out);
-//			current_keylen = keylen;
-////			}
-//
-//	if (msg && tc_md) {
-//		int ret = 0;
-//		unsigned char *sigbuf = NULL;
-//		int i, siglen, pad_mode;
-//		/* EVP_PKEY structure */
-//
-//		siglen = RSA_size(rsa);
-//		sigbuf = OPENSSL_malloc(siglen);
-//		if (!sigbuf)
-//				goto error;
-//
-//		if (Saltlen >= 0)
-//				pad_mode = RSA_PKCS1_PSS_PADDING;
-//		else if (Saltlen == -2)
-//				pad_mode = RSA_X931_PADDING;
-//		else
-//				pad_mode = RSA_PKCS1_PADDING;
-//
-//		if (!FIPS_rsa_sign(rsa, Msg, Msglen, dgst, pad_mode, Saltlen, NULL,
-//								sigbuf, (unsigned int *)&siglen))
-//				goto error;
-//
-//		fputs("S = ", out);
-//
-//		for (i = 0; i < siglen; i++)
-//				fprintf(out, "%02X", sigbuf[i]);
-//
-//		fputs(RESP_EOL, out);
-//
-//		ret = 1;
-//
-//		error:
-//
-//		if (sigbuf)
-//				OPENSSL_free(sigbuf);
-//
-//		return ret;
-//	}
-//}
+unsigned char *hex2bin_m(const char *in, long *plen)
+{
+	unsigned char *p;
+	if (strlen(in) == 0)
+		{
+		*plen = 0;
+		return OPENSSL_malloc(1);
+		}
+	p = OPENSSL_malloc((strlen(in) + 1)/2);
+	*plen = hex2bin(in, p);
+	return p;
+}
+
+int hex2bin(const char *in, unsigned char *out)
+{
+    int n1, n2, isodd = 0;
+    unsigned char ch;
+
+    n1 = strlen(in);
+    if (in[n1 - 1] == '\n')
+	n1--;
+
+    if (n1 & 1)
+	isodd = 1;
+
+    for (n1=0,n2=0 ; in[n1] && in[n1] != '\n' ; )
+	{ /* first byte */
+	if ((in[n1] >= '0') && (in[n1] <= '9'))
+	    ch = in[n1++] - '0';
+	else if ((in[n1] >= 'A') && (in[n1] <= 'F'))
+	    ch = in[n1++] - 'A' + 10;
+	else if ((in[n1] >= 'a') && (in[n1] <= 'f'))
+	    ch = in[n1++] - 'a' + 10;
+	else
+	    return -1;
+	if(!in[n1])
+	    {
+	    out[n2++]=ch;
+	    break;
+	    }
+	/* If input is odd length first digit is least significant: assumes
+	 * all digits valid hex and null terminated which is true for the
+	 * strings we pass.
+	 */
+	if (n1 == 1 && isodd)
+		{
+		out[n2++] = ch;
+		continue;
+		}
+	out[n2] = ch << 4;
+	/* second byte */
+	if ((in[n1] >= '0') && (in[n1] <= '9'))
+	    ch = in[n1++] - '0';
+	else if ((in[n1] >= 'A') && (in[n1] <= 'F'))
+	    ch = in[n1++] - 'A' + 10;
+	else if ((in[n1] >= 'a') && (in[n1] <= 'f'))
+	    ch = in[n1++] - 'a' + 10;
+	else
+	    return -1;
+	out[n2++] |= ch;
+	}
+    return n2;
+}
+
+/*
+ * RSA SigGen handler
+ */
+static ACVP_RESULT app_rsa_siggen_handler(ACVP_TEST_CASE *test_case)
+{
+	RSA *rsa = NULL;
+	EVP_MD *tc_md = NULL;
+	unsigned char *msg = NULL;
+	unsigned char *sigbuf = NULL;
+	int siglen, pad_mode;
+	long msglen = -1;
+	BIGNUM *bn_e;
+
+	ACVP_RSA_TC	*tc;
+
+	if (!test_case) {
+		return ACVP_INVALID_ARG;
+	}
+
+	tc = test_case->tc.rsa;
+
+	if (!tc) {
+		return ACVP_INVALID_ARG;
+	}
+
+//	fips_algtest_init(); /*** necessito? ***/
+
+	/*
+	 * Set the message digest to the appropriate sha
+	 */
+	if(strncmp(tc->sig_tc->sig_attrs_tc->hash_alg, ACVP_RSA_SHA_1, RSA_HASH_ALG_MAX_LEN ) == 0 ) {
+		tc_md = (EVP_MD *)EVP_sha1();
+	} else if(strncmp(tc->sig_tc->sig_attrs_tc->hash_alg, ACVP_RSA_SHA_224, RSA_HASH_ALG_MAX_LEN ) == 0 ) {
+		tc_md = (EVP_MD *)EVP_sha224();
+	} else if(strncmp(tc->sig_tc->sig_attrs_tc->hash_alg, ACVP_RSA_SHA_256, RSA_HASH_ALG_MAX_LEN ) == 0 ) {
+		tc_md = (EVP_MD *)EVP_sha256();
+	} else if(strncmp(tc->sig_tc->sig_attrs_tc->hash_alg, ACVP_RSA_SHA_384, RSA_HASH_ALG_MAX_LEN ) == 0 ) {
+		tc_md = (EVP_MD *)EVP_sha384();
+	} else if(strncmp(tc->sig_tc->sig_attrs_tc->hash_alg, ACVP_RSA_SHA_512, RSA_HASH_ALG_MAX_LEN ) == 0 ) {
+		tc_md = (EVP_MD *)EVP_sha512();
+//	} else if(strncmp(tc->sig_tc->sig_attrs_tc->hash_alg, ACVP_RSA_SHA_512_224, RSA_HASH_ALG_MAX_LEN ) == 0 ) {
+//		tc_md = (EVP_MD *)EVP_sha512224(); /*** what is this function for this hash? ***/
+//	} else if(strncmp(tc->sig_tc->sig_attrs_tc->hash_alg, ACVP_RSA_SHA_512_256, RSA_HASH_ALG_MAX_LEN ) == 0 ) {
+//		tc_md = (EVP_MD *)EVP_sha512256(); /*** what is this function for this hash? ***/
+	} else {
+		printf("\nError: hashAlg not supported for RSA SigGen\n");
+		return ACVP_INVALID_ARG;
+	}
+
+	/*
+	 * Set the message given from the tc to binary form
+	 */
+	msg = hex2bin_m(tc->sig_tc->sig_attrs_tc->msg, &msglen);
+	if (msglen == -1) {
+		printf("\nError: hex2bin error for RSA SigGen\n");
+		return ACVP_INVALID_ARG;
+	}
+
+	/*
+	 * Make an RSA object and set a new BN exponent to use to generate a key
+	 */
+	if (rsa) {
+		FIPS_rsa_free(rsa);
+	}
+
+	rsa = FIPS_rsa_new();
+	if (!rsa) {
+		printf("\nError: Issue with RSA obj in RSA SigGen\n");
+		return ACVP_CRYPTO_MODULE_FAIL;
+	}
+
+	bn_e = BN_new();
+	if (!bn_e || !BN_set_word(bn_e, 0x1001)) {
+		printf("\nError: Issue with exponent in RSA SigGen\n");
+		return ACVP_CRYPTO_MODULE_FAIL;
+	}
+
+	if (!tc->sig_tc->sig_attrs_tc->modulo) {
+		printf("\nError: Issue with modulo in RSA SigGen\n");
+		return ACVP_CRYPTO_MODULE_FAIL;
+	}
+
+	/*
+	 * Set the pad mode and generate a key given the respective sigType
+	 */
+	if(strncmp(tc->sig_tc->sig_type, RSA_SIG_TYPE_X931_NAME, RSA_SIG_TYPE_MAX ) == 0 ) {
+		pad_mode = RSA_X931_PADDING;
+		if (!RSA_X931_generate_key_ex(rsa, 2048 /*tc->sig_tc->sig_attrs_tc->modulo*/, bn_e, NULL)) {
+			printf("\nError: Issue with keygen during siggen mode for sigType X9.31\n");
+			return ACVP_CRYPTO_MODULE_FAIL;
+		}
+	} else if(strncmp(tc->sig_tc->sig_type, RSA_SIG_TYPE_PKCS1V15_NAME, RSA_SIG_TYPE_MAX ) == 0 ) {
+		pad_mode = RSA_PKCS1_PADDING;
+//		if (!RSA_PKCS1V15_generate_key_ex(rsa, tc->sig_tc->sig_attrs_tc->modulo, bn_e, NULL)) { /*** only need to (can) generate key with x931-- sigType doesn't matter for key generation ***/
+//			printf("\nError: Issue with keygen during siggen mode for sigType PKCS1V15\n");
+//			return ACVP_CRYPTO_MODULE_FAIL;
+//		}
+	} else if(strncmp(tc->sig_tc->sig_type, RSA_SIG_TYPE_PKCS1PSS_NAME, RSA_SIG_TYPE_MAX ) == 0 ) {
+		pad_mode = RSA_PKCS1_PSS_PADDING;
+//		if (!RSA_PKCS1PSS_generate_key_ex(rsa, tc->sig_tc->sig_attrs_tc->modulo, bn_e, NULL)) { /*** only need to (can) generate key with x931-- sigType doesn't matter for key generation ***/
+//			printf("\nError: Issue with keygen during siggen mode for sigType PKCS1PSS\n");
+//			return ACVP_CRYPTO_MODULE_FAIL;
+//		}
+	} else {
+		printf("\nError: sigType not supported\n");
+		return ACVP_INVALID_ARG;
+	}
+
+	BN_free(bn_e);
+
+	printf("\nRSA SIGGEN---- E: %s\n", rsa->e);
+
+	/*
+	 * Retrieve and save the exponent and modulus from the key generation process
+	 */
+	tc->sig_tc->sig_attrs_tc->e = rsa->e;
+	tc->sig_tc->sig_attrs_tc->n = rsa->n;
+
+	if (msg && tc_md) {
+		siglen = RSA_size(rsa);
+		sigbuf = OPENSSL_malloc(siglen);
+
+		if (!sigbuf) {
+			printf("\nError: SigBuf fail in RSA SigGen\n");
+			return ACVP_CRYPTO_MODULE_FAIL;
+		}
+
+		if (!FIPS_rsa_sign(rsa, msg, msglen, tc_md, pad_mode, tc->sig_tc->sig_attrs_tc->salt_len, NULL,
+								sigbuf, (unsigned int *)&siglen)) {
+			printf("\nError: RSA Signature Generation fail\n");
+			return ACVP_CRYPTO_MODULE_FAIL;
+		}
+
+		/*
+		 * Retrieve and save the signature generated from signing the generated key
+		 */
+		tc->sig_tc->sig_attrs_tc->s = sigbuf; /***what format is this given in and what should it be?***/
+
+		if (sigbuf)
+			OPENSSL_free(sigbuf);
+	}
+	return ACVP_SUCCESS;
+}
 
 
 /* RSA SigVer handler
