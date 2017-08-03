@@ -115,6 +115,8 @@
 #define ACVP_RSA_KEYGEN         	 "keyGen"
 #define ACVP_RSA_SIGGEN         	 "sigGen"
 #define ACVP_RSA_SIGVER              "sigVer"
+#define ACVP_RSA_HASHALG_OBJ_NAME  "hashAlgs"
+#define ACVP_RSA_SALTLEN_OBJ_NAME  "saltLens"
 
 #define ACVP_DRBG_MODE_SHA_1         "SHA-1"
 #define ACVP_DRBG_MODE_SHA_224       "SHA-224"
@@ -311,9 +313,9 @@ typedef struct acvp_rsa_primes_list {
 } ACVP_RSA_PRIMES_LIST;
 
 typedef struct acvp_rsa_cap_sig_type {
-   int mod_rsa_siggen; // 2048, 3072, 4096 -- defined as macros
-   ACVP_NAME_LIST *compatible_hashes_siggen;
-   ACVP_SALT_SIZES *salt_siggen; // 28, 32, 64 -- when sigType = "PKCS1PSS"
+   int mod_rsa_sig; // 2048, 3072, 4096 -- defined as macros
+   ACVP_NAME_LIST *compatible_hashes_sig;
+   ACVP_SALT_SIZES *salt_sig; // 28, 32, 64 -- when sigType = "PKCS1PSS"
    struct acvp_rsa_cap_sig_type *next;
 } ACVP_RSA_CAP_SIG_TYPE;
 
@@ -332,11 +334,18 @@ typedef struct acvp_rsa_mode_siggen_t {
     ACVP_RSA_CAP_SIG_TYPE *cap_sig_type; //holds modRSASigGen (int) and hashSigGen (list)
 } ACVP_RSA_SIGGEN_ATTRS;
 
+typedef struct acvp_rsa_mode_sigver_t {
+    ACVP_RSA_MODE   mode;  // "sigVer"
+    char *sig_type; // "X9.31", "PKCS1v1.5", "PKCS1PSS"
+    ACVP_RSA_CAP_SIG_TYPE *cap_sig_type; //holds modRSASigVer (int) and hashSigVer (list)
+} ACVP_RSA_SIGVER_ATTRS;
+
 typedef struct acvp_rsa_cap_mode_list_t {
     ACVP_RSA_MODE cap_mode;
     union {
         ACVP_RSA_KEYGEN_ATTRS *keygen;
         ACVP_RSA_SIGGEN_ATTRS *siggen;
+        ACVP_RSA_SIGVER_ATTRS *sigver;
     } cap_mode_attrs;
     struct acvp_rsa_cap_mode_list_t *next;
 } ACVP_RSA_CAP_MODE_LIST;
@@ -440,7 +449,9 @@ ACVP_CIPHER acvp_lookup_cipher_index(const char *algorithm);
 ACVP_DRBG_MODE acvp_lookup_drbg_mode_index(const char *mode);
 ACVP_DRBG_CAP_MODE_LIST* acvp_locate_drbg_mode_entry(ACVP_CAPS_LIST *cap, ACVP_DRBG_MODE mode);
 ACVP_RSA_MODE acvp_lookup_rsa_mode_index(char *mode);
+ACVP_RSA_CAP_MODE_LIST* acvp_locate_rsa_sig_type_entry(ACVP_CAPS_LIST *cap, ACVP_RSA_MODE mode, ACVP_RSA_SIG_TYPE sig_type);
 ACVP_RSA_CAP_MODE_LIST* acvp_locate_rsa_mode_entry(ACVP_CAPS_LIST *cap, ACVP_RSA_MODE mode);
+char *acvp_rsa_get_sig_type_name(ACVP_RSA_SIG_TYPE sig_type);
 char *acvp_lookup_rsa_randpq_name(int value);
 int acvp_lookup_rsa_randpq_index(char *value);
 unsigned int yes_or_no(ACVP_CTX *ctx, const char *text);
