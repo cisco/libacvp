@@ -2035,7 +2035,7 @@ static ACVP_RESULT app_rsa_siggen_handler(ACVP_TEST_CASE *test_case)
 	 */
 	if(strncmp(tc->sig_tc->sig_type, RSA_SIG_TYPE_X931_NAME, RSA_SIG_TYPE_MAX ) == 0 ) {
 		pad_mode = RSA_X931_PADDING;
-		if (!RSA_X931_generate_key_ex(rsa, 2048 /*tc->sig_tc->sig_attrs_tc->modulo*/, bn_e, NULL)) {
+		if (!RSA_X931_generate_key_ex(rsa, tc->sig_tc->sig_attrs_tc->modulo, bn_e, NULL)) {
 			printf("\nError: Issue with keygen during siggen mode for sigType X9.31\n");
 			return ACVP_CRYPTO_MODULE_FAIL;
 		}
