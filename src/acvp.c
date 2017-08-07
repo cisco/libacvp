@@ -1300,7 +1300,7 @@ ACVP_RESULT acvp_rsa_prepare_to_add_param(ACVP_CTX *ctx, ACVP_CIPHER cipher,
     if (!*rsa_cap_mode_list) {
         *rsa_cap_mode_list = calloc(1, sizeof(ACVP_RSA_CAP_MODE_LIST));
         if (!*rsa_cap_mode_list) {
-            ACVP_LOG_ERR("Malloc Failed -- enable rsa cap parm");
+            ACVP_LOG_ERR("Malloc Failed -- RSA cap mode list entry");
             return ACVP_MALLOC_FAIL;
         }
 
@@ -1310,7 +1310,7 @@ ACVP_RESULT acvp_rsa_prepare_to_add_param(ACVP_CTX *ctx, ACVP_CIPHER cipher,
         case ACVP_RSA_MODE_KEYGEN:
             (*rsa_cap_mode_list)->cap_mode_attrs.keygen = calloc(1, sizeof(ACVP_RSA_KEYGEN_ATTRS));
             if (!(*rsa_cap_mode_list)->cap_mode_attrs.keygen) {
-                ACVP_LOG_ERR("Malloc Failed -- enable rsa cap parm");
+                ACVP_LOG_ERR("Malloc Failed -- RSA KeyGen cap attributes");
                 return ACVP_MALLOC_FAIL;
             }
             (*rsa_cap_mode_list)->cap_mode_attrs.keygen->rand_pq = 0;
@@ -1318,14 +1318,14 @@ ACVP_RESULT acvp_rsa_prepare_to_add_param(ACVP_CTX *ctx, ACVP_CIPHER cipher,
         case ACVP_RSA_MODE_SIGGEN:
 			(*rsa_cap_mode_list)->cap_mode_attrs.siggen = calloc(1, sizeof(ACVP_RSA_SIGGEN_ATTRS));
 			if (!(*rsa_cap_mode_list)->cap_mode_attrs.siggen) {
-				ACVP_LOG_ERR("Malloc Failed -- enable rsa cap parm");
+				ACVP_LOG_ERR("Malloc Failed -- RSA SigGen cap attributes");
 				return ACVP_MALLOC_FAIL;
 			}
 			break;
         case ACVP_RSA_MODE_SIGVER:
                     (*rsa_cap_mode_list)->cap_mode_attrs.sigver = calloc(1, sizeof(ACVP_RSA_SIGVER_ATTRS));
                     if (!(*rsa_cap_mode_list)->cap_mode_attrs.sigver) {
-                        ACVP_LOG_ERR("Malloc Failed -- enable rsa cap parm");
+                        ACVP_LOG_ERR("Malloc Failed -- RSA SigVer cap attributes");
                         return ACVP_MALLOC_FAIL;
                     }
                     break;
@@ -1467,14 +1467,14 @@ ACVP_RESULT acvp_enable_rsa_cap_parm (ACVP_CTX *ctx,
             if (!rsa_cap_mode_list) {
                 rsa_cap_mode_list = calloc(1, sizeof(ACVP_RSA_CAP_MODE_LIST));
                 if (!rsa_cap_mode_list) {
-                    ACVP_LOG_ERR("Malloc Failed -- enable rsa cap parm");
+                    ACVP_LOG_ERR("Malloc Failed -- RSA cap mode list entry");
                     return ACVP_MALLOC_FAIL;
                 }
                 rsa_cap_mode_list->cap_mode = mode;
                 rsa_cap_mode_list->cap_mode_attrs.siggen = calloc(1,
                         sizeof(ACVP_RSA_SIGGEN_ATTRS));
                 if (!rsa_cap_mode_list->cap_mode_attrs.siggen) {
-                    ACVP_LOG_ERR("Malloc Failed -- enable rsa cap parm");
+                    ACVP_LOG_ERR("Malloc Failed -- RSA SigGen cap attributes");
                     return ACVP_MALLOC_FAIL;
                 }
                 ACVP_RSA_CAP_MODE_LIST *current_rsa_cap_list =
@@ -1499,14 +1499,14 @@ ACVP_RESULT acvp_enable_rsa_cap_parm (ACVP_CTX *ctx,
             if (!rsa_cap_mode_list) {
                 rsa_cap_mode_list = calloc(1, sizeof(ACVP_RSA_CAP_MODE_LIST));
                 if (!rsa_cap_mode_list) {
-                    ACVP_LOG_ERR("Malloc Failed -- enable rsa cap parm");
+                    ACVP_LOG_ERR("Malloc Failed -- RSA cap mode list entry");
                     return ACVP_MALLOC_FAIL;
                 }
                 rsa_cap_mode_list->cap_mode = mode;
                 rsa_cap_mode_list->cap_mode_attrs.sigver = calloc(1,
                         sizeof(ACVP_RSA_SIGVER_ATTRS));
                 if (!rsa_cap_mode_list->cap_mode_attrs.sigver) {
-                    ACVP_LOG_ERR("Malloc Failed -- enable rsa cap parm");
+                    ACVP_LOG_ERR("Malloc Failed -- RSA SigVer cap attributes");
                     return ACVP_MALLOC_FAIL;
                 }
                 ACVP_RSA_CAP_MODE_LIST *current_rsa_cap_list =
@@ -1581,7 +1581,7 @@ ACVP_RESULT acvp_enable_rsa_cap_sig_type_parm (ACVP_CTX *ctx,
     if (!rsa_cap_mode_list) {
         rsa_cap_mode_list = calloc(1, sizeof(ACVP_RSA_CAP_MODE_LIST));
         if (!rsa_cap_mode_list) {
-            ACVP_LOG_ERR("Malloc Failed -- enable rsa cap parm");
+            ACVP_LOG_ERR("Malloc Failed -- RSA cap mode list entry");
             return ACVP_MALLOC_FAIL;
         }
 
@@ -1591,17 +1591,17 @@ ACVP_RESULT acvp_enable_rsa_cap_sig_type_parm (ACVP_CTX *ctx,
         case ACVP_RSA_MODE_SIGGEN:
             rsa_cap_mode_list->cap_mode_attrs.siggen = calloc(1, sizeof(ACVP_RSA_SIGGEN_ATTRS));
             if (!rsa_cap_mode_list->cap_mode_attrs.siggen) {
-                ACVP_LOG_ERR("Malloc Failed -- enable rsa cap parm");
+                ACVP_LOG_ERR("Malloc Failed -- RSA SigGen cap attributes");
                 return ACVP_MALLOC_FAIL;
             }
             break;
         case ACVP_RSA_MODE_SIGVER:
-                    rsa_cap_mode_list->cap_mode_attrs.sigver = calloc(1, sizeof(ACVP_RSA_SIGVER_ATTRS));
-                    if (!rsa_cap_mode_list->cap_mode_attrs.sigver) {
-                        ACVP_LOG_ERR("Malloc Failed -- enable rsa cap parm");
-                        return ACVP_MALLOC_FAIL;
-                    }
-                    break;
+            rsa_cap_mode_list->cap_mode_attrs.sigver = calloc(1, sizeof(ACVP_RSA_SIGVER_ATTRS));
+            if (!rsa_cap_mode_list->cap_mode_attrs.sigver) {
+                ACVP_LOG_ERR("Malloc Failed -- RSA SigVer cap attributes");
+                return ACVP_MALLOC_FAIL;
+            }
+            break;
         default:
             break;
         }
@@ -1625,7 +1625,7 @@ ACVP_RESULT acvp_enable_rsa_cap_sig_type_parm (ACVP_CTX *ctx,
         if(!rsa_cap_mode_list->cap_mode_attrs.siggen->cap_sig_type) {
           rsa_cap_mode_list->cap_mode_attrs.siggen->cap_sig_type = calloc(1, sizeof(ACVP_RSA_CAP_SIG_TYPE));
           if(!rsa_cap_mode_list->cap_mode_attrs.siggen->cap_sig_type) {
-              ACVP_LOG_ERR("Malloc Failed -- enable rsa cap parm");
+              ACVP_LOG_ERR("Malloc Failed -- RSA SigGen cap sig type entry");
               return ACVP_MALLOC_FAIL;
           }
           rsa_cap_mode_list->cap_mode_attrs.siggen->cap_sig_type->mod_rsa_sig = mod;
@@ -1640,7 +1640,7 @@ ACVP_RESULT acvp_enable_rsa_cap_sig_type_parm (ACVP_CTX *ctx,
                     if(current_cap_sig_type->next == NULL) {
                         current_cap_sig_type->next = calloc(1, sizeof(ACVP_RSA_CAP_SIG_TYPE));
                         if(!current_cap_sig_type->next) {
-                            ACVP_LOG_ERR("Malloc Failed -- enable rsa cap parm");
+                            ACVP_LOG_ERR("Malloc Failed -- RSA SigGen cap sig type entry");
                             return ACVP_MALLOC_FAIL;
                         }
                         current_cap_sig_type = current_cap_sig_type->next;
@@ -1659,7 +1659,7 @@ ACVP_RESULT acvp_enable_rsa_cap_sig_type_parm (ACVP_CTX *ctx,
         if(!current_cap_sig_type->compatible_hashes_sig) {
             current_cap_sig_type->compatible_hashes_sig = calloc(1, sizeof(ACVP_NAME_LIST));
             if(!current_cap_sig_type->compatible_hashes_sig) {
-                ACVP_LOG_ERR("Malloc Failed -- enable rsa cap parm");
+                ACVP_LOG_ERR("Malloc Failed -- RSA SigGen compatible hashes entry");
                 return ACVP_MALLOC_FAIL;
             }
             current_cap_sig_type->compatible_hashes_sig->name = hash;
@@ -1670,7 +1670,7 @@ ACVP_RESULT acvp_enable_rsa_cap_sig_type_parm (ACVP_CTX *ctx,
             }
             current_hash->next = calloc(1, sizeof(ACVP_NAME_LIST));
             if(!current_hash->next) {
-                ACVP_LOG_ERR("Malloc Failed -- enable rsa cap parm");
+                ACVP_LOG_ERR("Malloc Failed -- RSA SigGen compatible hashes entry");
                 return ACVP_MALLOC_FAIL;
             }
             current_hash->next->name = hash;
@@ -1681,7 +1681,7 @@ ACVP_RESULT acvp_enable_rsa_cap_sig_type_parm (ACVP_CTX *ctx,
         if(!rsa_cap_mode_list->cap_mode_attrs.sigver->cap_sig_type) {
               rsa_cap_mode_list->cap_mode_attrs.sigver->cap_sig_type = calloc(1, sizeof(ACVP_RSA_CAP_SIG_TYPE));
               if(!rsa_cap_mode_list->cap_mode_attrs.sigver->cap_sig_type) {
-                  ACVP_LOG_ERR("Malloc Failed -- enable rsa cap parm");
+                  ACVP_LOG_ERR("Malloc Failed -- RSA SigVer cap sig type entry");
                   return ACVP_MALLOC_FAIL;
               }
               rsa_cap_mode_list->cap_mode_attrs.sigver->cap_sig_type->mod_rsa_sig = mod;
@@ -1696,7 +1696,7 @@ ACVP_RESULT acvp_enable_rsa_cap_sig_type_parm (ACVP_CTX *ctx,
                         if(current_cap_sig_type->next == NULL) {
                             current_cap_sig_type->next = calloc(1, sizeof(ACVP_RSA_CAP_SIG_TYPE));
                             if(!current_cap_sig_type->next) {
-                                ACVP_LOG_ERR("Malloc Failed -- enable rsa cap parm");
+                                ACVP_LOG_ERR("Malloc Failed -- RSA SigVer cap sig type entry");
                                 return ACVP_MALLOC_FAIL;
                             }
                             current_cap_sig_type = current_cap_sig_type->next;
@@ -1715,7 +1715,7 @@ ACVP_RESULT acvp_enable_rsa_cap_sig_type_parm (ACVP_CTX *ctx,
             if(!current_cap_sig_type->compatible_hashes_sig) {
                 current_cap_sig_type->compatible_hashes_sig = calloc(1, sizeof(ACVP_NAME_LIST));
                 if(!current_cap_sig_type->compatible_hashes_sig) {
-                    ACVP_LOG_ERR("Malloc Failed -- enable rsa cap parm");
+                    ACVP_LOG_ERR("Malloc Failed -- RSA SigVer compatible hashes entry");
                     return ACVP_MALLOC_FAIL;
                 }
                 current_cap_sig_type->compatible_hashes_sig->name = hash;
@@ -1726,7 +1726,7 @@ ACVP_RESULT acvp_enable_rsa_cap_sig_type_parm (ACVP_CTX *ctx,
                 }
                 current_hash->next = calloc(1, sizeof(ACVP_NAME_LIST));
                 if(!current_hash->next) {
-                    ACVP_LOG_ERR("Malloc Failed -- enable rsa cap parm");
+                    ACVP_LOG_ERR("Malloc Failed -- RSA SigVer compatible hashes entry");
                     return ACVP_MALLOC_FAIL;
                 }
                 current_hash->next->name = hash;
@@ -1789,7 +1789,7 @@ ACVP_RESULT acvp_enable_rsa_cap_sig_type_salt_parm (ACVP_CTX *ctx,
     if (!rsa_cap_mode_list) {
         rsa_cap_mode_list = calloc(1, sizeof(ACVP_RSA_CAP_MODE_LIST));
         if (!rsa_cap_mode_list) {
-            ACVP_LOG_ERR("Malloc Failed -- enable rsa cap parm");
+            ACVP_LOG_ERR("Malloc Failed -- RSA cap mode list entry");
             return ACVP_MALLOC_FAIL;
         }
 
@@ -1799,14 +1799,14 @@ ACVP_RESULT acvp_enable_rsa_cap_sig_type_salt_parm (ACVP_CTX *ctx,
         case ACVP_RSA_MODE_SIGGEN:
             rsa_cap_mode_list->cap_mode_attrs.siggen = calloc(1, sizeof(ACVP_RSA_SIGGEN_ATTRS));
             if (!rsa_cap_mode_list->cap_mode_attrs.siggen) {
-                ACVP_LOG_ERR("Malloc Failed -- enable rsa cap parm");
+                ACVP_LOG_ERR("Malloc Failed -- RSA SigGen cap attributes");
                 return ACVP_MALLOC_FAIL;
             }
             break;
         case ACVP_RSA_MODE_SIGVER:
                     rsa_cap_mode_list->cap_mode_attrs.sigver = calloc(1, sizeof(ACVP_RSA_SIGVER_ATTRS));
                     if (!rsa_cap_mode_list->cap_mode_attrs.sigver) {
-                        ACVP_LOG_ERR("Malloc Failed -- enable rsa cap parm");
+                        ACVP_LOG_ERR("Malloc Failed -- RSA SigVer cap attributes");
                         return ACVP_MALLOC_FAIL;
                     }
                     break;
@@ -1825,7 +1825,7 @@ ACVP_RESULT acvp_enable_rsa_cap_sig_type_salt_parm (ACVP_CTX *ctx,
             rsa_cap_mode_list->cap_mode_attrs.siggen->cap_sig_type = calloc(1,
                     sizeof(ACVP_RSA_CAP_SIG_TYPE));
             if (!rsa_cap_mode_list->cap_mode_attrs.siggen->cap_sig_type) {
-                ACVP_LOG_ERR("Malloc Failed -- enable rsa cap parm");
+                ACVP_LOG_ERR("Malloc Failed -- RSA SigGen cap sig type entry");
                 return ACVP_MALLOC_FAIL;
             }
             rsa_cap_mode_list->cap_mode_attrs.siggen->cap_sig_type->mod_rsa_sig =
@@ -1845,7 +1845,7 @@ ACVP_RESULT acvp_enable_rsa_cap_sig_type_salt_parm (ACVP_CTX *ctx,
                                 sizeof(ACVP_RSA_CAP_SIG_TYPE));
                         if (!current_cap_sig_type->next) {
                             ACVP_LOG_ERR(
-                                    "Malloc Failed -- enable rsa cap parm");
+                                    "Malloc Failed -- RSA SigGen cap sig type entry");
                             return ACVP_MALLOC_FAIL;
                         }
                         current_cap_sig_type = current_cap_sig_type->next;
@@ -1865,7 +1865,7 @@ ACVP_RESULT acvp_enable_rsa_cap_sig_type_salt_parm (ACVP_CTX *ctx,
             current_cap_sig_type->compatible_hashes_sig = calloc(1,
                     sizeof(ACVP_NAME_LIST));
             if (!current_cap_sig_type->compatible_hashes_sig) {
-                ACVP_LOG_ERR("Malloc Failed -- enable rsa cap parm");
+                ACVP_LOG_ERR("Malloc Failed -- RSA SigGen compatible hashes entry");
                 return ACVP_MALLOC_FAIL;
             }
             current_cap_sig_type->compatible_hashes_sig->name = hash;
@@ -1876,7 +1876,7 @@ ACVP_RESULT acvp_enable_rsa_cap_sig_type_salt_parm (ACVP_CTX *ctx,
             }
             current_hash->next = calloc(1, sizeof(ACVP_NAME_LIST));
             if (!current_hash->next) {
-                ACVP_LOG_ERR("Malloc Failed -- enable rsa cap parm");
+                ACVP_LOG_ERR("Malloc Failed -- RSA SigGen compatible hashes entry");
                 return ACVP_MALLOC_FAIL;
             }
             current_hash->next->name = hash;
@@ -1891,7 +1891,7 @@ ACVP_RESULT acvp_enable_rsa_cap_sig_type_salt_parm (ACVP_CTX *ctx,
                 current_cap_sig_type->salt_sig = calloc(1,
                         sizeof(ACVP_SALT_SIZES));
                 if (!current_cap_sig_type->salt_sig) {
-                    ACVP_LOG_ERR("Malloc Failed -- enable rsa cap parm");
+                    ACVP_LOG_ERR("Malloc Failed -- RSA SigGen salt size entry");
                     return ACVP_MALLOC_FAIL;
                 }
                 current_cap_sig_type->salt_sig->saltVal = salt;
@@ -1902,7 +1902,7 @@ ACVP_RESULT acvp_enable_rsa_cap_sig_type_salt_parm (ACVP_CTX *ctx,
                 }
                 current_salt->next = calloc(1, sizeof(ACVP_SALT_SIZES));
                 if (!current_salt->next) {
-                    ACVP_LOG_ERR("Malloc Failed -- enable rsa cap parm");
+                    ACVP_LOG_ERR("Malloc Failed -- RSA SigGen salt size entry");
                     return ACVP_MALLOC_FAIL;
                 }
                 current_salt->next->saltVal = salt;
@@ -1913,7 +1913,7 @@ ACVP_RESULT acvp_enable_rsa_cap_sig_type_salt_parm (ACVP_CTX *ctx,
                     rsa_cap_mode_list->cap_mode_attrs.sigver->cap_sig_type = calloc(1,
                             sizeof(ACVP_RSA_CAP_SIG_TYPE));
                     if (!rsa_cap_mode_list->cap_mode_attrs.sigver->cap_sig_type) {
-                        ACVP_LOG_ERR("Malloc Failed -- enable rsa cap parm");
+                        ACVP_LOG_ERR("Malloc Failed -- RSA SigVer cap sig type entry");
                         return ACVP_MALLOC_FAIL;
                     }
                     rsa_cap_mode_list->cap_mode_attrs.siggen->cap_sig_type->mod_rsa_sig =
@@ -1933,7 +1933,7 @@ ACVP_RESULT acvp_enable_rsa_cap_sig_type_salt_parm (ACVP_CTX *ctx,
                                         sizeof(ACVP_RSA_CAP_SIG_TYPE));
                                 if (!current_cap_sig_type->next) {
                                     ACVP_LOG_ERR(
-                                            "Malloc Failed -- enable rsa cap parm");
+                                            "Malloc Failed -- RSA SigVer cap sig type entry");
                                     return ACVP_MALLOC_FAIL;
                                 }
                                 current_cap_sig_type = current_cap_sig_type->next;
@@ -1953,7 +1953,7 @@ ACVP_RESULT acvp_enable_rsa_cap_sig_type_salt_parm (ACVP_CTX *ctx,
                     current_cap_sig_type->compatible_hashes_sig = calloc(1,
                             sizeof(ACVP_NAME_LIST));
                     if (!current_cap_sig_type->compatible_hashes_sig) {
-                        ACVP_LOG_ERR("Malloc Failed -- enable rsa cap parm");
+                        ACVP_LOG_ERR("Malloc Failed -- RSA SigVer compatible hashes entry");
                         return ACVP_MALLOC_FAIL;
                     }
                     current_cap_sig_type->compatible_hashes_sig->name = hash;
@@ -1964,7 +1964,7 @@ ACVP_RESULT acvp_enable_rsa_cap_sig_type_salt_parm (ACVP_CTX *ctx,
                     }
                     current_hash->next = calloc(1, sizeof(ACVP_NAME_LIST));
                     if (!current_hash->next) {
-                        ACVP_LOG_ERR("Malloc Failed -- enable rsa cap parm");
+                        ACVP_LOG_ERR("Malloc Failed -- RSA SigVer compatible hashes entry");
                         return ACVP_MALLOC_FAIL;
                     }
                     current_hash->next->name = hash;
@@ -1979,7 +1979,7 @@ ACVP_RESULT acvp_enable_rsa_cap_sig_type_salt_parm (ACVP_CTX *ctx,
                         current_cap_sig_type->salt_sig = calloc(1,
                                 sizeof(ACVP_SALT_SIZES));
                         if (!current_cap_sig_type->salt_sig) {
-                            ACVP_LOG_ERR("Malloc Failed -- enable rsa cap parm");
+                            ACVP_LOG_ERR("Malloc Failed -- RSA SigVer salt size entry");
                             return ACVP_MALLOC_FAIL;
                         }
                         current_cap_sig_type->salt_sig->saltVal = salt;
@@ -1990,7 +1990,7 @@ ACVP_RESULT acvp_enable_rsa_cap_sig_type_salt_parm (ACVP_CTX *ctx,
                         }
                         current_salt->next = calloc(1, sizeof(ACVP_SALT_SIZES));
                         if (!current_salt->next) {
-                            ACVP_LOG_ERR("Malloc Failed -- enable rsa cap parm");
+                            ACVP_LOG_ERR("Malloc Failed -- RSA SigVer salt size entry");
                             return ACVP_MALLOC_FAIL;
                         }
                         current_salt->next->saltVal = salt;
