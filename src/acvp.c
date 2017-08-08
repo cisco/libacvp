@@ -624,21 +624,48 @@ ACVP_RESULT acvp_enable_hash_cap_parm (
     return ACVP_SUCCESS;
 }
 
-ACVP_RESULT acvp_validate_hmac_parm_value(ACVP_HMAC_PARM parm, int value) {
+ACVP_RESULT acvp_validate_hmac_parm_value(ACVP_CIPHER cipher,
+                                          ACVP_HMAC_PARM parm,
+                                          int value) {
   ACVP_RESULT retval = ACVP_INVALID_ARG;
+  int max_val = 0;
 
   switch(parm){
-    case ACVP_HMAC_KEYRANGE1_MIN:
-    case ACVP_HMAC_KEYRANGE1_MAX:
-    case ACVP_HMAC_KEYRANGE2_MIN:
-    case ACVP_HMAC_KEYRANGE2_MAX:
-    case ACVP_HMAC_MACLEN:
-      if (value >= 0 && value <= 65536) {
+    case ACVP_HMAC_KEYLEN_MIN:
+    case ACVP_HMAC_KEYLEN_MAX:
+      if (value >= 8 && value <= 524288) {
         retval = ACVP_SUCCESS;
       }
       break;
-    case ACVP_HMAC_KEYBLOCK:
-      retval = is_valid_tf_param(value);
+    case ACVP_HMAC_MACLEN:
+      switch(cipher){
+        case ACVP_HMAC_SHA1:
+          max_val = 160;
+          break;
+        case ACVP_HMAC_SHA2_224:
+        case ACVP_HMAC_SHA2_512_224:
+        case ACVP_HMAC_SHA3_224:
+          max_val = 224;
+          break;
+        case ACVP_HMAC_SHA2_256:
+        case ACVP_HMAC_SHA2_512_256:
+        case ACVP_HMAC_SHA3_256:
+          max_val = 256;
+          break;
+        case ACVP_HMAC_SHA2_384:
+        case ACVP_HMAC_SHA3_384:
+          max_val = 384;
+          break;
+        case ACVP_HMAC_SHA2_512:
+        case ACVP_HMAC_SHA3_512:
+          max_val = 512;
+          break;
+        default:
+          break;
+      }
+      if (value >= 32 && value <= max_val) {
+        retval = ACVP_SUCCESS;
+      }
       break;
     default:
       break;
@@ -692,25 +719,16 @@ ACVP_RESULT acvp_enable_hmac_cap_parm(
         return ACVP_NO_CAP;
     }
 
-    if (acvp_validate_hmac_parm_value(parm, value) != ACVP_SUCCESS) {
+    if (acvp_validate_hmac_parm_value(cipher, parm, value) != ACVP_SUCCESS) {
       return ACVP_INVALID_ARG;
     }
 
     switch (parm) {
-    case ACVP_HMAC_KEYRANGE1_MIN:
-      cap->cap.hmac_cap->key_range_1[0] = value;
+    case ACVP_HMAC_KEYLEN_MIN:
+      cap->cap.hmac_cap->key_len_min = value;
       break;
-    case ACVP_HMAC_KEYRANGE1_MAX:
-      cap->cap.hmac_cap->key_range_1[1] = value;
-      break;
-    case ACVP_HMAC_KEYRANGE2_MIN:
-      cap->cap.hmac_cap->key_range_2[0] = value;
-      break;
-    case ACVP_HMAC_KEYRANGE2_MAX:
-      cap->cap.hmac_cap->key_range_2[1] = value;
-      break;
-    case ACVP_HMAC_KEYBLOCK:
-      cap->cap.hmac_cap->key_block = value;
+    case ACVP_HMAC_KEYLEN_MAX:
+      cap->cap.hmac_cap->key_len_max = value;
       break;
     case ACVP_HMAC_MACLEN:
       acvp_cap_add_length(&cap->cap.hmac_cap->mac_len, value);
@@ -2023,6 +2041,8 @@ static ACVP_RESULT acvp_build_hash_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
 static ACVP_RESULT acvp_build_hmac_register_cap(JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry)
 {
     JSON_Array *temp_arr = NULL;
+    JSON_Value *val = NULL;
+    JSON_Object *obj = NULL;
     ACVP_SL_LIST *sl_list;
     ACVP_RESULT result;
 
@@ -2030,18 +2050,17 @@ static ACVP_RESULT acvp_build_hmac_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
     result = acvp_lookup_prereqVals(cap_obj, cap_entry);
     if (result != ACVP_SUCCESS) return result;
 
-    json_object_set_value(cap_obj, "keyRange1", json_value_init_array());
-    temp_arr = json_object_get_array(cap_obj, "keyRange1");
-    json_array_append_number(temp_arr, cap_entry->cap.hmac_cap->key_range_1[0]);
-    json_array_append_number(temp_arr, cap_entry->cap.hmac_cap->key_range_1[1]);
+    json_object_set_value(cap_obj, "keyLen", json_value_init_array());
+    temp_arr = json_object_get_array(cap_obj, "keyLen");
 
-    json_object_set_value(cap_obj, "keyRange2", json_value_init_array());
-    temp_arr = json_object_get_array(cap_obj, "keyRange2");
-    json_array_append_number(temp_arr, cap_entry->cap.hmac_cap->key_range_2[0]);
-    json_array_append_number(temp_arr, cap_entry->cap.hmac_cap->key_range_2[1]);
+    val = json_value_init_object();
+    obj = json_value_get_object(val);
 
-    json_object_set_boolean(cap_obj, "keyBlock", cap_entry->cap.hmac_cap->key_block);
+    json_object_set_number(obj, "min", cap_entry->cap.hmac_cap->key_len_min);
+    json_object_set_number(obj, "max", cap_entry->cap.hmac_cap->key_len_max);
+    json_object_set_number(obj, "increment", 8);
 
+    json_array_append_value(temp_arr, val);
     /*
      * Set the supported mac lengths
      */

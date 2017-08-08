@@ -233,10 +233,9 @@ typedef struct acvp_kdf135_snmp_capability {
 } ACVP_KDF135_SNMP_CAP;
 
 typedef struct acvp_hmac_capability {
-    int                       key_range_1[2];      //":"65536"
-    int                       key_range_2[2];      //":"65536"
-    int                       key_block;        // boolean
-    ACVP_SL_LIST              *mac_len;
+    int                       key_len_min;      // 8-524288
+    int                       key_len_max;      // 8-524288
+    ACVP_SL_LIST              *mac_len;         // 32-512
 } ACVP_HMAC_CAP;
 
 typedef struct acvp_cmac_capability {
