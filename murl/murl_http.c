@@ -59,7 +59,7 @@
 //       but the body size may need to be this large for ACVP, if not larger.
 //       we'll need to rethink how to allocate this memory for the various
 //       use cases.
-#define MAX_HEADERS 13
+#define MAX_HEADERS 64
 #define MAX_ELEMENT_SIZE 64*1024
 #define MAX_BODY_SIZE 64*1024*1024
 
@@ -102,7 +102,10 @@ int request_path_cb (http_parser *p, const char *buf, size_t len)
 {
     http_msg *msg = p->data;
 
-    //FIXME: check for buffer overflow prior to strncat
+    if (len > MAX_ELEMENT_SIZE) {
+        fprintf(stderr, "Maximum request path size exceeded\n");
+	return -1;
+    }
     strncat(msg->request_path, buf, len);
     return 0;
 }
@@ -111,7 +114,10 @@ int request_url_cb (http_parser *p, const char *buf, size_t len)
 {
     http_msg *msg = p->data;
 
-    //FIXME: check for buffer overflow prior to strncat
+    if (len > MAX_ELEMENT_SIZE) {
+        fprintf(stderr, "Maximum URL size exceeded\n");
+	return -1;
+    }
     strncat(msg->request_url, buf, len);
     return 0;
 }
@@ -120,7 +126,10 @@ int query_string_cb (http_parser *p, const char *buf, size_t len)
 {
     http_msg *msg = p->data;
 
-    //FIXME: check for buffer overflow prior to strncat
+    if (len > MAX_ELEMENT_SIZE) {
+        fprintf(stderr, "Maximum query string size exceeded\n");
+	return -1;
+    }
     strncat(msg->query_string, buf, len);
     return 0;
 }
@@ -129,7 +138,10 @@ int fragment_cb (http_parser *p, const char *buf, size_t len)
 {
     http_msg *msg = p->data;
 
-    //FIXME: check for buffer overflow prior to strncat
+    if (len > MAX_ELEMENT_SIZE) {
+        fprintf(stderr, "Maximum fragment size exceeded\n");
+	return -1;
+    }
     strncat(msg->fragment, buf, len);
     return 0;
 }
@@ -138,10 +150,18 @@ int header_field_cb (http_parser *p, const char *buf, size_t len)
 {
     http_msg *msg = p->data;
 
+    if (len > MAX_ELEMENT_SIZE) {
+        fprintf(stderr, "Maximum header field size exceeded\n");
+	return -1;
+    }
+    if (msg->num_headers >= MAX_HEADERS) {
+        fprintf(stderr, "Maximum header count exceeded\n");
+	return -1;
+    }
+
     if (msg->last_header_element != FIELD)
         msg->num_headers++;
 
-    //FIXME: check for buffer overflow prior to strncat
     strncat(msg->headers[msg->num_headers-1][0], buf, len);
 
     msg->last_header_element = FIELD;
@@ -153,7 +173,15 @@ int header_value_cb (http_parser *p, const char *buf, size_t len)
 {
     http_msg *msg = p->data;
 
-    //FIXME: check for buffer overflow prior to strncat
+    if (len > MAX_ELEMENT_SIZE) {
+        fprintf(stderr, "Maximum header field size exceeded\n");
+	return -1;
+    }
+    if (msg->num_headers >= MAX_HEADERS) {
+        fprintf(stderr, "Maximum header count exceeded\n");
+	return -1;
+    }
+
     strncat(msg->headers[msg->num_headers-1][1], buf, len);
 
     msg->last_header_element = VALUE;
