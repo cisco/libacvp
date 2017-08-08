@@ -47,7 +47,7 @@ static ACVP_RESULT acvp_des_init_tc(ACVP_CTX *ctx,
                                     unsigned int iv_len,
                                     unsigned int pt_len,
                                     ACVP_CIPHER alg_id,
-				    ACVP_SYM_CIPH_DIR dir);
+                                    ACVP_SYM_CIPH_DIR dir);
 static ACVP_RESULT acvp_des_release_tc(ACVP_SYM_CIPHER_TC *stc);
 
 
@@ -56,6 +56,20 @@ static ACVP_RESULT acvp_des_release_tc(ACVP_SYM_CIPHER_TC *stc);
 static unsigned char old_iv[8];
 static unsigned char ptext[10001][8];
 static unsigned char ctext[10001][8];
+
+static void shiftin(unsigned char *dst,unsigned char *src,int nbits)
+{
+    int n;
+
+    /* move the bytes... */
+    memmove(dst,dst+nbits/8,3*8-nbits/8);
+    /* append new data */
+    memcpy(dst+3*8-nbits/8,src,(nbits+7)/8);
+    /* left shift the bits */
+    if(nbits%8)
+    for(n=0 ; n < 3*8 ; ++n)
+        dst[n]=(dst[n] << (nbits%8))|(dst[n+1] >> (8-nbits%8));
+}
 
 /*
  * After each encrypt/decrypt for a Monte Carlo test the iv
@@ -74,60 +88,97 @@ static ACVP_RESULT acvp_des_mct_iterate_tc(ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *st
     switch (stc->cipher)
     {
     case ACVP_TDES_CBC:
-    case ACVP_TDES_OFB:
         if (stc->direction == ACVP_DIR_ENCRYPT) {
-    	    if (j == 0) {
-	        memcpy(stc->pt, old_iv, 8);
+            if (j == 0) {
+                memcpy(stc->pt, old_iv, 8);
             } else {
-	        for(n=0 ; n < 8 ; ++n) {
-		    stc->pt[n] = ctext[j-1][n];
-	        }
+                for(n=0 ; n < 8 ; ++n) {
+                    stc->pt[n] = ctext[j-1][n];
+                }
             }
             for(n=0 ; n < 8 ; ++n) {
-	        stc->iv[n] = ctext[j][n];
-	    }
+                stc->iv[n] = ctext[j][n];
+             }
         } else {
-     	    for(n=0 ; n < 8 ; ++n) {
-	        stc->ct[n] = ptext[j][n];
-	    }
-    	    if (j != 0) {
+            for(n=0 ; n < 8 ; ++n) {
+                stc->ct[n] = ptext[j][n];
+            }
+            if (j != 0) {
                 for(n=0 ; n < 8 ; ++n) {
-	            stc->iv[n] = ptext[j-1][n];
-		}
-	    }
-	}
-	break;
-    case ACVP_TDES_CFB1:
-    case ACVP_TDES_CFB8:
+                    stc->iv[n] = ptext[j-1][n];
+            }
+        }
+    }
+    break;
     case ACVP_TDES_CFB64:
         if (stc->direction == ACVP_DIR_ENCRYPT) {
-    	    if (j == 0) {
-	        memcpy(stc->pt, old_iv, 8);
+            if (j == 0) {
+                memcpy(stc->pt, old_iv, 8);
             } else {
-	        for(n=0 ; n < 8 ; ++n) {
-		    stc->pt[n] = ctext[j-1][n];
-	        }
+                for(n=0 ; n < 8 ; ++n) {
+                    stc->pt[n] = ctext[j-1][n];
+                }
             }
             for(n=0 ; n < 8 ; ++n) {
-	        stc->iv[n] = ctext[j][n];
-	    }
+                stc->iv[n] = ctext[j][n];
+            }
         } else {
 
-	    for(n=0 ; n < 8 ; ++n) {
-		stc->ct[n] ^= stc->pt[n];
-	    }
+            for(n=0 ; n < 8 ; ++n) {
+                stc->ct[n] ^= stc->pt[n];
+            }
             for(n=0 ; n < 8 ; ++n) {
                 stc->iv[n] = stc->pt[n] ^ stc->ct[n];
-	    }
+            }
         }
         break;
+
+    case ACVP_TDES_OFB:
+        if (stc->direction == ACVP_DIR_ENCRYPT) {
+            if (j == 0) {
+                memcpy(stc->pt, old_iv, 8);
+            } else {
+                for(n=0 ; n < 8 ; ++n) {
+                    stc->pt[n] = stc->iv_ret[n]; 
+                }
+            }
+        } else {
+            if (j == 0) {
+                memcpy(stc->ct, old_iv, 8);
+            } else {
+                for(n=0 ; n < 8 ; ++n) {
+                    stc->ct[n] = stc->iv_ret[n]; 
+                }
+            }
+        }
+        break;
+    case ACVP_TDES_CFB1:
+    case ACVP_TDES_CFB8:
+        if (stc->direction == ACVP_DIR_ENCRYPT) {
+            if (j == 0) {
+                memcpy(stc->pt, old_iv, 8);
+            } else {
+                for(n=0 ; n < 8 ; ++n) {
+                    stc->pt[n] = stc->iv_ret[n]; 
+                }
+            }
+        } else {
+            for(n=0 ; n < 8 ; ++n) {
+                stc->ct[n] ^= stc->pt[n];
+            }
+            for(n=0 ; n < 8 ; ++n) {
+                stc->iv[n] = stc->pt[n] ^ stc->ct[n];
+            }
+        }
+        break;
+
     case ACVP_TDES_ECB:
         if (stc->direction == ACVP_DIR_ENCRYPT) {
             memcpy(stc->pt, stc->ct, stc->ct_len);
         } else {
             memcpy(stc->ct, stc->pt, stc->pt_len);
         }
-	break;
+        break;
     default:
         break;
     }
@@ -146,10 +197,10 @@ static ACVP_RESULT acvp_des_output_mct_tc(ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *stc
                                           JSON_Object *r_tobj)
 {
     ACVP_RESULT rv;
-    char *tmp;
-    char *tmp1;
-    char *tmp2;
-    char *tmp3;
+    char *tmp = NULL;
+    char *tmp1 = NULL;
+    char *tmp2 = NULL;
+    char *tmp3 = NULL;
 
     tmp = calloc(1, ACVP_SYM_CT_MAX);
     if (!tmp) {
@@ -178,18 +229,18 @@ static ACVP_RESULT acvp_des_output_mct_tc(ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *stc
     memset(tmp3, 0x0, ACVP_SYM_CT_MAX);
     rv = acvp_bin_to_hexstr(stc->key, stc->key_len/24, (unsigned char*)tmp1);
     if (rv != ACVP_SUCCESS) {
-	ACVP_LOG_ERR("hex conversion failure (key)");
-	return rv;
+        ACVP_LOG_ERR("hex conversion failure (key)");
+        return rv;
     }
     rv = acvp_bin_to_hexstr(stc->key+8, stc->key_len/24, (unsigned char*)tmp2);
     if (rv != ACVP_SUCCESS) {
-	ACVP_LOG_ERR("hex conversion failure (key)");
-	return rv;
+        ACVP_LOG_ERR("hex conversion failure (key)");
+        return rv;
     }
     rv = acvp_bin_to_hexstr(stc->key+16, stc->key_len/24, (unsigned char*)tmp3);
     if (rv != ACVP_SUCCESS) {
-	ACVP_LOG_ERR("hex conversion failure (key)");
-	return rv;
+        ACVP_LOG_ERR("hex conversion failure (key)");
+        return rv;
     }
     json_object_set_string(r_tobj, "key1", tmp1);
     json_object_set_string(r_tobj, "key2", tmp2);
@@ -197,30 +248,46 @@ static ACVP_RESULT acvp_des_output_mct_tc(ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *stc
 
     if (stc->cipher != ACVP_TDES_ECB) {
         memset(tmp, 0x0, ACVP_SYM_CT_MAX);
-	rv = acvp_bin_to_hexstr(stc->iv, stc->iv_len, (unsigned char*)tmp);
-	if (rv != ACVP_SUCCESS) {
-	    ACVP_LOG_ERR("hex conversion failure (iv)");
-	    return rv;
+        rv = acvp_bin_to_hexstr(stc->iv, stc->iv_len, (unsigned char*)tmp);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("hex conversion failure (iv)");
+            return rv;
         }
         json_object_set_string(r_tobj, "iv", tmp);
     }
 
     if (stc->direction == ACVP_DIR_ENCRYPT) {
-	memset(tmp, 0x0, ACVP_SYM_CT_MAX);
-	rv = acvp_bin_to_hexstr(stc->pt, stc->pt_len, (unsigned char*)tmp);
-	if (rv != ACVP_SUCCESS) {
-	    ACVP_LOG_ERR("hex conversion failure (pt)");
-	    return rv;
-	}
-	json_object_set_string(r_tobj, "pt", tmp);
+        memset(tmp, 0x0, ACVP_SYM_CT_MAX);
+        if (stc->cipher == ACVP_TDES_CFB1) {
+            rv = acvp_bin_to_bit(stc->pt, 1, (unsigned char*)tmp);
+            if (rv != ACVP_SUCCESS) {
+                ACVP_LOG_ERR("hex conversion failure (pt)");
+                return rv;
+            }
+        } else {
+            rv = acvp_bin_to_hexstr(stc->pt, stc->pt_len, (unsigned char*)tmp);
+            if (rv != ACVP_SUCCESS) {
+                ACVP_LOG_ERR("hex conversion failure (pt)");
+                return rv;
+            }
+        }
+        json_object_set_string(r_tobj, "pt", tmp);
     } else {
-	memset(tmp, 0x0, ACVP_SYM_CT_MAX);
-	rv = acvp_bin_to_hexstr(stc->ct, stc->ct_len, (unsigned char*)tmp);
-	if (rv != ACVP_SUCCESS) {
-	    ACVP_LOG_ERR("hex conversion failure (ct)");
-	    return rv;
-	}
-	json_object_set_string(r_tobj, "ct", tmp);
+        memset(tmp, 0x0, ACVP_SYM_CT_MAX);
+        if (stc->cipher == ACVP_TDES_CFB1) {
+            rv = acvp_bin_to_bit(stc->ct, 1, (unsigned char*)tmp);
+            if (rv != ACVP_SUCCESS) {
+                ACVP_LOG_ERR("hex conversion failure (ct)");
+                return rv;
+            }
+        } else {
+            rv = acvp_bin_to_hexstr(stc->ct, stc->ct_len, (unsigned char*)tmp);
+            if (rv != ACVP_SUCCESS) {
+                ACVP_LOG_ERR("hex conversion failure (ct)");
+                return rv;
+            }
+        }
+        json_object_set_string(r_tobj, "ct", tmp);
     }
 
     free(tmp);
@@ -254,7 +321,7 @@ void acvp_des_set_odd_parity(unsigned char *key)
     unsigned int i;
 
     for (i=0; i<24; i++)
-	(key)[i] = odd_parity[(key)[i]];
+    (key)[i] = odd_parity[(key)[i]];
 }
 
 
@@ -266,19 +333,40 @@ void acvp_des_set_odd_parity(unsigned char *key)
  * back to the ACV server by the transport layer.
  */
 static ACVP_RESULT acvp_des_mct_tc(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap,
-		                   ACVP_TEST_CASE *tc, ACVP_SYM_CIPHER_TC *stc,
-				   JSON_Array *res_array)
+                           ACVP_TEST_CASE *tc, ACVP_SYM_CIPHER_TC *stc,
+                   JSON_Array *res_array)
 {
-    int i, j, n;
+    int i, j, n, bit_len;
     ACVP_RESULT rv;
     JSON_Value          *r_tval = NULL; /* Response testval */
     JSON_Object         *r_tobj = NULL; /* Response testobj */
     char *tmp;
+    unsigned char nk[4*8]; /* longest key+8 */
 
     tmp = calloc(1, ACVP_SYM_CT_MAX);
     if (!tmp) {
         ACVP_LOG_ERR("Unable to malloc in acvp_des_output_tc");
         return ACVP_MALLOC_FAIL;
+    }
+
+    switch (stc->cipher)
+    {
+    case ACVP_TDES_CBC:
+    case ACVP_TDES_OFB:
+    case ACVP_TDES_CFB64:
+    case ACVP_TDES_ECB:
+        bit_len = 64;
+        break;
+    case ACVP_TDES_CFB8:
+        bit_len = 8;
+        break;
+    case ACVP_TDES_CFB1:
+        bit_len = 1;
+        break;
+    default:
+        ACVP_LOG_ERR("unsupported algorithm (%d)", stc->cipher);
+        return (ACVP_UNSUPPORTED_OP);
+        break;
     }
 
 
@@ -294,17 +382,17 @@ static ACVP_RESULT acvp_des_mct_tc(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap,
          * Output the test case request values using JSON
          */
         rv = acvp_des_output_mct_tc(ctx, stc, r_tobj);
-	if (rv != ACVP_SUCCESS) {
+        if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("JSON output failure in DES module");
             return rv;
         }
 
-	for (j = 0; j < 10000; ++j) {
+        for (j = 0; j < 10000; ++j) {
 
-	    if (j == 0) {
-	        memcpy(old_iv, stc->iv, stc->iv_len);
+            if (j == 0) {
+                memcpy(old_iv, stc->iv, stc->iv_len);
             }
-	    stc->mct_index = j;    /* indicates init vs. update */
+            stc->mct_index = j;    /* indicates init vs. update */
             /* Process the current DES encrypt test vector... */
             rv = (cap->crypto_handler)(tc);
             if (rv != ACVP_SUCCESS) {
@@ -312,73 +400,73 @@ static ACVP_RESULT acvp_des_mct_tc(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap,
                 return ACVP_CRYPTO_MODULE_FAIL;
             }
             /*
-	     * Adjust the parameters for next iteration if needed.
-	     */
-	    rv = acvp_des_mct_iterate_tc(ctx, stc, i, r_tobj);
-	    if (rv != ACVP_SUCCESS) {
+             * Adjust the parameters for next iteration if needed.
+             */
+            if (stc->direction == ACVP_DIR_ENCRYPT) {
+                shiftin(nk, stc->ct, bit_len);
+            } else {
+                shiftin(nk, stc->pt, bit_len);
+            }
+            rv = acvp_des_mct_iterate_tc(ctx, stc, i, r_tobj);
+            if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("Failed the MCT iteration changes");
                 return rv;
-	    }
+            }
         }
 
-	j = 9999;
-	if (stc->direction == ACVP_DIR_ENCRYPT) {
-	    for(n=0 ; n < 8 ; ++n)
-	        stc->key[n] ^= ctext[j][n];
-	    for(n=0 ; n < 8 ; ++n)
-	        stc->key[8+n] ^= ctext[j-1][n];
-	    for(n=0 ; n < 8 ; ++n)
-	        stc->key[16+n] ^= ctext[j-2][n];
+        j = 9999;
+
+        for(n=0 ; n < 8 ; ++n)
+            stc->key[n] ^= nk[16+n]; 
+        for(n=0 ; n < 8 ; ++n)
+            stc->key[8+n] ^= nk[8+n];
+        for(n=0 ; n < 8 ; ++n)
+            stc->key[16+n] ^= nk[n]; 
 
 #if 0   /* TODO: Do we really need to special case 2-key ? */
-	if(numkeys == 2)
-	    for(n=0 ; n < 8 ; ++n)
-	        stc->key[n+16] = stc->key[n];
+    if(numkeys == 2)
+        for(n=0 ; n < 8 ; ++n)
+            stc->key[n+16] = stc->key[n];
 #endif
 
-  	    acvp_des_set_odd_parity(stc->key);
+        acvp_des_set_odd_parity(stc->key);
+        memcpy(stc->iv, stc->iv_ret_after, 8); /* only on encrypt */
+
+        if (stc->direction == ACVP_DIR_ENCRYPT) {
+            memset(tmp, 0x0, ACVP_SYM_CT_MAX);
+            if (stc->cipher == ACVP_TDES_CFB1) {
+                rv = acvp_bin_to_bit(stc->ct, 1, (unsigned char*)tmp);
+                if (rv != ACVP_SUCCESS) {
+                    ACVP_LOG_ERR("hex conversion failure (ct)");
+                    return rv;
+                }
+            } else {
+                rv = acvp_bin_to_hexstr(stc->ct, stc->ct_len, (unsigned char*)tmp);
+                if (rv != ACVP_SUCCESS) {
+                    ACVP_LOG_ERR("hex conversion failure (ct)");
+                    return rv;
+                }
+            }
+            json_object_set_string(r_tobj, "ct", tmp);
         } else {
-	    for(n=0 ; n < 8 ; ++n)
-	        stc->key[n] ^= ptext[j][n];
-	    for(n=0 ; n < 8 ; ++n)
-	        stc->key[8+n] ^= ptext[j-1][n];
-	    for(n=0 ; n < 8 ; ++n)
-	        stc->key[16+n] ^= ptext[j-2][n];
-
-#if 0   /* TODO: Do we really need to special case 2-key ? */
-	if(numkeys == 2)
-	    for(n=0 ; n < 8 ; ++n)
-	        stc->key[n+16] = stc->key[n];
-#endif
-
-  	    acvp_des_set_odd_parity(stc->key);
-
-        }
-	if (stc->direction == ACVP_DIR_ENCRYPT) {
-
-	    memset(tmp, 0x0, ACVP_SYM_CT_MAX);
-	    rv = acvp_bin_to_hexstr(stc->ct, stc->ct_len, (unsigned char*)tmp);
-	    if (rv != ACVP_SUCCESS) {
-	        ACVP_LOG_ERR("hex conversion failure (ct)");
-		return rv;
-	    }
-	    json_object_set_string(r_tobj, "ct", tmp);
-
-
-	} else {
-
-	    memset(tmp, 0x0, ACVP_SYM_CT_MAX);
-	    rv = acvp_bin_to_hexstr(stc->pt, stc->pt_len, (unsigned char*)tmp);
-	    if (rv != ACVP_SUCCESS) {
-	        ACVP_LOG_ERR("hex conversion failure (pt)");
-		return rv;
-	    }
-	    json_object_set_string(r_tobj, "pt", tmp);
-
+            memset(tmp, 0x0, ACVP_SYM_CT_MAX);
+            if (stc->cipher == ACVP_TDES_CFB1) {
+                rv = acvp_bin_to_bit(stc->pt, 1, (unsigned char*)tmp);
+                if (rv != ACVP_SUCCESS) {
+                    ACVP_LOG_ERR("hex conversion failure (pt)");
+                    return rv;
+                }
+            } else {
+                rv = acvp_bin_to_hexstr(stc->pt, stc->pt_len, (unsigned char*)tmp);
+                if (rv != ACVP_SUCCESS) {
+                    ACVP_LOG_ERR("hex conversion failure (pt)");
+                    return rv;
+                }
+            }
+            json_object_set_string(r_tobj, "pt", tmp);
         }
         /* Append the test response value to array */
         json_array_append_value(res_array, r_tval);
-
     }
 
 
@@ -396,8 +484,8 @@ static ACVP_RESULT acvp_des_mct_tc(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap,
 ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
 {
     unsigned int tc_id, keylen, ivlen, ptlen;
-    unsigned char *     key, *pt = NULL, *ct = NULL, *iv = NULL;
-    unsigned char 	*key1, *key2, *key3;
+    unsigned char *     key = NULL, *pt = NULL, *ct = NULL, *iv = NULL;
+    unsigned char     *key1, *key2, *key3;
     JSON_Value *        groupval;
     JSON_Object         *groupobj = NULL;
     JSON_Value          *testval;
@@ -422,15 +510,15 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
     ACVP_TEST_CASE tc;
     ACVP_RESULT rv;
 
-    const char		*dir_str = NULL;
-    const char		*alg_str = json_object_get_string(obj, "algorithm");
-    ACVP_SYM_CIPH_DIR	dir;
-    ACVP_CIPHER	alg_id;
+    const char        *dir_str = NULL;
+    const char        *alg_str = json_object_get_string(obj, "algorithm");
+    ACVP_SYM_CIPH_DIR    dir;
+    ACVP_CIPHER    alg_id;
     char *test_type, *json_result;
 
     if (!alg_str) {
         ACVP_LOG_ERR("unable to parse 'algorithm' from JSON");
-	return (ACVP_MALFORMED_JSON);
+        return (ACVP_MALFORMED_JSON);
     }
 
     /*
@@ -484,15 +572,15 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
         groupobj = json_value_get_object(groupval);
         dir_str = json_object_get_string(groupobj, "direction");
 
-      	/* version 0.3 direction */
-      	if (dir_str != NULL) {
-    	    /*
-    	     * verify the direction is valid
-     	     */
+        /* version 0.3 direction */
+        if (dir_str != NULL) {
+            /*
+             * verify the direction is valid
+             */
             if (!strncmp(dir_str, "encrypt", 7)) {
-                dir = ACVP_DIR_ENCRYPT;
+                 dir = ACVP_DIR_ENCRYPT;
             } else if (!strncmp(dir_str, "decrypt", 7)) {
-                dir = ACVP_DIR_DECRYPT;
+                 dir = ACVP_DIR_DECRYPT;
             } else {
                 ACVP_LOG_ERR("unsupported direction requested from server (%s)", dir_str);
                 return (ACVP_UNSUPPORTED_OP);
@@ -503,13 +591,11 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
         }
         keylen = (unsigned int)json_object_get_number(groupobj, "keyLen");
         ivlen = (unsigned int)json_object_get_number(groupobj, "ivLen");
-        //ptlen = (unsigned int)json_object_get_number(groupobj, "ptLen");
         test_type = (char *)json_object_get_string(groupobj, "testType");
 
         ACVP_LOG_INFO("    Test group: %d", i);
         ACVP_LOG_INFO("        keylen: %d", keylen);
         ACVP_LOG_INFO("         ivlen: %d", ivlen);
-        ACVP_LOG_INFO("         ptlen: %d", ptlen);
         ACVP_LOG_INFO("         dir:   %s", dir_str);
         ACVP_LOG_INFO("      testtype: %d", test_type);
 
@@ -533,10 +619,10 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
             key = (unsigned char *)json_object_get_string(testobj, "key");
 
             if (key == NULL) {
-       	        key = calloc(1, ACVP_SYM_KEY_MAX);
-        	    	if (!key) {
+                key = calloc(1, ACVP_SYM_KEY_MAX);
+                if (!key) {
                     ACVP_LOG_ERR("Unable to malloc");
-              	    return ACVP_MALLOC_FAIL;
+                    return ACVP_MALLOC_FAIL;
                 }
                 memset(key, 0x0, ACVP_SYM_KEY_MAX);
 
@@ -544,20 +630,33 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
                 memcpy(key+16, key2, 16);
                 memcpy(key+32, key3, 16);
             }
-      	    if (dir == ACVP_DIR_ENCRYPT) {
+            if (dir == ACVP_DIR_ENCRYPT) {
                 pt = (unsigned char *)json_object_get_string(testobj, "pt");
                 iv = (unsigned char *)json_object_get_string(testobj, "iv");
-              	ptlen = strlen((char *)pt)*(8/2);
+                if (!pt) return (ACVP_MALFORMED_JSON);
+
+                if (alg_id == ACVP_TDES_CFB1) {
+                    ptlen = strlen((char *)pt)*(8);
+                } else {
+                      ptlen = strlen((char *)pt)*(8/2);
+                }
             } else {
                 ct = (unsigned char *)json_object_get_string(testobj, "ct");
                 iv = (unsigned char *)json_object_get_string(testobj, "iv");
-                ptlen = strlen((char *)ct)*(8/2);
+                if (!ct) return (ACVP_MALFORMED_JSON);
+
+                if (alg_id == ACVP_TDES_CFB1) {
+                    ptlen = strlen((char *)ct)*(8);
+                } else {
+                      ptlen = strlen((char *)ct)*(8/2);
+                }
             }
 
             ACVP_LOG_INFO("        Test case: %d", j);
             ACVP_LOG_INFO("            tcId: %d", tc_id);
             ACVP_LOG_INFO("              key: %s", key);
             ACVP_LOG_INFO("               pt: %s", pt);
+            ACVP_LOG_INFO("            ptlen: %d", ptlen);
             ACVP_LOG_INFO("               ct: %s", ct);
             ACVP_LOG_INFO("               iv: %s", iv);
             ACVP_LOG_INFO("              dir: %s", dir_str);
@@ -576,7 +675,7 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
              *       the entire vector set to be more efficient
              */
             acvp_des_init_tc(ctx, &stc, tc_id, test_type, key, pt, ct, iv,
-		             keylen, ivlen, ptlen, alg_id, dir);
+                     keylen, ivlen, ptlen, alg_id, dir);
 
             /* If Monte Carlo start that here */
             if (stc.test_type == ACVP_SYM_TEST_TYPE_MCT) {
@@ -589,22 +688,22 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
                 }
             } else {
 
-            /* Process the current DES encrypt test vector... */
-            rv = (cap->crypto_handler)(&tc);
-            if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("crypto module failed the operation");
-                return ACVP_CRYPTO_MODULE_FAIL;
-            }
+                /* Process the current DES encrypt test vector... */
+                rv = (cap->crypto_handler)(&tc);
+                if (rv != ACVP_SUCCESS) {
+                    ACVP_LOG_ERR("crypto module failed the operation");
+                    return ACVP_CRYPTO_MODULE_FAIL;
+                }
 
-            /*
-             * Output the test case results using JSON
-             */
-            rv = acvp_des_output_tc(ctx, &stc, r_tobj);
-            if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("JSON output failure in 3DES module");
-                return rv;
+                /*
+                 * Output the test case results using JSON
+                 */
+                rv = acvp_des_output_tc(ctx, &stc, r_tobj);
+                if (rv != ACVP_SUCCESS) {
+                    ACVP_LOG_ERR("JSON output failure in 3DES module");
+                    return rv;
+                }
             }
-	}
 
             /*
              * Release all the memory associated with the test case
@@ -647,24 +746,42 @@ static ACVP_RESULT acvp_des_output_tc(ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *stc, JS
     }
 
     if (stc->direction == ACVP_DIR_ENCRYPT) {
-	memset(tmp, 0x0, ACVP_SYM_CT_MAX);
-	rv = acvp_bin_to_hexstr(stc->ct, stc->ct_len, (unsigned char*)tmp);
-	if (rv != ACVP_SUCCESS) {
-	    ACVP_LOG_ERR("hex conversion failure (ct)");
-	    return rv;
-	}
-	json_object_set_string(tc_rsp, "ct", tmp);
+        memset(tmp, 0x0, ACVP_SYM_CT_MAX);
+        if (stc->cipher == ACVP_TDES_CFB1) {
+            rv = acvp_bin_to_bit(stc->ct, stc->ct_len, (unsigned char*)tmp);
+            if (rv != ACVP_SUCCESS) {
+                ACVP_LOG_ERR("hex conversion failure (ct)");
+                return rv;
+            }
+
+        } else {
+            rv = acvp_bin_to_hexstr(stc->ct, stc->ct_len, (unsigned char*)tmp);
+            if (rv != ACVP_SUCCESS) {
+                ACVP_LOG_ERR("hex conversion failure (ct)");
+                return rv;
+            }
+        }
+        json_object_set_string(tc_rsp, "ct", tmp);
     } else {
-	rv = acvp_bin_to_hexstr(stc->pt, stc->pt_len, (unsigned char*)tmp);
-	if (rv != ACVP_SUCCESS) {
-	    ACVP_LOG_ERR("hex conversion failure (pt)");
-	    return rv;
-	}
-	json_object_set_string(tc_rsp, "pt", tmp);
+        memset(tmp, 0x0, ACVP_SYM_CT_MAX);
+        if (stc->cipher == ACVP_TDES_CFB1) {
+            rv = acvp_bin_to_bit(stc->pt, stc->pt_len, (unsigned char*)tmp);
+            if (rv != ACVP_SUCCESS) {
+                ACVP_LOG_ERR("hex conversion failure (pt)");
+                return rv;
+            }
+
+        } else {
+            rv = acvp_bin_to_hexstr(stc->pt, stc->pt_len, (unsigned char*)tmp);
+            if (rv != ACVP_SUCCESS) {
+                ACVP_LOG_ERR("hex conversion failure (pt)");
+                return rv;
+            }
+        }
+        json_object_set_string(tc_rsp, "pt", tmp);
     }
 
     free(tmp);
-
     return ACVP_SUCCESS;
 }
 
@@ -690,7 +807,7 @@ static ACVP_RESULT acvp_des_init_tc(ACVP_CTX *ctx,
                                     unsigned int iv_len,
                                     unsigned int pt_len,
                                     ACVP_CIPHER alg_id,
-				    ACVP_SYM_CIPH_DIR dir)
+                    ACVP_SYM_CIPH_DIR dir)
 {
     ACVP_RESULT rv;
 
@@ -706,6 +823,10 @@ static ACVP_RESULT acvp_des_init_tc(ACVP_CTX *ctx,
     if (!stc->ct) return ACVP_MALLOC_FAIL;
     stc->iv = calloc(1, ACVP_SYM_IV_MAX);
     if (!stc->iv) return ACVP_MALLOC_FAIL;
+    stc->iv_ret = calloc(1, ACVP_SYM_IV_MAX);
+    if (!stc->iv_ret) return ACVP_MALLOC_FAIL;
+    stc->iv_ret_after = calloc(1, ACVP_SYM_IV_MAX);
+    if (!stc->iv_ret_after) return ACVP_MALLOC_FAIL;
 
     /* Assume KAT if not MCT */
     if (test_type && !strcmp(test_type, "MCT")) {
@@ -723,27 +844,43 @@ static ACVP_RESULT acvp_des_init_tc(ACVP_CTX *ctx,
     }
 
     if (j_pt) {
-	rv = acvp_hexstr_to_bin((const unsigned char *)j_pt, stc->pt, ACVP_SYM_PT_MAX);
-	if (rv != ACVP_SUCCESS) {
-	    ACVP_LOG_ERR("Hex converstion failure (pt)");
-	    return rv;
-	}
+        if (alg_id == ACVP_TDES_CFB1) {
+            rv = acvp_bit_to_bin((const unsigned char *)j_pt, pt_len/8, stc->pt);
+            if (rv != ACVP_SUCCESS) {
+                ACVP_LOG_ERR("Hex conversion failure (pt)");
+                return rv;
+            }
+        } else {
+            rv = acvp_hexstr_to_bin((const unsigned char *)j_pt, stc->pt, ACVP_SYM_PT_MAX);
+            if (rv != ACVP_SUCCESS) {
+                ACVP_LOG_ERR("Hex converstion failure (pt)");
+                return rv;
+            }
+        }
     }
 
     if (j_ct) {
-	rv = acvp_hexstr_to_bin((const unsigned char *)j_ct, stc->ct, ACVP_SYM_CT_MAX);
-	if (rv != ACVP_SUCCESS) {
-	    ACVP_LOG_ERR("Hex converstion failure (ct)");
-	    return rv;
-	}
+        if (alg_id == ACVP_TDES_CFB1) {
+            rv = acvp_bit_to_bin((const unsigned char *)j_ct, pt_len/8, stc->ct);
+            if (rv != ACVP_SUCCESS) {
+                ACVP_LOG_ERR("Hex conversion failure (ct)");
+                return rv;
+            }
+        } else {
+            rv = acvp_hexstr_to_bin((const unsigned char *)j_ct, stc->ct, ACVP_SYM_CT_MAX);
+            if (rv != ACVP_SUCCESS) {
+                ACVP_LOG_ERR("Hex converstion failure (ct)");
+                return rv;
+            }
+        }
     }
 
     if (j_iv) {
-	rv = acvp_hexstr_to_bin((const unsigned char *)j_iv, stc->iv, ACVP_SYM_IV_MAX);
-	if (rv != ACVP_SUCCESS) {
-	    ACVP_LOG_ERR("Hex converstion failure (iv)");
-	    return rv;
-	}
+        rv = acvp_hexstr_to_bin((const unsigned char *)j_iv, stc->iv, ACVP_SYM_IV_MAX);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Hex converstion failure (iv)");
+            return rv;
+        }
     }
 
     /*
@@ -773,6 +910,8 @@ static ACVP_RESULT acvp_des_release_tc(ACVP_SYM_CIPHER_TC *stc)
     free(stc->pt);
     free(stc->ct);
     free(stc->iv);
+    free(stc->iv_ret);
+    free(stc->iv_ret_after);
     memset(stc, 0x0, sizeof(ACVP_SYM_CIPHER_TC));
 
     return ACVP_SUCCESS;

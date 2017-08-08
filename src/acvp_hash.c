@@ -46,7 +46,7 @@ static ACVP_RESULT acvp_hash_mct_iterate_tc(ACVP_CTX *ctx, ACVP_HASH_TC *stc, in
 static ACVP_RESULT acvp_hash_output_mct_tc(ACVP_CTX *ctx, ACVP_HASH_TC *stc, JSON_Object *r_tobj)
 {
     ACVP_RESULT rv;
-    char *tmp; 
+    char *tmp;
 
     tmp = calloc(1, ACVP_HASH_MSG_MAX);
     if (!tmp) {
@@ -79,12 +79,12 @@ static ACVP_RESULT acvp_hash_mct_tc(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap,
     ACVP_RESULT rv;
     JSON_Value          *r_tval = NULL; /* Response testval */
     JSON_Object         *r_tobj = NULL; /* Response testobj */
-    char *tmp;
-    unsigned char *msg;
+    char *tmp = NULL;
+    unsigned char *msg = NULL;
 
-    tmp = calloc(1, ACVP_SYM_CT_MAX);
+    tmp = calloc(1, ACVP_HASH_MSG_MAX);
     if (!tmp) {
-        ACVP_LOG_ERR("Unable to malloc in acvp_des_output_tc");
+        ACVP_LOG_ERR("Unable to malloc in acvp_hash_mct_tc");
         return ACVP_MALLOC_FAIL;
     }
 
