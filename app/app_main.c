@@ -38,7 +38,11 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include "acvp.h"
+#ifdef USE_MURL
+#include <murl/murl.h>
+#else
 #include <curl/curl.h>
+#endif
 #include <openssl/evp.h>
 #include <openssl/aes.h>
 #include <openssl/bio.h>
@@ -50,8 +54,7 @@
 #include <openssl/bn.h>
 #include <openssl/rsa.h>
 #include <openssl/fips.h>
-#include <fipssyms.h>
-//#include "fips_utl.h"
+#include <openssl/fipssyms.h>
 
 #ifdef ACVP_NO_RUNTIME
 #include "app_lcl.h"
