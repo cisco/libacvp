@@ -78,11 +78,17 @@ static ACVP_RESULT app_drbg_handler(ACVP_TEST_CASE *test_case);
 #endif
 
 
-#define DEFAULT_SERVER "127.0.0.1"
+/*#define DEFAULT_SERVER "127.0.0.1"
 #define DEFAULT_PORT 443
 #define DEFAULT_CA_CHAIN "certs/acvp-private-root-ca.crt.pem"
 #define DEFAULT_CERT "certs/sto-labsrv2-client-cert.pem"
 #define DEFAULT_KEY "certs/sto-labsrv2-client-key.pem"
+*/
+#define DEFAULT_SERVER "172.18.152.183"
+#define DEFAULT_PORT 8043
+#define DEFAULT_CA_CHAIN "certs/mozzila_trust_anchors.pem"
+#define DEFAULT_CERT "certs/sto-labsrv1-server.crt.pem"
+#define DEFAULT_KEY "certs/sto-labsrv1-server.key.pem”
 
 
 char *server;
