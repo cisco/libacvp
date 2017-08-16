@@ -4096,6 +4096,17 @@ ACVP_RESULT acvp_process_tests(ACVP_CTX *ctx)
     return (rv);
 }
 
+ACVP_RESULT acvp_process_injected_vector_set(ACVP_CTX *ctx, char *test_filename)
+{
+    ACVP_RESULT rv;
+    JSON_Value *obj = json_parse_file(test_filename);
+    if (json_value_get_type(root_value) != JSONArray) {
+        return ACVP_INVALID_ARG;
+    }
+    rv = acvp_process_vector_set(ctx, obj);
+    return (rv);
+}
+
 /*
  * This is a minimal retry handler, which pauses for a specific time.
  * This allows the server time to generate the vectors on behalf of
