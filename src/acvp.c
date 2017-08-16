@@ -4100,7 +4100,7 @@ ACVP_RESULT acvp_process_injected_vector_set(ACVP_CTX *ctx, char *test_filename)
 {
     ACVP_RESULT rv;
     JSON_Value *obj = json_parse_file(test_filename);
-    if (json_value_get_type(root_value) != JSONArray) {
+    if (json_value_get_type(obj) != JSONArray) {
         return ACVP_INVALID_ARG;
     }
     rv = acvp_process_vector_set(ctx, obj);
