@@ -152,7 +152,8 @@ ACVP_ALG_HANDLER alg_tbl[ACVP_ALG_MAX] = {
     {ACVP_DSA,             &acvp_dsa_kat_handler,   ACVP_ALG_DSA},
     {ACVP_RSA,             &acvp_rsa_kat_handler,   ACVP_ALG_RSA},
     {ACVP_KDF135_TLS,      &acvp_kdf135_tls_kat_handler,  ACVP_ALG_KDF135_TLS},
-    {ACVP_KDF135_SNMP,     &acvp_kdf135_snmp_kat_handler, ACVP_ALG_KDF135_SNMP}
+    {ACVP_KDF135_SNMP,     &acvp_kdf135_snmp_kat_handler, ACVP_ALG_KDF135_SNMP},
+    {ACVP_KDF135_SSH ,     &acvp_kdf135_ssh_kat_handler, ACVP_ALG_KDF135_SSH}
 };
 
 #define ACVP_NUM_PREREQS 5
@@ -1134,6 +1135,7 @@ static ACVP_RESULT acvp_validate_prereq_val(ACVP_CIPHER cipher, ACVP_PREREQ_ALG 
         break;
     case ACVP_KDF135_TLS:
     case ACVP_KDF135_SNMP:
+    case ACVP_KDF135_SSH:
         if (pre_req == ACVP_PREREQ_SHA ||
             pre_req == ACVP_PREREQ_HMAC)
             return ACVP_SUCCESS;
@@ -2621,6 +2623,41 @@ static ACVP_RESULT acvp_build_kdf135_snmp_register_cap(JSON_Object *cap_obj, ACV
     return ACVP_SUCCESS;
 }
 
+static ACVP_RESULT acvp_build_kdf135_ssh_register_cap(JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry)
+{
+    JSON_Array *temp_arr = NULL;
+    ACVP_RESULT result;
+
+    json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
+    json_object_set_value(cap_obj, "methods", json_value_init_array());
+    temp_arr = json_object_get_array(cap_obj, "methods");
+    if (cap_entry->cap.kdf135_ssh_cap->method[0] == ACVP_SSH_METH_TDES_CBC)
+        json_array_append_string(temp_arr, "TDES-CBC");
+
+    if (cap_entry->cap.kdf135_ssh_cap->method[1] == ACVP_SSH_METH_AES_128_CBC)
+        json_array_append_string(temp_arr, "AES-128-CBC");
+
+    if (cap_entry->cap.kdf135_ssh_cap->method[2] == ACVP_SSH_METH_AES_192_CBC)
+        json_array_append_string(temp_arr, "AES-192-CBC");
+
+    if (cap_entry->cap.kdf135_ssh_cap->method[3] == ACVP_SSH_METH_AES_256_CBC)
+        json_array_append_string(temp_arr, "AES-256-CBC");
+
+    json_object_set_value(cap_obj, "sha", json_value_init_array());
+    temp_arr = json_object_get_array(cap_obj, "sha");
+    if (cap_entry->cap.kdf135_ssh_cap->sha & ACVP_KDF135_SSH_CAP_SHA256)
+        json_array_append_string(temp_arr, "SHA-256");
+    if (cap_entry->cap.kdf135_ssh_cap->sha & ACVP_KDF135_SSH_CAP_SHA384)
+        json_array_append_string(temp_arr, "SHA-384");
+    if (cap_entry->cap.kdf135_ssh_cap->sha & ACVP_KDF135_SSH_CAP_SHA512)
+        json_array_append_string(temp_arr, "SHA-512");
+
+    result = acvp_lookup_prereqVals(cap_obj, cap_entry);
+    if(result != ACVP_SUCCESS) return result;
+
+    return ACVP_SUCCESS;
+}
+
 static ACVP_RESULT acvp_build_dsa_pqggen_register(JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry) {
     ACVP_RESULT result = ACVP_SUCCESS;
     ACVP_DSA_PQGGEN_ATTRS *pqggen = NULL;
@@ -2953,6 +2990,9 @@ static ACVP_RESULT acvp_build_register(ACVP_CTX *ctx, char **reg)
                 break;
             case ACVP_KDF135_SNMP:
                 acvp_build_kdf135_snmp_register_cap(cap_obj, cap_entry);
+                break;
+            case ACVP_KDF135_SSH:
+                acvp_build_kdf135_ssh_register_cap(cap_obj, cap_entry);
                 break;
             default:
                 ACVP_LOG_ERR("Cap entry not found, %d.", cap_entry->cipher);
@@ -3841,7 +3881,122 @@ ACVP_RESULT acvp_enable_kdf135_snmp_cap(
     return (acvp_append_kdf135_snmp_caps_entry(ctx, cap, crypto_handler));
 }
 
+static ACVP_RESULT acvp_append_kdf135_ssh_caps_entry(
+       ACVP_CTX *ctx,
+       ACVP_KDF135_SSH_CAP *cap,
+       ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case))
+{
+    ACVP_CAPS_LIST *cap_entry, *cap_e2;
 
+    cap_entry = calloc(1, sizeof(ACVP_CAPS_LIST));
+    if (!cap_entry) {
+        return ACVP_MALLOC_FAIL;
+    }
+    cap_entry->cipher = ACVP_KDF135_SSH;
+    cap_entry->cap.kdf135_ssh_cap = cap;
+    cap_entry->crypto_handler = crypto_handler;
+    cap_entry->cap_type = ACVP_KDF135_SSH_TYPE;
+
+    if (!ctx->caps_list) {
+        ctx->caps_list = cap_entry;
+    } else {
+        cap_e2 = ctx->caps_list;
+        while (cap_e2->next) {
+            cap_e2 = cap_e2->next;
+        }
+        cap_e2->next = cap_entry;
+    }
+    return ACVP_SUCCESS;
+}
+
+ACVP_RESULT acvp_enable_kdf135_ssh_cap(
+          ACVP_CTX *ctx,
+          ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case))
+{
+    ACVP_KDF135_SSH_CAP *cap;
+
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+    if (!crypto_handler) {
+        return ACVP_INVALID_ARG;
+    }
+
+    cap = calloc(1, sizeof(ACVP_KDF135_SSH_CAP));
+    if (!cap) {
+        return ACVP_MALLOC_FAIL;
+    }
+
+    return (acvp_append_kdf135_ssh_caps_entry(ctx, cap, crypto_handler));
+}
+
+static
+ACVP_RESULT acvp_validate_kdf135_ssh_param_value(ACVP_KDF135_SSH_METHOD method, ACVP_KDF135_SSH_CAP_PARM param) {
+    ACVP_RESULT retval = ACVP_INVALID_ARG;
+
+    if ((method < ACVP_SSH_METH_MAX) && (method > 0)) {
+        if ((param & ACVP_KDF135_SSH_CAP_SHA256) ||
+            (param & ACVP_KDF135_SSH_CAP_SHA384) ||
+            (param & ACVP_KDF135_SSH_CAP_SHA512) ) {
+            retval = ACVP_SUCCESS;
+        }
+    }
+    return retval;
+}
+
+/*
+ * The user should call this after invoking acvp_enable_kdf135_ssh_cap()
+ * to specify the kdf parameters.
+ */
+ACVP_RESULT acvp_enable_kdf135_ssh_cap_parm(
+                          ACVP_CTX *ctx,
+                          ACVP_CIPHER kcap,
+                          ACVP_KDF135_SSH_METHOD method,
+                          ACVP_KDF135_SSH_CAP_PARM param) {
+
+    ACVP_CAPS_LIST *cap;
+    ACVP_KDF135_SSH_CAP *kdf135_ssh_cap;
+
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+
+    cap = acvp_locate_cap_entry(ctx, kcap);
+    if (!cap) {
+        return ACVP_NO_CAP;
+    }
+
+    kdf135_ssh_cap = cap->cap.kdf135_ssh_cap;
+    if (!kdf135_ssh_cap) {
+        return ACVP_NO_CAP;
+    }
+
+    if (acvp_validate_kdf135_ssh_param_value(method, param) != ACVP_SUCCESS) {
+        return ACVP_INVALID_ARG;
+    }
+
+    /* only support two method types so just use whichever is available */
+    switch(method) {
+    case ACVP_SSH_METH_TDES_CBC:
+        kdf135_ssh_cap->method[0] = ACVP_SSH_METH_TDES_CBC;
+        break;
+    case ACVP_SSH_METH_AES_128_CBC:
+        kdf135_ssh_cap->method[1] = ACVP_SSH_METH_AES_128_CBC;
+        break;
+    case ACVP_SSH_METH_AES_192_CBC:
+        kdf135_ssh_cap->method[2] = ACVP_SSH_METH_AES_192_CBC;
+        break;
+    case ACVP_SSH_METH_AES_256_CBC:
+        kdf135_ssh_cap->method[3] = ACVP_SSH_METH_AES_256_CBC;
+        break;
+    default:
+        return ACVP_INVALID_ARG;
+    }
+
+    kdf135_ssh_cap->sha = kdf135_ssh_cap->sha | param;
+
+    return ACVP_SUCCESS;
+}
 
 /*
  * Append an DSA capability to the
