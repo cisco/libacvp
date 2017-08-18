@@ -314,16 +314,25 @@ static ACVP_RESULT acvp_kdf135_ssh_init_tc(ACVP_CTX *ctx,
                                     unsigned int tc_id,
                                     ACVP_CIPHER alg_id,
                                     unsigned int  sha_type,
-                                    unsigned int  sh_sec_len,
-                                    unsigned int  iv_len,
-                                    unsigned int  key_len,
+                                    unsigned int  sh_sec_len,           //bites (spec)
+                                    unsigned int  iv_len,               //bites (spec)
+                                    unsigned int  key_len,              //bites (spec)
                                     const unsigned char *shared_sec_k,
                                     const unsigned char *hash_h,
-                                    unsigned int hash_len,
+                                    unsigned int hash_len,              //bytes
                                     const unsigned char *session_id,
-                                    unsigned int session_len)
+                                    unsigned int session_len)           //bytes
 {
     memset(stc, 0x0, sizeof(ACVP_KDF135_SSH_TC));
+
+    if ((sh_sec_len/8 > ACVP_KDF135_SSH_MSG_MAX) ||
+        (iv_len/8 > ACVP_KDF135_SSH_MSG_MAX) ||
+        (key_len/8 > ACVP_KDF135_SSH_MSG_MAX) ||
+        (hash_len > ACVP_KDF135_SSH_MSG_MAX) ||
+        (session_len > ACVP_KDF135_SSH_MSG_MAX) ) {
+        ACVP_LOG_ERR("Input length too long KDF SSH.");
+        return (ACVP_DATA_TOO_LARGE);
+    }
 
     stc->shared_sec_k = calloc(1, ACVP_KDF135_SSH_MSG_MAX);
     if (!stc->shared_sec_k) return ACVP_MALLOC_FAIL;
@@ -347,8 +356,9 @@ static ACVP_RESULT acvp_kdf135_ssh_init_tc(ACVP_CTX *ctx,
     stc->sc_i_key = calloc(1, ACVP_KDF135_SSH_MSG_MAX);
     if (!stc->sc_i_key) return ACVP_MALLOC_FAIL;
 
-    memcpy(stc->shared_sec_k, shared_sec_k, key_len);
+    memcpy(stc->shared_sec_k, shared_sec_k, key_len/8);
     memcpy(stc->hash_h, hash_h, hash_len);
+    memcpy(stc->session_id, session_id, session_len);
 
     memset(stc->cs_init_iv, 0, ACVP_KDF135_SSH_MSG_MAX);
     memset(stc->sc_init_iv, 0, ACVP_KDF135_SSH_MSG_MAX);
@@ -360,11 +370,11 @@ static ACVP_RESULT acvp_kdf135_ssh_init_tc(ACVP_CTX *ctx,
     stc->tc_id        = tc_id;
     stc->cipher       = alg_id;
     stc->sha_type     = sha_type;
-    stc->sh_sec_len   = sh_sec_len;
-    stc->iv_len       = iv_len;
-    stc->key_len      = key_len;
-    stc->session_len  = session_len;
-    stc->hash_len     = hash_len;
+    stc->sh_sec_len   = sh_sec_len;     //bites
+    stc->iv_len       = iv_len;         //bites
+    stc->key_len      = key_len;        //bits
+    stc->session_len  = session_len;    //bytes
+    stc->hash_len     = hash_len;       //bytes
     return ACVP_SUCCESS;
 }
 
