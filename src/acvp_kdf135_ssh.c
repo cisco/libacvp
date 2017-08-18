@@ -347,6 +347,9 @@ static ACVP_RESULT acvp_kdf135_ssh_init_tc(ACVP_CTX *ctx,
     stc->sc_i_key = calloc(1, ACVP_KDF135_SSH_MSG_MAX);
     if (!stc->sc_i_key) return ACVP_MALLOC_FAIL;
 
+    memcpy(stc->shared_sec_k, shared_sec_k, key_len);
+    memcpy(stc->hash_h, hash_h, hash_len);
+
     memset(stc->cs_init_iv, 0, ACVP_KDF135_SSH_MSG_MAX);
     memset(stc->sc_init_iv, 0, ACVP_KDF135_SSH_MSG_MAX);
     memset(stc->cs_e_key,   0, ACVP_KDF135_SSH_MSG_MAX);

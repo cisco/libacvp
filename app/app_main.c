@@ -736,6 +736,10 @@ int main(int argc, char **argv)
    CHECK_ENABLE_CAP_RV(rv);
    rv = acvp_enable_prereq_cap(ctx, ACVP_KDF135_SSH, ACVP_PREREQ_SHA, value);
    CHECK_ENABLE_CAP_RV(rv);
+   rv = acvp_enable_prereq_cap(ctx, ACVP_KDF135_SSH, ACVP_PREREQ_TDES, value);
+   CHECK_ENABLE_CAP_RV(rv);
+   rv = acvp_enable_prereq_cap(ctx, ACVP_KDF135_SSH, ACVP_PREREQ_AES, value);
+   CHECK_ENABLE_CAP_RV(rv);
 
    rv = acvp_enable_kdf135_ssh_cap_parm(ctx, ACVP_KDF135_SSH, ACVP_SSH_METH_TDES_CBC, ACVP_KDF135_SSH_CAP_SHA256 | ACVP_KDF135_SSH_CAP_SHA384 | ACVP_KDF135_SSH_CAP_SHA512);
    CHECK_ENABLE_CAP_RV(rv);

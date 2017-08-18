@@ -1135,11 +1135,17 @@ static ACVP_RESULT acvp_validate_prereq_val(ACVP_CIPHER cipher, ACVP_PREREQ_ALG 
         break;
     case ACVP_KDF135_TLS:
     case ACVP_KDF135_SNMP:
-    case ACVP_KDF135_SSH:
         if (pre_req == ACVP_PREREQ_SHA ||
             pre_req == ACVP_PREREQ_HMAC)
             return ACVP_SUCCESS;
         break;
+    case ACVP_KDF135_SSH:
+        if (pre_req == ACVP_PREREQ_SHA ||
+            pre_req == ACVP_PREREQ_TDES ||
+            pre_req == ACVP_PREREQ_AES)
+            return ACVP_SUCCESS;
+        break;
+
     default:
         break;
     }
