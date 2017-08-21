@@ -58,7 +58,7 @@
 } while (0)
 #endif
 
-#define ACVP_ALG_MAX 52  /* Used by alg_tbl[] */
+#define ACVP_ALG_MAX 53  /* Used by alg_tbl[] */
 
 #define ACVP_ALG_AES_ECB             "AES-ECB"
 #define ACVP_ALG_AES_CBC             "AES-CBC"
@@ -136,6 +136,7 @@
 
 #define ACVP_ALG_KDF135_TLS	     "KDF-TLS"
 #define ACVP_ALG_KDF135_SNMP     "KDF-SNMP"
+#define ACVP_ALG_KDF135_SSH      "KDF-SSH"
 
 #define ACVP_SYM_KEY_MAX    64
 #define ACVP_SYM_PT_MAX     1024
@@ -154,6 +155,7 @@
 #define ACVP_HASH_MD_MAX        64
 
 #define ACVP_KDF135_TLS_MSG_MAX 1024*4
+#define ACVP_KDF135_SSH_MSG_MAX 1024
 
 #define ACVP_HMAC_MSG_MAX       1024
 #define ACVP_HMAC_MAC_MAX       64
@@ -231,6 +233,11 @@ typedef struct acvp_kdf135_tls_capability {
 typedef struct acvp_kdf135_snmp_capability {
 
 } ACVP_KDF135_SNMP_CAP;
+
+typedef struct acvp_kdf135_ssh_capability {
+    int           method[4];
+    int           sha;
+} ACVP_KDF135_SSH_CAP;
 
 typedef struct acvp_hmac_capability {
     int                       key_len_min;      // 8-524288
@@ -368,6 +375,7 @@ typedef struct acvp_caps_list_t {
       ACVP_RSA_CAP          *rsa_cap;
       ACVP_KDF135_TLS_CAP   *kdf135_tls_cap;
       ACVP_KDF135_SNMP_CAP  *kdf135_snmp_cap;
+      ACVP_KDF135_SSH_CAP   *kdf135_ssh_cap;
     //TODO: add other cipher types
     } cap;
     ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case);
@@ -440,6 +448,7 @@ ACVP_RESULT acvp_cmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 ACVP_RESULT acvp_rsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 ACVP_RESULT acvp_kdf135_tls_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 ACVP_RESULT acvp_kdf135_snmp_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
+ACVP_RESULT acvp_kdf135_ssh_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 ACVP_RESULT acvp_dsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
 /*

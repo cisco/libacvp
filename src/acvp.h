@@ -132,6 +132,7 @@ typedef enum acvp_sym_cipher {
     ACVP_DSA,
     ACVP_KDF135_TLS,
     ACVP_KDF135_SNMP,
+    ACVP_KDF135_SSH,
     ACVP_CIPHER_END
 } ACVP_CIPHER;
 
@@ -160,6 +161,22 @@ typedef enum acvp_kdf135_tls_cap_parm {
     ACVP_KDF135_TLS_CAP_MAX
 } ACVP_KDF135_TLS_CAP_PARM;
 
+/* these are bit flags */
+typedef enum acvp_kdf135_ssh_cap_parm {
+    ACVP_KDF135_SSH_CAP_MIN    = 0,
+    ACVP_KDF135_SSH_CAP_SHA256 = 1, //bin 001
+    ACVP_KDF135_SSH_CAP_SHA384 = 2, //bin 010
+    ACVP_KDF135_SSH_CAP_SHA512 = 4, //bin 100
+} ACVP_KDF135_SSH_CAP_PARM;
+
+typedef enum acvp_kdf135_ssh_method {
+    ACVP_SSH_METH_TDES_CBC = 1,
+    ACVP_SSH_METH_AES_128_CBC,
+    ACVP_SSH_METH_AES_192_CBC,
+    ACVP_SSH_METH_AES_256_CBC,
+    ACVP_SSH_METH_MAX
+} ACVP_KDF135_SSH_METHOD;
+
 /*
  * Used to help manage capability structures
  */
@@ -172,7 +189,8 @@ typedef enum acvp_capability_type {
     ACVP_RSA_TYPE,
     ACVP_DSA_TYPE,
     ACVP_KDF135_TLS_TYPE,
-    ACVP_KDF135_SNMP_TYPE
+    ACVP_KDF135_SNMP_TYPE,
+    ACVP_KDF135_SSH_TYPE
 } ACVP_CAP_TYPE;
 
 typedef enum acvp_sym_cipher_keying_option {
@@ -483,6 +501,32 @@ typedef struct acvp_kdf135_snmp_tc_t {
 
 /*
  * This struct holds data that represents a single test case
+ * for kdf135 SSH testing.  This data is
+ * passed between libacvp and the crypto module.
+ */
+typedef struct acvp_kdf135_ssh_tc_t {
+    ACVP_CIPHER cipher;
+    unsigned int  tc_id;        /* Test case id */
+    unsigned int  sha_type;
+    unsigned int  sh_sec_len;
+    unsigned int  iv_len;
+    unsigned int  key_len;
+    char          *shared_sec_k;
+    char          *hash_h;
+    unsigned int  hash_len;
+    char          *session_id;
+    unsigned int  session_len;
+    //results
+    unsigned char *cs_init_iv;
+    unsigned char *sc_init_iv;
+    unsigned char *cs_e_key;
+    unsigned char *sc_e_key;
+    unsigned char *cs_i_key;
+    unsigned char *sc_i_key;
+} ACVP_KDF135_SSH_TC;
+
+/*
+ * This struct holds data that represents a single test case
  * for hmac testing.  This data is
  * passed between libacvp and the crypto module.
  */
@@ -680,6 +724,7 @@ typedef struct acvp_cipher_tc_t {
         ACVP_RSA_TC         *rsa;
         ACVP_KDF135_TLS_TC  *kdf135_tls;
         ACVP_KDF135_SNMP_TC *kdf135_snmp;
+        ACVP_KDF135_SSH_TC  *kdf135_ssh;
         //TODO: need more types for hashes, etc.
     } tc;
 } ACVP_TEST_CASE;
@@ -1019,6 +1064,15 @@ ACVP_RESULT acvp_enable_kdf135_tls_cap_parm(
 ACVP_RESULT acvp_enable_kdf135_snmp_cap(
           ACVP_CTX *ctx,
           ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case));
+
+ACVP_RESULT acvp_enable_kdf135_ssh_cap(
+          ACVP_CTX *ctx,
+          ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case));
+ACVP_RESULT acvp_enable_kdf135_ssh_cap_parm(
+                          ACVP_CTX *ctx,
+                          ACVP_CIPHER cap,
+                          ACVP_KDF135_SSH_METHOD method,
+                          ACVP_KDF135_SSH_CAP_PARM param);
 
 /*! @brief acvp_enable_prereq_cap() allows an application to specify a
        prerequisite for a cipher capability that was previously registered.
