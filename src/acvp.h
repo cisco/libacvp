@@ -325,9 +325,9 @@ typedef enum acvp_rsa_param {
 //#define MOD_PRIME_3072     3072
 //#define MOD_PRIME_4096     4096
 
-#define RSA_SIG_TYPE_X931_NAME      "X9.31"
+#define RSA_SIG_TYPE_X931_NAME      "ANSX9.31"
 #define RSA_SIG_TYPE_PKCS1V15_NAME  "PKCS1v1.5"
-#define RSA_SIG_TYPE_PKCS1PSS_NAME  "PKCS1PSS"
+#define RSA_SIG_TYPE_PKCS1PSS_NAME  "PSS"
 
 #define PROB_PRIME_TEST_2       2
 #define PROB_PRIME_TEST_3       3

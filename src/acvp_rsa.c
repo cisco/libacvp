@@ -39,34 +39,37 @@ static ACVP_RESULT acvp_rsa_init_sig_tc(ACVP_CTX *ctx,
 									unsigned int salt_len
                                     )
 {
-    memset(sigtc, 0x0, sizeof(ACVP_RSA_SIG_TC));
 
     switch(sigtc->mode) {
     case ACVP_RSA_MODE_SIGGEN:
     	/*
     	 * make room for all items
     	 */
+    	//TODO Determine Max Lengths
 		sigtc->sig_type = calloc(RSA_SIG_TYPE_MAX, sizeof(char));
 		sigtc->sig_attrs_tc = calloc(1, sizeof(ACVP_RSA_SIG_TC));
 		if (!sigtc->sig_attrs_tc) return ACVP_MALLOC_FAIL;
-		sigtc->sig_attrs_tc->hash_alg = calloc(1, sizeof(char));
-		sigtc->sig_attrs_tc->msg = calloc(/***find real size***/1, sizeof(unsigned char));
-
+		sigtc->sig_attrs_tc->hash_alg=(char *) calloc(1, strlen(hash_alg)+1);
+		if(!sigtc->sig_attrs_tc->hash_alg) return ACVP_MALLOC_FAIL;
+		sigtc->sig_attrs_tc->msg=(char *) calloc(strlen(msg)+1, sizeof(char));
+		if(!sigtc->sig_attrs_tc->msg) return ACVP_MALLOC_FAIL;
 		/*
 		 * only make room and assign value to saltLen if sigType is PKCS1PSS
 		 */
-		if(strncmp(sig_type, RSA_SIG_TYPE_PKCS1PSS_NAME, RSA_SIG_TYPE_MAX_LEN ) == 0 ) {
-			sigtc->sig_attrs_tc->salt_len = salt_len;
+		if(strncmp(sig_type, RSA_SIG_TYPE_PKCS1PSS_NAME, RSA_SIG_TYPE_MAX_LEN ) != 0 ) {
+			salt_len=0;
 		}
 
 		/*
 		 * assign value to all items
 		 */
 		sigtc->sig_type = sig_type;
+		sigtc->sig_attrs_tc->mode = sigtc->mode;
 		sigtc->sig_attrs_tc->tc_id = tc_id; /***init tc_id in keygen***/
 		sigtc->sig_attrs_tc->modulo = modulo;
-		sigtc->sig_attrs_tc->hash_alg = hash_alg;
-		sigtc->sig_attrs_tc->msg = msg;
+		sigtc->sig_attrs_tc->salt_len = salt_len;
+		memcpy(sigtc->sig_attrs_tc->hash_alg, hash_alg, strlen(hash_alg));
+		memcpy(sigtc->sig_attrs_tc->msg, msg, strlen(msg));
 		break;
 	//case ACVP_RSA_MODE_SIGVER:
 		//do the things for sigver!!!
@@ -291,14 +294,20 @@ static ACVP_RESULT acvp_rsa_output_keygen_tc(ACVP_CTX *ctx, ACVP_RSA_KEYGEN_TC *
  */
 static ACVP_RESULT acvp_rsa_release_sig_tc(ACVP_RSA_SIG_TC *sigtc)
 {
-    if(sigtc->sig_attrs_tc->e) free(sigtc->sig_attrs_tc->e);
-    if(sigtc->sig_attrs_tc->n) free(sigtc->sig_attrs_tc->n);
-    if(sigtc->sig_attrs_tc->s) free(sigtc->sig_attrs_tc->s);
+    if(sigtc->sig_attrs_tc->e) BN_free(sigtc->sig_attrs_tc->e);
+    sigtc->sig_attrs_tc->e=NULL;
+    if(sigtc->sig_attrs_tc->n) BN_free(sigtc->sig_attrs_tc->n);
+    sigtc->sig_attrs_tc->n=NULL;
+    if(sigtc->sig_attrs_tc->s) BN_free(sigtc->sig_attrs_tc->s);
+    sigtc->sig_attrs_tc->s=NULL;
 
     if(sigtc->sig_attrs_tc->hash_alg) free(sigtc->sig_attrs_tc->hash_alg);
-    if(sigtc->sig_attrs_tc->msg) free(sigtc->sig_attrs_tc->msg);
+    sigtc->sig_attrs_tc->hash_alg=NULL;
 
+    if(sigtc->sig_attrs_tc->msg) free(sigtc->sig_attrs_tc->msg);
+    sigtc->sig_attrs_tc->msg=NULL;
     free(sigtc->sig_attrs_tc);
+    sigtc->sig_attrs_tc=NULL;
 
     return ACVP_SUCCESS;
 }
@@ -469,19 +478,20 @@ static ACVP_RESULT acvp_kat_rsa_sig(unsigned int tc_id, ACVP_CIPHER alg_id,
 	switch(sigtc->mode) {
 	case ACVP_RSA_MODE_SIGGEN:
 	{
-		modulo = (unsigned int)json_object_get_number(testobj, "modulo");
-		hash_alg = (char *)json_object_get_string(testobj, "hashAlg");
-		msg = (unsigned char *)json_object_get_string(testobj, "msg");
+		modulo = (unsigned int)json_object_get_number(groupobj, ACVP_RSA_SIG_MODULO_OBJ_NAME);
+		hash_alg = (char *)json_object_get_string(groupobj, ACVP_RSA_HASHALG_OBJ_NAME);
+		msg = (unsigned char *)json_object_get_string(testobj, ACVP_RSA_SIG_MSG_OBJ_NAME);
 		if(strncmp(sig_type, RSA_SIG_TYPE_PKCS1PSS_NAME, RSA_SIG_TYPE_MAX_LEN ) == 0 ) {
-			salt_len = (unsigned int)json_object_get_number(testobj, "saltLen");
+			salt_len = (unsigned int)json_object_get_number(testobj, ACVP_RSA_SALTLEN_OBJ_NAME);
 		}
+
 		/*
 		 * Setup the test case data that will be passed down to
 		 * the crypto module.
 		 * TODO: this does mallocs, we can probably do the mallocs once for
 		 *       the entire vector set to be more efficient
 		 */
-		rv = acvp_rsa_init_sig_tc(ctx, &*sigtc, tc_id, alg_id, /* note: mode is set in kat_handler */
+		rv = acvp_rsa_init_sig_tc(ctx, sigtc, tc_id, alg_id, /* note: mode is set in kat_handler */
 			    sig_type, modulo, hash_alg, msg, salt_len); /* siggen attrs */
 		break;
 	}
@@ -524,7 +534,8 @@ ACVP_RESULT acvp_rsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
     ACVP_CAPS_LIST      *cap;
     ACVP_RSA_KEYGEN_TC  stc;
     ACVP_RSA_SIG_TC     sigtc;
-    ACVP_TEST_CASE tc;
+    ACVP_TEST_CASE 		tc;
+    ACVP_RSA_TC			rsa_tc;
     ACVP_RESULT rv;
     const char          *alg_str = json_object_get_string(obj, "algorithm");
     char                *mode_str = NULL;
@@ -560,6 +571,8 @@ ACVP_RESULT acvp_rsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
         return (ACVP_UNSUPPORTED_OP);
     }
 
+
+    mode_str = (char *)json_object_get_string(obj, "mode");
     /*
      * Create ACVP array for response
      */
@@ -568,7 +581,6 @@ ACVP_RESULT acvp_rsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
         ACVP_LOG_ERR("ERROR: Failed to create JSON response struct. ");
         return(rv);
     }
-
     /*
      * Start to build the JSON response
      * TODO: This code will likely be common to all the algorithms, need to move this
@@ -587,11 +599,12 @@ ACVP_RESULT acvp_rsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
 
     groups = json_object_get_array(obj, "testGroups");
     g_cnt = json_array_get_count(groups);
+
+    tc.tc.rsa = &rsa_tc;
     for (i = 0; i < g_cnt; i++) {
         groupval = json_array_get_value(groups, i);
         groupobj = json_value_get_object(groupval);
 
-        mode_str = (char *)json_object_get_string(groupobj, "mode");
         if (!mode_str) {
             ACVP_LOG_ERR("ERROR: unable to parse 'mode' from JSON");
             return (ACVP_MALFORMED_JSON);
@@ -667,6 +680,7 @@ ACVP_RESULT acvp_rsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
             	/*
 				 * Get a reference to the abstracted test case
 				 */
+                memset(&sigtc, 0x0, sizeof(ACVP_RSA_SIG_TC));
 				tc.tc.rsa->sig_tc = &sigtc;
 				sigtc.mode =  tc.tc.rsa->mode;
 

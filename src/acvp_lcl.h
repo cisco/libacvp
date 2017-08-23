@@ -115,8 +115,10 @@
 #define ACVP_RSA_KEYGEN         	 "keyGen"
 #define ACVP_RSA_SIGGEN         	 "sigGen"
 #define ACVP_RSA_SIGVER              "sigVer"
-#define ACVP_RSA_HASHALG_OBJ_NAME  "hashAlgs"
-#define ACVP_RSA_SALTLEN_OBJ_NAME  "saltLens"
+#define ACVP_RSA_HASHALG_OBJ_NAME  "hashAlg"
+#define ACVP_RSA_SALTLEN_OBJ_NAME  "saltLen"
+#define ACVP_RSA_SIG_MSG_OBJ_NAME  "message"
+#define ACVP_RSA_SIG_MODULO_OBJ_NAME  "modulo"
 
 #define ACVP_DRBG_MODE_SHA_1         "SHA-1"
 #define ACVP_DRBG_MODE_SHA_224       "SHA-224"

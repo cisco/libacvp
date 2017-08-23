@@ -1,78 +1,64 @@
-[
-   { "acvVersion": "0.4" },
-   { "vsId": 1163,
-      "algorithm": "RSA",
-      "mode": "sigGen",
-      "testGroups" : [
-             {
-                 "sigType" : "ANSX9.31",
-                 "hashAlg" : "SHA-256",
-                 "modulo" : 2048,
-                 "tests" : [
-                    {
-                      "tcId" : 1165,
-                      "message" : "f648ffc4ed74845803fec53ba865d3889b3892e402d96c5eba814698ec84b32ce1d7684917cff19d942ba2787a55cf2edce540bdd067dfafc55eb442178913c7e164144813f2446dc4ba9aa0c90fad708695233304016df04420b27cd31b08e29ff9ea080965e7903bb297fdbc1cd31741512590c7307ee7ded0278d48c4fa47"
-                    },
-                 ]
-             },
-             {
-                "sigType": "ANSX9.31",
-                "hashAlg" : "SHA-256",
-                "modulo" : 3072,
-                "tests": [
-                    {
-                      "tcId" : 1166,
-                      "message" : "f5feb83726c8839aeaec00a67f46ee2c3f5226b169e47ec42419ec8fc18defab41ce2a391711522e2f244bee2ea48e1dfc70ceb1805ddb4caa2cc6cab7b94615b0745a41341530d5788c46668c37cf6be058584c06c6abbcb9e3f4491fcd22314bd99078063de537cf0c3937206879bef3f30ca98586b6bb5a26bd3581334ba7"
-                    }
-                 ]
-             },
-             {
-                "sigType" : "PKCS1v1.5",
-                "hashAlg" : "SHA-256",
-                "modulo" : 2048,
-                "tests" : [
-                   {
-                     "tcId" : 1167,
-                     "message" : "5af283b1b76ab2a695d794c23b35ca7371fc779e92ebf589e304c7f923d8cf976304c19818fcd89d6f07c8d8e08bf371068bdf28ae6ee83b2e02328af8c0e2f96e528e16f852f1fc5455e4772e288a68f159ca6bdcf902b858a1f94789b3163823e2d0717ff56689eec7d0e54d93f520d96e1eb04515abc70ae90578ff38d31b"
-                   },
-                ]
-             },
-             {
-                "sigType" : "PKCS1v1.5",
-                "hashAlg" : "SHA-256",
-                "modulo" : 3072,
-                "tests" : [
-                    {
-                      "tcId" : 1168,
-                      "message" : "bcf6074333a7ede592ffc9ecf1c51181287e0a69363f467de4bf6b5aa5b03759c150c1c2b23b023cce8393882702b86fb0ef9ef9a1b0e1e01cef514410f0f6a05e2252fd3af4e566d4e9f79b38ef910a73edcdfaf89b4f0a429614dabab46b08da94405e937aa049ec5a7a8ded33a338bb9f1dd404a799e19ddb3a836aa39c77"
-                    }
-                 ]
-             },
-             {
-                "sigType" : "PSS",
-                "hashAlg" : "SHA-256",
-                "modulo" : 2048,
-                "tests" : [
-                    {
-                      "tcId" : 1169,
-                      "saltLen" : 20,
-                      "message" : "dfc22604b95d15328059745c6c98eb9dfb347cf9f170aff19deeec555f22285a6706c4ecbf0fb1458c60d9bf913fbae6f4c554d245d946b4bc5f34aec2ac6be8b33dc8e0e3a9d601dfd53678f5674443f67df78a3a9e0933e5f158b169ac8d1c4cd0fb872c14ca8e001e542ea0f9cfda88c42dcad8a74097a00c22055b0bd41f"
-                    }
-                 ]
-             },
-             {
-                "sigType" : "PSS",
-                "hashAlg" : "SHA-256",
-                "modulo" : 3072,
-                "tests" : [
-                    {
-                      "tcId" : 1170,
-                      "saltLen" : 20,
-                      "message" : "c16499110ed577202aed2d3e4d51ded6c66373faef6533a860e1934c63484f87a8d9b92f3ac45197b2909710abba1daf759fe0510e9bd8dd4d73cec961f06ee07acd9d42c6d40dac9f430ef90374a7e944bde5220096737454f96b614d0f6cdd9f08ed529a4ad0e759cf3a023dc8a30b9a872974af9b2af6dc3d111d0feb7006"
-                    }
-                 ]
-             }
-       ]
-    }
-  ]
-
+[{
+	"acvVersion": "0.4"
+}, {
+	"vsId": 1163,
+	"algorithm": "RSA",
+	"mode": "sigGen",
+	"testGroups": [{
+			"sigType": "ANSX9.31",
+			"hashAlg": "SHA-256",
+			"modulo": 2048,
+			"tests": [{
+				"tcId": 1165,
+				"message": "f648ffc4ed74845803fec53ba865d3889b3892e402d96c5eba814698ec84b32ce1d7684917cff19d942ba2787a55cf2edce540bdd067dfafc55eb442178913c7e164144813f2446dc4ba9aa0c90fad708695233304016df04420b27cd31b08e29ff9ea080965e7903bb297fdbc1cd31741512590c7307ee7ded0278d48c4fa47"
+			}]
+		},
+		{
+			"sigType": "ANSX9.31",
+			"hashAlg": "SHA-256",
+			"modulo": 3072,
+			"tests": [{
+				"tcId": 1166,
+				"message": "f5feb83726c8839aeaec00a67f46ee2c3f5226b169e47ec42419ec8fc18defab41ce2a391711522e2f244bee2ea48e1dfc70ceb1805ddb4caa2cc6cab7b94615b0745a41341530d5788c46668c37cf6be058584c06c6abbcb9e3f4491fcd22314bd99078063de537cf0c3937206879bef3f30ca98586b6bb5a26bd3581334ba7"
+			}]
+		},
+		{
+			"sigType": "PKCS1v1.5",
+			"hashAlg": "SHA-256",
+			"modulo": 2048,
+			"tests": [{
+				"tcId": 1167,
+				"message": "5af283b1b76ab2a695d794c23b35ca7371fc779e92ebf589e304c7f923d8cf976304c19818fcd89d6f07c8d8e08bf371068bdf28ae6ee83b2e02328af8c0e2f96e528e16f852f1fc5455e4772e288a68f159ca6bdcf902b858a1f94789b3163823e2d0717ff56689eec7d0e54d93f520d96e1eb04515abc70ae90578ff38d31b"
+			}]
+		},
+		{
+			"sigType": "PKCS1v1.5",
+			"hashAlg": "SHA-256",
+			"modulo": 3072,
+			"tests": [{
+				"tcId": 1168,
+				"message": "bcf6074333a7ede592ffc9ecf1c51181287e0a69363f467de4bf6b5aa5b03759c150c1c2b23b023cce8393882702b86fb0ef9ef9a1b0e1e01cef514410f0f6a05e2252fd3af4e566d4e9f79b38ef910a73edcdfaf89b4f0a429614dabab46b08da94405e937aa049ec5a7a8ded33a338bb9f1dd404a799e19ddb3a836aa39c77"
+			}]
+		},
+		{
+			"sigType": "PSS",
+			"hashAlg": "SHA-256",
+			"modulo": 2048,
+			"tests": [{
+				"tcId": 1169,
+				"saltLen": 20,
+				"message": "dfc22604b95d15328059745c6c98eb9dfb347cf9f170aff19deeec555f22285a6706c4ecbf0fb1458c60d9bf913fbae6f4c554d245d946b4bc5f34aec2ac6be8b33dc8e0e3a9d601dfd53678f5674443f67df78a3a9e0933e5f158b169ac8d1c4cd0fb872c14ca8e001e542ea0f9cfda88c42dcad8a74097a00c22055b0bd41f"
+			}]
+		},
+		{
+			"sigType": "PSS",
+			"hashAlg": "SHA-256",
+			"modulo": 3072,
+			"tests": [{
+				"tcId": 1170,
+				"saltLen": 20,
+				"message": "c16499110ed577202aed2d3e4d51ded6c66373faef6533a860e1934c63484f87a8d9b92f3ac45197b2909710abba1daf759fe0510e9bd8dd4d73cec961f06ee07acd9d42c6d40dac9f430ef90374a7e944bde5220096737454f96b614d0f6cdd9f08ed529a4ad0e759cf3a023dc8a30b9a872974af9b2af6dc3d111d0feb7006"
+			}]
+		}
+	]
+}]
