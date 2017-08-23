@@ -61,7 +61,6 @@
 #include <openssl/fips.h>
 extern int fips_selftest_fail;
 extern int fips_mode;
-#endif
 int dsa_builtin_paramgen(DSA *ret, size_t bits, size_t qbits,
 	const EVP_MD *evpmd, const unsigned char *seed_in, size_t seed_len,
 	unsigned char *seed_out,
@@ -70,7 +69,7 @@ int dsa_builtin_paramgen2(DSA *ret, size_t L, size_t N,
 	const EVP_MD *evpmd, const unsigned char *seed_in, size_t seed_len,
 	int idx, unsigned char *seed_out,
 	int *counter_ret, unsigned long *h_ret, BN_GENCB *cb);
-
+#endif
 static ACVP_RESULT app_aes_handler_aead(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_aes_keywrap_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_aes_handler(ACVP_TEST_CASE *test_case);
@@ -2139,6 +2138,7 @@ static ACVP_RESULT app_cmac_handler(ACVP_TEST_CASE *test_case)
     return ACVP_SUCCESS;
 }
 
+#ifdef ACVP_NO_RUNTIME
 static ACVP_RESULT app_dsa_handler(ACVP_TEST_CASE *test_case)
 {
     ACVP_DSA_PQGGEN_TC *pqggen;
@@ -2257,7 +2257,7 @@ static ACVP_RESULT app_dsa_handler(ACVP_TEST_CASE *test_case)
     }
     return ACVP_SUCCESS;
 }
-
+#endif
 
 static ACVP_RESULT app_rsa_handler(ACVP_TEST_CASE *test_case)
 {
