@@ -2126,7 +2126,6 @@ static ACVP_RESULT app_rsa_siggen_handler(ACVP_TEST_CASE *test_case)
 
 	BN_free(bn_e);
 
-//	printf("\nRSA SIGGEN---- E: %s\n", rsa->e);
 
 	/*
 	 * Retrieve and save the exponent and modulus from the key generation process
@@ -2152,7 +2151,7 @@ static ACVP_RESULT app_rsa_siggen_handler(ACVP_TEST_CASE *test_case)
 		/*
 		 * Retrieve and save the signature generated from signing the generated key
 		 */
-		tc->sig_tc->sig_attrs_tc->s = BN_bin2bn(sigbuf, siglen, calloc(1,sizeof(BIGNUM))); /***what format is this given in and what should it be?***/
+		tc->sig_tc->sig_attrs_tc->s = BN_bin2bn(sigbuf, siglen, calloc(1,sizeof(BIGNUM)));
 		if (sigbuf)
 			OPENSSL_free(sigbuf);
 	}

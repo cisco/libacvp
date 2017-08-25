@@ -312,6 +312,7 @@ typedef enum acvp_rsa_param {
 #define RSA_SALT_SIGGEN_64      64
 
 #define RSA_HASH_ALG_MAX_LEN    12
+#define RSA_MSG_MAX_LEN         1000
 #define RSA_SIG_TYPE_MAX        16
 //#define MOD_PROV_PRIME_2048     2048
 //#define MOD_PROV_PRIME_3072     3072

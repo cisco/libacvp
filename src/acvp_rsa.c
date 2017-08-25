@@ -45,13 +45,12 @@ static ACVP_RESULT acvp_rsa_init_sig_tc(ACVP_CTX *ctx,
     	/*
     	 * make room for all items
     	 */
-    	//TODO Determine Max Lengths
 		sigtc->sig_type = calloc(RSA_SIG_TYPE_MAX, sizeof(char));
 		sigtc->sig_attrs_tc = calloc(1, sizeof(ACVP_RSA_SIG_ATTRS_TC));
 		if (!sigtc->sig_attrs_tc) return ACVP_MALLOC_FAIL;
-		sigtc->sig_attrs_tc->hash_alg=(char *) calloc(1, strlen(hash_alg)+1);
+		sigtc->sig_attrs_tc->hash_alg=(char *) calloc(1, RSA_HASH_ALG_MAX_LEN);
 		if(!sigtc->sig_attrs_tc->hash_alg) return ACVP_MALLOC_FAIL;
-		sigtc->sig_attrs_tc->msg=(char *) calloc(strlen(msg)+1, sizeof(char));
+		sigtc->sig_attrs_tc->msg=(char *) calloc(1, RSA_MSG_MAX_LEN);
 		if(!sigtc->sig_attrs_tc->msg) return ACVP_MALLOC_FAIL;
 		/*
 		 * only make room and assign value to saltLen if sigType is PKCS1PSS
