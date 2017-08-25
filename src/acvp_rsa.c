@@ -108,7 +108,6 @@ static ACVP_RESULT acvp_rsa_init_keygen_tc(ACVP_CTX *ctx,
                                     unsigned char *xq2
                                     )
 {
-    memset(stc, 0x0, sizeof(ACVP_RSA_KEYGEN_TC));
     stc->rand_pq = rand_pq;
 
     switch(stc->mode) {
