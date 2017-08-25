@@ -198,13 +198,13 @@ ACVP_RESULT is_valid_tf_param(unsigned int value) {
 /* This function checks to see if the value is a hash alg */
 ACVP_RESULT is_valid_hash_alg(char *value) {
     if (!value) return ACVP_INVALID_ARG;
-    if (strncmp(value, ACVP_RSA_PRIME_SHA_1, 5) == 0 ||
-        strncmp(value, ACVP_RSA_PRIME_SHA_224, 7) == 0 ||
-        strncmp(value, ACVP_RSA_PRIME_SHA_256, 7) == 0 ||
-        strncmp(value, ACVP_RSA_PRIME_SHA_384, 7) == 0 ||
-        strncmp(value, ACVP_RSA_PRIME_SHA_512, 7) == 0 ||
-        strncmp(value, ACVP_RSA_PRIME_SHA_512_224, 11) == 0 ||
-        strncmp(value, ACVP_RSA_PRIME_SHA_512_256, 11) == 0)
+    if (strncmp(value, ACVP_RSA_SHA_1, 5) == 0 ||
+        strncmp(value, ACVP_RSA_SHA_224, 7) == 0 ||
+        strncmp(value, ACVP_RSA_SHA_256, 7) == 0 ||
+        strncmp(value, ACVP_RSA_SHA_384, 7) == 0 ||
+        strncmp(value, ACVP_RSA_SHA_512, 7) == 0 ||
+        strncmp(value, ACVP_RSA_SHA_512_224, 11) == 0 ||
+        strncmp(value, ACVP_RSA_SHA_512_256, 11) == 0)
             return ACVP_SUCCESS;
     else return ACVP_INVALID_ARG;
 }
@@ -220,9 +220,9 @@ ACVP_RESULT is_valid_prime_test(char *value) {
 
 /* This function checks to see if the value is a valid prime test (RSA) */
 ACVP_RESULT is_valid_rsa_mod(int value) {
-    if (value != MOD_PRIME_2048 &&
-        value != MOD_PRIME_3072 &&
-        value != MOD_PRIME_4096)
+    if (value != MOD_RSA_2048 &&
+        value != MOD_RSA_3072 &&
+        value != MOD_RSA_4096)
             return ACVP_INVALID_ARG;
     else return ACVP_SUCCESS;
 }
@@ -237,8 +237,10 @@ ACVP_RSA_MODE acvp_lookup_rsa_mode_index(char *mode)
 {
     int i;
     struct acvp_rsa_mode_name_t rsa_mode_tbl[ACVP_RSA_MODE_END] = {
+            // YIKES THIS IS BACKWARDS FROM DRBG
             {ACVP_RSA_MODE_KEYGEN, ACVP_RSA_KEYGEN},
-            {ACVP_RSA_MODE_SIGVER, ACVP_RSA_SIGVER},
+			{ACVP_RSA_MODE_SIGGEN, ACVP_RSA_SIGGEN},
+            {ACVP_RSA_MODE_SIGVER, ACVP_RSA_SIGVER}
     };
 
     for (i = 0; i < ACVP_RSA_MODE_END; i++) {
@@ -462,6 +464,76 @@ ACVP_RSA_CAP_MODE_LIST* acvp_locate_rsa_mode_entry(ACVP_CAPS_LIST *cap,
     return NULL;
 }
 
+ACVP_RSA_CAP_MODE_LIST* acvp_locate_rsa_sig_type_entry(ACVP_CAPS_LIST *cap,
+                                                   ACVP_RSA_MODE mode,
+                                                   ACVP_RSA_SIG_TYPE sig_type)
+{
+    ACVP_RSA_CAP_MODE_LIST *cap_mode_list;
+    ACVP_RSA_MODE          *cap_mode;
+    ACVP_RSA_CAP           *rsa_cap;
+    char *sig_type_str = acvp_rsa_get_sig_type_name(sig_type);
+    if(!sig_type_str) return NULL;
+
+    rsa_cap = cap->cap.rsa_cap;
+
+    /*
+     * No entires yet
+     */
+    cap_mode_list = rsa_cap->rsa_cap_mode_list;
+    if (!cap_mode_list) {
+        return NULL;
+    }
+
+    cap_mode = &cap_mode_list->cap_mode;
+    if (!cap_mode) {
+        return NULL;
+    }
+
+    while (cap_mode_list) {
+        if (*cap_mode == mode) {
+            switch(mode) {
+            case ACVP_RSA_MODE_SIGGEN:
+                if(!cap_mode_list->cap_mode_attrs.siggen)
+                    return NULL;
+                if(!cap_mode_list->cap_mode_attrs.siggen->sig_type)
+                    break;
+                if(!strcmp(cap_mode_list->cap_mode_attrs.siggen->sig_type,sig_type_str)) {
+                    return cap_mode_list;
+                }
+                break;
+            case ACVP_RSA_MODE_SIGVER:
+                if(!cap_mode_list->cap_mode_attrs.sigver)
+                    return NULL;
+                if(!cap_mode_list->cap_mode_attrs.sigver->sig_type)
+                    break;
+                if(!strcmp(cap_mode_list->cap_mode_attrs.sigver->sig_type,sig_type_str)) {
+                    return cap_mode_list;
+                }
+                break;
+            default:
+                return NULL;
+            }
+        }
+        cap_mode_list = cap_mode_list->next;
+        cap_mode = &cap_mode_list->cap_mode;
+    }
+    return NULL;
+}
+char *acvp_rsa_get_sig_type_name(ACVP_RSA_SIG_TYPE sig_type)
+{
+    switch(sig_type)
+    {
+    case RSA_SIG_TYPE_X931:
+        return RSA_SIG_TYPE_X931_NAME;
+    case RSA_SIG_TYPE_PKCS1V15:
+        return RSA_SIG_TYPE_PKCS1V15_NAME;
+    case RSA_SIG_TYPE_PKCS1PSS:
+        return RSA_SIG_TYPE_PKCS1PSS_NAME;
+    default:
+        break;
+    }
+    return NULL;
+}
 unsigned int yes_or_no(ACVP_CTX *ctx, const char *text)
 {
     unsigned int result;
