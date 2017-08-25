@@ -215,10 +215,9 @@ static ACVP_RESULT acvp_rsa_output_sig_tc(ACVP_CTX *ctx, ACVP_RSA_SIG_TC *sigtc,
             /*
              * set the JSON vals
              */
-            /*** tc_id???***/
             json_object_set_string(tc_rsp, "e", BN_bn2hex(sigtc->sig_attrs_tc->e));
             json_object_set_string(tc_rsp, "n", BN_bn2hex(sigtc->sig_attrs_tc->n));
-            json_object_set_string(tc_rsp, "s", BN_bn2hex(sigtc->sig_attrs_tc->s));
+            json_object_set_string(tc_rsp, "signature", BN_bn2hex(sigtc->sig_attrs_tc->s));
             break;
         //case ACVP_RSA_MODE_SIGVER:
             /*

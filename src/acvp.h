@@ -316,13 +316,12 @@ typedef enum acvp_rsa_param {
     ACVP_RAND_PQ,
     ACVP_CAPS_PROV_PRIME,
     ACVP_CAPS_PROB_PRIME,
-	ACVP_CAPS_PROV_PROB_PRIME,
-	ACVP_RSA_INFO_GEN_BY_SERVER,
-	ACVP_SIG_TYPE,
-	ACVP_CAP_SIG_TYPE
+    ACVP_CAPS_PROV_PROB_PRIME,
+    ACVP_RSA_INFO_GEN_BY_SERVER,
+    ACVP_SIG_TYPE,
+    ACVP_CAP_SIG_TYPE
 } ACVP_RSA_PARM;
 
-// TODO not sure if these even go here.....
 #define MOD_RSA_2048     2048
 #define MOD_RSA_3072     3072
 #define MOD_RSA_4096     4096
@@ -334,17 +333,6 @@ typedef enum acvp_rsa_param {
 #define RSA_HASH_ALG_MAX_LEN    12
 #define RSA_MSG_MAX_LEN         1000
 #define RSA_SIG_TYPE_MAX        16
-//#define MOD_PROV_PRIME_2048     2048
-//#define MOD_PROV_PRIME_3072     3072
-//#define MOD_PROV_PRIME_4096     4096
-//
-//#define MOD_PROB_PRIME_2048     2048
-//#define MOD_PROB_PRIME_3072     3072
-//#define MOD_PROB_PRIME_4096     4096
-//
-//#define MOD_PRIME_2048     2048
-//#define MOD_PRIME_3072     3072
-//#define MOD_PRIME_4096     4096
 
 #define RSA_SIG_TYPE_X931_NAME      "ANSX9.31"
 #define RSA_SIG_TYPE_PKCS1V15_NAME  "PKCS1v1.5"
@@ -367,15 +355,15 @@ typedef enum acvp_rsa_param {
 typedef enum acvp_rsa_mode {
     ACVP_RSA_MODE_START = 0,
     ACVP_RSA_MODE_KEYGEN,
-	ACVP_RSA_MODE_SIGGEN,
+    ACVP_RSA_MODE_SIGGEN,
     ACVP_RSA_MODE_SIGVER,
     ACVP_RSA_MODE_END
 } ACVP_RSA_MODE;
 
 typedef enum acvp_rsa_sig_type {
-	RSA_SIG_TYPE_X931 = 0,
-	RSA_SIG_TYPE_PKCS1V15,
-	RSA_SIG_TYPE_PKCS1PSS
+    RSA_SIG_TYPE_X931 = 0,
+    RSA_SIG_TYPE_PKCS1V15,
+    RSA_SIG_TYPE_PKCS1PSS
 } ACVP_RSA_SIG_TYPE;
 
 typedef enum acvp_sym_cipher_parameter {
@@ -609,7 +597,7 @@ typedef struct acvp_cmac_tc_t {
  * for RSA testing.  This data is
  * passed between libacvp and the crypto module.
  */
-typedef struct acvp_rsa_keygen_attrs_tc_t {
+typedef struct acvp_rsa_keygen_tc_t {
     ACVP_RSA_MODE mode; // "keyGen"
 
     char *hash_alg;
@@ -650,16 +638,6 @@ typedef struct acvp_rsa_keygen_attrs_tc_t {
     unsigned char *prime_seed_q2;
 
     unsigned char *prime_result; // "prime" or "composite"
-} ACVP_RSA_KEYGEN_ATTRS_TC;
-
-typedef struct acvp_rsa_keygen_tc_t {
-    ACVP_CIPHER cipher; /* hash algorithm TODO: need to validate that
-                           this is one of the hashes when we check parms */
-    ACVP_RSA_MODE mode; // "keyGen"
-    int info_gen_by_server;
-    unsigned int rand_pq;
-    unsigned int mod;
-    ACVP_RSA_KEYGEN_ATTRS_TC *keygen_attrs_tc;
 } ACVP_RSA_KEYGEN_TC;
 
 /*
@@ -668,7 +646,7 @@ typedef struct acvp_rsa_keygen_tc_t {
  * passed between libacvp and the crypto module.
  */
 typedef struct acvp_rsa_sig_attrs_tc_t {
-    ACVP_RSA_MODE mode; // "sigGen" /***necessary in here?***/
+    ACVP_RSA_MODE mode; // "sigGen" 
     unsigned int  tc_id;    /* Test case id */
     unsigned int  modulo;
     char *hash_alg;
@@ -687,7 +665,7 @@ typedef struct acvp_rsa_sig_tc_t {
 } ACVP_RSA_SIG_TC;
 
 typedef struct acvp_rsa_tc_t {
-	ACVP_RSA_MODE mode;
+    ACVP_RSA_MODE mode;
     ACVP_RSA_KEYGEN_TC *keygen_tc;
     ACVP_RSA_SIG_TC *sig_tc;
 } ACVP_RSA_TC;
@@ -853,12 +831,12 @@ enum acvp_result {
     @return ACVP_RESULT
  */
 ACVP_RESULT acvp_enable_sym_cipher_cap(
-	ACVP_CTX *ctx,
-	ACVP_CIPHER cipher,
-	ACVP_SYM_CIPH_DIR dir,
-	ACVP_SYM_CIPH_KO keying_options,
-	ACVP_SYM_CIPH_IVGEN_SRC ivgen_source,
-	ACVP_SYM_CIPH_IVGEN_MODE ivgen_mode,
+    ACVP_CTX *ctx,
+    ACVP_CIPHER cipher,
+    ACVP_SYM_CIPH_DIR dir,
+    ACVP_SYM_CIPH_KO keying_options,
+    ACVP_SYM_CIPH_IVGEN_SRC ivgen_source,
+    ACVP_SYM_CIPH_IVGEN_MODE ivgen_mode,
         ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case));
 
 
@@ -887,10 +865,10 @@ ACVP_RESULT acvp_enable_sym_cipher_cap(
     @return ACVP_RESULT
  */
 ACVP_RESULT acvp_enable_sym_cipher_cap_parm(
-	ACVP_CTX *ctx,
-	ACVP_CIPHER cipher,
-	ACVP_SYM_CIPH_PARM parm,
-	int length);
+    ACVP_CTX *ctx,
+    ACVP_CIPHER cipher,
+    ACVP_SYM_CIPH_PARM parm,
+    int length);
 
 /*! @brief acvp_enable_hash_cap() allows an application to specify a
        hash capability to be tested by the ACVP server.
@@ -913,13 +891,13 @@ ACVP_RESULT acvp_enable_sym_cipher_cap_parm(
     @return ACVP_RESULT
  */
 ACVP_RESULT acvp_enable_hash_cap(
-	ACVP_CTX *ctx,
-	ACVP_CIPHER cipher,
+    ACVP_CTX *ctx,
+    ACVP_CIPHER cipher,
         ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case));
 
 ACVP_RESULT acvp_enable_hash_cap_parm (
-		   ACVP_CTX *ctx,
-		   ACVP_CIPHER cipher,
+           ACVP_CTX *ctx,
+           ACVP_CIPHER cipher,
                    ACVP_HASH_PARM       param,
                    int                  value);
 
@@ -1066,29 +1044,29 @@ ACVP_RESULT acvp_enable_rsa_cap_sig_type_salt_parm (ACVP_CTX *ctx,
                              );
 
 /*! @brief acvp_enable_hmac_cap() allows an application to specify an
-	   HMAC capability to be tested by the ACVP server.
+       HMAC capability to be tested by the ACVP server.
 
-	This function should be called to enable crypto capabilities for
-	hmac algorithms that will be tested by the ACVP server.  This
-	includes HMAC-SHA-1, HMAC-SHA2-256, HMAC-SHA2-384, etc.  This function may be called
-	multiple times to specify more than one crypto capability.
+    This function should be called to enable crypto capabilities for
+    hmac algorithms that will be tested by the ACVP server.  This
+    includes HMAC-SHA-1, HMAC-SHA2-256, HMAC-SHA2-384, etc.  This function may be called
+    multiple times to specify more than one crypto capability.
 
-	When the application enables a crypto capability, such as HMAC-SHA-1, it
-	also needs to specify a callback function that will be used by libacvp
-	when that crypto capability is needed during a test session.
+    When the application enables a crypto capability, such as HMAC-SHA-1, it
+    also needs to specify a callback function that will be used by libacvp
+    when that crypto capability is needed during a test session.
 
-	@param ctx Address of pointer to a previously allocated ACVP_CTX.
-	@param cipher ACVP_CIPHER enum value identifying the crypto capability.
-	@param crypto_handler Address of function implemented by application that
-	   is invoked by libacvp when the crypto capablity is needed during
-	   a test session.
+    @param ctx Address of pointer to a previously allocated ACVP_CTX.
+    @param cipher ACVP_CIPHER enum value identifying the crypto capability.
+    @param crypto_handler Address of function implemented by application that
+       is invoked by libacvp when the crypto capablity is needed during
+       a test session.
 
-	@return ACVP_RESULT
+    @return ACVP_RESULT
  */
 ACVP_RESULT acvp_enable_hmac_cap(
-						ACVP_CTX *ctx,
-						ACVP_CIPHER cipher,
-						ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case));
+                        ACVP_CTX *ctx,
+                        ACVP_CIPHER cipher,
+                        ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case));
 
 ACVP_RESULT acvp_enable_hmac_cap_parm(
                           ACVP_CTX *ctx,
@@ -1097,29 +1075,29 @@ ACVP_RESULT acvp_enable_hmac_cap_parm(
                           int value);
 
 /*! @brief acvp_enable_cmac_cap() allows an application to specify an
-	   CMAC capability to be tested by the ACVP server.
+       CMAC capability to be tested by the ACVP server.
 
-	This function should be called to enable crypto capabilities for
-	cmac algorithms that will be tested by the ACVP server.  This
-	includes CMAC-AES-128, CMAC-AES-192, CMAC-AES-256, etc.  This function may be called
-	multiple times to specify more than one crypto capability.
+    This function should be called to enable crypto capabilities for
+    cmac algorithms that will be tested by the ACVP server.  This
+    includes CMAC-AES-128, CMAC-AES-192, CMAC-AES-256, etc.  This function may be called
+    multiple times to specify more than one crypto capability.
 
-	When the application enables a crypto capability, such as CMAC-AES-128, it
-	also needs to specify a callback function that will be used by libacvp
-	when that crypto capability is needed during a test session.
+    When the application enables a crypto capability, such as CMAC-AES-128, it
+    also needs to specify a callback function that will be used by libacvp
+    when that crypto capability is needed during a test session.
 
-	@param ctx Address of pointer to a previously allocated ACVP_CTX.
-	@param cipher ACVP_CIPHER enum value identifying the crypto capability.
-	@param crypto_handler Address of function implemented by application that
-	   is invoked by libacvp when the crypto capablity is needed during
-	   a test session.
+    @param ctx Address of pointer to a previously allocated ACVP_CTX.
+    @param cipher ACVP_CIPHER enum value identifying the crypto capability.
+    @param crypto_handler Address of function implemented by application that
+       is invoked by libacvp when the crypto capablity is needed during
+       a test session.
 
-	@return ACVP_RESULT
+    @return ACVP_RESULT
  */
 ACVP_RESULT acvp_enable_cmac_cap(
-						ACVP_CTX *ctx,
-						ACVP_CIPHER cipher,
-						ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case));
+                        ACVP_CTX *ctx,
+                        ACVP_CIPHER cipher,
+                        ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case));
 
 ACVP_RESULT acvp_enable_cmac_cap_parm(
                           ACVP_CTX *ctx,
@@ -1151,7 +1129,7 @@ ACVP_RESULT acvp_enable_kdf135_tls_cap_parm(
                           ACVP_CTX *ctx,
                           ACVP_CIPHER cap,
                           ACVP_KDF135_TLS_METHOD method,
-			  ACVP_KDF135_TLS_CAP_PARM param);
+              ACVP_KDF135_TLS_CAP_PARM param);
 
 
 ACVP_RESULT acvp_enable_kdf135_snmp_cap(
@@ -1202,7 +1180,7 @@ ACVP_RESULT acvp_enable_prereq_cap(
     @return ACVP_RESULT
  */
 ACVP_RESULT acvp_create_test_session(ACVP_CTX **ctx, ACVP_RESULT (*progress_cb)(char *msg),
-	                             ACVP_LOG_LVL level);
+                                 ACVP_LOG_LVL level);
 
 /*! @brief acvp_free_test_session() releases the memory associated with
        an ACVP_CTX.
@@ -1337,10 +1315,10 @@ ACVP_RESULT acvp_process_tests(ACVP_CTX *ctx);
     @return ACVP_RESULT
  */
 ACVP_RESULT acvp_set_vendor_info(ACVP_CTX *ctx,
-				 const char *vendor_name,
-				 const char *vendor_url,
-				 const char *contact_name,
-				 const char *contact_email);
+                 const char *vendor_name,
+                 const char *vendor_url,
+                 const char *contact_name,
+                 const char *contact_email);
 
 /*! @brief acvp_set_module_info() specifies the crypto module attributes
     for the test session.
@@ -1355,10 +1333,10 @@ ACVP_RESULT acvp_set_vendor_info(ACVP_CTX *ctx,
     @return ACVP_RESULT
  */
 ACVP_RESULT acvp_set_module_info(ACVP_CTX *ctx,
-				 const char *module_name,
-				 const char *module_type,
-				 const char *module_version,
-				 const char *module_description);
+                 const char *module_name,
+                 const char *module_type,
+                 const char *module_version,
+                 const char *module_description);
 
 ACVP_RESULT acvp_check_test_results(ACVP_CTX *ctx);
 void acvp_cleanup(void);
