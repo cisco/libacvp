@@ -643,6 +643,8 @@ ACVP_RESULT acvp_rsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
                 /*
                  * Get a reference to the abstracted test case
                  */
+			    
+                memset(&stc, 0x0, sizeof(ACVP_RSA_SIG_TC));
                 tc.tc.rsa->keygen_tc = &stc;
                 stc.mode = tc.tc.rsa->mode;
 
