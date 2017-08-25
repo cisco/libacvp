@@ -28,7 +28,7 @@
 
 #include "parson.h"
 
-#define ACVP_VERSION    "0.3"
+#define ACVP_VERSION    "0.4"
 
 #ifndef ACVP_LOG_INFO
 #define ACVP_LOG_INFO(format, args ...) do { \

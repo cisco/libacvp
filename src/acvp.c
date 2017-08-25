@@ -3073,7 +3073,7 @@ ACVP_RESULT acvp_register(ACVP_CTX *ctx)
         return rv;
     }
 
-    if (ctx->debug == ACVP_LOG_LVL_STATUS) {
+    if (ctx->debug >= ACVP_LOG_LVL_STATUS) {
         printf("\nPOST %s\n", reg);
     } else {
         ACVP_LOG_INFO("POST %s", reg);
