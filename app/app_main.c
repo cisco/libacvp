@@ -2041,7 +2041,7 @@ static ACVP_RESULT app_rsa_siggen_handler(ACVP_TEST_CASE *test_case)
 		return ACVP_INVALID_ARG;
 	}
 
-//	fips_algtest_init(); /*** necessito? ***/
+    //	fips_algtest_init(); /*** necessito? ***/
 
 	/*
 	 * Set the message digest to the appropriate sha
@@ -2104,21 +2104,21 @@ static ACVP_RESULT app_rsa_siggen_handler(ACVP_TEST_CASE *test_case)
 	if(strncmp(tc->sig_tc->sig_type, RSA_SIG_TYPE_X931_NAME, RSA_SIG_TYPE_MAX ) == 0 ) {
 		pad_mode = RSA_X931_PADDING;
 		if (!RSA_X931_generate_key_ex(rsa, tc->sig_tc->sig_attrs_tc->modulo, bn_e, NULL)) {
-			printf("\nError: Issue with keygen during siggen mode for sigType X9.31\n");
+			printf("\nError: Issue with keygen during siggen mode for sigType %s\n",RSA_SIG_TYPE_X931_NAME);
 			return ACVP_CRYPTO_MODULE_FAIL;
 		}
 	} else if(strncmp(tc->sig_tc->sig_type, RSA_SIG_TYPE_PKCS1V15_NAME, RSA_SIG_TYPE_MAX ) == 0 ) {
 		pad_mode = RSA_PKCS1_PADDING;
-//		if (!RSA_PKCS1V15_generate_key_ex(rsa, tc->sig_tc->sig_attrs_tc->modulo, bn_e, NULL)) { /*** only need to (can) generate key with x931-- sigType doesn't matter for key generation ***/
-//			printf("\nError: Issue with keygen during siggen mode for sigType PKCS1V15\n");
-//			return ACVP_CRYPTO_MODULE_FAIL;
-//		}
+		if (!RSA_X931_generate_key_ex(rsa, tc->sig_tc->sig_attrs_tc->modulo, bn_e, NULL)) { /*** only need to (can) generate key with x931-- sigType doesn't matter for key generation ***/
+			printf("\nError: Issue with keygen during siggen mode for sigType PKCS1V15\n");
+			return ACVP_CRYPTO_MODULE_FAIL;
+		}
 	} else if(strncmp(tc->sig_tc->sig_type, RSA_SIG_TYPE_PKCS1PSS_NAME, RSA_SIG_TYPE_MAX ) == 0 ) {
 		pad_mode = RSA_PKCS1_PSS_PADDING;
-//		if (!RSA_PKCS1PSS_generate_key_ex(rsa, tc->sig_tc->sig_attrs_tc->modulo, bn_e, NULL)) { /*** only need to (can) generate key with x931-- sigType doesn't matter for key generation ***/
-//			printf("\nError: Issue with keygen during siggen mode for sigType PKCS1PSS\n");
-//			return ACVP_CRYPTO_MODULE_FAIL;
-//		}
+		if (!RSA_X931_generate_key_ex(rsa, tc->sig_tc->sig_attrs_tc->modulo, bn_e, NULL)) { /*** only need to (can) generate key with x931-- sigType doesn't matter for key generation ***/
+			printf("\nError: Issue with keygen during siggen mode for sigType PKCS1PSS\n");
+			return ACVP_CRYPTO_MODULE_FAIL;
+		}
 	} else {
 		printf("\nError: sigType not supported\n");
 		return ACVP_INVALID_ARG;
@@ -2126,7 +2126,6 @@ static ACVP_RESULT app_rsa_siggen_handler(ACVP_TEST_CASE *test_case)
 
 	BN_free(bn_e);
 
-	printf("\nRSA SIGGEN---- E: %s\n", rsa->e);
 
 	/*
 	 * Retrieve and save the exponent and modulus from the key generation process
@@ -2152,14 +2151,12 @@ static ACVP_RESULT app_rsa_siggen_handler(ACVP_TEST_CASE *test_case)
 		/*
 		 * Retrieve and save the signature generated from signing the generated key
 		 */
-		tc->sig_tc->sig_attrs_tc->s = sigbuf; /***what format is this given in and what should it be?***/
-
+		tc->sig_tc->sig_attrs_tc->s = BN_bin2bn(sigbuf, siglen, calloc(1,sizeof(BIGNUM)));
 		if (sigbuf)
 			OPENSSL_free(sigbuf);
 	}
 	return ACVP_SUCCESS;
 }
-
 
 /* RSA SigVer handler
  * msg and sig are binary format
