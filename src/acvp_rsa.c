@@ -47,7 +47,7 @@ static ACVP_RESULT acvp_rsa_init_sig_tc(ACVP_CTX *ctx,
     	 */
     	//TODO Determine Max Lengths
 		sigtc->sig_type = calloc(RSA_SIG_TYPE_MAX, sizeof(char));
-		sigtc->sig_attrs_tc = calloc(1, sizeof(ACVP_RSA_SIG_TC));
+		sigtc->sig_attrs_tc = calloc(1, sizeof(ACVP_RSA_SIG_ATTRS_TC));
 		if (!sigtc->sig_attrs_tc) return ACVP_MALLOC_FAIL;
 		sigtc->sig_attrs_tc->hash_alg=(char *) calloc(1, strlen(hash_alg)+1);
 		if(!sigtc->sig_attrs_tc->hash_alg) return ACVP_MALLOC_FAIL;
@@ -488,7 +488,7 @@ static ACVP_RESULT acvp_kat_rsa_sig(unsigned int tc_id, ACVP_CIPHER alg_id,
 		/*
 		 * Setup the test case data that will be passed down to
 		 * the crypto module.
-		 * TODO: this does mallocs, we can probably do the mallocs once for
+		 * TODO: this does mallocs,kat we can probably do the mallocs once for
 		 *       the entire vector set to be more efficient
 		 */
 		rv = acvp_rsa_init_sig_tc(ctx, sigtc, tc_id, alg_id, /* note: mode is set in kat_handler */
@@ -688,7 +688,6 @@ ACVP_RESULT acvp_rsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
 				 * Retrieve values from JSON and init tc
 				 */
             	rv = acvp_kat_rsa_sig(tc_id, alg_id, groupobj, testobj, cap, ctx, &sigtc);
-
             	/* Process the current test vector... */
 				if (rv == ACVP_SUCCESS) {
 					rv = (cap->crypto_handler)(&tc);

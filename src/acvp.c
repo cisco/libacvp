@@ -4106,6 +4106,8 @@ ACVP_RESULT acvp_process_injected_vector_set(ACVP_CTX *ctx, char *test_filename)
     }
     JSON_Object *obj = acvp_get_obj_from_rsp(val);
     rv = acvp_process_vector_set(ctx, obj);
+    acvp_submit_vector_responses(ctx);
+    json_value_free(val);
     return (rv);
 }
 
