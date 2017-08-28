@@ -2276,8 +2276,9 @@ static ACVP_RESULT app_cmac_handler(ACVP_TEST_CASE *test_case)
     return ACVP_SUCCESS;
 }
 
-/*#ifdef ACVP_NO_RUNTIME
-static ACVP_RESULT app_dsa_handler(ACVP_TEST_CASE *test_case)
+//Must be commented out if the user is Making with Makefile.fom
+#ifdef ACVP_NO_RUNTIME
+/*static ACVP_RESULT app_dsa_handler(ACVP_TEST_CASE *test_case)
 {
     ACVP_DSA_PQGGEN_TC *pqggen;
     int                dsa2 = 0, L, N;
@@ -2394,9 +2395,9 @@ static ACVP_RESULT app_dsa_handler(ACVP_TEST_CASE *test_case)
         break;
     }
     return ACVP_SUCCESS;
-}
+}*/
 #endif
-*/
+
 static ACVP_RESULT app_rsa_handler(ACVP_TEST_CASE *test_case)
 {
     /*
@@ -2476,76 +2477,11 @@ static ACVP_RESULT app_rsa_handler(ACVP_TEST_CASE *test_case)
     return ACVP_SUCCESS;
 }
 
-/**
- * copied from ciscossl-fom fips_utl.h
- */
-unsigned char *hex2bin_m(const char *in, long *plen)
-{
-	unsigned char *p;
-	if (strlen(in) == 0)
-		{
-		*plen = 0;
-		return OPENSSL_malloc(1);
-		}
-	p = OPENSSL_malloc((strlen(in) + 1)/2);
-	*plen = hex2bin(in, p);
-	return p;
-}
 
-int hex2bin(const char *in, unsigned char *out)
-{
-    int n1, n2, isodd = 0;
-    unsigned char ch;
-
-    n1 = strlen(in);
-    if (in[n1 - 1] == '\n')
-	n1--;
-
-    if (n1 & 1)
-	isodd = 1;
-
-    for (n1=0,n2=0 ; in[n1] && in[n1] != '\n' ; )
-	{ /* first byte */
-	if ((in[n1] >= '0') && (in[n1] <= '9'))
-	    ch = in[n1++] - '0';
-	else if ((in[n1] >= 'A') && (in[n1] <= 'F'))
-	    ch = in[n1++] - 'A' + 10;
-	else if ((in[n1] >= 'a') && (in[n1] <= 'f'))
-	    ch = in[n1++] - 'a' + 10;
-	else
-	    return -1;
-	if(!in[n1])
-	    {
-	    out[n2++]=ch;
-	    break;
-	    }
-	/* If input is odd length first digit is least significant: assumes
-	 * all digits valid hex and null terminated which is true for the
-	 * strings we pass.
-	 */
-	if (n1 == 1 && isodd)
-		{
-		out[n2++] = ch;
-		continue;
-		}
-	out[n2] = ch << 4;
-	/* second byte */
-	if ((in[n1] >= '0') && (in[n1] <= '9'))
-	    ch = in[n1++] - '0';
-	else if ((in[n1] >= 'A') && (in[n1] <= 'F'))
-	    ch = in[n1++] - 'A' + 10;
-	else if ((in[n1] >= 'a') && (in[n1] <= 'f'))
-	    ch = in[n1++] - 'a' + 10;
-	else
-	    return -1;
-	out[n2++] |= ch;
-	}
-    return n2;
-}
-
-
+#ifdef ACVP_NO_RUNTIME
 /*
  * RSA SigGen handler
+ * requires Makefile.fom to function
  */
 static ACVP_RESULT app_rsa_siggen_handler(ACVP_TEST_CASE *test_case)
 {
@@ -2596,12 +2532,18 @@ static ACVP_RESULT app_rsa_siggen_handler(ACVP_TEST_CASE *test_case)
     /*
      * Set the message given from the tc to binary form
      */
-    msg = hex2bin_m(tc->sig_tc->sig_attrs_tc->msg, &msglen);
-    if (msglen == -1) {
+    msg = calloc(1,RSA_MSG_MAX_LEN);
+    if(!msg)
+    {
+    	printf("\nError: Alloc failure in RSA SigGen Handler\n");
+        return ACVP_INVALID_ARG;
+    }
+    ACVP_RESULT rv = acvp_hexstr_to_bin(tc->sig_tc->sig_attrs_tc->msg,msg,RSA_MSG_MAX_LEN);
+    if (rv != ACVP_SUCCESS) {
         printf("\nError: hex2bin error for RSA SigGen\n");
         return ACVP_INVALID_ARG;
     }
-
+    msglen = strlen((const char*)tc->sig_tc->sig_attrs_tc->msg)/2;
     /*
      * Make an RSA object and set a new BN exponent to use to generate a key
      */
@@ -2833,7 +2775,6 @@ err:
         return ACVP_UNSUPPORTED_OP;
 }
 
-#ifdef ACVP_NO_RUNTIME
 typedef struct
 {
     unsigned char *ent;
