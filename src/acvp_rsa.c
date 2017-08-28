@@ -67,8 +67,8 @@ static ACVP_RESULT acvp_rsa_init_sig_tc(ACVP_CTX *ctx,
         sigtc->sig_attrs_tc->tc_id = tc_id; /***init tc_id in keygen***/
         sigtc->sig_attrs_tc->modulo = modulo;
         sigtc->sig_attrs_tc->salt_len = salt_len;
-        memcpy(sigtc->sig_attrs_tc->hash_alg, hash_alg, strlen(hash_alg));
-        memcpy(sigtc->sig_attrs_tc->msg, msg, strlen(msg));
+        memcpy(sigtc->sig_attrs_tc->hash_alg, hash_alg, RSA_HASH_ALG_MAX_LEN);
+        memcpy(sigtc->sig_attrs_tc->msg, msg, RSA_MSG_MAX_LEN);
         break;
     //case ACVP_RSA_MODE_SIGVER:
         //do the things for sigver!!!
@@ -107,6 +107,7 @@ static ACVP_RESULT acvp_rsa_init_tc_keygen(ACVP_CTX *ctx,
                                     unsigned char *xq2
                                     )
 {
+    memset(stc, 0x0, sizeof(ACVP_RSA_TC));
     stc->rand_pq = rand_pq;
 
     switch(stc->mode) {
@@ -238,7 +239,7 @@ static ACVP_RESULT acvp_rsa_output_sig_tc(ACVP_CTX *ctx, ACVP_RSA_SIG_TC *sigtc,
  * file that will be uploaded to the server.  This routine handles
  * the JSON processing for a single test case.
  */
-static ACVP_RESULT acvp_rsa_output_keygen_tc(ACVP_CTX *ctx, ACVP_RSA_KEYGEN_TC *stc, JSON_Object *tc_rsp)
+static ACVP_RESULT acvp_rsa_output_tc(ACVP_CTX *ctx, ACVP_RSA_TC *stc, JSON_Object *tc_rsp)
 {
     switch(stc->mode) {
         case ACVP_RSA_MODE_KEYGEN:
@@ -313,7 +314,8 @@ static ACVP_RESULT acvp_rsa_release_sig_tc(ACVP_RSA_SIG_TC *sigtc)
  * This function simply releases the data associated with
  * a test case.
  */
-static ACVP_RESULT acvp_rsa_release_keygen_tc(ACVP_RSA_KEYGEN_TC *stc)
+
+static ACVP_RESULT acvp_rsa_release_tc(ACVP_RSA_TC *stc)
 {
     if(stc->keygen_tc->e) free(stc->keygen_tc->e);
     if(stc->keygen_tc->seed) free(stc->keygen_tc->seed);
@@ -532,7 +534,6 @@ ACVP_RESULT acvp_rsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
     ACVP_RSA_TC stc;
     ACVP_TEST_CASE tc;
     ACVP_RSA_SIG_TC     sigtc;
-    ACVP_RSA_TC         rsa_tc;
     ACVP_RESULT rv;
     const char          *alg_str = json_object_get_string(obj, "algorithm");
     char                *mode_str = NULL;
@@ -609,7 +610,6 @@ ACVP_RESULT acvp_rsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
     groups = json_object_get_array(obj, "testGroups");
     g_cnt = json_array_get_count(groups);
 
-    tc.tc.rsa = &rsa_tc;
     for (i = 0; i < g_cnt; i++) {
         groupval = json_array_get_value(groups, i);
         groupobj = json_value_get_object(groupval);
