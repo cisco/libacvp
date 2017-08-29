@@ -665,7 +665,11 @@ typedef struct acvp_rsa_sig_tc_t {
 } ACVP_RSA_SIG_TC;
 
 typedef struct acvp_rsa_tc_t {
-    ACVP_RSA_MODE mode;
+    ACVP_CIPHER cipher;
+    ACVP_RSA_MODE mode; // "keyGen"
+    int info_gen_by_server;
+    unsigned int rand_pq;
+    unsigned int mod;
     ACVP_RSA_KEYGEN_TC *keygen_tc;
     ACVP_RSA_SIG_TC *sig_tc;
 } ACVP_RSA_TC;

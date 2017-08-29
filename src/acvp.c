@@ -1513,64 +1513,20 @@ ACVP_RESULT acvp_enable_rsa_cap_parm (ACVP_CTX *ctx,
         break;
     case ACVP_RSA_MODE_SIGGEN:
         if (rsa_cap_mode_list->cap_mode_attrs.siggen->sig_type) {
-            rsa_cap_mode_list = acvp_locate_rsa_sig_type_entry(cap_list, mode,
-                    value);
+            rsa_cap_mode_list= acvp_locate_rsa_sig_type_entry(ctx, cap_list, mode,
+                                            value);
             if (!rsa_cap_mode_list) {
-                rsa_cap_mode_list = calloc(1, sizeof(ACVP_RSA_CAP_MODE_LIST));
-                if (!rsa_cap_mode_list) {
-                    ACVP_LOG_ERR("Malloc Failed -- RSA cap mode list entry");
-                    return ACVP_MALLOC_FAIL;
-                }
-                rsa_cap_mode_list->cap_mode = mode;
-                rsa_cap_mode_list->cap_mode_attrs.siggen = calloc(1,
-                        sizeof(ACVP_RSA_SIGGEN_ATTRS));
-                if (!rsa_cap_mode_list->cap_mode_attrs.siggen) {
-                    ACVP_LOG_ERR("Malloc Failed -- RSA SigGen cap attributes");
-                    return ACVP_MALLOC_FAIL;
-                }
-                ACVP_RSA_CAP_MODE_LIST *current_rsa_cap_list =
-                        ctx->caps_list->cap.rsa_cap->rsa_cap_mode_list;
-                if (!current_rsa_cap_list)
-                    ctx->caps_list->cap.rsa_cap->rsa_cap_mode_list =
-                            rsa_cap_mode_list;
-                else {
-                    while (current_rsa_cap_list->next) {
-                        current_rsa_cap_list = current_rsa_cap_list->next;
-                    }
-                    current_rsa_cap_list->next = rsa_cap_mode_list;
-                }
+                return ACVP_INVALID_ARG;
             }
         }
         result = acvp_add_rsa_siggen_parm(rsa_cap_mode_list, param, value);
         break;
     case ACVP_RSA_MODE_SIGVER:
         if (rsa_cap_mode_list->cap_mode_attrs.sigver->sig_type) {
-            rsa_cap_mode_list = acvp_locate_rsa_sig_type_entry(cap_list, mode,
-                    value);
+            rsa_cap_mode_list = acvp_locate_rsa_sig_type_entry(ctx, cap_list, mode,
+        	                    value);
             if (!rsa_cap_mode_list) {
-                rsa_cap_mode_list = calloc(1, sizeof(ACVP_RSA_CAP_MODE_LIST));
-                if (!rsa_cap_mode_list) {
-                    ACVP_LOG_ERR("Malloc Failed -- RSA cap mode list entry");
-                    return ACVP_MALLOC_FAIL;
-                }
-                rsa_cap_mode_list->cap_mode = mode;
-                rsa_cap_mode_list->cap_mode_attrs.sigver = calloc(1,
-                        sizeof(ACVP_RSA_SIGVER_ATTRS));
-                if (!rsa_cap_mode_list->cap_mode_attrs.sigver) {
-                    ACVP_LOG_ERR("Malloc Failed -- RSA SigVer cap attributes");
-                    return ACVP_MALLOC_FAIL;
-                }
-                ACVP_RSA_CAP_MODE_LIST *current_rsa_cap_list =
-                        ctx->caps_list->cap.rsa_cap->rsa_cap_mode_list;
-                if (!current_rsa_cap_list)
-                    ctx->caps_list->cap.rsa_cap->rsa_cap_mode_list =
-                            rsa_cap_mode_list;
-                else {
-                    while (current_rsa_cap_list->next) {
-                        current_rsa_cap_list = current_rsa_cap_list->next;
-                    }
-                    current_rsa_cap_list->next = rsa_cap_mode_list;
-                }
+                return ACVP_INVALID_ARG;
             }
         }
         result = acvp_add_rsa_sigver_parm(rsa_cap_mode_list, param, value);
@@ -1628,45 +1584,9 @@ ACVP_RESULT acvp_enable_rsa_cap_sig_type_parm (ACVP_CTX *ctx,
         ACVP_LOG_ERR("RSA Cap entry not found.");
         return ACVP_NO_CAP;
     }
-    rsa_cap_mode_list = acvp_locate_rsa_sig_type_entry(cap_list, mode, sig_type);
+    rsa_cap_mode_list = acvp_locate_rsa_sig_type_entry(ctx, cap_list, mode, sig_type);
     if (!rsa_cap_mode_list) {
-        rsa_cap_mode_list = calloc(1, sizeof(ACVP_RSA_CAP_MODE_LIST));
-        if (!rsa_cap_mode_list) {
-            ACVP_LOG_ERR("Malloc Failed -- RSA cap mode list entry");
-            return ACVP_MALLOC_FAIL;
-        }
-
-        rsa_cap_mode_list->cap_mode = mode;
-
-        switch(mode) {
-        case ACVP_RSA_MODE_SIGGEN:
-            rsa_cap_mode_list->cap_mode_attrs.siggen = calloc(1, sizeof(ACVP_RSA_SIGGEN_ATTRS));
-            if (!rsa_cap_mode_list->cap_mode_attrs.siggen) {
-                ACVP_LOG_ERR("Malloc Failed -- RSA SigGen cap attributes");
-                return ACVP_MALLOC_FAIL;
-            }
-            break;
-        case ACVP_RSA_MODE_SIGVER:
-            rsa_cap_mode_list->cap_mode_attrs.sigver = calloc(1, sizeof(ACVP_RSA_SIGVER_ATTRS));
-            if (!rsa_cap_mode_list->cap_mode_attrs.sigver) {
-                ACVP_LOG_ERR("Malloc Failed -- RSA SigVer cap attributes");
-                return ACVP_MALLOC_FAIL;
-            }
-            break;
-        default:
-            break;
-        }
-        ACVP_CAPS_LIST *current_rsa_cap_list =
-                cap_list->cap.rsa_cap->rsa_cap_mode_list;
-        if (!current_rsa_cap_list)
-            cap_list->cap.rsa_cap->rsa_cap_mode_list =
-                    rsa_cap_mode_list;
-        else {
-            while (current_rsa_cap_list->next) {
-                current_rsa_cap_list = current_rsa_cap_list->next;
-            }
-            current_rsa_cap_list->next = rsa_cap_mode_list;
-        }
+        return ACVP_INVALID_ARG;
     }
     // TODO CHECK PARAMS BEFORE DOING ALL THIS LOOKUP
     int found = 0;
@@ -1836,36 +1756,9 @@ ACVP_RESULT acvp_enable_rsa_cap_sig_type_salt_parm (ACVP_CTX *ctx,
         ACVP_LOG_ERR("RSA Cap entry not found.");
         return ACVP_NO_CAP;
     }
-    rsa_cap_mode_list = acvp_locate_rsa_sig_type_entry(cap_list, mode, sig_type);
+    rsa_cap_mode_list = acvp_locate_rsa_sig_type_entry(ctx, cap_list, mode, sig_type);
     if (!rsa_cap_mode_list) {
-        rsa_cap_mode_list = calloc(1, sizeof(ACVP_RSA_CAP_MODE_LIST));
-        if (!rsa_cap_mode_list) {
-            ACVP_LOG_ERR("Malloc Failed -- RSA cap mode list entry");
-            return ACVP_MALLOC_FAIL;
-        }
-
-        rsa_cap_mode_list->cap_mode = mode;
-
-        switch(mode) {
-        case ACVP_RSA_MODE_SIGGEN:
-            rsa_cap_mode_list->cap_mode_attrs.siggen = calloc(1, sizeof(ACVP_RSA_SIGGEN_ATTRS));
-            if (!rsa_cap_mode_list->cap_mode_attrs.siggen) {
-                ACVP_LOG_ERR("Malloc Failed -- RSA SigGen cap attributes");
-                return ACVP_MALLOC_FAIL;
-            }
-            break;
-        case ACVP_RSA_MODE_SIGVER:
-                    rsa_cap_mode_list->cap_mode_attrs.sigver = calloc(1, sizeof(ACVP_RSA_SIGVER_ATTRS));
-                    if (!rsa_cap_mode_list->cap_mode_attrs.sigver) {
-                        ACVP_LOG_ERR("Malloc Failed -- RSA SigVer cap attributes");
-                        return ACVP_MALLOC_FAIL;
-                    }
-                    break;
-        default:
-            break;
-        }
-
-        cap_list->cap.rsa_cap->rsa_cap_mode_list = rsa_cap_mode_list;
+        return ACVP_INVALID_ARG;
     }
 
     // TODO CHECK PARAMS BEFORE DOING ALL THIS LOOKUP
@@ -2599,7 +2492,7 @@ ACVP_RESULT acvp_set_cacerts(ACVP_CTX *ctx, char *ca_file)
     /*
      * Enable peer verification when CA certs are provided.
      */
-    ctx->verify_peer = 0;
+    ctx->verify_peer = 1;
 
     return ACVP_SUCCESS;
 }
@@ -4397,7 +4290,6 @@ static ACVP_RESULT acvp_process_vsid(ACVP_CTX *ctx, int vs_id)
 
     return ACVP_SUCCESS;
 }
-
 
 /*
  * This function is used to invoke the appropriate handler function

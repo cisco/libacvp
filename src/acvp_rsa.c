@@ -67,12 +67,9 @@ static ACVP_RESULT acvp_rsa_init_sig_tc(ACVP_CTX *ctx,
         sigtc->sig_attrs_tc->tc_id = tc_id; /***init tc_id in keygen***/
         sigtc->sig_attrs_tc->modulo = modulo;
         sigtc->sig_attrs_tc->salt_len = salt_len;
-        memcpy(sigtc->sig_attrs_tc->hash_alg, hash_alg, strlen(hash_alg));
-        memcpy(sigtc->sig_attrs_tc->msg, msg, strlen(msg));
+        memcpy(sigtc->sig_attrs_tc->hash_alg, hash_alg, RSA_HASH_ALG_MAX_LEN);
+        memcpy(sigtc->sig_attrs_tc->msg, msg, RSA_MSG_MAX_LEN);
         break;
-    //case ACVP_RSA_MODE_SIGVER:
-        //do the things for sigver!!!
-        //break;
     default:
         break;
     }
@@ -107,6 +104,7 @@ static ACVP_RESULT acvp_rsa_init_tc_keygen(ACVP_CTX *ctx,
                                     unsigned char *xq2
                                     )
 {
+    memset(stc, 0x0, sizeof(ACVP_RSA_TC));
     stc->rand_pq = rand_pq;
 
     switch(stc->mode) {
@@ -219,12 +217,6 @@ static ACVP_RESULT acvp_rsa_output_sig_tc(ACVP_CTX *ctx, ACVP_RSA_SIG_TC *sigtc,
             json_object_set_string(tc_rsp, "n", BN_bn2hex(sigtc->sig_attrs_tc->n));
             json_object_set_string(tc_rsp, "signature", BN_bn2hex(sigtc->sig_attrs_tc->s));
             break;
-        //case ACVP_RSA_MODE_SIGVER:
-            /*
-             * set the JSON vals
-             */
-            // do sigver vals here!!!
-            //break;
         default:
             break;
     }
@@ -238,7 +230,7 @@ static ACVP_RESULT acvp_rsa_output_sig_tc(ACVP_CTX *ctx, ACVP_RSA_SIG_TC *sigtc,
  * file that will be uploaded to the server.  This routine handles
  * the JSON processing for a single test case.
  */
-static ACVP_RESULT acvp_rsa_output_keygen_tc(ACVP_CTX *ctx, ACVP_RSA_KEYGEN_TC *stc, JSON_Object *tc_rsp)
+static ACVP_RESULT acvp_rsa_output_tc(ACVP_CTX *ctx, ACVP_RSA_TC *stc, JSON_Object *tc_rsp)
 {
     switch(stc->mode) {
         case ACVP_RSA_MODE_KEYGEN:
@@ -313,7 +305,8 @@ static ACVP_RESULT acvp_rsa_release_sig_tc(ACVP_RSA_SIG_TC *sigtc)
  * This function simply releases the data associated with
  * a test case.
  */
-static ACVP_RESULT acvp_rsa_release_keygen_tc(ACVP_RSA_KEYGEN_TC *stc)
+
+static ACVP_RESULT acvp_rsa_release_tc(ACVP_RSA_TC *stc)
 {
     if(stc->keygen_tc->e) free(stc->keygen_tc->e);
     if(stc->keygen_tc->seed) free(stc->keygen_tc->seed);
@@ -460,11 +453,6 @@ static ACVP_RESULT acvp_kat_rsa_sig(unsigned int tc_id, ACVP_CIPHER alg_id,
     salt_len = 0;
 
     /*
-     * sigver attrs for test obj
-     */
-    //they go here!!!
-
-    /*
      * set group obj -- common to siggen and sigver
      */
     sig_type = (char *)json_object_get_string(groupobj, "sigType");
@@ -474,7 +462,6 @@ static ACVP_RESULT acvp_kat_rsa_sig(unsigned int tc_id, ACVP_CIPHER alg_id,
      */
     switch(sigtc->mode) {
     case ACVP_RSA_MODE_SIGGEN:
-    {
         modulo = (unsigned int)json_object_get_number(groupobj, ACVP_RSA_SIG_MODULO_OBJ_NAME);
         hash_alg = (char *)json_object_get_string(groupobj, ACVP_RSA_HASHALG_OBJ_NAME);
         msg = (unsigned char *)json_object_get_string(testobj, ACVP_RSA_SIG_MSG_OBJ_NAME);
@@ -491,12 +478,6 @@ static ACVP_RESULT acvp_kat_rsa_sig(unsigned int tc_id, ACVP_CIPHER alg_id,
         rv = acvp_rsa_init_sig_tc(ctx, sigtc, tc_id, alg_id, /* note: mode is set in kat_handler */
                 sig_type, modulo, hash_alg, msg, salt_len); /* siggen attrs */
         break;
-    }
-//    case ACVP_RSA_MODE_SIGVER:
-//    {
-//        //set sigver test obj attrs here!!!
-//        break;
-//    }
     default:
         break;
     }
@@ -532,7 +513,6 @@ ACVP_RESULT acvp_rsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
     ACVP_RSA_TC stc;
     ACVP_TEST_CASE tc;
     ACVP_RSA_SIG_TC     sigtc;
-    ACVP_RSA_TC         rsa_tc;
     ACVP_RESULT rv;
     const char          *alg_str = json_object_get_string(obj, "algorithm");
     char                *mode_str = NULL;
@@ -609,7 +589,6 @@ ACVP_RESULT acvp_rsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
     groups = json_object_get_array(obj, "testGroups");
     g_cnt = json_array_get_count(groups);
 
-    tc.tc.rsa = &rsa_tc;
     for (i = 0; i < g_cnt; i++) {
         groupval = json_array_get_value(groups, i);
         groupobj = json_value_get_object(groupval);
@@ -708,8 +687,6 @@ ACVP_RESULT acvp_rsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
                  * Release all the memory associated with the test case
                  */
                 acvp_rsa_release_sig_tc(&sigtc);
-                break;
-            case ACVP_RSA_MODE_SIGVER:
                 break;
             default:
                 break;
