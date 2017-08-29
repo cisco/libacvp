@@ -30,3 +30,4 @@ clean:
 	rm -f libacvp.so.1.0.0
 	rm -f acvp_app
 	rm -f testgcm
+	
