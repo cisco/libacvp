@@ -494,7 +494,7 @@ ACVP_CIPHER acvp_lookup_cipher_index(const char *algorithm);
 ACVP_DRBG_MODE acvp_lookup_drbg_mode_index(const char *mode);
 ACVP_DRBG_CAP_MODE_LIST* acvp_locate_drbg_mode_entry(ACVP_CAPS_LIST *cap, ACVP_DRBG_MODE mode);
 ACVP_RSA_MODE acvp_lookup_rsa_mode_index(char *mode);
-ACVP_RSA_CAP_MODE_LIST* acvp_locate_rsa_sig_type_entry(ACVP_CAPS_LIST *cap, ACVP_RSA_MODE mode, ACVP_RSA_SIG_TYPE sig_type);
+ACVP_RSA_CAP_MODE_LIST* acvp_locate_rsa_sig_type_entry(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap, ACVP_RSA_MODE mode, ACVP_RSA_SIG_TYPE sig_type);
 ACVP_RSA_CAP_MODE_LIST* acvp_locate_rsa_mode_entry(ACVP_CAPS_LIST *cap, ACVP_RSA_MODE mode);
 char *acvp_rsa_get_sig_type_name(ACVP_RSA_SIG_TYPE sig_type);
 char *acvp_lookup_rsa_randpq_name(int value);

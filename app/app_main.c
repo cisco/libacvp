@@ -2397,7 +2397,6 @@ static ACVP_RESULT app_cmac_handler(ACVP_TEST_CASE *test_case)
     return ACVP_SUCCESS;
 }*/
 #endif
-
 static ACVP_RESULT app_rsa_handler(ACVP_TEST_CASE *test_case)
 {
     /*
@@ -2547,9 +2546,6 @@ static ACVP_RESULT app_rsa_siggen_handler(ACVP_TEST_CASE *test_case)
     /*
      * Make an RSA object and set a new BN exponent to use to generate a key
      */
-    if (rsa) {
-        FIPS_rsa_free(rsa);
-    }
 
     rsa = FIPS_rsa_new();
     if (!rsa) {
@@ -2604,8 +2600,8 @@ static ACVP_RESULT app_rsa_siggen_handler(ACVP_TEST_CASE *test_case)
     /*
      * Retrieve and save the exponent and modulus from the key generation process
      */
-    tc->sig_tc->sig_attrs_tc->e = rsa->e;
-    tc->sig_tc->sig_attrs_tc->n = rsa->n;
+    tc->sig_tc->sig_attrs_tc->e = BN_dup(rsa->e);
+    tc->sig_tc->sig_attrs_tc->n = BN_dup(rsa->n);
 
     if (msg && tc_md) {
         siglen = RSA_size(rsa);
@@ -2627,6 +2623,9 @@ static ACVP_RESULT app_rsa_siggen_handler(ACVP_TEST_CASE *test_case)
          */
         tc->sig_tc->sig_attrs_tc->s = BN_bin2bn(sigbuf, siglen, calloc(1,sizeof(BIGNUM)));
         app_rsa_sigver_handler(msg,msglen,sigbuf,siglen,BN_bn2hex(tc->sig_tc->sig_attrs_tc->e),BN_bn2hex(tc->sig_tc->sig_attrs_tc->n),pad,hash);
+        if (rsa) {
+            FIPS_rsa_free(rsa);
+        }
         if (sigbuf)
             OPENSSL_free(sigbuf);
     }
