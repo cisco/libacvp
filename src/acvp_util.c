@@ -198,13 +198,13 @@ ACVP_RESULT is_valid_tf_param(unsigned int value) {
 /* This function checks to see if the value is a hash alg */
 ACVP_RESULT is_valid_hash_alg(char *value) {
     if (!value) return ACVP_INVALID_ARG;
-    if (strncmp(value, ACVP_RSA_PRIME_SHA_1, 5) == 0 ||
-        strncmp(value, ACVP_RSA_PRIME_SHA_224, 7) == 0 ||
-        strncmp(value, ACVP_RSA_PRIME_SHA_256, 7) == 0 ||
-        strncmp(value, ACVP_RSA_PRIME_SHA_384, 7) == 0 ||
-        strncmp(value, ACVP_RSA_PRIME_SHA_512, 7) == 0 ||
-        strncmp(value, ACVP_RSA_PRIME_SHA_512_224, 11) == 0 ||
-        strncmp(value, ACVP_RSA_PRIME_SHA_512_256, 11) == 0)
+    if (strncmp(value, ACVP_RSA_SHA_1, 5) == 0 ||
+        strncmp(value, ACVP_RSA_SHA_224, 7) == 0 ||
+        strncmp(value, ACVP_RSA_SHA_256, 7) == 0 ||
+        strncmp(value, ACVP_RSA_SHA_384, 7) == 0 ||
+        strncmp(value, ACVP_RSA_SHA_512, 7) == 0 ||
+        strncmp(value, ACVP_RSA_SHA_512_224, 11) == 0 ||
+        strncmp(value, ACVP_RSA_SHA_512_256, 11) == 0)
             return ACVP_SUCCESS;
     else return ACVP_INVALID_ARG;
 }
@@ -220,9 +220,9 @@ ACVP_RESULT is_valid_prime_test(char *value) {
 
 /* This function checks to see if the value is a valid prime test (RSA) */
 ACVP_RESULT is_valid_rsa_mod(int value) {
-    if (value != MOD_PRIME_2048 &&
-        value != MOD_PRIME_3072 &&
-        value != MOD_PRIME_4096)
+    if (value != MOD_RSA_2048 &&
+        value != MOD_RSA_3072 &&
+        value != MOD_RSA_4096)
             return ACVP_INVALID_ARG;
     else return ACVP_SUCCESS;
 }
@@ -237,8 +237,10 @@ ACVP_RSA_MODE acvp_lookup_rsa_mode_index(char *mode)
 {
     int i;
     struct acvp_rsa_mode_name_t rsa_mode_tbl[ACVP_RSA_MODE_END] = {
+            // YIKES THIS IS BACKWARDS FROM DRBG
             {ACVP_RSA_MODE_KEYGEN, ACVP_RSA_KEYGEN},
-            {ACVP_RSA_MODE_SIGVER, ACVP_RSA_SIGVER},
+			{ACVP_RSA_MODE_SIGGEN, ACVP_RSA_SIGGEN},
+            {ACVP_RSA_MODE_SIGVER, ACVP_RSA_SIGVER}
     };
 
     for (i = 0; i < ACVP_RSA_MODE_END; i++) {
@@ -462,6 +464,139 @@ ACVP_RSA_CAP_MODE_LIST* acvp_locate_rsa_mode_entry(ACVP_CAPS_LIST *cap,
     return NULL;
 }
 
+/*
+ * This function allocs a new rsa cap mode list item when the a specific rsa sig type isn't found
+ * The entry created here should be added to the ctx and freed by acvp_free_test_session()
+ * A return of NULL means that there was a malloc error othwerwise it was successful.
+ */
+ACVP_RSA_CAP_MODE_LIST* acvp_alloc_new_rsa_cap_sig_mode_entry(ACVP_RSA_MODE mode)
+{
+    ACVP_RSA_CAP_MODE_LIST *rsa_tmp_mode_list = calloc(1, sizeof(ACVP_RSA_CAP_MODE_LIST));
+    if (!rsa_tmp_mode_list) {
+        return NULL;
+    }
+    switch(mode) {
+        case ACVP_RSA_MODE_SIGGEN:
+            rsa_tmp_mode_list->cap_mode = mode;
+            rsa_tmp_mode_list->cap_mode_attrs.siggen = calloc(1,
+                    sizeof(ACVP_RSA_SIGGEN_ATTRS));
+            if (!rsa_tmp_mode_list->cap_mode_attrs.siggen) {
+                break;
+            }
+            return rsa_tmp_mode_list;
+        case ACVP_RSA_MODE_SIGVER:
+            rsa_tmp_mode_list->cap_mode = mode;
+            rsa_tmp_mode_list->cap_mode_attrs.sigver = calloc(1,
+                    sizeof(ACVP_RSA_SIGVER_ATTRS));
+            if (!rsa_tmp_mode_list->cap_mode_attrs.sigver) {
+                break;
+            }
+            return rsa_tmp_mode_list;
+        default:
+            break;
+    }
+
+    free(rsa_tmp_mode_list);
+    return NULL;
+}
+
+/*
+ * This function is used to locate the rsa_cap_mode_list entry that matches the signature type specified.
+ * If no entry is found in the list with that type, a blank cap_mode will be returned. If there is an error NULL is returned.
+ */
+ACVP_RSA_CAP_MODE_LIST* acvp_locate_rsa_sig_type_entry(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap,
+                                                   ACVP_RSA_MODE mode,
+                                                   ACVP_RSA_SIG_TYPE sig_type)
+{
+    ACVP_RSA_CAP_MODE_LIST *cap_mode_list = NULL;
+    ACVP_RSA_CAP_MODE_LIST *cap_mode_list_last_entry = NULL;
+    ACVP_RSA_CAP           *rsa_cap = NULL;
+    char *sig_type_str = acvp_rsa_get_sig_type_name(sig_type);
+    if(!sig_type_str)
+    {
+        ACVP_LOG_ERR("Signature type specified is not supported");
+        return NULL;
+    }
+
+    rsa_cap = cap->cap.rsa_cap;
+
+    /*
+     * No entires yet
+     */
+    cap_mode_list = rsa_cap->rsa_cap_mode_list;
+    if (!cap_mode_list) {
+        ACVP_LOG_ERR("RSA cap mode list has not found");
+        return NULL;
+    }
+
+    if (!cap_mode_list->cap_mode) {
+        ACVP_LOG_ERR("RSA cap mode not found");
+        return NULL;
+    }
+
+    while (cap_mode_list) {
+        if (cap_mode_list->cap_mode == mode) {
+            switch(mode) {
+            case ACVP_RSA_MODE_SIGGEN:
+                if(!cap_mode_list->cap_mode_attrs.siggen){
+                    ACVP_LOG_ERR("SigGen Cap mode attributes not defined");
+                    return NULL;
+                }
+                if(!cap_mode_list->cap_mode_attrs.siggen->sig_type)
+                {
+                    ACVP_LOG_ERR("SigGen Signature type not defined");
+                    return NULL;
+                }
+                if(!strcmp(cap_mode_list->cap_mode_attrs.siggen->sig_type,sig_type_str)) {
+                    return cap_mode_list;
+                }
+                break;
+            case ACVP_RSA_MODE_SIGVER:
+                if(!cap_mode_list->cap_mode_attrs.sigver)
+                {
+                    ACVP_LOG_ERR("SigVer Cap mode attributes not defined");
+                    return NULL;
+                }
+                if(!cap_mode_list->cap_mode_attrs.sigver->sig_type)
+                {
+                    ACVP_LOG_ERR("SigVer Signature type not defined");
+                    return NULL;
+                }
+                if(!strcmp(cap_mode_list->cap_mode_attrs.sigver->sig_type,sig_type_str)) {
+                    return cap_mode_list;
+                }
+                break;
+            default:
+                ACVP_LOG_ERR("RSA Mode not supported");
+                return NULL;
+            }
+        }
+        cap_mode_list_last_entry = cap_mode_list;
+        cap_mode_list = cap_mode_list->next;
+    }
+    cap_mode_list_last_entry->next = acvp_alloc_new_rsa_cap_sig_mode_entry(mode);
+    if (!cap_mode_list_last_entry->next)
+    {
+        ACVP_LOG_ERR("Malloc Failure during RSA Mode List entry creation");
+    }
+    return cap_mode_list_last_entry->next;
+}
+
+char *acvp_rsa_get_sig_type_name(ACVP_RSA_SIG_TYPE sig_type)
+{
+    switch(sig_type)
+    {
+    case RSA_SIG_TYPE_X931:
+        return RSA_SIG_TYPE_X931_NAME;
+    case RSA_SIG_TYPE_PKCS1V15:
+        return RSA_SIG_TYPE_PKCS1V15_NAME;
+    case RSA_SIG_TYPE_PKCS1PSS:
+        return RSA_SIG_TYPE_PKCS1PSS_NAME;
+    default:
+        break;
+    }
+    return NULL;
+}
 unsigned int yes_or_no(ACVP_CTX *ctx, const char *text)
 {
     unsigned int result;
