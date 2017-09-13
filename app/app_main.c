@@ -768,7 +768,7 @@ int main(int argc, char **argv)
     /*
      * Enable RSA keygen...
      */
-    rv = acvp_enable_rsa_cap(ctx, ACVP_RSA, &app_rsa_sigver_handler);
+    rv = acvp_enable_rsa_cap(ctx, ACVP_RSA, &app_rsa_siggen_handler);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_prereq_cap(ctx, ACVP_RSA, ACVP_PREREQ_SHA, value);
     CHECK_ENABLE_CAP_RV(rv);
@@ -2487,17 +2487,22 @@ static ACVP_RESULT app_rsa_siggen_handler(ACVP_TEST_CASE *test_case)
     int siglen, pad_mode;
     long msglen = -1;
     BIGNUM *bn_e;
-
     ACVP_RSA_TC    *tc;
 
+    ACVP_RESULT rv;
+
     if (!test_case) {
-        return ACVP_INVALID_ARG;
+        printf("\nError: test case not found in RSA SigGen handler\n");
+        rv = ACVP_INVALID_ARG;
+        goto err;
     }
 
     tc = test_case->tc.rsa;
 
     if (!tc) {
-        return ACVP_INVALID_ARG;
+        printf("\nError: test case not found in RSA SigGen handler\n");
+        rv = ACVP_INVALID_ARG;
+        goto err;
     }
 
     /*
@@ -2515,23 +2520,25 @@ static ACVP_RESULT app_rsa_siggen_handler(ACVP_TEST_CASE *test_case)
         tc_md = (EVP_MD *)EVP_sha512();
     } else {
         printf("\nError: hashAlg not supported for RSA SigGen\n");
-        return ACVP_INVALID_ARG;
+        rv = ACVP_INVALID_ARG;
+        goto err;
     }
 
     /*
      * Set the message given from the tc to binary form
      */
-
     msg = calloc(1,RSA_MSG_MAX_LEN);
     if(!msg)
     {
-    	printf("\nError: Alloc failure in RSA SigGen Handler\n");
-        return ACVP_INVALID_ARG;
+        printf("\nError: Alloc failure in RSA SigGen Handler\n");
+        rv = ACVP_INVALID_ARG;
+        goto err;
     }
-    ACVP_RESULT rv = acvp_hexstr_to_bin(tc->sig_tc->sig_attrs_tc->msg,msg,RSA_MSG_MAX_LEN);
+    rv = acvp_hexstr_to_bin(tc->sig_tc->sig_attrs_tc->msg,msg,RSA_MSG_MAX_LEN);
     if (rv != ACVP_SUCCESS) {
         printf("\nError: hex2bin error for RSA SigGen\n");
-        return ACVP_INVALID_ARG;
+        rv = ACVP_INVALID_ARG;
+        goto err;
     }
     msglen = strlen((const char*)tc->sig_tc->sig_attrs_tc->msg)/2;
     /*
@@ -2541,18 +2548,21 @@ static ACVP_RESULT app_rsa_siggen_handler(ACVP_TEST_CASE *test_case)
     rsa = FIPS_rsa_new();
     if (!rsa) {
         printf("\nError: Issue with RSA obj in RSA SigGen\n");
-        return ACVP_CRYPTO_MODULE_FAIL;
+        rv = ACVP_CRYPTO_MODULE_FAIL;
+        goto err;
     }
 
     bn_e = BN_new();
     if (!bn_e || !BN_set_word(bn_e, 0x1001)) {
         printf("\nError: Issue with exponent in RSA SigGen\n");
-        return ACVP_CRYPTO_MODULE_FAIL;
+        rv = ACVP_CRYPTO_MODULE_FAIL;
+        goto err;
     }
 
     if (!tc->sig_tc->sig_attrs_tc->modulo) {
         printf("\nError: Issue with modulo in RSA SigGen\n");
-        return ACVP_CRYPTO_MODULE_FAIL;
+        rv = ACVP_CRYPTO_MODULE_FAIL;
+        goto err;
     }
 
     /*
@@ -2562,26 +2572,29 @@ static ACVP_RESULT app_rsa_siggen_handler(ACVP_TEST_CASE *test_case)
         pad_mode = RSA_X931_PADDING;
         if (!RSA_X931_generate_key_ex(rsa, tc->sig_tc->sig_attrs_tc->modulo, bn_e, NULL)) {
             printf("\nError: Issue with keygen during siggen mode for sigType %s\n",RSA_SIG_TYPE_X931_NAME);
-            return ACVP_CRYPTO_MODULE_FAIL;
+            rv = ACVP_CRYPTO_MODULE_FAIL;
+            goto err;
         }
     } else if(strncmp(tc->sig_tc->sig_type, RSA_SIG_TYPE_PKCS1V15_NAME, RSA_SIG_TYPE_MAX ) == 0 ) {
         pad_mode = RSA_PKCS1_PADDING;
         if (!RSA_X931_generate_key_ex(rsa, tc->sig_tc->sig_attrs_tc->modulo, bn_e, NULL)) { 
             printf("\nError: Issue with keygen during siggen mode for sigType PKCS1V15\n");
-            return ACVP_CRYPTO_MODULE_FAIL;
+            rv = ACVP_CRYPTO_MODULE_FAIL;
+            goto err;
         }
     } else if(strncmp(tc->sig_tc->sig_type, RSA_SIG_TYPE_PKCS1PSS_NAME, RSA_SIG_TYPE_MAX ) == 0 ) {
         pad_mode = RSA_PKCS1_PSS_PADDING;
         if (!RSA_X931_generate_key_ex(rsa, tc->sig_tc->sig_attrs_tc->modulo, bn_e, NULL)) { /*** only need to (can) generate key with x931-- sigType doesn't matter for key generation ***/
             printf("\nError: Issue with keygen during siggen mode for sigType PKCS1PSS\n");
-            return ACVP_CRYPTO_MODULE_FAIL;
+            rv = ACVP_CRYPTO_MODULE_FAIL;
+            goto err;
         }
     } else {
         printf("\nError: sigType not supported\n");
-        return ACVP_INVALID_ARG;
+        rv = ACVP_INVALID_ARG;
+        goto err;
     }
 
-    BN_free(bn_e);
 
 
     /*
@@ -2596,26 +2609,33 @@ static ACVP_RESULT app_rsa_siggen_handler(ACVP_TEST_CASE *test_case)
 
         if (!sigbuf) {
             printf("\nError: SigBuf fail in RSA SigGen\n");
-            return ACVP_CRYPTO_MODULE_FAIL;
+            rv = ACVP_CRYPTO_MODULE_FAIL;
+            goto err;
         }
 
         if (!FIPS_rsa_sign(rsa, msg, msglen, tc_md, pad_mode, tc->sig_tc->sig_attrs_tc->salt_len, NULL,
                                 sigbuf, (unsigned int *)&siglen)) {
             printf("\nError: RSA Signature Generation fail\n");
-            return ACVP_CRYPTO_MODULE_FAIL;
+            rv = ACVP_CRYPTO_MODULE_FAIL;
+            goto err;
         }
 
         /*
          * Retrieve and save the signature generated from signing the generated key
          */
         tc->sig_tc->sig_attrs_tc->s = BN_bin2bn(sigbuf, siglen, calloc(1,sizeof(BIGNUM)));
-        if (rsa) {
-            FIPS_rsa_free(rsa);
+        if(!tc->sig_tc->sig_attrs_tc->s) {
+            printf("\nError: RSA Signature BigNum alloc failure\n");
+            rv = ACVP_MALLOC_FAIL;
+            goto err;
         }
-        if (sigbuf)
-            OPENSSL_free(sigbuf);
     }
-    return ACVP_SUCCESS;
+err:if (msg) free(msg);
+    if (sigbuf) OPENSSL_free(sigbuf);
+    if (bn_e) BN_free(bn_e);
+    if (rsa) FIPS_rsa_free(rsa);
+    if (sigbuf) OPENSSL_free(sigbuf);
+    return rv;
 }
 
 
@@ -2737,7 +2757,7 @@ static ACVP_RESULT app_rsa_sigver_handler(ACVP_TEST_CASE *test_case)
         }
 
         long lerr;
-        // Initialize operation
+        /* Initialize operation */
         ret = EVP_DigestVerifyInit(tc_mdctx, &rsa_pkctx, tc_md, NULL, rsa_evpkey);
         if (ret != 1) {
             printf("ERROR: EVP_DigestVerifyInit failed in RSA SigVer test case.\n");
@@ -2746,7 +2766,7 @@ static ACVP_RESULT app_rsa_sigver_handler(ACVP_TEST_CASE *test_case)
             goto err;
         }
 
-        // set padding
+        /* set padding */
         ret = EVP_PKEY_CTX_set_rsa_padding(rsa_pkctx, padding);
         if (ret != 1) {
             printf("ERROR: EVP_PKEY_CTX_set_rsa_padding failed in RSA SigVer test case.\n");
@@ -2755,7 +2775,7 @@ static ACVP_RESULT app_rsa_sigver_handler(ACVP_TEST_CASE *test_case)
             goto err;
         }
       
-        // update the message
+        /* update the message */
         ret = EVP_DigestVerifyUpdate(tc_mdctx, msg, msglen);
         if (ret != 1) {
             printf("ERROR: EVP_DigestVerifyUpdate failed in RSA SigVer test case.\n");
@@ -2764,7 +2784,7 @@ static ACVP_RESULT app_rsa_sigver_handler(ACVP_TEST_CASE *test_case)
             goto err;
         }
 
-        // Finalize
+        /* Finalize */
         ret = EVP_DigestVerifyFinal(tc_mdctx, sig, siglen);
         switch(ret) {
         case 0:
