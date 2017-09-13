@@ -34,7 +34,8 @@
 /*
  * Forward prototypes for local functions
  */
-static ACVP_RESULT acvp_des_output_tc(ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *stc, JSON_Object *tc_rsp);
+static ACVP_RESULT acvp_des_output_tc(ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *stc, 
+                                      JSON_Object *tc_rsp, ACVP_RESULT opt_rv);
 static ACVP_RESULT acvp_des_init_tc(ACVP_CTX *ctx,
                                     ACVP_SYM_CIPHER_TC *stc,
                                     unsigned int tc_id,
@@ -273,6 +274,7 @@ static ACVP_RESULT acvp_des_output_mct_tc(ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *stc
         }
         json_object_set_string(r_tobj, "pt", tmp);
     } else {
+
         memset(tmp, 0x0, ACVP_SYM_CT_MAX);
         if (stc->cipher == ACVP_TDES_CFB1) {
             rv = acvp_bin_to_bit(stc->ct, 1, (unsigned char*)tmp);
@@ -690,15 +692,18 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
 
                 /* Process the current DES encrypt test vector... */
                 rv = (cap->crypto_handler)(&tc);
+
                 if (rv != ACVP_SUCCESS) {
-                    ACVP_LOG_ERR("crypto module failed the operation");
-                    return ACVP_CRYPTO_MODULE_FAIL;
+                    if (rv != ACVP_CRYPTO_WRAP_FAIL) {
+                        ACVP_LOG_ERR("ERROR: crypto module failed the operation");
+                        return ACVP_CRYPTO_MODULE_FAIL;
+                    }
                 }
 
                 /*
                  * Output the test case results using JSON
                  */
-                rv = acvp_des_output_tc(ctx, &stc, r_tobj);
+                rv = acvp_des_output_tc(ctx, &stc, r_tobj, rv);
                 if (rv != ACVP_SUCCESS) {
                     ACVP_LOG_ERR("JSON output failure in 3DES module");
                     return rv;
@@ -734,7 +739,8 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
  * file that will be uploaded to the server.  This routine handles
  * the JSON processing for a single test case.
  */
-static ACVP_RESULT acvp_des_output_tc(ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *stc, JSON_Object *tc_rsp)
+static ACVP_RESULT acvp_des_output_tc(ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *stc, 
+                                      JSON_Object *tc_rsp, ACVP_RESULT opt_rv)
 {
     ACVP_RESULT rv;
     char *tmp;
@@ -763,6 +769,13 @@ static ACVP_RESULT acvp_des_output_tc(ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *stc, JS
         }
         json_object_set_string(tc_rsp, "ct", tmp);
     } else {
+
+        if ((stc->cipher == ACVP_TDES_KW ) && 
+            (opt_rv == ACVP_CRYPTO_WRAP_FAIL)) {
+                json_object_set_boolean(tc_rsp, "decryptFail", 1);
+                return ACVP_SUCCESS;
+        }
+
         memset(tmp, 0x0, ACVP_SYM_CT_MAX);
         if (stc->cipher == ACVP_TDES_CFB1) {
             rv = acvp_bin_to_bit(stc->pt, stc->pt_len, (unsigned char*)tmp);

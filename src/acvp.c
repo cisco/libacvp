@@ -663,6 +663,42 @@ ACVP_RESULT acvp_enable_prereq_cap(ACVP_CTX *ctx,
     return (acvp_add_prereq_val(cipher, cap_list, pre_req_cap, value));
 }
 
+/*
+ * Add Sym parms that are not length based
+ */
+ACVP_RESULT acvp_enable_sym_cipher_cap_value (
+		   ACVP_CTX             *ctx,
+		   ACVP_CIPHER          cipher,
+           ACVP_SYM_CIPH_PARM   param,
+           int                  value
+           )
+{
+    ACVP_CAPS_LIST *cap;
+
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+
+    cap = acvp_locate_cap_entry(ctx, cipher);
+    if (!cap) {
+        return ACVP_NO_CAP;
+    }
+
+    switch (param) {
+    case ACVP_SYM_CIPH_KW_MODE:
+        if (value < ACVP_SYM_KW_MAX) {
+            cap->cap.sym_cap->kw_mode |= value;
+        } else {
+            return ACVP_INVALID_ARG;
+        }
+        break;
+    default:
+        return ACVP_INVALID_ARG;
+        break;
+    }
+    return ACVP_SUCCESS;
+}
+
 ACVP_RESULT acvp_enable_hash_cap(
 	ACVP_CTX *ctx,
 	ACVP_CIPHER cipher,
@@ -1234,15 +1270,20 @@ static ACVP_RESULT acvp_validate_prereq_val(ACVP_CIPHER cipher, ACVP_PREREQ_ALG 
     case ACVP_AES_OFB:
     case ACVP_AES_CBC:
     case ACVP_AES_KW:
+    case ACVP_AES_KWP:
     case ACVP_AES_CTR:
+        if (pre_req == ACVP_PREREQ_AES ||
+            pre_req == ACVP_PREREQ_DRBG)
+            return ACVP_SUCCESS;
+        break;
     case ACVP_TDES_ECB:
     case ACVP_TDES_CBC:
     case ACVP_TDES_OFB:
     case ACVP_TDES_CFB64:
     case ACVP_TDES_CFB8:
     case ACVP_TDES_CFB1:
-        if (pre_req == ACVP_PREREQ_AES ||
-            pre_req == ACVP_PREREQ_DRBG)
+    case ACVP_TDES_KW:
+        if (pre_req == ACVP_PREREQ_TDES)
             return ACVP_SUCCESS;
         break;
     case ACVP_SHA1:
@@ -2784,6 +2825,7 @@ static ACVP_RESULT acvp_build_cmac_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
 
 static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry)
 {
+    JSON_Array *kwc_arr = NULL;
     JSON_Array *mode_arr = NULL;
     JSON_Array *opts_arr = NULL;
     ACVP_SL_LIST *sl_list;
@@ -2808,6 +2850,21 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
     if (sym_cap->direction == ACVP_DIR_DECRYPT ||
         sym_cap->direction == ACVP_DIR_BOTH) {
         json_array_append_string(mode_arr, "decrypt");
+    }
+
+    /*
+     * Set the keywrap modes capability
+     */
+    if ((cap_entry->cipher == ACVP_AES_KW) || (cap_entry->cipher == ACVP_AES_KWP) ||
+        (cap_entry->cipher == ACVP_TDES_KW)) {
+        json_object_set_value(cap_obj, "kwCipher", json_value_init_array());
+        kwc_arr = json_object_get_array(cap_obj, "kwCipher");
+        if (sym_cap->kw_mode & ACVP_SYM_KW_CIPHER) {
+            json_array_append_string(kwc_arr, "cipher");
+        }
+        if (sym_cap->kw_mode & ACVP_SYM_KW_INVERSE) {
+            json_array_append_string(kwc_arr, "inverse");
+        }
     }
 
     /*
@@ -2904,6 +2961,7 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
     case ACVP_AES_OFB:
     case ACVP_AES_CBC:
     case ACVP_AES_KW:
+    case ACVP_AES_KWP:
     case ACVP_AES_CTR:
         break;
     default:
@@ -3786,6 +3844,7 @@ static ACVP_RESULT acvp_build_register(ACVP_CTX *ctx, char **reg)
             case ACVP_AES_OFB:
             case ACVP_AES_CBC:
             case ACVP_AES_KW:
+            case ACVP_AES_KWP:
             case ACVP_AES_CTR:
             case ACVP_TDES_ECB:
             case ACVP_TDES_CBC:
@@ -3793,6 +3852,7 @@ static ACVP_RESULT acvp_build_register(ACVP_CTX *ctx, char **reg)
             case ACVP_TDES_CFB64:
             case ACVP_TDES_CFB8:
             case ACVP_TDES_CFB1:
+            case ACVP_TDES_KW:
                 acvp_build_sym_cipher_register_cap(cap_obj, cap_entry);
                 break;
             case ACVP_SHA1:

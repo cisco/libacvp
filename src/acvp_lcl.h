@@ -234,6 +234,7 @@ typedef struct acvp_sym_cipher_capability {
     ACVP_SL_LIST *ivlen;
     ACVP_SL_LIST *aadlen;
     ACVP_SL_LIST *taglen;
+    int          kw_mode;
 } ACVP_SYM_CIPHER_CAP;
 
 typedef struct acvp_hash_capability {

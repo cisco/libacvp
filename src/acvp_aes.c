@@ -35,7 +35,7 @@
  * Forward prototypes for local functions
  */
 static ACVP_RESULT acvp_aes_output_tc(ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *stc, JSON_Object *tc_rsp,
-                                      ACVP_RESULT tag_rv);
+                                      ACVP_RESULT opt_rv);
 static ACVP_RESULT acvp_aes_init_tc(ACVP_CTX *ctx,
                                     ACVP_SYM_CIPHER_TC *stc,
                                     unsigned int tc_id,
@@ -552,6 +552,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
         test_type = (char *)json_object_get_string(groupobj, "testType");
 
         ACVP_LOG_INFO("    Test group: %d", i);
+        ACVP_LOG_INFO("           dir: %d", dir_str);
         ACVP_LOG_INFO("        keylen: %d", keylen);
         ACVP_LOG_INFO("         ivlen: %d", ivlen);
         ACVP_LOG_INFO("         ptlen: %d", ptlen);
@@ -633,12 +634,11 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
                 /* Process the current AES KAT test vector... */
                 rv = (cap->crypto_handler)(&tc);
                 if (rv != ACVP_SUCCESS) {
-                    if (rv != ACVP_CRYPTO_TAG_FAIL) {
+                    if ((rv != ACVP_CRYPTO_TAG_FAIL) && (rv != ACVP_CRYPTO_WRAP_FAIL)) {
                         ACVP_LOG_ERR("ERROR: crypto module failed the operation");
                         return ACVP_CRYPTO_MODULE_FAIL;
                     }
                 }
-
 
                 /*
                  * Output the test case results using JSON
@@ -679,7 +679,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
  * the JSON processing for a single test case.
  */
 static ACVP_RESULT acvp_aes_output_tc(ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *stc,
-                                     JSON_Object *tc_rsp, ACVP_RESULT tag_rv)
+                                     JSON_Object *tc_rsp, ACVP_RESULT opt_rv)
 {
     ACVP_RESULT rv;
     char *tmp;
@@ -734,7 +734,13 @@ static ACVP_RESULT acvp_aes_output_tc(ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *stc,
         }
     } else {
         if ((stc->cipher == ACVP_AES_GCM || stc->cipher == ACVP_AES_CCM) &&
-            (tag_rv == ACVP_CRYPTO_TAG_FAIL)) {
+            (opt_rv == ACVP_CRYPTO_TAG_FAIL)) {
+                json_object_set_boolean(tc_rsp, "decryptFail", 1);
+                return ACVP_SUCCESS;
+        }
+
+        if ((stc->cipher == ACVP_AES_KW || stc->cipher == ACVP_AES_KWP) &&
+            (opt_rv == ACVP_CRYPTO_WRAP_FAIL)) {
                 json_object_set_boolean(tc_rsp, "decryptFail", 1);
                 return ACVP_SUCCESS;
         }
