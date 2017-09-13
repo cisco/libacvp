@@ -1601,9 +1601,11 @@ static ACVP_RESULT app_aes_keywrap_handler(ACVP_TEST_CASE *test_case)
         EVP_CIPHER_CTX_set_flags(&cipher_ctx, EVP_CIPHER_CTX_FLAG_WRAP_ALLOW);
         EVP_CipherInit_ex(&cipher_ctx, cipher, NULL, tc->key, NULL, 0);
 
+#ifdef OPENSSL_AES_KWP
         if (tc->cipher == ACVP_AES_KWP) {
             EVP_CIPHER_CTX_set_flags(&cipher_ctx, EVP_CIPHER_CTX_FLAG_UNWRAP_WITHPAD);
         }
+#endif
         c_len = EVP_Cipher(&cipher_ctx, tc->pt, tc->ct, tc->ct_len);
         if (c_len <= 0) {
             printf("Error: key wrap operation failed (%d)\n", c_len);
