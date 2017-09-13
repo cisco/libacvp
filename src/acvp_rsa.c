@@ -153,7 +153,6 @@ static ACVP_RESULT acvp_rsa_init_sigver_tc(ACVP_CTX *ctx,
         sigtc->sig_attrs_tc->modulo = modulo;
         strncpy(sigtc->sig_attrs_tc->hash_alg, hash_alg, RSA_HASH_ALG_MAX_LEN);
         strncpy(sigtc->sig_attrs_tc->msg, msg, RSA_MSG_MAX_LEN);
-        BIGNUM * tmp_exp = NULL;
         if(!BN_hex2bn(&sigtc->sig_attrs_tc->e, e))
         {
             ACVP_LOG_ERR("Could not convert exponent hex string to BIGNUM while initializing SigVer test case");

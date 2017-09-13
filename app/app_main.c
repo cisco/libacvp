@@ -768,7 +768,7 @@ int main(int argc, char **argv)
     /*
      * Enable RSA keygen...
      */
-    rv = acvp_enable_rsa_cap(ctx, ACVP_RSA, &app_rsa_siggen_handler);
+    rv = acvp_enable_rsa_cap(ctx, ACVP_RSA, &app_rsa_sigver_handler);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_prereq_cap(ctx, ACVP_RSA, ACVP_PREREQ_SHA, value);
     CHECK_ENABLE_CAP_RV(rv);
@@ -2486,7 +2486,7 @@ static ACVP_RESULT app_rsa_siggen_handler(ACVP_TEST_CASE *test_case)
     unsigned char *sigbuf = NULL;
     int siglen, pad_mode;
     long msglen = -1;
-    BIGNUM *bn_e;
+    BIGNUM *bn_e = NULL;
     ACVP_RSA_TC    *tc;
 
     ACVP_RESULT rv;
@@ -2504,7 +2504,11 @@ static ACVP_RESULT app_rsa_siggen_handler(ACVP_TEST_CASE *test_case)
         rv = ACVP_INVALID_ARG;
         goto err;
     }
-
+    if(tc->mode != ACVP_RSA_MODE_SIGGEN)
+    {
+        printf( "ERROR: RSA mode not SigGen.\n");
+        goto err;
+    }
     /*
      * Set the message digest to the appropriate sha
      */
@@ -2623,7 +2627,7 @@ static ACVP_RESULT app_rsa_siggen_handler(ACVP_TEST_CASE *test_case)
         /*
          * Retrieve and save the signature generated from signing the generated key
          */
-        tc->sig_tc->sig_attrs_tc->s = BN_bin2bn(sigbuf, siglen, calloc(1,sizeof(BIGNUM)));
+        tc->sig_tc->sig_attrs_tc->s = BN_bin2bn(sigbuf, siglen, NULL);
         if(!tc->sig_tc->sig_attrs_tc->s) {
             printf("\nError: RSA Signature BigNum alloc failure\n");
             rv = ACVP_MALLOC_FAIL;
@@ -2634,7 +2638,6 @@ err:if (msg) free(msg);
     if (sigbuf) OPENSSL_free(sigbuf);
     if (bn_e) BN_free(bn_e);
     if (rsa) FIPS_rsa_free(rsa);
-    if (sigbuf) OPENSSL_free(sigbuf);
     return rv;
 }
 
@@ -2653,7 +2656,7 @@ static ACVP_RESULT app_rsa_sigver_handler(ACVP_TEST_CASE *test_case)
     EVP_PKEY *rsa_evpkey = NULL;
     EVP_PKEY_CTX *rsa_pkctx = NULL;
     char *msg = NULL;
-    char *sig = NULL;
+    unsigned char *sig = NULL;
     int ret = -1;
     int padding;
     if (!test_case) {
@@ -2757,6 +2760,7 @@ static ACVP_RESULT app_rsa_sigver_handler(ACVP_TEST_CASE *test_case)
         }
 
         long lerr;
+
         /* Initialize operation */
         ret = EVP_DigestVerifyInit(tc_mdctx, &rsa_pkctx, tc_md, NULL, rsa_evpkey);
         if (ret != 1) {
@@ -2809,10 +2813,6 @@ err:
     if (msg) free(msg);
     if (sig) free(sig);
     if (rsa_evpkey) EVP_PKEY_free(rsa_evpkey);
-    if (rsa_pkctx) {
-        EVP_PKEY_CTX_free(rsa_pkctx);
-        rsa_pkctx = NULL;
-    }
     if (tc_mdctx) EVP_MD_CTX_destroy(tc_mdctx);
 
     if (ret == 1)
