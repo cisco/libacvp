@@ -81,6 +81,11 @@ static ACVP_RESULT acvp_append_kdf135_tls_caps_entry(
     ACVP_KDF135_TLS_METHOD method,
     ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case));
 static void acvp_cap_free_sl(ACVP_SL_LIST *list);
+static void acvp_cap_free_nl(ACVP_NAME_LIST *list);
+static void acvp_cap_free_saltl(ACVP_SALT_SIZES *list);
+static void acvp_cap_free_rsa_sig_tl(ACVP_RSA_CAP_SIG_TYPE *list);
+static void acvp_cap_free_rsa_primesl(ACVP_RSA_PRIMES_LIST *list);
+static void acvp_cap_free_rsa_ml(ACVP_RSA_CAP_MODE_LIST *list);
 static ACVP_RESULT acvp_get_result_vsid(ACVP_CTX *ctx, int vs_id);
 static ACVP_RESULT acvp_add_prereq_val(ACVP_CIPHER cipher,
                     ACVP_CAPS_LIST *caps_list,
@@ -312,8 +317,18 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx)
                     free(cap_entry);
                     cap_entry = cap_e2;
                     break;
-                default:
+                case ACVP_RSA_TYPE:
+                    if(cap_entry->cap.rsa_cap) {
+                        if(cap_entry->cap.rsa_cap->rsa_cap_mode_list) {
+                            acvp_cap_free_rsa_ml(cap_entry->cap.rsa_cap->rsa_cap_mode_list);
+                        }
+                        free(cap_entry->cap.rsa_cap);
+                    }
+                    free(cap_entry);
+                    cap_entry = cap_e2;
                     break;
+                default:
+                    return ACVP_INVALID_ARG;
                 }
             }
         }
@@ -370,6 +385,125 @@ static void acvp_cap_free_sl(ACVP_SL_LIST *list)
     while(top) {
         tmp = top;
         top = top->next;
+        free(tmp);
+    }
+}
+/*
+ * Simple utility function to free a name
+ * list from the capabilities structure.
+ */
+static void acvp_cap_free_nl(ACVP_NAME_LIST *list)
+{
+    ACVP_NAME_LIST *top = list;
+    ACVP_NAME_LIST *tmp;
+
+    while(top) {
+        tmp = top;
+        top = top->next;
+        free(tmp);
+    }
+}
+/*
+ * Simple utility function to free a name
+ * list from the capabilities structure.
+ */
+static void acvp_cap_free_saltl(ACVP_SALT_SIZES *list)
+{
+    ACVP_SALT_SIZES *top = list;
+    ACVP_SALT_SIZES *tmp;
+
+    while(top) {
+        tmp = top;
+        top = top->next;
+        free(tmp);
+    }
+}
+static void acvp_cap_free_rsa_sig_tl(ACVP_RSA_CAP_SIG_TYPE *list)
+{
+    ACVP_RSA_CAP_SIG_TYPE *top = list;
+    ACVP_RSA_CAP_SIG_TYPE *tmp;
+
+    while(top) {
+        tmp = top;
+        top = top->next;
+        if(tmp->salt_sig) {
+            acvp_cap_free_saltl(tmp->salt_sig);
+            tmp->salt_sig = NULL;
+        }
+        if(tmp->compatible_hashes_sig) {
+            acvp_cap_free_nl(tmp->compatible_hashes_sig);
+            tmp->compatible_hashes_sig = NULL;
+        }
+        free(tmp);
+    }
+}
+static void acvp_cap_free_rsa_primesl(ACVP_RSA_PRIMES_LIST *list)
+{
+    ACVP_RSA_PRIMES_LIST *top = list;
+    ACVP_RSA_PRIMES_LIST *tmp;
+
+    while(top) {
+        tmp = top;
+        top = top->next;
+        if(tmp->prime_tests) {
+            acvp_cap_free_nl(tmp->prime_tests);
+            tmp->prime_tests = NULL;
+        }
+        if(tmp->hash_algs) {
+            acvp_cap_free_nl(tmp->hash_algs);
+            tmp->hash_algs = NULL;
+        }
+        free(tmp);
+    }
+}
+static void acvp_cap_free_rsa_ml(ACVP_RSA_CAP_MODE_LIST *list)
+{
+    ACVP_RSA_CAP_MODE_LIST *top = list;
+    ACVP_RSA_CAP_MODE_LIST *tmp;
+
+    while(top) {
+        tmp = top;
+        top = top->next;
+        switch(tmp->cap_mode)
+        {
+        case ACVP_RSA_MODE_KEYGEN:
+            if(tmp->cap_mode_attrs.keygen) {
+                if(tmp->cap_mode_attrs.keygen->cap_primes_list) {
+                    acvp_cap_free_rsa_primesl(tmp->cap_mode_attrs.keygen->cap_primes_list);
+                    tmp->cap_mode_attrs.keygen->cap_primes_list = NULL;
+                }
+                if(tmp->cap_mode_attrs.keygen->fixed_pub_exp_val) {
+                    BN_free(tmp->cap_mode_attrs.keygen->fixed_pub_exp_val);
+                    tmp->cap_mode_attrs.keygen->fixed_pub_exp_val=NULL;
+                }
+                free(tmp->cap_mode_attrs.keygen);
+                tmp->cap_mode_attrs.keygen = NULL;
+            }
+            break;
+        case ACVP_RSA_MODE_SIGGEN:
+            if(tmp->cap_mode_attrs.siggen) {
+                if(tmp->cap_mode_attrs.siggen->cap_sig_type) {
+                    acvp_cap_free_rsa_sig_tl(tmp->cap_mode_attrs.siggen->cap_sig_type);
+                    tmp->cap_mode_attrs.siggen->cap_sig_type = NULL;
+                }
+                free(tmp->cap_mode_attrs.siggen);
+                tmp->cap_mode_attrs.siggen = NULL;
+            }
+            break;
+        case ACVP_RSA_MODE_SIGVER:
+            if(tmp->cap_mode_attrs.sigver) {
+                if(tmp->cap_mode_attrs.sigver->cap_sig_type) {
+                    acvp_cap_free_rsa_sig_tl(tmp->cap_mode_attrs.sigver->cap_sig_type);
+                    tmp->cap_mode_attrs.sigver->cap_sig_type = NULL;
+                }
+                free(tmp->cap_mode_attrs.sigver);
+                tmp->cap_mode_attrs.sigver = NULL;
+            }
+            break;
+        default:
+            printf("Error RSA Structure could not be freed properly");
+            exit(1);
+        }
         free(tmp);
     }
 }
@@ -3018,8 +3152,8 @@ static ACVP_RESULT acvp_lookup_rsa_primes(JSON_Object *cap_obj, ACVP_RSA_CAP *rs
             rand_pq_val == RSA_RAND_PQ_B34 ||
             rand_pq_val == RSA_RAND_PQ_B35)
         {
-            json_object_set_value(obj, "hashAlg", json_value_init_array());
-            hash_array = json_object_get_array(obj, "hashAlg");
+            json_object_set_value(obj, ACVP_RSA_CAP_HASHALG_OBJ_NAME, json_value_init_array());
+            hash_array = json_object_get_array(obj, ACVP_RSA_CAP_HASHALG_OBJ_NAME);
             comp_name = primes->hash_algs;
 
             while(comp_name) {
@@ -3085,8 +3219,8 @@ static ACVP_RESULT acvp_lookup_rsa_cap_sig_type(JSON_Object *cap_obj, ACVP_RSA_C
             obj = json_value_get_object(val);
 
             json_object_set_number(obj, "modulo", type->mod_rsa_sig);
-            json_object_set_value(obj, ACVP_RSA_HASHALG_OBJ_NAME, json_value_init_array());
-            hash_sig_array = json_object_get_array(obj, ACVP_RSA_HASHALG_OBJ_NAME);
+            json_object_set_value(obj, ACVP_RSA_CAP_HASHALG_OBJ_NAME, json_value_init_array());
+            hash_sig_array = json_object_get_array(obj, ACVP_RSA_CAP_HASHALG_OBJ_NAME);
             comp_hash = type->compatible_hashes_sig;
 
             while(comp_hash) {
@@ -3137,8 +3271,8 @@ static ACVP_RESULT acvp_lookup_rsa_cap_sig_type(JSON_Object *cap_obj, ACVP_RSA_C
             obj = json_value_get_object(val);
 
             json_object_set_number(obj, "modulo", type->mod_rsa_sig);
-            json_object_set_value(obj, ACVP_RSA_HASHALG_OBJ_NAME, json_value_init_array());
-            hash_sig_array = json_object_get_array(obj, ACVP_RSA_HASHALG_OBJ_NAME);
+            json_object_set_value(obj, ACVP_RSA_CAP_HASHALG_OBJ_NAME, json_value_init_array());
+            hash_sig_array = json_object_get_array(obj, ACVP_RSA_CAP_HASHALG_OBJ_NAME);
             comp_hash = type->compatible_hashes_sig;
 
             while(comp_hash) {
@@ -3199,7 +3333,9 @@ static ACVP_RESULT acvp_build_rsa_keygen_register(JSON_Object **cap_specs_obj, A
     json_object_set_string(*cap_specs_obj, "pubExp", rsa_cap_mode->pub_exp == RSA_PUB_EXP_FIXED ? "fixed" : "random");
 
     if (rsa_cap_mode->pub_exp == RSA_PUB_EXP_FIXED) {
-        json_object_set_string(*cap_specs_obj, "fixedPubExpVal", BN_bn2hex(rsa_cap_mode->fixed_pub_exp_val));
+        char *fixPEV=BN_bn2hex(rsa_cap_mode->fixed_pub_exp_val);
+        json_object_set_string(*cap_specs_obj, "fixedPubExpVal",fixPEV );
+        free(fixPEV);
     }
 
     json_object_set_boolean(*cap_specs_obj, "infoGeneratedByServer", rsa_cap_mode->info_gen_by_server);
@@ -4299,7 +4435,11 @@ ACVP_RESULT acvp_process_injected_vsid(ACVP_CTX *ctx,char* filename)
     }
     JSON_Object *obj = acvp_get_obj_from_rsp(root_value);
     ACVP_RESULT rv = acvp_process_vector_set(ctx, obj);
-    acvp_submit_vector_responses(ctx);
+    if(rv == ACVP_SUCCESS)
+    {
+        acvp_submit_vector_responses(ctx);
+    }
+    if(root_value) json_value_free(root_value);
     return rv;
 }
 
