@@ -1640,7 +1640,7 @@ static ACVP_RESULT app_des_keywrap_handler(ACVP_TEST_CASE *test_case)
     if (tc->direction == ACVP_DIR_ENCRYPT) {
         EVP_CIPHER_CTX_set_flags(&cipher_ctx, EVP_CIPHER_CTX_FLAG_WRAP_ALLOW);
         EVP_CipherInit_ex(&cipher_ctx, cipher, NULL, tc->key, NULL, 1);
-        EVP_CipherUpdate(&cipher_ctx, tc->ct, &c_len, tc->pt, tc->pt_len);
+        c_len = EVP_Cipher(&cipher_ctx, tc->ct, tc->pt, tc->pt_len);
         if (c_len <= 0) {
             printf("Error: key wrap operation failed (%d)\n", c_len);
             return ACVP_CRYPTO_MODULE_FAIL;
