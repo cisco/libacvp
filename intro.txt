@@ -1,0 +1,136 @@
+/**
+ 
+@mainpage Introduction to libacvp
+ 
+This document describes libacvp, a library that implements an ACVP client
+based on https://github.com/usnistgov/ACVP and a command line application
+that provides configuration and invocation of the algorithm testing.
+
+
+
+ 
+This document is organized as follows.  The first chapter provides 
+background material on ACVP, an overview of libacvp and an overview
+of the acvp_app.  The subsequent
+chapters provide a detailed reference to the libacvp API and related
+functions.  The reference material is created automatically (using the
+doxygen utility) from comments embedded in some of the C header
+files. 
+
+@section LICENSE License and Disclaimer
+
+libacvp is distributed under the following license, which is included
+in the source code distribution.  It is reproduced in the manual in
+case you attained the library from another source.
+	
+@latexonly
+\begin{quote}
+Copyright (c) 2017 Cisco Systems, Inc.  All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions
+are met:
+\begin{itemize}
+\item  Redistributions of source code must retain the above copyright
+  notice, this list of conditions and the following disclaimer.
+\item Redistributions in binary form must reproduce the above
+  copyright notice, this list of conditions and the following
+  disclaimer in the documentation and/or other materials provided
+  with the distribution.
+\item Neither the name of the Cisco Systems, Inc. nor the names of its
+  contributors may be used to endorse or promote products derived
+  from this software without specific prior written permission.
+\end{itemize}
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+COPYRIGHT HOLDERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
+OF THE POSSIBILITY OF SUCH DAMAGE.
+\end{quote}
+@endlatexonly
+
+@section Features Supported Features
+
+ 
+The user should be aware that it is possible to misuse this library,
+which may result in inadequate security.  If you are implementing a 
+feature using this library, you will want to read the Security Considerations 
+section of the ACVP specs(https://github.com/usnistgov/ACVP).  In addition, it is important that 
+you read and understand the terms outlined in the @ref LICENSE section.
+
+
+@section Installing Installing and Building libacvp 
+
+@latexonly
+
+To install libacvp, download the latest release of the distribution.  
+
+libacvp uses the GNU \texttt{autoconf} and \texttt{make}
+utilities\footnote{BSD make may not work; if both versions of make
+are on your platform, you may have to invoke GNU make as \texttt{gmake}.}.  In
+the \texttt{libest} directory, run the configure script and then make:
+\begin{verbatim}
+  ./configure [ options ]       
+  make                          
+  make install
+\end{verbatim}
+
+This package has been tested on both 32 and 64 bit Linux systems running
+CentOS and Ubuntu.  The OpenSSL development package should be installed
+on the system, or CiscoSSL can be used.  
+
+\subsection{Static Linking}
+
+TBD
+
+\subsection{SafeC Library}
+
+TBD
+
+\subsection{Release builds}
+
+TBD
+
+\begin{verbatim}
+  ./configure [ options ]       
+  make                          
+  make install-strip
+\end{verbatim}
+
+@endlatexonly
+
+@latexonly
+
+\subsection{Java build}
+
+TBD
+
+@endlatexonly
+
+@section Examples Example Code
+
+@latexonly
+
+The example application is built automatically when building libacvp.
+
+
+Note, the example code is not suitable for including into 
+commercial software.  The example apps is primarily used to test
+the libacvp library in linux and to show how the API should be used.  The
+example code does not have all the appropriate error handling
+and robust design required for commercial software.  
+
+@endlatexonly
+
+
+@section Overview ACVP Overview
+
+
+ */

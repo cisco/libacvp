@@ -1,6 +1,6 @@
 /** @file */
 /*****************************************************************************
-* Copyright (c) 2016, Cisco Systems, Inc.
+* Copyright (c) 2016-2017, Cisco Systems, Inc.
 * All rights reserved.
 
 * Redistribution and use in source and binary forms, with or without modification,
@@ -2626,7 +2626,7 @@ ACVP_RESULT acvp_set_cacerts(ACVP_CTX *ctx, char *ca_file)
     /*
      * Enable peer verification when CA certs are provided.
      */
-    ctx->verify_peer = 0;
+    ctx->verify_peer = 1;
 
     return ACVP_SUCCESS;
 }
@@ -4425,22 +4425,6 @@ static ACVP_RESULT acvp_process_vsid(ACVP_CTX *ctx, int vs_id)
     }
 
     return ACVP_SUCCESS;
-}
-
-ACVP_RESULT acvp_process_injected_vsid(ACVP_CTX *ctx,char* filename)
-{
-    JSON_Value *root_value = json_parse_file(filename);
-    if (json_value_get_type(root_value) != JSONArray) {
-            return ACVP_JSON_ERR;
-    }
-    JSON_Object *obj = acvp_get_obj_from_rsp(root_value);
-    ACVP_RESULT rv = acvp_process_vector_set(ctx, obj);
-    if(rv == ACVP_SUCCESS)
-    {
-        acvp_submit_vector_responses(ctx);
-    }
-    if(root_value) json_value_free(root_value);
-    return rv;
 }
 
 /*
