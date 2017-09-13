@@ -73,6 +73,7 @@ int dsa_builtin_paramgen(DSA *ret, size_t bits, size_t qbits,
 static ACVP_RESULT app_aes_handler_aead(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_aes_keywrap_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_aes_handler(ACVP_TEST_CASE *test_case);
+static ACVP_RESULT app_des_keywrap_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_des_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_sha_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_hmac_handler(ACVP_TEST_CASE *test_case);
@@ -1547,6 +1548,80 @@ static ACVP_RESULT app_aes_handler(ACVP_TEST_CASE *test_case)
 static ACVP_RESULT app_aes_keywrap_handler(ACVP_TEST_CASE *test_case)
 {
     ACVP_SYM_CIPHER_TC      *tc;
+    EVP_CIPHER_CTX          cipher_ctx;
+    const EVP_CIPHER        *cipher;
+    int                     c_len;
+
+    if (!test_case) {
+        return ACVP_INVALID_ARG;
+    }
+
+    tc = test_case->tc.symmetric;
+
+    /* Begin encrypt code section */
+    EVP_CIPHER_CTX_init(&cipher_ctx);
+
+    switch (tc->cipher) {
+    case ACVP_AES_KW:
+    case ACVP_AES_KWP:
+        switch (tc->key_len) {
+        case 128:
+            cipher = EVP_aes_128_wrap();
+            break;
+        case 192:
+            cipher = EVP_aes_192_wrap();
+            break;
+        case 256:
+            cipher = EVP_aes_256_wrap();
+            break;
+        default:
+            printf("Unsupported AES keywrap key length\n");
+            return ACVP_NO_CAP;
+            break;
+        }
+        break;
+    default:
+        printf("Error: Unsupported AES keywrap mode requested by ACVP server\n");
+        return ACVP_NO_CAP;
+        break;
+    }
+
+
+    if (tc->direction == ACVP_DIR_ENCRYPT) {
+        EVP_CIPHER_CTX_set_flags(&cipher_ctx, EVP_CIPHER_CTX_FLAG_WRAP_ALLOW);
+        EVP_CipherInit_ex(&cipher_ctx, cipher, NULL, tc->key, NULL, 1);
+        c_len = EVP_Cipher(&cipher_ctx, tc->ct, tc->pt, tc->pt_len);
+        if (c_len <= 0) {
+            printf("Error: key wrap operation failed (%d)\n", c_len);
+            return ACVP_CRYPTO_MODULE_FAIL;
+        } else {
+            tc->ct_len = c_len;
+        }
+    } else if (tc->direction == ACVP_DIR_DECRYPT) {
+        EVP_CIPHER_CTX_set_flags(&cipher_ctx, EVP_CIPHER_CTX_FLAG_WRAP_ALLOW);
+        EVP_CipherInit_ex(&cipher_ctx, cipher, NULL, tc->key, NULL, 0);
+
+        if (tc->cipher == ACVP_AES_KWP) {
+            EVP_CIPHER_CTX_set_flags(&cipher_ctx, EVP_CIPHER_CTX_FLAG_UNWRAP_WITHPAD);
+        }
+        c_len = EVP_Cipher(&cipher_ctx, tc->pt, tc->ct, tc->ct_len);
+        if (c_len <= 0) {
+            printf("Error: key wrap operation failed (%d)\n", c_len);
+            return ACVP_CRYPTO_WRAP_FAIL;
+        }
+    } else {
+        printf("Unsupported direction\n");
+        return ACVP_UNSUPPORTED_OP;
+    }
+
+    EVP_CIPHER_CTX_cleanup(&cipher_ctx);
+    return ACVP_SUCCESS;
+}
+
+/* TODO: I don't believe that openssl's 3DES keywrap is FIPS compliant */
+static ACVP_RESULT app_des_keywrap_handler(ACVP_TEST_CASE *test_case)
+{
+    ACVP_SYM_CIPHER_TC      *tc;
     EVP_CIPHER_CTX cipher_ctx;
     const EVP_CIPHER        *cipher;
     int c_len;
@@ -1560,49 +1635,26 @@ static ACVP_RESULT app_aes_keywrap_handler(ACVP_TEST_CASE *test_case)
     /* Begin encrypt code section */
     EVP_CIPHER_CTX_init(&cipher_ctx);
 
-    switch (tc->cipher) {
-    case ACVP_AES_KW:
-  switch (tc->key_len) {
-  case 128:
-      cipher = EVP_aes_128_wrap();
-      break;
-  case 192:
-      cipher = EVP_aes_192_wrap();
-      break;
-  case 256:
-      cipher = EVP_aes_256_wrap();
-      break;
-  default:
-      printf("Unsupported AES keywrap key length\n");
-      return ACVP_NO_CAP;
-      break;
-  }
-  break;
-    default:
-  printf("Error: Unsupported AES keywrap mode requested by ACVP server\n");
-  return ACVP_NO_CAP;
-  break;
-    }
-
+    cipher = EVP_des_ede3_wrap();
 
     if (tc->direction == ACVP_DIR_ENCRYPT) {
-  EVP_CIPHER_CTX_set_flags(&cipher_ctx, EVP_CIPHER_CTX_FLAG_WRAP_ALLOW);
-  EVP_CipherInit_ex(&cipher_ctx, cipher, NULL, tc->key, NULL, 1);
-  c_len = EVP_Cipher(&cipher_ctx, tc->ct, tc->pt, tc->pt_len);
-  if (c_len <= 0) {
-      printf("Error: key wrap operation failed (%d)\n", c_len);
-      return ACVP_CRYPTO_MODULE_FAIL;
-  } else {
-      tc->ct_len = c_len;
-  }
+        EVP_CIPHER_CTX_set_flags(&cipher_ctx, EVP_CIPHER_CTX_FLAG_WRAP_ALLOW);
+        EVP_CipherInit_ex(&cipher_ctx, cipher, NULL, tc->key, NULL, 1);
+        EVP_CipherUpdate(&cipher_ctx, tc->ct, &c_len, tc->pt, tc->pt_len);
+        if (c_len <= 0) {
+            printf("Error: key wrap operation failed (%d)\n", c_len);
+            return ACVP_CRYPTO_MODULE_FAIL;
+        } else {
+            tc->ct_len = c_len;
+        }
     } else if (tc->direction == ACVP_DIR_DECRYPT) {
-  EVP_CIPHER_CTX_set_flags(&cipher_ctx, EVP_CIPHER_CTX_FLAG_WRAP_ALLOW);
-  EVP_CipherInit_ex(&cipher_ctx, cipher, NULL, tc->key, NULL, 0);
-  c_len = EVP_Cipher(&cipher_ctx, tc->pt, tc->ct, tc->ct_len + 8);
-  if (c_len <= 0) {
-      printf("Error: key wrap operation failed (%d)\n", c_len);
-      return ACVP_CRYPTO_MODULE_FAIL;
-  }
+        EVP_CIPHER_CTX_set_flags(&cipher_ctx, EVP_CIPHER_CTX_FLAG_WRAP_ALLOW);
+        EVP_CipherInit_ex(&cipher_ctx, cipher, NULL, tc->key, NULL, 0);
+        c_len = EVP_Cipher(&cipher_ctx, tc->pt, tc->ct, tc->ct_len);
+        if (c_len <= 0) {
+            printf("Error: key wrap operation failed (%d)\n", c_len);
+            return ACVP_CRYPTO_WRAP_FAIL;
+        }
     } else {
         printf("Unsupported direction\n");
         return ACVP_UNSUPPORTED_OP;

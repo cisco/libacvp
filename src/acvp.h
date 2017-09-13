@@ -372,8 +372,16 @@ typedef enum acvp_sym_cipher_parameter {
     ACVP_SYM_CIPH_IVLEN,
     ACVP_SYM_CIPH_PTLEN,
     ACVP_SYM_CIPH_AADLEN,
+    ACVP_SYM_CIPH_KW_MODE,
 } ACVP_SYM_CIPH_PARM;
 
+typedef enum acvp_sym_kw_mode {
+    ACVP_SYM_KW_NONE = 0,
+    ACVP_SYM_KW_CIPHER,
+    ACVP_SYM_KW_INVERSE,
+    ACVP_SYM_KW_MAX
+} ACVP_SYM_KW_MODE;
+ 
 typedef enum acvp_sym_cipher_testtype {
     ACVP_SYM_TEST_TYPE_NONE = 0,
     ACVP_SYM_TEST_TYPE_AFT,
@@ -800,6 +808,7 @@ enum acvp_result {
     ACVP_INVALID_ARG,
     ACVP_CRYPTO_MODULE_FAIL,
     ACVP_CRYPTO_TAG_FAIL,
+    ACVP_CRYPTO_WRAP_FAIL,
     ACVP_NO_TOKEN,
     ACVP_NO_CAP,
     ACVP_MALFORMED_JSON,
@@ -844,6 +853,12 @@ ACVP_RESULT acvp_enable_sym_cipher_cap(
     ACVP_SYM_CIPH_IVGEN_MODE ivgen_mode,
         ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case));
 
+/* TODO - need brief */
+ACVP_RESULT acvp_enable_sym_cipher_cap_parm(
+    ACVP_CTX *ctx,
+    ACVP_CIPHER cipher,
+    ACVP_SYM_CIPH_PARM parm,
+    int length);
 
 /*! @brief acvp_enable_sym_cipher_cap_parm() allows an application to specify
        operational parameters to be used for a given cipher during a
