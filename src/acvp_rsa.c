@@ -54,7 +54,7 @@ static void populate_bitlens(ACVP_RSA_TC *stc, JSON_Object *tc_rsp) {
     json_object_set_number(tc_rsp, "bitlen4", stc->keygen_tc->bitlen4);
 }
 
-static ACVP_RESULT acvp_rsa_init_sig_tc(ACVP_CTX *ctx,
+static ACVP_RESULT acvp_rsa_init_siggen_tc(ACVP_CTX *ctx,
                                     ACVP_RSA_SIG_TC *sigtc,
                                     unsigned int tc_id,
                                     ACVP_CIPHER alg_id,
@@ -66,18 +66,26 @@ static ACVP_RESULT acvp_rsa_init_sig_tc(ACVP_CTX *ctx,
                                     )
 {
 
-    switch(sigtc->mode) {
-    case ACVP_RSA_MODE_SIGGEN:
+    if(sigtc->mode == ACVP_RSA_MODE_SIGGEN) {
         /*
          * make room for all items
          */
         sigtc->sig_type = calloc(RSA_SIG_TYPE_MAX, sizeof(char));
         sigtc->sig_attrs_tc = calloc(1, sizeof(ACVP_RSA_SIG_ATTRS_TC));
-        if (!sigtc->sig_attrs_tc) return ACVP_MALLOC_FAIL;
+        if (!sigtc->sig_attrs_tc) {
+            ACVP_LOG_ERR("Couldn't make SigGen sig attrs object");
+            return ACVP_MALLOC_FAIL;
+        }
         sigtc->sig_attrs_tc->hash_alg=(char *) calloc(1, RSA_HASH_ALG_MAX_LEN);
-        if(!sigtc->sig_attrs_tc->hash_alg) return ACVP_MALLOC_FAIL;
-        sigtc->sig_attrs_tc->msg=(char *) calloc(1, RSA_MSG_MAX_LEN);
-        if(!sigtc->sig_attrs_tc->msg) return ACVP_MALLOC_FAIL;
+        if(!sigtc->sig_attrs_tc->hash_alg) {
+            ACVP_LOG_ERR("Couldn't make SigGen hash alg buffer");
+            return ACVP_MALLOC_FAIL;
+        }
+        sigtc->sig_attrs_tc->msg=(unsigned char *) calloc(1, RSA_MSG_MAX_LEN);
+        if(!sigtc->sig_attrs_tc->msg) {
+            ACVP_LOG_ERR("Couldn't make SigGen msg buffer");
+            return ACVP_MALLOC_FAIL;
+        }
         /*
          * only make room and assign value to saltLen if sigType is PKCS1PSS
          */
@@ -90,19 +98,83 @@ static ACVP_RESULT acvp_rsa_init_sig_tc(ACVP_CTX *ctx,
          */
         sigtc->sig_type = sig_type;
         sigtc->sig_attrs_tc->mode = sigtc->mode;
-        sigtc->sig_attrs_tc->tc_id = tc_id; /***init tc_id in keygen***/
+        sigtc->sig_attrs_tc->tc_id = tc_id;
         sigtc->sig_attrs_tc->modulo = modulo;
         sigtc->sig_attrs_tc->salt_len = salt_len;
         memcpy(sigtc->sig_attrs_tc->hash_alg, hash_alg, RSA_HASH_ALG_MAX_LEN);
         memcpy(sigtc->sig_attrs_tc->msg, msg, RSA_MSG_MAX_LEN);
-        break;
-    default:
-        break;
+    } else {
+        ACVP_LOG_ERR("Cannot init for RSA modes other than SigGen");
+        return ACVP_INVALID_ARG;
     }
 
     return ACVP_SUCCESS;
 }
+static ACVP_RESULT acvp_rsa_init_sigver_tc(ACVP_CTX *ctx,
+                                    ACVP_RSA_SIG_TC *sigtc,
+                                    unsigned int tc_id,
+                                    ACVP_CIPHER alg_id,
+                                    char *sig_type,
+                                    unsigned int modulo,
+                                    char *hash_alg,
+                                    unsigned char *msg,
+                                    unsigned char *e,
+                                    unsigned char *n,
+                                    unsigned char *sig
+                                    )
+{
 
+    if(sigtc->mode == ACVP_RSA_MODE_SIGVER) {
+        /*
+         * make room for all items
+         */
+        sigtc->sig_attrs_tc = calloc(1, sizeof(ACVP_RSA_SIG_ATTRS_TC));
+        if (!sigtc->sig_attrs_tc) {
+            ACVP_LOG_ERR("Couldn't make SigVer sig attrs object");
+            return ACVP_MALLOC_FAIL;
+        }
+        sigtc->sig_attrs_tc->hash_alg=(char *) calloc(1, RSA_HASH_ALG_MAX_LEN);
+        if(!sigtc->sig_attrs_tc->hash_alg) {
+            ACVP_LOG_ERR("Couldn't make SigVer hash alg buffer");
+            return ACVP_MALLOC_FAIL;
+        }
+        sigtc->sig_attrs_tc->msg=(unsigned char *) calloc(1, RSA_MSG_MAX_LEN);
+        if(!sigtc->sig_attrs_tc->msg) {
+            ACVP_LOG_ERR("Couldn't make SigVer msg buffer");
+            return ACVP_MALLOC_FAIL;
+        }
+
+        /*
+         * assign value to all items
+         */
+        sigtc->sig_type = sig_type;
+        sigtc->sig_attrs_tc->mode = sigtc->mode;
+        sigtc->sig_attrs_tc->tc_id = tc_id;
+        sigtc->sig_attrs_tc->modulo = modulo;
+        strncpy(sigtc->sig_attrs_tc->hash_alg, hash_alg, RSA_HASH_ALG_MAX_LEN);
+        strncpy(sigtc->sig_attrs_tc->msg, msg, RSA_MSG_MAX_LEN);
+        if(!BN_hex2bn(&sigtc->sig_attrs_tc->e, e))
+        {
+            ACVP_LOG_ERR("Could not convert exponent hex string to BIGNUM while initializing SigVer test case");
+            return ACVP_INVALID_ARG;
+        }
+        if(!BN_hex2bn(&sigtc->sig_attrs_tc->n, n))
+        {
+            ACVP_LOG_ERR("Could not convert modulus hex string to BIGNUM while initializing SigVer test case");
+            return ACVP_INVALID_ARG;
+        }
+        if(!BN_hex2bn(&sigtc->sig_attrs_tc->s,sig))
+        {
+            ACVP_LOG_ERR("Could not convert exponent hex string to BIGNUM while initializing SigVer test case");
+            return ACVP_INVALID_ARG;
+        }
+    } else {
+        ACVP_LOG_ERR("Cannot init for RSA modes other than SigVer");
+        return ACVP_INVALID_ARG;
+    }
+
+    return ACVP_SUCCESS;
+}
 
 static ACVP_RESULT acvp_rsa_init_tc_keygen(ACVP_CTX *ctx,
                                     ACVP_RSA_TC *stc,
@@ -239,9 +311,15 @@ static ACVP_RESULT acvp_rsa_output_sig_tc(ACVP_CTX *ctx, ACVP_RSA_SIG_TC *sigtc,
             /*
              * set the JSON vals
              */
-            json_object_set_string(tc_rsp, "e", BN_bn2hex(sigtc->sig_attrs_tc->e));
-            json_object_set_string(tc_rsp, "n", BN_bn2hex(sigtc->sig_attrs_tc->n));
-            json_object_set_string(tc_rsp, "signature", BN_bn2hex(sigtc->sig_attrs_tc->s));
+            json_object_set_string(tc_rsp, ACVP_RSA_SIGVER_EXP_OBJ_NAME , BN_bn2hex(sigtc->sig_attrs_tc->e));
+            json_object_set_string(tc_rsp, ACVP_RSA_SIGVER_MOD_OBJ_NAME, BN_bn2hex(sigtc->sig_attrs_tc->n));
+            json_object_set_string(tc_rsp, ACVP_RSA_SIGVER_SIG_OBJ_NAME, BN_bn2hex(sigtc->sig_attrs_tc->s));
+            break;
+        case ACVP_RSA_MODE_SIGVER:
+            /*
+             * set the JSON vals
+             */
+            json_object_set_string(tc_rsp,ACVP_RSA_SIGVER_PASS_OBJ_NAME, sigtc->pass?ACVP_RSA_SIGVER_PASS_YES_OBJ_NAME:ACVP_RSA_SIGVER_PASS_NO_OBJ_NAME);
             break;
         default:
             break;
@@ -472,25 +550,32 @@ static ACVP_RESULT acvp_kat_rsa_sig(unsigned int tc_id, ACVP_CIPHER alg_id,
     /*
      * siggen attrs for test obj
      */
-    unsigned int modulo, salt_len;
-    unsigned char *msg;
-    char *hash_alg;
-
+    unsigned int salt_len;
     salt_len = 0;
 
     /*
-     * set group obj -- common to siggen and sigver
+     * sigver attrs for test obj
      */
-    sig_type = (char *)json_object_get_string(groupobj, "sigType");
+    unsigned char *e;
+    unsigned char *n;
+    unsigned char *sig;
 
+    /*
+     * attrs common to siggen and sigver
+     */
+    unsigned int modulo;
+    unsigned char *msg;
+    char *hash_alg;
+
+    sig_type = (char *)json_object_get_string(groupobj, "sigType");
+    modulo = (unsigned int)json_object_get_number(groupobj, ACVP_RSA_SIG_MODULO_OBJ_NAME);
+    hash_alg = (char *)json_object_get_string(groupobj, ACVP_RSA_TC_HASHALG_OBJ_NAME);
+    msg = (unsigned char *)json_object_get_string(testobj, ACVP_RSA_SIG_MSG_OBJ_NAME);
     /*
      * set test obj
      */
     switch(sigtc->mode) {
     case ACVP_RSA_MODE_SIGGEN:
-        modulo = (unsigned int)json_object_get_number(groupobj, ACVP_RSA_SIG_MODULO_OBJ_NAME);
-        hash_alg = (char *)json_object_get_string(groupobj, ACVP_RSA_HASHALG_OBJ_NAME);
-        msg = (unsigned char *)json_object_get_string(testobj, ACVP_RSA_SIG_MSG_OBJ_NAME);
         if(strncmp(sig_type, RSA_SIG_TYPE_PKCS1PSS_NAME, RSA_SIG_TYPE_MAX_LEN ) == 0 ) {
             salt_len = (unsigned int)json_object_get_number(testobj, ACVP_RSA_SALTLEN_OBJ_NAME);
         }
@@ -501,8 +586,15 @@ static ACVP_RESULT acvp_kat_rsa_sig(unsigned int tc_id, ACVP_CIPHER alg_id,
          * TODO: this does mallocs,kat we can probably do the mallocs once for
          *       the entire vector set to be more efficient
          */
-        rv = acvp_rsa_init_sig_tc(ctx, sigtc, tc_id, alg_id, /* note: mode is set in kat_handler */
+        rv = acvp_rsa_init_siggen_tc(ctx, sigtc, tc_id, alg_id, /* note: mode is set in kat_handler */
                 sig_type, modulo, hash_alg, msg, salt_len); /* siggen attrs */
+        break;
+    case ACVP_RSA_MODE_SIGVER:
+        e = (unsigned char *)json_object_get_string(groupobj, ACVP_RSA_SIGVER_EXP_OBJ_NAME);
+        n = (unsigned char *)json_object_get_string(groupobj, ACVP_RSA_SIGVER_MOD_OBJ_NAME);
+        sig = (unsigned char *)json_object_get_string(testobj, ACVP_RSA_SIGVER_SIG_OBJ_NAME);
+        rv = acvp_rsa_init_sigver_tc(ctx, sigtc, tc_id, alg_id, /* note: mode is set in kat_handler */
+                        sig_type, modulo, hash_alg, msg, e, n, sig); /* siggen attrs */
         break;
     default:
         break;
@@ -609,6 +701,7 @@ ACVP_RESULT acvp_rsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
 
     json_object_set_number(r_vs, "vsId", ctx->vs_id);
     json_object_set_string(r_vs, "algorithm", alg_str);
+    json_object_set_string(r_vs, "mode", mode_str);
     json_object_set_value(r_vs, "testResults", json_value_init_array());
     r_tarr = json_object_get_array(r_vs, "testResults");
 
@@ -663,7 +756,8 @@ ACVP_RESULT acvp_rsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
                     rv = (cap->crypto_handler)(&tc);
                     if (rv != ACVP_SUCCESS) {
                         ACVP_LOG_ERR("ERROR: crypto module failed the operation");
-                        return ACVP_CRYPTO_MODULE_FAIL;
+                        rv = ACVP_CRYPTO_MODULE_FAIL;
+                        goto key_err;
                     }
                 }
 
@@ -673,13 +767,14 @@ ACVP_RESULT acvp_rsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
                 rv = acvp_rsa_output_tc(ctx, &stc, r_tobj);
                 if (rv != ACVP_SUCCESS) {
                     ACVP_LOG_ERR("ERROR: JSON output failure in hash module");
-                    return rv;
+                    goto key_err;
                 }
                 /*
                  * Release all the memory associated with the test case
                  */
-                acvp_rsa_release_tc(&stc);
+ key_err:       acvp_rsa_release_tc(&stc);
                 break;
+            case ACVP_RSA_MODE_SIGVER:
             case ACVP_RSA_MODE_SIGGEN:
                 /*
                  * Get a reference to the abstracted test case
@@ -697,7 +792,8 @@ ACVP_RESULT acvp_rsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
                     rv = (cap->crypto_handler)(&tc);
                     if (rv != ACVP_SUCCESS) {
                         ACVP_LOG_ERR("ERROR: crypto module failed the operation");
-                        return ACVP_CRYPTO_MODULE_FAIL;
+                        rv = ACVP_CRYPTO_MODULE_FAIL;
+                        goto sig_err;
                     }
                 }
 
@@ -707,12 +803,12 @@ ACVP_RESULT acvp_rsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
                 rv = acvp_rsa_output_sig_tc(ctx, &sigtc, r_tobj);
                 if (rv != ACVP_SUCCESS) {
                     ACVP_LOG_ERR("ERROR: JSON output failure in hash module");
-                    return rv;
+                    goto sig_err;
                 }
                 /*
                  * Release all the memory associated with the test case
                  */
-                acvp_rsa_release_sig_tc(&sigtc);
+sig_err:        acvp_rsa_release_sig_tc(&sigtc);
                 break;
             default:
                 break;
@@ -720,10 +816,13 @@ ACVP_RESULT acvp_rsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
 
             /* Append the test response value to array */
             json_array_append_value(r_tarr, r_tval);
+            if(rv != ACVP_SUCCESS) {
+                goto end;
+            }
         }
     }
 
-    json_array_append_value(reg_arry, r_vs_val);
+end:json_array_append_value(reg_arry, r_vs_val);
 
     json_result = json_serialize_to_string_pretty(ctx->kat_resp);
     if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
@@ -733,6 +832,6 @@ ACVP_RESULT acvp_rsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
     }
     json_free_serialized_string(json_result);
 
-    return ACVP_SUCCESS;
+    return rv;
 }
 

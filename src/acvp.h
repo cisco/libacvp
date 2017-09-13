@@ -646,7 +646,7 @@ typedef struct acvp_rsa_keygen_tc_t {
  * passed between libacvp and the crypto module.
  */
 typedef struct acvp_rsa_sig_attrs_tc_t {
-    ACVP_RSA_MODE mode; // "sigGen" 
+    ACVP_RSA_MODE mode;
     unsigned int  tc_id;    /* Test case id */
     unsigned int  modulo;
     char *hash_alg;
@@ -661,6 +661,7 @@ typedef struct acvp_rsa_sig_attrs_tc_t {
 typedef struct acvp_rsa_sig_tc_t {
     ACVP_RSA_MODE mode; // "sigGen" "sigVer"
     char *sig_type; // "X9.31"
+    char pass;
     ACVP_RSA_SIG_ATTRS_TC *sig_attrs_tc;
 } ACVP_RSA_SIG_TC;
 
