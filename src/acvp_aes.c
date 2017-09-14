@@ -46,6 +46,7 @@ static ACVP_RESULT acvp_aes_init_tc(ACVP_CTX *ctx,
                                     unsigned char *j_iv,
                                     unsigned char *j_tag,
                                     unsigned char *j_aad,
+                                    unsigned char *kwcipher,
                                     unsigned int key_len,
                                     unsigned int iv_len,
                                     unsigned int pt_len,
@@ -436,7 +437,7 @@ static ACVP_RESULT acvp_aes_mct_tc(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap,
 ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
 {
     unsigned int tc_id, keylen, ivlen, ptlen, aadlen, taglen;
-    unsigned char *     key, *pt = NULL, *ct = NULL, *aad = NULL, *iv = NULL, *tag = NULL;
+    unsigned char *     key, *pt = NULL, *ct = NULL, *aad = NULL, *iv = NULL, *tag = NULL, *kwcipher = NULL;
     JSON_Value *        groupval;
     JSON_Object         *groupobj = NULL;
     JSON_Value          *testval;
@@ -538,6 +539,13 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
             return (ACVP_UNSUPPORTED_OP);
         }
 
+        if ((alg_id == ACVP_AES_KW) || (alg_id == ACVP_AES_KW) ||
+            (alg_id == ACVP_TDES_KW)) {
+            kwcipher = (char *)json_object_get_string(groupobj, "kwCipher");
+            if (kwcipher == NULL) {
+                return (ACVP_UNSUPPORTED_OP);
+            }
+        }                
         keylen = (unsigned int)json_object_get_number(groupobj, "keyLen");
         ivlen = 0;
         if ((alg_id != ACVP_AES_ECB) && (alg_id != ACVP_AES_KW)) {
@@ -553,6 +561,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
 
         ACVP_LOG_INFO("    Test group: %d", i);
         ACVP_LOG_INFO("           dir: %d", dir_str);
+        ACVP_LOG_INFO("            kw: %s", kwcipher);
         ACVP_LOG_INFO("        keylen: %d", keylen);
         ACVP_LOG_INFO("         ivlen: %d", ivlen);
         ACVP_LOG_INFO("         ptlen: %d", ptlen);
@@ -617,7 +626,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
              *       the entire vector set to be more efficient
              */
             acvp_aes_init_tc(ctx, &stc, tc_id, test_type, key, pt, ct, iv, tag, aad,
-                     keylen, ivlen, ptlen, aadlen, taglen, alg_id, dir);
+                     kwcipher, keylen, ivlen, ptlen, aadlen, taglen, alg_id, dir);
 
             /* If Monte Carlo start that here */
             if (stc.test_type == ACVP_SYM_TEST_TYPE_MCT) {
@@ -785,6 +794,7 @@ static ACVP_RESULT acvp_aes_init_tc(ACVP_CTX *ctx,
                                     unsigned char *j_iv,
                                     unsigned char *j_tag,
                                     unsigned char *j_aad,
+                                    unsigned char *kwcipher,
                                     unsigned int key_len,
                                     unsigned int iv_len,
                                     unsigned int pt_len,
@@ -821,6 +831,16 @@ static ACVP_RESULT acvp_aes_init_tc(ACVP_CTX *ctx,
         return ACVP_UNSUPPORTED_OP;
     }
 
+    if (kwcipher != NULL) {
+        if (!strcmp(kwcipher, "cipher")) {
+            stc->kwcipher = ACVP_SYM_KW_CIPHER;
+        } else if (!strcmp(kwcipher, "inverse")) {
+            stc->kwcipher = ACVP_SYM_KW_INVERSE;
+        } else {
+            ACVP_LOG_ERR("Invalid kwCipher value");
+            return ACVP_INVALID_ARG;
+        }
+    }
     rv = acvp_hexstr_to_bin((const unsigned char *)j_key, stc->key, ACVP_SYM_KEY_MAX);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Hex conversion failure (key)");

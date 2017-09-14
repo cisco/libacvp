@@ -449,6 +449,7 @@ typedef struct acvp_sym_cipher_tc_t {
     unsigned char   *tag; /* Aead tag */
     unsigned char   *iv_ret; /* updated IV used for TDES MCT */
     unsigned char   *iv_ret_after; /* updated IV used for TDES MCT */
+    unsigned int kwcipher;
     unsigned int key_len;
     unsigned int pt_len;
     unsigned int aad_len;
@@ -854,10 +855,10 @@ ACVP_RESULT acvp_enable_sym_cipher_cap(
         ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case));
 
 /* TODO - need brief */
-ACVP_RESULT acvp_enable_sym_cipher_cap_parm(
+ACVP_RESULT acvp_enable_sym_cipher_cap_value(
     ACVP_CTX *ctx,
     ACVP_CIPHER cipher,
-    ACVP_SYM_CIPH_PARM parm,
+    ACVP_SYM_CIPH_PARM param,
     int length);
 
 /*! @brief acvp_enable_sym_cipher_cap_parm() allows an application to specify

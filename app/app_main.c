@@ -459,9 +459,11 @@ int main(int argc, char **argv)
    /*
     * Enable AES keywrap for various key sizes and PT lengths
     * Note: this is with padding disabled, minimum PT length is 128 bits and must be
-    *       a multiple of 64 bits.
+    *       a multiple of 64 bits. openssl does not support INVERSE mode.
     */
    rv = acvp_enable_sym_cipher_cap(ctx, ACVP_AES_KW, ACVP_DIR_BOTH, ACVP_KO_NA, ACVP_IVGEN_SRC_NA, ACVP_IVGEN_MODE_NA, &app_aes_keywrap_handler);
+   CHECK_ENABLE_CAP_RV(rv);
+   rv = acvp_enable_sym_cipher_cap_value(ctx, ACVP_AES_KW, ACVP_SYM_CIPH_KW_MODE, ACVP_SYM_KW_CIPHER);
    CHECK_ENABLE_CAP_RV(rv);
    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_KW, ACVP_SYM_CIPH_KEYLEN, 128);
    CHECK_ENABLE_CAP_RV(rv);
@@ -726,8 +728,8 @@ int main(int argc, char **argv)
 
    rv = acvp_enable_kdf135_ssh_cap_parm(ctx, ACVP_KDF135_SSH, ACVP_SSH_METH_AES_256_CBC, ACVP_KDF135_SSH_CAP_SHA256 | ACVP_KDF135_SSH_CAP_SHA384 | ACVP_KDF135_SSH_CAP_SHA512);
    CHECK_ENABLE_CAP_RV(rv);
-#endif
 
+#endif
 #if 0 /* until DSA is supported on the server side */
     /*
      * Enable DSA....
@@ -1545,6 +1547,7 @@ static ACVP_RESULT app_aes_handler(ACVP_TEST_CASE *test_case)
     return ACVP_SUCCESS;
 }
 
+/* TODO - openssl does not support inverse option */
 static ACVP_RESULT app_aes_keywrap_handler(ACVP_TEST_CASE *test_case)
 {
     ACVP_SYM_CIPHER_TC      *tc;
@@ -1557,6 +1560,10 @@ static ACVP_RESULT app_aes_keywrap_handler(ACVP_TEST_CASE *test_case)
     }
 
     tc = test_case->tc.symmetric;
+
+    if (tc->kwcipher != ACVP_SYM_KW_CIPHER) {
+        return ACVP_INVALID_ARG;
+    }
 
     /* Begin encrypt code section */
     EVP_CIPHER_CTX_init(&cipher_ctx);
@@ -1608,8 +1615,9 @@ static ACVP_RESULT app_aes_keywrap_handler(ACVP_TEST_CASE *test_case)
 #endif
         c_len = EVP_Cipher(&cipher_ctx, tc->pt, tc->ct, tc->ct_len);
         if (c_len <= 0) {
-            printf("Error: key wrap operation failed (%d)\n", c_len);
             return ACVP_CRYPTO_WRAP_FAIL;
+        } else {
+            tc->pt_len = c_len;
         }
     } else {
         printf("Unsupported direction\n");
@@ -1654,8 +1662,9 @@ static ACVP_RESULT app_des_keywrap_handler(ACVP_TEST_CASE *test_case)
         EVP_CipherInit_ex(&cipher_ctx, cipher, NULL, tc->key, NULL, 0);
         c_len = EVP_Cipher(&cipher_ctx, tc->pt, tc->ct, tc->ct_len);
         if (c_len <= 0) {
-            printf("Error: key wrap operation failed (%d)\n", c_len);
             return ACVP_CRYPTO_WRAP_FAIL;
+        } else {
+            tc->pt_len = c_len;
         }
     } else {
         printf("Unsupported direction\n");
