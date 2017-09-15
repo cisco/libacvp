@@ -4559,7 +4559,7 @@ static ACVP_RESULT acvp_get_result_vsid(ACVP_CTX *ctx, int vs_id)
     JSON_Value *val;
     JSON_Object *obj = NULL;
     char *json_buf;
-    int retry_count = 900; /* 15 minutes*/
+    int retry_count = 2700; /* 15 minutes*/
     int retry = 1;
 
     while (retry && (retry_count > 0)) {

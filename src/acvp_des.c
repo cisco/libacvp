@@ -599,7 +599,7 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
         ACVP_LOG_INFO("        keylen: %d", keylen);
         ACVP_LOG_INFO("         ivlen: %d", ivlen);
         ACVP_LOG_INFO("         dir:   %s", dir_str);
-        ACVP_LOG_INFO("      testtype: %d", test_type);
+        ACVP_LOG_INFO("      testtype: %s", test_type);
 
         keylen = 192;
         if (alg_id != ACVP_TDES_ECB) {
