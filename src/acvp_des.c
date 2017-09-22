@@ -205,22 +205,22 @@ static ACVP_RESULT acvp_des_output_mct_tc(ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *stc
 
     tmp = calloc(1, ACVP_SYM_CT_MAX);
     if (!tmp) {
-        ACVP_LOG_ERR("Unable to malloc in acvp_des_output_tc");
+        ACVP_LOG_ERR("Unable to malloc in acvp_des_output_mct_tc");
         return ACVP_MALLOC_FAIL;
     }
     tmp1 = calloc(1, ACVP_SYM_CT_MAX);
     if (!tmp1) {
-        ACVP_LOG_ERR("Unable to malloc in acvp_des_output_tc");
+        ACVP_LOG_ERR("Unable to malloc in acvp_des_output_mct_tc");
         return ACVP_MALLOC_FAIL;
     }
     tmp2 = calloc(1, ACVP_SYM_CT_MAX);
     if (!tmp2) {
-        ACVP_LOG_ERR("Unable to malloc in acvp_des_output_tc");
+        ACVP_LOG_ERR("Unable to malloc in acvp_des_output_mct_tc");
         return ACVP_MALLOC_FAIL;
     }
     tmp3 = calloc(1, ACVP_SYM_CT_MAX);
     if (!tmp3) {
-        ACVP_LOG_ERR("Unable to malloc in acvp_des_output_tc");
+        ACVP_LOG_ERR("Unable to malloc in acvp_des_output_mct_tc");
         return ACVP_MALLOC_FAIL;
     }
 
@@ -347,7 +347,7 @@ static ACVP_RESULT acvp_des_mct_tc(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap,
 
     tmp = calloc(1, ACVP_SYM_CT_MAX);
     if (!tmp) {
-        ACVP_LOG_ERR("Unable to malloc in acvp_des_output_tc");
+        ACVP_LOG_ERR("Unable to malloc in acvp_des_mct_tc");
         return ACVP_MALLOC_FAIL;
     }
 
@@ -433,6 +433,18 @@ static ACVP_RESULT acvp_des_mct_tc(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap,
 
         acvp_des_set_odd_parity(stc->key);
         memcpy(stc->iv, stc->iv_ret_after, 8); /* only on encrypt */
+
+	    if (stc->cipher == ACVP_TDES_OFB) {
+            if (stc->direction == ACVP_DIR_ENCRYPT) {
+	            for(n=0 ; n < 8 ; ++n) {
+	                stc->pt[n] = ptext[0][n] ^ stc->iv_ret[n];
+                }
+            } else {
+	            for(n=0 ; n < 8 ; ++n) {
+                    stc->ct[n] = ctext[0][n] ^ stc->iv_ret[n];
+                }
+            }
+        }
 
         if (stc->direction == ACVP_DIR_ENCRYPT) {
             memset(tmp, 0x0, ACVP_SYM_CT_MAX);
