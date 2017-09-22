@@ -37,6 +37,7 @@ static ACVP_RESULT acvp_hmac_init_tc(ACVP_CTX *ctx,
                                     unsigned int tc_id,
                                     unsigned int msg_len,
                                     unsigned char *msg,
+                                    unsigned int mac_len,
                                     unsigned int key_len,
                                     unsigned char *key,
                                     ACVP_CIPHER alg_id)
@@ -64,8 +65,9 @@ static ACVP_RESULT acvp_hmac_init_tc(ACVP_CTX *ctx,
     }
 
     stc->tc_id = tc_id;
-    stc->msg_len = msg_len;
-    stc->key_len = key_len;
+    stc->mac_len = mac_len/8;
+    stc->msg_len = msg_len/8;
+    stc->key_len = key_len/8;
     stc->cipher = alg_id;
 
     return ACVP_SUCCESS;
@@ -116,7 +118,7 @@ static ACVP_RESULT acvp_hmac_release_tc(ACVP_HMAC_TC *stc)
 
 ACVP_RESULT acvp_hmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
 {
-    unsigned int tc_id, msglen, keyLen;
+    unsigned int tc_id, msglen, keylen, maclen;
     unsigned char       *msg = NULL, *key = NULL;
     JSON_Value          *groupval;
     JSON_Object         *groupobj = NULL;
@@ -200,6 +202,9 @@ ACVP_RESULT acvp_hmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
         groupval = json_array_get_value(groups, i);
         groupobj = json_value_get_object(groupval);
 
+        msglen = (unsigned int)json_object_get_number(groupobj, "msgLen");
+        keylen = (unsigned int)json_object_get_number(groupobj, "keyLen");
+        maclen = (unsigned int)json_object_get_number(groupobj, "macLen");
 
         ACVP_LOG_INFO("    Test group: %d", i);
         ACVP_LOG_INFO("        msglen: %d", msglen);
@@ -212,16 +217,15 @@ ACVP_RESULT acvp_hmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
             testobj = json_value_get_object(testval);
 
             tc_id = (unsigned int)json_object_get_number(testobj, "tcId");
-            msglen = (unsigned int)json_object_get_number(testobj, "msgLen");
             msg = (unsigned char *)json_object_get_string(testobj, "msg");
-            keyLen = (unsigned int)json_object_get_number(testobj, "keyLen");
             key = (unsigned char *)json_object_get_string(testobj, "key");
 
             ACVP_LOG_INFO("        Test case: %d", j);
             ACVP_LOG_INFO("             tcId: %d", tc_id);
             ACVP_LOG_INFO("           msgLen: %d", msglen);
+            ACVP_LOG_INFO("           macLen: %d", maclen);
             ACVP_LOG_INFO("              msg: %s", msg);
-            ACVP_LOG_INFO("           keyLen: %d", keyLen);
+            ACVP_LOG_INFO("           keyLen: %d", keylen);
             ACVP_LOG_INFO("              key: %s", key);
 
             /*
@@ -241,7 +245,7 @@ ACVP_RESULT acvp_hmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
             if (msglen == 0) {
                 msglen = strnlen((const char *)msg, ACVP_HMAC_MSG_MAX) / 2;
             }
-            acvp_hmac_init_tc(ctx, &stc, tc_id, msglen, msg, keyLen, key, alg_id);
+            acvp_hmac_init_tc(ctx, &stc, tc_id, msglen, msg, maclen, keylen, key, alg_id);
 
             /* Process the current test vector... */
             rv = (cap->crypto_handler)(&tc);

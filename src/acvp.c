@@ -2769,7 +2769,7 @@ static ACVP_RESULT acvp_build_hmac_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
 
     json_object_set_number(obj, "min", cap_entry->cap.hmac_cap->key_len_min);
     json_object_set_number(obj, "max", cap_entry->cap.hmac_cap->key_len_max);
-    json_object_set_number(obj, "increment", 8);
+    json_object_set_number(obj, "increment", 64);
 
     json_array_append_value(temp_arr, val);
     /*
@@ -4559,7 +4559,7 @@ static ACVP_RESULT acvp_get_result_vsid(ACVP_CTX *ctx, int vs_id)
     JSON_Value *val;
     JSON_Object *obj = NULL;
     char *json_buf;
-    int retry_count = 2700; /* 15 minutes*/
+    int retry_count = 900; /* 15 minutes*/
     int retry = 1;
 
     while (retry && (retry_count > 0)) {
