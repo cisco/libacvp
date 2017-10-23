@@ -479,7 +479,7 @@ ACVP_RSA_CAP_MODE_LIST* acvp_alloc_new_rsa_cap_sig_mode_entry(ACVP_RSA_MODE mode
         case ACVP_RSA_MODE_SIGGEN:
             rsa_tmp_mode_list->cap_mode = mode;
             rsa_tmp_mode_list->cap_mode_attrs.siggen = calloc(1,
-                    sizeof(ACVP_RSA_SIGGEN_ATTRS));
+                    sizeof(ACVP_RSA_SIG_ATTRS));
             if (!rsa_tmp_mode_list->cap_mode_attrs.siggen) {
                 break;
             }
@@ -487,7 +487,7 @@ ACVP_RSA_CAP_MODE_LIST* acvp_alloc_new_rsa_cap_sig_mode_entry(ACVP_RSA_MODE mode
         case ACVP_RSA_MODE_SIGVER:
             rsa_tmp_mode_list->cap_mode = mode;
             rsa_tmp_mode_list->cap_mode_attrs.sigver = calloc(1,
-                    sizeof(ACVP_RSA_SIGVER_ATTRS));
+                    sizeof(ACVP_RSA_SIG_ATTRS));
             if (!rsa_tmp_mode_list->cap_mode_attrs.sigver) {
                 break;
             }
@@ -504,7 +504,7 @@ ACVP_RSA_CAP_MODE_LIST* acvp_alloc_new_rsa_cap_sig_mode_entry(ACVP_RSA_MODE mode
  * This function is used to locate the rsa_cap_mode_list entry that matches the signature type specified.
  * If no entry is found in the list with that type, a blank cap_mode will be returned. If there is an error NULL is returned.
  */
-ACVP_RSA_CAP_MODE_LIST* acvp_locate_rsa_sig_type_entry(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap,
+ACVP_RSA_SIG_ATTRS* acvp_locate_rsa_sig_type_entry(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap,
                                                    ACVP_RSA_MODE mode,
                                                    ACVP_RSA_SIG_TYPE sig_type)
 {
@@ -536,50 +536,39 @@ ACVP_RSA_CAP_MODE_LIST* acvp_locate_rsa_sig_type_entry(ACVP_CTX *ctx, ACVP_CAPS_
 
     while (cap_mode_list) {
         if (cap_mode_list->cap_mode == mode) {
+            ACVP_RSA_SIG_ATTRS *last = NULL, *current_sig_type = NULL;
             switch(mode) {
             case ACVP_RSA_MODE_SIGGEN:
-                if(!cap_mode_list->cap_mode_attrs.siggen){
-                    ACVP_LOG_ERR("SigGen Cap mode attributes not defined");
-                    return NULL;
-                }
-                if(!cap_mode_list->cap_mode_attrs.siggen->sig_type)
-                {
-                    ACVP_LOG_ERR("SigGen Signature type not defined");
-                    return NULL;
-                }
-                if(!strcmp(cap_mode_list->cap_mode_attrs.siggen->sig_type,sig_type_str)) {
-                    return cap_mode_list;
-                }
+                current_sig_type = cap_mode_list->cap_mode_attrs.siggen;
                 break;
             case ACVP_RSA_MODE_SIGVER:
-                if(!cap_mode_list->cap_mode_attrs.sigver)
-                {
-                    ACVP_LOG_ERR("SigVer Cap mode attributes not defined");
-                    return NULL;
-                }
-                if(!cap_mode_list->cap_mode_attrs.sigver->sig_type)
-                {
-                    ACVP_LOG_ERR("SigVer Signature type not defined");
-                    return NULL;
-                }
-                if(!strcmp(cap_mode_list->cap_mode_attrs.sigver->sig_type,sig_type_str)) {
-                    return cap_mode_list;
-                }
+                current_sig_type = cap_mode_list->cap_mode_attrs.sigver;
                 break;
             default:
-                ACVP_LOG_ERR("RSA Mode not supported");
+                ACVP_LOG_ERR("RSA type not supported");
                 return NULL;
             }
+            while (current_sig_type) {
+                if (current_sig_type->sig_type_val == sig_type) return current_sig_type;
+                last = current_sig_type;
+                current_sig_type = current_sig_type->next;
+            }
+            ACVP_LOG_INFO("Can't find specified RSA sigtype, creating a new obj");
+            last->next = calloc(1, sizeof(ACVP_RSA_SIG_ATTRS));
+            if (!last->next) {
+                ACVP_LOG_ERR("Malloc Failed -- RSA SigGen cap sig type entry");
+                return NULL;
+            }
+            last->next->sig_type = calloc(1, sizeof(sig_type_str));
+            last->next->sig_type = sig_type_str;
+            last->next->sig_type_val = sig_type;
+            return last->next;
         }
         cap_mode_list_last_entry = cap_mode_list;
         cap_mode_list = cap_mode_list->next;
     }
-    cap_mode_list_last_entry->next = acvp_alloc_new_rsa_cap_sig_mode_entry(mode);
-    if (!cap_mode_list_last_entry->next)
-    {
-        ACVP_LOG_ERR("Malloc Failure during RSA Mode List entry creation");
-    }
-    return cap_mode_list_last_entry->next;
+    ACVP_LOG_ERR("Can't find value");
+    return NULL;
 }
 
 char *acvp_rsa_get_sig_type_name(ACVP_RSA_SIG_TYPE sig_type)

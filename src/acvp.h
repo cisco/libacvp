@@ -1052,14 +1052,6 @@ ACVP_RESULT acvp_enable_rsa_cap_sig_type_parm (ACVP_CTX *ctx,
                              ACVP_RSA_MODE mode,
                              ACVP_RSA_SIG_TYPE sig_type,
                              int mod,
-                             char *hash
-                             );
-
-ACVP_RESULT acvp_enable_rsa_cap_sig_type_salt_parm (ACVP_CTX *ctx,
-                             ACVP_CIPHER cipher,
-                             ACVP_RSA_MODE mode,
-                             ACVP_RSA_SIG_TYPE sig_type,
-                             int mod,
                              char *hash,
                              int salt
                              );
