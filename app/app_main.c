@@ -765,7 +765,7 @@ int main(int argc, char **argv)
     CHECK_ENABLE_CAP_RV(rv);
 #endif
 
- #ifdef ACVP_NO_RUNTIME
+#ifdef ACVP_NO_RUNTIME
 
 #if 0 /* until RSA is supported on the server side */
     /*
@@ -972,6 +972,7 @@ int main(int argc, char **argv)
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_rsa_cap_sig_type_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_SIGVER, RSA_SIG_TYPE_PKCS1PSS, MOD_RSA_4096, ACVP_RSA_SHA_512, RSA_SALT_SIGGEN_64);
     CHECK_ENABLE_CAP_RV(rv);
+#endif
 #endif
 
 #ifdef ACVP_NO_RUNTIME
