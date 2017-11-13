@@ -2477,7 +2477,7 @@ static ACVP_RESULT app_cmac_handler(ACVP_TEST_CASE *test_case)
     }
     return ACVP_SUCCESS;
 }*/
-#endif
+
 static ACVP_RESULT app_rsa_handler(ACVP_TEST_CASE *test_case)
 {
     /*
@@ -2575,7 +2575,7 @@ static ACVP_RESULT app_rsa_handler(ACVP_TEST_CASE *test_case)
 
 }
 
-#ifdef ACVP_NO_RUNTIME
+
 /*
  * RSA SigGen handler
  * requires Makefile.fom to function
