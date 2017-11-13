@@ -1564,6 +1564,7 @@ static ACVP_RESULT app_aes_handler(ACVP_TEST_CASE *test_case)
     return ACVP_SUCCESS;
 }
 
+#ifdef ACVP_V04
 /* TODO - openssl does not support inverse option */
 static ACVP_RESULT app_aes_keywrap_handler(ACVP_TEST_CASE *test_case)
 {
@@ -1692,6 +1693,7 @@ static ACVP_RESULT app_des_keywrap_handler(ACVP_TEST_CASE *test_case)
 
     return ACVP_SUCCESS;
 }
+#endif
 
 /*
  * This fuction is invoked by libacvp when an AES crypto
