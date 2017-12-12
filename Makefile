@@ -4,7 +4,7 @@ LDFLAGS+=
 INCDIRS+=-I. -Isrc
 PKCS11_INCDIRS+=-I/usr/include/nss3 -I/usr/include/nspr4
 
-SOURCES=src/acvp.c src/acvp_aes.c src/acvp_des.c src/acvp_hash.c src/acvp_transport.c src/acvp_util.c src/parson.c src/acvp_drbg.c src/acvp_hmac.c src/acvp_cmac.c
+SOURCES=src/acvp.c src/acvp_aes.c src/acvp_des.c src/acvp_hash.c src/acvp_transport.c src/acvp_util.c src/parson.c src/acvp_drbg.c src/acvp_hmac.c src/acvp_cmac.c src/acvp_rsa.c src/acvp_dsa.c src/acvp_kdf135_tls.c src/acvp_kdf135_snmp.c src/acvp_kdf135_ssh.c
 OBJECTS=$(SOURCES:.c=.o)
 
 all: libacvp.a acvp_app pkcs11_app

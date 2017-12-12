@@ -1,3 +1,29 @@
+/** @file */
+/*****************************************************************************
+* Copyright (c) 2016-2017, Cisco Systems, Inc.
+* All rights reserved.
+
+* Redistribution and use in source and binary forms, with or without modification,
+* are permitted provided that the following conditions are met:
+*
+* 1. Redistributions of source code must retain the above copyright notice,
+*    this list of conditions and the following disclaimer.
+*
+* 2. Redistributions in binary form must reproduce the above copyright notice,
+*    this list of conditions and the following disclaimer in the documentation
+*    and/or other materials provided with the distribution.
+*
+* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+* AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+* IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+* DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+* FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+* DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+* SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+* CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+* OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+* USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*****************************************************************************/
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -135,6 +161,7 @@ ACVP_RESULT acvp_cmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
     ACVP_RESULT rv;
     const char		*alg_str = json_object_get_string(obj, "algorithm");
     ACVP_CIPHER	        alg_id;
+    char *json_result;
 
     if (!alg_str) {
         ACVP_LOG_ERR("ERROR: unable to parse 'algorithm' from JSON");
@@ -261,8 +288,14 @@ ACVP_RESULT acvp_cmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
     }
 
     json_array_append_value(reg_arry, r_vs_val);
-    //FIXME
-    printf("\n\n%s\n\n", json_serialize_to_string_pretty(ctx->kat_resp));
+
+    json_result = json_serialize_to_string_pretty(ctx->kat_resp);
+    if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
+        printf("\n\n%s\n\n", json_result);
+    } else {
+        ACVP_LOG_INFO("\n\n%s\n\n", json_result);
+    }
+    json_free_serialized_string(json_result);
 
     return ACVP_SUCCESS;
 }
