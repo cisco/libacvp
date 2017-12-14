@@ -607,16 +607,16 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
         ivlen = (unsigned int)json_object_get_number(groupobj, "ivLen");
         test_type = (char *)json_object_get_string(groupobj, "testType");
 
+        keylen = 192;
+        if (alg_id != ACVP_TDES_ECB) {
+            ivlen = 64;
+        }
         ACVP_LOG_INFO("    Test group: %d", i);
         ACVP_LOG_INFO("        keylen: %d", keylen);
         ACVP_LOG_INFO("         ivlen: %d", ivlen);
         ACVP_LOG_INFO("         dir:   %s", dir_str);
         ACVP_LOG_INFO("      testtype: %s", test_type);
 
-        keylen = 192;
-        if (alg_id != ACVP_TDES_ECB) {
-            ivlen = 64;
-        }
         tests = json_object_get_array(groupobj, "tests");
         t_cnt = json_array_get_count(tests);
         for (j = 0; j < t_cnt; j++) {
@@ -650,9 +650,11 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
                 if (!pt) return (ACVP_MALFORMED_JSON);
 
                 if (alg_id == ACVP_TDES_CFB1) {
-                    ptlen = strlen((char *)pt)*(8);
+                    ptlen = (unsigned int)json_object_get_number(testobj, "ptLen");
+                    if (!ptlen) 
+                        ptlen = strlen((char *)pt)*(8/2);
                 } else {
-                      ptlen = strlen((char *)pt)*(8/2);
+                    ptlen = strlen((char *)pt)*(8/2);
                 }
             } else {
                 ct = (unsigned char *)json_object_get_string(testobj, "ct");
@@ -660,9 +662,11 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
                 if (!ct) return (ACVP_MALFORMED_JSON);
 
                 if (alg_id == ACVP_TDES_CFB1) {
-                    ptlen = strlen((char *)ct)*(8);
+                    ptlen = (unsigned int)json_object_get_number(testobj, "ctLen");
+                    if (!ptlen)
+                        ptlen = strlen((char *)pt)*(8/2);
                 } else {
-                      ptlen = strlen((char *)ct)*(8/2);
+                    ptlen = strlen((char *)ct)*(8/2);
                 }
             }
 
@@ -870,7 +874,7 @@ static ACVP_RESULT acvp_des_init_tc(ACVP_CTX *ctx,
 
     if (j_pt) {
         if (alg_id == ACVP_TDES_CFB1) {
-            rv = acvp_bit_to_bin((const unsigned char *)j_pt, pt_len/8, stc->pt);
+            rv = acvp_bit_to_bin((const unsigned char *)j_pt, pt_len, stc->pt);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("Hex conversion failure (pt)");
                 return rv;
@@ -886,7 +890,7 @@ static ACVP_RESULT acvp_des_init_tc(ACVP_CTX *ctx,
 
     if (j_ct) {
         if (alg_id == ACVP_TDES_CFB1) {
-            rv = acvp_bit_to_bin((const unsigned char *)j_ct, pt_len/8, stc->ct);
+            rv = acvp_bit_to_bin((const unsigned char *)j_ct, pt_len, stc->ct);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("Hex conversion failure (ct)");
                 return rv;
@@ -916,9 +920,13 @@ static ACVP_RESULT acvp_des_init_tc(ACVP_CTX *ctx,
     stc->tc_id = tc_id;
     stc->key_len = key_len;
     stc->iv_len = iv_len/8;
-    stc->pt_len = pt_len/8;
-    stc->ct_len = pt_len/8;
-
+    if (alg_id == ACVP_TDES_CFB1) {    
+        stc->pt_len = pt_len;
+        stc->ct_len = pt_len;
+    } else {
+        stc->pt_len = pt_len/8;
+        stc->ct_len = pt_len/8;
+    }
     stc->cipher = alg_id;
     stc->direction = dir;
 
