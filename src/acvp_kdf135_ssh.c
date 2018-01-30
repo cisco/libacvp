@@ -264,48 +264,48 @@ static ACVP_RESULT acvp_kdf135_ssh_output_tc(ACVP_CTX *ctx, ACVP_KDF135_SSH_TC *
         ACVP_LOG_ERR("Unable to malloc in acvp_kdf135_ssh_output_tc");
         return ACVP_MALLOC_FAIL;
     }
-
     json_object_set_string(tc_rsp, "csInitIV", tmp);
+    free(tmp);
 
     tmp = calloc(1, ACVP_KDF135_SSH_MSG_MAX);
     if (!tmp) {
         ACVP_LOG_ERR("Unable to malloc in acvp_kdf135_ssh_output_tc");
         return ACVP_MALLOC_FAIL;
     }
-
     json_object_set_string(tc_rsp, "scInitIV", tmp);
+    free(tmp);
 
     tmp = calloc(1, ACVP_KDF135_SSH_MSG_MAX);
     if (!tmp) {
         ACVP_LOG_ERR("Unable to malloc in acvp_kdf135_ssh_output_tc");
         return ACVP_MALLOC_FAIL;
     }
-
     json_object_set_string(tc_rsp, "csEKey", tmp);
+    free(tmp);
 
     tmp = calloc(1, ACVP_KDF135_SSH_MSG_MAX);
     if (!tmp) {
         ACVP_LOG_ERR("Unable to malloc in acvp_kdf135_ssh_output_tc");
         return ACVP_MALLOC_FAIL;
     }
-
     json_object_set_string(tc_rsp, "scEKey", tmp);
+    free(tmp);
 
     tmp = calloc(1, ACVP_KDF135_SSH_MSG_MAX);
     if (!tmp) {
         ACVP_LOG_ERR("Unable to malloc in acvp_kdf135_ssh_output_tc");
         return ACVP_MALLOC_FAIL;
     }
-
     json_object_set_string(tc_rsp, "csIKey", tmp);
+    free(tmp);
 
     tmp = calloc(1, ACVP_KDF135_SSH_MSG_MAX);
     if (!tmp) {
         ACVP_LOG_ERR("Unable to malloc in acvp_kdf135_ssh_output_tc");
         return ACVP_MALLOC_FAIL;
     }
-
     json_object_set_string(tc_rsp, "scIKey", tmp);
+    free(tmp);
     return ACVP_SUCCESS;
 }
 

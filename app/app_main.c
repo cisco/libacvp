@@ -1733,117 +1733,123 @@ static ACVP_RESULT app_aes_handler_aead(ACVP_TEST_CASE *test_case)
     /* Validate key length and assign OpenSSL EVP cipher */
     switch (tc->cipher) {
     case ACVP_AES_GCM:
-  switch (tc->key_len) {
-  case 128:
-      cipher = EVP_aes_128_gcm();
-      break;
-  case 192:
-      cipher = EVP_aes_192_gcm();
-      break;
-  case 256:
-      cipher = EVP_aes_256_gcm();
-      break;
-  default:
-      printf("Unsupported AES-GCM key length\n");
-      return ACVP_UNSUPPORTED_OP;
-  }
-  if (tc->direction == ACVP_DIR_ENCRYPT) {
-      EVP_CIPHER_CTX_set_flags(&cipher_ctx, EVP_CIPH_FLAG_NON_FIPS_ALLOW);
-      EVP_CipherInit(&cipher_ctx, cipher, NULL, NULL, 1);
-      EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_GCM_SET_IVLEN, tc->iv_len, 0);
-      EVP_CipherInit(&cipher_ctx, NULL, tc->key, NULL, 1);
+        switch (tc->key_len) {
+        case 128:
+            cipher = EVP_aes_128_gcm();
+            break;
+        case 192:
+            cipher = EVP_aes_192_gcm();
+            break;
+        case 256:
+            cipher = EVP_aes_256_gcm();
+            break;
+        default:
+            printf("Unsupported AES-GCM key length\n");
+            EVP_CIPHER_CTX_cleanup(&cipher_ctx);
+            return ACVP_UNSUPPORTED_OP;
+        }
+        if (tc->direction == ACVP_DIR_ENCRYPT) {
+            EVP_CIPHER_CTX_set_flags(&cipher_ctx, EVP_CIPH_FLAG_NON_FIPS_ALLOW);
+            EVP_CipherInit(&cipher_ctx, cipher, NULL, NULL, 1);
+            EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_GCM_SET_IVLEN, tc->iv_len, 0);
+            EVP_CipherInit(&cipher_ctx, NULL, tc->key, NULL, 1);
 
-      EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_GCM_SET_IV_FIXED, 4, iv_fixed);
-      if (!EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_GCM_IV_GEN, tc->iv_len, tc->iv)) {
-  printf("acvp_aes_encrypt: iv gen error\n");
-  return ACVP_CRYPTO_MODULE_FAIL;
-      }
-      if (tc->aad_len) {
-  EVP_Cipher(&cipher_ctx, NULL, tc->aad, tc->aad_len);
-      }
-      EVP_Cipher(&cipher_ctx, tc->ct, tc->pt, tc->pt_len);
-      EVP_Cipher(&cipher_ctx, NULL, NULL, 0);
-      EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_GCM_GET_TAG, tc->tag_len, tc->tag);
-  } else if (tc->direction == ACVP_DIR_DECRYPT) {
-      EVP_CIPHER_CTX_set_flags(&cipher_ctx, EVP_CIPH_FLAG_NON_FIPS_ALLOW);
-      EVP_CipherInit_ex(&cipher_ctx, cipher, NULL, tc->key, NULL, 0);
-      EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_GCM_SET_IVLEN, tc->iv_len, 0);
-      EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_GCM_SET_IV_FIXED, -1, tc->iv);
-      if(!EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_GCM_IV_GEN, tc->iv_len, tc->iv)) {
-  printf("\nFailed to set IV");;
-  return ACVP_CRYPTO_MODULE_FAIL;
-      }
-      if (tc->aad_len) {
-  /*
-   * Set dummy tag before processing AAD.  Otherwise the AAD can
-   * not be processed.
-   */
-  EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_GCM_SET_TAG, tc->tag_len, tc->tag);
-  EVP_Cipher(&cipher_ctx, NULL, tc->aad, tc->aad_len);
-      }
-      /*
-       * Set the tag when decrypting
-       */
-      EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_GCM_SET_TAG, tc->tag_len, tc->tag);
+            EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_GCM_SET_IV_FIXED, 4, iv_fixed);
+            if (!EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_GCM_IV_GEN, tc->iv_len, tc->iv)) {
+                printf("acvp_aes_encrypt: iv gen error\n");
+                EVP_CIPHER_CTX_cleanup(&cipher_ctx);
+                return ACVP_CRYPTO_MODULE_FAIL;
+            }
+            if (tc->aad_len) {
+                EVP_Cipher(&cipher_ctx, NULL, tc->aad, tc->aad_len);
+            }
+            EVP_Cipher(&cipher_ctx, tc->ct, tc->pt, tc->pt_len);
+            EVP_Cipher(&cipher_ctx, NULL, NULL, 0);
+            EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_GCM_GET_TAG, tc->tag_len, tc->tag);
+        } else if (tc->direction == ACVP_DIR_DECRYPT) {
+            EVP_CIPHER_CTX_set_flags(&cipher_ctx, EVP_CIPH_FLAG_NON_FIPS_ALLOW);
+            EVP_CipherInit_ex(&cipher_ctx, cipher, NULL, tc->key, NULL, 0);
+            EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_GCM_SET_IVLEN, tc->iv_len, 0);
+            EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_GCM_SET_IV_FIXED, -1, tc->iv);
+            if(!EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_GCM_IV_GEN, tc->iv_len, tc->iv)) {
+                printf("\nFailed to set IV");
+                EVP_CIPHER_CTX_cleanup(&cipher_ctx);
+                return ACVP_CRYPTO_MODULE_FAIL;
+            }
+            if (tc->aad_len) {
+                /*
+                 * Set dummy tag before processing AAD.  Otherwise the AAD can
+                 * not be processed.
+                 */
+                EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_GCM_SET_TAG, tc->tag_len, tc->tag);
+                EVP_Cipher(&cipher_ctx, NULL, tc->aad, tc->aad_len);
+            }
+            /*
+             * Set the tag when decrypting
+             */
+            EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_GCM_SET_TAG, tc->tag_len, tc->tag);
 
-      /*
-       * Decrypt the CT
-       */
-      EVP_Cipher(&cipher_ctx, tc->pt, tc->ct, tc->pt_len);
-      /*
-       * Check the tag
-       */
-      rv = EVP_Cipher(&cipher_ctx, NULL, NULL, 0);
-      if (rv) {
-  return ACVP_CRYPTO_TAG_FAIL;
-      }
-  }
-  break;
+            /*
+             * Decrypt the CT
+             */
+            EVP_Cipher(&cipher_ctx, tc->pt, tc->ct, tc->pt_len);
+            /*
+             * Check the tag
+             */
+            rv = EVP_Cipher(&cipher_ctx, NULL, NULL, 0);
+            if (rv) {
+                EVP_CIPHER_CTX_cleanup(&cipher_ctx);
+                return ACVP_CRYPTO_TAG_FAIL;
+            }
+        }
+        break;
     case ACVP_AES_CCM:
-  switch (tc->key_len) {
-  case 128:
-      cipher = EVP_aes_128_ccm();
-      break;
-  case 192:
-      cipher = EVP_aes_192_ccm();
-      break;
-  case 256:
-      cipher = EVP_aes_256_ccm();
-      break;
-  default:
-      printf("Unsupported AES-CCM key length\n");
-      return ACVP_UNSUPPORTED_OP;
-  }
-  if (tc->direction == ACVP_DIR_ENCRYPT) {
-      EVP_CipherInit(&cipher_ctx, cipher, NULL, NULL, 1);
-      EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_CCM_SET_IVLEN, tc->iv_len, 0);
-      EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_CCM_SET_TAG, tc->tag_len, 0);
-      EVP_CipherInit(&cipher_ctx, NULL, tc->key, tc->iv, 1);
-      EVP_Cipher(&cipher_ctx, NULL, NULL, tc->pt_len);
-      EVP_Cipher(&cipher_ctx, NULL, tc->aad, tc->aad_len);
-      EVP_Cipher(&cipher_ctx, tc->ct, tc->pt, tc->pt_len);
-      EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_CCM_GET_TAG, tc->tag_len, tc->ct + tc->ct_len);
-      tc->ct_len += tc->tag_len;
-  } else if (tc->direction == ACVP_DIR_DECRYPT) {
-      EVP_CipherInit(&cipher_ctx, cipher, NULL, NULL, 0);
-      EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_CCM_SET_IVLEN, tc->iv_len, 0);
-      EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_CCM_SET_TAG, tc->tag_len, tc->ct + tc->pt_len);
-      EVP_CipherInit(&cipher_ctx, NULL, tc->key, tc->iv, 0);
-      EVP_Cipher(&cipher_ctx, NULL, NULL, tc->pt_len);
-      EVP_Cipher(&cipher_ctx, NULL, tc->aad, tc->aad_len);
-      /*
-       * Decrypt and check the tag
-       */
-      rv = EVP_Cipher(&cipher_ctx, tc->pt, tc->ct, tc->pt_len);
-      if (rv < 0) {
-  return ACVP_CRYPTO_TAG_FAIL;
-      }
-  }
-  break;
+        switch (tc->key_len) {
+        case 128:
+          cipher = EVP_aes_128_ccm();
+          break;
+        case 192:
+          cipher = EVP_aes_192_ccm();
+          break;
+        case 256:
+          cipher = EVP_aes_256_ccm();
+          break;
+        default:
+            printf("Unsupported AES-CCM key length\n");
+            EVP_CIPHER_CTX_cleanup(&cipher_ctx);
+            return ACVP_UNSUPPORTED_OP;
+        }
+        if (tc->direction == ACVP_DIR_ENCRYPT) {
+            EVP_CipherInit(&cipher_ctx, cipher, NULL, NULL, 1);
+            EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_CCM_SET_IVLEN, tc->iv_len, 0);
+            EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_CCM_SET_TAG, tc->tag_len, 0);
+            EVP_CipherInit(&cipher_ctx, NULL, tc->key, tc->iv, 1);
+            EVP_Cipher(&cipher_ctx, NULL, NULL, tc->pt_len);
+            EVP_Cipher(&cipher_ctx, NULL, tc->aad, tc->aad_len);
+            EVP_Cipher(&cipher_ctx, tc->ct, tc->pt, tc->pt_len);
+            EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_CCM_GET_TAG, tc->tag_len, tc->ct + tc->ct_len);
+            tc->ct_len += tc->tag_len;
+        } else if (tc->direction == ACVP_DIR_DECRYPT) {
+          EVP_CipherInit(&cipher_ctx, cipher, NULL, NULL, 0);
+          EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_CCM_SET_IVLEN, tc->iv_len, 0);
+          EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_CCM_SET_TAG, tc->tag_len, tc->ct + tc->pt_len);
+          EVP_CipherInit(&cipher_ctx, NULL, tc->key, tc->iv, 0);
+          EVP_Cipher(&cipher_ctx, NULL, NULL, tc->pt_len);
+          EVP_Cipher(&cipher_ctx, NULL, tc->aad, tc->aad_len);
+          /*
+           * Decrypt and check the tag
+           */
+          rv = EVP_Cipher(&cipher_ctx, tc->pt, tc->ct, tc->pt_len);
+          if (rv < 0) {
+              EVP_CIPHER_CTX_cleanup(&cipher_ctx);
+              return ACVP_CRYPTO_TAG_FAIL;
+          }
+        }
+        break;
     default:
-  printf("Error: Unsupported AES AEAD mode requested by ACVP server\n");
-  return ACVP_NO_CAP;
-  break;
+        printf("Error: Unsupported AES AEAD mode requested by ACVP server\n");
+            EVP_CIPHER_CTX_cleanup(&cipher_ctx);
+            return ACVP_NO_CAP;
     }
 
     EVP_CIPHER_CTX_cleanup(&cipher_ctx);

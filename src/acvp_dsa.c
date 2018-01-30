@@ -273,35 +273,43 @@ ACVP_RESULT acvp_dsa_pqggen_handler (ACVP_CTX *ctx, ACVP_TEST_CASE tc, ACVP_CAPS
 
         ACVP_LOG_INFO("       Test case: %d", j);
         ACVP_LOG_INFO("            tcId: %d", tc_id);
-        if (!strncmp((char *)gen_g, "canonical", 9)) {
-            p = (unsigned char *)json_object_get_string(testobj, "p");
-            q = (unsigned char *)json_object_get_string(testobj, "q");
-            seed = (unsigned char *)json_object_get_string(testobj, "seed");
-            index = (unsigned char *)json_object_get_string(testobj, "index");
-            gpq = ACVP_DSA_CANONICAL;
-            ACVP_LOG_INFO("               p: %s", p);
-            ACVP_LOG_INFO("               q: %s", q);
-            ACVP_LOG_INFO("            seed: %s", seed);
-            ACVP_LOG_INFO("           index: %s", index);
+        if (gen_g) {
+            if (!strncmp((char *)gen_g, "canonical", 9)) {
+                p = (unsigned char *)json_object_get_string(testobj, "p");
+                q = (unsigned char *)json_object_get_string(testobj, "q");
+                seed = (unsigned char *)json_object_get_string(testobj, "seed");
+                index = (unsigned char *)json_object_get_string(testobj, "index");
+                gpq = ACVP_DSA_CANONICAL;
+                ACVP_LOG_INFO("               p: %s", p);
+                ACVP_LOG_INFO("               q: %s", q);
+                ACVP_LOG_INFO("            seed: %s", seed);
+                ACVP_LOG_INFO("           index: %s", index);
+            }
         }
 
         /* find the mode */
-        if (!strncmp((char *)gen_g, "unverifiable", 12)) {
-            p = (unsigned char *)json_object_get_string(testobj, "p");
-            q = (unsigned char *)json_object_get_string(testobj, "q");
-            gpq = ACVP_DSA_UNVERIFIABLE;
-            ACVP_LOG_INFO("               p: %s", p);
-            ACVP_LOG_INFO("               q: %s", q);
+        if (gen_g) {
+            if (!strncmp((char *)gen_g, "unverifiable", 12)) {
+                p = (unsigned char *)json_object_get_string(testobj, "p");
+                q = (unsigned char *)json_object_get_string(testobj, "q");
+                gpq = ACVP_DSA_UNVERIFIABLE;
+                ACVP_LOG_INFO("               p: %s", p);
+                ACVP_LOG_INFO("               q: %s", q);
+            }
         }
-    	if (!strncmp((char *)gen_pq, "probable", 8)) {
-            num = json_object_get_number(testobj, "num");
-            gpq = ACVP_DSA_PROBABLE;
-            ACVP_LOG_INFO("             num: %d", num);
+    	if (gen_pq) {
+            if (!strncmp((char *)gen_pq, "probable", 8)) {
+                num = json_object_get_number(testobj, "num");
+                gpq = ACVP_DSA_PROBABLE;
+                ACVP_LOG_INFO("             num: %d", num);
+            }
         }
-    	if (!strncmp((char *)gen_pq, "provable", 8)) {
-            num = json_object_get_number(testobj, "num");
-            gpq = ACVP_DSA_PROVABLE;
-            ACVP_LOG_INFO("             num: %d", num);
+    	if (gen_pq){
+            if (!strncmp((char *)gen_pq, "provable", 8)) {
+                num = json_object_get_number(testobj, "num");
+                gpq = ACVP_DSA_PROVABLE;
+                ACVP_LOG_INFO("             num: %d", num);
+            }
         }
 
 

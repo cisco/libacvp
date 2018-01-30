@@ -220,7 +220,6 @@ ACVP_RESULT acvp_cmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
 
 
         ACVP_LOG_INFO("    Test group: %d", i);
-        ACVP_LOG_INFO("        msglen: %d", msglen);
 
         tests = json_object_get_array(groupobj, "tests");
         t_cnt = json_array_get_count(tests);

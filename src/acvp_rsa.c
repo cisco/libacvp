@@ -151,19 +151,19 @@ static ACVP_RESULT acvp_rsa_init_sigver_tc(ACVP_CTX *ctx,
         sigtc->sig_attrs_tc->mode = sigtc->mode;
         sigtc->sig_attrs_tc->tc_id = tc_id;
         sigtc->sig_attrs_tc->modulo = modulo;
-        strncpy(sigtc->sig_attrs_tc->hash_alg, hash_alg, RSA_HASH_ALG_MAX_LEN);
-        strncpy(sigtc->sig_attrs_tc->msg, msg, RSA_MSG_MAX_LEN);
-        if(!BN_hex2bn(&sigtc->sig_attrs_tc->e, e))
+        strncpy(sigtc->sig_attrs_tc->hash_alg, (const char *)hash_alg, RSA_HASH_ALG_MAX_LEN);
+        strncpy((char *)sigtc->sig_attrs_tc->msg, (const char *)msg, RSA_MSG_MAX_LEN);
+        if(!BN_hex2bn(&sigtc->sig_attrs_tc->e, (const char *)e))
         {
             ACVP_LOG_ERR("Could not convert exponent hex string to BIGNUM while initializing SigVer test case");
             return ACVP_INVALID_ARG;
         }
-        if(!BN_hex2bn(&sigtc->sig_attrs_tc->n, n))
+        if(!BN_hex2bn(&sigtc->sig_attrs_tc->n, (const char *)n))
         {
             ACVP_LOG_ERR("Could not convert modulus hex string to BIGNUM while initializing SigVer test case");
             return ACVP_INVALID_ARG;
         }
-        if(!BN_hex2bn(&sigtc->sig_attrs_tc->s,sig))
+        if(!BN_hex2bn(&sigtc->sig_attrs_tc->s, (const char *)sig))
         {
             ACVP_LOG_ERR("Could not convert exponent hex string to BIGNUM while initializing SigVer test case");
             return ACVP_INVALID_ARG;
@@ -488,7 +488,7 @@ acvp_kat_rsa_keygen(int info_gen_by_server, int rand_pq, ACVP_CAPS_LIST* cap,
 }
 
 static ACVP_RESULT
-acvp_prep_keygen(int rand_pq, unsigned int mod, int info_gen_by_server,
+acvp_prep_keygen(int rand_pq, unsigned int mod,
         unsigned int tc_id, ACVP_CIPHER alg_id,
         char* rand_pq_str, JSON_Object* groupobj, char* hash_alg,
         char* prime_test, char* pub_exp, JSON_Object* testobj,
@@ -502,6 +502,7 @@ acvp_prep_keygen(int rand_pq, unsigned int mod, int info_gen_by_server,
     unsigned int bitlen1, bitlen2, bitlen3, bitlen4;
     BIGNUM* e;
     const char* exponent;
+    int info_gen_by_server = 0;
     rand_pq_str = (char*) json_object_get_string(groupobj, "randPQ");
     rand_pq = acvp_lookup_rsa_randpq_index(rand_pq_str);
     mod = json_object_get_number(groupobj, "modRSA");
@@ -539,7 +540,7 @@ static ACVP_RESULT acvp_kat_rsa_sig(unsigned int tc_id, ACVP_CIPHER alg_id,
         JSON_Object* groupobj, JSON_Object* testobj, ACVP_CAPS_LIST* cap,
         ACVP_CTX* ctx, ACVP_RSA_SIG_TC* sigtc)
 {
-    ACVP_RESULT rv;
+    ACVP_RESULT rv = ACVP_SUCCESS;
 
     /*
      * Sig attrs for group obj
@@ -635,11 +636,11 @@ ACVP_RESULT acvp_rsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
     const char          *alg_str = json_object_get_string(obj, "algorithm");
     char                *mode_str = NULL;
     ACVP_CIPHER            alg_id;
-    char *json_result, *rand_pq_str;
-    unsigned int mod;
+    char *json_result = NULL, *rand_pq_str = NULL;
+    unsigned int mod = 0;
 
-    int info_gen_by_server, rand_pq;
-    char *hash_alg, *prime_test, *pub_exp;
+    int rand_pq = -1;
+    char *hash_alg = NULL, *prime_test = NULL, *pub_exp = NULL;
 
     if (!alg_str) {
         ACVP_LOG_ERR("ERROR: unable to parse 'algorithm' from JSON");
@@ -741,13 +742,13 @@ ACVP_RESULT acvp_rsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
                  */
                 
                 memset(&stc, 0x0, sizeof(ACVP_RSA_TC));
-                tc.tc.rsa->keygen_tc = &stc;
+                tc.tc.rsa->keygen_tc = stc.keygen_tc;
                 stc.mode = tc.tc.rsa->mode;
 
                 /*
                  * Retrieve values from JSON and initialize the tc
                  */
-                rv = acvp_prep_keygen(rand_pq, mod, info_gen_by_server,
+                rv = acvp_prep_keygen(rand_pq, mod,
                         tc_id, alg_id, rand_pq_str, groupobj, hash_alg,
                         prime_test, pub_exp, testobj, cap, ctx, &stc);
 

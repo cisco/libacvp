@@ -509,7 +509,6 @@ ACVP_RSA_SIG_ATTRS* acvp_locate_rsa_sig_type_entry(ACVP_CTX *ctx, ACVP_CAPS_LIST
                                                    ACVP_RSA_SIG_TYPE sig_type)
 {
     ACVP_RSA_CAP_MODE_LIST *cap_mode_list = NULL;
-    ACVP_RSA_CAP_MODE_LIST *cap_mode_list_last_entry = NULL;
     ACVP_RSA_CAP           *rsa_cap = NULL;
     char *sig_type_str = acvp_rsa_get_sig_type_name(sig_type);
     if(!sig_type_str)
@@ -559,12 +558,10 @@ ACVP_RSA_SIG_ATTRS* acvp_locate_rsa_sig_type_entry(ACVP_CTX *ctx, ACVP_CAPS_LIST
                 ACVP_LOG_ERR("Malloc Failed -- RSA SigGen cap sig type entry");
                 return NULL;
             }
-            last->next->sig_type = calloc(1, sizeof(sig_type_str));
             last->next->sig_type = sig_type_str;
             last->next->sig_type_val = sig_type;
             return last->next;
         }
-        cap_mode_list_last_entry = cap_mode_list;
         cap_mode_list = cap_mode_list->next;
     }
     ACVP_LOG_ERR("Can't find value");
