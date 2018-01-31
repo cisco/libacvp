@@ -232,6 +232,8 @@ static ACVP_RESULT acvp_kdf135_snmp_output_tc(ACVP_CTX *ctx, ACVP_KDF135_SNMP_TC
         return rv;
     }
     json_object_set_string(tc_rsp, "sKey", tmp);
+
+    free(tmp);
     return ACVP_SUCCESS;
 }
 

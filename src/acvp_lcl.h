@@ -196,6 +196,13 @@
 
 #define ACVP_PATH_SEGMENT_DEFAULT ""
 
+#define ACVP_HASH_MCT_INNER 1000
+#define ACVP_HASH_MCT_OUTER 100
+#define ACVP_AES_MCT_INNER 1000
+#define ACVP_AES_MCT_OUTER 100
+#define ACVP_DES_MCT_INNER 10000
+#define ACVP_DES_MCT_OUTER 400
+
 typedef struct acvp_alg_handler_t ACVP_ALG_HANDLER;
 
 struct acvp_alg_handler_t {

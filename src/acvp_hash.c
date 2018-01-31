@@ -118,7 +118,7 @@ static ACVP_RESULT acvp_hash_mct_tc(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap,
     memcpy(stc->m2, stc->msg, stc->msg_len);
     memcpy(stc->m3, stc->msg, stc->msg_len);
 
-    for (i = 0; i < 100; ++i) {
+    for (i = 0; i < ACVP_HASH_MCT_OUTER; ++i) {
 
         /*
          * Create a new test case in the response
@@ -126,61 +126,68 @@ static ACVP_RESULT acvp_hash_mct_tc(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap,
         r_tval = json_value_init_object();
         r_tobj = json_value_get_object(r_tval);
 
-    msg = calloc(1, ACVP_HASH_MSG_MAX);
-    if (!msg) {
-        ACVP_LOG_ERR("Unable to malloc in acvp_hash_output_tc");
-        return ACVP_MALLOC_FAIL;
-    }
+        msg = calloc(1, ACVP_HASH_MSG_MAX);
+        if (!msg) {
+            ACVP_LOG_ERR("Unable to malloc in acvp_hash_output_tc");
+            free(tmp);
+            return ACVP_MALLOC_FAIL;
+        }
 
-    memcpy(msg, stc->m1, stc->msg_len);
-    memcpy(msg + stc->msg_len, stc->m2, stc->msg_len);
-    memcpy(msg + (stc->msg_len * 2), stc->m3, stc->msg_len);
+        memcpy(msg, stc->m1, stc->msg_len);
+        memcpy(msg + stc->msg_len, stc->m2, stc->msg_len);
+        memcpy(msg + (stc->msg_len * 2), stc->m3, stc->msg_len);
 
-    rv = acvp_bin_to_hexstr(msg, stc->msg_len * 3, (unsigned char*)tmp);
-    if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("hex conversion failure (msg)");
-        return rv;
-    }
-    json_object_set_string(r_tobj, "msg", tmp);
-
-
-	for (j = 0; j < 1000; ++j) {
+        rv = acvp_bin_to_hexstr(msg, stc->msg_len * 3, (unsigned char*)tmp);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("hex conversion failure (msg)");
+            free(msg);
+            free(tmp);
+            return rv;
+        }
+        json_object_set_string(r_tobj, "msg", tmp);
+        for (j = 0; j < ACVP_HASH_MCT_INNER; ++j) {
 
             /* Process the current SHA test vector... */
             rv = (cap->crypto_handler)(tc);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("crypto module failed the operation");
+                free(msg);
+                free(tmp);
                 return ACVP_CRYPTO_MODULE_FAIL;
             }
 
             /*
-	     * Adjust the parameters for next iteration if needed.
-	     */
-	    rv = acvp_hash_mct_iterate_tc(ctx, stc, i, r_tobj);
-	    if (rv != ACVP_SUCCESS) {
+             * Adjust the parameters for next iteration if needed.
+             */
+            rv = acvp_hash_mct_iterate_tc(ctx, stc, i, r_tobj);
+             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("Failed the MCT iteration changes");
+                free(msg);
+                free(tmp);
                 return rv;
-	    }
+            }
         }
         /*
          * Output the test case request values using JSON
          */
         rv = acvp_hash_output_mct_tc(ctx, stc, r_tobj);
-	if (rv != ACVP_SUCCESS) {
+        if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("JSON output failure in HASH module");
+            free(msg);
+            free(tmp);
             return rv;
         }
 
         /* Append the test response value to array */
         json_array_append_value(res_array, r_tval);
 
-	memcpy(stc->m1, stc->m3, stc->msg_len);
-	memcpy(stc->m2, stc->m3, stc->msg_len);
+        memcpy(stc->m1, stc->m3, stc->msg_len);
+        memcpy(stc->m2, stc->m3, stc->msg_len);
+
+        free(msg);
     }
 
     free(tmp);
-    free(msg);
-
     return ACVP_SUCCESS;
 }
 
@@ -272,27 +279,26 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
         groupval = json_array_get_value(groups, i);
         groupobj = json_value_get_object(groupval);
 
-
         ACVP_LOG_INFO("    Test group: %d", i);
-        ACVP_LOG_INFO("        msglen: %d", msglen);
 
     	test_type = (char *)json_object_get_string(groupobj, "testType");
         tests = json_object_get_array(groupobj, "tests");
         t_cnt = json_array_get_count(tests);
+
         for (j = 0; j < t_cnt; j++) {
             ACVP_LOG_INFO("Found new hash test vector...");
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
 
             tc_id = (unsigned int)json_object_get_number(testobj, "tcId");
-	    msg = (unsigned char *)json_object_get_string(testobj, "msg");
+	        msg = (unsigned char *)json_object_get_string(testobj, "msg");
             msglen = (unsigned int)json_object_get_number(testobj, "len");
 
             ACVP_LOG_INFO("        Test case: %d", j);
             ACVP_LOG_INFO("             tcId: %d", tc_id);
             ACVP_LOG_INFO("              len: %d", msglen);
             ACVP_LOG_INFO("              msg: %s", msg);
-	    ACVP_LOG_INFO("         testtype: %s", test_type);
+	        ACVP_LOG_INFO("         testtype: %s", test_type);
 
             /*
              * Create a new test case in the response
@@ -310,29 +316,32 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
              */
             acvp_hash_init_tc(ctx, &stc, tc_id, test_type, msglen, msg, alg_id);
 
-	    /* If Monte Carlo start that here */
-	    if (stc.test_type == ACVP_HASH_TEST_TYPE_MCT) {
-	        json_object_set_value(r_tobj, "resultsArray", json_value_init_array());
-		res_tarr = json_object_get_array(r_tobj, "resultsArray");
-	        rv = acvp_hash_mct_tc(ctx, cap, &tc, &stc, res_tarr);
-		if (rv != ACVP_SUCCESS) {
-		    ACVP_LOG_ERR("crypto module failed the HASH MCT operation");
-		    return ACVP_CRYPTO_MODULE_FAIL;
+	        /* If Monte Carlo start that here */
+	        if (stc.test_type == ACVP_HASH_TEST_TYPE_MCT) {
+	            json_object_set_value(r_tobj, "resultsArray", json_value_init_array());
+		        res_tarr = json_object_get_array(r_tobj, "resultsArray");
+                rv = acvp_hash_mct_tc(ctx, cap, &tc, &stc, res_tarr);
+		        if (rv != ACVP_SUCCESS) {
+		            ACVP_LOG_ERR("crypto module failed the HASH MCT operation");
+			        json_value_free(r_tval);
+                    return ACVP_CRYPTO_MODULE_FAIL;
                 }
-	    } else {
+	        } else {
                 /* Process the current test vector... */
-		rv = (cap->crypto_handler)(&tc);
-		if (rv != ACVP_SUCCESS) {
+		        rv = (cap->crypto_handler)(&tc);
+		        if (rv != ACVP_SUCCESS) {
                     ACVP_LOG_ERR("crypto module failed the operation");
+                    json_value_free(r_tval);
                     return ACVP_CRYPTO_MODULE_FAIL;
                 }
 
                 /*
-		 * Output the test case results using JSON
-		 */
-		rv = acvp_hash_output_tc(ctx, &stc, r_tobj);
-		if (rv != ACVP_SUCCESS) {
+		         * Output the test case results using JSON
+		         */
+		        rv = acvp_hash_output_tc(ctx, &stc, r_tobj);
+		        if (rv != ACVP_SUCCESS) {
                     ACVP_LOG_ERR("JSON output failure in hash module");
+                    json_value_free(r_tval);
                     return rv;
                 }
             }
