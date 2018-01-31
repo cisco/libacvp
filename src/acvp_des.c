@@ -385,7 +385,7 @@ static ACVP_RESULT acvp_des_mct_tc(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap,
     }
 
 
-    for (i = 0; i < 400; ++i) {
+    for (i = 0; i < ACVP_DES_MCT_OUTER; ++i) {
 
         /*
          * Create a new test case in the response
@@ -403,7 +403,7 @@ static ACVP_RESULT acvp_des_mct_tc(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap,
             return rv;
         }
 
-        for (j = 0; j < 10000; ++j) {
+        for (j = 0; j < ACVP_DES_MCT_INNER; ++j) {
 
             if (j == 0) {
                 memcpy(old_iv, stc->iv, stc->iv_len);
@@ -654,10 +654,6 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
             key3 = (unsigned char *)json_object_get_string(testobj, "key3");
 
             /* TODO: remove this its there to work with our server */
-            if (key) {
-                free(key);
-                key = NULL;
-            }
             key = (unsigned char *)json_object_get_string(testobj, "key");
 
             if (key == NULL) {
@@ -676,10 +672,7 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
                 pt = (unsigned char *)json_object_get_string(testobj, "pt");
                 iv = (unsigned char *)json_object_get_string(testobj, "iv");
                 if (!pt) {
-                    if (key) {
-                        free(key);
-                        key = NULL;
-                    }
+                    free(key);
                     return (ACVP_MALFORMED_JSON);
                 }
 
@@ -694,10 +687,7 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
                 ct = (unsigned char *)json_object_get_string(testobj, "ct");
                 iv = (unsigned char *)json_object_get_string(testobj, "iv");
                 if (!ct) {
-                    if (key) {
-                        free(key);
-                        key = NULL;
-                    }
+                    free(key);
                     return (ACVP_MALFORMED_JSON);
                 }
 
@@ -742,10 +732,7 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
                 rv = acvp_des_mct_tc(ctx, cap, &tc, &stc, res_tarr);
                 if (rv != ACVP_SUCCESS) {
                     ACVP_LOG_ERR("crypto module failed the DES MCT operation");
-                    if (key) {
-                        free(key);
-                        key = NULL;
-                    }
+                    free(key);
                     return ACVP_CRYPTO_MODULE_FAIL;
                 }
             } else {
@@ -756,10 +743,7 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
                 if (rv != ACVP_SUCCESS) {
                     if (rv != ACVP_CRYPTO_WRAP_FAIL) {
                         ACVP_LOG_ERR("ERROR: crypto module failed the operation");
-                        if (key) {
-                            free(key);
-                            key = NULL;
-                        }
+                        free(key);
                         return ACVP_CRYPTO_MODULE_FAIL;
                     }
                 }
@@ -770,10 +754,7 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
                 rv = acvp_des_output_tc(ctx, &stc, r_tobj, rv);
                 if (rv != ACVP_SUCCESS) {
                     ACVP_LOG_ERR("JSON output failure in 3DES module");
-                    if (key) {
-                        free(key);
-                        key = NULL;
-                    }
+                    free(key);
                     return rv;
                 }
             }
@@ -785,10 +766,8 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
 
             /* Append the test response value to array */
             json_array_append_value(r_tarr, r_tval);
-        }
-        if (key) {
+
             free(key);
-            key = NULL;
         }
     }
 

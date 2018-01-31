@@ -269,7 +269,7 @@ static ACVP_RESULT acvp_aes_mct_tc(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap,
     }
 
     memcpy(iv[0], stc->iv, stc->iv_len);
-    for (i = 0; i < 100; ++i) {
+    for (i = 0; i < ACVP_AES_MCT_OUTER; ++i) {
 
         /*
          * Create a new test case in the response
@@ -287,7 +287,7 @@ static ACVP_RESULT acvp_aes_mct_tc(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap,
             return rv;
         }
 
-        for (j = 0; j < 1000; ++j) {
+        for (j = 0; j < ACVP_AES_MCT_INNER; ++j) {
 
             stc->mct_index = j;    /* indicates init vs. update */
             /* Process the current AES encrypt test vector... */

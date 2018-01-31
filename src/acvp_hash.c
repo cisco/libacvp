@@ -105,8 +105,6 @@ static ACVP_RESULT acvp_hash_mct_tc(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap,
     ACVP_RESULT rv;
     JSON_Value          *r_tval = NULL; /* Response testval */
     JSON_Object         *r_tobj = NULL; /* Response testobj */
-    int num_mct_outer = 100;
-    int num_mct_inner = 1000;
     char *tmp = NULL;
     unsigned char *msg = NULL;
 
@@ -120,7 +118,7 @@ static ACVP_RESULT acvp_hash_mct_tc(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap,
     memcpy(stc->m2, stc->msg, stc->msg_len);
     memcpy(stc->m3, stc->msg, stc->msg_len);
 
-    for (i = 0; i < num_mct_outer; ++i) {
+    for (i = 0; i < ACVP_HASH_MCT_OUTER; ++i) {
 
         /*
          * Create a new test case in the response
@@ -147,7 +145,7 @@ static ACVP_RESULT acvp_hash_mct_tc(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap,
             return rv;
         }
         json_object_set_string(r_tobj, "msg", tmp);
-        for (j = 0; j < num_mct_inner; ++j) {
+        for (j = 0; j < ACVP_HASH_MCT_INNER; ++j) {
 
             /* Process the current SHA test vector... */
             rv = (cap->crypto_handler)(tc);
