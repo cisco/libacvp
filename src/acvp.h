@@ -463,14 +463,10 @@ typedef struct acvp_sym_cipher_tc_t {
  * This struct holds data that represents a single test case
  * for an asymmetric cipher, such as RSA or ECDSA.  This data is
  * passed between libacvp and the crypto module.
- *
- * TODO: libacvp currently supports no asymmetric ciphers, this
- *       is only a placeholder.
  */
 typedef struct acvp_asym_cipher_tc_t {
     ACVP_CIPHER cipher;
     unsigned int tc_id;    /* Test case id */
-    //TODO: need to add support for RSA, ECDSA, etc.
 } ACVP_ASYM_CIPHER_TC;
 
 /*
@@ -854,16 +850,36 @@ ACVP_RESULT acvp_enable_sym_cipher_cap(
     ACVP_SYM_CIPH_IVGEN_MODE ivgen_mode,
         ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case));
 
-/* TODO - need brief */
+/*! @brief acvp_enable_sym_cipher_cap_parm() allows an application to specify
+       non length-based operational parameters to be used for a given cipher
+       during a test session with the ACVP server.
+
+    This function should be called to enable crypto capabilities for
+    symmetric ciphers that will be tested by the ACVP server.  This
+    includes AES and 3DES.
+
+    This function may be called multiple times to specify more than one
+    crypto parameter value for the cipher. The ACVP_CIPHER value passed to
+    this function should already have been setup by invoking
+    acvp_enable_sym_cipher_cap() for that cipher earlier.
+
+    @param ctx Address of pointer to a previously allocated ACVP_CTX.
+    @param cipher ACVP_CIPHER enum value identifying the crypto capability.
+    @param parm ACVP_SYM_CIPH_PARM enum value identifying the algorithm parameter
+       that is being specified.  An example would be the supported key wrap values
+   @param value The length value for the symmetric cipher parameter being set
+
+    @return ACVP_RESULT
+ */
 ACVP_RESULT acvp_enable_sym_cipher_cap_value(
     ACVP_CTX *ctx,
     ACVP_CIPHER cipher,
     ACVP_SYM_CIPH_PARM param,
-    int length);
+    int value);
 
 /*! @brief acvp_enable_sym_cipher_cap_parm() allows an application to specify
-       operational parameters to be used for a given cipher during a
-       test session with the ACVP server.
+       length-based operational parameters to be used for a given cipher during
+       a test session with the ACVP server.
 
     This function should be called to enable crypto capabilities for
     symmetric ciphers that will be tested by the ACVP server.  This
@@ -882,6 +898,7 @@ ACVP_RESULT acvp_enable_sym_cipher_cap_value(
     @param parm ACVP_SYM_CIPH_PARM enum value identifying the algorithm parameter
        that is being specified.  An example would be the supported plaintext
        length of the algorithm.
+   @param length The length value for the symmetric cipher parameter being set
 
     @return ACVP_RESULT
  */
@@ -916,6 +933,28 @@ ACVP_RESULT acvp_enable_hash_cap(
     ACVP_CIPHER cipher,
         ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case));
 
+/*! @brief acvp_enable_hash_cap_parm() allows an application to specify
+       operational parameters to be used for a given hash alg during a
+       test session with the ACVP server.
+
+    This function should be called to enable crypto capabilities for
+    hash capabilities that will be tested by the ACVP server.  This
+    includes SHA-1, SHA-256, SHA-384, etc.
+
+    This function may be called multiple times to specify more than one
+    crypto parameter value for the hash algorithm. The ACVP_CIPHER value
+    passed to this function should already have been setup by invoking
+    acvp_enable_hash_cap().
+
+    @param ctx Address of pointer to a previously allocated ACVP_CTX.
+    @param cipher ACVP_CIPHER enum value identifying the crypto capability.
+    @param param ACVP_HASH_PARM enum value identifying the algorithm parameter
+       that is being specified.  An example would be a flag indicating if
+       empty input values are allowed.
+    @param value the value corresponding to the parameter being set
+
+    @return ACVP_RESULT
+ */
 ACVP_RESULT acvp_enable_hash_cap_parm (
            ACVP_CTX *ctx,
            ACVP_CIPHER cipher,
@@ -930,8 +969,8 @@ ACVP_RESULT acvp_enable_hash_cap_parm (
     includes HASHDRBG, HMACDRBG, CTRDRBG. This function may be called
     multiple times to specify more than one crypto capability.
 
-    When the application enables a crypto capability, such as SHA-1, it
-    also needs to specify a callback function that will be used by libacvp
+    When the application enables a crypto capability, such as ACVP_HASHDRBG,
+    it also needs to specify a callback function that will be used by libacvp
     when that crypto capability is needed during a test session.
 
     @param ctx Address of pointer to a previously allocated ACVP_CTX.
@@ -947,6 +986,25 @@ ACVP_RESULT acvp_enable_drbg_cap(
                                  ACVP_CIPHER cipher,
                                  ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case));
 
+/*! @brief acvp_enable_drbg_cap_parm() allows an application to specify
+       operational parameters to be used for a given DRBG alg during a
+       test session with the ACVP server.
+
+    This function should be called to enable crypto capabilities for
+    hash capabilities that will be tested by the ACVP server.  This
+    includes HASHDRBG, HMACDRBG, CTRDRBG. This function may be called
+    multiple times to specify more than one crypto capability.
+
+    @param ctx Address of pointer to a previously allocated ACVP_CTX.
+    @param cipher ACVP_CIPHER enum value identifying the crypto capability.
+    @param mode ACVP_DRBG_MODE enum value specifying mode. An example would be
+        ACVP_DRBG_SHA_1
+    @param param ACVP_DRBG_PARM enum value identifying the algorithm parameter
+       that is being specified.  An example would be prediction resistance.
+    @param value the value corresponding to the parameter being set
+
+    @return ACVP_RESULT
+ */
 ACVP_RESULT acvp_enable_drbg_cap_parm(
                              ACVP_CTX *ctx,
                              ACVP_CIPHER cipher,
@@ -955,6 +1013,23 @@ ACVP_RESULT acvp_enable_drbg_cap_parm(
                              int value
                              );
 
+/*! @brief acvp_enable_drbg_prereq_cap() allows an application to specify
+        a prerequisite algorithm for a given DRBG during a test session
+        with the ACVP server.
+
+        This function should be called to enable a prerequisite for
+        a DRBG capability that will be tested by the server.
+
+   @param ctx Address of pointer to a previously allocated ACVP_CTX.
+   @param cipher ACVP_CIPHER enum value identifying the crypto capability.
+   @param mode ACVP_DRBG_MODE enum value specifying mode. An example would be
+        ACVP_DRBG_SHA_1
+   @param pre_req ACVP_PREREQ_ALG enum that the specified cipher/mode
+        depends on
+   @param value "same" or number
+
+   @return ACVP_RESULT
+ */
 ACVP_RESULT acvp_enable_drbg_prereq_cap(
                              ACVP_CTX *ctx,
                              ACVP_CIPHER cipher,
@@ -963,6 +1038,25 @@ ACVP_RESULT acvp_enable_drbg_prereq_cap(
                              char *value
                              );
 
+/*! @brief acvp_enable_drbg_length_cap() allows an application to register
+        a DRBG capability length-based paramter.
+
+        This function should be used to register a length-based parameter
+        for a DRBG capability. An example would be entropy, nonce, perso
+        where a minimum, step, and maximum can be specified.
+
+   @param ctx Address of pointer to a previously allocated ACVP_CTX.
+   @param cipher ACVP_CIPHER enum value identifying the crypto capability.
+   @param mode ACVP_DRBG_MODE enum value specifying mode. An example would be
+        ACVP_DRBG_SHA_1
+   @param param ACVP_DRBG_PARM enum value specifying paramter. An example
+        would be ACVP_DRBG_ENTROPY_LEN
+   @param min minimum value
+   @param step increment value
+   @param max maximum value
+
+   @return ACVP_RESULT
+ */
 ACVP_RESULT acvp_enable_drbg_length_cap(
                              ACVP_CTX         *ctx,
                              ACVP_CIPHER       cipher,
@@ -985,7 +1079,7 @@ ACVP_RESULT acvp_enable_drbg_length_cap(
    @param ctx Address of pointer to a previously allocated ACVP_CTX.
    @param cipher ACVP_CIPHER enum value identifying the crypto capability.
    @param crypto_handler Address of function implemented by application that
-      is invoked by libacvp when the crypto capablity is needed during
+      is invoked by libacvp when the crypto capability is needed during
       a test session.
 
    @return ACVP_RESULT
@@ -995,6 +1089,25 @@ ACVP_RESULT acvp_enable_dsa_cap(
                                 ACVP_CIPHER cipher,
                                 ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case));
 
+/*! @brief acvp_enable_dsa_cap_parm() allows an application to specify
+       operational parameters to be used for a given hash alg during a
+       test session with the ACVP server.
+
+    This function should be called to enable crypto capabilities for
+    hash capabilities that will be tested by the ACVP server.  This
+    includes HASHDRBG, HMACDRBG, CTRDRBG. This function may be called
+    multiple times to specify more than one crypto capability.
+
+    @param ctx Address of pointer to a previously allocated ACVP_CTX.
+    @param cipher ACVP_CIPHER enum value identifying the crypto capability.
+    @param mode ACVP_DSA_MODE enum value specifying mode. An example would be
+        ACVP_DSA_MODE_PQGGEN
+    @param param ACVP_DSA_PARM enum value identifying the algorithm parameter
+       that is being specified.  An example would be ACVP_DSA_GENPQ.
+    @param value the value corresponding to the parameter being set
+
+    @return ACVP_RESULT
+ */
 ACVP_RESULT acvp_enable_dsa_cap_parm(ACVP_CTX *ctx,
                              ACVP_CIPHER cipher,
                              ACVP_DSA_MODE mode,
@@ -1024,6 +1137,24 @@ ACVP_RESULT acvp_enable_rsa_cap(
                                 ACVP_CIPHER cipher,
                                 ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case));
 
+/*! @brief acvp_enable_rsa_cap_parm() allows an application to specify
+       operational parameters to be used for a given RSA alg during a
+       test session with the ACVP server.
+
+    This function should be called to enable parameters for
+    RSA capabilities that will be tested by the ACVP server. This function may be called
+    multiple times to specify more than one crypto capability.
+
+    @param ctx Address of pointer to a previously allocated ACVP_CTX.
+    @param cipher ACVP_CIPHER enum value identifying the crypto capability.
+    @param mode ACVP_RSA_MODE enum value specifying mode. An example would be
+        ACVP_RSA_MODE_KEYGEN
+    @param param ACVP_RSA_PARM enum value identifying the algorithm parameter
+       that is being specified.  An example would be public exponent
+    @param value the value corresponding to the parameter being set
+
+    @return ACVP_RESULT
+ */
 ACVP_RESULT acvp_enable_rsa_cap_parm(
                             ACVP_CTX *ctx,
                             ACVP_CIPHER cipher,
@@ -1032,6 +1163,23 @@ ACVP_RESULT acvp_enable_rsa_cap_parm(
                             int value
                             );
 
+/*! @brief acvp_enable_rsa_bignum_parm() allows an application to specify
+       BIGNUM operational parameters to be used for a given RSA alg during a
+       test session with the ACVP server.
+
+    This function behaves the same as acvp_enable_rsa_cap_parm() but instead
+    allows the application to specify a BIGNUM parameter
+
+    @param ctx Address of pointer to a previously allocated ACVP_CTX.
+    @param cipher ACVP_CIPHER enum value identifying the crypto capability.
+    @param mode ACVP_RSA_MODE enum value specifying mode. An example would be
+        ACVP_RSA_MODE_KEYGEN
+    @param param ACVP_RSA_PARM enum value identifying the algorithm parameter
+       that is being specified.  An example would be public exponent
+    @param value BIGNUM value corresponding to the parameter being set
+
+    @return ACVP_RESULT
+ */
 ACVP_RESULT acvp_enable_rsa_bignum_parm (ACVP_CTX *ctx,
                              ACVP_CIPHER cipher,
                              ACVP_RSA_MODE mode,
@@ -1039,6 +1187,29 @@ ACVP_RESULT acvp_enable_rsa_bignum_parm (ACVP_CTX *ctx,
                              BIGNUM *value
                            );
 
+/*! @brief acvp_enable_rsa_primes_parm() allows an application to specify
+        RSA key generation provable or probable primes parameters for use
+        during a test session with the ACVP server.
+
+        The function behaves similarly to acvp_enable_rsa_cap_parm() and
+        acvp_enable_rsa_bignum_parm() but allows for a modulo and hash
+        algorithm parameter to be specified alongside the provable or
+        probable parameter.
+
+   @param ctx Address of pointer to a previously allocated ACVP_CTX.
+   @param cipher ACVP_CIPHER enum value identifying the crypto capability.
+   @param mode ACVP_RSA_MODE enum value specifying mode. In this case it
+       will always be ACVP_RSA_MODE_KEYGEN
+   @param param ACVP_RSA_PARM enum value identifying the algorithm parameter
+       being specified. Here, it will be one of: ACVP_CAPS_PROV_PRIME,
+       ACVP_CAPS_PROB_PRIME, or ACVP_CAPS_PROV_PROB_PRIME
+   @param mod Supported RSA modulo value for probable or provable prime
+       generation
+   @param hash The corresponding supported hash algorithm for probable
+       or provable prime generation
+
+   @return ACVP_RESULT
+ */
 ACVP_RESULT acvp_enable_rsa_primes_parm (ACVP_CTX *ctx,
                              ACVP_CIPHER cipher,
                              ACVP_RSA_MODE mode,
@@ -1047,6 +1218,27 @@ ACVP_RESULT acvp_enable_rsa_primes_parm (ACVP_CTX *ctx,
                              char *hash
                            );
 
+/*! @brief acvp_enable_rsa_cap_sig_type_parm() allows an application to
+        specify parameters for RSA signature capability for use during a
+        test session with the ACVP server.
+
+        This function behaves similarly to acvp_enable_rsa_primes_parm()
+        but also allows for a salt value to be specified.
+
+   @param ctx Address of pointer to a previously allocated ACVP_CTX.
+   @param cipher ACVP_CIPHER enum value identifying the crypto capability.
+   @param mode ACVP_RSA_MODE enum value specifying mode. In this case it
+       will always be ACVP_RSA_MODE_KEYGEN
+   @param sig_type ACVP_RSA_SIG_TYPE enum value specifying which type is
+       being registered.
+   @param mod Supported RSA modulo value
+   @param hash The corresponding supported hash algorithm - the first value
+       in the 'hashPair' parameter for registration
+   @param salt The corresponding salt length - the second value in the
+       'hashPair' parameter for registration
+
+   @return ACVP_RESULT
+ */
 ACVP_RESULT acvp_enable_rsa_cap_sig_type_parm (ACVP_CTX *ctx,
                              ACVP_CIPHER cipher,
                              ACVP_RSA_MODE mode,
@@ -1081,6 +1273,20 @@ ACVP_RESULT acvp_enable_hmac_cap(
                         ACVP_CIPHER cipher,
                         ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case));
 
+/*! @brief acvp_enable_hmac_cap_parm() allows an application to specify
+        operational parameters for use during a test session with the
+        ACVP server.
+
+        This function allows the application to specify parameters for use
+        when registering HMAC capability with the server.
+
+   @param ctx Address of pointer to a previously allocated ACVP_CTX.
+   @param cipher ACVP_CIPHER enum value identifying the crypto capability.
+   @param parm ACVP_HMAC_PARM enum value specifying parameter
+   @param value Supported value for the corresponding parameter
+
+   @return ACVP_RESULT
+ */
 ACVP_RESULT acvp_enable_hmac_cap_parm(
                           ACVP_CTX *ctx,
                           ACVP_CIPHER cipher,
@@ -1112,6 +1318,20 @@ ACVP_RESULT acvp_enable_cmac_cap(
                         ACVP_CIPHER cipher,
                         ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case));
 
+/*! @brief acvp_enable_cmac_cap_parm() allows an application to specify
+        operational parameters for use during a test session with the
+        ACVP server.
+
+        This function allows the application to specify parameters for use
+        when registering CMAC capability with the server.
+
+   @param ctx Address of pointer to a previously allocated ACVP_CTX.
+   @param cipher ACVP_CIPHER enum value identifying the crypto capability.
+   @param parm ACVP_CMAC_PARM enum value specifying parameter
+   @param value Supported value for the corresponding parameter
+
+   @return ACVP_RESULT
+ */
 ACVP_RESULT acvp_enable_cmac_cap_parm(
                           ACVP_CTX *ctx,
                           ACVP_CIPHER cipher,
@@ -1138,20 +1358,50 @@ ACVP_RESULT acvp_enable_kdf135_tls_cap(
           ACVP_KDF135_TLS_METHOD method,
           ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case));
 
+ACVP_RESULT acvp_enable_kdf135_snmp_cap(
+        ACVP_CTX *ctx,
+        ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case));
+
+ACVP_RESULT acvp_enable_kdf135_ssh_cap(
+        ACVP_CTX *ctx,
+        ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case));
+
+/*! @brief acvp_enable_kdf135_tls_cap_parm() allows an application to specify
+        operational parameters to be used during a test session with the ACVP
+        server.
+
+        This function should be called after acvp_enable_kdf135_tls_cap() to
+        specify the parameters for the corresponding KDF.
+
+   @param ctx Address of pointer to a previously allocated ACVP_CTX.
+   @param cap ACVP_CIPHER enum value identifying the crypto capability, here it
+        will always be ACVP_KDF135_TLS
+   @param method ACVP_KDF135_TLS_METHOD enum value specifying method type
+   @param param ACVP_KDF135_TLS_CAP_PARM enum value
+
+   @return ACVP_RESULT
+ */
 ACVP_RESULT acvp_enable_kdf135_tls_cap_parm(
                           ACVP_CTX *ctx,
                           ACVP_CIPHER cap,
                           ACVP_KDF135_TLS_METHOD method,
               ACVP_KDF135_TLS_CAP_PARM param);
 
+/*! @brief acvp_enable_kdf135_ssh_cap_parm() allows an application to specify
+        operational parameters to be used during a test session with the ACVP
+        server.
 
-ACVP_RESULT acvp_enable_kdf135_snmp_cap(
-          ACVP_CTX *ctx,
-          ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case));
+        This function should be called after acvp_enable_kdf135_tls_cap() to
+        specify the parameters for the corresponding KDF.
 
-ACVP_RESULT acvp_enable_kdf135_ssh_cap(
-          ACVP_CTX *ctx,
-          ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case));
+   @param ctx Address of pointer to a previously allocated ACVP_CTX.
+   @param cap ACVP_CIPHER enum value identifying the crypto capability, here it
+        will always be ACVP_KDF135_SSH
+   @param method ACVP_KDF135_SSH_METHOD enum value specifying method type
+   @param param ACVP_KDF135_SSH_CAP_PARM enum value
+
+   @return ACVP_RESULT
+ */
 ACVP_RESULT acvp_enable_kdf135_ssh_cap_parm(
                           ACVP_CTX *ctx,
                           ACVP_CIPHER cap,
@@ -1351,6 +1601,13 @@ ACVP_RESULT acvp_set_module_info(ACVP_CTX *ctx,
                  const char *module_version,
                  const char *module_description);
 
+/*! @brief acvp_check_test_results() allows the application to fetch vector
+        set results from the server during a test session.
+
+   @param ctx Address of pointer to a previously allocated ACVP_CTX.
+
+   @return ACVP_RESULT
+ */
 ACVP_RESULT acvp_check_test_results(ACVP_CTX *ctx);
 void acvp_cleanup(void);
 
