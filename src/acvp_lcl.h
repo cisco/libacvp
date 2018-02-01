@@ -134,6 +134,14 @@
 #define ACVP_PREREQ_VAL_STR "valValue"
 #define ACVP_PREREQ_OBJ_STR "prereqVals"
 
+#define ACVP_RSA_SHA_1         "SHA-1"
+#define ACVP_RSA_SHA_224       "SHA-224"
+#define ACVP_RSA_SHA_256       "SHA-256"
+#define ACVP_RSA_SHA_384       "SHA-384"
+#define ACVP_RSA_SHA_512       "SHA-512"
+#define ACVP_RSA_SHA_512_224   "SHA-512/224"
+#define ACVP_RSA_SHA_512_256   "SHA-512/256"
+
 #define ACVP_DRBG_MODE_SHA_1         "SHA-1"
 #define ACVP_DRBG_MODE_SHA_224       "SHA-224"
 #define ACVP_DRBG_MODE_SHA_256       "SHA-256"

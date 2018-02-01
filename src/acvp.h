@@ -290,26 +290,6 @@ typedef enum acvp_drbg_param {
     ACVP_DRBG_PRE_REQ_VALS
 } ACVP_DRBG_PARM;
 
-#define ACVP_DRBG_PREREQ_SHA      "SHA"
-#define ACVP_DRBG_PREREQ_HMAC     "HMAC"
-#define ACVP_DRBG_PREREQ_AES      "AES"
-#define ACVP_DRBG_PREREQ_TDES     "TDES"
-typedef enum acvp_drbg_pre_req {
-    DRBG_SHA = 1,
-    DRBG_HMAC,
-    DRBG_AES,
-    DRBG_TDES
-} ACVP_DRBG_PRE_REQ;
-
-
-#define ACVP_RSA_SHA_1         "SHA-1"
-#define ACVP_RSA_SHA_224       "SHA-224"
-#define ACVP_RSA_SHA_256       "SHA-256"
-#define ACVP_RSA_SHA_384       "SHA-384"
-#define ACVP_RSA_SHA_512       "SHA-512"
-#define ACVP_RSA_SHA_512_224   "SHA-512/224"
-#define ACVP_RSA_SHA_512_256   "SHA-512/256"
-
 typedef enum acvp_rsa_param {
     ACVP_PUB_EXP = 0,
     ACVP_FIXED_PUB_EXP_VAL,
