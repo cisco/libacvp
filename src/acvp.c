@@ -2181,6 +2181,17 @@ ACVP_RESULT acvp_enable_drbg_prereq_cap(ACVP_CTX          *ctx,
         return ACVP_NO_CTX;
     }
 
+    switch (pre_req) {
+        case ACVP_PREREQ_AES:
+        case ACVP_PREREQ_TDES:
+        case ACVP_PREREQ_DRBG:
+        case ACVP_PREREQ_HMAC:
+        case ACVP_PREREQ_SHA:
+            break;
+        default:
+            return ACVP_INVALID_ARG;
+    }
+
     /*
      * Locate this cipher in the caps array
      */
@@ -2224,17 +2235,6 @@ ACVP_RESULT acvp_enable_drbg_length_cap(ACVP_CTX            *ctx,
 
     if (!ctx) {
         return ACVP_NO_CTX;
-    }
-
-    switch (pre_req) {
-        case ACVP_PREREQ_AES:
-        case ACVP_PREREQ_TDES:
-        case ACVP_PREREQ_DRBG:
-        case ACVP_PREREQ_HMAC:
-        case ACVP_PREREQ_SHA:
-            break;
-        default:
-            return ACVP_INVALID_ARG;
     }
 
     /*

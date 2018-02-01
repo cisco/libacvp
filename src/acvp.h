@@ -63,10 +63,8 @@ typedef enum acvp_log_lvl {
 typedef struct acvp_ctx_t ACVP_CTX;
 
 /*! @struct ACVP_RESULT
- *  @brief This enum is used to indicate error conditions to the appplication
+ *  @brief This enum is used to indicate error conditions to the application
  *     layer. Most libacvp function will return a value from this enum.
- *
- *     TODO: document all the error codes
  */
 typedef enum acvp_result ACVP_RESULT;
 
@@ -601,7 +599,7 @@ typedef struct acvp_rsa_keygen_tc_t {
     unsigned char *prime_seed_q1;
     unsigned char *prime_seed_q2;
 
-    unsigned char *prime_result; // "prime" or "composite"
+    unsigned char *prime_result; /**< "prime" or "composite" */
 } ACVP_RSA_KEYGEN_TC;
 
 /*
@@ -748,16 +746,15 @@ typedef struct acvp_cipher_tc_t {
         ACVP_KDF135_TLS_TC  *kdf135_tls;
         ACVP_KDF135_SNMP_TC *kdf135_snmp;
         ACVP_KDF135_SSH_TC  *kdf135_ssh;
-        //TODO: need more types for hashes, etc.
     } tc;
 } ACVP_TEST_CASE;
 
 enum acvp_result {
     ACVP_SUCCESS = 0,
-    ACVP_MALLOC_FAIL,
-    ACVP_NO_CTX,
-    ACVP_TRANSPORT_FAIL,
-    ACVP_JSON_ERR,
+    ACVP_MALLOC_FAIL, /**< Error allocating memory */
+    ACVP_NO_CTX, /**< No valid context */
+    ACVP_TRANSPORT_FAIL, /**< Error exchanging data with server */
+    ACVP_JSON_ERR, 
     ACVP_UNSUPPORTED_OP,
     ACVP_CLEANUP_FAIL,
     ACVP_KAT_DOWNLOAD_RETRY,
