@@ -145,11 +145,6 @@ typedef enum acvp_prereq_mode_t {
   ACVP_PREREQ_SHA
 } ACVP_PREREQ_ALG;
 
-typedef struct acvp_prereqs_mode_name_t {
-    ACVP_PREREQ_ALG alg;
-    char *name;
-} ACVP_PREREQ_MODE_NAME;
-
 #define ACVP_KDF135_SNMP_ENGID_MAX 32
 #define ACVP_KDF135_SNMP_SKEY_MAX 32
 
@@ -241,22 +236,6 @@ typedef enum acvp_hash_param {
     ACVP_HASH_IN_BIT = 0,
     ACVP_HASH_IN_EMPTY
 } ACVP_HASH_PARM;
-
-/*
- * These are the available DRBG algorithms that libacvp supports.  The application
- * layer will need to register one or more of these based on the capabilities
- * of the crypto module being validated.
- *
- * **************** ALERT *****************
- * This enum must stay aligned with drbg_alg_tbl[] in acvp.c
- */
-typedef enum acvp_alg_drbg {
-    ACVP_DRBG_ALG_START = 0,
-    ACVP_HASH_DRBG,
-    ACVP_HMAC_DRBG,
-    ACVP_CTR_DRBG,
-    ACVP_DRBG_ALG_END
-} ACVP_DRBG;
 
 /*
  * * **************** ALERT *****************

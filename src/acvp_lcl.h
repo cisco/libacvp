@@ -154,11 +154,6 @@
 #define ACVP_DRBG_MODE_AES_192       "AES-192"
 #define ACVP_DRBG_MODE_AES_256       "AES-256"
 
-#define ACVP_DRBG_PR_ALG_AES         "AES"
-#define ACVP_DRBG_PR_ALG_HMAC        "HMAC"
-#define ACVP_DRBG_PR_ALG_SHA         "SHA"
-#define ACVP_DRBG_PR_ALG_TDES        "TDES"
-
 #define ACVP_ALG_KDF135_TLS	     "KDF-TLS"
 #define ACVP_ALG_KDF135_SNMP     "KDF-SNMP"
 #define ACVP_ALG_KDF135_SSH      "KDF-SSH"

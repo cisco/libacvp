@@ -160,6 +160,11 @@ ACVP_ALG_HANDLER alg_tbl[ACVP_ALG_MAX] = {
     {ACVP_KDF135_SSH ,     &acvp_kdf135_ssh_kat_handler, ACVP_ALG_KDF135_SSH}
 };
 
+typedef struct acvp_prereqs_mode_name_t {
+    ACVP_PREREQ_ALG alg;
+    char *name;
+} ACVP_PREREQ_MODE_NAME;
+
 #define ACVP_NUM_PREREQS 5
 struct acvp_prereqs_mode_name_t acvp_prereqs_tbl[ACVP_NUM_PREREQS] = {
     {ACVP_PREREQ_AES, "AES"},
@@ -2219,6 +2224,17 @@ ACVP_RESULT acvp_enable_drbg_length_cap(ACVP_CTX            *ctx,
 
     if (!ctx) {
         return ACVP_NO_CTX;
+    }
+
+    switch (pre_req) {
+        case ACVP_PREREQ_AES:
+        case ACVP_PREREQ_TDES:
+        case ACVP_PREREQ_DRBG:
+        case ACVP_PREREQ_HMAC:
+        case ACVP_PREREQ_SHA:
+            break;
+        default:
+            return ACVP_INVALID_ARG;
     }
 
     /*

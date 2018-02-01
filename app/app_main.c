@@ -1005,10 +1005,10 @@ int main(int argc, char **argv)
     CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_enable_drbg_prereq_cap(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1,
-            DRBG_SHA, value);
+            ACVP_PREREQ_SHA, value);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_drbg_prereq_cap(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1,
-            DRBG_AES, value2);
+            ACVP_PREREQ_AES, value2);
     CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_enable_drbg_cap_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1,
@@ -1050,10 +1050,10 @@ int main(int argc, char **argv)
     CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_enable_drbg_prereq_cap(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224,
-            DRBG_SHA, value);
+            ACVP_PREREQ_SHA, value);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_drbg_prereq_cap(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224,
-            DRBG_AES, value2);
+            ACVP_PREREQ_AES, value2);
     CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_enable_drbg_cap_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224,
@@ -1135,10 +1135,10 @@ int main(int argc, char **argv)
     CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_enable_drbg_prereq_cap(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128,
-            DRBG_SHA, value);
+            ACVP_PREREQ_SHA, value);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_drbg_prereq_cap(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128,
-            DRBG_AES, value2);
+            ACVP_PREREQ_AES, value2);
     CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_enable_drbg_cap_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128,
