@@ -34,64 +34,64 @@
 /*
  * Forward prototypes for local functions
  */
-static ACVP_RESULT acvp_kdf135_ssh_output_tc(ACVP_CTX *ctx, ACVP_KDF135_SSH_TC *stc,
-                                             JSON_Object *tc_rsp);
+static ACVP_RESULT acvp_kdf135_ssh_output_tc (ACVP_CTX *ctx, ACVP_KDF135_SSH_TC *stc,
+                                              JSON_Object *tc_rsp);
 
-static ACVP_RESULT acvp_kdf135_ssh_init_tc(ACVP_CTX *ctx,
-                                           ACVP_KDF135_SSH_TC *stc,
-                                           unsigned int tc_id,
-                                           ACVP_CIPHER alg_id,
-                                           unsigned int  sha_type,
-                                           unsigned int  sh_sec_len,
-                                           unsigned int  iv_len,
-                                           unsigned int  key_len,
-                                           const unsigned char *shared_sec_k,
-                                           const unsigned char *hash_h,
-                                           unsigned int hash_len,
-                                           const unsigned char *session_id,
-                                           unsigned int session_len);
-static ACVP_RESULT acvp_kdf135_ssh_release_tc(ACVP_KDF135_SSH_TC *stc);
+static ACVP_RESULT acvp_kdf135_ssh_init_tc (ACVP_CTX *ctx,
+                                            ACVP_KDF135_SSH_TC *stc,
+                                            unsigned int tc_id,
+                                            ACVP_CIPHER alg_id,
+                                            unsigned int sha_type,
+                                            unsigned int sh_sec_len,
+                                            unsigned int iv_len,
+                                            unsigned int key_len,
+                                            const unsigned char *shared_sec_k,
+                                            const unsigned char *hash_h,
+                                            unsigned int hash_len,
+                                            const unsigned char *session_id,
+                                            unsigned int session_len);
+
+static ACVP_RESULT acvp_kdf135_ssh_release_tc (ACVP_KDF135_SSH_TC *stc);
 
 
-ACVP_RESULT acvp_kdf135_ssh_kat_handler (ACVP_CTX *ctx, JSON_Object *obj)
-{
-    unsigned int        tc_id;
-    JSON_Value          *groupval;
-    JSON_Object         *groupobj = NULL;
-    JSON_Value          *testval;
-    JSON_Object         *testobj = NULL;
-    JSON_Array          *groups;
-    JSON_Array          *tests;
+ACVP_RESULT acvp_kdf135_ssh_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
+    unsigned int tc_id;
+    JSON_Value *groupval;
+    JSON_Object *groupobj = NULL;
+    JSON_Value *testval;
+    JSON_Object *testobj = NULL;
+    JSON_Array *groups;
+    JSON_Array *tests;
 
-    JSON_Value          *reg_arry_val  = NULL;
-    JSON_Object         *reg_obj       = NULL;
-    JSON_Array          *reg_arry      = NULL;
+    JSON_Value *reg_arry_val = NULL;
+    JSON_Object *reg_obj = NULL;
+    JSON_Array *reg_arry = NULL;
 
     int i, g_cnt;
     int j, t_cnt;
 
-    JSON_Value          *r_vs_val = NULL;
-    JSON_Object         *r_vs = NULL;
-    JSON_Array          *r_tarr = NULL; /* Response testarray */
-    JSON_Value          *r_tval = NULL; /* Response testval */
-    JSON_Object         *r_tobj = NULL; /* Response testobj */
-    ACVP_CAPS_LIST      *cap;
+    JSON_Value *r_vs_val = NULL;
+    JSON_Object *r_vs = NULL;
+    JSON_Array *r_tarr = NULL; /* Response testarray */
+    JSON_Value *r_tval = NULL; /* Response testval */
+    JSON_Object *r_tobj = NULL; /* Response testobj */
+    ACVP_CAPS_LIST *cap;
     ACVP_KDF135_SSH_TC stc;
     ACVP_TEST_CASE tc;
-    ACVP_RESULT         rv;
-    const char          *alg_str = json_object_get_string(obj, "algorithm");
-    ACVP_CIPHER	        alg_id;
-    const char          *sha = NULL;
-    unsigned int        sh_sec_len;
-    unsigned int        iv_len;
-    unsigned int        key_len;
-    unsigned int        hash_len;
-    unsigned int        session_len;
-    unsigned int        sha_type;
-    char                *sh_secret_k;
-    char                *session_id;
-    char                *hash_h;
-    char                *json_result;
+    ACVP_RESULT rv;
+    const char *alg_str = json_object_get_string(obj, "algorithm");
+    ACVP_CIPHER alg_id;
+    const char *sha = NULL;
+    unsigned int sh_sec_len;
+    unsigned int iv_len;
+    unsigned int key_len;
+    unsigned int hash_len;
+    unsigned int session_len;
+    unsigned int sha_type;
+    char *sh_secret_k;
+    char *session_id;
+    char *hash_h;
+    char *json_result;
 
     if (!alg_str) {
         ACVP_LOG_ERR("unable to parse 'algorithm' from JSON for KDF SSH.");
@@ -123,7 +123,7 @@ ACVP_RESULT acvp_kdf135_ssh_kat_handler (ACVP_CTX *ctx, JSON_Object *obj)
     rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Failed to create JSON response struct. ");
-        return(rv);
+        return (rv);
     }
 
     /*
@@ -147,10 +147,10 @@ ACVP_RESULT acvp_kdf135_ssh_kat_handler (ACVP_CTX *ctx, JSON_Object *obj)
         groupval = json_array_get_value(groups, i);
         groupobj = json_value_get_object(groupval);
 
-        sha        = json_object_get_string(testobj, "sha");
-        sh_sec_len = (unsigned int)json_object_get_number(groupobj, "shSecLen");
-        iv_len     = (unsigned int)json_object_get_number(groupobj, "ivLen");
-        key_len    = (unsigned int)json_object_get_number(groupobj, "keyLen");
+        sha = json_object_get_string(testobj, "sha");
+        sh_sec_len = (unsigned int) json_object_get_number(groupobj, "shSecLen");
+        iv_len = (unsigned int) json_object_get_number(groupobj, "ivLen");
+        key_len = (unsigned int) json_object_get_number(groupobj, "keyLen");
 
         ACVP_LOG_INFO("    Test group: %d", i);
         ACVP_LOG_INFO("          sha: %s", sha);
@@ -173,10 +173,10 @@ ACVP_RESULT acvp_kdf135_ssh_kat_handler (ACVP_CTX *ctx, JSON_Object *obj)
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
 
-            tc_id = (unsigned int)json_object_get_number(testobj, "tcId");
-            sh_secret_k = (char*)json_object_get_string(testobj, "k");
-            hash_h = (char*)json_object_get_string(testobj, "h");
-            session_id = (char*)json_object_get_string(testobj, "sessionID");
+            tc_id = (unsigned int) json_object_get_number(testobj, "tcId");
+            sh_secret_k = (char *) json_object_get_string(testobj, "k");
+            hash_h = (char *) json_object_get_string(testobj, "h");
+            session_id = (char *) json_object_get_string(testobj, "sessionID");
             hash_len = strlen(hash_h);
             session_len = strlen(session_id);
 
@@ -205,10 +205,10 @@ ACVP_RESULT acvp_kdf135_ssh_kat_handler (ACVP_CTX *ctx, JSON_Object *obj)
                                     sh_sec_len,
                                     iv_len,
                                     key_len,
-                                    (const unsigned char*)sh_secret_k,
-                                    (const unsigned char*)hash_h,
+                                    (const unsigned char *) sh_secret_k,
+                                    (const unsigned char *) hash_h,
                                     hash_len,
-                                    (const unsigned char*)session_id,
+                                    (const unsigned char *) session_id,
                                     session_len);
 
             /* Process the current test vector... */
@@ -255,8 +255,7 @@ ACVP_RESULT acvp_kdf135_ssh_kat_handler (ACVP_CTX *ctx, JSON_Object *obj)
  * file that will be uploaded to the server.  This routine handles
  * the JSON processing for a single test case.
  */
-static ACVP_RESULT acvp_kdf135_ssh_output_tc(ACVP_CTX *ctx, ACVP_KDF135_SSH_TC *stc, JSON_Object *tc_rsp)
-{
+static ACVP_RESULT acvp_kdf135_ssh_output_tc (ACVP_CTX *ctx, ACVP_KDF135_SSH_TC *stc, JSON_Object *tc_rsp) {
     char *tmp;
 
     tmp = calloc(1, ACVP_KDF135_SSH_MSG_MAX);
@@ -309,72 +308,72 @@ static ACVP_RESULT acvp_kdf135_ssh_output_tc(ACVP_CTX *ctx, ACVP_KDF135_SSH_TC *
     return ACVP_SUCCESS;
 }
 
-static ACVP_RESULT acvp_kdf135_ssh_init_tc(ACVP_CTX *ctx,
-                                    ACVP_KDF135_SSH_TC *stc,
-                                    unsigned int tc_id,
-                                    ACVP_CIPHER alg_id,
-                                    unsigned int  sha_type,
-                                    unsigned int  sh_sec_len,           //bites (spec)
-                                    unsigned int  iv_len,               //bites (spec)
-                                    unsigned int  key_len,              //bites (spec)
-                                    const unsigned char *shared_sec_k,
-                                    const unsigned char *hash_h,
-                                    unsigned int hash_len,              //bytes
-                                    const unsigned char *session_id,
-                                    unsigned int session_len)           //bytes
+static ACVP_RESULT acvp_kdf135_ssh_init_tc (ACVP_CTX *ctx,
+                                            ACVP_KDF135_SSH_TC *stc,
+                                            unsigned int tc_id,
+                                            ACVP_CIPHER alg_id,
+                                            unsigned int sha_type,
+                                            unsigned int sh_sec_len,           //bites (spec)
+                                            unsigned int iv_len,               //bites (spec)
+                                            unsigned int key_len,              //bites (spec)
+                                            const unsigned char *shared_sec_k,
+                                            const unsigned char *hash_h,
+                                            unsigned int hash_len,              //bytes
+                                            const unsigned char *session_id,
+                                            unsigned int session_len)           //bytes
 {
     memset(stc, 0x0, sizeof(ACVP_KDF135_SSH_TC));
 
-    if ((sh_sec_len/8 > ACVP_KDF135_SSH_MSG_MAX) ||
-        (iv_len/8 > ACVP_KDF135_SSH_MSG_MAX) ||
-        (key_len/8 > ACVP_KDF135_SSH_MSG_MAX) ||
+    if ((sh_sec_len / 8 > ACVP_KDF135_SSH_MSG_MAX) ||
+        (iv_len / 8 > ACVP_KDF135_SSH_MSG_MAX) ||
+        (key_len / 8 > ACVP_KDF135_SSH_MSG_MAX) ||
         (hash_len > ACVP_KDF135_SSH_MSG_MAX) ||
-        (session_len > ACVP_KDF135_SSH_MSG_MAX) ) {
+        (session_len > ACVP_KDF135_SSH_MSG_MAX)) {
         ACVP_LOG_ERR("Input length too long KDF SSH.");
         return (ACVP_DATA_TOO_LARGE);
     }
 
     stc->shared_sec_k = calloc(1, ACVP_KDF135_SSH_MSG_MAX);
-    if (!stc->shared_sec_k) return ACVP_MALLOC_FAIL;
+    if (!stc->shared_sec_k) { return ACVP_MALLOC_FAIL; }
     stc->hash_h = calloc(1, ACVP_KDF135_SSH_MSG_MAX);
-    if (!stc->hash_h) return ACVP_MALLOC_FAIL;
+    if (!stc->hash_h) { return ACVP_MALLOC_FAIL; }
     stc->session_id = calloc(1, ACVP_KDF135_SSH_MSG_MAX);
-    if (!stc->session_id) return ACVP_MALLOC_FAIL;
+    if (!stc->session_id) { return ACVP_MALLOC_FAIL; }
 
     stc->cs_init_iv = calloc(1, ACVP_KDF135_SSH_MSG_MAX);
-    if (!stc->cs_init_iv) return ACVP_MALLOC_FAIL;
+    if (!stc->cs_init_iv) { return ACVP_MALLOC_FAIL; }
     stc->sc_init_iv = calloc(1, ACVP_KDF135_SSH_MSG_MAX);
-    if (!stc->sc_init_iv) return ACVP_MALLOC_FAIL;
+    if (!stc->sc_init_iv) { return ACVP_MALLOC_FAIL; }
 
     stc->cs_e_key = calloc(1, ACVP_KDF135_SSH_MSG_MAX);
-    if (!stc->cs_e_key) return ACVP_MALLOC_FAIL;
+    if (!stc->cs_e_key) { return ACVP_MALLOC_FAIL; }
     stc->sc_e_key = calloc(1, ACVP_KDF135_SSH_MSG_MAX);
-    if (!stc->sc_e_key) return ACVP_MALLOC_FAIL;
+    if (!stc->sc_e_key) { return ACVP_MALLOC_FAIL; }
 
     stc->cs_i_key = calloc(1, ACVP_KDF135_SSH_MSG_MAX);
-    if (!stc->cs_i_key) return ACVP_MALLOC_FAIL;
+    if (!stc->cs_i_key) { return ACVP_MALLOC_FAIL; }
     stc->sc_i_key = calloc(1, ACVP_KDF135_SSH_MSG_MAX);
-    if (!stc->sc_i_key) return ACVP_MALLOC_FAIL;
+    if (!stc->sc_i_key) { return ACVP_MALLOC_FAIL; }
 
-    memcpy(stc->shared_sec_k, shared_sec_k, key_len/8);
+    memcpy(stc->shared_sec_k, shared_sec_k, key_len / 8);
     memcpy(stc->hash_h, hash_h, hash_len);
     memcpy(stc->session_id, session_id, session_len);
 
     memset(stc->cs_init_iv, 0, ACVP_KDF135_SSH_MSG_MAX);
     memset(stc->sc_init_iv, 0, ACVP_KDF135_SSH_MSG_MAX);
-    memset(stc->cs_e_key,   0, ACVP_KDF135_SSH_MSG_MAX);
-    memset(stc->sc_e_key,   0, ACVP_KDF135_SSH_MSG_MAX);
-    memset(stc->cs_i_key,   0, ACVP_KDF135_SSH_MSG_MAX);
-    memset(stc->sc_i_key,   0, ACVP_KDF135_SSH_MSG_MAX);
+    memset(stc->cs_e_key, 0, ACVP_KDF135_SSH_MSG_MAX);
+    memset(stc->sc_e_key, 0, ACVP_KDF135_SSH_MSG_MAX);
+    memset(stc->cs_i_key, 0, ACVP_KDF135_SSH_MSG_MAX);
+    memset(stc->sc_i_key, 0, ACVP_KDF135_SSH_MSG_MAX);
 
-    stc->tc_id        = tc_id;
-    stc->cipher       = alg_id;
-    stc->sha_type     = sha_type;
-    stc->sh_sec_len   = sh_sec_len;     //bites
-    stc->iv_len       = iv_len;         //bites
-    stc->key_len      = key_len;        //bits
-    stc->session_len  = session_len;    //bytes
-    stc->hash_len     = hash_len;       //bytes
+    stc->tc_id = tc_id;
+    stc->cipher = alg_id;
+    stc->sha_type = sha_type;
+    stc->sh_sec_len = sh_sec_len;     //bites
+    stc->iv_len = iv_len;         //bites
+    stc->key_len = key_len;        //bits
+    stc->session_len = session_len;    //bytes
+    stc->hash_len = hash_len;       //bytes
     return ACVP_SUCCESS;
 }
 
@@ -382,8 +381,7 @@ static ACVP_RESULT acvp_kdf135_ssh_init_tc(ACVP_CTX *ctx,
  * This function simply releases the data associated with
  * a test case.
  */
-static ACVP_RESULT acvp_kdf135_ssh_release_tc(ACVP_KDF135_SSH_TC *stc)
-{
+static ACVP_RESULT acvp_kdf135_ssh_release_tc (ACVP_KDF135_SSH_TC *stc) {
     free(stc->shared_sec_k);
     free(stc->hash_h);
     free(stc->session_id);
