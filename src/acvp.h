@@ -295,9 +295,6 @@ typedef enum acvp_rsa_param {
 #define RSA_SIG_TYPE_PKCS1V15_NAME  "PKCS1v1.5"
 #define RSA_SIG_TYPE_PKCS1PSS_NAME  "PSS"
 
-#define PROB_PRIME_TEST_2       2
-#define PROB_PRIME_TEST_3       3
-
 #define PRIME_TEST_TBLC2_NAME "tblC2"
 #define PRIME_TEST_TBLC3_NAME "tblC3"
 
