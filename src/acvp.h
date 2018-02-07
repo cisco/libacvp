@@ -28,6 +28,7 @@
 * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *****************************************************************************/
 #include <openssl/bn.h>
+
 #ifndef acvp_h
 #define acvp_h
 
@@ -138,11 +139,11 @@ typedef enum acvp_sym_cipher {
 
 
 typedef enum acvp_prereq_mode_t {
-  ACVP_PREREQ_AES = 1,
-  ACVP_PREREQ_TDES,
-  ACVP_PREREQ_DRBG,
-  ACVP_PREREQ_HMAC,
-  ACVP_PREREQ_SHA
+    ACVP_PREREQ_AES = 1,
+    ACVP_PREREQ_TDES,
+    ACVP_PREREQ_DRBG,
+    ACVP_PREREQ_HMAC,
+    ACVP_PREREQ_SHA
 } ACVP_PREREQ_ALG;
 
 typedef struct acvp_prereqs_mode_name_t {
@@ -163,7 +164,7 @@ typedef enum acvp_kdf135_tls_cap_parm {
 
 /* these are bit flags */
 typedef enum acvp_kdf135_ssh_cap_parm {
-    ACVP_KDF135_SSH_CAP_MIN    = 0,
+    ACVP_KDF135_SSH_CAP_MIN = 0,
     ACVP_KDF135_SSH_CAP_SHA256 = 1, //bin 001
     ACVP_KDF135_SSH_CAP_SHA384 = 2, //bin 010
     ACVP_KDF135_SSH_CAP_SHA512 = 4, //bin 100
@@ -381,7 +382,7 @@ typedef enum acvp_sym_kw_mode {
     ACVP_SYM_KW_INVERSE,
     ACVP_SYM_KW_MAX
 } ACVP_SYM_KW_MODE;
- 
+
 typedef enum acvp_sym_cipher_testtype {
     ACVP_SYM_TEST_TYPE_NONE = 0,
     ACVP_SYM_TEST_TYPE_AFT,
@@ -414,12 +415,12 @@ typedef enum acvp_cmac_parameter {
 } ACVP_CMAC_PARM;
 
 typedef enum acvp_cmac_msg_len_index {
-  CMAC_BLK_DIVISIBLE_1 = 0,
-  CMAC_BLK_DIVISIBLE_2,
-  CMAC_BLK_NOT_DIVISIBLE_1,
-  CMAC_BLK_NOT_DIVISIBLE_2,
-  CMAC_MSG_LEN_MAX,
-  CMAC_MSG_LEN_NUM_ITEMS
+    CMAC_BLK_DIVISIBLE_1 = 0,
+    CMAC_BLK_DIVISIBLE_2,
+    CMAC_BLK_NOT_DIVISIBLE_1,
+    CMAC_BLK_NOT_DIVISIBLE_2,
+    CMAC_MSG_LEN_MAX,
+    CMAC_MSG_LEN_NUM_ITEMS
 } ACVP_CMAC_MSG_LEN_INDEX;
 
 /*
@@ -435,20 +436,20 @@ typedef enum acvp_cmac_msg_len_index {
  * encoded vector response.
  */
 typedef struct acvp_sym_cipher_tc_t {
-    ACVP_CIPHER       cipher;
+    ACVP_CIPHER cipher;
     ACVP_SYM_CIPH_TESTTYPE test_type; /* KAT or MCT */
     ACVP_SYM_CIPH_DIR direction;   /* encrypt or decrypt */
     ACVP_SYM_CIPH_IVGEN_SRC ivgen_source;
     ACVP_SYM_CIPH_IVGEN_MODE ivgen_mode;
     unsigned int tc_id;    /* Test case id */
-    unsigned char   *key; /* Aes symmetric key */
-    unsigned char   *pt; /* Plaintext */
-    unsigned char   *aad; /* Additional Authenticated Data */
-    unsigned char   *iv; /* Initialization Vector */
-    unsigned char   *ct; /* Ciphertext */
-    unsigned char   *tag; /* Aead tag */
-    unsigned char   *iv_ret; /* updated IV used for TDES MCT */
-    unsigned char   *iv_ret_after; /* updated IV used for TDES MCT */
+    unsigned char *key; /* Aes symmetric key */
+    unsigned char *pt; /* Plaintext */
+    unsigned char *aad; /* Additional Authenticated Data */
+    unsigned char *iv; /* Initialization Vector */
+    unsigned char *ct; /* Ciphertext */
+    unsigned char *tag; /* Aead tag */
+    unsigned char *iv_ret; /* updated IV used for TDES MCT */
+    unsigned char *iv_ret_after; /* updated IV used for TDES MCT */
     unsigned int kwcipher;
     unsigned int key_len;
     unsigned int pt_len;
@@ -488,15 +489,15 @@ typedef struct acvp_entropy_tc_t {
  */
 typedef struct acvp_hash_tc_t {
     ACVP_CIPHER cipher;
-    unsigned int  tc_id;    /* Test case id */
+    unsigned int tc_id;    /* Test case id */
     ACVP_HASH_TESTTYPE test_type; /* KAT or MCT */
     unsigned char *msg;
     unsigned char *m1;
     unsigned char *m2;
     unsigned char *m3;
-    unsigned int  msg_len;
+    unsigned int msg_len;
     unsigned char *md; /* The resulting digest calculated for the test case */
-    unsigned int  md_len;
+    unsigned int md_len;
 } ACVP_HASH_TC;
 
 /*
@@ -506,7 +507,7 @@ typedef struct acvp_hash_tc_t {
  */
 typedef struct acvp_kdf135_tls_tc_t {
     ACVP_CIPHER cipher;
-    unsigned int  tc_id;    /* Test case id */
+    unsigned int tc_id;    /* Test case id */
     unsigned int method;
     unsigned int md;
     unsigned int pm_len;
@@ -529,7 +530,7 @@ typedef struct acvp_kdf135_tls_tc_t {
  */
 typedef struct acvp_kdf135_snmp_tc_t {
     ACVP_CIPHER cipher;
-    unsigned int  tc_id;    /* Test case id */
+    unsigned int tc_id;    /* Test case id */
     const char *password;
     unsigned int p_len;
     unsigned char *s_key;
@@ -544,16 +545,16 @@ typedef struct acvp_kdf135_snmp_tc_t {
  */
 typedef struct acvp_kdf135_ssh_tc_t {
     ACVP_CIPHER cipher;
-    unsigned int  tc_id;        /* Test case id */
-    unsigned int  sha_type;
-    unsigned int  sh_sec_len;
-    unsigned int  iv_len;
-    unsigned int  key_len;
-    char          *shared_sec_k;
-    char          *hash_h;
-    unsigned int  hash_len;
-    char          *session_id;
-    unsigned int  session_len;
+    unsigned int tc_id;        /* Test case id */
+    unsigned int sha_type;
+    unsigned int sh_sec_len;
+    unsigned int iv_len;
+    unsigned int key_len;
+    char *shared_sec_k;
+    char *hash_h;
+    unsigned int hash_len;
+    char *session_id;
+    unsigned int session_len;
     //results
     unsigned char *cs_init_iv;
     unsigned char *sc_init_iv;
@@ -570,12 +571,12 @@ typedef struct acvp_kdf135_ssh_tc_t {
  */
 typedef struct acvp_hmac_tc_t {
     ACVP_CIPHER cipher;
-    unsigned int  tc_id;    /* Test case id */
+    unsigned int tc_id;    /* Test case id */
     unsigned char *msg;
-    unsigned int  msg_len;
+    unsigned int msg_len;
     unsigned char *mac; /* The resulting digest calculated for the test case */
-    unsigned int  mac_len;
-    unsigned int  key_len;
+    unsigned int mac_len;
+    unsigned int key_len;
     unsigned char *key;
 } ACVP_HMAC_TC;
 
@@ -586,12 +587,12 @@ typedef struct acvp_hmac_tc_t {
  */
 typedef struct acvp_cmac_tc_t {
     ACVP_CIPHER cipher;
-    unsigned int  tc_id;    /* Test case id */
+    unsigned int tc_id;    /* Test case id */
     unsigned char *msg;
-    unsigned int  msg_len;
+    unsigned int msg_len;
     unsigned char *mac; /* The resulting digest calculated for the test case */
-    unsigned int  mac_len;
-    unsigned int  key_len;
+    unsigned int mac_len;
+    unsigned int key_len;
     unsigned char *key;
     unsigned char *key2;
     unsigned char *key3;
@@ -606,7 +607,7 @@ typedef struct acvp_rsa_keygen_tc_t {
     ACVP_RSA_MODE mode; // "keyGen"
 
     char *hash_alg;
-    unsigned int  tc_id;    /* Test case id */
+    unsigned int tc_id;    /* Test case id */
     char *pub_exp;
     char *prime_test;
 
@@ -652,8 +653,8 @@ typedef struct acvp_rsa_keygen_tc_t {
  */
 typedef struct acvp_rsa_sig_attrs_tc_t {
     ACVP_RSA_MODE mode;
-    unsigned int  tc_id;    /* Test case id */
-    unsigned int  modulo;
+    unsigned int tc_id;    /* Test case id */
+    unsigned int modulo;
     char *hash_alg;
     unsigned char *msg;
     unsigned int salt_len; // only for sigType PKCSS1PSS
@@ -747,24 +748,24 @@ typedef struct acvp_dsa_tc_t {
 typedef struct acvp_drbg_tc_t {
     ACVP_CIPHER cipher;
     ACVP_DRBG_MODE mode;
-    unsigned int  tc_id;    /* Test case id */
+    unsigned int tc_id;    /* Test case id */
 
-    unsigned char  *additional_input;
-    unsigned char  *entropy_input_pr;
-    unsigned char  *additional_input_1;
-    unsigned char  *entropy_input_pr_1;
-    unsigned char  *perso_string;
-    unsigned char  *entropy;
-    unsigned char  *nonce;
-    unsigned char  *drb; /* The resulting pseudo random generated for the test case */
+    unsigned char *additional_input;
+    unsigned char *entropy_input_pr;
+    unsigned char *additional_input_1;
+    unsigned char *entropy_input_pr_1;
+    unsigned char *perso_string;
+    unsigned char *entropy;
+    unsigned char *nonce;
+    unsigned char *drb; /* The resulting pseudo random generated for the test case */
 
-    unsigned int  additional_input_len;
-    unsigned int  pred_resist_enabled;
-    unsigned int  perso_string_len;
-    unsigned int  der_func_enabled;
-    unsigned int  entropy_len;
-    unsigned int  nonce_len;
-    unsigned int  drb_len;
+    unsigned int additional_input_len;
+    unsigned int pred_resist_enabled;
+    unsigned int perso_string_len;
+    unsigned int der_func_enabled;
+    unsigned int entropy_len;
+    unsigned int nonce_len;
+    unsigned int drb_len;
 } ACVP_DRBG_TC;
 
 /*
@@ -777,18 +778,18 @@ typedef struct acvp_drbg_tc_t {
  */
 typedef struct acvp_cipher_tc_t {
     union {
-        ACVP_SYM_CIPHER_TC  *symmetric;
+        ACVP_SYM_CIPHER_TC *symmetric;
         ACVP_ASYM_CIPHER_TC *asymmetric;
-        ACVP_ENTROPY_TC     *entropy;
-        ACVP_HASH_TC        *hash;
-        ACVP_DRBG_TC        *drbg;
-        ACVP_DSA_TC         *dsa;
-        ACVP_HMAC_TC        *hmac;
-        ACVP_CMAC_TC        *cmac;
-        ACVP_RSA_TC         *rsa;
-        ACVP_KDF135_TLS_TC  *kdf135_tls;
+        ACVP_ENTROPY_TC *entropy;
+        ACVP_HASH_TC *hash;
+        ACVP_DRBG_TC *drbg;
+        ACVP_DSA_TC *dsa;
+        ACVP_HMAC_TC *hmac;
+        ACVP_CMAC_TC *cmac;
+        ACVP_RSA_TC *rsa;
+        ACVP_KDF135_TLS_TC *kdf135_tls;
         ACVP_KDF135_SNMP_TC *kdf135_snmp;
-        ACVP_KDF135_SSH_TC  *kdf135_ssh;
+        ACVP_KDF135_SSH_TC *kdf135_ssh;
         //TODO: need more types for hashes, etc.
     } tc;
 } ACVP_TEST_CASE;
@@ -841,14 +842,14 @@ enum acvp_result {
 
     @return ACVP_RESULT
  */
-ACVP_RESULT acvp_enable_sym_cipher_cap(
-    ACVP_CTX *ctx,
-    ACVP_CIPHER cipher,
-    ACVP_SYM_CIPH_DIR dir,
-    ACVP_SYM_CIPH_KO keying_options,
-    ACVP_SYM_CIPH_IVGEN_SRC ivgen_source,
-    ACVP_SYM_CIPH_IVGEN_MODE ivgen_mode,
-        ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case));
+ACVP_RESULT acvp_enable_sym_cipher_cap (
+        ACVP_CTX *ctx,
+        ACVP_CIPHER cipher,
+        ACVP_SYM_CIPH_DIR dir,
+        ACVP_SYM_CIPH_KO keying_options,
+        ACVP_SYM_CIPH_IVGEN_SRC ivgen_source,
+        ACVP_SYM_CIPH_IVGEN_MODE ivgen_mode,
+        ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case));
 
 /*! @brief acvp_enable_sym_cipher_cap_parm() allows an application to specify
        non length-based operational parameters to be used for a given cipher
@@ -871,11 +872,11 @@ ACVP_RESULT acvp_enable_sym_cipher_cap(
 
     @return ACVP_RESULT
  */
-ACVP_RESULT acvp_enable_sym_cipher_cap_value(
-    ACVP_CTX *ctx,
-    ACVP_CIPHER cipher,
-    ACVP_SYM_CIPH_PARM param,
-    int value);
+ACVP_RESULT acvp_enable_sym_cipher_cap_value (
+        ACVP_CTX *ctx,
+        ACVP_CIPHER cipher,
+        ACVP_SYM_CIPH_PARM param,
+        int value);
 
 /*! @brief acvp_enable_sym_cipher_cap_parm() allows an application to specify
        length-based operational parameters to be used for a given cipher during
@@ -902,11 +903,11 @@ ACVP_RESULT acvp_enable_sym_cipher_cap_value(
 
     @return ACVP_RESULT
  */
-ACVP_RESULT acvp_enable_sym_cipher_cap_parm(
-    ACVP_CTX *ctx,
-    ACVP_CIPHER cipher,
-    ACVP_SYM_CIPH_PARM parm,
-    int length);
+ACVP_RESULT acvp_enable_sym_cipher_cap_parm (
+        ACVP_CTX *ctx,
+        ACVP_CIPHER cipher,
+        ACVP_SYM_CIPH_PARM parm,
+        int length);
 
 /*! @brief acvp_enable_hash_cap() allows an application to specify a
        hash capability to be tested by the ACVP server.
@@ -928,10 +929,10 @@ ACVP_RESULT acvp_enable_sym_cipher_cap_parm(
 
     @return ACVP_RESULT
  */
-ACVP_RESULT acvp_enable_hash_cap(
-    ACVP_CTX *ctx,
-    ACVP_CIPHER cipher,
-        ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case));
+ACVP_RESULT acvp_enable_hash_cap (
+        ACVP_CTX *ctx,
+        ACVP_CIPHER cipher,
+        ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case));
 
 /*! @brief acvp_enable_hash_cap_parm() allows an application to specify
        operational parameters to be used for a given hash alg during a
@@ -956,10 +957,10 @@ ACVP_RESULT acvp_enable_hash_cap(
     @return ACVP_RESULT
  */
 ACVP_RESULT acvp_enable_hash_cap_parm (
-           ACVP_CTX *ctx,
-           ACVP_CIPHER cipher,
-                   ACVP_HASH_PARM       param,
-                   int                  value);
+        ACVP_CTX *ctx,
+        ACVP_CIPHER cipher,
+        ACVP_HASH_PARM param,
+        int value);
 
 /*! @brief acvp_enable_drbg_cap() allows an application to specify a
        hash capability to be tested by the ACVP server.
@@ -981,10 +982,10 @@ ACVP_RESULT acvp_enable_hash_cap_parm (
 
     @return ACVP_RESULT
  */
-ACVP_RESULT acvp_enable_drbg_cap(
-                                 ACVP_CTX *ctx,
-                                 ACVP_CIPHER cipher,
-                                 ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case));
+ACVP_RESULT acvp_enable_drbg_cap (
+        ACVP_CTX *ctx,
+        ACVP_CIPHER cipher,
+        ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case));
 
 /*! @brief acvp_enable_drbg_cap_parm() allows an application to specify
        operational parameters to be used for a given DRBG alg during a
@@ -1005,13 +1006,13 @@ ACVP_RESULT acvp_enable_drbg_cap(
 
     @return ACVP_RESULT
  */
-ACVP_RESULT acvp_enable_drbg_cap_parm(
-                             ACVP_CTX *ctx,
-                             ACVP_CIPHER cipher,
-                             ACVP_DRBG_MODE mode,
-                             ACVP_DRBG_PARM param,
-                             int value
-                             );
+ACVP_RESULT acvp_enable_drbg_cap_parm (
+        ACVP_CTX *ctx,
+        ACVP_CIPHER cipher,
+        ACVP_DRBG_MODE mode,
+        ACVP_DRBG_PARM param,
+        int value
+);
 
 /*! @brief acvp_enable_drbg_prereq_cap() allows an application to specify
         a prerequisite algorithm for a given DRBG during a test session
@@ -1030,13 +1031,13 @@ ACVP_RESULT acvp_enable_drbg_cap_parm(
 
    @return ACVP_RESULT
  */
-ACVP_RESULT acvp_enable_drbg_prereq_cap(
-                             ACVP_CTX *ctx,
-                             ACVP_CIPHER cipher,
-                             ACVP_DRBG_MODE mode,
-                             ACVP_PREREQ_ALG pre_req,
-                             char *value
-                             );
+ACVP_RESULT acvp_enable_drbg_prereq_cap (
+        ACVP_CTX *ctx,
+        ACVP_CIPHER cipher,
+        ACVP_DRBG_MODE mode,
+        ACVP_PREREQ_ALG pre_req,
+        char *value
+);
 
 /*! @brief acvp_enable_drbg_length_cap() allows an application to register
         a DRBG capability length-based paramter.
@@ -1057,14 +1058,14 @@ ACVP_RESULT acvp_enable_drbg_prereq_cap(
 
    @return ACVP_RESULT
  */
-ACVP_RESULT acvp_enable_drbg_length_cap(
-                             ACVP_CTX         *ctx,
-                             ACVP_CIPHER       cipher,
-                             ACVP_DRBG_MODE    mode,
-                             ACVP_DRBG_PARM    param,
-                             int               min,
-                             int               step,
-                             int               max);
+ACVP_RESULT acvp_enable_drbg_length_cap (
+        ACVP_CTX *ctx,
+        ACVP_CIPHER cipher,
+        ACVP_DRBG_MODE mode,
+        ACVP_DRBG_PARM param,
+        int min,
+        int step,
+        int max);
 
 /*! @brief acvp_enable_dsa_cap()
 
@@ -1084,10 +1085,10 @@ ACVP_RESULT acvp_enable_drbg_length_cap(
 
    @return ACVP_RESULT
 */
-ACVP_RESULT acvp_enable_dsa_cap(
-                                ACVP_CTX *ctx,
-                                ACVP_CIPHER cipher,
-                                ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case));
+ACVP_RESULT acvp_enable_dsa_cap (
+        ACVP_CTX *ctx,
+        ACVP_CIPHER cipher,
+        ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case));
 
 /*! @brief acvp_enable_dsa_cap_parm() allows an application to specify
        operational parameters to be used for a given hash alg during a
@@ -1108,11 +1109,11 @@ ACVP_RESULT acvp_enable_dsa_cap(
 
     @return ACVP_RESULT
  */
-ACVP_RESULT acvp_enable_dsa_cap_parm(ACVP_CTX *ctx,
-                             ACVP_CIPHER cipher,
-                             ACVP_DSA_MODE mode,
-                             ACVP_DSA_PARM param,
-                             int value);
+ACVP_RESULT acvp_enable_dsa_cap_parm (ACVP_CTX *ctx,
+                                      ACVP_CIPHER cipher,
+                                      ACVP_DSA_MODE mode,
+                                      ACVP_DSA_PARM param,
+                                      int value);
 
 /*! @brief acvp_enable_rsa_cap()
 
@@ -1132,10 +1133,10 @@ ACVP_RESULT acvp_enable_dsa_cap_parm(ACVP_CTX *ctx,
 
    @return ACVP_RESULT
 */
-ACVP_RESULT acvp_enable_rsa_cap(
-                                ACVP_CTX *ctx,
-                                ACVP_CIPHER cipher,
-                                ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case));
+ACVP_RESULT acvp_enable_rsa_cap (
+        ACVP_CTX *ctx,
+        ACVP_CIPHER cipher,
+        ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case));
 
 /*! @brief acvp_enable_rsa_cap_parm() allows an application to specify
        operational parameters to be used for a given RSA alg during a
@@ -1155,13 +1156,13 @@ ACVP_RESULT acvp_enable_rsa_cap(
 
     @return ACVP_RESULT
  */
-ACVP_RESULT acvp_enable_rsa_cap_parm(
-                            ACVP_CTX *ctx,
-                            ACVP_CIPHER cipher,
-                            ACVP_RSA_MODE mode,
-                            ACVP_RSA_PARM param,
-                            int value
-                            );
+ACVP_RESULT acvp_enable_rsa_cap_parm (
+        ACVP_CTX *ctx,
+        ACVP_CIPHER cipher,
+        ACVP_RSA_MODE mode,
+        ACVP_RSA_PARM param,
+        int value
+);
 
 /*! @brief acvp_enable_rsa_bignum_parm() allows an application to specify
        BIGNUM operational parameters to be used for a given RSA alg during a
@@ -1181,11 +1182,11 @@ ACVP_RESULT acvp_enable_rsa_cap_parm(
     @return ACVP_RESULT
  */
 ACVP_RESULT acvp_enable_rsa_bignum_parm (ACVP_CTX *ctx,
-                             ACVP_CIPHER cipher,
-                             ACVP_RSA_MODE mode,
-                             ACVP_RSA_PARM param,
-                             BIGNUM *value
-                           );
+                                         ACVP_CIPHER cipher,
+                                         ACVP_RSA_MODE mode,
+                                         ACVP_RSA_PARM param,
+                                         BIGNUM *value
+);
 
 /*! @brief acvp_enable_rsa_primes_parm() allows an application to specify
         RSA key generation provable or probable primes parameters for use
@@ -1211,12 +1212,12 @@ ACVP_RESULT acvp_enable_rsa_bignum_parm (ACVP_CTX *ctx,
    @return ACVP_RESULT
  */
 ACVP_RESULT acvp_enable_rsa_primes_parm (ACVP_CTX *ctx,
-                             ACVP_CIPHER cipher,
-                             ACVP_RSA_MODE mode,
-                             ACVP_RSA_PARM param,
-                             int mod,
-                             char *hash
-                           );
+                                         ACVP_CIPHER cipher,
+                                         ACVP_RSA_MODE mode,
+                                         ACVP_RSA_PARM param,
+                                         int mod,
+                                         char *hash
+);
 
 /*! @brief acvp_enable_rsa_cap_sig_type_parm() allows an application to
         specify parameters for RSA signature capability for use during a
@@ -1240,13 +1241,13 @@ ACVP_RESULT acvp_enable_rsa_primes_parm (ACVP_CTX *ctx,
    @return ACVP_RESULT
  */
 ACVP_RESULT acvp_enable_rsa_cap_sig_type_parm (ACVP_CTX *ctx,
-                             ACVP_CIPHER cipher,
-                             ACVP_RSA_MODE mode,
-                             ACVP_RSA_SIG_TYPE sig_type,
-                             int mod,
-                             char *hash,
-                             int salt
-                             );
+                                               ACVP_CIPHER cipher,
+                                               ACVP_RSA_MODE mode,
+                                               ACVP_RSA_SIG_TYPE sig_type,
+                                               int mod,
+                                               char *hash,
+                                               int salt
+);
 
 /*! @brief acvp_enable_hmac_cap() allows an application to specify an
        HMAC capability to be tested by the ACVP server.
@@ -1268,10 +1269,10 @@ ACVP_RESULT acvp_enable_rsa_cap_sig_type_parm (ACVP_CTX *ctx,
 
     @return ACVP_RESULT
  */
-ACVP_RESULT acvp_enable_hmac_cap(
-                        ACVP_CTX *ctx,
-                        ACVP_CIPHER cipher,
-                        ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case));
+ACVP_RESULT acvp_enable_hmac_cap (
+        ACVP_CTX *ctx,
+        ACVP_CIPHER cipher,
+        ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case));
 
 /*! @brief acvp_enable_hmac_cap_parm() allows an application to specify
         operational parameters for use during a test session with the
@@ -1287,11 +1288,11 @@ ACVP_RESULT acvp_enable_hmac_cap(
 
    @return ACVP_RESULT
  */
-ACVP_RESULT acvp_enable_hmac_cap_parm(
-                          ACVP_CTX *ctx,
-                          ACVP_CIPHER cipher,
-                          ACVP_HMAC_PARM parm,
-                          int value);
+ACVP_RESULT acvp_enable_hmac_cap_parm (
+        ACVP_CTX *ctx,
+        ACVP_CIPHER cipher,
+        ACVP_HMAC_PARM parm,
+        int value);
 
 /*! @brief acvp_enable_cmac_cap() allows an application to specify an
        CMAC capability to be tested by the ACVP server.
@@ -1313,10 +1314,10 @@ ACVP_RESULT acvp_enable_hmac_cap_parm(
 
     @return ACVP_RESULT
  */
-ACVP_RESULT acvp_enable_cmac_cap(
-                        ACVP_CTX *ctx,
-                        ACVP_CIPHER cipher,
-                        ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case));
+ACVP_RESULT acvp_enable_cmac_cap (
+        ACVP_CTX *ctx,
+        ACVP_CIPHER cipher,
+        ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case));
 
 /*! @brief acvp_enable_cmac_cap_parm() allows an application to specify
         operational parameters for use during a test session with the
@@ -1332,11 +1333,11 @@ ACVP_RESULT acvp_enable_cmac_cap(
 
    @return ACVP_RESULT
  */
-ACVP_RESULT acvp_enable_cmac_cap_parm(
-                          ACVP_CTX *ctx,
-                          ACVP_CIPHER cipher,
-                          ACVP_CMAC_PARM parm,
-                          int value);
+ACVP_RESULT acvp_enable_cmac_cap_parm (
+        ACVP_CTX *ctx,
+        ACVP_CIPHER cipher,
+        ACVP_CMAC_PARM parm,
+        int value);
 
 /*! @brief acvp_enable_kdf135_*_cap() allows an application to specify a
        kdf cipher capability to be tested by the ACVP server.
@@ -1353,18 +1354,18 @@ ACVP_RESULT acvp_enable_cmac_cap_parm(
 
     @return ACVP_RESULT
  */
-ACVP_RESULT acvp_enable_kdf135_tls_cap(
-          ACVP_CTX *ctx,
-          ACVP_KDF135_TLS_METHOD method,
-          ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case));
-
-ACVP_RESULT acvp_enable_kdf135_snmp_cap(
+ACVP_RESULT acvp_enable_kdf135_tls_cap (
         ACVP_CTX *ctx,
-        ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case));
+        ACVP_KDF135_TLS_METHOD method,
+        ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case));
 
-ACVP_RESULT acvp_enable_kdf135_ssh_cap(
+ACVP_RESULT acvp_enable_kdf135_snmp_cap (
         ACVP_CTX *ctx,
-        ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case));
+        ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case));
+
+ACVP_RESULT acvp_enable_kdf135_ssh_cap (
+        ACVP_CTX *ctx,
+        ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case));
 
 /*! @brief acvp_enable_kdf135_tls_cap_parm() allows an application to specify
         operational parameters to be used during a test session with the ACVP
@@ -1381,11 +1382,11 @@ ACVP_RESULT acvp_enable_kdf135_ssh_cap(
 
    @return ACVP_RESULT
  */
-ACVP_RESULT acvp_enable_kdf135_tls_cap_parm(
-                          ACVP_CTX *ctx,
-                          ACVP_CIPHER cap,
-                          ACVP_KDF135_TLS_METHOD method,
-              ACVP_KDF135_TLS_CAP_PARM param);
+ACVP_RESULT acvp_enable_kdf135_tls_cap_parm (
+        ACVP_CTX *ctx,
+        ACVP_CIPHER cap,
+        ACVP_KDF135_TLS_METHOD method,
+        ACVP_KDF135_TLS_CAP_PARM param);
 
 /*! @brief acvp_enable_kdf135_ssh_cap_parm() allows an application to specify
         operational parameters to be used during a test session with the ACVP
@@ -1402,11 +1403,11 @@ ACVP_RESULT acvp_enable_kdf135_tls_cap_parm(
 
    @return ACVP_RESULT
  */
-ACVP_RESULT acvp_enable_kdf135_ssh_cap_parm(
-                          ACVP_CTX *ctx,
-                          ACVP_CIPHER cap,
-                          ACVP_KDF135_SSH_METHOD method,
-                          ACVP_KDF135_SSH_CAP_PARM param);
+ACVP_RESULT acvp_enable_kdf135_ssh_cap_parm (
+        ACVP_CTX *ctx,
+        ACVP_CIPHER cap,
+        ACVP_KDF135_SSH_METHOD method,
+        ACVP_KDF135_SSH_CAP_PARM param);
 
 /*! @brief acvp_enable_prereq_cap() allows an application to specify a
        prerequisite for a cipher capability that was previously registered.
@@ -1419,11 +1420,11 @@ ACVP_RESULT acvp_enable_kdf135_ssh_cap_parm(
     @return ACVP_RESULT
  */
 
-ACVP_RESULT acvp_enable_prereq_cap(
-                ACVP_CTX *ctx,
-                ACVP_CIPHER cipher,
-                ACVP_PREREQ_ALG pre_req_cap,
-                char *value);
+ACVP_RESULT acvp_enable_prereq_cap (
+        ACVP_CTX *ctx,
+        ACVP_CIPHER cipher,
+        ACVP_PREREQ_ALG pre_req_cap,
+        char *value);
 
 /*! @brief acvp_create_test_session() creates a context that can be used to
       commence a test session with an ACVP server.
@@ -1442,8 +1443,8 @@ ACVP_RESULT acvp_enable_prereq_cap(
 
     @return ACVP_RESULT
  */
-ACVP_RESULT acvp_create_test_session(ACVP_CTX **ctx, ACVP_RESULT (*progress_cb)(char *msg),
-                                 ACVP_LOG_LVL level);
+ACVP_RESULT acvp_create_test_session (ACVP_CTX **ctx, ACVP_RESULT (*progress_cb) (char *msg),
+                                      ACVP_LOG_LVL level);
 
 /*! @brief acvp_free_test_session() releases the memory associated with
        an ACVP_CTX.
@@ -1459,7 +1460,7 @@ ACVP_RESULT acvp_create_test_session(ACVP_CTX **ctx, ACVP_RESULT (*progress_cb)(
 
     @return ACVP_RESULT
  */
-ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx);
+ACVP_RESULT acvp_free_test_session (ACVP_CTX *ctx);
 
 /*! @brief acvp_set_server() specifies the ACVP server and TCP port
        number to use when contacting the server.
@@ -1475,7 +1476,7 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx);
 
     @return ACVP_RESULT
  */
-ACVP_RESULT acvp_set_server(ACVP_CTX *ctx, char *server_name, int port);
+ACVP_RESULT acvp_set_server (ACVP_CTX *ctx, char *server_name, int port);
 
 /*! @brief acvp_set_path_segment() specifies the URI prefix used by
        the ACVP server.
@@ -1493,7 +1494,7 @@ ACVP_RESULT acvp_set_server(ACVP_CTX *ctx, char *server_name, int port);
 
     @return ACVP_RESULT
  */
-ACVP_RESULT acvp_set_path_segment(ACVP_CTX *ctx, char *path_segment);
+ACVP_RESULT acvp_set_path_segment (ACVP_CTX *ctx, char *path_segment);
 
 /*! @brief acvp_set_cacerts() specifies PEM encoded certificates to use
        as the root trust anchors for establishing the TLS session with
@@ -1513,7 +1514,7 @@ ACVP_RESULT acvp_set_path_segment(ACVP_CTX *ctx, char *path_segment);
 
     @return ACVP_RESULT
  */
-ACVP_RESULT acvp_set_cacerts(ACVP_CTX *ctx, char *ca_file);
+ACVP_RESULT acvp_set_cacerts (ACVP_CTX *ctx, char *ca_file);
 
 /*! @brief acvp_set_certkey() specifies PEM encoded certificate and
        private key to use for establishing the TLS session with the
@@ -1534,7 +1535,7 @@ ACVP_RESULT acvp_set_cacerts(ACVP_CTX *ctx, char *ca_file);
 
     @return ACVP_RESULT
  */
-ACVP_RESULT acvp_set_certkey(ACVP_CTX *ctx, char *cert_file, char *key_file);
+ACVP_RESULT acvp_set_certkey (ACVP_CTX *ctx, char *cert_file, char *key_file);
 
 /*! @brief acvp_register() registers the DUT with the ACVP server.
 
@@ -1548,7 +1549,7 @@ ACVP_RESULT acvp_set_certkey(ACVP_CTX *ctx, char *cert_file, char *key_file);
 
     @return ACVP_RESULT
  */
-ACVP_RESULT acvp_register(ACVP_CTX *ctx);
+ACVP_RESULT acvp_register (ACVP_CTX *ctx);
 
 /*! @brief acvp_process_tests() performs the ACVP testing procedures.
 
@@ -1563,7 +1564,7 @@ ACVP_RESULT acvp_register(ACVP_CTX *ctx);
 
     @return ACVP_RESULT
  */
-ACVP_RESULT acvp_process_tests(ACVP_CTX *ctx);
+ACVP_RESULT acvp_process_tests (ACVP_CTX *ctx);
 
 /*! @brief acvp_set_vendor_info() specifies the vendor attributes
     for the test session.
@@ -1577,11 +1578,11 @@ ACVP_RESULT acvp_process_tests(ACVP_CTX *ctx);
 
     @return ACVP_RESULT
  */
-ACVP_RESULT acvp_set_vendor_info(ACVP_CTX *ctx,
-                 const char *vendor_name,
-                 const char *vendor_url,
-                 const char *contact_name,
-                 const char *contact_email);
+ACVP_RESULT acvp_set_vendor_info (ACVP_CTX *ctx,
+                                  const char *vendor_name,
+                                  const char *vendor_url,
+                                  const char *contact_name,
+                                  const char *contact_email);
 
 /*! @brief acvp_set_module_info() specifies the crypto module attributes
     for the test session.
@@ -1595,11 +1596,11 @@ ACVP_RESULT acvp_set_vendor_info(ACVP_CTX *ctx,
 
     @return ACVP_RESULT
  */
-ACVP_RESULT acvp_set_module_info(ACVP_CTX *ctx,
-                 const char *module_name,
-                 const char *module_type,
-                 const char *module_version,
-                 const char *module_description);
+ACVP_RESULT acvp_set_module_info (ACVP_CTX *ctx,
+                                  const char *module_name,
+                                  const char *module_type,
+                                  const char *module_version,
+                                  const char *module_description);
 
 /*! @brief acvp_check_test_results() allows the application to fetch vector
         set results from the server during a test session.
@@ -1608,8 +1609,9 @@ ACVP_RESULT acvp_set_module_info(ACVP_CTX *ctx,
 
    @return ACVP_RESULT
  */
-ACVP_RESULT acvp_check_test_results(ACVP_CTX *ctx);
-void acvp_cleanup(void);
+ACVP_RESULT acvp_check_test_results (ACVP_CTX *ctx);
+
+void acvp_cleanup (void);
 
 #ifdef __cplusplus
 }

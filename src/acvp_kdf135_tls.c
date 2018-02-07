@@ -34,67 +34,66 @@
 /*
  * Forward prototypes for local functions
  */
-static ACVP_RESULT acvp_kdf135_tls_output_tc(ACVP_CTX *ctx, ACVP_KDF135_TLS_TC *stc, JSON_Object *tc_rsp);
-static ACVP_RESULT acvp_kdf135_tls_init_tc(ACVP_CTX *ctx,
-                                    ACVP_KDF135_TLS_TC *stc,
-                                    unsigned int tc_id,
-                                    ACVP_CIPHER alg_id,
-				    unsigned int method, 
-				    unsigned int sha, 
-				    unsigned int pm_len, 
-				    unsigned int kb_len, 
-				    const char *pm_secret, 
-				    const char *sh_rnd, 
-				    const char *ch_rnd, 
-				    const char *s_rnd, 
-				    const char *c_rnd);
-static ACVP_RESULT acvp_kdf135_tls_release_tc(ACVP_KDF135_TLS_TC *stc);
+static ACVP_RESULT acvp_kdf135_tls_output_tc (ACVP_CTX *ctx, ACVP_KDF135_TLS_TC *stc, JSON_Object *tc_rsp);
+
+static ACVP_RESULT acvp_kdf135_tls_init_tc (ACVP_CTX *ctx,
+                                            ACVP_KDF135_TLS_TC *stc,
+                                            unsigned int tc_id,
+                                            ACVP_CIPHER alg_id,
+                                            unsigned int method,
+                                            unsigned int sha,
+                                            unsigned int pm_len,
+                                            unsigned int kb_len,
+                                            const char *pm_secret,
+                                            const char *sh_rnd,
+                                            const char *ch_rnd,
+                                            const char *s_rnd,
+                                            const char *c_rnd);
+
+static ACVP_RESULT acvp_kdf135_tls_release_tc (ACVP_KDF135_TLS_TC *stc);
 
 
-
-
-ACVP_RESULT acvp_kdf135_tls_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
-{
+ACVP_RESULT acvp_kdf135_tls_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     unsigned int tc_id, meth, md;
-    JSON_Value          *groupval;
-    JSON_Object         *groupobj = NULL;
-    JSON_Value          *testval;
-    JSON_Object         *testobj = NULL;
-    JSON_Array          *groups;
-    JSON_Array          *tests;
+    JSON_Value *groupval;
+    JSON_Object *groupobj = NULL;
+    JSON_Value *testval;
+    JSON_Object *testobj = NULL;
+    JSON_Array *groups;
+    JSON_Array *tests;
 
-    JSON_Value          *reg_arry_val  = NULL;
-    JSON_Object         *reg_obj       = NULL;
-    JSON_Array          *reg_arry      = NULL;
+    JSON_Value *reg_arry_val = NULL;
+    JSON_Object *reg_obj = NULL;
+    JSON_Array *reg_arry = NULL;
 
     int i, g_cnt;
     int j, t_cnt;
 
-    JSON_Value          *r_vs_val = NULL;
-    JSON_Object         *r_vs = NULL;
-    JSON_Array          *r_tarr = NULL; /* Response testarray */
-    JSON_Value          *r_tval = NULL; /* Response testval */
-    JSON_Object         *r_tobj = NULL; /* Response testobj */
-    ACVP_CAPS_LIST      *cap;
+    JSON_Value *r_vs_val = NULL;
+    JSON_Object *r_vs = NULL;
+    JSON_Array *r_tarr = NULL; /* Response testarray */
+    JSON_Value *r_tval = NULL; /* Response testval */
+    JSON_Object *r_tobj = NULL; /* Response testobj */
+    ACVP_CAPS_LIST *cap;
     ACVP_KDF135_TLS_TC stc;
     ACVP_TEST_CASE tc;
     ACVP_HASH_TESTTYPE test_type;
     ACVP_RESULT rv;
-    const char		*alg_str = json_object_get_string(obj, "algorithm"); 
-    ACVP_CIPHER	        alg_id;
-    const char		*pm_secret = NULL;
-    const char		*sh_rnd = NULL;
-    const char		*ch_rnd = NULL;
-    const char		*s_rnd = NULL;
-    const char		*c_rnd = NULL;
-    const char		*method = NULL;
-    const char		*sha = NULL;
+    const char *alg_str = json_object_get_string(obj, "algorithm");
+    ACVP_CIPHER alg_id;
+    const char *pm_secret = NULL;
+    const char *sh_rnd = NULL;
+    const char *ch_rnd = NULL;
+    const char *s_rnd = NULL;
+    const char *c_rnd = NULL;
+    const char *method = NULL;
+    const char *sha = NULL;
     unsigned int kb_len, pm_len;
     char *json_result;
 
     if (!alg_str) {
         ACVP_LOG_ERR("unable to parse 'algorithm' from JSON");
-	return (ACVP_MALFORMED_JSON);
+        return (ACVP_MALFORMED_JSON);
     }
 
     /*
@@ -122,7 +121,7 @@ ACVP_RESULT acvp_kdf135_tls_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
     rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Failed to create JSON response struct. ");
-        return(rv);
+        return (rv);
     }
 
     /*
@@ -147,10 +146,10 @@ ACVP_RESULT acvp_kdf135_tls_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
         groupobj = json_value_get_object(groupval);
 
 
-        pm_len = (unsigned int)json_object_get_number(groupobj, "pmLen");
-        kb_len = (unsigned int)json_object_get_number(groupobj, "kbLen");
+        pm_len = (unsigned int) json_object_get_number(groupobj, "pmLen");
+        kb_len = (unsigned int) json_object_get_number(groupobj, "kbLen");
         method = json_object_get_string(groupobj, "method");
-	sha = json_object_get_string(groupobj, "sha");
+        sha = json_object_get_string(groupobj, "sha");
 
         if (!strncmp(method, "TLS1.2", 6)) {
             meth = ACVP_KDF135_TLS12;
@@ -185,13 +184,13 @@ ACVP_RESULT acvp_kdf135_tls_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
 
-            tc_id = (unsigned int)json_object_get_number(testobj, "tcId");
+            tc_id = (unsigned int) json_object_get_number(testobj, "tcId");
             pm_secret = json_object_get_string(testobj, "pmSecret");
             sh_rnd = json_object_get_string(testobj, "shRND");
-	    ch_rnd = json_object_get_string(testobj, "chRND");
-	    s_rnd = json_object_get_string(testobj, "sRND");
-	    c_rnd = json_object_get_string(testobj, "cRND");
-	    test_type = (unsigned int)json_object_get_number(groupobj, "testType");
+            ch_rnd = json_object_get_string(testobj, "chRND");
+            s_rnd = json_object_get_string(testobj, "sRND");
+            c_rnd = json_object_get_string(testobj, "cRND");
+            test_type = (unsigned int) json_object_get_number(groupobj, "testType");
 
             ACVP_LOG_INFO("        Test case: %d", j);
             ACVP_LOG_INFO("             tcId: %d", tc_id);
@@ -200,7 +199,7 @@ ACVP_RESULT acvp_kdf135_tls_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
             ACVP_LOG_INFO("            chRND: %d", ch_rnd);
             ACVP_LOG_INFO("             sRND: %d", s_rnd);
             ACVP_LOG_INFO("             cRND: %d", c_rnd);
-	    ACVP_LOG_INFO("         testtype: %d", test_type);
+            ACVP_LOG_INFO("         testtype: %d", test_type);
 
             /*
              * Create a new test case in the response
@@ -216,12 +215,12 @@ ACVP_RESULT acvp_kdf135_tls_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
              * TODO: this does mallocs, we can probably do the mallocs once for
              *       the entire vector set to be more efficient
              */
-            acvp_kdf135_tls_init_tc(ctx, &stc, tc_id, alg_id, meth, md, pm_len, 
+            acvp_kdf135_tls_init_tc(ctx, &stc, tc_id, alg_id, meth, md, pm_len,
                                     kb_len, pm_secret, sh_rnd, ch_rnd, s_rnd, c_rnd);
 
             /* Process the current test vector... */
             rv = (cap->crypto_handler)(&tc);
-	    if (rv != ACVP_SUCCESS) {
+            if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("crypto module failed the operation");
                 return ACVP_CRYPTO_MODULE_FAIL;
             }
@@ -229,8 +228,8 @@ ACVP_RESULT acvp_kdf135_tls_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
             /*
 	     * Output the test case results using JSON
 	      */
-	    rv = acvp_kdf135_tls_output_tc(ctx, &stc, r_tobj);
-	    if (rv != ACVP_SUCCESS) {
+            rv = acvp_kdf135_tls_output_tc(ctx, &stc, r_tobj);
+            if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("JSON output failure in hash module");
                 return rv;
             }
@@ -263,8 +262,7 @@ ACVP_RESULT acvp_kdf135_tls_kat_handler(ACVP_CTX *ctx, JSON_Object *obj)
  * file that will be uploaded to the server.  This routine handles
  * the JSON processing for a single test case.
  */
-static ACVP_RESULT acvp_kdf135_tls_output_tc(ACVP_CTX *ctx, ACVP_KDF135_TLS_TC *stc, JSON_Object *tc_rsp)
-{
+static ACVP_RESULT acvp_kdf135_tls_output_tc (ACVP_CTX *ctx, ACVP_KDF135_TLS_TC *stc, JSON_Object *tc_rsp) {
     char *tmp;
     ACVP_RESULT rv;
 
@@ -274,14 +272,14 @@ static ACVP_RESULT acvp_kdf135_tls_output_tc(ACVP_CTX *ctx, ACVP_KDF135_TLS_TC *
         return ACVP_MALLOC_FAIL;
     }
 
-    rv = acvp_bin_to_hexstr(stc->msecret1, stc->pm_len, (unsigned char*)tmp);
+    rv = acvp_bin_to_hexstr(stc->msecret1, stc->pm_len, (unsigned char *) tmp);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("hex conversion failure (mac)");
         return rv;
     }
     json_object_set_string(tc_rsp, "mSecret", tmp);
 
-    rv = acvp_bin_to_hexstr(stc->kblock1, stc->kb_len, (unsigned char*)tmp);
+    rv = acvp_bin_to_hexstr(stc->kblock1, stc->kb_len, (unsigned char *) tmp);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("hex conversion failure (mac)");
         return rv;
@@ -293,80 +291,78 @@ static ACVP_RESULT acvp_kdf135_tls_output_tc(ACVP_CTX *ctx, ACVP_KDF135_TLS_TC *
     return ACVP_SUCCESS;
 }
 
-static ACVP_RESULT acvp_kdf135_tls_init_tc(ACVP_CTX *ctx,
-                                    ACVP_KDF135_TLS_TC *stc,
-                                    unsigned int tc_id,
-                                    ACVP_CIPHER alg_id,
-				    unsigned int method, 
-				    unsigned int md, 
-				    unsigned int pm_len, 
-				    unsigned int kb_len, 
-				    const char *pm_secret, 
-				    const char *sh_rnd, 
-				    const char *ch_rnd, 
-				    const char *s_rnd, 
-				    const char *c_rnd)
-{
+static ACVP_RESULT acvp_kdf135_tls_init_tc (ACVP_CTX *ctx,
+                                            ACVP_KDF135_TLS_TC *stc,
+                                            unsigned int tc_id,
+                                            ACVP_CIPHER alg_id,
+                                            unsigned int method,
+                                            unsigned int md,
+                                            unsigned int pm_len,
+                                            unsigned int kb_len,
+                                            const char *pm_secret,
+                                            const char *sh_rnd,
+                                            const char *ch_rnd,
+                                            const char *s_rnd,
+                                            const char *c_rnd) {
     ACVP_RESULT rv;
 
     memset(stc, 0x0, sizeof(ACVP_KDF135_TLS_TC));
 
     stc->pm_secret = calloc(1, ACVP_KDF135_TLS_MSG_MAX);
-    if (!stc->pm_secret) return ACVP_MALLOC_FAIL;
+    if (!stc->pm_secret) { return ACVP_MALLOC_FAIL; }
     stc->sh_rnd = calloc(1, ACVP_KDF135_TLS_MSG_MAX);
-    if (!stc->sh_rnd) return ACVP_MALLOC_FAIL;
+    if (!stc->sh_rnd) { return ACVP_MALLOC_FAIL; }
     stc->ch_rnd = calloc(1, ACVP_KDF135_TLS_MSG_MAX);
-    if (!stc->ch_rnd) return ACVP_MALLOC_FAIL;
+    if (!stc->ch_rnd) { return ACVP_MALLOC_FAIL; }
     stc->c_rnd = calloc(1, ACVP_KDF135_TLS_MSG_MAX);
-    if (!stc->c_rnd) return ACVP_MALLOC_FAIL;
+    if (!stc->c_rnd) { return ACVP_MALLOC_FAIL; }
     stc->s_rnd = calloc(1, ACVP_KDF135_TLS_MSG_MAX);
-    if (!stc->s_rnd) return ACVP_MALLOC_FAIL;
+    if (!stc->s_rnd) { return ACVP_MALLOC_FAIL; }
     stc->msecret1 = calloc(1, ACVP_KDF135_TLS_MSG_MAX);
-    if (!stc->msecret1) return ACVP_MALLOC_FAIL;
+    if (!stc->msecret1) { return ACVP_MALLOC_FAIL; }
     stc->msecret2 = calloc(1, ACVP_KDF135_TLS_MSG_MAX);
-    if (!stc->msecret2) return ACVP_MALLOC_FAIL;
+    if (!stc->msecret2) { return ACVP_MALLOC_FAIL; }
     stc->kblock1 = calloc(1, ACVP_KDF135_TLS_MSG_MAX);
-    if (!stc->kblock1) return ACVP_MALLOC_FAIL;
+    if (!stc->kblock1) { return ACVP_MALLOC_FAIL; }
     stc->kblock2 = calloc(1, ACVP_KDF135_TLS_MSG_MAX);
-    if (!stc->kblock2) return ACVP_MALLOC_FAIL;
+    if (!stc->kblock2) { return ACVP_MALLOC_FAIL; }
 
-    memset(stc->msecret1, 0, ACVP_KDF135_TLS_MSG_MAX); 
-    memset(stc->msecret2, 0, ACVP_KDF135_TLS_MSG_MAX); 
+    memset(stc->msecret1, 0, ACVP_KDF135_TLS_MSG_MAX);
+    memset(stc->msecret2, 0, ACVP_KDF135_TLS_MSG_MAX);
     memset(stc->kblock1, 0, ACVP_KDF135_TLS_MSG_MAX);
     memset(stc->kblock2, 0, ACVP_KDF135_TLS_MSG_MAX);
- 
 
 
     stc->tc_id = tc_id;
     stc->cipher = alg_id;
-    stc->pm_len = pm_len/8;
-    stc->kb_len = kb_len/8;
+    stc->pm_len = pm_len / 8;
+    stc->kb_len = kb_len / 8;
 
-    rv = acvp_hexstr_to_bin((const unsigned char *)pm_secret, stc->pm_secret, ACVP_KDF135_TLS_MSG_MAX);
+    rv = acvp_hexstr_to_bin((const unsigned char *) pm_secret, stc->pm_secret, ACVP_KDF135_TLS_MSG_MAX);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Hex converstion failure (msg)");
         return rv;
     }
 
-    rv = acvp_hexstr_to_bin((const unsigned char *)sh_rnd, stc->sh_rnd, ACVP_KDF135_TLS_MSG_MAX);
+    rv = acvp_hexstr_to_bin((const unsigned char *) sh_rnd, stc->sh_rnd, ACVP_KDF135_TLS_MSG_MAX);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Hex converstion failure (msg)");
         return rv;
     }
 
-    rv = acvp_hexstr_to_bin((const unsigned char *)ch_rnd, stc->ch_rnd, ACVP_KDF135_TLS_MSG_MAX);
+    rv = acvp_hexstr_to_bin((const unsigned char *) ch_rnd, stc->ch_rnd, ACVP_KDF135_TLS_MSG_MAX);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Hex converstion failure (msg)");
         return rv;
     }
 
-    rv = acvp_hexstr_to_bin((const unsigned char *)s_rnd, stc->s_rnd, ACVP_KDF135_TLS_MSG_MAX);
+    rv = acvp_hexstr_to_bin((const unsigned char *) s_rnd, stc->s_rnd, ACVP_KDF135_TLS_MSG_MAX);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Hex converstion failure (msg)");
         return rv;
     }
 
-    rv = acvp_hexstr_to_bin((const unsigned char *)c_rnd, stc->c_rnd, ACVP_KDF135_TLS_MSG_MAX);
+    rv = acvp_hexstr_to_bin((const unsigned char *) c_rnd, stc->c_rnd, ACVP_KDF135_TLS_MSG_MAX);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Hex converstion failure (msg)");
         return rv;
@@ -382,8 +378,7 @@ static ACVP_RESULT acvp_kdf135_tls_init_tc(ACVP_CTX *ctx,
  * This function simply releases the data associated with
  * a test case.
  */
-static ACVP_RESULT acvp_kdf135_tls_release_tc(ACVP_KDF135_TLS_TC *stc)
-{
+static ACVP_RESULT acvp_kdf135_tls_release_tc (ACVP_KDF135_TLS_TC *stc) {
 
     free(stc->pm_secret);
     free(stc->sh_rnd);
