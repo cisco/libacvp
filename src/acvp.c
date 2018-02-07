@@ -36,62 +36,77 @@
 /*
  * Forward prototypes for local functions
  */
-static ACVP_RESULT acvp_parse_register(ACVP_CTX *ctx);
-static ACVP_RESULT acvp_process_vsid(ACVP_CTX *ctx, int vs_id);
-static ACVP_RESULT acvp_process_vector_set(ACVP_CTX *ctx, JSON_Object *obj);
-static ACVP_RESULT acvp_dispatch_vector_set(ACVP_CTX *ctx, JSON_Object *obj);
-static ACVP_RESULT acvp_append_sym_cipher_caps_entry(
-    ACVP_CTX *ctx,
-    ACVP_SYM_CIPHER_CAP *cap,
-    ACVP_CIPHER cipher,
-    ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case));
-static ACVP_RESULT acvp_append_hash_caps_entry(
-    ACVP_CTX *ctx,
-    ACVP_HASH_CAP *cap,
-    ACVP_CIPHER cipher,
-    ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case));
-static ACVP_RESULT acvp_append_drbg_caps_entry(
-	ACVP_CTX *ctx,
-	ACVP_DRBG_CAP *cap,
-	ACVP_CIPHER cipher,
-	ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case));
-static ACVP_RESULT acvp_append_dsa_caps_entry(
-	ACVP_CTX *ctx,
-	ACVP_DSA_CAP *cap,
-	ACVP_CIPHER cipher,
-	ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case));
-static ACVP_RESULT acvp_append_rsa_caps_entry(
-	ACVP_CTX *ctx,
-	ACVP_RSA_CAP *cap,
-	ACVP_CIPHER cipher,
-	ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case));
-static ACVP_RESULT acvp_append_hmac_caps_entry(
-	ACVP_CTX *ctx,
-	ACVP_HMAC_CAP *cap,
-	ACVP_CIPHER cipher,
-	ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case));
-static ACVP_RESULT acvp_append_cmac_caps_entry(
-	ACVP_CTX *ctx,
-	ACVP_CMAC_CAP *cap,
-	ACVP_CIPHER cipher,
-	ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case));
-static ACVP_RESULT acvp_append_kdf135_tls_caps_entry(
-    ACVP_CTX *ctx,
-    ACVP_KDF135_TLS_CAP *cap,
-    ACVP_KDF135_TLS_METHOD method,
-    ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case));
-static void acvp_cap_free_sl(ACVP_SL_LIST *list);
-static void acvp_cap_free_nl(ACVP_NAME_LIST *list);
-static void acvp_cap_free_rsa_sig_tl(ACVP_RSA_CAP_SIG_TYPE *list);
-static void acvp_cap_free_rsa_primesl(ACVP_RSA_PRIMES_LIST *list);
-static void acvp_cap_free_rsa_ml(ACVP_RSA_CAP_MODE_LIST *list);
-static ACVP_RESULT acvp_get_result_vsid(ACVP_CTX *ctx, int vs_id);
-static ACVP_RESULT acvp_add_prereq_val(ACVP_CIPHER cipher,
-                    ACVP_CAPS_LIST *caps_list,
-                    ACVP_PREREQ_ALG pre_req, char *value);
+static ACVP_RESULT acvp_parse_register (ACVP_CTX *ctx);
 
+static ACVP_RESULT acvp_process_vsid (ACVP_CTX *ctx, int vs_id);
 
+static ACVP_RESULT acvp_process_vector_set (ACVP_CTX *ctx, JSON_Object *obj);
 
+static ACVP_RESULT acvp_dispatch_vector_set (ACVP_CTX *ctx, JSON_Object *obj);
+
+static ACVP_RESULT acvp_append_sym_cipher_caps_entry (
+        ACVP_CTX *ctx,
+        ACVP_SYM_CIPHER_CAP *cap,
+        ACVP_CIPHER cipher,
+        ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case));
+
+static ACVP_RESULT acvp_append_hash_caps_entry (
+        ACVP_CTX *ctx,
+        ACVP_HASH_CAP *cap,
+        ACVP_CIPHER cipher,
+        ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case));
+
+static ACVP_RESULT acvp_append_drbg_caps_entry (
+        ACVP_CTX *ctx,
+        ACVP_DRBG_CAP *cap,
+        ACVP_CIPHER cipher,
+        ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case));
+
+static ACVP_RESULT acvp_append_dsa_caps_entry (
+        ACVP_CTX *ctx,
+        ACVP_DSA_CAP *cap,
+        ACVP_CIPHER cipher,
+        ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case));
+
+static ACVP_RESULT acvp_append_rsa_caps_entry (
+        ACVP_CTX *ctx,
+        ACVP_RSA_CAP *cap,
+        ACVP_CIPHER cipher,
+        ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case));
+
+static ACVP_RESULT acvp_append_hmac_caps_entry (
+        ACVP_CTX *ctx,
+        ACVP_HMAC_CAP *cap,
+        ACVP_CIPHER cipher,
+        ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case));
+
+static ACVP_RESULT acvp_append_cmac_caps_entry (
+        ACVP_CTX *ctx,
+        ACVP_CMAC_CAP *cap,
+        ACVP_CIPHER cipher,
+        ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case));
+
+static ACVP_RESULT acvp_append_kdf135_tls_caps_entry (
+        ACVP_CTX *ctx,
+        ACVP_KDF135_TLS_CAP *cap,
+        ACVP_KDF135_TLS_METHOD method,
+        ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case));
+
+static void acvp_cap_free_sl (ACVP_SL_LIST *list);
+
+static void acvp_cap_free_nl (ACVP_NAME_LIST *list);
+
+static void acvp_cap_free_rsa_sig_tl (ACVP_RSA_CAP_SIG_TYPE *list);
+
+static void acvp_cap_free_rsa_primesl (ACVP_RSA_PRIMES_LIST *list);
+
+static void acvp_cap_free_rsa_ml (ACVP_RSA_CAP_MODE_LIST *list);
+
+static ACVP_RESULT acvp_get_result_vsid (ACVP_CTX *ctx, int vs_id);
+
+static ACVP_RESULT acvp_add_prereq_val (ACVP_CIPHER cipher,
+                                        ACVP_CAPS_LIST *caps_list,
+                                        ACVP_PREREQ_ALG pre_req, char *value);
 
 
 /*
@@ -105,59 +120,59 @@ static ACVP_RESULT acvp_add_prereq_val(ACVP_CIPHER cipher,
  * This table is not sparse, it must contain ACVP_OP_MAX entries.
  */
 ACVP_ALG_HANDLER alg_tbl[ACVP_ALG_MAX] = {
-    {ACVP_AES_GCM,         &acvp_aes_kat_handler,   ACVP_ALG_AES_GCM},
-    {ACVP_AES_CCM,         &acvp_aes_kat_handler,   ACVP_ALG_AES_CCM},
-    {ACVP_AES_ECB,         &acvp_aes_kat_handler,   ACVP_ALG_AES_ECB},
-    {ACVP_AES_CBC,         &acvp_aes_kat_handler,   ACVP_ALG_AES_CBC},
-    {ACVP_AES_CFB1,        &acvp_aes_kat_handler,   ACVP_ALG_AES_CFB1},
-    {ACVP_AES_CFB8,        &acvp_aes_kat_handler,   ACVP_ALG_AES_CFB8},
-    {ACVP_AES_CFB128,      &acvp_aes_kat_handler,   ACVP_ALG_AES_CFB128},
-    {ACVP_AES_OFB,         &acvp_aes_kat_handler,   ACVP_ALG_AES_OFB},
-    {ACVP_AES_CTR,         &acvp_aes_kat_handler,   ACVP_ALG_AES_CTR},
-    {ACVP_AES_XTS,         &acvp_aes_kat_handler,   ACVP_ALG_AES_XTS},
-    {ACVP_AES_KW,          &acvp_aes_kat_handler,   ACVP_ALG_AES_KW},
-    {ACVP_AES_KWP,         &acvp_aes_kat_handler,   ACVP_ALG_AES_KWP},
-    {ACVP_TDES_ECB,        &acvp_des_kat_handler,   ACVP_ALG_TDES_ECB},
-    {ACVP_TDES_CBC,        &acvp_des_kat_handler,   ACVP_ALG_TDES_CBC},
-    {ACVP_TDES_CBCI,       &acvp_des_kat_handler,   ACVP_ALG_TDES_CBCI},
-    {ACVP_TDES_OFB,        &acvp_des_kat_handler,   ACVP_ALG_TDES_OFB},
-    {ACVP_TDES_OFBI,       &acvp_des_kat_handler,   ACVP_ALG_TDES_OFBI},
-    {ACVP_TDES_CFB1,       &acvp_des_kat_handler,   ACVP_ALG_TDES_CFB1},
-    {ACVP_TDES_CFB8,       &acvp_des_kat_handler,   ACVP_ALG_TDES_CFB8},
-    {ACVP_TDES_CFB64,      &acvp_des_kat_handler,   ACVP_ALG_TDES_CFB64},
-    {ACVP_TDES_CFBP1,      &acvp_des_kat_handler,   ACVP_ALG_TDES_CFBP1},
-    {ACVP_TDES_CFBP8,      &acvp_des_kat_handler,   ACVP_ALG_TDES_CFBP8},
-    {ACVP_TDES_CFBP64,     &acvp_des_kat_handler,   ACVP_ALG_TDES_CFBP64},
-    {ACVP_TDES_CTR,        &acvp_des_kat_handler,   ACVP_ALG_TDES_CTR},
-    {ACVP_TDES_KW,         &acvp_des_kat_handler,   ACVP_ALG_TDES_KW},
-    {ACVP_SHA1,            &acvp_hash_kat_handler,  ACVP_ALG_SHA1},
-    {ACVP_SHA224,          &acvp_hash_kat_handler,  ACVP_ALG_SHA224},
-    {ACVP_SHA256,          &acvp_hash_kat_handler,  ACVP_ALG_SHA256},
-    {ACVP_SHA384,          &acvp_hash_kat_handler,  ACVP_ALG_SHA384},
-    {ACVP_SHA512,          &acvp_hash_kat_handler,  ACVP_ALG_SHA512},
-    {ACVP_HASHDRBG,        &acvp_drbg_kat_handler,  ACVP_ALG_HASHDRBG},
-    {ACVP_HMACDRBG,        &acvp_drbg_kat_handler,  ACVP_ALG_HMACDRBG},
-    {ACVP_CTRDRBG,         &acvp_drbg_kat_handler,  ACVP_ALG_CTRDRBG},
-    {ACVP_HMAC_SHA1,       &acvp_hmac_kat_handler,  ACVP_ALG_HMAC_SHA1},
-    {ACVP_HMAC_SHA2_224,   &acvp_hmac_kat_handler,  ACVP_ALG_HMAC_SHA2_224},
-    {ACVP_HMAC_SHA2_256,   &acvp_hmac_kat_handler,  ACVP_ALG_HMAC_SHA2_256},
-    {ACVP_HMAC_SHA2_384,   &acvp_hmac_kat_handler,  ACVP_ALG_HMAC_SHA2_384},
-    {ACVP_HMAC_SHA2_512,   &acvp_hmac_kat_handler,  ACVP_ALG_HMAC_SHA2_512},
-    {ACVP_HMAC_SHA2_512_224, &acvp_hmac_kat_handler, ACVP_ALG_HMAC_SHA2_512_224},
-    {ACVP_HMAC_SHA2_512_256, &acvp_hmac_kat_handler, ACVP_ALG_HMAC_SHA2_512_256},
-    {ACVP_HMAC_SHA3_224,   &acvp_hmac_kat_handler,  ACVP_ALG_HMAC_SHA3_224},
-    {ACVP_HMAC_SHA3_256,   &acvp_hmac_kat_handler,  ACVP_ALG_HMAC_SHA3_256},
-    {ACVP_HMAC_SHA3_384,   &acvp_hmac_kat_handler,  ACVP_ALG_HMAC_SHA3_384},
-    {ACVP_HMAC_SHA3_512,   &acvp_hmac_kat_handler,  ACVP_ALG_HMAC_SHA3_512},
-    {ACVP_CMAC_AES_128,    &acvp_cmac_kat_handler,  ACVP_ALG_CMAC_AES_128},
-    {ACVP_CMAC_AES_192,    &acvp_cmac_kat_handler,  ACVP_ALG_CMAC_AES_192},
-    {ACVP_CMAC_AES_256,    &acvp_cmac_kat_handler,  ACVP_ALG_CMAC_AES_256},
-    {ACVP_CMAC_TDES,       &acvp_cmac_kat_handler,  ACVP_ALG_CMAC_TDES},
-    {ACVP_DSA,             &acvp_dsa_kat_handler,   ACVP_ALG_DSA},
-    {ACVP_RSA,             &acvp_rsa_kat_handler,   ACVP_ALG_RSA},
-    {ACVP_KDF135_TLS,      &acvp_kdf135_tls_kat_handler,  ACVP_ALG_KDF135_TLS},
-    {ACVP_KDF135_SNMP,     &acvp_kdf135_snmp_kat_handler, ACVP_ALG_KDF135_SNMP},
-    {ACVP_KDF135_SSH ,     &acvp_kdf135_ssh_kat_handler, ACVP_ALG_KDF135_SSH}
+        {ACVP_AES_GCM,           &acvp_aes_kat_handler,         ACVP_ALG_AES_GCM},
+        {ACVP_AES_CCM,           &acvp_aes_kat_handler,         ACVP_ALG_AES_CCM},
+        {ACVP_AES_ECB,           &acvp_aes_kat_handler,         ACVP_ALG_AES_ECB},
+        {ACVP_AES_CBC,           &acvp_aes_kat_handler,         ACVP_ALG_AES_CBC},
+        {ACVP_AES_CFB1,          &acvp_aes_kat_handler,         ACVP_ALG_AES_CFB1},
+        {ACVP_AES_CFB8,          &acvp_aes_kat_handler,         ACVP_ALG_AES_CFB8},
+        {ACVP_AES_CFB128,        &acvp_aes_kat_handler,         ACVP_ALG_AES_CFB128},
+        {ACVP_AES_OFB,           &acvp_aes_kat_handler,         ACVP_ALG_AES_OFB},
+        {ACVP_AES_CTR,           &acvp_aes_kat_handler,         ACVP_ALG_AES_CTR},
+        {ACVP_AES_XTS,           &acvp_aes_kat_handler,         ACVP_ALG_AES_XTS},
+        {ACVP_AES_KW,            &acvp_aes_kat_handler,         ACVP_ALG_AES_KW},
+        {ACVP_AES_KWP,           &acvp_aes_kat_handler,         ACVP_ALG_AES_KWP},
+        {ACVP_TDES_ECB,          &acvp_des_kat_handler,         ACVP_ALG_TDES_ECB},
+        {ACVP_TDES_CBC,          &acvp_des_kat_handler,         ACVP_ALG_TDES_CBC},
+        {ACVP_TDES_CBCI,         &acvp_des_kat_handler,         ACVP_ALG_TDES_CBCI},
+        {ACVP_TDES_OFB,          &acvp_des_kat_handler,         ACVP_ALG_TDES_OFB},
+        {ACVP_TDES_OFBI,         &acvp_des_kat_handler,         ACVP_ALG_TDES_OFBI},
+        {ACVP_TDES_CFB1,         &acvp_des_kat_handler,         ACVP_ALG_TDES_CFB1},
+        {ACVP_TDES_CFB8,         &acvp_des_kat_handler,         ACVP_ALG_TDES_CFB8},
+        {ACVP_TDES_CFB64,        &acvp_des_kat_handler,         ACVP_ALG_TDES_CFB64},
+        {ACVP_TDES_CFBP1,        &acvp_des_kat_handler,         ACVP_ALG_TDES_CFBP1},
+        {ACVP_TDES_CFBP8,        &acvp_des_kat_handler,         ACVP_ALG_TDES_CFBP8},
+        {ACVP_TDES_CFBP64,       &acvp_des_kat_handler,         ACVP_ALG_TDES_CFBP64},
+        {ACVP_TDES_CTR,          &acvp_des_kat_handler,         ACVP_ALG_TDES_CTR},
+        {ACVP_TDES_KW,           &acvp_des_kat_handler,         ACVP_ALG_TDES_KW},
+        {ACVP_SHA1,              &acvp_hash_kat_handler,        ACVP_ALG_SHA1},
+        {ACVP_SHA224,            &acvp_hash_kat_handler,        ACVP_ALG_SHA224},
+        {ACVP_SHA256,            &acvp_hash_kat_handler,        ACVP_ALG_SHA256},
+        {ACVP_SHA384,            &acvp_hash_kat_handler,        ACVP_ALG_SHA384},
+        {ACVP_SHA512,            &acvp_hash_kat_handler,        ACVP_ALG_SHA512},
+        {ACVP_HASHDRBG,          &acvp_drbg_kat_handler,        ACVP_ALG_HASHDRBG},
+        {ACVP_HMACDRBG,          &acvp_drbg_kat_handler,        ACVP_ALG_HMACDRBG},
+        {ACVP_CTRDRBG,           &acvp_drbg_kat_handler,        ACVP_ALG_CTRDRBG},
+        {ACVP_HMAC_SHA1,         &acvp_hmac_kat_handler,        ACVP_ALG_HMAC_SHA1},
+        {ACVP_HMAC_SHA2_224,     &acvp_hmac_kat_handler,        ACVP_ALG_HMAC_SHA2_224},
+        {ACVP_HMAC_SHA2_256,     &acvp_hmac_kat_handler,        ACVP_ALG_HMAC_SHA2_256},
+        {ACVP_HMAC_SHA2_384,     &acvp_hmac_kat_handler,        ACVP_ALG_HMAC_SHA2_384},
+        {ACVP_HMAC_SHA2_512,     &acvp_hmac_kat_handler,        ACVP_ALG_HMAC_SHA2_512},
+        {ACVP_HMAC_SHA2_512_224, &acvp_hmac_kat_handler,        ACVP_ALG_HMAC_SHA2_512_224},
+        {ACVP_HMAC_SHA2_512_256, &acvp_hmac_kat_handler,        ACVP_ALG_HMAC_SHA2_512_256},
+        {ACVP_HMAC_SHA3_224,     &acvp_hmac_kat_handler,        ACVP_ALG_HMAC_SHA3_224},
+        {ACVP_HMAC_SHA3_256,     &acvp_hmac_kat_handler,        ACVP_ALG_HMAC_SHA3_256},
+        {ACVP_HMAC_SHA3_384,     &acvp_hmac_kat_handler,        ACVP_ALG_HMAC_SHA3_384},
+        {ACVP_HMAC_SHA3_512,     &acvp_hmac_kat_handler,        ACVP_ALG_HMAC_SHA3_512},
+        {ACVP_CMAC_AES_128,      &acvp_cmac_kat_handler,        ACVP_ALG_CMAC_AES_128},
+        {ACVP_CMAC_AES_192,      &acvp_cmac_kat_handler,        ACVP_ALG_CMAC_AES_192},
+        {ACVP_CMAC_AES_256,      &acvp_cmac_kat_handler,        ACVP_ALG_CMAC_AES_256},
+        {ACVP_CMAC_TDES,         &acvp_cmac_kat_handler,        ACVP_ALG_CMAC_TDES},
+        {ACVP_DSA,               &acvp_dsa_kat_handler,         ACVP_ALG_DSA},
+        {ACVP_RSA,               &acvp_rsa_kat_handler,         ACVP_ALG_RSA},
+        {ACVP_KDF135_TLS,        &acvp_kdf135_tls_kat_handler,  ACVP_ALG_KDF135_TLS},
+        {ACVP_KDF135_SNMP,       &acvp_kdf135_snmp_kat_handler, ACVP_ALG_KDF135_SNMP},
+        {ACVP_KDF135_SSH,        &acvp_kdf135_ssh_kat_handler,  ACVP_ALG_KDF135_SSH}
 };
 
 typedef struct acvp_prereqs_mode_name_t {
@@ -167,11 +182,11 @@ typedef struct acvp_prereqs_mode_name_t {
 
 #define ACVP_NUM_PREREQS 5
 struct acvp_prereqs_mode_name_t acvp_prereqs_tbl[ACVP_NUM_PREREQS] = {
-    {ACVP_PREREQ_AES, "AES"},
-    {ACVP_PREREQ_DRBG, "DRBG"},
-    {ACVP_PREREQ_HMAC, "HMAC"},
-    {ACVP_PREREQ_SHA, "SHA"},
-    {ACVP_PREREQ_TDES, "TDES"}
+        {ACVP_PREREQ_AES,  "AES"},
+        {ACVP_PREREQ_DRBG, "DRBG"},
+        {ACVP_PREREQ_HMAC, "HMAC"},
+        {ACVP_PREREQ_SHA,  "SHA"},
+        {ACVP_PREREQ_TDES, "TDES"}
 };
 
 
@@ -179,10 +194,9 @@ struct acvp_prereqs_mode_name_t acvp_prereqs_tbl[ACVP_NUM_PREREQS] = {
  * This is the first function the user should invoke to allocate
  * a new context to be used for the test session.
  */
-ACVP_RESULT acvp_create_test_session(ACVP_CTX **ctx,
-                                     ACVP_RESULT (*progress_cb)(char *msg),
-				     ACVP_LOG_LVL level)
-{
+ACVP_RESULT acvp_create_test_session (ACVP_CTX **ctx,
+                                      ACVP_RESULT (*progress_cb) (char *msg),
+                                      ACVP_LOG_LVL level) {
     *ctx = calloc(1, sizeof(ACVP_CTX));
     if (!*ctx) {
         return ACVP_MALLOC_FAIL;
@@ -202,14 +216,13 @@ ACVP_RESULT acvp_create_test_session(ACVP_CTX **ctx,
 /*
  * Free Internal memory for DRBG Data struct
  */
-static void acvp_free_drbg_struct(ACVP_CAPS_LIST* cap_list)
-{
-    ACVP_DRBG_CAP       *drbg_cap = cap_list->cap.drbg_cap;
+static void acvp_free_drbg_struct (ACVP_CAPS_LIST *cap_list) {
+    ACVP_DRBG_CAP *drbg_cap = cap_list->cap.drbg_cap;
     if (drbg_cap) {
         ACVP_DRBG_CAP_MODE_LIST *mode_list = drbg_cap->drbg_cap_mode_list;
         ACVP_DRBG_CAP_MODE_LIST *next_mode_list;
-        ACVP_PREREQ_LIST   *current_pre_req_vals;
-        ACVP_PREREQ_LIST   *next_pre_req_vals;
+        ACVP_PREREQ_LIST *current_pre_req_vals;
+        ACVP_PREREQ_LIST *next_pre_req_vals;
 
         if (mode_list) {
             do {
@@ -237,42 +250,41 @@ static void acvp_free_drbg_struct(ACVP_CAPS_LIST* cap_list)
     }
 }
 
-static void acvp_free_prereqs(ACVP_CAPS_LIST* cap_list) {
-      while (cap_list->prereq_vals) {
-          ACVP_PREREQ_LIST *temp_ptr;
-          temp_ptr = cap_list->prereq_vals;
-          cap_list->prereq_vals = cap_list->prereq_vals->next;
-          free(temp_ptr);
-      }
+static void acvp_free_prereqs (ACVP_CAPS_LIST *cap_list) {
+    while (cap_list->prereq_vals) {
+        ACVP_PREREQ_LIST *temp_ptr;
+        temp_ptr = cap_list->prereq_vals;
+        cap_list->prereq_vals = cap_list->prereq_vals->next;
+        free(temp_ptr);
+    }
 }
 
 /*
  * The application will invoke this to free the ACVP context
  * when the test session is finished.
  */
-ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx)
-{
+ACVP_RESULT acvp_free_test_session (ACVP_CTX *ctx) {
     ACVP_VS_LIST *vs_entry, *vs_e2;
     ACVP_CAPS_LIST *cap_entry, *cap_e2;
 
     if (ctx) {
-        if (ctx->reg_buf) free(ctx->reg_buf);
-        if (ctx->kat_buf) free(ctx->kat_buf);
-        if (ctx->upld_buf) free(ctx->upld_buf);
-        if (ctx->kat_resp) json_value_free(ctx->kat_resp);
-        if (ctx->server_name) free(ctx->server_name);
-        if (ctx->vendor_name) free(ctx->vendor_name);
-        if (ctx->vendor_url) free(ctx->vendor_url);
-        if (ctx->contact_name) free(ctx->contact_name);
-        if (ctx->contact_email) free(ctx->contact_email);
-        if (ctx->module_name) free(ctx->module_name);
-        if (ctx->module_version) free(ctx->module_version);
-        if (ctx->module_type) free(ctx->module_type);
-        if (ctx->module_desc) free(ctx->module_desc);
-        if (ctx->path_segment) free(ctx->path_segment);
-        if (ctx->cacerts_file) free(ctx->cacerts_file);
-        if (ctx->tls_cert) free(ctx->tls_cert);
-        if (ctx->tls_key) free(ctx->tls_key);
+        if (ctx->reg_buf) { free(ctx->reg_buf); }
+        if (ctx->kat_buf) { free(ctx->kat_buf); }
+        if (ctx->upld_buf) { free(ctx->upld_buf); }
+        if (ctx->kat_resp) { json_value_free(ctx->kat_resp); }
+        if (ctx->server_name) { free(ctx->server_name); }
+        if (ctx->vendor_name) { free(ctx->vendor_name); }
+        if (ctx->vendor_url) { free(ctx->vendor_url); }
+        if (ctx->contact_name) { free(ctx->contact_name); }
+        if (ctx->contact_email) { free(ctx->contact_email); }
+        if (ctx->module_name) { free(ctx->module_name); }
+        if (ctx->module_version) { free(ctx->module_version); }
+        if (ctx->module_type) { free(ctx->module_type); }
+        if (ctx->module_desc) { free(ctx->module_desc); }
+        if (ctx->path_segment) { free(ctx->path_segment); }
+        if (ctx->cacerts_file) { free(ctx->cacerts_file); }
+        if (ctx->tls_cert) { free(ctx->tls_cert); }
+        if (ctx->tls_key) { free(ctx->tls_key); }
         if (ctx->vs_list) {
             vs_entry = ctx->vs_list;
             while (vs_entry) {
@@ -322,8 +334,8 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx)
                     cap_entry = cap_e2;
                     break;
                 case ACVP_RSA_TYPE:
-                    if(cap_entry->cap.rsa_cap) {
-                        if(cap_entry->cap.rsa_cap->rsa_cap_mode_list) {
+                    if (cap_entry->cap.rsa_cap) {
+                        if (cap_entry->cap.rsa_cap->rsa_cap_mode_list) {
                             acvp_cap_free_rsa_ml(cap_entry->cap.rsa_cap->rsa_cap_mode_list);
                         }
                         free(cap_entry->cap.rsa_cap);
@@ -336,7 +348,7 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx)
                 }
             }
         }
-        if (ctx->jwt_token) free(ctx->jwt_token);
+        if (ctx->jwt_token) { free(ctx->jwt_token); }
         free(ctx);
     }
     return ACVP_SUCCESS;
@@ -346,8 +358,7 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx)
  * Adds the length provided to the linked list of
  * supported lengths.
  */
-static ACVP_RESULT acvp_cap_add_length(ACVP_SL_LIST **list, int len)
-{
+static ACVP_RESULT acvp_cap_add_length (ACVP_SL_LIST **list, int len) {
     ACVP_SL_LIST *l = *list;
     ACVP_SL_LIST *new;
 
@@ -356,7 +367,7 @@ static ACVP_RESULT acvp_cap_add_length(ACVP_SL_LIST **list, int len)
      */
     new = calloc(1, sizeof(ACVP_SL_LIST));
     if (!new) {
-      return ACVP_MALLOC_FAIL;
+        return ACVP_MALLOC_FAIL;
     }
     new->length = len;
 
@@ -364,15 +375,15 @@ static ACVP_RESULT acvp_cap_add_length(ACVP_SL_LIST **list, int len)
      * See if we need to create the list first
      */
     if (!l) {
-      *list = new;
+        *list = new;
     } else {
-      /*
-       * Find the end of the list and add the new entry there
-       */
-      while (l->next) {
-          l = l->next;
-      }
-      l->next = new;
+        /*
+         * Find the end of the list and add the new entry there
+         */
+        while (l->next) {
+            l = l->next;
+        }
+        l->next = new;
     }
     return ACVP_SUCCESS;
 }
@@ -381,27 +392,26 @@ static ACVP_RESULT acvp_cap_add_length(ACVP_SL_LIST **list, int len)
  * Simple utility function to free a supported length
  * list from the capabilities structure.
  */
-static void acvp_cap_free_sl(ACVP_SL_LIST *list)
-{
+static void acvp_cap_free_sl (ACVP_SL_LIST *list) {
     ACVP_SL_LIST *top = list;
     ACVP_SL_LIST *tmp;
 
-    while(top) {
+    while (top) {
         tmp = top;
         top = top->next;
         free(tmp);
     }
 }
+
 /*
  * Simple utility function to free a name
  * list from the capabilities structure.
  */
-static void acvp_cap_free_nl(ACVP_NAME_LIST *list)
-{
+static void acvp_cap_free_nl (ACVP_NAME_LIST *list) {
     ACVP_NAME_LIST *top = list;
     ACVP_NAME_LIST *tmp;
 
-    while(top) {
+    while (top) {
         tmp = top;
         top = top->next;
         free(tmp);
@@ -409,12 +419,11 @@ static void acvp_cap_free_nl(ACVP_NAME_LIST *list)
 }
 
 
-static void acvp_cap_free_hash_pairs(ACVP_RSA_HASH_PAIR_LIST *list)
-{
+static void acvp_cap_free_hash_pairs (ACVP_RSA_HASH_PAIR_LIST *list) {
     ACVP_RSA_HASH_PAIR_LIST *top = list;
     ACVP_RSA_HASH_PAIR_LIST *tmp;
 
-    while(top) {
+    while (top) {
         tmp = top;
         free(top->name);
         top->name = NULL;
@@ -423,12 +432,11 @@ static void acvp_cap_free_hash_pairs(ACVP_RSA_HASH_PAIR_LIST *list)
     }
 }
 
-static void acvp_cap_free_rsa_sig_tl(ACVP_RSA_CAP_SIG_TYPE *list)
-{
+static void acvp_cap_free_rsa_sig_tl (ACVP_RSA_CAP_SIG_TYPE *list) {
     ACVP_RSA_CAP_SIG_TYPE *top = list;
     ACVP_RSA_CAP_SIG_TYPE *tmp;
 
-    while(top) {
+    while (top) {
         tmp = top;
         top = top->next;
         if (tmp->hash_pairs) {
@@ -438,52 +446,51 @@ static void acvp_cap_free_rsa_sig_tl(ACVP_RSA_CAP_SIG_TYPE *list)
         free(tmp);
     }
 }
-static void acvp_cap_free_rsa_primesl(ACVP_RSA_PRIMES_LIST *list)
-{
+
+static void acvp_cap_free_rsa_primesl (ACVP_RSA_PRIMES_LIST *list) {
     ACVP_RSA_PRIMES_LIST *top = list;
     ACVP_RSA_PRIMES_LIST *tmp;
 
-    while(top) {
+    while (top) {
         tmp = top;
         top = top->next;
-        if(tmp->prime_tests) {
+        if (tmp->prime_tests) {
             acvp_cap_free_nl(tmp->prime_tests);
             tmp->prime_tests = NULL;
         }
-        if(tmp->hash_algs) {
+        if (tmp->hash_algs) {
             acvp_cap_free_nl(tmp->hash_algs);
             tmp->hash_algs = NULL;
         }
         free(tmp);
     }
 }
-static void acvp_cap_free_rsa_ml(ACVP_RSA_CAP_MODE_LIST *list)
-{
+
+static void acvp_cap_free_rsa_ml (ACVP_RSA_CAP_MODE_LIST *list) {
     ACVP_RSA_CAP_MODE_LIST *top = list;
     ACVP_RSA_CAP_MODE_LIST *tmp;
 
-    while(top) {
+    while (top) {
         tmp = top;
         top = top->next;
-        switch(tmp->cap_mode)
-        {
+        switch (tmp->cap_mode) {
         case ACVP_RSA_MODE_KEYGEN:
-            if(tmp->cap_mode_attrs.keygen) {
-                if(tmp->cap_mode_attrs.keygen->cap_primes_list) {
+            if (tmp->cap_mode_attrs.keygen) {
+                if (tmp->cap_mode_attrs.keygen->cap_primes_list) {
                     acvp_cap_free_rsa_primesl(tmp->cap_mode_attrs.keygen->cap_primes_list);
                     tmp->cap_mode_attrs.keygen->cap_primes_list = NULL;
                 }
-                if(tmp->cap_mode_attrs.keygen->fixed_pub_exp_val) {
+                if (tmp->cap_mode_attrs.keygen->fixed_pub_exp_val) {
                     BN_free(tmp->cap_mode_attrs.keygen->fixed_pub_exp_val);
-                    tmp->cap_mode_attrs.keygen->fixed_pub_exp_val=NULL;
+                    tmp->cap_mode_attrs.keygen->fixed_pub_exp_val = NULL;
                 }
                 free(tmp->cap_mode_attrs.keygen);
                 tmp->cap_mode_attrs.keygen = NULL;
             }
             break;
         case ACVP_RSA_MODE_SIGGEN:
-            if(tmp->cap_mode_attrs.siggen) {
-                if(tmp->cap_mode_attrs.siggen->cap_sig_type) {
+            if (tmp->cap_mode_attrs.siggen) {
+                if (tmp->cap_mode_attrs.siggen->cap_sig_type) {
                     acvp_cap_free_rsa_sig_tl(tmp->cap_mode_attrs.siggen->cap_sig_type);
                     tmp->cap_mode_attrs.siggen->cap_sig_type = NULL;
                 }
@@ -492,8 +499,8 @@ static void acvp_cap_free_rsa_ml(ACVP_RSA_CAP_MODE_LIST *list)
             }
             break;
         case ACVP_RSA_MODE_SIGVER:
-            if(tmp->cap_mode_attrs.sigver) {
-                if(tmp->cap_mode_attrs.sigver->cap_sig_type) {
+            if (tmp->cap_mode_attrs.sigver) {
+                if (tmp->cap_mode_attrs.sigver->cap_sig_type) {
                     acvp_cap_free_rsa_sig_tl(tmp->cap_mode_attrs.sigver->cap_sig_type);
                     tmp->cap_mode_attrs.sigver->cap_sig_type = NULL;
                 }
@@ -521,15 +528,14 @@ static void acvp_cap_free_rsa_ml(ACVP_RSA_CAP_MODE_LIST *list)
  * calling acvp_register().
  *
  */
-ACVP_RESULT acvp_enable_sym_cipher_cap(
-	ACVP_CTX *ctx,
-	ACVP_CIPHER cipher,
-	ACVP_SYM_CIPH_DIR dir,
-	ACVP_SYM_CIPH_KO keying_option,
-	ACVP_SYM_CIPH_IVGEN_SRC ivgen_source,
-	ACVP_SYM_CIPH_IVGEN_MODE ivgen_mode,
-        ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case))
-{
+ACVP_RESULT acvp_enable_sym_cipher_cap (
+        ACVP_CTX *ctx,
+        ACVP_CIPHER cipher,
+        ACVP_SYM_CIPH_DIR dir,
+        ACVP_SYM_CIPH_KO keying_option,
+        ACVP_SYM_CIPH_IVGEN_SRC ivgen_source,
+        ACVP_SYM_CIPH_IVGEN_MODE ivgen_mode,
+        ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case)) {
     ACVP_SYM_CIPHER_CAP *cap;
 
     if (!ctx) {
@@ -554,36 +560,36 @@ ACVP_RESULT acvp_enable_sym_cipher_cap(
     return (acvp_append_sym_cipher_caps_entry(ctx, cap, cipher, crypto_handler));
 }
 
-ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_SYM_CIPH_PARM parm, int value) {
-  ACVP_RESULT retval = ACVP_INVALID_ARG;
+ACVP_RESULT acvp_validate_sym_cipher_parm_value (ACVP_SYM_CIPH_PARM parm, int value) {
+    ACVP_RESULT retval = ACVP_INVALID_ARG;
 
-  switch(parm){
+    switch (parm) {
     case ACVP_SYM_CIPH_KEYLEN:
-      if (value == 128 || value == 168 || value == 192 || value == 256) {
-        retval = ACVP_SUCCESS;
-      }
-      break;
+        if (value == 128 || value == 168 || value == 192 || value == 256) {
+            retval = ACVP_SUCCESS;
+        }
+        break;
     case ACVP_SYM_CIPH_TAGLEN:
-      if (value >= 4 && value <= 128) {
-        retval = ACVP_SUCCESS;
-      }
-      break;
+        if (value >= 4 && value <= 128) {
+            retval = ACVP_SUCCESS;
+        }
+        break;
     case ACVP_SYM_CIPH_IVLEN:
-      if (value >= 8 && value <= 1024) {
-        retval = ACVP_SUCCESS;
-      }
-      break;
+        if (value >= 8 && value <= 1024) {
+            retval = ACVP_SUCCESS;
+        }
+        break;
     case ACVP_SYM_CIPH_AADLEN:
     case ACVP_SYM_CIPH_PTLEN:
-      if (value >= 0 && value <= 65536) {
-        retval = ACVP_SUCCESS;
-      }
-      break;
+        if (value >= 0 && value <= 65536) {
+            retval = ACVP_SUCCESS;
+        }
+        break;
     default:
-      break;
-  }
+        break;
+    }
 
-  return retval;
+    return retval;
 }
 
 /*
@@ -592,11 +598,11 @@ ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_SYM_CIPH_PARM parm, int val
  * lengths, and tag lengths.  This is called by the user multiple times,
  * once for each length supported.
  */
-ACVP_RESULT acvp_enable_sym_cipher_cap_parm(
-	ACVP_CTX *ctx,
-	ACVP_CIPHER cipher,
-	ACVP_SYM_CIPH_PARM parm,
-	int length) {
+ACVP_RESULT acvp_enable_sym_cipher_cap_parm (
+        ACVP_CTX *ctx,
+        ACVP_CIPHER cipher,
+        ACVP_SYM_CIPH_PARM parm,
+        int length) {
 
     ACVP_CAPS_LIST *cap;
 
@@ -606,43 +612,42 @@ ACVP_RESULT acvp_enable_sym_cipher_cap_parm(
     cap = acvp_locate_cap_entry(ctx, cipher);
     if (!cap) {
         ACVP_LOG_ERR("Cap entry not found, use acvp_enable_sym_cipher_cap() first.");
-	return ACVP_NO_CAP;
+        return ACVP_NO_CAP;
     }
 
     if (acvp_validate_sym_cipher_parm_value(parm, length) != ACVP_SUCCESS) {
-      return ACVP_INVALID_ARG;
+        return ACVP_INVALID_ARG;
     }
 
     switch (parm) {
     case ACVP_SYM_CIPH_KEYLEN:
-      acvp_cap_add_length(&cap->cap.sym_cap->keylen, length);
-      break;
+        acvp_cap_add_length(&cap->cap.sym_cap->keylen, length);
+        break;
     case ACVP_SYM_CIPH_TAGLEN:
-      acvp_cap_add_length(&cap->cap.sym_cap->taglen, length);
-      break;
+        acvp_cap_add_length(&cap->cap.sym_cap->taglen, length);
+        break;
     case ACVP_SYM_CIPH_IVLEN:
-      acvp_cap_add_length(&cap->cap.sym_cap->ivlen, length);
-      break;
+        acvp_cap_add_length(&cap->cap.sym_cap->ivlen, length);
+        break;
     case ACVP_SYM_CIPH_PTLEN:
-      acvp_cap_add_length(&cap->cap.sym_cap->ptlen, length);
-      break;
+        acvp_cap_add_length(&cap->cap.sym_cap->ptlen, length);
+        break;
     case ACVP_SYM_CIPH_AADLEN:
-      acvp_cap_add_length(&cap->cap.sym_cap->aadlen, length);
-      break;
+        acvp_cap_add_length(&cap->cap.sym_cap->aadlen, length);
+        break;
     default:
-      return ACVP_INVALID_ARG;
+        return ACVP_INVALID_ARG;
     }
 
     return ACVP_SUCCESS;
 }
 
 
-ACVP_RESULT acvp_enable_prereq_cap(ACVP_CTX *ctx,
-                                       ACVP_CIPHER      cipher,
+ACVP_RESULT acvp_enable_prereq_cap (ACVP_CTX *ctx,
+                                    ACVP_CIPHER cipher,
                                     ACVP_PREREQ_ALG pre_req_cap,
-                             	       char              *value)
-{
-    ACVP_CAPS_LIST          *cap_list;
+                                    char *value) {
+    ACVP_CAPS_LIST *cap_list;
 
     if (!ctx) {
         return ACVP_NO_CTX;
@@ -668,12 +673,11 @@ ACVP_RESULT acvp_enable_prereq_cap(ACVP_CTX *ctx,
  * Add Sym parms that are not length based
  */
 ACVP_RESULT acvp_enable_sym_cipher_cap_value (
-		   ACVP_CTX             *ctx,
-		   ACVP_CIPHER          cipher,
-           ACVP_SYM_CIPH_PARM   param,
-           int                  value
-           )
-{
+        ACVP_CTX *ctx,
+        ACVP_CIPHER cipher,
+        ACVP_SYM_CIPH_PARM param,
+        int value
+) {
     ACVP_CAPS_LIST *cap;
 
     if (!ctx) {
@@ -700,11 +704,10 @@ ACVP_RESULT acvp_enable_sym_cipher_cap_value (
     return ACVP_SUCCESS;
 }
 
-ACVP_RESULT acvp_enable_hash_cap(
-	ACVP_CTX *ctx,
-	ACVP_CIPHER cipher,
-	ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case))
-{
+ACVP_RESULT acvp_enable_hash_cap (
+        ACVP_CTX *ctx,
+        ACVP_CIPHER cipher,
+        ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case)) {
     ACVP_HASH_CAP *cap;
 
     if (!ctx) {
@@ -725,31 +728,30 @@ ACVP_RESULT acvp_enable_hash_cap(
     return (acvp_append_hash_caps_entry(ctx, cap, cipher, crypto_handler));
 }
 
-ACVP_RESULT acvp_validate_hash_parm_value(ACVP_HASH_PARM parm, int value) {
-  ACVP_RESULT retval = ACVP_INVALID_ARG;
+ACVP_RESULT acvp_validate_hash_parm_value (ACVP_HASH_PARM parm, int value) {
+    ACVP_RESULT retval = ACVP_INVALID_ARG;
 
-  switch(parm){
+    switch (parm) {
     case ACVP_HASH_IN_BIT:
     case ACVP_HASH_IN_EMPTY:
         retval = is_valid_tf_param(value);
         break;
     default:
-      break;
-  }
+        break;
+    }
 
-  return retval;
+    return retval;
 }
 
 /*
  * Add HASH(SHA) parameters
  */
 ACVP_RESULT acvp_enable_hash_cap_parm (
-		   ACVP_CTX *ctx,
-		   ACVP_CIPHER cipher,
-                   ACVP_HASH_PARM       param,
-                   int                  value
-                   )
-{
+        ACVP_CTX *ctx,
+        ACVP_CIPHER cipher,
+        ACVP_HASH_PARM param,
+        int value
+) {
     ACVP_CAPS_LIST *cap;
     ACVP_HASH_CAP *hash_cap;
 
@@ -768,7 +770,7 @@ ACVP_RESULT acvp_enable_hash_cap_parm (
     }
 
     if (acvp_validate_hash_parm_value(param, value) != ACVP_SUCCESS) {
-      return ACVP_INVALID_ARG;
+        return ACVP_INVALID_ARG;
     }
 
     switch (cipher) {
@@ -783,7 +785,7 @@ ACVP_RESULT acvp_enable_hash_cap_parm (
             break;
         case ACVP_HASH_IN_EMPTY:
             hash_cap->in_empty = value;
-	    break;
+            break;
         default:
             return ACVP_INVALID_ARG;
             break;
@@ -796,61 +798,60 @@ ACVP_RESULT acvp_enable_hash_cap_parm (
     return ACVP_SUCCESS;
 }
 
-ACVP_RESULT acvp_validate_hmac_parm_value(ACVP_CIPHER cipher,
-                                          ACVP_HMAC_PARM parm,
-                                          int value) {
-  ACVP_RESULT retval = ACVP_INVALID_ARG;
-  int max_val = 0;
+ACVP_RESULT acvp_validate_hmac_parm_value (ACVP_CIPHER cipher,
+                                           ACVP_HMAC_PARM parm,
+                                           int value) {
+    ACVP_RESULT retval = ACVP_INVALID_ARG;
+    int max_val = 0;
 
-  switch(parm){
+    switch (parm) {
     case ACVP_HMAC_KEYLEN_MIN:
     case ACVP_HMAC_KEYLEN_MAX:
-      if (value >= 8 && value <= 524288) {
-        retval = ACVP_SUCCESS;
-      }
-      break;
+        if (value >= 8 && value <= 524288) {
+            retval = ACVP_SUCCESS;
+        }
+        break;
     case ACVP_HMAC_MACLEN:
-      switch(cipher){
+        switch (cipher) {
         case ACVP_HMAC_SHA1:
-          max_val = 160;
-          break;
+            max_val = 160;
+            break;
         case ACVP_HMAC_SHA2_224:
         case ACVP_HMAC_SHA2_512_224:
         case ACVP_HMAC_SHA3_224:
-          max_val = 224;
-          break;
+            max_val = 224;
+            break;
         case ACVP_HMAC_SHA2_256:
         case ACVP_HMAC_SHA2_512_256:
         case ACVP_HMAC_SHA3_256:
-          max_val = 256;
-          break;
+            max_val = 256;
+            break;
         case ACVP_HMAC_SHA2_384:
         case ACVP_HMAC_SHA3_384:
-          max_val = 384;
-          break;
+            max_val = 384;
+            break;
         case ACVP_HMAC_SHA2_512:
         case ACVP_HMAC_SHA3_512:
-          max_val = 512;
-          break;
+            max_val = 512;
+            break;
         default:
-          break;
-      }
-      if (value >= 32 && value <= max_val) {
-        retval = ACVP_SUCCESS;
-      }
-      break;
+            break;
+        }
+        if (value >= 32 && value <= max_val) {
+            retval = ACVP_SUCCESS;
+        }
+        break;
     default:
-      break;
-  }
+        break;
+    }
 
-  return retval;
+    return retval;
 }
 
-ACVP_RESULT acvp_enable_hmac_cap(
-          ACVP_CTX *ctx,
-          ACVP_CIPHER cipher,
-          ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case))
-{
+ACVP_RESULT acvp_enable_hmac_cap (
+        ACVP_CTX *ctx,
+        ACVP_CIPHER cipher,
+        ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case)) {
     ACVP_HMAC_CAP *cap;
 
     if (!ctx) {
@@ -862,7 +863,7 @@ ACVP_RESULT acvp_enable_hmac_cap(
 
     cap = calloc(1, sizeof(ACVP_HMAC_CAP));
     if (!cap) {
-      return ACVP_MALLOC_FAIL;
+        return ACVP_MALLOC_FAIL;
     }
 
     return (acvp_append_hmac_caps_entry(ctx, cap, cipher, crypto_handler));
@@ -874,11 +875,11 @@ ACVP_RESULT acvp_enable_hmac_cap(
  * suuported mac lengths. This is called by the user multiple times,
  * once for each length supported.
  */
-ACVP_RESULT acvp_enable_hmac_cap_parm(
-                          ACVP_CTX *ctx,
-                          ACVP_CIPHER cipher,
-                          ACVP_HMAC_PARM parm,
-                          int value) {
+ACVP_RESULT acvp_enable_hmac_cap_parm (
+        ACVP_CTX *ctx,
+        ACVP_CIPHER cipher,
+        ACVP_HMAC_PARM parm,
+        int value) {
 
     ACVP_CAPS_LIST *cap;
 
@@ -892,42 +893,42 @@ ACVP_RESULT acvp_enable_hmac_cap_parm(
     }
 
     if (acvp_validate_hmac_parm_value(cipher, parm, value) != ACVP_SUCCESS) {
-      return ACVP_INVALID_ARG;
+        return ACVP_INVALID_ARG;
     }
 
     switch (parm) {
     case ACVP_HMAC_KEYLEN_MIN:
-      cap->cap.hmac_cap->key_len_min = value;
-      break;
+        cap->cap.hmac_cap->key_len_min = value;
+        break;
     case ACVP_HMAC_KEYLEN_MAX:
-      cap->cap.hmac_cap->key_len_max = value;
-      break;
+        cap->cap.hmac_cap->key_len_max = value;
+        break;
     case ACVP_HMAC_MACLEN:
-      acvp_cap_add_length(&cap->cap.hmac_cap->mac_len, value);
-      break;
+        acvp_cap_add_length(&cap->cap.hmac_cap->mac_len, value);
+        break;
     default:
-      return ACVP_INVALID_ARG;
+        return ACVP_INVALID_ARG;
     }
 
     return ACVP_SUCCESS;
 }
 
-ACVP_RESULT acvp_validate_cmac_parm_value(ACVP_CMAC_PARM parm, int value) {
-  ACVP_RESULT retval = ACVP_INVALID_ARG;
+ACVP_RESULT acvp_validate_cmac_parm_value (ACVP_CMAC_PARM parm, int value) {
+    ACVP_RESULT retval = ACVP_INVALID_ARG;
 
-  switch(parm){
+    switch (parm) {
     case ACVP_CMAC_BLK_DIVISIBLE_1:
     case ACVP_CMAC_BLK_DIVISIBLE_2:
     case ACVP_CMAC_BLK_NOT_DIVISIBLE_1:
     case ACVP_CMAC_BLK_NOT_DIVISIBLE_2:
     case ACVP_CMAC_MSG_LEN_MAX:
         if (value >= 0 && value <= 524288 && value % 8 == 0) {
-          retval = ACVP_SUCCESS;
+            retval = ACVP_SUCCESS;
         }
         break;
     case ACVP_CMAC_MACLEN:
         if (value >= 8 && value <= 524288 && value % 8 == 0) {
-          retval = ACVP_SUCCESS;
+            retval = ACVP_SUCCESS;
         }
         break;
     case ACVP_CMAC_DIRECTION_GEN:
@@ -936,16 +937,15 @@ ACVP_RESULT acvp_validate_cmac_parm_value(ACVP_CMAC_PARM parm, int value) {
         break;
     default:
         break;
-  }
+    }
 
-  return retval;
+    return retval;
 }
 
-ACVP_RESULT acvp_enable_cmac_cap(
-          ACVP_CTX *ctx,
-          ACVP_CIPHER cipher,
-          ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case))
-{
+ACVP_RESULT acvp_enable_cmac_cap (
+        ACVP_CTX *ctx,
+        ACVP_CIPHER cipher,
+        ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case)) {
     ACVP_CMAC_CAP *cap;
 
     if (!ctx) {
@@ -957,7 +957,7 @@ ACVP_RESULT acvp_enable_cmac_cap(
 
     cap = calloc(1, sizeof(ACVP_CMAC_CAP));
     if (!cap) {
-      return ACVP_MALLOC_FAIL;
+        return ACVP_MALLOC_FAIL;
     }
 
     return (acvp_append_cmac_caps_entry(ctx, cap, cipher, crypto_handler));
@@ -969,11 +969,11 @@ ACVP_RESULT acvp_enable_cmac_cap(
  * This is called by the user multiple times,
  * once for each length supported.
  */
-ACVP_RESULT acvp_enable_cmac_cap_parm(
-                          ACVP_CTX *ctx,
-                          ACVP_CIPHER cipher,
-                          ACVP_CMAC_PARM parm,
-                          int value) {
+ACVP_RESULT acvp_enable_cmac_cap_parm (
+        ACVP_CTX *ctx,
+        ACVP_CIPHER cipher,
+        ACVP_CMAC_PARM parm,
+        int value) {
 
     ACVP_CAPS_LIST *cap;
 
@@ -987,83 +987,82 @@ ACVP_RESULT acvp_enable_cmac_cap_parm(
     }
 
     if (acvp_validate_cmac_parm_value(parm, value) != ACVP_SUCCESS) {
-      return ACVP_INVALID_ARG;
+        return ACVP_INVALID_ARG;
     }
 
     switch (parm) {
     case ACVP_CMAC_BLK_DIVISIBLE_1:
-      cap->cap.cmac_cap->msg_len[CMAC_BLK_DIVISIBLE_1] = value;
-      break;
+        cap->cap.cmac_cap->msg_len[CMAC_BLK_DIVISIBLE_1] = value;
+        break;
     case ACVP_CMAC_BLK_DIVISIBLE_2:
-      cap->cap.cmac_cap->msg_len[CMAC_BLK_DIVISIBLE_2] = value;
-      break;
+        cap->cap.cmac_cap->msg_len[CMAC_BLK_DIVISIBLE_2] = value;
+        break;
     case ACVP_CMAC_BLK_NOT_DIVISIBLE_1:
-      cap->cap.cmac_cap->msg_len[CMAC_BLK_NOT_DIVISIBLE_1] = value;
-      break;
+        cap->cap.cmac_cap->msg_len[CMAC_BLK_NOT_DIVISIBLE_1] = value;
+        break;
     case ACVP_CMAC_BLK_NOT_DIVISIBLE_2:
-      cap->cap.cmac_cap->msg_len[CMAC_BLK_NOT_DIVISIBLE_2] = value;
-      break;
+        cap->cap.cmac_cap->msg_len[CMAC_BLK_NOT_DIVISIBLE_2] = value;
+        break;
     case ACVP_CMAC_MSG_LEN_MAX:
-      cap->cap.cmac_cap->msg_len[CMAC_MSG_LEN_MAX] = value;
-      break;
+        cap->cap.cmac_cap->msg_len[CMAC_MSG_LEN_MAX] = value;
+        break;
     case ACVP_CMAC_DIRECTION_GEN:
-      cap->cap.cmac_cap->direction_gen = value;
-      break;
+        cap->cap.cmac_cap->direction_gen = value;
+        break;
     case ACVP_CMAC_DIRECTION_VER:
-      cap->cap.cmac_cap->direction_ver = value;
-      break;
+        cap->cap.cmac_cap->direction_ver = value;
+        break;
     case ACVP_CMAC_MACLEN:
-      acvp_cap_add_length(&cap->cap.cmac_cap->mac_len, value);
-      break;
+        acvp_cap_add_length(&cap->cap.cmac_cap->mac_len, value);
+        break;
     default:
-      return ACVP_INVALID_ARG;
+        return ACVP_INVALID_ARG;
     }
 
     return ACVP_SUCCESS;
 }
 
 
-ACVP_RESULT acvp_validate_drbg_parm_value(ACVP_DRBG_PARM parm, int value) {
-  ACVP_RESULT retval = ACVP_INVALID_ARG;
+ACVP_RESULT acvp_validate_drbg_parm_value (ACVP_DRBG_PARM parm, int value) {
+    ACVP_RESULT retval = ACVP_INVALID_ARG;
 
-  switch(parm){
+    switch (parm) {
     case ACVP_DRBG_DER_FUNC_ENABLED:
     case ACVP_DRBG_PRED_RESIST_ENABLED:
     case ACVP_DRBG_RESEED_ENABLED:
-      retval = is_valid_tf_param(value);
-      break;
+        retval = is_valid_tf_param(value);
+        break;
     case ACVP_DRBG_ENTROPY_LEN:
     case ACVP_DRBG_NONCE_LEN:
     case ACVP_DRBG_PERSO_LEN:
     case ACVP_DRBG_ADD_IN_LEN:
     case ACVP_DRBG_RET_BITS_LEN:
     case ACVP_DRBG_PRE_REQ_VALS:
-      // TODO: add proper validation for these parameters
-      retval = ACVP_SUCCESS;
-      break;
+        // TODO: add proper validation for these parameters
+        retval = ACVP_SUCCESS;
+        break;
     default:
-      break;
-  }
+        break;
+    }
 
-  return retval;
+    return retval;
 }
 
 /*
  * Add CTR DRBG parameters
  */
 static ACVP_RESULT acvp_add_ctr_drbg_cap_parm (
-                             ACVP_DRBG_CAP_MODE  *drbg_cap_mode,
-                             ACVP_DRBG_MODE       mode,
-                             ACVP_DRBG_PARM       param,
-                             int value
-                             )
-{
+        ACVP_DRBG_CAP_MODE *drbg_cap_mode,
+        ACVP_DRBG_MODE mode,
+        ACVP_DRBG_PARM param,
+        int value
+) {
     if (!drbg_cap_mode) {
         return ACVP_INVALID_ARG;
     }
 
     if (acvp_validate_drbg_parm_value(param, value) != ACVP_SUCCESS) {
-      return ACVP_INVALID_ARG;
+        return ACVP_INVALID_ARG;
     }
 
     switch (mode) {
@@ -1116,12 +1115,11 @@ static ACVP_RESULT acvp_add_ctr_drbg_cap_parm (
  * Add HASH DRBG parameters
  */
 static ACVP_RESULT acvp_add_hash_drbg_cap_parm (
-                             ACVP_DRBG_CAP_MODE  *drbg_cap_mode,
-                             ACVP_DRBG_MODE       mode,
-                             ACVP_DRBG_PARM       param,
-                             int                  value
-                             )
-{
+        ACVP_DRBG_CAP_MODE *drbg_cap_mode,
+        ACVP_DRBG_MODE mode,
+        ACVP_DRBG_PARM param,
+        int value
+) {
     switch (mode) {
     case ACVP_DRBG_SHA_1:
     case ACVP_DRBG_SHA_224:
@@ -1173,12 +1171,11 @@ static ACVP_RESULT acvp_add_hash_drbg_cap_parm (
  * Add HMAC DRBG parameters
  */
 static ACVP_RESULT acvp_add_hmac_drbg_cap_parm (
-                             ACVP_DRBG_CAP_MODE  *drbg_cap_mode,
-                             ACVP_DRBG_MODE       mode,
-                             ACVP_DRBG_PARM       param,
-                             int                  value
-                             )
-{
+        ACVP_DRBG_CAP_MODE *drbg_cap_mode,
+        ACVP_DRBG_MODE mode,
+        ACVP_DRBG_PARM param,
+        int value
+) {
     switch (mode) {
     case ACVP_DRBG_SHA_1:
     case ACVP_DRBG_SHA_224:
@@ -1230,9 +1227,8 @@ static ACVP_RESULT acvp_add_hmac_drbg_cap_parm (
 /*
  * Append a DRBG pre req val to the
  */
-static ACVP_RESULT acvp_add_drbg_prereq_val(ACVP_DRBG_CAP_MODE *drbg_cap_mode,
-                   ACVP_DRBG_MODE mode, ACVP_PREREQ_ALG pre_req, char *value)
-{
+static ACVP_RESULT acvp_add_drbg_prereq_val (ACVP_DRBG_CAP_MODE *drbg_cap_mode,
+                                             ACVP_DRBG_MODE mode, ACVP_PREREQ_ALG pre_req, char *value) {
     ACVP_PREREQ_LIST *prereq_entry, *prereq_entry_2;
 
     prereq_entry = calloc(1, sizeof(ACVP_PREREQ_LIST));
@@ -1246,7 +1242,7 @@ static ACVP_RESULT acvp_add_drbg_prereq_val(ACVP_DRBG_CAP_MODE *drbg_cap_mode,
      * 1st entry
      */
     if (!drbg_cap_mode->prereq_vals) {
-        drbg_cap_mode->prereq_vals= prereq_entry;
+        drbg_cap_mode->prereq_vals = prereq_entry;
     } else {
         /*
          * append to the last in the list
@@ -1260,8 +1256,8 @@ static ACVP_RESULT acvp_add_drbg_prereq_val(ACVP_DRBG_CAP_MODE *drbg_cap_mode,
     return (ACVP_SUCCESS);
 }
 
-static ACVP_RESULT acvp_validate_prereq_val(ACVP_CIPHER cipher, ACVP_PREREQ_ALG pre_req) {
-    switch(cipher) {
+static ACVP_RESULT acvp_validate_prereq_val (ACVP_CIPHER cipher, ACVP_PREREQ_ALG pre_req) {
+    switch (cipher) {
     case ACVP_AES_GCM:
     case ACVP_AES_CCM:
     case ACVP_AES_ECB:
@@ -1274,8 +1270,9 @@ static ACVP_RESULT acvp_validate_prereq_val(ACVP_CIPHER cipher, ACVP_PREREQ_ALG 
     case ACVP_AES_KWP:
     case ACVP_AES_CTR:
         if (pre_req == ACVP_PREREQ_AES ||
-            pre_req == ACVP_PREREQ_DRBG)
+            pre_req == ACVP_PREREQ_DRBG) {
             return ACVP_SUCCESS;
+        }
         break;
     case ACVP_TDES_ECB:
     case ACVP_TDES_CBC:
@@ -1284,8 +1281,9 @@ static ACVP_RESULT acvp_validate_prereq_val(ACVP_CIPHER cipher, ACVP_PREREQ_ALG 
     case ACVP_TDES_CFB8:
     case ACVP_TDES_CFB1:
     case ACVP_TDES_KW:
-        if (pre_req == ACVP_PREREQ_TDES)
+        if (pre_req == ACVP_PREREQ_TDES) {
             return ACVP_SUCCESS;
+        }
         break;
     case ACVP_SHA1:
     case ACVP_SHA224:
@@ -1300,45 +1298,52 @@ static ACVP_RESULT acvp_validate_prereq_val(ACVP_CIPHER cipher, ACVP_PREREQ_ALG 
         if (pre_req == ACVP_PREREQ_AES ||
             pre_req == ACVP_PREREQ_DRBG ||
             pre_req == ACVP_PREREQ_SHA ||
-            pre_req == ACVP_PREREQ_TDES)
+            pre_req == ACVP_PREREQ_TDES) {
             return ACVP_SUCCESS;
+        }
         break;
     case ACVP_HMAC_SHA1:
     case ACVP_HMAC_SHA2_224:
     case ACVP_HMAC_SHA2_256:
     case ACVP_HMAC_SHA2_384:
     case ACVP_HMAC_SHA2_512:
-        if (pre_req == ACVP_PREREQ_SHA)
+        if (pre_req == ACVP_PREREQ_SHA) {
             return ACVP_SUCCESS;
+        }
         break;
     case ACVP_CMAC_AES_128:
     case ACVP_CMAC_AES_192:
     case ACVP_CMAC_AES_256:
     case ACVP_CMAC_TDES:
-        if (pre_req == ACVP_PREREQ_AES)
+        if (pre_req == ACVP_PREREQ_AES) {
             return ACVP_SUCCESS;
+        }
         break;
     case ACVP_DSA:
         if (pre_req == ACVP_PREREQ_SHA ||
-            pre_req == ACVP_PREREQ_DRBG)
+            pre_req == ACVP_PREREQ_DRBG) {
             return ACVP_SUCCESS;
+        }
         break;
     case ACVP_RSA:
         if (pre_req == ACVP_PREREQ_SHA ||
-        	pre_req == ACVP_PREREQ_DRBG)
+            pre_req == ACVP_PREREQ_DRBG) {
             return ACVP_SUCCESS;
+        }
         break;
     case ACVP_KDF135_TLS:
     case ACVP_KDF135_SNMP:
         if (pre_req == ACVP_PREREQ_SHA ||
-            pre_req == ACVP_PREREQ_HMAC)
+            pre_req == ACVP_PREREQ_HMAC) {
             return ACVP_SUCCESS;
+        }
         break;
     case ACVP_KDF135_SSH:
         if (pre_req == ACVP_PREREQ_SHA ||
             pre_req == ACVP_PREREQ_TDES ||
-            pre_req == ACVP_PREREQ_AES)
+            pre_req == ACVP_PREREQ_AES) {
             return ACVP_SUCCESS;
+        }
         break;
 
     default:
@@ -1352,11 +1357,10 @@ static ACVP_RESULT acvp_validate_prereq_val(ACVP_CIPHER cipher, ACVP_PREREQ_ALG 
  * Add RSA siggen parameter sigType
  */
 static ACVP_RESULT acvp_add_rsa_siggen_parm (
-                             ACVP_RSA_CAP_MODE_LIST  *rsa_cap_mode_list,
-                             ACVP_RSA_PARM       param,
-                             ACVP_RSA_SIG_TYPE   value
-                             )
-{
+        ACVP_RSA_CAP_MODE_LIST *rsa_cap_mode_list,
+        ACVP_RSA_PARM param,
+        ACVP_RSA_SIG_TYPE value
+) {
     // TODO: NEED TO ADD VALIDATION here
     ACVP_RSA_SIG_ATTRS *current_sig_type = NULL;
 
@@ -1375,20 +1379,20 @@ static ACVP_RESULT acvp_add_rsa_siggen_parm (
         }
 
         switch (value) {
-            case RSA_SIG_TYPE_X931:
-                printf("setting sig type to x931 %d %s\n", value, RSA_SIG_TYPE_X931_NAME);
-                current_sig_type->sig_type = RSA_SIG_TYPE_X931_NAME;
-                break;
-            case RSA_SIG_TYPE_PKCS1V15:
-                printf("setting sig type to pcks %d %s\n", value, RSA_SIG_TYPE_PKCS1V15_NAME);
-                current_sig_type->sig_type = RSA_SIG_TYPE_PKCS1V15_NAME;
-                break;
-            case RSA_SIG_TYPE_PKCS1PSS:
-                printf("setting sig type to pss %d %s\n", value, RSA_SIG_TYPE_PKCS1PSS_NAME);
-                current_sig_type->sig_type = RSA_SIG_TYPE_PKCS1PSS_NAME;
-                break;
-            default:
-                break;
+        case RSA_SIG_TYPE_X931:
+            printf("setting sig type to x931 %d %s\n", value, RSA_SIG_TYPE_X931_NAME);
+            current_sig_type->sig_type = RSA_SIG_TYPE_X931_NAME;
+            break;
+        case RSA_SIG_TYPE_PKCS1V15:
+            printf("setting sig type to pcks %d %s\n", value, RSA_SIG_TYPE_PKCS1V15_NAME);
+            current_sig_type->sig_type = RSA_SIG_TYPE_PKCS1V15_NAME;
+            break;
+        case RSA_SIG_TYPE_PKCS1PSS:
+            printf("setting sig type to pss %d %s\n", value, RSA_SIG_TYPE_PKCS1PSS_NAME);
+            current_sig_type->sig_type = RSA_SIG_TYPE_PKCS1PSS_NAME;
+            break;
+        default:
+            break;
         }
         break;
     default:
@@ -1402,47 +1406,46 @@ static ACVP_RESULT acvp_add_rsa_siggen_parm (
  * Add RSA siggen parameter sigType
  */
 static ACVP_RESULT acvp_add_rsa_sigver_parm (
-                             ACVP_RSA_CAP_MODE_LIST  *rsa_cap_mode_list,
-                             ACVP_RSA_PARM       param,
-                             ACVP_RSA_SIG_TYPE   value
-                             )
-{
+        ACVP_RSA_CAP_MODE_LIST *rsa_cap_mode_list,
+        ACVP_RSA_PARM param,
+        ACVP_RSA_SIG_TYPE value
+) {
 
     // TODO: NEED TO ADD VALIDATION here
 
     ACVP_RSA_SIG_ATTRS *current_sig_type = NULL;
 
     switch (param) {
-        case ACVP_SIG_TYPE:
-            current_sig_type = rsa_cap_mode_list->cap_mode_attrs.sigver;
-            if (current_sig_type) {
-                while (current_sig_type->next) {
-                    current_sig_type = current_sig_type->next;
-                }
-                current_sig_type->next = calloc(1, sizeof(ACVP_RSA_SIG_ATTRS));
+    case ACVP_SIG_TYPE:
+        current_sig_type = rsa_cap_mode_list->cap_mode_attrs.sigver;
+        if (current_sig_type) {
+            while (current_sig_type->next) {
                 current_sig_type = current_sig_type->next;
-            } else {
-                rsa_cap_mode_list->cap_mode_attrs.sigver = calloc(1, sizeof(ACVP_RSA_SIG_ATTRS));
-                current_sig_type = rsa_cap_mode_list->cap_mode_attrs.sigver;
             }
+            current_sig_type->next = calloc(1, sizeof(ACVP_RSA_SIG_ATTRS));
+            current_sig_type = current_sig_type->next;
+        } else {
+            rsa_cap_mode_list->cap_mode_attrs.sigver = calloc(1, sizeof(ACVP_RSA_SIG_ATTRS));
+            current_sig_type = rsa_cap_mode_list->cap_mode_attrs.sigver;
+        }
 
-            switch (value) {
-                case RSA_SIG_TYPE_X931:
-                    current_sig_type->sig_type = RSA_SIG_TYPE_X931_NAME;
-                    break;
-                case RSA_SIG_TYPE_PKCS1V15:
-                    current_sig_type->sig_type = RSA_SIG_TYPE_PKCS1V15_NAME;
-                    break;
-                case RSA_SIG_TYPE_PKCS1PSS:
-                    current_sig_type->sig_type = RSA_SIG_TYPE_PKCS1PSS_NAME;
-                    break;
-                default:
-                    break;
-            }
+        switch (value) {
+        case RSA_SIG_TYPE_X931:
+            current_sig_type->sig_type = RSA_SIG_TYPE_X931_NAME;
+            break;
+        case RSA_SIG_TYPE_PKCS1V15:
+            current_sig_type->sig_type = RSA_SIG_TYPE_PKCS1V15_NAME;
+            break;
+        case RSA_SIG_TYPE_PKCS1PSS:
+            current_sig_type->sig_type = RSA_SIG_TYPE_PKCS1PSS_NAME;
             break;
         default:
-            return ACVP_INVALID_ARG;
             break;
+        }
+        break;
+    default:
+        return ACVP_INVALID_ARG;
+        break;
     }
     return ACVP_SUCCESS;
 }
@@ -1450,10 +1453,9 @@ static ACVP_RESULT acvp_add_rsa_sigver_parm (
 /*
  * Append a RSA pre req val to the list of prereqs
  */
-static ACVP_RESULT acvp_add_prereq_val(ACVP_CIPHER cipher,
-                    ACVP_CAPS_LIST *cap_list,
-                    ACVP_PREREQ_ALG pre_req, char *value)
-{
+static ACVP_RESULT acvp_add_prereq_val (ACVP_CIPHER cipher,
+                                        ACVP_CAPS_LIST *cap_list,
+                                        ACVP_PREREQ_ALG pre_req, char *value) {
     ACVP_PREREQ_LIST *prereq_entry, *prereq_entry_2;
     ACVP_RESULT result;
 
@@ -1488,17 +1490,14 @@ static ACVP_RESULT acvp_add_prereq_val(ACVP_CIPHER cipher,
 }
 
 
-
-
 /*
  * Add top level RSA keygen parameters
  */
 static ACVP_RESULT acvp_add_rsa_keygen_parm (
-                             ACVP_RSA_CAP_MODE_LIST  *rsa_cap_mode_list,
-                             ACVP_RSA_PARM       param,
-                             int                  value
-                             )
-{
+        ACVP_RSA_CAP_MODE_LIST *rsa_cap_mode_list,
+        ACVP_RSA_PARM param,
+        int value
+) {
     switch (param) {
     case ACVP_PUB_EXP:
         rsa_cap_mode_list->cap_mode_attrs.keygen->pub_exp = value;
@@ -1517,10 +1516,10 @@ static ACVP_RESULT acvp_add_rsa_keygen_parm (
     return ACVP_SUCCESS;
 }
 
-ACVP_RESULT acvp_rsa_prepare_to_add_param(ACVP_CTX *ctx, ACVP_CIPHER cipher,
-                                          ACVP_RSA_MODE mode,
-                                          ACVP_CAPS_LIST **cap_list,
-                                          ACVP_RSA_CAP_MODE_LIST      **rsa_cap_mode_list) {
+ACVP_RESULT acvp_rsa_prepare_to_add_param (ACVP_CTX *ctx, ACVP_CIPHER cipher,
+                                           ACVP_RSA_MODE mode,
+                                           ACVP_CAPS_LIST **cap_list,
+                                           ACVP_RSA_CAP_MODE_LIST **rsa_cap_mode_list) {
 
     ACVP_RSA_CAP_MODE_LIST *current_rsa_cap_list;
 
@@ -1531,7 +1530,7 @@ ACVP_RESULT acvp_rsa_prepare_to_add_param(ACVP_CTX *ctx, ACVP_CIPHER cipher,
         return ACVP_NO_CTX;
     }
 
-    if (cipher != ACVP_RSA) return ACVP_INVALID_ARG;
+    if (cipher != ACVP_RSA) { return ACVP_INVALID_ARG; }
 
     /*
      * Locate this cipher in the caps array
@@ -1561,7 +1560,7 @@ ACVP_RESULT acvp_rsa_prepare_to_add_param(ACVP_CTX *ctx, ACVP_CIPHER cipher,
 
         (*rsa_cap_mode_list)->cap_mode = mode;
 
-        switch(mode) {
+        switch (mode) {
         case ACVP_RSA_MODE_KEYGEN:
             (*rsa_cap_mode_list)->cap_mode_attrs.keygen = calloc(1, sizeof(ACVP_RSA_KEYGEN_ATTRS));
             if (!(*rsa_cap_mode_list)->cap_mode_attrs.keygen) {
@@ -1571,25 +1570,25 @@ ACVP_RESULT acvp_rsa_prepare_to_add_param(ACVP_CTX *ctx, ACVP_CIPHER cipher,
             (*rsa_cap_mode_list)->cap_mode_attrs.keygen->rand_pq = 0;
             break;
         case ACVP_RSA_MODE_SIGGEN:
-			(*rsa_cap_mode_list)->cap_mode_attrs.siggen = calloc(1, sizeof(ACVP_RSA_SIG_ATTRS));
-			if (!(*rsa_cap_mode_list)->cap_mode_attrs.siggen) {
-				ACVP_LOG_ERR("Malloc Failed -- RSA SigGen cap attributes");
-				return ACVP_MALLOC_FAIL;
-			}
-			break;
+            (*rsa_cap_mode_list)->cap_mode_attrs.siggen = calloc(1, sizeof(ACVP_RSA_SIG_ATTRS));
+            if (!(*rsa_cap_mode_list)->cap_mode_attrs.siggen) {
+                ACVP_LOG_ERR("Malloc Failed -- RSA SigGen cap attributes");
+                return ACVP_MALLOC_FAIL;
+            }
+            break;
         case ACVP_RSA_MODE_SIGVER:
-                    (*rsa_cap_mode_list)->cap_mode_attrs.sigver = calloc(1, sizeof(ACVP_RSA_SIG_ATTRS));
-                    if (!(*rsa_cap_mode_list)->cap_mode_attrs.sigver) {
-                        ACVP_LOG_ERR("Malloc Failed -- RSA SigVer cap attributes");
-                        return ACVP_MALLOC_FAIL;
-                    }
-                    break;
+            (*rsa_cap_mode_list)->cap_mode_attrs.sigver = calloc(1, sizeof(ACVP_RSA_SIG_ATTRS));
+            if (!(*rsa_cap_mode_list)->cap_mode_attrs.sigver) {
+                ACVP_LOG_ERR("Malloc Failed -- RSA SigVer cap attributes");
+                return ACVP_MALLOC_FAIL;
+            }
+            break;
         default:
             break;
         }
 
         current_rsa_cap_list = (*cap_list)->cap.rsa_cap->rsa_cap_mode_list;
-        if (!current_rsa_cap_list) (*cap_list)->cap.rsa_cap->rsa_cap_mode_list = *rsa_cap_mode_list;
+        if (!current_rsa_cap_list) { (*cap_list)->cap.rsa_cap->rsa_cap_mode_list = *rsa_cap_mode_list; }
         else {
             while (current_rsa_cap_list->next) {
                 current_rsa_cap_list = current_rsa_cap_list->next;
@@ -1602,12 +1601,11 @@ ACVP_RESULT acvp_rsa_prepare_to_add_param(ACVP_CTX *ctx, ACVP_CIPHER cipher,
     return ACVP_SUCCESS;
 }
 
-ACVP_RESULT acvp_validate_rsa_parm_value(ACVP_RSA_PARM parm, int value,
-                                         ACVP_RSA_CAP_MODE_LIST *rsa_cap_mode_list)
-{
-  ACVP_RESULT retval = ACVP_INVALID_ARG;
+ACVP_RESULT acvp_validate_rsa_parm_value (ACVP_RSA_PARM parm, int value,
+                                          ACVP_RSA_CAP_MODE_LIST *rsa_cap_mode_list) {
+    ACVP_RESULT retval = ACVP_INVALID_ARG;
 
-  switch(parm){
+    switch (parm) {
     case ACVP_PUB_EXP:
     case ACVP_RSA_INFO_GEN_BY_SERVER:
         retval = is_valid_tf_param(value);
@@ -1620,66 +1618,65 @@ ACVP_RESULT acvp_validate_rsa_parm_value(ACVP_RSA_PARM parm, int value,
     case ACVP_CAPS_PROV_PRIME:
         if (rsa_cap_mode_list->cap_mode_attrs.keygen->rand_pq == RSA_RAND_PQ_B32 ||
             rsa_cap_mode_list->cap_mode_attrs.keygen->rand_pq == RSA_RAND_PQ_B34) {
-              retval = ACVP_SUCCESS;
+            retval = ACVP_SUCCESS;
         }
         break;
     case ACVP_CAPS_PROB_PRIME:
         if (rsa_cap_mode_list->cap_mode_attrs.keygen->rand_pq == RSA_RAND_PQ_B33 ||
             rsa_cap_mode_list->cap_mode_attrs.keygen->rand_pq == RSA_RAND_PQ_B36) {
-              retval = ACVP_SUCCESS;
+            retval = ACVP_SUCCESS;
         }
         break;
     case ACVP_CAPS_PROV_PROB_PRIME:
         if (rsa_cap_mode_list->cap_mode_attrs.keygen->rand_pq == RSA_RAND_PQ_B35) {
-              retval = ACVP_SUCCESS;
+            retval = ACVP_SUCCESS;
         }
         break;
 
     case ACVP_SIG_TYPE:
-    	switch (value) {
-		case RSA_SIG_TYPE_X931:
-		case RSA_SIG_TYPE_PKCS1V15:
-		case RSA_SIG_TYPE_PKCS1PSS:
-			retval = ACVP_SUCCESS;
-		}
-		break;
+        switch (value) {
+        case RSA_SIG_TYPE_X931:
+        case RSA_SIG_TYPE_PKCS1V15:
+        case RSA_SIG_TYPE_PKCS1PSS:
+            retval = ACVP_SUCCESS;
+        }
+        break;
     default:
-      break;
-  }
+        break;
+    }
 
-  return retval;
+    return retval;
 }
 
-ACVP_RESULT acvp_validate_rsa_primes_parm(ACVP_RSA_PARM parm, int mod, char *name,
-                                          ACVP_RSA_CAP_MODE_LIST *rsa_cap_mode_list)
-{
+ACVP_RESULT acvp_validate_rsa_primes_parm (ACVP_RSA_PARM parm, int mod, char *name,
+                                           ACVP_RSA_CAP_MODE_LIST *rsa_cap_mode_list) {
     ACVP_RESULT retval = ACVP_INVALID_ARG;
     retval = is_valid_rsa_mod(mod);
-    if (retval != ACVP_SUCCESS) return retval;
+    if (retval != ACVP_SUCCESS) { return retval; }
 
-    switch(parm){
+    switch (parm) {
     case ACVP_CAPS_PROV_PRIME:
         if (rsa_cap_mode_list->cap_mode_attrs.keygen->rand_pq == RSA_RAND_PQ_B32 ||
             rsa_cap_mode_list->cap_mode_attrs.keygen->rand_pq == RSA_RAND_PQ_B34) {
-                retval = is_valid_hash_alg(name);
+            retval = is_valid_hash_alg(name);
         }
         break;
     case ACVP_CAPS_PROB_PRIME:
         if (rsa_cap_mode_list->cap_mode_attrs.keygen->rand_pq == RSA_RAND_PQ_B33 ||
             rsa_cap_mode_list->cap_mode_attrs.keygen->rand_pq == RSA_RAND_PQ_B36) {
-                retval = is_valid_prime_test(name);
+            retval = is_valid_prime_test(name);
         }
         break;
     case ACVP_CAPS_PROV_PROB_PRIME:
         if (rsa_cap_mode_list->cap_mode_attrs.keygen->rand_pq == RSA_RAND_PQ_B35) {
-              if (is_valid_hash_alg(name) == ACVP_SUCCESS ||
-                  is_valid_prime_test(name) == ACVP_SUCCESS) {
-                      retval = ACVP_SUCCESS;
-              }
+            if (is_valid_hash_alg(name) == ACVP_SUCCESS ||
+                is_valid_prime_test(name) == ACVP_SUCCESS) {
+                retval = ACVP_SUCCESS;
+            }
         }
         break;
     default:
-      break;
+        break;
     }
 
     return retval;
@@ -1689,12 +1686,11 @@ ACVP_RESULT acvp_validate_rsa_primes_parm(ACVP_RSA_PARM parm, int mod, char *nam
  * The user should call this after invoking acvp_enable_rsa_cap_parm().
  */
 ACVP_RESULT acvp_enable_rsa_cap_parm (ACVP_CTX *ctx,
-                             ACVP_CIPHER cipher,
-                             ACVP_RSA_MODE mode,
-                             ACVP_RSA_PARM param,
-                             int value
-                             )
-{
+                                      ACVP_CIPHER cipher,
+                                      ACVP_RSA_MODE mode,
+                                      ACVP_RSA_PARM param,
+                                      int value
+) {
     ACVP_RSA_CAP_MODE_LIST *rsa_cap_mode_list;
     ACVP_CAPS_LIST *cap_list;
     ACVP_RESULT result;
@@ -1708,15 +1704,16 @@ ACVP_RESULT acvp_enable_rsa_cap_parm (ACVP_CTX *ctx,
         return result;
     }
     if (acvp_validate_rsa_parm_value(param, value, rsa_cap_mode_list)
-                != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("Invalid value for specified RSA param");
-            return ACVP_INVALID_ARG;
-        }
+        != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Invalid value for specified RSA param");
+        return ACVP_INVALID_ARG;
+    }
     switch (mode) {
     case ACVP_RSA_MODE_KEYGEN:
         result = acvp_add_rsa_keygen_parm(rsa_cap_mode_list, param, value);
         if (result != ACVP_SUCCESS)
-            ACVP_LOG_ERR("Invalid param to enable_rsa_cap_parm. If registering primes, use enable_rsa_primes instead");
+            ACVP_LOG_ERR(
+                    "Invalid param to enable_rsa_cap_parm. If registering primes, use enable_rsa_primes instead");
         break;
     case ACVP_RSA_MODE_SIGGEN:
         result = acvp_add_rsa_siggen_parm(rsa_cap_mode_list, param, value);
@@ -1727,7 +1724,7 @@ ACVP_RESULT acvp_enable_rsa_cap_parm (ACVP_CTX *ctx,
         if (result != ACVP_SUCCESS) ACVP_LOG_ERR("Invalid param to enable_rsa_cap_parm");
         break;
     default:
-        ACVP_LOG_ERR("RSA Mode Type Not Found - RSA mode %d is not supported.",mode);
+        ACVP_LOG_ERR("RSA Mode Type Not Found - RSA mode %d is not supported.", mode);
         return ACVP_INVALID_ARG;
     }
 
@@ -1738,15 +1735,14 @@ ACVP_RESULT acvp_enable_rsa_cap_parm (ACVP_CTX *ctx,
  * The user should call this after invoking acvp_enable_rsa_cap_parm().
  */
 ACVP_RESULT acvp_enable_rsa_cap_sig_type_parm (ACVP_CTX *ctx,
-                             ACVP_CIPHER cipher,
-                             ACVP_RSA_MODE mode,
-                             ACVP_RSA_SIG_TYPE sig_type,
-                             int mod,
-                             char *hash,
-							 int salt
-                             )
-{
-    ACVP_CAPS_LIST              *cap_list;
+                                               ACVP_CIPHER cipher,
+                                               ACVP_RSA_MODE mode,
+                                               ACVP_RSA_SIG_TYPE sig_type,
+                                               int mod,
+                                               char *hash,
+                                               int salt
+) {
+    ACVP_CAPS_LIST *cap_list;
 
     /*
      * Validate input
@@ -1796,10 +1792,10 @@ ACVP_RESULT acvp_enable_rsa_cap_sig_type_parm (ACVP_CTX *ctx,
 
         current_cap_sig_type = rsa_sig_cap_list->cap_sig_type;
         if (current_cap_sig_type) {
-            if (current_cap_sig_type->mod_rsa_sig == mod) goto process_sig;
+            if (current_cap_sig_type->mod_rsa_sig == mod) { goto process_sig; }
             while (current_cap_sig_type->next) {
                 current_cap_sig_type = current_cap_sig_type->next;
-                if (current_cap_sig_type->mod_rsa_sig == mod) goto process_sig;
+                if (current_cap_sig_type->mod_rsa_sig == mod) { goto process_sig; }
             }
             current_cap_sig_type->next = calloc(1, sizeof(ACVP_RSA_CAP_SIG_TYPE));
             current_cap_sig_type = current_cap_sig_type->next;
@@ -1818,7 +1814,7 @@ ACVP_RESULT acvp_enable_rsa_cap_sig_type_parm (ACVP_CTX *ctx,
                 return ACVP_MALLOC_FAIL;
             }
             current_cap_sig_type->hash_pairs->name = hash;
-            if (salt) current_cap_sig_type->hash_pairs->salt = salt;
+            if (salt) { current_cap_sig_type->hash_pairs->salt = salt; }
         } else {
             current_hash = current_cap_sig_type->hash_pairs;
             while (current_hash->next != NULL) {
@@ -1830,7 +1826,7 @@ ACVP_RESULT acvp_enable_rsa_cap_sig_type_parm (ACVP_CTX *ctx,
                 return ACVP_MALLOC_FAIL;
             }
             current_hash->next->name = hash;
-            if (salt) current_hash->next->salt = salt;
+            if (salt) { current_hash->next->salt = salt; }
         }
 
     } else if (mode == ACVP_RSA_MODE_SIGVER) {
@@ -1838,10 +1834,10 @@ ACVP_RESULT acvp_enable_rsa_cap_sig_type_parm (ACVP_CTX *ctx,
 
         current_cap_sig_type = rsa_sig_cap_list->cap_sig_type;
         if (current_cap_sig_type) {
-            if (current_cap_sig_type->mod_rsa_sig == mod) goto process_ver;
+            if (current_cap_sig_type->mod_rsa_sig == mod) { goto process_ver; }
             while (current_cap_sig_type->next) {
                 current_cap_sig_type = current_cap_sig_type->next;
-                if (current_cap_sig_type->mod_rsa_sig == mod) goto process_ver;
+                if (current_cap_sig_type->mod_rsa_sig == mod) { goto process_ver; }
             }
             current_cap_sig_type->next = calloc(1, sizeof(ACVP_RSA_CAP_SIG_TYPE));
             current_cap_sig_type = current_cap_sig_type->next;
@@ -1860,7 +1856,7 @@ ACVP_RESULT acvp_enable_rsa_cap_sig_type_parm (ACVP_CTX *ctx,
                 return ACVP_MALLOC_FAIL;
             }
             current_cap_sig_type->hash_pairs->name = hash;
-            if (salt) current_cap_sig_type->hash_pairs->salt = salt;
+            if (salt) { current_cap_sig_type->hash_pairs->salt = salt; }
         } else {
             current_hash = current_cap_sig_type->hash_pairs;
             while (current_hash->next != NULL) {
@@ -1872,7 +1868,7 @@ ACVP_RESULT acvp_enable_rsa_cap_sig_type_parm (ACVP_CTX *ctx,
                 return ACVP_MALLOC_FAIL;
             }
             current_hash->next->name = hash;
-            if (salt) current_hash->next->salt = salt;
+            if (salt) { current_hash->next->salt = salt; }
         }
     } else {
         return (ACVP_INVALID_ARG);
@@ -1885,19 +1881,18 @@ ACVP_RESULT acvp_enable_rsa_cap_sig_type_parm (ACVP_CTX *ctx,
  * The user should call this after invoking acvp_enable_rsa_cap_parm().
  */
 ACVP_RESULT acvp_enable_rsa_bignum_parm (ACVP_CTX *ctx,
-                             ACVP_CIPHER cipher,
-                             ACVP_RSA_MODE mode,
-                             ACVP_RSA_PARM param,
-                             BIGNUM *value
-                             )
-{
-    ACVP_RSA_CAP_MODE_LIST      *rsa_cap_mode_list;
-    ACVP_CAPS_LIST              *cap_list;
-    ACVP_RESULT                 result;
+                                         ACVP_CIPHER cipher,
+                                         ACVP_RSA_MODE mode,
+                                         ACVP_RSA_PARM param,
+                                         BIGNUM *value
+) {
+    ACVP_RSA_CAP_MODE_LIST *rsa_cap_mode_list;
+    ACVP_CAPS_LIST *cap_list;
+    ACVP_RESULT result;
 
     result = acvp_rsa_prepare_to_add_param(ctx, cipher, mode, &cap_list,
                                            &rsa_cap_mode_list);
-    if(result != ACVP_SUCCESS) {
+    if (result != ACVP_SUCCESS) {
         free(rsa_cap_mode_list);
         return result;
     }
@@ -1907,10 +1902,11 @@ ACVP_RESULT acvp_enable_rsa_bignum_parm (ACVP_CTX *ctx,
      */
     switch (mode) {
     case ACVP_RSA_MODE_KEYGEN:
-        switch(param) {
+        switch (param) {
         case ACVP_FIXED_PUB_EXP_VAL:
-            if (rsa_cap_mode_list->cap_mode_attrs.keygen->pub_exp == RSA_PUB_EXP_FIXED)
+            if (rsa_cap_mode_list->cap_mode_attrs.keygen->pub_exp == RSA_PUB_EXP_FIXED) {
                 rsa_cap_mode_list->cap_mode_attrs.keygen->fixed_pub_exp_val = value;
+            }
             break;
         default:
             return ACVP_INVALID_ARG;
@@ -1929,16 +1925,15 @@ ACVP_RESULT acvp_enable_rsa_bignum_parm (ACVP_CTX *ctx,
  * and setting the randPQ value.
  */
 ACVP_RESULT acvp_enable_rsa_primes_parm (ACVP_CTX *ctx,
-                             ACVP_CIPHER cipher,
-                             ACVP_RSA_MODE mode,
-                             ACVP_RSA_PARM param,
-                             int mod,
-                             char *name
-                             )
-{
-    ACVP_RSA_CAP_MODE_LIST      *rsa_cap_mode_list;
-    ACVP_CAPS_LIST              *cap_list;
-    ACVP_RESULT                 result;
+                                         ACVP_CIPHER cipher,
+                                         ACVP_RSA_MODE mode,
+                                         ACVP_RSA_PARM param,
+                                         int mod,
+                                         char *name
+) {
+    ACVP_RSA_CAP_MODE_LIST *rsa_cap_mode_list;
+    ACVP_CAPS_LIST *cap_list;
+    ACVP_RESULT result;
     int found;
 
     result = acvp_rsa_prepare_to_add_param(ctx, cipher, mode, &cap_list,
@@ -1955,24 +1950,24 @@ ACVP_RESULT acvp_enable_rsa_primes_parm (ACVP_CTX *ctx,
     }
 
     ACVP_RSA_PRIMES_LIST *current_prime = NULL;
-    if(!rsa_cap_mode_list->cap_mode_attrs.keygen->cap_primes_list) {
-      rsa_cap_mode_list->cap_mode_attrs.keygen->cap_primes_list = calloc(1, sizeof(ACVP_RSA_PRIMES_LIST));
-      if(!rsa_cap_mode_list->cap_mode_attrs.keygen->cap_primes_list) {
-          ACVP_LOG_ERR("Malloc Failed -- enable rsa cap parm");
-          return ACVP_MALLOC_FAIL;
-      }
-      rsa_cap_mode_list->cap_mode_attrs.keygen->cap_primes_list->modulo = mod;
-      current_prime = rsa_cap_mode_list->cap_mode_attrs.keygen->cap_primes_list;
+    if (!rsa_cap_mode_list->cap_mode_attrs.keygen->cap_primes_list) {
+        rsa_cap_mode_list->cap_mode_attrs.keygen->cap_primes_list = calloc(1, sizeof(ACVP_RSA_PRIMES_LIST));
+        if (!rsa_cap_mode_list->cap_mode_attrs.keygen->cap_primes_list) {
+            ACVP_LOG_ERR("Malloc Failed -- enable rsa cap parm");
+            return ACVP_MALLOC_FAIL;
+        }
+        rsa_cap_mode_list->cap_mode_attrs.keygen->cap_primes_list->modulo = mod;
+        current_prime = rsa_cap_mode_list->cap_mode_attrs.keygen->cap_primes_list;
 
     } else {
         current_prime = rsa_cap_mode_list->cap_mode_attrs.keygen->cap_primes_list;
 
         found = 0;
         do {
-            if(current_prime->modulo != mod) {
-                if(current_prime->next == NULL) {
+            if (current_prime->modulo != mod) {
+                if (current_prime->next == NULL) {
                     current_prime->next = calloc(1, sizeof(ACVP_RSA_PRIMES_LIST));
-                    if(!current_prime->next) {
+                    if (!current_prime->next) {
                         ACVP_LOG_ERR("Malloc Failed -- enable rsa cap parm");
                         return ACVP_MALLOC_FAIL;
                     }
@@ -1990,20 +1985,20 @@ ACVP_RESULT acvp_enable_rsa_primes_parm (ACVP_CTX *ctx,
 
     if (param == ACVP_CAPS_PROV_PRIME || param == ACVP_CAPS_PROV_PROB_PRIME) {
         ACVP_NAME_LIST *current_hash = NULL;
-        if(!current_prime->hash_algs) {
+        if (!current_prime->hash_algs) {
             current_prime->hash_algs = calloc(1, sizeof(ACVP_NAME_LIST));
-            if(!current_prime->hash_algs) {
+            if (!current_prime->hash_algs) {
                 ACVP_LOG_ERR("Malloc Failed -- enable rsa cap parm");
                 return ACVP_MALLOC_FAIL;
             }
             current_prime->hash_algs->name = name;
         } else {
             current_hash = current_prime->hash_algs;
-            while(current_hash->next != NULL) {
+            while (current_hash->next != NULL) {
                 current_hash = current_hash->next;
             }
             current_hash->next = calloc(1, sizeof(ACVP_NAME_LIST));
-            if(!current_hash->next) {
+            if (!current_hash->next) {
                 ACVP_LOG_ERR("Malloc Failed -- enable rsa cap parm");
                 return ACVP_MALLOC_FAIL;
             }
@@ -2013,20 +2008,20 @@ ACVP_RESULT acvp_enable_rsa_primes_parm (ACVP_CTX *ctx,
 
     if (param == ACVP_CAPS_PROB_PRIME || param == ACVP_CAPS_PROV_PROB_PRIME) {
         ACVP_NAME_LIST *current_prime_test = NULL;
-        if(!current_prime->prime_tests) {
+        if (!current_prime->prime_tests) {
             current_prime->prime_tests = calloc(1, sizeof(ACVP_NAME_LIST));
-            if(!current_prime->prime_tests) {
+            if (!current_prime->prime_tests) {
                 ACVP_LOG_ERR("Malloc Failed -- enable rsa cap parm");
                 return ACVP_MALLOC_FAIL;
             }
             current_prime->prime_tests->name = name;
         } else {
             current_prime_test = current_prime->prime_tests;
-            while(current_prime_test->next != NULL) {
+            while (current_prime_test->next != NULL) {
                 current_prime_test = current_prime_test->next;
             }
             current_prime_test->next = calloc(1, sizeof(ACVP_NAME_LIST));
-            if(!current_prime_test->next) {
+            if (!current_prime_test->next) {
                 ACVP_LOG_ERR("Malloc Failed -- enable rsa cap parm");
                 return ACVP_MALLOC_FAIL;
             }
@@ -2041,32 +2036,31 @@ ACVP_RESULT acvp_enable_rsa_primes_parm (ACVP_CTX *ctx,
  * Add DRBG Length Range
  */
 static ACVP_RESULT acvp_add_drbg_length_range (
-                             ACVP_DRBG_CAP_MODE  *drbg_cap_mode,
-                             ACVP_DRBG_PARM       param,
-                             int                  min,
-                             int                  step,
-                             int                  max
-                             )
-{
+        ACVP_DRBG_CAP_MODE *drbg_cap_mode,
+        ACVP_DRBG_PARM param,
+        int min,
+        int step,
+        int max
+) {
     if (!drbg_cap_mode) {
         return ACVP_INVALID_ARG;
     }
 
     switch (param) {
     case ACVP_DRBG_ENTROPY_LEN:
-        drbg_cap_mode->entropy_len_min  = min;
+        drbg_cap_mode->entropy_len_min = min;
         drbg_cap_mode->entropy_len_step = step;
-        drbg_cap_mode->entropy_len_max  = max;
+        drbg_cap_mode->entropy_len_max = max;
         break;
     case ACVP_DRBG_NONCE_LEN:
-        drbg_cap_mode->nonce_len_min  = min;
+        drbg_cap_mode->nonce_len_min = min;
         drbg_cap_mode->nonce_len_step = step;
-        drbg_cap_mode->nonce_len_max  = max;
+        drbg_cap_mode->nonce_len_max = max;
         break;
     case ACVP_DRBG_PERSO_LEN:
-        drbg_cap_mode->perso_len_min  = min;
+        drbg_cap_mode->perso_len_min = min;
         drbg_cap_mode->perso_len_step = step;
-        drbg_cap_mode->perso_len_max  = max;
+        drbg_cap_mode->perso_len_max = max;
         break;
     case ACVP_DRBG_ADD_IN_LEN:
         drbg_cap_mode->additional_in_len_min = min;
@@ -2087,20 +2081,18 @@ static ACVP_RESULT acvp_add_drbg_length_range (
 }
 
 
-
 /*
  * The user should call this after invoking acvp_enable_drbg_cap_parm().
  */
 ACVP_RESULT acvp_enable_drbg_cap_parm (ACVP_CTX *ctx,
-                             ACVP_CIPHER cipher,
-                             ACVP_DRBG_MODE mode,
-                             ACVP_DRBG_PARM param,
-                             int value
-                             )
-{
+                                       ACVP_CIPHER cipher,
+                                       ACVP_DRBG_MODE mode,
+                                       ACVP_DRBG_PARM param,
+                                       int value
+) {
     ACVP_DRBG_CAP_MODE_LIST *drbg_cap_mode_list;
-    ACVP_CAPS_LIST          *cap_list;
-    ACVP_RESULT              result;
+    ACVP_CAPS_LIST *cap_list;
+    ACVP_RESULT result;
 
     /*
      * Validate input
@@ -2168,14 +2160,13 @@ ACVP_RESULT acvp_enable_drbg_cap_parm (ACVP_CTX *ctx,
     return (result);
 }
 
-ACVP_RESULT acvp_enable_drbg_prereq_cap(ACVP_CTX          *ctx,
-                             ACVP_CIPHER       cipher,
-                             ACVP_DRBG_MODE    mode,
-                             ACVP_PREREQ_ALG pre_req,
-                             char              *value)
-{
+ACVP_RESULT acvp_enable_drbg_prereq_cap (ACVP_CTX *ctx,
+                                         ACVP_CIPHER cipher,
+                                         ACVP_DRBG_MODE mode,
+                                         ACVP_PREREQ_ALG pre_req,
+                                         char *value) {
     ACVP_DRBG_CAP_MODE_LIST *drbg_cap_mode_list;
-    ACVP_CAPS_LIST          *cap_list;
+    ACVP_CAPS_LIST *cap_list;
 
     if (!ctx) {
         return ACVP_NO_CTX;
@@ -2222,16 +2213,15 @@ ACVP_RESULT acvp_enable_drbg_prereq_cap(ACVP_CTX          *ctx,
     return (acvp_add_drbg_prereq_val(&drbg_cap_mode_list->cap_mode, mode, pre_req, value));
 }
 
-ACVP_RESULT acvp_enable_drbg_length_cap(ACVP_CTX            *ctx,
-                                        ACVP_CIPHER          cipher,
-                                        ACVP_DRBG_MODE       mode,
-                                        ACVP_DRBG_PARM       param,
-                                        int                  min,
-                                        int                  step,
-                                        int                  max)
-{
+ACVP_RESULT acvp_enable_drbg_length_cap (ACVP_CTX *ctx,
+                                         ACVP_CIPHER cipher,
+                                         ACVP_DRBG_MODE mode,
+                                         ACVP_DRBG_PARM param,
+                                         int min,
+                                         int step,
+                                         int max) {
     ACVP_DRBG_CAP_MODE_LIST *drbg_cap_mode_list;
-    ACVP_CAPS_LIST          *cap_list;
+    ACVP_CAPS_LIST *cap_list;
 
     if (!ctx) {
         return ACVP_NO_CTX;
@@ -2264,15 +2254,14 @@ ACVP_RESULT acvp_enable_drbg_length_cap(ACVP_CTX            *ctx,
     /*
      * Add the length range to the cap
      */
-    return(acvp_add_drbg_length_range(&drbg_cap_mode_list->cap_mode,
-           param, min, step, max));
+    return (acvp_add_drbg_length_range(&drbg_cap_mode_list->cap_mode,
+                                       param, min, step, max));
 }
 
-ACVP_RESULT acvp_enable_drbg_cap(
-     ACVP_CTX *ctx,
-     ACVP_CIPHER cipher,
-     ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case))
-{
+ACVP_RESULT acvp_enable_drbg_cap (
+        ACVP_CTX *ctx,
+        ACVP_CIPHER cipher,
+        ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case)) {
     ACVP_DRBG_CAP *drbg_cap;
     ACVP_RESULT result;
 
@@ -2302,11 +2291,10 @@ ACVP_RESULT acvp_enable_drbg_cap(
     return result;
 }
 
-ACVP_RESULT acvp_enable_rsa_cap(
-     ACVP_CTX *ctx,
-     ACVP_CIPHER cipher,
-     ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case))
-{
+ACVP_RESULT acvp_enable_rsa_cap (
+        ACVP_CTX *ctx,
+        ACVP_CIPHER cipher,
+        ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case)) {
     ACVP_RSA_CAP *rsa_cap;
     ACVP_RESULT result;
 
@@ -2341,20 +2329,19 @@ ACVP_RESULT acvp_enable_rsa_cap(
  * Allows application to specify the vendor attributes for
  * the test session.
  */
-ACVP_RESULT acvp_set_vendor_info(ACVP_CTX *ctx,
-				 const char *vendor_name,
-				 const char *vendor_url,
-				 const char *contact_name,
-				 const char *contact_email)
-{
+ACVP_RESULT acvp_set_vendor_info (ACVP_CTX *ctx,
+                                  const char *vendor_name,
+                                  const char *vendor_url,
+                                  const char *contact_name,
+                                  const char *contact_email) {
     if (!ctx) {
         return ACVP_NO_CTX;
     }
 
-    if (ctx->vendor_name) free (ctx->vendor_name);
-    if (ctx->vendor_url) free (ctx->vendor_url);
-    if (ctx->contact_name) free (ctx->contact_name);
-    if (ctx->contact_email) free (ctx->contact_email);
+    if (ctx->vendor_name) { free(ctx->vendor_name); }
+    if (ctx->vendor_url) { free(ctx->vendor_url); }
+    if (ctx->contact_name) { free(ctx->contact_name); }
+    if (ctx->contact_email) { free(ctx->contact_email); }
 
     ctx->vendor_name = strdup(vendor_name);
     ctx->vendor_url = strdup(vendor_url);
@@ -2368,20 +2355,19 @@ ACVP_RESULT acvp_set_vendor_info(ACVP_CTX *ctx,
  * Allows application to specify the crypto module attributes for
  * the test session.
  */
-ACVP_RESULT acvp_set_module_info(ACVP_CTX *ctx,
-				 const char *module_name,
-				 const char *module_type,
-				 const char *module_version,
-				 const char *module_description)
-{
+ACVP_RESULT acvp_set_module_info (ACVP_CTX *ctx,
+                                  const char *module_name,
+                                  const char *module_type,
+                                  const char *module_version,
+                                  const char *module_description) {
     if (!ctx) {
         return ACVP_NO_CTX;
     }
 
-    if (ctx->module_name) free (ctx->module_name);
-    if (ctx->module_type) free (ctx->module_type);
-    if (ctx->module_version) free (ctx->module_version);
-    if (ctx->module_desc) free (ctx->module_desc);
+    if (ctx->module_name) { free(ctx->module_name); }
+    if (ctx->module_type) { free(ctx->module_type); }
+    if (ctx->module_version) { free(ctx->module_version); }
+    if (ctx->module_desc) { free(ctx->module_desc); }
 
     ctx->module_name = strdup(module_name);
     ctx->module_type = strdup(module_type);
@@ -2395,12 +2381,11 @@ ACVP_RESULT acvp_set_module_info(ACVP_CTX *ctx,
  * This function is used by the application to specify the
  * ACVP server address and TCP port#.
  */
-ACVP_RESULT acvp_set_server(ACVP_CTX *ctx, char *server_name, int port)
-{
+ACVP_RESULT acvp_set_server (ACVP_CTX *ctx, char *server_name, int port) {
     if (!ctx) {
         return ACVP_NO_CTX;
     }
-    if (ctx->server_name) free (ctx->server_name);
+    if (ctx->server_name) { free(ctx->server_name); }
     ctx->server_name = strdup(server_name);
     ctx->server_port = port;
 
@@ -2411,15 +2396,14 @@ ACVP_RESULT acvp_set_server(ACVP_CTX *ctx, char *server_name, int port)
  * This function is used by the application to specify the
  * ACVP server URI path segment prefix.
  */
-ACVP_RESULT acvp_set_path_segment(ACVP_CTX *ctx, char *path_segment)
-{
+ACVP_RESULT acvp_set_path_segment (ACVP_CTX *ctx, char *path_segment) {
     if (!ctx) {
         return ACVP_NO_CTX;
     }
     if (!path_segment) {
         return ACVP_INVALID_ARG;
     }
-    if (ctx->path_segment) free (ctx->path_segment);
+    if (ctx->path_segment) { free(ctx->path_segment); }
     ctx->path_segment = strdup(path_segment);
 
     return ACVP_SUCCESS;
@@ -2433,12 +2417,11 @@ ACVP_RESULT acvp_set_path_segment(ACVP_CTX *ctx, char *path_segment)
  * enabled, which is not recommended (but provided as an operational
  * mode for testing).
  */
-ACVP_RESULT acvp_set_cacerts(ACVP_CTX *ctx, char *ca_file)
-{
+ACVP_RESULT acvp_set_cacerts (ACVP_CTX *ctx, char *ca_file) {
     if (!ctx) {
         return ACVP_NO_CTX;
     }
-    if (ctx->cacerts_file) free (ctx->cacerts_file);
+    if (ctx->cacerts_file) { free(ctx->cacerts_file); }
     ctx->cacerts_file = strdup(ca_file);
 
     /*
@@ -2457,31 +2440,29 @@ ACVP_RESULT acvp_set_cacerts(ACVP_CTX *ctx, char *ca_file)
  * should only be used when the ACVP server supports TLS client
  * authentication.
  */
-ACVP_RESULT acvp_set_certkey(ACVP_CTX *ctx, char *cert_file, char *key_file)
-{
+ACVP_RESULT acvp_set_certkey (ACVP_CTX *ctx, char *cert_file, char *key_file) {
     if (!ctx) {
         return ACVP_NO_CTX;
     }
-    if (ctx->tls_cert) free (ctx->tls_cert);
+    if (ctx->tls_cert) { free(ctx->tls_cert); }
     ctx->tls_cert = strdup(cert_file);
-    if (ctx->tls_key) free (ctx->tls_key);
+    if (ctx->tls_key) { free(ctx->tls_key); }
     ctx->tls_key = strdup(key_file);
 
     return ACVP_SUCCESS;
 }
 
 
-static ACVP_RESULT acvp_lookup_prereqVals (JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry)
-{
+static ACVP_RESULT acvp_lookup_prereqVals (JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry) {
     JSON_Array *prereq_array = NULL;
     ACVP_PREREQ_LIST *prereq_vals, *next_pre_req;
     ACVP_PREREQ_ALG_VAL *pre_req;
     char *alg_str;
     int i = 0;
 
-    if(!cap_entry) return ACVP_INVALID_ARG;
+    if (!cap_entry) { return ACVP_INVALID_ARG; }
 
-    if (!cap_entry->has_prereq) return ACVP_SUCCESS;
+    if (!cap_entry->has_prereq) { return ACVP_SUCCESS; }
     /*
      * Init json array
      */
@@ -2491,9 +2472,9 @@ static ACVP_RESULT acvp_lookup_prereqVals (JSON_Object *cap_obj, ACVP_CAPS_LIST 
     /*
      * return OK if nothing present
      */
-     prereq_vals = cap_entry->prereq_vals;
+    prereq_vals = cap_entry->prereq_vals;
 
-     while (prereq_vals) {
+    while (prereq_vals) {
         JSON_Value *val = NULL;
         JSON_Object *obj = NULL;
         val = json_value_init_object();
@@ -2517,8 +2498,7 @@ static ACVP_RESULT acvp_lookup_prereqVals (JSON_Object *cap_obj, ACVP_CAPS_LIST 
     return ACVP_SUCCESS;
 }
 
-static ACVP_RESULT acvp_build_hash_register_cap(JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry)
-{
+static ACVP_RESULT acvp_build_hash_register_cap (JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry) {
     json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
     json_object_set_boolean(cap_obj, "inBit", cap_entry->cap.hash_cap->in_bit);
     json_object_set_boolean(cap_obj, "inEmpty", cap_entry->cap.hash_cap->in_empty);
@@ -2526,8 +2506,7 @@ static ACVP_RESULT acvp_build_hash_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
     return ACVP_SUCCESS;
 }
 
-static ACVP_RESULT acvp_build_hmac_register_cap(JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry)
-{
+static ACVP_RESULT acvp_build_hmac_register_cap (JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry) {
     JSON_Array *temp_arr = NULL;
     JSON_Value *val = NULL;
     JSON_Object *obj = NULL;
@@ -2536,7 +2515,7 @@ static ACVP_RESULT acvp_build_hmac_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
 
     json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
     result = acvp_lookup_prereqVals(cap_obj, cap_entry);
-    if (result != ACVP_SUCCESS) return result;
+    if (result != ACVP_SUCCESS) { return result; }
 
     json_object_set_value(cap_obj, "keyLen", json_value_init_array());
     temp_arr = json_object_get_array(cap_obj, "keyLen");
@@ -2556,15 +2535,14 @@ static ACVP_RESULT acvp_build_hmac_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
     temp_arr = json_object_get_array(cap_obj, "macLen");
     sl_list = cap_entry->cap.hmac_cap->mac_len;
     while (sl_list) {
-      json_array_append_number(temp_arr, sl_list->length);
-      sl_list = sl_list->next;
+        json_array_append_number(temp_arr, sl_list->length);
+        sl_list = sl_list->next;
     }
 
     return ACVP_SUCCESS;
 }
 
-static ACVP_RESULT acvp_build_cmac_register_cap(JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry)
-{
+static ACVP_RESULT acvp_build_cmac_register_cap (JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry) {
     JSON_Array *temp_arr = NULL;
     ACVP_SL_LIST *sl_list;
     int i;
@@ -2572,17 +2550,17 @@ static ACVP_RESULT acvp_build_cmac_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
 
     json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
     result = acvp_lookup_prereqVals(cap_obj, cap_entry);
-    if(result != ACVP_SUCCESS) return result;
+    if (result != ACVP_SUCCESS) { return result; }
 
     json_object_set_value(cap_obj, "direction", json_value_init_array());
     temp_arr = json_object_get_array(cap_obj, "direction");
-    if (cap_entry->cap.cmac_cap->direction_gen) json_array_append_string(temp_arr, "gen");
-    if (cap_entry->cap.cmac_cap->direction_ver) json_array_append_string(temp_arr, "ver");
+    if (cap_entry->cap.cmac_cap->direction_gen) { json_array_append_string(temp_arr, "gen"); }
+    if (cap_entry->cap.cmac_cap->direction_ver) { json_array_append_string(temp_arr, "ver"); }
 
     json_object_set_value(cap_obj, "msgLen", json_value_init_array());
     temp_arr = json_object_get_array(cap_obj, "msgLen");
     for (i = 0; i < CMAC_MSG_LEN_NUM_ITEMS; i++) {
-      json_array_append_number(temp_arr, cap_entry->cap.cmac_cap->msg_len[i]);
+        json_array_append_number(temp_arr, cap_entry->cap.cmac_cap->msg_len[i]);
     }
 
     /*
@@ -2592,16 +2570,15 @@ static ACVP_RESULT acvp_build_cmac_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
     temp_arr = json_object_get_array(cap_obj, "macLen");
     sl_list = cap_entry->cap.cmac_cap->mac_len;
     while (sl_list) {
-      json_array_append_number(temp_arr, sl_list->length);
-      sl_list = sl_list->next;
+        json_array_append_number(temp_arr, sl_list->length);
+        sl_list = sl_list->next;
     }
 
     return ACVP_SUCCESS;
 }
 
 
-static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry)
-{
+static ACVP_RESULT acvp_build_sym_cipher_register_cap (JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry) {
     JSON_Array *kwc_arr = NULL;
     JSON_Array *mode_arr = NULL;
     JSON_Array *opts_arr = NULL;
@@ -2613,7 +2590,7 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
 
     sym_cap = cap_entry->cap.sym_cap;
     result = acvp_lookup_prereqVals(cap_obj, cap_entry);
-    if (result != ACVP_SUCCESS) return result;
+    if (result != ACVP_SUCCESS) { return result; }
 
     /*
      * Set the direction capability
@@ -2647,7 +2624,7 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
     /*
      * Set the IV generation source if applicable
      */
-    switch(sym_cap->ivgen_source) {
+    switch (sym_cap->ivgen_source) {
     case ACVP_IVGEN_SRC_INT:
         json_object_set_string(cap_obj, "ivGen", "internal");
         break;
@@ -2662,7 +2639,7 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
     /*
      * Set the IV generation mode if applicable
      */
-    switch(sym_cap->ivgen_mode) {
+    switch (sym_cap->ivgen_mode) {
     case ACVP_IVGEN_MODE_821:
         json_object_set_string(cap_obj, "ivGenMode", "8.2.1");
         break;
@@ -2679,12 +2656,12 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
      */
     if (sym_cap->keying_option != ACVP_KO_NA) {
         json_object_set_value(cap_obj, "keyingOption", json_value_init_array());
-      	opts_arr = json_object_get_array(cap_obj, "keyingOption");
+        opts_arr = json_object_get_array(cap_obj, "keyingOption");
         if (sym_cap->keying_option == ACVP_KO_THREE ||
             sym_cap->keying_option == ACVP_KO_BOTH) {
             json_array_append_number(opts_arr, 1);
         }
-    	if (sym_cap->keying_option == ACVP_KO_TWO ||
+        if (sym_cap->keying_option == ACVP_KO_TWO ||
             sym_cap->keying_option == ACVP_KO_BOTH) {
             json_array_append_number(opts_arr, 2);
         }
@@ -2708,16 +2685,15 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
         opts_arr = json_object_get_array(cap_obj, "tagLen");
         sl_list = sym_cap->taglen;
         while (sl_list) {
-           json_array_append_number(opts_arr, sl_list->length);
-           sl_list = sl_list->next;
+            json_array_append_number(opts_arr, sl_list->length);
+            sl_list = sl_list->next;
         }
     }
 
     /*
      * Set the supported IV lengths
      */
-    switch (cap_entry->cipher)
-    {
+    switch (cap_entry->cipher) {
     case ACVP_TDES_ECB:
     case ACVP_TDES_CBC:
     case ACVP_TDES_CBCI:
@@ -2777,12 +2753,11 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
 }
 
 
-static char *acvp_lookup_drbg_mode_string (ACVP_CAPS_LIST *cap_entry)
-{
+static char *acvp_lookup_drbg_mode_string (ACVP_CAPS_LIST *cap_entry) {
     char *mode_str = NULL;
-    if(!cap_entry) return NULL;
-    if(!cap_entry->cap.drbg_cap) return NULL;
-    if(!cap_entry->cap.drbg_cap->drbg_cap_mode_list) return NULL;
+    if (!cap_entry) { return NULL; }
+    if (!cap_entry->cap.drbg_cap) { return NULL; }
+    if (!cap_entry->cap.drbg_cap->drbg_cap_mode_list) { return NULL; }
 
     switch (cap_entry->cap.drbg_cap->drbg_cap_mode_list->cap_mode.mode) {
     case ACVP_DRBG_SHA_1:
@@ -2824,15 +2799,14 @@ static char *acvp_lookup_drbg_mode_string (ACVP_CAPS_LIST *cap_entry)
     return mode_str;
 }
 
-static ACVP_RESULT acvp_lookup_drbg_prereqVals (JSON_Object *cap_obj, ACVP_DRBG_CAP_MODE *drbg_cap_mode)
-{
+static ACVP_RESULT acvp_lookup_drbg_prereqVals (JSON_Object *cap_obj, ACVP_DRBG_CAP_MODE *drbg_cap_mode) {
     JSON_Array *prereq_array = NULL;
     ACVP_PREREQ_LIST *prereq_vals, *next_pre_req;
     ACVP_PREREQ_ALG_VAL *pre_req;
     char *alg_str;
     int i;
 
-    if(!drbg_cap_mode) return ACVP_INVALID_ARG;
+    if (!drbg_cap_mode) { return ACVP_INVALID_ARG; }
 
     /*
      * Init json array
@@ -2844,7 +2818,7 @@ static ACVP_RESULT acvp_lookup_drbg_prereqVals (JSON_Object *cap_obj, ACVP_DRBG_
      * return OK if nothing present
      */
     prereq_vals = drbg_cap_mode->prereq_vals;
-    if(!prereq_vals) {
+    if (!prereq_vals) {
         return ACVP_SUCCESS;
     }
 
@@ -2873,16 +2847,14 @@ static ACVP_RESULT acvp_lookup_drbg_prereqVals (JSON_Object *cap_obj, ACVP_DRBG_
 }
 
 
-
-static ACVP_RESULT acvp_build_drbg_register_cap(JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry)
-{
+static ACVP_RESULT acvp_build_drbg_register_cap (JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry) {
     ACVP_RESULT result;
     ACVP_DRBG_CAP_MODE *drbg_cap_mode = NULL;
     JSON_Object *len_obj = NULL;
-    JSON_Value  *len_val = NULL;
+    JSON_Value *len_val = NULL;
 
     char *mode_str = acvp_lookup_drbg_mode_string(cap_entry);
-    if (!mode_str) return ACVP_INVALID_ARG;
+    if (!mode_str) { return ACVP_INVALID_ARG; }
 
     drbg_cap_mode = &cap_entry->cap.drbg_cap->drbg_cap_mode_list->cap_mode;
     json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
@@ -2890,10 +2862,10 @@ static ACVP_RESULT acvp_build_drbg_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
     json_object_set_boolean(cap_obj, "derFuncEnabled", drbg_cap_mode->der_func_enabled);
 
     result = acvp_lookup_drbg_prereqVals(cap_obj, drbg_cap_mode);
-    if (result != ACVP_SUCCESS) return result;
+    if (result != ACVP_SUCCESS) { return result; }
 
     json_object_set_boolean(cap_obj, "predResistanceEnabled", drbg_cap_mode->pred_resist_enabled);
-    json_object_set_boolean(cap_obj, "reseedImplemented",     drbg_cap_mode->reseed_implemented);
+    json_object_set_boolean(cap_obj, "reseedImplemented", drbg_cap_mode->reseed_implemented);
 
     //Set entropy range
     len_val = json_value_init_object();
@@ -2935,43 +2907,42 @@ static ACVP_RESULT acvp_build_drbg_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
 /*
  * Builds the JSON object for RSA keygen primes
  */
-static ACVP_RESULT acvp_lookup_rsa_primes(JSON_Object *cap_obj, ACVP_RSA_CAP *rsa_cap)
-{
+static ACVP_RESULT acvp_lookup_rsa_primes (JSON_Object *cap_obj, ACVP_RSA_CAP *rsa_cap) {
     JSON_Array *primes_array = NULL, *hash_array = NULL, *prime_test_array = NULL;
 
     ACVP_RSA_PRIMES_LIST *primes, *next_prime;
     ACVP_NAME_LIST *comp_name, *next_name;
 
-    if(!rsa_cap) return ACVP_INVALID_ARG;
+    if (!rsa_cap) { return ACVP_INVALID_ARG; }
     unsigned int rand_pq_val = rsa_cap->rsa_cap_mode_list->cap_mode_attrs.keygen->rand_pq;
 
     /*
      * Init json array
      */
     switch (rand_pq_val) {
-        case RSA_RAND_PQ_B32:
-        case RSA_RAND_PQ_B34:
-            json_object_set_value(cap_obj, "capProvPrimes", json_value_init_array());
-            primes_array = json_object_get_array(cap_obj, "capProvPrimes");
-            break;
-        case RSA_RAND_PQ_B33:
-        case RSA_RAND_PQ_B36:
-            json_object_set_value(cap_obj, "capProbPrime", json_value_init_array());
-            primes_array = json_object_get_array(cap_obj, "capProbPrime");
-            break;
-        case RSA_RAND_PQ_B35:
-            json_object_set_value(cap_obj, "capsProvProbPrimes", json_value_init_array());
-            primes_array = json_object_get_array(cap_obj, "capsProvProbPrimes");
-            break;
-        default:
-            break;
+    case RSA_RAND_PQ_B32:
+    case RSA_RAND_PQ_B34:
+        json_object_set_value(cap_obj, "capProvPrimes", json_value_init_array());
+        primes_array = json_object_get_array(cap_obj, "capProvPrimes");
+        break;
+    case RSA_RAND_PQ_B33:
+    case RSA_RAND_PQ_B36:
+        json_object_set_value(cap_obj, "capProbPrime", json_value_init_array());
+        primes_array = json_object_get_array(cap_obj, "capProbPrime");
+        break;
+    case RSA_RAND_PQ_B35:
+        json_object_set_value(cap_obj, "capsProvProbPrimes", json_value_init_array());
+        primes_array = json_object_get_array(cap_obj, "capsProvProbPrimes");
+        break;
+    default:
+        break;
     }
 
     /*
      * return OK if nothing present
      */
     primes = rsa_cap->rsa_cap_mode_list->cap_mode_attrs.keygen->cap_primes_list;
-    if(!rsa_cap->rsa_cap_mode_list->cap_mode_attrs.keygen->cap_primes_list) {
+    if (!rsa_cap->rsa_cap_mode_list->cap_mode_attrs.keygen->cap_primes_list) {
         return ACVP_SUCCESS;
     }
 
@@ -2985,30 +2956,30 @@ static ACVP_RESULT acvp_lookup_rsa_primes(JSON_Object *cap_obj, ACVP_RSA_CAP *rs
 
         if (rand_pq_val == RSA_RAND_PQ_B32 ||
             rand_pq_val == RSA_RAND_PQ_B34 ||
-            rand_pq_val == RSA_RAND_PQ_B35)
-        {
+            rand_pq_val == RSA_RAND_PQ_B35) {
             json_object_set_value(obj, ACVP_RSA_CAP_HASHALG_OBJ_NAME, json_value_init_array());
             hash_array = json_object_get_array(obj, ACVP_RSA_CAP_HASHALG_OBJ_NAME);
             comp_name = primes->hash_algs;
 
-            while(comp_name) {
-                if (is_valid_hash_alg(comp_name->name) == ACVP_SUCCESS)
+            while (comp_name) {
+                if (is_valid_hash_alg(comp_name->name) == ACVP_SUCCESS) {
                     json_array_append_string(hash_array, comp_name->name);
+                }
                 next_name = comp_name->next;
                 comp_name = next_name;
             }
         }
         if (rand_pq_val == RSA_RAND_PQ_B33 ||
             rand_pq_val == RSA_RAND_PQ_B36 ||
-            rand_pq_val == RSA_RAND_PQ_B35)
-        {
+            rand_pq_val == RSA_RAND_PQ_B35) {
             json_object_set_value(obj, "primeTest", json_value_init_array());
             prime_test_array = json_object_get_array(obj, "primeTest");
             comp_name = primes->prime_tests;
 
-            while(comp_name) {
-                if (is_valid_prime_test(comp_name->name) == ACVP_SUCCESS)
+            while (comp_name) {
+                if (is_valid_prime_test(comp_name->name) == ACVP_SUCCESS) {
                     json_array_append_string(prime_test_array, comp_name->name);
+                }
                 next_name = comp_name->next;
                 comp_name = next_name;
             }
@@ -3021,8 +2992,7 @@ static ACVP_RESULT acvp_lookup_rsa_primes(JSON_Object *cap_obj, ACVP_RSA_CAP *rs
     return ACVP_SUCCESS;
 }
 
-static ACVP_RESULT acvp_lookup_rsa_cap_sig_type(JSON_Array *alg_specs_array, ACVP_RSA_CAP_MODE_LIST *mode_list)
-{
+static ACVP_RESULT acvp_lookup_rsa_cap_sig_type (JSON_Array *alg_specs_array, ACVP_RSA_CAP_MODE_LIST *mode_list) {
     JSON_Array *mod_rsa_sig_array = NULL, *hash_sig_array = NULL;
 
     ACVP_RSA_SIG_ATTRS *type, *next_type;
@@ -3030,16 +3000,15 @@ static ACVP_RESULT acvp_lookup_rsa_cap_sig_type(JSON_Array *alg_specs_array, ACV
     JSON_Value *hashval = NULL;
     JSON_Object *hashobj = NULL;
 
-    if(!mode_list) return ACVP_INVALID_ARG;
+    if (!mode_list) { return ACVP_INVALID_ARG; }
 
     /*
      * Init json array
      */
-    if(mode_list->cap_mode == ACVP_RSA_MODE_SIGGEN)
-    {
+    if (mode_list->cap_mode == ACVP_RSA_MODE_SIGGEN) {
 
         type = mode_list->cap_mode_attrs.siggen;
-        if(!type) {
+        if (!type) {
             return ACVP_SUCCESS;
         }
 
@@ -3063,13 +3032,13 @@ static ACVP_RESULT acvp_lookup_rsa_cap_sig_type(JSON_Array *alg_specs_array, ACV
                 hash_sig_array = json_object_get_array(obj, ACVP_RSA_CAP_HASHPAIR_NAME);
                 comp_hash = mods->hash_pairs;
 
-                while(comp_hash) {
+                while (comp_hash) {
                     hashval = NULL;
                     hashobj = NULL;
                     hashval = json_value_init_object();
                     hashobj = json_value_get_object(hashval);
                     json_object_set_string(hashobj, ACVP_RSA_CAP_HASHALG_OBJ_NAME, comp_hash->name);
-                    if (comp_hash->salt) json_object_set_number(hashobj, "salt", comp_hash->salt);
+                    if (comp_hash->salt) { json_object_set_number(hashobj, "salt", comp_hash->salt); }
                     json_array_append_value(hash_sig_array, hashval);
                     next_hash = comp_hash->next;
                     comp_hash = next_hash;
@@ -3083,12 +3052,10 @@ static ACVP_RESULT acvp_lookup_rsa_cap_sig_type(JSON_Array *alg_specs_array, ACV
             next_type = type->next;
             type = next_type;
         }
-    }
-    else if(mode_list->cap_mode==ACVP_RSA_MODE_SIGVER)
-    {
+    } else if (mode_list->cap_mode == ACVP_RSA_MODE_SIGVER) {
 
         type = mode_list->cap_mode_attrs.sigver;
-        if(!type) {
+        if (!type) {
             return ACVP_SUCCESS;
         }
 
@@ -3112,13 +3079,13 @@ static ACVP_RESULT acvp_lookup_rsa_cap_sig_type(JSON_Array *alg_specs_array, ACV
                 hash_sig_array = json_object_get_array(obj, ACVP_RSA_CAP_HASHPAIR_NAME);
                 comp_hash = mods->hash_pairs;
 
-                while(comp_hash) {
+                while (comp_hash) {
                     hashval = NULL;
                     hashobj = NULL;
                     hashval = json_value_init_object();
                     hashobj = json_value_get_object(hashval);
                     json_object_set_string(hashobj, ACVP_RSA_CAP_HASHALG_OBJ_NAME, comp_hash->name);
-                    if (comp_hash->salt) json_object_set_number(hashobj, "salt", comp_hash->salt);
+                    if (comp_hash->salt) { json_object_set_number(hashobj, "salt", comp_hash->salt); }
                     json_array_append_value(hash_sig_array, hashval);
                     next_hash = comp_hash->next;
                     comp_hash = next_hash;
@@ -3136,26 +3103,25 @@ static ACVP_RESULT acvp_lookup_rsa_cap_sig_type(JSON_Array *alg_specs_array, ACV
     return ACVP_SUCCESS;
 }
 
-static char *acvp_lookup_rsa_mode_string (ACVP_RSA_MODE mode)
-{
+static char *acvp_lookup_rsa_mode_string (ACVP_RSA_MODE mode) {
     char *mode_str = NULL;
-    switch(mode) {
+    switch (mode) {
     case ACVP_RSA_MODE_KEYGEN:
         mode_str = ACVP_RSA_KEYGEN;
         break;
     case ACVP_RSA_MODE_SIGGEN:
-		mode_str = ACVP_RSA_SIGGEN;
-		break;
+        mode_str = ACVP_RSA_SIGGEN;
+        break;
     case ACVP_RSA_MODE_SIGVER:
-            mode_str = ACVP_RSA_SIGVER;
-            break;
+        mode_str = ACVP_RSA_SIGVER;
+        break;
     default:
         return NULL;
     }
     return mode_str;
 }
 
-static ACVP_RESULT acvp_build_rsa_keygen_register(JSON_Object **cap_specs_obj, ACVP_CAPS_LIST *cap_entry) {
+static ACVP_RESULT acvp_build_rsa_keygen_register (JSON_Object **cap_specs_obj, ACVP_CAPS_LIST *cap_entry) {
     ACVP_RESULT result = ACVP_SUCCESS;
     ACVP_RSA_KEYGEN_ATTRS *rsa_cap_mode = NULL;
 
@@ -3164,8 +3130,8 @@ static ACVP_RESULT acvp_build_rsa_keygen_register(JSON_Object **cap_specs_obj, A
     json_object_set_string(*cap_specs_obj, "pubExp", rsa_cap_mode->pub_exp == RSA_PUB_EXP_FIXED ? "fixed" : "random");
 
     if (rsa_cap_mode->pub_exp == RSA_PUB_EXP_FIXED) {
-        char *fixPEV=BN_bn2hex(rsa_cap_mode->fixed_pub_exp_val);
-        json_object_set_string(*cap_specs_obj, "fixedPubExpVal",fixPEV );
+        char *fixPEV = BN_bn2hex(rsa_cap_mode->fixed_pub_exp_val);
+        json_object_set_string(*cap_specs_obj, "fixedPubExpVal", fixPEV);
         free(fixPEV);
     }
 
@@ -3176,22 +3142,21 @@ static ACVP_RESULT acvp_build_rsa_keygen_register(JSON_Object **cap_specs_obj, A
     return result;
 }
 
-static ACVP_RESULT acvp_build_rsa_siggen_register(JSON_Array **alg_specs_array, ACVP_RSA_CAP_MODE_LIST *mode_list) {
+static ACVP_RESULT acvp_build_rsa_siggen_register (JSON_Array **alg_specs_array, ACVP_RSA_CAP_MODE_LIST *mode_list) {
     return acvp_lookup_rsa_cap_sig_type(*alg_specs_array, mode_list);
 }
 
-static ACVP_RESULT acvp_build_rsa_sigver_register(JSON_Array **alg_specs_array, ACVP_RSA_CAP_MODE_LIST *mode_list) {
+static ACVP_RESULT acvp_build_rsa_sigver_register (JSON_Array **alg_specs_array, ACVP_RSA_CAP_MODE_LIST *mode_list) {
     return acvp_lookup_rsa_cap_sig_type(*alg_specs_array, mode_list);
 }
 
-static ACVP_RESULT acvp_build_rsa_register_cap(JSON_Array *caps_arr, ACVP_CAPS_LIST *cap_entry)
-{
-	ACVP_RESULT result;
-	ACVP_RSA_MODE mode;
+static ACVP_RESULT acvp_build_rsa_register_cap (JSON_Array *caps_arr, ACVP_CAPS_LIST *cap_entry) {
+    ACVP_RESULT result;
+    ACVP_RSA_MODE mode;
 
-	JSON_Array *specs_array = NULL;
-	JSON_Value *cap_specs_val = NULL, *cap_val = NULL;
-	JSON_Object *cap_specs_obj = NULL, *cap_obj = NULL;
+    JSON_Array *specs_array = NULL;
+    JSON_Value *cap_specs_val = NULL, *cap_val = NULL;
+    JSON_Object *cap_specs_obj = NULL, *cap_obj = NULL;
 
     char *rsa_str = acvp_lookup_cipher_name(cap_entry->cipher);
 
@@ -3199,9 +3164,8 @@ static ACVP_RESULT acvp_build_rsa_register_cap(JSON_Array *caps_arr, ACVP_CAPS_L
      * Iterate through list of RSA modes and create registration object
      * for each one, appending to the array as we go
      */
-	ACVP_RSA_CAP_MODE_LIST *mode_list = cap_entry->cap.rsa_cap->rsa_cap_mode_list;
-	while(mode_list)
-	{
+    ACVP_RSA_CAP_MODE_LIST *mode_list = cap_entry->cap.rsa_cap->rsa_cap_mode_list;
+    while (mode_list) {
         cap_val = NULL;
         cap_obj = NULL;
         cap_val = json_value_init_object();
@@ -3209,124 +3173,133 @@ static ACVP_RESULT acvp_build_rsa_register_cap(JSON_Array *caps_arr, ACVP_CAPS_L
 
         json_object_set_string(cap_obj, "algorithm", rsa_str);
         result = acvp_lookup_prereqVals(cap_obj, cap_entry);
-        if (result != ACVP_SUCCESS) return result;
+        if (result != ACVP_SUCCESS) { return result; }
 
         mode = mode_list->cap_mode;
         char *mode_str = acvp_lookup_rsa_mode_string(mode);
-        if (!mode_str) return ACVP_INVALID_ARG;
+        if (!mode_str) { return ACVP_INVALID_ARG; }
         json_object_set_string(cap_obj, "mode", mode_str);
 
         json_object_set_value(cap_obj, "algSpecs", json_value_init_array());
         specs_array = json_object_get_array(cap_obj, "algSpecs");
 
-	    cap_specs_val = json_value_init_object();
-	    cap_specs_obj = json_value_get_object(cap_specs_val);
+        cap_specs_val = json_value_init_object();
+        cap_specs_obj = json_value_get_object(cap_specs_val);
 
-	    switch(mode) {
-	    case ACVP_RSA_MODE_KEYGEN:
-	        result = acvp_build_rsa_keygen_register(&cap_specs_obj, cap_entry);
-	        if (result != ACVP_SUCCESS) return result;
-	        break;
-	    case ACVP_RSA_MODE_SIGGEN:
-	        result = acvp_build_rsa_siggen_register(&specs_array, mode_list);
-	        if (result != ACVP_SUCCESS) return result;
-	        break;
-	    case ACVP_RSA_MODE_SIGVER:
-	        result = acvp_build_rsa_sigver_register(&specs_array, mode_list);
-	        if (result != ACVP_SUCCESS) return result;
-	        break;
-	    default:
+        switch (mode) {
+        case ACVP_RSA_MODE_KEYGEN:
+            result = acvp_build_rsa_keygen_register(&cap_specs_obj, cap_entry);
+            if (result != ACVP_SUCCESS) { return result; }
+            break;
+        case ACVP_RSA_MODE_SIGGEN:
+            result = acvp_build_rsa_siggen_register(&specs_array, mode_list);
+            if (result != ACVP_SUCCESS) { return result; }
+            break;
+        case ACVP_RSA_MODE_SIGVER:
+            result = acvp_build_rsa_sigver_register(&specs_array, mode_list);
+            if (result != ACVP_SUCCESS) { return result; }
+            break;
+        default:
             return ACVP_INVALID_ARG;
-	    }
+        }
 
         json_array_append_value(specs_array, cap_specs_val);
-	    mode_list = mode_list->next;
+        mode_list = mode_list->next;
         json_array_append_value(caps_arr, cap_val);
 
     }
-	return ACVP_SUCCESS;
+    return ACVP_SUCCESS;
 }
 
-static ACVP_RESULT acvp_build_kdf135_tls_register_cap(JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry)
-{
+static ACVP_RESULT acvp_build_kdf135_tls_register_cap (JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry) {
     JSON_Array *temp_arr = NULL;
     ACVP_RESULT result;
 
     json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
     json_object_set_value(cap_obj, "methods", json_value_init_array());
     temp_arr = json_object_get_array(cap_obj, "methods");
-    if (cap_entry->cap.kdf135_tls_cap->method[0] == ACVP_KDF135_TLS10_TLS11)
+    if (cap_entry->cap.kdf135_tls_cap->method[0] == ACVP_KDF135_TLS10_TLS11) {
         json_array_append_string(temp_arr, "TLS1.0-1.1");
-    else if (cap_entry->cap.kdf135_tls_cap->method[0] == ACVP_KDF135_TLS12)
+    } else if (cap_entry->cap.kdf135_tls_cap->method[0] == ACVP_KDF135_TLS12) {
         json_array_append_string(temp_arr, "TLS1.2");
+    }
 
-    if (cap_entry->cap.kdf135_tls_cap->method[1] == ACVP_KDF135_TLS10_TLS11)
+    if (cap_entry->cap.kdf135_tls_cap->method[1] == ACVP_KDF135_TLS10_TLS11) {
         json_array_append_string(temp_arr, "TLS1.0-1.1");
-    else if (cap_entry->cap.kdf135_tls_cap->method[1] == ACVP_KDF135_TLS12)
+    } else if (cap_entry->cap.kdf135_tls_cap->method[1] == ACVP_KDF135_TLS12) {
         json_array_append_string(temp_arr, "TLS1.2");
+    }
 
     json_object_set_value(cap_obj, "sha", json_value_init_array());
     temp_arr = json_object_get_array(cap_obj, "sha");
-    if (cap_entry->cap.kdf135_tls_cap->sha || ACVP_KDF135_TLS_CAP_SHA256)
+    if (cap_entry->cap.kdf135_tls_cap->sha || ACVP_KDF135_TLS_CAP_SHA256) {
         json_array_append_string(temp_arr, "SHA-256");
-    if (cap_entry->cap.kdf135_tls_cap->sha || ACVP_KDF135_TLS_CAP_SHA384)
+    }
+    if (cap_entry->cap.kdf135_tls_cap->sha || ACVP_KDF135_TLS_CAP_SHA384) {
         json_array_append_string(temp_arr, "SHA-384");
-    if (cap_entry->cap.kdf135_tls_cap->sha || ACVP_KDF135_TLS_CAP_SHA512)
+    }
+    if (cap_entry->cap.kdf135_tls_cap->sha || ACVP_KDF135_TLS_CAP_SHA512) {
         json_array_append_string(temp_arr, "SHA-512");
+    }
 
     result = acvp_lookup_prereqVals(cap_obj, cap_entry);
-    if(result != ACVP_SUCCESS) return result;
+    if (result != ACVP_SUCCESS) { return result; }
 
     return ACVP_SUCCESS;
 }
 
-static ACVP_RESULT acvp_build_kdf135_snmp_register_cap(JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry)
-{
+static ACVP_RESULT acvp_build_kdf135_snmp_register_cap (JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry) {
     ACVP_RESULT result;
     json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
 
     result = acvp_lookup_prereqVals(cap_obj, cap_entry);
-    if(result != ACVP_SUCCESS) return result;
+    if (result != ACVP_SUCCESS) { return result; }
 
     return ACVP_SUCCESS;
 }
 
-static ACVP_RESULT acvp_build_kdf135_ssh_register_cap(JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry)
-{
+static ACVP_RESULT acvp_build_kdf135_ssh_register_cap (JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry) {
     JSON_Array *temp_arr = NULL;
     ACVP_RESULT result;
 
     json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
     json_object_set_value(cap_obj, "methods", json_value_init_array());
     temp_arr = json_object_get_array(cap_obj, "methods");
-    if (cap_entry->cap.kdf135_ssh_cap->method[0] == ACVP_SSH_METH_TDES_CBC)
+    if (cap_entry->cap.kdf135_ssh_cap->method[0] == ACVP_SSH_METH_TDES_CBC) {
         json_array_append_string(temp_arr, "TDES-CBC");
+    }
 
-    if (cap_entry->cap.kdf135_ssh_cap->method[1] == ACVP_SSH_METH_AES_128_CBC)
+    if (cap_entry->cap.kdf135_ssh_cap->method[1] == ACVP_SSH_METH_AES_128_CBC) {
         json_array_append_string(temp_arr, "AES-128-CBC");
+    }
 
-    if (cap_entry->cap.kdf135_ssh_cap->method[2] == ACVP_SSH_METH_AES_192_CBC)
+    if (cap_entry->cap.kdf135_ssh_cap->method[2] == ACVP_SSH_METH_AES_192_CBC) {
         json_array_append_string(temp_arr, "AES-192-CBC");
+    }
 
-    if (cap_entry->cap.kdf135_ssh_cap->method[3] == ACVP_SSH_METH_AES_256_CBC)
+    if (cap_entry->cap.kdf135_ssh_cap->method[3] == ACVP_SSH_METH_AES_256_CBC) {
         json_array_append_string(temp_arr, "AES-256-CBC");
+    }
 
     json_object_set_value(cap_obj, "sha", json_value_init_array());
     temp_arr = json_object_get_array(cap_obj, "sha");
-    if (cap_entry->cap.kdf135_ssh_cap->sha & ACVP_KDF135_SSH_CAP_SHA256)
+    if (cap_entry->cap.kdf135_ssh_cap->sha & ACVP_KDF135_SSH_CAP_SHA256) {
         json_array_append_string(temp_arr, "SHA-256");
-    if (cap_entry->cap.kdf135_ssh_cap->sha & ACVP_KDF135_SSH_CAP_SHA384)
+    }
+    if (cap_entry->cap.kdf135_ssh_cap->sha & ACVP_KDF135_SSH_CAP_SHA384) {
         json_array_append_string(temp_arr, "SHA-384");
-    if (cap_entry->cap.kdf135_ssh_cap->sha & ACVP_KDF135_SSH_CAP_SHA512)
+    }
+    if (cap_entry->cap.kdf135_ssh_cap->sha & ACVP_KDF135_SSH_CAP_SHA512) {
         json_array_append_string(temp_arr, "SHA-512");
+    }
 
     result = acvp_lookup_prereqVals(cap_obj, cap_entry);
-    if(result != ACVP_SUCCESS) return result;
+    if (result != ACVP_SUCCESS) { return result; }
 
     return ACVP_SUCCESS;
 }
 
-static ACVP_RESULT acvp_build_dsa_pqggen_register(JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry) {
+static ACVP_RESULT acvp_build_dsa_pqggen_register (JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry) {
     ACVP_RESULT result = ACVP_SUCCESS;
     ACVP_DSA_PQGGEN_ATTRS *pqggen = NULL;
     ACVP_DSA_CAP_MODE *dsa_cap_mode = NULL;
@@ -3361,56 +3334,61 @@ static ACVP_RESULT acvp_build_dsa_pqggen_register(JSON_Object *cap_obj, ACVP_CAP
     json_object_set_value(cap_obj, "lnInfo", json_value_init_array());
     temp_arr = json_object_get_array(cap_obj, "lnInfo");
     while (pqggen) {
-    switch (pqggen->modulo)
-    {
+        switch (pqggen->modulo) {
         case ACVP_DSA_LN2048_224:
             ln_val = json_value_init_object();
             ln_obj = json_value_get_object(ln_val);
             json_object_set_string(ln_obj, "ln", "2048-224");
-	    break;
+            break;
         case ACVP_DSA_LN2048_256:
             ln_val = json_value_init_object();
             ln_obj = json_value_get_object(ln_val);
             json_object_set_string(ln_obj, "ln", "2048-256");
-	    break;
+            break;
         case ACVP_DSA_LN3072_256:
             ln_val = json_value_init_object();
             ln_obj = json_value_get_object(ln_val);
             json_object_set_string(ln_obj, "ln", "3072-256");
-	    break;
+            break;
         default:
-	    return ACVP_INVALID_ARG;
-    }
-    json_array_append_value(temp_arr, ln_val);
+            return ACVP_INVALID_ARG;
+        }
+        json_array_append_value(temp_arr, ln_val);
 
-    sha_val = json_value_init_object();
-    sha_obj = json_value_get_object(sha_val);
-    json_object_set_value(sha_obj, "sha", json_value_init_array());
-    sha_arr = json_object_get_array(sha_obj, "sha");
-    if (pqggen->sha & ACVP_DSA_SHA1)
-        json_array_append_string(sha_arr, "SHA-1");
-    if (pqggen->sha & ACVP_DSA_SHA224)
-        json_array_append_string(sha_arr, "SHA-224");
-    if (pqggen->sha & ACVP_DSA_SHA256)
-        json_array_append_string(sha_arr, "SHA-256");
-    if (pqggen->sha & ACVP_DSA_SHA384)
-        json_array_append_string(sha_arr, "SHA-384");
-    if (pqggen->sha & ACVP_DSA_SHA512)
-        json_array_append_string(sha_arr, "SHA-512");
-    if (pqggen->sha & ACVP_DSA_SHA512_224)
-        json_array_append_string(sha_arr, "SHA-512-224");
-    if (pqggen->sha & ACVP_DSA_SHA512_256)
-        json_array_append_string(sha_arr, "SHA-512-256");
-    pqggen = pqggen->next;
+        sha_val = json_value_init_object();
+        sha_obj = json_value_get_object(sha_val);
+        json_object_set_value(sha_obj, "sha", json_value_init_array());
+        sha_arr = json_object_get_array(sha_obj, "sha");
+        if (pqggen->sha & ACVP_DSA_SHA1) {
+            json_array_append_string(sha_arr, "SHA-1");
+        }
+        if (pqggen->sha & ACVP_DSA_SHA224) {
+            json_array_append_string(sha_arr, "SHA-224");
+        }
+        if (pqggen->sha & ACVP_DSA_SHA256) {
+            json_array_append_string(sha_arr, "SHA-256");
+        }
+        if (pqggen->sha & ACVP_DSA_SHA384) {
+            json_array_append_string(sha_arr, "SHA-384");
+        }
+        if (pqggen->sha & ACVP_DSA_SHA512) {
+            json_array_append_string(sha_arr, "SHA-512");
+        }
+        if (pqggen->sha & ACVP_DSA_SHA512_224) {
+            json_array_append_string(sha_arr, "SHA-512-224");
+        }
+        if (pqggen->sha & ACVP_DSA_SHA512_256) {
+            json_array_append_string(sha_arr, "SHA-512-256");
+        }
+        pqggen = pqggen->next;
 
-    json_array_append_value(temp_arr, sha_val);
+        json_array_append_value(temp_arr, sha_val);
     }
 
     return result;
 }
 
-static ACVP_RESULT acvp_build_dsa_register_cap(JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry)
-{
+static ACVP_RESULT acvp_build_dsa_register_cap (JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry) {
     ACVP_RESULT result;
     ACVP_DSA_MODE mode;
 
@@ -3420,7 +3398,7 @@ static ACVP_RESULT acvp_build_dsa_register_cap(JSON_Object *cap_obj, ACVP_CAPS_L
 
     json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
     result = acvp_lookup_prereqVals(cap_obj, cap_entry);
-    if (result != ACVP_SUCCESS) return result;
+    if (result != ACVP_SUCCESS) { return result; }
 
     json_object_set_value(cap_obj, "methods", json_value_init_array());
     meth_array = json_object_get_array(cap_obj, "methods");
@@ -3430,11 +3408,11 @@ static ACVP_RESULT acvp_build_dsa_register_cap(JSON_Object *cap_obj, ACVP_CAPS_L
 
     mode = cap_entry->cap.dsa_cap->dsa_cap_mode->cap_mode;
 
-    switch(mode) {
+    switch (mode) {
     case ACVP_DSA_MODE_PQGGEN:
         json_object_set_string(cap_meth_obj, "type", "pqgGen");
         result = acvp_build_dsa_pqggen_register(cap_meth_obj, cap_entry);
-        if (result != ACVP_SUCCESS) return result;
+        if (result != ACVP_SUCCESS) { return result; }
         break;
     default:
         break;
@@ -3451,12 +3429,11 @@ static ACVP_RESULT acvp_build_dsa_register_cap(JSON_Object *cap_obj, ACVP_CAPS_L
  * will be sent to the ACVP server to advertised the crypto
  * capabilities of the module under test.
  */
-static ACVP_RESULT acvp_build_register(ACVP_CTX *ctx, char **reg)
-{
+static ACVP_RESULT acvp_build_register (ACVP_CTX *ctx, char **reg) {
     ACVP_CAPS_LIST *cap_entry;
 
-    JSON_Value *reg_arry_val  = NULL;
-    JSON_Value *ver_val  = NULL;
+    JSON_Value *reg_arry_val = NULL;
+    JSON_Value *ver_val = NULL;
     JSON_Object *ver_obj = NULL;
 
     JSON_Array *reg_arry = NULL;
@@ -3474,20 +3451,20 @@ static ACVP_RESULT acvp_build_register(ACVP_CTX *ctx, char **reg)
     JSON_Object *cap_obj = NULL;
     JSON_Value *vendor_val = NULL;
     JSON_Object *vendor_obj = NULL;
-    JSON_Array *con_array_val  = NULL;
-    JSON_Array *dep_array_val  = NULL;
-    JSON_Value *mod_val  = NULL;
+    JSON_Array *con_array_val = NULL;
+    JSON_Array *dep_array_val = NULL;
+    JSON_Value *mod_val = NULL;
     JSON_Object *mod_obj = NULL;
-    JSON_Value *dep_val  = NULL;
+    JSON_Value *dep_val = NULL;
     JSON_Object *dep_obj = NULL;
-    JSON_Value *con_val  = NULL;
+    JSON_Value *con_val = NULL;
     JSON_Object *con_obj = NULL;
 
     /*
      * Start the registration array
      */
     reg_arry_val = json_value_init_array();
-    reg_arry = json_array  ((const JSON_Value *)reg_arry_val);
+    reg_arry = json_array((const JSON_Value *) reg_arry_val);
 
     ver_val = json_value_init_object();
     ver_obj = json_value_get_object(ver_val);
@@ -3603,7 +3580,7 @@ static ACVP_RESULT acvp_build_register(ACVP_CTX *ctx, char **reg)
             /*
              * Build up the capability JSON based on the cipher type
              */
-            switch(cap_entry->cipher) {
+            switch (cap_entry->cipher) {
             case ACVP_AES_GCM:
             case ACVP_AES_CCM:
             case ACVP_AES_ECB:
@@ -3651,7 +3628,7 @@ static ACVP_RESULT acvp_build_register(ACVP_CTX *ctx, char **reg)
                 break;
             case ACVP_DSA:
                 acvp_build_dsa_register_cap(cap_obj, cap_entry);
-	        break;
+                break;
             case ACVP_RSA:
                 // pass the whole array to this one... or change architecture of rsa?
                 acvp_build_rsa_register_cap(caps_arr, cap_entry);
@@ -3674,8 +3651,9 @@ static ACVP_RESULT acvp_build_register(ACVP_CTX *ctx, char **reg)
              * Now that we've built up the JSON for this capability,
              * add it to the array of capabilities on the register message.
              */
-            if (cap_entry->cipher != ACVP_RSA)
+            if (cap_entry->cipher != ACVP_RSA) {
                 json_array_append_value(caps_arr, cap_val);
+            }
 
             /* Advance to next cap entry */
             cap_entry = cap_entry->next;
@@ -3701,8 +3679,7 @@ static ACVP_RESULT acvp_build_register(ACVP_CTX *ctx, char **reg)
  * the server.  The server will respond with a set of vector set
  * identifiers that the client will need to process.
  */
-ACVP_RESULT acvp_register(ACVP_CTX *ctx)
-{
+ACVP_RESULT acvp_register (ACVP_CTX *ctx) {
     ACVP_RESULT rv;
     char *reg;
 
@@ -3746,12 +3723,11 @@ ACVP_RESULT acvp_register(ACVP_CTX *ctx)
  * capabilities list.  This list is later used to build
  * the register message.
  */
-static ACVP_RESULT acvp_append_sym_cipher_caps_entry(
-	ACVP_CTX *ctx,
-	ACVP_SYM_CIPHER_CAP *cap,
+static ACVP_RESULT acvp_append_sym_cipher_caps_entry (
+        ACVP_CTX *ctx,
+        ACVP_SYM_CIPHER_CAP *cap,
         ACVP_CIPHER cipher,
-        ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case))
-{
+        ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case)) {
     ACVP_CAPS_LIST *cap_entry, *cap_e2;
 
     cap_entry = calloc(1, sizeof(ACVP_CAPS_LIST));
@@ -3780,12 +3756,11 @@ static ACVP_RESULT acvp_append_sym_cipher_caps_entry(
  * capabilities list.  This list is later used to build
  * the register message.
  */
-static ACVP_RESULT acvp_append_hash_caps_entry(
-	ACVP_CTX *ctx,
-	ACVP_HASH_CAP *cap,
+static ACVP_RESULT acvp_append_hash_caps_entry (
+        ACVP_CTX *ctx,
+        ACVP_HASH_CAP *cap,
         ACVP_CIPHER cipher,
-        ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case))
-{
+        ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case)) {
     ACVP_CAPS_LIST *cap_entry, *cap_e2;
 
     cap_entry = calloc(1, sizeof(ACVP_CAPS_LIST));
@@ -3815,12 +3790,11 @@ static ACVP_RESULT acvp_append_hash_caps_entry(
  * capabilities list.  This list is later used to build
  * the register message.
  */
-static ACVP_RESULT acvp_append_drbg_caps_entry(
+static ACVP_RESULT acvp_append_drbg_caps_entry (
         ACVP_CTX *ctx,
         ACVP_DRBG_CAP *cap,
         ACVP_CIPHER cipher,
-        ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case))
-{
+        ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case)) {
     ACVP_CAPS_LIST *cap_entry, *cap_e2;
 
     cap_entry = calloc(1, sizeof(ACVP_CAPS_LIST));
@@ -3850,12 +3824,11 @@ static ACVP_RESULT acvp_append_drbg_caps_entry(
  * capabilities list.  This list is later used to build
  * the register message.
  */
-static ACVP_RESULT acvp_append_rsa_caps_entry(
+static ACVP_RESULT acvp_append_rsa_caps_entry (
         ACVP_CTX *ctx,
         ACVP_RSA_CAP *cap,
         ACVP_CIPHER cipher,
-        ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case))
-{
+        ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case)) {
     ACVP_CAPS_LIST *cap_entry, *cap_e2;
 
     cap_entry = calloc(1, sizeof(ACVP_CAPS_LIST));
@@ -3884,12 +3857,11 @@ static ACVP_RESULT acvp_append_rsa_caps_entry(
  * list.  This list is later used to build
  * the register message.
  */
-static ACVP_RESULT acvp_append_hmac_caps_entry(
+static ACVP_RESULT acvp_append_hmac_caps_entry (
         ACVP_CTX *ctx,
         ACVP_HMAC_CAP *cap,
         ACVP_CIPHER cipher,
-        ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case))
-{
+        ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case)) {
     ACVP_CAPS_LIST *cap_entry, *cap_e2;
 
     cap_entry = calloc(1, sizeof(ACVP_CAPS_LIST));
@@ -3918,12 +3890,11 @@ static ACVP_RESULT acvp_append_hmac_caps_entry(
  * list.  This list is later used to build
  * the register message.
  */
-static ACVP_RESULT acvp_append_cmac_caps_entry(
+static ACVP_RESULT acvp_append_cmac_caps_entry (
         ACVP_CTX *ctx,
         ACVP_CMAC_CAP *cap,
         ACVP_CIPHER cipher,
-        ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case))
-{
+        ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case)) {
     ACVP_CAPS_LIST *cap_entry, *cap_e2;
 
     cap_entry = calloc(1, sizeof(ACVP_CAPS_LIST));
@@ -3951,8 +3922,7 @@ static ACVP_RESULT acvp_append_cmac_caps_entry(
  * Append a VS identifier to the list of VS identifiers
  * that will need to be downloaded and processed later.
  */
-static ACVP_RESULT acvp_append_vs_entry(ACVP_CTX *ctx, int vs_id)
-{
+static ACVP_RESULT acvp_append_vs_entry (ACVP_CTX *ctx, int vs_id) {
     ACVP_VS_LIST *vs_entry, *vs_e2;
 
     vs_entry = calloc(1, sizeof(ACVP_VS_LIST));
@@ -3976,31 +3946,29 @@ static ACVP_RESULT acvp_append_vs_entry(ACVP_CTX *ctx, int vs_id)
 /*
  * get version from response
  */
-static char* acvp_get_version_from_rsp(JSON_Value *arry_val)
-{
+static char *acvp_get_version_from_rsp (JSON_Value *arry_val) {
     char *version = NULL;
     JSON_Object *ver_obj = NULL;
 
-    JSON_Array  *reg_array;
+    JSON_Array *reg_array;
 
     reg_array = json_value_get_array(arry_val);
     ver_obj = json_array_get_object(reg_array, 0);
-    version = (char *)json_object_get_string(ver_obj, "acvVersion");
+    version = (char *) json_object_get_string(ver_obj, "acvVersion");
     if (version == NULL) {
         return NULL;
     }
 
-    return(version);
+    return (version);
 }
 
 /*
  * get JASON Object from response
  */
-static JSON_Object* acvp_get_obj_from_rsp(JSON_Value *arry_val)
-{
+static JSON_Object *acvp_get_obj_from_rsp (JSON_Value *arry_val) {
     JSON_Object *obj = NULL;
-    JSON_Array  *reg_array;
-    char        *ver = NULL;
+    JSON_Array *reg_array;
+    char *ver = NULL;
 
     reg_array = json_value_get_array(arry_val);
     ver = acvp_get_version_from_rsp(arry_val);
@@ -4009,7 +3977,7 @@ static JSON_Object* acvp_get_obj_from_rsp(JSON_Value *arry_val)
     }
 
     obj = json_array_get_object(reg_array, 1);
-    return(obj);
+    return (obj);
 }
 
 /*
@@ -4018,8 +3986,7 @@ static JSON_Object* acvp_get_obj_from_rsp(JSON_Value *arry_val)
  * set (VS) identifiers that will need to be downloaded and processed
  * by the DUT.
  */
-static ACVP_RESULT acvp_parse_register(ACVP_CTX *ctx)
-{
+static ACVP_RESULT acvp_parse_register (ACVP_CTX *ctx) {
     JSON_Value *val;
     JSON_Object *obj = NULL;
     JSON_Object *cap_obj = NULL;
@@ -4054,13 +4021,13 @@ static ACVP_RESULT acvp_parse_register(ACVP_CTX *ctx)
         ACVP_LOG_ERR("No access_token provided in registration response");
         return ACVP_NO_TOKEN;
     } else {
-        i = strnlen(jwt, ACVP_JWT_TOKEN_MAX+1);
+        i = strnlen(jwt, ACVP_JWT_TOKEN_MAX + 1);
         if (i > ACVP_JWT_TOKEN_MAX) {
             json_value_free(val);
             ACVP_LOG_ERR("access_token too large");
             return ACVP_NO_TOKEN;
         }
-        ctx->jwt_token = calloc(1, i+1);
+        ctx->jwt_token = calloc(1, i + 1);
         strncpy(ctx->jwt_token, jwt, i);
         ctx->jwt_token[i] = 0;
         ACVP_LOG_STATUS("JWT: %s", ctx->jwt_token);
@@ -4100,8 +4067,7 @@ static ACVP_RESULT acvp_parse_register(ACVP_CTX *ctx)
  * by libacvp.  This function will block the caller.  Therefore,
  * it should be run on a separate thread if needed.
  */
-ACVP_RESULT acvp_process_tests(ACVP_CTX *ctx)
-{
+ACVP_RESULT acvp_process_tests (ACVP_CTX *ctx) {
     ACVP_RESULT rv;
     ACVP_VS_LIST *vs_entry;
 
@@ -4128,8 +4094,7 @@ ACVP_RESULT acvp_process_tests(ACVP_CTX *ctx)
  * This allows the server time to generate the vectors on behalf of
  * the client.
  */
-ACVP_RESULT acvp_retry_handler(ACVP_CTX *ctx, unsigned int retry_period)
-{
+ACVP_RESULT acvp_retry_handler (ACVP_CTX *ctx, unsigned int retry_period) {
     ACVP_LOG_STATUS("200 OK KAT values not ready, server requests we wait and try again...");
     if (retry_period <= 0 || retry_period > ACVP_RETRY_TIME_MAX) {
         retry_period = ACVP_RETRY_TIME_MAX;
@@ -4145,8 +4110,7 @@ ACVP_RESULT acvp_retry_handler(ACVP_CTX *ctx, unsigned int retry_period)
  * This routine will iterate through all the vector sets, requesting
  * the test result from the server for each set.
  */
-ACVP_RESULT acvp_check_test_results(ACVP_CTX *ctx)
-{
+ACVP_RESULT acvp_check_test_results (ACVP_CTX *ctx) {
     ACVP_RESULT rv;
     ACVP_VS_LIST *vs_entry;
 
@@ -4188,8 +4152,7 @@ ACVP_RESULT acvp_check_test_results(ACVP_CTX *ctx)
  *	d) Generate the response data
  *	e) Send the response data back to the ACVP server
  */
-static ACVP_RESULT acvp_process_vsid(ACVP_CTX *ctx, int vs_id)
-{
+static ACVP_RESULT acvp_process_vsid (ACVP_CTX *ctx, int vs_id) {
     ACVP_RESULT rv;
     JSON_Value *val;
     JSON_Object *obj = NULL;
@@ -4206,7 +4169,7 @@ static ACVP_RESULT acvp_process_vsid(ACVP_CTX *ctx, int vs_id)
             return (rv);
         }
         json_buf = ctx->kat_buf;
-    	if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
+        if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
             printf("\n200 OK %s\n", ctx->kat_buf);
         } else {
             ACVP_LOG_STATUS("200 OK %s\n", ctx->kat_buf);
@@ -4264,8 +4227,7 @@ static ACVP_RESULT acvp_process_vsid(ACVP_CTX *ctx, int vs_id)
  * KAT vector set that was previously downloaded.  The handler function
  * is looked up in the alg_tbl[] and invoked here.
  */
-static ACVP_RESULT acvp_dispatch_vector_set(ACVP_CTX *ctx, JSON_Object *obj)
-{
+static ACVP_RESULT acvp_dispatch_vector_set (ACVP_CTX *ctx, JSON_Object *obj) {
     int i;
     const char *alg = json_object_get_string(obj, "algorithm");
     const char *dir = json_object_get_string(obj, "direction");
@@ -4305,8 +4267,7 @@ static ACVP_RESULT acvp_dispatch_vector_set(ACVP_CTX *ctx, JSON_Object *obj)
  *	c) Dispatch the vectors to the handler for the
  *	   specified ACVP operation.
  */
-static ACVP_RESULT acvp_process_vector_set(ACVP_CTX *ctx, JSON_Object *obj)
-{
+static ACVP_RESULT acvp_process_vector_set (ACVP_CTX *ctx, JSON_Object *obj) {
     ACVP_RESULT rv;
 
     rv = acvp_dispatch_vector_set(ctx, obj);
@@ -4324,8 +4285,7 @@ static ACVP_RESULT acvp_process_vector_set(ACVP_CTX *ctx, JSON_Object *obj)
 /*
  * This function will get the test results for a single KAT vector set.
  */
-static ACVP_RESULT acvp_get_result_vsid(ACVP_CTX *ctx, int vs_id)
-{
+static ACVP_RESULT acvp_get_result_vsid (ACVP_CTX *ctx, int vs_id) {
     ACVP_RESULT rv;
     JSON_Value *val;
     JSON_Object *obj = NULL;
@@ -4343,9 +4303,9 @@ static ACVP_RESULT acvp_get_result_vsid(ACVP_CTX *ctx, int vs_id)
         }
         json_buf = ctx->kat_buf;
 
-    	if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
+        if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
             printf("\n%s\n", ctx->kat_buf);
-    	} else {
+        } else {
             ACVP_LOG_ERR("%s", ctx->kat_buf);
         }
         val = json_parse_string_with_comments(json_buf);
@@ -4362,13 +4322,13 @@ static ACVP_RESULT acvp_get_result_vsid(ACVP_CTX *ctx, int vs_id)
         unsigned int retry_period = json_object_get_number(obj, "retry");
         if (retry_period) {
             rv = acvp_retry_handler(ctx, retry_period);
-    	    retry_count -= retry_period;
+            retry_count -= retry_period;
         } else {
-	    /*
-	     * Parse the JSON response from the server, if the vector set failed,
-	     * then pull out the reason code and log it.
-	     */
-	    //TODO
+            /*
+             * Parse the JSON response from the server, if the vector set failed,
+             * then pull out the reason code and log it.
+             */
+            //TODO
         }
         json_value_free(val);
 
@@ -4389,34 +4349,33 @@ static ACVP_RESULT acvp_get_result_vsid(ACVP_CTX *ctx, int vs_id)
 }
 
 static
-ACVP_RESULT acvp_validate_kdf135_tls_param_value(ACVP_KDF135_TLS_METHOD method, ACVP_KDF135_TLS_CAP_PARM param) {
+ACVP_RESULT acvp_validate_kdf135_tls_param_value (ACVP_KDF135_TLS_METHOD method, ACVP_KDF135_TLS_CAP_PARM param) {
     ACVP_RESULT retval = ACVP_INVALID_ARG;
 
-    switch (method){
+    switch (method) {
 
-      case ACVP_KDF135_TLS12:
-          if ((param < ACVP_KDF135_TLS_CAP_MAX) && (param > 0)) {
-              retval = ACVP_SUCCESS;
-          }
-	  break;
-      case ACVP_KDF135_TLS10_TLS11:
-          if (param == 0) {
-              retval = ACVP_SUCCESS;
-	  }
-	  break;
-      default:
-          break;
+    case ACVP_KDF135_TLS12:
+        if ((param < ACVP_KDF135_TLS_CAP_MAX) && (param > 0)) {
+            retval = ACVP_SUCCESS;
+        }
+        break;
+    case ACVP_KDF135_TLS10_TLS11:
+        if (param == 0) {
+            retval = ACVP_SUCCESS;
+        }
+        break;
+    default:
+        break;
     }
 
     return retval;
 }
 
-static ACVP_RESULT acvp_append_kdf135_tls_caps_entry(
-       ACVP_CTX *ctx,
-       ACVP_KDF135_TLS_CAP *cap,
-       ACVP_KDF135_TLS_METHOD method,
-       ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case))
-{
+static ACVP_RESULT acvp_append_kdf135_tls_caps_entry (
+        ACVP_CTX *ctx,
+        ACVP_KDF135_TLS_CAP *cap,
+        ACVP_KDF135_TLS_METHOD method,
+        ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case)) {
     ACVP_CAPS_LIST *cap_entry, *cap_e2;
 
     cap_entry = calloc(1, sizeof(ACVP_CAPS_LIST));
@@ -4440,11 +4399,10 @@ static ACVP_RESULT acvp_append_kdf135_tls_caps_entry(
     return ACVP_SUCCESS;
 }
 
-ACVP_RESULT acvp_enable_kdf135_tls_cap(
-          ACVP_CTX *ctx,
-          ACVP_KDF135_TLS_METHOD method,
-          ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case))
-{
+ACVP_RESULT acvp_enable_kdf135_tls_cap (
+        ACVP_CTX *ctx,
+        ACVP_KDF135_TLS_METHOD method,
+        ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case)) {
     ACVP_KDF135_TLS_CAP *cap;
 
     if (!ctx) {
@@ -4466,11 +4424,11 @@ ACVP_RESULT acvp_enable_kdf135_tls_cap(
  * The user should call this after invoking acvp_enable_kdf135_tls_cap()
  * to specify the kdf parameters.
  */
-ACVP_RESULT acvp_enable_kdf135_tls_cap_parm(
-                          ACVP_CTX *ctx,
-                          ACVP_CIPHER kcap,
-                          ACVP_KDF135_TLS_METHOD method,
-			  ACVP_KDF135_TLS_CAP_PARM param) {
+ACVP_RESULT acvp_enable_kdf135_tls_cap_parm (
+        ACVP_CTX *ctx,
+        ACVP_CIPHER kcap,
+        ACVP_KDF135_TLS_METHOD method,
+        ACVP_KDF135_TLS_CAP_PARM param) {
 
     ACVP_CAPS_LIST *cap;
     ACVP_KDF135_TLS_CAP *kdf135_tls_cap;
@@ -4503,11 +4461,10 @@ ACVP_RESULT acvp_enable_kdf135_tls_cap_parm(
     return ACVP_SUCCESS;
 }
 
-static ACVP_RESULT acvp_append_kdf135_snmp_caps_entry(
-       ACVP_CTX *ctx,
-       ACVP_KDF135_SNMP_CAP *cap,
-       ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case))
-{
+static ACVP_RESULT acvp_append_kdf135_snmp_caps_entry (
+        ACVP_CTX *ctx,
+        ACVP_KDF135_SNMP_CAP *cap,
+        ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case)) {
     ACVP_CAPS_LIST *cap_entry, *cap_e2;
 
     cap_entry = calloc(1, sizeof(ACVP_CAPS_LIST));
@@ -4531,10 +4488,9 @@ static ACVP_RESULT acvp_append_kdf135_snmp_caps_entry(
     return ACVP_SUCCESS;
 }
 
-ACVP_RESULT acvp_enable_kdf135_snmp_cap(
-          ACVP_CTX *ctx,
-          ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case))
-{
+ACVP_RESULT acvp_enable_kdf135_snmp_cap (
+        ACVP_CTX *ctx,
+        ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case)) {
     ACVP_KDF135_SNMP_CAP *cap;
 
     if (!ctx) {
@@ -4552,11 +4508,10 @@ ACVP_RESULT acvp_enable_kdf135_snmp_cap(
     return (acvp_append_kdf135_snmp_caps_entry(ctx, cap, crypto_handler));
 }
 
-static ACVP_RESULT acvp_append_kdf135_ssh_caps_entry(
-       ACVP_CTX *ctx,
-       ACVP_KDF135_SSH_CAP *cap,
-       ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case))
-{
+static ACVP_RESULT acvp_append_kdf135_ssh_caps_entry (
+        ACVP_CTX *ctx,
+        ACVP_KDF135_SSH_CAP *cap,
+        ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case)) {
     ACVP_CAPS_LIST *cap_entry, *cap_e2;
 
     cap_entry = calloc(1, sizeof(ACVP_CAPS_LIST));
@@ -4580,10 +4535,9 @@ static ACVP_RESULT acvp_append_kdf135_ssh_caps_entry(
     return ACVP_SUCCESS;
 }
 
-ACVP_RESULT acvp_enable_kdf135_ssh_cap(
-          ACVP_CTX *ctx,
-          ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case))
-{
+ACVP_RESULT acvp_enable_kdf135_ssh_cap (
+        ACVP_CTX *ctx,
+        ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case)) {
     ACVP_KDF135_SSH_CAP *cap;
 
     if (!ctx) {
@@ -4602,13 +4556,13 @@ ACVP_RESULT acvp_enable_kdf135_ssh_cap(
 }
 
 static
-ACVP_RESULT acvp_validate_kdf135_ssh_param_value(ACVP_KDF135_SSH_METHOD method, ACVP_KDF135_SSH_CAP_PARM param) {
+ACVP_RESULT acvp_validate_kdf135_ssh_param_value (ACVP_KDF135_SSH_METHOD method, ACVP_KDF135_SSH_CAP_PARM param) {
     ACVP_RESULT retval = ACVP_INVALID_ARG;
 
     if ((method < ACVP_SSH_METH_MAX) && (method > 0)) {
         if ((param & ACVP_KDF135_SSH_CAP_SHA256) ||
             (param & ACVP_KDF135_SSH_CAP_SHA384) ||
-            (param & ACVP_KDF135_SSH_CAP_SHA512) ) {
+            (param & ACVP_KDF135_SSH_CAP_SHA512)) {
             retval = ACVP_SUCCESS;
         }
     }
@@ -4619,11 +4573,11 @@ ACVP_RESULT acvp_validate_kdf135_ssh_param_value(ACVP_KDF135_SSH_METHOD method, 
  * The user should call this after invoking acvp_enable_kdf135_ssh_cap()
  * to specify the kdf parameters.
  */
-ACVP_RESULT acvp_enable_kdf135_ssh_cap_parm(
-                          ACVP_CTX *ctx,
-                          ACVP_CIPHER kcap,
-                          ACVP_KDF135_SSH_METHOD method,
-                          ACVP_KDF135_SSH_CAP_PARM param) {
+ACVP_RESULT acvp_enable_kdf135_ssh_cap_parm (
+        ACVP_CTX *ctx,
+        ACVP_CIPHER kcap,
+        ACVP_KDF135_SSH_METHOD method,
+        ACVP_KDF135_SSH_CAP_PARM param) {
 
     ACVP_CAPS_LIST *cap;
     ACVP_KDF135_SSH_CAP *kdf135_ssh_cap;
@@ -4647,7 +4601,7 @@ ACVP_RESULT acvp_enable_kdf135_ssh_cap_parm(
     }
 
     /* only support two method types so just use whichever is available */
-    switch(method) {
+    switch (method) {
     case ACVP_SSH_METH_TDES_CBC:
         kdf135_ssh_cap->method[0] = ACVP_SSH_METH_TDES_CBC;
         break;
@@ -4674,12 +4628,11 @@ ACVP_RESULT acvp_enable_kdf135_ssh_cap_parm(
  * capabilities list.  This list is later used to build
  * the register message.
  */
-static ACVP_RESULT acvp_append_dsa_caps_entry(
+static ACVP_RESULT acvp_append_dsa_caps_entry (
         ACVP_CTX *ctx,
         ACVP_DSA_CAP *cap,
         ACVP_CIPHER cipher,
-        ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case))
-{
+        ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case)) {
     ACVP_CAPS_LIST *cap_entry, *cap_e2;
 
     cap_entry = calloc(1, sizeof(ACVP_CAPS_LIST));
@@ -4703,10 +4656,9 @@ static ACVP_RESULT acvp_append_dsa_caps_entry(
     return (ACVP_SUCCESS);
 }
 
-ACVP_RESULT acvp_enable_dsa_cap(ACVP_CTX *ctx,
-     ACVP_CIPHER cipher,
-     ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case))
-{
+ACVP_RESULT acvp_enable_dsa_cap (ACVP_CTX *ctx,
+                                 ACVP_CIPHER cipher,
+                                 ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case)) {
     ACVP_DSA_CAP *dsa_cap;
     ACVP_RESULT result;
     void *dsa_modes;
@@ -4740,8 +4692,8 @@ ACVP_RESULT acvp_enable_dsa_cap(ACVP_CTX *ctx,
     }
 
     dsa_cap->dsa_cap_mode = dsa_modes;
-    for (i=1; i <= ACVP_DSA_MAX_MODES; i++) {
-        dsa_cap->dsa_cap_mode[i-1].cap_mode = i;
+    for (i = 1; i <= ACVP_DSA_MAX_MODES; i++) {
+        dsa_cap->dsa_cap_mode[i - 1].cap_mode = i;
     }
 
     result = acvp_append_dsa_caps_entry(ctx, dsa_cap, cipher, crypto_handler);
@@ -4753,10 +4705,9 @@ ACVP_RESULT acvp_enable_dsa_cap(ACVP_CTX *ctx,
     return result;
 }
 
-static ACVP_RESULT acvp_dsa_set_modulo (ACVP_DSA_CAP_MODE  *dsa_cap_mode,
-                                        ACVP_DSA_PARM       param,
-                                        ACVP_DSA_SHA value)
-{
+static ACVP_RESULT acvp_dsa_set_modulo (ACVP_DSA_CAP_MODE *dsa_cap_mode,
+                                        ACVP_DSA_PARM param,
+                                        ACVP_DSA_SHA value) {
     ACVP_DSA_PQGGEN_ATTRS *pqggen;
 
     if (!dsa_cap_mode) {
@@ -4779,8 +4730,9 @@ static ACVP_RESULT acvp_dsa_set_modulo (ACVP_DSA_CAP_MODE  *dsa_cap_mode,
             pqggen->sha |= value;
             return ACVP_SUCCESS;
         }
-        if (pqggen->next == NULL)
-	    break;
+        if (pqggen->next == NULL) {
+            break;
+        }
         pqggen = pqggen->next;
     }
     pqggen->next = calloc(1, sizeof(ACVP_DSA_PQGGEN_ATTRS));
@@ -4798,11 +4750,10 @@ static ACVP_RESULT acvp_dsa_set_modulo (ACVP_DSA_CAP_MODE  *dsa_cap_mode,
  * Add DSA per modulo parameters
  */
 static ACVP_RESULT acvp_add_dsa_mode_parm (ACVP_CTX *ctx,
-       		   	     ACVP_DSA_CAP_MODE *dsa_cap_mode,
-                             ACVP_DSA_PARM       param,
-                             ACVP_DSA_SHA        value
-                             )
-{
+                                           ACVP_DSA_CAP_MODE *dsa_cap_mode,
+                                           ACVP_DSA_PARM param,
+                                           ACVP_DSA_SHA value
+) {
     ACVP_RESULT rv;
 
     /*
@@ -4828,47 +4779,46 @@ static ACVP_RESULT acvp_add_dsa_mode_parm (ACVP_CTX *ctx,
  * Add top level DSA pqggen parameters
  */
 static ACVP_RESULT acvp_add_dsa_pqggen_parm (ACVP_CTX *ctx,
-                             ACVP_DSA_CAP_MODE  *dsa_cap_mode,
-                             ACVP_DSA_PARM       param,
-                             int                 value
-                             )
-{
+                                             ACVP_DSA_CAP_MODE *dsa_cap_mode,
+                                             ACVP_DSA_PARM param,
+                                             int value
+) {
     switch (param) {
     case ACVP_DSA_GENPQ:
         switch (value) {
-	case ACVP_DSA_PROVABLE:
-	   dsa_cap_mode->gen_pq_prov = 1;
-	   break;
-	case ACVP_DSA_PROBABLE:
-	   dsa_cap_mode->gen_pq_prob = 1;
-	   break;
-	default:
+        case ACVP_DSA_PROVABLE:
+            dsa_cap_mode->gen_pq_prov = 1;
+            break;
+        case ACVP_DSA_PROBABLE:
+            dsa_cap_mode->gen_pq_prob = 1;
+            break;
+        default:
             return ACVP_INVALID_ARG;
             break;
         }
-	break;
+        break;
     case ACVP_DSA_GENG:
         switch (value) {
-	case ACVP_DSA_CANONICAL:
-	   dsa_cap_mode->gen_g_can = 1;
-	   break;
-	case ACVP_DSA_UNVERIFIABLE:
-	   dsa_cap_mode->gen_g_unv = 1;
-	   break;
-	default:
+        case ACVP_DSA_CANONICAL:
+            dsa_cap_mode->gen_g_can = 1;
+            break;
+        case ACVP_DSA_UNVERIFIABLE:
+            dsa_cap_mode->gen_g_unv = 1;
+            break;
+        default:
             return ACVP_INVALID_ARG;
             break;
         }
-	break;
+        break;
     case ACVP_DSA_LN2048_224:
         return (acvp_add_dsa_mode_parm(ctx, dsa_cap_mode, param, value));
-	break;
+        break;
     case ACVP_DSA_LN2048_256:
         return (acvp_add_dsa_mode_parm(ctx, dsa_cap_mode, param, value));
-	break;
+        break;
     case ACVP_DSA_LN3072_256:
         return (acvp_add_dsa_mode_parm(ctx, dsa_cap_mode, param, value));
-	break;
+        break;
     default:
         return ACVP_INVALID_ARG;
         break;
@@ -4882,16 +4832,15 @@ static ACVP_RESULT acvp_add_dsa_pqggen_parm (ACVP_CTX *ctx,
  * The user should call this after invoking acvp_enable_dsa_cap().
  */
 ACVP_RESULT acvp_enable_dsa_cap_parm (ACVP_CTX *ctx,
-                             ACVP_CIPHER cipher,
-                             ACVP_DSA_MODE mode,
-                             ACVP_DSA_PARM param,
-                             int value
-                             )
-{
-    ACVP_DSA_CAP_MODE           *dsa_cap_mode;
-    ACVP_DSA_CAP                *dsa_cap;
-    ACVP_CAPS_LIST              *cap_list;
-    ACVP_RESULT                 result;
+                                      ACVP_CIPHER cipher,
+                                      ACVP_DSA_MODE mode,
+                                      ACVP_DSA_PARM param,
+                                      int value
+) {
+    ACVP_DSA_CAP_MODE *dsa_cap_mode;
+    ACVP_DSA_CAP *dsa_cap;
+    ACVP_CAPS_LIST *cap_list;
+    ACVP_RESULT result;
 
 
     /*
@@ -4905,7 +4854,7 @@ ACVP_RESULT acvp_enable_dsa_cap_parm (ACVP_CTX *ctx,
     dsa_cap = cap_list->cap.dsa_cap;
 
     /* range check mode */
-    dsa_cap_mode = &dsa_cap->dsa_cap_mode[mode-1];
+    dsa_cap_mode = &dsa_cap->dsa_cap_mode[mode - 1];
     /*
      * Add the value to the cap
      */
