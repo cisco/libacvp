@@ -134,24 +134,12 @@
 #define ACVP_PREREQ_VAL_STR "valValue"
 #define ACVP_PREREQ_OBJ_STR "prereqVals"
 
-#define ACVP_DRBG_MODE_SHA_1         "SHA-1"
-#define ACVP_DRBG_MODE_SHA_224       "SHA-224"
-#define ACVP_DRBG_MODE_SHA_256       "SHA-256"
-#define ACVP_DRBG_MODE_SHA_384       "SHA-384"
-#define ACVP_DRBG_MODE_SHA_512       "SHA-512"
-#define ACVP_DRBG_MODE_SHA_512_224   "SHA-512/224"
-#define ACVP_DRBG_MODE_SHA_512_256   "SHA-512/256"
 #define ACVP_DRBG_MODE_3KEYTDEA      "3KeyTDEA"
 #define ACVP_DRBG_MODE_AES_128       "AES-128"
 #define ACVP_DRBG_MODE_AES_192       "AES-192"
 #define ACVP_DRBG_MODE_AES_256       "AES-256"
 
-#define ACVP_DRBG_PR_ALG_AES         "AES"
-#define ACVP_DRBG_PR_ALG_HMAC        "HMAC"
-#define ACVP_DRBG_PR_ALG_SHA         "SHA"
-#define ACVP_DRBG_PR_ALG_TDES        "TDES"
-
-#define ACVP_ALG_KDF135_TLS         "KDF-TLS"
+#define ACVP_ALG_KDF135_TLS	     "KDF-TLS"
 #define ACVP_ALG_KDF135_SNMP     "KDF-SNMP"
 #define ACVP_ALG_KDF135_SSH      "KDF-SSH"
 
@@ -282,7 +270,7 @@ typedef struct acvp_cmac_capability {
 } ACVP_CMAC_CAP;
 
 typedef struct acvp_drbg_cap_mode {
-    ACVP_DRBG_MODE mode;                   //"3KeyTDEA",
+    ACVP_DRBG_MODE mode;        //"3KeyTDEA",
     int der_func_enabled;       // boolean
     ACVP_PREREQ_LIST *prereq_vals;
     int pred_resist_enabled;    // boolean
@@ -355,7 +343,7 @@ typedef struct acvp_rsa_cap_sig_type {
 } ACVP_RSA_CAP_SIG_TYPE;
 
 typedef struct acvp_rsa_keygen_attrs_t {
-    ACVP_RSA_MODE mode;                    // "keyGen"
+    ACVP_RSA_MODE mode;                      // "keyGen"
     int pub_exp;                             // 0 - random, 1 - fixed
     BIGNUM *fixed_pub_exp_val;               // hex value of e
     int rand_pq;                             // as defined in FIPS186-4
@@ -426,7 +414,6 @@ typedef struct acvp_caps_list_t {
         ACVP_KDF135_TLS_CAP *kdf135_tls_cap;
         ACVP_KDF135_SNMP_CAP *kdf135_snmp_cap;
         ACVP_KDF135_SSH_CAP *kdf135_ssh_cap;
-        //TODO: add other cipher types
     } cap;
 
     ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case);
@@ -446,10 +433,10 @@ struct acvp_ctx_t {
     char *server_name;
     char *path_segment;
     int server_port;
-    char *cacerts_file; /* Location of CA certificates Curl will use to verify peer */
-    int verify_peer;           /* enables TLS peer verification via Curl */
-    char *tls_cert;     /* Location of PEM encoded X509 cert to use for TLS client auth */
-    char *tls_key;      /* Location of PEM encoded priv key to use for TLS client auth */
+    char *cacerts_file;     /* Location of CA certificates Curl will use to verify peer */
+    int verify_peer;        /* enables TLS peer verification via Curl */
+    char *tls_cert;         /* Location of PEM encoded X509 cert to use for TLS client auth */
+    char *tls_key;          /* Location of PEM encoded priv key to use for TLS client auth */
     char *vendor_name;
     char *vendor_url;
     char *contact_name;

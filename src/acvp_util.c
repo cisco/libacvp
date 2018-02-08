@@ -163,13 +163,13 @@ int acvp_lookup_rsa_randpq_index (char *value) {
 ACVP_DRBG_MODE acvp_lookup_drbg_mode_index (const char *mode) {
     int i;
     struct acvp_drbg_mode_name_t drbg_mode_tbl[ACVP_DRBG_MODE_END] = {
-            {ACVP_DRBG_SHA_1,       ACVP_DRBG_MODE_SHA_1},
-            {ACVP_DRBG_SHA_224,     ACVP_DRBG_MODE_SHA_224},
-            {ACVP_DRBG_SHA_256,     ACVP_DRBG_MODE_SHA_256},
-            {ACVP_DRBG_SHA_384,     ACVP_DRBG_MODE_SHA_384},
-            {ACVP_DRBG_SHA_512,     ACVP_DRBG_MODE_SHA_512},
-            {ACVP_DRBG_SHA_512_224, ACVP_DRBG_MODE_SHA_512_224},
-            {ACVP_DRBG_SHA_512_256, ACVP_DRBG_MODE_SHA_512_256},
+            {ACVP_DRBG_SHA_1,       ACVP_STR_SHA_1},
+            {ACVP_DRBG_SHA_224,     ACVP_STR_SHA_224},
+            {ACVP_DRBG_SHA_256,     ACVP_STR_SHA_256},
+            {ACVP_DRBG_SHA_384,     ACVP_STR_SHA_384},
+            {ACVP_DRBG_SHA_512,     ACVP_STR_SHA_512},
+            {ACVP_DRBG_SHA_512_224, ACVP_STR_SHA_512_224},
+            {ACVP_DRBG_SHA_512_256, ACVP_STR_SHA_512_256},
             {ACVP_DRBG_3KEYTDEA,    ACVP_DRBG_MODE_3KEYTDEA},
             {ACVP_DRBG_AES_128,     ACVP_DRBG_MODE_AES_128},
             {ACVP_DRBG_AES_192,     ACVP_DRBG_MODE_AES_192},
@@ -194,13 +194,13 @@ ACVP_RESULT is_valid_tf_param (unsigned int value) {
 /* This function checks to see if the value is a hash alg */
 ACVP_RESULT is_valid_hash_alg (char *value) {
     if (!value) { return ACVP_INVALID_ARG; }
-    if (strncmp(value, ACVP_RSA_SHA_1, 5) == 0 ||
-        strncmp(value, ACVP_RSA_SHA_224, 7) == 0 ||
-        strncmp(value, ACVP_RSA_SHA_256, 7) == 0 ||
-        strncmp(value, ACVP_RSA_SHA_384, 7) == 0 ||
-        strncmp(value, ACVP_RSA_SHA_512, 7) == 0 ||
-        strncmp(value, ACVP_RSA_SHA_512_224, 11) == 0 ||
-        strncmp(value, ACVP_RSA_SHA_512_256, 11) == 0) {
+    if (strncmp(value, ACVP_STR_SHA_1, 5) == 0 ||
+        strncmp(value, ACVP_STR_SHA_224, 7) == 0 ||
+        strncmp(value, ACVP_STR_SHA_256, 7) == 0 ||
+        strncmp(value, ACVP_STR_SHA_384, 7) == 0 ||
+        strncmp(value, ACVP_STR_SHA_512, 7) == 0 ||
+        strncmp(value, ACVP_STR_SHA_512_224, 11) == 0 ||
+        strncmp(value, ACVP_STR_SHA_512_256, 11) == 0) {
         return ACVP_SUCCESS;
     } else { return ACVP_INVALID_ARG; }
 }

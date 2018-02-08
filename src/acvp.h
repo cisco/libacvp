@@ -64,10 +64,8 @@ typedef enum acvp_log_lvl {
 typedef struct acvp_ctx_t ACVP_CTX;
 
 /*! @struct ACVP_RESULT
- *  @brief This enum is used to indicate error conditions to the appplication
+ *  @brief This enum is used to indicate error conditions to the application
  *     layer. Most libacvp function will return a value from this enum.
- *
- *     TODO: document all the error codes
  */
 typedef enum acvp_result ACVP_RESULT;
 
@@ -145,11 +143,6 @@ typedef enum acvp_prereq_mode_t {
     ACVP_PREREQ_HMAC,
     ACVP_PREREQ_SHA
 } ACVP_PREREQ_ALG;
-
-typedef struct acvp_prereqs_mode_name_t {
-    ACVP_PREREQ_ALG alg;
-    char *name;
-} ACVP_PREREQ_MODE_NAME;
 
 #define ACVP_KDF135_SNMP_ENGID_MAX 32
 #define ACVP_KDF135_SNMP_SKEY_MAX 32
@@ -238,26 +231,17 @@ typedef enum acvp_kdf135_tls_method {
     ACVP_KDF135_TLS12
 } ACVP_KDF135_TLS_METHOD;
 
+#define ACVP_STR_SHA_1         "SHA-1"
+#define ACVP_STR_SHA_224       "SHA-224"
+#define ACVP_STR_SHA_256       "SHA-256"
+#define ACVP_STR_SHA_384       "SHA-384"
+#define ACVP_STR_SHA_512       "SHA-512"
+#define ACVP_STR_SHA_512_224   "SHA-512/224"
+#define ACVP_STR_SHA_512_256   "SHA-512/256"
 typedef enum acvp_hash_param {
     ACVP_HASH_IN_BIT = 0,
     ACVP_HASH_IN_EMPTY
 } ACVP_HASH_PARM;
-
-/*
- * These are the available DRBG algorithms that libacvp supports.  The application
- * layer will need to register one or more of these based on the capabilities
- * of the crypto module being validated.
- *
- * **************** ALERT *****************
- * This enum must stay aligned with drbg_alg_tbl[] in acvp.c
- */
-typedef enum acvp_alg_drbg {
-    ACVP_DRBG_ALG_START = 0,
-    ACVP_HASH_DRBG,
-    ACVP_HMAC_DRBG,
-    ACVP_CTR_DRBG,
-    ACVP_DRBG_ALG_END
-} ACVP_DRBG;
 
 /*
  * * **************** ALERT *****************
@@ -291,26 +275,6 @@ typedef enum acvp_drbg_param {
     ACVP_DRBG_PRE_REQ_VALS
 } ACVP_DRBG_PARM;
 
-#define ACVP_DRBG_PREREQ_SHA      "SHA"
-#define ACVP_DRBG_PREREQ_HMAC     "HMAC"
-#define ACVP_DRBG_PREREQ_AES      "AES"
-#define ACVP_DRBG_PREREQ_TDES     "TDES"
-typedef enum acvp_drbg_pre_req {
-    DRBG_SHA = 1,
-    DRBG_HMAC,
-    DRBG_AES,
-    DRBG_TDES
-} ACVP_DRBG_PRE_REQ;
-
-
-#define ACVP_RSA_SHA_1         "SHA-1"
-#define ACVP_RSA_SHA_224       "SHA-224"
-#define ACVP_RSA_SHA_256       "SHA-256"
-#define ACVP_RSA_SHA_384       "SHA-384"
-#define ACVP_RSA_SHA_512       "SHA-512"
-#define ACVP_RSA_SHA_512_224   "SHA-512/224"
-#define ACVP_RSA_SHA_512_256   "SHA-512/256"
-
 typedef enum acvp_rsa_param {
     ACVP_PUB_EXP = 0,
     ACVP_FIXED_PUB_EXP_VAL,
@@ -338,9 +302,6 @@ typedef enum acvp_rsa_param {
 #define RSA_SIG_TYPE_X931_NAME      "ANSX9.31"
 #define RSA_SIG_TYPE_PKCS1V15_NAME  "PKCS1v1.5"
 #define RSA_SIG_TYPE_PKCS1PSS_NAME  "PSS"
-
-#define PROB_PRIME_TEST_2       2
-#define PROB_PRIME_TEST_3       3
 
 #define PRIME_TEST_TBLC2_NAME "tblC2"
 #define PRIME_TEST_TBLC3_NAME "tblC3"
@@ -643,7 +604,7 @@ typedef struct acvp_rsa_keygen_tc_t {
     unsigned char *prime_seed_q1;
     unsigned char *prime_seed_q2;
 
-    unsigned char *prime_result; // "prime" or "composite"
+    unsigned char *prime_result; /**< "prime" or "composite" */
 } ACVP_RSA_KEYGEN_TC;
 
 /*
@@ -790,15 +751,14 @@ typedef struct acvp_cipher_tc_t {
         ACVP_KDF135_TLS_TC *kdf135_tls;
         ACVP_KDF135_SNMP_TC *kdf135_snmp;
         ACVP_KDF135_SSH_TC *kdf135_ssh;
-        //TODO: need more types for hashes, etc.
     } tc;
 } ACVP_TEST_CASE;
 
 enum acvp_result {
     ACVP_SUCCESS = 0,
-    ACVP_MALLOC_FAIL,
-    ACVP_NO_CTX,
-    ACVP_TRANSPORT_FAIL,
+    ACVP_MALLOC_FAIL, /**< Error allocating memory */
+    ACVP_NO_CTX, /**< No valid context */
+    ACVP_TRANSPORT_FAIL, /**< Error exchanging data with server */
     ACVP_JSON_ERR,
     ACVP_UNSUPPORTED_OP,
     ACVP_CLEANUP_FAIL,
