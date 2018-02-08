@@ -26,7 +26,7 @@ CCFLAGS = -Wall -g -DNO_SSL_DL $(CURL_CC_DEFINE) $(CFLAGS)
 CC = gcc
 
 # linker flags
-LDFLAGS += -ldl -lcriterion -lacvp -lcurl -lcrypto # unecessary for now: -lpthread -lssl
+LDFLAGS += -ldl -lcriterion -lacvp -lcurl -lcrypto
 
 
 # library paths
