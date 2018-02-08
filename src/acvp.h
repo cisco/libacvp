@@ -231,6 +231,13 @@ typedef enum acvp_kdf135_tls_method {
     ACVP_KDF135_TLS12
 } ACVP_KDF135_TLS_METHOD;
 
+#define ACVP_STR_SHA_1         "SHA-1"
+#define ACVP_STR_SHA_224       "SHA-224"
+#define ACVP_STR_SHA_256       "SHA-256"
+#define ACVP_STR_SHA_384       "SHA-384"
+#define ACVP_STR_SHA_512       "SHA-512"
+#define ACVP_STR_SHA_512_224   "SHA-512/224"
+#define ACVP_STR_SHA_512_256   "SHA-512/256"
 typedef enum acvp_hash_param {
     ACVP_HASH_IN_BIT = 0,
     ACVP_HASH_IN_EMPTY
