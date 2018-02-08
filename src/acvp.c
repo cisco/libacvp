@@ -197,6 +197,9 @@ struct acvp_prereqs_mode_name_t acvp_prereqs_tbl[ACVP_NUM_PREREQS] = {
 ACVP_RESULT acvp_create_test_session (ACVP_CTX **ctx,
                                       ACVP_RESULT (*progress_cb) (char *msg),
                                       ACVP_LOG_LVL level) {
+    if (!ctx) {
+        return ACVP_INVALID_ARG;
+    }
     *ctx = calloc(1, sizeof(ACVP_CTX));
     if (!*ctx) {
         return ACVP_MALLOC_FAIL;
@@ -2385,7 +2388,12 @@ ACVP_RESULT acvp_set_server (ACVP_CTX *ctx, char *server_name, int port) {
     if (!ctx) {
         return ACVP_NO_CTX;
     }
-    if (ctx->server_name) { free(ctx->server_name); }
+    if (!server_name || !port) {
+        return ACVP_INVALID_ARG;
+    }
+    if (ctx->server_name) {
+        free(ctx->server_name);
+    }
     ctx->server_name = strdup(server_name);
     ctx->server_port = port;
 
