@@ -659,8 +659,7 @@ int main(int argc, char **argv)
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_prereq_cap(ctx, ACVP_HMAC_SHA2_512, ACVP_PREREQ_SHA, value);
     CHECK_ENABLE_CAP_RV(rv);
-
-#ifdef ACVP_V05
+    
     /*
      * Enable 3DES-CFB64
      */
@@ -672,7 +671,7 @@ int main(int argc, char **argv)
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_TDES_CFB64, ACVP_SYM_CIPH_PTLEN, 64 * 5);
     CHECK_ENABLE_CAP_RV(rv);
-
+    
     /*
      * Enable 3DES-CFB8
      */
@@ -687,6 +686,7 @@ int main(int argc, char **argv)
     rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_TDES_CFB8, ACVP_SYM_CIPH_PTLEN, 64 * 4);
     CHECK_ENABLE_CAP_RV(rv);
 
+#ifdef ACVP_V05
     /*
      * Enable 3DES-CFB1
      */
