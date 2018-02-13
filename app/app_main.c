@@ -190,6 +190,12 @@ static void print_usage(void)
     printf("password on the key file.\n");
 }
 
+int aes = 1;
+int tdes = 1;
+int hash = 1;
+int cmac = 0;
+int hmac = 1;
+
 int main(int argc, char **argv)
 {
     ACVP_RESULT rv;
@@ -314,377 +320,404 @@ int main(int argc, char **argv)
      * We need to register all the crypto module capabilities that will be
      * validated.
      */
-   rv = acvp_enable_sym_cipher_cap(ctx, ACVP_AES_GCM, ACVP_DIR_BOTH, ACVP_KO_NA, ACVP_IVGEN_SRC_INT, ACVP_IVGEN_MODE_821, &app_aes_handler_aead);
-   CHECK_ENABLE_CAP_RV(rv);
-   rv = acvp_enable_prereq_cap(ctx, ACVP_AES_GCM, ACVP_PREREQ_AES, value);
-   CHECK_ENABLE_CAP_RV(rv);
-   rv = acvp_enable_prereq_cap(ctx, ACVP_AES_GCM, ACVP_PREREQ_DRBG, value);
-   CHECK_ENABLE_CAP_RV(rv);
-   rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_GCM, ACVP_SYM_CIPH_KEYLEN, 128);
-   CHECK_ENABLE_CAP_RV(rv);
-   rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_GCM, ACVP_SYM_CIPH_KEYLEN, 192);
-   CHECK_ENABLE_CAP_RV(rv);
-   rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_GCM, ACVP_SYM_CIPH_KEYLEN, 256);
-   CHECK_ENABLE_CAP_RV(rv);
-   rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_GCM, ACVP_SYM_CIPH_TAGLEN, 96);
-   CHECK_ENABLE_CAP_RV(rv);
-   rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_GCM, ACVP_SYM_CIPH_TAGLEN, 128);
-   CHECK_ENABLE_CAP_RV(rv);
-   rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_GCM, ACVP_SYM_CIPH_IVLEN, 96);
-   CHECK_ENABLE_CAP_RV(rv);
-   rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_GCM, ACVP_SYM_CIPH_PTLEN, 0);
-   CHECK_ENABLE_CAP_RV(rv);
-   rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_GCM, ACVP_SYM_CIPH_PTLEN, 128);
-   CHECK_ENABLE_CAP_RV(rv);
-   rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_GCM, ACVP_SYM_CIPH_PTLEN, 136);
-   CHECK_ENABLE_CAP_RV(rv);
-   rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_GCM, ACVP_SYM_CIPH_AADLEN, 128);
-   CHECK_ENABLE_CAP_RV(rv);
-   rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_GCM, ACVP_SYM_CIPH_AADLEN, 136);
-   CHECK_ENABLE_CAP_RV(rv);
-   rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_GCM, ACVP_SYM_CIPH_AADLEN, 256);
-   CHECK_ENABLE_CAP_RV(rv);
+    if (aes) {
+        rv = acvp_enable_sym_cipher_cap(ctx, ACVP_AES_GCM, ACVP_DIR_BOTH, ACVP_KO_NA, ACVP_IVGEN_SRC_INT,
+                                        ACVP_IVGEN_MODE_821, &app_aes_handler_aead);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_prereq_cap(ctx, ACVP_AES_GCM, ACVP_PREREQ_AES, value);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_prereq_cap(ctx, ACVP_AES_GCM, ACVP_PREREQ_DRBG, value);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_GCM, ACVP_SYM_CIPH_KEYLEN, 128);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_GCM, ACVP_SYM_CIPH_KEYLEN, 192);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_GCM, ACVP_SYM_CIPH_KEYLEN, 256);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_GCM, ACVP_SYM_CIPH_TAGLEN, 96);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_GCM, ACVP_SYM_CIPH_TAGLEN, 128);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_GCM, ACVP_SYM_CIPH_IVLEN, 96);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_GCM, ACVP_SYM_CIPH_PTLEN, 0);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_GCM, ACVP_SYM_CIPH_PTLEN, 128);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_GCM, ACVP_SYM_CIPH_PTLEN, 136);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_GCM, ACVP_SYM_CIPH_AADLEN, 128);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_GCM, ACVP_SYM_CIPH_AADLEN, 136);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_GCM, ACVP_SYM_CIPH_AADLEN, 256);
+        CHECK_ENABLE_CAP_RV(rv);
 
-   /*
-    * Enable AES-ECB 128,192,256 bit key
-    */
-   rv = acvp_enable_sym_cipher_cap(ctx, ACVP_AES_ECB, ACVP_DIR_BOTH, ACVP_KO_NA, ACVP_IVGEN_SRC_NA, ACVP_IVGEN_MODE_NA, &app_aes_handler);
-   CHECK_ENABLE_CAP_RV(rv);
-   rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_ECB, ACVP_SYM_CIPH_KEYLEN, 128);
-   CHECK_ENABLE_CAP_RV(rv);
-   rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_ECB, ACVP_SYM_CIPH_KEYLEN, 192);
-   CHECK_ENABLE_CAP_RV(rv);
-   rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_ECB, ACVP_SYM_CIPH_KEYLEN, 256);
-   CHECK_ENABLE_CAP_RV(rv);
-   rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_ECB, ACVP_SYM_CIPH_PTLEN, 1536);
-   CHECK_ENABLE_CAP_RV(rv);
+        /*
+         * Enable AES-ECB 128,192,256 bit key
+         */
+        rv = acvp_enable_sym_cipher_cap(ctx, ACVP_AES_ECB, ACVP_DIR_BOTH, ACVP_KO_NA, ACVP_IVGEN_SRC_NA,
+                                        ACVP_IVGEN_MODE_NA, &app_aes_handler);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_ECB, ACVP_SYM_CIPH_KEYLEN, 128);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_ECB, ACVP_SYM_CIPH_KEYLEN, 192);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_ECB, ACVP_SYM_CIPH_KEYLEN, 256);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_ECB, ACVP_SYM_CIPH_PTLEN, 1536);
+        CHECK_ENABLE_CAP_RV(rv);
 
-    /*
-     * Enable AES-CBC 128 bit key
-     */
-    rv = acvp_enable_sym_cipher_cap(ctx, ACVP_AES_CBC, ACVP_DIR_BOTH, ACVP_KO_NA, ACVP_IVGEN_SRC_NA, ACVP_IVGEN_MODE_NA, &app_aes_handler);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CBC, ACVP_SYM_CIPH_KEYLEN, 128);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CBC, ACVP_SYM_CIPH_KEYLEN, 192);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CBC, ACVP_SYM_CIPH_KEYLEN, 256);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CBC, ACVP_SYM_CIPH_PTLEN, 128);
-    CHECK_ENABLE_CAP_RV(rv);
+        /*
+         * Enable AES-CBC 128 bit key
+         */
+        rv = acvp_enable_sym_cipher_cap(ctx, ACVP_AES_CBC, ACVP_DIR_BOTH, ACVP_KO_NA, ACVP_IVGEN_SRC_NA,
+                                        ACVP_IVGEN_MODE_NA, &app_aes_handler);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CBC, ACVP_SYM_CIPH_KEYLEN, 128);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CBC, ACVP_SYM_CIPH_KEYLEN, 192);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CBC, ACVP_SYM_CIPH_KEYLEN, 256);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CBC, ACVP_SYM_CIPH_PTLEN, 128);
+        CHECK_ENABLE_CAP_RV(rv);
 
-    /*
-     * Enable AES-CFB8 128,192,256 bit key
-     */
-    rv = acvp_enable_sym_cipher_cap(ctx, ACVP_AES_CFB8, ACVP_DIR_BOTH, ACVP_KO_NA, ACVP_IVGEN_SRC_NA, ACVP_IVGEN_MODE_NA, &app_aes_handler);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CFB8, ACVP_SYM_CIPH_KEYLEN, 128);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CFB8, ACVP_SYM_CIPH_KEYLEN, 192);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CFB8, ACVP_SYM_CIPH_KEYLEN, 256);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CFB8, ACVP_SYM_CIPH_PTLEN, 256);
-    CHECK_ENABLE_CAP_RV(rv);
+        /*
+         * Enable AES-CFB8 128,192,256 bit key
+         */
+        rv = acvp_enable_sym_cipher_cap(ctx, ACVP_AES_CFB8, ACVP_DIR_BOTH, ACVP_KO_NA, ACVP_IVGEN_SRC_NA,
+                                        ACVP_IVGEN_MODE_NA, &app_aes_handler);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CFB8, ACVP_SYM_CIPH_KEYLEN, 128);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CFB8, ACVP_SYM_CIPH_KEYLEN, 192);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CFB8, ACVP_SYM_CIPH_KEYLEN, 256);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CFB8, ACVP_SYM_CIPH_PTLEN, 256);
+        CHECK_ENABLE_CAP_RV(rv);
 
-    /*
-     * Enable AES-CFB128 128,192,256 bit key
-     */
-    rv = acvp_enable_sym_cipher_cap(ctx, ACVP_AES_CFB128, ACVP_DIR_BOTH, ACVP_KO_NA, ACVP_IVGEN_SRC_NA, ACVP_IVGEN_MODE_NA, &app_aes_handler);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CFB128, ACVP_SYM_CIPH_KEYLEN, 128);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CFB128, ACVP_SYM_CIPH_KEYLEN, 192);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CFB128, ACVP_SYM_CIPH_KEYLEN, 256);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CFB128, ACVP_SYM_CIPH_PTLEN, 1536);
-    CHECK_ENABLE_CAP_RV(rv);
+        /*
+         * Enable AES-CFB128 128,192,256 bit key
+         */
+        rv = acvp_enable_sym_cipher_cap(ctx, ACVP_AES_CFB128, ACVP_DIR_BOTH, ACVP_KO_NA, ACVP_IVGEN_SRC_NA,
+                                        ACVP_IVGEN_MODE_NA, &app_aes_handler);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CFB128, ACVP_SYM_CIPH_KEYLEN, 128);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CFB128, ACVP_SYM_CIPH_KEYLEN, 192);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CFB128, ACVP_SYM_CIPH_KEYLEN, 256);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CFB128, ACVP_SYM_CIPH_PTLEN, 1536);
+        CHECK_ENABLE_CAP_RV(rv);
 
-    /*
-     * Enable AES-OFB 128, 192, 256 bit key
-     */
-    rv = acvp_enable_sym_cipher_cap(ctx, ACVP_AES_OFB, ACVP_DIR_BOTH, ACVP_KO_NA, ACVP_IVGEN_SRC_NA, ACVP_IVGEN_MODE_NA, &app_aes_handler);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_OFB, ACVP_SYM_CIPH_KEYLEN, 128);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_OFB, ACVP_SYM_CIPH_KEYLEN, 192);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_OFB, ACVP_SYM_CIPH_KEYLEN, 256);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_OFB, ACVP_SYM_CIPH_PTLEN, 128);
-    CHECK_ENABLE_CAP_RV(rv);
+        /*
+         * Enable AES-OFB 128, 192, 256 bit key
+         */
+        rv = acvp_enable_sym_cipher_cap(ctx, ACVP_AES_OFB, ACVP_DIR_BOTH, ACVP_KO_NA, ACVP_IVGEN_SRC_NA,
+                                        ACVP_IVGEN_MODE_NA, &app_aes_handler);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_OFB, ACVP_SYM_CIPH_KEYLEN, 128);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_OFB, ACVP_SYM_CIPH_KEYLEN, 192);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_OFB, ACVP_SYM_CIPH_KEYLEN, 256);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_OFB, ACVP_SYM_CIPH_PTLEN, 128);
+        CHECK_ENABLE_CAP_RV(rv);
 
-    /*
-     * Register AES CCM capabilities
-     */
-    rv = acvp_enable_sym_cipher_cap(ctx, ACVP_AES_CCM, ACVP_DIR_BOTH, ACVP_KO_NA, ACVP_IVGEN_SRC_NA, ACVP_IVGEN_MODE_NA, &app_aes_handler_aead);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_prereq_cap(ctx, ACVP_AES_CCM, ACVP_PREREQ_AES, value);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CCM, ACVP_SYM_CIPH_KEYLEN, 128);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CCM, ACVP_SYM_CIPH_KEYLEN, 192);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CCM, ACVP_SYM_CIPH_KEYLEN, 256);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CCM, ACVP_SYM_CIPH_PTLEN, 0);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CCM, ACVP_SYM_CIPH_PTLEN, 256);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CCM, ACVP_SYM_CIPH_TAGLEN, 128);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CCM, ACVP_SYM_CIPH_IVLEN, 56);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CCM, ACVP_SYM_CIPH_AADLEN, 0);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CCM, ACVP_SYM_CIPH_AADLEN, 65536);
-    CHECK_ENABLE_CAP_RV(rv);
+        /*
+         * Register AES CCM capabilities
+         */
+        rv = acvp_enable_sym_cipher_cap(ctx, ACVP_AES_CCM, ACVP_DIR_BOTH, ACVP_KO_NA, ACVP_IVGEN_SRC_NA,
+                                        ACVP_IVGEN_MODE_NA, &app_aes_handler_aead);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_prereq_cap(ctx, ACVP_AES_CCM, ACVP_PREREQ_AES, value);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CCM, ACVP_SYM_CIPH_KEYLEN, 128);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CCM, ACVP_SYM_CIPH_KEYLEN, 192);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CCM, ACVP_SYM_CIPH_KEYLEN, 256);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CCM, ACVP_SYM_CIPH_PTLEN, 0);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CCM, ACVP_SYM_CIPH_PTLEN, 256);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CCM, ACVP_SYM_CIPH_TAGLEN, 128);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CCM, ACVP_SYM_CIPH_IVLEN, 56);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CCM, ACVP_SYM_CIPH_AADLEN, 0);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CCM, ACVP_SYM_CIPH_AADLEN, 65536);
+        CHECK_ENABLE_CAP_RV(rv);
 
-    /*
-     * Enable AES-CFB1 128,192,256 bit key
-     */
-    rv = acvp_enable_sym_cipher_cap(ctx, ACVP_AES_CFB1, ACVP_DIR_BOTH, ACVP_KO_NA, ACVP_IVGEN_SRC_NA, ACVP_IVGEN_MODE_NA, &app_aes_handler);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CFB1, ACVP_SYM_CIPH_KEYLEN, 128);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CFB1, ACVP_SYM_CIPH_KEYLEN, 192);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CFB1, ACVP_SYM_CIPH_KEYLEN, 256);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CFB1, ACVP_SYM_CIPH_PTLEN, 1536);
-    CHECK_ENABLE_CAP_RV(rv);
+        /*
+         * Enable AES-CFB1 128,192,256 bit key
+         */
+        rv = acvp_enable_sym_cipher_cap(ctx, ACVP_AES_CFB1, ACVP_DIR_BOTH, ACVP_KO_NA, ACVP_IVGEN_SRC_NA,
+                                        ACVP_IVGEN_MODE_NA, &app_aes_handler);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CFB1, ACVP_SYM_CIPH_KEYLEN, 128);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CFB1, ACVP_SYM_CIPH_KEYLEN, 192);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CFB1, ACVP_SYM_CIPH_KEYLEN, 256);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CFB1, ACVP_SYM_CIPH_PTLEN, 1536);
+        CHECK_ENABLE_CAP_RV(rv);
 
-    /*
-     * Enable AES keywrap for various key sizes and PT lengths
-     * Note: this is with padding disabled, minimum PT length is 128 bits and must be
-     *       a multiple of 64 bits. openssl does not support INVERSE mode.
-     */
-    rv = acvp_enable_sym_cipher_cap(ctx, ACVP_AES_KW, ACVP_DIR_BOTH, ACVP_KO_NA, ACVP_IVGEN_SRC_NA, ACVP_IVGEN_MODE_NA, &app_aes_keywrap_handler);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_sym_cipher_cap_value(ctx, ACVP_AES_KW, ACVP_SYM_CIPH_KW_MODE, ACVP_SYM_KW_CIPHER);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_KW, ACVP_SYM_CIPH_KEYLEN, 128);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_KW, ACVP_SYM_CIPH_KEYLEN, 192);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_KW, ACVP_SYM_CIPH_KEYLEN, 256);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_KW, ACVP_SYM_CIPH_PTLEN, 512);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_KW, ACVP_SYM_CIPH_PTLEN, 192);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_KW, ACVP_SYM_CIPH_PTLEN, 128);
-    CHECK_ENABLE_CAP_RV(rv);
+        /*
+         * Enable AES keywrap for various key sizes and PT lengths
+         * Note: this is with padding disabled, minimum PT length is 128 bits and must be
+         *       a multiple of 64 bits. openssl does not support INVERSE mode.
+         */
+        rv = acvp_enable_sym_cipher_cap(ctx, ACVP_AES_KW, ACVP_DIR_BOTH, ACVP_KO_NA, ACVP_IVGEN_SRC_NA,
+                                        ACVP_IVGEN_MODE_NA, &app_aes_keywrap_handler);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_sym_cipher_cap_value(ctx, ACVP_AES_KW, ACVP_SYM_CIPH_KW_MODE, ACVP_SYM_KW_CIPHER);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_KW, ACVP_SYM_CIPH_KEYLEN, 128);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_KW, ACVP_SYM_CIPH_KEYLEN, 192);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_KW, ACVP_SYM_CIPH_KEYLEN, 256);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_KW, ACVP_SYM_CIPH_PTLEN, 512);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_KW, ACVP_SYM_CIPH_PTLEN, 192);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_KW, ACVP_SYM_CIPH_PTLEN, 128);
+        CHECK_ENABLE_CAP_RV(rv);
 
-    /*
-     * Enable AES-CTR 128 bit key
-     */
-    rv = acvp_enable_sym_cipher_cap(ctx, ACVP_AES_CTR, ACVP_DIR_BOTH, ACVP_KO_NA, ACVP_IVGEN_SRC_NA, ACVP_IVGEN_MODE_NA, &app_aes_handler);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CTR, ACVP_SYM_CIPH_KEYLEN, 128);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CTR, ACVP_SYM_CIPH_PTLEN, 128);
-    CHECK_ENABLE_CAP_RV(rv);
+        /*
+         * Enable AES-CTR 128 bit key
+         */
+        rv = acvp_enable_sym_cipher_cap(ctx, ACVP_AES_CTR, ACVP_DIR_BOTH, ACVP_KO_NA, ACVP_IVGEN_SRC_NA,
+                                        ACVP_IVGEN_MODE_NA, &app_aes_handler);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CTR, ACVP_SYM_CIPH_KEYLEN, 128);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CTR, ACVP_SYM_CIPH_PTLEN, 128);
+        CHECK_ENABLE_CAP_RV(rv);
+    }
 
-    /*
-     * Enable 3DES-ECB
-     */
-    rv = acvp_enable_sym_cipher_cap(ctx, ACVP_TDES_ECB, ACVP_DIR_BOTH, ACVP_KO_THREE, ACVP_IVGEN_SRC_NA, ACVP_IVGEN_MODE_NA, &app_des_handler);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_TDES_ECB, ACVP_SYM_CIPH_KEYLEN, 192);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_TDES_ECB, ACVP_SYM_CIPH_PTLEN, 16*8*4);
-    CHECK_ENABLE_CAP_RV(rv);
-
-    /*
-     * Enable 3DES-CBC
-     */
-    rv = acvp_enable_sym_cipher_cap(ctx, ACVP_TDES_CBC, ACVP_DIR_BOTH, ACVP_KO_THREE, ACVP_IVGEN_SRC_NA, ACVP_IVGEN_MODE_NA, &app_des_handler);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_TDES_CBC, ACVP_SYM_CIPH_KEYLEN, 192);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_TDES_CBC, ACVP_SYM_CIPH_IVLEN, 192/3);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_TDES_CBC, ACVP_SYM_CIPH_PTLEN, 64);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_TDES_CBC, ACVP_SYM_CIPH_PTLEN, 64*2);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_TDES_CBC, ACVP_SYM_CIPH_PTLEN, 64*3);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_TDES_CBC, ACVP_SYM_CIPH_PTLEN, 64*12);
-    CHECK_ENABLE_CAP_RV(rv);
-
-    /*
-     * Enable 3DES-OFB
-     */
-    rv = acvp_enable_sym_cipher_cap(ctx, ACVP_TDES_OFB, ACVP_DIR_BOTH, ACVP_KO_THREE, ACVP_IVGEN_SRC_NA, ACVP_IVGEN_MODE_NA, &app_des_handler);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_TDES_OFB, ACVP_SYM_CIPH_KEYLEN, 192);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_TDES_OFB, ACVP_SYM_CIPH_IVLEN, 192/3);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_TDES_OFB, ACVP_SYM_CIPH_PTLEN, 64);
-    CHECK_ENABLE_CAP_RV(rv);
-
-   /*
-    * Enable SHA-1 and SHA-2
-    */
-    rv = acvp_enable_hash_cap(ctx, ACVP_SHA1, &app_sha_handler);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_hash_cap_parm(ctx, ACVP_SHA1, ACVP_HASH_IN_BIT, 0);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_hash_cap_parm(ctx, ACVP_SHA1, ACVP_HASH_IN_EMPTY, 1);
-    CHECK_ENABLE_CAP_RV(rv);
-
-    rv = acvp_enable_hash_cap(ctx, ACVP_SHA224, &app_sha_handler);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_hash_cap_parm(ctx, ACVP_SHA224, ACVP_HASH_IN_BIT, 0);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_hash_cap_parm(ctx, ACVP_SHA224, ACVP_HASH_IN_EMPTY, 1);
-    CHECK_ENABLE_CAP_RV(rv);
-
-    rv = acvp_enable_hash_cap(ctx, ACVP_SHA256, &app_sha_handler);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_hash_cap_parm(ctx, ACVP_SHA256, ACVP_HASH_IN_BIT, 0);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_hash_cap_parm(ctx, ACVP_SHA256, ACVP_HASH_IN_EMPTY, 1);
-    CHECK_ENABLE_CAP_RV(rv);
-
-    rv = acvp_enable_hash_cap(ctx, ACVP_SHA384, &app_sha_handler);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_hash_cap_parm(ctx, ACVP_SHA384, ACVP_HASH_IN_BIT, 0);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_hash_cap_parm(ctx, ACVP_SHA384, ACVP_HASH_IN_EMPTY, 1);
-    CHECK_ENABLE_CAP_RV(rv);
-
-    rv = acvp_enable_hash_cap(ctx, ACVP_SHA512, &app_sha_handler);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_hash_cap_parm(ctx, ACVP_SHA512, ACVP_HASH_IN_BIT, 0);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_hash_cap_parm(ctx, ACVP_SHA512, ACVP_HASH_IN_EMPTY, 1);
-    CHECK_ENABLE_CAP_RV(rv);
-
-    /*
-     * Enable CMAC
-     */
-    rv = acvp_enable_cmac_cap(ctx, ACVP_CMAC_AES_128, &app_cmac_handler);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_cmac_cap_parm(ctx, ACVP_CMAC_AES_128, ACVP_CMAC_BLK_DIVISIBLE_1, 1024);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_cmac_cap_parm(ctx, ACVP_CMAC_AES_128, ACVP_CMAC_BLK_NOT_DIVISIBLE_1, 2048);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_cmac_cap_parm(ctx, ACVP_CMAC_AES_128, ACVP_CMAC_MACLEN, 64);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_cmac_cap_parm(ctx, ACVP_CMAC_AES_128, ACVP_CMAC_MACLEN, 256);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_cmac_cap_parm(ctx, ACVP_CMAC_AES_128, ACVP_CMAC_DIRECTION_GEN, 1);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_cmac_cap_parm(ctx, ACVP_CMAC_AES_128, ACVP_CMAC_DIRECTION_VER, 1);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_prereq_cap(ctx, ACVP_CMAC_AES_128, ACVP_PREREQ_AES, value);
-    CHECK_ENABLE_CAP_RV(rv);
-
-    rv = acvp_enable_cmac_cap(ctx, ACVP_CMAC_TDES, &app_cmac_handler);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_cmac_cap_parm(ctx, ACVP_CMAC_TDES, ACVP_CMAC_BLK_DIVISIBLE_1, 1024);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_cmac_cap_parm(ctx, ACVP_CMAC_TDES, ACVP_CMAC_BLK_NOT_DIVISIBLE_1, 2048);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_cmac_cap_parm(ctx, ACVP_CMAC_TDES, ACVP_CMAC_MACLEN, 64);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_cmac_cap_parm(ctx, ACVP_CMAC_TDES, ACVP_CMAC_MACLEN, 256);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_cmac_cap_parm(ctx, ACVP_CMAC_TDES, ACVP_CMAC_DIRECTION_GEN, 1);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_cmac_cap_parm(ctx, ACVP_CMAC_TDES, ACVP_CMAC_DIRECTION_VER, 1);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_prereq_cap(ctx, ACVP_CMAC_TDES, ACVP_PREREQ_AES, value);
-    CHECK_ENABLE_CAP_RV(rv);
-
-    /*
-     * Enable HMAC: TODO - need to add increment value in bits, default to 64 now.
-     */
-    rv = acvp_enable_hmac_cap(ctx, ACVP_HMAC_SHA1, &app_hmac_handler);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA1, ACVP_HMAC_KEYLEN_MIN, 32*8);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA1, ACVP_HMAC_KEYLEN_MAX, 56*8);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA1, ACVP_HMAC_MACLEN, 160);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_prereq_cap(ctx, ACVP_HMAC_SHA1, ACVP_PREREQ_SHA, value);
-    CHECK_ENABLE_CAP_RV(rv);
-
-    rv = acvp_enable_hmac_cap(ctx, ACVP_HMAC_SHA2_224, &app_hmac_handler);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA2_224, ACVP_HMAC_KEYLEN_MIN, 32*8);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA2_224, ACVP_HMAC_KEYLEN_MAX, 56*8);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA2_224, ACVP_HMAC_MACLEN, 224);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_prereq_cap(ctx, ACVP_HMAC_SHA2_224, ACVP_PREREQ_SHA, value);
-    CHECK_ENABLE_CAP_RV(rv);
-
-    rv = acvp_enable_hmac_cap(ctx, ACVP_HMAC_SHA2_256, &app_hmac_handler);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA2_256, ACVP_HMAC_KEYLEN_MIN, 32*8);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA2_256, ACVP_HMAC_KEYLEN_MAX, 56*8);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA2_256, ACVP_HMAC_MACLEN, 256);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_prereq_cap(ctx, ACVP_HMAC_SHA2_256, ACVP_PREREQ_SHA, value);
-    CHECK_ENABLE_CAP_RV(rv);
-
-    rv = acvp_enable_hmac_cap(ctx, ACVP_HMAC_SHA2_384, &app_hmac_handler);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA2_384, ACVP_HMAC_KEYLEN_MIN, 32*8);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA2_384, ACVP_HMAC_KEYLEN_MAX, 56*8);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA2_384, ACVP_HMAC_MACLEN, 384);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_prereq_cap(ctx, ACVP_HMAC_SHA2_384, ACVP_PREREQ_SHA, value);
-    CHECK_ENABLE_CAP_RV(rv);
-
-    rv = acvp_enable_hmac_cap(ctx, ACVP_HMAC_SHA2_512, &app_hmac_handler);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA2_512, ACVP_HMAC_KEYLEN_MIN, 32*8);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA2_512, ACVP_HMAC_KEYLEN_MAX, 56*8);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA2_512, ACVP_HMAC_MACLEN, 512);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_prereq_cap(ctx, ACVP_HMAC_SHA2_512, ACVP_PREREQ_SHA, value);
-    CHECK_ENABLE_CAP_RV(rv);
+    if (tdes) {
+        /*
+         * Enable 3DES-ECB
+         */
+        rv = acvp_enable_sym_cipher_cap(ctx, ACVP_TDES_ECB, ACVP_DIR_BOTH, ACVP_KO_THREE, ACVP_IVGEN_SRC_NA,
+                                        ACVP_IVGEN_MODE_NA, &app_des_handler);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_TDES_ECB, ACVP_SYM_CIPH_KEYLEN, 192);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_TDES_ECB, ACVP_SYM_CIPH_PTLEN, 16 * 8 * 4);
+        CHECK_ENABLE_CAP_RV(rv);
     
-    /*
-     * Enable 3DES-CFB64
-     */
-    rv = acvp_enable_sym_cipher_cap(ctx, ACVP_TDES_CFB64, ACVP_DIR_BOTH, ACVP_KO_THREE, ACVP_IVGEN_SRC_NA, ACVP_IVGEN_MODE_NA, &app_des_handler);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_TDES_CFB64, ACVP_SYM_CIPH_KEYLEN, 192);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_TDES_CFB64, ACVP_SYM_CIPH_IVLEN, 192/3);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_TDES_CFB64, ACVP_SYM_CIPH_PTLEN, 64 * 5);
-    CHECK_ENABLE_CAP_RV(rv);
+        /*
+         * Enable 3DES-CBC
+         */
+        rv = acvp_enable_sym_cipher_cap(ctx, ACVP_TDES_CBC, ACVP_DIR_BOTH, ACVP_KO_THREE, ACVP_IVGEN_SRC_NA,
+                                        ACVP_IVGEN_MODE_NA, &app_des_handler);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_TDES_CBC, ACVP_SYM_CIPH_KEYLEN, 192);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_TDES_CBC, ACVP_SYM_CIPH_IVLEN, 192 / 3);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_TDES_CBC, ACVP_SYM_CIPH_PTLEN, 64);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_TDES_CBC, ACVP_SYM_CIPH_PTLEN, 64 * 2);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_TDES_CBC, ACVP_SYM_CIPH_PTLEN, 64 * 3);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_TDES_CBC, ACVP_SYM_CIPH_PTLEN, 64 * 12);
+        CHECK_ENABLE_CAP_RV(rv);
     
-    /*
-     * Enable 3DES-CFB8
-     */
-    rv = acvp_enable_sym_cipher_cap(ctx, ACVP_TDES_CFB8, ACVP_DIR_BOTH, ACVP_KO_THREE, ACVP_IVGEN_SRC_NA, ACVP_IVGEN_MODE_NA, &app_des_handler);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_TDES_CFB8, ACVP_SYM_CIPH_KEYLEN, 192);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_TDES_CFB8, ACVP_SYM_CIPH_IVLEN, 192/3);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_TDES_CFB8, ACVP_SYM_CIPH_PTLEN, 64);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_TDES_CFB8, ACVP_SYM_CIPH_PTLEN, 64 * 4);
-    CHECK_ENABLE_CAP_RV(rv);
+        /*
+         * Enable 3DES-OFB
+         */
+        rv = acvp_enable_sym_cipher_cap(ctx, ACVP_TDES_OFB, ACVP_DIR_BOTH, ACVP_KO_THREE, ACVP_IVGEN_SRC_NA,
+                                        ACVP_IVGEN_MODE_NA, &app_des_handler);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_TDES_OFB, ACVP_SYM_CIPH_KEYLEN, 192);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_TDES_OFB, ACVP_SYM_CIPH_IVLEN, 192 / 3);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_TDES_OFB, ACVP_SYM_CIPH_PTLEN, 64);
+        CHECK_ENABLE_CAP_RV(rv);
+    
+        /*
+         * Enable 3DES-CFB64
+         */
+        rv = acvp_enable_sym_cipher_cap(ctx, ACVP_TDES_CFB64, ACVP_DIR_BOTH, ACVP_KO_THREE, ACVP_IVGEN_SRC_NA, ACVP_IVGEN_MODE_NA, &app_des_handler);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_TDES_CFB64, ACVP_SYM_CIPH_KEYLEN, 192);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_TDES_CFB64, ACVP_SYM_CIPH_IVLEN, 192/3);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_TDES_CFB64, ACVP_SYM_CIPH_PTLEN, 64 * 5);
+        CHECK_ENABLE_CAP_RV(rv);
+    
+        /*
+         * Enable 3DES-CFB8
+         */
+        rv = acvp_enable_sym_cipher_cap(ctx, ACVP_TDES_CFB8, ACVP_DIR_BOTH, ACVP_KO_THREE, ACVP_IVGEN_SRC_NA, ACVP_IVGEN_MODE_NA, &app_des_handler);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_TDES_CFB8, ACVP_SYM_CIPH_KEYLEN, 192);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_TDES_CFB8, ACVP_SYM_CIPH_IVLEN, 192/3);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_TDES_CFB8, ACVP_SYM_CIPH_PTLEN, 64);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_TDES_CFB8, ACVP_SYM_CIPH_PTLEN, 64 * 4);
+        CHECK_ENABLE_CAP_RV(rv);
+    }
+
+    if (hash) {
+        /*
+         * Enable SHA-1 and SHA-2
+         */
+        rv = acvp_enable_hash_cap(ctx, ACVP_SHA1, &app_sha_handler);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_hash_cap_parm(ctx, ACVP_SHA1, ACVP_HASH_IN_BIT, 0);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_hash_cap_parm(ctx, ACVP_SHA1, ACVP_HASH_IN_EMPTY, 1);
+        CHECK_ENABLE_CAP_RV(rv);
+    
+        rv = acvp_enable_hash_cap(ctx, ACVP_SHA224, &app_sha_handler);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_hash_cap_parm(ctx, ACVP_SHA224, ACVP_HASH_IN_BIT, 0);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_hash_cap_parm(ctx, ACVP_SHA224, ACVP_HASH_IN_EMPTY, 1);
+        CHECK_ENABLE_CAP_RV(rv);
+    
+        rv = acvp_enable_hash_cap(ctx, ACVP_SHA256, &app_sha_handler);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_hash_cap_parm(ctx, ACVP_SHA256, ACVP_HASH_IN_BIT, 0);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_hash_cap_parm(ctx, ACVP_SHA256, ACVP_HASH_IN_EMPTY, 1);
+        CHECK_ENABLE_CAP_RV(rv);
+    
+        rv = acvp_enable_hash_cap(ctx, ACVP_SHA384, &app_sha_handler);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_hash_cap_parm(ctx, ACVP_SHA384, ACVP_HASH_IN_BIT, 0);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_hash_cap_parm(ctx, ACVP_SHA384, ACVP_HASH_IN_EMPTY, 1);
+        CHECK_ENABLE_CAP_RV(rv);
+    
+        rv = acvp_enable_hash_cap(ctx, ACVP_SHA512, &app_sha_handler);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_hash_cap_parm(ctx, ACVP_SHA512, ACVP_HASH_IN_BIT, 0);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_hash_cap_parm(ctx, ACVP_SHA512, ACVP_HASH_IN_EMPTY, 1);
+        CHECK_ENABLE_CAP_RV(rv);
+    }
+
+    if (cmac) {
+        /*
+         * Enable CMAC
+         */
+        rv = acvp_enable_cmac_cap(ctx, ACVP_CMAC_AES_128, &app_cmac_handler);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_cmac_cap_parm(ctx, ACVP_CMAC_AES_128, ACVP_CMAC_BLK_DIVISIBLE_1, 1024);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_cmac_cap_parm(ctx, ACVP_CMAC_AES_128, ACVP_CMAC_BLK_NOT_DIVISIBLE_1, 2048);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_cmac_cap_parm(ctx, ACVP_CMAC_AES_128, ACVP_CMAC_MACLEN, 64);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_cmac_cap_parm(ctx, ACVP_CMAC_AES_128, ACVP_CMAC_MACLEN, 256);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_cmac_cap_parm(ctx, ACVP_CMAC_AES_128, ACVP_CMAC_KEYLEN, 128);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_cmac_cap_parm(ctx, ACVP_CMAC_AES_128, ACVP_CMAC_DIRECTION_GEN, 1);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_cmac_cap_parm(ctx, ACVP_CMAC_AES_128, ACVP_CMAC_DIRECTION_VER, 1);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_prereq_cap(ctx, ACVP_CMAC_AES_128, ACVP_PREREQ_AES, value);
+        CHECK_ENABLE_CAP_RV(rv);
+    
+        rv = acvp_enable_cmac_cap(ctx, ACVP_CMAC_TDES, &app_cmac_handler);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_cmac_cap_parm(ctx, ACVP_CMAC_TDES, ACVP_CMAC_BLK_DIVISIBLE_1, 1024);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_cmac_cap_parm(ctx, ACVP_CMAC_TDES, ACVP_CMAC_BLK_NOT_DIVISIBLE_1, 2048);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_cmac_cap_parm(ctx, ACVP_CMAC_TDES, ACVP_CMAC_MACLEN, 64);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_cmac_cap_parm(ctx, ACVP_CMAC_TDES, ACVP_CMAC_MACLEN, 256);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_cmac_cap_parm(ctx, ACVP_CMAC_TDES, ACVP_CMAC_KEYLEN, 128);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_cmac_cap_parm(ctx, ACVP_CMAC_TDES, ACVP_CMAC_DIRECTION_GEN, 1);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_cmac_cap_parm(ctx, ACVP_CMAC_TDES, ACVP_CMAC_DIRECTION_VER, 1);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_prereq_cap(ctx, ACVP_CMAC_TDES, ACVP_PREREQ_AES, value);
+        CHECK_ENABLE_CAP_RV(rv);
+    }
+
+    if (hmac) {
+        /*
+         * Enable HMAC: TODO - need to add increment value in bits, default to 64 now.
+         */
+        rv = acvp_enable_hmac_cap(ctx, ACVP_HMAC_SHA1, &app_hmac_handler);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA1, ACVP_HMAC_KEYLEN_MIN, 32 * 8);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA1, ACVP_HMAC_KEYLEN_MAX, 56 * 8);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA1, ACVP_HMAC_MACLEN, 160);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_prereq_cap(ctx, ACVP_HMAC_SHA1, ACVP_PREREQ_SHA, value);
+        CHECK_ENABLE_CAP_RV(rv);
+    
+        rv = acvp_enable_hmac_cap(ctx, ACVP_HMAC_SHA2_224, &app_hmac_handler);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA2_224, ACVP_HMAC_KEYLEN_MIN, 32 * 8);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA2_224, ACVP_HMAC_KEYLEN_MAX, 56 * 8);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA2_224, ACVP_HMAC_MACLEN, 224);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_prereq_cap(ctx, ACVP_HMAC_SHA2_224, ACVP_PREREQ_SHA, value);
+        CHECK_ENABLE_CAP_RV(rv);
+    
+        rv = acvp_enable_hmac_cap(ctx, ACVP_HMAC_SHA2_256, &app_hmac_handler);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA2_256, ACVP_HMAC_KEYLEN_MIN, 32 * 8);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA2_256, ACVP_HMAC_KEYLEN_MAX, 56 * 8);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA2_256, ACVP_HMAC_MACLEN, 256);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_prereq_cap(ctx, ACVP_HMAC_SHA2_256, ACVP_PREREQ_SHA, value);
+        CHECK_ENABLE_CAP_RV(rv);
+    
+        rv = acvp_enable_hmac_cap(ctx, ACVP_HMAC_SHA2_384, &app_hmac_handler);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA2_384, ACVP_HMAC_KEYLEN_MIN, 32 * 8);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA2_384, ACVP_HMAC_KEYLEN_MAX, 56 * 8);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA2_384, ACVP_HMAC_MACLEN, 384);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_prereq_cap(ctx, ACVP_HMAC_SHA2_384, ACVP_PREREQ_SHA, value);
+        CHECK_ENABLE_CAP_RV(rv);
+    
+        rv = acvp_enable_hmac_cap(ctx, ACVP_HMAC_SHA2_512, &app_hmac_handler);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA2_512, ACVP_HMAC_KEYLEN_MIN, 32 * 8);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA2_512, ACVP_HMAC_KEYLEN_MAX, 56 * 8);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_hmac_cap_parm(ctx, ACVP_HMAC_SHA2_512, ACVP_HMAC_MACLEN, 512);
+        CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_prereq_cap(ctx, ACVP_HMAC_SHA2_512, ACVP_PREREQ_SHA, value);
+        CHECK_ENABLE_CAP_RV(rv);
+    }
 
 #ifdef ACVP_V05
     /*

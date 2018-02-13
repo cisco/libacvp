@@ -366,6 +366,7 @@ typedef enum acvp_hmac_parameter {
 
 typedef enum acvp_cmac_parameter {
     ACVP_CMAC_MACLEN,
+    ACVP_CMAC_KEYLEN,
     ACVP_CMAC_DIRECTION_GEN,
     ACVP_CMAC_DIRECTION_VER,
     ACVP_CMAC_BLK_DIVISIBLE_1,

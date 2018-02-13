@@ -931,6 +931,11 @@ ACVP_RESULT acvp_validate_cmac_parm_value (ACVP_CMAC_PARM parm, int value) {
             retval = ACVP_SUCCESS;
         }
         break;
+    case ACVP_CMAC_KEYLEN:
+        if (value == 128 || value == 192 || value == 256) {
+            retval = ACVP_SUCCESS;
+        }
+        break;
     case ACVP_CMAC_DIRECTION_GEN:
     case ACVP_CMAC_DIRECTION_VER:
         retval = is_valid_tf_param(value);
@@ -1014,6 +1019,9 @@ ACVP_RESULT acvp_enable_cmac_cap_parm (
         break;
     case ACVP_CMAC_MACLEN:
         acvp_cap_add_length(&cap->cap.cmac_cap->mac_len, value);
+        break;
+    case ACVP_CMAC_KEYLEN:
+        acvp_cap_add_length(&cap->cap.cmac_cap->key_len, value);
         break;
     default:
         return ACVP_INVALID_ARG;
@@ -2569,6 +2577,17 @@ static ACVP_RESULT acvp_build_cmac_register_cap (JSON_Object *cap_obj, ACVP_CAPS
     json_object_set_value(cap_obj, "macLen", json_value_init_array());
     temp_arr = json_object_get_array(cap_obj, "macLen");
     sl_list = cap_entry->cap.cmac_cap->mac_len;
+    while (sl_list) {
+        json_array_append_number(temp_arr, sl_list->length);
+        sl_list = sl_list->next;
+    }
+    
+    /*
+     * Set the supported key lengths
+     */
+    json_object_set_value(cap_obj, "keyLen", json_value_init_array());
+    temp_arr = json_object_get_array(cap_obj, "keyLen");
+    sl_list = cap_entry->cap.cmac_cap->key_len;
     while (sl_list) {
         json_array_append_number(temp_arr, sl_list->length);
         sl_list = sl_list->next;

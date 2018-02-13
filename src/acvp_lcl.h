@@ -266,6 +266,7 @@ typedef struct acvp_cmac_capability {
     int direction_gen; // boolean
     int direction_ver; // boolean
     ACVP_SL_LIST *mac_len;
+    ACVP_SL_LIST *key_len; // 128,192,256
     int msg_len[5];
 } ACVP_CMAC_CAP;
 
