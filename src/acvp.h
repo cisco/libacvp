@@ -123,9 +123,7 @@ typedef enum acvp_sym_cipher {
     ACVP_HMAC_SHA3_256,
     ACVP_HMAC_SHA3_384,
     ACVP_HMAC_SHA3_512,
-    ACVP_CMAC_AES_128,
-    ACVP_CMAC_AES_192,
-    ACVP_CMAC_AES_256,
+    ACVP_CMAC_AES,
     ACVP_CMAC_TDES,
     ACVP_RSA,
     ACVP_DSA,
@@ -367,6 +365,7 @@ typedef enum acvp_hmac_parameter {
 typedef enum acvp_cmac_parameter {
     ACVP_CMAC_MACLEN,
     ACVP_CMAC_KEYLEN,
+    ACVP_CMAC_KEYING_OPTION,
     ACVP_CMAC_DIRECTION_GEN,
     ACVP_CMAC_DIRECTION_VER,
     ACVP_CMAC_BLK_DIVISIBLE_1,

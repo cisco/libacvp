@@ -164,9 +164,7 @@ ACVP_ALG_HANDLER alg_tbl[ACVP_ALG_MAX] = {
         {ACVP_HMAC_SHA3_256,     &acvp_hmac_kat_handler,        ACVP_ALG_HMAC_SHA3_256},
         {ACVP_HMAC_SHA3_384,     &acvp_hmac_kat_handler,        ACVP_ALG_HMAC_SHA3_384},
         {ACVP_HMAC_SHA3_512,     &acvp_hmac_kat_handler,        ACVP_ALG_HMAC_SHA3_512},
-        {ACVP_CMAC_AES_128,      &acvp_cmac_kat_handler,        ACVP_ALG_CMAC_AES_128},
-        {ACVP_CMAC_AES_192,      &acvp_cmac_kat_handler,        ACVP_ALG_CMAC_AES_192},
-        {ACVP_CMAC_AES_256,      &acvp_cmac_kat_handler,        ACVP_ALG_CMAC_AES_256},
+        {ACVP_CMAC_AES,          &acvp_cmac_kat_handler,        ACVP_ALG_CMAC_AES},
         {ACVP_CMAC_TDES,         &acvp_cmac_kat_handler,        ACVP_ALG_CMAC_TDES},
         {ACVP_DSA,               &acvp_dsa_kat_handler,         ACVP_ALG_DSA},
         {ACVP_RSA,               &acvp_rsa_kat_handler,         ACVP_ALG_RSA},
@@ -927,6 +925,8 @@ ACVP_RESULT acvp_validate_cmac_parm_value (ACVP_CMAC_PARM parm, int value) {
         }
         break;
     case ACVP_CMAC_MACLEN:
+        // TODO: need to validate max vals based on cmac
+        // mode... 128 for cmac-aes, 64 for cmac-tdes
         if (value >= 8 && value <= 524288 && value % 8 == 0) {
             retval = ACVP_SUCCESS;
         }
@@ -939,6 +939,11 @@ ACVP_RESULT acvp_validate_cmac_parm_value (ACVP_CMAC_PARM parm, int value) {
     case ACVP_CMAC_DIRECTION_GEN:
     case ACVP_CMAC_DIRECTION_VER:
         retval = is_valid_tf_param(value);
+        break;
+    case ACVP_CMAC_KEYING_OPTION:
+        if (value == 1 || value == 2) {
+            retval = ACVP_SUCCESS;
+        }
         break;
     default:
         break;
@@ -1022,6 +1027,9 @@ ACVP_RESULT acvp_enable_cmac_cap_parm (
         break;
     case ACVP_CMAC_KEYLEN:
         acvp_cap_add_length(&cap->cap.cmac_cap->key_len, value);
+        break;
+    case ACVP_CMAC_KEYING_OPTION:
+        acvp_cap_add_length(&cap->cap.cmac_cap->keying_option, value);
         break;
     default:
         return ACVP_INVALID_ARG;
@@ -1319,9 +1327,7 @@ static ACVP_RESULT acvp_validate_prereq_val (ACVP_CIPHER cipher, ACVP_PREREQ_ALG
             return ACVP_SUCCESS;
         }
         break;
-    case ACVP_CMAC_AES_128:
-    case ACVP_CMAC_AES_192:
-    case ACVP_CMAC_AES_256:
+    case ACVP_CMAC_AES:
     case ACVP_CMAC_TDES:
         if (pre_req == ACVP_PREREQ_AES) {
             return ACVP_SUCCESS;
@@ -2582,17 +2588,30 @@ static ACVP_RESULT acvp_build_cmac_register_cap (JSON_Object *cap_obj, ACVP_CAPS
         sl_list = sl_list->next;
     }
     
-    /*
-     * Set the supported key lengths
-     */
-    json_object_set_value(cap_obj, "keyLen", json_value_init_array());
-    temp_arr = json_object_get_array(cap_obj, "keyLen");
-    sl_list = cap_entry->cap.cmac_cap->key_len;
-    while (sl_list) {
-        json_array_append_number(temp_arr, sl_list->length);
-        sl_list = sl_list->next;
+    if (cap_entry->cipher == ACVP_CMAC_AES) {
+        /*
+         * Set the supported key lengths. if CMAC-AES
+         */
+        json_object_set_value(cap_obj, "keyLen", json_value_init_array());
+        temp_arr = json_object_get_array(cap_obj, "keyLen");
+        sl_list = cap_entry->cap.cmac_cap->key_len;
+        while (sl_list) {
+            json_array_append_number(temp_arr, sl_list->length);
+            sl_list = sl_list->next;
+        }
+    } else if (cap_entry->cipher == ACVP_CMAC_TDES) {
+        /*
+         * Set the supported key lengths. if CMAC-TDES
+         */
+        json_object_set_value(cap_obj, "keyingOption", json_value_init_array());
+        temp_arr = json_object_get_array(cap_obj, "keyingOption");
+        sl_list = cap_entry->cap.cmac_cap->keying_option;
+        while (sl_list) {
+            json_array_append_number(temp_arr, sl_list->length);
+            sl_list = sl_list->next;
+        }
     }
-
+    
     return ACVP_SUCCESS;
 }
 
@@ -3659,9 +3678,7 @@ static ACVP_RESULT acvp_build_register (ACVP_CTX *ctx, char **reg) {
             case ACVP_HMAC_SHA2_512:
                 acvp_build_hmac_register_cap(cap_obj, cap_entry);
                 break;
-            case ACVP_CMAC_AES_128:
-            case ACVP_CMAC_AES_192:
-            case ACVP_CMAC_AES_256:
+            case ACVP_CMAC_AES:
             case ACVP_CMAC_TDES:
                 acvp_build_cmac_register_cap(cap_obj, cap_entry);
                 break;
