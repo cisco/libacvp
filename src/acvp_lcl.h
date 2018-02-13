@@ -105,9 +105,7 @@
 #define ACVP_ALG_HMAC_SHA3_384       "HMAC-SHA3-384"
 #define ACVP_ALG_HMAC_SHA3_512       "HMAC-SHA3-512"
 
-#define ACVP_ALG_CMAC_AES_128        "CMAC-AES-128"
-#define ACVP_ALG_CMAC_AES_192        "CMAC-AES-192"
-#define ACVP_ALG_CMAC_AES_256        "CMAC-AES-256"
+#define ACVP_ALG_CMAC_AES            "CMAC-AES"
 #define ACVP_ALG_CMAC_TDES           "CMAC-TDES"
 
 #define ACVP_ALG_DSA                 "DSA2"
@@ -266,6 +264,8 @@ typedef struct acvp_cmac_capability {
     int direction_gen; // boolean
     int direction_ver; // boolean
     ACVP_SL_LIST *mac_len;
+    ACVP_SL_LIST *key_len; // 128,192,256
+    ACVP_SL_LIST *keying_option; // 1 or 2
     int msg_len[5];
 } ACVP_CMAC_CAP;
 
