@@ -70,6 +70,14 @@ int dsa_builtin_paramgen(DSA *ret, size_t bits, size_t qbits,
 	int idx, unsigned char *seed_out,
 	int *counter_ret, unsigned long *h_ret, BN_GENCB *cb);*/
 #endif
+static void enable_aes(ACVP_CTX *ctx);
+static void enable_tdes(ACVP_CTX *ctx);
+static void enable_hash(ACVP_CTX *ctx);
+static void enable_cmac(ACVP_CTX *ctx);
+static void enable_hmac(ACVP_CTX *ctx);
+static void enable_kdf(ACVP_CTX *ctx);
+static void enable_dsa(ACVP_CTX *ctx);
+
 static ACVP_RESULT app_aes_handler_aead(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_aes_keywrap_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_aes_handler(ACVP_TEST_CASE *test_case);
@@ -164,6 +172,241 @@ ACVP_RESULT progress(char *msg)
 {
     printf("%s", msg);
     return ACVP_SUCCESS;
+}
+
+static void print_usage(void)
+{
+    printf("\nInvalid usage...\n");
+    printf("acvp_app does not require any argument, however logging level can be\n");
+    printf("controlled using:\n");
+    printf("      -none\n");
+    printf("      -error\n");
+    printf("      -warn\n");
+    printf("      -status(default)\n");
+    printf("      -info\n");
+    printf("      -verbose\n");
+    printf("\n");
+    printf("In addition some options are passed to acvp_app using\n");
+    printf("environment variables.  The following variables can be set:\n\n");
+    printf("    ACV_SERVER (when not set, defaults to %s)\n", DEFAULT_SERVER);
+    printf("    ACV_PORT (when not set, defaults to %d)\n", DEFAULT_PORT);
+    printf("    ACV_URI_PREFIX (when not set, defaults to null)\n");
+    printf("    ACV_CA_FILE (when not set, defaults to %s)\n", DEFAULT_CA_CHAIN);
+    printf("    ACV_CERT_FILE (when not set, defaults to %s)\n", DEFAULT_CERT);
+    printf("    ACV_KEY_FILE (when not set, defaults to %s)\n\n", DEFAULT_KEY);
+    printf("The CA certificates, cert and key should be PEM encoded. There should be no\n");
+    printf("password on the key file.\n");
+}
+
+int main(int argc, char **argv)
+{
+    ACVP_RESULT rv;
+    ACVP_CTX *ctx;
+    char ssl_version[10];
+    ACVP_LOG_LVL level = ACVP_LOG_LVL_STATUS;
+    
+    int aes = 1;
+    int tdes = 1;
+    int hash = 1;
+    int cmac = 1;
+    int hmac = 1;
+    int kdf = 0;
+    int dsa = 0;
+    int rsa = 0;
+    int drbg = 0;
+
+    if (argc > 2) {
+        print_usage();
+        return 1;
+    }
+
+    argv++;
+    argc--;
+    while (argc >= 1) {
+        if (strcmp(*argv, "-info") == 0) {
+            level = ACVP_LOG_LVL_INFO;
+        }
+        if (strcmp(*argv, "-status") == 0) {
+            level = ACVP_LOG_LVL_STATUS;
+        }
+        if (strcmp(*argv, "-warn") == 0) {
+            level = ACVP_LOG_LVL_WARN;
+        }
+        if (strcmp(*argv, "-error") == 0) {
+            level = ACVP_LOG_LVL_ERR;
+        }
+        if (strcmp(*argv, "-none") == 0) {
+            level = ACVP_LOG_LVL_NONE;
+        }
+        if (strcmp(*argv, "-verbose") == 0) {
+            level = ACVP_LOG_LVL_VERBOSE;
+        }
+        if (strcmp(*argv, "-help") == 0) {
+            print_usage();
+            return 1;
+        }
+    argv++;
+    argc--;
+    }
+
+#ifdef ACVP_NO_RUNTIME
+    fips_selftest_fail = 0;
+    fips_mode = 0;
+    fips_algtest_init_nofips();
+#endif
+
+    EVP_CIPHER_CTX_cleanup(&cipher_ctx);
+    setup_session_parameters();
+
+    /*
+     * We begin the libacvp usage flow here.
+     * First, we create a test session context.
+     */
+    rv = acvp_create_test_session(&ctx, &progress, level);
+    if (rv != ACVP_SUCCESS) {
+        printf("Failed to create ACVP context\n");
+        exit(1);
+    }
+
+    /*
+     * Next we specify the ACVP server address
+     */
+    rv = acvp_set_server(ctx, server, port);
+    if (rv != ACVP_SUCCESS) {
+        printf("Failed to set server/port\n");
+        exit(1);
+    }
+
+    /*
+     * Setup the vendor attributes
+     */
+    rv = acvp_set_vendor_info(ctx, "Cisco Systems", "www.cisco.com", "Barry Fussell", "bfussell@cisco.com");
+    if (rv != ACVP_SUCCESS) {
+        printf("Failed to set vendor info\n");
+        exit(1);
+    }
+
+    /*
+     * Setup the crypto module attributes
+     */
+    snprintf(ssl_version, 10, "%08x", (unsigned int)SSLeay());
+    rv = acvp_set_module_info(ctx, "OpenSSL", "software", ssl_version, "FOM 6.2a");
+    if (rv != ACVP_SUCCESS) {
+        printf("Failed to set module info\n");
+        exit(1);
+    }
+
+    /*
+     * Set the path segment prefix if needed
+     */
+     if (strnlen(path_segment, 255) > 0) {
+        rv = acvp_set_path_segment(ctx, path_segment);
+        if (rv != ACVP_SUCCESS) {
+            printf("Failed to set URI prefix\n");
+            exit(1);
+        }
+     }
+
+    /*
+     * Next we provide the CA certs to be used by libacvp
+     * to verify the ACVP TLS certificate.
+     */
+    rv = acvp_set_cacerts(ctx, ca_chain_file);
+    if (rv != ACVP_SUCCESS) {
+        printf("Failed to set CA certs\n");
+        exit(1);
+    }
+
+    /*
+     * Specify the certificate and private key the client should used
+     * for TLS client auth.
+     */
+    rv = acvp_set_certkey(ctx, cert_file, key_file);
+    if (rv != ACVP_SUCCESS) {
+        printf("Failed to set TLS cert/key\n");
+        exit(1);
+    }
+
+    /*
+     * We need to register all the crypto module capabilities that will be
+     * validated. Each has their own method for readability.
+     */
+    if (aes) {
+        enable_aes(ctx);
+    }
+
+    if (tdes) {
+        enable_tdes(ctx);
+    }
+
+    if (hash) {
+        enable_hash(ctx);
+    }
+
+    if (cmac) {
+        enable_cmac(ctx);
+    }
+
+    if (hmac) {
+        enable_hmac(ctx);
+    }
+
+    if (kdf) {
+        enable_kdf(ctx);
+    }
+
+    if (dsa) {
+        enable_dsa(ctx);
+    }
+
+#ifdef ACVP_NO_RUNTIME
+    if (rsa) {
+        enable_rsa(ctx);
+    }
+
+    if (drbg) {
+        enable_drbg(ctx);
+    }
+#endif
+
+    /*
+     * Now that we have a test session, we register with
+     * the server to advertise our capabilities and receive
+     * the KAT vector sets the server demands that we process.
+     */
+    rv = acvp_register(ctx);
+    if (rv != ACVP_SUCCESS) {
+        printf("Failed to register with ACVP server (rv=%d)\n", rv);
+        exit(1);
+    }
+
+    /*
+     * Now we process the test cases given to us during
+     * registration earlier.
+     */
+    rv = acvp_process_tests(ctx);
+    if (rv != ACVP_SUCCESS) {
+        printf("Failed to process vectors (%d)\n", rv);
+        exit(1);
+    }
+
+    printf("\nTests complete, checking results...\n");
+    rv = acvp_check_test_results(ctx);
+    if (rv != ACVP_SUCCESS) {
+        printf("Unable to retrieve test results (%d)\n", rv);
+        exit(1);
+    }
+    /*
+     * Finally, we free the test session context and cleanup
+     */
+    rv = acvp_free_test_session(ctx);
+    if (rv != ACVP_SUCCESS) {
+        printf("Failed to free ACVP context\n");
+        exit(1);
+    }
+    acvp_cleanup();
+    
+    return (0);
 }
 
 static void enable_aes (ACVP_CTX *ctx) {
@@ -425,6 +668,20 @@ static void enable_tdes (ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_TDES_CFB8, ACVP_SYM_CIPH_PTLEN, 64 * 4);
     CHECK_ENABLE_CAP_RV(rv);
+
+#ifdef ACVP_V05
+    /*
+     * Enable 3DES-CFB1
+     */
+    rv = acvp_enable_sym_cipher_cap(ctx, ACVP_TDES_CFB1, ACVP_DIR_BOTH, ACVP_KO_THREE, ACVP_IVGEN_SRC_NA, ACVP_IVGEN_MODE_NA, &app_des_handler);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_TDES_CFB1, ACVP_SYM_CIPH_KEYLEN, 192);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_TDES_CFB1, ACVP_SYM_CIPH_IVLEN, 192/3);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_TDES_CFB1, ACVP_SYM_CIPH_PTLEN, 64);
+    CHECK_ENABLE_CAP_RV(rv);
+#endif
 }
 
 static void enable_hash (ACVP_CTX *ctx) {
@@ -578,198 +835,12 @@ static void enable_hmac (ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
 }
 
-static void print_usage(void)
-{
-    printf("\nInvalid usage...\n");
-    printf("acvp_app does not require any argument, however logging level can be\n");
-    printf("controlled using:\n");
-    printf("      -none\n");
-    printf("      -error\n");
-    printf("      -warn\n");
-    printf("      -status(default)\n");
-    printf("      -info\n");
-    printf("      -verbose\n");
-    printf("\n");
-    printf("In addition some options are passed to acvp_app using\n");
-    printf("environment variables.  The following variables can be set:\n\n");
-    printf("    ACV_SERVER (when not set, defaults to %s)\n", DEFAULT_SERVER);
-    printf("    ACV_PORT (when not set, defaults to %d)\n", DEFAULT_PORT);
-    printf("    ACV_URI_PREFIX (when not set, defaults to null)\n");
-    printf("    ACV_CA_FILE (when not set, defaults to %s)\n", DEFAULT_CA_CHAIN);
-    printf("    ACV_CERT_FILE (when not set, defaults to %s)\n", DEFAULT_CERT);
-    printf("    ACV_KEY_FILE (when not set, defaults to %s)\n\n", DEFAULT_KEY);
-    printf("The CA certificates, cert and key should be PEM encoded. There should be no\n");
-    printf("password on the key file.\n");
-}
-
-int main(int argc, char **argv)
-{
-    ACVP_RESULT rv;
-    ACVP_CTX *ctx;
-    char ssl_version[10];
-    ACVP_LOG_LVL level = ACVP_LOG_LVL_STATUS;
-    
-    int aes = 1;
-    int tdes = 1;
-    int hash = 1;
-    int cmac = 1;
-    int hmac = 1;
-
-    if (argc > 2) {
-        print_usage();
-        return 1;
-    }
-
-    argv++;
-    argc--;
-    while (argc >= 1) {
-        if (strcmp(*argv, "-info") == 0) {
-            level = ACVP_LOG_LVL_INFO;
-        }
-        if (strcmp(*argv, "-status") == 0) {
-            level = ACVP_LOG_LVL_STATUS;
-        }
-        if (strcmp(*argv, "-warn") == 0) {
-            level = ACVP_LOG_LVL_WARN;
-        }
-        if (strcmp(*argv, "-error") == 0) {
-            level = ACVP_LOG_LVL_ERR;
-        }
-        if (strcmp(*argv, "-none") == 0) {
-            level = ACVP_LOG_LVL_NONE;
-        }
-        if (strcmp(*argv, "-verbose") == 0) {
-            level = ACVP_LOG_LVL_VERBOSE;
-        }
-        if (strcmp(*argv, "-help") == 0) {
-            print_usage();
-            return 1;
-        }
-    argv++;
-    argc--;
-    }
-
-#ifdef ACVP_NO_RUNTIME
-    fips_selftest_fail = 0;
-    fips_mode = 0;
-    fips_algtest_init_nofips();
-#endif
-
-    EVP_CIPHER_CTX_cleanup(&cipher_ctx);
-    setup_session_parameters();
-
-    /*
-     * We begin the libacvp usage flow here.
-     * First, we create a test session context.
-     */
-    rv = acvp_create_test_session(&ctx, &progress, level);
-    if (rv != ACVP_SUCCESS) {
-        printf("Failed to create ACVP context\n");
-        exit(1);
-    }
-
-    /*
-     * Next we specify the ACVP server address
-     */
-    rv = acvp_set_server(ctx, server, port);
-    if (rv != ACVP_SUCCESS) {
-        printf("Failed to set server/port\n");
-        exit(1);
-    }
-
-    /*
-     * Setup the vendor attributes
-     */
-    rv = acvp_set_vendor_info(ctx, "Cisco Systems", "www.cisco.com", "Barry Fussell", "bfussell@cisco.com");
-    if (rv != ACVP_SUCCESS) {
-        printf("Failed to set vendor info\n");
-        exit(1);
-    }
-
-    /*
-     * Setup the crypto module attributes
-     */
-    snprintf(ssl_version, 10, "%08x", (unsigned int)SSLeay());
-    rv = acvp_set_module_info(ctx, "OpenSSL", "software", ssl_version, "FOM 6.2a");
-    if (rv != ACVP_SUCCESS) {
-        printf("Failed to set module info\n");
-        exit(1);
-    }
-
-    /*
-     * Set the path segment prefix if needed
-     */
-     if (strnlen(path_segment, 255) > 0) {
-        rv = acvp_set_path_segment(ctx, path_segment);
-        if (rv != ACVP_SUCCESS) {
-            printf("Failed to set URI prefix\n");
-            exit(1);
-        }
-     }
-
-    /*
-     * Next we provide the CA certs to be used by libacvp
-     * to verify the ACVP TLS certificate.
-     */
-    rv = acvp_set_cacerts(ctx, ca_chain_file);
-    if (rv != ACVP_SUCCESS) {
-        printf("Failed to set CA certs\n");
-        exit(1);
-    }
-
-    /*
-     * Specify the certificate and private key the client should used
-     * for TLS client auth.
-     */
-    rv = acvp_set_certkey(ctx, cert_file, key_file);
-    if (rv != ACVP_SUCCESS) {
-        printf("Failed to set TLS cert/key\n");
-        exit(1);
-    }
-
-    /*
-     * We need to register all the crypto module capabilities that will be
-     * validated. Each has their own method for readability.
-     */
-    if (aes) {
-        enable_aes(ctx);
-    }
-
-    if (tdes) {
-        enable_tdes(ctx);
-    }
-
-    if (hash) {
-        enable_hash(ctx);
-    }
-
-    if (cmac) {
-        enable_cmac(ctx);
-    }
-
-    if (hmac) {
-        enable_hmac(ctx);
-    }
-
-#ifdef ACVP_V05
-    /*
-     * Enable 3DES-CFB1
-     */
-    rv = acvp_enable_sym_cipher_cap(ctx, ACVP_TDES_CFB1, ACVP_DIR_BOTH, ACVP_KO_THREE, ACVP_IVGEN_SRC_NA, ACVP_IVGEN_MODE_NA, &app_des_handler);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_TDES_CFB1, ACVP_SYM_CIPH_KEYLEN, 192);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_TDES_CFB1, ACVP_SYM_CIPH_IVLEN, 192/3);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_TDES_CFB1, ACVP_SYM_CIPH_PTLEN, 64);
-    CHECK_ENABLE_CAP_RV(rv);
-#endif
-
+static void enable_kdf (ACVP_CTX *ctx) {
 #ifdef OPENSSL_KDF_SUPPORT
+    ACVP_RESULT rv;
     /*
      * Enable KDF-135
      */
-
     rv = acvp_enable_kdf135_tls_cap(ctx, ACVP_KDF135_TLS, &app_kdf135_tls_handler);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_prereq_cap(ctx, ACVP_KDF135_TLS, ACVP_PREREQ_SHA, value);
@@ -805,8 +876,12 @@ int main(int argc, char **argv)
     rv = acvp_enable_kdf135_ssh_cap_parm(ctx, ACVP_KDF135_SSH, ACVP_SSH_METH_AES_256_CBC, ACVP_KDF135_SSH_CAP_SHA256 | ACVP_KDF135_SSH_CAP_SHA384 | ACVP_KDF135_SSH_CAP_SHA512);
     CHECK_ENABLE_CAP_RV(rv);
 #endif
+}
 
+static void enable_dsa (ACVP_CTX *ctx) {
 #if 0 /* until DSA is supported on the server side */
+    ACVP_RESULT rv;
+
     /*
      * Enable DSA....
      */
@@ -840,10 +915,12 @@ int main(int argc, char **argv)
     rv = acvp_enable_dsa_cap_parm(ctx, ACVP_DSA, ACVP_DSA_MODE_PQGGEN, ACVP_DSA_LN3072_256, ACVP_DSA_SHA256);
     CHECK_ENABLE_CAP_RV(rv);
 #endif
+}
 
-#ifdef ACVP_NO_RUNTIME
-
+static void enable_rsa (ACVP_CTX *ctx) {
 #if 0 /* until RSA is supported on the server side */
+    ACVP_RESULT rv;
+
     /*
      * Enable RSA keygen...
      */
@@ -1049,8 +1126,12 @@ int main(int argc, char **argv)
     rv = acvp_enable_rsa_cap_sig_type_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_SIGVER, RSA_SIG_TYPE_PKCS1PSS, MOD_RSA_4096, ACVP_STR_SHA_512, RSA_SALT_SIGGEN_64);
     CHECK_ENABLE_CAP_RV(rv);
 #endif
+}
 
+static void enable_drbg (ACVP_CTX *ctx) {
 #if 0  /* until drbg is supported by the server */
+    ACVP_RESULT rv;
+
     /*
      * Register DRBG
      */
@@ -1235,48 +1316,6 @@ int main(int argc, char **argv)
     CHECK_ENABLE_CAP_RV(rv);
 
 #endif
-#endif
-
-    /*
-     * Now that we have a test session, we register with
-     * the server to advertise our capabilities and receive
-     * the KAT vector sets the server demands that we process.
-     */
-    rv = acvp_register(ctx);
-    if (rv != ACVP_SUCCESS) {
-        printf("Failed to register with ACVP server (rv=%d)\n", rv);
-        exit(1);
-    }
-
-    /*
-     * Now we process the test cases given to us during
-     * registration earlier.
-     */
-    rv = acvp_process_tests(ctx);
-    if (rv != ACVP_SUCCESS) {
-        printf("Failed to process vectors (%d)\n", rv);
-        exit(1);
-    }
-
-    printf("\nTests complete, checking results...\n");
-    rv = acvp_check_test_results(ctx);
-    if (rv != ACVP_SUCCESS) {
-        printf("Unable to retrieve test results (%d)\n", rv);
-        exit(1);
-    }
-    /*
-     * Finally, we free the test session context and cleanup
-     */
-    rv = acvp_free_test_session(ctx);
-    if (rv != ACVP_SUCCESS) {
-        printf("Failed to free ACVP context\n");
-        exit(1);
-    }
-    acvp_cleanup();
-
-    // BN_free(expo); /* needed when passing bignum arg to rsa keygen from app */
-
-    return (0);
 }
 
 static ACVP_RESULT app_des_handler(ACVP_TEST_CASE *test_case)
