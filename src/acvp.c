@@ -2726,11 +2726,31 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap (JSON_Object *cap_obj, ACV
             sl_list = sl_list->next;
         }
     }
+    
     /*
      * Set the supported plaintext lengths
      */
-    json_object_set_value(cap_obj, "ptLen", json_value_init_array());
-    opts_arr = json_object_get_array(cap_obj, "ptLen");
+    switch (cap_entry->cipher) {
+    case ACVP_AES_ECB:
+    case ACVP_AES_CBC:
+    case ACVP_AES_CFB1:
+    case ACVP_AES_CFB8:
+    case ACVP_AES_CFB128:
+    case ACVP_AES_OFB:
+    case ACVP_AES_XTS:
+    case ACVP_AES_KWP:
+        json_object_set_value(cap_obj, "dataLen", json_value_init_array());
+        opts_arr = json_object_get_array(cap_obj, "dataLen");
+        break;
+    case ACVP_AES_CTR:
+        json_object_set_value(cap_obj, "dataLength", json_value_init_array());
+        opts_arr = json_object_get_array(cap_obj, "dataLength");
+        break;
+    default:
+        json_object_set_value(cap_obj, "ptLen", json_value_init_array());
+        opts_arr = json_object_get_array(cap_obj, "ptLen");
+        break;
+    }
     sl_list = sym_cap->ptlen;
     while (sl_list) {
         json_array_append_number(opts_arr, sl_list->length);
