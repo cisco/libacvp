@@ -78,7 +78,7 @@ void acvp_cleanup (void) {
 ACVP_CAPS_LIST *acvp_locate_cap_entry (ACVP_CTX *ctx, ACVP_CIPHER cipher) {
     ACVP_CAPS_LIST *cap;
 
-    if (!ctx->caps_list) {
+    if (!ctx || !ctx->caps_list) {
         return NULL;
     }
 
@@ -113,7 +113,10 @@ char *acvp_lookup_cipher_name (ACVP_CIPHER alg) {
  * algorithm name (as defined in the ACVP spec).  It
  * returns -1 if none match.
  */
-ACVP_CIPHER acvp_lookup_cipher_index (const char *algorithm) {
+int acvp_lookup_cipher_index (const char *algorithm) {
+    if (!algorithm) {
+        return -1;
+    }
     int i;
 
     for (i = 0; i < ACVP_ALG_MAX; i++) {
@@ -147,6 +150,9 @@ char *acvp_lookup_rsa_randpq_name (int value) {
 }
 
 int acvp_lookup_rsa_randpq_index (char *value) {
+    if (!value) {
+        return 0;
+    }
     if (strncmp(value, "B.3.2", 5) == 0) { return RSA_RAND_PQ_B32; }
     if (strncmp(value, "B.3.3", 5) == 0) { return RSA_RAND_PQ_B33; }
     if (strncmp(value, "B.3.4", 5) == 0) { return RSA_RAND_PQ_B34; }

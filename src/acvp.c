@@ -545,6 +545,37 @@ ACVP_RESULT acvp_enable_sym_cipher_cap (
     if (!crypto_handler) {
         return ACVP_INVALID_ARG;
     }
+    
+    switch (cipher) {
+    case ACVP_AES_GCM:
+    case ACVP_AES_CCM:
+    case ACVP_AES_ECB:
+    case ACVP_AES_CBC:
+    case ACVP_AES_CFB1:
+    case ACVP_AES_CFB8:
+    case ACVP_AES_CFB128:
+    case ACVP_AES_OFB:
+    case ACVP_AES_CTR:
+    case ACVP_AES_XTS:
+    case ACVP_AES_KW:
+    case ACVP_AES_KWP:
+    case ACVP_TDES_ECB:
+    case ACVP_TDES_CBC:
+    case ACVP_TDES_CBCI:
+    case ACVP_TDES_OFB:
+    case ACVP_TDES_OFBI:
+    case ACVP_TDES_CFB1:
+    case ACVP_TDES_CFB8:
+    case ACVP_TDES_CFB64:
+    case ACVP_TDES_CFBP1:
+    case ACVP_TDES_CFBP8:
+    case ACVP_TDES_CFBP64:
+    case ACVP_TDES_CTR:
+    case ACVP_TDES_KW:
+        break;
+    default:
+        return ACVP_INVALID_ARG;
+    }
 
     cap = calloc(1, sizeof(ACVP_SYM_CIPHER_CAP));
     if (!cap) {
@@ -2355,6 +2386,11 @@ ACVP_RESULT acvp_set_vendor_info (ACVP_CTX *ctx,
                                   const char *contact_email) {
     if (!ctx) {
         return ACVP_NO_CTX;
+    }
+    if (!vendor_name || !vendor_url ||
+        !contact_name || !contact_email) {
+        ACVP_LOG_ERR("Must provide values for vendor info");
+        return ACVP_INVALID_ARG;
     }
 
     if (ctx->vendor_name) { free(ctx->vendor_name); }

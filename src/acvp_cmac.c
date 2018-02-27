@@ -174,7 +174,7 @@ static ACVP_RESULT acvp_cmac_release_tc (ACVP_CMAC_TC *stc) {
 
 ACVP_RESULT acvp_cmac_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     unsigned int tc_id, msglen, keyLen, keyingOption, maclen, verify = 0;
-    unsigned char *msg = NULL, *key1 = NULL, *key2 = NULL, *key3 = NULL, *direction = NULL, *mac = NULL;
+    unsigned char *msg = NULL, *key1 = NULL, *key2 = NULL, *key3 = NULL, *mac = NULL;
     JSON_Value *groupval;
     JSON_Object *groupobj = NULL;
     JSON_Value *testval;
@@ -200,7 +200,7 @@ ACVP_RESULT acvp_cmac_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     ACVP_RESULT rv;
     const char *alg_str = json_object_get_string(obj, "algorithm");
     ACVP_CIPHER alg_id;
-    char *json_result;
+    char *json_result, *direction = NULL;
 
     if (!alg_str) {
         ACVP_LOG_ERR("ERROR: unable to parse 'algorithm' from JSON");

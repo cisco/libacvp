@@ -519,7 +519,7 @@ ACVP_CAPS_LIST *acvp_locate_cap_entry (ACVP_CTX *ctx, ACVP_CIPHER cipher);
 
 char *acvp_lookup_cipher_name (ACVP_CIPHER alg);
 
-ACVP_CIPHER acvp_lookup_cipher_index (const char *algorithm);
+int acvp_lookup_cipher_index (const char *algorithm);
 
 ACVP_DRBG_MODE acvp_lookup_drbg_mode_index (const char *mode);
 
