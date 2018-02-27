@@ -548,13 +548,17 @@ typedef struct acvp_hmac_tc_t {
  */
 typedef struct acvp_cmac_tc_t {
     ACVP_CIPHER cipher;
+    char direction[3];
+    char ver_disposition[4];
     unsigned int tc_id;    /* Test case id */
     unsigned char *msg;
     unsigned int msg_len;
     unsigned char *mac; /* The resulting digest calculated for the test case */
     unsigned int mac_len;
     unsigned int key_len;
+    /* for CMAC-AES */
     unsigned char *key;
+    /* for CMAC-TDES */
     unsigned char *key2;
     unsigned char *key3;
 } ACVP_CMAC_TC;

@@ -733,14 +733,11 @@ static void enable_cmac (ACVP_CTX *ctx) {
     /*
      * Enable CMAC
      */
-#if 0 // CMAC-AES not quite ready...
     rv = acvp_enable_cmac_cap(ctx, ACVP_CMAC_AES, &app_cmac_handler);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_cmac_cap_parm(ctx, ACVP_CMAC_AES, ACVP_CMAC_BLK_DIVISIBLE_1, 1024);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_cmac_cap_parm(ctx, ACVP_CMAC_AES, ACVP_CMAC_BLK_NOT_DIVISIBLE_1, 2048);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_cmac_cap_parm(ctx, ACVP_CMAC_AES, ACVP_CMAC_MACLEN, 64);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_cmac_cap_parm(ctx, ACVP_CMAC_AES, ACVP_CMAC_MACLEN, 128);
     CHECK_ENABLE_CAP_RV(rv);
@@ -752,8 +749,7 @@ static void enable_cmac (ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_prereq_cap(ctx, ACVP_CMAC_AES, ACVP_PREREQ_AES, value);
     CHECK_ENABLE_CAP_RV(rv);
-#endif
-    
+
     rv = acvp_enable_cmac_cap(ctx, ACVP_CMAC_TDES, &app_cmac_handler);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_cmac_cap_parm(ctx, ACVP_CMAC_TDES, ACVP_CMAC_BLK_DIVISIBLE_1, 1024);
@@ -768,7 +764,7 @@ static void enable_cmac (ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_cmac_cap_parm(ctx, ACVP_CMAC_TDES, ACVP_CMAC_DIRECTION_VER, 1);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_prereq_cap(ctx, ACVP_CMAC_TDES, ACVP_PREREQ_AES, value);
+    rv = acvp_enable_prereq_cap(ctx, ACVP_CMAC_TDES, ACVP_PREREQ_TDES, value);
     CHECK_ENABLE_CAP_RV(rv);
 }
 
@@ -2100,7 +2096,10 @@ static ACVP_RESULT app_cmac_handler(ACVP_TEST_CASE *test_case)
     ACVP_CMAC_TC    *tc;
     const EVP_CIPHER    *c;
     CMAC_CTX       *cmac_ctx;
-    int msg_len;
+    int msg_len, key_len, i;
+    unsigned char mac_compare[16] = {0};
+    char full_key[65] = {0};
+    int mac_cmp_len;
 
     if (!test_case) {
         return ACVP_INVALID_ARG;
@@ -2123,31 +2122,69 @@ static ACVP_RESULT app_cmac_handler(ACVP_TEST_CASE *test_case)
             default:
                 break;
             }
+            key_len = (tc->key_len)/8;
+            for (i = 0; i < key_len; i++) {
+                full_key[i] = tc->key[i];
+            }
+            break;
         case ACVP_CMAC_TDES:
             c = EVP_des_ede3_cbc();
+            for (i = 0; i < 8; i++) {
+                full_key[i] = tc->key[i];
+            }
+            for (i; i < 16; i++) {
+                full_key[i] = tc->key2[i%8];
+            }
+            for (i; i < 24; i++) {
+                full_key[i] = tc->key3[i%8];
+            }
+            key_len = 24;
             break;
         default:
-            printf("Error: Unsupported hash algorithm requested by ACVP server\n");
+            printf("Error: Unsupported CMAC algorithm requested by ACVP server\n");
             return ACVP_NO_CAP;
             break;
     }
-
+    
+    full_key[key_len] = '/0';
+    
     cmac_ctx = CMAC_CTX_new();
     msg_len = tc->msg_len;
 
-    if (!CMAC_Init(cmac_ctx, tc->key, tc->key_len, c, NULL)) {
-        printf("\nCrypto module error, HMAC_Init_ex failed\n");
+    if (!CMAC_Init(cmac_ctx, full_key, key_len, c, NULL)) {
+        printf("\nCrypto module error, CMAC_Init_ex failed\n");
         return ACVP_CRYPTO_MODULE_FAIL;
     }
-
-    if (!CMAC_Update(cmac_ctx, tc->msg, msg_len)) {
-        printf("\nCrypto module error, HMAC_Update failed\n");
+    
+    if (!CMAC_Update(cmac_ctx, tc->msg, tc->msg_len)) {
+        printf("\nCrypto module error, CMAC_Update failed\n");
         return ACVP_CRYPTO_MODULE_FAIL;
     }
-
-    if (!CMAC_Final(cmac_ctx, tc->mac, (size_t *)&tc->mac_len)) {
-        printf("\nCrypto module error, HMAC_Final failed\n");
-        return ACVP_CRYPTO_MODULE_FAIL;
+    
+    if (strncmp((const char *)tc->direction, "ver", 3) == 0) {
+        if (!CMAC_Final(cmac_ctx, mac_compare, (size_t *)&mac_cmp_len)) {
+            printf("\nCrypto module error, CMAC_Final failed\n");
+            return ACVP_CRYPTO_MODULE_FAIL;
+        }
+        
+        /*
+         * Reformat the MAC - in "gen" mode, this formatting happens
+         * when we build the response JSON. Since the comparison
+         * happens here for "ver" we have to reformat here as well
+         */
+        unsigned char formatted_mac_compare[tc->mac_len * 2 + 1];
+        acvp_bin_to_hexstr(mac_compare, mac_cmp_len, formatted_mac_compare);
+        
+        if (strncmp((const char *)formatted_mac_compare, (const char *)tc->mac, tc->mac_len * 2) == 0) {
+            strncpy((char *)tc->ver_disposition, "pass", 4);
+        } else {
+            strncpy((char *)tc->ver_disposition, "fail", 4);
+        }
+    } else {
+        if (!CMAC_Final(cmac_ctx, tc->mac, (size_t *)&tc->mac_len)) {
+            printf("\nCrypto module error, CMAC_Final failed\n");
+            return ACVP_CRYPTO_MODULE_FAIL;
+        }
     }
     CMAC_CTX_cleanup(cmac_ctx);
 

@@ -41,17 +41,40 @@ static ACVP_RESULT acvp_cmac_init_tc (ACVP_CTX *ctx,
                                       unsigned char *key,
                                       unsigned char *key2,
                                       unsigned char *key3,
+                                      int direction_verify,
+                                      unsigned char *mac,
+                                      unsigned int mac_len,
                                       ACVP_CIPHER alg_id) {
     ACVP_RESULT rv;
 
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+    if (alg_id != ACVP_CMAC_TDES && alg_id != ACVP_CMAC_AES) {
+        return ACVP_INVALID_ARG;
+    }
+    if (!msg || !stc || !tc_id || !key) {
+        return ACVP_INVALID_ARG;
+    }
+    if (alg_id == ACVP_CMAC_TDES && (!key2 || !key3)) {
+        return ACVP_INVALID_ARG;
+    }
+    if (direction_verify) {
+        if (!mac_len || !mac) {
+            return ACVP_INVALID_ARG;
+        }
+    }
+    
     memset(stc, 0x0, sizeof(ACVP_CMAC_TC));
 
     stc->msg = calloc(1, ACVP_CMAC_MSG_MAX);
     if (!stc->msg) { return ACVP_MALLOC_FAIL; }
-    stc->mac = calloc(1, ACVP_CMAC_MAC_MAX);
+    
+    stc->mac = calloc(ACVP_CMAC_MAC_MAX, sizeof(char));
     if (!stc->mac) { return ACVP_MALLOC_FAIL; }
     stc->key = calloc(1, ACVP_CMAC_KEY_MAX);
     if (!stc->key) { return ACVP_MALLOC_FAIL; }
+    
     stc->key2 = calloc(1, ACVP_CMAC_KEY_MAX);
     if (!stc->key2) { return ACVP_MALLOC_FAIL; }
     stc->key3 = calloc(1, ACVP_CMAC_KEY_MAX);
@@ -62,27 +85,44 @@ static ACVP_RESULT acvp_cmac_init_tc (ACVP_CTX *ctx,
         ACVP_LOG_ERR("Hex converstion failure (msg)");
         return rv;
     }
-    rv = acvp_hexstr_to_bin((const unsigned char *) key, stc->key, ACVP_CMAC_KEY_MAX);
-    if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("Hex converstion failure (key)");
-        return rv;
+    
+    if (alg_id == ACVP_CMAC_AES) {
+        rv = acvp_hexstr_to_bin((const unsigned char *) key, stc->key, ACVP_CMAC_KEY_MAX);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Hex converstion failure (key)");
+            return rv;
+        }
+        stc->key_len = key_len;
+    } else if (alg_id == ACVP_CMAC_TDES) {
+        rv = acvp_hexstr_to_bin((const unsigned char *) key, stc->key, ACVP_CMAC_KEY_MAX);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Hex converstion failure (key1)");
+            return rv;
+        }
+        rv = acvp_hexstr_to_bin((const unsigned char *) key2, stc->key2, ACVP_CMAC_KEY_MAX);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Hex converstion failure (key2)");
+            return rv;
+        }
+        rv = acvp_hexstr_to_bin((const unsigned char *) key3, stc->key3, ACVP_CMAC_KEY_MAX);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Hex converstion failure (key3)");
+            return rv;
+        }
     }
-    rv = acvp_hexstr_to_bin((const unsigned char *) key, stc->key2, ACVP_CMAC_KEY_MAX);
-    if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("Hex converstion failure (key2)");
-        return rv;
-    }
-    rv = acvp_hexstr_to_bin((const unsigned char *) key, stc->key3, ACVP_CMAC_KEY_MAX);
-    if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("Hex converstion failure (key3)");
-        return rv;
+
+    if (direction_verify) {
+        strncpy(stc->direction, "ver", 3);
+        stc->mac_len = mac_len;
+        strncpy(stc->mac, (const char *)mac, stc->mac_len * 2);
+    } else {
+        strncpy(stc->direction, "gen", 3);
     }
 
     stc->tc_id = tc_id;
     stc->msg_len = msg_len;
-    stc->key_len = key_len;
     stc->cipher = alg_id;
-
+    
     return ACVP_SUCCESS;
 }
 
@@ -101,14 +141,17 @@ static ACVP_RESULT acvp_cmac_output_tc (ACVP_CTX *ctx, ACVP_CMAC_TC *stc, JSON_O
         ACVP_LOG_ERR("Unable to malloc in acvp_cmac_output_tc");
         return ACVP_MALLOC_FAIL;
     }
-
-    rv = acvp_bin_to_hexstr(stc->mac, stc->mac_len, (unsigned char *) tmp);
-    if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("hex conversion failure (mac)");
-        return rv;
+    
+    if (strncmp(stc->direction, "ver", 3) == 0) {
+        json_object_set_string(tc_rsp, "result", stc->ver_disposition);
+    } else {
+        rv = acvp_bin_to_hexstr(stc->mac, stc->mac_len, (unsigned char *) tmp);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("hex conversion failure (mac)");
+            return rv;
+        }
+        json_object_set_string(tc_rsp, "mac", tmp);
     }
-    json_object_set_string(tc_rsp, "mac", tmp);
-
     free(tmp);
 
     return ACVP_SUCCESS;
@@ -130,8 +173,8 @@ static ACVP_RESULT acvp_cmac_release_tc (ACVP_CMAC_TC *stc) {
 }
 
 ACVP_RESULT acvp_cmac_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
-    unsigned int tc_id, msglen, keyLen;
-    unsigned char *msg = NULL, *key = NULL, *key2 = NULL, *key3 = NULL;
+    unsigned int tc_id, msglen, keyLen, keyingOption, maclen, verify = 0;
+    unsigned char *msg = NULL, *key1 = NULL, *key2 = NULL, *key3 = NULL, *direction = NULL, *mac = NULL;
     JSON_Value *groupval;
     JSON_Object *groupobj = NULL;
     JSON_Value *testval;
@@ -213,9 +256,18 @@ ACVP_RESULT acvp_cmac_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     for (i = 0; i < g_cnt; i++) {
         groupval = json_array_get_value(groups, i);
         groupobj = json_value_get_object(groupval);
-
-
-        ACVP_LOG_INFO("    Test group: %d", i);
+        
+        if (alg_id == ACVP_CMAC_AES) {
+            keyLen = (unsigned int) json_object_get_number(groupobj, "keyLen");
+        } else if (alg_id == ACVP_CMAC_TDES) {
+            keyingOption = (unsigned int) json_object_get_number(groupobj, "keyingOption");
+        }
+        
+        direction = (char *)json_object_get_string(groupobj, "direction");
+        msglen = (unsigned int) json_object_get_number(groupobj, "msgLen") / 8;
+        maclen = (unsigned int) json_object_get_number(groupobj, "macLen") / 8;
+    
+        ACVP_LOG_INFO("\n\n    Test group: %d", i);
 
         tests = json_object_get_array(groupobj, "tests");
         t_cnt = json_array_get_count(tests);
@@ -225,22 +277,40 @@ ACVP_RESULT acvp_cmac_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
             testobj = json_value_get_object(testval);
 
             tc_id = (unsigned int) json_object_get_number(testobj, "tcId");
-            msglen = (unsigned int) json_object_get_number(testobj, "msgLen");
             msg = (unsigned char *) json_object_get_string(testobj, "msg");
-            keyLen = (unsigned int) json_object_get_number(testobj, "keyLen");
-            key = (unsigned char *) json_object_get_string(testobj, "key");
-            key2 = (unsigned char *) json_object_get_string(testobj, "key2");
-            key3 = (unsigned char *) json_object_get_string(testobj, "key3");
+            if (alg_id == ACVP_CMAC_AES) {
+                key1 = (unsigned char *) json_object_get_string(testobj, "key");
+            } else if (alg_id == ACVP_CMAC_TDES) {
+                key1 = (unsigned char *) json_object_get_string(testobj, "key1");
+                key2 = (unsigned char *) json_object_get_string(testobj, "key2");
+                key3 = (unsigned char *) json_object_get_string(testobj, "key3");
+            }
+    
+            if (strncmp((const char *)direction, "ver", 3) == 0) {
+                verify = 1;
+                mac = (unsigned char *) json_object_get_string(testobj, "mac");
+            }
 
-            ACVP_LOG_INFO("        Test case: %d", j);
+            ACVP_LOG_INFO("\n        Test case: %d", j);
             ACVP_LOG_INFO("             tcId: %d", tc_id);
+            ACVP_LOG_INFO("        direction: %s", direction);
+
             ACVP_LOG_INFO("           msgLen: %d", msglen);
             ACVP_LOG_INFO("              msg: %s", msg);
-            ACVP_LOG_INFO("           keyLen: %d", keyLen);
-            ACVP_LOG_INFO("              key: %s", key);
-            ACVP_LOG_INFO("             key2: %s", key2);
-            ACVP_LOG_INFO("             key3: %s", key3);
-
+            if (alg_id == ACVP_CMAC_AES) {
+                ACVP_LOG_INFO("           keyLen: %d", keyLen);
+                ACVP_LOG_INFO("              key: %s", key1);
+            } else if (alg_id == ACVP_CMAC_TDES) {
+                ACVP_LOG_INFO("     keyingOption: %d", keyingOption);
+                ACVP_LOG_INFO("             key1: %s", key1);
+                ACVP_LOG_INFO("             key2: %s", key2);
+                ACVP_LOG_INFO("             key3: %s", key3);
+            }
+    
+            if (verify) {
+                ACVP_LOG_INFO("              mac: %s", mac);
+            }
+            
             /*
              * Create a new test case in the response
              */
@@ -255,7 +325,8 @@ ACVP_RESULT acvp_cmac_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
              * TODO: this does mallocs, we can probably do the mallocs once for
              *       the entire vector set to be more efficient
              */
-            acvp_cmac_init_tc(ctx, &stc, tc_id, msg, msglen, keyLen, key, key2, key3, alg_id);
+            acvp_cmac_init_tc(ctx, &stc, tc_id, msg, msglen, keyLen, key1, key2, key3,
+                              verify, mac, maclen, alg_id);
 
             /* Process the current test vector... */
             rv = (cap->crypto_handler)(&tc);
