@@ -2096,7 +2096,7 @@ static ACVP_RESULT app_cmac_handler(ACVP_TEST_CASE *test_case)
     ACVP_CMAC_TC    *tc;
     const EVP_CIPHER    *c;
     CMAC_CTX       *cmac_ctx;
-    int msg_len, key_len, i;
+    int key_len, i;
     unsigned char mac_compare[16] = {0};
     char full_key[65] = {0};
     int mac_cmp_len;
@@ -2132,10 +2132,10 @@ static ACVP_RESULT app_cmac_handler(ACVP_TEST_CASE *test_case)
             for (i = 0; i < 8; i++) {
                 full_key[i] = tc->key[i];
             }
-            for (i; i < 16; i++) {
+            for (; i < 16; i++) {
                 full_key[i] = tc->key2[i%8];
             }
-            for (i; i < 24; i++) {
+            for (; i < 24; i++) {
                 full_key[i] = tc->key3[i%8];
             }
             key_len = 24;
@@ -2146,10 +2146,9 @@ static ACVP_RESULT app_cmac_handler(ACVP_TEST_CASE *test_case)
             break;
     }
     
-    full_key[key_len] = '/0';
+    full_key[key_len] = '\0';
     
     cmac_ctx = CMAC_CTX_new();
-    msg_len = tc->msg_len;
 
     if (!CMAC_Init(cmac_ctx, full_key, key_len, c, NULL)) {
         printf("\nCrypto module error, CMAC_Init_ex failed\n");
