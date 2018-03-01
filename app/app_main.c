@@ -77,6 +77,8 @@ static void enable_cmac(ACVP_CTX *ctx);
 static void enable_hmac(ACVP_CTX *ctx);
 static void enable_kdf(ACVP_CTX *ctx);
 static void enable_dsa(ACVP_CTX *ctx);
+static void enable_rsa(ACVP_CTX *ctx);
+static void enable_drbg(ACVP_CTX *ctx);
 
 static ACVP_RESULT app_aes_handler_aead(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_aes_keywrap_handler(ACVP_TEST_CASE *test_case);
@@ -213,7 +215,7 @@ int main(int argc, char **argv)
     int kdf = 0;
     int dsa = 0;
     int rsa = 0;
-    int drbg = 0;
+    int drbg = 1;
 
     if (argc > 2) {
         print_usage();
@@ -1125,7 +1127,6 @@ static void enable_rsa (ACVP_CTX *ctx) {
 }
 
 static void enable_drbg (ACVP_CTX *ctx) {
-#if 0  /* until drbg is supported by the server */
     ACVP_RESULT rv;
 
     /*
@@ -1139,8 +1140,11 @@ static void enable_drbg (ACVP_CTX *ctx) {
           exit(1);
       }
 
+    char value[] = "same";
     char value2[] = "123456";
-    rv = acvp_enable_drbg_cap(ctx, ACVP_HASHDRBG, app_drbg_handler);
+    
+#if 0 /* only CTR mode is supported by the server currently */
+    rv = acvp_enable_drbg_cap(ctx, ACVP_HASHDRBG, &app_drbg_handler);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_drbg_cap_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1,
                                     ACVP_DRBG_DER_FUNC_ENABLED, 0);
@@ -1184,7 +1188,7 @@ static void enable_drbg (ACVP_CTX *ctx) {
 
     //ACVP_HMACDRBG
 
-    rv = acvp_enable_drbg_cap(ctx, ACVP_HMACDRBG, app_drbg_handler);
+    rv = acvp_enable_drbg_cap(ctx, ACVP_HMACDRBG, &app_drbg_handler);
     CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_enable_drbg_cap_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224,
@@ -1246,9 +1250,10 @@ static void enable_drbg (ACVP_CTX *ctx) {
     rv = acvp_enable_drbg_length_cap(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224,
             ACVP_DRBG_ADD_IN_LEN, (int)0, (int)128,(int) 256);
     CHECK_ENABLE_CAP_RV(rv);
+#endif
 
     // ACVP_CTRDRBG
-    rv = acvp_enable_drbg_cap(ctx, ACVP_CTRDRBG, app_drbg_handler);
+    rv = acvp_enable_drbg_cap(ctx, ACVP_CTRDRBG, &app_drbg_handler);
     CHECK_ENABLE_CAP_RV(rv);
 
     //Add length range
@@ -1311,7 +1316,6 @@ static void enable_drbg (ACVP_CTX *ctx) {
             ACVP_DRBG_RET_BITS_LEN, 512);
     CHECK_ENABLE_CAP_RV(rv);
 
-#endif
 }
 
 static ACVP_RESULT app_des_handler(ACVP_TEST_CASE *test_case)
@@ -3241,7 +3245,7 @@ static ACVP_RESULT app_drbg_handler(ACVP_TEST_CASE *test_case)
      * Set entropy and nonce
      */
     entropy_nonce.ent = tc->entropy;
-    entropy_nonce.entlen = tc->entropy_len/8;
+    entropy_nonce.entlen = drbg_entropy_len/8;
 
     entropy_nonce.nonce = nonce;
     entropy_nonce.noncelen = tc->nonce_len/8;
@@ -3282,7 +3286,7 @@ static ACVP_RESULT app_drbg_handler(ACVP_TEST_CASE *test_case)
      */
     if (tc->pred_resist_enabled) {
         entropy_nonce.ent = tc->entropy_input_pr;
-        entropy_nonce.entlen = tc->entropy_len/8;
+        entropy_nonce.entlen = drbg_entropy_len/8;
 
         fips_rc =  FIPS_drbg_generate(drbg_ctx, (unsigned char *)tc->drb,
                                   (size_t) (tc->drb_len/8),
@@ -3299,7 +3303,7 @@ static ACVP_RESULT app_drbg_handler(ACVP_TEST_CASE *test_case)
         }
 
         entropy_nonce.ent = tc->entropy_input_pr_1;
-        entropy_nonce.entlen = tc->entropy_len/8;
+        entropy_nonce.entlen = drbg_entropy_len/8;
 
         fips_rc =  FIPS_drbg_generate(drbg_ctx, (unsigned char *)tc->drb,
                                   (size_t) (tc->drb_len/8),
