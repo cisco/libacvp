@@ -76,9 +76,7 @@ ACVP_RESULT acvp_drbg_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     unsigned int drb_len = 0;
     unsigned int der_func_enabled;
     unsigned int pred_resist_enabled;
-
-    char *der_func_str;
-    char *pred_resist_str;
+    
     char *json_result;
 
     JSON_Value *reg_arry_val = NULL;
@@ -104,17 +102,11 @@ ACVP_RESULT acvp_drbg_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     ACVP_TEST_CASE tc;
     ACVP_RESULT rv;
     const char *alg_str = json_object_get_string(obj, "algorithm");
-    char *mode_str = (char *) json_object_get_string(obj, "mode");
     ACVP_CIPHER alg_id;
     ACVP_DRBG_MODE mode_id;
 
     if (!alg_str) {
         ACVP_LOG_ERR("unable to parse 'algorithm' from JSON");
-        return (ACVP_MALFORMED_JSON);
-    }
-
-    if (!mode_str) {
-        ACVP_LOG_ERR("unable to parse DRBG 'mode' from JSON");
         return (ACVP_MALFORMED_JSON);
     }
 
@@ -133,23 +125,13 @@ ACVP_RESULT acvp_drbg_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
         ACVP_LOG_ERR("unsupported algorithm (%s)", alg_str);
         return (ACVP_UNSUPPORTED_OP);
     }
-    /*
-     * Get DRBG Mode index
-     */
-    mode_id = acvp_lookup_drbg_mode_index(mode_str);
-    if (mode_id == ACVP_DRBG_MODE_END) {
-        ACVP_LOG_ERR("unsupported DRBG mode (%s)", mode_str);
-        return (ACVP_UNSUPPORTED_OP);
-    }
-
+    
     cap = acvp_locate_cap_entry(ctx, alg_id);
     if (!cap) {
         ACVP_LOG_ERR("ACVP server requesting unsupported capability");
         return (ACVP_UNSUPPORTED_OP);
     }
-
-    mode_str = (char *) json_object_get_string(obj, "mode");
-
+    
     /*
      * Create ACVP array for response
      */
@@ -186,25 +168,36 @@ ACVP_RESULT acvp_drbg_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
         json_result = json_serialize_to_string_pretty(groupval);
         ACVP_LOG_INFO("json groupval count: %d\n %s\n", i, json_result);
         json_free_serialized_string(json_result);
-
+    
+        /*
+         * Get DRBG Mode index
+         */
+        char *mode_str = (char *) json_object_get_string(groupobj, "mode");
+        if (!mode_str) {
+            ACVP_LOG_ERR("unable to parse DRBG 'mode' from JSON");
+            return (ACVP_MALFORMED_JSON);
+        }
+        mode_id = acvp_lookup_drbg_mode_index(mode_str);
+        if (mode_id == ACVP_DRBG_MODE_END) {
+            ACVP_LOG_ERR("unsupported DRBG mode (%s)", mode_str);
+            return (ACVP_UNSUPPORTED_OP);
+        }
+    
         /*
          * Handle Group Params
          */
-        der_func_str = (char *) json_object_get_string(groupobj, "derFunc");
-        pred_resist_str = (char *) json_object_get_string(groupobj, "predResistance");
+        der_func_enabled = json_object_get_boolean(groupobj, "derFunc");
+        pred_resist_enabled = json_object_get_boolean(groupobj, "predResistance");
+        
         entropy_len = (unsigned int) json_object_get_number(groupobj, "entropyInputLen");
         nonce_len = (unsigned int) json_object_get_number(groupobj, "nonceLen");
         perso_string_len = (unsigned int) json_object_get_number(groupobj, "persoStringLen");
         drb_len = (unsigned int) json_object_get_number(groupobj, "returnedBitsLen");
 
-        if ((!der_func_str) || (!pred_resist_str)) {
+        if (!der_func_enabled || !pred_resist_enabled) {
             ACVP_LOG_ERR("ACVP server requesting unsupported PR or DF capability");
             return (ACVP_UNSUPPORTED_OP);
         }
-
-        der_func_enabled = yes_or_no(ctx, der_func_str);
-        pred_resist_enabled = yes_or_no(ctx, pred_resist_str);
-
 
         if (pred_resist_enabled) {
             additional_input_len = json_object_get_number(groupobj, "additionalInputLen");
@@ -212,10 +205,12 @@ ACVP_RESULT acvp_drbg_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
 
         ACVP_LOG_INFO("    Test group:");
         ACVP_LOG_INFO("    DRBG mode: %s", mode_str);
-        ACVP_LOG_INFO("    derFunc: %s", der_func_str);
-        ACVP_LOG_INFO("    predResistance: %s", pred_resist_str);
+        ACVP_LOG_INFO("    derFunc: %s", der_func_enabled ? "true" : "false");
+        ACVP_LOG_INFO("    predResistance: %s", pred_resist_enabled ? "true" : "false");
         ACVP_LOG_INFO("    entropyInputLen: %d", entropy_len);
-        ACVP_LOG_INFO("    additionalInputLen: %d", additional_input_len);
+        if (pred_resist_enabled) {
+            ACVP_LOG_INFO("    additionalInputLen: %d", additional_input_len);
+        }
         ACVP_LOG_INFO("    persoStringLen: %d", perso_string_len);
         ACVP_LOG_INFO("    nonceLen: %d", nonce_len);
         ACVP_LOG_INFO("    returnedBitsLen: %d", drb_len);
@@ -251,7 +246,7 @@ ACVP_RESULT acvp_drbg_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
             /*
              * Handle pred_resist_input array. Has at most 2 elements
              */
-            pred_resist_input = json_object_get_array(testobj, "predResistanceInput");
+            pred_resist_input = json_object_get_array(testobj, "otherInput");
             int pr_input_cnt = json_array_get_count(pred_resist_input);
             JSON_Value *pr_input_val;
             JSON_Object *pr_input_obj;
@@ -262,7 +257,7 @@ ACVP_RESULT acvp_drbg_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
             pr_input_obj = json_value_get_object(pr_input_val);
 
             additional_input = (unsigned char *) json_object_get_string(pr_input_obj, "additionalInput");
-            entropy_input_pr = (unsigned char *) json_object_get_string(pr_input_obj, "entropyInputPR");
+            entropy_input_pr = (unsigned char *) json_object_get_string(pr_input_obj, "entropyInput");
 
             /*
              * Get 2nd element from the array
@@ -272,7 +267,7 @@ ACVP_RESULT acvp_drbg_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
                 pr_input_val = json_array_get_value(pred_resist_input, pr_i);
                 pr_input_obj = json_value_get_object(pr_input_val);
                 additional_input_1 = (unsigned char *) json_object_get_string(pr_input_obj, "additionalInput");
-                entropy_input_pr_1 = (unsigned char *) json_object_get_string(pr_input_obj, "entropyInputPR");
+                entropy_input_pr_1 = (unsigned char *) json_object_get_string(pr_input_obj, "entropyInput");
             }
 
             /*
@@ -361,7 +356,7 @@ static ACVP_RESULT acvp_drbg_output_tc (ACVP_CTX *ctx, ACVP_DRBG_TC *stc, JSON_O
         return ACVP_MALLOC_FAIL;
     }
 
-    rv = acvp_bin_to_hexstr(stc->drb, stc->drb_len, (unsigned char *) tmp);
+    rv = acvp_bin_to_hexstr(stc->drb, stc->drb_len/8, (unsigned char *) tmp);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("hex conversion failure (returnedBits)");
         return rv;
