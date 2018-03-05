@@ -125,6 +125,8 @@ typedef enum acvp_sym_cipher {
     ACVP_HMAC_SHA3_512,
     ACVP_CMAC_AES,
     ACVP_CMAC_TDES,
+    ACVP_RSA_KEYGEN,
+    ACVP_RSA_SIGGEN,
     ACVP_RSA,
     ACVP_DSA,
     ACVP_KDF135_TLS,
@@ -179,6 +181,8 @@ typedef enum acvp_capability_type {
     ACVP_HMAC_TYPE,
     ACVP_CMAC_TYPE,
     ACVP_RSA_TYPE,
+    ACVP_RSA_KEYGEN_TYPE,
+    ACVP_RSA_SIGGEN_TYPE,
     ACVP_DSA_TYPE,
     ACVP_KDF135_TLS_TYPE,
     ACVP_KDF135_SNMP_TYPE,
@@ -236,6 +240,12 @@ typedef enum acvp_kdf135_tls_method {
 #define ACVP_STR_SHA_512       "SHA-512"
 #define ACVP_STR_SHA_512_224   "SHA-512/224"
 #define ACVP_STR_SHA_512_256   "SHA-512/256"
+#define ACVP_STR_SHA2_224       "SHA2-224"
+#define ACVP_STR_SHA2_256       "SHA2-256"
+#define ACVP_STR_SHA2_384       "SHA2-384"
+#define ACVP_STR_SHA2_512       "SHA2-512"
+#define ACVP_STR_SHA2_512_224   "SHA2-512/224"
+#define ACVP_STR_SHA2_512_256   "SHA2-512/256"
 typedef enum acvp_hash_param {
     ACVP_HASH_IN_BIT = 0,
     ACVP_HASH_IN_EMPTY
@@ -276,13 +286,20 @@ typedef enum acvp_drbg_param {
 typedef enum acvp_rsa_param {
     ACVP_PUB_EXP = 0,
     ACVP_FIXED_PUB_EXP_VAL,
+    ACVP_KEY_FORMAT_CRT,
     ACVP_RAND_PQ,
     ACVP_CAPS_PROV_PRIME,
     ACVP_CAPS_PROB_PRIME,
     ACVP_CAPS_PROV_PROB_PRIME,
     ACVP_RSA_INFO_GEN_BY_SERVER,
     ACVP_SIG_TYPE,
-    ACVP_CAP_SIG_TYPE
+    ACVP_CAP_SIG_TYPE,
+    // edaw this needs to be reorganized too
+    ACVP_RSA_SIG_MODULO,
+    ACVP_RSA_MODE_CAPABILITY,
+    ACVP_RSA_SALT,
+    ACVP_RSA_HASH_ALG,
+    ACVP_RSA_PRIME_TBL
 } ACVP_RSA_PARM;
 
 #define MOD_RSA_2048     2048
@@ -297,9 +314,9 @@ typedef enum acvp_rsa_param {
 #define RSA_MSG_MAX_LEN         1000
 #define RSA_SIG_TYPE_MAX        16
 
-#define RSA_SIG_TYPE_X931_NAME      "ANSX9.31"
-#define RSA_SIG_TYPE_PKCS1V15_NAME  "PKCS1v1.5"
-#define RSA_SIG_TYPE_PKCS1PSS_NAME  "PSS"
+#define RSA_SIG_TYPE_X931_NAME      "ansx9.31"
+#define RSA_SIG_TYPE_PKCS1V15_NAME  "pkcs1v1.5"
+#define RSA_SIG_TYPE_PKCS1PSS_NAME  "pss"
 
 #define PRIME_TEST_TBLC2_NAME "tblC2"
 #define PRIME_TEST_TBLC3_NAME "tblC3"

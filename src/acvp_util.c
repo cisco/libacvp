@@ -206,7 +206,13 @@ ACVP_RESULT is_valid_hash_alg (char *value) {
         strncmp(value, ACVP_STR_SHA_384, 7) == 0 ||
         strncmp(value, ACVP_STR_SHA_512, 7) == 0 ||
         strncmp(value, ACVP_STR_SHA_512_224, 11) == 0 ||
-        strncmp(value, ACVP_STR_SHA_512_256, 11) == 0) {
+        strncmp(value, ACVP_STR_SHA_512_256, 11) == 0 ||
+        strncmp(value, ACVP_STR_SHA2_224, 8) == 0 ||
+        strncmp(value, ACVP_STR_SHA2_256, 8) == 0 ||
+        strncmp(value, ACVP_STR_SHA2_384, 8) == 0 ||
+        strncmp(value, ACVP_STR_SHA2_512, 8) == 0 ||
+        strncmp(value, ACVP_STR_SHA2_512_224, 12) == 0 ||
+        strncmp(value, ACVP_STR_SHA2_512_256, 12) == 0) {
         return ACVP_SUCCESS;
     } else { return ACVP_INVALID_ARG; }
 }
@@ -239,8 +245,8 @@ ACVP_RSA_MODE acvp_lookup_rsa_mode_index (char *mode) {
     int i;
     struct acvp_rsa_mode_name_t rsa_mode_tbl[ACVP_RSA_MODE_END] = {
             // YIKES THIS IS BACKWARDS FROM DRBG
-            {ACVP_RSA_MODE_KEYGEN, ACVP_RSA_KEYGEN},
-            {ACVP_RSA_MODE_SIGGEN, ACVP_RSA_SIGGEN},
+            {ACVP_RSA_MODE_KEYGEN, ACVP_ALG_RSA_KEYGEN},
+            {ACVP_RSA_MODE_SIGGEN, ACVP_ALG_RSA_SIGGEN},
             {ACVP_RSA_MODE_SIGVER, ACVP_RSA_SIGVER}
     };
 
