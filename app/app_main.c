@@ -586,17 +586,58 @@ static void enable_aes (ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_KW, ACVP_SYM_CIPH_PTLEN, 128);
     CHECK_ENABLE_CAP_RV(rv);
+
+    rv = acvp_enable_sym_cipher_cap(ctx, ACVP_AES_KWP, ACVP_DIR_BOTH, ACVP_KO_NA, ACVP_IVGEN_SRC_NA,
+                                    ACVP_IVGEN_MODE_NA, &app_aes_keywrap_handler);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_sym_cipher_cap_value(ctx, ACVP_AES_KWP, ACVP_SYM_CIPH_KW_MODE, ACVP_SYM_KW_CIPHER);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_KWP, ACVP_SYM_CIPH_KEYLEN, 128);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_KWP, ACVP_SYM_CIPH_KEYLEN, 192);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_KWP, ACVP_SYM_CIPH_KEYLEN, 256);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_KWP, ACVP_SYM_CIPH_PTLEN, 8);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_KWP, ACVP_SYM_CIPH_PTLEN, 32);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_KWP, ACVP_SYM_CIPH_PTLEN, 96);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_KWP, ACVP_SYM_CIPH_PTLEN, 808);
+    CHECK_ENABLE_CAP_RV(rv);
     
     /*
-     * Enable AES-CTR 128 bit key
+     * Enable AES-XTS 128 and 256 bit key
+     */
+    rv = acvp_enable_sym_cipher_cap(ctx, ACVP_AES_XTS, ACVP_DIR_BOTH, ACVP_KO_NA, ACVP_IVGEN_SRC_NA,
+                                    ACVP_IVGEN_MODE_NA, &app_aes_handler);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_XTS, ACVP_SYM_CIPH_KEYLEN, 128);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_XTS, ACVP_SYM_CIPH_KEYLEN, 256);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_XTS, ACVP_SYM_CIPH_PTLEN, 65536);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_XTS, ACVP_SYM_CIPH_TWEAK, ACVP_SYM_CIPH_TWEAK_HEX);
+    CHECK_ENABLE_CAP_RV(rv);
+
+#ifdef ACVP_V05
+    /*
+     * Enable AES-CTR 128, 192, 256 bit key
      */
     rv = acvp_enable_sym_cipher_cap(ctx, ACVP_AES_CTR, ACVP_DIR_BOTH, ACVP_KO_NA, ACVP_IVGEN_SRC_NA,
                                     ACVP_IVGEN_MODE_NA, &app_aes_handler);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CTR, ACVP_SYM_CIPH_KEYLEN, 128);
     CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CTR, ACVP_SYM_CIPH_KEYLEN, 192);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CTR, ACVP_SYM_CIPH_KEYLEN, 256);
+    CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CTR, ACVP_SYM_CIPH_PTLEN, 128);
     CHECK_ENABLE_CAP_RV(rv);
+#endif
 }
 
 static void enable_tdes (ACVP_CTX *ctx) {
@@ -671,7 +712,6 @@ static void enable_tdes (ACVP_CTX *ctx) {
     rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_TDES_CFB8, ACVP_SYM_CIPH_PTLEN, 64 * 4);
     CHECK_ENABLE_CAP_RV(rv);
 
-#ifdef ACVP_V05
     /*
      * Enable 3DES-CFB1
      */
@@ -682,6 +722,17 @@ static void enable_tdes (ACVP_CTX *ctx) {
     rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_TDES_CFB1, ACVP_SYM_CIPH_IVLEN, 192/3);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_TDES_CFB1, ACVP_SYM_CIPH_PTLEN, 64);
+    CHECK_ENABLE_CAP_RV(rv);
+#ifdef ACVP_V05
+    /*
+     * Enable TDES-CTR 
+     */
+    rv = acvp_enable_sym_cipher_cap(ctx, ACVP_TDES_CTR, ACVP_DIR_BOTH, ACVP_KO_THREE, ACVP_IVGEN_SRC_NA,
+                                    ACVP_IVGEN_MODE_NA, &app_des_handler);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_TDES_CTR, ACVP_SYM_CIPH_KEYLEN, 192);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_TDES_CTR, ACVP_SYM_CIPH_PTLEN, 64);
     CHECK_ENABLE_CAP_RV(rv);
 #endif
 }
@@ -1368,6 +1419,10 @@ static ACVP_RESULT app_des_handler(ACVP_TEST_CASE *test_case)
         iv = tc->iv;
         cipher = EVP_des_ede3_cfb1();
         break;
+    case ACVP_TDES_CTR:
+        iv = tc->iv;
+        cipher = EVP_des_ede3_ctr();
+        break;
     default:
         printf("Error: Unsupported DES mode requested by ACVP server\n");
         return ACVP_NO_CAP;
@@ -1593,6 +1648,22 @@ static ACVP_RESULT app_aes_handler(ACVP_TEST_CASE *test_case)
       break;
   }
   break;
+    case ACVP_AES_XTS:
+        iv = tc->iv;
+        switch (tc->key_len) {
+        case 128:
+            cipher = EVP_aes_128_xts();
+            break;
+        case 256:
+            cipher = EVP_aes_256_xts();
+            break;
+        default:
+            printf("Unsupported AES key length\n");
+            return ACVP_NO_CAP;
+            break;
+        }
+        break;
+  break;
     default:
   printf("Error: Unsupported AES mode requested by ACVP server\n");
   return ACVP_NO_CAP;
@@ -1723,11 +1794,9 @@ static ACVP_RESULT app_aes_keywrap_handler(ACVP_TEST_CASE *test_case)
         EVP_CIPHER_CTX_set_flags(&cipher_ctx, EVP_CIPHER_CTX_FLAG_WRAP_ALLOW);
         EVP_CipherInit_ex(&cipher_ctx, cipher, NULL, tc->key, NULL, 0);
 
-#ifdef OPENSSL_AES_KWP
         if (tc->cipher == ACVP_AES_KWP) {
             EVP_CIPHER_CTX_set_flags(&cipher_ctx, EVP_CIPHER_CTX_FLAG_UNWRAP_WITHPAD);
         }
-#endif
         c_len = EVP_Cipher(&cipher_ctx, tc->pt, tc->ct, tc->ct_len);
         if (c_len <= 0) {
             return ACVP_CRYPTO_WRAP_FAIL;

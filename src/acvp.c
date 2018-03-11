@@ -611,6 +611,12 @@ ACVP_RESULT acvp_validate_sym_cipher_parm_value (ACVP_SYM_CIPH_PARM parm, int va
             retval = ACVP_SUCCESS;
         }
         break;
+    case ACVP_SYM_CIPH_TWEAK:
+        if (value >= ACVP_SYM_CIPH_TWEAK_HEX &&
+            value < ACVP_SYM_CIPH_TWEAK_NONE) {
+            retval = ACVP_SUCCESS;
+        }
+        break;
     case ACVP_SYM_CIPH_AADLEN:
     case ACVP_SYM_CIPH_PTLEN:
         if (value >= 0 && value <= 65536) {
@@ -663,6 +669,9 @@ ACVP_RESULT acvp_enable_sym_cipher_cap_parm (
         break;
     case ACVP_SYM_CIPH_PTLEN:
         acvp_cap_add_length(&cap->cap.sym_cap->ptlen, length);
+        break;
+    case ACVP_SYM_CIPH_TWEAK:
+        acvp_cap_add_length(&cap->cap.sym_cap->tweak, length);
         break;
     case ACVP_SYM_CIPH_AADLEN:
         acvp_cap_add_length(&cap->cap.sym_cap->aadlen, length);
@@ -1314,11 +1323,12 @@ static ACVP_RESULT acvp_validate_prereq_val (ACVP_CIPHER cipher, ACVP_PREREQ_ALG
     case ACVP_AES_CFB1:
     case ACVP_AES_CFB8:
     case ACVP_AES_CFB128:
+    case ACVP_AES_CTR:
     case ACVP_AES_OFB:
     case ACVP_AES_CBC:
     case ACVP_AES_KW:
     case ACVP_AES_KWP:
-    case ACVP_AES_CTR:
+    case ACVP_AES_XTS:
         if (pre_req == ACVP_PREREQ_AES ||
             pre_req == ACVP_PREREQ_DRBG) {
             return ACVP_SUCCESS;
@@ -2795,11 +2805,12 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap (JSON_Object *cap_obj, ACV
     case ACVP_AES_CFB1:
     case ACVP_AES_CFB8:
     case ACVP_AES_CFB128:
+    case ACVP_AES_CTR:
     case ACVP_AES_OFB:
     case ACVP_AES_CBC:
     case ACVP_AES_KW:
     case ACVP_AES_KWP:
-    case ACVP_AES_CTR:
+    case ACVP_AES_XTS:
         break;
     default:
         json_object_set_value(cap_obj, "ivLen", json_value_init_array());
@@ -2821,11 +2832,10 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap (JSON_Object *cap_obj, ACV
     case ACVP_AES_CFB8:
     case ACVP_AES_CFB128:
     case ACVP_AES_OFB:
-    case ACVP_AES_XTS:
-    case ACVP_AES_KWP:
         json_object_set_value(cap_obj, "dataLen", json_value_init_array());
         opts_arr = json_object_get_array(cap_obj, "dataLen");
         break;
+    case ACVP_TDES_CTR:
     case ACVP_AES_CTR:
         json_object_set_value(cap_obj, "dataLength", json_value_init_array());
         opts_arr = json_object_get_array(cap_obj, "dataLength");
@@ -2839,6 +2849,26 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap (JSON_Object *cap_obj, ACV
     while (sl_list) {
         json_array_append_number(opts_arr, sl_list->length);
         sl_list = sl_list->next;
+    }
+
+    if (cap_entry->cipher == ACVP_AES_XTS) {
+        json_object_set_value(cap_obj, "tweakMode", json_value_init_array());
+        opts_arr = json_object_get_array(cap_obj, "tweakMode");
+        sl_list = sym_cap->tweak;
+        while (sl_list) {
+            switch (sym_cap->tweak->length)
+            {
+            case ACVP_SYM_CIPH_TWEAK_HEX:
+                json_array_append_string(opts_arr, "hex");
+                break;
+            case ACVP_SYM_CIPH_TWEAK_NUM:
+                json_array_append_string(opts_arr, "number");
+                break;
+            default:
+                break;
+            }
+            sl_list = sl_list->next;
+        }
     }
 
     /*
@@ -3714,13 +3744,15 @@ static ACVP_RESULT acvp_build_register (ACVP_CTX *ctx, char **reg) {
             case ACVP_AES_CFB1:
             case ACVP_AES_CFB8:
             case ACVP_AES_CFB128:
+            case ACVP_AES_CTR:
             case ACVP_AES_OFB:
             case ACVP_AES_CBC:
             case ACVP_AES_KW:
             case ACVP_AES_KWP:
-            case ACVP_AES_CTR:
+            case ACVP_AES_XTS:
             case ACVP_TDES_ECB:
             case ACVP_TDES_CBC:
+            case ACVP_TDES_CTR:
             case ACVP_TDES_OFB:
             case ACVP_TDES_CFB64:
             case ACVP_TDES_CFB8:
@@ -4994,4 +5026,33 @@ ACVP_RESULT acvp_enable_dsa_cap_parm (ACVP_CTX *ctx,
     }
 
     return (result);
+}
+
+/* increment counter (64-bit int) by 1 */
+void ctr64_inc(unsigned char *counter)
+{
+    int n = 8;
+    unsigned char c;
+
+    do {
+        --n;
+        c = counter[n];
+        ++c;
+        counter[n] = c;
+        if (c)
+            return;
+    } while (n);
+}
+
+/* increment counter (128-bit int) by 1 */
+void ctr128_inc(unsigned char *counter)
+{
+    unsigned int n = 16, c = 1;
+
+    do {
+        --n;
+        c += counter[n];
+        counter[n] = (unsigned char)c;
+        c >>= 8;
+    } while (n);
 }
