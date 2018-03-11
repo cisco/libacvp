@@ -1575,6 +1575,8 @@ ACVP_RESULT acvp_set_module_info (ACVP_CTX *ctx,
  */
 ACVP_RESULT acvp_check_test_results (ACVP_CTX *ctx);
 
+ACVP_RESULT acvp_bin_to_hexstr (const unsigned char *src, unsigned int src_len, unsigned char *dest);
+
 void acvp_cleanup (void);
 
 #ifdef __cplusplus

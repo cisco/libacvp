@@ -1250,7 +1250,6 @@ static void enable_drbg (ACVP_CTX *ctx) {
     rv = acvp_enable_drbg_length_cap(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224,
             ACVP_DRBG_ADD_IN_LEN, (int)0, (int)128,(int) 256);
     CHECK_ENABLE_CAP_RV(rv);
-#endif
 
     // ACVP_CTRDRBG
     rv = acvp_enable_drbg_cap(ctx, ACVP_CTRDRBG, &app_drbg_handler);
@@ -1315,6 +1314,7 @@ static void enable_drbg (ACVP_CTX *ctx) {
     rv = acvp_enable_drbg_cap_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128,
             ACVP_DRBG_RET_BITS_LEN, 512);
     CHECK_ENABLE_CAP_RV(rv);
+#endif
 
 }
 

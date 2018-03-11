@@ -477,8 +477,6 @@ void acvp_log_msg (ACVP_CTX *ctx, ACVP_LOG_LVL level, const char *format, ...);
 
 ACVP_RESULT acvp_hexstr_to_bin (const unsigned char *src, unsigned char *dest, int dest_max);
 
-ACVP_RESULT acvp_bin_to_hexstr (const unsigned char *src, unsigned int src_len, unsigned char *dest);
-
 ACVP_RESULT acvp_bin_to_bit (const unsigned char *in, int len, unsigned char *out);
 
 ACVP_RESULT acvp_bit_to_bin (const unsigned char *in, int len, unsigned char *out);
