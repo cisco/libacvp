@@ -564,7 +564,8 @@ static void enable_aes (ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CFB1, ACVP_SYM_CIPH_PTLEN, 1536);
     CHECK_ENABLE_CAP_RV(rv);
-    
+
+#if 0
     /*
      * Enable AES keywrap for various key sizes and PT lengths
      * Note: this is with padding disabled, minimum PT length is 128 bits and must be
@@ -607,6 +608,7 @@ static void enable_aes (ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_KWP, ACVP_SYM_CIPH_PTLEN, 808);
     CHECK_ENABLE_CAP_RV(rv);
+#endif
     
     /*
      * Enable AES-XTS 128 and 256 bit key
@@ -1746,6 +1748,7 @@ static ACVP_RESULT app_aes_handler(ACVP_TEST_CASE *test_case)
 }
 
 /* TODO - openssl does not support inverse option */
+#if 0
 static ACVP_RESULT app_aes_keywrap_handler(ACVP_TEST_CASE *test_case)
 {
     ACVP_SYM_CIPHER_TC      *tc;
@@ -1871,6 +1874,7 @@ static ACVP_RESULT app_des_keywrap_handler(ACVP_TEST_CASE *test_case)
 
     return ACVP_SUCCESS;
 }
+#endif
 
 /*
  * This fuction is invoked by libacvp when an AES crypto
@@ -2706,7 +2710,6 @@ error:
     return ACVP_SUCCESS;
 }*/
 
-#ifdef ACVP_NO_RUNTIME
 static ACVP_RESULT app_rsa_keygen_handler(ACVP_TEST_CASE *test_case)
 {
     /*
