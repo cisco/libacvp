@@ -234,7 +234,7 @@ static ACVP_RESULT acvp_aes_output_mct_tc (ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *st
                 return rv;
             }
         }
-        json_object_set_string(r_tobj, "ct", tmp);
+       json_object_set_string(r_tobj, "ct", tmp);
     }
 
     free(tmp);
@@ -550,7 +550,8 @@ ACVP_RESULT acvp_aes_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
             return (ACVP_UNSUPPORTED_OP);
         }
 
-        if ((alg_id == ACVP_AES_KW) || (alg_id == ACVP_TDES_KW)) {
+        if ((alg_id == ACVP_AES_KW) || (alg_id == ACVP_TDES_KW) ||
+            (alg_id == ACVP_AES_KWP)) {
             kwcipher = (unsigned char *) json_object_get_string(groupobj, "kwCipher");
             if (kwcipher == NULL) {
                 return (ACVP_UNSUPPORTED_OP);
@@ -558,7 +559,8 @@ ACVP_RESULT acvp_aes_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
         }
         keylen = (unsigned int) json_object_get_number(groupobj, "keyLen");
         ivlen = 0;
-        if ((alg_id != ACVP_AES_ECB) && (alg_id != ACVP_AES_KW)) {
+        if ((alg_id != ACVP_AES_ECB) && (alg_id != ACVP_AES_KW) && 
+            (alg_id != ACVP_AES_KWP)) {
             ivlen = 128;
         }
         if (alg_id == ACVP_AES_GCM || alg_id == ACVP_AES_CCM) {
@@ -592,7 +594,15 @@ ACVP_RESULT acvp_aes_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
             key = (unsigned char *) json_object_get_string(testobj, "key");
             if (dir == ACVP_DIR_ENCRYPT) {
                 pt = (unsigned char *) json_object_get_string(testobj, "pt");
-                iv = (unsigned char *) json_object_get_string(testobj, "iv");
+                if (!pt)
+                    pt = (unsigned char *) json_object_get_string(testobj, "plainText");
+
+                /* XTS may call it tweak value "i", but we treat it as an IV */
+                if (alg_id == ACVP_AES_XTS) {
+                    iv = (unsigned char *) json_object_get_string(testobj, "i");
+                } else {
+                    iv = (unsigned char *) json_object_get_string(testobj, "iv");
+                }
                 if (alg_id != ACVP_AES_GCM && alg_id != ACVP_AES_CCM && alg_id != ACVP_AES_CFB1) {
                     ptlen = strlen((char *) pt) * (8 / 2);
                 }
@@ -601,7 +611,15 @@ ACVP_RESULT acvp_aes_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
                 }
             } else {
                 ct = (unsigned char *) json_object_get_string(testobj, "ct");
-                iv = (unsigned char *) json_object_get_string(testobj, "iv");
+                if (!ct)
+                    ct = (unsigned char *) json_object_get_string(testobj, "cipherText");
+
+                /* XTS may call it tweak value "i", but we treat it as an IV */
+                if (alg_id == ACVP_AES_XTS) {
+                    iv = (unsigned char *) json_object_get_string(testobj, "i");
+                } else {
+                    iv = (unsigned char *) json_object_get_string(testobj, "iv");
+                }
                 tag = (unsigned char *) json_object_get_string(testobj, "tag");
                 if (alg_id != ACVP_AES_GCM && alg_id != ACVP_AES_CCM && alg_id != ACVP_AES_CFB1) {
                     ptlen = strlen((char *) ct) * (8 / 2);
@@ -701,6 +719,8 @@ static ACVP_RESULT acvp_aes_output_tc (ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *stc,
                                        JSON_Object *tc_rsp, ACVP_RESULT opt_rv) {
     ACVP_RESULT rv;
     char *tmp;
+    JSON_Array *ivs_array = NULL; /* IVs testarray */
+    int i;
 
     tmp = calloc(1, ACVP_SYM_CT_MAX);
     if (!tmp) {
@@ -736,7 +756,20 @@ static ACVP_RESULT acvp_aes_output_tc (ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *stc,
                 goto err;
             }
         }
-        json_object_set_string(tc_rsp, "ct", tmp);
+        if (stc->cipher == ACVP_AES_CTR) {
+            json_object_set_string(tc_rsp, "cipherText", tmp);
+            if (stc->test_type == ACVP_SYM_TEST_TYPE_CTR) {
+                json_object_set_value(tc_rsp, "ivs", json_value_init_array());
+                ivs_array = json_object_get_array(tc_rsp, "ivs");
+                for (i=0; i<(stc->pt_len/16); i++) {
+                    rv = acvp_bin_to_hexstr(stc->iv, stc->iv_len, (unsigned char *) tmp);
+                    json_array_append_string(ivs_array, tmp);
+                    ctr128_inc(stc->iv);
+                }
+            }
+        } else {
+            json_object_set_string(tc_rsp, "ct", tmp);
+        }
 
         /*
          * AES-GCM ciphers need to include the tag
@@ -778,7 +811,20 @@ static ACVP_RESULT acvp_aes_output_tc (ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *stc,
                 goto err;
             }
         }
-        json_object_set_string(tc_rsp, "pt", tmp);
+        if (stc->cipher == ACVP_AES_CTR) {
+            json_object_set_string(tc_rsp, "plainText", tmp);
+            if (stc->test_type == ACVP_SYM_TEST_TYPE_CTR) {
+                json_object_set_value(tc_rsp, "ivs", json_value_init_array());
+                ivs_array = json_object_get_array(tc_rsp, "ivs");
+                for (i=0; i<(stc->pt_len/16); i++) {
+                    rv = acvp_bin_to_hexstr(stc->iv, stc->iv_len, (unsigned char *) tmp);
+                    json_array_append_string(ivs_array, tmp);
+                    ctr128_inc(stc->iv);
+                }
+            }
+        } else {
+            json_object_set_string(tc_rsp, "pt", tmp);
+        }
     }
     free(tmp);
 
@@ -841,8 +887,15 @@ static ACVP_RESULT acvp_aes_init_tc (ACVP_CTX *ctx,
         stc->test_type = ACVP_SYM_TEST_TYPE_MCT;
     } else if (test_type && !strcmp(test_type, "AFT")) {
         stc->test_type = ACVP_SYM_TEST_TYPE_AFT;
+    } else if (test_type && !strcmp(test_type, "counter")) {
+        stc->test_type = ACVP_SYM_TEST_TYPE_CTR;
     } else {
-        return ACVP_UNSUPPORTED_OP;
+        /* consistency be damned, XTS can omit the testType */
+        if (alg_id == ACVP_AES_XTS) {
+            stc->test_type = ACVP_SYM_TEST_TYPE_AFT;
+        } else {
+            return ACVP_UNSUPPORTED_OP;
+        }
     }
 
     if (kwcipher != NULL) {

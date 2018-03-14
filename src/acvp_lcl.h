@@ -142,8 +142,8 @@
 #define ACVP_ALG_KDF135_SSH      "KDF-SSH"
 
 #define ACVP_SYM_KEY_MAX    64
-#define ACVP_SYM_PT_MAX     1024
-#define ACVP_SYM_CT_MAX     1024
+#define ACVP_SYM_PT_MAX     1024*32
+#define ACVP_SYM_CT_MAX     1024*32
 #define ACVP_SYM_IV_MAX     64
 #define ACVP_SYM_TAG_MAX    64
 #define ACVP_SYM_AAD_MAX    128
@@ -189,6 +189,8 @@
 #define ACVP_DES_MCT_INNER 10000
 #define ACVP_DES_MCT_OUTER 400
 
+#define ACVP_CFB1_BIT_MASK 0x80
+
 typedef struct acvp_alg_handler_t ACVP_ALG_HANDLER;
 
 struct acvp_alg_handler_t {
@@ -229,6 +231,7 @@ typedef struct acvp_sym_cipher_capability {
     ACVP_SYM_CIPH_IVGEN_MODE ivgen_mode;
     ACVP_SL_LIST *keylen;
     ACVP_SL_LIST *ptlen;
+    ACVP_SL_LIST *tweak;
     ACVP_SL_LIST *ivlen;
     ACVP_SL_LIST *aadlen;
     ACVP_SL_LIST *taglen;
@@ -458,8 +461,6 @@ void acvp_log_msg (ACVP_CTX *ctx, ACVP_LOG_LVL level, const char *format, ...);
 
 ACVP_RESULT acvp_hexstr_to_bin (const unsigned char *src, unsigned char *dest, int dest_max);
 
-ACVP_RESULT acvp_bin_to_hexstr (const unsigned char *src, unsigned int src_len, unsigned char *dest);
-
 ACVP_RESULT acvp_bin_to_bit (const unsigned char *in, int len, unsigned char *out);
 
 ACVP_RESULT acvp_bit_to_bin (const unsigned char *in, int len, unsigned char *out);
@@ -524,4 +525,6 @@ ACVP_RESULT is_valid_prime_test (char *value);
 
 ACVP_RESULT is_valid_rsa_mod (int value);
 
+void ctr64_inc(unsigned char *counter);
+void ctr128_inc(unsigned char *counter);
 #endif

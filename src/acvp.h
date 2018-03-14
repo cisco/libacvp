@@ -342,9 +342,16 @@ typedef enum acvp_sym_cipher_parameter {
     ACVP_SYM_CIPH_TAGLEN,
     ACVP_SYM_CIPH_IVLEN,
     ACVP_SYM_CIPH_PTLEN,
+    ACVP_SYM_CIPH_TWEAK,
     ACVP_SYM_CIPH_AADLEN,
     ACVP_SYM_CIPH_KW_MODE,
 } ACVP_SYM_CIPH_PARM;
+
+typedef enum acvp_sym_xts_tweak_mode {
+    ACVP_SYM_CIPH_TWEAK_HEX = 1,
+    ACVP_SYM_CIPH_TWEAK_NUM,
+    ACVP_SYM_CIPH_TWEAK_NONE
+} ACVP_SYM_CIPH_TWEAK_MODE;
 
 typedef enum acvp_sym_kw_mode {
     ACVP_SYM_KW_NONE = 0,
@@ -356,6 +363,7 @@ typedef enum acvp_sym_kw_mode {
 typedef enum acvp_sym_cipher_testtype {
     ACVP_SYM_TEST_TYPE_NONE = 0,
     ACVP_SYM_TEST_TYPE_AFT,
+    ACVP_SYM_TEST_TYPE_CTR,
     ACVP_SYM_TEST_TYPE_MCT
 } ACVP_SYM_CIPH_TESTTYPE;
 
@@ -1557,6 +1565,8 @@ ACVP_RESULT acvp_set_module_info (ACVP_CTX *ctx,
    @return ACVP_RESULT
  */
 ACVP_RESULT acvp_check_test_results (ACVP_CTX *ctx);
+
+ACVP_RESULT acvp_bin_to_hexstr (const unsigned char *src, unsigned int src_len, unsigned char *dest);
 
 void acvp_cleanup (void);
 
