@@ -125,10 +125,10 @@ typedef enum acvp_sym_cipher {
     ACVP_HMAC_SHA3_512,
     ACVP_CMAC_AES,
     ACVP_CMAC_TDES,
+    ACVP_DSA,
     ACVP_RSA_KEYGEN,
     ACVP_RSA_SIGGEN,
-    ACVP_RSA,
-    ACVP_DSA,
+    ACVP_RSA_SIGVER,
     ACVP_KDF135_TLS,
     ACVP_KDF135_SNMP,
     ACVP_KDF135_SSH,
@@ -180,9 +180,9 @@ typedef enum acvp_capability_type {
     ACVP_DRBG_TYPE,
     ACVP_HMAC_TYPE,
     ACVP_CMAC_TYPE,
-    ACVP_RSA_TYPE,
     ACVP_RSA_KEYGEN_TYPE,
     ACVP_RSA_SIGGEN_TYPE,
+    ACVP_RSA_SIGVER_TYPE,
     ACVP_DSA_TYPE,
     ACVP_KDF135_TLS_TYPE,
     ACVP_KDF135_SNMP_TYPE,
@@ -284,35 +284,22 @@ typedef enum acvp_drbg_param {
 } ACVP_DRBG_PARM;
 
 typedef enum acvp_rsa_param {
-    ACVP_PUB_EXP = 0,
+    ACVP_PUB_EXP_MODE = 0,
     ACVP_FIXED_PUB_EXP_VAL,
     ACVP_KEY_FORMAT_CRT,
     ACVP_RAND_PQ,
     ACVP_CAPS_PROV_PRIME,
     ACVP_CAPS_PROB_PRIME,
     ACVP_CAPS_PROV_PROB_PRIME,
-    ACVP_RSA_INFO_GEN_BY_SERVER,
-    ACVP_SIG_TYPE,
-    ACVP_CAP_SIG_TYPE,
-    // edaw this needs to be reorganized too
-    ACVP_RSA_SIG_MODULO,
-    ACVP_RSA_MODE_CAPABILITY,
-    ACVP_RSA_SALT,
-    ACVP_RSA_HASH_ALG,
-    ACVP_RSA_PRIME_TBL
+    ACVP_RSA_INFO_GEN_BY_SERVER
 } ACVP_RSA_PARM;
 
 #define MOD_RSA_2048     2048
 #define MOD_RSA_3072     3072
 #define MOD_RSA_4096     4096
 
-#define RSA_SALT_SIGGEN_28      28
-#define RSA_SALT_SIGGEN_32      32
-#define RSA_SALT_SIGGEN_64      64
-
-#define RSA_HASH_ALG_MAX_LEN    12
-#define RSA_MSG_MAX_LEN         1000
-#define RSA_SIG_TYPE_MAX        16
+#define ACVP_RSA_HASH_ALG_LEN_MAX    12
+#define ACVP_RSA_SIG_TYPE_LEN_MAX    9
 
 #define RSA_SIG_TYPE_X931_NAME      "ansx9.31"
 #define RSA_SIG_TYPE_PKCS1V15_NAME  "pkcs1v1.5"
@@ -329,13 +316,20 @@ typedef enum acvp_rsa_param {
 #define RSA_PUB_EXP_FIXED      1
 #define RSA_PUB_EXP_RANDOM     0
 
-typedef enum acvp_rsa_mode {
-    ACVP_RSA_MODE_START = 0,
-    ACVP_RSA_MODE_KEYGEN,
-    ACVP_RSA_MODE_SIGGEN,
-    ACVP_RSA_MODE_SIGVER,
-    ACVP_RSA_MODE_END
-} ACVP_RSA_MODE;
+#define ACVP_RSA_RANDPQ32_STR "B.3.2"
+#define ACVP_RSA_RANDPQ33_STR "B.3.3"
+#define ACVP_RSA_RANDPQ34_STR "B.3.4"
+#define ACVP_RSA_RANDPQ35_STR "B.3.5"
+#define ACVP_RSA_RANDPQ36_STR "B.3.6"
+
+typedef enum acvp_rsa_keygen_mode_t {
+    ACVP_RSA_KEYGEN_START = 0,
+    ACVP_RSA_KEYGEN_B32,
+    ACVP_RSA_KEYGEN_B33,
+    ACVP_RSA_KEYGEN_B34,
+    ACVP_RSA_KEYGEN_B35,
+    ACVP_RSA_KEYGEN_B36
+} ACVP_RSA_KEYGEN_MODE;
 
 typedef enum acvp_rsa_sig_type {
     RSA_SIG_TYPE_X931 = 0,
@@ -586,28 +580,33 @@ typedef struct acvp_cmac_tc_t {
  * passed between libacvp and the crypto module.
  */
 typedef struct acvp_rsa_keygen_tc_t {
-    ACVP_RSA_MODE mode; // "keyGen"
-
     char *hash_alg;
     unsigned int tc_id;    /* Test case id */
     char *pub_exp;
     char *prime_test;
+    char *prime_result;
+    
+    int rand_pq;
+    int info_gen_by_server;
+    char *pub_exp_mode;
+    char *key_format;
+    int modulo;
 
     BIGNUM *e;
-    unsigned char *p_rand;
-    unsigned char *q_rand;
+    BIGNUM *p_rand;
+    BIGNUM *q_rand;
 
-    unsigned char *xp1;
-    unsigned char *xp2;
-    unsigned char *xp;
-    unsigned char *p1;
-    unsigned char *p2;
+    BIGNUM *xp1;
+    BIGNUM *xp2;
+    BIGNUM *xp;
 
-    unsigned char *xq1;
-    unsigned char *xq2;
-    unsigned char *xq;
-    unsigned char *q1;
-    unsigned char *q2;
+    BIGNUM *xq1;
+    BIGNUM *xq2;
+    BIGNUM *xq;
+    
+    BIGNUM *dmp1;
+    BIGNUM *dmq1;
+    BIGNUM *iqmp;
 
     BIGNUM *n;
     BIGNUM *d;
@@ -615,17 +614,11 @@ typedef struct acvp_rsa_keygen_tc_t {
     BIGNUM *q;
 
     unsigned char *seed;
-    unsigned int seed_len;
-    unsigned int bitlen1;
-    unsigned int bitlen2;
-    unsigned int bitlen3;
-    unsigned int bitlen4;
-
-    unsigned char *prime_seed_p2;
-    unsigned char *prime_seed_q1;
-    unsigned char *prime_seed_q2;
-
-    unsigned char *prime_result; /**< "prime" or "composite" */
+    int seed_len;
+    int bitlen1;
+    int bitlen2;
+    int bitlen3;
+    int bitlen4;
 } ACVP_RSA_KEYGEN_TC;
 
 /*
@@ -633,35 +626,21 @@ typedef struct acvp_rsa_keygen_tc_t {
  * for RSA testing.  This data is
  * passed between libacvp and the crypto module.
  */
-typedef struct acvp_rsa_sig_attrs_tc_t {
-    ACVP_RSA_MODE mode;
+typedef struct acvp_rsa_sig_tc_t {
+    char *hash_alg;
+    char *sig_type;
     unsigned int tc_id;    /* Test case id */
     unsigned int modulo;
-    char *hash_alg;
-    unsigned char *msg;
-    unsigned int salt_len; // only for sigType PKCSS1PSS
-
     BIGNUM *e;
     BIGNUM *n;
-    BIGNUM *s;
-} ACVP_RSA_SIG_ATTRS_TC;
-
-typedef struct acvp_rsa_sig_tc_t {
-    ACVP_RSA_MODE mode; // "sigGen" "sigVer"
-    char *sig_type; // "X9.31"
-    char pass;
-    ACVP_RSA_SIG_ATTRS_TC *sig_attrs_tc;
+    int salt_len;
+    unsigned char *msg;
+    int msg_len;
+    unsigned char *signature;
+    int sig_len;
+    ACVP_CIPHER sig_mode;
+    int ver_disposition;
 } ACVP_RSA_SIG_TC;
-
-typedef struct acvp_rsa_tc_t {
-    ACVP_CIPHER cipher;
-    ACVP_RSA_MODE mode; // "keyGen"
-    int info_gen_by_server;
-    unsigned int rand_pq;
-    unsigned int mod;
-    ACVP_RSA_KEYGEN_TC *keygen_tc;
-    ACVP_RSA_SIG_TC *sig_tc;
-} ACVP_RSA_TC;
 
 typedef enum acvp_dsa_mode {
     ACVP_DSA_MODE_PQGGEN = 1
@@ -768,7 +747,8 @@ typedef struct acvp_cipher_tc_t {
         ACVP_DSA_TC *dsa;
         ACVP_HMAC_TC *hmac;
         ACVP_CMAC_TC *cmac;
-        ACVP_RSA_TC *rsa;
+        ACVP_RSA_KEYGEN_TC *rsa_keygen;
+        ACVP_RSA_SIG_TC *rsa_sig;
         ACVP_KDF135_TLS_TC *kdf135_tls;
         ACVP_KDF135_SNMP_TC *kdf135_snmp;
         ACVP_KDF135_SSH_TC *kdf135_ssh;
@@ -1114,12 +1094,22 @@ ACVP_RESULT acvp_enable_dsa_cap_parm (ACVP_CTX *ctx,
 
    @return ACVP_RESULT
 */
-ACVP_RESULT acvp_enable_rsa_cap (
+ACVP_RESULT acvp_enable_rsa_keygen_cap (
         ACVP_CTX *ctx,
         ACVP_CIPHER cipher,
         ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case));
 
-/*! @brief acvp_enable_rsa_cap_parm() allows an application to specify
+ACVP_RESULT acvp_enable_rsa_siggen_cap (
+        ACVP_CTX *ctx,
+        ACVP_CIPHER cipher,
+        ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case));
+
+ACVP_RESULT acvp_enable_rsa_sigver_cap (
+        ACVP_CTX *ctx,
+        ACVP_CIPHER cipher,
+        ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case));
+
+/*! @brief acvp_enable_rsa_*_cap_parm() allows an application to specify
        operational parameters to be used for a given RSA alg during a
        test session with the ACVP server.
 
@@ -1137,13 +1127,23 @@ ACVP_RESULT acvp_enable_rsa_cap (
 
     @return ACVP_RESULT
  */
-ACVP_RESULT acvp_enable_rsa_cap_parm (
+ACVP_RESULT acvp_enable_rsa_keygen_cap_parm (
         ACVP_CTX *ctx,
-        ACVP_CIPHER cipher,
-        ACVP_RSA_MODE mode,
         ACVP_RSA_PARM param,
         int value
 );
+
+ACVP_RESULT acvp_enable_rsa_keygen_mode (ACVP_CTX *ctx,
+                                         ACVP_RSA_KEYGEN_MODE value);
+
+ACVP_RESULT acvp_enable_rsa_siggen_type (ACVP_CTX *ctx,
+                                         ACVP_RSA_SIG_TYPE type);
+
+ACVP_RESULT acvp_enable_rsa_siggen_caps_parm (ACVP_CTX *ctx,
+                                              ACVP_RSA_SIG_TYPE sig_type,
+                                              int mod,
+                                              char *hash_name,
+                                              int salt_len);
 
 /*! @brief acvp_enable_rsa_bignum_parm() allows an application to specify
        BIGNUM operational parameters to be used for a given RSA alg during a
@@ -1162,11 +1162,9 @@ ACVP_RESULT acvp_enable_rsa_cap_parm (
 
     @return ACVP_RESULT
  */
-ACVP_RESULT acvp_enable_rsa_bignum_parm (ACVP_CTX *ctx,
-                                         ACVP_CIPHER cipher,
-                                         ACVP_RSA_MODE mode,
-                                         ACVP_RSA_PARM param,
-                                         BIGNUM *value
+ACVP_RESULT acvp_enable_rsa_keygen_bignum_parm (ACVP_CTX *ctx,
+                                                ACVP_RSA_PARM param,
+                                                BIGNUM *value
 );
 
 /*! @brief acvp_enable_rsa_primes_parm() allows an application to specify
@@ -1192,42 +1190,10 @@ ACVP_RESULT acvp_enable_rsa_bignum_parm (ACVP_CTX *ctx,
 
    @return ACVP_RESULT
  */
-ACVP_RESULT acvp_enable_rsa_primes_parm (ACVP_CTX *ctx,
-                                         ACVP_CIPHER cipher,
-                                         ACVP_RSA_MODE mode,
-                                         ACVP_RSA_PARM param,
-                                         int mod,
-                                         char *hash
-);
-
-/*! @brief acvp_enable_rsa_cap_sig_type_parm() allows an application to
-        specify parameters for RSA signature capability for use during a
-        test session with the ACVP server.
-
-        This function behaves similarly to acvp_enable_rsa_primes_parm()
-        but also allows for a salt value to be specified.
-
-   @param ctx Address of pointer to a previously allocated ACVP_CTX.
-   @param cipher ACVP_CIPHER enum value identifying the crypto capability.
-   @param mode ACVP_RSA_MODE enum value specifying mode. In this case it
-       will always be ACVP_RSA_MODE_KEYGEN
-   @param sig_type ACVP_RSA_SIG_TYPE enum value specifying which type is
-       being registered.
-   @param mod Supported RSA modulo value
-   @param hash The corresponding supported hash algorithm - the first value
-       in the 'hashPair' parameter for registration
-   @param salt The corresponding salt length - the second value in the
-       'hashPair' parameter for registration
-
-   @return ACVP_RESULT
- */
-ACVP_RESULT acvp_enable_rsa_cap_sig_type_parm (ACVP_CTX *ctx,
-                                               ACVP_CIPHER cipher,
-                                               ACVP_RSA_MODE mode,
-                                               ACVP_RSA_SIG_TYPE sig_type,
-                                               int mod,
-                                               char *hash,
-                                               int salt
+ACVP_RESULT acvp_enable_rsa_keygen_primes_parm (ACVP_CTX *ctx,
+                                                ACVP_RSA_KEYGEN_MODE mode,
+                                                int mod,
+                                                char *name
 );
 
 /*! @brief acvp_enable_hmac_cap() allows an application to specify an

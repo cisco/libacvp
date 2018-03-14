@@ -115,7 +115,7 @@
 
 #define ACVP_ALG_RSA_KEYGEN             "keyGen"
 #define ACVP_ALG_RSA_SIGGEN             "sigGen"
-#define ACVP_RSA_SIGVER              "sigVer"
+#define ACVP_ALG_RSA_SIGVER              "sigVer"
 #define ACVP_RSA_CAP_HASHALG_OBJ_NAME  "hashAlg"
 #define ACVP_RSA_CAP_HASHPAIR_NAME "hashPair"
 #define ACVP_RSA_TC_HASHALG_OBJ_NAME  "hashAlg"
@@ -172,8 +172,8 @@
 #define ACVP_DSA_SEED_MAX       128
 
 #define ACVP_RSA_SEEDLEN_MAX    64
-
-#define RSA_SIG_TYPE_MAX_LEN    9
+#define ACVP_RSA_MSGLEN_MAX     512
+#define ACVP_RSA_SIGNATURE_MAX  1024
 
 #define ACVP_KAT_BUF_MAX        1024*1024*4
 #define ACVP_REG_BUF_MAX        1024*128
@@ -309,11 +309,6 @@ struct acvp_drbg_mode_name_t {
     char *name;
 };
 
-struct acvp_rsa_mode_name_t {
-    ACVP_RSA_MODE mode;
-    char *name;
-};
-
 /*
  * list of strings to be used for supported algs,
  * prime_tests, etc.
@@ -323,11 +318,9 @@ typedef struct acvp_name_list_t {
     struct acvp_name_list_t *next;
 } ACVP_NAME_LIST;
 
-
 typedef struct acvp_rsa_hash_pair_list {
     char *name;
     int salt;
-//    int modulo;
     struct acvp_rsa_hash_pair_list *next;
 } ACVP_RSA_HASH_PAIR_LIST;
 
@@ -340,63 +333,25 @@ typedef struct acvp_rsa_mode_caps_list {
     struct acvp_rsa_mode_caps_list *next;
 } ACVP_RSA_MODE_CAPS_LIST;
 
-typedef struct acvp_rsa_cap_sig_type {
-    int modulo; // 2048, 3072, 4096 -- defined as macros
-    ACVP_RSA_HASH_PAIR_LIST *hash_pairs;
-    struct acvp_rsa_cap_sig_type *next;
-} ACVP_RSA_SIG_TYPE_CAPS;
-
-typedef struct acvp_rsa_keygen_attrs_t {
-    ACVP_RSA_MODE mode;                      // "keyGen"
-    int pub_exp;                             // 0 - random, 1 - fixed
-    BIGNUM *fixed_pub_exp_val;               // hex value of e
-    int rand_pq;                             // as defined in FIPS186-4 - not used by b.3.3
-    int info_gen_by_server;                  // boolean
-    ACVP_RSA_MODE_CAPS_LIST *mode_capabilities;
-} ACVP_RSA_KEYGEN_ATTRS;
-
-typedef struct acvp_rsa_sig_attrs_t {
-    int sig_type_val;
-    char *sig_type; // "X9.31", "PKCS1v1.5", "PKCS1PSS"
-    ACVP_RSA_MODE_CAPS_LIST *mode_capabilities; //holds modRSASigGen (int) and hashSigGen (list)
-    struct acvp_rsa_sig_attrs_t *next;
-} ACVP_RSA_SIG_ATTRS;
-
-#define ACVP_RSA_MAX_MODES 3
-typedef struct acvp_rsa_cap_mode_list_t {
-    ACVP_RSA_MODE cap_mode;
-    union {
-        ACVP_RSA_KEYGEN_ATTRS *keygen;
-        ACVP_RSA_SIG_ATTRS *siggen;
-        ACVP_RSA_SIG_ATTRS *sigver;
-    } cap_mode_attrs;
-    struct acvp_rsa_cap_mode_list_t *next;
-} ACVP_RSA_CAP_MODE_LIST;
-
-typedef struct acvp_rsa_capability {
-    ACVP_CIPHER cipher;
-    ACVP_RSA_CAP_MODE_LIST *rsa_cap_mode_list;
-} ACVP_RSA_CAP;
-
 typedef struct acvp_rsa_keygen_capability_t {
-    ACVP_RSA_MODE mode;                      // "keyGen"
     int key_format_crt;                     // if false, key format is assumed to be standard
     int pub_exp_mode;                             // 0 - random, 1 - fixed
     BIGNUM *fixed_pub_exp;               // hex value of e
-    int rand_pq;                             // as defined in FIPS186-4
+    ACVP_RSA_KEYGEN_MODE rand_pq;        // as defined in FIPS186-4
+    char *rand_pq_str;
     int info_gen_by_server;                  // boolean
-    ACVP_RSA_MODE_CAPS_LIST *cap_primes_list;
-    // edaw could use "next" here based on randPQ
+    ACVP_RSA_MODE_CAPS_LIST *mode_capabilities;
+    struct acvp_rsa_keygen_capability_t *next; // to support multiple randPQ values
 } ACVP_RSA_KEYGEN_CAP;
 
 typedef struct acvp_rsa_sig_capability_t {
-//    int sig_type_val;
-//    ACVP_RSA_SIG_TYPE sig_type; // "X9.31", "PKCS1v1.5", "PKCS1PSS"
     char *sig_type_str;
     int sig_type;
+    int pub_exp_mode; // for sigVer only
+    BIGNUM *fixed_pub_exp; // hex value of e
     ACVP_RSA_MODE_CAPS_LIST *mode_capabilities; //holds modRSASigGen (int) and hashSigGen (list)
     struct acvp_rsa_sig_capability_t *next;
-} ACVP_RSA_SIGGEN_CAP;
+} ACVP_RSA_SIG_CAP;
 
 
 typedef struct acvp_dsa_pqggen_attrs {
@@ -434,9 +389,9 @@ typedef struct acvp_caps_list_t {
         ACVP_DSA_CAP *dsa_cap;
         ACVP_HMAC_CAP *hmac_cap;
         ACVP_CMAC_CAP *cmac_cap;
-        ACVP_RSA_CAP *rsa_cap;
         ACVP_RSA_KEYGEN_CAP *rsa_keygen_cap;
-        ACVP_RSA_SIGGEN_CAP *rsa_sig_cap;
+        ACVP_RSA_SIG_CAP *rsa_siggen_cap;
+        ACVP_RSA_SIG_CAP *rsa_sigver_cap;
         ACVP_KDF135_TLS_CAP *kdf135_tls_cap;
         ACVP_KDF135_SNMP_CAP *kdf135_snmp_cap;
         ACVP_KDF135_SSH_CAP *kdf135_ssh_cap;
@@ -528,7 +483,9 @@ ACVP_RESULT acvp_hmac_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
 
 ACVP_RESULT acvp_cmac_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
 
-ACVP_RESULT acvp_rsa_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
+ACVP_RESULT acvp_rsa_keygen_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
+
+ACVP_RESULT acvp_rsa_sig_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
 
 ACVP_RESULT acvp_kdf135_tls_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
 
@@ -545,20 +502,11 @@ ACVP_CAPS_LIST *acvp_locate_cap_entry (ACVP_CTX *ctx, ACVP_CIPHER cipher);
 
 char *acvp_lookup_cipher_name (ACVP_CIPHER alg);
 
-int acvp_lookup_cipher_index (const char *algorithm);
+ACVP_CIPHER acvp_lookup_cipher_index (const char *algorithm);
 
 ACVP_DRBG_MODE acvp_lookup_drbg_mode_index (const char *mode);
 
 ACVP_DRBG_CAP_MODE_LIST *acvp_locate_drbg_mode_entry (ACVP_CAPS_LIST *cap, ACVP_DRBG_MODE mode);
-
-ACVP_RSA_MODE acvp_lookup_rsa_mode_index (char *mode);
-
-ACVP_RSA_SIG_ATTRS *
-acvp_locate_rsa_sig_type_entry (ACVP_CTX *ctx, ACVP_CAPS_LIST *cap, ACVP_RSA_MODE mode, ACVP_RSA_SIG_TYPE sig_type);
-
-ACVP_RSA_CAP_MODE_LIST *acvp_locate_rsa_mode_entry (ACVP_CAPS_LIST *cap, ACVP_RSA_MODE mode);
-
-char *acvp_rsa_get_sig_type_name (ACVP_RSA_SIG_TYPE sig_type);
 
 char *acvp_lookup_rsa_randpq_name (int value);
 

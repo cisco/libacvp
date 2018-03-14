@@ -88,10 +88,6 @@ static ACVP_RESULT app_des_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_sha_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_hmac_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_cmac_handler(ACVP_TEST_CASE *test_case);
-static ACVP_RESULT app_rsa_handler(ACVP_TEST_CASE *test_case);
-static ACVP_RESULT app_rsa_siggen_handler(ACVP_TEST_CASE *test_case);
-static ACVP_RESULT app_rsa_sigver_handler(ACVP_TEST_CASE *test_case);
-
 //static ACVP_RESULT app_dsa_handler(ACVP_TEST_CASE *test_case);
 
 #ifdef OPENSSL_KDF_SUPPORT
@@ -101,6 +97,8 @@ static ACVP_RESULT app_kdf135_ssh_handler(ACVP_TEST_CASE *test_case);
 #endif
 #ifdef ACVP_NO_RUNTIME
 static ACVP_RESULT app_drbg_handler(ACVP_TEST_CASE *test_case);
+static ACVP_RESULT app_rsa_keygen_handler(ACVP_TEST_CASE *test_case);
+static ACVP_RESULT app_rsa_sig_handler(ACVP_TEST_CASE *test_case);
 #endif
 
 #define DEFAULT_SERVER "127.0.0.1"
@@ -214,8 +212,11 @@ int main(int argc, char **argv)
     int hmac = 1;
     int kdf = 0;
     int dsa = 0;
+    /*
+     * these require the fom, off by default
+     */
     int rsa = 0;
-    int drbg = 1;
+    int drbg = 0;
 
     if (argc > 2) {
         print_usage();
@@ -915,11 +916,19 @@ static void enable_dsa (ACVP_CTX *ctx) {
 #endif
 }
 
+#ifdef ACVP_NO_RUNTIME
 static void enable_rsa (ACVP_CTX *ctx) {
-//#if 0 /* until RSA is supported on the server side */
     ACVP_RESULT rv;
     char value[] = "same";
     BIGNUM *expo;
+    
+    expo = BN_new();
+    if (!expo) {
+        printf("oh no\n");
+        exit(1);
+    }
+    BN_ULONG mm = RSA_F4;
+    BN_set_word(expo, mm);
 
     /*
      * Enable RSA keygen...
@@ -928,204 +937,206 @@ static void enable_rsa (ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_prereq_cap(ctx, ACVP_RSA_KEYGEN, ACVP_PREREQ_SHA, value);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_keygen_cap_parm(ctx, ACVP_PUB_EXP, RSA_PUB_EXP_FIXED);
+    rv = acvp_enable_prereq_cap(ctx, ACVP_RSA_KEYGEN, ACVP_PREREQ_DRBG, value);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_keygen_cap_parm(ctx, ACVP_RSA_INFO_GEN_BY_SERVER, 0);
+    rv = acvp_enable_rsa_keygen_cap_parm(ctx, ACVP_PUB_EXP_MODE, RSA_PUB_EXP_FIXED);
     CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_rsa_keygen_cap_parm(ctx, ACVP_RSA_INFO_GEN_BY_SERVER, 1);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_rsa_keygen_cap_parm(ctx, ACVP_KEY_FORMAT_CRT, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    
 
-    expo = BN_new();
-    if (!expo) {
-        printf("oh no\n");
-        exit(1);
-    }
-    BN_ULONG mm = RSA_F4;
-    BN_set_word(expo, mm);
-//    if (!BN_set_word(expo, mm)) {
-//        printf("Bignum API fail\n");
-//        return;
-//    }
     rv = acvp_enable_rsa_keygen_bignum_parm(ctx, ACVP_FIXED_PUB_EXP_VAL, expo);
     CHECK_ENABLE_CAP_RV(rv);
-
-    /*
-     * Only one of following three chunks should be used at a time
-     * This is because only one randPQ value registration is currently supported
-     */
-
-    // ENABLES RAND PQ VALUE 1 or 3 -- "provPC" or "provRP"
-    // not to be used in conjunction with other randPQ values
-     rv = acvp_enable_rsa_keygen_cap_parm(ctx, ACVP_RAND_PQ, RSA_RAND_PQ_B34);
-     CHECK_ENABLE_CAP_RV(rv);
-     rv = acvp_enable_rsa_keygen_primes_parm(ctx, ACVP_CAPS_PROV_PRIME, MOD_RSA_2048, ACVP_STR_SHA_1);
-     CHECK_ENABLE_CAP_RV(rv);
-     rv = acvp_enable_rsa_keygen_primes_parm(ctx, ACVP_CAPS_PROV_PRIME, MOD_RSA_2048, ACVP_STR_SHA2_224);
-     CHECK_ENABLE_CAP_RV(rv);
-     rv = acvp_enable_rsa_keygen_primes_parm(ctx, ACVP_CAPS_PROV_PRIME, MOD_RSA_2048, ACVP_STR_SHA2_512);
-     CHECK_ENABLE_CAP_RV(rv);
-     rv = acvp_enable_rsa_keygen_primes_parm(ctx, ACVP_CAPS_PROV_PRIME, MOD_RSA_2048, PRIME_TEST_TBLC2_NAME);
-     CHECK_ENABLE_CAP_RV(rv);
-     rv = acvp_enable_rsa_keygen_primes_parm(ctx, ACVP_CAPS_PROV_PRIME, MOD_RSA_4096, ACVP_STR_SHA_1);
-     CHECK_ENABLE_CAP_RV(rv);
-     rv = acvp_enable_rsa_keygen_primes_parm(ctx, ACVP_CAPS_PROV_PRIME, MOD_RSA_4096, ACVP_STR_SHA2_224);
-     CHECK_ENABLE_CAP_RV(rv);
-     rv = acvp_enable_rsa_keygen_primes_parm(ctx, ACVP_CAPS_PROV_PRIME, MOD_RSA_4096, PRIME_TEST_TBLC2_NAME);
-     CHECK_ENABLE_CAP_RV(rv);
-
-    // ENABLES RAND PQ VALUE 2 or 5 -- "probPC" or "probRP"
-    // not to be used in conjunction with other randPQ values
-//     rv = acvp_enable_rsa_keygen_cap_parm(ctx, ACVP_RAND_PQ, RSA_RAND_PQ_B33);
-//     CHECK_ENABLE_CAP_RV(rv);
-//     rv = acvp_enable_rsa_keygen_primes_parm(ctx, ACVP_CAPS_PROB_PRIME, MOD_RSA_2048, PRIME_TEST_TBLC2_NAME);
-//     CHECK_ENABLE_CAP_RV(rv);
-//     rv = acvp_enable_rsa_keygen_primes_parm(ctx, ACVP_CAPS_PROB_PRIME, MOD_RSA_4096, PRIME_TEST_TBLC3_NAME);
-//     CHECK_ENABLE_CAP_RV(rv);
-//     rv = acvp_enable_rsa_keygen_primes_parm(ctx, ACVP_CAPS_PROB_PRIME, MOD_RSA_4096, PRIME_TEST_TBLC2_NAME);
-//     CHECK_ENABLE_CAP_RV(rv);
-//     rv = acvp_enable_rsa_keygen_primes_parm(ctx, ACVP_CAPS_PROB_PRIME, MOD_RSA_2048, ACVP_STR_SHA2_224);
-//     CHECK_ENABLE_CAP_RV(rv);
-//     rv = acvp_enable_rsa_keygen_primes_parm(ctx, ACVP_CAPS_PROB_PRIME, MOD_RSA_4096, ACVP_STR_SHA2_224);
-//     CHECK_ENABLE_CAP_RV(rv);
-
-//    // ENABLES RAND PQ VALUE 4 -- "bothPC"
-//    // not to be used in conjunction with other randPQ values
-//    rv = acvp_enable_rsa_keygen_cap_parm(ctx, ACVP_RAND_PQ, RSA_RAND_PQ_B35);
-//    CHECK_ENABLE_CAP_RV(rv);
-//    rv = acvp_enable_rsa_keygen_cap_parm(ctx, ACVP_KEY_FORMAT_CRT, 0);
-//    CHECK_ENABLE_CAP_RV(rv);
-//    rv = acvp_enable_rsa_keygen_primes_parm(ctx, ACVP_CAPS_PROV_PROB_PRIME, MOD_RSA_2048, PRIME_TEST_TBLC2_NAME);
-//    CHECK_ENABLE_CAP_RV(rv);
-//    rv = acvp_enable_rsa_keygen_primes_parm(ctx, ACVP_CAPS_PROV_PROB_PRIME, MOD_RSA_2048, ACVP_STR_SHA2_224);
-//    CHECK_ENABLE_CAP_RV(rv);
-//    rv = acvp_enable_rsa_keygen_primes_parm(ctx, ACVP_CAPS_PROV_PROB_PRIME, MOD_RSA_2048, ACVP_STR_SHA2_512);
-//    CHECK_ENABLE_CAP_RV(rv);
-//    rv = acvp_enable_rsa_keygen_primes_parm(ctx, ACVP_CAPS_PROV_PROB_PRIME, MOD_RSA_3072, PRIME_TEST_TBLC2_NAME);
-//    CHECK_ENABLE_CAP_RV(rv);
-//    rv = acvp_enable_rsa_keygen_primes_parm(ctx, ACVP_CAPS_PROV_PROB_PRIME, MOD_RSA_3072, ACVP_STR_SHA_1);
-//    CHECK_ENABLE_CAP_RV(rv);
-//    rv = acvp_enable_rsa_keygen_primes_parm(ctx, ACVP_CAPS_PROV_PROB_PRIME, MOD_RSA_4096, ACVP_STR_SHA2_224);
-//    CHECK_ENABLE_CAP_RV(rv);
-//    rv = acvp_enable_rsa_keygen_primes_parm(ctx, ACVP_CAPS_PROV_PROB_PRIME, MOD_RSA_4096, PRIME_TEST_TBLC3_NAME);
-//    CHECK_ENABLE_CAP_RV(rv);
-//    rv = acvp_enable_rsa_keygen_primes_parm(ctx, ACVP_CAPS_PROV_PROB_PRIME, MOD_RSA_4096, PRIME_TEST_TBLC2_NAME);
-//    CHECK_ENABLE_CAP_RV(rv);
     
-#if 1 /* until RSA is supported on the server side */
-    
-    rv = acvp_enable_rsa_siggen_cap(ctx, ACVP_RSA_SIGGEN, &app_rsa_siggen_handler);
+    rv = acvp_enable_rsa_keygen_mode(ctx, ACVP_RSA_KEYGEN_B34);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_rsa_keygen_primes_parm(ctx, ACVP_RSA_KEYGEN_B34, MOD_RSA_2048, ACVP_STR_SHA2_256);
+    CHECK_ENABLE_CAP_RV(rv);
+    // TODO: leaving this in here as a workaround until the server allows it as optional
+    rv = acvp_enable_rsa_keygen_primes_parm(ctx, ACVP_RSA_KEYGEN_B34, MOD_RSA_2048, PRIME_TEST_TBLC2_NAME);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_rsa_keygen_primes_parm(ctx, ACVP_RSA_KEYGEN_B34, MOD_RSA_3072, ACVP_STR_SHA2_256);
+    CHECK_ENABLE_CAP_RV(rv);
+    // TODO: leaving this in here as a workaround until the server allows it as optional
+    rv = acvp_enable_rsa_keygen_primes_parm(ctx, ACVP_RSA_KEYGEN_B34, MOD_RSA_3072, PRIME_TEST_TBLC2_NAME);
     CHECK_ENABLE_CAP_RV(rv);
     
+    
+    /*
+     * Enable siggen
+     */
+    rv = acvp_enable_rsa_siggen_cap(ctx, ACVP_RSA_SIGGEN, &app_rsa_sig_handler);
+    CHECK_ENABLE_CAP_RV(rv);
     
     // RSA w/ sigType: X9.31
     rv = acvp_enable_rsa_siggen_type(ctx, RSA_SIG_TYPE_X931);
     CHECK_ENABLE_CAP_RV(rv);
-    
-    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_X931, MOD_RSA_4096, ACVP_STR_SHA2_512, 0);
+    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_X931, MOD_RSA_2048, ACVP_STR_SHA2_256, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_X931, MOD_RSA_4096, ACVP_STR_SHA2_224, 0);
+    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_X931, MOD_RSA_2048, ACVP_STR_SHA2_384, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_X931, MOD_RSA_2048, ACVP_STR_SHA2_512, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_X931, MOD_RSA_3072, ACVP_STR_SHA2_256, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_X931, MOD_RSA_3072, ACVP_STR_SHA2_384, 0);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_X931, MOD_RSA_3072, ACVP_STR_SHA2_512, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_X931, MOD_RSA_3072, ACVP_STR_SHA2_224, 0);
+#if 0 // mod 4096 isn't supported by the server just yet
+    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_X931, MOD_RSA_4096, ACVP_STR_SHA2_256, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    
+    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_X931, MOD_RSA_4096, ACVP_STR_SHA2_384, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_X931, MOD_RSA_4096, ACVP_STR_SHA2_512, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+#endif
+
+
     // RSA w/ sigType: PKCS1v1.5
     rv = acvp_enable_rsa_siggen_type(ctx, RSA_SIG_TYPE_PKCS1V15);
     CHECK_ENABLE_CAP_RV(rv);
-    
-    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_PKCS1V15, MOD_RSA_2048, ACVP_STR_SHA2_512, 0);
+    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_PKCS1V15, MOD_RSA_2048, ACVP_STR_SHA_1, 0);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_PKCS1V15, MOD_RSA_2048, ACVP_STR_SHA2_224, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_PKCS1V15, MOD_RSA_3072, ACVP_STR_SHA2_512, 0);
+    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_PKCS1V15, MOD_RSA_2048, ACVP_STR_SHA2_256, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_PKCS1V15, MOD_RSA_2048, ACVP_STR_SHA2_384, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_PKCS1V15, MOD_RSA_2048, ACVP_STR_SHA2_512, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_PKCS1V15, MOD_RSA_3072, ACVP_STR_SHA_1, 0);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_PKCS1V15, MOD_RSA_3072, ACVP_STR_SHA2_224, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    
-    // RSA w/ sigType: PKCS1PSS -- has saltSigGen
+    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_PKCS1V15, MOD_RSA_3072, ACVP_STR_SHA2_256, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_PKCS1V15, MOD_RSA_3072, ACVP_STR_SHA2_384, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_PKCS1V15, MOD_RSA_3072, ACVP_STR_SHA2_512, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+#if 0 // mod 4096 isn't supported by the server just yet
+    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_PKCS1V15, MOD_RSA_4096, ACVP_STR_SHA_1, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_PKCS1V15, MOD_RSA_4096, ACVP_STR_SHA2_224, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_PKCS1V15, MOD_RSA_4096, ACVP_STR_SHA2_256, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_PKCS1V15, MOD_RSA_4096, ACVP_STR_SHA2_384, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_PKCS1V15, MOD_RSA_4096, ACVP_STR_SHA2_512, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+#endif
+
+    // RSA w/ sigType: PKCS1PSS -- has salt
     rv = acvp_enable_rsa_siggen_type(ctx, RSA_SIG_TYPE_PKCS1PSS);
     CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_PKCS1PSS, MOD_RSA_2048, ACVP_STR_SHA_1, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_PKCS1PSS, MOD_RSA_2048, ACVP_STR_SHA2_224, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_PKCS1PSS, MOD_RSA_2048, ACVP_STR_SHA2_256, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_PKCS1PSS, MOD_RSA_2048, ACVP_STR_SHA2_384, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_PKCS1PSS, MOD_RSA_2048, ACVP_STR_SHA2_512, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_PKCS1PSS, MOD_RSA_3072, ACVP_STR_SHA_1, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_PKCS1PSS, MOD_RSA_3072, ACVP_STR_SHA2_224, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_PKCS1PSS, MOD_RSA_3072, ACVP_STR_SHA2_256, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_PKCS1PSS, MOD_RSA_3072, ACVP_STR_SHA2_384, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_PKCS1PSS, MOD_RSA_3072, ACVP_STR_SHA2_512, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    /*
+     * Enable sigver
+     */
+    rv = acvp_enable_rsa_sigver_cap(ctx, ACVP_RSA_SIGVER, &app_rsa_sig_handler);
+    CHECK_ENABLE_CAP_RV(rv);
     
-    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_PKCS1PSS, MOD_RSA_2048, ACVP_STR_SHA2_512, 28);
+    rv = acvp_enable_rsa_sigver_cap_parm(ctx, ACVP_PUB_EXP_MODE, RSA_PUB_EXP_FIXED);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_PKCS1PSS, MOD_RSA_2048, ACVP_STR_SHA2_224, 32);
+    rv = acvp_enable_rsa_sigver_bignum_parm(ctx, ACVP_FIXED_PUB_EXP_VAL, expo);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_PKCS1PSS, MOD_RSA_3072, ACVP_STR_SHA2_512, 28);
+    
+    // RSA w/ sigType: X9.31
+    rv = acvp_enable_rsa_sigver_type(ctx, RSA_SIG_TYPE_X931);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_PKCS1PSS, MOD_RSA_3072, ACVP_STR_SHA2_224, 32);
+    rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_X931, MOD_RSA_2048, ACVP_STR_SHA_1, 0);
     CHECK_ENABLE_CAP_RV(rv);
-
-#endif
-#if 0 /* until sigver is supported on the server side */
-
-
-// RSA w/ sigType: PKCS1v1.5
-    rv = acvp_enable_rsa_cap_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_SIGVER, ACVP_SIG_TYPE, RSA_SIG_TYPE_PKCS1V15);
+    rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_X931, MOD_RSA_2048, ACVP_STR_SHA2_256, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_cap_sig_type_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_SIGVER, RSA_SIG_TYPE_PKCS1V15, MOD_RSA_2048, ACVP_STR_SHA_224, 0);
+    rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_X931, MOD_RSA_2048, ACVP_STR_SHA2_384, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_cap_sig_type_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_SIGVER, RSA_SIG_TYPE_PKCS1V15, MOD_RSA_2048, ACVP_STR_SHA_256, 0);
+    rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_X931, MOD_RSA_2048, ACVP_STR_SHA2_512, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_cap_sig_type_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_SIGVER, RSA_SIG_TYPE_PKCS1V15, MOD_RSA_2048, ACVP_STR_SHA_512, 0);
+    rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_X931, MOD_RSA_3072, ACVP_STR_SHA_1, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_cap_sig_type_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_SIGVER, RSA_SIG_TYPE_PKCS1V15, MOD_RSA_3072, ACVP_STR_SHA_224, 0);
+    rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_X931, MOD_RSA_3072, ACVP_STR_SHA2_256, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_cap_sig_type_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_SIGVER, RSA_SIG_TYPE_PKCS1V15, MOD_RSA_3072, ACVP_STR_SHA_256, 0);
+    rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_X931, MOD_RSA_3072, ACVP_STR_SHA2_384, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_cap_sig_type_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_SIGVER, RSA_SIG_TYPE_PKCS1V15, MOD_RSA_3072, ACVP_STR_SHA_512, 0);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_cap_sig_type_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_SIGVER, RSA_SIG_TYPE_PKCS1V15, MOD_RSA_4096, ACVP_STR_SHA_224, 0);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_cap_sig_type_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_SIGVER, RSA_SIG_TYPE_PKCS1V15, MOD_RSA_4096, ACVP_STR_SHA_256, 0);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_cap_sig_type_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_SIGVER, RSA_SIG_TYPE_PKCS1V15, MOD_RSA_4096, ACVP_STR_SHA_512, 0);
+    rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_X931, MOD_RSA_3072, ACVP_STR_SHA2_512, 0);
     CHECK_ENABLE_CAP_RV(rv);
 
-// RSA w/ sigType: X9.31
-    rv = acvp_enable_rsa_cap_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_SIGVER, ACVP_SIG_TYPE, RSA_SIG_TYPE_X931);
+    // RSA w/ sigType: PKCS1v1.5
+    rv = acvp_enable_rsa_sigver_type(ctx, RSA_SIG_TYPE_PKCS1V15);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_cap_sig_type_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_SIGVER, RSA_SIG_TYPE_X931, MOD_RSA_2048, ACVP_STR_SHA_224, 0);
+    rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_PKCS1V15, MOD_RSA_2048, ACVP_STR_SHA_1, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_cap_sig_type_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_SIGVER, RSA_SIG_TYPE_X931, MOD_RSA_2048, ACVP_STR_SHA_256, 0);
+    rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_PKCS1V15, MOD_RSA_2048, ACVP_STR_SHA2_224, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_cap_sig_type_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_SIGVER, RSA_SIG_TYPE_X931, MOD_RSA_2048, ACVP_STR_SHA_512, 0);
+    rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_PKCS1V15, MOD_RSA_2048, ACVP_STR_SHA2_256, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_cap_sig_type_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_SIGVER, RSA_SIG_TYPE_X931, MOD_RSA_3072, ACVP_STR_SHA_224, 0);
+    rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_PKCS1V15, MOD_RSA_2048, ACVP_STR_SHA2_384, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_cap_sig_type_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_SIGVER, RSA_SIG_TYPE_X931, MOD_RSA_3072, ACVP_STR_SHA_256, 0);
+    rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_PKCS1V15, MOD_RSA_2048, ACVP_STR_SHA2_512, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_cap_sig_type_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_SIGVER, RSA_SIG_TYPE_X931, MOD_RSA_3072, ACVP_STR_SHA_512, 0);
+    rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_PKCS1V15, MOD_RSA_3072, ACVP_STR_SHA_1, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_cap_sig_type_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_SIGVER, RSA_SIG_TYPE_X931, MOD_RSA_4096, ACVP_STR_SHA_224, 0);
+    rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_PKCS1V15, MOD_RSA_3072, ACVP_STR_SHA2_224, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_cap_sig_type_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_SIGVER, RSA_SIG_TYPE_X931, MOD_RSA_4096, ACVP_STR_SHA_256, 0);
+    rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_PKCS1V15, MOD_RSA_3072, ACVP_STR_SHA2_256, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_cap_sig_type_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_SIGVER, RSA_SIG_TYPE_X931, MOD_RSA_4096, ACVP_STR_SHA_512, 0);
+    rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_PKCS1V15, MOD_RSA_3072, ACVP_STR_SHA2_384, 0);
     CHECK_ENABLE_CAP_RV(rv);
-
-// RSA w/ sigType: PKCS1PSS
-    rv = acvp_enable_rsa_cap_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_SIGVER, ACVP_SIG_TYPE, RSA_SIG_TYPE_PKCS1PSS);
+    rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_PKCS1V15, MOD_RSA_3072, ACVP_STR_SHA2_512, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_cap_sig_type_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_SIGVER, RSA_SIG_TYPE_PKCS1PSS, MOD_RSA_2048, ACVP_STR_SHA_224, RSA_SALT_SIGGEN_28);
+    
+    // RSA w/ sigType: PKCS1PSS -- has salt
+    rv = acvp_enable_rsa_sigver_type(ctx, RSA_SIG_TYPE_PKCS1PSS);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_cap_sig_type_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_SIGVER, RSA_SIG_TYPE_PKCS1PSS, MOD_RSA_2048, ACVP_STR_SHA_256, RSA_SALT_SIGGEN_32);
+    rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_PKCS1PSS, MOD_RSA_2048, ACVP_STR_SHA_1, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_cap_sig_type_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_SIGVER, RSA_SIG_TYPE_PKCS1PSS, MOD_RSA_2048, ACVP_STR_SHA_512, RSA_SALT_SIGGEN_64);
+    rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_PKCS1PSS, MOD_RSA_2048, ACVP_STR_SHA2_224, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_cap_sig_type_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_SIGVER, RSA_SIG_TYPE_PKCS1PSS, MOD_RSA_3072, ACVP_STR_SHA_224, RSA_SALT_SIGGEN_28);
+    rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_PKCS1PSS, MOD_RSA_2048, ACVP_STR_SHA2_256, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_cap_sig_type_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_SIGVER, RSA_SIG_TYPE_PKCS1PSS, MOD_RSA_3072, ACVP_STR_SHA_256, RSA_SALT_SIGGEN_32);
+    rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_PKCS1PSS, MOD_RSA_2048, ACVP_STR_SHA2_384, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_cap_sig_type_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_SIGVER, RSA_SIG_TYPE_PKCS1PSS, MOD_RSA_3072, ACVP_STR_SHA_512, RSA_SALT_SIGGEN_64);
+    rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_PKCS1PSS, MOD_RSA_2048, ACVP_STR_SHA2_512, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_cap_sig_type_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_SIGVER, RSA_SIG_TYPE_PKCS1PSS, MOD_RSA_4096, ACVP_STR_SHA_224, RSA_SALT_SIGGEN_28);
+    rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_PKCS1PSS, MOD_RSA_3072, ACVP_STR_SHA_1, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_cap_sig_type_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_SIGVER, RSA_SIG_TYPE_PKCS1PSS, MOD_RSA_4096, ACVP_STR_SHA_256, RSA_SALT_SIGGEN_32);
+    rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_PKCS1PSS, MOD_RSA_3072, ACVP_STR_SHA2_224, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_cap_sig_type_parm(ctx, ACVP_RSA, ACVP_RSA_MODE_SIGVER, RSA_SIG_TYPE_PKCS1PSS, MOD_RSA_4096, ACVP_STR_SHA_512, RSA_SALT_SIGGEN_64);
+    rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_PKCS1PSS, MOD_RSA_3072, ACVP_STR_SHA2_256, 0);
     CHECK_ENABLE_CAP_RV(rv);
-#endif
+    rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_PKCS1PSS, MOD_RSA_3072, ACVP_STR_SHA2_384, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_PKCS1PSS, MOD_RSA_3072, ACVP_STR_SHA2_512, 0);
+    CHECK_ENABLE_CAP_RV(rv);
 }
+#endif
 
+#ifdef ACVP_NO_RUNTIME
 static void enable_drbg (ACVP_CTX *ctx) {
     ACVP_RESULT rv;
 
@@ -1317,6 +1328,7 @@ static void enable_drbg (ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
 
 }
+#endif
 
 static ACVP_RESULT app_des_handler(ACVP_TEST_CASE *test_case)
 {
@@ -2625,100 +2637,57 @@ error:
     return ACVP_SUCCESS;
 }*/
 
+#ifdef ACVP_NO_RUNTIME
 static ACVP_RESULT app_rsa_keygen_handler(ACVP_TEST_CASE *test_case)
 {
     /*
      * custom crypto module handler
-     * to be filled in
+     * to be filled in -
+     * this handler assumes info gen by server
+     * and all the other params registered for
+     * in this example app.
      */
-    ACVP_RSA_TC    *tc;
-    ACVP_RESULT rv;
+    
+    ACVP_RSA_KEYGEN_TC    *tc;
+    ACVP_RESULT rv = ACVP_SUCCESS;
     RSA       *rsa;
     
     /* keygen vars */
-    unsigned int bitlen1, bitlen2, bitlen3, bitlen4, seed_len, keylen;
-    BIGNUM *exponent;
-    unsigned long m;
-    unsigned char *seed = NULL;
-
-    /* siggen vars */
-    EVP_MD *tc_md = NULL;
-    unsigned char *msg = NULL, *sigbuf = NULL;
-    int siglen, pad_mode;
-    long msglen = -1;
-    BIGNUM *bn_e = NULL;    
+    unsigned int bitlen1, bitlen2, bitlen3, bitlen4, keylen;
     
     if (!test_case) {
-        return ACVP_INVALID_ARG;
+        rv = ACVP_INVALID_ARG;
+        goto err;
     }
-
-    tc = test_case->tc.rsa;
-    switch(tc->mode) {
-    case ACVP_RSA_MODE_KEYGEN:
-        switch (tc->rand_pq) {
-        case RSA_RAND_PQ_B34: // "provPC"
-            rsa = RSA_new();
-            if(tc->info_gen_by_server) {
-                exponent = tc->keygen_tc->e;
-                bitlen1 = tc->keygen_tc->bitlen1;
-                bitlen2 = tc->keygen_tc->bitlen2;
-                bitlen3 = tc->keygen_tc->bitlen3;
-                bitlen4 = tc->keygen_tc->bitlen4;
-                seed_len = tc->keygen_tc->seed_len;
-                seed = tc->keygen_tc->seed;
-            } else {
-                exponent = BN_new();
-                m = RSA_F4;
-                seed_len = 28;
-                seed = calloc(seed_len, sizeof(char));
-                if (!BN_set_word(exponent, m)) {
-                    printf("Bignum API fail\n");
-                    return ACVP_CRYPTO_MODULE_FAIL;
-                }
-                if (RAND_bytes(seed, seed_len) <= 0) {
-                    printf("RAND API fail\n");
-                    return ACVP_CRYPTO_MODULE_FAIL;
-                }
-                bitlen1 = 160;
-                bitlen2 = 272;
-                bitlen3 = 240;
-                bitlen4 = 184;
-                keylen = 2048;
-            }
-            break;
-        case RSA_RAND_PQ_B32: // "provRP"
-        case RSA_RAND_PQ_B33: // "probRP"
-        case RSA_RAND_PQ_B35: // "bothPC"
-        case RSA_RAND_PQ_B36: // "probPC"
-        default:
-            break;
-        }
-        if(rsa_generate_key_internal(&rsa->p, &rsa->q, &rsa->n, &rsa->d,
-                                      seed, seed_len,
-                                      bitlen1, bitlen2, bitlen3, bitlen4,
-                                      exponent, keylen, NULL) != 1) {
-            return ACVP_CRYPTO_MODULE_FAIL;
-        }
-        tc->keygen_tc->p = rsa->p;
-        tc->keygen_tc->q = rsa->q;
-        tc->keygen_tc->n = rsa->n;
-        tc->keygen_tc->d = rsa->d;
-
-        BN_free(exponent);
-        RSA_free(rsa);
-        break;
-    case ACVP_RSA_MODE_SIGGEN:
-    case ACVP_RSA_MODE_SIGVER:
-    default:
-        break;
+    tc = test_case->tc.rsa_keygen;
+    
+    rsa = FIPS_rsa_new();
+    bitlen1 = tc->bitlen1;
+    bitlen2 = tc->bitlen2;
+    bitlen3 = tc->bitlen3;
+    bitlen4 = tc->bitlen4;
+    keylen = tc->modulo;
+    
+    int rc = rsa_generate_key_internal(&rsa->p, &rsa->q, &rsa->n, &rsa->d,
+                                       tc->seed, tc->seed_len,
+                                       bitlen1, bitlen2, bitlen3, bitlen4,
+                                       tc->e, keylen, NULL);
+    if (rc != 1) {
+        printf("Error generating key\n");
+        rv = ACVP_CRYPTO_MODULE_FAIL;
+        goto err;
     }
     
-    err:
-    if (msg) free(msg);
-    if (sigbuf) OPENSSL_free(sigbuf);
-    if (bn_e) BN_free(bn_e);
+    tc->p = BN_dup(rsa->p);
+    tc->q = BN_dup(rsa->q);
+    tc->n = BN_dup(rsa->n);
+    tc->d = BN_dup(rsa->d);
 
-    return ACVP_SUCCESS;
+    RSA_free(rsa);
+
+    
+    err:
+    return rv;
 
 }
 
@@ -2727,19 +2696,16 @@ static ACVP_RESULT app_rsa_keygen_handler(ACVP_TEST_CASE *test_case)
  * RSA SigGen handler
  * requires Makefile.fom to function
  */
-//TODO: Fix freeing for siggen
-static ACVP_RESULT app_rsa_siggen_handler(ACVP_TEST_CASE *test_case)
+static ACVP_RESULT app_rsa_sig_handler(ACVP_TEST_CASE *test_case)
 {
-    RSA *rsa = NULL;
     EVP_MD *tc_md = NULL;
-    unsigned char *msg = NULL;
-    unsigned char *sigbuf = NULL;
-    int siglen, pad_mode;
-    long msglen = -1;
+    unsigned char *msg = NULL, *sigbuf = NULL;
+    int siglen, pad_mode, msg_len;
     BIGNUM *bn_e = NULL;
-    ACVP_RSA_TC    *tc;
-
-    ACVP_RESULT rv;
+    ACVP_RSA_SIG_TC    *tc;
+    RSA *rsa = NULL;
+    
+    ACVP_RESULT rv = ACVP_SUCCESS;
 
     if (!test_case) {
         printf("\nError: test case not found in RSA SigGen handler\n");
@@ -2747,30 +2713,32 @@ static ACVP_RESULT app_rsa_siggen_handler(ACVP_TEST_CASE *test_case)
         goto err;
     }
 
-    tc = test_case->tc.rsa;
+    tc = test_case->tc.rsa_sig;
 
     if (!tc) {
         printf("\nError: test case not found in RSA SigGen handler\n");
         rv = ACVP_INVALID_ARG;
         goto err;
     }
-    if(tc->mode != ACVP_RSA_MODE_SIGGEN)
-    {
-        printf( "ERROR: RSA mode not SigGen.\n");
-        goto err;
-    }
+
     /*
      * Set the message digest to the appropriate sha
      */
-    if(strncmp(tc->sig_tc->sig_attrs_tc->hash_alg, ACVP_STR_SHA_1, RSA_HASH_ALG_MAX_LEN ) == 0 ) {
+    int nid;
+    if (strncmp(tc->hash_alg, ACVP_STR_SHA_1, strlen(ACVP_STR_SHA_1)) == 0 ) {
+        nid = NID_sha1;
         tc_md = (EVP_MD *)EVP_sha1();
-    } else if(strncmp(tc->sig_tc->sig_attrs_tc->hash_alg, ACVP_STR_SHA_224, RSA_HASH_ALG_MAX_LEN ) == 0 ) {
+    } else if (strncmp(tc->hash_alg, ACVP_STR_SHA2_224, strlen(ACVP_STR_SHA2_224)) == 0 ) {
+        nid = NID_sha224;
         tc_md = (EVP_MD *)EVP_sha224();
-    } else if(strncmp(tc->sig_tc->sig_attrs_tc->hash_alg, ACVP_STR_SHA_256, RSA_HASH_ALG_MAX_LEN ) == 0 ) {
+    } else if (strncmp(tc->hash_alg, ACVP_STR_SHA2_256, strlen(ACVP_STR_SHA2_256)) == 0 ) {
+        nid = NID_sha256;
         tc_md = (EVP_MD *)EVP_sha256();
-    } else if(strncmp(tc->sig_tc->sig_attrs_tc->hash_alg, ACVP_STR_SHA_384, RSA_HASH_ALG_MAX_LEN ) == 0 ) {
+    } else if (strncmp(tc->hash_alg, ACVP_STR_SHA2_384, strlen(ACVP_STR_SHA2_384)) == 0 ) {
+        nid = NID_sha384;
         tc_md = (EVP_MD *)EVP_sha384();
-    } else if(strncmp(tc->sig_tc->sig_attrs_tc->hash_alg, ACVP_STR_SHA_512, RSA_HASH_ALG_MAX_LEN ) == 0 ) {
+    } else if (strncmp(tc->hash_alg, ACVP_STR_SHA2_512, strlen(ACVP_STR_SHA2_512)) == 0 ) {
+        nid = NID_sha512;
         tc_md = (EVP_MD *)EVP_sha512();
     } else {
         printf("\nError: hashAlg not supported for RSA SigGen\n");
@@ -2781,39 +2749,34 @@ static ACVP_RESULT app_rsa_siggen_handler(ACVP_TEST_CASE *test_case)
     /*
      * Set the message given from the tc to binary form
      */
-    msg = calloc(1,RSA_MSG_MAX_LEN);
-    if(!msg)
-    {
+    msg_len = tc->msg_len;
+    msg = calloc(msg_len + 1, sizeof(char));
+    if(!msg) {
         printf("\nError: Alloc failure in RSA SigGen Handler\n");
         rv = ACVP_INVALID_ARG;
         goto err;
     }
-    rv = acvp_hexstr_to_bin(tc->sig_tc->sig_attrs_tc->msg,msg,RSA_MSG_MAX_LEN);
-    if (rv != ACVP_SUCCESS) {
-        printf("\nError: hex2bin error for RSA SigGen\n");
-        rv = ACVP_INVALID_ARG;
-        goto err;
-    }
-    msglen = strlen((const char*)tc->sig_tc->sig_attrs_tc->msg)/2;
+    memcpy(msg, tc->msg, msg_len);
+    
     /*
      * Make an RSA object and set a new BN exponent to use to generate a key
      */
 
-    rsa = FIPS_rsa_new();
+    rsa = RSA_new();
     if (!rsa) {
         printf("\nError: Issue with RSA obj in RSA SigGen\n");
         rv = ACVP_CRYPTO_MODULE_FAIL;
         goto err;
     }
-
+    
     bn_e = BN_new();
-    if (!bn_e || !BN_set_word(bn_e, 0x1001)) {
+    if (!bn_e || !BN_set_word(bn_e, 0x10001)) {
         printf("\nError: Issue with exponent in RSA SigGen\n");
         rv = ACVP_CRYPTO_MODULE_FAIL;
         goto err;
     }
-
-    if (!tc->sig_tc->sig_attrs_tc->modulo) {
+    
+    if (!tc->modulo) {
         printf("\nError: Issue with modulo in RSA SigGen\n");
         rv = ACVP_CRYPTO_MODULE_FAIL;
         goto err;
@@ -2822,255 +2785,68 @@ static ACVP_RESULT app_rsa_siggen_handler(ACVP_TEST_CASE *test_case)
     /*
      * Set the pad mode and generate a key given the respective sigType
      */
-//    if(strncmp(tc->sig_tc->sig_type, RSA_SIG_TYPE_X931_NAME, RSA_SIG_TYPE_MAX ) == 0 ) {
-//        pad_mode = RSA_X931_PADDING;
-//        if (!RSA_X931_generate_key_ex(rsa, tc->sig_tc->sig_attrs_tc->modulo, bn_e, NULL)) {
-//            printf("\nError: Issue with keygen during siggen mode for sigType %s\n",RSA_SIG_TYPE_X931_NAME);
-//            rv = ACVP_CRYPTO_MODULE_FAIL;
-//            goto err;
-//        }
-//    } else if(strncmp(tc->sig_tc->sig_type, RSA_SIG_TYPE_PKCS1V15_NAME, RSA_SIG_TYPE_MAX ) == 0 ) {
-//        pad_mode = RSA_PKCS1_PADDING;
-//        if (!RSA_X931_generate_key_ex(rsa, tc->sig_tc->sig_attrs_tc->modulo, bn_e, NULL)) {
-//            printf("\nError: Issue with keygen during siggen mode for sigType PKCS1V15\n");
-//            rv = ACVP_CRYPTO_MODULE_FAIL;
-//            goto err;
-//        }
-//    } else if(strncmp(tc->sig_tc->sig_type, RSA_SIG_TYPE_PKCS1PSS_NAME, RSA_SIG_TYPE_MAX ) == 0 ) {
-//        pad_mode = RSA_PKCS1_PSS_PADDING;
-//        if (!RSA_X931_generate_key_ex(rsa, tc->sig_tc->sig_attrs_tc->modulo, bn_e, NULL)) { /*** only need to (can) generate key with x931-- sigType doesn't matter for key generation ***/
-//            printf("\nError: Issue with keygen during siggen mode for sigType PKCS1PSS\n");
-//            rv = ACVP_CRYPTO_MODULE_FAIL;
-//            goto err;
-//        }
-//    } else {
-//        printf("\nError: sigType not supported\n");
-//        rv = ACVP_INVALID_ARG;
-//        goto err;
-//    }
-
-
-
+    if(strncmp(tc->sig_type, RSA_SIG_TYPE_X931_NAME, 8) == 0) {
+        pad_mode = RSA_X931_PADDING;
+    } else if(strncmp(tc->sig_type, RSA_SIG_TYPE_PKCS1V15_NAME, 8) == 0) {
+        pad_mode = RSA_PKCS1_PADDING;
+    } else if(strncmp(tc->sig_type, RSA_SIG_TYPE_PKCS1PSS_NAME, 8) == 0) {
+        pad_mode = RSA_PKCS1_PSS_PADDING;
+    } else {
+        printf("\nError: sigType not supported\n");
+        rv = ACVP_INVALID_ARG;
+        goto err;
+    }
+    
     /*
-     * Retrieve and save the exponent and modulus from the key generation process
+     * If we are verifying, set RSA to the given public key
+     * Else, generate a new key, retrieve and save values
      */
-    tc->sig_tc->sig_attrs_tc->e = BN_dup(rsa->e);
-    tc->sig_tc->sig_attrs_tc->n = BN_dup(rsa->n);
-
-    if (msg && tc_md) {
-        siglen = RSA_size(rsa);
-        sigbuf = OPENSSL_malloc(siglen);
-
-        if (!sigbuf) {
-            printf("\nError: SigBuf fail in RSA SigGen\n");
+    if (tc->sig_mode == ACVP_RSA_SIGVER) {
+        rsa->e = BN_dup(tc->e);
+        rsa->n = BN_dup(tc->n);
+        
+        tc->ver_disposition = RSA_verify(nid, msg, msg_len, tc->signature, tc->sig_len, rsa);
+    } else {
+        if (!FIPS_rsa_x931_generate_key_ex(rsa, tc->modulo, bn_e, NULL)) {
+            printf("\nError: Issue with keygen during siggen handling\n");
             rv = ACVP_CRYPTO_MODULE_FAIL;
             goto err;
         }
-
-        if (!FIPS_rsa_sign(rsa, msg, msglen, tc_md, pad_mode, tc->sig_tc->sig_attrs_tc->salt_len, NULL,
-                                sigbuf, (unsigned int *)&siglen)) {
-            printf("\nError: RSA Signature Generation fail\n");
-            rv = ACVP_CRYPTO_MODULE_FAIL;
-            goto err;
+        tc->e = BN_dup(rsa->e);
+        tc->n = BN_dup(rsa->n);
+        
+        if (msg && tc_md) {
+            siglen = RSA_size(rsa);
+            sigbuf = calloc(siglen, sizeof(char));
+            if (!sigbuf) {
+                printf("\nError: SigBuf fail in RSA SigGen\n");
+                rv = ACVP_CRYPTO_MODULE_FAIL;
+                goto err;
+            }
+        
+            if (!FIPS_rsa_sign(rsa, msg, msg_len, tc_md, pad_mode, 0, NULL,
+                                    sigbuf, (unsigned int *)&siglen)) {
+                printf("\nError: RSA Signature Generation fail\n");
+                rv = ACVP_CRYPTO_MODULE_FAIL;
+                goto err;
+            }
+            
+            acvp_bin_to_hexstr(sigbuf, siglen, tc->signature);
+            tc->sig_len = siglen;
         }
-
-        /*
-         * Retrieve and save the signature generated from signing the generated key
-         */
-        tc->sig_tc->sig_attrs_tc->s = BN_bin2bn(sigbuf, siglen, NULL);
-        if(!tc->sig_tc->sig_attrs_tc->s) {
-            printf("\nError: RSA Signature BigNum alloc failure\n");
-            rv = ACVP_MALLOC_FAIL;
-            goto err;
-        }
     }
-err:if (msg) free(msg);
-    if (sigbuf) OPENSSL_free(sigbuf);
-    if (bn_e) BN_free(bn_e);
-    if (rsa) FIPS_rsa_free(rsa);
-    return rv;
-}
-
-
-/* RSA SigVer handler
- * msg and sig are binary format
- * exponent and modulus are hex values
- */
-static ACVP_RESULT app_rsa_sigver_handler(ACVP_TEST_CASE *test_case)
-{
-    ACVP_RSA_TC    *tc_rsa;
-    EVP_MD_CTX *tc_mdctx = NULL;
-    EVP_MD *tc_md = NULL;
-
-    RSA *rsa_key = NULL;
-    EVP_PKEY *rsa_evpkey = NULL;
-    EVP_PKEY_CTX *rsa_pkctx = NULL;
-    char *msg = NULL;
-    unsigned char *sig = NULL;
-    int ret = -1;
-    int padding;
-    if (!test_case) {
-        return ACVP_INVALID_ARG;
-    }
-
-    tc_rsa = test_case->tc.rsa;
-
-    if (!tc_rsa) {
-        return ACVP_INVALID_ARG;
-    }
-    if(tc_rsa->mode != ACVP_RSA_MODE_SIGVER)
-    {
-        printf( "ERROR: RSA mode not SigVer.\n");
-        goto err;
-    }
-    ACVP_RSA_SIG_TC *sig_tc = tc_rsa->sig_tc;
-    if(!sig_tc) {
-        printf( "ERROR: No signature test case found in RSA SigVer test case.\n");
-        goto err;
-    }
-    if(!sig_tc->sig_type) {
-        printf( "ERROR: No signature padding type found in RSA SigVer test case.\n");
-        goto err;
-    }
-    if(strncmp(sig_tc->sig_type,RSA_SIG_TYPE_X931_NAME, RSA_SIG_TYPE_MAX) == 0) {
-        padding = RSA_X931_PADDING;
-    } else if(strncmp(sig_tc->sig_type,RSA_SIG_TYPE_PKCS1V15_NAME, RSA_SIG_TYPE_MAX) == 0){
-        padding = RSA_PKCS1_PADDING;
-    } else if(strncmp(sig_tc->sig_type,RSA_SIG_TYPE_PKCS1PSS_NAME, RSA_SIG_TYPE_MAX) == 0) {
-        padding = RSA_PKCS1_PSS_PADDING;
-    } else {
-        printf( "ERROR: Unsupported RSA padding.\n");
-        goto err;
-    }
-    if(!sig_tc->sig_attrs_tc) {
-            printf( "ERROR: No signature test attributes object found in RSA SigVer test case.\n");
-            goto err;
-    }
-    char *hash_alg = sig_tc->sig_attrs_tc->hash_alg;
-    if(!hash_alg) {
-        printf( "ERROR: No hash algorithm found in RSA SigVer test case.\n");
-        goto err;
-    }
-    if(strncmp(hash_alg, ACVP_STR_SHA_1, RSA_HASH_ALG_MAX_LEN ) == 0) {
-        tc_md = (EVP_MD *)EVP_sha1();
-    } else if(strncmp(hash_alg, ACVP_STR_SHA_224, RSA_HASH_ALG_MAX_LEN ) == 0) {
-        tc_md = (EVP_MD *)EVP_sha224();
-    } else if(strncmp(hash_alg, ACVP_STR_SHA_256, RSA_HASH_ALG_MAX_LEN ) == 0) {
-        tc_md = (EVP_MD *)EVP_sha256();
-    } else if(strncmp(hash_alg, ACVP_STR_SHA_384, RSA_HASH_ALG_MAX_LEN ) == 0) {
-        tc_md = (EVP_MD *)EVP_sha384();
-    } else if(strncmp(hash_alg, ACVP_STR_SHA_512, RSA_HASH_ALG_MAX_LEN ) == 0) {
-        tc_md = (EVP_MD *)EVP_sha512();
-    } else {
-        printf("\nError: hashAlg not supported for RSA SigVer\n");
-        goto err;
-    }
-    msg = calloc(1,RSA_MSG_MAX_LEN);
-    if(!msg)
-    {
-        printf( "ERROR: No message found in RSA SigVer test case.\n");
-        goto err;
-    }
-    ACVP_RESULT rv = acvp_hexstr_to_bin(sig_tc->sig_attrs_tc->msg,msg,RSA_MSG_MAX_LEN);
-    if (rv != ACVP_SUCCESS) {
-        printf("\nError: hex2bin error for RSA SigVer\n");
-        goto err;
-    }
-    int msglen = strnlen((const char*)sig_tc->sig_attrs_tc->msg,RSA_MSG_MAX_LEN)/2;
-    sig = calloc(1,RSA_MSG_MAX_LEN);
-    if(!sig)
-    {
-        printf( "ERROR: No signature found in RSA SigVer test case.\n");
-        goto err;
-    }
-    int siglen = BN_bn2bin(sig_tc->sig_attrs_tc->s,sig);
-
-    /* Create RSA Public key from input */
-    rsa_key = RSA_new();
-    if (rsa_key) {
-        rsa_key->n    = BN_dup(sig_tc->sig_attrs_tc->n);
-        rsa_key->e    = BN_dup(sig_tc->sig_attrs_tc->e);
-        rsa_key->iqmp = NULL;
-        rsa_key->d    = NULL;
-        rsa_key->p    = NULL;
-        rsa_key->q    = NULL;
-
-        rsa_evpkey = EVP_PKEY_new();
-        if (!rsa_evpkey) {
-            printf( "ERROR: EVP_PKEY_new() failed\n");
-            goto err;
-        }
-        EVP_PKEY_assign_RSA(rsa_evpkey, rsa_key);
-
-
-        /* Create the Message Digest Context */
-        if (!(tc_mdctx = EVP_MD_CTX_create())) {
-            printf( "ERROR: EVP_MD_CTX_create() failed in RSA SigVer test case.\n");
-            goto err;
-        }
-
-        long lerr;
-
-        /* Initialize operation */
-        ret = EVP_DigestVerifyInit(tc_mdctx, &rsa_pkctx, tc_md, NULL, rsa_evpkey);
-        if (ret != 1) {
-            printf("ERROR: EVP_DigestVerifyInit failed in RSA SigVer test case.\n");
-            while ((lerr = ERR_get_error()))
-                printf( "ERROR:%s\n", ERR_error_string(lerr, NULL));
-            goto err;
-        }
-
-        /* set padding */
-        ret = EVP_PKEY_CTX_set_rsa_padding(rsa_pkctx, padding);
-        if (ret != 1) {
-            printf("ERROR: EVP_PKEY_CTX_set_rsa_padding failed in RSA SigVer test case.\n");
-            while ((lerr = ERR_get_error()))
-                printf( "ERROR:%s\n", ERR_error_string(lerr, NULL));
-            goto err;
-        }
-      
-        /* update the message */
-        ret = EVP_DigestVerifyUpdate(tc_mdctx, msg, msglen);
-        if (ret != 1) {
-            printf("ERROR: EVP_DigestVerifyUpdate failed in RSA SigVer test case.\n");
-            while ((lerr = ERR_get_error()))
-                printf( "ERROR:%s\n", ERR_error_string(lerr, NULL));
-            goto err;
-        }
-
-        /* Finalize */
-        ret = EVP_DigestVerifyFinal(tc_mdctx, sig, siglen);
-        switch(ret) {
-        case 0:
-            ret = 1;
-            break;
-        case 1:
-            sig_tc->pass = 1;
-            break;
-        default:
-            printf("ERROR: EVP_DigestVerifyFinal failed in RSA SigVer test case.\n");
-            while ((lerr = ERR_get_error()))
-                printf( "ERROR:%s\n", ERR_error_string(lerr, NULL));
-            goto err;
-        }
-
-    }
-    else {
-        ret = 0;
-    }
-
 err:
     if (msg) free(msg);
-    if (sig) free(sig);
-    if (rsa_evpkey) EVP_PKEY_free(rsa_evpkey);
-    if (tc_mdctx) EVP_MD_CTX_destroy(tc_mdctx);
-
-    if (ret == 1)
-        return ACVP_SUCCESS;
-    else
-        return ACVP_UNSUPPORTED_OP;
+    if (sigbuf) free(sigbuf);
+    if (bn_e) BN_free(bn_e);
+    if (rsa) RSA_free(rsa);
+    
+    return rv;
 }
+#endif
 
+
+#ifdef ACVP_NO_RUNTIME
 typedef struct
 {
     unsigned char *ent;
