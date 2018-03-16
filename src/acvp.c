@@ -3445,6 +3445,7 @@ static ACVP_RESULT acvp_build_register(ACVP_CTX *ctx, char **reg)
     JSON_Object *dep_obj = NULL;
     JSON_Value *con_val  = NULL;
     JSON_Object *con_obj = NULL;
+    char *name;
 
     /*
      * Start the registration array
@@ -3518,8 +3519,12 @@ static ACVP_RESULT acvp_build_register(ACVP_CTX *ctx, char **reg)
      */
 
     json_object_set_string(dep_obj, "type", "software");
-    json_object_set_string(dep_obj, "name", "Linux 3.1");
-    json_object_set_string(dep_obj, "cpe", "cpe-2.3:o:ubuntu:linux:3.1");
+    name = acvp_get_env_name();
+    json_object_set_string(dep_obj, "name", name);
+    free(name);
+    name = acvp_get_env_cpe();
+    json_object_set_string(dep_obj, "cpe", name);
+    free(name);
     json_array_append_value(dep_array_val, dep_val);
 
     dep_val = json_value_init_object();

@@ -33,6 +33,12 @@
 #else
 #include <curl/curl.h>
 #endif
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <string.h>
 
 extern ACVP_ALG_HANDLER alg_tbl[];
 static int acvp_char_to_int(char ch);
@@ -68,6 +74,231 @@ void acvp_cleanup(void)
 {
     curl_global_cleanup();
 }
+
+/*
+ * read everything from a file descriptor into newly allocated memory and
+ * return it.
+ */
+#define BUF_SIZE 1024
+char *
+acvp_readalloc(int fd)
+{
+    char * buffer = NULL;
+    int size = 0;
+    int next = 0;
+    int left = 0;
+    int bytes = -1;
+
+    do {
+        if (left == 0) {
+            char *new_buf;
+            size += BUF_SIZE;
+            left = BUF_SIZE;
+            new_buf = realloc(buffer,size);
+            if (new_buf == NULL) {
+                free(buffer);
+                return NULL;
+            }
+            memset(&new_buf[next],0, BUF_SIZE);
+            buffer = new_buf;
+        }
+        bytes = read(fd, &buffer[next], left);
+        if (bytes < 0) {
+             free(buffer);
+             return NULL;
+        }
+        left -= bytes;
+        next += bytes;
+    } while (bytes != 0);
+    return buffer;
+}
+
+/*
+ * run the external text program. All the output from standard error and
+ * standard out are saved in a log which is returned. The caller is
+ * responsible for freeing that collected log.
+ */
+char *
+acvp_exec(const char *prog, char *const argv[], ACVP_RESULT *status)
+{
+    int pipefd[2];
+    int rv;
+    char *log;
+    int pid;
+
+    rv = pipe(pipefd);
+    if (rv < 0) {
+        perror("pipe");
+        fprintf(stderr, "Couldn't create a pipe\n");
+        *status = ACVP_RESOURCE_FAIL;
+        return NULL;
+    }
+    pid = fork();
+    if (pid < 0) {
+        perror("fork");
+        fprintf(stderr, "Couldn't fork\n");
+        *status = ACVP_RESOURCE_FAIL;
+        return NULL;
+    }
+    if (pid == 0) {
+        /* close our pipe so we don't hang if the parent dies */
+        close(pipefd[0]);
+
+        /* set up stdin, stdout and stderr */
+        close(0); /* no standard in */
+        dup2(pipefd[1],1); /* standard out -> pipe */
+        dup2(pipefd[1],2); /* standard error -> pipe */
+
+        execvp(prog,argv);
+        perror(prog);
+        /* only gets here on failure */
+        exit (ACVP_RESOURCE_FAIL);
+    }
+
+    close(pipefd[1]);
+    log = acvp_readalloc(pipefd[0]);
+    if (log == NULL) {
+        *status = ACVP_MALLOC_FAIL;
+        return NULL;
+    }
+    waitpid(pid, &rv, 0);
+    *status = WIFEXITED(rv) ? WEXITSTATUS(rv) : ACVP_RESOURCE_FAIL;
+
+    /* clean up after ourselves */
+    close(pipefd[0]);
+    return log;
+}
+
+char *acvp_get_env_name(void)
+{
+    char *name;
+    char *base_name;
+    char *base_name_end;
+    size_t base_name_len;
+    char *version;
+    char *version_end;
+    size_t version_len;
+    ACVP_RESULT status;
+    int fd;
+
+    /* read /proc/version */
+    fd = open("/proc/version", O_RDONLY);
+    if (fd < 0) {
+        /* if /proc/version doesn't exist, try uname -sr */
+        char *const argv[] = { "-sr", 0 };
+        name = acvp_exec("uname", argv, &status);
+        if (name == NULL) {
+            return strdup("Unknown");
+        }
+        /* uname -sr returns exactly what we want */
+        return name;
+    }
+    name = acvp_readalloc(fd);
+    if (name == NULL) {
+        return strdup("Unknown");
+    }
+    /* /proc/version returns {OS} version {version} [( {more_info} )*] # {build_info} */
+    /* we want to return {OS} {verison} */
+    base_name = name;
+    base_name_end = strchr(base_name, ' ');
+    if (base_name == NULL) {
+        return base_name;
+    }
+    *base_name_end = 0;
+    base_name_len = base_name_end-base_name;
+    version = strchr(base_name_end+1, ' ');
+    if (version == NULL) {
+        return base_name;
+    }
+    version++;
+    version_end = strchr(version, ' ');
+    if (version_end != NULL) {
+        *version_end=0;
+        version_len = version_end-version;
+    } else {
+        version_len = strlen(version);
+    }
+    name = malloc(base_name_len + version_len + 2);
+    if (name == NULL) {
+        return base_name;
+    }
+    memcpy(name, base_name, base_name_len);
+    name[base_name_len] = ' ';
+    memcpy(name+base_name_len+1, version, version_len);
+    name[base_name_len+1 +version_len] = 0;
+    free(base_name);
+    return (name);
+}
+
+char *acvp_get_env_cpe(void)
+{
+    char *os_release;
+    char *cpe_name;
+    char *cpe_name_end;
+    size_t cpe_name_len;
+    char *cpe;
+    int i,j;
+    int fd;
+    int escape;
+
+    /* read /proc/version */
+    fd = open("/etc/os-release", O_RDONLY);
+    if (fd < 0) {
+        fd = open("/usr/lib/os-release", O_RDONLY);
+        if (fd < 0) {
+            return strdup("cpe:/o:unknown");
+        }
+    }
+    os_release = acvp_readalloc(fd);
+    if (os_release == NULL) {
+        return strdup("cpe:/o:unknown");
+    }
+    /* now scan for CPE_NAME */
+    cpe_name = strstr(os_release,"CPE_NAME=");
+    if (cpe_name == NULL) {
+        free(os_release);
+        return strdup("cpe:/o:unknown");
+    }
+    /* find the end of the name */
+    cpe_name_end = strchr(cpe_name, '\n');
+    if (cpe_name_end == NULL) {
+        cpe_name_len = strlen(cpe_name);
+    } else {
+        cpe_name_len = cpe_name_end - cpe_name;
+    }
+    /* get space to store the final cpe */
+    cpe = malloc(cpe_name_len+1);
+    /* clean up the string. remove special characters, interpret escapes */
+    for (i=0, j=0, escape=0; i < cpe_name_len; i++) {
+        char c = cpe_name[i];
+        if (escape) {
+            cpe[j] = c;
+            j++;
+            escape=0;
+            continue;
+        }
+        if (c == 0) {
+            break; /* paranoia, shouldn't happen */
+        }
+        /* skip non-printing characters */
+        if (c < ' ')  {
+            continue;
+        }
+        if (c == '\"')  {
+            continue;
+        }
+        if (c == '\\') {
+            escape = 1;
+            continue;
+        }
+        cpe[j] = c;
+        j++;
+    }
+    cpe[j] = 0;
+    free(os_release);
+    return (cpe);
+}
+
 
 /*
  * This function is used to locate the callback function that's needed

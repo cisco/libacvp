@@ -815,6 +815,7 @@ enum acvp_result {
     ACVP_MALFORMED_JSON,
     ACVP_DATA_TOO_LARGE,
     ACVP_DUP_CIPHER,
+    ACVP_RESOURCE_FAIL,
     ACVP_RESULT_MAX,
 };
 

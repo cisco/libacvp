@@ -512,4 +512,10 @@ ACVP_RESULT is_valid_tf_param(unsigned int value);
 ACVP_RESULT is_valid_hash_alg(char *value);
 ACVP_RESULT is_valid_prime_test(char *value);
 ACVP_RESULT is_valid_rsa_mod(int value);
+
+char *acvp_readalloc(int fd);
+char *acvp_exec(const char *prog, char *const argv[], ACVP_RESULT *status);
+char *acvp_get_env_name(void);
+char *acvp_get_env_cpe(void);
+
 #endif
