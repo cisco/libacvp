@@ -64,6 +64,9 @@ extern "C"
 #ifndef CKM_DES3_CFB8
 #define CKM_DES3_CFB8  CKM_INVALID_MECHANISM
 #endif
+#ifndef CKM_DES3_CTR
+#define CKM_DES3_CTR  CKM_INVALID_MECHANISM
+#endif
 
 /* add the PKCS #11 2.40 defines if not in pkcs11.h. This allows us to use
  * PKCS #11 2.20 header files to compile this and still work at runtime
@@ -86,6 +89,41 @@ extern "C"
 #ifndef CKM_AES_KEY_WRAP
 #define CKM_AES_KEY_WRAP               0x00002109UL
 #endif
+#ifndef CKM_AES_KEY_WRAP_PAD
+#define CKM_AES_KEY_WRAP_PAD           0x0000210AUL
+#endif
+#ifndef CKM_AES_KEY_WRAP_KPW
+#define CKM_AES_KEY_WRAP_KPW           0x0000210BUL
+#endif
+#ifndef CKM_AES_CMAC
+#define CKM_AES_CMAC                   0x0000108BUL
+#endif
+#ifndef CKM_DES3_CMAC
+#define CKM_DES3_CMAC                  0x00000138UL
+#endif
+#ifndef CKM_SHA512_224
+#define CKM_SHA512_224                 0x00000048UL
+#endif
+#ifndef CKM_SHA512_256
+#define CKM_SHA512_256                 0x0000004CUL
+#endif
+
+/* key types from PKCS #11 2.40 */
+#ifndef CKK_SHA_1_HMAC
+#define CKK_SHA_1_HMAC                 0x00000028UL
+#endif
+#ifndef CKK_SHA224_HMAC
+#define CKK_SHA224_HMAC                0x0000002EUL
+#endif
+#ifndef CKK_SHA256_HMAC
+#define CKK_SHA256_HMAC                0x0000002BUL
+#endif
+#ifndef CKK_SHA384_HMAC
+#define CKK_SHA384_HMAC                0x0000002CUL
+#endif
+#ifndef CKK_SHA512_HMAC
+#define CKK_SHA512_HMAC                0x0000002DUL
+#endif
 
 /* add PKCS #11 3.0 defines if not in pkcs11.h */
 #ifndef CKF_MESSAGE_ENCRYPT
@@ -94,9 +132,6 @@ extern "C"
 #ifndef CKF_MESSAGE_DECRYPT
 #define CKF_MESSAGE_DECRYPT           0x000000004UL
 #endif
-
-
-
 
 #ifdef __cplusplus
 }
