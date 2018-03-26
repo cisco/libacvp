@@ -41,26 +41,26 @@
  */
 static ACVP_RESULT acvp_rsa_output_tc (ACVP_CTX *ctx, ACVP_RSA_KEYGEN_TC *stc, JSON_Object *tc_rsp) {
     
-    json_object_set_string(tc_rsp, "p", BN_bn2hex(stc->p));
-    json_object_set_string(tc_rsp, "q", BN_bn2hex(stc->q));
-    json_object_set_string(tc_rsp, "n", BN_bn2hex(stc->n));
-    json_object_set_string(tc_rsp, "d", BN_bn2hex(stc->d));
-    json_object_set_string(tc_rsp, "e", BN_bn2hex(stc->e));
+    json_object_set_string(tc_rsp, "p", (const char *)stc->p);
+    json_object_set_string(tc_rsp, "q", (const char *)stc->q);
+    json_object_set_string(tc_rsp, "n", (const char *)stc->n);
+    json_object_set_string(tc_rsp, "d", (const char *)stc->d);
+    json_object_set_string(tc_rsp, "e", (const char *)stc->e);
     
     if (strncmp(stc->key_format, "crt", 8) == 0) {
-        json_object_set_string(tc_rsp, "xP", BN_bn2hex(stc->xp));
-        json_object_set_string(tc_rsp, "xP1", BN_bn2hex(stc->xp1));
-        json_object_set_string(tc_rsp, "xP2", BN_bn2hex(stc->xp2));
-        json_object_set_string(tc_rsp, "xQ", BN_bn2hex(stc->xq));
-        json_object_set_string(tc_rsp, "xQ1", BN_bn2hex(stc->xq1));
-        json_object_set_string(tc_rsp, "xQ2", BN_bn2hex(stc->xq2));
+        json_object_set_string(tc_rsp, "xP", (const char *)stc->xp);
+        json_object_set_string(tc_rsp, "xP1", (const char *)stc->xp1);
+        json_object_set_string(tc_rsp, "xP2", (const char *)stc->xp2);
+        json_object_set_string(tc_rsp, "xQ", (const char *)stc->xq);
+        json_object_set_string(tc_rsp, "xQ1", (const char *)stc->xq1);
+        json_object_set_string(tc_rsp, "xQ2", (const char *)stc->xq2);
     }
     
     if (stc->info_gen_by_server) {
         if (stc->rand_pq == ACVP_RSA_KEYGEN_B33 ||
             stc->rand_pq == ACVP_RSA_KEYGEN_B35 ||
             stc->rand_pq == ACVP_RSA_KEYGEN_B36) {
-            json_object_set_string(tc_rsp, "primeResult", stc->prime_result);
+            json_object_set_string(tc_rsp, "primeResult", (const char *)stc->prime_result);
         }
     } else {
         if (!(stc->rand_pq == ACVP_RSA_KEYGEN_B33)) {
@@ -85,12 +85,12 @@ static ACVP_RESULT acvp_rsa_output_tc (ACVP_CTX *ctx, ACVP_RSA_KEYGEN_TC *stc, J
  */
 
 static ACVP_RESULT acvp_rsa_keygen_release_tc (ACVP_RSA_KEYGEN_TC *stc) {
-    if (stc->e) { BN_free(stc->e); }
+    if (stc->e) { free(stc->e); }
     if (stc->seed) { free(stc->seed); }
-    if (stc->p) { BN_free(stc->p); }
-    if (stc->q) { BN_free(stc->q); }
-    if (stc->n) { BN_free(stc->n); }
-    if (stc->d) { BN_free(stc->d); }
+    if (stc->p) { free(stc->p); }
+    if (stc->q) { free(stc->q); }
+    if (stc->n) { free(stc->n); }
+    if (stc->d) { free(stc->d); }
 
     return ACVP_SUCCESS;
 }
@@ -105,19 +105,33 @@ static ACVP_RESULT acvp_rsa_keygen_init_tc (ACVP_CTX *ctx,
                                             int modulo,
                                             char *prime_test,
                                             int rand_pq,
-                                            BIGNUM *e,
+                                            char *e,
                                             char *seed,
                                             int seed_len,
                                             int bitlen1,
                                             int bitlen2,
                                             int bitlen3,
                                             int bitlen4) {
+    ACVP_RESULT rv;
     memset(stc, 0x0, sizeof(ACVP_RSA_KEYGEN_TC));
     
     stc->info_gen_by_server = info_gen_by_server;
     stc->tc_id = tc_id;
     stc->rand_pq = rand_pq;
     stc->modulo = modulo;
+    
+    stc->e = calloc(8, sizeof(char));
+    if (!stc->e) { return ACVP_MALLOC_FAIL; }
+    stc->e = calloc(ACVP_RSA_EXP_LEN_MAX, sizeof(char));
+    if (!stc->e) { return ACVP_MALLOC_FAIL; }
+    stc->p = calloc(ACVP_RSA_EXP_LEN_MAX, sizeof(char));
+    if (!stc->p) { return ACVP_MALLOC_FAIL; }
+    stc->q = calloc(ACVP_RSA_EXP_LEN_MAX, sizeof(char));
+    if (!stc->q) { return ACVP_MALLOC_FAIL; }
+    stc->n = calloc(ACVP_RSA_EXP_LEN_MAX, sizeof(char));
+    if (!stc->n) { return ACVP_MALLOC_FAIL; }
+    stc->d = calloc(ACVP_RSA_EXP_LEN_MAX, sizeof(char));
+    if (!stc->d) { return ACVP_MALLOC_FAIL; }
     
     stc->seed = calloc(ACVP_RSA_SEEDLEN_MAX, sizeof(char));
     if (!stc->seed) { return ACVP_MALLOC_FAIL; }
@@ -148,7 +162,11 @@ static ACVP_RESULT acvp_rsa_keygen_init_tc (ACVP_CTX *ctx,
         stc->seed_len = seed_len/2;
     }
     if (e != NULL) {
-        stc->e = BN_dup(e);
+        rv = acvp_hexstr_to_bin((const unsigned char *) e, stc->e, ACVP_RSA_EXP_LEN_MAX);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Hex conversion failure (e)");
+            return rv;
+        }
     }
     return ACVP_SUCCESS;
 }
@@ -188,8 +206,6 @@ ACVP_RESULT acvp_rsa_keygen_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     char *hash_alg = NULL;
     char *e_str, *alg_str, *mode_str, *seed;
     int bitlen1, bitlen2, bitlen3, bitlen4;
-    
-    BIGNUM *e = NULL;
     
     alg_str = (char *) json_object_get_string(obj, "algorithm");
     if (!alg_str) {
@@ -301,18 +317,11 @@ ACVP_RESULT acvp_rsa_keygen_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
                 bitlen3 = json_array_get_number(bitlens, 2);
                 bitlen4 = json_array_get_number(bitlens, 3);
                 seed = (char *) json_object_get_string(testobj, "seed");
-                
-                if (e_str) {
-                    e = BN_new();
-                    BN_hex2bn(&e, e_str);
-                } else {
-                    e = BN_dup(cap->cap.rsa_keygen_cap->fixed_pub_exp);
-                }
-                seed_len = strlen(seed);
+                seed_len = strnlen(seed, ACVP_RSA_SEEDLEN_MAX);
             }
     
             rv = acvp_rsa_keygen_init_tc(ctx, &stc, tc_id, info_gen_by_server, hash_alg, key_format,
-                                         pub_exp_mode, mod, prime_test, rand_pq, e, seed, seed_len,
+                                         pub_exp_mode, mod, prime_test, rand_pq, e_str, seed, seed_len,
                                          bitlen1, bitlen2, bitlen3, bitlen4);
 
             /* Process the current test vector... */

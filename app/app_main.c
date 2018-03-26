@@ -975,13 +975,11 @@ static void enable_rsa (ACVP_CTX *ctx) {
     char value[] = "same";
     BIGNUM *expo;
     
-    expo = BN_new();
-    if (!expo) {
+    expo = FIPS_bn_new();
+    if (!expo || !BN_set_word(expo, 0x10001)) {
         printf("oh no\n");
         exit(1);
     }
-    BN_ULONG mm = RSA_F4;
-    BN_set_word(expo, mm);
 
     /*
      * Enable RSA keygen...
@@ -998,9 +996,8 @@ static void enable_rsa (ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_rsa_keygen_cap_parm(ctx, ACVP_KEY_FORMAT_CRT, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    
 
-    rv = acvp_enable_rsa_keygen_bignum_parm(ctx, ACVP_FIXED_PUB_EXP_VAL, expo);
+    rv = acvp_enable_rsa_keygen_exp_parm(ctx, ACVP_FIXED_PUB_EXP_VAL, BN_bn2hex(expo));
     CHECK_ENABLE_CAP_RV(rv);
     
     rv = acvp_enable_rsa_keygen_mode(ctx, ACVP_RSA_KEYGEN_B34);
@@ -1046,7 +1043,6 @@ static void enable_rsa (ACVP_CTX *ctx) {
     rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_X931, MOD_RSA_4096, ACVP_STR_SHA2_512, 0);
     CHECK_ENABLE_CAP_RV(rv);
 #endif
-
 
     // RSA w/ sigType: PKCS1v1.5
     rv = acvp_enable_rsa_siggen_type(ctx, RSA_SIG_TYPE_PKCS1V15);
@@ -1116,7 +1112,7 @@ static void enable_rsa (ACVP_CTX *ctx) {
     
     rv = acvp_enable_rsa_sigver_cap_parm(ctx, ACVP_PUB_EXP_MODE, RSA_PUB_EXP_FIXED);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_sigver_bignum_parm(ctx, ACVP_FIXED_PUB_EXP_VAL, expo);
+    rv = acvp_enable_rsa_sigver_exp_parm(ctx, ACVP_FIXED_PUB_EXP_VAL, BN_bn2hex(expo));
     CHECK_ENABLE_CAP_RV(rv);
     
     // RSA w/ sigType: X9.31
@@ -2723,7 +2719,10 @@ static ACVP_RESULT app_rsa_keygen_handler(ACVP_TEST_CASE *test_case)
     ACVP_RSA_KEYGEN_TC    *tc;
     ACVP_RESULT rv = ACVP_SUCCESS;
     RSA       *rsa;
-    
+    BIGNUM *e = BN_new();
+    int seed_max = 256;
+    char seed[seed_max];
+
     /* keygen vars */
     unsigned int bitlen1, bitlen2, bitlen3, bitlen4, keylen;
     
@@ -2739,11 +2738,19 @@ static ACVP_RESULT app_rsa_keygen_handler(ACVP_TEST_CASE *test_case)
     bitlen3 = tc->bitlen3;
     bitlen4 = tc->bitlen4;
     keylen = tc->modulo;
+
+    if (!BN_hex2bn(&e, (const char *)tc->e)) {
+        printf("Error converting e string to BN\n");
+        rv = ACVP_CRYPTO_MODULE_FAIL;
+        goto err;
+    }
+    
+    acvp_hexstr_to_bin(tc->seed, seed, seed_max);
     
     int rc = rsa_generate_key_internal(&rsa->p, &rsa->q, &rsa->n, &rsa->d,
-                                       tc->seed, tc->seed_len,
+                                       seed, tc->seed_len,
                                        bitlen1, bitlen2, bitlen3, bitlen4,
-                                       tc->e, keylen, NULL);
+                                       e, keylen, NULL);
     if (rc != 1) {
         printf("Error generating key\n");
         rv = ACVP_CRYPTO_MODULE_FAIL;
@@ -2755,7 +2762,13 @@ static ACVP_RESULT app_rsa_keygen_handler(ACVP_TEST_CASE *test_case)
     tc->n = BN_dup(rsa->n);
     tc->d = BN_dup(rsa->d);
 
-    RSA_free(rsa);
+    tc->p = (unsigned char *)BN_bn2hex(rsa->p);
+    tc->q = (unsigned char *)BN_bn2hex(rsa->q);
+    tc->n = (unsigned char *)BN_bn2hex(rsa->n);
+    tc->d = (unsigned char *)BN_bn2hex(rsa->d);
+
+    FIPS_rsa_free(rsa);
+
 
     
     err:
@@ -2834,7 +2847,7 @@ static ACVP_RESULT app_rsa_sig_handler(ACVP_TEST_CASE *test_case)
      * Make an RSA object and set a new BN exponent to use to generate a key
      */
 
-    rsa = RSA_new();
+    rsa = FIPS_rsa_new();
     if (!rsa) {
         printf("\nError: Issue with RSA obj in RSA SigGen\n");
         rv = ACVP_CRYPTO_MODULE_FAIL;
@@ -2874,9 +2887,8 @@ static ACVP_RESULT app_rsa_sig_handler(ACVP_TEST_CASE *test_case)
      * Else, generate a new key, retrieve and save values
      */
     if (tc->sig_mode == ACVP_RSA_SIGVER) {
-        rsa->e = BN_dup(tc->e);
-        rsa->n = BN_dup(tc->n);
-        
+        BN_hex2bn(&rsa->e, (const char *)tc->e);
+        BN_hex2bn(&rsa->n, (const char *)tc->n);
         tc->ver_disposition = RSA_verify(nid, msg, msg_len, tc->signature, tc->sig_len, rsa);
     } else {
         if (!FIPS_rsa_x931_generate_key_ex(rsa, tc->modulo, bn_e, NULL)) {
@@ -2884,8 +2896,8 @@ static ACVP_RESULT app_rsa_sig_handler(ACVP_TEST_CASE *test_case)
             rv = ACVP_CRYPTO_MODULE_FAIL;
             goto err;
         }
-        tc->e = BN_dup(rsa->e);
-        tc->n = BN_dup(rsa->n);
+        tc->e = (unsigned char *)BN_bn2hex(rsa->e);
+        tc->n = (unsigned char *)BN_bn2hex(rsa->n);
         
         if (msg && tc_md) {
             siglen = RSA_size(rsa);
@@ -2911,12 +2923,11 @@ err:
     if (msg) free(msg);
     if (sigbuf) free(sigbuf);
     if (bn_e) BN_free(bn_e);
-    if (rsa) RSA_free(rsa);
+    if (rsa) FIPS_rsa_free(rsa);
     
     return rv;
 }
 #endif
-
 
 #ifdef ACVP_NO_RUNTIME
 typedef struct

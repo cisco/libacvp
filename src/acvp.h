@@ -300,6 +300,7 @@ typedef enum acvp_rsa_param {
 
 #define ACVP_RSA_HASH_ALG_LEN_MAX    12
 #define ACVP_RSA_SIG_TYPE_LEN_MAX    9
+#define ACVP_RSA_EXP_LEN_MAX         256
 
 #define RSA_SIG_TYPE_X931_NAME      "ansx9.31"
 #define RSA_SIG_TYPE_PKCS1V15_NAME  "pkcs1v1.5"
@@ -308,11 +309,6 @@ typedef enum acvp_rsa_param {
 #define PRIME_TEST_TBLC2_NAME "tblC2"
 #define PRIME_TEST_TBLC3_NAME "tblC3"
 
-#define RSA_RAND_PQ_B32        1
-#define RSA_RAND_PQ_B33        2
-#define RSA_RAND_PQ_B34        3
-#define RSA_RAND_PQ_B35        4
-#define RSA_RAND_PQ_B36        5
 #define RSA_PUB_EXP_FIXED      1
 #define RSA_PUB_EXP_RANDOM     0
 
@@ -332,7 +328,8 @@ typedef enum acvp_rsa_keygen_mode_t {
 } ACVP_RSA_KEYGEN_MODE;
 
 typedef enum acvp_rsa_sig_type {
-    RSA_SIG_TYPE_X931 = 0,
+    RSA_SIG_TYPE_START = 0,
+    RSA_SIG_TYPE_X931,
     RSA_SIG_TYPE_PKCS1V15,
     RSA_SIG_TYPE_PKCS1PSS
 } ACVP_RSA_SIG_TYPE;
@@ -600,26 +597,26 @@ typedef struct acvp_rsa_keygen_tc_t {
     char *key_format;
     int modulo;
 
-    BIGNUM *e;
-    BIGNUM *p_rand;
-    BIGNUM *q_rand;
+    unsigned char *e;
+    unsigned char *p_rand;
+    unsigned char *q_rand;
 
-    BIGNUM *xp1;
-    BIGNUM *xp2;
-    BIGNUM *xp;
+    unsigned char *xp1;
+    unsigned char *xp2;
+    unsigned char *xp;
 
-    BIGNUM *xq1;
-    BIGNUM *xq2;
-    BIGNUM *xq;
+    unsigned char *xq1;
+    unsigned char *xq2;
+    unsigned char *xq;
     
-    BIGNUM *dmp1;
-    BIGNUM *dmq1;
-    BIGNUM *iqmp;
+    unsigned char *dmp1;
+    unsigned char *dmq1;
+    unsigned char *iqmp;
 
-    BIGNUM *n;
-    BIGNUM *d;
-    BIGNUM *p;
-    BIGNUM *q;
+    unsigned char *n;
+    unsigned char *d;
+    unsigned char *p;
+    unsigned char *q;
 
     unsigned char *seed;
     int seed_len;
@@ -639,8 +636,8 @@ typedef struct acvp_rsa_sig_tc_t {
     char *sig_type;
     unsigned int tc_id;    /* Test case id */
     unsigned int modulo;
-    BIGNUM *e;
-    BIGNUM *n;
+    unsigned char *e;
+    unsigned char *n;
     int salt_len;
     unsigned char *msg;
     int msg_len;
@@ -1141,13 +1138,34 @@ ACVP_RESULT acvp_enable_rsa_keygen_cap_parm (
         int value
 );
 
+ACVP_RESULT acvp_enable_rsa_siggen_cap_parm (
+        ACVP_CTX *ctx,
+        ACVP_RSA_PARM param,
+        int value
+);
+
+ACVP_RESULT acvp_enable_rsa_sigver_cap_parm (
+        ACVP_CTX *ctx,
+        ACVP_RSA_PARM param,
+        int value
+);
+
 ACVP_RESULT acvp_enable_rsa_keygen_mode (ACVP_CTX *ctx,
                                          ACVP_RSA_KEYGEN_MODE value);
 
 ACVP_RESULT acvp_enable_rsa_siggen_type (ACVP_CTX *ctx,
                                          ACVP_RSA_SIG_TYPE type);
 
+ACVP_RESULT acvp_enable_rsa_sigver_type (ACVP_CTX *ctx,
+                                         ACVP_RSA_SIG_TYPE type);
+
 ACVP_RESULT acvp_enable_rsa_siggen_caps_parm (ACVP_CTX *ctx,
+                                              ACVP_RSA_SIG_TYPE sig_type,
+                                              int mod,
+                                              char *hash_name,
+                                              int salt_len);
+
+ACVP_RESULT acvp_enable_rsa_sigver_caps_parm (ACVP_CTX *ctx,
                                               ACVP_RSA_SIG_TYPE sig_type,
                                               int mod,
                                               char *hash_name,
@@ -1170,9 +1188,13 @@ ACVP_RESULT acvp_enable_rsa_siggen_caps_parm (ACVP_CTX *ctx,
 
     @return ACVP_RESULT
  */
-ACVP_RESULT acvp_enable_rsa_keygen_bignum_parm (ACVP_CTX *ctx,
-                                                ACVP_RSA_PARM param,
-                                                BIGNUM *value
+ACVP_RESULT acvp_enable_rsa_keygen_exp_parm (ACVP_CTX *ctx,
+                                             ACVP_RSA_PARM param,
+                                             char *value
+);
+ACVP_RESULT acvp_enable_rsa_sigver_exp_parm (ACVP_CTX *ctx,
+                                             ACVP_RSA_PARM param,
+                                             char *value
 );
 
 /*! @brief acvp_enable_rsa_primes_parm() allows an application to specify
@@ -1180,7 +1202,7 @@ ACVP_RESULT acvp_enable_rsa_keygen_bignum_parm (ACVP_CTX *ctx,
         during a test session with the ACVP server.
 
         The function behaves similarly to acvp_enable_rsa_cap_parm() and
-        acvp_enable_rsa_bignum_parm() but allows for a modulo and hash
+        acvp_enable_rsa_*_exp_parm() but allows for a modulo and hash
         algorithm parameter to be specified alongside the provable or
         probable parameter.
 

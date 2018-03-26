@@ -237,7 +237,7 @@ static void acvp_cap_free_rsa_keygen_list (ACVP_CAPS_LIST *cap_list) {
     
     while (keygen_cap) {
         if (keygen_cap->fixed_pub_exp) {
-            BN_free(keygen_cap->fixed_pub_exp);
+            free(keygen_cap->fixed_pub_exp);
         }
         
         ACVP_RSA_MODE_CAPS_LIST *mode_list = keygen_cap->mode_capabilities;
@@ -1439,8 +1439,8 @@ ACVP_RESULT acvp_validate_rsa_primes_parm (ACVP_RSA_PARM parm, int mod, char *na
 
     switch (parm) {
     case ACVP_CAPS_PROV_PRIME:
-        if (rsa_keygen_cap->rand_pq == RSA_RAND_PQ_B32 ||
-                rsa_keygen_cap->rand_pq == RSA_RAND_PQ_B34) {
+        if (rsa_keygen_cap->rand_pq == ACVP_RSA_KEYGEN_B32 ||
+                rsa_keygen_cap->rand_pq == ACVP_RSA_KEYGEN_B34) {
             if (is_valid_hash_alg(name) == ACVP_SUCCESS ||
                 is_valid_prime_test(name) == ACVP_SUCCESS) {
                 retval = ACVP_SUCCESS;
@@ -1448,8 +1448,8 @@ ACVP_RESULT acvp_validate_rsa_primes_parm (ACVP_RSA_PARM parm, int mod, char *na
         }
         break;
     case ACVP_CAPS_PROB_PRIME:
-        if (rsa_keygen_cap->rand_pq == RSA_RAND_PQ_B33 ||
-                rsa_keygen_cap->rand_pq == RSA_RAND_PQ_B36) {
+        if (rsa_keygen_cap->rand_pq == ACVP_RSA_KEYGEN_B33 ||
+                rsa_keygen_cap->rand_pq == ACVP_RSA_KEYGEN_B36) {
             if (is_valid_hash_alg(name) == ACVP_SUCCESS ||
                 is_valid_prime_test(name) == ACVP_SUCCESS) {
                 retval = ACVP_SUCCESS;
@@ -1457,7 +1457,7 @@ ACVP_RESULT acvp_validate_rsa_primes_parm (ACVP_RSA_PARM parm, int mod, char *na
         }
         break;
     case ACVP_CAPS_PROV_PROB_PRIME:
-        if (rsa_keygen_cap->rand_pq == RSA_RAND_PQ_B35) {
+        if (rsa_keygen_cap->rand_pq == ACVP_RSA_KEYGEN_B35) {
             if (is_valid_hash_alg(name) == ACVP_SUCCESS ||
                 is_valid_prime_test(name) == ACVP_SUCCESS) {
                 retval = ACVP_SUCCESS;
@@ -1493,7 +1493,11 @@ ACVP_RESULT acvp_enable_rsa_keygen_mode (ACVP_CTX *ctx,
     keygen_cap = cap_list->cap.rsa_keygen_cap;
     
     while (keygen_cap) {
-        if (!keygen_cap->rand_pq) {
+        if (keygen_cap->rand_pq != ACVP_RSA_KEYGEN_B32 &&
+            keygen_cap->rand_pq != ACVP_RSA_KEYGEN_B33 &&
+            keygen_cap->rand_pq != ACVP_RSA_KEYGEN_B34 &&
+            keygen_cap->rand_pq != ACVP_RSA_KEYGEN_B35 &&
+            keygen_cap->rand_pq != ACVP_RSA_KEYGEN_B36) {
             break;
         }
         if (keygen_cap->rand_pq == value) {
@@ -1506,23 +1510,23 @@ ACVP_RESULT acvp_enable_rsa_keygen_mode (ACVP_CTX *ctx,
         }
         keygen_cap = keygen_cap->next;
     }
-    
+
     keygen_cap->rand_pq = value;
     switch (value) {
     case ACVP_RSA_KEYGEN_B32:
-        keygen_cap->rand_pq_str = ACVP_RSA_RANDPQ32_STR;
+        keygen_cap->rand_pq_str = (char *)ACVP_RSA_RANDPQ32_STR;
         break;
     case ACVP_RSA_KEYGEN_B33:
-        keygen_cap->rand_pq_str = ACVP_RSA_RANDPQ33_STR;
+        keygen_cap->rand_pq_str = (char *)ACVP_RSA_RANDPQ33_STR;
         break;
     case ACVP_RSA_KEYGEN_B34:
-        keygen_cap->rand_pq_str = ACVP_RSA_RANDPQ34_STR;
+        keygen_cap->rand_pq_str = (char *)ACVP_RSA_RANDPQ34_STR;
         break;
     case ACVP_RSA_KEYGEN_B35:
-        keygen_cap->rand_pq_str = ACVP_RSA_RANDPQ35_STR;
+        keygen_cap->rand_pq_str = (char *)ACVP_RSA_RANDPQ35_STR;
         break;
     case ACVP_RSA_KEYGEN_B36:
-        keygen_cap->rand_pq_str = ACVP_RSA_RANDPQ36_STR;
+        keygen_cap->rand_pq_str = (char *)ACVP_RSA_RANDPQ36_STR;
         break;
     default:
         break;
@@ -1549,9 +1553,6 @@ ACVP_RESULT acvp_enable_rsa_keygen_cap_parm (ACVP_CTX *ctx,
     switch (param) {
     case ACVP_PUB_EXP_MODE:
         cap_list->cap.rsa_keygen_cap->pub_exp_mode = value;
-        break;
-    case ACVP_RAND_PQ:
-        cap_list->cap.rsa_keygen_cap->rand_pq = value;
         break;
     case ACVP_RSA_INFO_GEN_BY_SERVER:
         cap_list->cap.rsa_keygen_cap->info_gen_by_server = value;
@@ -1631,13 +1632,13 @@ ACVP_RESULT acvp_enable_rsa_sigver_type (ACVP_CTX *ctx,
     sigver_cap->sig_type = value;
     switch (value) {
     case RSA_SIG_TYPE_X931:
-        sigver_cap->sig_type_str = RSA_SIG_TYPE_X931_NAME;
+        sigver_cap->sig_type_str = (char *)RSA_SIG_TYPE_X931_NAME;
         break;
     case RSA_SIG_TYPE_PKCS1V15:
-        sigver_cap->sig_type_str = RSA_SIG_TYPE_PKCS1V15_NAME;
+        sigver_cap->sig_type_str = (char *)RSA_SIG_TYPE_PKCS1V15_NAME;
         break;
     case RSA_SIG_TYPE_PKCS1PSS:
-        sigver_cap->sig_type_str = RSA_SIG_TYPE_PKCS1PSS_NAME;
+        sigver_cap->sig_type_str = (char *)RSA_SIG_TYPE_PKCS1PSS_NAME;
         break;
     default:
         break;
@@ -1704,9 +1705,9 @@ ACVP_RESULT acvp_enable_rsa_siggen_type (ACVP_CTX *ctx,
 /*
  * The user should call this after invoking acvp_enable_rsa_keygen_cap_parm().
  */
-ACVP_RESULT acvp_enable_rsa_keygen_bignum_parm (ACVP_CTX *ctx,
-                                         ACVP_RSA_PARM param,
-                                         BIGNUM *value
+ACVP_RESULT acvp_enable_rsa_keygen_exp_parm (ACVP_CTX *ctx,
+                                             ACVP_RSA_PARM param,
+                                             char *value
 ) {
     ACVP_CAPS_LIST *cap_list;
     
@@ -1722,7 +1723,7 @@ ACVP_RESULT acvp_enable_rsa_keygen_bignum_parm (ACVP_CTX *ctx,
     switch (param) {
     case ACVP_FIXED_PUB_EXP_VAL:
         if (cap_list->cap.rsa_keygen_cap->pub_exp_mode == RSA_PUB_EXP_FIXED) {
-            cap_list->cap.rsa_keygen_cap->fixed_pub_exp = value;
+            cap_list->cap.rsa_keygen_cap->fixed_pub_exp = (unsigned char *)value;
         }
         break;
     default:
@@ -1737,9 +1738,9 @@ ACVP_RESULT acvp_enable_rsa_keygen_bignum_parm (ACVP_CTX *ctx,
  * The user should call this after invoking acvp_enable_rsa_sigver_cap_parm().
  */
 // TODO: maybe we can collapse these bignums into a shared internal method
-ACVP_RESULT acvp_enable_rsa_sigver_bignum_parm (ACVP_CTX *ctx,
-                                                ACVP_RSA_PARM param,
-                                                BIGNUM *value
+ACVP_RESULT acvp_enable_rsa_sigver_exp_parm (ACVP_CTX *ctx,
+                                             ACVP_RSA_PARM param,
+                                             char *value
 ) {
     ACVP_CAPS_LIST *cap_list;
     
@@ -1755,7 +1756,7 @@ ACVP_RESULT acvp_enable_rsa_sigver_bignum_parm (ACVP_CTX *ctx,
     switch (param) {
     case ACVP_FIXED_PUB_EXP_VAL:
         if (cap_list->cap.rsa_sigver_cap->pub_exp_mode == RSA_PUB_EXP_FIXED) {
-            cap_list->cap.rsa_sigver_cap->fixed_pub_exp = BN_dup(value);
+            cap_list->cap.rsa_sigver_cap->fixed_pub_exp = (unsigned char *)value;
         }
         break;
     default:
@@ -3206,9 +3207,7 @@ static ACVP_RESULT acvp_build_rsa_keygen_register_cap (JSON_Object *cap_obj, ACV
     json_object_set_string(cap_obj, "pubExpMode", keygen_cap->pub_exp_mode == RSA_PUB_EXP_FIXED ? "fixed" : "random");
     if (keygen_cap->pub_exp_mode == RSA_PUB_EXP_FIXED) {
         if (keygen_cap->fixed_pub_exp) {
-            char *fixPEV = BN_bn2hex(keygen_cap->fixed_pub_exp);
-            json_object_set_string(cap_obj, "fixedPubExp", fixPEV);
-            free(fixPEV);
+            json_object_set_string(cap_obj, "fixedPubExp", (const char *)keygen_cap->fixed_pub_exp);
         }
     }
     json_object_set_string(cap_obj, "keyFormat", keygen_cap->key_format_crt ? "crt" : "standard");
@@ -3246,9 +3245,7 @@ static ACVP_RESULT acvp_build_rsa_sig_register_cap (JSON_Object *cap_obj, ACVP_C
         rsa_cap_mode = cap_entry->cap.rsa_sigver_cap;
         json_object_set_string(cap_obj, "pubExpMode", cap_entry->cap.rsa_sigver_cap->pub_exp_mode ? "fixed" : "random");
         if (cap_entry->cap.rsa_sigver_cap->pub_exp_mode) {
-            char *fixPEV = BN_bn2hex(cap_entry->cap.rsa_sigver_cap->fixed_pub_exp);
-            json_object_set_string(cap_obj, "fixedPubExp", fixPEV);
-            free(fixPEV);
+            json_object_set_string(cap_obj, "fixedPubExp", (const char *)cap_entry->cap.rsa_sigver_cap->fixed_pub_exp);
         }
     }
     

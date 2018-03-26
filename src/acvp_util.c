@@ -134,15 +134,15 @@ ACVP_CIPHER acvp_lookup_cipher_index (const char *algorithm) {
  */
 char *acvp_lookup_rsa_randpq_name (int value) {
     switch (value) {
-    case RSA_RAND_PQ_B32:
+    case ACVP_RSA_KEYGEN_B32:
         return "B.3.2"; // "provRP"
-    case RSA_RAND_PQ_B33:
+    case ACVP_RSA_KEYGEN_B33:
         return "B.3.3"; // "probRP"
-    case RSA_RAND_PQ_B34:
+    case ACVP_RSA_KEYGEN_B34:
         return "B.3.4"; // "provPC"
-    case RSA_RAND_PQ_B35:
+    case ACVP_RSA_KEYGEN_B35:
         return "B.3.5"; // "bothPC"
-    case RSA_RAND_PQ_B36:
+    case ACVP_RSA_KEYGEN_B36:
         return "B.3.6"; // "probPC"
     default:
         return NULL;
@@ -153,11 +153,11 @@ int acvp_lookup_rsa_randpq_index (char *value) {
     if (!value) {
         return 0;
     }
-    if (strncmp(value, "B.3.2", 5) == 0) { return RSA_RAND_PQ_B32; }
-    if (strncmp(value, "B.3.3", 5) == 0) { return RSA_RAND_PQ_B33; }
-    if (strncmp(value, "B.3.4", 5) == 0) { return RSA_RAND_PQ_B34; }
-    if (strncmp(value, "B.3.5", 5) == 0) { return RSA_RAND_PQ_B35; }
-    if (strncmp(value, "B.3.6", 5) == 0) { return RSA_RAND_PQ_B36; }
+    if (strncmp(value, "B.3.2", 5) == 0) { return ACVP_RSA_KEYGEN_B32; }
+    if (strncmp(value, "B.3.3", 5) == 0) { return ACVP_RSA_KEYGEN_B33; }
+    if (strncmp(value, "B.3.4", 5) == 0) { return ACVP_RSA_KEYGEN_B34; }
+    if (strncmp(value, "B.3.5", 5) == 0) { return ACVP_RSA_KEYGEN_B35; }
+    if (strncmp(value, "B.3.6", 5) == 0) { return ACVP_RSA_KEYGEN_B36; }
     return 0;
 }
 

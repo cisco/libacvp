@@ -43,10 +43,8 @@ static ACVP_RESULT acvp_rsa_sig_output_tc (ACVP_CTX *ctx, ACVP_RSA_SIG_TC *stc, 
     if (stc->sig_mode == ACVP_RSA_SIGVER) {
         json_object_set_string(tc_rsp, "sigResult", stc->ver_disposition ? "passed" : "failed");
     } else {
-        char *e_str = BN_bn2hex(stc->e);
-        char *n_str = BN_bn2hex(stc->n);
-        json_object_set_string(tc_rsp, "e", e_str);
-        json_object_set_string(tc_rsp, "n", n_str);
+        json_object_set_string(tc_rsp, "e", (const char *)stc->e);
+        json_object_set_string(tc_rsp, "n", (const char *)stc->n);
         json_object_set_string(tc_rsp, "signature", (const char *)stc->signature);
     }
 
@@ -62,8 +60,8 @@ static ACVP_RESULT acvp_rsa_siggen_release_tc (ACVP_RSA_SIG_TC *stc) {
     if (stc->msg) { free(stc->msg); }
     if (stc->hash_alg) { free(stc->hash_alg); }
     if (stc->sig_type) { free(stc->sig_type); }
-    if (stc->e) { BN_free(stc->e); }
-    if (stc->n) { BN_free(stc->n); }
+    if (stc->e) { free(stc->e); }
+    if (stc->n) { free(stc->n); }
 
     return ACVP_SUCCESS;
 }
@@ -75,8 +73,8 @@ static ACVP_RESULT acvp_rsa_sig_init_tc (ACVP_CTX *ctx,
                                          char *sig_type,
                                          unsigned int mod,
                                          char *hash_alg,
-                                         BIGNUM *e,
-                                         BIGNUM *n,
+                                         char *e,
+                                         char *n,
                                          unsigned char *msg,
                                          unsigned char *signature,
                                          char *salt) {
@@ -91,6 +89,10 @@ static ACVP_RESULT acvp_rsa_sig_init_tc (ACVP_CTX *ctx,
     if (!stc->hash_alg) { return ACVP_MALLOC_FAIL; }
     stc->signature = calloc(ACVP_RSA_SIGNATURE_MAX, sizeof(char));
     if (!stc->signature) { return ACVP_MALLOC_FAIL; }
+    stc->e = calloc(ACVP_RSA_EXP_LEN_MAX, sizeof(char));
+    if (!stc->e) { return ACVP_MALLOC_FAIL; }
+    stc->n = calloc(ACVP_RSA_EXP_LEN_MAX, sizeof(char));
+    if (!stc->n) { return ACVP_MALLOC_FAIL; }
     
     stc->msg_len = strnlen((const char*)msg, ACVP_RSA_MSGLEN_MAX)/2;
     
@@ -102,10 +104,17 @@ static ACVP_RESULT acvp_rsa_sig_init_tc (ACVP_CTX *ctx,
     
     if (cipher == ACVP_RSA_SIGVER) {
         stc->sig_mode = ACVP_RSA_SIGVER;
-
-        stc->e = BN_dup(e);
-        stc->n = BN_dup(n);
         
+        rv = acvp_hexstr_to_bin((const unsigned char *) e, stc->e, ACVP_RSA_EXP_LEN_MAX);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Hex conversion failure (e)");
+            return rv;
+        }
+        rv = acvp_hexstr_to_bin((const unsigned char *) n, stc->n, ACVP_RSA_EXP_LEN_MAX);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Hex conversion failure (n)");
+            return rv;
+        }
         stc->sig_len = strnlen((const char*)signature, ACVP_RSA_SIGNATURE_MAX);
         rv = acvp_hexstr_to_bin((const unsigned char *) signature, stc->signature, ACVP_RSA_SIGNATURE_MAX);
         if (rv != ACVP_SUCCESS) {
@@ -114,9 +123,6 @@ static ACVP_RESULT acvp_rsa_sig_init_tc (ACVP_CTX *ctx,
         }
     } else {
         stc->sig_mode = ACVP_RSA_SIGGEN;
-    
-        stc->e = BN_new();
-        stc->n = BN_new();
     }
     
     memcpy(stc->sig_type, sig_type, strnlen((const char *)sig_type, ACVP_RSA_SIG_TYPE_LEN_MAX));
@@ -157,11 +163,8 @@ ACVP_RESULT acvp_rsa_sig_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     char *json_result = NULL, *mode_str;
     unsigned int mod = 0;
     unsigned char *msg, *signature;
-    const char *e_str, *n_str;
+    char *e_str = NULL, *n_str = NULL;
     char *hash_alg = NULL, *sig_type, *salt, *alg_str;
-    
-    // for sigVer
-    BIGNUM *e = BN_new(), *n = BN_new();
 
     ACVP_RESULT rv;
     alg_str = (char *) json_object_get_string(obj, "algorithm");
@@ -234,10 +237,8 @@ ACVP_RESULT acvp_rsa_sig_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
         hash_alg = (char *) json_object_get_string(groupobj, "hashAlg");
         
         if (alg_id == ACVP_RSA_SIGVER) {
-            e_str = (const char *) json_object_get_string(groupobj, "e");
-            BN_hex2bn(&e, e_str);
-            n_str = (const char *) json_object_get_string(groupobj, "n");
-            BN_hex2bn(&n, n_str);
+            e_str = (char *) json_object_get_string(groupobj, "e");
+            n_str = (char *) json_object_get_string(groupobj, "n");
         }
 
         ACVP_LOG_INFO("       Test group: %d", i);
@@ -276,7 +277,7 @@ ACVP_RESULT acvp_rsa_sig_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
                 salt = (char *) json_object_get_string(testobj, "salt");
             }
             
-            acvp_rsa_sig_init_tc(ctx, alg_id,  &stc, tc_id, sig_type, mod, hash_alg, e, n, msg, signature, salt);
+            acvp_rsa_sig_init_tc(ctx, alg_id,  &stc, tc_id, sig_type, mod, hash_alg, e_str, n_str, msg, signature, salt);
             
             
             /* Process the current test vector... */
