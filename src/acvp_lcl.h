@@ -111,23 +111,9 @@
 #define ACVP_ALG_DSA                 "DSA2"
 #define ACVP_DSA_PQGGEN              "pqgGen"
 
-#define ACVP_ALG_RSA                 "RSA"
-
 #define ACVP_ALG_RSA_KEYGEN             "keyGen"
 #define ACVP_ALG_RSA_SIGGEN             "sigGen"
 #define ACVP_ALG_RSA_SIGVER              "sigVer"
-#define ACVP_RSA_CAP_HASHALG_OBJ_NAME  "hashAlg"
-#define ACVP_RSA_CAP_HASHPAIR_NAME "hashPair"
-#define ACVP_RSA_TC_HASHALG_OBJ_NAME  "hashAlg"
-#define ACVP_RSA_SALTLEN_OBJ_NAME  "saltLen"
-#define ACVP_RSA_SIG_MSG_OBJ_NAME  "message"
-#define ACVP_RSA_SIG_MODULO_OBJ_NAME  "modulo"
-#define ACVP_RSA_SIGVER_EXP_OBJ_NAME  "e"
-#define ACVP_RSA_SIGVER_MOD_OBJ_NAME  "n"
-#define ACVP_RSA_SIGVER_SIG_OBJ_NAME  "signature"
-#define ACVP_RSA_SIGVER_PASS_OBJ_NAME "sigResult"
-#define ACVP_RSA_SIGVER_PASS_YES_OBJ_NAME "passed"
-#define ACVP_RSA_SIGVER_PASS_NO_OBJ_NAME "failed"
 
 #define ACVP_PREREQ_VAL_STR "valValue"
 #define ACVP_PREREQ_OBJ_STR "prereqVals"
@@ -141,55 +127,72 @@
 #define ACVP_ALG_KDF135_SNMP     "KDF-SNMP"
 #define ACVP_ALG_KDF135_SSH      "KDF-SSH"
 
-#define ACVP_SYM_KEY_MAX    64
-#define ACVP_SYM_PT_MAX     1024*32
-#define ACVP_SYM_CT_MAX     1024*32
-#define ACVP_SYM_IV_MAX     64
-#define ACVP_SYM_TAG_MAX    64
-#define ACVP_SYM_AAD_MAX    128
+/*
+ * The values that are supplied
+ * when a client application registers are in bits, as
+ * the specs specify.
+ *
+ * All of these values are used to allocate memory for
+ * and check lengths of the character arrays that the
+ * library uses in sending/receiving JSON structs in
+ * an ACVP interaction.
+ */
+#define ACVP_SYM_KEY_MAX    64       /**< 256 bits, 64 characters */
+#define ACVP_SYM_PT_MAX     16384    /**< 65536 bits, 16384 characters */
+#define ACVP_SYM_CT_MAX     16384    /**< 65536 bits, 16384 characters */
+#define ACVP_SYM_IV_MAX     256      /**< 1024 bits, 256 characters */
+#define ACVP_SYM_TAG_MAX    32       /**< 128 bits, 32 characters */
+#define ACVP_SYM_AAD_MAX    16384    /**< 65536 bits, 16384 characters */
 
-#define ACVP_DRB_MAX            4096
+#define ACVP_DRB_MAX             4096
 #define ACVP_DRBG_ENTPY_IN_MAX   256
 #define ACVP_DRBG_NONCE_MAX      256
 #define ACVP_DRBG_PER_SO_MAX     256
 #define ACVP_DRBG_ADDI_IN_MAX    256
 
 #define ACVP_HASH_MSG_MAX       1024*64
-#define ACVP_HASH_MD_MAX        64
+#define ACVP_HASH_MD_MAX        128     /**< 512 bits, 128 characters */
+#define ACVP_HASH_MCT_INNER     1000
+#define ACVP_HASH_MCT_OUTER     100
+#define ACVP_AES_MCT_INNER      1000
+#define ACVP_AES_MCT_OUTER      100
+#define ACVP_DES_MCT_INNER      10000
+#define ACVP_DES_MCT_OUTER      400
 
 #define ACVP_KDF135_TLS_MSG_MAX 1024*4
 #define ACVP_KDF135_SSH_MSG_MAX 1024
 
 #define ACVP_HMAC_MSG_MAX       1024
-#define ACVP_HMAC_MAC_MAX       64
-#define ACVP_HMAC_KEY_MAX       256
+#define ACVP_HMAC_MAC_MAX       128       /**< 512 bits, 128 characters */
+#define ACVP_HMAC_KEY_MAX       131072    /**< 524288 bits, 131072 characters */
 
-#define ACVP_CMAC_MSG_MAX       1024
-#define ACVP_CMAC_MAC_MAX       64
-#define ACVP_CMAC_KEY_MAX       256
+#define ACVP_CMAC_MSG_MAX       131072    /**< 524288 bits, 131072 characters */
+#define ACVP_CMAC_MAC_MAX       128       /**< 512 bits, 128 characters */
+#define ACVP_CMAC_KEY_MAX       64        /**< 256 bits, 64 characters */
 
-#define ACVP_DSA_PQG_MAX        4096
+#define ACVP_DSA_PQG_MAX        3072     /**< 3072 bits, 768 characters */
 #define ACVP_DSA_SEED_MAX       128
 
 #define ACVP_RSA_SEEDLEN_MAX    64
 #define ACVP_RSA_MSGLEN_MAX     512
 #define ACVP_RSA_SIGNATURE_MAX  1024
+#define ACVP_RSA_RANDPQ32_STR   "B.3.2"
+#define ACVP_RSA_RANDPQ33_STR   "B.3.3"
+#define ACVP_RSA_RANDPQ34_STR   "B.3.4"
+#define ACVP_RSA_RANDPQ35_STR   "B.3.5"
+#define ACVP_RSA_RANDPQ36_STR   "B.3.6"
+#define ACVP_RSA_SIG_TYPE_LEN_MAX    9
+#define ACVP_RSA_HASH_ALG_LEN_MAX    12
+#define ACVP_RSA_EXP_LEN_MAX         512  /**< 2048 bits max for n, 512 characters */
 
 #define ACVP_KAT_BUF_MAX        1024*1024*4
 #define ACVP_REG_BUF_MAX        1024*128
-#define ACVP_RETRY_TIME_MAX         60 /* seconds */
+#define ACVP_RETRY_TIME_MAX     60 /* seconds */
 #define ACVP_JWT_TOKEN_MAX      1024
 
 #define ACVP_PATH_SEGMENT_DEFAULT ""
 
-#define ACVP_HASH_MCT_INNER 1000
-#define ACVP_HASH_MCT_OUTER 100
-#define ACVP_AES_MCT_INNER 1000
-#define ACVP_AES_MCT_OUTER 100
-#define ACVP_DES_MCT_INNER 10000
-#define ACVP_DES_MCT_OUTER 400
-
-#define ACVP_CFB1_BIT_MASK 0x80
+#define ACVP_CFB1_BIT_MASK      0x80
 
 typedef struct acvp_alg_handler_t ACVP_ALG_HANDLER;
 

@@ -228,9 +228,9 @@ ACVP_RESULT is_valid_prime_test (char *value) {
 
 /* This function checks to see if the value is a valid prime test (RSA) */
 ACVP_RESULT is_valid_rsa_mod (int value) {
-    if (value != MOD_RSA_2048 &&
-        value != MOD_RSA_3072 &&
-        value != MOD_RSA_4096) {
+    if (value != 2048 &&
+        value != 3072 &&
+        value != 4096) {
         return ACVP_INVALID_ARG;
     } else { return ACVP_SUCCESS; }
 }

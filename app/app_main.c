@@ -1002,15 +1002,15 @@ static void enable_rsa (ACVP_CTX *ctx) {
     
     rv = acvp_enable_rsa_keygen_mode(ctx, ACVP_RSA_KEYGEN_B34);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_keygen_primes_parm(ctx, ACVP_RSA_KEYGEN_B34, MOD_RSA_2048, ACVP_STR_SHA2_256);
+    rv = acvp_enable_rsa_keygen_primes_parm(ctx, ACVP_RSA_KEYGEN_B34, 2048, ACVP_STR_SHA2_256);
     CHECK_ENABLE_CAP_RV(rv);
     // TODO: leaving this in here as a workaround until the server allows it as optional
-    rv = acvp_enable_rsa_keygen_primes_parm(ctx, ACVP_RSA_KEYGEN_B34, MOD_RSA_2048, PRIME_TEST_TBLC2_NAME);
+    rv = acvp_enable_rsa_keygen_primes_parm(ctx, ACVP_RSA_KEYGEN_B34, 2048, PRIME_TEST_TBLC2_NAME);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_keygen_primes_parm(ctx, ACVP_RSA_KEYGEN_B34, MOD_RSA_3072, ACVP_STR_SHA2_256);
+    rv = acvp_enable_rsa_keygen_primes_parm(ctx, ACVP_RSA_KEYGEN_B34, 3072, ACVP_STR_SHA2_256);
     CHECK_ENABLE_CAP_RV(rv);
     // TODO: leaving this in here as a workaround until the server allows it as optional
-    rv = acvp_enable_rsa_keygen_primes_parm(ctx, ACVP_RSA_KEYGEN_B34, MOD_RSA_3072, PRIME_TEST_TBLC2_NAME);
+    rv = acvp_enable_rsa_keygen_primes_parm(ctx, ACVP_RSA_KEYGEN_B34, 3072, PRIME_TEST_TBLC2_NAME);
     CHECK_ENABLE_CAP_RV(rv);
     
     
@@ -1023,85 +1023,85 @@ static void enable_rsa (ACVP_CTX *ctx) {
     // RSA w/ sigType: X9.31
     rv = acvp_enable_rsa_siggen_type(ctx, RSA_SIG_TYPE_X931);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_X931, MOD_RSA_2048, ACVP_STR_SHA2_256, 0);
+    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_X931, 2048, ACVP_STR_SHA2_256, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_X931, MOD_RSA_2048, ACVP_STR_SHA2_384, 0);
+    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_X931, 2048, ACVP_STR_SHA2_384, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_X931, MOD_RSA_2048, ACVP_STR_SHA2_512, 0);
+    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_X931, 2048, ACVP_STR_SHA2_512, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_X931, MOD_RSA_3072, ACVP_STR_SHA2_256, 0);
+    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_X931, 3072, ACVP_STR_SHA2_256, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_X931, MOD_RSA_3072, ACVP_STR_SHA2_384, 0);
+    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_X931, 3072, ACVP_STR_SHA2_384, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_X931, MOD_RSA_3072, ACVP_STR_SHA2_512, 0);
+    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_X931, 3072, ACVP_STR_SHA2_512, 0);
     CHECK_ENABLE_CAP_RV(rv);
 #if 0 // mod 4096 isn't supported by the server just yet
-    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_X931, MOD_RSA_4096, ACVP_STR_SHA2_256, 0);
+    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_X931, 4096, ACVP_STR_SHA2_256, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_X931, MOD_RSA_4096, ACVP_STR_SHA2_384, 0);
+    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_X931, 4096, ACVP_STR_SHA2_384, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_X931, MOD_RSA_4096, ACVP_STR_SHA2_512, 0);
+    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_X931, 4096, ACVP_STR_SHA2_512, 0);
     CHECK_ENABLE_CAP_RV(rv);
 #endif
 
     // RSA w/ sigType: PKCS1v1.5
     rv = acvp_enable_rsa_siggen_type(ctx, RSA_SIG_TYPE_PKCS1V15);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_PKCS1V15, MOD_RSA_2048, ACVP_STR_SHA_1, 0);
+    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_PKCS1V15, 2048, ACVP_STR_SHA_1, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_PKCS1V15, MOD_RSA_2048, ACVP_STR_SHA2_224, 0);
+    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_PKCS1V15, 2048, ACVP_STR_SHA2_224, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_PKCS1V15, MOD_RSA_2048, ACVP_STR_SHA2_256, 0);
+    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_PKCS1V15, 2048, ACVP_STR_SHA2_256, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_PKCS1V15, MOD_RSA_2048, ACVP_STR_SHA2_384, 0);
+    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_PKCS1V15, 2048, ACVP_STR_SHA2_384, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_PKCS1V15, MOD_RSA_2048, ACVP_STR_SHA2_512, 0);
+    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_PKCS1V15, 2048, ACVP_STR_SHA2_512, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_PKCS1V15, MOD_RSA_3072, ACVP_STR_SHA_1, 0);
+    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_PKCS1V15, 3072, ACVP_STR_SHA_1, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_PKCS1V15, MOD_RSA_3072, ACVP_STR_SHA2_224, 0);
+    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_PKCS1V15, 3072, ACVP_STR_SHA2_224, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_PKCS1V15, MOD_RSA_3072, ACVP_STR_SHA2_256, 0);
+    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_PKCS1V15, 3072, ACVP_STR_SHA2_256, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_PKCS1V15, MOD_RSA_3072, ACVP_STR_SHA2_384, 0);
+    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_PKCS1V15, 3072, ACVP_STR_SHA2_384, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_PKCS1V15, MOD_RSA_3072, ACVP_STR_SHA2_512, 0);
+    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_PKCS1V15, 3072, ACVP_STR_SHA2_512, 0);
     CHECK_ENABLE_CAP_RV(rv);
 #if 0 // mod 4096 isn't supported by the server just yet
-    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_PKCS1V15, MOD_RSA_4096, ACVP_STR_SHA_1, 0);
+    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_PKCS1V15, 4096, ACVP_STR_SHA_1, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_PKCS1V15, MOD_RSA_4096, ACVP_STR_SHA2_224, 0);
+    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_PKCS1V15, 4096, ACVP_STR_SHA2_224, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_PKCS1V15, MOD_RSA_4096, ACVP_STR_SHA2_256, 0);
+    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_PKCS1V15, 4096, ACVP_STR_SHA2_256, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_PKCS1V15, MOD_RSA_4096, ACVP_STR_SHA2_384, 0);
+    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_PKCS1V15, 4096, ACVP_STR_SHA2_384, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_PKCS1V15, MOD_RSA_4096, ACVP_STR_SHA2_512, 0);
+    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_PKCS1V15, 4096, ACVP_STR_SHA2_512, 0);
     CHECK_ENABLE_CAP_RV(rv);
 #endif
 
     // RSA w/ sigType: PKCS1PSS -- has salt
     rv = acvp_enable_rsa_siggen_type(ctx, RSA_SIG_TYPE_PKCS1PSS);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_PKCS1PSS, MOD_RSA_2048, ACVP_STR_SHA_1, 0);
+    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_PKCS1PSS, 2048, ACVP_STR_SHA_1, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_PKCS1PSS, MOD_RSA_2048, ACVP_STR_SHA2_224, 0);
+    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_PKCS1PSS, 2048, ACVP_STR_SHA2_224, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_PKCS1PSS, MOD_RSA_2048, ACVP_STR_SHA2_256, 0);
+    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_PKCS1PSS, 2048, ACVP_STR_SHA2_256, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_PKCS1PSS, MOD_RSA_2048, ACVP_STR_SHA2_384, 0);
+    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_PKCS1PSS, 2048, ACVP_STR_SHA2_384, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_PKCS1PSS, MOD_RSA_2048, ACVP_STR_SHA2_512, 0);
+    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_PKCS1PSS, 2048, ACVP_STR_SHA2_512, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_PKCS1PSS, MOD_RSA_3072, ACVP_STR_SHA_1, 0);
+    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_PKCS1PSS, 3072, ACVP_STR_SHA_1, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_PKCS1PSS, MOD_RSA_3072, ACVP_STR_SHA2_224, 0);
+    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_PKCS1PSS, 3072, ACVP_STR_SHA2_224, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_PKCS1PSS, MOD_RSA_3072, ACVP_STR_SHA2_256, 0);
+    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_PKCS1PSS, 3072, ACVP_STR_SHA2_256, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_PKCS1PSS, MOD_RSA_3072, ACVP_STR_SHA2_384, 0);
+    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_PKCS1PSS, 3072, ACVP_STR_SHA2_384, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_PKCS1PSS, MOD_RSA_3072, ACVP_STR_SHA2_512, 0);
+    rv = acvp_enable_rsa_siggen_caps_parm(ctx, RSA_SIG_TYPE_PKCS1PSS, 3072, ACVP_STR_SHA2_512, 0);
     CHECK_ENABLE_CAP_RV(rv);
 
     /*
@@ -1118,69 +1118,69 @@ static void enable_rsa (ACVP_CTX *ctx) {
     // RSA w/ sigType: X9.31
     rv = acvp_enable_rsa_sigver_type(ctx, RSA_SIG_TYPE_X931);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_X931, MOD_RSA_2048, ACVP_STR_SHA_1, 0);
+    rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_X931, 2048, ACVP_STR_SHA_1, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_X931, MOD_RSA_2048, ACVP_STR_SHA2_256, 0);
+    rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_X931, 2048, ACVP_STR_SHA2_256, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_X931, MOD_RSA_2048, ACVP_STR_SHA2_384, 0);
+    rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_X931, 2048, ACVP_STR_SHA2_384, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_X931, MOD_RSA_2048, ACVP_STR_SHA2_512, 0);
+    rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_X931, 2048, ACVP_STR_SHA2_512, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_X931, MOD_RSA_3072, ACVP_STR_SHA_1, 0);
+    rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_X931, 3072, ACVP_STR_SHA_1, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_X931, MOD_RSA_3072, ACVP_STR_SHA2_256, 0);
+    rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_X931, 3072, ACVP_STR_SHA2_256, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_X931, MOD_RSA_3072, ACVP_STR_SHA2_384, 0);
+    rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_X931, 3072, ACVP_STR_SHA2_384, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_X931, MOD_RSA_3072, ACVP_STR_SHA2_512, 0);
+    rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_X931, 3072, ACVP_STR_SHA2_512, 0);
     CHECK_ENABLE_CAP_RV(rv);
 
     // RSA w/ sigType: PKCS1v1.5
     rv = acvp_enable_rsa_sigver_type(ctx, RSA_SIG_TYPE_PKCS1V15);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_PKCS1V15, MOD_RSA_2048, ACVP_STR_SHA_1, 0);
+    rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_PKCS1V15, 2048, ACVP_STR_SHA_1, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_PKCS1V15, MOD_RSA_2048, ACVP_STR_SHA2_224, 0);
+    rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_PKCS1V15, 2048, ACVP_STR_SHA2_224, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_PKCS1V15, MOD_RSA_2048, ACVP_STR_SHA2_256, 0);
+    rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_PKCS1V15, 2048, ACVP_STR_SHA2_256, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_PKCS1V15, MOD_RSA_2048, ACVP_STR_SHA2_384, 0);
+    rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_PKCS1V15, 2048, ACVP_STR_SHA2_384, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_PKCS1V15, MOD_RSA_2048, ACVP_STR_SHA2_512, 0);
+    rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_PKCS1V15, 2048, ACVP_STR_SHA2_512, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_PKCS1V15, MOD_RSA_3072, ACVP_STR_SHA_1, 0);
+    rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_PKCS1V15, 3072, ACVP_STR_SHA_1, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_PKCS1V15, MOD_RSA_3072, ACVP_STR_SHA2_224, 0);
+    rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_PKCS1V15, 3072, ACVP_STR_SHA2_224, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_PKCS1V15, MOD_RSA_3072, ACVP_STR_SHA2_256, 0);
+    rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_PKCS1V15, 3072, ACVP_STR_SHA2_256, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_PKCS1V15, MOD_RSA_3072, ACVP_STR_SHA2_384, 0);
+    rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_PKCS1V15, 3072, ACVP_STR_SHA2_384, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_PKCS1V15, MOD_RSA_3072, ACVP_STR_SHA2_512, 0);
+    rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_PKCS1V15, 3072, ACVP_STR_SHA2_512, 0);
     CHECK_ENABLE_CAP_RV(rv);
     
     // RSA w/ sigType: PKCS1PSS -- has salt
     rv = acvp_enable_rsa_sigver_type(ctx, RSA_SIG_TYPE_PKCS1PSS);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_PKCS1PSS, MOD_RSA_2048, ACVP_STR_SHA_1, 0);
+    rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_PKCS1PSS, 2048, ACVP_STR_SHA_1, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_PKCS1PSS, MOD_RSA_2048, ACVP_STR_SHA2_224, 0);
+    rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_PKCS1PSS, 2048, ACVP_STR_SHA2_224, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_PKCS1PSS, MOD_RSA_2048, ACVP_STR_SHA2_256, 0);
+    rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_PKCS1PSS, 2048, ACVP_STR_SHA2_256, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_PKCS1PSS, MOD_RSA_2048, ACVP_STR_SHA2_384, 0);
+    rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_PKCS1PSS, 2048, ACVP_STR_SHA2_384, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_PKCS1PSS, MOD_RSA_2048, ACVP_STR_SHA2_512, 0);
+    rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_PKCS1PSS, 2048, ACVP_STR_SHA2_512, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_PKCS1PSS, MOD_RSA_3072, ACVP_STR_SHA_1, 0);
+    rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_PKCS1PSS, 3072, ACVP_STR_SHA_1, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_PKCS1PSS, MOD_RSA_3072, ACVP_STR_SHA2_224, 0);
+    rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_PKCS1PSS, 3072, ACVP_STR_SHA2_224, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_PKCS1PSS, MOD_RSA_3072, ACVP_STR_SHA2_256, 0);
+    rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_PKCS1PSS, 3072, ACVP_STR_SHA2_256, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_PKCS1PSS, MOD_RSA_3072, ACVP_STR_SHA2_384, 0);
+    rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_PKCS1PSS, 3072, ACVP_STR_SHA2_384, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_PKCS1PSS, MOD_RSA_3072, ACVP_STR_SHA2_512, 0);
+    rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_PKCS1PSS, 3072, ACVP_STR_SHA2_512, 0);
     CHECK_ENABLE_CAP_RV(rv);
 }
 #endif
