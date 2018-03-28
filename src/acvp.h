@@ -232,13 +232,16 @@ typedef enum acvp_kdf135_tls_method {
     ACVP_KDF135_TLS12
 } ACVP_KDF135_TLS_METHOD;
 
-#define ACVP_STR_SHA_1         "SHA-1"
-#define ACVP_STR_SHA_224       "SHA-224"
-#define ACVP_STR_SHA_256       "SHA-256"
-#define ACVP_STR_SHA_384       "SHA-384"
-#define ACVP_STR_SHA_512       "SHA-512"
-#define ACVP_STR_SHA_512_224   "SHA-512/224"
-#define ACVP_STR_SHA_512_256   "SHA-512/256"
+// TODO: most of the specs are moving toward "SHA2..." but
+// not all of them have been updated. The duplicates can
+// be removed once all are updated.
+#define ACVP_STR_SHA_1          "SHA-1"
+#define ACVP_STR_SHA_224        "SHA-224"
+#define ACVP_STR_SHA_256        "SHA-256"
+#define ACVP_STR_SHA_384        "SHA-384"
+#define ACVP_STR_SHA_512        "SHA-512"
+#define ACVP_STR_SHA_512_224    "SHA-512/224"
+#define ACVP_STR_SHA_512_256    "SHA-512/256"
 #define ACVP_STR_SHA2_224       "SHA2-224"
 #define ACVP_STR_SHA2_256       "SHA2-256"
 #define ACVP_STR_SHA2_384       "SHA2-384"
@@ -293,14 +296,6 @@ typedef enum acvp_rsa_param {
     ACVP_RSA_INFO_GEN_BY_SERVER
 } ACVP_RSA_PARM;
 
-#define MOD_RSA_2048     2048
-#define MOD_RSA_3072     3072
-#define MOD_RSA_4096     4096
-
-#define ACVP_RSA_HASH_ALG_LEN_MAX    12
-#define ACVP_RSA_SIG_TYPE_LEN_MAX    9
-#define ACVP_RSA_EXP_LEN_MAX         256
-
 #define RSA_SIG_TYPE_X931_NAME      "ansx9.31"
 #define RSA_SIG_TYPE_PKCS1V15_NAME  "pkcs1v1.5"
 #define RSA_SIG_TYPE_PKCS1PSS_NAME  "pss"
@@ -310,12 +305,6 @@ typedef enum acvp_rsa_param {
 
 #define RSA_PUB_EXP_FIXED      1
 #define RSA_PUB_EXP_RANDOM     0
-
-#define ACVP_RSA_RANDPQ32_STR "B.3.2"
-#define ACVP_RSA_RANDPQ33_STR "B.3.3"
-#define ACVP_RSA_RANDPQ34_STR "B.3.4"
-#define ACVP_RSA_RANDPQ35_STR "B.3.5"
-#define ACVP_RSA_RANDPQ36_STR "B.3.6"
 
 typedef enum acvp_rsa_keygen_mode_t {
     ACVP_RSA_KEYGEN_START = 0,
