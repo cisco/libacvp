@@ -450,7 +450,7 @@ struct acvp_ctx_t {
     JSON_Value *kat_resp;   /* holds the current set of vector responses */
     int read_ctr;            /* used during curl processing */
     int vs_id;               /* vs_id currently being processed */
-    char *ans_buf;
+    char *ans_buf;    /* holds the queried answers on a sample registration */
 };
 
 ACVP_RESULT acvp_send_register (ACVP_CTX *ctx, char *reg);

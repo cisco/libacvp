@@ -196,7 +196,7 @@ ACVP_RESULT acvp_rsa_keygen_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     int info_gen_by_server, rand_pq, seed_len;
     char *pub_exp_mode, *key_format, *prime_test;
     char *hash_alg = NULL;
-    char *e_str, *alg_str, *mode_str, *seed;
+    char *e_str = NULL, *alg_str, *mode_str, *seed;
     int bitlen1, bitlen2, bitlen3, bitlen4;
     
     alg_str = (char *) json_object_get_string(obj, "algorithm");
