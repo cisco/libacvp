@@ -186,6 +186,7 @@
 #define ACVP_RSA_EXP_LEN_MAX         512  /**< 2048 bits max for n, 512 characters */
 
 #define ACVP_KAT_BUF_MAX        1024*1024*4
+#define ACVP_ANS_BUF_MAX        1024*1024*4
 #define ACVP_REG_BUF_MAX        1024*128
 #define ACVP_RETRY_TIME_MAX     60 /* seconds */
 #define ACVP_JWT_TOKEN_MAX      1024
@@ -432,6 +433,8 @@ struct acvp_ctx_t {
     char *module_type;
     char *module_version;
     char *module_desc;
+    
+    int is_sample;
 
     /* test session data */
     ACVP_VS_LIST *vs_list;
@@ -450,9 +453,12 @@ struct acvp_ctx_t {
     JSON_Value *kat_resp;   /* holds the current set of vector responses */
     int read_ctr;            /* used during curl processing */
     int vs_id;               /* vs_id currently being processed */
+    char *ans_buf;    /* holds the queried answers on a sample registration */
 };
 
 ACVP_RESULT acvp_send_register (ACVP_CTX *ctx, char *reg);
+
+ACVP_RESULT acvp_retrieve_sample_answers (ACVP_CTX *ctx, int vs_id);
 
 ACVP_RESULT acvp_retrieve_vector_set (ACVP_CTX *ctx, int vs_id);
 
