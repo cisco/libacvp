@@ -186,6 +186,10 @@ static void print_usage(void)
     printf("      -info\n");
     printf("      -verbose\n");
     printf("\n");
+    printf("If you are running a sample registration (querying for correct answers\n");
+    printf("in addition to the normal registration flow) use:\n");
+    printf("      -sample\n");
+    printf("\n");
     printf("In addition some options are passed to acvp_app using\n");
     printf("environment variables.  The following variables can be set:\n\n");
     printf("    ACV_SERVER (when not set, defaults to %s)\n", DEFAULT_SERVER);
@@ -204,6 +208,7 @@ int main(int argc, char **argv)
     ACVP_CTX *ctx;
     char ssl_version[10];
     ACVP_LOG_LVL level = ACVP_LOG_LVL_STATUS;
+    int sample = 0;
     
     int aes = 1;
     int tdes = 1;
@@ -218,7 +223,7 @@ int main(int argc, char **argv)
     int rsa = 0;
     int drbg = 0;
 
-    if (argc > 2) {
+    if (argc > 3) {
         print_usage();
         return 1;
     }
@@ -226,6 +231,9 @@ int main(int argc, char **argv)
     argv++;
     argc--;
     while (argc >= 1) {
+        if (strcmp(*argv, "-sample") == 0) {
+            sample = 1;
+        }
         if (strcmp(*argv, "-info") == 0) {
             level = ACVP_LOG_LVL_INFO;
         }
@@ -328,6 +336,10 @@ int main(int argc, char **argv)
     if (rv != ACVP_SUCCESS) {
         printf("Failed to set TLS cert/key\n");
         exit(1);
+    }
+    
+    if (sample) {
+        acvp_mark_as_sample(ctx);
     }
 
     /*

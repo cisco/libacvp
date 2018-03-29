@@ -3633,6 +3633,10 @@ static ACVP_RESULT acvp_build_register (ACVP_CTX *ctx, char **reg) {
 
     json_object_set_string(oe_obj, "implementationDescription", ctx->module_desc);
     json_object_set_value(obj, "oeInformation", oe_val);
+    
+    if (ctx->is_sample) {
+        json_object_set_boolean(obj, "isSample", 1);
+    }
 
     /*
      * Start the capabilities advertisement
@@ -3755,6 +3759,10 @@ static ACVP_RESULT acvp_build_register (ACVP_CTX *ctx, char **reg) {
     json_value_free(dep_val);
 
     return ACVP_SUCCESS;
+}
+
+void acvp_mark_as_sample (ACVP_CTX *ctx) {
+    ctx->is_sample = 1;
 }
 
 /*
@@ -4247,6 +4255,9 @@ ACVP_RESULT acvp_check_test_results (ACVP_CTX *ctx) {
     vs_entry = ctx->vs_list;
     while (vs_entry) {
         rv = acvp_get_result_vsid(ctx, vs_entry->vs_id);
+        if (ctx->is_sample) {
+            rv = acvp_retrieve_sample_answers(ctx, vs_entry->vs_id);
+        }
         vs_entry = vs_entry->next;
     }
 

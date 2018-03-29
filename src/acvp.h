@@ -1513,6 +1513,17 @@ ACVP_RESULT acvp_set_cacerts (ACVP_CTX *ctx, char *ca_file);
  */
 ACVP_RESULT acvp_set_certkey (ACVP_CTX *ctx, char *cert_file, char *key_file);
 
+/*! @brief acvp_mark_as_sample() marks the registration as a sample.
+ 
+    This function sets a flag that will allow the client to retrieve
+    the correct answers later on, allowing for comparison and
+    debugging.
+    
+    @param ctx Pointer to ACVP_CTX that was previously created by
+        calling acvp_create_test_session.
+ */
+void acvp_mark_as_sample (ACVP_CTX *ctx);
+
 /*! @brief acvp_register() registers the DUT with the ACVP server.
 
     This function is used to regitser the DUT with the server.

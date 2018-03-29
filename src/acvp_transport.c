@@ -329,6 +329,42 @@ static size_t acvp_curl_write_upld_func (void *ptr, size_t size, size_t nmemb, v
  * to the application (us).  We will store the HTTP body
  * on the ACVP_CTX in one of the transitory fields.
  */
+static size_t acvp_curl_write_ans_func (void *ptr, size_t size, size_t nmemb, void *userdata) {
+    ACVP_CTX *ctx = (ACVP_CTX *) userdata;
+    char *json_buf;
+    
+    if (size != 1) {
+        fprintf(stderr, "\ncurl size not 1\n");
+        return 0;
+    }
+    
+    if (!ctx->ans_buf) {
+        ctx->ans_buf = calloc(1, ACVP_ANS_BUF_MAX);
+        if (!ctx->ans_buf) {
+            fprintf(stderr, "\nmalloc failed in curl write ans func\n");
+            return 0;
+        }
+    }
+    json_buf = ctx->ans_buf;
+    
+    if ((ctx->read_ctr + nmemb) > ACVP_ANS_BUF_MAX) {
+        fprintf(stderr, "\nAnswer response is too large\n");
+        return 0;
+    }
+    
+    memcpy(&json_buf[ctx->read_ctr], ptr, nmemb);
+    json_buf[ctx->read_ctr + nmemb] = 0;
+    ctx->read_ctr += nmemb;
+    
+    return nmemb;
+}
+
+
+/*
+ * This is a callback used by curl to send the HTTP body
+ * to the application (us).  We will store the HTTP body
+ * on the ACVP_CTX in one of the transitory fields.
+ */
 static size_t acvp_curl_write_kat_func (void *ptr, size_t size, size_t nmemb, void *userdata) {
     ACVP_CTX *ctx = (ACVP_CTX *) userdata;
     char *json_buf;
@@ -392,6 +428,42 @@ static size_t acvp_curl_write_register_func (void *ptr, size_t size, size_t nmem
     ctx->read_ctr += nmemb;
 
     return nmemb;
+}
+
+
+/*
+ * This is the transport function used within libacvp to register
+ * the DUT with the ACVP server.
+ *
+ * The reg parameter is the JSON encoded registration message that
+ * will be sent to the server.
+ */
+ACVP_RESULT acvp_retrieve_sample_answers (ACVP_CTX *ctx, int vs_id) {
+    int rv;
+    char url[512]; //TODO: 512 is an arbitrary limit
+    
+    memset(url, 0x0, 512);
+    snprintf(url, 511, "https://%s:%d/%svalidation/acvp/vectors/answers?vsId=%d", ctx->server_name, ctx->server_port,
+             ctx->path_segment, vs_id);
+    
+    ACVP_LOG_STATUS("GET acvp/validation/acvp/vectors/answers?vsId=%d", vs_id);
+    
+    rv = acvp_curl_http_get(ctx, url, &acvp_curl_write_ans_func);
+    if (rv != HTTP_OK) {
+        ACVP_LOG_ERR("Unable to get sample answers from ACVP server. curl rv=%d\n", rv);
+        return ACVP_TRANSPORT_FAIL;
+    }
+    
+    /*
+     * Update user with status
+     */
+    ACVP_LOG_STATUS("Successfully received sample answers from ACVP server");
+    printf("\n%s\n\n", ctx->ans_buf);
+    
+    free(ctx->ans_buf);
+    ctx->ans_buf = NULL;
+    
+    return ACVP_SUCCESS;
 }
 
 
