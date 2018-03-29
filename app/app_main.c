@@ -2725,30 +2725,28 @@ static ACVP_RESULT app_rsa_keygen_handler(ACVP_TEST_CASE *test_case)
 
     /* keygen vars */
     unsigned int bitlen1, bitlen2, bitlen3, bitlen4, keylen;
-    
+
     if (!test_case) {
         rv = ACVP_INVALID_ARG;
         goto err;
     }
     tc = test_case->tc.rsa_keygen;
-    
+
     rsa = FIPS_rsa_new();
     bitlen1 = tc->bitlen1;
     bitlen2 = tc->bitlen2;
     bitlen3 = tc->bitlen3;
     bitlen4 = tc->bitlen4;
     keylen = tc->modulo;
-
+    
     if (!BN_hex2bn(&e, (const char *)tc->e)) {
         printf("Error converting e string to BN\n");
         rv = ACVP_CRYPTO_MODULE_FAIL;
         goto err;
     }
     
-    acvp_hexstr_to_bin(tc->seed, seed, seed_max);
-    
     int rc = rsa_generate_key_internal(&rsa->p, &rsa->q, &rsa->n, &rsa->d,
-                                       seed, tc->seed_len,
+                                       tc->seed, tc->seed_len,
                                        bitlen1, bitlen2, bitlen3, bitlen4,
                                        e, keylen, NULL);
     if (rc != 1) {
@@ -2756,11 +2754,6 @@ static ACVP_RESULT app_rsa_keygen_handler(ACVP_TEST_CASE *test_case)
         rv = ACVP_CRYPTO_MODULE_FAIL;
         goto err;
     }
-    
-    tc->p = BN_dup(rsa->p);
-    tc->q = BN_dup(rsa->q);
-    tc->n = BN_dup(rsa->n);
-    tc->d = BN_dup(rsa->d);
 
     tc->p = (unsigned char *)BN_bn2hex(rsa->p);
     tc->q = (unsigned char *)BN_bn2hex(rsa->q);
@@ -2837,7 +2830,7 @@ static ACVP_RESULT app_rsa_sig_handler(ACVP_TEST_CASE *test_case)
     msg_len = tc->msg_len;
     msg = calloc(msg_len + 1, sizeof(char));
     if(!msg) {
-        printf("\nError: Alloc failure in RSA SigGen Handler\n");
+        printf("\nError: Alloc failure in RSA Sig Handler\n");
         rv = ACVP_INVALID_ARG;
         goto err;
     }
@@ -2849,20 +2842,20 @@ static ACVP_RESULT app_rsa_sig_handler(ACVP_TEST_CASE *test_case)
 
     rsa = FIPS_rsa_new();
     if (!rsa) {
-        printf("\nError: Issue with RSA obj in RSA SigGen\n");
+        printf("\nError: Issue with RSA obj in RSA Sig\n");
         rv = ACVP_CRYPTO_MODULE_FAIL;
         goto err;
     }
     
     bn_e = BN_new();
-    if (!bn_e || !BN_set_word(bn_e, 0x10001)) {
-        printf("\nError: Issue with exponent in RSA SigGen\n");
+    if (!bn_e || !BN_set_word(bn_e, 0x1001)) {
+        printf("\nError: Issue with exponent in RSA Sig\n");
         rv = ACVP_CRYPTO_MODULE_FAIL;
         goto err;
     }
     
     if (!tc->modulo) {
-        printf("\nError: Issue with modulo in RSA SigGen\n");
+        printf("\nError: Issue with modulo in RSA Sig\n");
         rv = ACVP_CRYPTO_MODULE_FAIL;
         goto err;
     }

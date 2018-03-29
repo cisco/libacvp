@@ -3206,9 +3206,7 @@ static ACVP_RESULT acvp_build_rsa_keygen_register_cap (JSON_Object *cap_obj, ACV
     json_object_set_boolean(cap_obj, "infoGeneratedByServer", keygen_cap->info_gen_by_server);
     json_object_set_string(cap_obj, "pubExpMode", keygen_cap->pub_exp_mode == RSA_PUB_EXP_FIXED ? "fixed" : "random");
     if (keygen_cap->pub_exp_mode == RSA_PUB_EXP_FIXED) {
-        if (keygen_cap->fixed_pub_exp) {
-            json_object_set_string(cap_obj, "fixedPubExp", (const char *)keygen_cap->fixed_pub_exp);
-        }
+        json_object_set_string(cap_obj, "fixedPubExp", (const char *)keygen_cap->fixed_pub_exp);
     }
     json_object_set_string(cap_obj, "keyFormat", keygen_cap->key_format_crt ? "crt" : "standard");
     
@@ -4374,7 +4372,7 @@ static ACVP_RESULT acvp_dispatch_vector_set (ACVP_CTX *ctx, JSON_Object *obj) {
         if (!strncmp(alg, alg_tbl[i].name, strlen(alg_tbl[i].name))) {
             rv = (alg_tbl[i].handler)(ctx, obj);
             return rv;
-        } else if (!strncmp(mode, alg_tbl[i].name, strlen(alg_tbl[i].name))) {
+        } else if (mode && !strncmp(mode, alg_tbl[i].name, strlen(alg_tbl[i].name))) {
             rv = (alg_tbl[i].handler)(ctx, obj);
             return rv;
         }

@@ -120,10 +120,9 @@ static ACVP_RESULT acvp_rsa_keygen_init_tc (ACVP_CTX *ctx,
     stc->rand_pq = rand_pq;
     stc->modulo = modulo;
     
-    stc->e = calloc(8, sizeof(char));
-    if (!stc->e) { return ACVP_MALLOC_FAIL; }
     stc->e = calloc(ACVP_RSA_EXP_LEN_MAX, sizeof(char));
     if (!stc->e) { return ACVP_MALLOC_FAIL; }
+    strncpy(stc->e, e, strnlen(e, ACVP_RSA_EXP_LEN_MAX));
     stc->p = calloc(ACVP_RSA_EXP_LEN_MAX, sizeof(char));
     if (!stc->p) { return ACVP_MALLOC_FAIL; }
     stc->q = calloc(ACVP_RSA_EXP_LEN_MAX, sizeof(char));
@@ -160,13 +159,6 @@ static ACVP_RESULT acvp_rsa_keygen_init_tc (ACVP_CTX *ctx,
         stc->bitlen4 = bitlen4;
         acvp_hexstr_to_bin((const unsigned char *)seed, stc->seed, seed_len);
         stc->seed_len = seed_len/2;
-    }
-    if (e != NULL) {
-        rv = acvp_hexstr_to_bin((const unsigned char *) e, stc->e, ACVP_RSA_EXP_LEN_MAX);
-        if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("Hex conversion failure (e)");
-            return rv;
-        }
     }
     return ACVP_SUCCESS;
 }
@@ -273,6 +265,8 @@ ACVP_RESULT acvp_rsa_keygen_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
          */
         info_gen_by_server = json_object_get_boolean(groupobj, "infoGeneratedByServer");
         pub_exp_mode = (char *) json_object_get_string(groupobj, "pubExpMode");
+        e_str = (char *) json_object_get_string(groupobj, "fixedPubExp");
+
         key_format = (char *) json_object_get_string(groupobj, "keyFormat");
         rand_pq_str = (char *) json_object_get_string(groupobj, "randPQ");
         prime_test = (char *) json_object_get_string(groupobj, "primeTest");
@@ -310,7 +304,9 @@ ACVP_RESULT acvp_rsa_keygen_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
              * Retrieve values from JSON and initialize the tc
              */
             if (info_gen_by_server) {
-                e_str = (char *) json_object_get_string(testobj, "e");
+                if (!e_str) {
+                    e_str = (char *) json_object_get_string(testobj, "e");
+                }
                 bitlens = json_object_get_array(testobj, "bitlens");
                 bitlen1 = json_array_get_number(bitlens, 0);
                 bitlen2 = json_array_get_number(bitlens, 1);
