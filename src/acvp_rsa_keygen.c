@@ -112,7 +112,6 @@ static ACVP_RESULT acvp_rsa_keygen_init_tc (ACVP_CTX *ctx,
                                             int bitlen2,
                                             int bitlen3,
                                             int bitlen4) {
-    ACVP_RESULT rv;
     memset(stc, 0x0, sizeof(ACVP_RSA_KEYGEN_TC));
     
     stc->info_gen_by_server = info_gen_by_server;
@@ -122,7 +121,7 @@ static ACVP_RESULT acvp_rsa_keygen_init_tc (ACVP_CTX *ctx,
     
     stc->e = calloc(ACVP_RSA_EXP_LEN_MAX, sizeof(char));
     if (!stc->e) { return ACVP_MALLOC_FAIL; }
-    strncpy(stc->e, e, strnlen(e, ACVP_RSA_EXP_LEN_MAX));
+    strncpy((char *)stc->e, e, strnlen(e, ACVP_RSA_EXP_LEN_MAX));
     stc->p = calloc(ACVP_RSA_EXP_LEN_MAX, sizeof(char));
     if (!stc->p) { return ACVP_MALLOC_FAIL; }
     stc->q = calloc(ACVP_RSA_EXP_LEN_MAX, sizeof(char));

@@ -1019,13 +1019,13 @@ static void enable_rsa (ACVP_CTX *ctx) {
     // TODO: leaving this in here as a workaround until the server allows it as optional
     rv = acvp_enable_rsa_keygen_primes_parm(ctx, ACVP_RSA_KEYGEN_B34, 2048, PRIME_TEST_TBLC2_NAME);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_keygen_primes_parm(ctx, ACVP_RSA_KEYGEN_B34, 3072, ACVP_STR_SHA2_256);
+    rv = acvp_enable_rsa_keygen_primes_parm(ctx, ACVP_RSA_KEYGEN_B34, MOD_RSA_3072, ACVP_STR_SHA2_256);
     CHECK_ENABLE_CAP_RV(rv);
     // TODO: leaving this in here as a workaround until the server allows it as optional
-    rv = acvp_enable_rsa_keygen_primes_parm(ctx, ACVP_RSA_KEYGEN_B34, 3072, PRIME_TEST_TBLC2_NAME);
+    rv = acvp_enable_rsa_keygen_primes_parm(ctx, ACVP_RSA_KEYGEN_B34, MOD_RSA_3072, PRIME_TEST_TBLC2_NAME);
     CHECK_ENABLE_CAP_RV(rv);
-    
-    
+#endif
+#if 0
     /*
      * Enable siggen
      */
@@ -1442,9 +1442,11 @@ static ACVP_RESULT app_des_handler(ACVP_TEST_CASE *test_case)
         cipher = EVP_des_ede3_cfb1();
         break;
     case ACVP_TDES_CTR:
-        iv = tc->iv;
-        cipher = EVP_des_ede3_ctr();
-        break;
+        /*
+         * IMPORTANT: if this mode is supported in your crypto module,
+         * you will need to fill that out here. It is set to fall
+         * through as an unsupported mode.
+         */
     default:
         printf("Error: Unsupported DES mode requested by ACVP server\n");
         return ACVP_NO_CAP;
@@ -2318,13 +2320,13 @@ static ACVP_RESULT app_kdf135_tls_handler(ACVP_TEST_CASE *test_case)
     {
     case ACVP_KDF135_TLS_CAP_SHA256:
         evp_md1 = evp_md2 = EVP_sha256();
-  break;
+        break;
     case ACVP_KDF135_TLS_CAP_SHA384:
         evp_md1 = evp_md2 = EVP_sha384();
-  break;
+        break;
     case ACVP_KDF135_TLS_CAP_SHA512:
         evp_md1 = evp_md2 = EVP_sha512();
-  break;
+        break;
     default:
         printf("\nCrypto module error, Bad SHA type\n");
         return ACVP_INVALID_ARG;
@@ -2332,16 +2334,16 @@ static ACVP_RESULT app_kdf135_tls_handler(ACVP_TEST_CASE *test_case)
 
     count = 1;
     len = tc->pm_len / count;
-    if (count == 1)
-          psm_len = 0;
+    if (count == 1) {
+        psm_len = 0;
+    }
 
-    ret = kdf_tls12_P_hash(evp_md1, (const unsigned char *)tc->pm_secret, len + (psm_len & 1),
-                       TLS_MD_MASTER_SECRET_CONST, TLS_MD_MASTER_SECRET_CONST_SIZE,
-                     tc->ch_rnd, strlen((char *)tc->ch_rnd),
-                     tc->sh_rnd, strlen((char *)tc->sh_rnd),
-                     NULL, 0,
-                     NULL, 0,
-                     master_secret1, olen1);
+    /*
+     * IMPORTANT: Need to set ret = <your KDF API here>
+     * The default is set to failure as this is not
+     * currently supported in OpenSSL
+     */
+    ret = 0;
     if (ret == 0) {
         printf("\nCrypto module error, TLS kdf failure\n");
         return ACVP_CRYPTO_MODULE_FAIL;
@@ -2351,14 +2353,13 @@ static ACVP_RESULT app_kdf135_tls_handler(ACVP_TEST_CASE *test_case)
     }
 
     if (evp_md1 != evp_md2) {
-        ret = kdf_tls12_P_hash(evp_md2, (const unsigned char *)tc->pm_secret + len, len + (psm_len & 1),
-                           TLS_MD_MASTER_SECRET_CONST, TLS_MD_MASTER_SECRET_CONST_SIZE,
-                         tc->ch_rnd, strlen((char *)tc->ch_rnd),
-                         tc->sh_rnd, strlen((char *)tc->sh_rnd),
-                         NULL, 0,
-                         NULL, 0,
-                         master_secret2, olen1);
-    if (ret == 0) {
+        /*
+         * IMPORTANT: Need to set ret = <your KDF API here>
+         * The default is set to failure as this is not
+         * currently supported in OpenSSL
+         */
+        ret = 0;
+        if (ret == 0) {
             printf("\nCrypto module error, TLS kdf failure\n");
             return ACVP_CRYPTO_MODULE_FAIL;
         }
@@ -2370,16 +2371,15 @@ static ACVP_RESULT app_kdf135_tls_handler(ACVP_TEST_CASE *test_case)
 
     len1 = olen1;
     len = len1 / count;
-    if (count == 1)
+    if (count == 1) {
         len1 = 0;
-    ret = kdf_tls12_P_hash(evp_md1, (const unsigned char *)master_secret1,
-                   len + (len1 & 1),
-                   TLS_MD_KEY_EXPANSION_CONST, TLS_MD_KEY_EXPANSION_CONST_SIZE,
-                   tc->s_rnd, strlen((char *)tc->s_rnd),
-               tc->c_rnd, strlen((char *)tc->c_rnd),
-               NULL, 0,
-               NULL, 0,
-               key_block2, olen2);
+    }
+    /*
+     * IMPORTANT: Need to set ret = <your KDF API here>
+     * The default is set to failure as this is not
+     * currently supported in OpenSSL
+     */
+    ret = 0;
     if (ret == 0) {
         printf("\nCrypto module error, TLS kdf failure\n");
         return ACVP_CRYPTO_MODULE_FAIL;
@@ -2388,16 +2388,13 @@ static ACVP_RESULT app_kdf135_tls_handler(ACVP_TEST_CASE *test_case)
         key_block1[i] ^= key_block2[i];
     }
     if (evp_md1 != evp_md2) {
-
-    ret = kdf_tls12_P_hash(evp_md2, (const unsigned char *)master_secret1 + len,
-                   len + (len1 & 1),
-                           TLS_MD_KEY_EXPANSION_CONST, TLS_MD_KEY_EXPANSION_CONST_SIZE,
-                       tc->s_rnd, strlen((char *)tc->s_rnd),
-                   tc->c_rnd, strlen((char *)tc->c_rnd),
-                   NULL, 0,
-                   NULL, 0,
-                   key_block2, olen2);
-    if (ret == 0) {
+        /*
+         * IMPORTANT: Need to set ret = <your KDF API here>
+         * The default is set to failure as this is not
+         * currently supported in OpenSSL
+         */
+        ret = 0;
+        if (ret == 0) {
             printf("\nCrypto module error, TLS kdf failure\n");
             return ACVP_CRYPTO_MODULE_FAIL;
         }
@@ -2423,8 +2420,13 @@ static ACVP_RESULT app_kdf135_snmp_handler(ACVP_TEST_CASE *test_case)
         printf("\nCrypto module error, malloc failure\n");
         return ACVP_CRYPTO_MODULE_FAIL;
     }
-
-    ret = kdf_snmp(tc->engine_id, strnlen((const char *)tc->engine_id, ACVP_KDF135_SNMP_ENGID_MAX), tc->password, p_len, s_key);
+    
+    /*
+     * IMPORTANT: Need to set ret = <your KDF API here>
+     * The default is set to failure as this is not
+     * currently supported in OpenSSL
+     */
+    ret = 0;
     if (!ret) {
         printf("\nCrypto module error, kdf snmp failure\n");
         return ACVP_CRYPTO_MODULE_FAIL;
@@ -2468,21 +2470,16 @@ static ACVP_RESULT app_kdf135_ssh_handler(ACVP_TEST_CASE *test_case)
         return ACVP_INVALID_ARG;
     }
 
-/*
-   o  Initial IV client to server: HASH(K || H || "A" || session_id)
-      (Here K is encoded as mpint and "A" as byte and session_id as raw
-      data.  "A" means the single character A, ASCII 65).
-
-   o  Initial IV server to client: HASH(K || H || "B" || session_id)
-
-   o  Encryption key client to server: HASH(K || H || "C" || session_id)
-
-   o  Encryption key server to client: HASH(K || H || "D" || session_id)
-
-   o  Integrity key client to server: HASH(K || H || "E" || session_id)
-
-   o  Integrity key server to client: HASH(K || H || "F" || session_id)
- */
+    /*
+       o  Initial IV client to server: HASH(K || H || "A" || session_id)
+          (Here K is encoded as mpint and "A" as byte and session_id as raw
+          data.  "A" means the single character A, ASCII 65).
+       o  Initial IV server to client: HASH(K || H || "B" || session_id)
+       o  Encryption key client to server: HASH(K || H || "C" || session_id)
+       o  Encryption key server to client: HASH(K || H || "D" || session_id)
+       o  Integrity key client to server: HASH(K || H || "E" || session_id)
+       o  Integrity key server to client: HASH(K || H || "F" || session_id)
+     */
     cs_init_iv_buf = tc->cs_init_iv;
     sc_init_iv_buf = tc->sc_init_iv;
     cs_e_key_buf   = tc->cs_e_key;
@@ -2495,102 +2492,78 @@ static ACVP_RESULT app_kdf135_ssh_handler(ACVP_TEST_CASE *test_case)
         rc = ACVP_MALLOC_FAIL;
         goto error;
     }
-
-    ret = kdf_ssh((const EVP_MD*)evp_md,
-                  'A',
-                  (unsigned int)tc->iv_len/8,
-                  (char*)tc->shared_sec_k,
-                  (int)tc->sh_sec_len/8,
-                  (char*)tc->session_id,
-                  tc->session_len,
-                  (char *)tc->hash_h,
-                  tc->hash_len,
-                  cs_init_iv_buf);
+    
+    /*
+     * IMPORTANT: Need to set ret = <your KDF API here>
+     * The default is set to failure as this is not
+     * currently supported in OpenSSL
+     */
+    ret = 1;
     if (ret != 0) {
         printf("\nCrypto module error, kdf ssh cs_init_iv failure\n");
         rc = ACVP_CRYPTO_MODULE_FAIL;
         goto error;
     }
-
-    ret = kdf_ssh((const EVP_MD*)evp_md,
-                  'B',
-                  (unsigned int)tc->iv_len/8,
-                  (char*)tc->shared_sec_k,
-                  (int)tc->sh_sec_len/8,
-                  (char*)tc->session_id,
-                  strlen((const char*)tc->session_id),
-                  (char*)tc->hash_h,
-                  strlen((const char*)tc->hash_h),
-                  sc_init_iv_buf);
+    
+    /*
+     * IMPORTANT: Need to set ret = <your KDF API here>
+     * The default is set to failure as this is not
+     * currently supported in OpenSSL
+     */
+    ret = 1;
     if (ret != 0) {
         printf("\nCrypto module error, kdf ssh sc_init_iv failure\n");
         rc = ACVP_CRYPTO_MODULE_FAIL;
         goto error;
     }
-
-    ret = kdf_ssh((const EVP_MD*)evp_md,
-                  'C',
-                  (unsigned int)tc->key_len/8,
-                  (char*)tc->shared_sec_k,
-                  (int)tc->sh_sec_len/8,
-                  (char*)tc->session_id,
-                  strlen((const char*)tc->session_id),
-                  (char*)tc->hash_h,
-                  strlen((const char*)tc->hash_h),
-                  cs_e_key_buf);
+    
+    /*
+     * IMPORTANT: Need to set ret = <your KDF API here>
+     * The default is set to failure as this is not
+     * currently supported in OpenSSL
+     */
+    ret = 1;
     if (ret != 0) {
         printf("\nCrypto module error, kdf ssh cs_e_key failure\n");
         rc = ACVP_CRYPTO_MODULE_FAIL;
         goto error;
     }
-
-    ret = kdf_ssh((const EVP_MD*)evp_md,
-                   'D',
-                   (unsigned int)tc->key_len/8,
-                   (char*)tc->shared_sec_k,
-                   (int)tc->sh_sec_len/8,
-                   (char*)tc->session_id,
-                   strlen((const char*)tc->session_id),
-                   (char*)tc->hash_h,
-                   strlen((const char*)tc->hash_h),
-                   sc_e_key_buf);
-     if (ret != 0) {
-         printf("\nCrypto module error, kdf ssh sc_e_key failure\n");
-         rc = ACVP_CRYPTO_MODULE_FAIL;
-         goto error;
-     }
-
-     ret = kdf_ssh((const EVP_MD*)evp_md,
-                     'E',
-                     (unsigned int)tc->key_len/8,
-                     (char*)tc->shared_sec_k,
-                     (int)tc->sh_sec_len/8,
-                     (char*)tc->session_id,
-                     strlen((const char*)tc->session_id),
-                     (char*)tc->hash_h,
-                     strlen((const char*)tc->hash_h),
-                     cs_i_key_buf);
-       if (ret != 0) {
-           printf("\nCrypto module error, kdf ssh cs_i_key failure\n");
-           rc = ACVP_CRYPTO_MODULE_FAIL;
-           goto error;
-       }
-
-       ret = kdf_ssh((const EVP_MD*)evp_md,
-                      'F',
-                      (unsigned int)tc->key_len/8,
-                      (char*)tc->shared_sec_k,
-                      (int)tc->sh_sec_len/8,
-                      (char*)tc->session_id,
-                      strlen((const char*)tc->session_id),
-                      (char*)tc->hash_h,
-                      strlen((const char *)tc->hash_h),
-                      sc_i_key_buf);
-       if (ret != 0) {
-           printf("\nCrypto module error, kdf ssh sc_i_key failure\n");
-           rc = ACVP_CRYPTO_MODULE_FAIL;
-           goto error;
-       }
+    
+    /*
+     * IMPORTANT: Need to set ret = <your KDF API here>
+     * The default is set to failure as this is not
+     * currently supported in OpenSSL
+     */
+    ret = 1;
+    if (ret != 0) {
+        printf("\nCrypto module error, kdf ssh sc_e_key failure\n");
+        rc = ACVP_CRYPTO_MODULE_FAIL;
+        goto error;
+    }
+    
+    /*
+     * IMPORTANT: Need to set ret = <your KDF API here>
+     * The default is set to failure as this is not
+     * currently supported in OpenSSL
+     */
+    ret = 1;
+    if (ret != 0) {
+       printf("\nCrypto module error, kdf ssh cs_i_key failure\n");
+       rc = ACVP_CRYPTO_MODULE_FAIL;
+       goto error;
+    }
+    
+    /*
+     * IMPORTANT: Need to set ret = <your KDF API here>
+     * The default is set to failure as this is not
+     * currently supported in OpenSSL
+     */
+    ret = 1;
+    if (ret != 0) {
+       printf("\nCrypto module error, kdf ssh sc_i_key failure\n");
+       rc = ACVP_CRYPTO_MODULE_FAIL;
+       goto error;
+    }
 
 error:
     return rc;
@@ -2757,12 +2730,15 @@ static ACVP_RESULT app_rsa_keygen_handler(ACVP_TEST_CASE *test_case)
         goto err;
     }
     
-    int rc = rsa_generate_key_internal(&rsa->p, &rsa->q, &rsa->n, &rsa->d,
-                                       tc->seed, tc->seed_len,
-                                       bitlen1, bitlen2, bitlen3, bitlen4,
-                                       e, keylen, NULL);
-    if (rc != 1) {
-        printf("Error generating key\n");
+    /*
+     * IMPORTANT: Placeholder! The RSA keygen vector
+     * sets will fail if this handler is left as is.
+     *
+     * Below, insert your own key generation API that
+     * supports specification of all of the params...
+     */
+    if (!FIPS_rsa_x931_generate_key_ex(rsa, tc->modulo, e, NULL)) {
+        printf("\nError: Issue with key generation\n");
         rv = ACVP_CRYPTO_MODULE_FAIL;
         goto err;
     }
