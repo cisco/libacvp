@@ -73,6 +73,13 @@ Overview
 
 Building
 
+    IMPORTANT: The exmaple client application has placeholders for some
+    vector processing handlers that are not currently supported in OpenSSL,
+    namely KDFs, RSA key generation, and TDES CTR. The respective handlers
+    have skeleton code and are marked with a comment "IMPORTANT: ...".
+    You will have to fill these in with your crypto module's API in order
+    for vector tests to pass.
+
     Dependencies:
         libacvp is dependent on gcc, make, curl (or substitution) and
         openssl (or substitution)
@@ -82,6 +89,7 @@ Building
         32-bit systems. If you have another system, you will need to add
         your own libraries and update the Makefile.win to reflect the new
         libraries (for example -lssl32)
+
         1. Install dependencies and add to PATH
         2. Add the path to curl and openssl dev headers to the INCDIRS in
             the Makefile.win
