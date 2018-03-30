@@ -1024,8 +1024,7 @@ static void enable_rsa (ACVP_CTX *ctx) {
     // TODO: leaving this in here as a workaround until the server allows it as optional
     rv = acvp_enable_rsa_keygen_primes_parm(ctx, ACVP_RSA_KEYGEN_B34, 3072, PRIME_TEST_TBLC2_NAME);
     CHECK_ENABLE_CAP_RV(rv);
-#endif
-#if 0
+
     /*
      * Enable siggen
      */
