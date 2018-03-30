@@ -1019,10 +1019,10 @@ static void enable_rsa (ACVP_CTX *ctx) {
     // TODO: leaving this in here as a workaround until the server allows it as optional
     rv = acvp_enable_rsa_keygen_primes_parm(ctx, ACVP_RSA_KEYGEN_B34, 2048, PRIME_TEST_TBLC2_NAME);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_keygen_primes_parm(ctx, ACVP_RSA_KEYGEN_B34, MOD_RSA_3072, ACVP_STR_SHA2_256);
+    rv = acvp_enable_rsa_keygen_primes_parm(ctx, ACVP_RSA_KEYGEN_B34, 3072, ACVP_STR_SHA2_256);
     CHECK_ENABLE_CAP_RV(rv);
     // TODO: leaving this in here as a workaround until the server allows it as optional
-    rv = acvp_enable_rsa_keygen_primes_parm(ctx, ACVP_RSA_KEYGEN_B34, MOD_RSA_3072, PRIME_TEST_TBLC2_NAME);
+    rv = acvp_enable_rsa_keygen_primes_parm(ctx, ACVP_RSA_KEYGEN_B34, 3072, PRIME_TEST_TBLC2_NAME);
     CHECK_ENABLE_CAP_RV(rv);
 #endif
 #if 0
