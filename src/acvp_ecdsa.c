@@ -96,21 +96,21 @@ static ACVP_RESULT acvp_ecdsa_init_tc (ACVP_CTX *ctx,
     stc->cipher = cipher;
     
     stc->curve = calloc(5, sizeof(char));
-    if (!stc->curve) { return ACVP_MALLOC_FAIL; }
+    if (!stc->curve) { goto err; }
     strncpy(stc->curve, curve, strnlen(curve, 5));
     
     stc->secret_gen_mode = calloc(18, sizeof(char));
-    if (!stc->secret_gen_mode) { return ACVP_MALLOC_FAIL; }
+    if (!stc->secret_gen_mode) { goto err; }
     strncpy(stc->secret_gen_mode, secret_gen_mode, strnlen(secret_gen_mode, 18));
     
     stc->qy = calloc(ACVP_RSA_EXP_LEN_MAX, sizeof(char));
-    if (!stc->qy) { return ACVP_MALLOC_FAIL; }
+    if (!stc->qy) { goto err; }
     stc->qx = calloc(ACVP_RSA_EXP_LEN_MAX, sizeof(char));
-    if (!stc->qx) { return ACVP_MALLOC_FAIL; }
+    if (!stc->qx) { goto err; }
     stc->r = calloc(ACVP_RSA_EXP_LEN_MAX, sizeof(char));
-    if (!stc->r) { return ACVP_MALLOC_FAIL; }
+    if (!stc->r) { goto err; }
     stc->s = calloc(ACVP_RSA_EXP_LEN_MAX, sizeof(char));
-    if (!stc->s) { return ACVP_MALLOC_FAIL; }
+    if (!stc->s) { goto err; }
     
     if (cipher == ACVP_ECDSA_KEYVER || cipher == ACVP_ECDSA_SIGVER) {
         strncpy((char *)stc->qx, qx, strnlen(qx, 128));
@@ -122,13 +122,20 @@ static ACVP_RESULT acvp_ecdsa_init_tc (ACVP_CTX *ctx,
     }
     if (cipher == ACVP_ECDSA_SIGVER || cipher == ACVP_ECDSA_SIGGEN) {
         stc->message = calloc(ACVP_RSA_EXP_LEN_MAX, sizeof(char));
-        if (!stc->message) { return ACVP_MALLOC_FAIL; }
+        if (!stc->message) {
+            ACVP_LOG_ERR("Failed to allocate message buffer in ECDSA sig");
+            return ACVP_MALLOC_FAIL;
+        }
         strncpy((char *)stc->message, message, strnlen(message, ACVP_RSA_MSGLEN_MAX));
     }
     stc->d = calloc(ACVP_RSA_EXP_LEN_MAX, sizeof(char));
-    if (!stc->d) { return ACVP_MALLOC_FAIL; }
+    if (!stc->d) { goto err; }
     
     return ACVP_SUCCESS;
+    
+    err:
+    ACVP_LOG_ERR("Failed to allocate buffer in ECDSA test case");
+    return ACVP_MALLOC_FAIL;
 }
 
 ACVP_RESULT acvp_ecdsa_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
@@ -284,6 +291,9 @@ ACVP_RESULT acvp_ecdsa_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
                     rv = ACVP_CRYPTO_MODULE_FAIL;
                     goto key_err;
                 }
+            } else {
+                ACVP_LOG_ERR("Failed to initialize ECDSA test case");
+                goto key_err;
             }
             
             /*
@@ -294,15 +304,15 @@ ACVP_RESULT acvp_ecdsa_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
                 ACVP_LOG_ERR("ERROR: JSON output failure in hash module");
                 goto key_err;
             }
+    
+            /* Append the test response value to array */
+            json_array_append_value(r_tarr, r_tval);
             
             /*
              * Release all the memory associated with the test case
              */
             key_err:
             acvp_ecdsa_release_tc(&stc);
-            
-            /* Append the test response value to array */
-            json_array_append_value(r_tarr, r_tval);
             if (rv != ACVP_SUCCESS) {
                 goto end;
             }
@@ -322,3 +332,4 @@ ACVP_RESULT acvp_ecdsa_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     
     return rv;
 }
+
