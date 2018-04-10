@@ -92,6 +92,12 @@ static ACVP_RESULT acvp_append_rsa_keygen_caps_entry (
         ACVP_CIPHER cipher,
         ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case));
 
+static ACVP_RESULT acvp_append_ecdsa_caps_entry (
+        ACVP_CTX *ctx,
+        ACVP_ECDSA_CAP *cap,
+        ACVP_CIPHER cipher,
+        ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case));
+
 static ACVP_RESULT acvp_append_rsa_sig_caps_entry (
         ACVP_CTX *ctx,
         ACVP_RSA_SIG_CAP *cap,
@@ -172,6 +178,10 @@ ACVP_ALG_HANDLER alg_tbl[ACVP_ALG_MAX] = {
         {ACVP_RSA_KEYGEN,        &acvp_rsa_keygen_kat_handler,  ACVP_ALG_RSA_KEYGEN},
         {ACVP_RSA_SIGGEN,        &acvp_rsa_sig_kat_handler,     ACVP_ALG_RSA_SIGGEN},
         {ACVP_RSA_SIGVER,        &acvp_rsa_sig_kat_handler,     ACVP_ALG_RSA_SIGVER},
+        {ACVP_ECDSA_KEYGEN,      &acvp_ecdsa_kat_handler,       ACVP_ALG_ECDSA_KEYGEN},
+        {ACVP_ECDSA_KEYVER,      &acvp_ecdsa_kat_handler,       ACVP_ALG_ECDSA_KEYVER},
+        {ACVP_ECDSA_SIGGEN,      &acvp_ecdsa_kat_handler,       ACVP_ALG_ECDSA_SIGGEN},
+        {ACVP_ECDSA_SIGVER,      &acvp_ecdsa_kat_handler,       ACVP_ALG_ECDSA_SIGVER},
         {ACVP_KDF135_TLS,        &acvp_kdf135_tls_kat_handler,  ACVP_ALG_KDF135_TLS},
         {ACVP_KDF135_SNMP,       &acvp_kdf135_snmp_kat_handler, ACVP_ALG_KDF135_SNMP},
         {ACVP_KDF135_SSH,        &acvp_kdf135_ssh_kat_handler,  ACVP_ALG_KDF135_SSH}
@@ -1365,6 +1375,10 @@ static ACVP_RESULT acvp_validate_prereq_val (ACVP_CIPHER cipher, ACVP_PREREQ_ALG
     case ACVP_RSA_KEYGEN:
     case ACVP_RSA_SIGGEN:
     case ACVP_RSA_SIGVER:
+    case ACVP_ECDSA_KEYGEN:
+    case ACVP_ECDSA_KEYVER:
+    case ACVP_ECDSA_SIGGEN:
+    case ACVP_ECDSA_SIGVER:
         if (pre_req == ACVP_PREREQ_SHA ||
             pre_req == ACVP_PREREQ_DRBG) {
             return ACVP_SUCCESS;
@@ -1564,6 +1578,110 @@ ACVP_RESULT acvp_enable_rsa_keygen_cap_parm (ACVP_CTX *ctx,
         return ACVP_INVALID_ARG;
         break;
     }
+    return ACVP_SUCCESS;
+}
+
+/*
+ * The user should call this after invoking acvp_enable_ecdsa_cap().
+ */
+ACVP_RESULT acvp_enable_ecdsa_cap_parm (ACVP_CTX *ctx,
+                                        ACVP_CIPHER cipher,
+                                        ACVP_ECDSA_PARM param,
+                                        char *value
+) {
+    ACVP_CAPS_LIST *cap_list;
+    int curve = 0;
+    ACVP_NAME_LIST *current_curve, *current_secret_mode, *current_hash;
+    ACVP_ECDSA_CAP *cap;
+    
+    switch(cipher) {
+    case ACVP_ECDSA_KEYGEN:
+    case ACVP_ECDSA_KEYVER:
+    case ACVP_ECDSA_SIGGEN:
+    case ACVP_ECDSA_SIGVER:
+        break;
+    default:
+        return ACVP_INVALID_ARG;
+    }
+    
+    cap_list = acvp_locate_cap_entry(ctx, cipher);
+    if (!cap_list) {
+        ACVP_LOG_ERR("Cap entry not found.");
+        return ACVP_NO_CAP;
+    }
+    
+    switch(cipher) {
+    case ACVP_ECDSA_KEYGEN:
+        cap = cap_list->cap.ecdsa_keygen_cap;
+        break;
+    case ACVP_ECDSA_KEYVER:
+        cap = cap_list->cap.ecdsa_keyver_cap;
+        break;
+    case ACVP_ECDSA_SIGGEN:
+        cap = cap_list->cap.ecdsa_siggen_cap;
+        break;
+    case ACVP_ECDSA_SIGVER:
+        cap = cap_list->cap.ecdsa_sigver_cap;
+        break;
+    default:
+        return ACVP_INVALID_ARG;
+    }
+    
+    switch (param) {
+    case ACVP_CURVE:
+        curve = acvp_lookup_ecdsa_curve(cipher, value);
+        if (!curve) {
+            return ACVP_INVALID_ARG;
+        }
+        current_curve = cap->curves;
+        if (current_curve) {
+            while (current_curve->next) {
+                current_curve = current_curve->next;
+            }
+            current_curve->next = calloc(1, sizeof(ACVP_NAME_LIST));
+            current_curve->next->name = value;
+        } else {
+            cap->curves = calloc(1, sizeof(ACVP_NAME_LIST));
+            cap->curves->name = value;
+        }
+        break;
+    case ACVP_SECRET_GEN_MODE:
+        if (cipher != ACVP_ECDSA_KEYGEN) {
+            return ACVP_INVALID_ARG;
+        }
+        current_secret_mode = cap->secret_gen_modes;
+        if (current_secret_mode) {
+            while (current_secret_mode->next) {
+                current_secret_mode = current_secret_mode->next;
+            }
+            current_secret_mode->next = calloc(1, sizeof(ACVP_NAME_LIST));
+            current_secret_mode->next->name = value;
+        } else {
+            cap->secret_gen_modes = calloc(1, sizeof(ACVP_NAME_LIST));
+            cap->secret_gen_modes->name = value;
+        }
+        break;
+    case ACVP_HASH_ALG:
+        if (cipher != ACVP_ECDSA_SIGGEN && cipher != ACVP_ECDSA_SIGVER) {
+            return ACVP_INVALID_ARG;
+        }
+        current_hash = cap->hash_algs;
+        if (current_hash) {
+            while (current_hash->next) {
+                current_hash = current_hash->next;
+            }
+            current_hash->next = calloc(1, sizeof(ACVP_NAME_LIST));
+            current_hash->next->name = value;
+        } else {
+            cap->hash_algs = calloc(1, sizeof(ACVP_NAME_LIST));
+            cap->hash_algs->name = value;
+        }
+        break;
+    default:
+        return ACVP_INVALID_ARG;
+        break;
+    }
+    
     return ACVP_SUCCESS;
 }
 
@@ -2388,6 +2506,39 @@ ACVP_RESULT acvp_enable_rsa_keygen_cap (
     if (result != ACVP_SUCCESS) {
         free(rsa_keygen_cap);
         rsa_keygen_cap = NULL;
+    }
+    return result;
+}
+
+ACVP_RESULT acvp_enable_ecdsa_cap (
+        ACVP_CTX *ctx,
+        ACVP_CIPHER cipher,
+        ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case)) {
+    ACVP_ECDSA_CAP *ecdsa_cap;
+    ACVP_RESULT result;
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+    if (!crypto_handler) {
+        return ACVP_INVALID_ARG;
+    }
+    
+    /*
+     * Check for duplicate entry
+     */
+    if (acvp_locate_cap_entry(ctx, cipher)) {
+        return ACVP_DUP_CIPHER;
+    }
+    
+    ecdsa_cap = calloc(1, sizeof(ACVP_ECDSA_CAP));
+    if (!ecdsa_cap) {
+        return ACVP_MALLOC_FAIL;
+    }
+    
+    result = acvp_append_ecdsa_caps_entry(ctx, ecdsa_cap, cipher, crypto_handler);
+    if (result != ACVP_SUCCESS) {
+        free(ecdsa_cap);
+        ecdsa_cap = NULL;
     }
     return result;
 }
@@ -3254,12 +3405,12 @@ static ACVP_RESULT acvp_build_rsa_sig_register_cap (JSON_Object *cap_obj, ACVP_C
         alg_specs_val = json_value_init_object();
         alg_specs_obj = json_value_get_object(alg_specs_val);
         json_object_set_string(alg_specs_obj, "sigType", rsa_cap_mode->sig_type_str);
-    
+        
         json_object_set_value(alg_specs_obj, "sigTypeCapabilities", json_value_init_array());
         sig_type_caps_array = json_object_get_array(alg_specs_obj, "sigTypeCapabilities");
-    
+        
         ACVP_RSA_MODE_CAPS_LIST *current_sig_type_cap = rsa_cap_mode->mode_capabilities;
-    
+        
         while (current_sig_type_cap) {
             sig_type_val = json_value_init_object();
             sig_type_obj = json_value_get_object(sig_type_val);
@@ -3267,7 +3418,7 @@ static ACVP_RESULT acvp_build_rsa_sig_register_cap (JSON_Object *cap_obj, ACVP_C
             json_object_set_number(sig_type_obj, "modulo", current_sig_type_cap->modulo);
             json_object_set_value(sig_type_obj, "hashPair", json_value_init_array());
             hash_pair_array = json_object_get_array(sig_type_obj, "hashPair");
-    
+            
             ACVP_RSA_HASH_PAIR_LIST *current_hash_pair = current_sig_type_cap->hash_pair;
             while (current_hash_pair) {
                 hash_pair_val = json_value_init_object();
@@ -3276,20 +3427,102 @@ static ACVP_RESULT acvp_build_rsa_sig_register_cap (JSON_Object *cap_obj, ACVP_C
                 if (strncmp(rsa_cap_mode->sig_type_str, "pss", 3) == 0) {
                     json_object_set_number(hash_pair_obj, "saltLen", current_hash_pair->salt);
                 }
-            
+                
                 json_array_append_value(hash_pair_array, hash_pair_val);
                 current_hash_pair = current_hash_pair->next;
             }
             
             current_sig_type_cap = current_sig_type_cap->next;
             json_array_append_value(sig_type_caps_array, sig_type_val);
-        
+            
         }
         json_array_append_value(alg_specs_array, alg_specs_val);
         rsa_cap_mode = rsa_cap_mode->next;
     }
     
     return result;
+}
+
+static ACVP_RESULT acvp_build_ecdsa_register_cap (ACVP_CIPHER cipher, JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry) {
+    ACVP_RESULT result;
+    JSON_Array *caps_arr = NULL, *curves_arr = NULL, *secret_modes_arr = NULL, *hash_arr = NULL;
+    ACVP_NAME_LIST *current_curve = NULL, *current_secret_mode = NULL, *current_hash = NULL;
+    JSON_Value *alg_caps_val;
+    JSON_Object *alg_caps_obj;
+    
+    json_object_set_string(cap_obj, "algorithm", "ECDSA");
+    
+    switch(cipher) {
+    case ACVP_ECDSA_KEYGEN:
+        json_object_set_string(cap_obj, "mode", "keyGen");
+        current_curve = cap_entry->cap.ecdsa_keygen_cap->curves;
+        current_secret_mode = cap_entry->cap.ecdsa_keygen_cap->secret_gen_modes;
+        break;
+    case ACVP_ECDSA_KEYVER:
+        json_object_set_string(cap_obj, "mode", "keyVer");
+        current_curve = cap_entry->cap.ecdsa_keyver_cap->curves;
+        break;
+    case ACVP_ECDSA_SIGGEN:
+        json_object_set_string(cap_obj, "mode", "sigGen");
+        current_curve = cap_entry->cap.ecdsa_siggen_cap->curves;
+        current_hash = cap_entry->cap.ecdsa_siggen_cap->hash_algs;
+        break;
+    case ACVP_ECDSA_SIGVER:
+        json_object_set_string(cap_obj, "mode", "sigVer");
+        current_curve = cap_entry->cap.ecdsa_sigver_cap->curves;
+        current_hash = cap_entry->cap.ecdsa_sigver_cap->hash_algs;
+        break;
+    default:
+        return ACVP_INVALID_ARG;
+        break;
+    }
+    
+    result = acvp_lookup_prereqVals(cap_obj, cap_entry);
+    if (result != ACVP_SUCCESS) { return result; }
+    
+    if (cipher == ACVP_ECDSA_SIGVER || cipher == ACVP_ECDSA_SIGGEN) {
+        json_object_set_value(cap_obj, "capabilities", json_value_init_array());
+        caps_arr = json_object_get_array(cap_obj, "capabilities");
+    }
+    alg_caps_val = json_value_init_object();
+    alg_caps_obj = json_value_get_object(alg_caps_val);
+    
+    /*
+     * Iterate through list of RSA modes and create registration object
+     * for each one, appending to the array as we go
+     */
+    if (cipher == ACVP_ECDSA_SIGVER || cipher == ACVP_ECDSA_SIGGEN) {
+        json_object_set_value(alg_caps_obj, "curve", json_value_init_array());
+        curves_arr = json_object_get_array(alg_caps_obj, "curve");
+    } else {
+        json_object_set_value(cap_obj, "curve", json_value_init_array());
+        curves_arr = json_object_get_array(cap_obj, "curve");
+    }
+    while (current_curve) {
+        json_array_append_string(curves_arr, current_curve->name);
+        current_curve = current_curve->next;
+    }
+    
+    if (cipher == ACVP_ECDSA_KEYGEN) {
+        json_object_set_value(cap_obj, "secretGenerationMode", json_value_init_array());
+        secret_modes_arr = json_object_get_array(cap_obj, "secretGenerationMode");
+        while (current_secret_mode) {
+            json_array_append_string(secret_modes_arr, current_secret_mode->name);
+            current_secret_mode = current_secret_mode->next;
+        }
+    }
+    
+    if (cipher == ACVP_ECDSA_SIGGEN || cipher == ACVP_ECDSA_SIGVER) {
+        json_object_set_value(alg_caps_obj, "hashAlg", json_value_init_array());
+        hash_arr = json_object_get_array(alg_caps_obj, "hashAlg");
+        while (current_hash) {
+            json_array_append_string(hash_arr, current_hash->name);
+            current_hash = current_hash->next;
+        }
+        json_array_append_value(caps_arr, alg_caps_val);
+    }
+    
+    return ACVP_SUCCESS;
 }
 
 static ACVP_RESULT acvp_build_kdf135_tls_register_cap (JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry) {
@@ -3723,6 +3956,12 @@ static ACVP_RESULT acvp_build_register (ACVP_CTX *ctx, char **reg) {
             case ACVP_RSA_SIGVER:
                 acvp_build_rsa_sig_register_cap(cap_obj, cap_entry);
                 break;
+            case ACVP_ECDSA_KEYGEN:
+            case ACVP_ECDSA_KEYVER:
+            case ACVP_ECDSA_SIGGEN:
+            case ACVP_ECDSA_SIGVER:
+                acvp_build_ecdsa_register_cap(cap_entry->cipher, cap_obj, cap_entry);
+                break;
             case ACVP_KDF135_TLS:
                 acvp_build_kdf135_tls_register_cap(cap_obj, cap_entry);
                 break;
@@ -3930,6 +4169,58 @@ static ACVP_RESULT acvp_append_rsa_keygen_caps_entry (
     cap_entry->cap.rsa_keygen_cap = cap;
     cap_entry->crypto_handler = crypto_handler;
     cap_entry->cap_type = ACVP_RSA_KEYGEN_TYPE;
+    
+    if (!ctx->caps_list) {
+        ctx->caps_list = cap_entry;
+    } else {
+        cap_e2 = ctx->caps_list;
+        while (cap_e2->next) {
+            cap_e2 = cap_e2->next;
+        }
+        cap_e2->next = cap_entry;
+    }
+    return (ACVP_SUCCESS);
+}
+
+/*
+ * Append an ECDSA capability to the
+ * capabilities list.  This list is later used to build
+ * the register message.
+ */
+static ACVP_RESULT acvp_append_ecdsa_caps_entry (
+        ACVP_CTX *ctx,
+        ACVP_ECDSA_CAP *cap,
+        ACVP_CIPHER cipher,
+        ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case)) {
+    ACVP_CAPS_LIST *cap_entry, *cap_e2;
+    
+    cap_entry = calloc(1, sizeof(ACVP_CAPS_LIST));
+    if (!cap_entry) {
+        return ACVP_MALLOC_FAIL;
+    }
+    cap_entry->cipher = cipher;
+    cap_entry->crypto_handler = crypto_handler;
+    
+    switch (cipher) {
+    case ACVP_ECDSA_KEYGEN:
+        cap_entry->cap.ecdsa_keygen_cap = cap;
+        cap_entry->cap_type = ACVP_ECDSA_KEYGEN_TYPE;
+        break;
+    case ACVP_ECDSA_KEYVER:
+        cap_entry->cap.ecdsa_keyver_cap = cap;
+        cap_entry->cap_type = ACVP_ECDSA_KEYVER_TYPE;
+        break;
+    case ACVP_ECDSA_SIGGEN:
+        cap_entry->cap.ecdsa_siggen_cap = cap;
+        cap_entry->cap_type = ACVP_ECDSA_SIGGEN_TYPE;
+        break;
+    case ACVP_ECDSA_SIGVER:
+        cap_entry->cap.ecdsa_sigver_cap = cap;
+        cap_entry->cap_type = ACVP_ECDSA_SIGVER_TYPE;
+        break;
+    default:
+        return ACVP_INVALID_ARG;
+    }
     
     if (!ctx->caps_list) {
         ctx->caps_list = cap_entry;

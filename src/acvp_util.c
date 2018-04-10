@@ -235,6 +235,47 @@ ACVP_RESULT is_valid_rsa_mod (int value) {
     } else { return ACVP_SUCCESS; }
 }
 
+int acvp_lookup_ecdsa_curve (ACVP_CIPHER cipher, char *curve_name) {
+
+    if (strncmp(curve_name, "p-224", 5) == 0) {
+        return ACVP_ECDSA_CURVE_P224;
+    } else if (strncmp(curve_name, "p-256", 5) == 0) {
+        return ACVP_ECDSA_CURVE_P256;
+    } else if (strncmp(curve_name, "p-384", 5) == 0) {
+        return ACVP_ECDSA_CURVE_P384;
+    } else if (strncmp(curve_name, "p-521", 5) == 0) {
+        return ACVP_ECDSA_CURVE_P521;
+    } else if (strncmp(curve_name, "b-233", 5) == 0) {
+        return ACVP_ECDSA_CURVE_B233;
+    } else if (strncmp(curve_name, "b-283", 5) == 0) {
+        return ACVP_ECDSA_CURVE_B283;
+    } else if (strncmp(curve_name, "b-409", 5) == 0) {
+        return ACVP_ECDSA_CURVE_B409;
+    } else if (strncmp(curve_name, "b-571", 5) == 0) {
+        return ACVP_ECDSA_CURVE_B571;
+    } else if (strncmp(curve_name, "k-233", 5) == 0) {
+        return ACVP_ECDSA_CURVE_K233;
+    } else if (strncmp(curve_name, "k-283", 5) == 0) {
+        return ACVP_ECDSA_CURVE_K283;
+    } else if (strncmp(curve_name, "k-409", 5) == 0) {
+        return ACVP_ECDSA_CURVE_K409;
+    } else if (strncmp(curve_name, "k-571", 5) == 0) {
+        return ACVP_ECDSA_CURVE_K571;
+    }
+
+    if (cipher == ACVP_ECDSA_KEYVER || cipher == ACVP_ECDSA_SIGVER) {
+        if (strncmp(curve_name, "p-192", 5) == 0) {
+            return ACVP_ECDSA_CURVE_P192;
+        } else if (strncmp(curve_name, "b-163", 5) == 0) {
+            return ACVP_ECDSA_CURVE_B163;
+        } else if (strncmp(curve_name, "k-163", 5) == 0) {
+            return ACVP_ECDSA_CURVE_K163;
+        }
+    }
+
+    return 0;
+}
+
 //TODO: the next 3 functions could possibly be replaced using OpenSSL bignum,
 //      which has support for reading/writing hex strings.  But do we want
 //      to include a new dependency on OpenSSL?
