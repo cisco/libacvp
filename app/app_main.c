@@ -78,6 +78,7 @@ static void enable_hmac(ACVP_CTX *ctx);
 static void enable_kdf(ACVP_CTX *ctx);
 static void enable_dsa(ACVP_CTX *ctx);
 static void enable_rsa(ACVP_CTX *ctx);
+static void enable_ecdsa(ACVP_CTX *ctx);
 static void enable_drbg(ACVP_CTX *ctx);
 
 static ACVP_RESULT app_aes_handler_aead(ACVP_TEST_CASE *test_case);
@@ -99,6 +100,7 @@ static ACVP_RESULT app_kdf135_ssh_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_drbg_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_rsa_keygen_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_rsa_sig_handler(ACVP_TEST_CASE *test_case);
+static ACVP_RESULT app_ecdsa_handler(ACVP_TEST_CASE *test_case);
 #endif
 
 #define DEFAULT_SERVER "127.0.0.1"
@@ -222,6 +224,7 @@ int main(int argc, char **argv)
      */
     int rsa = 0;
     int drbg = 0;
+    int ecdsa = 1;
 
     if (argc > 3) {
         print_usage();
@@ -377,6 +380,10 @@ int main(int argc, char **argv)
 #ifdef ACVP_NO_RUNTIME
     if (rsa) {
         enable_rsa(ctx);
+    }
+    
+    if (ecdsa) {
+        enable_ecdsa(ctx);
     }
 
     if (drbg) {
@@ -1194,9 +1201,76 @@ static void enable_rsa (ACVP_CTX *ctx) {
     rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_PKCS1PSS, 3072, ACVP_STR_SHA2_512, 0);
     CHECK_ENABLE_CAP_RV(rv);
 }
-#endif
 
-#ifdef ACVP_NO_RUNTIME
+static void enable_ecdsa (ACVP_CTX *ctx) {
+    ACVP_RESULT rv;
+    char value[] = "same";
+
+    /*
+     * Enable ECDSA keyGen...
+     */
+    rv = acvp_enable_ecdsa_cap(ctx, ACVP_ECDSA_KEYGEN, &app_ecdsa_handler);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_prereq_cap(ctx, ACVP_ECDSA_KEYGEN, ACVP_PREREQ_SHA, value);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_prereq_cap(ctx, ACVP_ECDSA_KEYGEN, ACVP_PREREQ_DRBG, value);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_KEYGEN, ACVP_CURVE, "k-409");
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_KEYGEN, ACVP_CURVE, "p-521");
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_KEYGEN, ACVP_SECRET_GEN_MODE, "extra bits");
+    CHECK_ENABLE_CAP_RV(rv);
+    
+    /*
+     * Enable ECDSA keyVer...
+     */
+    rv = acvp_enable_ecdsa_cap(ctx, ACVP_ECDSA_KEYVER, &app_ecdsa_handler);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_prereq_cap(ctx, ACVP_ECDSA_KEYVER, ACVP_PREREQ_SHA, value);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_prereq_cap(ctx, ACVP_ECDSA_KEYVER, ACVP_PREREQ_DRBG, value);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_KEYVER, ACVP_CURVE, "k-163");
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_KEYVER, ACVP_CURVE, "b-163");
+    CHECK_ENABLE_CAP_RV(rv);
+
+#if 0 // for now while hashAlg parsing error persists
+    /*
+     * Enable ECDSA sigGen...
+     */
+    rv = acvp_enable_ecdsa_cap(ctx, ACVP_ECDSA_SIGGEN, &app_ecdsa_handler);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_prereq_cap(ctx, ACVP_ECDSA_SIGGEN, ACVP_PREREQ_SHA, value);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_prereq_cap(ctx, ACVP_ECDSA_SIGGEN, ACVP_PREREQ_DRBG, value);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_CURVE, "k-409");
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_CURVE, "p-521");
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_HASH_ALG, "SHA2-224");
+    CHECK_ENABLE_CAP_RV(rv);
+
+    /*
+     * Enable ECDSA sigVer...
+     */
+    rv = acvp_enable_ecdsa_cap(ctx, ACVP_ECDSA_SIGVER, &app_ecdsa_handler);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_prereq_cap(ctx, ACVP_ECDSA_SIGVER, ACVP_PREREQ_SHA, value);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_prereq_cap(ctx, ACVP_ECDSA_SIGVER, ACVP_PREREQ_DRBG, value);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_CURVE, "k-163");
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_CURVE, "b-163");
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_HASH_ALG, "SHA2-224");
+    CHECK_ENABLE_CAP_RV(rv);
+#endif
+}
+
 static void enable_drbg (ACVP_CTX *ctx) {
     ACVP_RESULT rv;
 
@@ -2748,14 +2822,73 @@ static ACVP_RESULT app_rsa_keygen_handler(ACVP_TEST_CASE *test_case)
     tc->d = (unsigned char *)BN_bn2hex(rsa->d);
 
     FIPS_rsa_free(rsa);
-
-
     
     err:
     return rv;
-
 }
 
+static ACVP_RESULT app_ecdsa_handler(ACVP_TEST_CASE *test_case)
+{
+    /*
+     * custom crypto module handler
+     * to be filled in with API for
+     * module under test
+     *
+     * existing code to be used as skeleton...
+     */
+    
+    ACVP_ECDSA_TC    *tc;
+    ACVP_RESULT rv = ACVP_CRYPTO_MODULE_FAIL;
+    ACVP_CIPHER mode;
+    EVP_MD *md;
+
+    if (!test_case) {
+        rv = ACVP_INVALID_ARG;
+        goto err;
+    }
+    tc = test_case->tc.ecdsa;
+    mode = tc->cipher;
+    
+    if (!strcmp(tc->hash_alg, "SHA-1"))
+        md = EVP_sha1();
+    else if (!strcmp(tc->hash_alg, "SHA2-224"))
+        md = EVP_sha224();
+    else if (!strcmp(tc->hash_alg, "SHA2-256"))
+        md = EVP_sha256();
+    else if (!strcmp(tc->hash_alg, "SHA2-384"))
+        md = EVP_sha384();
+    else if (!strcmp(tc->hash_alg, "SHA2-512"))
+        md = EVP_sha512();
+    
+    int nid;
+    if (!strcmp(tc->curve, "b-233"))
+        nid = NID_sect233r1;
+    if (!strcmp(tc->curve, "b-283"))
+        nid = NID_sect283r1;
+    if (!strcmp(tc->curve, "b-409"))
+        nid = NID_sect409r1;
+    if (!strcmp(tc->curve, "b-571"))
+        nid = NID_sect571r1;
+    if (!strcmp(tc->curve, "k-233"))
+        nid = NID_sect233k1;
+    if (!strcmp(tc->curve, "k-283"))
+        nid = NID_sect283k1;
+    if (!strcmp(tc->curve, "k-409"))
+        nid = NID_sect409k1;
+    if (!strcmp(tc->curve, "k-571"))
+        nid = NID_sect571k1;
+    if (!strcmp(tc->curve, "k-224"))
+        nid = NID_secp224r1;
+    if (!strcmp(tc->curve, "k-256"))
+        nid = NID_X9_62_prime256v1;
+    if (!strcmp(tc->curve, "k-384"))
+        nid = NID_secp384r1;
+    if (!strcmp(tc->curve, "k-521"))
+        nid = NID_secp521r1;
+    
+    err:
+    return rv;
+}
 
 /*
  * RSA SigGen handler

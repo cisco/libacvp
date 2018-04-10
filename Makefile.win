@@ -18,7 +18,8 @@ SOURCES= src/acvp.c \
          src/acvp_dsa.c \
          src/acvp_kdf135_tls.c \
          src/acvp_kdf135_snmp.c \
-         src/acvp_kdf135_ssh.c
+         src/acvp_kdf135_ssh.c \
+         src/acvp_ecdsa.c
 OBJECTS=$(SOURCES:.c=.o)
 
 all: libacvp.a acvp_app

@@ -58,7 +58,7 @@
 } while (0)
 #endif
 
-#define ACVP_ALG_MAX 53  /* Used by alg_tbl[] */
+#define ACVP_ALG_MAX 57  /* Used by alg_tbl[] */
 
 #define ACVP_ALG_AES_ECB             "AES-ECB"
 #define ACVP_ALG_AES_CBC             "AES-CBC"
@@ -113,7 +113,12 @@
 
 #define ACVP_ALG_RSA_KEYGEN             "keyGen"
 #define ACVP_ALG_RSA_SIGGEN             "sigGen"
-#define ACVP_ALG_RSA_SIGVER              "sigVer"
+#define ACVP_ALG_RSA_SIGVER             "sigVer"
+
+#define ACVP_ALG_ECDSA_KEYGEN           "keyGen"
+#define ACVP_ALG_ECDSA_KEYVER           "keyVer"
+#define ACVP_ALG_ECDSA_SIGGEN           "sigGen"
+#define ACVP_ALG_ECDSA_SIGVER           "sigVer"
 
 #define ACVP_PREREQ_VAL_STR "valValue"
 #define ACVP_PREREQ_OBJ_STR "prereqVals"
@@ -351,6 +356,32 @@ typedef struct acvp_rsa_keygen_capability_t {
     struct acvp_rsa_keygen_capability_t *next; // to support multiple randPQ values
 } ACVP_RSA_KEYGEN_CAP;
 
+typedef enum acvp_ecdsa_curves {
+    ACVP_ECDSA_CURVE_START = 0,
+    ACVP_ECDSA_CURVE_P192,
+    ACVP_ECDSA_CURVE_P224,
+    ACVP_ECDSA_CURVE_P256,
+    ACVP_ECDSA_CURVE_P384,
+    ACVP_ECDSA_CURVE_P521,
+    ACVP_ECDSA_CURVE_B163,
+    ACVP_ECDSA_CURVE_B233,
+    ACVP_ECDSA_CURVE_B283,
+    ACVP_ECDSA_CURVE_B409,
+    ACVP_ECDSA_CURVE_B571,
+    ACVP_ECDSA_CURVE_K163,
+    ACVP_ECDSA_CURVE_K233,
+    ACVP_ECDSA_CURVE_K283,
+    ACVP_ECDSA_CURVE_K409,
+    ACVP_ECDSA_CURVE_K571,
+    ACVP_ECDSA_CURVE_END
+} ACVP_ECDSA_CURVE;
+
+typedef struct acvp_ecdsa_capability_t {
+    ACVP_NAME_LIST *curves;
+    ACVP_NAME_LIST *secret_gen_modes;
+    ACVP_NAME_LIST *hash_algs;
+} ACVP_ECDSA_CAP;
+
 typedef struct acvp_rsa_sig_capability_t {
     char *sig_type_str;
     int sig_type;
@@ -399,6 +430,10 @@ typedef struct acvp_caps_list_t {
         ACVP_RSA_KEYGEN_CAP *rsa_keygen_cap;
         ACVP_RSA_SIG_CAP *rsa_siggen_cap;
         ACVP_RSA_SIG_CAP *rsa_sigver_cap;
+        ACVP_ECDSA_CAP *ecdsa_keygen_cap;
+        ACVP_ECDSA_CAP *ecdsa_keyver_cap;
+        ACVP_ECDSA_CAP *ecdsa_siggen_cap;
+        ACVP_ECDSA_CAP *ecdsa_sigver_cap;
         ACVP_KDF135_TLS_CAP *kdf135_tls_cap;
         ACVP_KDF135_SNMP_CAP *kdf135_snmp_cap;
         ACVP_KDF135_SSH_CAP *kdf135_ssh_cap;
@@ -494,6 +529,8 @@ ACVP_RESULT acvp_hmac_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
 ACVP_RESULT acvp_cmac_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
 
 ACVP_RESULT acvp_rsa_keygen_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
+
+ACVP_RESULT acvp_ecdsa_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
 
 ACVP_RESULT acvp_rsa_sig_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
 

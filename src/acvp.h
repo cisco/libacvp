@@ -128,6 +128,10 @@ typedef enum acvp_sym_cipher {
     ACVP_RSA_KEYGEN,
     ACVP_RSA_SIGGEN,
     ACVP_RSA_SIGVER,
+    ACVP_ECDSA_KEYGEN,
+    ACVP_ECDSA_KEYVER,
+    ACVP_ECDSA_SIGGEN,
+    ACVP_ECDSA_SIGVER,
     ACVP_KDF135_TLS,
     ACVP_KDF135_SNMP,
     ACVP_KDF135_SSH,
@@ -182,6 +186,10 @@ typedef enum acvp_capability_type {
     ACVP_RSA_KEYGEN_TYPE,
     ACVP_RSA_SIGGEN_TYPE,
     ACVP_RSA_SIGVER_TYPE,
+    ACVP_ECDSA_KEYGEN_TYPE,
+    ACVP_ECDSA_KEYVER_TYPE,
+    ACVP_ECDSA_SIGGEN_TYPE,
+    ACVP_ECDSA_SIGVER_TYPE,
     ACVP_DSA_TYPE,
     ACVP_KDF135_TLS_TYPE,
     ACVP_KDF135_SNMP_TYPE,
@@ -295,6 +303,12 @@ typedef enum acvp_rsa_param {
     ACVP_CAPS_PROV_PROB_PRIME,
     ACVP_RSA_INFO_GEN_BY_SERVER
 } ACVP_RSA_PARM;
+
+typedef enum acvp_ecdsa_param {
+    ACVP_CURVE,
+    ACVP_SECRET_GEN_MODE,
+    ACVP_HASH_ALG
+} ACVP_ECDSA_PARM;
 
 #define RSA_SIG_TYPE_X931_NAME      "ansx9.31"
 #define RSA_SIG_TYPE_PKCS1V15_NAME  "pkcs1v1.5"
@@ -616,6 +630,32 @@ typedef struct acvp_rsa_keygen_tc_t {
 
 /*
  * This struct holds data that represents a single test case
+ * for ECDSA testing.  This data is
+ * passed between libacvp and the crypto module.
+ */
+typedef struct acvp_ecdsa_tc_t {
+    char *hash_alg;
+    unsigned int tc_id;    /* Test case id */
+    
+    ACVP_CIPHER cipher;
+
+    char *curve;
+    char *secret_gen_mode;
+    
+    unsigned char *d;
+    unsigned char *qy;
+    unsigned char *qx;
+    
+    unsigned char *r;
+    unsigned char *s;
+    
+    char *ver_disposition;
+    unsigned char *message;
+
+} ACVP_ECDSA_TC;
+
+/*
+ * This struct holds data that represents a single test case
  * for RSA testing.  This data is
  * passed between libacvp and the crypto module.
  */
@@ -742,6 +782,7 @@ typedef struct acvp_cipher_tc_t {
         ACVP_CMAC_TC *cmac;
         ACVP_RSA_KEYGEN_TC *rsa_keygen;
         ACVP_RSA_SIG_TC *rsa_sig;
+        ACVP_ECDSA_TC *ecdsa;
         ACVP_KDF135_TLS_TC *kdf135_tls;
         ACVP_KDF135_SNMP_TC *kdf135_snmp;
         ACVP_KDF135_SSH_TC *kdf135_ssh;
@@ -1102,6 +1143,11 @@ ACVP_RESULT acvp_enable_rsa_sigver_cap (
         ACVP_CIPHER cipher,
         ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case));
 
+ACVP_RESULT acvp_enable_ecdsa_cap (
+        ACVP_CTX *ctx,
+        ACVP_CIPHER cipher,
+        ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case));
+
 /*! @brief acvp_enable_rsa_*_cap_parm() allows an application to specify
        operational parameters to be used for a given RSA alg during a
        test session with the ACVP server.
@@ -1158,6 +1204,13 @@ ACVP_RESULT acvp_enable_rsa_sigver_caps_parm (ACVP_CTX *ctx,
                                               int mod,
                                               char *hash_name,
                                               int salt_len);
+
+ACVP_RESULT acvp_enable_ecdsa_cap_parm (
+        ACVP_CTX *ctx,
+        ACVP_CIPHER cipher,
+        ACVP_ECDSA_PARM param,
+        char *value
+);
 
 /*! @brief acvp_enable_rsa_bignum_parm() allows an application to specify
        BIGNUM operational parameters to be used for a given RSA alg during a
