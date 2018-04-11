@@ -4013,6 +4013,12 @@ void acvp_mark_as_sample (ACVP_CTX *ctx) {
     ctx->is_sample = 1;
 }
 
+/*
+ * This function builds the JSON login message that
+ * will be sent to the ACVP server to perform the
+ * second of the two-factor authentications using
+ * a TOTP.
+ */
 static ACVP_RESULT acvp_build_login (ACVP_CTX *ctx, char **login) {
 
     JSON_Value *reg_arry_val = NULL;
@@ -4477,6 +4483,11 @@ static JSON_Object *acvp_get_obj_from_rsp (JSON_Value *arry_val) {
     return (obj);
 }
 
+/*
+ * This routine performs the JSON parsing of the login response
+ * from the ACVP server.  The response should contain an initial
+ * jwt which will be used once during registration.
+ */
 static ACVP_RESULT acvp_parse_login (ACVP_CTX *ctx) {
     JSON_Value *val;
     JSON_Object *obj = NULL;
@@ -4566,6 +4577,10 @@ static ACVP_RESULT acvp_parse_register (ACVP_CTX *ctx) {
             json_value_free(val);
             ACVP_LOG_ERR("access_token too large");
             return ACVP_NO_TOKEN;
+        }
+        /* free it if it was used for login */
+        if (ctx->jwt_token) {
+            free(ctx->jwt_token);
         }
         ctx->jwt_token = calloc(1, i + 1);
         strncpy(ctx->jwt_token, jwt, i);
