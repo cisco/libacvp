@@ -99,9 +99,11 @@ static ACVP_RESULT acvp_ecdsa_init_tc (ACVP_CTX *ctx,
     if (!stc->curve) { goto err; }
     strncpy(stc->curve, curve, strnlen(curve, 5));
     
-    stc->secret_gen_mode = calloc(18, sizeof(char));
-    if (!stc->secret_gen_mode) { goto err; }
-    strncpy(stc->secret_gen_mode, secret_gen_mode, strnlen(secret_gen_mode, 18));
+    if (secret_gen_mode) {
+        stc->secret_gen_mode = calloc(18, sizeof(char));
+        if (!stc->secret_gen_mode) { goto err; }
+        strncpy(stc->secret_gen_mode, secret_gen_mode, strnlen(secret_gen_mode, 18));
+    }
     
     stc->qy = calloc(ACVP_RSA_EXP_LEN_MAX, sizeof(char));
     if (!stc->qy) { goto err; }
@@ -167,7 +169,7 @@ ACVP_RESULT acvp_ecdsa_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     ACVP_CIPHER alg_id;
     char *json_result = NULL;
     char *hash_alg = NULL, *curve = NULL, *secret_gen_mode = NULL;
-    char *alg_str, *mode_str, *qx, *qy, *r, *s, *message;
+    char *alg_str, *mode_str, *qx, *qy, *r, *s, *message, *alg_tbl_index;
     
     alg_str = (char *) json_object_get_string(obj, "algorithm");
     if (!alg_str) {
@@ -178,11 +180,16 @@ ACVP_RESULT acvp_ecdsa_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     tc.tc.ecdsa = &stc;
     mode_str = (char *) json_object_get_string(obj, "mode");
     
+    /* allocate space to concatenate alg and mode strings (and a hyphen) */
+    alg_tbl_index = calloc(strnlen(alg_str, 5) + 6 + 1, sizeof(char));
+    strncat(alg_tbl_index, alg_str, 5);
+    strncat(alg_tbl_index, "-", 1);
+    strncat(alg_tbl_index, mode_str, 6);
     
     /*
      * Get the crypto module handler for this hash algorithm
      */
-    alg_id = acvp_lookup_cipher_index(mode_str);
+    alg_id = acvp_lookup_cipher_index(alg_tbl_index);
     switch(alg_id) {
     case ACVP_ECDSA_KEYGEN:
     case ACVP_ECDSA_KEYVER:

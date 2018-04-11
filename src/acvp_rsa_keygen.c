@@ -195,7 +195,7 @@ ACVP_RESULT acvp_rsa_keygen_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     int info_gen_by_server, rand_pq, seed_len;
     char *pub_exp_mode, *key_format, *prime_test;
     char *hash_alg = NULL;
-    char *e_str = NULL, *alg_str, *mode_str, *seed;
+    char *e_str = NULL, *alg_str, *mode_str, *seed, *alg_tbl_index;
     int bitlen1, bitlen2, bitlen3, bitlen4;
     
     alg_str = (char *) json_object_get_string(obj, "algorithm");
@@ -207,11 +207,17 @@ ACVP_RESULT acvp_rsa_keygen_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     tc.tc.rsa_keygen = &stc;
     mode_str = (char *) json_object_get_string(obj, "mode");
     
-
+    
+    /* allocate space to concatenate alg and mode strings (and a hyphen) */
+    alg_tbl_index = calloc(strnlen(alg_str, 5) + 6 + 1, sizeof(char));
+    strncat(alg_tbl_index, alg_str, 5);
+    strncat(alg_tbl_index, "-", 1);
+    strncat(alg_tbl_index, mode_str, 6);
+    
     /*
      * Get the crypto module handler for this hash algorithm
      */
-    alg_id = acvp_lookup_cipher_index(mode_str);
+    alg_id = acvp_lookup_cipher_index(alg_tbl_index);
     switch(alg_id) {
     case ACVP_RSA_KEYGEN:
         break;
