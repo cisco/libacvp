@@ -33,10 +33,13 @@
 #include "acvp_lcl.h"
 #include "parson.h"
 
+
 /*
  * Forward prototypes for local functions
  */
 static ACVP_RESULT acvp_parse_register (ACVP_CTX *ctx);
+
+static ACVP_RESULT acvp_parse_login (ACVP_CTX *ctx);
 
 static ACVP_RESULT acvp_process_vsid (ACVP_CTX *ctx, int vs_id);
 
@@ -224,6 +227,12 @@ ACVP_RESULT acvp_create_test_session (ACVP_CTX **ctx,
 
     (*ctx)->debug = level;
 
+    return ACVP_SUCCESS;
+}
+
+ACVP_RESULT acvp_set_2fa_callback (ACVP_CTX *ctx, ACVP_RESULT (*totp_cb) (char **token))
+{
+    ctx->totp_cb = totp_cb;
     return ACVP_SUCCESS;
 }
 
@@ -4004,6 +4013,41 @@ void acvp_mark_as_sample (ACVP_CTX *ctx) {
     ctx->is_sample = 1;
 }
 
+static ACVP_RESULT acvp_build_login (ACVP_CTX *ctx, char **login) {
+
+    JSON_Value *reg_arry_val = NULL;
+    JSON_Value *ver_val = NULL;
+    JSON_Object *ver_obj = NULL;
+    JSON_Value *pw_val = NULL;
+    JSON_Object *pw_obj = NULL;
+    JSON_Array *reg_arry = NULL;
+    char *token = malloc(ACVP_TOTP_TOKEN_MAX);
+
+    /*
+     * Start the login array
+     */
+    reg_arry_val = json_value_init_array();
+    reg_arry = json_array((const JSON_Value *) reg_arry_val);
+
+    ver_val = json_value_init_object();
+    ver_obj = json_value_get_object(ver_val);
+
+    json_object_set_string(ver_obj, "acvVersion", ACVP_VERSION);
+    json_array_append_value(reg_arry, ver_val);
+
+    pw_val = json_value_init_object();
+    pw_obj = json_value_get_object(pw_val);
+
+    ctx->totp_cb(&token);
+
+    json_object_set_string(pw_obj, "password", token);
+    json_array_append_value(reg_arry, pw_val);
+
+    *login = json_serialize_to_string_pretty(reg_arry_val);
+    free(token);
+    return ACVP_SUCCESS;
+}
+
 /*
  * This function is used to regitser the DUT with the server.
  * Registration allows the DUT to advertise it's capabilities to
@@ -4013,9 +4057,42 @@ void acvp_mark_as_sample (ACVP_CTX *ctx) {
 ACVP_RESULT acvp_register (ACVP_CTX *ctx) {
     ACVP_RESULT rv;
     char *reg;
+    char *login;
 
     if (!ctx) {
         return ACVP_NO_CTX;
+    }
+
+    /*
+     * Construct the login message
+     */
+    if (ctx->totp_cb) {
+        rv = acvp_build_login(ctx, &login);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Unable to build login message");
+            return rv;
+        }
+
+        if (ctx->debug >= ACVP_LOG_LVL_STATUS) {
+            printf("\nPOST %s\n", login);
+        } else {
+            ACVP_LOG_INFO("POST %s", login);
+        }
+
+        /*
+         * Send the login to the ACVP server and get the response,
+         */
+        rv = acvp_send_login(ctx, login);
+        if (rv == ACVP_SUCCESS) {
+            ACVP_LOG_STATUS("200 OK %s", ctx->reg_buf);
+            rv = acvp_parse_login(ctx);
+        } else {
+            ACVP_LOG_STATUS("Login Response Failed %s", ctx->reg_buf);
+        }
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_STATUS("Login Send Failed");
+            return rv;
+        }
     }
 
     /*
@@ -4398,6 +4475,49 @@ static JSON_Object *acvp_get_obj_from_rsp (JSON_Value *arry_val) {
 
     obj = json_array_get_object(reg_array, 1);
     return (obj);
+}
+
+static ACVP_RESULT acvp_parse_login (ACVP_CTX *ctx) {
+    JSON_Value *val;
+    JSON_Object *obj = NULL;
+    char *json_buf = ctx->reg_buf;
+    int i;
+    const char *jwt;
+
+    /*
+     * Parse the JSON
+     */
+    val = json_parse_string_with_comments(json_buf);
+    if (!val) {
+        ACVP_LOG_ERR("JSON parse error");
+        return ACVP_JSON_ERR;
+    }
+
+    obj = acvp_get_obj_from_rsp(val);
+
+    /*
+     * Get the JWT assigned to this session by the server.  This will need
+     * to be included when sending the vector responses back to the server
+     * later.
+     */
+    jwt = json_object_get_string(obj, "accessToken");
+    if (!jwt) {
+        json_value_free(val);
+        ACVP_LOG_ERR("No access_token provided in registration response");
+        return ACVP_NO_TOKEN;
+    } else {
+        i = strnlen(jwt, ACVP_JWT_TOKEN_MAX + 1);
+        if (i > ACVP_JWT_TOKEN_MAX) {
+            json_value_free(val);
+            ACVP_LOG_ERR("access_token too large");
+            return ACVP_NO_TOKEN;
+        }
+        ctx->jwt_token = calloc(1, i + 1);
+        strncpy(ctx->jwt_token, jwt, i);
+        ctx->jwt_token[i] = 0;
+        ACVP_LOG_STATUS("JWT: %s", ctx->jwt_token);
+    }
+    return ACVP_SUCCESS;
 }
 
 /*
