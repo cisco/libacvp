@@ -111,14 +111,14 @@
 #define ACVP_ALG_DSA                 "DSA2"
 #define ACVP_DSA_PQGGEN              "pqgGen"
 
-#define ACVP_ALG_RSA_KEYGEN             "keyGen"
-#define ACVP_ALG_RSA_SIGGEN             "sigGen"
-#define ACVP_ALG_RSA_SIGVER             "sigVer"
+#define ACVP_ALG_RSA_KEYGEN             "RSA-keyGen"
+#define ACVP_ALG_RSA_SIGGEN             "RSA-sigGen"
+#define ACVP_ALG_RSA_SIGVER             "RSA-sigVer"
 
-#define ACVP_ALG_ECDSA_KEYGEN           "keyGen"
-#define ACVP_ALG_ECDSA_KEYVER           "keyVer"
-#define ACVP_ALG_ECDSA_SIGGEN           "sigGen"
-#define ACVP_ALG_ECDSA_SIGVER           "sigVer"
+#define ACVP_ALG_ECDSA_KEYGEN           "ECDSA-keyGen"
+#define ACVP_ALG_ECDSA_KEYVER           "ECDSA-keyVer"
+#define ACVP_ALG_ECDSA_SIGGEN           "ECDSA-sigGen"
+#define ACVP_ALG_ECDSA_SIGVER           "ECDSA-sigVer"
 
 #define ACVP_PREREQ_VAL_STR "valValue"
 #define ACVP_PREREQ_OBJ_STR "prereqVals"

@@ -164,7 +164,7 @@ ACVP_RESULT acvp_rsa_sig_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     unsigned int mod = 0;
     unsigned char *msg, *signature;
     char *e_str = NULL, *n_str = NULL;
-    char *hash_alg = NULL, *sig_type, *salt, *alg_str;
+    char *hash_alg = NULL, *sig_type, *salt, *alg_str, *alg_tbl_index;
 
     ACVP_RESULT rv;
     alg_str = (char *) json_object_get_string(obj, "algorithm");
@@ -176,10 +176,16 @@ ACVP_RESULT acvp_rsa_sig_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     tc.tc.rsa_sig = &stc;
     mode_str = (char *) json_object_get_string(obj, "mode");
     
+    /* allocate space to concatenate alg and mode strings (and a hyphen) */
+    alg_tbl_index = calloc(strnlen(alg_str, 5) + 6 + 1, sizeof(char));
+    strncat(alg_tbl_index, alg_str, 5);
+    strncat(alg_tbl_index, "-", 1);
+    strncat(alg_tbl_index, mode_str, 6);
+    
     /*
      * Get the crypto module handler for this hash algorithm
      */
-    alg_id = acvp_lookup_cipher_index(mode_str);
+    alg_id = acvp_lookup_cipher_index(alg_tbl_index);
     switch(alg_id) {
     case ACVP_RSA_SIGGEN:
     case ACVP_RSA_SIGVER:
