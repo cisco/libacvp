@@ -36,6 +36,9 @@ extern "C"
 {
 #endif
 
+#define ACVP_TOTP_LENGTH 8
+#define ACVP_TOTP_TOKEN_MAX 128
+
 typedef enum acvp_log_lvl {
     ACVP_LOG_LVL_NONE = 0,
     ACVP_LOG_LVL_ERR,
@@ -807,6 +810,8 @@ enum acvp_result {
     ACVP_MALFORMED_JSON,
     ACVP_DATA_TOO_LARGE,
     ACVP_DUP_CIPHER,
+    ACVP_TOTP_DECODE_FAIL,
+    ACVP_TOTP_MISSING_SEED,
     ACVP_RESULT_MAX,
 };
 
@@ -1639,6 +1644,19 @@ ACVP_RESULT acvp_set_module_info (ACVP_CTX *ctx,
    @return ACVP_RESULT
  */
 ACVP_RESULT acvp_check_test_results (ACVP_CTX *ctx);
+
+/*! @brief acvp_set_2fa_callback() sets a callback function which
+    will create or obtain a TOTP password for the second part of
+    the two-factor authentication.
+
+    @param ctx Pointer to ACVP_CTX that was previously created by
+        calling acvp_create_test_session.
+    @param totp_cb Function that will get the TOTP password
+
+
+    @return ACVP_RESULT
+ */
+ACVP_RESULT acvp_set_2fa_callback (ACVP_CTX *ctx, ACVP_RESULT (*totp_cb) (char **token));
 
 ACVP_RESULT acvp_bin_to_hexstr (const unsigned char *src, unsigned int src_len, unsigned char *dest);
 
