@@ -39,7 +39,7 @@
 
 #define HTTP_OK    200
 
-#define MAX_TOKEN_LEN 512
+#define MAX_TOKEN_LEN 600
 
 static struct curl_slist *acvp_add_auth_hdr (ACVP_CTX *ctx, struct curl_slist *slist) {
     int bearer_size;
@@ -528,6 +528,27 @@ ACVP_RESULT acvp_retrieve_vector_set (ACVP_CTX *ctx, int vs_id) {
     return ACVP_SUCCESS;
 }
 
+ACVP_RESULT acvp_send_login (ACVP_CTX *ctx, char *login) {
+    int rv;
+    char url[512]; //TODO: 512 is an arbitrary limit
+
+    memset(url, 0x0, 512);
+    snprintf(url, 511, "https://%s:%d/%svalidation/acvp/login", ctx->server_name, ctx->server_port,
+             ctx->path_segment);
+
+    rv = acvp_curl_http_post(ctx, url, login, &acvp_curl_write_register_func);
+    if (rv != HTTP_OK) {
+        ACVP_LOG_ERR("Unable to register with ACVP server. curl rv=%d\n", rv);
+        return ACVP_TRANSPORT_FAIL;
+    }
+
+    /*
+     * Update user with status
+     */
+    ACVP_LOG_STATUS("Successfully received login response from ACVP server");
+
+    return ACVP_SUCCESS;
+}
 
 /*
  * This function is used to submit a vector set response

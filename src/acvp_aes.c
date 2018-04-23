@@ -763,6 +763,10 @@ static ACVP_RESULT acvp_aes_output_tc (ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *stc,
                 ivs_array = json_object_get_array(tc_rsp, "ivs");
                 for (i=0; i<(stc->pt_len/16); i++) {
                     rv = acvp_bin_to_hexstr(stc->iv, stc->iv_len, (unsigned char *) tmp);
+                    if (rv != ACVP_SUCCESS) {
+                        ACVP_LOG_ERR("hex conversion failure (tag)");
+                        goto err;
+                    }
                     json_array_append_string(ivs_array, tmp);
                     ctr128_inc(stc->iv);
                 }

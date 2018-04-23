@@ -74,21 +74,23 @@ static ACVP_RESULT acvp_ecdsa_release_tc (ACVP_ECDSA_TC *stc) {
     if (stc->r) { free(stc->r); }
     if (stc->s) { free(stc->s); }
     if (stc->message) { free(stc->message); }
+    if (stc->ver_disposition) { free(stc->ver_disposition); }
     
     return ACVP_SUCCESS;
 }
 
 static ACVP_RESULT acvp_ecdsa_init_tc (ACVP_CTX *ctx,
-                                              ACVP_CIPHER cipher,
-                                              ACVP_ECDSA_TC *stc,
-                                              unsigned int tc_id,
-                                              char *curve,
-                                              char *secret_gen_mode,
-                                              char *qx,
-                                              char *qy,
-                                              char *message,
-                                              char *r,
-                                              char *s
+                                       ACVP_CIPHER cipher,
+                                       ACVP_ECDSA_TC *stc,
+                                       unsigned int tc_id,
+                                       char *curve,
+                                       char *secret_gen_mode,
+                                       char *hash_alg,
+                                       char *qx,
+                                       char *qy,
+                                       char *message,
+                                       char *r,
+                                       char *s
 ) {
     memset(stc, 0x0, sizeof(ACVP_ECDSA_TC));
     
@@ -99,42 +101,54 @@ static ACVP_RESULT acvp_ecdsa_init_tc (ACVP_CTX *ctx,
     if (!stc->curve) { goto err; }
     strncpy(stc->curve, curve, strnlen(curve, 5));
     
-    stc->secret_gen_mode = calloc(18, sizeof(char));
-    if (!stc->secret_gen_mode) { goto err; }
-    strncpy(stc->secret_gen_mode, secret_gen_mode, strnlen(secret_gen_mode, 18));
+    if (secret_gen_mode) {
+        stc->secret_gen_mode = calloc(18, sizeof(char));
+        if (!stc->secret_gen_mode) { goto err; }
+        strncpy(stc->secret_gen_mode, secret_gen_mode, strnlen(secret_gen_mode, 18));
+    }
     
-    stc->qy = calloc(ACVP_RSA_EXP_LEN_MAX, sizeof(char));
-    if (!stc->qy) { goto err; }
-    stc->qx = calloc(ACVP_RSA_EXP_LEN_MAX, sizeof(char));
-    if (!stc->qx) { goto err; }
-    stc->r = calloc(ACVP_RSA_EXP_LEN_MAX, sizeof(char));
-    if (!stc->r) { goto err; }
-    stc->s = calloc(ACVP_RSA_EXP_LEN_MAX, sizeof(char));
-    if (!stc->s) { goto err; }
+    if (hash_alg) {
+        stc->hash_alg = calloc(8, sizeof(char));
+        if (!stc->hash_alg) { goto err; }
+        strncpy(stc->hash_alg, hash_alg, strnlen(hash_alg, 8));
+    }
     
     if (cipher == ACVP_ECDSA_KEYVER || cipher == ACVP_ECDSA_SIGVER) {
-        strncpy((char *)stc->qx, qx, strnlen(qx, 128));
-        strncpy((char *)stc->qy, qy, strnlen(qy, 128));
+        stc->qx = calloc(ACVP_RSA_EXP_LEN_MAX, sizeof(char));
+        if (!stc->qx) { goto err; }
+        strncpy((char *)stc->qx, qx, strnlen(qx, ACVP_RSA_EXP_LEN_MAX));
+        stc->qy = calloc(ACVP_RSA_EXP_LEN_MAX, sizeof(char));
+        if (!stc->qy) { goto err; }
+        strncpy((char *)stc->qy, qy, strnlen(qy, ACVP_RSA_EXP_LEN_MAX));
+        stc->ver_disposition = calloc(5, sizeof(char));
+        if (!stc->ver_disposition) { goto err; }
     }
     if (cipher == ACVP_ECDSA_SIGVER) {
-        strncpy((char *)stc->s, s, strnlen(s, 128));
-        strncpy((char *)stc->r, r, strnlen(r, 128));
+        stc->r = calloc(ACVP_RSA_EXP_LEN_MAX, sizeof(char));
+        if (!stc->r) { goto err; }
+        stc->s = calloc(ACVP_RSA_EXP_LEN_MAX, sizeof(char));
+        if (!stc->s) { goto err; }
+        strncpy((char *)stc->s, s, strnlen(s, ACVP_RSA_EXP_LEN_MAX));
+        strncpy((char *)stc->r, r, strnlen(r, ACVP_RSA_EXP_LEN_MAX));
     }
     if (cipher == ACVP_ECDSA_SIGVER || cipher == ACVP_ECDSA_SIGGEN) {
         stc->message = calloc(ACVP_RSA_EXP_LEN_MAX, sizeof(char));
-        if (!stc->message) {
-            ACVP_LOG_ERR("Failed to allocate message buffer in ECDSA sig");
-            return ACVP_MALLOC_FAIL;
-        }
+        if (!stc->message) { goto err; }
         strncpy((char *)stc->message, message, strnlen(message, ACVP_RSA_MSGLEN_MAX));
     }
-    stc->d = calloc(ACVP_RSA_EXP_LEN_MAX, sizeof(char));
-    if (!stc->d) { goto err; }
     
     return ACVP_SUCCESS;
     
     err:
     ACVP_LOG_ERR("Failed to allocate buffer in ECDSA test case");
+    if (stc->curve) free(stc->curve);
+    if (stc->secret_gen_mode) free(stc->secret_gen_mode);
+    if (stc->qx) free(stc->qx);
+    if (stc->qy) free(stc->qy);
+    if (stc->r) free(stc->r);
+    if (stc->s) free(stc->s);
+    if (stc->message) free(stc->message);
+    if (stc->ver_disposition) free(stc->ver_disposition);
     return ACVP_MALLOC_FAIL;
 }
 
@@ -167,7 +181,7 @@ ACVP_RESULT acvp_ecdsa_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     ACVP_CIPHER alg_id;
     char *json_result = NULL;
     char *hash_alg = NULL, *curve = NULL, *secret_gen_mode = NULL;
-    char *alg_str, *mode_str, *qx, *qy, *r, *s, *message;
+    char *alg_str, *mode_str, *qx, *qy, *r, *s, *message, *alg_tbl_index;
     
     alg_str = (char *) json_object_get_string(obj, "algorithm");
     if (!alg_str) {
@@ -178,11 +192,16 @@ ACVP_RESULT acvp_ecdsa_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     tc.tc.ecdsa = &stc;
     mode_str = (char *) json_object_get_string(obj, "mode");
     
+    /* allocate space to concatenate alg and mode strings (and a hyphen) */
+    alg_tbl_index = calloc(strnlen(alg_str, 5) + 6 + 1, sizeof(char));
+    strncat(alg_tbl_index, alg_str, 5);
+    strncat(alg_tbl_index, "-", 1);
+    strncat(alg_tbl_index, mode_str, 6);
     
     /*
      * Get the crypto module handler for this hash algorithm
      */
-    alg_id = acvp_lookup_cipher_index(mode_str);
+    alg_id = acvp_lookup_cipher_index(alg_tbl_index);
     switch(alg_id) {
     case ACVP_ECDSA_KEYGEN:
     case ACVP_ECDSA_KEYVER:
@@ -191,12 +210,14 @@ ACVP_RESULT acvp_ecdsa_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
         break;
     default:
         ACVP_LOG_ERR("ERROR: unsupported algorithm (%s)", alg_str);
+        free(alg_tbl_index);
         return (ACVP_UNSUPPORTED_OP);
     }
     
     cap = acvp_locate_cap_entry(ctx, alg_id);
     if (!cap) {
         ACVP_LOG_ERR("ERROR: ACVP server requesting unsupported capability");
+        free(alg_tbl_index);
         return (ACVP_UNSUPPORTED_OP);
     }
     ACVP_LOG_INFO("    ECDSA mode: %s", mode_str);
@@ -207,6 +228,7 @@ ACVP_RESULT acvp_ecdsa_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("ERROR: Failed to create JSON response struct. ");
+        free(alg_tbl_index);
         return (rv);
     }
     
@@ -281,7 +303,7 @@ ACVP_RESULT acvp_ecdsa_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
             
             json_object_set_number(r_tobj, "tcId", tc_id);
             
-            rv = acvp_ecdsa_init_tc(ctx, alg_id, &stc, tc_id, curve, secret_gen_mode, qx, qy, message, r, s);
+            rv = acvp_ecdsa_init_tc(ctx, alg_id, &stc, tc_id, curve, secret_gen_mode, hash_alg, qx, qy, message, r, s);
             
             /* Process the current test vector... */
             if (rv == ACVP_SUCCESS) {
@@ -329,7 +351,7 @@ ACVP_RESULT acvp_ecdsa_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
         ACVP_LOG_INFO("\n\n%s\n\n", json_result);
     }
     json_free_serialized_string(json_result);
-    
+    free(alg_tbl_index);
     return rv;
 }
 

@@ -87,6 +87,9 @@ static ACVP_RESULT acvp_rsa_output_tc (ACVP_CTX *ctx, ACVP_RSA_KEYGEN_TC *stc, J
 static ACVP_RESULT acvp_rsa_keygen_release_tc (ACVP_RSA_KEYGEN_TC *stc) {
     if (stc->e) { free(stc->e); }
     if (stc->seed) { free(stc->seed); }
+    if (stc->hash_alg) { free(stc->hash_alg); }
+    if (stc->key_format) { free(stc->key_format); }
+    if (stc->pub_exp_mode) { free(stc->pub_exp_mode); }
     if (stc->p) { free(stc->p); }
     if (stc->q) { free(stc->q); }
     if (stc->n) { free(stc->n); }
@@ -113,7 +116,7 @@ static ACVP_RESULT acvp_rsa_keygen_init_tc (ACVP_CTX *ctx,
                                             int bitlen3,
                                             int bitlen4) {
     memset(stc, 0x0, sizeof(ACVP_RSA_KEYGEN_TC));
-    
+    ACVP_RESULT rv = ACVP_SUCCESS;
     stc->info_gen_by_server = info_gen_by_server;
     stc->tc_id = tc_id;
     stc->rand_pq = rand_pq;
@@ -122,14 +125,6 @@ static ACVP_RESULT acvp_rsa_keygen_init_tc (ACVP_CTX *ctx,
     stc->e = calloc(ACVP_RSA_EXP_LEN_MAX, sizeof(char));
     if (!stc->e) { return ACVP_MALLOC_FAIL; }
     strncpy((char *)stc->e, e, strnlen(e, ACVP_RSA_EXP_LEN_MAX));
-    stc->p = calloc(ACVP_RSA_EXP_LEN_MAX, sizeof(char));
-    if (!stc->p) { return ACVP_MALLOC_FAIL; }
-    stc->q = calloc(ACVP_RSA_EXP_LEN_MAX, sizeof(char));
-    if (!stc->q) { return ACVP_MALLOC_FAIL; }
-    stc->n = calloc(ACVP_RSA_EXP_LEN_MAX, sizeof(char));
-    if (!stc->n) { return ACVP_MALLOC_FAIL; }
-    stc->d = calloc(ACVP_RSA_EXP_LEN_MAX, sizeof(char));
-    if (!stc->d) { return ACVP_MALLOC_FAIL; }
     
     stc->seed = calloc(ACVP_RSA_SEEDLEN_MAX, sizeof(char));
     if (!stc->seed) { return ACVP_MALLOC_FAIL; }
@@ -156,7 +151,10 @@ static ACVP_RESULT acvp_rsa_keygen_init_tc (ACVP_CTX *ctx,
         stc->bitlen2 = bitlen2;
         stc->bitlen3 = bitlen3;
         stc->bitlen4 = bitlen4;
-        acvp_hexstr_to_bin((const unsigned char *)seed, stc->seed, seed_len);
+        rv = acvp_hexstr_to_bin((const unsigned char *)seed, stc->seed, seed_len);
+        if (rv != ACVP_SUCCESS) {
+            return rv;
+        }
         stc->seed_len = seed_len/2;
     }
     return ACVP_SUCCESS;
@@ -195,7 +193,7 @@ ACVP_RESULT acvp_rsa_keygen_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     int info_gen_by_server, rand_pq, seed_len;
     char *pub_exp_mode, *key_format, *prime_test;
     char *hash_alg = NULL;
-    char *e_str = NULL, *alg_str, *mode_str, *seed;
+    char *e_str = NULL, *alg_str, *mode_str, *seed, *alg_tbl_index;
     int bitlen1, bitlen2, bitlen3, bitlen4;
     
     alg_str = (char *) json_object_get_string(obj, "algorithm");
@@ -207,22 +205,30 @@ ACVP_RESULT acvp_rsa_keygen_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     tc.tc.rsa_keygen = &stc;
     mode_str = (char *) json_object_get_string(obj, "mode");
     
-
+    
+    /* allocate space to concatenate alg and mode strings (and a hyphen) */
+    alg_tbl_index = calloc(strnlen(alg_str, 5) + 6 + 1, sizeof(char));
+    strncat(alg_tbl_index, alg_str, 5);
+    strncat(alg_tbl_index, "-", 1);
+    strncat(alg_tbl_index, mode_str, 6);
+    
     /*
      * Get the crypto module handler for this hash algorithm
      */
-    alg_id = acvp_lookup_cipher_index(mode_str);
+    alg_id = acvp_lookup_cipher_index(alg_tbl_index);
     switch(alg_id) {
     case ACVP_RSA_KEYGEN:
         break;
     default:
         ACVP_LOG_ERR("ERROR: unsupported algorithm (%s)", alg_str);
+        free(alg_tbl_index);
         return (ACVP_UNSUPPORTED_OP);
     }
 
     cap = acvp_locate_cap_entry(ctx, alg_id);
     if (!cap) {
         ACVP_LOG_ERR("ERROR: ACVP server requesting unsupported capability");
+        free(alg_tbl_index);
         return (ACVP_UNSUPPORTED_OP);
     }
     ACVP_LOG_INFO("    RSA mode: %s", mode_str);
@@ -233,6 +239,7 @@ ACVP_RESULT acvp_rsa_keygen_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("ERROR: Failed to create JSON response struct. ");
+        free(alg_tbl_index);
         return (rv);
     }
 
@@ -362,7 +369,7 @@ ACVP_RESULT acvp_rsa_keygen_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
         ACVP_LOG_INFO("\n\n%s\n\n", json_result);
     }
     json_free_serialized_string(json_result);
-
+    free(alg_tbl_index);
     return rv;
 }
 

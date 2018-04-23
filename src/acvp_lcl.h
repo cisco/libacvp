@@ -111,14 +111,14 @@
 #define ACVP_ALG_DSA                 "DSA2"
 #define ACVP_DSA_PQGGEN              "pqgGen"
 
-#define ACVP_ALG_RSA_KEYGEN             "keyGen"
-#define ACVP_ALG_RSA_SIGGEN             "sigGen"
-#define ACVP_ALG_RSA_SIGVER             "sigVer"
+#define ACVP_ALG_RSA_KEYGEN             "RSA-keyGen"
+#define ACVP_ALG_RSA_SIGGEN             "RSA-sigGen"
+#define ACVP_ALG_RSA_SIGVER             "RSA-sigVer"
 
-#define ACVP_ALG_ECDSA_KEYGEN           "keyGen"
-#define ACVP_ALG_ECDSA_KEYVER           "keyVer"
-#define ACVP_ALG_ECDSA_SIGGEN           "sigGen"
-#define ACVP_ALG_ECDSA_SIGVER           "sigVer"
+#define ACVP_ALG_ECDSA_KEYGEN           "ECDSA-keyGen"
+#define ACVP_ALG_ECDSA_KEYVER           "ECDSA-keyVer"
+#define ACVP_ALG_ECDSA_SIGGEN           "ECDSA-sigGen"
+#define ACVP_ALG_ECDSA_SIGVER           "ECDSA-sigVer"
 
 #define ACVP_PREREQ_VAL_STR "valValue"
 #define ACVP_PREREQ_OBJ_STR "prereqVals"
@@ -481,7 +481,11 @@ struct acvp_ctx_t {
     /* application callbacks */
     ACVP_RESULT (*test_progress_cb) (char *msg);
 
+    /* Two-factor authentication callback */
+    ACVP_RESULT (*totp_cb) (char **token);
+
     /* Transitory values */
+    char *login_buf;  /* holds the 2-FA authentication response */
     char *reg_buf;    /* holds the JSON registration response */
     char *kat_buf;    /* holds the current set of vectors being processed */
     char *upld_buf;   /* holds the HTTP response from server when uploading results */
@@ -492,6 +496,8 @@ struct acvp_ctx_t {
 };
 
 ACVP_RESULT acvp_send_register (ACVP_CTX *ctx, char *reg);
+
+ACVP_RESULT acvp_send_login (ACVP_CTX *ctx, char *login);
 
 ACVP_RESULT acvp_retrieve_sample_answers (ACVP_CTX *ctx, int vs_id);
 
@@ -570,6 +576,8 @@ ACVP_RESULT is_valid_hash_alg (char *value);
 ACVP_RESULT is_valid_prime_test (char *value);
 
 ACVP_RESULT is_valid_rsa_mod (int value);
+
+int acvp_lookup_ecdsa_curve (ACVP_CIPHER cipher, char *curve_name);
 
 void ctr64_inc(unsigned char *counter);
 void ctr128_inc(unsigned char *counter);

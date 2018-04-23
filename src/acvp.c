@@ -38,6 +38,8 @@
  */
 static ACVP_RESULT acvp_parse_register (ACVP_CTX *ctx);
 
+static ACVP_RESULT acvp_parse_login (ACVP_CTX *ctx);
+
 static ACVP_RESULT acvp_process_vsid (ACVP_CTX *ctx, int vs_id);
 
 static ACVP_RESULT acvp_process_vector_set (ACVP_CTX *ctx, JSON_Object *obj);
@@ -227,6 +229,12 @@ ACVP_RESULT acvp_create_test_session (ACVP_CTX **ctx,
     return ACVP_SUCCESS;
 }
 
+ACVP_RESULT acvp_set_2fa_callback (ACVP_CTX *ctx, ACVP_RESULT (*totp_cb) (char **token))
+{
+    ctx->totp_cb = totp_cb;
+    return ACVP_SUCCESS;
+}
+
 static void acvp_free_prereqs (ACVP_CAPS_LIST *cap_list) {
     while (cap_list->prereq_vals) {
         ACVP_PREREQ_LIST *temp_ptr;
@@ -275,12 +283,14 @@ static void acvp_cap_free_rsa_keygen_list (ACVP_CAPS_LIST *cap_list) {
  * multiple modes, we have to free the whole list
  */
 static void acvp_cap_free_rsa_sig_list (ACVP_CAPS_LIST *cap_list) {
-    ACVP_RSA_SIG_CAP *sig_cap, *temp_sig_cap;
+    ACVP_RSA_SIG_CAP *sig_cap = NULL, *temp_sig_cap = NULL;
     
     if (cap_list->cipher == ACVP_RSA_SIGGEN) {
         sig_cap = cap_list->cap.rsa_siggen_cap;
     } else if (cap_list->cipher == ACVP_RSA_SIGVER) {
         sig_cap = cap_list->cap.rsa_sigver_cap;
+    } else {
+        return;
     }
     
     acvp_free_prereqs(cap_list);
@@ -414,6 +424,22 @@ ACVP_RESULT acvp_free_test_session (ACVP_CTX *ctx) {
                     break;
                 case ACVP_RSA_SIGVER_TYPE:
                     acvp_cap_free_rsa_sig_list(cap_entry);
+                    break;
+                case ACVP_ECDSA_KEYGEN_TYPE:
+                    acvp_cap_free_nl(cap_entry->cap.ecdsa_keygen_cap->curves);
+                    acvp_cap_free_nl(cap_entry->cap.ecdsa_keygen_cap->secret_gen_modes);
+                    break;
+                case ACVP_ECDSA_KEYVER_TYPE:
+                    acvp_cap_free_nl(cap_entry->cap.ecdsa_keyver_cap->curves);
+                    acvp_cap_free_nl(cap_entry->cap.ecdsa_keyver_cap->secret_gen_modes);
+                    break;
+                case ACVP_ECDSA_SIGGEN_TYPE:
+                    acvp_cap_free_nl(cap_entry->cap.ecdsa_siggen_cap->curves);
+                    acvp_cap_free_nl(cap_entry->cap.ecdsa_siggen_cap->hash_algs);
+                    break;
+                case ACVP_ECDSA_SIGVER_TYPE:
+                    acvp_cap_free_nl(cap_entry->cap.ecdsa_sigver_cap->curves);
+                    acvp_cap_free_nl(cap_entry->cap.ecdsa_sigver_cap->hash_algs);
                     break;
                 default:
                     return ACVP_INVALID_ARG;
@@ -679,6 +705,9 @@ ACVP_RESULT acvp_enable_prereq_cap (ACVP_CTX *ctx,
 
     if (!ctx) {
         return ACVP_NO_CTX;
+    }
+    if (!value || strnlen(value, 12) == 0) {
+        return ACVP_INVALID_ARG;
     }
 
     /*
@@ -1445,46 +1474,6 @@ static ACVP_RESULT acvp_add_prereq_val (ACVP_CIPHER cipher,
     return (ACVP_SUCCESS);
 }
 
-ACVP_RESULT acvp_validate_rsa_primes_parm (ACVP_RSA_PARM parm, int mod, char *name,
-                                           ACVP_RSA_KEYGEN_CAP *rsa_keygen_cap) {
-    ACVP_RESULT retval;
-    retval = is_valid_rsa_mod(mod);
-    if (retval != ACVP_SUCCESS) { return retval; }
-
-    switch (parm) {
-    case ACVP_CAPS_PROV_PRIME:
-        if (rsa_keygen_cap->rand_pq == ACVP_RSA_KEYGEN_B32 ||
-                rsa_keygen_cap->rand_pq == ACVP_RSA_KEYGEN_B34) {
-            if (is_valid_hash_alg(name) == ACVP_SUCCESS ||
-                is_valid_prime_test(name) == ACVP_SUCCESS) {
-                retval = ACVP_SUCCESS;
-            }
-        }
-        break;
-    case ACVP_CAPS_PROB_PRIME:
-        if (rsa_keygen_cap->rand_pq == ACVP_RSA_KEYGEN_B33 ||
-                rsa_keygen_cap->rand_pq == ACVP_RSA_KEYGEN_B36) {
-            if (is_valid_hash_alg(name) == ACVP_SUCCESS ||
-                is_valid_prime_test(name) == ACVP_SUCCESS) {
-                retval = ACVP_SUCCESS;
-            }
-        }
-        break;
-    case ACVP_CAPS_PROV_PROB_PRIME:
-        if (rsa_keygen_cap->rand_pq == ACVP_RSA_KEYGEN_B35) {
-            if (is_valid_hash_alg(name) == ACVP_SUCCESS ||
-                is_valid_prime_test(name) == ACVP_SUCCESS) {
-                retval = ACVP_SUCCESS;
-            }
-        }
-        break;
-    default:
-        break;
-    }
-
-    return retval;
-}
-
 /*
  * The user should call this after invoking acvp_enable_rsa_keygen_cap().
  */
@@ -1557,6 +1546,7 @@ ACVP_RESULT acvp_enable_rsa_keygen_cap_parm (ACVP_CTX *ctx,
                                       int value
 ) {
     ACVP_CAPS_LIST *cap_list;
+    ACVP_RESULT rv = ACVP_SUCCESS;
     
     cap_list = acvp_locate_cap_entry(ctx, ACVP_RSA_KEYGEN);
     if (!cap_list) {
@@ -1569,16 +1559,27 @@ ACVP_RESULT acvp_enable_rsa_keygen_cap_parm (ACVP_CTX *ctx,
         cap_list->cap.rsa_keygen_cap->pub_exp_mode = value;
         break;
     case ACVP_RSA_INFO_GEN_BY_SERVER:
+        rv = is_valid_tf_param(value);
+        if (rv != ACVP_SUCCESS) {
+            break;
+        }
         cap_list->cap.rsa_keygen_cap->info_gen_by_server = value;
         break;
     case ACVP_KEY_FORMAT_CRT:
+        rv = is_valid_tf_param(value);
+        if (rv != ACVP_SUCCESS) {
+            break;
+        }
         cap_list->cap.rsa_keygen_cap->key_format_crt = value;
         break;
+    case ACVP_RAND_PQ:
+    case ACVP_FIXED_PUB_EXP_VAL:
+        ACVP_LOG_ERR("Use acvp_enable_rsa_keygen_mode() or acvp_enable_rsa_keygen_exp_parm() API to enable a new randPQ or exponent.");
     default:
-        return ACVP_INVALID_ARG;
+        rv = ACVP_INVALID_ARG;
         break;
     }
-    return ACVP_SUCCESS;
+    return rv;
 }
 
 /*
@@ -2097,7 +2098,7 @@ ACVP_RESULT acvp_enable_rsa_sigver_caps_parm (ACVP_CTX *ctx,
         while (current_hash->next != NULL) {
             current_hash = current_hash->next;
         }
-        current_hash->next = calloc(1, sizeof(ACVP_NAME_LIST));
+        current_hash->next = calloc(1, sizeof(ACVP_RSA_HASH_PAIR_LIST));
         if (!current_hash->next) {
             ACVP_LOG_ERR("Malloc Failed -- enable rsa cap parm");
             return ACVP_MALLOC_FAIL;
@@ -2203,7 +2204,7 @@ ACVP_RESULT acvp_enable_rsa_siggen_caps_parm (ACVP_CTX *ctx,
         while (current_hash->next != NULL) {
             current_hash = current_hash->next;
         }
-        current_hash->next = calloc(1, sizeof(ACVP_NAME_LIST));
+        current_hash->next = calloc(1, sizeof(ACVP_RSA_HASH_PAIR_LIST));
         if (!current_hash->next) {
             ACVP_LOG_ERR("Malloc Failed -- enable rsa cap parm");
             return ACVP_MALLOC_FAIL;
@@ -2485,6 +2486,9 @@ ACVP_RESULT acvp_enable_rsa_keygen_cap (
     
     if (!ctx) {
         return ACVP_NO_CTX;
+    }
+    if (cipher != ACVP_RSA_KEYGEN) {
+        return ACVP_INVALID_ARG;
     }
     if (!crypto_handler) {
         return ACVP_INVALID_ARG;
@@ -4005,6 +4009,47 @@ void acvp_mark_as_sample (ACVP_CTX *ctx) {
 }
 
 /*
+ * This function builds the JSON login message that
+ * will be sent to the ACVP server to perform the
+ * second of the two-factor authentications using
+ * a TOTP.
+ */
+static ACVP_RESULT acvp_build_login (ACVP_CTX *ctx, char **login) {
+
+    JSON_Value *reg_arry_val = NULL;
+    JSON_Value *ver_val = NULL;
+    JSON_Object *ver_obj = NULL;
+    JSON_Value *pw_val = NULL;
+    JSON_Object *pw_obj = NULL;
+    JSON_Array *reg_arry = NULL;
+    char *token = malloc(ACVP_TOTP_TOKEN_MAX);
+    memset(token, 0, ACVP_TOTP_TOKEN_MAX);
+    /*
+     * Start the login array
+     */
+    reg_arry_val = json_value_init_array();
+    reg_arry = json_array((const JSON_Value *) reg_arry_val);
+
+    ver_val = json_value_init_object();
+    ver_obj = json_value_get_object(ver_val);
+
+    json_object_set_string(ver_obj, "acvVersion", ACVP_VERSION);
+    json_array_append_value(reg_arry, ver_val);
+
+    pw_val = json_value_init_object();
+    pw_obj = json_value_get_object(pw_val);
+
+    ctx->totp_cb(&token);
+
+    json_object_set_string(pw_obj, "password", token);
+    json_array_append_value(reg_arry, pw_val);
+
+    *login = json_serialize_to_string_pretty(reg_arry_val);
+    free(token);
+    return ACVP_SUCCESS;
+}
+
+/*
  * This function is used to regitser the DUT with the server.
  * Registration allows the DUT to advertise it's capabilities to
  * the server.  The server will respond with a set of vector set
@@ -4013,9 +4058,42 @@ void acvp_mark_as_sample (ACVP_CTX *ctx) {
 ACVP_RESULT acvp_register (ACVP_CTX *ctx) {
     ACVP_RESULT rv;
     char *reg;
+    char *login;
 
     if (!ctx) {
         return ACVP_NO_CTX;
+    }
+
+    /*
+     * Construct the login message
+     */
+    if (ctx->totp_cb) {
+        rv = acvp_build_login(ctx, &login);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Unable to build login message");
+            return rv;
+        }
+
+        if (ctx->debug >= ACVP_LOG_LVL_STATUS) {
+            printf("\nPOST %s\n", login);
+        } else {
+            ACVP_LOG_INFO("POST %s", login);
+        }
+
+        /*
+         * Send the login to the ACVP server and get the response,
+         */
+        rv = acvp_send_login(ctx, login);
+        if (rv == ACVP_SUCCESS) {
+            ACVP_LOG_STATUS("200 OK %s", ctx->reg_buf);
+            rv = acvp_parse_login(ctx);
+        } else {
+            ACVP_LOG_STATUS("Login Response Failed %s", ctx->reg_buf);
+        }
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_STATUS("Login Send Failed");
+            return rv;
+        }
     }
 
     /*
@@ -4219,6 +4297,7 @@ static ACVP_RESULT acvp_append_ecdsa_caps_entry (
         cap_entry->cap_type = ACVP_ECDSA_SIGVER_TYPE;
         break;
     default:
+        free(cap_entry);
         return ACVP_INVALID_ARG;
     }
     
@@ -4401,6 +4480,54 @@ static JSON_Object *acvp_get_obj_from_rsp (JSON_Value *arry_val) {
 }
 
 /*
+ * This routine performs the JSON parsing of the login response
+ * from the ACVP server.  The response should contain an initial
+ * jwt which will be used once during registration.
+ */
+static ACVP_RESULT acvp_parse_login (ACVP_CTX *ctx) {
+    JSON_Value *val;
+    JSON_Object *obj = NULL;
+    char *json_buf = ctx->reg_buf;
+    int i;
+    const char *jwt;
+
+    /*
+     * Parse the JSON
+     */
+    val = json_parse_string_with_comments(json_buf);
+    if (!val) {
+        ACVP_LOG_ERR("JSON parse error");
+        return ACVP_JSON_ERR;
+    }
+
+    obj = acvp_get_obj_from_rsp(val);
+
+    /*
+     * Get the JWT assigned to this session by the server.  This will need
+     * to be included when sending the vector responses back to the server
+     * later.
+     */
+    jwt = json_object_get_string(obj, "accessToken");
+    if (!jwt) {
+        json_value_free(val);
+        ACVP_LOG_ERR("No access_token provided in registration response");
+        return ACVP_NO_TOKEN;
+    } else {
+        i = strnlen(jwt, ACVP_JWT_TOKEN_MAX + 1);
+        if (i > ACVP_JWT_TOKEN_MAX) {
+            json_value_free(val);
+            ACVP_LOG_ERR("access_token too large");
+            return ACVP_NO_TOKEN;
+        }
+        ctx->jwt_token = calloc(1, i + 1);
+        strncpy(ctx->jwt_token, jwt, i);
+        ctx->jwt_token[i] = 0;
+        ACVP_LOG_STATUS("JWT: %s", ctx->jwt_token);
+    }
+    return ACVP_SUCCESS;
+}
+
+/*
  * This routine performs the JSON parsing of the registration response
  * from the ACVP server.  The response should contain a list of vector
  * set (VS) identifiers that will need to be downloaded and processed
@@ -4446,6 +4573,10 @@ static ACVP_RESULT acvp_parse_register (ACVP_CTX *ctx) {
             json_value_free(val);
             ACVP_LOG_ERR("access_token too large");
             return ACVP_NO_TOKEN;
+        }
+        /* free it if it was used for login */
+        if (ctx->jwt_token) {
+            free(ctx->jwt_token);
         }
         ctx->jwt_token = calloc(1, i + 1);
         strncpy(ctx->jwt_token, jwt, i);
@@ -4652,6 +4783,7 @@ static ACVP_RESULT acvp_process_vsid (ACVP_CTX *ctx, int vs_id) {
  */
 static ACVP_RESULT acvp_dispatch_vector_set (ACVP_CTX *ctx, JSON_Object *obj) {
     int i;
+    const char *alg_tbl_index;
     const char *alg = json_object_get_string(obj, "algorithm");
     const char *mode = json_object_get_string(obj, "mode");
     const char *dir = json_object_get_string(obj, "direction");
@@ -4670,15 +4802,28 @@ static ACVP_RESULT acvp_dispatch_vector_set (ACVP_CTX *ctx, JSON_Object *obj) {
     
     ACVP_LOG_INFO("ACV version: %s", json_object_get_string(obj, "acvVersion"));
 
+    alg_tbl_index = calloc(12, sizeof(char));
+    
+    if (strncmp(alg, "RSA", 3) == 0 || strncmp(alg, "ECDSA", 5) == 0) {
+        strncat((char *)alg_tbl_index, alg, 5);
+        strncat((char *)alg_tbl_index, "-", 1);
+        strncat((char *)alg_tbl_index, mode, 6);
+    } else {
+        strncpy((char *)alg_tbl_index, alg, strnlen(alg, 12));
+    }
+
     for (i = 0; i < ACVP_ALG_MAX; i++) {
-        if (!strncmp(alg, alg_tbl[i].name, strlen(alg_tbl[i].name))) {
+        if (!strncmp(alg_tbl_index, alg_tbl[i].name, strlen(alg_tbl[i].name))) {
             rv = (alg_tbl[i].handler)(ctx, obj);
+            free((void *)alg_tbl_index);
             return rv;
         } else if (mode && !strncmp(mode, alg_tbl[i].name, strlen(alg_tbl[i].name))) {
             rv = (alg_tbl[i].handler)(ctx, obj);
+            free((void *)alg_tbl_index);
             return rv;
         }
     }
+    free((void *)alg_tbl_index);
     return ACVP_UNSUPPORTED_OP;
 }
 
@@ -5114,15 +5259,15 @@ ACVP_RESULT acvp_enable_dsa_cap (ACVP_CTX *ctx,
 
     dsa_cap->cipher = cipher;
 
-    dsa_modes = calloc(1, sizeof(ACVP_DSA_MAX_MODES) * sizeof(ACVP_DSA_CAP_MODE));
+    dsa_modes = calloc(1, sizeof(ACVP_DSA_MAX_MODES) * sizeof(ACVP_DSA_CAP_MODE) + 1);
     if (!dsa_modes) {
         free(dsa_cap);
         return ACVP_MALLOC_FAIL;
     }
 
-    dsa_cap->dsa_cap_mode = dsa_modes;
+    dsa_cap->dsa_cap_mode = (ACVP_DSA_CAP_MODE *)dsa_modes;
     for (i = 1; i <= ACVP_DSA_MAX_MODES; i++) {
-        dsa_cap->dsa_cap_mode[i - 1].cap_mode = i;
+        dsa_cap->dsa_cap_mode[i - 1].cap_mode = (ACVP_DSA_MODE)i;
     }
 
     result = acvp_append_dsa_caps_entry(ctx, dsa_cap, cipher, crypto_handler);
