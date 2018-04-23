@@ -33,6 +33,7 @@
 #include "acvp_lcl.h"
 #include "parson.h"
 
+
 /*
  * Forward prototypes for local functions
  */
@@ -4024,6 +4025,7 @@ static ACVP_RESULT acvp_build_login (ACVP_CTX *ctx, char **login) {
     JSON_Array *reg_arry = NULL;
     char *token = malloc(ACVP_TOTP_TOKEN_MAX);
     memset(token, 0, ACVP_TOTP_TOKEN_MAX);
+
     /*
      * Start the login array
      */
