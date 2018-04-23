@@ -301,9 +301,6 @@ typedef enum acvp_rsa_param {
     ACVP_FIXED_PUB_EXP_VAL,
     ACVP_KEY_FORMAT_CRT,
     ACVP_RAND_PQ,
-    ACVP_CAPS_PROV_PRIME,
-    ACVP_CAPS_PROB_PRIME,
-    ACVP_CAPS_PROV_PROB_PRIME,
     ACVP_RSA_INFO_GEN_BY_SERVER
 } ACVP_RSA_PARM;
 
@@ -569,8 +566,8 @@ typedef struct acvp_hmac_tc_t {
  */
 typedef struct acvp_cmac_tc_t {
     ACVP_CIPHER cipher;
-    char direction[3];
-    char ver_disposition[4];
+    char direction[4];
+    char ver_disposition[5];
     unsigned int tc_id;    /* Test case id */
     unsigned char *msg;
     unsigned int msg_len;
@@ -1659,6 +1656,8 @@ ACVP_RESULT acvp_check_test_results (ACVP_CTX *ctx);
 ACVP_RESULT acvp_set_2fa_callback (ACVP_CTX *ctx, ACVP_RESULT (*totp_cb) (char **token));
 
 ACVP_RESULT acvp_bin_to_hexstr (const unsigned char *src, unsigned int src_len, unsigned char *dest);
+
+ACVP_RESULT acvp_hexstr_to_bin (const unsigned char *src, unsigned char *dest, int dest_max);
 
 void acvp_cleanup (void);
 

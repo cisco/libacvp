@@ -62,6 +62,7 @@ static ACVP_RESULT acvp_rsa_siggen_release_tc (ACVP_RSA_SIG_TC *stc) {
     if (stc->sig_type) { free(stc->sig_type); }
     if (stc->e) { free(stc->e); }
     if (stc->n) { free(stc->n); }
+    if (stc->signature) { free(stc->signature); }
 
     return ACVP_SUCCESS;
 }
@@ -89,10 +90,6 @@ static ACVP_RESULT acvp_rsa_sig_init_tc (ACVP_CTX *ctx,
     if (!stc->hash_alg) { return ACVP_MALLOC_FAIL; }
     stc->signature = calloc(ACVP_RSA_SIGNATURE_MAX, sizeof(char));
     if (!stc->signature) { return ACVP_MALLOC_FAIL; }
-    stc->e = calloc(ACVP_RSA_EXP_LEN_MAX, sizeof(char));
-    if (!stc->e) { return ACVP_MALLOC_FAIL; }
-    stc->n = calloc(ACVP_RSA_EXP_LEN_MAX, sizeof(char));
-    if (!stc->n) { return ACVP_MALLOC_FAIL; }
     
     stc->msg_len = strnlen((const char*)msg, ACVP_RSA_MSGLEN_MAX)/2;
     
@@ -105,11 +102,15 @@ static ACVP_RESULT acvp_rsa_sig_init_tc (ACVP_CTX *ctx,
     if (cipher == ACVP_RSA_SIGVER) {
         stc->sig_mode = ACVP_RSA_SIGVER;
         
+        stc->e = calloc(ACVP_RSA_EXP_LEN_MAX, sizeof(char));
+        if (!stc->e) { return ACVP_MALLOC_FAIL; }
         rv = acvp_hexstr_to_bin((const unsigned char *) e, stc->e, ACVP_RSA_EXP_LEN_MAX);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Hex conversion failure (e)");
             return rv;
         }
+        stc->n = calloc(ACVP_RSA_EXP_LEN_MAX, sizeof(char));
+        if (!stc->n) { goto err; }
         rv = acvp_hexstr_to_bin((const unsigned char *) n, stc->n, ACVP_RSA_EXP_LEN_MAX);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Hex conversion failure (n)");
@@ -132,6 +133,11 @@ static ACVP_RESULT acvp_rsa_sig_init_tc (ACVP_CTX *ctx,
     stc->modulo = mod;
     
     return rv;
+    
+    err:
+    ACVP_LOG_ERR("Failed to allocate buffer in RSA test case");
+    if (stc->n) free(stc->n);
+    return ACVP_MALLOC_FAIL;
 }
 
 ACVP_RESULT acvp_rsa_sig_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
@@ -177,7 +183,8 @@ ACVP_RESULT acvp_rsa_sig_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     mode_str = (char *) json_object_get_string(obj, "mode");
     
     /* allocate space to concatenate alg and mode strings (and a hyphen) */
-    alg_tbl_index = calloc(strnlen(alg_str, 5) + 6 + 1, sizeof(char));
+    /* +1 for null termination */
+    alg_tbl_index = calloc(strnlen(alg_str, 5) + 6 + 1 + 1, sizeof(char));
     strncat(alg_tbl_index, alg_str, 5);
     strncat(alg_tbl_index, "-", 1);
     strncat(alg_tbl_index, mode_str, 6);
@@ -192,6 +199,7 @@ ACVP_RESULT acvp_rsa_sig_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
         break;
     default:
         ACVP_LOG_ERR("ERROR: unsupported algorithm (%s)", alg_str);
+        free(alg_tbl_index);
         return (ACVP_UNSUPPORTED_OP);
     }
     stc.sig_mode = alg_id;
@@ -199,6 +207,7 @@ ACVP_RESULT acvp_rsa_sig_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     cap = acvp_locate_cap_entry(ctx, alg_id);
     if (!cap) {
         ACVP_LOG_ERR("ERROR: ACVP server requesting unsupported capability");
+        free(alg_tbl_index);
         return (ACVP_UNSUPPORTED_OP);
     }
     ACVP_LOG_INFO("    RSA mode: %s", mode_str);
@@ -209,6 +218,7 @@ ACVP_RESULT acvp_rsa_sig_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("ERROR: Failed to create JSON response struct. ");
+        free(alg_tbl_index);
         return (rv);
     }
 
@@ -330,7 +340,7 @@ ACVP_RESULT acvp_rsa_sig_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
         ACVP_LOG_INFO("\n\n%s\n\n", json_result);
     }
     json_free_serialized_string(json_result);
-
+    free(alg_tbl_index);
     return rv;
 }
 

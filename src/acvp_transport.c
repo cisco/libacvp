@@ -39,7 +39,7 @@
 
 #define HTTP_OK    200
 
-#define MAX_TOKEN_LEN 512
+#define MAX_TOKEN_LEN 600
 
 static struct curl_slist *acvp_add_auth_hdr (ACVP_CTX *ctx, struct curl_slist *slist) {
     int bearer_size;

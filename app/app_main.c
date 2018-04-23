@@ -226,7 +226,7 @@ int main(int argc, char **argv)
      */
     int rsa = 0;
     int drbg = 0;
-    int ecdsa = 1;
+    int ecdsa = 0;
 
     if (argc > 3) {
         print_usage();
@@ -1011,6 +1011,8 @@ static void enable_rsa (ACVP_CTX *ctx) {
         printf("oh no\n");
         exit(1);
     }
+    char *expo_str = BN_bn2hex(expo);
+    FIPS_bn_free(expo);
 
     /*
      * Enable RSA keygen...
@@ -1028,7 +1030,7 @@ static void enable_rsa (ACVP_CTX *ctx) {
     rv = acvp_enable_rsa_keygen_cap_parm(ctx, ACVP_KEY_FORMAT_CRT, 0);
     CHECK_ENABLE_CAP_RV(rv);
 
-    rv = acvp_enable_rsa_keygen_exp_parm(ctx, ACVP_FIXED_PUB_EXP_VAL, BN_bn2hex(expo));
+    rv = acvp_enable_rsa_keygen_exp_parm(ctx, ACVP_FIXED_PUB_EXP_VAL, expo_str);
     CHECK_ENABLE_CAP_RV(rv);
     
     rv = acvp_enable_rsa_keygen_mode(ctx, ACVP_RSA_KEYGEN_B34);
@@ -1142,7 +1144,7 @@ static void enable_rsa (ACVP_CTX *ctx) {
     
     rv = acvp_enable_rsa_sigver_cap_parm(ctx, ACVP_PUB_EXP_MODE, RSA_PUB_EXP_FIXED);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_sigver_exp_parm(ctx, ACVP_FIXED_PUB_EXP_VAL, BN_bn2hex(expo));
+    rv = acvp_enable_rsa_sigver_exp_parm(ctx, ACVP_FIXED_PUB_EXP_VAL, expo_str);
     CHECK_ENABLE_CAP_RV(rv);
     
     // RSA w/ sigType: X9.31
@@ -1227,13 +1229,33 @@ static void enable_ecdsa (ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_prereq_cap(ctx, ACVP_ECDSA_KEYGEN, ACVP_PREREQ_DRBG, value);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_KEYGEN, ACVP_CURVE, "k-409");
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_KEYGEN, ACVP_CURVE, "p-224");
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_KEYGEN, ACVP_CURVE, "p-256");
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_KEYGEN, ACVP_CURVE, "p-384");
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_KEYGEN, ACVP_CURVE, "p-521");
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_KEYGEN, ACVP_SECRET_GEN_MODE, "extra bits");
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_KEYGEN, ACVP_CURVE, "k-233");
     CHECK_ENABLE_CAP_RV(rv);
-    
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_KEYGEN, ACVP_CURVE, "k-283");
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_KEYGEN, ACVP_CURVE, "k-409");
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_KEYGEN, ACVP_CURVE, "k-571");
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_KEYGEN, ACVP_CURVE, "b-233");
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_KEYGEN, ACVP_CURVE, "b-283");
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_KEYGEN, ACVP_CURVE, "b-409");
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_KEYGEN, ACVP_CURVE, "b-571");
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_KEYGEN, ACVP_SECRET_GEN_MODE, "testing candidates");
+    CHECK_ENABLE_CAP_RV(rv);
+
     /*
      * Enable ECDSA keyVer...
      */
@@ -1243,12 +1265,32 @@ static void enable_ecdsa (ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_prereq_cap(ctx, ACVP_ECDSA_KEYVER, ACVP_PREREQ_DRBG, value);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_KEYVER, ACVP_CURVE, "k-163");
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_KEYVER, ACVP_CURVE, "p-224");
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_KEYVER, ACVP_CURVE, "b-163");
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_KEYVER, ACVP_CURVE, "p-256");
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_KEYVER, ACVP_CURVE, "p-384");
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_KEYVER, ACVP_CURVE, "p-521");
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_KEYVER, ACVP_CURVE, "k-233");
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_KEYVER, ACVP_CURVE, "k-283");
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_KEYVER, ACVP_CURVE, "k-409");
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_KEYVER, ACVP_CURVE, "k-571");
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_KEYVER, ACVP_CURVE, "b-233");
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_KEYVER, ACVP_CURVE, "b-283");
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_KEYVER, ACVP_CURVE, "b-409");
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_KEYVER, ACVP_CURVE, "b-571");
     CHECK_ENABLE_CAP_RV(rv);
 
-#if 0 // for now while hashAlg parsing error persists
+
     /*
      * Enable ECDSA sigGen...
      */
@@ -1258,11 +1300,37 @@ static void enable_ecdsa (ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_prereq_cap(ctx, ACVP_ECDSA_SIGGEN, ACVP_PREREQ_DRBG, value);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_CURVE, "k-409");
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_CURVE, "p-224");
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_CURVE, "p-256");
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_CURVE, "p-384");
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_CURVE, "p-521");
     CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_CURVE, "k-233");
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_CURVE, "k-283");
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_CURVE, "k-409");
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_CURVE, "k-571");
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_CURVE, "b-233");
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_CURVE, "b-283");
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_CURVE, "b-409");
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_CURVE, "b-571");
+    CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_HASH_ALG, "SHA2-224");
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_HASH_ALG, "SHA2-256");
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_HASH_ALG, "SHA2-384");
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_HASH_ALG, "SHA2-512");
     CHECK_ENABLE_CAP_RV(rv);
 
     /*
@@ -1274,18 +1342,41 @@ static void enable_ecdsa (ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_prereq_cap(ctx, ACVP_ECDSA_SIGVER, ACVP_PREREQ_DRBG, value);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_CURVE, "k-163");
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_CURVE, "p-224");
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_CURVE, "b-163");
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_CURVE, "p-256");
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_CURVE, "p-384");
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_CURVE, "p-521");
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_CURVE, "k-233");
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_CURVE, "k-283");
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_CURVE, "k-409");
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_CURVE, "k-571");
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_CURVE, "b-233");
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_CURVE, "b-283");
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_CURVE, "b-409");
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_CURVE, "b-571");
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_HASH_ALG, "SHA2-224");
     CHECK_ENABLE_CAP_RV(rv);
-#endif
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_HASH_ALG, "SHA2-256");
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_HASH_ALG, "SHA2-384");
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_HASH_ALG, "SHA2-512");
+    CHECK_ENABLE_CAP_RV(rv);
 }
 
 static void enable_drbg (ACVP_CTX *ctx) {
-    ACVP_RESULT rv;
-
     /*
      * Register DRBG
      */
@@ -1296,11 +1387,12 @@ static void enable_drbg (ACVP_CTX *ctx) {
           (printf("Failed to enable FIPS mode.\n"));
           exit(1);
       }
-
+    
+#if 0 /* only CTR mode is supported by the server currently */
+    ACVP_RESULT rv;
     char value[] = "same";
     char value2[] = "123456";
     
-#if 0 /* only CTR mode is supported by the server currently */
     rv = acvp_enable_drbg_cap(ctx, ACVP_HASHDRBG, &app_drbg_handler);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_drbg_cap_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1,
@@ -2278,7 +2370,8 @@ static ACVP_RESULT app_hmac_handler(ACVP_TEST_CASE *test_case)
 static ACVP_RESULT app_cmac_handler(ACVP_TEST_CASE *test_case)
 {
     ACVP_CMAC_TC    *tc;
-    const EVP_CIPHER    *c;
+    ACVP_RESULT rv;
+    const EVP_CIPHER    *c = NULL;
     CMAC_CTX       *cmac_ctx;
     int key_len, i;
     unsigned char mac_compare[16] = {0};
@@ -2356,12 +2449,16 @@ static ACVP_RESULT app_cmac_handler(ACVP_TEST_CASE *test_case)
          * happens here for "ver" we have to reformat here as well
          */
         unsigned char formatted_mac_compare[tc->mac_len * 2 + 1];
-        acvp_bin_to_hexstr(mac_compare, mac_cmp_len, formatted_mac_compare);
+        rv = acvp_bin_to_hexstr(mac_compare, mac_cmp_len, formatted_mac_compare);
+        if (rv != ACVP_SUCCESS) {
+            printf("\nFailed to convert to hex string\n");
+            return ACVP_CRYPTO_MODULE_FAIL;
+        }
         
         if (strncmp((const char *)formatted_mac_compare, (const char *)tc->mac, tc->mac_len * 2) == 0) {
-            strncpy((char *)tc->ver_disposition, "pass", 4);
+            strncpy((char *)tc->ver_disposition, "pass", 5);
         } else {
-            strncpy((char *)tc->ver_disposition, "fail", 4);
+            strncpy((char *)tc->ver_disposition, "fail", 5);
         }
     } else {
         if (!CMAC_Final(cmac_ctx, tc->mac, (size_t *)&tc->mac_len)) {
@@ -3478,6 +3575,7 @@ static ACVP_RESULT totp(char **token)
     seed = getenv("ACV_TOTP_SEED");
     if (!seed) {
         printf("Failed to get TOTP seed\n");
+        free(new_seed);
         return ACVP_TOTP_MISSING_SEED;
     }
 

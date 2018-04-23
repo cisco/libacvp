@@ -112,11 +112,11 @@ static ACVP_RESULT acvp_cmac_init_tc (ACVP_CTX *ctx,
     }
 
     if (direction_verify) {
-        strncpy(stc->direction, "ver", 3);
+        strncpy(stc->direction, "ver", 4);
         stc->mac_len = mac_len;
         strncpy((char *)stc->mac, (const char *)mac, stc->mac_len * 2);
     } else {
-        strncpy(stc->direction, "gen", 3);
+        strncpy(stc->direction, "gen", 4);
     }
 
     stc->tc_id = tc_id;
