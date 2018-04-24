@@ -131,63 +131,63 @@ static ACVP_RESULT acvp_add_prereq_val (ACVP_CIPHER cipher,
  * This table is not sparse, it must contain ACVP_OP_MAX entries.
  */
 ACVP_ALG_HANDLER alg_tbl[ACVP_ALG_MAX] = {
-        {ACVP_AES_GCM,           &acvp_aes_kat_handler,         ACVP_ALG_AES_GCM},
-        {ACVP_AES_CCM,           &acvp_aes_kat_handler,         ACVP_ALG_AES_CCM},
-        {ACVP_AES_ECB,           &acvp_aes_kat_handler,         ACVP_ALG_AES_ECB},
-        {ACVP_AES_CBC,           &acvp_aes_kat_handler,         ACVP_ALG_AES_CBC},
-        {ACVP_AES_CFB1,          &acvp_aes_kat_handler,         ACVP_ALG_AES_CFB1},
-        {ACVP_AES_CFB8,          &acvp_aes_kat_handler,         ACVP_ALG_AES_CFB8},
-        {ACVP_AES_CFB128,        &acvp_aes_kat_handler,         ACVP_ALG_AES_CFB128},
-        {ACVP_AES_OFB,           &acvp_aes_kat_handler,         ACVP_ALG_AES_OFB},
-        {ACVP_AES_CTR,           &acvp_aes_kat_handler,         ACVP_ALG_AES_CTR},
-        {ACVP_AES_XTS,           &acvp_aes_kat_handler,         ACVP_ALG_AES_XTS},
-        {ACVP_AES_KW,            &acvp_aes_kat_handler,         ACVP_ALG_AES_KW},
-        {ACVP_AES_KWP,           &acvp_aes_kat_handler,         ACVP_ALG_AES_KWP},
-        {ACVP_TDES_ECB,          &acvp_des_kat_handler,         ACVP_ALG_TDES_ECB},
-        {ACVP_TDES_CBC,          &acvp_des_kat_handler,         ACVP_ALG_TDES_CBC},
-        {ACVP_TDES_CBCI,         &acvp_des_kat_handler,         ACVP_ALG_TDES_CBCI},
-        {ACVP_TDES_OFB,          &acvp_des_kat_handler,         ACVP_ALG_TDES_OFB},
-        {ACVP_TDES_OFBI,         &acvp_des_kat_handler,         ACVP_ALG_TDES_OFBI},
-        {ACVP_TDES_CFB1,         &acvp_des_kat_handler,         ACVP_ALG_TDES_CFB1},
-        {ACVP_TDES_CFB8,         &acvp_des_kat_handler,         ACVP_ALG_TDES_CFB8},
-        {ACVP_TDES_CFB64,        &acvp_des_kat_handler,         ACVP_ALG_TDES_CFB64},
-        {ACVP_TDES_CFBP1,        &acvp_des_kat_handler,         ACVP_ALG_TDES_CFBP1},
-        {ACVP_TDES_CFBP8,        &acvp_des_kat_handler,         ACVP_ALG_TDES_CFBP8},
-        {ACVP_TDES_CFBP64,       &acvp_des_kat_handler,         ACVP_ALG_TDES_CFBP64},
-        {ACVP_TDES_CTR,          &acvp_des_kat_handler,         ACVP_ALG_TDES_CTR},
-        {ACVP_TDES_KW,           &acvp_des_kat_handler,         ACVP_ALG_TDES_KW},
-        {ACVP_SHA1,              &acvp_hash_kat_handler,        ACVP_ALG_SHA1},
-        {ACVP_SHA224,            &acvp_hash_kat_handler,        ACVP_ALG_SHA224},
-        {ACVP_SHA256,            &acvp_hash_kat_handler,        ACVP_ALG_SHA256},
-        {ACVP_SHA384,            &acvp_hash_kat_handler,        ACVP_ALG_SHA384},
-        {ACVP_SHA512,            &acvp_hash_kat_handler,        ACVP_ALG_SHA512},
-        {ACVP_HASHDRBG,          &acvp_drbg_kat_handler,        ACVP_ALG_HASHDRBG},
-        {ACVP_HMACDRBG,          &acvp_drbg_kat_handler,        ACVP_ALG_HMACDRBG},
-        {ACVP_CTRDRBG,           &acvp_drbg_kat_handler,        ACVP_ALG_CTRDRBG},
-        {ACVP_HMAC_SHA1,         &acvp_hmac_kat_handler,        ACVP_ALG_HMAC_SHA1},
-        {ACVP_HMAC_SHA2_224,     &acvp_hmac_kat_handler,        ACVP_ALG_HMAC_SHA2_224},
-        {ACVP_HMAC_SHA2_256,     &acvp_hmac_kat_handler,        ACVP_ALG_HMAC_SHA2_256},
-        {ACVP_HMAC_SHA2_384,     &acvp_hmac_kat_handler,        ACVP_ALG_HMAC_SHA2_384},
-        {ACVP_HMAC_SHA2_512,     &acvp_hmac_kat_handler,        ACVP_ALG_HMAC_SHA2_512},
-        {ACVP_HMAC_SHA2_512_224, &acvp_hmac_kat_handler,        ACVP_ALG_HMAC_SHA2_512_224},
-        {ACVP_HMAC_SHA2_512_256, &acvp_hmac_kat_handler,        ACVP_ALG_HMAC_SHA2_512_256},
-        {ACVP_HMAC_SHA3_224,     &acvp_hmac_kat_handler,        ACVP_ALG_HMAC_SHA3_224},
-        {ACVP_HMAC_SHA3_256,     &acvp_hmac_kat_handler,        ACVP_ALG_HMAC_SHA3_256},
-        {ACVP_HMAC_SHA3_384,     &acvp_hmac_kat_handler,        ACVP_ALG_HMAC_SHA3_384},
-        {ACVP_HMAC_SHA3_512,     &acvp_hmac_kat_handler,        ACVP_ALG_HMAC_SHA3_512},
-        {ACVP_CMAC_AES,          &acvp_cmac_kat_handler,        ACVP_ALG_CMAC_AES},
-        {ACVP_CMAC_TDES,         &acvp_cmac_kat_handler,        ACVP_ALG_CMAC_TDES},
-        {ACVP_DSA,               &acvp_dsa_kat_handler,         ACVP_ALG_DSA},
-        {ACVP_RSA_KEYGEN,        &acvp_rsa_keygen_kat_handler,  ACVP_ALG_RSA_KEYGEN},
-        {ACVP_RSA_SIGGEN,        &acvp_rsa_sig_kat_handler,     ACVP_ALG_RSA_SIGGEN},
-        {ACVP_RSA_SIGVER,        &acvp_rsa_sig_kat_handler,     ACVP_ALG_RSA_SIGVER},
-        {ACVP_ECDSA_KEYGEN,      &acvp_ecdsa_kat_handler,       ACVP_ALG_ECDSA_KEYGEN},
-        {ACVP_ECDSA_KEYVER,      &acvp_ecdsa_kat_handler,       ACVP_ALG_ECDSA_KEYVER},
-        {ACVP_ECDSA_SIGGEN,      &acvp_ecdsa_kat_handler,       ACVP_ALG_ECDSA_SIGGEN},
-        {ACVP_ECDSA_SIGVER,      &acvp_ecdsa_kat_handler,       ACVP_ALG_ECDSA_SIGVER},
-        {ACVP_KDF135_TLS,        &acvp_kdf135_tls_kat_handler,  ACVP_ALG_KDF135_TLS},
-        {ACVP_KDF135_SNMP,       &acvp_kdf135_snmp_kat_handler, ACVP_ALG_KDF135_SNMP},
-        {ACVP_KDF135_SSH,        &acvp_kdf135_ssh_kat_handler,  ACVP_ALG_KDF135_SSH}
+        {ACVP_AES_GCM,           &acvp_aes_kat_handler,             ACVP_ALG_AES_GCM,           NULL},
+        {ACVP_AES_CCM,           &acvp_aes_kat_handler,             ACVP_ALG_AES_CCM,           NULL},
+        {ACVP_AES_ECB,           &acvp_aes_kat_handler,             ACVP_ALG_AES_ECB,           NULL},
+        {ACVP_AES_CBC,           &acvp_aes_kat_handler,             ACVP_ALG_AES_CBC,           NULL},
+        {ACVP_AES_CFB1,          &acvp_aes_kat_handler,             ACVP_ALG_AES_CFB1,          NULL},
+        {ACVP_AES_CFB8,          &acvp_aes_kat_handler,             ACVP_ALG_AES_CFB8,          NULL},
+        {ACVP_AES_CFB128,        &acvp_aes_kat_handler,             ACVP_ALG_AES_CFB128,        NULL},
+        {ACVP_AES_OFB,           &acvp_aes_kat_handler,             ACVP_ALG_AES_OFB,           NULL},
+        {ACVP_AES_CTR,           &acvp_aes_kat_handler,             ACVP_ALG_AES_CTR,           NULL},
+        {ACVP_AES_XTS,           &acvp_aes_kat_handler,             ACVP_ALG_AES_XTS,           NULL},
+        {ACVP_AES_KW,            &acvp_aes_kat_handler,             ACVP_ALG_AES_KW,            NULL},
+        {ACVP_AES_KWP,           &acvp_aes_kat_handler,             ACVP_ALG_AES_KWP,           NULL},
+        {ACVP_TDES_ECB,          &acvp_des_kat_handler,             ACVP_ALG_TDES_ECB,          NULL},
+        {ACVP_TDES_CBC,          &acvp_des_kat_handler,             ACVP_ALG_TDES_CBC,          NULL},
+        {ACVP_TDES_CBCI,         &acvp_des_kat_handler,             ACVP_ALG_TDES_CBCI,         NULL},
+        {ACVP_TDES_OFB,          &acvp_des_kat_handler,             ACVP_ALG_TDES_OFB,          NULL},
+        {ACVP_TDES_OFBI,         &acvp_des_kat_handler,             ACVP_ALG_TDES_OFBI,         NULL},
+        {ACVP_TDES_CFB1,         &acvp_des_kat_handler,             ACVP_ALG_TDES_CFB1,         NULL},
+        {ACVP_TDES_CFB8,         &acvp_des_kat_handler,             ACVP_ALG_TDES_CFB8,         NULL},
+        {ACVP_TDES_CFB64,        &acvp_des_kat_handler,             ACVP_ALG_TDES_CFB64,        NULL},
+        {ACVP_TDES_CFBP1,        &acvp_des_kat_handler,             ACVP_ALG_TDES_CFBP1,        NULL},
+        {ACVP_TDES_CFBP8,        &acvp_des_kat_handler,             ACVP_ALG_TDES_CFBP8,        NULL},
+        {ACVP_TDES_CFBP64,       &acvp_des_kat_handler,             ACVP_ALG_TDES_CFBP64,       NULL},
+        {ACVP_TDES_CTR,          &acvp_des_kat_handler,             ACVP_ALG_TDES_CTR,          NULL},
+        {ACVP_TDES_KW,           &acvp_des_kat_handler,             ACVP_ALG_TDES_KW,           NULL},
+        {ACVP_SHA1,              &acvp_hash_kat_handler,            ACVP_ALG_SHA1,              NULL},
+        {ACVP_SHA224,            &acvp_hash_kat_handler,            ACVP_ALG_SHA224,            NULL},
+        {ACVP_SHA256,            &acvp_hash_kat_handler,            ACVP_ALG_SHA256,            NULL},
+        {ACVP_SHA384,            &acvp_hash_kat_handler,            ACVP_ALG_SHA384,            NULL},
+        {ACVP_SHA512,            &acvp_hash_kat_handler,            ACVP_ALG_SHA512,            NULL},
+        {ACVP_HASHDRBG,          &acvp_drbg_kat_handler,            ACVP_ALG_HASHDRBG,          NULL},
+        {ACVP_HMACDRBG,          &acvp_drbg_kat_handler,            ACVP_ALG_HMACDRBG,          NULL},
+        {ACVP_CTRDRBG,           &acvp_drbg_kat_handler,            ACVP_ALG_CTRDRBG,           NULL},
+        {ACVP_HMAC_SHA1,         &acvp_hmac_kat_handler,            ACVP_ALG_HMAC_SHA1,         NULL},
+        {ACVP_HMAC_SHA2_224,     &acvp_hmac_kat_handler,            ACVP_ALG_HMAC_SHA2_224,     NULL},
+        {ACVP_HMAC_SHA2_256,     &acvp_hmac_kat_handler,            ACVP_ALG_HMAC_SHA2_256,     NULL},
+        {ACVP_HMAC_SHA2_384,     &acvp_hmac_kat_handler,            ACVP_ALG_HMAC_SHA2_384,     NULL},
+        {ACVP_HMAC_SHA2_512,     &acvp_hmac_kat_handler,            ACVP_ALG_HMAC_SHA2_512,     NULL},
+        {ACVP_HMAC_SHA2_512_224, &acvp_hmac_kat_handler,            ACVP_ALG_HMAC_SHA2_512_224, NULL},
+        {ACVP_HMAC_SHA2_512_256, &acvp_hmac_kat_handler,            ACVP_ALG_HMAC_SHA2_512_256, NULL},
+        {ACVP_HMAC_SHA3_224,     &acvp_hmac_kat_handler,            ACVP_ALG_HMAC_SHA3_224,     NULL},
+        {ACVP_HMAC_SHA3_256,     &acvp_hmac_kat_handler,            ACVP_ALG_HMAC_SHA3_256,     NULL},
+        {ACVP_HMAC_SHA3_384,     &acvp_hmac_kat_handler,            ACVP_ALG_HMAC_SHA3_384,     NULL},
+        {ACVP_HMAC_SHA3_512,     &acvp_hmac_kat_handler,            ACVP_ALG_HMAC_SHA3_512,     NULL},
+        {ACVP_CMAC_AES,          &acvp_cmac_kat_handler,            ACVP_ALG_CMAC_AES,          NULL},
+        {ACVP_CMAC_TDES,         &acvp_cmac_kat_handler,            ACVP_ALG_CMAC_TDES,         NULL},
+        {ACVP_DSA,               &acvp_dsa_kat_handler,             ACVP_ALG_DSA,               NULL},
+        {ACVP_RSA_KEYGEN,        &acvp_rsa_keygen_kat_handler,      ACVP_ALG_RSA,               ACVP_MODE_KEYGEN},
+        {ACVP_RSA_SIGGEN,        &acvp_rsa_siggen_kat_handler,      ACVP_ALG_RSA,               ACVP_MODE_SIGGEN},
+        {ACVP_RSA_SIGVER,        &acvp_rsa_sigver_kat_handler,      ACVP_ALG_RSA,               ACVP_MODE_SIGVER},
+        {ACVP_ECDSA_KEYGEN,      &acvp_ecdsa_keygen_kat_handler,    ACVP_ALG_ECDSA,             ACVP_MODE_KEYGEN},
+        {ACVP_ECDSA_KEYVER,      &acvp_ecdsa_keyver_kat_handler,    ACVP_ALG_ECDSA,             ACVP_MODE_KEYVER},
+        {ACVP_ECDSA_SIGGEN,      &acvp_ecdsa_siggen_kat_handler,    ACVP_ALG_ECDSA,             ACVP_MODE_SIGGEN},
+        {ACVP_ECDSA_SIGVER,      &acvp_ecdsa_sigver_kat_handler,    ACVP_ALG_ECDSA,             ACVP_MODE_SIGVER},
+        {ACVP_KDF135_TLS,        &acvp_kdf135_tls_kat_handler,      ACVP_ALG_KDF135_TLS,        NULL},
+        {ACVP_KDF135_SNMP,       &acvp_kdf135_snmp_kat_handler,     ACVP_ALG_KDF135_SNMP,       NULL},
+        {ACVP_KDF135_SSH,        &acvp_kdf135_ssh_kat_handler,      ACVP_ALG_KDF135_SSH,        NULL}
 };
 
 typedef struct acvp_prereqs_mode_name_t {
@@ -4785,7 +4785,6 @@ static ACVP_RESULT acvp_process_vsid (ACVP_CTX *ctx, int vs_id) {
  */
 static ACVP_RESULT acvp_dispatch_vector_set (ACVP_CTX *ctx, JSON_Object *obj) {
     int i;
-    const char *alg_tbl_index;
     const char *alg = json_object_get_string(obj, "algorithm");
     const char *mode = json_object_get_string(obj, "mode");
     const char *dir = json_object_get_string(obj, "direction");
@@ -4796,36 +4795,29 @@ static ACVP_RESULT acvp_dispatch_vector_set (ACVP_CTX *ctx, JSON_Object *obj) {
         ACVP_LOG_ERR("JSON parse error: ACV algorithm not found");
         return ACVP_JSON_ERR;
     }
-
+    
     ACVP_LOG_STATUS("vsId: %d", vs_id);
     ACVP_LOG_STATUS("ACV Operation: %s", alg);
     // TODO: make sure this is included where relevant only
     ACVP_LOG_INFO("ACV Direction: %s", dir);
     
     ACVP_LOG_INFO("ACV version: %s", json_object_get_string(obj, "acvVersion"));
-
-    alg_tbl_index = calloc(12, sizeof(char));
     
-    if (strncmp(alg, "RSA", 3) == 0 || strncmp(alg, "ECDSA", 5) == 0) {
-        strncat((char *)alg_tbl_index, alg, 5);
-        strncat((char *)alg_tbl_index, "-", 1);
-        strncat((char *)alg_tbl_index, mode, 6);
-    } else {
-        strncpy((char *)alg_tbl_index, alg, strnlen(alg, 12));
-    }
-
     for (i = 0; i < ACVP_ALG_MAX; i++) {
-        if (!strncmp(alg_tbl_index, alg_tbl[i].name, strlen(alg_tbl[i].name))) {
-            rv = (alg_tbl[i].handler)(ctx, obj);
-            free((void *)alg_tbl_index);
-            return rv;
-        } else if (mode && !strncmp(mode, alg_tbl[i].name, strlen(alg_tbl[i].name))) {
-            rv = (alg_tbl[i].handler)(ctx, obj);
-            free((void *)alg_tbl_index);
-            return rv;
+        if (!strncmp(alg, alg_tbl[i].name, strlen(alg_tbl[i].name))) {
+            if (alg_tbl[i].mode != NULL) {
+                if (mode != NULL) {
+                    if (!strncmp(mode, alg_tbl[i].mode, strlen(alg_tbl[i].mode))) {
+                        rv = (alg_tbl[i].handler)(ctx, obj);
+                        return rv;
+                    }
+                }
+            } else {
+                rv = (alg_tbl[i].handler)(ctx, obj);
+                return rv;
+            }
         }
     }
-    free((void *)alg_tbl_index);
     return ACVP_UNSUPPORTED_OP;
 }
 

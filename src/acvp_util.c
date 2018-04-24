@@ -96,6 +96,9 @@ ACVP_CAPS_LIST *acvp_locate_cap_entry (ACVP_CTX *ctx, ACVP_CIPHER cipher) {
  * This function returns the name of an algorithm given
  * a ACVP_CIPHER value.  It looks for the cipher in
  * the master algorithm table, returns NULL if none match.
+ *
+ * IMPORTANT: If using an asymmetric cipher with a mode,
+ * note that this API only returns the alg string
  */
 char *acvp_lookup_cipher_name (ACVP_CIPHER alg) {
     int i;
@@ -111,11 +114,14 @@ char *acvp_lookup_cipher_name (ACVP_CIPHER alg) {
 /*
  * This function returns the ID of a cipher given an
  * algorithm name (as defined in the ACVP spec).  It
- * returns -1 if none match.
+ * returns 0 if none match.
+ *
+ * IMPORTANT: This only works accurately for symmetric
+ * ciphers
  */
 ACVP_CIPHER acvp_lookup_cipher_index (const char *algorithm) {
     if (!algorithm) {
-        return -1;
+        return ACVP_CIPHER_START;
     }
     int i;
 
@@ -125,7 +131,7 @@ ACVP_CIPHER acvp_lookup_cipher_index (const char *algorithm) {
             return alg_tbl[i].cipher;
         }
     }
-    return -1;
+    return ACVP_CIPHER_START;
 }
 
 /*

@@ -111,14 +111,13 @@
 #define ACVP_ALG_DSA                 "DSA2"
 #define ACVP_DSA_PQGGEN              "pqgGen"
 
-#define ACVP_ALG_RSA_KEYGEN             "RSA-keyGen"
-#define ACVP_ALG_RSA_SIGGEN             "RSA-sigGen"
-#define ACVP_ALG_RSA_SIGVER             "RSA-sigVer"
+#define ACVP_ALG_RSA                "RSA"
+#define ACVP_ALG_ECDSA              "ECDSA"
 
-#define ACVP_ALG_ECDSA_KEYGEN           "ECDSA-keyGen"
-#define ACVP_ALG_ECDSA_KEYVER           "ECDSA-keyVer"
-#define ACVP_ALG_ECDSA_SIGGEN           "ECDSA-sigGen"
-#define ACVP_ALG_ECDSA_SIGVER           "ECDSA-sigVer"
+#define ACVP_MODE_KEYGEN            "keyGen"
+#define ACVP_MODE_KEYVER            "keyVer"
+#define ACVP_MODE_SIGGEN            "sigGen"
+#define ACVP_MODE_SIGVER            "sigVer"
 
 #define ACVP_PREREQ_VAL_STR "valValue"
 #define ACVP_PREREQ_OBJ_STR "prereqVals"
@@ -208,6 +207,7 @@ struct acvp_alg_handler_t {
     ACVP_RESULT (*handler) (ACVP_CTX *ctx, JSON_Object *obj);
 
     char *name;
+    char *mode; /** < Should be NULL unless using an asymmetric alg */
 };
 
 typedef struct acvp_vs_list_t {
@@ -536,9 +536,17 @@ ACVP_RESULT acvp_cmac_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
 
 ACVP_RESULT acvp_rsa_keygen_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
 
-ACVP_RESULT acvp_ecdsa_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
+ACVP_RESULT acvp_rsa_siggen_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
 
-ACVP_RESULT acvp_rsa_sig_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
+ACVP_RESULT acvp_rsa_sigver_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
+
+ACVP_RESULT acvp_ecdsa_keygen_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
+
+ACVP_RESULT acvp_ecdsa_keyver_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
+
+ACVP_RESULT acvp_ecdsa_siggen_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
+
+ACVP_RESULT acvp_ecdsa_sigver_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
 
 ACVP_RESULT acvp_kdf135_tls_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
 

@@ -32,6 +32,7 @@
 #include "acvp_lcl.h"
 #include "parson.h"
 
+static ACVP_RESULT acvp_rsa_sig_kat_handler_internal (ACVP_CTX *ctx, JSON_Object *obj, ACVP_CIPHER cipher);
 
 /*
  * After the test case has been processed by the DUT, the results
@@ -140,7 +141,15 @@ static ACVP_RESULT acvp_rsa_sig_init_tc (ACVP_CTX *ctx,
     return ACVP_MALLOC_FAIL;
 }
 
-ACVP_RESULT acvp_rsa_sig_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
+ACVP_RESULT acvp_rsa_siggen_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
+    return acvp_rsa_sig_kat_handler_internal(ctx, obj, ACVP_RSA_SIGGEN);
+}
+
+ACVP_RESULT acvp_rsa_sigver_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
+    return acvp_rsa_sig_kat_handler_internal(ctx, obj, ACVP_RSA_SIGVER);
+}
+
+static ACVP_RESULT acvp_rsa_sig_kat_handler_internal (ACVP_CTX *ctx, JSON_Object *obj, ACVP_CIPHER cipher) {
     unsigned int tc_id;
     JSON_Value *groupval;
     JSON_Object *groupobj = NULL;
@@ -170,7 +179,7 @@ ACVP_RESULT acvp_rsa_sig_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     unsigned int mod = 0;
     unsigned char *msg, *signature;
     char *e_str = NULL, *n_str = NULL;
-    char *hash_alg = NULL, *sig_type, *salt, *alg_str, *alg_tbl_index;
+    char *hash_alg = NULL, *sig_type, *salt, *alg_str;
 
     ACVP_RESULT rv;
     alg_str = (char *) json_object_get_string(obj, "algorithm");
@@ -182,32 +191,12 @@ ACVP_RESULT acvp_rsa_sig_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     tc.tc.rsa_sig = &stc;
     mode_str = (char *) json_object_get_string(obj, "mode");
     
-    /* allocate space to concatenate alg and mode strings (and a hyphen) */
-    /* +1 for null termination */
-    alg_tbl_index = calloc(strnlen(alg_str, 5) + 6 + 1 + 1, sizeof(char));
-    strncat(alg_tbl_index, alg_str, 5);
-    strncat(alg_tbl_index, "-", 1);
-    strncat(alg_tbl_index, mode_str, 6);
-    
-    /*
-     * Get the crypto module handler for this hash algorithm
-     */
-    alg_id = acvp_lookup_cipher_index(alg_tbl_index);
-    switch(alg_id) {
-    case ACVP_RSA_SIGGEN:
-    case ACVP_RSA_SIGVER:
-        break;
-    default:
-        ACVP_LOG_ERR("ERROR: unsupported algorithm (%s)", alg_str);
-        free(alg_tbl_index);
-        return (ACVP_UNSUPPORTED_OP);
-    }
+    alg_id = cipher;
     stc.sig_mode = alg_id;
     
     cap = acvp_locate_cap_entry(ctx, alg_id);
     if (!cap) {
         ACVP_LOG_ERR("ERROR: ACVP server requesting unsupported capability");
-        free(alg_tbl_index);
         return (ACVP_UNSUPPORTED_OP);
     }
     ACVP_LOG_INFO("    RSA mode: %s", mode_str);
@@ -218,7 +207,6 @@ ACVP_RESULT acvp_rsa_sig_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("ERROR: Failed to create JSON response struct. ");
-        free(alg_tbl_index);
         return (rv);
     }
 
@@ -340,7 +328,6 @@ ACVP_RESULT acvp_rsa_sig_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
         ACVP_LOG_INFO("\n\n%s\n\n", json_result);
     }
     json_free_serialized_string(json_result);
-    free(alg_tbl_index);
     return rv;
 }
 
