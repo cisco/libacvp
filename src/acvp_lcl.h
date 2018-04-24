@@ -215,6 +215,11 @@ typedef struct acvp_vs_list_t {
     struct acvp_vs_list_t *next;
 } ACVP_VS_LIST;
 
+struct acvp_result_desc_t {
+    ACVP_RESULT rv;
+    char *desc;
+};
+
 /*
  * Supported length list
  */

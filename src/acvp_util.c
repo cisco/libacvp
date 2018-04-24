@@ -494,3 +494,38 @@ ACVP_RESULT acvp_create_array (JSON_Object **obj, JSON_Value **val, JSON_Array *
     *arry = reg_arry;
     return (result);
 }
+
+/*
+ * This function returns a string that describes the error
+ * code passed in.
+ */
+char *acvp_lookup_error_string (ACVP_RESULT rv) {
+    int i;
+    struct acvp_result_desc_t error_desc_tbl[ACVP_RESULT_MAX-1] = {
+            {ACVP_MALLOC_FAIL, "Error allocating memory"},
+            {ACVP_NO_CTX, "No valid context found"},
+            {ACVP_TRANSPORT_FAIL, "Error using transport library"},
+            {ACVP_JSON_ERR, "Error using JSON library"},
+            {ACVP_UNSUPPORTED_OP, "Unsupported operation"},
+            {ACVP_CLEANUP_FAIL, "Error cleaning up ACVP context"},
+            {ACVP_KAT_DOWNLOAD_RETRY, "Error, need to retry"},
+            {ACVP_INVALID_ARG, "Invalid argument"},
+            {ACVP_CRYPTO_MODULE_FAIL, "Error from crypto module processing a vector set"},
+            {ACVP_CRYPTO_TAG_FAIL, "Error from crypto module processing a vector set"},
+            {ACVP_CRYPTO_WRAP_FAIL, "Error from crypto module processing a vector set"},
+            {ACVP_NO_TOKEN, "Error using JWT"},
+            {ACVP_NO_CAP, "No matching capability found"},
+            {ACVP_MALFORMED_JSON, "Unable to process JSON"},
+            {ACVP_DATA_TOO_LARGE, "Data too large"},
+            {ACVP_DUP_CIPHER, "Duplicate cipher, may have already registered"},
+            {ACVP_TOTP_DECODE_FAIL, "Failed to base64 decode TOTP seed"},
+            {ACVP_TOTP_MISSING_SEED, "Missing TOTP seed"}
+    };
+    
+    for (i = 0; i < ACVP_RESULT_MAX-1; i++) {
+        if (rv == error_desc_tbl[i].rv) {
+            return error_desc_tbl[i].desc;
+        }
+    }
+    return "Uknown error";
+}
