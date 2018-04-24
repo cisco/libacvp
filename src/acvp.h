@@ -1659,6 +1659,16 @@ ACVP_RESULT acvp_bin_to_hexstr (const unsigned char *src, unsigned int src_len, 
 
 ACVP_RESULT acvp_hexstr_to_bin (const unsigned char *src, unsigned char *dest, int dest_max);
 
+/*! @brief acvp_lookup_error_string() is a utility that
+ * returns a more descriptive string for an ACVP_RESULT
+ * error code
+ *
+ * @param rv ACVP_RESULT error code
+ *
+ * @return (char *) error string
+ */
+char *acvp_lookup_error_string (ACVP_RESULT rv);
+
 void acvp_cleanup (void);
 
 #ifdef __cplusplus

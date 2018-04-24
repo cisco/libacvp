@@ -125,7 +125,7 @@ static EVP_CIPHER_CTX cipher_ctx;  /* need to maintain across calls for MCT */
 
 #define CHECK_ENABLE_CAP_RV(rv) \
     if (rv != ACVP_SUCCESS) { \
-        printf("Failed to register capability with libacvp (rv=%d)\n", rv); \
+        printf("Failed to register capability with libacvp (rv=%d: %s)\n", rv, acvp_lookup_error_string(rv)); \
         exit(1); \
     }
 
