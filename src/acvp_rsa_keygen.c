@@ -193,7 +193,7 @@ ACVP_RESULT acvp_rsa_keygen_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     int info_gen_by_server, rand_pq, seed_len;
     char *pub_exp_mode, *key_format, *prime_test;
     char *hash_alg = NULL;
-    char *e_str = NULL, *alg_str, *mode_str, *seed, *alg_tbl_index;
+    char *e_str = NULL, *alg_str, *mode_str, *seed;
     int bitlen1, bitlen2, bitlen3, bitlen4;
     
     alg_str = (char *) json_object_get_string(obj, "algorithm");
@@ -205,30 +205,11 @@ ACVP_RESULT acvp_rsa_keygen_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     tc.tc.rsa_keygen = &stc;
     mode_str = (char *) json_object_get_string(obj, "mode");
     
-    
-    /* allocate space to concatenate alg and mode strings (and a hyphen) */
-    alg_tbl_index = calloc(strnlen(alg_str, 5) + 6 + 1, sizeof(char));
-    strncat(alg_tbl_index, alg_str, 5);
-    strncat(alg_tbl_index, "-", 1);
-    strncat(alg_tbl_index, mode_str, 6);
-    
-    /*
-     * Get the crypto module handler for this hash algorithm
-     */
-    alg_id = acvp_lookup_cipher_index(alg_tbl_index);
-    switch(alg_id) {
-    case ACVP_RSA_KEYGEN:
-        break;
-    default:
-        ACVP_LOG_ERR("ERROR: unsupported algorithm (%s)", alg_str);
-        free(alg_tbl_index);
-        return (ACVP_UNSUPPORTED_OP);
-    }
+    alg_id = ACVP_RSA_KEYGEN;
 
     cap = acvp_locate_cap_entry(ctx, alg_id);
     if (!cap) {
         ACVP_LOG_ERR("ERROR: ACVP server requesting unsupported capability");
-        free(alg_tbl_index);
         return (ACVP_UNSUPPORTED_OP);
     }
     ACVP_LOG_INFO("    RSA mode: %s", mode_str);
@@ -239,7 +220,6 @@ ACVP_RESULT acvp_rsa_keygen_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("ERROR: Failed to create JSON response struct. ");
-        free(alg_tbl_index);
         return (rv);
     }
 
@@ -369,7 +349,6 @@ ACVP_RESULT acvp_rsa_keygen_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
         ACVP_LOG_INFO("\n\n%s\n\n", json_result);
     }
     json_free_serialized_string(json_result);
-    free(alg_tbl_index);
     return rv;
 }
 
