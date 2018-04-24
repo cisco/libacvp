@@ -527,5 +527,5 @@ char *acvp_lookup_error_string (ACVP_RESULT rv) {
             return error_desc_tbl[i].desc;
         }
     }
-    return "Uknown error";
+    return "Unknown error";
 }
