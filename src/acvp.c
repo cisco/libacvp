@@ -4806,9 +4806,11 @@ static ACVP_RESULT acvp_dispatch_vector_set (ACVP_CTX *ctx, JSON_Object *obj) {
     for (i = 0; i < ACVP_ALG_MAX; i++) {
         if (!strncmp(alg, alg_tbl[i].name, strlen(alg_tbl[i].name))) {
             if (alg_tbl[i].mode != NULL) {
-                if (!strncmp(mode, alg_tbl[i].mode, strlen(alg_tbl[i].mode))) {
-                    rv = (alg_tbl[i].handler)(ctx, obj);
-                    return rv;
+                if (mode != NULL) {
+                    if (!strncmp(mode, alg_tbl[i].mode, strlen(alg_tbl[i].mode))) {
+                        rv = (alg_tbl[i].handler)(ctx, obj);
+                        return rv;
+                    }
                 }
             } else {
                 rv = (alg_tbl[i].handler)(ctx, obj);
