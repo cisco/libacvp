@@ -606,7 +606,7 @@ ACVP_RESULT acvp_enable_sym_cipher_cap (
     return (acvp_append_sym_cipher_caps_entry(ctx, cap, cipher, crypto_handler));
 }
 
-ACVP_RESULT acvp_validate_sym_cipher_parm_value (ACVP_SYM_CIPH_PARM parm, int value) {
+static ACVP_RESULT acvp_validate_sym_cipher_parm_value (ACVP_CIPHER cipher, ACVP_SYM_CIPH_PARM parm, int value) {
     ACVP_RESULT retval = ACVP_INVALID_ARG;
 
     switch (parm) {
@@ -616,8 +616,22 @@ ACVP_RESULT acvp_validate_sym_cipher_parm_value (ACVP_SYM_CIPH_PARM parm, int va
         }
         break;
     case ACVP_SYM_CIPH_TAGLEN:
-        if (value >= 4 && value <= 128) {
-            retval = ACVP_SUCCESS;
+        switch (cipher) {
+        case ACVP_AES_GCM:
+        case ACVP_AES_CCM:
+        case ACVP_AES_ECB:
+        case ACVP_AES_CBC:
+        case ACVP_AES_CFB1:
+        case ACVP_AES_CFB8:
+        case ACVP_AES_CFB128:
+        case ACVP_AES_OFB:
+        case ACVP_AES_CTR:
+            if (value >= 4 && value <= 128) {
+                retval = ACVP_SUCCESS;
+            }
+            break;
+        default:
+            break;
         }
         break;
     case ACVP_SYM_CIPH_IVLEN:
@@ -632,6 +646,24 @@ ACVP_RESULT acvp_validate_sym_cipher_parm_value (ACVP_SYM_CIPH_PARM parm, int va
         }
         break;
     case ACVP_SYM_CIPH_AADLEN:
+        switch (cipher) {
+        case ACVP_AES_GCM:
+        case ACVP_AES_CCM:
+        case ACVP_AES_ECB:
+        case ACVP_AES_CBC:
+        case ACVP_AES_CFB1:
+        case ACVP_AES_CFB8:
+        case ACVP_AES_CFB128:
+        case ACVP_AES_OFB:
+        case ACVP_AES_CTR:
+            if (value >= 0 && value <= 65536) {
+                retval = ACVP_SUCCESS;
+            }
+            break;
+        default:
+            break;
+        }
+        break;
     case ACVP_SYM_CIPH_PTLEN:
         if (value >= 0 && value <= 65536) {
             retval = ACVP_SUCCESS;
@@ -657,6 +689,36 @@ ACVP_RESULT acvp_enable_sym_cipher_cap_parm (
         int length) {
 
     ACVP_CAPS_LIST *cap;
+    switch (cipher) {
+    case ACVP_AES_GCM:
+    case ACVP_AES_CCM:
+    case ACVP_AES_ECB:
+    case ACVP_AES_CBC:
+    case ACVP_AES_CFB1:
+    case ACVP_AES_CFB8:
+    case ACVP_AES_CFB128:
+    case ACVP_AES_OFB:
+    case ACVP_AES_CTR:
+    case ACVP_AES_XTS:
+    case ACVP_AES_KW:
+    case ACVP_AES_KWP:
+    case ACVP_TDES_ECB:
+    case ACVP_TDES_CBC:
+    case ACVP_TDES_CBCI:
+    case ACVP_TDES_OFB:
+    case ACVP_TDES_OFBI:
+    case ACVP_TDES_CFB1:
+    case ACVP_TDES_CFB8:
+    case ACVP_TDES_CFB64:
+    case ACVP_TDES_CFBP1:
+    case ACVP_TDES_CFBP8:
+    case ACVP_TDES_CFBP64:
+    case ACVP_TDES_CTR:
+    case ACVP_TDES_KW:
+        break;
+    default:
+        return ACVP_INVALID_ARG;
+    }
 
     /*
      * Locate this cipher in the caps array
@@ -667,7 +729,7 @@ ACVP_RESULT acvp_enable_sym_cipher_cap_parm (
         return ACVP_NO_CAP;
     }
 
-    if (acvp_validate_sym_cipher_parm_value(parm, length) != ACVP_SUCCESS) {
+    if (acvp_validate_sym_cipher_parm_value(cipher, parm, length) != ACVP_SUCCESS) {
         return ACVP_INVALID_ARG;
     }
 
@@ -918,6 +980,23 @@ ACVP_RESULT acvp_enable_hmac_cap (
     if (!crypto_handler) {
         return ACVP_INVALID_ARG;
     }
+    
+    switch (cipher) {
+    case ACVP_HMAC_SHA1:
+    case ACVP_HMAC_SHA2_224:
+    case ACVP_HMAC_SHA2_256:
+    case ACVP_HMAC_SHA2_384:
+    case ACVP_HMAC_SHA2_512:
+    case ACVP_HMAC_SHA2_512_224:
+    case ACVP_HMAC_SHA2_512_256:
+    case ACVP_HMAC_SHA3_224:
+    case ACVP_HMAC_SHA3_256:
+    case ACVP_HMAC_SHA3_384:
+    case ACVP_HMAC_SHA3_512:
+        break;
+    default:
+        return ACVP_INVALID_ARG;
+    }
 
     cap = calloc(1, sizeof(ACVP_HMAC_CAP));
     if (!cap) {
@@ -1024,6 +1103,14 @@ ACVP_RESULT acvp_enable_cmac_cap (
     if (!crypto_handler) {
         return ACVP_INVALID_ARG;
     }
+    
+    switch (cipher) {
+    case ACVP_CMAC_AES:
+    case ACVP_CMAC_TDES:
+        break;
+    default:
+        return ACVP_INVALID_ARG;
+    }
 
     cap = calloc(1, sizeof(ACVP_CMAC_CAP));
     if (!cap) {
@@ -1089,8 +1176,10 @@ ACVP_RESULT acvp_enable_cmac_cap_parm (
         acvp_cap_add_length(&cap->cap.cmac_cap->key_len, value);
         break;
     case ACVP_CMAC_KEYING_OPTION:
-        acvp_cap_add_length(&cap->cap.cmac_cap->keying_option, value);
-        break;
+        if (cipher == ACVP_CMAC_TDES) {
+            acvp_cap_add_length(&cap->cap.cmac_cap->keying_option, value);
+            break;
+        }
     default:
         return ACVP_INVALID_ARG;
     }
