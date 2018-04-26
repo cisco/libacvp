@@ -127,7 +127,11 @@ typedef enum acvp_sym_cipher {
     ACVP_HMAC_SHA3_512,
     ACVP_CMAC_AES,
     ACVP_CMAC_TDES,
-    ACVP_DSA,
+    ACVP_DSA_KEYGEN,
+    ACVP_DSA_PQGGEN,
+    ACVP_DSA_PQGVER,
+    ACVP_DSA_SIGGEN,
+    ACVP_DSA_SIGVER,
     ACVP_RSA_KEYGEN,
     ACVP_RSA_SIGGEN,
     ACVP_RSA_SIGVER,
@@ -301,6 +305,9 @@ typedef enum acvp_rsa_param {
     ACVP_FIXED_PUB_EXP_VAL,
     ACVP_KEY_FORMAT_CRT,
     ACVP_RAND_PQ,
+    ACVP_CAPS_PROV_PRIME,
+    ACVP_CAPS_PROB_PRIME,
+    ACVP_CAPS_PROV_PROB_PRIME,
     ACVP_RSA_INFO_GEN_BY_SERVER
 } ACVP_RSA_PARM;
 
@@ -676,7 +683,11 @@ typedef struct acvp_rsa_sig_tc_t {
 } ACVP_RSA_SIG_TC;
 
 typedef enum acvp_dsa_mode {
-    ACVP_DSA_MODE_PQGGEN = 1
+    ACVP_DSA_MODE_KEYGEN = 1,
+    ACVP_DSA_MODE_PQGGEN,
+    ACVP_DSA_MODE_PQGVER,
+    ACVP_DSA_MODE_SIGGEN,
+    ACVP_DSA_MODE_SIGVER
 } ACVP_DSA_MODE;
 
 /* These are used as bit flags */
@@ -728,10 +739,29 @@ typedef struct acvp_dsa_pqggen_tc_t {
 
 typedef struct acvp_dsa_tc_t {
     ACVP_CIPHER cipher;
-    ACVP_DSA_MODE mode; // "pqgGen", "pqgVer", etc.
     union {
         ACVP_DSA_PQGGEN_TC *pqggen;
     } mode_tc;
+    ACVP_DSA_MODE mode; // "pqgGen", "pqgVer", etc.
+    int l;
+    int n;
+    int h;
+    int sha;
+    int gen_pq;
+    int num;
+    int index;
+    int seedlen;
+    int msglen;
+    int result;
+    unsigned char *p;
+    unsigned char *q;
+    unsigned char *g;
+    unsigned char *y;
+    unsigned char *r;
+    unsigned char *s;
+    unsigned char *seed;
+    unsigned char *msg;
+    int counter;
 } ACVP_DSA_TC;
 
 /*
