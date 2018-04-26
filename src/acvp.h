@@ -138,6 +138,7 @@ typedef enum acvp_sym_cipher {
     ACVP_KDF135_TLS,
     ACVP_KDF135_SNMP,
     ACVP_KDF135_SSH,
+    ACVP_KDF135_SRTP,
     ACVP_CIPHER_END
 } ACVP_CIPHER;
 
@@ -177,6 +178,14 @@ typedef enum acvp_kdf135_ssh_method {
     ACVP_SSH_METH_MAX
 } ACVP_KDF135_SSH_METHOD;
 
+typedef enum acvp_kdf135_srtp_param {
+    ACVP_SRTP_PARAM_MIN,
+    ACVP_SRTP_AES_KEYLEN,
+    ACVP_SRTP_SUPPORT_ZERO_KDR,
+    ACVP_SRTP_KDF_EXPONENT,
+    ACVP_SRTP_PARAM_MAX
+} ACVP_KDF135_SRTP_PARAM;
+
 /*
  * Used to help manage capability structures
  */
@@ -196,7 +205,8 @@ typedef enum acvp_capability_type {
     ACVP_DSA_TYPE,
     ACVP_KDF135_TLS_TYPE,
     ACVP_KDF135_SNMP_TYPE,
-    ACVP_KDF135_SSH_TYPE
+    ACVP_KDF135_SSH_TYPE,
+    ACVP_KDF135_SRTP_TYPE
 } ACVP_CAP_TYPE;
 
 typedef enum acvp_sym_cipher_keying_option {
@@ -1387,6 +1397,10 @@ ACVP_RESULT acvp_enable_kdf135_ssh_cap (
         ACVP_CTX *ctx,
         ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case));
 
+ACVP_RESULT acvp_enable_kdf135_srtp_cap (
+        ACVP_CTX *ctx,
+        ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case));
+
 /*! @brief acvp_enable_kdf135_tls_cap_parm() allows an application to specify
         operational parameters to be used during a test session with the ACVP
         server.
@@ -1428,6 +1442,14 @@ ACVP_RESULT acvp_enable_kdf135_ssh_cap_parm (
         ACVP_CIPHER cap,
         ACVP_KDF135_SSH_METHOD method,
         ACVP_KDF135_SSH_CAP_PARM param);
+
+
+/* ####### edaw ###### need to add a brief */
+ACVP_RESULT acvp_enable_kdf135_srtp_cap_parm (
+        ACVP_CTX *ctx,
+        ACVP_CIPHER cap,
+        ACVP_KDF135_SRTP_PARAM param,
+        int value);
 
 /*! @brief acvp_enable_prereq_cap() allows an application to specify a
        prerequisite for a cipher capability that was previously registered.

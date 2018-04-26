@@ -58,7 +58,7 @@
 } while (0)
 #endif
 
-#define ACVP_ALG_MAX 57  /* Used by alg_tbl[] */
+#define ACVP_ALG_MAX ACVP_CIPHER_END  /* Used by alg_tbl[] */
 
 #define ACVP_ALG_AES_ECB             "AES-ECB"
 #define ACVP_ALG_AES_CBC             "AES-CBC"
@@ -130,6 +130,7 @@
 #define ACVP_ALG_KDF135_TLS	     "KDF-TLS"
 #define ACVP_ALG_KDF135_SNMP     "KDF-SNMP"
 #define ACVP_ALG_KDF135_SSH      "KDF-SSH"
+#define ACVP_ALG_KDF135_SRTP     "KDF-SRTP"
 
 /*
  * The values that are supplied
@@ -270,6 +271,12 @@ typedef struct acvp_kdf135_ssh_capability {
     int method[4];
     int sha;
 } ACVP_KDF135_SSH_CAP;
+
+typedef struct acvp_kdf135_srtp_capability {
+    int supports_zero_kdr;
+    int kdr_exp[24];
+    ACVP_SL_LIST *aes_keylens;
+} ACVP_KDF135_SRTP_CAP;
 
 typedef struct acvp_hmac_capability {
     int key_len_min;      // 8-524288
@@ -442,6 +449,7 @@ typedef struct acvp_caps_list_t {
         ACVP_KDF135_TLS_CAP *kdf135_tls_cap;
         ACVP_KDF135_SNMP_CAP *kdf135_snmp_cap;
         ACVP_KDF135_SSH_CAP *kdf135_ssh_cap;
+        ACVP_KDF135_SRTP_CAP *kdf135_srtp_cap;
     } cap;
 
     ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case);
@@ -558,6 +566,8 @@ ACVP_RESULT acvp_kdf135_tls_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
 ACVP_RESULT acvp_kdf135_snmp_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
 
 ACVP_RESULT acvp_kdf135_ssh_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
+
+ACVP_RESULT acvp_kdf135_srtp_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
 
 ACVP_RESULT acvp_dsa_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
 

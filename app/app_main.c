@@ -96,6 +96,7 @@ static ACVP_RESULT app_cmac_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_kdf135_tls_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_kdf135_snmp_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_kdf135_ssh_handler(ACVP_TEST_CASE *test_case);
+static ACVP_RESULT app_kdf135_srtp_handler(ACVP_TEST_CASE *test_case);
 #endif
 #ifdef ACVP_NO_RUNTIME
 static ACVP_RESULT app_drbg_handler(ACVP_TEST_CASE *test_case);
@@ -921,6 +922,8 @@ static void enable_hmac (ACVP_CTX *ctx) {
 static void enable_kdf (ACVP_CTX *ctx) {
 #ifdef OPENSSL_KDF_SUPPORT
     ACVP_RESULT rv;
+    char value[] = "same";
+    int i;
     /*
      * Enable KDF-135
      */
@@ -949,15 +952,28 @@ static void enable_kdf (ACVP_CTX *ctx) {
 
     rv = acvp_enable_kdf135_ssh_cap_parm(ctx, ACVP_KDF135_SSH, ACVP_SSH_METH_TDES_CBC, ACVP_KDF135_SSH_CAP_SHA256 | ACVP_KDF135_SSH_CAP_SHA384 | ACVP_KDF135_SSH_CAP_SHA512);
     CHECK_ENABLE_CAP_RV(rv);
-
     rv = acvp_enable_kdf135_ssh_cap_parm(ctx, ACVP_KDF135_SSH, ACVP_SSH_METH_AES_128_CBC, ACVP_KDF135_SSH_CAP_SHA256 | ACVP_KDF135_SSH_CAP_SHA384 | ACVP_KDF135_SSH_CAP_SHA512);
     CHECK_ENABLE_CAP_RV(rv);
-
     rv = acvp_enable_kdf135_ssh_cap_parm(ctx, ACVP_KDF135_SSH, ACVP_SSH_METH_AES_192_CBC, ACVP_KDF135_SSH_CAP_SHA256 | ACVP_KDF135_SSH_CAP_SHA384 | ACVP_KDF135_SSH_CAP_SHA512);
     CHECK_ENABLE_CAP_RV(rv);
-
     rv = acvp_enable_kdf135_ssh_cap_parm(ctx, ACVP_KDF135_SSH, ACVP_SSH_METH_AES_256_CBC, ACVP_KDF135_SSH_CAP_SHA256 | ACVP_KDF135_SSH_CAP_SHA384 | ACVP_KDF135_SSH_CAP_SHA512);
     CHECK_ENABLE_CAP_RV(rv);
+    
+    rv = acvp_enable_kdf135_srtp_cap(ctx, &app_kdf135_srtp_handler);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_prereq_cap(ctx, ACVP_KDF135_SRTP, ACVP_PREREQ_AES, value);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_kdf135_srtp_cap_parm(ctx, ACVP_KDF135_SRTP, ACVP_SRTP_SUPPORT_ZERO_KDR, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    for (i = 0; i < 24; i++) {
+        rv = acvp_enable_kdf135_srtp_cap_parm(ctx, ACVP_KDF135_SRTP, ACVP_SRTP_KDF_EXPONENT, i + 1);
+        CHECK_ENABLE_CAP_RV(rv);
+    }
+    rv = acvp_enable_kdf135_srtp_cap_parm(ctx, ACVP_KDF135_SRTP, ACVP_SRTP_AES_KEYLEN, 128);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_kdf135_srtp_cap_parm(ctx, ACVP_KDF135_SRTP, ACVP_SRTP_AES_KEYLEN, 192);
+    CHECK_ENABLE_CAP_RV(rv);
+    
 #endif
 }
 
@@ -2472,6 +2488,10 @@ static ACVP_RESULT app_cmac_handler(ACVP_TEST_CASE *test_case)
 }
 
 #ifdef OPENSSL_KDF_SUPPORT
+static ACVP_RESULT app_kdf135_srtp_handler(ACVP_TEST_CASE *test_case) {
+    ACVP_RESULT rv = ACVP_CRYPTO_MODULE_FAIL;
+    return rv;
+}
 static ACVP_RESULT app_kdf135_tls_handler(ACVP_TEST_CASE *test_case)
 {
     ACVP_KDF135_TLS_TC    *tc;
