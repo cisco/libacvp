@@ -53,9 +53,9 @@
 #ifdef OPENSSL_KDF_SUPPORT
 #include <openssl/kdf.h>
 #endif
-//#include <openssl/dsa.h>
 
 #ifdef ACVP_NO_RUNTIME
+#include <openssl/dsa.h>
 #include "app_lcl.h"
 #include <openssl/fips_rand.h>
 #include <openssl/fips.h>
@@ -90,7 +90,7 @@ static ACVP_RESULT app_des_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_sha_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_hmac_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_cmac_handler(ACVP_TEST_CASE *test_case);
-//static ACVP_RESULT app_dsa_handler(ACVP_TEST_CASE *test_case);
+static ACVP_RESULT app_dsa_handler(ACVP_TEST_CASE *test_case);
 
 #ifdef OPENSSL_KDF_SUPPORT
 static ACVP_RESULT app_kdf135_tls_handler(ACVP_TEST_CASE *test_case);
@@ -221,10 +221,10 @@ int main(int argc, char **argv)
     int cmac = 1;
     int hmac = 1;
     int kdf = 0;
-    int dsa = 0;
     /*
      * these require the fom, off by default
      */
+    int dsa = 0;
     int rsa = 0;
     int drbg = 0;
     int ecdsa = 0;
@@ -386,11 +386,11 @@ int main(int argc, char **argv)
         enable_kdf(ctx);
     }
 
+#ifdef ACVP_NO_RUNTIME
     if (dsa) {
         enable_dsa(ctx);
     }
 
-#ifdef ACVP_NO_RUNTIME
     if (rsa) {
         enable_rsa(ctx);
     }
@@ -977,46 +977,173 @@ static void enable_kdf (ACVP_CTX *ctx) {
 #endif
 }
 
+#ifdef ACVP_NO_RUNTIME
 static void enable_dsa (ACVP_CTX *ctx) {
-#if 0 /* until DSA is supported on the server side */
     ACVP_RESULT rv;
+    char value[] = "same";
 
     /*
      * Enable DSA....
      */
-    rv = acvp_enable_dsa_cap(ctx, ACVP_DSA, &app_dsa_handler);
+    rv = acvp_enable_dsa_cap(ctx, ACVP_DSA_PQGGEN, &app_dsa_handler);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_prereq_cap(ctx, ACVP_DSA, ACVP_PREREQ_SHA, value);
+    rv = acvp_enable_prereq_cap(ctx, ACVP_DSA_PQGGEN, ACVP_PREREQ_SHA, value);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_prereq_cap(ctx, ACVP_DSA, ACVP_PREREQ_DRBG, value);
+    rv = acvp_enable_prereq_cap(ctx, ACVP_DSA_PQGGEN, ACVP_PREREQ_DRBG, value);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_dsa_cap_parm(ctx, ACVP_DSA, ACVP_DSA_MODE_PQGGEN, ACVP_DSA_GENPQ, ACVP_DSA_PROBABLE);
+    rv = acvp_enable_dsa_cap_parm(ctx, ACVP_DSA_PQGGEN, ACVP_DSA_MODE_PQGGEN, ACVP_DSA_GENPQ, ACVP_DSA_PROBABLE);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_dsa_cap_parm(ctx, ACVP_DSA, ACVP_DSA_MODE_PQGGEN, ACVP_DSA_GENPQ, ACVP_DSA_PROVABLE);
+    rv = acvp_enable_dsa_cap_parm(ctx, ACVP_DSA_PQGGEN, ACVP_DSA_MODE_PQGGEN, ACVP_DSA_GENG, ACVP_DSA_CANONICAL);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_dsa_cap_parm(ctx, ACVP_DSA, ACVP_DSA_MODE_PQGGEN, ACVP_DSA_GENG, ACVP_DSA_UNVERIFIABLE);
+    rv = acvp_enable_dsa_cap_parm(ctx, ACVP_DSA_PQGGEN, ACVP_DSA_MODE_PQGGEN, ACVP_DSA_LN2048_224, ACVP_DSA_SHA224);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_dsa_cap_parm(ctx, ACVP_DSA, ACVP_DSA_MODE_PQGGEN, ACVP_DSA_GENG, ACVP_DSA_CANONICAL);
+    rv = acvp_enable_dsa_cap_parm(ctx, ACVP_DSA_PQGGEN, ACVP_DSA_MODE_PQGGEN, ACVP_DSA_LN2048_224, ACVP_DSA_SHA256);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_dsa_cap_parm(ctx, ACVP_DSA_PQGGEN, ACVP_DSA_MODE_PQGGEN, ACVP_DSA_LN2048_224, ACVP_DSA_SHA384);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_dsa_cap_parm(ctx, ACVP_DSA_PQGGEN, ACVP_DSA_MODE_PQGGEN, ACVP_DSA_LN2048_224, ACVP_DSA_SHA512);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_dsa_cap_parm(ctx, ACVP_DSA_PQGGEN, ACVP_DSA_MODE_PQGGEN, ACVP_DSA_LN2048_256, ACVP_DSA_SHA256);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_dsa_cap_parm(ctx, ACVP_DSA_PQGGEN, ACVP_DSA_MODE_PQGGEN, ACVP_DSA_LN2048_256, ACVP_DSA_SHA384);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_dsa_cap_parm(ctx, ACVP_DSA_PQGGEN, ACVP_DSA_MODE_PQGGEN, ACVP_DSA_LN2048_256, ACVP_DSA_SHA512);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_dsa_cap_parm(ctx, ACVP_DSA_PQGGEN, ACVP_DSA_MODE_PQGGEN, ACVP_DSA_LN3072_256, ACVP_DSA_SHA256);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_dsa_cap_parm(ctx, ACVP_DSA_PQGGEN, ACVP_DSA_MODE_PQGGEN, ACVP_DSA_LN3072_256, ACVP_DSA_SHA384);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_dsa_cap_parm(ctx, ACVP_DSA_PQGGEN, ACVP_DSA_MODE_PQGGEN, ACVP_DSA_LN3072_256, ACVP_DSA_SHA512);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    rv = acvp_enable_dsa_cap(ctx, ACVP_DSA_PQGVER, &app_dsa_handler);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_prereq_cap(ctx, ACVP_DSA_PQGVER, ACVP_PREREQ_SHA, value);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_prereq_cap(ctx, ACVP_DSA_PQGVER, ACVP_PREREQ_DRBG, value);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_dsa_cap_parm(ctx, ACVP_DSA_PQGVER, ACVP_DSA_MODE_PQGVER, ACVP_DSA_GENPQ, ACVP_DSA_PROBABLE);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_dsa_cap_parm(ctx, ACVP_DSA_PQGVER, ACVP_DSA_MODE_PQGVER, ACVP_DSA_GENG, ACVP_DSA_CANONICAL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_dsa_cap_parm(ctx, ACVP_DSA_PQGVER, ACVP_DSA_MODE_PQGVER, ACVP_DSA_LN2048_224, ACVP_DSA_SHA224);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_dsa_cap_parm(ctx, ACVP_DSA_PQGVER, ACVP_DSA_MODE_PQGVER, ACVP_DSA_LN2048_224, ACVP_DSA_SHA256);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_dsa_cap_parm(ctx, ACVP_DSA_PQGVER, ACVP_DSA_MODE_PQGVER, ACVP_DSA_LN2048_224, ACVP_DSA_SHA384);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_dsa_cap_parm(ctx, ACVP_DSA_PQGVER, ACVP_DSA_MODE_PQGVER, ACVP_DSA_LN2048_224, ACVP_DSA_SHA512);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_dsa_cap_parm(ctx, ACVP_DSA_PQGVER, ACVP_DSA_MODE_PQGVER, ACVP_DSA_LN2048_256, ACVP_DSA_SHA256);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_dsa_cap_parm(ctx, ACVP_DSA_PQGVER, ACVP_DSA_MODE_PQGVER, ACVP_DSA_LN2048_256, ACVP_DSA_SHA384);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_dsa_cap_parm(ctx, ACVP_DSA_PQGVER, ACVP_DSA_MODE_PQGVER, ACVP_DSA_LN2048_256, ACVP_DSA_SHA512);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_dsa_cap_parm(ctx, ACVP_DSA_PQGVER, ACVP_DSA_MODE_PQGVER, ACVP_DSA_LN3072_256, ACVP_DSA_SHA256);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_dsa_cap_parm(ctx, ACVP_DSA_PQGVER, ACVP_DSA_MODE_PQGVER, ACVP_DSA_LN3072_256, ACVP_DSA_SHA384);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_dsa_cap_parm(ctx, ACVP_DSA_PQGVER, ACVP_DSA_MODE_PQGVER, ACVP_DSA_LN3072_256, ACVP_DSA_SHA512);
     CHECK_ENABLE_CAP_RV(rv);
 
 
-    rv = acvp_enable_dsa_cap_parm(ctx, ACVP_DSA, ACVP_DSA_MODE_PQGGEN, ACVP_DSA_LN2048_224, ACVP_DSA_SHA224);
+    rv = acvp_enable_dsa_cap(ctx, ACVP_DSA_KEYGEN, &app_dsa_handler);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_dsa_cap_parm(ctx, ACVP_DSA, ACVP_DSA_MODE_PQGGEN, ACVP_DSA_LN2048_224, ACVP_DSA_SHA256);
+    rv = acvp_enable_prereq_cap(ctx, ACVP_DSA_KEYGEN, ACVP_PREREQ_SHA, value);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_dsa_cap_parm(ctx, ACVP_DSA, ACVP_DSA_MODE_PQGGEN, ACVP_DSA_LN2048_224, ACVP_DSA_SHA384);
+    rv = acvp_enable_prereq_cap(ctx, ACVP_DSA_KEYGEN, ACVP_PREREQ_DRBG, value);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_dsa_cap_parm(ctx, ACVP_DSA, ACVP_DSA_MODE_PQGGEN, ACVP_DSA_LN2048_224, ACVP_DSA_SHA512);
+    rv = acvp_enable_dsa_cap_parm(ctx, ACVP_DSA_KEYGEN, ACVP_DSA_MODE_KEYGEN, ACVP_DSA_LN2048_224, ACVP_DSA_SHA224);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_dsa_cap_parm(ctx, ACVP_DSA_KEYGEN, ACVP_DSA_MODE_KEYGEN, ACVP_DSA_LN2048_224, ACVP_DSA_SHA256);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_dsa_cap_parm(ctx, ACVP_DSA_KEYGEN, ACVP_DSA_MODE_KEYGEN, ACVP_DSA_LN2048_224, ACVP_DSA_SHA384);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_dsa_cap_parm(ctx, ACVP_DSA_KEYGEN, ACVP_DSA_MODE_KEYGEN, ACVP_DSA_LN2048_224, ACVP_DSA_SHA512);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_dsa_cap_parm(ctx, ACVP_DSA_KEYGEN, ACVP_DSA_MODE_KEYGEN, ACVP_DSA_LN2048_256, ACVP_DSA_SHA224);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_dsa_cap_parm(ctx, ACVP_DSA_KEYGEN, ACVP_DSA_MODE_KEYGEN, ACVP_DSA_LN2048_256, ACVP_DSA_SHA256);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_dsa_cap_parm(ctx, ACVP_DSA_KEYGEN, ACVP_DSA_MODE_KEYGEN, ACVP_DSA_LN2048_256, ACVP_DSA_SHA384);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_dsa_cap_parm(ctx, ACVP_DSA_KEYGEN, ACVP_DSA_MODE_KEYGEN, ACVP_DSA_LN2048_256, ACVP_DSA_SHA512);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_dsa_cap_parm(ctx, ACVP_DSA_KEYGEN, ACVP_DSA_MODE_KEYGEN, ACVP_DSA_LN3072_256, ACVP_DSA_SHA224);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_dsa_cap_parm(ctx, ACVP_DSA_KEYGEN, ACVP_DSA_MODE_KEYGEN, ACVP_DSA_LN3072_256, ACVP_DSA_SHA256);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_dsa_cap_parm(ctx, ACVP_DSA_KEYGEN, ACVP_DSA_MODE_KEYGEN, ACVP_DSA_LN3072_256, ACVP_DSA_SHA384);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_dsa_cap_parm(ctx, ACVP_DSA_KEYGEN, ACVP_DSA_MODE_KEYGEN, ACVP_DSA_LN3072_256, ACVP_DSA_SHA512);
     CHECK_ENABLE_CAP_RV(rv);
 
-    rv = acvp_enable_dsa_cap_parm(ctx, ACVP_DSA, ACVP_DSA_MODE_PQGGEN, ACVP_DSA_LN2048_256, ACVP_DSA_SHA224);
+
+    rv = acvp_enable_dsa_cap(ctx, ACVP_DSA_SIGGEN, &app_dsa_handler);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_dsa_cap_parm(ctx, ACVP_DSA, ACVP_DSA_MODE_PQGGEN, ACVP_DSA_LN3072_256, ACVP_DSA_SHA256);
+    rv = acvp_enable_prereq_cap(ctx, ACVP_DSA_SIGGEN, ACVP_PREREQ_SHA, value);
     CHECK_ENABLE_CAP_RV(rv);
-#endif
+    rv = acvp_enable_prereq_cap(ctx, ACVP_DSA_SIGGEN, ACVP_PREREQ_DRBG, value);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_dsa_cap_parm(ctx, ACVP_DSA_SIGGEN, ACVP_DSA_MODE_SIGGEN, ACVP_DSA_LN2048_224, ACVP_DSA_SHA224);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_dsa_cap_parm(ctx, ACVP_DSA_SIGGEN, ACVP_DSA_MODE_SIGGEN, ACVP_DSA_LN2048_224, ACVP_DSA_SHA256);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_dsa_cap_parm(ctx, ACVP_DSA_SIGGEN, ACVP_DSA_MODE_SIGGEN, ACVP_DSA_LN2048_224, ACVP_DSA_SHA384);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_dsa_cap_parm(ctx, ACVP_DSA_SIGGEN, ACVP_DSA_MODE_SIGGEN, ACVP_DSA_LN2048_224, ACVP_DSA_SHA512);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_dsa_cap_parm(ctx, ACVP_DSA_SIGGEN, ACVP_DSA_MODE_SIGGEN, ACVP_DSA_LN2048_256, ACVP_DSA_SHA224);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_dsa_cap_parm(ctx, ACVP_DSA_SIGGEN, ACVP_DSA_MODE_SIGGEN, ACVP_DSA_LN2048_256, ACVP_DSA_SHA256);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_dsa_cap_parm(ctx, ACVP_DSA_SIGGEN, ACVP_DSA_MODE_SIGGEN, ACVP_DSA_LN2048_256, ACVP_DSA_SHA384);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_dsa_cap_parm(ctx, ACVP_DSA_SIGGEN, ACVP_DSA_MODE_SIGGEN, ACVP_DSA_LN2048_256, ACVP_DSA_SHA512);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_dsa_cap_parm(ctx, ACVP_DSA_SIGGEN, ACVP_DSA_MODE_SIGGEN, ACVP_DSA_LN3072_256, ACVP_DSA_SHA224);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_dsa_cap_parm(ctx, ACVP_DSA_SIGGEN, ACVP_DSA_MODE_SIGGEN, ACVP_DSA_LN3072_256, ACVP_DSA_SHA256);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_dsa_cap_parm(ctx, ACVP_DSA_SIGGEN, ACVP_DSA_MODE_SIGGEN, ACVP_DSA_LN3072_256, ACVP_DSA_SHA384);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_dsa_cap_parm(ctx, ACVP_DSA_SIGGEN, ACVP_DSA_MODE_SIGGEN, ACVP_DSA_LN3072_256, ACVP_DSA_SHA512);
+    CHECK_ENABLE_CAP_RV(rv);
+
+
+    rv = acvp_enable_dsa_cap(ctx, ACVP_DSA_SIGVER, &app_dsa_handler);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_prereq_cap(ctx, ACVP_DSA_SIGVER, ACVP_PREREQ_SHA, value);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_prereq_cap(ctx, ACVP_DSA_SIGVER, ACVP_PREREQ_DRBG, value);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_dsa_cap_parm(ctx, ACVP_DSA_SIGVER, ACVP_DSA_MODE_SIGVER, ACVP_DSA_LN2048_224, ACVP_DSA_SHA224);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_dsa_cap_parm(ctx, ACVP_DSA_SIGVER, ACVP_DSA_MODE_SIGVER, ACVP_DSA_LN2048_224, ACVP_DSA_SHA256);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_dsa_cap_parm(ctx, ACVP_DSA_SIGVER, ACVP_DSA_MODE_SIGVER, ACVP_DSA_LN2048_224, ACVP_DSA_SHA384);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_dsa_cap_parm(ctx, ACVP_DSA_SIGVER, ACVP_DSA_MODE_SIGVER, ACVP_DSA_LN2048_224, ACVP_DSA_SHA512);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_dsa_cap_parm(ctx, ACVP_DSA_SIGVER, ACVP_DSA_MODE_SIGVER, ACVP_DSA_LN2048_256, ACVP_DSA_SHA224);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_dsa_cap_parm(ctx, ACVP_DSA_SIGVER, ACVP_DSA_MODE_SIGVER, ACVP_DSA_LN2048_256, ACVP_DSA_SHA256);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_dsa_cap_parm(ctx, ACVP_DSA_SIGVER, ACVP_DSA_MODE_SIGVER, ACVP_DSA_LN2048_256, ACVP_DSA_SHA384);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_dsa_cap_parm(ctx, ACVP_DSA_SIGVER, ACVP_DSA_MODE_SIGVER, ACVP_DSA_LN2048_256, ACVP_DSA_SHA512);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_dsa_cap_parm(ctx, ACVP_DSA_SIGVER, ACVP_DSA_MODE_SIGVER, ACVP_DSA_LN3072_256, ACVP_DSA_SHA224);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_dsa_cap_parm(ctx, ACVP_DSA_SIGVER, ACVP_DSA_MODE_SIGVER, ACVP_DSA_LN3072_256, ACVP_DSA_SHA256);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_dsa_cap_parm(ctx, ACVP_DSA_SIGVER, ACVP_DSA_MODE_SIGVER, ACVP_DSA_LN3072_256, ACVP_DSA_SHA384);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_dsa_cap_parm(ctx, ACVP_DSA_SIGVER, ACVP_DSA_MODE_SIGVER, ACVP_DSA_LN3072_256, ACVP_DSA_SHA512);
+    CHECK_ENABLE_CAP_RV(rv);
 }
 
-#ifdef ACVP_NO_RUNTIME
 static void enable_rsa (ACVP_CTX *ctx) {
     ACVP_RESULT rv;
     char value[] = "same";
@@ -2774,7 +2901,7 @@ error:
 
 //Must be commented out if the user is Making with Makefile.fom
 #ifdef ACVP_NO_RUNTIME
-/*static ACVP_RESULT app_dsa_handler(ACVP_TEST_CASE *test_case)
+static ACVP_RESULT app_dsa_handler(ACVP_TEST_CASE *test_case)
 {
     ACVP_DSA_PQGGEN_TC *pqggen;
     int                dsa2 = 0, L, N;
@@ -2891,7 +3018,7 @@ error:
         break;
     }
     return ACVP_SUCCESS;
-}*/
+}
 
 static ACVP_RESULT app_rsa_keygen_handler(ACVP_TEST_CASE *test_case)
 {
