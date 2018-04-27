@@ -171,6 +171,10 @@
 
 #define ACVP_KDF135_TLS_MSG_MAX 1024*4
 #define ACVP_KDF135_SSH_MSG_MAX 1024
+#define ACVP_KDF135_SRTP_KDR_MAX 24
+#define ACVP_KDF135_SRTP_KDR_STR_MAX 8
+#define ACVP_KDF135_SRTP_MASTER_MAX 64
+#define ACVP_KDF135_SRTP_INDEX_MAX 32
 
 #define ACVP_HMAC_MSG_MAX       1024
 #define ACVP_HMAC_MAC_MAX       128       /**< 512 bits, 128 characters */
@@ -279,7 +283,7 @@ typedef struct acvp_kdf135_ssh_capability {
 
 typedef struct acvp_kdf135_srtp_capability {
     int supports_zero_kdr;
-    int kdr_exp[24];
+    int kdr_exp[ACVP_KDF135_SRTP_KDR_MAX];
     ACVP_SL_LIST *aes_keylens;
 } ACVP_KDF135_SRTP_CAP;
 

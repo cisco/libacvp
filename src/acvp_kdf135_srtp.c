@@ -85,22 +85,22 @@ static ACVP_RESULT acvp_kdf135_srtp_init_tc (ACVP_CTX *ctx,
     stc->tc_id = tc_id;
     stc->aes_keylen = aes_keylen;
     
-    stc->kdr = calloc(8, sizeof(char));
+    stc->kdr = calloc(ACVP_KDF135_SRTP_KDR_STR_MAX, sizeof(char));
     if (!stc->kdr) { return ACVP_MALLOC_FAIL; }
-    stc->master_key = calloc(64, sizeof(char));
+    stc->master_key = calloc(ACVP_KDF135_SRTP_MASTER_MAX, sizeof(char));
     if (!stc->master_key) { return ACVP_MALLOC_FAIL; }
-    stc->master_salt = calloc(64, sizeof(char));
+    stc->master_salt = calloc(ACVP_KDF135_SRTP_MASTER_MAX, sizeof(char));
     if (!stc->master_salt) { return ACVP_MALLOC_FAIL; }
-    stc->index = calloc(32, sizeof(char));
+    stc->index = calloc(ACVP_KDF135_SRTP_INDEX_MAX, sizeof(char));
     if (!stc->index) { return ACVP_MALLOC_FAIL; }
-    stc->srtcp_index = calloc(32, sizeof(char));
+    stc->srtcp_index = calloc(ACVP_KDF135_SRTP_INDEX_MAX, sizeof(char));
     if (!stc->srtcp_index) { return ACVP_MALLOC_FAIL; }
     
-    memcpy(stc->kdr, kdr, strnlen((const char *)kdr, 8));
-    memcpy(stc->master_key, master_key, strnlen((const char *)master_key, 64));
-    memcpy(stc->master_salt, master_salt, strnlen((const char *)master_salt, 64));
-    memcpy(stc->index, index, strnlen((const char *)index, 32));
-    memcpy(stc->srtcp_index, srtcp_index, strnlen((const char *)srtcp_index, 32));
+    memcpy(stc->kdr, kdr, strnlen((const char *)kdr, ACVP_KDF135_SRTP_KDR_STR_MAX));
+    memcpy(stc->master_key, master_key, strnlen((const char *)master_key, ACVP_KDF135_SRTP_MASTER_MAX));
+    memcpy(stc->master_salt, master_salt, strnlen((const char *)master_salt, ACVP_KDF135_SRTP_MASTER_MAX));
+    memcpy(stc->index, index, strnlen((const char *)index, ACVP_KDF135_SRTP_INDEX_MAX));
+    memcpy(stc->srtcp_index, srtcp_index, strnlen((const char *)srtcp_index, ACVP_KDF135_SRTP_INDEX_MAX));
     
     return ACVP_SUCCESS;
 }
