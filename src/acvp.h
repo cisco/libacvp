@@ -529,6 +529,30 @@ typedef struct acvp_kdf135_snmp_tc_t {
 
 /*
  * This struct holds data that represents a single test case
+ * for kdf135 SRTP testing.  This data is
+ * passed between libacvp and the crypto module.
+ */
+typedef struct acvp_kdf135_srtp_tc_t {
+    ACVP_CIPHER cipher;
+    unsigned int tc_id;    /* Test case id */
+    unsigned char *kdr;
+    int aes_keylen;
+    unsigned char *master_key;
+    unsigned char *master_salt;
+    unsigned char *index;
+    unsigned char *srtcp_index;
+    
+    unsigned char *srtp_ke;
+    unsigned char *srtp_ka;
+    unsigned char *srtp_ks;
+    unsigned char *srtcp_ke;
+    unsigned char *srtcp_ka;
+    unsigned char *srtcp_ks;
+    
+} ACVP_KDF135_SRTP_TC;
+
+/*
+ * This struct holds data that represents a single test case
  * for kdf135 SSH testing.  This data is
  * passed between libacvp and the crypto module.
  */
@@ -796,6 +820,7 @@ typedef struct acvp_cipher_tc_t {
         ACVP_KDF135_TLS_TC *kdf135_tls;
         ACVP_KDF135_SNMP_TC *kdf135_snmp;
         ACVP_KDF135_SSH_TC *kdf135_ssh;
+        ACVP_KDF135_SRTP_TC *kdf135_srtp;
     } tc;
 } ACVP_TEST_CASE;
 
