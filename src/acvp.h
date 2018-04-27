@@ -142,6 +142,7 @@ typedef enum acvp_sym_cipher {
     ACVP_KDF135_TLS,
     ACVP_KDF135_SNMP,
     ACVP_KDF135_SSH,
+    ACVP_KDF135_SRTP,
     ACVP_CIPHER_END
 } ACVP_CIPHER;
 
@@ -181,6 +182,14 @@ typedef enum acvp_kdf135_ssh_method {
     ACVP_SSH_METH_MAX
 } ACVP_KDF135_SSH_METHOD;
 
+typedef enum acvp_kdf135_srtp_param {
+    ACVP_SRTP_PARAM_MIN,
+    ACVP_SRTP_AES_KEYLEN,
+    ACVP_SRTP_SUPPORT_ZERO_KDR,
+    ACVP_SRTP_KDF_EXPONENT,
+    ACVP_SRTP_PARAM_MAX
+} ACVP_KDF135_SRTP_PARAM;
+
 /*
  * Used to help manage capability structures
  */
@@ -200,7 +209,8 @@ typedef enum acvp_capability_type {
     ACVP_DSA_TYPE,
     ACVP_KDF135_TLS_TYPE,
     ACVP_KDF135_SNMP_TYPE,
-    ACVP_KDF135_SSH_TYPE
+    ACVP_KDF135_SSH_TYPE,
+    ACVP_KDF135_SRTP_TYPE
 } ACVP_CAP_TYPE;
 
 typedef enum acvp_sym_cipher_keying_option {
@@ -523,6 +533,30 @@ typedef struct acvp_kdf135_snmp_tc_t {
 
 /*
  * This struct holds data that represents a single test case
+ * for kdf135 SRTP testing.  This data is
+ * passed between libacvp and the crypto module.
+ */
+typedef struct acvp_kdf135_srtp_tc_t {
+    ACVP_CIPHER cipher;
+    unsigned int tc_id;    /* Test case id */
+    unsigned char *kdr;
+    int aes_keylen;
+    unsigned char *master_key;
+    unsigned char *master_salt;
+    unsigned char *index;
+    unsigned char *srtcp_index;
+    
+    unsigned char *srtp_ke;
+    unsigned char *srtp_ka;
+    unsigned char *srtp_ks;
+    unsigned char *srtcp_ke;
+    unsigned char *srtcp_ka;
+    unsigned char *srtcp_ks;
+    
+} ACVP_KDF135_SRTP_TC;
+
+/*
+ * This struct holds data that represents a single test case
  * for kdf135 SSH testing.  This data is
  * passed between libacvp and the crypto module.
  */
@@ -813,6 +847,7 @@ typedef struct acvp_cipher_tc_t {
         ACVP_KDF135_TLS_TC *kdf135_tls;
         ACVP_KDF135_SNMP_TC *kdf135_snmp;
         ACVP_KDF135_SSH_TC *kdf135_ssh;
+        ACVP_KDF135_SRTP_TC *kdf135_srtp;
     } tc;
 } ACVP_TEST_CASE;
 
@@ -1414,6 +1449,10 @@ ACVP_RESULT acvp_enable_kdf135_ssh_cap (
         ACVP_CTX *ctx,
         ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case));
 
+ACVP_RESULT acvp_enable_kdf135_srtp_cap (
+        ACVP_CTX *ctx,
+        ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case));
+
 /*! @brief acvp_enable_kdf135_tls_cap_parm() allows an application to specify
         operational parameters to be used during a test session with the ACVP
         server.
@@ -1455,6 +1494,28 @@ ACVP_RESULT acvp_enable_kdf135_ssh_cap_parm (
         ACVP_CIPHER cap,
         ACVP_KDF135_SSH_METHOD method,
         ACVP_KDF135_SSH_CAP_PARM param);
+
+
+/*! @brief acvp_enable_kdf135_srtp_cap_parm() allows an application to specify
+        operational parameters to be used during a test session with the ACVP
+        server.
+
+        This function should be called after acvp_enable_kdf135_srtp_cap() to
+        specify the parameters for the corresponding KDF.
+
+   @param ctx Address of pointer to a previously allocated ACVP_CTX.
+   @param cap ACVP_CIPHER enum value identifying the crypto capability, here it
+        will always be ACVP_KDF135_SRTP
+   @param param acvp_enable_kdf135_srtp_cap_parm enum value specifying parameter
+   @param value integer value for parameter
+
+   @return ACVP_RESULT
+ */
+ACVP_RESULT acvp_enable_kdf135_srtp_cap_parm (
+        ACVP_CTX *ctx,
+        ACVP_CIPHER cap,
+        ACVP_KDF135_SRTP_PARAM param,
+        int value);
 
 /*! @brief acvp_enable_prereq_cap() allows an application to specify a
        prerequisite for a cipher capability that was previously registered.
