@@ -1496,7 +1496,21 @@ ACVP_RESULT acvp_enable_kdf135_ssh_cap_parm (
         ACVP_KDF135_SSH_CAP_PARM param);
 
 
-/* ####### edaw ###### need to add a brief */
+/*! @brief acvp_enable_kdf135_srtp_cap_parm() allows an application to specify
+        operational parameters to be used during a test session with the ACVP
+        server.
+
+        This function should be called after acvp_enable_kdf135_srtp_cap() to
+        specify the parameters for the corresponding KDF.
+
+   @param ctx Address of pointer to a previously allocated ACVP_CTX.
+   @param cap ACVP_CIPHER enum value identifying the crypto capability, here it
+        will always be ACVP_KDF135_SRTP
+   @param param acvp_enable_kdf135_srtp_cap_parm enum value specifying parameter
+   @param value integer value for parameter
+
+   @return ACVP_RESULT
+ */
 ACVP_RESULT acvp_enable_kdf135_srtp_cap_parm (
         ACVP_CTX *ctx,
         ACVP_CIPHER cap,
