@@ -144,6 +144,7 @@ typedef enum acvp_sym_cipher {
     ACVP_KDF135_SSH,
     ACVP_KDF135_SRTP,
     ACVP_KDF135_IKEV2,
+    ACVP_KDF135_IKEV1,
     ACVP_CIPHER_END
 } ACVP_CIPHER;
 
@@ -212,7 +213,8 @@ typedef enum acvp_capability_type {
     ACVP_KDF135_SNMP_TYPE,
     ACVP_KDF135_SSH_TYPE,
     ACVP_KDF135_SRTP_TYPE,
-    ACVP_KDF135_IKEV2_TYPE
+    ACVP_KDF135_IKEV2_TYPE,
+    ACVP_KDF135_IKEV1_TYPE
 } ACVP_CAP_TYPE;
 
 typedef enum acvp_sym_cipher_keying_option {
@@ -333,6 +335,16 @@ typedef enum acvp_kdf135_ikev2_param {
     ACVP_DH_SECRET_LEN,
     ACVP_KEY_MATERIAL_LEN
 } ACVP_KDF135_IKEV2_PARM;
+
+// TODO edaw should we collapse ike stuff?
+typedef enum acvp_kdf135_ikev1_param {
+    ACVP_KDF_IKEv1_HASH_ALG,
+    ACVP_KDF_IKEv1_AUTH_METHOD,
+    ACVP_KDF_IKEv1_INIT_NONCE_LEN,
+    ACVP_KDF_IKEv1_RESPOND_NONCE_LEN,
+    ACVP_KDF_IKEv1_DH_SECRET_LEN,
+    ACVP_KDF_IKEv1_PSK_LEN
+} ACVP_KDF135_IKEV1_PARM;
 
 #define RSA_SIG_TYPE_X931_NAME      "ansx9.31"
 #define RSA_SIG_TYPE_PKCS1V15_NAME  "pkcs1v1.5"
@@ -551,6 +563,32 @@ typedef struct acvp_kdf135_ikev2_tc_t {
     unsigned char *derived_keying_material_child;
     unsigned char *derived_keying_material_child_dh;
 } ACVP_KDF135_IKEV2_TC;
+
+/*
+ * This struct holds data that represents a single test case
+ * for kdf135 IKEV2 testing.  This data is
+ * passed between libacvp and the crypto module.
+ */
+typedef struct acvp_kdf135_ikev1_tc_t {
+    ACVP_CIPHER cipher;
+    unsigned int tc_id;    /* Test case id */
+    unsigned char *hash_alg;
+    int init_nonce_len;
+    int resp_nonce_len;
+    int dh_secret_len;
+    int keying_material_len;
+    unsigned char *init_nonce;
+    unsigned char *resp_nonce;
+    unsigned char *init_spi;
+    unsigned char *resp_spi;
+    unsigned char *gir;
+    unsigned char *gir_new;
+    unsigned char *s_key_seed;
+    unsigned char *s_key_seed_rekey;
+    unsigned char *derived_keying_material;
+    unsigned char *derived_keying_material_child;
+    unsigned char *derived_keying_material_child_dh;
+} ACVP_KDF135_IKEV1_TC;
 
 /*
  * This struct holds data that represents a single test case
@@ -885,6 +923,7 @@ typedef struct acvp_cipher_tc_t {
         ACVP_KDF135_SSH_TC *kdf135_ssh;
         ACVP_KDF135_SRTP_TC *kdf135_srtp;
         ACVP_KDF135_IKEV2_TC *kdf135_ikev2;
+        ACVP_KDF135_IKEV1_TC *kdf135_ikev1;
     } tc;
 } ACVP_TEST_CASE;
 
@@ -1494,6 +1533,10 @@ ACVP_RESULT acvp_enable_kdf135_ikev2_cap (
         ACVP_CTX *ctx,
         ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case));
 
+ACVP_RESULT acvp_enable_kdf135_ikev1_cap (
+        ACVP_CTX *ctx,
+        ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case));
+
 /*! @brief acvp_enable_kdf135_tls_cap_parm() allows an application to specify
         operational parameters to be used during a test session with the ACVP
         server.
@@ -1566,13 +1609,17 @@ ACVP_RESULT acvp_enable_kdf135_srtp_cap_parm (
     @param param ACVP_KDF135_IKEV2_PARM enum specifying parameter to enable.
             Here it is always ACVP_KDF_HASH_ALG. Other params should be enabled
             with acvp_enable_kdf135_ikev2_domain_param
-    @param hash_alg String value for hash algorithm to register with
+    @param value String value for parameter
     
     @return ACVP_RESULT
 */
 ACVP_RESULT acvp_enable_kdf135_ikev2_cap_param (ACVP_CTX *ctx,
                                                 ACVP_KDF135_IKEV2_PARM param,
-                                                char *hash_alg);
+                                                char *value);
+
+ACVP_RESULT acvp_enable_kdf135_ikev1_cap_param (ACVP_CTX *ctx,
+                                                ACVP_KDF135_IKEV1_PARM param,
+                                                char *value);
 
 /*! @brief acvp_enable_kdf135_ikev2_domain_param() allows an application to specify
         operational parameters to be used during a test session with the ACVP
@@ -1591,6 +1638,12 @@ ACVP_RESULT acvp_enable_kdf135_ikev2_cap_param (ACVP_CTX *ctx,
  */
 ACVP_RESULT acvp_enable_kdf135_ikev2_domain_param (ACVP_CTX *ctx,
                                                    ACVP_KDF135_IKEV2_PARM param,
+                                                   int min,
+                                                   int max,
+                                                   int increment);
+
+ACVP_RESULT acvp_enable_kdf135_ikev1_domain_param (ACVP_CTX *ctx,
+                                                   ACVP_KDF135_IKEV1_PARM param,
                                                    int min,
                                                    int max,
                                                    int increment);

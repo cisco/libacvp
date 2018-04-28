@@ -193,7 +193,8 @@ ACVP_ALG_HANDLER alg_tbl[ACVP_ALG_MAX] = {
         {ACVP_KDF135_SNMP,       &acvp_kdf135_snmp_kat_handler,     ACVP_ALG_KDF135_SNMP,       NULL},
         {ACVP_KDF135_SSH,        &acvp_kdf135_ssh_kat_handler,      ACVP_ALG_KDF135_SSH,        NULL},
         {ACVP_KDF135_SRTP,       &acvp_kdf135_srtp_kat_handler,     ACVP_ALG_KDF135_SRTP,       NULL},
-        {ACVP_KDF135_IKEV2,      &acvp_kdf135_ikev2_kat_handler,    ACVP_ALG_KDF135_IKEV2,      NULL}
+        {ACVP_KDF135_IKEV2,      &acvp_kdf135_ikev2_kat_handler,    ACVP_ALG_KDF135_IKEV2,      NULL},
+        {ACVP_KDF135_IKEV1,      &acvp_kdf135_ikev1_kat_handler,    ACVP_ALG_KDF135_IKEV1,      NULL}
 };
 
 typedef struct acvp_prereqs_mode_name_t {
@@ -1533,6 +1534,7 @@ static ACVP_RESULT acvp_validate_prereq_val (ACVP_CIPHER cipher, ACVP_PREREQ_ALG
         }
         break;
     case ACVP_KDF135_IKEV2:
+    case ACVP_KDF135_IKEV1:
         if (pre_req == ACVP_PREREQ_HMAC ||
             pre_req == ACVP_PREREQ_SHA) {
             return ACVP_SUCCESS;
@@ -1694,7 +1696,7 @@ ACVP_RESULT acvp_enable_rsa_keygen_cap_parm (ACVP_CTX *ctx,
 
 ACVP_RESULT acvp_enable_kdf135_ikev2_cap_param (ACVP_CTX *ctx,
                                                 ACVP_KDF135_IKEV2_PARM param,
-                                                char *hash_alg) {
+                                                char *value) {
     ACVP_CAPS_LIST *cap_list;
     ACVP_NAME_LIST *current_hash;
     ACVP_KDF135_IKEV2_CAP *cap;
@@ -1716,11 +1718,46 @@ ACVP_RESULT acvp_enable_kdf135_ikev2_cap_param (ACVP_CTX *ctx,
             current_hash = current_hash->next;
         }
         current_hash->next = calloc(1, sizeof(ACVP_NAME_LIST));
-        current_hash->next->name = hash_alg;
+        current_hash->next->name = value;
     } else {
         cap->hash_algs = calloc(1, sizeof(ACVP_NAME_LIST));
-        cap->hash_algs->name = hash_alg;
+        cap->hash_algs->name = value;
     }
+    return ACVP_SUCCESS;
+}
+
+ACVP_RESULT acvp_enable_kdf135_ikev1_cap_param (ACVP_CTX *ctx,
+                                                ACVP_KDF135_IKEV1_PARM param,
+                                                char *value) {
+    ACVP_CAPS_LIST *cap_list;
+    ACVP_NAME_LIST *current_hash;
+    ACVP_KDF135_IKEV1_CAP *cap;
+    
+    cap_list = acvp_locate_cap_entry(ctx, ACVP_KDF135_IKEV1);
+    if (!cap_list) {
+        ACVP_LOG_ERR("Cap entry not found.");
+        return ACVP_NO_CAP;
+    }
+    cap = cap_list->cap.kdf135_ikev1_cap;
+    
+    if (param == ACVP_KDF_IKEv1_HASH_ALG) {
+        current_hash = cap->hash_algs;
+        if (current_hash) {
+            while (current_hash->next) {
+                current_hash = current_hash->next;
+            }
+            current_hash->next = calloc(1, sizeof(ACVP_NAME_LIST));
+            current_hash->next->name = value;
+        } else {
+            cap->hash_algs = calloc(1, sizeof(ACVP_NAME_LIST));
+            cap->hash_algs->name = value;
+        }
+    } else if (param == ACVP_KDF_IKEv1_AUTH_METHOD) {
+        memcpy(cap->auth_method, value, 3);
+    } else {
+        return ACVP_INVALID_ARG;
+    }
+    
     return ACVP_SUCCESS;
 }
 
@@ -1750,6 +1787,43 @@ ACVP_RESULT acvp_enable_kdf135_ikev2_domain_param (ACVP_CTX *ctx,
         break;
     case ACVP_KEY_MATERIAL_LEN:
         domain = &cap_list->cap.kdf135_ikev2_cap->key_material_len;
+        break;
+    default:
+        return ACVP_INVALID_ARG;
+    }
+    domain->min = min;
+    domain->max = max;
+    domain->increment = increment;
+    
+    return ACVP_SUCCESS;
+}
+
+ACVP_RESULT acvp_enable_kdf135_ikev1_domain_param (ACVP_CTX *ctx,
+                                                   ACVP_KDF135_IKEV1_PARM param,
+                                                   int min,
+                                                   int max,
+                                                   int increment) {
+    ACVP_CAPS_LIST *cap_list;
+    ACVP_JSON_DOMAIN_OBJ *domain;
+    
+    cap_list = acvp_locate_cap_entry(ctx, ACVP_KDF135_IKEV1);
+    if (!cap_list) {
+        ACVP_LOG_ERR("Cap entry not found.");
+        return ACVP_NO_CAP;
+    }
+    
+    switch (param) {
+    case ACVP_KDF_IKEv1_INIT_NONCE_LEN:
+        domain = &cap_list->cap.kdf135_ikev1_cap->init_nonce_len_domain;
+        break;
+    case ACVP_KDF_IKEv1_RESPOND_NONCE_LEN:
+        domain = &cap_list->cap.kdf135_ikev1_cap->respond_nonce_len_domain;
+        break;
+    case ACVP_KDF_IKEv1_DH_SECRET_LEN:
+        domain = &cap_list->cap.kdf135_ikev1_cap->dh_secret_len;
+        break;
+    case ACVP_KDF_IKEv1_PSK_LEN:
+        domain = &cap_list->cap.kdf135_ikev1_cap->psk_len;
         break;
     default:
         return ACVP_INVALID_ARG;
@@ -3827,6 +3901,81 @@ static ACVP_RESULT acvp_build_kdf135_ikev2_register_cap (JSON_Object *cap_obj, A
     return ACVP_SUCCESS;
 }
 
+static ACVP_RESULT acvp_build_kdf135_ikev1_register_cap (JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry) {
+    ACVP_RESULT result;
+    JSON_Array *alg_specs_array = NULL, *tmp_arr = NULL;
+    JSON_Value *alg_specs_val = NULL, *tmp_val = NULL;
+    JSON_Object *alg_specs_obj = NULL, *tmp_obj = NULL;
+    ACVP_NAME_LIST *current_hash;
+    
+    json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
+    
+    result = acvp_lookup_prereqVals(cap_obj, cap_entry);
+    if (result != ACVP_SUCCESS) { return result; }
+    
+    json_object_set_value(cap_obj, "algSpecs", json_value_init_array());
+    alg_specs_array = json_object_get_array(cap_obj, "algSpecs");
+
+    alg_specs_val = json_value_init_object();
+    alg_specs_obj = json_value_get_object(alg_specs_val);
+
+    /* initiator nonce len */
+    // TODO edaw set the domain obj so we don't have to keep accessing this memory
+    json_object_set_value(alg_specs_obj, "initiatorNonceLength", json_value_init_array());
+    tmp_arr = json_object_get_array(alg_specs_obj, "initiatorNonceLength");
+    tmp_val = json_value_init_object();
+    tmp_obj = json_value_get_object(tmp_val);
+    json_object_set_number(tmp_obj, "min", cap_entry->cap.kdf135_ikev1_cap->init_nonce_len_domain.min);
+    json_object_set_number(tmp_obj, "max", cap_entry->cap.kdf135_ikev1_cap->init_nonce_len_domain.max);
+    json_object_set_number(tmp_obj, "increment", cap_entry->cap.kdf135_ikev1_cap->init_nonce_len_domain.increment);
+    json_array_append_value(tmp_arr, tmp_val);
+
+    /* responder nonce len */
+    json_object_set_value(alg_specs_obj, "responderNonceLength", json_value_init_array());
+    tmp_arr = json_object_get_array(alg_specs_obj, "responderNonceLength");
+    tmp_val = json_value_init_object();
+    tmp_obj = json_value_get_object(tmp_val);
+    json_object_set_number(tmp_obj, "min", cap_entry->cap.kdf135_ikev1_cap->respond_nonce_len_domain.min);
+    json_object_set_number(tmp_obj, "max", cap_entry->cap.kdf135_ikev1_cap->respond_nonce_len_domain.max);
+    json_object_set_number(tmp_obj, "increment", cap_entry->cap.kdf135_ikev1_cap->respond_nonce_len_domain.increment);
+    json_array_append_value(tmp_arr, tmp_val);
+
+    /* Diffie Hellman shared secret len */
+    json_object_set_value(alg_specs_obj, "diffieHellmanSharedSecretLength", json_value_init_array());
+    tmp_arr = json_object_get_array(alg_specs_obj, "diffieHellmanSharedSecretLength");
+    tmp_val = json_value_init_object();
+    tmp_obj = json_value_get_object(tmp_val);
+    json_object_set_number(tmp_obj, "min", cap_entry->cap.kdf135_ikev1_cap->dh_secret_len.min);
+    json_object_set_number(tmp_obj, "max", cap_entry->cap.kdf135_ikev1_cap->dh_secret_len.max);
+    json_object_set_number(tmp_obj, "increment", cap_entry->cap.kdf135_ikev1_cap->dh_secret_len.increment);
+    json_array_append_value(tmp_arr, tmp_val);
+
+    /* Derived keying material len */
+    json_object_set_value(alg_specs_obj, "preSharedKeyLength", json_value_init_array());
+    tmp_arr = json_object_get_array(alg_specs_obj, "preSharedKeyLength");
+    tmp_val = json_value_init_object();
+    tmp_obj = json_value_get_object(tmp_val);
+    json_object_set_number(tmp_obj, "min", cap_entry->cap.kdf135_ikev1_cap->psk_len.min);
+    json_object_set_number(tmp_obj, "max", cap_entry->cap.kdf135_ikev1_cap->psk_len.max);
+    json_object_set_number(tmp_obj, "increment", cap_entry->cap.kdf135_ikev1_cap->psk_len.increment);
+    json_array_append_value(tmp_arr, tmp_val);
+
+    /* Array of hash algs */
+    json_object_set_value(alg_specs_obj, "hashAlg", json_value_init_array());
+    tmp_arr = json_object_get_array(alg_specs_obj, "hashAlg");
+    current_hash = cap_entry->cap.kdf135_ikev1_cap->hash_algs;
+    while (current_hash) {
+        json_array_append_string(tmp_arr, current_hash->name);
+        current_hash = current_hash->next;
+    }
+    
+    json_object_set_string(alg_specs_obj, "authenticationMethod", cap_entry->cap.kdf135_ikev1_cap->auth_method);
+
+    json_array_append_value(alg_specs_array, alg_specs_val);
+    
+    return ACVP_SUCCESS;
+}
+
 static ACVP_RESULT acvp_build_kdf135_srtp_register_cap (JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry) {
     ACVP_RESULT result;
     JSON_Array *tmp_arr = NULL;
@@ -4499,6 +4648,9 @@ static ACVP_RESULT acvp_build_register (ACVP_CTX *ctx, char **reg) {
                 break;
             case ACVP_KDF135_IKEV2:
                 acvp_build_kdf135_ikev2_register_cap(cap_obj, cap_entry);
+                break;
+            case ACVP_KDF135_IKEV1:
+                acvp_build_kdf135_ikev1_register_cap(cap_obj, cap_entry);
                 break;
             default:
                 ACVP_LOG_ERR("Cap entry not found, %d.", cap_entry->cipher);
@@ -5645,6 +5797,54 @@ ACVP_RESULT acvp_enable_kdf135_ikev2_cap (
     }
     
     return (acvp_append_kdf135_ikev2_caps_entry(ctx, cap, crypto_handler));
+}
+
+static ACVP_RESULT acvp_append_kdf135_ikev1_caps_entry (
+        ACVP_CTX *ctx,
+        ACVP_KDF135_IKEV1_CAP *cap,
+        ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case)) {
+    ACVP_CAPS_LIST *cap_entry, *cap_e2;
+    
+    cap_entry = calloc(1, sizeof(ACVP_CAPS_LIST));
+    if (!cap_entry) {
+        return ACVP_MALLOC_FAIL;
+    }
+    cap_entry->cap.kdf135_ikev1_cap = cap;
+    cap_entry->crypto_handler = crypto_handler;
+    cap_entry->cipher = ACVP_KDF135_IKEV1;
+    cap_entry->cap_type = ACVP_KDF135_IKEV1_TYPE;
+    
+    if (!ctx->caps_list) {
+        ctx->caps_list = cap_entry;
+    } else {
+        cap_e2 = ctx->caps_list;
+        while (cap_e2->next) {
+            cap_e2 = cap_e2->next;
+        }
+        cap_e2->next = cap_entry;
+    }
+    return ACVP_SUCCESS;
+}
+
+/* TODO edaw these could probably be collapsed... */
+ACVP_RESULT acvp_enable_kdf135_ikev1_cap (
+        ACVP_CTX *ctx,
+        ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case)) {
+    ACVP_KDF135_IKEV1_CAP *cap;
+    
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+    if (!crypto_handler) {
+        return ACVP_INVALID_ARG;
+    }
+    
+    cap = calloc(1, sizeof(ACVP_KDF135_IKEV1_CAP));
+    if (!cap) {
+        return ACVP_MALLOC_FAIL;
+    }
+    
+    return (acvp_append_kdf135_ikev1_caps_entry(ctx, cap, crypto_handler));
 }
 
 static ACVP_RESULT acvp_append_kdf135_snmp_caps_entry (
