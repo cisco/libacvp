@@ -534,6 +534,22 @@ typedef struct acvp_kdf135_tls_tc_t {
 typedef struct acvp_kdf135_ikev2_tc_t {
     ACVP_CIPHER cipher;
     unsigned int tc_id;    /* Test case id */
+    unsigned char *hash_alg;
+    int init_nonce_len;
+    int resp_nonce_len;
+    int dh_secret_len;
+    int keying_material_len;
+    unsigned char *init_nonce;
+    unsigned char *resp_nonce;
+    unsigned char *init_spi;
+    unsigned char *resp_spi;
+    unsigned char *gir;
+    unsigned char *gir_new;
+    unsigned char *s_key_seed;
+    unsigned char *s_key_seed_rekey;
+    unsigned char *derived_keying_material;
+    unsigned char *derived_keying_material_child;
+    unsigned char *derived_keying_material_child_dh;
 } ACVP_KDF135_IKEV2_TC;
 
 /*
@@ -868,6 +884,7 @@ typedef struct acvp_cipher_tc_t {
         ACVP_KDF135_SNMP_TC *kdf135_snmp;
         ACVP_KDF135_SSH_TC *kdf135_ssh;
         ACVP_KDF135_SRTP_TC *kdf135_srtp;
+        ACVP_KDF135_IKEV2_TC *kdf135_ikev2;
     } tc;
 } ACVP_TEST_CASE;
 
