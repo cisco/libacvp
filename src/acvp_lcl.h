@@ -136,6 +136,7 @@
 #define ACVP_ALG_KDF135_SNMP     "KDF-SNMP"
 #define ACVP_ALG_KDF135_SSH      "KDF-SSH"
 #define ACVP_ALG_KDF135_SRTP     "KDF-SRTP"
+#define ACVP_ALG_KDF135_IKEV2    "KDF-IKEV2"
 
 /*
  * The values that are supplied
@@ -238,6 +239,21 @@ typedef struct acvp_sl_list_t {
     struct acvp_sl_list_t *next;
 } ACVP_SL_LIST;
 
+/*
+ * list of strings to be used for supported algs,
+ * prime_tests, etc.
+ */
+typedef struct acvp_name_list_t {
+    char *name;
+    struct acvp_name_list_t *next;
+} ACVP_NAME_LIST;
+
+typedef struct acvp_json_domain_obj_t {
+    int min;
+    int max;
+    int increment;
+} ACVP_JSON_DOMAIN_OBJ;
+
 typedef struct acvp_prereq_alg_val {
     ACVP_PREREQ_ALG alg;
     char *val;
@@ -286,6 +302,14 @@ typedef struct acvp_kdf135_srtp_capability {
     int kdr_exp[ACVP_KDF135_SRTP_KDR_MAX];
     ACVP_SL_LIST *aes_keylens;
 } ACVP_KDF135_SRTP_CAP;
+
+typedef struct acvp_kdf135_ikev2_capability {
+    ACVP_NAME_LIST *hash_algs;
+    ACVP_JSON_DOMAIN_OBJ init_nonce_len_domain;
+    ACVP_JSON_DOMAIN_OBJ respond_nonce_len_domain;
+    ACVP_JSON_DOMAIN_OBJ dh_secret_len;
+    ACVP_JSON_DOMAIN_OBJ key_material_len;
+} ACVP_KDF135_IKEV2_CAP;
 
 typedef struct acvp_hmac_capability {
     int key_len_min;      // 8-524288
@@ -341,15 +365,6 @@ struct acvp_drbg_mode_name_t {
     ACVP_DRBG_MODE mode;
     char *name;
 };
-
-/*
- * list of strings to be used for supported algs,
- * prime_tests, etc.
- */
-typedef struct acvp_name_list_t {
-    char *name;
-    struct acvp_name_list_t *next;
-} ACVP_NAME_LIST;
 
 typedef struct acvp_rsa_hash_pair_list {
     char *name;
@@ -467,6 +482,7 @@ typedef struct acvp_caps_list_t {
         ACVP_KDF135_SNMP_CAP *kdf135_snmp_cap;
         ACVP_KDF135_SSH_CAP *kdf135_ssh_cap;
         ACVP_KDF135_SRTP_CAP *kdf135_srtp_cap;
+        ACVP_KDF135_IKEV2_CAP *kdf135_ikev2_cap;
     } cap;
 
     ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case);
@@ -585,6 +601,8 @@ ACVP_RESULT acvp_kdf135_snmp_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
 ACVP_RESULT acvp_kdf135_ssh_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
 
 ACVP_RESULT acvp_kdf135_srtp_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
+
+ACVP_RESULT acvp_kdf135_ikev2_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
 
 ACVP_RESULT acvp_dsa_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
 

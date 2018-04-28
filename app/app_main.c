@@ -97,6 +97,7 @@ static ACVP_RESULT app_kdf135_tls_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_kdf135_snmp_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_kdf135_ssh_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_kdf135_srtp_handler(ACVP_TEST_CASE *test_case);
+static ACVP_RESULT app_kdf135_ikev2_handler(ACVP_TEST_CASE *test_case);
 #endif
 #ifdef ACVP_NO_RUNTIME
 static ACVP_RESULT app_drbg_handler(ACVP_TEST_CASE *test_case);
@@ -973,7 +974,17 @@ static void enable_kdf (ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_kdf135_srtp_cap_parm(ctx, ACVP_KDF135_SRTP, ACVP_SRTP_AES_KEYLEN, 192);
     CHECK_ENABLE_CAP_RV(rv);
-    
+
+    rv = acvp_enable_kdf135_ikev2_cap(ctx, &app_kdf135_ikev2_handler);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_prereq_cap(ctx, ACVP_KDF135_IKEV2, ACVP_PREREQ_SHA, value);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_kdf135_ikev2_domain_param(ctx, ACVP_INIT_NONCE_LEN, 64, 2048, 1);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_kdf135_ikev2_cap_param(ctx, ACVP_KDF_HASH_ALG, "SHA1");
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_kdf135_ikev2_cap_param(ctx, ACVP_KDF_HASH_ALG, "SHA2-224");
+    CHECK_ENABLE_CAP_RV(rv);
 #endif
 }
 
@@ -2619,6 +2630,12 @@ static ACVP_RESULT app_kdf135_srtp_handler(ACVP_TEST_CASE *test_case) {
     ACVP_RESULT rv = ACVP_CRYPTO_MODULE_FAIL;
     return rv;
 }
+
+static ACVP_RESULT app_kdf135_ikev2_handler(ACVP_TEST_CASE *test_case) {
+    ACVP_RESULT rv = ACVP_CRYPTO_MODULE_FAIL;
+    return rv;
+}
+
 static ACVP_RESULT app_kdf135_tls_handler(ACVP_TEST_CASE *test_case)
 {
     ACVP_KDF135_TLS_TC    *tc;
