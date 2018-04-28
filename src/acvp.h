@@ -573,21 +573,22 @@ typedef struct acvp_kdf135_ikev1_tc_t {
     ACVP_CIPHER cipher;
     unsigned int tc_id;    /* Test case id */
     unsigned char *hash_alg;
+    char auth_method[3];
     int init_nonce_len;
     int resp_nonce_len;
     int dh_secret_len;
-    int keying_material_len;
+    int psk_len;
     unsigned char *init_nonce;
     unsigned char *resp_nonce;
-    unsigned char *init_spi;
-    unsigned char *resp_spi;
-    unsigned char *gir;
-    unsigned char *gir_new;
-    unsigned char *s_key_seed;
-    unsigned char *s_key_seed_rekey;
-    unsigned char *derived_keying_material;
-    unsigned char *derived_keying_material_child;
-    unsigned char *derived_keying_material_child_dh;
+    unsigned char *init_ckey;
+    unsigned char *resp_ckey;
+    unsigned char *gxy;
+    unsigned char *psk;
+    
+    unsigned char *s_key_id;
+    unsigned char *s_key_id_d;
+    unsigned char *s_key_id_a;
+    unsigned char *s_key_id_e;
 } ACVP_KDF135_IKEV1_TC;
 
 /*

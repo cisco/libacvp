@@ -71,13 +71,13 @@ static ACVP_RESULT acvp_kdf135_ikev2_init_tc (ACVP_CTX *ctx,
     stc->dh_secret_len = dh_secret_len;
     stc->keying_material_len = keying_material_len;
     
-    stc->init_nonce = calloc(ACVP_KDF135_IKEV2_NONCE_LEN_MAX, sizeof(char));
+    stc->init_nonce = calloc(ACVP_KDF135_IKE_NONCE_LEN_MAX, sizeof(char));
     if (!stc->init_nonce) { return ACVP_MALLOC_FAIL; }
-    memcpy(stc->init_nonce, init_nonce, strnlen((const char *)init_nonce, ACVP_KDF135_IKEV2_NONCE_LEN_MAX));
+    memcpy(stc->init_nonce, init_nonce, strnlen((const char *)init_nonce, ACVP_KDF135_IKE_NONCE_LEN_MAX));
     
-    stc->resp_nonce = calloc(ACVP_KDF135_IKEV2_NONCE_LEN_MAX, sizeof(char));
+    stc->resp_nonce = calloc(ACVP_KDF135_IKE_NONCE_LEN_MAX, sizeof(char));
     if (!stc->resp_nonce) { return ACVP_MALLOC_FAIL; }
-    memcpy(stc->resp_nonce, resp_nonce, strnlen((const char *)resp_nonce, ACVP_KDF135_IKEV2_NONCE_LEN_MAX));
+    memcpy(stc->resp_nonce, resp_nonce, strnlen((const char *)resp_nonce, ACVP_KDF135_IKE_NONCE_LEN_MAX));
     
     stc->init_spi = calloc(ACVP_KDF135_IKEV2_SPI_LEN_MAX, sizeof(char));
     if (!stc->init_spi) { return ACVP_MALLOC_FAIL; }
