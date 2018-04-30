@@ -213,7 +213,7 @@ ACVP_RESULT acvp_kdf135_ikev2_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
         t_cnt = json_array_get_count(tests);
         
         for (j = 0; j < t_cnt; j++) {
-            ACVP_LOG_INFO("Found new KDF SRTP test vector...");
+            ACVP_LOG_INFO("Found new KDF IKEv2 test vector...");
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
             
