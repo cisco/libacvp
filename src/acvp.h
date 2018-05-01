@@ -537,7 +537,8 @@ typedef struct acvp_kdf135_tls_tc_t {
     unsigned char *kblock2;
 } ACVP_KDF135_TLS_TC;
 
-/*
+/*!
+ * @struct ACVP_KDF135_IKEV2_TC
  * This struct holds data that represents a single test case
  * for kdf135 IKEV2 testing.  This data is
  * passed between libacvp and the crypto module.
@@ -563,9 +564,10 @@ typedef struct acvp_kdf135_ikev2_tc_t {
     unsigned char *derived_keying_material_child_dh;
 } ACVP_KDF135_IKEV2_TC;
 
-/*
- * This struct holds data that represents a single test case
- * for kdf135 IKEV2 testing.  This data is
+/*!
+ * @struct ACVP_KDF135_IKEV1_TC
+ * @brief This struct holds data that represents a single test case
+ * for kdf135 IKEV1 testing.  This data is
  * passed between libacvp and the crypto module.
  */
 typedef struct acvp_kdf135_ikev1_tc_t {
