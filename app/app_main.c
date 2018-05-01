@@ -979,11 +979,17 @@ static void enable_kdf (ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_prereq_cap(ctx, ACVP_KDF135_IKEV2, ACVP_PREREQ_SHA, value);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_kdf135_ikev2_domain_param(ctx, ACVP_INIT_NONCE_LEN, 64, 2048, 1);
+    rv = acvp_enable_prereq_cap(ctx, ACVP_KDF135_IKEV2, ACVP_PREREQ_HMAC, value);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_kdf135_ikev2_domain_param(ctx, ACVP_INIT_NONCE_LEN, 128, 2048, 1);
+    CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_kdf135_ikev2_domain_param(ctx, ACVP_RESPOND_NONCE_LEN, 128, 2048, 1);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_kdf135_ikev2_domain_param(ctx, ACVP_INIT_NONCE_LEN, 128, 2048, 1);
+    CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_kdf135_ikev2_domain_param(ctx, ACVP_KEY_MATERIAL_LEN, 1056, 3072, 1);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_kdf135_ikev2_cap_param(ctx, ACVP_KDF_HASH_ALG, "SHA1");
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_kdf135_ikev2_cap_param(ctx, ACVP_KDF_HASH_ALG, "SHA2-224");
     CHECK_ENABLE_CAP_RV(rv);
 #endif
 }
