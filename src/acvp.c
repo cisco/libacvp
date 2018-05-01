@@ -4650,7 +4650,7 @@ ACVP_RESULT acvp_register (ACVP_CTX *ctx) {
 
     json_free_serialized_string(reg);
 
-    return (-1);
+    return (rv);
 }
 
 /*
