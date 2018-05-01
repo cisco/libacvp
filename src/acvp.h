@@ -336,7 +336,6 @@ typedef enum acvp_kdf135_ikev2_param {
     ACVP_KEY_MATERIAL_LEN
 } ACVP_KDF135_IKEV2_PARM;
 
-// TODO edaw should we collapse ike stuff?
 typedef enum acvp_kdf135_ikev1_param {
     ACVP_KDF_IKEv1_HASH_ALG,
     ACVP_KDF_IKEv1_AUTH_METHOD,

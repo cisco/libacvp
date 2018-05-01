@@ -3920,7 +3920,6 @@ static ACVP_RESULT acvp_build_kdf135_ikev1_register_cap (JSON_Object *cap_obj, A
     alg_specs_obj = json_value_get_object(alg_specs_val);
 
     /* initiator nonce len */
-    // TODO edaw set the domain obj so we don't have to keep accessing this memory
     json_object_set_value(alg_specs_obj, "initiatorNonceLength", json_value_init_array());
     tmp_arr = json_object_get_array(alg_specs_obj, "initiatorNonceLength");
     tmp_val = json_value_init_object();
@@ -5826,7 +5825,6 @@ static ACVP_RESULT acvp_append_kdf135_ikev1_caps_entry (
     return ACVP_SUCCESS;
 }
 
-/* TODO edaw these could probably be collapsed... */
 ACVP_RESULT acvp_enable_kdf135_ikev1_cap (
         ACVP_CTX *ctx,
         ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case)) {
