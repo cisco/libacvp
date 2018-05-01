@@ -79,7 +79,11 @@ typedef enum acvp_result ACVP_RESULT;
  * **************** ALERT *****************
  * This enum must stay aligned with alg_tbl[] in acvp.c
  */
-typedef enum acvp_sym_cipher {
+/*! @struct ACVP_CIPHER
+ *  @brief This enum lists the various algorithms supported by the ACVP
+ *  library
+ */
+typedef enum acvp_cipher {
     ACVP_CIPHER_START = 0,
     ACVP_AES_GCM,
     ACVP_AES_CCM,
@@ -146,7 +150,12 @@ typedef enum acvp_sym_cipher {
     ACVP_CIPHER_END
 } ACVP_CIPHER;
 
-
+/*! @struct ACVP_PREREQ_ALG
+ *  @brief This enum lists the prerequisities that are available
+ *  to the library during registration. Whereas an ACVP_CIPHER may
+ *  specify a certain mode or key size, the prereqs are more
+ *  generic.
+ */
 typedef enum acvp_prereq_mode_t {
     ACVP_PREREQ_AES = 1,
     ACVP_PREREQ_TDES,
@@ -158,7 +167,10 @@ typedef enum acvp_prereq_mode_t {
 #define ACVP_KDF135_SNMP_ENGID_MAX 32
 #define ACVP_KDF135_SNMP_SKEY_MAX 32
 
-/* these are bit flags */
+/*!
+ * @struct ACVP_KDF135_TLS_CAP_PARM
+ * @brief these are bit flags
+ */
 typedef enum acvp_kdf135_tls_cap_parm {
     ACVP_KDF135_TLS_CAP_SHA256 = 1,
     ACVP_KDF135_TLS_CAP_SHA384,
@@ -166,7 +178,10 @@ typedef enum acvp_kdf135_tls_cap_parm {
     ACVP_KDF135_TLS_CAP_MAX
 } ACVP_KDF135_TLS_CAP_PARM;
 
-/* these are bit flags */
+/*!
+ * @struct ACVP_KDF135_SSH_CAP_PARM
+ * @brief these are bit flags
+ */
 typedef enum acvp_kdf135_ssh_cap_parm {
     ACVP_KDF135_SSH_CAP_MIN = 0,
     ACVP_KDF135_SSH_CAP_SHA256 = 1, //bin 001
@@ -174,6 +189,7 @@ typedef enum acvp_kdf135_ssh_cap_parm {
     ACVP_KDF135_SSH_CAP_SHA512 = 4, //bin 100
 } ACVP_KDF135_SSH_CAP_PARM;
 
+/*! @struct ACVP_KDF135_SSH_METHOD */
 typedef enum acvp_kdf135_ssh_method {
     ACVP_SSH_METH_TDES_CBC = 1,
     ACVP_SSH_METH_AES_128_CBC,
@@ -182,6 +198,7 @@ typedef enum acvp_kdf135_ssh_method {
     ACVP_SSH_METH_MAX
 } ACVP_KDF135_SSH_METHOD;
 
+/*! @struct ACVP_KDF135_SRTP_PARAM */
 typedef enum acvp_kdf135_srtp_param {
     ACVP_SRTP_PARAM_MIN,
     ACVP_SRTP_AES_KEYLEN,
@@ -213,6 +230,7 @@ typedef enum acvp_capability_type {
     ACVP_KDF135_SRTP_TYPE
 } ACVP_CAP_TYPE;
 
+/*! @struct ACVP_SYM_CIPH_KO */
 typedef enum acvp_sym_cipher_keying_option {
     ACVP_KO_NA = 0,
     ACVP_KO_THREE,
@@ -220,8 +238,9 @@ typedef enum acvp_sym_cipher_keying_option {
     ACVP_KO_BOTH
 } ACVP_SYM_CIPH_KO;
 
-/*
- * The IV generation source for AEAD ciphers.
+/*!
+ * @struct ACVP_SYM_CIPH_IVGEN_SRC
+ * @brief The IV generation source for AEAD ciphers.
  * This can be internal, external, or not applicable.
  */
 typedef enum acvp_sym_cipher_ivgen_source {
@@ -230,8 +249,9 @@ typedef enum acvp_sym_cipher_ivgen_source {
     ACVP_IVGEN_SRC_NA
 } ACVP_SYM_CIPH_IVGEN_SRC;
 
-/*
- * The IV generation mode.  It can comply with 8.2.1,
+/*!
+ * @struct ACVP_SYM_CIPH_IVGEN_MODE
+ * @brief The IV generation mode.  It can comply with 8.2.1,
  * 8.2.2, or may not be applicable for some ciphers.
  */
 typedef enum acvp_sym_cipher_ivgen_mode {
@@ -241,9 +261,10 @@ typedef enum acvp_sym_cipher_ivgen_mode {
 } ACVP_SYM_CIPH_IVGEN_MODE;
 
 
-/*
- * These are the algorithm direction suppported by libacvp.  These are used in
- * conjunction with ACVP_SYM_CIPH when registering the
+/*!
+ * @struct ACVP_SYM_CIPH_DIR
+ * @brief These are the algorithm direction suppported by libacvp.
+ * These are used in conjunction with ACVP_SYM_CIPH when registering the
  * crypto module capabilities with libacvp.
  */
 typedef enum acvp_sym_cipher_direction {
@@ -252,6 +273,7 @@ typedef enum acvp_sym_cipher_direction {
     ACVP_DIR_BOTH
 } ACVP_SYM_CIPH_DIR;
 
+/*! @struct ACVP_KDF135_TLS_METHOD */
 typedef enum acvp_kdf135_tls_method {
     ACVP_KDF135_TLS10_TLS11 = 1,
     ACVP_KDF135_TLS12
@@ -282,6 +304,7 @@ typedef enum acvp_hash_param {
  * * **************** ALERT *****************
  * This enum must stay aligned with drbg_mode_tbl[] in acvp.c
  */
+/*! @struct ACVP_DRBG_MODE */
 typedef enum acvp_drbg_mode {
     ACVP_DRBG_MODE_START = 0,
     ACVP_DRBG_SHA_1,
@@ -298,6 +321,7 @@ typedef enum acvp_drbg_mode {
     ACVP_DRBG_MODE_END
 } ACVP_DRBG_MODE;
 
+/*! @struct ACVP_DRBG_PARM */
 typedef enum acvp_drbg_param {
     ACVP_DRBG_DER_FUNC_ENABLED = 0,
     ACVP_DRBG_PRED_RESIST_ENABLED,
@@ -310,6 +334,7 @@ typedef enum acvp_drbg_param {
     ACVP_DRBG_PRE_REQ_VALS
 } ACVP_DRBG_PARM;
 
+/*! @struct ACVP_RSA_PARM */
 typedef enum acvp_rsa_param {
     ACVP_PUB_EXP_MODE = 0,
     ACVP_FIXED_PUB_EXP_VAL,
@@ -318,6 +343,7 @@ typedef enum acvp_rsa_param {
     ACVP_RSA_INFO_GEN_BY_SERVER
 } ACVP_RSA_PARM;
 
+/*! @struct ACVP_ECDSA_PARM */
 typedef enum acvp_ecdsa_param {
     ACVP_CURVE,
     ACVP_SECRET_GEN_MODE,
@@ -334,6 +360,7 @@ typedef enum acvp_ecdsa_param {
 #define RSA_PUB_EXP_FIXED      1
 #define RSA_PUB_EXP_RANDOM     0
 
+/*! @struct ACVP_RSA_KEYGEN_MODE */
 typedef enum acvp_rsa_keygen_mode_t {
     ACVP_RSA_KEYGEN_START = 0,
     ACVP_RSA_KEYGEN_B32,
@@ -343,6 +370,7 @@ typedef enum acvp_rsa_keygen_mode_t {
     ACVP_RSA_KEYGEN_B36
 } ACVP_RSA_KEYGEN_MODE;
 
+/*! @struct ACVP_RSA_SIG_TYPE */
 typedef enum acvp_rsa_sig_type {
     RSA_SIG_TYPE_START = 0,
     RSA_SIG_TYPE_X931,
@@ -350,6 +378,7 @@ typedef enum acvp_rsa_sig_type {
     RSA_SIG_TYPE_PKCS1PSS
 } ACVP_RSA_SIG_TYPE;
 
+/*! @struct ACVP_SYM_CIPHER_PARM */
 typedef enum acvp_sym_cipher_parameter {
     ACVP_SYM_CIPH_KEYLEN = 0,
     ACVP_SYM_CIPH_TAGLEN,
@@ -360,12 +389,14 @@ typedef enum acvp_sym_cipher_parameter {
     ACVP_SYM_CIPH_KW_MODE,
 } ACVP_SYM_CIPH_PARM;
 
+/*! @struct ACVP_SYM_CIPH_TWEAK_MODE */
 typedef enum acvp_sym_xts_tweak_mode {
     ACVP_SYM_CIPH_TWEAK_HEX = 1,
     ACVP_SYM_CIPH_TWEAK_NUM,
     ACVP_SYM_CIPH_TWEAK_NONE
 } ACVP_SYM_CIPH_TWEAK_MODE;
 
+/*! @struct ACVP_SYM_KW_MODE */
 typedef enum acvp_sym_kw_mode {
     ACVP_SYM_KW_NONE = 0,
     ACVP_SYM_KW_CIPHER,
@@ -373,6 +404,7 @@ typedef enum acvp_sym_kw_mode {
     ACVP_SYM_KW_MAX
 } ACVP_SYM_KW_MODE;
 
+/*! @struct ACVP_SYM_CIPH_TESTTYPE */
 typedef enum acvp_sym_cipher_testtype {
     ACVP_SYM_TEST_TYPE_NONE = 0,
     ACVP_SYM_TEST_TYPE_AFT,
@@ -380,13 +412,14 @@ typedef enum acvp_sym_cipher_testtype {
     ACVP_SYM_TEST_TYPE_MCT
 } ACVP_SYM_CIPH_TESTTYPE;
 
-
+/*! @struct ACVP_HASH_TESTTYPE */
 typedef enum acvp_hash_testtype {
     ACVP_HASH_TEST_TYPE_NONE = 0,
     ACVP_HASH_TEST_TYPE_AFT,
     ACVP_HASH_TEST_TYPE_MCT
 } ACVP_HASH_TESTTYPE;
 
+/*! @struct ACVP_HMAC_PARM */
 typedef enum acvp_hmac_parameter {
     ACVP_HMAC_KEYLEN_MIN = 0,
     ACVP_HMAC_KEYLEN_MAX,
@@ -394,6 +427,7 @@ typedef enum acvp_hmac_parameter {
     ACVP_HMAC_MACLEN
 } ACVP_HMAC_PARM;
 
+/*! @struct ACVP_CMAC_PARM */
 typedef enum acvp_cmac_parameter {
     ACVP_CMAC_MACLEN,
     ACVP_CMAC_KEYLEN,
@@ -407,6 +441,7 @@ typedef enum acvp_cmac_parameter {
     ACVP_CMAC_MSG_LEN_MAX
 } ACVP_CMAC_PARM;
 
+/*! @struct ACVP_CMAC_MSG_LEN_INDEX */
 typedef enum acvp_cmac_msg_len_index {
     CMAC_BLK_DIVISIBLE_1 = 0,
     CMAC_BLK_DIVISIBLE_2,
@@ -416,8 +451,9 @@ typedef enum acvp_cmac_msg_len_index {
     CMAC_MSG_LEN_NUM_ITEMS
 } ACVP_CMAC_MSG_LEN_INDEX;
 
-/*
- * This struct holds data that represents a single test case for
+/*!
+ * @struct ACVP_SYM_CIPHER_TC
+ * @brief This struct holds data that represents a single test case for
  * a symmetric cipher, such as AES or DES.  This data is passed
  * between libacvp and the crypto module.  libacvp will parse the test
  * case parameters from the JSON encoded test vector, fill in this
@@ -453,19 +489,10 @@ typedef struct acvp_sym_cipher_tc_t {
     unsigned int mct_index;  /* used to identify init vs. update */
 } ACVP_SYM_CIPHER_TC;
 
-/*
- * This struct holds data that represents a single test case
- * for an asymmetric cipher, such as RSA or ECDSA.  This data is
- * passed between libacvp and the crypto module.
- */
-typedef struct acvp_asym_cipher_tc_t {
-    ACVP_CIPHER cipher;
-    unsigned int tc_id;    /* Test case id */
-} ACVP_ASYM_CIPHER_TC;
-
-/*
- * This struct holds data that represents a single test case
- * for entropy testing.  This data is
+/*!
+ * @struct ACVP_ENTROPY_TC
+ * @brief This struct holds data that represents a single test
+ * case for entropy testing. This data is
  * passed between libacvp and the crypto module.
  */
 typedef struct acvp_entropy_tc_t {
@@ -475,8 +502,9 @@ typedef struct acvp_entropy_tc_t {
     unsigned char *entropy_data;
 } ACVP_ENTROPY_TC;
 
-/*
- * This struct holds data that represents a single test case
+/*!
+ * @struct ACVP_HASH_TC
+ * @brief This struct holds data that represents a single test case
  * for hash testing.  This data is
  * passed between libacvp and the crypto module.
  */
@@ -493,9 +521,10 @@ typedef struct acvp_hash_tc_t {
     unsigned int md_len;
 } ACVP_HASH_TC;
 
-/*
- * This struct holds data that represents a single test case
- * for kdf135 TLS testing.  This data is
+/*!
+ * @struct ACVP_KDF135_TLS_TC
+ * @brief This struct holds data that represents a single test
+ * case for kdf135 TLS testing.  This data is
  * passed between libacvp and the crypto module.
  */
 typedef struct acvp_kdf135_tls_tc_t {
@@ -516,9 +545,65 @@ typedef struct acvp_kdf135_tls_tc_t {
     unsigned char *kblock2;
 } ACVP_KDF135_TLS_TC;
 
-/*
+/*!
+ * @struct ACVP_KDF135_IKEV2_TC
  * This struct holds data that represents a single test case
- * for kdf135 TLS testing.  This data is
+ * for kdf135 IKEV2 testing.  This data is
+ * passed between libacvp and the crypto module.
+ */
+typedef struct acvp_kdf135_ikev2_tc_t {
+    ACVP_CIPHER cipher;
+    unsigned int tc_id;    /* Test case id */
+    unsigned char *hash_alg;
+    int init_nonce_len;
+    int resp_nonce_len;
+    int dh_secret_len;
+    int keying_material_len;
+    unsigned char *init_nonce;
+    unsigned char *resp_nonce;
+    unsigned char *init_spi;
+    unsigned char *resp_spi;
+    unsigned char *gir;
+    unsigned char *gir_new;
+    unsigned char *s_key_seed;
+    unsigned char *s_key_seed_rekey;
+    unsigned char *derived_keying_material;
+    unsigned char *derived_keying_material_child;
+    unsigned char *derived_keying_material_child_dh;
+} ACVP_KDF135_IKEV2_TC;
+
+/*!
+ * @struct ACVP_KDF135_IKEV1_TC
+ * @brief This struct holds data that represents a single test case
+ * for kdf135 IKEV1 testing.  This data is
+ * passed between libacvp and the crypto module.
+ */
+typedef struct acvp_kdf135_ikev1_tc_t {
+    ACVP_CIPHER cipher;
+    unsigned int tc_id;    /* Test case id */
+    unsigned char *hash_alg;
+    char auth_method[3];
+    int init_nonce_len;
+    int resp_nonce_len;
+    int dh_secret_len;
+    int psk_len;
+    unsigned char *init_nonce;
+    unsigned char *resp_nonce;
+    unsigned char *init_ckey;
+    unsigned char *resp_ckey;
+    unsigned char *gxy;
+    unsigned char *psk;
+    
+    unsigned char *s_key_id;
+    unsigned char *s_key_id_d;
+    unsigned char *s_key_id_a;
+    unsigned char *s_key_id_e;
+} ACVP_KDF135_IKEV1_TC;
+
+/*!
+ * @struct ACVP_KDF135_SNMP_TC
+ * @brief This struct holds data that represents a single test
+ * case for kdf135 SNMP testing.  This data is
  * passed between libacvp and the crypto module.
  */
 typedef struct acvp_kdf135_snmp_tc_t {
@@ -531,9 +616,10 @@ typedef struct acvp_kdf135_snmp_tc_t {
     unsigned char *engine_id;
 } ACVP_KDF135_SNMP_TC;
 
-/*
- * This struct holds data that represents a single test case
- * for kdf135 SRTP testing.  This data is
+/*!
+ * @struct ACVP_KDF135_SRTP_TC
+ * @brief This struct holds data that represents a single test
+ * case for kdf135 SRTP testing.  This data is
  * passed between libacvp and the crypto module.
  */
 typedef struct acvp_kdf135_srtp_tc_t {
@@ -552,12 +638,12 @@ typedef struct acvp_kdf135_srtp_tc_t {
     unsigned char *srtcp_ke;
     unsigned char *srtcp_ka;
     unsigned char *srtcp_ks;
-    
 } ACVP_KDF135_SRTP_TC;
 
-/*
- * This struct holds data that represents a single test case
- * for kdf135 SSH testing.  This data is
+/*!
+ * @struct ACVP_KDF135_SSH_TC
+ * @brief This struct holds data that represents a single test
+ * case for kdf135 SSH testing.  This data is
  * passed between libacvp and the crypto module.
  */
 typedef struct acvp_kdf135_ssh_tc_t {
@@ -581,9 +667,10 @@ typedef struct acvp_kdf135_ssh_tc_t {
     unsigned char *sc_i_key;
 } ACVP_KDF135_SSH_TC;
 
-/*
- * This struct holds data that represents a single test case
- * for hmac testing.  This data is
+/*!
+ * @struct ACVP_HMAC_TC
+ * @brief This struct holds data that represents a single
+ * test case for HMAC testing.  This data is
  * passed between libacvp and the crypto module.
  */
 typedef struct acvp_hmac_tc_t {
@@ -597,9 +684,10 @@ typedef struct acvp_hmac_tc_t {
     unsigned char *key;
 } ACVP_HMAC_TC;
 
-/*
- * This struct holds data that represents a single test case
- * for cmac testing.  This data is
+/*!
+ * @struct ACVP_CMAC_TC
+ * @brief This struct holds data that represents a single
+ * test case for CMAC testing.  This data is
  * passed between libacvp and the crypto module.
  */
 typedef struct acvp_cmac_tc_t {
@@ -619,9 +707,11 @@ typedef struct acvp_cmac_tc_t {
     unsigned char *key3;
 } ACVP_CMAC_TC;
 
-/*
- * This struct holds data that represents a single test case
- * for RSA testing.  This data is
+/*!
+ * @struct ACVP_RSA_KEYGEN_TC
+ * @brief This struct holds data that represents a single
+ * test case for RSA keygen testing. The other modes of RSA
+ * have their own respective structs. This data is
  * passed between libacvp and the crypto module.
  */
 typedef struct acvp_rsa_keygen_tc_t {
@@ -666,9 +756,10 @@ typedef struct acvp_rsa_keygen_tc_t {
     int bitlen4;
 } ACVP_RSA_KEYGEN_TC;
 
-/*
- * This struct holds data that represents a single test case
- * for ECDSA testing.  This data is
+/*!
+ * @struct ACVP_ECDSA_TC
+ * @brief This struct holds data that represents a single
+ * test case for ECDSA testing. This data is
  * passed between libacvp and the crypto module.
  */
 typedef struct acvp_ecdsa_tc_t {
@@ -692,9 +783,11 @@ typedef struct acvp_ecdsa_tc_t {
 
 } ACVP_ECDSA_TC;
 
-/*
- * This struct holds data that represents a single test case
- * for RSA testing.  This data is
+/*!
+ * @struct ACVP_RSA_SIG_TC
+ * @brief This struct holds data that represents a single
+ * test case for RSA signature testing. Both siggen and sigver
+ * use this struct in their testing. This data is
  * passed between libacvp and the crypto module.
  */
 typedef struct acvp_rsa_sig_tc_t {
@@ -713,6 +806,7 @@ typedef struct acvp_rsa_sig_tc_t {
     int ver_disposition;
 } ACVP_RSA_SIG_TC;
 
+/*! @struct ACVP_DSA_MODE */
 typedef enum acvp_dsa_mode {
     ACVP_DSA_MODE_KEYGEN = 1,
     ACVP_DSA_MODE_PQGGEN,
@@ -721,7 +815,10 @@ typedef enum acvp_dsa_mode {
     ACVP_DSA_MODE_SIGVER
 } ACVP_DSA_MODE;
 
-/* These are used as bit flags */
+/*!
+ * @struct ACVP_DSA_SHA
+ * @brief these are bit flags
+ */
 typedef enum acvp_dsa_sha {
     ACVP_DSA_SHA1 = 1,
     ACVP_DSA_SHA224 = 2,
@@ -732,6 +829,7 @@ typedef enum acvp_dsa_sha {
     ACVP_DSA_SHA512_256 = 64,
 } ACVP_DSA_SHA;
 
+/*! @struct ACVP_DSA_PARM */
 typedef enum acvp_dsa_parm {
     ACVP_DSA_LN2048_224 = 1,
     ACVP_DSA_LN2048_256,
@@ -740,6 +838,7 @@ typedef enum acvp_dsa_parm {
     ACVP_DSA_GENG
 } ACVP_DSA_PARM;
 
+/*! @struct ACVP_DSA_GEN_PARM */
 typedef enum acvp_dsa_gen_parm {
     ACVP_DSA_PROVABLE = 1,
     ACVP_DSA_PROBABLE,
@@ -747,9 +846,10 @@ typedef enum acvp_dsa_gen_parm {
     ACVP_DSA_UNVERIFIABLE
 } ACVP_DSA_GEN_PARM;
 
-/*
- * This struct holds data that represents a single test case
- * for DSA testing.  This data is
+/*!
+ * @struct ACVP_DSA_PQGGEN_TC
+ * @brief This struct holds data that represents a single test
+ * case for DSA testing.  This data is
  * passed between libacvp and the crypto module.
  */
 typedef struct acvp_dsa_pqggen_tc_t {
@@ -768,6 +868,7 @@ typedef struct acvp_dsa_pqggen_tc_t {
     int counter;
 } ACVP_DSA_PQGGEN_TC;
 
+/*! @struct ACVP_DSA_TC */
 typedef struct acvp_dsa_tc_t {
     ACVP_CIPHER cipher;
     union {
@@ -795,8 +896,9 @@ typedef struct acvp_dsa_tc_t {
     int counter;
 } ACVP_DSA_TC;
 
-/*
- * This struct holds data that represents a single test case
+/*!
+ * @struct ACVP_DRBG_TC
+ * @brief This struct holds data that represents a single test case
  * for DRBG testing.  This data is
  * passed between libacvp and the crypto module.
  */
@@ -823,18 +925,18 @@ typedef struct acvp_drbg_tc_t {
     unsigned int drb_len;
 } ACVP_DRBG_TC;
 
-/*
- * This is the abstracted test case representation used for
+/*!
+ * @struct ACVP_TEST_CASE
+ * @brief This is the abstracted test case representation used for
  * passing test case data to/from the crypto module. Because the
  * callback prototype is generic to all algorithms, we abstract
  * the various classes of test cases using a union.  This
  * struct is then used to pass a reference to the test case
  * between libacvp and the crypto module.
  */
-typedef struct acvp_cipher_tc_t {
+typedef struct acvp_test_case_t {
     union {
         ACVP_SYM_CIPHER_TC *symmetric;
-        ACVP_ASYM_CIPHER_TC *asymmetric;
         ACVP_ENTROPY_TC *entropy;
         ACVP_HASH_TC *hash;
         ACVP_DRBG_TC *drbg;
@@ -1174,7 +1276,7 @@ ACVP_RESULT acvp_enable_dsa_cap_parm (ACVP_CTX *ctx,
                                       ACVP_DSA_PARM param,
                                       int value);
 
-/*! @brief acvp_enable_rsa_cap()
+/*! @brief acvp_enable_rsa_*_cap()
 
   This function should be used to enable RSA capabilities. Specific modes
   and parameters can use acvp_enable_rsa_cap_parm, acvp_enable_rsa_bignum_parm,
