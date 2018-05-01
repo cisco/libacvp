@@ -3950,7 +3950,7 @@ static ACVP_RESULT acvp_build_kdf135_ikev1_register_cap (JSON_Object *cap_obj, A
     json_object_set_number(tmp_obj, "increment", cap_entry->cap.kdf135_ikev1_cap->dh_secret_len.increment);
     json_array_append_value(tmp_arr, tmp_val);
 
-    /* Derived keying material len */
+    /* Pre shared key len */
     json_object_set_value(alg_specs_obj, "preSharedKeyLength", json_value_init_array());
     tmp_arr = json_object_get_array(alg_specs_obj, "preSharedKeyLength");
     tmp_val = json_value_init_object();
