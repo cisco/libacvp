@@ -208,30 +208,6 @@ typedef enum acvp_kdf135_srtp_param {
     ACVP_SRTP_PARAM_MAX
 } ACVP_KDF135_SRTP_PARAM;
 
-/*
- * Used to help manage capability structures
- */
-typedef enum acvp_capability_type {
-    ACVP_SYM_TYPE = 1,
-    ACVP_HASH_TYPE,
-    ACVP_DRBG_TYPE,
-    ACVP_HMAC_TYPE,
-    ACVP_CMAC_TYPE,
-    ACVP_RSA_KEYGEN_TYPE,
-    ACVP_RSA_SIGGEN_TYPE,
-    ACVP_RSA_SIGVER_TYPE,
-    ACVP_ECDSA_KEYGEN_TYPE,
-    ACVP_ECDSA_KEYVER_TYPE,
-    ACVP_ECDSA_SIGGEN_TYPE,
-    ACVP_ECDSA_SIGVER_TYPE,
-    ACVP_DSA_TYPE,
-    ACVP_KDF135_TLS_TYPE,
-    ACVP_KDF135_SNMP_TYPE,
-    ACVP_KDF135_SSH_TYPE,
-    ACVP_KDF135_SRTP_TYPE,
-    ACVP_KDF135_IKEV2_TYPE
-} ACVP_CAP_TYPE;
-
 /*! @struct ACVP_SYM_CIPH_KO */
 typedef enum acvp_sym_cipher_keying_option {
     ACVP_KO_NA = 0,
