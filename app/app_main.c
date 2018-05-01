@@ -109,8 +109,8 @@ static ACVP_RESULT app_ecdsa_handler(ACVP_TEST_CASE *test_case);
 #define DEFAULT_SERVER "127.0.0.1"
 #define DEFAULT_PORT 443
 #define DEFAULT_CA_CHAIN "certs/acvp-private-root-ca.crt.pem"
-#define DEFAULT_CERT "certs/sto-labsrv2-client-cert.pem"
-#define DEFAULT_KEY "certs/sto-labsrv2-client-key.pem"
+#define DEFAULT_CERT "certs/my-client-cert.pem"
+#define DEFAULT_KEY "certs/my-client-key.pem"
 
 #define TLS_MD_MASTER_SECRET_CONST              "master secret"
 #define TLS_MD_MASTER_SECRET_CONST_SIZE         13
