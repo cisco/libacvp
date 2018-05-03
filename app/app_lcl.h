@@ -64,6 +64,14 @@ int rsa_generate_key_internal(BIGNUM **p, BIGNUM **q, BIGNUM **n, BIGNUM **d,
                               BIGNUM *e_value, unsigned int nlen, BN_GENCB *cb);
 int RSA_X931_generate_key_ex(RSA *rsa, int bits, const BIGNUM *e, BN_GENCB *cb);
 int RSA_size(const RSA *r);
+DSA *	FIPS_dsa_new(void);
+void	FIPS_dsa_free (DSA *r);
+int FIPS_dsa_verify(DSA *dsa, const unsigned char *msg, size_t msglen,
+			const EVP_MD *mhash, DSA_SIG *s);
+DSA_SIG * FIPS_dsa_sign(DSA *dsa, const unsigned char *msg, size_t msglen,
+			const EVP_MD *mhash);
+DSA_SIG *FIPS_dsa_sig_new(void);
+void FIPS_dsa_sig_free(DSA_SIG *sig);
 
 static int no_err;
 static void put_err_cb(int lib, int func,int reason,const char *file,int line)

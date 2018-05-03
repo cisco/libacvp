@@ -462,12 +462,6 @@ typedef struct acvp_dsa_attrs {
     struct acvp_dsa_attrs *next;
 } ACVP_DSA_ATTRS;
 
-typedef struct acvp_dsa_pqggen_attrs {
-    int modulo;
-    int sha;
-    struct acvp_dsa_pqggen_attrs *next;
-} ACVP_DSA_PQGGEN_ATTRS;
-
 #define ACVP_DSA_MAX_MODES 5
 typedef struct acvp_dsa_cap_mode_t {
     ACVP_DSA_MODE cap_mode;
@@ -476,9 +470,6 @@ typedef struct acvp_dsa_cap_mode_t {
     int gen_pq_prov;
     int gen_g_unv;
     int gen_g_can;
-    union {
-        ACVP_DSA_PQGGEN_ATTRS *pqggen;
-    } cap_mode_attrs;
     ACVP_DSA_ATTRS *dsa_attrs;
 } ACVP_DSA_CAP_MODE;
 
@@ -634,15 +625,7 @@ ACVP_RESULT acvp_kdf135_ikev2_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
 
 ACVP_RESULT acvp_dsa_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
 
-ACVP_RESULT acvp_dsa_keygen_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
-
-ACVP_RESULT acvp_dsa_pqggen_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
-
-ACVP_RESULT acvp_dsa_pqgver_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
-
-ACVP_RESULT acvp_dsa_siggen_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
-
-ACVP_RESULT acvp_dsa_sigver_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
+ACVP_RESULT acvp_dsa_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
 
 /*
  * ACVP utility functions used internally

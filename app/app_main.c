@@ -65,10 +65,6 @@ int dsa_builtin_paramgen(DSA *ret, size_t bits, size_t qbits,
 	const EVP_MD *evpmd, const unsigned char *seed_in, size_t seed_len,
 	unsigned char *seed_out,
 	int *counter_ret, unsigned long *h_ret, BN_GENCB *cb);
-/*int dsa_builtin_paramgen2(DSA *ret, size_t L, size_t N,
-	const EVP_MD *evpmd, const unsigned char *seed_in, size_t seed_len,
-	int idx, unsigned char *seed_out,
-	int *counter_ret, unsigned long *h_ret, BN_GENCB *cb);*/
 #endif
 static ACVP_RESULT totp(char **token);
 static void enable_aes(ACVP_CTX *ctx);
@@ -216,16 +212,16 @@ int main(int argc, char **argv)
     ACVP_LOG_LVL level = ACVP_LOG_LVL_STATUS;
     int sample = 0;
     
-    int aes = 1;
-    int tdes = 1;
-    int hash = 1;
-    int cmac = 1;
-    int hmac = 1;
+    int aes = 0;
+    int tdes = 0;
+    int hash = 0;
+    int cmac = 0;
+    int hmac = 0;
     int kdf = 0;
     /*
      * these require the fom, off by default
      */
-    int dsa = 0;
+    int dsa = 1;
     int rsa = 0;
     int drbg = 0;
     int ecdsa = 0;
@@ -1159,6 +1155,7 @@ static void enable_dsa (ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_dsa_cap_parm(ctx, ACVP_DSA_SIGVER, ACVP_DSA_MODE_SIGVER, ACVP_DSA_LN3072_256, ACVP_DSA_SHA512);
     CHECK_ENABLE_CAP_RV(rv);
+
 }
 
 static void enable_rsa (ACVP_CTX *ctx) {
@@ -2926,24 +2923,26 @@ error:
 #ifdef ACVP_NO_RUNTIME
 static ACVP_RESULT app_dsa_handler(ACVP_TEST_CASE *test_case)
 {
-    ACVP_DSA_PQGGEN_TC *pqggen;
-    int                dsa2 = 0, L, N;
-    const EVP_MD       *md = NULL;
-    ACVP_DSA_TC           *tc;
-    unsigned char      seed[1024];
-    DSA                *dsa;
-    int                counter;
-    unsigned long      h;
-
+    int                 L, N, n, counter, r;
+    const EVP_MD        *md = NULL;
+    ACVP_DSA_TC         *tc;
+    unsigned char       seed[1024];
+    DSA                 *dsa = NULL;
+    unsigned long       h;
+    DSA_SIG             *sig = NULL;
+    char                *msg = NULL;
 
     tc = test_case->tc.dsa;
 
     switch (tc->mode)
     {
-    case ACVP_DSA_MODE_PQGGEN:
-        pqggen = test_case->tc.dsa->mode_tc.pqggen;
+    case ACVP_DSA_MODE_KEYGEN:
+    case ACVP_DSA_MODE_PQGVER:
+        return ACVP_CRYPTO_MODULE_FAIL;
+        break;
 
-        switch (pqggen->sha)
+    case ACVP_DSA_MODE_SIGVER:
+        switch (tc->sha)
         {
         case ACVP_DSA_SHA1:
             md = EVP_sha1();
@@ -2963,75 +2962,171 @@ static ACVP_RESULT app_dsa_handler(ACVP_TEST_CASE *test_case)
         case ACVP_DSA_SHA512_224:
         case ACVP_DSA_SHA512_256:
         default:
-            printf("DSA sha value not supported %d\n", pqggen->sha);
+            printf("DSA sha value not supported %d\n", tc->sha);
             return ACVP_CRYPTO_MODULE_FAIL;
             break;
         }
 
-        switch (pqggen->gen_pq)
+        dsa = FIPS_dsa_new();
+        sig = FIPS_dsa_sig_new();
+        L = tc->l;
+        N = tc->n;
+
+	    BN_hex2bn(&dsa->p, (char *)tc->p);
+	    BN_hex2bn(&dsa->q, (char *)tc->q);
+	    BN_hex2bn(&dsa->g, (char *)tc->g);
+
+	    n = tc->msglen;
+	    BN_hex2bn(&dsa->pub_key, (char *)tc->y);
+	    BN_hex2bn(&sig->r, (char *)tc->r);
+	    BN_hex2bn(&sig->s, (char *)tc->s);
+
+	    r = FIPS_dsa_verify(dsa, (const unsigned char *)msg, n, md, sig);
+
+	    if (sig->s) {
+		    BN_free(sig->s);
+		    sig->s = NULL;
+		}
+	    if (sig->r) {
+		    BN_free(sig->r);
+		    sig->r = NULL;
+		}
+        if (dsa) {
+	        FIPS_dsa_free(dsa);
+        }
+        /* return result, -1 is failure, 1 is pass */
+        tc->result = r;
+        break;
+
+    case ACVP_DSA_MODE_SIGGEN:
+        switch (tc->sha)
+        {
+        case ACVP_DSA_SHA1:
+            md = EVP_sha1();
+            break;
+        case ACVP_DSA_SHA224:
+            md = EVP_sha224();
+            break;
+        case ACVP_DSA_SHA256:
+            md = EVP_sha256();
+            break;
+        case ACVP_DSA_SHA384:
+            md = EVP_sha384();
+            break;
+        case ACVP_DSA_SHA512:
+            md = EVP_sha512();
+            break;
+        case ACVP_DSA_SHA512_224:
+        case ACVP_DSA_SHA512_256:
+        default:
+            printf("DSA sha value not supported %d\n", tc->sha);
+            return ACVP_CRYPTO_MODULE_FAIL;
+            break;
+        }
+
+        dsa = FIPS_dsa_new();
+        L = tc->l;
+        N = tc->n;
+
+        /* TODO: need to determine when you use this */
+	    if (dsa_builtin_paramgen2(dsa, L, N, md, NULL, 0, -1,
+						NULL, NULL, NULL, NULL) <= 0)
+			{
+			fprintf(stderr, "Parameter Generation error\n");
+			}
+        tc->p = (unsigned char *)BN_bn2hex(dsa->p);
+        tc->q = (unsigned char *)BN_bn2hex(dsa->q);
+        tc->g = (unsigned char *)BN_bn2hex(dsa->g);
+
+
+	    if (!DSA_generate_key(dsa)) {
+            printf("\n DSA_generate_key failed");
+        }
+
+        tc->y = (unsigned char *)BN_bn2hex(dsa->pub_key);
+
+	    sig = FIPS_dsa_sign(dsa, tc->msg, tc->msglen, md);
+        printf("\nMsgLen = %d", tc->msglen);
+        tc->r = (unsigned char *)BN_bn2hex(sig->r);
+        tc->s = (unsigned char *)BN_bn2hex(sig->s);
+	    FIPS_dsa_sig_free(sig);
+	    FIPS_dsa_free(dsa);
+        break;
+
+    case ACVP_DSA_MODE_PQGGEN:
+        switch (tc->sha)
+        {
+        case ACVP_DSA_SHA1:
+            md = EVP_sha1();
+            break;
+        case ACVP_DSA_SHA224:
+            md = EVP_sha224();
+            break;
+        case ACVP_DSA_SHA256:
+            md = EVP_sha256();
+            break;
+        case ACVP_DSA_SHA384:
+            md = EVP_sha384();
+            break;
+        case ACVP_DSA_SHA512:
+            md = EVP_sha512();
+            break;
+        case ACVP_DSA_SHA512_224:
+        case ACVP_DSA_SHA512_256:
+        default:
+            printf("DSA sha value not supported %d\n", tc->sha);
+            return ACVP_CRYPTO_MODULE_FAIL;
+            break;
+        }
+
+        switch (tc->gen_pq)
         {
         case ACVP_DSA_UNVERIFIABLE:
-            printf("DSA Parameter Generation2 error for %d, not supported\n", pqggen->gen_pq);
+            printf("DSA Parameter Generation2 error for %d, not supported\n", tc->gen_pq);
                 return ACVP_CRYPTO_MODULE_FAIL;
                 break;
         case ACVP_DSA_CANONICAL:
-        dsa = DSA_new();
-        BN_hex2bn(&dsa->p, (const char *)pqggen->p);
-        BN_hex2bn(&dsa->q, (const char *)pqggen->q);
-        L = pqggen->l;
-        N = pqggen->n;
-        if (dsa_builtin_paramgen2(dsa, L, N, md,
-                      pqggen->seed, pqggen->seedlen, pqggen->index, NULL,
+            dsa = DSA_new();
+            BN_hex2bn(&dsa->p, (const char *)tc->p);
+            BN_hex2bn(&dsa->q, (const char *)tc->q);
+            L = tc->l;
+            N = tc->n;
+            if (dsa_builtin_paramgen2(dsa, L, N, md,
+                      tc->seed, tc->seedlen, tc->index, NULL,
                       NULL, NULL, NULL) <= 0)
             {
-                printf("DSA Parameter Generation2 error for %d\n", pqggen->gen_pq);
+                printf("DSA Parameter Generation2 error for %d\n", tc->gen_pq);
                     return ACVP_CRYPTO_MODULE_FAIL;
             }
-                pqggen->g = (unsigned char *)BN_bn2hex(dsa->g);
-        DSA_free(dsa);
-                break;
+                tc->g = (unsigned char *)BN_bn2hex(dsa->g);
+            DSA_free(dsa);
+            break;
 
         case ACVP_DSA_PROBABLE:
         case ACVP_DSA_PROVABLE:
             dsa = DSA_new();
-        L = pqggen->l;
-        N = pqggen->n;
-            if (!dsa2 && !dsa_builtin_paramgen(dsa, L, N, md,
-                                 NULL, 0, seed,
-                               &counter, &h, NULL)) {
-            printf("DSA Parameter Generation error for %d\n", pqggen->gen_pq);
-                return ACVP_CRYPTO_MODULE_FAIL;
-                }
-            if (dsa2 && dsa_builtin_paramgen2(dsa, L, N, md,
+            L = tc->l;
+            N = tc->n;
+            if (dsa_builtin_paramgen2(dsa, L, N, md,
                                           NULL, 0, -1, seed,
-                              &counter, &h, NULL) <= 0) {
-                printf("DSA Parameter Generation 2 error for %d\n", pqggen->gen_pq);
+                                          &counter, &h, NULL) <= 0) {
+                printf("DSA Parameter Generation 2 error for %d\n", tc->gen_pq);
                 return ACVP_CRYPTO_MODULE_FAIL;
             }
 
-                pqggen->p = (unsigned char *)BN_bn2hex(dsa->p);
-                pqggen->q = (unsigned char *)BN_bn2hex(dsa->q);
-                pqggen->counter = counter;
-                pqggen->h = h;
+            tc->p = (unsigned char *)BN_bn2hex(dsa->p);
+            tc->q = (unsigned char *)BN_bn2hex(dsa->q);
+            tc->counter = counter;
+            tc->h = h;
 
-            if (!dsa2) {
-                    pqggen->g = (unsigned char *)BN_bn2hex(dsa->g);
-                    memcpy(pqggen->seed, &seed, EVP_MD_size(md));
-            pqggen->seedlen = EVP_MD_size(md);
-                } else {
-                    memcpy(pqggen->seed, &seed, EVP_MD_size(md));
-            pqggen->seedlen = EVP_MD_size(md);
-                }
-            if (!dsa2) {
-               pqggen->counter = counter;
-               pqggen->h = h;
-            } else {
-               pqggen->counter = counter;
-            }
+            memcpy(tc->seed, &seed, EVP_MD_size(md));
+            tc->seedlen = EVP_MD_size(md);
+            tc->counter = counter;
+
             DSA_free(dsa);
             break;
         default:
-            printf("Invalid DSA gen_pq %d\n", pqggen->gen_pq);
+            printf("Invalid DSA gen_pq %d\n", tc->gen_pq);
             return ACVP_CRYPTO_MODULE_FAIL;
             break;
         }

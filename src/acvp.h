@@ -833,33 +833,14 @@ typedef enum acvp_dsa_gen_parm {
 } ACVP_DSA_GEN_PARM;
 
 /*!
- * @struct ACVP_DSA_PQGGEN_TC
+ * @struct ACVP_DSA_TC
  * @brief This struct holds data that represents a single test
  * case for DSA testing.  This data is
  * passed between libacvp and the crypto module.
  */
-typedef struct acvp_dsa_pqggen_tc_t {
-    int l;
-    int n;
-    int h;
-    int sha;
-    int gen_pq;
-    int num;
-    int index;
-    int seedlen;
-    unsigned char *p;
-    unsigned char *q;
-    unsigned char *g;
-    unsigned char *seed;
-    int counter;
-} ACVP_DSA_PQGGEN_TC;
-
 /*! @struct ACVP_DSA_TC */
 typedef struct acvp_dsa_tc_t {
     ACVP_CIPHER cipher;
-    union {
-        ACVP_DSA_PQGGEN_TC *pqggen;
-    } mode_tc;
     ACVP_DSA_MODE mode; // "pqgGen", "pqgVer", etc.
     int l;
     int n;
