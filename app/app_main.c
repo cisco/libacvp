@@ -212,16 +212,16 @@ int main(int argc, char **argv)
     ACVP_LOG_LVL level = ACVP_LOG_LVL_STATUS;
     int sample = 0;
     
-    int aes = 0;
-    int tdes = 0;
-    int hash = 0;
-    int cmac = 0;
-    int hmac = 0;
+    int aes = 1;
+    int tdes = 1;
+    int hash = 1;
+    int cmac = 1;
+    int hmac = 1;
     int kdf = 0;
     /*
      * these require the fom, off by default
      */
-    int dsa = 1;
+    int dsa = 0;
     int rsa = 0;
     int drbg = 0;
     int ecdsa = 0;
