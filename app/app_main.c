@@ -106,6 +106,7 @@ static ACVP_RESULT app_rsa_sig_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_ecdsa_handler(ACVP_TEST_CASE *test_case);
 #endif
 
+#define JSON_FILENAME_LENGTH 24
 #define DEFAULT_SERVER "127.0.0.1"
 #define DEFAULT_PORT 443
 #define DEFAULT_CA_CHAIN "certs/acvp-private-root-ca.crt.pem"
@@ -218,7 +219,7 @@ int main(int argc, char **argv) {
     ACVP_LOG_LVL level = ACVP_LOG_LVL_STATUS;
     int sample = 0;
     int json = 0;
-    char json_file[24];
+    char json_file[JSON_FILENAME_LENGTH];
     
     int aes = 1;
     int tdes = 1;
