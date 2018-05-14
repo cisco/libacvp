@@ -106,6 +106,7 @@ static ACVP_RESULT app_rsa_sig_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_ecdsa_handler(ACVP_TEST_CASE *test_case);
 #endif
 
+#define JSON_FILENAME_LENGTH 24
 #define DEFAULT_SERVER "127.0.0.1"
 #define DEFAULT_PORT 443
 #define DEFAULT_CA_CHAIN "certs/acvp-private-root-ca.crt.pem"
@@ -191,6 +192,9 @@ static void print_usage(void)
     printf("      -info\n");
     printf("      -verbose\n");
     printf("\n");
+    printf("To register a formatted JSON file use:\n");
+    printf("      -json <file>\n");
+    printf("\n");
     printf("If you are running a sample registration (querying for correct answers\n");
     printf("in addition to the normal registration flow) use:\n");
     printf("      -sample\n");
@@ -208,13 +212,14 @@ static void print_usage(void)
     printf("password on the key file.\n");
 }
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
     ACVP_RESULT rv;
     ACVP_CTX *ctx;
     char ssl_version[10];
     ACVP_LOG_LVL level = ACVP_LOG_LVL_STATUS;
     int sample = 0;
+    int json = 0;
+    char json_file[JSON_FILENAME_LENGTH];
     
     int aes = 1;
     int tdes = 1;
@@ -229,12 +234,12 @@ int main(int argc, char **argv)
     int rsa = 0;
     int drbg = 0;
     int ecdsa = 0;
-
-    if (argc > 3) {
+    
+    if (argc > 4) {
         print_usage();
         return 1;
     }
-
+    
     argv++;
     argc--;
     while (argc >= 1) {
@@ -263,8 +268,14 @@ int main(int argc, char **argv)
             print_usage();
             return 1;
         }
-    argv++;
-    argc--;
+        if (strcmp(*argv, "-json") == 0) {
+            json = 1;
+            argc--;
+            argv++;
+            strcpy(json_file, *argv);
+        }
+        argv++;
+        argc--;
     }
 
 #ifdef ACVP_NO_RUNTIME
@@ -358,34 +369,47 @@ int main(int argc, char **argv)
     if (sample) {
         acvp_mark_as_sample(ctx);
     }
-
-    /*
-     * We need to register all the crypto module capabilities that will be
-     * validated. Each has their own method for readability.
-     */
-    if (aes) {
-        enable_aes(ctx);
-    }
-
-    if (tdes) {
-        enable_tdes(ctx);
-    }
-
-    if (hash) {
-        enable_hash(ctx);
-    }
-
-    if (cmac) {
-        enable_cmac(ctx);
-    }
-
-    if (hmac) {
-        enable_hmac(ctx);
-    }
-
-    if (kdf) {
-        enable_kdf(ctx);
-    }
+    
+    if (json) {
+        /*
+         * Using a JSON to register allows us to skip the
+         * "acvp_enable_*" API calls... could reduce the
+         * size of this file if you choose to use this capability.
+         */
+        rv = acvp_set_json_filename(ctx, json_file);
+        if (rv != ACVP_SUCCESS) {
+            printf("Failed to set json file within ACVP ctx (rv=%d)\n", rv);
+            exit(1);
+        }
+    } else {
+    
+        /*
+         * We need to register all the crypto module capabilities that will be
+         * validated. Each has their own method for readability.
+         */
+        if (aes) {
+            enable_aes(ctx);
+        }
+        
+        if (tdes) {
+            enable_tdes(ctx);
+        }
+        
+        if (hash) {
+            enable_hash(ctx);
+        }
+        
+        if (cmac) {
+            enable_cmac(ctx);
+        }
+        
+        if (hmac) {
+            enable_hmac(ctx);
+        }
+        
+        if (kdf) {
+            enable_kdf(ctx);
+        }
 
 #ifdef ACVP_NO_RUNTIME
     if (dsa) {
@@ -404,7 +428,7 @@ int main(int argc, char **argv)
         enable_drbg(ctx);
     }
 #endif
-
+    }
     /*
      * Now that we have a test session, we register with
      * the server to advertise our capabilities and receive
