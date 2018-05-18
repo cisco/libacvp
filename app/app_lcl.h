@@ -72,6 +72,8 @@ DSA_SIG * FIPS_dsa_sign(DSA *dsa, const unsigned char *msg, size_t msglen,
 			const EVP_MD *mhash);
 DSA_SIG *FIPS_dsa_sig_new(void);
 void FIPS_dsa_sig_free(DSA_SIG *sig);
+int	fips_bn_cmp(const BIGNUM *a, const BIGNUM *b);
+BIGNUM *fips_bn_dup(const BIGNUM *a);
 
 static int no_err;
 static void put_err_cb(int lib, int func,int reason,const char *file,int line)

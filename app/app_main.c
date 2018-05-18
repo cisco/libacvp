@@ -2947,23 +2947,146 @@ error:
 #ifdef ACVP_NO_RUNTIME
 static ACVP_RESULT app_dsa_handler(ACVP_TEST_CASE *test_case)
 {
-    int                 L, N, n, counter, r;
+    int                 L, N, n, r;
     const EVP_MD        *md = NULL;
     ACVP_DSA_TC         *tc;
     unsigned char       seed[1024];
     DSA                 *dsa = NULL;
-    unsigned long       h;
+    int                 counter, counter2;
+    unsigned long       h, h2;
     DSA_SIG             *sig = NULL;
-    char                *msg = NULL;
+    BIGNUM              *q = NULL, *p = NULL, *g = NULL;
 
     tc = test_case->tc.dsa;
-
     switch (tc->mode)
     {
     case ACVP_DSA_MODE_KEYGEN:
-    case ACVP_DSA_MODE_PQGVER:
-        return ACVP_CRYPTO_MODULE_FAIL;
+        dsa = FIPS_dsa_new();
+        if (!dsa) {
+            printf("Failed to allocate DSA strcut\n");
+            return ACVP_CRYPTO_MODULE_FAIL;
+        }
+        L = tc->l;
+        N = tc->n;
+
+        if (dsa_builtin_paramgen2(dsa, L, N, NULL, NULL, 0, -1,
+                        NULL, NULL, NULL, NULL) <= 0) {
+            printf("Parameter Generation error\n");
+            FIPS_dsa_free(dsa);
+            return ACVP_CRYPTO_MODULE_FAIL;
+        }
+        tc->p = (unsigned char *)BN_bn2hex(dsa->p);
+        tc->q = (unsigned char *)BN_bn2hex(dsa->q);
+        tc->g = (unsigned char *)BN_bn2hex(dsa->g);
+
+
+        if (!DSA_generate_key(dsa)) {
+            printf("\n DSA_generate_key failed");
+            FIPS_dsa_free(dsa);
+            return ACVP_CRYPTO_MODULE_FAIL;
+        }
+
+        tc->x = (unsigned char *)BN_bn2hex(dsa->priv_key);
+        tc->y = (unsigned char *)BN_bn2hex(dsa->pub_key);
+        FIPS_dsa_free(dsa);
         break;
+
+    case ACVP_DSA_MODE_PQGVER:
+        switch (tc->sha)
+        {
+        case ACVP_DSA_SHA1:
+            md = EVP_sha1();
+            break;
+        case ACVP_DSA_SHA224:
+            md = EVP_sha224();
+            break;
+        case ACVP_DSA_SHA256:
+            md = EVP_sha256();
+            break;
+        case ACVP_DSA_SHA384:
+            md = EVP_sha384();
+            break;
+        case ACVP_DSA_SHA512:
+            md = EVP_sha512();
+            break;
+        case ACVP_DSA_SHA512_224:
+        case ACVP_DSA_SHA512_256:
+        default:
+            printf("DSA sha value not supported %d\n", tc->sha);
+            return ACVP_CRYPTO_MODULE_FAIL;
+            break;
+        }
+ 
+        switch (tc->pqg) {
+        case ACVP_DSA_PROBABLE:
+            dsa = FIPS_dsa_new();
+            if (!dsa) {
+                printf("Failed to allocate DSA strcut\n");
+                return ACVP_CRYPTO_MODULE_FAIL;
+            }
+            L = tc->l;
+            N = tc->n;
+
+            BN_hex2bn(&p, (char *)tc->p);
+            BN_hex2bn(&q, (char *)tc->q);
+
+            if (dsa_builtin_paramgen2(dsa, L, N, md,
+                    tc->seed, tc->seedlen, tc->index, NULL,
+                    &counter2, &h2, NULL) < 0) {
+                printf("Parameter Generation error\n");
+                FIPS_dsa_free(dsa);
+                return ACVP_CRYPTO_MODULE_FAIL;
+            }
+
+            if (BN_cmp(dsa->p, p) || BN_cmp(dsa->q, q) || 
+                       ((BN_cmp(dsa->g, g) || (counter != counter2) || (h != h2))))
+                r = -1;
+            else
+                r = 1;
+
+            FIPS_dsa_free(dsa);
+            tc->result = r;
+            break;
+
+        case ACVP_DSA_CANONICAL:
+            dsa = FIPS_dsa_new();
+            if (!dsa) {
+                printf("Failed to allocate DSA strcut\n");
+                return ACVP_CRYPTO_MODULE_FAIL;
+            }
+            L = tc->l;
+            N = tc->n;
+
+            BN_hex2bn(&p, (char *)tc->p);
+            BN_hex2bn(&q, (char *)tc->q);
+            BN_hex2bn(&g, (char *)tc->g);
+ 
+            dsa->p = BN_dup(p);
+            dsa->q = BN_dup(q);
+
+            if (dsa_builtin_paramgen2(dsa, L, N, md,
+                    tc->seed, tc->seedlen, tc->index, NULL,
+                    &counter2, &h2, NULL) < 0) {
+
+                printf("Parameter Generation error\n");
+                FIPS_dsa_free(dsa);
+                return ACVP_CRYPTO_MODULE_FAIL;
+            }
+
+            if (BN_cmp(dsa->g, g)) {
+               r = -1;
+            } else {
+               r = 1;
+            }
+            FIPS_dsa_free(dsa);
+            tc->result = r;
+            break;
+       default:
+            printf("DSA pqg mode not supported %d\n", tc->pqg);
+            return ACVP_CRYPTO_MODULE_FAIL;
+            break;
+     }
+     break;
 
     case ACVP_DSA_MODE_SIGVER:
         switch (tc->sha)
@@ -2992,32 +3115,40 @@ static ACVP_RESULT app_dsa_handler(ACVP_TEST_CASE *test_case)
         }
 
         dsa = FIPS_dsa_new();
+        if (!dsa) {
+            printf("Failed to allocate DSA strcut\n");
+            return ACVP_CRYPTO_MODULE_FAIL;
+        }
         sig = FIPS_dsa_sig_new();
+        if (!sig) {
+            printf("Failed to allocate SIG strcut\n");
+            FIPS_dsa_free(dsa);
+            return ACVP_CRYPTO_MODULE_FAIL;
+        }
         L = tc->l;
         N = tc->n;
 
-	    BN_hex2bn(&dsa->p, (char *)tc->p);
-	    BN_hex2bn(&dsa->q, (char *)tc->q);
-	    BN_hex2bn(&dsa->g, (char *)tc->g);
+        BN_hex2bn(&dsa->p, (char *)tc->p);
+        BN_hex2bn(&dsa->q, (char *)tc->q);
+        BN_hex2bn(&dsa->g, (char *)tc->g);
 
-	    n = tc->msglen;
-	    BN_hex2bn(&dsa->pub_key, (char *)tc->y);
-	    BN_hex2bn(&sig->r, (char *)tc->r);
-	    BN_hex2bn(&sig->s, (char *)tc->s);
+        n = tc->msglen;
+        BN_hex2bn(&dsa->pub_key, (char *)tc->y);
+        BN_hex2bn(&sig->r, (char *)tc->r);
+        BN_hex2bn(&sig->s, (char *)tc->s);
 
-	    r = FIPS_dsa_verify(dsa, (const unsigned char *)msg, n, md, sig);
+        r = FIPS_dsa_verify(dsa, (const unsigned char *)tc->msg, n, md, sig);
 
-	    if (sig->s) {
-		    BN_free(sig->s);
-		    sig->s = NULL;
-		}
-	    if (sig->r) {
-		    BN_free(sig->r);
-		    sig->r = NULL;
-		}
-        if (dsa) {
-	        FIPS_dsa_free(dsa);
+        if (sig->s) {
+            BN_free(sig->s);
+            sig->s = NULL;
         }
+        if (sig->r) {
+            BN_free(sig->r);
+            sig->r = NULL;
+        }
+        FIPS_dsa_free(dsa);
+        FIPS_dsa_sig_free(sig);
         /* return result, -1 is failure, 1 is pass */
         tc->result = r;
         break;
@@ -3049,32 +3180,37 @@ static ACVP_RESULT app_dsa_handler(ACVP_TEST_CASE *test_case)
         }
 
         dsa = FIPS_dsa_new();
+        if (!dsa) {
+            printf("Failed to allocate DSA strcut\n");
+            return ACVP_CRYPTO_MODULE_FAIL;
+        }
         L = tc->l;
         N = tc->n;
 
-        /* TODO: need to determine when you use this */
-	    if (dsa_builtin_paramgen2(dsa, L, N, md, NULL, 0, -1,
-						NULL, NULL, NULL, NULL) <= 0)
-			{
-			fprintf(stderr, "Parameter Generation error\n");
-			}
+        if (dsa_builtin_paramgen2(dsa, L, N, md, NULL, 0, -1,
+                        NULL, NULL, NULL, NULL) <= 0) {
+            printf("Parameter Generation error\n");
+            FIPS_dsa_free(dsa);
+            return ACVP_CRYPTO_MODULE_FAIL;
+        }
         tc->p = (unsigned char *)BN_bn2hex(dsa->p);
         tc->q = (unsigned char *)BN_bn2hex(dsa->q);
         tc->g = (unsigned char *)BN_bn2hex(dsa->g);
 
 
-	    if (!DSA_generate_key(dsa)) {
+        if (!DSA_generate_key(dsa)) {
             printf("\n DSA_generate_key failed");
+            FIPS_dsa_free(dsa);
+            return ACVP_CRYPTO_MODULE_FAIL;
         }
 
         tc->y = (unsigned char *)BN_bn2hex(dsa->pub_key);
 
-	    sig = FIPS_dsa_sign(dsa, tc->msg, tc->msglen, md);
-        printf("\nMsgLen = %d", tc->msglen);
+        sig = FIPS_dsa_sign(dsa, tc->msg, tc->msglen, md);
         tc->r = (unsigned char *)BN_bn2hex(sig->r);
         tc->s = (unsigned char *)BN_bn2hex(sig->s);
-	    FIPS_dsa_sig_free(sig);
-	    FIPS_dsa_free(dsa);
+        FIPS_dsa_sig_free(sig);
+        FIPS_dsa_free(dsa);
         break;
 
     case ACVP_DSA_MODE_PQGGEN:
@@ -3110,31 +3246,32 @@ static ACVP_RESULT app_dsa_handler(ACVP_TEST_CASE *test_case)
                 return ACVP_CRYPTO_MODULE_FAIL;
                 break;
         case ACVP_DSA_CANONICAL:
-            dsa = DSA_new();
+            dsa = FIPS_dsa_new();
             BN_hex2bn(&dsa->p, (const char *)tc->p);
             BN_hex2bn(&dsa->q, (const char *)tc->q);
             L = tc->l;
             N = tc->n;
             if (dsa_builtin_paramgen2(dsa, L, N, md,
                       tc->seed, tc->seedlen, tc->index, NULL,
-                      NULL, NULL, NULL) <= 0)
-            {
+                      NULL, NULL, NULL) <= 0) {
                 printf("DSA Parameter Generation2 error for %d\n", tc->gen_pq);
-                    return ACVP_CRYPTO_MODULE_FAIL;
+                FIPS_dsa_free(dsa);
+                return ACVP_CRYPTO_MODULE_FAIL;
             }
-                tc->g = (unsigned char *)BN_bn2hex(dsa->g);
-            DSA_free(dsa);
+            tc->g = (unsigned char *)BN_bn2hex(dsa->g);
+            FIPS_dsa_free(dsa);
             break;
 
         case ACVP_DSA_PROBABLE:
         case ACVP_DSA_PROVABLE:
-            dsa = DSA_new();
+            dsa = FIPS_dsa_new();
             L = tc->l;
             N = tc->n;
             if (dsa_builtin_paramgen2(dsa, L, N, md,
                                           NULL, 0, -1, seed,
                                           &counter, &h, NULL) <= 0) {
                 printf("DSA Parameter Generation 2 error for %d\n", tc->gen_pq);
+                FIPS_dsa_free(dsa);
                 return ACVP_CRYPTO_MODULE_FAIL;
             }
 
@@ -3146,8 +3283,7 @@ static ACVP_RESULT app_dsa_handler(ACVP_TEST_CASE *test_case)
             memcpy(tc->seed, &seed, EVP_MD_size(md));
             tc->seedlen = EVP_MD_size(md);
             tc->counter = counter;
-
-            DSA_free(dsa);
+            FIPS_dsa_free(dsa);
             break;
         default:
             printf("Invalid DSA gen_pq %d\n", tc->gen_pq);
@@ -3717,98 +3853,98 @@ end:
 
 enum {BASE64_OK = 0, BASE64_INVALID};
 
-#define BASE64_ENCODE_OUT_SIZE(s)	(((s) + 2) / 3 * 4)
-#define BASE64_DECODE_OUT_SIZE(s)	(((s)) / 4 * 3)
+#define BASE64_ENCODE_OUT_SIZE(s)    (((s) + 2) / 3 * 4)
+#define BASE64_DECODE_OUT_SIZE(s)    (((s)) / 4 * 3)
 
 /* BASE 64 encode table */
 static const char base64en[] = {
-	'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
-	'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
-	'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
-	'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f',
-	'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n',
-	'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
-	'w', 'x', 'y', 'z', '0', '1', '2', '3',
-	'4', '5', '6', '7', '8', '9', '+', '/',
+    'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
+    'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
+    'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
+    'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f',
+    'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n',
+    'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
+    'w', 'x', 'y', 'z', '0', '1', '2', '3',
+    '4', '5', '6', '7', '8', '9', '+', '/',
 };
 
-#define BASE64_PAD	'='
+#define BASE64_PAD    '='
 
 
-#define BASE64DE_FIRST	'+'
-#define BASE64DE_LAST	'z'
+#define BASE64DE_FIRST    '+'
+#define BASE64DE_LAST    'z'
 /* ASCII order for BASE 64 decode, -1 in unused character */
 static const signed char base64de[] = {
-	/* '+', ',', '-', '.', '/', '0', '1', '2', */
-	    62,  -1,  -1,  -1,  63,  52,  53,  54,
+    /* '+', ',', '-', '.', '/', '0', '1', '2', */
+        62,  -1,  -1,  -1,  63,  52,  53,  54,
 
-	/* '3', '4', '5', '6', '7', '8', '9', ':', */
-	    55,  56,  57,  58,  59,  60,  61,  -1,
+    /* '3', '4', '5', '6', '7', '8', '9', ':', */
+        55,  56,  57,  58,  59,  60,  61,  -1,
 
-	/* ';', '<', '=', '>', '?', '@', 'A', 'B', */
-	    -1,  -1,  -1,  -1,  -1,  -1,   0,   1,
+    /* ';', '<', '=', '>', '?', '@', 'A', 'B', */
+        -1,  -1,  -1,  -1,  -1,  -1,   0,   1,
 
-	/* 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', */
-	     2,   3,   4,   5,   6,   7,   8,   9,
+    /* 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', */
+         2,   3,   4,   5,   6,   7,   8,   9,
 
-	/* 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', */
-	    10,  11,  12,  13,  14,  15,  16,  17,
+    /* 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', */
+        10,  11,  12,  13,  14,  15,  16,  17,
 
-	/* 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', */
-	    18,  19,  20,  21,  22,  23,  24,  25,
+    /* 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', */
+        18,  19,  20,  21,  22,  23,  24,  25,
 
-	/* '[', '\', ']', '^', '_', '`', 'a', 'b', */
-	    -1,  -1,  -1,  -1,  -1,  -1,  26,  27,
+    /* '[', '\', ']', '^', '_', '`', 'a', 'b', */
+        -1,  -1,  -1,  -1,  -1,  -1,  26,  27,
 
-	/* 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', */
-	    28,  29,  30,  31,  32,  33,  34,  35,
+    /* 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', */
+        28,  29,  30,  31,  32,  33,  34,  35,
 
-	/* 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', */
-	    36,  37,  38,  39,  40,  41,  42,  43,
+    /* 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', */
+        36,  37,  38,  39,  40,  41,  42,  43,
 
-	/* 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', */
-	    44,  45,  46,  47,  48,  49,  50,  51,
+    /* 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', */
+        44,  45,  46,  47,  48,  49,  50,  51,
 };
 
 
 static int
 base64_decode(const char *in, unsigned int inlen, unsigned char *out)
 {
-	unsigned int i, j;
+    unsigned int i, j;
 
-	for (i = j = 0; i < inlen; i++) {
-		int c;
-		int s = i % 4; 			/* from 8/gcd(6, 8) */
+    for (i = j = 0; i < inlen; i++) {
+        int c;
+        int s = i % 4;             /* from 8/gcd(6, 8) */
 
-		if (in[i] == '=')
-			return BASE64_OK;
+        if (in[i] == '=')
+            return BASE64_OK;
 
-		if (in[i] < BASE64DE_FIRST || in[i] > BASE64DE_LAST ||
-		    (c = base64de[in[i] - BASE64DE_FIRST]) == -1)
-			return BASE64_INVALID;
+        if (in[i] < BASE64DE_FIRST || in[i] > BASE64DE_LAST ||
+            (c = base64de[in[i] - BASE64DE_FIRST]) == -1)
+            return BASE64_INVALID;
 
-		switch (s) {
-		case 0:
-			out[j] = ((unsigned int)c << 2) & 0xFF;
-			continue;
-		case 1:
-			out[j++] += ((unsigned int)c >> 4) & 0x3;
+        switch (s) {
+        case 0:
+            out[j] = ((unsigned int)c << 2) & 0xFF;
+            continue;
+        case 1:
+            out[j++] += ((unsigned int)c >> 4) & 0x3;
 
-			/* if not last char with padding */
-			if (i < (inlen - 3) || in[inlen - 2] != '=')
-				out[j] = ((unsigned int)c & 0xF) << 4;
-			continue;
-		case 2:
-			out[j++] += ((unsigned int)c >> 2) & 0xF;
+            /* if not last char with padding */
+            if (i < (inlen - 3) || in[inlen - 2] != '=')
+                out[j] = ((unsigned int)c & 0xF) << 4;
+            continue;
+        case 2:
+            out[j++] += ((unsigned int)c >> 2) & 0xF;
 
-			/* if not last char with padding */
-			if (i < (inlen - 2) || in[inlen - 1] != '=')
-				out[j] =  ((unsigned int)c & 0x3) << 6;
-			continue;
-		case 3:
-			out[j++] += (unsigned char)c;
-		}
-	}
+            /* if not last char with padding */
+            if (i < (inlen - 2) || in[inlen - 1] != '=')
+                out[j] =  ((unsigned int)c & 0x3) << 6;
+            continue;
+        case 3:
+            out[j++] += (unsigned char)c;
+        }
+    }
 
 	return BASE64_OK;
 }

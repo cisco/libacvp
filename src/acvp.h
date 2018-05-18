@@ -846,21 +846,24 @@ typedef struct acvp_dsa_tc_t {
     int n;
     int h;
     int sha;
+    int c;
+    int pqg;
     int gen_pq;
     int num;
     int index;
     int seedlen;
     int msglen;
     int result;
+    int counter;
     unsigned char *p;
     unsigned char *q;
     unsigned char *g;
     unsigned char *y;
+    unsigned char *x;
     unsigned char *r;
     unsigned char *s;
     unsigned char *seed;
     unsigned char *msg;
-    int counter;
 } ACVP_DSA_TC;
 
 /*!
