@@ -1814,6 +1814,19 @@ ACVP_RESULT acvp_set_vendor_info (ACVP_CTX *ctx,
                                   const char *contact_name,
                                   const char *contact_email);
 
+/*! @brief acvp_set_json_filename specifies JSON registration file
+ *  to be used during registration. This allows the app to skip the
+ *  acvp_enable_* API calls
+ *
+ * @param ctx Pointer to ACVP_CTX that was previously created by
+        calling acvp_create_test_session.
+ * @param json_filename Name of the file that contains the JSON
+ *      registration
+ * @return ACVP_RESULT
+ */
+ACVP_RESULT acvp_set_json_filename (ACVP_CTX *ctx, const char *json_filename);
+
+
 /*! @brief acvp_set_module_info() specifies the crypto module attributes
     for the test session.
 

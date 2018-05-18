@@ -534,6 +534,9 @@ struct acvp_ctx_t {
     char *module_version;
     char *module_desc;
     
+    char *json_filename;
+    int use_json;
+    
     int is_sample;
 
     /* test session data */

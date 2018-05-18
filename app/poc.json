@@ -1,0 +1,74 @@
+[{
+  "acvVersion": "0.4"
+},
+{
+  "operation": "register",
+  "certificateRequest": "yes",
+  "debugRequest": "no",
+  "production": "no",
+  "encryptAtRest": "yes",
+  "oeInformation": {
+    "vendor": {
+      "name": "Cisco Systems",
+      "website": "www.cisco.com",
+      "contact": [
+        {
+          "name": "Barry Fussell",
+          "email": "bfussell@cisco.com"
+        }
+      ]
+    },
+    "module": {
+      "name": "OpenSSL",
+      "version": "100020bf",
+      "type": "software"
+    },
+    "operationalEnvironment": {
+      "dependencies": [
+        {
+          "type": "software",
+          "name": "Linux 3.1",
+          "cpe": "cpe-2.3:o:ubuntu:linux:3.1"
+        },
+        {
+          "type": "processor",
+          "manufacturer": "Intel",
+          "family": "ARK",
+          "name": "Xeon",
+          "series": "5100"
+        }
+      ]
+    },
+    "implementationDescription": "FOM 6.2a"
+  },
+  "capabilityExchange": {
+    "algorithms": [
+      {
+        "algorithm": "SHA-1",
+        "inBit": false,
+        "inEmpty": true
+      },
+      {
+        "algorithm": "SHA-224",
+        "inBit": false,
+        "inEmpty": true
+      },
+      {
+        "algorithm": "SHA-256",
+        "inBit": false,
+        "inEmpty": true
+      },
+      {
+        "algorithm": "SHA-384",
+        "inBit": false,
+        "inEmpty": true
+      },
+      {
+        "algorithm": "SHA-512",
+        "inBit": false,
+        "inEmpty": true
+      }
+    ]
+  }
+}
+]
