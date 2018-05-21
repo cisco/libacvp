@@ -3031,15 +3031,14 @@ static ACVP_RESULT app_dsa_handler(ACVP_TEST_CASE *test_case)
             BN_hex2bn(&q, (char *)tc->q);
 
             if (dsa_builtin_paramgen2(dsa, L, N, md,
-                    tc->seed, tc->seedlen, tc->index, NULL,
+                    tc->seed, tc->seedlen, -1, NULL,
                     &counter2, &h2, NULL) < 0) {
                 printf("Parameter Generation error\n");
                 FIPS_dsa_free(dsa);
                 return ACVP_CRYPTO_MODULE_FAIL;
             }
 
-            if (BN_cmp(dsa->p, p) || BN_cmp(dsa->q, q) || 
-                       ((BN_cmp(dsa->g, g) || (counter != counter2) || (h != h2))))
+            if (BN_cmp(dsa->p, p) || BN_cmp(dsa->q, q))
                 r = -1;
             else
                 r = 1;
