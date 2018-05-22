@@ -137,6 +137,7 @@
 #define ACVP_ALG_KDF135_SSH      "KDF-SSH"
 #define ACVP_ALG_KDF135_SRTP     "KDF-SRTP"
 #define ACVP_ALG_KDF135_IKEV2    "KDF-IKEV2"
+#define ACVP_ALG_KDF135_IKEV1    "KDF-IKEV1"
 
 /*
  * The values that are supplied
@@ -176,9 +177,12 @@
 #define ACVP_KDF135_SRTP_KDR_STR_MAX 8
 #define ACVP_KDF135_SRTP_MASTER_MAX 64
 #define ACVP_KDF135_SRTP_INDEX_MAX 32
-#define ACVP_KDF135_IKEV2_NONCE_LEN_MAX 512
+#define ACVP_KDF135_IKE_NONCE_LEN_MAX 512
 #define ACVP_KDF135_IKEV2_SPI_LEN_MAX 32
 #define ACVP_KDF135_IKEV2_GIR_LEN_MAX 4096
+#define ACVP_KDF135_PSK_LEN_MAX 8
+#define ACVP_KDF135_IKE_COOKIE_LEN_MAX 32
+#define ACVP_KDF135_IKEV1_GXY_LEN_MAX 32
 
 #define ACVP_HMAC_MSG_MAX       1024
 #define ACVP_HMAC_MAC_MAX       128       /**< 512 bits, 128 characters */
@@ -338,6 +342,15 @@ typedef struct acvp_kdf135_ikev2_capability {
     ACVP_JSON_DOMAIN_OBJ dh_secret_len;
     ACVP_JSON_DOMAIN_OBJ key_material_len;
 } ACVP_KDF135_IKEV2_CAP;
+
+typedef struct acvp_kdf135_ikev1_capability {
+    ACVP_NAME_LIST *hash_algs;
+    char auth_method[3];
+    ACVP_JSON_DOMAIN_OBJ init_nonce_len_domain;
+    ACVP_JSON_DOMAIN_OBJ respond_nonce_len_domain;
+    ACVP_JSON_DOMAIN_OBJ dh_secret_len;
+    ACVP_JSON_DOMAIN_OBJ psk_len;
+} ACVP_KDF135_IKEV1_CAP;
 
 typedef struct acvp_hmac_capability {
     int key_len_min;      // 8-524288
@@ -511,6 +524,7 @@ typedef struct acvp_caps_list_t {
         ACVP_KDF135_SSH_CAP *kdf135_ssh_cap;
         ACVP_KDF135_SRTP_CAP *kdf135_srtp_cap;
         ACVP_KDF135_IKEV2_CAP *kdf135_ikev2_cap;
+        ACVP_KDF135_IKEV1_CAP *kdf135_ikev1_cap;
     } cap;
 
     ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case);
@@ -634,6 +648,8 @@ ACVP_RESULT acvp_kdf135_ssh_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
 ACVP_RESULT acvp_kdf135_srtp_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
 
 ACVP_RESULT acvp_kdf135_ikev2_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
+
+ACVP_RESULT acvp_kdf135_ikev1_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
 
 ACVP_RESULT acvp_dsa_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
 

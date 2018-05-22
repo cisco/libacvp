@@ -34,42 +34,43 @@
 /*
  * Forward prototypes for local functions
  */
-static ACVP_RESULT acvp_kdf135_ikev2_output_tc (ACVP_CTX *ctx, ACVP_KDF135_IKEV2_TC *stc, JSON_Object *tc_rsp) {
-    json_object_set_string(tc_rsp, "sKeySeed", (const char *)stc->s_key_seed);
-    json_object_set_string(tc_rsp, "sKeySeedReKey", (const char *)stc->s_key_seed_rekey);
-    json_object_set_string(tc_rsp, "derivedKeyingMaterial", (const char *)stc->derived_keying_material);
-    json_object_set_string(tc_rsp, "derivedKeyingMaterialChild", (const char *)stc->derived_keying_material_child);
-    json_object_set_string(tc_rsp, "derivedKeyingMaterialChildDh", (const char *)stc->derived_keying_material_child_dh);
+static ACVP_RESULT acvp_kdf135_ikev1_output_tc (ACVP_CTX *ctx, ACVP_KDF135_IKEV1_TC *stc, JSON_Object *tc_rsp) {
+    json_object_set_string(tc_rsp, "sKeyId", (const char *)stc->s_key_id);
+    json_object_set_string(tc_rsp, "sKeyIdD", (const char *)stc->s_key_id_d);
+    json_object_set_string(tc_rsp, "sKeyIdA", (const char *)stc->s_key_id_a);
+    json_object_set_string(tc_rsp, "sKeyIdE", (const char *)stc->s_key_id_e);
     return ACVP_SUCCESS;
 }
 
-static ACVP_RESULT acvp_kdf135_ikev2_init_tc (ACVP_CTX *ctx,
-                                             ACVP_KDF135_IKEV2_TC *stc,
-                                             unsigned int tc_id,
-                                             unsigned char *hash_alg,
-                                             int init_nonce_len,
-                                             int resp_nonce_len,
-                                             int dh_secret_len,
-                                             int keying_material_len,
-                                             unsigned char *init_nonce,
-                                             unsigned char *resp_nonce,
-                                             unsigned char *init_spi,
-                                             unsigned char *resp_spi,
-                                             unsigned char *gir,
-                                             unsigned char *gir_new) {
+static ACVP_RESULT acvp_kdf135_ikev1_init_tc (ACVP_CTX *ctx,
+                                              ACVP_KDF135_IKEV1_TC *stc,
+                                              unsigned int tc_id,
+                                              unsigned char *hash_alg,
+                                              unsigned char *auth_method,
+                                              int init_nonce_len,
+                                              int resp_nonce_len,
+                                              int dh_secret_len,
+                                              int psk_len,
+                                              unsigned char *init_nonce,
+                                              unsigned char *resp_nonce,
+                                              unsigned char *init_ckey,
+                                              unsigned char *resp_ckey,
+                                              unsigned char *gxy,
+                                              unsigned char *psk) {
     ACVP_RESULT rv = ACVP_SUCCESS;
-    memset(stc, 0x0, sizeof(ACVP_KDF135_IKEV2_TC));
+    memset(stc, 0x0, sizeof(ACVP_KDF135_IKEV1_TC));
     
     stc->tc_id = tc_id;
     
     stc->hash_alg = calloc(ACVP_RSA_HASH_ALG_LEN_MAX, sizeof(char));
     if (!stc->hash_alg) { return ACVP_MALLOC_FAIL; }
     memcpy(stc->hash_alg, hash_alg, strnlen((const char *)hash_alg, ACVP_RSA_HASH_ALG_LEN_MAX));
+    memcpy(stc->auth_method, auth_method, 3);
     
     stc->init_nonce_len = init_nonce_len;
     stc->resp_nonce_len = resp_nonce_len;
     stc->dh_secret_len = dh_secret_len;
-    stc->keying_material_len = keying_material_len;
+    stc->psk_len = psk_len;
     
     stc->init_nonce = calloc(ACVP_KDF135_IKE_NONCE_LEN_MAX, sizeof(char));
     if (!stc->init_nonce) { return ACVP_MALLOC_FAIL; }
@@ -79,43 +80,42 @@ static ACVP_RESULT acvp_kdf135_ikev2_init_tc (ACVP_CTX *ctx,
     if (!stc->resp_nonce) { return ACVP_MALLOC_FAIL; }
     memcpy(stc->resp_nonce, resp_nonce, strnlen((const char *)resp_nonce, ACVP_KDF135_IKE_NONCE_LEN_MAX));
     
-    stc->init_spi = calloc(ACVP_KDF135_IKEV2_SPI_LEN_MAX, sizeof(char));
-    if (!stc->init_spi) { return ACVP_MALLOC_FAIL; }
-    memcpy(stc->init_spi, init_spi, strnlen((const char *)init_spi, ACVP_KDF135_IKEV2_SPI_LEN_MAX));
+    stc->init_ckey = calloc(ACVP_KDF135_IKE_COOKIE_LEN_MAX, sizeof(char));
+    if (!stc->init_ckey) { return ACVP_MALLOC_FAIL; }
+    memcpy(stc->init_ckey, init_ckey, strnlen((const char *)init_ckey, ACVP_KDF135_IKE_COOKIE_LEN_MAX));
     
-    stc->resp_spi = calloc(ACVP_KDF135_IKEV2_SPI_LEN_MAX, sizeof(char));
-    if (!stc->resp_spi) { return ACVP_MALLOC_FAIL; }
-    memcpy(stc->resp_spi, resp_spi, strnlen((const char *)resp_spi, ACVP_KDF135_IKEV2_SPI_LEN_MAX));
+    stc->resp_ckey = calloc(ACVP_KDF135_IKE_COOKIE_LEN_MAX, sizeof(char));
+    if (!stc->resp_ckey) { return ACVP_MALLOC_FAIL; }
+    memcpy(stc->resp_ckey, resp_ckey, strnlen((const char *)resp_ckey, ACVP_KDF135_IKE_COOKIE_LEN_MAX));
     
-    stc->gir = calloc(ACVP_KDF135_IKEV2_GIR_LEN_MAX, sizeof(char));
-    if (!stc->gir) { return ACVP_MALLOC_FAIL; }
-    memcpy(stc->gir, gir, strnlen((const char *)gir, ACVP_KDF135_IKEV2_GIR_LEN_MAX));
+    stc->gxy = calloc(ACVP_KDF135_IKEV1_GXY_LEN_MAX, sizeof(char));
+    if (!stc->gxy) { return ACVP_MALLOC_FAIL; }
+    memcpy(stc->gxy, gxy, strnlen((const char *)gxy, ACVP_KDF135_IKEV1_GXY_LEN_MAX));
     
-    stc->gir_new = calloc(ACVP_KDF135_IKEV2_GIR_LEN_MAX, sizeof(char));
-    if (!stc->gir_new) { return ACVP_MALLOC_FAIL; }
-    memcpy(stc->gir_new, gir_new, strnlen((const char *)gir_new, ACVP_KDF135_IKEV2_GIR_LEN_MAX));
+    stc->psk = calloc(ACVP_KDF135_PSK_LEN_MAX, sizeof(char));
+    if (!stc->psk) { return ACVP_MALLOC_FAIL; }
+    memcpy(stc->psk, psk, strnlen((const char *)psk, ACVP_KDF135_PSK_LEN_MAX));
     
     return rv;
 }
 
-static ACVP_RESULT acvp_kdf135_ikev2_release_tc (ACVP_KDF135_IKEV2_TC *stc) {
+static ACVP_RESULT acvp_kdf135_ikev1_release_tc (ACVP_KDF135_IKEV1_TC *stc) {
     if (stc->hash_alg) { free(stc->hash_alg); }
     if (stc->init_nonce) { free(stc->init_nonce); }
     if (stc->resp_nonce) { free(stc->resp_nonce); }
-    if (stc->init_spi) { free(stc->init_spi); }
-    if (stc->resp_spi) { free(stc->resp_spi); }
-    if (stc->gir) { free(stc->gir); }
-    if (stc->gir_new) { free(stc->gir_new); }
-    if (stc->s_key_seed) { free(stc->s_key_seed); }
-    if (stc->s_key_seed_rekey) { free(stc->s_key_seed_rekey); }
-    if (stc->derived_keying_material) { free(stc->derived_keying_material); }
-    if (stc->derived_keying_material_child) { free(stc->derived_keying_material_child); }
-    if (stc->derived_keying_material_child_dh) { free(stc->derived_keying_material_child_dh); }
+    if (stc->init_ckey) { free(stc->init_ckey); }
+    if (stc->resp_ckey) { free(stc->resp_ckey); }
+    if (stc->gxy) { free(stc->gxy); }
+    if (stc->psk) { free(stc->psk); }
+    if (stc->s_key_id) { free(stc->s_key_id); }
+    if (stc->s_key_id_d) { free(stc->s_key_id_d); }
+    if (stc->s_key_id_a) { free(stc->s_key_id_a); }
+    if (stc->s_key_id_e) { free(stc->s_key_id_e); }
     return ACVP_SUCCESS;
 }
 
 
-ACVP_RESULT acvp_kdf135_ikev2_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
+ACVP_RESULT acvp_kdf135_ikev1_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     unsigned int tc_id;
     JSON_Value *groupval;
     JSON_Object *groupobj = NULL;
@@ -137,16 +137,16 @@ ACVP_RESULT acvp_kdf135_ikev2_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     JSON_Value *r_tval = NULL; /* Response testval */
     JSON_Object *r_tobj = NULL; /* Response testobj */
     ACVP_CAPS_LIST *cap;
-    ACVP_KDF135_IKEV2_TC stc;
+    ACVP_KDF135_IKEV1_TC stc;
     ACVP_TEST_CASE tc;
     ACVP_RESULT rv;
     const char *alg_str = json_object_get_string(obj, "algorithm");
     ACVP_CIPHER alg_id;
     char *json_result;
     
-    unsigned char *hash_alg = NULL, *init_nonce = NULL, *resp_nonce = NULL, *init_spi = NULL;
-    unsigned char *resp_spi = NULL, *gir = NULL, *gir_new = NULL;
-    int init_nonce_len = 0, resp_nonce_len = 0, dh_secret_len = 0, keying_material_len = 0;
+    unsigned char *hash_alg = NULL, *auth_method = NULL, *init_nonce = NULL, *resp_nonce = NULL;
+    unsigned char *init_ckey = NULL, *resp_ckey = NULL, *gxy = NULL, *psk = NULL;
+    int init_nonce_len = 0, resp_nonce_len = 0, dh_secret_len = 0, psk_len = 0;
     
     if (!alg_str) {
         ACVP_LOG_ERR("unable to parse 'algorithm' from JSON for KDF SSH.");
@@ -156,8 +156,8 @@ ACVP_RESULT acvp_kdf135_ikev2_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     /*
      * Get a reference to the abstracted test case
      */
-    tc.tc.kdf135_ikev2 = &stc;
-    alg_id = ACVP_KDF135_IKEV2;
+    tc.tc.kdf135_ikev1 = &stc;
+    alg_id = ACVP_KDF135_IKEV1;
     stc.cipher = alg_id;
     
     cap = acvp_locate_cap_entry(ctx, alg_id);
@@ -195,35 +195,37 @@ ACVP_RESULT acvp_kdf135_ikev2_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     for (i = 0; i < g_cnt; i++) {
         groupval = json_array_get_value(groups, i);
         groupobj = json_value_get_object(groupval);
-        
+                
         hash_alg = (unsigned char *) json_object_get_string(groupobj, "hashAlg");
+        auth_method = (unsigned char *) json_object_get_string(groupobj, "authenticationMethod");
         init_nonce_len = json_object_get_number(groupobj, "nInitLength");
         resp_nonce_len = json_object_get_number(groupobj, "nRespLength");
         dh_secret_len = json_object_get_number(groupobj, "dhLength");
-        keying_material_len = json_object_get_number(groupobj, "derivedKeyingMaterialLength");
+        psk_len = json_object_get_number(groupobj, "preSharedKeyLength");
         
         ACVP_LOG_INFO("\n    Test group: %d", i);
-        ACVP_LOG_INFO("        hash alg: %S", hash_alg);
+        ACVP_LOG_INFO("        hash alg: %s", hash_alg);
+        ACVP_LOG_INFO("     auth method: %s", auth_method);
         ACVP_LOG_INFO("  init nonce len: %d", init_nonce_len);
         ACVP_LOG_INFO("  resp nonce len: %d", resp_nonce_len);
         ACVP_LOG_INFO("   dh secret len: %d", dh_secret_len);
-        ACVP_LOG_INFO("derived key material: %d", keying_material_len);
+        ACVP_LOG_INFO("         psk len: %d", psk_len);
         
         tests = json_object_get_array(groupobj, "tests");
         t_cnt = json_array_get_count(tests);
         
         for (j = 0; j < t_cnt; j++) {
-            ACVP_LOG_INFO("Found new KDF IKEv2 test vector...");
+            ACVP_LOG_INFO("Found new KDF IKEv1 test vector...");
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
             
             tc_id = (unsigned int) json_object_get_number(testobj, "tcId");
             init_nonce = (unsigned char *)json_object_get_string(testobj, "nInit");
             resp_nonce = (unsigned char *)json_object_get_string(testobj, "nResp");
-            init_spi = (unsigned char *)json_object_get_string(testobj, "spiInit");
-            resp_spi = (unsigned char *)json_object_get_string(testobj, "spiResp");
-            gir = (unsigned char *)json_object_get_string(testobj, "gir");
-            gir_new = (unsigned char *)json_object_get_string(testobj, "girNew");
+            init_ckey = (unsigned char *)json_object_get_string(testobj, "ckyInit");
+            resp_ckey = (unsigned char *)json_object_get_string(testobj, "ckyResp");
+            gxy = (unsigned char *)json_object_get_string(testobj, "gxy");
+            psk = (unsigned char *)json_object_get_string(testobj, "preSharedKey");
             
             ACVP_LOG_INFO("        Test case: %d", j);
             ACVP_LOG_INFO("             tcId: %d", tc_id);
@@ -238,16 +240,16 @@ ACVP_RESULT acvp_kdf135_ikev2_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
             
             /*
              * Setup the test case data that will be passed down to
-             * the crypto module.
+             * the crypto module2
              * TODO: this does mallocs, we can probably do the mallocs once for
              *       the entire vector set to be more efficient
              */
-            acvp_kdf135_ikev2_init_tc(ctx, &stc, tc_id, hash_alg,
+            acvp_kdf135_ikev1_init_tc(ctx, &stc, tc_id, hash_alg, auth_method,
                                       init_nonce_len, resp_nonce_len,
-                                      dh_secret_len, keying_material_len,
+                                      dh_secret_len, psk_len,
                                       init_nonce, resp_nonce,
-                                      init_spi, resp_spi,
-                                      gir, gir_new);
+                                      init_ckey, resp_ckey,
+                                      gxy, psk);
             
             /* Process the current test vector... */
             rv = (cap->crypto_handler)(&tc);
@@ -259,7 +261,7 @@ ACVP_RESULT acvp_kdf135_ikev2_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
             /*
              * Output the test case results using JSON
             */
-            rv = acvp_kdf135_ikev2_output_tc(ctx, &stc, r_tobj);
+            rv = acvp_kdf135_ikev1_output_tc(ctx, &stc, r_tobj);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("JSON output failure in hash module");
                 return rv;
@@ -267,7 +269,7 @@ ACVP_RESULT acvp_kdf135_ikev2_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
             /*
              * Release all the memory associated with the test case
              */
-            acvp_kdf135_ikev2_release_tc(&stc);
+            acvp_kdf135_ikev1_release_tc(&stc);
             
             /* Append the test response value to array */
             json_array_append_value(r_tarr, r_tval);
