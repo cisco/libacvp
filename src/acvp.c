@@ -253,6 +253,31 @@ static void acvp_free_prereqs (ACVP_CAPS_LIST *cap_list) {
 }
 
 /*
+ * Free Internal memory for DSA operations. Since it supports
+ * multiple modes, we have to free the whole list
+ */
+static void acvp_cap_free_dsa_attrs (ACVP_CAPS_LIST *cap_entry) {
+    ACVP_DSA_ATTRS *attrs = NULL, *next = NULL;
+    ACVP_DSA_CAP_MODE *dsa_cap_mode = NULL;
+    int i;
+
+    for (i=0; i<=ACVP_DSA_MAX_MODES; i++) {   
+        dsa_cap_mode = &cap_entry->cap.dsa_cap->dsa_cap_mode[i];
+        if (dsa_cap_mode->defined) {
+            next = dsa_cap_mode->dsa_attrs;
+            while (next) {
+                attrs = next;
+                next = attrs->next;
+                free(attrs);
+            }
+        }
+    }
+    dsa_cap_mode = &cap_entry->cap.dsa_cap->dsa_cap_mode[0];
+    free(dsa_cap_mode);
+}
+
+
+/*
  * Free Internal memory for keygen struct. Since it supports
  * multiple modes, we have to free the whole list
  */
@@ -423,6 +448,10 @@ ACVP_RESULT acvp_free_test_session (ACVP_CTX *ctx) {
                 case ACVP_CMAC_TYPE:
                     acvp_cap_free_sl(cap_entry->cap.cmac_cap->mac_len);
                     free(cap_entry->cap.cmac_cap);
+                    break;
+                case ACVP_DSA_TYPE:
+                    acvp_cap_free_dsa_attrs(cap_entry);
+                    free(cap_entry->cap.dsa_cap);
                     break;
                 case ACVP_RSA_KEYGEN_TYPE:
                     acvp_cap_free_rsa_keygen_list(cap_entry);
@@ -4114,8 +4143,8 @@ static ACVP_RESULT acvp_build_dsa_pqggen_register (JSON_Array *meth_array,
         new_cap_val = json_value_init_object();
         new_cap_obj = json_value_get_object(new_cap_val);
 
-        json_object_set_value(new_cap_obj, "PQGen", json_value_init_array());
-        temp_arr = json_object_get_array(new_cap_obj, "PQGen");
+        json_object_set_value(new_cap_obj, "pqGen", json_value_init_array());
+        temp_arr = json_object_get_array(new_cap_obj, "pqGen");
         if (dsa_cap_mode->gen_pq_prob) {
             json_array_append_string(temp_arr, "probable");
         }
@@ -4123,8 +4152,8 @@ static ACVP_RESULT acvp_build_dsa_pqggen_register (JSON_Array *meth_array,
             json_array_append_string(temp_arr, "provable");
         }
 
-        json_object_set_value(new_cap_obj, "GGen", json_value_init_array());
-        temp_arr = json_object_get_array(new_cap_obj, "GGen");
+        json_object_set_value(new_cap_obj, "gGen", json_value_init_array());
+        temp_arr = json_object_get_array(new_cap_obj, "gGen");
         if (dsa_cap_mode->gen_g_unv) {
             json_array_append_string(temp_arr, "unverifiable");
         }
@@ -4136,22 +4165,21 @@ static ACVP_RESULT acvp_build_dsa_pqggen_register (JSON_Array *meth_array,
             case ACVP_DSA_LN2048_224:
                 json_object_set_number(new_cap_obj, "l", 2048);
                 json_object_set_number(new_cap_obj, "n", 224);
-                acvp_build_dsa_hashalgs(new_cap_obj, meth_array, attrs);
                 break;
             case ACVP_DSA_LN2048_256:
                 json_object_set_number(new_cap_obj, "l", 2048);
                 json_object_set_number(new_cap_obj, "n", 256);
-                acvp_build_dsa_hashalgs(new_cap_obj, temp_arr, attrs);
                 break;
             case ACVP_DSA_LN3072_256:
                 json_object_set_number(new_cap_obj, "l", 3072);
                 json_object_set_number(new_cap_obj, "n", 256);
-                acvp_build_dsa_hashalgs(new_cap_obj, temp_arr, attrs);
                 break;
             default:
                 return ACVP_INVALID_ARG;
                 break;
         }
+        acvp_build_dsa_hashalgs(new_cap_obj, temp_arr, attrs);
+
         attrs = attrs->next;
         json_array_append_value(meth_array, new_cap_val);
     }
@@ -4175,8 +4203,8 @@ static ACVP_RESULT acvp_build_dsa_pqgver_register (JSON_Array *meth_array,
     new_cap_val = json_value_init_object();
     new_cap_obj = json_value_get_object(new_cap_val);
 
-    json_object_set_value(new_cap_obj, "PQGen", json_value_init_array());
-    temp_arr = json_object_get_array(new_cap_obj, "PQGen");
+    json_object_set_value(new_cap_obj, "pqGen", json_value_init_array());
+    temp_arr = json_object_get_array(new_cap_obj, "pqGen");
     if (dsa_cap_mode->gen_pq_prob) {
         json_array_append_string(temp_arr, "probable");
     }
@@ -4184,8 +4212,8 @@ static ACVP_RESULT acvp_build_dsa_pqgver_register (JSON_Array *meth_array,
         json_array_append_string(temp_arr, "provable");
     }
 
-    json_object_set_value(new_cap_obj, "GGen", json_value_init_array());
-    temp_arr = json_object_get_array(new_cap_obj, "GGen");
+    json_object_set_value(new_cap_obj, "gGen", json_value_init_array());
+    temp_arr = json_object_get_array(new_cap_obj, "gGen");
     if (dsa_cap_mode->gen_g_unv) {
         json_array_append_string(temp_arr, "unverifiable");
     }
@@ -4197,21 +4225,19 @@ static ACVP_RESULT acvp_build_dsa_pqgver_register (JSON_Array *meth_array,
             case ACVP_DSA_LN2048_224:
                 json_object_set_number(new_cap_obj, "l", 2048);
                 json_object_set_number(new_cap_obj, "n", 224);
-                acvp_build_dsa_hashalgs(new_cap_obj, meth_array, attrs);
                 break;
             case ACVP_DSA_LN2048_256:
                 json_object_set_number(new_cap_obj, "l", 2048);
                 json_object_set_number(new_cap_obj, "n", 256);
-                acvp_build_dsa_hashalgs(new_cap_obj, temp_arr, attrs);
                 break;
             case ACVP_DSA_LN3072_256:
                 json_object_set_number(new_cap_obj, "l", 3072);
                 json_object_set_number(new_cap_obj, "n", 256);
-                acvp_build_dsa_hashalgs(new_cap_obj, temp_arr, attrs);
                 break;
             default:
                 break;
         }
+        acvp_build_dsa_hashalgs(new_cap_obj, temp_arr, attrs);
         attrs = attrs->next;
         json_array_append_value(meth_array, new_cap_val);
     }
@@ -4280,21 +4306,19 @@ static ACVP_RESULT acvp_build_dsa_siggen_register (JSON_Array *meth_array,
             case ACVP_DSA_LN2048_224:
                 json_object_set_number(new_cap_obj, "l", 2048);
                 json_object_set_number(new_cap_obj, "n", 224);
-                acvp_build_dsa_hashalgs(new_cap_obj, meth_array, attrs);
                 break;
             case ACVP_DSA_LN2048_256:
                 json_object_set_number(new_cap_obj, "l", 2048);
                 json_object_set_number(new_cap_obj, "n", 256);
-                acvp_build_dsa_hashalgs(new_cap_obj, meth_array, attrs);
                 break;
             case ACVP_DSA_LN3072_256:
                 json_object_set_number(new_cap_obj, "l", 3072);
                 json_object_set_number(new_cap_obj, "n", 256);
-                acvp_build_dsa_hashalgs(new_cap_obj, meth_array, attrs);
                 break;
             default:
                 break;
         }
+        acvp_build_dsa_hashalgs(new_cap_obj, meth_array, attrs);
         attrs = attrs->next;
         json_array_append_value(meth_array, new_cap_val);
     }
@@ -4321,21 +4345,19 @@ static ACVP_RESULT acvp_build_dsa_sigver_register (JSON_Array *meth_array,
             case ACVP_DSA_LN2048_224:
                 json_object_set_number(new_cap_obj, "l", 2048);
                 json_object_set_number(new_cap_obj, "n", 224);
-                acvp_build_dsa_hashalgs(new_cap_obj, meth_array, attrs);
                 break;
             case ACVP_DSA_LN2048_256:
                 json_object_set_number(new_cap_obj, "l", 2048);
                 json_object_set_number(new_cap_obj, "n", 256);
-                acvp_build_dsa_hashalgs(new_cap_obj, meth_array, attrs);
                 break;
             case ACVP_DSA_LN3072_256:
                 json_object_set_number(new_cap_obj, "l", 3072);
                 json_object_set_number(new_cap_obj, "n", 256);
-                acvp_build_dsa_hashalgs(new_cap_obj, meth_array, attrs);
                 break;
             default:
                 break;
         }
+        acvp_build_dsa_hashalgs(new_cap_obj, meth_array, attrs);
         attrs = attrs->next;
         json_array_append_value(meth_array, new_cap_val);
     }
@@ -4415,6 +4437,7 @@ static ACVP_RESULT acvp_build_dsa_register_cap (JSON_Object *cap_obj, ACVP_CAPS_
     }
     return ACVP_SUCCESS;
 }
+
 
 /*
  * This function builds the JSON register message that
