@@ -2854,6 +2854,25 @@ ACVP_RESULT acvp_enable_rsa_sigver_cap (
 }
 
 /*
+ * Allows application to set JSON filename within context
+ * to be read in during registration
+ */
+ACVP_RESULT acvp_set_json_filename (ACVP_CTX *ctx, const char *json_filename) {
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+    if (!json_filename) {
+        ACVP_LOG_ERR("Must provide value for JSON filename");
+        return ACVP_INVALID_ARG;
+    }
+    if (ctx->json_filename) { free(ctx->json_filename); }
+    ctx->json_filename = strdup(json_filename);
+    ctx->use_json = 1;
+    
+    return ACVP_SUCCESS;
+}
+
+/*
  * Allows application to specify the vendor attributes for
  * the test session.
  */
@@ -4736,6 +4755,7 @@ ACVP_RESULT acvp_register (ACVP_CTX *ctx) {
     ACVP_RESULT rv;
     char *reg;
     char *login;
+    JSON_Value *tmp_json_from_file;
 
     if (!ctx) {
         return ACVP_NO_CTX;
@@ -4773,14 +4793,20 @@ ACVP_RESULT acvp_register (ACVP_CTX *ctx) {
         }
     }
 
-    /*
-     * Construct the registration message based on the capabilities
-     * the user has enabled.
-     */
-    rv = acvp_build_register(ctx, &reg);
-    if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("Unable to build register message");
-        return rv;
+    if (ctx->use_json != 1) {
+        /*
+         * Construct the registration message based on the capabilities
+         * the user has enabled.
+         */
+        rv = acvp_build_register(ctx, &reg);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Unable to build register message");
+            return rv;
+        }
+    } else {
+        tmp_json_from_file = json_parse_file(ctx->json_filename);
+        reg = json_serialize_to_string_pretty(tmp_json_from_file);
+        json_value_free(tmp_json_from_file);
     }
 
     if (ctx->debug >= ACVP_LOG_LVL_STATUS) {
@@ -4801,7 +4827,7 @@ ACVP_RESULT acvp_register (ACVP_CTX *ctx) {
 
     json_free_serialized_string(reg);
 
-    return (-1);
+    return (rv);
 }
 
 /*
