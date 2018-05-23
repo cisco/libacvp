@@ -138,6 +138,7 @@
 #define ACVP_ALG_KDF135_SRTP     "KDF-SRTP"
 #define ACVP_ALG_KDF135_IKEV2    "KDF-IKEV2"
 #define ACVP_ALG_KDF135_IKEV1    "KDF-IKEV1"
+#define ACVP_ALG_KDF135_TPM      "KDF-TPM"
 
 /*
  * The values that are supplied
@@ -261,7 +262,8 @@ typedef enum acvp_capability_type {
     ACVP_KDF135_SSH_TYPE,
     ACVP_KDF135_SRTP_TYPE,
     ACVP_KDF135_IKEV2_TYPE,
-    ACVP_KDF135_IKEV1_TYPE
+    ACVP_KDF135_IKEV1_TYPE,
+    ACVP_KDF135_TPM_TYPE
 } ACVP_CAP_TYPE;
 
 /*
@@ -324,6 +326,10 @@ typedef struct acvp_kdf135_tls_capability {
 typedef struct acvp_kdf135_snmp_capability {
 
 } ACVP_KDF135_SNMP_CAP;
+
+typedef struct acvp_kdf135_tpm_capability {
+
+} ACVP_KDF135_TPM_CAP;
 
 typedef struct acvp_kdf135_ssh_capability {
     int method[4];
@@ -517,6 +523,7 @@ typedef struct acvp_caps_list_t {
         ACVP_KDF135_SRTP_CAP *kdf135_srtp_cap;
         ACVP_KDF135_IKEV2_CAP *kdf135_ikev2_cap;
         ACVP_KDF135_IKEV1_CAP *kdf135_ikev1_cap;
+        ACVP_KDF135_TPM_CAP *kdf135_tpm_cap;
     } cap;
 
     ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case);
@@ -642,6 +649,8 @@ ACVP_RESULT acvp_kdf135_srtp_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
 ACVP_RESULT acvp_kdf135_ikev2_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
 
 ACVP_RESULT acvp_kdf135_ikev1_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
+
+ACVP_RESULT acvp_kdf135_tpm_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
 
 ACVP_RESULT acvp_dsa_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
 

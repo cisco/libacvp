@@ -95,6 +95,7 @@ static ACVP_RESULT app_kdf135_ssh_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_kdf135_srtp_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_kdf135_ikev2_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_kdf135_ikev1_handler(ACVP_TEST_CASE *test_case);
+static ACVP_RESULT app_kdf135_tpm_handler(ACVP_TEST_CASE *test_case);
 #endif
 #ifdef ACVP_NO_RUNTIME
 static ACVP_RESULT app_drbg_handler(ACVP_TEST_CASE *test_case);
@@ -961,6 +962,13 @@ static void enable_kdf (ACVP_CTX *ctx) {
     rv = acvp_enable_kdf135_snmp_cap(ctx, &app_kdf135_snmp_handler);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_prereq_cap(ctx, ACVP_KDF135_SNMP, ACVP_PREREQ_SHA, value);
+    CHECK_ENABLE_CAP_RV(rv);
+    
+    rv = acvp_enable_kdf135_tpm_cap(ctx, &app_kdf135_tpm_handler);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_prereq_cap(ctx, ACVP_KDF135_TPM, ACVP_PREREQ_SHA, value);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_prereq_cap(ctx, ACVP_KDF135_TPM, ACVP_PREREQ_HMAC, value);
     CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_enable_kdf135_ssh_cap(ctx, &app_kdf135_ssh_handler);
@@ -2688,6 +2696,11 @@ static ACVP_RESULT app_kdf135_ikev1_handler(ACVP_TEST_CASE *test_case) {
     return rv;
 }
 
+static ACVP_RESULT app_kdf135_tpm_handler(ACVP_TEST_CASE *test_case) {
+    ACVP_RESULT rv = ACVP_CRYPTO_MODULE_FAIL;
+    return rv;
+}
+
 static ACVP_RESULT app_kdf135_tls_handler(ACVP_TEST_CASE *test_case)
 {
     ACVP_KDF135_TLS_TC    *tc;
@@ -2830,7 +2843,7 @@ static ACVP_RESULT app_kdf135_snmp_handler(ACVP_TEST_CASE *test_case)
         return ACVP_CRYPTO_MODULE_FAIL;
     }
 
-    tc->skey_len = strnlen((const char *)s_key, ACVP_KDF135_SNMP_SKEY_MAX);
+    tc->skey_len = strnlen((const char *)s_key, ACVP_KDF135_SKEY_MAX);
 
     return ACVP_SUCCESS;
 }

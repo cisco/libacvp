@@ -149,6 +149,7 @@ typedef enum acvp_cipher {
     ACVP_KDF135_SRTP,
     ACVP_KDF135_IKEV2,
     ACVP_KDF135_IKEV1,
+    ACVP_KDF135_TPM,
     ACVP_CIPHER_END
 } ACVP_CIPHER;
 
@@ -167,7 +168,7 @@ typedef enum acvp_prereq_mode_t {
 } ACVP_PREREQ_ALG;
 
 #define ACVP_KDF135_SNMP_ENGID_MAX 32
-#define ACVP_KDF135_SNMP_SKEY_MAX 32
+#define ACVP_KDF135_SKEY_MAX 32
 
 /*!
  * @struct ACVP_KDF135_TLS_CAP_PARM
@@ -613,6 +614,22 @@ typedef struct acvp_kdf135_snmp_tc_t {
 } ACVP_KDF135_SNMP_TC;
 
 /*!
+ * @struct ACVP_KDF135_TPM_TC
+ * @brief This struct holds data that represents a single test
+ * case for kdf135 TPM testing.  This data is
+ * passed between libacvp and the crypto module.
+ */
+typedef struct acvp_kdf135_tpm_tc_t {
+    ACVP_CIPHER cipher;
+    unsigned int tc_id;    /* Test case id */
+    char *auth;
+    char *nonce_even;
+    char *nonce_odd;
+    unsigned char *s_key;
+    unsigned int skey_len;
+} ACVP_KDF135_TPM_TC;
+
+/*!
  * @struct ACVP_KDF135_SRTP_TC
  * @brief This struct holds data that represents a single test
  * case for kdf135 SRTP testing.  This data is
@@ -932,6 +949,7 @@ typedef struct acvp_test_case_t {
         ACVP_KDF135_SRTP_TC *kdf135_srtp;
         ACVP_KDF135_IKEV2_TC *kdf135_ikev2;
         ACVP_KDF135_IKEV1_TC *kdf135_ikev1;
+        ACVP_KDF135_TPM_TC *kdf135_tpm;
     } tc;
 } ACVP_TEST_CASE;
 
@@ -1542,6 +1560,10 @@ ACVP_RESULT acvp_enable_kdf135_ikev2_cap (
         ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case));
 
 ACVP_RESULT acvp_enable_kdf135_ikev1_cap (
+        ACVP_CTX *ctx,
+        ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case));
+
+ACVP_RESULT acvp_enable_kdf135_tpm_cap (
         ACVP_CTX *ctx,
         ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case));
 
