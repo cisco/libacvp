@@ -41,7 +41,7 @@ static ACVP_RESULT acvp_kdf135_tpm_output_tc (ACVP_CTX *ctx, ACVP_KDF135_TPM_TC 
     ACVP_RESULT rv;
     char *tmp;
     
-    tmp = calloc(1, ACVP_KDF135_SKEY_MAX);
+    tmp = calloc(1, ACVP_KDF135_TPM_SKEY_MAX);
     if (!tmp) {
         ACVP_LOG_ERR("Unable to malloc in acvp_kdf135 tpm_output_tc");
         return ACVP_MALLOC_FAIL;
@@ -76,10 +76,10 @@ static ACVP_RESULT acvp_kdf135_tpm_init_tc (ACVP_CTX *ctx,
     stc->nonce_odd = calloc(strlen(nonce_odd), sizeof(char));
     if (!stc->nonce_odd) { return ACVP_MALLOC_FAIL; }
     
-    stc->s_key = calloc(ACVP_KDF135_SKEY_MAX, sizeof(char));
+    stc->s_key = calloc(ACVP_KDF135_TPM_SKEY_MAX, sizeof(char));
     if (!stc->s_key) { return ACVP_MALLOC_FAIL; }
     
-    memset(stc->s_key, 0, ACVP_KDF135_SKEY_MAX);
+    memset(stc->s_key, 0, ACVP_KDF135_TPM_SKEY_MAX);
     
     stc->tc_id = tc_id;
     stc->cipher = ACVP_KDF135_TPM;

@@ -218,7 +218,7 @@ static ACVP_RESULT acvp_kdf135_snmp_output_tc (ACVP_CTX *ctx, ACVP_KDF135_SNMP_T
     ACVP_RESULT rv;
     char *tmp;
 
-    tmp = calloc(1, ACVP_KDF135_SKEY_MAX);
+    tmp = calloc(1, ACVP_KDF135_SNMP_SKEY_MAX);
     if (!tmp) {
         ACVP_LOG_ERR("Unable to malloc in acvp_hmac_output_tc");
         return ACVP_MALLOC_FAIL;
@@ -249,7 +249,7 @@ static ACVP_RESULT acvp_kdf135_snmp_init_tc (ACVP_CTX *ctx,
     stc->s_key = calloc(1, p_len);
     if (!stc->s_key) { return ACVP_MALLOC_FAIL; }
 
-    memset(stc->s_key, 0, ACVP_KDF135_SKEY_MAX);
+    memset(stc->s_key, 0, ACVP_KDF135_SNMP_SKEY_MAX);
 
     stc->tc_id = tc_id;
     stc->cipher = alg_id;

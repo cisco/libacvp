@@ -168,7 +168,8 @@ typedef enum acvp_prereq_mode_t {
 } ACVP_PREREQ_ALG;
 
 #define ACVP_KDF135_SNMP_ENGID_MAX 32
-#define ACVP_KDF135_SKEY_MAX 32
+#define ACVP_KDF135_SNMP_SKEY_MAX 32
+#define ACVP_KDF135_TPM_SKEY_MAX 32
 
 /*!
  * @struct ACVP_KDF135_TLS_CAP_PARM
