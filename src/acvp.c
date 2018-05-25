@@ -194,7 +194,8 @@ ACVP_ALG_HANDLER alg_tbl[ACVP_ALG_MAX] = {
         {ACVP_KDF135_SSH,        &acvp_kdf135_ssh_kat_handler,      ACVP_ALG_KDF135_SSH,        NULL},
         {ACVP_KDF135_SRTP,       &acvp_kdf135_srtp_kat_handler,     ACVP_ALG_KDF135_SRTP,       NULL},
         {ACVP_KDF135_IKEV2,      &acvp_kdf135_ikev2_kat_handler,    ACVP_ALG_KDF135_IKEV2,      NULL},
-        {ACVP_KDF135_IKEV1,      &acvp_kdf135_ikev1_kat_handler,    ACVP_ALG_KDF135_IKEV1,      NULL}
+        {ACVP_KDF135_IKEV1,      &acvp_kdf135_ikev1_kat_handler,    ACVP_ALG_KDF135_IKEV1,      NULL},
+        {ACVP_KDF135_TPM,        &acvp_kdf135_tpm_kat_handler,      ACVP_ALG_KDF135_TPM,        NULL}
 };
 
 typedef struct acvp_prereqs_mode_name_t {
@@ -1545,6 +1546,7 @@ static ACVP_RESULT acvp_validate_prereq_val (ACVP_CIPHER cipher, ACVP_PREREQ_ALG
         break;
     case ACVP_KDF135_TLS:
     case ACVP_KDF135_SNMP:
+    case ACVP_KDF135_TPM:
         if (pre_req == ACVP_PREREQ_SHA ||
             pre_req == ACVP_PREREQ_HMAC) {
             return ACVP_SUCCESS;
@@ -3877,6 +3879,16 @@ static ACVP_RESULT acvp_build_kdf135_snmp_register_cap (JSON_Object *cap_obj, AC
     return ACVP_SUCCESS;
 }
 
+static ACVP_RESULT acvp_build_kdf135_tpm_register_cap (JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry) {
+    ACVP_RESULT result;
+    json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
+    
+    result = acvp_lookup_prereqVals(cap_obj, cap_entry);
+    if (result != ACVP_SUCCESS) { return result; }
+    
+    return ACVP_SUCCESS;
+}
+
 static ACVP_RESULT acvp_build_kdf135_ikev2_register_cap (JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry) {
     ACVP_RESULT result;
     JSON_Array *alg_specs_array = NULL, *tmp_arr = NULL;
@@ -4692,6 +4704,9 @@ static ACVP_RESULT acvp_build_register (ACVP_CTX *ctx, char **reg) {
                 break;
             case ACVP_KDF135_IKEV1:
                 acvp_build_kdf135_ikev1_register_cap(cap_obj, cap_entry);
+                break;
+            case ACVP_KDF135_TPM:
+                acvp_build_kdf135_tpm_register_cap(cap_obj, cap_entry);
                 break;
             default:
                 ACVP_LOG_ERR("Cap entry not found, %d.", cap_entry->cipher);
@@ -5640,8 +5655,54 @@ static ACVP_RESULT acvp_get_result_vsid (ACVP_CTX *ctx, int vs_id) {
     return ACVP_SUCCESS;
 }
 
-static
-ACVP_RESULT acvp_validate_kdf135_tls_param_value (ACVP_KDF135_TLS_METHOD method, ACVP_KDF135_TLS_CAP_PARM param) {
+static ACVP_RESULT acvp_append_kdf135_tpm_caps_entry (
+        ACVP_CTX *ctx,
+        ACVP_KDF135_TPM_CAP *cap,
+        ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case)) {
+    ACVP_CAPS_LIST *cap_entry, *cap_e2;
+    
+    cap_entry = calloc(1, sizeof(ACVP_CAPS_LIST));
+    if (!cap_entry) {
+        return ACVP_MALLOC_FAIL;
+    }
+    cap_entry->cipher = ACVP_KDF135_TPM;
+    cap_entry->cap.kdf135_tpm_cap = cap;
+    cap_entry->crypto_handler = crypto_handler;
+    cap_entry->cap_type = ACVP_KDF135_TPM_TYPE;
+    
+    if (!ctx->caps_list) {
+        ctx->caps_list = cap_entry;
+    } else {
+        cap_e2 = ctx->caps_list;
+        while (cap_e2->next) {
+            cap_e2 = cap_e2->next;
+        }
+        cap_e2->next = cap_entry;
+    }
+    return ACVP_SUCCESS;
+}
+
+ACVP_RESULT acvp_enable_kdf135_tpm_cap (
+        ACVP_CTX *ctx,
+        ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case)) {
+    ACVP_KDF135_TPM_CAP *cap;
+    
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+    if (!crypto_handler) {
+        return ACVP_INVALID_ARG;
+    }
+    
+    cap = calloc(1, sizeof(ACVP_KDF135_TPM_CAP));
+    if (!cap) {
+        return ACVP_MALLOC_FAIL;
+    }
+    
+    return (acvp_append_kdf135_tpm_caps_entry(ctx, cap, crypto_handler));
+}
+
+static ACVP_RESULT acvp_validate_kdf135_tls_param_value (ACVP_KDF135_TLS_METHOD method, ACVP_KDF135_TLS_CAP_PARM param) {
     ACVP_RESULT retval = ACVP_INVALID_ARG;
 
     switch (method) {
