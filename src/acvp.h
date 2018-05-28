@@ -150,6 +150,7 @@ typedef enum acvp_cipher {
     ACVP_KDF135_IKEV2,
     ACVP_KDF135_IKEV1,
     ACVP_KDF135_TPM,
+    ACVP_KDF108,
     ACVP_CIPHER_END
 } ACVP_CIPHER;
 
@@ -164,6 +165,8 @@ typedef enum acvp_prereq_mode_t {
     ACVP_PREREQ_TDES,
     ACVP_PREREQ_DRBG,
     ACVP_PREREQ_HMAC,
+    ACVP_PREREQ_CMAC,
+    ACVP_PREREQ_KAS,
     ACVP_PREREQ_SHA
 } ACVP_PREREQ_ALG;
 
@@ -210,6 +213,30 @@ typedef enum acvp_kdf135_srtp_param {
     ACVP_SRTP_KDF_EXPONENT,
     ACVP_SRTP_PARAM_MAX
 } ACVP_KDF135_SRTP_PARAM;
+
+typedef enum acvp_kdf108_mode {
+    ACVP_KDF108_MODE_COUNTER,
+    ACVP_KDF108_MODE_FEEDBACK,
+    ACVP_KDF108_MODE_DPI
+} ACVP_KDF108_MODE;
+
+typedef enum acvp_kdf108_mac_mode_val {
+    ACVP_KDF108_MAC_MODE_CMAC_AES128 = 1,
+    ACVP_KDF108_MAC_MODE_CMAC_AES192,
+    ACVP_KDF108_MAC_MODE_CMAC_AES256,
+    ACVP_KDF108_MAC_MODE_CMAC_TDES,
+    ACVP_KDF108_MAC_MODE_HMAC_SHA1,
+    ACVP_KDF108_MAC_MODE_HMAC_SHA224,
+    ACVP_KDF108_MAC_MODE_HMAC_SHA256,
+    ACVP_KDF108_MAC_MODE_HMAC_SHA384,
+    ACVP_KDF108_MAC_MODE_HMAC_SHA512
+} ACVP_KDF108_MAC_MODE_VAL;
+
+typedef enum acvp_kdf108_fixed_data_order_val {
+    ACVP_KDF108_FIXED_AFTER = 1,
+    ACVP_KDF108_FIXED_BEFORE,
+    ACVP_KDF108_FIXED_MIDDLE
+} ACVP_KDF108_FIXED_DATA_ORDER_VAL;
 
 /*! @struct ACVP_SYM_CIPH_KO */
 typedef enum acvp_sym_cipher_keying_option {
@@ -347,6 +374,15 @@ typedef enum acvp_kdf135_ikev1_param {
     ACVP_KDF_IKEv1_DH_SECRET_LEN,
     ACVP_KDF_IKEv1_PSK_LEN
 } ACVP_KDF135_IKEV1_PARM;
+
+typedef enum acvp_kdf108_param {
+    ACVP_KDF108_KDF_MODE,
+    ACVP_KDF108_MAC_MODE,
+    ACVP_KDF108_SUPPORTED_LEN,
+    ACVP_KDF108_FIXED_DATA_ORDER,
+    ACVP_KDF108_COUNTER_LEN,
+    ACVP_KDF108_SUPPORTS_EMPTY_IV
+} ACVP_KDF108_PARM;
 
 #define RSA_SIG_TYPE_X931_NAME      "ansx9.31"
 #define RSA_SIG_TYPE_PKCS1V15_NAME  "pkcs1v1.5"
@@ -629,6 +665,27 @@ typedef struct acvp_kdf135_tpm_tc_t {
     unsigned char *s_key;
     unsigned int skey_len;
 } ACVP_KDF135_TPM_TC;
+
+
+/*!
+ * @struct ACVP_KDF108_TC
+ * @brief This struct holds data that represents a single test
+ * case for kdf108 testing.  This data is
+ * passed between libacvp and the crypto module.
+ */
+typedef struct acvp_kdf108_tc_t {
+    ACVP_CIPHER cipher;
+    unsigned int tc_id;    /* Test case id */
+    char *mode;
+    char *mac_mode;
+    char *counter_location;
+    unsigned char *key_in;
+    int counter_len;
+    int key_out_len;
+    int deferred;
+    char *key_out;
+    char *fixed_data;
+} ACVP_KDF108_TC;
 
 /*!
  * @struct ACVP_KDF135_SRTP_TC
@@ -951,6 +1008,7 @@ typedef struct acvp_test_case_t {
         ACVP_KDF135_IKEV2_TC *kdf135_ikev2;
         ACVP_KDF135_IKEV1_TC *kdf135_ikev1;
         ACVP_KDF135_TPM_TC *kdf135_tpm;
+        ACVP_KDF108_TC *kdf108;
     } tc;
 } ACVP_TEST_CASE;
 
@@ -1568,6 +1626,10 @@ ACVP_RESULT acvp_enable_kdf135_tpm_cap (
         ACVP_CTX *ctx,
         ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case));
 
+ACVP_RESULT acvp_enable_kdf108_cap (
+        ACVP_CTX *ctx,
+        ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case));
+
 /*! @brief acvp_enable_kdf135_tls_cap_parm() allows an application to specify
         operational parameters to be used during a test session with the ACVP
         server.
@@ -1632,6 +1694,26 @@ ACVP_RESULT acvp_enable_kdf135_srtp_cap_parm (
         ACVP_KDF135_SRTP_PARAM param,
         int value);
 
+/*! @brief acvp_enable_kdf108_cap_parm() allows an application to specify
+        operational parameters to be used during a test session with the ACVP
+        server.
+
+        This function should be called after acvp_enable_kdf135_srtp_cap() to
+        specify the parameters for the corresponding KDF.
+
+   @param ctx Address of pointer to a previously allocated ACVP_CTX.
+   @param cap ACVP_KDF108_MODE enum value identifying the kdf108 mode
+   @param param ACVP_KDF108_PARM enum value specifying parameter
+   @param value integer value for parameter
+
+   @return ACVP_RESULT
+ */
+ACVP_RESULT acvp_enable_kdf108_cap_param (
+        ACVP_CTX *ctx,
+        ACVP_KDF108_MODE mode,
+        ACVP_KDF108_PARM param,
+        int value);
+
 /*! @brief acvp_enable_kdf135_ikev2_cap_param() allows an application to specify
         operational parameters to be used during a test session with the ACVP
         server.
@@ -1678,6 +1760,13 @@ ACVP_RESULT acvp_enable_kdf135_ikev1_domain_param (ACVP_CTX *ctx,
                                                    int min,
                                                    int max,
                                                    int increment);
+
+ACVP_RESULT acvp_enable_kdf108_domain_param (ACVP_CTX *ctx,
+                                             ACVP_KDF108_MODE mode,
+                                             ACVP_KDF108_PARM param,
+                                               int min,
+                                               int max,
+                                               int increment);
 
 /*! @brief acvp_enable_prereq_cap() allows an application to specify a
        prerequisite for a cipher capability that was previously registered.
