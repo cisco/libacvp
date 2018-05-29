@@ -123,6 +123,9 @@
 #define ACVP_MODE_KEYVER            "keyVer"
 #define ACVP_MODE_SIGGEN            "sigGen"
 #define ACVP_MODE_SIGVER            "sigVer"
+#define ACVP_MODE_COUNTER           "counter"
+#define ACVP_MODE_FEEDBACK          "feedback"
+#define ACVP_MODE_DPI               "double pipeline iteration"
 
 #define ACVP_PREREQ_VAL_STR "valValue"
 #define ACVP_PREREQ_OBJ_STR "prereqVals"

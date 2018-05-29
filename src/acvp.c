@@ -6338,6 +6338,39 @@ ACVP_RESULT acvp_enable_kdf135_ssh_cap_parm (
     return ACVP_SUCCESS;
 }
 
+static ACVP_RESULT acvp_validate_kdf108_param_value (ACVP_KDF108_PARM param, int value) {
+    ACVP_RESULT retval = ACVP_INVALID_ARG;
+    
+    if ((param > ACVP_KDF108_PARAM_MIN) && (param < ACVP_KDF108_PARAM_MAX)) {
+        switch (param) {
+        case ACVP_KDF108_KDF_MODE:
+            ACVP_LOG_ERR("No need to explicity enable mode string. It is set implicity as params are added to a mode.");
+            break;
+        case ACVP_KDF108_MAC_MODE:
+            if (value > ACVP_KDF108_MAC_MODE_MIN && value < ACVP_KDF108_MAC_MODE_MAX) {
+                retval = ACVP_SUCCESS;
+            }
+            break;
+        case ACVP_KDF108_FIXED_DATA_ORDER:
+            if (value > ACVP_KDF108_FIXED_DATA_ORDER_MIN && value < ACVP_KDF108_FIXED_DATA_ORDER_MAX) {
+                retval = ACVP_SUCCESS;
+            }
+            break;
+        case ACVP_KDF108_COUNTER_LEN:
+            if (value <= 32 && value & 8 == 0) {
+                retval = ACVP_SUCCESS;
+            }
+            break;
+        case ACVP_KDF108_SUPPORTS_EMPTY_IV:
+            retval = is_valid_tf_param(value);
+            break;
+        default:
+            break;
+        }
+    }
+    return retval;
+}
+
 /*
  * The user should call this after invoking acvp_enable_kdf108_cap()
  * to specify the kdf parameters.
@@ -6368,27 +6401,27 @@ ACVP_RESULT acvp_enable_kdf108_cap_param (
         return ACVP_NO_CAP;
     }
     
-//    if (acvp_validate_kdf108_param_value(param, value) != ACVP_SUCCESS) {
-//        return ACVP_INVALID_ARG;
-//    }
+    if (acvp_validate_kdf108_param_value(param, value) != ACVP_SUCCESS) {
+        return ACVP_INVALID_ARG;
+    }
     
     switch (mode) {
     case ACVP_KDF108_MODE_COUNTER:
         mode_obj = &cap->cap.kdf108_cap->counter_mode;
         if (!mode_obj->kdf_mode) {
-            mode_obj->kdf_mode = "counter";
+            mode_obj->kdf_mode = ACVP_MODE_COUNTER;
         }
         break;
     case ACVP_KDF108_MODE_FEEDBACK:
         mode_obj = &cap->cap.kdf108_cap->feedback_mode;
         if (!mode_obj->kdf_mode) {
-            mode_obj->kdf_mode = "feedback";
+            mode_obj->kdf_mode = ACVP_MODE_FEEDBACK;
         }
         break;
     case ACVP_KDF108_MODE_DPI:
         mode_obj = &cap->cap.kdf108_cap->dpi_mode;
         if (!mode_obj->kdf_mode) {
-            mode_obj->kdf_mode = "dpi";
+            mode_obj->kdf_mode = ACVP_MODE_DPI;
         }
         break;
     default:
@@ -6468,14 +6501,20 @@ ACVP_RESULT acvp_enable_kdf108_cap_param (
             nl_obj = mode_obj->data_order;
         }
         switch (value) {
-        case ACVP_KDF108_FIXED_AFTER:
+        case ACVP_KDF108_FIXED_DATA_ORDER_AFTER:
             nl_obj->name = "after fixed data";
             break;
-        case ACVP_KDF108_FIXED_BEFORE:
+        case ACVP_KDF108_FIXED_DATA_ORDER_BEFORE:
             nl_obj->name = "before fixed data";
             break;
-        case ACVP_KDF108_FIXED_MIDDLE:
+        case ACVP_KDF108_FIXED_DATA_ORDER_MIDDLE:
             nl_obj->name = "middle fixed data";
+            break;
+        case ACVP_KDF108_FIXED_DATA_ORDER_NONE:
+            nl_obj->name = "none";
+            break;
+        case ACVP_KDF108_FIXED_DATA_ORDER_BEFORE_ITERATOR:
+            nl_obj->name = "before iterator";
             break;
         default:
             return ACVP_INVALID_ARG;
