@@ -6344,7 +6344,7 @@ static ACVP_RESULT acvp_validate_kdf108_param_value (ACVP_KDF108_PARM param, int
     if ((param > ACVP_KDF108_PARAM_MIN) && (param < ACVP_KDF108_PARAM_MAX)) {
         switch (param) {
         case ACVP_KDF108_KDF_MODE:
-            ACVP_LOG_ERR("No need to explicity enable mode string. It is set implicity as params are added to a mode.");
+            printf("No need to explicity enable mode string. It is set implicity as params are added to a mode.");
             break;
         case ACVP_KDF108_MAC_MODE:
             if (value > ACVP_KDF108_MAC_MODE_MIN && value < ACVP_KDF108_MAC_MODE_MAX) {
@@ -6357,7 +6357,7 @@ static ACVP_RESULT acvp_validate_kdf108_param_value (ACVP_KDF108_PARM param, int
             }
             break;
         case ACVP_KDF108_COUNTER_LEN:
-            if (value <= 32 && value & 8 == 0) {
+            if (value <= 32 && value % 8 == 0) {
                 retval = ACVP_SUCCESS;
             }
             break;
