@@ -265,7 +265,6 @@ static ACVP_RESULT acvp_dsa_pqggen_init_tc (ACVP_CTX *ctx,
                                      unsigned int tc_id,
                                      ACVP_CIPHER alg_id,
                                      unsigned int gpq,
-                                     unsigned int num,
                                      unsigned char *index,
                                      int l,
                                      int n,
@@ -309,16 +308,12 @@ static ACVP_RESULT acvp_dsa_pqggen_init_tc (ACVP_CTX *ctx,
             return rv;
         }
         stc->seedlen = strlen((char *) stc->seed);
-        stc->p = p;
-        stc->q = q;
+        memcpy(stc->p, p, strlen((const char *)p));
+        memcpy(stc->q, q, strlen((const char *)q));
         break;
     case ACVP_DSA_UNVERIFIABLE:
-        stc->p = p;
-        stc->q = q;
-        break;
     case ACVP_DSA_PROBABLE:
     case ACVP_DSA_PROVABLE:
-        stc->num = num;
         break;
     default:
         ACVP_LOG_ERR("Invalid GPQ argument %d", gpq);
@@ -354,7 +349,6 @@ static ACVP_RESULT acvp_dsa_output_tc (ACVP_CTX *ctx, ACVP_DSA_TC *stc, JSON_Obj
             }
 
             json_object_set_string(r_tobj, "p", (char *) stc->p);
-
             json_object_set_string(r_tobj, "q", (char *) stc->q);
 
             memset(tmp, 0x0, ACVP_DSA_SEED_MAX);
@@ -363,8 +357,7 @@ static ACVP_RESULT acvp_dsa_output_tc (ACVP_CTX *ctx, ACVP_DSA_TC *stc, JSON_Obj
                 ACVP_LOG_ERR("hex conversion failure (p)");
                 return rv;
             }
-            json_object_set_string(r_tobj, "seed", tmp);
-
+            json_object_set_string(r_tobj, "domainSeed", tmp);
             json_object_set_number(r_tobj, "counter", stc->counter);
             break;
         default:
@@ -417,8 +410,6 @@ static ACVP_RESULT acvp_dsa_release_tc (ACVP_DSA_TC *stc) {
     free(stc->s);
     free(stc->seed);
     free(stc->msg);
-    //memset(stc, 0x0, sizeof(ACVP_DSA_TC));
-
     return ACVP_SUCCESS;
 }
 
@@ -501,23 +492,21 @@ ACVP_RESULT acvp_dsa_pqggen_handler (ACVP_CTX *ctx, ACVP_TEST_CASE tc, ACVP_CAPS
     JSON_Array *tests;
     JSON_Value *testval;
     JSON_Object *testobj = NULL;
-    JSON_Array *res_array = NULL;
-    JSON_Array *res_tarr = NULL; /* Response resultsArray */
     JSON_Value *r_tval = NULL; /* Response testval */
     JSON_Object *r_tobj = NULL; /* Response testobj */
     int j, t_cnt, tc_id;
     ACVP_RESULT rv = ACVP_SUCCESS;
     JSON_Value *mval;
     JSON_Object *mobj = NULL;
-    unsigned int num = 0, gpq = 0, n, l;
+    unsigned gpq = 0, n, l;
     unsigned char *p = NULL, *q = NULL, *seed = NULL;
     ACVP_DSA_TC *stc;
 
-    gen_pq = (unsigned char *) json_object_get_string(groupobj, "genPQ");
-    gen_g = (unsigned char *) json_object_get_string(groupobj, "genG");
+    gen_pq = (unsigned char *) json_object_get_string(groupobj, "pqMode");
+    gen_g = (unsigned char *) json_object_get_string(groupobj, "gMode");
     l = json_object_get_number(groupobj, "l");
     n = json_object_get_number(groupobj, "n");
-    sha = (unsigned char *) json_object_get_string(groupobj, "sha");
+    sha = (unsigned char *) json_object_get_string(groupobj, "hashAlg");
 
     if (gen_pq) {
         ACVP_LOG_INFO("         genPQ: %s", gen_pq);
@@ -547,7 +536,7 @@ ACVP_RESULT acvp_dsa_pqggen_handler (ACVP_CTX *ctx, ACVP_TEST_CASE tc, ACVP_CAPS
             if (!strncmp((char *) gen_g, "canonical", 9)) {
                 p = (unsigned char *) json_object_get_string(testobj, "p");
                 q = (unsigned char *) json_object_get_string(testobj, "q");
-                seed = (unsigned char *) json_object_get_string(testobj, "seed");
+                seed = (unsigned char *) json_object_get_string(testobj, "domainSeed");
                 index = (unsigned char *) json_object_get_string(testobj, "index");
                 gpq = ACVP_DSA_CANONICAL;
                 ACVP_LOG_INFO("               p: %s", p);
@@ -569,16 +558,12 @@ ACVP_RESULT acvp_dsa_pqggen_handler (ACVP_CTX *ctx, ACVP_TEST_CASE tc, ACVP_CAPS
         }
         if (gen_pq) {
             if (!strncmp((char *) gen_pq, "probable", 8)) {
-                num = json_object_get_number(testobj, "num");
                 gpq = ACVP_DSA_PROBABLE;
-                ACVP_LOG_INFO("             num: %d", num);
             }
         }
         if (gen_pq) {
             if (!strncmp((char *) gen_pq, "provable", 8)) {
-                num = json_object_get_number(testobj, "num");
                 gpq = ACVP_DSA_PROVABLE;
-                ACVP_LOG_INFO("             num: %d", num);
             }
         }
 
@@ -590,7 +575,6 @@ ACVP_RESULT acvp_dsa_pqggen_handler (ACVP_CTX *ctx, ACVP_TEST_CASE tc, ACVP_CAPS
          *       the entire vector set to be more efficient
          */
 
-        /* num used to define number of iterations for PROVABLE/PROBABLE */
         switch (gpq) {
         case ACVP_DSA_PROBABLE:
         case ACVP_DSA_PROVABLE:
@@ -601,39 +585,29 @@ ACVP_RESULT acvp_dsa_pqggen_handler (ACVP_CTX *ctx, ACVP_TEST_CASE tc, ACVP_CAPS
             r_tobj = json_value_get_object(r_tval);
             json_object_set_number(r_tobj, "tcId", tc_id);
 
-            json_object_set_value(r_tobj, "resultsArray", json_value_init_array());
-            res_tarr = json_object_get_array(r_tobj, "resultsArray");
-            while (num--) {
+            acvp_dsa_pqggen_init_tc(ctx, stc, tc_id, stc->cipher, gpq, index, l, n, sha, p, q, seed);
 
-                acvp_dsa_pqggen_init_tc(ctx, stc, tc_id, stc->cipher, gpq, num, index, l, n, sha, p, q, seed);
-
-                /* Process the current DSA test vector... */
-                rv = (cap->crypto_handler)(&tc);
-                if (rv != ACVP_SUCCESS) {
-                    ACVP_LOG_ERR("crypto module failed the operation");
-                    return ACVP_CRYPTO_MODULE_FAIL;
-                }
-
-                mval = json_value_init_object();
-                mobj = json_value_get_object(mval);
-                /*
-                 * Output the test case results using JSON
-                 */
-                rv = acvp_dsa_output_tc(ctx, stc, mobj);
-                if (rv != ACVP_SUCCESS) {
-                    ACVP_LOG_ERR("JSON output failure in DSA module");
-                    return rv;
-                }
-
-                /* Append the test response value to array */
-                json_array_append_value(res_tarr, mval);
-
-                stc->seedlen = 0;
-                stc->counter = 0;
-                stc->seed = 0;
+            /* Process the current DSA test vector... */
+            rv = (cap->crypto_handler)(&tc);
+            if (rv != ACVP_SUCCESS) {
+                ACVP_LOG_ERR("crypto module failed the operation");
+                return ACVP_CRYPTO_MODULE_FAIL;
             }
-            /* Append the test response value to array */
-            json_array_append_value(res_array, mval);
+
+            mval = json_value_init_object();
+            mobj = json_value_get_object(mval);
+            /*
+             * Output the test case results using JSON
+             */
+            rv = acvp_dsa_output_tc(ctx, stc, r_tobj);
+            if (rv != ACVP_SUCCESS) {
+                ACVP_LOG_ERR("JSON output failure in DSA module");
+                return rv;
+            }
+
+            stc->seedlen = 0;
+            stc->counter = 0;
+            stc->seed = 0;
             break;
 
         case ACVP_DSA_CANONICAL:
@@ -646,7 +620,7 @@ ACVP_RESULT acvp_dsa_pqggen_handler (ACVP_CTX *ctx, ACVP_TEST_CASE tc, ACVP_CAPS
             json_object_set_number(r_tobj, "tcId", tc_id);
 
             /* Process the current DSA test vector... */
-            acvp_dsa_pqggen_init_tc(ctx, stc, tc_id, stc->cipher, gpq, num, index, l, n, sha, p, q, seed);
+            acvp_dsa_pqggen_init_tc(ctx, stc, tc_id, stc->cipher, gpq, index, l, n, sha, p, q, seed);
             rv = (cap->crypto_handler)(&tc);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("crypto module failed the operation");
@@ -661,18 +635,15 @@ ACVP_RESULT acvp_dsa_pqggen_handler (ACVP_CTX *ctx, ACVP_TEST_CASE tc, ACVP_CAPS
                 ACVP_LOG_ERR("JSON output failure in DSA module");
                 return rv;
             }
-            /* Append the test response value to array */
-            json_array_append_value(res_tarr, r_tval);
             break;
         default:
             ACVP_LOG_ERR("Invalid DSA PQGGen mode");
             rv = ACVP_INVALID_ARG;
             break;
         }
+        json_array_append_value(r_tarr, r_tval);
         acvp_dsa_release_tc(stc);
     }
-    /* Append the test response value to array */
-    json_array_append_value(r_tarr, r_tval);
     return rv;
 }
 
@@ -1032,7 +1003,7 @@ ACVP_RESULT acvp_dsa_pqgver_kat_handler (ACVP_CTX *ctx, JSON_Object *obj)
             return (rv);
         }
     }
-
+    memset(&stc, 0x0, sizeof(ACVP_DSA_TC));
     json_array_append_value(reg_arry, r_vs_val);
     json_result = json_serialize_to_string_pretty(ctx->kat_resp);
     if (!json_result) {
@@ -1136,6 +1107,7 @@ ACVP_RESULT acvp_dsa_pqggen_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
          }
     }
 
+    memset(&stc, 0x0, sizeof(ACVP_DSA_TC));
     json_array_append_value(reg_arry, r_vs_val);
     json_result = json_serialize_to_string_pretty(ctx->kat_resp);
     if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
@@ -1235,6 +1207,7 @@ ACVP_RESULT acvp_dsa_siggen_kat_handler (ACVP_CTX *ctx, JSON_Object *obj)
         }
     }
 
+    memset(&stc, 0x0, sizeof(ACVP_DSA_TC));
     json_array_append_value(reg_arry, r_vs_val);
     json_result = json_serialize_to_string_pretty(ctx->kat_resp);
 
@@ -1336,6 +1309,7 @@ ACVP_RESULT acvp_dsa_keygen_kat_handler (ACVP_CTX *ctx, JSON_Object *obj)
         }
     }
 
+    memset(&stc, 0x0, sizeof(ACVP_DSA_TC));
     json_array_append_value(reg_arry, r_vs_val);
     json_result = json_serialize_to_string_pretty(ctx->kat_resp);
 
@@ -1437,6 +1411,7 @@ ACVP_RESULT acvp_dsa_sigver_kat_handler (ACVP_CTX *ctx, JSON_Object *obj)
         }
     }
 
+    memset(&stc, 0x0, sizeof(ACVP_DSA_TC));
     json_array_append_value(reg_arry, r_vs_val);
     json_result = json_serialize_to_string_pretty(ctx->kat_resp);
     if (!json_result) {

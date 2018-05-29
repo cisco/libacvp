@@ -194,7 +194,7 @@
 #define ACVP_CMAC_KEY_MAX       64        /**< 256 bits, 64 characters */
 
 #define ACVP_DSA_PQG_MAX        3072     /**< 3072 bits, 768 characters */
-#define ACVP_DSA_SEED_MAX       128
+#define ACVP_DSA_SEED_MAX       1024
 #define ACVP_DSA_MAX_STRING     3072     /**< 3072 bytes */
 
 #define ACVP_RSA_SEEDLEN_MAX    64

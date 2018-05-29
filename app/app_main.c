@@ -3280,8 +3280,8 @@ static ACVP_RESULT app_dsa_handler(ACVP_TEST_CASE *test_case)
         {
         case ACVP_DSA_UNVERIFIABLE:
             printf("DSA Parameter Generation2 error for %d, not supported\n", tc->gen_pq);
-                return ACVP_CRYPTO_MODULE_FAIL;
-                break;
+            return ACVP_CRYPTO_MODULE_FAIL;
+            break;
         case ACVP_DSA_CANONICAL:
             dsa = FIPS_dsa_new();
             BN_hex2bn(&dsa->p, (const char *)tc->p);
@@ -3327,6 +3327,7 @@ static ACVP_RESULT app_dsa_handler(ACVP_TEST_CASE *test_case)
             return ACVP_CRYPTO_MODULE_FAIL;
             break;
         }
+        break;
     default:
         printf("Invalid DSA mode %d\n", tc->mode);
         return ACVP_CRYPTO_MODULE_FAIL;
