@@ -23,6 +23,7 @@ SOURCES= src/acvp.c \
          src/acvp_kdf135_ikev2.c \
          src/acvp_kdf135_ikev1.c \
          src/acvp_kdf135_tpm.c \
+         src/acvp_kdf108.c \
          src/acvp_ecdsa.c
 OBJECTS=$(SOURCES:.c=.o)
 

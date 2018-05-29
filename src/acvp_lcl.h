@@ -123,6 +123,9 @@
 #define ACVP_MODE_KEYVER            "keyVer"
 #define ACVP_MODE_SIGGEN            "sigGen"
 #define ACVP_MODE_SIGVER            "sigVer"
+#define ACVP_MODE_COUNTER           "counter"
+#define ACVP_MODE_FEEDBACK          "feedback"
+#define ACVP_MODE_DPI               "double pipeline iteration"
 
 #define ACVP_PREREQ_VAL_STR "valValue"
 #define ACVP_PREREQ_OBJ_STR "prereqVals"
@@ -139,6 +142,7 @@
 #define ACVP_ALG_KDF135_IKEV2    "KDF-IKEV2"
 #define ACVP_ALG_KDF135_IKEV1    "KDF-IKEV1"
 #define ACVP_ALG_KDF135_TPM      "KDF-TPM"
+#define ACVP_ALG_KDF108          "KDF-108"
 
 /*
  * The values that are supplied
@@ -263,7 +267,8 @@ typedef enum acvp_capability_type {
     ACVP_KDF135_SRTP_TYPE,
     ACVP_KDF135_IKEV2_TYPE,
     ACVP_KDF135_IKEV1_TYPE,
-    ACVP_KDF135_TPM_TYPE
+    ACVP_KDF135_TPM_TYPE,
+    ACVP_KDF108_TYPE
 } ACVP_CAP_TYPE;
 
 /*
@@ -326,6 +331,21 @@ typedef struct acvp_kdf135_tls_capability {
 typedef struct acvp_kdf135_snmp_capability {
 
 } ACVP_KDF135_SNMP_CAP;
+
+typedef struct acvp_kdf108_mode_params {
+    char *kdf_mode;
+    ACVP_NAME_LIST *mac_mode;
+    ACVP_JSON_DOMAIN_OBJ supported_lens;
+    ACVP_NAME_LIST *data_order;
+    ACVP_SL_LIST *counter_lens;
+    int empty_iv_support;
+} ACVP_KDF108_MODE_PARAMS;
+
+typedef struct acvp_kdf108_capability {
+    ACVP_KDF108_MODE_PARAMS counter_mode;
+    ACVP_KDF108_MODE_PARAMS feedback_mode;
+    ACVP_KDF108_MODE_PARAMS dpi_mode;
+} ACVP_KDF108_CAP;
 
 typedef struct acvp_kdf135_tpm_capability {
 
@@ -524,6 +544,7 @@ typedef struct acvp_caps_list_t {
         ACVP_KDF135_IKEV2_CAP *kdf135_ikev2_cap;
         ACVP_KDF135_IKEV1_CAP *kdf135_ikev1_cap;
         ACVP_KDF135_TPM_CAP *kdf135_tpm_cap;
+        ACVP_KDF108_CAP *kdf108_cap;
     } cap;
 
     ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case);
@@ -651,6 +672,8 @@ ACVP_RESULT acvp_kdf135_ikev2_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
 ACVP_RESULT acvp_kdf135_ikev1_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
 
 ACVP_RESULT acvp_kdf135_tpm_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
+
+ACVP_RESULT acvp_kdf108_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
 
 ACVP_RESULT acvp_dsa_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
 

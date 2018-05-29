@@ -195,7 +195,8 @@ ACVP_ALG_HANDLER alg_tbl[ACVP_ALG_MAX] = {
         {ACVP_KDF135_SRTP,       &acvp_kdf135_srtp_kat_handler,     ACVP_ALG_KDF135_SRTP,       NULL},
         {ACVP_KDF135_IKEV2,      &acvp_kdf135_ikev2_kat_handler,    ACVP_ALG_KDF135_IKEV2,      NULL},
         {ACVP_KDF135_IKEV1,      &acvp_kdf135_ikev1_kat_handler,    ACVP_ALG_KDF135_IKEV1,      NULL},
-        {ACVP_KDF135_TPM,        &acvp_kdf135_tpm_kat_handler,      ACVP_ALG_KDF135_TPM,        NULL}
+        {ACVP_KDF135_TPM,        &acvp_kdf135_tpm_kat_handler,      ACVP_ALG_KDF135_TPM,        NULL},
+        {ACVP_KDF108,            &acvp_kdf108_kat_handler,          ACVP_ALG_KDF108,            NULL}
 };
 
 typedef struct acvp_prereqs_mode_name_t {
@@ -1571,6 +1572,14 @@ static ACVP_RESULT acvp_validate_prereq_val (ACVP_CIPHER cipher, ACVP_PREREQ_ALG
             return ACVP_SUCCESS;
         }
         break;
+    case ACVP_KDF108:
+        if (pre_req == ACVP_PREREQ_DRBG ||
+            pre_req == ACVP_PREREQ_HMAC ||
+            pre_req == ACVP_PREREQ_CMAC ||
+            pre_req == ACVP_PREREQ_KAS) {
+            return ACVP_SUCCESS;
+        }
+        break;
     default:
         break;
     }
@@ -1855,6 +1864,49 @@ ACVP_RESULT acvp_enable_kdf135_ikev1_domain_param (ACVP_CTX *ctx,
         break;
     case ACVP_KDF_IKEv1_PSK_LEN:
         domain = &cap_list->cap.kdf135_ikev1_cap->psk_len;
+        break;
+    default:
+        return ACVP_INVALID_ARG;
+    }
+    domain->min = min;
+    domain->max = max;
+    domain->increment = increment;
+    
+    return ACVP_SUCCESS;
+}
+
+ACVP_RESULT acvp_enable_kdf108_domain_param (ACVP_CTX *ctx,
+                                             ACVP_KDF108_MODE mode,
+                                             ACVP_KDF108_PARM param,
+                                             int min,
+                                             int max,
+                                             int increment) {
+    ACVP_CAPS_LIST *cap_list;
+    ACVP_JSON_DOMAIN_OBJ *domain;
+    ACVP_KDF108_MODE_PARAMS *mode_obj;
+    
+    cap_list = acvp_locate_cap_entry(ctx, ACVP_KDF108);
+    if (!cap_list) {
+        ACVP_LOG_ERR("Cap entry not found.");
+        return ACVP_NO_CAP;
+    }
+    
+    switch (mode) {
+    case ACVP_KDF108_MODE_COUNTER:
+        mode_obj = &cap_list->cap.kdf108_cap->counter_mode;
+        break;
+    case ACVP_KDF108_MODE_FEEDBACK:
+        mode_obj = &cap_list->cap.kdf108_cap->feedback_mode;
+        break;
+    case ACVP_KDF108_MODE_DPI:
+        mode_obj = &cap_list->cap.kdf108_cap->dpi_mode;
+        break;
+    default:
+        return ACVP_INVALID_ARG;
+    }
+    switch (param) {
+    case ACVP_KDF108_SUPPORTED_LEN:
+        domain = &mode_obj->supported_lens;
         break;
     default:
         return ACVP_INVALID_ARG;
@@ -3889,6 +3941,99 @@ static ACVP_RESULT acvp_build_kdf135_tpm_register_cap (JSON_Object *cap_obj, ACV
     return ACVP_SUCCESS;
 }
 
+static ACVP_RESULT acvp_build_kdf108_mode_register (JSON_Object **mode_obj, ACVP_KDF108_MODE_PARAMS *mode_params) {
+    JSON_Array *tmp_arr = NULL;
+    JSON_Value *tmp_val = NULL;
+    JSON_Object *tmp_obj = NULL;
+    ACVP_NAME_LIST *nl_obj;
+    ACVP_SL_LIST *sl_obj;
+    
+    /* mac mode list */
+    json_object_set_value(*mode_obj, "macMode", json_value_init_array());
+    tmp_arr = json_object_get_array(*mode_obj, "macMode");
+    nl_obj = mode_params->mac_mode;
+    while (nl_obj) {
+        json_array_append_string(tmp_arr, nl_obj->name);
+        nl_obj = nl_obj->next;
+    }
+    
+    /* supported lens domain obj */
+    json_object_set_value(*mode_obj, "supportedLengths", json_value_init_array());
+    tmp_arr = json_object_get_array(*mode_obj, "supportedLengths");
+    tmp_val = json_value_init_object();
+    tmp_obj = json_value_get_object(tmp_val);
+    json_object_set_number(tmp_obj, "min", mode_params->supported_lens.min);
+    json_object_set_number(tmp_obj, "max", mode_params->supported_lens.max);
+    json_object_set_number(tmp_obj, "increment", mode_params->supported_lens.increment);
+    json_array_append_value(tmp_arr, tmp_val);
+    
+    /* fixed data order list */
+    json_object_set_value(*mode_obj, "fixedDataOrder", json_value_init_array());
+    tmp_arr = json_object_get_array(*mode_obj, "fixedDataOrder");
+    nl_obj = mode_params->data_order;
+    while (nl_obj) {
+        json_array_append_string(tmp_arr, nl_obj->name);
+        nl_obj = nl_obj->next;
+    }
+    
+    /* counter length list */
+    json_object_set_value(*mode_obj, "counterLengths", json_value_init_array());
+    tmp_arr = json_object_get_array(*mode_obj, "counterLengths");
+    sl_obj = mode_params->counter_lens;
+    while (sl_obj) {
+        json_array_append_number(tmp_arr, sl_obj->length);
+        sl_obj = sl_obj->next;
+    }
+    
+    json_object_set_boolean(*mode_obj, "supportsEmptyIv", mode_params->empty_iv_support);
+}
+
+static ACVP_RESULT acvp_build_kdf108_register_cap (JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry) {
+    ACVP_RESULT result;
+    JSON_Array *alg_specs_array = NULL, *tmp_arr = NULL;
+    JSON_Value *alg_specs_counter_val = NULL, *alg_specs_feedback_val = NULL, *alg_specs_dpi_val = NULL, *tmp_val = NULL;
+    JSON_Object *alg_specs_counter_obj = NULL, *alg_specs_feedback_obj = NULL, *alg_specs_dpi_obj = NULL, *tmp_obj = NULL;
+    ACVP_NAME_LIST *nl_obj;
+    ACVP_SL_LIST *sl_obj;
+    
+    json_object_set_string(cap_obj, "algorithm", "KDF");
+    
+    result = acvp_lookup_prereqVals(cap_obj, cap_entry);
+    if (result != ACVP_SUCCESS) { return result; }
+    
+    json_object_set_value(cap_obj, "algSpecs", json_value_init_array());
+    alg_specs_array = json_object_get_array(cap_obj, "algSpecs");
+    
+    alg_specs_counter_val = json_value_init_object();
+    alg_specs_counter_obj = json_value_get_object(alg_specs_counter_val);
+    alg_specs_counter_val = json_value_init_object();
+    alg_specs_counter_obj = json_value_get_object(alg_specs_counter_val);
+    
+    if (cap_entry->cap.kdf108_cap->counter_mode.kdf_mode) {
+        alg_specs_counter_val = json_value_init_object();
+        alg_specs_counter_obj = json_value_get_object(alg_specs_counter_val);
+        json_object_set_string(alg_specs_counter_obj, "kdfMode", "counter");
+        acvp_build_kdf108_mode_register(&alg_specs_counter_obj, &cap_entry->cap.kdf108_cap->counter_mode);
+        json_array_append_value(alg_specs_array, alg_specs_counter_val);
+    }
+    if (cap_entry->cap.kdf108_cap->feedback_mode.kdf_mode) {
+        alg_specs_feedback_val = json_value_init_object();
+        alg_specs_feedback_obj = json_value_get_object(alg_specs_feedback_val);
+        json_object_set_string(alg_specs_feedback_obj, "kdfMode", "feedback");
+        acvp_build_kdf108_mode_register(&alg_specs_feedback_obj, &cap_entry->cap.kdf108_cap->feedback_mode);
+        json_array_append_value(alg_specs_array, alg_specs_feedback_val);
+    }
+    if (cap_entry->cap.kdf108_cap->dpi_mode.kdf_mode) {
+        alg_specs_dpi_val = json_value_init_object();
+        alg_specs_dpi_obj = json_value_get_object(alg_specs_dpi_val);
+        json_object_set_string(alg_specs_dpi_obj, "kdfMode", "dpi");
+        acvp_build_kdf108_mode_register(&alg_specs_dpi_obj, &cap_entry->cap.kdf108_cap->dpi_mode);
+        json_array_append_value(alg_specs_array, alg_specs_dpi_val);
+    }
+    
+    return ACVP_SUCCESS;
+}
+
 static ACVP_RESULT acvp_build_kdf135_ikev2_register_cap (JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry) {
     ACVP_RESULT result;
     JSON_Array *alg_specs_array = NULL, *tmp_arr = NULL;
@@ -4707,6 +4852,9 @@ static ACVP_RESULT acvp_build_register (ACVP_CTX *ctx, char **reg) {
                 break;
             case ACVP_KDF135_TPM:
                 acvp_build_kdf135_tpm_register_cap(cap_obj, cap_entry);
+                break;
+            case ACVP_KDF108:
+                acvp_build_kdf108_register_cap(cap_obj, cap_entry);
                 break;
             default:
                 ACVP_LOG_ERR("Cap entry not found, %d.", cap_entry->cipher);
@@ -5955,6 +6103,53 @@ ACVP_RESULT acvp_enable_kdf135_ikev1_cap (
     return (acvp_append_kdf135_ikev1_caps_entry(ctx, cap, crypto_handler));
 }
 
+static ACVP_RESULT acvp_append_kdf108_caps_entry (
+        ACVP_CTX *ctx,
+        ACVP_KDF108_CAP *cap,
+        ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case)) {
+    ACVP_CAPS_LIST *cap_entry, *cap_e2;
+    
+    cap_entry = calloc(1, sizeof(ACVP_CAPS_LIST));
+    if (!cap_entry) {
+        return ACVP_MALLOC_FAIL;
+    }
+    cap_entry->cap.kdf108_cap = cap;
+    cap_entry->crypto_handler = crypto_handler;
+    cap_entry->cipher = ACVP_KDF108;
+    cap_entry->cap_type = ACVP_KDF108_TYPE;
+    
+    if (!ctx->caps_list) {
+        ctx->caps_list = cap_entry;
+    } else {
+        cap_e2 = ctx->caps_list;
+        while (cap_e2->next) {
+            cap_e2 = cap_e2->next;
+        }
+        cap_e2->next = cap_entry;
+    }
+    return ACVP_SUCCESS;
+}
+
+ACVP_RESULT acvp_enable_kdf108_cap (
+        ACVP_CTX *ctx,
+        ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case)) {
+    ACVP_KDF108_CAP *cap;
+    
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+    if (!crypto_handler) {
+        return ACVP_INVALID_ARG;
+    }
+    
+    cap = calloc(1, sizeof(ACVP_KDF108_CAP));
+    if (!cap) {
+        return ACVP_MALLOC_FAIL;
+    }
+    
+    return (acvp_append_kdf108_caps_entry(ctx, cap, crypto_handler));
+}
+
 static ACVP_RESULT acvp_append_kdf135_snmp_caps_entry (
         ACVP_CTX *ctx,
         ACVP_KDF135_SNMP_CAP *cap,
@@ -6140,6 +6335,198 @@ ACVP_RESULT acvp_enable_kdf135_ssh_cap_parm (
 
     kdf135_ssh_cap->sha = kdf135_ssh_cap->sha | param;
 
+    return ACVP_SUCCESS;
+}
+
+static ACVP_RESULT acvp_validate_kdf108_param_value (ACVP_KDF108_PARM param, int value) {
+    ACVP_RESULT retval = ACVP_INVALID_ARG;
+    
+    if ((param > ACVP_KDF108_PARAM_MIN) && (param < ACVP_KDF108_PARAM_MAX)) {
+        switch (param) {
+        case ACVP_KDF108_KDF_MODE:
+            printf("No need to explicity enable mode string. It is set implicity as params are added to a mode.");
+            break;
+        case ACVP_KDF108_MAC_MODE:
+            if (value > ACVP_KDF108_MAC_MODE_MIN && value < ACVP_KDF108_MAC_MODE_MAX) {
+                retval = ACVP_SUCCESS;
+            }
+            break;
+        case ACVP_KDF108_FIXED_DATA_ORDER:
+            if (value > ACVP_KDF108_FIXED_DATA_ORDER_MIN && value < ACVP_KDF108_FIXED_DATA_ORDER_MAX) {
+                retval = ACVP_SUCCESS;
+            }
+            break;
+        case ACVP_KDF108_COUNTER_LEN:
+            if (value <= 32 && value % 8 == 0) {
+                retval = ACVP_SUCCESS;
+            }
+            break;
+        case ACVP_KDF108_SUPPORTS_EMPTY_IV:
+            retval = is_valid_tf_param(value);
+            break;
+        default:
+            break;
+        }
+    }
+    return retval;
+}
+
+/*
+ * The user should call this after invoking acvp_enable_kdf108_cap()
+ * to specify the kdf parameters.
+ */
+ACVP_RESULT acvp_enable_kdf108_cap_param (
+        ACVP_CTX *ctx,
+        ACVP_KDF108_MODE mode,
+        ACVP_KDF108_PARM param,
+        int value) {
+    
+    ACVP_CAPS_LIST *cap;
+    ACVP_KDF108_CAP *kdf108_cap;
+    ACVP_KDF108_MODE_PARAMS *mode_obj;
+    ACVP_NAME_LIST *nl_obj;
+    ACVP_SL_LIST *sl_obj;
+    
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+    
+    cap = acvp_locate_cap_entry(ctx, ACVP_KDF108);
+    if (!cap) {
+        return ACVP_NO_CAP;
+    }
+    
+    kdf108_cap = cap->cap.kdf108_cap;
+    if (!kdf108_cap) {
+        return ACVP_NO_CAP;
+    }
+    
+    if (acvp_validate_kdf108_param_value(param, value) != ACVP_SUCCESS) {
+        return ACVP_INVALID_ARG;
+    }
+    
+    switch (mode) {
+    case ACVP_KDF108_MODE_COUNTER:
+        mode_obj = &cap->cap.kdf108_cap->counter_mode;
+        if (!mode_obj->kdf_mode) {
+            mode_obj->kdf_mode = ACVP_MODE_COUNTER;
+        }
+        break;
+    case ACVP_KDF108_MODE_FEEDBACK:
+        mode_obj = &cap->cap.kdf108_cap->feedback_mode;
+        if (!mode_obj->kdf_mode) {
+            mode_obj->kdf_mode = ACVP_MODE_FEEDBACK;
+        }
+        break;
+    case ACVP_KDF108_MODE_DPI:
+        mode_obj = &cap->cap.kdf108_cap->dpi_mode;
+        if (!mode_obj->kdf_mode) {
+            mode_obj->kdf_mode = ACVP_MODE_DPI;
+        }
+        break;
+    default:
+        return ACVP_INVALID_ARG;
+    }
+    
+    /* only support two method types so just use whichever is available */
+    switch (param) {
+    case ACVP_KDF108_MAC_MODE:
+        if (mode_obj->mac_mode) {
+            nl_obj = mode_obj->mac_mode;
+            while (nl_obj->next) {
+                nl_obj = nl_obj->next;
+            }
+            nl_obj->next = calloc(1, sizeof(ACVP_NAME_LIST));
+            nl_obj = nl_obj->next;
+        } else {
+            mode_obj->mac_mode = calloc(1, sizeof(ACVP_NAME_LIST));
+            nl_obj = mode_obj->mac_mode;
+        }
+        switch (value) {
+        case ACVP_KDF108_MAC_MODE_CMAC_AES128:
+            nl_obj->name = "CMAC-AES128";
+            break;
+        case ACVP_KDF108_MAC_MODE_CMAC_AES192:
+            nl_obj->name = "CMAC-AES192";
+            break;
+        case ACVP_KDF108_MAC_MODE_CMAC_AES256:
+            nl_obj->name = "CMAC-AES256";
+            break;
+        case ACVP_KDF108_MAC_MODE_CMAC_TDES:
+            nl_obj->name = "CMAC-TDES";
+            break;
+        case ACVP_KDF108_MAC_MODE_HMAC_SHA1:
+            nl_obj->name = "HMAC-SHA1";
+            break;
+        case ACVP_KDF108_MAC_MODE_HMAC_SHA224:
+            nl_obj->name = "HMAC-SHA224";
+            break;
+        case ACVP_KDF108_MAC_MODE_HMAC_SHA256:
+            nl_obj->name = "HMAC-SHA256";
+            break;
+        case ACVP_KDF108_MAC_MODE_HMAC_SHA384:
+            nl_obj->name = "HMAC-SHA384";
+            break;
+        case ACVP_KDF108_MAC_MODE_HMAC_SHA512:
+            nl_obj->name = "HMAC-SHA512";
+            break;
+        default:
+            return ACVP_INVALID_ARG;
+        }
+        break;
+    case ACVP_KDF108_COUNTER_LEN:
+        if (mode_obj->counter_lens) {
+            sl_obj = mode_obj->counter_lens;
+            while (sl_obj->next) {
+                sl_obj = sl_obj->next;
+            }
+            sl_obj->next = calloc(1, sizeof(ACVP_SL_LIST));
+            sl_obj = sl_obj->next;
+        } else {
+            mode_obj->counter_lens = calloc(1, sizeof(ACVP_SL_LIST));
+            sl_obj = mode_obj->counter_lens;
+        }
+        sl_obj->length = value;
+        break;
+    case ACVP_KDF108_FIXED_DATA_ORDER:
+        if (mode_obj->data_order) {
+            nl_obj = mode_obj->data_order;
+            while (nl_obj->next) {
+                nl_obj = nl_obj->next;
+            }
+            nl_obj->next = calloc(1, sizeof(ACVP_NAME_LIST));
+            nl_obj = nl_obj->next;
+        } else {
+            mode_obj->data_order = calloc(1, sizeof(ACVP_NAME_LIST));
+            nl_obj = mode_obj->data_order;
+        }
+        switch (value) {
+        case ACVP_KDF108_FIXED_DATA_ORDER_AFTER:
+            nl_obj->name = "after fixed data";
+            break;
+        case ACVP_KDF108_FIXED_DATA_ORDER_BEFORE:
+            nl_obj->name = "before fixed data";
+            break;
+        case ACVP_KDF108_FIXED_DATA_ORDER_MIDDLE:
+            nl_obj->name = "middle fixed data";
+            break;
+        case ACVP_KDF108_FIXED_DATA_ORDER_NONE:
+            nl_obj->name = "none";
+            break;
+        case ACVP_KDF108_FIXED_DATA_ORDER_BEFORE_ITERATOR:
+            nl_obj->name = "before iterator";
+            break;
+        default:
+            return ACVP_INVALID_ARG;
+        }
+        break;
+    case ACVP_KDF108_SUPPORTS_EMPTY_IV:
+        mode_obj->empty_iv_support = value;
+        break;
+    default:
+        return ACVP_INVALID_ARG;
+    }
+    
     return ACVP_SUCCESS;
 }
 
