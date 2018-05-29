@@ -149,6 +149,7 @@ typedef enum acvp_cipher {
     ACVP_KDF135_SRTP,
     ACVP_KDF135_IKEV2,
     ACVP_KDF135_IKEV1,
+    ACVP_KDF135_X963,
     ACVP_KDF135_TPM,
     ACVP_KDF108,
     ACVP_CIPHER_END
@@ -383,6 +384,20 @@ typedef enum acvp_kdf135_ikev1_param {
     ACVP_KDF_IKEv1_DH_SECRET_LEN,
     ACVP_KDF_IKEv1_PSK_LEN
 } ACVP_KDF135_IKEV1_PARM;
+
+typedef enum acvp_kdf135_x963_param {
+    ACVP_KDF_X963_HASH_ALG,
+    ACVP_KDF_X963_KEY_DATA_LEN,
+    ACVP_KDF_X963_FIELD_SIZE,
+    ACVP_KDF_X963_SHARED_INFO_LEN
+} ACVP_KDF135_X963_PARM;
+
+typedef enum acvp_kdf135_x963_hash_val {
+    ACVP_KDF_X963_SHA224,
+    ACVP_KDF_X963_SHA256,
+    ACVP_KDF_X963_SHA384,
+    ACVP_KDF_X963_SHA512
+} ACVP_KDF135_X963_HASH_VAL;
 
 typedef enum acvp_kdf108_param {
     ACVP_KDF108_PARAM_MIN,
@@ -676,6 +691,24 @@ typedef struct acvp_kdf135_tpm_tc_t {
     unsigned char *s_key;
     unsigned int skey_len;
 } ACVP_KDF135_TPM_TC;
+
+/*!
+ * @struct ACVP_KDF135_X963_TC
+ * @brief This struct holds data that represents a single test
+ * case for kdf135 TPM testing.  This data is
+ * passed between libacvp and the crypto module.
+ */
+typedef struct acvp_kdf135_x963_tc_t {
+    ACVP_CIPHER cipher;
+    unsigned int tc_id;    /* Test case id */
+    char *hash_alg;
+    int field_size;
+    int key_data_length;
+    int shared_info_length;
+    char *z;
+    char *shared_info;
+    char *key_data;
+} ACVP_KDF135_X963_TC;
 
 
 /*!
@@ -1018,6 +1051,7 @@ typedef struct acvp_test_case_t {
         ACVP_KDF135_SRTP_TC *kdf135_srtp;
         ACVP_KDF135_IKEV2_TC *kdf135_ikev2;
         ACVP_KDF135_IKEV1_TC *kdf135_ikev1;
+        ACVP_KDF135_X963_TC *kdf135_x963;
         ACVP_KDF135_TPM_TC *kdf135_tpm;
         ACVP_KDF108_TC *kdf108;
     } tc;
@@ -1633,6 +1667,10 @@ ACVP_RESULT acvp_enable_kdf135_ikev1_cap (
         ACVP_CTX *ctx,
         ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case));
 
+ACVP_RESULT acvp_enable_kdf135_x963_cap (
+        ACVP_CTX *ctx,
+        ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case));
+
 ACVP_RESULT acvp_enable_kdf135_tpm_cap (
         ACVP_CTX *ctx,
         ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case));
@@ -1723,6 +1761,25 @@ ACVP_RESULT acvp_enable_kdf108_cap_param (
         ACVP_CTX *ctx,
         ACVP_KDF108_MODE mode,
         ACVP_KDF108_PARM param,
+        int value);
+
+/*! @brief acvp_enable_kdf135_x963_cap_param() allows an application to specify
+        operational parameters to be used during a test session with the ACVP
+        server.
+
+        This function should be called after acvp_enable_kdf135_srtp_cap() to
+        specify the parameters for the corresponding KDF.
+
+   @param ctx Address of pointer to a previously allocated ACVP_CTX.
+   @param param ACVP_KDF135_X963_PARM enum value specifying parameter
+   @param value integer value for parameter. The acceptable hash algs are defined
+            in an enum ACVP_KDF135_X963_HASH_VALS in the library
+
+   @return ACVP_RESULT
+ */
+ACVP_RESULT acvp_enable_kdf135_x963_cap_param (
+        ACVP_CTX *ctx,
+        ACVP_KDF135_X963_PARM param,
         int value);
 
 /*! @brief acvp_enable_kdf135_ikev2_cap_param() allows an application to specify

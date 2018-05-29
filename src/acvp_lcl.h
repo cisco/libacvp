@@ -126,6 +126,7 @@
 #define ACVP_MODE_COUNTER           "counter"
 #define ACVP_MODE_FEEDBACK          "feedback"
 #define ACVP_MODE_DPI               "double pipeline iteration"
+#define ACVP_KDF135_ALG_STR         "kdf-components"
 
 #define ACVP_PREREQ_VAL_STR "valValue"
 #define ACVP_PREREQ_OBJ_STR "prereqVals"
@@ -143,6 +144,7 @@
 #define ACVP_ALG_KDF135_IKEV1    "KDF-IKEV1"
 #define ACVP_ALG_KDF135_TPM      "KDF-TPM"
 #define ACVP_ALG_KDF108          "KDF-108"
+#define ACVP_ALG_KDF135_X963     "KDF-X963"
 
 /*
  * The values that are supplied
@@ -267,6 +269,7 @@ typedef enum acvp_capability_type {
     ACVP_KDF135_SRTP_TYPE,
     ACVP_KDF135_IKEV2_TYPE,
     ACVP_KDF135_IKEV1_TYPE,
+    ACVP_KDF135_X963_TYPE,
     ACVP_KDF135_TPM_TYPE,
     ACVP_KDF108_TYPE
 } ACVP_CAP_TYPE;
@@ -378,6 +381,13 @@ typedef struct acvp_kdf135_ikev1_capability {
     ACVP_JSON_DOMAIN_OBJ dh_secret_len;
     ACVP_JSON_DOMAIN_OBJ psk_len;
 } ACVP_KDF135_IKEV1_CAP;
+
+typedef struct acvp_kdf135_x963_capability {
+    ACVP_NAME_LIST *hash_algs;
+    ACVP_SL_LIST *shared_info_lengths;
+    ACVP_SL_LIST *field_sizes;
+    ACVP_SL_LIST *key_data_lengths;
+} ACVP_KDF135_X963_CAP;
 
 typedef struct acvp_hmac_capability {
     int key_len_min;      // 8-524288
@@ -543,6 +553,7 @@ typedef struct acvp_caps_list_t {
         ACVP_KDF135_SRTP_CAP *kdf135_srtp_cap;
         ACVP_KDF135_IKEV2_CAP *kdf135_ikev2_cap;
         ACVP_KDF135_IKEV1_CAP *kdf135_ikev1_cap;
+        ACVP_KDF135_X963_CAP *kdf135_x963_cap;
         ACVP_KDF135_TPM_CAP *kdf135_tpm_cap;
         ACVP_KDF108_CAP *kdf108_cap;
     } cap;
@@ -670,6 +681,8 @@ ACVP_RESULT acvp_kdf135_srtp_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
 ACVP_RESULT acvp_kdf135_ikev2_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
 
 ACVP_RESULT acvp_kdf135_ikev1_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
+
+ACVP_RESULT acvp_kdf135_x963_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
 
 ACVP_RESULT acvp_kdf135_tpm_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
 

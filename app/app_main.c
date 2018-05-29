@@ -95,6 +95,7 @@ static ACVP_RESULT app_kdf135_ssh_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_kdf135_srtp_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_kdf135_ikev2_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_kdf135_ikev1_handler(ACVP_TEST_CASE *test_case);
+static ACVP_RESULT app_kdf135_x963_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_kdf135_tpm_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_kdf108_handler(ACVP_TEST_CASE *test_case);
 #endif
@@ -1039,6 +1040,23 @@ static void enable_kdf (ACVP_CTX *ctx) {
     rv = acvp_enable_kdf135_ikev1_cap_param(ctx, ACVP_KDF_IKEv1_HASH_ALG, "SHA1");
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_kdf135_ikev1_cap_param(ctx, ACVP_KDF_IKEv1_AUTH_METHOD, "psk");
+    CHECK_ENABLE_CAP_RV(rv);
+    
+    rv = acvp_enable_kdf135_x963_cap(ctx, &app_kdf135_x963_handler);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_prereq_cap(ctx, ACVP_KDF135_X963, ACVP_PREREQ_SHA, value);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_kdf135_x963_cap_param(ctx, ACVP_KDF_X963_HASH_ALG, ACVP_KDF_X963_SHA224);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_kdf135_x963_cap_param(ctx, ACVP_KDF_X963_HASH_ALG, ACVP_KDF_X963_SHA256);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_kdf135_x963_cap_param(ctx, ACVP_KDF_X963_KEY_DATA_LEN, 128);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_kdf135_x963_cap_param(ctx, ACVP_KDF_X963_FIELD_SIZE, 224);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_kdf135_x963_cap_param(ctx, ACVP_KDF_X963_FIELD_SIZE, 409);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_kdf135_x963_cap_param(ctx, ACVP_KDF_X963_SHARED_INFO_LEN, 512);
     CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_enable_kdf108_cap(ctx, &app_kdf108_handler);
@@ -2727,6 +2745,11 @@ static ACVP_RESULT app_kdf135_ikev2_handler(ACVP_TEST_CASE *test_case) {
 }
 
 static ACVP_RESULT app_kdf135_ikev1_handler(ACVP_TEST_CASE *test_case) {
+    ACVP_RESULT rv = ACVP_CRYPTO_MODULE_FAIL;
+    return rv;
+}
+
+static ACVP_RESULT app_kdf135_x963_handler(ACVP_TEST_CASE *test_case) {
     ACVP_RESULT rv = ACVP_CRYPTO_MODULE_FAIL;
     return rv;
 }
