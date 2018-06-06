@@ -51,18 +51,17 @@ static ACVP_RESULT acvp_kdf135_srtp_output_tc (ACVP_CTX *ctx, ACVP_KDF135_SRTP_T
  * a test case.
  */
 static ACVP_RESULT acvp_kdf135_srtp_release_tc (ACVP_KDF135_SRTP_TC *stc) {
-    if (stc->kdr) free(stc->kdr);
-    if (stc->master_key) free(stc->master_key);
-    if (stc->master_salt) free(stc->master_salt);
-    if (stc->index) free(stc->index);
-    if (stc->srtcp_index) free(stc->srtcp_index);
-    if (stc->kdr) free(stc->kdr);
-    if (stc->srtp_ke) free(stc->srtp_ke);
-    if (stc->srtp_ka) free(stc->srtp_ka);
-    if (stc->srtp_ks) free(stc->srtp_ks);
-    if (stc->srtcp_ke) free(stc->srtcp_ke);
-    if (stc->srtcp_ka) free(stc->srtcp_ka);
-    if (stc->srtcp_ks) free(stc->srtcp_ks);
+    free(stc->kdr);
+    free(stc->master_key);
+    free(stc->master_salt);
+    free(stc->index);
+    free(stc->srtcp_index);
+    free(stc->srtp_ke);
+    free(stc->srtp_ka);
+    free(stc->srtp_ks);
+    free(stc->srtcp_ke);
+    free(stc->srtcp_ka);
+    free(stc->srtcp_ks);
     return ACVP_SUCCESS;
 }
 
@@ -101,6 +100,19 @@ static ACVP_RESULT acvp_kdf135_srtp_init_tc (ACVP_CTX *ctx,
     memcpy(stc->master_salt, master_salt, strnlen((const char *)master_salt, ACVP_KDF135_SRTP_MASTER_MAX));
     memcpy(stc->index, index, strnlen((const char *)index, ACVP_KDF135_SRTP_INDEX_MAX));
     memcpy(stc->srtcp_index, srtcp_index, strnlen((const char *)srtcp_index, ACVP_KDF135_SRTP_INDEX_MAX));
+    
+    stc->srtp_ka = calloc(ACVP_KDF135_SRTP_OUTPUT_MAX, sizeof(char));
+    if (!stc->srtp_ka) { return ACVP_MALLOC_FAIL; }
+    stc->srtp_ke = calloc(ACVP_KDF135_SRTP_OUTPUT_MAX, sizeof(char));
+    if (!stc->srtp_ke) { return ACVP_MALLOC_FAIL; }
+    stc->srtp_ks = calloc(ACVP_KDF135_SRTP_OUTPUT_MAX, sizeof(char));
+    if (!stc->srtp_ks) { return ACVP_MALLOC_FAIL; }
+    stc->srtcp_ka = calloc(ACVP_KDF135_SRTP_OUTPUT_MAX, sizeof(char));
+    if (!stc->srtcp_ka) { return ACVP_MALLOC_FAIL; }
+    stc->srtcp_ke = calloc(ACVP_KDF135_SRTP_OUTPUT_MAX, sizeof(char));
+    if (!stc->srtcp_ke) { return ACVP_MALLOC_FAIL; }
+    stc->srtcp_ks = calloc(ACVP_KDF135_SRTP_OUTPUT_MAX, sizeof(char));
+    if (!stc->srtcp_ks) { return ACVP_MALLOC_FAIL; }
     
     return ACVP_SUCCESS;
 }
@@ -189,7 +201,7 @@ ACVP_RESULT acvp_kdf135_srtp_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
         kdr = (unsigned char *)json_object_get_string(groupobj, "kdr");
         
         ACVP_LOG_INFO("\n    Test group: %d", i);
-        ACVP_LOG_INFO("           kdr: %d", kdr);
+        ACVP_LOG_INFO("           kdr: %s", kdr);
         ACVP_LOG_INFO("    key length: %d", aes_key_length);
         
         tests = json_object_get_array(groupobj, "tests");
@@ -208,6 +220,10 @@ ACVP_RESULT acvp_kdf135_srtp_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
             
             ACVP_LOG_INFO("        Test case: %d", j);
             ACVP_LOG_INFO("             tcId: %d", tc_id);
+            ACVP_LOG_INFO("        masterKey: %s", master_key);
+            ACVP_LOG_INFO("       masterSalt: %s", master_salt);
+            ACVP_LOG_INFO("            index: %s", index);
+            ACVP_LOG_INFO("       srtcpIndex: %s", srtcp_index);
             
             /*
              * Create a new test case in the response

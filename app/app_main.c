@@ -952,7 +952,7 @@ static void enable_kdf (ACVP_CTX *ctx) {
     /*
      * Enable KDF-135
      */
-    rv = acvp_enable_kdf135_tls_cap(ctx, ACVP_KDF135_TLS, &app_kdf135_tls_handler);
+    rv = acvp_enable_kdf135_tls_cap(ctx, &app_kdf135_tls_handler);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_prereq_cap(ctx, ACVP_KDF135_TLS, ACVP_PREREQ_SHA, value);
     CHECK_ENABLE_CAP_RV(rv);

@@ -86,7 +86,6 @@ static ACVP_RESULT acvp_append_cmac_caps_entry (
 static ACVP_RESULT acvp_append_kdf135_tls_caps_entry (
         ACVP_CTX *ctx,
         ACVP_KDF135_TLS_CAP *cap,
-        ACVP_KDF135_TLS_METHOD method,
         ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case));
 
 static ACVP_RESULT acvp_append_rsa_keygen_caps_entry (
@@ -189,10 +188,10 @@ ACVP_ALG_HANDLER alg_tbl[ACVP_ALG_MAX] = {
         {ACVP_ECDSA_KEYVER,      &acvp_ecdsa_keyver_kat_handler,    ACVP_ALG_ECDSA,             ACVP_MODE_KEYVER},
         {ACVP_ECDSA_SIGGEN,      &acvp_ecdsa_siggen_kat_handler,    ACVP_ALG_ECDSA,             ACVP_MODE_SIGGEN},
         {ACVP_ECDSA_SIGVER,      &acvp_ecdsa_sigver_kat_handler,    ACVP_ALG_ECDSA,             ACVP_MODE_SIGVER},
-        {ACVP_KDF135_TLS,        &acvp_kdf135_tls_kat_handler,      ACVP_ALG_KDF135_TLS,        NULL},
+        {ACVP_KDF135_TLS,        &acvp_kdf135_tls_kat_handler,      ACVP_KDF135_ALG_STR,        ACVP_ALG_KDF135_TLS},
         {ACVP_KDF135_SNMP,       &acvp_kdf135_snmp_kat_handler,     ACVP_ALG_KDF135_SNMP,       NULL},
-        {ACVP_KDF135_SSH,        &acvp_kdf135_ssh_kat_handler,      ACVP_ALG_KDF135_SSH,        NULL},
-        {ACVP_KDF135_SRTP,       &acvp_kdf135_srtp_kat_handler,     ACVP_ALG_KDF135_SRTP,       NULL},
+        {ACVP_KDF135_SSH,        &acvp_kdf135_ssh_kat_handler,      ACVP_KDF135_ALG_STR,        ACVP_ALG_KDF135_SSH},
+        {ACVP_KDF135_SRTP,       &acvp_kdf135_srtp_kat_handler,     ACVP_KDF135_ALG_STR,        ACVP_ALG_KDF135_SRTP},
         {ACVP_KDF135_IKEV2,      &acvp_kdf135_ikev2_kat_handler,    ACVP_ALG_KDF135_IKEV2,      NULL},
         {ACVP_KDF135_IKEV1,      &acvp_kdf135_ikev1_kat_handler,    ACVP_ALG_KDF135_IKEV1,      NULL},
         {ACVP_KDF135_X963,       &acvp_kdf135_x963_kat_handler,     ACVP_ALG_KDF135_X963,       NULL},
@@ -481,6 +480,20 @@ ACVP_RESULT acvp_free_test_session (ACVP_CTX *ctx) {
                     acvp_cap_free_nl(cap_entry->cap.ecdsa_sigver_cap->curves);
                     acvp_cap_free_nl(cap_entry->cap.ecdsa_sigver_cap->hash_algs);
                     break;
+                case ACVP_KDF135_SRTP_TYPE:
+                    acvp_cap_free_sl(cap_entry->cap.kdf135_srtp_cap->aes_keylens);
+                    free(cap_entry->cap.kdf135_srtp_cap);
+                    break;
+                case ACVP_KDF135_TLS_TYPE:
+                    free(cap_entry->cap.kdf135_tls_cap);
+                    break;
+                case ACVP_KDF135_SNMP_TYPE:
+                case ACVP_KDF135_SSH_TYPE:
+                case ACVP_KDF135_IKEV2_TYPE:
+                case ACVP_KDF135_IKEV1_TYPE:
+                case ACVP_KDF135_X963_TYPE:
+                case ACVP_KDF135_TPM_TYPE:
+                case ACVP_KDF108_TYPE:
                 default:
                     return ACVP_INVALID_ARG;
                 }
@@ -3999,37 +4012,38 @@ static ACVP_RESULT acvp_build_ecdsa_register_cap (ACVP_CIPHER cipher, JSON_Objec
 static ACVP_RESULT acvp_build_kdf135_tls_register_cap (JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry) {
     JSON_Array *temp_arr = NULL;
     ACVP_RESULT result;
-
-    json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
-    json_object_set_value(cap_obj, "methods", json_value_init_array());
-    temp_arr = json_object_get_array(cap_obj, "methods");
+    
+    json_object_set_string(cap_obj, "algorithm", ACVP_KDF135_ALG_STR);
+    json_object_set_string(cap_obj, "mode", ACVP_ALG_KDF135_TLS);
+    json_object_set_value(cap_obj, "tlsVersion", json_value_init_array());
+    temp_arr = json_object_get_array(cap_obj, "tlsVersion");
     if (cap_entry->cap.kdf135_tls_cap->method[0] == ACVP_KDF135_TLS10_TLS11) {
-        json_array_append_string(temp_arr, "TLS1.0-1.1");
+        json_array_append_string(temp_arr, "v1.0/1.1");
     } else if (cap_entry->cap.kdf135_tls_cap->method[0] == ACVP_KDF135_TLS12) {
-        json_array_append_string(temp_arr, "TLS1.2");
+        json_array_append_string(temp_arr, "v1.2");
     }
-
+    
     if (cap_entry->cap.kdf135_tls_cap->method[1] == ACVP_KDF135_TLS10_TLS11) {
-        json_array_append_string(temp_arr, "TLS1.0-1.1");
+        json_array_append_string(temp_arr, "v1.0/1.1");
     } else if (cap_entry->cap.kdf135_tls_cap->method[1] == ACVP_KDF135_TLS12) {
-        json_array_append_string(temp_arr, "TLS1.2");
+        json_array_append_string(temp_arr, "v1.2");
     }
-
-    json_object_set_value(cap_obj, "sha", json_value_init_array());
-    temp_arr = json_object_get_array(cap_obj, "sha");
+    
+    json_object_set_value(cap_obj, "hashAlg", json_value_init_array());
+    temp_arr = json_object_get_array(cap_obj, "hashAlg");
     if (cap_entry->cap.kdf135_tls_cap->sha || ACVP_KDF135_TLS_CAP_SHA256) {
-        json_array_append_string(temp_arr, "SHA-256");
+        json_array_append_string(temp_arr, "SHA2-256");
     }
     if (cap_entry->cap.kdf135_tls_cap->sha || ACVP_KDF135_TLS_CAP_SHA384) {
-        json_array_append_string(temp_arr, "SHA-384");
+        json_array_append_string(temp_arr, "SHA2-384");
     }
     if (cap_entry->cap.kdf135_tls_cap->sha || ACVP_KDF135_TLS_CAP_SHA512) {
-        json_array_append_string(temp_arr, "SHA-512");
+        json_array_append_string(temp_arr, "SHA2-512");
     }
-
+    
     result = acvp_lookup_prereqVals(cap_obj, cap_entry);
     if (result != ACVP_SUCCESS) { return result; }
-
+    
     return ACVP_SUCCESS;
 }
 
@@ -4350,8 +4364,8 @@ static ACVP_RESULT acvp_build_kdf135_srtp_register_cap (JSON_Object *cap_obj, AC
     JSON_Array *tmp_arr = NULL;
     int i;
     ACVP_SL_LIST *current_aes_keylen;
-    
-    json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
+    json_object_set_string(cap_obj, "algorithm", ACVP_KDF135_ALG_STR);
+    json_object_set_string(cap_obj, "mode", ACVP_ALG_KDF135_SRTP);
     
     result = acvp_lookup_prereqVals(cap_obj, cap_entry);
     if (result != ACVP_SUCCESS) { return result; }
@@ -6043,7 +6057,6 @@ static ACVP_RESULT acvp_validate_kdf135_tls_param_value (ACVP_KDF135_TLS_METHOD 
 static ACVP_RESULT acvp_append_kdf135_tls_caps_entry (
         ACVP_CTX *ctx,
         ACVP_KDF135_TLS_CAP *cap,
-        ACVP_KDF135_TLS_METHOD method,
         ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case)) {
     ACVP_CAPS_LIST *cap_entry, *cap_e2;
 
@@ -6070,7 +6083,6 @@ static ACVP_RESULT acvp_append_kdf135_tls_caps_entry (
 
 ACVP_RESULT acvp_enable_kdf135_tls_cap (
         ACVP_CTX *ctx,
-        ACVP_KDF135_TLS_METHOD method,
         ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case)) {
     ACVP_KDF135_TLS_CAP *cap;
 
@@ -6086,7 +6098,7 @@ ACVP_RESULT acvp_enable_kdf135_tls_cap (
         return ACVP_MALLOC_FAIL;
     }
 
-    return (acvp_append_kdf135_tls_caps_entry(ctx, cap, method, crypto_handler));
+    return (acvp_append_kdf135_tls_caps_entry(ctx, cap, crypto_handler));
 }
 
 /*
