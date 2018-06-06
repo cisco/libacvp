@@ -747,12 +747,12 @@ typedef struct acvp_kdf135_srtp_tc_t {
     unsigned char *index;
     unsigned char *srtcp_index;
     
-    unsigned char *srtp_ke;
-    unsigned char *srtp_ka;
-    unsigned char *srtp_ks;
-    unsigned char *srtcp_ke;
-    unsigned char *srtcp_ka;
-    unsigned char *srtcp_ks;
+    char *srtp_ke;
+    char *srtp_ka;
+    char *srtp_ks;
+    char *srtcp_ke;
+    char *srtcp_ka;
+    char *srtcp_ks;
 } ACVP_KDF135_SRTP_TC;
 
 /*!
@@ -1644,7 +1644,6 @@ ACVP_RESULT acvp_enable_cmac_cap_parm (
  */
 ACVP_RESULT acvp_enable_kdf135_tls_cap (
         ACVP_CTX *ctx,
-        ACVP_KDF135_TLS_METHOD method,
         ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case));
 
 ACVP_RESULT acvp_enable_kdf135_snmp_cap (
