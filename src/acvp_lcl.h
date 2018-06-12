@@ -108,13 +108,20 @@
 #define ACVP_ALG_CMAC_AES            "CMAC-AES"
 #define ACVP_ALG_CMAC_TDES           "CMAC-TDES"
 
-#define ACVP_ALG_DSA                     "DSA"
-#define ACVP_ALG_DSA_PQGGEN              "pqgGen"
-#define ACVP_ALG_DSA_PQGVER              "pqgVer"
-#define ACVP_ALG_DSA_KEYGEN              "keyGen"
-#define ACVP_ALG_DSA_SIGGEN              "sigGen"
-#define ACVP_ALG_DSA_SIGVER              "sigVer"
+#define ACVP_ALG_DSA                 "DSA"
+#define ACVP_ALG_DSA_PQGGEN          "pqgGen"
+#define ACVP_ALG_DSA_PQGVER          "pqgVer"
+#define ACVP_ALG_DSA_KEYGEN          "keyGen"
+#define ACVP_ALG_DSA_SIGGEN          "sigGen"
+#define ACVP_ALG_DSA_SIGVER          "sigVer"
 
+#define ACVP_ALG_KAS_ECC             "KAS-ECC"
+#define ACVP_ALG_KAS_ECC_DPGEN       "dpGen"
+#define ACVP_ALG_KAS_ECC_DPVAL       "dpVal"
+#define ACVP_ALG_KAS_ECC_KEYPAIRGEN  "keyPairGen"
+#define ACVP_ALG_KAS_ECC_FULLVAL     "fullVal"
+#define ACVP_ALG_KAS_ECC_PARTIALVAL  "partialVal"
+#define ACVP_ALG_KAS_ECC_KEYREGEN    "keyRegen"
 
 #define ACVP_ALG_RSA                "RSA"
 #define ACVP_ALG_ECDSA              "ECDSA"
@@ -216,6 +223,8 @@
 #define ACVP_RSA_HASH_ALG_LEN_MAX    12
 #define ACVP_RSA_EXP_LEN_MAX         512  /**< 2048 bits max for n, 512 characters */
 
+#define ACVP_KAS_ECC_MAX 4096
+
 #define ACVP_KAT_BUF_MAX        1024*1024*4
 #define ACVP_ANS_BUF_MAX        1024*1024*4
 #define ACVP_REG_BUF_MAX        1024*128
@@ -272,7 +281,8 @@ typedef enum acvp_capability_type {
     ACVP_KDF135_IKEV1_TYPE,
     ACVP_KDF135_X963_TYPE,
     ACVP_KDF135_TPM_TYPE,
-    ACVP_KDF108_TYPE
+    ACVP_KDF108_TYPE,
+    ACVP_KAS_ECC_TYPE
 } ACVP_CAP_TYPE;
 
 /*
@@ -282,6 +292,14 @@ typedef struct acvp_sl_list_t {
     int length;
     struct acvp_sl_list_t *next;
 } ACVP_SL_LIST;
+
+/*
+ * Supported param list
+ */
+typedef struct acvp_param_list_t {
+    int param;
+    struct acvp_param_list_t *next;
+} ACVP_PARAM_LIST;
 
 /*
  * list of strings to be used for supported algs,
@@ -471,25 +489,6 @@ typedef struct acvp_rsa_keygen_capability_t {
     struct acvp_rsa_keygen_capability_t *next; // to support multiple randPQ values
 } ACVP_RSA_KEYGEN_CAP;
 
-typedef enum acvp_ecdsa_curves {
-    ACVP_ECDSA_CURVE_START = 0,
-    ACVP_ECDSA_CURVE_P192,
-    ACVP_ECDSA_CURVE_P224,
-    ACVP_ECDSA_CURVE_P256,
-    ACVP_ECDSA_CURVE_P384,
-    ACVP_ECDSA_CURVE_P521,
-    ACVP_ECDSA_CURVE_B163,
-    ACVP_ECDSA_CURVE_B233,
-    ACVP_ECDSA_CURVE_B283,
-    ACVP_ECDSA_CURVE_B409,
-    ACVP_ECDSA_CURVE_B571,
-    ACVP_ECDSA_CURVE_K163,
-    ACVP_ECDSA_CURVE_K233,
-    ACVP_ECDSA_CURVE_K283,
-    ACVP_ECDSA_CURVE_K409,
-    ACVP_ECDSA_CURVE_K571,
-    ACVP_ECDSA_CURVE_END
-} ACVP_ECDSA_CURVE;
 
 typedef struct acvp_ecdsa_capability_t {
     ACVP_NAME_LIST *curves;
@@ -529,6 +528,26 @@ typedef struct acvp_dsa_capability {
     ACVP_DSA_CAP_MODE *dsa_cap_mode;
 } ACVP_DSA_CAP;
 
+typedef struct acvp_kas_ecc_scheme {
+    int sha;
+    int curve;
+    struct acvp_kas_ecc_scheme *next;
+} ACVP_KAS_ECC_SCHEME;
+
+
+typedef struct acvp_kas_ecc_cap_mode_t {
+    ACVP_KAS_ECC_MODE cap_mode;
+    ACVP_PREREQ_LIST *prereq_vals;
+    ACVP_PARAM_LIST *curve;    /* CDH mode only */
+    ACVP_PARAM_LIST *function; /* CDH mode only */
+    ACVP_KAS_ECC_SCHEME *kas_ecc_sheme; /* other modes use schemes */
+} ACVP_KAS_ECC_CAP_MODE;
+
+typedef struct acvp_kas_ecc_capability_t {
+    ACVP_CIPHER cipher;
+    ACVP_KAS_ECC_CAP_MODE *kas_ecc_mode;
+} ACVP_KAS_ECC_CAP;
+
 typedef struct acvp_caps_list_t {
     ACVP_CIPHER cipher;
     ACVP_CAP_TYPE cap_type;
@@ -557,6 +576,7 @@ typedef struct acvp_caps_list_t {
         ACVP_KDF135_X963_CAP *kdf135_x963_cap;
         ACVP_KDF135_TPM_CAP *kdf135_tpm_cap;
         ACVP_KDF108_CAP *kdf108_cap;
+        ACVP_KAS_ECC_CAP *kas_ecc_cap;
     } cap;
 
     ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case);
@@ -693,6 +713,7 @@ ACVP_RESULT acvp_dsa_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
 
 ACVP_RESULT acvp_dsa_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
 
+ACVP_RESULT acvp_kas_ecc_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
 /*
  * ACVP utility functions used internally
  */

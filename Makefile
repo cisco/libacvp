@@ -1,7 +1,7 @@
 CC = gcc
-CFLAGS+=-g -O0 -fPIC -Wall
+CFLAGS+=-g -O0 -fPIC -Wall -DACVP_NO_RUNTIME -DOPENSSL_FIPS
 LDFLAGS+=
-INCDIRS+=-I. -Isrc
+INCDIRS+=-I. -Isrc -I$(MODULE_ROOT)/include
 
 SOURCES= src/acvp.c \
          src/acvp_aes.c \
@@ -25,8 +25,9 @@ SOURCES= src/acvp.c \
          src/acvp_kdf135_x963.c \
          src/acvp_kdf135_tpm.c \
          src/acvp_kdf108.c \
+         src/acvp_kas_ecc.c \
          src/acvp_ecdsa.c
-OBJECTS=$(SOURCES:.c=.o)
+OBJECTS=$(SOURCES:.c=.o) $(MODULE_ROOT)/lib/fipscanister.o
 
 all: libacvp.a acvp_app
 
@@ -43,7 +44,7 @@ libacvp.so: $(OBJECTS)
 	ln -fs libacvp.so.1.0.0 libacvp.so
 
 acvp_app: app/app_main.c libacvp.a
-	$(CC) $(INCDIRS) -pie $(CFLAGS) -o $@ app/app_main.c -L. $(LDFLAGS) -lacvp -lssl -lcrypto -lcurl -ldl
+	$(CC) $(INCDIRS) $(CFLAGS) -o $@ app/app_main.c -L. $(LDFLAGS) -lacvp -lcurl -ldl -lcrypto  -lssl
 
 clean:
 	rm -f *.[ao]
