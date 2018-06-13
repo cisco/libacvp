@@ -225,11 +225,11 @@ int main(int argc, char **argv) {
     int json = 0;
     char json_file[JSON_FILENAME_LENGTH];
     
-    int aes = 0;
-    int tdes = 0;
-    int hash = 0;
-    int cmac = 0;
-    int hmac = 0;
+    int aes = 1;
+    int tdes = 1;
+    int hash = 1;
+    int cmac = 1;
+    int hmac = 1;
     int kdf = 0;
     /*
      * these require the fom, off by default
@@ -238,7 +238,7 @@ int main(int argc, char **argv) {
     int rsa = 0;
     int drbg = 0;
     int ecdsa = 0;
-    int kas_ecc = 1;
+    int kas_ecc = 0;
     
     if (argc > 4) {
         print_usage();
@@ -1128,7 +1128,6 @@ static void enable_kas_ecc (ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_kas_ecc_cap_parm(ctx, ACVP_KAS_ECC, ACVP_KAS_ECC_MODE_CDH, ACVP_KAS_ECC_CURVE, ACVP_ECDSA_CURVE_P521);
     CHECK_ENABLE_CAP_RV(rv);
-#if 0
     rv = acvp_enable_kas_ecc_cap_parm(ctx, ACVP_KAS_ECC, ACVP_KAS_ECC_MODE_CDH, ACVP_KAS_ECC_CURVE, ACVP_ECDSA_CURVE_K233);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_kas_ecc_cap_parm(ctx, ACVP_KAS_ECC, ACVP_KAS_ECC_MODE_CDH, ACVP_KAS_ECC_CURVE, ACVP_ECDSA_CURVE_K283);
@@ -1145,7 +1144,6 @@ static void enable_kas_ecc (ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_kas_ecc_cap_parm(ctx, ACVP_KAS_ECC, ACVP_KAS_ECC_MODE_CDH, ACVP_KAS_ECC_CURVE, ACVP_ECDSA_CURVE_B571);
     CHECK_ENABLE_CAP_RV(rv);
-#endif
 }
 
 static void enable_dsa (ACVP_CTX *ctx) {
