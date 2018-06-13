@@ -43,7 +43,7 @@ static ACVP_RESULT acvp_kas_ecc_output_cdh_tc (ACVP_CTX *ctx, ACVP_KAS_ECC_TC *s
     ACVP_RESULT rv;
     char *tmp;
 
-    tmp = calloc(1, ACVP_KAS_ECC_MAX);
+    tmp = calloc(1, ACVP_KAS_ECC_MAX_STR);
     if (!tmp) {
         ACVP_LOG_ERR("Unable to malloc in acvp_aes_output_mct_tc");
         return ACVP_MALLOC_FAIL;
@@ -53,7 +53,7 @@ static ACVP_RESULT acvp_kas_ecc_output_cdh_tc (ACVP_CTX *ctx, ACVP_KAS_ECC_TC *s
 
     json_object_set_string(tc_rsp, "publicIutY", stc->piy);
 
-    memset(tmp, 0x0, ACVP_KAS_ECC_MAX);
+    memset(tmp, 0x0, ACVP_KAS_ECC_MAX_STR);
     rv = acvp_bin_to_hexstr((const unsigned char *)stc->z, stc->zlen, (unsigned char *) tmp);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("hex conversion failure (Z)");
@@ -75,18 +75,18 @@ static ACVP_RESULT acvp_kas_ecc_init_cdh_tc (ACVP_CTX *ctx,
 
     stc->mode = mode;
 
-    stc->psx = calloc(1, ACVP_KAS_ECC_MAX);
+    stc->psx = calloc(1, ACVP_KAS_ECC_MAX_STR);
     if (!stc->psx) { return ACVP_MALLOC_FAIL; }
-    stc->psy = calloc(1, ACVP_KAS_ECC_MAX);
+    stc->psy = calloc(1, ACVP_KAS_ECC_MAX_STR);
     if (!stc->psy) { return ACVP_MALLOC_FAIL; }
 
-    stc->z = calloc(1, ACVP_KAS_ECC_MAX);
+    stc->z = calloc(1, ACVP_KAS_ECC_MAX_STR);
     if (!stc->z) { return ACVP_MALLOC_FAIL; }
-    stc->d = calloc(1, ACVP_KAS_ECC_MAX);
+    stc->d = calloc(1, ACVP_KAS_ECC_MAX_STR);
     if (!stc->d) { return ACVP_MALLOC_FAIL; }
 
-    strncpy(stc->psx, psx, strlen((char *)psx));
-    strncpy(stc->psy, psy, strlen((char *)psy));
+    strncpy(stc->psx, psx, strnlen((char *)psx, ACVP_KAS_ECC_MAX_STR));
+    strncpy(stc->psy, psy, strnlen((char *)psy, ACVP_KAS_ECC_MAX_STR));
 
     if (!strcmp(curve, "b-233"))
         stc->curve = ACVP_ECDSA_CURVE_B233;

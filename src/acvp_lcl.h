@@ -223,7 +223,6 @@
 #define ACVP_RSA_HASH_ALG_LEN_MAX    12
 #define ACVP_RSA_EXP_LEN_MAX         512  /**< 2048 bits max for n, 512 characters */
 
-#define ACVP_KAS_ECC_MAX 4096
 
 #define ACVP_KAT_BUF_MAX        1024*1024*4
 #define ACVP_ANS_BUF_MAX        1024*1024*4
