@@ -297,6 +297,12 @@ typedef enum acvp_kdf135_tls_method {
     ACVP_KDF135_TLS12
 } ACVP_KDF135_TLS_METHOD;
 
+/*! @struct ACVP_KDF135_SNMP_PARAM */
+typedef enum acvp_kdf135_snmp_param {
+    ACVP_KDF135_SNMP_PASS_LEN,
+    ACVP_KDF135_SNMP_ENGID
+} ACVP_KDF135_SNMP_PARAM;
+
 // TODO: most of the specs are moving toward "SHA2..." but
 // not all of them have been updated. The duplicates can
 // be removed once all are updated.
@@ -1780,6 +1786,44 @@ ACVP_RESULT acvp_enable_kdf135_x963_cap_param (
         ACVP_CTX *ctx,
         ACVP_KDF135_X963_PARM param,
         int value);
+
+/*! @brief acvp_enable_kdf135_snmp_cap_parm() allows an application to specify
+        operational parameters to be used during a test session with the ACVP
+        server.
+
+        This function should be called after acvp_enable_kdf135_srtp_cap() to
+        specify the parameters for the corresponding KDF.
+
+   @param ctx Address of pointer to a previously allocated ACVP_CTX.
+   @param kcap ACVP_CIPHER enum value specifying parameter
+   @param param ACVP_KDF135_SNMP_PARAM enum value specifying parameter
+   @param value integer value for parameter
+
+   @return ACVP_RESULT
+ */
+ACVP_RESULT acvp_enable_kdf135_snmp_cap_parm (
+        ACVP_CTX *ctx,
+        ACVP_CIPHER kcap,
+        ACVP_KDF135_SNMP_PARAM param,
+        int value);
+
+/*! @brief acvp_enable_kdf135_snmp_engid_parm() allows an application to specify
+        a custom engid to be used during a test session with the ACVP
+        server.
+
+        This function should be called after acvp_enable_kdf135_snmp_cap() to
+        specify the parameters for the corresponding KDF.
+
+   @param ctx Address of pointer to a previously allocated ACVP_CTX.
+   @param kcap ACVP_CIPHER enum value specifying parameter
+   @param engid a hexadecimal string representing engine ID
+
+   @return ACVP_RESULT
+ */
+ACVP_RESULT acvp_enable_kdf135_snmp_engid_parm (
+        ACVP_CTX *ctx,
+        ACVP_CIPHER kcap,
+        char *engid);
 
 /*! @brief acvp_enable_kdf135_ikev2_cap_param() allows an application to specify
         operational parameters to be used during a test session with the ACVP
