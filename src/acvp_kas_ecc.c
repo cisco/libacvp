@@ -67,7 +67,7 @@ static ACVP_RESULT acvp_kas_ecc_output_cdh_tc (ACVP_CTX *ctx, ACVP_KAS_ECC_TC *s
 static ACVP_RESULT acvp_kas_ecc_init_cdh_tc (ACVP_CTX *ctx,
                                             ACVP_KAS_ECC_TC *stc,
                                             unsigned int tc_id,
-                                            unsigned char *curve,
+                                            const char *curve,
                                             char *psx,
                                             char *psy,
                                             unsigned int mode
@@ -79,8 +79,6 @@ static ACVP_RESULT acvp_kas_ecc_init_cdh_tc (ACVP_CTX *ctx,
     if (!stc->psx) { return ACVP_MALLOC_FAIL; }
     stc->psy = calloc(1, ACVP_KAS_ECC_MAX);
     if (!stc->psy) { return ACVP_MALLOC_FAIL; }
-    stc->curve = calloc(1, ACVP_KAS_ECC_MAX);
-    if (!stc->curve) { return ACVP_MALLOC_FAIL; }
 
     stc->z = calloc(1, ACVP_KAS_ECC_MAX);
     if (!stc->z) { return ACVP_MALLOC_FAIL; }
@@ -89,7 +87,32 @@ static ACVP_RESULT acvp_kas_ecc_init_cdh_tc (ACVP_CTX *ctx,
 
     strncpy(stc->psx, psx, strlen((char *)psx));
     strncpy(stc->psy, psy, strlen((char *)psy));
-    strncpy(stc->curve, (const char *)curve, strlen((char *)curve));
+
+    if (!strcmp(curve, "b-233"))
+        stc->curve = ACVP_ECDSA_CURVE_B233;
+    if (!strcmp(curve, "b-283"))
+        stc->curve = ACVP_ECDSA_CURVE_B283;
+    if (!strcmp(curve, "b-409"))
+        stc->curve = ACVP_ECDSA_CURVE_B409;
+    if (!strcmp(curve, "b-571"))
+        stc->curve = ACVP_ECDSA_CURVE_B571;
+    if (!strcmp(curve, "k-233"))
+        stc->curve = ACVP_ECDSA_CURVE_K233;
+    if (!strcmp(curve, "k-283"))
+        stc->curve = ACVP_ECDSA_CURVE_K283;
+    if (!strcmp(curve, "k-409"))
+        stc->curve = ACVP_ECDSA_CURVE_K409;
+    if (!strcmp(curve, "k-571"))
+        stc->curve = ACVP_ECDSA_CURVE_K571;
+    if (!strcmp(curve, "p-224"))
+        stc->curve = ACVP_ECDSA_CURVE_P224;
+    if (!strcmp(curve, "p-256"))
+        stc->curve = ACVP_ECDSA_CURVE_P256;
+    if (!strcmp(curve, "p-384"))
+        stc->curve = ACVP_ECDSA_CURVE_P384;
+    if (!strcmp(curve, "p-521"))
+        stc->curve = ACVP_ECDSA_CURVE_P521;
+
     return ACVP_SUCCESS;
 }
 
@@ -105,7 +128,6 @@ static ACVP_RESULT acvp_kas_ecc_release_tc (ACVP_KAS_ECC_TC *stc) {
     free(stc->piy);
     free(stc->d);
     free(stc->z);
-    free(stc->curve);
     return ACVP_SUCCESS;
 }
 
@@ -171,7 +193,7 @@ static ACVP_RESULT acvp_kas_ecc_cdh(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap, ACVP_TES
              * TODO: this does mallocs, we can probably do the mallocs once for
              *       the entire vector set to be more efficient
              */
-            acvp_kas_ecc_init_cdh_tc(ctx, stc, tc_id, (unsigned char *)curve, 
+            acvp_kas_ecc_init_cdh_tc(ctx, stc, tc_id, curve, 
                                      psx, psy, mode);
 
             /* Process the current AES KAT test vector... */

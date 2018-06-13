@@ -225,11 +225,11 @@ int main(int argc, char **argv) {
     int json = 0;
     char json_file[JSON_FILENAME_LENGTH];
     
-    int aes = 1;
-    int tdes = 1;
-    int hash = 1;
-    int cmac = 1;
-    int hmac = 1;
+    int aes = 0;
+    int tdes = 0;
+    int hash = 0;
+    int cmac = 0;
+    int hmac = 0;
     int kdf = 0;
     /*
      * these require the fom, off by default
@@ -238,7 +238,7 @@ int main(int argc, char **argv) {
     int rsa = 0;
     int drbg = 0;
     int ecdsa = 0;
-    int kas_ecc = 0;
+    int kas_ecc = 1;
     
     if (argc > 4) {
         print_usage();
@@ -1128,6 +1128,7 @@ static void enable_kas_ecc (ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_kas_ecc_cap_parm(ctx, ACVP_KAS_ECC, ACVP_KAS_ECC_MODE_CDH, ACVP_KAS_ECC_CURVE, ACVP_ECDSA_CURVE_P521);
     CHECK_ENABLE_CAP_RV(rv);
+#if 0
     rv = acvp_enable_kas_ecc_cap_parm(ctx, ACVP_KAS_ECC, ACVP_KAS_ECC_MODE_CDH, ACVP_KAS_ECC_CURVE, ACVP_ECDSA_CURVE_K233);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_kas_ecc_cap_parm(ctx, ACVP_KAS_ECC, ACVP_KAS_ECC_MODE_CDH, ACVP_KAS_ECC_CURVE, ACVP_ECDSA_CURVE_K283);
@@ -1144,6 +1145,7 @@ static void enable_kas_ecc (ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_kas_ecc_cap_parm(ctx, ACVP_KAS_ECC, ACVP_KAS_ECC_MODE_CDH, ACVP_KAS_ECC_CURVE, ACVP_ECDSA_CURVE_B571);
     CHECK_ENABLE_CAP_RV(rv);
+#endif
 }
 
 static void enable_dsa (ACVP_CTX *ctx) {
@@ -3504,6 +3506,7 @@ static int ec_print_key(ACVP_KAS_ECC_TC *tc, EC_KEY *key, int add_e, int exout)
     tx = BN_CTX_get(ctx);
     ty = BN_CTX_get(ctx);
     if (!tx || !ty) {
+        BN_CTX_free(ctx);
         printf("BN_CTX_get failed\n");
         return 0;
     }
@@ -3517,6 +3520,7 @@ static int ec_print_key(ACVP_KAS_ECC_TC *tc, EC_KEY *key, int add_e, int exout)
     else
 #ifdef OPENSSL_NO_EC2M
     {
+        BN_CTX_free(ctx);
         printf("ERROR: GF2m not supported\n");
         return 0;
     }
@@ -3528,22 +3532,22 @@ static int ec_print_key(ACVP_KAS_ECC_TC *tc, EC_KEY *key, int add_e, int exout)
     if (add_e) {
         tc->pix = BN_bn2hex(tx);
         tc->piy = BN_bn2hex(ty);
-        tc->pixlen = strlen(tc->pix);
-        tc->piylen = strlen(tc->piy);
+        tc->pixlen = strnlen(tc->pix, ACVP_KAS_ECC_MAX_STR);
+        tc->piylen = strnlen(tc->piy, ACVP_KAS_ECC_MAX_STR);
         if (d) {
             tc->d = BN_bn2hex(d);
-            tc->dlen = strlen(tc->d);
+            tc->dlen = strnlen(tc->d, ACVP_KAS_ECC_MAX_STR);
         }
     } else {
 
         tc->pix = BN_bn2hex(tx);
         tc->piy = BN_bn2hex(ty);
-        tc->pixlen = strlen(tc->pix);
-        tc->piylen = strlen(tc->piy);
+        tc->pixlen = strnlen(tc->pix, ACVP_KAS_ECC_MAX_STR);
+        tc->piylen = strnlen(tc->piy, ACVP_KAS_ECC_MAX_STR);
 
         if (d) {
             tc->d = BN_bn2hex(d);
-            tc->dlen = strlen(tc->d);
+            tc->dlen = strnlen(tc->d, ACVP_KAS_ECC_MAX_STR);
         }
     }
 
@@ -3564,36 +3568,48 @@ static ACVP_RESULT app_kas_ecc_handler(ACVP_TEST_CASE *test_case)
 
     tc = test_case->tc.kas_ecc;
 
-    if (!strcmp(tc->curve, "b-233"))
-        nid = NID_sect233r1;
-    if (!strcmp(tc->curve, "b-283"))
-        nid = NID_sect283r1;
-    if (!strcmp(tc->curve, "b-409"))
-        nid = NID_sect409r1;
-    if (!strcmp(tc->curve, "b-571"))
-        nid = NID_sect571r1;
-    if (!strcmp(tc->curve, "k-233"))
-        nid = NID_sect233k1;
-    if (!strcmp(tc->curve, "k-283"))
-        nid = NID_sect283k1;
-    if (!strcmp(tc->curve, "k-409"))
-        nid = NID_sect409k1;
-    if (!strcmp(tc->curve, "k-571"))
-        nid = NID_sect571k1;
-    if (!strcmp(tc->curve, "k-224"))
+    switch (tc->curve)
+    {
+    case ACVP_ECDSA_CURVE_P224:
         nid = NID_secp224r1;
-    if (!strcmp(tc->curve, "p-224"))
-        nid = NID_secp224r1;
-    if (!strcmp(tc->curve, "p-256"))
+        break;
+    case ACVP_ECDSA_CURVE_P256:
         nid = NID_X9_62_prime256v1;
-    if (!strcmp(tc->curve, "p-384"))
+        break;
+    case ACVP_ECDSA_CURVE_P384:
         nid = NID_secp384r1;
-    if (!strcmp(tc->curve, "p-521"))
+        break;
+    case ACVP_ECDSA_CURVE_P521:
         nid = NID_secp521r1;
-
-    if (nid == 0) {
-        printf("Invalid curve %s\n", tc->curve);
+        break;
+    case ACVP_ECDSA_CURVE_B233:
+        nid = NID_sect233r1;
+        break;
+    case ACVP_ECDSA_CURVE_B283:
+        nid = NID_sect283r1;
+        break;
+    case ACVP_ECDSA_CURVE_B409:
+        nid = NID_sect409r1;
+        break;
+    case ACVP_ECDSA_CURVE_B571:
+        nid = NID_sect571r1;
+        break;
+    case ACVP_ECDSA_CURVE_K233:
+        nid = NID_sect233k1;
+        break;
+    case ACVP_ECDSA_CURVE_K283:
+        nid = NID_sect283k1;
+        break;
+    case ACVP_ECDSA_CURVE_K409:
+        nid = NID_sect409k1;
+        break;
+    case ACVP_ECDSA_CURVE_K571:
+        nid = NID_sect571k1;
+        break;
+    default:
+        printf("Invalid curve %d\n", tc->curve);
         return ACVP_CRYPTO_MODULE_FAIL;
+        break;
     }
 
     group = EC_GROUP_new_by_curve_name(nid);
@@ -3604,30 +3620,42 @@ static ACVP_RESULT app_kas_ecc_handler(ACVP_TEST_CASE *test_case)
 
     ec = EC_KEY_new();
     if (ec == NULL) {
+        EC_GROUP_free(group);
         printf("No EC_KEY_new\n");
         return ACVP_CRYPTO_MODULE_FAIL;
     }
     EC_KEY_set_flags(ec, EC_FLAG_COFACTOR_ECDH);
     if (!EC_KEY_set_group(ec, group)) {
+        EC_GROUP_free(group);
         printf("No EC_KEY_set_group\n");
         return ACVP_CRYPTO_MODULE_FAIL;
     }
 
     if (!BN_hex2bn(&cx, (char *)tc->psx)) {
+        EC_GROUP_free(group);
         printf("BN_hex2bn failed\n");
         return ACVP_CRYPTO_MODULE_FAIL;
     }
 
     if (!BN_hex2bn(&cy, (char *)tc->psy)) {
+        EC_GROUP_free(group);
+        BN_free(cx);
         printf("BN_hex2bn failed\n");
         return ACVP_CRYPTO_MODULE_FAIL;
     }
     peerkey = make_peer(group, cx, cy);
     if (peerkey == NULL) {
+        EC_GROUP_free(group);
+        BN_free(cx);
+        BN_free(cy);
         printf("Peerkey failed\n");
         return ACVP_CRYPTO_MODULE_FAIL;
     }
     if (!EC_KEY_generate_key(ec)) {
+        EC_POINT_free(peerkey);
+        EC_GROUP_free(group);
+        BN_free(cx);
+        BN_free(cy);
         printf("EC_KEY_generate_key failed\n");
         return ACVP_CRYPTO_MODULE_FAIL;
     }
@@ -3635,15 +3663,30 @@ static ACVP_RESULT app_kas_ecc_handler(ACVP_TEST_CASE *test_case)
     ec_print_key(tc, ec, 0, exout);
     Zlen = (EC_GROUP_get_degree(group) + 7)/8;
     if (!Zlen) {
+        EC_KEY_free(ec);
+        EC_POINT_free(peerkey);
+        EC_GROUP_free(group);
+        BN_free(cx);
+        BN_free(cy);
         printf("Zlen degree failure\n");
         return ACVP_CRYPTO_MODULE_FAIL;
     }
     Z = OPENSSL_malloc(Zlen);
     if (!Z) {
+        EC_KEY_free(ec);
+        EC_POINT_free(peerkey);
+        EC_GROUP_free(group);
+        BN_free(cx);
+        BN_free(cy);
         printf("Malloc failure\n");
         return ACVP_CRYPTO_MODULE_FAIL;
     }
     if (!ECDH_compute_key(Z, Zlen, peerkey, ec, 0)) {
+        EC_KEY_free(ec);
+        EC_POINT_free(peerkey);
+        EC_GROUP_free(group);
+        BN_free(cx);
+        BN_free(cy);
         printf("ECDH_compute_key failure\n");
         return ACVP_CRYPTO_MODULE_FAIL;
     }

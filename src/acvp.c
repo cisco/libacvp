@@ -409,6 +409,7 @@ static void acvp_cap_free_kas_ecc_mode (ACVP_CAPS_LIST *cap_list) {
         }
     }
     free(cap_list->cap.kas_ecc_cap->kas_ecc_mode);
+    free(cap_list->cap.kas_ecc_cap);
 }
 /*
  * Free Internal memory for DRBG Data struct
@@ -517,7 +518,6 @@ ACVP_RESULT acvp_free_test_session (ACVP_CTX *ctx) {
                     break;
                 case ACVP_KAS_ECC_TYPE:
                     acvp_cap_free_kas_ecc_mode(cap_entry);
-                    free(cap_entry->cap.kas_ecc_cap);
                     break;
                 case ACVP_RSA_KEYGEN_TYPE:
                     acvp_cap_free_rsa_keygen_list(cap_entry);
