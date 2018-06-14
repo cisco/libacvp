@@ -37,48 +37,90 @@
  * file that will be uploaded to the server.  This routine handles
  * the JSON processing for a single test case.
  */
-static ACVP_RESULT acvp_kdf108_output_tc (ACVP_CTX *ctx, ACVP_KDF108_TC *stc, JSON_Object *tc_rsp) {
-    ACVP_RESULT rv;
-    
-    json_object_set_string(tc_rsp, "keyOut", stc->key_out);
-    json_object_set_string(tc_rsp, "fixedData", stc->fixed_data);
-    
+static ACVP_RESULT acvp_kdf108_output_tc (ACVP_CTX *ctx,
+                                          ACVP_KDF108_TC *stc,
+                                          JSON_Object *tc_rsp) {
+    ACVP_RESULT rv = 0;
+    char tmp[ACVP_KDF108_STRING_MAX + 1] = {0}; // Leave space for terminator
+
+    /*
+     * Sign check, only accept positive values
+     */
+    if (stc->key_out_len <= 0 ||
+        stc->fixed_data_len <= 0) {
+        ACVP_LOG_ERR("stc lengths <= 0");
+        return ACVP_INVALID_ARG;
+    }
+
+    /*
+     * Length check
+     */
+    if ((stc->key_out_len * 2) > ACVP_KDF108_STRING_MAX ||
+        (stc->fixed_data_len * 2) > ACVP_KDF108_STRING_MAX) {
+        ACVP_LOG_ERR("stc lengths > ACVP_KDF108_STRING_MAX(%u)", ACVP_KDF108_STRING_MAX);
+        return ACVP_INVALID_ARG;
+    }
+
+    rv = acvp_bin_to_hexstr(stc->key_out, stc->key_out_len, (unsigned char *) tmp);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("acvp_bin_to_hexstr() failure");
+        return rv;
+    }
+    json_object_set_string(tc_rsp, "keyOut", tmp);
+
+    // Clear the tmp array
+    memset(tmp, 0, ACVP_KDF108_STRING_MAX);
+
+    rv = acvp_bin_to_hexstr(stc->fixed_data, stc->fixed_data_len, (unsigned char *) tmp);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("acvp_bin_to_hexstr() failure");
+        return rv;
+    }
+    json_object_set_string(tc_rsp, "fixedData", tmp);
+
     return ACVP_SUCCESS;
 }
 
 static ACVP_RESULT acvp_kdf108_init_tc (ACVP_CTX *ctx,
                                         ACVP_KDF108_TC *stc,
                                         unsigned int tc_id,
-                                        char *kdf_mode,
-                                        char *mac_mode,
-                                        char *counter_location,
+                                        ACVP_KDF108_MODE kdf_mode,
+                                        ACVP_KDF108_MAC_MODE_VAL mac_mode,
+                                        ACVP_KDF108_FIXED_DATA_ORDER_VAL counter_location,
+                                        char *key_in,
+                                        int key_in_len,
                                         int key_out_len,
                                         int counter_len,
-                                        char *key_in,
                                         int deferred
 ) {
     memset(stc, 0x0, sizeof(ACVP_KDF108_TC));
-    
-    stc->mode = calloc(strlen(kdf_mode), sizeof(char));
-    if (!stc->mode) { return ACVP_MALLOC_FAIL; }
 
-    stc->mac_mode = calloc(strlen(mac_mode), sizeof(char));
-    if (!stc->mac_mode) { return ACVP_MALLOC_FAIL; }
-
-    stc->counter_location = calloc(strlen(counter_location), sizeof(char));
-    if (!stc->counter_location) { return ACVP_MALLOC_FAIL; }
-
-    stc->key_in = calloc(strlen(key_in), sizeof(char));
+    // Allocate space for the key_in (binary)
+    stc->key_in = calloc(key_in_len, sizeof(unsigned char));
     if (!stc->key_in) { return ACVP_MALLOC_FAIL; }
+
+    // Convert key_in from hex string to binary
+    acvp_hexstr_to_bin(key_in, stc->key_in, key_in_len);
+
+    // Allocate space for the key_out
+    stc->key_out = calloc(key_out_len, sizeof(unsigned char));
+    if (!stc->key_out) { return ACVP_MALLOC_FAIL; }
+
+    /*
+     * Allocate space for the fixed_data.
+     * User supplies the data, set size limit.
+     */
+    stc->fixed_data = calloc(ACVP_KDF108_FIXED_DATA_MAX, sizeof(unsigned char));
+    if (!stc->key_out) { return ACVP_MALLOC_FAIL; }
     
     stc->tc_id = tc_id;
     stc->cipher = ACVP_KDF108;
     stc->mode = kdf_mode;
     stc->mac_mode = mac_mode;
     stc->counter_location = counter_location;
+    stc->key_in_len = key_in_len;
     stc->key_out_len = key_out_len;
     stc->counter_len = counter_len;
-    stc->key_in = (unsigned char *)key_in;
     stc->deferred = deferred;
     
     return ACVP_SUCCESS;
@@ -89,12 +131,9 @@ static ACVP_RESULT acvp_kdf108_init_tc (ACVP_CTX *ctx,
  * a test case.
  */
 static ACVP_RESULT acvp_kdf108_release_tc (ACVP_KDF108_TC *stc) {
-    free(stc->mode);
-    free(stc->mac_mode);
-    free(stc->counter_location);
-    free(stc->key_in);
-    free(stc->key_out);
-    free(stc->fixed_data);
+    if (stc->key_in) free(stc->key_in);
+    if (stc->key_out) free(stc->key_out);
+    if (stc->fixed_data) free(stc->fixed_data);
     
     memset(stc, 0x0, sizeof(ACVP_KDF108_TC));
     return ACVP_SUCCESS;
@@ -121,14 +160,20 @@ ACVP_RESULT acvp_kdf108_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     JSON_Array *r_tarr = NULL; /* Response testarray */
     JSON_Value *r_tval = NULL; /* Response testval */
     JSON_Object *r_tobj = NULL; /* Response testobj */
+
     ACVP_CAPS_LIST *cap;
     ACVP_KDF108_TC stc;
     ACVP_TEST_CASE tc;
     ACVP_RESULT rv;
+
     const char *alg_str = "KDF";
     ACVP_CIPHER alg_id = ACVP_KDF108;
-    int key_out_len, counter_len, deferred;
-    char *kdf_mode = NULL, *mac_mode = NULL, *key_in = NULL, *counter_location = NULL;
+    ACVP_KDF108_MODE kdf_mode = 0;
+    ACVP_KDF108_MAC_MODE_VAL mac_mode = 0;
+    ACVP_KDF108_FIXED_DATA_ORDER_VAL ctr_loc = 0;
+    int key_out_bit_len, key_out_len, key_in_len, ctr_len, deferred;
+    unsigned char *key_in = NULL;
+    char *kdf_mode_str, *mac_mode_str, *key_in_str, *ctr_loc_str = NULL;
     char *json_result;
 
     /*
@@ -175,13 +220,100 @@ ACVP_RESULT acvp_kdf108_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
         groupval = json_array_get_value(groups, i);
         groupobj = json_value_get_object(groupval);
 
+        kdf_mode_str = json_object_get_string(groupobj, "kdfMode");
+        mac_mode_str = json_object_get_string(groupobj, "macMode");
+        key_out_bit_len = json_object_get_number(groupobj, "keyOutLength");
+        ctr_len = json_object_get_number(groupobj, "counterLength");
+        ctr_loc_str = json_object_get_string(groupobj, "counterLocation");
+
+        // Get the keyout byte length  (+1 for overflow bits)
+        key_out_len = (key_out_bit_len + 7) / 8;
+
+        if (key_out_len > ACVP_KDF108_KEYOUT_MAX) {
+            ACVP_LOG_ERR("ACVP server requesting unsupported key_out length (%d)",
+                         key_out_len);
+            return (ACVP_UNSUPPORTED_OP);
+        }
+
+        /*
+         * Determine the KDF108 mode to operate.
+         * Compare using protocol specified strings.
+         */
+        if (strncmp(kdf_mode_str, ACVP_MODE_COUNTER, 64) == 0) {
+            kdf_mode = ACVP_KDF108_MODE_COUNTER;
+        } else if (strncmp(kdf_mode_str, ACVP_MODE_FEEDBACK, 64) == 0) {
+            kdf_mode = ACVP_KDF108_MODE_FEEDBACK;
+        } else if (strncmp(kdf_mode_str, ACVP_MODE_DPI, 64) == 0) {
+            kdf_mode = ACVP_KDF108_MODE_DPI;
+        } else {
+            ACVP_LOG_ERR("ACVP server requesting unsupported KDF108 mode");
+            return (ACVP_UNSUPPORTED_OP);
+        }
+
+        /*
+         * Determine the mac mode to operate.
+         * Compare using protocol specified strings.
+         */
+        if (strncmp(mac_mode_str, ACVP_ALG_HMAC_SHA1, 64) == 0) {
+            mac_mode = ACVP_KDF108_MAC_MODE_HMAC_SHA1;
+            key_in_len = ACVP_BYTE_LEN_HMAC_SHA1;
+        } else if (strncmp(mac_mode_str, ACVP_ALG_HMAC_SHA2_224, 64) == 0) {
+            mac_mode = ACVP_KDF108_MAC_MODE_HMAC_SHA224;
+            key_in_len = ACVP_BYTE_LEN_HMAC_SHA224;
+        } else if (strncmp(mac_mode_str, ACVP_ALG_HMAC_SHA2_256, 64) == 0) {
+            mac_mode = ACVP_KDF108_MAC_MODE_HMAC_SHA256;
+            key_in_len = ACVP_BYTE_LEN_HMAC_SHA256;
+        } else if (strncmp(mac_mode_str, ACVP_ALG_HMAC_SHA2_384, 64) == 0) {
+            mac_mode = ACVP_KDF108_MAC_MODE_HMAC_SHA384;
+            key_in_len = ACVP_BYTE_LEN_HMAC_SHA384;
+        } else if (strncmp(mac_mode_str, ACVP_ALG_HMAC_SHA2_512, 64) == 0) {
+            mac_mode = ACVP_KDF108_MAC_MODE_HMAC_SHA512;
+            key_in_len = ACVP_BYTE_LEN_HMAC_SHA512;
+        } else if (strncmp(mac_mode_str, ACVP_ALG_CMAC_AES_128, 64) == 0) {
+            mac_mode = ACVP_KDF108_MAC_MODE_CMAC_AES128;
+            key_in_len = ACVP_BYTE_LEN_CMAC_AES128;
+        } else if (strncmp(mac_mode_str, ACVP_ALG_CMAC_AES_192, 64) == 0) {
+            mac_mode = ACVP_KDF108_MAC_MODE_CMAC_AES192;
+            key_in_len = ACVP_BYTE_LEN_CMAC_AES192;
+        } else if (strncmp(mac_mode_str, ACVP_ALG_CMAC_AES_256, 64) == 0) {
+            mac_mode = ACVP_KDF108_MAC_MODE_CMAC_AES256;
+            key_in_len = ACVP_BYTE_LEN_CMAC_AES256;
+        } else if (strncmp(mac_mode_str, ACVP_ALG_CMAC_TDES, 64) == 0) {
+            mac_mode = ACVP_KDF108_MAC_MODE_CMAC_TDES;
+            key_in_len = ACVP_BYTE_LEN_CMAC_TDES;
+        } else {
+            ACVP_LOG_ERR("ACVP server requesting unsupported KDF108 mac mode");
+            return (ACVP_UNSUPPORTED_OP);
+        }
+
+        /*
+         * Determine the counter location.
+         * Compare using protocol specified strings.
+         */
+        if (strncmp(ctr_loc_str, ACVP_FIXED_DATA_ORDER_AFTER_STR, 64) == 0) {
+            ctr_loc = ACVP_KDF108_FIXED_DATA_ORDER_AFTER;
+        } else if (strncmp(ctr_loc_str, ACVP_FIXED_DATA_ORDER_BEFORE_STR, 64) == 0) {
+            ctr_loc = ACVP_KDF108_FIXED_DATA_ORDER_BEFORE;
+        } else if (strncmp(ctr_loc_str, ACVP_FIXED_DATA_ORDER_MIDDLE_STR, 64) == 0) {
+            ctr_loc = ACVP_KDF108_FIXED_DATA_ORDER_MIDDLE;
+        } else if (strncmp(ctr_loc_str, ACVP_FIXED_DATA_ORDER_NONE_STR, 64) == 0) {
+            ctr_loc = ACVP_KDF108_FIXED_DATA_ORDER_NONE;
+        } else if (strncmp(ctr_loc_str, ACVP_FIXED_DATA_ORDER_BEFORE_ITERATOR_STR, 64) == 0) {
+            ctr_loc = ACVP_KDF108_FIXED_DATA_ORDER_BEFORE_ITERATOR;
+        } else {
+            ACVP_LOG_ERR("ACVP server requesting unsupported KDF108 counter location");
+            return (ACVP_UNSUPPORTED_OP);
+        }
+
+        /*
+         * Log Test Group information...
+         */
         ACVP_LOG_INFO("    Test group: %d", i);
-        
-        kdf_mode = json_object_get_string(groupobj, "kdfMode");
-        mac_mode = json_object_get_string(groupobj, "macMode");
-        key_out_len = json_object_get_number(groupobj, "keyOutLength");
-        counter_len = json_object_get_number(groupobj, "counterLength");
-        counter_location = json_object_get_string(groupobj, "counterLocation");
+        ACVP_LOG_INFO("       kdfMode: %s", kdf_mode_str);
+        ACVP_LOG_INFO("       macMode: %s", mac_mode_str);
+        ACVP_LOG_INFO("     keyOutLen: %d", key_out_bit_len);
+        ACVP_LOG_INFO("    counterLen: %d", ctr_len);
+        ACVP_LOG_INFO("    counterLoc: %s", ctr_loc_str);
 
         tests = json_object_get_array(groupobj, "tests");
         t_cnt = json_array_get_count(tests);
@@ -191,13 +323,16 @@ ACVP_RESULT acvp_kdf108_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
             testobj = json_value_get_object(testval);
 
             tc_id = (unsigned int) json_object_get_number(testobj, "tcId");
-            key_in = json_object_get_string(testobj, "keyIn");
+            key_in_str = json_object_get_string(testobj, "keyIn");
             deferred = json_object_get_boolean(testobj, "deferred");
 
+            /*
+             * Log Test Case information...
+             */
             ACVP_LOG_INFO("        Test case: %d", j);
             ACVP_LOG_INFO("             tcId: %d", tc_id);
-            ACVP_LOG_INFO("          macMode: %d", mac_mode);
-            ACVP_LOG_INFO("            keyIn: %d", key_in);
+            ACVP_LOG_INFO("            keyIn: %s", key_in_str);
+            ACVP_LOG_INFO("         deferred: %d", deferred);
 
             /*
              * Create a new test case in the response
@@ -214,8 +349,8 @@ ACVP_RESULT acvp_kdf108_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
              *       the entire vector set to be more efficient
              */
             acvp_kdf108_init_tc(ctx, &stc, tc_id, kdf_mode, mac_mode,
-                                counter_location, key_out_len,
-                                counter_len, key_in, deferred);
+                                ctr_loc, key_in_str, key_in_len,
+                                key_out_len, ctr_len, deferred);
 
             /* Process the current test vector... */
             rv = (cap->crypto_handler)(&tc);

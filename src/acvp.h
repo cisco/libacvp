@@ -39,6 +39,16 @@ extern "C"
 #define ACVP_TOTP_LENGTH 8
 #define ACVP_TOTP_TOKEN_MAX 128
 
+#define ACVP_BYTE_LEN_HMAC_SHA1 20
+#define ACVP_BYTE_LEN_HMAC_SHA224 28
+#define ACVP_BYTE_LEN_HMAC_SHA256 32
+#define ACVP_BYTE_LEN_HMAC_SHA384 48
+#define ACVP_BYTE_LEN_HMAC_SHA512 64
+#define ACVP_BYTE_LEN_CMAC_AES128 16
+#define ACVP_BYTE_LEN_CMAC_AES192 24
+#define ACVP_BYTE_LEN_CMAC_AES256 32
+#define ACVP_BYTE_LEN_CMAC_TDES 24
+
 typedef enum acvp_log_lvl {
     ACVP_LOG_LVL_NONE = 0,
     ACVP_LOG_LVL_ERR,
@@ -218,11 +228,16 @@ typedef enum acvp_kdf135_srtp_param {
     ACVP_SRTP_PARAM_MAX
 } ACVP_KDF135_SRTP_PARAM;
 
+#define ACVP_KDF108_KEYOUT_MAX 512
+#define ACVP_KDF108_FIXED_DATA_MAX 512
+
 /*! @struct ACVP_KDF108_MODE */
 typedef enum acvp_kdf108_mode {
+    ACVP_KDF108_MODE_MIN,
     ACVP_KDF108_MODE_COUNTER,
     ACVP_KDF108_MODE_FEEDBACK,
-    ACVP_KDF108_MODE_DPI
+    ACVP_KDF108_MODE_DPI,
+    ACVP_KDF108_MODE_MAX
 } ACVP_KDF108_MODE;
 
 /*! @struct ACVP_KDF108_MAC_MODE_VAL */
@@ -743,15 +758,19 @@ typedef struct acvp_kdf135_x963_tc_t {
 typedef struct acvp_kdf108_tc_t {
     ACVP_CIPHER cipher;
     unsigned int tc_id;    /* Test case id */
-    char *mode;
-    char *mac_mode;
-    char *counter_location;
+    ACVP_KDF108_MODE mode;
+    ACVP_KDF108_MAC_MODE_VAL mac_mode;
+    ACVP_KDF108_FIXED_DATA_ORDER_VAL counter_location;
     unsigned char *key_in;
+    unsigned char *key_out;
+    unsigned char *fixed_data;
+    int key_in_len;             /**< Length of key_in (in bytes) */
+    int key_out_len;            /**< Length of key_out (in bytes) */
+    int fixed_data_len;         /**< Length of fixed_data (in bytes).
+                                     --- User supplied ---
+                                     Must be <= ACVP_KDF108_FIXED_DATA_MAX */
     int counter_len;
-    int key_out_len;
     int deferred;
-    char *key_out;
-    char *fixed_data;
 } ACVP_KDF108_TC;
 
 /*!
@@ -1889,7 +1908,7 @@ ACVP_RESULT acvp_enable_kdf135_srtp_cap_parm (
         operational parameters to be used during a test session with the ACVP
         server.
 
-        This function should be called after acvp_enable_kdf135_srtp_cap() to
+        This function should be called after acvp_enable_kdf108_cap() to
         specify the parameters for the corresponding KDF.
 
    @param ctx Address of pointer to a previously allocated ACVP_CTX.
