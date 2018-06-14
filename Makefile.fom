@@ -25,6 +25,7 @@ SOURCES= src/acvp.c \
          src/acvp_kdf135_x963.c \
          src/acvp_kdf135_tpm.c \
          src/acvp_kdf108.c \
+         src/acvp_kas_ecc.c \
          src/acvp_ecdsa.c
 OBJECTS=$(SOURCES:.c=.o) $(MODULE_ROOT)/lib/fipscanister.o
 
