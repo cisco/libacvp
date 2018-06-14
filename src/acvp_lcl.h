@@ -106,6 +106,9 @@
 #define ACVP_ALG_HMAC_SHA3_512       "HMAC-SHA3-512"
 
 #define ACVP_ALG_CMAC_AES            "CMAC-AES"
+#define ACVP_ALG_CMAC_AES_128        "CMAC-AES128"
+#define ACVP_ALG_CMAC_AES_192        "CMAC-AES192"
+#define ACVP_ALG_CMAC_AES_256        "CMAC-AES256"
 #define ACVP_ALG_CMAC_TDES           "CMAC-TDES"
 
 #define ACVP_ALG_DSA                     "DSA"
@@ -128,6 +131,12 @@
 #define ACVP_MODE_DPI               "double pipeline iteration"
 #define ACVP_KDF135_ALG_STR         "kdf-components"
 
+#define ACVP_FIXED_DATA_ORDER_AFTER_STR "after fixed data"
+#define ACVP_FIXED_DATA_ORDER_BEFORE_STR "before fixed data"
+#define ACVP_FIXED_DATA_ORDER_MIDDLE_STR "middle fixed data"
+#define ACVP_FIXED_DATA_ORDER_NONE_STR "none"
+#define ACVP_FIXED_DATA_ORDER_BEFORE_ITERATOR_STR "before iterator"
+
 #define ACVP_PREREQ_VAL_STR "valValue"
 #define ACVP_PREREQ_OBJ_STR "prereqVals"
 
@@ -143,7 +152,7 @@
 #define ACVP_ALG_KDF135_IKEV2    "KDF-IKEV2"
 #define ACVP_ALG_KDF135_IKEV1    "KDF-IKEV1"
 #define ACVP_ALG_KDF135_TPM      "KDF-TPM"
-#define ACVP_ALG_KDF108          "KDF-108"
+#define ACVP_ALG_KDF108          "KDF"
 #define ACVP_ALG_KDF135_X963     "KDF-X963"
 
 /*
@@ -191,6 +200,8 @@
 #define ACVP_KDF135_PSK_LEN_MAX 8
 #define ACVP_KDF135_IKE_COOKIE_LEN_MAX 32
 #define ACVP_KDF135_IKEV1_GXY_LEN_MAX 32
+
+#define ACVP_KDF108_STRING_MAX 1024 /**< 4096 bits max for keyout, 1024 characters */
 
 #define ACVP_HMAC_MSG_MAX       1024
 #define ACVP_HMAC_MAC_MAX       128       /**< 512 bits, 128 characters */

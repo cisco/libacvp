@@ -388,6 +388,59 @@ static void acvp_free_drbg_struct (ACVP_CAPS_LIST *cap_list) {
 }
 
 /*
+ * Free Internal memory for KDF108 Cap struct
+ */
+static void acvp_cap_free_kdf108 (ACVP_CAPS_LIST *cap_list) {
+    ACVP_KDF108_CAP *cap = cap_list->cap.kdf108_cap;
+    ACVP_KDF108_MODE_PARAMS *mode_obj = NULL;
+
+    if (cap) {
+        if (cap->counter_mode.kdf_mode) {
+            mode_obj = &cap->counter_mode;
+            if (mode_obj->mac_mode) {
+                acvp_cap_free_nl(mode_obj->mac_mode);
+            }
+            if (mode_obj->data_order) {
+                acvp_cap_free_nl(mode_obj->data_order);
+            }
+            if (mode_obj->counter_lens) {
+                acvp_cap_free_sl(mode_obj->counter_lens);
+            }
+        }
+
+        if (cap->feedback_mode.kdf_mode) {
+            mode_obj = &cap->feedback_mode;
+            if (mode_obj->mac_mode) {
+                acvp_cap_free_nl(mode_obj->mac_mode);
+            }
+            if (mode_obj->data_order) {
+                acvp_cap_free_nl(mode_obj->data_order);
+            }
+            if (mode_obj->counter_lens) {
+                acvp_cap_free_sl(mode_obj->counter_lens);
+            }
+        }
+
+        if (cap->dpi_mode.kdf_mode) {
+            mode_obj = &cap->dpi_mode;
+            if (mode_obj->mac_mode) {
+                acvp_cap_free_nl(mode_obj->mac_mode);
+            }
+            if (mode_obj->data_order) {
+                acvp_cap_free_nl(mode_obj->data_order);
+            }
+            if (mode_obj->counter_lens) {
+                acvp_cap_free_sl(mode_obj->counter_lens);
+            }
+        }
+
+        free(cap);
+        cap = NULL;
+        cap_list->cap.kdf108_cap = NULL;
+    }
+}
+
+/*
  * The application will invoke this to free the ACVP context
  * when the test session is finished.
  */
@@ -487,13 +540,15 @@ ACVP_RESULT acvp_free_test_session (ACVP_CTX *ctx) {
                 case ACVP_KDF135_TLS_TYPE:
                     free(cap_entry->cap.kdf135_tls_cap);
                     break;
+                case ACVP_KDF108_TYPE:
+                    acvp_cap_free_kdf108(cap_entry);
+                    break;
                 case ACVP_KDF135_SNMP_TYPE:
                 case ACVP_KDF135_SSH_TYPE:
                 case ACVP_KDF135_IKEV2_TYPE:
                 case ACVP_KDF135_IKEV1_TYPE:
                 case ACVP_KDF135_X963_TYPE:
                 case ACVP_KDF135_TPM_TYPE:
-                case ACVP_KDF108_TYPE:
                 default:
                     return ACVP_INVALID_ARG;
                 }
@@ -4103,8 +4158,8 @@ static ACVP_RESULT acvp_build_kdf108_mode_register (JSON_Object **mode_obj, ACVP
     }
     
     /* counter length list */
-    json_object_set_value(*mode_obj, "counterLengths", json_value_init_array());
-    tmp_arr = json_object_get_array(*mode_obj, "counterLengths");
+    json_object_set_value(*mode_obj, "counterLength", json_value_init_array());
+    tmp_arr = json_object_get_array(*mode_obj, "counterLength");
     sl_obj = mode_params->counter_lens;
     while (sl_obj) {
         json_array_append_number(tmp_arr, sl_obj->length);
@@ -4112,6 +4167,8 @@ static ACVP_RESULT acvp_build_kdf108_mode_register (JSON_Object **mode_obj, ACVP
     }
     
     json_object_set_boolean(*mode_obj, "supportsEmptyIv", mode_params->empty_iv_support);
+
+    return ACVP_SUCCESS;
 }
 
 static ACVP_RESULT acvp_build_kdf108_register_cap (JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry) {
@@ -4127,8 +4184,8 @@ static ACVP_RESULT acvp_build_kdf108_register_cap (JSON_Object *cap_obj, ACVP_CA
     result = acvp_lookup_prereqVals(cap_obj, cap_entry);
     if (result != ACVP_SUCCESS) { return result; }
     
-    json_object_set_value(cap_obj, "algSpecs", json_value_init_array());
-    alg_specs_array = json_object_get_array(cap_obj, "algSpecs");
+    json_object_set_value(cap_obj, "capabilities", json_value_init_array());
+    alg_specs_array = json_object_get_array(cap_obj, "capabilities");
     
     alg_specs_counter_val = json_value_init_object();
     alg_specs_counter_obj = json_value_get_object(alg_specs_counter_val);
@@ -6671,31 +6728,31 @@ ACVP_RESULT acvp_enable_kdf108_cap_param (
         }
         switch (value) {
         case ACVP_KDF108_MAC_MODE_CMAC_AES128:
-            nl_obj->name = "CMAC-AES128";
+            nl_obj->name = ACVP_ALG_CMAC_AES_128;
             break;
         case ACVP_KDF108_MAC_MODE_CMAC_AES192:
-            nl_obj->name = "CMAC-AES192";
+            nl_obj->name = ACVP_ALG_CMAC_AES_192;
             break;
         case ACVP_KDF108_MAC_MODE_CMAC_AES256:
-            nl_obj->name = "CMAC-AES256";
+            nl_obj->name = ACVP_ALG_CMAC_AES_256;
             break;
         case ACVP_KDF108_MAC_MODE_CMAC_TDES:
-            nl_obj->name = "CMAC-TDES";
+            nl_obj->name = ACVP_ALG_CMAC_TDES;
             break;
         case ACVP_KDF108_MAC_MODE_HMAC_SHA1:
-            nl_obj->name = "HMAC-SHA1";
+            nl_obj->name = ACVP_ALG_HMAC_SHA1;
             break;
         case ACVP_KDF108_MAC_MODE_HMAC_SHA224:
-            nl_obj->name = "HMAC-SHA224";
+            nl_obj->name = ACVP_ALG_HMAC_SHA2_224;
             break;
         case ACVP_KDF108_MAC_MODE_HMAC_SHA256:
-            nl_obj->name = "HMAC-SHA256";
+            nl_obj->name = ACVP_ALG_HMAC_SHA2_256;
             break;
         case ACVP_KDF108_MAC_MODE_HMAC_SHA384:
-            nl_obj->name = "HMAC-SHA384";
+            nl_obj->name = ACVP_ALG_HMAC_SHA2_384;
             break;
         case ACVP_KDF108_MAC_MODE_HMAC_SHA512:
-            nl_obj->name = "HMAC-SHA512";
+            nl_obj->name = ACVP_ALG_HMAC_SHA2_512;
             break;
         default:
             return ACVP_INVALID_ARG;
@@ -6729,19 +6786,19 @@ ACVP_RESULT acvp_enable_kdf108_cap_param (
         }
         switch (value) {
         case ACVP_KDF108_FIXED_DATA_ORDER_AFTER:
-            nl_obj->name = "after fixed data";
+            nl_obj->name = ACVP_FIXED_DATA_ORDER_BEFORE_STR;
             break;
         case ACVP_KDF108_FIXED_DATA_ORDER_BEFORE:
-            nl_obj->name = "before fixed data";
+            nl_obj->name = ACVP_FIXED_DATA_ORDER_MIDDLE_STR;
             break;
         case ACVP_KDF108_FIXED_DATA_ORDER_MIDDLE:
-            nl_obj->name = "middle fixed data";
+            nl_obj->name = ACVP_FIXED_DATA_ORDER_MIDDLE_STR;
             break;
         case ACVP_KDF108_FIXED_DATA_ORDER_NONE:
-            nl_obj->name = "none";
+            nl_obj->name = ACVP_FIXED_DATA_ORDER_NONE_STR;
             break;
         case ACVP_KDF108_FIXED_DATA_ORDER_BEFORE_ITERATOR:
-            nl_obj->name = "before iterator";
+            nl_obj->name = ACVP_FIXED_DATA_ORDER_BEFORE_ITERATOR_STR;
             break;
         default:
             return ACVP_INVALID_ARG;
