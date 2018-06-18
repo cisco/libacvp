@@ -974,6 +974,10 @@ static void enable_kdf (ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_prereq_cap(ctx, ACVP_KDF135_SNMP, ACVP_PREREQ_SHA, value);
     CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_kdf135_snmp_cap_parm(ctx, ACVP_KDF135_SNMP, ACVP_KDF135_SNMP_PASS_LEN, 64);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_kdf135_snmp_engid_parm(ctx, ACVP_KDF135_SNMP, "AB37BDE5657AB");
+    CHECK_ENABLE_CAP_RV(rv);
     
     rv = acvp_enable_kdf135_tpm_cap(ctx, &app_kdf135_tpm_handler);
     CHECK_ENABLE_CAP_RV(rv);

@@ -189,7 +189,7 @@ ACVP_ALG_HANDLER alg_tbl[ACVP_ALG_MAX] = {
         {ACVP_ECDSA_SIGGEN,      &acvp_ecdsa_siggen_kat_handler,    ACVP_ALG_ECDSA,             ACVP_MODE_SIGGEN},
         {ACVP_ECDSA_SIGVER,      &acvp_ecdsa_sigver_kat_handler,    ACVP_ALG_ECDSA,             ACVP_MODE_SIGVER},
         {ACVP_KDF135_TLS,        &acvp_kdf135_tls_kat_handler,      ACVP_KDF135_ALG_STR,        ACVP_ALG_KDF135_TLS},
-        {ACVP_KDF135_SNMP,       &acvp_kdf135_snmp_kat_handler,     ACVP_ALG_KDF135_SNMP,       NULL},
+        {ACVP_KDF135_SNMP,       &acvp_kdf135_snmp_kat_handler,     ACVP_KDF135_ALG_STR,        ACVP_ALG_KDF135_SNMP},
         {ACVP_KDF135_SSH,        &acvp_kdf135_ssh_kat_handler,      ACVP_KDF135_ALG_STR,        ACVP_ALG_KDF135_SSH},
         {ACVP_KDF135_SRTP,       &acvp_kdf135_srtp_kat_handler,     ACVP_KDF135_ALG_STR,        ACVP_ALG_KDF135_SRTP},
         {ACVP_KDF135_IKEV2,      &acvp_kdf135_ikev2_kat_handler,    ACVP_ALG_KDF135_IKEV2,      NULL},
@@ -608,6 +608,9 @@ ACVP_RESULT acvp_free_test_session (ACVP_CTX *ctx) {
                     acvp_cap_free_kdf108(cap_entry);
                     break;
                 case ACVP_KDF135_SNMP_TYPE:
+                    acvp_cap_free_sl(cap_entry->cap.kdf135_snmp_cap->pass_lens);
+                    acvp_cap_free_nl(cap_entry->cap.kdf135_snmp_cap->eng_ids);
+                    break;
                 case ACVP_KDF135_SSH_TYPE:
                 case ACVP_KDF135_IKEV2_TYPE:
                 case ACVP_KDF135_IKEV1_TYPE:
@@ -4178,10 +4181,33 @@ static ACVP_RESULT acvp_build_kdf135_tls_register_cap (JSON_Object *cap_obj, ACV
 
 static ACVP_RESULT acvp_build_kdf135_snmp_register_cap (JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry) {
     ACVP_RESULT result;
-    json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
+    JSON_Array *temp_arr = NULL;
+    ACVP_NAME_LIST *current_engid;
+    ACVP_SL_LIST *current_val;
+    
+    json_object_set_string(cap_obj, "algorithm", ACVP_KDF135_ALG_STR);
+    json_object_set_string(cap_obj, "mode", ACVP_ALG_KDF135_SNMP);
 
     result = acvp_lookup_prereqVals(cap_obj, cap_entry);
     if (result != ACVP_SUCCESS) { return result; }
+    
+    json_object_set_value(cap_obj, "engineId", json_value_init_array());
+    temp_arr = json_object_get_array(cap_obj, "engineId");
+    
+    current_engid = cap_entry->cap.kdf135_snmp_cap->eng_ids;
+    while (current_engid) {
+        json_array_append_string(temp_arr, current_engid->name);
+        current_engid = current_engid->next;
+    }
+    
+    json_object_set_value(cap_obj, "passwordLength", json_value_init_array());
+    temp_arr = json_object_get_array(cap_obj, "passwordLength");
+    
+    current_val = cap_entry->cap.kdf135_snmp_cap->pass_lens;
+    while (current_val) {
+        json_array_append_number(temp_arr, current_val->length);
+        current_val = current_val->next;
+    }
 
     return ACVP_SUCCESS;
 }
@@ -6390,6 +6416,102 @@ ACVP_RESULT acvp_enable_kdf135_tls_cap (
     }
 
     return (acvp_append_kdf135_tls_caps_entry(ctx, cap, crypto_handler));
+}
+
+/*
+ * The user should call this after invoking acvp_enable_kdf135_snmp_cap()
+ * to specify kdf parameters
+ */
+ACVP_RESULT acvp_enable_kdf135_snmp_cap_parm (
+        ACVP_CTX *ctx,
+        ACVP_CIPHER kcap,
+        ACVP_KDF135_SNMP_PARAM param,
+        int value) {
+    
+    ACVP_CAPS_LIST *cap;
+    ACVP_KDF135_SNMP_CAP *kdf135_snmp_cap;
+    ACVP_SL_LIST *current_len;
+    
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+    
+    if (param != ACVP_KDF135_SNMP_PASS_LEN) {
+        return ACVP_INVALID_ARG;
+    }
+    
+    cap = acvp_locate_cap_entry(ctx, kcap);
+    if (!cap) {
+        return ACVP_NO_CAP;
+    }
+    
+    kdf135_snmp_cap = cap->cap.kdf135_snmp_cap;
+    if (!kdf135_snmp_cap) {
+        return ACVP_NO_CAP;
+    }
+    
+    if (kdf135_snmp_cap->pass_lens) {
+        current_len = kdf135_snmp_cap->pass_lens;
+        while (current_len->next) {
+            current_len = current_len->next;
+        }
+        current_len->next = calloc(1, sizeof(ACVP_SL_LIST));
+        current_len = current_len->next;
+    } else {
+        kdf135_snmp_cap->pass_lens = calloc(1, sizeof(ACVP_SL_LIST));
+        current_len = kdf135_snmp_cap->pass_lens;
+    }
+    current_len->length = value;
+    
+    return ACVP_SUCCESS;
+}
+
+/*
+ * The user should call this after invoking acvp_enable_kdf135_snmp_cap()
+ * to specify the hex string engine id. acvp_enable_kdf135_snmp_cap_parm()
+ * should be used to specify password length
+ */
+ACVP_RESULT acvp_enable_kdf135_snmp_engid_parm (
+        ACVP_CTX *ctx,
+        ACVP_CIPHER kcap,
+        char *engid) {
+    
+    ACVP_CAPS_LIST *cap;
+    ACVP_KDF135_SNMP_CAP *kdf135_snmp_cap;
+    ACVP_NAME_LIST *engids;
+    
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+    
+    if (!engid) {
+        return ACVP_INVALID_ARG;
+    }
+    
+    cap = acvp_locate_cap_entry(ctx, kcap);
+    if (!cap) {
+        return ACVP_NO_CAP;
+    }
+    
+    kdf135_snmp_cap = cap->cap.kdf135_snmp_cap;
+    if (!kdf135_snmp_cap) {
+        return ACVP_NO_CAP;
+    }
+    
+    if (kdf135_snmp_cap->eng_ids) {
+        engids = kdf135_snmp_cap->eng_ids;
+        while (engids->next) {
+            engids = engids->next;
+        }
+        engids->next = calloc(1, sizeof(ACVP_NAME_LIST));
+        engids = engids->next;
+    } else {
+        kdf135_snmp_cap->eng_ids = calloc(1, sizeof(ACVP_NAME_LIST));
+        engids = kdf135_snmp_cap->eng_ids;
+    }
+    engids->name = engid;
+    
+    return ACVP_SUCCESS;
 }
 
 /*

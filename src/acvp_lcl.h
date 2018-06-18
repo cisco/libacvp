@@ -361,7 +361,8 @@ typedef struct acvp_kdf135_tls_capability {
 } ACVP_KDF135_TLS_CAP;
 
 typedef struct acvp_kdf135_snmp_capability {
-
+    ACVP_SL_LIST *pass_lens;
+    ACVP_NAME_LIST *eng_ids;
 } ACVP_KDF135_SNMP_CAP;
 
 typedef struct acvp_kdf108_mode_params {
