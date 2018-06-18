@@ -675,11 +675,11 @@ typedef struct acvp_kdf135_ikev1_tc_t {
 typedef struct acvp_kdf135_snmp_tc_t {
     ACVP_CIPHER cipher;
     unsigned int tc_id;    /* Test case id */
+    char *engine_id;
     const char *password;
     unsigned int p_len;
     unsigned char *s_key;
     unsigned int skey_len;
-    unsigned char *engine_id;
 } ACVP_KDF135_SNMP_TC;
 
 /*!
