@@ -197,7 +197,9 @@ ACVP_ALG_HANDLER alg_tbl[ACVP_ALG_MAX] = {
         {ACVP_KDF135_X963,       &acvp_kdf135_x963_kat_handler,     ACVP_ALG_KDF135_X963,       NULL},
         {ACVP_KDF135_TPM,        &acvp_kdf135_tpm_kat_handler,      ACVP_ALG_KDF135_TPM,        NULL},
         {ACVP_KDF108,            &acvp_kdf108_kat_handler,          ACVP_ALG_KDF108,            NULL},
-        {ACVP_KAS_ECC,           &acvp_kas_ecc_kat_handler,         ACVP_ALG_KAS_ECC,           NULL}
+        {ACVP_KAS_ECC_CDH,       &acvp_kas_ecc_kat_handler,         ACVP_ALG_KAS_ECC,           ACVP_ALG_KAS_ECC_CDH},
+        {ACVP_KAS_ECC_COMP,      &acvp_kas_ecc_kat_handler,         ACVP_ALG_KAS_ECC,           ACVP_ALG_KAS_ECC_COMP},
+        {ACVP_KAS_ECC_NOCOMP,    &acvp_kas_ecc_kat_handler,         ACVP_ALG_KAS_ECC,           ACVP_ALG_KAS_ECC_NOCOMP}
 };
 
 typedef struct acvp_prereqs_mode_name_t {
@@ -368,6 +370,14 @@ static void acvp_cap_free_kas_ecc_mode (ACVP_CAPS_LIST *cap_list) {
         ACVP_PARAM_LIST *next_func;
         ACVP_PARAM_LIST *current_curve;
         ACVP_PARAM_LIST *next_curve;
+        ACVP_PARAM_LIST *current_hash;
+        ACVP_PARAM_LIST *next_hash;
+        ACVP_PARAM_LIST *current_role;
+        ACVP_PARAM_LIST *next_role;
+        ACVP_KAS_ECC_PSET *current_pset;
+        ACVP_KAS_ECC_PSET *next_pset;
+        ACVP_KAS_ECC_SCHEME *current_scheme;
+        ACVP_KAS_ECC_SCHEME *next_scheme;
 
         if (kas_ecc_cap->kas_ecc_mode) {
             for (i=0; i< ACVP_KAS_ECC_MAX_MODES; i++) {
@@ -405,12 +415,48 @@ static void acvp_cap_free_kas_ecc_mode (ACVP_CAPS_LIST *cap_list) {
                         current_curve = next_curve;
                     } while (current_curve);
                 }
+                /*
+                 * Delete all schemes, psets and their param lists
+                 */
+                current_scheme = mode->scheme;
+                if (current_scheme) {
+                    do {
+                        current_role = current_scheme->role;
+                        if (current_role) {
+                            do {
+                                next_role = current_role->next;
+                                free(current_role);
+                                current_role = next_role;
+                            } while (current_role);
+                        }
+                        current_pset = current_scheme->pset;
+                        if (current_pset) {
+                            do {
+                                current_hash = current_pset->sha;
+                                if (current_hash) {
+                                    do {
+                                        next_hash = current_hash->next;
+                                        free(current_hash);
+                                        current_hash = next_hash;
+                                    } while (current_hash);
+                                }
+                                next_pset = current_pset->next;
+                                free(current_pset);
+                                current_pset = next_pset;
+                            } while (current_pset);
+                        }
+                        next_scheme = current_scheme->next;
+                        free(current_scheme);
+                        current_scheme = next_scheme;
+                    } while (current_scheme);
+                }
             }
         }
     }
     free(cap_list->cap.kas_ecc_cap->kas_ecc_mode);
     free(cap_list->cap.kas_ecc_cap);
 }
+
 /*
  * Free Internal memory for DRBG Data struct
  */
@@ -569,7 +615,9 @@ ACVP_RESULT acvp_free_test_session (ACVP_CTX *ctx) {
                     acvp_cap_free_dsa_attrs(cap_entry);
                     free(cap_entry->cap.dsa_cap);
                     break;
-                case ACVP_KAS_ECC_TYPE:
+                case ACVP_KAS_ECC_CDH_TYPE:
+                case ACVP_KAS_ECC_COMP_TYPE:
+                case ACVP_KAS_ECC_NOCOMP_TYPE:
                     acvp_cap_free_kas_ecc_mode(cap_entry);
                     break;
                 case ACVP_RSA_KEYGEN_TYPE:
@@ -1716,13 +1764,19 @@ static ACVP_RESULT acvp_validate_prereq_val (ACVP_CIPHER cipher, ACVP_PREREQ_ALG
             return ACVP_SUCCESS;
         }
         break;
-    case ACVP_KAS_ECC:
+    case ACVP_KAS_ECC_COMP:
+    case ACVP_KAS_ECC_NOCOMP:
         if (pre_req == ACVP_PREREQ_DRBG ||
             pre_req == ACVP_PREREQ_HMAC ||
             pre_req == ACVP_PREREQ_CMAC ||
             pre_req == ACVP_PREREQ_SHA ||
             pre_req == ACVP_PREREQ_CCM ||
             pre_req == ACVP_PREREQ_ECDSA) {
+            return ACVP_SUCCESS;
+        }
+        break;
+    case ACVP_KAS_ECC_CDH:
+        if (pre_req == ACVP_PREREQ_ECDSA) {
             return ACVP_SUCCESS;
         }
         break;
@@ -4979,35 +5033,51 @@ static ACVP_RESULT acvp_lookup_kas_ecc_prereqVals (JSON_Object *cap_obj,
     return ACVP_SUCCESS;
 }
 
-static ACVP_RESULT acvp_build_kas_ecc_register_cap (JSON_Object *cap_obj, 
-                                                    ACVP_CAPS_LIST *cap_entry) {
+static ACVP_RESULT acvp_build_kas_ecc_register_cap (ACVP_CTX *ctx, JSON_Object *cap_obj, 
+                                                    ACVP_CAPS_LIST *cap_entry, int i) {
     JSON_Array *temp_arr = NULL;
     ACVP_RESULT result;
     ACVP_KAS_ECC_CAP_MODE *kas_ecc_mode;
     ACVP_KAS_ECC_CAP *kas_ecc_cap;
-    int i;
     ACVP_PARAM_LIST *current_func;
     ACVP_PARAM_LIST *current_curve;
+    JSON_Value *func_val = NULL;
+    JSON_Object *func_obj = NULL;
+    JSON_Value *sch_val = NULL;
+    JSON_Object *sch_obj = NULL;
+    JSON_Value *kdf_val = NULL;
+    JSON_Object *kdf_obj = NULL;
+    JSON_Value *pset_val = NULL;
+    JSON_Object *pset_obj = NULL;
+    JSON_Value *set_val = NULL;
+    JSON_Object *set_obj = NULL;
+    ACVP_KAS_ECC_SCHEME *current_scheme;
+    ACVP_KAS_ECC_PSET *current_pset;
+    ACVP_PARAM_LIST *sha, *role;
+    ACVP_KAS_ECC_SET kdf;
+    ACVP_KAS_ECC_SCHEMES scheme;
+    int set, curve;
 
-    json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
-
-    for (i=1; i<ACVP_KAS_ECC_MAX_MODES; i++) {
-        kas_ecc_cap = cap_entry->cap.kas_ecc_cap;
-        kas_ecc_mode = &kas_ecc_cap->kas_ecc_mode[i-1];
-        if (kas_ecc_mode->prereq_vals) {
-            switch (kas_ecc_mode->cap_mode)
-            {
-            case ACVP_KAS_ECC_MODE_CDH:
-                json_object_set_string(cap_obj, "mode", "CDH-Component");
-                break;
-            case ACVP_KAS_ECC_MODE_NONE:
-            case ACVP_KAS_ECC_MODE_COMPONENT:
-            default:
-                break;
-            }
-            result = acvp_lookup_kas_ecc_prereqVals(cap_obj, kas_ecc_mode);
-            if (result != ACVP_SUCCESS) { return result; }
+    kas_ecc_cap = cap_entry->cap.kas_ecc_cap;
+    kas_ecc_mode = &kas_ecc_cap->kas_ecc_mode[i-1];
+    if (kas_ecc_mode->prereq_vals) {
+        json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
+        switch (kas_ecc_mode->cap_mode)
+        {
+        case ACVP_KAS_ECC_MODE_CDH:
+            json_object_set_string(cap_obj, "mode", "CDH-Component");
+            break;
+        case ACVP_KAS_ECC_MODE_COMPONENT:
+            json_object_set_string(cap_obj, "mode", "Component");
+            break;
+        case ACVP_KAS_ECC_MODE_NOCOMP:
+        default:
+            ACVP_LOG_ERR("\nUnsupported KAS-ECC mode %d", kas_ecc_mode->cap_mode);
+            return ACVP_INVALID_ARG;
+            break;
         }
+        result = acvp_lookup_kas_ecc_prereqVals(cap_obj, kas_ecc_mode);
+        if (result != ACVP_SUCCESS) { return result; }
         switch (i)
         {
         case ACVP_KAS_ECC_MODE_CDH:
@@ -5027,7 +5097,8 @@ static ACVP_RESULT acvp_build_kas_ecc_register_cap (JSON_Object *cap_obj,
                 case ACVP_KAS_ECC_FUNC_KEYREGEN:
                 case ACVP_KAS_ECC_FUNC_FULL:
                 default:
-                    printf("\nUnsupported KAS-ECC function %d", current_func->param);
+                    ACVP_LOG_ERR("\nUnsupported KAS-ECC function %d", current_func->param);
+                    return ACVP_INVALID_ARG;
                     break;
                 }
                 current_func = current_func->next;
@@ -5075,17 +5146,212 @@ static ACVP_RESULT acvp_build_kas_ecc_register_cap (JSON_Object *cap_obj,
                     json_array_append_string(temp_arr, "p-521");
                     break;
                 default:
-                    printf("\nUnsupported KAS-ECC function %d", current_curve->param);
+                    ACVP_LOG_ERR("\nUnsupported KAS-ECC function %d", current_curve->param);
+                    return ACVP_INVALID_ARG;
                     break;
                 }
                 current_curve = current_curve->next;
             }
+            break;
+        case ACVP_KAS_ECC_MODE_COMPONENT:
+            json_object_set_value(cap_obj, "function", json_value_init_array());
+            temp_arr = json_object_get_array(cap_obj, "function");
+            current_func = kas_ecc_mode->function;
+            while (current_func) {
+                switch (current_func->param)
+                { 
+                case ACVP_KAS_ECC_FUNC_PARTIAL:
+                    json_array_append_string(temp_arr, "partialVal");
+                    break;
+                case ACVP_KAS_ECC_FUNC_DPGEN:
+                case ACVP_KAS_ECC_FUNC_DPVAL:
+                case ACVP_KAS_ECC_FUNC_KEYPAIR:
+                case ACVP_KAS_ECC_FUNC_KEYREGEN:
+                case ACVP_KAS_ECC_FUNC_FULL:
+                default:
+                    ACVP_LOG_ERR("\nUnsupported KAS-ECC function %d", current_func->param);
+                    return ACVP_INVALID_ARG;
+                    break;
+                }
+                current_func = current_func->next;
+            }
+
+            sch_val = json_value_init_object();
+            sch_obj = json_value_get_object(sch_val);
+
+            func_val = json_value_init_object();
+            func_obj = json_value_get_object(func_val);
+
+            kdf_val = json_value_init_object();
+            kdf_obj = json_value_get_object(kdf_val);
+
+            pset_val = json_value_init_object();
+            pset_obj = json_value_get_object(pset_val);
+
+            current_scheme = kas_ecc_mode->scheme;
+            while (current_scheme) {
+                kdf = current_scheme->kdf;
+                scheme = current_scheme->scheme;
+                current_pset = current_scheme->pset;
+                while (current_pset) {
+                    set_val = json_value_init_object();
+                    set_obj = json_value_get_object(set_val);
+
+                    set = current_pset->set;
+                    curve = current_pset->curve;
+                    switch (curve)
+                    { 
+                    case ACVP_ECDSA_CURVE_B233:
+                        json_object_set_string(set_obj, "curve", "B-233");
+                        break;
+                    case ACVP_ECDSA_CURVE_B283:
+                        json_object_set_string(set_obj, "curve", "B-283");
+                        break;
+                    case ACVP_ECDSA_CURVE_B409:
+                        json_object_set_string(set_obj, "curve", "B-409");
+                        break;
+                    case ACVP_ECDSA_CURVE_B571:
+                        json_object_set_string(set_obj, "curve", "B-571");
+                        break;
+                    case ACVP_ECDSA_CURVE_K233:
+                        json_object_set_string(set_obj, "curve", "K-233");
+                        break;
+                    case ACVP_ECDSA_CURVE_K283:
+                        json_object_set_string(set_obj, "curve", "K-283");
+                        break;
+                    case ACVP_ECDSA_CURVE_K409:
+                        json_object_set_string(set_obj, "curve", "K-409");
+                        break;
+                    case ACVP_ECDSA_CURVE_K571:
+                        json_object_set_string(set_obj, "curve", "K-571");
+                        break;
+                    case ACVP_ECDSA_CURVE_P224:
+                        json_object_set_string(set_obj, "curve", "P-224");
+                        break;
+                    case ACVP_ECDSA_CURVE_P256:
+                        json_object_set_string(set_obj, "curve", "P-256");
+                        break;
+                    case ACVP_ECDSA_CURVE_P384:
+                        json_object_set_string(set_obj, "curve", "P-384");
+                        break;
+                    case ACVP_ECDSA_CURVE_P521:
+                        json_object_set_string(set_obj, "curve", "P-521");
+                        break;
+                    default:
+                        ACVP_LOG_ERR("\nUnsupported KAS-ECC curve %d", curve);
+                        return ACVP_INVALID_ARG;
+                        break;
+                    }
+
+                    json_object_set_value(set_obj, "hashAlg", json_value_init_array());
+                    temp_arr = json_object_get_array(set_obj, "hashAlg");
+                    sha = current_pset->sha;
+                    while (sha) {
+                        switch (sha->param)
+                        {
+                        case ACVP_SHA224:
+                            json_array_append_string(temp_arr, "SHA2-224");
+                            break;
+                        case ACVP_SHA256:
+                            json_array_append_string(temp_arr, "SHA2-256");
+                            break;
+                        case ACVP_SHA384:
+                            json_array_append_string(temp_arr, "SHA2-384");
+                            break;
+                        case ACVP_SHA512:
+                            json_array_append_string(temp_arr, "SHA2-512");
+                            break;
+                        default:
+                            ACVP_LOG_ERR("\nUnsupported KAS-ECC sha param %d", sha->param);
+                            return ACVP_INVALID_ARG;
+                            break;
+                        }
+                        sha = sha->next;
+                    }
+                    switch (set)
+                    {
+                    case ACVP_KAS_ECC_EB:
+                        json_object_set_value(pset_obj, "eb", set_val);
+                        break;
+                    case ACVP_KAS_ECC_EC:
+                        json_object_set_value(pset_obj, "ec", set_val);
+                        break;
+                    case ACVP_KAS_ECC_ED:
+                        json_object_set_value(pset_obj, "ed", set_val);
+                        break;
+                    case ACVP_KAS_ECC_EE:
+                        json_object_set_value(pset_obj, "ee", set_val);
+                        break;
+                    default:
+                        ACVP_LOG_ERR("\nUnsupported KAS-ECC set %d", set);
+                        return ACVP_INVALID_ARG;
+                        break;
+                    }
+                    current_pset = current_pset->next;
+                }
+                json_object_set_value(kdf_obj, "parameterSet", pset_val);
+
+                json_object_set_value(func_obj, "role", json_value_init_array());
+                temp_arr = json_object_get_array(func_obj, "role");
+                role = current_scheme->role;
+                while (role) {
+                    switch (role->param)
+                    {
+                    case ACVP_KAS_ECC_ROLE_INITIATOR:
+                        json_array_append_string(temp_arr, "initiator");
+                        break;
+                    case ACVP_KAS_ECC_ROLE_RESPONDER:
+                        json_array_append_string(temp_arr, "responder");
+                        break;
+                    default:
+                        ACVP_LOG_ERR("\nUnsupported KAS-ECC role %d", role->param);
+                        return ACVP_INVALID_ARG;
+                        break;
+                    }
+                    role = role->next;
+                }
+                switch (kdf)
+                {
+                case ACVP_KAS_ECC_NOKDFNOKC:
+                    json_object_set_value(func_obj, "noKdfNoKc", kdf_val);
+                    break;
+                case ACVP_KAS_ECC_KDFNOKC:
+                    json_object_set_value(func_obj, "kdfNoKc", kdf_val);
+                    break;
+                case ACVP_KAS_ECC_KDFKC:
+                    json_object_set_value(func_obj, "kdfKc", kdf_val);
+                    break;
+                default:
+                    ACVP_LOG_ERR("\nUnsupported KAS-ECC kdf %d", kdf);
+                    return ACVP_INVALID_ARG;
+                    break;
+                }
+                switch (scheme)
+                {
+                case ACVP_KAS_ECC_EPHEMERAL_UNIFIED:
+                    json_object_set_value(sch_obj, "ephemeralUnified", func_val);
+                    break;
+                case ACVP_KAS_ECC_FULL_MQV:
+                case ACVP_KAS_ECC_FULL_UNIFIED:
+                case ACVP_KAS_ECC_ONEPASS_DH:
+                case ACVP_KAS_ECC_ONEPASS_MQV:
+                case ACVP_KAS_ECC_ONEPASS_UNIFIED:
+                case ACVP_KAS_ECC_STATIC_UNIFIED:
+                default:
+                    ACVP_LOG_ERR("\nUnsupported KAS-ECC scheme %d", scheme);
+                    return ACVP_INVALID_ARG;
+                    break;
+                }
+                json_object_set_value(cap_obj, "scheme", sch_val);
+                current_scheme = current_scheme->next;
+            }
+            break;
         default:
+            ACVP_LOG_ERR("\nUnsupported KAS-ECC mode %d", i);
+            return ACVP_INVALID_ARG;
             break;
         }
-
     }
-
     return ACVP_SUCCESS;
 }
 
@@ -5352,8 +5618,14 @@ static ACVP_RESULT acvp_build_register (ACVP_CTX *ctx, char **reg) {
             case ACVP_KDF108:
                 acvp_build_kdf108_register_cap(cap_obj, cap_entry);
                 break;
-            case ACVP_KAS_ECC:
-                acvp_build_kas_ecc_register_cap(cap_obj, cap_entry);
+            case ACVP_KAS_ECC_CDH:
+                acvp_build_kas_ecc_register_cap(ctx, cap_obj, cap_entry, ACVP_KAS_ECC_MODE_CDH);
+                break;
+            case ACVP_KAS_ECC_COMP:
+                acvp_build_kas_ecc_register_cap(ctx, cap_obj, cap_entry, ACVP_KAS_ECC_MODE_COMPONENT);
+                break;
+            case ACVP_KAS_ECC_NOCOMP:
+                acvp_build_kas_ecc_register_cap(ctx, cap_obj, cap_entry, ACVP_KAS_ECC_MODE_NOCOMP);
                 break;
             default:
                 ACVP_LOG_ERR("Cap entry not found, %d.", cap_entry->cipher);
@@ -5423,7 +5695,9 @@ static ACVP_RESULT acvp_build_login (ACVP_CTX *ctx, char **login) {
     ctx->totp_cb(&token);
 
     json_object_set_string(pw_obj, "password", token);
+
     json_array_append_value(reg_arry, pw_val);
+
 
     *login = json_serialize_to_string_pretty(reg_arry_val);
     free(token);
@@ -7610,6 +7884,7 @@ ACVP_RESULT acvp_enable_kas_ecc_prereq_cap (ACVP_CTX *ctx,
         case ACVP_PREREQ_SHA:
             break;
         default:
+            ACVP_LOG_ERR("\nUnsupported KAS-ECC prereq %d", pre_req);
             return ACVP_INVALID_ARG;
     }
 
@@ -7649,7 +7924,12 @@ static ACVP_RESULT acvp_append_kas_ecc_caps_entry (
     cap_entry->cipher = cipher;
     cap_entry->cap.kas_ecc_cap = cap;
     cap_entry->crypto_handler = crypto_handler;
-    cap_entry->cap_type = ACVP_KAS_ECC_TYPE;
+    if (cipher == ACVP_KAS_ECC_CDH)
+        cap_entry->cap_type = ACVP_KAS_ECC_CDH_TYPE;
+    if (cipher == ACVP_KAS_ECC_COMP)
+        cap_entry->cap_type = ACVP_KAS_ECC_COMP_TYPE;
+    if (cipher == ACVP_KAS_ECC_NOCOMP)
+        cap_entry->cap_type = ACVP_KAS_ECC_NOCOMP_TYPE;
 
     if (!ctx->caps_list) {
         ctx->caps_list = cap_entry;
@@ -7716,7 +7996,7 @@ ACVP_RESULT acvp_enable_kas_ecc_cap (ACVP_CTX *ctx,
 ACVP_RESULT acvp_enable_kas_ecc_cap_parm (ACVP_CTX *ctx,
                                           ACVP_CIPHER cipher,
                                           ACVP_KAS_ECC_MODE mode,
-                                          ACVP_KAS_ECC_PARM param,
+                                          ACVP_KAS_ECC_PARAM param,
                                           int value) {
 
     ACVP_CAPS_LIST *cap;
@@ -7771,9 +8051,155 @@ ACVP_RESULT acvp_enable_kas_ecc_cap_parm (ACVP_CTX *ctx,
             }
             break;
         default:
+            ACVP_LOG_ERR("\nUnsupported KAS-ECC param %d", param);
+            return ACVP_INVALID_ARG;
             break;
         }
+        break;
+    case ACVP_KAS_ECC_MODE_COMPONENT:
+        switch (param)
+        {
+        case ACVP_KAS_ECC_FUNCTION:
+            current_func = kas_ecc_cap_mode->function;
+            if (current_func) {
+                while (current_func->next) {
+                    current_func = current_func->next;
+                }
+                current_func->next = calloc(1, sizeof(ACVP_PARAM_LIST));
+                current_func->next->param = value;
+            } else {
+                kas_ecc_cap_mode->function = calloc(1, sizeof(ACVP_PARAM_LIST));
+                kas_ecc_cap_mode->function->param = value;
+            }
+            break;
+        default:
+            ACVP_LOG_ERR("\nUnsupported KAS-ECC param %d", param);
+            return ACVP_INVALID_ARG;
+            break;
+        }
+        break;
     default:
+        ACVP_LOG_ERR("\nUnsupported KAS-ECC mode %d", mode);
+        return ACVP_INVALID_ARG;
+        break;
+    }
+    return ACVP_SUCCESS;
+}
+
+ACVP_RESULT acvp_enable_kas_ecc_cap_scheme (ACVP_CTX *ctx,
+                                            ACVP_CIPHER cipher,
+                                            ACVP_KAS_ECC_MODE mode,
+                                            ACVP_KAS_ECC_SCHEMES scheme,
+                                            ACVP_KAS_ECC_PARAM param,
+                                            int option,
+                                            int value) {
+
+    ACVP_CAPS_LIST *cap;
+    ACVP_KAS_ECC_CAP *kas_ecc_cap;
+    ACVP_KAS_ECC_CAP_MODE *kas_ecc_cap_mode;
+    ACVP_KAS_ECC_SCHEME *current_scheme;
+    ACVP_KAS_ECC_PSET *current_pset;
+    ACVP_KAS_ECC_PSET *last_pset;
+    ACVP_PARAM_LIST *current_role;
+    ACVP_PARAM_LIST *current_hash;
+
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+
+    cap = acvp_locate_cap_entry(ctx, cipher);
+    if (!cap) {
+        return ACVP_NO_CAP;
+    }
+
+    kas_ecc_cap = cap->cap.kas_ecc_cap;
+    if (!kas_ecc_cap) {
+        return ACVP_NO_CAP;
+    }
+    kas_ecc_cap_mode = &kas_ecc_cap->kas_ecc_mode[mode - 1];
+    switch (mode)
+    {
+    case ACVP_KAS_ECC_MODE_COMPONENT:
+    case ACVP_KAS_ECC_MODE_NOCOMP:
+        current_scheme = kas_ecc_cap_mode->scheme;
+        while (current_scheme) {
+            if (current_scheme->scheme == scheme) {
+                break;
+            } else {
+                current_scheme = current_scheme->next;
+            }
+        }
+        /* if there are none or didn't find the one we're looking for... */
+        if (current_scheme == NULL) {
+            kas_ecc_cap_mode->scheme = calloc(1, sizeof(ACVP_KAS_ECC_SCHEME));
+            kas_ecc_cap_mode->scheme->scheme = scheme;
+            current_scheme = kas_ecc_cap_mode->scheme;
+        }
+        switch (param)
+        {
+        case ACVP_KAS_ECC_KDF:
+            current_scheme->kdf = value;
+            break;
+        case ACVP_KAS_ECC_ROLE:
+            current_role = current_scheme->role;
+            if (current_role) {
+                while (current_role->next) {
+                    current_role = current_role->next;
+                }
+                current_role->next = calloc(1, sizeof(ACVP_PARAM_LIST));
+                current_role->next->param = value;
+            } else {
+                current_role = calloc(1, sizeof(ACVP_PARAM_LIST));
+                current_role->param = value;
+                current_scheme->role = current_role;
+            }
+            break;
+        case ACVP_KAS_ECC_EB:
+        case ACVP_KAS_ECC_EC:
+        case ACVP_KAS_ECC_ED:
+        case ACVP_KAS_ECC_EE:
+            current_pset = current_scheme->pset;
+            while (current_pset) {
+                if (current_pset->set == param) {
+                    break;
+                } else {
+                    last_pset = current_pset;
+                    current_pset = current_pset->next;
+                }
+            } 
+            if (!current_pset) {
+                current_pset = calloc(1, sizeof(ACVP_KAS_ECC_PSET));
+                if (current_scheme->pset == NULL) {
+                    current_scheme->pset = current_pset;
+                } else {
+                    last_pset->next = current_pset;
+                }
+                current_pset->set = param;
+                current_pset->curve = option;
+            }
+            //then set sha in a param list
+            current_hash = current_pset->sha;
+            if (current_hash) {
+                while (current_hash->next) {
+                    current_hash = current_hash->next;
+                }
+                current_hash->next = calloc(1, sizeof(ACVP_PARAM_LIST));
+                current_hash->next->param = value;
+            } else {
+                current_pset->sha = calloc(1, sizeof(ACVP_PARAM_LIST));
+                current_pset->sha->param = value;
+            }
+            break;
+        default:
+            ACVP_LOG_ERR("\nUnsupported KAS-ECC param %d", param);
+            return ACVP_INVALID_ARG;
+            break;
+        }
+        break;
+    case ACVP_KAS_ECC_MODE_CDH:
+    default:
+        ACVP_LOG_ERR("Scheme parameter sets not supported for this mode %d\n", mode);
+        return ACVP_INVALID_ARG;
         break;
     }
     return ACVP_SUCCESS;

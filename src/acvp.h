@@ -162,7 +162,9 @@ typedef enum acvp_cipher {
     ACVP_KDF135_X963,
     ACVP_KDF135_TPM,
     ACVP_KDF108,
-    ACVP_KAS_ECC,
+    ACVP_KAS_ECC_CDH,
+    ACVP_KAS_ECC_COMP,
+    ACVP_KAS_ECC_NOCOMP,
     ACVP_CIPHER_END
 } ACVP_CIPHER;
 
@@ -1048,7 +1050,7 @@ typedef struct acvp_dsa_tc_t {
 typedef enum acvp_kas_ecc_mode {
     ACVP_KAS_ECC_MODE_COMPONENT = 1,
     ACVP_KAS_ECC_MODE_CDH,
-    ACVP_KAS_ECC_MODE_NONE,       /* actual mode, means not-component */
+    ACVP_KAS_ECC_MODE_NOCOMP,
     ACVP_KAS_ECC_MAX_MODES
 } ACVP_KAS_ECC_MODE;
 
@@ -1063,11 +1065,48 @@ typedef enum acvp_kas_ecc_func {
     ACVP_KAS_ECC_MAX_FUNCS
 } ACVP_KAS_ECC_FUNC;
 
-/*! @struct ACVP_KAS_ECC_PARM */
+/*! @struct ACVP_KAS_ECC_PARAM */
 typedef enum acvp_kas_ecc_param {
     ACVP_KAS_ECC_FUNCTION = 1,
-    ACVP_KAS_ECC_CURVE
-} ACVP_KAS_ECC_PARM;
+    ACVP_KAS_ECC_CURVE,
+    ACVP_KAS_ECC_ROLE,
+    ACVP_KAS_ECC_KDF,
+    ACVP_KAS_ECC_EB,
+    ACVP_KAS_ECC_EC,
+    ACVP_KAS_ECC_ED,
+    ACVP_KAS_ECC_EE
+} ACVP_KAS_ECC_PARAM;
+
+/*! @struct ACVP_KAS_ECC_ROLE */
+typedef enum acvp_kas_ecc_roles {
+    ACVP_KAS_ECC_ROLE_INITIATOR = 1,
+    ACVP_KAS_ECC_ROLE_RESPONDER
+} ACVP_KAS_ECC_ROLES;
+
+/*! @struct ACVP_KAS_ECC_SET */
+typedef enum acvp_kas_ecc_set {
+    ACVP_KAS_ECC_NOKDFNOKC = 1,
+    ACVP_KAS_ECC_KDFNOKC,
+    ACVP_KAS_ECC_KDFKC,
+    ACVP_KAS_ECC_PARMSET
+} ACVP_KAS_ECC_SET;
+
+/*! @struct ACVP_KAS_ECC_SCHEMES */
+typedef enum acvp_kas_ecc_schemes {
+    ACVP_KAS_ECC_EPHEMERAL_UNIFIED = 1,
+    ACVP_KAS_ECC_FULL_MQV,
+    ACVP_KAS_ECC_FULL_UNIFIED,
+    ACVP_KAS_ECC_ONEPASS_DH,
+    ACVP_KAS_ECC_ONEPASS_MQV,
+    ACVP_KAS_ECC_ONEPASS_UNIFIED,
+    ACVP_KAS_ECC_STATIC_UNIFIED
+} ACVP_KAS_ECC_SCHEMES;
+
+/*! @struct ACVP_KAS_ECC_TEST_TYPE */
+typedef enum acvp_kas_ecc_test_type {
+    ACVP_KAS_ECC_TT_AFT = 1,
+    ACVP_KAS_ECC_TT_VAL
+} ACVP_KAS_ECC_TEST_TYPE;
 
 /*!
  * @struct ACVP_KAS_ECC_TC
@@ -1079,18 +1118,22 @@ typedef enum acvp_kas_ecc_param {
 typedef struct acvp_kas_ecc_tc_t {
     ACVP_CIPHER cipher;
     ACVP_KAS_ECC_FUNC func; 
+    int test_type;
     int curve;
+    int md;
     char *psx;
     char *psy;
     char *pix;
     char *piy;
     char *d;
     char *z;
+    char *chash;
     int mode;
     int pixlen;
     int piylen;
     int dlen;
     int zlen;
+    int chashlen;
 } ACVP_KAS_ECC_TC;
 
 /*!
@@ -1536,7 +1579,7 @@ ACVP_RESULT acvp_enable_kas_ecc_prereq_cap (
     @param cipher ACVP_CIPHER enum value identifying the crypto capability.
     @param mode ACVP_KAS_ECC_MODE enum value specifying mode. An example would be
         ACVP_KAS_ECC_MODE_PARTIALVAL
-    @param param ACVP_KAS_ECC_PARM enum value identifying the algorithm parameter
+    @param param ACVP_KAS_ECC_PARAM enum value identifying the algorithm parameter
        that is being specified.  An example would be ACVP_KAS_ECC_????
     @param value the value corresponding to the parameter being set
 
@@ -1545,8 +1588,16 @@ ACVP_RESULT acvp_enable_kas_ecc_prereq_cap (
 ACVP_RESULT acvp_enable_kas_ecc_cap_parm (ACVP_CTX *ctx,
                                           ACVP_CIPHER cipher,
                                           ACVP_KAS_ECC_MODE mode,
-                                          ACVP_KAS_ECC_PARM param,
+                                          ACVP_KAS_ECC_PARAM param,
                                           int value);
+
+ACVP_RESULT acvp_enable_kas_ecc_cap_scheme (ACVP_CTX *ctx,
+                                            ACVP_CIPHER cipher,
+                                            ACVP_KAS_ECC_MODE mode,
+                                            ACVP_KAS_ECC_SCHEMES scheme,
+                                            ACVP_KAS_ECC_PARAM param,
+                                            int option,
+                                            int value);
 
 /*! @brief acvp_enable_rsa_*_cap()
 
