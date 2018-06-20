@@ -118,6 +118,10 @@
 #define ACVP_ALG_DSA_SIGGEN          "sigGen"
 #define ACVP_ALG_DSA_SIGVER          "sigVer"
 
+#define ACVP_ALG_KAS_ECC_CDH         "CDH-Component"
+#define ACVP_ALG_KAS_ECC_COMP        "Component"
+#define ACVP_ALG_KAS_ECC_NOCOMP      ""
+
 #define ACVP_ALG_KAS_ECC             "KAS-ECC"
 #define ACVP_ALG_KAS_ECC_DPGEN       "dpGen"
 #define ACVP_ALG_KAS_ECC_DPVAL       "dpVal"
@@ -292,7 +296,9 @@ typedef enum acvp_capability_type {
     ACVP_KDF135_X963_TYPE,
     ACVP_KDF135_TPM_TYPE,
     ACVP_KDF108_TYPE,
-    ACVP_KAS_ECC_TYPE
+    ACVP_KAS_ECC_CDH_TYPE,
+    ACVP_KAS_ECC_COMP_TYPE,
+    ACVP_KAS_ECC_NOCOMP_TYPE
 } ACVP_CAP_TYPE;
 
 /*
@@ -539,9 +545,28 @@ typedef struct acvp_dsa_capability {
     ACVP_DSA_CAP_MODE *dsa_cap_mode;
 } ACVP_DSA_CAP;
 
-typedef struct acvp_kas_ecc_scheme {
-    int sha;
+typedef struct acvp_kas_ecc_mac {
+    int alg;
     int curve;
+    ACVP_PARAM_LIST *key;
+    int nonce;
+    int maclen;
+    struct acvp_kas_ecc_mac *next;
+} ACVP_KAS_ECC_MAC;
+
+typedef struct acvp_kas_ecc_pset {
+    int set;
+    int curve;
+    ACVP_PARAM_LIST *sha;
+    ACVP_KAS_ECC_MAC *mac;
+    struct acvp_kas_ecc_pset *next;
+} ACVP_KAS_ECC_PSET;
+
+typedef struct acvp_kas_ecc_scheme {
+    int scheme;
+    int kdf;
+    ACVP_PARAM_LIST *role;
+    ACVP_KAS_ECC_PSET *pset;
     struct acvp_kas_ecc_scheme *next;
 } ACVP_KAS_ECC_SCHEME;
 
@@ -550,8 +575,8 @@ typedef struct acvp_kas_ecc_cap_mode_t {
     ACVP_KAS_ECC_MODE cap_mode;
     ACVP_PREREQ_LIST *prereq_vals;
     ACVP_PARAM_LIST *curve;    /* CDH mode only */
-    ACVP_PARAM_LIST *function; /* CDH mode only */
-    ACVP_KAS_ECC_SCHEME *kas_ecc_sheme; /* other modes use schemes */
+    ACVP_PARAM_LIST *function;
+    ACVP_KAS_ECC_SCHEME *scheme; /* other modes use schemes */
 } ACVP_KAS_ECC_CAP_MODE;
 
 typedef struct acvp_kas_ecc_capability_t {
