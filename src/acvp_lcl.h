@@ -783,4 +783,5 @@ int acvp_lookup_ecdsa_curve (ACVP_CIPHER cipher, char *curve_name);
 
 void ctr64_inc(unsigned char *counter);
 void ctr128_inc(unsigned char *counter);
+ACVP_RESULT acvp_refresh (ACVP_CTX *ctx);
 #endif
