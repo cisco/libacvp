@@ -5666,7 +5666,7 @@ void acvp_mark_as_sample (ACVP_CTX *ctx) {
  * second of the two-factor authentications using
  * a TOTP.
  */
-static ACVP_RESULT acvp_build_login (ACVP_CTX *ctx, char **login) {
+static ACVP_RESULT acvp_build_login (ACVP_CTX *ctx, char **login, int refresh) {
 
     JSON_Value *reg_arry_val = NULL;
     JSON_Value *ver_val = NULL;
@@ -5696,6 +5696,9 @@ static ACVP_RESULT acvp_build_login (ACVP_CTX *ctx, char **login) {
 
     json_object_set_string(pw_obj, "password", token);
 
+    if (refresh) {
+        json_object_set_string(pw_obj, "accessToken", ctx->jwt_token);
+    }
     json_array_append_value(reg_arry, pw_val);
 
 
@@ -5724,7 +5727,7 @@ ACVP_RESULT acvp_register (ACVP_CTX *ctx) {
      * Construct the login message
      */
     if (ctx->totp_cb) {
-        rv = acvp_build_login(ctx, &login);
+        rv = acvp_build_login(ctx, &login, 0);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Unable to build login message");
             return rv;
@@ -6354,6 +6357,41 @@ ACVP_RESULT acvp_check_test_results (ACVP_CTX *ctx) {
 * Begin vector processing logic.  This code should probably go into another module.
 ***************************************************************************************************************/
 
+ACVP_RESULT acvp_refresh (ACVP_CTX *ctx)
+{
+    char *login = NULL;
+    ACVP_RESULT rv;
+
+    if (ctx->totp_cb) {
+        rv = acvp_build_login(ctx, &login, 1);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Unable to build login message");
+            return rv;
+        }
+
+        if (ctx->debug >= ACVP_LOG_LVL_STATUS) {
+            printf("\nPOST %s\n", login);
+        } else {
+            ACVP_LOG_INFO("POST %s", login);
+        }
+
+        /*
+         * Send the login to the ACVP server and get the response,
+         */
+        rv = acvp_send_login(ctx, login);
+        if (rv == ACVP_SUCCESS) {
+            ACVP_LOG_STATUS("200 OK %s", ctx->reg_buf);
+            rv = acvp_parse_login(ctx);
+        } else {
+            ACVP_LOG_STATUS("Login Response Failed %s", ctx->reg_buf);
+        }
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_STATUS("Login Send Failed");
+            return rv;
+        }
+    }
+    return ACVP_SUCCESS;
+}
 
 /*
  * This function will process a single KAT vector set.  Each KAT
@@ -6518,10 +6556,9 @@ static ACVP_RESULT acvp_get_result_vsid (ACVP_CTX *ctx, int vs_id) {
     JSON_Value *val;
     JSON_Object *obj = NULL;
     char *json_buf;
-    int retry_count = 900; /* 15 minutes*/
     int retry = 1;
 
-    while (retry && (retry_count > 0)) {
+    while (retry) {
         /*
          * Get the KAT vector set
          */
@@ -6550,7 +6587,6 @@ static ACVP_RESULT acvp_get_result_vsid (ACVP_CTX *ctx, int vs_id) {
         unsigned int retry_period = json_object_get_number(obj, "retry");
         if (retry_period) {
             rv = acvp_retry_handler(ctx, retry_period);
-            retry_count -= retry_period;
         } else {
             /*
              * Parse the JSON response from the server, if the vector set failed,
