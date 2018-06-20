@@ -3559,10 +3559,11 @@ static ACVP_RESULT app_kas_ecc_handler(ACVP_TEST_CASE *test_case)
     int nid = 0, exout = 0;
     EC_KEY *ec = NULL;
     EC_POINT *peerkey = NULL;
-    unsigned char *Z;
-    int Zlen;
+    unsigned char *Z = NULL;
+    int Zlen = 0;
     BIGNUM *cx = NULL, *cy = NULL, *ix = NULL, *iy = NULL, *id = NULL;
     const EVP_MD *md = NULL;
+    ACVP_RESULT rv = ACVP_CRYPTO_MODULE_FAIL;
 
     tc = test_case->tc.kas_ecc;
 
@@ -3606,7 +3607,7 @@ static ACVP_RESULT app_kas_ecc_handler(ACVP_TEST_CASE *test_case)
         break;
     default:
         printf("Invalid curve %d\n", tc->curve);
-        return ACVP_CRYPTO_MODULE_FAIL;
+        return rv;
         break;
     }
 
@@ -3627,88 +3628,64 @@ static ACVP_RESULT app_kas_ecc_handler(ACVP_TEST_CASE *test_case)
             break;
         default:
             printf("No valid hash name %d\n", tc->md);
-            return ACVP_CRYPTO_MODULE_FAIL;
+            return rv;
             break;
         }
     }
     group = EC_GROUP_new_by_curve_name(nid);
     if (group == NULL) {
         printf("No group from curve name %d\n", nid);
-        return ACVP_CRYPTO_MODULE_FAIL;
+        return rv;
     }
 
     ec = EC_KEY_new();
     if (ec == NULL) {
         EC_GROUP_free(group);
         printf("No EC_KEY_new\n");
-        return ACVP_CRYPTO_MODULE_FAIL;
+        return rv;
     }
     EC_KEY_set_flags(ec, EC_FLAG_COFACTOR_ECDH);
     if (!EC_KEY_set_group(ec, group)) {
         EC_GROUP_free(group);
         printf("No EC_KEY_set_group\n");
-        return ACVP_CRYPTO_MODULE_FAIL;
+        return rv;
     }
 
     if (!BN_hex2bn(&cx, (char *)tc->psx)) {
         EC_GROUP_free(group);
         printf("BN_hex2bn failed psx\n");
-        return ACVP_CRYPTO_MODULE_FAIL;
+        return rv;
     }
 
     if (!BN_hex2bn(&cy, (char *)tc->psy)) {
-        EC_GROUP_free(group);
-        BN_free(cx);
         printf("BN_hex2bn failed psy\n");
-        return ACVP_CRYPTO_MODULE_FAIL;
+        goto error;
     }
     peerkey = make_peer(group, cx, cy);
     if (peerkey == NULL) {
-        EC_GROUP_free(group);
-        BN_free(cx);
-        BN_free(cy);
         printf("Peerkey failed\n");
-        return ACVP_CRYPTO_MODULE_FAIL;
+        goto error;
     }
     if (tc->test_type == ACVP_KAS_ECC_TT_VAL) {
         if (!BN_hex2bn(&ix, (char *)tc->pix)) {
-            EC_GROUP_free(group);
-            BN_free(cx);
-            BN_free(cy);
             printf("BN_hex2bn failed pix\n");
-            return ACVP_CRYPTO_MODULE_FAIL;
+            goto error;
         }
 
         if (!BN_hex2bn(&iy, (char *)tc->piy)) {
-            EC_GROUP_free(group);
-            BN_free(cx);
-            BN_free(cy);
-            BN_free(ix);
             printf("BN_hex2bn failed piy\n");
-            return ACVP_CRYPTO_MODULE_FAIL;
+            goto error;
         }
         if (!BN_hex2bn(&id, (char *)tc->d)) {
-            EC_GROUP_free(group);
-            BN_free(cx);
-            BN_free(cy);
-            BN_free(ix);
-            BN_free(iy);
             printf("BN_hex2bn failed id\n");
-            return ACVP_CRYPTO_MODULE_FAIL;
+            goto error;
         }
         EC_KEY_set_public_key_affine_coordinates(ec, ix, iy);
         EC_KEY_set_private_key(ec, id);
     } else {
         if (!EC_KEY_generate_key(ec)) {
-            EC_POINT_free(peerkey);
-            EC_GROUP_free(group);
-            BN_free(cx);
-            BN_free(cy);
-            BN_free(ix);
-            BN_free(iy);
-            BN_free(id);
             printf("EC_KEY_generate_key failed\n");
-            return ACVP_CRYPTO_MODULE_FAIL;
+            goto error;
         }
     }
 
@@ -3716,41 +3693,17 @@ static ACVP_RESULT app_kas_ecc_handler(ACVP_TEST_CASE *test_case)
     ec_print_key(tc, ec, md ? 1 : 0, exout);
     Zlen = (EC_GROUP_get_degree(group) + 7)/8;
     if (!Zlen) {
-        EC_KEY_free(ec);
-        EC_POINT_free(peerkey);
-        EC_GROUP_free(group);
-        BN_free(cx);
-        BN_free(cy);
-        BN_free(ix);
-        BN_free(iy);
-        BN_free(id);
         printf("Zlen degree failure\n");
-        return ACVP_CRYPTO_MODULE_FAIL;
+        goto error;
     }
     Z = OPENSSL_malloc(Zlen);
     if (!Z) {
-        EC_KEY_free(ec);
-        EC_POINT_free(peerkey);
-        EC_GROUP_free(group);
-        BN_free(cx);
-        BN_free(cy);
-        BN_free(ix);
-        BN_free(iy);
-        BN_free(id);
         printf("Malloc failure\n");
-        return ACVP_CRYPTO_MODULE_FAIL;
+        goto error;
     }
     if (!ECDH_compute_key(Z, Zlen, peerkey, ec, 0)) {
-        EC_KEY_free(ec);
-        EC_POINT_free(peerkey);
-        EC_GROUP_free(group);
-        BN_free(cx);
-        BN_free(cy);
-        BN_free(ix);
-        BN_free(iy);
-        BN_free(id);
         printf("ECDH_compute_key failure\n");
-        return ACVP_CRYPTO_MODULE_FAIL;
+        goto error;
     }
 
     if (tc->test_type == ACVP_KAS_ECC_TT_AFT) {
@@ -3761,7 +3714,12 @@ static ACVP_RESULT app_kas_ecc_handler(ACVP_TEST_CASE *test_case)
         FIPS_digest(Z, Zlen, (unsigned char *)tc->chash, NULL, md);
         tc->chashlen = M_EVP_MD_size(md);
     }
-    OPENSSL_cleanse(Z, Zlen);
+    rv = ACVP_SUCCESS;
+
+error:
+    if (Z) {
+        OPENSSL_cleanse(Z, Zlen);
+    }
     OPENSSL_free(Z);
     EC_KEY_free(ec);
     EC_POINT_free(peerkey);
@@ -3771,7 +3729,7 @@ static ACVP_RESULT app_kas_ecc_handler(ACVP_TEST_CASE *test_case)
     BN_free(ix);
     BN_free(iy);
     BN_free(id);
-    return ACVP_SUCCESS;
+    return rv;
 }
 
 static ACVP_RESULT app_rsa_keygen_handler(ACVP_TEST_CASE *test_case)
@@ -4380,8 +4338,7 @@ static const signed char base64de[] = {
         44,  45,  46,  47,  48,  49,  50,  51,
 };
 
-
-static int
+static unsigned int
 base64_decode(const char *in, unsigned int inlen, unsigned char *out)
 {
     unsigned int i, j;
@@ -4391,11 +4348,11 @@ base64_decode(const char *in, unsigned int inlen, unsigned char *out)
         int s = i % 4;             /* from 8/gcd(6, 8) */
 
         if (in[i] == '=')
-            return BASE64_OK;
+            return j;
 
         if (in[i] < BASE64DE_FIRST || in[i] > BASE64DE_LAST ||
             (c = base64de[in[i] - BASE64DE_FIRST]) == -1)
-            return BASE64_INVALID;
+            return 0;
 
         switch (s) {
         case 0:
@@ -4420,7 +4377,7 @@ base64_decode(const char *in, unsigned int inlen, unsigned char *out)
         }
     }
 
-    return BASE64_OK;
+    return j;
 }
 
 
@@ -4433,7 +4390,8 @@ const int DIGITS_POWER[]
 = { 1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000 };
 
 static
-int hmac_totp(const char *key, const unsigned char *msg, char *hash, const EVP_MD *md)
+int hmac_totp(const char *key, const unsigned char *msg, char *hash, 
+              const EVP_MD *md, unsigned int key_len)
 {
     int len = 0;
     unsigned char buff[MAX_LEN];
@@ -4442,7 +4400,7 @@ int hmac_totp(const char *key, const unsigned char *msg, char *hash, const EVP_M
     memset(&ctx, 0 , sizeof(HMAC_CTX));
     HMAC_CTX_init(&ctx);
     EVP_MD_CTX_set_flags(&ctx.md_ctx, EVP_MD_CTX_FLAG_NON_FIPS_ALLOW);
-    if (!HMAC_Init_ex(&ctx, key, strlen((char *)key), md, NULL))
+    if (!HMAC_Init_ex(&ctx, key, key_len, md, NULL))
         return 0;
     if (!HMAC_Update(&ctx, msg, T_LEN))
         return 0;
@@ -4465,6 +4423,7 @@ static ACVP_RESULT totp(char **token)
     unsigned char token_buff[T_LEN + 1];
     char *new_seed = malloc(ACVP_TOTP_TOKEN_MAX);
     char *seed = NULL;
+    int seed_len = 0;
 
     if (!new_seed) {
         printf("Failed to malloc new_seed\n");
@@ -4496,7 +4455,8 @@ static ACVP_RESULT totp(char **token)
 
     memset(hash, 0, MAX_LEN);
 
-    if (base64_decode(seed, strlen(seed), (unsigned char *)new_seed) != BASE64_OK) {
+    seed_len = base64_decode(seed, strlen(seed), (unsigned char *)new_seed);
+    if (seed_len  == 0) {
         printf("Failed to decode TOTP seed\n");
         free(new_seed);
         return ACVP_TOTP_DECODE_FAIL;
@@ -4504,7 +4464,7 @@ static ACVP_RESULT totp(char **token)
 
 
     // use passed hash function
-    md_len = hmac_totp(new_seed, token_buff, hash, EVP_sha256());
+    md_len = hmac_totp(new_seed, token_buff, hash, EVP_sha256(), seed_len);
     if (md_len == 0) {
         printf("Failed to create TOTP\n");
         free(new_seed);
