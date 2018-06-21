@@ -7452,10 +7452,10 @@ ACVP_RESULT acvp_enable_kdf108_cap_param (
         }
         switch (value) {
         case ACVP_KDF108_FIXED_DATA_ORDER_AFTER:
-            nl_obj->name = ACVP_FIXED_DATA_ORDER_BEFORE_STR;
+            nl_obj->name = ACVP_FIXED_DATA_ORDER_AFTER_STR;
             break;
         case ACVP_KDF108_FIXED_DATA_ORDER_BEFORE:
-            nl_obj->name = ACVP_FIXED_DATA_ORDER_MIDDLE_STR;
+            nl_obj->name = ACVP_FIXED_DATA_ORDER_BEFORE_STR;
             break;
         case ACVP_KDF108_FIXED_DATA_ORDER_MIDDLE:
             nl_obj->name = ACVP_FIXED_DATA_ORDER_MIDDLE_STR;
