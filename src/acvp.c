@@ -660,6 +660,7 @@ ACVP_RESULT acvp_free_test_session (ACVP_CTX *ctx) {
                     acvp_cap_free_nl(cap_entry->cap.kdf135_snmp_cap->eng_ids);
                     break;
                 case ACVP_KDF135_SSH_TYPE:
+                    break;
                 case ACVP_KDF135_IKEV2_TYPE:
                 case ACVP_KDF135_IKEV1_TYPE:
                 case ACVP_KDF135_X963_TYPE:
@@ -4607,34 +4608,41 @@ static ACVP_RESULT acvp_build_kdf135_ssh_register_cap (JSON_Object *cap_obj, ACV
     ACVP_RESULT result;
 
     json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
-    json_object_set_value(cap_obj, "methods", json_value_init_array());
-    temp_arr = json_object_get_array(cap_obj, "methods");
+    json_object_set_string(cap_obj, "mode", ACVP_ALG_KDF135_SSH);
+    json_object_set_value(cap_obj, "cipher", json_value_init_array());
+    temp_arr = json_object_get_array(cap_obj, "cipher");
     if (cap_entry->cap.kdf135_ssh_cap->method[0] == ACVP_SSH_METH_TDES_CBC) {
-        json_array_append_string(temp_arr, "TDES-CBC");
+        json_array_append_string(temp_arr, "TDES");
     }
 
     if (cap_entry->cap.kdf135_ssh_cap->method[1] == ACVP_SSH_METH_AES_128_CBC) {
-        json_array_append_string(temp_arr, "AES-128-CBC");
+        json_array_append_string(temp_arr, "AES-128");
     }
 
     if (cap_entry->cap.kdf135_ssh_cap->method[2] == ACVP_SSH_METH_AES_192_CBC) {
-        json_array_append_string(temp_arr, "AES-192-CBC");
+        json_array_append_string(temp_arr, "AES-192");
     }
 
     if (cap_entry->cap.kdf135_ssh_cap->method[3] == ACVP_SSH_METH_AES_256_CBC) {
-        json_array_append_string(temp_arr, "AES-256-CBC");
+        json_array_append_string(temp_arr, "AES-256");
     }
 
-    json_object_set_value(cap_obj, "sha", json_value_init_array());
-    temp_arr = json_object_get_array(cap_obj, "sha");
+    json_object_set_value(cap_obj, "hashAlg", json_value_init_array());
+    temp_arr = json_object_get_array(cap_obj, "hashAlg");
+    if (cap_entry->cap.kdf135_ssh_cap->sha & ACVP_KDF135_SSH_CAP_SHA1) {
+        json_array_append_string(temp_arr, "SHA-1");
+    }
+    if (cap_entry->cap.kdf135_ssh_cap->sha & ACVP_KDF135_SSH_CAP_SHA224) {
+        json_array_append_string(temp_arr, "SHA2-224");
+    }
     if (cap_entry->cap.kdf135_ssh_cap->sha & ACVP_KDF135_SSH_CAP_SHA256) {
-        json_array_append_string(temp_arr, "SHA-256");
+        json_array_append_string(temp_arr, "SHA2-256");
     }
     if (cap_entry->cap.kdf135_ssh_cap->sha & ACVP_KDF135_SSH_CAP_SHA384) {
-        json_array_append_string(temp_arr, "SHA-384");
+        json_array_append_string(temp_arr, "SHA2-384");
     }
     if (cap_entry->cap.kdf135_ssh_cap->sha & ACVP_KDF135_SSH_CAP_SHA512) {
-        json_array_append_string(temp_arr, "SHA-512");
+        json_array_append_string(temp_arr, "SHA2-512");
     }
 
     result = acvp_lookup_prereqVals(cap_obj, cap_entry);
@@ -7198,7 +7206,9 @@ static ACVP_RESULT acvp_validate_kdf135_ssh_param_value (ACVP_KDF135_SSH_METHOD 
     ACVP_RESULT retval = ACVP_INVALID_ARG;
 
     if ((method < ACVP_SSH_METH_MAX) && (method > 0)) {
-        if ((param & ACVP_KDF135_SSH_CAP_SHA256) ||
+        if ((param & ACVP_KDF135_SSH_CAP_SHA1) ||
+            (param & ACVP_KDF135_SSH_CAP_SHA224) ||
+            (param & ACVP_KDF135_SSH_CAP_SHA256) ||
             (param & ACVP_KDF135_SSH_CAP_SHA384) ||
             (param & ACVP_KDF135_SSH_CAP_SHA512)) {
             retval = ACVP_SUCCESS;

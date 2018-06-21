@@ -167,6 +167,19 @@
 #define ACVP_ALG_KDF135_X963     "KDF-X963"
 
 /*
+ *  Defines the key lengths and block lengths (in bytes)
+ *  of symmetric block ciphers.
+ */
+#define ACVP_KEY_LEN_TDES 24
+#define ACVP_KEY_LEN_AES128 16
+#define ACVP_KEY_LEN_AES192 24
+#define ACVP_KEY_LEN_AES256 32
+#define ACVP_BLOCK_LEN_TDES 8
+#define ACVP_BLOCK_LEN_AES128 16 /**< 16 byte block size regardless of mode */
+#define ACVP_BLOCK_LEN_AES192 16 /**< 16 byte block size regardless of mode */
+#define ACVP_BLOCK_LEN_AES256 16 /**< 16 byte block size regardless of mode */
+
+/*
  * The values that are supplied
  * when a client application registers are in bits, as
  * the specs specify.
@@ -199,7 +212,18 @@
 #define ACVP_DES_MCT_OUTER      400
 
 #define ACVP_KDF135_TLS_MSG_MAX 1024*4
-#define ACVP_KDF135_SSH_MSG_MAX 1024
+#define ACVP_KDF135_SSH_EKEY_MAX (ACVP_BYTE_LEN_HMAC_SHA512) /**< Encryption Key max.
+                                                                  Be able to hold largest sha size, although
+                                                                  actual key is a subset (up to 32 bytes).
+                                                                  512 bits, 64 bytes */
+#define ACVP_KDF135_SSH_IKEY_MAX (ACVP_BYTE_LEN_HMAC_SHA512) /**< Integrity Key max
+                                                                  512 bits, 64 bytes */
+#define ACVP_KDF135_SSH_IV_MAX (ACVP_BYTE_LEN_HMAC_SHA512) /**< Initial IV key max
+                                                                Be able to hold largest sha size, although
+                                                                actual IV is a subset (up to 16 bytes).
+                                                                512 bits, 64 bytes */
+#define ACVP_KDF135_SSH_STR_OUT_MAX (ACVP_KDF135_SSH_IKEY_MAX * 2) /**< 128 characters */
+#define ACVP_KDF135_SSH_STR_IN_MAX 4096 /**< 4096 characters, needs to accomodate large shared_secret (K) */
 #define ACVP_KDF135_SRTP_KDR_MAX 24
 #define ACVP_KDF135_SRTP_KDR_STR_MAX 13
 #define ACVP_KDF135_SRTP_MASTER_MAX 65
@@ -758,6 +782,8 @@ ACVP_CAPS_LIST *acvp_locate_cap_entry (ACVP_CTX *ctx, ACVP_CIPHER cipher);
 char *acvp_lookup_cipher_name (ACVP_CIPHER alg);
 
 ACVP_CIPHER acvp_lookup_cipher_index (const char *algorithm);
+
+ACVP_CIPHER acvp_lookup_cipherwithmode_index (const char *algorithm, const char *mode);
 
 ACVP_DRBG_MODE acvp_lookup_drbg_mode_index (const char *mode);
 
