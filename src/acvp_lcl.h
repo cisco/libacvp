@@ -783,8 +783,6 @@ char *acvp_lookup_cipher_name (ACVP_CIPHER alg);
 
 ACVP_CIPHER acvp_lookup_cipher_index (const char *algorithm);
 
-ACVP_CIPHER acvp_lookup_cipherwithmode_index (const char *algorithm, const char *mode);
-
 ACVP_DRBG_MODE acvp_lookup_drbg_mode_index (const char *mode);
 
 ACVP_DRBG_CAP_MODE_LIST *acvp_locate_drbg_mode_entry (ACVP_CAPS_LIST *cap, ACVP_DRBG_MODE mode);

@@ -3001,7 +3001,7 @@ static ACVP_RESULT app_kdf135_ssh_handler(ACVP_TEST_CASE *test_case)
 
     switch (tc->sha_type)
     {
-	case ACVP_KDF135_SSH_CAP_SHA1:
+    case ACVP_KDF135_SSH_CAP_SHA1:
         evp_md = EVP_sha1();
         break;
     case ACVP_KDF135_SSH_CAP_SHA224:
@@ -3045,8 +3045,7 @@ static ACVP_RESULT app_kdf135_ssh_handler(ACVP_TEST_CASE *test_case)
     ret = 1;
     if (ret != 0) {
         printf("\nCrypto module error, kdf ssh cs_init_iv failure\n");
-        rc = ACVP_CRYPTO_MODULE_FAIL;
-        goto error;
+        return ACVP_CRYPTO_MODULE_FAIL;
     }
     
     /*
@@ -3057,8 +3056,7 @@ static ACVP_RESULT app_kdf135_ssh_handler(ACVP_TEST_CASE *test_case)
     ret = 1;
     if (ret != 0) {
         printf("\nCrypto module error, kdf ssh sc_init_iv failure\n");
-        rc = ACVP_CRYPTO_MODULE_FAIL;
-        goto error;
+        return ACVP_CRYPTO_MODULE_FAIL;
     }
     
     /*
@@ -3069,8 +3067,7 @@ static ACVP_RESULT app_kdf135_ssh_handler(ACVP_TEST_CASE *test_case)
     ret = 1;
     if (ret != 0) {
         printf("\nCrypto module error, kdf ssh cs_encrypt_key failure\n");
-        rc = ACVP_CRYPTO_MODULE_FAIL;
-        goto error;
+        return ACVP_CRYPTO_MODULE_FAIL;
     }
     
     /*
@@ -3081,8 +3078,7 @@ static ACVP_RESULT app_kdf135_ssh_handler(ACVP_TEST_CASE *test_case)
     ret = 1;
     if (ret != 0) {
         printf("\nCrypto module error, kdf ssh sc_encrypt_key failure\n");
-        rc = ACVP_CRYPTO_MODULE_FAIL;
-        goto error;
+        return ACVP_CRYPTO_MODULE_FAIL;
     }
     
     /*
@@ -3093,8 +3089,7 @@ static ACVP_RESULT app_kdf135_ssh_handler(ACVP_TEST_CASE *test_case)
     ret = 1;
     if (ret != 0) {
        printf("\nCrypto module error, kdf ssh cs_integrity_key failure\n");
-       rc = ACVP_CRYPTO_MODULE_FAIL;
-       goto error;
+       return ACVP_CRYPTO_MODULE_FAIL;
     }
     
     /*
@@ -3105,12 +3100,10 @@ static ACVP_RESULT app_kdf135_ssh_handler(ACVP_TEST_CASE *test_case)
     ret = 1;
     if (ret != 0) {
        printf("\nCrypto module error, kdf ssh sc_integrity_key failure\n");
-       rc = ACVP_CRYPTO_MODULE_FAIL;
-       goto error;
+       return ACVP_CRYPTO_MODULE_FAIL;
     }
 
-error:
-    return rc;
+    return ACVP_SUCCESS;
 }
 #endif
 

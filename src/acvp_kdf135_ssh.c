@@ -114,7 +114,7 @@ ACVP_RESULT acvp_kdf135_ssh_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     /*
      * Get the crypto module handler for this hash algorithm
      */
-    alg_id = acvp_lookup_cipherwithmode_index(alg_str, mode_str);
+    alg_id = ACVP_KDF135_SSH;
     if (alg_id < ACVP_CIPHER_START) {
         ACVP_LOG_ERR("unsupported algorithm (%s)", alg_str);
         return (ACVP_UNSUPPORTED_OP);
@@ -400,9 +400,12 @@ static ACVP_RESULT acvp_kdf135_ssh_init_tc (ACVP_CTX *ctx,
     if (!stc->session_id) { return ACVP_MALLOC_FAIL; }
 
     // Convert from hex string to binary
-    acvp_hexstr_to_bin(shared_secret_k, stc->shared_secret_k, shared_secret_len);
-    acvp_hexstr_to_bin(hash_h, stc->hash_h, hash_len);
-    acvp_hexstr_to_bin(session_id, stc->session_id, session_id_len);
+    acvp_hexstr_to_bin((const unsigned char*)shared_secret_k,
+                       (unsigned char *)stc->shared_secret_k, shared_secret_len);
+    acvp_hexstr_to_bin((const unsigned char*)hash_h,
+                       (unsigned char *)stc->hash_h, hash_len);
+    acvp_hexstr_to_bin((const unsigned char*)session_id,
+                       (unsigned char *)stc->session_id, session_id_len);
 
     // Allocate answer buffers
     stc->cs_init_iv = calloc(ACVP_KDF135_SSH_IV_MAX, sizeof(unsigned char));

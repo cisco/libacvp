@@ -134,35 +134,6 @@ ACVP_CIPHER acvp_lookup_cipher_index (const char *algorithm) {
     return ACVP_CIPHER_START;
 }
 
-
-/*
- * This function returns the ID of a cipher given an
- * algorithm name (as defined in the ACVP spec) and mode.
- *
- * \return 0 - No match
- * \return ACVP_CIPHER - match
- */
-ACVP_CIPHER acvp_lookup_cipherwithmode_index (const char *algorithm, const char *mode) {
-    int i = 0;
-
-    if (!algorithm || !mode) {
-        return ACVP_CIPHER_START;
-    }
-
-    for (i = 0; i < ACVP_ALG_MAX; i++) {
-        if (alg_tbl[i].mode == NULL) {
-            // Skip entries that don't have a mode
-            continue;
-        }
-
-        if (!strncmp(algorithm, alg_tbl[i].name, strlen(alg_tbl[i].name)) &&
-            !strncmp(mode, alg_tbl[i].mode, strlen(alg_tbl[i].mode))) {
-            return alg_tbl[i].cipher;
-        }
-    }
-    return ACVP_CIPHER_START;
-}
-
 /*
  * This method returns the string that corresponds to a randPQ
  * index value
