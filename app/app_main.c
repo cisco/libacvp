@@ -957,7 +957,7 @@ static void enable_kdf (ACVP_CTX *ctx) {
 #ifdef OPENSSL_KDF_SUPPORT
     ACVP_RESULT rv;
     char value[] = "same";
-    int i;
+    int i, flags = 0;
     /*
      * Enable KDF-135
      */
@@ -995,13 +995,17 @@ static void enable_kdf (ACVP_CTX *ctx) {
     rv = acvp_enable_prereq_cap(ctx, ACVP_KDF135_SSH, ACVP_PREREQ_AES, value);
     CHECK_ENABLE_CAP_RV(rv);
 
-    rv = acvp_enable_kdf135_ssh_cap_parm(ctx, ACVP_KDF135_SSH, ACVP_SSH_METH_TDES_CBC, ACVP_KDF135_SSH_CAP_SHA256 | ACVP_KDF135_SSH_CAP_SHA384 | ACVP_KDF135_SSH_CAP_SHA512);
+    // Bit flags for kdf135_ssh sha capabilities
+    flags = ACVP_KDF135_SSH_CAP_SHA1 | ACVP_KDF135_SSH_CAP_SHA224 |ACVP_KDF135_SSH_CAP_SHA256
+    | ACVP_KDF135_SSH_CAP_SHA384 | ACVP_KDF135_SSH_CAP_SHA512;
+
+    rv = acvp_enable_kdf135_ssh_cap_parm(ctx, ACVP_KDF135_SSH, ACVP_SSH_METH_TDES_CBC, flags);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_kdf135_ssh_cap_parm(ctx, ACVP_KDF135_SSH, ACVP_SSH_METH_AES_128_CBC, ACVP_KDF135_SSH_CAP_SHA256 | ACVP_KDF135_SSH_CAP_SHA384 | ACVP_KDF135_SSH_CAP_SHA512);
+    rv = acvp_enable_kdf135_ssh_cap_parm(ctx, ACVP_KDF135_SSH, ACVP_SSH_METH_AES_128_CBC, flags);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_kdf135_ssh_cap_parm(ctx, ACVP_KDF135_SSH, ACVP_SSH_METH_AES_192_CBC, ACVP_KDF135_SSH_CAP_SHA256 | ACVP_KDF135_SSH_CAP_SHA384 | ACVP_KDF135_SSH_CAP_SHA512);
+    rv = acvp_enable_kdf135_ssh_cap_parm(ctx, ACVP_KDF135_SSH, ACVP_SSH_METH_AES_192_CBC, flags);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_kdf135_ssh_cap_parm(ctx, ACVP_KDF135_SSH, ACVP_SSH_METH_AES_256_CBC, ACVP_KDF135_SSH_CAP_SHA256 | ACVP_KDF135_SSH_CAP_SHA384 | ACVP_KDF135_SSH_CAP_SHA512);
+    rv = acvp_enable_kdf135_ssh_cap_parm(ctx, ACVP_KDF135_SSH, ACVP_SSH_METH_AES_256_CBC, flags);
     CHECK_ENABLE_CAP_RV(rv);
     
     rv = acvp_enable_kdf135_srtp_cap(ctx, &app_kdf135_srtp_handler);
@@ -2989,60 +2993,50 @@ static ACVP_RESULT app_kdf135_snmp_handler(ACVP_TEST_CASE *test_case)
 
 static ACVP_RESULT app_kdf135_ssh_handler(ACVP_TEST_CASE *test_case)
 {
-    ACVP_KDF135_SSH_TC *tc;
-    ACVP_RESULT rc = ACVP_SUCCESS;
-
-    const EVP_MD *evp_md = NULL, *evp_md2 = NULL;
-    int p_len, ret;
-    unsigned char* cs_init_iv_buf = NULL;
-    unsigned char* sc_init_iv_buf = NULL;
-    unsigned char* cs_e_key_buf   = NULL;
-    unsigned char* sc_e_key_buf   = NULL;
-    unsigned char* cs_i_key_buf   = NULL;
-    unsigned char* sc_i_key_buf   = NULL;
+    ACVP_KDF135_SSH_TC *tc = NULL;
+    const EVP_MD *evp_md = NULL;
+    int ret = 0;
 
     tc = test_case->tc.kdf135_ssh;
 
     switch (tc->sha_type)
     {
+    case ACVP_KDF135_SSH_CAP_SHA1:
+        evp_md = EVP_sha1();
+        break;
+    case ACVP_KDF135_SSH_CAP_SHA224:
+        evp_md = EVP_sha224();
+        break;
     case ACVP_KDF135_SSH_CAP_SHA256:
-        evp_md = evp_md2 = EVP_sha256();
+        evp_md = EVP_sha256();
         break;
     case ACVP_KDF135_SSH_CAP_SHA384:
-        evp_md = evp_md2 = EVP_sha384();
+        evp_md = EVP_sha384();
         break;
     case ACVP_KDF135_SSH_CAP_SHA512:
-        evp_md = evp_md2 = EVP_sha512();
+        evp_md = EVP_sha512();
         break;
     default:
-        evp_md = EVP_sha1(); ///temp for test
         printf("\nCrypto module error, Bad SHA type\n");
         return ACVP_INVALID_ARG;
     }
 
     /*
-       o  Initial IV client to server: HASH(K || H || "A" || session_id)
-          (Here K is encoded as mpint and "A" as byte and session_id as raw
-          data.  "A" means the single character A, ASCII 65).
-       o  Initial IV server to client: HASH(K || H || "B" || session_id)
-       o  Encryption key client to server: HASH(K || H || "C" || session_id)
-       o  Encryption key server to client: HASH(K || H || "D" || session_id)
-       o  Integrity key client to server: HASH(K || H || "E" || session_id)
-       o  Integrity key server to client: HASH(K || H || "F" || session_id)
+     * Initial IV client to server: HASH(K || H || "A" || session_id)
+     * (Here K is encoded as mpint and "A" as byte and session_id as raw
+     * data.  "A" means the single character A, ASCII 65).
+     *
+     * Initial IV server to client: HASH(K || H || "B" || session_id)
+     *
+     * Encryption key client to server: HASH(K || H || "C" || session_id)
+     *
+     * Encryption key server to client: HASH(K || H || "D" || session_id)
+     *
+     * Integrity key client to server: HASH(K || H || "E" || session_id)
+     *
+     * Integrity key server to client: HASH(K || H || "F" || session_id)
      */
-    cs_init_iv_buf = tc->cs_init_iv;
-    sc_init_iv_buf = tc->sc_init_iv;
-    cs_e_key_buf   = tc->cs_e_key;
-    sc_e_key_buf   = tc->sc_e_key;
-    cs_i_key_buf   = tc->cs_i_key;
-    sc_i_key_buf   = tc->sc_i_key;
 
-    if(!cs_init_iv_buf || !sc_init_iv_buf || !cs_e_key_buf ||
-       !sc_e_key_buf || !cs_i_key_buf || !sc_i_key_buf) {
-        rc = ACVP_MALLOC_FAIL;
-        goto error;
-    }
-    
     /*
      * IMPORTANT: Need to set ret = <your KDF API here>
      * The default is set to failure as this is not
@@ -3051,8 +3045,7 @@ static ACVP_RESULT app_kdf135_ssh_handler(ACVP_TEST_CASE *test_case)
     ret = 1;
     if (ret != 0) {
         printf("\nCrypto module error, kdf ssh cs_init_iv failure\n");
-        rc = ACVP_CRYPTO_MODULE_FAIL;
-        goto error;
+        return ACVP_CRYPTO_MODULE_FAIL;
     }
     
     /*
@@ -3063,8 +3056,7 @@ static ACVP_RESULT app_kdf135_ssh_handler(ACVP_TEST_CASE *test_case)
     ret = 1;
     if (ret != 0) {
         printf("\nCrypto module error, kdf ssh sc_init_iv failure\n");
-        rc = ACVP_CRYPTO_MODULE_FAIL;
-        goto error;
+        return ACVP_CRYPTO_MODULE_FAIL;
     }
     
     /*
@@ -3074,9 +3066,8 @@ static ACVP_RESULT app_kdf135_ssh_handler(ACVP_TEST_CASE *test_case)
      */
     ret = 1;
     if (ret != 0) {
-        printf("\nCrypto module error, kdf ssh cs_e_key failure\n");
-        rc = ACVP_CRYPTO_MODULE_FAIL;
-        goto error;
+        printf("\nCrypto module error, kdf ssh cs_encrypt_key failure\n");
+        return ACVP_CRYPTO_MODULE_FAIL;
     }
     
     /*
@@ -3086,9 +3077,8 @@ static ACVP_RESULT app_kdf135_ssh_handler(ACVP_TEST_CASE *test_case)
      */
     ret = 1;
     if (ret != 0) {
-        printf("\nCrypto module error, kdf ssh sc_e_key failure\n");
-        rc = ACVP_CRYPTO_MODULE_FAIL;
-        goto error;
+        printf("\nCrypto module error, kdf ssh sc_encrypt_key failure\n");
+        return ACVP_CRYPTO_MODULE_FAIL;
     }
     
     /*
@@ -3098,9 +3088,8 @@ static ACVP_RESULT app_kdf135_ssh_handler(ACVP_TEST_CASE *test_case)
      */
     ret = 1;
     if (ret != 0) {
-       printf("\nCrypto module error, kdf ssh cs_i_key failure\n");
-       rc = ACVP_CRYPTO_MODULE_FAIL;
-       goto error;
+       printf("\nCrypto module error, kdf ssh cs_integrity_key failure\n");
+       return ACVP_CRYPTO_MODULE_FAIL;
     }
     
     /*
@@ -3110,13 +3099,11 @@ static ACVP_RESULT app_kdf135_ssh_handler(ACVP_TEST_CASE *test_case)
      */
     ret = 1;
     if (ret != 0) {
-       printf("\nCrypto module error, kdf ssh sc_i_key failure\n");
-       rc = ACVP_CRYPTO_MODULE_FAIL;
-       goto error;
+       printf("\nCrypto module error, kdf ssh sc_integrity_key failure\n");
+       return ACVP_CRYPTO_MODULE_FAIL;
     }
 
-error:
-    return rc;
+    return ACVP_SUCCESS;
 }
 #endif
 

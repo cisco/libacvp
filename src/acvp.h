@@ -207,9 +207,11 @@ typedef enum acvp_kdf135_tls_cap_parm {
  */
 typedef enum acvp_kdf135_ssh_cap_parm {
     ACVP_KDF135_SSH_CAP_MIN = 0,
-    ACVP_KDF135_SSH_CAP_SHA256 = 1, //bin 001
-    ACVP_KDF135_SSH_CAP_SHA384 = 2, //bin 010
-    ACVP_KDF135_SSH_CAP_SHA512 = 4, //bin 100
+    ACVP_KDF135_SSH_CAP_SHA1 = 1, //bin 00001
+    ACVP_KDF135_SSH_CAP_SHA224 = 2, //bin 00010
+    ACVP_KDF135_SSH_CAP_SHA256 = 4, //bin 00100
+    ACVP_KDF135_SSH_CAP_SHA384 = 8, //bin 01000
+    ACVP_KDF135_SSH_CAP_SHA512 = 16, //bin 10000
 } ACVP_KDF135_SSH_CAP_PARM;
 
 /*! @struct ACVP_KDF135_SSH_METHOD */
@@ -813,23 +815,30 @@ typedef struct acvp_kdf135_srtp_tc_t {
  */
 typedef struct acvp_kdf135_ssh_tc_t {
     ACVP_CIPHER cipher;
-    unsigned int tc_id;        /* Test case id */
-    unsigned int sha_type;
-    unsigned int sh_sec_len;
-    unsigned int iv_len;
-    unsigned int key_len;
-    char *shared_sec_k;
-    char *hash_h;
-    unsigned int hash_len;
-    char *session_id;
-    unsigned int session_len;
-    //results
-    unsigned char *cs_init_iv;
-    unsigned char *sc_init_iv;
-    unsigned char *cs_e_key;
-    unsigned char *sc_e_key;
-    unsigned char *cs_i_key;
-    unsigned char *sc_i_key;
+    unsigned int tc_id; /**< Test case id */
+    unsigned int sha_type; /**< SHA algorithm type
+                                Value of ACVP_KDF135_SSH_CAP_PARM */
+    unsigned int shared_secret_len; /**< Length of shared_secret (in bytes) */
+    unsigned int hash_len; /**< Length of hash (in bytes) */
+    unsigned int session_id_len; /**< Length of session_id (in bytes) */
+    unsigned int e_key_len; /**< Expected length of encrypt keys (in bytes) */
+    unsigned int i_key_len; /**< Expected length of integrity keys (in bytes) */
+    unsigned int iv_len; /**< Expected length of initial IV (in bytes) */
+    char *shared_secret_k; /**< Shared secret (K) */
+    char *hash_h; /**< Provided hash (H) */
+    char *session_id; /**< Session ID */
+    unsigned char *cs_init_iv; /**< Initial IV, client to server
+                                    ---User supplied--- */
+    unsigned char *sc_init_iv; /**< Initial IV, server to client,
+                                    ---User supplied--- */
+    unsigned char *cs_encrypt_key; /**< Encryption Key, client to server
+                                        ---User supplied--- */
+    unsigned char *sc_encrypt_key; /**< Encryption Key, server to client
+                                        ---User supplied--- */
+    unsigned char *cs_integrity_key; /**< Integrity Key, client to server
+                                          ---User supplied--- */
+    unsigned char *sc_integrity_key; /**< Integrity Key, server to client
+                                          ---User supplied--- */
 } ACVP_KDF135_SSH_TC;
 
 /*!
