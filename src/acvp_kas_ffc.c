@@ -67,14 +67,6 @@ static ACVP_RESULT acvp_kas_ffc_output_comp_tc (ACVP_CTX *ctx, ACVP_KAS_FFC_TC *
         return ACVP_SUCCESS;
     }
 
-    memset(tmp, 0x0, ACVP_KAS_FFC_MAX_STR);
-    rv = acvp_bin_to_hexstr((const unsigned char *)stc->piut, stc->piutlen, 
-                            (unsigned char *) tmp);
-    if (rv != ACVP_SUCCESS) {
-        free(tmp);
-        ACVP_LOG_ERR("hex conversion failure (Z)");
-        return rv;
-    }
     json_object_set_string(tc_rsp, "ephemeralPublicIut", stc->piut);
 
     memset(tmp, 0x0, ACVP_KAS_FFC_MAX_STR);
@@ -259,7 +251,7 @@ static ACVP_RESULT acvp_kas_ffc_comp(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap, ACVP_TE
             /* Process the current KAT test vector... */
             rv = (cap->crypto_handler)(tc);
             if (rv != ACVP_SUCCESS) {
-                    return ACVP_CRYPTO_MODULE_FAIL;
+                return ACVP_CRYPTO_MODULE_FAIL;
             }
 
             /*
@@ -364,7 +356,6 @@ ACVP_RESULT acvp_kas_ffc_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     default:
         ACVP_LOG_ERR("ACVP server requesting unsupported KAS-FFC mode");
         return ACVP_UNSUPPORTED_OP;
-        break;
     }
     json_array_append_value(reg_arry, r_vs_val);
 

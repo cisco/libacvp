@@ -1746,7 +1746,7 @@ ACVP_RESULT acvp_enable_kas_ffc_prereq_cap (
 );
 
 /*! @brief acvp_enable_kas_ffc_cap_parm() allows an application to specify
-       operational parameters to be used for a given hash alg during a
+       operational parameters to be used for a given alg during a
        test session with the ACVP server.
 
     This function should be called to enable crypto capabilities for
@@ -1756,7 +1756,7 @@ ACVP_RESULT acvp_enable_kas_ffc_prereq_cap (
     @param ctx Address of pointer to a previously allocated ACVP_CTX.
     @param cipher ACVP_CIPHER enum value identifying the crypto capability.
     @param mode ACVP_KAS_FFC_MODE enum value specifying mode. An example would be
-        ACVP_KAS_FFC_MODE_PARTIALVAL
+        ACVP_KAS_FFC_MODE_DPGEN
     @param param ACVP_KAS_FFC_PARAM enum value identifying the algorithm parameter
        that is being specified.  An example would be ACVP_KAS_FFC_????
     @param value the value corresponding to the parameter being set
@@ -1769,6 +1769,27 @@ ACVP_RESULT acvp_enable_kas_ffc_cap_parm (ACVP_CTX *ctx,
                                           ACVP_KAS_FFC_PARAM param,
                                           int value);
 
+
+/*! @brief acvp_enable_kas_ffc_cap_scheme() allows an application to specify
+       scheme parameters to be used for a given alg during a
+       test session with the ACVP server.
+
+    This function should be called to enable crypto capabilities for
+    KAS-FFC modes and functions. It may be called  multiple times to specify 
+    more than one crypto capability.
+
+    @param ctx Address of pointer to a previously allocated ACVP_CTX.
+    @param cipher ACVP_CIPHER enum value identifying the crypto capability.
+    @param mode ACVP_KAS_FFC_MODE enum value specifying mode. An example would be
+        ACVP_KAS_FFC_MODE_COMPONENT
+    @param param ACVP_KAS_FFC_SCHEME enum value identifying the algorithm parameter
+       that is being specified.  An example would be ACVP_KAS_FFC_DH_EPHEMERAL
+    @param param ACVP_KAS_FFC_PARAM enum value identifying the algorithm parameter
+       that is being specified.  An example would be ACVP_KAS_FFC_KDF
+    @param value the value corresponding to the parameter being set
+
+    @return ACVP_RESULT
+ */
 ACVP_RESULT acvp_enable_kas_ffc_cap_scheme (ACVP_CTX *ctx,
                                             ACVP_CIPHER cipher,
                                             ACVP_KAS_FFC_MODE mode,

@@ -64,9 +64,9 @@
 extern int fips_selftest_fail;
 extern int fips_mode;
 int dsa_builtin_paramgen(DSA *ret, size_t bits, size_t qbits,
-	const EVP_MD *evpmd, const unsigned char *seed_in, size_t seed_len,
-	unsigned char *seed_out,
-	int *counter_ret, unsigned long *h_ret, BN_GENCB *cb);
+    const EVP_MD *evpmd, const unsigned char *seed_in, size_t seed_len,
+    unsigned char *seed_out,
+    int *counter_ret, unsigned long *h_ret, BN_GENCB *cb);
 #endif
 static ACVP_RESULT totp(char **token);
 static void enable_aes(ACVP_CTX *ctx);
@@ -3802,22 +3802,22 @@ static ACVP_RESULT app_kas_ffc_handler(ACVP_TEST_CASE *test_case)
         return rv;
     }
     if (!BN_hex2bn(&dh->p, (char *)tc->p)) {
-            printf("BN_hex2bn failed p\n");
-            goto error;
+        printf("BN_hex2bn failed p\n");
+        goto error;
     }
     if (!BN_hex2bn(&dh->q, (char *)tc->q)) {
-            printf("BN_hex2bn failed q\n");
-            goto error;
+        printf("BN_hex2bn failed q\n");
+        goto error;
     }
 
     if (!BN_hex2bn(&dh->g, (char *)tc->g)) {
-            printf("BN_hex2bn failed g\n");
-            goto error;
+        printf("BN_hex2bn failed g\n");
+        goto error;
     }
 
     if (!BN_hex2bn(&peerkey, (char *)tc->eps)) {
-            printf("BN_hex2bn failed eps\n");
-            goto error;
+        printf("BN_hex2bn failed eps\n");
+        goto error;
     }
 
     if (tc->test_type == ACVP_KAS_FFC_TT_VAL) {
@@ -3869,7 +3869,7 @@ error:
     BN_clear_free(dh->pub_key);
     dh->priv_key = NULL;
     dh->pub_key = NULL;
-	FIPS_dh_free(dh);
+    FIPS_dh_free(dh);
     return rv;
 }
 
