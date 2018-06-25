@@ -130,6 +130,16 @@
 #define ACVP_ALG_KAS_ECC_PARTIALVAL  "partialVal"
 #define ACVP_ALG_KAS_ECC_KEYREGEN    "keyRegen"
 
+#define ACVP_ALG_KAS_FFC_COMP        "Component"
+#define ACVP_ALG_KAS_FFC_NOCOMP      ""
+
+#define ACVP_ALG_KAS_FFC             "KAS-FFC"
+#define ACVP_ALG_KAS_FFC_DPGEN       "dpGen"
+#define ACVP_ALG_KAS_FFC_MQV2        "MQV2"
+#define ACVP_ALG_KAS_FFC_KEYPAIRGEN  "keyPairGen"
+#define ACVP_ALG_KAS_FFC_FULLVAL     "fullVal"
+#define ACVP_ALG_KAS_FFC_KEYREGEN    "keyRegen"
+
 #define ACVP_ALG_RSA                "RSA"
 #define ACVP_ALG_ECDSA              "ECDSA"
 
@@ -322,7 +332,9 @@ typedef enum acvp_capability_type {
     ACVP_KDF108_TYPE,
     ACVP_KAS_ECC_CDH_TYPE,
     ACVP_KAS_ECC_COMP_TYPE,
-    ACVP_KAS_ECC_NOCOMP_TYPE
+    ACVP_KAS_ECC_NOCOMP_TYPE,
+    ACVP_KAS_FFC_COMP_TYPE,
+    ACVP_KAS_FFC_NOCOMP_TYPE
 } ACVP_CAP_TYPE;
 
 /*
@@ -608,6 +620,43 @@ typedef struct acvp_kas_ecc_capability_t {
     ACVP_KAS_ECC_CAP_MODE *kas_ecc_mode;
 } ACVP_KAS_ECC_CAP;
 
+typedef struct acvp_kas_ffc_mac {
+    int alg;
+    int curve;
+    ACVP_PARAM_LIST *key;
+    int nonce;
+    int maclen;
+    struct acvp_kas_ffc_mac *next;
+} ACVP_KAS_FFC_MAC;
+
+typedef struct acvp_kas_ffc_pset {
+    int set;
+    ACVP_PARAM_LIST *sha;
+    ACVP_KAS_FFC_MAC *mac;
+    struct acvp_kas_ffc_pset *next;
+} ACVP_KAS_FFC_PSET;
+
+typedef struct acvp_kas_ffc_scheme {
+    int scheme;
+    int kdf;
+    ACVP_PARAM_LIST *role;
+    ACVP_KAS_FFC_PSET *pset;
+    struct acvp_kas_ffc_scheme *next;
+} ACVP_KAS_FFC_SCHEME;
+
+
+typedef struct acvp_kas_ffc_cap_mode_t {
+    ACVP_KAS_FFC_MODE cap_mode;
+    ACVP_PREREQ_LIST *prereq_vals;
+    ACVP_PARAM_LIST *function;
+    ACVP_KAS_FFC_SCHEME *scheme; /* other modes use schemes */
+} ACVP_KAS_FFC_CAP_MODE;
+
+typedef struct acvp_kas_ffc_capability_t {
+    ACVP_CIPHER cipher;
+    ACVP_KAS_FFC_CAP_MODE *kas_ffc_mode;
+} ACVP_KAS_FFC_CAP;
+
 typedef struct acvp_caps_list_t {
     ACVP_CIPHER cipher;
     ACVP_CAP_TYPE cap_type;
@@ -637,6 +686,7 @@ typedef struct acvp_caps_list_t {
         ACVP_KDF135_TPM_CAP *kdf135_tpm_cap;
         ACVP_KDF108_CAP *kdf108_cap;
         ACVP_KAS_ECC_CAP *kas_ecc_cap;
+        ACVP_KAS_FFC_CAP *kas_ffc_cap;
     } cap;
 
     ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case);
@@ -774,6 +824,9 @@ ACVP_RESULT acvp_dsa_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
 ACVP_RESULT acvp_dsa_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
 
 ACVP_RESULT acvp_kas_ecc_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
+
+ACVP_RESULT acvp_kas_ffc_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
+
 /*
  * ACVP utility functions used internally
  */

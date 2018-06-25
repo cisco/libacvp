@@ -80,6 +80,7 @@ static void enable_rsa(ACVP_CTX *ctx);
 static void enable_ecdsa(ACVP_CTX *ctx);
 static void enable_drbg(ACVP_CTX *ctx);
 static void enable_kas_ecc(ACVP_CTX *ctx);
+static void enable_kas_ffc(ACVP_CTX *ctx);
 
 static ACVP_RESULT app_aes_handler_aead(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_aes_keywrap_handler(ACVP_TEST_CASE *test_case);
@@ -91,6 +92,7 @@ static ACVP_RESULT app_hmac_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_cmac_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_dsa_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_kas_ecc_handler(ACVP_TEST_CASE *test_case);
+static ACVP_RESULT app_kas_ffc_handler(ACVP_TEST_CASE *test_case);
 
 #ifdef OPENSSL_KDF_SUPPORT
 static ACVP_RESULT app_kdf135_tls_handler(ACVP_TEST_CASE *test_case);
@@ -239,6 +241,7 @@ int main(int argc, char **argv) {
     int drbg = 0;
     int ecdsa = 0;
     int kas_ecc = 0;
+    int kas_ffc = 0;
     
     if (argc > 4) {
         print_usage();
@@ -435,6 +438,9 @@ int main(int argc, char **argv) {
 
     if (kas_ecc) {
         enable_kas_ecc(ctx);
+    }
+    if (kas_ffc) {
+        enable_kas_ffc(ctx);
     }
 #endif
     }
@@ -1172,6 +1178,46 @@ static void enable_kas_ecc (ACVP_CTX *ctx) {
     rv = acvp_enable_kas_ecc_cap_scheme(ctx, ACVP_KAS_ECC_COMP, ACVP_KAS_ECC_MODE_COMPONENT, ACVP_KAS_ECC_EPHEMERAL_UNIFIED, ACVP_KAS_ECC_ED, ACVP_ECDSA_CURVE_P384, ACVP_SHA384);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_kas_ecc_cap_scheme(ctx, ACVP_KAS_ECC_COMP, ACVP_KAS_ECC_MODE_COMPONENT, ACVP_KAS_ECC_EPHEMERAL_UNIFIED, ACVP_KAS_ECC_EE, ACVP_ECDSA_CURVE_P521, ACVP_SHA512);
+    CHECK_ENABLE_CAP_RV(rv);
+
+}
+
+static void enable_kas_ffc (ACVP_CTX *ctx) {
+    ACVP_RESULT rv;
+    char value[] = "same";
+
+    /*
+     * Enable KAS-FFC....
+     */
+    rv = acvp_enable_kas_ffc_cap(ctx, ACVP_KAS_FFC_COMP, &app_kas_ffc_handler);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_kas_ffc_prereq_cap(ctx, ACVP_KAS_FFC_COMP, ACVP_KAS_FFC_MODE_COMPONENT, ACVP_PREREQ_DSA, value);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_kas_ffc_prereq_cap(ctx, ACVP_KAS_FFC_COMP, ACVP_KAS_FFC_MODE_COMPONENT, ACVP_PREREQ_SHA, value);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_kas_ffc_prereq_cap(ctx, ACVP_KAS_FFC_COMP, ACVP_KAS_FFC_MODE_COMPONENT, ACVP_PREREQ_DRBG, value);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_kas_ffc_prereq_cap(ctx, ACVP_KAS_FFC_COMP, ACVP_KAS_FFC_MODE_COMPONENT, ACVP_PREREQ_CCM, value);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_kas_ffc_prereq_cap(ctx, ACVP_KAS_FFC_COMP, ACVP_KAS_FFC_MODE_COMPONENT, ACVP_PREREQ_CMAC, value);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_kas_ffc_prereq_cap(ctx, ACVP_KAS_FFC_COMP, ACVP_KAS_FFC_MODE_COMPONENT, ACVP_PREREQ_HMAC, value);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_kas_ffc_cap_parm(ctx, ACVP_KAS_FFC_COMP, ACVP_KAS_FFC_MODE_COMPONENT, ACVP_KAS_FFC_FUNCTION, ACVP_KAS_FFC_FUNC_DPGEN);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_kas_ffc_cap_parm(ctx, ACVP_KAS_FFC_COMP, ACVP_KAS_FFC_MODE_COMPONENT, ACVP_KAS_FFC_FUNCTION, ACVP_KAS_FFC_FUNC_DPVAL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_kas_ffc_cap_scheme(ctx, ACVP_KAS_FFC_COMP, ACVP_KAS_FFC_MODE_COMPONENT, ACVP_KAS_FFC_DH_EPHEMERAL,  ACVP_KAS_FFC_ROLE, ACVP_KAS_FFC_ROLE_INITIATOR);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_kas_ffc_cap_scheme(ctx, ACVP_KAS_FFC_COMP, ACVP_KAS_FFC_MODE_COMPONENT, ACVP_KAS_FFC_DH_EPHEMERAL,  ACVP_KAS_FFC_ROLE, ACVP_KAS_FFC_ROLE_RESPONDER);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_kas_ffc_cap_scheme(ctx, ACVP_KAS_FFC_COMP, ACVP_KAS_FFC_MODE_COMPONENT, ACVP_KAS_FFC_DH_EPHEMERAL,  ACVP_KAS_FFC_KDF, ACVP_KAS_FFC_NOKDFNOKC);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_kas_ffc_cap_scheme(ctx, ACVP_KAS_FFC_COMP, ACVP_KAS_FFC_MODE_COMPONENT, ACVP_KAS_FFC_DH_EPHEMERAL, ACVP_KAS_FFC_FB, ACVP_SHA224);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_kas_ffc_cap_scheme(ctx, ACVP_KAS_FFC_COMP, ACVP_KAS_FFC_MODE_COMPONENT, ACVP_KAS_FFC_DH_EPHEMERAL, ACVP_KAS_FFC_FC, ACVP_SHA256);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_kas_ffc_cap_scheme(ctx, ACVP_KAS_FFC_COMP, ACVP_KAS_FFC_MODE_COMPONENT, ACVP_KAS_FFC_DH_EPHEMERAL, ACVP_KAS_FFC_FB, ACVP_SHA256);
     CHECK_ENABLE_CAP_RV(rv);
 
 }
@@ -3716,6 +3762,114 @@ error:
     BN_free(ix);
     BN_free(iy);
     BN_free(id);
+    return rv;
+}
+
+static ACVP_RESULT app_kas_ffc_handler(ACVP_TEST_CASE *test_case)
+{
+    ACVP_KAS_FFC_TC         *tc;
+    const EVP_MD *md = NULL;
+    ACVP_RESULT rv = ACVP_CRYPTO_MODULE_FAIL;
+    unsigned char *Z;
+    int Zlen;
+    DH *dh = NULL;
+    BIGNUM *peerkey = NULL;
+
+    tc = test_case->tc.kas_ffc;
+
+    switch (tc->md)
+    {
+    case ACVP_SHA224:
+        md = EVP_sha224();
+        break;
+    case ACVP_SHA256:
+        md = EVP_sha256();
+        break;
+    case ACVP_SHA384:
+        md = EVP_sha384();
+        break;
+    case ACVP_SHA512:
+        md = EVP_sha512();
+        break;
+    default:
+        printf("No valid hash name %d\n", tc->md);
+        return rv;
+        break;
+    }
+
+    dh = FIPS_dh_new();
+    if (!dh) {
+        return rv;
+    }
+    if (!BN_hex2bn(&dh->p, (char *)tc->p)) {
+            printf("BN_hex2bn failed p\n");
+            goto error;
+    }
+    if (!BN_hex2bn(&dh->q, (char *)tc->q)) {
+            printf("BN_hex2bn failed q\n");
+            goto error;
+    }
+
+    if (!BN_hex2bn(&dh->g, (char *)tc->g)) {
+            printf("BN_hex2bn failed g\n");
+            goto error;
+    }
+
+    if (!BN_hex2bn(&peerkey, (char *)tc->eps)) {
+            printf("BN_hex2bn failed eps\n");
+            goto error;
+    }
+
+    if (tc->test_type == ACVP_KAS_FFC_TT_VAL) {
+        if (!BN_hex2bn(&dh->priv_key, (char *)tc->epri)) {
+            printf("BN_hex2bn failed epri\n");
+            goto error;
+        }
+
+        if (!BN_hex2bn(&dh->pub_key, (char *)tc->epui)) {
+            printf("BN_hex2bn failed epui\n");
+            goto error;
+        }
+    }
+
+    if (tc->test_type == ACVP_KAS_FFC_TT_AFT) {
+        if (!DH_generate_key(dh)) {
+            printf("DH_generate_key failed\n");
+            goto error;
+        }
+    }
+    Z = OPENSSL_malloc(BN_num_bytes(dh->p));
+    if (!Z) {
+        printf("Malloc failed for Z\n");
+        goto error;
+    }
+
+    Zlen = DH_compute_key_padded(Z, peerkey, dh);
+    FIPS_digest(Z, Zlen, (unsigned char *)tc->chash, NULL, md);
+    tc->chashlen = M_EVP_MD_size(md);
+
+    if (tc->test_type == ACVP_KAS_FFC_TT_AFT) {
+        memcpy(tc->z, Z, Zlen);
+        tc->zlen = Zlen;
+    }
+
+    tc->piut = BN_bn2hex(dh->pub_key);
+    tc->piutlen = strnlen(tc->piut, ACVP_KAS_FFC_MAX_STR);
+
+
+    rv = ACVP_SUCCESS;
+
+error:
+    if (Z) {
+        OPENSSL_cleanse(Z, Zlen);
+    }
+    OPENSSL_free(Z);
+    BN_clear_free(peerkey);
+    BN_clear_free(dh->priv_key);
+    BN_clear_free(dh->pub_key);
+    dh->priv_key = NULL;
+    dh->pub_key = NULL;
+	FIPS_dh_free(dh);
     return rv;
 }
 
