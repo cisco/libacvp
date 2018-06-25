@@ -5207,10 +5207,20 @@ static ACVP_RESULT acvp_build_kas_ecc_register_cap (ACVP_CTX *ctx, JSON_Object *
                     json_array_append_string(temp_arr, "partialVal");
                     break;
                 case ACVP_KAS_ECC_FUNC_DPGEN:
+                    json_array_append_string(temp_arr, "dpGen");
+                    break;
                 case ACVP_KAS_ECC_FUNC_DPVAL:
+                    json_array_append_string(temp_arr, "dpVal");
+                    break;
                 case ACVP_KAS_ECC_FUNC_KEYPAIR:
+                    json_array_append_string(temp_arr, "keyPairGen");
+                    break;
                 case ACVP_KAS_ECC_FUNC_KEYREGEN:
+                    json_array_append_string(temp_arr, "keyRegen");
+                    break;
                 case ACVP_KAS_ECC_FUNC_FULL:
+                    json_array_append_string(temp_arr, "fullVal");
+                    break; 
                 default:
                     ACVP_LOG_ERR("\nUnsupported KAS-ECC function %d", current_func->param);
                     return ACVP_INVALID_ARG;
