@@ -94,8 +94,7 @@ static ACVP_RESULT app_dsa_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_kas_ecc_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_kas_ffc_handler(ACVP_TEST_CASE *test_case);
 
-//#ifdef OPENSSL_KDF_SUPPORT
-#if 1
+#ifdef OPENSSL_KDF_SUPPORT
 static ACVP_RESULT app_kdf135_tls_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_kdf135_snmp_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_kdf135_ssh_handler(ACVP_TEST_CASE *test_case);
@@ -228,12 +227,12 @@ int main(int argc, char **argv) {
     int json = 0;
     char json_file[JSON_FILENAME_LENGTH];
 
-    int aes = 0;
-    int tdes = 0;
-    int hash = 0;
-    int cmac = 0;
-    int hmac = 0;
-    int kdf = 1;
+    int aes = 1;
+    int tdes = 1;
+    int hash = 1;
+    int cmac = 1;
+    int hmac = 1;
+    int kdf = 0;
     /*
      * these require the fom, off by default
      */
@@ -961,15 +960,15 @@ static void enable_hmac (ACVP_CTX *ctx) {
 }
 
 static void enable_kdf (ACVP_CTX *ctx) {
-//#ifdef OPENSSL_KDF_SUPPORT
-#if 1
+#ifdef OPENSSL_KDF_SUPPORT
+
     ACVP_RESULT rv;
     char value[] = "same";
     int i, flags = 0;
     /*
      * Enable KDF-135
      */
-    /*rv = acvp_enable_kdf135_tls_cap(ctx, &app_kdf135_tls_handler);
+    rv = acvp_enable_kdf135_tls_cap(ctx, &app_kdf135_tls_handler);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_prereq_cap(ctx, ACVP_KDF135_TLS, ACVP_PREREQ_SHA, value);
     CHECK_ENABLE_CAP_RV(rv);
@@ -1030,7 +1029,7 @@ static void enable_kdf (ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_kdf135_srtp_cap_parm(ctx, ACVP_KDF135_SRTP, ACVP_SRTP_AES_KEYLEN, 192);
     CHECK_ENABLE_CAP_RV(rv);
-*/
+
     rv = acvp_enable_kdf135_ikev2_cap(ctx, &app_kdf135_ikev2_handler);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_prereq_cap(ctx, ACVP_KDF135_IKEV2, ACVP_PREREQ_SHA, value);
@@ -1041,15 +1040,15 @@ static void enable_kdf (ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_kdf135_ikev2_domain_param(ctx, ACVP_RESPOND_NONCE_LEN, 64, 2048, 1);
     CHECK_ENABLE_CAP_RV(rv);
-		rv = acvp_enable_kdf135_ikev2_domain_param(ctx, ACVP_DH_SECRET_LEN, 224, 8192, 1);
-		CHECK_ENABLE_CAP_RV(rv);
+	rv = acvp_enable_kdf135_ikev2_domain_param(ctx, ACVP_DH_SECRET_LEN, 224, 8192, 1);
+	CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_kdf135_ikev2_domain_param(ctx, ACVP_INIT_NONCE_LEN, 64, 2048, 1);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_kdf135_ikev2_domain_param(ctx, ACVP_KEY_MATERIAL_LEN, 1056, 3072, 1);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_kdf135_ikev2_cap_param(ctx, ACVP_KDF_HASH_ALG, "SHA-1");
     CHECK_ENABLE_CAP_RV(rv);
-/*
+
     rv = acvp_enable_kdf135_ikev1_cap(ctx, &app_kdf135_ikev1_handler);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_prereq_cap(ctx, ACVP_KDF135_IKEV1, ACVP_PREREQ_SHA, value);
@@ -1093,33 +1092,33 @@ static void enable_kdf (ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_kdf135_x963_cap_param(ctx, ACVP_KDF_X963_SHARED_INFO_LEN, 1024);
     CHECK_ENABLE_CAP_RV(rv);
-    */
+
 
     /*
      * KDF108 Counter Mode
      */
-    // rv = acvp_enable_kdf108_cap(ctx, &app_kdf108_handler);
-    // CHECK_ENABLE_CAP_RV(rv);
-    // rv = acvp_enable_prereq_cap(ctx, ACVP_KDF108, ACVP_PREREQ_HMAC, value);
-    // CHECK_ENABLE_CAP_RV(rv);
-    // rv = acvp_enable_kdf108_domain_param(ctx, ACVP_KDF108_MODE_COUNTER, ACVP_KDF108_SUPPORTED_LEN, 8, 1024, 8);
-    // CHECK_ENABLE_CAP_RV(rv);
-    // rv = acvp_enable_kdf108_cap_param(ctx, ACVP_KDF108_MODE_COUNTER, ACVP_KDF108_MAC_MODE, ACVP_KDF108_MAC_MODE_HMAC_SHA1);
-    // CHECK_ENABLE_CAP_RV(rv);
-    // rv = acvp_enable_kdf108_cap_param(ctx, ACVP_KDF108_MODE_COUNTER, ACVP_KDF108_MAC_MODE, ACVP_KDF108_MAC_MODE_HMAC_SHA224);
-    // CHECK_ENABLE_CAP_RV(rv);
-    // rv = acvp_enable_kdf108_cap_param(ctx, ACVP_KDF108_MODE_COUNTER, ACVP_KDF108_MAC_MODE, ACVP_KDF108_MAC_MODE_HMAC_SHA256);
-    // CHECK_ENABLE_CAP_RV(rv);
-    // rv = acvp_enable_kdf108_cap_param(ctx, ACVP_KDF108_MODE_COUNTER, ACVP_KDF108_MAC_MODE, ACVP_KDF108_MAC_MODE_HMAC_SHA384);
-    // CHECK_ENABLE_CAP_RV(rv);
-    // rv = acvp_enable_kdf108_cap_param(ctx, ACVP_KDF108_MODE_COUNTER, ACVP_KDF108_MAC_MODE, ACVP_KDF108_MAC_MODE_HMAC_SHA512);
-    // CHECK_ENABLE_CAP_RV(rv);
-    // rv = acvp_enable_kdf108_cap_param(ctx, ACVP_KDF108_MODE_COUNTER, ACVP_KDF108_COUNTER_LEN, 8);
-    // CHECK_ENABLE_CAP_RV(rv);
-    // rv = acvp_enable_kdf108_cap_param(ctx, ACVP_KDF108_MODE_COUNTER, ACVP_KDF108_FIXED_DATA_ORDER, ACVP_KDF108_FIXED_DATA_ORDER_AFTER);
-    // CHECK_ENABLE_CAP_RV(rv);
-    // rv = acvp_enable_kdf108_cap_param(ctx, ACVP_KDF108_MODE_COUNTER, ACVP_KDF108_SUPPORTS_EMPTY_IV, 0);
-    // CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_kdf108_cap(ctx, &app_kdf108_handler);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_prereq_cap(ctx, ACVP_KDF108, ACVP_PREREQ_HMAC, value);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_kdf108_domain_param(ctx, ACVP_KDF108_MODE_COUNTER, ACVP_KDF108_SUPPORTED_LEN, 8, 1024, 8);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_kdf108_cap_param(ctx, ACVP_KDF108_MODE_COUNTER, ACVP_KDF108_MAC_MODE, ACVP_KDF108_MAC_MODE_HMAC_SHA1);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_kdf108_cap_param(ctx, ACVP_KDF108_MODE_COUNTER, ACVP_KDF108_MAC_MODE, ACVP_KDF108_MAC_MODE_HMAC_SHA224);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_kdf108_cap_param(ctx, ACVP_KDF108_MODE_COUNTER, ACVP_KDF108_MAC_MODE, ACVP_KDF108_MAC_MODE_HMAC_SHA256);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_kdf108_cap_param(ctx, ACVP_KDF108_MODE_COUNTER, ACVP_KDF108_MAC_MODE, ACVP_KDF108_MAC_MODE_HMAC_SHA384);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_kdf108_cap_param(ctx, ACVP_KDF108_MODE_COUNTER, ACVP_KDF108_MAC_MODE, ACVP_KDF108_MAC_MODE_HMAC_SHA512);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_kdf108_cap_param(ctx, ACVP_KDF108_MODE_COUNTER, ACVP_KDF108_COUNTER_LEN, 8);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_kdf108_cap_param(ctx, ACVP_KDF108_MODE_COUNTER, ACVP_KDF108_FIXED_DATA_ORDER, ACVP_KDF108_FIXED_DATA_ORDER_AFTER);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_kdf108_cap_param(ctx, ACVP_KDF108_MODE_COUNTER, ACVP_KDF108_SUPPORTS_EMPTY_IV, 0);
+    CHECK_ENABLE_CAP_RV(rv);
 
 #endif
 }
@@ -2872,8 +2871,7 @@ static ACVP_RESULT app_cmac_handler(ACVP_TEST_CASE *test_case)
     return ACVP_SUCCESS;
 }
 
-//#ifdef OPENSSL_KDF_SUPPORT
-#if 1
+#ifdef OPENSSL_KDF_SUPPORT
 static ACVP_RESULT app_kdf135_srtp_handler(ACVP_TEST_CASE *test_case) {
     ACVP_RESULT rv = ACVP_CRYPTO_MODULE_FAIL;
     return rv;
