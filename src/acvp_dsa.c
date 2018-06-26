@@ -302,12 +302,12 @@ static ACVP_RESULT acvp_dsa_pqggen_init_tc (ACVP_CTX *ctx,
     switch (gpq) {
     case ACVP_DSA_CANONICAL:
         stc->index = strtol((char *) index, NULL, 16);
+        stc->seedlen = strlen((char *)seed)/2;
         rv = acvp_hexstr_to_bin((const unsigned char *) seed, stc->seed, ACVP_DSA_SEED_MAX);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Hex conversion failure (seed)");
             return rv;
         }
-        stc->seedlen = strlen((char *) stc->seed);
         memcpy(stc->p, p, strlen((const char *)p));
         memcpy(stc->q, q, strlen((const char *)q));
         break;

@@ -38,6 +38,7 @@
 #include "acvp_lcl.h"
 
 #define HTTP_OK    200
+#define HTTP_UNAUTH    401
 
 #define MAX_TOKEN_LEN 600
 
@@ -441,6 +442,7 @@ static size_t acvp_curl_write_register_func (void *ptr, size_t size, size_t nmem
 ACVP_RESULT acvp_retrieve_sample_answers (ACVP_CTX *ctx, int vs_id) {
     int rv;
     char url[512]; //TODO: 512 is an arbitrary limit
+    ACVP_RESULT result;
     
     memset(url, 0x0, 512);
     snprintf(url, 511, "https://%s:%d/%svalidation/acvp/vectors/answers?vsId=%d", ctx->server_name, ctx->server_port,
@@ -450,8 +452,18 @@ ACVP_RESULT acvp_retrieve_sample_answers (ACVP_CTX *ctx, int vs_id) {
     
     rv = acvp_curl_http_get(ctx, url, &acvp_curl_write_ans_func);
     if (rv != HTTP_OK) {
-        ACVP_LOG_ERR("Unable to get sample answers from ACVP server. curl rv=%d\n", rv);
-        return ACVP_TRANSPORT_FAIL;
+        if (rv == HTTP_UNAUTH) {
+            ACVP_LOG_ERR("JWT authorization has timed out curl rv=%d\n", rv);
+            /* give it one more try after the refresh */
+            result = acvp_refresh(ctx); 
+            if (result == ACVP_SUCCESS) {
+                rv = acvp_curl_http_get(ctx, url, &acvp_curl_write_ans_func);
+                if (rv != HTTP_OK) {
+                    ACVP_LOG_ERR("Unable to get sample answers from ACVP server. curl rv=%d\n", rv);
+                    return ACVP_TRANSPORT_FAIL;
+                }
+            }
+        }
     }
     
     /*
@@ -504,6 +516,7 @@ ACVP_RESULT acvp_send_register (ACVP_CTX *ctx, char *reg) {
 ACVP_RESULT acvp_retrieve_vector_set (ACVP_CTX *ctx, int vs_id) {
     int rv;
     char url[512]; //TODO: 512 is an arbitrary limit
+    ACVP_RESULT result;
 
     memset(url, 0x0, 512);
     snprintf(url, 511, "https://%s:%d/%svalidation/acvp/vectors?vsId=%d", ctx->server_name, ctx->server_port,
@@ -515,9 +528,19 @@ ACVP_RESULT acvp_retrieve_vector_set (ACVP_CTX *ctx, int vs_id) {
     }
     rv = acvp_curl_http_get(ctx, url, &acvp_curl_write_kat_func);
     if (rv != HTTP_OK) {
-        ACVP_LOG_ERR("Unable to get vectors from server. curl rv=%d\n", rv);
-        ACVP_LOG_ERR("%s\n", ctx->kat_buf);
-        return ACVP_TRANSPORT_FAIL;
+        if (rv == HTTP_UNAUTH) {
+            ACVP_LOG_ERR("JWT authorization has timed out curl rv=%d\n", rv);
+            /* give it one more try after the refresh */
+            result = acvp_refresh(ctx); 
+            if (result == ACVP_SUCCESS) {
+                rv = acvp_curl_http_get(ctx, url, &acvp_curl_write_kat_func);
+                if (rv != HTTP_OK) {
+                    ACVP_LOG_ERR("Unable to get vector set from ACVP server. curl rv=%d\n", rv);
+                    ACVP_LOG_ERR("%s\n", ctx->kat_buf);
+                    return ACVP_TRANSPORT_FAIL;
+                }
+            }
+        }
     }
 
     /*
@@ -536,6 +559,10 @@ ACVP_RESULT acvp_send_login (ACVP_CTX *ctx, char *login) {
     snprintf(url, 511, "https://%s:%d/%svalidation/acvp/login", ctx->server_name, ctx->server_port,
              ctx->path_segment);
 
+    if (ctx->jwt_token) {
+        free(ctx->jwt_token);
+    }
+    ctx->jwt_token = NULL;
     rv = acvp_curl_http_post(ctx, url, login, &acvp_curl_write_register_func);
     if (rv != HTTP_OK) {
         ACVP_LOG_ERR("Unable to register with ACVP server. curl rv=%d\n", rv);
@@ -558,6 +585,7 @@ ACVP_RESULT acvp_submit_vector_responses (ACVP_CTX *ctx) {
     int rv;
     char url[512]; //TODO: 512 is an arbitrary limit
     char *resp;
+    ACVP_RESULT result;
 
     memset(url, 0x0, 512);
     snprintf(url, 511, "https://%s:%d/%svalidation/acvp/vectors?vsId=%d", ctx->server_name, ctx->server_port,
@@ -569,9 +597,19 @@ ACVP_RESULT acvp_submit_vector_responses (ACVP_CTX *ctx) {
     ctx->kat_resp = NULL;
     json_free_serialized_string(resp);
     if (rv != HTTP_OK) {
-        ACVP_LOG_ERR("Unable to upload vector set to ACVP server. curl rv=%d\n", rv);
-        ACVP_LOG_ERR("%s\n", ctx->upld_buf);
-        return ACVP_TRANSPORT_FAIL;
+        if (rv == HTTP_UNAUTH) {
+            ACVP_LOG_ERR("JWT authorization has timed out curl rv=%d\n", rv);
+            /* give it one more try after the refresh */
+            result = acvp_refresh(ctx); 
+            if (result == ACVP_SUCCESS) {
+                rv = acvp_curl_http_post(ctx, url, resp, &acvp_curl_write_upld_func);
+                if (rv != HTTP_OK) {
+                    ACVP_LOG_ERR("Unable to get vector responses from ACVP server. curl rv=%d\n", rv);
+                    ACVP_LOG_ERR("%s\n", ctx->upld_buf);
+                    return ACVP_TRANSPORT_FAIL;
+                }
+            }
+        }
     }
 
     ACVP_LOG_STATUS("Successfully submitted KAT vector responses");
@@ -585,6 +623,7 @@ ACVP_RESULT acvp_submit_vector_responses (ACVP_CTX *ctx) {
 ACVP_RESULT acvp_retrieve_vector_set_result (ACVP_CTX *ctx, int vs_id) {
     int rv;
     char url[512]; //TODO: 512 is an arbitrary limit
+    ACVP_RESULT result;
 
     memset(url, 0x0, 512);
     snprintf(url, 511, "https://%s:%d/%svalidation/acvp/results?vsId=%d", ctx->server_name, ctx->server_port,
@@ -595,9 +634,19 @@ ACVP_RESULT acvp_retrieve_vector_set_result (ACVP_CTX *ctx, int vs_id) {
     }
     rv = acvp_curl_http_get(ctx, url, &acvp_curl_write_kat_func);
     if (rv != HTTP_OK) {
-        ACVP_LOG_ERR("Unable to get vector result from server. curl rv=%d\n", rv);
-        ACVP_LOG_ERR("%s\n", ctx->kat_buf);
-        return ACVP_TRANSPORT_FAIL;
+        if (rv == HTTP_UNAUTH) {
+            ACVP_LOG_ERR("JWT authorization has timed out curl rv=%d\n", rv);
+            /* give it one more try after the refresh */
+            result = acvp_refresh(ctx); 
+            if (result == ACVP_SUCCESS) {
+                rv = acvp_curl_http_get(ctx, url, &acvp_curl_write_kat_func);
+                if (rv != HTTP_OK) {
+                    ACVP_LOG_ERR("Unable to get vector result from server. curl rv=%d\n", rv);
+                    ACVP_LOG_ERR("%s\n", ctx->kat_buf);
+                    return ACVP_TRANSPORT_FAIL;
+                }
+            }
+        }
     }
 
     /*

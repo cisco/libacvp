@@ -40,6 +40,7 @@ static ACVP_RESULT acvp_kdf135_snmp_init_tc (ACVP_CTX *ctx,
                                              ACVP_KDF135_SNMP_TC *stc,
                                              unsigned int tc_id,
                                              ACVP_CIPHER alg_id,
+                                             char *engine_id,
                                              const char *password,
                                              unsigned int p_len);
 
@@ -87,15 +88,9 @@ ACVP_RESULT acvp_kdf135_snmp_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
      * Get a reference to the abstracted test case
      */
     tc.tc.kdf135_snmp = &stc;
-
-    /*
-     * Get the crypto module handler for this hash algorithm
-     */
-    alg_id = acvp_lookup_cipher_index(alg_str);
-    if (alg_id < ACVP_CIPHER_START) {
-        ACVP_LOG_ERR("unsupported algorithm (%s)", alg_str);
-        return (ACVP_UNSUPPORTED_OP);
-    }
+    alg_id = ACVP_KDF135_SNMP;
+    stc.cipher = alg_id;
+    
     cap = acvp_locate_cap_entry(ctx, alg_id);
     if (!cap) {
         ACVP_LOG_ERR("ACVP server requesting unsupported capability");
@@ -133,12 +128,12 @@ ACVP_RESULT acvp_kdf135_snmp_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
         groupobj = json_value_get_object(groupval);
 
 
-        p_len = (unsigned int) json_object_get_number(groupobj, "pLen");
-        engine_id = json_object_get_string(groupobj, "engineID");
+        p_len = (unsigned int) json_object_get_number(groupobj, "passwordLength");
+        engine_id = json_object_get_string(groupobj, "engineId");
 
         ACVP_LOG_INFO("    Test group: %d", i);
         ACVP_LOG_INFO("          pLen: %d", p_len);
-        ACVP_LOG_INFO("      engineID: %d", engine_id);
+        ACVP_LOG_INFO("      engineID: %s", engine_id);
 
         tests = json_object_get_array(groupobj, "tests");
         t_cnt = json_array_get_count(tests);
@@ -152,7 +147,7 @@ ACVP_RESULT acvp_kdf135_snmp_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
 
             ACVP_LOG_INFO("        Test case: %d", j);
             ACVP_LOG_INFO("             tcId: %d", tc_id);
-            ACVP_LOG_INFO("         password: %d", password);
+            ACVP_LOG_INFO("         password: %s", password);
 
             /*
              * Create a new test case in the response
@@ -168,7 +163,7 @@ ACVP_RESULT acvp_kdf135_snmp_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
              * TODO: this does mallocs, we can probably do the mallocs once for
              *       the entire vector set to be more efficient
              */
-            acvp_kdf135_snmp_init_tc(ctx, &stc, tc_id, alg_id, password, p_len);
+            acvp_kdf135_snmp_init_tc(ctx, &stc, tc_id, alg_id, engine_id, password, p_len);
 
             /* Process the current test vector... */
             rv = (cap->crypto_handler)(&tc);
@@ -215,23 +210,7 @@ ACVP_RESULT acvp_kdf135_snmp_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
  * the JSON processing for a single test case.
  */
 static ACVP_RESULT acvp_kdf135_snmp_output_tc (ACVP_CTX *ctx, ACVP_KDF135_SNMP_TC *stc, JSON_Object *tc_rsp) {
-    ACVP_RESULT rv;
-    char *tmp;
-
-    tmp = calloc(1, ACVP_KDF135_SNMP_SKEY_MAX);
-    if (!tmp) {
-        ACVP_LOG_ERR("Unable to malloc in acvp_hmac_output_tc");
-        return ACVP_MALLOC_FAIL;
-    }
-
-    rv = acvp_bin_to_hexstr(stc->s_key, stc->skey_len, (unsigned char *) tmp);
-    if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("hex conversion failure (mac)");
-        return rv;
-    }
-    json_object_set_string(tc_rsp, "sKey", tmp);
-
-    free(tmp);
+    json_object_set_string(tc_rsp, "sharedKey", stc->s_key);
     return ACVP_SUCCESS;
 }
 
@@ -239,22 +218,19 @@ static ACVP_RESULT acvp_kdf135_snmp_init_tc (ACVP_CTX *ctx,
                                              ACVP_KDF135_SNMP_TC *stc,
                                              unsigned int tc_id,
                                              ACVP_CIPHER alg_id,
+                                             char *engine_id,
                                              const char *password,
                                              unsigned int p_len) {
     memset(stc, 0x0, sizeof(ACVP_KDF135_SNMP_TC));
 
-    stc->password = calloc(1, p_len);
-    if (!stc->password) { return ACVP_MALLOC_FAIL; }
-
-    stc->s_key = calloc(1, p_len);
+    stc->s_key = calloc(ACVP_KDF135_SNMP_SKEY_MAX*2, sizeof(char));
     if (!stc->s_key) { return ACVP_MALLOC_FAIL; }
-
-    memset(stc->s_key, 0, ACVP_KDF135_SNMP_SKEY_MAX);
-
+    
     stc->tc_id = tc_id;
     stc->cipher = alg_id;
     stc->p_len = p_len;
     stc->password = password;
+    stc->engine_id = engine_id;
 
     return ACVP_SUCCESS;
 }
@@ -264,7 +240,6 @@ static ACVP_RESULT acvp_kdf135_snmp_init_tc (ACVP_CTX *ctx,
  * a test case.
  */
 static ACVP_RESULT acvp_kdf135_snmp_release_tc (ACVP_KDF135_SNMP_TC *stc) {
-    free((void *) stc->password);
     free(stc->s_key);
 
     memset(stc, 0x0, sizeof(ACVP_KDF135_SNMP_TC));

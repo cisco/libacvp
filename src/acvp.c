@@ -189,14 +189,19 @@ ACVP_ALG_HANDLER alg_tbl[ACVP_ALG_MAX] = {
         {ACVP_ECDSA_SIGGEN,      &acvp_ecdsa_siggen_kat_handler,    ACVP_ALG_ECDSA,             ACVP_MODE_SIGGEN},
         {ACVP_ECDSA_SIGVER,      &acvp_ecdsa_sigver_kat_handler,    ACVP_ALG_ECDSA,             ACVP_MODE_SIGVER},
         {ACVP_KDF135_TLS,        &acvp_kdf135_tls_kat_handler,      ACVP_KDF135_ALG_STR,        ACVP_ALG_KDF135_TLS},
-        {ACVP_KDF135_SNMP,       &acvp_kdf135_snmp_kat_handler,     ACVP_ALG_KDF135_SNMP,       NULL},
+        {ACVP_KDF135_SNMP,       &acvp_kdf135_snmp_kat_handler,     ACVP_KDF135_ALG_STR,        ACVP_ALG_KDF135_SNMP},
         {ACVP_KDF135_SSH,        &acvp_kdf135_ssh_kat_handler,      ACVP_KDF135_ALG_STR,        ACVP_ALG_KDF135_SSH},
         {ACVP_KDF135_SRTP,       &acvp_kdf135_srtp_kat_handler,     ACVP_KDF135_ALG_STR,        ACVP_ALG_KDF135_SRTP},
-        {ACVP_KDF135_IKEV2,      &acvp_kdf135_ikev2_kat_handler,    ACVP_KDF135_ALG_STR,      ACVP_ALG_KDF135_IKEV2},
-        {ACVP_KDF135_IKEV1,      &acvp_kdf135_ikev1_kat_handler,    ACVP_KDF135_ALG_STR,      ACVP_ALG_KDF135_IKEV1},
-        {ACVP_KDF135_X963,       &acvp_kdf135_x963_kat_handler,     ACVP_KDF135_ALG_STR,       ACVP_ALG_KDF135_X963},
+        {ACVP_KDF135_IKEV2,      &acvp_kdf135_ikev2_kat_handler,    ACVP_KDF135_ALG_STR,        ACVP_ALG_KDF135_IKEV2},
+        {ACVP_KDF135_IKEV1,      &acvp_kdf135_ikev1_kat_handler,    ACVP_KDF135_ALG_STR,        ACVP_ALG_KDF135_IKEV1},
+        {ACVP_KDF135_X963,       &acvp_kdf135_x963_kat_handler,     ACVP_KDF135_ALG_STR,        ACVP_ALG_KDF135_X963},
         {ACVP_KDF135_TPM,        &acvp_kdf135_tpm_kat_handler,      ACVP_ALG_KDF135_TPM,        NULL},
-        {ACVP_KDF108,            &acvp_kdf108_kat_handler,          ACVP_ALG_KDF108,            NULL}
+        {ACVP_KDF108,            &acvp_kdf108_kat_handler,          ACVP_ALG_KDF108,            NULL},
+        {ACVP_KAS_ECC_CDH,       &acvp_kas_ecc_kat_handler,         ACVP_ALG_KAS_ECC,           ACVP_ALG_KAS_ECC_CDH},
+        {ACVP_KAS_ECC_COMP,      &acvp_kas_ecc_kat_handler,         ACVP_ALG_KAS_ECC,           ACVP_ALG_KAS_ECC_COMP},
+        {ACVP_KAS_ECC_NOCOMP,    &acvp_kas_ecc_kat_handler,         ACVP_ALG_KAS_ECC,           ACVP_ALG_KAS_ECC_NOCOMP},
+        {ACVP_KAS_FFC_COMP,      &acvp_kas_ffc_kat_handler,         ACVP_ALG_KAS_FFC,           ACVP_ALG_KAS_FFC_COMP},
+        {ACVP_KAS_FFC_NOCOMP,    &acvp_kas_ffc_kat_handler,         ACVP_ALG_KAS_FFC,           ACVP_ALG_KAS_FFC_NOCOMP}
 };
 
 typedef struct acvp_prereqs_mode_name_t {
@@ -204,13 +209,18 @@ typedef struct acvp_prereqs_mode_name_t {
     char *name;
 } ACVP_PREREQ_MODE_NAME;
 
-#define ACVP_NUM_PREREQS 5
+#define ACVP_NUM_PREREQS 9
 struct acvp_prereqs_mode_name_t acvp_prereqs_tbl[ACVP_NUM_PREREQS] = {
-        {ACVP_PREREQ_AES,  "AES"},
-        {ACVP_PREREQ_DRBG, "DRBG"},
-        {ACVP_PREREQ_HMAC, "HMAC"},
-        {ACVP_PREREQ_SHA,  "SHA"},
-        {ACVP_PREREQ_TDES, "TDES"}
+        {ACVP_PREREQ_AES,    "AES"},
+        {ACVP_PREREQ_CCM,    "CCM"},
+        {ACVP_PREREQ_CMAC,   "CMAC"},
+        {ACVP_PREREQ_DRBG,   "DRBG"},
+        {ACVP_PREREQ_DSA,    "DSA"},
+        {ACVP_PREREQ_ECDSA,  "ECDSA"},
+        {ACVP_PREREQ_HMAC,   "HMAC"},
+        {ACVP_PREREQ_KAS,    "KAS"},
+        {ACVP_PREREQ_SHA,    "SHA"},
+        {ACVP_PREREQ_TDES,   "TDES"}
 };
 
 
@@ -277,7 +287,6 @@ static void acvp_cap_free_dsa_attrs (ACVP_CAPS_LIST *cap_entry) {
     dsa_cap_mode = &cap_entry->cap.dsa_cap->dsa_cap_mode[0];
     free(dsa_cap_mode);
 }
-
 
 /*
  * Free Internal memory for keygen struct. Since it supports
@@ -349,6 +358,196 @@ static void acvp_cap_free_rsa_sig_list (ACVP_CAPS_LIST *cap_list) {
         temp_sig_cap = NULL;
     }
 }
+/*
+ * Free Internal memory for KAS-ECC Data struct
+ */
+static void acvp_cap_free_kas_ecc_mode (ACVP_CAPS_LIST *cap_list) {
+    ACVP_KAS_ECC_CAP *kas_ecc_cap = cap_list->cap.kas_ecc_cap;
+    ACVP_KAS_ECC_CAP_MODE *mode;
+    int i;
+
+    if (kas_ecc_cap) {
+        ACVP_PREREQ_LIST *current_pre_req_vals;
+        ACVP_PREREQ_LIST *next_pre_req_vals;
+        ACVP_PARAM_LIST *current_func;
+        ACVP_PARAM_LIST *next_func;
+        ACVP_PARAM_LIST *current_curve;
+        ACVP_PARAM_LIST *next_curve;
+        ACVP_PARAM_LIST *current_hash;
+        ACVP_PARAM_LIST *next_hash;
+        ACVP_PARAM_LIST *current_role;
+        ACVP_PARAM_LIST *next_role;
+        ACVP_KAS_ECC_PSET *current_pset;
+        ACVP_KAS_ECC_PSET *next_pset;
+        ACVP_KAS_ECC_SCHEME *current_scheme;
+        ACVP_KAS_ECC_SCHEME *next_scheme;
+
+        if (kas_ecc_cap->kas_ecc_mode) {
+            for (i=0; i< ACVP_KAS_ECC_MAX_MODES; i++) {
+                mode = &kas_ecc_cap->kas_ecc_mode[i];
+                current_pre_req_vals = mode->prereq_vals;
+                /*
+                 * Delete all pre_req
+                 */
+                if (current_pre_req_vals) {
+                    do {
+                        next_pre_req_vals = current_pre_req_vals->next;
+                        free(current_pre_req_vals);
+                        current_pre_req_vals = next_pre_req_vals;
+                    } while (current_pre_req_vals);
+                }
+                /*
+                 * Delete all function name lists
+                 */
+                current_func = mode->function;
+                if (current_func) {
+                    do {
+                        next_func = current_func->next;
+                        free(current_func);
+                        current_func = next_func;
+                    } while (current_func);
+                }
+                /*
+                 * Delete all curve name lists
+                 */
+                current_curve = mode->curve;
+                if (current_curve) {
+                    do {
+                        next_curve = current_curve->next;
+                        free(current_curve);
+                        current_curve = next_curve;
+                    } while (current_curve);
+                }
+                /*
+                 * Delete all schemes, psets and their param lists
+                 */
+                current_scheme = mode->scheme;
+                if (current_scheme) {
+                    do {
+                        current_role = current_scheme->role;
+                        if (current_role) {
+                            do {
+                                next_role = current_role->next;
+                                free(current_role);
+                                current_role = next_role;
+                            } while (current_role);
+                        }
+                        current_pset = current_scheme->pset;
+                        if (current_pset) {
+                            do {
+                                current_hash = current_pset->sha;
+                                if (current_hash) {
+                                    do {
+                                        next_hash = current_hash->next;
+                                        free(current_hash);
+                                        current_hash = next_hash;
+                                    } while (current_hash);
+                                }
+                                next_pset = current_pset->next;
+                                free(current_pset);
+                                current_pset = next_pset;
+                            } while (current_pset);
+                        }
+                        next_scheme = current_scheme->next;
+                        free(current_scheme);
+                        current_scheme = next_scheme;
+                    } while (current_scheme);
+                }
+            }
+        }
+    }
+    free(cap_list->cap.kas_ecc_cap->kas_ecc_mode);
+    free(cap_list->cap.kas_ecc_cap);
+}
+
+/*
+ * Free Internal memory for KAS-FFC Data struct
+ */
+static void acvp_cap_free_kas_ffc_mode (ACVP_CAPS_LIST *cap_list) {
+    ACVP_KAS_FFC_CAP *kas_ffc_cap = cap_list->cap.kas_ffc_cap;
+    ACVP_KAS_FFC_CAP_MODE *mode;
+    int i;
+
+    if (kas_ffc_cap) {
+        ACVP_PREREQ_LIST *current_pre_req_vals;
+        ACVP_PREREQ_LIST *next_pre_req_vals;
+        ACVP_PARAM_LIST *current_func;
+        ACVP_PARAM_LIST *next_func;
+        ACVP_PARAM_LIST *current_hash;
+        ACVP_PARAM_LIST *next_hash;
+        ACVP_PARAM_LIST *current_role;
+        ACVP_PARAM_LIST *next_role;
+        ACVP_KAS_FFC_PSET *current_pset;
+        ACVP_KAS_FFC_PSET *next_pset;
+        ACVP_KAS_FFC_SCHEME *current_scheme;
+        ACVP_KAS_FFC_SCHEME *next_scheme;
+
+        if (kas_ffc_cap->kas_ffc_mode) {
+            for (i=0; i< ACVP_KAS_FFC_MAX_MODES; i++) {
+                mode = &kas_ffc_cap->kas_ffc_mode[i];
+                current_pre_req_vals = mode->prereq_vals;
+                /*
+                 * Delete all pre_req
+                 */
+                if (current_pre_req_vals) {
+                    do {
+                        next_pre_req_vals = current_pre_req_vals->next;
+                        free(current_pre_req_vals);
+                        current_pre_req_vals = next_pre_req_vals;
+                    } while (current_pre_req_vals);
+                }
+                /*
+                 * Delete all function name lists
+                 */
+                current_func = mode->function;
+                if (current_func) {
+                    do {
+                        next_func = current_func->next;
+                        free(current_func);
+                        current_func = next_func;
+                    } while (current_func);
+                }
+                /*
+                 * Delete all schemes, psets and their param lists
+                 */
+                current_scheme = mode->scheme;
+                if (current_scheme) {
+                    do {
+                        current_role = current_scheme->role;
+                        if (current_role) {
+                            do {
+                                next_role = current_role->next;
+                                free(current_role);
+                                current_role = next_role;
+                            } while (current_role);
+                        }
+                        current_pset = current_scheme->pset;
+                        if (current_pset) {
+                            do {
+                                current_hash = current_pset->sha;
+                                if (current_hash) {
+                                    do {
+                                        next_hash = current_hash->next;
+                                        free(current_hash);
+                                        current_hash = next_hash;
+                                    } while (current_hash);
+                                }
+                                next_pset = current_pset->next;
+                                free(current_pset);
+                                current_pset = next_pset;
+                            } while (current_pset);
+                        }
+                        next_scheme = current_scheme->next;
+                        free(current_scheme);
+                        current_scheme = next_scheme;
+                    } while (current_scheme);
+                }
+            }
+        }
+    }
+    free(cap_list->cap.kas_ffc_cap->kas_ffc_mode);
+    free(cap_list->cap.kas_ffc_cap);
+}
 
 /*
  * Free Internal memory for DRBG Data struct
@@ -384,6 +583,59 @@ static void acvp_free_drbg_struct (ACVP_CAPS_LIST *cap_list) {
         free(drbg_cap);
         drbg_cap = NULL;
         cap_list->cap.drbg_cap = NULL;
+    }
+}
+
+/*
+ * Free Internal memory for KDF108 Cap struct
+ */
+static void acvp_cap_free_kdf108 (ACVP_CAPS_LIST *cap_list) {
+    ACVP_KDF108_CAP *cap = cap_list->cap.kdf108_cap;
+    ACVP_KDF108_MODE_PARAMS *mode_obj = NULL;
+
+    if (cap) {
+        if (cap->counter_mode.kdf_mode) {
+            mode_obj = &cap->counter_mode;
+            if (mode_obj->mac_mode) {
+                acvp_cap_free_nl(mode_obj->mac_mode);
+            }
+            if (mode_obj->data_order) {
+                acvp_cap_free_nl(mode_obj->data_order);
+            }
+            if (mode_obj->counter_lens) {
+                acvp_cap_free_sl(mode_obj->counter_lens);
+            }
+        }
+
+        if (cap->feedback_mode.kdf_mode) {
+            mode_obj = &cap->feedback_mode;
+            if (mode_obj->mac_mode) {
+                acvp_cap_free_nl(mode_obj->mac_mode);
+            }
+            if (mode_obj->data_order) {
+                acvp_cap_free_nl(mode_obj->data_order);
+            }
+            if (mode_obj->counter_lens) {
+                acvp_cap_free_sl(mode_obj->counter_lens);
+            }
+        }
+
+        if (cap->dpi_mode.kdf_mode) {
+            mode_obj = &cap->dpi_mode;
+            if (mode_obj->mac_mode) {
+                acvp_cap_free_nl(mode_obj->mac_mode);
+            }
+            if (mode_obj->data_order) {
+                acvp_cap_free_nl(mode_obj->data_order);
+            }
+            if (mode_obj->counter_lens) {
+                acvp_cap_free_sl(mode_obj->counter_lens);
+            }
+        }
+
+        free(cap);
+        cap = NULL;
+        cap_list->cap.kdf108_cap = NULL;
     }
 }
 
@@ -455,6 +707,15 @@ ACVP_RESULT acvp_free_test_session (ACVP_CTX *ctx) {
                     acvp_cap_free_dsa_attrs(cap_entry);
                     free(cap_entry->cap.dsa_cap);
                     break;
+                case ACVP_KAS_ECC_CDH_TYPE:
+                case ACVP_KAS_ECC_COMP_TYPE:
+                case ACVP_KAS_ECC_NOCOMP_TYPE:
+                    acvp_cap_free_kas_ecc_mode(cap_entry);
+                    break;
+                case ACVP_KAS_FFC_COMP_TYPE:
+                case ACVP_KAS_FFC_NOCOMP_TYPE:
+                    acvp_cap_free_kas_ffc_mode(cap_entry);
+                    break;
                 case ACVP_RSA_KEYGEN_TYPE:
                     acvp_cap_free_rsa_keygen_list(cap_entry);
                     break;
@@ -487,13 +748,19 @@ ACVP_RESULT acvp_free_test_session (ACVP_CTX *ctx) {
                 case ACVP_KDF135_TLS_TYPE:
                     free(cap_entry->cap.kdf135_tls_cap);
                     break;
+                case ACVP_KDF108_TYPE:
+                    acvp_cap_free_kdf108(cap_entry);
+                    break;
                 case ACVP_KDF135_SNMP_TYPE:
+                    acvp_cap_free_sl(cap_entry->cap.kdf135_snmp_cap->pass_lens);
+                    acvp_cap_free_nl(cap_entry->cap.kdf135_snmp_cap->eng_ids);
+                    break;
                 case ACVP_KDF135_SSH_TYPE:
+                    break;
                 case ACVP_KDF135_IKEV2_TYPE:
                 case ACVP_KDF135_IKEV1_TYPE:
                 case ACVP_KDF135_X963_TYPE:
                 case ACVP_KDF135_TPM_TYPE:
-                case ACVP_KDF108_TYPE:
                 default:
                     return ACVP_INVALID_ARG;
                 }
@@ -1594,6 +1861,33 @@ static ACVP_RESULT acvp_validate_prereq_val (ACVP_CIPHER cipher, ACVP_PREREQ_ALG
             return ACVP_SUCCESS;
         }
         break;
+    case ACVP_KAS_ECC_COMP:
+    case ACVP_KAS_ECC_NOCOMP:
+        if (pre_req == ACVP_PREREQ_DRBG ||
+            pre_req == ACVP_PREREQ_HMAC ||
+            pre_req == ACVP_PREREQ_CMAC ||
+            pre_req == ACVP_PREREQ_SHA ||
+            pre_req == ACVP_PREREQ_CCM ||
+            pre_req == ACVP_PREREQ_ECDSA) {
+            return ACVP_SUCCESS;
+        }
+        break;
+    case ACVP_KAS_ECC_CDH:
+        if (pre_req == ACVP_PREREQ_ECDSA) {
+            return ACVP_SUCCESS;
+        }
+        break;
+    case ACVP_KAS_FFC_COMP:
+    case ACVP_KAS_FFC_NOCOMP:
+        if (pre_req == ACVP_PREREQ_DRBG ||
+            pre_req == ACVP_PREREQ_HMAC ||
+            pre_req == ACVP_PREREQ_CMAC ||
+            pre_req == ACVP_PREREQ_SHA ||
+            pre_req == ACVP_PREREQ_CCM ||
+            pre_req == ACVP_PREREQ_DSA) {
+            return ACVP_SUCCESS;
+        }
+        break;
     case ACVP_KDF135_X963:
         if (pre_req == ACVP_PREREQ_SHA) {
             return ACVP_SUCCESS;
@@ -1607,7 +1901,7 @@ static ACVP_RESULT acvp_validate_prereq_val (ACVP_CIPHER cipher, ACVP_PREREQ_ALG
 }
 
 /*
- * Append a RSA pre req val to the list of prereqs
+ * Append a pre req val to the list of prereqs
  */
 static ACVP_RESULT acvp_add_prereq_val (ACVP_CIPHER cipher,
                                         ACVP_CAPS_LIST *cap_list,
@@ -1844,16 +2138,16 @@ ACVP_RESULT acvp_enable_kdf135_x963_cap_param (ACVP_CTX *ctx,
             current_hash->next = calloc(1, sizeof(ACVP_NAME_LIST));
             switch (value) {
             case ACVP_KDF_X963_SHA224:
-                current_hash->next->name = "SHA-224";
+                current_hash->next->name = "SHA2-224";
                 break;
             case ACVP_KDF_X963_SHA256:
-                current_hash->next->name = "SHA-256";
+                current_hash->next->name = "SHA2-256";
                 break;
             case ACVP_KDF_X963_SHA384:
-                current_hash->next->name = "SHA-384";
+                current_hash->next->name = "SHA2-384";
                 break;
             case ACVP_KDF_X963_SHA512:
-                current_hash->next->name = "SHA-512";
+                current_hash->next->name = "SHA2-512";
                 break;
             default:
                 return ACVP_INVALID_ARG;
@@ -1862,16 +2156,16 @@ ACVP_RESULT acvp_enable_kdf135_x963_cap_param (ACVP_CTX *ctx,
             cap->hash_algs = calloc(1, sizeof(ACVP_NAME_LIST));
             switch (value) {
             case ACVP_KDF_X963_SHA224:
-                cap->hash_algs->name = "SHA-224";
+                cap->hash_algs->name = "SHA2-224";
                 break;
             case ACVP_KDF_X963_SHA256:
-                cap->hash_algs->name = "SHA-256";
+                cap->hash_algs->name = "SHA2-256";
                 break;
             case ACVP_KDF_X963_SHA384:
-                cap->hash_algs->name = "SHA-384";
+                cap->hash_algs->name = "SHA2-384";
                 break;
             case ACVP_KDF_X963_SHA512:
-                cap->hash_algs->name = "SHA-512";
+                cap->hash_algs->name = "SHA2-512";
                 break;
             default:
                 return ACVP_INVALID_ARG;
@@ -4049,10 +4343,33 @@ static ACVP_RESULT acvp_build_kdf135_tls_register_cap (JSON_Object *cap_obj, ACV
 
 static ACVP_RESULT acvp_build_kdf135_snmp_register_cap (JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry) {
     ACVP_RESULT result;
-    json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
+    JSON_Array *temp_arr = NULL;
+    ACVP_NAME_LIST *current_engid;
+    ACVP_SL_LIST *current_val;
+    
+    json_object_set_string(cap_obj, "algorithm", ACVP_KDF135_ALG_STR);
+    json_object_set_string(cap_obj, "mode", ACVP_ALG_KDF135_SNMP);
 
     result = acvp_lookup_prereqVals(cap_obj, cap_entry);
     if (result != ACVP_SUCCESS) { return result; }
+    
+    json_object_set_value(cap_obj, "engineId", json_value_init_array());
+    temp_arr = json_object_get_array(cap_obj, "engineId");
+    
+    current_engid = cap_entry->cap.kdf135_snmp_cap->eng_ids;
+    while (current_engid) {
+        json_array_append_string(temp_arr, current_engid->name);
+        current_engid = current_engid->next;
+    }
+    
+    json_object_set_value(cap_obj, "passwordLength", json_value_init_array());
+    temp_arr = json_object_get_array(cap_obj, "passwordLength");
+    
+    current_val = cap_entry->cap.kdf135_snmp_cap->pass_lens;
+    while (current_val) {
+        json_array_append_number(temp_arr, current_val->length);
+        current_val = current_val->next;
+    }
 
     return ACVP_SUCCESS;
 }
@@ -4103,8 +4420,8 @@ static ACVP_RESULT acvp_build_kdf108_mode_register (JSON_Object **mode_obj, ACVP
     }
     
     /* counter length list */
-    json_object_set_value(*mode_obj, "counterLengths", json_value_init_array());
-    tmp_arr = json_object_get_array(*mode_obj, "counterLengths");
+    json_object_set_value(*mode_obj, "counterLength", json_value_init_array());
+    tmp_arr = json_object_get_array(*mode_obj, "counterLength");
     sl_obj = mode_params->counter_lens;
     while (sl_obj) {
         json_array_append_number(tmp_arr, sl_obj->length);
@@ -4112,6 +4429,8 @@ static ACVP_RESULT acvp_build_kdf108_mode_register (JSON_Object **mode_obj, ACVP
     }
     
     json_object_set_boolean(*mode_obj, "supportsEmptyIv", mode_params->empty_iv_support);
+
+    return ACVP_SUCCESS;
 }
 
 static ACVP_RESULT acvp_build_kdf108_register_cap (JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry) {
@@ -4127,8 +4446,8 @@ static ACVP_RESULT acvp_build_kdf108_register_cap (JSON_Object *cap_obj, ACVP_CA
     result = acvp_lookup_prereqVals(cap_obj, cap_entry);
     if (result != ACVP_SUCCESS) { return result; }
     
-    json_object_set_value(cap_obj, "algSpecs", json_value_init_array());
-    alg_specs_array = json_object_get_array(cap_obj, "algSpecs");
+    json_object_set_value(cap_obj, "capabilities", json_value_init_array());
+    alg_specs_array = json_object_get_array(cap_obj, "capabilities");
     
     alg_specs_counter_val = json_value_init_object();
     alg_specs_counter_obj = json_value_get_object(alg_specs_counter_val);
@@ -4396,34 +4715,41 @@ static ACVP_RESULT acvp_build_kdf135_ssh_register_cap (JSON_Object *cap_obj, ACV
     ACVP_RESULT result;
 
     json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
-    json_object_set_value(cap_obj, "methods", json_value_init_array());
-    temp_arr = json_object_get_array(cap_obj, "methods");
+    json_object_set_string(cap_obj, "mode", ACVP_ALG_KDF135_SSH);
+    json_object_set_value(cap_obj, "cipher", json_value_init_array());
+    temp_arr = json_object_get_array(cap_obj, "cipher");
     if (cap_entry->cap.kdf135_ssh_cap->method[0] == ACVP_SSH_METH_TDES_CBC) {
-        json_array_append_string(temp_arr, "TDES-CBC");
+        json_array_append_string(temp_arr, "TDES");
     }
 
     if (cap_entry->cap.kdf135_ssh_cap->method[1] == ACVP_SSH_METH_AES_128_CBC) {
-        json_array_append_string(temp_arr, "AES-128-CBC");
+        json_array_append_string(temp_arr, "AES-128");
     }
 
     if (cap_entry->cap.kdf135_ssh_cap->method[2] == ACVP_SSH_METH_AES_192_CBC) {
-        json_array_append_string(temp_arr, "AES-192-CBC");
+        json_array_append_string(temp_arr, "AES-192");
     }
 
     if (cap_entry->cap.kdf135_ssh_cap->method[3] == ACVP_SSH_METH_AES_256_CBC) {
-        json_array_append_string(temp_arr, "AES-256-CBC");
+        json_array_append_string(temp_arr, "AES-256");
     }
 
-    json_object_set_value(cap_obj, "sha", json_value_init_array());
-    temp_arr = json_object_get_array(cap_obj, "sha");
+    json_object_set_value(cap_obj, "hashAlg", json_value_init_array());
+    temp_arr = json_object_get_array(cap_obj, "hashAlg");
+    if (cap_entry->cap.kdf135_ssh_cap->sha & ACVP_KDF135_SSH_CAP_SHA1) {
+        json_array_append_string(temp_arr, "SHA-1");
+    }
+    if (cap_entry->cap.kdf135_ssh_cap->sha & ACVP_KDF135_SSH_CAP_SHA224) {
+        json_array_append_string(temp_arr, "SHA2-224");
+    }
     if (cap_entry->cap.kdf135_ssh_cap->sha & ACVP_KDF135_SSH_CAP_SHA256) {
-        json_array_append_string(temp_arr, "SHA-256");
+        json_array_append_string(temp_arr, "SHA2-256");
     }
     if (cap_entry->cap.kdf135_ssh_cap->sha & ACVP_KDF135_SSH_CAP_SHA384) {
-        json_array_append_string(temp_arr, "SHA-384");
+        json_array_append_string(temp_arr, "SHA2-384");
     }
     if (cap_entry->cap.kdf135_ssh_cap->sha & ACVP_KDF135_SSH_CAP_SHA512) {
-        json_array_append_string(temp_arr, "SHA-512");
+        json_array_append_string(temp_arr, "SHA2-512");
     }
 
     result = acvp_lookup_prereqVals(cap_obj, cap_entry);
@@ -4774,6 +5100,635 @@ static ACVP_RESULT acvp_build_dsa_register_cap (JSON_Object *cap_obj, ACVP_CAPS_
     return ACVP_SUCCESS;
 }
 
+static ACVP_RESULT acvp_lookup_kas_ecc_prereqVals (JSON_Object *cap_obj, 
+                                                   ACVP_KAS_ECC_CAP_MODE *kas_ecc_mode) {
+    JSON_Array *prereq_array = NULL;
+    ACVP_PREREQ_LIST *prereq_vals, *next_pre_req;
+    ACVP_PREREQ_ALG_VAL *pre_req;
+    char *alg_str;
+    int i;
+
+    if (!kas_ecc_mode) { return ACVP_INVALID_ARG; }
+
+    /*
+     * Init json array
+     */
+    json_object_set_value(cap_obj, ACVP_PREREQ_OBJ_STR, json_value_init_array());
+    prereq_array = json_object_get_array(cap_obj, ACVP_PREREQ_OBJ_STR);
+
+    /*
+     * return OK if nothing present
+     */
+    prereq_vals = kas_ecc_mode->prereq_vals;
+    if (!prereq_vals) {
+        return ACVP_SUCCESS;
+    }
+
+
+    while (prereq_vals) {
+        JSON_Value *val = NULL;
+        JSON_Object *obj = NULL;
+        val = json_value_init_object();
+        obj = json_value_get_object(val);
+        pre_req = &prereq_vals->prereq_alg_val;
+
+        for (i = 0; i < ACVP_NUM_PREREQS; i++) {
+            if (acvp_prereqs_tbl[i].alg == pre_req->alg) {
+                alg_str = acvp_prereqs_tbl[i].name;
+                json_object_set_string(obj, "algorithm", alg_str);
+                json_object_set_string(obj, ACVP_PREREQ_VAL_STR, pre_req->val);
+                break;
+            }
+        }
+
+        json_array_append_value(prereq_array, val);
+        next_pre_req = prereq_vals->next;
+        prereq_vals = next_pre_req;
+    }
+    return ACVP_SUCCESS;
+}
+
+static ACVP_RESULT acvp_build_kas_ecc_register_cap (ACVP_CTX *ctx, JSON_Object *cap_obj, 
+                                                    ACVP_CAPS_LIST *cap_entry, int i) {
+    JSON_Array *temp_arr = NULL;
+    ACVP_RESULT result;
+    ACVP_KAS_ECC_CAP_MODE *kas_ecc_mode;
+    ACVP_KAS_ECC_CAP *kas_ecc_cap;
+    ACVP_PARAM_LIST *current_func;
+    ACVP_PARAM_LIST *current_curve;
+    JSON_Value *func_val = NULL;
+    JSON_Object *func_obj = NULL;
+    JSON_Value *sch_val = NULL;
+    JSON_Object *sch_obj = NULL;
+    JSON_Value *kdf_val = NULL;
+    JSON_Object *kdf_obj = NULL;
+    JSON_Value *pset_val = NULL;
+    JSON_Object *pset_obj = NULL;
+    JSON_Value *set_val = NULL;
+    JSON_Object *set_obj = NULL;
+    ACVP_KAS_ECC_SCHEME *current_scheme;
+    ACVP_KAS_ECC_PSET *current_pset;
+    ACVP_PARAM_LIST *sha, *role;
+    ACVP_KAS_ECC_SET kdf;
+    ACVP_KAS_ECC_SCHEMES scheme;
+    int set, curve;
+
+    kas_ecc_cap = cap_entry->cap.kas_ecc_cap;
+    kas_ecc_mode = &kas_ecc_cap->kas_ecc_mode[i-1];
+    if (kas_ecc_mode->prereq_vals) {
+        json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
+        switch (kas_ecc_mode->cap_mode)
+        {
+        case ACVP_KAS_ECC_MODE_CDH:
+            json_object_set_string(cap_obj, "mode", "CDH-Component");
+            break;
+        case ACVP_KAS_ECC_MODE_COMPONENT:
+            json_object_set_string(cap_obj, "mode", "Component");
+            break;
+        case ACVP_KAS_ECC_MODE_NOCOMP:
+        default:
+            ACVP_LOG_ERR("\nUnsupported KAS-ECC mode %d", kas_ecc_mode->cap_mode);
+            return ACVP_INVALID_ARG;
+            break;
+        }
+        result = acvp_lookup_kas_ecc_prereqVals(cap_obj, kas_ecc_mode);
+        if (result != ACVP_SUCCESS) { return result; }
+        switch (i)
+        {
+        case ACVP_KAS_ECC_MODE_CDH:
+
+            json_object_set_value(cap_obj, "function", json_value_init_array());
+            temp_arr = json_object_get_array(cap_obj, "function");
+            current_func = kas_ecc_mode->function;
+            while (current_func) {
+                switch (current_func->param)
+                { 
+                case ACVP_KAS_ECC_FUNC_PARTIAL:
+                    json_array_append_string(temp_arr, "partialVal");
+                    break;
+                case ACVP_KAS_ECC_FUNC_DPGEN:
+                    json_array_append_string(temp_arr, "dpGen");
+                    break;
+                case ACVP_KAS_ECC_FUNC_DPVAL:
+                    json_array_append_string(temp_arr, "dpVal");
+                    break;
+                case ACVP_KAS_ECC_FUNC_KEYPAIR:
+                    json_array_append_string(temp_arr, "keyPairGen");
+                    break;
+                case ACVP_KAS_ECC_FUNC_KEYREGEN:
+                    json_array_append_string(temp_arr, "keyRegen");
+                    break;
+                case ACVP_KAS_ECC_FUNC_FULL:
+                    json_array_append_string(temp_arr, "fullVal");
+                    break; 
+                default:
+                    ACVP_LOG_ERR("\nUnsupported KAS-ECC function %d", current_func->param);
+                    return ACVP_INVALID_ARG;
+                    break;
+                }
+                current_func = current_func->next;
+            }
+            json_object_set_value(cap_obj, "curve", json_value_init_array());
+            temp_arr = json_object_get_array(cap_obj, "curve");
+            current_curve = kas_ecc_mode->curve;
+            while (current_curve) {
+                switch (current_curve->param)
+                { 
+                case ACVP_ECDSA_CURVE_B233:
+                    json_array_append_string(temp_arr, "b-233");
+                    break;
+                case ACVP_ECDSA_CURVE_B283:
+                    json_array_append_string(temp_arr, "b-283");
+                    break;
+                case ACVP_ECDSA_CURVE_B409:
+                    json_array_append_string(temp_arr, "b-409");
+                    break;
+                case ACVP_ECDSA_CURVE_B571:
+                    json_array_append_string(temp_arr, "b-571");
+                    break;
+                case ACVP_ECDSA_CURVE_K233:
+                    json_array_append_string(temp_arr, "k-233");
+                    break;
+                case ACVP_ECDSA_CURVE_K283:
+                    json_array_append_string(temp_arr, "k-283");
+                    break;
+                case ACVP_ECDSA_CURVE_K409:
+                    json_array_append_string(temp_arr, "k-409");
+                    break;
+                case ACVP_ECDSA_CURVE_K571:
+                    json_array_append_string(temp_arr, "k-571");
+                    break;
+                case ACVP_ECDSA_CURVE_P224:
+                    json_array_append_string(temp_arr, "p-224");
+                    break;
+                case ACVP_ECDSA_CURVE_P256:
+                    json_array_append_string(temp_arr, "p-256");
+                    break;
+                case ACVP_ECDSA_CURVE_P384:
+                    json_array_append_string(temp_arr, "p-384");
+                    break;
+                case ACVP_ECDSA_CURVE_P521:
+                    json_array_append_string(temp_arr, "p-521");
+                    break;
+                default:
+                    ACVP_LOG_ERR("\nUnsupported KAS-ECC function %d", current_curve->param);
+                    return ACVP_INVALID_ARG;
+                    break;
+                }
+                current_curve = current_curve->next;
+            }
+            break;
+        case ACVP_KAS_ECC_MODE_COMPONENT:
+            json_object_set_value(cap_obj, "function", json_value_init_array());
+            temp_arr = json_object_get_array(cap_obj, "function");
+            current_func = kas_ecc_mode->function;
+            while (current_func) {
+                switch (current_func->param)
+                { 
+                case ACVP_KAS_ECC_FUNC_PARTIAL:
+                    json_array_append_string(temp_arr, "partialVal");
+                    break;
+                case ACVP_KAS_ECC_FUNC_DPGEN:
+                case ACVP_KAS_ECC_FUNC_DPVAL:
+                case ACVP_KAS_ECC_FUNC_KEYPAIR:
+                case ACVP_KAS_ECC_FUNC_KEYREGEN:
+                case ACVP_KAS_ECC_FUNC_FULL:
+                default:
+                    ACVP_LOG_ERR("\nUnsupported KAS-ECC function %d", current_func->param);
+                    return ACVP_INVALID_ARG;
+                    break;
+                }
+                current_func = current_func->next;
+            }
+
+            sch_val = json_value_init_object();
+            sch_obj = json_value_get_object(sch_val);
+
+            func_val = json_value_init_object();
+            func_obj = json_value_get_object(func_val);
+
+            kdf_val = json_value_init_object();
+            kdf_obj = json_value_get_object(kdf_val);
+
+            pset_val = json_value_init_object();
+            pset_obj = json_value_get_object(pset_val);
+
+            current_scheme = kas_ecc_mode->scheme;
+            while (current_scheme) {
+                kdf = current_scheme->kdf;
+                scheme = current_scheme->scheme;
+                current_pset = current_scheme->pset;
+                while (current_pset) {
+                    set_val = json_value_init_object();
+                    set_obj = json_value_get_object(set_val);
+
+                    set = current_pset->set;
+                    curve = current_pset->curve;
+                    switch (curve)
+                    { 
+                    case ACVP_ECDSA_CURVE_B233:
+                        json_object_set_string(set_obj, "curve", "B-233");
+                        break;
+                    case ACVP_ECDSA_CURVE_B283:
+                        json_object_set_string(set_obj, "curve", "B-283");
+                        break;
+                    case ACVP_ECDSA_CURVE_B409:
+                        json_object_set_string(set_obj, "curve", "B-409");
+                        break;
+                    case ACVP_ECDSA_CURVE_B571:
+                        json_object_set_string(set_obj, "curve", "B-571");
+                        break;
+                    case ACVP_ECDSA_CURVE_K233:
+                        json_object_set_string(set_obj, "curve", "K-233");
+                        break;
+                    case ACVP_ECDSA_CURVE_K283:
+                        json_object_set_string(set_obj, "curve", "K-283");
+                        break;
+                    case ACVP_ECDSA_CURVE_K409:
+                        json_object_set_string(set_obj, "curve", "K-409");
+                        break;
+                    case ACVP_ECDSA_CURVE_K571:
+                        json_object_set_string(set_obj, "curve", "K-571");
+                        break;
+                    case ACVP_ECDSA_CURVE_P224:
+                        json_object_set_string(set_obj, "curve", "P-224");
+                        break;
+                    case ACVP_ECDSA_CURVE_P256:
+                        json_object_set_string(set_obj, "curve", "P-256");
+                        break;
+                    case ACVP_ECDSA_CURVE_P384:
+                        json_object_set_string(set_obj, "curve", "P-384");
+                        break;
+                    case ACVP_ECDSA_CURVE_P521:
+                        json_object_set_string(set_obj, "curve", "P-521");
+                        break;
+                    default:
+                        ACVP_LOG_ERR("\nUnsupported KAS-ECC curve %d", curve);
+                        return ACVP_INVALID_ARG;
+                        break;
+                    }
+
+                    json_object_set_value(set_obj, "hashAlg", json_value_init_array());
+                    temp_arr = json_object_get_array(set_obj, "hashAlg");
+                    sha = current_pset->sha;
+                    while (sha) {
+                        switch (sha->param)
+                        {
+                        case ACVP_SHA224:
+                            json_array_append_string(temp_arr, "SHA2-224");
+                            break;
+                        case ACVP_SHA256:
+                            json_array_append_string(temp_arr, "SHA2-256");
+                            break;
+                        case ACVP_SHA384:
+                            json_array_append_string(temp_arr, "SHA2-384");
+                            break;
+                        case ACVP_SHA512:
+                            json_array_append_string(temp_arr, "SHA2-512");
+                            break;
+                        default:
+                            ACVP_LOG_ERR("\nUnsupported KAS-ECC sha param %d", sha->param);
+                            return ACVP_INVALID_ARG;
+                            break;
+                        }
+                        sha = sha->next;
+                    }
+                    switch (set)
+                    {
+                    case ACVP_KAS_ECC_EB:
+                        json_object_set_value(pset_obj, "eb", set_val);
+                        break;
+                    case ACVP_KAS_ECC_EC:
+                        json_object_set_value(pset_obj, "ec", set_val);
+                        break;
+                    case ACVP_KAS_ECC_ED:
+                        json_object_set_value(pset_obj, "ed", set_val);
+                        break;
+                    case ACVP_KAS_ECC_EE:
+                        json_object_set_value(pset_obj, "ee", set_val);
+                        break;
+                    default:
+                        ACVP_LOG_ERR("\nUnsupported KAS-ECC set %d", set);
+                        return ACVP_INVALID_ARG;
+                        break;
+                    }
+                    current_pset = current_pset->next;
+                }
+                json_object_set_value(kdf_obj, "parameterSet", pset_val);
+
+                json_object_set_value(func_obj, "role", json_value_init_array());
+                temp_arr = json_object_get_array(func_obj, "role");
+                role = current_scheme->role;
+                while (role) {
+                    switch (role->param)
+                    {
+                    case ACVP_KAS_ECC_ROLE_INITIATOR:
+                        json_array_append_string(temp_arr, "initiator");
+                        break;
+                    case ACVP_KAS_ECC_ROLE_RESPONDER:
+                        json_array_append_string(temp_arr, "responder");
+                        break;
+                    default:
+                        ACVP_LOG_ERR("\nUnsupported KAS-ECC role %d", role->param);
+                        return ACVP_INVALID_ARG;
+                        break;
+                    }
+                    role = role->next;
+                }
+                switch (kdf)
+                {
+                case ACVP_KAS_ECC_NOKDFNOKC:
+                    json_object_set_value(func_obj, "noKdfNoKc", kdf_val);
+                    break;
+                case ACVP_KAS_ECC_KDFNOKC:
+                    json_object_set_value(func_obj, "kdfNoKc", kdf_val);
+                    break;
+                case ACVP_KAS_ECC_KDFKC:
+                    json_object_set_value(func_obj, "kdfKc", kdf_val);
+                    break;
+                default:
+                    ACVP_LOG_ERR("\nUnsupported KAS-ECC kdf %d", kdf);
+                    return ACVP_INVALID_ARG;
+                    break;
+                }
+                switch (scheme)
+                {
+                case ACVP_KAS_ECC_EPHEMERAL_UNIFIED:
+                    json_object_set_value(sch_obj, "ephemeralUnified", func_val);
+                    break;
+                case ACVP_KAS_ECC_FULL_MQV:
+                case ACVP_KAS_ECC_FULL_UNIFIED:
+                case ACVP_KAS_ECC_ONEPASS_DH:
+                case ACVP_KAS_ECC_ONEPASS_MQV:
+                case ACVP_KAS_ECC_ONEPASS_UNIFIED:
+                case ACVP_KAS_ECC_STATIC_UNIFIED:
+                default:
+                    ACVP_LOG_ERR("\nUnsupported KAS-ECC scheme %d", scheme);
+                    return ACVP_INVALID_ARG;
+                    break;
+                }
+                json_object_set_value(cap_obj, "scheme", sch_val);
+                current_scheme = current_scheme->next;
+            }
+            break;
+        default:
+            ACVP_LOG_ERR("\nUnsupported KAS-ECC mode %d", i);
+            return ACVP_INVALID_ARG;
+            break;
+        }
+    }
+    return ACVP_SUCCESS;
+}
+
+static ACVP_RESULT acvp_lookup_kas_ffc_prereqVals (JSON_Object *cap_obj, 
+                                                   ACVP_KAS_FFC_CAP_MODE *kas_ffc_mode) {
+    JSON_Array *prereq_array = NULL;
+    ACVP_PREREQ_LIST *prereq_vals, *next_pre_req;
+    ACVP_PREREQ_ALG_VAL *pre_req;
+    char *alg_str;
+    int i;
+
+    if (!kas_ffc_mode) { return ACVP_INVALID_ARG; }
+
+    /*
+     * Init json array
+     */
+    json_object_set_value(cap_obj, ACVP_PREREQ_OBJ_STR, json_value_init_array());
+    prereq_array = json_object_get_array(cap_obj, ACVP_PREREQ_OBJ_STR);
+
+    /*
+     * return OK if nothing present
+     */
+    prereq_vals = kas_ffc_mode->prereq_vals;
+    if (!prereq_vals) {
+        return ACVP_SUCCESS;
+    }
+
+
+    while (prereq_vals) {
+        JSON_Value *val = NULL;
+        JSON_Object *obj = NULL;
+        val = json_value_init_object();
+        obj = json_value_get_object(val);
+        pre_req = &prereq_vals->prereq_alg_val;
+
+        for (i = 0; i < ACVP_NUM_PREREQS; i++) {
+            if (acvp_prereqs_tbl[i].alg == pre_req->alg) {
+                alg_str = acvp_prereqs_tbl[i].name;
+                json_object_set_string(obj, "algorithm", alg_str);
+                json_object_set_string(obj, ACVP_PREREQ_VAL_STR, pre_req->val);
+                break;
+            }
+        }
+
+        json_array_append_value(prereq_array, val);
+        next_pre_req = prereq_vals->next;
+        prereq_vals = next_pre_req;
+    }
+    return ACVP_SUCCESS;
+}
+
+static ACVP_RESULT acvp_build_kas_ffc_register_cap (ACVP_CTX *ctx, JSON_Object *cap_obj, 
+                                                    ACVP_CAPS_LIST *cap_entry, int i) {
+    JSON_Array *temp_arr = NULL;
+    ACVP_RESULT result;
+    ACVP_KAS_FFC_CAP_MODE *kas_ffc_mode;
+    ACVP_KAS_FFC_CAP *kas_ffc_cap;
+    ACVP_PARAM_LIST *current_func;
+    JSON_Value *func_val = NULL;
+    JSON_Object *func_obj = NULL;
+    JSON_Value *sch_val = NULL;
+    JSON_Object *sch_obj = NULL;
+    JSON_Value *kdf_val = NULL;
+    JSON_Object *kdf_obj = NULL;
+    JSON_Value *pset_val = NULL;
+    JSON_Object *pset_obj = NULL;
+    JSON_Value *set_val = NULL;
+    JSON_Object *set_obj = NULL;
+    ACVP_KAS_FFC_SCHEME *current_scheme;
+    ACVP_KAS_FFC_PSET *current_pset;
+    ACVP_PARAM_LIST *sha, *role;
+    ACVP_KAS_FFC_SET kdf;
+    ACVP_KAS_FFC_SCHEMES scheme;
+    int set;
+
+    kas_ffc_cap = cap_entry->cap.kas_ffc_cap;
+    kas_ffc_mode = &kas_ffc_cap->kas_ffc_mode[i-1];
+    if (kas_ffc_mode->prereq_vals) {
+        json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
+        switch (kas_ffc_mode->cap_mode)
+        {
+        case ACVP_KAS_FFC_MODE_COMPONENT:
+            json_object_set_string(cap_obj, "mode", "Component");
+            break;
+        case ACVP_KAS_FFC_MODE_NOCOMP:
+        default:
+            ACVP_LOG_ERR("\nUnsupported KAS-FFC mode %d", kas_ffc_mode->cap_mode);
+            return ACVP_INVALID_ARG;
+            break;
+        }
+        result = acvp_lookup_kas_ffc_prereqVals(cap_obj, kas_ffc_mode);
+        if (result != ACVP_SUCCESS) { return result; }
+        switch (i)
+        {
+        case ACVP_KAS_FFC_MODE_COMPONENT:
+            json_object_set_value(cap_obj, "function", json_value_init_array());
+            temp_arr = json_object_get_array(cap_obj, "function");
+            current_func = kas_ffc_mode->function;
+            while (current_func) {
+                switch (current_func->param)
+                { 
+                case ACVP_KAS_FFC_FUNC_DPGEN:
+                    json_array_append_string(temp_arr, "dpGen");
+                    break;
+                case ACVP_KAS_FFC_FUNC_DPVAL:
+                    json_array_append_string(temp_arr, "dpVal");
+                    break;
+                case ACVP_KAS_FFC_FUNC_KEYPAIR:
+                    json_array_append_string(temp_arr, "keyPairGen");
+                    break;
+                case ACVP_KAS_FFC_FUNC_KEYREGEN:
+                    json_array_append_string(temp_arr, "keyRegen");
+                    break;
+                case ACVP_KAS_FFC_FUNC_FULL:
+                    json_array_append_string(temp_arr, "fullVal");
+                    break;
+                default:
+                    ACVP_LOG_ERR("\nUnsupported KAS-FFC function %d", current_func->param);
+                    return ACVP_INVALID_ARG;
+                    break;
+                }
+                current_func = current_func->next;
+            }
+
+            sch_val = json_value_init_object();
+            sch_obj = json_value_get_object(sch_val);
+
+            func_val = json_value_init_object();
+            func_obj = json_value_get_object(func_val);
+
+            kdf_val = json_value_init_object();
+            kdf_obj = json_value_get_object(kdf_val);
+
+            pset_val = json_value_init_object();
+            pset_obj = json_value_get_object(pset_val);
+
+            current_scheme = kas_ffc_mode->scheme;
+            while (current_scheme) {
+                kdf = current_scheme->kdf;
+                scheme = current_scheme->scheme;
+                current_pset = current_scheme->pset;
+                while (current_pset) {
+                    set_val = json_value_init_object();
+                    set_obj = json_value_get_object(set_val);
+
+                    set = current_pset->set;
+
+                    json_object_set_value(set_obj, "hashAlg", json_value_init_array());
+                    temp_arr = json_object_get_array(set_obj, "hashAlg");
+                    sha = current_pset->sha;
+                    while (sha) {
+                        switch (sha->param)
+                        {
+                        case ACVP_SHA224:
+                            json_array_append_string(temp_arr, "SHA2-224");
+                            break;
+                        case ACVP_SHA256:
+                            json_array_append_string(temp_arr, "SHA2-256");
+                            break;
+                        case ACVP_SHA384:
+                            json_array_append_string(temp_arr, "SHA2-384");
+                            break;
+                        case ACVP_SHA512:
+                            json_array_append_string(temp_arr, "SHA2-512");
+                            break;
+                        default:
+                            ACVP_LOG_ERR("\nUnsupported KAS-FFC sha param %d", sha->param);
+                            return ACVP_INVALID_ARG;
+                            break;
+                        }
+                        sha = sha->next;
+                    }
+                    switch (set)
+                    {
+                    case ACVP_KAS_FFC_FB:
+                        json_object_set_value(pset_obj, "fb", set_val);
+                        break;
+                    case ACVP_KAS_FFC_FC:
+                        json_object_set_value(pset_obj, "fc", set_val);
+                        break;
+                    default:
+                        ACVP_LOG_ERR("\nUnsupported KAS-FFC set %d", set);
+                        return ACVP_INVALID_ARG;
+                        break;
+                    }
+                    current_pset = current_pset->next;
+                }
+                json_object_set_value(kdf_obj, "parameterSet", pset_val);
+
+                json_object_set_value(func_obj, "role", json_value_init_array());
+                temp_arr = json_object_get_array(func_obj, "role");
+                role = current_scheme->role;
+                while (role) {
+                    switch (role->param)
+                    {
+                    case ACVP_KAS_FFC_ROLE_INITIATOR:
+                        json_array_append_string(temp_arr, "initiator");
+                        break;
+                    case ACVP_KAS_FFC_ROLE_RESPONDER:
+                        json_array_append_string(temp_arr, "responder");
+                        break;
+                    default:
+                        ACVP_LOG_ERR("\nUnsupported KAS-FFC role %d", role->param);
+                        return ACVP_INVALID_ARG;
+                        break;
+                    }
+                    role = role->next;
+                }
+                switch (kdf)
+                {
+                case ACVP_KAS_FFC_NOKDFNOKC:
+                    json_object_set_value(func_obj, "noKdfNoKc", kdf_val);
+                    break;
+                case ACVP_KAS_FFC_KDFNOKC:
+                    json_object_set_value(func_obj, "kdfNoKc", kdf_val);
+                    break;
+                case ACVP_KAS_FFC_KDFKC:
+                    json_object_set_value(func_obj, "kdfKc", kdf_val);
+                    break;
+                default:
+                    ACVP_LOG_ERR("\nUnsupported KAS-FFC kdf %d", kdf);
+                    return ACVP_INVALID_ARG;
+                    break;
+                }
+                switch (scheme)
+                {
+                case ACVP_KAS_FFC_DH_EPHEMERAL:
+                    json_object_set_value(sch_obj, "dhEphem", func_val);
+                    break;
+                case ACVP_KAS_FFC_FULL_MQV1:
+                case ACVP_KAS_FFC_FULL_MQV2:
+                case ACVP_KAS_FFC_DH_HYBRID1:
+                case ACVP_KAS_FFC_DH_HYBRID_ONEFLOW:
+                case ACVP_KAS_FFC_DH_ONEFLOW:
+                case ACVP_KAS_FFC_DH_STATIC:
+                default:
+                    ACVP_LOG_ERR("\nUnsupported KAS-FFC scheme %d", scheme);
+                    return ACVP_INVALID_ARG;
+                    break;
+                }
+                json_object_set_value(cap_obj, "scheme", sch_val);
+                current_scheme = current_scheme->next;
+            }
+            break;
+        default:
+            ACVP_LOG_ERR("\nUnsupported KAS-FFC mode %d", i);
+            return ACVP_INVALID_ARG;
+            break;
+        }
+    }
+    return ACVP_SUCCESS;
+}
 
 /*
  * This function builds the JSON register message that
@@ -5038,6 +5993,21 @@ static ACVP_RESULT acvp_build_register (ACVP_CTX *ctx, char **reg) {
             case ACVP_KDF108:
                 acvp_build_kdf108_register_cap(cap_obj, cap_entry);
                 break;
+            case ACVP_KAS_ECC_CDH:
+                acvp_build_kas_ecc_register_cap(ctx, cap_obj, cap_entry, ACVP_KAS_ECC_MODE_CDH);
+                break;
+            case ACVP_KAS_ECC_COMP:
+                acvp_build_kas_ecc_register_cap(ctx, cap_obj, cap_entry, ACVP_KAS_ECC_MODE_COMPONENT);
+                break;
+            case ACVP_KAS_ECC_NOCOMP:
+                acvp_build_kas_ecc_register_cap(ctx, cap_obj, cap_entry, ACVP_KAS_ECC_MODE_NOCOMP);
+                break;
+            case ACVP_KAS_FFC_COMP:
+                acvp_build_kas_ffc_register_cap(ctx, cap_obj, cap_entry, ACVP_KAS_FFC_MODE_COMPONENT);
+                break;
+            case ACVP_KAS_FFC_NOCOMP:
+                acvp_build_kas_ffc_register_cap(ctx, cap_obj, cap_entry, ACVP_KAS_FFC_MODE_NOCOMP);
+                break;
             default:
                 ACVP_LOG_ERR("Cap entry not found, %d.", cap_entry->cipher);
                 return ACVP_NO_CAP;
@@ -5077,7 +6047,7 @@ void acvp_mark_as_sample (ACVP_CTX *ctx) {
  * second of the two-factor authentications using
  * a TOTP.
  */
-static ACVP_RESULT acvp_build_login (ACVP_CTX *ctx, char **login) {
+static ACVP_RESULT acvp_build_login (ACVP_CTX *ctx, char **login, int refresh) {
 
     JSON_Value *reg_arry_val = NULL;
     JSON_Value *ver_val = NULL;
@@ -5106,7 +6076,12 @@ static ACVP_RESULT acvp_build_login (ACVP_CTX *ctx, char **login) {
     ctx->totp_cb(&token);
 
     json_object_set_string(pw_obj, "password", token);
+
+    if (refresh) {
+        json_object_set_string(pw_obj, "accessToken", ctx->jwt_token);
+    }
     json_array_append_value(reg_arry, pw_val);
+
 
     *login = json_serialize_to_string_pretty(reg_arry_val);
     free(token);
@@ -5133,7 +6108,7 @@ ACVP_RESULT acvp_register (ACVP_CTX *ctx) {
      * Construct the login message
      */
     if (ctx->totp_cb) {
-        rv = acvp_build_login(ctx, &login);
+        rv = acvp_build_login(ctx, &login, 0);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Unable to build login message");
             return rv;
@@ -5763,6 +6738,41 @@ ACVP_RESULT acvp_check_test_results (ACVP_CTX *ctx) {
 * Begin vector processing logic.  This code should probably go into another module.
 ***************************************************************************************************************/
 
+ACVP_RESULT acvp_refresh (ACVP_CTX *ctx)
+{
+    char *login = NULL;
+    ACVP_RESULT rv;
+
+    if (ctx->totp_cb) {
+        rv = acvp_build_login(ctx, &login, 1);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Unable to build login message");
+            return rv;
+        }
+
+        if (ctx->debug >= ACVP_LOG_LVL_STATUS) {
+            printf("\nPOST %s\n", login);
+        } else {
+            ACVP_LOG_INFO("POST %s", login);
+        }
+
+        /*
+         * Send the login to the ACVP server and get the response,
+         */
+        rv = acvp_send_login(ctx, login);
+        if (rv == ACVP_SUCCESS) {
+            ACVP_LOG_STATUS("200 OK %s", ctx->reg_buf);
+            rv = acvp_parse_login(ctx);
+        } else {
+            ACVP_LOG_STATUS("Login Response Failed %s", ctx->reg_buf);
+        }
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_STATUS("Login Send Failed");
+            return rv;
+        }
+    }
+    return ACVP_SUCCESS;
+}
 
 /*
  * This function will process a single KAT vector set.  Each KAT
@@ -5927,10 +6937,9 @@ static ACVP_RESULT acvp_get_result_vsid (ACVP_CTX *ctx, int vs_id) {
     JSON_Value *val;
     JSON_Object *obj = NULL;
     char *json_buf;
-    int retry_count = 900; /* 15 minutes*/
     int retry = 1;
 
-    while (retry && (retry_count > 0)) {
+    while (retry) {
         /*
          * Get the KAT vector set
          */
@@ -5959,7 +6968,6 @@ static ACVP_RESULT acvp_get_result_vsid (ACVP_CTX *ctx, int vs_id) {
         unsigned int retry_period = json_object_get_number(obj, "retry");
         if (retry_period) {
             rv = acvp_retry_handler(ctx, retry_period);
-            retry_count -= retry_period;
         } else {
             /*
              * Parse the JSON response from the server, if the vector set failed,
@@ -6099,6 +7107,102 @@ ACVP_RESULT acvp_enable_kdf135_tls_cap (
     }
 
     return (acvp_append_kdf135_tls_caps_entry(ctx, cap, crypto_handler));
+}
+
+/*
+ * The user should call this after invoking acvp_enable_kdf135_snmp_cap()
+ * to specify kdf parameters
+ */
+ACVP_RESULT acvp_enable_kdf135_snmp_cap_parm (
+        ACVP_CTX *ctx,
+        ACVP_CIPHER kcap,
+        ACVP_KDF135_SNMP_PARAM param,
+        int value) {
+    
+    ACVP_CAPS_LIST *cap;
+    ACVP_KDF135_SNMP_CAP *kdf135_snmp_cap;
+    ACVP_SL_LIST *current_len;
+    
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+    
+    if (param != ACVP_KDF135_SNMP_PASS_LEN) {
+        return ACVP_INVALID_ARG;
+    }
+    
+    cap = acvp_locate_cap_entry(ctx, kcap);
+    if (!cap) {
+        return ACVP_NO_CAP;
+    }
+    
+    kdf135_snmp_cap = cap->cap.kdf135_snmp_cap;
+    if (!kdf135_snmp_cap) {
+        return ACVP_NO_CAP;
+    }
+    
+    if (kdf135_snmp_cap->pass_lens) {
+        current_len = kdf135_snmp_cap->pass_lens;
+        while (current_len->next) {
+            current_len = current_len->next;
+        }
+        current_len->next = calloc(1, sizeof(ACVP_SL_LIST));
+        current_len = current_len->next;
+    } else {
+        kdf135_snmp_cap->pass_lens = calloc(1, sizeof(ACVP_SL_LIST));
+        current_len = kdf135_snmp_cap->pass_lens;
+    }
+    current_len->length = value;
+    
+    return ACVP_SUCCESS;
+}
+
+/*
+ * The user should call this after invoking acvp_enable_kdf135_snmp_cap()
+ * to specify the hex string engine id. acvp_enable_kdf135_snmp_cap_parm()
+ * should be used to specify password length
+ */
+ACVP_RESULT acvp_enable_kdf135_snmp_engid_parm (
+        ACVP_CTX *ctx,
+        ACVP_CIPHER kcap,
+        char *engid) {
+    
+    ACVP_CAPS_LIST *cap;
+    ACVP_KDF135_SNMP_CAP *kdf135_snmp_cap;
+    ACVP_NAME_LIST *engids;
+    
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+    
+    if (!engid) {
+        return ACVP_INVALID_ARG;
+    }
+    
+    cap = acvp_locate_cap_entry(ctx, kcap);
+    if (!cap) {
+        return ACVP_NO_CAP;
+    }
+    
+    kdf135_snmp_cap = cap->cap.kdf135_snmp_cap;
+    if (!kdf135_snmp_cap) {
+        return ACVP_NO_CAP;
+    }
+    
+    if (kdf135_snmp_cap->eng_ids) {
+        engids = kdf135_snmp_cap->eng_ids;
+        while (engids->next) {
+            engids = engids->next;
+        }
+        engids->next = calloc(1, sizeof(ACVP_NAME_LIST));
+        engids = engids->next;
+    } else {
+        kdf135_snmp_cap->eng_ids = calloc(1, sizeof(ACVP_NAME_LIST));
+        engids = kdf135_snmp_cap->eng_ids;
+    }
+    engids->name = engid;
+    
+    return ACVP_SUCCESS;
 }
 
 /*
@@ -6475,7 +7579,9 @@ static ACVP_RESULT acvp_validate_kdf135_ssh_param_value (ACVP_KDF135_SSH_METHOD 
     ACVP_RESULT retval = ACVP_INVALID_ARG;
 
     if ((method < ACVP_SSH_METH_MAX) && (method > 0)) {
-        if ((param & ACVP_KDF135_SSH_CAP_SHA256) ||
+        if ((param & ACVP_KDF135_SSH_CAP_SHA1) ||
+            (param & ACVP_KDF135_SSH_CAP_SHA224) ||
+            (param & ACVP_KDF135_SSH_CAP_SHA256) ||
             (param & ACVP_KDF135_SSH_CAP_SHA384) ||
             (param & ACVP_KDF135_SSH_CAP_SHA512)) {
             retval = ACVP_SUCCESS;
@@ -6671,31 +7777,31 @@ ACVP_RESULT acvp_enable_kdf108_cap_param (
         }
         switch (value) {
         case ACVP_KDF108_MAC_MODE_CMAC_AES128:
-            nl_obj->name = "CMAC-AES128";
+            nl_obj->name = ACVP_ALG_CMAC_AES_128;
             break;
         case ACVP_KDF108_MAC_MODE_CMAC_AES192:
-            nl_obj->name = "CMAC-AES192";
+            nl_obj->name = ACVP_ALG_CMAC_AES_192;
             break;
         case ACVP_KDF108_MAC_MODE_CMAC_AES256:
-            nl_obj->name = "CMAC-AES256";
+            nl_obj->name = ACVP_ALG_CMAC_AES_256;
             break;
         case ACVP_KDF108_MAC_MODE_CMAC_TDES:
-            nl_obj->name = "CMAC-TDES";
+            nl_obj->name = ACVP_ALG_CMAC_TDES;
             break;
         case ACVP_KDF108_MAC_MODE_HMAC_SHA1:
-            nl_obj->name = "HMAC-SHA1";
+            nl_obj->name = ACVP_ALG_HMAC_SHA1;
             break;
         case ACVP_KDF108_MAC_MODE_HMAC_SHA224:
-            nl_obj->name = "HMAC-SHA224";
+            nl_obj->name = ACVP_ALG_HMAC_SHA2_224;
             break;
         case ACVP_KDF108_MAC_MODE_HMAC_SHA256:
-            nl_obj->name = "HMAC-SHA256";
+            nl_obj->name = ACVP_ALG_HMAC_SHA2_256;
             break;
         case ACVP_KDF108_MAC_MODE_HMAC_SHA384:
-            nl_obj->name = "HMAC-SHA384";
+            nl_obj->name = ACVP_ALG_HMAC_SHA2_384;
             break;
         case ACVP_KDF108_MAC_MODE_HMAC_SHA512:
-            nl_obj->name = "HMAC-SHA512";
+            nl_obj->name = ACVP_ALG_HMAC_SHA2_512;
             break;
         default:
             return ACVP_INVALID_ARG;
@@ -6729,19 +7835,19 @@ ACVP_RESULT acvp_enable_kdf108_cap_param (
         }
         switch (value) {
         case ACVP_KDF108_FIXED_DATA_ORDER_AFTER:
-            nl_obj->name = "after fixed data";
+            nl_obj->name = ACVP_FIXED_DATA_ORDER_AFTER_STR;
             break;
         case ACVP_KDF108_FIXED_DATA_ORDER_BEFORE:
-            nl_obj->name = "before fixed data";
+            nl_obj->name = ACVP_FIXED_DATA_ORDER_BEFORE_STR;
             break;
         case ACVP_KDF108_FIXED_DATA_ORDER_MIDDLE:
-            nl_obj->name = "middle fixed data";
+            nl_obj->name = ACVP_FIXED_DATA_ORDER_MIDDLE_STR;
             break;
         case ACVP_KDF108_FIXED_DATA_ORDER_NONE:
-            nl_obj->name = "none";
+            nl_obj->name = ACVP_FIXED_DATA_ORDER_NONE_STR;
             break;
         case ACVP_KDF108_FIXED_DATA_ORDER_BEFORE_ITERATOR:
-            nl_obj->name = "before iterator";
+            nl_obj->name = ACVP_FIXED_DATA_ORDER_BEFORE_ITERATOR_STR;
             break;
         default:
             return ACVP_INVALID_ARG;
@@ -7140,4 +8246,713 @@ void ctr128_inc(unsigned char *counter)
         counter[n] = (unsigned char)c;
         c >>= 8;
     } while (n);
+}
+
+/*
+ * Append a KAS-ECC pre req val to the capabilities
+ */
+static ACVP_RESULT acvp_add_kas_ecc_prereq_val (ACVP_KAS_ECC_CAP_MODE *kas_ecc_mode,
+                                                ACVP_KAS_ECC_MODE mode, ACVP_PREREQ_ALG pre_req, 
+                                                char *value) {
+    ACVP_PREREQ_LIST *prereq_entry, *prereq_entry_2;
+
+    prereq_entry = calloc(1, sizeof(ACVP_PREREQ_LIST));
+    if (!prereq_entry) {
+        return ACVP_MALLOC_FAIL;
+    }
+    prereq_entry->prereq_alg_val.alg = pre_req;
+    prereq_entry->prereq_alg_val.val = value;
+
+    /*
+     * 1st entry
+     */
+    if (!kas_ecc_mode->prereq_vals) {
+        kas_ecc_mode->prereq_vals = prereq_entry;
+    } else {
+        /*
+         * append to the last in the list
+         */
+        prereq_entry_2 = kas_ecc_mode->prereq_vals;
+        while (prereq_entry_2->next) {
+            prereq_entry_2 = prereq_entry_2->next;
+        }
+        prereq_entry_2->next = prereq_entry;
+    }
+    return (ACVP_SUCCESS);
+}
+
+ACVP_RESULT acvp_enable_kas_ecc_prereq_cap (ACVP_CTX *ctx,
+                                            ACVP_CIPHER cipher,
+                                            ACVP_KAS_ECC_MODE mode,
+                                            ACVP_PREREQ_ALG pre_req,
+                                            char *value) {
+    ACVP_KAS_ECC_CAP_MODE *kas_ecc_mode;
+    ACVP_KAS_ECC_CAP *kas_ecc_cap;
+    ACVP_CAPS_LIST *cap_list;
+
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+
+    switch (pre_req) {
+        case ACVP_PREREQ_CCM:
+        case ACVP_PREREQ_CMAC:
+        case ACVP_PREREQ_DRBG:
+        case ACVP_PREREQ_ECDSA:
+        case ACVP_PREREQ_HMAC:
+        case ACVP_PREREQ_SHA:
+            break;
+        default:
+            ACVP_LOG_ERR("\nUnsupported KAS-ECC prereq %d", pre_req);
+            return ACVP_INVALID_ARG;
+    }
+
+    /*
+     * Locate this cipher in the caps array
+     */
+    cap_list = acvp_locate_cap_entry(ctx, cipher);
+    if (!cap_list) {
+        ACVP_LOG_ERR("Cap entry not found.");
+        return ACVP_NO_CAP;
+    }
+
+    /*
+     * Locate cap mode from array
+     */
+    kas_ecc_cap = cap_list->cap.kas_ecc_cap;
+    kas_ecc_mode = &kas_ecc_cap->kas_ecc_mode[mode-1];
+
+    /*
+     * Add the value to the cap
+     */
+    return (acvp_add_kas_ecc_prereq_val(kas_ecc_mode, mode, pre_req, value));
+}
+
+
+static ACVP_RESULT acvp_append_kas_ecc_caps_entry (
+        ACVP_CTX *ctx,
+        ACVP_KAS_ECC_CAP *cap,
+        ACVP_CIPHER cipher,
+        ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case)) {
+    ACVP_CAPS_LIST *cap_entry, *cap_e2;
+
+    cap_entry = calloc(1, sizeof(ACVP_CAPS_LIST));
+    if (!cap_entry) {
+        return ACVP_MALLOC_FAIL;
+    }
+    cap_entry->cipher = cipher;
+    cap_entry->cap.kas_ecc_cap = cap;
+    cap_entry->crypto_handler = crypto_handler;
+    if (cipher == ACVP_KAS_ECC_CDH)
+        cap_entry->cap_type = ACVP_KAS_ECC_CDH_TYPE;
+    if (cipher == ACVP_KAS_ECC_COMP)
+        cap_entry->cap_type = ACVP_KAS_ECC_COMP_TYPE;
+    if (cipher == ACVP_KAS_ECC_NOCOMP)
+        cap_entry->cap_type = ACVP_KAS_ECC_NOCOMP_TYPE;
+
+    if (!ctx->caps_list) {
+        ctx->caps_list = cap_entry;
+    } else {
+        cap_e2 = ctx->caps_list;
+        while (cap_e2->next) {
+            cap_e2 = cap_e2->next;
+        }
+        cap_e2->next = cap_entry;
+    }
+    return (ACVP_SUCCESS);
+}
+
+ACVP_RESULT acvp_enable_kas_ecc_cap (ACVP_CTX *ctx,
+                                     ACVP_CIPHER cipher,
+                                     ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case)) {
+
+    ACVP_KAS_ECC_CAP *kas_ecc_cap;
+    ACVP_RESULT result;
+    void *kas_ecc_mode;
+    int i;
+
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+    if (!crypto_handler) {
+        return ACVP_INVALID_ARG;
+    }
+
+    /*
+     * Check for duplicate entry
+     */
+    if (acvp_locate_cap_entry(ctx, cipher)) {
+        return ACVP_DUP_CIPHER;
+    }
+
+    kas_ecc_cap = calloc(1, sizeof(ACVP_KAS_ECC_CAP));
+    if (!kas_ecc_cap) {
+        return ACVP_MALLOC_FAIL;
+    }
+
+    kas_ecc_cap->cipher = cipher;
+
+    kas_ecc_mode = calloc(1, ACVP_KAS_ECC_MAX_MODES * sizeof(ACVP_KAS_ECC_CAP_MODE) + 1);
+    if (!kas_ecc_mode) {
+        free(kas_ecc_cap);
+        return ACVP_MALLOC_FAIL;
+    }
+
+    kas_ecc_cap->kas_ecc_mode = (ACVP_KAS_ECC_CAP_MODE *)kas_ecc_mode;
+    for (i = 1; i <= ACVP_KAS_ECC_MAX_MODES; i++) {
+        kas_ecc_cap->kas_ecc_mode[i - 1].cap_mode = (ACVP_KAS_ECC_MODE)i;
+    }
+
+    result = acvp_append_kas_ecc_caps_entry(ctx, kas_ecc_cap, cipher, crypto_handler);
+    if (result != ACVP_SUCCESS) {
+        free(kas_ecc_cap);
+        free(kas_ecc_mode);
+        kas_ecc_cap = NULL;
+    }
+    return result;
+}
+
+ACVP_RESULT acvp_enable_kas_ecc_cap_parm (ACVP_CTX *ctx,
+                                          ACVP_CIPHER cipher,
+                                          ACVP_KAS_ECC_MODE mode,
+                                          ACVP_KAS_ECC_PARAM param,
+                                          int value) {
+
+    ACVP_CAPS_LIST *cap;
+    ACVP_KAS_ECC_CAP *kas_ecc_cap;
+    ACVP_KAS_ECC_CAP_MODE *kas_ecc_cap_mode;
+    ACVP_PARAM_LIST *current_func;
+    ACVP_PARAM_LIST *current_curve;
+
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+
+    cap = acvp_locate_cap_entry(ctx, cipher);
+    if (!cap) {
+        return ACVP_NO_CAP;
+    }
+
+    kas_ecc_cap = cap->cap.kas_ecc_cap;
+    if (!kas_ecc_cap) {
+        return ACVP_NO_CAP;
+    }
+    kas_ecc_cap_mode = &kas_ecc_cap->kas_ecc_mode[mode - 1];
+    switch (mode)
+    {
+    case ACVP_KAS_ECC_MODE_CDH:
+        switch (param)
+        {
+        case ACVP_KAS_ECC_FUNCTION:
+            current_func = kas_ecc_cap_mode->function;
+            if (current_func) {
+                while (current_func->next) {
+                    current_func = current_func->next;
+                }
+                current_func->next = calloc(1, sizeof(ACVP_PARAM_LIST));
+                current_func->next->param = value;
+            } else {
+                kas_ecc_cap_mode->function = calloc(1, sizeof(ACVP_PARAM_LIST));
+                kas_ecc_cap_mode->function->param = value;
+            }
+            break;
+        case ACVP_KAS_ECC_CURVE:
+            current_curve = kas_ecc_cap_mode->curve;
+            if (current_curve) {
+                while (current_curve->next) {
+                    current_curve = current_curve->next;
+                }
+                current_curve->next = calloc(1, sizeof(ACVP_PARAM_LIST));
+                current_curve->next->param = value;
+            } else {
+                kas_ecc_cap_mode->curve = calloc(1, sizeof(ACVP_PARAM_LIST));
+                kas_ecc_cap_mode->curve->param = value;
+            }
+            break;
+        default:
+            ACVP_LOG_ERR("\nUnsupported KAS-ECC param %d", param);
+            return ACVP_INVALID_ARG;
+            break;
+        }
+        break;
+    case ACVP_KAS_ECC_MODE_COMPONENT:
+        switch (param)
+        {
+        case ACVP_KAS_ECC_FUNCTION:
+            current_func = kas_ecc_cap_mode->function;
+            if (current_func) {
+                while (current_func->next) {
+                    current_func = current_func->next;
+                }
+                current_func->next = calloc(1, sizeof(ACVP_PARAM_LIST));
+                current_func->next->param = value;
+            } else {
+                kas_ecc_cap_mode->function = calloc(1, sizeof(ACVP_PARAM_LIST));
+                kas_ecc_cap_mode->function->param = value;
+            }
+            break;
+        default:
+            ACVP_LOG_ERR("\nUnsupported KAS-ECC param %d", param);
+            return ACVP_INVALID_ARG;
+            break;
+        }
+        break;
+    default:
+        ACVP_LOG_ERR("\nUnsupported KAS-ECC mode %d", mode);
+        return ACVP_INVALID_ARG;
+        break;
+    }
+    return ACVP_SUCCESS;
+}
+
+ACVP_RESULT acvp_enable_kas_ecc_cap_scheme (ACVP_CTX *ctx,
+                                            ACVP_CIPHER cipher,
+                                            ACVP_KAS_ECC_MODE mode,
+                                            ACVP_KAS_ECC_SCHEMES scheme,
+                                            ACVP_KAS_ECC_PARAM param,
+                                            int option,
+                                            int value) {
+
+    ACVP_CAPS_LIST *cap;
+    ACVP_KAS_ECC_CAP *kas_ecc_cap;
+    ACVP_KAS_ECC_CAP_MODE *kas_ecc_cap_mode;
+    ACVP_KAS_ECC_SCHEME *current_scheme;
+    ACVP_KAS_ECC_PSET *current_pset;
+    ACVP_KAS_ECC_PSET *last_pset;
+    ACVP_PARAM_LIST *current_role;
+    ACVP_PARAM_LIST *current_hash;
+
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+
+    cap = acvp_locate_cap_entry(ctx, cipher);
+    if (!cap) {
+        return ACVP_NO_CAP;
+    }
+
+    kas_ecc_cap = cap->cap.kas_ecc_cap;
+    if (!kas_ecc_cap) {
+        return ACVP_NO_CAP;
+    }
+    kas_ecc_cap_mode = &kas_ecc_cap->kas_ecc_mode[mode - 1];
+    switch (mode)
+    {
+    case ACVP_KAS_ECC_MODE_COMPONENT:
+    case ACVP_KAS_ECC_MODE_NOCOMP:
+        current_scheme = kas_ecc_cap_mode->scheme;
+        while (current_scheme) {
+            if (current_scheme->scheme == scheme) {
+                break;
+            } else {
+                current_scheme = current_scheme->next;
+            }
+        }
+        /* if there are none or didn't find the one we're looking for... */
+        if (current_scheme == NULL) {
+            kas_ecc_cap_mode->scheme = calloc(1, sizeof(ACVP_KAS_ECC_SCHEME));
+            kas_ecc_cap_mode->scheme->scheme = scheme;
+            current_scheme = kas_ecc_cap_mode->scheme;
+        }
+        switch (param)
+        {
+        case ACVP_KAS_ECC_KDF:
+            current_scheme->kdf = value;
+            break;
+        case ACVP_KAS_ECC_ROLE:
+            current_role = current_scheme->role;
+            if (current_role) {
+                while (current_role->next) {
+                    current_role = current_role->next;
+                }
+                current_role->next = calloc(1, sizeof(ACVP_PARAM_LIST));
+                current_role->next->param = value;
+            } else {
+                current_role = calloc(1, sizeof(ACVP_PARAM_LIST));
+                current_role->param = value;
+                current_scheme->role = current_role;
+            }
+            break;
+        case ACVP_KAS_ECC_EB:
+        case ACVP_KAS_ECC_EC:
+        case ACVP_KAS_ECC_ED:
+        case ACVP_KAS_ECC_EE:
+            current_pset = current_scheme->pset;
+            while (current_pset) {
+                if (current_pset->set == param) {
+                    break;
+                } else {
+                    last_pset = current_pset;
+                    current_pset = current_pset->next;
+                }
+            } 
+            if (!current_pset) {
+                current_pset = calloc(1, sizeof(ACVP_KAS_ECC_PSET));
+                if (current_scheme->pset == NULL) {
+                    current_scheme->pset = current_pset;
+                } else {
+                    last_pset->next = current_pset;
+                }
+                current_pset->set = param;
+                current_pset->curve = option;
+            }
+            //then set sha in a param list
+            current_hash = current_pset->sha;
+            if (current_hash) {
+                while (current_hash->next) {
+                    current_hash = current_hash->next;
+                }
+                current_hash->next = calloc(1, sizeof(ACVP_PARAM_LIST));
+                current_hash->next->param = value;
+            } else {
+                current_pset->sha = calloc(1, sizeof(ACVP_PARAM_LIST));
+                current_pset->sha->param = value;
+            }
+            break;
+        default:
+            ACVP_LOG_ERR("\nUnsupported KAS-ECC param %d", param);
+            return ACVP_INVALID_ARG;
+            break;
+        }
+        break;
+    case ACVP_KAS_ECC_MODE_CDH:
+    default:
+        ACVP_LOG_ERR("Scheme parameter sets not supported for this mode %d\n", mode);
+        return ACVP_INVALID_ARG;
+        break;
+    }
+    return ACVP_SUCCESS;
+}
+
+/*
+ * Append a KAS-FFC pre req val to the capabilities
+ */
+static ACVP_RESULT acvp_add_kas_ffc_prereq_val (ACVP_KAS_FFC_CAP_MODE *kas_ffc_mode,
+                                                ACVP_KAS_FFC_MODE mode, ACVP_PREREQ_ALG pre_req, 
+                                                char *value) {
+    ACVP_PREREQ_LIST *prereq_entry, *prereq_entry_2;
+
+    prereq_entry = calloc(1, sizeof(ACVP_PREREQ_LIST));
+    if (!prereq_entry) {
+        return ACVP_MALLOC_FAIL;
+    }
+    prereq_entry->prereq_alg_val.alg = pre_req;
+    prereq_entry->prereq_alg_val.val = value;
+
+    /*
+     * 1st entry
+     */
+    if (!kas_ffc_mode->prereq_vals) {
+        kas_ffc_mode->prereq_vals = prereq_entry;
+    } else {
+        /*
+         * append to the last in the list
+         */
+        prereq_entry_2 = kas_ffc_mode->prereq_vals;
+        while (prereq_entry_2->next) {
+            prereq_entry_2 = prereq_entry_2->next;
+        }
+        prereq_entry_2->next = prereq_entry;
+    }
+    return (ACVP_SUCCESS);
+}
+
+ACVP_RESULT acvp_enable_kas_ffc_prereq_cap (ACVP_CTX *ctx,
+                                            ACVP_CIPHER cipher,
+                                            ACVP_KAS_FFC_MODE mode,
+                                            ACVP_PREREQ_ALG pre_req,
+                                            char *value) {
+    ACVP_KAS_FFC_CAP_MODE *kas_ffc_mode;
+    ACVP_KAS_FFC_CAP *kas_ffc_cap;
+    ACVP_CAPS_LIST *cap_list;
+
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+
+    switch (pre_req) {
+        case ACVP_PREREQ_CCM:
+        case ACVP_PREREQ_CMAC:
+        case ACVP_PREREQ_DRBG:
+        case ACVP_PREREQ_DSA:
+        case ACVP_PREREQ_HMAC:
+        case ACVP_PREREQ_SHA:
+            break;
+        default:
+            ACVP_LOG_ERR("\nUnsupported KAS-FFC prereq %d", pre_req);
+            return ACVP_INVALID_ARG;
+    }
+
+    /*
+     * Locate this cipher in the caps array
+     */
+    cap_list = acvp_locate_cap_entry(ctx, cipher);
+    if (!cap_list) {
+        ACVP_LOG_ERR("Cap entry not found.");
+        return ACVP_NO_CAP;
+    }
+
+    /*
+     * Locate cap mode from array
+     */
+    kas_ffc_cap = cap_list->cap.kas_ffc_cap;
+    kas_ffc_mode = &kas_ffc_cap->kas_ffc_mode[mode-1];
+
+    /*
+     * Add the value to the cap
+     */
+    return (acvp_add_kas_ffc_prereq_val(kas_ffc_mode, mode, pre_req, value));
+}
+
+
+static ACVP_RESULT acvp_append_kas_ffc_caps_entry (
+        ACVP_CTX *ctx,
+        ACVP_KAS_FFC_CAP *cap,
+        ACVP_CIPHER cipher,
+        ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case)) {
+    ACVP_CAPS_LIST *cap_entry, *cap_e2;
+
+    cap_entry = calloc(1, sizeof(ACVP_CAPS_LIST));
+    if (!cap_entry) {
+        return ACVP_MALLOC_FAIL;
+    }
+    cap_entry->cipher = cipher;
+    cap_entry->cap.kas_ffc_cap = cap;
+    cap_entry->crypto_handler = crypto_handler;
+    if (cipher == ACVP_KAS_FFC_COMP)
+        cap_entry->cap_type = ACVP_KAS_FFC_COMP_TYPE;
+    if (cipher == ACVP_KAS_FFC_NOCOMP)
+        cap_entry->cap_type = ACVP_KAS_FFC_NOCOMP_TYPE;
+
+    if (!ctx->caps_list) {
+        ctx->caps_list = cap_entry;
+    } else {
+        cap_e2 = ctx->caps_list;
+        while (cap_e2->next) {
+            cap_e2 = cap_e2->next;
+        }
+        cap_e2->next = cap_entry;
+    }
+    return (ACVP_SUCCESS);
+}
+
+ACVP_RESULT acvp_enable_kas_ffc_cap (ACVP_CTX *ctx,
+                                     ACVP_CIPHER cipher,
+                                     ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case)) {
+
+    ACVP_KAS_FFC_CAP *kas_ffc_cap;
+    ACVP_RESULT result;
+    void *kas_ffc_mode;
+    int i;
+
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+    if (!crypto_handler) {
+        return ACVP_INVALID_ARG;
+    }
+
+    /*
+     * Check for duplicate entry
+     */
+    if (acvp_locate_cap_entry(ctx, cipher)) {
+        return ACVP_DUP_CIPHER;
+    }
+
+    kas_ffc_cap = calloc(1, sizeof(ACVP_KAS_FFC_CAP));
+    if (!kas_ffc_cap) {
+        return ACVP_MALLOC_FAIL;
+    }
+
+    kas_ffc_cap->cipher = cipher;
+
+    kas_ffc_mode = calloc(1, ACVP_KAS_FFC_MAX_MODES * sizeof(ACVP_KAS_FFC_CAP_MODE) + 1);
+    if (!kas_ffc_mode) {
+        free(kas_ffc_cap);
+        return ACVP_MALLOC_FAIL;
+    }
+
+    kas_ffc_cap->kas_ffc_mode = (ACVP_KAS_FFC_CAP_MODE *)kas_ffc_mode;
+    for (i = 1; i <= ACVP_KAS_FFC_MAX_MODES; i++) {
+        kas_ffc_cap->kas_ffc_mode[i - 1].cap_mode = (ACVP_KAS_FFC_MODE)i;
+    }
+
+    result = acvp_append_kas_ffc_caps_entry(ctx, kas_ffc_cap, cipher, crypto_handler);
+    if (result != ACVP_SUCCESS) {
+        free(kas_ffc_cap);
+        free(kas_ffc_mode);
+        kas_ffc_cap = NULL;
+    }
+    return result;
+}
+
+ACVP_RESULT acvp_enable_kas_ffc_cap_parm (ACVP_CTX *ctx,
+                                          ACVP_CIPHER cipher,
+                                          ACVP_KAS_FFC_MODE mode,
+                                          ACVP_KAS_FFC_PARAM param,
+                                          int value) {
+
+    ACVP_CAPS_LIST *cap;
+    ACVP_KAS_FFC_CAP *kas_ffc_cap;
+    ACVP_KAS_FFC_CAP_MODE *kas_ffc_cap_mode;
+    ACVP_PARAM_LIST *current_func;
+
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+
+    cap = acvp_locate_cap_entry(ctx, cipher);
+    if (!cap) {
+        return ACVP_NO_CAP;
+    }
+
+    kas_ffc_cap = cap->cap.kas_ffc_cap;
+    if (!kas_ffc_cap) {
+        return ACVP_NO_CAP;
+    }
+    kas_ffc_cap_mode = &kas_ffc_cap->kas_ffc_mode[mode - 1];
+    switch (mode)
+    {
+    case ACVP_KAS_FFC_MODE_COMPONENT:
+        switch (param)
+        {
+        case ACVP_KAS_FFC_FUNCTION:
+            current_func = kas_ffc_cap_mode->function;
+            if (current_func) {
+                while (current_func->next) {
+                    current_func = current_func->next;
+                }
+                current_func->next = calloc(1, sizeof(ACVP_PARAM_LIST));
+                current_func->next->param = value;
+            } else {
+                kas_ffc_cap_mode->function = calloc(1, sizeof(ACVP_PARAM_LIST));
+                kas_ffc_cap_mode->function->param = value;
+            }
+            break;
+        default:
+            ACVP_LOG_ERR("\nUnsupported KAS-FFC param %d", param);
+            return ACVP_INVALID_ARG;
+            break;
+        }
+        break;
+    default:
+        ACVP_LOG_ERR("\nUnsupported KAS-FFC mode %d", mode);
+        return ACVP_INVALID_ARG;
+        break;
+    }
+    return ACVP_SUCCESS;
+}
+
+ACVP_RESULT acvp_enable_kas_ffc_cap_scheme (ACVP_CTX *ctx,
+                                            ACVP_CIPHER cipher,
+                                            ACVP_KAS_FFC_MODE mode,
+                                            ACVP_KAS_FFC_SCHEMES scheme,
+                                            ACVP_KAS_FFC_PARAM param,
+                                            int value) {
+
+    ACVP_CAPS_LIST *cap;
+    ACVP_KAS_FFC_CAP *kas_ffc_cap;
+    ACVP_KAS_FFC_CAP_MODE *kas_ffc_cap_mode;
+    ACVP_KAS_FFC_SCHEME *current_scheme;
+    ACVP_KAS_FFC_PSET *current_pset;
+    ACVP_KAS_FFC_PSET *last_pset;
+    ACVP_PARAM_LIST *current_role;
+    ACVP_PARAM_LIST *current_hash;
+
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+
+    cap = acvp_locate_cap_entry(ctx, cipher);
+    if (!cap) {
+        return ACVP_NO_CAP;
+    }
+
+    kas_ffc_cap = cap->cap.kas_ffc_cap;
+    if (!kas_ffc_cap) {
+        return ACVP_NO_CAP;
+    }
+    kas_ffc_cap_mode = &kas_ffc_cap->kas_ffc_mode[mode - 1];
+    switch (mode)
+    {
+    case ACVP_KAS_FFC_MODE_COMPONENT:
+    case ACVP_KAS_FFC_MODE_NOCOMP:
+        current_scheme = kas_ffc_cap_mode->scheme;
+        while (current_scheme) {
+            if (current_scheme->scheme == scheme) {
+                break;
+            } else {
+                current_scheme = current_scheme->next;
+            }
+        }
+        /* if there are none or didn't find the one we're looking for... */
+        if (current_scheme == NULL) {
+            kas_ffc_cap_mode->scheme = calloc(1, sizeof(ACVP_KAS_FFC_SCHEME));
+            kas_ffc_cap_mode->scheme->scheme = scheme;
+            current_scheme = kas_ffc_cap_mode->scheme;
+        }
+        switch (param)
+        {
+        case ACVP_KAS_FFC_KDF:
+            current_scheme->kdf = value;
+            break;
+        case ACVP_KAS_FFC_ROLE:
+            current_role = current_scheme->role;
+            if (current_role) {
+                while (current_role->next) {
+                    current_role = current_role->next;
+                }
+                current_role->next = calloc(1, sizeof(ACVP_PARAM_LIST));
+                current_role->next->param = value;
+            } else {
+                current_role = calloc(1, sizeof(ACVP_PARAM_LIST));
+                current_role->param = value;
+                current_scheme->role = current_role;
+            }
+            break;
+        case ACVP_KAS_FFC_FB:
+        case ACVP_KAS_FFC_FC:
+            current_pset = current_scheme->pset;
+            while (current_pset) {
+                if (current_pset->set == param) {
+                    break;
+                } else {
+                    last_pset = current_pset;
+                    current_pset = current_pset->next;
+                }
+            } 
+            if (!current_pset) {
+                current_pset = calloc(1, sizeof(ACVP_KAS_FFC_PSET));
+                if (current_scheme->pset == NULL) {
+                    current_scheme->pset = current_pset;
+                } else {
+                    last_pset->next = current_pset;
+                }
+                current_pset->set = param;
+            }
+            //then set sha in a param list
+            current_hash = current_pset->sha;
+            if (current_hash) {
+                while (current_hash->next) {
+                    current_hash = current_hash->next;
+                }
+                current_hash->next = calloc(1, sizeof(ACVP_PARAM_LIST));
+                current_hash->next->param = value;
+            } else {
+                current_pset->sha = calloc(1, sizeof(ACVP_PARAM_LIST));
+                current_pset->sha->param = value;
+            }
+            break;
+        default:
+            ACVP_LOG_ERR("\nUnsupported KAS-FFC param %d", param);
+            return ACVP_INVALID_ARG;
+            break;
+        }
+        break;
+    default:
+        ACVP_LOG_ERR("Scheme parameter sets not supported for this mode %d\n", mode);
+        return ACVP_INVALID_ARG;
+        break;
+    }
+    return ACVP_SUCCESS;
 }
