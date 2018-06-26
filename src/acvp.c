@@ -192,9 +192,9 @@ ACVP_ALG_HANDLER alg_tbl[ACVP_ALG_MAX] = {
         {ACVP_KDF135_SNMP,       &acvp_kdf135_snmp_kat_handler,     ACVP_KDF135_ALG_STR,        ACVP_ALG_KDF135_SNMP},
         {ACVP_KDF135_SSH,        &acvp_kdf135_ssh_kat_handler,      ACVP_KDF135_ALG_STR,        ACVP_ALG_KDF135_SSH},
         {ACVP_KDF135_SRTP,       &acvp_kdf135_srtp_kat_handler,     ACVP_KDF135_ALG_STR,        ACVP_ALG_KDF135_SRTP},
-        {ACVP_KDF135_IKEV2,      &acvp_kdf135_ikev2_kat_handler,    ACVP_ALG_KDF135_IKEV2,      NULL},
-        {ACVP_KDF135_IKEV1,      &acvp_kdf135_ikev1_kat_handler,    ACVP_ALG_KDF135_IKEV1,      NULL},
-        {ACVP_KDF135_X963,       &acvp_kdf135_x963_kat_handler,     ACVP_ALG_KDF135_X963,       NULL},
+        {ACVP_KDF135_IKEV2,      &acvp_kdf135_ikev2_kat_handler,    ACVP_KDF135_ALG_STR,        ACVP_ALG_KDF135_IKEV2},
+        {ACVP_KDF135_IKEV1,      &acvp_kdf135_ikev1_kat_handler,    ACVP_KDF135_ALG_STR,        ACVP_ALG_KDF135_IKEV1},
+        {ACVP_KDF135_X963,       &acvp_kdf135_x963_kat_handler,     ACVP_KDF135_ALG_STR,        ACVP_ALG_KDF135_X963},
         {ACVP_KDF135_TPM,        &acvp_kdf135_tpm_kat_handler,      ACVP_ALG_KDF135_TPM,        NULL},
         {ACVP_KDF108,            &acvp_kdf108_kat_handler,          ACVP_ALG_KDF108,            NULL},
         {ACVP_KAS_ECC_CDH,       &acvp_kas_ecc_kat_handler,         ACVP_ALG_KAS_ECC,           ACVP_ALG_KAS_ECC_CDH},
@@ -2031,16 +2031,16 @@ ACVP_RESULT acvp_enable_kdf135_x963_cap_param (ACVP_CTX *ctx,
             current_hash->next = calloc(1, sizeof(ACVP_NAME_LIST));
             switch (value) {
             case ACVP_KDF_X963_SHA224:
-                current_hash->next->name = "SHA-224";
+                current_hash->next->name = "SHA2-224";
                 break;
             case ACVP_KDF_X963_SHA256:
-                current_hash->next->name = "SHA-256";
+                current_hash->next->name = "SHA2-256";
                 break;
             case ACVP_KDF_X963_SHA384:
-                current_hash->next->name = "SHA-384";
+                current_hash->next->name = "SHA2-384";
                 break;
             case ACVP_KDF_X963_SHA512:
-                current_hash->next->name = "SHA-512";
+                current_hash->next->name = "SHA2-512";
                 break;
             default:
                 return ACVP_INVALID_ARG;
@@ -2049,16 +2049,16 @@ ACVP_RESULT acvp_enable_kdf135_x963_cap_param (ACVP_CTX *ctx,
             cap->hash_algs = calloc(1, sizeof(ACVP_NAME_LIST));
             switch (value) {
             case ACVP_KDF_X963_SHA224:
-                cap->hash_algs->name = "SHA-224";
+                cap->hash_algs->name = "SHA2-224";
                 break;
             case ACVP_KDF_X963_SHA256:
-                cap->hash_algs->name = "SHA-256";
+                cap->hash_algs->name = "SHA2-256";
                 break;
             case ACVP_KDF_X963_SHA384:
-                cap->hash_algs->name = "SHA-384";
+                cap->hash_algs->name = "SHA2-384";
                 break;
             case ACVP_KDF_X963_SHA512:
-                cap->hash_algs->name = "SHA-512";
+                cap->hash_algs->name = "SHA2-512";
                 break;
             default:
                 return ACVP_INVALID_ARG;

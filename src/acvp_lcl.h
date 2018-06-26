@@ -58,7 +58,7 @@
 } while (0)
 #endif
 
-#define ACVP_ALG_MAX ACVP_CIPHER_END  /* Used by alg_tbl[] */
+#define ACVP_ALG_MAX ACVP_CIPHER_END - 1  /* Used by alg_tbl[] */
 
 #define ACVP_ALG_AES_ECB             "AES-ECB"
 #define ACVP_ALG_AES_CBC             "AES-CBC"
@@ -160,11 +160,11 @@
 #define ACVP_ALG_KDF135_SNMP     "snmp"
 #define ACVP_ALG_KDF135_SSH      "ssh"
 #define ACVP_ALG_KDF135_SRTP     "srtp"
-#define ACVP_ALG_KDF135_IKEV2    "KDF-IKEV2"
-#define ACVP_ALG_KDF135_IKEV1    "KDF-IKEV1"
+#define ACVP_ALG_KDF135_IKEV2    "ikev2"
+#define ACVP_ALG_KDF135_IKEV1    "ikev1"
 #define ACVP_ALG_KDF135_TPM      "KDF-TPM"
 #define ACVP_ALG_KDF108          "KDF"
-#define ACVP_ALG_KDF135_X963     "KDF-X963"
+#define ACVP_ALG_KDF135_X963     "ansix9.63"
 
 /*
  *  Defines the key lengths and block lengths (in bytes)
