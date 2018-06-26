@@ -1073,13 +1073,21 @@ static void enable_kdf (ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_kdf135_x963_cap_param(ctx, ACVP_KDF_X963_HASH_ALG, ACVP_KDF_X963_SHA256);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_kdf135_x963_cap_param(ctx, ACVP_KDF_X963_KEY_DATA_LEN, 128);
+    rv = acvp_enable_kdf135_x963_cap_param(ctx, ACVP_KDF_X963_HASH_ALG, ACVP_KDF_X963_SHA384);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_kdf135_x963_cap_param(ctx, ACVP_KDF_X963_HASH_ALG, ACVP_KDF_X963_SHA512);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_kdf135_x963_cap_param(ctx, ACVP_KDF_X963_KEY_DATA_LEN, 256);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_kdf135_x963_cap_param(ctx, ACVP_KDF_X963_KEY_DATA_LEN, 1024);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_kdf135_x963_cap_param(ctx, ACVP_KDF_X963_FIELD_SIZE, 224);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_kdf135_x963_cap_param(ctx, ACVP_KDF_X963_FIELD_SIZE, 409);
+    rv = acvp_enable_kdf135_x963_cap_param(ctx, ACVP_KDF_X963_FIELD_SIZE, 521);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_kdf135_x963_cap_param(ctx, ACVP_KDF_X963_SHARED_INFO_LEN, 512);
+    rv = acvp_enable_kdf135_x963_cap_param(ctx, ACVP_KDF_X963_SHARED_INFO_LEN, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_kdf135_x963_cap_param(ctx, ACVP_KDF_X963_SHARED_INFO_LEN, 1024);
     CHECK_ENABLE_CAP_RV(rv);
 
     /*
