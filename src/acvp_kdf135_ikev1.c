@@ -250,14 +250,14 @@ ACVP_RESULT acvp_kdf135_ikev1_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
                                       init_nonce, resp_nonce,
                                       init_ckey, resp_ckey,
                                       gxy, psk);
-            
+
             /* Process the current test vector... */
             rv = (cap->crypto_handler)(&tc);
             if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("crypto module failed the KDF SSH operation");
+                ACVP_LOG_ERR("crypto module failed the KDF IKEv1 operation");
                 return ACVP_CRYPTO_MODULE_FAIL;
             }
-            
+
             /*
              * Output the test case results using JSON
             */
