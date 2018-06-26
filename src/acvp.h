@@ -165,6 +165,8 @@ typedef enum acvp_cipher {
     ACVP_KAS_ECC_CDH,
     ACVP_KAS_ECC_COMP,
     ACVP_KAS_ECC_NOCOMP,
+    ACVP_KAS_FFC_COMP,
+    ACVP_KAS_FFC_NOCOMP,
     ACVP_CIPHER_END
 } ACVP_CIPHER;
 
@@ -179,6 +181,7 @@ typedef enum acvp_prereq_mode_t {
     ACVP_PREREQ_CCM,
     ACVP_PREREQ_CMAC,
     ACVP_PREREQ_DRBG,
+    ACVP_PREREQ_DSA,
     ACVP_PREREQ_ECDSA,
     ACVP_PREREQ_HMAC,
     ACVP_PREREQ_KAS,
@@ -1145,6 +1148,92 @@ typedef struct acvp_kas_ecc_tc_t {
     int chashlen;
 } ACVP_KAS_ECC_TC;
 
+#define ACVP_KAS_FFC_MAX_STR 4096
+/*! @struct ACVP_KAS_FFC_MODE */
+typedef enum acvp_kas_ffc_mode {
+    ACVP_KAS_FFC_MODE_COMPONENT = 1,
+    ACVP_KAS_FFC_MODE_NOCOMP,
+    ACVP_KAS_FFC_MAX_MODES
+} ACVP_KAS_FFC_MODE;
+
+/*! @struct ACVP_KAS_FFC_SCHEMES */
+typedef enum acvp_kas_ffc_schemes {
+    ACVP_KAS_FFC_DH_EPHEMERAL = 1,
+    ACVP_KAS_FFC_DH_HYBRID1,
+    ACVP_KAS_FFC_FULL_MQV1,
+    ACVP_KAS_FFC_FULL_MQV2,
+    ACVP_KAS_FFC_DH_HYBRID_ONEFLOW,
+    ACVP_KAS_FFC_DH_ONEFLOW,
+    ACVP_KAS_FFC_DH_STATIC
+} ACVP_KAS_FFC_SCHEMES;
+
+/*! @struct ACVP_KAS_FFC_FUNC */
+typedef enum acvp_kas_ffc_func {
+    ACVP_KAS_FFC_FUNC_DPGEN,
+    ACVP_KAS_FFC_FUNC_DPVAL,
+    ACVP_KAS_FFC_FUNC_KEYPAIR,
+    ACVP_KAS_FFC_FUNC_KEYREGEN,
+    ACVP_KAS_FFC_FUNC_FULL,
+    ACVP_KAS_FFC_MAX_FUNCS
+} ACVP_KAS_FFC_FUNC;
+
+/*! @struct ACVP_KAS_FFC_PARAM */
+typedef enum acvp_kas_ffc_param {
+    ACVP_KAS_FFC_FUNCTION = 1,
+    ACVP_KAS_FFC_CURVE,
+    ACVP_KAS_FFC_ROLE,
+    ACVP_KAS_FFC_KDF,
+    ACVP_KAS_FFC_FB,
+    ACVP_KAS_FFC_FC
+} ACVP_KAS_FFC_PARAM;
+
+/*! @struct ACVP_KAS_FFC_ROLE */
+typedef enum acvp_kas_ffc_roles {
+    ACVP_KAS_FFC_ROLE_INITIATOR = 1,
+    ACVP_KAS_FFC_ROLE_RESPONDER
+} ACVP_KAS_FFC_ROLES;
+
+/*! @struct ACVP_KAS_FFC_SET */
+typedef enum acvp_kas_ffc_set {
+    ACVP_KAS_FFC_NOKDFNOKC = 1,
+    ACVP_KAS_FFC_KDFNOKC,
+    ACVP_KAS_FFC_KDFKC,
+    ACVP_KAS_FFC_PARMSET
+} ACVP_KAS_FFC_SET;
+
+/*! @struct ACVP_KAS_FFC_TEST_TYPE */
+typedef enum acvp_kas_ffc_test_type {
+    ACVP_KAS_FFC_TT_AFT = 1,
+    ACVP_KAS_FFC_TT_VAL
+} ACVP_KAS_FFC_TEST_TYPE;
+
+/*!
+ * @struct ACVP_KAS_FFC_TC
+ * @brief This struct holds data that represents a single test
+ * case for KAS-FFC testing.  This data is
+ * passed between libacvp and the crypto module.
+ */
+/*! @struct ACVP_KAS_FFC_TC */
+typedef struct acvp_kas_ffc_tc_t {
+    ACVP_CIPHER cipher;
+    int test_type;
+    int md;
+    int mode;
+    char *p;
+    char *q;
+    char *g;
+    char *d;
+    char *eps;
+    char *epri;
+    char *epui;
+    char *z;
+    char *chash;
+    char *piut;
+    int chashlen;
+    int piutlen;
+    int zlen;
+} ACVP_KAS_FFC_TC;
+
 /*!
  * @struct ACVP_DRBG_TC
  * @brief This struct holds data that represents a single test case
@@ -1205,6 +1294,7 @@ typedef struct acvp_test_case_t {
         ACVP_KDF135_TPM_TC *kdf135_tpm;
         ACVP_KDF108_TC *kdf108;
         ACVP_KAS_ECC_TC *kas_ecc;
+        ACVP_KAS_FFC_TC *kas_ffc;
     } tc;
 } ACVP_TEST_CASE;
 
@@ -1606,6 +1696,105 @@ ACVP_RESULT acvp_enable_kas_ecc_cap_scheme (ACVP_CTX *ctx,
                                             ACVP_KAS_ECC_SCHEMES scheme,
                                             ACVP_KAS_ECC_PARAM param,
                                             int option,
+                                            int value);
+
+/*! @brief acvp_enable_kas_ffc_cap()
+
+  This function should be used to enable KAS-FFC capabilities. Specific modes
+  and parameters can use acvp_enable_kas_ffc_cap_parm.
+
+   When the application enables a crypto capability, such as KAS-FFC, it
+   also needs to specify a callback function that will be used by libacvp
+   when that crypto capability is needed during a test session.
+
+   @param ctx Address of pointer to a previously allocated ACVP_CTX.
+   @param cipher ACVP_CIPHER enum value identifying the crypto capability.
+   @param crypto_handler Address of function implemented by application that
+      is invoked by libacvp when the crypto capability is needed during
+      a test session.
+
+   @return ACVP_RESULT
+*/
+ACVP_RESULT acvp_enable_kas_ffc_cap (
+        ACVP_CTX *ctx,
+        ACVP_CIPHER cipher,
+        ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case));
+
+/*! @brief acvp_enable_kas_ffc_prereq_cap() allows an application to specify
+        a prerequisite algorithm for a given KAS-FFC mode during a test session
+        with the ACVP server.
+
+        This function should be called to enable a prerequisite for
+        an KAS-FFC mode capability that will be tested by the server.
+
+   @param ctx Address of pointer to a previously allocated ACVP_CTX.
+   @param cipher ACVP_CIPHER enum value identifying the crypto capability.
+   @param mode ACVP_KAS_FFC_MODE enum value specifying mode. An example would be
+        ACVP_KAS_FFC_MODE_PARTIAL
+   @param pre_req ACVP_PREREQ_ALG enum that the specified cipher/mode
+        depends on
+   @param value "same" or number
+
+   @return ACVP_RESULT
+ */
+ACVP_RESULT acvp_enable_kas_ffc_prereq_cap (
+        ACVP_CTX *ctx,
+        ACVP_CIPHER cipher,
+        ACVP_KAS_FFC_MODE mode,
+        ACVP_PREREQ_ALG pre_req,
+        char *value
+);
+
+/*! @brief acvp_enable_kas_ffc_cap_parm() allows an application to specify
+       operational parameters to be used for a given alg during a
+       test session with the ACVP server.
+
+    This function should be called to enable crypto capabilities for
+    KAS-FFC modes and functions. It may be called  multiple times to specify 
+    more than one crypto capability.
+
+    @param ctx Address of pointer to a previously allocated ACVP_CTX.
+    @param cipher ACVP_CIPHER enum value identifying the crypto capability.
+    @param mode ACVP_KAS_FFC_MODE enum value specifying mode. An example would be
+        ACVP_KAS_FFC_MODE_DPGEN
+    @param param ACVP_KAS_FFC_PARAM enum value identifying the algorithm parameter
+       that is being specified.  An example would be ACVP_KAS_FFC_????
+    @param value the value corresponding to the parameter being set
+
+    @return ACVP_RESULT
+ */
+ACVP_RESULT acvp_enable_kas_ffc_cap_parm (ACVP_CTX *ctx,
+                                          ACVP_CIPHER cipher,
+                                          ACVP_KAS_FFC_MODE mode,
+                                          ACVP_KAS_FFC_PARAM param,
+                                          int value);
+
+
+/*! @brief acvp_enable_kas_ffc_cap_scheme() allows an application to specify
+       scheme parameters to be used for a given alg during a
+       test session with the ACVP server.
+
+    This function should be called to enable crypto capabilities for
+    KAS-FFC modes and functions. It may be called  multiple times to specify 
+    more than one crypto capability.
+
+    @param ctx Address of pointer to a previously allocated ACVP_CTX.
+    @param cipher ACVP_CIPHER enum value identifying the crypto capability.
+    @param mode ACVP_KAS_FFC_MODE enum value specifying mode. An example would be
+        ACVP_KAS_FFC_MODE_COMPONENT
+    @param param ACVP_KAS_FFC_SCHEME enum value identifying the algorithm parameter
+       that is being specified.  An example would be ACVP_KAS_FFC_DH_EPHEMERAL
+    @param param ACVP_KAS_FFC_PARAM enum value identifying the algorithm parameter
+       that is being specified.  An example would be ACVP_KAS_FFC_KDF
+    @param value the value corresponding to the parameter being set
+
+    @return ACVP_RESULT
+ */
+ACVP_RESULT acvp_enable_kas_ffc_cap_scheme (ACVP_CTX *ctx,
+                                            ACVP_CIPHER cipher,
+                                            ACVP_KAS_FFC_MODE mode,
+                                            ACVP_KAS_FFC_SCHEMES scheme,
+                                            ACVP_KAS_FFC_PARAM param,
                                             int value);
 
 /*! @brief acvp_enable_rsa_*_cap()
