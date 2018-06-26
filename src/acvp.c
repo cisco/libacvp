@@ -273,7 +273,7 @@ static void acvp_cap_free_dsa_attrs (ACVP_CAPS_LIST *cap_entry) {
     ACVP_DSA_CAP_MODE *dsa_cap_mode = NULL;
     int i;
 
-    for (i=0; i<=ACVP_DSA_MAX_MODES; i++) {   
+    for (i=0; i<=ACVP_DSA_MAX_MODES; i++) {
         dsa_cap_mode = &cap_entry->cap.dsa_cap->dsa_cap_mode[i];
         if (dsa_cap_mode->defined) {
             next = dsa_cap_mode->dsa_attrs;
@@ -296,25 +296,25 @@ static void acvp_cap_free_rsa_keygen_list (ACVP_CAPS_LIST *cap_list) {
     ACVP_RSA_KEYGEN_CAP *keygen_cap = cap_list->cap.rsa_keygen_cap;
     ACVP_RSA_KEYGEN_CAP *temp_keygen_cap;
     acvp_free_prereqs(cap_list);
-    
+
     while (keygen_cap) {
         if (keygen_cap->fixed_pub_exp) {
             free(keygen_cap->fixed_pub_exp);
         }
-        
+
         ACVP_RSA_MODE_CAPS_LIST *mode_list = keygen_cap->mode_capabilities;
         ACVP_RSA_MODE_CAPS_LIST *temp_mode_list;
-        
+
         while (mode_list) {
             acvp_cap_free_nl(mode_list->hash_algs);
             acvp_cap_free_nl(mode_list->prime_tests);
-            
+
             temp_mode_list = mode_list;
             mode_list = mode_list->next;
             free(temp_mode_list);
             temp_mode_list = NULL;
         }
-        
+
         temp_keygen_cap = keygen_cap;
         keygen_cap = keygen_cap->next;
         free(temp_keygen_cap);
@@ -328,7 +328,7 @@ static void acvp_cap_free_rsa_keygen_list (ACVP_CAPS_LIST *cap_list) {
  */
 static void acvp_cap_free_rsa_sig_list (ACVP_CAPS_LIST *cap_list) {
     ACVP_RSA_SIG_CAP *sig_cap = NULL, *temp_sig_cap = NULL;
-    
+
     if (cap_list->cipher == ACVP_RSA_SIGGEN) {
         sig_cap = cap_list->cap.rsa_siggen_cap;
     } else if (cap_list->cipher == ACVP_RSA_SIGVER) {
@@ -336,22 +336,22 @@ static void acvp_cap_free_rsa_sig_list (ACVP_CAPS_LIST *cap_list) {
     } else {
         return;
     }
-    
+
     acvp_free_prereqs(cap_list);
-    
+
     while (sig_cap) {
         ACVP_RSA_MODE_CAPS_LIST *mode_list = sig_cap->mode_capabilities;
         ACVP_RSA_MODE_CAPS_LIST *temp_mode_list;
-        
+
         while (mode_list) {
             acvp_cap_free_hash_pairs(mode_list->hash_pair);
-            
+
             temp_mode_list = mode_list;
             mode_list = mode_list->next;
             free(temp_mode_list);
             temp_mode_list = NULL;
         }
-        
+
         temp_sig_cap = sig_cap;
         sig_cap = sig_cap->next;
         free(temp_sig_cap);
@@ -841,7 +841,7 @@ static void acvp_cap_free_nl (ACVP_NAME_LIST *list) {
 static void acvp_cap_free_hash_pairs (ACVP_RSA_HASH_PAIR_LIST *list) {
     ACVP_RSA_HASH_PAIR_LIST *top = list;
     ACVP_RSA_HASH_PAIR_LIST *tmp;
-    
+
     while (top) {
         tmp = top;
 
@@ -878,7 +878,7 @@ ACVP_RESULT acvp_enable_sym_cipher_cap (
     if (!crypto_handler) {
         return ACVP_INVALID_ARG;
     }
-    
+
     switch (cipher) {
     case ACVP_AES_GCM:
     case ACVP_AES_CCM:
@@ -1299,7 +1299,7 @@ ACVP_RESULT acvp_enable_hmac_cap (
     if (!crypto_handler) {
         return ACVP_INVALID_ARG;
     }
-    
+
     switch (cipher) {
     case ACVP_HMAC_SHA1:
     case ACVP_HMAC_SHA2_224:
@@ -1422,7 +1422,7 @@ ACVP_RESULT acvp_enable_cmac_cap (
     if (!crypto_handler) {
         return ACVP_INVALID_ARG;
     }
-    
+
     switch (cipher) {
     case ACVP_CMAC_AES:
     case ACVP_CMAC_TDES:
@@ -1896,7 +1896,7 @@ static ACVP_RESULT acvp_validate_prereq_val (ACVP_CIPHER cipher, ACVP_PREREQ_ALG
     default:
         break;
     }
-    
+
     return ACVP_INVALID_ARG;
 }
 
@@ -1948,18 +1948,18 @@ ACVP_RESULT acvp_enable_rsa_keygen_mode (ACVP_CTX *ctx,
     ACVP_CAPS_LIST *cap_list;
     ACVP_RSA_KEYGEN_CAP *keygen_cap;
     ACVP_RESULT result = ACVP_SUCCESS;
-    
+
     cap_list = acvp_locate_cap_entry(ctx, ACVP_RSA_KEYGEN);
     if (!cap_list) {
         ACVP_LOG_ERR("Cap entry not found.");
         return ACVP_NO_CAP;
     }
-    
+
     if (!cap_list->cap.rsa_keygen_cap) {
         cap_list->cap.rsa_keygen_cap = calloc(1, sizeof(ACVP_RSA_KEYGEN_CAP));
     }
     keygen_cap = cap_list->cap.rsa_keygen_cap;
-    
+
     while (keygen_cap) {
         if (keygen_cap->rand_pq != ACVP_RSA_KEYGEN_B32 &&
             keygen_cap->rand_pq != ACVP_RSA_KEYGEN_B33 &&
@@ -1999,7 +1999,7 @@ ACVP_RESULT acvp_enable_rsa_keygen_mode (ACVP_CTX *ctx,
     default:
         break;
     }
-    
+
     return result;
 }
 
@@ -2012,13 +2012,13 @@ ACVP_RESULT acvp_enable_rsa_keygen_cap_parm (ACVP_CTX *ctx,
 ) {
     ACVP_CAPS_LIST *cap_list;
     ACVP_RESULT rv = ACVP_SUCCESS;
-    
+
     cap_list = acvp_locate_cap_entry(ctx, ACVP_RSA_KEYGEN);
     if (!cap_list) {
         ACVP_LOG_ERR("Cap entry not found.");
         return ACVP_NO_CAP;
     }
-    
+
     switch (param) {
     case ACVP_PUB_EXP_MODE:
         cap_list->cap.rsa_keygen_cap->pub_exp_mode = value;
@@ -2053,18 +2053,18 @@ ACVP_RESULT acvp_enable_kdf135_ikev2_cap_param (ACVP_CTX *ctx,
     ACVP_CAPS_LIST *cap_list;
     ACVP_NAME_LIST *current_hash;
     ACVP_KDF135_IKEV2_CAP *cap;
-    
+
     cap_list = acvp_locate_cap_entry(ctx, ACVP_KDF135_IKEV2);
     if (!cap_list) {
         ACVP_LOG_ERR("Cap entry not found.");
         return ACVP_NO_CAP;
     }
     cap = cap_list->cap.kdf135_ikev2_cap;
-    
+
     if (param != ACVP_KDF_HASH_ALG) {
         return ACVP_INVALID_ARG;
     }
-    
+
     current_hash = cap->hash_algs;
     if (current_hash) {
         while (current_hash->next) {
@@ -2085,14 +2085,14 @@ ACVP_RESULT acvp_enable_kdf135_ikev1_cap_param (ACVP_CTX *ctx,
     ACVP_CAPS_LIST *cap_list;
     ACVP_NAME_LIST *current_hash;
     ACVP_KDF135_IKEV1_CAP *cap;
-    
+
     cap_list = acvp_locate_cap_entry(ctx, ACVP_KDF135_IKEV1);
     if (!cap_list) {
         ACVP_LOG_ERR("Cap entry not found.");
         return ACVP_NO_CAP;
     }
     cap = cap_list->cap.kdf135_ikev1_cap;
-    
+
     if (param == ACVP_KDF_IKEv1_HASH_ALG) {
         current_hash = cap->hash_algs;
         if (current_hash) {
@@ -2110,7 +2110,7 @@ ACVP_RESULT acvp_enable_kdf135_ikev1_cap_param (ACVP_CTX *ctx,
     } else {
         return ACVP_INVALID_ARG;
     }
-    
+
     return ACVP_SUCCESS;
 }
 
@@ -2121,14 +2121,14 @@ ACVP_RESULT acvp_enable_kdf135_x963_cap_param (ACVP_CTX *ctx,
     ACVP_NAME_LIST *current_hash;
     ACVP_SL_LIST *current_sl;
     ACVP_KDF135_X963_CAP *cap;
-    
+
     cap_list = acvp_locate_cap_entry(ctx, ACVP_KDF135_X963);
     if (!cap_list) {
         ACVP_LOG_ERR("Cap entry not found.");
         return ACVP_NO_CAP;
     }
     cap = cap_list->cap.kdf135_x963_cap;
-    
+
     if (param == ACVP_KDF_X963_HASH_ALG) {
         current_hash = cap->hash_algs;
         if (current_hash) {
@@ -2216,7 +2216,7 @@ ACVP_RESULT acvp_enable_kdf135_x963_cap_param (ACVP_CTX *ctx,
             return ACVP_INVALID_ARG;
         }
     }
-    
+
     return ACVP_SUCCESS;
 }
 
@@ -2227,13 +2227,13 @@ ACVP_RESULT acvp_enable_kdf135_ikev2_domain_param (ACVP_CTX *ctx,
                                                    int increment) {
     ACVP_CAPS_LIST *cap_list;
     ACVP_JSON_DOMAIN_OBJ *domain;
-    
+
     cap_list = acvp_locate_cap_entry(ctx, ACVP_KDF135_IKEV2);
     if (!cap_list) {
         ACVP_LOG_ERR("Cap entry not found.");
         return ACVP_NO_CAP;
     }
-    
+
     switch (param) {
     case ACVP_INIT_NONCE_LEN:
         domain = &cap_list->cap.kdf135_ikev2_cap->init_nonce_len_domain;
@@ -2253,7 +2253,7 @@ ACVP_RESULT acvp_enable_kdf135_ikev2_domain_param (ACVP_CTX *ctx,
     domain->min = min;
     domain->max = max;
     domain->increment = increment;
-    
+
     return ACVP_SUCCESS;
 }
 
@@ -2264,13 +2264,13 @@ ACVP_RESULT acvp_enable_kdf135_ikev1_domain_param (ACVP_CTX *ctx,
                                                    int increment) {
     ACVP_CAPS_LIST *cap_list;
     ACVP_JSON_DOMAIN_OBJ *domain;
-    
+
     cap_list = acvp_locate_cap_entry(ctx, ACVP_KDF135_IKEV1);
     if (!cap_list) {
         ACVP_LOG_ERR("Cap entry not found.");
         return ACVP_NO_CAP;
     }
-    
+
     switch (param) {
     case ACVP_KDF_IKEv1_INIT_NONCE_LEN:
         domain = &cap_list->cap.kdf135_ikev1_cap->init_nonce_len_domain;
@@ -2290,7 +2290,7 @@ ACVP_RESULT acvp_enable_kdf135_ikev1_domain_param (ACVP_CTX *ctx,
     domain->min = min;
     domain->max = max;
     domain->increment = increment;
-    
+
     return ACVP_SUCCESS;
 }
 
@@ -2303,13 +2303,13 @@ ACVP_RESULT acvp_enable_kdf108_domain_param (ACVP_CTX *ctx,
     ACVP_CAPS_LIST *cap_list;
     ACVP_JSON_DOMAIN_OBJ *domain;
     ACVP_KDF108_MODE_PARAMS *mode_obj;
-    
+
     cap_list = acvp_locate_cap_entry(ctx, ACVP_KDF108);
     if (!cap_list) {
         ACVP_LOG_ERR("Cap entry not found.");
         return ACVP_NO_CAP;
     }
-    
+
     switch (mode) {
     case ACVP_KDF108_MODE_COUNTER:
         mode_obj = &cap_list->cap.kdf108_cap->counter_mode;
@@ -2333,7 +2333,7 @@ ACVP_RESULT acvp_enable_kdf108_domain_param (ACVP_CTX *ctx,
     domain->min = min;
     domain->max = max;
     domain->increment = increment;
-    
+
     return ACVP_SUCCESS;
 }
 
@@ -2349,7 +2349,7 @@ ACVP_RESULT acvp_enable_ecdsa_cap_parm (ACVP_CTX *ctx,
     int curve = 0;
     ACVP_NAME_LIST *current_curve, *current_secret_mode, *current_hash;
     ACVP_ECDSA_CAP *cap;
-    
+
     switch(cipher) {
     case ACVP_ECDSA_KEYGEN:
     case ACVP_ECDSA_KEYVER:
@@ -2359,13 +2359,13 @@ ACVP_RESULT acvp_enable_ecdsa_cap_parm (ACVP_CTX *ctx,
     default:
         return ACVP_INVALID_ARG;
     }
-    
+
     cap_list = acvp_locate_cap_entry(ctx, cipher);
     if (!cap_list) {
         ACVP_LOG_ERR("Cap entry not found.");
         return ACVP_NO_CAP;
     }
-    
+
     switch(cipher) {
     case ACVP_ECDSA_KEYGEN:
         cap = cap_list->cap.ecdsa_keygen_cap;
@@ -2382,7 +2382,7 @@ ACVP_RESULT acvp_enable_ecdsa_cap_parm (ACVP_CTX *ctx,
     default:
         return ACVP_INVALID_ARG;
     }
-    
+
     switch (param) {
     case ACVP_CURVE:
         curve = acvp_lookup_ecdsa_curve(cipher, value);
@@ -2437,7 +2437,7 @@ ACVP_RESULT acvp_enable_ecdsa_cap_parm (ACVP_CTX *ctx,
         return ACVP_INVALID_ARG;
         break;
     }
-    
+
     return ACVP_SUCCESS;
 }
 
@@ -2449,13 +2449,13 @@ ACVP_RESULT acvp_enable_rsa_sigver_cap_parm (ACVP_CTX *ctx,
                                              int value
 ) {
     ACVP_CAPS_LIST *cap_list;
-    
+
     cap_list = acvp_locate_cap_entry(ctx, ACVP_RSA_SIGVER);
     if (!cap_list) {
         ACVP_LOG_ERR("Cap entry not found.");
         return ACVP_NO_CAP;
     }
-    
+
     switch (param) {
     case ACVP_PUB_EXP_MODE:
         cap_list->cap.rsa_sigver_cap->pub_exp_mode = value;
@@ -2476,18 +2476,18 @@ ACVP_RESULT acvp_enable_rsa_sigver_type (ACVP_CTX *ctx,
     ACVP_CAPS_LIST *cap_list;
     ACVP_RSA_SIG_CAP *sigver_cap;
     ACVP_RESULT result = ACVP_SUCCESS;
-    
+
     cap_list = acvp_locate_cap_entry(ctx, ACVP_RSA_SIGVER);
     if (!cap_list) {
         ACVP_LOG_ERR("Cap entry not found.");
         return ACVP_NO_CAP;
     }
-    
+
     if (!cap_list->cap.rsa_sigver_cap) {
         cap_list->cap.rsa_sigver_cap = calloc(1, sizeof(ACVP_RSA_SIG_CAP));
     }
     sigver_cap = cap_list->cap.rsa_sigver_cap;
-    
+
     while (sigver_cap) {
         if (!sigver_cap->sig_type) {
             break;
@@ -2502,7 +2502,7 @@ ACVP_RESULT acvp_enable_rsa_sigver_type (ACVP_CTX *ctx,
         }
         sigver_cap = sigver_cap->next;
     }
-    
+
     sigver_cap->sig_type = value;
     switch (value) {
     case RSA_SIG_TYPE_X931:
@@ -2517,7 +2517,7 @@ ACVP_RESULT acvp_enable_rsa_sigver_type (ACVP_CTX *ctx,
     default:
         break;
     }
-    
+
     return result;
 }
 
@@ -2531,18 +2531,18 @@ ACVP_RESULT acvp_enable_rsa_siggen_type (ACVP_CTX *ctx,
     ACVP_CAPS_LIST *cap_list;
     ACVP_RSA_SIG_CAP *siggen_cap;
     ACVP_RESULT result = ACVP_SUCCESS;
-    
+
     cap_list = acvp_locate_cap_entry(ctx, ACVP_RSA_SIGGEN);
     if (!cap_list) {
         ACVP_LOG_ERR("Cap entry not found.");
         return ACVP_NO_CAP;
     }
-    
+
     if (!cap_list->cap.rsa_siggen_cap) {
         cap_list->cap.rsa_siggen_cap = calloc(1, sizeof(ACVP_RSA_SIG_CAP));
     }
     siggen_cap = cap_list->cap.rsa_siggen_cap;
-    
+
     while (siggen_cap) {
         if (!siggen_cap->sig_type) {
             break;
@@ -2557,7 +2557,7 @@ ACVP_RESULT acvp_enable_rsa_siggen_type (ACVP_CTX *ctx,
         }
         siggen_cap = siggen_cap->next;
     }
-    
+
     siggen_cap->sig_type = value;
     switch (value) {
     case RSA_SIG_TYPE_X931:
@@ -2572,7 +2572,7 @@ ACVP_RESULT acvp_enable_rsa_siggen_type (ACVP_CTX *ctx,
     default:
         break;
     }
-    
+
     return result;
 }
 
@@ -2584,13 +2584,13 @@ ACVP_RESULT acvp_enable_rsa_keygen_exp_parm (ACVP_CTX *ctx,
                                              char *value
 ) {
     ACVP_CAPS_LIST *cap_list;
-    
+
     cap_list = acvp_locate_cap_entry(ctx, ACVP_RSA_KEYGEN);
     if (!cap_list) {
         ACVP_LOG_ERR("Cap entry not found.");
         return ACVP_NO_CAP;
     }
-    
+
     /*
      * Add the value to the cap
      */
@@ -2617,13 +2617,13 @@ ACVP_RESULT acvp_enable_rsa_sigver_exp_parm (ACVP_CTX *ctx,
                                              char *value
 ) {
     ACVP_CAPS_LIST *cap_list;
-    
+
     cap_list = acvp_locate_cap_entry(ctx, ACVP_RSA_SIGVER);
     if (!cap_list) {
         ACVP_LOG_ERR("Cap entry not found.");
         return ACVP_NO_CAP;
     }
-    
+
     /*
      * Add the value to the cap
      */
@@ -2637,7 +2637,7 @@ ACVP_RESULT acvp_enable_rsa_sigver_exp_parm (ACVP_CTX *ctx,
         return ACVP_INVALID_ARG;
         break;
     }
-    
+
     return ACVP_SUCCESS;
 }
 
@@ -2653,18 +2653,18 @@ ACVP_RESULT acvp_enable_rsa_keygen_primes_parm (ACVP_CTX *ctx,
     ACVP_RSA_KEYGEN_CAP *keygen_cap;
     ACVP_CAPS_LIST *cap_list;
     int found;
-    
+
     cap_list = acvp_locate_cap_entry(ctx, ACVP_RSA_KEYGEN);
     if (!cap_list) {
         ACVP_LOG_ERR("Cap entry not found.");
         return ACVP_NO_CAP;
     }
-    
+
     if (!cap_list->cap.rsa_keygen_cap) {
         ACVP_LOG_ERR("Cap entry not found.");
         return ACVP_NO_CAP;
     }
-    
+
     keygen_cap = cap_list->cap.rsa_keygen_cap;
     while (keygen_cap) {
         if (keygen_cap->rand_pq == mode) {
@@ -2673,7 +2673,7 @@ ACVP_RESULT acvp_enable_rsa_keygen_primes_parm (ACVP_CTX *ctx,
             keygen_cap = keygen_cap->next;
         }
     }
-    
+
     if (!keygen_cap) {
         ACVP_LOG_ERR("Cap entry not found.");
         return ACVP_NO_CAP;
@@ -2712,7 +2712,7 @@ ACVP_RESULT acvp_enable_rsa_keygen_primes_parm (ACVP_CTX *ctx,
             }
         } while (!found);
     }
-    
+
     if (is_valid_hash_alg(name) == ACVP_SUCCESS) {
         ACVP_NAME_LIST *current_hash = NULL;
         if (!current_prime->hash_algs) {
@@ -2775,22 +2775,22 @@ ACVP_RESULT acvp_enable_rsa_sigver_caps_parm (ACVP_CTX *ctx,
     ACVP_RSA_SIG_CAP *sigver_cap;
     ACVP_CAPS_LIST *cap_list;
     int found;
-    
+
     if (!ctx) {
         return ACVP_NO_CTX;
     }
-    
+
     if (!hash_name || !mod) {
         ACVP_LOG_ERR("Must specify modulo and hash name");
         return ACVP_INVALID_ARG;
     }
-    
+
     cap_list = acvp_locate_cap_entry(ctx, ACVP_RSA_SIGVER);
     if (!cap_list) {
         ACVP_LOG_ERR("Cap entry not found.");
         return ACVP_NO_CAP;
     }
-    
+
     sigver_cap = cap_list->cap.rsa_sigver_cap;
     while (sigver_cap) {
         if (sigver_cap->sig_type != sig_type) {
@@ -2802,7 +2802,7 @@ ACVP_RESULT acvp_enable_rsa_sigver_caps_parm (ACVP_CTX *ctx,
     if (!sigver_cap) {
         return ACVP_NO_CAP;
     }
-    
+
     ACVP_RSA_MODE_CAPS_LIST *current_cap = NULL;
     if (!sigver_cap->mode_capabilities) {
         sigver_cap->mode_capabilities = calloc(1, sizeof(ACVP_RSA_MODE_CAPS_LIST));
@@ -2812,10 +2812,10 @@ ACVP_RESULT acvp_enable_rsa_sigver_caps_parm (ACVP_CTX *ctx,
         }
         sigver_cap->mode_capabilities->modulo = mod;
         current_cap = sigver_cap->mode_capabilities;
-        
+
     } else {
         current_cap = sigver_cap->mode_capabilities;
-        
+
         found = 0;
         do {
             if (current_cap->modulo != mod) {
@@ -2836,7 +2836,7 @@ ACVP_RESULT acvp_enable_rsa_sigver_caps_parm (ACVP_CTX *ctx,
             }
         } while (!found);
     }
-    
+
     ACVP_RSA_HASH_PAIR_LIST *current_hash = NULL;
     if (!current_cap->hash_pair) {
         current_cap->hash_pair = calloc(1, sizeof(ACVP_RSA_HASH_PAIR_LIST));
@@ -2863,7 +2863,7 @@ ACVP_RESULT acvp_enable_rsa_sigver_caps_parm (ACVP_CTX *ctx,
             current_hash->next->salt = salt_len;
         }
     }
-    
+
     return (ACVP_SUCCESS);
 }
 
@@ -2881,22 +2881,22 @@ ACVP_RESULT acvp_enable_rsa_siggen_caps_parm (ACVP_CTX *ctx,
     ACVP_RSA_SIG_CAP *siggen_cap;
     ACVP_CAPS_LIST *cap_list;
     int found;
-    
+
     if (!ctx) {
         return ACVP_NO_CTX;
     }
-    
+
     if (!hash_name || !mod) {
         ACVP_LOG_ERR("Must specify modulo and hash name");
         return ACVP_INVALID_ARG;
     }
-    
+
     cap_list = acvp_locate_cap_entry(ctx, ACVP_RSA_SIGGEN);
     if (!cap_list) {
         ACVP_LOG_ERR("Cap entry not found.");
         return ACVP_NO_CAP;
     }
-    
+
     siggen_cap = cap_list->cap.rsa_siggen_cap;
     while (siggen_cap) {
         if (siggen_cap->sig_type != sig_type) {
@@ -2908,7 +2908,7 @@ ACVP_RESULT acvp_enable_rsa_siggen_caps_parm (ACVP_CTX *ctx,
     if (!siggen_cap) {
         return ACVP_NO_CAP;
     }
-    
+
     ACVP_RSA_MODE_CAPS_LIST *current_cap = NULL;
     if (!siggen_cap->mode_capabilities) {
         siggen_cap->mode_capabilities = calloc(1, sizeof(ACVP_RSA_MODE_CAPS_LIST));
@@ -2918,10 +2918,10 @@ ACVP_RESULT acvp_enable_rsa_siggen_caps_parm (ACVP_CTX *ctx,
         }
         siggen_cap->mode_capabilities->modulo = mod;
         current_cap = siggen_cap->mode_capabilities;
-        
+
     } else {
         current_cap = siggen_cap->mode_capabilities;
-        
+
         found = 0;
         do {
             if (current_cap->modulo != mod) {
@@ -2942,7 +2942,7 @@ ACVP_RESULT acvp_enable_rsa_siggen_caps_parm (ACVP_CTX *ctx,
             }
         } while (!found);
     }
-    
+
     ACVP_RSA_HASH_PAIR_LIST *current_hash = NULL;
     if (!current_cap->hash_pair) {
         current_cap->hash_pair = calloc(1, sizeof(ACVP_RSA_HASH_PAIR_LIST));
@@ -2969,7 +2969,7 @@ ACVP_RESULT acvp_enable_rsa_siggen_caps_parm (ACVP_CTX *ctx,
             current_hash->next->salt = salt_len;
         }
     }
-    
+
     return (ACVP_SUCCESS);
 }
 
@@ -3238,7 +3238,7 @@ ACVP_RESULT acvp_enable_rsa_keygen_cap (
         ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case)) {
     ACVP_RSA_KEYGEN_CAP *rsa_keygen_cap;
     ACVP_RESULT result;
-    
+
     if (!ctx) {
         return ACVP_NO_CTX;
     }
@@ -3248,19 +3248,19 @@ ACVP_RESULT acvp_enable_rsa_keygen_cap (
     if (!crypto_handler) {
         return ACVP_INVALID_ARG;
     }
-    
+
     /*
      * Check for duplicate entry
      */
     if (acvp_locate_cap_entry(ctx, cipher)) {
         return ACVP_DUP_CIPHER;
     }
-    
+
     rsa_keygen_cap = calloc(1, sizeof(ACVP_RSA_KEYGEN_CAP));
     if (!rsa_keygen_cap) {
         return ACVP_MALLOC_FAIL;
     }
-    
+
     result = acvp_append_rsa_keygen_caps_entry(ctx, rsa_keygen_cap, cipher, crypto_handler);
     if (result != ACVP_SUCCESS) {
         free(rsa_keygen_cap);
@@ -3281,19 +3281,19 @@ ACVP_RESULT acvp_enable_ecdsa_cap (
     if (!crypto_handler) {
         return ACVP_INVALID_ARG;
     }
-    
+
     /*
      * Check for duplicate entry
      */
     if (acvp_locate_cap_entry(ctx, cipher)) {
         return ACVP_DUP_CIPHER;
     }
-    
+
     ecdsa_cap = calloc(1, sizeof(ACVP_ECDSA_CAP));
     if (!ecdsa_cap) {
         return ACVP_MALLOC_FAIL;
     }
-    
+
     result = acvp_append_ecdsa_caps_entry(ctx, ecdsa_cap, cipher, crypto_handler);
     if (result != ACVP_SUCCESS) {
         free(ecdsa_cap);
@@ -3308,7 +3308,7 @@ static ACVP_RESULT acvp_enable_rsa_sig_cap_internal (
         ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case)) {
     ACVP_RSA_SIG_CAP *rsa_sig_cap;
     ACVP_RESULT result;
-    
+
     if (!ctx) {
         return ACVP_NO_CTX;
     }
@@ -3317,19 +3317,19 @@ static ACVP_RESULT acvp_enable_rsa_sig_cap_internal (
         (cipher != ACVP_RSA_SIGGEN))) {
         return ACVP_INVALID_ARG;
     }
-    
+
     /*
      * Check for duplicate entry
      */
     if (acvp_locate_cap_entry(ctx, cipher)) {
         return ACVP_DUP_CIPHER;
     }
-    
+
     rsa_sig_cap = calloc(1, sizeof(ACVP_RSA_SIG_CAP));
     if (!rsa_sig_cap) {
         return ACVP_MALLOC_FAIL;
     }
-    
+
     result = acvp_append_rsa_sig_caps_entry(ctx, rsa_sig_cap, cipher, crypto_handler);
     if (result != ACVP_SUCCESS) {
         free(rsa_sig_cap);
@@ -3342,16 +3342,16 @@ ACVP_RESULT acvp_enable_rsa_siggen_cap (
         ACVP_CTX *ctx,
         ACVP_CIPHER cipher,
         ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case)) {
-    
+
     return acvp_enable_rsa_sig_cap_internal(ctx, cipher, crypto_handler);
-    
+
 }
 
 ACVP_RESULT acvp_enable_rsa_sigver_cap (
         ACVP_CTX *ctx,
         ACVP_CIPHER cipher,
         ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case)) {
-    
+
     return acvp_enable_rsa_sig_cap_internal(ctx, cipher, crypto_handler);
 }
 
@@ -3370,7 +3370,7 @@ ACVP_RESULT acvp_set_json_filename (ACVP_CTX *ctx, const char *json_filename) {
     if (ctx->json_filename) { free(ctx->json_filename); }
     ctx->json_filename = strdup(json_filename);
     ctx->use_json = 1;
-    
+
     return ACVP_SUCCESS;
 }
 
@@ -3632,7 +3632,7 @@ static ACVP_RESULT acvp_build_cmac_register_cap (JSON_Object *cap_obj, ACVP_CAPS
         json_array_append_number(temp_arr, sl_list->length);
         sl_list = sl_list->next;
     }
-    
+
     if (cap_entry->cipher == ACVP_CMAC_AES) {
         /*
          * Set the supported key lengths. if CMAC-AES
@@ -3656,7 +3656,7 @@ static ACVP_RESULT acvp_build_cmac_register_cap (JSON_Object *cap_obj, ACVP_CAPS
             sl_list = sl_list->next;
         }
     }
-    
+
     return ACVP_SUCCESS;
 }
 
@@ -3810,7 +3810,7 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap (JSON_Object *cap_obj, ACV
             sl_list = sl_list->next;
         }
     }
-    
+
     /*
      * Set the supported plaintext lengths
      */
@@ -3985,12 +3985,12 @@ static ACVP_RESULT acvp_build_drbg_register_cap (JSON_Object *cap_obj, ACVP_CAPS
 
     result = acvp_lookup_drbg_prereqVals(cap_obj, drbg_cap_mode);
     if (result != ACVP_SUCCESS) { return result; }
-    
+
     json_object_set_value(cap_obj, "predResistanceEnabled", json_value_init_array());
     array = json_object_get_array(cap_obj, "predResistanceEnabled");
     json_array_append_boolean(array, drbg_cap_mode->pred_resist_enabled);
     json_object_set_boolean(cap_obj, "reseedImplemented", drbg_cap_mode->reseed_implemented);
-    
+
     JSON_Array *capabilities_array = NULL;
     json_object_set_value(cap_obj, "capabilities", json_value_init_array());
     capabilities_array = json_object_get_array(cap_obj, "capabilities");
@@ -4000,7 +4000,7 @@ static ACVP_RESULT acvp_build_drbg_register_cap (JSON_Object *cap_obj, ACVP_CAPS
     capabilities_obj = json_value_get_object(val);
     json_object_set_string(capabilities_obj, "mode", mode_str);
     json_object_set_boolean(capabilities_obj, "derFuncEnabled", drbg_cap_mode->der_func_enabled);
-    
+
     //Set entropy range
     len_val = json_value_init_object();
     len_obj = json_value_get_object(len_val);
@@ -4010,7 +4010,7 @@ static ACVP_RESULT acvp_build_drbg_register_cap (JSON_Object *cap_obj, ACVP_CAPS
     json_object_set_value(capabilities_obj, "entropyInputLen", json_value_init_array());
     array = json_object_get_array(capabilities_obj, "entropyInputLen");
     json_array_append_value(array, len_val);
-    
+
     //Set nonce range
     len_val = json_value_init_object();
     len_obj = json_value_get_object(len_val);
@@ -4043,11 +4043,11 @@ static ACVP_RESULT acvp_build_drbg_register_cap (JSON_Object *cap_obj, ACVP_CAPS
 
     //Set DRBG Length
     json_object_set_number(capabilities_obj, "returnedBitsLen", drbg_cap_mode->returned_bits_len);
-    
+
     json_array_append_value(capabilities_array, val);
-    
+
     return ACVP_SUCCESS;
-    
+
 }
 
 /*
@@ -4060,7 +4060,7 @@ static ACVP_RESULT acvp_lookup_rsa_primes (JSON_Object *cap_obj, ACVP_RSA_KEYGEN
     ACVP_NAME_LIST *comp_name, *next_name;
 
     if (!rsa_cap) { return ACVP_INVALID_ARG; }
-    
+
     /*
      * return OK if nothing present
      */
@@ -4079,7 +4079,7 @@ static ACVP_RESULT acvp_lookup_rsa_primes (JSON_Object *cap_obj, ACVP_RSA_KEYGEN
         obj = json_value_get_object(val);
 
         json_object_set_number(obj, "modulo", current_mode_cap->modulo);
-        
+
         json_object_set_value(obj, "hashAlg", json_value_init_array());
         hash_array = json_object_get_array(obj, "hashAlg");
         comp_name = current_mode_cap->hash_algs;
@@ -4091,13 +4091,13 @@ static ACVP_RESULT acvp_lookup_rsa_primes (JSON_Object *cap_obj, ACVP_RSA_KEYGEN
             next_name = comp_name->next;
             comp_name = next_name;
         }
-    
+
         comp_name = current_mode_cap->prime_tests;
-        
+
         if (comp_name) {
             json_object_set_value(obj, "primeTest", json_value_init_array());
             prime_test_array = json_object_get_array(obj, "primeTest");
-    
+
             while (comp_name) {
                 if (is_valid_prime_test(comp_name->name) == ACVP_SUCCESS) {
                     json_array_append_string(prime_test_array, comp_name->name);
@@ -4115,44 +4115,44 @@ static ACVP_RESULT acvp_lookup_rsa_primes (JSON_Object *cap_obj, ACVP_RSA_KEYGEN
 
 static ACVP_RESULT acvp_build_rsa_keygen_register_cap (JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry) {
     ACVP_RESULT result;
-    
+
     json_object_set_string(cap_obj, "algorithm", "RSA");
     json_object_set_string(cap_obj, "mode", "keyGen");
-    
+
     result = acvp_lookup_prereqVals(cap_obj, cap_entry);
     if (result != ACVP_SUCCESS) { return result; }
-    
+
     /*
      * Iterate through list of RSA modes and create registration object
      * for each one, appending to the array as we go
      */
     ACVP_RSA_KEYGEN_CAP *keygen_cap = cap_entry->cap.rsa_keygen_cap;
-    
+
     JSON_Array *alg_specs_array = NULL;
     JSON_Value *alg_specs_val = NULL;
     JSON_Object *alg_specs_obj = NULL;
-    
+
     json_object_set_boolean(cap_obj, "infoGeneratedByServer", keygen_cap->info_gen_by_server);
     json_object_set_string(cap_obj, "pubExpMode", keygen_cap->pub_exp_mode == RSA_PUB_EXP_FIXED ? "fixed" : "random");
     if (keygen_cap->pub_exp_mode == RSA_PUB_EXP_FIXED) {
         json_object_set_string(cap_obj, "fixedPubExp", (const char *)keygen_cap->fixed_pub_exp);
     }
     json_object_set_string(cap_obj, "keyFormat", keygen_cap->key_format_crt ? "crt" : "standard");
-    
+
     json_object_set_value(cap_obj, "algSpecs", json_value_init_array());
     alg_specs_array = json_object_get_array(cap_obj, "algSpecs");
-    
+
     while (keygen_cap) {
         alg_specs_val = json_value_init_object();
         alg_specs_obj = json_value_get_object(alg_specs_val);
-    
+
         json_object_set_string(alg_specs_obj, "randPQ", acvp_lookup_rsa_randpq_name(keygen_cap->rand_pq));
         result = acvp_lookup_rsa_primes(alg_specs_obj, keygen_cap);
-    
+
         json_array_append_value(alg_specs_array, alg_specs_val);
         keygen_cap = keygen_cap->next;
     }
-    
+
     return ACVP_SUCCESS;
 }
 
@@ -4162,7 +4162,7 @@ static ACVP_RESULT acvp_build_rsa_sig_register_cap (JSON_Object *cap_obj, ACVP_C
     JSON_Array *alg_specs_array = NULL, *sig_type_caps_array = NULL, *hash_pair_array = NULL;
     JSON_Value *alg_specs_val = NULL, *sig_type_val = NULL, *hash_pair_val = NULL;
     JSON_Object *alg_specs_obj = NULL, *sig_type_obj = NULL, *hash_pair_obj = NULL;
-    
+
     json_object_set_string(cap_obj, "algorithm", "RSA");
     if (cap_entry->cipher == ACVP_RSA_SIGGEN) {
         json_object_set_string(cap_obj, "mode", "sigGen");
@@ -4175,28 +4175,28 @@ static ACVP_RESULT acvp_build_rsa_sig_register_cap (JSON_Object *cap_obj, ACVP_C
             json_object_set_string(cap_obj, "fixedPubExp", (const char *)cap_entry->cap.rsa_sigver_cap->fixed_pub_exp);
         }
     }
-    
+
     json_object_set_value(cap_obj, "algSpecs", json_value_init_array());
     alg_specs_array = json_object_get_array(cap_obj, "algSpecs");
-    
+
     while(rsa_cap_mode) {
         alg_specs_val = json_value_init_object();
         alg_specs_obj = json_value_get_object(alg_specs_val);
         json_object_set_string(alg_specs_obj, "sigType", rsa_cap_mode->sig_type_str);
-        
+
         json_object_set_value(alg_specs_obj, "sigTypeCapabilities", json_value_init_array());
         sig_type_caps_array = json_object_get_array(alg_specs_obj, "sigTypeCapabilities");
-        
+
         ACVP_RSA_MODE_CAPS_LIST *current_sig_type_cap = rsa_cap_mode->mode_capabilities;
-        
+
         while (current_sig_type_cap) {
             sig_type_val = json_value_init_object();
             sig_type_obj = json_value_get_object(sig_type_val);
-            
+
             json_object_set_number(sig_type_obj, "modulo", current_sig_type_cap->modulo);
             json_object_set_value(sig_type_obj, "hashPair", json_value_init_array());
             hash_pair_array = json_object_get_array(sig_type_obj, "hashPair");
-            
+
             ACVP_RSA_HASH_PAIR_LIST *current_hash_pair = current_sig_type_cap->hash_pair;
             while (current_hash_pair) {
                 hash_pair_val = json_value_init_object();
@@ -4205,19 +4205,19 @@ static ACVP_RESULT acvp_build_rsa_sig_register_cap (JSON_Object *cap_obj, ACVP_C
                 if (strncmp(rsa_cap_mode->sig_type_str, "pss", 3) == 0) {
                     json_object_set_number(hash_pair_obj, "saltLen", current_hash_pair->salt);
                 }
-                
+
                 json_array_append_value(hash_pair_array, hash_pair_val);
                 current_hash_pair = current_hash_pair->next;
             }
-            
+
             current_sig_type_cap = current_sig_type_cap->next;
             json_array_append_value(sig_type_caps_array, sig_type_val);
-            
+
         }
         json_array_append_value(alg_specs_array, alg_specs_val);
         rsa_cap_mode = rsa_cap_mode->next;
     }
-    
+
     return result;
 }
 
@@ -4227,9 +4227,9 @@ static ACVP_RESULT acvp_build_ecdsa_register_cap (ACVP_CIPHER cipher, JSON_Objec
     ACVP_NAME_LIST *current_curve = NULL, *current_secret_mode = NULL, *current_hash = NULL;
     JSON_Value *alg_caps_val;
     JSON_Object *alg_caps_obj;
-    
+
     json_object_set_string(cap_obj, "algorithm", "ECDSA");
-    
+
     switch(cipher) {
     case ACVP_ECDSA_KEYGEN:
         json_object_set_string(cap_obj, "mode", "keyGen");
@@ -4254,17 +4254,17 @@ static ACVP_RESULT acvp_build_ecdsa_register_cap (ACVP_CIPHER cipher, JSON_Objec
         return ACVP_INVALID_ARG;
         break;
     }
-    
+
     result = acvp_lookup_prereqVals(cap_obj, cap_entry);
     if (result != ACVP_SUCCESS) { return result; }
-    
+
     if (cipher == ACVP_ECDSA_SIGVER || cipher == ACVP_ECDSA_SIGGEN) {
         json_object_set_value(cap_obj, "capabilities", json_value_init_array());
         caps_arr = json_object_get_array(cap_obj, "capabilities");
     }
     alg_caps_val = json_value_init_object();
     alg_caps_obj = json_value_get_object(alg_caps_val);
-    
+
     /*
      * Iterate through list of RSA modes and create registration object
      * for each one, appending to the array as we go
@@ -4280,7 +4280,7 @@ static ACVP_RESULT acvp_build_ecdsa_register_cap (ACVP_CIPHER cipher, JSON_Objec
         json_array_append_string(curves_arr, current_curve->name);
         current_curve = current_curve->next;
     }
-    
+
     if (cipher == ACVP_ECDSA_KEYGEN) {
         json_object_set_value(cap_obj, "secretGenerationMode", json_value_init_array());
         secret_modes_arr = json_object_get_array(cap_obj, "secretGenerationMode");
@@ -4289,7 +4289,7 @@ static ACVP_RESULT acvp_build_ecdsa_register_cap (ACVP_CIPHER cipher, JSON_Objec
             current_secret_mode = current_secret_mode->next;
         }
     }
-    
+
     if (cipher == ACVP_ECDSA_SIGGEN || cipher == ACVP_ECDSA_SIGVER) {
         json_object_set_value(alg_caps_obj, "hashAlg", json_value_init_array());
         hash_arr = json_object_get_array(alg_caps_obj, "hashAlg");
@@ -4299,14 +4299,14 @@ static ACVP_RESULT acvp_build_ecdsa_register_cap (ACVP_CIPHER cipher, JSON_Objec
         }
         json_array_append_value(caps_arr, alg_caps_val);
     }
-    
+
     return ACVP_SUCCESS;
 }
 
 static ACVP_RESULT acvp_build_kdf135_tls_register_cap (JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry) {
     JSON_Array *temp_arr = NULL;
     ACVP_RESULT result;
-    
+
     json_object_set_string(cap_obj, "algorithm", ACVP_KDF135_ALG_STR);
     json_object_set_string(cap_obj, "mode", ACVP_ALG_KDF135_TLS);
     json_object_set_value(cap_obj, "tlsVersion", json_value_init_array());
@@ -4316,13 +4316,13 @@ static ACVP_RESULT acvp_build_kdf135_tls_register_cap (JSON_Object *cap_obj, ACV
     } else if (cap_entry->cap.kdf135_tls_cap->method[0] == ACVP_KDF135_TLS12) {
         json_array_append_string(temp_arr, "v1.2");
     }
-    
+
     if (cap_entry->cap.kdf135_tls_cap->method[1] == ACVP_KDF135_TLS10_TLS11) {
         json_array_append_string(temp_arr, "v1.0/1.1");
     } else if (cap_entry->cap.kdf135_tls_cap->method[1] == ACVP_KDF135_TLS12) {
         json_array_append_string(temp_arr, "v1.2");
     }
-    
+
     json_object_set_value(cap_obj, "hashAlg", json_value_init_array());
     temp_arr = json_object_get_array(cap_obj, "hashAlg");
     if (cap_entry->cap.kdf135_tls_cap->sha || ACVP_KDF135_TLS_CAP_SHA256) {
@@ -4334,10 +4334,10 @@ static ACVP_RESULT acvp_build_kdf135_tls_register_cap (JSON_Object *cap_obj, ACV
     if (cap_entry->cap.kdf135_tls_cap->sha || ACVP_KDF135_TLS_CAP_SHA512) {
         json_array_append_string(temp_arr, "SHA2-512");
     }
-    
+
     result = acvp_lookup_prereqVals(cap_obj, cap_entry);
     if (result != ACVP_SUCCESS) { return result; }
-    
+
     return ACVP_SUCCESS;
 }
 
@@ -4377,10 +4377,10 @@ static ACVP_RESULT acvp_build_kdf135_snmp_register_cap (JSON_Object *cap_obj, AC
 static ACVP_RESULT acvp_build_kdf135_tpm_register_cap (JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry) {
     ACVP_RESULT result;
     json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
-    
+
     result = acvp_lookup_prereqVals(cap_obj, cap_entry);
     if (result != ACVP_SUCCESS) { return result; }
-    
+
     return ACVP_SUCCESS;
 }
 
@@ -4390,7 +4390,7 @@ static ACVP_RESULT acvp_build_kdf108_mode_register (JSON_Object **mode_obj, ACVP
     JSON_Object *tmp_obj = NULL;
     ACVP_NAME_LIST *nl_obj;
     ACVP_SL_LIST *sl_obj;
-    
+
     /* mac mode list */
     json_object_set_value(*mode_obj, "macMode", json_value_init_array());
     tmp_arr = json_object_get_array(*mode_obj, "macMode");
@@ -4399,7 +4399,7 @@ static ACVP_RESULT acvp_build_kdf108_mode_register (JSON_Object **mode_obj, ACVP
         json_array_append_string(tmp_arr, nl_obj->name);
         nl_obj = nl_obj->next;
     }
-    
+
     /* supported lens domain obj */
     json_object_set_value(*mode_obj, "supportedLengths", json_value_init_array());
     tmp_arr = json_object_get_array(*mode_obj, "supportedLengths");
@@ -4409,7 +4409,7 @@ static ACVP_RESULT acvp_build_kdf108_mode_register (JSON_Object **mode_obj, ACVP
     json_object_set_number(tmp_obj, "max", mode_params->supported_lens.max);
     json_object_set_number(tmp_obj, "increment", mode_params->supported_lens.increment);
     json_array_append_value(tmp_arr, tmp_val);
-    
+
     /* fixed data order list */
     json_object_set_value(*mode_obj, "fixedDataOrder", json_value_init_array());
     tmp_arr = json_object_get_array(*mode_obj, "fixedDataOrder");
@@ -4418,7 +4418,7 @@ static ACVP_RESULT acvp_build_kdf108_mode_register (JSON_Object **mode_obj, ACVP
         json_array_append_string(tmp_arr, nl_obj->name);
         nl_obj = nl_obj->next;
     }
-    
+
     /* counter length list */
     json_object_set_value(*mode_obj, "counterLength", json_value_init_array());
     tmp_arr = json_object_get_array(*mode_obj, "counterLength");
@@ -4427,7 +4427,7 @@ static ACVP_RESULT acvp_build_kdf108_mode_register (JSON_Object **mode_obj, ACVP
         json_array_append_number(tmp_arr, sl_obj->length);
         sl_obj = sl_obj->next;
     }
-    
+
     json_object_set_boolean(*mode_obj, "supportsEmptyIv", mode_params->empty_iv_support);
 
     return ACVP_SUCCESS;
@@ -4440,20 +4440,20 @@ static ACVP_RESULT acvp_build_kdf108_register_cap (JSON_Object *cap_obj, ACVP_CA
     JSON_Object *alg_specs_counter_obj = NULL, *alg_specs_feedback_obj = NULL, *alg_specs_dpi_obj = NULL, *tmp_obj = NULL;
     ACVP_NAME_LIST *nl_obj;
     ACVP_SL_LIST *sl_obj;
-    
+
     json_object_set_string(cap_obj, "algorithm", "KDF");
-    
+
     result = acvp_lookup_prereqVals(cap_obj, cap_entry);
     if (result != ACVP_SUCCESS) { return result; }
     
     json_object_set_value(cap_obj, "capabilities", json_value_init_array());
     alg_specs_array = json_object_get_array(cap_obj, "capabilities");
-    
+
     alg_specs_counter_val = json_value_init_object();
     alg_specs_counter_obj = json_value_get_object(alg_specs_counter_val);
     alg_specs_counter_val = json_value_init_object();
     alg_specs_counter_obj = json_value_get_object(alg_specs_counter_val);
-    
+
     if (cap_entry->cap.kdf108_cap->counter_mode.kdf_mode) {
         alg_specs_counter_val = json_value_init_object();
         alg_specs_counter_obj = json_value_get_object(alg_specs_counter_val);
@@ -4475,7 +4475,7 @@ static ACVP_RESULT acvp_build_kdf108_register_cap (JSON_Object *cap_obj, ACVP_CA
         acvp_build_kdf108_mode_register(&alg_specs_dpi_obj, &cap_entry->cap.kdf108_cap->dpi_mode);
         json_array_append_value(alg_specs_array, alg_specs_dpi_val);
     }
-    
+
     return ACVP_SUCCESS;
 }
 
@@ -4486,13 +4486,13 @@ static ACVP_RESULT acvp_build_kdf135_x963_register_cap (JSON_Object *cap_obj, AC
     JSON_Object *tmp_obj = NULL;
     ACVP_NAME_LIST *nl_obj;
     ACVP_SL_LIST *sl_obj;
-    
+
     json_object_set_string(cap_obj, "algorithm", ACVP_KDF135_ALG_STR);
     json_object_set_string(cap_obj, "mode", "ansix9.63");
-    
+
     result = acvp_lookup_prereqVals(cap_obj, cap_entry);
     if (result != ACVP_SUCCESS) { return result; }
-    
+
     /* Array of hash algs */
     json_object_set_value(cap_obj, "hashAlg", json_value_init_array());
     tmp_arr = json_object_get_array(cap_obj, "hashAlg");
@@ -4501,7 +4501,7 @@ static ACVP_RESULT acvp_build_kdf135_x963_register_cap (JSON_Object *cap_obj, AC
         json_array_append_string(tmp_arr, nl_obj->name);
         nl_obj = nl_obj->next;
     }
-    
+
     /* key data length list */
     json_object_set_value(cap_obj, "keyDataLength", json_value_init_array());
     tmp_arr = json_object_get_array(cap_obj, "keyDataLength");
@@ -4510,7 +4510,7 @@ static ACVP_RESULT acvp_build_kdf135_x963_register_cap (JSON_Object *cap_obj, AC
         json_array_append_number(tmp_arr, sl_obj->length);
         sl_obj = sl_obj->next;
     }
-    
+
     /* field size list */
     json_object_set_value(cap_obj, "fieldSize", json_value_init_array());
     tmp_arr = json_object_get_array(cap_obj, "fieldSize");
@@ -4519,7 +4519,7 @@ static ACVP_RESULT acvp_build_kdf135_x963_register_cap (JSON_Object *cap_obj, AC
         json_array_append_number(tmp_arr, sl_obj->length);
         sl_obj = sl_obj->next;
     }
-    
+
     /* shared info length list */
     json_object_set_value(cap_obj, "sharedInfoLength", json_value_init_array());
     tmp_arr = json_object_get_array(cap_obj, "sharedInfoLength");
@@ -4528,7 +4528,7 @@ static ACVP_RESULT acvp_build_kdf135_x963_register_cap (JSON_Object *cap_obj, AC
         json_array_append_number(tmp_arr, sl_obj->length);
         sl_obj = sl_obj->next;
     }
-    
+
     return ACVP_SUCCESS;
 }
 
@@ -4538,69 +4538,61 @@ static ACVP_RESULT acvp_build_kdf135_ikev2_register_cap (JSON_Object *cap_obj, A
     JSON_Value *alg_specs_val = NULL, *tmp_val = NULL;
     JSON_Object *alg_specs_obj = NULL, *tmp_obj = NULL;
     ACVP_NAME_LIST *current_hash;
-    
-    json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
-    
+
+    json_object_set_string(cap_obj, "algorithm", ACVP_KDF135_ALG_STR);
+    json_object_set_string(cap_obj, "mode", ACVP_ALG_KDF135_IKEV2);
     result = acvp_lookup_prereqVals(cap_obj, cap_entry);
     if (result != ACVP_SUCCESS) { return result; }
-    
-    json_object_set_value(cap_obj, "algSpecs", json_value_init_array());
-    alg_specs_array = json_object_get_array(cap_obj, "algSpecs");
-    
-    alg_specs_val = json_value_init_object();
-    alg_specs_obj = json_value_get_object(alg_specs_val);
-    
+
     /* initiator nonce len */
-    json_object_set_value(alg_specs_obj, "initiatorNonceLength", json_value_init_array());
-    tmp_arr = json_object_get_array(alg_specs_obj, "initiatorNonceLength");
+    json_object_set_value(cap_obj, "initiatorNonceLength", json_value_init_array());
+    tmp_arr = json_object_get_array(cap_obj, "initiatorNonceLength");
     tmp_val = json_value_init_object();
     tmp_obj = json_value_get_object(tmp_val);
     json_object_set_number(tmp_obj, "min", cap_entry->cap.kdf135_ikev2_cap->init_nonce_len_domain.min);
     json_object_set_number(tmp_obj, "max", cap_entry->cap.kdf135_ikev2_cap->init_nonce_len_domain.max);
     json_object_set_number(tmp_obj, "increment", cap_entry->cap.kdf135_ikev2_cap->init_nonce_len_domain.increment);
     json_array_append_value(tmp_arr, tmp_val);
-    
+
     /* responder nonce len */
-    json_object_set_value(alg_specs_obj, "responderNonceLength", json_value_init_array());
-    tmp_arr = json_object_get_array(alg_specs_obj, "responderNonceLength");
+    json_object_set_value(cap_obj, "responderNonceLength", json_value_init_array());
+    tmp_arr = json_object_get_array(cap_obj, "responderNonceLength");
     tmp_val = json_value_init_object();
     tmp_obj = json_value_get_object(tmp_val);
     json_object_set_number(tmp_obj, "min", cap_entry->cap.kdf135_ikev2_cap->respond_nonce_len_domain.min);
     json_object_set_number(tmp_obj, "max", cap_entry->cap.kdf135_ikev2_cap->respond_nonce_len_domain.max);
     json_object_set_number(tmp_obj, "increment", cap_entry->cap.kdf135_ikev2_cap->respond_nonce_len_domain.increment);
     json_array_append_value(tmp_arr, tmp_val);
-    
+
     /* Diffie Hellman shared secret len */
-    json_object_set_value(alg_specs_obj, "diffieHellmanSharedSecretLength", json_value_init_array());
-    tmp_arr = json_object_get_array(alg_specs_obj, "diffieHellmanSharedSecretLength");
+    json_object_set_value(cap_obj, "diffieHellmanSharedSecretLength", json_value_init_array());
+    tmp_arr = json_object_get_array(cap_obj, "diffieHellmanSharedSecretLength");
     tmp_val = json_value_init_object();
     tmp_obj = json_value_get_object(tmp_val);
     json_object_set_number(tmp_obj, "min", cap_entry->cap.kdf135_ikev2_cap->dh_secret_len.min);
     json_object_set_number(tmp_obj, "max", cap_entry->cap.kdf135_ikev2_cap->dh_secret_len.max);
     json_object_set_number(tmp_obj, "increment", cap_entry->cap.kdf135_ikev2_cap->dh_secret_len.increment);
     json_array_append_value(tmp_arr, tmp_val);
-    
+
     /* Derived keying material len */
-    json_object_set_value(alg_specs_obj, "derivedKeyingMaterialLength", json_value_init_array());
-    tmp_arr = json_object_get_array(alg_specs_obj, "derivedKeyingMaterialLength");
+    json_object_set_value(cap_obj, "derivedKeyingMaterialLength", json_value_init_array());
+    tmp_arr = json_object_get_array(cap_obj, "derivedKeyingMaterialLength");
     tmp_val = json_value_init_object();
     tmp_obj = json_value_get_object(tmp_val);
     json_object_set_number(tmp_obj, "min", cap_entry->cap.kdf135_ikev2_cap->key_material_len.min);
     json_object_set_number(tmp_obj, "max", cap_entry->cap.kdf135_ikev2_cap->key_material_len.max);
     json_object_set_number(tmp_obj, "increment", cap_entry->cap.kdf135_ikev2_cap->key_material_len.increment);
     json_array_append_value(tmp_arr, tmp_val);
-    
+
     /* Array of hash algs */
-    json_object_set_value(alg_specs_obj, "hashAlg", json_value_init_array());
-    tmp_arr = json_object_get_array(alg_specs_obj, "hashAlg");
+    json_object_set_value(cap_obj, "hashAlg", json_value_init_array());
+    tmp_arr = json_object_get_array(cap_obj, "hashAlg");
     current_hash = cap_entry->cap.kdf135_ikev2_cap->hash_algs;
     while (current_hash) {
         json_array_append_string(tmp_arr, current_hash->name);
         current_hash = current_hash->next;
     }
-    
-    json_array_append_value(alg_specs_array, alg_specs_val);
-    
+
     return ACVP_SUCCESS;
 }
 
@@ -4670,11 +4662,11 @@ static ACVP_RESULT acvp_build_kdf135_ikev1_register_cap (JSON_Object *cap_obj, A
         json_array_append_string(tmp_arr, current_hash->name);
         current_hash = current_hash->next;
     }
-    
+
     json_object_set_string(alg_specs_obj, "authenticationMethod", cap_entry->cap.kdf135_ikev1_cap->auth_method);
 
     json_array_append_value(alg_specs_array, alg_specs_val);
-    
+
     return ACVP_SUCCESS;
 }
 
@@ -4685,10 +4677,10 @@ static ACVP_RESULT acvp_build_kdf135_srtp_register_cap (JSON_Object *cap_obj, AC
     ACVP_SL_LIST *current_aes_keylen;
     json_object_set_string(cap_obj, "algorithm", ACVP_KDF135_ALG_STR);
     json_object_set_string(cap_obj, "mode", ACVP_ALG_KDF135_SRTP);
-    
+
     result = acvp_lookup_prereqVals(cap_obj, cap_entry);
     if (result != ACVP_SUCCESS) { return result; }
-    
+
     json_object_set_value(cap_obj, "aesKeyLength", json_value_init_array());
     tmp_arr = json_object_get_array(cap_obj, "aesKeyLength");
     current_aes_keylen = cap_entry->cap.kdf135_srtp_cap->aes_keylens;
@@ -4696,9 +4688,9 @@ static ACVP_RESULT acvp_build_kdf135_srtp_register_cap (JSON_Object *cap_obj, AC
         json_array_append_number(tmp_arr, current_aes_keylen->length);
         current_aes_keylen = current_aes_keylen->next;
     }
-    
+
     json_object_set_boolean(cap_obj, "supportsZeroKdr", cap_entry->cap.kdf135_srtp_cap->supports_zero_kdr);
-    
+
     json_object_set_value(cap_obj, "kdrExponent", json_value_init_array());
     tmp_arr = json_object_get_array(cap_obj, "kdrExponent");
     for (i = 0; i < 24; i++) {
@@ -4706,7 +4698,7 @@ static ACVP_RESULT acvp_build_kdf135_srtp_register_cap (JSON_Object *cap_obj, AC
             json_array_append_number(tmp_arr, i + 1);
         }
     }
-    
+
     return ACVP_SUCCESS;
 }
 
@@ -4789,7 +4781,7 @@ static void acvp_build_dsa_hashalgs (JSON_Object *cap_obj, JSON_Array *temp_arr,
     }
 }
 
-static ACVP_RESULT acvp_build_dsa_pqggen_register (JSON_Array *meth_array, 
+static ACVP_RESULT acvp_build_dsa_pqggen_register (JSON_Array *meth_array,
                                                    ACVP_CAPS_LIST *cap_entry) {
     ACVP_DSA_ATTRS *attrs = NULL;
     ACVP_DSA_CAP_MODE *dsa_cap_mode = NULL;
@@ -4848,7 +4840,7 @@ static ACVP_RESULT acvp_build_dsa_pqggen_register (JSON_Array *meth_array,
     return ACVP_SUCCESS;
 }
 
-static ACVP_RESULT acvp_build_dsa_pqgver_register (JSON_Array *meth_array, 
+static ACVP_RESULT acvp_build_dsa_pqgver_register (JSON_Array *meth_array,
                                                    ACVP_CAPS_LIST *cap_entry) {
     ACVP_RESULT result = ACVP_SUCCESS;
     ACVP_DSA_ATTRS *attrs = NULL;
@@ -4907,7 +4899,7 @@ static ACVP_RESULT acvp_build_dsa_pqgver_register (JSON_Array *meth_array,
     return result;
 }
 
-static ACVP_RESULT acvp_build_dsa_keygen_register (JSON_Array *meth_array, 
+static ACVP_RESULT acvp_build_dsa_keygen_register (JSON_Array *meth_array,
                                                    ACVP_CAPS_LIST *cap_entry) {
     ACVP_DSA_CAP_MODE *dsa_cap_mode = NULL;
     ACVP_DSA_ATTRS *attrs = NULL;
@@ -4950,7 +4942,7 @@ static ACVP_RESULT acvp_build_dsa_keygen_register (JSON_Array *meth_array,
 
 }
 
-static ACVP_RESULT acvp_build_dsa_siggen_register (JSON_Array *meth_array, 
+static ACVP_RESULT acvp_build_dsa_siggen_register (JSON_Array *meth_array,
                                                    ACVP_CAPS_LIST *cap_entry) {
     ACVP_DSA_CAP_MODE *dsa_cap_mode = NULL;
     ACVP_DSA_ATTRS *attrs = NULL;
@@ -4989,7 +4981,7 @@ static ACVP_RESULT acvp_build_dsa_siggen_register (JSON_Array *meth_array,
 
 }
 
-static ACVP_RESULT acvp_build_dsa_sigver_register (JSON_Array *meth_array, 
+static ACVP_RESULT acvp_build_dsa_sigver_register (JSON_Array *meth_array,
                                                    ACVP_CAPS_LIST *cap_entry) {
     ACVP_DSA_CAP_MODE *dsa_cap_mode = NULL;
     ACVP_DSA_ATTRS *attrs = NULL;
@@ -7251,7 +7243,7 @@ static ACVP_RESULT acvp_append_kdf135_srtp_caps_entry (
         ACVP_KDF135_SRTP_CAP *cap,
         ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case)) {
     ACVP_CAPS_LIST *cap_entry, *cap_e2;
-    
+
     cap_entry = calloc(1, sizeof(ACVP_CAPS_LIST));
     if (!cap_entry) {
         return ACVP_MALLOC_FAIL;
@@ -7725,6 +7717,7 @@ ACVP_RESULT acvp_enable_kdf108_cap_param (
     }
     
     cap = acvp_locate_cap_entry(ctx, ACVP_KDF108);
+
     if (!cap) {
         return ACVP_NO_CAP;
     }
