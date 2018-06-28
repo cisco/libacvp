@@ -75,7 +75,7 @@ ACVP_RESULT acvp_kdf135_snmp_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     const char *alg_str = json_object_get_string(obj, "algorithm");
     ACVP_CIPHER alg_id;
     const char *password = NULL;
-    const char *engine_id = NULL;
+    char *engine_id = NULL;
     unsigned int p_len;
     char *json_result;
 
@@ -129,7 +129,7 @@ ACVP_RESULT acvp_kdf135_snmp_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
 
 
         p_len = (unsigned int) json_object_get_number(groupobj, "passwordLength");
-        engine_id = json_object_get_string(groupobj, "engineId");
+        engine_id = (char *)json_object_get_string(groupobj, "engineId");
 
         ACVP_LOG_INFO("    Test group: %d", i);
         ACVP_LOG_INFO("          pLen: %d", p_len);
@@ -210,7 +210,7 @@ ACVP_RESULT acvp_kdf135_snmp_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
  * the JSON processing for a single test case.
  */
 static ACVP_RESULT acvp_kdf135_snmp_output_tc (ACVP_CTX *ctx, ACVP_KDF135_SNMP_TC *stc, JSON_Object *tc_rsp) {
-    json_object_set_string(tc_rsp, "sharedKey", stc->s_key);
+    json_object_set_string(tc_rsp, "sharedKey", (const char *)stc->s_key);
     return ACVP_SUCCESS;
 }
 

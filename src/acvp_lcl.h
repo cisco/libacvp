@@ -242,7 +242,10 @@
 #define ACVP_KDF135_IKE_NONCE_LEN_MAX 512
 #define ACVP_KDF135_IKEV2_SPI_LEN_MAX 32
 #define ACVP_KDF135_IKEV2_GIR_LEN_MAX 4096
+#define ACVP_KDF135_IKEV2_SKEY_MAX 4096 // arbitrary for now
+#define ACVP_KDF135_IKEV2_DKM_MAX 4096 // arbitrary for now
 #define ACVP_KDF135_PSK_LEN_MAX 8
+#define ACVP_KDF135_IKEV1_SKEY_MAX 2048 // arbitrary for now
 #define ACVP_KDF135_IKE_COOKIE_LEN_MAX 32
 #define ACVP_KDF135_IKEV1_GXY_LEN_MAX 32
 
@@ -366,6 +369,7 @@ typedef struct acvp_json_domain_obj_t {
     int min;
     int max;
     int increment;
+    int value; // for single values
 } ACVP_JSON_DOMAIN_OBJ;
 
 typedef struct acvp_prereq_alg_val {

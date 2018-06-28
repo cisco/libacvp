@@ -1036,13 +1036,12 @@ static void enable_kdf (ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_prereq_cap(ctx, ACVP_KDF135_IKEV2, ACVP_PREREQ_DRBG, value);
     CHECK_ENABLE_CAP_RV(rv);
+    // can use len_param or domain_param for these attributes
     rv = acvp_enable_kdf135_ikev2_domain_param(ctx, ACVP_INIT_NONCE_LEN, 64, 2048, 1);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_kdf135_ikev2_domain_param(ctx, ACVP_RESPOND_NONCE_LEN, 64, 2048, 1);
     CHECK_ENABLE_CAP_RV(rv);
-	rv = acvp_enable_kdf135_ikev2_domain_param(ctx, ACVP_DH_SECRET_LEN, 224, 8192, 1);
-	CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_kdf135_ikev2_domain_param(ctx, ACVP_INIT_NONCE_LEN, 64, 2048, 1);
+    rv = acvp_enable_kdf135_ikev2_cap_len_param(ctx, ACVP_DH_SECRET_LEN, 1024);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_kdf135_ikev2_domain_param(ctx, ACVP_KEY_MATERIAL_LEN, 1056, 3072, 1);
     CHECK_ENABLE_CAP_RV(rv);
