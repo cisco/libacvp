@@ -2256,6 +2256,10 @@ ACVP_RESULT acvp_enable_kdf135_ikev1_cap_param (ACVP_CTX *ctx,
                                                 ACVP_KDF135_IKEV1_PARM param,
                                                 char *value);
 
+ACVP_RESULT acvp_enable_kdf135_ikev2_cap_len_param (ACVP_CTX *ctx,
+                                                    ACVP_KDF135_IKEV2_PARM param,
+                                                    int value);
+
 /*! @brief acvp_enable_kdf135_ikev2_domain_param() allows an application to specify
         operational parameters to be used during a test session with the ACVP
         server.

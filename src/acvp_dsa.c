@@ -496,8 +496,6 @@ ACVP_RESULT acvp_dsa_pqggen_handler (ACVP_CTX *ctx, ACVP_TEST_CASE tc, ACVP_CAPS
     JSON_Object *r_tobj = NULL; /* Response testobj */
     int j, t_cnt, tc_id;
     ACVP_RESULT rv = ACVP_SUCCESS;
-    JSON_Value *mval;
-    JSON_Object *mobj = NULL;
     unsigned gpq = 0, n, l;
     unsigned char *p = NULL, *q = NULL, *seed = NULL;
     ACVP_DSA_TC *stc;
@@ -594,8 +592,6 @@ ACVP_RESULT acvp_dsa_pqggen_handler (ACVP_CTX *ctx, ACVP_TEST_CASE tc, ACVP_CAPS
                 return ACVP_CRYPTO_MODULE_FAIL;
             }
 
-            mval = json_value_init_object();
-            mobj = json_value_get_object(mval);
             /*
              * Output the test case results using JSON
              */

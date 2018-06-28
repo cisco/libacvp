@@ -198,9 +198,9 @@ ACVP_RESULT acvp_kdf135_tpm_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
             testobj = json_value_get_object(testval);
 
             tc_id = (unsigned int) json_object_get_number(testobj, "tcId");
-            auth = json_object_get_string(testobj, "auth");
-            nonce_even = json_object_get_string(testobj, "nonceEven");
-            nonce_odd = json_object_get_string(testobj, "nonceOdd");
+            auth = (char *)json_object_get_string(testobj, "auth");
+            nonce_even = (char *)json_object_get_string(testobj, "nonceEven");
+            nonce_odd = (char *)json_object_get_string(testobj, "nonceOdd");
 
             ACVP_LOG_INFO("        Test case: %d", j);
             ACVP_LOG_INFO("             tcId: %d", tc_id);

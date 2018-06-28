@@ -100,7 +100,7 @@ static ACVP_RESULT acvp_kdf108_init_tc (ACVP_CTX *ctx,
     if (!stc->key_in) { return ACVP_MALLOC_FAIL; }
 
     // Convert key_in from hex string to binary
-    acvp_hexstr_to_bin(key_in, stc->key_in, key_in_len);
+    acvp_hexstr_to_bin((unsigned char *)key_in, stc->key_in, key_in_len);
 
     // Allocate space for the key_out
     stc->key_out = calloc(key_out_len, sizeof(unsigned char));
@@ -172,7 +172,6 @@ ACVP_RESULT acvp_kdf108_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     ACVP_KDF108_MAC_MODE_VAL mac_mode = 0;
     ACVP_KDF108_FIXED_DATA_ORDER_VAL ctr_loc = 0;
     int key_out_bit_len, key_out_len, key_in_len, ctr_len, deferred;
-    unsigned char *key_in = NULL;
     char *kdf_mode_str, *mac_mode_str, *key_in_str, *ctr_loc_str = NULL;
     char *json_result;
 
@@ -220,11 +219,11 @@ ACVP_RESULT acvp_kdf108_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
         groupval = json_array_get_value(groups, i);
         groupobj = json_value_get_object(groupval);
 
-        kdf_mode_str = json_object_get_string(groupobj, "kdfMode");
-        mac_mode_str = json_object_get_string(groupobj, "macMode");
+        kdf_mode_str = (char *)json_object_get_string(groupobj, "kdfMode");
+        mac_mode_str = (char *)json_object_get_string(groupobj, "macMode");
         key_out_bit_len = json_object_get_number(groupobj, "keyOutLength");
         ctr_len = json_object_get_number(groupobj, "counterLength");
-        ctr_loc_str = json_object_get_string(groupobj, "counterLocation");
+        ctr_loc_str = (char *)json_object_get_string(groupobj, "counterLocation");
 
         // Get the keyout byte length  (+1 for overflow bits)
         key_out_len = (key_out_bit_len + 7) / 8;
@@ -323,7 +322,7 @@ ACVP_RESULT acvp_kdf108_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
             testobj = json_value_get_object(testval);
 
             tc_id = (unsigned int) json_object_get_number(testobj, "tcId");
-            key_in_str = json_object_get_string(testobj, "keyIn");
+            key_in_str = (char *)json_object_get_string(testobj, "keyIn");
             deferred = json_object_get_boolean(testobj, "deferred");
 
             /*

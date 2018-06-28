@@ -39,7 +39,7 @@ static ACVP_RESULT acvp_kdf135_ikev2_output_tc (ACVP_CTX *ctx, ACVP_KDF135_IKEV2
     json_object_set_string(tc_rsp, "sKeySeedReKey", (const char *)stc->s_key_seed_rekey);
     json_object_set_string(tc_rsp, "derivedKeyingMaterial", (const char *)stc->derived_keying_material);
     json_object_set_string(tc_rsp, "derivedKeyingMaterialChild", (const char *)stc->derived_keying_material_child);
-    json_object_set_string(tc_rsp, "derivedKeyingMaterialChildDh", (const char *)stc->derived_keying_material_child_dh);
+    json_object_set_string(tc_rsp, "derivedKeyingMaterialDh", (const char *)stc->derived_keying_material_child_dh);
     return ACVP_SUCCESS;
 }
 
@@ -94,7 +94,23 @@ static ACVP_RESULT acvp_kdf135_ikev2_init_tc (ACVP_CTX *ctx,
     stc->gir_new = calloc(ACVP_KDF135_IKEV2_GIR_LEN_MAX, sizeof(char));
     if (!stc->gir_new) { return ACVP_MALLOC_FAIL; }
     memcpy(stc->gir_new, gir_new, strnlen((const char *)gir_new, ACVP_KDF135_IKEV2_GIR_LEN_MAX));
-
+    
+    /* allocate memory for answers so app doesn't have to touch library memory */
+    stc->s_key_seed = calloc(ACVP_KDF135_IKEV2_SKEY_MAX, sizeof(char));
+    if (!stc->s_key_seed) { return ACVP_MALLOC_FAIL; }
+    
+    stc->s_key_seed_rekey = calloc(ACVP_KDF135_IKEV2_SKEY_MAX, sizeof(char));
+    if (!stc->s_key_seed_rekey) { return ACVP_MALLOC_FAIL; }
+    
+    stc->derived_keying_material = calloc(ACVP_KDF135_IKEV2_DKM_MAX, sizeof(char));
+    if (!stc->derived_keying_material) { return ACVP_MALLOC_FAIL; }
+    
+    stc->derived_keying_material_child_dh = calloc(ACVP_KDF135_IKEV2_DKM_MAX, sizeof(char));
+    if (!stc->derived_keying_material_child_dh) { return ACVP_MALLOC_FAIL; }
+    
+    stc->derived_keying_material_child = calloc(ACVP_KDF135_IKEV2_DKM_MAX, sizeof(char));
+    if (!stc->derived_keying_material_child) { return ACVP_MALLOC_FAIL; }
+    
     return rv;
 }
 

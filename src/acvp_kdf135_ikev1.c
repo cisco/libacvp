@@ -95,6 +95,15 @@ static ACVP_RESULT acvp_kdf135_ikev1_init_tc (ACVP_CTX *ctx,
     stc->psk = calloc(ACVP_KDF135_PSK_LEN_MAX, sizeof(char));
     if (!stc->psk) { return ACVP_MALLOC_FAIL; }
     memcpy(stc->psk, psk, strnlen((const char *)psk, ACVP_KDF135_PSK_LEN_MAX));
+    
+    stc->s_key_id = calloc(ACVP_KDF135_IKEV1_SKEY_MAX, sizeof(char));
+    if (!stc->s_key_id) { return ACVP_MALLOC_FAIL; }
+    stc->s_key_id_a = calloc(ACVP_KDF135_IKEV1_SKEY_MAX, sizeof(char));
+    if (!stc->s_key_id_a) { return ACVP_MALLOC_FAIL; }
+    stc->s_key_id_d = calloc(ACVP_KDF135_IKEV1_SKEY_MAX, sizeof(char));
+    if (!stc->s_key_id_d) { return ACVP_MALLOC_FAIL; }
+    stc->s_key_id_e = calloc(ACVP_KDF135_IKEV1_SKEY_MAX, sizeof(char));
+    if (!stc->s_key_id_e) { return ACVP_MALLOC_FAIL; }
 
     return rv;
 }
