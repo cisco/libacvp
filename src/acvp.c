@@ -5111,7 +5111,6 @@ static ACVP_RESULT acvp_build_dsa_register_cap (JSON_Object *cap_obj, ACVP_CAPS_
             break;
         default:
             return ACVP_INVALID_ARG;
-            break;
     }
     result = acvp_lookup_prereqVals(cap_obj, cap_entry);
     if (result != ACVP_SUCCESS) { return result; }
@@ -5149,9 +5148,6 @@ static ACVP_RESULT acvp_build_dsa_register_cap (JSON_Object *cap_obj, ACVP_CAPS_
         result = acvp_build_dsa_sigver_register(meth_array, cap_entry);
         if (result != ACVP_SUCCESS) { return result; }
      }
-        break;
-    default:
-        return ACVP_INVALID_ARG;
         break;
     }
     return ACVP_SUCCESS;

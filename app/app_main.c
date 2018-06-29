@@ -2819,7 +2819,6 @@ static ACVP_RESULT app_cmac_handler(ACVP_TEST_CASE *test_case)
         default:
             printf("Error: Unsupported CMAC algorithm requested by ACVP server\n");
             return ACVP_NO_CAP;
-            break;
     }
 
     full_key[key_len] = '\0';

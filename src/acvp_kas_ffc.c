@@ -150,15 +150,15 @@ static ACVP_RESULT acvp_kas_ffc_init_comp_tc (ACVP_CTX *ctx,
  */
 static ACVP_RESULT acvp_kas_ffc_release_tc (ACVP_KAS_FFC_TC *stc) {
 
-    free(stc->piut);
-    free(stc->epri);
-    free(stc->epui);
-    free(stc->eps);
-    free(stc->z);
-    free(stc->chash);
-    free(stc->p);
-    free(stc->q);
-    free(stc->g);
+    if (stc->piut) free(stc->piut);
+    if (stc->epri) free(stc->epri);
+    if (stc->epui) free(stc->epui);
+    if (stc->epui)free(stc->eps);
+    if (stc->z) free(stc->z);
+    if (stc->chash) free(stc->chash);
+    if (stc->p) free(stc->p);
+    if (stc->q) free(stc->q);
+    if (stc->g) free(stc->g);
     return ACVP_SUCCESS;
 }
 
@@ -288,7 +288,7 @@ ACVP_RESULT acvp_kas_ffc_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     ACVP_KAS_FFC_TC stc;
     ACVP_RESULT rv;
     const char *alg_str = json_object_get_string(obj, "algorithm");
-    int mode;
+    int mode = 0;
     char *json_result;
     const char *alg_mode;
 

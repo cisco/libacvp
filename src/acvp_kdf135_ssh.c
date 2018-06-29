@@ -385,6 +385,7 @@ static ACVP_RESULT acvp_kdf135_ssh_init_tc (ACVP_CTX *ctx,
 {
     unsigned int shared_secret_len = 0;
     unsigned int session_id_len = 0;
+    ACVP_RESULT rv;
 
     memset(stc, 0x0, sizeof(ACVP_KDF135_SSH_TC));
 
@@ -400,13 +401,16 @@ static ACVP_RESULT acvp_kdf135_ssh_init_tc (ACVP_CTX *ctx,
     if (!stc->session_id) { return ACVP_MALLOC_FAIL; }
 
     // Convert from hex string to binary
-    acvp_hexstr_to_bin((const unsigned char*)shared_secret_k,
+    rv = acvp_hexstr_to_bin((const unsigned char*)shared_secret_k,
                        (unsigned char *)stc->shared_secret_k, shared_secret_len);
-    acvp_hexstr_to_bin((const unsigned char*)hash_h,
+    if (rv != ACVP_SUCCESS) return rv;
+    rv = acvp_hexstr_to_bin((const unsigned char*)hash_h,
                        (unsigned char *)stc->hash_h, hash_len);
-    acvp_hexstr_to_bin((const unsigned char*)session_id,
+    if (rv != ACVP_SUCCESS) return rv;
+    rv = acvp_hexstr_to_bin((const unsigned char*)session_id,
                        (unsigned char *)stc->session_id, session_id_len);
-
+    if (rv != ACVP_SUCCESS) return rv;
+    
     // Allocate answer buffers
     stc->cs_init_iv = calloc(ACVP_KDF135_SSH_IV_MAX, sizeof(unsigned char));
     if (!stc->cs_init_iv) { return ACVP_MALLOC_FAIL; }

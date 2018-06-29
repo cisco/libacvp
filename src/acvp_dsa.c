@@ -401,15 +401,15 @@ static ACVP_RESULT acvp_dsa_output_tc (ACVP_CTX *ctx, ACVP_DSA_TC *stc, JSON_Obj
  */
 static ACVP_RESULT acvp_dsa_release_tc (ACVP_DSA_TC *stc) {
 
-    free(stc->p);
-    free(stc->q);
-    free(stc->g);
-    free(stc->x);
-    free(stc->y);
-    free(stc->r);
-    free(stc->s);
-    free(stc->seed);
-    free(stc->msg);
+    if (stc->p) free(stc->p);
+    if (stc->q) free(stc->q);
+    if (stc->g) free(stc->g);
+    if (stc->x) free(stc->x);
+    if (stc->y) free(stc->y);
+    if (stc->r) free(stc->r);
+    if (stc->s) free(stc->s);
+    if (stc->seed) free(stc->seed);
+    if (stc->msg) free(stc->msg);
     return ACVP_SUCCESS;
 }
 
@@ -724,7 +724,7 @@ ACVP_RESULT acvp_dsa_pqgver_handler (ACVP_CTX *ctx, ACVP_TEST_CASE tc, ACVP_CAPS
     JSON_Value *testval;
     JSON_Object *testobj = NULL;
     JSON_Value *r_tval = NULL; /* Response testval */
-    int j, t_cnt, tc_id, l, n, c, gpq;
+    int j, t_cnt, tc_id, l, n, c, gpq = 0;
     ACVP_RESULT rv = ACVP_SUCCESS;
     JSON_Value *mval;
     JSON_Object *mobj = NULL;

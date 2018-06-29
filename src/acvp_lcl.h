@@ -451,7 +451,7 @@ typedef struct acvp_kdf135_ikev2_capability {
 
 typedef struct acvp_kdf135_ikev1_capability {
     ACVP_NAME_LIST *hash_algs;
-    char auth_method[3];
+    char auth_method[4];
     ACVP_JSON_DOMAIN_OBJ init_nonce_len_domain;
     ACVP_JSON_DOMAIN_OBJ respond_nonce_len_domain;
     ACVP_JSON_DOMAIN_OBJ dh_secret_len;

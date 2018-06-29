@@ -94,13 +94,15 @@ static ACVP_RESULT acvp_kdf108_init_tc (ACVP_CTX *ctx,
                                         int deferred
 ) {
     memset(stc, 0x0, sizeof(ACVP_KDF108_TC));
+    ACVP_RESULT rv;
 
     // Allocate space for the key_in (binary)
     stc->key_in = calloc(key_in_len, sizeof(unsigned char));
     if (!stc->key_in) { return ACVP_MALLOC_FAIL; }
 
     // Convert key_in from hex string to binary
-    acvp_hexstr_to_bin((unsigned char *)key_in, stc->key_in, key_in_len);
+    rv = acvp_hexstr_to_bin((unsigned char *)key_in, stc->key_in, key_in_len);
+    if (rv != ACVP_SUCCESS) return rv;
 
     // Allocate space for the key_out
     stc->key_out = calloc(key_out_len, sizeof(unsigned char));
