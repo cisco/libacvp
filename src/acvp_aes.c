@@ -722,7 +722,7 @@ static ACVP_RESULT acvp_aes_output_tc (ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *stc,
     JSON_Array *ivs_array = NULL; /* IVs testarray */
     int i;
 
-    tmp = calloc(1, ACVP_SYM_CT_MAX);
+    tmp = calloc(ACVP_SYM_CT_MAX, sizeof(char));
     if (!tmp) {
         ACVP_LOG_ERR("Unable to malloc in acvp_aes_output_tc");
         return ACVP_MALLOC_FAIL;

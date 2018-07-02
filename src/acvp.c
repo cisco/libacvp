@@ -789,22 +789,22 @@ ACVP_RESULT acvp_free_test_session (ACVP_CTX *ctx) {
  */
 static ACVP_RESULT acvp_cap_add_length (ACVP_SL_LIST **list, int len) {
     ACVP_SL_LIST *l = *list;
-    ACVP_SL_LIST *new;
+    ACVP_SL_LIST *new_sl;
 
     /*
      * Allocate some space for the new entry
      */
-    new = calloc(1, sizeof(ACVP_SL_LIST));
-    if (!new) {
+    new_sl = calloc(1, sizeof(ACVP_SL_LIST));
+    if (!new_sl) {
         return ACVP_MALLOC_FAIL;
     }
-    new->length = len;
+    new_sl->length = len;
 
     /*
      * See if we need to create the list first
      */
     if (!l) {
-        *list = new;
+        *list = new_sl;
     } else {
         /*
          * Find the end of the list and add the new entry there
@@ -812,7 +812,7 @@ static ACVP_RESULT acvp_cap_add_length (ACVP_SL_LIST **list, int len) {
         while (l->next) {
             l = l->next;
         }
-        l->next = new;
+        l->next = new_sl;
     }
     return ACVP_SUCCESS;
 }
@@ -6138,6 +6138,7 @@ static ACVP_RESULT acvp_build_login (ACVP_CTX *ctx, char **login, int refresh) {
 
     *login = json_serialize_to_string_pretty(reg_arry_val);
     free(token);
+    json_value_free(reg_arry_val);
     return ACVP_SUCCESS;
 }
 
@@ -6623,6 +6624,7 @@ static ACVP_RESULT acvp_parse_login (ACVP_CTX *ctx) {
         ctx->jwt_token[i] = 0;
         ACVP_LOG_STATUS("JWT: %s", ctx->jwt_token);
     }
+    json_value_free(val);
     return ACVP_SUCCESS;
 }
 
