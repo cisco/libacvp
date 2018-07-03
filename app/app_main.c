@@ -2769,9 +2769,9 @@ static ACVP_RESULT app_hmac_handler(ACVP_TEST_CASE *test_case)
 static ACVP_RESULT app_cmac_handler(ACVP_TEST_CASE *test_case)
 {
     ACVP_CMAC_TC    *tc;
-    ACVP_RESULT rv;
+    ACVP_RESULT rv = ACVP_CRYPTO_MODULE_FAIL;
     const EVP_CIPHER    *c = NULL;
-    CMAC_CTX       *cmac_ctx;
+    CMAC_CTX       *cmac_ctx = NULL;
     int key_len, i;
     unsigned char mac_compare[16] = {0};
     char full_key[65] = {0};
@@ -2819,7 +2819,6 @@ static ACVP_RESULT app_cmac_handler(ACVP_TEST_CASE *test_case)
         default:
             printf("Error: Unsupported CMAC algorithm requested by ACVP server\n");
             return ACVP_NO_CAP;
-            break;
     }
 
     full_key[key_len] = '\0';
@@ -2828,18 +2827,18 @@ static ACVP_RESULT app_cmac_handler(ACVP_TEST_CASE *test_case)
 
     if (!CMAC_Init(cmac_ctx, full_key, key_len, c, NULL)) {
         printf("\nCrypto module error, CMAC_Init_ex failed\n");
-        return ACVP_CRYPTO_MODULE_FAIL;
+        goto cleanup;
     }
 
     if (!CMAC_Update(cmac_ctx, tc->msg, tc->msg_len)) {
         printf("\nCrypto module error, CMAC_Update failed\n");
-        return ACVP_CRYPTO_MODULE_FAIL;
+        goto cleanup;
     }
 
     if (strncmp((const char *)tc->direction, "ver", 3) == 0) {
         if (!CMAC_Final(cmac_ctx, mac_compare, (size_t *)&mac_cmp_len)) {
             printf("\nCrypto module error, CMAC_Final failed\n");
-            return ACVP_CRYPTO_MODULE_FAIL;
+            goto cleanup;
         }
 
         /*
@@ -2851,7 +2850,7 @@ static ACVP_RESULT app_cmac_handler(ACVP_TEST_CASE *test_case)
         rv = acvp_bin_to_hexstr(mac_compare, mac_cmp_len, formatted_mac_compare);
         if (rv != ACVP_SUCCESS) {
             printf("\nFailed to convert to hex string\n");
-            return ACVP_CRYPTO_MODULE_FAIL;
+            goto cleanup;
         }
 
         if (strncmp((const char *)formatted_mac_compare, (const char *)tc->mac, tc->mac_len * 2) == 0) {
@@ -2862,12 +2861,15 @@ static ACVP_RESULT app_cmac_handler(ACVP_TEST_CASE *test_case)
     } else {
         if (!CMAC_Final(cmac_ctx, tc->mac, (size_t *)&tc->mac_len)) {
             printf("\nCrypto module error, CMAC_Final failed\n");
-            return ACVP_CRYPTO_MODULE_FAIL;
+            goto cleanup;
         }
     }
-    CMAC_CTX_cleanup(cmac_ctx);
+    rv = ACVP_SUCCESS;
+    
+    cleanup:
+    if (cmac_ctx) CMAC_CTX_free(cmac_ctx);
 
-    return ACVP_SUCCESS;
+    return rv;
 }
 
 #ifdef OPENSSL_KDF_SUPPORT

@@ -529,3 +529,33 @@ char *acvp_lookup_error_string (ACVP_RESULT rv) {
     }
     return "Unknown error";
 }
+
+
+/* increment counter (64-bit int) by 1 */
+void ctr64_inc(unsigned char *counter)
+{
+    int n = 8;
+    unsigned char c;
+    
+    do {
+        --n;
+        c = counter[n];
+        ++c;
+        counter[n] = c;
+        if (c)
+            return;
+    } while (n);
+}
+
+/* increment counter (128-bit int) by 1 */
+void ctr128_inc(unsigned char *counter)
+{
+    unsigned int n = 16, c = 1;
+    
+    do {
+        --n;
+        c += counter[n];
+        counter[n] = (unsigned char)c;
+        c >>= 8;
+    } while (n);
+}

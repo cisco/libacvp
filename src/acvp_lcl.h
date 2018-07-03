@@ -451,7 +451,7 @@ typedef struct acvp_kdf135_ikev2_capability {
 
 typedef struct acvp_kdf135_ikev1_capability {
     ACVP_NAME_LIST *hash_algs;
-    char auth_method[3];
+    char auth_method[4];
     ACVP_JSON_DOMAIN_OBJ init_nonce_len_domain;
     ACVP_JSON_DOMAIN_OBJ respond_nonce_len_domain;
     ACVP_JSON_DOMAIN_OBJ dh_secret_len;
@@ -830,6 +830,11 @@ ACVP_RESULT acvp_dsa_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
 ACVP_RESULT acvp_kas_ecc_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
 
 ACVP_RESULT acvp_kas_ffc_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
+
+/*
+ * ACVP build registration functions used internally
+ */
+ACVP_RESULT acvp_build_register (ACVP_CTX *ctx, char **reg);
 
 /*
  * ACVP utility functions used internally
