@@ -5,7 +5,7 @@ INCDIRS+=-I. -Isrc
 
 SOURCES= src/acvp.c \
          src/acvp_build_register.c \
-         src/acvp_enable_cap.c \
+         src/acvp_capabilities.c \
          src/acvp_aes.c \
          src/acvp_des.c \
          src/acvp_hash.c \

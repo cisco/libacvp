@@ -93,8 +93,8 @@ static ACVP_RESULT acvp_kdf108_init_tc (ACVP_CTX *ctx,
                                         int counter_len,
                                         int deferred
 ) {
-    memset(stc, 0x0, sizeof(ACVP_KDF108_TC));
     ACVP_RESULT rv;
+    memset(stc, 0x0, sizeof(ACVP_KDF108_TC));
 
     // Allocate space for the key_in (binary)
     stc->key_in = calloc(key_in_len, sizeof(unsigned char));
