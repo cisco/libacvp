@@ -832,6 +832,11 @@ ACVP_RESULT acvp_kas_ecc_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
 ACVP_RESULT acvp_kas_ffc_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
 
 /*
+ * ACVP build registration functions used internally
+ */
+ACVP_RESULT acvp_build_register (ACVP_CTX *ctx, char **reg);
+
+/*
  * ACVP utility functions used internally
  */
 ACVP_CAPS_LIST *acvp_locate_cap_entry (ACVP_CTX *ctx, ACVP_CIPHER cipher);
