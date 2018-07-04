@@ -69,30 +69,28 @@ int dsa_builtin_paramgen(DSA *ret, size_t bits, size_t qbits,
     int *counter_ret, unsigned long *h_ret, BN_GENCB *cb);
 #endif
 static ACVP_RESULT totp(char **token);
-static void enable_aes(ACVP_CTX *ctx);
-static void enable_tdes(ACVP_CTX *ctx);
-static void enable_hash(ACVP_CTX *ctx);
-static void enable_cmac(ACVP_CTX *ctx);
-static void enable_hmac(ACVP_CTX *ctx);
-static void enable_kdf(ACVP_CTX *ctx);
-static void enable_dsa(ACVP_CTX *ctx);
-static void enable_rsa(ACVP_CTX *ctx);
-static void enable_ecdsa(ACVP_CTX *ctx);
-static void enable_drbg(ACVP_CTX *ctx);
-static void enable_kas_ecc(ACVP_CTX *ctx);
-static void enable_kas_ffc(ACVP_CTX *ctx);
+static int enable_aes(ACVP_CTX *ctx);
+static int enable_tdes(ACVP_CTX *ctx);
+static int enable_hash(ACVP_CTX *ctx);
+static int enable_cmac(ACVP_CTX *ctx);
+static int enable_hmac(ACVP_CTX *ctx);
+static int enable_kdf(ACVP_CTX *ctx);
+
+#ifdef ACVP_NO_RUNTIME
+static int enable_dsa(ACVP_CTX *ctx);
+static int enable_rsa(ACVP_CTX *ctx);
+static int enable_ecdsa(ACVP_CTX *ctx);
+static int enable_drbg(ACVP_CTX *ctx);
+static int enable_kas_ecc(ACVP_CTX *ctx);
+static int enable_kas_ffc(ACVP_CTX *ctx);
+#endif
 
 static ACVP_RESULT app_aes_handler_aead(ACVP_TEST_CASE *test_case);
-static ACVP_RESULT app_aes_keywrap_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_aes_handler(ACVP_TEST_CASE *test_case);
-static ACVP_RESULT app_des_keywrap_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_des_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_sha_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_hmac_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_cmac_handler(ACVP_TEST_CASE *test_case);
-static ACVP_RESULT app_dsa_handler(ACVP_TEST_CASE *test_case);
-static ACVP_RESULT app_kas_ecc_handler(ACVP_TEST_CASE *test_case);
-static ACVP_RESULT app_kas_ffc_handler(ACVP_TEST_CASE *test_case);
 
 #ifdef OPENSSL_KDF_SUPPORT
 static ACVP_RESULT app_kdf135_tls_handler(ACVP_TEST_CASE *test_case);
@@ -106,10 +104,15 @@ static ACVP_RESULT app_kdf135_tpm_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_kdf108_handler(ACVP_TEST_CASE *test_case);
 #endif
 #ifdef ACVP_NO_RUNTIME
+static ACVP_RESULT app_dsa_handler(ACVP_TEST_CASE *test_case);
+static ACVP_RESULT app_kas_ecc_handler(ACVP_TEST_CASE *test_case);
+static ACVP_RESULT app_kas_ffc_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_drbg_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_rsa_keygen_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_rsa_sig_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_ecdsa_handler(ACVP_TEST_CASE *test_case);
+static ACVP_RESULT app_des_keywrap_handler(ACVP_TEST_CASE *test_case);
+static ACVP_RESULT app_aes_keywrap_handler(ACVP_TEST_CASE *test_case);
 #endif
 
 #define JSON_FILENAME_LENGTH 24
@@ -130,12 +133,19 @@ char *ca_chain_file;
 char *cert_file;
 char *key_file;
 char *path_segment;
-static EVP_CIPHER_CTX cipher_ctx;  /* need to maintain across calls for MCT */
+
+static EVP_CIPHER_CTX *glb_cipher_ctx = NULL; /* need to maintain across calls for MCT */
 
 #define CHECK_ENABLE_CAP_RV(rv) \
     if (rv != ACVP_SUCCESS) { \
         printf("Failed to register capability with libacvp (rv=%d: %s)\n", rv, acvp_lookup_error_string(rv)); \
-        exit(1); \
+        return 1; \
+    }
+
+#define CHECK_ENABLE_CAP_RV_DEMO(rv) \
+    if (rv != ACVP_SUCCESS) { \
+        printf("Failed to register capability with libacvp (rv=%d: %s)\n", rv, acvp_lookup_error_string(rv)); \
+        goto end; \
     }
 
 
@@ -220,6 +230,7 @@ static void print_usage(void)
 
 int main(int argc, char **argv) {
     ACVP_RESULT rv;
+    int ret = 1; /* return code for main function */
     ACVP_CTX *ctx;
     char ssl_version[10];
     ACVP_LOG_LVL level = ACVP_LOG_LVL_STATUS;
@@ -236,12 +247,14 @@ int main(int argc, char **argv) {
     /*
      * these require the fom, off by default
      */
+#ifdef ACVP_NO_RUNTIME
     int dsa = 0;
     int rsa = 0;
     int drbg = 0;
     int ecdsa = 0;
     int kas_ecc = 0;
     int kas_ffc = 0;
+#endif
     
     if (argc > 4) {
         print_usage();
@@ -292,7 +305,13 @@ int main(int argc, char **argv) {
     fips_algtest_init_nofips();
 #endif
 
-    EVP_CIPHER_CTX_cleanup(&cipher_ctx);
+    if (glb_cipher_ctx == NULL) {
+        glb_cipher_ctx = EVP_CIPHER_CTX_new();
+        if ( glb_cipher_ctx == NULL) {
+            printf("Failed to allocate global cipher_ctx");
+            goto end;
+        }
+    }
     setup_session_parameters();
 
     /*
@@ -302,7 +321,7 @@ int main(int argc, char **argv) {
     rv = acvp_create_test_session(&ctx, &progress, level);
     if (rv != ACVP_SUCCESS) {
         printf("Failed to create ACVP context\n");
-        exit(1);
+        goto end;
     }
 
     /*
@@ -311,7 +330,7 @@ int main(int argc, char **argv) {
     rv = acvp_set_server(ctx, server, port);
     if (rv != ACVP_SUCCESS) {
         printf("Failed to set server/port\n");
-        exit(1);
+        goto end;
     }
 
     /*
@@ -320,7 +339,7 @@ int main(int argc, char **argv) {
     rv = acvp_set_vendor_info(ctx, "Cisco Systems", "www.cisco.com", "Barry Fussell", "bfussell@cisco.com");
     if (rv != ACVP_SUCCESS) {
         printf("Failed to set vendor info\n");
-        exit(1);
+        goto end;
     }
 
     /*
@@ -330,7 +349,7 @@ int main(int argc, char **argv) {
     rv = acvp_set_module_info(ctx, "OpenSSL", "software", ssl_version, "FOM 6.2a");
     if (rv != ACVP_SUCCESS) {
         printf("Failed to set module info\n");
-        exit(1);
+        goto end;
     }
 
     /*
@@ -340,7 +359,7 @@ int main(int argc, char **argv) {
         rv = acvp_set_path_segment(ctx, path_segment);
         if (rv != ACVP_SUCCESS) {
             printf("Failed to set URI prefix\n");
-            exit(1);
+            goto end;
         }
      }
 
@@ -351,7 +370,7 @@ int main(int argc, char **argv) {
     rv = acvp_set_cacerts(ctx, ca_chain_file);
     if (rv != ACVP_SUCCESS) {
         printf("Failed to set CA certs\n");
-        exit(1);
+        goto end;
     }
 
     /*
@@ -361,7 +380,7 @@ int main(int argc, char **argv) {
     rv = acvp_set_certkey(ctx, cert_file, key_file);
     if (rv != ACVP_SUCCESS) {
         printf("Failed to set TLS cert/key\n");
-        exit(1);
+        goto end;
     }
 
     /*
@@ -371,7 +390,7 @@ int main(int argc, char **argv) {
     rv = acvp_set_2fa_callback(ctx, &totp);
     if (rv != ACVP_SUCCESS) {
         printf("Failed to set Two-factor authentication callback\n");
-        exit(1);
+        goto end;
     }
 
     if (sample) {
@@ -387,7 +406,7 @@ int main(int argc, char **argv) {
         rv = acvp_set_json_filename(ctx, json_file);
         if (rv != ACVP_SUCCESS) {
             printf("Failed to set json file within ACVP ctx (rv=%d)\n", rv);
-            exit(1);
+            goto end;
         }
     } else {
 
@@ -396,52 +415,52 @@ int main(int argc, char **argv) {
          * validated. Each has their own method for readability.
          */
         if (aes) {
-            enable_aes(ctx);
+            if (enable_aes(ctx)) goto end;
         }
 
         if (tdes) {
-            enable_tdes(ctx);
+            if (enable_tdes(ctx)) goto end;
         }
 
         if (hash) {
-            enable_hash(ctx);
+            if (enable_hash(ctx)) goto end;
         }
 
         if (cmac) {
-            enable_cmac(ctx);
+            if (enable_cmac(ctx)) goto end;
         }
 
         if (hmac) {
-            enable_hmac(ctx);
+            if (enable_hmac(ctx)) goto end;
         }
 
         if (kdf) {
-            enable_kdf(ctx);
+            if (enable_kdf(ctx)) goto end;
         }
 
 #ifdef ACVP_NO_RUNTIME
-    if (dsa) {
-        enable_dsa(ctx);
-    }
+        if (dsa) {
+            if (enable_dsa(ctx)) goto end;
+        }
 
-    if (rsa) {
-        enable_rsa(ctx);
-    }
+        if (rsa) {
+            if (enable_rsa(ctx)) goto end;
+        }
 
-    if (ecdsa) {
-        enable_ecdsa(ctx);
-    }
+        if (ecdsa) {
+            if (enable_ecdsa(ctx)) goto end;
+        }
 
-    if (drbg) {
-        enable_drbg(ctx);
-    }
+        if (drbg) {
+            if (enable_drbg(ctx)) goto end;
+        }
 
-    if (kas_ecc) {
-        enable_kas_ecc(ctx);
-    }
-    if (kas_ffc) {
-        enable_kas_ffc(ctx);
-    }
+        if (kas_ecc) {
+            if (enable_kas_ecc(ctx)) goto end;
+        }
+        if (kas_ffc) {
+            if (enable_kas_ffc(ctx)) goto end;
+        }
 #endif
     }
     /*
@@ -452,7 +471,7 @@ int main(int argc, char **argv) {
     rv = acvp_register(ctx);
     if (rv != ACVP_SUCCESS) {
         printf("Failed to register with ACVP server (rv=%d)\n", rv);
-        exit(1);
+        goto end;
     }
 
     /*
@@ -462,14 +481,14 @@ int main(int argc, char **argv) {
     rv = acvp_process_tests(ctx);
     if (rv != ACVP_SUCCESS) {
         printf("Failed to process vectors (%d)\n", rv);
-        exit(1);
+        goto end;
     }
 
     printf("\nTests complete, checking results...\n");
     rv = acvp_check_test_results(ctx);
     if (rv != ACVP_SUCCESS) {
         printf("Unable to retrieve test results (%d)\n", rv);
-        exit(1);
+        goto end;
     }
     /*
      * Finally, we free the test session context and cleanup
@@ -477,14 +496,19 @@ int main(int argc, char **argv) {
     rv = acvp_free_test_session(ctx);
     if (rv != ACVP_SUCCESS) {
         printf("Failed to free ACVP context\n");
-        exit(1);
+        goto end;
     }
-    acvp_cleanup();
 
-    return (0);
+    ret = 0; /* Success */
+
+end:
+    acvp_cleanup();
+    if (glb_cipher_ctx) EVP_CIPHER_CTX_free(glb_cipher_ctx);
+
+    return ret;
 }
 
-static void enable_aes (ACVP_CTX *ctx) {
+static int enable_aes (ACVP_CTX *ctx) {
     ACVP_RESULT rv;
     char value[] = "same";
 
@@ -713,9 +737,11 @@ static void enable_aes (ACVP_CTX *ctx) {
     rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CTR, ACVP_SYM_CIPH_PTLEN, 128);
     CHECK_ENABLE_CAP_RV(rv);
 #endif
+
+    return 0;
 }
 
-static void enable_tdes (ACVP_CTX *ctx) {
+static int enable_tdes (ACVP_CTX *ctx) {
     ACVP_RESULT rv;
 
     /*
@@ -810,9 +836,11 @@ static void enable_tdes (ACVP_CTX *ctx) {
     rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_TDES_CTR, ACVP_SYM_CIPH_PTLEN, 64);
     CHECK_ENABLE_CAP_RV(rv);
 #endif
+
+    return 0;
 }
 
-static void enable_hash (ACVP_CTX *ctx) {
+static int enable_hash (ACVP_CTX *ctx) {
     ACVP_RESULT rv;
 
     /*
@@ -852,9 +880,11 @@ static void enable_hash (ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_hash_cap_parm(ctx, ACVP_SHA512, ACVP_HASH_IN_EMPTY, 1);
     CHECK_ENABLE_CAP_RV(rv);
+
+    return 0;
 }
 
-static void enable_cmac (ACVP_CTX *ctx) {
+static int enable_cmac (ACVP_CTX *ctx) {
     ACVP_RESULT rv;
     char value[] = "same";
 
@@ -894,9 +924,11 @@ static void enable_cmac (ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_prereq_cap(ctx, ACVP_CMAC_TDES, ACVP_PREREQ_TDES, value);
     CHECK_ENABLE_CAP_RV(rv);
+
+    return 0;
 }
 
-static void enable_hmac (ACVP_CTX *ctx) {
+static int enable_hmac (ACVP_CTX *ctx) {
     ACVP_RESULT rv;
     char value[] = "same";
 
@@ -957,9 +989,11 @@ static void enable_hmac (ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_prereq_cap(ctx, ACVP_HMAC_SHA2_512, ACVP_PREREQ_SHA, value);
     CHECK_ENABLE_CAP_RV(rv);
+
+    return 0;
 }
 
-static void enable_kdf (ACVP_CTX *ctx) {
+static int enable_kdf (ACVP_CTX *ctx) {
 #ifdef OPENSSL_KDF_SUPPORT
 
     ACVP_RESULT rv;
@@ -1120,10 +1154,12 @@ static void enable_kdf (ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
 
 #endif
+
+    return 0;
 }
 
 #ifdef ACVP_NO_RUNTIME
-static void enable_kas_ecc (ACVP_CTX *ctx) {
+static int enable_kas_ecc (ACVP_CTX *ctx) {
     ACVP_RESULT rv;
     char value[] = "same";
 
@@ -1192,9 +1228,10 @@ static void enable_kas_ecc (ACVP_CTX *ctx) {
     rv = acvp_enable_kas_ecc_cap_scheme(ctx, ACVP_KAS_ECC_COMP, ACVP_KAS_ECC_MODE_COMPONENT, ACVP_KAS_ECC_EPHEMERAL_UNIFIED, ACVP_KAS_ECC_EE, ACVP_ECDSA_CURVE_P521, ACVP_SHA512);
     CHECK_ENABLE_CAP_RV(rv);
 
+    return 0;
 }
 
-static void enable_kas_ffc (ACVP_CTX *ctx) {
+static int enable_kas_ffc (ACVP_CTX *ctx) {
     ACVP_RESULT rv;
     char value[] = "same";
 
@@ -1231,9 +1268,11 @@ static void enable_kas_ffc (ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_kas_ffc_cap_scheme(ctx, ACVP_KAS_FFC_COMP, ACVP_KAS_FFC_MODE_COMPONENT, ACVP_KAS_FFC_DH_EPHEMERAL, ACVP_KAS_FFC_FB, ACVP_SHA256);
     CHECK_ENABLE_CAP_RV(rv);
+
+    return 0;
 }
 
-static void enable_dsa (ACVP_CTX *ctx) {
+static int enable_dsa (ACVP_CTX *ctx) {
     ACVP_RESULT rv;
     char value[] = "same";
 
@@ -1398,9 +1437,10 @@ static void enable_dsa (ACVP_CTX *ctx) {
     rv = acvp_enable_dsa_cap_parm(ctx, ACVP_DSA_SIGVER, ACVP_DSA_MODE_SIGVER, ACVP_DSA_LN3072_256, ACVP_DSA_SHA512);
     CHECK_ENABLE_CAP_RV(rv);
 
+    return 0;
 }
 
-static void enable_rsa (ACVP_CTX *ctx) {
+static int enable_rsa (ACVP_CTX *ctx) {
     ACVP_RESULT rv;
     char value[] = "same";
     BIGNUM *expo;
@@ -1408,7 +1448,7 @@ static void enable_rsa (ACVP_CTX *ctx) {
     expo = FIPS_bn_new();
     if (!expo || !BN_set_word(expo, 0x10001)) {
         printf("oh no\n");
-        exit(1);
+        return 1;
     }
     char *expo_str = BN_bn2hex(expo);
     FIPS_bn_free(expo);
@@ -1613,9 +1653,11 @@ static void enable_rsa (ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_PKCS1PSS, 3072, ACVP_STR_SHA2_512, 0);
     CHECK_ENABLE_CAP_RV(rv);
+
+    return 0;
 }
 
-static void enable_ecdsa (ACVP_CTX *ctx) {
+static int enable_ecdsa (ACVP_CTX *ctx) {
     ACVP_RESULT rv;
     char value[] = "same";
 
@@ -1773,9 +1815,11 @@ static void enable_ecdsa (ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_HASH_ALG, "SHA2-512");
     CHECK_ENABLE_CAP_RV(rv);
+
+    return 0;
 }
 
-static void enable_drbg (ACVP_CTX *ctx) {
+static int enable_drbg (ACVP_CTX *ctx) {
     /*
      * Register DRBG
      */
@@ -1784,7 +1828,7 @@ static void enable_drbg (ACVP_CTX *ctx) {
       int fips_rc = FIPS_mode_set(1);
       if(!fips_rc) {
           (printf("Failed to enable FIPS mode.\n"));
-          exit(1);
+          return 1;
       }
 
 #if 0 /* only CTR mode is supported by the server currently */
@@ -1964,12 +2008,14 @@ static void enable_drbg (ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
 #endif
 
+    return 0;
 }
 #endif
 
 static ACVP_RESULT app_des_handler(ACVP_TEST_CASE *test_case)
 {
     ACVP_SYM_CIPHER_TC      *tc;
+    EVP_CIPHER_CTX *cipher_ctx;
     const EVP_CIPHER        *cipher;
     int ct_len, pt_len;
     unsigned char *iv = 0;
@@ -1989,9 +2035,7 @@ static ACVP_RESULT app_des_handler(ACVP_TEST_CASE *test_case)
     }
 
     /* Begin encrypt code section */
-    if (cipher_ctx.cipher == NULL) {
-        EVP_CIPHER_CTX_init(&cipher_ctx);
-    }
+    cipher_ctx = glb_cipher_ctx;
 
     switch (tc->cipher) {
     case ACVP_TDES_ECB:
@@ -2033,71 +2077,79 @@ static ACVP_RESULT app_des_handler(ACVP_TEST_CASE *test_case)
      * one thousand times before we complete each iteration.
      */
     if (tc->test_type == ACVP_SYM_TEST_TYPE_MCT) {
+        const unsigned char *iv = NULL;
+
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
+        iv = cipher_ctx->iv;
+#else
+        iv = EVP_CIPHER_CTX_iv(cipher_ctx);
+#endif
+
         if (tc->direction == ACVP_DIR_ENCRYPT) {
             if (tc->mct_index == 0) {
-                EVP_EncryptInit_ex(&cipher_ctx, cipher, NULL, tc->key, iv);
-            EVP_CIPHER_CTX_set_padding(&cipher_ctx, 0);
+                EVP_EncryptInit_ex(cipher_ctx, cipher, NULL, tc->key, iv);
+                EVP_CIPHER_CTX_set_padding(cipher_ctx, 0);
             } else {
                 /* TDES needs the pre-operation IV returned */
-                memcpy(tc->iv_ret, cipher_ctx.iv, 8);
+                memcpy(tc->iv_ret, iv, 8);
             }
             if (tc->cipher == ACVP_TDES_CFB1) {
-                EVP_CIPHER_CTX_set_flags(&cipher_ctx, EVP_CIPH_FLAG_LENGTH_BITS);
+                EVP_CIPHER_CTX_set_flags(cipher_ctx, EVP_CIPH_FLAG_LENGTH_BITS);
             }
 
-            EVP_EncryptUpdate(&cipher_ctx, tc->ct, &ct_len, tc->pt, tc->pt_len);
+            EVP_EncryptUpdate(cipher_ctx, tc->ct, &ct_len, tc->pt, tc->pt_len);
             tc->ct_len = ct_len;
             /* TDES needs the post-operation IV returned */
-            memcpy(tc->iv_ret_after, cipher_ctx.iv, 8);
+            memcpy(tc->iv_ret_after, iv, 8);
         } else if (tc->direction == ACVP_DIR_DECRYPT) {
             if (tc->mct_index == 0) {
-                EVP_DecryptInit_ex(&cipher_ctx, cipher, NULL, tc->key, iv);
-            EVP_CIPHER_CTX_set_padding(&cipher_ctx, 0);
+                EVP_DecryptInit_ex(cipher_ctx, cipher, NULL, tc->key, iv);
+                EVP_CIPHER_CTX_set_padding(cipher_ctx, 0);
             } else {
                 /* TDES needs the pre-operation IV returned */
-                memcpy(tc->iv_ret, cipher_ctx.iv, 8);
+                memcpy(tc->iv_ret, iv, 8);
             }
             if (tc->cipher == ACVP_TDES_CFB1) {
-                EVP_CIPHER_CTX_set_flags(&cipher_ctx, EVP_CIPH_FLAG_LENGTH_BITS);
+                EVP_CIPHER_CTX_set_flags(cipher_ctx, EVP_CIPH_FLAG_LENGTH_BITS);
             }
-            EVP_DecryptUpdate(&cipher_ctx, tc->pt, &pt_len, tc->ct, tc->ct_len);
+            EVP_DecryptUpdate(cipher_ctx, tc->pt, &pt_len, tc->ct, tc->ct_len);
             tc->pt_len = pt_len;
             /* TDES needs the post-operation IV returned */
-            memcpy(tc->iv_ret_after, cipher_ctx.iv, 8);
+            memcpy(tc->iv_ret_after, iv, 8);
         } else {
             printf("Unsupported direction\n");
             return ACVP_UNSUPPORTED_OP;
         }
         if (tc->mct_index == 9999) {
-            EVP_CIPHER_CTX_cleanup(&cipher_ctx);
+            EVP_CIPHER_CTX_cleanup(cipher_ctx);
         }
     } else {
         if (tc->direction == ACVP_DIR_ENCRYPT) {
-            EVP_EncryptInit_ex(&cipher_ctx, cipher, NULL, tc->key, iv);
-            EVP_CIPHER_CTX_set_padding(&cipher_ctx, 0);
+            EVP_EncryptInit_ex(cipher_ctx, cipher, NULL, tc->key, iv);
+            EVP_CIPHER_CTX_set_padding(cipher_ctx, 0);
             if (tc->cipher == ACVP_TDES_CFB1) {
-                EVP_CIPHER_CTX_set_flags(&cipher_ctx, EVP_CIPH_FLAG_LENGTH_BITS);
+                EVP_CIPHER_CTX_set_flags(cipher_ctx, EVP_CIPH_FLAG_LENGTH_BITS);
             }
-            EVP_EncryptUpdate(&cipher_ctx, tc->ct, &ct_len, tc->pt, tc->pt_len);
+            EVP_EncryptUpdate(cipher_ctx, tc->ct, &ct_len, tc->pt, tc->pt_len);
             tc->ct_len = ct_len;
-            EVP_EncryptFinal_ex(&cipher_ctx, tc->ct + ct_len, &ct_len);
+            EVP_EncryptFinal_ex(cipher_ctx, tc->ct + ct_len, &ct_len);
             tc->ct_len += ct_len;
         } else if (tc->direction == ACVP_DIR_DECRYPT) {
-            EVP_DecryptInit_ex(&cipher_ctx, cipher, NULL, tc->key, iv);
-            EVP_CIPHER_CTX_set_padding(&cipher_ctx, 0);
+            EVP_DecryptInit_ex(cipher_ctx, cipher, NULL, tc->key, iv);
+            EVP_CIPHER_CTX_set_padding(cipher_ctx, 0);
             if (tc->cipher == ACVP_TDES_CFB1) {
-                EVP_CIPHER_CTX_set_flags(&cipher_ctx, EVP_CIPH_FLAG_LENGTH_BITS);
+                EVP_CIPHER_CTX_set_flags(cipher_ctx, EVP_CIPH_FLAG_LENGTH_BITS);
             }
-            EVP_DecryptUpdate(&cipher_ctx, tc->pt, &pt_len, tc->ct, tc->ct_len);
+            EVP_DecryptUpdate(cipher_ctx, tc->pt, &pt_len, tc->ct, tc->ct_len);
             tc->pt_len = pt_len;
-            EVP_DecryptFinal_ex(&cipher_ctx, tc->pt + pt_len, &pt_len);
+            EVP_DecryptFinal_ex(cipher_ctx, tc->pt + pt_len, &pt_len);
             tc->pt_len += pt_len;
         } else {
             printf("Unsupported direction\n");
             return ACVP_UNSUPPORTED_OP;
         }
 
-        EVP_CIPHER_CTX_cleanup(&cipher_ctx);
+        EVP_CIPHER_CTX_cleanup(cipher_ctx);
     }
 
     return ACVP_SUCCESS;
@@ -2107,6 +2159,7 @@ static ACVP_RESULT app_des_handler(ACVP_TEST_CASE *test_case)
 static ACVP_RESULT app_aes_handler(ACVP_TEST_CASE *test_case)
 {
     ACVP_SYM_CIPHER_TC      *tc;
+    EVP_CIPHER_CTX *cipher_ctx;
     const EVP_CIPHER        *cipher;
     int ct_len, pt_len;
     unsigned char *iv = 0;
@@ -2118,8 +2171,9 @@ static ACVP_RESULT app_aes_handler(ACVP_TEST_CASE *test_case)
     tc = test_case->tc.symmetric;
 
     /* Begin encrypt code section */
-    if ((cipher_ctx.cipher == NULL) || (tc->test_type != ACVP_SYM_TEST_TYPE_MCT)) {
-  EVP_CIPHER_CTX_init(&cipher_ctx);
+    cipher_ctx = glb_cipher_ctx;
+    if ((tc->test_type != ACVP_SYM_TEST_TYPE_MCT)) {
+        EVP_CIPHER_CTX_init(cipher_ctx);
     }
 
     switch (tc->cipher) {
@@ -2276,58 +2330,58 @@ static ACVP_RESULT app_aes_handler(ACVP_TEST_CASE *test_case)
     if (tc->test_type == ACVP_SYM_TEST_TYPE_MCT) {
         if (tc->direction == ACVP_DIR_ENCRYPT) {
             if (tc->mct_index == 0) {
-          EVP_EncryptInit_ex(&cipher_ctx, cipher, NULL, tc->key, iv);
-  EVP_CIPHER_CTX_set_padding(&cipher_ctx, 0);
+                EVP_EncryptInit_ex(cipher_ctx, cipher, NULL, tc->key, iv);
+                EVP_CIPHER_CTX_set_padding(cipher_ctx, 0);
      if (tc->cipher == ACVP_AES_CFB1) {
-           EVP_CIPHER_CTX_set_flags(&cipher_ctx, EVP_CIPH_FLAG_LENGTH_BITS);
+         EVP_CIPHER_CTX_set_flags(cipher_ctx, EVP_CIPH_FLAG_LENGTH_BITS);
      }
             }
-      EVP_EncryptUpdate(&cipher_ctx, tc->ct, &ct_len, tc->pt, tc->pt_len);
+            EVP_EncryptUpdate(cipher_ctx, tc->ct, &ct_len, tc->pt, tc->pt_len);
       tc->ct_len = ct_len;
         } else if (tc->direction == ACVP_DIR_DECRYPT) {
             if (tc->mct_index == 0) {
-          EVP_DecryptInit_ex(&cipher_ctx, cipher, NULL, tc->key, iv);
-          EVP_CIPHER_CTX_set_padding(&cipher_ctx, 0);
+                EVP_DecryptInit_ex(cipher_ctx, cipher, NULL, tc->key, iv);
+                EVP_CIPHER_CTX_set_padding(cipher_ctx, 0);
      if (tc->cipher == ACVP_AES_CFB1) {
-           EVP_CIPHER_CTX_set_flags(&cipher_ctx, EVP_CIPH_FLAG_LENGTH_BITS);
+         EVP_CIPHER_CTX_set_flags(cipher_ctx, EVP_CIPH_FLAG_LENGTH_BITS);
      }
             }
-      EVP_DecryptUpdate(&cipher_ctx, tc->pt, &pt_len, tc->ct, tc->ct_len);
+            EVP_DecryptUpdate(cipher_ctx, tc->pt, &pt_len, tc->ct, tc->ct_len);
       tc->pt_len = pt_len;
         } else {
             printf("Unsupported direction\n");
       return ACVP_UNSUPPORTED_OP;
         }
         if (tc->mct_index == 999) {
-            EVP_CIPHER_CTX_cleanup(&cipher_ctx);
+            EVP_CIPHER_CTX_cleanup(cipher_ctx);
         }
 
     } else {
         if (tc->direction == ACVP_DIR_ENCRYPT) {
-      EVP_EncryptInit_ex(&cipher_ctx, cipher, NULL, tc->key, iv);
-           EVP_CIPHER_CTX_set_padding(&cipher_ctx, 0);
+            EVP_EncryptInit_ex(cipher_ctx, cipher, NULL, tc->key, iv);
+            EVP_CIPHER_CTX_set_padding(cipher_ctx, 0);
      if (tc->cipher == ACVP_AES_CFB1) {
-           EVP_CIPHER_CTX_set_flags(&cipher_ctx, EVP_CIPH_FLAG_LENGTH_BITS);
+         EVP_CIPHER_CTX_set_flags(cipher_ctx, EVP_CIPH_FLAG_LENGTH_BITS);
      }
-      EVP_EncryptUpdate(&cipher_ctx, tc->ct, &ct_len, tc->pt, tc->pt_len);
+     EVP_EncryptUpdate(cipher_ctx, tc->ct, &ct_len, tc->pt, tc->pt_len);
       tc->ct_len = ct_len;
-      EVP_EncryptFinal_ex(&cipher_ctx, tc->ct + ct_len, &ct_len);
+      EVP_EncryptFinal_ex(cipher_ctx, tc->ct + ct_len, &ct_len);
       tc->ct_len += ct_len;
         } else if (tc->direction == ACVP_DIR_DECRYPT) {
-      EVP_DecryptInit_ex(&cipher_ctx, cipher, NULL, tc->key, iv);
-      EVP_CIPHER_CTX_set_padding(&cipher_ctx, 0);
+            EVP_DecryptInit_ex(cipher_ctx, cipher, NULL, tc->key, iv);
+            EVP_CIPHER_CTX_set_padding(cipher_ctx, 0);
      if (tc->cipher == ACVP_AES_CFB1) {
-           EVP_CIPHER_CTX_set_flags(&cipher_ctx, EVP_CIPH_FLAG_LENGTH_BITS);
+         EVP_CIPHER_CTX_set_flags(cipher_ctx, EVP_CIPH_FLAG_LENGTH_BITS);
      }
-      EVP_DecryptUpdate(&cipher_ctx, tc->pt, &pt_len, tc->ct, tc->ct_len);
+     EVP_DecryptUpdate(cipher_ctx, tc->pt, &pt_len, tc->ct, tc->ct_len);
       tc->pt_len = pt_len;
-      EVP_DecryptFinal_ex(&cipher_ctx, tc->pt + pt_len, &pt_len);
+      EVP_DecryptFinal_ex(cipher_ctx, tc->pt + pt_len, &pt_len);
       tc->pt_len += pt_len;
         } else {
             printf("Unsupported direction\n");
       return ACVP_UNSUPPORTED_OP;
        }
-       EVP_CIPHER_CTX_cleanup(&cipher_ctx);
+        EVP_CIPHER_CTX_cleanup(cipher_ctx);
     }
 
     return ACVP_SUCCESS;
@@ -2478,10 +2532,11 @@ static ACVP_RESULT app_des_keywrap_handler(ACVP_TEST_CASE *test_case)
 static ACVP_RESULT app_aes_handler_aead(ACVP_TEST_CASE *test_case)
 {
     ACVP_SYM_CIPHER_TC      *tc;
-    EVP_CIPHER_CTX cipher_ctx;
+    EVP_CIPHER_CTX *cipher_ctx = NULL;
     const EVP_CIPHER        *cipher;
     unsigned char iv_fixed[4] = {1,2,3,4};
-    int rv;
+    ACVP_RESULT rc = 0;
+    int ret = 0;
 
     if (!test_case) {
         return ACVP_INVALID_ARG;
@@ -2495,7 +2550,8 @@ static ACVP_RESULT app_aes_handler_aead(ACVP_TEST_CASE *test_case)
     }
 
     /* Begin encrypt code section */
-    EVP_CIPHER_CTX_init(&cipher_ctx);
+    cipher_ctx = EVP_CIPHER_CTX_new();
+    EVP_CIPHER_CTX_init(cipher_ctx);
 
     /* Validate key length and assign OpenSSL EVP cipher */
     switch (tc->cipher) {
@@ -2512,61 +2568,61 @@ static ACVP_RESULT app_aes_handler_aead(ACVP_TEST_CASE *test_case)
             break;
         default:
             printf("Unsupported AES-GCM key length\n");
-            EVP_CIPHER_CTX_cleanup(&cipher_ctx);
-            return ACVP_UNSUPPORTED_OP;
+            rc = ACVP_UNSUPPORTED_OP;
+            goto end;
         }
         if (tc->direction == ACVP_DIR_ENCRYPT) {
-            EVP_CIPHER_CTX_set_flags(&cipher_ctx, EVP_CIPH_FLAG_NON_FIPS_ALLOW);
-            EVP_CipherInit(&cipher_ctx, cipher, NULL, NULL, 1);
-            EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_GCM_SET_IVLEN, tc->iv_len, 0);
-            EVP_CipherInit(&cipher_ctx, NULL, tc->key, NULL, 1);
+            EVP_CIPHER_CTX_set_flags(cipher_ctx, EVP_CIPH_FLAG_NON_FIPS_ALLOW);
+            EVP_CipherInit(cipher_ctx, cipher, NULL, NULL, 1);
+            EVP_CIPHER_CTX_ctrl(cipher_ctx, EVP_CTRL_GCM_SET_IVLEN, tc->iv_len, 0);
+            EVP_CipherInit(cipher_ctx, NULL, tc->key, NULL, 1);
 
-            EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_GCM_SET_IV_FIXED, 4, iv_fixed);
-            if (!EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_GCM_IV_GEN, tc->iv_len, tc->iv)) {
+            EVP_CIPHER_CTX_ctrl(cipher_ctx, EVP_CTRL_GCM_SET_IV_FIXED, 4, iv_fixed);
+            if (!EVP_CIPHER_CTX_ctrl(cipher_ctx, EVP_CTRL_GCM_IV_GEN, tc->iv_len, tc->iv)) {
                 printf("acvp_aes_encrypt: iv gen error\n");
-                EVP_CIPHER_CTX_cleanup(&cipher_ctx);
-                return ACVP_CRYPTO_MODULE_FAIL;
+                rc = ACVP_CRYPTO_MODULE_FAIL;
+                goto end;
             }
             if (tc->aad_len) {
-                EVP_Cipher(&cipher_ctx, NULL, tc->aad, tc->aad_len);
+                EVP_Cipher(cipher_ctx, NULL, tc->aad, tc->aad_len);
             }
-            EVP_Cipher(&cipher_ctx, tc->ct, tc->pt, tc->pt_len);
-            EVP_Cipher(&cipher_ctx, NULL, NULL, 0);
-            EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_GCM_GET_TAG, tc->tag_len, tc->tag);
+            EVP_Cipher(cipher_ctx, tc->ct, tc->pt, tc->pt_len);
+            EVP_Cipher(cipher_ctx, NULL, NULL, 0);
+            EVP_CIPHER_CTX_ctrl(cipher_ctx, EVP_CTRL_GCM_GET_TAG, tc->tag_len, tc->tag);
         } else if (tc->direction == ACVP_DIR_DECRYPT) {
-            EVP_CIPHER_CTX_set_flags(&cipher_ctx, EVP_CIPH_FLAG_NON_FIPS_ALLOW);
-            EVP_CipherInit_ex(&cipher_ctx, cipher, NULL, tc->key, NULL, 0);
-            EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_GCM_SET_IVLEN, tc->iv_len, 0);
-            EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_GCM_SET_IV_FIXED, -1, tc->iv);
-            if(!EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_GCM_IV_GEN, tc->iv_len, tc->iv)) {
+            EVP_CIPHER_CTX_set_flags(cipher_ctx, EVP_CIPH_FLAG_NON_FIPS_ALLOW);
+            EVP_CipherInit_ex(cipher_ctx, cipher, NULL, tc->key, NULL, 0);
+            EVP_CIPHER_CTX_ctrl(cipher_ctx, EVP_CTRL_GCM_SET_IVLEN, tc->iv_len, 0);
+            EVP_CIPHER_CTX_ctrl(cipher_ctx, EVP_CTRL_GCM_SET_IV_FIXED, -1, tc->iv);
+            if(!EVP_CIPHER_CTX_ctrl(cipher_ctx, EVP_CTRL_GCM_IV_GEN, tc->iv_len, tc->iv)) {
                 printf("\nFailed to set IV");
-                EVP_CIPHER_CTX_cleanup(&cipher_ctx);
-                return ACVP_CRYPTO_MODULE_FAIL;
+                rc = ACVP_CRYPTO_MODULE_FAIL;
+                goto end;
             }
             if (tc->aad_len) {
                 /*
                  * Set dummy tag before processing AAD.  Otherwise the AAD can
                  * not be processed.
                  */
-                EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_GCM_SET_TAG, tc->tag_len, tc->tag);
-                EVP_Cipher(&cipher_ctx, NULL, tc->aad, tc->aad_len);
+                EVP_CIPHER_CTX_ctrl(cipher_ctx, EVP_CTRL_GCM_SET_TAG, tc->tag_len, tc->tag);
+                EVP_Cipher(cipher_ctx, NULL, tc->aad, tc->aad_len);
             }
             /*
              * Set the tag when decrypting
              */
-            EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_GCM_SET_TAG, tc->tag_len, tc->tag);
+            EVP_CIPHER_CTX_ctrl(cipher_ctx, EVP_CTRL_GCM_SET_TAG, tc->tag_len, tc->tag);
 
             /*
              * Decrypt the CT
              */
-            EVP_Cipher(&cipher_ctx, tc->pt, tc->ct, tc->pt_len);
+            EVP_Cipher(cipher_ctx, tc->pt, tc->ct, tc->pt_len);
             /*
              * Check the tag
              */
-            rv = EVP_Cipher(&cipher_ctx, NULL, NULL, 0);
-            if (rv) {
-                EVP_CIPHER_CTX_cleanup(&cipher_ctx);
-                return ACVP_CRYPTO_TAG_FAIL;
+            ret = EVP_Cipher(cipher_ctx, NULL, NULL, 0);
+            if (ret) {
+                rc = ACVP_CRYPTO_TAG_FAIL;
+                goto end;
             }
         }
         break;
@@ -2583,52 +2639,55 @@ static ACVP_RESULT app_aes_handler_aead(ACVP_TEST_CASE *test_case)
           break;
         default:
             printf("Unsupported AES-CCM key length\n");
-            EVP_CIPHER_CTX_cleanup(&cipher_ctx);
-            return ACVP_UNSUPPORTED_OP;
+            rc = ACVP_UNSUPPORTED_OP;
+            goto end;
         }
         if (tc->direction == ACVP_DIR_ENCRYPT) {
-            EVP_CipherInit(&cipher_ctx, cipher, NULL, NULL, 1);
-            EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_CCM_SET_IVLEN, tc->iv_len, 0);
-            EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_CCM_SET_TAG, tc->tag_len, 0);
-            EVP_CipherInit(&cipher_ctx, NULL, tc->key, tc->iv, 1);
-            EVP_Cipher(&cipher_ctx, NULL, NULL, tc->pt_len);
-            EVP_Cipher(&cipher_ctx, NULL, tc->aad, tc->aad_len);
-            EVP_Cipher(&cipher_ctx, tc->ct, tc->pt, tc->pt_len);
-            EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_CCM_GET_TAG, tc->tag_len, tc->ct + tc->ct_len);
+            EVP_CipherInit(cipher_ctx, cipher, NULL, NULL, 1);
+            EVP_CIPHER_CTX_ctrl(cipher_ctx, EVP_CTRL_CCM_SET_IVLEN, tc->iv_len, 0);
+            EVP_CIPHER_CTX_ctrl(cipher_ctx, EVP_CTRL_CCM_SET_TAG, tc->tag_len, 0);
+            EVP_CipherInit(cipher_ctx, NULL, tc->key, tc->iv, 1);
+            EVP_Cipher(cipher_ctx, NULL, NULL, tc->pt_len);
+            EVP_Cipher(cipher_ctx, NULL, tc->aad, tc->aad_len);
+            EVP_Cipher(cipher_ctx, tc->ct, tc->pt, tc->pt_len);
+            EVP_CIPHER_CTX_ctrl(cipher_ctx, EVP_CTRL_CCM_GET_TAG, tc->tag_len, tc->ct + tc->ct_len);
             tc->ct_len += tc->tag_len;
         } else if (tc->direction == ACVP_DIR_DECRYPT) {
-          EVP_CipherInit(&cipher_ctx, cipher, NULL, NULL, 0);
-          EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_CCM_SET_IVLEN, tc->iv_len, 0);
-          EVP_CIPHER_CTX_ctrl(&cipher_ctx, EVP_CTRL_CCM_SET_TAG, tc->tag_len, tc->ct + tc->pt_len);
-          EVP_CipherInit(&cipher_ctx, NULL, tc->key, tc->iv, 0);
-          EVP_Cipher(&cipher_ctx, NULL, NULL, tc->pt_len);
-          EVP_Cipher(&cipher_ctx, NULL, tc->aad, tc->aad_len);
-          /*
-           * Decrypt and check the tag
-           */
-          rv = EVP_Cipher(&cipher_ctx, tc->pt, tc->ct, tc->pt_len);
-          if (rv < 0) {
-              EVP_CIPHER_CTX_cleanup(&cipher_ctx);
-              return ACVP_CRYPTO_TAG_FAIL;
-          }
+            EVP_CipherInit(cipher_ctx, cipher, NULL, NULL, 0);
+            EVP_CIPHER_CTX_ctrl(cipher_ctx, EVP_CTRL_CCM_SET_IVLEN, tc->iv_len, 0);
+            EVP_CIPHER_CTX_ctrl(cipher_ctx, EVP_CTRL_CCM_SET_TAG, tc->tag_len, tc->ct + tc->pt_len);
+            EVP_CipherInit(cipher_ctx, NULL, tc->key, tc->iv, 0);
+            EVP_Cipher(cipher_ctx, NULL, NULL, tc->pt_len);
+            EVP_Cipher(cipher_ctx, NULL, tc->aad, tc->aad_len);
+            /*
+             * Decrypt and check the tag
+             */
+            ret = EVP_Cipher(cipher_ctx, tc->pt, tc->ct, tc->pt_len);
+            if (ret < 0) {
+                rc = ACVP_CRYPTO_TAG_FAIL;
+                goto end;
+            }
         }
         break;
     default:
         printf("Error: Unsupported AES AEAD mode requested by ACVP server\n");
-            EVP_CIPHER_CTX_cleanup(&cipher_ctx);
-            return ACVP_NO_CAP;
+        rc = ACVP_NO_CAP;
+        goto end;
     }
 
-    EVP_CIPHER_CTX_cleanup(&cipher_ctx);
+end:
+    /* Cleanup */
+    if (cipher_ctx) EVP_CIPHER_CTX_free(cipher_ctx);
 
-    return ACVP_SUCCESS;
+    return rc;
 }
 
 static ACVP_RESULT app_sha_handler(ACVP_TEST_CASE *test_case)
 {
     ACVP_HASH_TC    *tc;
     const EVP_MD    *md;
-    EVP_MD_CTX          md_ctx;
+    EVP_MD_CTX *md_ctx = NULL;
+    ACVP_RESULT rc = ACVP_CRYPTO_MODULE_FAIL;
 
     if (!test_case) {
         return ACVP_INVALID_ARG;
@@ -2658,60 +2717,68 @@ static ACVP_RESULT app_sha_handler(ACVP_TEST_CASE *test_case)
   break;
     }
 
-    EVP_MD_CTX_init(&md_ctx);
+    md_ctx = EVP_MD_CTX_create();
 
     /* If Monte Carlo we need to be able to init and then update
      * one thousand times before we complete each iteration.
      */
     if (tc->test_type == ACVP_HASH_TEST_TYPE_MCT) {
 
-        if (!EVP_DigestInit_ex(&md_ctx, md, NULL)) {
+        if (!EVP_DigestInit_ex(md_ctx, md, NULL)) {
             printf("\nCrypto module error, EVP_DigestInit_ex failed\n");
-      return ACVP_CRYPTO_MODULE_FAIL;
+            goto end;
         }
-        if (!EVP_DigestUpdate(&md_ctx, tc->m1, tc->msg_len)) {
+        if (!EVP_DigestUpdate(md_ctx, tc->m1, tc->msg_len)) {
       printf("\nCrypto module error, EVP_DigestUpdate failed\n");
-      return ACVP_CRYPTO_MODULE_FAIL;
+            goto end;
         }
-  if (!EVP_DigestUpdate(&md_ctx, tc->m2, tc->msg_len)) {
+  if (!EVP_DigestUpdate(md_ctx, tc->m2, tc->msg_len)) {
       printf("\nCrypto module error, EVP_DigestUpdate failed\n");
-      return ACVP_CRYPTO_MODULE_FAIL;
+      goto end;
         }
-  if (!EVP_DigestUpdate(&md_ctx, tc->m3, tc->msg_len)) {
+  if (!EVP_DigestUpdate(md_ctx, tc->m3, tc->msg_len)) {
       printf("\nCrypto module error, EVP_DigestUpdate failed\n");
-      return ACVP_CRYPTO_MODULE_FAIL;
+      goto end;
         }
-  if (!EVP_DigestFinal(&md_ctx, tc->md, &tc->md_len)) {
+  if (!EVP_DigestFinal(md_ctx, tc->md, &tc->md_len)) {
       printf("\nCrypto module error, EVP_DigestFinal failed\n");
-      return ACVP_CRYPTO_MODULE_FAIL;
+      goto end;
         }
 
    } else {
-        if (!EVP_DigestInit_ex(&md_ctx, md, NULL)) {
+        if (!EVP_DigestInit_ex(md_ctx, md, NULL)) {
             printf("\nCrypto module error, EVP_DigestInit_ex failed\n");
-      return ACVP_CRYPTO_MODULE_FAIL;
+            goto end;
         }
 
-  if (!EVP_DigestUpdate(&md_ctx, tc->msg, tc->msg_len)) {
+  if (!EVP_DigestUpdate(md_ctx, tc->msg, tc->msg_len)) {
       printf("\nCrypto module error, EVP_DigestUpdate failed\n");
-      return ACVP_CRYPTO_MODULE_FAIL;
+      goto end;
         }
-  if (!EVP_DigestFinal(&md_ctx, tc->md, &tc->md_len)) {
+  if (!EVP_DigestFinal(md_ctx, tc->md, &tc->md_len)) {
       printf("\nCrypto module error, EVP_DigestFinal failed\n");
-      return ACVP_CRYPTO_MODULE_FAIL;
+      goto end;
         }
-  EVP_MD_CTX_cleanup(&md_ctx);
    }
 
-    return ACVP_SUCCESS;
+    rc = ACVP_SUCCESS;
+
+end:
+    if(md_ctx) EVP_MD_CTX_destroy(md_ctx);
+
+    return rc;
 }
 
 static ACVP_RESULT app_hmac_handler(ACVP_TEST_CASE *test_case)
 {
     ACVP_HMAC_TC    *tc;
     const EVP_MD    *md;
-    HMAC_CTX       hmac_ctx;
+    HMAC_CTX *hmac_ctx = NULL;
     int msg_len;
+    ACVP_RESULT rc = ACVP_CRYPTO_MODULE_FAIL;
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
+    HMAC_CTX static_ctx;
+#endif
 
     if (!test_case) {
         return ACVP_INVALID_ARG;
@@ -2741,29 +2808,42 @@ static ACVP_RESULT app_hmac_handler(ACVP_TEST_CASE *test_case)
         break;
     }
 
-    HMAC_CTX_init(&hmac_ctx);
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
+    hmac_ctx = &static_ctx;
+    HMAC_CTX_init(hmac_ctx);
+#else
+    hmac_ctx = HMAC_CTX_new();
+#endif
     msg_len = tc->msg_len;
 
-    if (!HMAC_Init_ex(&hmac_ctx, tc->key, tc->key_len, md, NULL)) {
+    if (!HMAC_Init_ex(hmac_ctx, tc->key, tc->key_len, md, NULL)) {
         printf("\nCrypto module error, HMAC_Init_ex failed\n");
-        return ACVP_CRYPTO_MODULE_FAIL;
+        goto end;
     }
 
-    if (!HMAC_Update(&hmac_ctx, tc->msg, msg_len)) {
+    if (!HMAC_Update(hmac_ctx, tc->msg, msg_len)) {
         printf("\nCrypto module error, HMAC_Update failed\n");
-        return ACVP_CRYPTO_MODULE_FAIL;
+        goto end;
     }
 
     /* TODO ? - we only support standard mac lengths so we return it, but
        the mac length was passed in and could be used to define how much to
        return */
-    if (!HMAC_Final(&hmac_ctx, tc->mac, &tc->mac_len)) {
+    if (!HMAC_Final(hmac_ctx, tc->mac, &tc->mac_len)) {
         printf("\nCrypto module error, HMAC_Final failed\n");
-        return ACVP_CRYPTO_MODULE_FAIL;
+        goto end;
     }
-    HMAC_CTX_cleanup(&hmac_ctx);
 
-    return ACVP_SUCCESS;
+    rc = ACVP_SUCCESS;
+
+end:
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
+    HMAC_CTX_cleanup(hmac_ctx);
+#else
+    if (hmac_ctx) HMAC_CTX_free(hmac_ctx);
+#endif
+
+    return rc;
 }
 
 static ACVP_RESULT app_cmac_handler(ACVP_TEST_CASE *test_case)
@@ -4549,19 +4629,29 @@ int hmac_totp(const char *key, const unsigned char *msg, char *hash,
 {
     int len = 0;
     unsigned char buff[MAX_LEN];
-    HMAC_CTX ctx;
+    HMAC_CTX *ctx;
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
+    HMAC_CTX static_ctx;
 
-    memset(&ctx, 0 , sizeof(HMAC_CTX));
-    HMAC_CTX_init(&ctx);
-    EVP_MD_CTX_set_flags(&ctx.md_ctx, EVP_MD_CTX_FLAG_NON_FIPS_ALLOW);
-    if (!HMAC_Init_ex(&ctx, key, key_len, md, NULL))
-        return 0;
-    if (!HMAC_Update(&ctx, msg, T_LEN))
-        return 0;
-    if (!HMAC_Final(&ctx, buff, (unsigned int *)&len))
-        return 0;
-    HMAC_CTX_cleanup(&ctx);
+    ctx = &static_ctx;
+    HMAC_CTX_init(ctx);
+#else
+    ctx = HMAC_CTX_new();
+#endif
+
+    HMAC_CTX_set_flags(ctx, EVP_MD_CTX_FLAG_NON_FIPS_ALLOW);
+    if (!HMAC_Init_ex(ctx, key, key_len, md, NULL)) goto end;
+    if (!HMAC_Update(ctx, msg, T_LEN)) goto end;
+    if (!HMAC_Final(ctx, buff, (unsigned int *)&len)) goto end;
     memcpy(hash, buff, len);
+
+end:
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
+    HMAC_CTX_cleanup(ctx);
+#else
+    if (ctx) HMAC_CTX_free(ctx);
+#endif
+
     return len;
 }
 
