@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2016, Cisco Systems, Inc.
+   Copyright (c) 2018, Cisco Systems, Inc.
    All rights reserved.
 
    Redistribution and use in source and binary forms, with or without modification,
@@ -43,6 +43,7 @@
 ***************************************************************************/
 
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 #include <sys/socket.h>
 #include <netdb.h>
@@ -1104,9 +1105,11 @@ static void Curl_ossl_cleanup(void)
     /* Free OpenSSL error strings */
     ERR_free_strings();
 
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
     /* Free thread local error state, destroying hash upon zero refcount */
     ERR_remove_thread_state(NULL);
     ERR_remove_state(0);
+#endif
 }
 
 void curl_easy_cleanup(CURL *curl)

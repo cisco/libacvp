@@ -248,7 +248,9 @@ cleanup:
     close(conn);
     destroy_server_connection();
     //BIO_free_all(listener);
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
     ERR_remove_thread_state(NULL);
+#endif
 
     server_running = 0;
     return NULL;
