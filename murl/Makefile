@@ -30,6 +30,7 @@ test:	$(TEST_OBJECTS) libmurl.so
 
 clean:
 	rm -f *.[ao]
+	rm -f test/*.[ao]
 	rm -f libmurl.so.1.0.0
 	rm -f libmurl.so
 	rm -f murl
