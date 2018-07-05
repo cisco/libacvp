@@ -142,12 +142,6 @@ static EVP_CIPHER_CTX *glb_cipher_ctx = NULL; /* need to maintain across calls f
         return 1; \
     }
 
-#define CHECK_ENABLE_CAP_RV_DEMO(rv) \
-    if (rv != ACVP_SUCCESS) { \
-        printf("Failed to register capability with libacvp (rv=%d: %s)\n", rv, acvp_lookup_error_string(rv)); \
-        goto end; \
-    }
-
 
 /*
  * Read the operational parameters from the various environment
