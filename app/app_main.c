@@ -74,8 +74,9 @@ static int enable_tdes(ACVP_CTX *ctx);
 static int enable_hash(ACVP_CTX *ctx);
 static int enable_cmac(ACVP_CTX *ctx);
 static int enable_hmac(ACVP_CTX *ctx);
+#ifdef OPENSSL_KDF_SUPPORT
 static int enable_kdf(ACVP_CTX *ctx);
-
+#endif
 #ifdef ACVP_NO_RUNTIME
 static int enable_dsa(ACVP_CTX *ctx);
 static int enable_rsa(ACVP_CTX *ctx);
@@ -126,6 +127,30 @@ static ACVP_RESULT app_aes_keywrap_handler(ACVP_TEST_CASE *test_case);
 #define TLS_MD_MASTER_SECRET_CONST_SIZE         13
 #define TLS_MD_KEY_EXPANSION_CONST              "key expansion"
 #define TLS_MD_KEY_EXPANSION_CONST_SIZE         13
+
+typedef struct app_config {
+    ACVP_LOG_LVL level;
+    int sample;
+    int json;
+    char json_file[JSON_FILENAME_LENGTH];
+
+    /*
+     * Algorithm Flags
+     * 0 is off, 1 is on
+     */
+    int aes; int tdes;
+    int hash; int cmac;
+    int hmac;
+    /* These require the fom */
+#ifdef OPENSSL_NO_RUNTIME
+    int dsa; int rsa;
+    int drbg; int ecdsa;
+    int kas_ecc; int kas_ffc;
+#endif
+#ifdef OPENSSL_KDF_SUPPORT
+    int kdf;
+#endif
+} APP_CONFIG;
 
 char *server;
 int port;
@@ -190,24 +215,63 @@ ACVP_RESULT progress(char *msg)
     return ACVP_SUCCESS;
 }
 
-static void print_usage(void)
+#define ANSI_COLOR_RED "\x1b[31m"
+#define ANSI_COLOR_RESET "\x1b[0m"
+
+static void print_usage(int err)
 {
+    if (err) {
     printf("\nInvalid usage...\n");
-    printf("acvp_app does not require any argument, however logging level can be\n");
+    } else {
+    printf("\n===========================");
+    printf("\n===== ACVP_APP USAGE ======");
+    printf("\n===========================\n");
+    }
+    printf("This program does not require any argument, however logging level can be\n");
     printf("controlled using:\n");
-    printf("      -none\n");
-    printf("      -error\n");
-    printf("      -warn\n");
-    printf("      -status(default)\n");
-    printf("      -info\n");
-    printf("      -verbose\n");
+    printf("      --none\n");
+    printf("      --error\n");
+    printf("      --warn\n");
+    printf("      --status(default)\n");
+    printf("      --info\n");
+    printf("      --verbose\n");
+    printf("\n");
+    printf("Algorithm Test Suites:\n");
+    printf("      --aes(default)\n");
+    printf("      --no_aes\n");
+    printf("      --tdes(default)\n");
+    printf("      --no_tdes\n");
+    printf("      --hash(default)\n");
+    printf("      --no_hash\n");
+    printf("      --cmac(default)\n");
+    printf("      --no_cmac\n");
+    printf("      --hmac(default)\n");
+    printf("      --no_hmac\n");
+#ifdef OPENSSL_NO_RUNTIME
+    printf("      --kdf\n");
+    printf("      --no_kdf(default)\n");
+#endif
+#ifdef OPENSSL_KDF_SUPPORT
+    printf("      --dsa\n");
+    printf("      --no_dsa(default)\n");
+    printf("      --rsa\n");
+    printf("      --no_rsa(default)\n");
+    printf("      --ecdsa\n");
+    printf("      --no_ecdsa(default)\n");
+    printf("      --drbg\n");
+    printf("      --no_drbg(default)\n");
+    printf("      --kas_ecc\n");
+    printf("      --no_kas_ecc(default)\n");
+    printf("      --kas_ffc\n");
+    printf("      --no_kas_ffc(default)\n");
+#endif
     printf("\n");
     printf("To register a formatted JSON file use:\n");
-    printf("      -json <file>\n");
+    printf("      --json <file>\n");
     printf("\n");
     printf("If you are running a sample registration (querying for correct answers\n");
     printf("in addition to the normal registration flow) use:\n");
-    printf("      -sample\n");
+    printf("      --sample\n");
     printf("\n");
     printf("In addition some options are passed to acvp_app using\n");
     printf("environment variables.  The following variables can be set:\n\n");
@@ -222,75 +286,377 @@ static void print_usage(void)
     printf("password on the key file.\n");
 }
 
+
+static int cli_alg_option(int *alg, int *op_status, int enable,
+                          char *enable_str, char *disable_str) {
+#define OP_DISABLE 1
+#define OP_ENABLE 2
+    if (enable) {
+        /*
+         * Trying to enable this algorithm.
+         * Check to see if algorithm has been disabled already.
+         */
+        if (*op_status == OP_DISABLE) {
+            printf(ANSI_COLOR_RED"Command error... [%s]"ANSI_COLOR_RESET
+                   "\nAlgorithm already disabled by \"%s\"."
+                   "\nPlease give only 1 of these options at a time.\n",
+                   enable_str, disable_str);
+            return 1;
+        }
+        *op_status = OP_ENABLE;
+        *alg = 1;
+    } else {
+        /*
+         * Trying to disable this algorithm.
+         * Check to see if algorithm has been disabled already.
+         */
+        if (*op_status == OP_ENABLE) {
+            printf(ANSI_COLOR_RED"Command error... [%s]"ANSI_COLOR_RESET
+                   "\nAlgorithm already enabled by \"%s\"."
+                   "\nPlease give only 1 of these options at a time.\n",
+                   disable_str, enable_str);
+            return 1;
+        }
+        *op_status = OP_DISABLE;
+        *alg = 0;
+    }
+
+    return 0;
+}
+
+static void default_config(APP_CONFIG *cfg) {
+    cfg->level = ACVP_LOG_LVL_STATUS;
+    cfg->aes = 1;
+    cfg->tdes = 1;
+    cfg->hash = 1;
+    cfg->cmac = 1;
+    cfg->hmac = 1;
+}
+
+static int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
+    char *log_lvl = NULL;
+    int aes_status = 0, tdes_status = 0,
+        hash_status = 0, cmac_status = 0,
+        hmac_status = 0;
+#ifdef OPENSSL_NO_RUNTIME
+    int dsa_status = 0, rsa_status = 0,
+        drbg_status = 0, ecdsa_status = 0,
+        kas_ecc_status = 0; kas_ffc_status = 0;
+#endif
+#ifdef OPENSSL_KDF_SUPPORT
+    int kdf_status = 0;
+#endif
+
+#define ALG_DISABLE 0
+#define ALG_ENABLE 1
+
+    /* Set the default configuration values */
+    default_config(cfg);
+
+    argv++;
+    argc--;
+    while (argc >= 1) {
+        if (strcmp(*argv, "--sample") == 0) {
+            cfg->sample = 1;
+        }
+        else if (strncmp(*argv, "--info", strlen("--info")) == 0) {
+            if (log_lvl) {
+                printf(ANSI_COLOR_RED"Command error... [%s]"ANSI_COLOR_RESET
+                       "\nLog Level already set to \"%s\"."
+                       "\nOnly 1 Log Level can be specified.\n", "--info", log_lvl);
+                print_usage(1);
+                return 1;
+            }
+            cfg->level = ACVP_LOG_LVL_INFO;
+            log_lvl = "info";
+        }
+        else if (strncmp(*argv, "--status", strlen("--status")) == 0) {
+            if (log_lvl) {
+                printf(ANSI_COLOR_RED"Command error... [%s]"ANSI_COLOR_RESET
+                       "\nLog Level already set to \"%s\"."
+                       "\nOnly 1 Log Level can be specified.\n", "--status", log_lvl);
+                print_usage(1);
+                return 1;
+            }
+            cfg->level = ACVP_LOG_LVL_STATUS;
+            log_lvl = "status";
+        }
+        else if (strncmp(*argv, "--warn", strlen("--warn")) == 0) {
+            if (log_lvl) {
+                printf(ANSI_COLOR_RED"Command error... [%s]"ANSI_COLOR_RESET
+                       "\nLog Level already set to \"%s\"."
+                       "\nOnly 1 Log Level can be specified.\n", "--warn", log_lvl);
+                print_usage(1);
+                return 1;
+            }
+            cfg->level = ACVP_LOG_LVL_WARN;
+            log_lvl = "warn";
+        }
+        else if (strncmp(*argv, "--error", strlen("--error")) == 0) {
+            if (log_lvl) {
+                printf(ANSI_COLOR_RED"Command error... [%s]"ANSI_COLOR_RESET
+                       "\nLog Level already set to \"%s\"."
+                       "\nOnly 1 Log Level can be specified.\n", "--error", log_lvl);
+                print_usage(1);
+                return 1;
+            }
+            cfg->level = ACVP_LOG_LVL_ERR;
+            log_lvl = "error";
+        }
+        else if (strncmp(*argv, "--none", strlen("--none")) == 0) {
+            if (log_lvl) {
+                printf(ANSI_COLOR_RED"Command error... [%s]"ANSI_COLOR_RESET
+                       "\nLog Level already set to \"%s\"."
+                       "\nOnly 1 Log Level can be specified.\n", "--none", log_lvl);
+                print_usage(1);
+                return 1;
+            }
+            cfg->level = ACVP_LOG_LVL_NONE;
+            log_lvl = "none";
+        }
+        else if (strncmp(*argv, "--verbose", strlen("--verbose")) == 0) {
+            if (log_lvl) {
+                printf(ANSI_COLOR_RED"Command error... [%s]"ANSI_COLOR_RESET
+                       "\nLog Level already set to \"%s\"."
+                       "\nOnly 1 Log Level can be specified.\n", "--verbose", log_lvl);
+                print_usage(1);
+                return 1;
+            }
+            cfg->level = ACVP_LOG_LVL_VERBOSE;
+            log_lvl = "verbose";
+        }
+        else if (strcmp(*argv, "--help") == 0) {
+            print_usage(0);
+            return 1;
+        }
+        else if (strcmp(*argv, "--json") == 0) {
+            int filename_len = 0;
+
+            cfg->json = 1;
+            argc--;
+            argv++;
+
+            if (*argv == NULL) {
+                printf(ANSI_COLOR_RED"Command error... [%s]"ANSI_COLOR_RESET
+                       "\nMissing <file>.\n", "--json");
+                print_usage(1);
+                return 1;
+            }
+
+            filename_len = strnlen(*argv, JSON_FILENAME_LENGTH+1);
+            if (filename_len > JSON_FILENAME_LENGTH){
+                printf(ANSI_COLOR_RED"Command error... [%s]"ANSI_COLOR_RESET
+                       "\nThe <file> \"%s\", has a name that is too long."
+                       "\nMax allowed <file> name length is (%d).\n",
+                       "--json", *argv, JSON_FILENAME_LENGTH);
+                print_usage(1);
+                return 1;
+            }
+
+            strcpy(cfg->json_file, *argv);
+        }
+        else if (strncmp(*argv, "--aes", strlen("--aes")) == 0) {
+            if (cli_alg_option(&cfg->aes, &aes_status, ALG_ENABLE,
+                                "--aes", "--no_aes")) return 1;
+        }
+        else if (strncmp(*argv, "--no_aes", strlen("--no_aes")) == 0) {
+            if (cli_alg_option(&cfg->aes, &aes_status, ALG_DISABLE,
+                                "--aes", "--no_aes")) return 1;
+        }
+        else if (strncmp(*argv, "--tdes", strlen("--tdes")) == 0) {
+            if (cli_alg_option(&cfg->tdes, &tdes_status, ALG_ENABLE,
+                                "--tdes", "--no_tdes")) return 1;
+        }
+        else if (strncmp(*argv, "--no_tdes", strlen("--no_tdes")) == 0) {
+            if (cli_alg_option(&cfg->tdes, &tdes_status, ALG_DISABLE,
+                                "--tdes", "--no_tdes")) return 1;
+        }
+        else if (strncmp(*argv, "--hash", strlen("--hash")) == 0) {
+            if (cli_alg_option(&cfg->hash, &hash_status, ALG_ENABLE,
+                                "--hash", "--no_hash")) return 1;
+        }
+        else if (strncmp(*argv, "--no_hash", strlen("--no_hash")) == 0) {
+            if (cli_alg_option(&cfg->hash, &hash_status, ALG_DISABLE,
+                                "--hash", "--no_hash")) return 1;
+        }
+        else if (strncmp(*argv, "--cmac", strlen("--cmac")) == 0) {
+            if (cli_alg_option(&cfg->cmac, &cmac_status, ALG_ENABLE,
+                                "--cmac", "--no_cmac")) return 1;
+        }
+        else if (strncmp(*argv, "--no_cmac", strlen("--no_cmac")) == 0) {
+            if (cli_alg_option(&cfg->cmac, &cmac_status, ALG_DISABLE,
+                                "--cmac", "--no_cmac")) return 1;
+        }
+        else if (strncmp(*argv, "--hmac", strlen("--hmac")) == 0) {
+            if (cli_alg_option(&cfg->hmac, &hmac_status, ALG_ENABLE,
+                                "--hmac", "--no_hmac")) return 1;
+        }
+        else if (strncmp(*argv, "--no_hmac", strlen("--no_hmac")) == 0) {
+            if (cli_alg_option(&cfg->hmac, &hmac_status, ALG_DISABLE,
+                                "--hmac", "--no_hmac")) return 1;
+        }
+        else if (strncmp(*argv, "--kdf", strlen("--kdf")) == 0) {
+#ifdef OPENSSL_KDF_SUPPORT
+            if (cli_alg_option(&cfg->kdf, &kdf_status, ALG_ENABLE,
+                                "--kdf", "--no_kdf")) return 1;
+#else
+            printf(ANSI_COLOR_RED"Command error... [%s]"ANSI_COLOR_RESET
+                   "\nMissing compile flag -DOPENSSL_KDF_SUPPORT"
+                   "\nThis option will have no effect.\n", "--kdf");
+#endif
+        }
+        else if (strncmp(*argv, "--no_kdf", strlen("--no_kdf")) == 0) {
+#ifdef OPENSSL_KDF_SUPPORT
+            if (cli_alg_option(&cfg->kdf, &kdf_status, ALG_DISABLE,
+                                "--kdf", "--no_kdf")) return 1;
+#else
+            printf(ANSI_COLOR_RED"Command error... [%s]"ANSI_COLOR_RESET
+                   "\nMissing compile flag -DOPENSSL_KDF_SUPPORT"
+                   "\nThis option will have no effect.\n", "--no_kdf");
+#endif
+        }
+        else if (strncmp(*argv, "--dsa", strlen("--dsa")) == 0) {
+#ifdef OPENSSL_NO_RUNTIME
+            if (cli_alg_option(&cfg->dsa, &dsa_status, ALG_ENABLE,
+                                "--dsa", "--no_dsa")) return 1;
+#else
+            printf(ANSI_COLOR_RED"Command error... [%s]"ANSI_COLOR_RESET
+                   "\nMissing compile flag -DOPENSSL_NO_RUNTIME"
+                   "\nThis option will have no effect.\n", "--dsa");
+#endif
+        }
+        else if (strncmp(*argv, "--no_dsa", strlen("--no_dsa")) == 0) {
+#ifdef OPENSSL_NO_RUNTIME
+            if (cli_alg_option(&cfg->dsa, &dsa_status, ALG_DISABLE,
+                                "--dsa", "--no_dsa")) return 1;
+#else
+            printf(ANSI_COLOR_RED"Command error... [%s]"ANSI_COLOR_RESET
+                   "\nMissing compile flag -DOPENSSL_NO_RUNTIME"
+                   "\nThis option will have no effect.\n", "--no_dsa");
+#endif
+        }
+        else if (strncmp(*argv, "--rsa", strlen("--rsa")) == 0) {
+#ifdef OPENSSL_NO_RUNTIME
+            if (cli_alg_option(&cfg->rsa, &rsa_status, ALG_ENABLE,
+                                "--rsa", "--no_rsa")) return 1;
+#else
+            printf(ANSI_COLOR_RED"Command error... [%s]"ANSI_COLOR_RESET
+                   "\nMissing compile flag -DOPENSSL_NO_RUNTIME"
+                   "\nThis option will have no effect.\n", "--rsa");
+#endif
+        }
+        else if (strncmp(*argv, "--no_rsa", strlen("--no_rsa")) == 0) {
+#ifdef OPENSSL_NO_RUNTIME
+            if (cli_alg_option(&cfg->rsa, &rsa_status, ALG_DISABLE,
+                                "--rsa", "--no_rsa")) return 1;
+#else
+            printf(ANSI_COLOR_RED"Command error... [%s]"ANSI_COLOR_RESET
+                   "\nMissing compile flag -DOPENSSL_NO_RUNTIME"
+                   "\nThis option will have no effect.\n", "--no_rsa");
+#endif
+        }
+        else if (strncmp(*argv, "--drbg", strlen("--drbg")) == 0) {
+#ifdef OPENSSL_NO_RUNTIME
+            if (cli_alg_option(&cfg->drbg, &drbg_status, ALG_ENABLE,
+                                "--drbg", "--no_drbg")) return 1;
+#else
+            printf(ANSI_COLOR_RED"Command error... [%s]"ANSI_COLOR_RESET
+                   "\nMissing compile flag -DOPENSSL_NO_RUNTIME"
+                   "\nThis option will have no effect\n", "--drbg");
+#endif
+        }
+        else if (strncmp(*argv, "--no_drbg", strlen("--no_drbg")) == 0) {
+#ifdef OPENSSL_NO_RUNTIME
+            if (cli_alg_option(&cfg->drbg, &drbg_status, ALG_DISABLE,
+                                "--drbg", "--no_drbg")) return 1;
+#else
+            printf(ANSI_COLOR_RED"Command error... [%s]"ANSI_COLOR_RESET
+                   "\nMissing compile flag -DOPENSSL_NO_RUNTIME"
+                   "\nTHis option will have no effect.\n", "--no_drbg");
+#endif
+        }
+        else if (strncmp(*argv, "--ecdsa", strlen("--ecdsa")) == 0) {
+#ifdef OPENSSL_NO_RUNTIME
+            if (cli_alg_option(&cfg->ecdsa, &ecdsa_status, ALG_ENABLE,
+                                "--ecdsa", "--no_ecdsa")) return 1;
+#else
+            printf(ANSI_COLOR_RED"Command warning... [%s]"ANSI_COLOR_RESET
+                   "\nMissing compile flag -DOPENSSL_NO_RUNTIME"
+                   "\nThis option will have no effect.\n", "--ecdsa");
+#endif
+        }
+        else if (strncmp(*argv, "--no_ecdsa", strlen("--no_ecdsa")) == 0) {
+#ifdef OPENSSL_NO_RUNTIME
+            if (cli_alg_option(&cfg->ecdsa, &ecdsa_status, ALG_DISABLE,
+                                "--ecdsa", "--no_ecdsa")) return 1;
+#else
+            printf(ANSI_COLOR_RED"Command warning... [%s]"ANSI_COLOR_RESET
+                   "\nMissing compile flag -DOPENSSL_NO_RUNTIME"
+                   "\nThis options will have no effect.\n", "--no_ecdsa");
+#endif
+        }
+        else if (strncmp(*argv, "--kas_ecc", strlen("--kas_ecc")) == 0) {
+#ifdef OPENSSL_NO_RUNTIME
+            if (cli_alg_option(&cfg->kas_ecc, &kas_ecc_status, ALG_ENABLE,
+                                "--kas_ecc", "--no_kas_ecc")) return 1;
+#else
+            printf(ANSI_COLOR_RED"Command warning... [%s]"ANSI_COLOR_RESET
+                   "\nMissing compile flag -DOPENSSL_NO_RUNTIME"
+                   "\nThis option will have no effect.\n", "--kas_ecc");
+#endif
+        }
+        else if (strncmp(*argv, "--no_kas_ecc", strlen("--no_kas_ecc")) == 0) {
+#ifdef OPENSSL_NO_RUNTIME
+            if (cli_alg_option(&cfg->kas_ecc, &kas_ecc_status, ALG_DISABLE,
+                                "--kas_ecc", "--no_kas_ecc")) return 1;
+#else
+            printf(ANSI_COLOR_RED"Command warning... [%s]"ANSI_COLOR_RESET
+                   "\nMissing compile flag -DOPENSSL_NO_RUNTIME"
+                   "\nThis option will have no effect.\n", "--no_kas_ecc");
+#endif
+        }
+        else if (strncmp(*argv, "--kas_ffc", strlen("--kas_ffc")) == 0) {
+#ifdef OPENSSL_NO_RUNTIME
+            if (cli_alg_option(&cfg->kas_ffc, &kas_ffc_status, ALG_ENABLE,
+                                "--kas_ffc", "--no_kas_ffc")) return 1;
+#else
+            printf(ANSI_COLOR_RED"Command warning... [%s]"ANSI_COLOR_RESET
+                   "\nMissing compile flag -DOPENSSL_NO_RUNTIME"
+                   "\nThis option will have no effect.\n", "--kas_ffc");
+#endif
+        }
+        else if (strncmp(*argv, "--no_kas_ffc", strlen("--no_kas_ffc")) == 0) {
+#ifdef OPENSSL_NO_RUNTIME
+            if (cli_alg_option(&cfg->kas_ffc, &kas_ffc_status, ALG_DISABLE,
+                                "--kas_ffc", "--no_kas_ffc")) return 1;
+#else
+            printf(ANSI_COLOR_RED"Command warning... [%s]"ANSI_COLOR_RESET
+                   "\nMissing compile flag -DOPENSSL_NO_RUNTIME"
+                   "\nThis option will have no effect.\n", "--no_kas_ffc");
+#endif
+        }
+        else {
+            printf("Command error... Option not recognized: \"%s\"", *argv);
+            print_usage(1);
+            return 1;
+        }
+        argv++;
+        argc--;
+    }
+    printf("\n");
+
+    return 0;
+}
+
 int main(int argc, char **argv) {
     ACVP_RESULT rv;
     int ret = 1; /* return code for main function */
     ACVP_CTX *ctx;
     char ssl_version[10];
-    ACVP_LOG_LVL level = ACVP_LOG_LVL_STATUS;
-    int sample = 0;
-    int json = 0;
-    char json_file[JSON_FILENAME_LENGTH];
+    APP_CONFIG cfg = {0};
 
-    int aes = 1;
-    int tdes = 1;
-    int hash = 1;
-    int cmac = 1;
-    int hmac = 1;
-    int kdf = 0;
-    /*
-     * these require the fom, off by default
-     */
-#ifdef ACVP_NO_RUNTIME
-    int dsa = 0;
-    int rsa = 0;
-    int drbg = 0;
-    int ecdsa = 0;
-    int kas_ecc = 0;
-    int kas_ffc = 0;
-#endif
-    
-    if (argc > 4) {
-        print_usage();
+    if (ingest_cli(&cfg, argc, argv)) {
         return 1;
-    }
-
-    argv++;
-    argc--;
-    while (argc >= 1) {
-        if (strcmp(*argv, "-sample") == 0) {
-            sample = 1;
-        }
-        if (strcmp(*argv, "-info") == 0) {
-            level = ACVP_LOG_LVL_INFO;
-        }
-        if (strcmp(*argv, "-status") == 0) {
-            level = ACVP_LOG_LVL_STATUS;
-        }
-        if (strcmp(*argv, "-warn") == 0) {
-            level = ACVP_LOG_LVL_WARN;
-        }
-        if (strcmp(*argv, "-error") == 0) {
-            level = ACVP_LOG_LVL_ERR;
-        }
-        if (strcmp(*argv, "-none") == 0) {
-            level = ACVP_LOG_LVL_NONE;
-        }
-        if (strcmp(*argv, "-verbose") == 0) {
-            level = ACVP_LOG_LVL_VERBOSE;
-        }
-        if (strcmp(*argv, "-help") == 0) {
-            print_usage();
-            return 1;
-        }
-        if (strcmp(*argv, "-json") == 0) {
-            json = 1;
-            argc--;
-            argv++;
-            strcpy(json_file, *argv);
-        }
-        argv++;
-        argc--;
     }
 
 #ifdef ACVP_NO_RUNTIME
@@ -312,7 +678,7 @@ int main(int argc, char **argv) {
      * We begin the libacvp usage flow here.
      * First, we create a test session context.
      */
-    rv = acvp_create_test_session(&ctx, &progress, level);
+    rv = acvp_create_test_session(&ctx, &progress, cfg.level);
     if (rv != ACVP_SUCCESS) {
         printf("Failed to create ACVP context\n");
         goto end;
@@ -387,17 +753,17 @@ int main(int argc, char **argv) {
         goto end;
     }
 
-    if (sample) {
+    if (cfg.sample) {
         acvp_mark_as_sample(ctx);
     }
 
-    if (json) {
+    if (cfg.json) {
         /*
          * Using a JSON to register allows us to skip the
          * "acvp_enable_*" API calls... could reduce the
          * size of this file if you choose to use this capability.
          */
-        rv = acvp_set_json_filename(ctx, json_file);
+        rv = acvp_set_json_filename(ctx, cfg.json_file);
         if (rv != ACVP_SUCCESS) {
             printf("Failed to set json file within ACVP ctx (rv=%d)\n", rv);
             goto end;
@@ -408,51 +774,53 @@ int main(int argc, char **argv) {
          * We need to register all the crypto module capabilities that will be
          * validated. Each has their own method for readability.
          */
-        if (aes) {
+        if (cfg.aes) {
             if (enable_aes(ctx)) goto end;
         }
 
-        if (tdes) {
+        if (cfg.tdes) {
             if (enable_tdes(ctx)) goto end;
         }
 
-        if (hash) {
+        if (cfg.hash) {
             if (enable_hash(ctx)) goto end;
         }
 
-        if (cmac) {
+        if (cfg.cmac) {
             if (enable_cmac(ctx)) goto end;
         }
 
-        if (hmac) {
+        if (cfg.hmac) {
             if (enable_hmac(ctx)) goto end;
         }
 
-        if (kdf) {
+#ifdef OPENSSL_KDF_SUPPORT
+        if (cfg.kdf) {
             if (enable_kdf(ctx)) goto end;
         }
+#endif
 
 #ifdef ACVP_NO_RUNTIME
-        if (dsa) {
+        if (cfg.dsa) {
             if (enable_dsa(ctx)) goto end;
         }
 
-        if (rsa) {
+        if (cfg.rsa) {
             if (enable_rsa(ctx)) goto end;
         }
 
-        if (ecdsa) {
+        if (cfg.ecdsa) {
             if (enable_ecdsa(ctx)) goto end;
         }
 
-        if (drbg) {
+        if (cfg.drbg) {
             if (enable_drbg(ctx)) goto end;
         }
 
-        if (kas_ecc) {
+        if (cfg.kas_ecc) {
             if (enable_kas_ecc(ctx)) goto end;
         }
-        if (kas_ffc) {
+        if (cfg.kas_ffc) {
             if (enable_kas_ffc(ctx)) goto end;
         }
 #endif
@@ -987,9 +1355,8 @@ static int enable_hmac (ACVP_CTX *ctx) {
     return 0;
 }
 
-static int enable_kdf (ACVP_CTX *ctx) {
 #ifdef OPENSSL_KDF_SUPPORT
-
+static int enable_kdf (ACVP_CTX *ctx) {
     ACVP_RESULT rv;
     char value[] = "same";
     int i, flags = 0;
@@ -1147,10 +1514,9 @@ static int enable_kdf (ACVP_CTX *ctx) {
     rv = acvp_enable_kdf108_cap_param(ctx, ACVP_KDF108_MODE_COUNTER, ACVP_KDF108_SUPPORTS_EMPTY_IV, 0);
     CHECK_ENABLE_CAP_RV(rv);
 
-#endif
-
     return 0;
 }
+#endif
 
 #ifdef ACVP_NO_RUNTIME
 static int enable_kas_ecc (ACVP_CTX *ctx) {
