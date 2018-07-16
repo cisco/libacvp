@@ -216,6 +216,7 @@ ACVP_RESULT progress(char *msg)
 }
 
 #define ANSI_COLOR_RED "\x1b[31m"
+#define ANSI_COLOR_YELLOW "\x1b[33m"
 #define ANSI_COLOR_RESET "\x1b[0m"
 
 static void print_usage(int err)
@@ -247,11 +248,11 @@ static void print_usage(int err)
     printf("      --no_cmac\n");
     printf("      --hmac(default)\n");
     printf("      --no_hmac\n");
-#ifdef OPENSSL_NO_RUNTIME
+#ifdef OPENSSL_KDF_SUPPORT
     printf("      --kdf\n");
     printf("      --no_kdf(default)\n");
 #endif
-#ifdef OPENSSL_KDF_SUPPORT
+#ifdef OPENSSL_NO_RUNTIME
     printf("      --dsa\n");
     printf("      --no_dsa(default)\n");
     printf("      --rsa\n");
@@ -580,7 +581,7 @@ static int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
             if (cli_alg_option(&cfg->ecdsa, &ecdsa_status, ALG_ENABLE,
                                 "--ecdsa", "--no_ecdsa")) return 1;
 #else
-            printf(ANSI_COLOR_RED"Command warning... [%s]"ANSI_COLOR_RESET
+            printf(ANSI_COLOR_YELLOW"Command warning... [%s]"ANSI_COLOR_RESET
                    "\nMissing compile flag -DOPENSSL_NO_RUNTIME"
                    "\nThis option will have no effect.\n", "--ecdsa");
 #endif
@@ -590,7 +591,7 @@ static int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
             if (cli_alg_option(&cfg->ecdsa, &ecdsa_status, ALG_DISABLE,
                                 "--ecdsa", "--no_ecdsa")) return 1;
 #else
-            printf(ANSI_COLOR_RED"Command warning... [%s]"ANSI_COLOR_RESET
+            printf(ANSI_COLOR_YELLOW"Command warning... [%s]"ANSI_COLOR_RESET
                    "\nMissing compile flag -DOPENSSL_NO_RUNTIME"
                    "\nThis options will have no effect.\n", "--no_ecdsa");
 #endif
@@ -600,7 +601,7 @@ static int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
             if (cli_alg_option(&cfg->kas_ecc, &kas_ecc_status, ALG_ENABLE,
                                 "--kas_ecc", "--no_kas_ecc")) return 1;
 #else
-            printf(ANSI_COLOR_RED"Command warning... [%s]"ANSI_COLOR_RESET
+            printf(ANSI_COLOR_YELLOW"Command warning... [%s]"ANSI_COLOR_RESET
                    "\nMissing compile flag -DOPENSSL_NO_RUNTIME"
                    "\nThis option will have no effect.\n", "--kas_ecc");
 #endif
@@ -610,7 +611,7 @@ static int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
             if (cli_alg_option(&cfg->kas_ecc, &kas_ecc_status, ALG_DISABLE,
                                 "--kas_ecc", "--no_kas_ecc")) return 1;
 #else
-            printf(ANSI_COLOR_RED"Command warning... [%s]"ANSI_COLOR_RESET
+            printf(ANSI_COLOR_YELLOW"Command warning... [%s]"ANSI_COLOR_RESET
                    "\nMissing compile flag -DOPENSSL_NO_RUNTIME"
                    "\nThis option will have no effect.\n", "--no_kas_ecc");
 #endif
@@ -620,7 +621,7 @@ static int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
             if (cli_alg_option(&cfg->kas_ffc, &kas_ffc_status, ALG_ENABLE,
                                 "--kas_ffc", "--no_kas_ffc")) return 1;
 #else
-            printf(ANSI_COLOR_RED"Command warning... [%s]"ANSI_COLOR_RESET
+            printf(ANSI_COLOR_YELLOW"Command warning... [%s]"ANSI_COLOR_RESET
                    "\nMissing compile flag -DOPENSSL_NO_RUNTIME"
                    "\nThis option will have no effect.\n", "--kas_ffc");
 #endif
@@ -630,7 +631,7 @@ static int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
             if (cli_alg_option(&cfg->kas_ffc, &kas_ffc_status, ALG_DISABLE,
                                 "--kas_ffc", "--no_kas_ffc")) return 1;
 #else
-            printf(ANSI_COLOR_RED"Command warning... [%s]"ANSI_COLOR_RESET
+            printf(ANSI_COLOR_YELLOW"Command warning... [%s]"ANSI_COLOR_RESET
                    "\nMissing compile flag -DOPENSSL_NO_RUNTIME"
                    "\nThis option will have no effect.\n", "--no_kas_ffc");
 #endif
