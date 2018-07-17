@@ -222,11 +222,11 @@ ACVP_RESULT progress(char *msg)
 static void print_usage(int err)
 {
     if (err) {
-    printf("\nInvalid usage...\n");
+        printf("\nInvalid usage...\n");
     } else {
-    printf("\n===========================");
-    printf("\n===== ACVP_APP USAGE ======");
-    printf("\n===========================\n");
+        printf("\n===========================");
+        printf("\n===== ACVP_APP USAGE ======");
+        printf("\n===========================\n");
     }
     printf("This program does not require any argument, however logging level can be\n");
     printf("controlled using:\n");
