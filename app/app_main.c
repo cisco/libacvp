@@ -342,7 +342,7 @@ static int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
 #ifdef ACVP_NO_RUNTIME
     int dsa_status = 0, rsa_status = 0,
         drbg_status = 0, ecdsa_status = 0,
-        kas_ecc_status = 0; kas_ffc_status = 0;
+        kas_ecc_status = 0, kas_ffc_status = 0;
 #endif
 #ifdef OPENSSL_KDF_SUPPORT
     int kdf_status = 0;
