@@ -142,7 +142,7 @@ typedef struct app_config {
     int hash; int cmac;
     int hmac;
     /* These require the fom */
-#ifdef OPENSSL_NO_RUNTIME
+#ifdef ACVP_NO_RUNTIME
     int dsa; int rsa;
     int drbg; int ecdsa;
     int kas_ecc; int kas_ffc;
@@ -252,7 +252,7 @@ static void print_usage(int err)
     printf("      --kdf\n");
     printf("      --no_kdf(default)\n");
 #endif
-#ifdef OPENSSL_NO_RUNTIME
+#ifdef ACVP_NO_RUNTIME
     printf("      --dsa\n");
     printf("      --no_dsa(default)\n");
     printf("      --rsa\n");
@@ -339,10 +339,10 @@ static int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
     int aes_status = 0, tdes_status = 0,
         hash_status = 0, cmac_status = 0,
         hmac_status = 0;
-#ifdef OPENSSL_NO_RUNTIME
+#ifdef ACVP_NO_RUNTIME
     int dsa_status = 0, rsa_status = 0,
         drbg_status = 0, ecdsa_status = 0,
-        kas_ecc_status = 0; kas_ffc_status = 0;
+        kas_ecc_status = 0, kas_ffc_status = 0;
 #endif
 #ifdef OPENSSL_KDF_SUPPORT
     int kdf_status = 0;
@@ -517,122 +517,122 @@ static int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
 #endif
         }
         else if (strncmp(*argv, "--dsa", strlen("--dsa")) == 0) {
-#ifdef OPENSSL_NO_RUNTIME
+#ifdef ACVP_NO_RUNTIME
             if (cli_alg_option(&cfg->dsa, &dsa_status, ALG_ENABLE,
                                 "--dsa", "--no_dsa")) return 1;
 #else
             printf(ANSI_COLOR_RED"Command error... [%s]"ANSI_COLOR_RESET
-                   "\nMissing compile flag -DOPENSSL_NO_RUNTIME"
+                   "\nMissing compile flag -DACVP_NO_RUNTIME"
                    "\nThis option will have no effect.\n", "--dsa");
 #endif
         }
         else if (strncmp(*argv, "--no_dsa", strlen("--no_dsa")) == 0) {
-#ifdef OPENSSL_NO_RUNTIME
+#ifdef ACVP_NO_RUNTIME
             if (cli_alg_option(&cfg->dsa, &dsa_status, ALG_DISABLE,
                                 "--dsa", "--no_dsa")) return 1;
 #else
             printf(ANSI_COLOR_RED"Command error... [%s]"ANSI_COLOR_RESET
-                   "\nMissing compile flag -DOPENSSL_NO_RUNTIME"
+                   "\nMissing compile flag -DACVP_NO_RUNTIME"
                    "\nThis option will have no effect.\n", "--no_dsa");
 #endif
         }
         else if (strncmp(*argv, "--rsa", strlen("--rsa")) == 0) {
-#ifdef OPENSSL_NO_RUNTIME
+#ifdef ACVP_NO_RUNTIME
             if (cli_alg_option(&cfg->rsa, &rsa_status, ALG_ENABLE,
                                 "--rsa", "--no_rsa")) return 1;
 #else
             printf(ANSI_COLOR_RED"Command error... [%s]"ANSI_COLOR_RESET
-                   "\nMissing compile flag -DOPENSSL_NO_RUNTIME"
+                   "\nMissing compile flag -DACVP_NO_RUNTIME"
                    "\nThis option will have no effect.\n", "--rsa");
 #endif
         }
         else if (strncmp(*argv, "--no_rsa", strlen("--no_rsa")) == 0) {
-#ifdef OPENSSL_NO_RUNTIME
+#ifdef ACVP_NO_RUNTIME
             if (cli_alg_option(&cfg->rsa, &rsa_status, ALG_DISABLE,
                                 "--rsa", "--no_rsa")) return 1;
 #else
             printf(ANSI_COLOR_RED"Command error... [%s]"ANSI_COLOR_RESET
-                   "\nMissing compile flag -DOPENSSL_NO_RUNTIME"
+                   "\nMissing compile flag -DACVP_NO_RUNTIME"
                    "\nThis option will have no effect.\n", "--no_rsa");
 #endif
         }
         else if (strncmp(*argv, "--drbg", strlen("--drbg")) == 0) {
-#ifdef OPENSSL_NO_RUNTIME
+#ifdef ACVP_NO_RUNTIME
             if (cli_alg_option(&cfg->drbg, &drbg_status, ALG_ENABLE,
                                 "--drbg", "--no_drbg")) return 1;
 #else
             printf(ANSI_COLOR_RED"Command error... [%s]"ANSI_COLOR_RESET
-                   "\nMissing compile flag -DOPENSSL_NO_RUNTIME"
+                   "\nMissing compile flag -DACVP_NO_RUNTIME"
                    "\nThis option will have no effect\n", "--drbg");
 #endif
         }
         else if (strncmp(*argv, "--no_drbg", strlen("--no_drbg")) == 0) {
-#ifdef OPENSSL_NO_RUNTIME
+#ifdef ACVP_NO_RUNTIME
             if (cli_alg_option(&cfg->drbg, &drbg_status, ALG_DISABLE,
                                 "--drbg", "--no_drbg")) return 1;
 #else
             printf(ANSI_COLOR_RED"Command error... [%s]"ANSI_COLOR_RESET
-                   "\nMissing compile flag -DOPENSSL_NO_RUNTIME"
+                   "\nMissing compile flag -DACVP_NO_RUNTIME"
                    "\nTHis option will have no effect.\n", "--no_drbg");
 #endif
         }
         else if (strncmp(*argv, "--ecdsa", strlen("--ecdsa")) == 0) {
-#ifdef OPENSSL_NO_RUNTIME
+#ifdef ACVP_NO_RUNTIME
             if (cli_alg_option(&cfg->ecdsa, &ecdsa_status, ALG_ENABLE,
                                 "--ecdsa", "--no_ecdsa")) return 1;
 #else
             printf(ANSI_COLOR_YELLOW"Command warning... [%s]"ANSI_COLOR_RESET
-                   "\nMissing compile flag -DOPENSSL_NO_RUNTIME"
+                   "\nMissing compile flag -DACVP_NO_RUNTIME"
                    "\nThis option will have no effect.\n", "--ecdsa");
 #endif
         }
         else if (strncmp(*argv, "--no_ecdsa", strlen("--no_ecdsa")) == 0) {
-#ifdef OPENSSL_NO_RUNTIME
+#ifdef ACVP_NO_RUNTIME
             if (cli_alg_option(&cfg->ecdsa, &ecdsa_status, ALG_DISABLE,
                                 "--ecdsa", "--no_ecdsa")) return 1;
 #else
             printf(ANSI_COLOR_YELLOW"Command warning... [%s]"ANSI_COLOR_RESET
-                   "\nMissing compile flag -DOPENSSL_NO_RUNTIME"
+                   "\nMissing compile flag -DACVP_NO_RUNTIME"
                    "\nThis options will have no effect.\n", "--no_ecdsa");
 #endif
         }
         else if (strncmp(*argv, "--kas_ecc", strlen("--kas_ecc")) == 0) {
-#ifdef OPENSSL_NO_RUNTIME
+#ifdef ACVP_NO_RUNTIME
             if (cli_alg_option(&cfg->kas_ecc, &kas_ecc_status, ALG_ENABLE,
                                 "--kas_ecc", "--no_kas_ecc")) return 1;
 #else
             printf(ANSI_COLOR_YELLOW"Command warning... [%s]"ANSI_COLOR_RESET
-                   "\nMissing compile flag -DOPENSSL_NO_RUNTIME"
+                   "\nMissing compile flag -DACVP_NO_RUNTIME"
                    "\nThis option will have no effect.\n", "--kas_ecc");
 #endif
         }
         else if (strncmp(*argv, "--no_kas_ecc", strlen("--no_kas_ecc")) == 0) {
-#ifdef OPENSSL_NO_RUNTIME
+#ifdef ACVP_NO_RUNTIME
             if (cli_alg_option(&cfg->kas_ecc, &kas_ecc_status, ALG_DISABLE,
                                 "--kas_ecc", "--no_kas_ecc")) return 1;
 #else
             printf(ANSI_COLOR_YELLOW"Command warning... [%s]"ANSI_COLOR_RESET
-                   "\nMissing compile flag -DOPENSSL_NO_RUNTIME"
+                   "\nMissing compile flag -DACVP_NO_RUNTIME"
                    "\nThis option will have no effect.\n", "--no_kas_ecc");
 #endif
         }
         else if (strncmp(*argv, "--kas_ffc", strlen("--kas_ffc")) == 0) {
-#ifdef OPENSSL_NO_RUNTIME
+#ifdef ACVP_NO_RUNTIME
             if (cli_alg_option(&cfg->kas_ffc, &kas_ffc_status, ALG_ENABLE,
                                 "--kas_ffc", "--no_kas_ffc")) return 1;
 #else
             printf(ANSI_COLOR_YELLOW"Command warning... [%s]"ANSI_COLOR_RESET
-                   "\nMissing compile flag -DOPENSSL_NO_RUNTIME"
+                   "\nMissing compile flag -DACVP_NO_RUNTIME"
                    "\nThis option will have no effect.\n", "--kas_ffc");
 #endif
         }
         else if (strncmp(*argv, "--no_kas_ffc", strlen("--no_kas_ffc")) == 0) {
-#ifdef OPENSSL_NO_RUNTIME
+#ifdef ACVP_NO_RUNTIME
             if (cli_alg_option(&cfg->kas_ffc, &kas_ffc_status, ALG_DISABLE,
                                 "--kas_ffc", "--no_kas_ffc")) return 1;
 #else
             printf(ANSI_COLOR_YELLOW"Command warning... [%s]"ANSI_COLOR_RESET
-                   "\nMissing compile flag -DOPENSSL_NO_RUNTIME"
+                   "\nMissing compile flag -DACVP_NO_RUNTIME"
                    "\nThis option will have no effect.\n", "--no_kas_ffc");
 #endif
         }
