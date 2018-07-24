@@ -114,6 +114,7 @@ static ACVP_RESULT acvp_append_hash_caps_entry (
     
     cap_entry = calloc(1, sizeof(ACVP_CAPS_LIST));
     if (!cap_entry) {
+        free(cap_entry);
         return ACVP_MALLOC_FAIL;
     }
     cap_entry->cipher = cipher;
