@@ -52,6 +52,7 @@
 #include <openssl/rsa.h>
 #include <openssl/bn.h>
 #include <openssl/rand.h>
+#include <openssl/ecdsa.h>
 #ifdef OPENSSL_KDF_SUPPORT
 #include <openssl/kdf.h>
 #endif
@@ -63,10 +64,6 @@
 #include <openssl/fips.h>
 extern int fips_selftest_fail;
 extern int fips_mode;
-int dsa_builtin_paramgen(DSA *ret, size_t bits, size_t qbits,
-    const EVP_MD *evpmd, const unsigned char *seed_in, size_t seed_len,
-    unsigned char *seed_out,
-    int *counter_ret, unsigned long *h_ret, BN_GENCB *cb);
 #endif
 static ACVP_RESULT totp(char **token);
 static int enable_aes(ACVP_CTX *ctx);
@@ -3620,6 +3617,10 @@ static ACVP_RESULT app_dsa_handler(ACVP_TEST_CASE *test_case)
     unsigned long       h, h2;
     DSA_SIG             *sig = NULL;
     BIGNUM              *q = NULL, *p = NULL, *g = NULL;
+    BIGNUM              *q2 = NULL, *p2 = NULL, *g2 = NULL;
+    BIGNUM *priv_key = NULL, *pub_key = NULL;
+    BIGNUM *sig_r = NULL, *sig_s = NULL;
+
 
     tc = test_case->tc.dsa;
     switch (tc->mode)
@@ -3639,10 +3640,19 @@ static ACVP_RESULT app_dsa_handler(ACVP_TEST_CASE *test_case)
             FIPS_dsa_free(dsa);
             return ACVP_CRYPTO_MODULE_FAIL;
         }
-        tc->p = (unsigned char *)BN_bn2hex(dsa->p);
-        tc->q = (unsigned char *)BN_bn2hex(dsa->q);
-        tc->g = (unsigned char *)BN_bn2hex(dsa->g);
 
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
+        p = dsa->p;
+        q = dsa->q;
+        g = dsa->g;
+#else
+        DSA_get0_pqg(dsa, (const BIGNUM **)&p,
+                     (const BIGNUM **)&q, (const BIGNUM **)&g);
+#endif
+
+        tc->p = (unsigned char *)BN_bn2hex(p);
+        tc->q = (unsigned char *)BN_bn2hex(q);
+        tc->g = (unsigned char *)BN_bn2hex(g);
 
         if (!DSA_generate_key(dsa)) {
             printf("\n DSA_generate_key failed");
@@ -3650,8 +3660,16 @@ static ACVP_RESULT app_dsa_handler(ACVP_TEST_CASE *test_case)
             return ACVP_CRYPTO_MODULE_FAIL;
         }
 
-        tc->x = (unsigned char *)BN_bn2hex(dsa->priv_key);
-        tc->y = (unsigned char *)BN_bn2hex(dsa->pub_key);
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
+        priv_key = dsa->priv_key;
+        pub_key = dsa->pub_key;
+#else
+        DSA_get0_key(dsa, (const BIGNUM **)&pub_key,
+                     (const BIGNUM **)&priv_key);
+#endif
+
+        tc->x = (unsigned char *)BN_bn2hex(priv_key);
+        tc->y = (unsigned char *)BN_bn2hex(pub_key);
         FIPS_dsa_free(dsa);
         break;
 
@@ -3702,7 +3720,15 @@ static ACVP_RESULT app_dsa_handler(ACVP_TEST_CASE *test_case)
                 return ACVP_CRYPTO_MODULE_FAIL;
             }
 
-            if (BN_cmp(dsa->p, p) || BN_cmp(dsa->q, q))
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
+            p2 = dsa->p;
+            q2 = dsa->q;
+#else
+            DSA_get0_pqg(dsa, (const BIGNUM **)&p2,
+                         (const BIGNUM **)&q2, NULL);
+#endif
+
+            if (BN_cmp(p2, p) || BN_cmp(q2, q))
                 r = -1;
             else
                 r = 1;
@@ -3724,8 +3750,12 @@ static ACVP_RESULT app_dsa_handler(ACVP_TEST_CASE *test_case)
             BN_hex2bn(&q, (char *)tc->q);
             BN_hex2bn(&g, (char *)tc->g);
 
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
             dsa->p = BN_dup(p);
             dsa->q = BN_dup(q);
+#else
+            DSA_set0_pqg(dsa, BN_dup(p), BN_dup(q), NULL);
+#endif
 
             if (dsa_builtin_paramgen2(dsa, L, N, md,
                     tc->seed, tc->seedlen, tc->index, NULL,
@@ -3736,7 +3766,13 @@ static ACVP_RESULT app_dsa_handler(ACVP_TEST_CASE *test_case)
                 return ACVP_CRYPTO_MODULE_FAIL;
             }
 
-            if (BN_cmp(dsa->g, g)) {
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
+            g2 = dsa->g;
+#else
+            DSA_get0_pqg(dsa, NULL, NULL, (const BIGNUM **)&g2);
+#endif
+
+            if (BN_cmp(g2, g)) {
                r = -1;
             } else {
                r = 1;
@@ -3791,25 +3827,31 @@ static ACVP_RESULT app_dsa_handler(ACVP_TEST_CASE *test_case)
         L = tc->l;
         N = tc->n;
 
-        BN_hex2bn(&dsa->p, (char *)tc->p);
-        BN_hex2bn(&dsa->q, (char *)tc->q);
-        BN_hex2bn(&dsa->g, (char *)tc->g);
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
+        p = dsa->p;
+        q = dsa->q;
+        g = dsa->g;
+        pub_key = dsa->pub_key;
+        sig_r = sig->r;
+        sig_s = sig->s;
+#else
+        DSA_get0_pqg(dsa, (const BIGNUM **)&p,
+                     (const BIGNUM **)&q, (const BIGNUM **)&g);
+        DSA_get0_key(dsa, (const BIGNUM **)&pub_key, NULL);
+        DSA_SIG_get0(sig, (const BIGNUM **)&sig_r, (const BIGNUM **)&sig_s);
+#endif
+
+        BN_hex2bn(&p, (char *)tc->p);
+        BN_hex2bn(&q, (char *)tc->q);
+        BN_hex2bn(&g, (char *)tc->g);
 
         n = tc->msglen;
-        BN_hex2bn(&dsa->pub_key, (char *)tc->y);
-        BN_hex2bn(&sig->r, (char *)tc->r);
-        BN_hex2bn(&sig->s, (char *)tc->s);
+        BN_hex2bn(&pub_key, (char *)tc->y);
+        BN_hex2bn(&sig_r, (char *)tc->r);
+        BN_hex2bn(&sig_s, (char *)tc->s);
 
         r = FIPS_dsa_verify(dsa, (const unsigned char *)tc->msg, n, md, sig);
 
-        if (sig->s) {
-            BN_free(sig->s);
-            sig->s = NULL;
-        }
-        if (sig->r) {
-            BN_free(sig->r);
-            sig->r = NULL;
-        }
         FIPS_dsa_free(dsa);
         FIPS_dsa_sig_free(sig);
         /* return result, -1 is failure, 1 is pass */
@@ -3856,9 +3898,18 @@ static ACVP_RESULT app_dsa_handler(ACVP_TEST_CASE *test_case)
             FIPS_dsa_free(dsa);
             return ACVP_CRYPTO_MODULE_FAIL;
         }
-        tc->p = (unsigned char *)BN_bn2hex(dsa->p);
-        tc->q = (unsigned char *)BN_bn2hex(dsa->q);
-        tc->g = (unsigned char *)BN_bn2hex(dsa->g);
+
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
+        p = dsa->p;
+        q = dsa->q;
+        g = dsa->g;
+#else
+        DSA_get0_pqg(dsa, (const BIGNUM **)&p,
+                     (const BIGNUM **)&q, (const BIGNUM **)&g);
+#endif
+        tc->p = (unsigned char *)BN_bn2hex(p);
+        tc->q = (unsigned char *)BN_bn2hex(q);
+        tc->g = (unsigned char *)BN_bn2hex(g);
 
 
         if (!DSA_generate_key(dsa)) {
@@ -3867,11 +3918,24 @@ static ACVP_RESULT app_dsa_handler(ACVP_TEST_CASE *test_case)
             return ACVP_CRYPTO_MODULE_FAIL;
         }
 
-        tc->y = (unsigned char *)BN_bn2hex(dsa->pub_key);
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
+        pub_key = dsa->pub_key;
+#else
+        DSA_get0_key(dsa, (const BIGNUM **)&pub_key, NULL);
+#endif
+        tc->y = (unsigned char *)BN_bn2hex(pub_key);
 
         sig = FIPS_dsa_sign(dsa, tc->msg, tc->msglen, md);
-        tc->r = (unsigned char *)BN_bn2hex(sig->r);
-        tc->s = (unsigned char *)BN_bn2hex(sig->s);
+
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
+        sig_r = sig->r;
+        sig_s = sig->s;
+#else
+        DSA_SIG_get0(sig, (const BIGNUM **)&sig_r, (const BIGNUM **)&sig_s);
+#endif
+
+        tc->r = (unsigned char *)BN_bn2hex(sig_r);
+        tc->s = (unsigned char *)BN_bn2hex(sig_s);
         FIPS_dsa_sig_free(sig);
         FIPS_dsa_free(dsa);
         break;
@@ -3910,8 +3974,17 @@ static ACVP_RESULT app_dsa_handler(ACVP_TEST_CASE *test_case)
             break;
         case ACVP_DSA_CANONICAL:
             dsa = FIPS_dsa_new();
-            BN_hex2bn(&dsa->p, (const char *)tc->p);
-            BN_hex2bn(&dsa->q, (const char *)tc->q);
+
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
+            p = dsa->p;
+            q = dsa->q;
+            g = dsa->g;
+#else
+            DSA_get0_pqg(dsa, (const BIGNUM **)&p,
+                         (const BIGNUM **)&q, (const BIGNUM **)&g);
+#endif
+            BN_hex2bn(&p, (const char *)tc->p);
+            BN_hex2bn(&q, (const char *)tc->q);
             L = tc->l;
             N = tc->n;
             if (dsa_builtin_paramgen2(dsa, L, N, md,
@@ -3921,7 +3994,7 @@ static ACVP_RESULT app_dsa_handler(ACVP_TEST_CASE *test_case)
                 FIPS_dsa_free(dsa);
                 return ACVP_CRYPTO_MODULE_FAIL;
             }
-            tc->g = (unsigned char *)BN_bn2hex(dsa->g);
+            tc->g = (unsigned char *)BN_bn2hex(g);
             FIPS_dsa_free(dsa);
             break;
 
@@ -3938,8 +4011,16 @@ static ACVP_RESULT app_dsa_handler(ACVP_TEST_CASE *test_case)
                 return ACVP_CRYPTO_MODULE_FAIL;
             }
 
-            tc->p = (unsigned char *)BN_bn2hex(dsa->p);
-            tc->q = (unsigned char *)BN_bn2hex(dsa->q);
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
+            p = dsa->p;
+            q = dsa->q;
+#else
+            DSA_get0_pqg(dsa, (const BIGNUM **)&p,
+                         (const BIGNUM **)&q, NULL);
+#endif
+
+            tc->p = (unsigned char *)BN_bn2hex(p);
+            tc->q = (unsigned char *)BN_bn2hex(q);
             tc->counter = counter;
             tc->h = h;
 
@@ -4199,7 +4280,7 @@ static ACVP_RESULT app_kas_ecc_handler(ACVP_TEST_CASE *test_case)
     } 
     if (tc->mode == ACVP_KAS_ECC_MODE_COMPONENT) {
         FIPS_digest(Z, Zlen, (unsigned char *)tc->chash, NULL, md);
-        tc->chashlen = M_EVP_MD_size(md);
+        tc->chashlen = EVP_MD_size(md);
     }
     rv = ACVP_SUCCESS;
 
@@ -4207,7 +4288,7 @@ error:
     if (Z) {
         OPENSSL_cleanse(Z, Zlen);
     }
-    OPENSSL_free(Z);
+    FIPS_free(Z);
     EC_KEY_free(ec);
     EC_POINT_free(peerkey);
     EC_GROUP_free(group);
@@ -4227,6 +4308,8 @@ static ACVP_RESULT app_kas_ffc_handler(ACVP_TEST_CASE *test_case)
     unsigned char *Z;
     int Zlen;
     DH *dh = NULL;
+    BIGNUM *p = NULL, *q = NULL, *g = NULL;
+    BIGNUM *pub_key = NULL, *priv_key = NULL;
     BIGNUM *peerkey = NULL;
 
     tc = test_case->tc.kas_ffc;
@@ -4255,16 +4338,30 @@ static ACVP_RESULT app_kas_ffc_handler(ACVP_TEST_CASE *test_case)
     if (!dh) {
         return rv;
     }
-    if (!BN_hex2bn(&dh->p, (char *)tc->p)) {
+
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
+    p = dh->p;
+    q = dh->q;
+    g = dh->g;
+    pub_key = dh->pub_key;
+    priv_key = dh->priv_key;
+#else
+    DH_get0_pqg(dh, (const BIGNUM **)&p,
+                (const BIGNUM **)&q, (const BIGNUM **)&g);
+    DH_get0_key(dh, (const BIGNUM **)&pub_key,
+                (const BIGNUM **)&priv_key);
+#endif
+
+    if (!BN_hex2bn(&p, (char *)tc->p)) {
         printf("BN_hex2bn failed p\n");
         goto error;
     }
-    if (!BN_hex2bn(&dh->q, (char *)tc->q)) {
+    if (!BN_hex2bn(&q, (char *)tc->q)) {
         printf("BN_hex2bn failed q\n");
         goto error;
     }
 
-    if (!BN_hex2bn(&dh->g, (char *)tc->g)) {
+    if (!BN_hex2bn(&g, (char *)tc->g)) {
         printf("BN_hex2bn failed g\n");
         goto error;
     }
@@ -4275,12 +4372,12 @@ static ACVP_RESULT app_kas_ffc_handler(ACVP_TEST_CASE *test_case)
     }
 
     if (tc->test_type == ACVP_KAS_FFC_TT_VAL) {
-        if (!BN_hex2bn(&dh->priv_key, (char *)tc->epri)) {
+        if (!BN_hex2bn(&priv_key, (char *)tc->epri)) {
             printf("BN_hex2bn failed epri\n");
             goto error;
         }
 
-        if (!BN_hex2bn(&dh->pub_key, (char *)tc->epui)) {
+        if (!BN_hex2bn(&pub_key, (char *)tc->epui)) {
             printf("BN_hex2bn failed epui\n");
             goto error;
         }
@@ -4292,7 +4389,7 @@ static ACVP_RESULT app_kas_ffc_handler(ACVP_TEST_CASE *test_case)
             goto error;
         }
     }
-    Z = OPENSSL_malloc(BN_num_bytes(dh->p));
+    Z = OPENSSL_malloc(BN_num_bytes(p));
     if (!Z) {
         printf("Malloc failed for Z\n");
         goto error;
@@ -4300,14 +4397,14 @@ static ACVP_RESULT app_kas_ffc_handler(ACVP_TEST_CASE *test_case)
 
     Zlen = DH_compute_key_padded(Z, peerkey, dh);
     FIPS_digest(Z, Zlen, (unsigned char *)tc->chash, NULL, md);
-    tc->chashlen = M_EVP_MD_size(md);
+    tc->chashlen = EVP_MD_size(md);
 
     if (tc->test_type == ACVP_KAS_FFC_TT_AFT) {
         memcpy(tc->z, Z, Zlen);
         tc->zlen = Zlen;
     }
 
-    tc->piut = BN_bn2hex(dh->pub_key);
+    tc->piut = BN_bn2hex(pub_key);
     tc->piutlen = strnlen(tc->piut, ACVP_KAS_FFC_MAX_STR);
 
 
@@ -4317,12 +4414,8 @@ error:
     if (Z) {
         OPENSSL_cleanse(Z, Zlen);
     }
-    OPENSSL_free(Z);
+    FIPS_free(Z);
     BN_clear_free(peerkey);
-    BN_clear_free(dh->priv_key);
-    BN_clear_free(dh->pub_key);
-    dh->priv_key = NULL;
-    dh->pub_key = NULL;
     FIPS_dh_free(dh);
     return rv;
 }
@@ -4340,6 +4433,7 @@ static ACVP_RESULT app_rsa_keygen_handler(ACVP_TEST_CASE *test_case)
     ACVP_RSA_KEYGEN_TC    *tc;
     ACVP_RESULT rv = ACVP_SUCCESS;
     RSA       *rsa;
+    BIGNUM *p = NULL, *q = NULL, *n = NULL, *d = NULL;
     BIGNUM *e = BN_new();
 
     /* keygen vars */
@@ -4364,6 +4458,18 @@ static ACVP_RESULT app_rsa_keygen_handler(ACVP_TEST_CASE *test_case)
         goto err;
     }
 
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
+    p = rsa->p;
+    q = rsa->q;
+    n = rsa->n;
+    d = rsa->d;
+#else
+    RSA_get0_key(rsa, (const BIGNUM **)&n, NULL,
+                 (const BIGNUM **)&d);
+    RSA_get0_factors(rsa, (const BIGNUM **)&p,
+                     (const BIGNUM **)&q);
+#endif
+
     /*
      * IMPORTANT: Placeholder! The RSA keygen vector
      * sets will fail if this handler is left as is.
@@ -4377,10 +4483,10 @@ static ACVP_RESULT app_rsa_keygen_handler(ACVP_TEST_CASE *test_case)
         goto err;
     }
 
-    tc->p = (unsigned char *)BN_bn2hex(rsa->p);
-    tc->q = (unsigned char *)BN_bn2hex(rsa->q);
-    tc->n = (unsigned char *)BN_bn2hex(rsa->n);
-    tc->d = (unsigned char *)BN_bn2hex(rsa->d);
+    tc->p = (unsigned char *)BN_bn2hex(p);
+    tc->q = (unsigned char *)BN_bn2hex(q);
+    tc->n = (unsigned char *)BN_bn2hex(n);
+    tc->d = (unsigned char *)BN_bn2hex(d);
 
     FIPS_rsa_free(rsa);
 
@@ -4460,7 +4566,7 @@ static ACVP_RESULT app_rsa_sig_handler(ACVP_TEST_CASE *test_case)
     EVP_MD *tc_md = NULL;
     unsigned char *msg = NULL, *sigbuf = NULL;
     int siglen, pad_mode, msg_len;
-    BIGNUM *bn_e = NULL;
+    BIGNUM *bn_e = NULL, *e = NULL, *n = NULL;
     ACVP_RSA_SIG_TC    *tc;
     RSA *rsa = NULL;
 
@@ -4528,6 +4634,13 @@ static ACVP_RESULT app_rsa_sig_handler(ACVP_TEST_CASE *test_case)
         goto err;
     }
 
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
+    e = rsa->e;
+    n = rsa->n;
+#else
+    RSA_get0_key(rsa, (const BIGNUM **)&n, (const BIGNUM **)&e, NULL);
+#endif
+
     bn_e = BN_new();
     if (!bn_e || !BN_set_word(bn_e, 0x1001)) {
         printf("\nError: Issue with exponent in RSA Sig\n");
@@ -4561,8 +4674,8 @@ static ACVP_RESULT app_rsa_sig_handler(ACVP_TEST_CASE *test_case)
      * Else, generate a new key, retrieve and save values
      */
     if (tc->sig_mode == ACVP_RSA_SIGVER) {
-        BN_hex2bn(&rsa->e, (const char *)tc->e);
-        BN_hex2bn(&rsa->n, (const char *)tc->n);
+        BN_hex2bn(&e, (const char *)tc->e);
+        BN_hex2bn(&n, (const char *)tc->n);
         tc->ver_disposition = RSA_verify(nid, msg, msg_len, tc->signature, tc->sig_len, rsa);
     } else {
         if (!FIPS_rsa_x931_generate_key_ex(rsa, tc->modulo, bn_e, NULL)) {
@@ -4570,8 +4683,8 @@ static ACVP_RESULT app_rsa_sig_handler(ACVP_TEST_CASE *test_case)
             rv = ACVP_CRYPTO_MODULE_FAIL;
             goto err;
         }
-        tc->e = (unsigned char *)BN_bn2hex(rsa->e);
-        tc->n = (unsigned char *)BN_bn2hex(rsa->n);
+        tc->e = (unsigned char *)BN_bn2hex(e);
+        tc->n = (unsigned char *)BN_bn2hex(n);
 
         if (msg && tc_md) {
             siglen = RSA_size(rsa);
@@ -4582,8 +4695,9 @@ static ACVP_RESULT app_rsa_sig_handler(ACVP_TEST_CASE *test_case)
                 goto err;
             }
 
-            if (!FIPS_rsa_sign(rsa, msg, msg_len, tc_md, pad_mode, 0, NULL,
-                                    sigbuf, (unsigned int *)&siglen)) {
+            if (!FIPS_rsa_sign(rsa, msg, msg_len, (const struct env_md_st *)tc_md,
+                               pad_mode, 0, NULL,
+                               sigbuf, (unsigned int *)&siglen)) {
                 printf("\nError: RSA Signature Generation fail\n");
                 rv = ACVP_CRYPTO_MODULE_FAIL;
                 goto err;
