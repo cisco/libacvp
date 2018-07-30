@@ -357,7 +357,7 @@ static int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
     while (argc >= 1) {
         /* version option used by itself, ignore remaining command line */
         if (strncmp(*argv, "--version", strlen("--version")) == 0) {
-            printf("\nACVP version %s(%s)\n", acvp_version(), acvp_protocol_version());
+            printf("\nACVP library version(protocol version): %s(%s)\n", acvp_version(), acvp_protocol_version());
             return 1;
         }
         if (strcmp(*argv, "--sample") == 0) {
