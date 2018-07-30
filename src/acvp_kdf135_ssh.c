@@ -94,10 +94,25 @@ ACVP_RESULT acvp_kdf135_ssh_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     const char *hash_str = NULL;
     char *json_result;
 
+    if (!ctx) {
+        ACVP_LOG_ERR("No ctx for handler operation");
+        return (ACVP_NO_CTX);
+    }
+
+    if (!obj) {
+        ACVP_LOG_ERR("No obj for handler operation");
+        return (ACVP_MALFORMED_JSON);
+    }
+
     alg_str = json_object_get_string(obj, "algorithm");
     if (!alg_str) {
         ACVP_LOG_ERR("unable to parse 'algorithm' from JSON");
         return (ACVP_MALFORMED_JSON);
+    }
+
+    if (strncmp(alg_str, "kdf-components", 14)) {
+        ACVP_LOG_ERR("Invalid algorithm for this function %s", alg_str);
+        return ACVP_INVALID_ARG;
     }
 
     mode_str = json_object_get_string(obj, "mode");
@@ -115,10 +130,6 @@ ACVP_RESULT acvp_kdf135_ssh_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
      * Get the crypto module handler for this hash algorithm
      */
     alg_id = ACVP_KDF135_SSH;
-    if (alg_id < ACVP_CIPHER_START) {
-        ACVP_LOG_ERR("unsupported algorithm (%s)", alg_str);
-        return (ACVP_UNSUPPORTED_OP);
-    }
     cap = acvp_locate_cap_entry(ctx, alg_id);
     if (!cap) {
         ACVP_LOG_ERR("ACVP server requesting unsupported capability %s : %d.", alg_str, alg_id);
@@ -150,6 +161,11 @@ ACVP_RESULT acvp_kdf135_ssh_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     r_tarr = json_object_get_array(r_vs, "testResults");
 
     groups = json_object_get_array(obj, "testGroups");
+    if (!groups) {
+        ACVP_LOG_ERR("Failed to include testGroups. ");
+        return ACVP_MISSING_ARG;
+    }
+
     g_cnt = json_array_get_count(groups);
     for (i = 0; i < g_cnt; i++) {
         groupval = json_array_get_value(groups, i);
@@ -157,7 +173,16 @@ ACVP_RESULT acvp_kdf135_ssh_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
 
         // Get the expected (user will generate) key and iv lengths
         cipher_str = json_object_get_string(groupobj, "cipher");
+        if (!cipher_str) {
+            ACVP_LOG_ERR("Failed to include cipher. ");
+            return ACVP_MISSING_ARG;
+        }
+
         sha_str = json_object_get_string(groupobj, "hashAlg");
+        if (!sha_str) {
+            ACVP_LOG_ERR("Failed to include hashAlg. ");
+            return ACVP_MISSING_ARG;
+        }
 
         /*
          * Determine the encrypt key_len, inferred from cipher.
@@ -211,16 +236,45 @@ ACVP_RESULT acvp_kdf135_ssh_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
         ACVP_LOG_INFO("       hashAlg: %s", sha_str);
 
         tests = json_object_get_array(groupobj, "tests");
+        if (!tests) {
+            ACVP_LOG_ERR("Failed to include tests. ");
+            return ACVP_MISSING_ARG;
+        }
+
         t_cnt = json_array_get_count(tests);
+        if (!t_cnt) {
+            ACVP_LOG_ERR("Failed to include tests in array. ");
+            return ACVP_MISSING_ARG;
+        }
+
         for (j = 0; j < t_cnt; j++) {
             ACVP_LOG_INFO("Found new KDF SSH test vector...");
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
 
             tc_id = (unsigned int) json_object_get_number(testobj, "tcId");
+            if (!tc_id) {
+                ACVP_LOG_ERR("Failed to include tc_id. ");
+                return ACVP_MISSING_ARG;
+            }
+
             shared_secret_str = json_object_get_string(testobj, "k");
+            if (!shared_secret_str) {
+                ACVP_LOG_ERR("Failed to include k. ");
+                return ACVP_MISSING_ARG;
+            }
+
             hash_str = json_object_get_string(testobj, "h");
+            if (!hash_str) {
+                ACVP_LOG_ERR("Failed to include h. ");
+                return ACVP_MISSING_ARG;
+            }
+
             session_id_str = json_object_get_string(testobj, "sessionId");
+            if (!session_id_str) {
+                ACVP_LOG_ERR("Failed to include sessionId. ");
+                return ACVP_MISSING_ARG;
+            }
 
             ACVP_LOG_INFO("        Test case: %d", j);
             ACVP_LOG_INFO("             tcId: %d", tc_id);

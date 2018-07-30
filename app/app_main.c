@@ -3828,28 +3828,26 @@ static ACVP_RESULT app_dsa_handler(ACVP_TEST_CASE *test_case)
         N = tc->n;
 
 #if OPENSSL_VERSION_NUMBER < 0x10100000L
-        p = dsa->p;
-        q = dsa->q;
-        g = dsa->g;
-        pub_key = dsa->pub_key;
-        sig_r = sig->r;
-        sig_s = sig->s;
+        BN_hex2bn(&dsa->p, (char *)tc->p);
+        BN_hex2bn(&dsa->q, (char *)tc->q);
+        BN_hex2bn(&dsa->g, (char *)tc->g);
+        BN_hex2bn(&dsa->pub_key, (char *)tc->y);
+        BN_hex2bn(&sig->r, (char *)tc->r);
+        BN_hex2bn(&sig->s, (char *)tc->s);
 #else
         DSA_get0_pqg(dsa, (const BIGNUM **)&p,
                      (const BIGNUM **)&q, (const BIGNUM **)&g);
         DSA_get0_key(dsa, (const BIGNUM **)&pub_key, NULL);
         DSA_SIG_get0(sig, (const BIGNUM **)&sig_r, (const BIGNUM **)&sig_s);
-#endif
-
         BN_hex2bn(&p, (char *)tc->p);
         BN_hex2bn(&q, (char *)tc->q);
         BN_hex2bn(&g, (char *)tc->g);
-
-        n = tc->msglen;
         BN_hex2bn(&pub_key, (char *)tc->y);
         BN_hex2bn(&sig_r, (char *)tc->r);
         BN_hex2bn(&sig_s, (char *)tc->s);
+#endif
 
+        n = tc->msglen;
         r = FIPS_dsa_verify(dsa, (const unsigned char *)tc->msg, n, md, sig);
 
         FIPS_dsa_free(dsa);
@@ -3976,15 +3974,14 @@ static ACVP_RESULT app_dsa_handler(ACVP_TEST_CASE *test_case)
             dsa = FIPS_dsa_new();
 
 #if OPENSSL_VERSION_NUMBER < 0x10100000L
-            p = dsa->p;
-            q = dsa->q;
-            g = dsa->g;
+            BN_hex2bn(&dsa->p, (const char *)tc->p);
+            BN_hex2bn(&dsa->q, (const char *)tc->q);
 #else
             DSA_get0_pqg(dsa, (const BIGNUM **)&p,
                          (const BIGNUM **)&q, (const BIGNUM **)&g);
-#endif
             BN_hex2bn(&p, (const char *)tc->p);
             BN_hex2bn(&q, (const char *)tc->q);
+#endif
             L = tc->l;
             N = tc->n;
             if (dsa_builtin_paramgen2(dsa, L, N, md,
@@ -3994,7 +3991,11 @@ static ACVP_RESULT app_dsa_handler(ACVP_TEST_CASE *test_case)
                 FIPS_dsa_free(dsa);
                 return ACVP_CRYPTO_MODULE_FAIL;
             }
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
+            tc->g = (unsigned char *)BN_bn2hex(dsa->g);
+#else
             tc->g = (unsigned char *)BN_bn2hex(g);
+#endif
             FIPS_dsa_free(dsa);
             break;
 
