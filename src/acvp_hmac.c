@@ -143,6 +143,16 @@ ACVP_RESULT acvp_hmac_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     ACVP_CIPHER alg_id;
     char *json_result;
 
+    if (!ctx) {
+        ACVP_LOG_ERR("No ctx for handler operation");
+        return (ACVP_NO_CTX);
+    }
+
+    if (!obj) {
+        ACVP_LOG_ERR("No obj for handler operation");
+        return (ACVP_MALFORMED_JSON);
+    }
+
     if (!alg_str) {
         ACVP_LOG_ERR("ERROR: unable to parse 'algorithm' from JSON");
         return (ACVP_MALFORMED_JSON);
@@ -193,28 +203,81 @@ ACVP_RESULT acvp_hmac_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     r_tarr = json_object_get_array(r_vs, "testResults");
 
     groups = json_object_get_array(obj, "testGroups");
+    if (!groups) {
+        ACVP_LOG_ERR("Failed to include testGroups. ");
+        return ACVP_MISSING_ARG;
+    }
     g_cnt = json_array_get_count(groups);
     for (i = 0; i < g_cnt; i++) {
         groupval = json_array_get_value(groups, i);
         groupobj = json_value_get_object(groupval);
 
         msglen = (unsigned int) json_object_get_number(groupobj, "msgLen");
+        if (!msglen) {
+            ACVP_LOG_ERR("Failed to include msgLen. ");
+            return ACVP_MISSING_ARG;
+        }
+
         keylen = (unsigned int) json_object_get_number(groupobj, "keyLen");
+        if (!keylen) {
+            ACVP_LOG_ERR("Failed to include keyLen. ");
+            return ACVP_MISSING_ARG;
+        }
+
         maclen = (unsigned int) json_object_get_number(groupobj, "macLen");
+        if (!maclen) {
+            ACVP_LOG_ERR("Failed to include macLen. ");
+            return ACVP_MISSING_ARG;
+        }
 
         ACVP_LOG_INFO("    Test group: %d", i);
         ACVP_LOG_INFO("        msglen: %d", msglen);
 
         tests = json_object_get_array(groupobj, "tests");
+        if (!tests) {
+            ACVP_LOG_ERR("Failed to include tests. ");
+            return ACVP_MISSING_ARG;
+        }
+
         t_cnt = json_array_get_count(tests);
+        if (!t_cnt) {
+            ACVP_LOG_ERR("Failed to include tests in array. ");
+            return ACVP_MISSING_ARG;
+        }
+
         for (j = 0; j < t_cnt; j++) {
             ACVP_LOG_INFO("Found new hash test vector...");
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
 
             tc_id = (unsigned int) json_object_get_number(testobj, "tcId");
+            if (!tc_id) {
+                ACVP_LOG_ERR("Failed to include tc_id. ");
+                return ACVP_MISSING_ARG;
+            }
             msg = (unsigned char *) json_object_get_string(testobj, "msg");
+            if (!msg) {
+                ACVP_LOG_ERR("Failed to include msg. ");
+                return ACVP_MISSING_ARG;
+            }
+
+            if (strnlen((char *)msg, ACVP_HMAC_MSG_MAX) != msglen*2/8) {
+                ACVP_LOG_ERR("msgLen(%d) or msg length(%d) incorrect", 
+                              msglen, strnlen((char *)msg, ACVP_HMAC_MSG_MAX)*8/2);
+                return ACVP_INVALID_ARG;
+            }
+
             key = (unsigned char *) json_object_get_string(testobj, "key");
+            if (!key) {
+                ACVP_LOG_ERR("Failed to include key. ");
+                return ACVP_MISSING_ARG;
+            }
+
+            if (strnlen((char *)key, ACVP_HMAC_KEY_MAX) != keylen*2/8) {
+                ACVP_LOG_ERR("keyLen(%d) or key length(%d) incorrect", 
+                              keylen, strnlen((char *)key, ACVP_HMAC_KEY_MAX)*8/2);
+                return ACVP_INVALID_ARG;
+            }
 
             ACVP_LOG_INFO("        Test case: %d", j);
             ACVP_LOG_INFO("             tcId: %d", tc_id);

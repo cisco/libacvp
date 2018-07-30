@@ -79,9 +79,20 @@ ACVP_RESULT acvp_kdf135_snmp_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     unsigned int p_len;
     char *json_result;
 
+
+    if (!ctx) {
+        ACVP_LOG_ERR("No ctx for handler operation");
+        return (ACVP_NO_CTX);
+    }
+
     if (!alg_str) {
         ACVP_LOG_ERR("unable to parse 'algorithm' from JSON");
         return (ACVP_MALFORMED_JSON);
+    }
+
+    if (strncmp(alg_str, "kdf-components", 14)) {
+        ACVP_LOG_ERR("Invalid algorithm for this function %s", alg_str);
+        return ACVP_INVALID_ARG;
     }
 
     /*
@@ -122,6 +133,11 @@ ACVP_RESULT acvp_kdf135_snmp_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     r_tarr = json_object_get_array(r_vs, "testResults");
 
     groups = json_object_get_array(obj, "testGroups");
+    if (!groups) {
+        ACVP_LOG_ERR("Failed to include testGroups. ");
+        return ACVP_MISSING_ARG;
+    }
+
     g_cnt = json_array_get_count(groups);
     for (i = 0; i < g_cnt; i++) {
         groupval = json_array_get_value(groups, i);
@@ -129,21 +145,54 @@ ACVP_RESULT acvp_kdf135_snmp_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
 
 
         p_len = (unsigned int) json_object_get_number(groupobj, "passwordLength");
+        if (!p_len) {
+            ACVP_LOG_ERR("pLen incorrect, %d", p_len);
+            return ACVP_INVALID_ARG;
+        }
+
         engine_id = (char *)json_object_get_string(groupobj, "engineId");
+        if (!engine_id) {
+            ACVP_LOG_ERR("Failed to include engineId. ");
+            return ACVP_MISSING_ARG;
+        }
 
         ACVP_LOG_INFO("    Test group: %d", i);
         ACVP_LOG_INFO("          pLen: %d", p_len);
         ACVP_LOG_INFO("      engineID: %s", engine_id);
 
         tests = json_object_get_array(groupobj, "tests");
+        if (!tests) {
+            ACVP_LOG_ERR("Failed to include tests. ");
+            return ACVP_MISSING_ARG;
+        }
+
         t_cnt = json_array_get_count(tests);
+        if (!t_cnt) {
+            ACVP_LOG_ERR("Failed to include tests in array. ");
+            return ACVP_MISSING_ARG;
+        }
+
         for (j = 0; j < t_cnt; j++) {
             ACVP_LOG_INFO("Found new hash test vector...");
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
 
             tc_id = (unsigned int) json_object_get_number(testobj, "tcId");
+            if (!tc_id) {
+                ACVP_LOG_ERR("Failed to include tc_id. ");
+                return ACVP_MISSING_ARG;
+            }
+
             password = json_object_get_string(testobj, "password");
+            if (!password) {
+                ACVP_LOG_ERR("Failed to include password");
+                return ACVP_MISSING_ARG;
+            }
+            if (strnlen(password, ACVP_KDF135_SNMP_PASSWORD_MAX) != p_len/8) {
+                ACVP_LOG_ERR("pLen(%d) or password length(%d) incorrect", 
+                              p_len/8, strnlen(password, ACVP_KDF135_SNMP_PASSWORD_MAX));
+                return ACVP_INVALID_ARG;
+            }
 
             ACVP_LOG_INFO("        Test case: %d", j);
             ACVP_LOG_INFO("             tcId: %d", tc_id);
@@ -240,8 +289,8 @@ static ACVP_RESULT acvp_kdf135_snmp_init_tc (ACVP_CTX *ctx,
  * a test case.
  */
 static ACVP_RESULT acvp_kdf135_snmp_release_tc (ACVP_KDF135_SNMP_TC *stc) {
-    free(stc->s_key);
 
+    free(stc->s_key);
     memset(stc, 0x0, sizeof(ACVP_KDF135_SNMP_TC));
     return ACVP_SUCCESS;
 }

@@ -429,13 +429,31 @@ ACVP_RESULT acvp_dsa_keygen_handler (ACVP_CTX *ctx, ACVP_TEST_CASE tc, ACVP_CAPS
     ACVP_DSA_TC *stc;
 
     l = json_object_get_number(groupobj, "l");
+    if (!l) {
+        ACVP_LOG_ERR("Failed to include l. ");
+        return ACVP_MISSING_ARG;
+    }
+
     n = json_object_get_number(groupobj, "n");
+    if (!n) {
+        ACVP_LOG_ERR("Failed to include n. ");
+        return ACVP_MISSING_ARG;
+    }
 
     ACVP_LOG_INFO("             l: %d", l);
     ACVP_LOG_INFO("             n: %d", n);
 
     tests = json_object_get_array(groupobj, "tests");
+    if (!tests) {
+        ACVP_LOG_ERR("Failed to include tests. ");
+        return ACVP_MISSING_ARG;
+    }
+
     t_cnt = json_array_get_count(tests);
+    if (!t_cnt) {
+        ACVP_LOG_ERR("Failed to include tests in array. ");
+        return ACVP_MISSING_ARG;
+    }
 
     stc = tc.tc.dsa;
 
@@ -445,6 +463,10 @@ ACVP_RESULT acvp_dsa_keygen_handler (ACVP_CTX *ctx, ACVP_TEST_CASE tc, ACVP_CAPS
         testobj = json_value_get_object(testval);
 
         tc_id = (unsigned int) json_object_get_number(testobj, "tcId");
+        if (!tc_id) {
+            ACVP_LOG_ERR("Failed to include tc_id. ");
+            return ACVP_MISSING_ARG;
+        }
 
         ACVP_LOG_INFO("       Test case: %d", j);
         ACVP_LOG_INFO("            tcId: %d", tc_id);
@@ -502,9 +524,26 @@ ACVP_RESULT acvp_dsa_pqggen_handler (ACVP_CTX *ctx, ACVP_TEST_CASE tc, ACVP_CAPS
 
     gen_pq = (unsigned char *) json_object_get_string(groupobj, "pqMode");
     gen_g = (unsigned char *) json_object_get_string(groupobj, "gMode");
+    if (!gen_pq && !gen_g) {
+        ACVP_LOG_ERR("Failed to include either gen_pq or gen_g. ");
+        return ACVP_MISSING_ARG;
+    }
     l = json_object_get_number(groupobj, "l");
+    if (!l) {
+        ACVP_LOG_ERR("Failed to include l. ");
+        return ACVP_MISSING_ARG;
+    }
+
     n = json_object_get_number(groupobj, "n");
+    if (!n) {
+        ACVP_LOG_ERR("Failed to include n. ");
+        return ACVP_MISSING_ARG;
+    }
     sha = (unsigned char *) json_object_get_string(groupobj, "hashAlg");
+    if (!sha) {
+        ACVP_LOG_ERR("Failed to include hashAlg. ");
+        return ACVP_MISSING_ARG;
+    }
 
     if (gen_pq) {
         ACVP_LOG_INFO("         genPQ: %s", gen_pq);
@@ -517,7 +556,16 @@ ACVP_RESULT acvp_dsa_pqggen_handler (ACVP_CTX *ctx, ACVP_TEST_CASE tc, ACVP_CAPS
     ACVP_LOG_INFO("           sha: %s", sha);
 
     tests = json_object_get_array(groupobj, "tests");
+    if (!tests) {
+        ACVP_LOG_ERR("Failed to include tests. ");
+        return ACVP_MISSING_ARG;
+    }
+
     t_cnt = json_array_get_count(tests);
+    if (!t_cnt) {
+        ACVP_LOG_ERR("Failed to include tests in array. ");
+        return ACVP_MISSING_ARG;
+    }
 
     stc = tc.tc.dsa;
 
@@ -527,15 +575,39 @@ ACVP_RESULT acvp_dsa_pqggen_handler (ACVP_CTX *ctx, ACVP_TEST_CASE tc, ACVP_CAPS
         testobj = json_value_get_object(testval);
 
         tc_id = (unsigned int) json_object_get_number(testobj, "tcId");
+        if (!tc_id) {
+            ACVP_LOG_ERR("Failed to include tc_id. ");
+            return ACVP_MISSING_ARG;
+        }
 
         ACVP_LOG_INFO("       Test case: %d", j);
         ACVP_LOG_INFO("            tcId: %d", tc_id);
         if (gen_g) {
             if (!strncmp((char *) gen_g, "canonical", 9)) {
                 p = (unsigned char *) json_object_get_string(testobj, "p");
+                if (!p) {
+                    ACVP_LOG_ERR("Failed to include p. ");
+                    return ACVP_MISSING_ARG;
+                }
+
                 q = (unsigned char *) json_object_get_string(testobj, "q");
+                if (!q) {
+                    ACVP_LOG_ERR("Failed to include q. ");
+                    return ACVP_MISSING_ARG;
+                }
+
                 seed = (unsigned char *) json_object_get_string(testobj, "domainSeed");
+                if (!seed) {
+                    ACVP_LOG_ERR("Failed to include domainSeed. ");
+                    return ACVP_MISSING_ARG;
+                }
+
                 index = (unsigned char *) json_object_get_string(testobj, "index");
+                if (!index) {
+                    ACVP_LOG_ERR("Failed to include index. ");
+                    return ACVP_MISSING_ARG;
+                }
+
                 gpq = ACVP_DSA_CANONICAL;
                 ACVP_LOG_INFO("               p: %s", p);
                 ACVP_LOG_INFO("               q: %s", q);
@@ -548,7 +620,17 @@ ACVP_RESULT acvp_dsa_pqggen_handler (ACVP_CTX *ctx, ACVP_TEST_CASE tc, ACVP_CAPS
         if (gen_g) {
             if (!strncmp((char *) gen_g, "unverifiable", 12)) {
                 p = (unsigned char *) json_object_get_string(testobj, "p");
+                if (!p) {
+                    ACVP_LOG_ERR("Failed to include p. ");
+                    return ACVP_MISSING_ARG;
+                }
+
                 q = (unsigned char *) json_object_get_string(testobj, "q");
+                if (!q) {
+                    ACVP_LOG_ERR("Failed to include q. ");
+                    return ACVP_MISSING_ARG;
+                }
+
                 gpq = ACVP_DSA_UNVERIFIABLE;
                 ACVP_LOG_INFO("               p: %s", p);
                 ACVP_LOG_INFO("               q: %s", q);
@@ -564,7 +646,10 @@ ACVP_RESULT acvp_dsa_pqggen_handler (ACVP_CTX *ctx, ACVP_TEST_CASE tc, ACVP_CAPS
                 gpq = ACVP_DSA_PROVABLE;
             }
         }
-
+        if (gpq == 0) {
+            ACVP_LOG_ERR("Failed to include valid gen_pq. ");
+            return ACVP_UNSUPPORTED_OP;
+        }
 
         /*
          * Setup the test case data that will be passed down to
@@ -658,15 +743,38 @@ ACVP_RESULT acvp_dsa_siggen_handler (ACVP_CTX *ctx, ACVP_TEST_CASE tc, ACVP_CAPS
     ACVP_DSA_TC *stc;
 
     l = json_object_get_number(groupobj, "l");
+    if (!l) {
+        ACVP_LOG_ERR("Failed to include l. ");
+        return ACVP_MISSING_ARG;
+    }
+
     n = json_object_get_number(groupobj, "n");
+    if (!n) {
+        ACVP_LOG_ERR("Failed to include n. ");
+        return ACVP_MISSING_ARG;
+    }
+
     sha = (unsigned char *) json_object_get_string(groupobj, "hashAlg");
+    if (!sha) {
+        ACVP_LOG_ERR("Failed to include hashAlg. ");
+        return ACVP_MISSING_ARG;
+    }
 
     ACVP_LOG_INFO("             l: %d", l);
     ACVP_LOG_INFO("             n: %d", n);
     ACVP_LOG_INFO("           sha: %s", sha);
 
     tests = json_object_get_array(groupobj, "tests");
+    if (!tests) {
+        ACVP_LOG_ERR("Failed to include tests. ");
+        return ACVP_MISSING_ARG;
+    }
+
     t_cnt = json_array_get_count(tests);
+    if (!t_cnt) {
+        ACVP_LOG_ERR("Failed to include tests in array. ");
+        return ACVP_MISSING_ARG;
+    }
 
     stc = tc.tc.dsa;
 
@@ -676,7 +784,17 @@ ACVP_RESULT acvp_dsa_siggen_handler (ACVP_CTX *ctx, ACVP_TEST_CASE tc, ACVP_CAPS
         testobj = json_value_get_object(testval);
 
         tc_id = (unsigned int) json_object_get_number(testobj, "tcId");
+        if (!tc_id) {
+            ACVP_LOG_ERR("Failed to include tc_id. ");
+            return ACVP_MISSING_ARG;
+        }
+
         msg = (unsigned char *) json_object_get_string(testobj, "message");
+        if (!msg) {
+            ACVP_LOG_ERR("Failed to include message. ");
+            return ACVP_MISSING_ARG;
+        }
+
         ACVP_LOG_INFO("       Test case: %d", j);
         ACVP_LOG_INFO("            tcId: %d", tc_id);
         ACVP_LOG_INFO("             msg: %s", msg);
@@ -733,10 +851,28 @@ ACVP_RESULT acvp_dsa_pqgver_handler (ACVP_CTX *ctx, ACVP_TEST_CASE tc, ACVP_CAPS
     ACVP_DSA_TC *stc;
 
     l = json_object_get_number(groupobj, "l");
+    if (!l) {
+        ACVP_LOG_ERR("Failed to include l. ");
+        return ACVP_MISSING_ARG;
+    }
+
     n = json_object_get_number(groupobj, "n");
+    if (!n) {
+        ACVP_LOG_ERR("Failed to include n. ");
+        return ACVP_MISSING_ARG;
+    }
+
     sha = (unsigned char *) json_object_get_string(groupobj, "hashAlg");
+    if (!sha) {
+        ACVP_LOG_ERR("Failed to include hashAlg. ");
+        return ACVP_MISSING_ARG;
+    }
     gmode = (unsigned char *) json_object_get_string(groupobj, "gMode");
     pqmode = (unsigned char *) json_object_get_string(groupobj, "pqMode");
+    if (!pqmode && !gmode) {
+        ACVP_LOG_ERR("Failed to include either pqMode or gMode. ");
+        return ACVP_MISSING_ARG;
+    }
 
     ACVP_LOG_INFO("             l: %d", l);
     ACVP_LOG_INFO("             n: %d", n);
@@ -745,7 +881,16 @@ ACVP_RESULT acvp_dsa_pqgver_handler (ACVP_CTX *ctx, ACVP_TEST_CASE tc, ACVP_CAPS
     ACVP_LOG_INFO("        pqmode: %s", pqmode);
 
     tests = json_object_get_array(groupobj, "tests");
+    if (!tests) {
+        ACVP_LOG_ERR("Failed to include tests. ");
+        return ACVP_MISSING_ARG;
+    }
+
     t_cnt = json_array_get_count(tests);
+    if (!t_cnt) {
+        ACVP_LOG_ERR("Failed to include tests in array. ");
+        return ACVP_MISSING_ARG;
+    }
 
     stc = tc.tc.dsa;
 
@@ -755,11 +900,27 @@ ACVP_RESULT acvp_dsa_pqgver_handler (ACVP_CTX *ctx, ACVP_TEST_CASE tc, ACVP_CAPS
         testobj = json_value_get_object(testval);
 
         tc_id = (unsigned int) json_object_get_number(testobj, "tcId");
+        if (!tc_id) {
+            ACVP_LOG_ERR("Failed to include tc_id. ");
+            return ACVP_MISSING_ARG;
+        }
+
         seed = (unsigned char *) json_object_get_string(testobj, "domainSeed");
         c = json_object_get_number(testobj, "counter");
         index = (unsigned char *) json_object_get_string(testobj, "index");
+
         p = (unsigned char *) json_object_get_string(testobj, "p");
+        if (!p) {
+            ACVP_LOG_ERR("Failed to include p. ");
+            return ACVP_MISSING_ARG;
+        }
+
         q = (unsigned char *) json_object_get_string(testobj, "q");
+        if (!q) {
+            ACVP_LOG_ERR("Failed to include q. ");
+            return ACVP_MISSING_ARG;
+        }
+
         g = (unsigned char *) json_object_get_string(testobj, "g");
 
         ACVP_LOG_INFO("       Test case: %d", j);
@@ -782,6 +943,32 @@ ACVP_RESULT acvp_dsa_pqgver_handler (ACVP_CTX *ctx, ACVP_TEST_CASE tc, ACVP_CAPS
         if (pqmode) {
             if (!strncmp((char *) pqmode, "probable", 8)) {
                 gpq = ACVP_DSA_PROBABLE;
+            }
+        }
+        if (gpq == 0) {
+            ACVP_LOG_ERR("Failed to include valid gen_pq. ");
+            return ACVP_UNSUPPORTED_OP;
+        }
+
+        if (gpq == ACVP_DSA_CANONICAL) {
+            if (!index) {
+                ACVP_LOG_ERR("Failed to include index. ");
+                return ACVP_MISSING_ARG;
+            }
+            if (!g) {
+                ACVP_LOG_ERR("Failed to include q. ");
+                return ACVP_MISSING_ARG;
+            }
+        }
+
+        if (gpq == ACVP_DSA_PROBABLE) {
+            if (!seed) {
+                ACVP_LOG_ERR("Failed to include seed. ");
+                return ACVP_MISSING_ARG;
+            }
+            if (!c) {
+                ACVP_LOG_ERR("Failed to include counter. ");
+                return ACVP_MISSING_ARG;
             }
         }
 
@@ -839,31 +1026,90 @@ ACVP_RESULT acvp_dsa_sigver_handler (ACVP_CTX *ctx, ACVP_TEST_CASE tc, ACVP_CAPS
     ACVP_DSA_TC *stc;
 
     l = json_object_get_number(groupobj, "l");
+    if (!l) {
+        ACVP_LOG_ERR("Failed to include l. ");
+        return ACVP_MISSING_ARG;
+    }
+
     n = json_object_get_number(groupobj, "n");
+    if (!n) {
+        ACVP_LOG_ERR("Failed to include n. ");
+        return ACVP_MISSING_ARG;
+    }
+
     sha = (unsigned char *) json_object_get_string(groupobj, "hashAlg");
+    if (!sha) {
+        ACVP_LOG_ERR("Failed to include hashAlg. ");
+        return ACVP_MISSING_ARG;
+    }
 
     ACVP_LOG_INFO("             l: %d", l);
     ACVP_LOG_INFO("             n: %d", n);
     ACVP_LOG_INFO("           sha: %s", sha);
 
     tests = json_object_get_array(groupobj, "tests");
+    if (!tests) {
+        ACVP_LOG_ERR("Failed to include tests. ");
+        return ACVP_MISSING_ARG;
+    }
+
     t_cnt = json_array_get_count(tests);
+    if (!t_cnt) {
+        ACVP_LOG_ERR("Failed to include tests in array. ");
+        return ACVP_MISSING_ARG;
+    }
 
     stc = tc.tc.dsa;
 
     p = (unsigned char *) json_object_get_string(groupobj, "p");
+    if (!p) {
+        ACVP_LOG_ERR("Failed to include p. ");
+        return ACVP_MISSING_ARG;
+    }
+
     q = (unsigned char *) json_object_get_string(groupobj, "q");
+    if (!q) {
+        ACVP_LOG_ERR("Failed to include q. ");
+        return ACVP_MISSING_ARG;
+    }
+
     g = (unsigned char *) json_object_get_string(groupobj, "g");
+    if (!g) {
+        ACVP_LOG_ERR("Failed to include g. ");
+        return ACVP_MISSING_ARG;
+    }
+
     for (j = 0; j < t_cnt; j++) {
         ACVP_LOG_INFO("Found new DSA SigVer test vector...");
         testval = json_array_get_value(tests, j);
         testobj = json_value_get_object(testval);
 
         tc_id = (unsigned int) json_object_get_number(testobj, "tcId");
+        if (!tc_id) {
+            ACVP_LOG_ERR("Failed to include tc_id. ");
+            return ACVP_MISSING_ARG;
+        }
+
         msg = (unsigned char *) json_object_get_string(testobj, "message");
+        if (!msg) {
+            ACVP_LOG_ERR("Failed to include message. ");
+            return ACVP_MISSING_ARG;
+        }
         r = (unsigned char *) json_object_get_string(testobj, "r");
+        if (!r) {
+            ACVP_LOG_ERR("Failed to include r. ");
+            return ACVP_MISSING_ARG;
+        }
         s = (unsigned char *) json_object_get_string(testobj, "s");
+        if (!s) {
+            ACVP_LOG_ERR("Failed to include s. ");
+            return ACVP_MISSING_ARG;
+        }
         y = (unsigned char *) json_object_get_string(testobj, "y");
+        if (!y) {
+            ACVP_LOG_ERR("Failed to include y. ");
+            return ACVP_MISSING_ARG;
+        }
 
         ACVP_LOG_INFO("       Test case: %d", j);
         ACVP_LOG_INFO("            tcId: %d", tc_id);
@@ -931,7 +1177,6 @@ ACVP_RESULT acvp_dsa_pqgver_kat_handler (ACVP_CTX *ctx, JSON_Object *obj)
     const char *alg_str = json_object_get_string(obj, "algorithm");
     ACVP_CIPHER alg_id;
     char *json_result;
-    unsigned char *type;
     unsigned int g_cnt, i;
 
     if (!alg_str) {
@@ -981,6 +1226,11 @@ ACVP_RESULT acvp_dsa_pqgver_kat_handler (ACVP_CTX *ctx, JSON_Object *obj)
     r_tarr = json_object_get_array(r_vs, "testResults");
 
     groups = json_object_get_array(obj, "testGroups");
+    if (!groups) {
+        ACVP_LOG_ERR("Failed to include testGroups. ");
+        return ACVP_MISSING_ARG;
+    }
+
     g_cnt = json_array_get_count(groups);
 
     stc.cipher = alg_id;
@@ -988,11 +1238,9 @@ ACVP_RESULT acvp_dsa_pqgver_kat_handler (ACVP_CTX *ctx, JSON_Object *obj)
         groupval = json_array_get_value(groups, i);
         groupobj = json_value_get_object(groupval);
 
-        type = (unsigned char *) json_object_get_string(groupobj, "type");
         stc.mode = ACVP_DSA_MODE_PQGVER;
 
         ACVP_LOG_INFO("    Test group: %d", i);
-        ACVP_LOG_INFO("          type: %s", type);
 
         rv = acvp_dsa_pqgver_handler(ctx, tc, cap, r_tarr, groupobj);
         if (rv != ACVP_SUCCESS) {
@@ -1034,7 +1282,6 @@ ACVP_RESULT acvp_dsa_pqggen_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     const char *alg_str = json_object_get_string(obj, "algorithm");
     ACVP_CIPHER alg_id;
     char *json_result;
-    unsigned char *type;
     unsigned int g_cnt, i;
 
     if (!alg_str) {
@@ -1084,6 +1331,10 @@ ACVP_RESULT acvp_dsa_pqggen_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     r_tarr = json_object_get_array(r_vs, "testResults");
 
     groups = json_object_get_array(obj, "testGroups");
+    if (!groups) {
+        ACVP_LOG_ERR("Failed to include testGroups. ");
+        return ACVP_MISSING_ARG;
+    }
     g_cnt = json_array_get_count(groups);
 
     stc.cipher = alg_id;
@@ -1091,11 +1342,9 @@ ACVP_RESULT acvp_dsa_pqggen_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
         groupval = json_array_get_value(groups, i);
         groupobj = json_value_get_object(groupval);
 
-        type = (unsigned char *) json_object_get_string(groupobj, "type");
         stc.mode = ACVP_DSA_MODE_PQGGEN;
 
         ACVP_LOG_INFO("    Test group: %d", i);
-        ACVP_LOG_INFO("          type: %s", type);
 
          rv = acvp_dsa_pqggen_handler(ctx, tc, cap, r_tarr, groupobj);
          if (rv != ACVP_SUCCESS) {
@@ -1134,7 +1383,6 @@ ACVP_RESULT acvp_dsa_siggen_kat_handler (ACVP_CTX *ctx, JSON_Object *obj)
     const char *alg_str = json_object_get_string(obj, "algorithm");
     ACVP_CIPHER alg_id;
     char *json_result;
-    unsigned char *type;
     unsigned int g_cnt, i;
 
     if (!alg_str) {
@@ -1184,6 +1432,10 @@ ACVP_RESULT acvp_dsa_siggen_kat_handler (ACVP_CTX *ctx, JSON_Object *obj)
     r_tarr = json_object_get_array(r_vs, "testResults");
 
     groups = json_object_get_array(obj, "testGroups");
+    if (!groups) {
+        ACVP_LOG_ERR("Failed to include testGroups. ");
+        return ACVP_MISSING_ARG;
+    }
     g_cnt = json_array_get_count(groups);
 
     stc.cipher = alg_id;
@@ -1191,11 +1443,9 @@ ACVP_RESULT acvp_dsa_siggen_kat_handler (ACVP_CTX *ctx, JSON_Object *obj)
         groupval = json_array_get_value(groups, i);
         groupobj = json_value_get_object(groupval);
 
-        type = (unsigned char *) json_object_get_string(groupobj, "type");
         stc.mode = ACVP_DSA_MODE_SIGGEN;
 
         ACVP_LOG_INFO("    Test group: %d", i);
-        ACVP_LOG_INFO("          type: %s", type);
 
         rv = acvp_dsa_siggen_handler(ctx, tc, cap, r_tarr, groupobj);
         if (rv != ACVP_SUCCESS) {
@@ -1236,7 +1486,6 @@ ACVP_RESULT acvp_dsa_keygen_kat_handler (ACVP_CTX *ctx, JSON_Object *obj)
     const char *alg_str = json_object_get_string(obj, "algorithm");
     ACVP_CIPHER alg_id;
     char *json_result;
-    unsigned char *type;
     unsigned int g_cnt, i;
 
     if (!alg_str) {
@@ -1286,6 +1535,10 @@ ACVP_RESULT acvp_dsa_keygen_kat_handler (ACVP_CTX *ctx, JSON_Object *obj)
     r_tarr = json_object_get_array(r_vs, "testResults");
 
     groups = json_object_get_array(obj, "testGroups");
+    if (!groups) {
+        ACVP_LOG_ERR("Failed to include testGroups. ");
+        return ACVP_MISSING_ARG;
+    }
     g_cnt = json_array_get_count(groups);
 
     stc.cipher = alg_id;
@@ -1293,11 +1546,9 @@ ACVP_RESULT acvp_dsa_keygen_kat_handler (ACVP_CTX *ctx, JSON_Object *obj)
         groupval = json_array_get_value(groups, i);
         groupobj = json_value_get_object(groupval);
 
-        type = (unsigned char *) json_object_get_string(groupobj, "type");
         stc.mode = ACVP_DSA_MODE_KEYGEN;
 
         ACVP_LOG_INFO("    Test group: %d", i);
-        ACVP_LOG_INFO("          type: %s", type);
 
         rv = acvp_dsa_keygen_handler(ctx, tc, cap, r_tarr, groupobj);
         if (rv != ACVP_SUCCESS) {
@@ -1338,7 +1589,6 @@ ACVP_RESULT acvp_dsa_sigver_kat_handler (ACVP_CTX *ctx, JSON_Object *obj)
     const char *alg_str = json_object_get_string(obj, "algorithm");
     ACVP_CIPHER alg_id;
     char *json_result;
-    unsigned char *type;
     unsigned int g_cnt, i;
 
     if (!alg_str) {
@@ -1388,6 +1638,10 @@ ACVP_RESULT acvp_dsa_sigver_kat_handler (ACVP_CTX *ctx, JSON_Object *obj)
     r_tarr = json_object_get_array(r_vs, "testResults");
 
     groups = json_object_get_array(obj, "testGroups");
+    if (!groups) {
+        ACVP_LOG_ERR("Failed to include testGroups. ");
+        return ACVP_MISSING_ARG;
+    }
     g_cnt = json_array_get_count(groups);
 
     stc.cipher = alg_id;
@@ -1395,11 +1649,9 @@ ACVP_RESULT acvp_dsa_sigver_kat_handler (ACVP_CTX *ctx, JSON_Object *obj)
         groupval = json_array_get_value(groups, i);
         groupobj = json_value_get_object(groupval);
 
-        type = (unsigned char *) json_object_get_string(groupobj, "type");
         stc.mode = ACVP_DSA_MODE_SIGVER;
 
         ACVP_LOG_INFO("    Test group: %d", i);
-        ACVP_LOG_INFO("          type: %s", type);
 
         rv = acvp_dsa_sigver_handler(ctx, tc, cap, r_tarr, groupobj);
         if (rv != ACVP_SUCCESS) {
@@ -1428,6 +1680,21 @@ ACVP_RESULT acvp_dsa_sigver_kat_handler (ACVP_CTX *ctx, JSON_Object *obj)
 ACVP_RESULT acvp_dsa_kat_handler (ACVP_CTX *ctx, JSON_Object *obj)
 {
     const char *mode = json_object_get_string(obj, "mode");
+
+    if (!ctx) {
+        ACVP_LOG_ERR("CTX is NULL. ");
+        return ACVP_NO_CTX;
+    }
+
+    if (!obj) {
+        ACVP_LOG_ERR("OBJ is NULL. ");
+        return ACVP_MALFORMED_JSON;
+    }
+
+    if (!mode) {
+        ACVP_LOG_ERR("Failed to include mode. ");
+        return ACVP_MISSING_ARG;
+    }
 
     if (!strncmp(mode, ACVP_ALG_DSA_PQGGEN, 6)) {
         return (acvp_dsa_pqggen_kat_handler(ctx, obj));
