@@ -2551,6 +2551,10 @@ char *acvp_lookup_error_string (ACVP_RESULT rv);
 
 void acvp_cleanup (void);
 
+char *acvp_version (void);
+
+char *acvp_protocol_version (void);
+
 #ifdef __cplusplus
 }
 #endif

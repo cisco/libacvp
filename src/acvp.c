@@ -1567,3 +1567,12 @@ static ACVP_RESULT acvp_get_result_vsid (ACVP_CTX *ctx, int vs_id) {
     return ACVP_SUCCESS;
 }
 
+char *acvp_version (void)
+{
+    return ACVP_LIBRARY_VERSION;
+}
+
+char *acvp_protocol_version (void)
+{
+    return ACVP_VERSION;
+}

@@ -233,6 +233,7 @@ static void print_usage(int err)
     printf("      --status(default)\n");
     printf("      --info\n");
     printf("      --verbose\n");
+    printf("      --version\n");
     printf("\n");
     printf("Algorithm Test Suites:\n");
     printf("      --aes(default)\n");
@@ -354,6 +355,11 @@ static int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
     argv++;
     argc--;
     while (argc >= 1) {
+        /* version option used by itself, ignore remaining command line */
+        if (strncmp(*argv, "--version", strlen("--version")) == 0) {
+            printf("\nACVP version %s(%s)\n", acvp_version(), acvp_protocol_version());
+            return 1;
+        }
         if (strcmp(*argv, "--sample") == 0) {
             cfg->sample = 1;
         }
