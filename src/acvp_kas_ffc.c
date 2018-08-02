@@ -153,7 +153,7 @@ static ACVP_RESULT acvp_kas_ffc_release_tc (ACVP_KAS_FFC_TC *stc) {
     if (stc->piut) free(stc->piut);
     if (stc->epri) free(stc->epri);
     if (stc->epui) free(stc->epui);
-    if (stc->epui)free(stc->eps);
+    if (stc->eps)free(stc->eps);
     if (stc->z) free(stc->z);
     if (stc->chash) free(stc->chash);
     if (stc->p) free(stc->p);

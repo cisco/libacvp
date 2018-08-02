@@ -27,8 +27,11 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#ifdef WIN32
+#include <io.h>
+#else
 #include <unistd.h>
-
+#endif
 #include "acvp.h"
 #include "acvp_lcl.h"
 #include "parson.h"

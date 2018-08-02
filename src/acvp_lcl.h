@@ -32,31 +32,59 @@
 #define ACVP_LIBRARY_VERSION    "1.0.0"
 
 #ifndef ACVP_LOG_INFO
+#ifdef WIN32
+#define ACVP_LOG_INFO(format, ...) do { \
+        acvp_log_msg(ctx, ACVP_LOG_LVL_INFO, "***ACVP [INFO][%s:%d]--> " format "\n", \
+                __func__, __LINE__, __VA_ARGS__); \
+} while (0)
+#else
 #define ACVP_LOG_INFO(format, args ...) do { \
         acvp_log_msg(ctx, ACVP_LOG_LVL_INFO, "***ACVP [INFO][%s:%d]--> " format "\n", \
                 __func__, __LINE__, ##args); \
 } while (0)
 #endif
+#endif
 
 #ifndef ACVP_LOG_ERR
+#ifdef WIN32
+#define ACVP_LOG_ERR(format, ...) do { \
+        acvp_log_msg(ctx, ACVP_LOG_LVL_ERR, "***ACVP [ERR][%s:%d]--> " format "\n", \
+                __func__, __LINE__, __VA_ARGS__); \
+} while (0)
+#else
 #define ACVP_LOG_ERR(format, args ...) do { \
         acvp_log_msg(ctx, ACVP_LOG_LVL_ERR, "***ACVP [ERR][%s:%d]--> " format "\n", \
                 __func__, __LINE__, ##args); \
 } while (0)
 #endif
+#endif
 
 #ifndef ACVP_LOG_STATUS
+#ifdef WIN32
+#define ACVP_LOG_STATUS(format, ...) do { \
+        acvp_log_msg(ctx, ACVP_LOG_LVL_STATUS, "***ACVP [STATUS][%s:%d]--> " format "\n", \
+                __func__, __LINE__, __VA_ARGS__); \
+} while (0)
+#else
 #define ACVP_LOG_STATUS(format, args ...) do { \
         acvp_log_msg(ctx, ACVP_LOG_LVL_STATUS, "***ACVP [STATUS][%s:%d]--> " format "\n", \
                 __func__, __LINE__, ##args); \
 } while (0)
 #endif
+#endif
 
 #ifndef ACVP_LOG_WARN
+#ifdef WIN32
+#define ACVP_LOG_WARN(format, ...) do { \
+        acvp_log_msg(ctx, ACVP_LOG_LVL_WARN, "***ACVP [WARN][%s:%d]--> " format "\n", \
+                __func__, __LINE__, __VA_ARGS__); \
+} while (0)
+#else
 #define ACVP_LOG_WARN(format, args ...) do { \
         acvp_log_msg(ctx, ACVP_LOG_LVL_WARN, "***ACVP [WARN][%s:%d]--> " format "\n", \
                 __func__, __LINE__, ##args); \
 } while (0)
+#endif
 #endif
 
 #define ACVP_ALG_MAX ACVP_CIPHER_END - 1  /* Used by alg_tbl[] */
@@ -428,7 +456,7 @@ typedef struct acvp_kdf108_capability {
 } ACVP_KDF108_CAP;
 
 typedef struct acvp_kdf135_tpm_capability {
-
+    int placeholder; // TODO remove TPM stuff from library
 } ACVP_KDF135_TPM_CAP;
 
 typedef struct acvp_kdf135_ssh_capability {

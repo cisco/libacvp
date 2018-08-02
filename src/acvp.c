@@ -27,8 +27,12 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#ifdef WIN32
+#include <io.h>
+#include <Windows.h>
+#else
 #include <unistd.h>
-
+#endif
 #include "acvp.h"
 #include "acvp_lcl.h"
 #include "parson.h"
@@ -1271,7 +1275,11 @@ ACVP_RESULT acvp_retry_handler (ACVP_CTX *ctx, unsigned int retry_period) {
         retry_period = ACVP_RETRY_TIME_MAX;
         ACVP_LOG_WARN("retry_period not found, using max retry period!");
     }
-    sleep(retry_period);
+    #ifdef WIN32
+        Sleep(retry_period);
+    #else
+        sleep(retry_period);
+    #endif
 
     return ACVP_KAT_DOWNLOAD_RETRY;
 }
