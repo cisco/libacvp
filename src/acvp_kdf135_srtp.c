@@ -38,13 +38,70 @@
  * the JSON processing for a single test case.
  */
 static ACVP_RESULT acvp_kdf135_srtp_output_tc (ACVP_CTX *ctx, ACVP_KDF135_SRTP_TC *stc, JSON_Object *tc_rsp) {
-    json_object_set_string(tc_rsp, "srtpKe", (const char *)stc->srtp_ke);
-    json_object_set_string(tc_rsp, "srtpKa", (const char *)stc->srtp_ka);
-    json_object_set_string(tc_rsp, "srtpKs", (const char *)stc->srtp_ks);
-    json_object_set_string(tc_rsp, "srtcpKe", (const char *)stc->srtcp_ke);
-    json_object_set_string(tc_rsp, "srtcpKa", (const char *)stc->srtcp_ka);
-    json_object_set_string(tc_rsp, "srtcpKs", (const char *)stc->srtcp_ks);
-    return ACVP_SUCCESS;
+    ACVP_RESULT rv = ACVP_SUCCESS;
+    char *tmp;
+    tmp = calloc(ACVP_KDF135_SRTP_OUTPUT_MAX, sizeof(char));
+    
+    rv = acvp_bin_to_hexstr(stc->srtp_ke, strnlen((const char *)stc->srtp_ke, ACVP_KDF135_SRTP_OUTPUT_MAX), (unsigned char *) tmp);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("hex conversion failure (srtp_ke)");
+        goto err;
+    }
+    json_object_set_string(tc_rsp, "srtpKe", (const char *)tmp);
+    memset(tmp, 0x0, ACVP_KDF135_SRTP_OUTPUT_MAX);
+    
+    rv = acvp_bin_to_hexstr(stc->srtp_ka, strnlen((const char *)stc->srtp_ka, ACVP_KDF135_SRTP_OUTPUT_MAX), (unsigned char *) tmp);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("hex conversion failure (srtp_ka)");
+        goto err;
+    }
+    json_object_set_string(tc_rsp, "srtpKa", (const char *)tmp);
+    memset(tmp, 0x0, ACVP_KDF135_SRTP_OUTPUT_MAX);
+
+//    json_object_set_string(tc_rsp, "srtpKa", (const char *)tmp);
+    
+    
+    rv = acvp_bin_to_hexstr(stc->srtp_ks, strnlen((const char *)stc->srtp_ks, ACVP_KDF135_SRTP_OUTPUT_MAX), (unsigned char *) tmp);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("hex conversion failure (srtp_ks)");
+        goto err;
+    }
+    json_object_set_string(tc_rsp, "srtpKs", (const char *)tmp);
+    memset(tmp, 0x0, ACVP_KDF135_SRTP_OUTPUT_MAX);
+    
+    rv = acvp_bin_to_hexstr(stc->srtcp_ke, strnlen((const char *)stc->srtcp_ke, ACVP_KDF135_SRTP_OUTPUT_MAX), (unsigned char *) tmp);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("hex conversion failure (srtcp_ke)");
+        goto err;
+    }
+    json_object_set_string(tc_rsp, "srtcpKe", (const char *)tmp);
+    memset(tmp, 0x0, ACVP_KDF135_SRTP_OUTPUT_MAX);
+    
+    rv = acvp_bin_to_hexstr(stc->srtcp_ka, strnlen((const char *)stc->srtcp_ka, ACVP_KDF135_SRTP_OUTPUT_MAX), (unsigned char *) tmp);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("hex conversion failure (srtcp_ka)");
+        goto err;
+    }
+    json_object_set_string(tc_rsp, "srtcpKa", (const char *)tmp);
+    memset(tmp, 0x0, ACVP_KDF135_SRTP_OUTPUT_MAX);
+    
+    rv = acvp_bin_to_hexstr(stc->srtcp_ks, strnlen((const char *)stc->srtcp_ks, ACVP_KDF135_SRTP_OUTPUT_MAX), (unsigned char *) tmp);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("hex conversion failure (srtcp_ks)");
+        goto err;
+    }
+    json_object_set_string(tc_rsp, "srtcpKs", (const char *)tmp);
+    memset(tmp, 0x0, ACVP_KDF135_SRTP_OUTPUT_MAX);
+    
+//    json_object_set_string(tc_rsp, "srtpKe", (const char *)stc->srtp_ke);
+//    json_object_set_string(tc_rsp, "srtpKa", (const char *)stc->srtp_ka);
+//    json_object_set_string(tc_rsp, "srtpKs", (const char *)stc->srtp_ks);
+//    json_object_set_string(tc_rsp, "srtcpKe", (const char *)stc->srtcp_ke);
+//    json_object_set_string(tc_rsp, "srtcpKa", (const char *)stc->srtcp_ka);
+//    json_object_set_string(tc_rsp, "srtcpKs", (const char *)stc->srtcp_ks);
+    err:
+//    free(tmp);
+    return rv;
 }
 /*
  * This function simply releases the data associated with
@@ -74,6 +131,7 @@ static ACVP_RESULT acvp_kdf135_srtp_init_tc (ACVP_CTX *ctx,
                                              unsigned char *master_salt,
                                              unsigned char *index,
                                              unsigned char *srtcp_index) {
+    ACVP_RESULT rv = ACVP_SUCCESS;
     memset(stc, 0x0, sizeof(ACVP_KDF135_SRTP_TC));
     
     if (!kdr || !master_key || !master_salt || !index || !srtcp_index) {
@@ -86,20 +144,50 @@ static ACVP_RESULT acvp_kdf135_srtp_init_tc (ACVP_CTX *ctx,
     
     stc->kdr = calloc(ACVP_KDF135_SRTP_KDR_STR_MAX, sizeof(char));
     if (!stc->kdr) { return ACVP_MALLOC_FAIL; }
+    rv = acvp_hexstr_to_bin((const unsigned char *) kdr, stc->kdr, ACVP_KDF135_SRTP_KDR_STR_MAX);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Hex conversion failure (kdr)");
+        return rv;
+    }
+    stc->kdr_len = strlen(kdr)/2;
+    
     stc->master_key = calloc(ACVP_KDF135_SRTP_MASTER_MAX, sizeof(char));
     if (!stc->master_key) { return ACVP_MALLOC_FAIL; }
+    rv = acvp_hexstr_to_bin((const unsigned char *) master_key, (unsigned char *)stc->master_key, ACVP_KDF135_SRTP_MASTER_MAX);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Hex conversion failure (master_key)");
+        return rv;
+    }
+    
     stc->master_salt = calloc(ACVP_KDF135_SRTP_MASTER_MAX, sizeof(char));
     if (!stc->master_salt) { return ACVP_MALLOC_FAIL; }
+    rv = acvp_hexstr_to_bin((const unsigned char *) master_salt, (unsigned char *)stc->master_salt, ACVP_KDF135_SRTP_MASTER_MAX);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Hex conversion failure (master_salt)");
+        return rv;
+    }
+    
     stc->index = calloc(ACVP_KDF135_SRTP_INDEX_MAX, sizeof(char));
     if (!stc->index) { return ACVP_MALLOC_FAIL; }
+    rv = acvp_hexstr_to_bin((const unsigned char *) index, (unsigned char *)stc->index, ACVP_KDF135_SRTP_INDEX_MAX);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Hex conversion failure (index)");
+        return rv;
+    }
+    
     stc->srtcp_index = calloc(ACVP_KDF135_SRTP_INDEX_MAX, sizeof(char));
     if (!stc->srtcp_index) { return ACVP_MALLOC_FAIL; }
+    rv = acvp_hexstr_to_bin((const unsigned char *) srtcp_index, (unsigned char *)stc->srtcp_index, ACVP_KDF135_SRTP_INDEX_MAX);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Hex conversion failure (srtcp_index)");
+        return rv;
+    }
     
-    memcpy(stc->kdr, kdr, strnlen((const char *)kdr, ACVP_KDF135_SRTP_KDR_STR_MAX));
-    memcpy(stc->master_key, master_key, strnlen((const char *)master_key, ACVP_KDF135_SRTP_MASTER_MAX));
-    memcpy(stc->master_salt, master_salt, strnlen((const char *)master_salt, ACVP_KDF135_SRTP_MASTER_MAX));
-    memcpy(stc->index, index, strnlen((const char *)index, ACVP_KDF135_SRTP_INDEX_MAX));
-    memcpy(stc->srtcp_index, srtcp_index, strnlen((const char *)srtcp_index, ACVP_KDF135_SRTP_INDEX_MAX));
+//    memcpy(stc->kdr, kdr, strnlen((const char *)kdr, ACVP_KDF135_SRTP_KDR_STR_MAX));
+//    memcpy(stc->master_key, master_key, strnlen((const char *)master_key, ACVP_KDF135_SRTP_MASTER_MAX));
+//    memcpy(stc->master_salt, master_salt, strnlen((const char *)master_salt, ACVP_KDF135_SRTP_MASTER_MAX));
+//    memcpy(stc->index, index, strnlen((const char *)index, ACVP_KDF135_SRTP_INDEX_MAX));
+//    memcpy(stc->srtcp_index, srtcp_index, strnlen((const char *)srtcp_index, ACVP_KDF135_SRTP_INDEX_MAX));
     
     stc->srtp_ka = calloc(ACVP_KDF135_SRTP_OUTPUT_MAX, sizeof(char));
     if (!stc->srtp_ka) { return ACVP_MALLOC_FAIL; }

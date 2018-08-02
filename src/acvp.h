@@ -655,6 +655,10 @@ typedef struct acvp_kdf135_tls_tc_t {
     unsigned char *msecret2;
     unsigned char *kblock1;  /* The resulting data calculated for the test case */
     unsigned char *kblock2;
+    int sh_rnd_len;
+    int ch_rnd_len;
+    int s_rnd_len;
+    int c_rnd_len;
 } ACVP_KDF135_TLS_TC;
 
 /*!
@@ -669,6 +673,10 @@ typedef struct acvp_kdf135_ikev2_tc_t {
     unsigned char *hash_alg;
     int init_nonce_len;
     int resp_nonce_len;
+    int gir_len;
+    int gir_new_len;
+    int init_spi_len;
+    int resp_spi_len;
     int dh_secret_len;
     int keying_material_len;
     unsigned char *init_nonce;
@@ -721,7 +729,8 @@ typedef struct acvp_kdf135_ikev1_tc_t {
 typedef struct acvp_kdf135_snmp_tc_t {
     ACVP_CIPHER cipher;
     unsigned int tc_id;    /* Test case id */
-    char *engine_id;
+    unsigned char *engine_id;
+    char *engine_id_str;
     const char *password;
     unsigned int p_len;
     unsigned char *s_key;
@@ -757,9 +766,9 @@ typedef struct acvp_kdf135_x963_tc_t {
     int field_size;
     int key_data_length;
     int shared_info_length;
-    char *z;
-    char *shared_info;
-    char *key_data;
+    unsigned char *z;
+    unsigned char *shared_info;
+    unsigned char *key_data;
 } ACVP_KDF135_X963_TC;
 
 
@@ -797,18 +806,19 @@ typedef struct acvp_kdf135_srtp_tc_t {
     ACVP_CIPHER cipher;
     unsigned int tc_id;    /* Test case id */
     unsigned char *kdr;
+    int kdr_len;
     int aes_keylen;
-    unsigned char *master_key;
-    unsigned char *master_salt;
-    unsigned char *index;
-    unsigned char *srtcp_index;
+    char *master_key;
+    char *master_salt;
+    char *index;
+    char *srtcp_index;
     
-    char *srtp_ke;
-    char *srtp_ka;
-    char *srtp_ks;
-    char *srtcp_ke;
-    char *srtcp_ka;
-    char *srtcp_ks;
+    unsigned char *srtp_ke;
+    unsigned char *srtp_ka;
+    unsigned char *srtp_ks;
+    unsigned char *srtcp_ke;
+    unsigned char *srtcp_ka;
+    unsigned char *srtcp_ks;
 } ACVP_KDF135_SRTP_TC;
 
 /*!
@@ -904,6 +914,7 @@ typedef struct acvp_rsa_keygen_tc_t {
     char *pub_exp_mode;
     char *key_format;
     int modulo;
+    int e_len;
 
     unsigned char *e;
     unsigned char *p_rand;
@@ -958,6 +969,7 @@ typedef struct acvp_ecdsa_tc_t {
     
     char *ver_disposition;
     unsigned char *message;
+    int msg_len;
 
 } ACVP_ECDSA_TC;
 
@@ -974,7 +986,9 @@ typedef struct acvp_rsa_sig_tc_t {
     unsigned int tc_id;    /* Test case id */
     unsigned int modulo;
     unsigned char *e;
+    int e_len;
     unsigned char *n;
+    int n_len;
     int salt_len;
     unsigned char *msg;
     int msg_len;
@@ -1134,13 +1148,13 @@ typedef struct acvp_kas_ecc_tc_t {
     int test_type;
     int curve;
     int md;
-    char *psx;
-    char *psy;
-    char *pix;
-    char *piy;
-    char *d;
-    char *z;
-    char *chash;
+    unsigned char *psx;
+    unsigned char *psy;
+    unsigned char *pix;
+    unsigned char *piy;
+    unsigned char *d;
+    unsigned char *z;
+    unsigned char *chash;
     int mode;
     int pixlen;
     int piylen;
@@ -1220,16 +1234,16 @@ typedef struct acvp_kas_ffc_tc_t {
     int test_type;
     int md;
     int mode;
-    char *p;
-    char *q;
-    char *g;
-    char *d;
-    char *eps;
-    char *epri;
-    char *epui;
-    char *z;
-    char *chash;
-    char *piut;
+    unsigned char *p;
+    unsigned char *q;
+    unsigned char *g;
+    unsigned char *d;
+    unsigned char *eps;
+    unsigned char *epri;
+    unsigned char *epui;
+    unsigned char *z;
+    unsigned char *chash;
+    unsigned char *piut;
     int chashlen;
     int piutlen;
     int zlen;

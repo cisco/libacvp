@@ -342,7 +342,7 @@ static ACVP_RESULT acvp_dsa_output_tc (ACVP_CTX *ctx, ACVP_DSA_TC *stc, JSON_Obj
             break;
         case ACVP_DSA_PROBABLE:
         case ACVP_DSA_PROVABLE:
-            tmp = calloc(1, ACVP_DSA_PQG_MAX);
+            tmp = calloc(ACVP_DSA_PQG_MAX, sizeof(char));
             if (!tmp) {
                 ACVP_LOG_ERR("Unable to malloc in acvp_aes_mct_output_tc");
                 return ACVP_MALLOC_FAIL;

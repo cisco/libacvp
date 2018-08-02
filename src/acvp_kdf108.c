@@ -40,7 +40,7 @@
 static ACVP_RESULT acvp_kdf108_output_tc (ACVP_CTX *ctx,
                                           ACVP_KDF108_TC *stc,
                                           JSON_Object *tc_rsp) {
-    ACVP_RESULT rv = 0;
+    ACVP_RESULT rv = ACVP_SUCCESS;
     char tmp[ACVP_KDF108_STRING_MAX + 1] = {0}; // Leave space for terminator
 
     /*

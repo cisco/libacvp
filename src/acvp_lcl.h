@@ -277,7 +277,8 @@
 #define ACVP_KDF135_IKEV1_SKEY_MAX 2048 // arbitrary for now
 #define ACVP_KDF135_IKE_COOKIE_LEN_MAX 32
 #define ACVP_KDF135_IKEV1_GXY_LEN_MAX 32
-
+#define ACVP_KDF135_X963_KEYDATA_MAX 4096/8
+#define ACVP_KDF135_X963_INPUT_MAX 1024/8
 #define ACVP_KDF108_STRING_MAX 1024 /**< 4096 bits max for keyout, 1024 characters */
 
 #define ACVP_HMAC_MSG_MAX       1024

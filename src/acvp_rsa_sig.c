@@ -41,15 +41,45 @@ static ACVP_RESULT acvp_rsa_sig_kat_handler_internal (ACVP_CTX *ctx, JSON_Object
  * the JSON processing for a single test case.
  */
 static ACVP_RESULT acvp_rsa_sig_output_tc (ACVP_CTX *ctx, ACVP_RSA_SIG_TC *stc, JSON_Object *tc_rsp) {
+    ACVP_RESULT rv = ACVP_SUCCESS;
+    char *tmp;
+    
     if (stc->sig_mode == ACVP_RSA_SIGVER) {
         json_object_set_string(tc_rsp, "sigResult", stc->ver_disposition ? "passed" : "failed");
     } else {
-        json_object_set_string(tc_rsp, "e", (const char *)stc->e);
-        json_object_set_string(tc_rsp, "n", (const char *)stc->n);
-        json_object_set_string(tc_rsp, "signature", (const char *)stc->signature);
+//        json_object_set_string(tc_rsp, "e", (const char *)stc->e);
+//        json_object_set_string(tc_rsp, "n", (const char *)stc->n);
+//        json_object_set_string(tc_rsp, "signature", (const char *)stc->signature);
+    
+        tmp = calloc(ACVP_RSA_SIGNATURE_MAX, sizeof(char));
+    
+        rv = acvp_bin_to_hexstr(stc->e, strnlen((const char *)stc->e, ACVP_RSA_EXP_LEN_MAX), (unsigned char *) tmp);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("hex conversion failure (e)");
+            goto err;
+        }
+        json_object_set_string(tc_rsp, "e", (const char *)tmp);
+        memset(tmp, 0x0, ACVP_RSA_EXP_LEN_MAX);
+    
+        rv = acvp_bin_to_hexstr(stc->n, strnlen((const char *)stc->n, ACVP_RSA_EXP_LEN_MAX), (unsigned char *) tmp);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("hex conversion failure (n)");
+            goto err;
+        }
+        json_object_set_string(tc_rsp, "n", (const char *)tmp);
+        memset(tmp, 0x0, ACVP_RSA_EXP_LEN_MAX);
+
+        rv = acvp_bin_to_hexstr(stc->signature, strnlen((const char *)stc->signature, ACVP_RSA_EXP_LEN_MAX), (unsigned char *) tmp);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("hex conversion failure (signature)");
+            goto err;
+        }
+        json_object_set_string(tc_rsp, "signature", (const char *)tmp);
     }
 
-    return ACVP_SUCCESS;
+    err:
+//    free(tmp);
+    return rv;
 }
 
 /*
@@ -92,6 +122,11 @@ static ACVP_RESULT acvp_rsa_sig_init_tc (ACVP_CTX *ctx,
     stc->signature = calloc(ACVP_RSA_SIGNATURE_MAX, sizeof(char));
     if (!stc->signature) { return ACVP_MALLOC_FAIL; }
     
+    stc->e = calloc(ACVP_RSA_EXP_LEN_MAX, sizeof(char));
+    if (!stc->e) { return ACVP_MALLOC_FAIL; }
+    stc->n = calloc(ACVP_RSA_EXP_LEN_MAX, sizeof(char));
+    if (!stc->n) { goto err; }
+    
     stc->msg_len = strnlen((const char*)msg, ACVP_RSA_MSGLEN_MAX)/2;
     
     rv = acvp_hexstr_to_bin((const unsigned char *) msg, stc->msg, ACVP_RSA_MSGLEN_MAX);
@@ -102,23 +137,20 @@ static ACVP_RESULT acvp_rsa_sig_init_tc (ACVP_CTX *ctx,
     
     if (cipher == ACVP_RSA_SIGVER) {
         stc->sig_mode = ACVP_RSA_SIGVER;
-        
-        stc->e = calloc(ACVP_RSA_EXP_LEN_MAX, sizeof(char));
-        if (!stc->e) { return ACVP_MALLOC_FAIL; }
+        stc->e_len = strlen(e)/2;
         rv = acvp_hexstr_to_bin((const unsigned char *) e, stc->e, ACVP_RSA_EXP_LEN_MAX);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Hex conversion failure (e)");
             return rv;
         }
-        stc->n = calloc(ACVP_RSA_EXP_LEN_MAX, sizeof(char));
-        if (!stc->n) { goto err; }
+        stc->n_len = strlen(n)/2;
         rv = acvp_hexstr_to_bin((const unsigned char *) n, stc->n, ACVP_RSA_EXP_LEN_MAX);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Hex conversion failure (n)");
             return rv;
         }
-        stc->sig_len = strnlen((const char*)signature, ACVP_RSA_SIGNATURE_MAX);
-        rv = acvp_hexstr_to_bin((const unsigned char *) signature, stc->signature, ACVP_RSA_SIGNATURE_MAX);
+        stc->sig_len = strnlen((const char*)signature, ACVP_RSA_SIGNATURE_MAX)/2;
+        rv = acvp_hexstr_to_bin((const unsigned char *) signature, stc->signature, stc->sig_len);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Hex conversion failure (signature)");
             return rv;

@@ -66,8 +66,16 @@ static ACVP_RESULT acvp_kas_ffc_output_comp_tc (ACVP_CTX *ctx, ACVP_KAS_FFC_TC *
         free(tmp);
         return ACVP_SUCCESS;
     }
-
-    json_object_set_string(tc_rsp, "ephemeralPublicIut", stc->piut);
+    
+    memset(tmp, 0x0, ACVP_KAS_FFC_MAX_STR);
+    rv = acvp_bin_to_hexstr((const unsigned char *)stc->piut, stc->piutlen,
+                            (unsigned char *) tmp);
+    if (rv != ACVP_SUCCESS) {
+        free(tmp);
+        ACVP_LOG_ERR("hex conversion failure (Z)");
+        return rv;
+    }
+    json_object_set_string(tc_rsp, "ephemeralPublicIut", tmp);
 
     memset(tmp, 0x0, ACVP_KAS_FFC_MAX_STR);
     rv = acvp_bin_to_hexstr((const unsigned char *)stc->chash, stc->chashlen, 
@@ -97,7 +105,7 @@ static ACVP_RESULT acvp_kas_ffc_init_comp_tc (ACVP_CTX *ctx,
                                               char *z,
                                               unsigned int mode
 ) {
-
+    ACVP_RESULT rv;
     stc->mode = mode;
     if (!strcmp(hash, "SHA2-224"))
         stc->md = ACVP_SHA224;
@@ -113,12 +121,36 @@ static ACVP_RESULT acvp_kas_ffc_init_comp_tc (ACVP_CTX *ctx,
 
     stc->p = calloc(1, ACVP_KAS_FFC_MAX_STR);
     if (!stc->p) { return ACVP_MALLOC_FAIL; }
+    rv = acvp_hexstr_to_bin((const unsigned char *) p, stc->p, ACVP_KAS_FFC_MAX_STR);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Hex conversion failure (p)");
+        return rv;
+    }
+    
     stc->q = calloc(1, ACVP_KAS_FFC_MAX_STR);
     if (!stc->q) { return ACVP_MALLOC_FAIL; }
+    rv = acvp_hexstr_to_bin((const unsigned char *) q, stc->q, ACVP_KAS_FFC_MAX_STR);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Hex conversion failure (q)");
+        return rv;
+    }
+    
     stc->g = calloc(1, ACVP_KAS_FFC_MAX_STR);
     if (!stc->g) { return ACVP_MALLOC_FAIL; }
+    rv = acvp_hexstr_to_bin((const unsigned char *) g, stc->g, ACVP_KAS_FFC_MAX_STR);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Hex conversion failure (g)");
+        return rv;
+    }
+    
     stc->eps = calloc(1, ACVP_KAS_FFC_MAX_STR);
     if (!stc->eps) { return ACVP_MALLOC_FAIL; }
+    rv = acvp_hexstr_to_bin((const unsigned char *) eps, stc->eps, ACVP_KAS_FFC_MAX_STR);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Hex conversion failure (eps)");
+        return rv;
+    }
+    
     stc->epri = calloc(1, ACVP_KAS_FFC_MAX_STR);
     if (!stc->epri) { return ACVP_MALLOC_FAIL; }
     stc->epui = calloc(1, ACVP_KAS_FFC_MAX_STR);
@@ -126,19 +158,34 @@ static ACVP_RESULT acvp_kas_ffc_init_comp_tc (ACVP_CTX *ctx,
     stc->chash = calloc(1, ACVP_KAS_FFC_MAX_STR);
     if (!stc->chash) { return ACVP_MALLOC_FAIL; }
 
-    strncpy(stc->p, p, strnlen((char *)p, ACVP_KAS_FFC_MAX_STR));
-    strncpy(stc->q, q, strnlen((char *)q, ACVP_KAS_FFC_MAX_STR));
-    strncpy(stc->g, g, strnlen((char *)g, ACVP_KAS_FFC_MAX_STR));
-    strncpy(stc->eps, eps, strnlen((char *)eps, ACVP_KAS_FFC_MAX_STR));
+//    strncpy(stc->p, p, strnlen((char *)p, ACVP_KAS_FFC_MAX_STR));
+//    strncpy(stc->q, q, strnlen((char *)q, ACVP_KAS_FFC_MAX_STR));
+//    strncpy(stc->g, g, strnlen((char *)g, ACVP_KAS_FFC_MAX_STR));
+//    strncpy(stc->eps, eps, strnlen((char *)eps, ACVP_KAS_FFC_MAX_STR));
 
     
     stc->z = calloc(1, ACVP_KAS_FFC_MAX_STR);
     if (!stc->z) { return ACVP_MALLOC_FAIL; }
  
     if (stc->test_type == ACVP_KAS_FFC_TT_VAL) {
-        strncpy(stc->z, z, strnlen((char *)z, ACVP_KAS_FFC_MAX_STR));
-        strncpy(stc->epri, epri, strnlen((char *)epri, ACVP_KAS_FFC_MAX_STR));
-        strncpy(stc->epui, epui, strnlen((char *)epui, ACVP_KAS_FFC_MAX_STR));
+        rv = acvp_hexstr_to_bin((const unsigned char *) z, stc->z, ACVP_KAS_FFC_MAX_STR);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Hex conversion failure (z)");
+            return rv;
+        }
+        rv = acvp_hexstr_to_bin((const unsigned char *) epri, stc->epri, ACVP_KAS_FFC_MAX_STR);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Hex conversion failure (epri)");
+            return rv;
+        }
+        rv = acvp_hexstr_to_bin((const unsigned char *) epui, stc->epui, ACVP_KAS_FFC_MAX_STR);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Hex conversion failure (epui)");
+            return rv;
+        }
+//        strncpy(stc->z, z, strnlen((char *)z, ACVP_KAS_FFC_MAX_STR));
+//        strncpy(stc->epri, epri, strnlen((char *)epri, ACVP_KAS_FFC_MAX_STR));
+//        strncpy(stc->epui, epui, strnlen((char *)epui, ACVP_KAS_FFC_MAX_STR));
 
     }
     return ACVP_SUCCESS;
