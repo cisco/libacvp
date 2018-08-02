@@ -56,7 +56,7 @@ static ACVP_RESULT acvp_kdf135_srtp_release_tc (ACVP_KDF135_SRTP_TC *stc) {
     if (stc->master_salt) free(stc->master_salt);
     if (stc->index) free(stc->index);
     if (stc->srtcp_index) free(stc->srtcp_index);
-    if (stc->srtcp_ke) free(stc->srtp_ke);
+    if (stc->srtp_ke) free(stc->srtp_ke);
     if (stc->srtp_ka) free(stc->srtp_ka);
     if (stc->srtp_ks) free(stc->srtp_ks);
     if (stc->srtcp_ke) free(stc->srtcp_ke);

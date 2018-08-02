@@ -73,7 +73,7 @@ Overview
 
 Building
 
-    IMPORTANT: The exmaple client application has placeholders for some
+    IMPORTANT: The example client application has placeholders for some
     vector processing handlers that are not currently supported in OpenSSL,
     namely KDFs, RSA key generation, and TDES CTR. The respective handlers
     have skeleton code and are marked with a comment "IMPORTANT: ...".
@@ -81,26 +81,28 @@ Building
     for vector tests to pass.
 
     Dependencies:
-        libacvp is dependent on gcc, make, curl (or substitution) and
+        libacvp is dependent on autotools, gcc, make, curl (or substitution) and
         openssl (or substitution)
 
+    To build:
+        ./configure --with-ssl-dir=<path to ssl dir> --with-libcurl-dir=<path to curl dir>
+        make
+        make install
+
+    To run:
+        1. export LD_LIBRARY_PATH=<path to ssl lib>
+        2. update and run scripts/nist_setup.sh
+        3. ./app/acvp_app
+
     On Windows:
-        The windows directory contains the libraries that are needed for
-        32-bit systems. If you have another system, you will need to add
-        your own libraries and update the Makefile.win to reflect the new
-        libraries (for example -lssl32)
-
-        1. Install dependencies and add to PATH
-        2. Add the path to curl and openssl dev headers to the INCDIRS in
-            the Makefile.win
-        3. make.exe -f Makefile.win
-        4. .\scripts\nist_setup.bat
-        5. acvp_app.exe
-
-    On MacOS and Linux (tested on CentOS 7):
-        1. make
-        2. source scripts/nist_setup.sh
-        3. ./acvp_app
+        1. Update and run the scripts/gradle_env.bat script
+            Note: some of the required .dll's and include headers are in the windows directory.
+                  If these aren't the version you are looking for, you will need to point
+                  the environment variables to your own install.
+        2. 'gradle build'
+        3. Update and run the scripts/nist_setup.bat script
+        4. The library is in build/libs/acvp and the example executable
+            is in build/exe/
 
 Credits
 

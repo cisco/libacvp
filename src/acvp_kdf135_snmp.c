@@ -194,6 +194,16 @@ ACVP_RESULT acvp_kdf135_snmp_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
                 return ACVP_INVALID_ARG;
             }
 
+            if (!password) {
+                ACVP_LOG_ERR("Failed to include password");
+                return ACVP_MISSING_ARG;
+            }
+            if (strnlen(password, p_len) != p_len/8) {
+                ACVP_LOG_ERR("pLen(%d) or password length(%d) incorrect", 
+                              p_len/8, strnlen(password, ACVP_KDF135_SNMP_PASSWORD_MAX));
+                return ACVP_INVALID_ARG;
+            }
+
             ACVP_LOG_INFO("        Test case: %d", j);
             ACVP_LOG_INFO("             tcId: %d", tc_id);
             ACVP_LOG_INFO("         password: %s", password);

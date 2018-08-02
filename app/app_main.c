@@ -33,14 +33,20 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#ifdef WIN32
+#include <io.h>
+#else
 #include <unistd.h>
+#endif
 #include <fcntl.h>
 #include "acvp.h"
+
 #ifdef USE_MURL
 #include <murl/murl.h>
 #else
 #include <curl/curl.h>
 #endif
+#include <openssl/ossl_typ.h>
 #include <openssl/evp.h>
 #include <openssl/aes.h>
 #include <openssl/obj_mac.h>
@@ -53,6 +59,8 @@
 #include <openssl/bn.h>
 #include <openssl/rand.h>
 #include <openssl/ecdsa.h>
+#include <openssl/ec.h>
+
 #ifdef OPENSSL_KDF_SUPPORT
 #include <openssl/kdf.h>
 #endif
@@ -657,6 +665,7 @@ int main(int argc, char **argv) {
     int ret = 1; /* return code for main function */
     ACVP_CTX *ctx;
     char ssl_version[10];
+    char value[] = "same";
     APP_CONFIG cfg = {0};
 
     if (ingest_cli(&cfg, argc, argv)) {
@@ -3290,7 +3299,7 @@ static ACVP_RESULT app_cmac_handler(ACVP_TEST_CASE *test_case)
          * when we build the response JSON. Since the comparison
          * happens here for "ver" we have to reformat here as well
          */
-        unsigned char formatted_mac_compare[tc->mac_len * 2 + 1];
+        unsigned char formatted_mac_compare[65]; // TODO max len for now
         rv = acvp_bin_to_hexstr(mac_compare, mac_cmp_len, formatted_mac_compare);
         if (rv != ACVP_SUCCESS) {
             printf("\nFailed to convert to hex string\n");
