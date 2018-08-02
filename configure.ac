@@ -46,9 +46,9 @@ fi
 AC_CHECK_LIB([ssl], [SSL_CTX_new], [],
              [AC_MSG_FAILURE([can't find openssl ssl lib])])
 
-
-# Include libcurl dir
-
+##
+# Libcurl installation directory path
+##
 AC_ARG_WITH([libcurl-dir],
     [AS_HELP_STRING([--with-libcurl-dir],
     [enable support for client proxy using libcurl])],
@@ -70,9 +70,9 @@ AS_IF(
      ]
     )
 
-
-# Include fom dir
-
+##
+# FOM installation directory path
+##
 AC_ARG_WITH([fom-dir],
     [AS_HELP_STRING([--with-fom-dir],
     [Path to FOM install directory])],
@@ -86,10 +86,9 @@ AS_IF(
      ]
     )
 
-
-
-# Include fom dir
-
+##
+# Gcoverage
+##
 AC_ARG_WITH([gcov],
 [AS_HELP_STRING([--gcov],
 [flag to indicate use of coverage - true|false])],
@@ -103,19 +102,19 @@ AS_IF(
  ]
 )
 
-
-
-
 SAFEC_STUB_DIR='$(abs_top_builddir)/safe_c_stub'
 AC_SUBST(SAFEC_STUB_DIR)
 
+##
+# SafeC installation directory path
+##
 AC_ARG_WITH([safec-dir],
-            [AS_HELP_STRING([--with-safec-dir=],
+            [AS_HELP_STRING([--with-safec-dir],
             [location of SAFEC install folder, This is a required option. --disable-safec can be used to override])],
             [safecdir="$withval"],
             [safecdir="no"])
 
-
+# Default installation directory
 AC_PREFIX_DEFAULT([/usr/local/acvp])
 
 cp confdefs.h acvp_config.h
