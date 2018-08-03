@@ -1305,6 +1305,7 @@ enum acvp_result {
     ACVP_NO_CTX, /**< No valid context */
     ACVP_TRANSPORT_FAIL, /**< Error exchanging data with server */
     ACVP_JSON_ERR,
+    ACVP_NO_DATA,
     ACVP_UNSUPPORTED_OP,
     ACVP_CLEANUP_FAIL,
     ACVP_KAT_DOWNLOAD_RETRY,
