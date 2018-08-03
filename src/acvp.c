@@ -1243,7 +1243,7 @@ static ACVP_RESULT acvp_parse_register (ACVP_CTX *ctx) {
  * it should be run on a separate thread if needed.
  */
 ACVP_RESULT acvp_process_tests (ACVP_CTX *ctx) {
-    ACVP_RESULT rv = ACVP_NO_CTX;
+    ACVP_RESULT rv;
     ACVP_VS_LIST *vs_entry;
 
     if (!ctx) {
@@ -1255,6 +1255,7 @@ ACVP_RESULT acvp_process_tests (ACVP_CTX *ctx) {
      * in the regisration response.  Process each vector set and
      * return the results to the server.
      */
+	rv = ACVP_NO_CTX;
     vs_entry = ctx->vs_list;
     while (vs_entry) {
         rv = acvp_process_vsid(ctx, vs_entry->vs_id);
