@@ -39,7 +39,7 @@
 #include <unistd.h>
 #endif
 #include <fcntl.h>
-#include "../src/acvp.h"
+#include "acvp.h"
 
 #ifdef USE_MURL
 #include <murl/murl.h>
