@@ -1243,7 +1243,7 @@ static ACVP_RESULT acvp_parse_register (ACVP_CTX *ctx) {
  * it should be run on a separate thread if needed.
  */
 ACVP_RESULT acvp_process_tests (ACVP_CTX *ctx) {
-    ACVP_RESULT rv;
+    ACVP_RESULT rv = ACVP_NO_CTX;
     ACVP_VS_LIST *vs_entry;
 
     if (!ctx) {
