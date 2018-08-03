@@ -490,6 +490,15 @@ ACVP_RESULT acvp_send_register (ACVP_CTX *ctx, char *reg) {
     int rv;
     char url[512]; //TODO: 512 is an arbitrary limit
 
+    if (!ctx) {
+        ACVP_LOG_ERR("No CTX for register");
+        return ACVP_NO_CTX;
+    }
+    if (!reg) {
+        ACVP_LOG_ERR("No data for register");
+        return ACVP_NO_DATA;
+    }
+
     memset(url, 0x0, 512);
     snprintf(url, 511, "https://%s:%d/%svalidation/acvp/register", ctx->server_name, ctx->server_port,
              ctx->path_segment);
@@ -554,6 +563,15 @@ ACVP_RESULT acvp_retrieve_vector_set (ACVP_CTX *ctx, int vs_id) {
 ACVP_RESULT acvp_send_login (ACVP_CTX *ctx, char *login) {
     int rv;
     char url[512]; //TODO: 512 is an arbitrary limit
+
+    if (!ctx) {
+        ACVP_LOG_ERR("No CTX for login");
+        return ACVP_NO_CTX;
+    }
+    if (!login) {
+        ACVP_LOG_ERR("No data for login");
+        return ACVP_NO_DATA;
+    }
 
     memset(url, 0x0, 512);
     snprintf(url, 511, "https://%s:%d/%svalidation/acvp/login", ctx->server_name, ctx->server_port,

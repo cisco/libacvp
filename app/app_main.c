@@ -97,6 +97,7 @@ static ACVP_RESULT app_des_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_sha_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_hmac_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_cmac_handler(ACVP_TEST_CASE *test_case);
+static ACVP_RESULT app_aes_keywrap_handler(ACVP_TEST_CASE *test_case);
 
 #ifdef OPENSSL_KDF_SUPPORT
 static ACVP_RESULT app_kdf135_tls_handler(ACVP_TEST_CASE *test_case);
@@ -106,7 +107,6 @@ static ACVP_RESULT app_kdf135_srtp_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_kdf135_ikev2_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_kdf135_ikev1_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_kdf135_x963_handler(ACVP_TEST_CASE *test_case);
-static ACVP_RESULT app_kdf135_tpm_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_kdf108_handler(ACVP_TEST_CASE *test_case);
 #endif
 #ifdef ACVP_NO_RUNTIME
@@ -117,8 +117,10 @@ static ACVP_RESULT app_drbg_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_rsa_keygen_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_rsa_sig_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_ecdsa_handler(ACVP_TEST_CASE *test_case);
+#if 0
+/* openssl does not support FIPS compliant des keywrap */
 static ACVP_RESULT app_des_keywrap_handler(ACVP_TEST_CASE *test_case);
-static ACVP_RESULT app_aes_keywrap_handler(ACVP_TEST_CASE *test_case);
+#endif
 #endif
 
 #define JSON_FILENAME_LENGTH 24
@@ -163,6 +165,7 @@ char *ca_chain_file;
 char *cert_file;
 char *key_file;
 char *path_segment;
+char value[] = "same";
 
 static EVP_CIPHER_CTX *glb_cipher_ctx = NULL; /* need to maintain across calls for MCT */
 
@@ -665,7 +668,6 @@ int main(int argc, char **argv) {
     int ret = 1; /* return code for main function */
     ACVP_CTX *ctx;
     char ssl_version[10];
-    char value[] = "same";
     APP_CONFIG cfg = {0};
 
     if (ingest_cli(&cfg, argc, argv)) {
@@ -885,7 +887,6 @@ end:
 
 static int enable_aes (ACVP_CTX *ctx) {
     ACVP_RESULT rv;
-    char value[] = "same";
 
     rv = acvp_enable_sym_cipher_cap(ctx, ACVP_AES_GCM, ACVP_DIR_BOTH, ACVP_KO_NA, ACVP_IVGEN_SRC_INT,
                                     ACVP_IVGEN_MODE_821, &app_aes_handler_aead);
@@ -1036,7 +1037,6 @@ static int enable_aes (ACVP_CTX *ctx) {
     rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CFB1, ACVP_SYM_CIPH_PTLEN, 1536);
     CHECK_ENABLE_CAP_RV(rv);
 
-#if 0
     /*
      * Enable AES keywrap for various key sizes and PT lengths
      * Note: this is with padding disabled, minimum PT length is 128 bits and must be
@@ -1079,7 +1079,6 @@ static int enable_aes (ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_KWP, ACVP_SYM_CIPH_PTLEN, 808);
     CHECK_ENABLE_CAP_RV(rv);
-#endif
 
     /*
      * Enable AES-XTS 128 and 256 bit key
@@ -1261,7 +1260,6 @@ static int enable_hash (ACVP_CTX *ctx) {
 
 static int enable_cmac (ACVP_CTX *ctx) {
     ACVP_RESULT rv;
-    char value[] = "same";
 
     /*
      * Enable CMAC
@@ -1305,7 +1303,6 @@ static int enable_cmac (ACVP_CTX *ctx) {
 
 static int enable_hmac (ACVP_CTX *ctx) {
     ACVP_RESULT rv;
-    char value[] = "same";
 
     /*
      * Enable HMAC: TODO - need to add increment value in bits, default to 64 now.
@@ -1371,7 +1368,6 @@ static int enable_hmac (ACVP_CTX *ctx) {
 #ifdef OPENSSL_KDF_SUPPORT
 static int enable_kdf (ACVP_CTX *ctx) {
     ACVP_RESULT rv;
-    char value[] = "same";
     int i, flags = 0;
     /*
      * Enable KDF-135
@@ -1394,13 +1390,6 @@ static int enable_kdf (ACVP_CTX *ctx) {
     rv = acvp_enable_kdf135_snmp_engid_parm(ctx, ACVP_KDF135_SNMP, "AB37BDE5657AB");
     CHECK_ENABLE_CAP_RV(rv);
     
-    rv = acvp_enable_kdf135_tpm_cap(ctx, &app_kdf135_tpm_handler);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_prereq_cap(ctx, ACVP_KDF135_TPM, ACVP_PREREQ_SHA, value);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_prereq_cap(ctx, ACVP_KDF135_TPM, ACVP_PREREQ_HMAC, value);
-    CHECK_ENABLE_CAP_RV(rv);
-
     rv = acvp_enable_kdf135_ssh_cap(ctx, &app_kdf135_ssh_handler);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_prereq_cap(ctx, ACVP_KDF135_SSH, ACVP_PREREQ_SHA, value);
@@ -1534,7 +1523,6 @@ static int enable_kdf (ACVP_CTX *ctx) {
 #ifdef ACVP_NO_RUNTIME
 static int enable_kas_ecc (ACVP_CTX *ctx) {
     ACVP_RESULT rv;
-    char value[] = "same";
 
     /*
      * Enable KAS-ECC....
@@ -1606,7 +1594,6 @@ static int enable_kas_ecc (ACVP_CTX *ctx) {
 
 static int enable_kas_ffc (ACVP_CTX *ctx) {
     ACVP_RESULT rv;
-    char value[] = "same";
 
     /*
      * Enable KAS-FFC....
@@ -1647,7 +1634,6 @@ static int enable_kas_ffc (ACVP_CTX *ctx) {
 
 static int enable_dsa (ACVP_CTX *ctx) {
     ACVP_RESULT rv;
-    char value[] = "same";
 
     /*
      * Enable DSA....
@@ -1815,7 +1801,6 @@ static int enable_dsa (ACVP_CTX *ctx) {
 
 static int enable_rsa (ACVP_CTX *ctx) {
     ACVP_RESULT rv;
-    char value[] = "same";
     BIGNUM *expo;
 
     expo = FIPS_bn_new();
@@ -2032,7 +2017,6 @@ static int enable_rsa (ACVP_CTX *ctx) {
 
 static int enable_ecdsa (ACVP_CTX *ctx) {
     ACVP_RESULT rv;
-    char value[] = "same";
 
     /*
      * Enable ECDSA keyGen...
@@ -2203,11 +2187,7 @@ static int enable_drbg (ACVP_CTX *ctx) {
           (printf("Failed to enable FIPS mode.\n"));
           return 1;
       }
-
-#if 0 /* only CTR mode is supported by the server currently */
     ACVP_RESULT rv;
-    char value[] = "same";
-    char value2[] = "123456";
 
     rv = acvp_enable_drbg_cap(ctx, ACVP_HASHDRBG, &app_drbg_handler);
     CHECK_ENABLE_CAP_RV(rv);
@@ -2218,9 +2198,6 @@ static int enable_drbg (ACVP_CTX *ctx) {
     rv = acvp_enable_drbg_prereq_cap(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1,
             ACVP_PREREQ_SHA, value);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_drbg_prereq_cap(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1,
-            ACVP_PREREQ_AES, value2);
-    CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_enable_drbg_cap_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1,
             ACVP_DRBG_PRED_RESIST_ENABLED, 1);
@@ -2230,41 +2207,40 @@ static int enable_drbg (ACVP_CTX *ctx) {
             ACVP_DRBG_RESEED_ENABLED, 1);
     CHECK_ENABLE_CAP_RV(rv);
 
-    rv = acvp_enable_drbg_cap_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1,
-            ACVP_DRBG_ENTROPY_LEN, 0);
+    rv = acvp_enable_drbg_length_cap(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1,
+            ACVP_DRBG_ENTROPY_LEN, (int)192, (int)64,(int) 256);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    rv = acvp_enable_drbg_length_cap(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1,
+            ACVP_DRBG_NONCE_LEN, (int)192, (int)64,(int) 256);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    rv = acvp_enable_drbg_length_cap(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1,
+            ACVP_DRBG_PERSO_LEN, (int)0, (int)128,(int) 256);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    rv = acvp_enable_drbg_length_cap(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1,
+            ACVP_DRBG_ADD_IN_LEN, (int)0, (int)128,(int) 256);
     CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_enable_drbg_cap_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1,
-            ACVP_DRBG_NONCE_LEN, 0);
+            ACVP_DRBG_RET_BITS_LEN, 160);
     CHECK_ENABLE_CAP_RV(rv);
-
-    rv = acvp_enable_drbg_cap_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1,
-            ACVP_DRBG_PERSO_LEN, 0);
-    CHECK_ENABLE_CAP_RV(rv);
-
-    rv = acvp_enable_drbg_cap_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1,
-            ACVP_DRBG_ADD_IN_LEN, 0);
-    CHECK_ENABLE_CAP_RV(rv);
-
-    rv = acvp_enable_drbg_cap_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1,
-            ACVP_DRBG_RET_BITS_LEN, 512);
-    CHECK_ENABLE_CAP_RV(rv);
-
 
     //ACVP_HMACDRBG
 
     rv = acvp_enable_drbg_cap(ctx, ACVP_HMACDRBG, &app_drbg_handler);
     CHECK_ENABLE_CAP_RV(rv);
 
-    rv = acvp_enable_drbg_cap_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224,
-                                    ACVP_DRBG_DER_FUNC_ENABLED, 0);
-    CHECK_ENABLE_CAP_RV(rv);
-
     rv = acvp_enable_drbg_prereq_cap(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224,
             ACVP_PREREQ_SHA, value);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_drbg_prereq_cap(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224,
-            ACVP_PREREQ_AES, value2);
+            ACVP_PREREQ_HMAC, value);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    rv = acvp_enable_drbg_cap_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224,
+                                    ACVP_DRBG_DER_FUNC_ENABLED, 1);
     CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_enable_drbg_cap_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224,
@@ -2276,36 +2252,16 @@ static int enable_drbg (ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_enable_drbg_cap_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224,
-            ACVP_DRBG_ENTROPY_LEN, 0);
-    CHECK_ENABLE_CAP_RV(rv);
-
-    rv = acvp_enable_drbg_cap_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224,
-            ACVP_DRBG_NONCE_LEN, 0);
-    CHECK_ENABLE_CAP_RV(rv);
-
-    rv = acvp_enable_drbg_cap_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224,
-            ACVP_DRBG_PERSO_LEN, 0);
-    CHECK_ENABLE_CAP_RV(rv);
-
-    rv = acvp_enable_drbg_cap_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224,
-            ACVP_DRBG_ADD_IN_LEN, 0);
-    CHECK_ENABLE_CAP_RV(rv);
-
-    rv = acvp_enable_drbg_cap_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224,
-            ACVP_DRBG_RET_BITS_LEN, 512);
+            ACVP_DRBG_RET_BITS_LEN, 224);
     CHECK_ENABLE_CAP_RV(rv);
 
     //Add length range
     rv = acvp_enable_drbg_length_cap(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224,
-            ACVP_DRBG_ENTROPY_LEN, (int)0, (int)128,(int) 256);
+            ACVP_DRBG_ENTROPY_LEN, (int)192, (int)64,(int) 256);
     CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_enable_drbg_length_cap(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224,
-            ACVP_DRBG_NONCE_LEN, (int)0, (int)128,(int) 256);
-    CHECK_ENABLE_CAP_RV(rv);
-
-    rv = acvp_enable_drbg_length_cap(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224,
-            ACVP_DRBG_PERSO_LEN, (int)0, (int)128,(int) 256);
+            ACVP_DRBG_NONCE_LEN, (int)192, (int)64,(int) 256);
     CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_enable_drbg_length_cap(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224,
@@ -2320,36 +2276,29 @@ static int enable_drbg (ACVP_CTX *ctx) {
     rv = acvp_enable_drbg_cap(ctx, ACVP_CTRDRBG, &app_drbg_handler);
     CHECK_ENABLE_CAP_RV(rv);
 
+    rv = acvp_enable_drbg_prereq_cap(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128,
+            ACVP_PREREQ_AES, value);
+    CHECK_ENABLE_CAP_RV(rv);
+
     //Add length range
     rv = acvp_enable_drbg_length_cap(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128,
-            ACVP_DRBG_ENTROPY_LEN, (int)0, (int)128,(int) 256);
+            ACVP_DRBG_ENTROPY_LEN, (int)128, (int)128, (int) 256);
     CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_enable_drbg_length_cap(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128,
-            ACVP_DRBG_NONCE_LEN, (int)0, (int)128,(int) 256);
+            ACVP_DRBG_NONCE_LEN, (int)64, (int)64,(int) 128);
     CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_enable_drbg_length_cap(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128,
-            ACVP_DRBG_PERSO_LEN, (int)0, (int)128,(int) 256);
+            ACVP_DRBG_PERSO_LEN, (int)0, (int)256,(int) 256);
     CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_enable_drbg_length_cap(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128,
-            ACVP_DRBG_PERSO_LEN, (int)0, (int)128,(int) 256);
-    CHECK_ENABLE_CAP_RV(rv);
-
-    rv = acvp_enable_drbg_length_cap(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128,
-            ACVP_DRBG_ADD_IN_LEN, (int)0, (int)128,(int) 256);
+            ACVP_DRBG_ADD_IN_LEN, (int)0, (int)256,(int) 256);
     CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_enable_drbg_cap_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128,
                                     ACVP_DRBG_DER_FUNC_ENABLED, 1);
-    CHECK_ENABLE_CAP_RV(rv);
-
-    rv = acvp_enable_drbg_prereq_cap(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128,
-            ACVP_PREREQ_SHA, value);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_drbg_prereq_cap(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128,
-            ACVP_PREREQ_AES, value2);
     CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_enable_drbg_cap_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128,
@@ -2357,29 +2306,12 @@ static int enable_drbg (ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_enable_drbg_cap_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128,
-            ACVP_DRBG_RESEED_ENABLED, 1);
+            ACVP_DRBG_RESEED_ENABLED, 0);
     CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_enable_drbg_cap_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128,
-            ACVP_DRBG_ENTROPY_LEN, 0);
+            ACVP_DRBG_RET_BITS_LEN, 256);
     CHECK_ENABLE_CAP_RV(rv);
-
-    rv = acvp_enable_drbg_cap_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128,
-            ACVP_DRBG_NONCE_LEN, 0);
-    CHECK_ENABLE_CAP_RV(rv);
-
-    rv = acvp_enable_drbg_cap_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128,
-            ACVP_DRBG_PERSO_LEN, 0);
-    CHECK_ENABLE_CAP_RV(rv);
-
-    rv = acvp_enable_drbg_cap_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128,
-            ACVP_DRBG_ADD_IN_LEN, 0);
-    CHECK_ENABLE_CAP_RV(rv);
-
-    rv = acvp_enable_drbg_cap_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128,
-            ACVP_DRBG_RET_BITS_LEN, 512);
-    CHECK_ENABLE_CAP_RV(rv);
-#endif
 
     return 0;
 }
@@ -2760,8 +2692,7 @@ static ACVP_RESULT app_aes_handler(ACVP_TEST_CASE *test_case)
     return ACVP_SUCCESS;
 }
 
-/* TODO - openssl does not support inverse option */
-#if 0
+/* NOTE - openssl does not support inverse option */
 static ACVP_RESULT app_aes_keywrap_handler(ACVP_TEST_CASE *test_case)
 {
     ACVP_SYM_CIPHER_TC      *tc;
@@ -2841,6 +2772,7 @@ static ACVP_RESULT app_aes_keywrap_handler(ACVP_TEST_CASE *test_case)
 }
 
 /* TODO: I don't believe that openssl's 3DES keywrap is FIPS compliant */
+#if 0
 static ACVP_RESULT app_des_keywrap_handler(ACVP_TEST_CASE *test_case)
 {
     ACVP_SYM_CIPHER_TC      *tc;
@@ -3342,11 +3274,6 @@ static ACVP_RESULT app_kdf135_ikev1_handler(ACVP_TEST_CASE *test_case) {
 }
 
 static ACVP_RESULT app_kdf135_x963_handler(ACVP_TEST_CASE *test_case) {
-    ACVP_RESULT rv = ACVP_CRYPTO_MODULE_FAIL;
-    return rv;
-}
-
-static ACVP_RESULT app_kdf135_tpm_handler(ACVP_TEST_CASE *test_case) {
     ACVP_RESULT rv = ACVP_CRYPTO_MODULE_FAIL;
     return rv;
 }
