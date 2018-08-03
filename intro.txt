@@ -2,10 +2,9 @@
  
 @mainpage Introduction to libacvp
  
-This document describes libacvp, a library that implements an ACVP client
-based on https://github.com/usnistgov/ACVP and a command line application
-that provides configuration and invocation of the algorithm testing.
-
+This document describes the libacvp external API. libacvp implements an ACVP client
+based on https://bitbucket-eng-rtp1.cisco.com/bitbucket/projects/TS/repos/libacvp/browse
+that provides configuration and invocation for cryptographic algorithm testing.
 
 
  
@@ -72,19 +71,27 @@ you read and understand the terms outlined in the @ref LICENSE section.
 
 To install libacvp, download the latest release of the distribution.  
 
-libacvp uses the GNU \texttt{autoconf} and \texttt{make}
+libacvp uses the GNU \texttt{make}
 utilities\footnote{BSD make may not work; if both versions of make
 are on your platform, you may have to invoke GNU make as \texttt{gmake}.}.  In
-the \texttt{libest} directory, run the configure script and then make:
+the \texttt{libacvp} directory run make:
 \begin{verbatim}
-  ./configure [ options ]       
   make                          
-  make install
 \end{verbatim}
 
 This package has been tested on both 32 and 64 bit Linux systems running
 CentOS and Ubuntu.  The OpenSSL development package should be installed
-on the system, or CiscoSSL can be used.  
+on the system.  
+
+Note: In this first iteration of the API reference there are some items listed
+as TBD.  These are items that we will evaluate and *may* implement in the future.
+If these TBD items are of interest to you feel free to implement them and
+submit them to the libacvp github.  This is an open source project and all
+worthwhile contributions will be embraced.
+
+\subsection{Shared Linking}
+
+By default libacvp is built as a shared library.
 
 \subsection{Static Linking}
 
@@ -98,39 +105,35 @@ TBD
 
 TBD
 
-\begin{verbatim}
-  ./configure [ options ]       
-  make                          
-  make install-strip
-\end{verbatim}
 
-@endlatexonly
-
-@latexonly
 
 \subsection{Java build}
 
 TBD
 
-@endlatexonly
 
 @section Examples Example Code
 
-@latexonly
 
 The example application is built automatically when building libacvp.
 
 
 Note, the example code is not suitable for including into 
 commercial software.  The example apps is primarily used to test
-the libacvp library in linux and to show how the API should be used.  The
-example code does not have all the appropriate error handling
-and robust design required for commercial software.  
+the libacvp library in linux and to show how the API should be used.  
 
-@endlatexonly
+
 
 
 @section Overview ACVP Overview
 
+@latexonly
+ACVP enables communication between a cryptographic module that is embedded inside of a device or otherwise running on a platform accessible via computer network, and an external testing system, using standard network communication interfaces and protocols. This communication protocol can also be used to validate the correctness of the implementations of the algorithms in the cryptographic module with a validation authority. This document describes how ACVP is structured with respect to the client-server model, the messaging protocol, optional features and flows.
+
+For a full description of the protocol and JSON schema please refer to the ACVp specification github:
+
+https://github.com/usnistgov/ACVP
+
+@endlatexonly
 
  */
