@@ -637,6 +637,9 @@ am__EXEEXT_TRUE
 LTLIBOBJS
 LIBOBJS
 SAFEC_STUB_DIR
+USE_FOM_FALSE
+USE_FOM_TRUE
+FOM_OBJ_DIR
 SSL_LDFLAGS
 SSL_CFLAGS
 CPP
@@ -714,6 +717,9 @@ am__isrc
 INSTALL_DATA
 INSTALL_SCRIPT
 INSTALL_PROGRAM
+MAINT
+MAINTAINER_MODE_FALSE
+MAINTAINER_MODE_TRUE
 target_alias
 host_alias
 build_alias
@@ -755,6 +761,7 @@ SHELL'
 ac_subst_files=''
 ac_user_opts='
 enable_option_checking
+enable_maintainer_mode
 enable_silent_rules
 enable_dependency_tracking
 enable_shared
@@ -767,6 +774,7 @@ with_sysroot
 enable_libtool_lock
 with_ssl_dir
 with_libcurl_dir
+with_libmurl_dir
 with_fom_dir
 with_gcov
 with_safec_dir
@@ -780,7 +788,8 @@ LDFLAGS
 LIBS
 CPPFLAGS
 LT_SYS_LIBRARY_PATH
-CPP'
+CPP
+FOM_OBJ_DIR'
 
 
 # Initialize some variables set by options.
@@ -1399,6 +1408,9 @@ Optional Features:
   --disable-option-checking  ignore unrecognized --enable/--with options
   --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
+  --enable-maintainer-mode
+                          enable make rules and dependencies not useful (and
+                          sometimes confusing) to the casual installer
   --enable-silent-rules   less verbose build output (undo: "make V=1")
   --disable-silent-rules  verbose build output (undo: "make V=0")
   --enable-dependency-tracking
@@ -1425,6 +1437,7 @@ Optional Packages:
   --with-ssl-dir          location of OpenSSL install folder, defaults to
                           /usr/local/ssl
   --with-libcurl-dir      enable support for client proxy using libcurl
+  --with-libmurl-dir      enable support for client proxy using libmurl
   --with-fom-dir          Path to FOM install directory
   --gcov                  flag to indicate use of coverage - true|false
   --with-safec-dir        location of SAFEC install folder, This is a required
@@ -1441,6 +1454,7 @@ Some influential environment variables:
   LT_SYS_LIBRARY_PATH
               User-defined run-time library search path.
   CPP         C preprocessor
+  FOM_OBJ_DIR "directory with fipscanister.o"
 
 Use these variables to override the choices made by `configure' or to help
 it to find libraries and programs with nonstandard names/locations.
@@ -2174,6 +2188,29 @@ ac_configure="$SHELL $ac_aux_dir/configure"  # Please don't use this var.
 # Init automake, and specify this program use relaxed structures.
 # i.e. this program doesn't follow the gnu coding standards, and doesn't have
 # ChangeLog, COPYING, AUTHORS, INSTALL, README etc. files.
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether to enable maintainer-specific portions of Makefiles" >&5
+$as_echo_n "checking whether to enable maintainer-specific portions of Makefiles... " >&6; }
+    # Check whether --enable-maintainer-mode was given.
+if test "${enable_maintainer_mode+set}" = set; then :
+  enableval=$enable_maintainer_mode; USE_MAINTAINER_MODE=$enableval
+else
+  USE_MAINTAINER_MODE=no
+fi
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $USE_MAINTAINER_MODE" >&5
+$as_echo "$USE_MAINTAINER_MODE" >&6; }
+   if test $USE_MAINTAINER_MODE = yes; then
+  MAINTAINER_MODE_TRUE=
+  MAINTAINER_MODE_FALSE='#'
+else
+  MAINTAINER_MODE_TRUE='#'
+  MAINTAINER_MODE_FALSE=
+fi
+
+  MAINT=$MAINTAINER_MODE_TRUE
+
+
 am__api_version='1.15'
 
 # Find a good install program.  We prefer a C program (faster),
@@ -12278,6 +12315,25 @@ fi
 fi
 
 ##
+# Libmurl installation directory path
+##
+
+# Check whether --with-libmurl-dir was given.
+if test "${with_libmurl_dir+set}" = set; then :
+  withval=$with_libmurl_dir; libmurldir="$withval"
+else
+  with_libmurldir=no
+fi
+
+
+if test "x$with_libmurldir" != xno; then :
+  CFLAGS="$CFLAGS -I$libmurldir/include -DUSE_MURL"
+      LDFLAGS="$LDFLAGS -L$libmurldir/lib -lmurl"
+
+fi
+
+
+##
 # FOM installation directory path
 ##
 
@@ -12292,8 +12348,15 @@ fi
 if test "x$with_fomdir" != xno; then :
   CFLAGS="$CFLAGS -DACVP_NO_RUNTIME -DOPENSSL_FIPS -DOPENSSL_KDF_SUPPORT -I$fomdir/include"
       LDFLAGS="$LDFLAGS -L$fomdir/lib -lcurl"
+      FOM_OBJ_DIR=$fomdir/lib
 
-
+fi
+ if test "x$with_fomdir" != xno; then
+  USE_FOM_TRUE=
+  USE_FOM_FALSE='#'
+else
+  USE_FOM_TRUE='#'
+  USE_FOM_FALSE=
 fi
 
 ##
@@ -12482,6 +12545,10 @@ LIBOBJS=$ac_libobjs
 LTLIBOBJS=$ac_ltlibobjs
 
 
+if test -z "${MAINTAINER_MODE_TRUE}" && test -z "${MAINTAINER_MODE_FALSE}"; then
+  as_fn_error $? "conditional \"MAINTAINER_MODE\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking that generated files are newer than configure" >&5
 $as_echo_n "checking that generated files are newer than configure... " >&6; }
    if test -n "$am_sleep_pid"; then
@@ -12504,6 +12571,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${am__fastdepCC_TRUE}" && test -z "${am__fastdepCC_FALSE}"; then
   as_fn_error $? "conditional \"am__fastdepCC\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${USE_FOM_TRUE}" && test -z "${USE_FOM_FALSE}"; then
+  as_fn_error $? "conditional \"USE_FOM\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 
