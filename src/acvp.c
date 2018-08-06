@@ -1255,8 +1255,10 @@ ACVP_RESULT acvp_process_tests (ACVP_CTX *ctx) {
      * in the regisration response.  Process each vector set and
      * return the results to the server.
      */
-	rv = ACVP_NO_CTX;
     vs_entry = ctx->vs_list;
+    if (!vs_entry) {
+        return ACVP_MISSING_ARG;
+    }
     while (vs_entry) {
         rv = acvp_process_vsid(ctx, vs_entry->vs_id);
         vs_entry = vs_entry->next;
