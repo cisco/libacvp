@@ -192,6 +192,10 @@ static ACVP_RESULT acvp_kas_ffc_comp(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap, ACVP_TE
 
         hash = json_object_get_string(groupobj, "hashAlg");
         test_type = json_object_get_string(groupobj, "testType");
+		if (!test_type) {
+			ACVP_LOG_ERR("Unable to parse testType from JSON");
+			return ACVP_MALFORMED_JSON;
+		}
         if (!strncmp(test_type, "AFT", 3))
             stc->test_type = ACVP_KAS_FFC_TT_AFT;
         if (!strncmp(test_type, "VAL", 3))
