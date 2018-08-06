@@ -1553,8 +1553,11 @@ ACVP_RESULT acvp_enable_hmac_cap (
     if (!cap) {
         return ACVP_MALLOC_FAIL;
     }
-    
-    return (acvp_append_hmac_caps_entry(ctx, cap, cipher, crypto_handler));
+    ACVP_RESULT rv = acvp_append_hmac_caps_entry(ctx, cap, cipher, crypto_handler);
+	if (rv != ACVP_SUCCESS) {
+		free(cap);
+	}
+    return rv;
 }
 
 /*
