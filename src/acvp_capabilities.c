@@ -1674,7 +1674,7 @@ ACVP_RESULT acvp_enable_cmac_cap (
         return ACVP_MALLOC_FAIL;
     }
 
-    result = acvp_append_cmac_caps_entry(ctx, cap, cipher, crypto_handler)
+    result = acvp_append_cmac_caps_entry(ctx, cap, cipher, crypto_handler);
 	if (result != ACVP_SUCCESS) {
 		free(cap);
 	}
@@ -3174,6 +3174,7 @@ ACVP_RESULT acvp_enable_kdf135_tpm_cap (
         ACVP_CTX *ctx,
         ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case)) {
     ACVP_KDF135_TPM_CAP *cap;
+	ACVP_RESULT result;
     
     if (!ctx) {
         return ACVP_NO_CTX;
@@ -3187,13 +3188,18 @@ ACVP_RESULT acvp_enable_kdf135_tpm_cap (
         return ACVP_MALLOC_FAIL;
     }
     
-    return (acvp_append_kdf135_tpm_caps_entry(ctx, cap, crypto_handler));
+    result = acvp_append_kdf135_tpm_caps_entry(ctx, cap, crypto_handler);
+	if (result != ACVP_SUCCESS) {
+		free(cap);
+	}
+	return result;
 }
 
 ACVP_RESULT acvp_enable_kdf135_tls_cap (
         ACVP_CTX *ctx,
         ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case)) {
     ACVP_KDF135_TLS_CAP *cap;
+	ACVP_RESULT result;
     
     if (!ctx) {
         return ACVP_NO_CTX;
@@ -3207,7 +3213,11 @@ ACVP_RESULT acvp_enable_kdf135_tls_cap (
         return ACVP_MALLOC_FAIL;
     }
     
-    return (acvp_append_kdf135_tls_caps_entry(ctx, cap, crypto_handler));
+    result = acvp_append_kdf135_tls_caps_entry(ctx, cap, crypto_handler);
+	if (result != ACVP_SUCCESS) {
+		free(cap);
+	}
+	return result;
 }
 
 /*
@@ -3351,6 +3361,7 @@ ACVP_RESULT acvp_enable_kdf135_srtp_cap (
         ACVP_CTX *ctx,
         ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case)) {
     ACVP_KDF135_SRTP_CAP *cap;
+	ACVP_RESULT result;
     
     if (!ctx) {
         return ACVP_NO_CTX;
@@ -3364,7 +3375,11 @@ ACVP_RESULT acvp_enable_kdf135_srtp_cap (
         return ACVP_MALLOC_FAIL;
     }
     
-    return (acvp_append_kdf135_srtp_caps_entry(ctx, cap, crypto_handler));
+    result = acvp_append_kdf135_srtp_caps_entry(ctx, cap, crypto_handler);
+	if (result != ACVP_SUCCESS) {
+		free(cap);
+	}
+	return result;
 }
 
 
@@ -3372,6 +3387,7 @@ ACVP_RESULT acvp_enable_kdf135_ikev2_cap (
         ACVP_CTX *ctx,
         ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case)) {
     ACVP_KDF135_IKEV2_CAP *cap;
+	ACVP_RESULT result;
     
     if (!ctx) {
         return ACVP_NO_CTX;
@@ -3385,7 +3401,11 @@ ACVP_RESULT acvp_enable_kdf135_ikev2_cap (
         return ACVP_MALLOC_FAIL;
     }
     
-    return (acvp_append_kdf135_ikev2_caps_entry(ctx, cap, crypto_handler));
+    result = acvp_append_kdf135_ikev2_caps_entry(ctx, cap, crypto_handler);
+	if (result != ACVP_SUCCESS) {
+		free(cap);
+	}
+	return result;
 }
 
 
@@ -3393,6 +3413,7 @@ ACVP_RESULT acvp_enable_kdf135_x963_cap (
         ACVP_CTX *ctx,
         ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case)) {
     ACVP_KDF135_X963_CAP *cap;
+	ACVP_RESULT result;
     
     if (!ctx) {
         return ACVP_NO_CTX;
@@ -3406,13 +3427,18 @@ ACVP_RESULT acvp_enable_kdf135_x963_cap (
         return ACVP_MALLOC_FAIL;
     }
     
-    return (acvp_append_kdf135_x963_caps_entry(ctx, cap, crypto_handler));
+    result = acvp_append_kdf135_x963_caps_entry(ctx, cap, crypto_handler);
+	if (result != ACVP_SUCCESS) {
+		free(cap);
+	}
+	return result;
 }
 
 ACVP_RESULT acvp_enable_kdf135_ikev1_cap (
         ACVP_CTX *ctx,
         ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case)) {
     ACVP_KDF135_IKEV1_CAP *cap;
+	ACVP_RESULT result;
     
     if (!ctx) {
         return ACVP_NO_CTX;
@@ -3426,13 +3452,18 @@ ACVP_RESULT acvp_enable_kdf135_ikev1_cap (
         return ACVP_MALLOC_FAIL;
     }
     
-    return (acvp_append_kdf135_ikev1_caps_entry(ctx, cap, crypto_handler));
+    result = acvp_append_kdf135_ikev1_caps_entry(ctx, cap, crypto_handler);
+	if (result != ACVP_SUCCESS) {
+		free(cap);
+	}
+	return result;
 }
 
 ACVP_RESULT acvp_enable_kdf108_cap (
         ACVP_CTX *ctx,
         ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case)) {
     ACVP_KDF108_CAP *cap;
+	ACVP_RESULT result;
     
     if (!ctx) {
         return ACVP_NO_CTX;
@@ -3446,13 +3477,18 @@ ACVP_RESULT acvp_enable_kdf108_cap (
         return ACVP_MALLOC_FAIL;
     }
     
-    return (acvp_append_kdf108_caps_entry(ctx, cap, crypto_handler));
+    result = acvp_append_kdf108_caps_entry(ctx, cap, crypto_handler);
+	if (result != ACVP_SUCCESS) {
+		free(cap);
+	}
+	return result;
 }
 
 ACVP_RESULT acvp_enable_kdf135_snmp_cap (
         ACVP_CTX *ctx,
         ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case)) {
     ACVP_KDF135_SNMP_CAP *cap;
+	ACVP_RESULT result;
     
     if (!ctx) {
         return ACVP_NO_CTX;
@@ -3466,13 +3502,18 @@ ACVP_RESULT acvp_enable_kdf135_snmp_cap (
         return ACVP_MALLOC_FAIL;
     }
     
-    return (acvp_append_kdf135_snmp_caps_entry(ctx, cap, crypto_handler));
+    result = acvp_append_kdf135_snmp_caps_entry(ctx, cap, crypto_handler);
+	if (result != ACVP_SUCCESS) {
+		free(cap);
+	}
+	return result;
 }
 
 ACVP_RESULT acvp_enable_kdf135_ssh_cap (
         ACVP_CTX *ctx,
         ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case)) {
     ACVP_KDF135_SSH_CAP *cap;
+	ACVP_RESULT result;
     
     if (!ctx) {
         return ACVP_NO_CTX;
@@ -3486,7 +3527,11 @@ ACVP_RESULT acvp_enable_kdf135_ssh_cap (
         return ACVP_MALLOC_FAIL;
     }
     
-    return (acvp_append_kdf135_ssh_caps_entry(ctx, cap, crypto_handler));
+    result = acvp_append_kdf135_ssh_caps_entry(ctx, cap, crypto_handler);
+	if (result != ACVP_SUCCESS) {
+		free(cap);
+	}
+	return result;
 }
 
 /*
