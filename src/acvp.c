@@ -922,6 +922,7 @@ static ACVP_RESULT acvp_build_login (ACVP_CTX *ctx, char **login, int refresh) {
     JSON_Object *pw_obj = NULL;
     JSON_Array *reg_arry = NULL;
     char *token = malloc(ACVP_TOTP_TOKEN_MAX);
+	if (!token) return ACVP_MALLOC_FAIL;
     memset(token, 0, ACVP_TOTP_TOKEN_MAX);
 
     /*
