@@ -1302,6 +1302,7 @@ ACVP_RESULT acvp_check_test_results (ACVP_CTX *ctx) {
      * in the regisration response.  Attempt to download the result
      * for each vector set.
      */
+	rv = ACVP_NO_CTX;
     vs_entry = ctx->vs_list;
     while (vs_entry) {
         rv = acvp_get_result_vsid(ctx, vs_entry->vs_id);
