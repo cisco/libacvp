@@ -1376,6 +1376,7 @@ ACVP_RESULT acvp_enable_hash_cap (
         ACVP_CIPHER cipher,
         ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case)) {
     ACVP_HASH_CAP *cap;
+	ACVP_RESULT result;
     
     if (!ctx) {
         return ACVP_NO_CTX;
@@ -1392,11 +1393,11 @@ ACVP_RESULT acvp_enable_hash_cap (
     //TODO: need to validate that cipher, mode, etc. are valid values
     //      we also need to make sure we're not adding a duplicate
     
-	ACVP_RESULT rv = acvp_append_hash_caps_entry(ctx, cap, cipher, crypto_handler);
-	if (rv != ACVP_SUCCESS) {
+	result = acvp_append_hash_caps_entry(ctx, cap, cipher, crypto_handler);
+	if (result != ACVP_SUCCESS) {
 		free(cap);
 	}
-    return rv;
+    return result;
 }
 
 static ACVP_RESULT acvp_validate_hash_parm_value (ACVP_HASH_PARM parm, int value) {
@@ -1524,6 +1525,7 @@ ACVP_RESULT acvp_enable_hmac_cap (
         ACVP_CIPHER cipher,
         ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case)) {
     ACVP_HMAC_CAP *cap;
+	ACVP_RESULT result;
     
     if (!ctx) {
         return ACVP_NO_CTX;
@@ -1553,11 +1555,11 @@ ACVP_RESULT acvp_enable_hmac_cap (
     if (!cap) {
         return ACVP_MALLOC_FAIL;
     }
-    ACVP_RESULT rv = acvp_append_hmac_caps_entry(ctx, cap, cipher, crypto_handler);
-	if (rv != ACVP_SUCCESS) {
+    result = acvp_append_hmac_caps_entry(ctx, cap, cipher, crypto_handler);
+	if (result != ACVP_SUCCESS) {
 		free(cap);
 	}
-    return rv;
+    return result;
 }
 
 /*
@@ -1650,7 +1652,8 @@ ACVP_RESULT acvp_enable_cmac_cap (
         ACVP_CIPHER cipher,
         ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case)) {
     ACVP_CMAC_CAP *cap;
-    
+    ACVP_RESULT result;
+
     if (!ctx) {
         return ACVP_NO_CTX;
     }
@@ -1670,8 +1673,12 @@ ACVP_RESULT acvp_enable_cmac_cap (
     if (!cap) {
         return ACVP_MALLOC_FAIL;
     }
-    
-    return (acvp_append_cmac_caps_entry(ctx, cap, cipher, crypto_handler));
+
+    result = acvp_append_cmac_caps_entry(ctx, cap, cipher, crypto_handler)
+	if (result != ACVP_SUCCESS) {
+		free(cap);
+	}
+    return result;
 }
 
 /*
