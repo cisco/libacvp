@@ -3602,6 +3602,7 @@ static ACVP_RESULT app_kdf108_handler(ACVP_TEST_CASE *test_case) {
 
 static ACVP_RESULT app_kdf135_tls_handler(ACVP_TEST_CASE *test_case)
 {
+#if 0
     ACVP_KDF135_TLS_TC    *tc;
     unsigned char *key_block1, *key_block2, *master_secret1, *master_secret2;
     int olen1 = 0, olen2 = 0, len1, ret, i, len, count, psm_len;
@@ -3719,12 +3720,13 @@ static ACVP_RESULT app_kdf135_tls_handler(ACVP_TEST_CASE *test_case)
             key_block1[i] ^= key_block2[i];
         }
     }
-
+#endif
     return ACVP_SUCCESS;
 }
 
 static ACVP_RESULT app_kdf135_snmp_handler(ACVP_TEST_CASE *test_case)
 {
+#if 0
     ACVP_KDF135_SNMP_TC    *tc;
     int engid_str_len = 0;
     int p_len, ret;
@@ -3750,7 +3752,7 @@ static ACVP_RESULT app_kdf135_snmp_handler(ACVP_TEST_CASE *test_case)
         return ACVP_CRYPTO_MODULE_FAIL;
     }
     tc->skey_len = ret;
-
+#endif
     return ACVP_SUCCESS;
 }
 
@@ -4526,21 +4528,12 @@ static ACVP_RESULT app_kas_ecc_handler(ACVP_TEST_CASE *test_case)
         printf("No EC_KEY_set_group\n");
         return rv;
     }
-
-//    if (!BN_hex2bn(&cx, (char *)tc->psx)) {
-//        EC_GROUP_free(group);
-//        printf("BN_hex2bn failed psx\n");
-//        return rv;
-//    }
+    
     if (!BN_bin2bn(tc->psx, strlen(tc->psx), cx)) {
         printf("BN_bin2bn failed psx\n");
         goto error;
     }
-
-//    if (!BN_hex2bn(&cy, (char *)tc->psy)) {
-//        printf("BN_hex2bn failed psy\n");
-//        goto error;
-//    }
+    
     if (!BN_bin2bn(tc->psy, strlen(tc->psy), cy)) {
         printf("BN_bin2bn failed psy\n");
         goto error;
@@ -4551,19 +4544,6 @@ static ACVP_RESULT app_kas_ecc_handler(ACVP_TEST_CASE *test_case)
         goto error;
     }
     if (tc->test_type == ACVP_KAS_ECC_TT_VAL) {
-//        if (!BN_hex2bn(&ix, (char *)tc->pix)) {
-//            printf("BN_hex2bn failed pix\n");
-//            goto error;
-//        }
-//
-//        if (!BN_hex2bn(&iy, (char *)tc->piy)) {
-//            printf("BN_hex2bn failed piy\n");
-//            goto error;
-//        }
-//        if (!BN_hex2bn(&id, (char *)tc->d)) {
-//            printf("BN_hex2bn failed id\n");
-//            goto error;
-//        }
         if (!BN_bin2bn(tc->pix, strlen(tc->pix), ix)) {
             printf("BN_bin2bn failed pix\n");
             goto error;
@@ -4633,7 +4613,7 @@ error:
 
 static ACVP_RESULT app_kas_ffc_handler(ACVP_TEST_CASE *test_case)
 {
-#if 1
+#if 0
     ACVP_KAS_FFC_TC         *tc;
     const EVP_MD *md = NULL;
     ACVP_RESULT rv = ACVP_CRYPTO_MODULE_FAIL;
@@ -4704,12 +4684,12 @@ static ACVP_RESULT app_kas_ffc_handler(ACVP_TEST_CASE *test_case)
     }
 
     if (tc->test_type == ACVP_KAS_FFC_TT_VAL) {
-        if (!BN_bin2bn(tc->epri, strlen(tc->epri), dh->priv_key) {
+        if (!BN_bin2bn(tc->epri, strlen(tc->epri), dh->priv_key)) {
             printf("BN_bin2bn failed epri\n");
             goto error;
         }
 
-        if (!BN_bin2bn(tc->epui, strlen(tc->epui), dh->pub_key) {
+        if (!BN_bin2bn(tc->epui, strlen(tc->epui), dh->pub_key)) {
             printf("BN_bin2bn failed epui\n");
             goto error;
         }
@@ -4769,7 +4749,6 @@ static ACVP_RESULT app_rsa_keygen_handler(ACVP_TEST_CASE *test_case)
     RSA       *rsa;
     BIGNUM *p = NULL, *q = NULL, *n = NULL, *d = NULL;
     BIGNUM *e = BN_new();
-    BIGNUM *p = NULL, *q = NULL, *n = NULL, *d = NULL;
 
     /* keygen vars */
     unsigned int bitlen1, bitlen2, bitlen3, bitlen4, keylen;
@@ -4793,11 +4772,6 @@ static ACVP_RESULT app_rsa_keygen_handler(ACVP_TEST_CASE *test_case)
 //        rv = ACVP_CRYPTO_MODULE_FAIL;
 //        goto err;
 //    }
-    
-    p = rsa->p;
-    q = rsa->q;
-    n = rsa->n;
-    d = rsa->d;
 
 #if OPENSSL_VERSION_NUMBER < 0x10100000L
     p = rsa->p;
@@ -5703,7 +5677,7 @@ int hmac_totp(const char *key, const unsigned char *msg, char *hash,
 #else
     ctx = HMAC_CTX_new();
 #endif
-
+    
     HMAC_CTX_set_flags(ctx, EVP_MD_CTX_FLAG_NON_FIPS_ALLOW);
     if (!HMAC_Init_ex(ctx, key, key_len, md, NULL)) goto end;
     if (!HMAC_Update(ctx, msg, T_LEN)) goto end;
@@ -5716,7 +5690,6 @@ end:
 #else
     if (ctx) HMAC_CTX_free(ctx);
 #endif
-
     return len;
 }
 
