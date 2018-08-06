@@ -4,4 +4,6 @@ acvp_app_SOURCES = app_main.c
 AM_CFLAGS = -I../.. -I$(srcdir)/../src -I$(SSL_CFLAGS) -g  $(FOM_CFLAGS)
 DL=-ldl
 acvp_app_LDFLAGS = -L../src/.libs $(DL) -lacvp -lssl -lcrypto
-
+if USE_FOM
+acvp_app_LDADD = $(FOM_OBJ_DIR)/fipscanister.o
+endif

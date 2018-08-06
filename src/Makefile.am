@@ -28,6 +28,6 @@ libacvp_la_SOURCES =  acvp.c\
                     acvp_kas_ecc.c \
                     acvp_kas_ffc.c \
                     acvp_ecdsa.c
-libacvp_la_LIBADD = $(SAFEC_LDFLAGS)
+libacvp_la_LIBADD = $(SAFEC_LDFLAGS) $(LIBOBJS)
 library_includedir=$(includedir)/acvp
 library_include_HEADERS = acvp.h

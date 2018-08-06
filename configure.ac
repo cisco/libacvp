@@ -7,6 +7,8 @@ AC_INIT([libacvp], [0.5], [ccsm-support@cisco.com])
 # Safety checks in case user overwritten --srcdir
 SUBDIRS=src
 AC_CONFIG_MACRO_DIR([m4])
+m4_pattern_allow([^AM_])
+m4_pattern_allow([^AC_])
 
 # Store the auxiliary build tools (e.g., install-sh, config.sub, config.guess)
 # in this dir (build-aux)
@@ -15,6 +17,7 @@ AC_CONFIG_AUX_DIR([config])
 # Init automake, and specify this program use relaxed structures.
 # i.e. this program doesn't follow the gnu coding standards, and doesn't have
 # ChangeLog, COPYING, AUTHORS, INSTALL, README etc. files.
+AM_MAINTAINER_MODE
 AM_INIT_AUTOMAKE([subdir-objects -Wall -Werror foreign])
 
 # Check for C compiler
@@ -70,9 +73,28 @@ AS_IF(
      ]
     )
 
+
+##
+# Libmurl installation directory path
+##
+AC_ARG_WITH([libmurl-dir],
+    [AS_HELP_STRING([--with-libmurl-dir],
+    [enable support for client proxy using libmurl])],
+    [libmurldir="$withval"],
+    [with_libmurldir=no])
+
+AS_IF(
+     [test "x$with_libmurldir" != xno],
+     [[CFLAGS="$CFLAGS -I$libmurldir/include -DUSE_MURL"]
+      [LDFLAGS="$LDFLAGS -L$libmurldir/lib -lmurl"]]
+      )
+
+
 ##
 # FOM installation directory path
 ##
+AC_ARG_VAR(FOM_OBJ_DIR, "directory with fipscanister.o")
+
 AC_ARG_WITH([fom-dir],
     [AS_HELP_STRING([--with-fom-dir],
     [Path to FOM install directory])],
@@ -83,8 +105,13 @@ AS_IF(
      [test "x$with_fomdir" != xno],
      [[CFLAGS="$CFLAGS -DACVP_NO_RUNTIME -DOPENSSL_FIPS -DOPENSSL_KDF_SUPPORT -I$fomdir/include"]
       [LDFLAGS="$LDFLAGS -L$fomdir/lib -lcurl"]
-     ]
+      [FOM_OBJ_DIR=$fomdir/lib]]
     )
+AM_CONDITIONAL([USE_FOM], [test "x$with_fomdir" != xno])
+
+
+# Include fom dir
+
 
 ##
 # Gcoverage
