@@ -1392,7 +1392,11 @@ ACVP_RESULT acvp_enable_hash_cap (
     //TODO: need to validate that cipher, mode, etc. are valid values
     //      we also need to make sure we're not adding a duplicate
     
-    return (acvp_append_hash_caps_entry(ctx, cap, cipher, crypto_handler));
+	ACVP_RESULT rv = acvp_append_hash_caps_entry(ctx, cap, cipher, crypto_handler);
+	if (rv != ACVP_SUCCESS) {
+		free(cap);
+	}
+    return rv;
 }
 
 static ACVP_RESULT acvp_validate_hash_parm_value (ACVP_HASH_PARM parm, int value) {
