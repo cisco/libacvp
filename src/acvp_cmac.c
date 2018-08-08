@@ -202,6 +202,16 @@ ACVP_RESULT acvp_cmac_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     ACVP_CIPHER alg_id;
     char *json_result, *direction = NULL;
 
+    if (!ctx) {
+        ACVP_LOG_ERR("No ctx for handler operation");
+        return (ACVP_NO_CTX);
+    }
+
+    if (!obj) {
+        ACVP_LOG_ERR("No obj for handler operation");
+        return (ACVP_MALFORMED_JSON);
+    }
+
     if (!alg_str) {
         ACVP_LOG_ERR("ERROR: unable to parse 'algorithm' from JSON");
         return (ACVP_MALFORMED_JSON);
