@@ -1394,6 +1394,8 @@ static int enable_hmac (ACVP_CTX *ctx) {
 }
 
 #ifdef OPENSSL_KDF_SUPPORT
+#define ENGID1 "800002B805123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456"
+#define ENGID2 "000002b87766554433221100"
 static int enable_kdf (ACVP_CTX *ctx) {
     ACVP_RESULT rv;
     int i, flags = 0;
@@ -4490,17 +4492,39 @@ static ACVP_RESULT app_kas_ffc_handler(ACVP_TEST_CASE *test_case)
     }
 
 #if OPENSSL_VERSION_NUMBER < 0x10100000L
+    if (!BN_hex2bn(&dh->p, (char *)tc->p)) {
+        printf("BN_hex2bn failed p\n");
+        goto error;
+    }
+
+    if (!BN_hex2bn(&dh->q, (char *)tc->q)) {
+        printf("BN_hex2bn failed q\n");
+        goto error;
+    }
+    if (!BN_hex2bn(&dh->g, (char *)tc->g)) {
+        printf("BN_hex2bn failed g\n");
+        goto error;
+    }
+    if (tc->test_type == ACVP_KAS_FFC_TT_VAL) {
+        if (!BN_hex2bn(&dh->pub_key, (char *)tc->epui)) {
+           printf("BN_hex2bn failed epui\n");
+            goto error;
+        }
+        if (!BN_hex2bn(&dh->priv_key, (char *)tc->epri)) {
+            printf("BN_hex2bn failed epri\n");
+            goto error;
+        }
+        pub_key = dh->pub_key;
+        priv_key = dh->priv_key;
+    }
     p = dh->p;
     q = dh->q;
     g = dh->g;
-    pub_key = dh->pub_key;
-    priv_key = dh->priv_key;
 #else
     DH_get0_pqg(dh, (const BIGNUM **)&p,
                 (const BIGNUM **)&q, (const BIGNUM **)&g);
     DH_get0_key(dh, (const BIGNUM **)&pub_key,
                 (const BIGNUM **)&priv_key);
-#endif
 
     if (!BN_hex2bn(&p, (char *)tc->p)) {
         printf("BN_hex2bn failed p\n");
@@ -4516,10 +4540,6 @@ static ACVP_RESULT app_kas_ffc_handler(ACVP_TEST_CASE *test_case)
         goto error;
     }
 
-    if (!BN_hex2bn(&peerkey, (char *)tc->eps)) {
-        printf("BN_hex2bn failed eps\n");
-        goto error;
-    }
 
     if (tc->test_type == ACVP_KAS_FFC_TT_VAL) {
         if (!BN_hex2bn(&priv_key, (char *)tc->epri)) {
@@ -4531,6 +4551,11 @@ static ACVP_RESULT app_kas_ffc_handler(ACVP_TEST_CASE *test_case)
             printf("BN_hex2bn failed epui\n");
             goto error;
         }
+    }
+#endif
+    if (!BN_hex2bn(&peerkey, (char *)tc->eps)) {
+        printf("BN_hex2bn failed eps\n");
+        goto error;
     }
 
     if (tc->test_type == ACVP_KAS_FFC_TT_AFT) {
@@ -4554,7 +4579,11 @@ static ACVP_RESULT app_kas_ffc_handler(ACVP_TEST_CASE *test_case)
         tc->zlen = Zlen;
     }
 
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
+    tc->piut = BN_bn2hex(dh->pub_key);
+#else
     tc->piut = BN_bn2hex(pub_key);
+#endif
     tc->piutlen = strnlen(tc->piut, ACVP_KAS_FFC_MAX_STR);
 
 
