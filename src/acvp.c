@@ -922,6 +922,7 @@ static ACVP_RESULT acvp_build_login (ACVP_CTX *ctx, char **login, int refresh) {
     JSON_Object *pw_obj = NULL;
     JSON_Array *reg_arry = NULL;
     char *token = malloc(ACVP_TOTP_TOKEN_MAX);
+    if (!token) return ACVP_MALLOC_FAIL;
     memset(token, 0, ACVP_TOTP_TOKEN_MAX);
 
     /*
@@ -1256,6 +1257,9 @@ ACVP_RESULT acvp_process_tests (ACVP_CTX *ctx) {
      * return the results to the server.
      */
     vs_entry = ctx->vs_list;
+    if (!vs_entry) {
+        return ACVP_MISSING_ARG;
+    }
     while (vs_entry) {
         rv = acvp_process_vsid(ctx, vs_entry->vs_id);
         vs_entry = vs_entry->next;
@@ -1303,6 +1307,9 @@ ACVP_RESULT acvp_check_test_results (ACVP_CTX *ctx) {
      * for each vector set.
      */
     vs_entry = ctx->vs_list;
+    if (!vs_entry) {
+        return ACVP_MISSING_ARG;
+    }
     while (vs_entry) {
         rv = acvp_get_result_vsid(ctx, vs_entry->vs_id);
         if (ctx->is_sample) {

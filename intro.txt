@@ -3,7 +3,7 @@
 @mainpage Introduction to libacvp
  
 This document describes the libacvp external API. libacvp implements an ACVP client
-based on https://bitbucket-eng-rtp1.cisco.com/bitbucket/projects/TS/repos/libacvp/browse
+based on https://github.com/usnistgov/ACVP.git
 that provides configuration and invocation for cryptographic algorithm testing.
 
 
