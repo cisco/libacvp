@@ -1957,8 +1957,8 @@ static ACVP_RESULT acvp_build_kas_ecc_register_cap (ACVP_CTX *ctx, JSON_Object *
                 }
                 json_object_set_value(kdf_obj, "parameterSet", pset_val);
                 
-                json_object_set_value(func_obj, "role", json_value_init_array());
-                temp_arr = json_object_get_array(func_obj, "role");
+                json_object_set_value(func_obj, "kasRole", json_value_init_array());
+                temp_arr = json_object_get_array(func_obj, "kasRole");
                 role = current_scheme->role;
                 while (role) {
                     switch (role->param)
@@ -2207,8 +2207,8 @@ static ACVP_RESULT acvp_build_kas_ffc_register_cap (ACVP_CTX *ctx, JSON_Object *
                 }
                 json_object_set_value(kdf_obj, "parameterSet", pset_val);
                 
-                json_object_set_value(func_obj, "role", json_value_init_array());
-                temp_arr = json_object_get_array(func_obj, "role");
+                json_object_set_value(func_obj, "kasRole", json_value_init_array());
+                temp_arr = json_object_get_array(func_obj, "kasRole");
                 role = current_scheme->role;
                 while (role) {
                     switch (role->param)
