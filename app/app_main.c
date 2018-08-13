@@ -2382,12 +2382,12 @@ static ACVP_RESULT app_des_handler(ACVP_TEST_CASE *test_case)
      * one thousand times before we complete each iteration.
      */
     if (tc->test_type == ACVP_SYM_TEST_TYPE_MCT) {
-        const unsigned char *iv = NULL;
+        const unsigned char *ctx_iv = NULL;
 
 #if OPENSSL_VERSION_NUMBER < 0x10100000L
-        iv = cipher_ctx->iv;
+        ctx_iv = cipher_ctx->iv;
 #else
-        iv = EVP_CIPHER_CTX_iv(cipher_ctx);
+        ctx_iv = EVP_CIPHER_CTX_iv(cipher_ctx);
 #endif
 
         if (tc->direction == ACVP_DIR_ENCRYPT) {
@@ -2396,7 +2396,7 @@ static ACVP_RESULT app_des_handler(ACVP_TEST_CASE *test_case)
                 EVP_CIPHER_CTX_set_padding(cipher_ctx, 0);
             } else {
                 /* TDES needs the pre-operation IV returned */
-                memcpy(tc->iv_ret, iv, 8);
+                memcpy(tc->iv_ret, ctx_iv, 8);
             }
             if (tc->cipher == ACVP_TDES_CFB1) {
                 EVP_CIPHER_CTX_set_flags(cipher_ctx, EVP_CIPH_FLAG_LENGTH_BITS);
@@ -2405,14 +2405,14 @@ static ACVP_RESULT app_des_handler(ACVP_TEST_CASE *test_case)
             EVP_EncryptUpdate(cipher_ctx, tc->ct, &ct_len, tc->pt, tc->pt_len);
             tc->ct_len = ct_len;
             /* TDES needs the post-operation IV returned */
-            memcpy(tc->iv_ret_after, iv, 8);
+            memcpy(tc->iv_ret_after, ctx_iv, 8);
         } else if (tc->direction == ACVP_DIR_DECRYPT) {
             if (tc->mct_index == 0) {
                 EVP_DecryptInit_ex(cipher_ctx, cipher, NULL, tc->key, iv);
                 EVP_CIPHER_CTX_set_padding(cipher_ctx, 0);
             } else {
                 /* TDES needs the pre-operation IV returned */
-                memcpy(tc->iv_ret, iv, 8);
+                memcpy(tc->iv_ret, ctx_iv, 8);
             }
             if (tc->cipher == ACVP_TDES_CFB1) {
                 EVP_CIPHER_CTX_set_flags(cipher_ctx, EVP_CIPH_FLAG_LENGTH_BITS);
@@ -2420,7 +2420,7 @@ static ACVP_RESULT app_des_handler(ACVP_TEST_CASE *test_case)
             EVP_DecryptUpdate(cipher_ctx, tc->pt, &pt_len, tc->ct, tc->ct_len);
             tc->pt_len = pt_len;
             /* TDES needs the post-operation IV returned */
-            memcpy(tc->iv_ret_after, iv, 8);
+            memcpy(tc->iv_ret_after, ctx_iv, 8);
         } else {
             printf("Unsupported direction\n");
             return ACVP_UNSUPPORTED_OP;
@@ -2696,9 +2696,10 @@ static ACVP_RESULT app_aes_handler(ACVP_TEST_CASE *test_case)
 static ACVP_RESULT app_aes_keywrap_handler(ACVP_TEST_CASE *test_case)
 {
     ACVP_SYM_CIPHER_TC      *tc;
-    EVP_CIPHER_CTX          cipher_ctx;
+    EVP_CIPHER_CTX *cipher_ctx = NULL;
     const EVP_CIPHER        *cipher;
     int                     c_len;
+    ACVP_RESULT rc = 0;
 
     if (!test_case) {
         return ACVP_INVALID_ARG;
@@ -2711,7 +2712,8 @@ static ACVP_RESULT app_aes_keywrap_handler(ACVP_TEST_CASE *test_case)
     }
 
     /* Begin encrypt code section */
-    EVP_CIPHER_CTX_init(&cipher_ctx);
+    cipher_ctx = EVP_CIPHER_CTX_new();
+    EVP_CIPHER_CTX_init(cipher_ctx);
 
     switch (tc->cipher) {
     case ACVP_AES_KW:
@@ -2728,47 +2730,52 @@ static ACVP_RESULT app_aes_keywrap_handler(ACVP_TEST_CASE *test_case)
             break;
         default:
             printf("Unsupported AES keywrap key length\n");
-            return ACVP_NO_CAP;
-            break;
+            rc = ACVP_NO_CAP;
+            goto end;
         }
         break;
     default:
         printf("Error: Unsupported AES keywrap mode requested by ACVP server\n");
-        return ACVP_NO_CAP;
-        break;
+        rc = ACVP_NO_CAP;
+        goto end;
     }
 
-
     if (tc->direction == ACVP_DIR_ENCRYPT) {
-        EVP_CIPHER_CTX_set_flags(&cipher_ctx, EVP_CIPHER_CTX_FLAG_WRAP_ALLOW);
-        EVP_CipherInit_ex(&cipher_ctx, cipher, NULL, tc->key, NULL, 1);
-        c_len = EVP_Cipher(&cipher_ctx, tc->ct, tc->pt, tc->pt_len);
+        EVP_CIPHER_CTX_set_flags(cipher_ctx, EVP_CIPHER_CTX_FLAG_WRAP_ALLOW);
+        EVP_CipherInit_ex(cipher_ctx, cipher, NULL, tc->key, NULL, 1);
+        c_len = EVP_Cipher(cipher_ctx, tc->ct, tc->pt, tc->pt_len);
         if (c_len <= 0) {
             printf("Error: key wrap operation failed (%d)\n", c_len);
-            return ACVP_CRYPTO_MODULE_FAIL;
+            rc = ACVP_CRYPTO_MODULE_FAIL;
+            goto end;
         } else {
             tc->ct_len = c_len;
         }
     } else if (tc->direction == ACVP_DIR_DECRYPT) {
-        EVP_CIPHER_CTX_set_flags(&cipher_ctx, EVP_CIPHER_CTX_FLAG_WRAP_ALLOW);
-        EVP_CipherInit_ex(&cipher_ctx, cipher, NULL, tc->key, NULL, 0);
+        EVP_CIPHER_CTX_set_flags(cipher_ctx, EVP_CIPHER_CTX_FLAG_WRAP_ALLOW);
+        EVP_CipherInit_ex(cipher_ctx, cipher, NULL, tc->key, NULL, 0);
 
         if (tc->cipher == ACVP_AES_KWP) {
-            EVP_CIPHER_CTX_set_flags(&cipher_ctx, EVP_CIPHER_CTX_FLAG_UNWRAP_WITHPAD);
+            EVP_CIPHER_CTX_set_flags(cipher_ctx, EVP_CIPHER_CTX_FLAG_UNWRAP_WITHPAD);
         }
-        c_len = EVP_Cipher(&cipher_ctx, tc->pt, tc->ct, tc->ct_len);
+        c_len = EVP_Cipher(cipher_ctx, tc->pt, tc->ct, tc->ct_len);
         if (c_len <= 0) {
-            return ACVP_CRYPTO_WRAP_FAIL;
+            rc = ACVP_CRYPTO_WRAP_FAIL;
+            goto end;
         } else {
             tc->pt_len = c_len;
         }
     } else {
         printf("Unsupported direction\n");
-        return ACVP_UNSUPPORTED_OP;
+        rc = ACVP_UNSUPPORTED_OP;
+        goto end;
     }
 
-    EVP_CIPHER_CTX_cleanup(&cipher_ctx);
-    return ACVP_SUCCESS;
+end:
+    /* Cleanup */
+    if (cipher_ctx) EVP_CIPHER_CTX_free(cipher_ctx);
+
+    return rc;
 }
 
 /* TODO: I don't believe that openssl's 3DES keywrap is FIPS compliant */
