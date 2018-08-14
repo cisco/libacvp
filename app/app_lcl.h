@@ -146,6 +146,7 @@ EVP_CIPHER_CTX *FIPS_cipher_ctx_new(void);
 //int FIPS_ec_method_get_field_type(const EC_METHOD *meth);
 //EC_POINT *FIPS_ec_point_new(const EC_GROUP *group);
 //void FIPS_ec_point_free(EC_POINT *point);
+
 void FIPS_cipher_ctx_init(EVP_CIPHER_CTX *ctx);
 void FIPS_cipher_ctx_free(EVP_CIPHER_CTX *a);
 EVP_MD_CTX *FIPS_md_ctx_create(void);
@@ -239,6 +240,11 @@ int FIPS_digest(const void *data, size_t count,
                 unsigned char *md, unsigned int *size, const EVP_MD *type);
 void FIPS_openssl_cleanse(void *ptr, size_t len);
 
+//
+//int dsa_builtin_paramgen2(DSA *ret, size_t L, size_t N,
+//	const EVP_MD *evpmd, const unsigned char *seed_in, size_t seed_len,
+//	int idx, unsigned char *seed_out,
+//	int *counter_ret, unsigned long *h_ret, BN_GENCB *cb);
 
 static int no_err;
 static void put_err_cb(int lib, int func,int reason,const char *file,int line)
