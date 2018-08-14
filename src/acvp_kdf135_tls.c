@@ -90,10 +90,20 @@ ACVP_RESULT acvp_kdf135_tls_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     const char *sha = NULL;
     unsigned int kb_len, pm_len;
     char *json_result;
+
+    if (!ctx) {
+        ACVP_LOG_ERR("No ctx for handler operation");
+        return ACVP_NO_CTX;
+    }
     
     if (!alg_str) {
         ACVP_LOG_ERR("unable to parse 'algorithm' from JSON");
-        return (ACVP_MALFORMED_JSON);
+        return ACVP_MALFORMED_JSON;
+    }
+
+    if (strncmp(alg_str, "kdf-components", strlen("kdf-components"))) {
+        ACVP_LOG_ERR("Invalid algorithm for this function %s", alg_str);
+        return ACVP_INVALID_ARG;
     }
     
     /*
@@ -145,11 +155,29 @@ ACVP_RESULT acvp_kdf135_tls_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
         groupval = json_array_get_value(groups, i);
         groupobj = json_value_get_object(groupval);
         
-        
         pm_len = (unsigned int) json_object_get_number(groupobj, "preMasterSecretLength");
+        if (!pm_len) {
+            ACVP_LOG_ERR("preMasterSecretLength incorrect, %d", pm_len);
+            return ACVP_INVALID_ARG;
+        }
+
         kb_len = (unsigned int) json_object_get_number(groupobj, "keyBlockLength");
+        if (!kb_len) {
+            ACVP_LOG_ERR("keyBlockLength incorrect, %d", kb_len);
+            return ACVP_INVALID_ARG;
+        }
+
         method = json_object_get_string(groupobj, "tlsVersion");
+        if (!method) {
+            ACVP_LOG_ERR("Failed to include tlsVersion");
+            return ACVP_MISSING_ARG;
+        }
+
         sha = json_object_get_string(groupobj, "hashAlg");
+        if (!sha) {
+            ACVP_LOG_ERR("Failed to include hashAlg");
+            return ACVP_MISSING_ARG;
+        }
         
         if (!strncmp(method, "v1.2", 4)) {
             meth = ACVP_KDF135_TLS12;
@@ -185,12 +213,47 @@ ACVP_RESULT acvp_kdf135_tls_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
             testobj = json_value_get_object(testval);
             
             tc_id = (unsigned int) json_object_get_number(testobj, "tcId");
+
             pm_secret = json_object_get_string(testobj, "preMasterSecret");
+            if (!pm_secret) {
+                ACVP_LOG_ERR("Failed to include preMasterSecret");
+                return ACVP_MISSING_ARG;
+            }
+            if (strnlen(pm_secret, pm_len) != pm_len/8) {
+                ACVP_LOG_ERR("pmLen(%d) or pmSecret length(%d) incorrect",
+                              pm_len/8, strnlen(pm_secret, ACVP_KDF135_TLS_PMSECRET_HEX_MAX));
+                return ACVP_INVALID_ARG;
+            }
+
             sh_rnd = json_object_get_string(testobj, "serverHelloRandom");
+            if (!sh_rnd) {
+                ACVP_LOG_ERR("Failed to include serverHelloRandom");
+                return ACVP_MISSING_ARG;
+            }
+
             ch_rnd = json_object_get_string(testobj, "clientHelloRandom");
+            if (!ch_rnd) {
+                ACVP_LOG_ERR("Failed to include clientHelloRandom");
+                return ACVP_MISSING_ARG;
+            }
+
             s_rnd = json_object_get_string(testobj, "serverRandom");
+            if (!s_rnd) {
+                ACVP_LOG_ERR("Failed to include serverRandom");
+                return ACVP_MISSING_ARG;
+            }
+
             c_rnd = json_object_get_string(testobj, "clientRandom");
+            if (!c_rnd) {
+                ACVP_LOG_ERR("Failed to include clientRandom");
+                return ACVP_MISSING_ARG;
+            }
+
             test_type = (unsigned int) json_object_get_number(groupobj, "testType");
+            if (!test_type) {
+                ACVP_LOG_ERR("testType incorrect, %d", test_type);
+                return ACVP_INVALID_ARG;
+            }
             
             ACVP_LOG_INFO("        Test case: %d", j);
             ACVP_LOG_INFO("             tcId: %d", tc_id);
@@ -226,13 +289,14 @@ ACVP_RESULT acvp_kdf135_tls_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
             }
             
             /*
-	     * Output the test case results using JSON
-	      */
+             * Output the test case results using JSON
+             */
             rv = acvp_kdf135_tls_output_tc(ctx, &stc, r_tobj);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("JSON output failure in hash module");
                 return rv;
             }
+
             /*
              * Release all the memory associated with the test case
              */
