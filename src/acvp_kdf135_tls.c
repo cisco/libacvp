@@ -219,9 +219,9 @@ ACVP_RESULT acvp_kdf135_tls_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
                 ACVP_LOG_ERR("Failed to include preMasterSecret");
                 return ACVP_MISSING_ARG;
             }
-            if (strnlen(pm_secret, pm_len) != pm_len/8) {
+            if (strnlen(pm_secret, pm_len) != pm_len/4) {
                 ACVP_LOG_ERR("pmLen(%d) or pmSecret length(%d) incorrect",
-                              pm_len/8, strnlen(pm_secret, ACVP_KDF135_TLS_PMSECRET_STR_MAX));
+                              pm_len/4, strnlen(pm_secret, ACVP_KDF135_TLS_PMSECRET_STR_MAX));
                 return ACVP_INVALID_ARG;
             }
 
