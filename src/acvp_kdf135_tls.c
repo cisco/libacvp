@@ -77,7 +77,6 @@ ACVP_RESULT acvp_kdf135_tls_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     ACVP_CAPS_LIST *cap;
     ACVP_KDF135_TLS_TC stc;
     ACVP_TEST_CASE tc;
-    ACVP_HASH_TESTTYPE test_type;
     ACVP_RESULT rv;
     const char *alg_str = json_object_get_string(obj, "algorithm");
     ACVP_CIPHER alg_id;
@@ -249,12 +248,6 @@ ACVP_RESULT acvp_kdf135_tls_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
                 return ACVP_MISSING_ARG;
             }
 
-            test_type = (unsigned int) json_object_get_number(groupobj, "testType");
-            if (!test_type) {
-                ACVP_LOG_ERR("testType incorrect, %d", test_type);
-                return ACVP_INVALID_ARG;
-            }
-            
             ACVP_LOG_INFO("        Test case: %d", j);
             ACVP_LOG_INFO("             tcId: %d", tc_id);
             ACVP_LOG_INFO("         pmSecret: %s", pm_secret);
@@ -262,7 +255,6 @@ ACVP_RESULT acvp_kdf135_tls_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
             ACVP_LOG_INFO("            chRND: %s", ch_rnd);
             ACVP_LOG_INFO("             sRND: %s", s_rnd);
             ACVP_LOG_INFO("             cRND: %s", c_rnd);
-            ACVP_LOG_INFO("         testtype: %s", test_type);
             
             /*
              * Create a new test case in the response
