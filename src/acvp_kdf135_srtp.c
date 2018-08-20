@@ -148,10 +148,20 @@ ACVP_RESULT acvp_kdf135_srtp_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     
     int aes_key_length;
     unsigned char *kdr = NULL, *master_key = NULL, *master_salt = NULL, *index = NULL, *srtcp_index = NULL;
+
+    if (!ctx) {
+        ACVP_LOG_ERR("No ctx for handler operation");
+        return ACVP_NO_CTX;
+    }
     
     if (!alg_str) {
-        ACVP_LOG_ERR("unable to parse 'algorithm' from JSON for KDF SSH.");
+        ACVP_LOG_ERR("unable to parse 'algorithm' from JSON.");
         return (ACVP_MALFORMED_JSON);
+    }
+
+    if (strncmp(alg_str, "kdf-components", strlen("kdf-components"))) {
+        ACVP_LOG_ERR("Invalid algorithm for this function %s", alg_str);
+        return ACVP_INVALID_ARG;
     }
     
     /*
@@ -198,7 +208,16 @@ ACVP_RESULT acvp_kdf135_srtp_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
         groupobj = json_value_get_object(groupval);
         
         aes_key_length = (unsigned int) json_object_get_number(groupobj, "aesKeyLength");
+        if (!aes_key_length) {
+            ACVP_LOG_ERR("aesKeyLength incorrect, %d", aes_key_length);
+            return ACVP_INVALID_ARG;
+        }
+
         kdr = (unsigned char *)json_object_get_string(groupobj, "kdr");
+        if (!kdr) {
+            ACVP_LOG_ERR("Failed to include kdr");
+            return ACVP_MISSING_ARG;
+        }
         
         ACVP_LOG_INFO("\n    Test group: %d", i);
         ACVP_LOG_INFO("           kdr: %s", kdr);
@@ -213,10 +232,30 @@ ACVP_RESULT acvp_kdf135_srtp_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
             testobj = json_value_get_object(testval);
             
             tc_id = (unsigned int) json_object_get_number(testobj, "tcId");
+
             master_key = (unsigned char *)json_object_get_string(testobj, "masterKey");
+            if (!master_key) {
+                ACVP_LOG_ERR("Failed to include JSON key:\"masterKey\"");
+                return ACVP_MISSING_ARG;
+            }
+
             master_salt = (unsigned char *)json_object_get_string(testobj, "masterSalt");
+            if (!master_salt) {
+                ACVP_LOG_ERR("Failed to include JSON key:\"masterSalt\"");
+                return ACVP_MISSING_ARG;
+            }
+
             index = (unsigned char *)json_object_get_string(testobj, "index");
+            if (!index) {
+                ACVP_LOG_ERR("Failed to include JSON key:\"index\"");
+                return ACVP_MISSING_ARG;
+            }
+
             srtcp_index = (unsigned char *)json_object_get_string(testobj, "srtcpIndex");
+            if (!srtcp_index) {
+                ACVP_LOG_ERR("Failed to include JSON key:\"srtcpIndex\"");
+                return ACVP_MISSING_ARG;
+            }
             
             ACVP_LOG_INFO("        Test case: %d", j);
             ACVP_LOG_INFO("             tcId: %d", tc_id);
@@ -244,7 +283,7 @@ ACVP_RESULT acvp_kdf135_srtp_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
             /* Process the current test vector... */
             rv = (cap->crypto_handler)(&tc);
             if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("crypto module failed the KDF SSH operation");
+                ACVP_LOG_ERR("crypto module failed");
                 return ACVP_CRYPTO_MODULE_FAIL;
             }
             
@@ -253,7 +292,7 @@ ACVP_RESULT acvp_kdf135_srtp_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
             */
             rv = acvp_kdf135_srtp_output_tc(ctx, &stc, r_tobj);
             if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("JSON output failure in hash module");
+                ACVP_LOG_ERR("JSON output failure");
                 return rv;
             }
             /*
