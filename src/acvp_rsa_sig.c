@@ -177,7 +177,7 @@ static ACVP_RESULT acvp_rsa_sig_kat_handler_internal (ACVP_CTX *ctx, JSON_Object
     ACVP_CIPHER alg_id;
     char *json_result = NULL, *mode_str;
     unsigned int mod = 0;
-    unsigned char *msg, *signature;
+    unsigned char *msg, *signature = NULL;
     char *e_str = NULL, *n_str = NULL;
     char *hash_alg = NULL, *sig_type, *salt, *alg_str;
 

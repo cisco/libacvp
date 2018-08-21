@@ -173,7 +173,7 @@ static ACVP_RESULT acvp_cmac_release_tc (ACVP_CMAC_TC *stc) {
 }
 
 ACVP_RESULT acvp_cmac_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
-    unsigned int tc_id, msglen, keyLen, keyingOption, maclen, verify = 0;
+    unsigned int tc_id, msglen, keyLen = 0, keyingOption = 0, maclen, verify = 0;
     unsigned char *msg = NULL, *key1 = NULL, *key2 = NULL, *key3 = NULL, *mac = NULL;
     JSON_Value *groupval;
     JSON_Object *groupobj = NULL;

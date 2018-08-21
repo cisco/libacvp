@@ -200,7 +200,7 @@ static ACVP_RESULT acvp_ecdsa_kat_handler_internal (ACVP_CTX *ctx, JSON_Object *
     ACVP_CIPHER alg_id;
     char *json_result = NULL;
     char *hash_alg = NULL, *curve = NULL, *secret_gen_mode = NULL;
-    char *alg_str, *mode_str, *qx, *qy, *r, *s, *message;
+    char *alg_str, *mode_str, *qx = NULL, *qy = NULL, *r = NULL, *s = NULL, *message = NULL;
     
     alg_str = (char *) json_object_get_string(obj, "algorithm");
     if (!alg_str) {

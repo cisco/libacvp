@@ -382,7 +382,7 @@ static ACVP_RESULT acvp_kas_ecc_comp(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap, ACVP_TE
     JSON_Object *r_tobj = NULL; /* Response testobj */
     const char *curve;
     const char *hash;
-    char *psx, *psy, *pix, *piy, *d, *z;
+    char *psx, *psy, *pix = NULL, *piy = NULL, *d = NULL, *z = NULL;
     unsigned int i, g_cnt;
     int j, t_cnt, tc_id;
     ACVP_RESULT rv;
