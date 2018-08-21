@@ -4466,7 +4466,7 @@ ACVP_RESULT acvp_enable_kas_ecc_cap_scheme (ACVP_CTX *ctx,
     ACVP_KAS_ECC_CAP_MODE *kas_ecc_cap_mode;
     ACVP_KAS_ECC_SCHEME *current_scheme;
     ACVP_KAS_ECC_PSET *current_pset;
-    ACVP_KAS_ECC_PSET *last_pset;
+    ACVP_KAS_ECC_PSET *last_pset = NULL;
     ACVP_PARAM_LIST *current_role;
     ACVP_PARAM_LIST *current_hash;
     
@@ -4803,7 +4803,7 @@ ACVP_RESULT acvp_enable_kas_ffc_cap_scheme (ACVP_CTX *ctx,
     ACVP_KAS_FFC_CAP_MODE *kas_ffc_cap_mode;
     ACVP_KAS_FFC_SCHEME *current_scheme;
     ACVP_KAS_FFC_PSET *current_pset;
-    ACVP_KAS_FFC_PSET *last_pset;
+    ACVP_KAS_FFC_PSET *last_pset = NULL;
     ACVP_PARAM_LIST *current_role;
     ACVP_PARAM_LIST *current_hash;
     

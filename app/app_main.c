@@ -1073,7 +1073,7 @@ static int enable_aes (ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_KW, ACVP_SYM_CIPH_PTLEN, 1280);
     CHECK_ENABLE_CAP_RV(rv);
-
+#ifdef OPENSSL_KWP
     rv = acvp_enable_sym_cipher_cap(ctx, ACVP_AES_KWP, ACVP_DIR_BOTH, ACVP_KO_NA, ACVP_IVGEN_SRC_NA,
                                     ACVP_IVGEN_MODE_NA, &app_aes_keywrap_handler);
     CHECK_ENABLE_CAP_RV(rv);
@@ -1095,7 +1095,7 @@ static int enable_aes (ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_KWP, ACVP_SYM_CIPH_PTLEN, 808);
     CHECK_ENABLE_CAP_RV(rv);
-
+#endif
     /*
      * Enable AES-XTS 128 and 256 bit key
      */
@@ -2965,9 +2965,11 @@ static ACVP_RESULT app_aes_keywrap_handler(ACVP_TEST_CASE *test_case)
         EVP_CIPHER_CTX_set_flags(cipher_ctx, EVP_CIPHER_CTX_FLAG_WRAP_ALLOW);
         EVP_CipherInit_ex(cipher_ctx, cipher, NULL, tc->key, NULL, 0);
 
+#ifdef OPENSSL_KWP
         if (tc->cipher == ACVP_AES_KWP) {
             EVP_CIPHER_CTX_set_flags(cipher_ctx, EVP_CIPHER_CTX_FLAG_UNWRAP_WITHPAD);
         }
+#endif
         c_len = EVP_Cipher(cipher_ctx, tc->pt, tc->ct, tc->ct_len);
         if (c_len <= 0) {
             rc = ACVP_CRYPTO_WRAP_FAIL;
@@ -5397,18 +5399,6 @@ enum {BASE64_OK = 0, BASE64_INVALID};
 
 #define BASE64_ENCODE_OUT_SIZE(s)    (((s) + 2) / 3 * 4)
 #define BASE64_DECODE_OUT_SIZE(s)    (((s)) / 4 * 3)
-
-/* BASE 64 encode table */
-static const char base64en[] = {
-    'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
-    'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
-    'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
-    'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f',
-    'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n',
-    'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
-    'w', 'x', 'y', 'z', '0', '1', '2', '3',
-    '4', '5', '6', '7', '8', '9', '+', '/',
-};
 
 #define BASE64_PAD    '='
 

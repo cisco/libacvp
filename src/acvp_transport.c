@@ -77,11 +77,11 @@ static void acvp_curl_log_peer_cert (ACVP_CTX *ctx, CURL *hnd) {
     int i;
     struct curl_slist *slist;
 
-    ptr.to_info = NULL;
+    ptr.to_certinfo = NULL;
 
-    rv = curl_easy_getinfo(hnd, CURLINFO_CERTINFO, &ptr.to_info);
+    rv = curl_easy_getinfo(hnd, CURLINFO_CERTINFO, &ptr.to_certinfo);
 
-    if (!rv && ptr.to_info) {
+    if (!rv && ptr.to_certinfo) {
         ACVP_LOG_INFO("TLS peer presented the following %d certificates...", ptr.to_certinfo->num_of_certs);
         for (i = 0; i < ptr.to_certinfo->num_of_certs; i++) {
             for (slist = ptr.to_certinfo->certinfo[i]; slist; slist = slist->next) {
