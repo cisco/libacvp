@@ -46,7 +46,7 @@ static ACVP_RESULT acvp_kdf135_ikev2_output_tc (ACVP_CTX *ctx, ACVP_KDF135_IKEV2
 static ACVP_RESULT acvp_kdf135_ikev2_init_tc (ACVP_CTX *ctx,
                                              ACVP_KDF135_IKEV2_TC *stc,
                                              unsigned int tc_id,
-                                             unsigned char *hash_alg,
+                                             ACVP_KDF135_HASH_VAL hash_alg,
                                              int init_nonce_len,
                                              int resp_nonce_len,
                                              int dh_secret_len,
@@ -62,10 +62,7 @@ static ACVP_RESULT acvp_kdf135_ikev2_init_tc (ACVP_CTX *ctx,
 
     stc->tc_id = tc_id;
 
-    stc->hash_alg = calloc(ACVP_RSA_HASH_ALG_LEN_MAX, sizeof(char));
-    if (!stc->hash_alg) { return ACVP_MALLOC_FAIL; }
-    memcpy(stc->hash_alg, hash_alg, strnlen((const char *)hash_alg, ACVP_RSA_HASH_ALG_LEN_MAX));
-
+    stc->hash_alg = hash_alg;
     stc->init_nonce_len = init_nonce_len;
     stc->resp_nonce_len = resp_nonce_len;
     stc->dh_secret_len = dh_secret_len;
@@ -132,7 +129,6 @@ static ACVP_RESULT acvp_kdf135_ikev2_init_tc (ACVP_CTX *ctx,
 }
 
 static ACVP_RESULT acvp_kdf135_ikev2_release_tc (ACVP_KDF135_IKEV2_TC *stc) {
-    if (stc->hash_alg) { free(stc->hash_alg); }
     if (stc->init_nonce) { free(stc->init_nonce); }
     if (stc->resp_nonce) { free(stc->resp_nonce); }
     if (stc->init_spi) { free(stc->init_spi); }
@@ -177,7 +173,9 @@ ACVP_RESULT acvp_kdf135_ikev2_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     ACVP_CIPHER alg_id;
     char *json_result;
 
-    unsigned char *hash_alg = NULL, *init_nonce = NULL, *resp_nonce = NULL, *init_spi = NULL;
+    ACVP_KDF135_HASH_VAL hash_alg;
+    const char *hash_alg_str = NULL;
+    unsigned char *init_nonce = NULL, *resp_nonce = NULL, *init_spi = NULL;
     unsigned char *resp_spi = NULL, *gir = NULL, *gir_new = NULL;
     int init_nonce_len = 0, resp_nonce_len = 0, dh_secret_len = 0, keying_material_len = 0;
 
@@ -239,7 +237,7 @@ ACVP_RESULT acvp_kdf135_ikev2_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
         groupval = json_array_get_value(groups, i);
         groupobj = json_value_get_object(groupval);
 
-        hash_alg = (unsigned char *) json_object_get_string(groupobj, "hashAlg");
+        hash_alg_str = json_object_get_string(groupobj, "hashAlg");
         if (!hash_alg) {
             ACVP_LOG_ERR("Failed to include hashAlg");
             return ACVP_MISSING_ARG;
@@ -273,8 +271,26 @@ ACVP_RESULT acvp_kdf135_ikev2_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
             return ACVP_INVALID_ARG;
         }
 
+        /*
+         * Determine the hash algorithm.
+         */
+        if (strncmp(hash_alg_str, ACVP_STR_SHA_1, strlen(ACVP_STR_SHA_1)) == 0) {
+            hash_alg = ACVP_KDF135_SHA1;
+        } else if (strncmp(hash_alg_str, ACVP_STR_SHA_224, strlen(ACVP_STR_SHA_224)) == 0) {
+            hash_alg = ACVP_KDF135_SHA224;
+        } else if (strncmp(hash_alg_str, ACVP_STR_SHA_256, strlen(ACVP_STR_SHA_256)) == 0) {
+            hash_alg = ACVP_KDF135_SHA256;
+        } else if (strncmp(hash_alg_str, ACVP_STR_SHA_384, strlen(ACVP_STR_SHA_384)) == 0) {
+            hash_alg = ACVP_KDF135_SHA384;
+        }else if (strncmp(hash_alg_str, ACVP_STR_SHA_512, strlen(ACVP_STR_SHA_512)) == 0) {
+            hash_alg = ACVP_KDF135_SHA512;
+        } else {
+            ACVP_LOG_ERR("ACVP server requesting invalid hash alg");
+            return ACVP_INVALID_ARG;
+        }
+
         ACVP_LOG_INFO("\n    Test group: %d", i);
-        ACVP_LOG_INFO("        hash alg: %S", hash_alg);
+        ACVP_LOG_INFO("        hash alg: %s", hash_alg_str);
         ACVP_LOG_INFO("  init nonce len: %d", init_nonce_len);
         ACVP_LOG_INFO("  resp nonce len: %d", resp_nonce_len);
         ACVP_LOG_INFO("   dh secret len: %d", dh_secret_len);
