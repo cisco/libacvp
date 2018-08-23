@@ -1486,7 +1486,7 @@ static int enable_kdf (ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_kdf135_ikev2_cap_len_param(ctx, ACVP_KEY_MATERIAL_LEN, 3072);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_kdf135_ikev2_cap_param(ctx, ACVP_KDF_HASH_ALG, "SHA-1");
+    rv = acvp_enable_kdf135_ikev2_cap_param(ctx, ACVP_KDF_HASH_ALG, ACVP_KDF135_SHA1);
     CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_enable_kdf135_ikev1_cap(ctx, &app_kdf135_ikev1_handler);
@@ -1512,13 +1512,13 @@ static int enable_kdf (ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_prereq_cap(ctx, ACVP_KDF135_X963, ACVP_PREREQ_SHA, value);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_kdf135_x963_cap_param(ctx, ACVP_KDF_X963_HASH_ALG, ACVP_KDF_X963_SHA224);
+    rv = acvp_enable_kdf135_x963_cap_param(ctx, ACVP_KDF_X963_HASH_ALG, ACVP_KDF135_SHA224);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_kdf135_x963_cap_param(ctx, ACVP_KDF_X963_HASH_ALG, ACVP_KDF_X963_SHA256);
+    rv = acvp_enable_kdf135_x963_cap_param(ctx, ACVP_KDF_X963_HASH_ALG, ACVP_KDF135_SHA256);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_kdf135_x963_cap_param(ctx, ACVP_KDF_X963_HASH_ALG, ACVP_KDF_X963_SHA384);
+    rv = acvp_enable_kdf135_x963_cap_param(ctx, ACVP_KDF_X963_HASH_ALG, ACVP_KDF135_SHA384);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_kdf135_x963_cap_param(ctx, ACVP_KDF_X963_HASH_ALG, ACVP_KDF_X963_SHA512);
+    rv = acvp_enable_kdf135_x963_cap_param(ctx, ACVP_KDF_X963_HASH_ALG, ACVP_KDF135_SHA512);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_kdf135_x963_cap_param(ctx, ACVP_KDF_X963_KEY_DATA_LEN, 256);
     CHECK_ENABLE_CAP_RV(rv);
