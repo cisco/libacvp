@@ -71,44 +71,61 @@ static ACVP_RESULT acvp_kdf135_ikev2_init_tc (ACVP_CTX *ctx,
     stc->dh_secret_len = dh_secret_len;
     stc->keying_material_len = keying_material_len;
 
-    stc->init_nonce = calloc(ACVP_KDF135_IKE_NONCE_LEN_MAX, sizeof(char));
+    stc->init_nonce = calloc(ACVP_KDF135_IKEV2_INIT_NONCE_STR_MAX,
+                             sizeof(unsigned char));
     if (!stc->init_nonce) { return ACVP_MALLOC_FAIL; }
-    memcpy(stc->init_nonce, init_nonce, strnlen((const char *)init_nonce, ACVP_KDF135_IKE_NONCE_LEN_MAX));
+    memcpy(stc->init_nonce, init_nonce, strnlen((const char *)init_nonce,
+           ACVP_KDF135_IKEV2_INIT_NONCE_STR_MAX));
 
-    stc->resp_nonce = calloc(ACVP_KDF135_IKE_NONCE_LEN_MAX, sizeof(char));
+    stc->resp_nonce = calloc(ACVP_KDF135_IKEV2_RESP_NONCE_STR_MAX,
+                             sizeof(unsigned char));
     if (!stc->resp_nonce) { return ACVP_MALLOC_FAIL; }
-    memcpy(stc->resp_nonce, resp_nonce, strnlen((const char *)resp_nonce, ACVP_KDF135_IKE_NONCE_LEN_MAX));
+    memcpy(stc->resp_nonce, resp_nonce, strnlen((const char *)resp_nonce,
+           ACVP_KDF135_IKEV2_RESP_NONCE_STR_MAX));
 
-    stc->init_spi = calloc(ACVP_KDF135_IKEV2_SPI_LEN_MAX, sizeof(char));
+    stc->init_spi = calloc(ACVP_KDF135_IKEV2_SPI_STR_MAX,
+                           sizeof(unsigned char));
     if (!stc->init_spi) { return ACVP_MALLOC_FAIL; }
-    memcpy(stc->init_spi, init_spi, strnlen((const char *)init_spi, ACVP_KDF135_IKEV2_SPI_LEN_MAX));
+    memcpy(stc->init_spi, init_spi, strnlen((const char *)init_spi,
+           ACVP_KDF135_IKEV2_SPI_STR_MAX));
 
-    stc->resp_spi = calloc(ACVP_KDF135_IKEV2_SPI_LEN_MAX, sizeof(char));
+    stc->resp_spi = calloc(ACVP_KDF135_IKEV2_SPI_STR_MAX,
+                           sizeof(unsigned char));
     if (!stc->resp_spi) { return ACVP_MALLOC_FAIL; }
-    memcpy(stc->resp_spi, resp_spi, strnlen((const char *)resp_spi, ACVP_KDF135_IKEV2_SPI_LEN_MAX));
+    memcpy(stc->resp_spi, resp_spi, strnlen((const char *)resp_spi,
+           ACVP_KDF135_IKEV2_SPI_STR_MAX));
 
-    stc->gir = calloc(ACVP_KDF135_IKEV2_GIR_LEN_MAX, sizeof(char));
+    stc->gir = calloc(ACVP_KDF135_IKEV2_DH_SHARED_SECRET_STR_MAX,
+                      sizeof(unsigned char));
     if (!stc->gir) { return ACVP_MALLOC_FAIL; }
-    memcpy(stc->gir, gir, strnlen((const char *)gir, ACVP_KDF135_IKEV2_GIR_LEN_MAX));
+    memcpy(stc->gir, gir, strnlen((const char *)gir,
+           ACVP_KDF135_IKEV2_DH_SHARED_SECRET_STR_MAX));
 
-    stc->gir_new = calloc(ACVP_KDF135_IKEV2_GIR_LEN_MAX, sizeof(char));
+    stc->gir_new = calloc(ACVP_KDF135_IKEV2_DH_SHARED_SECRET_STR_MAX,
+                          sizeof(unsigned char));
     if (!stc->gir_new) { return ACVP_MALLOC_FAIL; }
-    memcpy(stc->gir_new, gir_new, strnlen((const char *)gir_new, ACVP_KDF135_IKEV2_GIR_LEN_MAX));
+    memcpy(stc->gir_new, gir_new, strnlen((const char *)gir_new,
+           ACVP_KDF135_IKEV2_DH_SHARED_SECRET_STR_MAX));
     
     /* allocate memory for answers so app doesn't have to touch library memory */
-    stc->s_key_seed = calloc(ACVP_KDF135_IKEV2_SKEY_MAX, sizeof(char));
+    stc->s_key_seed = calloc(ACVP_KDF135_IKEV2_SKEY_SEED_STR_MAX,
+                             sizeof(unsigned char));
     if (!stc->s_key_seed) { return ACVP_MALLOC_FAIL; }
     
-    stc->s_key_seed_rekey = calloc(ACVP_KDF135_IKEV2_SKEY_MAX, sizeof(char));
+    stc->s_key_seed_rekey = calloc(ACVP_KDF135_IKEV2_SKEY_SEED_STR_MAX,
+                                   sizeof(unsigned char));
     if (!stc->s_key_seed_rekey) { return ACVP_MALLOC_FAIL; }
     
-    stc->derived_keying_material = calloc(ACVP_KDF135_IKEV2_DKM_MAX, sizeof(char));
+    stc->derived_keying_material = calloc(ACVP_KDF135_IKEV2_DKEY_MATERIAL_STR_MAX,
+                                          sizeof(unsigned char));
     if (!stc->derived_keying_material) { return ACVP_MALLOC_FAIL; }
     
-    stc->derived_keying_material_child_dh = calloc(ACVP_KDF135_IKEV2_DKM_MAX, sizeof(char));
+    stc->derived_keying_material_child_dh = calloc(ACVP_KDF135_IKEV2_DKEY_MATERIAL_STR_MAX,
+                                                   sizeof(unsigned char));
     if (!stc->derived_keying_material_child_dh) { return ACVP_MALLOC_FAIL; }
     
-    stc->derived_keying_material_child = calloc(ACVP_KDF135_IKEV2_DKM_MAX, sizeof(char));
+    stc->derived_keying_material_child = calloc(ACVP_KDF135_IKEV2_DKEY_MATERIAL_STR_MAX,
+                                                sizeof(unsigned char));
     if (!stc->derived_keying_material_child) { return ACVP_MALLOC_FAIL; }
     
     return rv;
@@ -164,9 +181,19 @@ ACVP_RESULT acvp_kdf135_ikev2_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     unsigned char *resp_spi = NULL, *gir = NULL, *gir_new = NULL;
     int init_nonce_len = 0, resp_nonce_len = 0, dh_secret_len = 0, keying_material_len = 0;
 
+    if (!ctx) {
+        ACVP_LOG_ERR("No ctx for handler operation");
+        return ACVP_NO_CTX;
+    }
+
     if (!alg_str) {
         ACVP_LOG_ERR("unable to parse 'algorithm' from JSON for KDF SSH.");
         return (ACVP_MALFORMED_JSON);
+    }
+
+    if (strncmp(alg_str, "kdf-components", strlen("kdf-components"))) {
+        ACVP_LOG_ERR("Invalid algorithm for this function %s", alg_str);
+        return ACVP_INVALID_ARG;
     }
 
     /*
@@ -213,10 +240,38 @@ ACVP_RESULT acvp_kdf135_ikev2_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
         groupobj = json_value_get_object(groupval);
 
         hash_alg = (unsigned char *) json_object_get_string(groupobj, "hashAlg");
+        if (!hash_alg) {
+            ACVP_LOG_ERR("Failed to include hashAlg");
+            return ACVP_MISSING_ARG;
+        }
+
         init_nonce_len = json_object_get_number(groupobj, "nInitLength");
+        if (!(init_nonce_len >= ACVP_KDF135_IKEV2_INIT_NONCE_BIT_MIN
+              && init_nonce_len <= ACVP_KDF135_IKEV2_INIT_NONCE_BIT_MAX)) {
+            ACVP_LOG_ERR("nInitLength incorrect, %d", init_nonce_len);
+            return ACVP_INVALID_ARG;
+        }
+
         resp_nonce_len = json_object_get_number(groupobj, "nRespLength");
+        if (!(resp_nonce_len >= ACVP_KDF135_IKEV2_RESP_NONCE_BIT_MIN
+              && resp_nonce_len <= ACVP_KDF135_IKEV2_RESP_NONCE_BIT_MAX)) {
+            ACVP_LOG_ERR("nRespLength incorrect, %d", resp_nonce_len);
+            return ACVP_INVALID_ARG;
+        }
+
         dh_secret_len = json_object_get_number(groupobj, "dhLength");
+        if (!(dh_secret_len >= ACVP_KDF135_IKEV2_DH_SHARED_SECRET_BIT_MIN
+              && dh_secret_len <= ACVP_KDF135_IKEV2_DH_SHARED_SECRET_BIT_MAX)) {
+            ACVP_LOG_ERR("dhLength incorrect, %d", dh_secret_len);
+            return ACVP_INVALID_ARG;
+        }
+
         keying_material_len = json_object_get_number(groupobj, "derivedKeyingMaterialLength");
+        if (!(keying_material_len >= ACVP_KDF135_IKEV2_DKEY_MATERIAL_BIT_MIN
+              && keying_material_len <= ACVP_KDF135_IKEV2_DKEY_MATERIAL_BIT_MAX)) {
+            ACVP_LOG_ERR("derivedKeyingMaterialLength incorrect, %d", keying_material_len);
+            return ACVP_INVALID_ARG;
+        }
 
         ACVP_LOG_INFO("\n    Test group: %d", i);
         ACVP_LOG_INFO("        hash alg: %S", hash_alg);
@@ -234,12 +289,78 @@ ACVP_RESULT acvp_kdf135_ikev2_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
             testobj = json_value_get_object(testval);
 
             tc_id = (unsigned int) json_object_get_number(testobj, "tcId");
+
             init_nonce = (unsigned char *)json_object_get_string(testobj, "nInit");
+            if (!init_nonce) {
+                ACVP_LOG_ERR("Failed to include nInit");
+                return ACVP_MISSING_ARG;
+            }
+            if (strnlen((char *)init_nonce, init_nonce_len) != init_nonce_len/4) {
+                ACVP_LOG_ERR("nInit length(%d) incorrect, expected(%d)",
+                              strnlen((char *)init_nonce, ACVP_KDF135_IKEV2_INIT_NONCE_STR_MAX),
+                              init_nonce_len/4);
+                return ACVP_INVALID_ARG;
+            }
+
             resp_nonce = (unsigned char *)json_object_get_string(testobj, "nResp");
+            if (!resp_nonce) {
+                ACVP_LOG_ERR("Failed to include nResp");
+                return ACVP_MISSING_ARG;
+            }
+            if (strnlen((char *)resp_nonce, resp_nonce_len) != resp_nonce_len/4) {
+                ACVP_LOG_ERR("nResp length(%d) incorrect, expected(%d)",
+                              strnlen((char *)resp_nonce, ACVP_KDF135_IKEV2_RESP_NONCE_STR_MAX),
+                              resp_nonce_len/4);
+                return ACVP_INVALID_ARG;
+            }
+
             init_spi = (unsigned char *)json_object_get_string(testobj, "spiInit");
+            if (!init_spi) {
+                ACVP_LOG_ERR("Failed to include spiInit");
+                return ACVP_MISSING_ARG;
+            }
+            if (strnlen((char *)init_spi, ACVP_KDF135_IKEV2_SPI_STR_MAX + 1)
+                > ACVP_KDF135_IKEV2_SPI_STR_MAX) {
+                ACVP_LOG_ERR("spiInit too long, max allowed=(%d)",
+                             ACVP_KDF135_IKEV2_SPI_STR_MAX);
+                return ACVP_INVALID_ARG;
+            }
+
             resp_spi = (unsigned char *)json_object_get_string(testobj, "spiResp");
+            if (!resp_spi) {
+                ACVP_LOG_ERR("Failed to include spiResp");
+                return ACVP_MISSING_ARG;
+            }
+            if (strnlen((char *)resp_spi, ACVP_KDF135_IKEV2_SPI_STR_MAX + 1)
+                > ACVP_KDF135_IKEV2_SPI_STR_MAX) {
+                ACVP_LOG_ERR("spiResp too long, max allowed=(%d)",
+                             ACVP_KDF135_IKEV2_SPI_STR_MAX);
+                return ACVP_INVALID_ARG;
+            }
+
             gir = (unsigned char *)json_object_get_string(testobj, "gir");
+            if (!gir) {
+                ACVP_LOG_ERR("Failed to include gir");
+                return ACVP_MISSING_ARG;
+            }
+            if (strnlen((char *)gir, ACVP_KDF135_IKEV2_DH_SHARED_SECRET_STR_MAX + 1)
+                > ACVP_KDF135_IKEV2_DH_SHARED_SECRET_STR_MAX) {
+                ACVP_LOG_ERR("gir too long, max allowed=(%d)",
+                             ACVP_KDF135_IKEV2_DH_SHARED_SECRET_STR_MAX);
+                return ACVP_INVALID_ARG;
+            }
+
             gir_new = (unsigned char *)json_object_get_string(testobj, "girNew");
+            if (!gir_new) {
+                ACVP_LOG_ERR("Failed to include girNew");
+                return ACVP_MISSING_ARG;
+            }
+            if (strnlen((char *)gir_new, ACVP_KDF135_IKEV2_DH_SHARED_SECRET_STR_MAX + 1)
+                > ACVP_KDF135_IKEV2_DH_SHARED_SECRET_STR_MAX) {
+                ACVP_LOG_ERR("girNew too long, max allowed=(%d)",
+                             ACVP_KDF135_IKEV2_DH_SHARED_SECRET_STR_MAX);
+                return ACVP_INVALID_ARG;
+            }
 
             ACVP_LOG_INFO("        Test case: %d", j);
             ACVP_LOG_INFO("             tcId: %d", tc_id);
@@ -268,7 +389,7 @@ ACVP_RESULT acvp_kdf135_ikev2_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
             /* Process the current test vector... */
             rv = (cap->crypto_handler)(&tc);
             if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("crypto module failed the KDF SSH operation");
+                ACVP_LOG_ERR("crypto module failed");
                 return ACVP_CRYPTO_MODULE_FAIL;
             }
 
@@ -277,7 +398,7 @@ ACVP_RESULT acvp_kdf135_ikev2_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
             */
             rv = acvp_kdf135_ikev2_output_tc(ctx, &stc, r_tobj);
             if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("JSON output failure in hash module");
+                ACVP_LOG_ERR("JSON output failure");
                 return rv;
             }
             /*
