@@ -3898,7 +3898,7 @@ ACVP_RESULT acvp_enable_kdf135_ikev2_cap_param (ACVP_CTX *ctx,
 
     switch (value) {
     case ACVP_KDF135_SHA1:
-        hash->name = ACVP_STR_SHA2_224;
+        hash->name = ACVP_STR_SHA_1;
         break;
     case ACVP_KDF135_SHA224:
         hash->name = ACVP_STR_SHA2_224;
