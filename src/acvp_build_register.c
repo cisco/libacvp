@@ -475,22 +475,22 @@ static char *acvp_lookup_drbg_mode_string (ACVP_CAPS_LIST *cap_entry) {
         mode_str = ACVP_STR_SHA_1;
         break;
     case ACVP_DRBG_SHA_224:
-        mode_str = ACVP_STR_SHA_224;
+        mode_str = ACVP_STR_SHA2_224;
         break;
     case ACVP_DRBG_SHA_256:
-        mode_str = ACVP_STR_SHA_256;
+        mode_str = ACVP_STR_SHA2_256;
         break;
     case ACVP_DRBG_SHA_384:
-        mode_str = ACVP_STR_SHA_384;
+        mode_str = ACVP_STR_SHA2_384;
         break;
     case ACVP_DRBG_SHA_512:
-        mode_str = ACVP_STR_SHA_512;
+        mode_str = ACVP_STR_SHA2_512;
         break;
     case ACVP_DRBG_SHA_512_224:
-        mode_str = ACVP_STR_SHA_512_224;
+        mode_str = ACVP_STR_SHA2_512_224;
         break;
     case ACVP_DRBG_SHA_512_256:
-        mode_str = ACVP_STR_SHA_512_256;
+        mode_str = ACVP_STR_SHA2_512_256;
         break;
     case ACVP_DRBG_3KEYTDEA:
         mode_str = ACVP_DRBG_MODE_3KEYTDEA;
