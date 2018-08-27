@@ -249,8 +249,7 @@ static ACVP_RESULT acvp_dsa_pqgver_init_tc (ACVP_CTX *ctx,
         stc->index = strtol((char *) index, NULL, 16);
     }
     if (seed) {
-        stc->seedlen = strlen((const char *)seed)/2;
-        rv = acvp_hexstr_to_bin((const unsigned char *) seed, stc->seed, ACVP_DSA_MAX_STRING);
+        rv = acvp_hexstr_to_bin((const unsigned char *) seed, stc->seed, ACVP_DSA_MAX_STRING, &(stc->seedlen));
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Hex conversion failure (seed)");
             return rv;
@@ -258,8 +257,11 @@ static ACVP_RESULT acvp_dsa_pqgver_init_tc (ACVP_CTX *ctx,
     }
     memcpy(stc->p, p, strlen((const char *)p));
     memcpy(stc->q, q, strlen((const char *)q));
+    stc->p_len = strlen((const char *)p);
+    stc->q_len = strlen((const char *)q);
     if (g) {
         memcpy(stc->g, g, strlen((const char *)g));
+        stc->g_len = strlen((const char *)g);
     }
     return ACVP_SUCCESS;
 }
@@ -306,14 +308,15 @@ static ACVP_RESULT acvp_dsa_pqggen_init_tc (ACVP_CTX *ctx,
     switch (gpq) {
     case ACVP_DSA_CANONICAL:
         stc->index = strtol((char *) index, NULL, 16);
-        stc->seedlen = strlen((char *)seed)/2;
-        rv = acvp_hexstr_to_bin((const unsigned char *) seed, stc->seed, ACVP_DSA_SEED_MAX);
+        rv = acvp_hexstr_to_bin((const unsigned char *) seed, stc->seed, ACVP_DSA_SEED_MAX, &(stc->seedlen));
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Hex conversion failure (seed)");
             return rv;
         }
         memcpy(stc->p, p, strlen((const char *)p));
         memcpy(stc->q, q, strlen((const char *)q));
+        stc->p_len = strlen((const char *)p);
+        stc->q_len = strlen((const char *)q);
         break;
     case ACVP_DSA_UNVERIFIABLE:
     case ACVP_DSA_PROBABLE:
