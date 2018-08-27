@@ -693,8 +693,8 @@ typedef struct acvp_kdf135_ikev2_tc_t {
  */
 typedef struct acvp_kdf135_ikev1_tc_t {
     ACVP_CIPHER cipher;
-    unsigned int tc_id;    /* Test case id */
-    unsigned char *hash_alg;
+    unsigned int tc_id; /**< Test case id */
+    ACVP_KDF135_HASH_VAL hash_alg;
     char auth_method[3];
     int init_nonce_len;
     int resp_nonce_len;

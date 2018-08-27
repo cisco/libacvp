@@ -68,60 +68,60 @@ static ACVP_RESULT acvp_kdf135_ikev2_init_tc (ACVP_CTX *ctx,
     stc->dh_secret_len = dh_secret_len;
     stc->keying_material_len = keying_material_len;
 
-    stc->init_nonce = calloc(ACVP_KDF135_IKEV2_INIT_NONCE_STR_MAX,
+    stc->init_nonce = calloc(ACVP_KDF135_IKEV2_INIT_NONCE_STR_MAX + 1,
                              sizeof(unsigned char));
     if (!stc->init_nonce) { return ACVP_MALLOC_FAIL; }
     memcpy(stc->init_nonce, init_nonce, strnlen((const char *)init_nonce,
            ACVP_KDF135_IKEV2_INIT_NONCE_STR_MAX));
 
-    stc->resp_nonce = calloc(ACVP_KDF135_IKEV2_RESP_NONCE_STR_MAX,
+    stc->resp_nonce = calloc(ACVP_KDF135_IKEV2_RESP_NONCE_STR_MAX + 1,
                              sizeof(unsigned char));
     if (!stc->resp_nonce) { return ACVP_MALLOC_FAIL; }
     memcpy(stc->resp_nonce, resp_nonce, strnlen((const char *)resp_nonce,
            ACVP_KDF135_IKEV2_RESP_NONCE_STR_MAX));
 
-    stc->init_spi = calloc(ACVP_KDF135_IKEV2_SPI_STR_MAX,
+    stc->init_spi = calloc(ACVP_KDF135_IKEV2_SPI_STR_MAX + 1,
                            sizeof(unsigned char));
     if (!stc->init_spi) { return ACVP_MALLOC_FAIL; }
     memcpy(stc->init_spi, init_spi, strnlen((const char *)init_spi,
            ACVP_KDF135_IKEV2_SPI_STR_MAX));
 
-    stc->resp_spi = calloc(ACVP_KDF135_IKEV2_SPI_STR_MAX,
+    stc->resp_spi = calloc(ACVP_KDF135_IKEV2_SPI_STR_MAX + 1,
                            sizeof(unsigned char));
     if (!stc->resp_spi) { return ACVP_MALLOC_FAIL; }
     memcpy(stc->resp_spi, resp_spi, strnlen((const char *)resp_spi,
            ACVP_KDF135_IKEV2_SPI_STR_MAX));
 
-    stc->gir = calloc(ACVP_KDF135_IKEV2_DH_SHARED_SECRET_STR_MAX,
+    stc->gir = calloc(ACVP_KDF135_IKEV2_DH_SHARED_SECRET_STR_MAX + 1,
                       sizeof(unsigned char));
     if (!stc->gir) { return ACVP_MALLOC_FAIL; }
     memcpy(stc->gir, gir, strnlen((const char *)gir,
            ACVP_KDF135_IKEV2_DH_SHARED_SECRET_STR_MAX));
 
-    stc->gir_new = calloc(ACVP_KDF135_IKEV2_DH_SHARED_SECRET_STR_MAX,
+    stc->gir_new = calloc(ACVP_KDF135_IKEV2_DH_SHARED_SECRET_STR_MAX + 1,
                           sizeof(unsigned char));
     if (!stc->gir_new) { return ACVP_MALLOC_FAIL; }
     memcpy(stc->gir_new, gir_new, strnlen((const char *)gir_new,
            ACVP_KDF135_IKEV2_DH_SHARED_SECRET_STR_MAX));
     
     /* allocate memory for answers so app doesn't have to touch library memory */
-    stc->s_key_seed = calloc(ACVP_KDF135_IKEV2_SKEY_SEED_STR_MAX,
+    stc->s_key_seed = calloc(ACVP_KDF135_IKEV2_SKEY_SEED_STR_MAX  + 1,
                              sizeof(unsigned char));
     if (!stc->s_key_seed) { return ACVP_MALLOC_FAIL; }
     
-    stc->s_key_seed_rekey = calloc(ACVP_KDF135_IKEV2_SKEY_SEED_STR_MAX,
+    stc->s_key_seed_rekey = calloc(ACVP_KDF135_IKEV2_SKEY_SEED_STR_MAX + 1,
                                    sizeof(unsigned char));
     if (!stc->s_key_seed_rekey) { return ACVP_MALLOC_FAIL; }
     
-    stc->derived_keying_material = calloc(ACVP_KDF135_IKEV2_DKEY_MATERIAL_STR_MAX,
+    stc->derived_keying_material = calloc(ACVP_KDF135_IKEV2_DKEY_MATERIAL_STR_MAX + 1,
                                           sizeof(unsigned char));
     if (!stc->derived_keying_material) { return ACVP_MALLOC_FAIL; }
     
-    stc->derived_keying_material_child_dh = calloc(ACVP_KDF135_IKEV2_DKEY_MATERIAL_STR_MAX,
+    stc->derived_keying_material_child_dh = calloc(ACVP_KDF135_IKEV2_DKEY_MATERIAL_STR_MAX + 1,
                                                    sizeof(unsigned char));
     if (!stc->derived_keying_material_child_dh) { return ACVP_MALLOC_FAIL; }
     
-    stc->derived_keying_material_child = calloc(ACVP_KDF135_IKEV2_DKEY_MATERIAL_STR_MAX,
+    stc->derived_keying_material_child = calloc(ACVP_KDF135_IKEV2_DKEY_MATERIAL_STR_MAX + 1,
                                                 sizeof(unsigned char));
     if (!stc->derived_keying_material_child) { return ACVP_MALLOC_FAIL; }
     
