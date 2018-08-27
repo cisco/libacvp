@@ -362,7 +362,6 @@ ACVP_RESULT acvp_hexstr_to_bin (const unsigned char *src, unsigned char *dest, i
     int length_converted = 0;
 
     if (!src || !dest) {
-        //return 0;
         return ACVP_INVALID_ARG;
     }
 
