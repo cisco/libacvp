@@ -41,8 +41,6 @@
 #include <fcntl.h>
 #include "acvp.h"
 
-#include "../src/acvp.h"
-
 #ifdef USE_MURL
 #include <murl/murl.h>
 #else
@@ -69,7 +67,6 @@
 
 #ifdef ACVP_NO_RUNTIME
 #include <openssl/dsa.h>
-#include <openssl/ecdsa.h>
 #include "app_lcl.h"
 #include <openssl/fips_rand.h>
 #include <openssl/fips.h>
@@ -85,8 +82,7 @@ static int enable_hmac(ACVP_CTX *ctx);
 #ifdef OPENSSL_KDF_SUPPORT
 static int enable_kdf(ACVP_CTX *ctx);
 #endif
-//#ifdef ACVP_NO_RUNTIME
-#if 1
+#ifdef ACVP_NO_RUNTIME
 static int enable_dsa(ACVP_CTX *ctx);
 static int enable_rsa(ACVP_CTX *ctx);
 static int enable_ecdsa(ACVP_CTX *ctx);
@@ -101,6 +97,7 @@ static ACVP_RESULT app_des_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_sha_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_hmac_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_cmac_handler(ACVP_TEST_CASE *test_case);
+static ACVP_RESULT app_aes_keywrap_handler(ACVP_TEST_CASE *test_case);
 
 #ifdef OPENSSL_KDF_SUPPORT
 static ACVP_RESULT app_kdf135_tls_handler(ACVP_TEST_CASE *test_case);
@@ -110,7 +107,6 @@ static ACVP_RESULT app_kdf135_srtp_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_kdf135_ikev2_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_kdf135_ikev1_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_kdf135_x963_handler(ACVP_TEST_CASE *test_case);
-static ACVP_RESULT app_kdf135_tpm_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_kdf108_handler(ACVP_TEST_CASE *test_case);
 #endif
 #ifdef ACVP_NO_RUNTIME
@@ -121,8 +117,10 @@ static ACVP_RESULT app_drbg_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_rsa_keygen_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_rsa_sig_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_ecdsa_handler(ACVP_TEST_CASE *test_case);
+#if 0
+/* openssl does not support FIPS compliant des keywrap */
 static ACVP_RESULT app_des_keywrap_handler(ACVP_TEST_CASE *test_case);
-static ACVP_RESULT app_aes_keywrap_handler(ACVP_TEST_CASE *test_case);
+#endif
 #endif
 
 #define JSON_FILENAME_LENGTH 24
@@ -167,6 +165,7 @@ char *ca_chain_file;
 char *cert_file;
 char *key_file;
 char *path_segment;
+char value[] = "same";
 
 static EVP_CIPHER_CTX *glb_cipher_ctx = NULL; /* need to maintain across calls for MCT */
 
@@ -664,18 +663,11 @@ static int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
     return 0;
 }
 
-//int main(int argc, char **argv) {
-//    ACVP_TEST_CASE *tc = NULL;
-//    app_rsa_sig_handler(tc);
-//    return;
-//}
-#if 1
 int main(int argc, char **argv) {
     ACVP_RESULT rv;
     int ret = 1; /* return code for main function */
     ACVP_CTX *ctx;
     char ssl_version[10];
-    char value[] = "same";
     APP_CONFIG cfg = {0};
 
     if (ingest_cli(&cfg, argc, argv)) {
@@ -887,18 +879,14 @@ int main(int argc, char **argv) {
     ret = 0; /* Success */
 
 end:
-    if (glb_cipher_ctx) EVP_CIPHER_CTX_free(glb_cipher_ctx);
-    
     acvp_cleanup();
-//    if (glb_cipher_ctx) EVP_CIPHER_CTX_free(glb_cipher_ctx);
+    if (glb_cipher_ctx) EVP_CIPHER_CTX_free(glb_cipher_ctx);
 
     return ret;
 }
-#endif
 
 static int enable_aes (ACVP_CTX *ctx) {
     ACVP_RESULT rv;
-    char value[] = "same";
 
     rv = acvp_enable_sym_cipher_cap(ctx, ACVP_AES_GCM, ACVP_DIR_BOTH, ACVP_KO_NA, ACVP_IVGEN_SRC_INT,
                                     ACVP_IVGEN_MODE_821, &app_aes_handler_aead);
@@ -1049,7 +1037,6 @@ static int enable_aes (ACVP_CTX *ctx) {
     rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_CFB1, ACVP_SYM_CIPH_PTLEN, 1536);
     CHECK_ENABLE_CAP_RV(rv);
 
-#if 0
     /*
      * Enable AES keywrap for various key sizes and PT lengths
      * Note: this is with padding disabled, minimum PT length is 128 bits and must be
@@ -1092,7 +1079,6 @@ static int enable_aes (ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_KWP, ACVP_SYM_CIPH_PTLEN, 808);
     CHECK_ENABLE_CAP_RV(rv);
-#endif
 
     /*
      * Enable AES-XTS 128 and 256 bit key
@@ -1274,7 +1260,6 @@ static int enable_hash (ACVP_CTX *ctx) {
 
 static int enable_cmac (ACVP_CTX *ctx) {
     ACVP_RESULT rv;
-    char value[] = "same";
 
     /*
      * Enable CMAC
@@ -1318,7 +1303,6 @@ static int enable_cmac (ACVP_CTX *ctx) {
 
 static int enable_hmac (ACVP_CTX *ctx) {
     ACVP_RESULT rv;
-    char value[] = "same";
 
     /*
      * Enable HMAC: TODO - need to add increment value in bits, default to 64 now.
@@ -1382,11 +1366,8 @@ static int enable_hmac (ACVP_CTX *ctx) {
 }
 
 #ifdef OPENSSL_KDF_SUPPORT
-#define ENGID1 "800002B805123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456"
-#define ENGID2 "000002b87766554433221100"
 static int enable_kdf (ACVP_CTX *ctx) {
     ACVP_RESULT rv;
-    char value[] = "same";
     int i, flags = 0;
     /*
      * Enable KDF-135
@@ -1404,15 +1385,11 @@ static int enable_kdf (ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_prereq_cap(ctx, ACVP_KDF135_SNMP, ACVP_PREREQ_SHA, value);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_kdf135_snmp_cap_parm(ctx, ACVP_KDF135_SNMP, ACVP_KDF135_SNMP_PASS_LEN, 128);
-    CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_kdf135_snmp_cap_parm(ctx, ACVP_KDF135_SNMP, ACVP_KDF135_SNMP_PASS_LEN, 64);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_kdf135_snmp_engid_parm(ctx, ACVP_KDF135_SNMP, ENGID1);
+    rv = acvp_enable_kdf135_snmp_engid_parm(ctx, ACVP_KDF135_SNMP, "AB37BDE5657AB");
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_kdf135_snmp_engid_parm(ctx, ACVP_KDF135_SNMP, ENGID2);
-    CHECK_ENABLE_CAP_RV(rv);
-
+    
     rv = acvp_enable_kdf135_ssh_cap(ctx, &app_kdf135_ssh_handler);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_prereq_cap(ctx, ACVP_KDF135_SSH, ACVP_PREREQ_SHA, value);
@@ -1422,7 +1399,7 @@ static int enable_kdf (ACVP_CTX *ctx) {
     rv = acvp_enable_prereq_cap(ctx, ACVP_KDF135_SSH, ACVP_PREREQ_AES, value);
     CHECK_ENABLE_CAP_RV(rv);
 
-    //Bit flags for kdf135_ssh sha capabilities
+    // Bit flags for kdf135_ssh sha capabilities
     flags = ACVP_KDF135_SSH_CAP_SHA1 | ACVP_KDF135_SSH_CAP_SHA224 |ACVP_KDF135_SSH_CAP_SHA256
     | ACVP_KDF135_SSH_CAP_SHA384 | ACVP_KDF135_SSH_CAP_SHA512;
 
@@ -1442,14 +1419,12 @@ static int enable_kdf (ACVP_CTX *ctx) {
     rv = acvp_enable_kdf135_srtp_cap_parm(ctx, ACVP_KDF135_SRTP, ACVP_SRTP_SUPPORT_ZERO_KDR, 0);
     CHECK_ENABLE_CAP_RV(rv);
     for (i = 0; i < 24; i++) {
-       rv = acvp_enable_kdf135_srtp_cap_parm(ctx, ACVP_KDF135_SRTP, ACVP_SRTP_KDF_EXPONENT, i + 1);
-       CHECK_ENABLE_CAP_RV(rv);
+        rv = acvp_enable_kdf135_srtp_cap_parm(ctx, ACVP_KDF135_SRTP, ACVP_SRTP_KDF_EXPONENT, i + 1);
+        CHECK_ENABLE_CAP_RV(rv);
     }
     rv = acvp_enable_kdf135_srtp_cap_parm(ctx, ACVP_KDF135_SRTP, ACVP_SRTP_AES_KEYLEN, 128);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_kdf135_srtp_cap_parm(ctx, ACVP_KDF135_SRTP, ACVP_SRTP_AES_KEYLEN, 192);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_kdf135_srtp_cap_parm(ctx, ACVP_KDF135_SRTP, ACVP_SRTP_AES_KEYLEN, 256);
     CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_enable_kdf135_ikev2_cap(ctx, &app_kdf135_ikev2_handler);
@@ -1459,16 +1434,61 @@ static int enable_kdf (ACVP_CTX *ctx) {
     rv = acvp_enable_prereq_cap(ctx, ACVP_KDF135_IKEV2, ACVP_PREREQ_DRBG, value);
     CHECK_ENABLE_CAP_RV(rv);
     // can use len_param or domain_param for these attributes
-    rv = acvp_enable_kdf135_ikev2_cap_len_param(ctx, ACVP_INIT_NONCE_LEN, 64);
+    rv = acvp_enable_kdf135_ikev2_domain_param(ctx, ACVP_INIT_NONCE_LEN, 64, 2048, 1);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_kdf135_ikev2_cap_len_param(ctx, ACVP_RESPOND_NONCE_LEN, 64);
+    rv = acvp_enable_kdf135_ikev2_domain_param(ctx, ACVP_RESPOND_NONCE_LEN, 64, 2048, 1);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_kdf135_ikev2_cap_len_param(ctx, ACVP_DH_SECRET_LEN, 1024);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_kdf135_ikev2_cap_len_param(ctx, ACVP_KEY_MATERIAL_LEN, 160);
+    rv = acvp_enable_kdf135_ikev2_domain_param(ctx, ACVP_KEY_MATERIAL_LEN, 1056, 3072, 1);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_kdf135_ikev2_cap_param(ctx, ACVP_KDF_HASH_ALG, "SHA-1");
     CHECK_ENABLE_CAP_RV(rv);
+
+    rv = acvp_enable_kdf135_ikev1_cap(ctx, &app_kdf135_ikev1_handler);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_prereq_cap(ctx, ACVP_KDF135_IKEV1, ACVP_PREREQ_SHA, value);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_prereq_cap(ctx, ACVP_KDF135_IKEV1, ACVP_PREREQ_DRBG, value);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_kdf135_ikev1_domain_param(ctx, ACVP_KDF_IKEv1_INIT_NONCE_LEN, 64, 2048, 1);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_kdf135_ikev1_domain_param(ctx, ACVP_KDF_IKEv1_RESPOND_NONCE_LEN, 64, 2048, 1);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_kdf135_ikev1_domain_param(ctx, ACVP_KDF_IKEv1_DH_SECRET_LEN, 224, 8192, 1);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_kdf135_ikev1_domain_param(ctx, ACVP_KDF_IKEv1_PSK_LEN, 8, 8192, 1);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_kdf135_ikev1_cap_param(ctx, ACVP_KDF_IKEv1_HASH_ALG, "SHA-1");
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_kdf135_ikev1_cap_param(ctx, ACVP_KDF_IKEv1_AUTH_METHOD, "psk");
+    CHECK_ENABLE_CAP_RV(rv);
+
+    rv = acvp_enable_kdf135_x963_cap(ctx, &app_kdf135_x963_handler);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_prereq_cap(ctx, ACVP_KDF135_X963, ACVP_PREREQ_SHA, value);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_kdf135_x963_cap_param(ctx, ACVP_KDF_X963_HASH_ALG, ACVP_KDF_X963_SHA224);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_kdf135_x963_cap_param(ctx, ACVP_KDF_X963_HASH_ALG, ACVP_KDF_X963_SHA256);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_kdf135_x963_cap_param(ctx, ACVP_KDF_X963_HASH_ALG, ACVP_KDF_X963_SHA384);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_kdf135_x963_cap_param(ctx, ACVP_KDF_X963_HASH_ALG, ACVP_KDF_X963_SHA512);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_kdf135_x963_cap_param(ctx, ACVP_KDF_X963_KEY_DATA_LEN, 256);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_kdf135_x963_cap_param(ctx, ACVP_KDF_X963_KEY_DATA_LEN, 1024);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_kdf135_x963_cap_param(ctx, ACVP_KDF_X963_FIELD_SIZE, 224);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_kdf135_x963_cap_param(ctx, ACVP_KDF_X963_FIELD_SIZE, 521);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_kdf135_x963_cap_param(ctx, ACVP_KDF_X963_SHARED_INFO_LEN, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_enable_kdf135_x963_cap_param(ctx, ACVP_KDF_X963_SHARED_INFO_LEN, 1024);
+    CHECK_ENABLE_CAP_RV(rv);
+
 
     /*
      * KDF108 Counter Mode
@@ -1500,11 +1520,9 @@ static int enable_kdf (ACVP_CTX *ctx) {
 }
 #endif
 
-
 #ifdef ACVP_NO_RUNTIME
 static int enable_kas_ecc (ACVP_CTX *ctx) {
     ACVP_RESULT rv;
-    char value[] = "same";
 
     /*
      * Enable KAS-ECC....
@@ -1576,7 +1594,6 @@ static int enable_kas_ecc (ACVP_CTX *ctx) {
 
 static int enable_kas_ffc (ACVP_CTX *ctx) {
     ACVP_RESULT rv;
-    char value[] = "same";
 
     /*
      * Enable KAS-FFC....
@@ -1617,7 +1634,6 @@ static int enable_kas_ffc (ACVP_CTX *ctx) {
 
 static int enable_dsa (ACVP_CTX *ctx) {
     ACVP_RESULT rv;
-    char value[] = "same";
 
     /*
      * Enable DSA....
@@ -1785,7 +1801,6 @@ static int enable_dsa (ACVP_CTX *ctx) {
 
 static int enable_rsa (ACVP_CTX *ctx) {
     ACVP_RESULT rv;
-    char value[] = "same";
     BIGNUM *expo;
 
     expo = FIPS_bn_new();
@@ -2002,7 +2017,6 @@ static int enable_rsa (ACVP_CTX *ctx) {
 
 static int enable_ecdsa (ACVP_CTX *ctx) {
     ACVP_RESULT rv;
-    char value[] = "same";
 
     /*
      * Enable ECDSA keyGen...
@@ -2173,11 +2187,7 @@ static int enable_drbg (ACVP_CTX *ctx) {
           (printf("Failed to enable FIPS mode.\n"));
           return 1;
       }
-
-#if 0 /* only CTR mode is supported by the server currently */
     ACVP_RESULT rv;
-    char value[] = "same";
-    char value2[] = "123456";
 
     rv = acvp_enable_drbg_cap(ctx, ACVP_HASHDRBG, &app_drbg_handler);
     CHECK_ENABLE_CAP_RV(rv);
@@ -2188,9 +2198,6 @@ static int enable_drbg (ACVP_CTX *ctx) {
     rv = acvp_enable_drbg_prereq_cap(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1,
             ACVP_PREREQ_SHA, value);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_drbg_prereq_cap(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1,
-            ACVP_PREREQ_AES, value2);
-    CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_enable_drbg_cap_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1,
             ACVP_DRBG_PRED_RESIST_ENABLED, 1);
@@ -2200,41 +2207,40 @@ static int enable_drbg (ACVP_CTX *ctx) {
             ACVP_DRBG_RESEED_ENABLED, 1);
     CHECK_ENABLE_CAP_RV(rv);
 
-    rv = acvp_enable_drbg_cap_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1,
-            ACVP_DRBG_ENTROPY_LEN, 0);
+    rv = acvp_enable_drbg_length_cap(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1,
+            ACVP_DRBG_ENTROPY_LEN, (int)192, (int)64,(int) 256);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    rv = acvp_enable_drbg_length_cap(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1,
+            ACVP_DRBG_NONCE_LEN, (int)192, (int)64,(int) 256);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    rv = acvp_enable_drbg_length_cap(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1,
+            ACVP_DRBG_PERSO_LEN, (int)0, (int)128,(int) 256);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    rv = acvp_enable_drbg_length_cap(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1,
+            ACVP_DRBG_ADD_IN_LEN, (int)0, (int)128,(int) 256);
     CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_enable_drbg_cap_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1,
-            ACVP_DRBG_NONCE_LEN, 0);
+            ACVP_DRBG_RET_BITS_LEN, 160);
     CHECK_ENABLE_CAP_RV(rv);
-
-    rv = acvp_enable_drbg_cap_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1,
-            ACVP_DRBG_PERSO_LEN, 0);
-    CHECK_ENABLE_CAP_RV(rv);
-
-    rv = acvp_enable_drbg_cap_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1,
-            ACVP_DRBG_ADD_IN_LEN, 0);
-    CHECK_ENABLE_CAP_RV(rv);
-
-    rv = acvp_enable_drbg_cap_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1,
-            ACVP_DRBG_RET_BITS_LEN, 512);
-    CHECK_ENABLE_CAP_RV(rv);
-
 
     //ACVP_HMACDRBG
 
     rv = acvp_enable_drbg_cap(ctx, ACVP_HMACDRBG, &app_drbg_handler);
     CHECK_ENABLE_CAP_RV(rv);
 
-    rv = acvp_enable_drbg_cap_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224,
-                                    ACVP_DRBG_DER_FUNC_ENABLED, 0);
-    CHECK_ENABLE_CAP_RV(rv);
-
     rv = acvp_enable_drbg_prereq_cap(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224,
             ACVP_PREREQ_SHA, value);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_drbg_prereq_cap(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224,
-            ACVP_PREREQ_AES, value2);
+            ACVP_PREREQ_HMAC, value);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    rv = acvp_enable_drbg_cap_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224,
+                                    ACVP_DRBG_DER_FUNC_ENABLED, 1);
     CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_enable_drbg_cap_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224,
@@ -2246,36 +2252,16 @@ static int enable_drbg (ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_enable_drbg_cap_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224,
-            ACVP_DRBG_ENTROPY_LEN, 0);
-    CHECK_ENABLE_CAP_RV(rv);
-
-    rv = acvp_enable_drbg_cap_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224,
-            ACVP_DRBG_NONCE_LEN, 0);
-    CHECK_ENABLE_CAP_RV(rv);
-
-    rv = acvp_enable_drbg_cap_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224,
-            ACVP_DRBG_PERSO_LEN, 0);
-    CHECK_ENABLE_CAP_RV(rv);
-
-    rv = acvp_enable_drbg_cap_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224,
-            ACVP_DRBG_ADD_IN_LEN, 0);
-    CHECK_ENABLE_CAP_RV(rv);
-
-    rv = acvp_enable_drbg_cap_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224,
-            ACVP_DRBG_RET_BITS_LEN, 512);
+            ACVP_DRBG_RET_BITS_LEN, 224);
     CHECK_ENABLE_CAP_RV(rv);
 
     //Add length range
     rv = acvp_enable_drbg_length_cap(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224,
-            ACVP_DRBG_ENTROPY_LEN, (int)0, (int)128,(int) 256);
+            ACVP_DRBG_ENTROPY_LEN, (int)192, (int)64,(int) 256);
     CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_enable_drbg_length_cap(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224,
-            ACVP_DRBG_NONCE_LEN, (int)0, (int)128,(int) 256);
-    CHECK_ENABLE_CAP_RV(rv);
-
-    rv = acvp_enable_drbg_length_cap(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224,
-            ACVP_DRBG_PERSO_LEN, (int)0, (int)128,(int) 256);
+            ACVP_DRBG_NONCE_LEN, (int)192, (int)64,(int) 256);
     CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_enable_drbg_length_cap(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224,
@@ -2290,36 +2276,29 @@ static int enable_drbg (ACVP_CTX *ctx) {
     rv = acvp_enable_drbg_cap(ctx, ACVP_CTRDRBG, &app_drbg_handler);
     CHECK_ENABLE_CAP_RV(rv);
 
+    rv = acvp_enable_drbg_prereq_cap(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128,
+            ACVP_PREREQ_AES, value);
+    CHECK_ENABLE_CAP_RV(rv);
+
     //Add length range
     rv = acvp_enable_drbg_length_cap(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128,
-            ACVP_DRBG_ENTROPY_LEN, (int)0, (int)128,(int) 256);
+            ACVP_DRBG_ENTROPY_LEN, (int)128, (int)128, (int) 256);
     CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_enable_drbg_length_cap(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128,
-            ACVP_DRBG_NONCE_LEN, (int)0, (int)128,(int) 256);
+            ACVP_DRBG_NONCE_LEN, (int)64, (int)64,(int) 128);
     CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_enable_drbg_length_cap(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128,
-            ACVP_DRBG_PERSO_LEN, (int)0, (int)128,(int) 256);
+            ACVP_DRBG_PERSO_LEN, (int)0, (int)256,(int) 256);
     CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_enable_drbg_length_cap(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128,
-            ACVP_DRBG_PERSO_LEN, (int)0, (int)128,(int) 256);
-    CHECK_ENABLE_CAP_RV(rv);
-
-    rv = acvp_enable_drbg_length_cap(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128,
-            ACVP_DRBG_ADD_IN_LEN, (int)0, (int)128,(int) 256);
+            ACVP_DRBG_ADD_IN_LEN, (int)0, (int)256,(int) 256);
     CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_enable_drbg_cap_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128,
                                     ACVP_DRBG_DER_FUNC_ENABLED, 1);
-    CHECK_ENABLE_CAP_RV(rv);
-
-    rv = acvp_enable_drbg_prereq_cap(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128,
-            ACVP_PREREQ_SHA, value);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_drbg_prereq_cap(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128,
-            ACVP_PREREQ_AES, value2);
     CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_enable_drbg_cap_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128,
@@ -2327,29 +2306,12 @@ static int enable_drbg (ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_enable_drbg_cap_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128,
-            ACVP_DRBG_RESEED_ENABLED, 1);
+            ACVP_DRBG_RESEED_ENABLED, 0);
     CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_enable_drbg_cap_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128,
-            ACVP_DRBG_ENTROPY_LEN, 0);
+            ACVP_DRBG_RET_BITS_LEN, 256);
     CHECK_ENABLE_CAP_RV(rv);
-
-    rv = acvp_enable_drbg_cap_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128,
-            ACVP_DRBG_NONCE_LEN, 0);
-    CHECK_ENABLE_CAP_RV(rv);
-
-    rv = acvp_enable_drbg_cap_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128,
-            ACVP_DRBG_PERSO_LEN, 0);
-    CHECK_ENABLE_CAP_RV(rv);
-
-    rv = acvp_enable_drbg_cap_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128,
-            ACVP_DRBG_ADD_IN_LEN, 0);
-    CHECK_ENABLE_CAP_RV(rv);
-
-    rv = acvp_enable_drbg_cap_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128,
-            ACVP_DRBG_RET_BITS_LEN, 512);
-    CHECK_ENABLE_CAP_RV(rv);
-#endif
 
     return 0;
 }
@@ -2730,8 +2692,7 @@ static ACVP_RESULT app_aes_handler(ACVP_TEST_CASE *test_case)
     return ACVP_SUCCESS;
 }
 
-/* TODO - openssl does not support inverse option */
-#if 0
+/* NOTE - openssl does not support inverse option */
 static ACVP_RESULT app_aes_keywrap_handler(ACVP_TEST_CASE *test_case)
 {
     ACVP_SYM_CIPHER_TC      *tc;
@@ -2811,6 +2772,7 @@ static ACVP_RESULT app_aes_keywrap_handler(ACVP_TEST_CASE *test_case)
 }
 
 /* TODO: I don't believe that openssl's 3DES keywrap is FIPS compliant */
+#if 0
 static ACVP_RESULT app_des_keywrap_handler(ACVP_TEST_CASE *test_case)
 {
     ACVP_SYM_CIPHER_TC      *tc;
@@ -3295,164 +3257,14 @@ static ACVP_RESULT app_cmac_handler(ACVP_TEST_CASE *test_case)
     return rv;
 }
 
-//#ifdef OPENSSL_KDF_SUPPORT
-#if 1
+#ifdef OPENSSL_KDF_SUPPORT
 static ACVP_RESULT app_kdf135_srtp_handler(ACVP_TEST_CASE *test_case) {
-
-    ACVP_KDF135_SRTP_TC *tc;
-    int ret;
-    EVP_CIPHER *cipher;
-    
-    tc = test_case->tc.kdf135_srtp;
-    switch (tc->aes_keylen) {
-    case 128:
-        cipher = EVP_aes_128_ctr();
-        break;
-    case 192:
-        cipher = EVP_aes_192_ctr();
-        break;
-    case 256:
-        cipher = EVP_aes_256_ctr();
-        break;
-    default:
-        printf("Unsupported aes keylen\n");
-        return ACVP_CRYPTO_MODULE_FAIL;
-    }
-    
-    char *tmp_kdr;
-
-    tmp_kdr = calloc(7, sizeof(char));
-    memcpy(tmp_kdr+(6-tc->kdr_len), tc->kdr, tc->kdr_len);
-    
-    ret = kdf_srtp(cipher, tc->master_key, tc->master_salt, tmp_kdr, tc->index, 00, (char *)tc->srtp_ke);
-    if (ret == -1) {
-        printf("kdf_srtp srtp_ke error\n");
-        return ACVP_CRYPTO_MODULE_FAIL;
-    }
-    ret = kdf_srtp(cipher, tc->master_key, tc->master_salt, tmp_kdr, tc->index, 01, (char *)tc->srtp_ka);
-    if (ret == -1) {
-        printf("kdf_srtp srtp_ka error\n");
-        return ACVP_CRYPTO_MODULE_FAIL;
-    }
-    ret = kdf_srtp(cipher, tc->master_key, tc->master_salt, tmp_kdr, tc->index, 02, (char *)tc->srtp_ks);
-    if (ret == -1) {
-        printf("kdf_srtp srtp_ks error\n");
-        return ACVP_CRYPTO_MODULE_FAIL;
-    }
-    ret = kdf_srtp(cipher, tc->master_key, tc->master_salt, tmp_kdr, tc->srtcp_index, 03, (char *)tc->srtcp_ke);
-    if (ret == -1) {
-        printf("kdf_srtp srtcp_ke error\n");
-        return ACVP_CRYPTO_MODULE_FAIL;
-    }
-    ret = kdf_srtp(cipher, tc->master_key, tc->master_salt, tmp_kdr, tc->srtcp_index, 04, (char *)tc->srtcp_ka);
-    if (ret == -1) {
-        printf("kdf_srtp srtcp_ka error\n");
-        return ACVP_CRYPTO_MODULE_FAIL;
-    }
-    ret = kdf_srtp(cipher, tc->master_key, tc->master_salt, tmp_kdr, tc->srtcp_index, 05, (char *)tc->srtcp_ks);
-    if (ret == -1) {
-        printf("kdf_srtp srtcp_ks error\n");
-        return ACVP_CRYPTO_MODULE_FAIL;
-    }
-    
-    return ACVP_SUCCESS;
+    ACVP_RESULT rv = ACVP_CRYPTO_MODULE_FAIL;
+    return rv;
 }
 
 static ACVP_RESULT app_kdf135_ikev2_handler(ACVP_TEST_CASE *test_case) {
     ACVP_RESULT rv = ACVP_CRYPTO_MODULE_FAIL;
-    ACVP_KDF135_IKEV2_TC *tc;
-    tc = test_case->tc.kdf135_ikev2;
-    int ret, ninr_len, spi_len; // gir_new_len,
-    unsigned char *ninr_bytes = NULL; //*spi_bytes = NULL, *gir_bytes = NULL, *gir_new_bytes = NULL;
-    unsigned char *concatenated_spi = NULL; //*ninr = NULL,
-//    unsigned char *seedkey = NULL, *dkm = NULL, *seedkey_rekey = NULL, *dkm_sa = NULL, *dkm_sa_dh = NULL;
-//    dkm = malloc(1024);
-//    dkm_sa = malloc(1024);
-//    dkm_sa_dh = malloc(1024);
-//    seedkey = malloc(1024);
-//    seedkey_rekey = malloc(1024);
-    
-    const EVP_MD *evp_md = EVP_sha1();
-    
-    ninr_bytes = calloc(tc->init_nonce_len+tc->resp_nonce_len+1, sizeof(char));
-    memcpy(ninr_bytes, tc->init_nonce, tc->init_nonce_len);
-    memcpy(ninr_bytes+tc->init_nonce_len, tc->resp_nonce, tc->resp_nonce_len);
-    
-//    strcpy(ninr_bytes, tc->init_nonce);
-//    strcat(ninr_bytes, tc->resp_nonce);
-    
-    /* conver things to bytes */
-//    ninr_len = (tc->init_nonce_len/8+tc->resp_nonce_len/8);
-    ninr_len = tc->init_nonce_len + tc->resp_nonce_len;
-//    ninr_bytes = calloc(ninr_len+1, sizeof(char));
-//    acvp_hexstr_to_bin((unsigned char *)ninr, ninr_bytes, ninr_len+1);
-    
-//    gir_len = strlen(tc->gir)/2;
-//    gir_bytes = calloc(gir_len+1, sizeof(char));
-//    acvp_hexstr_to_bin(tc->gir, gir_bytes, gir_len);
-    
-//    gir_new_len = strlen(tc->gir_new)/2;
-//    gir_new_bytes = calloc(gir_new_len+1, sizeof(char));
-//    acvp_hexstr_to_bin(tc->gir_new, gir_new_bytes, gir_new_len);
-    
-    ret = kdf_ikev2_gen(tc->s_key_seed, evp_md, ninr_bytes, ninr_len, tc->gir, tc->gir_len);
-    if (ret) {
-        printf("IKEv2 failed seedkey generation");
-        return rv;
-    }
-    
-    // nonce_lens are /4 because that is the character length of the string
-    // then we divide the entire concatenated length by 2 to give byte length
-    spi_len = ninr_len + tc->init_spi_len + tc->resp_spi_len;
-    //spi_len = (tc->init_nonce_len/4 + tc->resp_nonce_len/4 + strlen(tc->init_spi) + strlen(tc->resp_spi)) / 2;
-    concatenated_spi = calloc(spi_len+1, sizeof(char));
-    memcpy(concatenated_spi, ninr_bytes, ninr_len);
-    memcpy(concatenated_spi+ninr_len, tc->init_spi, tc->init_spi_len);
-    memcpy(concatenated_spi+ninr_len+tc->init_spi_len, tc->resp_spi, tc->resp_spi_len);
-    
-//    strcpy(concatenated_spi, ninr_bytes);
-//    strcat(concatenated_spi, tc->init_spi);
-//    strcat(concatenated_spi, tc->resp_spi);
-    
-    /* convert to bytes */
-//    spi_bytes = calloc(spi_len+1, sizeof(char));
-//    acvp_hexstr_to_bin((unsigned char *)concatenated_spi, spi_bytes, spi_len);
-    
-    ret = kdf_ikev2_dkm(tc->derived_keying_material, tc->keying_material_len/8, evp_md, tc->s_key_seed, 20,
-                        concatenated_spi, spi_len, NULL, 00);
-    if (ret != 0) {
-        printf("IKEv2 failed dkm generation %d", ret);
-        return rv;
-    }
-    
-    ret = kdf_ikev2_dkm(tc->derived_keying_material_child, tc->keying_material_len/8, evp_md, tc->derived_keying_material, 20,
-                        ninr_bytes, ninr_len, NULL, 0);
-    if (ret != 0) {
-        printf("IKEv2 failed dkm_sa generation");
-        return rv;
-    }
-    
-    ret = kdf_ikev2_dkm(tc->derived_keying_material_child_dh, tc->keying_material_len/8, evp_md, tc->derived_keying_material, 20,
-                        ninr_bytes, ninr_len, tc->gir_new, tc->gir_new_len);
-    if (ret != 0) {
-        printf("IKEv2 failed dkm_sa_dh generation");
-        return rv;
-    }
-    
-    ret = kdf_ikev2_rekey(tc->s_key_seed_rekey, evp_md, ninr_bytes, ninr_len,
-                          tc->gir_new, tc->gir_new_len, 1, tc->derived_keying_material, 20);
-    if (ret != 0) {
-        printf("IKEv2 failed seedkey rekey generation");
-        return rv;
-    }
-    
-//    acvp_bin_to_hexstr(seedkey, 20, tc->s_key_seed);
-//    acvp_bin_to_hexstr(seedkey_rekey, 20, tc->s_key_seed_rekey);
-//    acvp_bin_to_hexstr(dkm, tc->keying_material_len/8, tc->derived_keying_material);
-//    acvp_bin_to_hexstr(dkm_sa, tc->keying_material_len/8, tc->derived_keying_material_child);
-//    acvp_bin_to_hexstr(dkm_sa_dh, tc->keying_material_len/8, tc->derived_keying_material_child_dh);
-    rv = ACVP_SUCCESS;
-    
     return rv;
 }
 
@@ -3466,145 +3278,13 @@ static ACVP_RESULT app_kdf135_x963_handler(ACVP_TEST_CASE *test_case) {
     return rv;
 }
 
-static ACVP_RESULT app_kdf135_tpm_handler(ACVP_TEST_CASE *test_case) {
+static ACVP_RESULT app_kdf108_handler(ACVP_TEST_CASE *test_case) {
     ACVP_RESULT rv = ACVP_CRYPTO_MODULE_FAIL;
     return rv;
 }
 
-static ACVP_RESULT app_kdf108_handler(ACVP_TEST_CASE *test_case) {
-    ACVP_KDF108_TC *tc = NULL;
-    const EVP_MD *md = NULL;
-    // The max keyout size + room for extra rotation (assuming largest HMAC)
-    unsigned char out[ACVP_KDF108_KEYOUT_MAX + ACVP_BYTE_LEN_HMAC_SHA512];
-    int max_out = 0;
-    int fd_len = 0;
-    int ret = 0;
-
-    unsigned char fixed_data[] = {
-        0x40, 0x18, 0x6a, 0xee, 0xf2, 0x37, 0x48, 0x03,
-        0x7e, 0x0f, 0x0d, 0x6e, 0x86, 0x34, 0xca, 0xdc,
-        0x81, 0xa7, 0x7c, 0xec, 0x97, 0xee, 0x03, 0xa7,
-        0xd7, 0x9c, 0x28, 0x18, 0x63, 0x65, 0xcc, 0x48,
-        0x1c, 0xbd, 0xc4, 0xf3, 0x08, 0x11, 0xf3, 0x5d,
-        0xcb, 0x9d, 0x10, 0x2c, 0x1b, 0x73, 0x01, 0x11,
-        0x2c, 0xf3, 0xd5, 0x80, 0x5c, 0x69, 0x1d, 0x8e,
-        0x6c, 0x08, 0x8e, 0xc6
-    };
-
-    fd_len = sizeof(fixed_data);
-    max_out = sizeof(out);
-
-    // Clear the out buffer
-    memset(out, 0, max_out);
-
-    // Resolve the union, get handle on kdf108 test case
-    tc = test_case->tc.kdf108;
-
-    if (tc->mode != ACVP_KDF108_MODE_COUNTER) {
-        printf("\napp_kdf108_handler error: Unsupported mode\n");
-        return ACVP_NO_CAP;
-    }
-
-    if (tc->counter_len != 8) {
-        printf("\napp_kdf108_handler error: Unsupported counter length\n");
-        return ACVP_NO_CAP;
-    }
-
-    switch (tc->mac_mode) {
-    case ACVP_KDF108_MAC_MODE_HMAC_SHA1:
-        md = EVP_sha1();
-        if (tc->key_in_len != ACVP_BYTE_LEN_HMAC_SHA1) {
-            printf("\napp_kdf108_handler error: Bad key_in_len (%d), expected (%d)\n",
-                   tc->key_in_len, ACVP_BYTE_LEN_HMAC_SHA1);
-            return ACVP_INVALID_ARG;
-        }
-        break;
-    case ACVP_KDF108_MAC_MODE_HMAC_SHA224:
-        md = EVP_sha224();
-        if (tc->key_in_len != ACVP_BYTE_LEN_HMAC_SHA224) {
-            printf("\napp_kdf108_handler error: Bad key_in_len (%d), expected (%d)\n",
-                   tc->key_in_len, ACVP_BYTE_LEN_HMAC_SHA224);
-            return ACVP_INVALID_ARG;
-        }
-        break;
-    case ACVP_KDF108_MAC_MODE_HMAC_SHA256:
-        md = EVP_sha256();
-        if (tc->key_in_len != ACVP_BYTE_LEN_HMAC_SHA256) {
-            printf("\napp_kdf108_handler error: Bad key_in_len (%d), expected (%d)\n",
-                   tc->key_in_len, ACVP_BYTE_LEN_HMAC_SHA256);
-            return ACVP_INVALID_ARG;
-        }
-        break;
-    case ACVP_KDF108_MAC_MODE_HMAC_SHA384:
-        md = EVP_sha384();
-        if (tc->key_in_len != ACVP_BYTE_LEN_HMAC_SHA384) {
-            printf("\napp_kdf108_handler error: Bad key_in_len (%d), expected (%d)\n",
-                   tc->key_in_len, ACVP_BYTE_LEN_HMAC_SHA384);
-            return ACVP_INVALID_ARG;
-        }
-        break;
-    case ACVP_KDF108_MAC_MODE_HMAC_SHA512:
-        md = EVP_sha512();
-        if (tc->key_in_len != ACVP_BYTE_LEN_HMAC_SHA512) {
-            printf("\napp_kdf108_handler error: Bad key_in_len (%d), expected (%d)\n",
-                   tc->key_in_len, ACVP_BYTE_LEN_HMAC_SHA512);
-            return ACVP_INVALID_ARG;
-        }
-        break;
-    default:
-        printf("app_kdf108_handler error: Unsupported hash algorithm\n");
-        return ACVP_NO_CAP;
-    }
-
-    if (tc->key_out_len + md->md_size > max_out) {
-        /*
-         * The "out" buffer size is not large enough to hold the derived key.
-         * This should never happen assuming capabilities are respected...
-         */
-        printf("\napp_kdf108_handler error: Buffer \"out\" (%d) < (%d)\n",
-                max_out, (tc->key_out_len + md->md_size));
-        return ACVP_DATA_TOO_LARGE;
-    }
-
-    // Only support after fixed data
-    if (tc->counter_location != ACVP_KDF108_FIXED_DATA_ORDER_AFTER) {
-        printf("\napp_kdf108_handler error: Unsupported counter location\n");
-        return ACVP_NO_CAP;
-    }
-
-    /*
-     * Prepare and attach fixed_data to test case.
-     */
-    if (fd_len > ACVP_KDF108_FIXED_DATA_MAX) {
-        printf("\napp_kdf108_handler error: fd_len > fixed data max\n");
-        return ACVP_CRYPTO_MODULE_FAIL;
-    }
-    // Copy in the data and set length (make sure <= max allowed)
-    memcpy(tc->fixed_data, fixed_data, fd_len);
-    tc->fixed_data_len = fd_len;
-
-
-    // Call the crypto API
-    ret = kdf_802_11i(tc->key_in, tc->key_in_len, NULL, 0,
-                      tc->fixed_data, tc->fixed_data_len,
-                      out, tc->key_out_len + md->md_size, md);
-
-    if (ret != md->md_size) {
-        printf("\napp_kdf108_handler error: kdf_802_11i() bad return value\n");
-        return ACVP_CRYPTO_MODULE_FAIL;
-    }
-
-    /*
-     * Copy the derived key (skip the portion where counter=0)
-     */
-    memcpy(tc->key_out, out + md->md_size, tc->key_out_len);
-
-    return ACVP_SUCCESS;
-}
-
 static ACVP_RESULT app_kdf135_tls_handler(ACVP_TEST_CASE *test_case)
 {
-#if 0
     ACVP_KDF135_TLS_TC    *tc;
     unsigned char *key_block1, *key_block2, *master_secret1, *master_secret2;
     int olen1 = 0, olen2 = 0, len1, ret, i, len, count, psm_len;
@@ -3633,13 +3313,13 @@ static ACVP_RESULT app_kdf135_tls_handler(ACVP_TEST_CASE *test_case)
     {
     case ACVP_KDF135_TLS_CAP_SHA256:
         evp_md1 = evp_md2 = EVP_sha256();
-  break;
+        break;
     case ACVP_KDF135_TLS_CAP_SHA384:
         evp_md1 = evp_md2 = EVP_sha384();
-  break;
+        break;
     case ACVP_KDF135_TLS_CAP_SHA512:
         evp_md1 = evp_md2 = EVP_sha512();
-  break;
+        break;
     default:
         printf("\nCrypto module error, Bad SHA type\n");
         return ACVP_INVALID_ARG;
@@ -3647,16 +3327,16 @@ static ACVP_RESULT app_kdf135_tls_handler(ACVP_TEST_CASE *test_case)
 
     count = 1;
     len = tc->pm_len / count;
-    if (count == 1)
-          psm_len = 0;
-    
-    ret = kdf_tls12_P_hash(evp_md1, tc->pm_secret, len + (psm_len & 1),
-                           TLS_MD_MASTER_SECRET_CONST, TLS_MD_MASTER_SECRET_CONST_SIZE,
-                           tc->ch_rnd, tc->ch_rnd_len,
-                           tc->sh_rnd, tc->sh_rnd_len,
-                           NULL, 0,
-                           NULL, 0,
-                           master_secret1, olen1);
+    if (count == 1) {
+        psm_len = 0;
+    }
+
+    /*
+     * IMPORTANT: Need to set ret = <your KDF API here>
+     * The default is set to failure as this is not
+     * currently supported in OpenSSL
+     */
+    ret = 0;
     if (ret == 0) {
         printf("\nCrypto module error, TLS kdf failure\n");
         return ACVP_CRYPTO_MODULE_FAIL;
@@ -3664,16 +3344,15 @@ static ACVP_RESULT app_kdf135_tls_handler(ACVP_TEST_CASE *test_case)
     for (i = 0; i < olen1; i++) {
          master_secret1[i] ^= master_secret2[i];
     }
-    
+
     if (evp_md1 != evp_md2) {
-        ret = kdf_tls12_P_hash(evp_md2, tc->pm_secret + len, len + (psm_len & 1),
-                               TLS_MD_MASTER_SECRET_CONST, TLS_MD_MASTER_SECRET_CONST_SIZE,
-                               tc->ch_rnd, tc->ch_rnd_len,
-                               tc->sh_rnd, tc->sh_rnd_len,
-                               NULL, 0,
-                               NULL, 0,
-                               master_secret2, olen1);
-    if (ret == 0) {
+        /*
+         * IMPORTANT: Need to set ret = <your KDF API here>
+         * The default is set to failure as this is not
+         * currently supported in OpenSSL
+         */
+        ret = 0;
+        if (ret == 0) {
             printf("\nCrypto module error, TLS kdf failure\n");
             return ACVP_CRYPTO_MODULE_FAIL;
         }
@@ -3685,17 +3364,15 @@ static ACVP_RESULT app_kdf135_tls_handler(ACVP_TEST_CASE *test_case)
 
     len1 = olen1;
     len = len1 / count;
-    if (count == 1)
+    if (count == 1) {
         len1 = 0;
-    ret = kdf_tls12_P_hash(evp_md1, (const unsigned char *)master_secret1,
-                           len + (len1 & 1),
-                           TLS_MD_KEY_EXPANSION_CONST, TLS_MD_KEY_EXPANSION_CONST_SIZE,
-                           tc->s_rnd, tc->s_rnd_len,
-                           tc->c_rnd, tc->c_rnd_len,
-                           NULL, 0,
-                           NULL, 0,
-                           key_block2, olen2);
-
+    }
+    /*
+     * IMPORTANT: Need to set ret = <your KDF API here>
+     * The default is set to failure as this is not
+     * currently supported in OpenSSL
+     */
+    ret = 0;
     if (ret == 0) {
         printf("\nCrypto module error, TLS kdf failure\n");
         return ACVP_CRYPTO_MODULE_FAIL;
@@ -3704,17 +3381,13 @@ static ACVP_RESULT app_kdf135_tls_handler(ACVP_TEST_CASE *test_case)
         key_block1[i] ^= key_block2[i];
     }
     if (evp_md1 != evp_md2) {
-    
-        ret = kdf_tls12_P_hash(evp_md2, (const unsigned char *)master_secret1 + len,
-                               len + (len1 & 1),
-                               TLS_MD_KEY_EXPANSION_CONST, TLS_MD_KEY_EXPANSION_CONST_SIZE,
-                               tc->s_rnd, tc->s_rnd_len,
-                               tc->c_rnd, tc->c_rnd_len,
-                               NULL, 0,
-                               NULL, 0,
-                               key_block2, olen2);
-
-    if (ret == 0) {
+        /*
+         * IMPORTANT: Need to set ret = <your KDF API here>
+         * The default is set to failure as this is not
+         * currently supported in OpenSSL
+         */
+        ret = 0;
+        if (ret == 0) {
             printf("\nCrypto module error, TLS kdf failure\n");
             return ACVP_CRYPTO_MODULE_FAIL;
         }
@@ -3722,39 +3395,37 @@ static ACVP_RESULT app_kdf135_tls_handler(ACVP_TEST_CASE *test_case)
             key_block1[i] ^= key_block2[i];
         }
     }
-#endif
+
     return ACVP_SUCCESS;
 }
 
 static ACVP_RESULT app_kdf135_snmp_handler(ACVP_TEST_CASE *test_case)
 {
-#if 0
     ACVP_KDF135_SNMP_TC    *tc;
-    int engid_str_len = 0;
+    unsigned char *s_key;
     int p_len, ret;
 
     tc = test_case->tc.kdf135_snmp;
-    
-    if (!tc->p_len || !tc->engine_id || !tc->password) {
-        printf("\nCrypto module error, kdf snmp missing tc args\n");
+    s_key = tc->s_key;
+    p_len = tc->p_len;
+
+    if (!s_key) {
+        printf("\nCrypto module error, malloc failure\n");
         return ACVP_CRYPTO_MODULE_FAIL;
     }
-    
-    p_len = tc->p_len/8;
-    
-    if (memcmp(tc->engine_id_str, ENGID1, 1) == 0) {
-        engid_str_len = 64;
-    } else {
-        engid_str_len = 24;
-    }
 
-    ret = kdf_snmp(tc->engine_id, engid_str_len/2, tc->password, p_len, tc->s_key);
+    /*
+     * IMPORTANT: Need to set ret = <your KDF API here>
+     * The default is set to failure as this is not
+     * currently supported in OpenSSL
+     */
+    ret = 0;
     if (!ret) {
         printf("\nCrypto module error, kdf snmp failure\n");
         return ACVP_CRYPTO_MODULE_FAIL;
     }
-    tc->skey_len = ret;
-#endif
+
+    tc->skey_len = strnlen((const char *)s_key, ACVP_KDF135_SNMP_SKEY_MAX);
 
     return ACVP_SUCCESS;
 }
@@ -3805,69 +3476,70 @@ static ACVP_RESULT app_kdf135_ssh_handler(ACVP_TEST_CASE *test_case)
      * Integrity key server to client: HASH(K || H || "F" || session_id)
      */
 
-    ret = kdf_ssh(evp_md, 'A', tc->iv_len,
-                  (char*)tc->shared_secret_k, tc->shared_secret_len,
-                  (char*)tc->session_id, tc->session_id_len,
-                  (char *)tc->hash_h, tc->hash_len,
-                  tc->cs_init_iv);
+    /*
+     * IMPORTANT: Need to set ret = <your KDF API here>
+     * The default is set to failure as this is not
+     * currently supported in OpenSSL
+     */
+    ret = 1;
     if (ret != 0) {
         printf("\nCrypto module error, kdf ssh cs_init_iv failure\n");
         return ACVP_CRYPTO_MODULE_FAIL;
     }
 
-    ret = kdf_ssh(evp_md, 'B', tc->iv_len,
-                  (char*)tc->shared_secret_k, tc->shared_secret_len,
-                  (char*)tc->session_id, tc->session_id_len,
-                  (char*)tc->hash_h, tc->hash_len,
-                  tc->sc_init_iv);
-
+    /*
+     * IMPORTANT: Need to set ret = <your KDF API here>
+     * The default is set to failure as this is not
+     * currently supported in OpenSSL
+     */
+    ret = 1;
     if (ret != 0) {
         printf("\nCrypto module error, kdf ssh sc_init_iv failure\n");
         return ACVP_CRYPTO_MODULE_FAIL;
     }
 
-    ret = kdf_ssh(evp_md, 'C', tc->e_key_len,
-                  (char*)tc->shared_secret_k, tc->shared_secret_len,
-                  (char*)tc->session_id, tc->session_id_len,
-                  (char*)tc->hash_h, tc->hash_len,
-                  tc->cs_encrypt_key);
-
+    /*
+     * IMPORTANT: Need to set ret = <your KDF API here>
+     * The default is set to failure as this is not
+     * currently supported in OpenSSL
+     */
+    ret = 1;
     if (ret != 0) {
         printf("\nCrypto module error, kdf ssh cs_encrypt_key failure\n");
         return ACVP_CRYPTO_MODULE_FAIL;
     }
 
-    ret = kdf_ssh(evp_md, 'D', tc->e_key_len,
-                  (char*)tc->shared_secret_k, tc->shared_secret_len,
-                  (char*)tc->session_id, tc->session_id_len,
-                  (char*)tc->hash_h, tc->hash_len,
-                  tc->sc_encrypt_key);
-
+    /*
+     * IMPORTANT: Need to set ret = <your KDF API here>
+     * The default is set to failure as this is not
+     * currently supported in OpenSSL
+     */
+    ret = 1;
     if (ret != 0) {
         printf("\nCrypto module error, kdf ssh sc_encrypt_key failure\n");
         return ACVP_CRYPTO_MODULE_FAIL;
     }
 
-    ret = kdf_ssh(evp_md, 'E', tc->i_key_len,
-                  (char*)tc->shared_secret_k, tc->shared_secret_len,
-                  (char*)tc->session_id, tc->session_id_len,
-                  (char*)tc->hash_h, tc->hash_len,
-                  tc->cs_integrity_key);
-
+    /*
+     * IMPORTANT: Need to set ret = <your KDF API here>
+     * The default is set to failure as this is not
+     * currently supported in OpenSSL
+     */
+    ret = 1;
     if (ret != 0) {
-        printf("\nCrypto module error, kdf ssh cs_integrity_key failure\n");
-        return ACVP_CRYPTO_MODULE_FAIL;
+       printf("\nCrypto module error, kdf ssh cs_integrity_key failure\n");
+       return ACVP_CRYPTO_MODULE_FAIL;
     }
 
-    ret = kdf_ssh(evp_md, 'F', tc->i_key_len,
-                  (char*)tc->shared_secret_k, tc->shared_secret_len,
-                  (char*)tc->session_id, tc->session_id_len,
-                  (char*)tc->hash_h, tc->hash_len,
-                  tc->sc_integrity_key);
-
+    /*
+     * IMPORTANT: Need to set ret = <your KDF API here>
+     * The default is set to failure as this is not
+     * currently supported in OpenSSL
+     */
+    ret = 1;
     if (ret != 0) {
-        printf("\nCrypto module error, kdf ssh sc_integrity_key failure\n");
-        return ACVP_CRYPTO_MODULE_FAIL;
+       printf("\nCrypto module error, kdf ssh sc_integrity_key failure\n");
+       return ACVP_CRYPTO_MODULE_FAIL;
     }
 
     return ACVP_SUCCESS;
@@ -3875,11 +3547,9 @@ static ACVP_RESULT app_kdf135_ssh_handler(ACVP_TEST_CASE *test_case)
 #endif
 
 //Must be commented out if the user is Making with Makefile.fom
-//#ifdef ACVP_NO_RUNTIME
-#if 1
+#ifdef ACVP_NO_RUNTIME
 static ACVP_RESULT app_dsa_handler(ACVP_TEST_CASE *test_case)
 {
-#if 0
     int                 L, N, n, r;
     const EVP_MD        *md = NULL;
     ACVP_DSA_TC         *tc;
@@ -3913,15 +3583,6 @@ static ACVP_RESULT app_dsa_handler(ACVP_TEST_CASE *test_case)
             return ACVP_CRYPTO_MODULE_FAIL;
         }
 
-//        tc->p = (unsigned char *)BN_bn2hex(dsa->p);
-//        tc->q = (unsigned char *)BN_bn2hex(dsa->q);
-//        tc->g = (unsigned char *)BN_bn2hex(dsa->g);
-
-        
-        if (!BN_bn2bin(dsa->p, tc->p)) return ACVP_CRYPTO_MODULE_FAIL;
-        if (!BN_bn2bin(dsa->q, tc->q)) return ACVP_CRYPTO_MODULE_FAIL;
-        if (!BN_bn2bin(dsa->g, tc->g)) return ACVP_CRYPTO_MODULE_FAIL;
-
 #if OPENSSL_VERSION_NUMBER < 0x10100000L
         p = dsa->p;
         q = dsa->q;
@@ -3931,16 +3592,15 @@ static ACVP_RESULT app_dsa_handler(ACVP_TEST_CASE *test_case)
                      (const BIGNUM **)&q, (const BIGNUM **)&g);
 #endif
 
-        tc->p = (unsigned char *)BN_bn2hex(p);
-        tc->q = (unsigned char *)BN_bn2hex(q);
-        tc->g = (unsigned char *)BN_bn2hex(g);
+        tc->p_len = BN_bn2bin(p, tc->p);
+        tc->q_len = BN_bn2bin(q, tc->q);
+        tc->g_len = BN_bn2bin(g, tc->g);
 
         if (!DSA_generate_key(dsa)) {
             printf("\n DSA_generate_key failed");
             FIPS_dsa_free(dsa);
             return ACVP_CRYPTO_MODULE_FAIL;
         }
-
 
 #if OPENSSL_VERSION_NUMBER < 0x10100000L
         priv_key = dsa->priv_key;
@@ -3950,11 +3610,8 @@ static ACVP_RESULT app_dsa_handler(ACVP_TEST_CASE *test_case)
                      (const BIGNUM **)&priv_key);
 #endif
 
-//        tc->x = (unsigned char *)BN_bn2hex(dsa->priv_key);
-//        tc->y = (unsigned char *)BN_bn2hex(dsa->pub_key);
-        if (!BN_bn2bin(dsa->priv_key, tc->x)) return ACVP_CRYPTO_MODULE_FAIL;
-        if (!BN_bn2bin(dsa->pub_key, tc->y)) return ACVP_CRYPTO_MODULE_FAIL;
-
+        tc->x_len = BN_bn2bin(priv_key, tc->x);
+        tc->y_len = BN_bn2bin(pub_key, tc->y);
         FIPS_dsa_free(dsa);
         break;
 
@@ -3994,11 +3651,10 @@ static ACVP_RESULT app_dsa_handler(ACVP_TEST_CASE *test_case)
             L = tc->l;
             N = tc->n;
 
-//            BN_hex2bn(&p, (char *)tc->p);
-//            BN_hex2bn(&q, (char *)tc->q);
-
-            BN_bin2bn(tc->p, strlen(tc->p), p);
-            BN_bin2bn(tc->q, strlen(tc->q), q);
+            p = FIPS_bn_new();
+            q = FIPS_bn_new();
+            BN_bin2bn(tc->p, tc->p_len, p);
+            BN_bin2bn(tc->q, tc->q_len, q);
 
             if (dsa_builtin_paramgen2(dsa, L, N, md,
                     tc->seed, tc->seedlen, -1, NULL,
@@ -4033,10 +3689,13 @@ static ACVP_RESULT app_dsa_handler(ACVP_TEST_CASE *test_case)
             }
             L = tc->l;
             N = tc->n;
-            
-            BN_bin2bn(tc->p, strlen(tc->p), p);
-            BN_bin2bn(tc->q, strlen(tc->q), q);
-            BN_bin2bn(tc->g, strlen(tc->g), g);
+
+            p = FIPS_bn_new();
+            q = FIPS_bn_new();
+            g = FIPS_bn_new();
+            BN_bin2bn(tc->p, tc->p_len, p);
+            BN_bin2bn(tc->q, tc->q_len, q);
+            BN_bin2bn(tc->g, tc->g_len, g);
 
 #if OPENSSL_VERSION_NUMBER < 0x10100000L
             dsa->p = BN_dup(p);
@@ -4114,17 +3773,27 @@ static ACVP_RESULT app_dsa_handler(ACVP_TEST_CASE *test_case)
         }
         L = tc->l;
         N = tc->n;
-        
-        BN_bin2bn(tc->p, strlen(tc->p), dsa->p);
-        BN_bin2bn(tc->q, strlen(tc->q), dsa->q);
-        BN_bin2bn(tc->g, strlen(tc->g), dsa->g);
 
-        n = tc->msglen;
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
+        BN_bin2bn(tc->p, tc->p_len, dsa->p);
+        BN_bin2bn(tc->q, tc->q_len, dsa->q);
+        BN_bin2bn(tc->g, tc->g_len, dsa->g);
+        BN_bin2bn(tc->y, tc->y_len, dsa->pub_key);
+        BN_bin2bn(tc->r, tc->r_len, sig->r);
+        BN_bin2bn(tc->s, tc->s_len, sig->s);
+#else
+        DSA_get0_pqg(dsa, (const BIGNUM **)&p,
+                     (const BIGNUM **)&q, (const BIGNUM **)&g);
+        DSA_get0_key(dsa, (const BIGNUM **)&pub_key, NULL);
+        DSA_SIG_get0(sig, (const BIGNUM **)&sig_r, (const BIGNUM **)&sig_s);
 
-
-        BN_bin2bn(tc->y, strlen(tc->y), dsa->pub_key);
-        BN_bin2bn(tc->r, strlen(tc->r), sig->r);
-        BN_bin2bn(tc->s, strlen(tc->s), sig->s);
+        BN_bin2bn(tc->p, tc->p_len, p);
+        BN_bin2bn(tc->q, tc->q_len, q);
+        BN_bin2bn(tc->g, tc->g_len, g);
+        BN_bin2bn(tc->y, tc->y_len, pub_key);
+        BN_bin2bn(tc->r, tc->r_len, sig_r);
+        BN_bin2bn(tc->s, tc->s_len, sig_s);
+#endif
 
         n = tc->msglen;
         r = FIPS_dsa_verify(dsa, (const unsigned char *)tc->msg, n, md, sig);
@@ -4175,10 +3844,18 @@ static ACVP_RESULT app_dsa_handler(ACVP_TEST_CASE *test_case)
             FIPS_dsa_free(dsa);
             return ACVP_CRYPTO_MODULE_FAIL;
         }
-        
-        if (!BN_bn2bin(dsa->p, tc->p)) return ACVP_CRYPTO_MODULE_FAIL;
-        if (!BN_bn2bin(dsa->q, tc->q)) return ACVP_CRYPTO_MODULE_FAIL;
-        if (!BN_bn2bin(dsa->g, tc->g)) return ACVP_CRYPTO_MODULE_FAIL;
+
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
+        p = dsa->p;
+        q = dsa->q;
+        g = dsa->g;
+#else
+        DSA_get0_pqg(dsa, (const BIGNUM **)&p,
+                     (const BIGNUM **)&q, (const BIGNUM **)&g);
+#endif
+        tc->p_len = BN_bn2bin(p, tc->p);
+        tc->q_len = BN_bn2bin(q, tc->q);
+        tc->g_len = BN_bn2bin(g, tc->g);
 
 
         if (!DSA_generate_key(dsa)) {
@@ -4187,14 +3864,24 @@ static ACVP_RESULT app_dsa_handler(ACVP_TEST_CASE *test_case)
             return ACVP_CRYPTO_MODULE_FAIL;
         }
 
-
-        if (!BN_bn2bin(dsa->pub_key, tc->y)) return ACVP_CRYPTO_MODULE_FAIL;
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
+        pub_key = dsa->pub_key;
+#else
+        DSA_get0_key(dsa, (const BIGNUM **)&pub_key, NULL);
+#endif
+        tc->y_len = BN_bn2bin(pub_key, tc->y);
 
         sig = FIPS_dsa_sign(dsa, tc->msg, tc->msglen, md);
 
-        if (!BN_bn2bin(sig->r, tc->r)) return ACVP_CRYPTO_MODULE_FAIL;
-        if (!BN_bn2bin(sig->s, tc->s)) return ACVP_CRYPTO_MODULE_FAIL;
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
+        sig_r = sig->r;
+        sig_s = sig->s;
+#else
+        DSA_SIG_get0(sig, (const BIGNUM **)&sig_r, (const BIGNUM **)&sig_s);
+#endif
 
+        tc->r_len = BN_bn2bin(sig_r, tc->r);
+        tc->s_len = BN_bn2bin(sig_s, tc->s);
         FIPS_dsa_sig_free(sig);
         FIPS_dsa_free(dsa);
         break;
@@ -4234,8 +3921,16 @@ static ACVP_RESULT app_dsa_handler(ACVP_TEST_CASE *test_case)
         case ACVP_DSA_CANONICAL:
             dsa = FIPS_dsa_new();
 
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
             BN_bin2bn(tc->p, strlen(tc->p), dsa->p);
             BN_bin2bn(tc->q, strlen(tc->q), dsa->q);
+#else
+            DSA_get0_pqg(dsa, (const BIGNUM **)&p,
+                         (const BIGNUM **)&q, (const BIGNUM **)&g);
+
+            BN_bin2bn(tc->p, strlen(tc->p), p);
+            BN_bin2bn(tc->q, strlen(tc->q), q);
+#endif
             L = tc->l;
             N = tc->n;
             if (dsa_builtin_paramgen2(dsa, L, N, md,
@@ -4245,8 +3940,11 @@ static ACVP_RESULT app_dsa_handler(ACVP_TEST_CASE *test_case)
                 FIPS_dsa_free(dsa);
                 return ACVP_CRYPTO_MODULE_FAIL;
             }
-
-            if (!BN_bn2bin(dsa->g, tc->g)) return ACVP_CRYPTO_MODULE_FAIL;
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
+            tc->g_len = BN_bn2bin(dsa->g, tc->g);
+#else
+            tc->g_len = BN_bn2bin(g, tc->g);
+#endif
             FIPS_dsa_free(dsa);
             break;
 
@@ -4263,10 +3961,16 @@ static ACVP_RESULT app_dsa_handler(ACVP_TEST_CASE *test_case)
                 return ACVP_CRYPTO_MODULE_FAIL;
             }
 
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
+            p = dsa->p;
+            q = dsa->q;
+#else
+            DSA_get0_pqg(dsa, (const BIGNUM **)&p,
+                         (const BIGNUM **)&q, NULL);
+#endif
 
-            if (!BN_bn2bin(dsa->p, tc->p)) return ACVP_CRYPTO_MODULE_FAIL;
-            if (!BN_bn2bin(dsa->q, tc->q)) return ACVP_CRYPTO_MODULE_FAIL;
-
+            tc->p_len = BN_bn2bin(p, tc->p);
+            tc->q_len = BN_bn2bin(q, tc->q);
             tc->counter = counter;
             tc->h = h;
 
@@ -4286,7 +3990,6 @@ static ACVP_RESULT app_dsa_handler(ACVP_TEST_CASE *test_case)
         return ACVP_CRYPTO_MODULE_FAIL;
         break;
     }
-#endif
     return ACVP_SUCCESS;
 }
 
@@ -4354,16 +4057,10 @@ static int ec_print_key(ACVP_KAS_ECC_TC *tc, EC_KEY *key, int add_e, int exout)
     }
 
     if (tc->test_type == ACVP_KAS_ECC_TT_AFT) {
-        BN_bn2bin(tx, tc->pix);
-        BN_bn2bin(ty, tc->piy);
-//        tc->pix = BN_bn2hex(tx);
-//        tc->piy = BN_bn2hex(ty);
-        tc->pixlen = strnlen((const char *)tc->pix, ACVP_KAS_ECC_MAX_STR);
-        tc->piylen = strnlen((const char *)tc->piy, ACVP_KAS_ECC_MAX_STR);
+        tc->pixlen = BN_bn2bin(tx, tc->pix);
+        tc->piylen = BN_bn2bin(ty, tc->piy);
         if (tc->mode == ACVP_KAS_ECC_MODE_COMPONENT) {
-//            tc->d = BN_bn2hex(d);
-            BN_bn2bin(d, tc->d);
-            tc->dlen = strnlen((const char *)tc->d, ACVP_KAS_ECC_MAX_STR);
+            tc->dlen = BN_bn2bin(d, tc->d);
         }
     }
     BN_CTX_free(ctx);
@@ -4372,7 +4069,6 @@ static int ec_print_key(ACVP_KAS_ECC_TC *tc, EC_KEY *key, int add_e, int exout)
 
 static ACVP_RESULT app_kas_ecc_handler(ACVP_TEST_CASE *test_case)
 {
-#if 0
     EC_GROUP *group = NULL;
     ACVP_KAS_ECC_TC         *tc;
     int nid = 0, exout = 0;
@@ -4470,13 +4166,12 @@ static ACVP_RESULT app_kas_ecc_handler(ACVP_TEST_CASE *test_case)
         return rv;
     }
 
-    if (!BN_bin2bn(tc->psx, strlen(tc->psx), cx)) {
-        printf("BN_bin2bn failed psx\n");
-        goto error;
-    }
-
-    if (!BN_bin2bn(tc->psy, strlen(tc->psy), cy)) {
-        printf("BN_bin2bn failed psy\n");
+    cx = FIPS_bn_new();
+    cy = FIPS_bn_new();
+    BN_bin2bn(tc->psx, tc->psxlen, cx);
+    BN_bin2bn(tc->psy, tc->psylen, cy);
+    if (!cx || !cy) {
+        printf("BN_bin2bn failed psx psy\n");
         goto error;
     }
     peerkey = make_peer(group, cx, cy);
@@ -4485,20 +4180,18 @@ static ACVP_RESULT app_kas_ecc_handler(ACVP_TEST_CASE *test_case)
         goto error;
     }
     if (tc->test_type == ACVP_KAS_ECC_TT_VAL) {
-
-        if (!BN_bin2bn(tc->pix, strlen(tc->pix), ix)) {
-            printf("BN_bin2bn failed pix\n");
+        ix = FIPS_bn_new();
+        iy = FIPS_bn_new();
+        id = FIPS_bn_new();
+        BN_bin2bn(tc->pix, tc->pixlen, ix);
+        BN_bin2bn(tc->piy, tc->piylen, iy);
+        BN_bin2bn(tc->d, tc->dlen, id);
+        
+        if (!ix || !iy || !id) {
+            printf("BN_bin2bn failed pix piy d");
             goto error;
         }
-
-        if (!BN_bin2bn(tc->piy, strlen(tc->piy), iy)) {
-            printf("BN_bin2bn failed piy\n");
-            goto error;
-        }
-        if (!BN_bin2bn(tc->d, strlen(tc->d), id)) {
-            printf("BN_bin2bn failed id\n");
-            goto error;
-        }
+        
         EC_KEY_set_public_key_affine_coordinates(ec, ix, iy);
         EC_KEY_set_private_key(ec, id);
     } else {
@@ -4528,7 +4221,7 @@ static ACVP_RESULT app_kas_ecc_handler(ACVP_TEST_CASE *test_case)
     if (tc->test_type == ACVP_KAS_ECC_TT_AFT) {
         memcpy(tc->z, Z, Zlen);
         tc->zlen = Zlen;
-    }
+    } 
     if (tc->mode == ACVP_KAS_ECC_MODE_COMPONENT) {
         FIPS_digest(Z, Zlen, (unsigned char *)tc->chash, NULL, md);
         tc->chashlen = EVP_MD_size(md);
@@ -4549,18 +4242,15 @@ error:
     BN_free(iy);
     BN_free(id);
     return rv;
-    #endif
-
 }
 
 static ACVP_RESULT app_kas_ffc_handler(ACVP_TEST_CASE *test_case)
 {
-#if 0
     ACVP_KAS_FFC_TC         *tc;
     const EVP_MD *md = NULL;
     ACVP_RESULT rv = ACVP_CRYPTO_MODULE_FAIL;
-    unsigned char *Z;
-    int Zlen;
+    unsigned char *Z = NULL;
+    int Zlen = 0;
     DH *dh = NULL;
     BIGNUM *p = NULL, *q = NULL, *g = NULL;
     BIGNUM *pub_key = NULL, *priv_key = NULL;
@@ -4593,37 +4283,39 @@ static ACVP_RESULT app_kas_ffc_handler(ACVP_TEST_CASE *test_case)
         return rv;
     }
 
-    if (!BN_bin2bn(tc->p), strlen(tc->p), dh->p) {
-        printf("BN_bin2bn failed p\n");
-        goto error;
-    }
-    if (!BN_bin2bn(tc->q), strlen(tc->q), dh->q) {
-        printf("BN_bin2bn failed q\n");
-        goto error;
-    }
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
+    p = dh->p;
+    q = dh->q;
+    g = dh->g;
+    pub_key = dh->pub_key;
+    priv_key = dh->priv_key;
+#else
+    DH_get0_pqg(dh, (const BIGNUM **)&p,
+                (const BIGNUM **)&q, (const BIGNUM **)&g);
+    DH_get0_key(dh, (const BIGNUM **)&pub_key,
+                (const BIGNUM **)&priv_key);
+#endif
 
-    if (!BN_bin2bn(tc->g), strlen(tc->g), dh->g) {
-        printf("BN_bin2bn failed g\n");
-        goto error;
-    }
+    BN_bin2bn(tc->p, tc->plen, p);
+    BN_bin2bn(tc->q, tc->qlen, q);
+    BN_bin2bn(tc->g, tc->glen, g);
 
-    if (!BN_bin2bn(tc->eps, strlen(tc->eps), peerkey)) {
-        printf("BN_bin2bn failed eps\n");
+    peerkey = FIPS_bn_new();
+    BN_bin2bn(tc->eps, tc->epslen, peerkey);
+    
+    if (!peerkey || !dh->p || !dh->q || !dh->g) {
+        printf("BN_bin2bn failed p q g eps\n");
         goto error;
     }
 
     if (tc->test_type == ACVP_KAS_FFC_TT_VAL) {
-        
-        if (!BN_bin2bn(tc->epri, strlen(tc->epri), dh->priv_key)) {
-            printf("BN_bin2bn failed epri\n");
+        BN_bin2bn(tc->epri, tc->eprilen, priv_key);
+        BN_bin2bn(tc->epui, tc->epuilen, pub_key);
+    
+        if (!dh->pub_key || !dh->priv_key) {
+            printf("BN_bin2bn failed epri epui\n");
             goto error;
         }
-
-        if (!BN_bin2bn(tc->epui, strlen(tc->epui), dh->pub_key)) {
-            printf("BN_bin2bn failed epui\n");
-            goto error;
-        }
-        
     }
 
     if (tc->test_type == ACVP_KAS_FFC_TT_AFT) {
@@ -4647,8 +4339,7 @@ static ACVP_RESULT app_kas_ffc_handler(ACVP_TEST_CASE *test_case)
         tc->zlen = Zlen;
     }
 
-    BN_bn2bin(dh->pub_key, tc->piut);
-    tc->piutlen = strnlen(tc->piut, ACVP_KAS_FFC_MAX_STR)*2;
+    tc->piutlen = BN_bn2bin(dh->pub_key, tc->piut);
 
     rv = ACVP_SUCCESS;
 
@@ -4660,7 +4351,6 @@ error:
     BN_clear_free(peerkey);
     FIPS_dh_free(dh);
     return rv;
-#endif
 }
 
 static ACVP_RESULT app_rsa_keygen_handler(ACVP_TEST_CASE *test_case)
@@ -4695,16 +4385,15 @@ static ACVP_RESULT app_rsa_keygen_handler(ACVP_TEST_CASE *test_case)
     bitlen4 = tc->bitlen4;
     keylen = tc->modulo;
 
-//    BN_bin2bn(tc->e, tc->e_len, e);
-//    if (!e) {
-//        printf("Error converting e string to BN\n");
-//        rv = ACVP_CRYPTO_MODULE_FAIL;
-//        goto err;
-//    }
-
+    e = FIPS_bn_new();
+    BN_bin2bn(tc->e, tc->e_len, e);
+    if (!e) {
+        printf("Error converting e to BN\n");
+        rv = ACVP_CRYPTO_MODULE_FAIL;
+        goto err;
+    }
 
 #if OPENSSL_VERSION_NUMBER < 0x10100000L
-
     p = rsa->p;
     q = rsa->q;
     n = rsa->n;
@@ -4723,78 +4412,20 @@ static ACVP_RESULT app_rsa_keygen_handler(ACVP_TEST_CASE *test_case)
      * Below, insert your own key generation API that
      * supports specification of all of the params...
      */
-//    if (!FIPS_rsa_x931_generate_key_ex(rsa, tc->modulo, e, NULL)) {
-//        printf("\nError: Issue with key generation\n");
-//        rv = ACVP_CRYPTO_MODULE_FAIL;
-//        goto err;
-//    }
-    
-    e = BN_new();
-    if (!e || !BN_set_word(e, 0x1001)) {
-        printf("\nError: Issue with exponent in RSA keygen\n");
+    if (!FIPS_rsa_x931_generate_key_ex(rsa, tc->modulo, e, NULL)) {
+        printf("\nError: Issue with key generation\n");
         rv = ACVP_CRYPTO_MODULE_FAIL;
         goto err;
     }
-    
-    int rc = rsa_generate_key_internal(&p, &q, &n, &d,
-                                       tc->seed, tc->seed_len,
-                                       bitlen1, bitlen2, bitlen3, bitlen4,
-                                       e, keylen, NULL);
-    if (rc != 1) {
-        printf("Error generating key\n");
-        rv = ACVP_CRYPTO_MODULE_FAIL;
-        goto err;
-    }
-    
-    
-    if (!BN_bn2bin(p, tc->p)) {
-        printf("\nError: BN_bn2bin conversion failure\n");
-        rv = ACVP_CRYPTO_MODULE_FAIL;
-        goto err;
-    }
-    if (!BN_bn2bin(q, tc->q)) {
-        printf("\nError: BN_bn2bin conversion failure\n");
-        rv = ACVP_CRYPTO_MODULE_FAIL;
-        goto err;
-    }
-    if (!BN_bn2bin(n, tc->n)) {
-        printf("\nError: BN_bn2bin conversion failure\n");
-        rv = ACVP_CRYPTO_MODULE_FAIL;
-        goto err;
-    }
-    if (!BN_bn2bin(d, tc->d)) {
-        printf("\nError: BN_bn2bin conversion failure\n");
-        rv = ACVP_CRYPTO_MODULE_FAIL;
-        goto err;
-    }
-    
-    err:
-    //FIPS_rsa_free(rsa);
-    return rv;
-}
 
-static int ec_get_pubkey(EC_KEY *key, BIGNUM *x, BIGNUM *y)
-{
-    const EC_POINT *pt;
-    const EC_GROUP *grp;
-    const EC_METHOD *meth;
-    int rv;
-    BN_CTX *ctx;
-    ctx = BN_CTX_new();
-    if (!ctx)
-        return 0;
-    grp = EC_KEY_get0_group(key);
-    if (!grp) return 0;
-    pt = EC_KEY_get0_public_key(key);
-    if (!pt) return 0;
-    meth = EC_GROUP_method_of(grp);
-    if (EC_METHOD_get_field_type(meth) == NID_X9_62_prime_field) {
-        rv = EC_POINT_get_affine_coordinates_GFp(grp, pt, x, y, ctx);
-    } else {
-        rv = EC_POINT_get_affine_coordinates_GF2m(grp, pt, x, y, ctx);
-    }
-    
-    BN_CTX_free(ctx);
+    tc->p_len = BN_bn2bin(p, tc->p);
+    tc->q_len = BN_bn2bin(q, tc->q);
+    tc->n_len = BN_bn2bin(n, tc->n);
+    tc->d_len = BN_bn2bin(d, tc->d);
+
+    FIPS_rsa_free(rsa);
+
+    err:
     return rv;
 }
 
@@ -4809,237 +4440,55 @@ static ACVP_RESULT app_ecdsa_handler(ACVP_TEST_CASE *test_case)
      */
 
     ACVP_ECDSA_TC    *tc;
-    ACVP_RESULT rv = ACVP_SUCCESS;
+    ACVP_RESULT rv = ACVP_CRYPTO_MODULE_FAIL;
     ACVP_CIPHER mode;
     const EVP_MD *md;
-    ECDSA_SIG sg, *sig = NULL;
-
-    int nid = NID_undef, rc = 0, msg_len = 0;
-    BIGNUM *Qx = NULL, *Qy = NULL;
-    const BIGNUM *d = NULL;
-    EC_KEY *key = NULL;
-    unsigned char *msg = NULL;
-
 
     if (!test_case) {
-        printf("No test case found\n");
         rv = ACVP_INVALID_ARG;
         goto err;
     }
     tc = test_case->tc.ecdsa;
     mode = tc->cipher;
 
-    if (mode == ACVP_ECDSA_SIGGEN || mode == ACVP_ECDSA_SIGVER) {
-        if (!strncmp(tc->hash_alg, "SHA-1", 5))
-            md = EVP_sha1();
-        else if (!strncmp(tc->hash_alg, "SHA2-224", 8))
-            md = EVP_sha224();
-        else if (!strncmp(tc->hash_alg, "SHA2-256", 8))
-            md = EVP_sha256();
-        else if (!strncmp(tc->hash_alg, "SHA2-384", 8))
-            md = EVP_sha384();
-        else if (!strncmp(tc->hash_alg, "SHA2-512", 8))
-            md = EVP_sha512();
-        if (!md) {
-            printf("Unsupported hash alg in ECDSA\n");
-            rv = ACVP_CRYPTO_MODULE_FAIL;
-            goto err;
-        }
-    }
+    if (!strcmp(tc->hash_alg, "SHA-1"))
+        md = EVP_sha1();
+    else if (!strcmp(tc->hash_alg, "SHA2-224"))
+        md = EVP_sha224();
+    else if (!strcmp(tc->hash_alg, "SHA2-256"))
+        md = EVP_sha256();
+    else if (!strcmp(tc->hash_alg, "SHA2-384"))
+        md = EVP_sha384();
+    else if (!strcmp(tc->hash_alg, "SHA2-512"))
+        md = EVP_sha512();
 
-    if (!strncmp(tc->curve, "b-233", 5))
+    int nid;
+    if (!strcmp(tc->curve, "b-233"))
         nid = NID_sect233r1;
-    if (!strncmp(tc->curve, "b-283", 5))
+    if (!strcmp(tc->curve, "b-283"))
         nid = NID_sect283r1;
-    if (!strncmp(tc->curve, "b-409", 5))
+    if (!strcmp(tc->curve, "b-409"))
         nid = NID_sect409r1;
-    if (!strncmp(tc->curve, "b-571", 5))
+    if (!strcmp(tc->curve, "b-571"))
         nid = NID_sect571r1;
-    if (!strncmp(tc->curve, "k-233", 5))
+    if (!strcmp(tc->curve, "k-233"))
         nid = NID_sect233k1;
-    if (!strncmp(tc->curve, "k-283", 5))
+    if (!strcmp(tc->curve, "k-283"))
         nid = NID_sect283k1;
-    if (!strncmp(tc->curve, "k-409", 5))
+    if (!strcmp(tc->curve, "k-409"))
         nid = NID_sect409k1;
-    if (!strncmp(tc->curve, "k-571", 5))
+    if (!strcmp(tc->curve, "k-571"))
         nid = NID_sect571k1;
-    if (!strncmp(tc->curve, "p-224", 5))
+    if (!strcmp(tc->curve, "k-224"))
         nid = NID_secp224r1;
-    if (!strncmp(tc->curve, "p-256", 5))
+    if (!strcmp(tc->curve, "p-256"))
         nid = NID_X9_62_prime256v1;
-    if (!strncmp(tc->curve, "p-384", 5))
+    if (!strcmp(tc->curve, "p-384"))
         nid = NID_secp384r1;
-    if (!strncmp(tc->curve, "p-521", 5))
+    if (!strcmp(tc->curve, "p-521"))
         nid = NID_secp521r1;
 
-    if (!nid) {
-        printf("Unsupported curve\n");
-        rv = ACVP_CRYPTO_MODULE_FAIL;
-        goto err;
-    }
-
-    switch (mode) {
-    case ACVP_ECDSA_KEYGEN:
-        Qx = FIPS_bn_new();
-        Qy = FIPS_bn_new();
-        if (!Qx || !Qy) {
-            printf("Error BIGNUM malloc\n");
-            rv = ACVP_CRYPTO_MODULE_FAIL;
-            goto err;
-        }
-
-        key = EC_KEY_new_by_curve_name(nid);
-        if (!key) {
-            printf("Failed to instantiate ECDSA key\n");
-            rv = ACVP_CRYPTO_MODULE_FAIL;
-            goto err;
-        }
-
-        if (!EC_KEY_generate_key(key)) {
-            printf("Error generating ECDSA key\n");
-            rv = ACVP_CRYPTO_MODULE_FAIL;
-            goto err;
-        }
-
-        if (!ec_get_pubkey(key, Qx, Qy)) {
-            printf("Error getting ECDSA key attributes\n");
-            rv = ACVP_CRYPTO_MODULE_FAIL;
-            goto err;
-        }
-
-        d = EC_KEY_get0_private_key(key);
-        
-        BN_bn2bin(Qx, tc->qx);
-        BN_bn2bin(Qy, tc->qy);
-        BN_bn2bin(d, tc->d);
-        break;
-    case ACVP_ECDSA_KEYVER:
-        if (!BN_bin2bn(tc->qx, sizeof(*tc->qx), Qx)) {
-            printf("Error BIGNUM conversion\n");
-            rv = ACVP_CRYPTO_MODULE_FAIL;
-            goto err;
-        }
-        if (!BN_bin2bn(tc->qy, sizeof(*tc->qy), Qy)) {
-            printf("Error BIGNUM conversion\n");
-            rv = ACVP_CRYPTO_MODULE_FAIL;
-            goto err;
-        }
-        key = EC_KEY_new_by_curve_name(nid);
-        if (!key) {
-            printf("Failed to instantiate ECDSA key\n");
-            rv = ACVP_CRYPTO_MODULE_FAIL;
-            goto err;
-        }
-
-        rc = EC_KEY_set_public_key_affine_coordinates(key, Qx, Qy);
-        strncpy(tc->ver_disposition, rc ? "pass" : "fail", 5);
-        break;
-    case ACVP_ECDSA_SIGGEN:
-        Qx = FIPS_bn_new();
-        Qy = FIPS_bn_new();
-        if (!Qx || !Qy) {
-            printf("Error BIGNUM malloc\n");
-            rv = ACVP_CRYPTO_MODULE_FAIL;
-            goto err;
-        }
-        key = EC_KEY_new_by_curve_name(nid);
-        if (!key) {
-            printf("Failed to instantiate ECDSA key\n");
-            rv = ACVP_CRYPTO_MODULE_FAIL;
-            goto err;
-        }
-
-        if (!EC_KEY_generate_key(key)) {
-            printf("Error generating ECDSA key\n");
-            rv = ACVP_CRYPTO_MODULE_FAIL;
-            goto err;
-        }
-
-        if (!ec_get_pubkey(key, Qx, Qy)) {
-            printf("Error getting ECDSA key attributes\n");
-            rv = ACVP_CRYPTO_MODULE_FAIL;
-            goto err;
-        }
-        
-//        msg_len = strnlen((const char *)tc->message, 1024)/2;
-        msg_len = tc->msg_len;
-//        msg = calloc(msg_len + 1, sizeof(char));
-//        acvp_hexstr_to_bin(tc->message, msg, msg_len);
-        sig = FIPS_ecdsa_sign(key, tc->message, msg_len, md);
-        if (!sig) {
-            printf("Error signing message\n");
-            rv = ACVP_CRYPTO_MODULE_FAIL;
-            goto err;
-        }
-
-
-        BN_bn2bin(Qx, tc->qx);
-        BN_bn2bin(Qy, tc->qy);
-        BN_bn2bin(sig->r, tc->r);
-        BN_bn2bin(sig->s, tc->s);
-
-        FIPS_ecdsa_sig_free(sig);
-
-        break;
-    case ACVP_ECDSA_SIGVER:
-        sig = &sg;
-        sig->r = NULL;
-        sig->s = NULL;
-
-        if (!BN_bin2bn(tc->qx, strlen((const char *)tc->qx), Qx)) {
-            printf("Error BIGNUM conversion\n");
-            rv = ACVP_CRYPTO_MODULE_FAIL;
-            goto err;
-        }
-        if (!BN_bin2bn(tc->qy, strlen((const char *)tc->qy), Qy)) {
-            printf("Error BIGNUM conversion\n");
-            rv = ACVP_CRYPTO_MODULE_FAIL;
-            goto err;
-        }
-        if (!BN_bin2bn(tc->r, strlen((const char *)tc->r), sig->r)) {
-            printf("Error BIGNUM conversion\n");
-            rv = ACVP_CRYPTO_MODULE_FAIL;
-            goto err;
-        }
-        if (!BN_bin2bn(tc->s, strlen((const char *)tc->s), sig->s)) {
-            printf("Error BIGNUM conversion\n");
-            rv = ACVP_CRYPTO_MODULE_FAIL;
-            goto err;
-        }
-
-        key = EC_KEY_new_by_curve_name(nid);
-        if (!key) {
-            printf("Failed to instantiate ECDSA key\n");
-            rv = ACVP_CRYPTO_MODULE_FAIL;
-            goto err;
-        }
-
-        rc = EC_KEY_set_public_key_affine_coordinates(key, Qx, Qy);
-        if (rc != 1) {
-            printf("Error setting ECDSA coordinates\n");
-            goto points_err;
-        }
-        msg_len = strnlen((const char *)tc->message, 1024)/2;
-        msg = calloc(msg_len, sizeof(char));
-        acvp_hexstr_to_bin(tc->message, msg, msg_len);
-
-        rc = FIPS_ecdsa_verify(key, msg, msg_len, md, sig);
-    points_err:
-        strncpy(tc->ver_disposition, rc ? "pass" : "fail", 5);
-
-        break;
-    default:
-        printf("Unsupported ECDSA mode\n");
-        rv = ACVP_CRYPTO_MODULE_FAIL;
-        break;
-    }
-
     err:
-    if (msg) free(msg);
-    if (Qx) FIPS_bn_free(Qx);
-    if (Qy) FIPS_bn_free(Qy);
-    if (key) EC_KEY_free(key);
-
     return rv;
 }
 
@@ -5055,13 +4504,6 @@ static ACVP_RESULT app_rsa_sig_handler(ACVP_TEST_CASE *test_case)
     BIGNUM *bn_e = NULL, *e = NULL, *n = NULL;
     ACVP_RSA_SIG_TC    *tc;
     RSA *rsa = NULL;
-//    int decide, e_len, sig_len, n_len;
-//    char msg2[] = "22957CFAB8A400A57B1FD0EC09FC9FA2309423544E3B074756D85A5379F5C79B2A168703302898A12245B3B617FD68AAEB65E2D9250920AA99AC23504623EA2FD6E7E971A78B08126E495E6FE5A0F37928A07764249D8314882F8E383B06EB81B499570B76914B62C90677A81EA9D928E45E5731A49FC82DF26002F2EDD219E5";
-//    char e_str[] = "010001";
-//    char n_str[] = "A77B3E25576106B422632AFDA61EE3D588F48A6E06BD5F5200255B41597EB22D7FE59DE7D85B283ED31F9CFC937BF602F0EA73A3B1D09866C878BC1570AD94B4EBF729729A89CC4B84FA29CDC5D2C40C60F3745A322C8513EAFD3C2FF3AD49EC61F5E8E70C7925C9D01DCF59DF3621CAF8B7B701B34121BD1F81455F6CCAB7FD72D42AFCD85FC254AB21731BF835F70C513417DA1A45A12C559071DF63FD51C5102B9696C4BA1406116BA2ED20786C35A0FC438FA9586156A7308A19E76BFBA7D9471CC2088EA051F640C9256AD496DA87E3992104B2FF004CF05BA103E0E2D2D981BEB004E4653B48DD6140E03373E963EB35161801369335FE81C5580BE50F";
-//    char signature_str[] = "2A774D57117F7E340635CC587B3561340DF9227C2ADA9894A2D6EE14A2B498DCFFEF71CC644F805A8A2587FD05BB76660730D8D05D7027CF3F7BCF6F8DA13933E39A57FD195AC3C065FBD1A23DD7E46B24189F30CF4117B1FDD3EF527431922A1621CA42220DCFAC0A4BADF9FE0F0D9DE5512ADCB183FC4911E93F0ED7F588ECD3A6D6ABD7516E3EE208E1856CB6E5AACFC0859C89FDE13AFA53C56BEE2EC2981D1D293F01D1B3F563CB13D8A23995DF82E4F334BEF993DC2CCEBCBEC58A6029796A1B3C359536A019B1A9BDD48BAF71D5FAC321723DC9E949F5E5D2043559CF840266CA85718866AEA32A17828293735D2CE4953B47E3A2FC86E467F256BBA5";
-////    unsigned char *signature = calloc(1024, sizeof(char)), *e_bytes = calloc(512, sizeof(char)), *n_bytes = calloc(512, sizeof(char));
-//    unsigned char *signature, *e_bytes, *n_bytes;
 
     ACVP_RESULT rv = ACVP_SUCCESS;
 
@@ -5108,7 +4550,6 @@ static ACVP_RESULT app_rsa_sig_handler(ACVP_TEST_CASE *test_case)
      * Set the message given from the tc to binary form
      */
     msg_len = tc->msg_len;
-    
     msg = calloc(msg_len + 1, sizeof(char));
     if(!msg) {
         printf("\nError: Alloc failure in RSA Sig Handler\n");
@@ -5116,7 +4557,6 @@ static ACVP_RESULT app_rsa_sig_handler(ACVP_TEST_CASE *test_case)
         goto err;
     }
     memcpy(msg, tc->msg, msg_len);
-//    memcpy(msg, msg2, msg_len);
 
     /*
      * Make an RSA object and set a new BN exponent to use to generate a key
@@ -5163,62 +4603,34 @@ static ACVP_RESULT app_rsa_sig_handler(ACVP_TEST_CASE *test_case)
         rv = ACVP_INVALID_ARG;
         goto err;
     }
-//    pad_mode = RSA_X931_PADDING;
-//    e_len = 3;
-    
-//    sig_len = strnlen((const char*)signature_str, 512);
-//    rv = acvp_hexstr_to_bin((const unsigned char *) signature_str, signature, 1024);
-//    if (rv != ACVP_SUCCESS) {
-//        goto err;
-//    }
-//
-//    n_len = strlen(n_str)/2;
-//    rv = acvp_hexstr_to_bin((const unsigned char *) e_str, e_bytes, 512);
-//    if (rv != ACVP_SUCCESS) {
-//        goto err;
-//    }
-//    rv = acvp_hexstr_to_bin((const unsigned char *) n_str, n_bytes, 512);
-//    if (rv != ACVP_SUCCESS) {
-//        goto err;
-//    }
-    
-//    e = rsa->e;
-    n = rsa->n;
-
-    n = rsa->n;
 
     /*
      * If we are verifying, set RSA to the given public key
      * Else, generate a new key, retrieve and save values
      */
     if (tc->sig_mode == ACVP_RSA_SIGVER) {
-
-        rsa->e = BN_new();
-        if (!BN_set_word(rsa->e, 0x010001)) {
+        rsa->e = FIPS_bn_new();
+        if (!BN_bin2bn(tc->e, tc->e_len, rsa->e) {
             printf("\nError: Issue with exponent in RSA Sig\n");
             rv = ACVP_CRYPTO_MODULE_FAIL;
             goto err;
         }
 
-        rsa->n = BN_new();
+        rsa->n = FIPS_bn_new();
         if (!BN_bin2bn(tc->n, tc->n_len, rsa->n)) {
-//        if (!BN_bin2bn(tc->n, tc->n_len, rsa->n)) {
-//        if (!BN_bin2bn(n_bytes, n_len, n)) {
             printf("\nBN_bin2bn failure (n)\n");
             rv = ACVP_MALLOC_FAIL;
             goto err;
         }
-
-        tc->ver_disposition = RSA_verify(nid, msg, tc->msg_len, tc->signature, tc->sig_len, rsa);
+        tc->ver_disposition = RSA_verify(nid, msg, msg_len, tc->signature, tc->sig_len, rsa);
     } else {
         if (!FIPS_rsa_x931_generate_key_ex(rsa, tc->modulo, bn_e, NULL)) {
             printf("\nError: Issue with keygen during siggen handling\n");
             rv = ACVP_CRYPTO_MODULE_FAIL;
             goto err;
         }
-
-        BN_bn2bin(rsa->e, tc->e);
-        BN_bn2bin(rsa->n, tc->n);
+        tc->e_len = BN_bn2bin(e, tc->e);
+        tc->n_len = BN_bn2bin(n, tc->n);
 
         if (msg && tc_md) {
             siglen = RSA_size(rsa);
@@ -5228,12 +4640,10 @@ static ACVP_RESULT app_rsa_sig_handler(ACVP_TEST_CASE *test_case)
                 rv = ACVP_CRYPTO_MODULE_FAIL;
                 goto err;
             }
-//            if (!FIPS_rsa_sign(rsa, msg, msg_len, (const struct env_md_st *)tc_md,
-//                               pad_mode, 0, NULL,
-//                               tc->signature, (unsigned int *)&siglen)) {
 
-            if (!FIPS_rsa_sign(rsa, msg, msg_len, tc_md, pad_mode, 0, NULL,
-                                    tc->signature, (unsigned int *)&siglen)) {
+            if (!FIPS_rsa_sign(rsa, msg, msg_len, (const struct env_md_st *)tc_md,
+                               pad_mode, 0, NULL,
+                               sigbuf, (unsigned int *)&siglen)) {
                 printf("\nError: RSA Signature Generation fail\n");
                 rv = ACVP_CRYPTO_MODULE_FAIL;
                 goto err;
@@ -5247,7 +4657,7 @@ err:
     if (sigbuf) free(sigbuf);
     if (bn_e) BN_free(bn_e);
     if (rsa) FIPS_rsa_free(rsa);
-    
+
     return rv;
 }
 #endif
@@ -5640,15 +5050,15 @@ int hmac_totp(const char *key, const unsigned char *msg, char *hash,
     int len = 0;
     unsigned char buff[MAX_LEN];
     HMAC_CTX *ctx;
-//#if OPENSSL_VERSION_NUMBER < 0x10100000L
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
     HMAC_CTX static_ctx;
 
     ctx = &static_ctx;
     HMAC_CTX_init(ctx);
-//#else
-//    ctx = HMAC_CTX_new();
-//#endif
-    
+#else
+    ctx = HMAC_CTX_new();
+#endif
+
     HMAC_CTX_set_flags(ctx, EVP_MD_CTX_FLAG_NON_FIPS_ALLOW);
     if (!HMAC_Init_ex(ctx, key, key_len, md, NULL)) goto end;
     if (!HMAC_Update(ctx, msg, T_LEN)) goto end;
@@ -5661,6 +5071,7 @@ end:
 #else
     if (ctx) HMAC_CTX_free(ctx);
 #endif
+
     return len;
 }
 
