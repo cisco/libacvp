@@ -355,12 +355,14 @@ ACVP_RESULT acvp_bin_to_bit (const unsigned char *in, int len, unsigned char *ou
  * in the destination.
  * TODO: Enable the function to handle odd number of hex characters
  */
-ACVP_RESULT acvp_hexstr_to_bin (const unsigned char *src, unsigned char *dest, int dest_max) {
+ACVP_RESULT acvp_hexstr_to_bin (const unsigned char *src, unsigned char *dest, int dest_max, int *converted_len) {
     int src_len;
     int byte_a, byte_b;
     int is_odd = 0;
+    int length_converted = 0;
 
     if (!src || !dest) {
+        //return 0;
         return ACVP_INVALID_ARG;
     }
 
@@ -386,11 +388,13 @@ ACVP_RESULT acvp_hexstr_to_bin (const unsigned char *src, unsigned char *dest, i
 
             dest++;
             src += 2;
+            length_converted++;
         }
     } else {
         return ACVP_UNSUPPORTED_OP;
     }
-
+    
+    if (converted_len) *converted_len = length_converted;
     return ACVP_SUCCESS;
 }
 

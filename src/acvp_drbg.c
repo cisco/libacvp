@@ -412,7 +412,7 @@ static ACVP_RESULT acvp_drbg_init_tc (ACVP_CTX *ctx,
 
     if (additional_input) {
         rv = acvp_hexstr_to_bin((const unsigned char *) additional_input,
-                                stc->additional_input, ACVP_DRBG_ADDI_IN_MAX);
+                                stc->additional_input, ACVP_DRBG_ADDI_IN_MAX, NULL);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Hex conversion failure (additional_input)");
             return rv;
@@ -421,7 +421,7 @@ static ACVP_RESULT acvp_drbg_init_tc (ACVP_CTX *ctx,
 
     if (entropy_input_pr) {
         rv = acvp_hexstr_to_bin((const unsigned char *) entropy_input_pr,
-                                stc->entropy_input_pr, ACVP_DRBG_ENTPY_IN_MAX);
+                                stc->entropy_input_pr, ACVP_DRBG_ENTPY_IN_MAX, NULL);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Hex conversion failure (entropy_input_pr)");
             return rv;
@@ -430,7 +430,7 @@ static ACVP_RESULT acvp_drbg_init_tc (ACVP_CTX *ctx,
 
     if (additional_input_1) {
         rv = acvp_hexstr_to_bin((const unsigned char *) additional_input_1,
-                                stc->additional_input_1, ACVP_DRBG_ADDI_IN_MAX);
+                                stc->additional_input_1, ACVP_DRBG_ADDI_IN_MAX, NULL);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Hex conversion failure (2nd additional_input)");
             return rv;
@@ -439,7 +439,7 @@ static ACVP_RESULT acvp_drbg_init_tc (ACVP_CTX *ctx,
 
     if (entropy_input_pr_1) {
         rv = acvp_hexstr_to_bin((const unsigned char *) entropy_input_pr_1,
-                                stc->entropy_input_pr_1, ACVP_DRBG_ENTPY_IN_MAX);
+                                stc->entropy_input_pr_1, ACVP_DRBG_ENTPY_IN_MAX, NULL);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Hex conversion failure (2nd entropy_input_pr)");
             return rv;
@@ -448,7 +448,7 @@ static ACVP_RESULT acvp_drbg_init_tc (ACVP_CTX *ctx,
 
     if (entropy) {
         rv = acvp_hexstr_to_bin((const unsigned char *) entropy,
-                                stc->entropy, ACVP_DRBG_ENTPY_IN_MAX);
+                                stc->entropy, ACVP_DRBG_ENTPY_IN_MAX, NULL);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Hex conversion failure (entropy)");
             return rv;
@@ -457,7 +457,7 @@ static ACVP_RESULT acvp_drbg_init_tc (ACVP_CTX *ctx,
 
     if (perso_string) {
         rv = acvp_hexstr_to_bin((const unsigned char *) perso_string,
-                                stc->perso_string, ACVP_DRBG_PER_SO_MAX);
+                                stc->perso_string, ACVP_DRBG_PER_SO_MAX, NULL);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Hex conversion failure (perso_string)");
             return rv;
@@ -466,7 +466,7 @@ static ACVP_RESULT acvp_drbg_init_tc (ACVP_CTX *ctx,
 
     if (nonce) {
         rv = acvp_hexstr_to_bin((const unsigned char *) nonce,
-                                stc->nonce, ACVP_DRBG_NONCE_MAX);
+                                stc->nonce, ACVP_DRBG_NONCE_MAX, NULL);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Hex conversion failure (nonce)");
             return rv;

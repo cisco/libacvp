@@ -912,7 +912,7 @@ static ACVP_RESULT acvp_aes_init_tc (ACVP_CTX *ctx,
             return ACVP_INVALID_ARG;
         }
     }
-    rv = acvp_hexstr_to_bin((const unsigned char *) j_key, stc->key, ACVP_SYM_KEY_MAX);
+    rv = acvp_hexstr_to_bin((const unsigned char *) j_key, stc->key, ACVP_SYM_KEY_MAX, NULL);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Hex conversion failure (key)");
         return rv;
@@ -927,7 +927,7 @@ static ACVP_RESULT acvp_aes_init_tc (ACVP_CTX *ctx,
             }
         } else {
 
-            rv = acvp_hexstr_to_bin((const unsigned char *) j_pt, stc->pt, ACVP_SYM_PT_MAX);
+            rv = acvp_hexstr_to_bin((const unsigned char *) j_pt, stc->pt, ACVP_SYM_PT_MAX, NULL);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("Hex conversion failure (pt)");
                 return rv;
@@ -943,7 +943,7 @@ static ACVP_RESULT acvp_aes_init_tc (ACVP_CTX *ctx,
                 return rv;
             }
         } else {
-            rv = acvp_hexstr_to_bin((const unsigned char *) j_ct, stc->ct, ACVP_SYM_CT_MAX);
+            rv = acvp_hexstr_to_bin((const unsigned char *) j_ct, stc->ct, ACVP_SYM_CT_MAX, NULL);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("Hex conversion failure (ct)");
                 return rv;
@@ -951,7 +951,7 @@ static ACVP_RESULT acvp_aes_init_tc (ACVP_CTX *ctx,
         }
     }
     if (j_iv) {
-        rv = acvp_hexstr_to_bin((const unsigned char *) j_iv, stc->iv, ACVP_SYM_IV_MAX);
+        rv = acvp_hexstr_to_bin((const unsigned char *) j_iv, stc->iv, ACVP_SYM_IV_MAX, NULL);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Hex conversion failure (iv)");
             return rv;
@@ -959,7 +959,7 @@ static ACVP_RESULT acvp_aes_init_tc (ACVP_CTX *ctx,
     }
 
     if (j_tag) {
-        rv = acvp_hexstr_to_bin((const unsigned char *) j_tag, stc->tag, ACVP_SYM_TAG_MAX);
+        rv = acvp_hexstr_to_bin((const unsigned char *) j_tag, stc->tag, ACVP_SYM_TAG_MAX, NULL);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Hex conversion failure (tag)");
             return rv;
@@ -967,7 +967,7 @@ static ACVP_RESULT acvp_aes_init_tc (ACVP_CTX *ctx,
     }
 
     if (j_aad) {
-        rv = acvp_hexstr_to_bin((const unsigned char *) j_aad, stc->aad, ACVP_SYM_AAD_MAX);
+        rv = acvp_hexstr_to_bin((const unsigned char *) j_aad, stc->aad, ACVP_SYM_AAD_MAX, NULL);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Hex conversion failure (aad)");
             return rv;

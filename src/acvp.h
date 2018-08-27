@@ -333,12 +333,6 @@ typedef enum acvp_kdf135_snmp_param {
 // not all of them have been updated. The duplicates can
 // be removed once all are updated.
 #define ACVP_STR_SHA_1          "SHA-1"
-#define ACVP_STR_SHA_224        "SHA-224"
-#define ACVP_STR_SHA_256        "SHA-256"
-#define ACVP_STR_SHA_384        "SHA-384"
-#define ACVP_STR_SHA_512        "SHA-512"
-#define ACVP_STR_SHA_512_224    "SHA-512/224"
-#define ACVP_STR_SHA_512_256    "SHA-512/256"
 #define ACVP_STR_SHA2_224       "SHA2-224"
 #define ACVP_STR_SHA2_256       "SHA2-256"
 #define ACVP_STR_SHA2_384       "SHA2-384"
@@ -690,6 +684,7 @@ typedef struct acvp_kdf135_ikev2_tc_t {
     unsigned char *derived_keying_material;
     unsigned char *derived_keying_material_child;
     unsigned char *derived_keying_material_child_dh;
+    int key_out_len;
 } ACVP_KDF135_IKEV2_TC;
 
 /*!
@@ -943,6 +938,17 @@ typedef struct acvp_rsa_keygen_tc_t {
     int bitlen2;
     int bitlen3;
     int bitlen4;
+    
+    int n_len;
+    int d_len;
+    int p_len;
+    int q_len;
+    int xq_len;
+    int xq1_len;
+    int xq2_len;
+    int xp_len;
+    int xp1_len;
+    int xp2_len;
 } ACVP_RSA_KEYGEN_TC;
 
 /*!
@@ -961,13 +967,18 @@ typedef struct acvp_ecdsa_tc_t {
     char *secret_gen_mode;
     
     unsigned char *d;
+    int d_len;
     unsigned char *qy;
+    int qx_len;
     unsigned char *qx;
+    int qy_len;
     
     unsigned char *r;
+    int r_len;
     unsigned char *s;
+    int s_len;
     
-    char *ver_disposition;
+    int ver_disposition;
     unsigned char *message;
     int msg_len;
 
@@ -989,6 +1000,7 @@ typedef struct acvp_rsa_sig_tc_t {
     int e_len;
     unsigned char *n;
     int n_len;
+    char *salt;
     int salt_len;
     unsigned char *msg;
     int msg_len;
@@ -1062,12 +1074,19 @@ typedef struct acvp_dsa_tc_t {
     int result;
     int counter;
     unsigned char *p;
+    int p_len;
     unsigned char *q;
+    int q_len;
     unsigned char *g;
+    int g_len;
     unsigned char *y;
+    int y_len;
     unsigned char *x;
+    int x_len;
     unsigned char *r;
+    int r_len;
     unsigned char *s;
+    int s_len;
     unsigned char *seed;
     unsigned char *msg;
 } ACVP_DSA_TC;
@@ -1156,6 +1175,8 @@ typedef struct acvp_kas_ecc_tc_t {
     unsigned char *z;
     unsigned char *chash;
     int mode;
+    int psxlen;
+    int psylen;
     int pixlen;
     int piylen;
     int dlen;
@@ -1244,9 +1265,16 @@ typedef struct acvp_kas_ffc_tc_t {
     unsigned char *z;
     unsigned char *chash;
     unsigned char *piut;
+    int plen;
+    int qlen;
+    int glen;
+    int dlen;
+    int zlen;
+    int epslen;
+    int eprilen;
+    int epuilen;
     int chashlen;
     int piutlen;
-    int zlen;
 } ACVP_KAS_FFC_TC;
 
 /*!
@@ -2551,7 +2579,7 @@ ACVP_RESULT acvp_set_2fa_callback (ACVP_CTX *ctx, ACVP_RESULT (*totp_cb) (char *
 
 ACVP_RESULT acvp_bin_to_hexstr (const unsigned char *src, unsigned int src_len, unsigned char *dest);
 
-ACVP_RESULT acvp_hexstr_to_bin (const unsigned char *src, unsigned char *dest, int dest_max);
+ACVP_RESULT acvp_hexstr_to_bin (const unsigned char *src, unsigned char *dest, int dest_max, int *converted_len);
 
 /*! @brief acvp_lookup_error_string() is a utility that
  * returns a more descriptive string for an ACVP_RESULT

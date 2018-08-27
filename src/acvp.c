@@ -1243,7 +1243,7 @@ static ACVP_RESULT acvp_parse_register (ACVP_CTX *ctx) {
  * it should be run on a separate thread if needed.
  */
 ACVP_RESULT acvp_process_tests (ACVP_CTX *ctx) {
-    ACVP_RESULT rv;
+    ACVP_RESULT rv = ACVP_SUCCESS;
     ACVP_VS_LIST *vs_entry;
 
     if (!ctx) {
@@ -1290,7 +1290,7 @@ ACVP_RESULT acvp_retry_handler (ACVP_CTX *ctx, unsigned int retry_period) {
  * the test result from the server for each set.
  */
 ACVP_RESULT acvp_check_test_results (ACVP_CTX *ctx) {
-    ACVP_RESULT rv;
+    ACVP_RESULT rv = ACVP_SUCCESS;
     ACVP_VS_LIST *vs_entry;
 
     if (!ctx) {

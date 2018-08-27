@@ -40,8 +40,6 @@
 #define HTTP_OK    200
 #define HTTP_UNAUTH    401
 
-#define MAX_TOKEN_LEN 600
-
 static struct curl_slist *acvp_add_auth_hdr (ACVP_CTX *ctx, struct curl_slist *slist) {
     int bearer_size;
     char *bearer;
@@ -50,7 +48,7 @@ static struct curl_slist *acvp_add_auth_hdr (ACVP_CTX *ctx, struct curl_slist *s
      * Create the Authorzation header if needed
      */
     if (ctx->jwt_token) {
-        bearer_size = strnlen(ctx->jwt_token, MAX_TOKEN_LEN) + 23;
+        bearer_size = strnlen(ctx->jwt_token, ACVP_JWT_TOKEN_MAX) + 23;
         bearer = calloc(1, bearer_size);
         if (!bearer) {
             ACVP_LOG_ERR("unable to allocate memory.");

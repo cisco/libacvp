@@ -71,10 +71,6 @@ static ACVP_RESULT acvp_kdf135_ikev1_output_tc (ACVP_CTX *ctx, ACVP_KDF135_IKEV1
     json_object_set_string(tc_rsp, "sKeyIdE", (const char *)tmp);
     memset(tmp, 0x0, ACVP_KDF135_IKEV1_SKEY_MAX);
     
-//    json_object_set_string(tc_rsp, "sKeyId", (const char *)stc->s_key_id);
-//    json_object_set_string(tc_rsp, "sKeyIdD", (const char *)stc->s_key_id_d);
-//    json_object_set_string(tc_rsp, "sKeyIdA", (const char *)stc->s_key_id_a);
-//    json_object_set_string(tc_rsp, "sKeyIdE", (const char *)stc->s_key_id_e);
     err:
     free(tmp);
     return rv;
@@ -113,57 +109,51 @@ static ACVP_RESULT acvp_kdf135_ikev1_init_tc (ACVP_CTX *ctx,
 
     stc->init_nonce = calloc(ACVP_KDF135_IKE_NONCE_LEN_MAX, sizeof(char));
     if (!stc->init_nonce) { return ACVP_MALLOC_FAIL; }
-    rv = acvp_hexstr_to_bin((const unsigned char *) init_nonce, stc->init_nonce, ACVP_KDF135_IKE_NONCE_LEN_MAX);
+    rv = acvp_hexstr_to_bin((const unsigned char *) init_nonce, stc->init_nonce, ACVP_KDF135_IKE_NONCE_LEN_MAX, NULL);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Hex conversion failure (init_nonce)");
         return rv;
     }
-//    memcpy(stc->init_nonce, init_nonce, strnlen((const char *)init_nonce, ACVP_KDF135_IKE_NONCE_LEN_MAX));
 
     stc->resp_nonce = calloc(ACVP_KDF135_IKE_NONCE_LEN_MAX, sizeof(char));
     if (!stc->resp_nonce) { return ACVP_MALLOC_FAIL; }
-    rv = acvp_hexstr_to_bin((const unsigned char *) resp_nonce, stc->resp_nonce, ACVP_KDF135_IKE_NONCE_LEN_MAX);
+    rv = acvp_hexstr_to_bin((const unsigned char *) resp_nonce, stc->resp_nonce, ACVP_KDF135_IKE_NONCE_LEN_MAX, NULL);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Hex conversion failure (resp_nonce)");
         return rv;
     }
-//    memcpy(stc->resp_nonce, resp_nonce, strnlen((const char *)resp_nonce, ACVP_KDF135_IKE_NONCE_LEN_MAX));
 
     stc->init_ckey = calloc(ACVP_KDF135_IKE_COOKIE_LEN_MAX, sizeof(char));
     if (!stc->init_ckey) { return ACVP_MALLOC_FAIL; }
-    rv = acvp_hexstr_to_bin((const unsigned char *) init_ckey, stc->init_ckey, ACVP_KDF135_IKE_COOKIE_LEN_MAX);
+    rv = acvp_hexstr_to_bin((const unsigned char *) init_ckey, stc->init_ckey, ACVP_KDF135_IKE_COOKIE_LEN_MAX, NULL);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Hex conversion failure (init_ckey)");
         return rv;
     }
-//    memcpy(stc->init_ckey, init_ckey, strnlen((const char *)init_ckey, ACVP_KDF135_IKE_COOKIE_LEN_MAX));
 
     stc->resp_ckey = calloc(ACVP_KDF135_IKE_COOKIE_LEN_MAX, sizeof(char));
     if (!stc->resp_ckey) { return ACVP_MALLOC_FAIL; }
-    rv = acvp_hexstr_to_bin((const unsigned char *) resp_ckey, stc->resp_ckey, ACVP_KDF135_IKE_COOKIE_LEN_MAX);
+    rv = acvp_hexstr_to_bin((const unsigned char *) resp_ckey, stc->resp_ckey, ACVP_KDF135_IKE_COOKIE_LEN_MAX, NULL);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Hex conversion failure (resp_ckey)");
         return rv;
     }
-//    memcpy(stc->resp_ckey, resp_ckey, strnlen((const char *)resp_ckey, ACVP_KDF135_IKE_COOKIE_LEN_MAX));
 
     stc->gxy = calloc(ACVP_KDF135_IKEV1_GXY_LEN_MAX, sizeof(char));
     if (!stc->gxy) { return ACVP_MALLOC_FAIL; }
-    rv = acvp_hexstr_to_bin((const unsigned char *) gxy, stc->gxy, ACVP_KDF135_IKEV1_GXY_LEN_MAX);
+    rv = acvp_hexstr_to_bin((const unsigned char *) gxy, stc->gxy, ACVP_KDF135_IKEV1_GXY_LEN_MAX, NULL);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Hex conversion failure (gxy)");
         return rv;
     }
-//    memcpy(stc->gxy, gxy, strnlen((const char *)gxy, ACVP_KDF135_IKEV1_GXY_LEN_MAX));
 
     stc->psk = calloc(ACVP_KDF135_PSK_LEN_MAX, sizeof(char));
     if (!stc->psk) { return ACVP_MALLOC_FAIL; }
-    rv = acvp_hexstr_to_bin((const unsigned char *) psk, stc->psk, ACVP_KDF135_PSK_LEN_MAX);
+    rv = acvp_hexstr_to_bin((const unsigned char *) psk, stc->psk, ACVP_KDF135_PSK_LEN_MAX, NULL);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Hex conversion failure (psk)");
         return rv;
     }
-//    memcpy(stc->psk, psk, strnlen((const char *)psk, ACVP_KDF135_PSK_LEN_MAX));
     
     stc->s_key_id = calloc(ACVP_KDF135_IKEV1_SKEY_MAX, sizeof(char));
     if (!stc->s_key_id) { return ACVP_MALLOC_FAIL; }

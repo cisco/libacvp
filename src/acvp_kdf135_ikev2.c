@@ -39,7 +39,7 @@ static ACVP_RESULT acvp_kdf135_ikev2_output_tc (ACVP_CTX *ctx, ACVP_KDF135_IKEV2
     char *tmp;
     
     tmp = calloc(ACVP_KDF135_IKEV2_SKEY_MAX, sizeof(char));
-    rv = acvp_bin_to_hexstr(stc->s_key_seed, strnlen((const char *)stc->s_key_seed, ACVP_KDF135_IKEV2_SKEY_MAX), (unsigned char *) tmp);
+    rv = acvp_bin_to_hexstr(stc->s_key_seed, stc->key_out_len, (unsigned char *) tmp);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("hex conversion failure (s_key_seed)");
         goto err;
@@ -47,7 +47,7 @@ static ACVP_RESULT acvp_kdf135_ikev2_output_tc (ACVP_CTX *ctx, ACVP_KDF135_IKEV2
     json_object_set_string(tc_rsp, "sKeySeed", (const char *)tmp);
     memset(tmp, 0x0, ACVP_KDF135_IKEV2_SKEY_MAX);
     
-    rv = acvp_bin_to_hexstr(stc->s_key_seed_rekey, strnlen((const char *)stc->s_key_seed_rekey, ACVP_KDF135_IKEV2_SKEY_MAX), (unsigned char *) tmp);
+    rv = acvp_bin_to_hexstr(stc->s_key_seed_rekey, stc->key_out_len, (unsigned char *) tmp);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("hex conversion failure (s_key_seed_rekey)");
         goto err;
@@ -58,7 +58,7 @@ static ACVP_RESULT acvp_kdf135_ikev2_output_tc (ACVP_CTX *ctx, ACVP_KDF135_IKEV2
     
     
     tmp = calloc(ACVP_KDF135_IKEV2_DKM_MAX, sizeof(char));
-    rv = acvp_bin_to_hexstr(stc->derived_keying_material, strnlen((const char *)stc->derived_keying_material, ACVP_KDF135_IKEV2_DKM_MAX), (unsigned char *) tmp);
+    rv = acvp_bin_to_hexstr(stc->derived_keying_material, stc->key_out_len, (unsigned char *) tmp);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("hex conversion failure (derived_keying_material)");
         goto err;
@@ -66,7 +66,7 @@ static ACVP_RESULT acvp_kdf135_ikev2_output_tc (ACVP_CTX *ctx, ACVP_KDF135_IKEV2
     json_object_set_string(tc_rsp, "derivedKeyingMaterial", (const char *)tmp);
     memset(tmp, 0x0, ACVP_KDF135_IKEV2_DKM_MAX);
     
-    rv = acvp_bin_to_hexstr(stc->derived_keying_material_child, strnlen((const char *)stc->derived_keying_material_child, ACVP_KDF135_IKEV2_DKM_MAX), (unsigned char *) tmp);
+    rv = acvp_bin_to_hexstr(stc->derived_keying_material_child, stc->key_out_len, (unsigned char *) tmp);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("hex conversion failure (derived_keying_material)");
         goto err;
@@ -74,7 +74,7 @@ static ACVP_RESULT acvp_kdf135_ikev2_output_tc (ACVP_CTX *ctx, ACVP_KDF135_IKEV2
     json_object_set_string(tc_rsp, "derivedKeyingMaterialChild", (const char *)tmp);
     memset(tmp, 0x0, ACVP_KDF135_IKEV2_DKM_MAX);
     
-    rv = acvp_bin_to_hexstr(stc->derived_keying_material_child_dh, strnlen((const char *)stc->derived_keying_material_child_dh, ACVP_KDF135_IKEV2_DKM_MAX), (unsigned char *) tmp);
+    rv = acvp_bin_to_hexstr(stc->derived_keying_material_child_dh, stc->key_out_len, (unsigned char *) tmp);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("hex conversion failure (derived_keying_material)");
         goto err;
@@ -82,12 +82,6 @@ static ACVP_RESULT acvp_kdf135_ikev2_output_tc (ACVP_CTX *ctx, ACVP_KDF135_IKEV2
     json_object_set_string(tc_rsp, "derivedKeyingMaterialDh", (const char *)tmp);
     memset(tmp, 0x0, ACVP_KDF135_IKEV2_DKM_MAX);
     
-    
-//    json_object_set_string(tc_rsp, "sKeySeed", (const char *)stc->s_key_seed);
-//    json_object_set_string(tc_rsp, "sKeySeedReKey", (const char *)stc->s_key_seed_rekey);
-//    json_object_set_string(tc_rsp, "derivedKeyingMaterial", (const char *)stc->derived_keying_material);
-//    json_object_set_string(tc_rsp, "derivedKeyingMaterialChild", (const char *)stc->derived_keying_material_child);
-//    json_object_set_string(tc_rsp, "derivedKeyingMaterialDh", (const char *)stc->derived_keying_material_child_dh);
     err:
     free(tmp);
     return rv;
@@ -115,72 +109,63 @@ static ACVP_RESULT acvp_kdf135_ikev2_init_tc (ACVP_CTX *ctx,
     stc->hash_alg = calloc(ACVP_RSA_HASH_ALG_LEN_MAX, sizeof(char));
     if (!stc->hash_alg) { return ACVP_MALLOC_FAIL; }
     memcpy(stc->hash_alg, hash_alg, strnlen((const char *)hash_alg, ACVP_RSA_HASH_ALG_LEN_MAX));
-
-//    stc->init_nonce_len = init_nonce_len;
-//    stc->resp_nonce_len = resp_nonce_len;
+    
     stc->dh_secret_len = dh_secret_len;
     stc->keying_material_len = keying_material_len;
 
     stc->init_nonce = calloc(ACVP_KDF135_IKE_NONCE_LEN_MAX, sizeof(char));
     if (!stc->init_nonce) { return ACVP_MALLOC_FAIL; }
-    rv = acvp_hexstr_to_bin((const unsigned char *) init_nonce, stc->init_nonce, ACVP_KDF135_IKE_NONCE_LEN_MAX);
+    rv = acvp_hexstr_to_bin((const unsigned char *) init_nonce, stc->init_nonce, ACVP_KDF135_IKE_NONCE_LEN_MAX, NULL);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Hex conversion failure (init_nonce)");
         return rv;
     }
     stc->init_nonce_len = strlen((const char *)init_nonce)/2;
-//    memcpy(stc->init_nonce, init_nonce, strnlen((const char *)init_nonce, ACVP_KDF135_IKE_NONCE_LEN_MAX));
 
     stc->resp_nonce = calloc(ACVP_KDF135_IKE_NONCE_LEN_MAX, sizeof(char));
     if (!stc->resp_nonce) { return ACVP_MALLOC_FAIL; }
-    rv = acvp_hexstr_to_bin((const unsigned char *) resp_nonce, stc->resp_nonce, ACVP_KDF135_IKE_NONCE_LEN_MAX);
+    rv = acvp_hexstr_to_bin((const unsigned char *) resp_nonce, stc->resp_nonce, ACVP_KDF135_IKE_NONCE_LEN_MAX, NULL);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Hex conversion failure (resp_nonce)");
         return rv;
     }
     stc->resp_nonce_len = strlen((const char *)resp_nonce)/2;
-//    memcpy(stc->resp_nonce, resp_nonce, strnlen((const char *)resp_nonce, ACVP_KDF135_IKE_NONCE_LEN_MAX));
 
     stc->init_spi = calloc(ACVP_KDF135_IKEV2_SPI_LEN_MAX, sizeof(char));
     if (!stc->init_spi) { return ACVP_MALLOC_FAIL; }
-    rv = acvp_hexstr_to_bin((const unsigned char *) init_spi, stc->init_spi, ACVP_KDF135_IKEV2_SPI_LEN_MAX);
+    rv = acvp_hexstr_to_bin((const unsigned char *) init_spi, stc->init_spi, ACVP_KDF135_IKEV2_SPI_LEN_MAX, NULL);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Hex conversion failure (init_spi)");
         return rv;
     }
     stc->init_spi_len = strlen((const char *)init_spi)/2;
-//    memcpy(stc->init_spi, init_spi, strnlen((const char *)init_spi, ACVP_KDF135_IKEV2_SPI_LEN_MAX));
 
     stc->resp_spi = calloc(ACVP_KDF135_IKEV2_SPI_LEN_MAX, sizeof(char));
     if (!stc->resp_spi) { return ACVP_MALLOC_FAIL; }
-    rv = acvp_hexstr_to_bin((const unsigned char *) resp_spi, stc->resp_spi, ACVP_KDF135_IKEV2_SPI_LEN_MAX);
+    rv = acvp_hexstr_to_bin((const unsigned char *) resp_spi, stc->resp_spi, ACVP_KDF135_IKEV2_SPI_LEN_MAX, NULL);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Hex conversion failure (resp_spi)");
         return rv;
     }
     stc->resp_spi_len = strlen((const char *)resp_spi)/2;
-//    memcpy(stc->resp_spi, resp_spi, strnlen((const char *)resp_spi, ACVP_KDF135_IKEV2_SPI_LEN_MAX));
 
     stc->gir = calloc(ACVP_KDF135_IKEV2_GIR_LEN_MAX, sizeof(char));
     if (!stc->gir) { return ACVP_MALLOC_FAIL; }
-    rv = acvp_hexstr_to_bin((const unsigned char *) gir, stc->gir, ACVP_KDF135_IKEV2_GIR_LEN_MAX);
+    rv = acvp_hexstr_to_bin((const unsigned char *) gir, stc->gir, ACVP_KDF135_IKEV2_GIR_LEN_MAX, NULL);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Hex conversion failure (gir)");
         return rv;
     }
     stc->gir_len = strlen((const char *)gir)/2;
-//    memcpy(stc->gir, gir, strnlen((const char *)gir, ACVP_KDF135_IKEV2_GIR_LEN_MAX));
 
     stc->gir_new = calloc(ACVP_KDF135_IKEV2_GIR_LEN_MAX, sizeof(char));
     if (!stc->gir_new) { return ACVP_MALLOC_FAIL; }
-    rv = acvp_hexstr_to_bin((const unsigned char *) gir_new, stc->gir_new, ACVP_KDF135_IKEV2_GIR_LEN_MAX);
+    rv = acvp_hexstr_to_bin((const unsigned char *) gir_new, stc->gir_new, ACVP_KDF135_IKEV2_GIR_LEN_MAX, NULL);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Hex conversion failure (gir_new)");
         return rv;
     }
     stc->gir_new_len = strlen((const char *)gir_new)/2;
-
-//    memcpy(stc->gir_new, gir_new, strnlen((const char *)gir_new, ACVP_KDF135_IKEV2_GIR_LEN_MAX));
     
     /* allocate memory for answers so app doesn't have to touch library memory */
     stc->s_key_seed = calloc(ACVP_KDF135_IKEV2_SKEY_MAX, sizeof(char));

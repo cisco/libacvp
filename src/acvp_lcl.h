@@ -294,8 +294,8 @@
 #define ACVP_DSA_MAX_STRING     3072     /**< 3072 bytes */
 
 #define ACVP_RSA_SEEDLEN_MAX    64
-#define ACVP_RSA_MSGLEN_MAX     512
-#define ACVP_RSA_SIGNATURE_MAX  1024
+#define ACVP_RSA_MSGLEN_MAX     1024
+#define ACVP_RSA_SIGNATURE_MAX  2048
 #define ACVP_RSA_RANDPQ32_STR   "B.3.2"
 #define ACVP_RSA_RANDPQ33_STR   "B.3.3"
 #define ACVP_RSA_RANDPQ34_STR   "B.3.4"
@@ -303,7 +303,7 @@
 #define ACVP_RSA_RANDPQ36_STR   "B.3.6"
 #define ACVP_RSA_SIG_TYPE_LEN_MAX    9
 #define ACVP_RSA_HASH_ALG_LEN_MAX    12
-#define ACVP_RSA_EXP_LEN_MAX         512  /**< 2048 bits max for n, 512 characters */
+#define ACVP_RSA_EXP_LEN_MAX         1024  /**< 2048 bits max for n, 512 characters */
 
 
 #define ACVP_KAT_BUF_MAX        1024*1024*4
@@ -796,7 +796,7 @@ ACVP_RESULT acvp_submit_vector_responses (ACVP_CTX *ctx);
 
 void acvp_log_msg (ACVP_CTX *ctx, ACVP_LOG_LVL level, const char *format, ...);
 
-ACVP_RESULT acvp_hexstr_to_bin (const unsigned char *src, unsigned char *dest, int dest_max);
+ACVP_RESULT acvp_hexstr_to_bin (const unsigned char *src, unsigned char *dest, int dest_max, int *converted_len);
 
 ACVP_RESULT acvp_bin_to_bit (const unsigned char *in, int len, unsigned char *out);
 

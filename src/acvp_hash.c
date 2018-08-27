@@ -426,7 +426,7 @@ static ACVP_RESULT acvp_hash_init_tc (ACVP_CTX *ctx,
         return ACVP_UNSUPPORTED_OP;
     }
 
-    rv = acvp_hexstr_to_bin((const unsigned char *) msg, stc->msg, ACVP_HASH_MSG_MAX);
+    rv = acvp_hexstr_to_bin((const unsigned char *) msg, stc->msg, ACVP_HASH_MSG_MAX, NULL);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Hex converstion failure (msg)");
         return rv;

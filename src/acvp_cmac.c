@@ -80,31 +80,30 @@ static ACVP_RESULT acvp_cmac_init_tc (ACVP_CTX *ctx,
     stc->key3 = calloc(1, ACVP_CMAC_KEY_MAX);
     if (!stc->key3) { return ACVP_MALLOC_FAIL; }
 
-    rv = acvp_hexstr_to_bin((const unsigned char *) msg, stc->msg, ACVP_CMAC_MSG_MAX);
+    rv = acvp_hexstr_to_bin((const unsigned char *) msg, stc->msg, ACVP_CMAC_MSG_MAX, NULL);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Hex converstion failure (msg)");
         return rv;
     }
     
     if (alg_id == ACVP_CMAC_AES) {
-        rv = acvp_hexstr_to_bin((const unsigned char *) key, stc->key, ACVP_CMAC_KEY_MAX);
+        rv = acvp_hexstr_to_bin((const unsigned char *) key, stc->key, ACVP_CMAC_KEY_MAX, (int *)&(stc->key_len));
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Hex converstion failure (key)");
             return rv;
         }
-        stc->key_len = key_len;
     } else if (alg_id == ACVP_CMAC_TDES) {
-        rv = acvp_hexstr_to_bin((const unsigned char *) key, stc->key, ACVP_CMAC_KEY_MAX);
+        rv = acvp_hexstr_to_bin((const unsigned char *) key, stc->key, ACVP_CMAC_KEY_MAX, NULL);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Hex converstion failure (key1)");
             return rv;
         }
-        rv = acvp_hexstr_to_bin((const unsigned char *) key2, stc->key2, ACVP_CMAC_KEY_MAX);
+        rv = acvp_hexstr_to_bin((const unsigned char *) key2, stc->key2, ACVP_CMAC_KEY_MAX, NULL);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Hex converstion failure (key2)");
             return rv;
         }
-        rv = acvp_hexstr_to_bin((const unsigned char *) key3, stc->key3, ACVP_CMAC_KEY_MAX);
+        rv = acvp_hexstr_to_bin((const unsigned char *) key3, stc->key3, ACVP_CMAC_KEY_MAX, NULL);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Hex converstion failure (key3)");
             return rv;

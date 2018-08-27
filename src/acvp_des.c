@@ -948,7 +948,7 @@ static ACVP_RESULT acvp_des_init_tc (ACVP_CTX *ctx,
         return ACVP_UNSUPPORTED_OP;
     }
 
-    rv = acvp_hexstr_to_bin((const unsigned char *) j_key, stc->key, ACVP_SYM_KEY_MAX);
+    rv = acvp_hexstr_to_bin((const unsigned char *) j_key, stc->key, ACVP_SYM_KEY_MAX, NULL);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Hex converstion failure (key)");
         return rv;
@@ -956,13 +956,13 @@ static ACVP_RESULT acvp_des_init_tc (ACVP_CTX *ctx,
 
     if (j_pt) {
         if (alg_id == ACVP_TDES_CFB1) {
-            rv = acvp_hexstr_to_bin((const unsigned char *) j_pt, stc->pt, ACVP_SYM_PT_MAX);
+            rv = acvp_hexstr_to_bin((const unsigned char *) j_pt, stc->pt, ACVP_SYM_PT_MAX, NULL);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("Hex conversion failure (pt)");
                 return rv;
             }
         } else {
-            rv = acvp_hexstr_to_bin((const unsigned char *) j_pt, stc->pt, ACVP_SYM_PT_MAX);
+            rv = acvp_hexstr_to_bin((const unsigned char *) j_pt, stc->pt, ACVP_SYM_PT_MAX, NULL);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("Hex converstion failure (pt)");
                 return rv;
@@ -972,13 +972,13 @@ static ACVP_RESULT acvp_des_init_tc (ACVP_CTX *ctx,
 
     if (j_ct) {
         if (alg_id == ACVP_TDES_CFB1) {
-            rv = acvp_hexstr_to_bin((const unsigned char *) j_ct, stc->ct, ACVP_SYM_PT_MAX);
+            rv = acvp_hexstr_to_bin((const unsigned char *) j_ct, stc->ct, ACVP_SYM_PT_MAX, NULL);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("Hex conversion failure (ct)");
                 return rv;
             }
         } else {
-            rv = acvp_hexstr_to_bin((const unsigned char *) j_ct, stc->ct, ACVP_SYM_CT_MAX);
+            rv = acvp_hexstr_to_bin((const unsigned char *) j_ct, stc->ct, ACVP_SYM_CT_MAX, NULL);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("Hex converstion failure (ct)");
                 return rv;
@@ -987,7 +987,7 @@ static ACVP_RESULT acvp_des_init_tc (ACVP_CTX *ctx,
     }
 
     if (j_iv) {
-        rv = acvp_hexstr_to_bin((const unsigned char *) j_iv, stc->iv, ACVP_SYM_IV_MAX);
+        rv = acvp_hexstr_to_bin((const unsigned char *) j_iv, stc->iv, ACVP_SYM_IV_MAX, NULL);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Hex converstion failure (iv)");
             return rv;

@@ -455,14 +455,12 @@ static ACVP_RESULT acvp_kdf135_ssh_init_tc (ACVP_CTX *ctx,
     if (!stc->session_id) { return ACVP_MALLOC_FAIL; }
 
     // Convert from hex string to binary
-    rv = acvp_hexstr_to_bin((const unsigned char*)shared_secret_k,
-                       (unsigned char *)stc->shared_secret_k, shared_secret_len);
+    rv = acvp_hexstr_to_bin((const unsigned char *) shared_secret_k, (unsigned char *) stc->shared_secret_k,
+                            shared_secret_len, NULL);
     if (rv != ACVP_SUCCESS) return rv;
-    rv = acvp_hexstr_to_bin((const unsigned char*)hash_h,
-                       (unsigned char *)stc->hash_h, hash_len);
+    rv = acvp_hexstr_to_bin((const unsigned char *) hash_h, (unsigned char *) stc->hash_h, hash_len, NULL);
     if (rv != ACVP_SUCCESS) return rv;
-    rv = acvp_hexstr_to_bin((const unsigned char*)session_id,
-                       (unsigned char *)stc->session_id, session_id_len);
+    rv = acvp_hexstr_to_bin((const unsigned char *) session_id, (unsigned char *) stc->session_id, session_id_len, NULL);
     if (rv != ACVP_SUCCESS) return rv;
     
     // Allocate answer buffers

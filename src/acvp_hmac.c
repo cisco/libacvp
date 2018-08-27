@@ -52,12 +52,13 @@ static ACVP_RESULT acvp_hmac_init_tc (ACVP_CTX *ctx,
     stc->key = calloc(1, ACVP_HMAC_KEY_MAX);
     if (!stc->key) { return ACVP_MALLOC_FAIL; }
 
-    rv = acvp_hexstr_to_bin((const unsigned char *) msg, stc->msg, ACVP_HMAC_MSG_MAX);
+    rv = acvp_hexstr_to_bin((const unsigned char *) msg, stc->msg, ACVP_HMAC_MSG_MAX, NULL);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Hex converstion failure (msg)");
         return rv;
     }
-    rv = acvp_hexstr_to_bin((const unsigned char *) key, stc->key, ACVP_HMAC_KEY_MAX);
+    
+    rv = acvp_hexstr_to_bin((const unsigned char *) key, stc->key, ACVP_HMAC_KEY_MAX, NULL);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Hex converstion failure (key)");
         return rv;
