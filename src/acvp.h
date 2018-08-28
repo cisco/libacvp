@@ -235,6 +235,14 @@ typedef enum acvp_kdf135_ssh_method {
     ACVP_SSH_METH_MAX
 } ACVP_KDF135_SSH_METHOD;
 
+/*! @struct ACVP_KDF135_IKEV1_AUTH_METHOD */
+typedef enum acvp_kdf135_ikev1_auth_method {
+    ACVP_KDF135_IKEV1_AMETH_DSA = 1,
+    ACVP_KDF135_IKEV1_AMETH_PSK,
+    ACVP_KDF135_IKEV1_AMETH_PKE,
+    ACVP_KDF135_IKEV1_AMETH_MAX
+} ACVP_KDF135_IKEV1_AUTH_METHOD;
+
 /*! @struct ACVP_KDF135_SRTP_PARAM */
 typedef enum acvp_kdf135_srtp_param {
     ACVP_SRTP_PARAM_MIN,
@@ -695,7 +703,7 @@ typedef struct acvp_kdf135_ikev1_tc_t {
     ACVP_CIPHER cipher;
     unsigned int tc_id; /**< Test case id */
     ACVP_KDF135_HASH_VAL hash_alg;
-    char auth_method[3];
+    ACVP_KDF135_IKEV1_AUTH_METHOD auth_method;
     int init_nonce_len;
     int resp_nonce_len;
     int dh_secret_len;
@@ -2258,7 +2266,7 @@ ACVP_RESULT acvp_enable_kdf135_ikev2_cap_param (ACVP_CTX *ctx,
 
 ACVP_RESULT acvp_enable_kdf135_ikev1_cap_param (ACVP_CTX *ctx,
                                                 ACVP_KDF135_IKEV1_PARM param,
-                                                char *value);
+                                                int value);
 
 ACVP_RESULT acvp_enable_kdf135_ikev2_cap_len_param (ACVP_CTX *ctx,
                                                     ACVP_KDF135_IKEV2_PARM param,

@@ -46,7 +46,7 @@ static ACVP_RESULT acvp_kdf135_ikev1_init_tc (ACVP_CTX *ctx,
                                               ACVP_KDF135_IKEV1_TC *stc,
                                               unsigned int tc_id,
                                               ACVP_KDF135_HASH_VAL hash_alg,
-                                              unsigned char *auth_method,
+                                              ACVP_KDF135_IKEV1_AUTH_METHOD auth_method,
                                               int init_nonce_len,
                                               int resp_nonce_len,
                                               int dh_secret_len,
@@ -63,7 +63,7 @@ static ACVP_RESULT acvp_kdf135_ikev1_init_tc (ACVP_CTX *ctx,
     stc->tc_id = tc_id;
 
     stc->hash_alg = hash_alg;
-    memcpy(stc->auth_method, auth_method, 3);
+    stc->auth_method = auth_method;
 
     stc->init_nonce_len = init_nonce_len;
     stc->resp_nonce_len = resp_nonce_len;
@@ -166,9 +166,10 @@ ACVP_RESULT acvp_kdf135_ikev1_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     ACVP_CIPHER alg_id;
     char *json_result;
 
-    ACVP_KDF135_HASH_VAL hash_alg;
-    const char *hash_alg_str = NULL;
-    unsigned char *auth_method = NULL, *init_nonce = NULL, *resp_nonce = NULL;
+    ACVP_KDF135_HASH_VAL hash_alg = 0;
+    ACVP_KDF135_IKEV1_AUTH_METHOD auth_method = 0;
+    const char *hash_alg_str = NULL, *auth_method_str = NULL;
+    unsigned char *init_nonce = NULL, *resp_nonce = NULL;
     unsigned char *init_ckey = NULL, *resp_ckey = NULL, *gxy = NULL, *psk = NULL;
     int init_nonce_len = 0, resp_nonce_len = 0, dh_secret_len = 0, psk_len = 0;
 
@@ -236,8 +237,8 @@ ACVP_RESULT acvp_kdf135_ikev1_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
             return ACVP_MISSING_ARG;
         }
 
-        auth_method = (unsigned char *) json_object_get_string(groupobj, "authenticationMethod");
-        if (!auth_method) {
+        auth_method_str = json_object_get_string(groupobj, "authenticationMethod");
+        if (!auth_method_str) {
             ACVP_LOG_ERR("Failed to include authenticationMethod");
             return ACVP_MISSING_ARG;
         }
@@ -284,13 +285,30 @@ ACVP_RESULT acvp_kdf135_ikev1_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
         }else if (strncmp(hash_alg_str, ACVP_STR_SHA_512, strlen(ACVP_STR_SHA_512)) == 0) {
             hash_alg = ACVP_KDF135_SHA512;
         } else {
-            ACVP_LOG_ERR("ACVP server requesting invalid hash alg");
+            ACVP_LOG_ERR("ACVP server requesting invalid hashAlg");
+            return ACVP_INVALID_ARG;
+        }
+
+        /*
+         * Determine the authentication method.
+         */
+        if (strncmp(auth_method_str, ACVP_AUTH_METHOD_DSA_STR,
+                    strlen(ACVP_AUTH_METHOD_DSA_STR)) == 0) {
+            auth_method = ACVP_KDF135_IKEV1_AMETH_DSA;
+        } else if (strncmp(auth_method_str, ACVP_AUTH_METHOD_PSK_STR,
+                           strlen(ACVP_AUTH_METHOD_PSK_STR)) == 0) {
+            auth_method = ACVP_KDF135_IKEV1_AMETH_PSK;
+        } else if (strncmp(auth_method_str, ACVP_AUTH_METHOD_PKE_STR,
+                           strlen(ACVP_AUTH_METHOD_PKE_STR)) == 0) {
+            auth_method = ACVP_KDF135_IKEV1_AMETH_PKE;
+        } else {
+            ACVP_LOG_ERR("ACVP server requesting invalid authenticationMethod");
             return ACVP_INVALID_ARG;
         }
 
         ACVP_LOG_INFO("\n    Test group: %d", i);
         ACVP_LOG_INFO("        hash alg: %s", hash_alg_str);
-        ACVP_LOG_INFO("     auth method: %s", auth_method);
+        ACVP_LOG_INFO("     auth method: %s", auth_method_str);
         ACVP_LOG_INFO("  init nonce len: %d", init_nonce_len);
         ACVP_LOG_INFO("  resp nonce len: %d", resp_nonce_len);
         ACVP_LOG_INFO("   dh secret len: %d", dh_secret_len);

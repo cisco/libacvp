@@ -3868,7 +3868,6 @@ ACVP_RESULT acvp_enable_kdf135_ikev2_cap_param (ACVP_CTX *ctx,
                                                 ACVP_KDF135_IKEV2_PARM param,
                                                 int value) {
     ACVP_CAPS_LIST *cap_list = NULL;
-    ACVP_NAME_LIST *current_hash = NULL;
     ACVP_NAME_LIST *hash = NULL;
     ACVP_KDF135_IKEV2_CAP *cap = NULL;
     
@@ -3885,7 +3884,7 @@ ACVP_RESULT acvp_enable_kdf135_ikev2_cap_param (ACVP_CTX *ctx,
     }
     
     if (cap->hash_algs) {
-        current_hash = cap->hash_algs;
+        ACVP_NAME_LIST *current_hash = cap->hash_algs;
         while (current_hash->next) {
             current_hash = current_hash->next;
         }
@@ -3960,9 +3959,9 @@ ACVP_RESULT acvp_enable_kdf135_ikev2_cap_len_param (ACVP_CTX *ctx,
 
 ACVP_RESULT acvp_enable_kdf135_ikev1_cap_param (ACVP_CTX *ctx,
                                                 ACVP_KDF135_IKEV1_PARM param,
-                                                char *value) {
+                                                int value) {
     ACVP_CAPS_LIST *cap_list;
-    ACVP_NAME_LIST *current_hash;
+    ACVP_NAME_LIST *hash = NULL;
     ACVP_KDF135_IKEV1_CAP *cap;
     
     cap_list = acvp_locate_cap_entry(ctx, ACVP_KDF135_IKEV1);
@@ -3973,20 +3972,58 @@ ACVP_RESULT acvp_enable_kdf135_ikev1_cap_param (ACVP_CTX *ctx,
     cap = cap_list->cap.kdf135_ikev1_cap;
     
     if (param == ACVP_KDF_IKEv1_HASH_ALG) {
-        current_hash = cap->hash_algs;
-        if (current_hash) {
+        if (cap->hash_algs) {
+            ACVP_NAME_LIST *current_hash = cap->hash_algs;
             while (current_hash->next) {
                 current_hash = current_hash->next;
             }
             current_hash->next = calloc(1, sizeof(ACVP_NAME_LIST));
-            current_hash->next->name = value;
+            hash = current_hash->next;
         } else {
             cap->hash_algs = calloc(1, sizeof(ACVP_NAME_LIST));
-            cap->hash_algs->name = value;
+            hash = cap->hash_algs;
+        }
+
+        switch (value) {
+        case ACVP_KDF135_SHA1:
+            hash->name = ACVP_STR_SHA_1;
+            break;
+        case ACVP_KDF135_SHA224:
+            hash->name = ACVP_STR_SHA2_224;
+            break;
+        case ACVP_KDF135_SHA256:
+            hash->name = ACVP_STR_SHA2_256;
+            break;
+        case ACVP_KDF135_SHA384:
+            hash->name = ACVP_STR_SHA2_384;
+            break;
+        case ACVP_KDF135_SHA512:
+            hash->name = ACVP_STR_SHA2_512;
+            break;
+        default:
+            ACVP_LOG_ERR("Invalid hash algorithm.");
+            return ACVP_INVALID_ARG;
         }
     } else if (param == ACVP_KDF_IKEv1_AUTH_METHOD) {
-        memcpy(cap->auth_method, value, 3);
+        switch (value) {
+        case ACVP_KDF135_IKEV1_AMETH_DSA:
+            strncpy(cap->auth_method, ACVP_AUTH_METHOD_DSA_STR,
+                    ACVP_AUTH_METHOD_STR_MAX);
+            break;
+        case ACVP_KDF135_IKEV1_AMETH_PSK:
+            strncpy(cap->auth_method, ACVP_AUTH_METHOD_PSK_STR,
+                    ACVP_AUTH_METHOD_STR_MAX);
+            break;
+        case ACVP_KDF135_IKEV1_AMETH_PKE:
+            strncpy(cap->auth_method, ACVP_AUTH_METHOD_PKE_STR,
+                    ACVP_AUTH_METHOD_STR_MAX);
+            break;
+        default:
+            ACVP_LOG_ERR("Invalid authentication method.");
+            return ACVP_INVALID_ARG;
+        }
     } else {
+        ACVP_LOG_ERR("Invalid param.");
         return ACVP_INVALID_ARG;
     }
     

@@ -181,6 +181,12 @@
 #define ACVP_MODE_DPI               "double pipeline iteration"
 #define ACVP_KDF135_ALG_STR         "kdf-components"
 
+#define ACVP_AUTH_METHOD_DSA_STR "dsa"
+#define ACVP_AUTH_METHOD_PSK_STR "psk"
+#define ACVP_AUTH_METHOD_PKE_STR "pke"
+#define ACVP_AUTH_METHOD_STR_MAX 3
+#define ACVP_AUTH_METHOD_STR_MAX_PLUS 4
+
 #define ACVP_FIXED_DATA_ORDER_AFTER_STR "after fixed data"
 #define ACVP_FIXED_DATA_ORDER_BEFORE_STR "before fixed data"
 #define ACVP_FIXED_DATA_ORDER_MIDDLE_STR "middle fixed data"
@@ -539,7 +545,7 @@ typedef struct acvp_kdf135_ikev2_capability {
 
 typedef struct acvp_kdf135_ikev1_capability {
     ACVP_NAME_LIST *hash_algs;
-    char auth_method[4];
+    char auth_method[ACVP_AUTH_METHOD_STR_MAX_PLUS];
     ACVP_JSON_DOMAIN_OBJ init_nonce_len_domain;
     ACVP_JSON_DOMAIN_OBJ respond_nonce_len_domain;
     ACVP_JSON_DOMAIN_OBJ dh_secret_len;
