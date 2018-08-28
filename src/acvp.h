@@ -194,6 +194,14 @@ typedef enum acvp_prereq_mode_t {
 #define ACVP_KDF135_TPM_SKEY_MAX 32
 #define ACVP_KDF135_SNMP_PASSWORD_MAX 8192
 
+typedef enum acvp_kdf135_hash_val {
+    ACVP_KDF135_SHA1,
+    ACVP_KDF135_SHA224,
+    ACVP_KDF135_SHA256,
+    ACVP_KDF135_SHA384,
+    ACVP_KDF135_SHA512
+} ACVP_KDF135_HASH_VAL;
+
 /*!
  * @struct ACVP_KDF135_TLS_CAP_PARM
  * @brief these are bit flags
@@ -438,13 +446,6 @@ typedef enum acvp_kdf135_x963_param {
     ACVP_KDF_X963_SHARED_INFO_LEN
 } ACVP_KDF135_X963_PARM;
 
-typedef enum acvp_kdf135_x963_hash_val {
-    ACVP_KDF_X963_SHA224,
-    ACVP_KDF_X963_SHA256,
-    ACVP_KDF_X963_SHA384,
-    ACVP_KDF_X963_SHA512
-} ACVP_KDF135_X963_HASH_VAL;
-
 typedef enum acvp_kdf108_param {
     ACVP_KDF108_PARAM_MIN,
     ACVP_KDF108_KDF_MODE,
@@ -664,7 +665,7 @@ typedef struct acvp_kdf135_tls_tc_t {
 typedef struct acvp_kdf135_ikev2_tc_t {
     ACVP_CIPHER cipher;
     unsigned int tc_id;    /* Test case id */
-    unsigned char *hash_alg;
+    ACVP_KDF135_HASH_VAL hash_alg;
     int init_nonce_len;
     int resp_nonce_len;
     int gir_len;
@@ -1347,6 +1348,7 @@ enum acvp_result {
     ACVP_NO_CTX, /**< No valid context */
     ACVP_TRANSPORT_FAIL, /**< Error exchanging data with server */
     ACVP_JSON_ERR,
+    ACVP_NO_DATA,
     ACVP_UNSUPPORTED_OP,
     ACVP_CLEANUP_FAIL,
     ACVP_KAT_DOWNLOAD_RETRY,
@@ -2294,7 +2296,7 @@ ACVP_RESULT acvp_enable_kdf135_snmp_engid_parm (
 */
 ACVP_RESULT acvp_enable_kdf135_ikev2_cap_param (ACVP_CTX *ctx,
                                                 ACVP_KDF135_IKEV2_PARM param,
-                                                char *value);
+                                                int value);
 
 ACVP_RESULT acvp_enable_kdf135_ikev1_cap_param (ACVP_CTX *ctx,
                                                 ACVP_KDF135_IKEV1_PARM param,

@@ -139,6 +139,7 @@ ACVP_RESULT acvp_kdf135_x963_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     ACVP_TEST_CASE tc;
     ACVP_RESULT rv;
     char *alg_str = ACVP_KDF135_ALG_STR;
+    const char *alg_str_test = NULL;
     ACVP_CIPHER alg_id;
     char *json_result;
     
@@ -151,6 +152,22 @@ ACVP_RESULT acvp_kdf135_x963_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     tc.tc.kdf135_x963 = &stc;
     alg_id = ACVP_KDF135_X963;
     stc.cipher = alg_id;
+    
+    if (!ctx) {
+        ACVP_LOG_ERR("No ctx for handler operation");
+        return (ACVP_NO_CTX);
+    }
+
+    if (!obj) {
+        ACVP_LOG_ERR("No obj for handler operation");
+        return (ACVP_MALFORMED_JSON);
+    }
+    
+    alg_str_test = json_object_get_string(obj, "algorithm");  
+    if (strncmp(alg_str_test, "kdf-components", 14)) {
+        ACVP_LOG_ERR("Invalid algorithm for this function %s", alg_str_test);
+        return ACVP_INVALID_ARG;
+    }
     
     cap = acvp_locate_cap_entry(ctx, alg_id);
     if (!cap) {
@@ -184,15 +201,34 @@ ACVP_RESULT acvp_kdf135_x963_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     r_tarr = json_object_get_array(r_vs, "testResults");
     
     groups = json_object_get_array(obj, "testGroups");
+    if(!groups) {
+        ACVP_LOG_ERR("Failed to include testGroups. ");
+        return ACVP_MISSING_ARG;
+    }
+    
     g_cnt = json_array_get_count(groups);
     for (i = 0; i < g_cnt; i++) {
         groupval = json_array_get_value(groups, i);
         groupobj = json_value_get_object(groupval);
         
         field_size = json_object_get_number(groupobj, "fieldSize");
+        if (!field_size) {
+            ACVP_LOG_ERR("Failed to include field size. ");
+            return ACVP_MISSING_ARG;
+        }
+        
         key_data_length = json_object_get_number(groupobj, "keyDataLength");
+        if (!key_data_length) {
+            ACVP_LOG_ERR("Failed to include key data length. ");
+            return ACVP_MISSING_ARG;
+        }
+        
         shared_info_len = json_object_get_number(groupobj, "sharedInfoLength");
         hash_alg = (unsigned char *)json_object_get_string(groupobj, "hashAlg");
+        if (!hash_alg) {
+            ACVP_LOG_ERR("Failed to include hash alg. ");
+            return ACVP_MISSING_ARG;
+        }
         
         ACVP_LOG_INFO("\n    Test group: %d", i);
         ACVP_LOG_INFO("         hashAlg: %s", hash_alg);
@@ -201,7 +237,16 @@ ACVP_RESULT acvp_kdf135_x963_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
         ACVP_LOG_INFO("   keyDataLength: %d", key_data_length);
         
         tests = json_object_get_array(groupobj, "tests");
+        if(!tests) {
+            ACVP_LOG_ERR("Failed to include tests. ");
+            return ACVP_MISSING_ARG;
+        }
+        
         t_cnt = json_array_get_count(tests);
+        if (!t_cnt) {
+            ACVP_LOG_ERR("Failed to include tests in array. ");
+            return ACVP_MISSING_ARG;
+        }
         
         for (j = 0; j < t_cnt; j++) {
             ACVP_LOG_INFO("Found new KDF135 X963 test vector...");
@@ -209,6 +254,11 @@ ACVP_RESULT acvp_kdf135_x963_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
             testobj = json_value_get_object(testval);
             
             tc_id = (unsigned int) json_object_get_number(testobj, "tcId");
+            if (!tc_id) {
+                ACVP_LOG_ERR("Failed to include tc_id. ");
+                return ACVP_MISSING_ARG;
+            }
+            
             z = (unsigned char *)json_object_get_string(testobj, "z");
             shared_info = (unsigned char *)json_object_get_string(testobj, "sharedInfo");
             

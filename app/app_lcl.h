@@ -92,7 +92,7 @@ extern "C"
 #include <openssl/fips_rand.h>
 #include <openssl/fips.h>
 
-#if defined(dsa_builtin_paramgen2) && OPENSSL_VERSION_NUMBER < 0x10100000L
+#if defined(dsa_builtin_paramgen2) && OPENSSL_VERSION_NUMBER <= 0x10100000L
 # undef dsa_builtin_paramgen2
 int dsa_builtin_paramgen2(DSA *ret, size_t L, size_t N,
      const EVP_MD *evpmd, const unsigned char *seed_in, size_t seed_len,
@@ -106,47 +106,6 @@ int dsa_builtin_paramgen2(DSA *ret, size_t L, size_t N,
  * the FOM specific API's being used
  */
 EVP_CIPHER_CTX *FIPS_cipher_ctx_new(void);
-//EVP_MD_CTX *FIPS_md_ctx_create(void);
-//void FIPS_md_ctx_destroy(EVP_MD_CTX *ctx);
-//void FIPS_cmac_ctx_free(CMAC_CTX *ctx);
-//EVP_CIPHER_CTX *FIPS_cipher_ctx_new(void);
-//void FIPS_cipher_ctx_free(EVP_CIPHER_CTX *ctx);
-//void FIPS_hmac_ctx_set_flags(HMAC_CTX *ctx, unsigned long flags);
-//int FIPS_bn_bn2bin(const BIGNUM *a, unsigned char *to);
-//BIGNUM *FIPS_bn_bin2bn(const unsigned char *s, int len, BIGNUM *ret);
-//EC_KEY *FIPS_ec_key_new_by_curve_name(int nid);
-//int FIPS_ec_key_set_public_key_affine_coordinates(EC_KEY *key, BIGNUM *x,
-//                                             BIGNUM *y);
-//void FIPS_ecdsa_sig_free(ECDSA_SIG *sig);
-//int FIPS_ec_point_get_affine_coordinates_gfp(const EC_GROUP *group,
-//                                        const EC_POINT *p, BIGNUM *x,
-//                                        BIGNUM *y, BN_CTX *ctx);
-//int FIPS_ec_point_get_affine_coordinates_gf2m(const EC_GROUP *group,
-//                                         const EC_POINT *p, BIGNUM *x,
-//                                         BIGNUM *y, BN_CTX *ctx);
-//int fips_ec_point_set_affine_coordinates_gfp(const EC_GROUP *group, EC_POINT *p,
-//                                        const BIGNUM *x, const BIGNUM *y,
-//                                        BN_CTX *ctx);
-//int fips_ec_point_set_affine_coordinates_gf2m(const EC_GROUP *group, EC_POINT *p,
-//                                         const BIGNUM *x, const BIGNUM *y,
-//                                         BN_CTX *ctx);
-//BN_CTX *fips_bn_ctx_new(void);
-//void fips_bn_ctx_free(BN_CTX *c);
-//BIGNUM *fips_bn_ctx_get(BN_CTX *ctx);
-//void FIPS_ec_key_free(EC_KEY *r);
-//int FIPS_ecdsa_verify(EC_KEY *key, const unsigned char *msg, size_t msglen,
-//			const EVP_MD *mhash, ECDSA_SIG *s);
-//ECDSA_SIG * FIPS_ecdsa_sign(EC_KEY *key,
-//			const unsigned char *msg, size_t msglen,
-//			const EVP_MD *mhash);
-//EC_GROUP *FIPS_ec_key_get0_group(const EC_KEY *key);
-//BIGNUM *FIPS_ec_key_get0_private_key(const EC_KEY *key);
-//EC_POINT *FIPS_ec_key_get0_public_key(const EC_KEY *key);
-//EC_METHOD *FIPS_ec_group_method_of(const EC_GROUP *group);
-//int FIPS_ec_method_get_field_type(const EC_METHOD *meth);
-//EC_POINT *FIPS_ec_point_new(const EC_GROUP *group);
-//void FIPS_ec_point_free(EC_POINT *point);
-
 void FIPS_cipher_ctx_init(EVP_CIPHER_CTX *ctx);
 void FIPS_cipher_ctx_free(EVP_CIPHER_CTX *a);
 EVP_MD_CTX *FIPS_md_ctx_create(void);
@@ -239,6 +198,10 @@ void FIPS_free(void *ptr);
 int FIPS_digest(const void *data, size_t count,
                 unsigned char *md, unsigned int *size, const EVP_MD *type);
 void FIPS_openssl_cleanse(void *ptr, size_t len);
+int FIPS_rsa_verify(struct rsa_st *rsa, const unsigned char *msg, int msglen,
+			const struct env_md_st *mhash, int rsa_pad_mode,
+			int saltlen, const struct env_md_st *mgf1Hash,
+			const unsigned char *sigbuf, unsigned int siglen);
 
 //
 //int dsa_builtin_paramgen2(DSA *ret, size_t L, size_t N,

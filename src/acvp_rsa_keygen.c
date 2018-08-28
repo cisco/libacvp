@@ -292,10 +292,10 @@ ACVP_RESULT acvp_rsa_keygen_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     ACVP_CIPHER alg_id;
     char *json_result = NULL, *rand_pq_str = NULL;
     unsigned int mod = 0;
-    int info_gen_by_server, rand_pq, seed_len;
+    int info_gen_by_server, rand_pq, seed_len = 0;
     char *pub_exp_mode, *key_format, *prime_test;
     char *hash_alg = NULL;
-    char *e_str = NULL, *alg_str, *mode_str, *seed;
+    char *e_str = NULL, *alg_str, *mode_str, *seed = NULL;
     int bitlen1 = 0, bitlen2 = 0, bitlen3 = 0, bitlen4 = 0;
     
     alg_str = (char *) json_object_get_string(obj, "algorithm");

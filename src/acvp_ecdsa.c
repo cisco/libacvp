@@ -232,7 +232,6 @@ static ACVP_RESULT acvp_ecdsa_init_tc (ACVP_CTX *ctx,
     if (stc->s) free(stc->s);
     if (stc->d) free(stc->d);
     if (stc->message) free(stc->message);
-    if (stc->ver_disposition) free(stc->ver_disposition);
     return ACVP_MALLOC_FAIL;
 }
 
@@ -282,7 +281,7 @@ static ACVP_RESULT acvp_ecdsa_kat_handler_internal (ACVP_CTX *ctx, JSON_Object *
     ACVP_CIPHER alg_id;
     char *json_result = NULL;
     char *hash_alg = NULL, *curve = NULL, *secret_gen_mode = NULL;
-    char *alg_str, *mode_str, *qx, *qy, *r, *s, *message;
+    char *alg_str, *mode_str, *qx = NULL, *qy = NULL, *r = NULL, *s = NULL, *message = NULL;
     
     alg_str = (char *) json_object_get_string(obj, "algorithm");
     if (!alg_str) {
