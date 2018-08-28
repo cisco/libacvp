@@ -39,10 +39,11 @@
  */
 static ACVP_RESULT acvp_kdf135_srtp_output_tc (ACVP_CTX *ctx, ACVP_KDF135_SRTP_TC *stc, JSON_Object *tc_rsp) {
     ACVP_RESULT rv = ACVP_SUCCESS;
-    char *tmp;
-    tmp = calloc(ACVP_KDF135_SRTP_OUTPUT_MAX, sizeof(char));
+    char *tmp = NULL;
+    tmp = calloc(ACVP_KDF135_SRTP_OUTPUT_MAX+1, sizeof(char));
+    if (!tmp) { return ACVP_MALLOC_FAIL; }
     
-    rv = acvp_bin_to_hexstr(stc->srtp_ke, stc->aes_keylen/8, (unsigned char *) tmp);
+    rv = acvp_bin_to_hexstr(stc->srtp_ke, stc->aes_keylen/8, tmp);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("hex conversion failure (srtp_ke)");
         goto err;
@@ -50,7 +51,7 @@ static ACVP_RESULT acvp_kdf135_srtp_output_tc (ACVP_CTX *ctx, ACVP_KDF135_SRTP_T
     json_object_set_string(tc_rsp, "srtpKe", (const char *)tmp);
     memset(tmp, 0x0, ACVP_KDF135_SRTP_OUTPUT_MAX);
     
-    rv = acvp_bin_to_hexstr(stc->srtp_ka, 160/8, (unsigned char *) tmp);
+    rv = acvp_bin_to_hexstr(stc->srtp_ka, 160/8, tmp);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("hex conversion failure (srtp_ka)");
         goto err;
@@ -58,7 +59,7 @@ static ACVP_RESULT acvp_kdf135_srtp_output_tc (ACVP_CTX *ctx, ACVP_KDF135_SRTP_T
     json_object_set_string(tc_rsp, "srtpKa", (const char *)tmp);
     memset(tmp, 0x0, ACVP_KDF135_SRTP_OUTPUT_MAX);
     
-    rv = acvp_bin_to_hexstr(stc->srtp_ks, 112/8, (unsigned char *) tmp);
+    rv = acvp_bin_to_hexstr(stc->srtp_ks, 112/8, tmp);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("hex conversion failure (srtp_ks)");
         goto err;
@@ -66,7 +67,7 @@ static ACVP_RESULT acvp_kdf135_srtp_output_tc (ACVP_CTX *ctx, ACVP_KDF135_SRTP_T
     json_object_set_string(tc_rsp, "srtpKs", (const char *)tmp);
     memset(tmp, 0x0, ACVP_KDF135_SRTP_OUTPUT_MAX);
     
-    rv = acvp_bin_to_hexstr(stc->srtcp_ke, stc->aes_keylen/8, (unsigned char *) tmp);
+    rv = acvp_bin_to_hexstr(stc->srtcp_ke, stc->aes_keylen/8, tmp);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("hex conversion failure (srtcp_ke)");
         goto err;
@@ -74,7 +75,7 @@ static ACVP_RESULT acvp_kdf135_srtp_output_tc (ACVP_CTX *ctx, ACVP_KDF135_SRTP_T
     json_object_set_string(tc_rsp, "srtcpKe", (const char *)tmp);
     memset(tmp, 0x0, ACVP_KDF135_SRTP_OUTPUT_MAX);
     
-    rv = acvp_bin_to_hexstr(stc->srtcp_ka, 160/8, (unsigned char *) tmp);
+    rv = acvp_bin_to_hexstr(stc->srtcp_ka, 160/8, tmp);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("hex conversion failure (srtcp_ka)");
         goto err;
@@ -82,7 +83,7 @@ static ACVP_RESULT acvp_kdf135_srtp_output_tc (ACVP_CTX *ctx, ACVP_KDF135_SRTP_T
     json_object_set_string(tc_rsp, "srtcpKa", (const char *)tmp);
     memset(tmp, 0x0, ACVP_KDF135_SRTP_OUTPUT_MAX);
     
-    rv = acvp_bin_to_hexstr(stc->srtcp_ks, 112/8, (unsigned char *) tmp);
+    rv = acvp_bin_to_hexstr(stc->srtcp_ks, 112/8, tmp);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("hex conversion failure (srtcp_ks)");
         goto err;
@@ -90,7 +91,7 @@ static ACVP_RESULT acvp_kdf135_srtp_output_tc (ACVP_CTX *ctx, ACVP_KDF135_SRTP_T
     json_object_set_string(tc_rsp, "srtcpKs", (const char *)tmp);
     memset(tmp, 0x0, ACVP_KDF135_SRTP_OUTPUT_MAX);
 
-    err:
+err:
     free(tmp);
     return rv;
 }
@@ -117,11 +118,11 @@ static ACVP_RESULT acvp_kdf135_srtp_init_tc (ACVP_CTX *ctx,
                                              ACVP_KDF135_SRTP_TC *stc,
                                              unsigned int tc_id,
                                              int aes_keylen,
-                                             unsigned char *kdr,
-                                             unsigned char *master_key,
-                                             unsigned char *master_salt,
-                                             unsigned char *index,
-                                             unsigned char *srtcp_index) {
+                                             char *kdr,
+                                             char *master_key,
+                                             char *master_salt,
+                                             char *index,
+                                             char *srtcp_index) {
     ACVP_RESULT rv = ACVP_SUCCESS;
     memset(stc, 0x0, sizeof(ACVP_KDF135_SRTP_TC));
     
@@ -133,61 +134,61 @@ static ACVP_RESULT acvp_kdf135_srtp_init_tc (ACVP_CTX *ctx,
     stc->tc_id = tc_id;
     stc->aes_keylen = aes_keylen;
     
-    stc->kdr = calloc(ACVP_KDF135_SRTP_KDR_STR_MAX, sizeof(char));
+    stc->kdr = calloc(ACVP_KDF135_SRTP_KDR_STR_MAX+1, sizeof(char));
     if (!stc->kdr) { return ACVP_MALLOC_FAIL; }
-    rv = acvp_hexstr_to_bin((const unsigned char *) kdr, stc->kdr, ACVP_KDF135_SRTP_KDR_STR_MAX, &(stc->kdr_len));
+    rv = acvp_hexstr_to_bin(kdr, stc->kdr, ACVP_KDF135_SRTP_KDR_STR_MAX, &(stc->kdr_len));
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Hex conversion failure (kdr)");
         return rv;
     }
     
-    stc->master_key = calloc(ACVP_KDF135_SRTP_MASTER_MAX, sizeof(char));
+    stc->master_key = calloc(ACVP_KDF135_SRTP_MASTER_MAX+1, sizeof(char));
     if (!stc->master_key) { return ACVP_MALLOC_FAIL; }
-    rv = acvp_hexstr_to_bin((const unsigned char *) master_key, (unsigned char *) stc->master_key,
+    rv = acvp_hexstr_to_bin(master_key, (unsigned char *) stc->master_key,
                             ACVP_KDF135_SRTP_MASTER_MAX, NULL);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Hex conversion failure (master_key)");
         return rv;
     }
     
-    stc->master_salt = calloc(ACVP_KDF135_SRTP_MASTER_MAX, sizeof(char));
+    stc->master_salt = calloc(ACVP_KDF135_SRTP_MASTER_MAX+1, sizeof(char));
     if (!stc->master_salt) { return ACVP_MALLOC_FAIL; }
-    rv = acvp_hexstr_to_bin((const unsigned char *) master_salt, (unsigned char *) stc->master_salt,
+    rv = acvp_hexstr_to_bin(master_salt, (unsigned char *) stc->master_salt,
                             ACVP_KDF135_SRTP_MASTER_MAX, NULL);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Hex conversion failure (master_salt)");
         return rv;
     }
     
-    stc->index = calloc(ACVP_KDF135_SRTP_INDEX_MAX, sizeof(char));
+    stc->index = calloc(ACVP_KDF135_SRTP_INDEX_MAX+1, sizeof(char));
     if (!stc->index) { return ACVP_MALLOC_FAIL; }
-    rv = acvp_hexstr_to_bin((const unsigned char *) index, (unsigned char *) stc->index, ACVP_KDF135_SRTP_INDEX_MAX,
+    rv = acvp_hexstr_to_bin(index, (unsigned char *) stc->index, ACVP_KDF135_SRTP_INDEX_MAX,
                             NULL);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Hex conversion failure (index)");
         return rv;
     }
     
-    stc->srtcp_index = calloc(ACVP_KDF135_SRTP_INDEX_MAX, sizeof(char));
+    stc->srtcp_index = calloc(ACVP_KDF135_SRTP_INDEX_MAX+1, sizeof(char));
     if (!stc->srtcp_index) { return ACVP_MALLOC_FAIL; }
-    rv = acvp_hexstr_to_bin((const unsigned char *) srtcp_index, (unsigned char *) stc->srtcp_index,
+    rv = acvp_hexstr_to_bin(srtcp_index, (unsigned char *) stc->srtcp_index,
                             ACVP_KDF135_SRTP_INDEX_MAX, NULL);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Hex conversion failure (srtcp_index)");
         return rv;
     }
     
-    stc->srtp_ka = calloc(ACVP_KDF135_SRTP_OUTPUT_MAX, sizeof(char));
+    stc->srtp_ka = calloc(ACVP_KDF135_SRTP_OUTPUT_MAX+1, sizeof(char));
     if (!stc->srtp_ka) { return ACVP_MALLOC_FAIL; }
-    stc->srtp_ke = calloc(ACVP_KDF135_SRTP_OUTPUT_MAX, sizeof(char));
+    stc->srtp_ke = calloc(ACVP_KDF135_SRTP_OUTPUT_MAX+1, sizeof(char));
     if (!stc->srtp_ke) { return ACVP_MALLOC_FAIL; }
-    stc->srtp_ks = calloc(ACVP_KDF135_SRTP_OUTPUT_MAX, sizeof(char));
+    stc->srtp_ks = calloc(ACVP_KDF135_SRTP_OUTPUT_MAX+1, sizeof(char));
     if (!stc->srtp_ks) { return ACVP_MALLOC_FAIL; }
-    stc->srtcp_ka = calloc(ACVP_KDF135_SRTP_OUTPUT_MAX, sizeof(char));
+    stc->srtcp_ka = calloc(ACVP_KDF135_SRTP_OUTPUT_MAX+1, sizeof(char));
     if (!stc->srtcp_ka) { return ACVP_MALLOC_FAIL; }
-    stc->srtcp_ke = calloc(ACVP_KDF135_SRTP_OUTPUT_MAX, sizeof(char));
+    stc->srtcp_ke = calloc(ACVP_KDF135_SRTP_OUTPUT_MAX+1, sizeof(char));
     if (!stc->srtcp_ke) { return ACVP_MALLOC_FAIL; }
-    stc->srtcp_ks = calloc(ACVP_KDF135_SRTP_OUTPUT_MAX, sizeof(char));
+    stc->srtcp_ks = calloc(ACVP_KDF135_SRTP_OUTPUT_MAX+1, sizeof(char));
     if (!stc->srtcp_ks) { return ACVP_MALLOC_FAIL; }
     
     return ACVP_SUCCESS;
@@ -223,7 +224,7 @@ ACVP_RESULT acvp_kdf135_srtp_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     char *json_result;
     
     int aes_key_length;
-    unsigned char *kdr = NULL, *master_key = NULL, *master_salt = NULL, *index = NULL, *srtcp_index = NULL;
+    char *kdr = NULL, *master_key = NULL, *master_salt = NULL, *index = NULL, *srtcp_index = NULL;
 
     if (!ctx) {
         ACVP_LOG_ERR("No ctx for handler operation");
@@ -289,7 +290,7 @@ ACVP_RESULT acvp_kdf135_srtp_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
             return ACVP_INVALID_ARG;
         }
 
-        kdr = (unsigned char *)json_object_get_string(groupobj, "kdr");
+        kdr = (char *)json_object_get_string(groupobj, "kdr");
         if (!kdr) {
             ACVP_LOG_ERR("Failed to include kdr");
             return ACVP_MISSING_ARG;
@@ -309,25 +310,25 @@ ACVP_RESULT acvp_kdf135_srtp_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
             
             tc_id = (unsigned int) json_object_get_number(testobj, "tcId");
 
-            master_key = (unsigned char *)json_object_get_string(testobj, "masterKey");
+            master_key = (char *)json_object_get_string(testobj, "masterKey");
             if (!master_key) {
                 ACVP_LOG_ERR("Failed to include JSON key:\"masterKey\"");
                 return ACVP_MISSING_ARG;
             }
 
-            master_salt = (unsigned char *)json_object_get_string(testobj, "masterSalt");
+            master_salt = (char *)json_object_get_string(testobj, "masterSalt");
             if (!master_salt) {
                 ACVP_LOG_ERR("Failed to include JSON key:\"masterSalt\"");
                 return ACVP_MISSING_ARG;
             }
 
-            index = (unsigned char *)json_object_get_string(testobj, "index");
+            index = (char *)json_object_get_string(testobj, "index");
             if (!index) {
                 ACVP_LOG_ERR("Failed to include JSON key:\"index\"");
                 return ACVP_MISSING_ARG;
             }
 
-            srtcp_index = (unsigned char *)json_object_get_string(testobj, "srtcpIndex");
+            srtcp_index = (char *)json_object_get_string(testobj, "srtcpIndex");
             if (!srtcp_index) {
                 ACVP_LOG_ERR("Failed to include JSON key:\"srtcpIndex\"");
                 return ACVP_MISSING_ARG;

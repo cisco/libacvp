@@ -42,12 +42,16 @@ static ACVP_RESULT acvp_rsa_sig_kat_handler_internal (ACVP_CTX *ctx, JSON_Object
  */
 static ACVP_RESULT acvp_rsa_sig_output_tc (ACVP_CTX *ctx, ACVP_RSA_SIG_TC *stc, JSON_Object *tc_rsp) {
     ACVP_RESULT rv = ACVP_SUCCESS;
-    char *tmp = calloc(ACVP_RSA_SIGNATURE_MAX, sizeof(char));
+    char *tmp = calloc(ACVP_RSA_SIGNATURE_MAX+1, sizeof(char));
+    if (!tmp) {
+        ACVP_LOG_ERR("Unable to malloc in acvp_kdf135 tpm_output_tc");
+        return ACVP_MALLOC_FAIL;
+    }
     
     if (stc->sig_mode == ACVP_RSA_SIGVER) {
         json_object_set_string(tc_rsp, "sigResult", stc->ver_disposition ? "passed" : "failed");
     } else {
-        rv = acvp_bin_to_hexstr(stc->e, stc->e_len, (unsigned char *) tmp);
+        rv = acvp_bin_to_hexstr(stc->e, stc->e_len, tmp);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("hex conversion failure (e)");
             goto err;
@@ -55,7 +59,7 @@ static ACVP_RESULT acvp_rsa_sig_output_tc (ACVP_CTX *ctx, ACVP_RSA_SIG_TC *stc, 
         json_object_set_string(tc_rsp, "e", (const char *)tmp);
         memset(tmp, 0x0, ACVP_RSA_EXP_LEN_MAX);
     
-        rv = acvp_bin_to_hexstr(stc->n, stc->n_len, (unsigned char *) tmp);
+        rv = acvp_bin_to_hexstr(stc->n, stc->n_len, tmp);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("hex conversion failure (n)");
             goto err;
@@ -63,7 +67,7 @@ static ACVP_RESULT acvp_rsa_sig_output_tc (ACVP_CTX *ctx, ACVP_RSA_SIG_TC *stc, 
         json_object_set_string(tc_rsp, "n", (const char *)tmp);
         memset(tmp, 0x0, ACVP_RSA_EXP_LEN_MAX);
 
-        rv = acvp_bin_to_hexstr(stc->signature, (unsigned int)stc->sig_len, (unsigned char *) tmp);
+        rv = acvp_bin_to_hexstr(stc->signature, (unsigned int)stc->sig_len, tmp);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("hex conversion failure (signature)");
             goto err;
@@ -71,7 +75,7 @@ static ACVP_RESULT acvp_rsa_sig_output_tc (ACVP_CTX *ctx, ACVP_RSA_SIG_TC *stc, 
         json_object_set_string(tc_rsp, "signature", (const char *)tmp);
     }
 
-    err:
+err:
     if(tmp) free(tmp);
     return rv;
 }
@@ -101,8 +105,8 @@ static ACVP_RESULT acvp_rsa_sig_init_tc (ACVP_CTX *ctx,
                                          char *hash_alg,
                                          char *e,
                                          char *n,
-                                         unsigned char *msg,
-                                         unsigned char *signature,
+                                         char *msg,
+                                         char *signature,
                                          char *salt,
                                          int salt_len) {
     ACVP_RESULT rv;
@@ -124,7 +128,7 @@ static ACVP_RESULT acvp_rsa_sig_init_tc (ACVP_CTX *ctx,
     stc->n = calloc(ACVP_RSA_EXP_LEN_MAX, sizeof(char));
     if (!stc->n) { goto err; }
     
-    rv = acvp_hexstr_to_bin((const unsigned char *) msg, stc->msg, ACVP_RSA_MSGLEN_MAX, &(stc->msg_len));
+    rv = acvp_hexstr_to_bin(msg, stc->msg, ACVP_RSA_MSGLEN_MAX, &(stc->msg_len));
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Hex conversion failure (msg)");
         return rv;
@@ -132,17 +136,17 @@ static ACVP_RESULT acvp_rsa_sig_init_tc (ACVP_CTX *ctx,
     
     if (cipher == ACVP_RSA_SIGVER) {
         stc->sig_mode = ACVP_RSA_SIGVER;
-        rv = acvp_hexstr_to_bin((const unsigned char *) e, stc->e, ACVP_RSA_EXP_LEN_MAX, &(stc->e_len));
+        rv = acvp_hexstr_to_bin(e, stc->e, ACVP_RSA_EXP_LEN_MAX, &(stc->e_len));
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Hex conversion failure (e)");
             return rv;
         }
-        rv = acvp_hexstr_to_bin((const unsigned char *) n, stc->n, ACVP_RSA_EXP_LEN_MAX, &(stc->n_len));
+        rv = acvp_hexstr_to_bin(n, stc->n, ACVP_RSA_EXP_LEN_MAX, &(stc->n_len));
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Hex conversion failure (n)");
             return rv;
         }
-        rv = acvp_hexstr_to_bin((const unsigned char *) signature, stc->signature, ACVP_RSA_SIGNATURE_MAX, &stc->sig_len);
+        rv = acvp_hexstr_to_bin(signature, stc->signature, ACVP_RSA_SIGNATURE_MAX, &stc->sig_len);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Hex conversion failure (signature)");
             return rv;
@@ -208,7 +212,7 @@ static ACVP_RESULT acvp_rsa_sig_kat_handler_internal (ACVP_CTX *ctx, JSON_Object
     ACVP_CIPHER alg_id;
     char *json_result = NULL, *mode_str;
     unsigned int mod = 0;
-    unsigned char *msg, *signature = NULL;
+    char *msg, *signature = NULL;
     char *e_str = NULL, *n_str = NULL;
     char *hash_alg = NULL, *sig_type, *salt = NULL, *alg_str;
     int salt_len = 0;
@@ -307,10 +311,10 @@ static ACVP_RESULT acvp_rsa_sig_kat_handler_internal (ACVP_CTX *ctx, JSON_Object
              * Get a reference to the abstracted test case
              */
         
-            msg = (unsigned char *) json_object_get_string(testobj, "message");
+            msg = (char *) json_object_get_string(testobj, "message");
 
             if (alg_id == ACVP_RSA_SIGVER) {
-                signature = (unsigned char *) json_object_get_string(testobj, "signature");
+                signature = (char *) json_object_get_string(testobj, "signature");
                 salt = (char *) json_object_get_string(testobj, "salt");
             }
     
@@ -353,7 +357,7 @@ static ACVP_RESULT acvp_rsa_sig_kat_handler_internal (ACVP_CTX *ctx, JSON_Object
         }
     }
 
-    end:
+end:
     json_array_append_value(reg_arry, r_vs_val);
 
     json_result = json_serialize_to_string_pretty(ctx->kat_resp);

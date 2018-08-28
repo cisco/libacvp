@@ -42,7 +42,7 @@ static ACVP_RESULT acvp_hash_init_tc (ACVP_CTX *ctx,
                                       unsigned int tc_id,
                                       char *test_type,
                                       unsigned int msg_len,
-                                      unsigned char *msg,
+                                      char *msg,
                                       ACVP_CIPHER alg_id);
 
 static ACVP_RESULT acvp_hash_release_tc (ACVP_HASH_TC *stc);
@@ -72,14 +72,14 @@ static ACVP_RESULT acvp_hash_mct_iterate_tc (ACVP_CTX *ctx, ACVP_HASH_TC *stc, i
  */
 static ACVP_RESULT acvp_hash_output_mct_tc (ACVP_CTX *ctx, ACVP_HASH_TC *stc, JSON_Object *r_tobj) {
     ACVP_RESULT rv;
-    char *tmp;
+    char *tmp = NULL;
 
     tmp = calloc(1, ACVP_HASH_MSG_MAX);
     if (!tmp) {
         ACVP_LOG_ERR("Unable to malloc in acvp_hash_output_tc");
         return ACVP_MALLOC_FAIL;
     }
-    rv = acvp_bin_to_hexstr(stc->md, stc->md_len, (unsigned char *) tmp);
+    rv = acvp_bin_to_hexstr(stc->md, stc->md_len, tmp);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("hex conversion failure (md)");
         return rv;
@@ -136,7 +136,7 @@ static ACVP_RESULT acvp_hash_mct_tc (ACVP_CTX *ctx, ACVP_CAPS_LIST *cap,
         memcpy(msg + stc->msg_len, stc->m2, stc->msg_len);
         memcpy(msg + (stc->msg_len * 2), stc->m3, stc->msg_len);
 
-        rv = acvp_bin_to_hexstr(msg, stc->msg_len * 3, (unsigned char *) tmp);
+        rv = acvp_bin_to_hexstr(msg, stc->msg_len * 3, tmp);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("hex conversion failure (msg)");
             free(msg);
@@ -192,7 +192,7 @@ static ACVP_RESULT acvp_hash_mct_tc (ACVP_CTX *ctx, ACVP_CAPS_LIST *cap,
 
 ACVP_RESULT acvp_hash_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     unsigned int tc_id, msglen;
-    unsigned char *msg = NULL;
+    char *msg = NULL;
     JSON_Value *groupval;
     JSON_Object *groupobj = NULL;
     JSON_Value *testval;
@@ -289,7 +289,7 @@ ACVP_RESULT acvp_hash_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
             testobj = json_value_get_object(testval);
 
             tc_id = (unsigned int) json_object_get_number(testobj, "tcId");
-            msg = (unsigned char *) json_object_get_string(testobj, "msg");
+            msg = (char *) json_object_get_string(testobj, "msg");
             msglen = (unsigned int) json_object_get_number(testobj, "len");
 
             ACVP_LOG_INFO("        Test case: %d", j);
@@ -374,7 +374,7 @@ ACVP_RESULT acvp_hash_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
  */
 static ACVP_RESULT acvp_hash_output_tc (ACVP_CTX *ctx, ACVP_HASH_TC *stc, JSON_Object *tc_rsp) {
     ACVP_RESULT rv;
-    char *tmp;
+    char *tmp = NULL;
 
     tmp = calloc(1, ACVP_HASH_MSG_MAX);
     if (!tmp) {
@@ -382,7 +382,7 @@ static ACVP_RESULT acvp_hash_output_tc (ACVP_CTX *ctx, ACVP_HASH_TC *stc, JSON_O
         return ACVP_MALLOC_FAIL;
     }
 
-    rv = acvp_bin_to_hexstr(stc->md, stc->md_len, (unsigned char *) tmp);
+    rv = acvp_bin_to_hexstr(stc->md, stc->md_len, tmp);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("hex conversion failure (msg)");
         return rv;
@@ -399,7 +399,7 @@ static ACVP_RESULT acvp_hash_init_tc (ACVP_CTX *ctx,
                                       unsigned int tc_id,
                                       char *test_type,
                                       unsigned int msg_len,
-                                      unsigned char *msg,
+                                      char *msg,
                                       ACVP_CIPHER alg_id) {
     ACVP_RESULT rv;
 
@@ -419,14 +419,14 @@ static ACVP_RESULT acvp_hash_init_tc (ACVP_CTX *ctx,
     /* Assume KAT if not MCT */
     if (test_type && !strcmp(test_type, "MCT")) {
         stc->test_type = ACVP_HASH_TEST_TYPE_MCT;
-        msg_len = (strlen((char *) msg) / 2) * 8;
+        msg_len = (strnlen((char *) msg, ACVP_HASH_MSG_MAX) / 2) * 8;
     } else if (test_type && !strcmp(test_type, "AFT")) {
         stc->test_type = ACVP_HASH_TEST_TYPE_AFT;
     } else {
         return ACVP_UNSUPPORTED_OP;
     }
 
-    rv = acvp_hexstr_to_bin((const unsigned char *) msg, stc->msg, ACVP_HASH_MSG_MAX, NULL);
+    rv = acvp_hexstr_to_bin(msg, stc->msg, ACVP_HASH_MSG_MAX, NULL);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Hex converstion failure (msg)");
         return rv;

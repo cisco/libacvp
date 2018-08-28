@@ -270,17 +270,17 @@ ACVP_RESULT acvp_kdf135_snmp_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
  */
 static ACVP_RESULT acvp_kdf135_snmp_output_tc (ACVP_CTX *ctx, ACVP_KDF135_SNMP_TC *stc, JSON_Object *tc_rsp) {
     ACVP_RESULT rv = ACVP_SUCCESS;
-    char *tmp;
+    char *tmp = NULL;
     tmp = calloc(stc->skey_len*2+1, sizeof(char));
     
-    rv = acvp_bin_to_hexstr(stc->s_key, stc->skey_len, (unsigned char *) tmp);
+    rv = acvp_bin_to_hexstr(stc->s_key, stc->skey_len, tmp);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("hex conversion failure (s_key)");
         goto err;
     }
     json_object_set_string(tc_rsp, "sharedKey", (const char *)tmp);
     
-    err:
+err:
     free(tmp);
     return rv;
 }
@@ -306,7 +306,7 @@ static ACVP_RESULT acvp_kdf135_snmp_init_tc (ACVP_CTX *ctx,
     stc->engine_id = calloc(ACVP_KDF135_SNMP_ENGID_MAX, sizeof(char));
     stc->skey_len = 160/8;
     if (!stc->engine_id) { return ACVP_MALLOC_FAIL; }
-    rv = acvp_hexstr_to_bin((const unsigned char *) engine_id, stc->engine_id, ACVP_KDF135_SNMP_ENGID_MAX, NULL);
+    rv = acvp_hexstr_to_bin(engine_id, stc->engine_id, ACVP_KDF135_SNMP_ENGID_MAX, NULL);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Hex conversion failure (init_nonce)");
         return rv;

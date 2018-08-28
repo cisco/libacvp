@@ -319,16 +319,16 @@ ACVP_RESULT acvp_kdf135_tls_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
  * the JSON processing for a single test case.
  */
 static ACVP_RESULT acvp_kdf135_tls_output_tc (ACVP_CTX *ctx, ACVP_KDF135_TLS_TC *stc, JSON_Object *tc_rsp) {
-    char *tmp;
+    char *tmp = NULL;
     ACVP_RESULT rv = ACVP_SUCCESS;
     
-    tmp = calloc(1, ACVP_KDF135_TLS_MSG_MAX);
+    tmp = calloc(1, ACVP_KDF135_TLS_MSG_MAX+1);
     if (!tmp) {
         ACVP_LOG_ERR("Unable to malloc in acvp_kdf135_tls_output_tc");
         return ACVP_MALLOC_FAIL;
     }
     
-    rv = acvp_bin_to_hexstr(stc->msecret1, stc->pm_len, (unsigned char *) tmp);
+    rv = acvp_bin_to_hexstr(stc->msecret1, stc->pm_len, tmp);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("hex conversion failure (mac)");
         goto err;
@@ -336,14 +336,14 @@ static ACVP_RESULT acvp_kdf135_tls_output_tc (ACVP_CTX *ctx, ACVP_KDF135_TLS_TC 
     json_object_set_string(tc_rsp, "masterSecret", tmp);
     memset(tmp, 0x0, ACVP_KDF135_TLS_MSG_MAX);
     
-    rv = acvp_bin_to_hexstr(stc->kblock1, stc->kb_len, (unsigned char *) tmp);
+    rv = acvp_bin_to_hexstr(stc->kblock1, stc->kb_len, tmp);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("hex conversion failure (mac)");
         goto err;
     }
     json_object_set_string(tc_rsp, "keyBlock", tmp);
     
-    err:
+err:
     free(tmp);
     
     return rv;
@@ -367,7 +367,7 @@ static ACVP_RESULT acvp_kdf135_tls_init_tc (ACVP_CTX *ctx,
     
     stc->pm_secret = calloc(1, ACVP_KDF135_TLS_MSG_MAX);
     if (!stc->pm_secret) { return ACVP_MALLOC_FAIL; }
-    rv = acvp_hexstr_to_bin((const unsigned char *) pm_secret, stc->pm_secret, ACVP_KDF135_TLS_MSG_MAX, NULL);
+    rv = acvp_hexstr_to_bin(pm_secret, stc->pm_secret, ACVP_KDF135_TLS_MSG_MAX, NULL);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Hex conversion failure (pm_secret)");
         return rv;
@@ -375,7 +375,7 @@ static ACVP_RESULT acvp_kdf135_tls_init_tc (ACVP_CTX *ctx,
     
     stc->sh_rnd = calloc(1, ACVP_KDF135_TLS_MSG_MAX);
     if (!stc->sh_rnd) { return ACVP_MALLOC_FAIL; }
-    rv = acvp_hexstr_to_bin((const unsigned char *) sh_rnd, stc->sh_rnd, ACVP_KDF135_TLS_MSG_MAX, &(stc->sh_rnd_len));
+    rv = acvp_hexstr_to_bin(sh_rnd, stc->sh_rnd, ACVP_KDF135_TLS_MSG_MAX, &(stc->sh_rnd_len));
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Hex conversion failure (sh_rnd)");
         return rv;
@@ -384,7 +384,7 @@ static ACVP_RESULT acvp_kdf135_tls_init_tc (ACVP_CTX *ctx,
     stc->ch_rnd = calloc(1, ACVP_KDF135_TLS_MSG_MAX);
     if (!stc->ch_rnd) { return ACVP_MALLOC_FAIL; }
 
-    rv = acvp_hexstr_to_bin((const unsigned char *) ch_rnd, stc->ch_rnd, ACVP_KDF135_TLS_MSG_MAX, &(stc->ch_rnd_len));
+    rv = acvp_hexstr_to_bin(ch_rnd, stc->ch_rnd, ACVP_KDF135_TLS_MSG_MAX, &(stc->ch_rnd_len));
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Hex conversion failure (ch_rnd)");
         return rv;
@@ -393,7 +393,7 @@ static ACVP_RESULT acvp_kdf135_tls_init_tc (ACVP_CTX *ctx,
     stc->c_rnd = calloc(1, ACVP_KDF135_TLS_MSG_MAX);
     if (!stc->c_rnd) { return ACVP_MALLOC_FAIL; }
 
-    rv = acvp_hexstr_to_bin((const unsigned char *) c_rnd, stc->c_rnd, ACVP_KDF135_TLS_MSG_MAX, &(stc->c_rnd_len));
+    rv = acvp_hexstr_to_bin(c_rnd, stc->c_rnd, ACVP_KDF135_TLS_MSG_MAX, &(stc->c_rnd_len));
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Hex conversion failure (c_rnd)");
         return rv;
@@ -402,7 +402,7 @@ static ACVP_RESULT acvp_kdf135_tls_init_tc (ACVP_CTX *ctx,
     stc->s_rnd = calloc(1, ACVP_KDF135_TLS_MSG_MAX);
     if (!stc->s_rnd) { return ACVP_MALLOC_FAIL; }
 
-    rv = acvp_hexstr_to_bin((const unsigned char *) s_rnd, stc->s_rnd, ACVP_KDF135_TLS_MSG_MAX, &(stc->s_rnd_len));
+    rv = acvp_hexstr_to_bin(s_rnd, stc->s_rnd, ACVP_KDF135_TLS_MSG_MAX, &(stc->s_rnd_len));
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Hex conversion failure (s_rnd)");
         return rv;

@@ -1096,7 +1096,6 @@ static int enable_aes (ACVP_CTX *ctx) {
     rv = acvp_enable_sym_cipher_cap_parm(ctx, ACVP_AES_KWP, ACVP_SYM_CIPH_PTLEN, 808);
     CHECK_ENABLE_CAP_RV(rv);
 #endif
-
     /*
      * Enable AES-XTS 128 and 256 bit key
      */
@@ -2271,7 +2270,7 @@ static int enable_drbg (ACVP_CTX *ctx) {
     rv = acvp_enable_drbg_cap_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1,
             ACVP_DRBG_RET_BITS_LEN, 160);
     CHECK_ENABLE_CAP_RV(rv);
-    
+
 #if 0 /* TODO: get DRBG to support multiple instances of each flavor */
     rv = acvp_enable_drbg_cap_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_224,
                                     ACVP_DRBG_DER_FUNC_ENABLED, 0);
@@ -2284,7 +2283,7 @@ static int enable_drbg (ACVP_CTX *ctx) {
     rv = acvp_enable_drbg_cap_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_224,
             ACVP_DRBG_PRED_RESIST_ENABLED, 1);
     CHECK_ENABLE_CAP_RV(rv);
-    
+
     rv = acvp_enable_drbg_cap_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_224,
             ACVP_DRBG_PRED_RESIST_ENABLED, 1);
     CHECK_ENABLE_CAP_RV(rv);
@@ -2392,7 +2391,7 @@ static int enable_drbg (ACVP_CTX *ctx) {
     rv = acvp_enable_drbg_cap_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_384,
             ACVP_DRBG_RET_BITS_LEN, 384);
     CHECK_ENABLE_CAP_RV(rv);
-    
+
     rv = acvp_enable_drbg_cap_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_512,
                                     ACVP_DRBG_DER_FUNC_ENABLED, 0);
     CHECK_ENABLE_CAP_RV(rv);

@@ -285,7 +285,7 @@ int acvp_lookup_ecdsa_curve (ACVP_CIPHER cipher, char *curve_name) {
  */
 ACVP_RESULT acvp_bin_to_hexstr (const unsigned char *src,
                                 unsigned int src_len,
-                                unsigned char *dest) {
+                                char *dest) {
     int i, j;
     unsigned char nibb_a, nibb_b;
     unsigned char hex_chars[] = "0123456789ABCDEF";
@@ -349,7 +349,7 @@ ACVP_RESULT acvp_bin_to_bit (const unsigned char *in, int len, unsigned char *ou
  * in the destination.
  * TODO: Enable the function to handle odd number of hex characters
  */
-ACVP_RESULT acvp_hexstr_to_bin (const unsigned char *src, unsigned char *dest, int dest_max, int *converted_len) {
+ACVP_RESULT acvp_hexstr_to_bin (const char *src, unsigned char *dest, int dest_max, int *converted_len) {
     int src_len;
     int byte_a, byte_b;
     int is_odd = 0;

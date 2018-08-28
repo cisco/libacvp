@@ -43,11 +43,11 @@ static ACVP_RESULT acvp_ecdsa_kat_handler_internal (ACVP_CTX *ctx, JSON_Object *
  */
 static ACVP_RESULT acvp_ecdsa_output_tc (ACVP_CTX *ctx, ACVP_CIPHER cipher, ACVP_ECDSA_TC *stc, JSON_Object *tc_rsp) {
     ACVP_RESULT rv;
-    char *tmp;
+    char *tmp = NULL;
     tmp = calloc(ACVP_RSA_EXP_LEN_MAX, sizeof(char));
     
     if (cipher == ACVP_ECDSA_KEYGEN) {
-        rv = acvp_bin_to_hexstr(stc->qy, stc->qy_len, (unsigned char *) tmp);
+        rv = acvp_bin_to_hexstr(stc->qy, stc->qy_len, tmp);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("hex conversion failure (qy)");
             goto err;
@@ -55,7 +55,7 @@ static ACVP_RESULT acvp_ecdsa_output_tc (ACVP_CTX *ctx, ACVP_CIPHER cipher, ACVP
         json_object_set_string(tc_rsp, "qy", (const char *)tmp);
         memset(tmp, 0x0, ACVP_RSA_EXP_LEN_MAX);
     
-        rv = acvp_bin_to_hexstr(stc->qx, stc->qx_len, (unsigned char *) tmp);
+        rv = acvp_bin_to_hexstr(stc->qx, stc->qx_len, tmp);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("hex conversion failure (qx)");
             goto err;
@@ -63,7 +63,7 @@ static ACVP_RESULT acvp_ecdsa_output_tc (ACVP_CTX *ctx, ACVP_CIPHER cipher, ACVP
         json_object_set_string(tc_rsp, "qx", (const char *)tmp);
         memset(tmp, 0x0, ACVP_RSA_EXP_LEN_MAX);
     
-        rv = acvp_bin_to_hexstr(stc->d, stc->d_len, (unsigned char *) tmp);
+        rv = acvp_bin_to_hexstr(stc->d, stc->d_len, tmp);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("hex conversion failure (d)");
             goto err;
@@ -76,7 +76,7 @@ static ACVP_RESULT acvp_ecdsa_output_tc (ACVP_CTX *ctx, ACVP_CIPHER cipher, ACVP
     
     }
     if (cipher == ACVP_ECDSA_SIGGEN) {
-        rv = acvp_bin_to_hexstr(stc->qy, stc->qy_len, (unsigned char *) tmp);
+        rv = acvp_bin_to_hexstr(stc->qy, stc->qy_len, tmp);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("hex conversion failure (qy)");
             goto err;
@@ -84,7 +84,7 @@ static ACVP_RESULT acvp_ecdsa_output_tc (ACVP_CTX *ctx, ACVP_CIPHER cipher, ACVP
         json_object_set_string(tc_rsp, "qy", (const char *)tmp);
         memset(tmp, 0x0, ACVP_RSA_EXP_LEN_MAX);
     
-        rv = acvp_bin_to_hexstr(stc->qx, stc->qx_len, (unsigned char *) tmp);
+        rv = acvp_bin_to_hexstr(stc->qx, stc->qx_len, tmp);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("hex conversion failure (qx)");
             goto err;
@@ -92,7 +92,7 @@ static ACVP_RESULT acvp_ecdsa_output_tc (ACVP_CTX *ctx, ACVP_CIPHER cipher, ACVP
         json_object_set_string(tc_rsp, "qx", (const char *)tmp);
         memset(tmp, 0x0, ACVP_RSA_EXP_LEN_MAX);
     
-        rv = acvp_bin_to_hexstr(stc->r, stc->r_len, (unsigned char *) tmp);
+        rv = acvp_bin_to_hexstr(stc->r, stc->r_len, tmp);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("hex conversion failure (r)");
             goto err;
@@ -100,7 +100,7 @@ static ACVP_RESULT acvp_ecdsa_output_tc (ACVP_CTX *ctx, ACVP_CIPHER cipher, ACVP
         json_object_set_string(tc_rsp, "r", (const char *)tmp);
         memset(tmp, 0x0, ACVP_RSA_EXP_LEN_MAX);
     
-        rv = acvp_bin_to_hexstr(stc->s, stc->s_len, (unsigned char *) tmp);
+        rv = acvp_bin_to_hexstr(stc->s, stc->s_len, tmp);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("hex conversion failure (s)");
             goto err;
@@ -109,7 +109,7 @@ static ACVP_RESULT acvp_ecdsa_output_tc (ACVP_CTX *ctx, ACVP_CIPHER cipher, ACVP
         memset(tmp, 0x0, ACVP_RSA_EXP_LEN_MAX);
     }
     
-    err:
+err:
     free(tmp);
     return ACVP_SUCCESS;
 }
@@ -185,13 +185,13 @@ static ACVP_RESULT acvp_ecdsa_init_tc (ACVP_CTX *ctx,
     
     if (cipher == ACVP_ECDSA_KEYVER || cipher == ACVP_ECDSA_SIGVER) {
         if (!qx || !qy) return ACVP_MISSING_ARG;
-        rv = acvp_hexstr_to_bin((const unsigned char *) qx, stc->qx, ACVP_RSA_EXP_LEN_MAX, &(stc->qx_len));
+        rv = acvp_hexstr_to_bin(qx, stc->qx, ACVP_RSA_EXP_LEN_MAX, &(stc->qx_len));
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Hex conversion failure (qx)");
             return rv;
         }
         
-        rv = acvp_hexstr_to_bin((const unsigned char *) qy, stc->qy, ACVP_RSA_EXP_LEN_MAX, &(stc->qy_len));
+        rv = acvp_hexstr_to_bin(qy, stc->qy, ACVP_RSA_EXP_LEN_MAX, &(stc->qy_len));
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Hex conversion failure (qy)");
             return rv;
@@ -199,13 +199,13 @@ static ACVP_RESULT acvp_ecdsa_init_tc (ACVP_CTX *ctx,
     }
     if (cipher == ACVP_ECDSA_SIGVER) {
         if (!r || !s) return ACVP_MISSING_ARG;
-        rv = acvp_hexstr_to_bin((const unsigned char *) r, stc->r, ACVP_RSA_EXP_LEN_MAX, &(stc->r_len));
+        rv = acvp_hexstr_to_bin(r, stc->r, ACVP_RSA_EXP_LEN_MAX, &(stc->r_len));
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Hex conversion failure (r)");
             return rv;
         }
         
-        rv = acvp_hexstr_to_bin((const unsigned char *) s, stc->s, ACVP_RSA_EXP_LEN_MAX, &(stc->s_len));
+        rv = acvp_hexstr_to_bin(s, stc->s, ACVP_RSA_EXP_LEN_MAX, &(stc->s_len));
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Hex conversion failure (s)");
             return rv;
@@ -213,7 +213,7 @@ static ACVP_RESULT acvp_ecdsa_init_tc (ACVP_CTX *ctx,
     }
     if (cipher == ACVP_ECDSA_SIGVER || cipher == ACVP_ECDSA_SIGGEN) {
         if (!message) return ACVP_MISSING_ARG;
-        rv = acvp_hexstr_to_bin((const unsigned char *) message, stc->message, ACVP_RSA_MSGLEN_MAX, &(stc->msg_len));
+        rv = acvp_hexstr_to_bin(message, stc->message, ACVP_RSA_MSGLEN_MAX, &(stc->msg_len));
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Hex conversion failure (message)");
             return rv;
@@ -222,7 +222,7 @@ static ACVP_RESULT acvp_ecdsa_init_tc (ACVP_CTX *ctx,
     
     return ACVP_SUCCESS;
     
-    err:
+err:
     ACVP_LOG_ERR("Failed to allocate buffer in ECDSA test case");
     if (stc->curve) free(stc->curve);
     if (stc->secret_gen_mode) free(stc->secret_gen_mode);

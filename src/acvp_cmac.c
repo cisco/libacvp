@@ -35,14 +35,14 @@
 static ACVP_RESULT acvp_cmac_init_tc (ACVP_CTX *ctx,
                                       ACVP_CMAC_TC *stc,
                                       unsigned int tc_id,
-                                      unsigned char *msg,
+                                      char *msg,
                                       unsigned int msg_len,
                                       unsigned int key_len,
-                                      unsigned char *key,
-                                      unsigned char *key2,
-                                      unsigned char *key3,
+                                      char *key,
+                                      char *key2,
+                                      char *key3,
                                       int direction_verify,
-                                      unsigned char *mac,
+                                      char *mac,
                                       unsigned int mac_len,
                                       ACVP_CIPHER alg_id) {
     ACVP_RESULT rv;
@@ -80,30 +80,30 @@ static ACVP_RESULT acvp_cmac_init_tc (ACVP_CTX *ctx,
     stc->key3 = calloc(1, ACVP_CMAC_KEY_MAX);
     if (!stc->key3) { return ACVP_MALLOC_FAIL; }
 
-    rv = acvp_hexstr_to_bin((const unsigned char *) msg, stc->msg, ACVP_CMAC_MSG_MAX, NULL);
+    rv = acvp_hexstr_to_bin(msg, stc->msg, ACVP_CMAC_MSG_MAX, NULL);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Hex converstion failure (msg)");
         return rv;
     }
     
     if (alg_id == ACVP_CMAC_AES) {
-        rv = acvp_hexstr_to_bin((const unsigned char *) key, stc->key, ACVP_CMAC_KEY_MAX, (int *)&(stc->key_len));
+        rv = acvp_hexstr_to_bin(key, stc->key, ACVP_CMAC_KEY_MAX, (int *)&(stc->key_len));
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Hex converstion failure (key)");
             return rv;
         }
     } else if (alg_id == ACVP_CMAC_TDES) {
-        rv = acvp_hexstr_to_bin((const unsigned char *) key, stc->key, ACVP_CMAC_KEY_MAX, NULL);
+        rv = acvp_hexstr_to_bin(key, stc->key, ACVP_CMAC_KEY_MAX, NULL);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Hex converstion failure (key1)");
             return rv;
         }
-        rv = acvp_hexstr_to_bin((const unsigned char *) key2, stc->key2, ACVP_CMAC_KEY_MAX, NULL);
+        rv = acvp_hexstr_to_bin(key2, stc->key2, ACVP_CMAC_KEY_MAX, NULL);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Hex converstion failure (key2)");
             return rv;
         }
-        rv = acvp_hexstr_to_bin((const unsigned char *) key3, stc->key3, ACVP_CMAC_KEY_MAX, NULL);
+        rv = acvp_hexstr_to_bin(key3, stc->key3, ACVP_CMAC_KEY_MAX, NULL);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Hex converstion failure (key3)");
             return rv;
@@ -133,7 +133,7 @@ static ACVP_RESULT acvp_cmac_init_tc (ACVP_CTX *ctx,
  */
 static ACVP_RESULT acvp_cmac_output_tc (ACVP_CTX *ctx, ACVP_CMAC_TC *stc, JSON_Object *tc_rsp) {
     ACVP_RESULT rv;
-    char *tmp;
+    char *tmp = NULL;
 
     tmp = calloc(1, ACVP_CMAC_MSG_MAX);
     if (!tmp) {
@@ -144,7 +144,7 @@ static ACVP_RESULT acvp_cmac_output_tc (ACVP_CTX *ctx, ACVP_CMAC_TC *stc, JSON_O
     if (strncmp(stc->direction, "ver", 3) == 0) {
         json_object_set_string(tc_rsp, "result", stc->ver_disposition);
     } else {
-        rv = acvp_bin_to_hexstr(stc->mac, stc->mac_len, (unsigned char *) tmp);
+        rv = acvp_bin_to_hexstr(stc->mac, stc->mac_len, tmp);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("hex conversion failure (mac)");
             return rv;
@@ -173,7 +173,7 @@ static ACVP_RESULT acvp_cmac_release_tc (ACVP_CMAC_TC *stc) {
 
 ACVP_RESULT acvp_cmac_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     unsigned int tc_id, msglen, keyLen = 0, keyingOption = 0, maclen, verify = 0;
-    unsigned char *msg = NULL, *key1 = NULL, *key2 = NULL, *key3 = NULL, *mac = NULL;
+    char *msg = NULL, *key1 = NULL, *key2 = NULL, *key3 = NULL, *mac = NULL;
     JSON_Value *groupval;
     JSON_Object *groupobj = NULL;
     JSON_Value *testval;
@@ -286,18 +286,18 @@ ACVP_RESULT acvp_cmac_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
             testobj = json_value_get_object(testval);
 
             tc_id = (unsigned int) json_object_get_number(testobj, "tcId");
-            msg = (unsigned char *) json_object_get_string(testobj, "msg");
+            msg = (char *) json_object_get_string(testobj, "msg");
             if (alg_id == ACVP_CMAC_AES) {
-                key1 = (unsigned char *) json_object_get_string(testobj, "key");
+                key1 = (char *) json_object_get_string(testobj, "key");
             } else if (alg_id == ACVP_CMAC_TDES) {
-                key1 = (unsigned char *) json_object_get_string(testobj, "key1");
-                key2 = (unsigned char *) json_object_get_string(testobj, "key2");
-                key3 = (unsigned char *) json_object_get_string(testobj, "key3");
+                key1 = (char *) json_object_get_string(testobj, "key1");
+                key2 = (char *) json_object_get_string(testobj, "key2");
+                key3 = (char *) json_object_get_string(testobj, "key3");
             }
     
             if (strncmp((const char *)direction, "ver", 3) == 0) {
                 verify = 1;
-                mac = (unsigned char *) json_object_get_string(testobj, "mac");
+                mac = (char *) json_object_get_string(testobj, "mac");
             }
 
             ACVP_LOG_INFO("\n        Test case: %d", j);

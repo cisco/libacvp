@@ -39,17 +39,17 @@
  */
 static ACVP_RESULT acvp_kdf135_x963_output_tc (ACVP_CTX *ctx, ACVP_KDF135_X963_TC *stc, JSON_Object *tc_rsp) {
     ACVP_RESULT rv;
-    char *tmp;
+    char *tmp = NULL;
     tmp = calloc(ACVP_KDF135_X963_KEYDATA_MAX, sizeof(char));
     
-    rv = acvp_bin_to_hexstr(stc->key_data, strnlen((const char *)stc->key_data, ACVP_KDF135_X963_KEYDATA_MAX), (unsigned char *) tmp);
+    rv = acvp_bin_to_hexstr(stc->key_data, strnlen((const char *)stc->key_data, ACVP_KDF135_X963_KEYDATA_MAX), tmp);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("hex conversion failure (key_data)");
         goto err;
     }
     json_object_set_string(tc_rsp, "keyData", (const char *)tmp);
     memset(tmp, 0x0, ACVP_KDF135_X963_KEYDATA_MAX);
-    err:
+err:
     free(tmp);
     return ACVP_SUCCESS;
 }
@@ -72,8 +72,8 @@ static ACVP_RESULT acvp_kdf135_x963_init_tc (ACVP_CTX *ctx,
                                              int field_size,
                                              int key_data_length,
                                              int shared_info_length,
-                                             unsigned char *z,
-                                             unsigned char *shared_info) {
+                                             char *z,
+                                             char *shared_info) {
     ACVP_RESULT rv = ACVP_SUCCESS;
     memset(stc, 0x0, sizeof(ACVP_KDF135_X963_TC));
 
@@ -93,7 +93,7 @@ static ACVP_RESULT acvp_kdf135_x963_init_tc (ACVP_CTX *ctx,
     
     stc->z = calloc(ACVP_KDF135_X963_INPUT_MAX, sizeof(char));
     if (!stc->z) { return ACVP_MALLOC_FAIL; }
-    rv = acvp_hexstr_to_bin((const unsigned char *) z, stc->z, ACVP_KDF135_X963_INPUT_MAX, NULL);
+    rv = acvp_hexstr_to_bin(z, stc->z, ACVP_KDF135_X963_INPUT_MAX, NULL);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Hex conversion failure (z)");
         return rv;
@@ -101,7 +101,7 @@ static ACVP_RESULT acvp_kdf135_x963_init_tc (ACVP_CTX *ctx,
     
     stc->shared_info = calloc(ACVP_KDF135_X963_INPUT_MAX, sizeof(char));
     if (!stc->shared_info) { return ACVP_MALLOC_FAIL; }
-    rv = acvp_hexstr_to_bin((const unsigned char *) shared_info, stc->shared_info, ACVP_KDF135_X963_INPUT_MAX, NULL);
+    rv = acvp_hexstr_to_bin(shared_info, stc->shared_info, ACVP_KDF135_X963_INPUT_MAX, NULL);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Hex conversion failure (shared_info)");
         return rv;
@@ -144,7 +144,8 @@ ACVP_RESULT acvp_kdf135_x963_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     char *json_result;
     
     int field_size, key_data_length, shared_info_len;
-    unsigned char *hash_alg = NULL, *z = NULL, *shared_info = NULL;
+    unsigned char *hash_alg = NULL;
+    char *z = NULL, *shared_info = NULL;
     
     /*
      * Get a reference to the abstracted test case
@@ -259,8 +260,8 @@ ACVP_RESULT acvp_kdf135_x963_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
                 return ACVP_MISSING_ARG;
             }
             
-            z = (unsigned char *)json_object_get_string(testobj, "z");
-            shared_info = (unsigned char *)json_object_get_string(testobj, "sharedInfo");
+            z = (char *)json_object_get_string(testobj, "z");
+            shared_info = (char *)json_object_get_string(testobj, "sharedInfo");
             
             ACVP_LOG_INFO("        Test case: %d", j);
             ACVP_LOG_INFO("             tcId: %d", tc_id);

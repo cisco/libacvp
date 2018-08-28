@@ -347,6 +347,7 @@ typedef enum acvp_kdf135_snmp_param {
 #define ACVP_STR_SHA2_512       "SHA2-512"
 #define ACVP_STR_SHA2_512_224   "SHA2-512/224"
 #define ACVP_STR_SHA2_512_256   "SHA2-512/256"
+#define ACVP_STR_SHA_MAX        12
 typedef enum acvp_hash_param {
     ACVP_HASH_IN_BIT = 0,
     ACVP_HASH_IN_EMPTY
@@ -463,6 +464,9 @@ typedef enum acvp_kdf108_param {
 
 #define PRIME_TEST_TBLC2_NAME "tblC2"
 #define PRIME_TEST_TBLC3_NAME "tblC3"
+#define PRIME_TEST_STR_LEN_MAX 5
+#define RSA_PUB_EXP_MODE_STR_LEN_MAX 7
+#define RSA_KEY_FORMAT_STR_LEN_MAX 8
 
 #define RSA_PUB_EXP_FIXED      1
 #define RSA_PUB_EXP_RANDOM     0
@@ -1093,6 +1097,7 @@ typedef struct acvp_dsa_tc_t {
 } ACVP_DSA_TC;
 
 #define ACVP_KAS_ECC_MAX_STR 4096
+#define ACVP_KAS_ECC_MAX_BYTE ACVP_KAS_ECC_MAX_STR/2
 /*! @struct ACVP_KAS_ECC_MODE */
 typedef enum acvp_kas_ecc_mode {
     ACVP_KAS_ECC_MODE_COMPONENT = 1,
@@ -2579,9 +2584,9 @@ ACVP_RESULT acvp_check_test_results (ACVP_CTX *ctx);
  */
 ACVP_RESULT acvp_set_2fa_callback (ACVP_CTX *ctx, ACVP_RESULT (*totp_cb) (char **token));
 
-ACVP_RESULT acvp_bin_to_hexstr (const unsigned char *src, unsigned int src_len, unsigned char *dest);
+ACVP_RESULT acvp_bin_to_hexstr (const unsigned char *src, unsigned int src_len, char *dest);
 
-ACVP_RESULT acvp_hexstr_to_bin (const unsigned char *src, unsigned char *dest, int dest_max, int *converted_len);
+ACVP_RESULT acvp_hexstr_to_bin (const char *src, unsigned char *dest, int dest_max, int *converted_len);
 
 /*! @brief acvp_lookup_error_string() is a utility that
  * returns a more descriptive string for an ACVP_RESULT

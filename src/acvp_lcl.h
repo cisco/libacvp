@@ -285,6 +285,7 @@
  * https://github.com/usnistgov/ACVP/blob/master/artifacts/acvp_sub_kdf135_ikev2.txt
  */
 #define ACVP_KDF135_IKEV2_SPI_STR_MAX 32
+#define ACVP_KDF135_IKEV2_SPI_BYTE_MAX ACVP_KDF135_IKEV2_SPI_STR_MAX/2
 
 #define ACVP_KDF135_IKEV2_SKEY_SEED_BYTE_MAX 64 /**< SHA256 byte length */
 #define ACVP_KDF135_IKEV2_SKEY_SEED_STR_MAX 128 /**< SHA256 hex length */
@@ -323,7 +324,9 @@
 #define ACVP_CMAC_KEY_MAX       64        /**< 256 bits, 64 characters */
 
 #define ACVP_DSA_PQG_MAX        3072     /**< 3072 bits, 768 characters */
+#define ACVP_DSA_PQG_MAX_BYTES  ACVP_DSA_PQG_MAX/2
 #define ACVP_DSA_SEED_MAX       1024
+#define ACVP_DSA_SEED_MAX_BYTES ACVP_DSA_SEED_MAX/2
 #define ACVP_DSA_MAX_STRING     3072     /**< 3072 bytes */
 
 #define ACVP_RSA_SEEDLEN_MAX    64
@@ -829,7 +832,7 @@ ACVP_RESULT acvp_submit_vector_responses (ACVP_CTX *ctx);
 
 void acvp_log_msg (ACVP_CTX *ctx, ACVP_LOG_LVL level, const char *format, ...);
 
-ACVP_RESULT acvp_hexstr_to_bin (const unsigned char *src, unsigned char *dest, int dest_max, int *converted_len);
+ACVP_RESULT acvp_hexstr_to_bin (const char *src, unsigned char *dest, int dest_max, int *converted_len);
 
 ACVP_RESULT acvp_bin_to_bit (const unsigned char *in, int len, unsigned char *out);
 
