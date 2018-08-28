@@ -91,7 +91,7 @@ static ACVP_RESULT acvp_kdf135_srtp_output_tc (ACVP_CTX *ctx, ACVP_KDF135_SRTP_T
     memset(tmp, 0x0, ACVP_KDF135_SRTP_OUTPUT_MAX);
 
     err:
-//    free(tmp);
+    free(tmp);
     return rv;
 }
 /*

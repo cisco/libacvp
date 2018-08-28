@@ -84,6 +84,7 @@ static ACVP_RESULT acvp_rsa_sig_output_tc (ACVP_CTX *ctx, ACVP_RSA_SIG_TC *stc, 
 static ACVP_RESULT acvp_rsa_siggen_release_tc (ACVP_RSA_SIG_TC *stc) {
     if (stc->msg) { free(stc->msg); }
     if (stc->hash_alg) { free(stc->hash_alg); }
+    if (stc->sig_type) { free(stc->sig_type); }
     if (stc->e) { free(stc->e); }
     if (stc->n) { free(stc->n); }
     if (stc->signature) { free(stc->signature); }
@@ -123,7 +124,7 @@ static ACVP_RESULT acvp_rsa_sig_init_tc (ACVP_CTX *ctx,
     stc->n = calloc(ACVP_RSA_EXP_LEN_MAX, sizeof(char));
     if (!stc->n) { goto err; }
     
-    rv = acvp_hexstr_to_bin((const unsigned char *) msg, stc->msg, stc->msg_len, &(stc->msg_len));
+    rv = acvp_hexstr_to_bin((const unsigned char *) msg, stc->msg, ACVP_RSA_MSGLEN_MAX, &(stc->msg_len));
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Hex conversion failure (msg)");
         return rv;
@@ -349,9 +350,6 @@ static ACVP_RESULT acvp_rsa_sig_kat_handler_internal (ACVP_CTX *ctx, JSON_Object
             if (rv != ACVP_SUCCESS) {
                 goto end;
             }
-
-            signature = NULL;
-            msg = NULL;
         }
     }
 

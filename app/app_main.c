@@ -3792,12 +3792,12 @@ static ACVP_RESULT app_dsa_handler(ACVP_TEST_CASE *test_case)
         L = tc->l;
         N = tc->n;
 
-//        if (dsa_builtin_paramgen2(dsa, L, N, NULL, NULL, 0, -1,
-//                        NULL, NULL, NULL, NULL) <= 0) {
-//            printf("Parameter Generation error\n");
-//            FIPS_dsa_free(dsa);
-//            return ACVP_CRYPTO_MODULE_FAIL;
-//        }
+        if (dsa_builtin_paramgen2(dsa, L, N, NULL, NULL, 0, -1,
+                        NULL, NULL, NULL, NULL) <= 0) {
+            printf("Parameter Generation error\n");
+            FIPS_dsa_free(dsa);
+            return ACVP_CRYPTO_MODULE_FAIL;
+        }
 
 #if OPENSSL_VERSION_NUMBER <= 0x10100000L
         p = dsa->p;
@@ -3872,13 +3872,13 @@ static ACVP_RESULT app_dsa_handler(ACVP_TEST_CASE *test_case)
             BN_bin2bn(tc->p, tc->p_len, p);
             BN_bin2bn(tc->q, tc->q_len, q);
 
-//            if (dsa_builtin_paramgen2(dsa, L, N, md,
-//                    tc->seed, tc->seedlen, -1, NULL,
-//                    &counter2, &h2, NULL) < 0) {
-//                printf("Parameter Generation error\n");
-//                FIPS_dsa_free(dsa);
-//                return ACVP_CRYPTO_MODULE_FAIL;
-//            }
+            if (dsa_builtin_paramgen2(dsa, L, N, md,
+                    tc->seed, tc->seedlen, -1, NULL,
+                    &counter2, &h2, NULL) < 0) {
+                printf("Parameter Generation error\n");
+                FIPS_dsa_free(dsa);
+                return ACVP_CRYPTO_MODULE_FAIL;
+            }
 
 #if OPENSSL_VERSION_NUMBER <= 0x10100000L
             p2 = dsa->p;
@@ -3919,15 +3919,15 @@ static ACVP_RESULT app_dsa_handler(ACVP_TEST_CASE *test_case)
 #else
             DSA_set0_pqg(dsa, BN_dup(p), BN_dup(q), NULL);
 #endif
-//
-//            if (dsa_builtin_paramgen2(dsa, L, N, md,
-//                    tc->seed, tc->seedlen, tc->index, NULL,
-//                    &counter2, &h2, NULL) < 0) {
-//
-//                printf("Parameter Generation error\n");
-//                FIPS_dsa_free(dsa);
-//                return ACVP_CRYPTO_MODULE_FAIL;
-//            }
+
+            if (dsa_builtin_paramgen2(dsa, L, N, md,
+                    tc->seed, tc->seedlen, tc->index, NULL,
+                    &counter2, &h2, NULL) < 0) {
+
+                printf("Parameter Generation error\n");
+                FIPS_dsa_free(dsa);
+                return ACVP_CRYPTO_MODULE_FAIL;
+            }
 
 #if OPENSSL_VERSION_NUMBER <= 0x10100000L
             g2 = dsa->g;
@@ -4054,12 +4054,12 @@ static ACVP_RESULT app_dsa_handler(ACVP_TEST_CASE *test_case)
         L = tc->l;
         N = tc->n;
 
-//        if (dsa_builtin_paramgen2(dsa, L, N, md, NULL, 0, -1,
-//                        NULL, NULL, NULL, NULL) <= 0) {
-//            printf("Parameter Generation error\n");
-//            FIPS_dsa_free(dsa);
-//            return ACVP_CRYPTO_MODULE_FAIL;
-//        }
+        if (dsa_builtin_paramgen2(dsa, L, N, md, NULL, 0, -1,
+                        NULL, NULL, NULL, NULL) <= 0) {
+            printf("Parameter Generation error\n");
+            FIPS_dsa_free(dsa);
+            return ACVP_CRYPTO_MODULE_FAIL;
+        }
 
 #if OPENSSL_VERSION_NUMBER <= 0x10100000L
         p = dsa->p;
@@ -4149,13 +4149,13 @@ static ACVP_RESULT app_dsa_handler(ACVP_TEST_CASE *test_case)
 #endif
             L = tc->l;
             N = tc->n;
-//            if (dsa_builtin_paramgen2(dsa, L, N, md,
-//                      tc->seed, tc->seedlen, tc->index, NULL,
-//                      NULL, NULL, NULL) <= 0) {
-//                printf("DSA Parameter Generation2 error for %d\n", tc->gen_pq);
-//                FIPS_dsa_free(dsa);
-//                return ACVP_CRYPTO_MODULE_FAIL;
-//            }
+            if (dsa_builtin_paramgen2(dsa, L, N, md,
+                      tc->seed, tc->seedlen, tc->index, NULL,
+                      NULL, NULL, NULL) <= 0) {
+                printf("DSA Parameter Generation2 error for %d\n", tc->gen_pq);
+                FIPS_dsa_free(dsa);
+                return ACVP_CRYPTO_MODULE_FAIL;
+            }
 #if OPENSSL_VERSION_NUMBER <= 0x10100000L
             tc->g_len = BN_bn2bin(dsa->g, tc->g);
 #else
@@ -4169,13 +4169,13 @@ static ACVP_RESULT app_dsa_handler(ACVP_TEST_CASE *test_case)
             dsa = FIPS_dsa_new();
             L = tc->l;
             N = tc->n;
-//            if (dsa_builtin_paramgen2(dsa, L, N, md,
-//                                          NULL, 0, -1, seed,
-//                                          &counter, &h, NULL) <= 0) {
-//                printf("DSA Parameter Generation 2 error for %d\n", tc->gen_pq);
-//                FIPS_dsa_free(dsa);
-//                return ACVP_CRYPTO_MODULE_FAIL;
-//            }
+            if (dsa_builtin_paramgen2(dsa, L, N, md,
+                                          NULL, 0, -1, seed,
+                                          &counter, &h, NULL) <= 0) {
+                printf("DSA Parameter Generation 2 error for %d\n", tc->gen_pq);
+                FIPS_dsa_free(dsa);
+                return ACVP_CRYPTO_MODULE_FAIL;
+            }
 
 #if OPENSSL_VERSION_NUMBER <= 0x10100000L
             p = dsa->p;
@@ -4503,6 +4503,8 @@ static ACVP_RESULT app_kas_ffc_handler(ACVP_TEST_CASE *test_case)
     p = dh->p;
     q = dh->q;
     g = dh->g;
+    pub_key = dh->pub_key;
+    priv_key = dh->priv_key;
 #else
     DH_get0_pqg(dh, (const BIGNUM **)&p,
                 (const BIGNUM **)&q, (const BIGNUM **)&g);
@@ -4517,7 +4519,7 @@ static ACVP_RESULT app_kas_ffc_handler(ACVP_TEST_CASE *test_case)
     peerkey = FIPS_bn_new();
     BN_bin2bn(tc->eps, tc->epslen, peerkey);
     
-    if (!peerkey || !dh->p || !dh->q || !dh->g) {
+    if (!peerkey || !p || !q || !g) {
         printf("BN_bin2bn failed p q g eps\n");
         goto error;
     }
@@ -4526,7 +4528,7 @@ static ACVP_RESULT app_kas_ffc_handler(ACVP_TEST_CASE *test_case)
         BN_bin2bn(tc->epri, tc->eprilen, priv_key);
         BN_bin2bn(tc->epui, tc->epuilen, pub_key);
     
-        if (!dh->pub_key || !dh->priv_key) {
+        if (!pub_key || !priv_key) {
             printf("BN_bin2bn failed epri epui\n");
             goto error;
         }
@@ -4869,7 +4871,6 @@ static ACVP_RESULT app_ecdsa_handler(ACVP_TEST_CASE *test_case)
     
         BN_bin2bn(tc->qx, tc->qx_len, Qx);
         BN_bin2bn(tc->qy, tc->qy_len, Qy);
-
         if (!Qx || !Qy) {
             printf("Error BIGNUM conversion\n");
             rv = ACVP_CRYPTO_MODULE_FAIL;
@@ -4878,6 +4879,11 @@ static ACVP_RESULT app_ecdsa_handler(ACVP_TEST_CASE *test_case)
         
         BN_bin2bn(tc->r, tc->r_len, r);
         BN_bin2bn(tc->s, tc->s_len, s);
+        if (!r || !s) {
+            printf("Error BIGNUM conversion\n");
+            rv = ACVP_CRYPTO_MODULE_FAIL;
+            goto err;
+        }
     
         key = EC_KEY_new_by_curve_name(nid);
         if (!key) {

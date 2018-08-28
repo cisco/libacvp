@@ -203,12 +203,6 @@ int FIPS_rsa_verify(struct rsa_st *rsa, const unsigned char *msg, int msglen,
 			int saltlen, const struct env_md_st *mgf1Hash,
 			const unsigned char *sigbuf, unsigned int siglen);
 
-//
-//int dsa_builtin_paramgen2(DSA *ret, size_t L, size_t N,
-//	const EVP_MD *evpmd, const unsigned char *seed_in, size_t seed_len,
-//	int idx, unsigned char *seed_out,
-//	int *counter_ret, unsigned long *h_ret, BN_GENCB *cb);
-
 static int no_err;
 static void put_err_cb(int lib, int func,int reason,const char *file,int line)
 	{
