@@ -285,7 +285,7 @@
  * https://github.com/usnistgov/ACVP/blob/master/artifacts/acvp_sub_kdf135_ikev2.txt
  */
 #define ACVP_KDF135_IKEV2_SPI_STR_MAX 32
-#define ACVP_KDF135_IKEV2_SPI_BYTE_MAX ACVP_KDF135_IKEV2_SPI_STR_MAX/2
+#define ACVP_KDF135_IKEV2_SPI_BYTE_MAX (ACVP_KDF135_IKEV2_SPI_STR_MAX/2)
 
 #define ACVP_KDF135_IKEV2_SKEY_SEED_BYTE_MAX 64 /**< SHA256 byte length */
 #define ACVP_KDF135_IKEV2_SKEY_SEED_STR_MAX 128 /**< SHA256 hex length */
@@ -324,9 +324,9 @@
 #define ACVP_CMAC_KEY_MAX       64        /**< 256 bits, 64 characters */
 
 #define ACVP_DSA_PQG_MAX        3072     /**< 3072 bits, 768 characters */
-#define ACVP_DSA_PQG_MAX_BYTES  ACVP_DSA_PQG_MAX/2
+#define ACVP_DSA_PQG_MAX_BYTES  (ACVP_DSA_PQG_MAX/2)
 #define ACVP_DSA_SEED_MAX       1024
-#define ACVP_DSA_SEED_MAX_BYTES ACVP_DSA_SEED_MAX/2
+#define ACVP_DSA_SEED_MAX_BYTES (ACVP_DSA_SEED_MAX/2)
 #define ACVP_DSA_MAX_STRING     3072     /**< 3072 bytes */
 
 #define ACVP_RSA_SEEDLEN_MAX    64
@@ -340,6 +340,7 @@
 #define ACVP_RSA_SIG_TYPE_LEN_MAX    9
 #define ACVP_RSA_HASH_ALG_LEN_MAX    12
 #define ACVP_RSA_EXP_LEN_MAX         1024  /**< 2048 bits max for n, 512 characters */
+#define ACVP_ECDSA_EXP_LEN_MAX       512
 
 
 #define ACVP_KAT_BUF_MAX        1024*1024*4

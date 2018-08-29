@@ -74,12 +74,12 @@ static ACVP_RESULT acvp_hash_output_mct_tc (ACVP_CTX *ctx, ACVP_HASH_TC *stc, JS
     ACVP_RESULT rv;
     char *tmp = NULL;
 
-    tmp = calloc(1, ACVP_HASH_MSG_MAX);
+    tmp = calloc(1, ACVP_HASH_MD_MAX+1);
     if (!tmp) {
         ACVP_LOG_ERR("Unable to malloc in acvp_hash_output_tc");
         return ACVP_MALLOC_FAIL;
     }
-    rv = acvp_bin_to_hexstr(stc->md, stc->md_len, tmp);
+    rv = acvp_bin_to_hexstr(stc->md, stc->md_len, tmp, ACVP_HASH_MD_MAX);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("hex conversion failure (md)");
         return rv;
@@ -136,7 +136,7 @@ static ACVP_RESULT acvp_hash_mct_tc (ACVP_CTX *ctx, ACVP_CAPS_LIST *cap,
         memcpy(msg + stc->msg_len, stc->m2, stc->msg_len);
         memcpy(msg + (stc->msg_len * 2), stc->m3, stc->msg_len);
 
-        rv = acvp_bin_to_hexstr(msg, stc->msg_len * 3, tmp);
+        rv = acvp_bin_to_hexstr(msg, stc->msg_len * 3, tmp, ACVP_HASH_MSG_MAX);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("hex conversion failure (msg)");
             free(msg);
@@ -376,13 +376,13 @@ static ACVP_RESULT acvp_hash_output_tc (ACVP_CTX *ctx, ACVP_HASH_TC *stc, JSON_O
     ACVP_RESULT rv;
     char *tmp = NULL;
 
-    tmp = calloc(1, ACVP_HASH_MSG_MAX);
+    tmp = calloc(1, ACVP_HASH_MD_MAX+1);
     if (!tmp) {
         ACVP_LOG_ERR("Unable to malloc in acvp_hash_output_tc");
         return ACVP_MALLOC_FAIL;
     }
 
-    rv = acvp_bin_to_hexstr(stc->md, stc->md_len, tmp);
+    rv = acvp_bin_to_hexstr(stc->md, stc->md_len, tmp, ACVP_HASH_MD_MAX);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("hex conversion failure (msg)");
         return rv;

@@ -13,11 +13,11 @@ Upcoming Changes!
     
     The library API has been updated as of **August 2018** to store hex buffers
     as their equivalent byte arrays. This simplifies the responsibilities of
-    the applicatin layer as most C crypto libraries ingest/output byte
+    the application layer as most C crypto libraries ingest/output byte
     arrays by default. From now on, test case properties that show in the ACVP
     spec as hex strings will be stored as byte arrays, and the library will
-    expect the application to populate result attributes as byte arrays as
-    well. For examples, see app/app_main.c.
+    expect the application to populate result attributes as byte arrays and to
+    fill in the corresponding length attribute. For examples, see app/app_main.c.
 
 
 Overview

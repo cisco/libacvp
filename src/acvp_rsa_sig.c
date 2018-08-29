@@ -42,7 +42,7 @@ static ACVP_RESULT acvp_rsa_sig_kat_handler_internal (ACVP_CTX *ctx, JSON_Object
  */
 static ACVP_RESULT acvp_rsa_sig_output_tc (ACVP_CTX *ctx, ACVP_RSA_SIG_TC *stc, JSON_Object *tc_rsp) {
     ACVP_RESULT rv = ACVP_SUCCESS;
-    char *tmp = calloc(ACVP_RSA_SIGNATURE_MAX+1, sizeof(char));
+    char *tmp = calloc(ACVP_RSA_EXP_LEN_MAX+1, sizeof(char));
     if (!tmp) {
         ACVP_LOG_ERR("Unable to malloc in acvp_kdf135 tpm_output_tc");
         return ACVP_MALLOC_FAIL;
@@ -51,7 +51,7 @@ static ACVP_RESULT acvp_rsa_sig_output_tc (ACVP_CTX *ctx, ACVP_RSA_SIG_TC *stc, 
     if (stc->sig_mode == ACVP_RSA_SIGVER) {
         json_object_set_string(tc_rsp, "sigResult", stc->ver_disposition ? "passed" : "failed");
     } else {
-        rv = acvp_bin_to_hexstr(stc->e, stc->e_len, tmp);
+        rv = acvp_bin_to_hexstr(stc->e, stc->e_len, tmp, ACVP_RSA_EXP_LEN_MAX);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("hex conversion failure (e)");
             goto err;
@@ -59,15 +59,20 @@ static ACVP_RESULT acvp_rsa_sig_output_tc (ACVP_CTX *ctx, ACVP_RSA_SIG_TC *stc, 
         json_object_set_string(tc_rsp, "e", (const char *)tmp);
         memset(tmp, 0x0, ACVP_RSA_EXP_LEN_MAX);
     
-        rv = acvp_bin_to_hexstr(stc->n, stc->n_len, tmp);
+        rv = acvp_bin_to_hexstr(stc->n, stc->n_len, tmp, ACVP_RSA_EXP_LEN_MAX);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("hex conversion failure (n)");
             goto err;
         }
         json_object_set_string(tc_rsp, "n", (const char *)tmp);
-        memset(tmp, 0x0, ACVP_RSA_EXP_LEN_MAX);
-
-        rv = acvp_bin_to_hexstr(stc->signature, (unsigned int)stc->sig_len, tmp);
+        free(tmp);
+    
+        tmp = calloc(ACVP_RSA_SIGNATURE_MAX+1, sizeof(char));
+        if (!tmp) {
+            ACVP_LOG_ERR("Unable to malloc in acvp_kdf135 tpm_output_tc");
+            return ACVP_MALLOC_FAIL;
+        }
+        rv = acvp_bin_to_hexstr(stc->signature, stc->sig_len, tmp, ACVP_RSA_SIGNATURE_MAX);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("hex conversion failure (signature)");
             goto err;

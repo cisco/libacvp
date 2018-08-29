@@ -135,7 +135,7 @@ static ACVP_RESULT acvp_cmac_output_tc (ACVP_CTX *ctx, ACVP_CMAC_TC *stc, JSON_O
     ACVP_RESULT rv;
     char *tmp = NULL;
 
-    tmp = calloc(1, ACVP_CMAC_MSG_MAX);
+    tmp = calloc(1, ACVP_CMAC_MAC_MAX);
     if (!tmp) {
         ACVP_LOG_ERR("Unable to malloc in acvp_cmac_output_tc");
         return ACVP_MALLOC_FAIL;
@@ -144,7 +144,7 @@ static ACVP_RESULT acvp_cmac_output_tc (ACVP_CTX *ctx, ACVP_CMAC_TC *stc, JSON_O
     if (strncmp(stc->direction, "ver", 3) == 0) {
         json_object_set_string(tc_rsp, "result", stc->ver_disposition);
     } else {
-        rv = acvp_bin_to_hexstr(stc->mac, stc->mac_len, tmp);
+        rv = acvp_bin_to_hexstr(stc->mac, stc->mac_len, tmp, ACVP_CMAC_MAC_MAX);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("hex conversion failure (mac)");
             return rv;

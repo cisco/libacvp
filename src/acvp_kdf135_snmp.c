@@ -271,9 +271,9 @@ ACVP_RESULT acvp_kdf135_snmp_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
 static ACVP_RESULT acvp_kdf135_snmp_output_tc (ACVP_CTX *ctx, ACVP_KDF135_SNMP_TC *stc, JSON_Object *tc_rsp) {
     ACVP_RESULT rv = ACVP_SUCCESS;
     char *tmp = NULL;
-    tmp = calloc(stc->skey_len*2+1, sizeof(char));
+    tmp = calloc(ACVP_KDF135_SNMP_SKEY_MAX+1, sizeof(char));
     
-    rv = acvp_bin_to_hexstr(stc->s_key, stc->skey_len, tmp);
+    rv = acvp_bin_to_hexstr(stc->s_key, stc->skey_len, tmp, ACVP_KDF135_SNMP_SKEY_MAX);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("hex conversion failure (s_key)");
         goto err;

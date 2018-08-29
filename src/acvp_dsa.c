@@ -386,11 +386,7 @@ static ACVP_RESULT acvp_dsa_output_tc (ACVP_CTX *ctx, ACVP_DSA_TC *stc, JSON_Obj
                 ACVP_LOG_ERR("Unable to malloc in acvp_dsa_output_tc");
                 return ACVP_MALLOC_FAIL;
             }
-            if (!stc->g_len) {
-                ACVP_LOG_ERR("Missing g_len from application. strnlen calculation could be erroneous");
-                stc->g_len = strnlen((char *)stc->g, ACVP_DSA_PQG_MAX_BYTES);
-            }
-            rv = acvp_bin_to_hexstr(stc->g, stc->g_len, tmp);
+            rv = acvp_bin_to_hexstr(stc->g, stc->g_len, tmp, ACVP_DSA_PQG_MAX);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("hex conversion failure (g)");
                 goto err;
@@ -405,35 +401,23 @@ static ACVP_RESULT acvp_dsa_output_tc (ACVP_CTX *ctx, ACVP_DSA_TC *stc, JSON_Obj
                 ACVP_LOG_ERR("Unable to malloc in acvp_dsa_output_tc");
                 return ACVP_MALLOC_FAIL;
             }
-            if (!stc->p_len) {
-                ACVP_LOG_ERR("Missing p_len from application. strnlen calculation could be erroneous");
-                stc->p_len = strnlen((char *)stc->p, ACVP_DSA_PQG_MAX_BYTES);
-            }
-            rv = acvp_bin_to_hexstr(stc->p, stc->p_len, tmp);
+            rv = acvp_bin_to_hexstr(stc->p, stc->p_len, tmp, ACVP_DSA_PQG_MAX);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("hex conversion failure (p)");
                 goto err;
             }
             json_object_set_string(r_tobj, "p", (const char *)tmp);
             memset(tmp, 0x0, ACVP_DSA_PQG_MAX+1);
-    
-            if (!stc->q_len) {
-                ACVP_LOG_ERR("Missing q_len from application. strnlen calculation could be erroneous");
-                stc->q_len = strnlen((char *)stc->q, ACVP_DSA_PQG_MAX_BYTES);
-            }
-            rv = acvp_bin_to_hexstr(stc->q, stc->q_len, tmp);
+            
+            rv = acvp_bin_to_hexstr(stc->q, stc->q_len, tmp, ACVP_DSA_PQG_MAX);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("hex conversion failure (q)");
                 goto err;
             }
             json_object_set_string(r_tobj, "q", (const char *)tmp);
-    
-            if (!stc->seedlen) {
-                ACVP_LOG_ERR("Missing seedlen from application. strnlen calculation could be erroneous");
-                stc->seedlen = strnlen((char *)stc->seed, ACVP_DSA_SEED_MAX_BYTES);
-            }
+            
             memset(tmp, 0x0, ACVP_DSA_SEED_MAX);
-            rv = acvp_bin_to_hexstr(stc->seed, stc->seedlen, tmp);
+            rv = acvp_bin_to_hexstr(stc->seed, stc->seedlen, tmp, ACVP_DSA_SEED_MAX);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("hex conversion failure (p)");
                 return rv;
@@ -453,71 +437,48 @@ static ACVP_RESULT acvp_dsa_output_tc (ACVP_CTX *ctx, ACVP_DSA_TC *stc, JSON_Obj
             ACVP_LOG_ERR("Unable to malloc in acvp_dsa_output_tc");
             return ACVP_MALLOC_FAIL;
         }
-        if (!stc->p_len) {
-            ACVP_LOG_ERR("Missing p_len from application. strnlen calculation could be erroneous");
-            stc->p_len = strnlen((char *)stc->p, ACVP_DSA_PQG_MAX_BYTES);
-        }
-        rv = acvp_bin_to_hexstr(stc->p, stc->p_len, tmp);
+
+        rv = acvp_bin_to_hexstr(stc->p, stc->p_len, tmp, ACVP_DSA_PQG_MAX);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("hex conversion failure (p)");
             goto err;
         }
         json_object_set_string(r_tobj, "p", (const char *)tmp);
         memset(tmp, 0x0, ACVP_DSA_PQG_MAX);
-    
-        if (!stc->q_len) {
-            ACVP_LOG_ERR("Missing q_len from application. strnlen calculation could be erroneous");
-            stc->q_len = strnlen((char *)stc->q, ACVP_DSA_PQG_MAX_BYTES);
-        }
-        rv = acvp_bin_to_hexstr(stc->q, stc->q_len, tmp);
+        
+        rv = acvp_bin_to_hexstr(stc->q, stc->q_len, tmp, ACVP_DSA_PQG_MAX);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("hex conversion failure (q)");
             goto err;
         }
         json_object_set_string(r_tobj, "q", (const char *)tmp);
         memset(tmp, 0x0, ACVP_DSA_PQG_MAX);
-    
-        if (!stc->g_len) {
-            ACVP_LOG_ERR("Missing g_len from application. strnlen calculation could be erroneous");
-            stc->g_len = strnlen((char *)stc->g, ACVP_DSA_PQG_MAX_BYTES);
-        }
-        rv = acvp_bin_to_hexstr(stc->g, stc->g_len, tmp);
+        
+        rv = acvp_bin_to_hexstr(stc->g, stc->g_len, tmp, ACVP_DSA_PQG_MAX);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("hex conversion failure (g)");
             goto err;
         }
         json_object_set_string(r_tobj, "g", (const char *)tmp);
         memset(tmp, 0x0, ACVP_DSA_PQG_MAX);
-    
-        if (!stc->y_len) {
-            ACVP_LOG_ERR("Missing y_len from application. strnlen calculation could be erroneous");
-            stc->y_len = strnlen((char *)stc->y, ACVP_DSA_PQG_MAX_BYTES);
-        }
-        rv = acvp_bin_to_hexstr(stc->y, stc->y_len, tmp);
+        
+        rv = acvp_bin_to_hexstr(stc->y, stc->y_len, tmp, ACVP_DSA_PQG_MAX);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("hex conversion failure (y)");
             goto err;
         }
         json_object_set_string(r_tobj, "y", (const char *)tmp);
         memset(tmp, 0x0, ACVP_DSA_PQG_MAX);
-    
-        if (!stc->r_len) {
-            ACVP_LOG_ERR("Missing r_len from application. strnlen calculation could be erroneous");
-            stc->r_len = strnlen((char *)stc->r, ACVP_DSA_PQG_MAX_BYTES);
-        }
-        rv = acvp_bin_to_hexstr(stc->r, stc->r_len, tmp);
+        
+        rv = acvp_bin_to_hexstr(stc->r, stc->r_len, tmp, ACVP_DSA_PQG_MAX);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("hex conversion failure (r)");
             goto err;
         }
         json_object_set_string(r_tobj, "r", (const char *)tmp);
         memset(tmp, 0x0, ACVP_DSA_PQG_MAX);
-    
-        if (!stc->s_len) {
-            ACVP_LOG_ERR("Missing s_len from application. strnlen calculation could be erroneous");
-            stc->s_len = strnlen((char *)stc->s, ACVP_DSA_PQG_MAX_BYTES);
-        }
-        rv = acvp_bin_to_hexstr(stc->s, stc->s_len, tmp);
+        
+        rv = acvp_bin_to_hexstr(stc->s, stc->s_len, tmp, ACVP_DSA_PQG_MAX);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("hex conversion failure (s)");
             goto err;
@@ -535,59 +496,39 @@ static ACVP_RESULT acvp_dsa_output_tc (ACVP_CTX *ctx, ACVP_DSA_TC *stc, JSON_Obj
             ACVP_LOG_ERR("Unable to malloc in acvp_dsa_output_tc");
             return ACVP_MALLOC_FAIL;
         }
-        if (!stc->p_len) {
-            ACVP_LOG_ERR("Missing p_len from application. strnlen calculation could be erroneous");
-            stc->p_len = strnlen((char *)stc->p, ACVP_DSA_PQG_MAX_BYTES);
-        }
-        rv = acvp_bin_to_hexstr(stc->p, stc->p_len, tmp);
+        rv = acvp_bin_to_hexstr(stc->p, stc->p_len, tmp, ACVP_DSA_PQG_MAX);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("hex conversion failure (p)");
             goto err;
         }
         json_object_set_string(r_tobj, "p", (const char *)tmp);
         memset(tmp, 0x0, ACVP_DSA_PQG_MAX);
-    
-        if (!stc->q_len) {
-            ACVP_LOG_ERR("Missing q_len from application. strnlen calculation could be erroneous");
-            stc->q_len = strnlen((char *)stc->q, ACVP_DSA_PQG_MAX_BYTES);
-        }
-        rv = acvp_bin_to_hexstr(stc->q, stc->q_len, tmp);
+        
+        rv = acvp_bin_to_hexstr(stc->q, stc->q_len, tmp, ACVP_DSA_PQG_MAX);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("hex conversion failure (q)");
             goto err;
         }
         json_object_set_string(r_tobj, "q", (const char *)tmp);
         memset(tmp, 0x0, ACVP_DSA_PQG_MAX);
-    
-        if (!stc->g_len) {
-            ACVP_LOG_ERR("Missing g_len from application. strnlen calculation could be erroneous");
-            stc->g_len = strnlen((char *)stc->g, ACVP_DSA_PQG_MAX_BYTES);
-        }
-        rv = acvp_bin_to_hexstr(stc->g, stc->g_len, tmp);
+        
+        rv = acvp_bin_to_hexstr(stc->g, stc->g_len, tmp, ACVP_DSA_PQG_MAX);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("hex conversion failure (g)");
             goto err;
         }
         json_object_set_string(r_tobj, "g", (const char *)tmp);
         memset(tmp, 0x0, ACVP_DSA_PQG_MAX);
-    
-        if (!stc->y_len) {
-            ACVP_LOG_ERR("Missing y_len from application. strnlen calculation could be erroneous");
-            stc->y_len = strnlen((char *)stc->y, ACVP_DSA_PQG_MAX_BYTES);
-        }
-        rv = acvp_bin_to_hexstr(stc->y, stc->y_len, tmp);
+        
+        rv = acvp_bin_to_hexstr(stc->y, stc->y_len, tmp, ACVP_DSA_PQG_MAX);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("hex conversion failure (y)");
             goto err;
         }
         json_object_set_string(r_tobj, "y", (const char *)tmp);
         memset(tmp, 0x0, ACVP_DSA_PQG_MAX);
-    
-        if (!stc->x_len) {
-            ACVP_LOG_ERR("Missing x_len from application. strnlen calculation could be erroneous");
-            stc->x_len = strnlen((char *)stc->x, ACVP_DSA_PQG_MAX_BYTES);
-        }
-        rv = acvp_bin_to_hexstr(stc->x, stc->x_len, tmp);
+        
+        rv = acvp_bin_to_hexstr(stc->x, stc->x_len, tmp, ACVP_DSA_PQG_MAX);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("hex conversion failure (x)");
             goto err;

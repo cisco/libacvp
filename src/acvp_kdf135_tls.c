@@ -328,7 +328,7 @@ static ACVP_RESULT acvp_kdf135_tls_output_tc (ACVP_CTX *ctx, ACVP_KDF135_TLS_TC 
         return ACVP_MALLOC_FAIL;
     }
     
-    rv = acvp_bin_to_hexstr(stc->msecret1, stc->pm_len, tmp);
+    rv = acvp_bin_to_hexstr(stc->msecret1, stc->pm_len, tmp, ACVP_KDF135_TLS_MSG_MAX);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("hex conversion failure (mac)");
         goto err;
@@ -336,7 +336,7 @@ static ACVP_RESULT acvp_kdf135_tls_output_tc (ACVP_CTX *ctx, ACVP_KDF135_TLS_TC 
     json_object_set_string(tc_rsp, "masterSecret", tmp);
     memset(tmp, 0x0, ACVP_KDF135_TLS_MSG_MAX);
     
-    rv = acvp_bin_to_hexstr(stc->kblock1, stc->kb_len, tmp);
+    rv = acvp_bin_to_hexstr(stc->kblock1, stc->kb_len, tmp, ACVP_KDF135_TLS_MSG_MAX);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("hex conversion failure (mac)");
         goto err;

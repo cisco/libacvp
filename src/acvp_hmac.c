@@ -83,13 +83,13 @@ static ACVP_RESULT acvp_hmac_output_tc (ACVP_CTX *ctx, ACVP_HMAC_TC *stc, JSON_O
     ACVP_RESULT rv;
     char *tmp = NULL;
 
-    tmp = calloc(1, ACVP_HMAC_MSG_MAX);
+    tmp = calloc(1, ACVP_HMAC_MAC_MAX+1);
     if (!tmp) {
         ACVP_LOG_ERR("Unable to malloc in acvp_hmac_output_tc");
         return ACVP_MALLOC_FAIL;
     }
 
-    rv = acvp_bin_to_hexstr(stc->mac, stc->mac_len, tmp);
+    rv = acvp_bin_to_hexstr(stc->mac, stc->mac_len, tmp, ACVP_HMAC_MAC_MAX);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("hex conversion failure (mac)");
         return rv;

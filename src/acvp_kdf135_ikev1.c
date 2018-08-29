@@ -43,7 +43,7 @@ static ACVP_RESULT acvp_kdf135_ikev1_output_tc (ACVP_CTX *ctx, ACVP_KDF135_IKEV1
         return ACVP_MALLOC_FAIL;
     }
     
-    rv = acvp_bin_to_hexstr(stc->s_key_id, strnlen((const char *)stc->s_key_id, ACVP_KDF135_IKEV1_SKEY_MAX), tmp);
+    rv = acvp_bin_to_hexstr(stc->s_key_id, stc->s_key_id_len, tmp, ACVP_KDF135_IKEV1_SKEY_MAX);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("hex conversion failure (s_key_id)");
         goto err;
@@ -51,7 +51,7 @@ static ACVP_RESULT acvp_kdf135_ikev1_output_tc (ACVP_CTX *ctx, ACVP_KDF135_IKEV1
     json_object_set_string(tc_rsp, "sKeyId", (const char *)tmp);
     memset(tmp, 0x0, ACVP_KDF135_IKEV1_SKEY_MAX);
     
-    rv = acvp_bin_to_hexstr(stc->s_key_id_d, strnlen((const char *)stc->s_key_id_d, ACVP_KDF135_IKEV1_SKEY_MAX), tmp);
+    rv = acvp_bin_to_hexstr(stc->s_key_id_d, stc->s_key_id_d_len, tmp, ACVP_KDF135_IKEV1_SKEY_MAX);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("hex conversion failure (s_key_id_d)");
         goto err;
@@ -59,7 +59,7 @@ static ACVP_RESULT acvp_kdf135_ikev1_output_tc (ACVP_CTX *ctx, ACVP_KDF135_IKEV1
     json_object_set_string(tc_rsp, "sKeyIdD", (const char *)tmp);
     memset(tmp, 0x0, ACVP_KDF135_IKEV1_SKEY_MAX);
     
-    rv = acvp_bin_to_hexstr(stc->s_key_id_a, strnlen((const char *)stc->s_key_id_a, ACVP_KDF135_IKEV1_SKEY_MAX), tmp);
+    rv = acvp_bin_to_hexstr(stc->s_key_id_a, stc->s_key_id_a_len, tmp, ACVP_KDF135_IKEV1_SKEY_MAX);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("hex conversion failure (s_key_id_a)");
         goto err;
@@ -67,7 +67,7 @@ static ACVP_RESULT acvp_kdf135_ikev1_output_tc (ACVP_CTX *ctx, ACVP_KDF135_IKEV1
     json_object_set_string(tc_rsp, "sKeyIdA", (const char *)tmp);
     memset(tmp, 0x0, ACVP_KDF135_IKEV1_SKEY_MAX);
     
-    rv = acvp_bin_to_hexstr(stc->s_key_id_e, strnlen((const char *)stc->s_key_id_e, ACVP_KDF135_IKEV1_SKEY_MAX), tmp);
+    rv = acvp_bin_to_hexstr(stc->s_key_id_e, stc->s_key_id_e_len, tmp, ACVP_KDF135_IKEV1_SKEY_MAX);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("hex conversion failure (s_key_id_e)");
         goto err;

@@ -715,9 +715,13 @@ typedef struct acvp_kdf135_ikev1_tc_t {
     unsigned char *psk;
     
     unsigned char *s_key_id;
+    int s_key_id_len;
     unsigned char *s_key_id_d;
+    int s_key_id_d_len;
     unsigned char *s_key_id_a;
+    int s_key_id_a_len;
     unsigned char *s_key_id_e;
+    int s_key_id_e_len;
 } ACVP_KDF135_IKEV1_TC;
 
 /*!
@@ -764,8 +768,8 @@ typedef struct acvp_kdf135_x963_tc_t {
     unsigned int tc_id;    /* Test case id */
     char *hash_alg;
     int field_size;
-    int key_data_length;
-    int shared_info_length;
+    int key_data_len;
+    int shared_info_len;
     unsigned char *z;
     unsigned char *shared_info;
     unsigned char *key_data;
@@ -2584,7 +2588,7 @@ ACVP_RESULT acvp_check_test_results (ACVP_CTX *ctx);
  */
 ACVP_RESULT acvp_set_2fa_callback (ACVP_CTX *ctx, ACVP_RESULT (*totp_cb) (char **token));
 
-ACVP_RESULT acvp_bin_to_hexstr (const unsigned char *src, unsigned int src_len, char *dest);
+ACVP_RESULT acvp_bin_to_hexstr (const unsigned char *src, int src_len, char *dest, int dest_max);
 
 ACVP_RESULT acvp_hexstr_to_bin (const char *src, unsigned char *dest, int dest_max, int *converted_len);
 

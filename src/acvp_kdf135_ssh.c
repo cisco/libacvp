@@ -365,8 +365,7 @@ static ACVP_RESULT acvp_kdf135_ssh_output_tc (ACVP_CTX *ctx,
         return ACVP_MALLOC_FAIL;
     }
 
-    rv = acvp_bin_to_hexstr(stc->cs_init_iv,
-                            stc->iv_len, tmp);
+    rv = acvp_bin_to_hexstr(stc->cs_init_iv, stc->iv_len, tmp, ACVP_KDF135_SSH_STR_OUT_MAX);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("acvp_bin_to_hexstr() failure");
         goto err;
@@ -374,8 +373,7 @@ static ACVP_RESULT acvp_kdf135_ssh_output_tc (ACVP_CTX *ctx,
     json_object_set_string(tc_rsp, "initialIvClient", tmp);
     memset(tmp, 0, ACVP_KDF135_SSH_STR_OUT_MAX);
 
-    rv = acvp_bin_to_hexstr(stc->cs_encrypt_key,
-                            stc->e_key_len, tmp);
+    rv = acvp_bin_to_hexstr(stc->cs_encrypt_key, stc->e_key_len, tmp, ACVP_KDF135_SSH_STR_OUT_MAX);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("acvp_bin_to_hexstr() failure");
         goto err;
@@ -383,8 +381,7 @@ static ACVP_RESULT acvp_kdf135_ssh_output_tc (ACVP_CTX *ctx,
     json_object_set_string(tc_rsp, "encryptionKeyClient", tmp);
     memset(tmp, 0, ACVP_KDF135_SSH_STR_OUT_MAX);
 
-    rv = acvp_bin_to_hexstr(stc->cs_integrity_key,
-                            stc->i_key_len, tmp);
+    rv = acvp_bin_to_hexstr(stc->cs_integrity_key, stc->i_key_len, tmp, ACVP_KDF135_SSH_STR_OUT_MAX);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("acvp_bin_to_hexstr() failure");
         goto err;
@@ -392,8 +389,7 @@ static ACVP_RESULT acvp_kdf135_ssh_output_tc (ACVP_CTX *ctx,
     json_object_set_string(tc_rsp, "integrityKeyClient", tmp);
     memset(tmp, 0, ACVP_KDF135_SSH_STR_OUT_MAX);
 
-    rv = acvp_bin_to_hexstr(stc->sc_init_iv,
-                            stc->iv_len, tmp);
+    rv = acvp_bin_to_hexstr(stc->sc_init_iv, stc->iv_len, tmp, ACVP_KDF135_SSH_STR_OUT_MAX);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("acvp_bin_to_hexstr() failure");
         goto err;
@@ -401,8 +397,7 @@ static ACVP_RESULT acvp_kdf135_ssh_output_tc (ACVP_CTX *ctx,
     json_object_set_string(tc_rsp, "initialIvServer", tmp);
     memset(tmp, 0, ACVP_KDF135_SSH_STR_OUT_MAX);
 
-    rv = acvp_bin_to_hexstr(stc->sc_encrypt_key,
-                            stc->e_key_len, tmp);
+    rv = acvp_bin_to_hexstr(stc->sc_encrypt_key, stc->e_key_len, tmp, ACVP_KDF135_SSH_STR_OUT_MAX);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("acvp_bin_to_hexstr() failure");
         goto err;
@@ -410,8 +405,7 @@ static ACVP_RESULT acvp_kdf135_ssh_output_tc (ACVP_CTX *ctx,
     json_object_set_string(tc_rsp, "encryptionKeyServer", tmp);
     memset(tmp, 0, ACVP_KDF135_SSH_STR_OUT_MAX);
 
-    rv = acvp_bin_to_hexstr(stc->sc_integrity_key,
-                            stc->i_key_len, tmp);
+    rv = acvp_bin_to_hexstr(stc->sc_integrity_key, stc->i_key_len, tmp, ACVP_KDF135_SSH_STR_OUT_MAX);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("acvp_bin_to_hexstr() failure");
         goto err;

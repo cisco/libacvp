@@ -3447,7 +3447,7 @@ static ACVP_RESULT app_cmac_handler(ACVP_TEST_CASE *test_case)
          * happens here for "ver" we have to reformat here as well
          */
         unsigned char formatted_mac_compare[65]; // TODO max len for now
-        rv = acvp_bin_to_hexstr(mac_compare, mac_cmp_len, formatted_mac_compare);
+        rv = acvp_bin_to_hexstr(mac_compare, mac_cmp_len, formatted_mac_compare, 64);
         if (rv != ACVP_SUCCESS) {
             printf("\nFailed to convert to hex string\n");
             goto cleanup;

@@ -61,7 +61,7 @@ static ACVP_RESULT acvp_kdf108_output_tc (ACVP_CTX *ctx,
         return ACVP_INVALID_ARG;
     }
 
-    rv = acvp_bin_to_hexstr(stc->key_out, stc->key_out_len, tmp);
+    rv = acvp_bin_to_hexstr(stc->key_out, stc->key_out_len, tmp, ACVP_KDF108_STRING_MAX);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("acvp_bin_to_hexstr() failure");
         return rv;
@@ -71,7 +71,7 @@ static ACVP_RESULT acvp_kdf108_output_tc (ACVP_CTX *ctx,
     // Clear the tmp array
     memset(tmp, 0, ACVP_KDF108_STRING_MAX);
 
-    rv = acvp_bin_to_hexstr(stc->fixed_data, stc->fixed_data_len, tmp);
+    rv = acvp_bin_to_hexstr(stc->fixed_data, stc->fixed_data_len, tmp, ACVP_KDF108_STRING_MAX);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("acvp_bin_to_hexstr() failure");
         return rv;

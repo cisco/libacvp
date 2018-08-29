@@ -59,8 +59,7 @@ static ACVP_RESULT acvp_kas_ffc_output_comp_tc (ACVP_CTX *ctx, ACVP_KAS_FFC_TC *
     }
     
     memset(tmp, 0x0, ACVP_KAS_FFC_MAX_STR);
-    rv = acvp_bin_to_hexstr((const unsigned char *)stc->piut, stc->piutlen,
-                            tmp);
+    rv = acvp_bin_to_hexstr(stc->piut, stc->piutlen, tmp, ACVP_KAS_FFC_MAX_STR);
     if (rv != ACVP_SUCCESS) {
         free(tmp);
         ACVP_LOG_ERR("hex conversion failure (Z)");
@@ -69,8 +68,7 @@ static ACVP_RESULT acvp_kas_ffc_output_comp_tc (ACVP_CTX *ctx, ACVP_KAS_FFC_TC *
     json_object_set_string(tc_rsp, "ephemeralPublicIut", tmp);
 
     memset(tmp, 0x0, ACVP_KAS_FFC_MAX_STR);
-    rv = acvp_bin_to_hexstr((const unsigned char *)stc->chash, stc->chashlen, 
-                            tmp);
+    rv = acvp_bin_to_hexstr(stc->chash, stc->chashlen, tmp, ACVP_KAS_FFC_MAX_STR);
     if (rv != ACVP_SUCCESS) {
         free(tmp);
         ACVP_LOG_ERR("hex conversion failure (Z)");

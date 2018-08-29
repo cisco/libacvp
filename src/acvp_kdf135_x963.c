@@ -42,7 +42,7 @@ static ACVP_RESULT acvp_kdf135_x963_output_tc (ACVP_CTX *ctx, ACVP_KDF135_X963_T
     char *tmp = NULL;
     tmp = calloc(ACVP_KDF135_X963_KEYDATA_MAX, sizeof(char));
     
-    rv = acvp_bin_to_hexstr(stc->key_data, strnlen((const char *)stc->key_data, ACVP_KDF135_X963_KEYDATA_MAX), tmp);
+    rv = acvp_bin_to_hexstr(stc->key_data, stc->key_data_len, tmp, ACVP_KDF135_X963_KEYDATA_MAX);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("hex conversion failure (key_data)");
         goto err;
@@ -84,8 +84,8 @@ static ACVP_RESULT acvp_kdf135_x963_init_tc (ACVP_CTX *ctx,
 
     stc->tc_id = tc_id;
     stc->field_size = field_size;
-    stc->key_data_length = key_data_length;
-    stc->shared_info_length = shared_info_length;
+    stc->key_data_len = key_data_length;
+    stc->shared_info_len = shared_info_length;
 
     stc->hash_alg = calloc(ACVP_RSA_HASH_ALG_LEN_MAX, sizeof(char));
     if (!stc->hash_alg) { return ACVP_MALLOC_FAIL; }

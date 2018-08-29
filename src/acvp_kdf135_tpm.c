@@ -47,7 +47,7 @@ static ACVP_RESULT acvp_kdf135_tpm_output_tc (ACVP_CTX *ctx, ACVP_KDF135_TPM_TC 
         return ACVP_MALLOC_FAIL;
     }
     
-    rv = acvp_bin_to_hexstr(stc->s_key, stc->skey_len, tmp);
+    rv = acvp_bin_to_hexstr(stc->s_key, stc->skey_len, tmp, ACVP_KDF135_TPM_SKEY_MAX);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("hex conversion failure (s_key)");
         return rv;

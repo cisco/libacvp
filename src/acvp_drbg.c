@@ -356,7 +356,7 @@ static ACVP_RESULT acvp_drbg_output_tc (ACVP_CTX *ctx, ACVP_DRBG_TC *stc, JSON_O
         return ACVP_MALLOC_FAIL;
     }
 
-    rv = acvp_bin_to_hexstr(stc->drb, stc->drb_len/8, tmp);
+    rv = acvp_bin_to_hexstr(stc->drb, stc->drb_len / 8, tmp, ACVP_DRB_MAX);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("hex conversion failure (returnedBits)");
         return rv;

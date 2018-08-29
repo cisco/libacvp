@@ -232,17 +232,17 @@ static ACVP_RESULT acvp_des_output_mct_tc (ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *st
     memset(tmp1, 0x0, ACVP_SYM_CT_MAX);
     memset(tmp2, 0x0, ACVP_SYM_CT_MAX);
     memset(tmp3, 0x0, ACVP_SYM_CT_MAX);
-    rv = acvp_bin_to_hexstr(stc->key, stc->key_len / 24, tmp1);
+    rv = acvp_bin_to_hexstr(stc->key, stc->key_len / 24, tmp1, ACVP_SYM_CT_MAX);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("hex conversion failure (key)");
         goto err;
     }
-    rv = acvp_bin_to_hexstr(stc->key + 8, stc->key_len / 24, tmp2);
+    rv = acvp_bin_to_hexstr(stc->key + 8, stc->key_len / 24, tmp2, ACVP_SYM_CT_MAX);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("hex conversion failure (key)");
         goto err;
     }
-    rv = acvp_bin_to_hexstr(stc->key + 16, stc->key_len / 24, tmp3);
+    rv = acvp_bin_to_hexstr(stc->key + 16, stc->key_len / 24, tmp3, ACVP_SYM_CT_MAX);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("hex conversion failure (key)");
         goto err;
@@ -253,7 +253,7 @@ static ACVP_RESULT acvp_des_output_mct_tc (ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *st
 
     if (stc->cipher != ACVP_TDES_ECB) {
         memset(tmp, 0x0, ACVP_SYM_CT_MAX);
-        rv = acvp_bin_to_hexstr(stc->iv, stc->iv_len, tmp);
+        rv = acvp_bin_to_hexstr(stc->iv, stc->iv_len, tmp, ACVP_SYM_CT_MAX);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("hex conversion failure (iv)");
             goto err;
@@ -265,7 +265,7 @@ static ACVP_RESULT acvp_des_output_mct_tc (ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *st
         memset(tmp, 0x0, ACVP_SYM_CT_MAX);
         if (stc->cipher == ACVP_TDES_CFB1) {
             stc->pt[0] &= ACVP_CFB1_BIT_MASK;
-            rv = acvp_bin_to_hexstr(stc->pt, 1, tmp);
+            rv = acvp_bin_to_hexstr(stc->pt, 1, tmp, ACVP_SYM_CT_MAX);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("hex conversion failure (pt)");
                 goto err;
@@ -274,7 +274,7 @@ static ACVP_RESULT acvp_des_output_mct_tc (ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *st
             json_object_set_number(r_tobj, "ptLen", 1);
             json_object_set_number(r_tobj, "ctLen", 1);
         } else {
-            rv = acvp_bin_to_hexstr(stc->pt, stc->pt_len, tmp);
+            rv = acvp_bin_to_hexstr(stc->pt, stc->pt_len, tmp, ACVP_SYM_CT_MAX);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("hex conversion failure (pt)");
                 goto err;
@@ -285,7 +285,7 @@ static ACVP_RESULT acvp_des_output_mct_tc (ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *st
 
         memset(tmp, 0x0, ACVP_SYM_CT_MAX);
         if (stc->cipher == ACVP_TDES_CFB1) {
-            rv = acvp_bin_to_hexstr(stc->ct, 1, tmp);
+            rv = acvp_bin_to_hexstr(stc->ct, 1, tmp, ACVP_SYM_CT_MAX);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("hex conversion failure (ct)");
                 goto err;
@@ -294,7 +294,7 @@ static ACVP_RESULT acvp_des_output_mct_tc (ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *st
             json_object_set_number(r_tobj, "ctLen", 1);
             json_object_set_number(r_tobj, "ptLen", 1);
         } else {
-            rv = acvp_bin_to_hexstr(stc->ct, stc->ct_len, tmp);
+            rv = acvp_bin_to_hexstr(stc->ct, stc->ct_len, tmp, ACVP_SYM_CT_MAX);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("hex conversion failure (ct)");
                 goto err;
@@ -471,7 +471,7 @@ static ACVP_RESULT acvp_des_mct_tc (ACVP_CTX *ctx, ACVP_CAPS_LIST *cap,
             memset(tmp, 0x0, ACVP_SYM_CT_MAX);
             if (stc->cipher == ACVP_TDES_CFB1) {
                 stc->ct[0] &= ACVP_CFB1_BIT_MASK;
-                rv = acvp_bin_to_hexstr(stc->ct, 1, tmp);
+                rv = acvp_bin_to_hexstr(stc->ct, 1, tmp, ACVP_SYM_CT_MAX);
                 if (rv != ACVP_SUCCESS) {
                     ACVP_LOG_ERR("hex conversion failure (ct)");
                     free(tmp);
@@ -479,7 +479,7 @@ static ACVP_RESULT acvp_des_mct_tc (ACVP_CTX *ctx, ACVP_CAPS_LIST *cap,
                     return rv;
                 }
             } else {
-                rv = acvp_bin_to_hexstr(stc->ct, stc->ct_len, tmp);
+                rv = acvp_bin_to_hexstr(stc->ct, stc->ct_len, tmp, ACVP_SYM_CT_MAX);
                 if (rv != ACVP_SUCCESS) {
                     ACVP_LOG_ERR("hex conversion failure (ct)");
                     free(tmp);
@@ -491,7 +491,7 @@ static ACVP_RESULT acvp_des_mct_tc (ACVP_CTX *ctx, ACVP_CAPS_LIST *cap,
         } else {
             memset(tmp, 0x0, ACVP_SYM_CT_MAX);
             if (stc->cipher == ACVP_TDES_CFB1) {
-                rv = acvp_bin_to_hexstr(stc->pt, 1, tmp);
+                rv = acvp_bin_to_hexstr(stc->pt, 1, tmp, ACVP_SYM_CT_MAX);
                 if (rv != ACVP_SUCCESS) {
                     ACVP_LOG_ERR("hex conversion failure (pt)");
                     free(tmp);
@@ -499,7 +499,7 @@ static ACVP_RESULT acvp_des_mct_tc (ACVP_CTX *ctx, ACVP_CAPS_LIST *cap,
                     return rv;
                 }
             } else {
-                rv = acvp_bin_to_hexstr(stc->pt, stc->pt_len, tmp);
+                rv = acvp_bin_to_hexstr(stc->pt, stc->pt_len, tmp, ACVP_SYM_CT_MAX);
                 if (rv != ACVP_SUCCESS) {
                     ACVP_LOG_ERR("hex conversion failure (pt)");
                     free(tmp);
@@ -817,7 +817,7 @@ static ACVP_RESULT acvp_des_output_tc (ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *stc,
     if (stc->direction == ACVP_DIR_ENCRYPT) {
         memset(tmp, 0x0, ACVP_SYM_CT_MAX);
         if (stc->cipher == ACVP_TDES_CFB1) {
-            rv = acvp_bin_to_hexstr(stc->ct, stc->ct_len, tmp);
+            rv = acvp_bin_to_hexstr(stc->ct, stc->ct_len, tmp, ACVP_SYM_CT_MAX);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("hex conversion failure (ct)");
                 free(tmp);
@@ -826,7 +826,7 @@ static ACVP_RESULT acvp_des_output_tc (ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *stc,
             json_object_set_string(tc_rsp, "ct", tmp);
             json_object_set_number(tc_rsp, "ctLen", stc->ct_len);
         } else {
-            rv = acvp_bin_to_hexstr(stc->ct, stc->ct_len, tmp);
+            rv = acvp_bin_to_hexstr(stc->ct, stc->ct_len, tmp, ACVP_SYM_CT_MAX);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("hex conversion failure (ct)");
                 free(tmp);
@@ -838,7 +838,7 @@ static ACVP_RESULT acvp_des_output_tc (ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *stc,
                     json_object_set_value(tc_rsp, "ivs", json_value_init_array());
                     ivs_array = json_object_get_array(tc_rsp, "ivs");
                     for (i=0; i<(stc->pt_len/8); i++) {
-                        rv = acvp_bin_to_hexstr(stc->iv, stc->iv_len, tmp);
+                        rv = acvp_bin_to_hexstr(stc->iv, stc->iv_len, tmp, ACVP_SYM_CT_MAX);
                         json_array_append_string(ivs_array, tmp);
                         ctr64_inc(stc->iv);
                     }
@@ -858,7 +858,7 @@ static ACVP_RESULT acvp_des_output_tc (ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *stc,
 
         memset(tmp, 0x0, ACVP_SYM_CT_MAX);
         if (stc->cipher == ACVP_TDES_CFB1) {
-            rv = acvp_bin_to_hexstr(stc->pt, stc->pt_len, tmp);
+            rv = acvp_bin_to_hexstr(stc->pt, stc->pt_len, tmp, ACVP_SYM_CT_MAX);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("hex conversion failure (pt)");
                 free(tmp);
@@ -868,7 +868,7 @@ static ACVP_RESULT acvp_des_output_tc (ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *stc,
             json_object_set_number(tc_rsp, "ptLen", stc->pt_len);
 
         } else {
-            rv = acvp_bin_to_hexstr(stc->pt, stc->pt_len, tmp);
+            rv = acvp_bin_to_hexstr(stc->pt, stc->pt_len, tmp, ACVP_SYM_CT_MAX);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("hex conversion failure (pt)");
                 free(tmp);
@@ -880,7 +880,7 @@ static ACVP_RESULT acvp_des_output_tc (ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *stc,
                     json_object_set_value(tc_rsp, "ivs", json_value_init_array());
                     ivs_array = json_object_get_array(tc_rsp, "ivs");
                     for (i=0; i<(stc->pt_len/8); i++) {
-                        rv = acvp_bin_to_hexstr(stc->iv, stc->iv_len, tmp);
+                        rv = acvp_bin_to_hexstr(stc->iv, stc->iv_len, tmp, ACVP_SYM_CT_MAX);
                         json_array_append_string(ivs_array, tmp);
                         ctr64_inc(stc->iv);
                     }

@@ -283,12 +283,24 @@ int acvp_lookup_ecdsa_curve (ACVP_CIPHER cipher, char *curve_name) {
  * Convert a byte array from source to a hexadecimal string which is
  * stored in the destination.
  */
-ACVP_RESULT acvp_bin_to_hexstr (const unsigned char *src,
-                                unsigned int src_len,
-                                char *dest) {
+ACVP_RESULT acvp_bin_to_hexstr (const unsigned char *src, int src_len, char *dest, int dest_max) {
     int i, j;
     unsigned char nibb_a, nibb_b;
     unsigned char hex_chars[] = "0123456789ABCDEF";
+    
+    if (!src || !dest) {
+        return ACVP_MISSING_ARG;
+    }
+    
+    if (src_len > dest_max) {
+        return ACVP_DATA_TOO_LARGE;
+    }
+    
+    if (!src_len) {
+        // NOTE: Missing src_len (attr lens should be set in application)
+        // strnlen calculation could be erroneous if the buffer contains null byte
+        src_len = strnlen((char *)src, dest_max/2);
+    }
 
     for (i = 0, j = 0; i < src_len; i++, j += 2) {
         nibb_a = *src >> 4; /* Get first half of byte */
