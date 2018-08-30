@@ -40,7 +40,7 @@
 static ACVP_RESULT acvp_kdf135_srtp_output_tc (ACVP_CTX *ctx, ACVP_KDF135_SRTP_TC *stc, JSON_Object *tc_rsp) {
     ACVP_RESULT rv = ACVP_SUCCESS;
     char *tmp = NULL;
-    tmp = calloc(ACVP_KDF135_SRTP_OUTPUT_MAX+1, sizeof(char));
+    tmp = calloc(ACVP_KDF135_SRTP_OUTPUT_MAX, sizeof(char));
     if (!tmp) { return ACVP_MALLOC_FAIL; }
     
     rv = acvp_bin_to_hexstr(stc->srtp_ke, stc->aes_keylen / 8, tmp, ACVP_KDF135_SRTP_OUTPUT_MAX);

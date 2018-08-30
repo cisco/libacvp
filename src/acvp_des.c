@@ -201,25 +201,25 @@ static ACVP_RESULT acvp_des_output_mct_tc (ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *st
     char *tmp2 = NULL;
     char *tmp3 = NULL;
 
-    tmp = calloc(1, ACVP_SYM_CT_MAX);
+    tmp = calloc(1, ACVP_SYM_CT_MAX+1);
     if (!tmp) {
         ACVP_LOG_ERR("Unable to malloc in acvp_des_output_mct_tc");
         return ACVP_MALLOC_FAIL;
     }
-    tmp1 = calloc(1, ACVP_SYM_CT_MAX);
+    tmp1 = calloc(1, ACVP_SYM_CT_MAX+1);
     if (!tmp1) {
         ACVP_LOG_ERR("Unable to malloc in acvp_des_output_mct_tc");
         free(tmp);
         return ACVP_MALLOC_FAIL;
     }
-    tmp2 = calloc(1, ACVP_SYM_CT_MAX);
+    tmp2 = calloc(1, ACVP_SYM_CT_MAX+1);
     if (!tmp2) {
         ACVP_LOG_ERR("Unable to malloc in acvp_des_output_mct_tc");
         free(tmp);
         free(tmp1);
         return ACVP_MALLOC_FAIL;
     }
-    tmp3 = calloc(1, ACVP_SYM_CT_MAX);
+    tmp3 = calloc(1, ACVP_SYM_CT_MAX+1);
     if (!tmp3) {
         ACVP_LOG_ERR("Unable to malloc in acvp_des_output_mct_tc");
         free(tmp);
@@ -227,11 +227,7 @@ static ACVP_RESULT acvp_des_output_mct_tc (ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *st
         free(tmp2);
         return ACVP_MALLOC_FAIL;
     }
-
-    memset(tmp, 0x0, ACVP_SYM_CT_MAX);
-    memset(tmp1, 0x0, ACVP_SYM_CT_MAX);
-    memset(tmp2, 0x0, ACVP_SYM_CT_MAX);
-    memset(tmp3, 0x0, ACVP_SYM_CT_MAX);
+    
     rv = acvp_bin_to_hexstr(stc->key, stc->key_len / 24, tmp1, ACVP_SYM_CT_MAX);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("hex conversion failure (key)");
@@ -361,7 +357,7 @@ static ACVP_RESULT acvp_des_mct_tc (ACVP_CTX *ctx, ACVP_CAPS_LIST *cap,
     char *tmp = NULL;
     unsigned char nk[4 * 8]; /* longest key+8 */
 
-    tmp = calloc(1, ACVP_SYM_CT_MAX);
+    tmp = calloc(1, ACVP_SYM_CT_MAX+1);
     if (!tmp) {
         ACVP_LOG_ERR("Unable to malloc in acvp_des_mct_tc");
         return ACVP_MALLOC_FAIL;

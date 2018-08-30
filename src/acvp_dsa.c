@@ -432,7 +432,7 @@ static ACVP_RESULT acvp_dsa_output_tc (ACVP_CTX *ctx, ACVP_DSA_TC *stc, JSON_Obj
         }
         break;
     case ACVP_DSA_MODE_SIGGEN:
-        tmp = calloc(ACVP_DSA_PQG_MAX, sizeof(char));
+        tmp = calloc(ACVP_DSA_PQG_MAX+1, sizeof(char));
         if (!tmp) {
             ACVP_LOG_ERR("Unable to malloc in acvp_dsa_output_tc");
             return ACVP_MALLOC_FAIL;
@@ -491,7 +491,7 @@ static ACVP_RESULT acvp_dsa_output_tc (ACVP_CTX *ctx, ACVP_DSA_TC *stc, JSON_Obj
         json_object_set_string(r_tobj, "result", stc->result > 0 ? "passed" : "failed");
         break;
     case ACVP_DSA_MODE_KEYGEN:
-        tmp = calloc(ACVP_DSA_PQG_MAX, sizeof(char));
+        tmp = calloc(ACVP_DSA_PQG_MAX+1, sizeof(char));
         if (!tmp) {
             ACVP_LOG_ERR("Unable to malloc in acvp_dsa_output_tc");
             return ACVP_MALLOC_FAIL;
