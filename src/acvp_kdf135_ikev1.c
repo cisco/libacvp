@@ -276,13 +276,13 @@ ACVP_RESULT acvp_kdf135_ikev1_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
          */
         if (strncmp(hash_alg_str, ACVP_STR_SHA_1, strlen(ACVP_STR_SHA_1)) == 0) {
             hash_alg = ACVP_KDF135_SHA1;
-        } else if (strncmp(hash_alg_str, ACVP_STR_SHA_224, strlen(ACVP_STR_SHA_224)) == 0) {
+        } else if (strncmp(hash_alg_str, ACVP_STR_SHA2_224, strlen(ACVP_STR_SHA2_224)) == 0) {
             hash_alg = ACVP_KDF135_SHA224;
-        } else if (strncmp(hash_alg_str, ACVP_STR_SHA_256, strlen(ACVP_STR_SHA_256)) == 0) {
+        } else if (strncmp(hash_alg_str, ACVP_STR_SHA2_256, strlen(ACVP_STR_SHA2_256)) == 0) {
             hash_alg = ACVP_KDF135_SHA256;
-        } else if (strncmp(hash_alg_str, ACVP_STR_SHA_384, strlen(ACVP_STR_SHA_384)) == 0) {
+        } else if (strncmp(hash_alg_str, ACVP_STR_SHA2_384, strlen(ACVP_STR_SHA2_384)) == 0) {
             hash_alg = ACVP_KDF135_SHA384;
-        }else if (strncmp(hash_alg_str, ACVP_STR_SHA_512, strlen(ACVP_STR_SHA_512)) == 0) {
+        }else if (strncmp(hash_alg_str, ACVP_STR_SHA2_512, strlen(ACVP_STR_SHA2_512)) == 0) {
             hash_alg = ACVP_KDF135_SHA512;
         } else {
             ACVP_LOG_ERR("ACVP server requesting invalid hashAlg");
