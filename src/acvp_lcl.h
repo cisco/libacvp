@@ -273,6 +273,8 @@
 #define ACVP_KDF135_IKEV1_SKEY_MAX 2048 // arbitrary for now
 #define ACVP_KDF135_IKE_COOKIE_LEN_MAX 32
 #define ACVP_KDF135_IKEV1_GXY_LEN_MAX 32
+#define ACVP_KDF135_X963_KEYDATA_MAX 4096/8
+#define ACVP_KDF135_X963_INPUT_MAX 1024/8
 
 #define ACVP_KDF135_TLS_PMSECRET_BIT_MAX (384)
 #define ACVP_KDF135_TLS_PMSECRET_BYTE_MAX (ACVP_KDF135_TLS_PMSECRET_BIT_MAX >> 3)
@@ -283,6 +285,7 @@
  * https://github.com/usnistgov/ACVP/blob/master/artifacts/acvp_sub_kdf135_ikev2.txt
  */
 #define ACVP_KDF135_IKEV2_SPI_STR_MAX 32
+#define ACVP_KDF135_IKEV2_SPI_BYTE_MAX (ACVP_KDF135_IKEV2_SPI_STR_MAX/2)
 
 #define ACVP_KDF135_IKEV2_SKEY_SEED_BYTE_MAX 64 /**< SHA256 byte length */
 #define ACVP_KDF135_IKEV2_SKEY_SEED_STR_MAX 128 /**< SHA256 hex length */
@@ -321,12 +324,14 @@
 #define ACVP_CMAC_KEY_MAX       64        /**< 256 bits, 64 characters */
 
 #define ACVP_DSA_PQG_MAX        3072     /**< 3072 bits, 768 characters */
+#define ACVP_DSA_PQG_MAX_BYTES  (ACVP_DSA_PQG_MAX/2)
 #define ACVP_DSA_SEED_MAX       1024
+#define ACVP_DSA_SEED_MAX_BYTES (ACVP_DSA_SEED_MAX/2)
 #define ACVP_DSA_MAX_STRING     3072     /**< 3072 bytes */
 
 #define ACVP_RSA_SEEDLEN_MAX    64
-#define ACVP_RSA_MSGLEN_MAX     512
-#define ACVP_RSA_SIGNATURE_MAX  1024
+#define ACVP_RSA_MSGLEN_MAX     1024
+#define ACVP_RSA_SIGNATURE_MAX  2048
 #define ACVP_RSA_RANDPQ32_STR   "B.3.2"
 #define ACVP_RSA_RANDPQ33_STR   "B.3.3"
 #define ACVP_RSA_RANDPQ34_STR   "B.3.4"
@@ -334,7 +339,8 @@
 #define ACVP_RSA_RANDPQ36_STR   "B.3.6"
 #define ACVP_RSA_SIG_TYPE_LEN_MAX    9
 #define ACVP_RSA_HASH_ALG_LEN_MAX    12
-#define ACVP_RSA_EXP_LEN_MAX         512  /**< 2048 bits max for n, 512 characters */
+#define ACVP_RSA_EXP_LEN_MAX         1024  /**< 2048 bits max for n, 512 characters */
+#define ACVP_ECDSA_EXP_LEN_MAX       512
 
 
 #define ACVP_KAT_BUF_MAX        1024*1024*4
@@ -827,7 +833,7 @@ ACVP_RESULT acvp_submit_vector_responses (ACVP_CTX *ctx);
 
 void acvp_log_msg (ACVP_CTX *ctx, ACVP_LOG_LVL level, const char *format, ...);
 
-ACVP_RESULT acvp_hexstr_to_bin (const unsigned char *src, unsigned char *dest, int dest_max);
+ACVP_RESULT acvp_hexstr_to_bin (const char *src, unsigned char *dest, int dest_max, int *converted_len);
 
 ACVP_RESULT acvp_bin_to_bit (const unsigned char *in, int len, unsigned char *out);
 

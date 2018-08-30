@@ -40,7 +40,7 @@
 static ACVP_RESULT acvp_kdf108_output_tc (ACVP_CTX *ctx,
                                           ACVP_KDF108_TC *stc,
                                           JSON_Object *tc_rsp) {
-    ACVP_RESULT rv = 0;
+    ACVP_RESULT rv = ACVP_SUCCESS;
     char tmp[ACVP_KDF108_STRING_MAX + 1] = {0}; // Leave space for terminator
 
     /*
@@ -61,7 +61,7 @@ static ACVP_RESULT acvp_kdf108_output_tc (ACVP_CTX *ctx,
         return ACVP_INVALID_ARG;
     }
 
-    rv = acvp_bin_to_hexstr(stc->key_out, stc->key_out_len, (unsigned char *) tmp);
+    rv = acvp_bin_to_hexstr(stc->key_out, stc->key_out_len, tmp, ACVP_KDF108_STRING_MAX);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("acvp_bin_to_hexstr() failure");
         return rv;
@@ -71,7 +71,7 @@ static ACVP_RESULT acvp_kdf108_output_tc (ACVP_CTX *ctx,
     // Clear the tmp array
     memset(tmp, 0, ACVP_KDF108_STRING_MAX);
 
-    rv = acvp_bin_to_hexstr(stc->fixed_data, stc->fixed_data_len, (unsigned char *) tmp);
+    rv = acvp_bin_to_hexstr(stc->fixed_data, stc->fixed_data_len, tmp, ACVP_KDF108_STRING_MAX);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("acvp_bin_to_hexstr() failure");
         return rv;
@@ -101,7 +101,7 @@ static ACVP_RESULT acvp_kdf108_init_tc (ACVP_CTX *ctx,
     if (!stc->key_in) { return ACVP_MALLOC_FAIL; }
 
     // Convert key_in from hex string to binary
-    rv = acvp_hexstr_to_bin((unsigned char *)key_in, stc->key_in, key_in_len);
+    rv = acvp_hexstr_to_bin(key_in, stc->key_in, key_in_len, NULL);
     if (rv != ACVP_SUCCESS) return rv;
 
     // Allocate space for the key_out

@@ -36,10 +36,10 @@ static ACVP_RESULT acvp_hmac_init_tc (ACVP_CTX *ctx,
                                       ACVP_HMAC_TC *stc,
                                       unsigned int tc_id,
                                       unsigned int msg_len,
-                                      unsigned char *msg,
+                                      char *msg,
                                       unsigned int mac_len,
                                       unsigned int key_len,
-                                      unsigned char *key,
+                                      char *key,
                                       ACVP_CIPHER alg_id) {
     ACVP_RESULT rv;
 
@@ -52,12 +52,13 @@ static ACVP_RESULT acvp_hmac_init_tc (ACVP_CTX *ctx,
     stc->key = calloc(1, ACVP_HMAC_KEY_MAX);
     if (!stc->key) { return ACVP_MALLOC_FAIL; }
 
-    rv = acvp_hexstr_to_bin((const unsigned char *) msg, stc->msg, ACVP_HMAC_MSG_MAX);
+    rv = acvp_hexstr_to_bin(msg, stc->msg, ACVP_HMAC_MSG_MAX, NULL);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Hex converstion failure (msg)");
         return rv;
     }
-    rv = acvp_hexstr_to_bin((const unsigned char *) key, stc->key, ACVP_HMAC_KEY_MAX);
+    
+    rv = acvp_hexstr_to_bin(key, stc->key, ACVP_HMAC_KEY_MAX, NULL);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Hex converstion failure (key)");
         return rv;
@@ -80,15 +81,15 @@ static ACVP_RESULT acvp_hmac_init_tc (ACVP_CTX *ctx,
  */
 static ACVP_RESULT acvp_hmac_output_tc (ACVP_CTX *ctx, ACVP_HMAC_TC *stc, JSON_Object *tc_rsp) {
     ACVP_RESULT rv;
-    char *tmp;
+    char *tmp = NULL;
 
-    tmp = calloc(1, ACVP_HMAC_MSG_MAX);
+    tmp = calloc(ACVP_HMAC_MAC_MAX+1, sizeof(char));
     if (!tmp) {
         ACVP_LOG_ERR("Unable to malloc in acvp_hmac_output_tc");
         return ACVP_MALLOC_FAIL;
     }
 
-    rv = acvp_bin_to_hexstr(stc->mac, stc->mac_len, (unsigned char *) tmp);
+    rv = acvp_bin_to_hexstr(stc->mac, stc->mac_len, tmp, ACVP_HMAC_MAC_MAX);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("hex conversion failure (mac)");
         return rv;
@@ -115,7 +116,7 @@ static ACVP_RESULT acvp_hmac_release_tc (ACVP_HMAC_TC *stc) {
 
 ACVP_RESULT acvp_hmac_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     unsigned int tc_id, msglen, keylen, maclen;
-    unsigned char *msg = NULL, *key = NULL;
+    char *msg = NULL, *key = NULL;
     JSON_Value *groupval;
     JSON_Object *groupobj = NULL;
     JSON_Value *testval;
@@ -255,7 +256,7 @@ ACVP_RESULT acvp_hmac_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
                 ACVP_LOG_ERR("Failed to include tc_id. ");
                 return ACVP_MISSING_ARG;
             }
-            msg = (unsigned char *) json_object_get_string(testobj, "msg");
+            msg = (char *) json_object_get_string(testobj, "msg");
             if (!msg) {
                 ACVP_LOG_ERR("Failed to include msg. ");
                 return ACVP_MISSING_ARG;
@@ -267,7 +268,7 @@ ACVP_RESULT acvp_hmac_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
                 return ACVP_INVALID_ARG;
             }
 
-            key = (unsigned char *) json_object_get_string(testobj, "key");
+            key = (char *) json_object_get_string(testobj, "key");
             if (!key) {
                 ACVP_LOG_ERR("Failed to include key. ");
                 return ACVP_MISSING_ARG;

@@ -41,20 +41,31 @@
 static ACVP_RESULT acvp_kas_ecc_output_cdh_tc (ACVP_CTX *ctx, ACVP_KAS_ECC_TC *stc,
                                                JSON_Object *tc_rsp) {
     ACVP_RESULT rv;
-    char *tmp;
+    char *tmp = NULL;
 
-    tmp = calloc(1, ACVP_KAS_ECC_MAX_STR);
+    tmp = calloc(ACVP_KAS_ECC_MAX_STR+1, sizeof(char));
     if (!tmp) {
         ACVP_LOG_ERR("Unable to malloc in acvp_aes_output_mct_tc");
         return ACVP_MALLOC_FAIL;
     }
-
-    json_object_set_string(tc_rsp, "publicIutX", stc->pix);
-
-    json_object_set_string(tc_rsp, "publicIutY", stc->piy);
+    
+    rv = acvp_bin_to_hexstr(stc->pix, stc->pixlen, tmp, ACVP_KAS_ECC_MAX_STR);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("hex conversion failure (pix)");
+        return rv;
+    }
+    json_object_set_string(tc_rsp, "publicIutX", tmp);
+    
+    memset(tmp, 0x0, ACVP_KAS_ECC_MAX_STR);
+    rv = acvp_bin_to_hexstr(stc->piy, stc->piylen, tmp, ACVP_KAS_ECC_MAX_STR);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("hex conversion failure (piy)");
+        return rv;
+    }
+    json_object_set_string(tc_rsp, "publicIutY", tmp);
 
     memset(tmp, 0x0, ACVP_KAS_ECC_MAX_STR);
-    rv = acvp_bin_to_hexstr((const unsigned char *)stc->z, stc->zlen, (unsigned char *) tmp);
+    rv = acvp_bin_to_hexstr(stc->z, stc->zlen, tmp, ACVP_KAS_ECC_MAX_STR);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("hex conversion failure (Z)");
         return rv;
@@ -74,9 +85,9 @@ static ACVP_RESULT acvp_kas_ecc_output_cdh_tc (ACVP_CTX *ctx, ACVP_KAS_ECC_TC *s
 static ACVP_RESULT acvp_kas_ecc_output_comp_tc (ACVP_CTX *ctx, ACVP_KAS_ECC_TC *stc,
                                                JSON_Object *tc_rsp) {
     ACVP_RESULT rv;
-    char *tmp;
+    char *tmp = NULL;
 
-    tmp = calloc(1, ACVP_KAS_ECC_MAX_STR);
+    tmp = calloc(1, ACVP_KAS_ECC_MAX_STR+1);
     if (!tmp) {
         ACVP_LOG_ERR("Unable to malloc in acvp_aes_output_mct_tc");
         return ACVP_MALLOC_FAIL;
@@ -84,14 +95,13 @@ static ACVP_RESULT acvp_kas_ecc_output_comp_tc (ACVP_CTX *ctx, ACVP_KAS_ECC_TC *
 
     if (stc->test_type == ACVP_KAS_ECC_TT_VAL) {
         memset(tmp, 0x0, ACVP_KAS_ECC_MAX_STR);
-        rv = acvp_bin_to_hexstr((const unsigned char *)stc->chash, stc->chashlen, 
-                                (unsigned char *) tmp);
+        rv = acvp_bin_to_hexstr(stc->chash, stc->chashlen, tmp, ACVP_KAS_ECC_MAX_STR);
         if (rv != ACVP_SUCCESS) {
             free(tmp);
             ACVP_LOG_ERR("hex conversion failure (Z)");
             return rv;
         }
-        if (!memcmp(stc->z, tmp, stc->zlen)) {    
+        if (!memcmp(stc->z, stc->chash, stc->zlen)) {
             json_object_set_string(tc_rsp, "result", "pass");
         } else {
             json_object_set_string(tc_rsp, "result", "fail");
@@ -99,14 +109,33 @@ static ACVP_RESULT acvp_kas_ecc_output_comp_tc (ACVP_CTX *ctx, ACVP_KAS_ECC_TC *
         free(tmp);
         return ACVP_SUCCESS;
     }
-
-    json_object_set_string(tc_rsp, "ephemeralPrivateIut", stc->d);
-    json_object_set_string(tc_rsp, "ephemeralPublicIutX", stc->pix);
-    json_object_set_string(tc_rsp, "ephemeralPublicIutY", stc->piy);
+    
+    memset(tmp, 0x0, ACVP_KAS_ECC_MAX_STR);
+    rv = acvp_bin_to_hexstr(stc->pix, stc->pixlen, tmp, ACVP_KAS_ECC_MAX_STR);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("hex conversion failure (pix)");
+        return rv;
+    }
+    json_object_set_string(tc_rsp, "ephemeralPublicIutX", tmp);
+    
+    memset(tmp, 0x0, ACVP_KAS_ECC_MAX_STR);
+    rv = acvp_bin_to_hexstr(stc->piy, stc->piylen, tmp, ACVP_KAS_ECC_MAX_STR);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("hex conversion failure (piy)");
+        return rv;
+    }
+    json_object_set_string(tc_rsp, "ephemeralPublicIutY", tmp);
+    
+    memset(tmp, 0x0, ACVP_KAS_ECC_MAX_STR);
+    rv = acvp_bin_to_hexstr(stc->d, stc->dlen, tmp, ACVP_KAS_ECC_MAX_STR);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("hex conversion failure (d)");
+        return rv;
+    }
+    json_object_set_string(tc_rsp, "ephemeralPrivateIut", tmp);
 
     memset(tmp, 0x0, ACVP_KAS_ECC_MAX_STR);
-    rv = acvp_bin_to_hexstr((const unsigned char *)stc->chash, stc->chashlen, 
-                            (unsigned char *) tmp);
+    rv = acvp_bin_to_hexstr(stc->chash, stc->chashlen, tmp, ACVP_KAS_ECC_MAX_STR);
     if (rv != ACVP_SUCCESS) {
         free(tmp);
         ACVP_LOG_ERR("hex conversion failure (Z)");
@@ -125,13 +154,29 @@ static ACVP_RESULT acvp_kas_ecc_init_cdh_tc (ACVP_CTX *ctx,
                                              char *psy,
                                              unsigned int mode
 ) {
-
+    ACVP_RESULT rv;
     stc->mode = mode;
 
-    stc->psx = calloc(1, ACVP_KAS_ECC_MAX_STR);
+    stc->psx = calloc(1, ACVP_KAS_ECC_MAX_BYTE);
     if (!stc->psx) { return ACVP_MALLOC_FAIL; }
-    stc->psy = calloc(1, ACVP_KAS_ECC_MAX_STR);
+    rv = acvp_hexstr_to_bin(psx, stc->psx, ACVP_KAS_ECC_MAX_STR, &(stc->psxlen));
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Hex conversion failure (psx)");
+        return rv;
+    }
+    
+    stc->psy = calloc(1, ACVP_KAS_ECC_MAX_BYTE);
     if (!stc->psy) { return ACVP_MALLOC_FAIL; }
+    rv = acvp_hexstr_to_bin(psy, stc->psy, ACVP_KAS_ECC_MAX_STR, &(stc->psylen));
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Hex conversion failure (psy)");
+        return rv;
+    }
+    
+    stc->pix = calloc(1, ACVP_KAS_ECC_MAX_STR);
+    if (!stc->pix) { return ACVP_MALLOC_FAIL; }
+    stc->piy = calloc(1, ACVP_KAS_ECC_MAX_STR);
+    if (!stc->piy) { return ACVP_MALLOC_FAIL; }
 
     stc->z = calloc(1, ACVP_KAS_ECC_MAX_STR);
     if (!stc->z) { return ACVP_MALLOC_FAIL; }
@@ -139,9 +184,6 @@ static ACVP_RESULT acvp_kas_ecc_init_cdh_tc (ACVP_CTX *ctx,
     if (!stc->d) { return ACVP_MALLOC_FAIL; }
     stc->chash = calloc(1, ACVP_KAS_ECC_MAX_STR);
     if (!stc->chash) { return ACVP_MALLOC_FAIL; }
-
-    strncpy(stc->psx, psx, strnlen((char *)psx, ACVP_KAS_ECC_MAX_STR));
-    strncpy(stc->psy, psy, strnlen((char *)psy, ACVP_KAS_ECC_MAX_STR));
 
     if (!strcmp(curve, "b-233"))
         stc->curve = ACVP_ECDSA_CURVE_B233;
@@ -177,41 +219,79 @@ static ACVP_RESULT acvp_kas_ecc_init_comp_tc (ACVP_CTX *ctx,
                                               const char *curve,
                                               const char *hash,
                                               char *psx,
+                                              int psx_len,
                                               char *psy,
+                                              int psy_len,
                                               char *d,
                                               char *pix,
                                               char *piy,
                                               char *z,
                                               unsigned int mode
 ) {
-
+    ACVP_RESULT rv;
     stc->mode = mode;
 
     stc->psx = calloc(1, ACVP_KAS_ECC_MAX_STR);
     if (!stc->psx) { return ACVP_MALLOC_FAIL; }
+    rv = acvp_hexstr_to_bin(psx, stc->psx, ACVP_KAS_ECC_MAX_STR, &(stc->psxlen));
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Hex conversion failure (psx)");
+        return rv;
+    }
+    
     stc->psy = calloc(1, ACVP_KAS_ECC_MAX_STR);
     if (!stc->psy) { return ACVP_MALLOC_FAIL; }
+    rv = acvp_hexstr_to_bin(psy, stc->psy, ACVP_KAS_ECC_MAX_STR, &(stc->psylen));
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Hex conversion failure (psy)");
+        return rv;
+    }
 
     stc->z = calloc(1, ACVP_KAS_ECC_MAX_STR);
     if (!stc->z) { return ACVP_MALLOC_FAIL; }
     stc->chash = calloc(1, ACVP_KAS_ECC_MAX_STR);
     if (!stc->chash) { return ACVP_MALLOC_FAIL; }
-
-    strncpy(stc->psx, psx, strnlen((char *)psx, ACVP_KAS_ECC_MAX_STR));
-    strncpy(stc->psy, psy, strnlen((char *)psy, ACVP_KAS_ECC_MAX_STR));
+    
     if (stc->test_type == ACVP_KAS_ECC_TT_VAL) {
+        if (!pix || !piy || !d || !z) {
+            return ACVP_MISSING_ARG;
+        }
+        stc->pix = calloc(1, ACVP_KAS_ECC_MAX_STR);
+        if (!stc->pix) { return ACVP_MALLOC_FAIL; }
+        rv = acvp_hexstr_to_bin(pix, stc->pix, ACVP_KAS_ECC_MAX_STR, &(stc->pixlen));
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Hex conversion failure (pix)");
+            return rv;
+        }
+    
+        stc->piy = calloc(1, ACVP_KAS_ECC_MAX_STR);
+        if (!stc->piy) { return ACVP_MALLOC_FAIL; }
+        rv = acvp_hexstr_to_bin(piy, stc->piy, ACVP_KAS_ECC_MAX_STR, &(stc->piylen));
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Hex conversion failure (piy)");
+            return rv;
+        }
+    
+        stc->d = calloc(1, ACVP_KAS_ECC_MAX_STR);
+        if (!stc->d) { return ACVP_MALLOC_FAIL; }
+        rv = acvp_hexstr_to_bin(d, stc->d, ACVP_KAS_ECC_MAX_STR, &(stc->dlen));
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Hex conversion failure (d)");
+            return rv;
+        }
+
+        rv = acvp_hexstr_to_bin(z, stc->z, ACVP_KAS_ECC_MAX_STR, &(stc->zlen));
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Hex conversion failure (z)");
+            return rv;
+        }
+    } else {
         stc->pix = calloc(1, ACVP_KAS_ECC_MAX_STR);
         if (!stc->pix) { return ACVP_MALLOC_FAIL; }
         stc->piy = calloc(1, ACVP_KAS_ECC_MAX_STR);
         if (!stc->piy) { return ACVP_MALLOC_FAIL; }
         stc->d = calloc(1, ACVP_KAS_ECC_MAX_STR);
         if (!stc->d) { return ACVP_MALLOC_FAIL; }
-
-        strncpy(stc->pix, pix, strnlen((char *)pix, ACVP_KAS_ECC_MAX_STR));
-        strncpy(stc->piy, piy, strnlen((char *)piy, ACVP_KAS_ECC_MAX_STR));
-        strncpy(stc->d, d, strnlen((char *)d, ACVP_KAS_ECC_MAX_STR));
-        strncpy(stc->z, z, strnlen((char *)z, ACVP_KAS_ECC_MAX_STR));
-        stc->zlen = strnlen((char *)z, ACVP_KAS_ECC_MAX_STR);
     }
     if (!strcmp(hash, "SHA2-224"))
         stc->md = ACVP_SHA224;
@@ -454,8 +534,10 @@ static ACVP_RESULT acvp_kas_ecc_comp(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap, ACVP_TE
              * TODO: this does mallocs, we can probably do the mallocs once for
              *       the entire vector set to be more efficient
              */
+            int psx_len = sizeof(psx)/2;
+            int psy_len = sizeof(psy)/2;
             acvp_kas_ecc_init_comp_tc(ctx, stc, tc_id, curve, hash,
-                                      psx, psy, d, pix, piy, z, mode);
+                                      psx, psx_len, psy, psy_len, d, pix, piy, z, mode);
 
             /* Process the current KAT test vector... */
             rv = (cap->crypto_handler)(tc);

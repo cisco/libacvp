@@ -38,7 +38,19 @@
  * the JSON processing for a single test case.
  */
 static ACVP_RESULT acvp_kdf135_x963_output_tc (ACVP_CTX *ctx, ACVP_KDF135_X963_TC *stc, JSON_Object *tc_rsp) {
-    json_object_set_string(tc_rsp, "keyData", (const char *)stc->key_data);
+    ACVP_RESULT rv;
+    char *tmp = NULL;
+    tmp = calloc(ACVP_KDF135_X963_KEYDATA_MAX+1, sizeof(char));
+    
+    rv = acvp_bin_to_hexstr(stc->key_data, stc->key_data_len, tmp, ACVP_KDF135_X963_KEYDATA_MAX);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("hex conversion failure (key_data)");
+        goto err;
+    }
+    json_object_set_string(tc_rsp, "keyData", (const char *)tmp);
+    memset(tmp, 0x0, ACVP_KDF135_X963_KEYDATA_MAX);
+err:
+    free(tmp);
     return ACVP_SUCCESS;
 }
 /*
@@ -60,8 +72,9 @@ static ACVP_RESULT acvp_kdf135_x963_init_tc (ACVP_CTX *ctx,
                                              int field_size,
                                              int key_data_length,
                                              int shared_info_length,
-                                             unsigned char *z,
-                                             unsigned char *shared_info) {
+                                             char *z,
+                                             char *shared_info) {
+    ACVP_RESULT rv = ACVP_SUCCESS;
     memset(stc, 0x0, sizeof(ACVP_KDF135_X963_TC));
 
     if (!hash_alg || !z || !shared_info) {
@@ -71,22 +84,32 @@ static ACVP_RESULT acvp_kdf135_x963_init_tc (ACVP_CTX *ctx,
 
     stc->tc_id = tc_id;
     stc->field_size = field_size;
-    stc->key_data_length = key_data_length;
-    stc->shared_info_length = shared_info_length;
+    stc->key_data_len = key_data_length;
+    stc->shared_info_len = shared_info_length;
 
     stc->hash_alg = calloc(ACVP_RSA_HASH_ALG_LEN_MAX, sizeof(char));
     if (!stc->hash_alg) { return ACVP_MALLOC_FAIL; }
-    stc->z = calloc(1024/8, sizeof(char));
+    memcpy(stc->hash_alg, hash_alg, strnlen((const char *)hash_alg, ACVP_RSA_HASH_ALG_LEN_MAX));
+    
+    stc->z = calloc(ACVP_KDF135_X963_INPUT_MAX, sizeof(char));
     if (!stc->z) { return ACVP_MALLOC_FAIL; }
-    stc->shared_info = calloc(1024/8, sizeof(char));
+    rv = acvp_hexstr_to_bin(z, stc->z, ACVP_KDF135_X963_INPUT_MAX, NULL);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Hex conversion failure (z)");
+        return rv;
+    }
+    
+    stc->shared_info = calloc(ACVP_KDF135_X963_INPUT_MAX, sizeof(char));
     if (!stc->shared_info) { return ACVP_MALLOC_FAIL; }
-    stc->key_data = calloc(4096/8, sizeof(char));
+    rv = acvp_hexstr_to_bin(shared_info, stc->shared_info, ACVP_KDF135_X963_INPUT_MAX, NULL);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Hex conversion failure (shared_info)");
+        return rv;
+    }
+    
+    stc->key_data = calloc(ACVP_KDF135_X963_KEYDATA_MAX, sizeof(char));
     if (!stc->key_data) { return ACVP_MALLOC_FAIL; }
 
-    memcpy(stc->hash_alg, hash_alg, strnlen((const char *)hash_alg, ACVP_RSA_HASH_ALG_LEN_MAX));
-    memcpy(stc->z, z, strnlen((const char *)z, 1024/8));
-    memcpy(stc->shared_info, shared_info, strnlen((const char *)shared_info, 1024/8));
-    
     return ACVP_SUCCESS;
 }
 
@@ -121,7 +144,8 @@ ACVP_RESULT acvp_kdf135_x963_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     char *json_result;
     
     int field_size, key_data_length, shared_info_len;
-    unsigned char *hash_alg = NULL, *z = NULL, *shared_info = NULL;
+    unsigned char *hash_alg = NULL;
+    char *z = NULL, *shared_info = NULL;
     
     /*
      * Get a reference to the abstracted test case
@@ -236,8 +260,8 @@ ACVP_RESULT acvp_kdf135_x963_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
                 return ACVP_MISSING_ARG;
             }
             
-            z = (unsigned char *)json_object_get_string(testobj, "z");
-            shared_info = (unsigned char *)json_object_get_string(testobj, "sharedInfo");
+            z = (char *)json_object_get_string(testobj, "z");
+            shared_info = (char *)json_object_get_string(testobj, "sharedInfo");
             
             ACVP_LOG_INFO("        Test case: %d", j);
             ACVP_LOG_INFO("             tcId: %d", tc_id);

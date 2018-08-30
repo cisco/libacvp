@@ -269,8 +269,20 @@ ACVP_RESULT acvp_kdf135_snmp_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
  * the JSON processing for a single test case.
  */
 static ACVP_RESULT acvp_kdf135_snmp_output_tc (ACVP_CTX *ctx, ACVP_KDF135_SNMP_TC *stc, JSON_Object *tc_rsp) {
-    json_object_set_string(tc_rsp, "sharedKey", (const char *)stc->s_key);
-    return ACVP_SUCCESS;
+    ACVP_RESULT rv = ACVP_SUCCESS;
+    char *tmp = NULL;
+    tmp = calloc(ACVP_KDF135_SNMP_SKEY_MAX+1, sizeof(char));
+    
+    rv = acvp_bin_to_hexstr(stc->s_key, stc->skey_len, tmp, ACVP_KDF135_SNMP_SKEY_MAX);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("hex conversion failure (s_key)");
+        goto err;
+    }
+    json_object_set_string(tc_rsp, "sharedKey", (const char *)tmp);
+    
+err:
+    free(tmp);
+    return rv;
 }
 
 static ACVP_RESULT acvp_kdf135_snmp_init_tc (ACVP_CTX *ctx,
@@ -280,6 +292,7 @@ static ACVP_RESULT acvp_kdf135_snmp_init_tc (ACVP_CTX *ctx,
                                              char *engine_id,
                                              const char *password,
                                              unsigned int p_len) {
+    ACVP_RESULT rv;
     memset(stc, 0x0, sizeof(ACVP_KDF135_SNMP_TC));
 
     stc->s_key = calloc(ACVP_KDF135_SNMP_SKEY_MAX*2, sizeof(char));
@@ -289,7 +302,15 @@ static ACVP_RESULT acvp_kdf135_snmp_init_tc (ACVP_CTX *ctx,
     stc->cipher = alg_id;
     stc->p_len = p_len;
     stc->password = password;
-    stc->engine_id = engine_id;
+    stc->engine_id_str = engine_id;
+    stc->engine_id = calloc(ACVP_KDF135_SNMP_ENGID_MAX, sizeof(char));
+    stc->skey_len = 160/8;
+    if (!stc->engine_id) { return ACVP_MALLOC_FAIL; }
+    rv = acvp_hexstr_to_bin(engine_id, stc->engine_id, ACVP_KDF135_SNMP_ENGID_MAX, NULL);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Hex conversion failure (init_nonce)");
+        return rv;
+    }
 
     return ACVP_SUCCESS;
 }
