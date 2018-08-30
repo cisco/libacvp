@@ -292,16 +292,10 @@ ACVP_RESULT acvp_bin_to_hexstr (const unsigned char *src, int src_len, char *des
         return ACVP_MISSING_ARG;
     }
     
-    if (src_len > dest_max) {
+    if ((src_len * 2) > dest_max) {
         return ACVP_DATA_TOO_LARGE;
     }
     
-    if (!src_len) {
-        // NOTE: Missing src_len (attr lens should be set in application)
-        // strnlen calculation could be erroneous if the buffer contains null byte
-        src_len = strnlen((char *)src, dest_max/2);
-    }
-
     for (i = 0, j = 0; i < src_len; i++, j += 2) {
         nibb_a = *src >> 4; /* Get first half of byte */
         nibb_b = *src & 0x0f; /* Get second half of byte */

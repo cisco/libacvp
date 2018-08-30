@@ -350,7 +350,7 @@ static ACVP_RESULT acvp_drbg_output_tc (ACVP_CTX *ctx, ACVP_DRBG_TC *stc, JSON_O
     ACVP_RESULT rv;
     char *tmp = NULL;
 
-    tmp = calloc(1, 2 * ACVP_DRB_MAX);
+    tmp = calloc(2 * ACVP_DRB_MAX + 1, sizeof(char));
     if (!tmp) {
         ACVP_LOG_ERR("Unable to malloc in acvp_drbg_output_tc");
         return ACVP_MALLOC_FAIL;

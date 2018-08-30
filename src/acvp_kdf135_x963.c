@@ -40,7 +40,7 @@
 static ACVP_RESULT acvp_kdf135_x963_output_tc (ACVP_CTX *ctx, ACVP_KDF135_X963_TC *stc, JSON_Object *tc_rsp) {
     ACVP_RESULT rv;
     char *tmp = NULL;
-    tmp = calloc(ACVP_KDF135_X963_KEYDATA_MAX, sizeof(char));
+    tmp = calloc(ACVP_KDF135_X963_KEYDATA_MAX+1, sizeof(char));
     
     rv = acvp_bin_to_hexstr(stc->key_data, stc->key_data_len, tmp, ACVP_KDF135_X963_KEYDATA_MAX);
     if (rv != ACVP_SUCCESS) {

@@ -44,7 +44,7 @@ static ACVP_RESULT acvp_ecdsa_kat_handler_internal (ACVP_CTX *ctx, JSON_Object *
 static ACVP_RESULT acvp_ecdsa_output_tc (ACVP_CTX *ctx, ACVP_CIPHER cipher, ACVP_ECDSA_TC *stc, JSON_Object *tc_rsp) {
     ACVP_RESULT rv;
     char *tmp = NULL;
-    tmp = calloc(ACVP_ECDSA_EXP_LEN_MAX, sizeof(char));
+    tmp = calloc(ACVP_ECDSA_EXP_LEN_MAX+1, sizeof(char));
     
     if (cipher == ACVP_ECDSA_KEYGEN) {
         rv = acvp_bin_to_hexstr(stc->qy, stc->qy_len, tmp, ACVP_ECDSA_EXP_LEN_MAX);

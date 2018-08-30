@@ -347,7 +347,7 @@ static ACVP_RESULT acvp_kdf135_ssh_output_tc (ACVP_CTX *ctx,
                                               ACVP_KDF135_SSH_TC *stc,
                                               JSON_Object *tc_rsp) {
     char *tmp = NULL;
-    int rv = ACVP_SUCCESS;
+    ACVP_RESULT rv = ACVP_SUCCESS;
 
     if ((stc->iv_len * 2) > ACVP_KDF135_SSH_STR_OUT_MAX ||
         (stc->e_key_len * 2) > ACVP_KDF135_SSH_STR_OUT_MAX ||

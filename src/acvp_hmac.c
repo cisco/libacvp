@@ -83,7 +83,7 @@ static ACVP_RESULT acvp_hmac_output_tc (ACVP_CTX *ctx, ACVP_HMAC_TC *stc, JSON_O
     ACVP_RESULT rv;
     char *tmp = NULL;
 
-    tmp = calloc(1, ACVP_HMAC_MAC_MAX+1);
+    tmp = calloc(ACVP_HMAC_MAC_MAX+1, sizeof(char));
     if (!tmp) {
         ACVP_LOG_ERR("Unable to malloc in acvp_hmac_output_tc");
         return ACVP_MALLOC_FAIL;
