@@ -40,7 +40,7 @@
 static ACVP_RESULT acvp_kdf135_srtp_output_tc (ACVP_CTX *ctx, ACVP_KDF135_SRTP_TC *stc, JSON_Object *tc_rsp) {
     ACVP_RESULT rv = ACVP_SUCCESS;
     char *tmp = NULL;
-    tmp = calloc(ACVP_KDF135_SRTP_OUTPUT_MAX, sizeof(char));
+    tmp = calloc(ACVP_KDF135_SRTP_OUTPUT_MAX+1, sizeof(char));
     if (!tmp) { return ACVP_MALLOC_FAIL; }
     
     rv = acvp_bin_to_hexstr(stc->srtp_ke, stc->aes_keylen / 8, tmp, ACVP_KDF135_SRTP_OUTPUT_MAX);
@@ -134,7 +134,7 @@ static ACVP_RESULT acvp_kdf135_srtp_init_tc (ACVP_CTX *ctx,
     stc->tc_id = tc_id;
     stc->aes_keylen = aes_keylen;
     
-    stc->kdr = calloc(ACVP_KDF135_SRTP_KDR_STR_MAX+1, sizeof(char));
+    stc->kdr = calloc(ACVP_KDF135_SRTP_KDR_STR_MAX, sizeof(char));
     if (!stc->kdr) { return ACVP_MALLOC_FAIL; }
     rv = acvp_hexstr_to_bin(kdr, stc->kdr, ACVP_KDF135_SRTP_KDR_STR_MAX, &(stc->kdr_len));
     if (rv != ACVP_SUCCESS) {
@@ -142,7 +142,7 @@ static ACVP_RESULT acvp_kdf135_srtp_init_tc (ACVP_CTX *ctx,
         return rv;
     }
     
-    stc->master_key = calloc(ACVP_KDF135_SRTP_MASTER_MAX+1, sizeof(char));
+    stc->master_key = calloc(ACVP_KDF135_SRTP_MASTER_MAX, sizeof(char));
     if (!stc->master_key) { return ACVP_MALLOC_FAIL; }
     rv = acvp_hexstr_to_bin(master_key, (unsigned char *) stc->master_key,
                             ACVP_KDF135_SRTP_MASTER_MAX, NULL);
@@ -151,7 +151,7 @@ static ACVP_RESULT acvp_kdf135_srtp_init_tc (ACVP_CTX *ctx,
         return rv;
     }
     
-    stc->master_salt = calloc(ACVP_KDF135_SRTP_MASTER_MAX+1, sizeof(char));
+    stc->master_salt = calloc(ACVP_KDF135_SRTP_MASTER_MAX, sizeof(char));
     if (!stc->master_salt) { return ACVP_MALLOC_FAIL; }
     rv = acvp_hexstr_to_bin(master_salt, (unsigned char *) stc->master_salt,
                             ACVP_KDF135_SRTP_MASTER_MAX, NULL);
@@ -160,7 +160,7 @@ static ACVP_RESULT acvp_kdf135_srtp_init_tc (ACVP_CTX *ctx,
         return rv;
     }
     
-    stc->index = calloc(ACVP_KDF135_SRTP_INDEX_MAX+1, sizeof(char));
+    stc->index = calloc(ACVP_KDF135_SRTP_INDEX_MAX, sizeof(char));
     if (!stc->index) { return ACVP_MALLOC_FAIL; }
     rv = acvp_hexstr_to_bin(index, (unsigned char *) stc->index, ACVP_KDF135_SRTP_INDEX_MAX,
                             NULL);
@@ -169,7 +169,7 @@ static ACVP_RESULT acvp_kdf135_srtp_init_tc (ACVP_CTX *ctx,
         return rv;
     }
     
-    stc->srtcp_index = calloc(ACVP_KDF135_SRTP_INDEX_MAX+1, sizeof(char));
+    stc->srtcp_index = calloc(ACVP_KDF135_SRTP_INDEX_MAX, sizeof(char));
     if (!stc->srtcp_index) { return ACVP_MALLOC_FAIL; }
     rv = acvp_hexstr_to_bin(srtcp_index, (unsigned char *) stc->srtcp_index,
                             ACVP_KDF135_SRTP_INDEX_MAX, NULL);
@@ -178,17 +178,17 @@ static ACVP_RESULT acvp_kdf135_srtp_init_tc (ACVP_CTX *ctx,
         return rv;
     }
     
-    stc->srtp_ka = calloc(ACVP_KDF135_SRTP_OUTPUT_MAX+1, sizeof(char));
+    stc->srtp_ka = calloc(ACVP_KDF135_SRTP_OUTPUT_MAX, sizeof(char));
     if (!stc->srtp_ka) { return ACVP_MALLOC_FAIL; }
-    stc->srtp_ke = calloc(ACVP_KDF135_SRTP_OUTPUT_MAX+1, sizeof(char));
+    stc->srtp_ke = calloc(ACVP_KDF135_SRTP_OUTPUT_MAX, sizeof(char));
     if (!stc->srtp_ke) { return ACVP_MALLOC_FAIL; }
-    stc->srtp_ks = calloc(ACVP_KDF135_SRTP_OUTPUT_MAX+1, sizeof(char));
+    stc->srtp_ks = calloc(ACVP_KDF135_SRTP_OUTPUT_MAX, sizeof(char));
     if (!stc->srtp_ks) { return ACVP_MALLOC_FAIL; }
-    stc->srtcp_ka = calloc(ACVP_KDF135_SRTP_OUTPUT_MAX+1, sizeof(char));
+    stc->srtcp_ka = calloc(ACVP_KDF135_SRTP_OUTPUT_MAX, sizeof(char));
     if (!stc->srtcp_ka) { return ACVP_MALLOC_FAIL; }
-    stc->srtcp_ke = calloc(ACVP_KDF135_SRTP_OUTPUT_MAX+1, sizeof(char));
+    stc->srtcp_ke = calloc(ACVP_KDF135_SRTP_OUTPUT_MAX, sizeof(char));
     if (!stc->srtcp_ke) { return ACVP_MALLOC_FAIL; }
-    stc->srtcp_ks = calloc(ACVP_KDF135_SRTP_OUTPUT_MAX+1, sizeof(char));
+    stc->srtcp_ks = calloc(ACVP_KDF135_SRTP_OUTPUT_MAX, sizeof(char));
     if (!stc->srtcp_ks) { return ACVP_MALLOC_FAIL; }
     
     return ACVP_SUCCESS;
