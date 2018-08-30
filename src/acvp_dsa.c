@@ -94,7 +94,7 @@ static ACVP_RESULT acvp_dsa_siggen_init_tc (ACVP_CTX *ctx,
                                      int l,
                                      int n,
                                      unsigned char *sha,
-                                     unsigned char *msg) {
+                                     char *msg) {
     ACVP_RESULT rv;
 
     stc->l = l;
@@ -116,8 +116,7 @@ static ACVP_RESULT acvp_dsa_siggen_init_tc (ACVP_CTX *ctx,
     stc->msg = calloc(1, ACVP_DSA_PQG_MAX);
     if (!stc->msg) { return ACVP_MALLOC_FAIL; }
 
-    stc->msglen = strlen((const char *)msg)/2;
-    rv = acvp_hexstr_to_bin((const unsigned char *) msg, stc->msg, ACVP_DSA_PQG_MAX);
+    rv = acvp_hexstr_to_bin(msg, stc->msg, ACVP_DSA_PQG_MAX, &(stc->msglen));
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Hex conversion failure (msg)");
         return rv;
@@ -134,13 +133,13 @@ static ACVP_RESULT acvp_dsa_sigver_init_tc (ACVP_CTX *ctx,
                                      int l,
                                      int n,
                                      unsigned char *sha,
-                                     unsigned char *p,
-                                     unsigned char *q,
-                                     unsigned char *g,
-                                     unsigned char *r,
-                                     unsigned char *s,
-                                     unsigned char *y,
-                                     unsigned char *msg) {
+                                     char *p,
+                                     char *q,
+                                     char *g,
+                                     char *r,
+                                     char *s,
+                                     char *y,
+                                     char *msg) {
     ACVP_RESULT rv;
 
     stc->l = l;
@@ -174,18 +173,42 @@ static ACVP_RESULT acvp_dsa_sigver_init_tc (ACVP_CTX *ctx,
     stc->y = calloc(1, ACVP_DSA_MAX_STRING);
     if (!stc->y) { return ACVP_MALLOC_FAIL; }
 
-    stc->msglen = strlen((const char *)msg)/2;
-    rv = acvp_hexstr_to_bin((const unsigned char *) msg, stc->msg, ACVP_DSA_MAX_STRING);
+    rv = acvp_hexstr_to_bin(msg, stc->msg, ACVP_DSA_MAX_STRING, &(stc->msglen));
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Hex conversion failure (msg)");
         return rv;
     }
-    memcpy(stc->p, p, strlen((const char *)p));
-    memcpy(stc->q, q, strlen((const char *)q));
-    memcpy(stc->g, g, strlen((const char *)g));
-    memcpy(stc->r, r, strlen((const char *)r));
-    memcpy(stc->s, s, strlen((const char *)s));
-    memcpy(stc->y, y, strlen((const char *)y));
+    rv = acvp_hexstr_to_bin(p, stc->p, ACVP_DSA_MAX_STRING, &(stc->p_len));
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Hex conversion failure (p)");
+        return rv;
+    }
+    rv = acvp_hexstr_to_bin(q, stc->q, ACVP_DSA_MAX_STRING, &(stc->q_len));
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Hex conversion failure (q)");
+        return rv;
+    }
+    rv = acvp_hexstr_to_bin(g, stc->g, ACVP_DSA_MAX_STRING, &(stc->g_len));
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Hex conversion failure (g)");
+        return rv;
+    }
+    rv = acvp_hexstr_to_bin(r, stc->r, ACVP_DSA_MAX_STRING, &(stc->r_len));
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Hex conversion failure (r)");
+        return rv;
+    }
+    rv = acvp_hexstr_to_bin(s, stc->s, ACVP_DSA_MAX_STRING, &(stc->s_len));
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Hex conversion failure (s)");
+        return rv;
+    }
+    rv = acvp_hexstr_to_bin(y, stc->y, ACVP_DSA_MAX_STRING, &(stc->y_len));
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Hex conversion failure (y)");
+        return rv;
+    }
+
     return ACVP_SUCCESS;
 }
 
@@ -199,10 +222,10 @@ static ACVP_RESULT acvp_dsa_pqgver_init_tc (ACVP_CTX *ctx,
                                      int c,
                                      unsigned char *index,
                                      unsigned char *sha,
-                                     unsigned char *p,
-                                     unsigned char *q,
-                                     unsigned char *g,
-                                     unsigned char *seed,
+                                     char *p,
+                                     char *q,
+                                     char *g,
+                                     char *seed,
                                      unsigned int pqg) {
     ACVP_RESULT rv;
 
@@ -245,17 +268,30 @@ static ACVP_RESULT acvp_dsa_pqgver_init_tc (ACVP_CTX *ctx,
         stc->index = strtol((char *) index, NULL, 16);
     }
     if (seed) {
-        stc->seedlen = strlen((const char *)seed)/2;
-        rv = acvp_hexstr_to_bin((const unsigned char *) seed, stc->seed, ACVP_DSA_MAX_STRING);
+        rv = acvp_hexstr_to_bin(seed, stc->seed, ACVP_DSA_MAX_STRING, &(stc->seedlen));
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Hex conversion failure (seed)");
             return rv;
         }
     }
-    memcpy(stc->p, p, strlen((const char *)p));
-    memcpy(stc->q, q, strlen((const char *)q));
+    
+    rv = acvp_hexstr_to_bin(p, stc->p, ACVP_DSA_MAX_STRING, &(stc->p_len));
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Hex conversion failure (p)");
+        return rv;
+    }
+    rv = acvp_hexstr_to_bin(q, stc->q, ACVP_DSA_MAX_STRING, &(stc->q_len));
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Hex conversion failure (q)");
+        return rv;
+    }
+
     if (g) {
-        memcpy(stc->g, g, strlen((const char *)g));
+        rv = acvp_hexstr_to_bin(g, stc->g, ACVP_DSA_MAX_STRING, &(stc->g_len));
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Hex conversion failure (g)");
+            return rv;
+        }
     }
     return ACVP_SUCCESS;
 }
@@ -269,9 +305,9 @@ static ACVP_RESULT acvp_dsa_pqggen_init_tc (ACVP_CTX *ctx,
                                      int l,
                                      int n,
                                      unsigned char *sha,
-                                     unsigned char *p,
-                                     unsigned char *q,
-                                     unsigned char *seed) {
+                                     char *p,
+                                     char *q,
+                                     char *seed) {
     ACVP_RESULT rv;
 
     stc->l = l;
@@ -302,14 +338,21 @@ static ACVP_RESULT acvp_dsa_pqggen_init_tc (ACVP_CTX *ctx,
     switch (gpq) {
     case ACVP_DSA_CANONICAL:
         stc->index = strtol((char *) index, NULL, 16);
-        stc->seedlen = strlen((char *)seed)/2;
-        rv = acvp_hexstr_to_bin((const unsigned char *) seed, stc->seed, ACVP_DSA_SEED_MAX);
+        rv = acvp_hexstr_to_bin(seed, stc->seed, ACVP_DSA_SEED_MAX, &(stc->seedlen));
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Hex conversion failure (seed)");
             return rv;
         }
-        memcpy(stc->p, p, strlen((const char *)p));
-        memcpy(stc->q, q, strlen((const char *)q));
+        rv = acvp_hexstr_to_bin(p, stc->p, ACVP_DSA_MAX_STRING, &(stc->p_len));
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Hex conversion failure (p)");
+            return rv;
+        }
+        rv = acvp_hexstr_to_bin(q, stc->q, ACVP_DSA_MAX_STRING, &(stc->q_len));
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Hex conversion failure (q)");
+            return rv;
+        }
         break;
     case ACVP_DSA_UNVERIFIABLE:
     case ACVP_DSA_PROBABLE:
@@ -338,21 +381,43 @@ static ACVP_RESULT acvp_dsa_output_tc (ACVP_CTX *ctx, ACVP_DSA_TC *stc, JSON_Obj
         switch (stc->gen_pq) {
         case ACVP_DSA_CANONICAL:
         case ACVP_DSA_UNVERIFIABLE:
-            json_object_set_string(r_tobj, "g", (char *) stc->g);
+            tmp = calloc(ACVP_DSA_PQG_MAX+1, sizeof(char));
+            if (!tmp) {
+                ACVP_LOG_ERR("Unable to malloc in acvp_dsa_output_tc");
+                return ACVP_MALLOC_FAIL;
+            }
+            rv = acvp_bin_to_hexstr(stc->g, stc->g_len, tmp, ACVP_DSA_PQG_MAX);
+            if (rv != ACVP_SUCCESS) {
+                ACVP_LOG_ERR("hex conversion failure (g)");
+                goto err;
+            }
+            json_object_set_string(r_tobj, "g", (const char *)tmp);
+            memset(tmp, 0x0, ACVP_DSA_PQG_MAX+1);
             break;
         case ACVP_DSA_PROBABLE:
         case ACVP_DSA_PROVABLE:
-            tmp = calloc(1, ACVP_DSA_PQG_MAX);
+            tmp = calloc(ACVP_DSA_PQG_MAX+1, sizeof(char));
             if (!tmp) {
-                ACVP_LOG_ERR("Unable to malloc in acvp_aes_mct_output_tc");
+                ACVP_LOG_ERR("Unable to malloc in acvp_dsa_output_tc");
                 return ACVP_MALLOC_FAIL;
             }
-
-            json_object_set_string(r_tobj, "p", (char *) stc->p);
-            json_object_set_string(r_tobj, "q", (char *) stc->q);
-
+            rv = acvp_bin_to_hexstr(stc->p, stc->p_len, tmp, ACVP_DSA_PQG_MAX);
+            if (rv != ACVP_SUCCESS) {
+                ACVP_LOG_ERR("hex conversion failure (p)");
+                goto err;
+            }
+            json_object_set_string(r_tobj, "p", (const char *)tmp);
+            memset(tmp, 0x0, ACVP_DSA_PQG_MAX+1);
+            
+            rv = acvp_bin_to_hexstr(stc->q, stc->q_len, tmp, ACVP_DSA_PQG_MAX);
+            if (rv != ACVP_SUCCESS) {
+                ACVP_LOG_ERR("hex conversion failure (q)");
+                goto err;
+            }
+            json_object_set_string(r_tobj, "q", (const char *)tmp);
+            
             memset(tmp, 0x0, ACVP_DSA_SEED_MAX);
-            rv = acvp_bin_to_hexstr(stc->seed, stc->seedlen, (unsigned char *) tmp);
+            rv = acvp_bin_to_hexstr(stc->seed, stc->seedlen, tmp, ACVP_DSA_SEED_MAX);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("hex conversion failure (p)");
                 return rv;
@@ -367,22 +432,110 @@ static ACVP_RESULT acvp_dsa_output_tc (ACVP_CTX *ctx, ACVP_DSA_TC *stc, JSON_Obj
         }
         break;
     case ACVP_DSA_MODE_SIGGEN:
-        json_object_set_string(r_tobj, "p", (char *) stc->p);
-        json_object_set_string(r_tobj, "q", (char *) stc->q);
-        json_object_set_string(r_tobj, "g", (char *) stc->g);
-        json_object_set_string(r_tobj, "y", (char *) stc->y);
-        json_object_set_string(r_tobj, "r", (char *) stc->r);
-        json_object_set_string(r_tobj, "s", (char *) stc->s);
+        tmp = calloc(ACVP_DSA_PQG_MAX+1, sizeof(char));
+        if (!tmp) {
+            ACVP_LOG_ERR("Unable to malloc in acvp_dsa_output_tc");
+            return ACVP_MALLOC_FAIL;
+        }
+
+        rv = acvp_bin_to_hexstr(stc->p, stc->p_len, tmp, ACVP_DSA_PQG_MAX);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("hex conversion failure (p)");
+            goto err;
+        }
+        json_object_set_string(r_tobj, "p", (const char *)tmp);
+        memset(tmp, 0x0, ACVP_DSA_PQG_MAX);
+        
+        rv = acvp_bin_to_hexstr(stc->q, stc->q_len, tmp, ACVP_DSA_PQG_MAX);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("hex conversion failure (q)");
+            goto err;
+        }
+        json_object_set_string(r_tobj, "q", (const char *)tmp);
+        memset(tmp, 0x0, ACVP_DSA_PQG_MAX);
+        
+        rv = acvp_bin_to_hexstr(stc->g, stc->g_len, tmp, ACVP_DSA_PQG_MAX);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("hex conversion failure (g)");
+            goto err;
+        }
+        json_object_set_string(r_tobj, "g", (const char *)tmp);
+        memset(tmp, 0x0, ACVP_DSA_PQG_MAX);
+        
+        rv = acvp_bin_to_hexstr(stc->y, stc->y_len, tmp, ACVP_DSA_PQG_MAX);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("hex conversion failure (y)");
+            goto err;
+        }
+        json_object_set_string(r_tobj, "y", (const char *)tmp);
+        memset(tmp, 0x0, ACVP_DSA_PQG_MAX);
+        
+        rv = acvp_bin_to_hexstr(stc->r, stc->r_len, tmp, ACVP_DSA_PQG_MAX);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("hex conversion failure (r)");
+            goto err;
+        }
+        json_object_set_string(r_tobj, "r", (const char *)tmp);
+        memset(tmp, 0x0, ACVP_DSA_PQG_MAX);
+        
+        rv = acvp_bin_to_hexstr(stc->s, stc->s_len, tmp, ACVP_DSA_PQG_MAX);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("hex conversion failure (s)");
+            goto err;
+        }
+        json_object_set_string(r_tobj, "s", (const char *)tmp);
+        memset(tmp, 0x0, ACVP_DSA_PQG_MAX);
+        
         break;
     case ACVP_DSA_MODE_SIGVER:
         json_object_set_string(r_tobj, "result", stc->result > 0 ? "passed" : "failed");
         break;
     case ACVP_DSA_MODE_KEYGEN:
-        json_object_set_string(r_tobj, "p", (char *) stc->p);
-        json_object_set_string(r_tobj, "q", (char *) stc->q);
-        json_object_set_string(r_tobj, "g", (char *) stc->g);
-        json_object_set_string(r_tobj, "y", (char *) stc->y);
-        json_object_set_string(r_tobj, "x", (char *) stc->x);
+        tmp = calloc(ACVP_DSA_PQG_MAX+1, sizeof(char));
+        if (!tmp) {
+            ACVP_LOG_ERR("Unable to malloc in acvp_dsa_output_tc");
+            return ACVP_MALLOC_FAIL;
+        }
+        rv = acvp_bin_to_hexstr(stc->p, stc->p_len, tmp, ACVP_DSA_PQG_MAX);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("hex conversion failure (p)");
+            goto err;
+        }
+        json_object_set_string(r_tobj, "p", (const char *)tmp);
+        memset(tmp, 0x0, ACVP_DSA_PQG_MAX);
+        
+        rv = acvp_bin_to_hexstr(stc->q, stc->q_len, tmp, ACVP_DSA_PQG_MAX);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("hex conversion failure (q)");
+            goto err;
+        }
+        json_object_set_string(r_tobj, "q", (const char *)tmp);
+        memset(tmp, 0x0, ACVP_DSA_PQG_MAX);
+        
+        rv = acvp_bin_to_hexstr(stc->g, stc->g_len, tmp, ACVP_DSA_PQG_MAX);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("hex conversion failure (g)");
+            goto err;
+        }
+        json_object_set_string(r_tobj, "g", (const char *)tmp);
+        memset(tmp, 0x0, ACVP_DSA_PQG_MAX);
+        
+        rv = acvp_bin_to_hexstr(stc->y, stc->y_len, tmp, ACVP_DSA_PQG_MAX);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("hex conversion failure (y)");
+            goto err;
+        }
+        json_object_set_string(r_tobj, "y", (const char *)tmp);
+        memset(tmp, 0x0, ACVP_DSA_PQG_MAX);
+        
+        rv = acvp_bin_to_hexstr(stc->x, stc->x_len, tmp, ACVP_DSA_PQG_MAX);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("hex conversion failure (x)");
+            goto err;
+        }
+        json_object_set_string(r_tobj, "x", (const char *)tmp);
+        memset(tmp, 0x0, ACVP_DSA_PQG_MAX);
+
         break;
     case ACVP_DSA_MODE_PQGVER:
         json_object_set_string(r_tobj, "result", stc->result > 0 ? "passed" : "failed");
@@ -391,6 +544,7 @@ static ACVP_RESULT acvp_dsa_output_tc (ACVP_CTX *ctx, ACVP_DSA_TC *stc, JSON_Obj
         break;
     }
 
+err:
     free(tmp);
     return ACVP_SUCCESS;
 }
@@ -519,7 +673,7 @@ ACVP_RESULT acvp_dsa_pqggen_handler (ACVP_CTX *ctx, ACVP_TEST_CASE tc, ACVP_CAPS
     int j, t_cnt, tc_id;
     ACVP_RESULT rv = ACVP_SUCCESS;
     unsigned gpq = 0, n, l;
-    unsigned char *p = NULL, *q = NULL, *seed = NULL;
+    char *p = NULL, *q = NULL, *seed = NULL;
     ACVP_DSA_TC *stc;
 
     gen_pq = (unsigned char *) json_object_get_string(groupobj, "pqMode");
@@ -584,19 +738,19 @@ ACVP_RESULT acvp_dsa_pqggen_handler (ACVP_CTX *ctx, ACVP_TEST_CASE tc, ACVP_CAPS
         ACVP_LOG_INFO("            tcId: %d", tc_id);
         if (gen_g) {
             if (!strncmp((char *) gen_g, "canonical", 9)) {
-                p = (unsigned char *) json_object_get_string(testobj, "p");
+                p = (char *) json_object_get_string(testobj, "p");
                 if (!p) {
                     ACVP_LOG_ERR("Failed to include p. ");
                     return ACVP_MISSING_ARG;
                 }
 
-                q = (unsigned char *) json_object_get_string(testobj, "q");
+                q = (char *) json_object_get_string(testobj, "q");
                 if (!q) {
                     ACVP_LOG_ERR("Failed to include q. ");
                     return ACVP_MISSING_ARG;
                 }
 
-                seed = (unsigned char *) json_object_get_string(testobj, "domainSeed");
+                seed = (char *) json_object_get_string(testobj, "domainSeed");
                 if (!seed) {
                     ACVP_LOG_ERR("Failed to include domainSeed. ");
                     return ACVP_MISSING_ARG;
@@ -619,13 +773,13 @@ ACVP_RESULT acvp_dsa_pqggen_handler (ACVP_CTX *ctx, ACVP_TEST_CASE tc, ACVP_CAPS
         /* find the mode */
         if (gen_g) {
             if (!strncmp((char *) gen_g, "unverifiable", 12)) {
-                p = (unsigned char *) json_object_get_string(testobj, "p");
+                p = (char *) json_object_get_string(testobj, "p");
                 if (!p) {
                     ACVP_LOG_ERR("Failed to include p. ");
                     return ACVP_MISSING_ARG;
                 }
 
-                q = (unsigned char *) json_object_get_string(testobj, "q");
+                q = (char *) json_object_get_string(testobj, "q");
                 if (!q) {
                     ACVP_LOG_ERR("Failed to include q. ");
                     return ACVP_MISSING_ARG;
@@ -730,7 +884,8 @@ ACVP_RESULT acvp_dsa_pqggen_handler (ACVP_CTX *ctx, ACVP_TEST_CASE tc, ACVP_CAPS
 
 ACVP_RESULT acvp_dsa_siggen_handler (ACVP_CTX *ctx, ACVP_TEST_CASE tc, ACVP_CAPS_LIST *cap,
                                      JSON_Array *r_tarr, JSON_Object *groupobj) {
-    unsigned char *sha = NULL, *index = NULL, *msg = NULL;
+    unsigned char *sha = NULL, *index = NULL;
+    char *msg = NULL;
     JSON_Array *tests;
     JSON_Value *testval;
     JSON_Object *testobj = NULL;
@@ -789,7 +944,7 @@ ACVP_RESULT acvp_dsa_siggen_handler (ACVP_CTX *ctx, ACVP_TEST_CASE tc, ACVP_CAPS
             return ACVP_MISSING_ARG;
         }
 
-        msg = (unsigned char *) json_object_get_string(testobj, "message");
+        msg = (char *) json_object_get_string(testobj, "message");
         if (!msg) {
             ACVP_LOG_ERR("Failed to include message. ");
             return ACVP_MISSING_ARG;
@@ -836,8 +991,8 @@ ACVP_RESULT acvp_dsa_siggen_handler (ACVP_CTX *ctx, ACVP_TEST_CASE tc, ACVP_CAPS
 
 ACVP_RESULT acvp_dsa_pqgver_handler (ACVP_CTX *ctx, ACVP_TEST_CASE tc, ACVP_CAPS_LIST *cap,
                                      JSON_Array *r_tarr, JSON_Object *groupobj) {
-    unsigned char *sha = NULL;
-    unsigned char *g = NULL, *pqmode = NULL, *gmode = NULL, *seed = NULL, *index = NULL;
+    unsigned char *sha = NULL, *index = NULL;
+    char *g = NULL, *pqmode = NULL, *gmode = NULL, *seed = NULL;
     JSON_Array *tests;
     JSON_Value *testval;
     JSON_Object *testobj = NULL;
@@ -847,7 +1002,7 @@ ACVP_RESULT acvp_dsa_pqgver_handler (ACVP_CTX *ctx, ACVP_TEST_CASE tc, ACVP_CAPS
     JSON_Value *mval;
     JSON_Object *mobj = NULL;
     unsigned int num = 0;
-    unsigned char *p = NULL, *q = NULL;
+    char *p = NULL, *q = NULL;
     ACVP_DSA_TC *stc;
 
     l = json_object_get_number(groupobj, "l");
@@ -867,8 +1022,8 @@ ACVP_RESULT acvp_dsa_pqgver_handler (ACVP_CTX *ctx, ACVP_TEST_CASE tc, ACVP_CAPS
         ACVP_LOG_ERR("Failed to include hashAlg. ");
         return ACVP_MISSING_ARG;
     }
-    gmode = (unsigned char *) json_object_get_string(groupobj, "gMode");
-    pqmode = (unsigned char *) json_object_get_string(groupobj, "pqMode");
+    gmode = (char *) json_object_get_string(groupobj, "gMode");
+    pqmode = (char *) json_object_get_string(groupobj, "pqMode");
     if (!pqmode && !gmode) {
         ACVP_LOG_ERR("Failed to include either pqMode or gMode. ");
         return ACVP_MISSING_ARG;
@@ -905,23 +1060,23 @@ ACVP_RESULT acvp_dsa_pqgver_handler (ACVP_CTX *ctx, ACVP_TEST_CASE tc, ACVP_CAPS
             return ACVP_MISSING_ARG;
         }
 
-        seed = (unsigned char *) json_object_get_string(testobj, "domainSeed");
+        seed = (char *) json_object_get_string(testobj, "domainSeed");
         c = json_object_get_number(testobj, "counter");
         index = (unsigned char *) json_object_get_string(testobj, "index");
 
-        p = (unsigned char *) json_object_get_string(testobj, "p");
+        p = (char *) json_object_get_string(testobj, "p");
         if (!p) {
             ACVP_LOG_ERR("Failed to include p. ");
             return ACVP_MISSING_ARG;
         }
 
-        q = (unsigned char *) json_object_get_string(testobj, "q");
+        q = (char *) json_object_get_string(testobj, "q");
         if (!q) {
             ACVP_LOG_ERR("Failed to include q. ");
             return ACVP_MISSING_ARG;
         }
 
-        g = (unsigned char *) json_object_get_string(testobj, "g");
+        g = (char *) json_object_get_string(testobj, "g");
 
         ACVP_LOG_INFO("       Test case: %d", j);
         ACVP_LOG_INFO("            tcId: %d", tc_id);
@@ -936,12 +1091,12 @@ ACVP_RESULT acvp_dsa_pqgver_handler (ACVP_CTX *ctx, ACVP_TEST_CASE tc, ACVP_CAPS
 
         /* find the mode */
         if (gmode) {
-            if (!strncmp((char *) gmode, "canonical", 9)) {
+            if (!strncmp(gmode, "canonical", 9)) {
                 gpq = ACVP_DSA_CANONICAL;
             }
         }
         if (pqmode) {
-            if (!strncmp((char *) pqmode, "probable", 8)) {
+            if (!strncmp(pqmode, "probable", 8)) {
                 gpq = ACVP_DSA_PROBABLE;
             }
         }
@@ -1011,8 +1166,8 @@ ACVP_RESULT acvp_dsa_pqgver_handler (ACVP_CTX *ctx, ACVP_TEST_CASE tc, ACVP_CAPS
 
 ACVP_RESULT acvp_dsa_sigver_handler (ACVP_CTX *ctx, ACVP_TEST_CASE tc, ACVP_CAPS_LIST *cap,
                                      JSON_Array *r_tarr, JSON_Object *groupobj) {
-    unsigned char *sha = NULL, *index = NULL, *msg = NULL, *r = NULL, *s = NULL, *y = NULL;
-    unsigned char *g = NULL;
+    unsigned char *sha = NULL, *index = NULL;
+    char *msg = NULL, *r = NULL, *s = NULL, *y = NULL, *g = NULL;
     JSON_Array *tests;
     JSON_Value *testval;
     JSON_Object *testobj = NULL;
@@ -1022,7 +1177,7 @@ ACVP_RESULT acvp_dsa_sigver_handler (ACVP_CTX *ctx, ACVP_TEST_CASE tc, ACVP_CAPS
     JSON_Value *mval;
     JSON_Object *mobj = NULL;
     unsigned int num = 0;
-    unsigned char *p = NULL, *q = NULL;
+    char *p = NULL, *q = NULL;
     ACVP_DSA_TC *stc;
 
     l = json_object_get_number(groupobj, "l");
@@ -1061,19 +1216,19 @@ ACVP_RESULT acvp_dsa_sigver_handler (ACVP_CTX *ctx, ACVP_TEST_CASE tc, ACVP_CAPS
 
     stc = tc.tc.dsa;
 
-    p = (unsigned char *) json_object_get_string(groupobj, "p");
+    p = (char *)json_object_get_string(groupobj, "p");
     if (!p) {
         ACVP_LOG_ERR("Failed to include p. ");
         return ACVP_MISSING_ARG;
     }
 
-    q = (unsigned char *) json_object_get_string(groupobj, "q");
+    q = (char *)json_object_get_string(groupobj, "q");
     if (!q) {
         ACVP_LOG_ERR("Failed to include q. ");
         return ACVP_MISSING_ARG;
     }
 
-    g = (unsigned char *) json_object_get_string(groupobj, "g");
+    g = (char *)json_object_get_string(groupobj, "g");
     if (!g) {
         ACVP_LOG_ERR("Failed to include g. ");
         return ACVP_MISSING_ARG;
@@ -1084,28 +1239,28 @@ ACVP_RESULT acvp_dsa_sigver_handler (ACVP_CTX *ctx, ACVP_TEST_CASE tc, ACVP_CAPS
         testval = json_array_get_value(tests, j);
         testobj = json_value_get_object(testval);
 
-        tc_id = (unsigned int) json_object_get_number(testobj, "tcId");
+        tc_id = json_object_get_number(testobj, "tcId");
         if (!tc_id) {
             ACVP_LOG_ERR("Failed to include tc_id. ");
             return ACVP_MISSING_ARG;
         }
 
-        msg = (unsigned char *) json_object_get_string(testobj, "message");
+        msg = (char *)json_object_get_string(testobj, "message");
         if (!msg) {
             ACVP_LOG_ERR("Failed to include message. ");
             return ACVP_MISSING_ARG;
         }
-        r = (unsigned char *) json_object_get_string(testobj, "r");
+        r = (char *)json_object_get_string(testobj, "r");
         if (!r) {
             ACVP_LOG_ERR("Failed to include r. ");
             return ACVP_MISSING_ARG;
         }
-        s = (unsigned char *) json_object_get_string(testobj, "s");
+        s = (char *)json_object_get_string(testobj, "s");
         if (!s) {
             ACVP_LOG_ERR("Failed to include s. ");
             return ACVP_MISSING_ARG;
         }
-        y = (unsigned char *) json_object_get_string(testobj, "y");
+        y = (char *)json_object_get_string(testobj, "y");
         if (!y) {
             ACVP_LOG_ERR("Failed to include y. ");
             return ACVP_MISSING_ARG;

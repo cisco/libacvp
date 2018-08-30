@@ -207,12 +207,6 @@ ACVP_RESULT is_valid_tf_param (unsigned int value) {
 ACVP_RESULT is_valid_hash_alg (char *value) {
     if (!value) { return ACVP_INVALID_ARG; }
     if (strncmp(value, ACVP_STR_SHA_1, 5) == 0 ||
-        strncmp(value, ACVP_STR_SHA_224, 7) == 0 ||
-        strncmp(value, ACVP_STR_SHA_256, 7) == 0 ||
-        strncmp(value, ACVP_STR_SHA_384, 7) == 0 ||
-        strncmp(value, ACVP_STR_SHA_512, 7) == 0 ||
-        strncmp(value, ACVP_STR_SHA_512_224, 11) == 0 ||
-        strncmp(value, ACVP_STR_SHA_512_256, 11) == 0 ||
         strncmp(value, ACVP_STR_SHA2_224, 8) == 0 ||
         strncmp(value, ACVP_STR_SHA2_256, 8) == 0 ||
         strncmp(value, ACVP_STR_SHA2_384, 8) == 0 ||
@@ -289,13 +283,19 @@ int acvp_lookup_ecdsa_curve (ACVP_CIPHER cipher, char *curve_name) {
  * Convert a byte array from source to a hexadecimal string which is
  * stored in the destination.
  */
-ACVP_RESULT acvp_bin_to_hexstr (const unsigned char *src,
-                                unsigned int src_len,
-                                unsigned char *dest) {
+ACVP_RESULT acvp_bin_to_hexstr (const unsigned char *src, int src_len, char *dest, int dest_max) {
     int i, j;
     unsigned char nibb_a, nibb_b;
     unsigned char hex_chars[] = "0123456789ABCDEF";
-
+    
+    if (!src || !dest) {
+        return ACVP_MISSING_ARG;
+    }
+    
+    if ((src_len * 2) > dest_max) {
+        return ACVP_DATA_TOO_LARGE;
+    }
+    
     for (i = 0, j = 0; i < src_len; i++, j += 2) {
         nibb_a = *src >> 4; /* Get first half of byte */
         nibb_b = *src & 0x0f; /* Get second half of byte */
@@ -355,10 +355,11 @@ ACVP_RESULT acvp_bin_to_bit (const unsigned char *in, int len, unsigned char *ou
  * in the destination.
  * TODO: Enable the function to handle odd number of hex characters
  */
-ACVP_RESULT acvp_hexstr_to_bin (const unsigned char *src, unsigned char *dest, int dest_max) {
+ACVP_RESULT acvp_hexstr_to_bin (const char *src, unsigned char *dest, int dest_max, int *converted_len) {
     int src_len;
     int byte_a, byte_b;
     int is_odd = 0;
+    int length_converted = 0;
 
     if (!src || !dest) {
         return ACVP_INVALID_ARG;
@@ -386,11 +387,13 @@ ACVP_RESULT acvp_hexstr_to_bin (const unsigned char *src, unsigned char *dest, i
 
             dest++;
             src += 2;
+            length_converted++;
         }
     } else {
         return ACVP_UNSUPPORTED_OP;
     }
-
+    
+    if (converted_len) *converted_len = length_converted;
     return ACVP_SUCCESS;
 }
 

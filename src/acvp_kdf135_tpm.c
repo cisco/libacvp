@@ -39,15 +39,15 @@
  */
 static ACVP_RESULT acvp_kdf135_tpm_output_tc (ACVP_CTX *ctx, ACVP_KDF135_TPM_TC *stc, JSON_Object *tc_rsp) {
     ACVP_RESULT rv;
-    char *tmp;
+    char *tmp = NULL;
     
-    tmp = calloc(1, ACVP_KDF135_TPM_SKEY_MAX);
+    tmp = calloc(1, ACVP_KDF135_TPM_SKEY_MAX+1);
     if (!tmp) {
         ACVP_LOG_ERR("Unable to malloc in acvp_kdf135 tpm_output_tc");
         return ACVP_MALLOC_FAIL;
     }
     
-    rv = acvp_bin_to_hexstr(stc->s_key, stc->skey_len, (unsigned char *) tmp);
+    rv = acvp_bin_to_hexstr(stc->s_key, stc->skey_len, tmp, ACVP_KDF135_TPM_SKEY_MAX);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("hex conversion failure (s_key)");
         return rv;

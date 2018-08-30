@@ -92,7 +92,7 @@ extern "C"
 #include <openssl/fips_rand.h>
 #include <openssl/fips.h>
 
-#if defined(dsa_builtin_paramgen2) && OPENSSL_VERSION_NUMBER < 0x10100000L
+#if defined(dsa_builtin_paramgen2) && OPENSSL_VERSION_NUMBER <= 0x10100000L
 # undef dsa_builtin_paramgen2
 int dsa_builtin_paramgen2(DSA *ret, size_t L, size_t N,
      const EVP_MD *evpmd, const unsigned char *seed_in, size_t seed_len,
@@ -198,6 +198,10 @@ void FIPS_free(void *ptr);
 int FIPS_digest(const void *data, size_t count,
                 unsigned char *md, unsigned int *size, const EVP_MD *type);
 void FIPS_openssl_cleanse(void *ptr, size_t len);
+int FIPS_rsa_verify(struct rsa_st *rsa, const unsigned char *msg, int msglen,
+			const struct env_md_st *mhash, int rsa_pad_mode,
+			int saltlen, const struct env_md_st *mgf1Hash,
+			const unsigned char *sigbuf, unsigned int siglen);
 
 static int no_err;
 static void put_err_cb(int lib, int func,int reason,const char *file,int line)
