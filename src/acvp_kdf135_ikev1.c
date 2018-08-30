@@ -100,11 +100,14 @@ static ACVP_RESULT acvp_kdf135_ikev1_init_tc (ACVP_CTX *ctx,
     memcpy(stc->gxy, gxy, strnlen((const char *)gxy,
            ACVP_KDF135_IKEV1_DH_SHARED_SECRET_STR_MAX));
 
-    stc->psk = calloc(ACVP_KDF135_IKEV1_PSK_STR_MAX + 1,
-                      sizeof(unsigned char));
-    if (!stc->psk) { return ACVP_MALLOC_FAIL; }
-    memcpy(stc->psk, psk, strnlen((const char *)psk,
-           ACVP_KDF135_IKEV1_PSK_STR_MAX));
+    if (psk != NULL) {
+        /* Only for PSK authentication method */
+        stc->psk = calloc(ACVP_KDF135_IKEV1_PSK_STR_MAX + 1,
+                          sizeof(unsigned char));
+        if (!stc->psk) { return ACVP_MALLOC_FAIL; }
+        memcpy(stc->psk, psk, strnlen((const char *)psk,
+               ACVP_KDF135_IKEV1_PSK_STR_MAX));
+    }
     
     stc->s_key_id = calloc(ACVP_KDF135_IKEV1_SKEY_STR_MAX + 1,
                            sizeof(unsigned char));
@@ -237,10 +240,45 @@ ACVP_RESULT acvp_kdf135_ikev1_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
             return ACVP_MISSING_ARG;
         }
 
+        /*
+         * Determine the hash algorithm.
+         */
+        if (strncmp(hash_alg_str, ACVP_STR_SHA_1, strlen(ACVP_STR_SHA_1)) == 0) {
+            hash_alg = ACVP_KDF135_SHA1;
+        } else if (strncmp(hash_alg_str, ACVP_STR_SHA2_224, strlen(ACVP_STR_SHA2_224)) == 0) {
+            hash_alg = ACVP_KDF135_SHA224;
+        } else if (strncmp(hash_alg_str, ACVP_STR_SHA2_256, strlen(ACVP_STR_SHA2_256)) == 0) {
+            hash_alg = ACVP_KDF135_SHA256;
+        } else if (strncmp(hash_alg_str, ACVP_STR_SHA2_384, strlen(ACVP_STR_SHA2_384)) == 0) {
+            hash_alg = ACVP_KDF135_SHA384;
+        } else if (strncmp(hash_alg_str, ACVP_STR_SHA2_512, strlen(ACVP_STR_SHA2_512)) == 0) {
+            hash_alg = ACVP_KDF135_SHA512;
+        } else {
+            ACVP_LOG_ERR("ACVP server requesting invalid hashAlg");
+            return ACVP_INVALID_ARG;
+        }
+
         auth_method_str = json_object_get_string(groupobj, "authenticationMethod");
         if (!auth_method_str) {
             ACVP_LOG_ERR("Failed to include authenticationMethod");
             return ACVP_MISSING_ARG;
+        }
+
+        /*
+         * Determine the authentication method.
+         */
+        if (strncmp(auth_method_str, ACVP_AUTH_METHOD_DSA_STR,
+                    strlen(ACVP_AUTH_METHOD_DSA_STR)) == 0) {
+            auth_method = ACVP_KDF135_IKEV1_AMETH_DSA;
+        } else if (strncmp(auth_method_str, ACVP_AUTH_METHOD_PSK_STR,
+                           strlen(ACVP_AUTH_METHOD_PSK_STR)) == 0) {
+            auth_method = ACVP_KDF135_IKEV1_AMETH_PSK;
+        } else if (strncmp(auth_method_str, ACVP_AUTH_METHOD_PKE_STR,
+                           strlen(ACVP_AUTH_METHOD_PKE_STR)) == 0) {
+            auth_method = ACVP_KDF135_IKEV1_AMETH_PKE;
+        } else {
+            ACVP_LOG_ERR("ACVP server requesting invalid authenticationMethod");
+            return ACVP_INVALID_ARG;
         }
 
         init_nonce_len = json_object_get_number(groupobj, "nInitLength");
@@ -264,46 +302,14 @@ ACVP_RESULT acvp_kdf135_ikev1_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
             return ACVP_INVALID_ARG;
         }
 
-        psk_len = json_object_get_number(groupobj, "preSharedKeyLength");
-        if (!(psk_len >= ACVP_KDF135_IKEV1_PSK_BIT_MIN
-              && psk_len <= ACVP_KDF135_IKEV1_PSK_BIT_MAX)) {
-            ACVP_LOG_ERR("preSharedKeyLength incorrect, %d", psk_len);
-            return ACVP_INVALID_ARG;
-        }
-
-        /*
-         * Determine the hash algorithm.
-         */
-        if (strncmp(hash_alg_str, ACVP_STR_SHA_1, strlen(ACVP_STR_SHA_1)) == 0) {
-            hash_alg = ACVP_KDF135_SHA1;
-        } else if (strncmp(hash_alg_str, ACVP_STR_SHA2_224, strlen(ACVP_STR_SHA2_224)) == 0) {
-            hash_alg = ACVP_KDF135_SHA224;
-        } else if (strncmp(hash_alg_str, ACVP_STR_SHA2_256, strlen(ACVP_STR_SHA2_256)) == 0) {
-            hash_alg = ACVP_KDF135_SHA256;
-        } else if (strncmp(hash_alg_str, ACVP_STR_SHA2_384, strlen(ACVP_STR_SHA2_384)) == 0) {
-            hash_alg = ACVP_KDF135_SHA384;
-        }else if (strncmp(hash_alg_str, ACVP_STR_SHA2_512, strlen(ACVP_STR_SHA2_512)) == 0) {
-            hash_alg = ACVP_KDF135_SHA512;
-        } else {
-            ACVP_LOG_ERR("ACVP server requesting invalid hashAlg");
-            return ACVP_INVALID_ARG;
-        }
-
-        /*
-         * Determine the authentication method.
-         */
-        if (strncmp(auth_method_str, ACVP_AUTH_METHOD_DSA_STR,
-                    strlen(ACVP_AUTH_METHOD_DSA_STR)) == 0) {
-            auth_method = ACVP_KDF135_IKEV1_AMETH_DSA;
-        } else if (strncmp(auth_method_str, ACVP_AUTH_METHOD_PSK_STR,
-                           strlen(ACVP_AUTH_METHOD_PSK_STR)) == 0) {
-            auth_method = ACVP_KDF135_IKEV1_AMETH_PSK;
-        } else if (strncmp(auth_method_str, ACVP_AUTH_METHOD_PKE_STR,
-                           strlen(ACVP_AUTH_METHOD_PKE_STR)) == 0) {
-            auth_method = ACVP_KDF135_IKEV1_AMETH_PKE;
-        } else {
-            ACVP_LOG_ERR("ACVP server requesting invalid authenticationMethod");
-            return ACVP_INVALID_ARG;
+        if (auth_method == ACVP_KDF135_IKEV1_AMETH_PSK) {
+            /* Only for PSK authentication method */
+            psk_len = json_object_get_number(groupobj, "preSharedKeyLength");
+            if (!(psk_len >= ACVP_KDF135_IKEV1_PSK_BIT_MIN
+                  && psk_len <= ACVP_KDF135_IKEV1_PSK_BIT_MAX)) {
+                ACVP_LOG_ERR("preSharedKeyLength incorrect, %d", psk_len);
+                return ACVP_INVALID_ARG;
+            }
         }
 
         ACVP_LOG_INFO("\n    Test group: %d", i);
@@ -384,16 +390,20 @@ ACVP_RESULT acvp_kdf135_ikev1_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
                 return ACVP_INVALID_ARG;
             }
 
-            psk = (unsigned char *)json_object_get_string(testobj, "preSharedKey");
-            if (!psk) {
-                ACVP_LOG_ERR("Failed to include preSharedKey");
-                return ACVP_MISSING_ARG;
-            }
-            if (strnlen((char *)psk, ACVP_KDF135_IKEV1_PSK_STR_MAX + 1)
-                > ACVP_KDF135_IKEV1_PSK_STR_MAX) {
-                ACVP_LOG_ERR("preSharedKey too long, max allowed=(%d)",
-                             ACVP_KDF135_IKEV1_PSK_STR_MAX);
-                return ACVP_INVALID_ARG;
+
+            if (auth_method == ACVP_KDF135_IKEV1_AMETH_PSK) {
+                /* Only for PSK authentication method */
+                psk = (unsigned char *)json_object_get_string(testobj, "preSharedKey");
+                if (!psk) {
+                    ACVP_LOG_ERR("Failed to include preSharedKey");
+                    return ACVP_MISSING_ARG;
+                }
+                if (strnlen((char *)psk, ACVP_KDF135_IKEV1_PSK_STR_MAX + 1)
+                    > ACVP_KDF135_IKEV1_PSK_STR_MAX) {
+                    ACVP_LOG_ERR("preSharedKey too long, max allowed=(%d)",
+                                 ACVP_KDF135_IKEV1_PSK_STR_MAX);
+                    return ACVP_INVALID_ARG;
+                }
             }
 
             ACVP_LOG_INFO("        Test case: %d", j);
