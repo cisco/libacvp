@@ -391,10 +391,12 @@ ACVP_RESULT acvp_kdf135_ikev1_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
                 ACVP_LOG_ERR("Failed to include nInit");
                 return ACVP_MISSING_ARG;
             }
-            if (strnlen((char *)init_nonce, init_nonce_len) != init_nonce_len/4) {
+            if (strnlen((char *)init_nonce,
+                        ACVP_KDF135_IKEV1_INIT_NONCE_STR_MAX) != ((init_nonce_len + 7) / 8) * 2) {
                 ACVP_LOG_ERR("nInit length(%d) incorrect, expected(%d)",
-                              strnlen((char *)init_nonce, ACVP_KDF135_IKEV1_INIT_NONCE_STR_MAX),
-                              init_nonce_len/4);
+                              strnlen((char *)init_nonce,
+                                      ACVP_KDF135_IKEV1_INIT_NONCE_STR_MAX),
+                              ((init_nonce_len + 7) / 8) * 2);
                 return ACVP_INVALID_ARG;
             }
 
@@ -403,10 +405,12 @@ ACVP_RESULT acvp_kdf135_ikev1_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
                 ACVP_LOG_ERR("Failed to include nResp");
                 return ACVP_MISSING_ARG;
             }
-            if (strnlen((char *)resp_nonce, resp_nonce_len) != resp_nonce_len/4) {
+            if (strnlen((char *)resp_nonce,
+                        ACVP_KDF135_IKEV1_RESP_NONCE_STR_MAX) != ((resp_nonce_len + 7) / 8) * 2) {
                 ACVP_LOG_ERR("nResp length(%d) incorrect, expected(%d)",
-                              strnlen((char *)resp_nonce, ACVP_KDF135_IKEV1_RESP_NONCE_STR_MAX),
-                              resp_nonce_len/4);
+                              strnlen((char *)resp_nonce,
+                                      ACVP_KDF135_IKEV1_RESP_NONCE_STR_MAX),
+                              ((resp_nonce_len + 7) / 8) * 2);
                 return ACVP_INVALID_ARG;
             }
 
