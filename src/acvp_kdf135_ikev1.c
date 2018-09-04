@@ -291,7 +291,7 @@ ACVP_RESULT acvp_kdf135_ikev1_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
         groupobj = json_value_get_object(groupval);
 
         hash_alg_str = json_object_get_string(groupobj, "hashAlg");
-        if (!hash_alg) {
+        if (!hash_alg_str) {
             ACVP_LOG_ERR("Failed to include hashAlg");
             return ACVP_MISSING_ARG;
         }
