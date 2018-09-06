@@ -60,7 +60,7 @@ static ACVP_RESULT acvp_kdf135_ikev2_output_tc (ACVP_CTX *ctx, ACVP_KDF135_IKEV2
     
     
     tmp = calloc(ACVP_KDF135_IKEV2_DKEY_MATERIAL_STR_MAX, sizeof(char));
-    rv = acvp_bin_to_hexstr(stc->derived_keying_material, stc->key_out_len, tmp, ACVP_KDF135_IKEV2_DKEY_MATERIAL_STR_MAX);
+    rv = acvp_bin_to_hexstr(stc->derived_keying_material, stc->keying_material_len/8, tmp, ACVP_KDF135_IKEV2_DKEY_MATERIAL_STR_MAX);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("hex conversion failure (derived_keying_material)");
         goto err;
@@ -68,7 +68,7 @@ static ACVP_RESULT acvp_kdf135_ikev2_output_tc (ACVP_CTX *ctx, ACVP_KDF135_IKEV2
     json_object_set_string(tc_rsp, "derivedKeyingMaterial", (const char *)tmp);
     memset(tmp, 0x0, ACVP_KDF135_IKEV2_DKEY_MATERIAL_STR_MAX);
     
-    rv = acvp_bin_to_hexstr(stc->derived_keying_material_child, stc->key_out_len, tmp, ACVP_KDF135_IKEV2_DKEY_MATERIAL_STR_MAX);
+    rv = acvp_bin_to_hexstr(stc->derived_keying_material_child, stc->keying_material_len/8, tmp, ACVP_KDF135_IKEV2_DKEY_MATERIAL_STR_MAX);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("hex conversion failure (derived_keying_material)");
         goto err;
@@ -76,7 +76,7 @@ static ACVP_RESULT acvp_kdf135_ikev2_output_tc (ACVP_CTX *ctx, ACVP_KDF135_IKEV2
     json_object_set_string(tc_rsp, "derivedKeyingMaterialChild", (const char *)tmp);
     memset(tmp, 0x0, ACVP_KDF135_IKEV2_DKEY_MATERIAL_STR_MAX);
     
-    rv = acvp_bin_to_hexstr(stc->derived_keying_material_child_dh, stc->key_out_len, tmp, ACVP_KDF135_IKEV2_DKEY_MATERIAL_STR_MAX);
+    rv = acvp_bin_to_hexstr(stc->derived_keying_material_child_dh, stc->keying_material_len/8, tmp, ACVP_KDF135_IKEV2_DKEY_MATERIAL_STR_MAX);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("hex conversion failure (derived_keying_material)");
         goto err;
