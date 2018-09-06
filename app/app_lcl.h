@@ -127,6 +127,8 @@ void fips_bn_ctx_free(BN_CTX *a);
 void FIPS_bn_free(BIGNUM *a);
 int fips_BN_hex2bn(BIGNUM **bn, const char *a);
 char *fips_BN_bn2hex(const BIGNUM *a);
+BIGNUM *FIPS_bn_bin2bn(const unsigned char *s,int len,BIGNUM *ret);
+int	FIPS_bn_bn2bin(const BIGNUM *a, unsigned char *to);
 int fips_bn_set_word(BIGNUM *a, BN_ULONG w);
 int rsa_generate_key_internal(BIGNUM **p, BIGNUM **q, BIGNUM **n, BIGNUM **d,
                               void *seed, unsigned int seed_len,

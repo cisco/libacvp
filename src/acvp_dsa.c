@@ -82,6 +82,17 @@ static ACVP_RESULT acvp_dsa_keygen_init_tc (ACVP_CTX *ctx,
     if (stc->n == 0) {
         return ACVP_INVALID_ARG;
     }
+    
+    stc->p = calloc(1, ACVP_DSA_MAX_STRING);
+    if (!stc->p) { return ACVP_MALLOC_FAIL; }
+    stc->q = calloc(1, ACVP_DSA_MAX_STRING);
+    if (!stc->q) { return ACVP_MALLOC_FAIL; }
+    stc->g = calloc(1, ACVP_DSA_MAX_STRING);
+    if (!stc->g) { return ACVP_MALLOC_FAIL; }
+    stc->x = calloc(1, ACVP_DSA_MAX_STRING);
+    if (!stc->x) { return ACVP_MALLOC_FAIL; }
+    stc->y = calloc(1, ACVP_DSA_MAX_STRING);
+    if (!stc->y) { return ACVP_MALLOC_FAIL; }
 
     return ACVP_SUCCESS;
 }
@@ -99,6 +110,19 @@ static ACVP_RESULT acvp_dsa_siggen_init_tc (ACVP_CTX *ctx,
 
     stc->l = l;
     stc->n = n;
+    
+    stc->p = calloc(1, ACVP_DSA_MAX_STRING);
+    if (!stc->p) { return ACVP_MALLOC_FAIL; }
+    stc->q = calloc(1, ACVP_DSA_MAX_STRING);
+    if (!stc->q) { return ACVP_MALLOC_FAIL; }
+    stc->g = calloc(1, ACVP_DSA_MAX_STRING);
+    if (!stc->g) { return ACVP_MALLOC_FAIL; }
+    stc->r = calloc(1, ACVP_DSA_MAX_STRING);
+    if (!stc->r) { return ACVP_MALLOC_FAIL; }
+    stc->s = calloc(1, ACVP_DSA_MAX_STRING);
+    if (!stc->s) { return ACVP_MALLOC_FAIL; }
+    stc->y = calloc(1, ACVP_DSA_MAX_STRING);
+    if (!stc->y) { return ACVP_MALLOC_FAIL; }
 
     if (stc->l == 0) {
         return ACVP_INVALID_ARG;
