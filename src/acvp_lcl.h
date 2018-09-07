@@ -347,7 +347,30 @@
  * END KDF135_IKEV2
  */
 
-#define ACVP_KDF108_STRING_MAX 1024 /**< 4096 bits max for keyout, 1024 characters */
+/**
+ * Accepted length ranges for KDF108.
+ * https://github.com/usnistgov/ACVP/blob/master/artifacts/acvp_sub_kdf108.txt
+ */
+#define ACVP_KDF108_KEYOUT_BIT_MIN 160 /**< SHA-1 */
+#define ACVP_KDF108_KEYOUT_BIT_MAX 512 /**< SHA2-512 */
+#define ACVP_KDF108_KEYOUT_BYTE_MAX (ACVP_KDF108_KEYOUT_BIT_MAX >> 3)
+#define ACVP_KDF108_KEYOUT_STR_MAX (ACVP_KDF108_KEYOUT_BIT_MAX >> 2)
+
+#define ACVP_KDF108_KEYIN_BIT_MAX 512 /**< SHA2-512 */
+#define ACVP_KDF108_KEYIN_BYTE_MAX (ACVP_KDF108_KEYIN_BIT_MAX >> 3)
+#define ACVP_KDF108_KEYIN_STR_MAX (ACVP_KDF108_KEYIN_BIT_MAX >> 2)
+
+#define ACVP_KDF108_IV_BIT_MAX 512 /**< SHA2-512 */
+#define ACVP_KDF108_IV_BYTE_MAX (ACVP_KDF108_IV_BIT_MAX >> 3)
+#define ACVP_KDF108_IV_STR_MAX (ACVP_KDF108_IV_BIT_MAX >> 2)
+
+// TODO make sure the lengths for kdf108 fixed data are okay
+#define ACVP_KDF108_FIXED_DATA_BIT_MAX 512 /**< Arbitrary */
+#define ACVP_KDF108_FIXED_DATA_BYTE_MAX (ACVP_KDF108_FIXED_DATA_BIT_MAX >> 3)
+#define ACVP_KDF108_FIXED_DATA_STR_MAX (ACVP_KDF108_FIXED_DATA_BIT_MAX >> 2)
+/*
+ * END KDF108
+ */
 
 #define ACVP_HMAC_MSG_MAX       1024
 #define ACVP_HMAC_MAC_MAX       128       /**< 512 bits, 128 characters */

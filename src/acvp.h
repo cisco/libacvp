@@ -252,8 +252,8 @@ typedef enum acvp_kdf135_srtp_param {
     ACVP_SRTP_PARAM_MAX
 } ACVP_KDF135_SRTP_PARAM;
 
-#define ACVP_KDF108_KEYOUT_MAX 512
-#define ACVP_KDF108_FIXED_DATA_MAX 512
+#define ACVP_KDF108_KEYOUT_MAX 64 /**< SHA2-512 */
+#define ACVP_KDF108_FIXED_DATA_MAX 64 /**< SHA2-512 */
 
 /*! @struct ACVP_KDF108_MODE */
 typedef enum acvp_kdf108_mode {
@@ -799,8 +799,10 @@ typedef struct acvp_kdf108_tc_t {
     unsigned char *key_in;
     unsigned char *key_out;
     unsigned char *fixed_data;
+    unsigned char *iv;
     int key_in_len;             /**< Length of key_in (in bytes) */
     int key_out_len;            /**< Length of key_out (in bytes) */
+    int iv_len;                 /**< Length of iv (in bytes) */
     int fixed_data_len;         /**< Length of fixed_data (in bytes).
                                      --- User supplied ---
                                      Must be <= ACVP_KDF108_FIXED_DATA_MAX */
