@@ -312,39 +312,30 @@ ACVP_RESULT acvp_kdf108_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
         if (strncmp(mac_mode_str, ACVP_ALG_HMAC_SHA1,
                     strlen(ACVP_ALG_HMAC_SHA1)) == 0) {
             mac_mode = ACVP_KDF108_MAC_MODE_HMAC_SHA1;
-            key_in_len = ACVP_BYTE_LEN_HMAC_SHA1;
         } else if (strncmp(mac_mode_str, ACVP_ALG_HMAC_SHA2_224,
                            strlen(ACVP_ALG_HMAC_SHA2_224)) == 0) {
             mac_mode = ACVP_KDF108_MAC_MODE_HMAC_SHA224;
-            key_in_len = ACVP_BYTE_LEN_HMAC_SHA224;
         } else if (strncmp(mac_mode_str, ACVP_ALG_HMAC_SHA2_256,
                            strlen(ACVP_ALG_HMAC_SHA2_256)) == 0) {
             mac_mode = ACVP_KDF108_MAC_MODE_HMAC_SHA256;
-            key_in_len = ACVP_BYTE_LEN_HMAC_SHA256;
         } else if (strncmp(mac_mode_str, ACVP_ALG_HMAC_SHA2_384,
                            strlen(ACVP_ALG_HMAC_SHA2_384)) == 0) {
             mac_mode = ACVP_KDF108_MAC_MODE_HMAC_SHA384;
-            key_in_len = ACVP_BYTE_LEN_HMAC_SHA384;
         } else if (strncmp(mac_mode_str, ACVP_ALG_HMAC_SHA2_512,
                            strlen(ACVP_ALG_HMAC_SHA2_512)) == 0) {
             mac_mode = ACVP_KDF108_MAC_MODE_HMAC_SHA512;
-            key_in_len = ACVP_BYTE_LEN_HMAC_SHA512;
         } else if (strncmp(mac_mode_str, ACVP_ALG_CMAC_AES_128,
                            strlen(ACVP_ALG_CMAC_AES_128)) == 0) {
             mac_mode = ACVP_KDF108_MAC_MODE_CMAC_AES128;
-            key_in_len = ACVP_BYTE_LEN_CMAC_AES128;
         } else if (strncmp(mac_mode_str, ACVP_ALG_CMAC_AES_192,
                            strlen(ACVP_ALG_CMAC_AES_192)) == 0) {
             mac_mode = ACVP_KDF108_MAC_MODE_CMAC_AES192;
-            key_in_len = ACVP_BYTE_LEN_CMAC_AES192;
         } else if (strncmp(mac_mode_str, ACVP_ALG_CMAC_AES_256,
                            strlen(ACVP_ALG_CMAC_AES_256)) == 0) {
             mac_mode = ACVP_KDF108_MAC_MODE_CMAC_AES256;
-            key_in_len = ACVP_BYTE_LEN_CMAC_AES256;
         } else if (strncmp(mac_mode_str, ACVP_ALG_CMAC_TDES,
                            strlen(ACVP_ALG_CMAC_TDES)) == 0) {
             mac_mode = ACVP_KDF108_MAC_MODE_CMAC_TDES;
-            key_in_len = ACVP_BYTE_LEN_CMAC_TDES;
         } else {
             ACVP_LOG_ERR("Server JSON invalid macMode");
             return (ACVP_INVALID_ARG);
@@ -421,12 +412,15 @@ ACVP_RESULT acvp_kdf108_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
                 ACVP_LOG_ERR("Server JSON missing keyIn");
                 return ACVP_MISSING_ARG;
             }
-            if (strnlen(key_in_str, ACVP_KDF108_KEYIN_STR_MAX + 1)
-                > ACVP_KDF108_KEYIN_STR_MAX) {
+
+            key_in_len = strnlen(key_in_str, ACVP_KDF108_KEYIN_STR_MAX + 1);
+            if (key_in_len > ACVP_KDF108_KEYIN_STR_MAX) {
                 ACVP_LOG_ERR("keyIn too long, max allowed=(%d)",
                              ACVP_KDF108_KEYIN_STR_MAX);
                 return ACVP_INVALID_ARG;
             }
+            // Convert to byte length
+            key_in_len = key_in_len / 2;
 
             if (kdf_mode == ACVP_KDF108_MODE_FEEDBACK) {
                 iv_str = json_object_get_string(testobj, "iv");
@@ -475,8 +469,8 @@ ACVP_RESULT acvp_kdf108_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
              *       the entire vector set to be more efficient
              */
             acvp_kdf108_init_tc(ctx, &stc, tc_id, kdf_mode, mac_mode,
-                                ctr_loc, key_in_str, key_in_len,
-                                key_out_len, ctr_len, deferred);
+                                ctr_loc, key_in_str, iv_str, key_in_len,
+                                key_out_len, iv_len, ctr_len, deferred);
 
             /* Process the current test vector... */
             rv = (cap->crypto_handler)(&tc);
