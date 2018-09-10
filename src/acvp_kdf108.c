@@ -355,6 +355,7 @@ ACVP_RESULT acvp_kdf108_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
             if (ctr_len != 8 && ctr_len != 16
                 && ctr_len != 24 && ctr_len != 32) {
                     ACVP_LOG_ERR("Server JSON invalid counterLength, (%d)", ctr_len);
+                    return ACVP_INVALID_ARG;
             }
         }
 
