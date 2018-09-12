@@ -155,7 +155,7 @@ char *acvp_lookup_rsa_randpq_name (int value) {
     }
 }
 
-int acvp_lookup_rsa_randpq_index (char *value) {
+int acvp_lookup_rsa_randpq_index (const char *value) {
     if (!value) {
         return 0;
     }

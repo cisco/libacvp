@@ -43,7 +43,7 @@ static ACVP_RESULT acvp_kdf135_tpm_output_tc (ACVP_CTX *ctx, ACVP_KDF135_TPM_TC 
     
     tmp = calloc(1, ACVP_KDF135_TPM_SKEY_MAX+1);
     if (!tmp) {
-        ACVP_LOG_ERR("Unable to malloc in acvp_kdf135 tpm_output_tc");
+        ACVP_LOG_ERR("Unable to malloc");
         return ACVP_MALLOC_FAIL;
     }
     

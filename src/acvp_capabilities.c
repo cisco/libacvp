@@ -2538,7 +2538,7 @@ ACVP_RESULT acvp_enable_rsa_keygen_exp_parm (ACVP_CTX *ctx,
      */
     switch (param) {
     case ACVP_FIXED_PUB_EXP_VAL:
-        if (cap_list->cap.rsa_keygen_cap->pub_exp_mode == RSA_PUB_EXP_FIXED) {
+        if (cap_list->cap.rsa_keygen_cap->pub_exp_mode == ACVP_RSA_PUB_EXP_MODE_FIXED) {
             cap_list->cap.rsa_keygen_cap->fixed_pub_exp = (unsigned char *)value;
         }
         break;
@@ -2571,7 +2571,7 @@ ACVP_RESULT acvp_enable_rsa_sigver_exp_parm (ACVP_CTX *ctx,
      */
     switch (param) {
     case ACVP_FIXED_PUB_EXP_VAL:
-        if (cap_list->cap.rsa_sigver_cap->pub_exp_mode == RSA_PUB_EXP_FIXED) {
+        if (cap_list->cap.rsa_sigver_cap->pub_exp_mode == ACVP_RSA_PUB_EXP_MODE_FIXED) {
             cap_list->cap.rsa_sigver_cap->fixed_pub_exp = (unsigned char *)value;
         }
         break;

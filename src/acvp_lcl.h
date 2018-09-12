@@ -386,9 +386,18 @@
 #define ACVP_DSA_SEED_MAX_BYTES (ACVP_DSA_SEED_MAX/2)
 #define ACVP_DSA_MAX_STRING     3072     /**< 3072 bytes */
 
+#define ACVP_ECDSA_EXP_LEN_MAX       512
+
+/*
+ * START RSA
+ */
 #define ACVP_RSA_SEEDLEN_MAX    64
 #define ACVP_RSA_MSGLEN_MAX     1024
 #define ACVP_RSA_SIGNATURE_MAX  2048
+#define ACVP_RSA_PUB_EXP_MODE_FIXED_STR "fixed"
+#define ACVP_RSA_PUB_EXP_MODE_RANDOM_STR "random"
+#define ACVP_RSA_KEY_FORMAT_STD_STR "standard"
+#define ACVP_RSA_KEY_FORMAT_CRT_STR "crt"
 #define ACVP_RSA_RANDPQ32_STR   "B.3.2"
 #define ACVP_RSA_RANDPQ33_STR   "B.3.3"
 #define ACVP_RSA_RANDPQ34_STR   "B.3.4"
@@ -396,9 +405,14 @@
 #define ACVP_RSA_RANDPQ36_STR   "B.3.6"
 #define ACVP_RSA_SIG_TYPE_LEN_MAX    9
 #define ACVP_RSA_HASH_ALG_LEN_MAX    12
-#define ACVP_RSA_EXP_LEN_MAX         1024  /**< 2048 bits max for n, 512 characters */
-#define ACVP_ECDSA_EXP_LEN_MAX       512
 
+#define ACVP_RSA_EXP_BIT_MAX 4096 /**< 2048 bits max for n, 512 characters */
+#define ACVP_RSA_EXP_LEN_MAX (ACVP_RSA_EXP_BIT_MAX >> 2)
+#define ACVP_RSA_EXP_BYTE_MAX (ACVP_RSA_EXP_BIT_MAX >> 3)
+
+/*
+ * END RSA
+ */
 
 #define ACVP_KAT_BUF_MAX        1024*1024*4
 #define ACVP_ANS_BUF_MAX        1024*1024*4
@@ -661,7 +675,7 @@ typedef struct acvp_rsa_mode_caps_list {
 
 typedef struct acvp_rsa_keygen_capability_t {
     int key_format_crt;                     // if false, key format is assumed to be standard
-    int pub_exp_mode;                             // 0 - random, 1 - fixed
+    ACVP_RSA_PUB_EXP_MODE pub_exp_mode;
     unsigned char *fixed_pub_exp;               // hex value of e
     ACVP_RSA_KEYGEN_MODE rand_pq;        // as defined in FIPS186-4
     char *rand_pq_str;
@@ -975,7 +989,7 @@ ACVP_DRBG_CAP_MODE_LIST *acvp_locate_drbg_mode_entry (ACVP_CAPS_LIST *cap, ACVP_
 
 char *acvp_lookup_rsa_randpq_name (int value);
 
-int acvp_lookup_rsa_randpq_index (char *value);
+int acvp_lookup_rsa_randpq_index (const char *value);
 
 unsigned int yes_or_no (ACVP_CTX *ctx, const char *text);
 
