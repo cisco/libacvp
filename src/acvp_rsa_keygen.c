@@ -517,10 +517,16 @@ ACVP_RESULT acvp_rsa_keygen_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
                 unsigned int count = 0;
 
                 if (!e_str) {
-                    e_str = (char *) json_object_get_string(testobj, "e");
+                    e_str = json_object_get_string(testobj, "e");
                     if (!e_str) {
                         ACVP_LOG_ERR("Server JSON missing 'e'");
                         return ACVP_MISSING_ARG;
+                    }
+                    if (strnlen(e_str, ACVP_RSA_EXP_LEN_MAX + 1)
+                        > ACVP_RSA_EXP_LEN_MAX) {
+                        ACVP_LOG_ERR("'e' too long, max allowed=(%d)",
+                                     ACVP_RSA_EXP_LEN_MAX);
+                        return ACVP_INVALID_ARG;
                     }
                 }
 
@@ -542,7 +548,12 @@ ACVP_RESULT acvp_rsa_keygen_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
                     ACVP_LOG_ERR("Server JSON missing 'seed'");
                     return ACVP_MISSING_ARG;
                 }
-                seed_len = strnlen(seed, ACVP_RSA_SEEDLEN_MAX);
+                seed_len = strnlen(seed, ACVP_RSA_SEEDLEN_MAX + 1);
+                if (seed_len > ACVP_RSA_SEEDLEN_MAX) {
+                    ACVP_LOG_ERR("'seed' too long, max allowed=(%d)",
+                                 ACVP_RSA_SEEDLEN_MAX);
+                    return ACVP_INVALID_ARG;
+                }
             }
     
             rv = acvp_rsa_keygen_init_tc(ctx, &stc, tc_id, info_gen_by_server, hash_alg, key_format,
