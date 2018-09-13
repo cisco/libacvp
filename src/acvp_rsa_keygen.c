@@ -311,7 +311,7 @@ ACVP_RESULT acvp_rsa_keygen_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
         ACVP_LOG_ERR("Unable to parse 'mode' from JSON.");
         return ACVP_MALFORMED_JSON;
     }
-    if (strncmp(mode_str, ACVP_MODE_KEYGEN, strlen(ACVP_ALG_HMAC_SHA1))) {
+    if (strncmp(mode_str, ACVP_MODE_KEYGEN, strlen(ACVP_MODE_KEYGEN))) {
         ACVP_LOG_ERR("Wrong 'mode' JSON value. Expected '%s'",
                      ACVP_MODE_KEYGEN);
         return ACVP_INVALID_ARG;
@@ -448,9 +448,9 @@ ACVP_RESULT acvp_rsa_keygen_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
             return ACVP_INVALID_ARG;
         }
 
-        if (rand_pq == ACVP_RSA_KEYGEN_B33 ||
-            rand_pq == ACVP_RSA_KEYGEN_B35 ||
-            rand_pq == ACVP_RSA_KEYGEN_B36)
+        if (rand_pq == ACVP_RSA_KEYGEN_B32 ||
+            rand_pq == ACVP_RSA_KEYGEN_B34 ||
+            rand_pq == ACVP_RSA_KEYGEN_B35)
         {
             hash_alg_str = json_object_get_string(groupobj, "hashAlg");
             if (!hash_alg_str) {
