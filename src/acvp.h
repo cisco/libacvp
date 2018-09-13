@@ -476,8 +476,34 @@ typedef enum acvp_kdf108_param {
 #define RSA_PUB_EXP_MODE_STR_LEN_MAX 7
 #define RSA_KEY_FORMAT_STR_LEN_MAX 8
 
-#define RSA_PUB_EXP_FIXED      1
-#define RSA_PUB_EXP_RANDOM     0
+/*! @struct ACVP_RSA_KEY_FORMAT */
+typedef enum acvp_rsa_key_format {
+    ACVP_RSA_KEY_FORMAT_STANDARD = 1, /**< Standard */
+    ACVP_RSA_KEY_FORMAT_CRT /**< Chinese Remainder Theorem */
+} ACVP_RSA_KEY_FORMAT;
+
+/*! @struct ACVP_RSA_PUB_EXP_MODE */
+typedef enum acvp_rsa_pub_exp_mode {
+    ACVP_RSA_PUB_EXP_MODE_FIXED = 1,
+    ACVP_RSA_PUB_EXP_MODE_RANDOM
+} ACVP_RSA_PUB_EXP_MODE;
+
+/*! @struct ACVP_RSA_PRIME_TEST */
+typedef enum acvp_rsa_prime_test {
+    ACVP_RSA_PRIME_TEST_TBLC2 = 1,
+    ACVP_RSA_PRIME_TEST_TBLC3
+} ACVP_RSA_PRIME_TEST;
+
+/*! @struct ACVP_RSA_HASH_ALG */
+typedef enum acvp_rsa_hash_alg {
+    ACVP_RSA_SHA1 = 1,
+    ACVP_RSA_SHA224,
+    ACVP_RSA_SHA256,
+    ACVP_RSA_SHA384,
+    ACVP_RSA_SHA512,
+    ACVP_RSA_SHA512_224,
+    ACVP_RSA_SHA512_256,
+} ACVP_RSA_HASH_ALG;
 
 /*! @struct ACVP_RSA_KEYGEN_MODE */
 typedef enum acvp_rsa_keygen_mode_t {
@@ -917,16 +943,16 @@ typedef struct acvp_cmac_tc_t {
  * passed between libacvp and the crypto module.
  */
 typedef struct acvp_rsa_keygen_tc_t {
-    char *hash_alg;
     unsigned int tc_id;    /* Test case id */
-    char *pub_exp;
-    char *prime_test;
+    ACVP_RSA_HASH_ALG hash_alg;
+    ACVP_RSA_PRIME_TEST prime_test;
     char *prime_result;
+    char *pub_exp;
     
-    int rand_pq;
+    ACVP_RSA_KEYGEN_MODE rand_pq;
+    ACVP_RSA_PUB_EXP_MODE pub_exp_mode;
+    ACVP_RSA_KEY_FORMAT key_format;
     int info_gen_by_server;
-    char *pub_exp_mode;
-    char *key_format;
     int modulo;
     int e_len;
 

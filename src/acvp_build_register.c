@@ -702,8 +702,10 @@ static ACVP_RESULT acvp_build_rsa_keygen_register_cap (JSON_Object *cap_obj, ACV
     JSON_Object *alg_specs_obj = NULL;
     
     json_object_set_boolean(cap_obj, "infoGeneratedByServer", keygen_cap->info_gen_by_server);
-    json_object_set_string(cap_obj, "pubExpMode", keygen_cap->pub_exp_mode == RSA_PUB_EXP_FIXED ? "fixed" : "random");
-    if (keygen_cap->pub_exp_mode == RSA_PUB_EXP_FIXED) {
+    json_object_set_string(cap_obj, "pubExpMode",
+                           keygen_cap->pub_exp_mode == ACVP_RSA_PUB_EXP_MODE_FIXED ?
+                           ACVP_RSA_PUB_EXP_MODE_FIXED_STR : ACVP_RSA_PUB_EXP_MODE_RANDOM_STR);
+    if (keygen_cap->pub_exp_mode == ACVP_RSA_PUB_EXP_MODE_FIXED) {
         json_object_set_string(cap_obj, "fixedPubExp", (const char *)keygen_cap->fixed_pub_exp);
     }
     json_object_set_string(cap_obj, "keyFormat", keygen_cap->key_format_crt ? "crt" : "standard");

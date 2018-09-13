@@ -1863,7 +1863,7 @@ static int enable_rsa (ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_prereq_cap(ctx, ACVP_RSA_KEYGEN, ACVP_PREREQ_DRBG, value);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_rsa_keygen_cap_parm(ctx, ACVP_PUB_EXP_MODE, RSA_PUB_EXP_FIXED);
+    rv = acvp_enable_rsa_keygen_cap_parm(ctx, ACVP_PUB_EXP_MODE, ACVP_RSA_PUB_EXP_MODE_FIXED);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_rsa_keygen_cap_parm(ctx, ACVP_RSA_INFO_GEN_BY_SERVER, 1);
     CHECK_ENABLE_CAP_RV(rv);
@@ -1982,7 +1982,7 @@ static int enable_rsa (ACVP_CTX *ctx) {
     rv = acvp_enable_rsa_sigver_cap(ctx, ACVP_RSA_SIGVER, &app_rsa_sig_handler);
     CHECK_ENABLE_CAP_RV(rv);
 
-    rv = acvp_enable_rsa_sigver_cap_parm(ctx, ACVP_PUB_EXP_MODE, RSA_PUB_EXP_FIXED);
+    rv = acvp_enable_rsa_sigver_cap_parm(ctx, ACVP_PUB_EXP_MODE, ACVP_RSA_PUB_EXP_MODE_FIXED);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_rsa_sigver_exp_parm(ctx, ACVP_FIXED_PUB_EXP_VAL, expo_str);
     CHECK_ENABLE_CAP_RV(rv);
