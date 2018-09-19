@@ -220,6 +220,7 @@ static void acvp_cap_free_rsa_keygen_list (ACVP_CAPS_LIST *cap_list) {
 
     while (keygen_cap) {
         if (keygen_cap->fixed_pub_exp) {
+            //FIXME
             free(keygen_cap->fixed_pub_exp);
         }
 

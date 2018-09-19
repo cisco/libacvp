@@ -235,9 +235,19 @@
  * an ACVP interaction.
  */
 #define ACVP_SYM_KEY_MAX    64       /**< 256 bits, 64 characters */
-#define ACVP_SYM_PT_MAX     16384    /**< 65536 bits, 16384 characters */
-#define ACVP_SYM_CT_MAX     16384    /**< 65536 bits, 16384 characters */
-#define ACVP_SYM_IV_MAX     256      /**< 1024 bits, 256 characters */
+
+#define ACVP_SYM_PT_BIT_MAX 65536 /**< 65536 bits */
+#define ACVP_SYM_PT_MAX (ACVP_SYM_PT_BIT_MAX >> 2) /**< 16384 characters */
+#define ACVP_SYM_PT_BYTE_MAX (ACVP_SYM_PT_BIT_MAX >> 3) /**< 8192 bytes */
+
+#define ACVP_SYM_CT_BIT_MAX 65536 /**< 65536 bits */
+#define ACVP_SYM_CT_MAX (ACVP_SYM_CT_BIT_MAX >> 2) /**< 16384 characters */
+#define ACVP_SYM_CT_BYTE_MAX (ACVP_SYM_CT_BIT_MAX >> 3) /**< 8192 bytes */
+
+#define ACVP_SYM_IV_BIT_MAX 1024 /**< 1024 bits */
+#define ACVP_SYM_IV_MAX (ACVP_SYM_IV_BIT_MAX >> 2) /**< 256 characters */
+#define ACVP_SYM_IV_BYTE_MAX (ACVP_SYM_IV_BIT_MAX >> 3) /**< 128 bytes */
+
 #define ACVP_SYM_TAG_MAX    32       /**< 128 bits, 32 characters */
 #define ACVP_SYM_AAD_MAX    16384    /**< 65536 bits, 16384 characters */
 
@@ -255,6 +265,10 @@
 #define ACVP_AES_MCT_OUTER      100
 #define ACVP_DES_MCT_INNER      10000
 #define ACVP_DES_MCT_OUTER      400
+
+#define ACVP_TDES_KEY_BIT_LEN 192 /**< 192 bits */
+#define ACVP_TDES_KEY_STR_LEN (ACVP_TDES_KEY_BIT_LEN >> 2) /**< 48 characters */
+#define ACVP_TDES_KEY_BYTE_LEN (ACVP_TDES_KEY_BIT_LEN >> 3) /**< 24 bytes */
 
 #define ACVP_KDF135_TLS_MSG_MAX 1024*4
 #define ACVP_KDF135_SSH_EKEY_MAX (ACVP_BYTE_LEN_HMAC_SHA512) /**< Encryption Key max.

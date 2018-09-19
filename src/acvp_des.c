@@ -40,14 +40,15 @@ static ACVP_RESULT acvp_des_output_tc (ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *stc,
 static ACVP_RESULT acvp_des_init_tc (ACVP_CTX *ctx,
                                      ACVP_SYM_CIPHER_TC *stc,
                                      unsigned int tc_id,
-                                     char *test_type,
+                                     ACVP_SYM_CIPH_TESTTYPE test_type,
                                      char *j_key,
-                                     char *j_pt,
-                                     char *j_ct,
-                                     char *j_iv,
+                                     const char *j_pt,
+                                     const char *j_ct,
+                                     const char *j_iv,
                                      unsigned int key_len,
                                      unsigned int iv_len,
                                      unsigned int pt_len,
+                                     unsigned int ct_len,
                                      ACVP_CIPHER alg_id,
                                      ACVP_SYM_CIPH_DIR dir);
 
@@ -195,122 +196,146 @@ static ACVP_RESULT acvp_des_mct_iterate_tc (ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *s
  */
 static ACVP_RESULT acvp_des_output_mct_tc (ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *stc,
                                            JSON_Object *r_tobj) {
-    ACVP_RESULT rv;
-    char *tmp = NULL;
-    char *tmp1 = NULL;
-    char *tmp2 = NULL;
-    char *tmp3 = NULL;
+    ACVP_RESULT rv = ACVP_SUCCESS;
+    int single_key_str_len = 0;
+    int single_key_byte_len = 0;
+    char *tmp_k1 = NULL;
+    char *tmp_k2 = NULL;
+    char *tmp_k3 = NULL;
+    char *tmp_pt = NULL;
+    char *tmp_ct = NULL;
+    char *tmp_iv = NULL;
 
-    tmp = calloc(1, ACVP_SYM_CT_MAX+1);
-    if (!tmp) {
-        ACVP_LOG_ERR("Unable to malloc in acvp_des_output_mct_tc");
-        return ACVP_MALLOC_FAIL;
+    single_key_str_len = (ACVP_TDES_KEY_STR_LEN / 3);
+    single_key_byte_len = (ACVP_TDES_KEY_BYTE_LEN / 3);
+
+    tmp_k1 = calloc(single_key_str_len + 1, sizeof(char));
+    if (!tmp_k1) {
+        ACVP_LOG_ERR("Unable to malloc");
+        rv = ACVP_MALLOC_FAIL;
+        goto err;
     }
-    tmp1 = calloc(1, ACVP_SYM_CT_MAX+1);
-    if (!tmp1) {
-        ACVP_LOG_ERR("Unable to malloc in acvp_des_output_mct_tc");
-        free(tmp);
-        return ACVP_MALLOC_FAIL;
+    tmp_k2 = calloc(single_key_str_len + 1, sizeof(char));
+    if (!tmp_k2) {
+        ACVP_LOG_ERR("Unable to malloc");
+        rv = ACVP_MALLOC_FAIL;
+        goto err;
     }
-    tmp2 = calloc(1, ACVP_SYM_CT_MAX+1);
-    if (!tmp2) {
-        ACVP_LOG_ERR("Unable to malloc in acvp_des_output_mct_tc");
-        free(tmp);
-        free(tmp1);
-        return ACVP_MALLOC_FAIL;
-    }
-    tmp3 = calloc(1, ACVP_SYM_CT_MAX+1);
-    if (!tmp3) {
-        ACVP_LOG_ERR("Unable to malloc in acvp_des_output_mct_tc");
-        free(tmp);
-        free(tmp1);
-        free(tmp2);
-        return ACVP_MALLOC_FAIL;
+    tmp_k3 = calloc(single_key_str_len + 1, sizeof(char));
+    if (!tmp_k3) {
+        ACVP_LOG_ERR("Unable to malloc");
+        rv = ACVP_MALLOC_FAIL;
+        goto err;
     }
     
-    rv = acvp_bin_to_hexstr(stc->key, stc->key_len / 24, tmp1, ACVP_SYM_CT_MAX);
+    /*
+     * Split the 48 byte key into 3 parts, and convert to hex.
+     */
+    rv = acvp_bin_to_hexstr(stc->key, single_key_byte_len,
+                            tmp_k1, single_key_str_len);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("hex conversion failure (key)");
         goto err;
     }
-    rv = acvp_bin_to_hexstr(stc->key + 8, stc->key_len / 24, tmp2, ACVP_SYM_CT_MAX);
+
+    rv = acvp_bin_to_hexstr(stc->key + 8, single_key_byte_len,
+                            tmp_k2, single_key_str_len);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("hex conversion failure (key)");
         goto err;
     }
-    rv = acvp_bin_to_hexstr(stc->key + 16, stc->key_len / 24, tmp3, ACVP_SYM_CT_MAX);
+
+    rv = acvp_bin_to_hexstr(stc->key + 16, single_key_byte_len,
+                            tmp_k3, single_key_str_len);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("hex conversion failure (key)");
         goto err;
     }
-    json_object_set_string(r_tobj, "key1", tmp1);
-    json_object_set_string(r_tobj, "key2", tmp2);
-    json_object_set_string(r_tobj, "key3", tmp3);
+
+    json_object_set_string(r_tobj, "key1", tmp_k1);
+    json_object_set_string(r_tobj, "key2", tmp_k2);
+    json_object_set_string(r_tobj, "key3", tmp_k3);
 
     if (stc->cipher != ACVP_TDES_ECB) {
-        memset(tmp, 0x0, ACVP_SYM_CT_MAX);
-        rv = acvp_bin_to_hexstr(stc->iv, stc->iv_len, tmp, ACVP_SYM_CT_MAX);
+        tmp_iv = calloc(ACVP_SYM_IV_MAX + 1, sizeof(char));
+        if (!tmp_iv) {
+            ACVP_LOG_ERR("Unable to malloc");
+            rv = ACVP_MALLOC_FAIL;
+            goto err;
+        }
+
+        rv = acvp_bin_to_hexstr(stc->iv, stc->iv_len, tmp_iv, ACVP_SYM_IV_MAX);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("hex conversion failure (iv)");
             goto err;
         }
-        json_object_set_string(r_tobj, "iv", tmp);
+        json_object_set_string(r_tobj, "iv", tmp_iv);
     }
 
     if (stc->direction == ACVP_DIR_ENCRYPT) {
-        memset(tmp, 0x0, ACVP_SYM_CT_MAX);
+        tmp_pt = calloc(ACVP_SYM_PT_MAX + 1, sizeof(char));
+        if (!tmp_pt) {
+            ACVP_LOG_ERR("Unable to malloc");
+            rv = ACVP_MALLOC_FAIL;
+            goto err;
+        }
+
         if (stc->cipher == ACVP_TDES_CFB1) {
             stc->pt[0] &= ACVP_CFB1_BIT_MASK;
-            rv = acvp_bin_to_hexstr(stc->pt, 1, tmp, ACVP_SYM_CT_MAX);
+            rv = acvp_bin_to_hexstr(stc->pt, 1, tmp_pt, ACVP_SYM_PT_MAX);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("hex conversion failure (pt)");
                 goto err;
             }
-            json_object_set_string(r_tobj, "pt", tmp);
+            json_object_set_string(r_tobj, "pt", tmp_pt);
             json_object_set_number(r_tobj, "ptLen", 1);
             json_object_set_number(r_tobj, "ctLen", 1);
         } else {
-            rv = acvp_bin_to_hexstr(stc->pt, stc->pt_len, tmp, ACVP_SYM_CT_MAX);
+            rv = acvp_bin_to_hexstr(stc->pt, stc->pt_len, tmp_pt, ACVP_SYM_PT_MAX);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("hex conversion failure (pt)");
                 goto err;
             }
-            json_object_set_string(r_tobj, "pt", tmp);
+            json_object_set_string(r_tobj, "pt", tmp_pt);
         }
     } else {
+        /*
+         * Decrypt
+         */
+        tmp_ct = calloc(ACVP_SYM_CT_MAX + 1, sizeof(char));
+        if (!tmp_ct) {
+            ACVP_LOG_ERR("Unable to malloc");
+            rv = ACVP_MALLOC_FAIL;
+            goto err;
+        }
 
-        memset(tmp, 0x0, ACVP_SYM_CT_MAX);
         if (stc->cipher == ACVP_TDES_CFB1) {
-            rv = acvp_bin_to_hexstr(stc->ct, 1, tmp, ACVP_SYM_CT_MAX);
+            rv = acvp_bin_to_hexstr(stc->ct, 1, tmp_ct, ACVP_SYM_CT_MAX);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("hex conversion failure (ct)");
                 goto err;
             }
-            json_object_set_string(r_tobj, "ct", tmp);
+            json_object_set_string(r_tobj, "ct", tmp_ct);
             json_object_set_number(r_tobj, "ctLen", 1);
             json_object_set_number(r_tobj, "ptLen", 1);
         } else {
-            rv = acvp_bin_to_hexstr(stc->ct, stc->ct_len, tmp, ACVP_SYM_CT_MAX);
+            rv = acvp_bin_to_hexstr(stc->ct, stc->ct_len, tmp_ct, ACVP_SYM_CT_MAX);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("hex conversion failure (ct)");
                 goto err;
             }
-            json_object_set_string(r_tobj, "ct", tmp);
+            json_object_set_string(r_tobj, "ct", tmp_ct);
         }
     }
 
-    free(tmp);
-    free(tmp1);
-    free(tmp2);
-    free(tmp3);
-
-    return ACVP_SUCCESS;
-
 err:
-    free(tmp);
-    free(tmp1);
-    free(tmp2);
-    free(tmp3);
+    if (tmp_k1) free(tmp_k1);
+    if (tmp_k2) free(tmp_k2);
+    if (tmp_k3) free(tmp_k3);
+    if (tmp_pt) free(tmp_pt);
+    if (tmp_ct) free(tmp_ct);
+    if (tmp_iv) free(tmp_iv);
+
     return rv;
 }
 
@@ -522,9 +547,7 @@ static ACVP_RESULT acvp_des_mct_tc (ACVP_CTX *ctx, ACVP_CAPS_LIST *cap,
  * back to the ACV server by the transport layer.
  */
 ACVP_RESULT acvp_des_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
-    unsigned int tc_id, keylen, ivlen, ptlen;
-    char *key = NULL, *pt = NULL, *ct = NULL, *iv = NULL;
-    char *key1, *key2, *key3;
+
     JSON_Value *groupval;
     JSON_Object *groupobj = NULL;
     JSON_Value *testval;
@@ -549,12 +572,20 @@ ACVP_RESULT acvp_des_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     ACVP_TEST_CASE tc;
     ACVP_RESULT rv;
 
-    const char *dir_str = NULL;
-    const char *alg_str = json_object_get_string(obj, "algorithm");
-    ACVP_SYM_CIPH_DIR dir;
-    ACVP_CIPHER alg_id;
-    char *test_type, *json_result;
+    const char *alg_str = NULL;
+    ACVP_SYM_CIPH_TESTTYPE test_type = 0;
+    ACVP_SYM_CIPH_DIR dir = 0;
+    ACVP_CIPHER alg_id = 0;
+    char *json_result = NULL;
+    const char *test_type_str = NULL, *dir_str = NULL;
+    unsigned int tc_id = 0, keylen = 0;
 
+    if (!ctx) {
+        ACVP_LOG_ERR("No ctx for handler operation");
+        return ACVP_NO_CTX;
+    }
+
+    alg_str = json_object_get_string(obj, "algorithm");
     if (!alg_str) {
         ACVP_LOG_ERR("unable to parse 'algorithm' from JSON");
         return (ACVP_MALFORMED_JSON);
@@ -609,101 +640,202 @@ ACVP_RESULT acvp_des_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     for (i = 0; i < g_cnt; i++) {
         groupval = json_array_get_value(groups, i);
         groupobj = json_value_get_object(groupval);
+
         dir_str = json_object_get_string(groupobj, "direction");
-
-        /* version 0.3 direction */
-        if (dir_str != NULL) {
-            /*
-             * verify the direction is valid
-             */
-            if (!strncmp(dir_str, "encrypt", 7)) {
-                dir = ACVP_DIR_ENCRYPT;
-            } else if (!strncmp(dir_str, "decrypt", 7)) {
-                dir = ACVP_DIR_DECRYPT;
-            } else {
-                ACVP_LOG_ERR("unsupported direction requested from server (%s)", dir_str);
-                return (ACVP_UNSUPPORTED_OP);
-            }
+        if (!dir_str) {
+            ACVP_LOG_ERR("Server JSON missing 'direction'");
+            return ACVP_MISSING_ARG;
+        }
+        /*
+         * verify the direction is valid
+         */
+        if (!strncmp(dir_str, "encrypt", strlen("encrypt"))) {
+            dir = ACVP_DIR_ENCRYPT;
+        } else if (!strncmp(dir_str, "decrypt", strlen("decrypt"))) {
+            dir = ACVP_DIR_DECRYPT;
         } else {
-            ACVP_LOG_ERR("unsupported direction requested from server (%s)", dir_str);
-            return (ACVP_UNSUPPORTED_OP);
+            ACVP_LOG_ERR("Server JSON invalid 'direction'");
+            return (ACVP_INVALID_ARG);
         }
-        keylen = (unsigned int) json_object_get_number(groupobj, "keyLen");
-        ivlen = (unsigned int) json_object_get_number(groupobj, "ivLen");
-        test_type = (char *) json_object_get_string(groupobj, "testType");
 
-        keylen = 192;
-        if (alg_id != ACVP_TDES_ECB) {
-            ivlen = 64;
+        test_type_str = json_object_get_string(groupobj, "testType");
+        if (!test_type_str) {
+            ACVP_LOG_ERR("Server JSON missing 'testType'");
+            return ACVP_MISSING_ARG;
         }
+
+        if (!strncmp(test_type_str, "MCT", strlen("MCT"))) {
+            test_type = ACVP_SYM_TEST_TYPE_MCT;
+        } else if (!strncmp(test_type_str, "AFT", strlen("AFT"))) {
+            test_type = ACVP_SYM_TEST_TYPE_AFT;
+        } else if (!strncmp(test_type_str, "counter", strlen("counter"))) {
+            test_type = ACVP_SYM_TEST_TYPE_CTR;
+        } else {
+            return ACVP_INVALID_ARG;
+        }
+
+        // keyLen will always be the same for TDES
+        keylen = ACVP_TDES_KEY_BIT_LEN;
+
         ACVP_LOG_INFO("    Test group: %d", i);
         ACVP_LOG_INFO("        keylen: %d", keylen);
-        ACVP_LOG_INFO("         ivlen: %d", ivlen);
         ACVP_LOG_INFO("         dir:   %s", dir_str);
-        ACVP_LOG_INFO("      testtype: %s", test_type);
+        ACVP_LOG_INFO("      testtype: %s", test_type_str);
 
         tests = json_object_get_array(groupobj, "tests");
         t_cnt = json_array_get_count(tests);
         for (j = 0; j < t_cnt; j++) {
+            const char *pt = NULL, *ct = NULL, *iv = NULL;
+            const char *key1 = NULL, *key2 = NULL, *key3 = NULL;
+            unsigned int ivlen = 0, ptlen = 0, ctlen = 0, tmp_key_len = 0;
+            char *key = NULL;
+
             ACVP_LOG_INFO("Found new 3DES test vector...");
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
 
             tc_id = (unsigned int) json_object_get_number(testobj, "tcId");
-            key1 = (char *) json_object_get_string(testobj, "key1");
-            key2 = (char *) json_object_get_string(testobj, "key2");
-            key3 = (char *) json_object_get_string(testobj, "key3");
+
+            key1 = json_object_get_string(testobj, "key1");
+            if (!key1) {
+                ACVP_LOG_ERR("Server JSON missing 'key1'");
+                return ACVP_MISSING_ARG;
+            }
+            tmp_key_len = strnlen(key1, ACVP_SYM_KEY_MAX + 1);
+            if (tmp_key_len != (ACVP_TDES_KEY_STR_LEN / 3)) {
+                ACVP_LOG_ERR("'key1' wrong length (%u). Expected (%d)",
+                             tmp_key_len, (ACVP_TDES_KEY_STR_LEN / 3));
+                return ACVP_INVALID_ARG;
+            }
+
+            key2 = json_object_get_string(testobj, "key2");
+            if (!key2) {
+                ACVP_LOG_ERR("Server JSON missing 'key2'");
+                return ACVP_MISSING_ARG;
+            }
+            tmp_key_len = strnlen(key2, ACVP_SYM_KEY_MAX + 1);
+            if (tmp_key_len != (ACVP_TDES_KEY_STR_LEN / 3)) {
+                ACVP_LOG_ERR("'key2' wrong length (%u). Expected (%d)",
+                             tmp_key_len, (ACVP_TDES_KEY_STR_LEN / 3));
+                return ACVP_INVALID_ARG;
+            }
+
+            key3 = json_object_get_string(testobj, "key3");
+            if (!key3) {
+                ACVP_LOG_ERR("Server JSON missing 'key3'");
+                return ACVP_MISSING_ARG;
+            }
+            tmp_key_len = strnlen(key3, ACVP_SYM_KEY_MAX + 1);
+            if (tmp_key_len != (ACVP_TDES_KEY_STR_LEN / 3)) {
+                ACVP_LOG_ERR("'key3' wrong length (%u). Expected (%d)",
+                             tmp_key_len, (ACVP_TDES_KEY_STR_LEN / 3));
+                return ACVP_INVALID_ARG;
+            }
 
             /* TODO: remove this its there to work with our server */
             key = (char *) json_object_get_string(testobj, "key");
 
             if (key == NULL) {
-                key = calloc(1, ACVP_SYM_KEY_MAX);
+                key = calloc(ACVP_SYM_KEY_MAX + 1, sizeof(char));
                 if (!key) {
                     ACVP_LOG_ERR("Unable to malloc");
                     return ACVP_MALLOC_FAIL;
                 }
-                memset(key, 0x0, ACVP_SYM_KEY_MAX);
 
-                memcpy(key, key1, 16);
-                memcpy(key + 16, key2, 16);
-                memcpy(key + 32, key3, 16);
+                strncpy(key, key1, (ACVP_TDES_KEY_STR_LEN / 3));
+                strncpy(key + 16, key2, (ACVP_TDES_KEY_STR_LEN / 3));
+                strncpy(key + 32, key3, (ACVP_TDES_KEY_STR_LEN / 3));
             }
+
             if (dir == ACVP_DIR_ENCRYPT) {
-                pt = (char *) json_object_get_string(testobj, "pt");
-                if (!pt)
-                    pt = (char *) json_object_get_string(testobj, "plainText");
-                iv = (char *) json_object_get_string(testobj, "iv");
+                pt = json_object_get_string(testobj, "pt");
                 if (!pt) {
+                    ACVP_LOG_ERR("Server JSON missing 'pt'");
                     free(key);
-                    return (ACVP_MALFORMED_JSON);
+                    return ACVP_MISSING_ARG;
+                }
+
+                ptlen = strnlen(pt, ACVP_SYM_PT_MAX + 1);
+                if (ptlen > ACVP_SYM_PT_MAX) {
+                    ACVP_LOG_ERR("'pt' too long, max allowed=(%d)",
+                                 ACVP_SYM_PT_MAX);
+                    free(key);
+                    return ACVP_INVALID_ARG;
+                }
+                // Convert to bits
+                ptlen = ptlen * 4;
+
+                if (alg_id != ACVP_TDES_ECB) {
+                    iv = json_object_get_string(testobj, "iv");
+                    if (!iv) {
+                        ACVP_LOG_ERR("Server JSON missing 'iv'");
+                        free(key);
+                        return ACVP_MISSING_ARG;
+                    }
+
+                    ivlen = strnlen(iv, ACVP_SYM_IV_MAX + 1);
+                    if (ivlen != 16) {
+                        ACVP_LOG_ERR("Invalid 'iv' length (%u). Expected (%u)", ivlen, 16);
+                        free(key);
+                        return ACVP_INVALID_ARG;
+                    }
+                    // Convert to bits
+                    ivlen = ivlen * 4;
                 }
 
                 if (alg_id == ACVP_TDES_CFB1) {
-                    ptlen = (unsigned int) json_object_get_number(testobj, "ptLen");
-                    if (!ptlen) {
-                        ptlen = strlen((char *) pt) * (8 / 2);
+                    unsigned int tmp_pt_len = 0;
+
+                    tmp_pt_len = (unsigned int) json_object_get_number(testobj, "ptLen");
+                    if (tmp_pt_len) {
+                        // Replace with the provided ptLen
+                        ptlen = tmp_pt_len;
                     }
-                } else {
-                    ptlen = strlen((char *) pt) * (8 / 2);
                 }
             } else {
-                ct = (char *) json_object_get_string(testobj, "ct");
-                if (!ct)
-                    ct = (char *) json_object_get_string(testobj, "cipherText");
-                iv = (char *) json_object_get_string(testobj, "iv");
+                ct = json_object_get_string(testobj, "ct");
                 if (!ct) {
+                    ACVP_LOG_ERR("Server JSON missing 'ct'");
                     free(key);
-                    return (ACVP_MALFORMED_JSON);
+                    return ACVP_MISSING_ARG;
+                }
+
+                ctlen = strnlen(ct, ACVP_SYM_CT_MAX + 1);
+                if (ctlen > ACVP_SYM_CT_MAX) {
+                    ACVP_LOG_ERR("'ct' too long, max allowed=(%d)",
+                                 ACVP_SYM_CT_MAX);
+                    free(key);
+                    return ACVP_INVALID_ARG;
+                }
+                // Convert to bits
+                ctlen = ctlen * 4;
+
+                if (alg_id != ACVP_TDES_ECB) {
+                    iv = json_object_get_string(testobj, "iv");
+                    if (!iv) {
+                        ACVP_LOG_ERR("Server JSON missing 'iv'");
+                        free(key);
+                        return ACVP_MISSING_ARG;
+                    }
+
+                    ivlen = strnlen(iv, ACVP_SYM_IV_MAX + 1);
+                    if (ivlen != 16) {
+                        ACVP_LOG_ERR("Invalid 'iv' length (%u). Expected (%u)", ivlen, 16);
+                        free(key);
+                        return ACVP_INVALID_ARG;
+                    }
+                    // Convert to bits
+                    ivlen = ivlen * 4;
                 }
 
                 if (alg_id == ACVP_TDES_CFB1) {
-                    ptlen = (unsigned int) json_object_get_number(testobj, "ctLen");
-                    if (!ptlen) {
-                        ptlen = strlen((char *) ct) * (8 / 2);
+                    unsigned int tmp_ct_len = 0;
+
+                    tmp_ct_len = (unsigned int) json_object_get_number(testobj, "ctLen");
+                    if (tmp_ct_len) {
+                        // Replace with the provided ctLen
+                        ctlen = tmp_ct_len;
                     }
-                } else {
-                    ptlen = strlen((char *) ct) * (8 / 2);
                 }
             }
 
@@ -713,8 +845,11 @@ ACVP_RESULT acvp_des_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
             ACVP_LOG_INFO("               pt: %s", pt);
             ACVP_LOG_INFO("            ptlen: %d", ptlen);
             ACVP_LOG_INFO("               ct: %s", ct);
+            ACVP_LOG_INFO("            ctlen: %d", ctlen);
             ACVP_LOG_INFO("               iv: %s", iv);
+            ACVP_LOG_INFO("            ivlen: %d", ivlen);
             ACVP_LOG_INFO("              dir: %s", dir_str);
+
             /*
              * Create a new test case in the response
              */
@@ -730,7 +865,10 @@ ACVP_RESULT acvp_des_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
              *       the entire vector set to be more efficient
              */
             acvp_des_init_tc(ctx, &stc, tc_id, test_type, key, pt, ct, iv,
-                             keylen, ivlen, ptlen, alg_id, dir);
+                             keylen, ivlen, ptlen, ctlen, alg_id, dir);
+
+            // Key has been copied, we can free here
+            free(key);
 
             /* If Monte Carlo start that here */
             if (stc.test_type == ACVP_SYM_TEST_TYPE_MCT) {
@@ -739,18 +877,17 @@ ACVP_RESULT acvp_des_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
                 rv = acvp_des_mct_tc(ctx, cap, &tc, &stc, res_tarr);
                 if (rv != ACVP_SUCCESS) {
                     ACVP_LOG_ERR("crypto module failed the DES MCT operation");
-                    free(key);
+                    acvp_des_release_tc(&stc);
                     return ACVP_CRYPTO_MODULE_FAIL;
                 }
             } else {
 
                 /* Process the current DES encrypt test vector... */
                 rv = (cap->crypto_handler)(&tc);
-
                 if (rv != ACVP_SUCCESS) {
                     if (rv != ACVP_CRYPTO_WRAP_FAIL) {
                         ACVP_LOG_ERR("ERROR: crypto module failed the operation");
-                        free(key);
+                        acvp_des_release_tc(&stc);
                         return ACVP_CRYPTO_MODULE_FAIL;
                     }
                 }
@@ -761,7 +898,7 @@ ACVP_RESULT acvp_des_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
                 rv = acvp_des_output_tc(ctx, &stc, r_tobj, rv);
                 if (rv != ACVP_SUCCESS) {
                     ACVP_LOG_ERR("JSON output failure in 3DES module");
-                    free(key);
+                    acvp_des_release_tc(&stc);
                     return rv;
                 }
             }
@@ -773,8 +910,6 @@ ACVP_RESULT acvp_des_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
 
             /* Append the test response value to array */
             json_array_append_value(r_tarr, r_tval);
-
-            free(key);
         }
     }
 
@@ -904,14 +1039,15 @@ static ACVP_RESULT acvp_des_output_tc (ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *stc,
 static ACVP_RESULT acvp_des_init_tc (ACVP_CTX *ctx,
                                      ACVP_SYM_CIPHER_TC *stc,
                                      unsigned int tc_id,
-                                     char *test_type,
+                                     ACVP_SYM_CIPH_TESTTYPE test_type,
                                      char *j_key,
-                                     char *j_pt,
-                                     char *j_ct,
-                                     char *j_iv,
+                                     const char *j_pt,
+                                     const char *j_ct,
+                                     const char *j_iv,
                                      unsigned int key_len,
                                      unsigned int iv_len,
                                      unsigned int pt_len,
+                                     unsigned int ct_len,
                                      ACVP_CIPHER alg_id,
                                      ACVP_SYM_CIPH_DIR dir) {
     ACVP_RESULT rv;
@@ -933,17 +1069,6 @@ static ACVP_RESULT acvp_des_init_tc (ACVP_CTX *ctx,
     stc->iv_ret_after = calloc(1, ACVP_SYM_IV_MAX);
     if (!stc->iv_ret_after) { return ACVP_MALLOC_FAIL; }
 
-    /* Assume KAT if not MCT */
-    if (test_type && !strcmp(test_type, "MCT")) {
-        stc->test_type = ACVP_SYM_TEST_TYPE_MCT;
-    } else if (test_type && !strcmp(test_type, "AFT")) {
-        stc->test_type = ACVP_SYM_TEST_TYPE_AFT;
-    } else if (test_type && !strcmp(test_type, "counter")) {
-        stc->test_type = ACVP_SYM_TEST_TYPE_CTR;
-    } else {
-        return ACVP_UNSUPPORTED_OP;
-    }
-
     rv = acvp_hexstr_to_bin(j_key, stc->key, ACVP_SYM_KEY_MAX, NULL);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Hex converstion failure (key)");
@@ -952,13 +1077,13 @@ static ACVP_RESULT acvp_des_init_tc (ACVP_CTX *ctx,
 
     if (j_pt) {
         if (alg_id == ACVP_TDES_CFB1) {
-            rv = acvp_hexstr_to_bin(j_pt, stc->pt, ACVP_SYM_PT_MAX, NULL);
+            rv = acvp_hexstr_to_bin(j_pt, stc->pt, ACVP_SYM_PT_BYTE_MAX, NULL);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("Hex conversion failure (pt)");
                 return rv;
             }
         } else {
-            rv = acvp_hexstr_to_bin(j_pt, stc->pt, ACVP_SYM_PT_MAX, NULL);
+            rv = acvp_hexstr_to_bin(j_pt, stc->pt, ACVP_SYM_PT_BYTE_MAX, NULL);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("Hex converstion failure (pt)");
                 return rv;
@@ -968,13 +1093,13 @@ static ACVP_RESULT acvp_des_init_tc (ACVP_CTX *ctx,
 
     if (j_ct) {
         if (alg_id == ACVP_TDES_CFB1) {
-            rv = acvp_hexstr_to_bin(j_ct, stc->ct, ACVP_SYM_PT_MAX, NULL);
+            rv = acvp_hexstr_to_bin(j_ct, stc->ct, ACVP_SYM_PT_BYTE_MAX, NULL);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("Hex conversion failure (ct)");
                 return rv;
             }
         } else {
-            rv = acvp_hexstr_to_bin(j_ct, stc->ct, ACVP_SYM_CT_MAX, NULL);
+            rv = acvp_hexstr_to_bin(j_ct, stc->ct, ACVP_SYM_CT_BYTE_MAX, NULL);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("Hex converstion failure (ct)");
                 return rv;
@@ -983,7 +1108,7 @@ static ACVP_RESULT acvp_des_init_tc (ACVP_CTX *ctx,
     }
 
     if (j_iv) {
-        rv = acvp_hexstr_to_bin(j_iv, stc->iv, ACVP_SYM_IV_MAX, NULL);
+        rv = acvp_hexstr_to_bin(j_iv, stc->iv, ACVP_SYM_IV_BYTE_MAX, NULL);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Hex converstion failure (iv)");
             return rv;
@@ -993,20 +1118,21 @@ static ACVP_RESULT acvp_des_init_tc (ACVP_CTX *ctx,
     /*
      * These lengths come in as bit lengths from the ACVP server.
      * We convert to bytes.
-     * TODO: do we need to support bit lengths not a multiple of 8?
      */
     stc->tc_id = tc_id;
     stc->key_len = key_len;
-    stc->iv_len = iv_len / 8;
+    stc->iv_len = (iv_len + 7) / 8;
     if (alg_id == ACVP_TDES_CFB1) {
+        // Use the bit lengths
         stc->pt_len = pt_len;
-        stc->ct_len = pt_len;
+        stc->ct_len = ct_len;
     } else {
-        stc->pt_len = pt_len / 8;
-        stc->ct_len = pt_len / 8;
+        stc->pt_len = (pt_len + 7) / 8;
+        stc->ct_len = (ct_len + 7) / 8;
     }
     stc->cipher = alg_id;
     stc->direction = dir;
+    stc->test_type = test_type;
 
     return ACVP_SUCCESS;
 }
@@ -1016,12 +1142,12 @@ static ACVP_RESULT acvp_des_init_tc (ACVP_CTX *ctx,
  * a test case.
  */
 static ACVP_RESULT acvp_des_release_tc (ACVP_SYM_CIPHER_TC *stc) {
-    free(stc->key);
-    free(stc->pt);
-    free(stc->ct);
-    free(stc->iv);
-    free(stc->iv_ret);
-    free(stc->iv_ret_after);
+    if (stc->key) free(stc->key);
+    if (stc->pt) free(stc->pt);
+    if (stc->ct) free(stc->ct);
+    if (stc->iv) free(stc->iv);
+    if (stc->iv_ret) free(stc->iv_ret);
+    if (stc->iv_ret_after) free(stc->iv_ret_after);
     memset(stc, 0x0, sizeof(ACVP_SYM_CIPHER_TC));
 
     return ACVP_SUCCESS;
