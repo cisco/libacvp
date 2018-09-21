@@ -35,7 +35,7 @@ AC_ARG_WITH([ssl-dir],
 AC_SUBST([SSL_CFLAGS], "$ssldir/include")
 AC_SUBST([SSL_LDFLAGS], "$ssldir/lib")
 
-CFLAGS="$CFLAGS -Wall -z,noexecstack -fstack-protector-all -I$ssldir/include"
+CFLAGS="$CFLAGS -Wall -z,noexecstack -fstack-protector-all -D_FORTIFY_SOURCE=2 -I$ssldir/include"
 LDFLAGS="$LDFLAGS -L$ssldir/lib"
 if test "$is_freebsd" = "1" ; then
 AC_CHECK_LIB([crypto], [EVP_EncryptInit], [],

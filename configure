@@ -12087,7 +12087,7 @@ SSL_CFLAGS="$ssldir/include"
 SSL_LDFLAGS="$ssldir/lib"
 
 
-CFLAGS="$CFLAGS -Wall -z,noexecstack -fstack-protector-all -I$ssldir/include"
+CFLAGS="$CFLAGS -Wall -z,noexecstack -fstack-protector-all -D_FORTIFY_SOURCE=2 -I$ssldir/include"
 LDFLAGS="$LDFLAGS -L$ssldir/lib"
 if test "$is_freebsd" = "1" ; then
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for EVP_EncryptInit in -lcrypto" >&5
