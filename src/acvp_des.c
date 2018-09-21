@@ -765,24 +765,6 @@ ACVP_RESULT acvp_des_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
                 // Convert to bits
                 ptlen = ptlen * 4;
 
-                if (alg_id != ACVP_TDES_ECB) {
-                    iv = json_object_get_string(testobj, "iv");
-                    if (!iv) {
-                        ACVP_LOG_ERR("Server JSON missing 'iv'");
-                        free(key);
-                        return ACVP_MISSING_ARG;
-                    }
-
-                    ivlen = strnlen(iv, ACVP_SYM_IV_MAX + 1);
-                    if (ivlen != 16) {
-                        ACVP_LOG_ERR("Invalid 'iv' length (%u). Expected (%u)", ivlen, 16);
-                        free(key);
-                        return ACVP_INVALID_ARG;
-                    }
-                    // Convert to bits
-                    ivlen = ivlen * 4;
-                }
-
                 if (alg_id == ACVP_TDES_CFB1) {
                     unsigned int tmp_pt_len = 0;
 
@@ -810,24 +792,6 @@ ACVP_RESULT acvp_des_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
                 // Convert to bits
                 ctlen = ctlen * 4;
 
-                if (alg_id != ACVP_TDES_ECB) {
-                    iv = json_object_get_string(testobj, "iv");
-                    if (!iv) {
-                        ACVP_LOG_ERR("Server JSON missing 'iv'");
-                        free(key);
-                        return ACVP_MISSING_ARG;
-                    }
-
-                    ivlen = strnlen(iv, ACVP_SYM_IV_MAX + 1);
-                    if (ivlen != 16) {
-                        ACVP_LOG_ERR("Invalid 'iv' length (%u). Expected (%u)", ivlen, 16);
-                        free(key);
-                        return ACVP_INVALID_ARG;
-                    }
-                    // Convert to bits
-                    ivlen = ivlen * 4;
-                }
-
                 if (alg_id == ACVP_TDES_CFB1) {
                     unsigned int tmp_ct_len = 0;
 
@@ -837,6 +801,24 @@ ACVP_RESULT acvp_des_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
                         ctlen = tmp_ct_len;
                     }
                 }
+            }
+
+            if (alg_id != ACVP_TDES_ECB) {
+                iv = json_object_get_string(testobj, "iv");
+                if (!iv) {
+                    ACVP_LOG_ERR("Server JSON missing 'iv'");
+                    free(key);
+                    return ACVP_MISSING_ARG;
+                }
+
+                ivlen = strnlen(iv, ACVP_SYM_IV_MAX + 1);
+                if (ivlen != 16) {
+                    ACVP_LOG_ERR("Invalid 'iv' length (%u). Expected (%u)", ivlen, 16);
+                    free(key);
+                    return ACVP_INVALID_ARG;
+                }
+                // Convert to bits
+                ivlen = ivlen * 4;
             }
 
             ACVP_LOG_INFO("        Test case: %d", j);
