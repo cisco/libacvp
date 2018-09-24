@@ -329,12 +329,8 @@ ACVP_RESULT acvp_hash_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
                  * The "len" can be == 0 if the "msg" string is
                  * empty or equal to "00".
                  */
-                if (tmp_msg_len != 0) {
-                    // The msg string is not empty
-                    ACVP_LOG_ERR("Server JSON 'len' is 0 or missing");
-                    return ACVP_INVALID_ARG;
-                } else if (strncmp(msg, "00", 2)) {
-                    // The msg string is not equal to "00"
+                if (tmp_msg_len != 0 && strncmp(msg, "00", 2)) {
+                    // The msg string is not empty and not equal to "00"
                     ACVP_LOG_ERR("Server JSON 'len' is 0 or missing");
                     return ACVP_INVALID_ARG;
                 }
@@ -349,7 +345,7 @@ ACVP_RESULT acvp_hash_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
             ACVP_LOG_INFO("             tcId: %d", tc_id);
             ACVP_LOG_INFO("              len: %d", msglen);
             ACVP_LOG_INFO("              msg: %s", msg);
-            ACVP_LOG_INFO("         testtype: %s", test_type);
+            ACVP_LOG_INFO("         testtype: %s", test_type_str);
 
             /*
              * Create a new test case in the response
