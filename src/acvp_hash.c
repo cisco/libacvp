@@ -323,6 +323,9 @@ ACVP_RESULT acvp_hash_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
                 return ACVP_INVALID_ARG;
             }
 
+            // Convert to bits
+            msglen = tmp_msg_len * 4;
+#if 0
             msglen = (unsigned int) json_object_get_number(testobj, "len");
             if (!msglen) {
                 /*
@@ -340,6 +343,7 @@ ACVP_RESULT acvp_hash_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
                              ACVP_HASH_MSG_BIT_MAX);
                 return ACVP_INVALID_ARG;
             }
+#endif
 
             ACVP_LOG_INFO("        Test case: %d", j);
             ACVP_LOG_INFO("             tcId: %d", tc_id);
@@ -487,6 +491,7 @@ static ACVP_RESULT acvp_hash_init_tc (ACVP_CTX *ctx,
     stc->tc_id = tc_id;
     stc->msg_len = (msg_len + 7) / 8;
     stc->cipher = alg_id;
+    stc->test_type = test_type;
 
     return ACVP_SUCCESS;
 }
