@@ -853,33 +853,6 @@ static ACVP_RESULT acvp_add_dsa_keygen_parm (ACVP_CTX *ctx,
     return ACVP_SUCCESS;
 }
 
-static ACVP_RESULT acvp_append_kdf135_tpm_caps_entry (
-        ACVP_CTX *ctx,
-        ACVP_KDF135_TPM_CAP *cap,
-        ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case)) {
-    ACVP_CAPS_LIST *cap_entry, *cap_e2;
-    
-    cap_entry = calloc(1, sizeof(ACVP_CAPS_LIST));
-    if (!cap_entry) {
-        return ACVP_MALLOC_FAIL;
-    }
-    cap_entry->cipher = ACVP_KDF135_TPM;
-    cap_entry->cap.kdf135_tpm_cap = cap;
-    cap_entry->crypto_handler = crypto_handler;
-    cap_entry->cap_type = ACVP_KDF135_TPM_TYPE;
-    
-    if (!ctx->caps_list) {
-        ctx->caps_list = cap_entry;
-    } else {
-        cap_e2 = ctx->caps_list;
-        while (cap_e2->next) {
-            cap_e2 = cap_e2->next;
-        }
-        cap_e2->next = cap_entry;
-    }
-    return ACVP_SUCCESS;
-}
-
 static ACVP_RESULT acvp_validate_sym_cipher_parm_value (ACVP_CIPHER cipher, ACVP_SYM_CIPH_PARM parm, int value) {
     ACVP_RESULT retval = ACVP_INVALID_ARG;
     
@@ -1038,12 +1011,6 @@ static ACVP_RESULT acvp_validate_prereq_val (ACVP_CIPHER cipher, ACVP_PREREQ_ALG
         break;
     case ACVP_KDF135_TLS:
     case ACVP_KDF135_SNMP:
-    case ACVP_KDF135_TPM:
-        if (pre_req == ACVP_PREREQ_SHA ||
-            pre_req == ACVP_PREREQ_HMAC) {
-            return ACVP_SUCCESS;
-        }
-        break;
     case ACVP_KDF135_SSH:
         if (pre_req == ACVP_PREREQ_SHA ||
             pre_req == ACVP_PREREQ_TDES ||
@@ -3168,31 +3135,6 @@ ACVP_RESULT acvp_enable_dsa_cap_parm (ACVP_CTX *ctx,
     }
     
     return (result);
-}
-
-ACVP_RESULT acvp_enable_kdf135_tpm_cap (
-        ACVP_CTX *ctx,
-        ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case)) {
-    ACVP_KDF135_TPM_CAP *cap;
-    ACVP_RESULT result;
-    
-    if (!ctx) {
-        return ACVP_NO_CTX;
-    }
-    if (!crypto_handler) {
-        return ACVP_INVALID_ARG;
-    }
-    
-    cap = calloc(1, sizeof(ACVP_KDF135_TPM_CAP));
-    if (!cap) {
-        return ACVP_MALLOC_FAIL;
-    }
-    
-    result = acvp_append_kdf135_tpm_caps_entry(ctx, cap, crypto_handler);
-    if (result != ACVP_SUCCESS) {
-        free(cap);
-    }
-    return result;
 }
 
 ACVP_RESULT acvp_enable_kdf135_tls_cap (

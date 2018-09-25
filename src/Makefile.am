@@ -23,7 +23,6 @@ libacvp_la_SOURCES =  acvp.c\
                     acvp_kdf135_ikev2.c \
                     acvp_kdf135_ikev1.c \
                     acvp_kdf135_x963.c \
-                    acvp_kdf135_tpm.c \
                     acvp_kdf108.c \
                     acvp_kas_ecc.c \
                     acvp_kas_ffc.c \

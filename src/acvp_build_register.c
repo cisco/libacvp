@@ -945,16 +945,6 @@ static ACVP_RESULT acvp_build_kdf135_snmp_register_cap (JSON_Object *cap_obj, AC
     return ACVP_SUCCESS;
 }
 
-static ACVP_RESULT acvp_build_kdf135_tpm_register_cap (JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry) {
-    ACVP_RESULT result;
-    json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
-    
-    result = acvp_lookup_prereqVals(cap_obj, cap_entry);
-    if (result != ACVP_SUCCESS) { return result; }
-    
-    return ACVP_SUCCESS;
-}
-
 static ACVP_RESULT acvp_build_kdf108_mode_register (JSON_Object **mode_obj, ACVP_KDF108_MODE_PARAMS *mode_params) {
     JSON_Array *tmp_arr = NULL;
     JSON_Value *tmp_val = NULL;
@@ -2558,9 +2548,6 @@ ACVP_RESULT acvp_build_register (ACVP_CTX *ctx, char **reg) {
                 break;
             case ACVP_KDF135_X963:
                 acvp_build_kdf135_x963_register_cap(cap_obj, cap_entry);
-                break;
-            case ACVP_KDF135_TPM:
-                acvp_build_kdf135_tpm_register_cap(cap_obj, cap_entry);
                 break;
             case ACVP_KDF108:
                 acvp_build_kdf108_register_cap(cap_obj, cap_entry);

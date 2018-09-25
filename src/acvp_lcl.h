@@ -583,10 +583,6 @@ typedef struct acvp_kdf108_capability {
     ACVP_KDF108_MODE_PARAMS dpi_mode;
 } ACVP_KDF108_CAP;
 
-typedef struct acvp_kdf135_tpm_capability {
-    int placeholder; // TODO remove TPM stuff from library
-} ACVP_KDF135_TPM_CAP;
-
 typedef struct acvp_kdf135_ssh_capability {
     int method[4];
     int sha;
@@ -844,7 +840,6 @@ typedef struct acvp_caps_list_t {
         ACVP_KDF135_IKEV2_CAP *kdf135_ikev2_cap;
         ACVP_KDF135_IKEV1_CAP *kdf135_ikev1_cap;
         ACVP_KDF135_X963_CAP *kdf135_x963_cap;
-        ACVP_KDF135_TPM_CAP *kdf135_tpm_cap;
         ACVP_KDF108_CAP *kdf108_cap;
         ACVP_KAS_ECC_CAP *kas_ecc_cap;
         ACVP_KAS_FFC_CAP *kas_ffc_cap;
@@ -975,8 +970,6 @@ ACVP_RESULT acvp_kdf135_ikev2_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
 ACVP_RESULT acvp_kdf135_ikev1_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
 
 ACVP_RESULT acvp_kdf135_x963_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
-
-ACVP_RESULT acvp_kdf135_tpm_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
 
 ACVP_RESULT acvp_kdf108_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
 
