@@ -444,6 +444,20 @@ ACVP_RESULT acvp_retrieve_sample_answers (ACVP_CTX *ctx, int vs_id) {
     char url[512]; //TODO: 512 is an arbitrary limit
     ACVP_RESULT result;
     
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+    
+    if (!ctx->server_name || !ctx->server_port) {
+        ACVP_LOG_ERR("Missing server/port details; call acvp_set_server first");
+        return ACVP_MISSING_ARG;
+    }
+    
+    if (!vs_id) {
+        ACVP_LOG_ERR("Missing vs_id from retrieve sample answers");
+        return ACVP_MISSING_ARG;
+    }
+    
     memset(url, 0x0, 512);
     snprintf(url, 511, "https://%s:%d/%svalidation/acvp/vectors/answers?vsId=%d", ctx->server_name, ctx->server_port,
              ctx->path_segment, vs_id);
@@ -526,6 +540,20 @@ ACVP_RESULT acvp_retrieve_vector_set (ACVP_CTX *ctx, int vs_id) {
     int rv;
     char url[512]; //TODO: 512 is an arbitrary limit
     ACVP_RESULT result;
+    
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+    
+    if (!ctx->server_name || !ctx->server_port) {
+        ACVP_LOG_ERR("Missing server/port details; call acvp_set_server first");
+        return ACVP_MISSING_ARG;
+    }
+    
+    if (!vs_id) {
+        ACVP_LOG_ERR("Missing vs_id from retrieve vector set");
+        return ACVP_MISSING_ARG;
+    }
 
     memset(url, 0x0, 512);
     snprintf(url, 511, "https://%s:%d/%svalidation/acvp/vectors?vsId=%d", ctx->server_name, ctx->server_port,
@@ -604,6 +632,20 @@ ACVP_RESULT acvp_submit_vector_responses (ACVP_CTX *ctx) {
     char url[512]; //TODO: 512 is an arbitrary limit
     char *resp;
     ACVP_RESULT result;
+    
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+    
+    if (!ctx->server_name || !ctx->server_port) {
+        ACVP_LOG_ERR("Missing server/port details; call acvp_set_server first");
+        return ACVP_MISSING_ARG;
+    }
+    
+    if (!ctx->vs_id) {
+        ACVP_LOG_ERR("Missing vs_id when trying to submit responses");
+        return ACVP_MISSING_ARG;
+    }
 
     memset(url, 0x0, 512);
     snprintf(url, 511, "https://%s:%d/%svalidation/acvp/vectors?vsId=%d", ctx->server_name, ctx->server_port,
@@ -642,6 +684,20 @@ ACVP_RESULT acvp_retrieve_vector_set_result (ACVP_CTX *ctx, int vs_id) {
     int rv;
     char url[512]; //TODO: 512 is an arbitrary limit
     ACVP_RESULT result;
+    
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+    
+    if (!ctx->server_name || !ctx->server_port) {
+        ACVP_LOG_ERR("Missing server/port details; call acvp_set_server first");
+        return ACVP_MISSING_ARG;
+    }
+    
+    if (!vs_id) {
+        ACVP_LOG_ERR("Missing vs_id from retrieve vector set");
+        return ACVP_MISSING_ARG;
+    }
 
     memset(url, 0x0, 512);
     snprintf(url, 511, "https://%s:%d/%svalidation/acvp/results?vsId=%d", ctx->server_name, ctx->server_port,

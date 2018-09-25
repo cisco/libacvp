@@ -136,7 +136,6 @@ ACVP_ALG_HANDLER alg_tbl[ACVP_ALG_MAX] = {
         {ACVP_KDF135_IKEV2,      &acvp_kdf135_ikev2_kat_handler,    ACVP_KDF135_ALG_STR,        ACVP_ALG_KDF135_IKEV2},
         {ACVP_KDF135_IKEV1,      &acvp_kdf135_ikev1_kat_handler,    ACVP_KDF135_ALG_STR,        ACVP_ALG_KDF135_IKEV1},
         {ACVP_KDF135_X963,       &acvp_kdf135_x963_kat_handler,     ACVP_KDF135_ALG_STR,        ACVP_ALG_KDF135_X963},
-        {ACVP_KDF135_TPM,        &acvp_kdf135_tpm_kat_handler,      ACVP_ALG_KDF135_TPM,        NULL},
         {ACVP_KDF108,            &acvp_kdf108_kat_handler,          ACVP_ALG_KDF108,            NULL},
         {ACVP_KAS_ECC_CDH,       &acvp_kas_ecc_kat_handler,         ACVP_ALG_KAS_ECC,           ACVP_ALG_KAS_ECC_CDH},
         {ACVP_KAS_ECC_COMP,      &acvp_kas_ecc_kat_handler,         ACVP_ALG_KAS_ECC,           ACVP_ALG_KAS_ECC_COMP},

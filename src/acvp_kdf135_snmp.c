@@ -303,10 +303,10 @@ static ACVP_RESULT acvp_kdf135_snmp_init_tc (ACVP_CTX *ctx,
     stc->p_len = p_len;
     stc->password = password;
     stc->engine_id_str = engine_id;
-    stc->engine_id = calloc(ACVP_KDF135_SNMP_ENGID_MAX, sizeof(char));
+    stc->engine_id = calloc(ACVP_KDF135_SNMP_ENGID_MAX_BYTES, sizeof(char));
     stc->skey_len = 160/8;
     if (!stc->engine_id) { return ACVP_MALLOC_FAIL; }
-    rv = acvp_hexstr_to_bin(engine_id, stc->engine_id, ACVP_KDF135_SNMP_ENGID_MAX, NULL);
+    rv = acvp_hexstr_to_bin(engine_id, stc->engine_id, ACVP_KDF135_SNMP_ENGID_MAX_BYTES, NULL);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Hex conversion failure (init_nonce)");
         return rv;

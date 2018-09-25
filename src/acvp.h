@@ -160,7 +160,6 @@ typedef enum acvp_cipher {
     ACVP_KDF135_IKEV2,
     ACVP_KDF135_IKEV1,
     ACVP_KDF135_X963,
-    ACVP_KDF135_TPM,
     ACVP_KDF108,
     ACVP_KAS_ECC_CDH,
     ACVP_KAS_ECC_COMP,
@@ -189,7 +188,8 @@ typedef enum acvp_prereq_mode_t {
     ACVP_PREREQ_TDES
 } ACVP_PREREQ_ALG;
 
-#define ACVP_KDF135_SNMP_ENGID_MAX 32
+#define ACVP_KDF135_SNMP_ENGID_MAX_BYTES 32
+#define ACVP_KDF135_SNMP_ENGID_MAX_STR 64
 #define ACVP_KDF135_SNMP_SKEY_MAX 64
 #define ACVP_KDF135_TPM_SKEY_MAX 32
 #define ACVP_KDF135_SNMP_PASSWORD_MAX 8192
@@ -328,7 +328,7 @@ typedef enum acvp_sym_cipher_ivgen_mode {
  * crypto module capabilities with libacvp.
  */
 typedef enum acvp_sym_cipher_direction {
-    ACVP_DIR_ENCRYPT = 0,
+    ACVP_DIR_ENCRYPT = 1,
     ACVP_DIR_DECRYPT,
     ACVP_DIR_BOTH
 } ACVP_SYM_CIPH_DIR;
@@ -586,6 +586,14 @@ typedef enum acvp_cmac_parameter {
     ACVP_CMAC_MSG_LEN_MAX
 } ACVP_CMAC_PARM;
 
+/*! @enum ACVP_CMAC_TDES_KEYING_OPTION */
+typedef enum acvp_cmac_tdes_keying_option {
+    ACVP_CMAC_TDES_KEYING_OPTION_MIN = 0,
+    ACVP_CMAC_TDES_KEYING_OPTION_1,
+    ACVP_CMAC_TDES_KEYING_OPTION_2,
+    ACVP_CMAC_TDES_KEYING_OPTION_MAX
+} ACVP_CMAC_TDES_KEYING_OPTION;
+
 /*! @struct ACVP_CMAC_MSG_LEN_INDEX */
 typedef enum acvp_cmac_msg_len_index {
     CMAC_BLK_DIVISIBLE_1 = 0,
@@ -774,22 +782,6 @@ typedef struct acvp_kdf135_snmp_tc_t {
     unsigned char *s_key;
     unsigned int skey_len;
 } ACVP_KDF135_SNMP_TC;
-
-/*!
- * @struct ACVP_KDF135_TPM_TC
- * @brief This struct holds data that represents a single test
- * case for kdf135 TPM testing.  This data is
- * passed between libacvp and the crypto module.
- */
-typedef struct acvp_kdf135_tpm_tc_t {
-    ACVP_CIPHER cipher;
-    unsigned int tc_id;    /* Test case id */
-    char *auth;
-    char *nonce_even;
-    char *nonce_odd;
-    unsigned char *s_key;
-    unsigned int skey_len;
-} ACVP_KDF135_TPM_TC;
 
 /*!
  * @struct ACVP_KDF135_X963_TC
@@ -1191,7 +1183,8 @@ typedef enum acvp_kas_ecc_schemes {
     ACVP_KAS_ECC_ONEPASS_DH,
     ACVP_KAS_ECC_ONEPASS_MQV,
     ACVP_KAS_ECC_ONEPASS_UNIFIED,
-    ACVP_KAS_ECC_STATIC_UNIFIED
+    ACVP_KAS_ECC_STATIC_UNIFIED,
+    ACVP_KAS_ECC_SCHEMES_MAX
 } ACVP_KAS_ECC_SCHEMES;
 
 /*! @struct ACVP_KAS_ECC_TEST_TYPE */
@@ -1246,12 +1239,13 @@ typedef enum acvp_kas_ffc_schemes {
     ACVP_KAS_FFC_FULL_MQV2,
     ACVP_KAS_FFC_DH_HYBRID_ONEFLOW,
     ACVP_KAS_FFC_DH_ONEFLOW,
-    ACVP_KAS_FFC_DH_STATIC
+    ACVP_KAS_FFC_DH_STATIC,
+    ACVP_KAS_FFC_MAX_SCHEMES
 } ACVP_KAS_FFC_SCHEMES;
 
 /*! @struct ACVP_KAS_FFC_FUNC */
 typedef enum acvp_kas_ffc_func {
-    ACVP_KAS_FFC_FUNC_DPGEN,
+    ACVP_KAS_FFC_FUNC_DPGEN = 1,
     ACVP_KAS_FFC_FUNC_DPVAL,
     ACVP_KAS_FFC_FUNC_KEYPAIR,
     ACVP_KAS_FFC_FUNC_KEYREGEN,
@@ -1380,7 +1374,6 @@ typedef struct acvp_test_case_t {
         ACVP_KDF135_IKEV2_TC *kdf135_ikev2;
         ACVP_KDF135_IKEV1_TC *kdf135_ikev1;
         ACVP_KDF135_X963_TC *kdf135_x963;
-        ACVP_KDF135_TPM_TC *kdf135_tpm;
         ACVP_KDF108_TC *kdf108;
         ACVP_KAS_ECC_TC *kas_ecc;
         ACVP_KAS_FFC_TC *kas_ffc;
@@ -2175,10 +2168,6 @@ ACVP_RESULT acvp_enable_kdf135_ikev1_cap (
         ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case));
 
 ACVP_RESULT acvp_enable_kdf135_x963_cap (
-        ACVP_CTX *ctx,
-        ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case));
-
-ACVP_RESULT acvp_enable_kdf135_tpm_cap (
         ACVP_CTX *ctx,
         ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case));
 

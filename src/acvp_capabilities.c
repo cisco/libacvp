@@ -853,33 +853,6 @@ static ACVP_RESULT acvp_add_dsa_keygen_parm (ACVP_CTX *ctx,
     return ACVP_SUCCESS;
 }
 
-static ACVP_RESULT acvp_append_kdf135_tpm_caps_entry (
-        ACVP_CTX *ctx,
-        ACVP_KDF135_TPM_CAP *cap,
-        ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case)) {
-    ACVP_CAPS_LIST *cap_entry, *cap_e2;
-    
-    cap_entry = calloc(1, sizeof(ACVP_CAPS_LIST));
-    if (!cap_entry) {
-        return ACVP_MALLOC_FAIL;
-    }
-    cap_entry->cipher = ACVP_KDF135_TPM;
-    cap_entry->cap.kdf135_tpm_cap = cap;
-    cap_entry->crypto_handler = crypto_handler;
-    cap_entry->cap_type = ACVP_KDF135_TPM_TYPE;
-    
-    if (!ctx->caps_list) {
-        ctx->caps_list = cap_entry;
-    } else {
-        cap_e2 = ctx->caps_list;
-        while (cap_e2->next) {
-            cap_e2 = cap_e2->next;
-        }
-        cap_e2->next = cap_entry;
-    }
-    return ACVP_SUCCESS;
-}
-
 static ACVP_RESULT acvp_validate_sym_cipher_parm_value (ACVP_CIPHER cipher, ACVP_SYM_CIPH_PARM parm, int value) {
     ACVP_RESULT retval = ACVP_INVALID_ARG;
     
@@ -1038,14 +1011,9 @@ static ACVP_RESULT acvp_validate_prereq_val (ACVP_CIPHER cipher, ACVP_PREREQ_ALG
         break;
     case ACVP_KDF135_TLS:
     case ACVP_KDF135_SNMP:
-    case ACVP_KDF135_TPM:
-        if (pre_req == ACVP_PREREQ_SHA ||
-            pre_req == ACVP_PREREQ_HMAC) {
-            return ACVP_SUCCESS;
-        }
-        break;
     case ACVP_KDF135_SSH:
         if (pre_req == ACVP_PREREQ_SHA ||
+            pre_req == ACVP_PREREQ_HMAC ||
             pre_req == ACVP_PREREQ_TDES ||
             pre_req == ACVP_PREREQ_AES) {
             return ACVP_SUCCESS;
@@ -3015,6 +2983,10 @@ ACVP_RESULT acvp_enable_ecdsa_cap_parm (ACVP_CTX *ctx,
         return ACVP_INVALID_ARG;
     }
     
+    if (!value) {
+        return ACVP_MISSING_ARG;
+    }
+    
     switch (param) {
     case ACVP_CURVE:
         curve = acvp_lookup_ecdsa_curve(cipher, value);
@@ -3037,6 +3009,11 @@ ACVP_RESULT acvp_enable_ecdsa_cap_parm (ACVP_CTX *ctx,
         if (cipher != ACVP_ECDSA_KEYGEN) {
             return ACVP_INVALID_ARG;
         }
+        if (strncmp(value, ACVP_ECDSA_KEYGEN_EXTRA_BITS, strlen(ACVP_ECDSA_KEYGEN_EXTRA_BITS)) &&
+            strncmp(value, ACVP_ECDSA_KEYGEN_TESTING_CANDIDATES, strlen(ACVP_ECDSA_KEYGEN_TESTING_CANDIDATES))) {
+            ACVP_LOG_ERR("invalid secret gen mode");
+            return ACVP_INVALID_ARG;
+        }
         current_secret_mode = cap->secret_gen_modes;
         if (current_secret_mode) {
             while (current_secret_mode->next) {
@@ -3051,6 +3028,10 @@ ACVP_RESULT acvp_enable_ecdsa_cap_parm (ACVP_CTX *ctx,
         break;
     case ACVP_HASH_ALG:
         if (cipher != ACVP_ECDSA_SIGGEN && cipher != ACVP_ECDSA_SIGVER) {
+            return ACVP_INVALID_ARG;
+        }
+        if (is_valid_hash_alg(value) != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("invalid hash alg");
             return ACVP_INVALID_ARG;
         }
         current_hash = cap->hash_algs;
@@ -3170,31 +3151,6 @@ ACVP_RESULT acvp_enable_dsa_cap_parm (ACVP_CTX *ctx,
     return (result);
 }
 
-ACVP_RESULT acvp_enable_kdf135_tpm_cap (
-        ACVP_CTX *ctx,
-        ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case)) {
-    ACVP_KDF135_TPM_CAP *cap;
-    ACVP_RESULT result;
-    
-    if (!ctx) {
-        return ACVP_NO_CTX;
-    }
-    if (!crypto_handler) {
-        return ACVP_INVALID_ARG;
-    }
-    
-    cap = calloc(1, sizeof(ACVP_KDF135_TPM_CAP));
-    if (!cap) {
-        return ACVP_MALLOC_FAIL;
-    }
-    
-    result = acvp_append_kdf135_tpm_caps_entry(ctx, cap, crypto_handler);
-    if (result != ACVP_SUCCESS) {
-        free(cap);
-    }
-    return result;
-}
-
 ACVP_RESULT acvp_enable_kdf135_tls_cap (
         ACVP_CTX *ctx,
         ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case)) {
@@ -3239,6 +3195,12 @@ ACVP_RESULT acvp_enable_kdf135_snmp_cap_parm (
     }
     
     if (param != ACVP_KDF135_SNMP_PASS_LEN) {
+        return ACVP_INVALID_ARG;
+    }
+    
+    if (value < ACVP_KDF135_SNMP_PASS_LEN_MIN ||
+        value > ACVP_KDF135_SNMP_PASS_LEN_MAX) {
+        ACVP_LOG_ERR("Invalid pass len");
         return ACVP_INVALID_ARG;
     }
     
@@ -3287,6 +3249,10 @@ ACVP_RESULT acvp_enable_kdf135_snmp_engid_parm (
     }
     
     if (!engid) {
+        return ACVP_INVALID_ARG;
+    }
+    if (strnlen(engid, ACVP_KDF135_SNMP_ENGID_MAX_STR + 1) > ACVP_KDF135_SNMP_ENGID_MAX_STR) {
+        ACVP_LOG_ERR("engid too long");
         return ACVP_INVALID_ARG;
     }
     
@@ -3788,6 +3754,10 @@ ACVP_RESULT acvp_enable_kdf135_srtp_cap_parm (
     /* only support two method types so just use whichever is available */
     switch (param) {
     case ACVP_SRTP_AES_KEYLEN:
+        if (value != 128 && value != 192 && value != 256) {
+            ACVP_LOG_ERR("invalid aes keylen");
+            return ACVP_INVALID_ARG;
+        }
         current_aes_keylen = kdf135_srtp_cap->aes_keylens;
         if (!current_aes_keylen) {
             kdf135_srtp_cap->aes_keylens = calloc(1, sizeof(ACVP_SL_LIST));
@@ -3801,9 +3771,17 @@ ACVP_RESULT acvp_enable_kdf135_srtp_cap_parm (
         }
         break;
     case ACVP_SRTP_SUPPORT_ZERO_KDR:
+        if (is_valid_tf_param(value) != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("invalid boolean for zero kdr support");
+            return ACVP_INVALID_ARG;
+        }
         kdf135_srtp_cap->supports_zero_kdr = value;
         break;
     case ACVP_SRTP_KDF_EXPONENT:
+        if (!value || value > ACVP_KDF135_SRTP_KDR_MAX) {
+            ACVP_LOG_ERR("invalid srtp exponent");
+            return ACVP_INVALID_ARG;
+        }
         kdf135_srtp_cap->kdr_exp[value - 1] = 1;
         break;
     default:
@@ -3935,15 +3913,35 @@ ACVP_RESULT acvp_enable_kdf135_ikev2_cap_len_param (ACVP_CTX *ctx,
     
     switch (param) {
     case ACVP_INIT_NONCE_LEN:
+        if (value < ACVP_KDF135_IKEV2_INIT_NONCE_BIT_MIN ||
+            value > ACVP_KDF135_IKEV2_INIT_NONCE_BIT_MAX) {
+            ACVP_LOG_ERR("min or max outside of acceptable range");
+            return ACVP_INVALID_ARG;
+        }
         domain = &cap->init_nonce_len_domain;
         break;
     case ACVP_RESPOND_NONCE_LEN:
+        if (value < ACVP_KDF135_IKEV2_RESP_NONCE_BIT_MIN ||
+            value > ACVP_KDF135_IKEV2_RESP_NONCE_BIT_MAX) {
+            ACVP_LOG_ERR("min or max outside of acceptable range");
+            return ACVP_INVALID_ARG;
+        }
         domain = &cap->respond_nonce_len_domain;
         break;
     case ACVP_DH_SECRET_LEN:
+        if (value < ACVP_KDF135_IKEV2_DH_SHARED_SECRET_BIT_MIN ||
+            value > ACVP_KDF135_IKEV2_DH_SHARED_SECRET_BIT_MAX) {
+            ACVP_LOG_ERR("min or max outside of acceptable range");
+            return ACVP_INVALID_ARG;
+        }
         domain = &cap->dh_secret_len;
         break;
     case ACVP_KEY_MATERIAL_LEN:
+        if (value < ACVP_KDF135_IKEV2_DKEY_MATERIAL_BIT_MIN ||
+            value > ACVP_KDF135_IKEV2_DKEY_MATERIAL_BIT_MAX) {
+            ACVP_LOG_ERR("min or max outside of acceptable range");
+            return ACVP_INVALID_ARG;
+        }
         domain = &cap->key_material_len;
         break;
     default:
@@ -4090,6 +4088,11 @@ ACVP_RESULT acvp_enable_kdf135_x963_cap_param (ACVP_CTX *ctx,
     } else {
         switch (param) {
         case ACVP_KDF_X963_KEY_DATA_LEN:
+            if (value < ACVP_KDF135_X963_KEYDATA_MIN_BITS ||
+                value > ACVP_KDF135_X963_KEYDATA_MAX_BITS) {
+                ACVP_LOG_ERR("invalid key len value");
+                return ACVP_INVALID_ARG;
+            }
             if (cap->key_data_lengths) {
                 current_sl = cap->key_data_lengths;
                 while (current_sl->next) {
@@ -4103,6 +4106,17 @@ ACVP_RESULT acvp_enable_kdf135_x963_cap_param (ACVP_CTX *ctx,
             }
             break;
         case ACVP_KDF_X963_FIELD_SIZE:
+            if (value != ACVP_KDF135_X963_FIELD_SIZE_224 &&
+                value != ACVP_KDF135_X963_FIELD_SIZE_233 &&
+                value != ACVP_KDF135_X963_FIELD_SIZE_256 &&
+                value != ACVP_KDF135_X963_FIELD_SIZE_283 &&
+                value != ACVP_KDF135_X963_FIELD_SIZE_384 &&
+                value != ACVP_KDF135_X963_FIELD_SIZE_409 &&
+                value != ACVP_KDF135_X963_FIELD_SIZE_521 &&
+                value != ACVP_KDF135_X963_FIELD_SIZE_571) {
+                ACVP_LOG_ERR("invalid field size value");
+                return ACVP_INVALID_ARG;
+            }
             if (cap->field_sizes) {
                 current_sl = cap->field_sizes;
                 while (current_sl->next) {
@@ -4116,6 +4130,11 @@ ACVP_RESULT acvp_enable_kdf135_x963_cap_param (ACVP_CTX *ctx,
             }
             break;
         case ACVP_KDF_X963_SHARED_INFO_LEN:
+            if (value < ACVP_KDF135_X963_SHARED_INFO_LEN_MIN ||
+                value > ACVP_KDF135_X963_SHARED_INFO_LEN_MAX) {
+                ACVP_LOG_ERR("invalid shared info len value");
+                return ACVP_INVALID_ARG;
+            }
             if (cap->shared_info_lengths) {
                 current_sl = cap->shared_info_lengths;
                 while (current_sl->next) {
@@ -4152,15 +4171,35 @@ ACVP_RESULT acvp_enable_kdf135_ikev2_domain_param (ACVP_CTX *ctx,
     
     switch (param) {
     case ACVP_INIT_NONCE_LEN:
+        if (min < ACVP_KDF135_IKEV2_INIT_NONCE_BIT_MIN ||
+            max > ACVP_KDF135_IKEV2_INIT_NONCE_BIT_MAX) {
+            ACVP_LOG_ERR("min or max outside of acceptable range");
+            return ACVP_INVALID_ARG;
+        }
         domain = &cap_list->cap.kdf135_ikev2_cap->init_nonce_len_domain;
         break;
     case ACVP_RESPOND_NONCE_LEN:
+        if (min < ACVP_KDF135_IKEV2_RESP_NONCE_BIT_MIN ||
+            max > ACVP_KDF135_IKEV2_RESP_NONCE_BIT_MAX) {
+            ACVP_LOG_ERR("min or max outside of acceptable range");
+            return ACVP_INVALID_ARG;
+        }
         domain = &cap_list->cap.kdf135_ikev2_cap->respond_nonce_len_domain;
         break;
     case ACVP_DH_SECRET_LEN:
+        if (min < ACVP_KDF135_IKEV2_DH_SHARED_SECRET_BIT_MIN ||
+            ACVP_KDF135_IKEV2_DH_SHARED_SECRET_BIT_MAX > 8192) {
+            ACVP_LOG_ERR("min or max outside of acceptable range");
+            return ACVP_INVALID_ARG;
+        }
         domain = &cap_list->cap.kdf135_ikev2_cap->dh_secret_len;
         break;
     case ACVP_KEY_MATERIAL_LEN:
+        if (min < ACVP_KDF135_IKEV2_DKEY_MATERIAL_BIT_MIN ||
+            max > ACVP_KDF135_IKEV2_DKEY_MATERIAL_BIT_MAX) {
+            ACVP_LOG_ERR("min or max outside of acceptable range");
+            return ACVP_INVALID_ARG;
+        }
         domain = &cap_list->cap.kdf135_ikev2_cap->key_material_len;
         break;
     default:
@@ -4193,15 +4232,35 @@ ACVP_RESULT acvp_enable_kdf135_ikev1_domain_param (ACVP_CTX *ctx,
     
     switch (param) {
     case ACVP_KDF_IKEv1_INIT_NONCE_LEN:
+        if (min < ACVP_KDF135_IKEV1_INIT_NONCE_BIT_MIN ||
+            max > ACVP_KDF135_IKEV1_INIT_NONCE_BIT_MAX) {
+            ACVP_LOG_ERR("min or max outside of acceptable range");
+            return ACVP_INVALID_ARG;
+        }
         domain = &cap_list->cap.kdf135_ikev1_cap->init_nonce_len_domain;
         break;
     case ACVP_KDF_IKEv1_RESPOND_NONCE_LEN:
+        if (min < ACVP_KDF135_IKEV1_RESP_NONCE_BIT_MIN ||
+            max > ACVP_KDF135_IKEV1_RESP_NONCE_BIT_MAX) {
+            ACVP_LOG_ERR("min or max outside of acceptable range");
+            return ACVP_INVALID_ARG;
+        }
         domain = &cap_list->cap.kdf135_ikev1_cap->respond_nonce_len_domain;
         break;
     case ACVP_KDF_IKEv1_DH_SECRET_LEN:
+        if (min < ACVP_KDF135_IKEV1_DH_SHARED_SECRET_BIT_MIN ||
+            max > ACVP_KDF135_IKEV1_DH_SHARED_SECRET_BIT_MAX) {
+            ACVP_LOG_ERR("min or max outside of acceptable range");
+            return ACVP_INVALID_ARG;
+        }
         domain = &cap_list->cap.kdf135_ikev1_cap->dh_secret_len;
         break;
     case ACVP_KDF_IKEv1_PSK_LEN:
+        if (min < ACVP_KDF135_IKEV1_PSK_BIT_MIN ||
+            max > ACVP_KDF135_IKEV1_PSK_BIT_MAX) {
+            ACVP_LOG_ERR("min or max outside of acceptable range");
+            return ACVP_INVALID_ARG;
+        }
         domain = &cap_list->cap.kdf135_ikev1_cap->psk_len;
         break;
     default:
@@ -4228,6 +4287,11 @@ ACVP_RESULT acvp_enable_kdf108_domain_param (ACVP_CTX *ctx,
     if (!cap_list) {
         ACVP_LOG_ERR("Cap entry not found.");
         return ACVP_NO_CAP;
+    }
+    
+    if (!min || max > ACVP_KDF108_KEYIN_BIT_MAX) {
+        ACVP_LOG_ERR("min and/or max outside acceptable range");
+        return ACVP_INVALID_ARG;
     }
     
     switch (mode) {
@@ -4437,6 +4501,16 @@ ACVP_RESULT acvp_enable_kas_ecc_cap_parm (ACVP_CTX *ctx,
         return ACVP_NO_CTX;
     }
     
+    switch (cipher) {
+    case ACVP_KAS_ECC_CDH:
+    case ACVP_KAS_ECC_COMP:
+    case ACVP_KAS_ECC_NOCOMP:
+        break;
+    default:
+        ACVP_LOG_ERR("Invalid cipher");
+        return ACVP_INVALID_ARG;
+    }
+    
     cap = acvp_locate_cap_entry(ctx, cipher);
     if (!cap) {
         return ACVP_NO_CAP;
@@ -4453,6 +4527,10 @@ ACVP_RESULT acvp_enable_kas_ecc_cap_parm (ACVP_CTX *ctx,
         switch (param)
         {
         case ACVP_KAS_ECC_FUNCTION:
+            if (!value || value > ACVP_KAS_ECC_MAX_FUNCS) {
+                ACVP_LOG_ERR("invalid kas ecc function");
+                return ACVP_INVALID_ARG;
+            }
             current_func = kas_ecc_cap_mode->function;
             if (current_func) {
                 while (current_func->next) {
@@ -4466,6 +4544,10 @@ ACVP_RESULT acvp_enable_kas_ecc_cap_parm (ACVP_CTX *ctx,
             }
             break;
         case ACVP_KAS_ECC_CURVE:
+            if (value <= ACVP_ECDSA_CURVE_START || value >= ACVP_ECDSA_CURVE_END) {
+                ACVP_LOG_ERR("invalid kas ecc curve attr");
+                return ACVP_INVALID_ARG;
+            }
             current_curve = kas_ecc_cap_mode->curve;
             if (current_curve) {
                 while (current_curve->next) {
@@ -4488,6 +4570,10 @@ ACVP_RESULT acvp_enable_kas_ecc_cap_parm (ACVP_CTX *ctx,
         switch (param)
         {
         case ACVP_KAS_ECC_FUNCTION:
+            if (!value || value > ACVP_KAS_ECC_MAX_FUNCS) {
+                ACVP_LOG_ERR("invalid kas ecc function");
+                return ACVP_INVALID_ARG;
+            }
             current_func = kas_ecc_cap_mode->function;
             if (current_func) {
                 while (current_func->next) {
@@ -4535,6 +4621,16 @@ ACVP_RESULT acvp_enable_kas_ecc_cap_scheme (ACVP_CTX *ctx,
         return ACVP_NO_CTX;
     }
     
+    switch (cipher) {
+    case ACVP_KAS_ECC_CDH:
+    case ACVP_KAS_ECC_COMP:
+    case ACVP_KAS_ECC_NOCOMP:
+        break;
+    default:
+        ACVP_LOG_ERR("Invalid cipher");
+        return ACVP_INVALID_ARG;
+    }
+    
     cap = acvp_locate_cap_entry(ctx, cipher);
     if (!cap) {
         return ACVP_NO_CAP;
@@ -4549,6 +4645,10 @@ ACVP_RESULT acvp_enable_kas_ecc_cap_scheme (ACVP_CTX *ctx,
     {
     case ACVP_KAS_ECC_MODE_COMPONENT:
     case ACVP_KAS_ECC_MODE_NOCOMP:
+        if (!scheme || scheme >= ACVP_KAS_ECC_SCHEMES_MAX) {
+            ACVP_LOG_ERR("Invalid ecc scheme");
+            return ACVP_INVALID_ARG;
+        }
         current_scheme = kas_ecc_cap_mode->scheme;
         while (current_scheme) {
             if (current_scheme->scheme == scheme) {
@@ -4566,9 +4666,16 @@ ACVP_RESULT acvp_enable_kas_ecc_cap_scheme (ACVP_CTX *ctx,
         switch (param)
         {
         case ACVP_KAS_ECC_KDF:
-            current_scheme->kdf = value;
+            if (!value || value > ACVP_KAS_ECC_PARMSET) {
+                return ACVP_INVALID_ARG;
+            }
+            current_scheme->kdf = (ACVP_KAS_ECC_SET)value;
             break;
         case ACVP_KAS_ECC_ROLE:
+            if (value != ACVP_KAS_ECC_ROLE_INITIATOR &&
+                    value != ACVP_KAS_ECC_ROLE_RESPONDER) {
+                return ACVP_INVALID_ARG;
+            }
             current_role = current_scheme->role;
             if (current_role) {
                 while (current_role->next) {
@@ -4810,6 +4917,15 @@ ACVP_RESULT acvp_enable_kas_ffc_cap_parm (ACVP_CTX *ctx,
         return ACVP_NO_CTX;
     }
     
+    switch (cipher) {
+    case ACVP_KAS_FFC_COMP:
+    case ACVP_KAS_FFC_NOCOMP:
+        break;
+    default:
+        ACVP_LOG_ERR("Invalid cipher");
+        return ACVP_INVALID_ARG;
+    }
+    
     cap = acvp_locate_cap_entry(ctx, cipher);
     if (!cap) {
         return ACVP_NO_CAP;
@@ -4826,6 +4942,10 @@ ACVP_RESULT acvp_enable_kas_ffc_cap_parm (ACVP_CTX *ctx,
         switch (param)
         {
         case ACVP_KAS_FFC_FUNCTION:
+            if (!value || value > ACVP_KAS_FFC_MAX_FUNCS) {
+                ACVP_LOG_ERR("invalid kas ffc function");
+                return ACVP_INVALID_ARG;
+            }
             current_func = kas_ffc_cap_mode->function;
             if (current_func) {
                 while (current_func->next) {
@@ -4886,6 +5006,10 @@ ACVP_RESULT acvp_enable_kas_ffc_cap_scheme (ACVP_CTX *ctx,
     {
     case ACVP_KAS_FFC_MODE_COMPONENT:
     case ACVP_KAS_FFC_MODE_NOCOMP:
+        if (!scheme || scheme >= ACVP_KAS_FFC_MAX_SCHEMES) {
+            ACVP_LOG_ERR("Invalid kas ffc scheme");
+            return ACVP_INVALID_ARG;
+        }
         current_scheme = kas_ffc_cap_mode->scheme;
         while (current_scheme) {
             if (current_scheme->scheme == scheme) {
@@ -4903,9 +5027,16 @@ ACVP_RESULT acvp_enable_kas_ffc_cap_scheme (ACVP_CTX *ctx,
         switch (param)
         {
         case ACVP_KAS_FFC_KDF:
-            current_scheme->kdf = value;
+            if (!value || value > ACVP_KAS_FFC_PARMSET) {
+                return ACVP_INVALID_ARG;
+            }
+            current_scheme->kdf = (ACVP_KAS_FFC_SET)value;
             break;
         case ACVP_KAS_FFC_ROLE:
+            if (value != ACVP_KAS_FFC_ROLE_INITIATOR &&
+                    value != ACVP_KAS_FFC_ROLE_RESPONDER) {
+                return ACVP_INVALID_ARG;
+            }
             current_role = current_scheme->role;
             if (current_role) {
                 while (current_role->next) {
