@@ -169,6 +169,9 @@
 #define ACVP_ALG_KAS_FFC_FULLVAL     "fullVal"
 #define ACVP_ALG_KAS_FFC_KEYREGEN    "keyRegen"
 
+#define ACVP_ECDSA_KEYGEN_EXTRA_BITS "extra bits"
+#define ACVP_ECDSA_KEYGEN_TESTING_CANDIDATES "testing candidates"
+
 #define ACVP_ALG_RSA                "RSA"
 #define ACVP_ALG_ECDSA              "ECDSA"
 
@@ -288,17 +291,46 @@
                                                                 512 bits, 64 bytes */
 #define ACVP_KDF135_SSH_STR_OUT_MAX (ACVP_KDF135_SSH_IKEY_MAX * 2) /**< 128 characters */
 #define ACVP_KDF135_SSH_STR_IN_MAX 4096 /**< 4096 characters, needs to accomodate large shared_secret (K) */
+
+/**
+* Accepted length ranges for KDF135_SRTP.
+* https://github.com/usnistgov/ACVP/blob/master/artifacts/acvp_sub_kdf135_srtp.txt
+*/
 #define ACVP_KDF135_SRTP_KDR_MAX 24
 #define ACVP_KDF135_SRTP_KDR_STR_MAX 13
 #define ACVP_KDF135_SRTP_MASTER_MAX 65
 #define ACVP_KDF135_SRTP_INDEX_MAX 32
 #define ACVP_KDF135_SRTP_OUTPUT_MAX 64
-#define ACVP_KDF135_X963_KEYDATA_MAX 4096/8
-#define ACVP_KDF135_X963_INPUT_MAX 1024/8
 
 #define ACVP_KDF135_TLS_PMSECRET_BIT_MAX (384)
 #define ACVP_KDF135_TLS_PMSECRET_BYTE_MAX (ACVP_KDF135_TLS_PMSECRET_BIT_MAX >> 3)
 #define ACVP_KDF135_TLS_PMSECRET_STR_MAX (ACVP_KDF135_TLS_PMSECRET_BIT_MAX >> 2)
+
+/**
+* Accepted length ranges for KDF135_X963.
+* https://github.com/usnistgov/ACVP/blob/master/artifacts/acvp_sub_kdf135_x963.txt
+*/
+#define ACVP_KDF135_X963_KEYDATA_MIN_BITS 128
+#define ACVP_KDF135_X963_KEYDATA_MAX_BITS 4096
+#define ACVP_KDF135_X963_KEYDATA_MAX_BYTES (ACVP_KDF135_X963_KEYDATA_MAX_BITS)/8
+#define ACVP_KDF135_X963_INPUT_MAX 1024/8
+#define ACVP_KDF135_X963_FIELD_SIZE_224 224
+#define ACVP_KDF135_X963_FIELD_SIZE_233 233
+#define ACVP_KDF135_X963_FIELD_SIZE_256 256
+#define ACVP_KDF135_X963_FIELD_SIZE_283 283
+#define ACVP_KDF135_X963_FIELD_SIZE_384 384
+#define ACVP_KDF135_X963_FIELD_SIZE_409 409
+#define ACVP_KDF135_X963_FIELD_SIZE_521 521
+#define ACVP_KDF135_X963_FIELD_SIZE_571 571
+#define ACVP_KDF135_X963_SHARED_INFO_LEN_MAX 1024
+#define ACVP_KDF135_X963_SHARED_INFO_LEN_MIN 0
+
+/**
+ * Accepted length ranges for KDF135_SNMP.
+ * https://github.com/usnistgov/ACVP/blob/master/artifacts/acvp_sub_kdf135_snmp.txt
+ */
+#define ACVP_KDF135_SNMP_PASS_LEN_MIN 64
+#define ACVP_KDF135_SNMP_PASS_LEN_MAX 8192
 
 /**
  * Accepted length ranges for KDF135_IKEV1.
@@ -554,8 +586,8 @@ typedef struct acvp_sym_cipher_capability {
 } ACVP_SYM_CIPHER_CAP;
 
 typedef struct acvp_hash_capability {
-    int in_bit;
-    int in_empty;
+    int in_bit; /* defaults to false */
+    int in_empty; /* defaults to false */
 } ACVP_HASH_CAP;
 
 typedef struct acvp_kdf135_tls_capability {
@@ -756,8 +788,8 @@ typedef struct acvp_kas_ecc_pset {
 } ACVP_KAS_ECC_PSET;
 
 typedef struct acvp_kas_ecc_scheme {
-    int scheme;
-    int kdf;
+    ACVP_KAS_ECC_SCHEMES scheme;
+    ACVP_KAS_ECC_SET kdf;
     ACVP_PARAM_LIST *role;
     ACVP_KAS_ECC_PSET *pset;
     struct acvp_kas_ecc_scheme *next;
@@ -794,8 +826,8 @@ typedef struct acvp_kas_ffc_pset {
 } ACVP_KAS_FFC_PSET;
 
 typedef struct acvp_kas_ffc_scheme {
-    int scheme;
-    int kdf;
+    ACVP_KAS_FFC_SCHEMES scheme;
+    ACVP_KAS_FFC_SET kdf;
     ACVP_PARAM_LIST *role;
     ACVP_KAS_FFC_PSET *pset;
     struct acvp_kas_ffc_scheme *next;
@@ -1007,7 +1039,7 @@ unsigned int yes_or_no (ACVP_CTX *ctx, const char *text);
 
 ACVP_RESULT acvp_create_array (JSON_Object **obj, JSON_Value **val, JSON_Array **arry);
 
-ACVP_RESULT is_valid_tf_param (unsigned int value);
+ACVP_RESULT is_valid_tf_param (int value);
 
 ACVP_RESULT is_valid_hash_alg (char *value);
 
