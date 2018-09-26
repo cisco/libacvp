@@ -125,6 +125,7 @@ static long acvp_curl_http_get (ACVP_CTX *ctx, char *url, void *writefunc) {
     curl_easy_setopt(hnd, CURLOPT_URL, url);
     curl_easy_setopt(hnd, CURLOPT_NOPROGRESS, 1L);
     curl_easy_setopt(hnd, CURLOPT_USERAGENT, "curl/7.27.0");
+    curl_easy_setopt(hnd, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_2);
     if (slist) {
         curl_easy_setopt(hnd, CURLOPT_HTTPHEADER, slist);
     }
@@ -231,6 +232,7 @@ static long acvp_curl_http_post (ACVP_CTX *ctx, char *url, char *data, void *wri
     curl_easy_setopt(hnd, CURLOPT_POST, 1L);
     curl_easy_setopt(hnd, CURLOPT_POSTFIELDS, data);
     curl_easy_setopt(hnd, CURLOPT_POSTFIELDSIZE_LARGE, (curl_off_t) strlen(data));
+    curl_easy_setopt(hnd, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_2);
     //FIXME: we should always to TLS peer auth
     if (ctx->verify_peer && ctx->cacerts_file) {
         curl_easy_setopt(hnd, CURLOPT_CAINFO, ctx->cacerts_file);
