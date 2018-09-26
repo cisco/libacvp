@@ -801,8 +801,14 @@ ACVP_RESULT acvp_aes_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
              * TODO: this does mallocs, we can probably do the mallocs once for
              *       the entire vector set to be more efficient
              */
-            acvp_aes_init_tc(ctx, &stc, tc_id, test_type, key, pt, ct, iv, tag, aad,
-                             kwcipher, keylen, ivlen, ptlen, aadlen, taglen, alg_id, dir);
+            rv = acvp_aes_init_tc(ctx, &stc, tc_id, test_type, key,
+                                  pt, ct, iv, tag, aad, kwcipher, keylen,
+                                  ivlen, ptlen, aadlen, taglen, alg_id, dir);
+            if (rv != ACVP_SUCCESS) {
+                    ACVP_LOG_ERR("Init for stc (test case) failed");
+                    acvp_aes_release_tc(&stc);
+                    return rv;
+            }
 
             /* If Monte Carlo start that here */
             if (stc.test_type == ACVP_SYM_TEST_TYPE_MCT) {
