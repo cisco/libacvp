@@ -40,14 +40,14 @@ static ACVP_RESULT acvp_aes_output_tc (ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *stc, J
 static ACVP_RESULT acvp_aes_init_tc (ACVP_CTX *ctx,
                                      ACVP_SYM_CIPHER_TC *stc,
                                      unsigned int tc_id,
-                                     char *test_type,
-                                     char *j_key,
-                                     char *j_pt,
-                                     char *j_ct,
-                                     char *j_iv,
-                                     char *j_tag,
-                                     char *j_aad,
-                                     char *kwcipher,
+                                     ACVP_SYM_CIPH_TESTTYPE test_type,
+                                     const char *j_key,
+                                     const char *j_pt,
+                                     const char *j_ct,
+                                     const char *j_iv,
+                                     const char *j_tag,
+                                     const char *j_aad,
+                                     ACVP_SYM_KW_MODE kwcipher,
                                      unsigned int key_len,
                                      unsigned int iv_len,
                                      unsigned int pt_len,
@@ -447,8 +447,6 @@ static ACVP_RESULT acvp_aes_mct_tc (ACVP_CTX *ctx, ACVP_CAPS_LIST *cap,
  * back to the ACV server by the transport layer.
  */
 ACVP_RESULT acvp_aes_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
-    unsigned int tc_id, keylen, ivlen, ptlen, aadlen, taglen;
-    char *key, *pt = NULL, *ct = NULL, *aad = NULL, *iv = NULL, *tag = NULL, *kwcipher = NULL;
     JSON_Value *groupval;
     JSON_Object *groupobj = NULL;
     JSON_Value *testval;
@@ -473,13 +471,16 @@ ACVP_RESULT acvp_aes_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     ACVP_TEST_CASE tc;
     ACVP_RESULT rv;
 
-    const char *dir_str = NULL;
-    const char *alg_str = json_object_get_string(obj, "algorithm");
+    char *json_result = NULL;
+    const char *alg_str = NULL;
+    ACVP_CIPHER alg_id = 0;
 
-    ACVP_SYM_CIPH_DIR dir;
-    ACVP_CIPHER alg_id;
-    char *test_type, *json_result;
+    if (!ctx) {
+        ACVP_LOG_ERR("No ctx for handler operation");
+        return ACVP_NO_CTX;
+    }
 
+    alg_str = json_object_get_string(obj, "algorithm");
     if (!alg_str) {
         ACVP_LOG_ERR("unable to parse 'algorithm' from JSON");
         return (ACVP_MALFORMED_JSON);
@@ -528,107 +529,254 @@ ACVP_RESULT acvp_aes_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     groups = json_object_get_array(obj, "testGroups");
     g_cnt = json_array_get_count(groups);
     for (i = 0; i < g_cnt; i++) {
+        const char *test_type_str = NULL, *dir_str = NULL, *kwcipher_str = NULL;
+        unsigned int keylen = 0, ivlen = 0, ptlen = 0, aadlen = 0, taglen = 0;
+        ACVP_SYM_CIPH_DIR dir = 0;
+        ACVP_SYM_CIPH_TESTTYPE test_type = 0;
+        ACVP_SYM_KW_MODE kwcipher = 0;
+
         groupval = json_array_get_value(groups, i);
         groupobj = json_value_get_object(groupval);
-        dir_str = json_object_get_string(groupobj, "direction");
 
-        /* version 0.3 direction */
-        if (dir_str != NULL) {
-            /*
-             * verify the direction is valid
-              */
-            if (!strncmp(dir_str, "encrypt", 7)) {
-                dir = ACVP_DIR_ENCRYPT;
-            } else if (!strncmp(dir_str, "decrypt", 7)) {
-                dir = ACVP_DIR_DECRYPT;
-            } else {
-                ACVP_LOG_ERR("unsupported direction requested from server (%s)", dir_str);
-                return (ACVP_UNSUPPORTED_OP);
-            }
+        dir_str = json_object_get_string(groupobj, "direction");
+        if (!dir_str) {
+            ACVP_LOG_ERR("Server JSON missing 'direction'");
+            return ACVP_MISSING_ARG;
+        }
+        if (!strncmp(dir_str, "encrypt", strlen("encrypt"))) {
+            dir = ACVP_DIR_ENCRYPT;
+        } else if (!strncmp(dir_str, "decrypt", strlen("decrypt"))) {
+            dir = ACVP_DIR_DECRYPT;
         } else {
-            ACVP_LOG_ERR("unsupported direction requested from server (%s)", dir_str);
-            return (ACVP_UNSUPPORTED_OP);
+            ACVP_LOG_ERR("Server JSON invalid 'direction'");
+            return ACVP_INVALID_ARG;
+        }
+
+        test_type_str = json_object_get_string(groupobj, "testType");
+        if (!test_type_str) {
+            ACVP_LOG_ERR("Server JSON missing 'testType'");
+            return ACVP_MISSING_ARG;
+        }
+        if (!strcmp(test_type_str, "MCT")) {
+            test_type = ACVP_SYM_TEST_TYPE_MCT;
+        } else if (!strcmp(test_type_str, "AFT")) {
+            test_type = ACVP_SYM_TEST_TYPE_AFT;
+        } else if (!strcmp(test_type_str, "aft")) {
+            // FIXME this is only temporary fix for XTS
+            test_type = ACVP_SYM_TEST_TYPE_AFT;
+        } else if (!strcmp(test_type_str, "counter")) {
+            test_type = ACVP_SYM_TEST_TYPE_CTR;
+        } else {
+            ACVP_LOG_ERR("Server JSON invalid 'testType'");
+            return ACVP_INVALID_ARG;
         }
 
         if ((alg_id == ACVP_AES_KW) || (alg_id == ACVP_TDES_KW) ||
             (alg_id == ACVP_AES_KWP)) {
-            kwcipher = (char *) json_object_get_string(groupobj, "kwCipher");
-            if (kwcipher == NULL) {
-                return (ACVP_UNSUPPORTED_OP);
+
+            kwcipher_str = json_object_get_string(groupobj, "kwCipher");
+            if (!kwcipher_str) {
+                ACVP_LOG_ERR("Server JSON missing 'kwCipher'");
+                return ACVP_MISSING_ARG;
+            }
+
+            if (!strncmp(kwcipher_str, "cipher", strlen("cipher"))) {
+                kwcipher = ACVP_SYM_KW_CIPHER;
+            } else if (!strncmp(kwcipher_str, "inverse", strlen("inverse"))) {
+                kwcipher = ACVP_SYM_KW_INVERSE;
+            } else {
+                ACVP_LOG_ERR("Server JSON invalid 'kwCipher'");
+                return ACVP_INVALID_ARG;
             }
         }
+
         keylen = (unsigned int) json_object_get_number(groupobj, "keyLen");
-        ivlen = 0;
+        if (keylen != 128 && keylen != 192 && keylen != 256) {
+            ACVP_LOG_ERR("Server JSON invalid 'keyLen', (%u)", keylen);
+            return ACVP_INVALID_ARG;
+        }
+
         if ((alg_id != ACVP_AES_ECB) && (alg_id != ACVP_AES_KW) && 
             (alg_id != ACVP_AES_KWP)) {
             ivlen = 128;
         }
         if (alg_id == ACVP_AES_GCM || alg_id == ACVP_AES_CCM) {
             ivlen = (unsigned int) json_object_get_number(groupobj, "ivLen");
+            if (!ivlen) {
+                ACVP_LOG_ERR("Server JSON missing 'ivlen'");
+                return ACVP_MISSING_ARG;
+            }
+
+            if (alg_id == ACVP_AES_GCM) {
+                if (!(ivlen >= ACVP_AES_GCM_IV_BIT_MIN &&
+                      ivlen <= ACVP_AES_GCM_IV_BIT_MAX)) {
+                    ACVP_LOG_ERR("Server JSON invalid 'ivlen', (%u)", ivlen);
+                    return ACVP_INVALID_ARG;
+                }
+            } else {
+                if (ivlen >= ACVP_AES_CCM_IV_BIT_MIN &&
+                    ivlen <= ACVP_AES_CCM_IV_BIT_MAX) {
+                    if (ivlen % 8 != 0) {
+                        // Only increments of 8 allowed
+                        ACVP_LOG_ERR("Server JSON 'ivlen' (%u) mod 8 != 0", ivlen);
+                        return ACVP_INVALID_ARG;
+                    }
+                } else {
+                    ACVP_LOG_ERR("Server JSON invalid 'ivlen', (%u)", ivlen);
+                    return ACVP_INVALID_ARG;
+                }
+            }
+
+            aadlen = (unsigned int) json_object_get_number(groupobj, "aadLen");
+            if (aadlen > ACVP_SYM_AAD_BIT_MAX) {
+                ACVP_LOG_ERR("'aadLen' too large (%u), max allowed=(%d)",
+                             aadlen, ACVP_SYM_AAD_BIT_MAX);
+                return ACVP_INVALID_ARG;
+            }
+
+            taglen = (unsigned int) json_object_get_number(groupobj, "tagLen");
+            if (!(taglen >= ACVP_SYM_TAG_BIT_MIN &&
+                  taglen <= ACVP_SYM_TAG_BIT_MAX)) {
+                ACVP_LOG_ERR("Server JSON invalid 'taglen', (%u)", taglen);
+                return ACVP_INVALID_ARG;
+            }
         }
+
         ptlen = (unsigned int) json_object_get_number(groupobj, "ptLen");
-        aadlen = (unsigned int) json_object_get_number(groupobj, "aadLen");
-        taglen = (unsigned int) json_object_get_number(groupobj, "tagLen");
-        test_type = (char *) json_object_get_string(groupobj, "testType");
+        if (ptlen > ACVP_SYM_PT_BIT_MAX) {
+            ACVP_LOG_ERR("'ptLen' too large (%u), max allowed=(%d)",
+                         ptlen, ACVP_SYM_PT_BIT_MAX);
+            return ACVP_INVALID_ARG;
+        }
 
         ACVP_LOG_INFO("    Test group: %d", i);
         ACVP_LOG_INFO("           dir: %d", dir_str);
-        ACVP_LOG_INFO("            kw: %s", kwcipher);
+        ACVP_LOG_INFO("            kw: %s", kwcipher_str);
         ACVP_LOG_INFO("        keylen: %d", keylen);
         ACVP_LOG_INFO("         ivlen: %d", ivlen);
         ACVP_LOG_INFO("         ptlen: %d", ptlen);
         ACVP_LOG_INFO("        aadlen: %d", aadlen);
         ACVP_LOG_INFO("        taglen: %d", taglen);
-        ACVP_LOG_INFO("      testtype: %s", test_type);
-
+        ACVP_LOG_INFO("      testtype: %s", test_type_str);
 
         tests = json_object_get_array(groupobj, "tests");
         t_cnt = json_array_get_count(tests);
 
         for (j = 0; j < t_cnt; j++) {
+            const char *pt = NULL, *ct = NULL, *iv = NULL,
+                       *key = NULL, *tag = NULL, *aad = NULL;
+            unsigned int tc_id = 0;
+
             ACVP_LOG_INFO("Found new AES test vector...");
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
 
             tc_id = (unsigned int) json_object_get_number(testobj, "tcId");
-            key = (char *) json_object_get_string(testobj, "key");
-            if (dir == ACVP_DIR_ENCRYPT) {
-                pt = (char *) json_object_get_string(testobj, "pt");
-                if (!pt)
-                    pt = (char *) json_object_get_string(testobj, "plainText");
 
-                /* XTS may call it tweak value "i", but we treat it as an IV */
-                if (alg_id == ACVP_AES_XTS) {
-                    iv = (char *) json_object_get_string(testobj, "i");
-                } else {
-                    iv = (char *) json_object_get_string(testobj, "iv");
+            key = json_object_get_string(testobj, "key");
+
+            if (dir == ACVP_DIR_ENCRYPT) {
+                unsigned int tmp_pt_len = 0;
+
+                pt = json_object_get_string(testobj, "pt");
+                if (!pt) {
+                    ACVP_LOG_ERR("Server JSON missing 'pt'");
+                    return ACVP_MISSING_ARG;
                 }
-                if (alg_id != ACVP_AES_GCM && alg_id != ACVP_AES_CCM && alg_id != ACVP_AES_CFB1) {
-                    ptlen = strnlen(pt, ACVP_SYM_PT_MAX) * (8 / 2);
+                tmp_pt_len = strnlen(pt, ACVP_SYM_PT_MAX + 1);
+                if (tmp_pt_len > ACVP_SYM_PT_MAX) {
+                    ACVP_LOG_ERR("'pt' too long, max allowed=(%d)",
+                                 ACVP_SYM_PT_MAX);
+                    return ACVP_INVALID_ARG;
                 }
-                if (alg_id == ACVP_AES_CFB1) {
-                    ptlen = strnlen(pt, ACVP_SYM_PT_MAX) * (8);
+
+                if (alg_id != ACVP_AES_GCM && alg_id != ACVP_AES_CCM
+                    && alg_id != ACVP_AES_CFB1) {
+
+                    if (alg_id == ACVP_AES_CFB1) {
+                        ptlen = tmp_pt_len * 8;
+                    } else {
+                        ptlen = tmp_pt_len * (8 / 2);
+                    }
                 }
             } else {
-                ct = (char *) json_object_get_string(testobj, "ct");
-                if (!ct)
-                    ct = (char *) json_object_get_string(testobj, "cipherText");
+                unsigned int tmp_ct_len = 0;
 
-                /* XTS may call it tweak value "i", but we treat it as an IV */
-                if (alg_id == ACVP_AES_XTS) {
-                    iv = (char *) json_object_get_string(testobj, "i");
-                } else {
-                    iv = (char *) json_object_get_string(testobj, "iv");
+                ct = json_object_get_string(testobj, "ct");
+                if (!ct) {
+                    ACVP_LOG_ERR("Server JSON missing 'ct'");
+                    return ACVP_MISSING_ARG;
                 }
-                tag = (char *) json_object_get_string(testobj, "tag");
-                if (alg_id != ACVP_AES_GCM && alg_id != ACVP_AES_CCM && alg_id != ACVP_AES_CFB1) {
-                    ptlen = strnlen(ct, ACVP_SYM_CT_MAX) * (8 / 2);
+                tmp_ct_len = strnlen(ct, ACVP_SYM_CT_MAX + 1);
+                if (tmp_ct_len > ACVP_SYM_CT_MAX) {
+                    ACVP_LOG_ERR("'ct' too long, max allowed=(%d)",
+                                 ACVP_SYM_CT_MAX);
+                    return ACVP_INVALID_ARG;
                 }
-                if (alg_id == ACVP_AES_CFB1) {
-                    ptlen = strnlen(ct, ACVP_SYM_CT_MAX) * (8);
+
+                if (alg_id == ACVP_AES_GCM || alg_id == ACVP_AES_CCM) {
+                    tag = json_object_get_string(testobj, "tag");
+                    if (!tag) {
+                        ACVP_LOG_ERR("Server JSON missing 'tag'");
+                        return ACVP_MISSING_ARG;
+                    }
+                    if (strnlen(tag, ACVP_SYM_TAG_MAX + 1) > ACVP_SYM_TAG_MAX) {
+                        ACVP_LOG_ERR("'tag' too long, max allowed=(%d)",
+                                     ACVP_SYM_TAG_MAX);
+                        return ACVP_INVALID_ARG;
+                    }
+                }
+
+                if (alg_id != ACVP_AES_GCM && alg_id != ACVP_AES_CCM
+                    && alg_id != ACVP_AES_CFB1) {
+
+                    if (alg_id == ACVP_AES_CFB1) {
+                        ptlen = tmp_ct_len * 8;
+                    } else {
+                        ptlen = tmp_ct_len * (8 / 2);
+                    }
                 }
             }
-            aad = (char *) json_object_get_string(testobj, "aad");
+
+            if (ivlen) {
+                if (alg_id == ACVP_AES_XTS) {
+                    /* XTS may call it tweak value "i", but we treat it as an IV */
+                    iv = json_object_get_string(testobj, "i");
+                    if (!iv) {
+                        ACVP_LOG_ERR("Server JSON missing 'i'");
+                        return ACVP_MISSING_ARG;
+                    }
+                    if (strnlen(iv, ACVP_SYM_IV_MAX + 1) > ACVP_SYM_IV_MAX) {
+                        ACVP_LOG_ERR("'i' too long, max allowed=(%d)",
+                                     ACVP_SYM_IV_MAX);
+                        return ACVP_INVALID_ARG;
+                    }
+                } else {
+                    iv = json_object_get_string(testobj, "iv");
+                    if (!iv) {
+                        ACVP_LOG_ERR("Server JSON missing 'iv'");
+                        return ACVP_MISSING_ARG;
+                    }
+                    if (strnlen(iv, ACVP_SYM_IV_MAX + 1) > ACVP_SYM_IV_MAX) {
+                        ACVP_LOG_ERR("'iv' too long, max allowed=(%d)",
+                                     ACVP_SYM_IV_MAX);
+                        return ACVP_INVALID_ARG;
+                    }
+                }
+            }
+
+            if (alg_id == ACVP_AES_GCM || alg_id == ACVP_AES_CCM) {
+                aad = json_object_get_string(testobj, "aad");
+                if (!aad) {
+                    ACVP_LOG_ERR("Server JSON missing 'aad'");
+                    return ACVP_MISSING_ARG;
+                }
+                if (strnlen(aad, ACVP_SYM_AAD_MAX + 1) > ACVP_SYM_AAD_MAX) {
+                    ACVP_LOG_ERR("'aad' too long, max allowed=(%d)",
+                                 ACVP_SYM_AAD_MAX);
+                    return ACVP_INVALID_ARG;
+                }
+            }
 
             ACVP_LOG_INFO("        Test case: %d", j);
             ACVP_LOG_INFO("            tcId: %d", tc_id);
@@ -653,8 +801,14 @@ ACVP_RESULT acvp_aes_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
              * TODO: this does mallocs, we can probably do the mallocs once for
              *       the entire vector set to be more efficient
              */
-            acvp_aes_init_tc(ctx, &stc, tc_id, test_type, key, pt, ct, iv, tag, aad,
-                             kwcipher, keylen, ivlen, ptlen, aadlen, taglen, alg_id, dir);
+            rv = acvp_aes_init_tc(ctx, &stc, tc_id, test_type, key,
+                                  pt, ct, iv, tag, aad, kwcipher, keylen,
+                                  ivlen, ptlen, aadlen, taglen, alg_id, dir);
+            if (rv != ACVP_SUCCESS) {
+                    ACVP_LOG_ERR("Init for stc (test case) failed");
+                    acvp_aes_release_tc(&stc);
+                    return rv;
+            }
 
             /* If Monte Carlo start that here */
             if (stc.test_type == ACVP_SYM_TEST_TYPE_MCT) {
@@ -663,6 +817,7 @@ ACVP_RESULT acvp_aes_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
                 rv = acvp_aes_mct_tc(ctx, cap, &tc, &stc, res_tarr);
                 if (rv != ACVP_SUCCESS) {
                     ACVP_LOG_ERR("crypto module failed the MCT operation");
+                    acvp_aes_release_tc(&stc);
                     return ACVP_CRYPTO_MODULE_FAIL;
                 }
 
@@ -673,6 +828,7 @@ ACVP_RESULT acvp_aes_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
                 if (rv != ACVP_SUCCESS) {
                     if ((rv != ACVP_CRYPTO_TAG_FAIL) && (rv != ACVP_CRYPTO_WRAP_FAIL)) {
                         ACVP_LOG_ERR("ERROR: crypto module failed the operation");
+                        acvp_aes_release_tc(&stc);
                         return ACVP_CRYPTO_MODULE_FAIL;
                     }
                 }
@@ -683,6 +839,7 @@ ACVP_RESULT acvp_aes_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
                 rv = acvp_aes_output_tc(ctx, &stc, r_tobj, rv);
                 if (rv != ACVP_SUCCESS) {
                     ACVP_LOG_ERR("JSON output failure in AES module");
+                    acvp_aes_release_tc(&stc);
                     return rv;
                 }
             }
@@ -852,14 +1009,14 @@ err:
 static ACVP_RESULT acvp_aes_init_tc (ACVP_CTX *ctx,
                                      ACVP_SYM_CIPHER_TC *stc,
                                      unsigned int tc_id,
-                                     char *test_type,
-                                     char *j_key,
-                                     char *j_pt,
-                                     char *j_ct,
-                                     char *j_iv,
-                                     char *j_tag,
-                                     char *j_aad,
-                                     char *kwcipher,
+                                     ACVP_SYM_CIPH_TESTTYPE test_type,
+                                     const char *j_key,
+                                     const char *j_pt,
+                                     const char *j_ct,
+                                     const char *j_iv,
+                                     const char *j_tag,
+                                     const char *j_aad,
+                                     ACVP_SYM_KW_MODE kwcipher,
                                      unsigned int key_len,
                                      unsigned int iv_len,
                                      unsigned int pt_len,
@@ -875,43 +1032,17 @@ static ACVP_RESULT acvp_aes_init_tc (ACVP_CTX *ctx,
 
     stc->key = calloc(1, ACVP_SYM_KEY_MAX);
     if (!stc->key) { return ACVP_MALLOC_FAIL; }
-    stc->pt = calloc(1, ACVP_SYM_PT_MAX);
+    stc->pt = calloc(1, ACVP_SYM_PT_BYTE_MAX);
     if (!stc->pt) { return ACVP_MALLOC_FAIL; }
-    stc->ct = calloc(1, ACVP_SYM_CT_MAX);
+    stc->ct = calloc(1, ACVP_SYM_CT_BYTE_MAX);
     if (!stc->ct) { return ACVP_MALLOC_FAIL; }
-    stc->tag = calloc(1, ACVP_SYM_TAG_MAX);
+    stc->tag = calloc(1, ACVP_SYM_TAG_BYTE_MAX);
     if (!stc->tag) { return ACVP_MALLOC_FAIL; }
-    stc->iv = calloc(1, ACVP_SYM_IV_MAX);
+    stc->iv = calloc(1, ACVP_SYM_IV_BYTE_MAX);
     if (!stc->iv) { return ACVP_MALLOC_FAIL; }
-    stc->aad = calloc(1, ACVP_SYM_AAD_MAX);
+    stc->aad = calloc(1, ACVP_SYM_AAD_BYTE_MAX);
     if (!stc->aad) { return ACVP_MALLOC_FAIL; }
 
-    /* Assume KAT if not MCT */
-    if (test_type && !strcmp(test_type, "MCT")) {
-        stc->test_type = ACVP_SYM_TEST_TYPE_MCT;
-    } else if (test_type && !strcmp(test_type, "AFT")) {
-        stc->test_type = ACVP_SYM_TEST_TYPE_AFT;
-    } else if (test_type && !strcmp(test_type, "counter")) {
-        stc->test_type = ACVP_SYM_TEST_TYPE_CTR;
-    } else {
-        /* consistency be damned, XTS can omit the testType */
-        if (alg_id == ACVP_AES_XTS) {
-            stc->test_type = ACVP_SYM_TEST_TYPE_AFT;
-        } else {
-            return ACVP_UNSUPPORTED_OP;
-        }
-    }
-
-    if (kwcipher != NULL) {
-        if (!strcmp((const char *) kwcipher, "cipher")) {
-            stc->kwcipher = ACVP_SYM_KW_CIPHER;
-        } else if (!strcmp((const char *) kwcipher, "inverse")) {
-            stc->kwcipher = ACVP_SYM_KW_INVERSE;
-        } else {
-            ACVP_LOG_ERR("Invalid kwCipher value");
-            return ACVP_INVALID_ARG;
-        }
-    }
     rv = acvp_hexstr_to_bin(j_key, stc->key, ACVP_SYM_KEY_MAX, NULL);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Hex conversion failure (key)");
@@ -927,7 +1058,7 @@ static ACVP_RESULT acvp_aes_init_tc (ACVP_CTX *ctx,
             }
         } else {
 
-            rv = acvp_hexstr_to_bin(j_pt, stc->pt, ACVP_SYM_PT_MAX, NULL);
+            rv = acvp_hexstr_to_bin(j_pt, stc->pt, ACVP_SYM_PT_BYTE_MAX, NULL);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("Hex conversion failure (pt)");
                 return rv;
@@ -943,7 +1074,7 @@ static ACVP_RESULT acvp_aes_init_tc (ACVP_CTX *ctx,
                 return rv;
             }
         } else {
-            rv = acvp_hexstr_to_bin(j_ct, stc->ct, ACVP_SYM_CT_MAX, NULL);
+            rv = acvp_hexstr_to_bin(j_ct, stc->ct, ACVP_SYM_CT_BYTE_MAX, NULL);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("Hex conversion failure (ct)");
                 return rv;
@@ -951,7 +1082,7 @@ static ACVP_RESULT acvp_aes_init_tc (ACVP_CTX *ctx,
         }
     }
     if (j_iv) {
-        rv = acvp_hexstr_to_bin(j_iv, stc->iv, ACVP_SYM_IV_MAX, NULL);
+        rv = acvp_hexstr_to_bin(j_iv, stc->iv, ACVP_SYM_IV_BYTE_MAX, NULL);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Hex conversion failure (iv)");
             return rv;
@@ -959,7 +1090,7 @@ static ACVP_RESULT acvp_aes_init_tc (ACVP_CTX *ctx,
     }
 
     if (j_tag) {
-        rv = acvp_hexstr_to_bin(j_tag, stc->tag, ACVP_SYM_TAG_MAX, NULL);
+        rv = acvp_hexstr_to_bin(j_tag, stc->tag, ACVP_SYM_TAG_BYTE_MAX, NULL);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Hex conversion failure (tag)");
             return rv;
@@ -967,7 +1098,7 @@ static ACVP_RESULT acvp_aes_init_tc (ACVP_CTX *ctx,
     }
 
     if (j_aad) {
-        rv = acvp_hexstr_to_bin(j_aad, stc->aad, ACVP_SYM_AAD_MAX, NULL);
+        rv = acvp_hexstr_to_bin(j_aad, stc->aad, ACVP_SYM_AAD_BYTE_MAX, NULL);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Hex conversion failure (aad)");
             return rv;
@@ -980,6 +1111,8 @@ static ACVP_RESULT acvp_aes_init_tc (ACVP_CTX *ctx,
      * TODO: do we need to support bit lengths not a multiple of 8?
      */
     stc->tc_id = tc_id;
+    stc->kwcipher = kwcipher;
+    stc->test_type = test_type;
     stc->key_len = key_len;
     stc->iv_len = iv_len / 8;
     stc->pt_len = pt_len / 8;
@@ -998,12 +1131,12 @@ static ACVP_RESULT acvp_aes_init_tc (ACVP_CTX *ctx,
  * a test case.
  */
 static ACVP_RESULT acvp_aes_release_tc (ACVP_SYM_CIPHER_TC *stc) {
-    free(stc->key);
-    free(stc->pt);
-    free(stc->ct);
-    free(stc->tag);
-    free(stc->iv);
-    free(stc->aad);
+    if (stc->key) free(stc->key);
+    if (stc->pt) free(stc->pt);
+    if (stc->ct) free(stc->ct);
+    if (stc->tag) free(stc->tag);
+    if (stc->iv) free(stc->iv);
+    if (stc->aad) free(stc->aad);
     memset(stc, 0x0, sizeof(ACVP_SYM_CIPHER_TC));
 
     return ACVP_SUCCESS;
