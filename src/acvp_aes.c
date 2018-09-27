@@ -633,18 +633,20 @@ ACVP_RESULT acvp_aes_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
                     return ACVP_INVALID_ARG;
                 }
 
-                iv_gen_mode_str = json_object_get_string(groupobj, "ivGenMode");
-                if (!iv_gen_mode_str) {
-                    ACVP_LOG_ERR("Server JSON missing 'ivGenMode'");
-                    return ACVP_MISSING_ARG;
-                }
-                if (!strncmp(iv_gen_mode_str, "8.2.1", strlen("8.2.1"))) {
-                    iv_gen_mode = ACVP_IVGEN_MODE_821;
-                } else if (!strncmp(iv_gen_mode_str, "8.2.2", strlen("8.2.2"))) {
-                    iv_gen_mode = ACVP_IVGEN_MODE_822;
-                } else {
-                    ACVP_LOG_ERR("Server JSON invalid 'ivGenMode'");
-                    return ACVP_INVALID_ARG;
+                if (iv_gen == ACVP_IVGEN_SRC_INT){
+                    iv_gen_mode_str = json_object_get_string(groupobj, "ivGenMode");
+                    if (!iv_gen_mode_str) {
+                        ACVP_LOG_ERR("Server JSON missing 'ivGenMode'");
+                        return ACVP_MISSING_ARG;
+                    }
+                    if (!strncmp(iv_gen_mode_str, "8.2.1", strlen("8.2.1"))) {
+                        iv_gen_mode = ACVP_IVGEN_MODE_821;
+                    } else if (!strncmp(iv_gen_mode_str, "8.2.2", strlen("8.2.2"))) {
+                        iv_gen_mode = ACVP_IVGEN_MODE_822;
+                    } else {
+                        ACVP_LOG_ERR("Server JSON invalid 'ivGenMode'");
+                        return ACVP_INVALID_ARG;
+                    }
                 }
             } else {
                 if (ivlen >= ACVP_AES_CCM_IV_BIT_MIN &&
