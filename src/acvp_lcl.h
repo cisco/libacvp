@@ -256,7 +256,7 @@
 #define ACVP_SYM_TAG_MAX (ACVP_SYM_TAG_BIT_MAX >> 2) /**< 32 characters */
 #define ACVP_SYM_TAG_BYTE_MAX (ACVP_SYM_TAG_BIT_MAX >> 3) /**< 16 bytes */
 
-#define ACVP_SYM_AAD_BIT_MAX 16384 /**< 65536 bits */
+#define ACVP_SYM_AAD_BIT_MAX 65536 /**< 65536 bits */
 #define ACVP_SYM_AAD_MAX (ACVP_SYM_AAD_BIT_MAX >> 2) /**< 16384 characters */
 #define ACVP_SYM_AAD_BYTE_MAX (ACVP_SYM_AAD_BIT_MAX >> 3) /**< 8192 bytes */
 

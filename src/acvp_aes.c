@@ -709,6 +709,15 @@ ACVP_RESULT acvp_aes_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
             tc_id = (unsigned int) json_object_get_number(testobj, "tcId");
 
             key = json_object_get_string(testobj, "key");
+            if (!key) {
+                ACVP_LOG_ERR("Server JSON missing 'key'");
+                return ACVP_MISSING_ARG;
+            }
+            if (strnlen(key, ACVP_SYM_KEY_MAX + 1) > ACVP_SYM_KEY_MAX) {
+                ACVP_LOG_ERR("'key' too long, max allowed=(%d)",
+                             ACVP_SYM_KEY_MAX);
+                return ACVP_INVALID_ARG;
+            }
 
             if (dir == ACVP_DIR_ENCRYPT) {
                 unsigned int tmp_pt_len = 0;
@@ -749,7 +758,7 @@ ACVP_RESULT acvp_aes_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
                     return ACVP_INVALID_ARG;
                 }
 
-                if (alg_id == ACVP_AES_GCM || alg_id == ACVP_AES_CCM) {
+                if (alg_id == ACVP_AES_GCM) {
                     tag = json_object_get_string(testobj, "tag");
                     if (!tag) {
                         ACVP_LOG_ERR("Server JSON missing 'tag'");
