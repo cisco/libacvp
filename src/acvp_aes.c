@@ -774,10 +774,11 @@ ACVP_RESULT acvp_aes_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
             }
 
             /*
-             * If GCM and the generation is internal, then iv is not provided.
+             * If GCM, direction is encrypt, and the generation is internal
+             * then iv is not provided.
              */
-            if (ivlen && !(alg_id == ACVP_AES_GCM
-                           && iv_gen == ACVP_IVGEN_SRC_INT)) {
+            if (ivlen && !(alg_id == ACVP_AES_GCM && dir == ACVP_DIR_ENCRYPT &&
+                           iv_gen == ACVP_IVGEN_SRC_INT)) {
                 if (alg_id == ACVP_AES_XTS) {
                     /* XTS may call it tweak value "i", but we treat it as an IV */
                     iv = json_object_get_string(testobj, "i");
