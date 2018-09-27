@@ -54,7 +54,9 @@ static ACVP_RESULT acvp_aes_init_tc (ACVP_CTX *ctx,
                                      unsigned int aad_len,
                                      unsigned int tag_len,
                                      ACVP_CIPHER alg_id,
-                                     ACVP_SYM_CIPH_DIR dir);
+                                     ACVP_SYM_CIPH_DIR dir,
+                                     ACVP_SYM_CIPH_IVGEN_SRC iv_gen,
+                                     ACVP_SYM_CIPH_IVGEN_MODE iv_gen_mode);
 
 static ACVP_RESULT acvp_aes_release_tc (ACVP_SYM_CIPHER_TC *stc);
 
@@ -529,11 +531,14 @@ ACVP_RESULT acvp_aes_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     groups = json_object_get_array(obj, "testGroups");
     g_cnt = json_array_get_count(groups);
     for (i = 0; i < g_cnt; i++) {
-        const char *test_type_str = NULL, *dir_str = NULL, *kwcipher_str = NULL;
+        const char *test_type_str = NULL, *dir_str = NULL, *kwcipher_str = NULL,
+                   *iv_gen_str = NULL, *iv_gen_mode_str = NULL;
         unsigned int keylen = 0, ivlen = 0, ptlen = 0, aadlen = 0, taglen = 0;
         ACVP_SYM_CIPH_DIR dir = 0;
         ACVP_SYM_CIPH_TESTTYPE test_type = 0;
         ACVP_SYM_KW_MODE kwcipher = 0;
+        ACVP_SYM_CIPH_IVGEN_SRC iv_gen = ACVP_IVGEN_SRC_NA;
+        ACVP_SYM_CIPH_IVGEN_MODE iv_gen_mode = ACVP_IVGEN_MODE_NA;
 
         groupval = json_array_get_value(groups, i);
         groupobj = json_value_get_object(groupval);
@@ -611,6 +616,34 @@ ACVP_RESULT acvp_aes_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
                 if (!(ivlen >= ACVP_AES_GCM_IV_BIT_MIN &&
                       ivlen <= ACVP_AES_GCM_IV_BIT_MAX)) {
                     ACVP_LOG_ERR("Server JSON invalid 'ivlen', (%u)", ivlen);
+                    return ACVP_INVALID_ARG;
+                }
+
+                iv_gen_str = json_object_get_string(groupobj, "ivGen");
+                if (!iv_gen_str) {
+                    ACVP_LOG_ERR("Server JSON missing 'ivGen'");
+                    return ACVP_MISSING_ARG;
+                }
+                if (!strncmp(iv_gen_str, "internal", strlen("internal"))) {
+                    iv_gen = ACVP_IVGEN_SRC_INT;
+                } else if (!strncmp(iv_gen_str, "external", strlen("external"))) {
+                    iv_gen = ACVP_IVGEN_SRC_EXT;
+                } else {
+                    ACVP_LOG_ERR("Server JSON invalid 'ivGen'");
+                    return ACVP_INVALID_ARG;
+                }
+
+                iv_gen_mode_str = json_object_get_string(groupobj, "ivGenMode");
+                if (!iv_gen_mode_str) {
+                    ACVP_LOG_ERR("Server JSON missing 'ivGenMode'");
+                    return ACVP_MISSING_ARG;
+                }
+                if (!strncmp(iv_gen_mode_str, "8.2.1", strlen("8.2.1"))) {
+                    iv_gen_mode = ACVP_IVGEN_MODE_821;
+                } else if (!strncmp(iv_gen_mode_str, "8.2.2", strlen("8.2.2"))) {
+                    iv_gen_mode = ACVP_IVGEN_MODE_822;
+                } else {
+                    ACVP_LOG_ERR("Server JSON invalid 'ivGenMode'");
                     return ACVP_INVALID_ARG;
                 }
             } else {
@@ -738,7 +771,11 @@ ACVP_RESULT acvp_aes_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
                 }
             }
 
-            if (ivlen) {
+            /*
+             * If GCM and the generation is internal, then iv is not provided.
+             */
+            if (ivlen && !(alg_id == ACVP_AES_GCM
+                           && iv_gen == ACVP_IVGEN_SRC_INT)) {
                 if (alg_id == ACVP_AES_XTS) {
                     /* XTS may call it tweak value "i", but we treat it as an IV */
                     iv = json_object_get_string(testobj, "i");
@@ -803,7 +840,8 @@ ACVP_RESULT acvp_aes_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
              */
             rv = acvp_aes_init_tc(ctx, &stc, tc_id, test_type, key,
                                   pt, ct, iv, tag, aad, kwcipher, keylen,
-                                  ivlen, ptlen, aadlen, taglen, alg_id, dir);
+                                  ivlen, ptlen, aadlen, taglen, alg_id, dir,
+                                  iv_gen, iv_gen_mode);
             if (rv != ACVP_SUCCESS) {
                     ACVP_LOG_ERR("Init for stc (test case) failed");
                     acvp_aes_release_tc(&stc);
@@ -1023,7 +1061,9 @@ static ACVP_RESULT acvp_aes_init_tc (ACVP_CTX *ctx,
                                      unsigned int aad_len,
                                      unsigned int tag_len,
                                      ACVP_CIPHER alg_id,
-                                     ACVP_SYM_CIPH_DIR dir) {
+                                     ACVP_SYM_CIPH_DIR dir,
+                                     ACVP_SYM_CIPH_IVGEN_SRC iv_gen,
+                                     ACVP_SYM_CIPH_IVGEN_MODE iv_gen_mode) {
     ACVP_RESULT rv;
 
     //FIXME:  check lengths do not exceed MAX values below
@@ -1122,6 +1162,8 @@ static ACVP_RESULT acvp_aes_init_tc (ACVP_CTX *ctx,
 
     stc->cipher = alg_id;
     stc->direction = dir;
+    stc->ivgen_source = iv_gen;
+    stc->ivgen_mode = iv_gen_mode;
 
     return ACVP_SUCCESS;
 }
