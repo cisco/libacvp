@@ -632,7 +632,7 @@ typedef struct acvp_sym_cipher_tc_t {
     unsigned char *tag; /* Aead tag */
     unsigned char *iv_ret; /* updated IV used for TDES MCT */
     unsigned char *iv_ret_after; /* updated IV used for TDES MCT */
-    unsigned int kwcipher;
+    ACVP_SYM_KW_MODE kwcipher;
     unsigned int key_len;
     unsigned int pt_len;
     unsigned int aad_len;

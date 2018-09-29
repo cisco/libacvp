@@ -251,8 +251,14 @@
 #define ACVP_SYM_IV_MAX (ACVP_SYM_IV_BIT_MAX >> 2) /**< 256 characters */
 #define ACVP_SYM_IV_BYTE_MAX (ACVP_SYM_IV_BIT_MAX >> 3) /**< 128 bytes */
 
-#define ACVP_SYM_TAG_MAX    32       /**< 128 bits, 32 characters */
-#define ACVP_SYM_AAD_MAX    16384    /**< 65536 bits, 16384 characters */
+#define ACVP_SYM_TAG_BIT_MIN 4 /**< 128 bits */
+#define ACVP_SYM_TAG_BIT_MAX 128 /**< 128 bits */
+#define ACVP_SYM_TAG_MAX (ACVP_SYM_TAG_BIT_MAX >> 2) /**< 32 characters */
+#define ACVP_SYM_TAG_BYTE_MAX (ACVP_SYM_TAG_BIT_MAX >> 3) /**< 16 bytes */
+
+#define ACVP_SYM_AAD_BIT_MAX 65536 /**< 65536 bits */
+#define ACVP_SYM_AAD_MAX (ACVP_SYM_AAD_BIT_MAX >> 2) /**< 16384 characters */
+#define ACVP_SYM_AAD_BYTE_MAX (ACVP_SYM_AAD_BIT_MAX >> 3) /**< 8192 bytes */
 
 #define ACVP_DRB_MAX             4096
 #define ACVP_DRBG_ENTPY_IN_MAX   256
@@ -277,6 +283,11 @@
 #define ACVP_TDES_KEY_BIT_LEN 192 /**< 192 bits */
 #define ACVP_TDES_KEY_STR_LEN (ACVP_TDES_KEY_BIT_LEN >> 2) /**< 48 characters */
 #define ACVP_TDES_KEY_BYTE_LEN (ACVP_TDES_KEY_BIT_LEN >> 3) /**< 24 bytes */
+
+#define ACVP_AES_CCM_IV_BIT_MIN 56 /**< 56 bits */
+#define ACVP_AES_CCM_IV_BIT_MAX 104 /**< 104 bits */
+#define ACVP_AES_GCM_IV_BIT_MIN 8 /**< 8 bits */
+#define ACVP_AES_GCM_IV_BIT_MAX 1024 /**< 1024 bits */
 
 #define ACVP_KDF135_TLS_MSG_MAX 1024*4
 #define ACVP_KDF135_SSH_EKEY_MAX (ACVP_BYTE_LEN_HMAC_SHA512) /**< Encryption Key max.
