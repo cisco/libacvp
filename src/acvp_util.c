@@ -522,7 +522,8 @@ char *acvp_lookup_error_string (ACVP_RESULT rv) {
             {ACVP_DATA_TOO_LARGE, "Data too large"},
             {ACVP_DUP_CIPHER, "Duplicate cipher, may have already registered"},
             {ACVP_TOTP_DECODE_FAIL, "Failed to base64 decode TOTP seed"},
-            {ACVP_TOTP_MISSING_SEED, "Missing TOTP seed"}
+            {ACVP_TOTP_MISSING_SEED, "Missing TOTP seed"},
+            {ACVP_DUPLICATE_CTX, "ctx already initialized"}
     };
     
     for (i = 0; i < ACVP_RESULT_MAX-1; i++) {

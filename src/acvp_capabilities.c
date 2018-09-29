@@ -4188,7 +4188,7 @@ ACVP_RESULT acvp_enable_kdf135_ikev2_domain_param (ACVP_CTX *ctx,
         break;
     case ACVP_DH_SECRET_LEN:
         if (min < ACVP_KDF135_IKEV2_DH_SHARED_SECRET_BIT_MIN ||
-            ACVP_KDF135_IKEV2_DH_SHARED_SECRET_BIT_MAX > 8192) {
+            max > ACVP_KDF135_IKEV2_DH_SHARED_SECRET_BIT_MAX) {
             ACVP_LOG_ERR("min or max outside of acceptable range");
             return ACVP_INVALID_ARG;
         }

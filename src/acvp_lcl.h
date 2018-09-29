@@ -482,6 +482,7 @@
 #define ACVP_RETRY_TIME_MAX     60 /* seconds */
 #define ACVP_JWT_TOKEN_MAX      1024
 
+#define ACVP_SESSION_PARAMS_STR_LEN_MAX 256
 #define ACVP_PATH_SEGMENT_DEFAULT ""
 
 #define ACVP_CFB1_BIT_MASK      0x80
@@ -970,8 +971,6 @@ ACVP_RESULT acvp_bit_to_bin (const unsigned char *in, int len, unsigned char *ou
 /*
  * These are the handler routines for each KAT operation
  */
-ACVP_RESULT acvp_retry_handler (ACVP_CTX *ctx, unsigned int retry_period);
-
 ACVP_RESULT acvp_aes_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
 
 ACVP_RESULT acvp_des_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);

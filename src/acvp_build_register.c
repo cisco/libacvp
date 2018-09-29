@@ -102,6 +102,9 @@ static ACVP_RESULT acvp_lookup_prereqVals (JSON_Object *cap_obj, ACVP_CAPS_LIST 
 
 static ACVP_RESULT acvp_build_hash_register_cap (JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry) {
     json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
+    if (!cap_entry->cap.hash_cap) {
+        return ACVP_MISSING_ARG;
+    }
     json_object_set_boolean(cap_obj, "inBit", cap_entry->cap.hash_cap->in_bit);
     json_object_set_boolean(cap_obj, "inEmpty", cap_entry->cap.hash_cap->in_empty);
     
@@ -115,6 +118,9 @@ static ACVP_RESULT acvp_build_hmac_register_cap (JSON_Object *cap_obj, ACVP_CAPS
     ACVP_SL_LIST *sl_list;
     ACVP_RESULT result;
     
+    if (!cap_entry->cap.hmac_cap) {
+        return ACVP_NO_CAP;
+    }
     json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
     result = acvp_lookup_prereqVals(cap_obj, cap_entry);
     if (result != ACVP_SUCCESS) { return result; }
@@ -156,6 +162,9 @@ static ACVP_RESULT acvp_build_cmac_register_cap (JSON_Object *cap_obj, ACVP_CAPS
     
     json_object_set_value(cap_obj, "direction", json_value_init_array());
     temp_arr = json_object_get_array(cap_obj, "direction");
+    if (!cap_entry->cap.cmac_cap->direction_gen && !cap_entry->cap.cmac_cap->direction_ver) {
+        return ACVP_MISSING_ARG;
+    }
     if (cap_entry->cap.cmac_cap->direction_gen) { json_array_append_string(temp_arr, "gen"); }
     if (cap_entry->cap.cmac_cap->direction_ver) { json_array_append_string(temp_arr, "ver"); }
     
@@ -194,6 +203,9 @@ static ACVP_RESULT acvp_build_cmac_register_cap (JSON_Object *cap_obj, ACVP_CAPS
         json_object_set_value(cap_obj, "keyingOption", json_value_init_array());
         temp_arr = json_object_get_array(cap_obj, "keyingOption");
         sl_list = cap_entry->cap.cmac_cap->keying_option;
+        if (!sl_list) {
+            return ACVP_MISSING_ARG;
+        }
         while (sl_list) {
             json_array_append_number(temp_arr, sl_list->length);
             sl_list = sl_list->next;
@@ -214,12 +226,18 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap (JSON_Object *cap_obj, ACV
     json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
     
     sym_cap = cap_entry->cap.sym_cap;
+    if (!sym_cap) {
+        return ACVP_MISSING_ARG;
+    }
     result = acvp_lookup_prereqVals(cap_obj, cap_entry);
     if (result != ACVP_SUCCESS) { return result; }
     
     /*
      * Set the direction capability
      */
+    if (!sym_cap->direction) {
+        return ACVP_MISSING_ARG;
+    }
     json_object_set_value(cap_obj, "direction", json_value_init_array());
     mode_arr = json_object_get_array(cap_obj, "direction");
     if (sym_cap->direction == ACVP_DIR_ENCRYPT ||
@@ -297,6 +315,9 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap (JSON_Object *cap_obj, ACV
     json_object_set_value(cap_obj, "keyLen", json_value_init_array());
     opts_arr = json_object_get_array(cap_obj, "keyLen");
     sl_list = sym_cap->keylen;
+    if (!sl_list) {
+        return ACVP_MISSING_ARG;
+    }
     while (sl_list) {
         json_array_append_number(opts_arr, sl_list->length);
         sl_list = sl_list->next;
@@ -520,7 +541,16 @@ static ACVP_RESULT acvp_build_drbg_register_cap (JSON_Object *cap_obj, ACVP_CAPS
     char *mode_str = acvp_lookup_drbg_mode_string(cap_entry);
     if (!mode_str) { return ACVP_INVALID_ARG; }
     
+    if (!&cap_entry->cap.drbg_cap) {
+        return ACVP_NO_CAP;
+    }
+    if (!&cap_entry->cap.drbg_cap->drbg_cap_mode_list) {
+        return ACVP_MISSING_ARG;
+    }
     drbg_cap_mode = &cap_entry->cap.drbg_cap->drbg_cap_mode_list->cap_mode;
+    if (!drbg_cap_mode) {
+        return ACVP_MISSING_ARG;
+    }
     json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
     
     result = acvp_lookup_drbg_prereqVals(cap_obj, drbg_cap_mode);
@@ -696,12 +726,18 @@ static ACVP_RESULT acvp_build_rsa_keygen_register_cap (JSON_Object *cap_obj, ACV
      * for each one, appending to the array as we go
      */
     ACVP_RSA_KEYGEN_CAP *keygen_cap = cap_entry->cap.rsa_keygen_cap;
+    if (!keygen_cap) {
+        return ACVP_NO_CAP;
+    }
     
     JSON_Array *alg_specs_array = NULL;
     JSON_Value *alg_specs_val = NULL;
     JSON_Object *alg_specs_obj = NULL;
     
     json_object_set_boolean(cap_obj, "infoGeneratedByServer", keygen_cap->info_gen_by_server);
+    if (!keygen_cap->pub_exp_mode) {
+        return ACVP_MISSING_ARG;
+    }
     json_object_set_string(cap_obj, "pubExpMode",
                            keygen_cap->pub_exp_mode == ACVP_RSA_PUB_EXP_MODE_FIXED ?
                            ACVP_RSA_PUB_EXP_MODE_FIXED_STR : ACVP_RSA_PUB_EXP_MODE_RANDOM_STR);
@@ -719,6 +755,9 @@ static ACVP_RESULT acvp_build_rsa_keygen_register_cap (JSON_Object *cap_obj, ACV
         
         json_object_set_string(alg_specs_obj, "randPQ", acvp_lookup_rsa_randpq_name(keygen_cap->rand_pq));
         result = acvp_lookup_rsa_primes(alg_specs_obj, keygen_cap);
+        if (result != ACVP_SUCCESS) {
+            return result;
+        }
         
         json_array_append_value(alg_specs_array, alg_specs_val);
         keygen_cap = keygen_cap->next;
@@ -738,10 +777,16 @@ static ACVP_RESULT acvp_build_rsa_sig_register_cap (JSON_Object *cap_obj, ACVP_C
     if (cap_entry->cipher == ACVP_RSA_SIGGEN) {
         json_object_set_string(cap_obj, "mode", "sigGen");
         rsa_cap_mode = cap_entry->cap.rsa_siggen_cap;
+        if (!rsa_cap_mode) {
+            return ACVP_MISSING_ARG;
+        }
     } else if (cap_entry->cipher == ACVP_RSA_SIGVER) {
         json_object_set_string(cap_obj, "mode", "sigVer");
         rsa_cap_mode = cap_entry->cap.rsa_sigver_cap;
-        json_object_set_string(cap_obj, "pubExpMode", cap_entry->cap.rsa_sigver_cap->pub_exp_mode ? "fixed" : "random");
+        if (!rsa_cap_mode) {
+            return ACVP_MISSING_ARG;
+        }
+        json_object_set_string(cap_obj, "pubExpMode", rsa_cap_mode->pub_exp_mode ? "fixed" : "random");
         if (cap_entry->cap.rsa_sigver_cap->pub_exp_mode) {
             json_object_set_string(cap_obj, "fixedPubExp", (const char *)cap_entry->cap.rsa_sigver_cap->fixed_pub_exp);
         }
@@ -772,6 +817,9 @@ static ACVP_RESULT acvp_build_rsa_sig_register_cap (JSON_Object *cap_obj, ACVP_C
             while (current_hash_pair) {
                 hash_pair_val = json_value_init_object();
                 hash_pair_obj = json_value_get_object(hash_pair_val);
+                if (!current_hash_pair->name) {
+                    return ACVP_MISSING_ARG;
+                }
                 json_object_set_string(hash_pair_obj, "hashAlg", current_hash_pair->name);
                 if (strncmp(rsa_cap_mode->sig_type_str, "pss", 3) == 0) {
                     json_object_set_number(hash_pair_obj, "saltLen", current_hash_pair->salt);
@@ -804,20 +852,32 @@ static ACVP_RESULT acvp_build_ecdsa_register_cap (ACVP_CIPHER cipher, JSON_Objec
     switch(cipher) {
     case ACVP_ECDSA_KEYGEN:
         json_object_set_string(cap_obj, "mode", "keyGen");
+        if (!cap_entry->cap.ecdsa_keygen_cap) {
+            return ACVP_NO_CAP;
+        }
         current_curve = cap_entry->cap.ecdsa_keygen_cap->curves;
         current_secret_mode = cap_entry->cap.ecdsa_keygen_cap->secret_gen_modes;
         break;
     case ACVP_ECDSA_KEYVER:
         json_object_set_string(cap_obj, "mode", "keyVer");
+        if (!cap_entry->cap.ecdsa_keyver_cap) {
+            return ACVP_NO_CAP;
+        }
         current_curve = cap_entry->cap.ecdsa_keyver_cap->curves;
         break;
     case ACVP_ECDSA_SIGGEN:
         json_object_set_string(cap_obj, "mode", "sigGen");
+        if (!cap_entry->cap.ecdsa_siggen_cap) {
+            return ACVP_NO_CAP;
+        }
         current_curve = cap_entry->cap.ecdsa_siggen_cap->curves;
         current_hash = cap_entry->cap.ecdsa_siggen_cap->hash_algs;
         break;
     case ACVP_ECDSA_SIGVER:
         json_object_set_string(cap_obj, "mode", "sigVer");
+        if (!cap_entry->cap.ecdsa_sigver_cap) {
+            return ACVP_NO_CAP;
+        }
         current_curve = cap_entry->cap.ecdsa_sigver_cap->curves;
         current_hash = cap_entry->cap.ecdsa_sigver_cap->hash_algs;
         break;
@@ -847,7 +907,13 @@ static ACVP_RESULT acvp_build_ecdsa_register_cap (ACVP_CIPHER cipher, JSON_Objec
         json_object_set_value(cap_obj, "curve", json_value_init_array());
         curves_arr = json_object_get_array(cap_obj, "curve");
     }
+    if (!current_curve) {
+        return ACVP_MISSING_ARG;
+    }
     while (current_curve) {
+        if (!current_curve->name) {
+            return ACVP_MISSING_ARG;
+        }
         json_array_append_string(curves_arr, current_curve->name);
         current_curve = current_curve->next;
     }
@@ -856,6 +922,9 @@ static ACVP_RESULT acvp_build_ecdsa_register_cap (ACVP_CIPHER cipher, JSON_Objec
         json_object_set_value(cap_obj, "secretGenerationMode", json_value_init_array());
         secret_modes_arr = json_object_get_array(cap_obj, "secretGenerationMode");
         while (current_secret_mode) {
+            if (!current_secret_mode->name) {
+                return ACVP_MISSING_ARG;
+            }
             json_array_append_string(secret_modes_arr, current_secret_mode->name);
             current_secret_mode = current_secret_mode->next;
         }
@@ -865,6 +934,9 @@ static ACVP_RESULT acvp_build_ecdsa_register_cap (ACVP_CIPHER cipher, JSON_Objec
         json_object_set_value(alg_caps_obj, "hashAlg", json_value_init_array());
         hash_arr = json_object_get_array(alg_caps_obj, "hashAlg");
         while (current_hash) {
+            if (!current_hash->name) {
+                return ACVP_MISSING_ARG;
+            }
             json_array_append_string(hash_arr, current_hash->name);
             current_hash = current_hash->next;
         }
@@ -1324,8 +1396,8 @@ static ACVP_RESULT acvp_build_kdf135_ssh_register_cap (JSON_Object *cap_obj, ACV
     return ACVP_SUCCESS;
 }
 
-static void acvp_build_dsa_hashalgs (JSON_Object *cap_obj, JSON_Array *temp_arr,
-                                     ACVP_DSA_ATTRS *attrs)
+static ACVP_RESULT acvp_build_dsa_hashalgs (JSON_Object *cap_obj, JSON_Array *temp_arr,
+                                            ACVP_DSA_ATTRS *attrs)
 {
     JSON_Array *sha_arr = NULL;
     
@@ -1353,11 +1425,18 @@ static void acvp_build_dsa_hashalgs (JSON_Object *cap_obj, JSON_Array *temp_arr,
     if (attrs->sha & ACVP_DSA_SHA512_256) {
         json_array_append_string(sha_arr, "SHA2-512-256");
     }
+    
+    if (json_array_get_count(sha_arr) == 0) {
+        return ACVP_MISSING_ARG;
+    }
+    
+    return ACVP_SUCCESS;
 }
 
 static ACVP_RESULT acvp_build_dsa_pqggen_register (JSON_Array *meth_array,
                                                    ACVP_CAPS_LIST *cap_entry) {
     ACVP_DSA_ATTRS *attrs = NULL;
+    ACVP_RESULT rv;
     ACVP_DSA_CAP_MODE *dsa_cap_mode = NULL;
     JSON_Array *temp_arr = NULL;
     JSON_Value *new_cap_val = NULL;
@@ -1365,9 +1444,11 @@ static ACVP_RESULT acvp_build_dsa_pqggen_register (JSON_Array *meth_array,
     
     dsa_cap_mode = &cap_entry->cap.dsa_cap->dsa_cap_mode[ACVP_DSA_MODE_PQGGEN-1];
     attrs = dsa_cap_mode->dsa_attrs;
+    if (!attrs) {
+        return ACVP_MISSING_ARG;
+    }
     
-    while (attrs) {
-        
+    while (attrs) {     
         new_cap_val = json_value_init_object();
         new_cap_obj = json_value_get_object(new_cap_val);
         
@@ -1379,6 +1460,9 @@ static ACVP_RESULT acvp_build_dsa_pqggen_register (JSON_Array *meth_array,
         if (dsa_cap_mode->gen_pq_prov) {
             json_array_append_string(temp_arr, "provable");
         }
+        if (!dsa_cap_mode->gen_pq_prob && !dsa_cap_mode->gen_pq_prov) {
+            return ACVP_MISSING_ARG;
+        }
         
         json_object_set_value(new_cap_obj, "gGen", json_value_init_array());
         temp_arr = json_object_get_array(new_cap_obj, "gGen");
@@ -1387,6 +1471,9 @@ static ACVP_RESULT acvp_build_dsa_pqggen_register (JSON_Array *meth_array,
         }
         if (dsa_cap_mode->gen_g_can) {
             json_array_append_string(temp_arr, "canonical");
+        }
+        if (!dsa_cap_mode->gen_g_unv && !dsa_cap_mode->gen_g_can) {
+            return ACVP_MISSING_ARG;
         }
         
         switch (attrs->modulo) {
@@ -1406,7 +1493,10 @@ static ACVP_RESULT acvp_build_dsa_pqggen_register (JSON_Array *meth_array,
             return ACVP_INVALID_ARG;
             break;
         }
-        acvp_build_dsa_hashalgs(new_cap_obj, temp_arr, attrs);
+        rv = acvp_build_dsa_hashalgs(new_cap_obj, temp_arr, attrs);
+        if (rv != ACVP_SUCCESS) {
+            return rv;
+        }
         
         attrs = attrs->next;
         json_array_append_value(meth_array, new_cap_val);
@@ -1439,6 +1529,9 @@ static ACVP_RESULT acvp_build_dsa_pqgver_register (JSON_Array *meth_array,
         if (dsa_cap_mode->gen_pq_prov) {
             json_array_append_string(temp_arr, "provable");
         }
+        if (!dsa_cap_mode->gen_pq_prob && !dsa_cap_mode->gen_pq_prov) {
+            return ACVP_MISSING_ARG;
+        }
         
         json_object_set_value(new_cap_obj, "gGen", json_value_init_array());
         temp_arr = json_object_get_array(new_cap_obj, "gGen");
@@ -1447,6 +1540,9 @@ static ACVP_RESULT acvp_build_dsa_pqgver_register (JSON_Array *meth_array,
         }
         if (dsa_cap_mode->gen_g_can) {
             json_array_append_string(temp_arr, "canonical");
+        }
+        if (!dsa_cap_mode->gen_g_unv && !dsa_cap_mode->gen_g_can) {
+            return ACVP_MISSING_ARG;
         }
         
         switch (attrs->modulo) {
@@ -1465,7 +1561,11 @@ static ACVP_RESULT acvp_build_dsa_pqgver_register (JSON_Array *meth_array,
         default:
             break;
         }
-        acvp_build_dsa_hashalgs(new_cap_obj, temp_arr, attrs);
+        result = acvp_build_dsa_hashalgs(new_cap_obj, temp_arr, attrs);
+        if (result != ACVP_SUCCESS) {
+            return result;
+        }
+        
         attrs = attrs->next;
         json_array_append_value(meth_array, new_cap_val);
     }
@@ -1519,6 +1619,7 @@ static ACVP_RESULT acvp_build_dsa_keygen_register (JSON_Array *meth_array,
 static ACVP_RESULT acvp_build_dsa_siggen_register (JSON_Array *meth_array,
                                                    ACVP_CAPS_LIST *cap_entry) {
     ACVP_DSA_CAP_MODE *dsa_cap_mode = NULL;
+    ACVP_RESULT rv;
     ACVP_DSA_ATTRS *attrs = NULL;
     JSON_Value *new_cap_val = NULL;
     JSON_Object *new_cap_obj = NULL;
@@ -1546,7 +1647,10 @@ static ACVP_RESULT acvp_build_dsa_siggen_register (JSON_Array *meth_array,
         default:
             break;
         }
-        acvp_build_dsa_hashalgs(new_cap_obj, meth_array, attrs);
+        rv = acvp_build_dsa_hashalgs(new_cap_obj, meth_array, attrs);
+        if (rv != ACVP_SUCCESS) {
+            return rv;
+        }
         attrs = attrs->next;
         json_array_append_value(meth_array, new_cap_val);
     }
@@ -1558,6 +1662,7 @@ static ACVP_RESULT acvp_build_dsa_siggen_register (JSON_Array *meth_array,
 static ACVP_RESULT acvp_build_dsa_sigver_register (JSON_Array *meth_array,
                                                    ACVP_CAPS_LIST *cap_entry) {
     ACVP_DSA_CAP_MODE *dsa_cap_mode = NULL;
+    ACVP_RESULT rv;
     ACVP_DSA_ATTRS *attrs = NULL;
     JSON_Value *new_cap_val = NULL;
     JSON_Object *new_cap_obj = NULL;
@@ -1585,7 +1690,11 @@ static ACVP_RESULT acvp_build_dsa_sigver_register (JSON_Array *meth_array,
         default:
             break;
         }
-        acvp_build_dsa_hashalgs(new_cap_obj, meth_array, attrs);
+        rv = acvp_build_dsa_hashalgs(new_cap_obj, meth_array, attrs);
+        if (rv != ACVP_SUCCESS) {
+            return rv;
+        }
+        
         attrs = attrs->next;
         json_array_append_value(meth_array, new_cap_val);
     }
@@ -1599,6 +1708,9 @@ static ACVP_RESULT acvp_build_dsa_register_cap (JSON_Object *cap_obj, ACVP_CAPS_
     ACVP_RESULT result;
     JSON_Array *meth_array = NULL;
     
+    if (!cap_entry->cap.dsa_cap) {
+        return ACVP_NO_CAP;
+    }
     json_object_set_string(cap_obj, "algorithm", "DSA");
     
     switch (mode)
@@ -1736,6 +1848,9 @@ static ACVP_RESULT acvp_build_kas_ecc_register_cap (ACVP_CTX *ctx, JSON_Object *
     int set, curve;
     
     kas_ecc_cap = cap_entry->cap.kas_ecc_cap;
+    if (!kas_ecc_cap) {
+        return ACVP_NO_CAP;
+    }
     kas_ecc_mode = &kas_ecc_cap->kas_ecc_mode[i-1];
     if (kas_ecc_mode->prereq_vals) {
         json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
@@ -2038,6 +2153,8 @@ static ACVP_RESULT acvp_build_kas_ecc_register_cap (ACVP_CTX *ctx, JSON_Object *
             return ACVP_INVALID_ARG;
             break;
         }
+    } else {
+        return ACVP_MISSING_ARG;
     }
     return ACVP_SUCCESS;
 }
@@ -2115,6 +2232,9 @@ static ACVP_RESULT acvp_build_kas_ffc_register_cap (ACVP_CTX *ctx, JSON_Object *
     int set;
     
     kas_ffc_cap = cap_entry->cap.kas_ffc_cap;
+    if (!kas_ffc_cap) {
+        return ACVP_NO_CAP;
+    }
     kas_ffc_mode = &kas_ffc_cap->kas_ffc_mode[i-1];
     if (kas_ffc_mode->prereq_vals) {
         json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
@@ -2288,6 +2408,8 @@ static ACVP_RESULT acvp_build_kas_ffc_register_cap (ACVP_CTX *ctx, JSON_Object *
             return ACVP_INVALID_ARG;
             break;
         }
+    } else {
+        return ACVP_MISSING_ARG;
     }
     return ACVP_SUCCESS;
 }
@@ -2298,6 +2420,7 @@ static ACVP_RESULT acvp_build_kas_ffc_register_cap (ACVP_CTX *ctx, JSON_Object *
  * capabilities of the module under test.
  */
 ACVP_RESULT acvp_build_register (ACVP_CTX *ctx, char **reg) {
+    ACVP_RESULT rv = ACVP_SUCCESS;
     ACVP_CAPS_LIST *cap_entry;
     
     JSON_Value *reg_arry_val = NULL;
@@ -2327,6 +2450,11 @@ ACVP_RESULT acvp_build_register (ACVP_CTX *ctx, char **reg) {
     JSON_Object *dep_obj = NULL;
     JSON_Value *con_val = NULL;
     JSON_Object *con_obj = NULL;
+    
+    if (!ctx) {
+        ACVP_LOG_ERR("No ctx for build_register");
+        return ACVP_NO_CTX;
+    }
     
     /*
      * Start the registration array
@@ -2473,103 +2601,106 @@ ACVP_RESULT acvp_build_register (ACVP_CTX *ctx, char **reg) {
             case ACVP_TDES_CFB8:
             case ACVP_TDES_CFB1:
             case ACVP_TDES_KW:
-                acvp_build_sym_cipher_register_cap(cap_obj, cap_entry);
+                rv = acvp_build_sym_cipher_register_cap(cap_obj, cap_entry);
                 break;
             case ACVP_SHA1:
             case ACVP_SHA224:
             case ACVP_SHA256:
             case ACVP_SHA384:
             case ACVP_SHA512:
-                acvp_build_hash_register_cap(cap_obj, cap_entry);
+                rv = acvp_build_hash_register_cap(cap_obj, cap_entry);
                 break;
             case ACVP_HASHDRBG:
             case ACVP_HMACDRBG:
             case ACVP_CTRDRBG:
-                acvp_build_drbg_register_cap(cap_obj, cap_entry);
+                rv = acvp_build_drbg_register_cap(cap_obj, cap_entry);
                 break;
             case ACVP_HMAC_SHA1:
             case ACVP_HMAC_SHA2_224:
             case ACVP_HMAC_SHA2_256:
             case ACVP_HMAC_SHA2_384:
             case ACVP_HMAC_SHA2_512:
-                acvp_build_hmac_register_cap(cap_obj, cap_entry);
+                rv = acvp_build_hmac_register_cap(cap_obj, cap_entry);
                 break;
             case ACVP_CMAC_AES:
             case ACVP_CMAC_TDES:
-                acvp_build_cmac_register_cap(cap_obj, cap_entry);
+                rv = acvp_build_cmac_register_cap(cap_obj, cap_entry);
                 break;
             case ACVP_DSA_KEYGEN:
-                acvp_build_dsa_register_cap(cap_obj, cap_entry, ACVP_DSA_MODE_KEYGEN);
+                rv = acvp_build_dsa_register_cap(cap_obj, cap_entry, ACVP_DSA_MODE_KEYGEN);
                 break;
             case ACVP_DSA_PQGVER:
-                acvp_build_dsa_register_cap(cap_obj, cap_entry, ACVP_DSA_MODE_PQGVER);
+                rv = acvp_build_dsa_register_cap(cap_obj, cap_entry, ACVP_DSA_MODE_PQGVER);
                 break;
             case ACVP_DSA_PQGGEN:
-                acvp_build_dsa_register_cap(cap_obj, cap_entry, ACVP_DSA_MODE_PQGGEN);
+                rv = acvp_build_dsa_register_cap(cap_obj, cap_entry, ACVP_DSA_MODE_PQGGEN);
                 break;
             case ACVP_DSA_SIGGEN:
-                acvp_build_dsa_register_cap(cap_obj, cap_entry, ACVP_DSA_MODE_SIGGEN);
+                rv = acvp_build_dsa_register_cap(cap_obj, cap_entry, ACVP_DSA_MODE_SIGGEN);
                 break;
             case ACVP_DSA_SIGVER:
-                acvp_build_dsa_register_cap(cap_obj, cap_entry, ACVP_DSA_MODE_SIGVER);
+                rv = acvp_build_dsa_register_cap(cap_obj, cap_entry, ACVP_DSA_MODE_SIGVER);
                 break;
             case ACVP_RSA_KEYGEN:
-                acvp_build_rsa_keygen_register_cap(cap_obj, cap_entry);
+                rv = acvp_build_rsa_keygen_register_cap(cap_obj, cap_entry);
                 break;
             case ACVP_RSA_SIGGEN:
-                acvp_build_rsa_sig_register_cap(cap_obj, cap_entry);
-                break;
             case ACVP_RSA_SIGVER:
-                acvp_build_rsa_sig_register_cap(cap_obj, cap_entry);
+                rv = acvp_build_rsa_sig_register_cap(cap_obj, cap_entry);
                 break;
             case ACVP_ECDSA_KEYGEN:
             case ACVP_ECDSA_KEYVER:
             case ACVP_ECDSA_SIGGEN:
             case ACVP_ECDSA_SIGVER:
-                acvp_build_ecdsa_register_cap(cap_entry->cipher, cap_obj, cap_entry);
+                rv = acvp_build_ecdsa_register_cap(cap_entry->cipher, cap_obj, cap_entry);
                 break;
             case ACVP_KDF135_TLS:
-                acvp_build_kdf135_tls_register_cap(cap_obj, cap_entry);
+                rv = acvp_build_kdf135_tls_register_cap(cap_obj, cap_entry);
                 break;
             case ACVP_KDF135_SNMP:
-                acvp_build_kdf135_snmp_register_cap(cap_obj, cap_entry);
+                rv = acvp_build_kdf135_snmp_register_cap(cap_obj, cap_entry);
                 break;
             case ACVP_KDF135_SSH:
-                acvp_build_kdf135_ssh_register_cap(cap_obj, cap_entry);
+                rv = acvp_build_kdf135_ssh_register_cap(cap_obj, cap_entry);
                 break;
             case ACVP_KDF135_SRTP:
-                acvp_build_kdf135_srtp_register_cap(cap_obj, cap_entry);
+                rv = acvp_build_kdf135_srtp_register_cap(cap_obj, cap_entry);
                 break;
             case ACVP_KDF135_IKEV2:
-                acvp_build_kdf135_ikev2_register_cap(cap_obj, cap_entry);
+                rv = acvp_build_kdf135_ikev2_register_cap(cap_obj, cap_entry);
                 break;
             case ACVP_KDF135_IKEV1:
-                acvp_build_kdf135_ikev1_register_cap(cap_obj, cap_entry);
+                rv = acvp_build_kdf135_ikev1_register_cap(cap_obj, cap_entry);
                 break;
             case ACVP_KDF135_X963:
-                acvp_build_kdf135_x963_register_cap(cap_obj, cap_entry);
+                rv = acvp_build_kdf135_x963_register_cap(cap_obj, cap_entry);
                 break;
             case ACVP_KDF108:
-                acvp_build_kdf108_register_cap(cap_obj, cap_entry);
+                rv = acvp_build_kdf108_register_cap(cap_obj, cap_entry);
                 break;
             case ACVP_KAS_ECC_CDH:
-                acvp_build_kas_ecc_register_cap(ctx, cap_obj, cap_entry, ACVP_KAS_ECC_MODE_CDH);
+                rv = acvp_build_kas_ecc_register_cap(ctx, cap_obj, cap_entry, ACVP_KAS_ECC_MODE_CDH);
                 break;
             case ACVP_KAS_ECC_COMP:
-                acvp_build_kas_ecc_register_cap(ctx, cap_obj, cap_entry, ACVP_KAS_ECC_MODE_COMPONENT);
+                rv = acvp_build_kas_ecc_register_cap(ctx, cap_obj, cap_entry, ACVP_KAS_ECC_MODE_COMPONENT);
                 break;
             case ACVP_KAS_ECC_NOCOMP:
-                acvp_build_kas_ecc_register_cap(ctx, cap_obj, cap_entry, ACVP_KAS_ECC_MODE_NOCOMP);
+                rv = acvp_build_kas_ecc_register_cap(ctx, cap_obj, cap_entry, ACVP_KAS_ECC_MODE_NOCOMP);
                 break;
             case ACVP_KAS_FFC_COMP:
-                acvp_build_kas_ffc_register_cap(ctx, cap_obj, cap_entry, ACVP_KAS_FFC_MODE_COMPONENT);
+                rv = acvp_build_kas_ffc_register_cap(ctx, cap_obj, cap_entry, ACVP_KAS_FFC_MODE_COMPONENT);
                 break;
             case ACVP_KAS_FFC_NOCOMP:
-                acvp_build_kas_ffc_register_cap(ctx, cap_obj, cap_entry, ACVP_KAS_FFC_MODE_NOCOMP);
+                rv = acvp_build_kas_ffc_register_cap(ctx, cap_obj, cap_entry, ACVP_KAS_FFC_MODE_NOCOMP);
                 break;
             default:
                 ACVP_LOG_ERR("Cap entry not found, %d.", cap_entry->cipher);
                 return ACVP_NO_CAP;
+            }
+            
+            if (rv != ACVP_SUCCESS) {
+                ACVP_LOG_ERR("failed to build registration for cipher %s (%d)", acvp_lookup_cipher_name(cap_entry->cipher), rv);
+                return rv;
             }
             
             /*
@@ -2581,6 +2712,9 @@ ACVP_RESULT acvp_build_register (ACVP_CTX *ctx, char **reg) {
             /* Advance to next cap entry */
             cap_entry = cap_entry->next;
         }
+    } else {
+        ACVP_LOG_ERR("No capabilities added to ctx");
+        return ACVP_NO_CAP;
     }
     
     /*
