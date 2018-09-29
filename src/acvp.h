@@ -1380,6 +1380,9 @@ typedef struct acvp_test_case_t {
     } tc;
 } ACVP_TEST_CASE;
 
+/*
+ * lookup function for err strings is in acvp_util.c
+ */
 enum acvp_result {
     ACVP_SUCCESS = 0,
     ACVP_MALLOC_FAIL, /**< Error allocating memory */
@@ -1402,7 +1405,8 @@ enum acvp_result {
     ACVP_DUP_CIPHER,
     ACVP_TOTP_DECODE_FAIL,
     ACVP_TOTP_MISSING_SEED,
-    ACVP_RESULT_MAX,
+    ACVP_DUPLICATE_CTX,
+    ACVP_RESULT_MAX
 };
 
 /*! @brief acvp_enable_sym_cipher_cap() allows an application to specify a
@@ -2511,7 +2515,7 @@ ACVP_RESULT acvp_set_certkey (ACVP_CTX *ctx, char *cert_file, char *key_file);
     @param ctx Pointer to ACVP_CTX that was previously created by
         calling acvp_create_test_session.
  */
-void acvp_mark_as_sample (ACVP_CTX *ctx);
+ACVP_RESULT acvp_mark_as_sample (ACVP_CTX *ctx);
 
 /*! @brief acvp_register() registers the DUT with the ACVP server.
 

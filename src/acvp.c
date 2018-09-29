@@ -154,6 +154,10 @@ ACVP_RESULT acvp_create_test_session (ACVP_CTX **ctx,
     if (!ctx) {
         return ACVP_INVALID_ARG;
     }
+    if (*ctx) {
+        printf("Err: cannot initialize non-null ctx; clear ctx & set to NULL first");
+        return ACVP_DUPLICATE_CTX;
+    }
     *ctx = calloc(1, sizeof(ACVP_CTX));
     if (!*ctx) {
         return ACVP_MALLOC_FAIL;
@@ -171,6 +175,12 @@ ACVP_RESULT acvp_create_test_session (ACVP_CTX **ctx,
 
 ACVP_RESULT acvp_set_2fa_callback (ACVP_CTX *ctx, ACVP_RESULT (*totp_cb) (char **token))
 {
+    if (totp_cb == NULL) {
+        return ACVP_MISSING_ARG;
+    }
+    if (ctx == NULL) {
+        return ACVP_NO_CTX;
+    }
     ctx->totp_cb = totp_cb;
     return ACVP_SUCCESS;
 }
@@ -700,6 +710,8 @@ ACVP_RESULT acvp_free_test_session (ACVP_CTX *ctx) {
         }
         if (ctx->jwt_token) { free(ctx->jwt_token); }
         free(ctx);
+    } else {
+        ACVP_LOG_STATUS("No ctx to free");
     }
     return ACVP_SUCCESS;
 }
@@ -756,7 +768,7 @@ ACVP_RESULT acvp_set_json_filename (ACVP_CTX *ctx, const char *json_filename) {
     }
     if (!json_filename) {
         ACVP_LOG_ERR("Must provide value for JSON filename");
-        return ACVP_INVALID_ARG;
+        return ACVP_MISSING_ARG;
     }
     if (ctx->json_filename) { free(ctx->json_filename); }
     ctx->json_filename = strdup(json_filename);
@@ -782,16 +794,24 @@ ACVP_RESULT acvp_set_vendor_info (ACVP_CTX *ctx,
         ACVP_LOG_ERR("Must provide values for vendor info");
         return ACVP_INVALID_ARG;
     }
+    
+    if (strnlen(vendor_name, ACVP_SESSION_PARAMS_STR_LEN_MAX + 1) > ACVP_SESSION_PARAMS_STR_LEN_MAX ||
+        strnlen(vendor_url, ACVP_SESSION_PARAMS_STR_LEN_MAX + 1) > ACVP_SESSION_PARAMS_STR_LEN_MAX ||
+        strnlen(contact_name, ACVP_SESSION_PARAMS_STR_LEN_MAX + 1) > ACVP_SESSION_PARAMS_STR_LEN_MAX ||
+        strnlen(contact_email, ACVP_SESSION_PARAMS_STR_LEN_MAX + 1) > ACVP_SESSION_PARAMS_STR_LEN_MAX) {
+        ACVP_LOG_ERR("Vendor info string(s) too long");
+        return ACVP_INVALID_ARG;
+    }
 
     if (ctx->vendor_name) { free(ctx->vendor_name); }
     if (ctx->vendor_url) { free(ctx->vendor_url); }
     if (ctx->contact_name) { free(ctx->contact_name); }
     if (ctx->contact_email) { free(ctx->contact_email); }
 
-    ctx->vendor_name = strdup(vendor_name);
-    ctx->vendor_url = strdup(vendor_url);
-    ctx->contact_name = strdup(contact_name);
-    ctx->contact_email = strdup(contact_email);
+    ctx->vendor_name = strndup(vendor_name, ACVP_SESSION_PARAMS_STR_LEN_MAX);
+    ctx->vendor_url = strndup(vendor_url, ACVP_SESSION_PARAMS_STR_LEN_MAX);
+    ctx->contact_name = strndup(contact_name, ACVP_SESSION_PARAMS_STR_LEN_MAX);
+    ctx->contact_email = strndup(contact_email, ACVP_SESSION_PARAMS_STR_LEN_MAX);
 
     return ACVP_SUCCESS;
 }
@@ -808,16 +828,30 @@ ACVP_RESULT acvp_set_module_info (ACVP_CTX *ctx,
     if (!ctx) {
         return ACVP_NO_CTX;
     }
+    
+    if (!module_name || !module_type ||
+        !module_version || !module_description) {
+        ACVP_LOG_ERR("Must provide values for module info");
+        return ACVP_INVALID_ARG;
+    }
+    
+    if (strnlen(module_name, ACVP_SESSION_PARAMS_STR_LEN_MAX + 1) > ACVP_SESSION_PARAMS_STR_LEN_MAX ||
+        strnlen(module_type, ACVP_SESSION_PARAMS_STR_LEN_MAX + 1) > ACVP_SESSION_PARAMS_STR_LEN_MAX ||
+        strnlen(module_version, ACVP_SESSION_PARAMS_STR_LEN_MAX + 1) > ACVP_SESSION_PARAMS_STR_LEN_MAX ||
+        strnlen(module_description, ACVP_SESSION_PARAMS_STR_LEN_MAX + 1) > ACVP_SESSION_PARAMS_STR_LEN_MAX) {
+        ACVP_LOG_ERR("Module info string(s) too long");
+        return ACVP_INVALID_ARG;
+    }
 
     if (ctx->module_name) { free(ctx->module_name); }
     if (ctx->module_type) { free(ctx->module_type); }
     if (ctx->module_version) { free(ctx->module_version); }
     if (ctx->module_desc) { free(ctx->module_desc); }
 
-    ctx->module_name = strdup(module_name);
-    ctx->module_type = strdup(module_type);
-    ctx->module_version = strdup(module_version);
-    ctx->module_desc = strdup(module_description);
+    ctx->module_name = strndup(module_name, ACVP_SESSION_PARAMS_STR_LEN_MAX);
+    ctx->module_type = strndup(module_type, ACVP_SESSION_PARAMS_STR_LEN_MAX);
+    ctx->module_version = strndup(module_version, ACVP_SESSION_PARAMS_STR_LEN_MAX);
+    ctx->module_desc = strndup(module_description, ACVP_SESSION_PARAMS_STR_LEN_MAX);
 
     return ACVP_SUCCESS;
 }
@@ -830,13 +864,17 @@ ACVP_RESULT acvp_set_server (ACVP_CTX *ctx, char *server_name, int port) {
     if (!ctx) {
         return ACVP_NO_CTX;
     }
-    if (!server_name || !port) {
+    if (!server_name || port < 1) {
+        return ACVP_INVALID_ARG;
+    }
+    if (strnlen(server_name, ACVP_SESSION_PARAMS_STR_LEN_MAX + 1) > ACVP_SESSION_PARAMS_STR_LEN_MAX) {
+        ACVP_LOG_ERR("Server name string(s) too long");
         return ACVP_INVALID_ARG;
     }
     if (ctx->server_name) {
         free(ctx->server_name);
     }
-    ctx->server_name = strdup(server_name);
+    ctx->server_name = strndup(server_name, ACVP_SESSION_PARAMS_STR_LEN_MAX);
     ctx->server_port = port;
 
     return ACVP_SUCCESS;
@@ -853,8 +891,12 @@ ACVP_RESULT acvp_set_path_segment (ACVP_CTX *ctx, char *path_segment) {
     if (!path_segment) {
         return ACVP_INVALID_ARG;
     }
+    if (strnlen(path_segment, ACVP_SESSION_PARAMS_STR_LEN_MAX + 1) > ACVP_SESSION_PARAMS_STR_LEN_MAX) {
+        ACVP_LOG_ERR("Path segment string(s) too long");
+        return ACVP_INVALID_ARG;
+    }
     if (ctx->path_segment) { free(ctx->path_segment); }
-    ctx->path_segment = strdup(path_segment);
+    ctx->path_segment = strndup(path_segment, ACVP_SESSION_PARAMS_STR_LEN_MAX);
 
     return ACVP_SUCCESS;
 }
@@ -871,8 +913,18 @@ ACVP_RESULT acvp_set_cacerts (ACVP_CTX *ctx, char *ca_file) {
     if (!ctx) {
         return ACVP_NO_CTX;
     }
+    
+    if (!ca_file) {
+        return ACVP_MISSING_ARG;
+    }
+    
+    if (strnlen(ca_file, ACVP_SESSION_PARAMS_STR_LEN_MAX + 1) > ACVP_SESSION_PARAMS_STR_LEN_MAX) {
+        ACVP_LOG_ERR("CA filename is suspiciously long...");
+        return ACVP_INVALID_ARG;
+    }
+    
     if (ctx->cacerts_file) { free(ctx->cacerts_file); }
-    ctx->cacerts_file = strdup(ca_file);
+    ctx->cacerts_file = strndup(ca_file, ACVP_SESSION_PARAMS_STR_LEN_MAX);
 
     /*
      * Enable peer verification when CA certs are provided.
@@ -894,17 +946,30 @@ ACVP_RESULT acvp_set_certkey (ACVP_CTX *ctx, char *cert_file, char *key_file) {
     if (!ctx) {
         return ACVP_NO_CTX;
     }
+    
+    if (!cert_file || !key_file) {
+        return ACVP_MISSING_ARG;
+    }
+    if (strnlen(cert_file, ACVP_SESSION_PARAMS_STR_LEN_MAX + 1) > ACVP_SESSION_PARAMS_STR_LEN_MAX ||
+        strnlen(key_file, ACVP_SESSION_PARAMS_STR_LEN_MAX + 1) > ACVP_SESSION_PARAMS_STR_LEN_MAX) {
+        ACVP_LOG_ERR("CA filename is suspiciously long...");
+        return ACVP_INVALID_ARG;
+    }
     if (ctx->tls_cert) { free(ctx->tls_cert); }
-    ctx->tls_cert = strdup(cert_file);
+    ctx->tls_cert = strndup(cert_file, ACVP_SESSION_PARAMS_STR_LEN_MAX);
     if (ctx->tls_key) { free(ctx->tls_key); }
-    ctx->tls_key = strdup(key_file);
+    ctx->tls_key = strndup(key_file, ACVP_SESSION_PARAMS_STR_LEN_MAX);
 
     return ACVP_SUCCESS;
 }
 
 
-void acvp_mark_as_sample (ACVP_CTX *ctx) {
+ACVP_RESULT acvp_mark_as_sample (ACVP_CTX *ctx) {
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
     ctx->is_sample = 1;
+    return ACVP_SUCCESS;
 }
 
 /*
@@ -914,7 +979,7 @@ void acvp_mark_as_sample (ACVP_CTX *ctx) {
  * a TOTP.
  */
 static ACVP_RESULT acvp_build_login (ACVP_CTX *ctx, char **login, int refresh) {
-
+    ACVP_RESULT rv = ACVP_SUCCESS;
     JSON_Value *reg_arry_val = NULL;
     JSON_Value *ver_val = NULL;
     JSON_Object *ver_obj = NULL;
@@ -941,6 +1006,11 @@ static ACVP_RESULT acvp_build_login (ACVP_CTX *ctx, char **login, int refresh) {
     pw_obj = json_value_get_object(pw_val);
 
     ctx->totp_cb(&token);
+    if (strnlen(token, ACVP_TOTP_TOKEN_MAX + 1) > ACVP_TOTP_TOKEN_MAX) {
+        ACVP_LOG_ERR("totp cb generated a token that is too long");
+        rv = ACVP_INVALID_ARG;
+        goto end;
+    }
 
     json_object_set_string(pw_obj, "password", token);
 
@@ -949,11 +1019,11 @@ static ACVP_RESULT acvp_build_login (ACVP_CTX *ctx, char **login, int refresh) {
     }
     json_array_append_value(reg_arry, pw_val);
 
-
+end:
     *login = json_serialize_to_string_pretty(reg_arry_val);
     free(token);
     json_value_free(reg_arry_val);
-    return ACVP_SUCCESS;
+    return rv;
 }
 
 /*
@@ -1034,6 +1104,8 @@ ACVP_RESULT acvp_register (ACVP_CTX *ctx) {
     if (rv == ACVP_SUCCESS) {
         ACVP_LOG_STATUS("200 OK %s", ctx->reg_buf);
         rv = acvp_parse_register(ctx);
+    } else {
+        ACVP_LOG_ERR("Failed to send registration, err=%d, %s", rv, acvp_lookup_error_string(rv));
     }
 
     json_free_serialized_string(reg);
@@ -1273,7 +1345,7 @@ ACVP_RESULT acvp_process_tests (ACVP_CTX *ctx) {
  * This allows the server time to generate the vectors on behalf of
  * the client.
  */
-ACVP_RESULT acvp_retry_handler (ACVP_CTX *ctx, unsigned int retry_period) {
+static ACVP_RESULT acvp_retry_handler (ACVP_CTX *ctx, unsigned int retry_period) {
     ACVP_LOG_STATUS("200 OK KAT values not ready, server requests we wait and try again...");
     if (retry_period <= 0 || retry_period > ACVP_RETRY_TIME_MAX) {
         retry_period = ACVP_RETRY_TIME_MAX;
@@ -1329,6 +1401,10 @@ ACVP_RESULT acvp_check_test_results (ACVP_CTX *ctx) {
 
 ACVP_RESULT acvp_refresh (ACVP_CTX *ctx)
 {
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+    
     char *login = NULL;
     ACVP_RESULT rv;
 

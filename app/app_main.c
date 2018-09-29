@@ -666,7 +666,7 @@ static int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
 int main(int argc, char **argv) {
     ACVP_RESULT rv;
     int ret = 1; /* return code for main function */
-    ACVP_CTX *ctx;
+    ACVP_CTX *ctx = NULL;
     char ssl_version[10];
     APP_CONFIG cfg = {0};
 
@@ -695,7 +695,7 @@ int main(int argc, char **argv) {
      */
     rv = acvp_create_test_session(&ctx, &progress, cfg.level);
     if (rv != ACVP_SUCCESS) {
-        printf("Failed to create ACVP context\n");
+        printf("Failed to create ACVP context: %s\n", acvp_lookup_error_string(rv));
         goto end;
     }
 
