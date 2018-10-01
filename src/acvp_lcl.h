@@ -29,7 +29,7 @@
 #include "parson.h"
 
 #define ACVP_VERSION    "0.4"
-#define ACVP_LIBRARY_VERSION    "1.0.0"
+#define ACVP_LIBRARY_VERSION    "libacvp-1.0.0"
 
 #ifndef ACVP_LOG_INFO
 #ifdef WIN32
