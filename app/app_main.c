@@ -4150,8 +4150,7 @@ static ACVP_RESULT app_dsa_handler(ACVP_TEST_CASE *test_case)
             dsa->p = BN_dup(p);
             dsa->q = BN_dup(q);
 #else
-            DSA_set0_pqg(dsa, (const BIGNUM **)&p,
-                     (const BIGNUM **)&q, (const BIGNUM **)&g);
+            DSA_set0_pqg(dsa, p, q, g);
 #endif
             L = tc->l;
             N = tc->n;
@@ -4525,8 +4524,7 @@ static ACVP_RESULT app_kas_ffc_handler(ACVP_TEST_CASE *test_case)
     dh->q = BN_dup(q);
     dh->g = BN_dup(g);
 #else
-    DH_set0_pqg(dh, (const BIGNUM **)&p,
-                (const BIGNUM **)&q, (const BIGNUM **)&g);
+    DH_set0_pqg(dh, p, q, g);
 #endif
 
     if (tc->test_type == ACVP_KAS_FFC_TT_VAL) {
@@ -4543,8 +4541,7 @@ static ACVP_RESULT app_kas_ffc_handler(ACVP_TEST_CASE *test_case)
         dh->pub_key = BN_dup(pub_key);
         dh->priv_key = BN_dup(priv_key);
 #else
-        DH_set0_key(dh, (const BIGNUM **)&pub_key,
-                (const BIGNUM **)&priv_key);
+        DH_set0_key(dh, pub_key, priv_key);
 #endif
     }
 
@@ -5051,7 +5048,7 @@ static ACVP_RESULT app_rsa_sig_handler(ACVP_TEST_CASE *test_case)
         rsa->e = BN_dup(e);
         rsa->n = BN_dup(n);
 #else
-        RSA_set0_key(rsa, (const BIGNUM **)&n, (const BIGNUM **)&e, NULL);
+        RSA_set0_key(rsa, n, e, NULL);
 #endif
 
         tc->ver_disposition = FIPS_rsa_verify(rsa, tc->msg, tc->msg_len, tc_md, pad_mode, salt_len, NULL, tc->signature, tc->sig_len);
