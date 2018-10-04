@@ -9,7 +9,8 @@
         The ACVP specification is a work-in-progress and can be found at
         https://github.com/usnistgov/ACVP
 
-Upcoming Changes!
+
+Recent Changes!
     
     The library API has been updated as of **August 2018** to store hex buffers
     as their equivalent byte arrays. This simplifies the responsibilities of
@@ -19,15 +20,15 @@ Upcoming Changes!
     expect the application to populate result attributes as byte arrays and to
     fill in the corresponding length attribute. For examples, see app/app_main.c.
 
-
 Overview
 
-    libacvp is a client-side ACVP implementation.  This library currently
-    has two dependencies: libcurl and parson.  Curl is used for sending
-    REST calls to the ACVP server.  Parson is used to parse and generate
-    JSON data for the REST calls.  The parson code is included and compiled
-    as part of libacvp.  libcurl is not included, and must be installed
-    separately on your Linux host, including the Curl header files.
+    libacvp is a client-side ACVP reference implementation.  This library 
+    currently has three dependencies: openssl, libcurl and parson.  Curl is
+    used for sending REST calls to the ACVP server.  Parson is used to parse
+    and generate JSON data for the REST calls.  Openssl is used for TLS
+    transport by libcurl. The parson code is included and compiled as part
+    of libacvp.  libcurl, libssl and libcrypto are not included, and must
+    be installed separately on your build host, including the header files.
 
     This code uses features in OpenSSL 1.0.2, but not present in OpenSSL 1.0.1.
     Many Linux distros still ship with OpenSSL 1.0.1.  Under this situation
@@ -40,30 +41,32 @@ Overview
     download the Curl source, compile it against the OpenSSL 1.0.2
     header files, and link libcurl against OpenSSL 1.0.2.  OpenSSL 1.0.2
     is used for AES keywrap support, which isn't available in OpenSSL 1.0.1.
+    libacvp can also be used with 1.1.X versions of openssl and have compile
+    time checks to address differences in the API.
 
     libacvp will register with the ACVP server, advertising capabilities to
-    the server.  Currently only AES-GCM is supported.  The server will
-    respond with a list of vector set identifiers that need to be
-    processed.  libacvp will download each vector set, process the vectors,
-    and send the results back to the server.
+    the server.  The server will respond with a list of vector set identifiers
+    that need to be processed.  libacvp will download each vector set, process
+    the vectors, and send the results back to the server.  This is performed
+    realtime. If non-realtime support is required the library will require
+    enhancing.
 
     The app directory contains a sample application that uses libacvp.  The software
-    that uses libacvp for crypto validation will be responsible for writing
-    a similar app for their platform.  acvp_app is only provided here for
-    unit testing and demonstrating how to use libacvp.  The application
-    layer (acvp_app.c) is required to provide the crypto module that will
-    be FIPS validated.  In this example it uses OpenSSL, which introduces
-    libcrypto.so as a new dependency when compiling the app.  The OpenSSL
-    development package needs to be installed on your Linux system.
+    that uses libacvp for crypto testing may require additional enhancements
+    or a new app depending on the crypto under test.  acvp_app is only provided
+    here for unit testing and demonstrating how to use libacvp.  The application
+    layer (app_main.c) is required to interface with the crypto module that will
+    be tested.  In this example it uses OpenSSL, which introduces libcrypto.so as
+    the module under test.  The OpenSSL development package needs to be installed
+    on your Linux system.
 
-    There is also a FOM Makefile which provides an example on how a
-    standalone module could be tested.  In this case it uses the openssl
-    FOM canister.  The FOM canister has a few algorithms that can only
-    be tested when not running in a final product, and they are compiled
-    in using -DACVP_NO_RUNTIME. These algorithms can be tested under this
-    configuration. The FOM build also requires the path to the canister
-    header files and object which is defined using the environment
-    variable MODULE_ROOT.
+    The library also provides an example on how a standalone module could be
+    tested.  In this case it uses the openssl FOM canister.  The FOM canister
+    has a few algorithms that can only be tested when not running in a final
+    product, These algorithms can be tested under this configuration. The FOM
+    build also requires the path to the canister header files and object which
+    is defined in the configure command line for no runtime shown below which
+    automatically adds the compile time flag -DACVP_NO_RUNTIME.
 
     The certs directory contains the certificates used to establish a TLS
     session with well-known ACVP servers.  libacvp requires one or more
@@ -78,26 +81,40 @@ Overview
     dependency.  This may be useful for target platforms that don't support
     Curl, such as Android or iOS.  Murl is a "minimal" Curl implementation.
     It implements a handful of the Curl API entry points used by libacvp.
-    The Murl code is currently in an experimental stage.
+    The Murl code is currently in an experimental stage and is not supported
+    or maintained as part of libacvp and should not be used in any
+    production environment.
 
 
 Building
-
-    IMPORTANT: The example client application has placeholders for some
-    vector processing handlers that are not currently supported in OpenSSL,
-    namely KDFs, RSA key generation, and TDES CTR. The respective handlers
-    have skeleton code and are marked with a comment "IMPORTANT: ...".
-    You will have to fill these in with your crypto module's API in order
-    for vector tests to pass.
 
     Dependencies:
         libacvp is dependent on autotools, gcc, make, curl (or substitution) and
         openssl (or substitution)
 
-    To build:
+    To build for runtime testing:
         ./configure --with-ssl-dir=<path to ssl dir> --with-libcurl-dir=<path to curl dir>
+        make clean
         make
         make install
+
+    To build for no runtime testing:
+        ./configure --with-ssl-dir=<path to ssl dir> --with-libcurl-dir=<path to curl dir> --with-fom_dir=<path to where FOM is installed>
+        make clean
+        make
+        make install
+
+    Cross compiles also require environment variables options --build and --host, 
+    for example:
+        export CROSS_COMPILE=powerpc-buildroot-linux-uclibc
+        Your $PATH must contain a path the gcc
+        ./configure --build=<local target prefix> --host=<gcc prefix of target host> --with-ssl-dir=<path to ssl dir> --with-libcurl-dir=<path to curl dir>
+
+  
+     exmaple with build and host information:
+        ./configure --build=<localx86_64-unknown-linux-gnu --host=mips64-octeon-linux-gnu --with-ssl-dir=<path to ssl dir> --with-libcurl-dir=<path to curl dir>
+
+    All dependent libraries must have been built with the same cross compile.
 
     To run:
         1. export LD_LIBRARY_PATH=<path to ssl lib>
