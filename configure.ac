@@ -26,6 +26,7 @@ AM_PROG_CC_C_O
 AM_PROG_AR
 LT_INIT
 # We can add more checks in this section
+AC_CANONICAL_HOST
 
 AC_ARG_WITH([ssl-dir],
 	    [AS_HELP_STRING([--with-ssl-dir],
@@ -35,7 +36,23 @@ AC_ARG_WITH([ssl-dir],
 AC_SUBST([SSL_CFLAGS], "$ssldir/include")
 AC_SUBST([SSL_LDFLAGS], "$ssldir/lib")
 
-CFLAGS="$CFLAGS -Wall -z,noexecstack -fstack-protector-all -D_FORTIFY_SOURCE=2 -I$ssldir/include"
+CFLAGS="$CFLAGS -Wall -fstack-protector-all -D_FORTIFY_SOURCE=2 -I$ssldir/include"
+
+##
+# OSX doesn't need/support -z,noexecstack
+# only add if running on linux
+##
+gcc_z_support=no
+case "${host_os}" in
+    linux*)
+        gcc_z_support=yes
+        ;;
+esac
+
+AS_IF(
+    [test "$gcc_z_support" = "yes"],
+    [[CFLAGS="$CFLAGS -z,noexecstack"]])
+
 LDFLAGS="$LDFLAGS -L$ssldir/lib"
 if test "$is_freebsd" = "1" ; then
 AC_CHECK_LIB([crypto], [EVP_EncryptInit], [],

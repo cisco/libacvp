@@ -12087,7 +12087,23 @@ SSL_CFLAGS="$ssldir/include"
 SSL_LDFLAGS="$ssldir/lib"
 
 
-CFLAGS="$CFLAGS -Wall -z,noexecstack -fstack-protector-all -D_FORTIFY_SOURCE=2 -I$ssldir/include"
+CFLAGS="$CFLAGS -Wall -fstack-protector-all -D_FORTIFY_SOURCE=2 -I$ssldir/include"
+
+##
+# OSX doesn't need/support -z,noexecstack
+# only add if running on linux
+##
+gcc_z_support=no
+case "${host_os}" in
+    linux*)
+        gcc_z_support=yes
+        ;;
+esac
+
+if test "$gcc_z_support" = "yes"; then :
+  CFLAGS="$CFLAGS -z,noexecstack"
+fi
+
 LDFLAGS="$LDFLAGS -L$ssldir/lib"
 if test "$is_freebsd" = "1" ; then
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for EVP_EncryptInit in -lcrypto" >&5
