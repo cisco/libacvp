@@ -617,26 +617,25 @@ static ACVP_RESULT acvp_validate_kdf135_ssh_param_value (ACVP_KDF135_SSH_METHOD 
 static ACVP_RESULT acvp_validate_kdf135_srtp_param_value (ACVP_KDF135_SRTP_PARAM param, int value) {
     ACVP_RESULT retval = ACVP_INVALID_ARG;
     
-    if ((param > ACVP_SRTP_PARAM_MIN) && (param < ACVP_SRTP_PARAM_MAX)) {
-        switch (param) {
-        case ACVP_SRTP_AES_KEYLEN:
-            if (value == 128 ||
-                value == 192 ||
-                value == 256) {
-                retval = ACVP_SUCCESS;
-            }
-            break;
-        case ACVP_SRTP_SUPPORT_ZERO_KDR:
-            retval = is_valid_tf_param(value);
-            break;
-        case ACVP_SRTP_KDF_EXPONENT:
-            if (value >= 1 && value <= 24) {
-                retval = ACVP_SUCCESS;
-            }
-            break;
-        default:
-            break;
+    switch (param) {
+    case ACVP_SRTP_AES_KEYLEN:
+        if (value == 128 ||
+            value == 192 ||
+            value == 256) {
+            retval = ACVP_SUCCESS;
         }
+        break;
+    case ACVP_SRTP_SUPPORT_ZERO_KDR:
+        retval = is_valid_tf_param(value);
+        break;
+    case ACVP_SRTP_KDF_EXPONENT:
+        if (value >= 1 && value <= 24) {
+            retval = ACVP_SUCCESS;
+        }
+        break;
+    default:
+        // Invalid
+        break;
     }
     return retval;
 }
@@ -2115,15 +2114,6 @@ ACVP_RESULT acvp_enable_drbg_cap_parm (ACVP_CTX *ctx,
         return ACVP_NO_CTX;
     }
     
-    switch (cipher) {
-    case ACVP_HASHDRBG:
-    case ACVP_HMACDRBG:
-    case ACVP_CTRDRBG:
-        break;
-    default:
-        return ACVP_INVALID_ARG;
-    }
-    
     /*
      * Locate this cipher in the caps array
      */
@@ -2308,6 +2298,7 @@ ACVP_RESULT acvp_enable_rsa_keygen_cap_parm (ACVP_CTX *ctx,
     case ACVP_RAND_PQ:
     case ACVP_FIXED_PUB_EXP_VAL:
         ACVP_LOG_ERR("Use acvp_enable_rsa_keygen_mode() or acvp_enable_rsa_keygen_exp_parm() API to enable a new randPQ or exponent.");
+        break;
     default:
         rv = ACVP_INVALID_ARG;
         break;
@@ -2949,16 +2940,6 @@ ACVP_RESULT acvp_enable_ecdsa_cap_parm (ACVP_CTX *ctx,
     int curve = 0;
     ACVP_NAME_LIST *current_curve, *current_secret_mode, *current_hash;
     ACVP_ECDSA_CAP *cap;
-    
-    switch(cipher) {
-    case ACVP_ECDSA_KEYGEN:
-    case ACVP_ECDSA_KEYVER:
-    case ACVP_ECDSA_SIGGEN:
-    case ACVP_ECDSA_SIGVER:
-        break;
-    default:
-        return ACVP_INVALID_ARG;
-    }
     
     cap_list = acvp_locate_cap_entry(ctx, cipher);
     if (!cap_list) {

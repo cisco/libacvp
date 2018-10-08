@@ -40,7 +40,7 @@
  */
 static ACVP_RESULT acvp_kas_ffc_output_comp_tc (ACVP_CTX *ctx, ACVP_KAS_FFC_TC *stc,
                                                JSON_Object *tc_rsp) {
-    ACVP_RESULT rv;
+    ACVP_RESULT rv = ACVP_SUCCESS;
     char *tmp = NULL;
 
     tmp = calloc(ACVP_KAS_FFC_MAX_STR+1, sizeof(char));
@@ -55,28 +55,28 @@ static ACVP_RESULT acvp_kas_ffc_output_comp_tc (ACVP_CTX *ctx, ACVP_KAS_FFC_TC *
         } else {
             json_object_set_string(tc_rsp, "result", "fail");
         }
-        return ACVP_SUCCESS;
+        goto end;
     }
     
     memset(tmp, 0x0, ACVP_KAS_FFC_MAX_STR);
     rv = acvp_bin_to_hexstr(stc->piut, stc->piutlen, tmp, ACVP_KAS_FFC_MAX_STR);
     if (rv != ACVP_SUCCESS) {
-        free(tmp);
         ACVP_LOG_ERR("hex conversion failure (Z)");
-        return rv;
+        goto end;
     }
     json_object_set_string(tc_rsp, "ephemeralPublicIut", tmp);
 
     memset(tmp, 0x0, ACVP_KAS_FFC_MAX_STR);
     rv = acvp_bin_to_hexstr(stc->chash, stc->chashlen, tmp, ACVP_KAS_FFC_MAX_STR);
     if (rv != ACVP_SUCCESS) {
-        free(tmp);
         ACVP_LOG_ERR("hex conversion failure (Z)");
-        return rv;
+        goto end;
     }
     json_object_set_string(tc_rsp, "hashZIut", tmp);
 
-    free(tmp);
+end:
+    if (tmp) free(tmp);
+
     return rv;
 }
 

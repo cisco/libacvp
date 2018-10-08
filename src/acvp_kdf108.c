@@ -55,7 +55,8 @@ static ACVP_RESULT acvp_kdf108_output_tc (ACVP_CTX *ctx,
     if (stc->key_out_len > ACVP_KDF108_KEYOUT_BYTE_MAX) {
         ACVP_LOG_ERR("stc->key_out_len > ACVP_KDF108_KEYOUT_BYTE_MAX(%u)",
                      ACVP_KDF108_KEYOUT_BYTE_MAX);
-        return ACVP_INVALID_ARG;
+        rv = ACVP_INVALID_ARG;
+        goto end;
     }
 
     rv = acvp_bin_to_hexstr(stc->key_out, stc->key_out_len,
@@ -80,7 +81,8 @@ static ACVP_RESULT acvp_kdf108_output_tc (ACVP_CTX *ctx,
     if (stc->fixed_data_len > ACVP_KDF108_FIXED_DATA_BYTE_MAX) {
         ACVP_LOG_ERR("stc->fixed_data_len > ACVP_KDF108_FIXED_DATA_BYTE_MAX(%u)",
                      ACVP_KDF108_FIXED_DATA_BYTE_MAX);
-        return ACVP_INVALID_ARG;
+        rv = ACVP_INVALID_ARG;
+        goto end;
     }
 
     rv = acvp_bin_to_hexstr(stc->fixed_data, stc->fixed_data_len,

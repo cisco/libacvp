@@ -71,7 +71,7 @@ static ACVP_RESULT acvp_hash_mct_iterate_tc (ACVP_CTX *ctx, ACVP_HASH_TC *stc, i
  * the JSON processing for a single test case for MCT.
  */
 static ACVP_RESULT acvp_hash_output_mct_tc (ACVP_CTX *ctx, ACVP_HASH_TC *stc, JSON_Object *r_tobj) {
-    ACVP_RESULT rv;
+    ACVP_RESULT rv = ACVP_SUCCESS;
     char *tmp = NULL;
 
     tmp = calloc(1, ACVP_HASH_MD_STR_MAX + 1);
@@ -82,13 +82,14 @@ static ACVP_RESULT acvp_hash_output_mct_tc (ACVP_CTX *ctx, ACVP_HASH_TC *stc, JS
     rv = acvp_bin_to_hexstr(stc->md, stc->md_len, tmp, ACVP_HASH_MD_STR_MAX);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("hex conversion failure (md)");
-        return rv;
+        goto end;
     }
     json_object_set_string(r_tobj, "md", tmp);
 
-    free(tmp);
+end:
+    if (tmp) free(tmp);
 
-    return ACVP_SUCCESS;
+    return rv;
 }
 
 /*
@@ -435,7 +436,7 @@ ACVP_RESULT acvp_hash_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
  * the JSON processing for a single test case.
  */
 static ACVP_RESULT acvp_hash_output_tc (ACVP_CTX *ctx, ACVP_HASH_TC *stc, JSON_Object *tc_rsp) {
-    ACVP_RESULT rv;
+    ACVP_RESULT rv = ACVP_SUCCESS;
     char *tmp = NULL;
 
     tmp = calloc(ACVP_HASH_MD_STR_MAX + 1, sizeof(char));
@@ -447,13 +448,14 @@ static ACVP_RESULT acvp_hash_output_tc (ACVP_CTX *ctx, ACVP_HASH_TC *stc, JSON_O
     rv = acvp_bin_to_hexstr(stc->md, stc->md_len, tmp, ACVP_HASH_MD_STR_MAX);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("hex conversion failure (msg)");
-        return rv;
+        goto end;
     }
     json_object_set_string(tc_rsp, "md", tmp);
 
-    free(tmp);
+end:
+    if (tmp) free(tmp);
 
-    return ACVP_SUCCESS;
+    return rv;
 }
 
 static ACVP_RESULT acvp_hash_init_tc (ACVP_CTX *ctx,

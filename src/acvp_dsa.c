@@ -397,7 +397,7 @@ static ACVP_RESULT acvp_dsa_pqggen_init_tc (ACVP_CTX *ctx,
  * the JSON processing for a single test case.
  */
 static ACVP_RESULT acvp_dsa_output_tc (ACVP_CTX *ctx, ACVP_DSA_TC *stc, JSON_Object *r_tobj) {
-    ACVP_RESULT rv;
+    ACVP_RESULT rv = ACVP_SUCCESS;
     char *tmp = NULL;
 
     switch (stc->mode) {
@@ -444,7 +444,7 @@ static ACVP_RESULT acvp_dsa_output_tc (ACVP_CTX *ctx, ACVP_DSA_TC *stc, JSON_Obj
             rv = acvp_bin_to_hexstr(stc->seed, stc->seedlen, tmp, ACVP_DSA_SEED_MAX);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("hex conversion failure (p)");
-                return rv;
+                goto err;
             }
             json_object_set_string(r_tobj, "domainSeed", tmp);
             json_object_set_number(r_tobj, "counter", stc->counter);
@@ -569,8 +569,9 @@ static ACVP_RESULT acvp_dsa_output_tc (ACVP_CTX *ctx, ACVP_DSA_TC *stc, JSON_Obj
     }
 
 err:
-    free(tmp);
-    return ACVP_SUCCESS;
+    if (tmp) free(tmp);
+
+    return rv;
 }
 
 /*
@@ -762,18 +763,6 @@ ACVP_RESULT acvp_dsa_pqggen_handler (ACVP_CTX *ctx, ACVP_TEST_CASE tc, ACVP_CAPS
         ACVP_LOG_INFO("            tcId: %d", tc_id);
         if (gen_g) {
             if (!strncmp((char *) gen_g, "canonical", 9)) {
-                p = (char *) json_object_get_string(testobj, "p");
-                if (!p) {
-                    ACVP_LOG_ERR("Failed to include p. ");
-                    return ACVP_MISSING_ARG;
-                }
-
-                q = (char *) json_object_get_string(testobj, "q");
-                if (!q) {
-                    ACVP_LOG_ERR("Failed to include q. ");
-                    return ACVP_MISSING_ARG;
-                }
-
                 seed = (char *) json_object_get_string(testobj, "domainSeed");
                 if (!seed) {
                     ACVP_LOG_ERR("Failed to include domainSeed. ");
@@ -787,46 +776,41 @@ ACVP_RESULT acvp_dsa_pqggen_handler (ACVP_CTX *ctx, ACVP_TEST_CASE tc, ACVP_CAPS
                 }
 
                 gpq = ACVP_DSA_CANONICAL;
-                ACVP_LOG_INFO("               p: %s", p);
-                ACVP_LOG_INFO("               q: %s", q);
+
                 ACVP_LOG_INFO("            seed: %s", seed);
                 ACVP_LOG_INFO("           index: %s", index);
-            }
-        }
-
-        /* find the mode */
-        if (gen_g) {
-            if (!strncmp((char *) gen_g, "unverifiable", 12)) {
-                p = (char *) json_object_get_string(testobj, "p");
-                if (!p) {
-                    ACVP_LOG_ERR("Failed to include p. ");
-                    return ACVP_MISSING_ARG;
-                }
-
-                q = (char *) json_object_get_string(testobj, "q");
-                if (!q) {
-                    ACVP_LOG_ERR("Failed to include q. ");
-                    return ACVP_MISSING_ARG;
-                }
-
+            } else if (!strncmp((char *) gen_g, "unverifiable", 12)) {
                 gpq = ACVP_DSA_UNVERIFIABLE;
-                ACVP_LOG_INFO("               p: %s", p);
-                ACVP_LOG_INFO("               q: %s", q);
+            } else {
+                ACVP_LOG_ERR("Server JSON invalid 'genG'");
+                return ACVP_INVALID_ARG;
             }
+
+            p = (char *) json_object_get_string(testobj, "p");
+            if (!p) {
+                ACVP_LOG_ERR("Failed to include p. ");
+                return ACVP_MISSING_ARG;
+            }
+
+            q = (char *) json_object_get_string(testobj, "q");
+            if (!q) {
+                ACVP_LOG_ERR("Failed to include q. ");
+                return ACVP_MISSING_ARG;
+            }
+
+            ACVP_LOG_INFO("               p: %s", p);
+            ACVP_LOG_INFO("               q: %s", q);
         }
+
         if (gen_pq) {
             if (!strncmp((char *) gen_pq, "probable", 8)) {
                 gpq = ACVP_DSA_PROBABLE;
-            }
-        }
-        if (gen_pq) {
-            if (!strncmp((char *) gen_pq, "provable", 8)) {
+            } else if (!strncmp((char *) gen_pq, "provable", 8)) {
                 gpq = ACVP_DSA_PROVABLE;
+            } else {
+                ACVP_LOG_ERR("Server JSON invalid 'genPQ'");
+                return ACVP_INVALID_ARG;
             }
-        }
-        if (gpq == 0) {
-            ACVP_LOG_ERR("Failed to include valid gen_pq. ");
-            return ACVP_UNSUPPORTED_OP;
         }
 
         /*

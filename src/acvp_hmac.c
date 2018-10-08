@@ -80,7 +80,7 @@ static ACVP_RESULT acvp_hmac_init_tc (ACVP_CTX *ctx,
  * the JSON processing for a single test case.
  */
 static ACVP_RESULT acvp_hmac_output_tc (ACVP_CTX *ctx, ACVP_HMAC_TC *stc, JSON_Object *tc_rsp) {
-    ACVP_RESULT rv;
+    ACVP_RESULT rv = ACVP_SUCCESS;
     char *tmp = NULL;
 
     tmp = calloc(ACVP_HMAC_MAC_MAX+1, sizeof(char));
@@ -92,13 +92,14 @@ static ACVP_RESULT acvp_hmac_output_tc (ACVP_CTX *ctx, ACVP_HMAC_TC *stc, JSON_O
     rv = acvp_bin_to_hexstr(stc->mac, stc->mac_len, tmp, ACVP_HMAC_MAC_MAX);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("hex conversion failure (mac)");
-        return rv;
+        goto end;
     }
     json_object_set_string(tc_rsp, "mac", tmp);
 
-    free(tmp);
+end:
+    if (tmp) free(tmp);
 
-    return ACVP_SUCCESS;
+    return rv;
 }
 
 /*
@@ -115,7 +116,7 @@ static ACVP_RESULT acvp_hmac_release_tc (ACVP_HMAC_TC *stc) {
 }
 
 ACVP_RESULT acvp_hmac_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
-    unsigned int tc_id, msglen, keylen, maclen;
+    unsigned int tc_id = 0, msglen = 0, keylen = 0, maclen = 0;
     char *msg = NULL, *key = NULL;
     JSON_Value *groupval;
     JSON_Object *groupobj = NULL;
@@ -302,9 +303,6 @@ ACVP_RESULT acvp_hmac_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
              * TODO: this does mallocs, we can probably do the mallocs once for
              *       the entire vector set to be more efficient
              */
-            if (msglen == 0) {
-                msglen = strnlen((const char *) msg, ACVP_HMAC_MSG_MAX) / 2;
-            }
             acvp_hmac_init_tc(ctx, &stc, tc_id, msglen, msg, maclen, keylen, key, alg_id);
 
             /* Process the current test vector... */
