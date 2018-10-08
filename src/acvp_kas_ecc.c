@@ -40,7 +40,7 @@
  */
 static ACVP_RESULT acvp_kas_ecc_output_cdh_tc (ACVP_CTX *ctx, ACVP_KAS_ECC_TC *stc,
                                                JSON_Object *tc_rsp) {
-    ACVP_RESULT rv;
+    ACVP_RESULT rv = ACVP_SUCCESS;
     char *tmp = NULL;
 
     tmp = calloc(ACVP_KAS_ECC_MAX_STR+1, sizeof(char));
@@ -52,7 +52,7 @@ static ACVP_RESULT acvp_kas_ecc_output_cdh_tc (ACVP_CTX *ctx, ACVP_KAS_ECC_TC *s
     rv = acvp_bin_to_hexstr(stc->pix, stc->pixlen, tmp, ACVP_KAS_ECC_MAX_STR);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("hex conversion failure (pix)");
-        return rv;
+        goto end;
     }
     json_object_set_string(tc_rsp, "publicIutX", tmp);
     
@@ -60,7 +60,7 @@ static ACVP_RESULT acvp_kas_ecc_output_cdh_tc (ACVP_CTX *ctx, ACVP_KAS_ECC_TC *s
     rv = acvp_bin_to_hexstr(stc->piy, stc->piylen, tmp, ACVP_KAS_ECC_MAX_STR);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("hex conversion failure (piy)");
-        return rv;
+        goto end;
     }
     json_object_set_string(tc_rsp, "publicIutY", tmp);
 
@@ -68,10 +68,13 @@ static ACVP_RESULT acvp_kas_ecc_output_cdh_tc (ACVP_CTX *ctx, ACVP_KAS_ECC_TC *s
     rv = acvp_bin_to_hexstr(stc->z, stc->zlen, tmp, ACVP_KAS_ECC_MAX_STR);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("hex conversion failure (Z)");
-        return rv;
+        goto end;
     }
     json_object_set_string(tc_rsp, "z", tmp);
-    free(tmp);
+
+end:
+    if (tmp) free(tmp);
+
     return rv;
 }
 
@@ -84,7 +87,7 @@ static ACVP_RESULT acvp_kas_ecc_output_cdh_tc (ACVP_CTX *ctx, ACVP_KAS_ECC_TC *s
  */
 static ACVP_RESULT acvp_kas_ecc_output_comp_tc (ACVP_CTX *ctx, ACVP_KAS_ECC_TC *stc,
                                                JSON_Object *tc_rsp) {
-    ACVP_RESULT rv;
+    ACVP_RESULT rv = ACVP_SUCCESS;
     char *tmp = NULL;
 
     tmp = calloc(1, ACVP_KAS_ECC_MAX_STR+1);
@@ -97,24 +100,22 @@ static ACVP_RESULT acvp_kas_ecc_output_comp_tc (ACVP_CTX *ctx, ACVP_KAS_ECC_TC *
         memset(tmp, 0x0, ACVP_KAS_ECC_MAX_STR);
         rv = acvp_bin_to_hexstr(stc->chash, stc->chashlen, tmp, ACVP_KAS_ECC_MAX_STR);
         if (rv != ACVP_SUCCESS) {
-            free(tmp);
             ACVP_LOG_ERR("hex conversion failure (Z)");
-            return rv;
+            goto end;
         }
         if (!memcmp(stc->z, stc->chash, stc->zlen)) {
             json_object_set_string(tc_rsp, "result", "pass");
         } else {
             json_object_set_string(tc_rsp, "result", "fail");
         }
-        free(tmp);
-        return ACVP_SUCCESS;
+        goto end;
     }
     
     memset(tmp, 0x0, ACVP_KAS_ECC_MAX_STR);
     rv = acvp_bin_to_hexstr(stc->pix, stc->pixlen, tmp, ACVP_KAS_ECC_MAX_STR);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("hex conversion failure (pix)");
-        return rv;
+        goto end;
     }
     json_object_set_string(tc_rsp, "ephemeralPublicIutX", tmp);
     
@@ -122,7 +123,7 @@ static ACVP_RESULT acvp_kas_ecc_output_comp_tc (ACVP_CTX *ctx, ACVP_KAS_ECC_TC *
     rv = acvp_bin_to_hexstr(stc->piy, stc->piylen, tmp, ACVP_KAS_ECC_MAX_STR);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("hex conversion failure (piy)");
-        return rv;
+        goto end;
     }
     json_object_set_string(tc_rsp, "ephemeralPublicIutY", tmp);
     
@@ -130,19 +131,21 @@ static ACVP_RESULT acvp_kas_ecc_output_comp_tc (ACVP_CTX *ctx, ACVP_KAS_ECC_TC *
     rv = acvp_bin_to_hexstr(stc->d, stc->dlen, tmp, ACVP_KAS_ECC_MAX_STR);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("hex conversion failure (d)");
-        return rv;
+        goto end;
     }
     json_object_set_string(tc_rsp, "ephemeralPrivateIut", tmp);
 
     memset(tmp, 0x0, ACVP_KAS_ECC_MAX_STR);
     rv = acvp_bin_to_hexstr(stc->chash, stc->chashlen, tmp, ACVP_KAS_ECC_MAX_STR);
     if (rv != ACVP_SUCCESS) {
-        free(tmp);
         ACVP_LOG_ERR("hex conversion failure (Z)");
-        return rv;
+        goto end;
     }
     json_object_set_string(tc_rsp, "hashZIut", tmp);
-    free(tmp);
+
+end:
+    if (tmp) free(tmp);
+
     return rv;
 }
 

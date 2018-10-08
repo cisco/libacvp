@@ -347,7 +347,7 @@ ACVP_RESULT acvp_drbg_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
  * the JSON processing for a single test case.
  */
 static ACVP_RESULT acvp_drbg_output_tc (ACVP_CTX *ctx, ACVP_DRBG_TC *stc, JSON_Object *tc_rsp) {
-    ACVP_RESULT rv;
+    ACVP_RESULT rv = ACVP_SUCCESS;
     char *tmp = NULL;
 
     tmp = calloc(2 * ACVP_DRB_MAX + 1, sizeof(char));
@@ -359,13 +359,14 @@ static ACVP_RESULT acvp_drbg_output_tc (ACVP_CTX *ctx, ACVP_DRBG_TC *stc, JSON_O
     rv = acvp_bin_to_hexstr(stc->drb, stc->drb_len / 8, tmp, ACVP_DRB_MAX);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("hex conversion failure (returnedBits)");
-        return rv;
+        goto end;
     }
     json_object_set_string(tc_rsp, "returnedBits", tmp);
 
-    free(tmp);
+end:
+    if (tmp) free(tmp);
 
-    return ACVP_SUCCESS;
+    return rv;
 }
 
 static ACVP_RESULT acvp_drbg_init_tc (ACVP_CTX *ctx,

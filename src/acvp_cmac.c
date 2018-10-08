@@ -132,7 +132,7 @@ static ACVP_RESULT acvp_cmac_init_tc (ACVP_CTX *ctx,
  * the JSON processing for a single test case.
  */
 static ACVP_RESULT acvp_cmac_output_tc (ACVP_CTX *ctx, ACVP_CMAC_TC *stc, JSON_Object *tc_rsp) {
-    ACVP_RESULT rv;
+    ACVP_RESULT rv = ACVP_SUCCESS;
     char *tmp = NULL;
 
     tmp = calloc(ACVP_CMAC_MAC_MAX+1, sizeof(char));
@@ -147,13 +147,15 @@ static ACVP_RESULT acvp_cmac_output_tc (ACVP_CTX *ctx, ACVP_CMAC_TC *stc, JSON_O
         rv = acvp_bin_to_hexstr(stc->mac, stc->mac_len, tmp, ACVP_CMAC_MAC_MAX);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("hex conversion failure (mac)");
-            return rv;
+            goto end;
         }
         json_object_set_string(tc_rsp, "mac", tmp);
     }
-    free(tmp);
 
-    return ACVP_SUCCESS;
+end:
+    if (tmp) free(tmp);
+
+    return rv;
 }
 
 /*

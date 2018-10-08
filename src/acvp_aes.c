@@ -169,7 +169,7 @@ static ACVP_RESULT acvp_aes_mct_iterate_tc (ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *s
  * the JSON processing for a single test case for MCT.
  */
 static ACVP_RESULT acvp_aes_output_mct_tc (ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *stc, JSON_Object *r_tobj) {
-    ACVP_RESULT rv;
+    ACVP_RESULT rv = ACVP_SUCCESS;
     char *tmp = NULL;
 
     tmp = calloc(1, ACVP_SYM_CT_MAX+1);
@@ -182,7 +182,7 @@ static ACVP_RESULT acvp_aes_output_mct_tc (ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *st
     rv = acvp_bin_to_hexstr(stc->key, stc->key_len / 8, tmp, ACVP_SYM_CT_MAX);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("hex conversion failure (key)");
-        return rv;
+        goto end;
     }
     json_object_set_string(r_tobj, "key", tmp);
 
@@ -191,8 +191,7 @@ static ACVP_RESULT acvp_aes_output_mct_tc (ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *st
         rv = acvp_bin_to_hexstr(stc->iv, stc->iv_len, tmp, ACVP_SYM_CT_MAX);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("hex conversion failure (iv)");
-            free(tmp);
-            return rv;
+            goto end;
         }
         json_object_set_string(r_tobj, "iv", tmp);
     }
@@ -204,15 +203,13 @@ static ACVP_RESULT acvp_aes_output_mct_tc (ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *st
             rv = acvp_bin_to_bit(stc->pt, 1, (unsigned char *) tmp);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("hex conversion failure (pt)");
-                free(tmp);
-                return rv;
+                goto end;
             }
         } else {
             rv = acvp_bin_to_hexstr(stc->pt, stc->pt_len, tmp, ACVP_SYM_CT_MAX);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("hex conversion failure (pt)");
-                free(tmp);
-                return rv;
+                goto end;
             }
         }
         json_object_set_string(r_tobj, "pt", tmp);
@@ -225,23 +222,22 @@ static ACVP_RESULT acvp_aes_output_mct_tc (ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *st
 
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("hex conversion failure (ct)");
-                free(tmp);
-                return rv;
+                goto end;
             }
         } else {
             rv = acvp_bin_to_hexstr(stc->ct, stc->ct_len, tmp, ACVP_SYM_CT_MAX);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("hex conversion failure (ct)");
-                free(tmp);
-                return rv;
+                goto end;
             }
         }
        json_object_set_string(r_tobj, "ct", tmp);
     }
 
-    free(tmp);
+end:
+    if (tmp) free(tmp);
 
-    return ACVP_SUCCESS;
+    return rv;
 }
 
 
@@ -259,7 +255,7 @@ static ACVP_RESULT acvp_aes_mct_tc (ACVP_CTX *ctx, ACVP_CAPS_LIST *cap,
     JSON_Value *r_tval = NULL; /* Response testval */
     JSON_Object *r_tobj = NULL; /* Response testobj */
     char *tmp = NULL;
-    unsigned char ciphertext[64 + 4];
+    unsigned char ciphertext[64 + 4] = {0};
 
     tmp = calloc(1, ACVP_SYM_CT_MAX+1);
     if (!tmp) {

@@ -950,7 +950,7 @@ static ACVP_RESULT acvp_des_output_tc (ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *stc,
                 if (stc->test_type == ACVP_SYM_TEST_TYPE_CTR) {
                     json_object_set_value(tc_rsp, "ivs", json_value_init_array());
                     ivs_array = json_object_get_array(tc_rsp, "ivs");
-                    for (i=0; i<(stc->pt_len/8); i++) {
+                    for (i=0; i<(stc->ct_len/8); i++) {
                         rv = acvp_bin_to_hexstr(stc->iv, stc->iv_len, tmp, ACVP_SYM_CT_MAX);
                         json_array_append_string(ivs_array, tmp);
                         ctr64_inc(stc->iv);
