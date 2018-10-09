@@ -2297,6 +2297,7 @@ ACVP_RESULT acvp_enable_rsa_keygen_cap_parm (ACVP_CTX *ctx,
         break;
     case ACVP_RAND_PQ:
     case ACVP_FIXED_PUB_EXP_VAL:
+        rv = ACVP_INVALID_ARG;
         ACVP_LOG_ERR("Use acvp_enable_rsa_keygen_mode() or acvp_enable_rsa_keygen_exp_parm() API to enable a new randPQ or exponent.");
         break;
     default:
