@@ -346,6 +346,9 @@ static ACVP_RESULT acvp_kas_ecc_release_tc (ACVP_KAS_ECC_TC *stc) {
     if (stc->piy) free(stc->piy);
     if (stc->d) free(stc->d);
     if (stc->z) free(stc->z);
+
+    memset(stc, 0x0, sizeof(ACVP_KAS_ECC_TC));
+
     return ACVP_SUCCESS;
 }
 

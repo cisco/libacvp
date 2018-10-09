@@ -393,7 +393,7 @@ static ACVP_RESULT acvp_validate_kdf135_tls_param_value (ACVP_KDF135_TLS_METHOD 
     switch (method) {
     
     case ACVP_KDF135_TLS12:
-        if ((param < ACVP_KDF135_TLS_CAP_MAX) && (param > 0)) {
+        if (param > ACVP_KDF135_TLS_CAP_MIN && param < ACVP_KDF135_TLS_CAP_MAX) {
             retval = ACVP_SUCCESS;
         }
         break;
@@ -3300,6 +3300,8 @@ ACVP_RESULT acvp_enable_kdf135_tls_cap_parm (
     } else {
         kdf135_tls_cap->method[1] = method;
     }
+
+    kdf135_tls_cap->sha = param;
     
     return ACVP_SUCCESS;
 }

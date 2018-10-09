@@ -589,6 +589,9 @@ static ACVP_RESULT acvp_dsa_release_tc (ACVP_DSA_TC *stc) {
     if (stc->s) free(stc->s);
     if (stc->seed) free(stc->seed);
     if (stc->msg) free(stc->msg);
+
+    memset(stc, 0x0, sizeof(ACVP_DSA_TC));
+
     return ACVP_SUCCESS;
 }
 
