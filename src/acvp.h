@@ -207,10 +207,11 @@ typedef enum acvp_kdf135_hash_val {
  * @brief these are bit flags
  */
 typedef enum acvp_kdf135_tls_cap_parm {
-    ACVP_KDF135_TLS_CAP_SHA256 = 1,
-    ACVP_KDF135_TLS_CAP_SHA384,
-    ACVP_KDF135_TLS_CAP_SHA512,
-    ACVP_KDF135_TLS_CAP_MAX
+    ACVP_KDF135_TLS_CAP_MIN = 0,
+    ACVP_KDF135_TLS_CAP_SHA256 = 1, /**< bin 00001 */
+    ACVP_KDF135_TLS_CAP_SHA384 = 2, /**< bin 00010 */
+    ACVP_KDF135_TLS_CAP_SHA512 = 4, /**< bin 00100 */
+    ACVP_KDF135_TLS_CAP_MAX = 8, /**< all fields added together + 1 */
 } ACVP_KDF135_TLS_CAP_PARM;
 
 /*!

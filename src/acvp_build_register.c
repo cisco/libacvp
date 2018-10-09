@@ -968,13 +968,13 @@ static ACVP_RESULT acvp_build_kdf135_tls_register_cap (JSON_Object *cap_obj, ACV
     
     json_object_set_value(cap_obj, "hashAlg", json_value_init_array());
     temp_arr = json_object_get_array(cap_obj, "hashAlg");
-    if (cap_entry->cap.kdf135_tls_cap->sha | ACVP_KDF135_TLS_CAP_SHA256) {
+    if (cap_entry->cap.kdf135_tls_cap->sha & ACVP_KDF135_TLS_CAP_SHA256) {
         json_array_append_string(temp_arr, "SHA2-256");
     }
-    if (cap_entry->cap.kdf135_tls_cap->sha | ACVP_KDF135_TLS_CAP_SHA384) {
+    if (cap_entry->cap.kdf135_tls_cap->sha & ACVP_KDF135_TLS_CAP_SHA384) {
         json_array_append_string(temp_arr, "SHA2-384");
     }
-    if (cap_entry->cap.kdf135_tls_cap->sha | ACVP_KDF135_TLS_CAP_SHA512) {
+    if (cap_entry->cap.kdf135_tls_cap->sha & ACVP_KDF135_TLS_CAP_SHA512) {
         json_array_append_string(temp_arr, "SHA2-512");
     }
     
