@@ -191,7 +191,7 @@ static ACVP_RESULT acvp_rsa_keygen_init_tc (ACVP_CTX *ctx,
                                             ACVP_RSA_KEYGEN_TC *stc,
                                             unsigned int tc_id,
                                             int info_gen_by_server,
-                                            ACVP_RSA_HASH_ALG hash_alg,
+                                            ACVP_HASH_ALG hash_alg,
                                             ACVP_RSA_KEY_FORMAT key_format,
                                             ACVP_RSA_PUB_EXP_MODE pub_exp_mode,
                                             int modulo,
@@ -282,7 +282,7 @@ ACVP_RESULT acvp_rsa_keygen_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     char *json_result = NULL;
     unsigned int mod = 0;
     int info_gen_by_server, rand_pq, seed_len = 0;
-    ACVP_RSA_HASH_ALG hash_alg = 0;
+    ACVP_HASH_ALG hash_alg = 0;
     ACVP_RSA_PRIME_TEST prime_test = 0;
     ACVP_RSA_PUB_EXP_MODE pub_exp_mode = 0;
     ACVP_RSA_KEY_FORMAT key_format = 0;
@@ -460,25 +460,25 @@ ACVP_RESULT acvp_rsa_keygen_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
 
             if (strncmp(hash_alg_str, ACVP_STR_SHA_1,
                         strlen(ACVP_STR_SHA_1)) == 0) {
-                hash_alg = ACVP_RSA_SHA1;
+                hash_alg = ACVP_SHA1;
             } else if (strncmp(hash_alg_str, ACVP_STR_SHA2_224,
                                strlen(ACVP_STR_SHA2_224)) == 0) {
-                hash_alg = ACVP_RSA_SHA224;
+                hash_alg = ACVP_SHA224;
             } else if (strncmp(hash_alg_str, ACVP_STR_SHA2_256,
                                strlen(ACVP_STR_SHA2_256)) == 0) {
-                hash_alg = ACVP_RSA_SHA256;
+                hash_alg = ACVP_SHA256;
             } else if (strncmp(hash_alg_str, ACVP_STR_SHA2_384,
                                strlen(ACVP_STR_SHA2_384)) == 0) {
-                hash_alg = ACVP_RSA_SHA384;
+                hash_alg = ACVP_SHA384;
             } else if (strncmp(hash_alg_str, ACVP_STR_SHA2_512,
                                strlen(ACVP_STR_SHA2_512)) == 0) {
-                hash_alg = ACVP_RSA_SHA512;
+                hash_alg = ACVP_SHA512;
             } else if (strncmp(hash_alg_str, ACVP_STR_SHA2_512_224,
                                strlen(ACVP_STR_SHA2_512_224)) == 0) {
-                hash_alg = ACVP_RSA_SHA512_224;
+                hash_alg = ACVP_SHA512_224;
             } else if (strncmp(hash_alg_str, ACVP_STR_SHA2_512_256,
                                strlen(ACVP_STR_SHA2_512_224)) == 0) {
-                hash_alg = ACVP_RSA_SHA512_256;
+                hash_alg = ACVP_SHA512_256;
             } else {
                 ACVP_LOG_ERR("Server JSON invalid 'hashAlg'");
                 return ACVP_INVALID_ARG;

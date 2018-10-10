@@ -952,11 +952,11 @@ static ACVP_RESULT acvp_validate_prereq_val (ACVP_CIPHER cipher, ACVP_PREREQ_ALG
             return ACVP_SUCCESS;
         }
         break;
-    case ACVP_SHA1:
-    case ACVP_SHA224:
-    case ACVP_SHA256:
-    case ACVP_SHA384:
-    case ACVP_SHA512:
+    case ACVP_HASH_SHA1:
+    case ACVP_HASH_SHA224:
+    case ACVP_HASH_SHA256:
+    case ACVP_HASH_SHA384:
+    case ACVP_HASH_SHA512:
         return ACVP_INVALID_ARG;
         break;
     case ACVP_HASHDRBG:
@@ -1413,11 +1413,11 @@ ACVP_RESULT acvp_enable_hash_cap_parm (
     }
     
     switch (cipher) {
-    case ACVP_SHA1:
-    case ACVP_SHA224:
-    case ACVP_SHA256:
-    case ACVP_SHA384:
-    case ACVP_SHA512:
+    case ACVP_HASH_SHA1:
+    case ACVP_HASH_SHA224:
+    case ACVP_HASH_SHA256:
+    case ACVP_HASH_SHA384:
+    case ACVP_HASH_SHA512:
         switch (param) {
         case ACVP_HASH_IN_BIT:
             hash_cap->in_bit = value;
@@ -3008,7 +3008,7 @@ ACVP_RESULT acvp_enable_ecdsa_cap_parm (ACVP_CTX *ctx,
             cap->secret_gen_modes->name = value;
         }
         break;
-    case ACVP_HASH_ALG:
+    case ACVP_ECDSA_HASH_ALG:
         if (cipher != ACVP_ECDSA_SIGGEN && cipher != ACVP_ECDSA_SIGVER) {
             return ACVP_INVALID_ARG;
         }
@@ -3858,19 +3858,19 @@ ACVP_RESULT acvp_enable_kdf135_ikev2_cap_param (ACVP_CTX *ctx,
     }
 
     switch (value) {
-    case ACVP_KDF135_SHA1:
+    case ACVP_SHA1:
         hash->name = ACVP_STR_SHA_1;
         break;
-    case ACVP_KDF135_SHA224:
+    case ACVP_SHA224:
         hash->name = ACVP_STR_SHA2_224;
         break;
-    case ACVP_KDF135_SHA256:
+    case ACVP_SHA256:
         hash->name = ACVP_STR_SHA2_256;
         break;
-    case ACVP_KDF135_SHA384:
+    case ACVP_SHA384:
         hash->name = ACVP_STR_SHA2_384;
         break;
-    case ACVP_KDF135_SHA512:
+    case ACVP_SHA512:
         hash->name = ACVP_STR_SHA2_512;
         break;
     default:
@@ -3967,19 +3967,19 @@ ACVP_RESULT acvp_enable_kdf135_ikev1_cap_param (ACVP_CTX *ctx,
         }
 
         switch (value) {
-        case ACVP_KDF135_SHA1:
+        case ACVP_SHA1:
             hash->name = ACVP_STR_SHA_1;
             break;
-        case ACVP_KDF135_SHA224:
+        case ACVP_SHA224:
             hash->name = ACVP_STR_SHA2_224;
             break;
-        case ACVP_KDF135_SHA256:
+        case ACVP_SHA256:
             hash->name = ACVP_STR_SHA2_256;
             break;
-        case ACVP_KDF135_SHA384:
+        case ACVP_SHA384:
             hash->name = ACVP_STR_SHA2_384;
             break;
-        case ACVP_KDF135_SHA512:
+        case ACVP_SHA512:
             hash->name = ACVP_STR_SHA2_512;
             break;
         default:
@@ -4035,16 +4035,16 @@ ACVP_RESULT acvp_enable_kdf135_x963_cap_param (ACVP_CTX *ctx,
             }
             current_hash->next = calloc(1, sizeof(ACVP_NAME_LIST));
             switch (value) {
-            case ACVP_KDF135_SHA224:
+            case ACVP_SHA224:
                 current_hash->next->name = ACVP_STR_SHA2_224;
                 break;
-            case ACVP_KDF135_SHA256:
+            case ACVP_SHA256:
                 current_hash->next->name = ACVP_STR_SHA2_256;
                 break;
-            case ACVP_KDF135_SHA384:
+            case ACVP_SHA384:
                 current_hash->next->name = ACVP_STR_SHA2_384;
                 break;
-            case ACVP_KDF135_SHA512:
+            case ACVP_SHA512:
                 current_hash->next->name = ACVP_STR_SHA2_512;
                 break;
             default:
@@ -4053,16 +4053,16 @@ ACVP_RESULT acvp_enable_kdf135_x963_cap_param (ACVP_CTX *ctx,
         } else {
             cap->hash_algs = calloc(1, sizeof(ACVP_NAME_LIST));
             switch (value) {
-            case ACVP_KDF135_SHA224:
+            case ACVP_SHA224:
                 cap->hash_algs->name = ACVP_STR_SHA2_224;
                 break;
-            case ACVP_KDF135_SHA256:
+            case ACVP_SHA256:
                 cap->hash_algs->name = ACVP_STR_SHA2_256;
                 break;
-            case ACVP_KDF135_SHA384:
+            case ACVP_SHA384:
                 cap->hash_algs->name = ACVP_STR_SHA2_384;
                 break;
-            case ACVP_KDF135_SHA512:
+            case ACVP_SHA512:
                 cap->hash_algs->name = ACVP_STR_SHA2_512;
                 break;
             default:

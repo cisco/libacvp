@@ -84,7 +84,7 @@ end:
 static ACVP_RESULT acvp_kas_ffc_init_comp_tc (ACVP_CTX *ctx,
                                               ACVP_KAS_FFC_TC *stc,
                                               unsigned int tc_id,
-                                              const char *hash,
+                                              ACVP_HASH_ALG hash_alg,
                                               char *p,
                                               char *q,
                                               char *g,
@@ -96,17 +96,7 @@ static ACVP_RESULT acvp_kas_ffc_init_comp_tc (ACVP_CTX *ctx,
 ) {
     ACVP_RESULT rv;
     stc->mode = mode;
-    if (!strcmp(hash, "SHA2-224"))
-        stc->md = ACVP_SHA224;
-    if (!strcmp(hash, "SHA2-256"))
-        stc->md = ACVP_SHA256;
-    if (!strcmp(hash, "SHA2-384"))
-        stc->md = ACVP_SHA384;
-    if (!strcmp(hash, "SHA2-512"))
-        stc->md = ACVP_SHA512;
-    if (!stc->md) {
-        return ACVP_UNSUPPORTED_OP;
-    }
+    stc->md = hash_alg;
 
     stc->p = calloc(1, ACVP_KAS_FFC_MAX_STR);
     if (!stc->p) { return ACVP_MALLOC_FAIL; }
@@ -203,7 +193,8 @@ static ACVP_RESULT acvp_kas_ffc_comp(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap, ACVP_TE
     JSON_Array *tests;
     JSON_Value *r_tval = NULL; /* Response testval */
     JSON_Object *r_tobj = NULL; /* Response testobj */
-    const char *hash;
+    const char *hash_str;
+    ACVP_HASH_ALG hash_alg = 0;
     char *p = NULL, *q = NULL, *g = NULL, *eps = NULL, *z = NULL, *epri = NULL, *epui = NULL;
     unsigned int i, g_cnt;
     int j, t_cnt, tc_id;
@@ -218,7 +209,20 @@ static ACVP_RESULT acvp_kas_ffc_comp(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap, ACVP_TE
         groupval = json_array_get_value(groups, i);
         groupobj = json_value_get_object(groupval);
 
-        hash = json_object_get_string(groupobj, "hashAlg");
+        hash_str = json_object_get_string(groupobj, "hashAlg");
+
+        if (!strncmp(hash_str, ACVP_STR_SHA2_224, strlen(ACVP_STR_SHA2_224))) {
+            hash_alg = ACVP_SHA224;
+        } else if (!strncmp(hash_str, ACVP_STR_SHA2_256, strlen(ACVP_STR_SHA2_256))) {
+            hash_alg = ACVP_SHA256;
+        } else if (!strncmp(hash_str, ACVP_STR_SHA2_384, strlen(ACVP_STR_SHA2_384))) {
+            hash_alg = ACVP_SHA384;
+        } else if (!strncmp(hash_str, ACVP_STR_SHA2_512, strlen(ACVP_STR_SHA2_512))) {
+            hash_alg = ACVP_SHA512;
+        } else {
+            return ACVP_INVALID_ARG;
+        }
+
         test_type = json_object_get_string(groupobj, "testType");
         if (!test_type) {
             ACVP_LOG_ERR("Unable to parse testType from JSON");
@@ -229,13 +233,12 @@ static ACVP_RESULT acvp_kas_ffc_comp(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap, ACVP_TE
         if (!strncmp(test_type, "VAL", 3))
             stc->test_type = ACVP_KAS_FFC_TT_VAL;
     
-
         p = (char *) json_object_get_string(groupobj, "p");
         q = (char *) json_object_get_string(groupobj, "q");
         g = (char *) json_object_get_string(groupobj, "g");
         ACVP_LOG_INFO("    Test group: %d", i);
         ACVP_LOG_INFO("      test type: %s", test_type);
-        ACVP_LOG_INFO("           hash: %s", hash);
+        ACVP_LOG_INFO("           hash: %s", hash_str);
         ACVP_LOG_INFO("              p: %s", p);
         ACVP_LOG_INFO("              q: %s", q);
         ACVP_LOG_INFO("              g: %s", g);
@@ -274,7 +277,7 @@ static ACVP_RESULT acvp_kas_ffc_comp(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap, ACVP_TE
              * TODO: this does mallocs, we can probably do the mallocs once for
              *       the entire vector set to be more efficient
              */
-            rv = acvp_kas_ffc_init_comp_tc(ctx, stc, tc_id, hash,
+            rv = acvp_kas_ffc_init_comp_tc(ctx, stc, tc_id, hash_alg,
                                            p, q, g, eps, epri, epui, z, mode);
             if (rv != ACVP_SUCCESS) {
                 return ACVP_CRYPTO_MODULE_FAIL;
@@ -321,14 +324,19 @@ ACVP_RESULT acvp_kas_ffc_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     ACVP_RESULT rv;
     const char *alg_str = json_object_get_string(obj, "algorithm");
     int mode = 0;
-    char *json_result;
-    const char *alg_mode;
+    char *json_result = NULL;
+    const char *mode_str = NULL;
 
+    if (!ctx) {
+        ACVP_LOG_ERR("No ctx for handler operation");
+        return ACVP_NO_CTX;
+    }
+
+    alg_str = json_object_get_string(obj, "algorithm");
     if (!alg_str) {
         ACVP_LOG_ERR("unable to parse 'algorithm' from JSON");
         return (ACVP_MALFORMED_JSON);
     }
-
 
     /*
      * Get a reference to the abstracted test case
@@ -359,15 +367,19 @@ ACVP_RESULT acvp_kas_ffc_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     json_object_set_number(r_vs, "vsId", ctx->vs_id);
     json_object_set_string(r_vs, "algorithm", alg_str);
 
-    alg_mode = json_object_get_string(obj, "mode");
-    json_object_set_string(r_vs, "mode", alg_mode);
+    mode_str = json_object_get_string(obj, "mode");
+    json_object_set_string(r_vs, "mode", mode_str);
     json_object_set_value(r_vs, "testResults", json_value_init_array());
     r_tarr = json_object_get_array(r_vs, "testResults");
 
-
-    if (!strncmp(alg_mode, "Component", 9)) {
-        mode = ACVP_KAS_FFC_MODE_COMPONENT;
-        stc.cipher = ACVP_KAS_FFC_COMP;
+    if (mode_str) {
+        if (!strncmp(mode_str, "Component", strlen("Component"))) {
+            mode = ACVP_KAS_FFC_MODE_COMPONENT;
+            stc.cipher = ACVP_KAS_FFC_COMP;
+        } else {
+            ACVP_LOG_ERR("Server JSON invalid 'mode'");
+            return ACVP_INVALID_ARG;
+        }
     }
     if (mode == 0) {
         mode = ACVP_KAS_FFC_MODE_NOCOMP;
