@@ -1218,7 +1218,6 @@ typedef struct acvp_kas_ecc_tc_t {
     int chashlen;
 } ACVP_KAS_ECC_TC;
 
-#define ACVP_KAS_FFC_MAX_STR 4096
 /*! @struct ACVP_KAS_FFC_MODE */
 typedef enum acvp_kas_ffc_mode {
     ACVP_KAS_FFC_MODE_COMPONENT = 1,
