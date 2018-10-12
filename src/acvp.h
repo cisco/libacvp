@@ -120,11 +120,11 @@ typedef enum acvp_cipher {
     ACVP_TDES_CFBP64,
     ACVP_TDES_CTR,
     ACVP_TDES_KW,
-    ACVP_SHA1,
-    ACVP_SHA224,
-    ACVP_SHA256,
-    ACVP_SHA384,
-    ACVP_SHA512,
+    ACVP_HASH_SHA1,
+    ACVP_HASH_SHA224,
+    ACVP_HASH_SHA256,
+    ACVP_HASH_SHA384,
+    ACVP_HASH_SHA512,
     ACVP_HASHDRBG,
     ACVP_HMACDRBG,
     ACVP_CTRDRBG,
@@ -194,13 +194,18 @@ typedef enum acvp_prereq_mode_t {
 #define ACVP_KDF135_TPM_SKEY_MAX 32
 #define ACVP_KDF135_SNMP_PASSWORD_MAX 8192
 
-typedef enum acvp_kdf135_hash_val {
-    ACVP_KDF135_SHA1,
-    ACVP_KDF135_SHA224,
-    ACVP_KDF135_SHA256,
-    ACVP_KDF135_SHA384,
-    ACVP_KDF135_SHA512
-} ACVP_KDF135_HASH_VAL;
+/*!
+ * @enum ACVP_HASH_ALG
+ */
+typedef enum acvp_hash_alg {
+    ACVP_SHA1 = 1,
+    ACVP_SHA224,
+    ACVP_SHA256,
+    ACVP_SHA384,
+    ACVP_SHA512,
+    ACVP_SHA512_224,
+    ACVP_SHA512_256
+} ACVP_HASH_ALG;
 
 /*!
  * @struct ACVP_KDF135_TLS_CAP_PARM
@@ -409,7 +414,7 @@ typedef enum acvp_rsa_param {
 typedef enum acvp_ecdsa_param {
     ACVP_CURVE,
     ACVP_SECRET_GEN_MODE,
-    ACVP_HASH_ALG
+    ACVP_ECDSA_HASH_ALG
 } ACVP_ECDSA_PARM;
 
 typedef enum acvp_ecdsa_curves {
@@ -494,17 +499,6 @@ typedef enum acvp_rsa_prime_test {
     ACVP_RSA_PRIME_TEST_TBLC2 = 1,
     ACVP_RSA_PRIME_TEST_TBLC3
 } ACVP_RSA_PRIME_TEST;
-
-/*! @struct ACVP_RSA_HASH_ALG */
-typedef enum acvp_rsa_hash_alg {
-    ACVP_RSA_SHA1 = 1,
-    ACVP_RSA_SHA224,
-    ACVP_RSA_SHA256,
-    ACVP_RSA_SHA384,
-    ACVP_RSA_SHA512,
-    ACVP_RSA_SHA512_224,
-    ACVP_RSA_SHA512_256,
-} ACVP_RSA_HASH_ALG;
 
 /*! @struct ACVP_RSA_KEYGEN_MODE */
 typedef enum acvp_rsa_keygen_mode_t {
@@ -712,7 +706,7 @@ typedef struct acvp_kdf135_tls_tc_t {
 typedef struct acvp_kdf135_ikev2_tc_t {
     ACVP_CIPHER cipher;
     unsigned int tc_id;    /* Test case id */
-    ACVP_KDF135_HASH_VAL hash_alg;
+    ACVP_HASH_ALG hash_alg;
     int init_nonce_len;
     int resp_nonce_len;
     int gir_len;
@@ -744,7 +738,7 @@ typedef struct acvp_kdf135_ikev2_tc_t {
 typedef struct acvp_kdf135_ikev1_tc_t {
     ACVP_CIPHER cipher;
     unsigned int tc_id; /**< Test case id */
-    ACVP_KDF135_HASH_VAL hash_alg;
+    ACVP_HASH_ALG hash_alg;
     ACVP_KDF135_IKEV1_AUTH_METHOD auth_method;
     int init_nonce_len;
     int resp_nonce_len;
@@ -937,7 +931,7 @@ typedef struct acvp_cmac_tc_t {
  */
 typedef struct acvp_rsa_keygen_tc_t {
     unsigned int tc_id;    /* Test case id */
-    ACVP_RSA_HASH_ALG hash_alg;
+    ACVP_HASH_ALG hash_alg;
     ACVP_RSA_PRIME_TEST prime_test;
     char *prime_result;
     char *pub_exp;
@@ -1224,7 +1218,6 @@ typedef struct acvp_kas_ecc_tc_t {
     int chashlen;
 } ACVP_KAS_ECC_TC;
 
-#define ACVP_KAS_FFC_MAX_STR 4096
 /*! @struct ACVP_KAS_FFC_MODE */
 typedef enum acvp_kas_ffc_mode {
     ACVP_KAS_FFC_MODE_COMPONENT = 1,
@@ -1294,7 +1287,7 @@ typedef enum acvp_kas_ffc_test_type {
 typedef struct acvp_kas_ffc_tc_t {
     ACVP_CIPHER cipher;
     int test_type;
-    int md;
+    ACVP_HASH_ALG md;
     int mode;
     unsigned char *p;
     unsigned char *q;

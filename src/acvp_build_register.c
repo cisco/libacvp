@@ -2603,11 +2603,11 @@ ACVP_RESULT acvp_build_register (ACVP_CTX *ctx, char **reg) {
             case ACVP_TDES_KW:
                 rv = acvp_build_sym_cipher_register_cap(cap_obj, cap_entry);
                 break;
-            case ACVP_SHA1:
-            case ACVP_SHA224:
-            case ACVP_SHA256:
-            case ACVP_SHA384:
-            case ACVP_SHA512:
+            case ACVP_HASH_SHA1:
+            case ACVP_HASH_SHA224:
+            case ACVP_HASH_SHA256:
+            case ACVP_HASH_SHA384:
+            case ACVP_HASH_SHA512:
                 rv = acvp_build_hash_register_cap(cap_obj, cap_entry);
                 break;
             case ACVP_HASHDRBG:

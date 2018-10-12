@@ -92,7 +92,7 @@ err:
 static ACVP_RESULT acvp_kdf135_ikev2_init_tc (ACVP_CTX *ctx,
                                              ACVP_KDF135_IKEV2_TC *stc,
                                              unsigned int tc_id,
-                                             ACVP_KDF135_HASH_VAL hash_alg,
+                                             ACVP_HASH_ALG hash_alg,
                                              int init_nonce_len,
                                              int resp_nonce_len,
                                              int dh_secret_len,
@@ -238,7 +238,7 @@ ACVP_RESULT acvp_kdf135_ikev2_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     ACVP_CIPHER alg_id;
     char *json_result;
 
-    ACVP_KDF135_HASH_VAL hash_alg;
+    ACVP_HASH_ALG hash_alg;
     const char *hash_alg_str = NULL;
     char *init_nonce = NULL, *resp_nonce = NULL, *init_spi = NULL;
     char *resp_spi = NULL, *gir = NULL, *gir_new = NULL;
@@ -340,15 +340,15 @@ ACVP_RESULT acvp_kdf135_ikev2_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
          * Determine the hash algorithm.
          */
         if (strncmp(hash_alg_str, ACVP_STR_SHA_1, strnlen(ACVP_STR_SHA_1, ACVP_STR_SHA_MAX)) == 0) {
-            hash_alg = ACVP_KDF135_SHA1;
+            hash_alg = ACVP_SHA1;
         } else if (strncmp(hash_alg_str, ACVP_STR_SHA2_224, strnlen(ACVP_STR_SHA2_224, ACVP_STR_SHA_MAX)) == 0) {
-            hash_alg = ACVP_KDF135_SHA224;
+            hash_alg = ACVP_SHA224;
         } else if (strncmp(hash_alg_str, ACVP_STR_SHA2_256, strnlen(ACVP_STR_SHA2_256, ACVP_STR_SHA_MAX)) == 0) {
-            hash_alg = ACVP_KDF135_SHA256;
+            hash_alg = ACVP_SHA256;
         } else if (strncmp(hash_alg_str, ACVP_STR_SHA2_384, strnlen(ACVP_STR_SHA2_384, ACVP_STR_SHA_MAX)) == 0) {
-            hash_alg = ACVP_KDF135_SHA384;
+            hash_alg = ACVP_SHA384;
         }else if (strncmp(hash_alg_str, ACVP_STR_SHA2_512, strnlen(ACVP_STR_SHA2_512, ACVP_STR_SHA_MAX)) == 0) {
-            hash_alg = ACVP_KDF135_SHA512;
+            hash_alg = ACVP_SHA512;
         } else {
             ACVP_LOG_ERR("ACVP server requesting invalid hash alg");
             return ACVP_INVALID_ARG;
