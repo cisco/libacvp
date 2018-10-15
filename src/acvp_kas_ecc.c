@@ -43,29 +43,29 @@ static ACVP_RESULT acvp_kas_ecc_output_cdh_tc (ACVP_CTX *ctx, ACVP_KAS_ECC_TC *s
     ACVP_RESULT rv = ACVP_SUCCESS;
     char *tmp = NULL;
 
-    tmp = calloc(ACVP_KAS_ECC_MAX_STR+1, sizeof(char));
+    tmp = calloc(ACVP_KAS_ECC_STR_MAX + 1, sizeof(char));
     if (!tmp) {
         ACVP_LOG_ERR("Unable to malloc in acvp_aes_output_mct_tc");
         return ACVP_MALLOC_FAIL;
     }
     
-    rv = acvp_bin_to_hexstr(stc->pix, stc->pixlen, tmp, ACVP_KAS_ECC_MAX_STR);
+    rv = acvp_bin_to_hexstr(stc->pix, stc->pixlen, tmp, ACVP_KAS_ECC_STR_MAX);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("hex conversion failure (pix)");
         goto end;
     }
     json_object_set_string(tc_rsp, "publicIutX", tmp);
     
-    memset(tmp, 0x0, ACVP_KAS_ECC_MAX_STR);
-    rv = acvp_bin_to_hexstr(stc->piy, stc->piylen, tmp, ACVP_KAS_ECC_MAX_STR);
+    memset(tmp, 0x0, ACVP_KAS_ECC_STR_MAX);
+    rv = acvp_bin_to_hexstr(stc->piy, stc->piylen, tmp, ACVP_KAS_ECC_STR_MAX);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("hex conversion failure (piy)");
         goto end;
     }
     json_object_set_string(tc_rsp, "publicIutY", tmp);
 
-    memset(tmp, 0x0, ACVP_KAS_ECC_MAX_STR);
-    rv = acvp_bin_to_hexstr(stc->z, stc->zlen, tmp, ACVP_KAS_ECC_MAX_STR);
+    memset(tmp, 0x0, ACVP_KAS_ECC_STR_MAX);
+    rv = acvp_bin_to_hexstr(stc->z, stc->zlen, tmp, ACVP_KAS_ECC_STR_MAX);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("hex conversion failure (Z)");
         goto end;
@@ -90,15 +90,15 @@ static ACVP_RESULT acvp_kas_ecc_output_comp_tc (ACVP_CTX *ctx, ACVP_KAS_ECC_TC *
     ACVP_RESULT rv = ACVP_SUCCESS;
     char *tmp = NULL;
 
-    tmp = calloc(1, ACVP_KAS_ECC_MAX_STR+1);
+    tmp = calloc(1, ACVP_KAS_ECC_STR_MAX + 1);
     if (!tmp) {
         ACVP_LOG_ERR("Unable to malloc in acvp_aes_output_mct_tc");
         return ACVP_MALLOC_FAIL;
     }
 
     if (stc->test_type == ACVP_KAS_ECC_TT_VAL) {
-        memset(tmp, 0x0, ACVP_KAS_ECC_MAX_STR);
-        rv = acvp_bin_to_hexstr(stc->chash, stc->chashlen, tmp, ACVP_KAS_ECC_MAX_STR);
+        memset(tmp, 0x0, ACVP_KAS_ECC_STR_MAX);
+        rv = acvp_bin_to_hexstr(stc->chash, stc->chashlen, tmp, ACVP_KAS_ECC_STR_MAX);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("hex conversion failure (Z)");
             goto end;
@@ -111,32 +111,32 @@ static ACVP_RESULT acvp_kas_ecc_output_comp_tc (ACVP_CTX *ctx, ACVP_KAS_ECC_TC *
         goto end;
     }
     
-    memset(tmp, 0x0, ACVP_KAS_ECC_MAX_STR);
-    rv = acvp_bin_to_hexstr(stc->pix, stc->pixlen, tmp, ACVP_KAS_ECC_MAX_STR);
+    memset(tmp, 0x0, ACVP_KAS_ECC_STR_MAX);
+    rv = acvp_bin_to_hexstr(stc->pix, stc->pixlen, tmp, ACVP_KAS_ECC_STR_MAX);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("hex conversion failure (pix)");
         goto end;
     }
     json_object_set_string(tc_rsp, "ephemeralPublicIutX", tmp);
     
-    memset(tmp, 0x0, ACVP_KAS_ECC_MAX_STR);
-    rv = acvp_bin_to_hexstr(stc->piy, stc->piylen, tmp, ACVP_KAS_ECC_MAX_STR);
+    memset(tmp, 0x0, ACVP_KAS_ECC_STR_MAX);
+    rv = acvp_bin_to_hexstr(stc->piy, stc->piylen, tmp, ACVP_KAS_ECC_STR_MAX);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("hex conversion failure (piy)");
         goto end;
     }
     json_object_set_string(tc_rsp, "ephemeralPublicIutY", tmp);
     
-    memset(tmp, 0x0, ACVP_KAS_ECC_MAX_STR);
-    rv = acvp_bin_to_hexstr(stc->d, stc->dlen, tmp, ACVP_KAS_ECC_MAX_STR);
+    memset(tmp, 0x0, ACVP_KAS_ECC_STR_MAX);
+    rv = acvp_bin_to_hexstr(stc->d, stc->dlen, tmp, ACVP_KAS_ECC_STR_MAX);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("hex conversion failure (d)");
         goto end;
     }
     json_object_set_string(tc_rsp, "ephemeralPrivateIut", tmp);
 
-    memset(tmp, 0x0, ACVP_KAS_ECC_MAX_STR);
-    rv = acvp_bin_to_hexstr(stc->chash, stc->chashlen, tmp, ACVP_KAS_ECC_MAX_STR);
+    memset(tmp, 0x0, ACVP_KAS_ECC_STR_MAX);
+    rv = acvp_bin_to_hexstr(stc->chash, stc->chashlen, tmp, ACVP_KAS_ECC_STR_MAX);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("hex conversion failure (Z)");
         goto end;
@@ -152,66 +152,42 @@ end:
 static ACVP_RESULT acvp_kas_ecc_init_cdh_tc (ACVP_CTX *ctx,
                                              ACVP_KAS_ECC_TC *stc,
                                              unsigned int tc_id,
-                                             const char *curve,
-                                             char *psx,
-                                             char *psy,
-                                             unsigned int mode
+                                             ACVP_KAS_ECC_MODE mode,
+                                             ACVP_ECDSA_CURVE curve,
+                                             const char *psx,
+                                             const char *psy
 ) {
     ACVP_RESULT rv;
     stc->mode = mode;
+    stc->curve = curve;
 
-    stc->psx = calloc(1, ACVP_KAS_ECC_MAX_BYTE);
+    stc->psx = calloc(1, ACVP_KAS_ECC_BYTE_MAX);
     if (!stc->psx) { return ACVP_MALLOC_FAIL; }
-    rv = acvp_hexstr_to_bin(psx, stc->psx, ACVP_KAS_ECC_MAX_STR, &(stc->psxlen));
+    rv = acvp_hexstr_to_bin(psx, stc->psx, ACVP_KAS_ECC_BYTE_MAX, &(stc->psxlen));
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Hex conversion failure (psx)");
         return rv;
     }
     
-    stc->psy = calloc(1, ACVP_KAS_ECC_MAX_BYTE);
+    stc->psy = calloc(1, ACVP_KAS_ECC_BYTE_MAX);
     if (!stc->psy) { return ACVP_MALLOC_FAIL; }
-    rv = acvp_hexstr_to_bin(psy, stc->psy, ACVP_KAS_ECC_MAX_STR, &(stc->psylen));
+    rv = acvp_hexstr_to_bin(psy, stc->psy, ACVP_KAS_ECC_BYTE_MAX, &(stc->psylen));
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Hex conversion failure (psy)");
         return rv;
     }
     
-    stc->pix = calloc(1, ACVP_KAS_ECC_MAX_STR);
+    stc->pix = calloc(1, ACVP_KAS_ECC_BYTE_MAX);
     if (!stc->pix) { return ACVP_MALLOC_FAIL; }
-    stc->piy = calloc(1, ACVP_KAS_ECC_MAX_STR);
+    stc->piy = calloc(1, ACVP_KAS_ECC_BYTE_MAX);
     if (!stc->piy) { return ACVP_MALLOC_FAIL; }
 
-    stc->z = calloc(1, ACVP_KAS_ECC_MAX_STR);
+    stc->z = calloc(1, ACVP_KAS_ECC_BYTE_MAX);
     if (!stc->z) { return ACVP_MALLOC_FAIL; }
-    stc->d = calloc(1, ACVP_KAS_ECC_MAX_STR);
+    stc->d = calloc(1, ACVP_KAS_ECC_BYTE_MAX);
     if (!stc->d) { return ACVP_MALLOC_FAIL; }
-    stc->chash = calloc(1, ACVP_KAS_ECC_MAX_STR);
+    stc->chash = calloc(1, ACVP_KAS_ECC_BYTE_MAX);
     if (!stc->chash) { return ACVP_MALLOC_FAIL; }
-
-    if (!strcmp(curve, "b-233"))
-        stc->curve = ACVP_ECDSA_CURVE_B233;
-    if (!strcmp(curve, "b-283"))
-        stc->curve = ACVP_ECDSA_CURVE_B283;
-    if (!strcmp(curve, "b-409"))
-        stc->curve = ACVP_ECDSA_CURVE_B409;
-    if (!strcmp(curve, "b-571"))
-        stc->curve = ACVP_ECDSA_CURVE_B571;
-    if (!strcmp(curve, "k-233"))
-        stc->curve = ACVP_ECDSA_CURVE_K233;
-    if (!strcmp(curve, "k-283"))
-        stc->curve = ACVP_ECDSA_CURVE_K283;
-    if (!strcmp(curve, "k-409"))
-        stc->curve = ACVP_ECDSA_CURVE_K409;
-    if (!strcmp(curve, "k-571"))
-        stc->curve = ACVP_ECDSA_CURVE_K571;
-    if (!strcmp(curve, "p-224"))
-        stc->curve = ACVP_ECDSA_CURVE_P224;
-    if (!strcmp(curve, "p-256"))
-        stc->curve = ACVP_ECDSA_CURVE_P256;
-    if (!strcmp(curve, "p-384"))
-        stc->curve = ACVP_ECDSA_CURVE_P384;
-    if (!strcmp(curve, "p-521"))
-        stc->curve = ACVP_ECDSA_CURVE_P521;
 
     return ACVP_SUCCESS;
 }
@@ -219,116 +195,77 @@ static ACVP_RESULT acvp_kas_ecc_init_cdh_tc (ACVP_CTX *ctx,
 static ACVP_RESULT acvp_kas_ecc_init_comp_tc (ACVP_CTX *ctx,
                                               ACVP_KAS_ECC_TC *stc,
                                               unsigned int tc_id,
-                                              const char *curve,
-                                              const char *hash,
-                                              char *psx,
-                                              int psx_len,
-                                              char *psy,
-                                              int psy_len,
-                                              char *d,
-                                              char *pix,
-                                              char *piy,
-                                              char *z,
-                                              unsigned int mode
+                                              ACVP_KAS_ECC_MODE mode,
+                                              ACVP_ECDSA_CURVE curve,
+                                              ACVP_HASH_ALG hash,
+                                              const char *psx,
+                                              const char *psy,
+                                              const char *d,
+                                              const char *pix,
+                                              const char *piy,
+                                              const char *z
 ) {
     ACVP_RESULT rv;
     stc->mode = mode;
+    stc->curve = curve;
+    stc->md = hash;
 
-    stc->psx = calloc(1, ACVP_KAS_ECC_MAX_STR);
+    stc->psx = calloc(1, ACVP_KAS_ECC_BYTE_MAX);
     if (!stc->psx) { return ACVP_MALLOC_FAIL; }
-    rv = acvp_hexstr_to_bin(psx, stc->psx, ACVP_KAS_ECC_MAX_STR, &(stc->psxlen));
+    rv = acvp_hexstr_to_bin(psx, stc->psx, ACVP_KAS_ECC_BYTE_MAX, &(stc->psxlen));
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Hex conversion failure (psx)");
         return rv;
     }
     
-    stc->psy = calloc(1, ACVP_KAS_ECC_MAX_STR);
+    stc->psy = calloc(1, ACVP_KAS_ECC_BYTE_MAX);
     if (!stc->psy) { return ACVP_MALLOC_FAIL; }
-    rv = acvp_hexstr_to_bin(psy, stc->psy, ACVP_KAS_ECC_MAX_STR, &(stc->psylen));
+    rv = acvp_hexstr_to_bin(psy, stc->psy, ACVP_KAS_ECC_BYTE_MAX, &(stc->psylen));
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Hex conversion failure (psy)");
         return rv;
     }
 
-    stc->z = calloc(1, ACVP_KAS_ECC_MAX_STR);
+    stc->pix = calloc(1, ACVP_KAS_ECC_BYTE_MAX);
+    if (!stc->pix) { return ACVP_MALLOC_FAIL; }
+    stc->piy = calloc(1, ACVP_KAS_ECC_BYTE_MAX);
+    if (!stc->piy) { return ACVP_MALLOC_FAIL; }
+    stc->d = calloc(1, ACVP_KAS_ECC_BYTE_MAX);
+    if (!stc->d) { return ACVP_MALLOC_FAIL; }
+    stc->z = calloc(1, ACVP_KAS_ECC_BYTE_MAX);
     if (!stc->z) { return ACVP_MALLOC_FAIL; }
-    stc->chash = calloc(1, ACVP_KAS_ECC_MAX_STR);
+    stc->chash = calloc(1, ACVP_KAS_ECC_BYTE_MAX);
     if (!stc->chash) { return ACVP_MALLOC_FAIL; }
     
     if (stc->test_type == ACVP_KAS_ECC_TT_VAL) {
         if (!pix || !piy || !d || !z) {
             return ACVP_MISSING_ARG;
         }
-        stc->pix = calloc(1, ACVP_KAS_ECC_MAX_STR);
-        if (!stc->pix) { return ACVP_MALLOC_FAIL; }
-        rv = acvp_hexstr_to_bin(pix, stc->pix, ACVP_KAS_ECC_MAX_STR, &(stc->pixlen));
+
+        rv = acvp_hexstr_to_bin(pix, stc->pix, ACVP_KAS_ECC_BYTE_MAX, &(stc->pixlen));
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Hex conversion failure (pix)");
             return rv;
         }
     
-        stc->piy = calloc(1, ACVP_KAS_ECC_MAX_STR);
-        if (!stc->piy) { return ACVP_MALLOC_FAIL; }
-        rv = acvp_hexstr_to_bin(piy, stc->piy, ACVP_KAS_ECC_MAX_STR, &(stc->piylen));
+        rv = acvp_hexstr_to_bin(piy, stc->piy, ACVP_KAS_ECC_BYTE_MAX, &(stc->piylen));
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Hex conversion failure (piy)");
             return rv;
         }
     
-        stc->d = calloc(1, ACVP_KAS_ECC_MAX_STR);
-        if (!stc->d) { return ACVP_MALLOC_FAIL; }
-        rv = acvp_hexstr_to_bin(d, stc->d, ACVP_KAS_ECC_MAX_STR, &(stc->dlen));
+        rv = acvp_hexstr_to_bin(d, stc->d, ACVP_KAS_ECC_BYTE_MAX, &(stc->dlen));
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Hex conversion failure (d)");
             return rv;
         }
 
-        rv = acvp_hexstr_to_bin(z, stc->z, ACVP_KAS_ECC_MAX_STR, &(stc->zlen));
+        rv = acvp_hexstr_to_bin(z, stc->z, ACVP_KAS_ECC_BYTE_MAX, &(stc->zlen));
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Hex conversion failure (z)");
             return rv;
         }
-    } else {
-        stc->pix = calloc(1, ACVP_KAS_ECC_MAX_STR);
-        if (!stc->pix) { return ACVP_MALLOC_FAIL; }
-        stc->piy = calloc(1, ACVP_KAS_ECC_MAX_STR);
-        if (!stc->piy) { return ACVP_MALLOC_FAIL; }
-        stc->d = calloc(1, ACVP_KAS_ECC_MAX_STR);
-        if (!stc->d) { return ACVP_MALLOC_FAIL; }
     }
-    if (!strcmp(hash, "SHA2-224"))
-        stc->md = ACVP_SHA224;
-    if (!strcmp(hash, "SHA2-256"))
-        stc->md = ACVP_SHA256;
-    if (!strcmp(hash, "SHA2-384"))
-        stc->md = ACVP_SHA384;
-    if (!strcmp(hash, "SHA2-512"))
-        stc->md = ACVP_SHA512;
-
-    if (!strcmp(curve, "b-233"))
-        stc->curve = ACVP_ECDSA_CURVE_B233;
-    if (!strcmp(curve, "b-283"))
-        stc->curve = ACVP_ECDSA_CURVE_B283;
-    if (!strcmp(curve, "b-409"))
-        stc->curve = ACVP_ECDSA_CURVE_B409;
-    if (!strcmp(curve, "b-571"))
-        stc->curve = ACVP_ECDSA_CURVE_B571;
-    if (!strcmp(curve, "k-233"))
-        stc->curve = ACVP_ECDSA_CURVE_K233;
-    if (!strcmp(curve, "k-283"))
-        stc->curve = ACVP_ECDSA_CURVE_K283;
-    if (!strcmp(curve, "k-409"))
-        stc->curve = ACVP_ECDSA_CURVE_K409;
-    if (!strcmp(curve, "k-571"))
-        stc->curve = ACVP_ECDSA_CURVE_K571;
-    if (!strcmp(curve, "p-224"))
-        stc->curve = ACVP_ECDSA_CURVE_P224;
-    if (!strcmp(curve, "p-256"))
-        stc->curve = ACVP_ECDSA_CURVE_P256;
-    if (!strcmp(curve, "p-384"))
-        stc->curve = ACVP_ECDSA_CURVE_P384;
-    if (!strcmp(curve, "p-521"))
-        stc->curve = ACVP_ECDSA_CURVE_P521;
 
     return ACVP_SUCCESS;
 }
@@ -364,41 +301,77 @@ static ACVP_RESULT acvp_kas_ecc_cdh(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap, ACVP_TES
     JSON_Array *tests;
     JSON_Value *r_tval = NULL; /* Response testval */
     JSON_Object *r_tobj = NULL; /* Response testobj */
-    const char *curve;
-    char *psx;
-    char *psy;
     unsigned int i, g_cnt;
     int j, t_cnt, tc_id;
     ACVP_RESULT rv;
-    const char *test_type;
 
     groups = json_object_get_array(obj, "testGroups");
     g_cnt = json_array_get_count(groups);
 
-
     for (i = 0; i < g_cnt; i++) {
+        ACVP_ECDSA_CURVE curve = 0;
+        const char *test_type_str = NULL, *curve_str = NULL;
+
         groupval = json_array_get_value(groups, i);
         groupobj = json_value_get_object(groupval);
 
-        curve = json_object_get_string(groupobj, "curve");
-        test_type = json_object_get_string(groupobj, "testType");
-        if (!test_type) {
-            ACVP_LOG_ERR("Unable to parse testType from JSON");
-            return ACVP_MALFORMED_JSON;
+        curve_str = json_object_get_string(groupobj, "curve");
+        if (!curve_str) {
+            ACVP_LOG_ERR("Server JSON missing 'curve'");
+            return ACVP_MISSING_ARG;
         }
-        if (!strncmp(test_type, "AFT", 3))
+        if (!strncmp(curve_str, "b-233", strlen("b-233"))) {
+            curve = ACVP_ECDSA_CURVE_B233;
+        } else if (!strncmp(curve_str, "b-283", strlen("b-283"))) {
+            curve = ACVP_ECDSA_CURVE_B283;
+        } else if (!strncmp(curve_str, "b-409", strlen("b-409"))) {
+            curve = ACVP_ECDSA_CURVE_B409;
+        } else if (!strncmp(curve_str, "b-571", strlen("b-571"))) {
+            curve = ACVP_ECDSA_CURVE_B571;
+        } else if (!strncmp(curve_str, "k-233", strlen("k-233"))) {
+            curve = ACVP_ECDSA_CURVE_K233;
+        } else if (!strncmp(curve_str, "k-283", strlen("k-283"))) {
+            curve = ACVP_ECDSA_CURVE_K283;
+        } else if (!strncmp(curve_str, "k-409", strlen("k-409"))) {
+            curve = ACVP_ECDSA_CURVE_K409;
+        } else if (!strncmp(curve_str, "k-571", strlen("k-571"))) {
+            curve = ACVP_ECDSA_CURVE_K571;
+        } else if (!strncmp(curve_str, "p-224", strlen("p-224"))) {
+            curve = ACVP_ECDSA_CURVE_P224;
+        } else if (!strncmp(curve_str, "p-256", strlen("p-256"))) {
+            curve = ACVP_ECDSA_CURVE_P256;
+        } else if (!strncmp(curve_str, "p-384", strlen("p-384"))) {
+            curve = ACVP_ECDSA_CURVE_P384;
+        } else if (!strncmp(curve_str, "p-521", strlen("p-521"))) {
+            curve = ACVP_ECDSA_CURVE_P521;
+        } else {
+            ACVP_LOG_ERR("Server JSON invalid 'curve'");
+            return ACVP_INVALID_ARG;
+        }
+
+        test_type_str = json_object_get_string(groupobj, "testType");
+        if (!test_type_str) {
+            ACVP_LOG_ERR("Server JSON missing 'testType'");
+            return ACVP_MISSING_ARG;
+        }
+        if (!strncmp(test_type_str, "AFT", 3)) {
             stc->test_type = ACVP_KAS_ECC_TT_AFT;
-        if (!strncmp(test_type, "VAL", 3))
+        } else if (!strncmp(test_type_str, "VAL", 3)) {
             stc->test_type = ACVP_KAS_ECC_TT_VAL;
+        } else {
+            ACVP_LOG_ERR("Server JSON invalid 'testType'");
+            return ACVP_INVALID_ARG;
+        }
 
         ACVP_LOG_INFO("    Test group: %d", i);
-        ACVP_LOG_INFO("          curve: %s", curve);
-
+        ACVP_LOG_INFO("          curve: %s", curve_str);
 
         tests = json_object_get_array(groupobj, "tests");
         t_cnt = json_array_get_count(tests);
 
         for (j = 0; j < t_cnt; j++) {
+            const char *psx = NULL, *psy = NULL;
+
             ACVP_LOG_INFO("Found new KAS-ECC CDH test vector...");
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
@@ -412,8 +385,27 @@ static ACVP_RESULT acvp_kas_ecc_cdh(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap, ACVP_TES
 
             json_object_set_number(r_tobj, "tcId", tc_id);
 
-            psx = (char *) json_object_get_string(testobj, "publicServerX");
-            psy = (char *) json_object_get_string(testobj, "publicServerY");
+            psx = json_object_get_string(testobj, "publicServerX");
+            if (!psx) {
+                ACVP_LOG_ERR("Server JSON missing 'publicServerX'");
+                return ACVP_MISSING_ARG;
+            }
+            if (strnlen(psx, ACVP_KAS_ECC_STR_MAX + 1) > ACVP_KAS_ECC_STR_MAX) {
+                ACVP_LOG_ERR("publicServerX too long, max allowed=(%d)",
+                             ACVP_KAS_ECC_STR_MAX);
+                return ACVP_INVALID_ARG;
+            }
+
+            psy = json_object_get_string(testobj, "publicServerY");
+            if (!psy) {
+                ACVP_LOG_ERR("Server JSON missing 'publicServerY'");
+                return ACVP_MISSING_ARG;
+            }
+            if (strnlen(psy, ACVP_KAS_ECC_STR_MAX + 1) > ACVP_KAS_ECC_STR_MAX) {
+                ACVP_LOG_ERR("publicServerY too long, max allowed=(%d)",
+                             ACVP_KAS_ECC_STR_MAX);
+                return ACVP_INVALID_ARG;
+            }
 
             ACVP_LOG_INFO("            psx: %s", psx);
             ACVP_LOG_INFO("            psy: %s", psy);
@@ -424,13 +416,18 @@ static ACVP_RESULT acvp_kas_ecc_cdh(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap, ACVP_TES
              * TODO: this does mallocs, we can probably do the mallocs once for
              *       the entire vector set to be more efficient
              */
-            acvp_kas_ecc_init_cdh_tc(ctx, stc, tc_id, curve,
-                                     psx, psy, mode);
+            rv = acvp_kas_ecc_init_cdh_tc(ctx, stc, tc_id, mode, curve,
+                                          psx, psy);
+            if (rv != ACVP_SUCCESS) {
+                acvp_kas_ecc_release_tc(stc);
+                return ACVP_CRYPTO_MODULE_FAIL;
+            }
 
             /* Process the current KAT test vector... */
             rv = (cap->crypto_handler)(tc);
             if (rv != ACVP_SUCCESS) {
-                    return ACVP_CRYPTO_MODULE_FAIL;
+                acvp_kas_ecc_release_tc(stc);
+                return ACVP_CRYPTO_MODULE_FAIL;
             }
 
             /*
@@ -439,6 +436,7 @@ static ACVP_RESULT acvp_kas_ecc_cdh(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap, ACVP_TES
             rv = acvp_kas_ecc_output_cdh_tc(ctx, stc, r_tobj);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("JSON output failure in KAS-ECC module");
+                acvp_kas_ecc_release_tc(stc);
                 return rv;
             }
 
@@ -466,45 +464,99 @@ static ACVP_RESULT acvp_kas_ecc_comp(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap, ACVP_TE
     JSON_Array *tests;
     JSON_Value *r_tval = NULL; /* Response testval */
     JSON_Object *r_tobj = NULL; /* Response testobj */
-    const char *curve;
-    const char *hash;
-    char *psx, *psy, *pix = NULL, *piy = NULL, *d = NULL, *z = NULL;
     unsigned int i, g_cnt;
     int j, t_cnt, tc_id;
     ACVP_RESULT rv;
-    const char *test_type;
 
     groups = json_object_get_array(obj, "testGroups");
     g_cnt = json_array_get_count(groups);
 
-
     for (i = 0; i < g_cnt; i++) {
+        ACVP_HASH_ALG hash = 0;
+        ACVP_ECDSA_CURVE curve = 0;
+        const char *test_type_str = NULL, *curve_str = NULL, *hash_str = NULL;
+
         groupval = json_array_get_value(groups, i);
         groupobj = json_value_get_object(groupval);
 
-        curve = json_object_get_string(groupobj, "curve");
-        hash = json_object_get_string(groupobj, "hashAlg");
-        test_type = json_object_get_string(groupobj, "testType");
-        if (!test_type) {
-            ACVP_LOG_ERR("Unable to parse testType from JSON");
-            return ACVP_MALFORMED_JSON;
+        curve_str = json_object_get_string(groupobj, "curve");
+        if (!curve_str) {
+            ACVP_LOG_ERR("Server JSON missing 'curve'");
+            return ACVP_MISSING_ARG;
         }
-        if (!strncmp(test_type, "AFT", 3))
+        if (!strncmp(curve_str, "b-233", strlen("b-233"))) {
+            curve = ACVP_ECDSA_CURVE_B233;
+        } else if (!strncmp(curve_str, "b-283", strlen("b-283"))) {
+            curve = ACVP_ECDSA_CURVE_B283;
+        } else if (!strncmp(curve_str, "b-409", strlen("b-409"))) {
+            curve = ACVP_ECDSA_CURVE_B409;
+        } else if (!strncmp(curve_str, "b-571", strlen("b-571"))) {
+            curve = ACVP_ECDSA_CURVE_B571;
+        } else if (!strncmp(curve_str, "k-233", strlen("k-233"))) {
+            curve = ACVP_ECDSA_CURVE_K233;
+        } else if (!strncmp(curve_str, "k-283", strlen("k-283"))) {
+            curve = ACVP_ECDSA_CURVE_K283;
+        } else if (!strncmp(curve_str, "k-409", strlen("k-409"))) {
+            curve = ACVP_ECDSA_CURVE_K409;
+        } else if (!strncmp(curve_str, "k-571", strlen("k-571"))) {
+            curve = ACVP_ECDSA_CURVE_K571;
+        } else if (!strncmp(curve_str, "p-224", strlen("p-224"))) {
+            curve = ACVP_ECDSA_CURVE_P224;
+        } else if (!strncmp(curve_str, "p-256", strlen("p-256"))) {
+            curve = ACVP_ECDSA_CURVE_P256;
+        } else if (!strncmp(curve_str, "p-384", strlen("p-384"))) {
+            curve = ACVP_ECDSA_CURVE_P384;
+        } else if (!strncmp(curve_str, "p-521", strlen("p-521"))) {
+            curve = ACVP_ECDSA_CURVE_P521;
+        } else {
+            ACVP_LOG_ERR("Server JSON invalid 'curve'");
+            return ACVP_INVALID_ARG;
+        }
+
+        hash_str = json_object_get_string(groupobj, "hashAlg");
+        if (!hash_str) {
+            ACVP_LOG_ERR("Server JSON missing 'hashAlg'");
+            return ACVP_MISSING_ARG;
+        }
+        if (!strncmp(hash_str, "SHA2-224", strlen("SHA2-224"))) {
+            hash = ACVP_SHA224;
+        } else if (!strncmp(hash_str, "SHA2-256", strlen("SHA2-256"))) {
+            hash = ACVP_SHA256;
+        } else if (!strncmp(hash_str, "SHA2-384", strlen("SHA2-384"))) {
+            hash = ACVP_SHA384;
+        } else if (!strncmp(hash_str, "SHA2-512", strlen("SHA2-512"))) {
+            hash = ACVP_SHA512;
+        } else {
+            ACVP_LOG_ERR("Server JSON invalid 'hashAlg'");
+            return ACVP_INVALID_ARG;
+        }
+
+        test_type_str = json_object_get_string(groupobj, "testType");
+        if (!test_type_str) {
+            ACVP_LOG_ERR("Server JSON missing 'testType'");
+            return ACVP_MISSING_ARG;
+        }
+        if (!strncmp(test_type_str, "AFT", 3)) {
             stc->test_type = ACVP_KAS_ECC_TT_AFT;
-        if (!strncmp(test_type, "VAL", 3))
+        } else if (!strncmp(test_type_str, "VAL", 3)) {
             stc->test_type = ACVP_KAS_ECC_TT_VAL;
+        } else {
+            ACVP_LOG_ERR("Server JSON invalid 'testType'");
+            return ACVP_INVALID_ARG;
+        }
     
-
         ACVP_LOG_INFO("    Test group: %d", i);
-        ACVP_LOG_INFO("      test type: %s", test_type);
-        ACVP_LOG_INFO("          curve: %s", curve);
-        ACVP_LOG_INFO("           hash: %s", hash);
-
+        ACVP_LOG_INFO("      test type: %s", test_type_str);
+        ACVP_LOG_INFO("          curve: %s", curve_str);
+        ACVP_LOG_INFO("           hash: %s", hash_str);
 
         tests = json_object_get_array(groupobj, "tests");
         t_cnt = json_array_get_count(tests);
 
         for (j = 0; j < t_cnt; j++) {
+            const char *psx = NULL, *psy = NULL, *pix = NULL,
+                       *piy = NULL, *d = NULL, *z = NULL;
+
             ACVP_LOG_INFO("Found new KAS-ECC Component test vector...");
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
@@ -518,16 +570,76 @@ static ACVP_RESULT acvp_kas_ecc_comp(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap, ACVP_TE
 
             json_object_set_number(r_tobj, "tcId", tc_id);
 
-            psx = (char *) json_object_get_string(testobj, "ephemeralPublicServerX");
-            psy = (char *) json_object_get_string(testobj, "ephemeralPublicServerY");
+            psx = json_object_get_string(testobj, "ephemeralPublicServerX");
+            if (!psx) {
+                ACVP_LOG_ERR("Server JSON missing 'ephemeralPublicServerX'");
+                return ACVP_MISSING_ARG;
+            }
+            if (strnlen(psx, ACVP_KAS_ECC_STR_MAX + 1) > ACVP_KAS_ECC_STR_MAX) {
+                ACVP_LOG_ERR("ephemeralPublicServerX too long, max allowed=(%d)",
+                             ACVP_KAS_ECC_STR_MAX);
+                return ACVP_INVALID_ARG;
+            }
+
+            psy = json_object_get_string(testobj, "ephemeralPublicServerY");
+            if (!psy) {
+                ACVP_LOG_ERR("Server JSON missing 'ephemeralPublicServerY'");
+                return ACVP_MISSING_ARG;
+            }
+            if (strnlen(psy, ACVP_KAS_ECC_STR_MAX + 1) > ACVP_KAS_ECC_STR_MAX) {
+                ACVP_LOG_ERR("ephemeralPublicServerY too long, max allowed=(%d)",
+                             ACVP_KAS_ECC_STR_MAX);
+                return ACVP_INVALID_ARG;
+            }
+
             ACVP_LOG_INFO("            psx: %s", psx);
             ACVP_LOG_INFO("            psy: %s", psy);
 
             if (stc->test_type == ACVP_KAS_ECC_TT_VAL) {
-                pix = (char *) json_object_get_string(testobj, "ephemeralPublicIutX");
-                piy = (char *) json_object_get_string(testobj, "ephemeralPublicIutY");
-                d = (char *) json_object_get_string(testobj, "ephemeralPrivateIut");
-                z = (char *) json_object_get_string(testobj, "hashZIut");
+                pix = json_object_get_string(testobj, "ephemeralPublicIutX");
+                if (!pix) {
+                    ACVP_LOG_ERR("Server JSON missing 'ephemeralPublicIutX'");
+                    return ACVP_MISSING_ARG;
+                }
+                if (strnlen(pix, ACVP_KAS_ECC_STR_MAX + 1) > ACVP_KAS_ECC_STR_MAX) {
+                    ACVP_LOG_ERR("ephemeralPublicIutX too long, max allowed=(%d)",
+                                 ACVP_KAS_ECC_STR_MAX);
+                    return ACVP_INVALID_ARG;
+                }
+
+                piy = json_object_get_string(testobj, "ephemeralPublicIutY");
+                if (!piy) {
+                    ACVP_LOG_ERR("Server JSON missing 'ephemeralPublicIutY'");
+                    return ACVP_MISSING_ARG;
+                }
+                if (strnlen(piy, ACVP_KAS_ECC_STR_MAX + 1) > ACVP_KAS_ECC_STR_MAX) {
+                    ACVP_LOG_ERR("ephemeralPublicIutY too long, max allowed=(%d)",
+                                 ACVP_KAS_ECC_STR_MAX);
+                    return ACVP_INVALID_ARG;
+                }
+
+                d = json_object_get_string(testobj, "ephemeralPrivateIut");
+                if (!d) {
+                    ACVP_LOG_ERR("Server JSON missing 'ephemeralPrivateIut'");
+                    return ACVP_MISSING_ARG;
+                }
+                if (strnlen(d, ACVP_KAS_ECC_STR_MAX + 1) > ACVP_KAS_ECC_STR_MAX) {
+                    ACVP_LOG_ERR("ephemeralPrivateIut too long, max allowed=(%d)",
+                                 ACVP_KAS_ECC_STR_MAX);
+                    return ACVP_INVALID_ARG;
+                }
+
+                z = json_object_get_string(testobj, "hashZIut");
+                if (!z) {
+                    ACVP_LOG_ERR("Server JSON missing 'hashZIut'");
+                    return ACVP_MISSING_ARG;
+                }
+                if (strnlen(z, ACVP_KAS_ECC_STR_MAX + 1) > ACVP_KAS_ECC_STR_MAX) {
+                    ACVP_LOG_ERR("hashZIut too long, max allowed=(%d)",
+                                 ACVP_KAS_ECC_STR_MAX);
+                    return ACVP_INVALID_ARG;
+                }
+
                 ACVP_LOG_INFO("              d: %s", d);
                 ACVP_LOG_INFO("            pix: %s", pix);
                 ACVP_LOG_INFO("            piy: %s", piy);
@@ -540,15 +652,18 @@ static ACVP_RESULT acvp_kas_ecc_comp(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap, ACVP_TE
              * TODO: this does mallocs, we can probably do the mallocs once for
              *       the entire vector set to be more efficient
              */
-            int psx_len = sizeof(psx)/2;
-            int psy_len = sizeof(psy)/2;
-            acvp_kas_ecc_init_comp_tc(ctx, stc, tc_id, curve, hash,
-                                      psx, psx_len, psy, psy_len, d, pix, piy, z, mode);
+            rv = acvp_kas_ecc_init_comp_tc(ctx, stc, tc_id, mode, curve, hash,
+                                           psx, psy, d, pix, piy, z);
+            if (rv != ACVP_SUCCESS) {
+                acvp_kas_ecc_release_tc(stc);
+                return ACVP_CRYPTO_MODULE_FAIL;
+            }
 
             /* Process the current KAT test vector... */
             rv = (cap->crypto_handler)(tc);
             if (rv != ACVP_SUCCESS) {
-                    return ACVP_CRYPTO_MODULE_FAIL;
+                acvp_kas_ecc_release_tc(stc);
+                return ACVP_CRYPTO_MODULE_FAIL;
             }
 
             /*
@@ -557,6 +672,7 @@ static ACVP_RESULT acvp_kas_ecc_comp(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap, ACVP_TE
             rv = acvp_kas_ecc_output_comp_tc(ctx, stc, r_tobj);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("JSON output failure in KAS-ECC module");
+                acvp_kas_ecc_release_tc(stc);
                 return rv;
             }
 
@@ -584,16 +700,21 @@ ACVP_RESULT acvp_kas_ecc_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     ACVP_TEST_CASE tc;
     ACVP_KAS_ECC_TC stc;
     ACVP_RESULT rv;
-    const char *alg_str = json_object_get_string(obj, "algorithm");
+    const char *alg_str = NULL;
     int mode = 0;
-    char *json_result;
-    const char *alg_mode;
+    char *json_result = NULL;
+    const char *mode_str = NULL;
 
+    if (!ctx) {
+        ACVP_LOG_ERR("No ctx for handler operation");
+        return ACVP_NO_CTX;
+    }
+
+    alg_str = json_object_get_string(obj, "algorithm");
     if (!alg_str) {
         ACVP_LOG_ERR("unable to parse 'algorithm' from JSON");
         return (ACVP_MALFORMED_JSON);
     }
-
 
     /*
      * Get a reference to the abstracted test case
@@ -624,19 +745,22 @@ ACVP_RESULT acvp_kas_ecc_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     json_object_set_number(r_vs, "vsId", ctx->vs_id);
     json_object_set_string(r_vs, "algorithm", alg_str);
 
-    alg_mode = json_object_get_string(obj, "mode");
-    json_object_set_string(r_vs, "mode", alg_mode);
+    mode_str = json_object_get_string(obj, "mode");
+    json_object_set_string(r_vs, "mode", mode_str);
     json_object_set_value(r_vs, "testResults", json_value_init_array());
     r_tarr = json_object_get_array(r_vs, "testResults");
 
-
-    if (!strncmp(alg_mode, "CDH-Component", 13)) {
-        mode = ACVP_KAS_ECC_MODE_CDH;
-        stc.cipher = ACVP_KAS_ECC_CDH;
-    }
-    if (!strncmp(alg_mode, "Component", 9)) {
-        mode = ACVP_KAS_ECC_MODE_COMPONENT;
-        stc.cipher = ACVP_KAS_ECC_COMP;
+    if (mode_str) {
+        if (!strncmp(mode_str, "CDH-Component", 13)) {
+            mode = ACVP_KAS_ECC_MODE_CDH;
+            stc.cipher = ACVP_KAS_ECC_CDH;
+        } else if (!strncmp(mode_str, "Component", 9)) {
+            mode = ACVP_KAS_ECC_MODE_COMPONENT;
+            stc.cipher = ACVP_KAS_ECC_COMP;
+        } else {
+            ACVP_LOG_ERR("Server JSON invalid 'mode'");
+            return ACVP_INVALID_ARG;
+        }
     }
     if (mode == 0) {
         mode = ACVP_KAS_ECC_MODE_NOCOMP;
