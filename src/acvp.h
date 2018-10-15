@@ -1123,8 +1123,6 @@ typedef struct acvp_dsa_tc_t {
     unsigned char *msg;
 } ACVP_DSA_TC;
 
-#define ACVP_KAS_ECC_MAX_STR 4096
-#define ACVP_KAS_ECC_MAX_BYTE ACVP_KAS_ECC_MAX_STR/2
 /*! @struct ACVP_KAS_ECC_MODE */
 typedef enum acvp_kas_ecc_mode {
     ACVP_KAS_ECC_MODE_COMPONENT = 1,
@@ -1199,8 +1197,9 @@ typedef struct acvp_kas_ecc_tc_t {
     ACVP_CIPHER cipher;
     ACVP_KAS_ECC_FUNC func; 
     int test_type;
-    int curve;
-    int md;
+    ACVP_KAS_ECC_MODE mode;
+    ACVP_ECDSA_CURVE curve;
+    ACVP_HASH_ALG md;
     unsigned char *psx;
     unsigned char *psy;
     unsigned char *pix;
@@ -1208,7 +1207,6 @@ typedef struct acvp_kas_ecc_tc_t {
     unsigned char *d;
     unsigned char *z;
     unsigned char *chash;
-    int mode;
     int psxlen;
     int psylen;
     int pixlen;
