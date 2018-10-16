@@ -152,6 +152,7 @@ end:
 static ACVP_RESULT acvp_kas_ecc_init_cdh_tc (ACVP_CTX *ctx,
                                              ACVP_KAS_ECC_TC *stc,
                                              unsigned int tc_id,
+                                             ACVP_KAS_ECC_TEST_TYPE test_type,
                                              ACVP_KAS_ECC_MODE mode,
                                              ACVP_ECDSA_CURVE curve,
                                              const char *psx,
@@ -160,6 +161,7 @@ static ACVP_RESULT acvp_kas_ecc_init_cdh_tc (ACVP_CTX *ctx,
     ACVP_RESULT rv;
     stc->mode = mode;
     stc->curve = curve;
+    stc->test_type = test_type;
 
     stc->psx = calloc(1, ACVP_KAS_ECC_BYTE_MAX);
     if (!stc->psx) { return ACVP_MALLOC_FAIL; }
@@ -195,6 +197,7 @@ static ACVP_RESULT acvp_kas_ecc_init_cdh_tc (ACVP_CTX *ctx,
 static ACVP_RESULT acvp_kas_ecc_init_comp_tc (ACVP_CTX *ctx,
                                               ACVP_KAS_ECC_TC *stc,
                                               unsigned int tc_id,
+                                              ACVP_KAS_ECC_TEST_TYPE test_type,
                                               ACVP_KAS_ECC_MODE mode,
                                               ACVP_ECDSA_CURVE curve,
                                               ACVP_HASH_ALG hash,
@@ -209,6 +212,7 @@ static ACVP_RESULT acvp_kas_ecc_init_comp_tc (ACVP_CTX *ctx,
     stc->mode = mode;
     stc->curve = curve;
     stc->md = hash;
+    stc->test_type = test_type;
 
     stc->psx = calloc(1, ACVP_KAS_ECC_BYTE_MAX);
     if (!stc->psx) { return ACVP_MALLOC_FAIL; }
@@ -309,6 +313,7 @@ static ACVP_RESULT acvp_kas_ecc_cdh(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap, ACVP_TES
     g_cnt = json_array_get_count(groups);
 
     for (i = 0; i < g_cnt; i++) {
+        ACVP_KAS_ECC_TEST_TYPE test_type = 0;
         ACVP_ECDSA_CURVE curve = 0;
         const char *test_type_str = NULL, *curve_str = NULL;
 
@@ -355,9 +360,9 @@ static ACVP_RESULT acvp_kas_ecc_cdh(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap, ACVP_TES
             return ACVP_MISSING_ARG;
         }
         if (!strncmp(test_type_str, "AFT", 3)) {
-            stc->test_type = ACVP_KAS_ECC_TT_AFT;
+            test_type = ACVP_KAS_ECC_TT_AFT;
         } else if (!strncmp(test_type_str, "VAL", 3)) {
-            stc->test_type = ACVP_KAS_ECC_TT_VAL;
+            test_type = ACVP_KAS_ECC_TT_VAL;
         } else {
             ACVP_LOG_ERR("Server JSON invalid 'testType'");
             return ACVP_INVALID_ARG;
@@ -416,8 +421,8 @@ static ACVP_RESULT acvp_kas_ecc_cdh(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap, ACVP_TES
              * TODO: this does mallocs, we can probably do the mallocs once for
              *       the entire vector set to be more efficient
              */
-            rv = acvp_kas_ecc_init_cdh_tc(ctx, stc, tc_id, mode, curve,
-                                          psx, psy);
+            rv = acvp_kas_ecc_init_cdh_tc(ctx, stc, tc_id, test_type, mode,
+                                          curve, psx, psy);
             if (rv != ACVP_SUCCESS) {
                 acvp_kas_ecc_release_tc(stc);
                 return ACVP_CRYPTO_MODULE_FAIL;
@@ -472,6 +477,7 @@ static ACVP_RESULT acvp_kas_ecc_comp(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap, ACVP_TE
     g_cnt = json_array_get_count(groups);
 
     for (i = 0; i < g_cnt; i++) {
+        ACVP_KAS_ECC_TEST_TYPE test_type = 0;
         ACVP_HASH_ALG hash = 0;
         ACVP_ECDSA_CURVE curve = 0;
         const char *test_type_str = NULL, *curve_str = NULL, *hash_str = NULL;
@@ -537,9 +543,9 @@ static ACVP_RESULT acvp_kas_ecc_comp(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap, ACVP_TE
             return ACVP_MISSING_ARG;
         }
         if (!strncmp(test_type_str, "AFT", 3)) {
-            stc->test_type = ACVP_KAS_ECC_TT_AFT;
+            test_type = ACVP_KAS_ECC_TT_AFT;
         } else if (!strncmp(test_type_str, "VAL", 3)) {
-            stc->test_type = ACVP_KAS_ECC_TT_VAL;
+            test_type = ACVP_KAS_ECC_TT_VAL;
         } else {
             ACVP_LOG_ERR("Server JSON invalid 'testType'");
             return ACVP_INVALID_ARG;
@@ -595,7 +601,7 @@ static ACVP_RESULT acvp_kas_ecc_comp(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap, ACVP_TE
             ACVP_LOG_INFO("            psx: %s", psx);
             ACVP_LOG_INFO("            psy: %s", psy);
 
-            if (stc->test_type == ACVP_KAS_ECC_TT_VAL) {
+            if (test_type == ACVP_KAS_ECC_TT_VAL) {
                 pix = json_object_get_string(testobj, "ephemeralPublicIutX");
                 if (!pix) {
                     ACVP_LOG_ERR("Server JSON missing 'ephemeralPublicIutX'");
@@ -652,8 +658,9 @@ static ACVP_RESULT acvp_kas_ecc_comp(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap, ACVP_TE
              * TODO: this does mallocs, we can probably do the mallocs once for
              *       the entire vector set to be more efficient
              */
-            rv = acvp_kas_ecc_init_comp_tc(ctx, stc, tc_id, mode, curve, hash,
-                                           psx, psy, d, pix, piy, z);
+            rv = acvp_kas_ecc_init_comp_tc(ctx, stc, tc_id, test_type, mode,
+                                           curve, hash, psx, psy,
+                                           d, pix, piy, z);
             if (rv != ACVP_SUCCESS) {
                 acvp_kas_ecc_release_tc(stc);
                 return ACVP_CRYPTO_MODULE_FAIL;
