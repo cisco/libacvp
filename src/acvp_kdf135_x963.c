@@ -165,6 +165,10 @@ ACVP_RESULT acvp_kdf135_x963_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     }
     
     alg_str_test = json_object_get_string(obj, "algorithm");  
+    if (!alg_str_test) {
+        ACVP_LOG_ERR("Server JSON missing 'algorithm'");
+        return ACVP_MISSING_ARG;
+    }
     if (strncmp(alg_str_test, "kdf-components", 14)) {
         ACVP_LOG_ERR("Invalid algorithm for this function %s", alg_str_test);
         return ACVP_INVALID_ARG;
