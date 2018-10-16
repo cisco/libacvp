@@ -303,40 +303,45 @@ static ACVP_RESULT acvp_kas_ffc_comp(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap, ACVP_TE
                 return ACVP_INVALID_ARG;
             }
 
-            epri = json_object_get_string(testobj, "ephemeralPrivateIut");
-            if (!epri) {
-                ACVP_LOG_ERR("Server JSON missing 'ephemeralPrivateIut'");
-                return ACVP_MISSING_ARG;
-            }
-            if (strnlen(epri, ACVP_KAS_FFC_STR_MAX + 1)
-                > ACVP_KAS_FFC_STR_MAX) {
-                ACVP_LOG_ERR("ephemeralPrivateIut too long, max allowed=(%d)",
-                             ACVP_KAS_FFC_STR_MAX);
-                return ACVP_INVALID_ARG;
-            }
+            if (stc->test_type == ACVP_KAS_FFC_TT_VAL) {
+                /*
+                 * Validate
+                 */
+                epri = json_object_get_string(testobj, "ephemeralPrivateIut");
+                if (!epri) {
+                    ACVP_LOG_ERR("Server JSON missing 'ephemeralPrivateIut'");
+                    return ACVP_MISSING_ARG;
+                }
+                if (strnlen(epri, ACVP_KAS_FFC_STR_MAX + 1)
+                    > ACVP_KAS_FFC_STR_MAX) {
+                    ACVP_LOG_ERR("ephemeralPrivateIut too long, max allowed=(%d)",
+                                 ACVP_KAS_FFC_STR_MAX);
+                    return ACVP_INVALID_ARG;
+                }
 
-            epui = json_object_get_string(testobj, "ephemeralPublicIut");
-            if (!epui) {
-                ACVP_LOG_ERR("Server JSON missing 'ephemeralPublicIut'");
-                return ACVP_MISSING_ARG;
-            }
-            if (strnlen(epui, ACVP_KAS_FFC_STR_MAX + 1)
-                > ACVP_KAS_FFC_STR_MAX) {
-                ACVP_LOG_ERR("ephemeralPublicIut too long, max allowed=(%d)",
-                             ACVP_KAS_FFC_STR_MAX);
-                return ACVP_INVALID_ARG;
-            }
+                epui = json_object_get_string(testobj, "ephemeralPublicIut");
+                if (!epui) {
+                    ACVP_LOG_ERR("Server JSON missing 'ephemeralPublicIut'");
+                    return ACVP_MISSING_ARG;
+                }
+                if (strnlen(epui, ACVP_KAS_FFC_STR_MAX + 1)
+                    > ACVP_KAS_FFC_STR_MAX) {
+                    ACVP_LOG_ERR("ephemeralPublicIut too long, max allowed=(%d)",
+                                 ACVP_KAS_FFC_STR_MAX);
+                    return ACVP_INVALID_ARG;
+                }
 
-            z = json_object_get_string(testobj, "hashZIut");
-            if (!z) {
-                ACVP_LOG_ERR("Server JSON missing 'hashZIut'");
-                return ACVP_MISSING_ARG;
-            }
-            if (strnlen(z, ACVP_KAS_FFC_STR_MAX + 1)
-                > ACVP_KAS_FFC_STR_MAX) {
-                ACVP_LOG_ERR("hashZIut too long, max allowed=(%d)",
-                             ACVP_KAS_FFC_STR_MAX);
-                return ACVP_INVALID_ARG;
+                z = json_object_get_string(testobj, "hashZIut");
+                if (!z) {
+                    ACVP_LOG_ERR("Server JSON missing 'hashZIut'");
+                    return ACVP_MISSING_ARG;
+                }
+                if (strnlen(z, ACVP_KAS_FFC_STR_MAX + 1)
+                    > ACVP_KAS_FFC_STR_MAX) {
+                    ACVP_LOG_ERR("hashZIut too long, max allowed=(%d)",
+                                 ACVP_KAS_FFC_STR_MAX);
+                    return ACVP_INVALID_ARG;
+                }
             }
 
             ACVP_LOG_INFO("            eps: %s", eps);
