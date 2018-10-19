@@ -706,7 +706,7 @@ ACVP_RESULT acvp_kas_ecc_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     ACVP_CAPS_LIST *cap;
     ACVP_TEST_CASE tc;
     ACVP_KAS_ECC_TC stc;
-    ACVP_RESULT rv;
+    ACVP_RESULT rv = ACVP_SUCCESS;
     const char *alg_str = NULL;
     int mode = 0;
     char *json_result = NULL;
@@ -783,7 +783,9 @@ ACVP_RESULT acvp_kas_ecc_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
             return (ACVP_UNSUPPORTED_OP);
         }
         rv = acvp_kas_ecc_cdh(ctx, cap, &tc, &stc, obj, mode, r_tarr);
-        break;        
+        if (rv != ACVP_SUCCESS) return rv;
+        break;
+
     case ACVP_KAS_ECC_MODE_COMPONENT:
         cap = acvp_locate_cap_entry(ctx, ACVP_KAS_ECC_COMP);
         if (!cap) {
@@ -791,7 +793,9 @@ ACVP_RESULT acvp_kas_ecc_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
             return ACVP_UNSUPPORTED_OP;
         }
         rv = acvp_kas_ecc_comp(ctx, cap, &tc, &stc, obj, mode, r_tarr);
-        break;        
+        if (rv != ACVP_SUCCESS) return rv;
+        break;
+
     case ACVP_KAS_ECC_MODE_NOCOMP:
     default:
         ACVP_LOG_ERR("ACVP server requesting unsupported KAS-ECC mode");
