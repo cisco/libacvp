@@ -410,7 +410,7 @@ ACVP_RESULT acvp_kas_ffc_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     ACVP_CAPS_LIST *cap;
     ACVP_TEST_CASE tc;
     ACVP_KAS_FFC_TC stc;
-    ACVP_RESULT rv;
+    ACVP_RESULT rv = ACVP_SUCCESS;
     const char *alg_str = json_object_get_string(obj, "algorithm");
     int mode = 0;
     char *json_result = NULL;
@@ -484,7 +484,9 @@ ACVP_RESULT acvp_kas_ffc_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
             return ACVP_UNSUPPORTED_OP;
         }
         rv = acvp_kas_ffc_comp(ctx, cap, &tc, &stc, obj, mode, r_tarr);
-        break;        
+        if (rv != ACVP_SUCCESS) return rv;
+        break;
+
     case ACVP_KAS_FFC_MODE_NOCOMP:
     default:
         ACVP_LOG_ERR("ACVP server requesting unsupported KAS-FFC mode");
