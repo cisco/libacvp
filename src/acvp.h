@@ -2623,7 +2623,7 @@ ACVP_RESULT acvp_hexstr_to_bin (const char *src, unsigned char *dest, int dest_m
  */
 char *acvp_lookup_error_string (ACVP_RESULT rv);
 
-void acvp_cleanup (void);
+ACVP_RESULT acvp_cleanup (ACVP_CTX *ctx);
 
 char *acvp_version (void);
 

@@ -62,13 +62,37 @@ void acvp_log_msg (ACVP_CTX *ctx, ACVP_LOG_LVL level, const char *format, ...) {
     }
 }
 
-/*
+/*!
+ *
+ * @brief Free all memory in the libacvp library.
+ *        Please use this before you application exits.
+ *
+ * The libacvp library allocates memory internally that needs
+ * to be freed before the calling application exits. The user
+ * of libacvp should ensure that this function is called upon
+ * encountering an error, or successful program termination.
+ *
  * Curl requires a cleanup function to be invoked when done.
  * We must extend this to our user, which is done here.
  * Our users shouldn't have to include curl.h.
+ *
+ * @param ctx Pointer to ACVP_CTX to be freed. May be NULL.
+ *
  */
-void acvp_cleanup (void) {
+ACVP_RESULT acvp_cleanup (ACVP_CTX *ctx) {
+    ACVP_RESULT rv = ACVP_SUCCESS;
+
+    if (ctx) {
+        /* Only call if ctx is not null */
+        rv = acvp_free_test_session(ctx);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Failed to free parameter 'ctx'");
+        }
+    }
+
     curl_global_cleanup();
+
+    return rv;
 }
 
 /*

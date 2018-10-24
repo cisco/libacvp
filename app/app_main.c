@@ -664,8 +664,7 @@ static int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
 }
 
 int main(int argc, char **argv) {
-    ACVP_RESULT rv;
-    int ret = 1; /* return code for main function */
+    ACVP_RESULT rv = ACVP_SUCCESS;
     ACVP_CTX *ctx = NULL;
     char ssl_version[10];
     APP_CONFIG cfg = {0};
@@ -867,22 +866,14 @@ int main(int argc, char **argv) {
         printf("Unable to retrieve test results (%d)\n", rv);
         goto end;
     }
-    /*
-     * Finally, we free the test session context and cleanup
-     */
-    rv = acvp_free_test_session(ctx);
-    if (rv != ACVP_SUCCESS) {
-        printf("Failed to free ACVP context\n");
-        goto end;
-    }
-
-    ret = 0; /* Success */
 
 end:
-    acvp_cleanup();
     if (glb_cipher_ctx) EVP_CIPHER_CTX_free(glb_cipher_ctx);
 
-    return ret;
+    /* Free all memory associated with libacvp */
+    rv = acvp_cleanup(ctx);
+
+    return rv;
 }
 
 static int enable_aes (ACVP_CTX *ctx) {
