@@ -214,6 +214,8 @@
 #define ACVP_ALG_KDF108          "KDF"
 #define ACVP_ALG_KDF135_X963     "ansix9.63"
 
+#define ACVP_CAPABILITY_STR_MAX 512 /**< Arbitrary string length limit */
+
 /*
  *  Defines the key lengths and block lengths (in bytes)
  *  of symmetric block ciphers.
@@ -743,7 +745,7 @@ typedef struct acvp_rsa_mode_caps_list {
 typedef struct acvp_rsa_keygen_capability_t {
     int key_format_crt;                     // if false, key format is assumed to be standard
     ACVP_RSA_PUB_EXP_MODE pub_exp_mode;
-    unsigned char *fixed_pub_exp;               // hex value of e
+    char *fixed_pub_exp;               // hex value of e
     ACVP_RSA_KEYGEN_MODE rand_pq;        // as defined in FIPS186-4
     char *rand_pq_str;
     int info_gen_by_server;                  // boolean
@@ -762,7 +764,7 @@ typedef struct acvp_rsa_sig_capability_t {
     char *sig_type_str;
     int sig_type;
     int pub_exp_mode; // for sigVer only
-    unsigned char *fixed_pub_exp; // hex value of e
+    char *fixed_pub_exp; // hex value of e
     ACVP_RSA_MODE_CAPS_LIST *mode_capabilities; //holds modRSASigGen (int) and hashSigGen (list)
     struct acvp_rsa_sig_capability_t *next;
 } ACVP_RSA_SIG_CAP;
