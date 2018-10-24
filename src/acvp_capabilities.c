@@ -2485,26 +2485,45 @@ ACVP_RESULT acvp_enable_rsa_keygen_exp_parm (ACVP_CTX *ctx,
                                              ACVP_RSA_PARM param,
                                              char *value
 ) {
-    ACVP_CAPS_LIST *cap_list;
+    ACVP_CAPS_LIST *cap_list = NULL;
+    ACVP_RSA_KEYGEN_CAP *cap = NULL;
     
     cap_list = acvp_locate_cap_entry(ctx, ACVP_RSA_KEYGEN);
     if (!cap_list) {
         ACVP_LOG_ERR("Cap entry not found.");
         return ACVP_NO_CAP;
     }
+
+    /* Get pointer to rsa keygen cap */
+    cap = cap_list->cap.rsa_keygen_cap;
     
     /*
      * Add the value to the cap
      */
     switch (param) {
     case ACVP_FIXED_PUB_EXP_VAL:
-        if (cap_list->cap.rsa_keygen_cap->pub_exp_mode == ACVP_RSA_PUB_EXP_MODE_FIXED) {
-            cap_list->cap.rsa_keygen_cap->fixed_pub_exp = (unsigned char *)value;
+        if (cap->pub_exp_mode == ACVP_RSA_PUB_EXP_MODE_FIXED) {
+            if (cap->fixed_pub_exp == NULL) {
+                unsigned int len = strnlen(value, ACVP_CAPABILITY_STR_MAX + 1);
+
+                if (len > ACVP_CAPABILITY_STR_MAX) {
+                    ACVP_LOG_ERR("Parameter 'value' string is too long. "
+                                 "max allowed is (%d) characters.",
+                                 ACVP_CAPABILITY_STR_MAX);
+                    return ACVP_INVALID_ARG;
+                }
+
+                /* Make sure this is deallocated */
+                cap->fixed_pub_exp = calloc(len, sizeof(char));
+                strncpy(cap->fixed_pub_exp, value, len);
+            } else {
+                ACVP_LOG_ERR("ACVP_FIXED_PUB_EXP_VAL has already been set.");
+                return ACVP_UNSUPPORTED_OP;
+            }
         }
         break;
     default:
         return ACVP_INVALID_ARG;
-        break;
     }
     
     return ACVP_SUCCESS;
@@ -2518,26 +2537,45 @@ ACVP_RESULT acvp_enable_rsa_sigver_exp_parm (ACVP_CTX *ctx,
                                              ACVP_RSA_PARM param,
                                              char *value
 ) {
-    ACVP_CAPS_LIST *cap_list;
+    ACVP_CAPS_LIST *cap_list = NULL;
+    ACVP_RSA_SIG_CAP *cap = NULL;
     
     cap_list = acvp_locate_cap_entry(ctx, ACVP_RSA_SIGVER);
     if (!cap_list) {
         ACVP_LOG_ERR("Cap entry not found.");
         return ACVP_NO_CAP;
     }
+
+    /* Get pointer to rsa keygen cap */
+    cap = cap_list->cap.rsa_sigver_cap;
     
     /*
      * Add the value to the cap
      */
     switch (param) {
     case ACVP_FIXED_PUB_EXP_VAL:
-        if (cap_list->cap.rsa_sigver_cap->pub_exp_mode == ACVP_RSA_PUB_EXP_MODE_FIXED) {
-            cap_list->cap.rsa_sigver_cap->fixed_pub_exp = (unsigned char *)value;
+        if (cap->pub_exp_mode == ACVP_RSA_PUB_EXP_MODE_FIXED) {
+            if (cap->fixed_pub_exp == NULL) {
+                unsigned int len = strnlen(value, ACVP_CAPABILITY_STR_MAX + 1);
+
+                if (len > ACVP_CAPABILITY_STR_MAX) {
+                    ACVP_LOG_ERR("Parameter 'value' string is too long. "
+                                 "max allowed is (%d) characters.",
+                                 ACVP_CAPABILITY_STR_MAX);
+                    return ACVP_INVALID_ARG;
+                }
+
+                /* Make sure this is deallocated */
+                cap->fixed_pub_exp = calloc(len, sizeof(char));
+                strncpy(cap->fixed_pub_exp, value, len);
+            } else {
+                ACVP_LOG_ERR("ACVP_FIXED_PUB_EXP_VAL has already been set.");
+                return ACVP_UNSUPPORTED_OP;
+            }
         }
         break;
     default:
         return ACVP_INVALID_ARG;
-        break;
     }
     
     return ACVP_SUCCESS;

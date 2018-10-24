@@ -172,7 +172,7 @@ static EVP_CIPHER_CTX *glb_cipher_ctx = NULL; /* need to maintain across calls f
 #define CHECK_ENABLE_CAP_RV(rv) \
     if (rv != ACVP_SUCCESS) { \
         printf("Failed to register capability with libacvp (rv=%d: %s)\n", rv, acvp_lookup_error_string(rv)); \
-        return 1; \
+        goto end; \
     }
 
 
@@ -886,7 +886,7 @@ end:
 }
 
 static int enable_aes (ACVP_CTX *ctx) {
-    ACVP_RESULT rv;
+    ACVP_RESULT rv = ACVP_SUCCESS;
 
     rv = acvp_enable_sym_cipher_cap(ctx, ACVP_AES_GCM, ACVP_DIR_BOTH, ACVP_KO_NA, ACVP_IVGEN_SRC_INT,
                                     ACVP_IVGEN_MODE_821, &app_aes_handler_aead);
@@ -1128,11 +1128,13 @@ static int enable_aes (ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
 #endif
 
-    return 0;
+end:
+
+    return rv;
 }
 
 static int enable_tdes (ACVP_CTX *ctx) {
-    ACVP_RESULT rv;
+    ACVP_RESULT rv = ACVP_SUCCESS;
 
     /*
      * Enable 3DES-ECB
@@ -1227,11 +1229,13 @@ static int enable_tdes (ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
 #endif
 
-    return 0;
+end:
+
+    return rv;
 }
 
 static int enable_hash (ACVP_CTX *ctx) {
-    ACVP_RESULT rv;
+    ACVP_RESULT rv = ACVP_SUCCESS;
 
     /*
      * Enable SHA-1 and SHA-2
@@ -1271,11 +1275,13 @@ static int enable_hash (ACVP_CTX *ctx) {
     rv = acvp_enable_hash_cap_parm(ctx, ACVP_HASH_SHA512, ACVP_HASH_IN_EMPTY, 1);
     CHECK_ENABLE_CAP_RV(rv);
 
-    return 0;
+end:
+
+    return rv;
 }
 
 static int enable_cmac (ACVP_CTX *ctx) {
-    ACVP_RESULT rv;
+    ACVP_RESULT rv = ACVP_SUCCESS;
 
     /*
      * Enable CMAC
@@ -1326,11 +1332,13 @@ static int enable_cmac (ACVP_CTX *ctx) {
     rv = acvp_enable_prereq_cap(ctx, ACVP_CMAC_TDES, ACVP_PREREQ_TDES, value);
     CHECK_ENABLE_CAP_RV(rv);
 
-    return 0;
+end:
+
+    return rv;
 }
 
 static int enable_hmac (ACVP_CTX *ctx) {
-    ACVP_RESULT rv;
+    ACVP_RESULT rv = ACVP_SUCCESS;
 
     /*
      * Enable HMAC: TODO - need to add increment value in bits, default to 64 now.
@@ -1390,14 +1398,16 @@ static int enable_hmac (ACVP_CTX *ctx) {
     rv = acvp_enable_prereq_cap(ctx, ACVP_HMAC_SHA2_512, ACVP_PREREQ_SHA, value);
     CHECK_ENABLE_CAP_RV(rv);
 
-    return 0;
+end:
+
+    return rv;
 }
 
 #ifdef OPENSSL_KDF_SUPPORT
 #define ENGID1 "800002B805123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456"
 #define ENGID2 "000002b87766554433221100"
 static int enable_kdf (ACVP_CTX *ctx) {
-    ACVP_RESULT rv;
+    ACVP_RESULT rv = ACVP_SUCCESS;
     int i, flags = 0;
 
     /*
@@ -1559,13 +1569,15 @@ static int enable_kdf (ACVP_CTX *ctx) {
     rv = acvp_enable_kdf108_cap_param(ctx, ACVP_KDF108_MODE_COUNTER, ACVP_KDF108_SUPPORTS_EMPTY_IV, 0);
     CHECK_ENABLE_CAP_RV(rv);
 
-    return 0;
+end:
+
+    return rv;
 }
 #endif
 
 #ifdef ACVP_NO_RUNTIME
 static int enable_kas_ecc (ACVP_CTX *ctx) {
-    ACVP_RESULT rv;
+    ACVP_RESULT rv = ACVP_SUCCESS;
 
     /*
      * Enable KAS-ECC....
@@ -1632,11 +1644,13 @@ static int enable_kas_ecc (ACVP_CTX *ctx) {
     rv = acvp_enable_kas_ecc_cap_scheme(ctx, ACVP_KAS_ECC_COMP, ACVP_KAS_ECC_MODE_COMPONENT, ACVP_KAS_ECC_EPHEMERAL_UNIFIED, ACVP_KAS_ECC_EE, ACVP_ECDSA_CURVE_P521, ACVP_SHA512);
     CHECK_ENABLE_CAP_RV(rv);
 
-    return 0;
+end:
+
+    return rv;
 }
 
 static int enable_kas_ffc (ACVP_CTX *ctx) {
-    ACVP_RESULT rv;
+    ACVP_RESULT rv = ACVP_SUCCESS;
 
     /*
      * Enable KAS-FFC....
@@ -1672,11 +1686,13 @@ static int enable_kas_ffc (ACVP_CTX *ctx) {
     rv = acvp_enable_kas_ffc_cap_scheme(ctx, ACVP_KAS_FFC_COMP, ACVP_KAS_FFC_MODE_COMPONENT, ACVP_KAS_FFC_DH_EPHEMERAL, ACVP_KAS_FFC_FB, ACVP_SHA256);
     CHECK_ENABLE_CAP_RV(rv);
 
-    return 0;
+end:
+
+    return rv;
 }
 
 static int enable_dsa (ACVP_CTX *ctx) {
-    ACVP_RESULT rv;
+    ACVP_RESULT rv = ACVP_SUCCESS;
 
     /*
      * Enable DSA....
@@ -1839,19 +1855,22 @@ static int enable_dsa (ACVP_CTX *ctx) {
     rv = acvp_enable_dsa_cap_parm(ctx, ACVP_DSA_SIGVER, ACVP_DSA_MODE_SIGVER, ACVP_DSA_LN3072_256, ACVP_DSA_SHA512);
     CHECK_ENABLE_CAP_RV(rv);
 
-    return 0;
+end:
+
+    return rv;
 }
 
 static int enable_rsa (ACVP_CTX *ctx) {
-    ACVP_RESULT rv;
-    BIGNUM *expo;
+    ACVP_RESULT rv = ACVP_SUCCESS;
+    BIGNUM *expo = NULL;
+    char *expo_str = NULL;
 
     expo = FIPS_bn_new();
     if (!expo || !BN_set_word(expo, RSA_F4)) {
         printf("oh no\n");
         return 1;
     }
-    char *expo_str = BN_bn2hex(expo);
+    expo_str = BN_bn2hex(expo);
     FIPS_bn_free(expo);
 
     /*
@@ -2055,11 +2074,14 @@ static int enable_rsa (ACVP_CTX *ctx) {
     rv = acvp_enable_rsa_sigver_caps_parm(ctx, RSA_SIG_TYPE_PKCS1PSS, 3072, ACVP_STR_SHA2_512, 0);
     CHECK_ENABLE_CAP_RV(rv);
 
-    return 0;
+end:
+    if (expo_str) free(expo_str);
+
+    return rv;
 }
 
 static int enable_ecdsa (ACVP_CTX *ctx) {
-    ACVP_RESULT rv;
+    ACVP_RESULT rv = ACVP_SUCCESS;
 
     /*
      * Enable ECDSA keyGen...
@@ -2216,10 +2238,14 @@ static int enable_ecdsa (ACVP_CTX *ctx) {
     rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_ECDSA_HASH_ALG, "SHA2-512");
     CHECK_ENABLE_CAP_RV(rv);
 
-    return 0;
+end:
+
+    return rv;
 }
 
 static int enable_drbg (ACVP_CTX *ctx) {
+    ACVP_RESULT rv = ACVP_SUCCESS;
+
     /*
      * Register DRBG
      */
@@ -2230,7 +2256,6 @@ static int enable_drbg (ACVP_CTX *ctx) {
           (printf("Failed to enable FIPS mode.\n"));
           return 1;
       }
-    ACVP_RESULT rv;
 
     rv = acvp_enable_drbg_cap(ctx, ACVP_HASHDRBG, &app_drbg_handler);
     CHECK_ENABLE_CAP_RV(rv);
@@ -2518,7 +2543,9 @@ static int enable_drbg (ACVP_CTX *ctx) {
             ACVP_DRBG_RET_BITS_LEN, 256);
     CHECK_ENABLE_CAP_RV(rv);
 
-    return 0;
+end:
+
+    return rv;
 }
 #endif
 
