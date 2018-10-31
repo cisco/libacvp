@@ -283,14 +283,34 @@ static ACVP_RESULT acvp_ecdsa_kat_handler_internal (ACVP_CTX *ctx, JSON_Object *
     char *hash_alg = NULL, *curve = NULL, *secret_gen_mode = NULL;
     char *alg_str, *mode_str, *qx = NULL, *qy = NULL, *r = NULL, *s = NULL, *message = NULL;
     
+    if (!ctx) {
+        ACVP_LOG_ERR("No ctx for handler operation");
+        return ACVP_NO_CTX;
+    }
+    
     alg_str = (char *) json_object_get_string(obj, "algorithm");
     if (!alg_str) {
         ACVP_LOG_ERR("ERROR: unable to parse 'algorithm' from JSON");
         return (ACVP_MALFORMED_JSON);
     }
+    if (strncmp(alg_str, ACVP_ALG_ECDSA, strlen(ACVP_ALG_ECDSA))) {
+        ACVP_LOG_ERR("Invalid algorithm string in JSON");
+        return ACVP_INVALID_ARG;
+    }
     
     tc.tc.ecdsa = &stc;
     mode_str = (char *) json_object_get_string(obj, "mode");
+    if (!mode_str) {
+        ACVP_LOG_ERR("Server JSON missing 'mode_str'");
+        return ACVP_MALFORMED_JSON;
+    }
+    if (strncmp(mode_str, ACVP_MODE_KEYGEN, strlen(ACVP_MODE_KEYGEN)) &&
+        strncmp(mode_str, ACVP_MODE_KEYVER, strlen(ACVP_MODE_KEYVER)) &&
+        strncmp(mode_str, ACVP_MODE_SIGGEN, strlen(ACVP_MODE_SIGGEN)) &&
+        strncmp(mode_str, ACVP_MODE_SIGVER, strlen(ACVP_MODE_SIGVER))) {
+        ACVP_LOG_ERR("Server JSON includes unrecognized mode");
+        return ACVP_INVALID_ARG;
+    }
     
     alg_id = cipher;
     
@@ -328,6 +348,10 @@ static ACVP_RESULT acvp_ecdsa_kat_handler_internal (ACVP_CTX *ctx, JSON_Object *
     r_tarr = json_object_get_array(r_vs, "testResults");
     
     groups = json_object_get_array(obj, "testGroups");
+    if (!groups) {
+        ACVP_LOG_ERR("Missing testGroups from server JSON");
+        return ACVP_MALFORMED_JSON;
+    }
     g_cnt = json_array_get_count(groups);
     
     for (i = 0; i < g_cnt; i++) {
@@ -337,10 +361,30 @@ static ACVP_RESULT acvp_ecdsa_kat_handler_internal (ACVP_CTX *ctx, JSON_Object *
          * Get a reference to the abstracted test case
          */
         curve = (char *) json_object_get_string(groupobj, "curve");
+        if (!curve) {
+            ACVP_LOG_ERR("Server JSON missing 'curve'");
+            return ACVP_MISSING_ARG;
+        }
+        if (!acvp_lookup_ecdsa_curve(alg_id, curve)) {
+            ACVP_LOG_ERR("Server JSON includes unrecognized curve");
+            return ACVP_INVALID_ARG;
+        }
         if (alg_id == ACVP_ECDSA_KEYGEN) {
             secret_gen_mode = (char *) json_object_get_string(groupobj, "secretGenerationMode");
+            if (!secret_gen_mode) {
+                ACVP_LOG_ERR("Server JSON missing 'secret_gen_mode'");
+                return ACVP_MISSING_ARG;
+            }
         } else if (alg_id == ACVP_ECDSA_SIGGEN || alg_id == ACVP_ECDSA_SIGVER) {
             hash_alg = (char *) json_object_get_string(groupobj, "hashAlg");
+            if (!hash_alg) {
+                ACVP_LOG_ERR("Server JSON missing 'hash_alg'");
+                return ACVP_MISSING_ARG;
+            }
+            if (is_valid_hash_alg(hash_alg) == ACVP_INVALID_ARG) {
+                ACVP_LOG_ERR("Invalid hash alg");
+                return ACVP_INVALID_ARG;
+            }
         }
         
         ACVP_LOG_INFO("           Test group: %d", i);
@@ -360,13 +404,39 @@ static ACVP_RESULT acvp_ecdsa_kat_handler_internal (ACVP_CTX *ctx, JSON_Object *
             if (alg_id == ACVP_ECDSA_KEYVER || alg_id == ACVP_ECDSA_SIGVER) {
                 qx = (char *) json_object_get_string(testobj, "qx");
                 qy = (char *) json_object_get_string(testobj, "qy");
+                if (!qx || !qy) {
+                    ACVP_LOG_ERR("Server JSON missing 'qx' or 'qy'");
+                    return ACVP_MISSING_ARG;
+                }
+                if (strnlen(qx, ACVP_ECDSA_EXP_LEN_MAX + 1) > ACVP_ECDSA_EXP_LEN_MAX ||
+                    strnlen(qy, ACVP_ECDSA_EXP_LEN_MAX + 1) > ACVP_ECDSA_EXP_LEN_MAX) {
+                    ACVP_LOG_ERR("'qx' or 'qy' too long");
+                    return ACVP_INVALID_ARG;
+                }
             }
             if (alg_id == ACVP_ECDSA_SIGGEN || alg_id == ACVP_ECDSA_SIGVER) {
                 message = (char *) json_object_get_string(testobj, "message");
+                if (!message) {
+                    ACVP_LOG_ERR("Server JSON missing 'message'");
+                    return ACVP_MISSING_ARG;
+                }
+                if (strnlen(message, ACVP_ECDSA_MSGLEN_MAX + 1) > ACVP_ECDSA_MSGLEN_MAX) {
+                    ACVP_LOG_ERR("message string too long");
+                    return ACVP_INVALID_ARG;
+                }
             }
             if (alg_id == ACVP_ECDSA_SIGVER) {
                 r = (char *) json_object_get_string(testobj, "r");
                 s = (char *) json_object_get_string(testobj, "s");
+                if (!r || !s) {
+                    ACVP_LOG_ERR("Server JSON missing 'r' or 's'");
+                    return ACVP_MISSING_ARG;
+                }
+                if (strnlen(r, ACVP_ECDSA_EXP_LEN_MAX + 1) > ACVP_ECDSA_EXP_LEN_MAX ||
+                    strnlen(s, ACVP_ECDSA_EXP_LEN_MAX + 1) > ACVP_ECDSA_EXP_LEN_MAX) {
+                    ACVP_LOG_ERR("'r' or 's' too long");
+                    return ACVP_INVALID_ARG;
+                }
             }
             
             ACVP_LOG_INFO("        Test case: %d", j);
