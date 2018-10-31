@@ -3234,19 +3234,19 @@ static ACVP_RESULT app_sha_handler(ACVP_TEST_CASE *test_case)
     tc = test_case->tc.hash;
 
     switch (tc->cipher) {
-    case ACVP_SHA1:
+    case ACVP_HASH_SHA1:
   md = EVP_sha1();
   break;
-    case ACVP_SHA224:
+    case ACVP_HASH_SHA224:
   md = EVP_sha224();
   break;
-    case ACVP_SHA256:
+    case ACVP_HASH_SHA256:
   md = EVP_sha256();
   break;
-    case ACVP_SHA384:
+    case ACVP_HASH_SHA384:
   md = EVP_sha384();
   break;
-    case ACVP_SHA512:
+    case ACVP_HASH_SHA512:
   md = EVP_sha512();
   break;
     default:
