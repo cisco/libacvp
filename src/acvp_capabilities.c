@@ -1800,6 +1800,42 @@ ACVP_RESULT acvp_enable_drbg_length_cap (ACVP_CTX *ctx,
         drbg_cap_mode_list->cap_mode.mode = mode;
         cap_list->cap.drbg_cap->drbg_cap_mode_list = drbg_cap_mode_list;
     }
+
+    switch (param) {
+    case ACVP_DRBG_ENTROPY_LEN:
+        if (max > ACVP_DRBG_ENTPY_IN_BIT_MAX) {
+            ACVP_LOG_ERR("Parameter 'max'(%d) > ACVP_DRBG_ENTPY_IN_BIT_MAX(%d). "
+                         "Please reduce the integer.",
+                         max, ACVP_DRBG_ENTPY_IN_BIT_MAX);
+            return ACVP_INVALID_ARG;
+        }
+        break;
+    case ACVP_DRBG_NONCE_LEN:
+        if (max > ACVP_DRBG_NONCE_BIT_MAX) {
+            ACVP_LOG_ERR("Parameter 'max'(%d) > ACVP_DRBG_NONCE_BIT_MAX(%d). "
+                         "Please reduce the integer.",
+                         max, ACVP_DRBG_NONCE_BIT_MAX);
+            return ACVP_INVALID_ARG;
+        }
+        break;
+    case ACVP_DRBG_PERSO_LEN:
+        if (max > ACVP_DRBG_PER_SO_BIT_MAX) {
+            ACVP_LOG_ERR("Parameter 'max'(%d) > ACVP_DRBG_PER_SO_BIT_MAX(%d). "
+                         "Please reduce the integer.",
+                         max, ACVP_DRBG_PER_SO_BIT_MAX);
+            return ACVP_INVALID_ARG;
+        }
+        break;
+    case ACVP_DRBG_ADD_IN_LEN:
+        if (max > ACVP_DRBG_ADDI_IN_BIT_MAX) {
+            ACVP_LOG_ERR("Parameter 'max'(%d) > ACVP_DRBG_ADDI_IN_BIT_MAX(%d). "
+                         "Please reduce the integer.",
+                         max, ACVP_DRBG_ADDI_IN_BIT_MAX);
+            return ACVP_INVALID_ARG;
+        }
+    default:
+        break;
+    }
     
     /*
      * Add the length range to the cap
