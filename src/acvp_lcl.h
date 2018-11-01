@@ -262,11 +262,34 @@
 #define ACVP_SYM_AAD_MAX (ACVP_SYM_AAD_BIT_MAX >> 2) /**< 16384 characters */
 #define ACVP_SYM_AAD_BYTE_MAX (ACVP_SYM_AAD_BIT_MAX >> 3) /**< 8192 bytes */
 
-#define ACVP_DRB_MAX             4096
-#define ACVP_DRBG_ENTPY_IN_MAX   256
-#define ACVP_DRBG_NONCE_MAX      256
-#define ACVP_DRBG_PER_SO_MAX     256
-#define ACVP_DRBG_ADDI_IN_MAX    256
+/**
+ * Accepted length ranges for DRBG.
+ * https://github.com/usnistgov/ACVP/blob/master/artifacts/acvp_sub_drbg.txt
+ */
+#define ACVP_DRB_BIT_MAX 4096
+#define ACVP_DRB_BYTE_MAX (ACVP_DRB_BIT_MAX >> 3)
+#define ACVP_DRB_STR_MAX (ACVP_DRB_BIT_MAX >> 2)
+
+#define ACVP_DRBG_ENTPY_IN_BIT_MIN 80
+#define ACVP_DRBG_ENTPY_IN_BIT_MAX 1048576 /**< 2^20 library limit. Spec allows 2^35 */
+#define ACVP_DRBG_ENTPY_IN_BYTE_MAX (ACVP_DRBG_ENTPY_IN_BIT_MAX >> 3)
+#define ACVP_DRBG_ENTPY_IN_STR_MAX (ACVP_DRBG_ENTPY_IN_BIT_MAX >> 2)
+
+#define ACVP_DRBG_NONCE_BIT_MIN 40
+#define ACVP_DRBG_NONCE_BIT_MAX 512
+#define ACVP_DRBG_NONCE_BYTE_MAX (ACVP_DRBG_NONCE_BIT_MAX >> 3)
+#define ACVP_DRBG_NONCE_STR_MAX (ACVP_DRBG_NONCE_BIT_MAX >> 2)
+
+#define ACVP_DRBG_PER_SO_BIT_MAX 1048576 /**< 2^20 library limit. Spec allows 2^35 */
+#define ACVP_DRBG_PER_SO_BYTE_MAX (ACVP_DRBG_PER_SO_BIT_MAX >> 3)
+#define ACVP_DRBG_PER_SO_STR_MAX (ACVP_DRBG_PER_SO_BIT_MAX >> 2)
+
+#define ACVP_DRBG_ADDI_IN_BIT_MAX 1048576 /**< 2^20 library limit. Spec allows 2^35 */
+#define ACVP_DRBG_ADDI_IN_BYTE_MAX (ACVP_DRBG_ADDI_IN_BIT_MAX >> 3)
+#define ACVP_DRBG_ADDI_IN_STR_MAX (ACVP_DRBG_ADDI_IN_BIT_MAX >> 2)
+/*
+ * END DRBG
+ */
 
 #define ACVP_HASH_MSG_BIT_MAX 102400 /**< 102400 bits */
 #define ACVP_HASH_MSG_STR_MAX (ACVP_HASH_MSG_BIT_MAX >> 2) /**< 25600 characters */
