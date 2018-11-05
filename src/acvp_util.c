@@ -191,32 +191,36 @@ int acvp_lookup_rsa_randpq_index (const char *value) {
     return 0;
 }
 
+static struct acvp_drbg_mode_name_t drbg_mode_tbl[] = {
+    {ACVP_DRBG_SHA_1,       ACVP_STR_SHA_1},
+    {ACVP_DRBG_SHA_224,     ACVP_STR_SHA2_224},
+    {ACVP_DRBG_SHA_256,     ACVP_STR_SHA2_256},
+    {ACVP_DRBG_SHA_384,     ACVP_STR_SHA2_384},
+    {ACVP_DRBG_SHA_512,     ACVP_STR_SHA2_512},
+    {ACVP_DRBG_SHA_512_224, ACVP_STR_SHA2_512_224},
+    {ACVP_DRBG_SHA_512_256, ACVP_STR_SHA2_512_256},
+    {ACVP_DRBG_3KEYTDEA,    ACVP_DRBG_MODE_3KEYTDEA},
+    {ACVP_DRBG_AES_128,     ACVP_DRBG_MODE_AES_128},
+    {ACVP_DRBG_AES_192,     ACVP_DRBG_MODE_AES_192},
+    {ACVP_DRBG_AES_256,     ACVP_DRBG_MODE_AES_256}
+};
+static int drbg_mode_tbl_length =
+    sizeof(drbg_mode_tbl) / sizeof(struct acvp_drbg_mode_name_t);
+
 /*
  * This function returns the ID of a DRBG mode given an
  * algorithm name (as defined in the ACVP spec).  It
  * returns ACVP_DRBG_MODE_END if none match.
  */
 ACVP_DRBG_MODE acvp_lookup_drbg_mode_index (const char *mode) {
-    int i;
-    struct acvp_drbg_mode_name_t drbg_mode_tbl[ACVP_DRBG_MODE_END] = {
-            {ACVP_DRBG_SHA_1,       ACVP_STR_SHA_1},
-            {ACVP_DRBG_SHA_224,     ACVP_STR_SHA2_224},
-            {ACVP_DRBG_SHA_256,     ACVP_STR_SHA2_256},
-            {ACVP_DRBG_SHA_384,     ACVP_STR_SHA2_384},
-            {ACVP_DRBG_SHA_512,     ACVP_STR_SHA2_512},
-            {ACVP_DRBG_SHA_512_224, ACVP_STR_SHA2_512_224},
-            {ACVP_DRBG_SHA_512_256, ACVP_STR_SHA2_512_256},
-            {ACVP_DRBG_3KEYTDEA,    ACVP_DRBG_MODE_3KEYTDEA},
-            {ACVP_DRBG_AES_128,     ACVP_DRBG_MODE_AES_128},
-            {ACVP_DRBG_AES_192,     ACVP_DRBG_MODE_AES_192},
-            {ACVP_DRBG_AES_256,     ACVP_DRBG_MODE_AES_256}
-    };
+    int i = 0;
 
-    for (i = 0; i < ACVP_DRBG_MODE_END; i++) {
+    for (i = 0; i < drbg_mode_tbl_length; i++) {
         if (!strncmp(mode, drbg_mode_tbl[i].name, strlen(drbg_mode_tbl[i].name))) {
             return drbg_mode_tbl[i].mode;
         }
     }
+
     return ACVP_DRBG_MODE_END;
 }
 
