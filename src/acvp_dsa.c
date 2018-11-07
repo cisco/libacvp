@@ -32,38 +32,6 @@
 #include "acvp_lcl.h"
 #include "parson.h"
 
-static ACVP_RESULT acvp_dsa_set_sha (ACVP_DSA_TC *stc, unsigned char *sha) {
-
-    if (!strncmp((char *) sha, "SHA2-1", 6)) {
-        stc->sha = ACVP_DSA_SHA1;
-        return ACVP_SUCCESS;
-    }
-    if (!strncmp((char *) sha, "SHA2-224", 8)) {
-        stc->sha = ACVP_DSA_SHA224;
-        return ACVP_SUCCESS;
-    }
-    if (!strncmp((char *) sha, "SHA2-256", 8)) {
-        stc->sha = ACVP_DSA_SHA256;
-        return ACVP_SUCCESS;
-    }
-    if (!strncmp((char *) sha, "SHA2-384", 8)) {
-        stc->sha = ACVP_DSA_SHA384;
-        return ACVP_SUCCESS;
-    }
-    if (!strncmp((char *) sha, "SHA2-512", 8)) {
-        stc->sha = ACVP_DSA_SHA512;
-        return ACVP_SUCCESS;
-    }
-    if (!strncmp((char *) sha, "SHA2-512/224", 12)) {
-        stc->sha = ACVP_DSA_SHA512_224;
-        return ACVP_SUCCESS;
-    }
-    if (!strncmp((char *) sha, "SHA2-512/256", 12)) {
-        stc->sha = ACVP_DSA_SHA512_256;
-        return ACVP_SUCCESS;
-    }
-    return ACVP_INVALID_ARG;
-}
 static ACVP_RESULT acvp_dsa_keygen_init_tc (ACVP_CTX *ctx,
                                      ACVP_DSA_TC *stc,
                                      unsigned int tc_id,
@@ -104,12 +72,13 @@ static ACVP_RESULT acvp_dsa_siggen_init_tc (ACVP_CTX *ctx,
                                      unsigned char *index,
                                      int l,
                                      int n,
-                                     unsigned char *sha,
+                                     ACVP_HASH_ALG sha,
                                      char *msg) {
     ACVP_RESULT rv;
 
     stc->l = l;
     stc->n = n;
+    stc->sha = sha;
     
     stc->p = calloc(1, ACVP_DSA_MAX_STRING);
     if (!stc->p) { return ACVP_MALLOC_FAIL; }
@@ -131,12 +100,6 @@ static ACVP_RESULT acvp_dsa_siggen_init_tc (ACVP_CTX *ctx,
         return ACVP_INVALID_ARG;
     }
 
-    rv = acvp_dsa_set_sha(stc, sha);
-    if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("Bad SHA value");
-        return rv;
-    }
-
     stc->msg = calloc(1, ACVP_DSA_PQG_MAX);
     if (!stc->msg) { return ACVP_MALLOC_FAIL; }
 
@@ -156,7 +119,7 @@ static ACVP_RESULT acvp_dsa_sigver_init_tc (ACVP_CTX *ctx,
                                      unsigned char *index,
                                      int l,
                                      int n,
-                                     unsigned char *sha,
+                                     ACVP_HASH_ALG sha,
                                      char *p,
                                      char *q,
                                      char *g,
@@ -168,6 +131,7 @@ static ACVP_RESULT acvp_dsa_sigver_init_tc (ACVP_CTX *ctx,
 
     stc->l = l;
     stc->n = n;
+    stc->sha = sha;
 
     if (stc->l == 0) {
         return ACVP_INVALID_ARG;
@@ -176,11 +140,6 @@ static ACVP_RESULT acvp_dsa_sigver_init_tc (ACVP_CTX *ctx,
         return ACVP_INVALID_ARG;
     }
 
-    rv = acvp_dsa_set_sha(stc, sha);
-    if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("Bad SHA value");
-        return rv;
-    }
     stc->msg = calloc(1, ACVP_DSA_MAX_STRING);
     if (!stc->msg) { return ACVP_MALLOC_FAIL; }
 
@@ -245,7 +204,7 @@ static ACVP_RESULT acvp_dsa_pqgver_init_tc (ACVP_CTX *ctx,
                                      int n,
                                      int c,
                                      unsigned char *index,
-                                     unsigned char *sha,
+                                     ACVP_HASH_ALG sha,
                                      char *p,
                                      char *q,
                                      char *g,
@@ -257,6 +216,7 @@ static ACVP_RESULT acvp_dsa_pqgver_init_tc (ACVP_CTX *ctx,
     stc->n = n;
     stc->c = c;
     stc->pqg = pqg;
+    stc->sha = sha;
 
     if (stc->l == 0) {
         return ACVP_INVALID_ARG;
@@ -265,11 +225,6 @@ static ACVP_RESULT acvp_dsa_pqgver_init_tc (ACVP_CTX *ctx,
         return ACVP_INVALID_ARG;
     }
 
-    rv = acvp_dsa_set_sha(stc, sha);
-    if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("Bad SHA value");
-        return rv;
-    }
     stc->seed = calloc(1, ACVP_DSA_MAX_STRING);
     if (!stc->seed) { return ACVP_MALLOC_FAIL; }
 
@@ -328,7 +283,7 @@ static ACVP_RESULT acvp_dsa_pqggen_init_tc (ACVP_CTX *ctx,
                                      unsigned char *index,
                                      int l,
                                      int n,
-                                     unsigned char *sha,
+                                     ACVP_HASH_ALG sha,
                                      char *p,
                                      char *q,
                                      char *seed) {
@@ -336,17 +291,13 @@ static ACVP_RESULT acvp_dsa_pqggen_init_tc (ACVP_CTX *ctx,
 
     stc->l = l;
     stc->n = n;
+    stc->sha = sha;
 
     if (stc->l == 0) {
         return ACVP_INVALID_ARG;
     }
     if (stc->n == 0) {
         return ACVP_INVALID_ARG;
-    }
-    rv = acvp_dsa_set_sha(stc, sha);
-    if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("Bad SHA value");
-        return rv;
     }
 
     stc->p = calloc(1, ACVP_DSA_PQG_MAX);
@@ -692,7 +643,7 @@ ACVP_RESULT acvp_dsa_keygen_handler (ACVP_CTX *ctx, ACVP_TEST_CASE tc, ACVP_CAPS
 
 ACVP_RESULT acvp_dsa_pqggen_handler (ACVP_CTX *ctx, ACVP_TEST_CASE tc, ACVP_CAPS_LIST *cap,
                                      JSON_Array *r_tarr, JSON_Object *groupobj) {
-    unsigned char *gen_pq = NULL, *sha = NULL, *index = NULL, *gen_g = NULL;
+    unsigned char *gen_pq = NULL, *index = NULL, *gen_g = NULL;
     JSON_Array *tests;
     JSON_Value *testval;
     JSON_Object *testobj = NULL;
@@ -703,6 +654,8 @@ ACVP_RESULT acvp_dsa_pqggen_handler (ACVP_CTX *ctx, ACVP_TEST_CASE tc, ACVP_CAPS
     unsigned gpq = 0, n, l;
     char *p = NULL, *q = NULL, *seed = NULL;
     ACVP_DSA_TC *stc;
+    ACVP_HASH_ALG sha = 0;
+    const char *sha_str = NULL;
 
     gen_pq = (unsigned char *) json_object_get_string(groupobj, "pqMode");
     gen_g = (unsigned char *) json_object_get_string(groupobj, "gMode");
@@ -721,10 +674,16 @@ ACVP_RESULT acvp_dsa_pqggen_handler (ACVP_CTX *ctx, ACVP_TEST_CASE tc, ACVP_CAPS
         ACVP_LOG_ERR("Failed to include n. ");
         return ACVP_MISSING_ARG;
     }
-    sha = (unsigned char *) json_object_get_string(groupobj, "hashAlg");
-    if (!sha) {
+
+    sha_str = json_object_get_string(groupobj, "hashAlg");
+    if (!sha_str) {
         ACVP_LOG_ERR("Failed to include hashAlg. ");
         return ACVP_MISSING_ARG;
+    }
+    sha = acvp_lookup_hash_alg(sha_str);
+    if (!sha) {
+        ACVP_LOG_ERR("Server JSON invalid 'hashAlg'");
+        return ACVP_INVALID_ARG;
     }
 
     if (gen_pq) {
@@ -735,7 +694,7 @@ ACVP_RESULT acvp_dsa_pqggen_handler (ACVP_CTX *ctx, ACVP_TEST_CASE tc, ACVP_CAPS
     }
     ACVP_LOG_INFO("             l: %d", l);
     ACVP_LOG_INFO("             n: %d", n);
-    ACVP_LOG_INFO("           sha: %s", sha);
+    ACVP_LOG_INFO("           sha: %s", sha_str);
 
     tests = json_object_get_array(groupobj, "tests");
     if (!tests) {
@@ -895,7 +854,7 @@ ACVP_RESULT acvp_dsa_pqggen_handler (ACVP_CTX *ctx, ACVP_TEST_CASE tc, ACVP_CAPS
 
 ACVP_RESULT acvp_dsa_siggen_handler (ACVP_CTX *ctx, ACVP_TEST_CASE tc, ACVP_CAPS_LIST *cap,
                                      JSON_Array *r_tarr, JSON_Object *groupobj) {
-    unsigned char *sha = NULL, *index = NULL;
+    unsigned char *index = NULL;
     char *msg = NULL;
     JSON_Array *tests;
     JSON_Value *testval;
@@ -907,6 +866,8 @@ ACVP_RESULT acvp_dsa_siggen_handler (ACVP_CTX *ctx, ACVP_TEST_CASE tc, ACVP_CAPS
     JSON_Object *mobj = NULL;
     unsigned int num = 0;
     ACVP_DSA_TC *stc;
+    ACVP_HASH_ALG sha = 0;
+    const char *sha_str = NULL;
 
     l = json_object_get_number(groupobj, "l");
     if (!l) {
@@ -920,15 +881,20 @@ ACVP_RESULT acvp_dsa_siggen_handler (ACVP_CTX *ctx, ACVP_TEST_CASE tc, ACVP_CAPS
         return ACVP_MISSING_ARG;
     }
 
-    sha = (unsigned char *) json_object_get_string(groupobj, "hashAlg");
-    if (!sha) {
+    sha_str = json_object_get_string(groupobj, "hashAlg");
+    if (!sha_str) {
         ACVP_LOG_ERR("Failed to include hashAlg. ");
         return ACVP_MISSING_ARG;
+    }
+    sha = acvp_lookup_hash_alg(sha_str);
+    if (!sha) {
+        ACVP_LOG_ERR("Server JSON invalid 'hashAlg'");
+        return ACVP_INVALID_ARG;
     }
 
     ACVP_LOG_INFO("             l: %d", l);
     ACVP_LOG_INFO("             n: %d", n);
-    ACVP_LOG_INFO("           sha: %s", sha);
+    ACVP_LOG_INFO("           sha: %s", sha_str);
 
     tests = json_object_get_array(groupobj, "tests");
     if (!tests) {
@@ -1002,7 +968,7 @@ ACVP_RESULT acvp_dsa_siggen_handler (ACVP_CTX *ctx, ACVP_TEST_CASE tc, ACVP_CAPS
 
 ACVP_RESULT acvp_dsa_pqgver_handler (ACVP_CTX *ctx, ACVP_TEST_CASE tc, ACVP_CAPS_LIST *cap,
                                      JSON_Array *r_tarr, JSON_Object *groupobj) {
-    unsigned char *sha = NULL, *index = NULL;
+    unsigned char *index = NULL;
     char *g = NULL, *pqmode = NULL, *gmode = NULL, *seed = NULL;
     JSON_Array *tests;
     JSON_Value *testval;
@@ -1015,6 +981,8 @@ ACVP_RESULT acvp_dsa_pqgver_handler (ACVP_CTX *ctx, ACVP_TEST_CASE tc, ACVP_CAPS
     unsigned int num = 0;
     char *p = NULL, *q = NULL;
     ACVP_DSA_TC *stc;
+    ACVP_HASH_ALG sha = 0;
+    const char *sha_str = NULL;
 
     l = json_object_get_number(groupobj, "l");
     if (!l) {
@@ -1028,11 +996,17 @@ ACVP_RESULT acvp_dsa_pqgver_handler (ACVP_CTX *ctx, ACVP_TEST_CASE tc, ACVP_CAPS
         return ACVP_MISSING_ARG;
     }
 
-    sha = (unsigned char *) json_object_get_string(groupobj, "hashAlg");
-    if (!sha) {
+    sha_str = json_object_get_string(groupobj, "hashAlg");
+    if (!sha_str) {
         ACVP_LOG_ERR("Failed to include hashAlg. ");
         return ACVP_MISSING_ARG;
     }
+    sha = acvp_lookup_hash_alg(sha_str);
+    if (!sha) {
+        ACVP_LOG_ERR("Server JSON invalid 'hashAlg'");
+        return ACVP_INVALID_ARG;
+    }
+
     gmode = (char *) json_object_get_string(groupobj, "gMode");
     pqmode = (char *) json_object_get_string(groupobj, "pqMode");
     if (!pqmode && !gmode) {
@@ -1042,7 +1016,7 @@ ACVP_RESULT acvp_dsa_pqgver_handler (ACVP_CTX *ctx, ACVP_TEST_CASE tc, ACVP_CAPS
 
     ACVP_LOG_INFO("             l: %d", l);
     ACVP_LOG_INFO("             n: %d", n);
-    ACVP_LOG_INFO("           sha: %s", sha);
+    ACVP_LOG_INFO("           sha: %s", sha_str);
     ACVP_LOG_INFO("         gmode: %s", gmode);
     ACVP_LOG_INFO("        pqmode: %s", pqmode);
 
@@ -1177,7 +1151,7 @@ ACVP_RESULT acvp_dsa_pqgver_handler (ACVP_CTX *ctx, ACVP_TEST_CASE tc, ACVP_CAPS
 
 ACVP_RESULT acvp_dsa_sigver_handler (ACVP_CTX *ctx, ACVP_TEST_CASE tc, ACVP_CAPS_LIST *cap,
                                      JSON_Array *r_tarr, JSON_Object *groupobj) {
-    unsigned char *sha = NULL, *index = NULL;
+    unsigned char *index = NULL;
     char *msg = NULL, *r = NULL, *s = NULL, *y = NULL, *g = NULL;
     JSON_Array *tests;
     JSON_Value *testval;
@@ -1190,6 +1164,8 @@ ACVP_RESULT acvp_dsa_sigver_handler (ACVP_CTX *ctx, ACVP_TEST_CASE tc, ACVP_CAPS
     unsigned int num = 0;
     char *p = NULL, *q = NULL;
     ACVP_DSA_TC *stc;
+    ACVP_HASH_ALG sha = 0;
+    const char *sha_str = NULL;
 
     l = json_object_get_number(groupobj, "l");
     if (!l) {
@@ -1203,15 +1179,20 @@ ACVP_RESULT acvp_dsa_sigver_handler (ACVP_CTX *ctx, ACVP_TEST_CASE tc, ACVP_CAPS
         return ACVP_MISSING_ARG;
     }
 
-    sha = (unsigned char *) json_object_get_string(groupobj, "hashAlg");
-    if (!sha) {
+    sha_str = json_object_get_string(groupobj, "hashAlg");
+    if (!sha_str) {
         ACVP_LOG_ERR("Failed to include hashAlg. ");
         return ACVP_MISSING_ARG;
+    }
+    sha = acvp_lookup_hash_alg(sha_str);
+    if (!sha) {
+        ACVP_LOG_ERR("Server JSON invalid 'hashAlg'");
+        return ACVP_INVALID_ARG;
     }
 
     ACVP_LOG_INFO("             l: %d", l);
     ACVP_LOG_INFO("             n: %d", n);
-    ACVP_LOG_INFO("           sha: %s", sha);
+    ACVP_LOG_INFO("           sha: %s", sha_str);
 
     tests = json_object_get_array(groupobj, "tests");
     if (!tests) {

@@ -231,25 +231,82 @@ ACVP_RESULT is_valid_tf_param (int value) {
     else { return ACVP_INVALID_ARG; }
 }
 
-/* This function checks to see if the value is a hash alg */
-ACVP_RESULT is_valid_hash_alg (char *value) {
-    if (!value) { return ACVP_INVALID_ARG; }
-    if (strncmp(value, ACVP_STR_SHA_1, 5) == 0 ||
-        strncmp(value, ACVP_STR_SHA2_224, 8) == 0 ||
-        strncmp(value, ACVP_STR_SHA2_256, 8) == 0 ||
-        strncmp(value, ACVP_STR_SHA2_384, 8) == 0 ||
-        strncmp(value, ACVP_STR_SHA2_512, 8) == 0 ||
-        strncmp(value, ACVP_STR_SHA2_512_224, 12) == 0 ||
-        strncmp(value, ACVP_STR_SHA2_512_256, 12) == 0) {
-        return ACVP_SUCCESS;
-    } else { return ACVP_INVALID_ARG; }
+/*
+ * Local table for matching ACVP_HASH_ALG to name string and vice versa.
+ */
+static struct acvp_hash_alg_info hash_alg_tbl[] = {
+    {ACVP_SHA1, ACVP_STR_SHA_1},
+    {ACVP_SHA224, ACVP_STR_SHA2_224},
+    {ACVP_SHA256, ACVP_STR_SHA2_256},
+    {ACVP_SHA384, ACVP_STR_SHA2_384},
+    {ACVP_SHA512, ACVP_STR_SHA2_512},
+    {ACVP_SHA512_224, ACVP_STR_SHA2_512_224},
+    {ACVP_SHA512_256, ACVP_STR_SHA2_512_256}
+};
+static int hash_alg_tbl_length =
+    sizeof(hash_alg_tbl) / sizeof(struct acvp_hash_alg_info);
+
+/**
+ * @brief Using \p name, find the corresponding ACVP_HASH_ALG.
+ *
+ * @param[in] name The string representation of hash algorithm.
+ *
+ * @return ACVP_HASH_ALG
+ * @return 0 - fail
+ */
+ACVP_HASH_ALG acvp_lookup_hash_alg (const char *name) {
+    int i = 0;
+
+    if (!name) return 0;
+
+    for (i = 0; i < hash_alg_tbl_length; i++) {
+        if (!strncmp(name, hash_alg_tbl[i].name,
+                     strlen(hash_alg_tbl[i].name))) {
+            return hash_alg_tbl[i].id;
+        }
+    }
+
+    return 0;
+}
+
+/**
+ * @brief Using ACVP_HASH_ALG \p id, find the string representation.
+ *
+ * @param[in] name The string representation of hash algorithm.
+ *
+ * @return char*
+ * @return NULL - fail
+ */
+char *acvp_lookup_hash_alg_name (ACVP_HASH_ALG id) {
+    int i = 0;
+
+    if (!id) return NULL;
+
+    for (i = 0; i < hash_alg_tbl_length; i++) {
+        if (id == hash_alg_tbl[i].id) {
+            return hash_alg_tbl[i].name;
+        }
+    }
+
+    return NULL;
+}
+
+char *acvp_lookup_rsa_prime_test_name(ACVP_RSA_PRIME_TEST_TYPE type) {
+    switch(type) {
+    case ACVP_RSA_PRIME_TEST_TBLC2:
+        return ACVP_RSA_PRIME_TEST_TBLC2_STR;
+    case ACVP_RSA_PRIME_TEST_TBLC3:
+        return ACVP_RSA_PRIME_TEST_TBLC3_STR;
+    default:
+        return NULL;
+    }
 }
 
 /* This function checks to see if the value is a valid prime test (RSA) */
 ACVP_RESULT is_valid_prime_test (char *value) {
     if (!value) { return ACVP_INVALID_ARG; }
-    if (strncmp(value, PRIME_TEST_TBLC2_NAME, 5) != 0 &&
-        strncmp(value, PRIME_TEST_TBLC3_NAME, 5) != 0) {
+    if (strncmp(value, ACVP_RSA_PRIME_TEST_TBLC2_STR, 5) != 0 &&
+        strncmp(value, ACVP_RSA_PRIME_TEST_TBLC3_STR, 5) != 0) {
         return ACVP_INVALID_ARG;
     } else { return ACVP_SUCCESS; }
 }
@@ -263,41 +320,76 @@ ACVP_RESULT is_valid_rsa_mod (int value) {
     } else { return ACVP_SUCCESS; }
 }
 
-int acvp_lookup_ecdsa_curve (ACVP_CIPHER cipher, char *curve_name) {
+/*
+ * Local table for matching ACVP_ECDSA_CURVE to name string and vice versa.
+ */
+static struct acvp_ecdsa_curve_info ecdsa_curve_tbl[] = {
+    {ACVP_ECDSA_CURVE_P224, "p-224"},
+    {ACVP_ECDSA_CURVE_P256, "p-256"},
+    {ACVP_ECDSA_CURVE_P384, "p-384"},
+    {ACVP_ECDSA_CURVE_P521, "p-521"},
+    {ACVP_ECDSA_CURVE_B233, "b-233"},
+    {ACVP_ECDSA_CURVE_B283, "b-283"},
+    {ACVP_ECDSA_CURVE_B409, "b-409"},
+    {ACVP_ECDSA_CURVE_B571, "b-571"},
+    {ACVP_ECDSA_CURVE_K233, "k-233"},
+    {ACVP_ECDSA_CURVE_K283, "k-283"},
+    {ACVP_ECDSA_CURVE_K409, "k-409"},
+    {ACVP_ECDSA_CURVE_K571, "k-571"}
+};
+static int ecdsa_curve_tbl_length =
+    sizeof(ecdsa_curve_tbl) / sizeof(struct acvp_ecdsa_curve_info);
 
-    if (strncmp(curve_name, "p-224", 5) == 0) {
-        return ACVP_ECDSA_CURVE_P224;
-    } else if (strncmp(curve_name, "p-256", 5) == 0) {
-        return ACVP_ECDSA_CURVE_P256;
-    } else if (strncmp(curve_name, "p-384", 5) == 0) {
-        return ACVP_ECDSA_CURVE_P384;
-    } else if (strncmp(curve_name, "p-521", 5) == 0) {
-        return ACVP_ECDSA_CURVE_P521;
-    } else if (strncmp(curve_name, "b-233", 5) == 0) {
-        return ACVP_ECDSA_CURVE_B233;
-    } else if (strncmp(curve_name, "b-283", 5) == 0) {
-        return ACVP_ECDSA_CURVE_B283;
-    } else if (strncmp(curve_name, "b-409", 5) == 0) {
-        return ACVP_ECDSA_CURVE_B409;
-    } else if (strncmp(curve_name, "b-571", 5) == 0) {
-        return ACVP_ECDSA_CURVE_B571;
-    } else if (strncmp(curve_name, "k-233", 5) == 0) {
-        return ACVP_ECDSA_CURVE_K233;
-    } else if (strncmp(curve_name, "k-283", 5) == 0) {
-        return ACVP_ECDSA_CURVE_K283;
-    } else if (strncmp(curve_name, "k-409", 5) == 0) {
-        return ACVP_ECDSA_CURVE_K409;
-    } else if (strncmp(curve_name, "k-571", 5) == 0) {
-        return ACVP_ECDSA_CURVE_K571;
+/*
+ * Local table for matching ACVP_ECDSA_CURVE to name string and vice versa.
+ * Containes "deprecated" curves (still allowed for KEYVER and SIGVER).
+ */
+static struct acvp_ecdsa_curve_info ecdsa_curve_depr_tbl[] = {
+    {ACVP_ECDSA_CURVE_P192, "p-192"},
+    {ACVP_ECDSA_CURVE_B163, "b-163"},
+    {ACVP_ECDSA_CURVE_K163, "k-163"}
+};
+static int ecdsa_curve_depr_tbl_length =
+    sizeof(ecdsa_curve_depr_tbl) / sizeof(struct acvp_ecdsa_curve_info);
+
+char *acvp_lookup_ecdsa_curve_name(ACVP_CIPHER cipher, ACVP_ECDSA_CURVE id) {
+    int i = 0;
+
+    for (i = 0; i < ecdsa_curve_tbl_length; i++) {
+        if (id == ecdsa_curve_tbl[i].id) {
+            return ecdsa_curve_tbl[i].name;
+        }
     }
 
     if (cipher == ACVP_ECDSA_KEYVER || cipher == ACVP_ECDSA_SIGVER) {
-        if (strncmp(curve_name, "p-192", 5) == 0) {
-            return ACVP_ECDSA_CURVE_P192;
-        } else if (strncmp(curve_name, "b-163", 5) == 0) {
-            return ACVP_ECDSA_CURVE_B163;
-        } else if (strncmp(curve_name, "k-163", 5) == 0) {
-            return ACVP_ECDSA_CURVE_K163;
+        /* Check the deprecated curves */
+        for (i = 0; i < ecdsa_curve_depr_tbl_length; i++) {
+            if (id == ecdsa_curve_depr_tbl[i].id) {
+                return ecdsa_curve_depr_tbl[i].name;
+            }
+        }
+    }
+
+    return NULL;
+}
+
+ACVP_ECDSA_CURVE acvp_lookup_ecdsa_curve(ACVP_CIPHER cipher, const char *name) {
+    int i = 0;
+
+    for (i = 0; i < ecdsa_curve_tbl_length; i++) {
+        if (!strncmp(name, ecdsa_curve_tbl[i].name,
+                     strlen(ecdsa_curve_tbl[i].name))) {
+            return ecdsa_curve_tbl[i].id;
+        }
+    }
+
+    if (cipher == ACVP_ECDSA_KEYVER || cipher == ACVP_ECDSA_SIGVER) {
+        /* Check the deprecated curves */
+        for (i = 0; i < ecdsa_curve_depr_tbl_length; i++) {
+            if (!strncmp(name, ecdsa_curve_depr_tbl[i].name,
+                         strlen(ecdsa_curve_depr_tbl[i].name))) {
+                return ecdsa_curve_depr_tbl[i].id;
+            }
         }
     }
 

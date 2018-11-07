@@ -121,9 +121,6 @@ err:
  */
 
 static ACVP_RESULT acvp_ecdsa_release_tc (ACVP_ECDSA_TC *stc) {
-    if (stc->curve) { free(stc->curve); }
-    if (stc->secret_gen_mode) { free(stc->secret_gen_mode); }
-    if (stc->hash_alg) { free(stc->hash_alg); }
     if (stc->qy) { free(stc->qy); }
     if (stc->qx) { free(stc->qx); }
     if (stc->d) { free(stc->d); }
@@ -138,9 +135,9 @@ static ACVP_RESULT acvp_ecdsa_init_tc (ACVP_CTX *ctx,
                                        ACVP_CIPHER cipher,
                                        ACVP_ECDSA_TC *stc,
                                        unsigned int tc_id,
-                                       char *curve,
-                                       char *secret_gen_mode,
-                                       char *hash_alg,
+                                       ACVP_ECDSA_CURVE curve,
+                                       ACVP_ECDSA_SECRET_GEN_MODE secret_gen_mode,
+                                       ACVP_HASH_ALG hash_alg,
                                        char *qx,
                                        char *qy,
                                        char *message,
@@ -153,22 +150,9 @@ static ACVP_RESULT acvp_ecdsa_init_tc (ACVP_CTX *ctx,
     
     stc->tc_id = tc_id;
     stc->cipher = cipher;
-    
-    stc->curve = calloc(5, sizeof(char));
-    if (!stc->curve) { goto err; }
-    strncpy(stc->curve, curve, strnlen(curve, 5));
-    
-    if (secret_gen_mode) {
-        stc->secret_gen_mode = calloc(18, sizeof(char));
-        if (!stc->secret_gen_mode) { goto err; }
-        strncpy(stc->secret_gen_mode, secret_gen_mode, strnlen(secret_gen_mode, 18));
-    }
-    
-    if (hash_alg) {
-        stc->hash_alg = calloc(8, sizeof(char));
-        if (!stc->hash_alg) { goto err; }
-        strncpy(stc->hash_alg, hash_alg, strnlen(hash_alg, 8));
-    }
+    stc->hash_alg = hash_alg;
+    stc->curve = curve;
+    stc->secret_gen_mode = secret_gen_mode;
     
     stc->qx = calloc(ACVP_RSA_EXP_LEN_MAX, sizeof(char));
     if (!stc->qx) { goto err; }
@@ -224,8 +208,6 @@ static ACVP_RESULT acvp_ecdsa_init_tc (ACVP_CTX *ctx,
     
 err:
     ACVP_LOG_ERR("Failed to allocate buffer in ECDSA test case");
-    if (stc->curve) free(stc->curve);
-    if (stc->secret_gen_mode) free(stc->secret_gen_mode);
     if (stc->qx) free(stc->qx);
     if (stc->qy) free(stc->qy);
     if (stc->r) free(stc->r);
@@ -250,7 +232,6 @@ ACVP_RESULT acvp_ecdsa_siggen_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
 ACVP_RESULT acvp_ecdsa_sigver_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     return acvp_ecdsa_kat_handler_internal(ctx, obj, ACVP_ECDSA_SIGVER);
 }
-
 
 static ACVP_RESULT acvp_ecdsa_kat_handler_internal (ACVP_CTX *ctx, JSON_Object *obj, ACVP_CIPHER cipher) {
     unsigned int tc_id;
@@ -280,7 +261,6 @@ static ACVP_RESULT acvp_ecdsa_kat_handler_internal (ACVP_CTX *ctx, JSON_Object *
     
     ACVP_CIPHER alg_id;
     char *json_result = NULL;
-    char *hash_alg = NULL, *curve = NULL, *secret_gen_mode = NULL;
     char *alg_str, *mode_str, *qx = NULL, *qy = NULL, *r = NULL, *s = NULL, *message = NULL;
     
     if (!ctx) {
@@ -355,42 +335,65 @@ static ACVP_RESULT acvp_ecdsa_kat_handler_internal (ACVP_CTX *ctx, JSON_Object *
     g_cnt = json_array_get_count(groups);
     
     for (i = 0; i < g_cnt; i++) {
+        ACVP_HASH_ALG hash_alg = 0;
+        ACVP_ECDSA_CURVE curve = 0;
+        ACVP_ECDSA_SECRET_GEN_MODE secret_gen_mode = 0;
+        const char *hash_alg_str = NULL, *curve_str = NULL,
+                   *secret_gen_mode_str = NULL;
+
         groupval = json_array_get_value(groups, i);
         groupobj = json_value_get_object(groupval);
+
         /*
          * Get a reference to the abstracted test case
          */
-        curve = (char *) json_object_get_string(groupobj, "curve");
-        if (!curve) {
+        curve_str = json_object_get_string(groupobj, "curve");
+        if (!curve_str) {
             ACVP_LOG_ERR("Server JSON missing 'curve'");
             return ACVP_MISSING_ARG;
         }
-        if (!acvp_lookup_ecdsa_curve(alg_id, curve)) {
+
+        curve = acvp_lookup_ecdsa_curve(alg_id, curve_str);
+        if (!curve) {
             ACVP_LOG_ERR("Server JSON includes unrecognized curve");
             return ACVP_INVALID_ARG;
         }
+
         if (alg_id == ACVP_ECDSA_KEYGEN) {
-            secret_gen_mode = (char *) json_object_get_string(groupobj, "secretGenerationMode");
-            if (!secret_gen_mode) {
-                ACVP_LOG_ERR("Server JSON missing 'secret_gen_mode'");
+            secret_gen_mode_str = json_object_get_string(groupobj, "secretGenerationMode");
+            if (!secret_gen_mode_str) {
+                ACVP_LOG_ERR("Server JSON missing 'secretGenerationMode'");
                 return ACVP_MISSING_ARG;
+            }
+
+            if (strncmp(secret_gen_mode_str, ACVP_ECDSA_EXTRA_BITS_STR,
+                        strlen(ACVP_ECDSA_EXTRA_BITS_STR)) == 0) {
+                secret_gen_mode = ACVP_ECDSA_SECRET_GEN_EXTRA_BITS;
+            } else if (strncmp(secret_gen_mode_str, ACVP_ECDSA_TESTING_CANDIDATES_STR,
+                               strlen(ACVP_ECDSA_TESTING_CANDIDATES_STR)) == 0) {
+                secret_gen_mode = ACVP_ECDSA_SECRET_GEN_TEST_CAND;
+            } else {
+                ACVP_LOG_ERR("Server JSON invalid 'secretGenerationMode'");
+                return ACVP_INVALID_ARG;
             }
         } else if (alg_id == ACVP_ECDSA_SIGGEN || alg_id == ACVP_ECDSA_SIGVER) {
-            hash_alg = (char *) json_object_get_string(groupobj, "hashAlg");
-            if (!hash_alg) {
-                ACVP_LOG_ERR("Server JSON missing 'hash_alg'");
+            hash_alg_str = json_object_get_string(groupobj, "hashAlg");
+            if (!hash_alg_str) {
+                ACVP_LOG_ERR("Server JSON missing 'hashAlg'");
                 return ACVP_MISSING_ARG;
             }
-            if (is_valid_hash_alg(hash_alg) == ACVP_INVALID_ARG) {
-                ACVP_LOG_ERR("Invalid hash alg");
+
+            hash_alg = acvp_lookup_hash_alg(hash_alg_str);
+            if (!hash_alg || hash_alg == ACVP_SHA1) {
+                ACVP_LOG_ERR("Server JSON invalid 'hashAlg'");
                 return ACVP_INVALID_ARG;
             }
         }
         
         ACVP_LOG_INFO("           Test group: %d", i);
-        ACVP_LOG_INFO("                curve: %s", curve);
-        ACVP_LOG_INFO(" secretGenerationMode: %s", secret_gen_mode);
-        ACVP_LOG_INFO("              hashAlg: %s", hash_alg);
+        ACVP_LOG_INFO("                curve: %s", curve_str);
+        ACVP_LOG_INFO(" secretGenerationMode: %s", secret_gen_mode_str);
+        ACVP_LOG_INFO("              hashAlg: %s", hash_alg_str);
         
         tests = json_object_get_array(groupobj, "tests");
         t_cnt = json_array_get_count(tests);

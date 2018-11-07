@@ -684,7 +684,7 @@ static ACVP_RESULT acvp_lookup_rsa_primes (JSON_Object *cap_obj, ACVP_RSA_KEYGEN
         comp_name = current_mode_cap->hash_algs;
         
         while (comp_name) {
-            if (is_valid_hash_alg(comp_name->name) == ACVP_SUCCESS) {
+            if (acvp_lookup_hash_alg(comp_name->name)) {
                 json_array_append_string(hash_array, comp_name->name);
             }
             next_name = comp_name->next;
@@ -968,13 +968,13 @@ static ACVP_RESULT acvp_build_kdf135_tls_register_cap (JSON_Object *cap_obj, ACV
     
     json_object_set_value(cap_obj, "hashAlg", json_value_init_array());
     temp_arr = json_object_get_array(cap_obj, "hashAlg");
-    if (cap_entry->cap.kdf135_tls_cap->sha & ACVP_KDF135_TLS_CAP_SHA256) {
+    if (cap_entry->cap.kdf135_tls_cap->sha & ACVP_SHA256) {
         json_array_append_string(temp_arr, "SHA2-256");
     }
-    if (cap_entry->cap.kdf135_tls_cap->sha & ACVP_KDF135_TLS_CAP_SHA384) {
+    if (cap_entry->cap.kdf135_tls_cap->sha & ACVP_SHA384) {
         json_array_append_string(temp_arr, "SHA2-384");
     }
-    if (cap_entry->cap.kdf135_tls_cap->sha & ACVP_KDF135_TLS_CAP_SHA512) {
+    if (cap_entry->cap.kdf135_tls_cap->sha & ACVP_SHA512) {
         json_array_append_string(temp_arr, "SHA2-512");
     }
     
@@ -1374,19 +1374,19 @@ static ACVP_RESULT acvp_build_kdf135_ssh_register_cap (JSON_Object *cap_obj, ACV
     
     json_object_set_value(cap_obj, "hashAlg", json_value_init_array());
     temp_arr = json_object_get_array(cap_obj, "hashAlg");
-    if (cap_entry->cap.kdf135_ssh_cap->sha & ACVP_KDF135_SSH_CAP_SHA1) {
+    if (cap_entry->cap.kdf135_ssh_cap->sha & ACVP_SHA1) {
         json_array_append_string(temp_arr, "SHA-1");
     }
-    if (cap_entry->cap.kdf135_ssh_cap->sha & ACVP_KDF135_SSH_CAP_SHA224) {
+    if (cap_entry->cap.kdf135_ssh_cap->sha & ACVP_SHA224) {
         json_array_append_string(temp_arr, "SHA2-224");
     }
-    if (cap_entry->cap.kdf135_ssh_cap->sha & ACVP_KDF135_SSH_CAP_SHA256) {
+    if (cap_entry->cap.kdf135_ssh_cap->sha & ACVP_SHA256) {
         json_array_append_string(temp_arr, "SHA2-256");
     }
-    if (cap_entry->cap.kdf135_ssh_cap->sha & ACVP_KDF135_SSH_CAP_SHA384) {
+    if (cap_entry->cap.kdf135_ssh_cap->sha & ACVP_SHA384) {
         json_array_append_string(temp_arr, "SHA2-384");
     }
-    if (cap_entry->cap.kdf135_ssh_cap->sha & ACVP_KDF135_SSH_CAP_SHA512) {
+    if (cap_entry->cap.kdf135_ssh_cap->sha & ACVP_SHA512) {
         json_array_append_string(temp_arr, "SHA2-512");
     }
     
@@ -1404,25 +1404,25 @@ static ACVP_RESULT acvp_build_dsa_hashalgs (JSON_Object *cap_obj, JSON_Array *te
     json_object_set_value(cap_obj, "hashAlg", json_value_init_array());
     sha_arr = json_object_get_array(cap_obj, "hashAlg");
     
-    if (attrs->sha & ACVP_DSA_SHA1) {
+    if (attrs->sha & ACVP_SHA1) {
         json_array_append_string(sha_arr, "SHA2-1");
     }
-    if (attrs->sha & ACVP_DSA_SHA224) {
+    if (attrs->sha & ACVP_SHA224) {
         json_array_append_string(sha_arr, "SHA2-224");
     }
-    if (attrs->sha & ACVP_DSA_SHA256) {
+    if (attrs->sha & ACVP_SHA256) {
         json_array_append_string(sha_arr, "SHA2-256");
     }
-    if (attrs->sha & ACVP_DSA_SHA384) {
+    if (attrs->sha & ACVP_SHA384) {
         json_array_append_string(sha_arr, "SHA2-384");
     }
-    if (attrs->sha & ACVP_DSA_SHA512) {
+    if (attrs->sha & ACVP_SHA512) {
         json_array_append_string(sha_arr, "SHA2-512");
     }
-    if (attrs->sha & ACVP_DSA_SHA512_224) {
+    if (attrs->sha & ACVP_SHA512_224) {
         json_array_append_string(sha_arr, "SHA2-512-224");
     }
-    if (attrs->sha & ACVP_DSA_SHA512_256) {
+    if (attrs->sha & ACVP_SHA512_256) {
         json_array_append_string(sha_arr, "SHA2-512-256");
     }
     
