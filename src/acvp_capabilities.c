@@ -3076,10 +3076,10 @@ ACVP_RESULT acvp_enable_ecdsa_cap_parm (ACVP_CTX *ctx,
     }
     
     switch (param) {
-    case ACVP_CURVE:
+    case ACVP_ECDSA_CURVE:
         string = acvp_lookup_ec_curve_name(cipher, value);
         if (!string) {
-            ACVP_LOG_ERR("Invalid 'value' for ACVP_CURVE");
+            ACVP_LOG_ERR("Invalid 'value' for ACVP_ECDSA_CURVE");
             return ACVP_INVALID_ARG;
         }
 

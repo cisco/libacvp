@@ -385,7 +385,7 @@ typedef enum acvp_rsa_prime_param {
 
 /*! @struct ACVP_ECDSA_PARM */
 typedef enum acvp_ecdsa_param {
-    ACVP_CURVE,
+    ACVP_ECDSA_CURVE,
     ACVP_ECDSA_SECRET_GEN,
     ACVP_ECDSA_HASH_ALG
 } ACVP_ECDSA_PARM;
