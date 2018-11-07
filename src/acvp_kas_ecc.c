@@ -154,7 +154,7 @@ static ACVP_RESULT acvp_kas_ecc_init_cdh_tc (ACVP_CTX *ctx,
                                              unsigned int tc_id,
                                              ACVP_KAS_ECC_TEST_TYPE test_type,
                                              ACVP_KAS_ECC_MODE mode,
-                                             ACVP_ECDSA_CURVE curve,
+                                             ACVP_EC_CURVE curve,
                                              const char *psx,
                                              const char *psy
 ) {
@@ -199,7 +199,7 @@ static ACVP_RESULT acvp_kas_ecc_init_comp_tc (ACVP_CTX *ctx,
                                               unsigned int tc_id,
                                               ACVP_KAS_ECC_TEST_TYPE test_type,
                                               ACVP_KAS_ECC_MODE mode,
-                                              ACVP_ECDSA_CURVE curve,
+                                              ACVP_EC_CURVE curve,
                                               ACVP_HASH_ALG hash,
                                               const char *psx,
                                               const char *psy,
@@ -314,7 +314,7 @@ static ACVP_RESULT acvp_kas_ecc_cdh(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap, ACVP_TES
 
     for (i = 0; i < g_cnt; i++) {
         ACVP_KAS_ECC_TEST_TYPE test_type = 0;
-        ACVP_ECDSA_CURVE curve = 0;
+        ACVP_EC_CURVE curve = 0;
         const char *test_type_str = NULL, *curve_str = NULL;
 
         groupval = json_array_get_value(groups, i);
@@ -325,31 +325,8 @@ static ACVP_RESULT acvp_kas_ecc_cdh(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap, ACVP_TES
             ACVP_LOG_ERR("Server JSON missing 'curve'");
             return ACVP_MISSING_ARG;
         }
-        if (!strncmp(curve_str, "b-233", strlen("b-233"))) {
-            curve = ACVP_ECDSA_CURVE_B233;
-        } else if (!strncmp(curve_str, "b-283", strlen("b-283"))) {
-            curve = ACVP_ECDSA_CURVE_B283;
-        } else if (!strncmp(curve_str, "b-409", strlen("b-409"))) {
-            curve = ACVP_ECDSA_CURVE_B409;
-        } else if (!strncmp(curve_str, "b-571", strlen("b-571"))) {
-            curve = ACVP_ECDSA_CURVE_B571;
-        } else if (!strncmp(curve_str, "k-233", strlen("k-233"))) {
-            curve = ACVP_ECDSA_CURVE_K233;
-        } else if (!strncmp(curve_str, "k-283", strlen("k-283"))) {
-            curve = ACVP_ECDSA_CURVE_K283;
-        } else if (!strncmp(curve_str, "k-409", strlen("k-409"))) {
-            curve = ACVP_ECDSA_CURVE_K409;
-        } else if (!strncmp(curve_str, "k-571", strlen("k-571"))) {
-            curve = ACVP_ECDSA_CURVE_K571;
-        } else if (!strncmp(curve_str, "p-224", strlen("p-224"))) {
-            curve = ACVP_ECDSA_CURVE_P224;
-        } else if (!strncmp(curve_str, "p-256", strlen("p-256"))) {
-            curve = ACVP_ECDSA_CURVE_P256;
-        } else if (!strncmp(curve_str, "p-384", strlen("p-384"))) {
-            curve = ACVP_ECDSA_CURVE_P384;
-        } else if (!strncmp(curve_str, "p-521", strlen("p-521"))) {
-            curve = ACVP_ECDSA_CURVE_P521;
-        } else {
+        curve = acvp_lookup_ec_curve(stc->cipher, curve_str);
+        if (!curve) {
             ACVP_LOG_ERR("Server JSON invalid 'curve'");
             return ACVP_INVALID_ARG;
         }
@@ -479,7 +456,7 @@ static ACVP_RESULT acvp_kas_ecc_comp(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap, ACVP_TE
     for (i = 0; i < g_cnt; i++) {
         ACVP_KAS_ECC_TEST_TYPE test_type = 0;
         ACVP_HASH_ALG hash = 0;
-        ACVP_ECDSA_CURVE curve = 0;
+        ACVP_EC_CURVE curve = 0;
         const char *test_type_str = NULL, *curve_str = NULL, *hash_str = NULL;
 
         groupval = json_array_get_value(groups, i);
@@ -490,31 +467,9 @@ static ACVP_RESULT acvp_kas_ecc_comp(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap, ACVP_TE
             ACVP_LOG_ERR("Server JSON missing 'curve'");
             return ACVP_MISSING_ARG;
         }
-        if (!strncmp(curve_str, "b-233", strlen("b-233"))) {
-            curve = ACVP_ECDSA_CURVE_B233;
-        } else if (!strncmp(curve_str, "b-283", strlen("b-283"))) {
-            curve = ACVP_ECDSA_CURVE_B283;
-        } else if (!strncmp(curve_str, "b-409", strlen("b-409"))) {
-            curve = ACVP_ECDSA_CURVE_B409;
-        } else if (!strncmp(curve_str, "b-571", strlen("b-571"))) {
-            curve = ACVP_ECDSA_CURVE_B571;
-        } else if (!strncmp(curve_str, "k-233", strlen("k-233"))) {
-            curve = ACVP_ECDSA_CURVE_K233;
-        } else if (!strncmp(curve_str, "k-283", strlen("k-283"))) {
-            curve = ACVP_ECDSA_CURVE_K283;
-        } else if (!strncmp(curve_str, "k-409", strlen("k-409"))) {
-            curve = ACVP_ECDSA_CURVE_K409;
-        } else if (!strncmp(curve_str, "k-571", strlen("k-571"))) {
-            curve = ACVP_ECDSA_CURVE_K571;
-        } else if (!strncmp(curve_str, "p-224", strlen("p-224"))) {
-            curve = ACVP_ECDSA_CURVE_P224;
-        } else if (!strncmp(curve_str, "p-256", strlen("p-256"))) {
-            curve = ACVP_ECDSA_CURVE_P256;
-        } else if (!strncmp(curve_str, "p-384", strlen("p-384"))) {
-            curve = ACVP_ECDSA_CURVE_P384;
-        } else if (!strncmp(curve_str, "p-521", strlen("p-521"))) {
-            curve = ACVP_ECDSA_CURVE_P521;
-        } else {
+
+        curve = acvp_lookup_ec_curve(stc->cipher, curve_str);
+        if (!curve) {
             ACVP_LOG_ERR("Server JSON invalid 'curve'");
             return ACVP_INVALID_ARG;
         }

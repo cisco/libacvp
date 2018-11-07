@@ -3077,7 +3077,7 @@ ACVP_RESULT acvp_enable_ecdsa_cap_parm (ACVP_CTX *ctx,
     
     switch (param) {
     case ACVP_CURVE:
-        string = acvp_lookup_ecdsa_curve_name(cipher, value);
+        string = acvp_lookup_ec_curve_name(cipher, value);
         if (!string) {
             ACVP_LOG_ERR("Invalid 'value' for ACVP_CURVE");
             return ACVP_INVALID_ARG;
@@ -4647,7 +4647,7 @@ ACVP_RESULT acvp_enable_kas_ecc_cap_parm (ACVP_CTX *ctx,
             }
             break;
         case ACVP_KAS_ECC_CURVE:
-            if (value <= ACVP_ECDSA_CURVE_START || value >= ACVP_ECDSA_CURVE_END) {
+            if (value <= ACVP_EC_CURVE_START || value >= ACVP_EC_CURVE_END) {
                 ACVP_LOG_ERR("invalid kas ecc curve attr");
                 return ACVP_INVALID_ARG;
             }

@@ -1909,49 +1909,18 @@ static ACVP_RESULT acvp_build_kas_ecc_register_cap (ACVP_CTX *ctx, JSON_Object *
             temp_arr = json_object_get_array(cap_obj, "curve");
             current_curve = kas_ecc_mode->curve;
             while (current_curve) {
-                switch (current_curve->param)
-                {
-                case ACVP_ECDSA_CURVE_B233:
-                    json_array_append_string(temp_arr, "b-233");
-                    break;
-                case ACVP_ECDSA_CURVE_B283:
-                    json_array_append_string(temp_arr, "b-283");
-                    break;
-                case ACVP_ECDSA_CURVE_B409:
-                    json_array_append_string(temp_arr, "b-409");
-                    break;
-                case ACVP_ECDSA_CURVE_B571:
-                    json_array_append_string(temp_arr, "b-571");
-                    break;
-                case ACVP_ECDSA_CURVE_K233:
-                    json_array_append_string(temp_arr, "k-233");
-                    break;
-                case ACVP_ECDSA_CURVE_K283:
-                    json_array_append_string(temp_arr, "k-283");
-                    break;
-                case ACVP_ECDSA_CURVE_K409:
-                    json_array_append_string(temp_arr, "k-409");
-                    break;
-                case ACVP_ECDSA_CURVE_K571:
-                    json_array_append_string(temp_arr, "k-571");
-                    break;
-                case ACVP_ECDSA_CURVE_P224:
-                    json_array_append_string(temp_arr, "p-224");
-                    break;
-                case ACVP_ECDSA_CURVE_P256:
-                    json_array_append_string(temp_arr, "p-256");
-                    break;
-                case ACVP_ECDSA_CURVE_P384:
-                    json_array_append_string(temp_arr, "p-384");
-                    break;
-                case ACVP_ECDSA_CURVE_P521:
-                    json_array_append_string(temp_arr, "p-521");
-                    break;
-                default:
-                    ACVP_LOG_ERR("\nUnsupported KAS-ECC function %d", current_curve->param);
+                char *curve_str = NULL;
+
+                curve_str = acvp_lookup_ec_curve_name(kas_ecc_cap->cipher,
+                                                      current_curve->param);
+                if (!curve_str) {
+                    ACVP_LOG_ERR("\nUnsupported curve %d",
+                                 current_curve->param);
                     return ACVP_INVALID_ARG;
-                    break;
                 }
+
+                json_array_append_string(temp_arr, curve_str);
+
                 current_curve = current_curve->next;
             }
             break;
@@ -2003,40 +1972,40 @@ static ACVP_RESULT acvp_build_kas_ecc_register_cap (ACVP_CTX *ctx, JSON_Object *
                     curve = current_pset->curve;
                     switch (curve)
                     {
-                    case ACVP_ECDSA_CURVE_B233:
+                    case ACVP_EC_CURVE_B233:
                         json_object_set_string(set_obj, "curve", "B-233");
                         break;
-                    case ACVP_ECDSA_CURVE_B283:
+                    case ACVP_EC_CURVE_B283:
                         json_object_set_string(set_obj, "curve", "B-283");
                         break;
-                    case ACVP_ECDSA_CURVE_B409:
+                    case ACVP_EC_CURVE_B409:
                         json_object_set_string(set_obj, "curve", "B-409");
                         break;
-                    case ACVP_ECDSA_CURVE_B571:
+                    case ACVP_EC_CURVE_B571:
                         json_object_set_string(set_obj, "curve", "B-571");
                         break;
-                    case ACVP_ECDSA_CURVE_K233:
+                    case ACVP_EC_CURVE_K233:
                         json_object_set_string(set_obj, "curve", "K-233");
                         break;
-                    case ACVP_ECDSA_CURVE_K283:
+                    case ACVP_EC_CURVE_K283:
                         json_object_set_string(set_obj, "curve", "K-283");
                         break;
-                    case ACVP_ECDSA_CURVE_K409:
+                    case ACVP_EC_CURVE_K409:
                         json_object_set_string(set_obj, "curve", "K-409");
                         break;
-                    case ACVP_ECDSA_CURVE_K571:
+                    case ACVP_EC_CURVE_K571:
                         json_object_set_string(set_obj, "curve", "K-571");
                         break;
-                    case ACVP_ECDSA_CURVE_P224:
+                    case ACVP_EC_CURVE_P224:
                         json_object_set_string(set_obj, "curve", "P-224");
                         break;
-                    case ACVP_ECDSA_CURVE_P256:
+                    case ACVP_EC_CURVE_P256:
                         json_object_set_string(set_obj, "curve", "P-256");
                         break;
-                    case ACVP_ECDSA_CURVE_P384:
+                    case ACVP_EC_CURVE_P384:
                         json_object_set_string(set_obj, "curve", "P-384");
                         break;
-                    case ACVP_ECDSA_CURVE_P521:
+                    case ACVP_EC_CURVE_P521:
                         json_object_set_string(set_obj, "curve", "P-521");
                         break;
                     default:

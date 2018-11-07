@@ -321,51 +321,51 @@ ACVP_RESULT is_valid_rsa_mod (int value) {
 }
 
 /*
- * Local table for matching ACVP_ECDSA_CURVE to name string and vice versa.
+ * Local table for matching ACVP_EC_CURVE to name string and vice versa.
  */
-static struct acvp_ecdsa_curve_info ecdsa_curve_tbl[] = {
-    {ACVP_ECDSA_CURVE_P224, "p-224"},
-    {ACVP_ECDSA_CURVE_P256, "p-256"},
-    {ACVP_ECDSA_CURVE_P384, "p-384"},
-    {ACVP_ECDSA_CURVE_P521, "p-521"},
-    {ACVP_ECDSA_CURVE_B233, "b-233"},
-    {ACVP_ECDSA_CURVE_B283, "b-283"},
-    {ACVP_ECDSA_CURVE_B409, "b-409"},
-    {ACVP_ECDSA_CURVE_B571, "b-571"},
-    {ACVP_ECDSA_CURVE_K233, "k-233"},
-    {ACVP_ECDSA_CURVE_K283, "k-283"},
-    {ACVP_ECDSA_CURVE_K409, "k-409"},
-    {ACVP_ECDSA_CURVE_K571, "k-571"}
+static struct acvp_ec_curve_info ec_curve_tbl[] = {
+    {ACVP_EC_CURVE_P224, "p-224"},
+    {ACVP_EC_CURVE_P256, "p-256"},
+    {ACVP_EC_CURVE_P384, "p-384"},
+    {ACVP_EC_CURVE_P521, "p-521"},
+    {ACVP_EC_CURVE_B233, "b-233"},
+    {ACVP_EC_CURVE_B283, "b-283"},
+    {ACVP_EC_CURVE_B409, "b-409"},
+    {ACVP_EC_CURVE_B571, "b-571"},
+    {ACVP_EC_CURVE_K233, "k-233"},
+    {ACVP_EC_CURVE_K283, "k-283"},
+    {ACVP_EC_CURVE_K409, "k-409"},
+    {ACVP_EC_CURVE_K571, "k-571"}
 };
-static int ecdsa_curve_tbl_length =
-    sizeof(ecdsa_curve_tbl) / sizeof(struct acvp_ecdsa_curve_info);
+static int ec_curve_tbl_length =
+    sizeof(ec_curve_tbl) / sizeof(struct acvp_ec_curve_info);
 
 /*
- * Local table for matching ACVP_ECDSA_CURVE to name string and vice versa.
- * Containes "deprecated" curves (still allowed for KEYVER and SIGVER).
+ * Local table for matching ACVP_EC_CURVE to name string and vice versa.
+ * Containes "deprecated" curves (still allowed for ECDSA_KEYVER and ECDSA_SIGVER).
  */
-static struct acvp_ecdsa_curve_info ecdsa_curve_depr_tbl[] = {
-    {ACVP_ECDSA_CURVE_P192, "p-192"},
-    {ACVP_ECDSA_CURVE_B163, "b-163"},
-    {ACVP_ECDSA_CURVE_K163, "k-163"}
+static struct acvp_ec_curve_info ec_curve_depr_tbl[] = {
+    {ACVP_EC_CURVE_P192, "p-192"},
+    {ACVP_EC_CURVE_B163, "b-163"},
+    {ACVP_EC_CURVE_K163, "k-163"}
 };
-static int ecdsa_curve_depr_tbl_length =
-    sizeof(ecdsa_curve_depr_tbl) / sizeof(struct acvp_ecdsa_curve_info);
+static int ec_curve_depr_tbl_length =
+    sizeof(ec_curve_depr_tbl) / sizeof(struct acvp_ec_curve_info);
 
-char *acvp_lookup_ecdsa_curve_name(ACVP_CIPHER cipher, ACVP_ECDSA_CURVE id) {
+char *acvp_lookup_ec_curve_name(ACVP_CIPHER cipher, ACVP_EC_CURVE id) {
     int i = 0;
 
-    for (i = 0; i < ecdsa_curve_tbl_length; i++) {
-        if (id == ecdsa_curve_tbl[i].id) {
-            return ecdsa_curve_tbl[i].name;
+    for (i = 0; i < ec_curve_tbl_length; i++) {
+        if (id == ec_curve_tbl[i].id) {
+            return ec_curve_tbl[i].name;
         }
     }
 
     if (cipher == ACVP_ECDSA_KEYVER || cipher == ACVP_ECDSA_SIGVER) {
         /* Check the deprecated curves */
-        for (i = 0; i < ecdsa_curve_depr_tbl_length; i++) {
-            if (id == ecdsa_curve_depr_tbl[i].id) {
-                return ecdsa_curve_depr_tbl[i].name;
+        for (i = 0; i < ec_curve_depr_tbl_length; i++) {
+            if (id == ec_curve_depr_tbl[i].id) {
+                return ec_curve_depr_tbl[i].name;
             }
         }
     }
@@ -373,22 +373,22 @@ char *acvp_lookup_ecdsa_curve_name(ACVP_CIPHER cipher, ACVP_ECDSA_CURVE id) {
     return NULL;
 }
 
-ACVP_ECDSA_CURVE acvp_lookup_ecdsa_curve(ACVP_CIPHER cipher, const char *name) {
+ACVP_EC_CURVE acvp_lookup_ec_curve(ACVP_CIPHER cipher, const char *name) {
     int i = 0;
 
-    for (i = 0; i < ecdsa_curve_tbl_length; i++) {
-        if (!strncmp(name, ecdsa_curve_tbl[i].name,
-                     strlen(ecdsa_curve_tbl[i].name))) {
-            return ecdsa_curve_tbl[i].id;
+    for (i = 0; i < ec_curve_tbl_length; i++) {
+        if (!strncmp(name, ec_curve_tbl[i].name,
+                     strlen(ec_curve_tbl[i].name))) {
+            return ec_curve_tbl[i].id;
         }
     }
 
     if (cipher == ACVP_ECDSA_KEYVER || cipher == ACVP_ECDSA_SIGVER) {
         /* Check the deprecated curves */
-        for (i = 0; i < ecdsa_curve_depr_tbl_length; i++) {
-            if (!strncmp(name, ecdsa_curve_depr_tbl[i].name,
-                         strlen(ecdsa_curve_depr_tbl[i].name))) {
-                return ecdsa_curve_depr_tbl[i].id;
+        for (i = 0; i < ec_curve_depr_tbl_length; i++) {
+            if (!strncmp(name, ec_curve_depr_tbl[i].name,
+                         strlen(ec_curve_depr_tbl[i].name))) {
+                return ec_curve_depr_tbl[i].id;
             }
         }
     }

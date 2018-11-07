@@ -237,6 +237,15 @@
 #define ACVP_BLOCK_LEN_AES256 16 /**< 16 byte block size regardless of mode */
 
 /*
+ * Hash algorithm output lengths (in bytes).
+ */
+#define ACVP_SHA1_BYTE_LEN 20
+#define ACVP_SHA224_BYTE_LEN 28
+#define ACVP_SHA256_BYTE_LEN 32
+#define ACVP_SHA384_BYTE_LEN 48
+#define ACVP_SHA512_BYTE_LEN 64
+
+/*
  * The values that are supplied
  * when a client application registers are in bits, as
  * the specs specify.
@@ -322,16 +331,16 @@
 #define ACVP_AES_GCM_IV_BIT_MAX 1024 /**< 1024 bits */
 
 #define ACVP_KDF135_TLS_MSG_MAX 1024*4
-#define ACVP_KDF135_SSH_EKEY_MAX (ACVP_BYTE_LEN_HMAC_SHA512) /**< Encryption Key max.
-                                                                  Be able to hold largest sha size, although
-                                                                  actual key is a subset (up to 32 bytes).
-                                                                  512 bits, 64 bytes */
-#define ACVP_KDF135_SSH_IKEY_MAX (ACVP_BYTE_LEN_HMAC_SHA512) /**< Integrity Key max
-                                                                  512 bits, 64 bytes */
-#define ACVP_KDF135_SSH_IV_MAX (ACVP_BYTE_LEN_HMAC_SHA512) /**< Initial IV key max
-                                                                Be able to hold largest sha size, although
-                                                                actual IV is a subset (up to 16 bytes).
-                                                                512 bits, 64 bytes */
+#define ACVP_KDF135_SSH_EKEY_MAX (ACVP_SHA512_BYTE_LEN) /**< Encryption Key max.
+                                                             Be able to hold largest sha size, although
+                                                             actual key is a subset (up to 32 bytes).
+                                                             512 bits, 64 bytes */
+#define ACVP_KDF135_SSH_IKEY_MAX (ACVP_SHA512_BYTE_LEN) /**< Integrity Key max
+                                                             512 bits, 64 bytes */
+#define ACVP_KDF135_SSH_IV_MAX (ACVP_SHA512_BYTE_LEN) /**< Initial IV key max
+                                                           Be able to hold largest sha size, although
+                                                           actual IV is a subset (up to 16 bytes).
+                                                           512 bits, 64 bytes */
 #define ACVP_KDF135_SSH_STR_OUT_MAX (ACVP_KDF135_SSH_IKEY_MAX * 2) /**< 128 characters */
 #define ACVP_KDF135_SSH_STR_IN_MAX 4096 /**< 4096 characters, needs to accomodate large shared_secret (K) */
 
@@ -553,8 +562,8 @@ struct acvp_hash_alg_info {
     char *name;
 };
 
-struct acvp_ecdsa_curve_info {
-    ACVP_ECDSA_CURVE id;
+struct acvp_ec_curve_info {
+    ACVP_EC_CURVE id;
     char *name;
 };
 
@@ -1109,8 +1118,8 @@ ACVP_RESULT is_valid_rsa_mod (int value);
 ACVP_HASH_ALG acvp_lookup_hash_alg (const char *name);
 char *acvp_lookup_hash_alg_name (ACVP_HASH_ALG id);
 
-ACVP_ECDSA_CURVE acvp_lookup_ecdsa_curve (ACVP_CIPHER cipher, const char *name);
-char *acvp_lookup_ecdsa_curve_name (ACVP_CIPHER cipher, ACVP_ECDSA_CURVE id);
+ACVP_EC_CURVE acvp_lookup_ec_curve (ACVP_CIPHER cipher, const char *name);
+char *acvp_lookup_ec_curve_name (ACVP_CIPHER cipher, ACVP_EC_CURVE id);
 
 void ctr64_inc(unsigned char *counter);
 void ctr128_inc(unsigned char *counter);

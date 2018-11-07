@@ -39,16 +39,6 @@ extern "C"
 #define ACVP_TOTP_LENGTH 8
 #define ACVP_TOTP_TOKEN_MAX 128
 
-#define ACVP_BYTE_LEN_HMAC_SHA1 20
-#define ACVP_BYTE_LEN_HMAC_SHA224 28
-#define ACVP_BYTE_LEN_HMAC_SHA256 32
-#define ACVP_BYTE_LEN_HMAC_SHA384 48
-#define ACVP_BYTE_LEN_HMAC_SHA512 64
-#define ACVP_BYTE_LEN_CMAC_AES128 16
-#define ACVP_BYTE_LEN_CMAC_AES192 24
-#define ACVP_BYTE_LEN_CMAC_AES256 32
-#define ACVP_BYTE_LEN_CMAC_TDES 24
-
 typedef enum acvp_log_lvl {
     ACVP_LOG_LVL_NONE = 0,
     ACVP_LOG_LVL_ERR,
@@ -405,25 +395,25 @@ typedef enum acvp_ecdsa_secret_gen_mode {
     ACVP_ECDSA_SECRET_GEN_TEST_CAND
 } ACVP_ECDSA_SECRET_GEN_MODE;
 
-typedef enum acvp_ecdsa_curves {
-    ACVP_ECDSA_CURVE_START = 0,
-    ACVP_ECDSA_CURVE_P192,
-    ACVP_ECDSA_CURVE_P224,
-    ACVP_ECDSA_CURVE_P256,
-    ACVP_ECDSA_CURVE_P384,
-    ACVP_ECDSA_CURVE_P521,
-    ACVP_ECDSA_CURVE_B163,
-    ACVP_ECDSA_CURVE_B233,
-    ACVP_ECDSA_CURVE_B283,
-    ACVP_ECDSA_CURVE_B409,
-    ACVP_ECDSA_CURVE_B571,
-    ACVP_ECDSA_CURVE_K163,
-    ACVP_ECDSA_CURVE_K233,
-    ACVP_ECDSA_CURVE_K283,
-    ACVP_ECDSA_CURVE_K409,
-    ACVP_ECDSA_CURVE_K571,
-    ACVP_ECDSA_CURVE_END
-} ACVP_ECDSA_CURVE;
+typedef enum acvp_ec_curve {
+    ACVP_EC_CURVE_START = 0,
+    ACVP_EC_CURVE_P192,
+    ACVP_EC_CURVE_P224,
+    ACVP_EC_CURVE_P256,
+    ACVP_EC_CURVE_P384,
+    ACVP_EC_CURVE_P521,
+    ACVP_EC_CURVE_B163,
+    ACVP_EC_CURVE_B233,
+    ACVP_EC_CURVE_B283,
+    ACVP_EC_CURVE_B409,
+    ACVP_EC_CURVE_B571,
+    ACVP_EC_CURVE_K163,
+    ACVP_EC_CURVE_K233,
+    ACVP_EC_CURVE_K283,
+    ACVP_EC_CURVE_K409,
+    ACVP_EC_CURVE_K571,
+    ACVP_EC_CURVE_END
+} ACVP_EC_CURVE;
 
 typedef enum acvp_kdf135_ikev2_param {
     ACVP_KDF_HASH_ALG,
@@ -971,7 +961,7 @@ typedef struct acvp_ecdsa_tc_t {
     
     ACVP_CIPHER cipher;
 
-    ACVP_ECDSA_CURVE curve;
+    ACVP_EC_CURVE curve;
     ACVP_ECDSA_SECRET_GEN_MODE secret_gen_mode;
     
     unsigned char *d;
@@ -1160,7 +1150,7 @@ typedef struct acvp_kas_ecc_tc_t {
     ACVP_KAS_ECC_FUNC func; 
     ACVP_KAS_ECC_TEST_TYPE test_type;
     ACVP_KAS_ECC_MODE mode;
-    ACVP_ECDSA_CURVE curve;
+    ACVP_EC_CURVE curve;
     ACVP_HASH_ALG md;
     unsigned char *psx;
     unsigned char *psy;

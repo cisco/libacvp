@@ -1580,29 +1580,29 @@ static int enable_kas_ecc (ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_kas_ecc_cap_parm(ctx, ACVP_KAS_ECC_CDH, ACVP_KAS_ECC_MODE_CDH, ACVP_KAS_ECC_FUNCTION, ACVP_KAS_ECC_FUNC_PARTIAL);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_kas_ecc_cap_parm(ctx, ACVP_KAS_ECC_CDH, ACVP_KAS_ECC_MODE_CDH, ACVP_KAS_ECC_CURVE, ACVP_ECDSA_CURVE_P224);
+    rv = acvp_enable_kas_ecc_cap_parm(ctx, ACVP_KAS_ECC_CDH, ACVP_KAS_ECC_MODE_CDH, ACVP_KAS_ECC_CURVE, ACVP_EC_CURVE_P224);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_kas_ecc_cap_parm(ctx, ACVP_KAS_ECC_CDH, ACVP_KAS_ECC_MODE_CDH, ACVP_KAS_ECC_CURVE, ACVP_ECDSA_CURVE_P256);
+    rv = acvp_enable_kas_ecc_cap_parm(ctx, ACVP_KAS_ECC_CDH, ACVP_KAS_ECC_MODE_CDH, ACVP_KAS_ECC_CURVE, ACVP_EC_CURVE_P256);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_kas_ecc_cap_parm(ctx, ACVP_KAS_ECC_CDH, ACVP_KAS_ECC_MODE_CDH, ACVP_KAS_ECC_CURVE, ACVP_ECDSA_CURVE_P384);
+    rv = acvp_enable_kas_ecc_cap_parm(ctx, ACVP_KAS_ECC_CDH, ACVP_KAS_ECC_MODE_CDH, ACVP_KAS_ECC_CURVE, ACVP_EC_CURVE_P384);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_kas_ecc_cap_parm(ctx, ACVP_KAS_ECC_CDH, ACVP_KAS_ECC_MODE_CDH, ACVP_KAS_ECC_CURVE, ACVP_ECDSA_CURVE_P521);
+    rv = acvp_enable_kas_ecc_cap_parm(ctx, ACVP_KAS_ECC_CDH, ACVP_KAS_ECC_MODE_CDH, ACVP_KAS_ECC_CURVE, ACVP_EC_CURVE_P521);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_kas_ecc_cap_parm(ctx, ACVP_KAS_ECC_CDH, ACVP_KAS_ECC_MODE_CDH, ACVP_KAS_ECC_CURVE, ACVP_ECDSA_CURVE_K233);
+    rv = acvp_enable_kas_ecc_cap_parm(ctx, ACVP_KAS_ECC_CDH, ACVP_KAS_ECC_MODE_CDH, ACVP_KAS_ECC_CURVE, ACVP_EC_CURVE_K233);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_kas_ecc_cap_parm(ctx, ACVP_KAS_ECC_CDH, ACVP_KAS_ECC_MODE_CDH, ACVP_KAS_ECC_CURVE, ACVP_ECDSA_CURVE_K283);
+    rv = acvp_enable_kas_ecc_cap_parm(ctx, ACVP_KAS_ECC_CDH, ACVP_KAS_ECC_MODE_CDH, ACVP_KAS_ECC_CURVE, ACVP_EC_CURVE_K283);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_kas_ecc_cap_parm(ctx, ACVP_KAS_ECC_CDH, ACVP_KAS_ECC_MODE_CDH, ACVP_KAS_ECC_CURVE, ACVP_ECDSA_CURVE_K409);
+    rv = acvp_enable_kas_ecc_cap_parm(ctx, ACVP_KAS_ECC_CDH, ACVP_KAS_ECC_MODE_CDH, ACVP_KAS_ECC_CURVE, ACVP_EC_CURVE_K409);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_kas_ecc_cap_parm(ctx, ACVP_KAS_ECC_CDH, ACVP_KAS_ECC_MODE_CDH, ACVP_KAS_ECC_CURVE, ACVP_ECDSA_CURVE_K571);
+    rv = acvp_enable_kas_ecc_cap_parm(ctx, ACVP_KAS_ECC_CDH, ACVP_KAS_ECC_MODE_CDH, ACVP_KAS_ECC_CURVE, ACVP_EC_CURVE_K571);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_kas_ecc_cap_parm(ctx, ACVP_KAS_ECC_CDH, ACVP_KAS_ECC_MODE_CDH, ACVP_KAS_ECC_CURVE, ACVP_ECDSA_CURVE_B233);
+    rv = acvp_enable_kas_ecc_cap_parm(ctx, ACVP_KAS_ECC_CDH, ACVP_KAS_ECC_MODE_CDH, ACVP_KAS_ECC_CURVE, ACVP_EC_CURVE_B233);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_kas_ecc_cap_parm(ctx, ACVP_KAS_ECC_CDH, ACVP_KAS_ECC_MODE_CDH, ACVP_KAS_ECC_CURVE, ACVP_ECDSA_CURVE_B283);
+    rv = acvp_enable_kas_ecc_cap_parm(ctx, ACVP_KAS_ECC_CDH, ACVP_KAS_ECC_MODE_CDH, ACVP_KAS_ECC_CURVE, ACVP_EC_CURVE_B283);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_kas_ecc_cap_parm(ctx, ACVP_KAS_ECC_CDH, ACVP_KAS_ECC_MODE_CDH, ACVP_KAS_ECC_CURVE, ACVP_ECDSA_CURVE_B409);
+    rv = acvp_enable_kas_ecc_cap_parm(ctx, ACVP_KAS_ECC_CDH, ACVP_KAS_ECC_MODE_CDH, ACVP_KAS_ECC_CURVE, ACVP_EC_CURVE_B409);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_kas_ecc_cap_parm(ctx, ACVP_KAS_ECC_CDH, ACVP_KAS_ECC_MODE_CDH, ACVP_KAS_ECC_CURVE, ACVP_ECDSA_CURVE_B571);
+    rv = acvp_enable_kas_ecc_cap_parm(ctx, ACVP_KAS_ECC_CDH, ACVP_KAS_ECC_MODE_CDH, ACVP_KAS_ECC_CURVE, ACVP_EC_CURVE_B571);
     CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_enable_kas_ecc_cap(ctx, ACVP_KAS_ECC_COMP, &app_kas_ecc_handler);
@@ -1627,13 +1627,13 @@ static int enable_kas_ecc (ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_kas_ecc_cap_scheme(ctx, ACVP_KAS_ECC_COMP, ACVP_KAS_ECC_MODE_COMPONENT, ACVP_KAS_ECC_EPHEMERAL_UNIFIED,  ACVP_KAS_ECC_KDF, 0, ACVP_KAS_ECC_NOKDFNOKC);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_kas_ecc_cap_scheme(ctx, ACVP_KAS_ECC_COMP, ACVP_KAS_ECC_MODE_COMPONENT, ACVP_KAS_ECC_EPHEMERAL_UNIFIED, ACVP_KAS_ECC_EB, ACVP_ECDSA_CURVE_P224, ACVP_SHA224);
+    rv = acvp_enable_kas_ecc_cap_scheme(ctx, ACVP_KAS_ECC_COMP, ACVP_KAS_ECC_MODE_COMPONENT, ACVP_KAS_ECC_EPHEMERAL_UNIFIED, ACVP_KAS_ECC_EB, ACVP_EC_CURVE_P224, ACVP_SHA224);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_kas_ecc_cap_scheme(ctx, ACVP_KAS_ECC_COMP, ACVP_KAS_ECC_MODE_COMPONENT, ACVP_KAS_ECC_EPHEMERAL_UNIFIED, ACVP_KAS_ECC_EC, ACVP_ECDSA_CURVE_P256, ACVP_SHA256);
+    rv = acvp_enable_kas_ecc_cap_scheme(ctx, ACVP_KAS_ECC_COMP, ACVP_KAS_ECC_MODE_COMPONENT, ACVP_KAS_ECC_EPHEMERAL_UNIFIED, ACVP_KAS_ECC_EC, ACVP_EC_CURVE_P256, ACVP_SHA256);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_kas_ecc_cap_scheme(ctx, ACVP_KAS_ECC_COMP, ACVP_KAS_ECC_MODE_COMPONENT, ACVP_KAS_ECC_EPHEMERAL_UNIFIED, ACVP_KAS_ECC_ED, ACVP_ECDSA_CURVE_P384, ACVP_SHA384);
+    rv = acvp_enable_kas_ecc_cap_scheme(ctx, ACVP_KAS_ECC_COMP, ACVP_KAS_ECC_MODE_COMPONENT, ACVP_KAS_ECC_EPHEMERAL_UNIFIED, ACVP_KAS_ECC_ED, ACVP_EC_CURVE_P384, ACVP_SHA384);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_kas_ecc_cap_scheme(ctx, ACVP_KAS_ECC_COMP, ACVP_KAS_ECC_MODE_COMPONENT, ACVP_KAS_ECC_EPHEMERAL_UNIFIED, ACVP_KAS_ECC_EE, ACVP_ECDSA_CURVE_P521, ACVP_SHA512);
+    rv = acvp_enable_kas_ecc_cap_scheme(ctx, ACVP_KAS_ECC_COMP, ACVP_KAS_ECC_MODE_COMPONENT, ACVP_KAS_ECC_EPHEMERAL_UNIFIED, ACVP_KAS_ECC_EE, ACVP_EC_CURVE_P521, ACVP_SHA512);
     CHECK_ENABLE_CAP_RV(rv);
 
 end:
@@ -2088,29 +2088,29 @@ static int enable_ecdsa (ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_prereq_cap(ctx, ACVP_ECDSA_KEYGEN, ACVP_PREREQ_DRBG, value);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_KEYGEN, ACVP_CURVE, ACVP_ECDSA_CURVE_P224);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_KEYGEN, ACVP_CURVE, ACVP_EC_CURVE_P224);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_KEYGEN, ACVP_CURVE, ACVP_ECDSA_CURVE_P256);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_KEYGEN, ACVP_CURVE, ACVP_EC_CURVE_P256);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_KEYGEN, ACVP_CURVE, ACVP_ECDSA_CURVE_P384);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_KEYGEN, ACVP_CURVE, ACVP_EC_CURVE_P384);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_KEYGEN, ACVP_CURVE, ACVP_ECDSA_CURVE_P521);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_KEYGEN, ACVP_CURVE, ACVP_EC_CURVE_P521);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_KEYGEN, ACVP_CURVE, ACVP_ECDSA_CURVE_K233);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_KEYGEN, ACVP_CURVE, ACVP_EC_CURVE_K233);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_KEYGEN, ACVP_CURVE, ACVP_ECDSA_CURVE_K283);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_KEYGEN, ACVP_CURVE, ACVP_EC_CURVE_K283);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_KEYGEN, ACVP_CURVE, ACVP_ECDSA_CURVE_K409);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_KEYGEN, ACVP_CURVE, ACVP_EC_CURVE_K409);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_KEYGEN, ACVP_CURVE, ACVP_ECDSA_CURVE_K571);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_KEYGEN, ACVP_CURVE, ACVP_EC_CURVE_K571);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_KEYGEN, ACVP_CURVE, ACVP_ECDSA_CURVE_B233);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_KEYGEN, ACVP_CURVE, ACVP_EC_CURVE_B233);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_KEYGEN, ACVP_CURVE, ACVP_ECDSA_CURVE_B283);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_KEYGEN, ACVP_CURVE, ACVP_EC_CURVE_B283);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_KEYGEN, ACVP_CURVE, ACVP_ECDSA_CURVE_B409);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_KEYGEN, ACVP_CURVE, ACVP_EC_CURVE_B409);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_KEYGEN, ACVP_CURVE, ACVP_ECDSA_CURVE_B571);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_KEYGEN, ACVP_CURVE, ACVP_EC_CURVE_B571);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_KEYGEN, ACVP_ECDSA_SECRET_GEN, ACVP_ECDSA_SECRET_GEN_TEST_CAND);
     CHECK_ENABLE_CAP_RV(rv);
@@ -2124,29 +2124,29 @@ static int enable_ecdsa (ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_prereq_cap(ctx, ACVP_ECDSA_KEYVER, ACVP_PREREQ_DRBG, value);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_KEYVER, ACVP_CURVE, ACVP_ECDSA_CURVE_P224);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_KEYVER, ACVP_CURVE, ACVP_EC_CURVE_P224);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_KEYVER, ACVP_CURVE, ACVP_ECDSA_CURVE_P256);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_KEYVER, ACVP_CURVE, ACVP_EC_CURVE_P256);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_KEYVER, ACVP_CURVE, ACVP_ECDSA_CURVE_P384);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_KEYVER, ACVP_CURVE, ACVP_EC_CURVE_P384);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_KEYVER, ACVP_CURVE, ACVP_ECDSA_CURVE_P521);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_KEYVER, ACVP_CURVE, ACVP_EC_CURVE_P521);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_KEYVER, ACVP_CURVE, ACVP_ECDSA_CURVE_K233);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_KEYVER, ACVP_CURVE, ACVP_EC_CURVE_K233);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_KEYVER, ACVP_CURVE, ACVP_ECDSA_CURVE_K283);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_KEYVER, ACVP_CURVE, ACVP_EC_CURVE_K283);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_KEYVER, ACVP_CURVE, ACVP_ECDSA_CURVE_K409);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_KEYVER, ACVP_CURVE, ACVP_EC_CURVE_K409);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_KEYVER, ACVP_CURVE, ACVP_ECDSA_CURVE_K571);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_KEYVER, ACVP_CURVE, ACVP_EC_CURVE_K571);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_KEYVER, ACVP_CURVE, ACVP_ECDSA_CURVE_B233);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_KEYVER, ACVP_CURVE, ACVP_EC_CURVE_B233);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_KEYVER, ACVP_CURVE, ACVP_ECDSA_CURVE_B283);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_KEYVER, ACVP_CURVE, ACVP_EC_CURVE_B283);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_KEYVER, ACVP_CURVE, ACVP_ECDSA_CURVE_B409);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_KEYVER, ACVP_CURVE, ACVP_EC_CURVE_B409);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_KEYVER, ACVP_CURVE, ACVP_ECDSA_CURVE_B571);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_KEYVER, ACVP_CURVE, ACVP_EC_CURVE_B571);
     CHECK_ENABLE_CAP_RV(rv);
 
 
@@ -2159,29 +2159,29 @@ static int enable_ecdsa (ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_prereq_cap(ctx, ACVP_ECDSA_SIGGEN, ACVP_PREREQ_DRBG, value);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_CURVE, ACVP_ECDSA_CURVE_P224);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_CURVE, ACVP_EC_CURVE_P224);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_CURVE, ACVP_ECDSA_CURVE_P256);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_CURVE, ACVP_EC_CURVE_P256);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_CURVE, ACVP_ECDSA_CURVE_P384);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_CURVE, ACVP_EC_CURVE_P384);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_CURVE, ACVP_ECDSA_CURVE_P521);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_CURVE, ACVP_EC_CURVE_P521);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_CURVE, ACVP_ECDSA_CURVE_K233);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_CURVE, ACVP_EC_CURVE_K233);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_CURVE, ACVP_ECDSA_CURVE_K283);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_CURVE, ACVP_EC_CURVE_K283);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_CURVE, ACVP_ECDSA_CURVE_K409);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_CURVE, ACVP_EC_CURVE_K409);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_CURVE, ACVP_ECDSA_CURVE_K571);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_CURVE, ACVP_EC_CURVE_K571);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_CURVE, ACVP_ECDSA_CURVE_B233);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_CURVE, ACVP_EC_CURVE_B233);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_CURVE, ACVP_ECDSA_CURVE_B283);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_CURVE, ACVP_EC_CURVE_B283);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_CURVE, ACVP_ECDSA_CURVE_B409);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_CURVE, ACVP_EC_CURVE_B409);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_CURVE, ACVP_ECDSA_CURVE_B571);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_CURVE, ACVP_EC_CURVE_B571);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_ECDSA_HASH_ALG, ACVP_SHA224);
     CHECK_ENABLE_CAP_RV(rv);
@@ -2201,29 +2201,29 @@ static int enable_ecdsa (ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_prereq_cap(ctx, ACVP_ECDSA_SIGVER, ACVP_PREREQ_DRBG, value);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_CURVE, ACVP_ECDSA_CURVE_P224);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_CURVE, ACVP_EC_CURVE_P224);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_CURVE, ACVP_ECDSA_CURVE_P256);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_CURVE, ACVP_EC_CURVE_P256);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_CURVE, ACVP_ECDSA_CURVE_P384);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_CURVE, ACVP_EC_CURVE_P384);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_CURVE, ACVP_ECDSA_CURVE_P521);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_CURVE, ACVP_EC_CURVE_P521);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_CURVE, ACVP_ECDSA_CURVE_K233);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_CURVE, ACVP_EC_CURVE_K233);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_CURVE, ACVP_ECDSA_CURVE_K283);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_CURVE, ACVP_EC_CURVE_K283);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_CURVE, ACVP_ECDSA_CURVE_K409);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_CURVE, ACVP_EC_CURVE_K409);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_CURVE, ACVP_ECDSA_CURVE_K571);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_CURVE, ACVP_EC_CURVE_K571);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_CURVE, ACVP_ECDSA_CURVE_B233);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_CURVE, ACVP_EC_CURVE_B233);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_CURVE, ACVP_ECDSA_CURVE_B283);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_CURVE, ACVP_EC_CURVE_B283);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_CURVE, ACVP_ECDSA_CURVE_B409);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_CURVE, ACVP_EC_CURVE_B409);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_CURVE, ACVP_ECDSA_CURVE_B571);
+    rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_CURVE, ACVP_EC_CURVE_B571);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_enable_ecdsa_cap_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_ECDSA_HASH_ALG, ACVP_SHA224);
     CHECK_ENABLE_CAP_RV(rv);
@@ -4328,40 +4328,40 @@ static ACVP_RESULT app_kas_ecc_handler(ACVP_TEST_CASE *test_case)
 
     switch (tc->curve)
     {
-    case ACVP_ECDSA_CURVE_P224:
+    case ACVP_EC_CURVE_P224:
         nid = NID_secp224r1;
         break;
-    case ACVP_ECDSA_CURVE_P256:
+    case ACVP_EC_CURVE_P256:
         nid = NID_X9_62_prime256v1;
         break;
-    case ACVP_ECDSA_CURVE_P384:
+    case ACVP_EC_CURVE_P384:
         nid = NID_secp384r1;
         break;
-    case ACVP_ECDSA_CURVE_P521:
+    case ACVP_EC_CURVE_P521:
         nid = NID_secp521r1;
         break;
-    case ACVP_ECDSA_CURVE_B233:
+    case ACVP_EC_CURVE_B233:
         nid = NID_sect233r1;
         break;
-    case ACVP_ECDSA_CURVE_B283:
+    case ACVP_EC_CURVE_B283:
         nid = NID_sect283r1;
         break;
-    case ACVP_ECDSA_CURVE_B409:
+    case ACVP_EC_CURVE_B409:
         nid = NID_sect409r1;
         break;
-    case ACVP_ECDSA_CURVE_B571:
+    case ACVP_EC_CURVE_B571:
         nid = NID_sect571r1;
         break;
-    case ACVP_ECDSA_CURVE_K233:
+    case ACVP_EC_CURVE_K233:
         nid = NID_sect233k1;
         break;
-    case ACVP_ECDSA_CURVE_K283:
+    case ACVP_EC_CURVE_K283:
         nid = NID_sect283k1;
         break;
-    case ACVP_ECDSA_CURVE_K409:
+    case ACVP_EC_CURVE_K409:
         nid = NID_sect409k1;
         break;
-    case ACVP_ECDSA_CURVE_K571:
+    case ACVP_EC_CURVE_K571:
         nid = NID_sect571k1;
         break;
     default:
@@ -4758,40 +4758,40 @@ static ACVP_RESULT app_ecdsa_handler(ACVP_TEST_CASE *test_case)
     }
 
     switch(tc->curve) {
-    case ACVP_ECDSA_CURVE_B233:
+    case ACVP_EC_CURVE_B233:
         nid = NID_sect233r1;
         break;
-    case ACVP_ECDSA_CURVE_B283:
+    case ACVP_EC_CURVE_B283:
         nid = NID_sect283r1;
         break;
-    case ACVP_ECDSA_CURVE_B409:
+    case ACVP_EC_CURVE_B409:
         nid = NID_sect409r1;
         break;
-    case ACVP_ECDSA_CURVE_B571:
+    case ACVP_EC_CURVE_B571:
         nid = NID_sect571r1;
         break;
-    case ACVP_ECDSA_CURVE_K233:
+    case ACVP_EC_CURVE_K233:
         nid = NID_sect233k1;
         break;
-    case ACVP_ECDSA_CURVE_K283:
+    case ACVP_EC_CURVE_K283:
         nid = NID_sect283k1;
         break;
-    case ACVP_ECDSA_CURVE_K409:
+    case ACVP_EC_CURVE_K409:
         nid = NID_sect409k1;
         break;
-    case ACVP_ECDSA_CURVE_K571:
+    case ACVP_EC_CURVE_K571:
         nid = NID_sect571k1;
         break;
-    case ACVP_ECDSA_CURVE_P224:
+    case ACVP_EC_CURVE_P224:
         nid = NID_secp224r1;
         break;
-    case ACVP_ECDSA_CURVE_P256:
+    case ACVP_EC_CURVE_P256:
         nid = NID_X9_62_prime256v1;
         break;
-    case ACVP_ECDSA_CURVE_P384:
+    case ACVP_EC_CURVE_P384:
         nid = NID_secp384r1;
         break;
-    case ACVP_ECDSA_CURVE_P521:
+    case ACVP_EC_CURVE_P521:
         nid = NID_secp521r1;
         break;
     default:

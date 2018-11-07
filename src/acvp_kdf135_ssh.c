@@ -210,19 +210,19 @@ ACVP_RESULT acvp_kdf135_ssh_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
          */
         if (!strncmp(sha_str, "SHA-1", 5)) {
             sha_type = ACVP_SHA1;
-            i_key_len = hash_len = ACVP_BYTE_LEN_HMAC_SHA1;
+            i_key_len = hash_len = ACVP_SHA1_BYTE_LEN;
         } else if (!strncmp(sha_str, "SHA2-224", 8)) {
             sha_type = ACVP_SHA224;
-            i_key_len = hash_len = ACVP_BYTE_LEN_HMAC_SHA224;
+            i_key_len = hash_len = ACVP_SHA224_BYTE_LEN;
         } else if (!strncmp(sha_str, "SHA2-256", 8)) {
             sha_type = ACVP_SHA256;
-            i_key_len = hash_len = ACVP_BYTE_LEN_HMAC_SHA256;
+            i_key_len = hash_len = ACVP_SHA256_BYTE_LEN;
         } else if (!strncmp(sha_str, "SHA2-384", 8)) {
             sha_type = ACVP_SHA384;
-            i_key_len = hash_len = ACVP_BYTE_LEN_HMAC_SHA384;
+            i_key_len = hash_len = ACVP_SHA384_BYTE_LEN;
         } else if (!strncmp(sha_str, "SHA2-512", 8)) {
             sha_type = ACVP_SHA512;
-            i_key_len = hash_len = ACVP_BYTE_LEN_HMAC_SHA512;
+            i_key_len = hash_len = ACVP_SHA512_BYTE_LEN;
         } else {
             ACVP_LOG_ERR("Unsupported sha type");
             return ACVP_NO_CAP;

@@ -135,7 +135,7 @@ static ACVP_RESULT acvp_ecdsa_init_tc (ACVP_CTX *ctx,
                                        ACVP_CIPHER cipher,
                                        ACVP_ECDSA_TC *stc,
                                        unsigned int tc_id,
-                                       ACVP_ECDSA_CURVE curve,
+                                       ACVP_EC_CURVE curve,
                                        ACVP_ECDSA_SECRET_GEN_MODE secret_gen_mode,
                                        ACVP_HASH_ALG hash_alg,
                                        char *qx,
@@ -336,7 +336,7 @@ static ACVP_RESULT acvp_ecdsa_kat_handler_internal (ACVP_CTX *ctx, JSON_Object *
     
     for (i = 0; i < g_cnt; i++) {
         ACVP_HASH_ALG hash_alg = 0;
-        ACVP_ECDSA_CURVE curve = 0;
+        ACVP_EC_CURVE curve = 0;
         ACVP_ECDSA_SECRET_GEN_MODE secret_gen_mode = 0;
         const char *hash_alg_str = NULL, *curve_str = NULL,
                    *secret_gen_mode_str = NULL;
@@ -353,7 +353,7 @@ static ACVP_RESULT acvp_ecdsa_kat_handler_internal (ACVP_CTX *ctx, JSON_Object *
             return ACVP_MISSING_ARG;
         }
 
-        curve = acvp_lookup_ecdsa_curve(alg_id, curve_str);
+        curve = acvp_lookup_ec_curve(alg_id, curve_str);
         if (!curve) {
             ACVP_LOG_ERR("Server JSON includes unrecognized curve");
             return ACVP_INVALID_ARG;
