@@ -1149,8 +1149,7 @@ static int enable_aes (ACVP_CTX *ctx) {
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_KW, ACVP_SYM_CIPH_PTLEN, 1280);
     CHECK_ENABLE_CAP_RV(rv);
 #ifdef OPENSSL_KWP
-    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_KWP, ACVP_SYM_CIPH_DIR_BOTH, ACVP_SYM_CIPH_KO_NA, ACVP_SYM_CIPH_IVGEN_SRC_NA,
-                                    ACVP_SYM_CIPH_IVGEN_MODE_NA, &app_aes_keywrap_handler);
+    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_KWP, &app_aes_keywrap_handler);
     CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_KWP, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
@@ -1209,8 +1208,7 @@ static int enable_aes (ACVP_CTX *ctx) {
     /*
      * Enable AES-CTR 128, 192, 256 bit key
      */
-    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_CTR, ACVP_SYM_CIPH_DIR_BOTH, ACVP_SYM_CIPH_KO_NA, ACVP_SYM_CIPH_IVGEN_SRC_NA,
-                                    ACVP_SYM_CIPH_IVGEN_MODE_NA, &app_aes_handler);
+    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_CTR, &app_aes_handler);
     CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_CTR, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);

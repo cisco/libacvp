@@ -196,7 +196,8 @@ typedef enum acvp_hash_alg {
     ACVP_SHA384 = 8,
     ACVP_SHA512 = 16,
     ACVP_SHA512_224 = 32,
-    ACVP_SHA512_256 = 64
+    ACVP_SHA512_256 = 64,
+    ACVP_HASH_ALG_MAX = 128
 } ACVP_HASH_ALG;
 
 /*! @struct ACVP_KDF135_SSH_METHOD */

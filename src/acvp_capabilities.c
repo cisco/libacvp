@@ -502,15 +502,8 @@ static ACVP_RESULT acvp_validate_kdf135_tls_param_value (ACVP_KDF135_TLS_METHOD 
     switch (method) {
     
     case ACVP_KDF135_TLS12:
-        switch(param) {
-        case ACVP_SHA256:
-        case ACVP_SHA384:
-        case ACVP_SHA512:
+        if (param > 0  && param < ACVP_HASH_ALG_MAX) {
             retval = ACVP_SUCCESS;
-            break;
-        default:
-            /* Wrong */
-            break;
         }
         break;
     case ACVP_KDF135_TLS10_TLS11:
@@ -1098,47 +1091,47 @@ ACVP_RESULT acvp_cap_sym_cipher_set_parm (
     case ACVP_SYM_CIPH_KW_MODE:
         if (value < ACVP_SYM_KW_MAX) {
             cap->cap.sym_cap->kw_mode |= value;
+            return ACVP_SUCCESS;
         } else {
             ACVP_LOG_ERR("Invalid parameter 'value' for param ACVP_SYM_CIPH_KW_MODE");
             return ACVP_INVALID_ARG;
         }
-        break;
 
     case ACVP_SYM_CIPH_PARM_DIR:
         if (value != 0 && value < ACVP_SYM_CIPH_DIR_MAX) {
             cap->cap.sym_cap->direction = value;
+            return ACVP_SUCCESS;
         } else {
             ACVP_LOG_ERR("Invalid parameter 'value' for param ACVP_SYM_CIPH_PARM_DIR");
             return ACVP_INVALID_ARG;
         }
-        break;
 
     case ACVP_SYM_CIPH_PARM_KO:
         if (value != 0 && value < ACVP_SYM_CIPH_KO_MAX) {
             cap->cap.sym_cap->keying_option = value;
+            return ACVP_SUCCESS;
         } else {
             ACVP_LOG_ERR("Invalid parameter 'value' for param ACVP_SYM_CIPH_PARM_KO");
             return ACVP_INVALID_ARG;
         }
-        break;
 
     case ACVP_SYM_CIPH_PARM_IVGEN_SRC:
         if (value != 0 && value < ACVP_SYM_CIPH_IVGEN_SRC_MAX) {
             cap->cap.sym_cap->ivgen_source = value;
+            return ACVP_SUCCESS;
         } else {
             ACVP_LOG_ERR("Invalid parameter 'value' for param ACVP_SYM_CIPH_PARM_IVGEN_SRC");
             return ACVP_INVALID_ARG;
         }
-        break;
 
     case ACVP_SYM_CIPH_PARM_IVGEN_MODE:
         if (value != 0 && value < ACVP_SYM_CIPH_IVGEN_MODE_MAX) {
             cap->cap.sym_cap->ivgen_mode = value;
+            return ACVP_SUCCESS;
         } else {
             ACVP_LOG_ERR("Invalid parameter 'value' for param ACVP_SYM_CIPH_PARM_IVGEN_MODE");
             return ACVP_INVALID_ARG;
         }
-        break;
 
     default:
         break;
