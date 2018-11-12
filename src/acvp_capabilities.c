@@ -70,39 +70,6 @@ static ACVP_RESULT acvp_cap_add_length (ACVP_SL_LIST **list, int len) {
     return ACVP_SUCCESS;
 }
 
-/*
- * Append a symmetric cipher capabilitiy to the
- * capabilities list.  This list is later used to build
- * the register message.
- */
-static ACVP_RESULT acvp_cap_list_append_sym_cipher (
-        ACVP_CTX *ctx,
-        ACVP_SYM_CIPHER_CAP *cap,
-        ACVP_CIPHER cipher,
-        ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case)) {
-    ACVP_CAPS_LIST *cap_entry, *cap_e2;
-    
-    cap_entry = calloc(1, sizeof(ACVP_CAPS_LIST));
-    if (!cap_entry) {
-        return ACVP_MALLOC_FAIL;
-    }
-    cap_entry->cipher = cipher;
-    cap_entry->cap.sym_cap = cap;
-    cap_entry->crypto_handler = crypto_handler;
-    cap_entry->cap_type = ACVP_SYM_TYPE;
-    
-    if (!ctx->caps_list) {
-        ctx->caps_list = cap_entry;
-    } else {
-        cap_e2 = ctx->caps_list;
-        while (cap_e2->next) {
-            cap_e2 = cap_e2->next;
-        }
-        cap_e2->next = cap_entry;
-    }
-    return (ACVP_SUCCESS);
-}
-
 static ACVP_DSA_CAP *allocate_dsa_cap(void) {
     ACVP_DSA_CAP *cap = NULL;
     ACVP_DSA_CAP_MODE *modes = NULL;
@@ -179,10 +146,19 @@ static ACVP_KAS_FFC_CAP *allocate_kas_ffc_cap(void) {
     return cap;
 }
 
-/*
- * Append a DRBG capability to the
- * capabilities list.  This list is later used to build
- * the register message.
+/*!
+ * @brief Create and append an ACVP_CAPS_LIST object
+ *        to the current list.
+ *
+ * This function is designed to handle all of the
+ * ACVP_CIPHER and ACVP_CAP_TYPE permutations.
+ *
+ * @param[in] ctx Pointer to ACVP_CTX whose cap_list will be appended to.
+ * @param[in] type ACVP_CAP_TYPE enum value.
+ * @param[in] cipher ACVP_CIPHER enum value.
+ * @param[in] crypto_handler The function pointer for crypto module callback.
+ *
+ * @return ACVP_RESULT
  */
 static ACVP_RESULT acvp_cap_list_append (ACVP_CTX *ctx,
                                          ACVP_CAP_TYPE type,
@@ -1073,7 +1049,6 @@ ACVP_RESULT acvp_cap_sym_cipher_set_parm (
         ACVP_CIPHER cipher,
         ACVP_SYM_CIPH_PARM parm,
         int value) {
-    
     ACVP_CAPS_LIST *cap = NULL;
 
     switch (cipher) {
@@ -1124,9 +1099,47 @@ ACVP_RESULT acvp_cap_sym_cipher_set_parm (
         if (value < ACVP_SYM_KW_MAX) {
             cap->cap.sym_cap->kw_mode |= value;
         } else {
+            ACVP_LOG_ERR("Invalid parameter 'value' for param ACVP_SYM_CIPH_KW_MODE");
             return ACVP_INVALID_ARG;
         }
         break;
+
+    case ACVP_SYM_CIPH_PARM_DIR:
+        if (value != 0 && value < ACVP_SYM_CIPH_DIR_MAX) {
+            cap->cap.sym_cap->direction = value;
+        } else {
+            ACVP_LOG_ERR("Invalid parameter 'value' for param ACVP_SYM_CIPH_PARM_DIR");
+            return ACVP_INVALID_ARG;
+        }
+        break;
+
+    case ACVP_SYM_CIPH_PARM_KO:
+        if (value != 0 && value < ACVP_SYM_CIPH_KO_MAX) {
+            cap->cap.sym_cap->keying_option = value;
+        } else {
+            ACVP_LOG_ERR("Invalid parameter 'value' for param ACVP_SYM_CIPH_PARM_KO");
+            return ACVP_INVALID_ARG;
+        }
+        break;
+
+    case ACVP_SYM_CIPH_PARM_IVGEN_SRC:
+        if (value != 0 && value < ACVP_SYM_CIPH_IVGEN_SRC_MAX) {
+            cap->cap.sym_cap->ivgen_source = value;
+        } else {
+            ACVP_LOG_ERR("Invalid parameter 'value' for param ACVP_SYM_CIPH_PARM_IVGEN_SRC");
+            return ACVP_INVALID_ARG;
+        }
+        break;
+
+    case ACVP_SYM_CIPH_PARM_IVGEN_MODE:
+        if (value != 0 && value < ACVP_SYM_CIPH_IVGEN_MODE_MAX) {
+            cap->cap.sym_cap->ivgen_mode = value;
+        } else {
+            ACVP_LOG_ERR("Invalid parameter 'value' for param ACVP_SYM_CIPH_PARM_IVGEN_MODE");
+            return ACVP_INVALID_ARG;
+        }
+        break;
+
     default:
         break;
     }
@@ -1176,19 +1189,14 @@ ACVP_RESULT acvp_cap_sym_cipher_set_parm (
 ACVP_RESULT acvp_cap_sym_cipher_enable (
         ACVP_CTX *ctx,
         ACVP_CIPHER cipher,
-        ACVP_SYM_CIPH_DIR dir,
-        ACVP_SYM_CIPH_KO keying_option,
-        ACVP_SYM_CIPH_IVGEN_SRC ivgen_source,
-        ACVP_SYM_CIPH_IVGEN_MODE ivgen_mode,
         ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case)) {
-
-    ACVP_SYM_CIPHER_CAP *cap;
     ACVP_RESULT result = ACVP_SUCCESS;
     
     if (!ctx) {
         return ACVP_NO_CTX;
     }
     if (!crypto_handler) {
+        ACVP_LOG_ERR("NULL parameter 'crypto_handler'");
         return ACVP_INVALID_ARG;
     }
     
@@ -1223,21 +1231,13 @@ ACVP_RESULT acvp_cap_sym_cipher_enable (
         return ACVP_INVALID_ARG;
     }
     
-    cap = calloc(1, sizeof(ACVP_SYM_CIPHER_CAP));
-    if (!cap) {
-        return ACVP_MALLOC_FAIL;
-    }
-    
-    //TODO: need to validate that cipher, mode, etc. are valid values
-    //      we also need to make sure we're not adding a duplicate
-    cap->direction = dir;
-    cap->keying_option = keying_option;
-    cap->ivgen_source = ivgen_source;
-    cap->ivgen_mode = ivgen_mode;
-    
-    result = acvp_cap_list_append_sym_cipher(ctx, cap, cipher, crypto_handler);
+    result = acvp_cap_list_append(ctx, ACVP_SYM_TYPE, cipher, crypto_handler);
 
-    if (result == ACVP_MALLOC_FAIL) free(cap);
+    if (result == ACVP_DUP_CIPHER) {
+        ACVP_LOG_ERR("Capability previously enabled. Duplicate not allowed.");
+    } else if (result == ACVP_MALLOC_FAIL) {
+        ACVP_LOG_ERR("Failed to allocate capability object");
+    }
 
     return result;
 }

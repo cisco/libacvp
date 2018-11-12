@@ -240,12 +240,12 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap (JSON_Object *cap_obj, ACV
     }
     json_object_set_value(cap_obj, "direction", json_value_init_array());
     mode_arr = json_object_get_array(cap_obj, "direction");
-    if (sym_cap->direction == ACVP_DIR_ENCRYPT ||
-        sym_cap->direction == ACVP_DIR_BOTH) {
+    if (sym_cap->direction == ACVP_SYM_CIPH_DIR_ENCRYPT ||
+        sym_cap->direction == ACVP_SYM_CIPH_DIR_BOTH) {
         json_array_append_string(mode_arr, "encrypt");
     }
-    if (sym_cap->direction == ACVP_DIR_DECRYPT ||
-        sym_cap->direction == ACVP_DIR_BOTH) {
+    if (sym_cap->direction == ACVP_SYM_CIPH_DIR_DECRYPT ||
+        sym_cap->direction == ACVP_SYM_CIPH_DIR_BOTH) {
         json_array_append_string(mode_arr, "decrypt");
     }
     
@@ -268,10 +268,10 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap (JSON_Object *cap_obj, ACV
      * Set the IV generation source if applicable
      */
     switch (sym_cap->ivgen_source) {
-    case ACVP_IVGEN_SRC_INT:
+    case ACVP_SYM_CIPH_IVGEN_SRC_INT:
         json_object_set_string(cap_obj, "ivGen", "internal");
         break;
-    case ACVP_IVGEN_SRC_EXT:
+    case ACVP_SYM_CIPH_IVGEN_SRC_EXT:
         json_object_set_string(cap_obj, "ivGen", "external");
         break;
     default:
@@ -283,10 +283,10 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap (JSON_Object *cap_obj, ACV
      * Set the IV generation mode if applicable
      */
     switch (sym_cap->ivgen_mode) {
-    case ACVP_IVGEN_MODE_821:
+    case ACVP_SYM_CIPH_IVGEN_MODE_821:
         json_object_set_string(cap_obj, "ivGenMode", "8.2.1");
         break;
-    case ACVP_IVGEN_MODE_822:
+    case ACVP_SYM_CIPH_IVGEN_MODE_822:
         json_object_set_string(cap_obj, "ivGenMode", "8.2.2");
         break;
     default:
@@ -297,15 +297,15 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap (JSON_Object *cap_obj, ACV
     /*
      * Set the TDES keyingOptions  if applicable
      */
-    if (sym_cap->keying_option != ACVP_KO_NA) {
+    if (sym_cap->keying_option != ACVP_SYM_CIPH_KO_NA) {
         json_object_set_value(cap_obj, "keyingOption", json_value_init_array());
         opts_arr = json_object_get_array(cap_obj, "keyingOption");
-        if (sym_cap->keying_option == ACVP_KO_THREE ||
-            sym_cap->keying_option == ACVP_KO_BOTH) {
+        if (sym_cap->keying_option == ACVP_SYM_CIPH_KO_THREE ||
+            sym_cap->keying_option == ACVP_SYM_CIPH_KO_BOTH) {
             json_array_append_number(opts_arr, 1);
         }
-        if (sym_cap->keying_option == ACVP_KO_TWO ||
-            sym_cap->keying_option == ACVP_KO_BOTH) {
+        if (sym_cap->keying_option == ACVP_SYM_CIPH_KO_TWO ||
+            sym_cap->keying_option == ACVP_SYM_CIPH_KO_BOTH) {
             json_array_append_number(opts_arr, 2);
         }
     }

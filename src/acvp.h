@@ -265,10 +265,11 @@ typedef enum acvp_kdf108_fixed_data_order_val {
 
 /*! @struct ACVP_SYM_CIPH_KO */
 typedef enum acvp_sym_cipher_keying_option {
-    ACVP_KO_NA = 0,
-    ACVP_KO_THREE,
-    ACVP_KO_TWO,
-    ACVP_KO_BOTH
+    ACVP_SYM_CIPH_KO_NA = 1,
+    ACVP_SYM_CIPH_KO_THREE,
+    ACVP_SYM_CIPH_KO_TWO,
+    ACVP_SYM_CIPH_KO_BOTH,
+    ACVP_SYM_CIPH_KO_MAX
 } ACVP_SYM_CIPH_KO;
 
 /*!
@@ -277,9 +278,10 @@ typedef enum acvp_sym_cipher_keying_option {
  * This can be internal, external, or not applicable.
  */
 typedef enum acvp_sym_cipher_ivgen_source {
-    ACVP_IVGEN_SRC_INT = 0,
-    ACVP_IVGEN_SRC_EXT,
-    ACVP_IVGEN_SRC_NA
+    ACVP_SYM_CIPH_IVGEN_SRC_INT = 1,
+    ACVP_SYM_CIPH_IVGEN_SRC_EXT,
+    ACVP_SYM_CIPH_IVGEN_SRC_NA,
+    ACVP_SYM_CIPH_IVGEN_SRC_MAX
 } ACVP_SYM_CIPH_IVGEN_SRC;
 
 /*!
@@ -288,9 +290,10 @@ typedef enum acvp_sym_cipher_ivgen_source {
  * 8.2.2, or may not be applicable for some ciphers.
  */
 typedef enum acvp_sym_cipher_ivgen_mode {
-    ACVP_IVGEN_MODE_821 = 0,
-    ACVP_IVGEN_MODE_822,
-    ACVP_IVGEN_MODE_NA
+    ACVP_SYM_CIPH_IVGEN_MODE_821 = 1,
+    ACVP_SYM_CIPH_IVGEN_MODE_822,
+    ACVP_SYM_CIPH_IVGEN_MODE_NA,
+    ACVP_SYM_CIPH_IVGEN_MODE_MAX
 } ACVP_SYM_CIPH_IVGEN_MODE;
 
 
@@ -301,9 +304,10 @@ typedef enum acvp_sym_cipher_ivgen_mode {
  * crypto module capabilities with libacvp.
  */
 typedef enum acvp_sym_cipher_direction {
-    ACVP_DIR_ENCRYPT = 1,
-    ACVP_DIR_DECRYPT,
-    ACVP_DIR_BOTH
+    ACVP_SYM_CIPH_DIR_ENCRYPT = 1,
+    ACVP_SYM_CIPH_DIR_DECRYPT,
+    ACVP_SYM_CIPH_DIR_BOTH,
+    ACVP_SYM_CIPH_DIR_MAX
 } ACVP_SYM_CIPH_DIR;
 
 /*! @struct ACVP_KDF135_TLS_METHOD */
@@ -487,13 +491,17 @@ typedef enum acvp_rsa_sig_type {
 
 /*! @struct ACVP_SYM_CIPHER_PARM */
 typedef enum acvp_sym_cipher_parameter {
-    ACVP_SYM_CIPH_KEYLEN = 0,
+    ACVP_SYM_CIPH_KEYLEN = 1,
     ACVP_SYM_CIPH_TAGLEN,
     ACVP_SYM_CIPH_IVLEN,
     ACVP_SYM_CIPH_PTLEN,
     ACVP_SYM_CIPH_TWEAK,
     ACVP_SYM_CIPH_AADLEN,
     ACVP_SYM_CIPH_KW_MODE,
+    ACVP_SYM_CIPH_PARM_DIR,
+    ACVP_SYM_CIPH_PARM_KO,
+    ACVP_SYM_CIPH_PARM_IVGEN_MODE,
+    ACVP_SYM_CIPH_PARM_IVGEN_SRC
 } ACVP_SYM_CIPH_PARM;
 
 /*! @struct ACVP_SYM_CIPH_TWEAK_MODE */
@@ -1383,10 +1391,6 @@ enum acvp_result {
 ACVP_RESULT acvp_cap_sym_cipher_enable (
         ACVP_CTX *ctx,
         ACVP_CIPHER cipher,
-        ACVP_SYM_CIPH_DIR dir,
-        ACVP_SYM_CIPH_KO keying_options,
-        ACVP_SYM_CIPH_IVGEN_SRC ivgen_source,
-        ACVP_SYM_CIPH_IVGEN_MODE ivgen_mode,
         ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case));
 
 /*! @brief acvp_enable_sym_cipher_cap_parm() allows an application to specify
