@@ -1845,7 +1845,7 @@ static ACVP_RESULT acvp_build_kas_ecc_register_cap (ACVP_CTX *ctx, JSON_Object *
     ACVP_PARAM_LIST *sha, *role;
     ACVP_KAS_ECC_SET kdf;
     ACVP_KAS_ECC_SCHEMES scheme;
-    int set, curve;
+    int set;
     
     kas_ecc_cap = cap_entry->cap.kas_ecc_cap;
     if (!kas_ecc_cap) {
@@ -1965,55 +1965,22 @@ static ACVP_RESULT acvp_build_kas_ecc_register_cap (ACVP_CTX *ctx, JSON_Object *
                 scheme = current_scheme->scheme;
                 current_pset = current_scheme->pset;
                 while (current_pset) {
+                    char *curve_str = NULL;
+
                     set_val = json_value_init_object();
                     set_obj = json_value_get_object(set_val);
                     
                     set = current_pset->set;
-                    curve = current_pset->curve;
-                    switch (curve)
-                    {
-                    case ACVP_EC_CURVE_B233:
-                        json_object_set_string(set_obj, "curve", "B-233");
-                        break;
-                    case ACVP_EC_CURVE_B283:
-                        json_object_set_string(set_obj, "curve", "B-283");
-                        break;
-                    case ACVP_EC_CURVE_B409:
-                        json_object_set_string(set_obj, "curve", "B-409");
-                        break;
-                    case ACVP_EC_CURVE_B571:
-                        json_object_set_string(set_obj, "curve", "B-571");
-                        break;
-                    case ACVP_EC_CURVE_K233:
-                        json_object_set_string(set_obj, "curve", "K-233");
-                        break;
-                    case ACVP_EC_CURVE_K283:
-                        json_object_set_string(set_obj, "curve", "K-283");
-                        break;
-                    case ACVP_EC_CURVE_K409:
-                        json_object_set_string(set_obj, "curve", "K-409");
-                        break;
-                    case ACVP_EC_CURVE_K571:
-                        json_object_set_string(set_obj, "curve", "K-571");
-                        break;
-                    case ACVP_EC_CURVE_P224:
-                        json_object_set_string(set_obj, "curve", "P-224");
-                        break;
-                    case ACVP_EC_CURVE_P256:
-                        json_object_set_string(set_obj, "curve", "P-256");
-                        break;
-                    case ACVP_EC_CURVE_P384:
-                        json_object_set_string(set_obj, "curve", "P-384");
-                        break;
-                    case ACVP_EC_CURVE_P521:
-                        json_object_set_string(set_obj, "curve", "P-521");
-                        break;
-                    default:
-                        ACVP_LOG_ERR("\nUnsupported KAS-ECC curve %d", curve);
+
+                    curve_str = acvp_lookup_ec_curve_name(kas_ecc_cap->cipher,
+                                                          current_pset->curve);
+                    if (!curve_str) {
+                        ACVP_LOG_ERR("\nUnsupported curve %d",
+                                     current_pset->curve);
                         return ACVP_INVALID_ARG;
-                        break;
                     }
-                    
+                    json_object_set_string(set_obj, "curve", curve_str);
+
                     json_object_set_value(set_obj, "hashAlg", json_value_init_array());
                     temp_arr = json_object_get_array(set_obj, "hashAlg");
                     sha = current_pset->sha;
