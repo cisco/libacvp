@@ -195,7 +195,7 @@ static ACVP_RESULT acvp_rsa_keygen_init_tc (ACVP_CTX *ctx,
                                             ACVP_RSA_KEY_FORMAT key_format,
                                             ACVP_RSA_PUB_EXP_MODE pub_exp_mode,
                                             int modulo,
-                                            ACVP_RSA_PRIME_TEST prime_test,
+                                            ACVP_RSA_PRIME_TEST_TYPE prime_test,
                                             int rand_pq,
                                             const char *e,
                                             const char *seed,
@@ -283,7 +283,7 @@ ACVP_RESULT acvp_rsa_keygen_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     unsigned int mod = 0;
     int info_gen_by_server, rand_pq, seed_len = 0;
     ACVP_HASH_ALG hash_alg = 0;
-    ACVP_RSA_PRIME_TEST prime_test = 0;
+    ACVP_RSA_PRIME_TEST_TYPE prime_test = 0;
     ACVP_RSA_PUB_EXP_MODE pub_exp_mode = 0;
     ACVP_RSA_KEY_FORMAT key_format = 0;
     const char *e_str = NULL, *alg_str = NULL, *mode_str, *hash_alg_str = NULL,
@@ -426,11 +426,11 @@ ACVP_RESULT acvp_rsa_keygen_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
                 return ACVP_MISSING_ARG;
             }
 
-            if (strncmp(prime_test_str, PRIME_TEST_TBLC2_NAME,
-                        strlen(PRIME_TEST_TBLC2_NAME)) == 0) {
+            if (strncmp(prime_test_str, ACVP_RSA_PRIME_TEST_TBLC2_STR,
+                        strlen(ACVP_RSA_PRIME_TEST_TBLC2_STR)) == 0) {
                 prime_test = ACVP_RSA_PRIME_TEST_TBLC2;
-            } else if (strncmp(prime_test_str, PRIME_TEST_TBLC3_NAME,
-                               strlen(PRIME_TEST_TBLC3_NAME)) == 0) {
+            } else if (strncmp(prime_test_str, ACVP_RSA_PRIME_TEST_TBLC3_STR,
+                               strlen(ACVP_RSA_PRIME_TEST_TBLC3_STR)) == 0) {
                 prime_test = ACVP_RSA_PRIME_TEST_TBLC3;
             } else {
                 ACVP_LOG_ERR("Server JSON invalid 'primeTest'");

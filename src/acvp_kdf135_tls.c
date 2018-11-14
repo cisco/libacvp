@@ -40,8 +40,8 @@ static ACVP_RESULT acvp_kdf135_tls_init_tc (ACVP_CTX *ctx,
                                             ACVP_KDF135_TLS_TC *stc,
                                             unsigned int tc_id,
                                             ACVP_CIPHER alg_id,
-                                            unsigned int method,
-                                            unsigned int sha,
+                                            ACVP_KDF135_TLS_METHOD method,
+                                            ACVP_HASH_ALG md,
                                             unsigned int pm_len,
                                             unsigned int kb_len,
                                             const char *pm_secret,
@@ -54,7 +54,7 @@ static ACVP_RESULT acvp_kdf135_tls_release_tc (ACVP_KDF135_TLS_TC *stc);
 
 
 ACVP_RESULT acvp_kdf135_tls_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
-    unsigned int tc_id, meth, md;
+    unsigned int tc_id;
     JSON_Value *groupval;
     JSON_Object *groupobj = NULL;
     JSON_Value *testval;
@@ -80,6 +80,8 @@ ACVP_RESULT acvp_kdf135_tls_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     ACVP_RESULT rv;
     const char *alg_str = json_object_get_string(obj, "algorithm");
     ACVP_CIPHER alg_id;
+    ACVP_HASH_ALG md = 0;
+    ACVP_KDF135_TLS_METHOD meth = 0;
     const char *pm_secret = NULL;
     const char *sh_rnd = NULL;
     const char *ch_rnd = NULL;
@@ -188,11 +190,11 @@ ACVP_RESULT acvp_kdf135_tls_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
         }
         
         if (!strncmp(sha, "SHA2-256", 8)) {
-            md = ACVP_KDF135_TLS_CAP_SHA256;
+            md = ACVP_SHA256;
         } else if (!strncmp(sha, "SHA2-384", 8)) {
-            md = ACVP_KDF135_TLS_CAP_SHA384;
+            md = ACVP_SHA384;
         } else if (!strncmp(sha, "SHA2-512", 8)) {
-            md = ACVP_KDF135_TLS_CAP_SHA512;
+            md = ACVP_SHA512;
         } else {
             ACVP_LOG_ERR("Not TLS SHA");
             return ACVP_NO_CAP;
@@ -353,8 +355,8 @@ static ACVP_RESULT acvp_kdf135_tls_init_tc (ACVP_CTX *ctx,
                                             ACVP_KDF135_TLS_TC *stc,
                                             unsigned int tc_id,
                                             ACVP_CIPHER alg_id,
-                                            unsigned int method,
-                                            unsigned int md,
+                                            ACVP_KDF135_TLS_METHOD method,
+                                            ACVP_HASH_ALG md,
                                             unsigned int pm_len,
                                             unsigned int kb_len,
                                             const char *pm_secret,

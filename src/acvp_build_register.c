@@ -240,12 +240,12 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap (JSON_Object *cap_obj, ACV
     }
     json_object_set_value(cap_obj, "direction", json_value_init_array());
     mode_arr = json_object_get_array(cap_obj, "direction");
-    if (sym_cap->direction == ACVP_DIR_ENCRYPT ||
-        sym_cap->direction == ACVP_DIR_BOTH) {
+    if (sym_cap->direction == ACVP_SYM_CIPH_DIR_ENCRYPT ||
+        sym_cap->direction == ACVP_SYM_CIPH_DIR_BOTH) {
         json_array_append_string(mode_arr, "encrypt");
     }
-    if (sym_cap->direction == ACVP_DIR_DECRYPT ||
-        sym_cap->direction == ACVP_DIR_BOTH) {
+    if (sym_cap->direction == ACVP_SYM_CIPH_DIR_DECRYPT ||
+        sym_cap->direction == ACVP_SYM_CIPH_DIR_BOTH) {
         json_array_append_string(mode_arr, "decrypt");
     }
     
@@ -268,10 +268,10 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap (JSON_Object *cap_obj, ACV
      * Set the IV generation source if applicable
      */
     switch (sym_cap->ivgen_source) {
-    case ACVP_IVGEN_SRC_INT:
+    case ACVP_SYM_CIPH_IVGEN_SRC_INT:
         json_object_set_string(cap_obj, "ivGen", "internal");
         break;
-    case ACVP_IVGEN_SRC_EXT:
+    case ACVP_SYM_CIPH_IVGEN_SRC_EXT:
         json_object_set_string(cap_obj, "ivGen", "external");
         break;
     default:
@@ -283,10 +283,10 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap (JSON_Object *cap_obj, ACV
      * Set the IV generation mode if applicable
      */
     switch (sym_cap->ivgen_mode) {
-    case ACVP_IVGEN_MODE_821:
+    case ACVP_SYM_CIPH_IVGEN_MODE_821:
         json_object_set_string(cap_obj, "ivGenMode", "8.2.1");
         break;
-    case ACVP_IVGEN_MODE_822:
+    case ACVP_SYM_CIPH_IVGEN_MODE_822:
         json_object_set_string(cap_obj, "ivGenMode", "8.2.2");
         break;
     default:
@@ -297,15 +297,15 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap (JSON_Object *cap_obj, ACV
     /*
      * Set the TDES keyingOptions  if applicable
      */
-    if (sym_cap->keying_option != ACVP_KO_NA) {
+    if (sym_cap->keying_option != ACVP_SYM_CIPH_KO_NA) {
         json_object_set_value(cap_obj, "keyingOption", json_value_init_array());
         opts_arr = json_object_get_array(cap_obj, "keyingOption");
-        if (sym_cap->keying_option == ACVP_KO_THREE ||
-            sym_cap->keying_option == ACVP_KO_BOTH) {
+        if (sym_cap->keying_option == ACVP_SYM_CIPH_KO_THREE ||
+            sym_cap->keying_option == ACVP_SYM_CIPH_KO_BOTH) {
             json_array_append_number(opts_arr, 1);
         }
-        if (sym_cap->keying_option == ACVP_KO_TWO ||
-            sym_cap->keying_option == ACVP_KO_BOTH) {
+        if (sym_cap->keying_option == ACVP_SYM_CIPH_KO_TWO ||
+            sym_cap->keying_option == ACVP_SYM_CIPH_KO_BOTH) {
             json_array_append_number(opts_arr, 2);
         }
     }
@@ -684,7 +684,7 @@ static ACVP_RESULT acvp_lookup_rsa_primes (JSON_Object *cap_obj, ACVP_RSA_KEYGEN
         comp_name = current_mode_cap->hash_algs;
         
         while (comp_name) {
-            if (is_valid_hash_alg(comp_name->name) == ACVP_SUCCESS) {
+            if (acvp_lookup_hash_alg(comp_name->name)) {
                 json_array_append_string(hash_array, comp_name->name);
             }
             next_name = comp_name->next;
@@ -968,13 +968,13 @@ static ACVP_RESULT acvp_build_kdf135_tls_register_cap (JSON_Object *cap_obj, ACV
     
     json_object_set_value(cap_obj, "hashAlg", json_value_init_array());
     temp_arr = json_object_get_array(cap_obj, "hashAlg");
-    if (cap_entry->cap.kdf135_tls_cap->sha & ACVP_KDF135_TLS_CAP_SHA256) {
+    if (cap_entry->cap.kdf135_tls_cap->sha & ACVP_SHA256) {
         json_array_append_string(temp_arr, "SHA2-256");
     }
-    if (cap_entry->cap.kdf135_tls_cap->sha & ACVP_KDF135_TLS_CAP_SHA384) {
+    if (cap_entry->cap.kdf135_tls_cap->sha & ACVP_SHA384) {
         json_array_append_string(temp_arr, "SHA2-384");
     }
-    if (cap_entry->cap.kdf135_tls_cap->sha & ACVP_KDF135_TLS_CAP_SHA512) {
+    if (cap_entry->cap.kdf135_tls_cap->sha & ACVP_SHA512) {
         json_array_append_string(temp_arr, "SHA2-512");
     }
     
@@ -1374,19 +1374,19 @@ static ACVP_RESULT acvp_build_kdf135_ssh_register_cap (JSON_Object *cap_obj, ACV
     
     json_object_set_value(cap_obj, "hashAlg", json_value_init_array());
     temp_arr = json_object_get_array(cap_obj, "hashAlg");
-    if (cap_entry->cap.kdf135_ssh_cap->sha & ACVP_KDF135_SSH_CAP_SHA1) {
+    if (cap_entry->cap.kdf135_ssh_cap->sha & ACVP_SHA1) {
         json_array_append_string(temp_arr, "SHA-1");
     }
-    if (cap_entry->cap.kdf135_ssh_cap->sha & ACVP_KDF135_SSH_CAP_SHA224) {
+    if (cap_entry->cap.kdf135_ssh_cap->sha & ACVP_SHA224) {
         json_array_append_string(temp_arr, "SHA2-224");
     }
-    if (cap_entry->cap.kdf135_ssh_cap->sha & ACVP_KDF135_SSH_CAP_SHA256) {
+    if (cap_entry->cap.kdf135_ssh_cap->sha & ACVP_SHA256) {
         json_array_append_string(temp_arr, "SHA2-256");
     }
-    if (cap_entry->cap.kdf135_ssh_cap->sha & ACVP_KDF135_SSH_CAP_SHA384) {
+    if (cap_entry->cap.kdf135_ssh_cap->sha & ACVP_SHA384) {
         json_array_append_string(temp_arr, "SHA2-384");
     }
-    if (cap_entry->cap.kdf135_ssh_cap->sha & ACVP_KDF135_SSH_CAP_SHA512) {
+    if (cap_entry->cap.kdf135_ssh_cap->sha & ACVP_SHA512) {
         json_array_append_string(temp_arr, "SHA2-512");
     }
     
@@ -1404,25 +1404,25 @@ static ACVP_RESULT acvp_build_dsa_hashalgs (JSON_Object *cap_obj, JSON_Array *te
     json_object_set_value(cap_obj, "hashAlg", json_value_init_array());
     sha_arr = json_object_get_array(cap_obj, "hashAlg");
     
-    if (attrs->sha & ACVP_DSA_SHA1) {
+    if (attrs->sha & ACVP_SHA1) {
         json_array_append_string(sha_arr, "SHA2-1");
     }
-    if (attrs->sha & ACVP_DSA_SHA224) {
+    if (attrs->sha & ACVP_SHA224) {
         json_array_append_string(sha_arr, "SHA2-224");
     }
-    if (attrs->sha & ACVP_DSA_SHA256) {
+    if (attrs->sha & ACVP_SHA256) {
         json_array_append_string(sha_arr, "SHA2-256");
     }
-    if (attrs->sha & ACVP_DSA_SHA384) {
+    if (attrs->sha & ACVP_SHA384) {
         json_array_append_string(sha_arr, "SHA2-384");
     }
-    if (attrs->sha & ACVP_DSA_SHA512) {
+    if (attrs->sha & ACVP_SHA512) {
         json_array_append_string(sha_arr, "SHA2-512");
     }
-    if (attrs->sha & ACVP_DSA_SHA512_224) {
+    if (attrs->sha & ACVP_SHA512_224) {
         json_array_append_string(sha_arr, "SHA2-512-224");
     }
-    if (attrs->sha & ACVP_DSA_SHA512_256) {
+    if (attrs->sha & ACVP_SHA512_256) {
         json_array_append_string(sha_arr, "SHA2-512-256");
     }
     
@@ -1845,7 +1845,7 @@ static ACVP_RESULT acvp_build_kas_ecc_register_cap (ACVP_CTX *ctx, JSON_Object *
     ACVP_PARAM_LIST *sha, *role;
     ACVP_KAS_ECC_SET kdf;
     ACVP_KAS_ECC_SCHEMES scheme;
-    int set, curve;
+    int set;
     
     kas_ecc_cap = cap_entry->cap.kas_ecc_cap;
     if (!kas_ecc_cap) {
@@ -1909,49 +1909,18 @@ static ACVP_RESULT acvp_build_kas_ecc_register_cap (ACVP_CTX *ctx, JSON_Object *
             temp_arr = json_object_get_array(cap_obj, "curve");
             current_curve = kas_ecc_mode->curve;
             while (current_curve) {
-                switch (current_curve->param)
-                {
-                case ACVP_ECDSA_CURVE_B233:
-                    json_array_append_string(temp_arr, "b-233");
-                    break;
-                case ACVP_ECDSA_CURVE_B283:
-                    json_array_append_string(temp_arr, "b-283");
-                    break;
-                case ACVP_ECDSA_CURVE_B409:
-                    json_array_append_string(temp_arr, "b-409");
-                    break;
-                case ACVP_ECDSA_CURVE_B571:
-                    json_array_append_string(temp_arr, "b-571");
-                    break;
-                case ACVP_ECDSA_CURVE_K233:
-                    json_array_append_string(temp_arr, "k-233");
-                    break;
-                case ACVP_ECDSA_CURVE_K283:
-                    json_array_append_string(temp_arr, "k-283");
-                    break;
-                case ACVP_ECDSA_CURVE_K409:
-                    json_array_append_string(temp_arr, "k-409");
-                    break;
-                case ACVP_ECDSA_CURVE_K571:
-                    json_array_append_string(temp_arr, "k-571");
-                    break;
-                case ACVP_ECDSA_CURVE_P224:
-                    json_array_append_string(temp_arr, "p-224");
-                    break;
-                case ACVP_ECDSA_CURVE_P256:
-                    json_array_append_string(temp_arr, "p-256");
-                    break;
-                case ACVP_ECDSA_CURVE_P384:
-                    json_array_append_string(temp_arr, "p-384");
-                    break;
-                case ACVP_ECDSA_CURVE_P521:
-                    json_array_append_string(temp_arr, "p-521");
-                    break;
-                default:
-                    ACVP_LOG_ERR("\nUnsupported KAS-ECC function %d", current_curve->param);
+                char *curve_str = NULL;
+
+                curve_str = acvp_lookup_ec_curve_name(kas_ecc_cap->cipher,
+                                                      current_curve->param);
+                if (!curve_str) {
+                    ACVP_LOG_ERR("\nUnsupported curve %d",
+                                 current_curve->param);
                     return ACVP_INVALID_ARG;
-                    break;
                 }
+
+                json_array_append_string(temp_arr, curve_str);
+
                 current_curve = current_curve->next;
             }
             break;
@@ -1996,55 +1965,22 @@ static ACVP_RESULT acvp_build_kas_ecc_register_cap (ACVP_CTX *ctx, JSON_Object *
                 scheme = current_scheme->scheme;
                 current_pset = current_scheme->pset;
                 while (current_pset) {
+                    char *curve_str = NULL;
+
                     set_val = json_value_init_object();
                     set_obj = json_value_get_object(set_val);
                     
                     set = current_pset->set;
-                    curve = current_pset->curve;
-                    switch (curve)
-                    {
-                    case ACVP_ECDSA_CURVE_B233:
-                        json_object_set_string(set_obj, "curve", "B-233");
-                        break;
-                    case ACVP_ECDSA_CURVE_B283:
-                        json_object_set_string(set_obj, "curve", "B-283");
-                        break;
-                    case ACVP_ECDSA_CURVE_B409:
-                        json_object_set_string(set_obj, "curve", "B-409");
-                        break;
-                    case ACVP_ECDSA_CURVE_B571:
-                        json_object_set_string(set_obj, "curve", "B-571");
-                        break;
-                    case ACVP_ECDSA_CURVE_K233:
-                        json_object_set_string(set_obj, "curve", "K-233");
-                        break;
-                    case ACVP_ECDSA_CURVE_K283:
-                        json_object_set_string(set_obj, "curve", "K-283");
-                        break;
-                    case ACVP_ECDSA_CURVE_K409:
-                        json_object_set_string(set_obj, "curve", "K-409");
-                        break;
-                    case ACVP_ECDSA_CURVE_K571:
-                        json_object_set_string(set_obj, "curve", "K-571");
-                        break;
-                    case ACVP_ECDSA_CURVE_P224:
-                        json_object_set_string(set_obj, "curve", "P-224");
-                        break;
-                    case ACVP_ECDSA_CURVE_P256:
-                        json_object_set_string(set_obj, "curve", "P-256");
-                        break;
-                    case ACVP_ECDSA_CURVE_P384:
-                        json_object_set_string(set_obj, "curve", "P-384");
-                        break;
-                    case ACVP_ECDSA_CURVE_P521:
-                        json_object_set_string(set_obj, "curve", "P-521");
-                        break;
-                    default:
-                        ACVP_LOG_ERR("\nUnsupported KAS-ECC curve %d", curve);
+
+                    curve_str = acvp_lookup_ec_curve_name(kas_ecc_cap->cipher,
+                                                          current_pset->curve);
+                    if (!curve_str) {
+                        ACVP_LOG_ERR("\nUnsupported curve %d",
+                                     current_pset->curve);
                         return ACVP_INVALID_ARG;
-                        break;
                     }
-                    
+                    json_object_set_string(set_obj, "curve", curve_str);
+
                     json_object_set_value(set_obj, "hashAlg", json_value_init_array());
                     temp_arr = json_object_get_array(set_obj, "hashAlg");
                     sha = current_pset->sha;

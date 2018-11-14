@@ -92,7 +92,7 @@ static ACVP_RESULT acvp_aes_mct_iterate_tc (ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *s
     switch (stc->cipher) {
     case ACVP_AES_ECB:
 
-        if (stc->direction == ACVP_DIR_ENCRYPT) {
+        if (stc->direction == ACVP_SYM_CIPH_DIR_ENCRYPT) {
             memcpy(stc->pt, ctext[j], stc->ct_len);
         } else {
             memcpy(stc->ct, ptext[j], stc->ct_len);
@@ -103,14 +103,14 @@ static ACVP_RESULT acvp_aes_mct_iterate_tc (ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *s
     case ACVP_AES_OFB:
     case ACVP_AES_CFB128:
         if (j == 0) {
-            if (stc->direction == ACVP_DIR_ENCRYPT) {
+            if (stc->direction == ACVP_SYM_CIPH_DIR_ENCRYPT) {
                 memcpy(stc->pt, stc->iv, stc->ct_len);
             } else {
                 memcpy(stc->ct, stc->iv, stc->ct_len);
             }
         } else {
 
-            if (stc->direction == ACVP_DIR_ENCRYPT) {
+            if (stc->direction == ACVP_SYM_CIPH_DIR_ENCRYPT) {
                 memcpy(stc->pt, ctext[j - 1], stc->ct_len);
                 memcpy(stc->iv, ctext[j], stc->ct_len);
             } else {
@@ -121,7 +121,7 @@ static ACVP_RESULT acvp_aes_mct_iterate_tc (ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *s
         break;
 
     case ACVP_AES_CFB8:
-        if (stc->direction == ACVP_DIR_ENCRYPT) {
+        if (stc->direction == ACVP_SYM_CIPH_DIR_ENCRYPT) {
             if (j < 16) {
                 memcpy(stc->pt, &stc->iv[j], stc->pt_len);
             } else {
@@ -137,7 +137,7 @@ static ACVP_RESULT acvp_aes_mct_iterate_tc (ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *s
         break;
 
     case ACVP_AES_CFB1:
-        if (stc->direction == ACVP_DIR_ENCRYPT) {
+        if (stc->direction == ACVP_SYM_CIPH_DIR_ENCRYPT) {
             if (j < 128) {
                 sb(ptext[j + 1], 0, gb(iv[i], j));
             } else {
@@ -196,7 +196,7 @@ static ACVP_RESULT acvp_aes_output_mct_tc (ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *st
         json_object_set_string(r_tobj, "iv", tmp);
     }
 
-    if (stc->direction == ACVP_DIR_ENCRYPT) {
+    if (stc->direction == ACVP_SYM_CIPH_DIR_ENCRYPT) {
         memset(tmp, 0x0, ACVP_SYM_CT_MAX);
 
         if (stc->cipher == ACVP_AES_CFB1) {
@@ -305,7 +305,7 @@ static ACVP_RESULT acvp_aes_mct_tc (ACVP_CTX *ctx, ACVP_CAPS_LIST *cap,
         }
 
         j = 999;
-        if (stc->direction == ACVP_DIR_ENCRYPT) {
+        if (stc->direction == ACVP_SYM_CIPH_DIR_ENCRYPT) {
 
             memset(tmp, 0x0, ACVP_SYM_CT_MAX);
             if (stc->cipher == ACVP_AES_CFB1) {
@@ -533,8 +533,8 @@ ACVP_RESULT acvp_aes_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
         ACVP_SYM_CIPH_DIR dir = 0;
         ACVP_SYM_CIPH_TESTTYPE test_type = 0;
         ACVP_SYM_KW_MODE kwcipher = 0;
-        ACVP_SYM_CIPH_IVGEN_SRC iv_gen = ACVP_IVGEN_SRC_NA;
-        ACVP_SYM_CIPH_IVGEN_MODE iv_gen_mode = ACVP_IVGEN_MODE_NA;
+        ACVP_SYM_CIPH_IVGEN_SRC iv_gen = ACVP_SYM_CIPH_IVGEN_SRC_NA;
+        ACVP_SYM_CIPH_IVGEN_MODE iv_gen_mode = ACVP_SYM_CIPH_IVGEN_MODE_NA;
 
         groupval = json_array_get_value(groups, i);
         groupobj = json_value_get_object(groupval);
@@ -545,9 +545,9 @@ ACVP_RESULT acvp_aes_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
             return ACVP_MISSING_ARG;
         }
         if (!strncmp(dir_str, "encrypt", strlen("encrypt"))) {
-            dir = ACVP_DIR_ENCRYPT;
+            dir = ACVP_SYM_CIPH_DIR_ENCRYPT;
         } else if (!strncmp(dir_str, "decrypt", strlen("decrypt"))) {
-            dir = ACVP_DIR_DECRYPT;
+            dir = ACVP_SYM_CIPH_DIR_DECRYPT;
         } else {
             ACVP_LOG_ERR("Server JSON invalid 'direction'");
             return ACVP_INVALID_ARG;
@@ -621,24 +621,24 @@ ACVP_RESULT acvp_aes_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
                     return ACVP_MISSING_ARG;
                 }
                 if (!strncmp(iv_gen_str, "internal", strlen("internal"))) {
-                    iv_gen = ACVP_IVGEN_SRC_INT;
+                    iv_gen = ACVP_SYM_CIPH_IVGEN_SRC_INT;
                 } else if (!strncmp(iv_gen_str, "external", strlen("external"))) {
-                    iv_gen = ACVP_IVGEN_SRC_EXT;
+                    iv_gen = ACVP_SYM_CIPH_IVGEN_SRC_EXT;
                 } else {
                     ACVP_LOG_ERR("Server JSON invalid 'ivGen'");
                     return ACVP_INVALID_ARG;
                 }
 
-                if (iv_gen == ACVP_IVGEN_SRC_INT){
+                if (iv_gen == ACVP_SYM_CIPH_IVGEN_SRC_INT){
                     iv_gen_mode_str = json_object_get_string(groupobj, "ivGenMode");
                     if (!iv_gen_mode_str) {
                         ACVP_LOG_ERR("Server JSON missing 'ivGenMode'");
                         return ACVP_MISSING_ARG;
                     }
                     if (!strncmp(iv_gen_mode_str, "8.2.1", strlen("8.2.1"))) {
-                        iv_gen_mode = ACVP_IVGEN_MODE_821;
+                        iv_gen_mode = ACVP_SYM_CIPH_IVGEN_MODE_821;
                     } else if (!strncmp(iv_gen_mode_str, "8.2.2", strlen("8.2.2"))) {
-                        iv_gen_mode = ACVP_IVGEN_MODE_822;
+                        iv_gen_mode = ACVP_SYM_CIPH_IVGEN_MODE_822;
                     } else {
                         ACVP_LOG_ERR("Server JSON invalid 'ivGenMode'");
                         return ACVP_INVALID_ARG;
@@ -715,7 +715,7 @@ ACVP_RESULT acvp_aes_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
                 return ACVP_INVALID_ARG;
             }
 
-            if (dir == ACVP_DIR_ENCRYPT) {
+            if (dir == ACVP_SYM_CIPH_DIR_ENCRYPT) {
                 unsigned int tmp_pt_len = 0;
 
                 pt = json_object_get_string(testobj, "pt");
@@ -782,8 +782,8 @@ ACVP_RESULT acvp_aes_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
              * If GCM, direction is encrypt, and the generation is internal
              * then iv is not provided.
              */
-            if (ivlen && !(alg_id == ACVP_AES_GCM && dir == ACVP_DIR_ENCRYPT &&
-                           iv_gen == ACVP_IVGEN_SRC_INT)) {
+            if (ivlen && !(alg_id == ACVP_AES_GCM && dir == ACVP_SYM_CIPH_DIR_ENCRYPT &&
+                           iv_gen == ACVP_SYM_CIPH_IVGEN_SRC_INT)) {
                 if (alg_id == ACVP_AES_XTS) {
                     /* XTS may call it tweak value "i", but we treat it as an IV */
                     iv = json_object_get_string(testobj, "i");
@@ -931,7 +931,7 @@ static ACVP_RESULT acvp_aes_output_tc (ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *stc,
         return ACVP_MALLOC_FAIL;
     }
 
-    if (stc->direction == ACVP_DIR_ENCRYPT) {
+    if (stc->direction == ACVP_SYM_CIPH_DIR_ENCRYPT) {
         /*
          * Only return IV on AES-GCM ciphers
          */

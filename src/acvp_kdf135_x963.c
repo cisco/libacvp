@@ -58,7 +58,6 @@ err:
  * a test case.
  */
 static ACVP_RESULT acvp_kdf135_x963_release_tc (ACVP_KDF135_X963_TC *stc) {
-    if (stc->hash_alg) free(stc->hash_alg);
     if (stc->z) free(stc->z);
     if (stc->shared_info) free(stc->shared_info);
     if (stc->key_data) free(stc->key_data);
@@ -68,7 +67,7 @@ static ACVP_RESULT acvp_kdf135_x963_release_tc (ACVP_KDF135_X963_TC *stc) {
 static ACVP_RESULT acvp_kdf135_x963_init_tc (ACVP_CTX *ctx,
                                              ACVP_KDF135_X963_TC *stc,
                                              unsigned int tc_id,
-                                             unsigned char *hash_alg,
+                                             ACVP_HASH_ALG hash_alg,
                                              int field_size,
                                              int key_data_length,
                                              int shared_info_length,
@@ -83,14 +82,11 @@ static ACVP_RESULT acvp_kdf135_x963_init_tc (ACVP_CTX *ctx,
     }
 
     stc->tc_id = tc_id;
+    stc->hash_alg = hash_alg;
     stc->field_size = field_size;
     stc->key_data_len = key_data_length;
     stc->shared_info_len = shared_info_length;
 
-    stc->hash_alg = calloc(ACVP_RSA_HASH_ALG_LEN_MAX, sizeof(char));
-    if (!stc->hash_alg) { return ACVP_MALLOC_FAIL; }
-    memcpy(stc->hash_alg, hash_alg, strnlen((const char *)hash_alg, ACVP_RSA_HASH_ALG_LEN_MAX));
-    
     stc->z = calloc(ACVP_KDF135_X963_INPUT_MAX, sizeof(char));
     if (!stc->z) { return ACVP_MALLOC_FAIL; }
     rv = acvp_hexstr_to_bin(z, stc->z, ACVP_KDF135_X963_INPUT_MAX, NULL);
@@ -144,7 +140,6 @@ ACVP_RESULT acvp_kdf135_x963_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     char *json_result;
     
     int field_size, key_data_length, shared_info_len;
-    unsigned char *hash_alg = NULL;
     char *z = NULL, *shared_info = NULL;
     
     /*
@@ -213,6 +208,9 @@ ACVP_RESULT acvp_kdf135_x963_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     
     g_cnt = json_array_get_count(groups);
     for (i = 0; i < g_cnt; i++) {
+        ACVP_HASH_ALG hash_alg = 0;
+        const char *hash_alg_str = NULL;
+
         groupval = json_array_get_value(groups, i);
         groupobj = json_value_get_object(groupval);
         
@@ -229,14 +227,31 @@ ACVP_RESULT acvp_kdf135_x963_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
         }
         
         shared_info_len = json_object_get_number(groupobj, "sharedInfoLength");
-        hash_alg = (unsigned char *)json_object_get_string(groupobj, "hashAlg");
-        if (!hash_alg) {
-            ACVP_LOG_ERR("Failed to include hash alg. ");
+
+        hash_alg_str = json_object_get_string(groupobj, "hashAlg");
+        if (!hash_alg_str) {
+            ACVP_LOG_ERR("Failed to include hashAlg. ");
             return ACVP_MISSING_ARG;
+        }
+        if (!strncmp(hash_alg_str, ACVP_STR_SHA2_224,
+                     strlen(ACVP_STR_SHA2_224))) {
+            hash_alg = ACVP_SHA224;
+        } else if (!strncmp(hash_alg_str, ACVP_STR_SHA2_256,
+                            strlen(ACVP_STR_SHA2_256))) {
+            hash_alg = ACVP_SHA256;
+        } else if (!strncmp(hash_alg_str, ACVP_STR_SHA2_384,
+                            strlen(ACVP_STR_SHA2_384))) {
+            hash_alg = ACVP_SHA384;
+        } else if (!strncmp(hash_alg_str, ACVP_STR_SHA2_512,
+                            strlen(ACVP_STR_SHA2_512))) {
+            hash_alg = ACVP_SHA512;
+        } else {
+            ACVP_LOG_ERR("Server JSON invalid 'hashAlg'");
+            return ACVP_INVALID_ARG;
         }
         
         ACVP_LOG_INFO("\n    Test group: %d", i);
-        ACVP_LOG_INFO("         hashAlg: %s", hash_alg);
+        ACVP_LOG_INFO("         hashAlg: %s", hash_alg_str);
         ACVP_LOG_INFO("       fieldSize: %d", field_size);
         ACVP_LOG_INFO("   sharedInfoLen: %d", shared_info_len);
         ACVP_LOG_INFO("   keyDataLength: %d", key_data_length);

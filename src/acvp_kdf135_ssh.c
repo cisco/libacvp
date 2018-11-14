@@ -83,10 +83,8 @@ ACVP_RESULT acvp_kdf135_ssh_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     unsigned int i_key_len;
     unsigned int iv_len;
     unsigned int hash_len;
-    unsigned int sha_type;
     const char *alg_str = NULL;
     const char *mode_str = NULL;
-    const char *sha_str = NULL;
     const char *cipher_str = NULL;
     const char *shared_secret_str = NULL;
     const char *session_id_str = NULL;
@@ -167,6 +165,9 @@ ACVP_RESULT acvp_kdf135_ssh_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
 
     g_cnt = json_array_get_count(groups);
     for (i = 0; i < g_cnt; i++) {
+        ACVP_HASH_ALG sha_type = 0;
+        const char *sha_str = NULL;
+
         groupval = json_array_get_value(groups, i);
         groupobj = json_value_get_object(groupval);
 
@@ -208,20 +209,20 @@ ACVP_RESULT acvp_kdf135_ssh_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
          * Also infer the hash_len and integrity key_len.
          */
         if (!strncmp(sha_str, "SHA-1", 5)) {
-            sha_type = ACVP_KDF135_SSH_CAP_SHA1;
-            i_key_len = hash_len = ACVP_BYTE_LEN_HMAC_SHA1;
+            sha_type = ACVP_SHA1;
+            i_key_len = hash_len = ACVP_SHA1_BYTE_LEN;
         } else if (!strncmp(sha_str, "SHA2-224", 8)) {
-            sha_type = ACVP_KDF135_SSH_CAP_SHA224;
-            i_key_len = hash_len = ACVP_BYTE_LEN_HMAC_SHA224;
+            sha_type = ACVP_SHA224;
+            i_key_len = hash_len = ACVP_SHA224_BYTE_LEN;
         } else if (!strncmp(sha_str, "SHA2-256", 8)) {
-            sha_type = ACVP_KDF135_SSH_CAP_SHA256;
-            i_key_len = hash_len = ACVP_BYTE_LEN_HMAC_SHA256;
+            sha_type = ACVP_SHA256;
+            i_key_len = hash_len = ACVP_SHA256_BYTE_LEN;
         } else if (!strncmp(sha_str, "SHA2-384", 8)) {
-            sha_type = ACVP_KDF135_SSH_CAP_SHA384;
-            i_key_len = hash_len = ACVP_BYTE_LEN_HMAC_SHA384;
+            sha_type = ACVP_SHA384;
+            i_key_len = hash_len = ACVP_SHA384_BYTE_LEN;
         } else if (!strncmp(sha_str, "SHA2-512", 8)) {
-            sha_type = ACVP_KDF135_SSH_CAP_SHA512;
-            i_key_len = hash_len = ACVP_BYTE_LEN_HMAC_SHA512;
+            sha_type = ACVP_SHA512;
+            i_key_len = hash_len = ACVP_SHA512_BYTE_LEN;
         } else {
             ACVP_LOG_ERR("Unsupported sha type");
             return ACVP_NO_CAP;
@@ -421,7 +422,7 @@ static ACVP_RESULT acvp_kdf135_ssh_init_tc (ACVP_CTX *ctx,
                                             ACVP_KDF135_SSH_TC *stc,
                                             unsigned int tc_id,
                                             ACVP_CIPHER alg_id,
-                                            unsigned int sha_type,
+                                            ACVP_HASH_ALG sha_type,
                                             unsigned int e_key_len,
                                             unsigned int i_key_len,
                                             unsigned int iv_len,

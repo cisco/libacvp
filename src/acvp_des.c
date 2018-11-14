@@ -89,7 +89,7 @@ static ACVP_RESULT acvp_des_mct_iterate_tc (ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *s
 
     switch (stc->cipher) {
     case ACVP_TDES_CBC:
-        if (stc->direction == ACVP_DIR_ENCRYPT) {
+        if (stc->direction == ACVP_SYM_CIPH_DIR_ENCRYPT) {
             if (j == 0) {
                 memcpy(stc->pt, old_iv, 8);
             } else {
@@ -112,7 +112,7 @@ static ACVP_RESULT acvp_des_mct_iterate_tc (ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *s
         }
         break;
     case ACVP_TDES_CFB64:
-        if (stc->direction == ACVP_DIR_ENCRYPT) {
+        if (stc->direction == ACVP_SYM_CIPH_DIR_ENCRYPT) {
             if (j == 0) {
                 memcpy(stc->pt, old_iv, 8);
             } else {
@@ -135,7 +135,7 @@ static ACVP_RESULT acvp_des_mct_iterate_tc (ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *s
         break;
 
     case ACVP_TDES_OFB:
-        if (stc->direction == ACVP_DIR_ENCRYPT) {
+        if (stc->direction == ACVP_SYM_CIPH_DIR_ENCRYPT) {
             if (j == 0) {
                 memcpy(stc->pt, old_iv, 8);
             } else {
@@ -155,7 +155,7 @@ static ACVP_RESULT acvp_des_mct_iterate_tc (ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *s
         break;
     case ACVP_TDES_CFB1:
     case ACVP_TDES_CFB8:
-        if (stc->direction == ACVP_DIR_ENCRYPT) {
+        if (stc->direction == ACVP_SYM_CIPH_DIR_ENCRYPT) {
             if (j == 0) {
                 memcpy(stc->pt, old_iv, 8);
             } else {
@@ -174,7 +174,7 @@ static ACVP_RESULT acvp_des_mct_iterate_tc (ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *s
         break;
 
     case ACVP_TDES_ECB:
-        if (stc->direction == ACVP_DIR_ENCRYPT) {
+        if (stc->direction == ACVP_SYM_CIPH_DIR_ENCRYPT) {
             memcpy(stc->pt, stc->ct, stc->ct_len);
         } else {
             memcpy(stc->ct, stc->pt, stc->pt_len);
@@ -272,7 +272,7 @@ static ACVP_RESULT acvp_des_output_mct_tc (ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *st
         json_object_set_string(r_tobj, "iv", tmp_iv);
     }
 
-    if (stc->direction == ACVP_DIR_ENCRYPT) {
+    if (stc->direction == ACVP_SYM_CIPH_DIR_ENCRYPT) {
         tmp_pt = calloc(ACVP_SYM_PT_MAX + 1, sizeof(char));
         if (!tmp_pt) {
             ACVP_LOG_ERR("Unable to malloc");
@@ -443,7 +443,7 @@ static ACVP_RESULT acvp_des_mct_tc (ACVP_CTX *ctx, ACVP_CAPS_LIST *cap,
             /*
              * Adjust the parameters for next iteration if needed.
              */
-            if (stc->direction == ACVP_DIR_ENCRYPT) {
+            if (stc->direction == ACVP_SYM_CIPH_DIR_ENCRYPT) {
                 shiftin(nk, stc->ct, bit_len);
             } else {
                 shiftin(nk, stc->pt, bit_len);
@@ -477,7 +477,7 @@ static ACVP_RESULT acvp_des_mct_tc (ACVP_CTX *ctx, ACVP_CAPS_LIST *cap,
         memcpy(stc->iv, stc->iv_ret_after, 8); /* only on encrypt */
 
         if (stc->cipher == ACVP_TDES_OFB) {
-            if (stc->direction == ACVP_DIR_ENCRYPT) {
+            if (stc->direction == ACVP_SYM_CIPH_DIR_ENCRYPT) {
                 for (n = 0; n < 8; ++n) {
                     stc->pt[n] = ptext[0][n] ^ stc->iv_ret[n];
                 }
@@ -488,7 +488,7 @@ static ACVP_RESULT acvp_des_mct_tc (ACVP_CTX *ctx, ACVP_CAPS_LIST *cap,
             }
         }
 
-        if (stc->direction == ACVP_DIR_ENCRYPT) {
+        if (stc->direction == ACVP_SYM_CIPH_DIR_ENCRYPT) {
             memset(tmp, 0x0, ACVP_SYM_CT_MAX);
             if (stc->cipher == ACVP_TDES_CFB1) {
                 stc->ct[0] &= ACVP_CFB1_BIT_MASK;
@@ -650,9 +650,9 @@ ACVP_RESULT acvp_des_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
          * verify the direction is valid
          */
         if (!strncmp(dir_str, "encrypt", strlen("encrypt"))) {
-            dir = ACVP_DIR_ENCRYPT;
+            dir = ACVP_SYM_CIPH_DIR_ENCRYPT;
         } else if (!strncmp(dir_str, "decrypt", strlen("decrypt"))) {
-            dir = ACVP_DIR_DECRYPT;
+            dir = ACVP_SYM_CIPH_DIR_DECRYPT;
         } else {
             ACVP_LOG_ERR("Server JSON invalid 'direction'");
             return (ACVP_INVALID_ARG);
@@ -747,7 +747,7 @@ ACVP_RESULT acvp_des_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
                 strncpy(key + 32, key3, (ACVP_TDES_KEY_STR_LEN / 3));
             }
 
-            if (dir == ACVP_DIR_ENCRYPT) {
+            if (dir == ACVP_SYM_CIPH_DIR_ENCRYPT) {
                 pt = json_object_get_string(testobj, "pt");
                 if (!pt) {
                     ACVP_LOG_ERR("Server JSON missing 'pt'");
@@ -927,7 +927,7 @@ static ACVP_RESULT acvp_des_output_tc (ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *stc,
         return ACVP_MALLOC_FAIL;
     }
 
-    if (stc->direction == ACVP_DIR_ENCRYPT) {
+    if (stc->direction == ACVP_SYM_CIPH_DIR_ENCRYPT) {
         memset(tmp, 0x0, ACVP_SYM_CT_MAX);
         if (stc->cipher == ACVP_TDES_CFB1) {
             rv = acvp_bin_to_hexstr(stc->ct, stc->ct_len, tmp, ACVP_SYM_CT_MAX);

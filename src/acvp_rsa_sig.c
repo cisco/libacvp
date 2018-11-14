@@ -92,8 +92,6 @@ err:
 
 static ACVP_RESULT acvp_rsa_siggen_release_tc (ACVP_RSA_SIG_TC *stc) {
     if (stc->msg) { free(stc->msg); }
-    if (stc->hash_alg) { free(stc->hash_alg); }
-    if (stc->sig_type) { free(stc->sig_type); }
     if (stc->e) { free(stc->e); }
     if (stc->n) { free(stc->n); }
     if (stc->signature) { free(stc->signature); }
@@ -105,9 +103,9 @@ static ACVP_RESULT acvp_rsa_sig_init_tc (ACVP_CTX *ctx,
                                          ACVP_CIPHER cipher,
                                          ACVP_RSA_SIG_TC *stc,
                                          unsigned int tc_id,
-                                         char *sig_type,
+                                         ACVP_RSA_SIG_TYPE sig_type,
                                          unsigned int mod,
-                                         char *hash_alg,
+                                         ACVP_HASH_ALG hash_alg,
                                          char *e,
                                          char *n,
                                          char *msg,
@@ -119,10 +117,6 @@ static ACVP_RESULT acvp_rsa_sig_init_tc (ACVP_CTX *ctx,
     
     stc->msg = calloc(ACVP_RSA_MSGLEN_MAX, sizeof(char));
     if (!stc->msg) { return ACVP_MALLOC_FAIL; }
-    stc->sig_type = calloc(ACVP_RSA_SIG_TYPE_LEN_MAX, sizeof(char));
-    if (!stc->sig_type) { return ACVP_MALLOC_FAIL; }
-    stc->hash_alg = calloc(ACVP_RSA_HASH_ALG_LEN_MAX, sizeof(char));
-    if (!stc->hash_alg) { return ACVP_MALLOC_FAIL; }
     stc->signature = calloc(ACVP_RSA_SIGNATURE_MAX, sizeof(char));
     if (!stc->signature) { return ACVP_MALLOC_FAIL; }
     stc->salt = calloc(ACVP_RSA_SIGNATURE_MAX, sizeof(char));
@@ -160,9 +154,6 @@ static ACVP_RESULT acvp_rsa_sig_init_tc (ACVP_CTX *ctx,
         stc->sig_mode = ACVP_RSA_SIGGEN;
     }
     
-    memcpy(stc->sig_type, sig_type, strnlen((const char *)sig_type, ACVP_RSA_SIG_TYPE_LEN_MAX));
-    memcpy(stc->hash_alg, hash_alg, strnlen((const char *)hash_alg, ACVP_RSA_HASH_ALG_LEN_MAX));
-    
     if (salt_len) {
         if (salt) {
             memcpy(stc->salt, salt, strnlen((const char *) salt, 256));
@@ -172,6 +163,8 @@ static ACVP_RESULT acvp_rsa_sig_init_tc (ACVP_CTX *ctx,
     
     stc->tc_id = tc_id;
     stc->modulo = mod;
+    stc->hash_alg = hash_alg;
+    stc->sig_type = sig_type;
     
     return rv;
     
@@ -219,7 +212,7 @@ static ACVP_RESULT acvp_rsa_sig_kat_handler_internal (ACVP_CTX *ctx, JSON_Object
     unsigned int mod = 0;
     char *msg, *signature = NULL;
     char *e_str = NULL, *n_str = NULL;
-    char *hash_alg = NULL, *sig_type, *salt = NULL, *alg_str;
+    char *salt = NULL, *alg_str;
     int salt_len = 0, json_msglen, json_siglen;
     
     if (!ctx) {
@@ -292,16 +285,32 @@ static ACVP_RESULT acvp_rsa_sig_kat_handler_internal (ACVP_CTX *ctx, JSON_Object
     g_cnt = json_array_get_count(groups);
 
     for (i = 0; i < g_cnt; i++) {
+        ACVP_RSA_SIG_TYPE sig_type = 0;
+        ACVP_HASH_ALG hash_alg = 0;
+        const char *sig_type_str = NULL, *hash_alg_str = NULL;
+
         groupval = json_array_get_value(groups, i);
         groupobj = json_value_get_object(groupval);
-        /*
-         * Get a reference to the abstracted test case
-         */
-        sig_type = (char *) json_object_get_string(groupobj, "sigType");
-        if (!sig_type) {
-            ACVP_LOG_ERR("Missing sigType from rsa_siggen json");
+
+        sig_type_str = json_object_get_string(groupobj, "sigType");
+        if (!sig_type_str) {
+            ACVP_LOG_ERR("Server JSON missing 'sigType'");
             return ACVP_MISSING_ARG;
         }
+        if (strncmp(sig_type_str, ACVP_RSA_SIG_TYPE_X931_STR,
+                    strlen(ACVP_RSA_SIG_TYPE_X931_STR)) == 0) {
+            sig_type = ACVP_RSA_SIG_TYPE_X931;
+        } else if (strncmp(sig_type_str, ACVP_RSA_SIG_TYPE_PKCS1V15_STR,
+                           strlen(ACVP_RSA_SIG_TYPE_PKCS1V15_STR)) == 0) {
+            sig_type = ACVP_RSA_SIG_TYPE_PKCS1V15;
+        } else if (strncmp(sig_type_str, ACVP_RSA_SIG_TYPE_PKCS1PSS_STR,
+                           strlen(ACVP_RSA_SIG_TYPE_PKCS1PSS_STR)) == 0) {
+            sig_type = ACVP_RSA_SIG_TYPE_PKCS1PSS;
+        } else {
+            ACVP_LOG_ERR("Server JSON invalid 'sigType'");
+            return ACVP_INVALID_ARG;
+        }
+
         mod = json_object_get_number(groupobj, "modulo");
         if (!mod) {
             ACVP_LOG_ERR("Server JSON missing 'modulo'");
@@ -311,11 +320,18 @@ static ACVP_RESULT acvp_rsa_sig_kat_handler_internal (ACVP_CTX *ctx, JSON_Object
             ACVP_LOG_ERR("Server JSON invalid 'modulo', (%d)", mod);
             return ACVP_INVALID_ARG;
         }
-        hash_alg = (char *) json_object_get_string(groupobj, "hashAlg");
-        if (!hash_alg) {
-            ACVP_LOG_ERR("Missing hashAlg from rsa_siggen json");
+
+        hash_alg_str = json_object_get_string(groupobj, "hashAlg");
+        if (!hash_alg_str) {
+            ACVP_LOG_ERR("Server JSON missing 'hashAlg'");
             return ACVP_MISSING_ARG;
         }
+        hash_alg = acvp_lookup_hash_alg(hash_alg_str);
+        if (!hash_alg || hash_alg == ACVP_SHA1) {
+            ACVP_LOG_ERR("Server JSON invalid 'hashAlg'");
+            return ACVP_INVALID_ARG;
+        }
+
         salt_len = json_object_get_number(groupobj, "saltLen");
         
         if (alg_id == ACVP_RSA_SIGVER) {
@@ -333,9 +349,9 @@ static ACVP_RESULT acvp_rsa_sig_kat_handler_internal (ACVP_CTX *ctx, JSON_Object
         }
 
         ACVP_LOG_INFO("       Test group: %d", i);
-        ACVP_LOG_INFO("          sigType: %s", sig_type);
+        ACVP_LOG_INFO("          sigType: %s", sig_type_str);
         ACVP_LOG_INFO("           modulo: %d", mod);
-        ACVP_LOG_INFO("          hashAlg: %s", hash_alg);
+        ACVP_LOG_INFO("          hashAlg: %s", hash_alg_str);
 
         tests = json_object_get_array(groupobj, "tests");
         t_cnt = json_array_get_count(tests);

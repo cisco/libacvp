@@ -169,8 +169,15 @@
 #define ACVP_ALG_KAS_FFC_FULLVAL     "fullVal"
 #define ACVP_ALG_KAS_FFC_KEYREGEN    "keyRegen"
 
-#define ACVP_ECDSA_KEYGEN_EXTRA_BITS "extra bits"
-#define ACVP_ECDSA_KEYGEN_TESTING_CANDIDATES "testing candidates"
+#define ACVP_ECDSA_EXTRA_BITS_STR "extra bits"
+#define ACVP_ECDSA_TESTING_CANDIDATES_STR "testing candidates"
+
+#define ACVP_RSA_PRIME_TEST_TBLC2_STR "tblC2"
+#define ACVP_RSA_PRIME_TEST_TBLC3_STR "tblC3"
+
+#define ACVP_RSA_SIG_TYPE_X931_STR      "ansx9.31"
+#define ACVP_RSA_SIG_TYPE_PKCS1V15_STR  "pkcs1v1.5"
+#define ACVP_RSA_SIG_TYPE_PKCS1PSS_STR  "pss"
 
 #define ACVP_ALG_RSA                "RSA"
 #define ACVP_ALG_ECDSA              "ECDSA"
@@ -228,6 +235,15 @@
 #define ACVP_BLOCK_LEN_AES128 16 /**< 16 byte block size regardless of mode */
 #define ACVP_BLOCK_LEN_AES192 16 /**< 16 byte block size regardless of mode */
 #define ACVP_BLOCK_LEN_AES256 16 /**< 16 byte block size regardless of mode */
+
+/*
+ * Hash algorithm output lengths (in bytes).
+ */
+#define ACVP_SHA1_BYTE_LEN 20
+#define ACVP_SHA224_BYTE_LEN 28
+#define ACVP_SHA256_BYTE_LEN 32
+#define ACVP_SHA384_BYTE_LEN 48
+#define ACVP_SHA512_BYTE_LEN 64
 
 /*
  * The values that are supplied
@@ -315,16 +331,16 @@
 #define ACVP_AES_GCM_IV_BIT_MAX 1024 /**< 1024 bits */
 
 #define ACVP_KDF135_TLS_MSG_MAX 1024*4
-#define ACVP_KDF135_SSH_EKEY_MAX (ACVP_BYTE_LEN_HMAC_SHA512) /**< Encryption Key max.
-                                                                  Be able to hold largest sha size, although
-                                                                  actual key is a subset (up to 32 bytes).
-                                                                  512 bits, 64 bytes */
-#define ACVP_KDF135_SSH_IKEY_MAX (ACVP_BYTE_LEN_HMAC_SHA512) /**< Integrity Key max
-                                                                  512 bits, 64 bytes */
-#define ACVP_KDF135_SSH_IV_MAX (ACVP_BYTE_LEN_HMAC_SHA512) /**< Initial IV key max
-                                                                Be able to hold largest sha size, although
-                                                                actual IV is a subset (up to 16 bytes).
-                                                                512 bits, 64 bytes */
+#define ACVP_KDF135_SSH_EKEY_MAX (ACVP_SHA512_BYTE_LEN) /**< Encryption Key max.
+                                                             Be able to hold largest sha size, although
+                                                             actual key is a subset (up to 32 bytes).
+                                                             512 bits, 64 bytes */
+#define ACVP_KDF135_SSH_IKEY_MAX (ACVP_SHA512_BYTE_LEN) /**< Integrity Key max
+                                                             512 bits, 64 bytes */
+#define ACVP_KDF135_SSH_IV_MAX (ACVP_SHA512_BYTE_LEN) /**< Initial IV key max
+                                                           Be able to hold largest sha size, although
+                                                           actual IV is a subset (up to 16 bytes).
+                                                           512 bits, 64 bytes */
 #define ACVP_KDF135_SSH_STR_OUT_MAX (ACVP_KDF135_SSH_IKEY_MAX * 2) /**< 128 characters */
 #define ACVP_KDF135_SSH_STR_IN_MAX 4096 /**< 4096 characters, needs to accomodate large shared_secret (K) */
 
@@ -500,7 +516,6 @@
 #define ACVP_RSA_RANDPQ35_STR   "B.3.5"
 #define ACVP_RSA_RANDPQ36_STR   "B.3.6"
 #define ACVP_RSA_SIG_TYPE_LEN_MAX    9
-#define ACVP_RSA_HASH_ALG_LEN_MAX    12
 
 #define ACVP_RSA_EXP_BIT_MAX 4096 /**< 2048 bits max for n, 512 characters */
 #define ACVP_RSA_EXP_LEN_MAX (ACVP_RSA_EXP_BIT_MAX >> 2)
@@ -540,6 +555,16 @@ typedef struct acvp_vs_list_t {
 struct acvp_result_desc_t {
     ACVP_RESULT rv;
     char *desc;
+};
+
+struct acvp_hash_alg_info {
+    ACVP_HASH_ALG id;
+    char *name;
+};
+
+struct acvp_ec_curve_info {
+    ACVP_EC_CURVE id;
+    char *name;
 };
 
 /*
@@ -1085,13 +1110,16 @@ ACVP_RESULT acvp_create_array (JSON_Object **obj, JSON_Value **val, JSON_Array *
 
 ACVP_RESULT is_valid_tf_param (int value);
 
-ACVP_RESULT is_valid_hash_alg (char *value);
-
+char *acvp_lookup_rsa_prime_test_name(ACVP_RSA_PRIME_TEST_TYPE type);
 ACVP_RESULT is_valid_prime_test (char *value);
 
 ACVP_RESULT is_valid_rsa_mod (int value);
 
-int acvp_lookup_ecdsa_curve (ACVP_CIPHER cipher, char *curve_name);
+ACVP_HASH_ALG acvp_lookup_hash_alg (const char *name);
+char *acvp_lookup_hash_alg_name (ACVP_HASH_ALG id);
+
+ACVP_EC_CURVE acvp_lookup_ec_curve (ACVP_CIPHER cipher, const char *name);
+char *acvp_lookup_ec_curve_name (ACVP_CIPHER cipher, ACVP_EC_CURVE id);
 
 void ctr64_inc(unsigned char *counter);
 void ctr128_inc(unsigned char *counter);
