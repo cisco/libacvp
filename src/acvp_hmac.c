@@ -32,15 +32,15 @@
 #include "acvp_lcl.h"
 #include "parson.h"
 
-static ACVP_RESULT acvp_hmac_init_tc (ACVP_CTX *ctx,
-                                      ACVP_HMAC_TC *stc,
-                                      unsigned int tc_id,
-                                      unsigned int msg_len,
-                                      char *msg,
-                                      unsigned int mac_len,
-                                      unsigned int key_len,
-                                      char *key,
-                                      ACVP_CIPHER alg_id) {
+static ACVP_RESULT acvp_hmac_init_tc(ACVP_CTX *ctx,
+                                     ACVP_HMAC_TC *stc,
+                                     unsigned int tc_id,
+                                     unsigned int msg_len,
+                                     char *msg,
+                                     unsigned int mac_len,
+                                     unsigned int key_len,
+                                     char *key,
+                                     ACVP_CIPHER alg_id) {
     ACVP_RESULT rv;
 
     memset(stc, 0x0, sizeof(ACVP_HMAC_TC));
@@ -57,7 +57,7 @@ static ACVP_RESULT acvp_hmac_init_tc (ACVP_CTX *ctx,
         ACVP_LOG_ERR("Hex converstion failure (msg)");
         return rv;
     }
-    
+
     rv = acvp_hexstr_to_bin(key, stc->key, ACVP_HMAC_KEY_MAX, NULL);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Hex converstion failure (key)");
@@ -79,11 +79,11 @@ static ACVP_RESULT acvp_hmac_init_tc (ACVP_CTX *ctx,
  * file that will be uploaded to the server.  This routine handles
  * the JSON processing for a single test case.
  */
-static ACVP_RESULT acvp_hmac_output_tc (ACVP_CTX *ctx, ACVP_HMAC_TC *stc, JSON_Object *tc_rsp) {
+static ACVP_RESULT acvp_hmac_output_tc(ACVP_CTX *ctx, ACVP_HMAC_TC *stc, JSON_Object *tc_rsp) {
     ACVP_RESULT rv = ACVP_SUCCESS;
     char *tmp = NULL;
 
-    tmp = calloc(ACVP_HMAC_MAC_MAX+1, sizeof(char));
+    tmp = calloc(ACVP_HMAC_MAC_MAX + 1, sizeof(char));
     if (!tmp) {
         ACVP_LOG_ERR("Unable to malloc in acvp_hmac_output_tc");
         return ACVP_MALLOC_FAIL;
@@ -106,7 +106,7 @@ end:
  * This function simply releases the data associated with
  * a test case.
  */
-static ACVP_RESULT acvp_hmac_release_tc (ACVP_HMAC_TC *stc) {
+static ACVP_RESULT acvp_hmac_release_tc(ACVP_HMAC_TC *stc) {
     free(stc->msg);
     free(stc->mac);
     free(stc->key);
@@ -115,7 +115,7 @@ static ACVP_RESULT acvp_hmac_release_tc (ACVP_HMAC_TC *stc) {
     return ACVP_SUCCESS;
 }
 
-ACVP_RESULT acvp_hmac_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
+ACVP_RESULT acvp_hmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     unsigned int tc_id = 0, msglen = 0, keylen = 0, maclen = 0;
     char *msg = NULL, *key = NULL;
     JSON_Value *groupval;
@@ -134,8 +134,8 @@ ACVP_RESULT acvp_hmac_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
 
     JSON_Value *r_vs_val = NULL;
     JSON_Object *r_vs = NULL;
-    JSON_Array *r_tarr = NULL; /* Response testarray */
-    JSON_Value *r_tval = NULL; /* Response testval */
+    JSON_Array *r_tarr = NULL;  /* Response testarray */
+    JSON_Value *r_tval = NULL;  /* Response testval */
     JSON_Object *r_tobj = NULL; /* Response testobj */
     ACVP_CAPS_LIST *cap;
     ACVP_HMAC_TC stc;
@@ -147,17 +147,17 @@ ACVP_RESULT acvp_hmac_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
 
     if (!ctx) {
         ACVP_LOG_ERR("No ctx for handler operation");
-        return (ACVP_NO_CTX);
+        return ACVP_NO_CTX;
     }
 
     if (!obj) {
         ACVP_LOG_ERR("No obj for handler operation");
-        return (ACVP_MALFORMED_JSON);
+        return ACVP_MALFORMED_JSON;
     }
 
     if (!alg_str) {
         ACVP_LOG_ERR("ERROR: unable to parse 'algorithm' from JSON");
-        return (ACVP_MALFORMED_JSON);
+        return ACVP_MALFORMED_JSON;
     }
 
     /*
@@ -171,12 +171,12 @@ ACVP_RESULT acvp_hmac_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     alg_id = acvp_lookup_cipher_index(alg_str);
     if (alg_id < ACVP_CIPHER_START) {
         ACVP_LOG_ERR("ERROR: unsupported algorithm (%s)", alg_str);
-        return (ACVP_UNSUPPORTED_OP);
+        return ACVP_UNSUPPORTED_OP;
     }
     cap = acvp_locate_cap_entry(ctx, alg_id);
     if (!cap) {
         ACVP_LOG_ERR("ERROR: ACVP server requesting unsupported capability");
-        return (ACVP_UNSUPPORTED_OP);
+        return ACVP_UNSUPPORTED_OP;
     }
 
     /*
@@ -185,7 +185,7 @@ ACVP_RESULT acvp_hmac_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("ERROR: Failed to create JSON response struct. ");
-        return (rv);
+        return rv;
     }
 
     /*
@@ -214,19 +214,19 @@ ACVP_RESULT acvp_hmac_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
         groupval = json_array_get_value(groups, i);
         groupobj = json_value_get_object(groupval);
 
-        msglen = (unsigned int) json_object_get_number(groupobj, "msgLen");
+        msglen = (unsigned int)json_object_get_number(groupobj, "msgLen");
         if (!msglen) {
             ACVP_LOG_ERR("Failed to include msgLen. ");
             return ACVP_MISSING_ARG;
         }
 
-        keylen = (unsigned int) json_object_get_number(groupobj, "keyLen");
+        keylen = (unsigned int)json_object_get_number(groupobj, "keyLen");
         if (!keylen) {
             ACVP_LOG_ERR("Failed to include keyLen. ");
             return ACVP_MISSING_ARG;
         }
 
-        maclen = (unsigned int) json_object_get_number(groupobj, "macLen");
+        maclen = (unsigned int)json_object_get_number(groupobj, "macLen");
         if (!maclen) {
             ACVP_LOG_ERR("Failed to include macLen. ");
             return ACVP_MISSING_ARG;
@@ -252,32 +252,32 @@ ACVP_RESULT acvp_hmac_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
 
-            tc_id = (unsigned int) json_object_get_number(testobj, "tcId");
+            tc_id = (unsigned int)json_object_get_number(testobj, "tcId");
             if (!tc_id) {
                 ACVP_LOG_ERR("Failed to include tc_id. ");
                 return ACVP_MISSING_ARG;
             }
-            msg = (char *) json_object_get_string(testobj, "msg");
+            msg = (char *)json_object_get_string(testobj, "msg");
             if (!msg) {
                 ACVP_LOG_ERR("Failed to include msg. ");
                 return ACVP_MISSING_ARG;
             }
 
-            if (strnlen((char *)msg, ACVP_HMAC_MSG_MAX) != msglen*2/8) {
-                ACVP_LOG_ERR("msgLen(%d) or msg length(%d) incorrect", 
-                              msglen, strnlen((char *)msg, ACVP_HMAC_MSG_MAX)*8/2);
+            if (strnlen((char *)msg, ACVP_HMAC_MSG_MAX) != msglen * 2 / 8) {
+                ACVP_LOG_ERR("msgLen(%d) or msg length(%d) incorrect",
+                             msglen, strnlen((char *)msg, ACVP_HMAC_MSG_MAX) * 8 / 2);
                 return ACVP_INVALID_ARG;
             }
 
-            key = (char *) json_object_get_string(testobj, "key");
+            key = (char *)json_object_get_string(testobj, "key");
             if (!key) {
                 ACVP_LOG_ERR("Failed to include key. ");
                 return ACVP_MISSING_ARG;
             }
 
-            if (strnlen((char *)key, ACVP_HMAC_KEY_MAX) != keylen*2/8) {
-                ACVP_LOG_ERR("keyLen(%d) or key length(%d) incorrect", 
-                              keylen, strnlen((char *)key, ACVP_HMAC_KEY_MAX)*8/2);
+            if (strnlen((char *)key, ACVP_HMAC_KEY_MAX) != keylen * 2 / 8) {
+                ACVP_LOG_ERR("keyLen(%d) or key length(%d) incorrect",
+                             keylen, strnlen((char *)key, ACVP_HMAC_KEY_MAX) * 8 / 2);
                 return ACVP_INVALID_ARG;
             }
 

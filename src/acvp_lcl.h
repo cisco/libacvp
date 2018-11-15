@@ -35,12 +35,12 @@
 #ifdef WIN32
 #define ACVP_LOG_INFO(format, ...) do { \
         acvp_log_msg(ctx, ACVP_LOG_LVL_INFO, "***ACVP [INFO][%s:%d]--> " format "\n", \
-                __func__, __LINE__, __VA_ARGS__); \
+                     __func__, __LINE__, __VA_ARGS__); \
 } while (0)
 #else
 #define ACVP_LOG_INFO(format, args ...) do { \
         acvp_log_msg(ctx, ACVP_LOG_LVL_INFO, "***ACVP [INFO][%s:%d]--> " format "\n", \
-                __func__, __LINE__, ##args); \
+                     __func__, __LINE__, ##args); \
 } while (0)
 #endif
 #endif
@@ -49,12 +49,12 @@
 #ifdef WIN32
 #define ACVP_LOG_ERR(format, ...) do { \
         acvp_log_msg(ctx, ACVP_LOG_LVL_ERR, "***ACVP [ERR][%s:%d]--> " format "\n", \
-                __func__, __LINE__, __VA_ARGS__); \
+                     __func__, __LINE__, __VA_ARGS__); \
 } while (0)
 #else
 #define ACVP_LOG_ERR(format, args ...) do { \
         acvp_log_msg(ctx, ACVP_LOG_LVL_ERR, "***ACVP [ERR][%s:%d]--> " format "\n", \
-                __func__, __LINE__, ##args); \
+                     __func__, __LINE__, ##args); \
 } while (0)
 #endif
 #endif
@@ -63,12 +63,12 @@
 #ifdef WIN32
 #define ACVP_LOG_STATUS(format, ...) do { \
         acvp_log_msg(ctx, ACVP_LOG_LVL_STATUS, "***ACVP [STATUS][%s:%d]--> " format "\n", \
-                __func__, __LINE__, __VA_ARGS__); \
+                     __func__, __LINE__, __VA_ARGS__); \
 } while (0)
 #else
 #define ACVP_LOG_STATUS(format, args ...) do { \
         acvp_log_msg(ctx, ACVP_LOG_LVL_STATUS, "***ACVP [STATUS][%s:%d]--> " format "\n", \
-                __func__, __LINE__, ##args); \
+                     __func__, __LINE__, ##args); \
 } while (0)
 #endif
 #endif
@@ -77,12 +77,12 @@
 #ifdef WIN32
 #define ACVP_LOG_WARN(format, ...) do { \
         acvp_log_msg(ctx, ACVP_LOG_LVL_WARN, "***ACVP [WARN][%s:%d]--> " format "\n", \
-                __func__, __LINE__, __VA_ARGS__); \
+                     __func__, __LINE__, __VA_ARGS__); \
 } while (0)
 #else
 #define ACVP_LOG_WARN(format, args ...) do { \
         acvp_log_msg(ctx, ACVP_LOG_LVL_WARN, "***ACVP [WARN][%s:%d]--> " format "\n", \
-                __func__, __LINE__, ##args); \
+                     __func__, __LINE__, ##args); \
 } while (0)
 #endif
 #endif
@@ -211,7 +211,7 @@
 #define ACVP_DRBG_MODE_AES_192       "AES-192"
 #define ACVP_DRBG_MODE_AES_256       "AES-256"
 
-#define ACVP_ALG_KDF135_TLS	     "tls"
+#define ACVP_ALG_KDF135_TLS          "tls"
 #define ACVP_ALG_KDF135_SNMP     "snmp"
 #define ACVP_ALG_KDF135_SSH      "ssh"
 #define ACVP_ALG_KDF135_SRTP     "srtp"
@@ -257,25 +257,25 @@
  */
 #define ACVP_SYM_KEY_MAX    64       /**< 256 bits, 64 characters */
 
-#define ACVP_SYM_PT_BIT_MAX 65536 /**< 65536 bits */
-#define ACVP_SYM_PT_MAX (ACVP_SYM_PT_BIT_MAX >> 2) /**< 16384 characters */
+#define ACVP_SYM_PT_BIT_MAX 65536                       /**< 65536 bits */
+#define ACVP_SYM_PT_MAX (ACVP_SYM_PT_BIT_MAX >> 2)      /**< 16384 characters */
 #define ACVP_SYM_PT_BYTE_MAX (ACVP_SYM_PT_BIT_MAX >> 3) /**< 8192 bytes */
 
-#define ACVP_SYM_CT_BIT_MAX 65536 /**< 65536 bits */
-#define ACVP_SYM_CT_MAX (ACVP_SYM_CT_BIT_MAX >> 2) /**< 16384 characters */
+#define ACVP_SYM_CT_BIT_MAX 65536                       /**< 65536 bits */
+#define ACVP_SYM_CT_MAX (ACVP_SYM_CT_BIT_MAX >> 2)      /**< 16384 characters */
 #define ACVP_SYM_CT_BYTE_MAX (ACVP_SYM_CT_BIT_MAX >> 3) /**< 8192 bytes */
 
-#define ACVP_SYM_IV_BIT_MAX 1024 /**< 1024 bits */
-#define ACVP_SYM_IV_MAX (ACVP_SYM_IV_BIT_MAX >> 2) /**< 256 characters */
+#define ACVP_SYM_IV_BIT_MAX 1024                        /**< 1024 bits */
+#define ACVP_SYM_IV_MAX (ACVP_SYM_IV_BIT_MAX >> 2)      /**< 256 characters */
 #define ACVP_SYM_IV_BYTE_MAX (ACVP_SYM_IV_BIT_MAX >> 3) /**< 128 bytes */
 
-#define ACVP_SYM_TAG_BIT_MIN 4 /**< 128 bits */
-#define ACVP_SYM_TAG_BIT_MAX 128 /**< 128 bits */
-#define ACVP_SYM_TAG_MAX (ACVP_SYM_TAG_BIT_MAX >> 2) /**< 32 characters */
+#define ACVP_SYM_TAG_BIT_MIN 4                            /**< 128 bits */
+#define ACVP_SYM_TAG_BIT_MAX 128                          /**< 128 bits */
+#define ACVP_SYM_TAG_MAX (ACVP_SYM_TAG_BIT_MAX >> 2)      /**< 32 characters */
 #define ACVP_SYM_TAG_BYTE_MAX (ACVP_SYM_TAG_BIT_MAX >> 3) /**< 16 bytes */
 
-#define ACVP_SYM_AAD_BIT_MAX 65536 /**< 65536 bits */
-#define ACVP_SYM_AAD_MAX (ACVP_SYM_AAD_BIT_MAX >> 2) /**< 16384 characters */
+#define ACVP_SYM_AAD_BIT_MAX 65536                        /**< 65536 bits */
+#define ACVP_SYM_AAD_MAX (ACVP_SYM_AAD_BIT_MAX >> 2)      /**< 16384 characters */
 #define ACVP_SYM_AAD_BYTE_MAX (ACVP_SYM_AAD_BIT_MAX >> 3) /**< 8192 bytes */
 
 /**
@@ -307,12 +307,12 @@
  * END DRBG
  */
 
-#define ACVP_HASH_MSG_BIT_MAX 102400 /**< 102400 bits */
-#define ACVP_HASH_MSG_STR_MAX (ACVP_HASH_MSG_BIT_MAX >> 2) /**< 25600 characters */
+#define ACVP_HASH_MSG_BIT_MAX 102400                        /**< 102400 bits */
+#define ACVP_HASH_MSG_STR_MAX (ACVP_HASH_MSG_BIT_MAX >> 2)  /**< 25600 characters */
 #define ACVP_HASH_MSG_BYTE_MAX (ACVP_HASH_MSG_BIT_MAX >> 3) /**< 12800 bytes */
-#define ACVP_HASH_MD_BIT_MAX 512 /**< 512 bits */
-#define ACVP_HASH_MD_STR_MAX (ACVP_HASH_MD_BIT_MAX >> 2) /**< 128 characters */
-#define ACVP_HASH_MD_BYTE_MAX (ACVP_HASH_MD_BIT_MAX >> 3) /**< 64 bytes */
+#define ACVP_HASH_MD_BIT_MAX 512                            /**< 512 bits */
+#define ACVP_HASH_MD_STR_MAX (ACVP_HASH_MD_BIT_MAX >> 2)    /**< 128 characters */
+#define ACVP_HASH_MD_BYTE_MAX (ACVP_HASH_MD_BIT_MAX >> 3)   /**< 64 bytes */
 
 #define ACVP_HASH_MCT_INNER     1000
 #define ACVP_HASH_MCT_OUTER     100
@@ -321,33 +321,33 @@
 #define ACVP_DES_MCT_INNER      10000
 #define ACVP_DES_MCT_OUTER      400
 
-#define ACVP_TDES_KEY_BIT_LEN 192 /**< 192 bits */
-#define ACVP_TDES_KEY_STR_LEN (ACVP_TDES_KEY_BIT_LEN >> 2) /**< 48 characters */
+#define ACVP_TDES_KEY_BIT_LEN 192                           /**< 192 bits */
+#define ACVP_TDES_KEY_STR_LEN (ACVP_TDES_KEY_BIT_LEN >> 2)  /**< 48 characters */
 #define ACVP_TDES_KEY_BYTE_LEN (ACVP_TDES_KEY_BIT_LEN >> 3) /**< 24 bytes */
 
-#define ACVP_AES_CCM_IV_BIT_MIN 56 /**< 56 bits */
-#define ACVP_AES_CCM_IV_BIT_MAX 104 /**< 104 bits */
-#define ACVP_AES_GCM_IV_BIT_MIN 8 /**< 8 bits */
+#define ACVP_AES_CCM_IV_BIT_MIN 56   /**< 56 bits */
+#define ACVP_AES_CCM_IV_BIT_MAX 104  /**< 104 bits */
+#define ACVP_AES_GCM_IV_BIT_MIN 8    /**< 8 bits */
 #define ACVP_AES_GCM_IV_BIT_MAX 1024 /**< 1024 bits */
 
-#define ACVP_KDF135_TLS_MSG_MAX 1024*4
-#define ACVP_KDF135_SSH_EKEY_MAX (ACVP_SHA512_BYTE_LEN) /**< Encryption Key max.
-                                                             Be able to hold largest sha size, although
-                                                             actual key is a subset (up to 32 bytes).
-                                                             512 bits, 64 bytes */
-#define ACVP_KDF135_SSH_IKEY_MAX (ACVP_SHA512_BYTE_LEN) /**< Integrity Key max
-                                                             512 bits, 64 bytes */
-#define ACVP_KDF135_SSH_IV_MAX (ACVP_SHA512_BYTE_LEN) /**< Initial IV key max
-                                                           Be able to hold largest sha size, although
-                                                           actual IV is a subset (up to 16 bytes).
-                                                           512 bits, 64 bytes */
+#define ACVP_KDF135_TLS_MSG_MAX 1024 * 4
+#define ACVP_KDF135_SSH_EKEY_MAX (ACVP_SHA512_BYTE_LEN)            /**< Encryption Key max.
+                                                                        Be able to hold largest sha size, although
+                                                                        actual key is a subset (up to 32 bytes).
+                                                                        512 bits, 64 bytes */
+#define ACVP_KDF135_SSH_IKEY_MAX (ACVP_SHA512_BYTE_LEN)            /**< Integrity Key max
+                                                                        512 bits, 64 bytes */
+#define ACVP_KDF135_SSH_IV_MAX (ACVP_SHA512_BYTE_LEN)              /**< Initial IV key max
+                                                                        Be able to hold largest sha size, although
+                                                                        actual IV is a subset (up to 16 bytes).
+                                                                        512 bits, 64 bytes */
 #define ACVP_KDF135_SSH_STR_OUT_MAX (ACVP_KDF135_SSH_IKEY_MAX * 2) /**< 128 characters */
-#define ACVP_KDF135_SSH_STR_IN_MAX 4096 /**< 4096 characters, needs to accomodate large shared_secret (K) */
+#define ACVP_KDF135_SSH_STR_IN_MAX 4096                            /**< 4096 characters, needs to accomodate large shared_secret (K) */
 
 /**
-* Accepted length ranges for KDF135_SRTP.
-* https://github.com/usnistgov/ACVP/blob/master/artifacts/acvp_sub_kdf135_srtp.txt
-*/
+ * Accepted length ranges for KDF135_SRTP.
+ * https://github.com/usnistgov/ACVP/blob/master/artifacts/acvp_sub_kdf135_srtp.txt
+ */
 #define ACVP_KDF135_SRTP_KDR_MAX 24
 #define ACVP_KDF135_SRTP_KDR_STR_MAX 13
 #define ACVP_KDF135_SRTP_MASTER_MAX 65
@@ -359,13 +359,13 @@
 #define ACVP_KDF135_TLS_PMSECRET_STR_MAX (ACVP_KDF135_TLS_PMSECRET_BIT_MAX >> 2)
 
 /**
-* Accepted length ranges for KDF135_X963.
-* https://github.com/usnistgov/ACVP/blob/master/artifacts/acvp_sub_kdf135_x963.txt
-*/
+ * Accepted length ranges for KDF135_X963.
+ * https://github.com/usnistgov/ACVP/blob/master/artifacts/acvp_sub_kdf135_x963.txt
+ */
 #define ACVP_KDF135_X963_KEYDATA_MIN_BITS 128
 #define ACVP_KDF135_X963_KEYDATA_MAX_BITS 4096
-#define ACVP_KDF135_X963_KEYDATA_MAX_BYTES (ACVP_KDF135_X963_KEYDATA_MAX_BITS)/8
-#define ACVP_KDF135_X963_INPUT_MAX 1024/8
+#define ACVP_KDF135_X963_KEYDATA_MAX_BYTES (ACVP_KDF135_X963_KEYDATA_MAX_BITS) / 8
+#define ACVP_KDF135_X963_INPUT_MAX 1024 / 8
 #define ACVP_KDF135_X963_FIELD_SIZE_224 224
 #define ACVP_KDF135_X963_FIELD_SIZE_233 233
 #define ACVP_KDF135_X963_FIELD_SIZE_256 256
@@ -389,7 +389,7 @@
  * https://github.com/usnistgov/ACVP/blob/master/artifacts/acvp_sub_kdf135_ikev1.txt
  */
 #define ACVP_KDF135_IKEV1_COOKIE_STR_MAX 32
-#define ACVP_KDF135_IKEV1_COOKIE_BYTE_MAX (ACVP_KDF135_IKEV1_COOKIE_STR_MAX/2)
+#define ACVP_KDF135_IKEV1_COOKIE_BYTE_MAX (ACVP_KDF135_IKEV1_COOKIE_STR_MAX / 2)
 
 #define ACVP_KDF135_IKEV1_SKEY_BYTE_MAX 64 /**< SHA512 byte length */
 #define ACVP_KDF135_IKEV1_SKEY_STR_MAX 128 /**< SHA512 hex length */
@@ -422,7 +422,7 @@
  * https://github.com/usnistgov/ACVP/blob/master/artifacts/acvp_sub_kdf135_ikev2.txt
  */
 #define ACVP_KDF135_IKEV2_SPI_STR_MAX 32
-#define ACVP_KDF135_IKEV2_SPI_BYTE_MAX (ACVP_KDF135_IKEV2_SPI_STR_MAX/2)
+#define ACVP_KDF135_IKEV2_SPI_BYTE_MAX (ACVP_KDF135_IKEV2_SPI_STR_MAX / 2)
 
 #define ACVP_KDF135_IKEV2_SKEY_SEED_BYTE_MAX 64 /**< SHA512 byte length */
 #define ACVP_KDF135_IKEV2_SKEY_SEED_STR_MAX 128 /**< SHA512 hex length */
@@ -484,9 +484,9 @@
 #define ACVP_CMAC_KEY_MAX       64        /**< 256 bits, 64 characters */
 
 #define ACVP_DSA_PQG_MAX        3072     /**< 3072 bits, 768 characters */
-#define ACVP_DSA_PQG_MAX_BYTES  (ACVP_DSA_PQG_MAX/2)
+#define ACVP_DSA_PQG_MAX_BYTES  (ACVP_DSA_PQG_MAX / 2)
 #define ACVP_DSA_SEED_MAX       1024
-#define ACVP_DSA_SEED_MAX_BYTES (ACVP_DSA_SEED_MAX/2)
+#define ACVP_DSA_SEED_MAX_BYTES (ACVP_DSA_SEED_MAX / 2)
 #define ACVP_DSA_MAX_STRING     3072     /**< 3072 bytes */
 
 #define ACVP_ECDSA_EXP_LEN_MAX       512
@@ -525,9 +525,9 @@
  * END RSA
  */
 
-#define ACVP_KAT_BUF_MAX        1024*1024*4
-#define ACVP_ANS_BUF_MAX        1024*1024*4
-#define ACVP_REG_BUF_MAX        1024*128
+#define ACVP_KAT_BUF_MAX        1024 * 1024 * 4
+#define ACVP_ANS_BUF_MAX        1024 * 1024 * 4
+#define ACVP_REG_BUF_MAX        1024 * 128
 #define ACVP_RETRY_TIME_MAX     60 /* seconds */
 #define ACVP_JWT_TOKEN_MAX      1024
 
@@ -657,7 +657,7 @@ typedef struct acvp_sym_cipher_capability {
 } ACVP_SYM_CIPHER_CAP;
 
 typedef struct acvp_hash_capability {
-    int in_bit; /* defaults to false */
+    int in_bit;   /* defaults to false */
     int in_empty; /* defaults to false */
 } ACVP_HASH_CAP;
 
@@ -722,16 +722,16 @@ typedef struct acvp_kdf135_x963_capability {
 } ACVP_KDF135_X963_CAP;
 
 typedef struct acvp_hmac_capability {
-    int key_len_min;      // 8-524288
-    int key_len_max;      // 8-524288
-    ACVP_SL_LIST *mac_len;         // 32-512
+    int key_len_min;       // 8-524288
+    int key_len_max;       // 8-524288
+    ACVP_SL_LIST *mac_len; // 32-512
 } ACVP_HMAC_CAP;
 
 typedef struct acvp_cmac_capability {
     int direction_gen; // boolean
     int direction_ver; // boolean
     ACVP_SL_LIST *mac_len;
-    ACVP_SL_LIST *key_len; // 128,192,256
+    ACVP_SL_LIST *key_len;       // 128,192,256
     ACVP_SL_LIST *keying_option; // 1 or 2
     int msg_len[5];
 } ACVP_CMAC_CAP;
@@ -784,7 +784,7 @@ typedef struct acvp_rsa_hash_pair_list {
 
 typedef struct acvp_rsa_mode_caps_list {
     int modulo; // 2048, 3072, 4096 -- defined as macros
-    int salt; // only valid for siggen mode
+    int salt;   // only valid for siggen mode
     ACVP_NAME_LIST *hash_algs;
     ACVP_RSA_HASH_PAIR_LIST *hash_pair;
     ACVP_NAME_LIST *prime_tests;
@@ -795,7 +795,7 @@ typedef struct acvp_rsa_keygen_capability_t {
     int key_format_crt;                     // if false, key format is assumed to be standard
     ACVP_RSA_PUB_EXP_MODE pub_exp_mode;
     char *fixed_pub_exp;               // hex value of e
-    ACVP_RSA_KEYGEN_MODE rand_pq;        // as defined in FIPS186-4
+    ACVP_RSA_KEYGEN_MODE rand_pq;      // as defined in FIPS186-4
     char *rand_pq_str;
     int info_gen_by_server;                  // boolean
     ACVP_RSA_MODE_CAPS_LIST *mode_capabilities;
@@ -812,8 +812,8 @@ typedef struct acvp_ecdsa_capability_t {
 typedef struct acvp_rsa_sig_capability_t {
     char *sig_type_str;
     int sig_type;
-    int pub_exp_mode; // for sigVer only
-    char *fixed_pub_exp; // hex value of e
+    int pub_exp_mode;                           // for sigVer only
+    char *fixed_pub_exp;                        // hex value of e
     ACVP_RSA_MODE_CAPS_LIST *mode_capabilities; //holds modRSASigGen (int) and hashSigGen (list)
     struct acvp_rsa_sig_capability_t *next;
 } ACVP_RSA_SIG_CAP;
@@ -948,7 +948,7 @@ typedef struct acvp_caps_list_t {
         ACVP_KAS_FFC_CAP *kas_ffc_cap;
     } cap;
 
-    ACVP_RESULT (*crypto_handler) (ACVP_TEST_CASE *test_case);
+    ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case);
 
     struct acvp_caps_list_t *next;
 } ACVP_CAPS_LIST;
@@ -997,131 +997,132 @@ struct acvp_ctx_t {
     ACVP_RESULT (*totp_cb) (char **token);
 
     /* Transitory values */
-    char *login_buf;  /* holds the 2-FA authentication response */
-    char *reg_buf;    /* holds the JSON registration response */
-    char *kat_buf;    /* holds the current set of vectors being processed */
-    char *upld_buf;   /* holds the HTTP response from server when uploading results */
-    JSON_Value *kat_resp;   /* holds the current set of vector responses */
-    int read_ctr;            /* used during curl processing */
-    int vs_id;               /* vs_id currently being processed */
-    char *ans_buf;    /* holds the queried answers on a sample registration */
+    char *login_buf;      /* holds the 2-FA authentication response */
+    char *reg_buf;        /* holds the JSON registration response */
+    char *kat_buf;        /* holds the current set of vectors being processed */
+    char *upld_buf;       /* holds the HTTP response from server when uploading results */
+    JSON_Value *kat_resp; /* holds the current set of vector responses */
+    int read_ctr;         /* used during curl processing */
+    int vs_id;            /* vs_id currently being processed */
+    char *ans_buf;        /* holds the queried answers on a sample registration */
 };
 
-ACVP_RESULT acvp_send_register (ACVP_CTX *ctx, char *reg);
+ACVP_RESULT acvp_send_register(ACVP_CTX *ctx, char *reg);
 
-ACVP_RESULT acvp_send_login (ACVP_CTX *ctx, char *login);
+ACVP_RESULT acvp_send_login(ACVP_CTX *ctx, char *login);
 
-ACVP_RESULT acvp_retrieve_sample_answers (ACVP_CTX *ctx, int vs_id);
+ACVP_RESULT acvp_retrieve_sample_answers(ACVP_CTX *ctx, int vs_id);
 
-ACVP_RESULT acvp_retrieve_vector_set (ACVP_CTX *ctx, int vs_id);
+ACVP_RESULT acvp_retrieve_vector_set(ACVP_CTX *ctx, int vs_id);
 
-ACVP_RESULT acvp_retrieve_vector_set_result (ACVP_CTX *ctx, int vs_id);
+ACVP_RESULT acvp_retrieve_vector_set_result(ACVP_CTX *ctx, int vs_id);
 
-ACVP_RESULT acvp_submit_vector_responses (ACVP_CTX *ctx);
+ACVP_RESULT acvp_submit_vector_responses(ACVP_CTX *ctx);
 
-void acvp_log_msg (ACVP_CTX *ctx, ACVP_LOG_LVL level, const char *format, ...);
+void acvp_log_msg(ACVP_CTX *ctx, ACVP_LOG_LVL level, const char *format, ...);
 
-ACVP_RESULT acvp_hexstr_to_bin (const char *src, unsigned char *dest, int dest_max, int *converted_len);
+ACVP_RESULT acvp_hexstr_to_bin(const char *src, unsigned char *dest, int dest_max, int *converted_len);
 
-ACVP_RESULT acvp_bin_to_bit (const unsigned char *in, int len, unsigned char *out);
+ACVP_RESULT acvp_bin_to_bit(const unsigned char *in, int len, unsigned char *out);
 
-ACVP_RESULT acvp_bit_to_bin (const unsigned char *in, int len, unsigned char *out);
+ACVP_RESULT acvp_bit_to_bin(const unsigned char *in, int len, unsigned char *out);
 
 /*
  * These are the handler routines for each KAT operation
  */
-ACVP_RESULT acvp_aes_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
+ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
-ACVP_RESULT acvp_des_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
+ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
-ACVP_RESULT acvp_entropy_handler (ACVP_CTX *ctx, JSON_Object *obj);
+ACVP_RESULT acvp_entropy_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
-ACVP_RESULT acvp_hash_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
+ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
-ACVP_RESULT acvp_drbg_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
+ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
-ACVP_RESULT acvp_hmac_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
+ACVP_RESULT acvp_hmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
-ACVP_RESULT acvp_cmac_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
+ACVP_RESULT acvp_cmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
-ACVP_RESULT acvp_rsa_keygen_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
+ACVP_RESULT acvp_rsa_keygen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
-ACVP_RESULT acvp_rsa_siggen_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
+ACVP_RESULT acvp_rsa_siggen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
-ACVP_RESULT acvp_rsa_sigver_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
+ACVP_RESULT acvp_rsa_sigver_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
-ACVP_RESULT acvp_ecdsa_keygen_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
+ACVP_RESULT acvp_ecdsa_keygen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
-ACVP_RESULT acvp_ecdsa_keyver_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
+ACVP_RESULT acvp_ecdsa_keyver_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
-ACVP_RESULT acvp_ecdsa_siggen_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
+ACVP_RESULT acvp_ecdsa_siggen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
-ACVP_RESULT acvp_ecdsa_sigver_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
+ACVP_RESULT acvp_ecdsa_sigver_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
-ACVP_RESULT acvp_kdf135_tls_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
+ACVP_RESULT acvp_kdf135_tls_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
-ACVP_RESULT acvp_kdf135_snmp_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
+ACVP_RESULT acvp_kdf135_snmp_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
-ACVP_RESULT acvp_kdf135_ssh_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
+ACVP_RESULT acvp_kdf135_ssh_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
-ACVP_RESULT acvp_kdf135_srtp_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
+ACVP_RESULT acvp_kdf135_srtp_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
-ACVP_RESULT acvp_kdf135_ikev2_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
+ACVP_RESULT acvp_kdf135_ikev2_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
-ACVP_RESULT acvp_kdf135_ikev1_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
+ACVP_RESULT acvp_kdf135_ikev1_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
-ACVP_RESULT acvp_kdf135_x963_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
+ACVP_RESULT acvp_kdf135_x963_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
-ACVP_RESULT acvp_kdf108_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
+ACVP_RESULT acvp_kdf108_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
-ACVP_RESULT acvp_dsa_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
+ACVP_RESULT acvp_dsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
-ACVP_RESULT acvp_dsa_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
+ACVP_RESULT acvp_dsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
-ACVP_RESULT acvp_kas_ecc_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
+ACVP_RESULT acvp_kas_ecc_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
-ACVP_RESULT acvp_kas_ffc_kat_handler (ACVP_CTX *ctx, JSON_Object *obj);
+ACVP_RESULT acvp_kas_ffc_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
 /*
  * ACVP build registration functions used internally
  */
-ACVP_RESULT acvp_build_register (ACVP_CTX *ctx, char **reg);
+ACVP_RESULT acvp_build_register(ACVP_CTX *ctx, char **reg);
 
 /*
  * ACVP utility functions used internally
  */
-ACVP_CAPS_LIST *acvp_locate_cap_entry (ACVP_CTX *ctx, ACVP_CIPHER cipher);
+ACVP_CAPS_LIST *acvp_locate_cap_entry(ACVP_CTX *ctx, ACVP_CIPHER cipher);
 
-char *acvp_lookup_cipher_name (ACVP_CIPHER alg);
+char *acvp_lookup_cipher_name(ACVP_CIPHER alg);
 
-ACVP_CIPHER acvp_lookup_cipher_index (const char *algorithm);
+ACVP_CIPHER acvp_lookup_cipher_index(const char *algorithm);
 
-ACVP_DRBG_MODE acvp_lookup_drbg_mode_index (const char *mode);
+ACVP_DRBG_MODE acvp_lookup_drbg_mode_index(const char *mode);
 
-ACVP_DRBG_CAP_MODE_LIST *acvp_locate_drbg_mode_entry (ACVP_CAPS_LIST *cap, ACVP_DRBG_MODE mode);
+ACVP_DRBG_CAP_MODE_LIST *acvp_locate_drbg_mode_entry(ACVP_CAPS_LIST *cap, ACVP_DRBG_MODE mode);
 
-char *acvp_lookup_rsa_randpq_name (int value);
+char *acvp_lookup_rsa_randpq_name(int value);
 
-int acvp_lookup_rsa_randpq_index (const char *value);
+int acvp_lookup_rsa_randpq_index(const char *value);
 
-unsigned int yes_or_no (ACVP_CTX *ctx, const char *text);
+unsigned int yes_or_no(ACVP_CTX *ctx, const char *text);
 
-ACVP_RESULT acvp_create_array (JSON_Object **obj, JSON_Value **val, JSON_Array **arry);
+ACVP_RESULT acvp_create_array(JSON_Object **obj, JSON_Value **val, JSON_Array **arry);
 
-ACVP_RESULT is_valid_tf_param (int value);
+ACVP_RESULT is_valid_tf_param(int value);
 
 char *acvp_lookup_rsa_prime_test_name(ACVP_RSA_PRIME_TEST_TYPE type);
-ACVP_RESULT is_valid_prime_test (char *value);
+ACVP_RESULT is_valid_prime_test(char *value);
 
-ACVP_RESULT is_valid_rsa_mod (int value);
+ACVP_RESULT is_valid_rsa_mod(int value);
 
-ACVP_HASH_ALG acvp_lookup_hash_alg (const char *name);
-char *acvp_lookup_hash_alg_name (ACVP_HASH_ALG id);
+ACVP_HASH_ALG acvp_lookup_hash_alg(const char *name);
+char *acvp_lookup_hash_alg_name(ACVP_HASH_ALG id);
 
-ACVP_EC_CURVE acvp_lookup_ec_curve (ACVP_CIPHER cipher, const char *name);
-char *acvp_lookup_ec_curve_name (ACVP_CIPHER cipher, ACVP_EC_CURVE id);
+ACVP_EC_CURVE acvp_lookup_ec_curve(ACVP_CIPHER cipher, const char *name);
+char *acvp_lookup_ec_curve_name(ACVP_CIPHER cipher, ACVP_EC_CURVE id);
 
 void ctr64_inc(unsigned char *counter);
 void ctr128_inc(unsigned char *counter);
-ACVP_RESULT acvp_refresh (ACVP_CTX *ctx);
+ACVP_RESULT acvp_refresh(ACVP_CTX *ctx);
+
 #endif

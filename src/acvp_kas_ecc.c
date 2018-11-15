@@ -38,8 +38,9 @@
  * file that will be uploaded to the server.  This routine handles
  * the JSON processing for a single test case.
  */
-static ACVP_RESULT acvp_kas_ecc_output_cdh_tc (ACVP_CTX *ctx, ACVP_KAS_ECC_TC *stc,
-                                               JSON_Object *tc_rsp) {
+static ACVP_RESULT acvp_kas_ecc_output_cdh_tc(ACVP_CTX *ctx,
+                                              ACVP_KAS_ECC_TC *stc,
+                                              JSON_Object *tc_rsp) {
     ACVP_RESULT rv = ACVP_SUCCESS;
     char *tmp = NULL;
 
@@ -48,14 +49,14 @@ static ACVP_RESULT acvp_kas_ecc_output_cdh_tc (ACVP_CTX *ctx, ACVP_KAS_ECC_TC *s
         ACVP_LOG_ERR("Unable to malloc in acvp_aes_output_mct_tc");
         return ACVP_MALLOC_FAIL;
     }
-    
+
     rv = acvp_bin_to_hexstr(stc->pix, stc->pixlen, tmp, ACVP_KAS_ECC_STR_MAX);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("hex conversion failure (pix)");
         goto end;
     }
     json_object_set_string(tc_rsp, "publicIutX", tmp);
-    
+
     memset(tmp, 0x0, ACVP_KAS_ECC_STR_MAX);
     rv = acvp_bin_to_hexstr(stc->piy, stc->piylen, tmp, ACVP_KAS_ECC_STR_MAX);
     if (rv != ACVP_SUCCESS) {
@@ -78,14 +79,14 @@ end:
     return rv;
 }
 
-
 /*
  * After the test case has been processed by the DUT, the results
  * need to be JSON formated to be included in the vector set results
  * file that will be uploaded to the server.  This routine handles
  * the JSON processing for a single test case.
  */
-static ACVP_RESULT acvp_kas_ecc_output_comp_tc (ACVP_CTX *ctx, ACVP_KAS_ECC_TC *stc,
+static ACVP_RESULT acvp_kas_ecc_output_comp_tc(ACVP_CTX *ctx,
+                                               ACVP_KAS_ECC_TC *stc,
                                                JSON_Object *tc_rsp) {
     ACVP_RESULT rv = ACVP_SUCCESS;
     char *tmp = NULL;
@@ -110,7 +111,7 @@ static ACVP_RESULT acvp_kas_ecc_output_comp_tc (ACVP_CTX *ctx, ACVP_KAS_ECC_TC *
         }
         goto end;
     }
-    
+
     memset(tmp, 0x0, ACVP_KAS_ECC_STR_MAX);
     rv = acvp_bin_to_hexstr(stc->pix, stc->pixlen, tmp, ACVP_KAS_ECC_STR_MAX);
     if (rv != ACVP_SUCCESS) {
@@ -118,7 +119,7 @@ static ACVP_RESULT acvp_kas_ecc_output_comp_tc (ACVP_CTX *ctx, ACVP_KAS_ECC_TC *
         goto end;
     }
     json_object_set_string(tc_rsp, "ephemeralPublicIutX", tmp);
-    
+
     memset(tmp, 0x0, ACVP_KAS_ECC_STR_MAX);
     rv = acvp_bin_to_hexstr(stc->piy, stc->piylen, tmp, ACVP_KAS_ECC_STR_MAX);
     if (rv != ACVP_SUCCESS) {
@@ -126,7 +127,7 @@ static ACVP_RESULT acvp_kas_ecc_output_comp_tc (ACVP_CTX *ctx, ACVP_KAS_ECC_TC *
         goto end;
     }
     json_object_set_string(tc_rsp, "ephemeralPublicIutY", tmp);
-    
+
     memset(tmp, 0x0, ACVP_KAS_ECC_STR_MAX);
     rv = acvp_bin_to_hexstr(stc->d, stc->dlen, tmp, ACVP_KAS_ECC_STR_MAX);
     if (rv != ACVP_SUCCESS) {
@@ -149,16 +150,16 @@ end:
     return rv;
 }
 
-static ACVP_RESULT acvp_kas_ecc_init_cdh_tc (ACVP_CTX *ctx,
-                                             ACVP_KAS_ECC_TC *stc,
-                                             unsigned int tc_id,
-                                             ACVP_KAS_ECC_TEST_TYPE test_type,
-                                             ACVP_KAS_ECC_MODE mode,
-                                             ACVP_EC_CURVE curve,
-                                             const char *psx,
-                                             const char *psy
-) {
+static ACVP_RESULT acvp_kas_ecc_init_cdh_tc(ACVP_CTX *ctx,
+                                            ACVP_KAS_ECC_TC *stc,
+                                            unsigned int tc_id,
+                                            ACVP_KAS_ECC_TEST_TYPE test_type,
+                                            ACVP_KAS_ECC_MODE mode,
+                                            ACVP_EC_CURVE curve,
+                                            const char *psx,
+                                            const char *psy) {
     ACVP_RESULT rv;
+
     stc->mode = mode;
     stc->curve = curve;
     stc->test_type = test_type;
@@ -170,7 +171,7 @@ static ACVP_RESULT acvp_kas_ecc_init_cdh_tc (ACVP_CTX *ctx,
         ACVP_LOG_ERR("Hex conversion failure (psx)");
         return rv;
     }
-    
+
     stc->psy = calloc(1, ACVP_KAS_ECC_BYTE_MAX);
     if (!stc->psy) { return ACVP_MALLOC_FAIL; }
     rv = acvp_hexstr_to_bin(psy, stc->psy, ACVP_KAS_ECC_BYTE_MAX, &(stc->psylen));
@@ -178,7 +179,7 @@ static ACVP_RESULT acvp_kas_ecc_init_cdh_tc (ACVP_CTX *ctx,
         ACVP_LOG_ERR("Hex conversion failure (psy)");
         return rv;
     }
-    
+
     stc->pix = calloc(1, ACVP_KAS_ECC_BYTE_MAX);
     if (!stc->pix) { return ACVP_MALLOC_FAIL; }
     stc->piy = calloc(1, ACVP_KAS_ECC_BYTE_MAX);
@@ -194,21 +195,21 @@ static ACVP_RESULT acvp_kas_ecc_init_cdh_tc (ACVP_CTX *ctx,
     return ACVP_SUCCESS;
 }
 
-static ACVP_RESULT acvp_kas_ecc_init_comp_tc (ACVP_CTX *ctx,
-                                              ACVP_KAS_ECC_TC *stc,
-                                              unsigned int tc_id,
-                                              ACVP_KAS_ECC_TEST_TYPE test_type,
-                                              ACVP_KAS_ECC_MODE mode,
-                                              ACVP_EC_CURVE curve,
-                                              ACVP_HASH_ALG hash,
-                                              const char *psx,
-                                              const char *psy,
-                                              const char *d,
-                                              const char *pix,
-                                              const char *piy,
-                                              const char *z
-) {
+static ACVP_RESULT acvp_kas_ecc_init_comp_tc(ACVP_CTX *ctx,
+                                             ACVP_KAS_ECC_TC *stc,
+                                             unsigned int tc_id,
+                                             ACVP_KAS_ECC_TEST_TYPE test_type,
+                                             ACVP_KAS_ECC_MODE mode,
+                                             ACVP_EC_CURVE curve,
+                                             ACVP_HASH_ALG hash,
+                                             const char *psx,
+                                             const char *psy,
+                                             const char *d,
+                                             const char *pix,
+                                             const char *piy,
+                                             const char *z) {
     ACVP_RESULT rv;
+
     stc->mode = mode;
     stc->curve = curve;
     stc->md = hash;
@@ -221,7 +222,7 @@ static ACVP_RESULT acvp_kas_ecc_init_comp_tc (ACVP_CTX *ctx,
         ACVP_LOG_ERR("Hex conversion failure (psx)");
         return rv;
     }
-    
+
     stc->psy = calloc(1, ACVP_KAS_ECC_BYTE_MAX);
     if (!stc->psy) { return ACVP_MALLOC_FAIL; }
     rv = acvp_hexstr_to_bin(psy, stc->psy, ACVP_KAS_ECC_BYTE_MAX, &(stc->psylen));
@@ -240,7 +241,7 @@ static ACVP_RESULT acvp_kas_ecc_init_comp_tc (ACVP_CTX *ctx,
     if (!stc->z) { return ACVP_MALLOC_FAIL; }
     stc->chash = calloc(1, ACVP_KAS_ECC_BYTE_MAX);
     if (!stc->chash) { return ACVP_MALLOC_FAIL; }
-    
+
     if (stc->test_type == ACVP_KAS_ECC_TT_VAL) {
         if (!pix || !piy || !d || !z) {
             return ACVP_MISSING_ARG;
@@ -251,13 +252,13 @@ static ACVP_RESULT acvp_kas_ecc_init_comp_tc (ACVP_CTX *ctx,
             ACVP_LOG_ERR("Hex conversion failure (pix)");
             return rv;
         }
-    
+
         rv = acvp_hexstr_to_bin(piy, stc->piy, ACVP_KAS_ECC_BYTE_MAX, &(stc->piylen));
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Hex conversion failure (piy)");
             return rv;
         }
-    
+
         rv = acvp_hexstr_to_bin(d, stc->d, ACVP_KAS_ECC_BYTE_MAX, &(stc->dlen));
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Hex conversion failure (d)");
@@ -278,8 +279,7 @@ static ACVP_RESULT acvp_kas_ecc_init_comp_tc (ACVP_CTX *ctx,
  * This function simply releases the data associated with
  * a test case.
  */
-static ACVP_RESULT acvp_kas_ecc_release_tc (ACVP_KAS_ECC_TC *stc) {
-
+static ACVP_RESULT acvp_kas_ecc_release_tc(ACVP_KAS_ECC_TC *stc) {
     if (stc->chash) free(stc->chash);
     if (stc->psx) free(stc->psx);
     if (stc->psy) free(stc->psy);
@@ -293,17 +293,20 @@ static ACVP_RESULT acvp_kas_ecc_release_tc (ACVP_KAS_ECC_TC *stc) {
     return ACVP_SUCCESS;
 }
 
-static ACVP_RESULT acvp_kas_ecc_cdh(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap, ACVP_TEST_CASE *tc,
-                                    ACVP_KAS_ECC_TC *stc, JSON_Object *obj, int mode, 
-                                    JSON_Array *r_tarr)
-{
+static ACVP_RESULT acvp_kas_ecc_cdh(ACVP_CTX *ctx,
+                                    ACVP_CAPS_LIST *cap,
+                                    ACVP_TEST_CASE *tc,
+                                    ACVP_KAS_ECC_TC *stc,
+                                    JSON_Object *obj,
+                                    int mode,
+                                    JSON_Array *r_tarr) {
     JSON_Value *groupval;
     JSON_Object *groupobj = NULL;
     JSON_Array *groups;
     JSON_Value *testval;
     JSON_Object *testobj = NULL;
     JSON_Array *tests;
-    JSON_Value *r_tval = NULL; /* Response testval */
+    JSON_Value *r_tval = NULL;  /* Response testval */
     JSON_Object *r_tobj = NULL; /* Response testobj */
     unsigned int i, g_cnt;
     int j, t_cnt, tc_id;
@@ -357,7 +360,7 @@ static ACVP_RESULT acvp_kas_ecc_cdh(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap, ACVP_TES
             ACVP_LOG_INFO("Found new KAS-ECC CDH test vector...");
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
-            tc_id = (unsigned int) json_object_get_number(testobj, "tcId");
+            tc_id = (unsigned int)json_object_get_number(testobj, "tcId");
 
             /*
              * Create a new test case in the response
@@ -391,7 +394,7 @@ static ACVP_RESULT acvp_kas_ecc_cdh(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap, ACVP_TES
 
             ACVP_LOG_INFO("            psx: %s", psx);
             ACVP_LOG_INFO("            psy: %s", psy);
-  
+
             /*
              * Setup the test case data that will be passed down to
              * the crypto module.
@@ -434,17 +437,20 @@ static ACVP_RESULT acvp_kas_ecc_cdh(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap, ACVP_TES
     return ACVP_SUCCESS;
 }
 
-static ACVP_RESULT acvp_kas_ecc_comp(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap, ACVP_TEST_CASE *tc,
-                                     ACVP_KAS_ECC_TC *stc, JSON_Object *obj, int mode, 
-                                     JSON_Array *r_tarr)
-{
+static ACVP_RESULT acvp_kas_ecc_comp(ACVP_CTX *ctx,
+                                     ACVP_CAPS_LIST *cap,
+                                     ACVP_TEST_CASE *tc,
+                                     ACVP_KAS_ECC_TC *stc,
+                                     JSON_Object *obj,
+                                     int mode,
+                                     JSON_Array *r_tarr) {
     JSON_Value *groupval;
     JSON_Object *groupobj = NULL;
     JSON_Array *groups;
     JSON_Value *testval;
     JSON_Object *testobj = NULL;
     JSON_Array *tests;
-    JSON_Value *r_tval = NULL; /* Response testval */
+    JSON_Value *r_tval = NULL;  /* Response testval */
     JSON_Object *r_tobj = NULL; /* Response testobj */
     unsigned int i, g_cnt;
     int j, t_cnt, tc_id;
@@ -505,7 +511,7 @@ static ACVP_RESULT acvp_kas_ecc_comp(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap, ACVP_TE
             ACVP_LOG_ERR("Server JSON invalid 'testType'");
             return ACVP_INVALID_ARG;
         }
-    
+
         ACVP_LOG_INFO("    Test group: %d", i);
         ACVP_LOG_INFO("      test type: %s", test_type_str);
         ACVP_LOG_INFO("          curve: %s", curve_str);
@@ -521,7 +527,7 @@ static ACVP_RESULT acvp_kas_ecc_comp(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap, ACVP_TE
             ACVP_LOG_INFO("Found new KAS-ECC Component test vector...");
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
-            tc_id = (unsigned int) json_object_get_number(testobj, "tcId");
+            tc_id = (unsigned int)json_object_get_number(testobj, "tcId");
 
             /*
              * Create a new test case in the response
@@ -606,7 +612,7 @@ static ACVP_RESULT acvp_kas_ecc_comp(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap, ACVP_TE
                 ACVP_LOG_INFO("            piy: %s", piy);
                 ACVP_LOG_INFO("              z: %s", z);
             }
-  
+
             /*
              * Setup the test case data that will be passed down to
              * the crypto module.
@@ -650,8 +656,7 @@ static ACVP_RESULT acvp_kas_ecc_comp(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap, ACVP_TE
     return ACVP_SUCCESS;
 }
 
-ACVP_RESULT acvp_kas_ecc_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
-
+ACVP_RESULT acvp_kas_ecc_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     JSON_Value *r_vs_val = NULL;
     JSON_Object *r_vs = NULL;
     JSON_Array *r_tarr = NULL; /* Response testarray */
@@ -675,7 +680,7 @@ ACVP_RESULT acvp_kas_ecc_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     alg_str = json_object_get_string(obj, "algorithm");
     if (!alg_str) {
         ACVP_LOG_ERR("unable to parse 'algorithm' from JSON");
-        return (ACVP_MALFORMED_JSON);
+        return ACVP_MALFORMED_JSON;
     }
 
     /*
@@ -690,7 +695,7 @@ ACVP_RESULT acvp_kas_ecc_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Failed to create JSON response struct. ");
-        return (rv);
+        return rv;
     }
 
     /*
@@ -729,16 +734,16 @@ ACVP_RESULT acvp_kas_ecc_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
         stc.cipher = ACVP_KAS_ECC_NOCOMP;
     }
 
-    switch (mode)
-    {
+    switch (mode) {
     case ACVP_KAS_ECC_MODE_CDH:
         cap = acvp_locate_cap_entry(ctx, ACVP_KAS_ECC_CDH);
         if (!cap) {
             ACVP_LOG_ERR("ACVP server requesting unsupported capability");
-            return (ACVP_UNSUPPORTED_OP);
+            return ACVP_UNSUPPORTED_OP;
         }
         rv = acvp_kas_ecc_cdh(ctx, cap, &tc, &stc, obj, mode, r_tarr);
         if (rv != ACVP_SUCCESS) return rv;
+
         break;
 
     case ACVP_KAS_ECC_MODE_COMPONENT:
@@ -749,12 +754,14 @@ ACVP_RESULT acvp_kas_ecc_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
         }
         rv = acvp_kas_ecc_comp(ctx, cap, &tc, &stc, obj, mode, r_tarr);
         if (rv != ACVP_SUCCESS) return rv;
+
         break;
 
     case ACVP_KAS_ECC_MODE_NOCOMP:
     default:
         ACVP_LOG_ERR("ACVP server requesting unsupported KAS-ECC mode");
         return ACVP_UNSUPPORTED_OP;
+
         break;
     }
     json_array_append_value(reg_arry, r_vs_val);
@@ -769,4 +776,3 @@ ACVP_RESULT acvp_kas_ecc_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
 
     return ACVP_SUCCESS;
 }
-

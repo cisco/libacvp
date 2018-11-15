@@ -32,20 +32,18 @@
 #ifdef USE_MURL
 #include <murl/murl.h>
 #else
-
 #include <curl/curl.h>
-
 #endif
 
 extern ACVP_ALG_HANDLER alg_tbl[];
 
-static int acvp_char_to_int (char ch);
+static int acvp_char_to_int(char ch);
 
 /*
  * This is a rudimentary logging facility for libacvp.
  * We will need more when moving beyond the PoC phase.
  */
-void acvp_log_msg (ACVP_CTX *ctx, ACVP_LOG_LVL level, const char *format, ...) {
+void acvp_log_msg(ACVP_CTX *ctx, ACVP_LOG_LVL level, const char *format, ...) {
     va_list arguments;
     char tmp[1024 * 2];
 
@@ -79,7 +77,7 @@ void acvp_log_msg (ACVP_CTX *ctx, ACVP_LOG_LVL level, const char *format, ...) {
  * @param ctx Pointer to ACVP_CTX to be freed. May be NULL.
  *
  */
-ACVP_RESULT acvp_cleanup (ACVP_CTX *ctx) {
+ACVP_RESULT acvp_cleanup(ACVP_CTX *ctx) {
     ACVP_RESULT rv = ACVP_SUCCESS;
 
     if (ctx) {
@@ -99,7 +97,7 @@ ACVP_RESULT acvp_cleanup (ACVP_CTX *ctx) {
  * This function is used to locate the callback function that's needed
  * when a particular crypto operation is needed by libacvp.
  */
-ACVP_CAPS_LIST *acvp_locate_cap_entry (ACVP_CTX *ctx, ACVP_CIPHER cipher) {
+ACVP_CAPS_LIST *acvp_locate_cap_entry(ACVP_CTX *ctx, ACVP_CIPHER cipher) {
     ACVP_CAPS_LIST *cap;
 
     if (!ctx || !ctx->caps_list) {
@@ -124,7 +122,7 @@ ACVP_CAPS_LIST *acvp_locate_cap_entry (ACVP_CTX *ctx, ACVP_CIPHER cipher) {
  * IMPORTANT: If using an asymmetric cipher with a mode,
  * note that this API only returns the alg string
  */
-char *acvp_lookup_cipher_name (ACVP_CIPHER alg) {
+char *acvp_lookup_cipher_name(ACVP_CIPHER alg) {
     int i;
 
     for (i = 0; i < ACVP_ALG_MAX; i++) {
@@ -143,7 +141,7 @@ char *acvp_lookup_cipher_name (ACVP_CIPHER alg) {
  * IMPORTANT: This only works accurately for symmetric
  * ciphers
  */
-ACVP_CIPHER acvp_lookup_cipher_index (const char *algorithm) {
+ACVP_CIPHER acvp_lookup_cipher_index(const char *algorithm) {
     if (!algorithm) {
         return ACVP_CIPHER_START;
     }
@@ -162,24 +160,29 @@ ACVP_CIPHER acvp_lookup_cipher_index (const char *algorithm) {
  * This method returns the string that corresponds to a randPQ
  * index value
  */
-char *acvp_lookup_rsa_randpq_name (int value) {
+char *acvp_lookup_rsa_randpq_name(int value) {
     switch (value) {
     case ACVP_RSA_KEYGEN_B32:
         return "B.3.2"; // "provRP"
+
     case ACVP_RSA_KEYGEN_B33:
         return "B.3.3"; // "probRP"
+
     case ACVP_RSA_KEYGEN_B34:
         return "B.3.4"; // "provPC"
+
     case ACVP_RSA_KEYGEN_B35:
         return "B.3.5"; // "bothPC"
+
     case ACVP_RSA_KEYGEN_B36:
         return "B.3.6"; // "probPC"
+
     default:
         return NULL;
     }
 }
 
-int acvp_lookup_rsa_randpq_index (const char *value) {
+int acvp_lookup_rsa_randpq_index(const char *value) {
     if (!value) {
         return 0;
     }
@@ -192,17 +195,17 @@ int acvp_lookup_rsa_randpq_index (const char *value) {
 }
 
 static struct acvp_drbg_mode_name_t drbg_mode_tbl[] = {
-    {ACVP_DRBG_SHA_1,       ACVP_STR_SHA_1},
-    {ACVP_DRBG_SHA_224,     ACVP_STR_SHA2_224},
-    {ACVP_DRBG_SHA_256,     ACVP_STR_SHA2_256},
-    {ACVP_DRBG_SHA_384,     ACVP_STR_SHA2_384},
-    {ACVP_DRBG_SHA_512,     ACVP_STR_SHA2_512},
-    {ACVP_DRBG_SHA_512_224, ACVP_STR_SHA2_512_224},
-    {ACVP_DRBG_SHA_512_256, ACVP_STR_SHA2_512_256},
-    {ACVP_DRBG_3KEYTDEA,    ACVP_DRBG_MODE_3KEYTDEA},
-    {ACVP_DRBG_AES_128,     ACVP_DRBG_MODE_AES_128},
-    {ACVP_DRBG_AES_192,     ACVP_DRBG_MODE_AES_192},
-    {ACVP_DRBG_AES_256,     ACVP_DRBG_MODE_AES_256}
+    { ACVP_DRBG_SHA_1,       ACVP_STR_SHA_1          },
+    { ACVP_DRBG_SHA_224,     ACVP_STR_SHA2_224       },
+    { ACVP_DRBG_SHA_256,     ACVP_STR_SHA2_256       },
+    { ACVP_DRBG_SHA_384,     ACVP_STR_SHA2_384       },
+    { ACVP_DRBG_SHA_512,     ACVP_STR_SHA2_512       },
+    { ACVP_DRBG_SHA_512_224, ACVP_STR_SHA2_512_224   },
+    { ACVP_DRBG_SHA_512_256, ACVP_STR_SHA2_512_256   },
+    { ACVP_DRBG_3KEYTDEA,    ACVP_DRBG_MODE_3KEYTDEA },
+    { ACVP_DRBG_AES_128,     ACVP_DRBG_MODE_AES_128  },
+    { ACVP_DRBG_AES_192,     ACVP_DRBG_MODE_AES_192  },
+    { ACVP_DRBG_AES_256,     ACVP_DRBG_MODE_AES_256  }
 };
 static int drbg_mode_tbl_length =
     sizeof(drbg_mode_tbl) / sizeof(struct acvp_drbg_mode_name_t);
@@ -212,7 +215,7 @@ static int drbg_mode_tbl_length =
  * algorithm name (as defined in the ACVP spec).  It
  * returns ACVP_DRBG_MODE_END if none match.
  */
-ACVP_DRBG_MODE acvp_lookup_drbg_mode_index (const char *mode) {
+ACVP_DRBG_MODE acvp_lookup_drbg_mode_index(const char *mode) {
     int i = 0;
 
     for (i = 0; i < drbg_mode_tbl_length; i++) {
@@ -226,22 +229,21 @@ ACVP_DRBG_MODE acvp_lookup_drbg_mode_index (const char *mode) {
 
 /* This function checks to see if the value is a valid
    true / false param */
-ACVP_RESULT is_valid_tf_param (int value) {
-    if (value == 0 || value == 1) { return ACVP_SUCCESS; }
-    else { return ACVP_INVALID_ARG; }
+ACVP_RESULT is_valid_tf_param(int value) {
+    if (value == 0 || value == 1) { return ACVP_SUCCESS; } else { return ACVP_INVALID_ARG; }
 }
 
 /*
  * Local table for matching ACVP_HASH_ALG to name string and vice versa.
  */
 static struct acvp_hash_alg_info hash_alg_tbl[] = {
-    {ACVP_SHA1, ACVP_STR_SHA_1},
-    {ACVP_SHA224, ACVP_STR_SHA2_224},
-    {ACVP_SHA256, ACVP_STR_SHA2_256},
-    {ACVP_SHA384, ACVP_STR_SHA2_384},
-    {ACVP_SHA512, ACVP_STR_SHA2_512},
-    {ACVP_SHA512_224, ACVP_STR_SHA2_512_224},
-    {ACVP_SHA512_256, ACVP_STR_SHA2_512_256}
+    { ACVP_SHA1,       ACVP_STR_SHA_1        },
+    { ACVP_SHA224,     ACVP_STR_SHA2_224     },
+    { ACVP_SHA256,     ACVP_STR_SHA2_256     },
+    { ACVP_SHA384,     ACVP_STR_SHA2_384     },
+    { ACVP_SHA512,     ACVP_STR_SHA2_512     },
+    { ACVP_SHA512_224, ACVP_STR_SHA2_512_224 },
+    { ACVP_SHA512_256, ACVP_STR_SHA2_512_256 }
 };
 static int hash_alg_tbl_length =
     sizeof(hash_alg_tbl) / sizeof(struct acvp_hash_alg_info);
@@ -254,7 +256,7 @@ static int hash_alg_tbl_length =
  * @return ACVP_HASH_ALG
  * @return 0 - fail
  */
-ACVP_HASH_ALG acvp_lookup_hash_alg (const char *name) {
+ACVP_HASH_ALG acvp_lookup_hash_alg(const char *name) {
     int i = 0;
 
     if (!name) return 0;
@@ -277,7 +279,7 @@ ACVP_HASH_ALG acvp_lookup_hash_alg (const char *name) {
  * @return char*
  * @return NULL - fail
  */
-char *acvp_lookup_hash_alg_name (ACVP_HASH_ALG id) {
+char *acvp_lookup_hash_alg_name(ACVP_HASH_ALG id) {
     int i = 0;
 
     if (!id) return NULL;
@@ -292,18 +294,20 @@ char *acvp_lookup_hash_alg_name (ACVP_HASH_ALG id) {
 }
 
 char *acvp_lookup_rsa_prime_test_name(ACVP_RSA_PRIME_TEST_TYPE type) {
-    switch(type) {
+    switch (type) {
     case ACVP_RSA_PRIME_TEST_TBLC2:
         return ACVP_RSA_PRIME_TEST_TBLC2_STR;
+
     case ACVP_RSA_PRIME_TEST_TBLC3:
         return ACVP_RSA_PRIME_TEST_TBLC3_STR;
+
     default:
         return NULL;
     }
 }
 
 /* This function checks to see if the value is a valid prime test (RSA) */
-ACVP_RESULT is_valid_prime_test (char *value) {
+ACVP_RESULT is_valid_prime_test(char *value) {
     if (!value) { return ACVP_INVALID_ARG; }
     if (strncmp(value, ACVP_RSA_PRIME_TEST_TBLC2_STR, 5) != 0 &&
         strncmp(value, ACVP_RSA_PRIME_TEST_TBLC3_STR, 5) != 0) {
@@ -312,7 +316,7 @@ ACVP_RESULT is_valid_prime_test (char *value) {
 }
 
 /* This function checks to see if the value is a valid prime test (RSA) */
-ACVP_RESULT is_valid_rsa_mod (int value) {
+ACVP_RESULT is_valid_rsa_mod(int value) {
     if (value != 2048 &&
         value != 3072 &&
         value != 4096) {
@@ -324,18 +328,18 @@ ACVP_RESULT is_valid_rsa_mod (int value) {
  * Local table for matching ACVP_EC_CURVE to name string and vice versa.
  */
 static struct acvp_ec_curve_info ec_curve_tbl[] = {
-    {ACVP_EC_CURVE_P224, "p-224"},
-    {ACVP_EC_CURVE_P256, "p-256"},
-    {ACVP_EC_CURVE_P384, "p-384"},
-    {ACVP_EC_CURVE_P521, "p-521"},
-    {ACVP_EC_CURVE_B233, "b-233"},
-    {ACVP_EC_CURVE_B283, "b-283"},
-    {ACVP_EC_CURVE_B409, "b-409"},
-    {ACVP_EC_CURVE_B571, "b-571"},
-    {ACVP_EC_CURVE_K233, "k-233"},
-    {ACVP_EC_CURVE_K283, "k-283"},
-    {ACVP_EC_CURVE_K409, "k-409"},
-    {ACVP_EC_CURVE_K571, "k-571"}
+    { ACVP_EC_CURVE_P224, "p-224" },
+    { ACVP_EC_CURVE_P256, "p-256" },
+    { ACVP_EC_CURVE_P384, "p-384" },
+    { ACVP_EC_CURVE_P521, "p-521" },
+    { ACVP_EC_CURVE_B233, "b-233" },
+    { ACVP_EC_CURVE_B283, "b-283" },
+    { ACVP_EC_CURVE_B409, "b-409" },
+    { ACVP_EC_CURVE_B571, "b-571" },
+    { ACVP_EC_CURVE_K233, "k-233" },
+    { ACVP_EC_CURVE_K283, "k-283" },
+    { ACVP_EC_CURVE_K409, "k-409" },
+    { ACVP_EC_CURVE_K571, "k-571" }
 };
 static int ec_curve_tbl_length =
     sizeof(ec_curve_tbl) / sizeof(struct acvp_ec_curve_info);
@@ -345,9 +349,9 @@ static int ec_curve_tbl_length =
  * Containes "deprecated" curves (still allowed for ECDSA_KEYVER and ECDSA_SIGVER).
  */
 static struct acvp_ec_curve_info ec_curve_depr_tbl[] = {
-    {ACVP_EC_CURVE_P192, "p-192"},
-    {ACVP_EC_CURVE_B163, "b-163"},
-    {ACVP_EC_CURVE_K163, "k-163"}
+    { ACVP_EC_CURVE_P192, "p-192" },
+    { ACVP_EC_CURVE_B163, "b-163" },
+    { ACVP_EC_CURVE_K163, "k-163" }
 };
 static int ec_curve_depr_tbl_length =
     sizeof(ec_curve_depr_tbl) / sizeof(struct acvp_ec_curve_info);
@@ -403,21 +407,21 @@ ACVP_EC_CURVE acvp_lookup_ec_curve(ACVP_CIPHER cipher, const char *name) {
  * Convert a byte array from source to a hexadecimal string which is
  * stored in the destination.
  */
-ACVP_RESULT acvp_bin_to_hexstr (const unsigned char *src, int src_len, char *dest, int dest_max) {
+ACVP_RESULT acvp_bin_to_hexstr(const unsigned char *src, int src_len, char *dest, int dest_max) {
     int i, j;
     unsigned char nibb_a, nibb_b;
     unsigned char hex_chars[] = "0123456789ABCDEF";
-    
+
     if (!src || !dest) {
         return ACVP_MISSING_ARG;
     }
-    
+
     if ((src_len * 2) > dest_max) {
         return ACVP_DATA_TOO_LARGE;
     }
-    
+
     for (i = 0, j = 0; i < src_len; i++, j += 2) {
-        nibb_a = *src >> 4; /* Get first half of byte */
+        nibb_a = *src >> 4;   /* Get first half of byte */
         nibb_b = *src & 0x0f; /* Get second half of byte */
 
         *dest = hex_chars[nibb_a];
@@ -431,12 +435,11 @@ ACVP_RESULT acvp_bin_to_hexstr (const unsigned char *src, int src_len, char *des
     return ACVP_SUCCESS;
 }
 
-
 /*
  * Convert a bit character string from *char ptr to
  * the destination as a concatenated bit value with bit0 = 0x80
  */
-ACVP_RESULT acvp_bit_to_bin (const unsigned char *in, int len, unsigned char *out) {
+ACVP_RESULT acvp_bit_to_bin(const unsigned char *in, int len, unsigned char *out) {
     int n;
 
     if (!len || !out || !in) {
@@ -454,10 +457,10 @@ ACVP_RESULT acvp_bit_to_bin (const unsigned char *in, int len, unsigned char *ou
 }
 
 /*
- * Convert characters in hexidecimal format from a *char ptr to a 
+ * Convert characters in hexidecimal format from a *char ptr to a
  * the destination as a binary bit string
  */
-ACVP_RESULT acvp_bin_to_bit (const unsigned char *in, int len, unsigned char *out) {
+ACVP_RESULT acvp_bin_to_bit(const unsigned char *in, int len, unsigned char *out) {
     int n;
 
     if (!len || !out || !in) {
@@ -475,7 +478,7 @@ ACVP_RESULT acvp_bin_to_bit (const unsigned char *in, int len, unsigned char *ou
  * in the destination.
  * TODO: Enable the function to handle odd number of hex characters
  */
-ACVP_RESULT acvp_hexstr_to_bin (const char *src, unsigned char *dest, int dest_max, int *converted_len) {
+ACVP_RESULT acvp_hexstr_to_bin(const char *src, unsigned char *dest, int dest_max, int *converted_len) {
     int src_len;
     int byte_a, byte_b;
     int is_odd = 0;
@@ -485,7 +488,7 @@ ACVP_RESULT acvp_hexstr_to_bin (const char *src, unsigned char *dest, int dest_m
         return ACVP_INVALID_ARG;
     }
 
-    src_len = (int) strlen((char *) src);
+    src_len = (int)strlen((char *)src);
 
     /*
      * Make sure the hex value isn't too large
@@ -500,7 +503,7 @@ ACVP_RESULT acvp_hexstr_to_bin (const char *src, unsigned char *dest, int dest_m
 
     if (!is_odd) {
         while (*src && src[1]) {
-            byte_a = acvp_char_to_int((char) *src) << 4; /* Shift to left half of byte */
+            byte_a = acvp_char_to_int((char)*src) << 4; /* Shift to left half of byte */
             byte_b = acvp_char_to_int(*(src + 1));
 
             *dest = byte_a + byte_b; /* Combine left half with right half */
@@ -512,7 +515,7 @@ ACVP_RESULT acvp_hexstr_to_bin (const char *src, unsigned char *dest, int dest_m
     } else {
         return ACVP_UNSUPPORTED_OP;
     }
-    
+
     if (converted_len) *converted_len = length_converted;
     return ACVP_SUCCESS;
 }
@@ -522,7 +525,7 @@ ACVP_RESULT acvp_hexstr_to_bin (const char *src, unsigned char *dest, int dest_m
  * Used to convert a hexadecimal character to it's byte
  * representation.
  */
-static int acvp_char_to_int (char ch) {
+static int acvp_char_to_int(char ch) {
     int ch_i;
 
     if (ch >= '0' && ch <= '9') {
@@ -538,12 +541,11 @@ static int acvp_char_to_int (char ch) {
     return ch_i;
 }
 
-
 /*
  * This function is used to locate the callback function that's needed
  * when a particular crypto operation is needed by libacvp.
  */
-ACVP_DRBG_CAP_MODE_LIST *acvp_locate_drbg_mode_entry (ACVP_CAPS_LIST *cap, ACVP_DRBG_MODE mode) {
+ACVP_DRBG_CAP_MODE_LIST *acvp_locate_drbg_mode_entry(ACVP_CAPS_LIST *cap, ACVP_DRBG_MODE mode) {
     ACVP_DRBG_CAP_MODE_LIST *cap_mode_list;
     ACVP_DRBG_CAP_MODE *cap_mode;
     ACVP_DRBG_CAP *drbg_cap;
@@ -573,9 +575,9 @@ ACVP_DRBG_CAP_MODE_LIST *acvp_locate_drbg_mode_entry (ACVP_CAPS_LIST *cap, ACVP_
     return NULL;
 }
 
-
-unsigned int yes_or_no (ACVP_CTX *ctx, const char *text) {
+unsigned int yes_or_no(ACVP_CTX *ctx, const char *text) {
     unsigned int result;
+
     if (!ctx || !text) { return 0; }
     if (!strncmp(text, "yes", 3)) {
         result = 1;
@@ -594,7 +596,7 @@ unsigned int yes_or_no (ACVP_CTX *ctx, const char *text) {
  * preamble is populated with the version string
  * returns ACVP_SUCCESS or ACVP_JSON_ERR
  */
-ACVP_RESULT acvp_create_array (JSON_Object **obj, JSON_Value **val, JSON_Array **arry) {
+ACVP_RESULT acvp_create_array(JSON_Object **obj, JSON_Value **val, JSON_Array **arry) {
     ACVP_RESULT result = ACVP_SUCCESS;
     JSON_Value *reg_arry_val = NULL;
     JSON_Object *reg_obj = NULL;
@@ -604,7 +606,7 @@ ACVP_RESULT acvp_create_array (JSON_Object **obj, JSON_Value **val, JSON_Array *
 
     reg_arry_val = json_value_init_array();
     reg_obj = json_value_get_object(reg_arry_val);
-    reg_arry = json_array((const JSON_Value *) reg_arry_val);
+    reg_arry = json_array((const JSON_Value *)reg_arry_val);
 
     ver_val = json_value_init_object();
     ver_obj = json_value_get_object(ver_val);
@@ -615,38 +617,38 @@ ACVP_RESULT acvp_create_array (JSON_Object **obj, JSON_Value **val, JSON_Array *
     *obj = reg_obj;
     *val = reg_arry_val;
     *arry = reg_arry;
-    return (result);
+    return result;
 }
 
 /*
  * This function returns a string that describes the error
  * code passed in.
  */
-char *acvp_lookup_error_string (ACVP_RESULT rv) {
+char *acvp_lookup_error_string(ACVP_RESULT rv) {
     int i;
-    struct acvp_result_desc_t error_desc_tbl[ACVP_RESULT_MAX-1] = {
-            {ACVP_MALLOC_FAIL, "Error allocating memory"},
-            {ACVP_NO_CTX, "No valid context found"},
-            {ACVP_TRANSPORT_FAIL, "Error using transport library"},
-            {ACVP_JSON_ERR, "Error using JSON library"},
-            {ACVP_UNSUPPORTED_OP, "Unsupported operation"},
-            {ACVP_CLEANUP_FAIL, "Error cleaning up ACVP context"},
-            {ACVP_KAT_DOWNLOAD_RETRY, "Error, need to retry"},
-            {ACVP_INVALID_ARG, "Invalid argument"},
-            {ACVP_CRYPTO_MODULE_FAIL, "Error from crypto module processing a vector set"},
-            {ACVP_CRYPTO_TAG_FAIL, "Error from crypto module processing a vector set"},
-            {ACVP_CRYPTO_WRAP_FAIL, "Error from crypto module processing a vector set"},
-            {ACVP_NO_TOKEN, "Error using JWT"},
-            {ACVP_NO_CAP, "No matching capability found"},
-            {ACVP_MALFORMED_JSON, "Unable to process JSON"},
-            {ACVP_DATA_TOO_LARGE, "Data too large"},
-            {ACVP_DUP_CIPHER, "Duplicate cipher, may have already registered"},
-            {ACVP_TOTP_DECODE_FAIL, "Failed to base64 decode TOTP seed"},
-            {ACVP_TOTP_MISSING_SEED, "Missing TOTP seed"},
-            {ACVP_DUPLICATE_CTX, "ctx already initialized"}
+    struct acvp_result_desc_t error_desc_tbl[ACVP_RESULT_MAX - 1] = {
+        { ACVP_MALLOC_FAIL,        "Error allocating memory"                          },
+        { ACVP_NO_CTX,             "No valid context found"                           },
+        { ACVP_TRANSPORT_FAIL,     "Error using transport library"                    },
+        { ACVP_JSON_ERR,           "Error using JSON library"                         },
+        { ACVP_UNSUPPORTED_OP,     "Unsupported operation"                            },
+        { ACVP_CLEANUP_FAIL,       "Error cleaning up ACVP context"                   },
+        { ACVP_KAT_DOWNLOAD_RETRY, "Error, need to retry"                             },
+        { ACVP_INVALID_ARG,        "Invalid argument"                                 },
+        { ACVP_CRYPTO_MODULE_FAIL, "Error from crypto module processing a vector set" },
+        { ACVP_CRYPTO_TAG_FAIL,    "Error from crypto module processing a vector set" },
+        { ACVP_CRYPTO_WRAP_FAIL,   "Error from crypto module processing a vector set" },
+        { ACVP_NO_TOKEN,           "Error using JWT"                                  },
+        { ACVP_NO_CAP,             "No matching capability found"                     },
+        { ACVP_MALFORMED_JSON,     "Unable to process JSON"                           },
+        { ACVP_DATA_TOO_LARGE,     "Data too large"                                   },
+        { ACVP_DUP_CIPHER,         "Duplicate cipher, may have already registered"    },
+        { ACVP_TOTP_DECODE_FAIL,   "Failed to base64 decode TOTP seed"                },
+        { ACVP_TOTP_MISSING_SEED,  "Missing TOTP seed"                                },
+        { ACVP_DUPLICATE_CTX,      "ctx already initialized"                          }
     };
-    
-    for (i = 0; i < ACVP_RESULT_MAX-1; i++) {
+
+    for (i = 0; i < ACVP_RESULT_MAX - 1; i++) {
         if (rv == error_desc_tbl[i].rv) {
             return error_desc_tbl[i].desc;
         }
@@ -654,13 +656,11 @@ char *acvp_lookup_error_string (ACVP_RESULT rv) {
     return "Unknown error";
 }
 
-
 /* increment counter (64-bit int) by 1 */
-void ctr64_inc(unsigned char *counter)
-{
+void ctr64_inc(unsigned char *counter) {
     int n = 8;
     unsigned char c;
-    
+
     do {
         --n;
         c = counter[n];
@@ -672,10 +672,9 @@ void ctr64_inc(unsigned char *counter)
 }
 
 /* increment counter (128-bit int) by 1 */
-void ctr128_inc(unsigned char *counter)
-{
+void ctr128_inc(unsigned char *counter) {
     unsigned int n = 16, c = 1;
-    
+
     do {
         --n;
         c += counter[n];

@@ -34,15 +34,16 @@
 /*
  * Forward prototypes for local functions
  */
-static ACVP_RESULT acvp_kdf135_ikev1_output_tc (ACVP_CTX *ctx, ACVP_KDF135_IKEV1_TC *stc, JSON_Object *tc_rsp) {
+static ACVP_RESULT acvp_kdf135_ikev1_output_tc(ACVP_CTX *ctx, ACVP_KDF135_IKEV1_TC *stc, JSON_Object *tc_rsp) {
     ACVP_RESULT rv;
     char *tmp = NULL;
-    tmp = calloc(ACVP_KDF135_IKEV1_SKEY_STR_MAX+1, sizeof(char));
+
+    tmp = calloc(ACVP_KDF135_IKEV1_SKEY_STR_MAX + 1, sizeof(char));
     if (!tmp) {
         ACVP_LOG_ERR("Unable to malloc in acvp_kdf135 tpm_output_tc");
         return ACVP_MALLOC_FAIL;
     }
-    
+
     rv = acvp_bin_to_hexstr(stc->s_key_id, stc->s_key_id_len, tmp, ACVP_KDF135_IKEV1_SKEY_STR_MAX);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("hex conversion failure (s_key_id)");
@@ -50,7 +51,7 @@ static ACVP_RESULT acvp_kdf135_ikev1_output_tc (ACVP_CTX *ctx, ACVP_KDF135_IKEV1
     }
     json_object_set_string(tc_rsp, "sKeyId", (const char *)tmp);
     memset(tmp, 0x0, ACVP_KDF135_IKEV1_SKEY_STR_MAX);
-    
+
     rv = acvp_bin_to_hexstr(stc->s_key_id_d, stc->s_key_id_d_len, tmp, ACVP_KDF135_IKEV1_SKEY_STR_MAX);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("hex conversion failure (s_key_id_d)");
@@ -58,7 +59,7 @@ static ACVP_RESULT acvp_kdf135_ikev1_output_tc (ACVP_CTX *ctx, ACVP_KDF135_IKEV1
     }
     json_object_set_string(tc_rsp, "sKeyIdD", (const char *)tmp);
     memset(tmp, 0x0, ACVP_KDF135_IKEV1_SKEY_STR_MAX);
-    
+
     rv = acvp_bin_to_hexstr(stc->s_key_id_a, stc->s_key_id_a_len, tmp, ACVP_KDF135_IKEV1_SKEY_STR_MAX);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("hex conversion failure (s_key_id_a)");
@@ -66,7 +67,7 @@ static ACVP_RESULT acvp_kdf135_ikev1_output_tc (ACVP_CTX *ctx, ACVP_KDF135_IKEV1
     }
     json_object_set_string(tc_rsp, "sKeyIdA", (const char *)tmp);
     memset(tmp, 0x0, ACVP_KDF135_IKEV1_SKEY_STR_MAX);
-    
+
     rv = acvp_bin_to_hexstr(stc->s_key_id_e, stc->s_key_id_e_len, tmp, ACVP_KDF135_IKEV1_SKEY_STR_MAX);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("hex conversion failure (s_key_id_e)");
@@ -74,29 +75,29 @@ static ACVP_RESULT acvp_kdf135_ikev1_output_tc (ACVP_CTX *ctx, ACVP_KDF135_IKEV1
     }
     json_object_set_string(tc_rsp, "sKeyIdE", (const char *)tmp);
     memset(tmp, 0x0, ACVP_KDF135_IKEV1_SKEY_STR_MAX);
-    
+
 err:
     free(tmp);
     return rv;
-    
 }
 
-static ACVP_RESULT acvp_kdf135_ikev1_init_tc (ACVP_CTX *ctx,
-                                              ACVP_KDF135_IKEV1_TC *stc,
-                                              unsigned int tc_id,
-                                              ACVP_HASH_ALG hash_alg,
-                                              ACVP_KDF135_IKEV1_AUTH_METHOD auth_method,
-                                              int init_nonce_len,
-                                              int resp_nonce_len,
-                                              int dh_secret_len,
-                                              int psk_len,
-                                              char *init_nonce,
-                                              char *resp_nonce,
-                                              char *init_ckey,
-                                              char *resp_ckey,
-                                              char *gxy,
-                                              char *psk) {
+static ACVP_RESULT acvp_kdf135_ikev1_init_tc(ACVP_CTX *ctx,
+                                             ACVP_KDF135_IKEV1_TC *stc,
+                                             unsigned int tc_id,
+                                             ACVP_HASH_ALG hash_alg,
+                                             ACVP_KDF135_IKEV1_AUTH_METHOD auth_method,
+                                             int init_nonce_len,
+                                             int resp_nonce_len,
+                                             int dh_secret_len,
+                                             int psk_len,
+                                             char *init_nonce,
+                                             char *resp_nonce,
+                                             char *init_ckey,
+                                             char *resp_ckey,
+                                             char *gxy,
+                                             char *psk) {
     ACVP_RESULT rv = ACVP_SUCCESS;
+
     memset(stc, 0x0, sizeof(ACVP_KDF135_IKEV1_TC));
 
     stc->tc_id = tc_id;
@@ -165,7 +166,7 @@ static ACVP_RESULT acvp_kdf135_ikev1_init_tc (ACVP_CTX *ctx,
             return rv;
         }
     }
-    
+
     stc->s_key_id = calloc(ACVP_KDF135_IKEV1_SKEY_BYTE_MAX,
                            sizeof(unsigned char));
     if (!stc->s_key_id) { return ACVP_MALLOC_FAIL; }
@@ -182,7 +183,7 @@ static ACVP_RESULT acvp_kdf135_ikev1_init_tc (ACVP_CTX *ctx,
     return rv;
 }
 
-static ACVP_RESULT acvp_kdf135_ikev1_release_tc (ACVP_KDF135_IKEV1_TC *stc) {
+static ACVP_RESULT acvp_kdf135_ikev1_release_tc(ACVP_KDF135_IKEV1_TC *stc) {
     if (stc->init_nonce) { free(stc->init_nonce); }
     if (stc->resp_nonce) { free(stc->resp_nonce); }
     if (stc->init_ckey) { free(stc->init_ckey); }
@@ -196,8 +197,7 @@ static ACVP_RESULT acvp_kdf135_ikev1_release_tc (ACVP_KDF135_IKEV1_TC *stc) {
     return ACVP_SUCCESS;
 }
 
-
-ACVP_RESULT acvp_kdf135_ikev1_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
+ACVP_RESULT acvp_kdf135_ikev1_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     unsigned int tc_id;
     JSON_Value *groupval;
     JSON_Object *groupobj = NULL;
@@ -215,8 +215,8 @@ ACVP_RESULT acvp_kdf135_ikev1_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
 
     JSON_Value *r_vs_val = NULL;
     JSON_Object *r_vs = NULL;
-    JSON_Array *r_tarr = NULL; /* Response testarray */
-    JSON_Value *r_tval = NULL; /* Response testval */
+    JSON_Array *r_tarr = NULL;  /* Response testarray */
+    JSON_Value *r_tval = NULL;  /* Response testval */
     JSON_Object *r_tobj = NULL; /* Response testobj */
     ACVP_CAPS_LIST *cap;
     ACVP_KDF135_IKEV1_TC stc;
@@ -239,7 +239,7 @@ ACVP_RESULT acvp_kdf135_ikev1_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
 
     if (!alg_str) {
         ACVP_LOG_ERR("unable to parse 'algorithm' from JSON.");
-        return (ACVP_MALFORMED_JSON);
+        return ACVP_MALFORMED_JSON;
     }
 
     if (strncmp(alg_str, "kdf-components", strlen("kdf-components"))) {
@@ -257,7 +257,7 @@ ACVP_RESULT acvp_kdf135_ikev1_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     cap = acvp_locate_cap_entry(ctx, alg_id);
     if (!cap) {
         ACVP_LOG_ERR("ACVP server requesting unsupported capability %s : %d.", alg_str, alg_id);
-        return (ACVP_UNSUPPORTED_OP);
+        return ACVP_UNSUPPORTED_OP;
     }
 
     /*
@@ -266,7 +266,7 @@ ACVP_RESULT acvp_kdf135_ikev1_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Failed to create JSON response struct. ");
-        return (rv);
+        return rv;
     }
 
     /*
@@ -338,22 +338,22 @@ ACVP_RESULT acvp_kdf135_ikev1_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
         }
 
         init_nonce_len = json_object_get_number(groupobj, "nInitLength");
-        if (!(init_nonce_len >= ACVP_KDF135_IKEV1_INIT_NONCE_BIT_MIN
-              && init_nonce_len <= ACVP_KDF135_IKEV1_INIT_NONCE_BIT_MAX)) {
+        if (!(init_nonce_len >= ACVP_KDF135_IKEV1_INIT_NONCE_BIT_MIN &&
+              init_nonce_len <= ACVP_KDF135_IKEV1_INIT_NONCE_BIT_MAX)) {
             ACVP_LOG_ERR("nInitLength incorrect, %d", init_nonce_len);
             return ACVP_INVALID_ARG;
         }
 
         resp_nonce_len = json_object_get_number(groupobj, "nRespLength");
-        if (!(resp_nonce_len >= ACVP_KDF135_IKEV1_RESP_NONCE_BIT_MIN
-              && resp_nonce_len <= ACVP_KDF135_IKEV1_RESP_NONCE_BIT_MAX)) {
+        if (!(resp_nonce_len >= ACVP_KDF135_IKEV1_RESP_NONCE_BIT_MIN &&
+              resp_nonce_len <= ACVP_KDF135_IKEV1_RESP_NONCE_BIT_MAX)) {
             ACVP_LOG_ERR("nRespLength incorrect, %d", resp_nonce_len);
             return ACVP_INVALID_ARG;
         }
 
         dh_secret_len = json_object_get_number(groupobj, "dhLength");
-        if (!(dh_secret_len >= ACVP_KDF135_IKEV1_DH_SHARED_SECRET_BIT_MIN
-              && dh_secret_len <= ACVP_KDF135_IKEV1_DH_SHARED_SECRET_BIT_MAX)) {
+        if (!(dh_secret_len >= ACVP_KDF135_IKEV1_DH_SHARED_SECRET_BIT_MIN &&
+              dh_secret_len <= ACVP_KDF135_IKEV1_DH_SHARED_SECRET_BIT_MAX)) {
             ACVP_LOG_ERR("dhLength incorrect, %d", dh_secret_len);
             return ACVP_INVALID_ARG;
         }
@@ -361,8 +361,8 @@ ACVP_RESULT acvp_kdf135_ikev1_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
         if (auth_method == ACVP_KDF135_IKEV1_AMETH_PSK) {
             /* Only for PSK authentication method */
             psk_len = json_object_get_number(groupobj, "preSharedKeyLength");
-            if (!(psk_len >= ACVP_KDF135_IKEV1_PSK_BIT_MIN
-                  && psk_len <= ACVP_KDF135_IKEV1_PSK_BIT_MAX)) {
+            if (!(psk_len >= ACVP_KDF135_IKEV1_PSK_BIT_MIN &&
+                  psk_len <= ACVP_KDF135_IKEV1_PSK_BIT_MAX)) {
                 ACVP_LOG_ERR("preSharedKeyLength incorrect, %d", psk_len);
                 return ACVP_INVALID_ARG;
             }
@@ -384,7 +384,7 @@ ACVP_RESULT acvp_kdf135_ikev1_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
 
-            tc_id = (unsigned int) json_object_get_number(testobj, "tcId");
+            tc_id = (unsigned int)json_object_get_number(testobj, "tcId");
 
             init_nonce = (char *)json_object_get_string(testobj, "nInit");
             if (!init_nonce) {
@@ -394,9 +394,9 @@ ACVP_RESULT acvp_kdf135_ikev1_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
             if (strnlen((char *)init_nonce,
                         ACVP_KDF135_IKEV1_INIT_NONCE_STR_MAX + 1) != ((init_nonce_len + 7) / 8) * 2) {
                 ACVP_LOG_ERR("nInit length(%d) incorrect, expected(%d)",
-                              strnlen((char *)init_nonce,
-                                      ACVP_KDF135_IKEV1_INIT_NONCE_STR_MAX + 1),
-                              ((init_nonce_len + 7) / 8) * 2);
+                             strnlen((char *)init_nonce,
+                                     ACVP_KDF135_IKEV1_INIT_NONCE_STR_MAX + 1),
+                             ((init_nonce_len + 7) / 8) * 2);
                 return ACVP_INVALID_ARG;
             }
 
@@ -408,9 +408,9 @@ ACVP_RESULT acvp_kdf135_ikev1_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
             if (strnlen((char *)resp_nonce,
                         ACVP_KDF135_IKEV1_RESP_NONCE_STR_MAX + 1) != ((resp_nonce_len + 7) / 8) * 2) {
                 ACVP_LOG_ERR("nResp length(%d) incorrect, expected(%d)",
-                              strnlen((char *)resp_nonce,
-                                      ACVP_KDF135_IKEV1_RESP_NONCE_STR_MAX + 1),
-                              ((resp_nonce_len + 7) / 8) * 2);
+                             strnlen((char *)resp_nonce,
+                                     ACVP_KDF135_IKEV1_RESP_NONCE_STR_MAX + 1),
+                             ((resp_nonce_len + 7) / 8) * 2);
                 return ACVP_INVALID_ARG;
             }
 
@@ -499,7 +499,7 @@ ACVP_RESULT acvp_kdf135_ikev1_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
 
             /*
              * Output the test case results using JSON
-            */
+             */
             rv = acvp_kdf135_ikev1_output_tc(ctx, &stc, r_tobj);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("JSON output failure in hash module");
