@@ -37,9 +37,9 @@
  * file that will be uploaded to the server.  This routine handles
  * the JSON processing for a single test case.
  */
-static ACVP_RESULT acvp_kdf108_output_tc (ACVP_CTX *ctx,
-                                          ACVP_KDF108_TC *stc,
-                                          JSON_Object *tc_rsp) {
+static ACVP_RESULT acvp_kdf108_output_tc(ACVP_CTX *ctx,
+                                         ACVP_KDF108_TC *stc,
+                                         JSON_Object *tc_rsp) {
     ACVP_RESULT rv = ACVP_SUCCESS;
     char *tmp = NULL;
 
@@ -99,21 +99,21 @@ end:
     return rv;
 }
 
-static ACVP_RESULT acvp_kdf108_init_tc (ACVP_CTX *ctx,
-                                        ACVP_KDF108_TC *stc,
-                                        unsigned int tc_id,
-                                        ACVP_KDF108_MODE kdf_mode,
-                                        ACVP_KDF108_MAC_MODE_VAL mac_mode,
-                                        ACVP_KDF108_FIXED_DATA_ORDER_VAL counter_location,
-                                        const char *key_in,
-                                        const char *iv,
-                                        int key_in_len,
-                                        int key_out_len,
-                                        int iv_len,
-                                        int counter_len,
-                                        int deferred
-) {
+static ACVP_RESULT acvp_kdf108_init_tc(ACVP_CTX *ctx,
+                                       ACVP_KDF108_TC *stc,
+                                       unsigned int tc_id,
+                                       ACVP_KDF108_MODE kdf_mode,
+                                       ACVP_KDF108_MAC_MODE_VAL mac_mode,
+                                       ACVP_KDF108_FIXED_DATA_ORDER_VAL counter_location,
+                                       const char *key_in,
+                                       const char *iv,
+                                       int key_in_len,
+                                       int key_out_len,
+                                       int iv_len,
+                                       int counter_len,
+                                       int deferred) {
     ACVP_RESULT rv;
+
     memset(stc, 0x0, sizeof(ACVP_KDF108_TC));
 
     // Allocate space for the key_in (binary)
@@ -151,7 +151,7 @@ static ACVP_RESULT acvp_kdf108_init_tc (ACVP_CTX *ctx,
     stc->fixed_data = calloc(ACVP_KDF108_FIXED_DATA_BYTE_MAX,
                              sizeof(unsigned char));
     if (!stc->fixed_data) { return ACVP_MALLOC_FAIL; }
-    
+
     stc->tc_id = tc_id;
     stc->cipher = ACVP_KDF108;
     stc->mode = kdf_mode;
@@ -161,7 +161,7 @@ static ACVP_RESULT acvp_kdf108_init_tc (ACVP_CTX *ctx,
     stc->key_out_len = key_out_len;
     stc->counter_len = counter_len;
     stc->deferred = deferred;
-    
+
     return ACVP_SUCCESS;
 }
 
@@ -169,17 +169,17 @@ static ACVP_RESULT acvp_kdf108_init_tc (ACVP_CTX *ctx,
  * This function simply releases the data associated with
  * a test case.
  */
-static ACVP_RESULT acvp_kdf108_release_tc (ACVP_KDF108_TC *stc) {
+static ACVP_RESULT acvp_kdf108_release_tc(ACVP_KDF108_TC *stc) {
     if (stc->key_in) free(stc->key_in);
     if (stc->key_out) free(stc->key_out);
     if (stc->fixed_data) free(stc->fixed_data);
     if (stc->iv) free(stc->iv);
-    
+
     memset(stc, 0x0, sizeof(ACVP_KDF108_TC));
     return ACVP_SUCCESS;
 }
 
-ACVP_RESULT acvp_kdf108_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
+ACVP_RESULT acvp_kdf108_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     unsigned int tc_id;
     JSON_Value *groupval;
     JSON_Object *groupobj = NULL;
@@ -197,8 +197,8 @@ ACVP_RESULT acvp_kdf108_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
 
     JSON_Value *r_vs_val = NULL;
     JSON_Object *r_vs = NULL;
-    JSON_Array *r_tarr = NULL; /* Response testarray */
-    JSON_Value *r_tval = NULL; /* Response testval */
+    JSON_Array *r_tarr = NULL;  /* Response testarray */
+    JSON_Value *r_tval = NULL;  /* Response testval */
     JSON_Object *r_tobj = NULL; /* Response testobj */
 
     ACVP_CAPS_LIST *cap;
@@ -225,7 +225,7 @@ ACVP_RESULT acvp_kdf108_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     alg_str = json_object_get_string(obj, "algorithm");
     if (!alg_str) {
         ACVP_LOG_ERR("unable to parse 'algorithm' from JSON.");
-        return (ACVP_MALFORMED_JSON);
+        return ACVP_MALFORMED_JSON;
     }
     if (strncmp(alg_str, "KDF", strlen("KDF"))) {
         ACVP_LOG_ERR("Invalid algorithm %s", alg_str);
@@ -244,7 +244,7 @@ ACVP_RESULT acvp_kdf108_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     cap = acvp_locate_cap_entry(ctx, alg_id);
     if (!cap) {
         ACVP_LOG_ERR("ACVP server requesting unsupported capability");
-        return (ACVP_UNSUPPORTED_OP);
+        return ACVP_UNSUPPORTED_OP;
     }
 
     /*
@@ -253,7 +253,7 @@ ACVP_RESULT acvp_kdf108_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Failed to create JSON response struct. ");
-        return (rv);
+        return rv;
     }
 
     /*
@@ -298,7 +298,7 @@ ACVP_RESULT acvp_kdf108_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
             kdf_mode = ACVP_KDF108_MODE_DPI;
         } else {
             ACVP_LOG_ERR("Server JSON invalid kdfMode");
-            return (ACVP_INVALID_ARG);
+            return ACVP_INVALID_ARG;
         }
 
         mac_mode_str = json_object_get_string(groupobj, "macMode");
@@ -340,13 +340,13 @@ ACVP_RESULT acvp_kdf108_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
             mac_mode = ACVP_KDF108_MAC_MODE_CMAC_TDES;
         } else {
             ACVP_LOG_ERR("Server JSON invalid macMode");
-            return (ACVP_INVALID_ARG);
+            return ACVP_INVALID_ARG;
         }
 
         key_out_bit_len = json_object_get_number(groupobj, "keyOutLength");
         if (!key_out_bit_len || key_out_bit_len > ACVP_KDF108_KEYOUT_BIT_MAX) {
             ACVP_LOG_ERR("Server JSON invalid keyOutLength, (%d)", key_out_len);
-            return (ACVP_INVALID_ARG);
+            return ACVP_INVALID_ARG;
         }
         // Get the keyout byte length  (+1 for overflow bits)
         key_out_len = (key_out_bit_len + 7) / 8;
@@ -354,10 +354,10 @@ ACVP_RESULT acvp_kdf108_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
         ctr_len = json_object_get_number(groupobj, "counterLength");
         if (kdf_mode == ACVP_KDF108_MODE_COUNTER) {
             /* Only check during counter mode */
-            if (ctr_len != 8 && ctr_len != 16
-                && ctr_len != 24 && ctr_len != 32) {
-                    ACVP_LOG_ERR("Server JSON invalid counterLength, (%d)", ctr_len);
-                    return ACVP_INVALID_ARG;
+            if (ctr_len != 8 && ctr_len != 16 &&
+                ctr_len != 24 && ctr_len != 32) {
+                ACVP_LOG_ERR("Server JSON invalid counterLength, (%d)", ctr_len);
+                return ACVP_INVALID_ARG;
             }
         }
 
@@ -388,7 +388,7 @@ ACVP_RESULT acvp_kdf108_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
             ctr_loc = ACVP_KDF108_FIXED_DATA_ORDER_BEFORE_ITERATOR;
         } else {
             ACVP_LOG_ERR("Server JSON invalid counterLocation.");
-            return (ACVP_INVALID_ARG);
+            return ACVP_INVALID_ARG;
         }
 
         /*
@@ -408,7 +408,7 @@ ACVP_RESULT acvp_kdf108_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
 
-            tc_id = (unsigned int) json_object_get_number(testobj, "tcId");
+            tc_id = (unsigned int)json_object_get_number(testobj, "tcId");
 
             key_in_str = json_object_get_string(testobj, "keyIn");
             if (!key_in_str) {
@@ -484,7 +484,7 @@ ACVP_RESULT acvp_kdf108_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
 
             /*
              * Output the test case results using JSON
-            */
+             */
             rv = acvp_kdf108_output_tc(ctx, &stc, r_tobj);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("JSON output failure in kdf135 tpm module");

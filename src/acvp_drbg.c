@@ -1,29 +1,29 @@
 /** @file */
 /*****************************************************************************
- * Copyright (c) 2017, Cisco Systems, Inc.
- * All rights reserved.
+* Copyright (c) 2017, Cisco Systems, Inc.
+* All rights reserved.
 
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted provided that the following conditions are met:
- *
- * 1. Redistributions of source code must retain the above copyright notice,
- *    this list of conditions and the following disclaimer.
- *
- * 2. Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
- * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *****************************************************************************/
+* Redistribution and use in source and binary forms, with or without modification,
+* are permitted provided that the following conditions are met:
+*
+* 1. Redistributions of source code must retain the above copyright notice,
+*    this list of conditions and the following disclaimer.
+*
+* 2. Redistributions in binary form must reproduce the above copyright notice,
+*    this list of conditions and the following disclaimer in the documentation
+*    and/or other materials provided with the distribution.
+*
+* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+* AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+* IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+* DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+* FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+* DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+* SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+* CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+* OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+* USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*****************************************************************************/
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -35,31 +35,31 @@
 /*
  * Forward prototypes for local functions
  */
-static ACVP_RESULT acvp_drbg_output_tc (ACVP_CTX *ctx, ACVP_DRBG_TC *stc, JSON_Object *tc_rsp);
+static ACVP_RESULT acvp_drbg_output_tc(ACVP_CTX *ctx, ACVP_DRBG_TC *stc, JSON_Object *tc_rsp);
 
-static ACVP_RESULT acvp_drbg_init_tc (ACVP_CTX *ctx,
-                                      ACVP_DRBG_TC *stc,
-                                      unsigned int tc_id,
-                                      const char *additional_input,
-                                      const char *entropy_input_pr,
-                                      const char *additional_input_1,
-                                      const char *entropy_input_pr_1,
-                                      const char *perso_string,
-                                      const char *entropy,
-                                      const char *nonce,
-                                      int der_func_enabled,
-                                      int pred_resist_enabled,
-                                      unsigned int additional_input_len,
-                                      unsigned int perso_string_len,
-                                      unsigned int entropy_len,
-                                      unsigned int nonce_len,
-                                      unsigned int drb_len,
-                                      ACVP_DRBG_MODE mode_id,
-                                      ACVP_CIPHER alg_id);
+static ACVP_RESULT acvp_drbg_init_tc(ACVP_CTX *ctx,
+                                     ACVP_DRBG_TC *stc,
+                                     unsigned int tc_id,
+                                     const char *additional_input,
+                                     const char *entropy_input_pr,
+                                     const char *additional_input_1,
+                                     const char *entropy_input_pr_1,
+                                     const char *perso_string,
+                                     const char *entropy,
+                                     const char *nonce,
+                                     int der_func_enabled,
+                                     int pred_resist_enabled,
+                                     unsigned int additional_input_len,
+                                     unsigned int perso_string_len,
+                                     unsigned int entropy_len,
+                                     unsigned int nonce_len,
+                                     unsigned int drb_len,
+                                     ACVP_DRBG_MODE mode_id,
+                                     ACVP_CIPHER alg_id);
 
-static ACVP_RESULT acvp_drbg_release_tc (ACVP_DRBG_TC *stc);
+static ACVP_RESULT acvp_drbg_release_tc(ACVP_DRBG_TC *stc);
 
-ACVP_RESULT acvp_drbg_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
+ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     char *json_result = NULL;
 
     JSON_Value *reg_arry_val = NULL;
@@ -77,8 +77,8 @@ ACVP_RESULT acvp_drbg_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     int j, t_cnt;
     JSON_Value *r_vs_val = NULL;
     JSON_Object *r_vs = NULL;
-    JSON_Array *r_tarr = NULL; /* Response testarray */
-    JSON_Value *r_tval = NULL; /* Response testval */
+    JSON_Array *r_tarr = NULL;  /* Response testarray */
+    JSON_Value *r_tval = NULL;  /* Response testval */
     JSON_Object *r_tobj = NULL; /* Response testobj */
     ACVP_CAPS_LIST *cap;
     ACVP_DRBG_TC stc;
@@ -96,7 +96,7 @@ ACVP_RESULT acvp_drbg_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     alg_str = json_object_get_string(obj, "algorithm");
     if (!alg_str) {
         ACVP_LOG_ERR("unable to parse 'algorithm' from JSON");
-        return (ACVP_MALFORMED_JSON);
+        return ACVP_MALFORMED_JSON;
     }
 
     ACVP_LOG_INFO("    DRBG alg: %s", alg_str);
@@ -112,22 +112,22 @@ ACVP_RESULT acvp_drbg_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     alg_id = acvp_lookup_cipher_index(alg_str);
     if ((alg_id < ACVP_HASHDRBG) || (alg_id > ACVP_CTRDRBG)) {
         ACVP_LOG_ERR("unsupported algorithm (%s)", alg_str);
-        return (ACVP_UNSUPPORTED_OP);
+        return ACVP_UNSUPPORTED_OP;
     }
-    
+
     cap = acvp_locate_cap_entry(ctx, alg_id);
     if (!cap) {
         ACVP_LOG_ERR("ACVP server requesting unsupported capability");
-        return (ACVP_UNSUPPORTED_OP);
+        return ACVP_UNSUPPORTED_OP;
     }
-    
+
     /*
      * Create ACVP array for response
      */
     rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Failed to create JSON response struct. ");
-        return (rv);
+        return rv;
     }
 
     /*
@@ -162,19 +162,19 @@ ACVP_RESULT acvp_drbg_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
         json_result = json_serialize_to_string_pretty(groupval);
         ACVP_LOG_INFO("json groupval count: %d\n %s\n", i, json_result);
         json_free_serialized_string(json_result);
-    
+
         /*
          * Get DRBG Mode index
          */
         mode_str = json_object_get_string(groupobj, "mode");
         if (!mode_str) {
             ACVP_LOG_ERR("Server JSON missing 'mode'");
-            return (ACVP_MALFORMED_JSON);
+            return ACVP_MALFORMED_JSON;
         }
         mode_id = acvp_lookup_drbg_mode_index(mode_str);
         if (mode_id == ACVP_DRBG_MODE_END) {
             ACVP_LOG_ERR("unsupported DRBG mode (%s)", mode_str);
-            return (ACVP_UNSUPPORTED_OP);
+            return ACVP_UNSUPPORTED_OP;
         }
 
         /*
@@ -193,8 +193,8 @@ ACVP_RESULT acvp_drbg_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
                 return ACVP_MISSING_ARG;
             }
         }
-        
-        entropy_len = (unsigned int) json_object_get_number(groupobj, "entropyInputLen");
+
+        entropy_len = (unsigned int)json_object_get_number(groupobj, "entropyInputLen");
         if (entropy_len < ACVP_DRBG_ENTPY_IN_BIT_MIN ||
             entropy_len > ACVP_DRBG_ENTPY_IN_BIT_MAX) {
             ACVP_LOG_ERR("Server JSON invalid 'entropyInputLen'(%u)",
@@ -202,7 +202,7 @@ ACVP_RESULT acvp_drbg_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
             return ACVP_INVALID_ARG;
         }
 
-        nonce_len = (unsigned int) json_object_get_number(groupobj, "nonceLen");
+        nonce_len = (unsigned int)json_object_get_number(groupobj, "nonceLen");
         if (!(alg_id == ACVP_CTRDRBG && !der_func_enabled)) {
             /* Allowed to be 0 when counter mode and not using derivation func */
             if (nonce_len < ACVP_DRBG_NONCE_BIT_MIN ||
@@ -213,14 +213,14 @@ ACVP_RESULT acvp_drbg_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
             }
         }
 
-        perso_string_len = (unsigned int) json_object_get_number(groupobj, "persoStringLen");
+        perso_string_len = (unsigned int)json_object_get_number(groupobj, "persoStringLen");
         if (perso_string_len > ACVP_DRBG_PER_SO_BIT_MAX) {
             ACVP_LOG_ERR("Server JSON invalid 'persoStringLen'(%u)",
                          nonce_len);
             return ACVP_INVALID_ARG;
         }
 
-        drb_len = (unsigned int) json_object_get_number(groupobj, "returnedBitsLen");
+        drb_len = (unsigned int)json_object_get_number(groupobj, "returnedBitsLen");
         if (!drb_len || drb_len > ACVP_DRB_BIT_MAX) {
             ACVP_LOG_ERR("Server JSON invalid 'returnedBitsLen'(%u)",
                          drb_len);
@@ -270,7 +270,7 @@ ACVP_RESULT acvp_drbg_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
             ACVP_LOG_INFO("json testval count: %d\n %s\n", i, json_result);
             json_free_serialized_string(json_result);
 
-            tc_id = (unsigned int) json_object_get_number(testobj, "tcId");
+            tc_id = (unsigned int)json_object_get_number(testobj, "tcId");
 
             perso_string = json_object_get_string(testobj, "persoString");
             if (!perso_string) {
@@ -444,7 +444,6 @@ ACVP_RESULT acvp_drbg_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
 
             /* Append the test response value to array */
             json_array_append_value(r_tarr, r_tval);
-
         }
     }
     json_array_append_value(reg_arry, r_vs_val);
@@ -466,7 +465,7 @@ ACVP_RESULT acvp_drbg_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
  * file that will be uploaded to the server.  This routine handles
  * the JSON processing for a single test case.
  */
-static ACVP_RESULT acvp_drbg_output_tc (ACVP_CTX *ctx, ACVP_DRBG_TC *stc, JSON_Object *tc_rsp) {
+static ACVP_RESULT acvp_drbg_output_tc(ACVP_CTX *ctx, ACVP_DRBG_TC *stc, JSON_Object *tc_rsp) {
     ACVP_RESULT rv = ACVP_SUCCESS;
     char *tmp = NULL;
 
@@ -489,26 +488,27 @@ end:
     return rv;
 }
 
-static ACVP_RESULT acvp_drbg_init_tc (ACVP_CTX *ctx,
-                                      ACVP_DRBG_TC *stc,
-                                      unsigned int tc_id,
-                                      const char *additional_input,
-                                      const char *entropy_input_pr,
-                                      const char *additional_input_1,
-                                      const char *entropy_input_pr_1,
-                                      const char *perso_string,
-                                      const char *entropy,
-                                      const char *nonce,
-                                      int der_func_enabled,
-                                      int pred_resist_enabled,
-                                      unsigned int additional_input_len,
-                                      unsigned int perso_string_len,
-                                      unsigned int entropy_len,
-                                      unsigned int nonce_len,
-                                      unsigned int drb_len,
-                                      ACVP_DRBG_MODE mode_id,
-                                      ACVP_CIPHER alg_id) {
+static ACVP_RESULT acvp_drbg_init_tc(ACVP_CTX *ctx,
+                                     ACVP_DRBG_TC *stc,
+                                     unsigned int tc_id,
+                                     const char *additional_input,
+                                     const char *entropy_input_pr,
+                                     const char *additional_input_1,
+                                     const char *entropy_input_pr_1,
+                                     const char *perso_string,
+                                     const char *entropy,
+                                     const char *nonce,
+                                     int der_func_enabled,
+                                     int pred_resist_enabled,
+                                     unsigned int additional_input_len,
+                                     unsigned int perso_string_len,
+                                     unsigned int entropy_len,
+                                     unsigned int nonce_len,
+                                     unsigned int drb_len,
+                                     ACVP_DRBG_MODE mode_id,
+                                     ACVP_CIPHER alg_id) {
     ACVP_RESULT rv;
+
     memset(stc, 0x0, sizeof(ACVP_DRBG_TC));
 
     //TODO Verify that these MAX values are correct.
@@ -611,7 +611,7 @@ static ACVP_RESULT acvp_drbg_init_tc (ACVP_CTX *ctx,
  * This function simply releases the data associated with
  * a test case.
  */
-static ACVP_RESULT acvp_drbg_release_tc (ACVP_DRBG_TC *stc) {
+static ACVP_RESULT acvp_drbg_release_tc(ACVP_DRBG_TC *stc) {
     if (stc->drb) free(stc->drb);
     if (stc->additional_input) free(stc->additional_input);
     if (stc->additional_input_1) free(stc->additional_input_1);

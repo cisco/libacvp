@@ -37,11 +37,12 @@
  * file that will be uploaded to the server.  This routine handles
  * the JSON processing for a single test case.
  */
-static ACVP_RESULT acvp_kdf135_x963_output_tc (ACVP_CTX *ctx, ACVP_KDF135_X963_TC *stc, JSON_Object *tc_rsp) {
+static ACVP_RESULT acvp_kdf135_x963_output_tc(ACVP_CTX *ctx, ACVP_KDF135_X963_TC *stc, JSON_Object *tc_rsp) {
     ACVP_RESULT rv;
     char *tmp = NULL;
-    tmp = calloc(ACVP_KDF135_X963_KEYDATA_MAX_BYTES+1, sizeof(char));
-    
+
+    tmp = calloc(ACVP_KDF135_X963_KEYDATA_MAX_BYTES + 1, sizeof(char));
+
     rv = acvp_bin_to_hexstr(stc->key_data, stc->key_data_len, tmp, ACVP_KDF135_X963_KEYDATA_MAX_BYTES);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("hex conversion failure (key_data)");
@@ -53,27 +54,29 @@ err:
     free(tmp);
     return ACVP_SUCCESS;
 }
+
 /*
  * This function simply releases the data associated with
  * a test case.
  */
-static ACVP_RESULT acvp_kdf135_x963_release_tc (ACVP_KDF135_X963_TC *stc) {
+static ACVP_RESULT acvp_kdf135_x963_release_tc(ACVP_KDF135_X963_TC *stc) {
     if (stc->z) free(stc->z);
     if (stc->shared_info) free(stc->shared_info);
     if (stc->key_data) free(stc->key_data);
     return ACVP_SUCCESS;
 }
 
-static ACVP_RESULT acvp_kdf135_x963_init_tc (ACVP_CTX *ctx,
-                                             ACVP_KDF135_X963_TC *stc,
-                                             unsigned int tc_id,
-                                             ACVP_HASH_ALG hash_alg,
-                                             int field_size,
-                                             int key_data_length,
-                                             int shared_info_length,
-                                             char *z,
-                                             char *shared_info) {
+static ACVP_RESULT acvp_kdf135_x963_init_tc(ACVP_CTX *ctx,
+                                            ACVP_KDF135_X963_TC *stc,
+                                            unsigned int tc_id,
+                                            ACVP_HASH_ALG hash_alg,
+                                            int field_size,
+                                            int key_data_length,
+                                            int shared_info_length,
+                                            char *z,
+                                            char *shared_info) {
     ACVP_RESULT rv = ACVP_SUCCESS;
+
     memset(stc, 0x0, sizeof(ACVP_KDF135_X963_TC));
 
     if (!hash_alg || !z || !shared_info) {
@@ -94,7 +97,7 @@ static ACVP_RESULT acvp_kdf135_x963_init_tc (ACVP_CTX *ctx,
         ACVP_LOG_ERR("Hex conversion failure (z)");
         return rv;
     }
-    
+
     stc->shared_info = calloc(ACVP_KDF135_X963_INPUT_MAX, sizeof(char));
     if (!stc->shared_info) { return ACVP_MALLOC_FAIL; }
     rv = acvp_hexstr_to_bin(shared_info, stc->shared_info, ACVP_KDF135_X963_INPUT_MAX, NULL);
@@ -102,14 +105,14 @@ static ACVP_RESULT acvp_kdf135_x963_init_tc (ACVP_CTX *ctx,
         ACVP_LOG_ERR("Hex conversion failure (shared_info)");
         return rv;
     }
-    
+
     stc->key_data = calloc(ACVP_KDF135_X963_KEYDATA_MAX_BYTES, sizeof(char));
     if (!stc->key_data) { return ACVP_MALLOC_FAIL; }
 
     return ACVP_SUCCESS;
 }
 
-ACVP_RESULT acvp_kdf135_x963_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
+ACVP_RESULT acvp_kdf135_x963_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     unsigned int tc_id;
     JSON_Value *groupval;
     JSON_Object *groupobj = NULL;
@@ -117,18 +120,18 @@ ACVP_RESULT acvp_kdf135_x963_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     JSON_Object *testobj = NULL;
     JSON_Array *groups;
     JSON_Array *tests;
-    
+
     JSON_Value *reg_arry_val = NULL;
     JSON_Object *reg_obj = NULL;
     JSON_Array *reg_arry = NULL;
-    
+
     int i, g_cnt;
     int j, t_cnt;
-    
+
     JSON_Value *r_vs_val = NULL;
     JSON_Object *r_vs = NULL;
-    JSON_Array *r_tarr = NULL; /* Response testarray */
-    JSON_Value *r_tval = NULL; /* Response testval */
+    JSON_Array *r_tarr = NULL;  /* Response testarray */
+    JSON_Value *r_tval = NULL;  /* Response testval */
     JSON_Object *r_tobj = NULL; /* Response testobj */
     ACVP_CAPS_LIST *cap;
     ACVP_KDF135_X963_TC stc;
@@ -138,28 +141,28 @@ ACVP_RESULT acvp_kdf135_x963_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     const char *alg_str_test = NULL;
     ACVP_CIPHER alg_id;
     char *json_result;
-    
+
     int field_size, key_data_length, shared_info_len;
     char *z = NULL, *shared_info = NULL;
-    
+
     /*
      * Get a reference to the abstracted test case
      */
     tc.tc.kdf135_x963 = &stc;
     alg_id = ACVP_KDF135_X963;
     stc.cipher = alg_id;
-    
+
     if (!ctx) {
         ACVP_LOG_ERR("No ctx for handler operation");
-        return (ACVP_NO_CTX);
+        return ACVP_NO_CTX;
     }
 
     if (!obj) {
         ACVP_LOG_ERR("No obj for handler operation");
-        return (ACVP_MALFORMED_JSON);
+        return ACVP_MALFORMED_JSON;
     }
-    
-    alg_str_test = json_object_get_string(obj, "algorithm");  
+
+    alg_str_test = json_object_get_string(obj, "algorithm");
     if (!alg_str_test) {
         ACVP_LOG_ERR("Server JSON missing 'algorithm'");
         return ACVP_MISSING_ARG;
@@ -168,22 +171,22 @@ ACVP_RESULT acvp_kdf135_x963_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
         ACVP_LOG_ERR("Invalid algorithm for this function %s", alg_str_test);
         return ACVP_INVALID_ARG;
     }
-    
+
     cap = acvp_locate_cap_entry(ctx, alg_id);
     if (!cap) {
         ACVP_LOG_ERR("ACVP server requesting unsupported capability %s : %d.", alg_str, alg_id);
-        return (ACVP_UNSUPPORTED_OP);
+        return ACVP_UNSUPPORTED_OP;
     }
-    
+
     /*
      * Create ACVP array for response
      */
     rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Failed to create JSON response struct. ");
-        return (rv);
+        return rv;
     }
-    
+
     /*
      * Start to build the JSON response
      */
@@ -193,19 +196,19 @@ ACVP_RESULT acvp_kdf135_x963_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     ctx->kat_resp = reg_arry_val;
     r_vs_val = json_value_init_object();
     r_vs = json_value_get_object(r_vs_val);
-    
+
     json_object_set_number(r_vs, "vsId", ctx->vs_id);
     json_object_set_string(r_vs, "algorithm", alg_str);
     json_object_set_string(r_vs, "mode", "ansix9.63");
     json_object_set_value(r_vs, "testResults", json_value_init_array());
     r_tarr = json_object_get_array(r_vs, "testResults");
-    
+
     groups = json_object_get_array(obj, "testGroups");
-    if(!groups) {
+    if (!groups) {
         ACVP_LOG_ERR("Failed to include testGroups. ");
         return ACVP_MISSING_ARG;
     }
-    
+
     g_cnt = json_array_get_count(groups);
     for (i = 0; i < g_cnt; i++) {
         ACVP_HASH_ALG hash_alg = 0;
@@ -213,19 +216,19 @@ ACVP_RESULT acvp_kdf135_x963_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
 
         groupval = json_array_get_value(groups, i);
         groupobj = json_value_get_object(groupval);
-        
+
         field_size = json_object_get_number(groupobj, "fieldSize");
         if (!field_size) {
             ACVP_LOG_ERR("Failed to include field size. ");
             return ACVP_MISSING_ARG;
         }
-        
+
         key_data_length = json_object_get_number(groupobj, "keyDataLength");
         if (!key_data_length) {
             ACVP_LOG_ERR("Failed to include key data length. ");
             return ACVP_MISSING_ARG;
         }
-        
+
         shared_info_len = json_object_get_number(groupobj, "sharedInfoLength");
 
         hash_alg_str = json_object_get_string(groupobj, "hashAlg");
@@ -249,50 +252,50 @@ ACVP_RESULT acvp_kdf135_x963_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
             ACVP_LOG_ERR("Server JSON invalid 'hashAlg'");
             return ACVP_INVALID_ARG;
         }
-        
+
         ACVP_LOG_INFO("\n    Test group: %d", i);
         ACVP_LOG_INFO("         hashAlg: %s", hash_alg_str);
         ACVP_LOG_INFO("       fieldSize: %d", field_size);
         ACVP_LOG_INFO("   sharedInfoLen: %d", shared_info_len);
         ACVP_LOG_INFO("   keyDataLength: %d", key_data_length);
-        
+
         tests = json_object_get_array(groupobj, "tests");
-        if(!tests) {
+        if (!tests) {
             ACVP_LOG_ERR("Failed to include tests. ");
             return ACVP_MISSING_ARG;
         }
-        
+
         t_cnt = json_array_get_count(tests);
         if (!t_cnt) {
             ACVP_LOG_ERR("Failed to include tests in array. ");
             return ACVP_MISSING_ARG;
         }
-        
+
         for (j = 0; j < t_cnt; j++) {
             ACVP_LOG_INFO("Found new KDF135 X963 test vector...");
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
-            
-            tc_id = (unsigned int) json_object_get_number(testobj, "tcId");
+
+            tc_id = (unsigned int)json_object_get_number(testobj, "tcId");
             if (!tc_id) {
                 ACVP_LOG_ERR("Failed to include tc_id. ");
                 return ACVP_MISSING_ARG;
             }
-            
+
             z = (char *)json_object_get_string(testobj, "z");
             shared_info = (char *)json_object_get_string(testobj, "sharedInfo");
-            
+
             ACVP_LOG_INFO("        Test case: %d", j);
             ACVP_LOG_INFO("             tcId: %d", tc_id);
-            
+
             /*
              * Create a new test case in the response
              */
             r_tval = json_value_init_object();
             r_tobj = json_value_get_object(r_tval);
-            
+
             json_object_set_number(r_tobj, "tcId", tc_id);
-            
+
             /*
              * Setup the test case data that will be passed down to
              * the crypto module.
@@ -302,17 +305,17 @@ ACVP_RESULT acvp_kdf135_x963_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
             acvp_kdf135_x963_init_tc(ctx, &stc, tc_id, hash_alg,
                                      field_size, key_data_length,
                                      shared_info_len, z, shared_info);
-            
+
             /* Process the current test vector... */
             rv = (cap->crypto_handler)(&tc);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("crypto module failed the KDF SSH operation");
                 return ACVP_CRYPTO_MODULE_FAIL;
             }
-            
+
             /*
              * Output the test case results using JSON
-            */
+             */
             rv = acvp_kdf135_x963_output_tc(ctx, &stc, r_tobj);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("JSON output failure in hash module");
@@ -322,14 +325,14 @@ ACVP_RESULT acvp_kdf135_x963_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
              * Release all the memory associated with the test case
              */
             acvp_kdf135_x963_release_tc(&stc);
-            
+
             /* Append the test response value to array */
             json_array_append_value(r_tarr, r_tval);
         }
     }
-    
+
     json_array_append_value(reg_arry, r_vs_val);
-    
+
     json_result = json_serialize_to_string_pretty(ctx->kat_resp);
     if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
         printf("\n\n%s\n\n", json_result);
@@ -337,6 +340,6 @@ ACVP_RESULT acvp_kdf135_x963_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
         ACVP_LOG_INFO("\n\n%s\n\n", json_result);
     }
     json_free_serialized_string(json_result);
-    
+
     return ACVP_SUCCESS;
 }

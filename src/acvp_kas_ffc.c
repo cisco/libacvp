@@ -38,7 +38,8 @@
  * file that will be uploaded to the server.  This routine handles
  * the JSON processing for a single test case.
  */
-static ACVP_RESULT acvp_kas_ffc_output_comp_tc (ACVP_CTX *ctx, ACVP_KAS_FFC_TC *stc,
+static ACVP_RESULT acvp_kas_ffc_output_comp_tc(ACVP_CTX *ctx,
+                                               ACVP_KAS_FFC_TC *stc,
                                                JSON_Object *tc_rsp) {
     ACVP_RESULT rv = ACVP_SUCCESS;
     char *tmp = NULL;
@@ -57,7 +58,7 @@ static ACVP_RESULT acvp_kas_ffc_output_comp_tc (ACVP_CTX *ctx, ACVP_KAS_FFC_TC *
         }
         goto end;
     }
-    
+
     memset(tmp, 0x0, ACVP_KAS_FFC_STR_MAX);
     rv = acvp_bin_to_hexstr(stc->piut, stc->piutlen, tmp, ACVP_KAS_FFC_STR_MAX);
     if (rv != ACVP_SUCCESS) {
@@ -80,21 +81,20 @@ end:
     return rv;
 }
 
-
-static ACVP_RESULT acvp_kas_ffc_init_comp_tc (ACVP_CTX *ctx,
-                                              ACVP_KAS_FFC_TC *stc,
-                                              unsigned int tc_id,
-                                              ACVP_HASH_ALG hash_alg,
-                                              const char *p,
-                                              const char *q,
-                                              const char *g,
-                                              const char *eps,
-                                              const char *epri,
-                                              const char *epui,
-                                              const char *z,
-                                              unsigned int mode
-) {
+static ACVP_RESULT acvp_kas_ffc_init_comp_tc(ACVP_CTX *ctx,
+                                             ACVP_KAS_FFC_TC *stc,
+                                             unsigned int tc_id,
+                                             ACVP_HASH_ALG hash_alg,
+                                             const char *p,
+                                             const char *q,
+                                             const char *g,
+                                             const char *eps,
+                                             const char *epri,
+                                             const char *epui,
+                                             const char *z,
+                                             unsigned int mode) {
     ACVP_RESULT rv;
+
     stc->mode = mode;
     stc->md = hash_alg;
 
@@ -105,7 +105,7 @@ static ACVP_RESULT acvp_kas_ffc_init_comp_tc (ACVP_CTX *ctx,
         ACVP_LOG_ERR("Hex conversion failure (p)");
         return rv;
     }
-    
+
     stc->q = calloc(1, ACVP_KAS_FFC_BYTE_MAX);
     if (!stc->q) { return ACVP_MALLOC_FAIL; }
     rv = acvp_hexstr_to_bin(q, stc->q, ACVP_KAS_FFC_BYTE_MAX, &(stc->qlen));
@@ -113,7 +113,7 @@ static ACVP_RESULT acvp_kas_ffc_init_comp_tc (ACVP_CTX *ctx,
         ACVP_LOG_ERR("Hex conversion failure (q)");
         return rv;
     }
-    
+
     stc->g = calloc(1, ACVP_KAS_FFC_BYTE_MAX);
     if (!stc->g) { return ACVP_MALLOC_FAIL; }
     rv = acvp_hexstr_to_bin(g, stc->g, ACVP_KAS_FFC_BYTE_MAX, &(stc->glen));
@@ -121,7 +121,7 @@ static ACVP_RESULT acvp_kas_ffc_init_comp_tc (ACVP_CTX *ctx,
         ACVP_LOG_ERR("Hex conversion failure (g)");
         return rv;
     }
-    
+
     stc->eps = calloc(1, ACVP_KAS_FFC_BYTE_MAX);
     if (!stc->eps) { return ACVP_MALLOC_FAIL; }
     rv = acvp_hexstr_to_bin(eps, stc->eps, ACVP_KAS_FFC_BYTE_MAX, &(stc->epslen));
@@ -129,7 +129,7 @@ static ACVP_RESULT acvp_kas_ffc_init_comp_tc (ACVP_CTX *ctx,
         ACVP_LOG_ERR("Hex conversion failure (eps)");
         return rv;
     }
-    
+
     stc->epri = calloc(1, ACVP_KAS_FFC_BYTE_MAX);
     if (!stc->epri) { return ACVP_MALLOC_FAIL; }
     stc->epui = calloc(1, ACVP_KAS_FFC_BYTE_MAX);
@@ -138,10 +138,10 @@ static ACVP_RESULT acvp_kas_ffc_init_comp_tc (ACVP_CTX *ctx,
     if (!stc->chash) { return ACVP_MALLOC_FAIL; }
     stc->piut = calloc(1, ACVP_KAS_FFC_BYTE_MAX);
     if (!stc->piut) { return ACVP_MALLOC_FAIL; }
-    
+
     stc->z = calloc(1, ACVP_KAS_FFC_BYTE_MAX);
     if (!stc->z) { return ACVP_MALLOC_FAIL; }
- 
+
     if (stc->test_type == ACVP_KAS_FFC_TT_VAL) {
         rv = acvp_hexstr_to_bin(z, stc->z, ACVP_KAS_FFC_BYTE_MAX, &(stc->zlen));
         if (rv != ACVP_SUCCESS) {
@@ -166,12 +166,11 @@ static ACVP_RESULT acvp_kas_ffc_init_comp_tc (ACVP_CTX *ctx,
  * This function simply releases the data associated with
  * a test case.
  */
-static ACVP_RESULT acvp_kas_ffc_release_tc (ACVP_KAS_FFC_TC *stc) {
-
+static ACVP_RESULT acvp_kas_ffc_release_tc(ACVP_KAS_FFC_TC *stc) {
     if (stc->piut) free(stc->piut);
     if (stc->epri) free(stc->epri);
     if (stc->epui) free(stc->epui);
-    if (stc->eps)free(stc->eps);
+    if (stc->eps) free(stc->eps);
     if (stc->z) free(stc->z);
     if (stc->chash) free(stc->chash);
     if (stc->p) free(stc->p);
@@ -180,18 +179,20 @@ static ACVP_RESULT acvp_kas_ffc_release_tc (ACVP_KAS_FFC_TC *stc) {
     return ACVP_SUCCESS;
 }
 
-
-static ACVP_RESULT acvp_kas_ffc_comp(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap, ACVP_TEST_CASE *tc,
-                                     ACVP_KAS_FFC_TC *stc, JSON_Object *obj, int mode, 
-                                     JSON_Array *r_tarr)
-{
+static ACVP_RESULT acvp_kas_ffc_comp(ACVP_CTX *ctx,
+                                     ACVP_CAPS_LIST *cap,
+                                     ACVP_TEST_CASE *tc,
+                                     ACVP_KAS_FFC_TC *stc,
+                                     JSON_Object *obj,
+                                     int mode,
+                                     JSON_Array *r_tarr) {
     JSON_Value *groupval;
     JSON_Object *groupobj = NULL;
     JSON_Array *groups;
     JSON_Value *testval;
     JSON_Object *testobj = NULL;
     JSON_Array *tests;
-    JSON_Value *r_tval = NULL; /* Response testval */
+    JSON_Value *r_tval = NULL;  /* Response testval */
     JSON_Object *r_tobj = NULL; /* Response testobj */
     const char *hash_str = NULL;
     ACVP_HASH_ALG hash_alg = 0;
@@ -239,7 +240,7 @@ static ACVP_RESULT acvp_kas_ffc_comp(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap, ACVP_TE
             ACVP_LOG_ERR("Server JSON invalid 'testType'");
             return ACVP_INVALID_ARG;
         }
-    
+
         p = json_object_get_string(groupobj, "p");
         if (!p) {
             ACVP_LOG_ERR("Server JSON missing 'p'");
@@ -289,7 +290,7 @@ static ACVP_RESULT acvp_kas_ffc_comp(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap, ACVP_TE
             ACVP_LOG_INFO("Found new KAS-FFC Component test vector...");
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
-            tc_id = (unsigned int) json_object_get_number(testobj, "tcId");
+            tc_id = (unsigned int)json_object_get_number(testobj, "tcId");
 
             eps = json_object_get_string(testobj, "ephemeralPublicServer");
             if (!eps) {
@@ -400,7 +401,7 @@ static ACVP_RESULT acvp_kas_ffc_comp(ACVP_CTX *ctx, ACVP_CAPS_LIST *cap, ACVP_TE
     return ACVP_SUCCESS;
 }
 
-ACVP_RESULT acvp_kas_ffc_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
+ACVP_RESULT acvp_kas_ffc_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     JSON_Value *r_vs_val = NULL;
     JSON_Object *r_vs = NULL;
     JSON_Array *r_tarr = NULL; /* Response testarray */
@@ -424,7 +425,7 @@ ACVP_RESULT acvp_kas_ffc_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     alg_str = json_object_get_string(obj, "algorithm");
     if (!alg_str) {
         ACVP_LOG_ERR("unable to parse 'algorithm' from JSON");
-        return (ACVP_MALFORMED_JSON);
+        return ACVP_MALFORMED_JSON;
     }
 
     /*
@@ -439,7 +440,7 @@ ACVP_RESULT acvp_kas_ffc_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Failed to create JSON response struct. ");
-        return (rv);
+        return rv;
     }
 
     /*
@@ -475,8 +476,7 @@ ACVP_RESULT acvp_kas_ffc_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
         stc.cipher = ACVP_KAS_FFC_NOCOMP;
     }
 
-    switch (mode)
-    {
+    switch (mode) {
     case ACVP_KAS_FFC_MODE_COMPONENT:
         cap = acvp_locate_cap_entry(ctx, ACVP_KAS_FFC_COMP);
         if (!cap) {
@@ -485,6 +485,7 @@ ACVP_RESULT acvp_kas_ffc_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
         }
         rv = acvp_kas_ffc_comp(ctx, cap, &tc, &stc, obj, mode, r_tarr);
         if (rv != ACVP_SUCCESS) return rv;
+
         break;
 
     case ACVP_KAS_FFC_MODE_NOCOMP:
@@ -504,5 +505,3 @@ ACVP_RESULT acvp_kas_ffc_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
 
     return ACVP_SUCCESS;
 }
-
-

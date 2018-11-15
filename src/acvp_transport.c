@@ -2,23 +2,23 @@
 * Copyright (c) 2016-2017, Cisco Systems, Inc.
 * All rights reserved.
 
-* Redistribution and use in source and binary forms, with or without modification, 
+* Redistribution and use in source and binary forms, with or without modification,
 * are permitted provided that the following conditions are met:
 *
-* 1. Redistributions of source code must retain the above copyright notice, 
+* 1. Redistributions of source code must retain the above copyright notice,
 *    this list of conditions and the following disclaimer.
 *
 * 2. Redistributions in binary form must reproduce the above copyright notice,
-*    this list of conditions and the following disclaimer in the documentation 
+*    this list of conditions and the following disclaimer in the documentation
 *    and/or other materials provided with the distribution.
 *
 * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
+* AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-* DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE 
-* FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
-* DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR 
-* SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER 
+* DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+* FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+* DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+* SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
 * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -26,9 +26,7 @@
 #ifdef USE_MURL
 # include <murl/murl.h>
 #else
-
 # include <curl/curl.h>
-
 #endif
 
 #include <stdio.h>
@@ -42,7 +40,7 @@
 
 #define ACVP_AUTH_BEARER_TITLE_LEN 23
 
-static struct curl_slist *acvp_add_auth_hdr (ACVP_CTX *ctx, struct curl_slist *slist) {
+static struct curl_slist *acvp_add_auth_hdr(ACVP_CTX *ctx, struct curl_slist *slist) {
     int bearer_size;
     char *bearer;
 
@@ -63,13 +61,13 @@ static struct curl_slist *acvp_add_auth_hdr (ACVP_CTX *ctx, struct curl_slist *s
     return slist;
 }
 
-
 /*
  * This routine will log the TLS peer certificate chain, which
  * allows auditing the peer identity by inspecting the logs.
  */
-static void acvp_curl_log_peer_cert (ACVP_CTX *ctx, CURL *hnd) {
+static void acvp_curl_log_peer_cert(ACVP_CTX *ctx, CURL *hnd) {
     int rv;
+
     union {
         struct curl_slist *to_info;
         struct curl_certinfo *to_certinfo;
@@ -105,7 +103,7 @@ static void acvp_curl_log_peer_cert (ACVP_CTX *ctx, CURL *hnd) {
  * Return value is the HTTP status value from the server
  *	    (e.g. 200 for HTTP OK)
  */
-static long acvp_curl_http_get (ACVP_CTX *ctx, char *url, void *writefunc) {
+static long acvp_curl_http_get(ACVP_CTX *ctx, char *url, void *writefunc) {
     long http_code = 0;
     CURL *hnd;
     struct curl_slist *slist;
@@ -171,7 +169,7 @@ static long acvp_curl_http_get (ACVP_CTX *ctx, char *url, void *writefunc) {
     curl_easy_getinfo(hnd, CURLINFO_RESPONSE_CODE, &http_code);
 
     if (http_code != HTTP_OK) {
-        ACVP_LOG_ERR("HTTP response: %d\n", (int) http_code);
+        ACVP_LOG_ERR("HTTP response: %d\n", (int)http_code);
     }
 
     curl_easy_cleanup(hnd);
@@ -181,7 +179,7 @@ static long acvp_curl_http_get (ACVP_CTX *ctx, char *url, void *writefunc) {
         slist = NULL;
     }
 
-    return (http_code);
+    return http_code;
 }
 
 /*
@@ -199,7 +197,7 @@ static long acvp_curl_http_get (ACVP_CTX *ctx, char *url, void *writefunc) {
  * Return value is the HTTP status value from the server
  *	    (e.g. 200 for HTTP OK)
  */
-static long acvp_curl_http_post (ACVP_CTX *ctx, char *url, char *data, void *writefunc) {
+static long acvp_curl_http_post(ACVP_CTX *ctx, char *url, char *data, void *writefunc) {
     long http_code = 0;
     CURL *hnd;
     CURLcode crv;
@@ -231,7 +229,7 @@ static long acvp_curl_http_post (ACVP_CTX *ctx, char *url, char *data, void *wri
     curl_easy_setopt(hnd, CURLOPT_CUSTOMREQUEST, "POST");
     curl_easy_setopt(hnd, CURLOPT_POST, 1L);
     curl_easy_setopt(hnd, CURLOPT_POSTFIELDS, data);
-    curl_easy_setopt(hnd, CURLOPT_POSTFIELDSIZE_LARGE, (curl_off_t) strlen(data));
+    curl_easy_setopt(hnd, CURLOPT_POSTFIELDSIZE_LARGE, (curl_off_t)strlen(data));
     curl_easy_setopt(hnd, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_2);
     //FIXME: we should always to TLS peer auth
     if (ctx->verify_peer && ctx->cacerts_file) {
@@ -280,7 +278,7 @@ static long acvp_curl_http_post (ACVP_CTX *ctx, char *url, char *data, void *wri
     curl_easy_getinfo(hnd, CURLINFO_RESPONSE_CODE, &http_code);
 
     if (http_code != HTTP_OK) {
-        ACVP_LOG_ERR("HTTP response: %d\n", (int) http_code);
+        ACVP_LOG_ERR("HTTP response: %d\n", (int)http_code);
     }
 
     curl_easy_cleanup(hnd);
@@ -288,7 +286,7 @@ static long acvp_curl_http_post (ACVP_CTX *ctx, char *url, char *data, void *wri
     curl_slist_free_all(slist);
     slist = NULL;
 
-    return (http_code);
+    return http_code;
 }
 
 /*
@@ -296,8 +294,8 @@ static long acvp_curl_http_post (ACVP_CTX *ctx, char *url, char *data, void *wri
  * to the application (us).  We will store the HTTP body
  * on the ACVP_CTX in one of the transitory fields.
  */
-static size_t acvp_curl_write_upld_func (void *ptr, size_t size, size_t nmemb, void *userdata) {
-    ACVP_CTX *ctx = (ACVP_CTX *) userdata;
+static size_t acvp_curl_write_upld_func(void *ptr, size_t size, size_t nmemb, void *userdata) {
+    ACVP_CTX *ctx = (ACVP_CTX *)userdata;
     char *http_buf;
 
     if (size != 1) {
@@ -326,21 +324,20 @@ static size_t acvp_curl_write_upld_func (void *ptr, size_t size, size_t nmemb, v
     return nmemb;
 }
 
-
 /*
  * This is a callback used by curl to send the HTTP body
  * to the application (us).  We will store the HTTP body
  * on the ACVP_CTX in one of the transitory fields.
  */
-static size_t acvp_curl_write_ans_func (void *ptr, size_t size, size_t nmemb, void *userdata) {
-    ACVP_CTX *ctx = (ACVP_CTX *) userdata;
+static size_t acvp_curl_write_ans_func(void *ptr, size_t size, size_t nmemb, void *userdata) {
+    ACVP_CTX *ctx = (ACVP_CTX *)userdata;
     char *json_buf;
-    
+
     if (size != 1) {
         fprintf(stderr, "\ncurl size not 1\n");
         return 0;
     }
-    
+
     if (!ctx->ans_buf) {
         ctx->ans_buf = calloc(1, ACVP_ANS_BUF_MAX);
         if (!ctx->ans_buf) {
@@ -349,27 +346,26 @@ static size_t acvp_curl_write_ans_func (void *ptr, size_t size, size_t nmemb, vo
         }
     }
     json_buf = ctx->ans_buf;
-    
+
     if ((ctx->read_ctr + nmemb) > ACVP_ANS_BUF_MAX) {
         fprintf(stderr, "\nAnswer response is too large\n");
         return 0;
     }
-    
+
     memcpy(&json_buf[ctx->read_ctr], ptr, nmemb);
     json_buf[ctx->read_ctr + nmemb] = 0;
     ctx->read_ctr += nmemb;
-    
+
     return nmemb;
 }
-
 
 /*
  * This is a callback used by curl to send the HTTP body
  * to the application (us).  We will store the HTTP body
  * on the ACVP_CTX in one of the transitory fields.
  */
-static size_t acvp_curl_write_kat_func (void *ptr, size_t size, size_t nmemb, void *userdata) {
-    ACVP_CTX *ctx = (ACVP_CTX *) userdata;
+static size_t acvp_curl_write_kat_func(void *ptr, size_t size, size_t nmemb, void *userdata) {
+    ACVP_CTX *ctx = (ACVP_CTX *)userdata;
     char *json_buf;
 
     if (size != 1) {
@@ -403,8 +399,8 @@ static size_t acvp_curl_write_kat_func (void *ptr, size_t size, size_t nmemb, vo
  * to the application (us).  We will store the HTTP body
  * on the ACVP_CTX in one of the transitory fields.
  */
-static size_t acvp_curl_write_register_func (void *ptr, size_t size, size_t nmemb, void *userdata) {
-    ACVP_CTX *ctx = (ACVP_CTX *) userdata;
+static size_t acvp_curl_write_register_func(void *ptr, size_t size, size_t nmemb, void *userdata) {
+    ACVP_CTX *ctx = (ACVP_CTX *)userdata;
     char *json_buf;
 
     if (size != 1) {
@@ -433,7 +429,6 @@ static size_t acvp_curl_write_register_func (void *ptr, size_t size, size_t nmem
     return nmemb;
 }
 
-
 /*
  * This is the transport function used within libacvp to register
  * the DUT with the ACVP server.
@@ -441,37 +436,37 @@ static size_t acvp_curl_write_register_func (void *ptr, size_t size, size_t nmem
  * The reg parameter is the JSON encoded registration message that
  * will be sent to the server.
  */
-ACVP_RESULT acvp_retrieve_sample_answers (ACVP_CTX *ctx, int vs_id) {
+ACVP_RESULT acvp_retrieve_sample_answers(ACVP_CTX *ctx, int vs_id) {
     int rv;
     char url[512]; //TODO: 512 is an arbitrary limit
     ACVP_RESULT result;
-    
+
     if (!ctx) {
         return ACVP_NO_CTX;
     }
-    
+
     if (!ctx->server_name || !ctx->server_port) {
         ACVP_LOG_ERR("Missing server/port details; call acvp_set_server first");
         return ACVP_MISSING_ARG;
     }
-    
+
     if (!vs_id) {
         ACVP_LOG_ERR("Missing vs_id from retrieve sample answers");
         return ACVP_MISSING_ARG;
     }
-    
+
     memset(url, 0x0, 512);
     snprintf(url, 511, "https://%s:%d/%svalidation/acvp/vectors/answers?vsId=%d", ctx->server_name, ctx->server_port,
              ctx->path_segment, vs_id);
-    
+
     ACVP_LOG_STATUS("GET acvp/validation/acvp/vectors/answers?vsId=%d", vs_id);
-    
+
     rv = acvp_curl_http_get(ctx, url, &acvp_curl_write_ans_func);
     if (rv != HTTP_OK) {
         if (rv == HTTP_UNAUTH) {
             ACVP_LOG_ERR("JWT authorization has timed out curl rv=%d\n", rv);
             /* give it one more try after the refresh */
-            result = acvp_refresh(ctx); 
+            result = acvp_refresh(ctx);
             if (result == ACVP_SUCCESS) {
                 rv = acvp_curl_http_get(ctx, url, &acvp_curl_write_ans_func);
                 if (rv != HTTP_OK) {
@@ -481,19 +476,18 @@ ACVP_RESULT acvp_retrieve_sample_answers (ACVP_CTX *ctx, int vs_id) {
             }
         }
     }
-    
+
     /*
      * Update user with status
      */
     ACVP_LOG_STATUS("Successfully received sample answers from ACVP server");
     printf("\n%s\n\n", ctx->ans_buf);
-    
+
     free(ctx->ans_buf);
     ctx->ans_buf = NULL;
-    
+
     return ACVP_SUCCESS;
 }
-
 
 /*
  * This is the transport function used within libacvp to register
@@ -502,7 +496,7 @@ ACVP_RESULT acvp_retrieve_sample_answers (ACVP_CTX *ctx, int vs_id) {
  * The reg parameter is the JSON encoded registration message that
  * will be sent to the server.
  */
-ACVP_RESULT acvp_send_register (ACVP_CTX *ctx, char *reg) {
+ACVP_RESULT acvp_send_register(ACVP_CTX *ctx, char *reg) {
     int rv;
     char url[512]; //TODO: 512 is an arbitrary limit
 
@@ -538,20 +532,20 @@ ACVP_RESULT acvp_send_register (ACVP_CTX *ctx, char *reg) {
  * This is the top level function used within libacvp to retrieve
  * a KAT vector set from the ACVP server.
  */
-ACVP_RESULT acvp_retrieve_vector_set (ACVP_CTX *ctx, int vs_id) {
+ACVP_RESULT acvp_retrieve_vector_set(ACVP_CTX *ctx, int vs_id) {
     int rv;
     char url[512]; //TODO: 512 is an arbitrary limit
     ACVP_RESULT result;
-    
+
     if (!ctx) {
         return ACVP_NO_CTX;
     }
-    
+
     if (!ctx->server_name || !ctx->server_port) {
         ACVP_LOG_ERR("Missing server/port details; call acvp_set_server first");
         return ACVP_MISSING_ARG;
     }
-    
+
     if (!vs_id) {
         ACVP_LOG_ERR("Missing vs_id from retrieve vector set");
         return ACVP_MISSING_ARG;
@@ -570,7 +564,7 @@ ACVP_RESULT acvp_retrieve_vector_set (ACVP_CTX *ctx, int vs_id) {
         if (rv == HTTP_UNAUTH) {
             ACVP_LOG_ERR("JWT authorization has timed out curl rv=%d\n", rv);
             /* give it one more try after the refresh */
-            result = acvp_refresh(ctx); 
+            result = acvp_refresh(ctx);
             if (result == ACVP_SUCCESS) {
                 rv = acvp_curl_http_get(ctx, url, &acvp_curl_write_kat_func);
                 if (rv != HTTP_OK) {
@@ -590,7 +584,7 @@ ACVP_RESULT acvp_retrieve_vector_set (ACVP_CTX *ctx, int vs_id) {
     return ACVP_SUCCESS;
 }
 
-ACVP_RESULT acvp_send_login (ACVP_CTX *ctx, char *login) {
+ACVP_RESULT acvp_send_login(ACVP_CTX *ctx, char *login) {
     int rv;
     char url[512]; //TODO: 512 is an arbitrary limit
 
@@ -629,21 +623,21 @@ ACVP_RESULT acvp_send_login (ACVP_CTX *ctx, char *login) {
  * This function is used to submit a vector set response
  * to the ACV server.
  */
-ACVP_RESULT acvp_submit_vector_responses (ACVP_CTX *ctx) {
+ACVP_RESULT acvp_submit_vector_responses(ACVP_CTX *ctx) {
     int rv;
     char url[512]; //TODO: 512 is an arbitrary limit
     char *resp;
     ACVP_RESULT result;
-    
+
     if (!ctx) {
         return ACVP_NO_CTX;
     }
-    
+
     if (!ctx->server_name || !ctx->server_port) {
         ACVP_LOG_ERR("Missing server/port details; call acvp_set_server first");
         return ACVP_MISSING_ARG;
     }
-    
+
     if (!ctx->vs_id) {
         ACVP_LOG_ERR("Missing vs_id when trying to submit responses");
         return ACVP_MISSING_ARG;
@@ -662,7 +656,7 @@ ACVP_RESULT acvp_submit_vector_responses (ACVP_CTX *ctx) {
         if (rv == HTTP_UNAUTH) {
             ACVP_LOG_ERR("JWT authorization has timed out curl rv=%d\n", rv);
             /* give it one more try after the refresh */
-            result = acvp_refresh(ctx); 
+            result = acvp_refresh(ctx);
             if (result == ACVP_SUCCESS) {
                 rv = acvp_curl_http_post(ctx, url, resp, &acvp_curl_write_upld_func);
                 if (rv != HTTP_OK) {
@@ -682,20 +676,20 @@ ACVP_RESULT acvp_submit_vector_responses (ACVP_CTX *ctx) {
  * This is the top level function used within libacvp to retrieve
  * the test result for a given KAT vector set from the ACVP server.
  */
-ACVP_RESULT acvp_retrieve_vector_set_result (ACVP_CTX *ctx, int vs_id) {
+ACVP_RESULT acvp_retrieve_vector_set_result(ACVP_CTX *ctx, int vs_id) {
     int rv;
     char url[512]; //TODO: 512 is an arbitrary limit
     ACVP_RESULT result;
-    
+
     if (!ctx) {
         return ACVP_NO_CTX;
     }
-    
+
     if (!ctx->server_name || !ctx->server_port) {
         ACVP_LOG_ERR("Missing server/port details; call acvp_set_server first");
         return ACVP_MISSING_ARG;
     }
-    
+
     if (!vs_id) {
         ACVP_LOG_ERR("Missing vs_id from retrieve vector set");
         return ACVP_MISSING_ARG;
@@ -713,7 +707,7 @@ ACVP_RESULT acvp_retrieve_vector_set_result (ACVP_CTX *ctx, int vs_id) {
         if (rv == HTTP_UNAUTH) {
             ACVP_LOG_ERR("JWT authorization has timed out curl rv=%d\n", rv);
             /* give it one more try after the refresh */
-            result = acvp_refresh(ctx); 
+            result = acvp_refresh(ctx);
             if (result == ACVP_SUCCESS) {
                 rv = acvp_curl_http_get(ctx, url, &acvp_curl_write_kat_func);
                 if (rv != HTTP_OK) {
@@ -732,5 +726,3 @@ ACVP_RESULT acvp_retrieve_vector_set_result (ACVP_CTX *ctx, int vs_id) {
 
     return ACVP_SUCCESS;
 }
-
-

@@ -35,17 +35,17 @@
 /*
  * Forward prototypes for local functions
  */
-static ACVP_RESULT acvp_hash_output_tc (ACVP_CTX *ctx, ACVP_HASH_TC *stc, JSON_Object *tc_rsp);
+static ACVP_RESULT acvp_hash_output_tc(ACVP_CTX *ctx, ACVP_HASH_TC *stc, JSON_Object *tc_rsp);
 
-static ACVP_RESULT acvp_hash_init_tc (ACVP_CTX *ctx,
-                                      ACVP_HASH_TC *stc,
-                                      unsigned int tc_id,
-                                      ACVP_HASH_TESTTYPE test_type,
-                                      unsigned int msg_len,
-                                      const char *msg,
-                                      ACVP_CIPHER alg_id);
+static ACVP_RESULT acvp_hash_init_tc(ACVP_CTX *ctx,
+                                     ACVP_HASH_TC *stc,
+                                     unsigned int tc_id,
+                                     ACVP_HASH_TESTTYPE test_type,
+                                     unsigned int msg_len,
+                                     const char *msg,
+                                     ACVP_CIPHER alg_id);
 
-static ACVP_RESULT acvp_hash_release_tc (ACVP_HASH_TC *stc);
+static ACVP_RESULT acvp_hash_release_tc(ACVP_HASH_TC *stc);
 
 
 /*
@@ -54,8 +54,10 @@ static ACVP_RESULT acvp_hash_release_tc (ACVP_HASH_TC *stc);
  * performs the iteration depdedent upon the hash type
  * and direction.
  */
-static ACVP_RESULT acvp_hash_mct_iterate_tc (ACVP_CTX *ctx, ACVP_HASH_TC *stc, int i,
-                                             JSON_Object *r_tobj) {
+static ACVP_RESULT acvp_hash_mct_iterate_tc(ACVP_CTX *ctx,
+                                            ACVP_HASH_TC *stc,
+                                            int i,
+                                            JSON_Object *r_tobj) {
     /* feed hash into the next message for MCT */
     memcpy(stc->m1, stc->m2, stc->md_len);
     memcpy(stc->m2, stc->m3, stc->md_len);
@@ -70,7 +72,7 @@ static ACVP_RESULT acvp_hash_mct_iterate_tc (ACVP_CTX *ctx, ACVP_HASH_TC *stc, i
  * file that will be uploaded to the server.  This routine handles
  * the JSON processing for a single test case for MCT.
  */
-static ACVP_RESULT acvp_hash_output_mct_tc (ACVP_CTX *ctx, ACVP_HASH_TC *stc, JSON_Object *r_tobj) {
+static ACVP_RESULT acvp_hash_output_mct_tc(ACVP_CTX *ctx, ACVP_HASH_TC *stc, JSON_Object *r_tobj) {
     ACVP_RESULT rv = ACVP_SUCCESS;
     char *tmp = NULL;
 
@@ -98,12 +100,14 @@ end:
  * parsed, processed, and a response is generated to be sent
  * back to the ACV server by the transport layer.
  */
-static ACVP_RESULT acvp_hash_mct_tc (ACVP_CTX *ctx, ACVP_CAPS_LIST *cap,
-                                     ACVP_TEST_CASE *tc, ACVP_HASH_TC *stc,
-                                     JSON_Array *res_array) {
+static ACVP_RESULT acvp_hash_mct_tc(ACVP_CTX *ctx,
+                                    ACVP_CAPS_LIST *cap,
+                                    ACVP_TEST_CASE *tc,
+                                    ACVP_HASH_TC *stc,
+                                    JSON_Array *res_array) {
     int i, j;
     ACVP_RESULT rv;
-    JSON_Value *r_tval = NULL; /* Response testval */
+    JSON_Value *r_tval = NULL;  /* Response testval */
     JSON_Object *r_tobj = NULL; /* Response testobj */
     char *tmp = NULL;
     unsigned char *msg = NULL;
@@ -119,7 +123,6 @@ static ACVP_RESULT acvp_hash_mct_tc (ACVP_CTX *ctx, ACVP_CAPS_LIST *cap,
     memcpy(stc->m3, stc->msg, stc->msg_len);
 
     for (i = 0; i < ACVP_HASH_MCT_OUTER; ++i) {
-
         /*
          * Create a new test case in the response
          */
@@ -146,7 +149,6 @@ static ACVP_RESULT acvp_hash_mct_tc (ACVP_CTX *ctx, ACVP_CAPS_LIST *cap,
         }
         json_object_set_string(r_tobj, "msg", tmp);
         for (j = 0; j < ACVP_HASH_MCT_INNER; ++j) {
-
             /* Process the current SHA test vector... */
             rv = (cap->crypto_handler)(tc);
             if (rv != ACVP_SUCCESS) {
@@ -191,7 +193,7 @@ static ACVP_RESULT acvp_hash_mct_tc (ACVP_CTX *ctx, ACVP_CAPS_LIST *cap,
     return ACVP_SUCCESS;
 }
 
-ACVP_RESULT acvp_hash_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
+ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     unsigned int tc_id, msglen;
     JSON_Value *groupval;
     JSON_Object *groupobj = NULL;
@@ -209,8 +211,8 @@ ACVP_RESULT acvp_hash_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
 
     JSON_Value *r_vs_val = NULL;
     JSON_Object *r_vs = NULL;
-    JSON_Array *r_tarr = NULL; /* Response testarray */
-    JSON_Value *r_tval = NULL; /* Response testval */
+    JSON_Array *r_tarr = NULL;  /* Response testarray */
+    JSON_Value *r_tval = NULL;  /* Response testval */
     JSON_Object *r_tobj = NULL; /* Response testobj */
     ACVP_CAPS_LIST *cap;
     ACVP_HASH_TC stc;
@@ -231,7 +233,7 @@ ACVP_RESULT acvp_hash_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     alg_str = json_object_get_string(obj, "algorithm");
     if (!alg_str) {
         ACVP_LOG_ERR("unable to parse 'algorithm' from JSON");
-        return (ACVP_MALFORMED_JSON);
+        return ACVP_MALFORMED_JSON;
     }
 
     /*
@@ -245,12 +247,12 @@ ACVP_RESULT acvp_hash_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     alg_id = acvp_lookup_cipher_index(alg_str);
     if (alg_id < ACVP_CIPHER_START) {
         ACVP_LOG_ERR("unsupported algorithm (%s)", alg_str);
-        return (ACVP_UNSUPPORTED_OP);
+        return ACVP_UNSUPPORTED_OP;
     }
     cap = acvp_locate_cap_entry(ctx, alg_id);
     if (!cap) {
         ACVP_LOG_ERR("ACVP server requesting unsupported capability");
-        return (ACVP_UNSUPPORTED_OP);
+        return ACVP_UNSUPPORTED_OP;
     }
 
     /*
@@ -259,7 +261,7 @@ ACVP_RESULT acvp_hash_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Failed to create JSON response struct. ");
-        return (rv);
+        return rv;
     }
 
     /*
@@ -310,7 +312,7 @@ ACVP_RESULT acvp_hash_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
 
-            tc_id = (unsigned int) json_object_get_number(testobj, "tcId");
+            tc_id = (unsigned int)json_object_get_number(testobj, "tcId");
 
             msg = json_object_get_string(testobj, "msg");
             if (!msg) {
@@ -327,7 +329,7 @@ ACVP_RESULT acvp_hash_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
             // Convert to bits
             msglen = tmp_msg_len * 4;
 #if 0
-            msglen = (unsigned int) json_object_get_number(testobj, "len");
+            msglen = (unsigned int)json_object_get_number(testobj, "len");
             if (!msglen) {
                 /*
                  * The "len" can be == 0 if the "msg" string is
@@ -396,8 +398,8 @@ ACVP_RESULT acvp_hash_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
                 }
 
                 /*
-		         * Output the test case results using JSON
-		         */
+                 * Output the test case results using JSON
+                 */
                 rv = acvp_hash_output_tc(ctx, &stc, r_tobj);
                 if (rv != ACVP_SUCCESS) {
                     ACVP_LOG_ERR("JSON output failure in hash module");
@@ -435,7 +437,7 @@ ACVP_RESULT acvp_hash_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
  * file that will be uploaded to the server.  This routine handles
  * the JSON processing for a single test case.
  */
-static ACVP_RESULT acvp_hash_output_tc (ACVP_CTX *ctx, ACVP_HASH_TC *stc, JSON_Object *tc_rsp) {
+static ACVP_RESULT acvp_hash_output_tc(ACVP_CTX *ctx, ACVP_HASH_TC *stc, JSON_Object *tc_rsp) {
     ACVP_RESULT rv = ACVP_SUCCESS;
     char *tmp = NULL;
 
@@ -458,13 +460,13 @@ end:
     return rv;
 }
 
-static ACVP_RESULT acvp_hash_init_tc (ACVP_CTX *ctx,
-                                      ACVP_HASH_TC *stc,
-                                      unsigned int tc_id,
-                                      ACVP_HASH_TESTTYPE test_type,
-                                      unsigned int msg_len,
-                                      const char *msg,
-                                      ACVP_CIPHER alg_id) {
+static ACVP_RESULT acvp_hash_init_tc(ACVP_CTX *ctx,
+                                     ACVP_HASH_TC *stc,
+                                     unsigned int tc_id,
+                                     ACVP_HASH_TESTTYPE test_type,
+                                     unsigned int msg_len,
+                                     const char *msg,
+                                     ACVP_CIPHER alg_id) {
     ACVP_RESULT rv;
 
     memset(stc, 0x0, sizeof(ACVP_HASH_TC));
@@ -502,7 +504,7 @@ static ACVP_RESULT acvp_hash_init_tc (ACVP_CTX *ctx,
  * This function simply releases the data associated with
  * a test case.
  */
-static ACVP_RESULT acvp_hash_release_tc (ACVP_HASH_TC *stc) {
+static ACVP_RESULT acvp_hash_release_tc(ACVP_HASH_TC *stc) {
     if (stc->msg) free(stc->msg);
     if (stc->md) free(stc->md);
     if (stc->m1) free(stc->m1);

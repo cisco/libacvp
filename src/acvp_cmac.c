@@ -32,19 +32,19 @@
 #include "acvp_lcl.h"
 #include "parson.h"
 
-static ACVP_RESULT acvp_cmac_init_tc (ACVP_CTX *ctx,
-                                      ACVP_CMAC_TC *stc,
-                                      unsigned int tc_id,
-                                      char *msg,
-                                      unsigned int msg_len,
-                                      unsigned int key_len,
-                                      char *key,
-                                      char *key2,
-                                      char *key3,
-                                      int direction_verify,
-                                      char *mac,
-                                      unsigned int mac_len,
-                                      ACVP_CIPHER alg_id) {
+static ACVP_RESULT acvp_cmac_init_tc(ACVP_CTX *ctx,
+                                     ACVP_CMAC_TC *stc,
+                                     unsigned int tc_id,
+                                     char *msg,
+                                     unsigned int msg_len,
+                                     unsigned int key_len,
+                                     char *key,
+                                     char *key2,
+                                     char *key3,
+                                     int direction_verify,
+                                     char *mac,
+                                     unsigned int mac_len,
+                                     ACVP_CIPHER alg_id) {
     ACVP_RESULT rv;
 
     if (!ctx) {
@@ -64,17 +64,17 @@ static ACVP_RESULT acvp_cmac_init_tc (ACVP_CTX *ctx,
             return ACVP_INVALID_ARG;
         }
     }
-    
+
     memset(stc, 0x0, sizeof(ACVP_CMAC_TC));
 
     stc->msg = calloc(1, ACVP_CMAC_MSG_MAX);
     if (!stc->msg) { return ACVP_MALLOC_FAIL; }
-    
+
     stc->mac = calloc(ACVP_CMAC_MAC_MAX, sizeof(char));
     if (!stc->mac) { return ACVP_MALLOC_FAIL; }
     stc->key = calloc(1, ACVP_CMAC_KEY_MAX);
     if (!stc->key) { return ACVP_MALLOC_FAIL; }
-    
+
     stc->key2 = calloc(1, ACVP_CMAC_KEY_MAX);
     if (!stc->key2) { return ACVP_MALLOC_FAIL; }
     stc->key3 = calloc(1, ACVP_CMAC_KEY_MAX);
@@ -85,7 +85,7 @@ static ACVP_RESULT acvp_cmac_init_tc (ACVP_CTX *ctx,
         ACVP_LOG_ERR("Hex converstion failure (msg)");
         return rv;
     }
-    
+
     if (alg_id == ACVP_CMAC_AES) {
         rv = acvp_hexstr_to_bin(key, stc->key, ACVP_CMAC_KEY_MAX, (int *)&(stc->key_len));
         if (rv != ACVP_SUCCESS) {
@@ -121,7 +121,7 @@ static ACVP_RESULT acvp_cmac_init_tc (ACVP_CTX *ctx,
     stc->tc_id = tc_id;
     stc->msg_len = msg_len;
     stc->cipher = alg_id;
-    
+
     return ACVP_SUCCESS;
 }
 
@@ -131,16 +131,16 @@ static ACVP_RESULT acvp_cmac_init_tc (ACVP_CTX *ctx,
  * file that will be uploaded to the server.  This routine handles
  * the JSON processing for a single test case.
  */
-static ACVP_RESULT acvp_cmac_output_tc (ACVP_CTX *ctx, ACVP_CMAC_TC *stc, JSON_Object *tc_rsp) {
+static ACVP_RESULT acvp_cmac_output_tc(ACVP_CTX *ctx, ACVP_CMAC_TC *stc, JSON_Object *tc_rsp) {
     ACVP_RESULT rv = ACVP_SUCCESS;
     char *tmp = NULL;
 
-    tmp = calloc(ACVP_CMAC_MAC_MAX+1, sizeof(char));
+    tmp = calloc(ACVP_CMAC_MAC_MAX + 1, sizeof(char));
     if (!tmp) {
         ACVP_LOG_ERR("Unable to malloc in acvp_cmac_output_tc");
         return ACVP_MALLOC_FAIL;
     }
-    
+
     if (strncmp(stc->direction, "ver", 3) == 0) {
         json_object_set_string(tc_rsp, "result", stc->ver_disposition);
     } else {
@@ -162,7 +162,7 @@ end:
  * This function simply releases the data associated with
  * a test case.
  */
-static ACVP_RESULT acvp_cmac_release_tc (ACVP_CMAC_TC *stc) {
+static ACVP_RESULT acvp_cmac_release_tc(ACVP_CMAC_TC *stc) {
     free(stc->msg);
     free(stc->mac);
     free(stc->key);
@@ -173,7 +173,7 @@ static ACVP_RESULT acvp_cmac_release_tc (ACVP_CMAC_TC *stc) {
     return ACVP_SUCCESS;
 }
 
-ACVP_RESULT acvp_cmac_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
+ACVP_RESULT acvp_cmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     unsigned int tc_id, msglen, keyLen = 0, keyingOption = 0, maclen, verify = 0;
     char *msg = NULL, *key1 = NULL, *key2 = NULL, *key3 = NULL, *mac = NULL;
     JSON_Value *groupval;
@@ -192,8 +192,8 @@ ACVP_RESULT acvp_cmac_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
 
     JSON_Value *r_vs_val = NULL;
     JSON_Object *r_vs = NULL;
-    JSON_Array *r_tarr = NULL; /* Response testarray */
-    JSON_Value *r_tval = NULL; /* Response testval */
+    JSON_Array *r_tarr = NULL;  /* Response testarray */
+    JSON_Value *r_tval = NULL;  /* Response testval */
     JSON_Object *r_tobj = NULL; /* Response testobj */
     ACVP_CAPS_LIST *cap;
     ACVP_CMAC_TC stc;
@@ -206,17 +206,17 @@ ACVP_RESULT acvp_cmac_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
 
     if (!ctx) {
         ACVP_LOG_ERR("No ctx for handler operation");
-        return (ACVP_NO_CTX);
+        return ACVP_NO_CTX;
     }
 
     if (!obj) {
         ACVP_LOG_ERR("No obj for handler operation");
-        return (ACVP_MALFORMED_JSON);
+        return ACVP_MALFORMED_JSON;
     }
 
     if (!alg_str) {
         ACVP_LOG_ERR("ERROR: unable to parse 'algorithm' from JSON");
-        return (ACVP_MALFORMED_JSON);
+        return ACVP_MALFORMED_JSON;
     }
 
     /*
@@ -230,12 +230,12 @@ ACVP_RESULT acvp_cmac_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     alg_id = acvp_lookup_cipher_index(alg_str);
     if (alg_id < ACVP_CIPHER_START) {
         ACVP_LOG_ERR("ERROR: unsupported algorithm (%s)", alg_str);
-        return (ACVP_UNSUPPORTED_OP);
+        return ACVP_UNSUPPORTED_OP;
     }
     cap = acvp_locate_cap_entry(ctx, alg_id);
     if (!cap) {
         ACVP_LOG_ERR("ERROR: ACVP server requesting unsupported capability");
-        return (ACVP_UNSUPPORTED_OP);
+        return ACVP_UNSUPPORTED_OP;
     }
 
     /*
@@ -244,7 +244,7 @@ ACVP_RESULT acvp_cmac_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("ERROR: Failed to create JSON response struct. ");
-        return (rv);
+        return rv;
     }
 
     /*
@@ -268,22 +268,22 @@ ACVP_RESULT acvp_cmac_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
     for (i = 0; i < g_cnt; i++) {
         groupval = json_array_get_value(groups, i);
         groupobj = json_value_get_object(groupval);
-        
+
         if (alg_id == ACVP_CMAC_AES) {
-            keyLen = (unsigned int) json_object_get_number(groupobj, "keyLen");
+            keyLen = (unsigned int)json_object_get_number(groupobj, "keyLen");
             if (!keyLen) {
                 ACVP_LOG_ERR("keylen missing from cmac aes json");
-                return (ACVP_MISSING_ARG);
+                return ACVP_MISSING_ARG;
             }
         } else if (alg_id == ACVP_CMAC_TDES) {
-            keyingOption = (unsigned int) json_object_get_number(groupobj, "keyingOption");
+            keyingOption = (unsigned int)json_object_get_number(groupobj, "keyingOption");
             if (keyingOption <= ACVP_CMAC_TDES_KEYING_OPTION_MIN ||
                 keyingOption >= ACVP_CMAC_TDES_KEYING_OPTION_MAX) {
                 ACVP_LOG_ERR("keyingOption missing or wrong from cmac tdes json");
-                return (ACVP_INVALID_ARG);
+                return ACVP_INVALID_ARG;
             }
         }
-        
+
         direction = (char *)json_object_get_string(groupobj, "direction");
         if (!direction) {
             ACVP_LOG_ERR("Unable to parse 'direction' from JSON.");
@@ -295,14 +295,14 @@ ACVP_RESULT acvp_cmac_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
             ACVP_LOG_ERR("'direction' should be 'gen' or 'ver'");
             return ACVP_UNSUPPORTED_OP;
         }
-        msglen = (unsigned int) json_object_get_number(groupobj, "msgLen") / 8;
+        msglen = (unsigned int)json_object_get_number(groupobj, "msgLen") / 8;
 
-        maclen = (unsigned int) json_object_get_number(groupobj, "macLen") / 8;
+        maclen = (unsigned int)json_object_get_number(groupobj, "macLen") / 8;
         if (!maclen) {
             ACVP_LOG_ERR("Server JSON missing 'macLen'");
             return ACVP_MISSING_ARG;
         }
-    
+
         ACVP_LOG_INFO("\n\n    Test group: %d", i);
 
         tests = json_object_get_array(groupobj, "tests");
@@ -312,16 +312,15 @@ ACVP_RESULT acvp_cmac_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
 
-            tc_id = (unsigned int) json_object_get_number(testobj, "tcId");
-            msg = (char *) json_object_get_string(testobj, "msg");
-            
+            tc_id = (unsigned int)json_object_get_number(testobj, "tcId");
+            msg = (char *)json_object_get_string(testobj, "msg");
+
             /* msg can be null if msglen is 0 */
             if (msg) {
                 json_msglen = strnlen(msg, ACVP_CMAC_MSG_MAX + 1);
                 if (json_msglen > ACVP_CMAC_MSG_MAX) {
                     ACVP_LOG_ERR("'msg' too long");
                     return ACVP_INVALID_ARG;
-    
                 }
                 if (!msglen && json_msglen > 0) {
                     ACVP_LOG_ERR("Server JSON missing 'msgLen'");
@@ -333,7 +332,7 @@ ACVP_RESULT acvp_cmac_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
             }
 
             if (alg_id == ACVP_CMAC_AES) {
-                key1 = (char *) json_object_get_string(testobj, "key");
+                key1 = (char *)json_object_get_string(testobj, "key");
                 if (!key1) {
                     ACVP_LOG_ERR("Server JSON missing 'key'");
                     return ACVP_MISSING_ARG;
@@ -344,9 +343,9 @@ ACVP_RESULT acvp_cmac_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
                     return ACVP_INVALID_ARG;
                 }
             } else if (alg_id == ACVP_CMAC_TDES) {
-                key1 = (char *) json_object_get_string(testobj, "key1");
-                key2 = (char *) json_object_get_string(testobj, "key2");
-                key3 = (char *) json_object_get_string(testobj, "key3");
+                key1 = (char *)json_object_get_string(testobj, "key1");
+                key2 = (char *)json_object_get_string(testobj, "key2");
+                key3 = (char *)json_object_get_string(testobj, "key3");
                 if (!key1 || !key2 || !key3) {
                     ACVP_LOG_ERR("Server JSON missing 'key(1,2,3)' value");
                     return ACVP_MISSING_ARG;
@@ -361,9 +360,9 @@ ACVP_RESULT acvp_cmac_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
                     return ACVP_INVALID_ARG;
                 }
             }
-            
+
             if (verify) {
-                mac = (char *) json_object_get_string(testobj, "mac");
+                mac = (char *)json_object_get_string(testobj, "mac");
                 if (!mac) {
                     ACVP_LOG_ERR("Server JSON missing 'mac'");
                     return ACVP_MISSING_ARG;
@@ -385,11 +384,11 @@ ACVP_RESULT acvp_cmac_kat_handler (ACVP_CTX *ctx, JSON_Object *obj) {
                 ACVP_LOG_INFO("             key2: %s", key2);
                 ACVP_LOG_INFO("             key3: %s", key3);
             }
-    
+
             if (verify) {
                 ACVP_LOG_INFO("              mac: %s", mac);
             }
-            
+
             /*
              * Create a new test case in the response
              */
