@@ -366,9 +366,8 @@ static ACVP_RESULT acvp_kas_ffc_comp(ACVP_CTX *ctx,
             rv = acvp_kas_ffc_init_comp_tc(ctx, stc, tc_id, hash_alg,
                                            p, q, g, eps, epri, epui, z, mode);
             if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("Failed acvp_kas_ffc_init_comp_tc");
                 acvp_kas_ffc_release_tc(stc);
-                return ACVP_CRYPTO_MODULE_FAIL;
+                return rv;
             }
 
             /* Process the current KAT test vector... */

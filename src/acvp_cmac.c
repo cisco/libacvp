@@ -111,11 +111,7 @@ static ACVP_RESULT acvp_cmac_init_tc(ACVP_CTX *ctx,
     }
 
     if (direction_verify) {
-        strncpy(stc->direction, "ver", 4);
-        stc->mac_len = mac_len;
-        strncpy((char *)stc->mac, (const char *)mac, stc->mac_len * 2);
-    } else {
-        strncpy(stc->direction, "gen", 4);
+        stc->verify = 1;
     }
 
     stc->tc_id = tc_id;
@@ -141,8 +137,12 @@ static ACVP_RESULT acvp_cmac_output_tc(ACVP_CTX *ctx, ACVP_CMAC_TC *stc, JSON_Ob
         return ACVP_MALLOC_FAIL;
     }
 
-    if (strncmp(stc->direction, "ver", 3) == 0) {
-        json_object_set_string(tc_rsp, "result", stc->ver_disposition);
+    if (stc->verify) {
+        if (stc->ver_disposition == ACVP_TEST_DISPOSITION_PASS) {
+            json_object_set_string(tc_rsp, "result", "pass");
+        } else {
+            json_object_set_string(tc_rsp, "result", "fail");
+        }
     } else {
         rv = acvp_bin_to_hexstr(stc->mac, stc->mac_len, tmp, ACVP_CMAC_MAC_MAX);
         if (rv != ACVP_SUCCESS) {
@@ -163,11 +163,11 @@ end:
  * a test case.
  */
 static ACVP_RESULT acvp_cmac_release_tc(ACVP_CMAC_TC *stc) {
-    free(stc->msg);
-    free(stc->mac);
-    free(stc->key);
-    free(stc->key2);
-    free(stc->key3);
+    if (stc->msg) free(stc->msg);
+    if (stc->mac) free(stc->mac);
+    if (stc->key) free(stc->key);
+    if (stc->key2) free(stc->key2);
+    if (stc->key3) free(stc->key3);
     memset(stc, 0x0, sizeof(ACVP_CMAC_TC));
 
     return ACVP_SUCCESS;
@@ -403,13 +403,18 @@ ACVP_RESULT acvp_cmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
              * TODO: this does mallocs, we can probably do the mallocs once for
              *       the entire vector set to be more efficient
              */
-            acvp_cmac_init_tc(ctx, &stc, tc_id, msg, msglen, keyLen, key1, key2, key3,
-                              verify, mac, maclen, alg_id);
+            rv = acvp_cmac_init_tc(ctx, &stc, tc_id, msg, msglen, keyLen, key1, key2, key3,
+                                   verify, mac, maclen, alg_id);
+            if (rv != ACVP_SUCCESS) {
+                acvp_cmac_release_tc(&stc);
+                return rv;
+            }
 
             /* Process the current test vector... */
             rv = (cap->crypto_handler)(&tc);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("ERROR: crypto module failed the operation");
+                acvp_cmac_release_tc(&stc);
                 return ACVP_CRYPTO_MODULE_FAIL;
             }
 
@@ -419,8 +424,10 @@ ACVP_RESULT acvp_cmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             rv = acvp_cmac_output_tc(ctx, &stc, r_tobj);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("ERROR: JSON output failure in hash module");
+                acvp_cmac_release_tc(&stc);
                 return rv;
             }
+
             /*
              * Release all the memory associated with the test case
              */
