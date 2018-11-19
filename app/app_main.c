@@ -4996,7 +4996,11 @@ static ACVP_RESULT app_ecdsa_handler(ACVP_TEST_CASE *test_case) {
             goto err;
         }
 
-        tc->ver_disposition = EC_KEY_set_public_key_affine_coordinates(key, Qx, Qy);
+        if (EC_KEY_set_public_key_affine_coordinates(key, Qx, Qy) == 1) {
+            tc->ver_disposition = ACVP_TEST_DISPOSITION_PASS;
+        } else {
+            tc->ver_disposition = ACVP_TEST_DISPOSITION_FAIL;
+        }
         break;
     case ACVP_ECDSA_SIGGEN:
         Qx = FIPS_bn_new();
@@ -5094,7 +5098,11 @@ static ACVP_RESULT app_ecdsa_handler(ACVP_TEST_CASE *test_case) {
             goto points_err;
         }
 
-        tc->ver_disposition = FIPS_ecdsa_verify(key, tc->message, tc->msg_len, md, sig);
+        if (FIPS_ecdsa_verify(key, tc->message, tc->msg_len, md, sig) == 1) {
+            tc->ver_disposition = ACVP_TEST_DISPOSITION_PASS;
+        } else {
+            tc->ver_disposition = ACVP_TEST_DISPOSITION_FAIL;
+        }
 points_err:
         break;
     default:
