@@ -613,12 +613,17 @@ ACVP_RESULT acvp_dsa_keygen_handler(ACVP_CTX *ctx,
          * TODO: this does mallocs, we can probably do the mallocs once for
          *       the entire vector set to be more efficient
          */
-        acvp_dsa_keygen_init_tc(ctx, stc, tc_id, stc->cipher, num, index, l, n);
+        rv = acvp_dsa_keygen_init_tc(ctx, stc, tc_id, stc->cipher, num, index, l, n);
+        if (rv != ACVP_SUCCESS) {
+            acvp_dsa_release_tc(stc);
+            return rv;
+        }
 
         /* Process the current DSA test vector... */
         rv = (cap->crypto_handler)(&tc);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("crypto module failed the operation");
+            acvp_dsa_release_tc(stc);
             return ACVP_CRYPTO_MODULE_FAIL;
         }
 
@@ -631,6 +636,7 @@ ACVP_RESULT acvp_dsa_keygen_handler(ACVP_CTX *ctx,
         rv = acvp_dsa_output_tc(ctx, stc, mobj);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("JSON output failure in DSA module");
+            acvp_dsa_release_tc(stc);
             return rv;
         }
 
@@ -799,12 +805,17 @@ ACVP_RESULT acvp_dsa_pqggen_handler(ACVP_CTX *ctx,
             r_tobj = json_value_get_object(r_tval);
             json_object_set_number(r_tobj, "tcId", tc_id);
 
-            acvp_dsa_pqggen_init_tc(ctx, stc, tc_id, stc->cipher, gpq, index, l, n, sha, p, q, seed);
+            rv = acvp_dsa_pqggen_init_tc(ctx, stc, tc_id, stc->cipher, gpq, index, l, n, sha, p, q, seed);
+            if (rv != ACVP_SUCCESS) {
+                acvp_dsa_release_tc(stc);
+                return rv;
+            }
 
             /* Process the current DSA test vector... */
             rv = (cap->crypto_handler)(&tc);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("crypto module failed the operation");
+                acvp_dsa_release_tc(stc);
                 return ACVP_CRYPTO_MODULE_FAIL;
             }
 
@@ -814,6 +825,7 @@ ACVP_RESULT acvp_dsa_pqggen_handler(ACVP_CTX *ctx,
             rv = acvp_dsa_output_tc(ctx, stc, r_tobj);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("JSON output failure in DSA module");
+                acvp_dsa_release_tc(stc);
                 return rv;
             }
 
@@ -832,10 +844,16 @@ ACVP_RESULT acvp_dsa_pqggen_handler(ACVP_CTX *ctx,
             json_object_set_number(r_tobj, "tcId", tc_id);
 
             /* Process the current DSA test vector... */
-            acvp_dsa_pqggen_init_tc(ctx, stc, tc_id, stc->cipher, gpq, index, l, n, sha, p, q, seed);
+            rv = acvp_dsa_pqggen_init_tc(ctx, stc, tc_id, stc->cipher, gpq, index, l, n, sha, p, q, seed);
+            if (rv != ACVP_SUCCESS) {
+                acvp_dsa_release_tc(stc);
+                return rv;
+            }
+
             rv = (cap->crypto_handler)(&tc);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("crypto module failed the operation");
+                acvp_dsa_release_tc(stc);
                 return ACVP_CRYPTO_MODULE_FAIL;
             }
 
@@ -845,6 +863,7 @@ ACVP_RESULT acvp_dsa_pqggen_handler(ACVP_CTX *ctx,
             rv = acvp_dsa_output_tc(ctx, stc, r_tobj);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("JSON output failure in DSA module");
+                acvp_dsa_release_tc(stc);
                 return rv;
             }
             break;
@@ -947,12 +966,17 @@ ACVP_RESULT acvp_dsa_siggen_handler(ACVP_CTX *ctx,
          * TODO: this does mallocs, we can probably do the mallocs once for
          *       the entire vector set to be more efficient
          */
-        acvp_dsa_siggen_init_tc(ctx, stc, tc_id, stc->cipher, num, index, l, n, sha, msg);
+        rv = acvp_dsa_siggen_init_tc(ctx, stc, tc_id, stc->cipher, num, index, l, n, sha, msg);
+        if (rv != ACVP_SUCCESS) {
+            acvp_dsa_release_tc(stc);
+            return rv;
+        }
 
         /* Process the current DSA test vector... */
         rv = (cap->crypto_handler)(&tc);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("crypto module failed the operation");
+            acvp_dsa_release_tc(stc);
             return ACVP_CRYPTO_MODULE_FAIL;
         }
 
@@ -965,6 +989,7 @@ ACVP_RESULT acvp_dsa_siggen_handler(ACVP_CTX *ctx,
         rv = acvp_dsa_output_tc(ctx, stc, mobj);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("JSON output failure in DSA module");
+            acvp_dsa_release_tc(stc);
             return rv;
         }
         acvp_dsa_release_tc(stc);
@@ -1131,13 +1156,18 @@ ACVP_RESULT acvp_dsa_pqgver_handler(ACVP_CTX *ctx,
          * TODO: this does mallocs, we can probably do the mallocs once for
          *       the entire vector set to be more efficient
          */
-        acvp_dsa_pqgver_init_tc(ctx, stc, tc_id, stc->cipher, num,
-                                l, n, c, index, sha, p, q, g, seed, gpq);
+        rv = acvp_dsa_pqgver_init_tc(ctx, stc, tc_id, stc->cipher, num,
+                                     l, n, c, index, sha, p, q, g, seed, gpq);
+        if (rv != ACVP_SUCCESS) {
+            acvp_dsa_release_tc(stc);
+            return rv;
+        }
 
         /* Process the current DSA test vector... */
         rv = (cap->crypto_handler)(&tc);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("crypto module failed the operation");
+            acvp_dsa_release_tc(stc);
             return ACVP_CRYPTO_MODULE_FAIL;
         }
 
@@ -1150,6 +1180,7 @@ ACVP_RESULT acvp_dsa_pqgver_handler(ACVP_CTX *ctx,
         rv = acvp_dsa_output_tc(ctx, stc, mobj);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("JSON output failure in DSA module");
+            acvp_dsa_release_tc(stc);
             return rv;
         }
         acvp_dsa_release_tc(stc);
@@ -1290,13 +1321,18 @@ ACVP_RESULT acvp_dsa_sigver_handler(ACVP_CTX *ctx,
          * TODO: this does mallocs, we can probably do the mallocs once for
          *       the entire vector set to be more efficient
          */
-        acvp_dsa_sigver_init_tc(ctx, stc, tc_id, stc->cipher, num, index,
-                                l, n, sha, p, q, g, r, s, y, msg);
+        rv = acvp_dsa_sigver_init_tc(ctx, stc, tc_id, stc->cipher, num, index,
+                                     l, n, sha, p, q, g, r, s, y, msg);
+        if (rv != ACVP_SUCCESS) {
+            acvp_dsa_release_tc(stc);
+            return rv;
+        }
 
         /* Process the current DSA test vector... */
         rv = (cap->crypto_handler)(&tc);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("crypto module failed the operation");
+            acvp_dsa_release_tc(stc);
             return ACVP_CRYPTO_MODULE_FAIL;
         }
 
@@ -1309,6 +1345,7 @@ ACVP_RESULT acvp_dsa_sigver_handler(ACVP_CTX *ctx,
         rv = acvp_dsa_output_tc(ctx, stc, mobj);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("JSON output failure in DSA module");
+            acvp_dsa_release_tc(stc);
             return rv;
         }
         acvp_dsa_release_tc(stc);

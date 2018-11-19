@@ -200,6 +200,12 @@ typedef enum acvp_hash_alg {
     ACVP_HASH_ALG_MAX = 128
 } ACVP_HASH_ALG;
 
+/*! @enum ACVP_TEST_DISPOSITION */
+typedef enum acvp_test_disposition {
+    ACVP_TEST_DISPOSITION_PASS = 1,
+    ACVP_TEST_DISPOSITION_FAIL = 2
+} ACVP_TEST_DISPOSITION;
+
 /*! @struct ACVP_KDF135_SSH_METHOD */
 typedef enum acvp_kdf135_ssh_method {
     ACVP_SSH_METH_TDES_CBC = 1,
@@ -882,9 +888,9 @@ typedef struct acvp_hmac_tc_t {
  */
 typedef struct acvp_cmac_tc_t {
     ACVP_CIPHER cipher;
-    char direction[4];
-    char ver_disposition[5];
-    unsigned int tc_id;    /* Test case id */
+    int verify;                            /**< 1 indicates verify. 0 indicates generate. */
+    ACVP_TEST_DISPOSITION ver_disposition; /**< Indicates pass/fail (only in "verify" direction)*/
+    unsigned int tc_id;                    /* Test case id */
     unsigned char *msg;
     unsigned int msg_len;
     unsigned char *mac; /* The resulting digest calculated for the test case */

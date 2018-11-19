@@ -460,17 +460,22 @@ ACVP_RESULT acvp_kdf135_ikev2_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
              * TODO: this does mallocs, we can probably do the mallocs once for
              *       the entire vector set to be more efficient
              */
-            acvp_kdf135_ikev2_init_tc(ctx, &stc, tc_id, hash_alg,
-                                      init_nonce_len, resp_nonce_len,
-                                      dh_secret_len, keying_material_len,
-                                      init_nonce, resp_nonce,
-                                      init_spi, resp_spi,
-                                      gir, gir_new);
+            rv = acvp_kdf135_ikev2_init_tc(ctx, &stc, tc_id, hash_alg,
+                                           init_nonce_len, resp_nonce_len,
+                                           dh_secret_len, keying_material_len,
+                                           init_nonce, resp_nonce,
+                                           init_spi, resp_spi,
+                                           gir, gir_new);
+            if (rv != ACVP_SUCCESS) {
+                acvp_kdf135_ikev2_release_tc(&stc);
+                return rv;
+            }
 
             /* Process the current test vector... */
             rv = (cap->crypto_handler)(&tc);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("crypto module failed");
+                acvp_kdf135_ikev2_release_tc(&stc);
                 return ACVP_CRYPTO_MODULE_FAIL;
             }
 
@@ -480,6 +485,7 @@ ACVP_RESULT acvp_kdf135_ikev2_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             rv = acvp_kdf135_ikev2_output_tc(ctx, &stc, r_tobj);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("JSON output failure");
+                acvp_kdf135_ikev2_release_tc(&stc);
                 return rv;
             }
             /*

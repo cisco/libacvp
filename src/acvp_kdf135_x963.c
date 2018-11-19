@@ -302,14 +302,19 @@ ACVP_RESULT acvp_kdf135_x963_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
              * TODO: this does mallocs, we can probably do the mallocs once for
              *       the entire vector set to be more efficient
              */
-            acvp_kdf135_x963_init_tc(ctx, &stc, tc_id, hash_alg,
-                                     field_size, key_data_length,
-                                     shared_info_len, z, shared_info);
+            rv = acvp_kdf135_x963_init_tc(ctx, &stc, tc_id, hash_alg,
+                                          field_size, key_data_length,
+                                          shared_info_len, z, shared_info);
+            if (rv != ACVP_SUCCESS) {
+                acvp_kdf135_x963_release_tc(&stc);
+                return rv;
+            }
 
             /* Process the current test vector... */
             rv = (cap->crypto_handler)(&tc);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("crypto module failed the KDF SSH operation");
+                acvp_kdf135_x963_release_tc(&stc);
                 return ACVP_CRYPTO_MODULE_FAIL;
             }
 
@@ -319,6 +324,7 @@ ACVP_RESULT acvp_kdf135_x963_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             rv = acvp_kdf135_x963_output_tc(ctx, &stc, r_tobj);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("JSON output failure in hash module");
+                acvp_kdf135_x963_release_tc(&stc);
                 return rv;
             }
             /*

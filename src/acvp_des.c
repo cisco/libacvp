@@ -849,8 +849,13 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
              * TODO: this does mallocs, we can probably do the mallocs once for
              *       the entire vector set to be more efficient
              */
-            acvp_des_init_tc(ctx, &stc, tc_id, test_type, key, pt, ct, iv,
-                             keylen, ivlen, ptlen, ctlen, alg_id, dir);
+            rv = acvp_des_init_tc(ctx, &stc, tc_id, test_type, key, pt, ct, iv,
+                                  keylen, ivlen, ptlen, ctlen, alg_id, dir);
+            if (rv != ACVP_SUCCESS) {
+                acvp_des_release_tc(&stc);
+                free(key);
+                return rv;
+            }
 
             // Key has been copied, we can free here
             free(key);

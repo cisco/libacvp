@@ -3604,7 +3604,7 @@ static ACVP_RESULT app_cmac_handler(ACVP_TEST_CASE *test_case) {
         goto cleanup;
     }
 
-    if (strncmp((const char *)tc->direction, "ver", 3) == 0) {
+    if (tc->verify) {
         if (!CMAC_Final(cmac_ctx, mac_compare, (size_t *)&mac_cmp_len)) {
             printf("\nCrypto module error, CMAC_Final failed\n");
             goto cleanup;
@@ -3623,9 +3623,9 @@ static ACVP_RESULT app_cmac_handler(ACVP_TEST_CASE *test_case) {
         }
 
         if (strncmp(formatted_mac_compare, (const char *)tc->mac, tc->mac_len * 2) == 0) {
-            strncpy((char *)tc->ver_disposition, "pass", 5);
+            tc->ver_disposition = ACVP_TEST_DISPOSITION_PASS;
         } else {
-            strncpy((char *)tc->ver_disposition, "fail", 5);
+            tc->ver_disposition = ACVP_TEST_DISPOSITION_FAIL;
         }
     } else {
         if (!CMAC_Final(cmac_ctx, tc->mac, (size_t *)&tc->mac_len)) {

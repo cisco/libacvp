@@ -405,7 +405,7 @@ static ACVP_RESULT acvp_kas_ecc_cdh(ACVP_CTX *ctx,
                                           curve, psx, psy);
             if (rv != ACVP_SUCCESS) {
                 acvp_kas_ecc_release_tc(stc);
-                return ACVP_CRYPTO_MODULE_FAIL;
+                return rv;
             }
 
             /* Process the current KAT test vector... */
@@ -624,7 +624,7 @@ static ACVP_RESULT acvp_kas_ecc_comp(ACVP_CTX *ctx,
                                            d, pix, piy, z);
             if (rv != ACVP_SUCCESS) {
                 acvp_kas_ecc_release_tc(stc);
-                return ACVP_CRYPTO_MODULE_FAIL;
+                return rv;
             }
 
             /* Process the current KAT test vector... */

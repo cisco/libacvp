@@ -471,14 +471,19 @@ ACVP_RESULT acvp_kdf108_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
              * TODO: this does mallocs, we can probably do the mallocs once for
              *       the entire vector set to be more efficient
              */
-            acvp_kdf108_init_tc(ctx, &stc, tc_id, kdf_mode, mac_mode,
-                                ctr_loc, key_in_str, iv_str, key_in_len,
-                                key_out_len, iv_len, ctr_len, deferred);
+            rv = acvp_kdf108_init_tc(ctx, &stc, tc_id, kdf_mode, mac_mode,
+                                     ctr_loc, key_in_str, iv_str, key_in_len,
+                                     key_out_len, iv_len, ctr_len, deferred);
+            if (rv != ACVP_SUCCESS) {
+                acvp_kdf108_release_tc(&stc);
+                return rv;
+            }
 
             /* Process the current test vector... */
             rv = (cap->crypto_handler)(&tc);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("crypto module failed the operation");
+                acvp_kdf108_release_tc(&stc);
                 return ACVP_CRYPTO_MODULE_FAIL;
             }
 
@@ -488,6 +493,7 @@ ACVP_RESULT acvp_kdf108_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             rv = acvp_kdf108_output_tc(ctx, &stc, r_tobj);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("JSON output failure in kdf135 tpm module");
+                acvp_kdf108_release_tc(&stc);
                 return rv;
             }
             /*

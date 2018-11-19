@@ -1026,7 +1026,7 @@ static ACVP_RESULT acvp_aes_output_tc(ACVP_CTX *ctx,
     return ACVP_SUCCESS;
 
 err:
-    free(tmp);
+    if (tmp) free(tmp);
     return rv;
 }
 
