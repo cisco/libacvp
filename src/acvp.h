@@ -202,8 +202,8 @@ typedef enum acvp_hash_alg {
 
 /*! @enum ACVP_TEST_DISPOSITION */
 typedef enum acvp_test_disposition {
-    ACVP_TEST_DISPOSITION_PASS = 1,
-    ACVP_TEST_DISPOSITION_FAIL = 2
+    ACVP_TEST_DISPOSITION_FAIL = 0,
+    ACVP_TEST_DISPOSITION_PASS = 1
 } ACVP_TEST_DISPOSITION;
 
 /*! @struct ACVP_KDF135_SSH_METHOD */
@@ -991,7 +991,7 @@ typedef struct acvp_ecdsa_tc_t {
     unsigned char *s;
     int s_len;
 
-    int ver_disposition;
+    ACVP_TEST_DISPOSITION ver_disposition; /**< Indicates pass/fail (only in "verify" direction)*/
     unsigned char *message;
     int msg_len;
 } ACVP_ECDSA_TC;
@@ -1019,7 +1019,7 @@ typedef struct acvp_rsa_sig_tc_t {
     unsigned char *signature;
     int sig_len;
     ACVP_CIPHER sig_mode;
-    int ver_disposition;
+    ACVP_TEST_DISPOSITION ver_disposition; /**< Indicates pass/fail (only in "verify" direction)*/
 } ACVP_RSA_SIG_TC;
 
 /*! @struct ACVP_DSA_MODE */
