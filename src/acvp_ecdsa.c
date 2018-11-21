@@ -73,7 +73,7 @@ static ACVP_RESULT acvp_ecdsa_output_tc(ACVP_CTX *ctx, ACVP_CIPHER cipher, ACVP_
         memset(tmp, 0x0, ACVP_ECDSA_EXP_LEN_MAX);
     }
     if (cipher == ACVP_ECDSA_KEYVER || cipher == ACVP_ECDSA_SIGVER) {
-        json_object_set_string(tc_rsp, "result", stc->ver_disposition ? "passed" : "failed");
+        json_object_set_boolean(tc_rsp, "testPassed", stc->ver_disposition);
     }
     if (cipher == ACVP_ECDSA_SIGGEN) {
         rv = acvp_bin_to_hexstr(stc->qy, stc->qy_len, tmp, ACVP_ECDSA_EXP_LEN_MAX);

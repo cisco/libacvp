@@ -267,7 +267,7 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
          */
         tests = json_object_get_array(groupobj, "tests");
         t_cnt = json_array_get_count(tests);
-        ACVP_LOG_INFO("Number of Tests: %d", g_cnt);
+        ACVP_LOG_INFO("Number of Tests: %d", t_cnt);
         for (j = 0; j < t_cnt; j++) {
             JSON_Value *pr_input_val = NULL;
             JSON_Object *pr_input_obj = NULL;

@@ -465,7 +465,7 @@ static ACVP_RESULT acvp_dsa_output_tc(ACVP_CTX *ctx, ACVP_DSA_TC *stc, JSON_Obje
 
         break;
     case ACVP_DSA_MODE_SIGVER:
-        json_object_set_string(r_tobj, "result", stc->result > 0 ? "passed" : "failed");
+        json_object_set_boolean(r_tobj, "testPassed", stc->result);
         break;
     case ACVP_DSA_MODE_KEYGEN:
         tmp = calloc(ACVP_DSA_PQG_MAX + 1, sizeof(char));
@@ -515,7 +515,7 @@ static ACVP_RESULT acvp_dsa_output_tc(ACVP_CTX *ctx, ACVP_DSA_TC *stc, JSON_Obje
 
         break;
     case ACVP_DSA_MODE_PQGVER:
-        json_object_set_string(r_tobj, "result", stc->result > 0 ? "passed" : "failed");
+        json_object_set_boolean(r_tobj, "testPassed", stc->result);
         break;
     default:
         break;
@@ -595,6 +595,8 @@ ACVP_RESULT acvp_dsa_keygen_handler(ACVP_CTX *ctx,
 
     for (j = 0; j < t_cnt; j++) {
         ACVP_LOG_INFO("Found new DSA KeyGen test vector...");
+        stc->mode = ACVP_DSA_MODE_KEYGEN;
+
         testval = json_array_get_value(tests, j);
         testobj = json_value_get_object(testval);
 
@@ -647,8 +649,6 @@ ACVP_RESULT acvp_dsa_keygen_handler(ACVP_CTX *ctx,
     /* Append the test response value to array */
     json_array_append_value(r_tarr, r_tval);
     return rv;
-
-    return ACVP_SUCCESS;
 }
 
 ACVP_RESULT acvp_dsa_pqggen_handler(ACVP_CTX *ctx,
@@ -725,6 +725,8 @@ ACVP_RESULT acvp_dsa_pqggen_handler(ACVP_CTX *ctx,
 
     for (j = 0; j < t_cnt; j++) {
         ACVP_LOG_INFO("Found new DSA PQGGen test vector...");
+        stc->mode = ACVP_DSA_MODE_PQGGEN;
+
         testval = json_array_get_value(tests, j);
         testobj = json_value_get_object(testval);
 
@@ -941,6 +943,8 @@ ACVP_RESULT acvp_dsa_siggen_handler(ACVP_CTX *ctx,
 
     for (j = 0; j < t_cnt; j++) {
         ACVP_LOG_INFO("Found new DSA SigGen test vector...");
+        stc->mode = ACVP_DSA_MODE_SIGGEN;
+
         testval = json_array_get_value(tests, j);
         testobj = json_value_get_object(testval);
 
@@ -1074,6 +1078,8 @@ ACVP_RESULT acvp_dsa_pqgver_handler(ACVP_CTX *ctx,
 
     for (j = 0; j < t_cnt; j++) {
         ACVP_LOG_INFO("Found new DSA PQGVer test vector...");
+        stc->mode = ACVP_DSA_MODE_PQGVER;
+
         testval = json_array_get_value(tests, j);
         testobj = json_value_get_object(testval);
 
@@ -1275,6 +1281,8 @@ ACVP_RESULT acvp_dsa_sigver_handler(ACVP_CTX *ctx,
 
     for (j = 0; j < t_cnt; j++) {
         ACVP_LOG_INFO("Found new DSA SigVer test vector...");
+        stc->mode = ACVP_DSA_MODE_SIGVER;
+
         testval = json_array_get_value(tests, j);
         testobj = json_value_get_object(testval);
 
