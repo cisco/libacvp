@@ -28,7 +28,7 @@
 
 #include "parson.h"
 
-#define ACVP_VERSION    "0.4"
+#define ACVP_VERSION    "0.5"
 #define ACVP_LIBRARY_VERSION    "libacvp-1.0.0"
 
 #ifndef ACVP_LOG_INFO
@@ -530,6 +530,7 @@
 #define ACVP_REG_BUF_MAX        1024 * 128
 #define ACVP_RETRY_TIME_MAX     60 /* seconds */
 #define ACVP_JWT_TOKEN_MAX      1024
+#define ACVP_ATTR_URL_MAX     512 /* TODO arbitrary */
 
 #define ACVP_SESSION_PARAMS_STR_LEN_MAX 256
 #define ACVP_PATH_SEGMENT_DEFAULT ""
@@ -954,6 +955,17 @@ typedef struct acvp_caps_list_t {
 } ACVP_CAPS_LIST;
 
 /*
+ * to keep track of OEs with multiple dependencies
+ * It includes a key/value list to be added as a flexible JSON obj
+ * and the URL that the server returns once the dep is registered
+ */
+typedef struct acvp_dependency_list_t {
+    ACVP_KV_LIST *attrs_list;
+    char *url; /* returned from the server */
+    struct acvp_dependency_list_t *next;
+} ACVP_DEPENDENCY_LIST;
+
+/*
  * This struct holds all the global data for a test session, such
  * as the server name, port#, etc.  Some of the values in this
  * struct are transitory and used during the JSON parsing and
@@ -962,21 +974,31 @@ typedef struct acvp_caps_list_t {
 struct acvp_ctx_t {
     /* Global config values for the session */
     ACVP_LOG_LVL debug;
+    int debug_request;
     char *server_name;
     char *path_segment;
+    char *api_context;
     int server_port;
     char *cacerts_file;     /* Location of CA certificates Curl will use to verify peer */
     int verify_peer;        /* enables TLS peer verification via Curl */
     char *tls_cert;         /* Location of PEM encoded X509 cert to use for TLS client auth */
     char *tls_key;          /* Location of PEM encoded priv key to use for TLS client auth */
     char *vendor_name;
-    char *vendor_url;
+    char *vendor_website;
     char *contact_name;
     char *contact_email;
     char *module_name;
     char *module_type;
     char *module_version;
     char *module_desc;
+    char *oe_name;
+    ACVP_DEPENDENCY_LIST *dependency_list;
+    ACVP_NAME_LIST *vsid_url_list;
+    char *session_url;
+
+    char *vendor_url; /*<< URL for vendor on validating server >>*/
+    char *module_url;
+    char *oe_url;
 
     char *json_filename;
     int use_json;
@@ -1003,19 +1025,32 @@ struct acvp_ctx_t {
     char *upld_buf;       /* holds the HTTP response from server when uploading results */
     JSON_Value *kat_resp; /* holds the current set of vector responses */
     int read_ctr;         /* used during curl processing */
-    int vs_id;            /* vs_id currently being processed */
-    char *ans_buf;        /* holds the queried answers on a sample registration */
+    char *test_sess_buf;
+    char *sample_buf;
+    int vs_id;      /* vs_id currently being processed */
+    char *vsid_url; /* vs currently being processed */
+    char *ans_buf;  /* holds the queried answers on a sample registration */
 };
 
-ACVP_RESULT acvp_send_register(ACVP_CTX *ctx, char *reg);
+ACVP_RESULT acvp_send_test_session_registration(ACVP_CTX *ctx, char *reg);
+
+ACVP_RESULT acvp_send_vendor_registration(ACVP_CTX *ctx, char *reg);
+
+ACVP_RESULT acvp_send_module_registration(ACVP_CTX *ctx, char *reg);
+
+ACVP_RESULT acvp_send_oe_registration(ACVP_CTX *ctx, char *reg);
+
+ACVP_RESULT acvp_send_dep_registration(ACVP_CTX *ctx, char *reg);
 
 ACVP_RESULT acvp_send_login(ACVP_CTX *ctx, char *login);
 
-ACVP_RESULT acvp_retrieve_sample_answers(ACVP_CTX *ctx, int vs_id);
+ACVP_RESULT acvp_retrieve_vector_set(ACVP_CTX *ctx, char *vsid_url);
 
-ACVP_RESULT acvp_retrieve_vector_set(ACVP_CTX *ctx, int vs_id);
+ACVP_RESULT acvp_retrieve_vector_set_result(ACVP_CTX *ctx, char *vsid_url);
 
-ACVP_RESULT acvp_retrieve_vector_set_result(ACVP_CTX *ctx, int vs_id);
+ACVP_RESULT acvp_retrieve_result(ACVP_CTX *ctx, char *api_url);
+
+ACVP_RESULT acvp_retrieve_expected_result(ACVP_CTX *ctx, char *api_url);
 
 ACVP_RESULT acvp_submit_vector_responses(ACVP_CTX *ctx);
 
@@ -1085,7 +1120,15 @@ ACVP_RESULT acvp_kas_ffc_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 /*
  * ACVP build registration functions used internally
  */
-ACVP_RESULT acvp_build_register(ACVP_CTX *ctx, char **reg);
+ACVP_RESULT acvp_build_vendors(ACVP_CTX *ctx, char **reg);
+
+ACVP_RESULT acvp_build_modules(ACVP_CTX *ctx, char **reg);
+
+ACVP_RESULT acvp_build_oes(ACVP_CTX *ctx, char **reg);
+
+ACVP_RESULT acvp_build_test_session(ACVP_CTX *ctx, char **reg);
+
+ACVP_RESULT acvp_build_dependency(ACVP_DEPENDENCY_LIST *dep, char **reg);
 
 /*
  * ACVP utility functions used internally
@@ -1103,8 +1146,6 @@ ACVP_DRBG_CAP_MODE_LIST *acvp_locate_drbg_mode_entry(ACVP_CAPS_LIST *cap, ACVP_D
 char *acvp_lookup_rsa_randpq_name(int value);
 
 int acvp_lookup_rsa_randpq_index(const char *value);
-
-unsigned int yes_or_no(ACVP_CTX *ctx, const char *text);
 
 ACVP_RESULT acvp_create_array(JSON_Object **obj, JSON_Value **val, JSON_Array **arry);
 

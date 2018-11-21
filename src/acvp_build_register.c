@@ -2353,44 +2353,73 @@ static ACVP_RESULT acvp_build_kas_ffc_register_cap(ACVP_CTX *ctx,
 }
 
 /*
+ * This function builds the JSON message to register an OE dependency
+ * with the validating server
+ */
+ACVP_RESULT acvp_build_dependency(ACVP_DEPENDENCY_LIST *dep, char **reg) {
+    JSON_Value *reg_arry_val = NULL;
+    JSON_Value *ver_val = NULL;
+    JSON_Object *ver_obj = NULL;
+    ACVP_KV_LIST *kv_list;
+    JSON_Array *reg_arry = NULL;
+
+    JSON_Value *val = NULL;
+    JSON_Object *obj = NULL;
+
+    if (!dep) {
+        return ACVP_MISSING_ARG;
+    }
+
+    /*
+     * Start the registration array
+     */
+    reg_arry_val = json_value_init_array();
+    reg_arry = json_array((const JSON_Value *)reg_arry_val);
+
+    ver_val = json_value_init_object();
+    ver_obj = json_value_get_object(ver_val);
+
+    json_object_set_string(ver_obj, "acvVersion", ACVP_VERSION);
+    json_array_append_value(reg_arry, ver_val);
+
+    val = json_value_init_object();
+    obj = json_value_get_object(val);
+
+    kv_list = dep->attrs_list;
+    while (kv_list) {
+        json_object_set_string(obj, kv_list->key, kv_list->value);
+        kv_list = kv_list->next;
+    }
+
+    json_array_append_value(reg_arry, val);
+    *reg = json_serialize_to_string_pretty(reg_arry_val);
+    json_value_free(reg_arry_val);
+
+    return ACVP_SUCCESS;
+}
+
+/*
  * This function builds the JSON register message that
  * will be sent to the ACVP server to advertised the crypto
  * capabilities of the module under test.
  */
-ACVP_RESULT acvp_build_register(ACVP_CTX *ctx, char **reg) {
+ACVP_RESULT acvp_build_test_session(ACVP_CTX *ctx, char **reg) {
     ACVP_RESULT rv = ACVP_SUCCESS;
     ACVP_CAPS_LIST *cap_entry;
 
     JSON_Value *reg_arry_val = NULL;
     JSON_Value *ver_val = NULL;
     JSON_Object *ver_obj = NULL;
-
     JSON_Array *reg_arry = NULL;
-
     JSON_Value *val = NULL;
     JSON_Object *obj = NULL;
-    JSON_Value *oe_val = NULL;
-    JSON_Object *oe_obj = NULL;
-    JSON_Value *oee_val = NULL;
-    JSON_Object *oee_obj = NULL;
+
     JSON_Array *caps_arr = NULL;
-    JSON_Value *caps_val = NULL;
-    JSON_Object *caps_obj = NULL;
     JSON_Value *cap_val = NULL;
     JSON_Object *cap_obj = NULL;
-    JSON_Value *vendor_val = NULL;
-    JSON_Object *vendor_obj = NULL;
-    JSON_Array *con_array_val = NULL;
-    JSON_Array *dep_array_val = NULL;
-    JSON_Value *mod_val = NULL;
-    JSON_Object *mod_obj = NULL;
-    JSON_Value *dep_val = NULL;
-    JSON_Object *dep_obj = NULL;
-    JSON_Value *con_val = NULL;
-    JSON_Object *con_obj = NULL;
 
     if (!ctx) {
-        ACVP_LOG_ERR("No ctx for build_register");
+        ACVP_LOG_ERR("No ctx for build_test_session");
         return ACVP_NO_CTX;
     }
 
@@ -2409,95 +2438,19 @@ ACVP_RESULT acvp_build_register(ACVP_CTX *ctx, char **reg) {
     val = json_value_init_object();
     obj = json_value_get_object(val);
 
-    /* TODO: Type of request are under construction, hardcoded for now
-     * will need a function acvp_set_request_info() to init
-     */
-    json_object_set_string(obj, "operation", "register");
-    json_object_set_string(obj, "certificateRequest", "yes");
-    json_object_set_string(obj, "debugRequest", "no");
-    json_object_set_string(obj, "production", "no");
-    json_object_set_string(obj, "encryptAtRest", "yes");
-
-    oe_val = json_value_init_object();
-    oe_obj = json_value_get_object(oe_val);
-
-    vendor_val = json_value_init_object();
-    vendor_obj = json_value_get_object(vendor_val);
-
-    json_object_set_string(vendor_obj, "name", ctx->vendor_name);
-    json_object_set_string(vendor_obj, "website", ctx->vendor_url);
-
-
-    json_object_set_value(vendor_obj, "contact", json_value_init_array());
-    con_array_val = json_object_get_array(vendor_obj, "contact");
-
-    con_val = json_value_init_object();
-    con_obj = json_value_get_object(con_val);
-
-    json_object_set_string(con_obj, "name", ctx->contact_name);
-    json_object_set_string(con_obj, "email", ctx->contact_email);
-    json_array_append_value(con_array_val, con_val);
-
-    json_object_set_value(oe_obj, "vendor", vendor_val);
-
-    mod_val = json_value_init_object();
-    mod_obj = json_value_get_object(mod_val);
-
-    json_object_set_string(mod_obj, "name", ctx->module_name);
-    json_object_set_string(mod_obj, "version", ctx->module_version);
-    json_object_set_string(mod_obj, "type", ctx->module_type);
-    json_object_set_value(oe_obj, "module", mod_val);
-
-    oee_val = json_value_init_object();
-    oee_obj = json_value_get_object(oee_val);
-
-    /* TODO: dependencies are under construction, hardcoded for now
-     * will need a function acvp_set_depedency_info() to init
-     */
-    json_object_set_value(oee_obj, "dependencies", json_value_init_array());
-    dep_array_val = json_object_get_array(oee_obj, "dependencies");
-
-    dep_val = json_value_init_object();
-    dep_obj = json_value_get_object(dep_val);
-
-    /* TODO: some of this stuff could be pulled from the processor(/proc/cpuinfo) and
-     * O/S internals (uname -a) and then populated - maybe an API to the DUT to
-     * return some of the environment info.  Needs to be moved to app code ?
-     */
-
-    json_object_set_string(dep_obj, "type", "software");
-    json_object_set_string(dep_obj, "name", "Linux 3.1");
-    json_object_set_string(dep_obj, "cpe", "cpe-2.3:o:ubuntu:linux:3.1");
-    json_array_append_value(dep_array_val, dep_val);
-
-    dep_val = json_value_init_object();
-    dep_obj = json_value_get_object(dep_val);
-    json_object_set_string(dep_obj, "type", "processor");
-    json_object_set_string(dep_obj, "manufacturer", "Intel");
-    json_object_set_string(dep_obj, "family", "ARK");
-    json_object_set_string(dep_obj, "name", "Xeon");
-    json_object_set_string(dep_obj, "series", "5100");
-    json_array_append_value(dep_array_val, dep_val);
-
-    dep_val = json_value_init_object();
-    dep_obj = json_value_get_object(dep_val);
-
-    json_object_set_value(oe_obj, "operationalEnvironment", oee_val);
-
-    json_object_set_string(oe_obj, "implementationDescription", ctx->module_desc);
-    json_object_set_value(obj, "oeInformation", oe_val);
-
+    json_object_set_string(obj, "moduleUrl", ctx->module_url);
     if (ctx->is_sample) {
         json_object_set_boolean(obj, "isSample", 1);
+    }
+    if (ctx->debug_request) {
+        json_object_set_string(obj, "debugRequest", "yes");
     }
 
     /*
      * Start the capabilities advertisement
      */
-    caps_val = json_value_init_object();
-    caps_obj = json_value_get_object(caps_val);
-    json_object_set_value(caps_obj, "algorithms", json_value_init_array());
-    caps_arr = json_object_get_array(caps_obj, "algorithms");
+    json_object_set_value(obj, "algorithms", json_value_init_array());
+    caps_arr = json_object_get_array(obj, "algorithms");
 
     /*
      * Iterate through all the capabilities the user has enabled
@@ -2658,12 +2611,175 @@ ACVP_RESULT acvp_build_register(ACVP_CTX *ctx, char **reg) {
     /*
      * Add the entire caps exchange section to the top object
      */
-    json_object_set_value(obj, "capabilityExchange", caps_val);
+    json_array_append_value(reg_arry, val);
+    *reg = json_serialize_to_string_pretty(reg_arry_val);
+    json_value_free(reg_arry_val);
+
+    return ACVP_SUCCESS;
+}
+
+/*
+ * This function builds the JSON message to register an OE with the
+ * validating crypto server
+ */
+ACVP_RESULT acvp_build_oes(ACVP_CTX *ctx, char **reg) {
+    JSON_Value *reg_arry_val = NULL;
+    JSON_Value *ver_val = NULL;
+    JSON_Object *ver_obj = NULL;
+
+    JSON_Array *reg_arry = NULL;
+
+    JSON_Value *val = NULL;
+    JSON_Object *obj = NULL;
+    JSON_Array *dep_array_val = NULL;
+
+    if (!ctx) {
+        ACVP_LOG_ERR("No ctx for build_oes");
+        return ACVP_NO_CTX;
+    }
+
+    /*
+     * Start the registration array
+     */
+    reg_arry_val = json_value_init_array();
+    reg_arry = json_array((const JSON_Value *)reg_arry_val);
+
+    ver_val = json_value_init_object();
+    ver_obj = json_value_get_object(ver_val);
+
+    json_object_set_string(ver_obj, "acvVersion", ACVP_VERSION);
+    json_array_append_value(reg_arry, ver_val);
+
+    val = json_value_init_object();
+    obj = json_value_get_object(val);
+
+    json_object_set_string(obj, "name", ctx->oe_name);
+    json_object_set_value(obj, "dependencyUrls", json_value_init_array());
+    dep_array_val = json_object_get_array(obj, "dependencyUrls");
+
+    ACVP_DEPENDENCY_LIST *dependency = ctx->dependency_list;
+    while (dependency) {
+        json_array_append_string(dep_array_val, dependency->url);
+        dependency = dependency->next;
+    }
 
     json_array_append_value(reg_arry, val);
     *reg = json_serialize_to_string_pretty(reg_arry_val);
     json_value_free(reg_arry_val);
-    json_value_free(dep_val);
+
+    return ACVP_SUCCESS;
+}
+
+/*
+ * This function builds the JSON message that registers a module with
+ * the validating crypto server
+ */
+ACVP_RESULT acvp_build_modules(ACVP_CTX *ctx, char **reg) {
+    JSON_Value *reg_arry_val = NULL;
+    JSON_Value *ver_val = NULL;
+    JSON_Object *ver_obj = NULL;
+
+    JSON_Array *reg_arry = NULL;
+
+    JSON_Value *val = NULL;
+    JSON_Object *obj = NULL;
+
+    if (!ctx) {
+        ACVP_LOG_ERR("No ctx for build_modules");
+        return ACVP_NO_CTX;
+    }
+
+    /*
+     * Start the registration array
+     */
+    reg_arry_val = json_value_init_array();
+    reg_arry = json_array((const JSON_Value *)reg_arry_val);
+
+    ver_val = json_value_init_object();
+    ver_obj = json_value_get_object(ver_val);
+
+    json_object_set_string(ver_obj, "acvVersion", ACVP_VERSION);
+    json_array_append_value(reg_arry, ver_val);
+
+    val = json_value_init_object();
+    obj = json_value_get_object(val);
+
+    json_object_set_string(obj, "name", ctx->module_name);
+    json_object_set_string(obj, "version", ctx->module_version);
+    json_object_set_string(obj, "type", ctx->module_type);
+    json_object_set_string(obj, "vendorUrl", ctx->vendor_url);
+    json_object_set_string(obj, "implementationDescription", ctx->module_desc);
+
+    json_array_append_value(reg_arry, val);
+    *reg = json_serialize_to_string_pretty(reg_arry_val);
+    json_value_free(reg_arry_val);
+
+    return ACVP_SUCCESS;
+}
+
+/*
+ * This function builds the JSON message to register a vendor with the
+ * validating crypto server
+ */
+ACVP_RESULT acvp_build_vendors(ACVP_CTX *ctx, char **reg) {
+    JSON_Value *reg_arry_val = NULL;
+    JSON_Value *ver_val = NULL;
+    JSON_Object *ver_obj = NULL;
+
+    JSON_Array *reg_arry = NULL, *contact_array = NULL;
+
+    JSON_Value *val = NULL;
+    JSON_Object *obj = NULL;
+
+    /*
+     * As of right now, we only support one contact with a name, website,
+     * contact name, and contact email
+     */
+    JSON_Value *contact_val = NULL;
+    JSON_Object *contact_obj = NULL;
+    JSON_Array *email_array = NULL;
+
+    if (!ctx) {
+        ACVP_LOG_ERR("No ctx for build vendor");
+        return ACVP_NO_CTX;
+    }
+
+    /*
+     * Start the registration array
+     */
+    reg_arry_val = json_value_init_array();
+    reg_arry = json_array((const JSON_Value *)reg_arry_val);
+
+    ver_val = json_value_init_object();
+    ver_obj = json_value_get_object(ver_val);
+
+    json_object_set_string(ver_obj, "acvVersion", ACVP_VERSION);
+    json_array_append_value(reg_arry, ver_val);
+
+    val = json_value_init_object();
+    obj = json_value_get_object(val);
+
+    json_object_set_string(obj, "name", ctx->vendor_name);
+    if (ctx->vendor_website) json_object_set_string(obj, "website", ctx->vendor_website);
+    if (ctx->contact_name || ctx->contact_email) {
+        json_object_set_value(obj, "contacts", json_value_init_array());
+        contact_array = json_object_get_array(obj, "contacts");
+
+        contact_val = json_value_init_object();
+        contact_obj = json_value_get_object(contact_val);
+
+        if (ctx->contact_name) json_object_set_string(contact_obj, "name", ctx->contact_name);
+        if (ctx->contact_email) {
+            json_object_set_value(contact_obj, "emails", json_value_init_array());
+            email_array = json_object_get_array(obj, "emails");
+            json_array_append_string(email_array, ctx->contact_email);
+        }
+        json_array_append_value(contact_array, contact_val);
+    }
+    json_array_append_value(reg_arry, val);
+
+    *reg = json_serialize_to_string_pretty(reg_arry_val);
+    json_value_free(reg_arry_val);
 
     return ACVP_SUCCESS;
 }

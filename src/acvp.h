@@ -39,6 +39,10 @@ extern "C"
 #define ACVP_TOTP_LENGTH 8
 #define ACVP_TOTP_TOKEN_MAX 128
 
+/*! @enum ACVP_LOG_LVL
+ * @brief This enum defines the different log levels for
+ * the ACVP client library
+ */
 typedef enum acvp_log_lvl {
     ACVP_LOG_LVL_NONE = 0,
     ACVP_LOG_LVL_ERR,
@@ -47,6 +51,23 @@ typedef enum acvp_log_lvl {
     ACVP_LOG_LVL_INFO,
     ACVP_LOG_LVL_VERBOSE,
 } ACVP_LOG_LVL;
+
+/*! @struct ACVP_KV_LIST
+ * @brief This struct is a list of key/value pairs
+ * to be added to flexible JSON objects during registration
+ *
+ * For example, dependencies can have different key/value
+ * pairs depending on their type, so if the attributes are
+ * added to this list, then the list can get translated into
+ * proper JSON during dependency registration.
+ */
+typedef struct acvp_kv_list_t {
+    char *key;
+    char *value;
+    struct acvp_kv_list_t *next;
+} ACVP_KV_LIST;
+
+void acvp_free_kv_list(ACVP_KV_LIST *kv_list);
 
 /*! @struct ACVP_CTX
  *  @brief This opaque structure is used to maintain the state of a test session
@@ -2299,6 +2320,16 @@ ACVP_RESULT acvp_create_test_session(ACVP_CTX **ctx,
  */
 ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx);
 
+/*! @brief acvp_enable_debug_request() sets a flag in the acvp ctx that
+    asks the server to send debug messages
+
+    @param ctx Pointer to ACVP_CTX that was previously created by
+        calling acvp_create_test_session.
+
+    @return ACVP_RESULT
+ */
+ACVP_RESULT acvp_enable_debug_request(ACVP_CTX *ctx);
+
 /*! @brief acvp_set_server() specifies the ACVP server and TCP port
        number to use when contacting the server.
 
@@ -2332,6 +2363,24 @@ ACVP_RESULT acvp_set_server(ACVP_CTX *ctx, char *server_name, int port);
     @return ACVP_RESULT
  */
 ACVP_RESULT acvp_set_path_segment(ACVP_CTX *ctx, char *path_segment);
+
+/*! @brief acvp_set_api_context() specifies the URI prefix used by
+       the ACVP server.
+
+    Some ACVP servers use a context string in the URI for the path to
+    the REST interface.  Calling this function allows the API context
+    prefix to be specified.  The value provided to this function is
+    prepended to the path segment of the URI used for the ACVP
+    REST calls.
+
+    @param ctx Pointer to ACVP_CTX that was previously created by
+        calling acvp_create_test_session.
+    @param api_context Value to embed in the URI path after the server name and
+       before the ACVP well-known path.
+
+    @return ACVP_RESULT
+ */
+ACVP_RESULT acvp_set_api_context(ACVP_CTX *ctx, char *api_context);
 
 /*! @brief acvp_set_cacerts() specifies PEM encoded certificates to use
        as the root trust anchors for establishing the TLS session with
@@ -2387,7 +2436,7 @@ ACVP_RESULT acvp_mark_as_sample(ACVP_CTX *ctx);
 
 /*! @brief acvp_register() registers the DUT with the ACVP server.
 
-    This function is used to regitser the DUT with the server.
+    This function is used to register the DUT with the server.
     Registration allows the DUT to advertise it's capabilities to
     the server.  The server will respond with a set of vector set
     identifiers that the client will need to process.
@@ -2463,6 +2512,17 @@ ACVP_RESULT acvp_set_module_info(ACVP_CTX *ctx,
                                  const char *module_version,
                                  const char *module_description);
 
+/*! @brief acvp_add_oe_dependency() adds a list of key/value pairs for
+ * a flexible json OE dependency
+ * @param ctx
+ * @param oe_name
+ * @param key_val_list
+ * @return ACVP_RESULT
+ */
+ACVP_RESULT acvp_add_oe_dependency(ACVP_CTX *ctx,
+                                   const char *oe_name,
+                                   ACVP_KV_LIST *key_val_list);
+
 /*! @brief acvp_check_test_results() allows the application to fetch vector
         set results from the server during a test session.
 
@@ -2485,8 +2545,24 @@ ACVP_RESULT acvp_check_test_results(ACVP_CTX *ctx);
  */
 ACVP_RESULT acvp_set_2fa_callback(ACVP_CTX *ctx, ACVP_RESULT (*totp_cb)(char **token));
 
+/*! @brief acvp_bin_to_hexstr() Converts a binary string to hex
+
+    @param src Pointer to the binary source string
+    @param src_len Length of source sting in bytes
+    @param dest Length of destination hex string
+    @param dest_max Maximum length allowed for destination
+    @return ACVP_RESULT
+ */
 ACVP_RESULT acvp_bin_to_hexstr(const unsigned char *src, int src_len, char *dest, int dest_max);
 
+/*! @brief acvp_hexstr_to_bin() Converts a hex string to binary
+
+    @param src Pointer to the hex source string
+    @param src_len Length of source sting in bytes
+    @param dest Length of destination binary string
+    @param dest_max Maximum length allowed for destination
+    @return ACVP_RESULT
+ */
 ACVP_RESULT acvp_hexstr_to_bin(const char *src, unsigned char *dest, int dest_max, int *converted_len);
 
 /*! @brief acvp_lookup_error_string() is a utility that
@@ -2499,10 +2575,25 @@ ACVP_RESULT acvp_hexstr_to_bin(const char *src, unsigned char *dest, int dest_ma
  */
 char *acvp_lookup_error_string(ACVP_RESULT rv);
 
+char *lower_string(const char *s);
+
+/*! @brief acvp_cleanup() extends the curl_global_cleanup
+ * function to applications using libacvp to perform
+ * cleanup of curl resources
+ *
+ */
 ACVP_RESULT acvp_cleanup(ACVP_CTX *ctx);
 
+/*! @brief acvp_version() fetch the library version string
+ *
+ * @return (char *) library string, formatted like: libacvp-1.0.0
+ */
 char *acvp_version(void);
 
+/*! @brief acvp_protocol_version() fetch the protocol version string
+ *
+ * @return (char *) protocol version, formated like: 0.5
+ */
 char *acvp_protocol_version(void);
 
 #ifdef __cplusplus

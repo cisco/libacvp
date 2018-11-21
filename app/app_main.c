@@ -140,6 +140,7 @@ static ACVP_RESULT app_des_keywrap_handler(ACVP_TEST_CASE *test_case);
 typedef struct app_config {
     ACVP_LOG_LVL level;
     int sample;
+    int dev;
     int json;
     char json_file[JSON_FILENAME_LENGTH];
 
@@ -167,6 +168,7 @@ char *ca_chain_file;
 char *cert_file;
 char *key_file;
 char *path_segment;
+char *api_context;
 char value[] = "same";
 
 static EVP_CIPHER_CTX *glb_cipher_ctx = NULL; /* need to maintain across calls for MCT */
@@ -194,6 +196,9 @@ static void setup_session_parameters() {
 
     path_segment = getenv("ACV_URI_PREFIX");
     if (!path_segment) path_segment = "";
+
+    api_context = getenv("ACV_API_CONTEXT");
+    if (!api_context) api_context = "";
 
     ca_chain_file = getenv("ACV_CA_FILE");
     if (!ca_chain_file) ca_chain_file = DEFAULT_CA_CHAIN;
@@ -281,6 +286,9 @@ static void print_usage(int err) {
     printf("If you are running a sample registration (querying for correct answers\n");
     printf("in addition to the normal registration flow) use:\n");
     printf("      --sample\n");
+    printf("\n");
+    printf("If you want to include \"debugRequest\" in your registration, use:\n");
+    printf("      --dev\n");
     printf("\n");
     printf("In addition some options are passed to acvp_app using\n");
     printf("environment variables.  The following variables can be set:\n\n");
@@ -375,6 +383,8 @@ static int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
         }
         if (strcmp(*argv, "--sample") == 0) {
             cfg->sample = 1;
+        } else if (strncmp(*argv, "--dev", strlen("--dev")) == 0) {
+            cfg->dev = 1;
         } else if (strncmp(*argv, "--info", strlen("--info")) == 0) {
             if (log_lvl) {
                 printf(ANSI_COLOR_RED "Command error... [%s]"ANSI_COLOR_RESET
@@ -637,6 +647,8 @@ int main(int argc, char **argv) {
     ACVP_CTX *ctx = NULL;
     char ssl_version[10];
     APP_CONFIG cfg = { 0 };
+    char *oe_name = "Ubuntu Linux 3.1 on AMD 6272 Opteron Processor with Acme package installed";
+    ACVP_KV_LIST *key_val_list = calloc(1, sizeof(ACVP_KV_LIST));
 
     if (ingest_cli(&cfg, argc, argv)) {
         return 1;
@@ -667,6 +679,14 @@ int main(int argc, char **argv) {
         goto end;
     }
 
+    if (cfg.dev) {
+        rv = acvp_enable_debug_request(ctx);
+        if (rv != ACVP_SUCCESS) {
+            printf("Failed to enable debug request: %s\n", acvp_lookup_error_string(rv));
+            goto end;
+        }
+    }
+
     /*
      * Next we specify the ACVP server address
      */
@@ -695,15 +715,34 @@ int main(int argc, char **argv) {
         goto end;
     }
 
+    key_val_list->key = strndup("type", 4);
+    key_val_list->value = strndup("software", 8);
+    key_val_list->next = calloc(1, sizeof(ACVP_KV_LIST));
+    key_val_list->next->key = strndup("name", 4);
+    key_val_list->next->value = strndup("Linux 3.1", 9);
+
+    rv = acvp_add_oe_dependency(ctx, oe_name, key_val_list);
+    if (rv != ACVP_SUCCESS) {
+        printf("Failed to set module info\n");
+        goto end;
+    }
+
+    /*
+     * Set the api context prefix if needed
+     */
+    rv = acvp_set_api_context(ctx, api_context);
+    if (rv != ACVP_SUCCESS) {
+        printf("Failed to set URI prefix\n");
+        goto end;
+    }
+
     /*
      * Set the path segment prefix if needed
      */
-    if (strnlen(path_segment, 255) > 0) {
-        rv = acvp_set_path_segment(ctx, path_segment);
-        if (rv != ACVP_SUCCESS) {
-            printf("Failed to set URI prefix\n");
-            goto end;
-        }
+    rv = acvp_set_path_segment(ctx, path_segment);
+    if (rv != ACVP_SUCCESS) {
+        printf("Failed to set URI prefix\n");
+        goto end;
     }
 
     /*
