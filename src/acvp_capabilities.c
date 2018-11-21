@@ -4053,6 +4053,7 @@ ACVP_RESULT acvp_cap_kdf135_x963_set_parm(ACVP_CTX *ctx,
                 current_hash->next->name = ACVP_STR_SHA2_512;
                 break;
             default:
+                ACVP_LOG_ERR("Invalid hash alg");
                 return ACVP_INVALID_ARG;
             }
         } else {
@@ -4071,6 +4072,7 @@ ACVP_RESULT acvp_cap_kdf135_x963_set_parm(ACVP_CTX *ctx,
                 cap->hash_algs->name = ACVP_STR_SHA2_512;
                 break;
             default:
+                ACVP_LOG_ERR("Invalid hash alg");
                 return ACVP_INVALID_ARG;
             }
         }

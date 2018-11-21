@@ -2252,10 +2252,32 @@ ACVP_RESULT acvp_cap_kdf135_ikev2_set_parm(ACVP_CTX *ctx,
                                            ACVP_KDF135_IKEV2_PARM param,
                                            int value);
 
+/*! @brief acvp_enable_kdf135_ikev1_cap_param() allows an application to specify
+        operational parameters to be used during a test session with the ACVP
+        server.
+
+    @param ctx Address of pointer to a previously allocated ACVP_CTX.
+    @param param ACVP_KDF135_IKEV1_PARM enum specifying parameter to enable.
+            Here it is ACVP_KDF_HASH_ALG or ACVP_KDF_IKEv1_AUTH_METHOD. Other
+            params should be enabled with acvp_enable_kdf135_ikev1_domain_param
+    @param value String value for parameter
+
+    @return ACVP_RESULT
+ */
 ACVP_RESULT acvp_cap_kdf135_ikev1_set_parm(ACVP_CTX *ctx,
                                            ACVP_KDF135_IKEV1_PARM param,
                                            int value);
 
+/*! @brief acvp_enable_kdf135_ikev2_cap_len_param() allows an application to specify
+        operational lengths to be used during a test session with the ACVP
+        server.
+
+    @param ctx Address of pointer to a previously allocated ACVP_CTX.
+    @param param ACVP_KDF135_IKEV2_PARM enum specifying parameter to enable.
+    @param value length
+
+    @return ACVP_RESULT
+ */
 ACVP_RESULT acvp_cap_kdf135_ikev2_set_length(ACVP_CTX *ctx,
                                              ACVP_KDF135_IKEV2_PARM param,
                                              int value);
@@ -2281,12 +2303,44 @@ ACVP_RESULT acvp_cap_kdf135_ikev2_set_domain(ACVP_CTX *ctx,
                                              int max,
                                              int increment);
 
+/*! @brief acvp_enable_kdf135_ikev1_domain_param() allows an application to specify
+        operational parameters to be used during a test session with the ACVP
+        server.
+
+        This function should be called after acvp_enable_kdf135_ikev1_cap() to
+        specify the parameters for the corresponding KDF.
+
+   @param ctx Address of pointer to a previously allocated ACVP_CTX.
+   @param param ACVP_KDF135_IKEV1_PARM enum value identifying the IKEv1 parameter
+   @param min integer minimum for domain parameter
+   @param max integer maximum for domain parameter
+   @param increment integer increment for domain parameter
+
+   @return ACVP_RESULT
+ */
+
 ACVP_RESULT acvp_cap_kdf135_ikev1_set_domain(ACVP_CTX *ctx,
                                              ACVP_KDF135_IKEV1_PARM param,
                                              int min,
                                              int max,
                                              int increment);
 
+/*! @brief acvp_enable_kdf108_domain_param() allows an application to specify
+        operational parameters to be used during a test session with the ACVP
+        server.
+
+        This function should be called after acvp_enable_kdf108_cap() to
+        specify the parameters for the corresponding KDF.
+
+   @param ctx Address of pointer to a previously allocated ACVP_CTX.
+   @param param ACVP_KDF108_MODE enum value identifying the KDF108 mode
+   @param param ACVP_KDF108_PARM enum value identifying the KDF108 parameter
+   @param min integer minimum for domain parameter
+   @param max integer maximum for domain parameter
+   @param increment integer increment for domain parameter
+
+   @return ACVP_RESULT
+ */
 ACVP_RESULT acvp_cap_kdf108_set_domain(ACVP_CTX *ctx,
                                        ACVP_KDF108_MODE mode,
                                        ACVP_KDF108_PARM param,

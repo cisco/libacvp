@@ -205,16 +205,16 @@ ACVP_RESULT acvp_kdf135_ssh_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         /*
          * Determine the encrypt key_len, inferred from cipher.
          */
-        if (!strncmp(cipher_str, "TDES", 4)) {
+        if (!strncmp(lower_string(cipher_str), lower_string(ACVP_MODE_TDES), 4)) {
             e_key_len = ACVP_KEY_LEN_TDES;
             iv_len = ACVP_BLOCK_LEN_TDES;
-        } else if (!strncmp(cipher_str, "AES-128", 7)) {
+        } else if (!strncmp(lower_string(cipher_str), lower_string(ACVP_MODE_AES_128), 7)) {
             e_key_len = ACVP_KEY_LEN_AES128;
             iv_len = ACVP_BLOCK_LEN_AES128;
-        } else if (!strncmp(cipher_str, "AES-192", 7)) {
+        } else if (!strncmp(lower_string(cipher_str), lower_string(ACVP_MODE_AES_192), 7)) {
             e_key_len = ACVP_KEY_LEN_AES192;
             iv_len = ACVP_BLOCK_LEN_AES192;
-        } else if (!strncmp(cipher_str, "AES-256", 7)) {
+        } else if (!strncmp(lower_string(cipher_str), lower_string(ACVP_MODE_AES_256), 7)) {
             e_key_len = ACVP_KEY_LEN_AES256;
             iv_len = ACVP_BLOCK_LEN_AES256;
         } else {

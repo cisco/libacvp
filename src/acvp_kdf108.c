@@ -463,7 +463,7 @@ ACVP_RESULT acvp_kdf108_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             }
 
             deferred = json_object_get_boolean(testobj, "deferred");
-            if (deferred == -1) {
+            if (deferred == -1 && ctr_loc == ACVP_KDF108_FIXED_DATA_ORDER_MIDDLE) {
                 ACVP_LOG_ERR("Server JSON missing deferred");
                 return ACVP_MISSING_ARG;
             }

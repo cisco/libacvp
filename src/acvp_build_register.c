@@ -1185,9 +1185,9 @@ static ACVP_RESULT acvp_build_kdf135_x963_register_cap(JSON_Object *cap_obj, ACV
 
 static ACVP_RESULT acvp_build_kdf135_ikev2_register_cap(JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry) {
     ACVP_RESULT result;
-    JSON_Array *tmp_arr = NULL;
-    JSON_Value *tmp_val = NULL;
-    JSON_Object *tmp_obj = NULL;
+    JSON_Array *tmp_arr = NULL, *alg_specs_array = NULL;
+    JSON_Value *tmp_val = NULL, *alg_specs_val = NULL;
+    JSON_Object *tmp_obj = NULL, *alg_specs_obj = NULL;
     ACVP_NAME_LIST *current_hash;
     ACVP_KDF135_IKEV2_CAP *cap = cap_entry->cap.kdf135_ikev2_cap;
 
@@ -1196,9 +1196,15 @@ static ACVP_RESULT acvp_build_kdf135_ikev2_register_cap(JSON_Object *cap_obj, AC
     result = acvp_lookup_prereqVals(cap_obj, cap_entry);
     if (result != ACVP_SUCCESS) { return result; }
 
+    json_object_set_value(cap_obj, "capabilities", json_value_init_array());
+    alg_specs_array = json_object_get_array(cap_obj, "capabilities");
+
+    alg_specs_val = json_value_init_object();
+    alg_specs_obj = json_value_get_object(alg_specs_val);
+
     /* initiator nonce len */
-    json_object_set_value(cap_obj, "initiatorNonceLength", json_value_init_array());
-    tmp_arr = json_object_get_array(cap_obj, "initiatorNonceLength");
+    json_object_set_value(alg_specs_obj, "initiatorNonceLength", json_value_init_array());
+    tmp_arr = json_object_get_array(alg_specs_obj, "initiatorNonceLength");
     if (cap->init_nonce_len_domain.value) {
         json_array_append_number(tmp_arr, cap->init_nonce_len_domain.value);
     } else {
@@ -1211,8 +1217,8 @@ static ACVP_RESULT acvp_build_kdf135_ikev2_register_cap(JSON_Object *cap_obj, AC
     }
 
     /* responder nonce len */
-    json_object_set_value(cap_obj, "responderNonceLength", json_value_init_array());
-    tmp_arr = json_object_get_array(cap_obj, "responderNonceLength");
+    json_object_set_value(alg_specs_obj, "responderNonceLength", json_value_init_array());
+    tmp_arr = json_object_get_array(alg_specs_obj, "responderNonceLength");
     if (cap->respond_nonce_len_domain.value) {
         json_array_append_number(tmp_arr, cap->respond_nonce_len_domain.value);
     } else {
@@ -1225,8 +1231,8 @@ static ACVP_RESULT acvp_build_kdf135_ikev2_register_cap(JSON_Object *cap_obj, AC
     }
 
     /* Diffie Hellman shared secret len */
-    json_object_set_value(cap_obj, "diffieHellmanSharedSecretLength", json_value_init_array());
-    tmp_arr = json_object_get_array(cap_obj, "diffieHellmanSharedSecretLength");
+    json_object_set_value(alg_specs_obj, "diffieHellmanSharedSecretLength", json_value_init_array());
+    tmp_arr = json_object_get_array(alg_specs_obj, "diffieHellmanSharedSecretLength");
     if (cap->dh_secret_len.value) {
         json_array_append_number(tmp_arr, cap->dh_secret_len.value);
     } else {
@@ -1239,8 +1245,8 @@ static ACVP_RESULT acvp_build_kdf135_ikev2_register_cap(JSON_Object *cap_obj, AC
     }
 
     /* Derived keying material len */
-    json_object_set_value(cap_obj, "derivedKeyingMaterialLength", json_value_init_array());
-    tmp_arr = json_object_get_array(cap_obj, "derivedKeyingMaterialLength");
+    json_object_set_value(alg_specs_obj, "derivedKeyingMaterialLength", json_value_init_array());
+    tmp_arr = json_object_get_array(alg_specs_obj, "derivedKeyingMaterialLength");
     if (cap->key_material_len.value) {
         json_array_append_number(tmp_arr, cap->key_material_len.value);
     } else {
@@ -1253,13 +1259,15 @@ static ACVP_RESULT acvp_build_kdf135_ikev2_register_cap(JSON_Object *cap_obj, AC
     }
 
     /* Array of hash algs */
-    json_object_set_value(cap_obj, "hashAlg", json_value_init_array());
-    tmp_arr = json_object_get_array(cap_obj, "hashAlg");
+    json_object_set_value(alg_specs_obj, "hashAlg", json_value_init_array());
+    tmp_arr = json_object_get_array(alg_specs_obj, "hashAlg");
     current_hash = cap->hash_algs;
     while (current_hash) {
         json_array_append_string(tmp_arr, current_hash->name);
         current_hash = current_hash->next;
     }
+
+    json_array_append_value(alg_specs_array, alg_specs_val);
 
     return ACVP_SUCCESS;
 }
