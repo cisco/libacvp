@@ -77,9 +77,9 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     int j, t_cnt;
     JSON_Value *r_vs_val = NULL;
     JSON_Object *r_vs = NULL;
-    JSON_Array *r_tarr = NULL;  /* Response testarray */
-    JSON_Value *r_tval = NULL;  /* Response testval */
-    JSON_Object *r_tobj = NULL; /* Response testobj */
+    JSON_Array *r_tarr = NULL, *r_garr = NULL;  /* Response testarray, grouparray */
+    JSON_Value *r_tval = NULL, *r_gval = NULL;  /* Response testval, groupval */
+    JSON_Object *r_tobj = NULL, *r_gobj = NULL; /* Response testobj, groupobj */
     ACVP_CAPS_LIST *cap;
     ACVP_DRBG_TC stc;
     ACVP_TEST_CASE tc;
@@ -144,24 +144,38 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
     json_object_set_number(r_vs, "vsId", ctx->vs_id);
     json_object_set_string(r_vs, "algorithm", alg_str);
-    json_object_set_value(r_vs, "testResults", json_value_init_array());
-    r_tarr = json_object_get_array(r_vs, "testResults");
+    /*
+     * create an array of response test groups
+     */
+    json_object_set_value(r_vs, "testGroups", json_value_init_array());
+    r_garr = json_object_get_array(r_vs, "testGroups");
 
     groups = json_object_get_array(obj, "testGroups");
     g_cnt = json_array_get_count(groups);
     ACVP_LOG_INFO("Number of TestGroups: %d", g_cnt);
     for (i = 0; i < g_cnt; i++) {
+        int tgId = 0;
         const char *mode_str = NULL;
         int der_func_enabled = 0, pred_resist_enabled = 0;
         unsigned int perso_string_len = 0, entropy_len = 0, nonce_len = 0,
                      drb_len = 0, additional_input_len = 0;
-
         groupval = json_array_get_value(groups, i);
         groupobj = json_value_get_object(groupval);
 
-        json_result = json_serialize_to_string_pretty(groupval);
-        ACVP_LOG_INFO("json groupval count: %d\n %s\n", i, json_result);
-        json_free_serialized_string(json_result);
+        /*
+         * Create a new group in the response with the tgid
+         * and an array of tests
+         */
+        r_gval = json_value_init_object();
+        r_gobj = json_value_get_object(r_gval);
+        tgId = json_object_get_number(groupobj, "tgId");
+        if (!tgId) {
+            ACVP_LOG_ERR("Missing tgid from server JSON groub obj");
+            return ACVP_MALFORMED_JSON;
+        }
+        json_object_set_number(r_gobj, "tgId", tgId);
+        json_object_set_value(r_gobj, "tests", json_value_init_array());
+        r_tarr = json_object_get_array(r_gobj, "tests");
 
         /*
          * Get DRBG Mode index
@@ -445,6 +459,7 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             /* Append the test response value to array */
             json_array_append_value(r_tarr, r_tval);
         }
+        json_array_append_value(r_garr, r_gval);
     }
     json_array_append_value(reg_arry, r_vs_val);
 

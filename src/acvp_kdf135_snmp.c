@@ -65,9 +65,9 @@ ACVP_RESULT acvp_kdf135_snmp_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
     JSON_Value *r_vs_val = NULL;
     JSON_Object *r_vs = NULL;
-    JSON_Array *r_tarr = NULL;  /* Response testarray */
-    JSON_Value *r_tval = NULL;  /* Response testval */
-    JSON_Object *r_tobj = NULL; /* Response testobj */
+    JSON_Array *r_tarr = NULL, *r_garr = NULL;  /* Response testarray, grouparray */
+    JSON_Value *r_tval = NULL, *r_gval = NULL;  /* Response testval, groupval */
+    JSON_Object *r_tobj = NULL, *r_gobj = NULL; /* Response testobj, groupobj */
     ACVP_CAPS_LIST *cap;
     ACVP_KDF135_SNMP_TC stc;
     ACVP_TEST_CASE tc;
@@ -129,8 +129,11 @@ ACVP_RESULT acvp_kdf135_snmp_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
     json_object_set_number(r_vs, "vsId", ctx->vs_id);
     json_object_set_string(r_vs, "algorithm", alg_str);
-    json_object_set_value(r_vs, "testResults", json_value_init_array());
-    r_tarr = json_object_get_array(r_vs, "testResults");
+    /*
+     * create an array of response test groups
+     */
+    json_object_set_value(r_vs, "testGroups", json_value_init_array());
+    r_garr = json_object_get_array(r_vs, "testGroups");
 
     groups = json_object_get_array(obj, "testGroups");
     if (!groups) {
@@ -140,9 +143,24 @@ ACVP_RESULT acvp_kdf135_snmp_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
     g_cnt = json_array_get_count(groups);
     for (i = 0; i < g_cnt; i++) {
+        int tgId = 0;
         groupval = json_array_get_value(groups, i);
         groupobj = json_value_get_object(groupval);
 
+        /*
+         * Create a new group in the response with the tgid
+         * and an array of tests
+         */
+        r_gval = json_value_init_object();
+        r_gobj = json_value_get_object(r_gval);
+        tgId = json_object_get_number(groupobj, "tgId");
+        if (!tgId) {
+            ACVP_LOG_ERR("Missing tgid from server JSON groub obj");
+            return ACVP_MALFORMED_JSON;
+        }
+        json_object_set_number(r_gobj, "tgId", tgId);
+        json_object_set_value(r_gobj, "tests", json_value_init_array());
+        r_tarr = json_object_get_array(r_gobj, "tests");
 
         p_len = (unsigned int)json_object_get_number(groupobj, "passwordLength");
         if (!p_len) {
@@ -188,19 +206,9 @@ ACVP_RESULT acvp_kdf135_snmp_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 ACVP_LOG_ERR("Failed to include password");
                 return ACVP_MISSING_ARG;
             }
-            if (strnlen(password, ACVP_KDF135_SNMP_PASSWORD_MAX) != p_len / 8) {
-                ACVP_LOG_ERR("pLen(%d) or password length(%d) incorrect",
-                             p_len / 8, strnlen(password, ACVP_KDF135_SNMP_PASSWORD_MAX));
-                return ACVP_INVALID_ARG;
-            }
-
-            if (!password) {
-                ACVP_LOG_ERR("Failed to include password");
-                return ACVP_MISSING_ARG;
-            }
-            if (strnlen(password, p_len) != p_len / 8) {
-                ACVP_LOG_ERR("pLen(%d) or password length(%d) incorrect",
-                             p_len / 8, strnlen(password, ACVP_KDF135_SNMP_PASSWORD_MAX));
+            int actual_len = strnlen(password, ACVP_KDF135_SNMP_PASSWORD_MAX);
+            if (actual_len != p_len / 8) {
+                ACVP_LOG_ERR("pLen(%d) or password length(%d) incorrect", p_len, actual_len);
                 return ACVP_INVALID_ARG;
             }
 
@@ -253,6 +261,7 @@ ACVP_RESULT acvp_kdf135_snmp_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             /* Append the test response value to array */
             json_array_append_value(r_tarr, r_tval);
         }
+        json_array_append_value(r_garr, r_gval);
     }
 
     json_array_append_value(reg_arry, r_vs_val);
