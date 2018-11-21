@@ -151,46 +151,66 @@ static ACVP_RESULT acvp_build_hmac_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
 }
 
 static ACVP_RESULT acvp_build_cmac_register_cap(JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry) {
-    JSON_Array *temp_arr = NULL;
+    JSON_Array *temp_arr = NULL, *capabilities_arr = NULL;
+    JSON_Value *capabilities_val = NULL, *msg_len_val = NULL, *mac_len_val = NULL;
+    JSON_Object *capabilities_obj = NULL, *msg_len_obj = NULL, *mac_len_obj = NULL;
     ACVP_SL_LIST *sl_list;
-    int i;
     ACVP_RESULT result;
+    ACVP_CMAC_CAP *cmac_cap = cap_entry->cap.cmac_cap;
 
     json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
     result = acvp_lookup_prereqVals(cap_obj, cap_entry);
     if (result != ACVP_SUCCESS) { return result; }
 
-    json_object_set_value(cap_obj, "direction", json_value_init_array());
-    temp_arr = json_object_get_array(cap_obj, "direction");
+    capabilities_val = json_value_init_object();
+    capabilities_obj = json_value_get_object(capabilities_val);
+
+    json_object_set_value(cap_obj, "capabilities", json_value_init_array());
+    capabilities_arr = json_object_get_array(cap_obj, "capabilities");
+
+    json_object_set_value(capabilities_obj, "direction", json_value_init_array());
+    temp_arr = json_object_get_array(capabilities_obj, "direction");
     if (!cap_entry->cap.cmac_cap->direction_gen && !cap_entry->cap.cmac_cap->direction_ver) {
         return ACVP_MISSING_ARG;
     }
     if (cap_entry->cap.cmac_cap->direction_gen) { json_array_append_string(temp_arr, "gen"); }
     if (cap_entry->cap.cmac_cap->direction_ver) { json_array_append_string(temp_arr, "ver"); }
 
-    json_object_set_value(cap_obj, "msgLen", json_value_init_array());
-    temp_arr = json_object_get_array(cap_obj, "msgLen");
-    for (i = 0; i < CMAC_MSG_LEN_NUM_ITEMS; i++) {
-        json_array_append_number(temp_arr, cap_entry->cap.cmac_cap->msg_len[i]);
+    json_object_set_value(capabilities_obj, "msgLen", json_value_init_array());
+    temp_arr = json_object_get_array(capabilities_obj, "msgLen");
+    if (cmac_cap->msg_len.value) {
+        json_array_append_number(temp_arr, cmac_cap->msg_len.value);
+    } else {
+        msg_len_val = json_value_init_object();
+        msg_len_obj = json_value_get_object(msg_len_val);
+        json_object_set_number(msg_len_obj, "min", cmac_cap->msg_len.min);
+        json_object_set_number(msg_len_obj, "max", cmac_cap->msg_len.max);
+        json_object_set_number(msg_len_obj, "increment", cmac_cap->msg_len.increment);
+        json_array_append_value(temp_arr, msg_len_val);
     }
 
     /*
      * Set the supported mac lengths
      */
-    json_object_set_value(cap_obj, "macLen", json_value_init_array());
-    temp_arr = json_object_get_array(cap_obj, "macLen");
-    sl_list = cap_entry->cap.cmac_cap->mac_len;
-    while (sl_list) {
-        json_array_append_number(temp_arr, sl_list->length);
-        sl_list = sl_list->next;
+    json_object_set_value(capabilities_obj, "macLen", json_value_init_array());
+    temp_arr = json_object_get_array(capabilities_obj, "macLen");
+    if (cmac_cap->mac_len.value) {
+        json_array_append_number(temp_arr, cmac_cap->mac_len.value);
+    } else {
+        mac_len_val = json_value_init_object();
+        mac_len_obj = json_value_get_object(mac_len_val);
+        json_object_set_number(mac_len_obj, "min", cmac_cap->mac_len.min);
+        json_object_set_number(mac_len_obj, "max", cmac_cap->mac_len.max);
+        json_object_set_number(mac_len_obj, "increment", cmac_cap->mac_len.increment);
+        json_array_append_value(temp_arr, mac_len_val);
     }
 
     if (cap_entry->cipher == ACVP_CMAC_AES) {
         /*
          * Set the supported key lengths. if CMAC-AES
          */
-        json_object_set_value(cap_obj, "keyLen", json_value_init_array());
-        temp_arr = json_object_get_array(cap_obj, "keyLen");
+        json_object_set_value(capabilities_obj, "keyLen", json_value_init_array());
+        temp_arr = json_object_get_array(capabilities_obj, "keyLen");
         sl_list = cap_entry->cap.cmac_cap->key_len;
         while (sl_list) {
             json_array_append_number(temp_arr, sl_list->length);
@@ -200,8 +220,8 @@ static ACVP_RESULT acvp_build_cmac_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
         /*
          * Set the supported key lengths. if CMAC-TDES
          */
-        json_object_set_value(cap_obj, "keyingOption", json_value_init_array());
-        temp_arr = json_object_get_array(cap_obj, "keyingOption");
+        json_object_set_value(capabilities_obj, "keyingOption", json_value_init_array());
+        temp_arr = json_object_get_array(capabilities_obj, "keyingOption");
         sl_list = cap_entry->cap.cmac_cap->keying_option;
         if (!sl_list) {
             return ACVP_MISSING_ARG;
@@ -211,6 +231,8 @@ static ACVP_RESULT acvp_build_cmac_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
             sl_list = sl_list->next;
         }
     }
+
+    json_array_append_value(capabilities_arr, capabilities_val);
 
     return ACVP_SUCCESS;
 }

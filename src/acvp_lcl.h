@@ -134,6 +134,11 @@
 #define ACVP_ALG_HMAC_SHA3_384       "HMAC-SHA3-384"
 #define ACVP_ALG_HMAC_SHA3_512       "HMAC-SHA3-512"
 
+#define ACVP_MODE_AES_128            "AES-128"
+#define ACVP_MODE_TDES "TDES"
+#define ACVP_MODE_AES_192 "AES-192"
+#define ACVP_MODE_AES_256 "AES-256"
+
 #define ACVP_ALG_CMAC_AES            "CMAC-AES"
 #define ACVP_ALG_CMAC_AES_128        "CMAC-AES128"
 #define ACVP_ALG_CMAC_AES_192        "CMAC-AES192"
@@ -479,8 +484,11 @@
 #define ACVP_HMAC_MAC_MAX       128       /**< 512 bits, 128 characters */
 #define ACVP_HMAC_KEY_MAX       131072    /**< 524288 bits, 131072 characters */
 
-#define ACVP_CMAC_MSG_MAX       131072    /**< 524288 bits, 131072 characters */
-#define ACVP_CMAC_MAC_MAX       128       /**< 512 bits, 128 characters */
+#define ACVP_CMAC_MSGLEN_MAX_STR       131072    /**< 524288 bits, 131072 characters */
+#define ACVP_CMAC_MSGLEN_MAX       524288
+#define ACVP_CMAC_MSGLEN_MIN       0
+#define ACVP_CMAC_MACLEN_MAX       128       /**< 512 bits, 128 characters */
+#define ACVP_CMAC_MACLEN_MIN       32
 #define ACVP_CMAC_KEY_MAX       64        /**< 256 bits, 64 characters */
 
 #define ACVP_DSA_PQG_MAX        3072     /**< 3072 bits, 768 characters */
@@ -729,12 +737,12 @@ typedef struct acvp_hmac_capability {
 } ACVP_HMAC_CAP;
 
 typedef struct acvp_cmac_capability {
-    int direction_gen; // boolean
-    int direction_ver; // boolean
-    ACVP_SL_LIST *mac_len;
+    ACVP_JSON_DOMAIN_OBJ mac_len;
+    ACVP_JSON_DOMAIN_OBJ msg_len;
+    int direction_gen;
+    int direction_ver;
     ACVP_SL_LIST *key_len;       // 128,192,256
-    ACVP_SL_LIST *keying_option; // 1 or 2
-    int msg_len[5];
+    ACVP_SL_LIST *keying_option;
 } ACVP_CMAC_CAP;
 
 typedef struct acvp_drbg_cap_mode {

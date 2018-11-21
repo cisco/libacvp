@@ -1463,15 +1463,15 @@ static int enable_cmac(ACVP_CTX *ctx) {
      */
     rv = acvp_cap_cmac_enable(ctx, ACVP_CMAC_AES, &app_cmac_handler);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_cmac_set_parm(ctx, ACVP_CMAC_AES, ACVP_CMAC_BLK_DIVISIBLE_1, 0);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_cmac_set_parm(ctx, ACVP_CMAC_AES, ACVP_CMAC_BLK_DIVISIBLE_2, 128);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_cmac_set_parm(ctx, ACVP_CMAC_AES, ACVP_CMAC_BLK_NOT_DIVISIBLE_1, 72);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_cmac_set_parm(ctx, ACVP_CMAC_AES, ACVP_CMAC_BLK_NOT_DIVISIBLE_2, 200);
+    rv = acvp_cap_cmac_set_domain(ctx, ACVP_CMAC_AES, ACVP_CMAC_MSGLEN, 0, 65536, 8);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_cmac_set_parm(ctx, ACVP_CMAC_AES, ACVP_CMAC_MACLEN, 128);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_set_prereq(ctx, ACVP_CMAC_AES, ACVP_PREREQ_AES, value);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_cmac_set_parm(ctx, ACVP_CMAC_AES, ACVP_CMAC_DIRECTION_GEN, 1);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_cmac_set_parm(ctx, ACVP_CMAC_AES, ACVP_CMAC_DIRECTION_VER, 1);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_cmac_set_parm(ctx, ACVP_CMAC_AES, ACVP_CMAC_KEYLEN, 128);
     CHECK_ENABLE_CAP_RV(rv);
@@ -1479,30 +1479,18 @@ static int enable_cmac(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_cmac_set_parm(ctx, ACVP_CMAC_AES, ACVP_CMAC_KEYLEN, 256);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_cmac_set_parm(ctx, ACVP_CMAC_AES, ACVP_CMAC_DIRECTION_GEN, 1);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_cmac_set_parm(ctx, ACVP_CMAC_AES, ACVP_CMAC_DIRECTION_VER, 1);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_set_prereq(ctx, ACVP_CMAC_AES, ACVP_PREREQ_AES, value);
-    CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_cap_cmac_enable(ctx, ACVP_CMAC_TDES, &app_cmac_handler);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_cmac_set_parm(ctx, ACVP_CMAC_TDES, ACVP_CMAC_BLK_DIVISIBLE_1, 0);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_cmac_set_parm(ctx, ACVP_CMAC_TDES, ACVP_CMAC_BLK_DIVISIBLE_2, 256);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_cmac_set_parm(ctx, ACVP_CMAC_TDES, ACVP_CMAC_BLK_NOT_DIVISIBLE_1, 120);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_cmac_set_parm(ctx, ACVP_CMAC_TDES, ACVP_CMAC_BLK_NOT_DIVISIBLE_2, 248);
+    rv = acvp_cap_cmac_set_domain(ctx, ACVP_CMAC_TDES, ACVP_CMAC_MSGLEN, 0, 65536, 8);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_cmac_set_parm(ctx, ACVP_CMAC_TDES, ACVP_CMAC_MACLEN, 64);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_cmac_set_parm(ctx, ACVP_CMAC_TDES, ACVP_CMAC_KEYING_OPTION, 1);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_cmac_set_parm(ctx, ACVP_CMAC_TDES, ACVP_CMAC_DIRECTION_GEN, 1);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_cmac_set_parm(ctx, ACVP_CMAC_TDES, ACVP_CMAC_DIRECTION_VER, 1);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_cmac_set_parm(ctx, ACVP_CMAC_TDES, ACVP_CMAC_KEYING_OPTION, 1);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_CMAC_TDES, ACVP_PREREQ_TDES, value);
     CHECK_ENABLE_CAP_RV(rv);
@@ -3593,7 +3581,7 @@ static ACVP_RESULT app_cmac_handler(ACVP_TEST_CASE *test_case) {
 
     switch (tc->cipher) {
     case ACVP_CMAC_AES:
-        switch (tc->key_len) {
+        switch (tc->key_len * 8) {
         case 128:
             c = EVP_aes_128_cbc();
             break;
@@ -3606,7 +3594,7 @@ static ACVP_RESULT app_cmac_handler(ACVP_TEST_CASE *test_case) {
         default:
             break;
         }
-        key_len = (tc->key_len) / 8;
+        key_len = (tc->key_len);
         for (i = 0; i < key_len; i++) {
             full_key[i] = tc->key[i];
         }

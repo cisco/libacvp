@@ -662,7 +662,8 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx) {
                     free(cap_entry->cap.hmac_cap);
                     break;
                 case ACVP_CMAC_TYPE:
-                    acvp_cap_free_sl(cap_entry->cap.cmac_cap->mac_len);
+                    acvp_cap_free_sl(cap_entry->cap.cmac_cap->key_len);
+                    acvp_cap_free_sl(cap_entry->cap.cmac_cap->keying_option);
                     free(cap_entry->cap.cmac_cap);
                     break;
                 case ACVP_DSA_TYPE:

@@ -573,16 +573,20 @@ typedef enum acvp_hmac_parameter {
 /*! @struct ACVP_CMAC_PARM */
 typedef enum acvp_cmac_parameter {
     ACVP_CMAC_MACLEN,
+    ACVP_CMAC_MSGLEN,
     ACVP_CMAC_KEYLEN,
     ACVP_CMAC_KEYING_OPTION,
     ACVP_CMAC_DIRECTION_GEN,
-    ACVP_CMAC_DIRECTION_VER,
-    ACVP_CMAC_BLK_DIVISIBLE_1,
-    ACVP_CMAC_BLK_DIVISIBLE_2,
-    ACVP_CMAC_BLK_NOT_DIVISIBLE_1,
-    ACVP_CMAC_BLK_NOT_DIVISIBLE_2,
-    ACVP_CMAC_MSG_LEN_MAX
+    ACVP_CMAC_DIRECTION_VER
 } ACVP_CMAC_PARM;
+
+typedef enum acvp_cmac_keylen {
+    ACVP_CMAC_KEYING_OPTION_1 = 1,
+    ACVP_CMAC_KEYING_OPTION_2 = 2,
+    ACVP_CMAC_KEYLEN_128 = 128,
+    ACVP_CMAC_KEYLEN_192 = 192,
+    ACVP_CMAC_KEYLEN_256 = 256
+} ACVP_CMAC_KEY_ATTR;
 
 /*! @enum ACVP_CMAC_TDES_KEYING_OPTION */
 typedef enum acvp_cmac_tdes_keying_option {
@@ -2035,6 +2039,29 @@ ACVP_RESULT acvp_cap_cmac_set_parm(ACVP_CTX *ctx,
                                    ACVP_CIPHER cipher,
                                    ACVP_CMAC_PARM parm,
                                    int value);
+
+/*! @brief acvp_cap_cmac_set_domain() allows an application to specify
+        operational parameters for use during a test session with the
+        ACVP server.
+
+        This function allows the application to specify parameters for use
+        when registering CMAC capability with the server.
+
+   @param ctx Address of pointer to a previously allocated ACVP_CTX.
+   @param cipher ACVP_CIPHER enum value identifying the crypto capability.
+   @param parm ACVP_CMAC_PARM enum value specifying parameter
+   @param min Minumum upported value for the corresponding parameter
+   @param max Maximum ssupported value for the corresponding parameter
+   @param increment Increment value supported
+
+   @return ACVP_RESULT
+ */
+ACVP_RESULT acvp_cap_cmac_set_domain(ACVP_CTX *ctx,
+                                     ACVP_CIPHER cipher,
+                                     ACVP_CMAC_PARM parm,
+                                     int min,
+                                     int max,
+                                     int increment);
 
 /*! @brief acvp_enable_kdf135_*_cap() allows an application to specify a
        kdf cipher capability to be tested by the ACVP server.

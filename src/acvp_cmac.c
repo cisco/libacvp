@@ -67,10 +67,10 @@ static ACVP_RESULT acvp_cmac_init_tc(ACVP_CTX *ctx,
 
     memset(stc, 0x0, sizeof(ACVP_CMAC_TC));
 
-    stc->msg = calloc(1, ACVP_CMAC_MSG_MAX);
+    stc->msg = calloc(1, ACVP_CMAC_MSGLEN_MAX_STR);
     if (!stc->msg) { return ACVP_MALLOC_FAIL; }
 
-    stc->mac = calloc(ACVP_CMAC_MAC_MAX, sizeof(char));
+    stc->mac = calloc(ACVP_CMAC_MACLEN_MAX, sizeof(char));
     if (!stc->mac) { return ACVP_MALLOC_FAIL; }
     stc->key = calloc(1, ACVP_CMAC_KEY_MAX);
     if (!stc->key) { return ACVP_MALLOC_FAIL; }
@@ -80,7 +80,7 @@ static ACVP_RESULT acvp_cmac_init_tc(ACVP_CTX *ctx,
     stc->key3 = calloc(1, ACVP_CMAC_KEY_MAX);
     if (!stc->key3) { return ACVP_MALLOC_FAIL; }
 
-    rv = acvp_hexstr_to_bin(msg, stc->msg, ACVP_CMAC_MSG_MAX, NULL);
+    rv = acvp_hexstr_to_bin(msg, stc->msg, ACVP_CMAC_MSGLEN_MAX_STR, NULL);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Hex converstion failure (msg)");
         return rv;
@@ -131,20 +131,16 @@ static ACVP_RESULT acvp_cmac_output_tc(ACVP_CTX *ctx, ACVP_CMAC_TC *stc, JSON_Ob
     ACVP_RESULT rv = ACVP_SUCCESS;
     char *tmp = NULL;
 
-    tmp = calloc(ACVP_CMAC_MAC_MAX + 1, sizeof(char));
+    tmp = calloc(ACVP_CMAC_MACLEN_MAX + 1, sizeof(char));
     if (!tmp) {
         ACVP_LOG_ERR("Unable to malloc in acvp_cmac_output_tc");
         return ACVP_MALLOC_FAIL;
     }
 
     if (stc->verify) {
-        if (stc->ver_disposition == ACVP_TEST_DISPOSITION_PASS) {
-            json_object_set_string(tc_rsp, "result", "pass");
-        } else {
-            json_object_set_string(tc_rsp, "result", "fail");
-        }
+        json_object_set_boolean(tc_rsp, "testPassed", stc->ver_disposition);
     } else {
-        rv = acvp_bin_to_hexstr(stc->mac, stc->mac_len, tmp, ACVP_CMAC_MAC_MAX);
+        rv = acvp_bin_to_hexstr(stc->mac, stc->mac_len, tmp, ACVP_CMAC_MACLEN_MAX);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("hex conversion failure (mac)");
             goto end;
@@ -332,12 +328,12 @@ ACVP_RESULT acvp_cmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             testobj = json_value_get_object(testval);
 
             tc_id = (unsigned int)json_object_get_number(testobj, "tcId");
-            msg = (char *)json_object_get_string(testobj, "msg");
+            msg = (char *)json_object_get_string(testobj, "message");
 
             /* msg can be null if msglen is 0 */
             if (msg) {
-                json_msglen = strnlen(msg, ACVP_CMAC_MSG_MAX + 1);
-                if (json_msglen > ACVP_CMAC_MSG_MAX) {
+                json_msglen = strnlen(msg, ACVP_CMAC_MSGLEN_MAX_STR + 1);
+                if (json_msglen > ACVP_CMAC_MSGLEN_MAX_STR) {
                     ACVP_LOG_ERR("'msg' too long");
                     return ACVP_INVALID_ARG;
                 }

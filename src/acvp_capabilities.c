@@ -1487,36 +1487,36 @@ static ACVP_RESULT acvp_validate_cmac_parm_value(ACVP_CMAC_PARM parm, int value)
     ACVP_RESULT retval = ACVP_INVALID_ARG;
 
     switch (parm) {
-    case ACVP_CMAC_BLK_DIVISIBLE_1:
-    case ACVP_CMAC_BLK_DIVISIBLE_2:
-    case ACVP_CMAC_BLK_NOT_DIVISIBLE_1:
-    case ACVP_CMAC_BLK_NOT_DIVISIBLE_2:
-    case ACVP_CMAC_MSG_LEN_MAX:
-        if (value >= 0 && value <= 524288 && value % 8 == 0) {
+    case ACVP_CMAC_MACLEN:
+        if (value >= ACVP_CMAC_MACLEN_MIN &&
+            value <= ACVP_CMAC_MACLEN_MAX &&
+            value % 8 == 0) {
             retval = ACVP_SUCCESS;
         }
         break;
-    case ACVP_CMAC_MACLEN:
-        // TODO: need to validate max vals based on cmac
-        // mode... 128 for cmac-aes, 64 for cmac-tdes
-        if (value >= 8 && value <= 524288 && value % 8 == 0) {
+    case ACVP_CMAC_MSGLEN:
+        if (value >= ACVP_CMAC_MSGLEN_MIN &&
+            value <= ACVP_CMAC_MSGLEN_MAX &&
+            value % 8 == 0) {
             retval = ACVP_SUCCESS;
         }
         break;
     case ACVP_CMAC_KEYLEN:
-        if (value == 128 || value == 192 || value == 256) {
+        if (value == ACVP_CMAC_KEYLEN_128 ||
+            value == ACVP_CMAC_KEYLEN_192 ||
+            value == ACVP_CMAC_KEYLEN_256) {
+            retval = ACVP_SUCCESS;
+        }
+        break;
+    case ACVP_CMAC_KEYING_OPTION:
+        if (value == ACVP_CMAC_KEYING_OPTION_1 || value == ACVP_CMAC_KEYING_OPTION_2) {
             retval = ACVP_SUCCESS;
         }
         break;
     case ACVP_CMAC_DIRECTION_GEN:
     case ACVP_CMAC_DIRECTION_VER:
-        retval = is_valid_tf_param(value);
-        break;
-    case ACVP_CMAC_KEYING_OPTION:
-        if (value == 1 || value == 2) {
-            retval = ACVP_SUCCESS;
-        }
-        break;
+        return is_valid_tf_param(value);
+
     default:
         break;
     }
@@ -1556,9 +1556,59 @@ ACVP_RESULT acvp_cap_cmac_enable(ACVP_CTX *ctx,
     return result;
 }
 
+ACVP_RESULT acvp_cap_cmac_set_domain(ACVP_CTX *ctx,
+                                     ACVP_CIPHER cipher,
+                                     ACVP_CMAC_PARM parm,
+                                     int min,
+                                     int max,
+                                     int increment) {
+    ACVP_CAPS_LIST *cap_list;
+    ACVP_JSON_DOMAIN_OBJ *domain;
+    ACVP_CMAC_CAP *current_cmac_cap;
+
+    cap_list = acvp_locate_cap_entry(ctx, cipher);
+    if (!cap_list) {
+        ACVP_LOG_ERR("Cap entry not found.");
+        return ACVP_NO_CAP;
+    }
+    current_cmac_cap = cap_list->cap.cmac_cap;
+
+    switch (parm) {
+    case ACVP_CMAC_MSGLEN:
+        if (min < ACVP_CMAC_MSGLEN_MIN ||
+            max > ACVP_CMAC_MSGLEN_MAX) {
+            ACVP_LOG_ERR("min or max outside of acceptable range");
+            return ACVP_INVALID_ARG;
+        }
+        domain = &current_cmac_cap->msg_len;
+        break;
+    case ACVP_CMAC_MACLEN:
+        if (min < ACVP_CMAC_MACLEN_MIN ||
+            max > ACVP_CMAC_MACLEN_MAX) {
+            ACVP_LOG_ERR("min or max outside of acceptable range");
+            return ACVP_INVALID_ARG;
+        }
+        domain = &current_cmac_cap->mac_len;
+        break;
+    default:
+        return ACVP_INVALID_ARG;
+    }
+    if (increment % 8 != 0) {
+        ACVP_LOG_ERR("increment must be mod 8");
+        return ACVP_INVALID_ARG;
+    }
+
+    domain->min = min;
+    domain->max = max;
+    domain->increment = increment;
+    domain->value = 0;
+
+    return ACVP_SUCCESS;
+}
+
 /*
  * The user should call this after invoking acvp_enable_cmac_cap()
- * to specify the supported msg lengths, mac lengths, and diretion.
+ * to specify the supported msg lengths and mac lengths.
  * This is called by the user multiple times,
  * once for each length supported.
  */
@@ -1567,6 +1617,7 @@ ACVP_RESULT acvp_cap_cmac_set_parm(ACVP_CTX *ctx,
                                    ACVP_CMAC_PARM parm,
                                    int value) {
     ACVP_CAPS_LIST *cap;
+    ACVP_CMAC_CAP *current_cmac_cap;
 
     /*
      * Locate this cipher in the caps array
@@ -1576,35 +1627,23 @@ ACVP_RESULT acvp_cap_cmac_set_parm(ACVP_CTX *ctx,
         ACVP_LOG_ERR("Cap entry not found, use acvp_enable_cmac_cipher_cap() first.");
         return ACVP_NO_CAP;
     }
-
+    current_cmac_cap = cap->cap.cmac_cap;
     if (acvp_validate_cmac_parm_value(parm, value) != ACVP_SUCCESS) {
         return ACVP_INVALID_ARG;
     }
 
     switch (parm) {
-    case ACVP_CMAC_BLK_DIVISIBLE_1:
-        cap->cap.cmac_cap->msg_len[CMAC_BLK_DIVISIBLE_1] = value;
+    case ACVP_CMAC_MSGLEN:
+        current_cmac_cap->msg_len.value = value;
         break;
-    case ACVP_CMAC_BLK_DIVISIBLE_2:
-        cap->cap.cmac_cap->msg_len[CMAC_BLK_DIVISIBLE_2] = value;
-        break;
-    case ACVP_CMAC_BLK_NOT_DIVISIBLE_1:
-        cap->cap.cmac_cap->msg_len[CMAC_BLK_NOT_DIVISIBLE_1] = value;
-        break;
-    case ACVP_CMAC_BLK_NOT_DIVISIBLE_2:
-        cap->cap.cmac_cap->msg_len[CMAC_BLK_NOT_DIVISIBLE_2] = value;
-        break;
-    case ACVP_CMAC_MSG_LEN_MAX:
-        cap->cap.cmac_cap->msg_len[CMAC_MSG_LEN_MAX] = value;
+    case ACVP_CMAC_MACLEN:
+        current_cmac_cap->mac_len.value = value;
         break;
     case ACVP_CMAC_DIRECTION_GEN:
         cap->cap.cmac_cap->direction_gen = value;
         break;
     case ACVP_CMAC_DIRECTION_VER:
         cap->cap.cmac_cap->direction_ver = value;
-        break;
-    case ACVP_CMAC_MACLEN:
-        acvp_cap_add_length(&cap->cap.cmac_cap->mac_len, value);
         break;
     case ACVP_CMAC_KEYLEN:
         acvp_cap_add_length(&cap->cap.cmac_cap->key_len, value);
