@@ -260,7 +260,9 @@
  * library uses in sending/receiving JSON structs in
  * an ACVP interaction.
  */
-#define ACVP_SYM_KEY_MAX    64       /**< 256 bits, 64 characters */
+#define ACVP_SYM_KEY_MAX_STR 128
+#define ACVP_SYM_KEY_MAX_BYTES 64       /**< 256 bits, 64 characters */
+#define ACVP_SYM_KEY_MAX_BITS 256
 
 #define ACVP_SYM_PT_BIT_MAX 65536                       /**< 65536 bits */
 #define ACVP_SYM_PT_MAX (ACVP_SYM_PT_BIT_MAX >> 2)      /**< 16384 characters */

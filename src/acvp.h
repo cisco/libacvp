@@ -637,6 +637,7 @@ typedef struct acvp_sym_cipher_tc_t {
     ACVP_SYM_KW_MODE kwcipher;
     unsigned int key_len;
     unsigned int pt_len;
+    unsigned int data_len;
     unsigned int aad_len;
     unsigned int iv_len;
     unsigned int ct_len;

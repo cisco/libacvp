@@ -723,7 +723,7 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 ACVP_LOG_ERR("Server JSON missing 'key1'");
                 return ACVP_MISSING_ARG;
             }
-            tmp_key_len = strnlen(key1, ACVP_SYM_KEY_MAX + 1);
+            tmp_key_len = strnlen(key1, ACVP_SYM_KEY_MAX_BYTES + 1);
             if (tmp_key_len != (ACVP_TDES_KEY_STR_LEN / 3)) {
                 ACVP_LOG_ERR("'key1' wrong length (%u). Expected (%d)",
                              tmp_key_len, (ACVP_TDES_KEY_STR_LEN / 3));
@@ -735,7 +735,7 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 ACVP_LOG_ERR("Server JSON missing 'key2'");
                 return ACVP_MISSING_ARG;
             }
-            tmp_key_len = strnlen(key2, ACVP_SYM_KEY_MAX + 1);
+            tmp_key_len = strnlen(key2, ACVP_SYM_KEY_MAX_BYTES + 1);
             if (tmp_key_len != (ACVP_TDES_KEY_STR_LEN / 3)) {
                 ACVP_LOG_ERR("'key2' wrong length (%u). Expected (%d)",
                              tmp_key_len, (ACVP_TDES_KEY_STR_LEN / 3));
@@ -747,7 +747,7 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 ACVP_LOG_ERR("Server JSON missing 'key3'");
                 return ACVP_MISSING_ARG;
             }
-            tmp_key_len = strnlen(key3, ACVP_SYM_KEY_MAX + 1);
+            tmp_key_len = strnlen(key3, ACVP_SYM_KEY_MAX_BYTES + 1);
             if (tmp_key_len != (ACVP_TDES_KEY_STR_LEN / 3)) {
                 ACVP_LOG_ERR("'key3' wrong length (%u). Expected (%d)",
                              tmp_key_len, (ACVP_TDES_KEY_STR_LEN / 3));
@@ -758,7 +758,7 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             key = (char *)json_object_get_string(testobj, "key");
 
             if (key == NULL) {
-                key = calloc(ACVP_SYM_KEY_MAX + 1, sizeof(char));
+                key = calloc(ACVP_SYM_KEY_MAX_BYTES + 1, sizeof(char));
                 if (!key) {
                     ACVP_LOG_ERR("Unable to malloc");
                     return ACVP_MALLOC_FAIL;
@@ -992,7 +992,7 @@ static ACVP_RESULT acvp_des_output_tc(ACVP_CTX *ctx,
     } else {
         if ((stc->cipher == ACVP_TDES_KW) &&
             (opt_rv == ACVP_CRYPTO_WRAP_FAIL)) {
-            json_object_set_boolean(tc_rsp, "decryptFail", 1);
+            json_object_set_boolean(tc_rsp, "testPassed", 1);
             free(tmp);
             return ACVP_SUCCESS;
         }
@@ -1064,7 +1064,7 @@ static ACVP_RESULT acvp_des_init_tc(ACVP_CTX *ctx,
 
     memset(stc, 0x0, sizeof(ACVP_SYM_CIPHER_TC));
 
-    stc->key = calloc(1, ACVP_SYM_KEY_MAX);
+    stc->key = calloc(1, ACVP_SYM_KEY_MAX_BYTES);
     if (!stc->key) { return ACVP_MALLOC_FAIL; }
     stc->pt = calloc(1, ACVP_SYM_PT_MAX);
     if (!stc->pt) { return ACVP_MALLOC_FAIL; }
@@ -1077,7 +1077,7 @@ static ACVP_RESULT acvp_des_init_tc(ACVP_CTX *ctx,
     stc->iv_ret_after = calloc(1, ACVP_SYM_IV_MAX);
     if (!stc->iv_ret_after) { return ACVP_MALLOC_FAIL; }
 
-    rv = acvp_hexstr_to_bin(j_key, stc->key, ACVP_SYM_KEY_MAX, NULL);
+    rv = acvp_hexstr_to_bin(j_key, stc->key, ACVP_SYM_KEY_MAX_BYTES, NULL);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Hex converstion failure (key)");
         return rv;
