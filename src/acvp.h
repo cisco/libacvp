@@ -1029,7 +1029,10 @@ typedef struct acvp_ecdsa_tc_t {
  * passed between libacvp and the crypto module.
  */
 typedef struct acvp_rsa_sig_tc_t {
-    unsigned int tc_id;    /* Test case id */
+    unsigned int tc_id; /* Test case id */
+    int tg_id;          /* needed to keep e,n state */
+    char *group_e;
+    char *group_n;
     ACVP_HASH_ALG hash_alg;
     ACVP_RSA_SIG_TYPE sig_type;
     unsigned int modulo;

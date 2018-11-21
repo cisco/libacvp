@@ -172,6 +172,9 @@ char *api_context;
 char value[] = "same";
 
 static EVP_CIPHER_CTX *glb_cipher_ctx = NULL; /* need to maintain across calls for MCT */
+int current_tg = 0;
+BIGNUM *group_n = NULL;
+RSA *group_rsa = NULL;
 
 #define CHECK_ENABLE_CAP_RV(rv) \
     if (rv != ACVP_SUCCESS) { \
@@ -876,7 +879,8 @@ int main(int argc, char **argv) {
 
 end:
     if (glb_cipher_ctx) EVP_CIPHER_CTX_free(glb_cipher_ctx);
-
+    if (group_rsa) RSA_free(group_rsa);
+    if (group_n) BN_free(group_n);
     /* Free all memory associated with libacvp */
     rv = acvp_cleanup(ctx);
 
@@ -5150,6 +5154,9 @@ err:
 /*
  * RSA SigGen handler
  * requires Makefile.fom to function
+ *
+ * group values are decalred near the top so that they
+ * can be freed at the end of main execution
  */
 static ACVP_RESULT app_rsa_sig_handler(ACVP_TEST_CASE *test_case) {
     EVP_MD *tc_md = NULL;
@@ -5276,24 +5283,33 @@ static ACVP_RESULT app_rsa_sig_handler(ACVP_TEST_CASE *test_case) {
 
         tc->ver_disposition = FIPS_rsa_verify(rsa, tc->msg, tc->msg_len, tc_md, pad_mode, salt_len, NULL, tc->signature, tc->sig_len);
     } else {
-        if (!FIPS_rsa_x931_generate_key_ex(rsa, tc->modulo, bn_e, NULL)) {
-            printf("\nError: Issue with keygen during siggen handling\n");
-            rv = ACVP_CRYPTO_MODULE_FAIL;
-            goto err;
-        }
+        if (current_tg != tc->tg_id) {
+            current_tg = tc->tg_id;
+            if (group_rsa) RSA_free(group_rsa);
+            group_rsa = RSA_new();
+            if (!FIPS_rsa_x931_generate_key_ex(group_rsa, tc->modulo, bn_e, NULL)) {
+                printf("\nError: Issue with keygen during siggen handling\n");
+                rv = ACVP_CRYPTO_MODULE_FAIL;
+                goto err;
+            }
 #if OPENSSL_VERSION_NUMBER <= 0x10100000L
-        e = rsa->e;
-        n = rsa->n;
+            e = group_rsa->e;
+            n = group_rsa->n;
+            group_n = BN_dup(n);
 #else
-        RSA_get0_key(rsa, (const BIGNUM **)&n, (const BIGNUM **)&e, NULL);
+            RSA_get0_key(rsa, (const BIGNUM **)&n, (const BIGNUM **)&e, NULL);
 #endif
+        } else {
+            e = BN_dup(bn_e);
+            n = BN_dup(group_n);
+        }
         tc->e_len = BN_bn2bin(e, tc->e);
         tc->n_len = BN_bn2bin(n, tc->n);
 
         if (tc->msg && tc_md) {
-            siglen = RSA_size(rsa);
+            siglen = RSA_size(group_rsa);
 
-            if (!FIPS_rsa_sign(rsa, tc->msg, tc->msg_len, tc_md, pad_mode, salt_len, NULL,
+            if (!FIPS_rsa_sign(group_rsa, tc->msg, tc->msg_len, tc_md, pad_mode, salt_len, NULL,
                                tc->signature, (unsigned int *)&siglen)) {
                 printf("\nError: RSA Signature Generation fail\n");
                 rv = ACVP_CRYPTO_MODULE_FAIL;

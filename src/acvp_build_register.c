@@ -690,8 +690,8 @@ static ACVP_RESULT acvp_lookup_rsa_primes(JSON_Object *cap_obj, ACVP_RSA_KEYGEN_
         return ACVP_SUCCESS;
     }
 
-    json_object_set_value(cap_obj, "capabilities", json_value_init_array());
-    primes_array = json_object_get_array(cap_obj, "capabilities");
+    json_object_set_value(cap_obj, "properties", json_value_init_array());
+    primes_array = json_object_get_array(cap_obj, "properties");
 
     while (current_mode_cap) {
         JSON_Value *val = NULL;
@@ -768,8 +768,8 @@ static ACVP_RESULT acvp_build_rsa_keygen_register_cap(JSON_Object *cap_obj, ACVP
     }
     json_object_set_string(cap_obj, "keyFormat", keygen_cap->key_format_crt ? "crt" : "standard");
 
-    json_object_set_value(cap_obj, "algSpecs", json_value_init_array());
-    alg_specs_array = json_object_get_array(cap_obj, "algSpecs");
+    json_object_set_value(cap_obj, "capabilities", json_value_init_array());
+    alg_specs_array = json_object_get_array(cap_obj, "capabilities");
 
     while (keygen_cap) {
         alg_specs_val = json_value_init_object();
@@ -814,16 +814,16 @@ static ACVP_RESULT acvp_build_rsa_sig_register_cap(JSON_Object *cap_obj, ACVP_CA
         }
     }
 
-    json_object_set_value(cap_obj, "algSpecs", json_value_init_array());
-    alg_specs_array = json_object_get_array(cap_obj, "algSpecs");
+    json_object_set_value(cap_obj, "capabilities", json_value_init_array());
+    alg_specs_array = json_object_get_array(cap_obj, "capabilities");
 
     while (rsa_cap_mode) {
         alg_specs_val = json_value_init_object();
         alg_specs_obj = json_value_get_object(alg_specs_val);
         json_object_set_string(alg_specs_obj, "sigType", rsa_cap_mode->sig_type_str);
 
-        json_object_set_value(alg_specs_obj, "sigTypeCapabilities", json_value_init_array());
-        sig_type_caps_array = json_object_get_array(alg_specs_obj, "sigTypeCapabilities");
+        json_object_set_value(alg_specs_obj, "properties", json_value_init_array());
+        sig_type_caps_array = json_object_get_array(alg_specs_obj, "properties");
 
         ACVP_RSA_MODE_CAPS_LIST *current_sig_type_cap = rsa_cap_mode->mode_capabilities;
 

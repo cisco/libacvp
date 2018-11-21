@@ -383,7 +383,7 @@ ACVP_RESULT acvp_rsa_keygen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             return ACVP_MISSING_ARG;
         }
 
-        pub_exp_mode_str = json_object_get_string(groupobj, "pubExpMode");
+        pub_exp_mode_str = json_object_get_string(groupobj, "pubExp");
         if (!pub_exp_mode_str) {
             ACVP_LOG_ERR("Server JSON missing 'pubExpMode'");
             return ACVP_MISSING_ARG;
