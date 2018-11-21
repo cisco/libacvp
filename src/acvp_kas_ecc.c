@@ -105,9 +105,9 @@ static ACVP_RESULT acvp_kas_ecc_output_comp_tc(ACVP_CTX *ctx,
             goto end;
         }
         if (!memcmp(stc->z, stc->chash, stc->zlen)) {
-            json_object_set_string(tc_rsp, "result", "pass");
+            json_object_set_boolean(tc_rsp, "testPassed", 1);
         } else {
-            json_object_set_string(tc_rsp, "result", "fail");
+            json_object_set_boolean(tc_rsp, "testPassed", 0);
         }
         goto end;
     }

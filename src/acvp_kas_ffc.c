@@ -52,9 +52,9 @@ static ACVP_RESULT acvp_kas_ffc_output_comp_tc(ACVP_CTX *ctx,
 
     if (stc->test_type == ACVP_KAS_FFC_TT_VAL) {
         if (!memcmp(stc->z, stc->chash, stc->zlen)) {
-            json_object_set_string(tc_rsp, "result", "pass");
+            json_object_set_boolean(tc_rsp, "testPassed", 1);
         } else {
-            json_object_set_string(tc_rsp, "result", "fail");
+            json_object_set_boolean(tc_rsp, "testPassed", 0);
         }
         goto end;
     }
@@ -248,6 +248,7 @@ static ACVP_RESULT acvp_kas_ffc_comp(ACVP_CTX *ctx,
             ACVP_LOG_ERR("Server JSON missing 'testType'");
             return ACVP_MISSING_ARG;
         }
+
         if (!strncmp(test_type, "AFT", 3)) {
             stc->test_type = ACVP_KAS_FFC_TT_AFT;
         } else if (!strncmp(test_type, "VAL", 3)) {
@@ -257,7 +258,7 @@ static ACVP_RESULT acvp_kas_ffc_comp(ACVP_CTX *ctx,
             return ACVP_INVALID_ARG;
         }
 
-        p = json_object_get_string(groupobj, "p");
+        p = (char *)json_object_get_string(groupobj, "p");
         if (!p) {
             ACVP_LOG_ERR("Server JSON missing 'p'");
             return ACVP_MISSING_ARG;
@@ -268,7 +269,7 @@ static ACVP_RESULT acvp_kas_ffc_comp(ACVP_CTX *ctx,
             return ACVP_INVALID_ARG;
         }
 
-        q = json_object_get_string(groupobj, "q");
+        q = (char *)json_object_get_string(groupobj, "q");
         if (!q) {
             ACVP_LOG_ERR("Server JSON missing 'q'");
             return ACVP_MISSING_ARG;
@@ -279,7 +280,7 @@ static ACVP_RESULT acvp_kas_ffc_comp(ACVP_CTX *ctx,
             return ACVP_INVALID_ARG;
         }
 
-        g = json_object_get_string(groupobj, "g");
+        g = (char *)json_object_get_string(groupobj, "g");
         if (!g) {
             ACVP_LOG_ERR("Server JSON missing 'g'");
             return ACVP_MISSING_ARG;
