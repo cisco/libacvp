@@ -390,7 +390,7 @@ static ACVP_RESULT acvp_ecdsa_kat_handler_internal(ACVP_CTX *ctx, JSON_Object *o
             }
 
             hash_alg = acvp_lookup_hash_alg(hash_alg_str);
-            if (!hash_alg || ( alg_id == ACVP_ECDSA_SIGGEN && hash_alg == ACVP_SHA1)) {
+            if (!hash_alg || (alg_id == ACVP_ECDSA_SIGGEN && hash_alg == ACVP_SHA1)) {
                 ACVP_LOG_ERR("Server JSON invalid 'hashAlg'");
                 return ACVP_INVALID_ARG;
             }
@@ -484,15 +484,15 @@ static ACVP_RESULT acvp_ecdsa_kat_handler_internal(ACVP_CTX *ctx, JSON_Object *o
                     ACVP_LOG_ERR("hex conversion failure (qy)");
                     goto key_err;
                 }
-                json_object_set_string(r_gobj, "qy", (const char *) tmp);
+                json_object_set_string(r_gobj, "qy", (const char *)tmp);
                 memset(tmp, 0x0, ACVP_ECDSA_EXP_LEN_MAX);
-    
+
                 rv = acvp_bin_to_hexstr(stc.qx, stc.qx_len, tmp, ACVP_ECDSA_EXP_LEN_MAX);
                 if (rv != ACVP_SUCCESS) {
                     ACVP_LOG_ERR("hex conversion failure (qx)");
                     goto key_err;
                 }
-                json_object_set_string(r_gobj, "qx", (const char *) tmp);
+                json_object_set_string(r_gobj, "qx", (const char *)tmp);
                 memset(tmp, 0x0, ACVP_ECDSA_EXP_LEN_MAX);
                 free(tmp);
             }

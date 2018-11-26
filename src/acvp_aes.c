@@ -683,7 +683,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 return ACVP_INVALID_ARG;
             }
         }
-    
+
         ptlen = (unsigned int)json_object_get_number(groupobj, "payloadLen");
         if (ptlen > ACVP_SYM_PT_BIT_MAX) {
             ACVP_LOG_ERR("'ptLen' too large (%u), max allowed=(%d)",
@@ -957,7 +957,7 @@ static ACVP_RESULT acvp_aes_output_tc(ACVP_CTX *ctx,
             ACVP_LOG_ERR("hex conversion failure (ct)");
             goto err;
         }
-        
+
         if (stc->cipher == ACVP_AES_CTR) {
             json_object_set_string(tc_rsp, "cipherText", tmp);
             if (stc->test_type == ACVP_SYM_TEST_TYPE_CTR) {

@@ -905,9 +905,9 @@ end:
     if (group_g) BN_free(group_g);
     if (group_pub_key) BN_free(group_pub_key);
     /* free ECDSA group vals */
-    if(ecdsa_group_Qx) BN_free(ecdsa_group_Qx);
-    if(ecdsa_group_Qy) BN_free(ecdsa_group_Qy);
-    if(ecdsa_group_key) EC_KEY_free(ecdsa_group_key);
+    if (ecdsa_group_Qx) BN_free(ecdsa_group_Qx);
+    if (ecdsa_group_Qy) BN_free(ecdsa_group_Qy);
+    if (ecdsa_group_key) EC_KEY_free(ecdsa_group_key);
     /* Free all memory associated with libacvp */
     rv = acvp_cleanup(ctx);
 
@@ -4004,13 +4004,13 @@ static ACVP_RESULT app_dsa_handler(ACVP_TEST_CASE *test_case) {
     case ACVP_DSA_MODE_KEYGEN:
         if (dsa_current_tg != tc->tg_id) {
             dsa_current_tg = tc->tg_id;
-        
+
             if (group_dsa) FIPS_dsa_free(group_dsa);
             if (group_p) BN_free(group_p);
             if (group_q) BN_free(group_q);
             if (group_g) BN_free(group_g);
             if (group_pub_key) BN_free(group_pub_key);
-        
+
             group_dsa = FIPS_dsa_new();
             if (!group_dsa) {
                 printf("Failed to allocate DSA strcut\n");
@@ -4018,7 +4018,7 @@ static ACVP_RESULT app_dsa_handler(ACVP_TEST_CASE *test_case) {
             }
             L = tc->l;
             N = tc->n;
-        
+
             if (dsa_builtin_paramgen2(group_dsa, L, N, md, NULL, 0, -1,
                                       NULL, NULL, NULL, NULL) <= 0) {
                 printf("Parameter Generation error\n");
@@ -4035,7 +4035,7 @@ static ACVP_RESULT app_dsa_handler(ACVP_TEST_CASE *test_case) {
                          (const BIGNUM **)&group_q, (const BIGNUM **)&group_g);
 #endif
         }
-    
+
         tc->p_len = BN_bn2bin(group_p, tc->p);
         tc->q_len = BN_bn2bin(group_q, tc->q);
         tc->g_len = BN_bn2bin(group_g, tc->g);
@@ -4278,16 +4278,16 @@ static ACVP_RESULT app_dsa_handler(ACVP_TEST_CASE *test_case) {
 
             break;
         }
-    
+
         if (dsa_current_tg != tc->tg_id) {
             dsa_current_tg = tc->tg_id;
-            
+
             if (group_dsa) FIPS_dsa_free(group_dsa);
             if (group_p) BN_free(group_p);
             if (group_q) BN_free(group_q);
             if (group_g) BN_free(group_g);
             if (group_pub_key) BN_free(group_pub_key);
-            
+
             group_dsa = FIPS_dsa_new();
             if (!group_dsa) {
                 printf("Failed to allocate DSA strcut\n");
@@ -4295,14 +4295,14 @@ static ACVP_RESULT app_dsa_handler(ACVP_TEST_CASE *test_case) {
             }
             L = tc->l;
             N = tc->n;
-    
+
             if (dsa_builtin_paramgen2(group_dsa, L, N, md, NULL, 0, -1,
                                       NULL, NULL, NULL, NULL) <= 0) {
                 printf("Parameter Generation error\n");
                 FIPS_dsa_free(group_dsa);
                 return ACVP_CRYPTO_MODULE_FAIL;
             }
-    
+
             if (!DSA_generate_key(group_dsa)) {
                 printf("\n DSA_generate_key failed");
                 FIPS_dsa_free(group_dsa);
@@ -4329,7 +4329,7 @@ static ACVP_RESULT app_dsa_handler(ACVP_TEST_CASE *test_case) {
         tc->q_len = BN_bn2bin(group_q, tc->q);
         tc->g_len = BN_bn2bin(group_g, tc->g);
         tc->y_len = BN_bn2bin(group_pub_key, tc->y);
-    
+
         sig = FIPS_dsa_sign(group_dsa, tc->msg, tc->msglen, md);
 
 #if OPENSSL_VERSION_NUMBER <= 0x10100000L
@@ -5085,7 +5085,7 @@ static ACVP_RESULT app_ecdsa_handler(ACVP_TEST_CASE *test_case) {
         if (ecdsa_current_tg != tc->tg_id) {
             ecdsa_current_tg = tc->tg_id;
             if (ecdsa_group_key) EC_KEY_free(ecdsa_group_key);
-            
+
             ecdsa_group_Qx = FIPS_bn_new();
             ecdsa_group_Qy = FIPS_bn_new();
             if (!ecdsa_group_Qx || !ecdsa_group_Qy) {
@@ -5099,13 +5099,13 @@ static ACVP_RESULT app_ecdsa_handler(ACVP_TEST_CASE *test_case) {
                 rv = ACVP_CRYPTO_MODULE_FAIL;
                 goto err;
             }
-    
+
             if (!EC_KEY_generate_key(ecdsa_group_key)) {
                 printf("Error generating ECDSA key\n");
                 rv = ACVP_CRYPTO_MODULE_FAIL;
                 goto err;
             }
-    
+
             if (!ec_get_pubkey(ecdsa_group_key, ecdsa_group_Qx, ecdsa_group_Qy)) {
                 printf("Error getting ECDSA key attributes\n");
                 rv = ACVP_CRYPTO_MODULE_FAIL;
