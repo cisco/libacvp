@@ -336,7 +336,7 @@ static ACVP_RESULT acvp_rsa_sig_kat_handler_internal(ACVP_CTX *ctx, JSON_Object 
             return ACVP_MISSING_ARG;
         }
         hash_alg = acvp_lookup_hash_alg(hash_alg_str);
-        if (!hash_alg || hash_alg == ACVP_SHA1) {
+        if (!hash_alg || (alg_id == ACVP_RSA_SIGGEN && hash_alg == ACVP_SHA1)) {
             ACVP_LOG_ERR("Server JSON invalid 'hashAlg'");
             return ACVP_INVALID_ARG;
         }

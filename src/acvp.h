@@ -998,6 +998,7 @@ typedef struct acvp_rsa_keygen_tc_t {
  */
 typedef struct acvp_ecdsa_tc_t {
     unsigned int tc_id;    /* Test case id */
+    int tg_id;
     ACVP_HASH_ALG hash_alg;
 
     ACVP_CIPHER cipher;
@@ -1085,6 +1086,8 @@ typedef enum acvp_dsa_gen_parm {
  */
 /*! @struct ACVP_DSA_TC */
 typedef struct acvp_dsa_tc_t {
+    int tg_id;
+    int tc_id;
     ACVP_CIPHER cipher;
     ACVP_DSA_MODE mode; // "pqgGen", "pqgVer", etc.
     ACVP_HASH_ALG sha;

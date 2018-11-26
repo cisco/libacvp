@@ -76,22 +76,6 @@ static ACVP_RESULT acvp_ecdsa_output_tc(ACVP_CTX *ctx, ACVP_CIPHER cipher, ACVP_
         json_object_set_boolean(tc_rsp, "testPassed", stc->ver_disposition);
     }
     if (cipher == ACVP_ECDSA_SIGGEN) {
-        rv = acvp_bin_to_hexstr(stc->qy, stc->qy_len, tmp, ACVP_ECDSA_EXP_LEN_MAX);
-        if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("hex conversion failure (qy)");
-            goto err;
-        }
-        json_object_set_string(tc_rsp, "qy", (const char *)tmp);
-        memset(tmp, 0x0, ACVP_ECDSA_EXP_LEN_MAX);
-
-        rv = acvp_bin_to_hexstr(stc->qx, stc->qx_len, tmp, ACVP_ECDSA_EXP_LEN_MAX);
-        if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("hex conversion failure (qx)");
-            goto err;
-        }
-        json_object_set_string(tc_rsp, "qx", (const char *)tmp);
-        memset(tmp, 0x0, ACVP_ECDSA_EXP_LEN_MAX);
-
         rv = acvp_bin_to_hexstr(stc->r, stc->r_len, tmp, ACVP_ECDSA_EXP_LEN_MAX);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("hex conversion failure (r)");
@@ -133,6 +117,7 @@ static ACVP_RESULT acvp_ecdsa_release_tc(ACVP_ECDSA_TC *stc) {
 static ACVP_RESULT acvp_ecdsa_init_tc(ACVP_CTX *ctx,
                                       ACVP_CIPHER cipher,
                                       ACVP_ECDSA_TC *stc,
+                                      int tg_id,
                                       unsigned int tc_id,
                                       ACVP_EC_CURVE curve,
                                       ACVP_ECDSA_SECRET_GEN_MODE secret_gen_mode,
@@ -147,6 +132,7 @@ static ACVP_RESULT acvp_ecdsa_init_tc(ACVP_CTX *ctx,
     memset(stc, 0x0, sizeof(ACVP_ECDSA_TC));
 
     stc->tc_id = tc_id;
+    stc->tg_id = tg_id;
     stc->cipher = cipher;
     stc->hash_alg = hash_alg;
     stc->curve = curve;
@@ -404,7 +390,7 @@ static ACVP_RESULT acvp_ecdsa_kat_handler_internal(ACVP_CTX *ctx, JSON_Object *o
             }
 
             hash_alg = acvp_lookup_hash_alg(hash_alg_str);
-            if (!hash_alg || hash_alg == ACVP_SHA1) {
+            if (!hash_alg || ( alg_id == ACVP_ECDSA_SIGGEN && hash_alg == ACVP_SHA1)) {
                 ACVP_LOG_ERR("Server JSON invalid 'hashAlg'");
                 return ACVP_INVALID_ARG;
             }
@@ -473,7 +459,7 @@ static ACVP_RESULT acvp_ecdsa_kat_handler_internal(ACVP_CTX *ctx, JSON_Object *o
 
             json_object_set_number(r_tobj, "tcId", tc_id);
 
-            rv = acvp_ecdsa_init_tc(ctx, alg_id, &stc, tc_id, curve, secret_gen_mode, hash_alg, qx, qy, message, r, s);
+            rv = acvp_ecdsa_init_tc(ctx, alg_id, &stc, tgId, tc_id, curve, secret_gen_mode, hash_alg, qx, qy, message, r, s);
 
             /* Process the current test vector... */
             if (rv == ACVP_SUCCESS) {
@@ -491,6 +477,25 @@ static ACVP_RESULT acvp_ecdsa_kat_handler_internal(ACVP_CTX *ctx, JSON_Object *o
             /*
              * Output the test case results using JSON
              */
+            if (cipher == ACVP_ECDSA_SIGGEN) {
+                char *tmp = calloc(ACVP_ECDSA_EXP_LEN_MAX + 1, sizeof(char));
+                rv = acvp_bin_to_hexstr(stc.qy, stc.qy_len, tmp, ACVP_ECDSA_EXP_LEN_MAX);
+                if (rv != ACVP_SUCCESS) {
+                    ACVP_LOG_ERR("hex conversion failure (qy)");
+                    goto key_err;
+                }
+                json_object_set_string(r_gobj, "qy", (const char *) tmp);
+                memset(tmp, 0x0, ACVP_ECDSA_EXP_LEN_MAX);
+    
+                rv = acvp_bin_to_hexstr(stc.qx, stc.qx_len, tmp, ACVP_ECDSA_EXP_LEN_MAX);
+                if (rv != ACVP_SUCCESS) {
+                    ACVP_LOG_ERR("hex conversion failure (qx)");
+                    goto key_err;
+                }
+                json_object_set_string(r_gobj, "qx", (const char *) tmp);
+                memset(tmp, 0x0, ACVP_ECDSA_EXP_LEN_MAX);
+                free(tmp);
+            }
             rv = acvp_ecdsa_output_tc(ctx, alg_id, &stc, r_tobj);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("ERROR: JSON output failure in hash module");

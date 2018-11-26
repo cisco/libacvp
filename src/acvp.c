@@ -1397,14 +1397,12 @@ static ACVP_RESULT acvp_parse_login(ACVP_CTX *ctx) {
      */
     jwt = json_object_get_string(obj, "accessToken");
     if (!jwt) {
-        json_value_free(val);
         ACVP_LOG_ERR("No access_token provided in registration response");
         rv = ACVP_NO_TOKEN;
         goto end;
     } else {
         i = strnlen(jwt, ACVP_JWT_TOKEN_MAX + 1);
         if (i > ACVP_JWT_TOKEN_MAX) {
-            json_value_free(val);
             ACVP_LOG_ERR("access_token too large");
             rv = ACVP_NO_TOKEN;
             goto end;
