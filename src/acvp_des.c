@@ -567,9 +567,9 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     int j, t_cnt;
     JSON_Value *r_vs_val = NULL;
     JSON_Object *r_vs = NULL;
-    JSON_Array *r_tarr = NULL;  /* Response testarray */
-    JSON_Value *r_tval = NULL;  /* Response testval */
-    JSON_Object *r_tobj = NULL; /* Response testobj */
+    JSON_Array *r_tarr = NULL, *r_garr = NULL;  /* Response testarray, grouparray */
+    JSON_Value *r_tval = NULL, *r_gval = NULL;  /* Response testval, groupval */
+    JSON_Object *r_tobj = NULL, *r_gobj = NULL; /* Response testobj, groupobj */
     ACVP_CAPS_LIST *cap;
     ACVP_SYM_CIPHER_TC stc;
     ACVP_TEST_CASE tc;
@@ -635,14 +635,33 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
     json_object_set_number(r_vs, "vsId", ctx->vs_id);
     json_object_set_string(r_vs, "algorithm", alg_str);
-    json_object_set_value(r_vs, "testResults", json_value_init_array());
-    r_tarr = json_object_get_array(r_vs, "testResults");
+    /*
+     * create an array of response test groups
+     */
+    json_object_set_value(r_vs, "testGroups", json_value_init_array());
+    r_garr = json_object_get_array(r_vs, "testGroups");
 
     groups = json_object_get_array(obj, "testGroups");
     g_cnt = json_array_get_count(groups);
     for (i = 0; i < g_cnt; i++) {
+        int tgId = 0;
         groupval = json_array_get_value(groups, i);
         groupobj = json_value_get_object(groupval);
+
+        /*
+         * Create a new group in the response with the tgid
+         * and an array of tests
+         */
+        r_gval = json_value_init_object();
+        r_gobj = json_value_get_object(r_gval);
+        tgId = json_object_get_number(groupobj, "tgId");
+        if (!tgId) {
+            ACVP_LOG_ERR("Missing tgid from server JSON groub obj");
+            return ACVP_MALFORMED_JSON;
+        }
+        json_object_set_number(r_gobj, "tgId", tgId);
+        json_object_set_value(r_gobj, "tests", json_value_init_array());
+        r_tarr = json_object_get_array(r_gobj, "tests");
 
         dir_str = json_object_get_string(groupobj, "direction");
         if (!dir_str) {
@@ -704,7 +723,7 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 ACVP_LOG_ERR("Server JSON missing 'key1'");
                 return ACVP_MISSING_ARG;
             }
-            tmp_key_len = strnlen(key1, ACVP_SYM_KEY_MAX + 1);
+            tmp_key_len = strnlen(key1, ACVP_SYM_KEY_MAX_BYTES + 1);
             if (tmp_key_len != (ACVP_TDES_KEY_STR_LEN / 3)) {
                 ACVP_LOG_ERR("'key1' wrong length (%u). Expected (%d)",
                              tmp_key_len, (ACVP_TDES_KEY_STR_LEN / 3));
@@ -716,7 +735,7 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 ACVP_LOG_ERR("Server JSON missing 'key2'");
                 return ACVP_MISSING_ARG;
             }
-            tmp_key_len = strnlen(key2, ACVP_SYM_KEY_MAX + 1);
+            tmp_key_len = strnlen(key2, ACVP_SYM_KEY_MAX_BYTES + 1);
             if (tmp_key_len != (ACVP_TDES_KEY_STR_LEN / 3)) {
                 ACVP_LOG_ERR("'key2' wrong length (%u). Expected (%d)",
                              tmp_key_len, (ACVP_TDES_KEY_STR_LEN / 3));
@@ -728,7 +747,7 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 ACVP_LOG_ERR("Server JSON missing 'key3'");
                 return ACVP_MISSING_ARG;
             }
-            tmp_key_len = strnlen(key3, ACVP_SYM_KEY_MAX + 1);
+            tmp_key_len = strnlen(key3, ACVP_SYM_KEY_MAX_BYTES + 1);
             if (tmp_key_len != (ACVP_TDES_KEY_STR_LEN / 3)) {
                 ACVP_LOG_ERR("'key3' wrong length (%u). Expected (%d)",
                              tmp_key_len, (ACVP_TDES_KEY_STR_LEN / 3));
@@ -739,7 +758,7 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             key = (char *)json_object_get_string(testobj, "key");
 
             if (key == NULL) {
-                key = calloc(ACVP_SYM_KEY_MAX + 1, sizeof(char));
+                key = calloc(ACVP_SYM_KEY_MAX_BYTES + 1, sizeof(char));
                 if (!key) {
                     ACVP_LOG_ERR("Unable to malloc");
                     return ACVP_MALLOC_FAIL;
@@ -900,6 +919,7 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             /* Append the test response value to array */
             json_array_append_value(r_tarr, r_tval);
         }
+        json_array_append_value(r_garr, r_gval);
     }
 
     json_array_append_value(reg_arry, r_vs_val);
@@ -972,7 +992,7 @@ static ACVP_RESULT acvp_des_output_tc(ACVP_CTX *ctx,
     } else {
         if ((stc->cipher == ACVP_TDES_KW) &&
             (opt_rv == ACVP_CRYPTO_WRAP_FAIL)) {
-            json_object_set_boolean(tc_rsp, "decryptFail", 1);
+            json_object_set_boolean(tc_rsp, "testPassed", 1);
             free(tmp);
             return ACVP_SUCCESS;
         }
@@ -1044,7 +1064,7 @@ static ACVP_RESULT acvp_des_init_tc(ACVP_CTX *ctx,
 
     memset(stc, 0x0, sizeof(ACVP_SYM_CIPHER_TC));
 
-    stc->key = calloc(1, ACVP_SYM_KEY_MAX);
+    stc->key = calloc(1, ACVP_SYM_KEY_MAX_BYTES);
     if (!stc->key) { return ACVP_MALLOC_FAIL; }
     stc->pt = calloc(1, ACVP_SYM_PT_MAX);
     if (!stc->pt) { return ACVP_MALLOC_FAIL; }
@@ -1057,7 +1077,7 @@ static ACVP_RESULT acvp_des_init_tc(ACVP_CTX *ctx,
     stc->iv_ret_after = calloc(1, ACVP_SYM_IV_MAX);
     if (!stc->iv_ret_after) { return ACVP_MALLOC_FAIL; }
 
-    rv = acvp_hexstr_to_bin(j_key, stc->key, ACVP_SYM_KEY_MAX, NULL);
+    rv = acvp_hexstr_to_bin(j_key, stc->key, ACVP_SYM_KEY_MAX_BYTES, NULL);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Hex converstion failure (key)");
         return rv;

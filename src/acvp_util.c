@@ -24,6 +24,7 @@
 * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *****************************************************************************/
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
 #include "acvp.h"
@@ -324,22 +325,38 @@ ACVP_RESULT is_valid_rsa_mod(int value) {
     } else { return ACVP_SUCCESS; }
 }
 
+char *lower_string(const char *s) {
+    int c = 0;
+    int length = strnlen(s, ACVP_ATTR_URL_MAX); // arbitrary
+    char *lowered = calloc(length, sizeof(char));
+
+    while (s[c] != '\0') {
+        if (s[c] >= 'A' && s[c] <= 'Z') {
+            lowered[c] = (char)(s[c] + 32);
+        } else {
+            lowered[c] = s[c];
+        }
+        c++;
+    }
+    return lowered;
+}
+
 /*
  * Local table for matching ACVP_EC_CURVE to name string and vice versa.
  */
 static struct acvp_ec_curve_info ec_curve_tbl[] = {
-    { ACVP_EC_CURVE_P224, "p-224" },
-    { ACVP_EC_CURVE_P256, "p-256" },
-    { ACVP_EC_CURVE_P384, "p-384" },
-    { ACVP_EC_CURVE_P521, "p-521" },
-    { ACVP_EC_CURVE_B233, "b-233" },
-    { ACVP_EC_CURVE_B283, "b-283" },
-    { ACVP_EC_CURVE_B409, "b-409" },
-    { ACVP_EC_CURVE_B571, "b-571" },
-    { ACVP_EC_CURVE_K233, "k-233" },
-    { ACVP_EC_CURVE_K283, "k-283" },
-    { ACVP_EC_CURVE_K409, "k-409" },
-    { ACVP_EC_CURVE_K571, "k-571" }
+    { ACVP_EC_CURVE_P224, "P-224" },
+    { ACVP_EC_CURVE_P256, "P-256" },
+    { ACVP_EC_CURVE_P384, "P-384" },
+    { ACVP_EC_CURVE_P521, "P-521" },
+    { ACVP_EC_CURVE_B233, "B-233" },
+    { ACVP_EC_CURVE_B283, "B-283" },
+    { ACVP_EC_CURVE_B409, "B-409" },
+    { ACVP_EC_CURVE_B571, "B-571" },
+    { ACVP_EC_CURVE_K233, "K-233" },
+    { ACVP_EC_CURVE_K283, "K-283" },
+    { ACVP_EC_CURVE_K409, "K-409" },
+    { ACVP_EC_CURVE_K571, "K-571" }
 };
 static int ec_curve_tbl_length =
     sizeof(ec_curve_tbl) / sizeof(struct acvp_ec_curve_info);
@@ -349,9 +366,9 @@ static int ec_curve_tbl_length =
  * Containes "deprecated" curves (still allowed for ECDSA_KEYVER and ECDSA_SIGVER).
  */
 static struct acvp_ec_curve_info ec_curve_depr_tbl[] = {
-    { ACVP_EC_CURVE_P192, "p-192" },
-    { ACVP_EC_CURVE_B163, "b-163" },
-    { ACVP_EC_CURVE_K163, "k-163" }
+    { ACVP_EC_CURVE_P192, "P-192" },
+    { ACVP_EC_CURVE_B163, "B-163" },
+    { ACVP_EC_CURVE_K163, "K-163" }
 };
 static int ec_curve_depr_tbl_length =
     sizeof(ec_curve_depr_tbl) / sizeof(struct acvp_ec_curve_info);
@@ -381,7 +398,7 @@ ACVP_EC_CURVE acvp_lookup_ec_curve(ACVP_CIPHER cipher, const char *name) {
     int i = 0;
 
     for (i = 0; i < ec_curve_tbl_length; i++) {
-        if (!strncmp(name, ec_curve_tbl[i].name,
+        if (!strncmp(lower_string(name), lower_string(ec_curve_tbl[i].name),
                      strlen(ec_curve_tbl[i].name))) {
             return ec_curve_tbl[i].id;
         }
@@ -390,7 +407,7 @@ ACVP_EC_CURVE acvp_lookup_ec_curve(ACVP_CIPHER cipher, const char *name) {
     if (cipher == ACVP_ECDSA_KEYVER || cipher == ACVP_ECDSA_SIGVER) {
         /* Check the deprecated curves */
         for (i = 0; i < ec_curve_depr_tbl_length; i++) {
-            if (!strncmp(name, ec_curve_depr_tbl[i].name,
+            if (!strncmp(lower_string(name), lower_string(ec_curve_depr_tbl[i].name),
                          strlen(ec_curve_depr_tbl[i].name))) {
                 return ec_curve_depr_tbl[i].id;
             }
@@ -442,7 +459,7 @@ ACVP_RESULT acvp_bin_to_hexstr(const unsigned char *src, int src_len, char *dest
 ACVP_RESULT acvp_bit_to_bin(const unsigned char *in, int len, unsigned char *out) {
     int n;
 
-    if (!len || !out || !in) {
+    if (!out || !in) {
         return ACVP_INVALID_ARG;
     }
 
@@ -575,21 +592,6 @@ ACVP_DRBG_CAP_MODE_LIST *acvp_locate_drbg_mode_entry(ACVP_CAPS_LIST *cap, ACVP_D
     return NULL;
 }
 
-unsigned int yes_or_no(ACVP_CTX *ctx, const char *text) {
-    unsigned int result;
-
-    if (!ctx || !text) { return 0; }
-    if (!strncmp(text, "yes", 3)) {
-        result = 1;
-    } else if (!strncmp(text, "no", 2)) {
-        result = 0;
-    } else {
-        ACVP_LOG_ERR("ERROR: unsupported yes/no value from server treated as 'no': (%s)", text);
-        result = 0;
-    }
-    return result;
-}
-
 /*
  * Creates a JSON acvp array which consists of
  * [{preamble}, {object}]
@@ -631,10 +633,12 @@ char *acvp_lookup_error_string(ACVP_RESULT rv) {
         { ACVP_NO_CTX,             "No valid context found"                           },
         { ACVP_TRANSPORT_FAIL,     "Error using transport library"                    },
         { ACVP_JSON_ERR,           "Error using JSON library"                         },
+        { ACVP_NO_DATA,            "Trying to use data but none was found"            },
         { ACVP_UNSUPPORTED_OP,     "Unsupported operation"                            },
         { ACVP_CLEANUP_FAIL,       "Error cleaning up ACVP context"                   },
         { ACVP_KAT_DOWNLOAD_RETRY, "Error, need to retry"                             },
         { ACVP_INVALID_ARG,        "Invalid argument"                                 },
+        { ACVP_MISSING_ARG,        "Missing a required argument"                      },
         { ACVP_CRYPTO_MODULE_FAIL, "Error from crypto module processing a vector set" },
         { ACVP_CRYPTO_TAG_FAIL,    "Error from crypto module processing a vector set" },
         { ACVP_CRYPTO_WRAP_FAIL,   "Error from crypto module processing a vector set" },
@@ -681,4 +685,15 @@ void ctr128_inc(unsigned char *counter) {
         counter[n] = (unsigned char)c;
         c >>= 8;
     } while (n);
+}
+
+void acvp_free_kv_list(ACVP_KV_LIST *kv_list) {
+    ACVP_KV_LIST *tmp;
+
+    while (kv_list) {
+        tmp = kv_list;
+        kv_list = kv_list->next;
+        if (tmp->key) free(tmp->key);
+        if (tmp->value) free(tmp->value);
+    }
 }

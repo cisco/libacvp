@@ -269,9 +269,9 @@ ACVP_RESULT acvp_rsa_keygen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
     JSON_Value *r_vs_val = NULL;
     JSON_Object *r_vs = NULL;
-    JSON_Array *r_tarr = NULL;  /* Response testarray */
-    JSON_Value *r_tval = NULL;  /* Response testval */
-    JSON_Object *r_tobj = NULL; /* Response testobj */
+    JSON_Array *r_tarr = NULL, *r_garr = NULL;  /* Response testarray, grouparray */
+    JSON_Value *r_tval = NULL, *r_gval = NULL;  /* Response testval, groupval */
+    JSON_Object *r_tobj = NULL, *r_gobj = NULL; /* Response testobj, groupobj */
     ACVP_CAPS_LIST *cap;
     ACVP_RSA_KEYGEN_TC stc;
     ACVP_TEST_CASE tc;
@@ -348,15 +348,34 @@ ACVP_RESULT acvp_rsa_keygen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     json_object_set_number(r_vs, "vsId", ctx->vs_id);
     json_object_set_string(r_vs, "algorithm", alg_str);
     json_object_set_string(r_vs, "mode", mode_str);
-    json_object_set_value(r_vs, "testResults", json_value_init_array());
-    r_tarr = json_object_get_array(r_vs, "testResults");
+    /*
+     * create an array of response test groups
+     */
+    json_object_set_value(r_vs, "testGroups", json_value_init_array());
+    r_garr = json_object_get_array(r_vs, "testGroups");
 
     groups = json_object_get_array(obj, "testGroups");
     g_cnt = json_array_get_count(groups);
 
     for (i = 0; i < g_cnt; i++) {
+        int tgId = 0;
         groupval = json_array_get_value(groups, i);
         groupobj = json_value_get_object(groupval);
+
+        /*
+         * Create a new group in the response with the tgid
+         * and an array of tests
+         */
+        r_gval = json_value_init_object();
+        r_gobj = json_value_get_object(r_gval);
+        tgId = json_object_get_number(groupobj, "tgId");
+        if (!tgId) {
+            ACVP_LOG_ERR("Missing tgid from server JSON groub obj");
+            return ACVP_MALFORMED_JSON;
+        }
+        json_object_set_number(r_gobj, "tgId", tgId);
+        json_object_set_value(r_gobj, "tests", json_value_init_array());
+        r_tarr = json_object_get_array(r_gobj, "tests");
 
         info_gen_by_server = json_object_get_boolean(groupobj, "infoGeneratedByServer");
         if (info_gen_by_server == -1) {
@@ -364,7 +383,7 @@ ACVP_RESULT acvp_rsa_keygen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             return ACVP_MISSING_ARG;
         }
 
-        pub_exp_mode_str = json_object_get_string(groupobj, "pubExpMode");
+        pub_exp_mode_str = json_object_get_string(groupobj, "pubExp");
         if (!pub_exp_mode_str) {
             ACVP_LOG_ERR("Server JSON missing 'pubExpMode'");
             return ACVP_MISSING_ARG;
@@ -588,6 +607,7 @@ key_err:
                 goto end;
             }
         }
+        json_array_append_value(r_garr, r_gval);
     }
 
 end:

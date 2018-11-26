@@ -329,7 +329,7 @@ static size_t acvp_curl_write_upld_func(void *ptr, size_t size, size_t nmemb, vo
  * to the application (us).  We will store the HTTP body
  * on the ACVP_CTX in one of the transitory fields.
  */
-static size_t acvp_curl_write_ans_func(void *ptr, size_t size, size_t nmemb, void *userdata) {
+static size_t acvp_curl_write_vs_func(void *ptr, size_t size, size_t nmemb, void *userdata) {
     ACVP_CTX *ctx = (ACVP_CTX *)userdata;
     char *json_buf;
 
@@ -338,14 +338,49 @@ static size_t acvp_curl_write_ans_func(void *ptr, size_t size, size_t nmemb, voi
         return 0;
     }
 
-    if (!ctx->ans_buf) {
-        ctx->ans_buf = calloc(1, ACVP_ANS_BUF_MAX);
-        if (!ctx->ans_buf) {
+    if (!ctx->test_sess_buf) {
+        ctx->test_sess_buf = calloc(1, ACVP_ANS_BUF_MAX);
+        if (!ctx->test_sess_buf) {
             fprintf(stderr, "\nmalloc failed in curl write ans func\n");
             return 0;
         }
     }
-    json_buf = ctx->ans_buf;
+    json_buf = ctx->test_sess_buf;
+
+    if ((ctx->read_ctr + nmemb) > ACVP_ANS_BUF_MAX) {
+        fprintf(stderr, "\nAnswer response is too large\n");
+        return 0;
+    }
+
+    memcpy(&json_buf[ctx->read_ctr], ptr, nmemb);
+    json_buf[ctx->read_ctr + nmemb] = 0;
+    ctx->read_ctr += nmemb;
+
+    return nmemb;
+}
+
+/*
+ * This is a callback used by curl to send the HTTP body
+ * to the application (us).  We will store the HTTP body
+ * on the ACVP_CTX in one of the transitory fields.
+ */
+static size_t acvp_curl_write_sample_func(void *ptr, size_t size, size_t nmemb, void *userdata) {
+    ACVP_CTX *ctx = (ACVP_CTX *)userdata;
+    char *json_buf;
+
+    if (size != 1) {
+        fprintf(stderr, "\ncurl size not 1\n");
+        return 0;
+    }
+
+    if (!ctx->sample_buf) {
+        ctx->sample_buf = calloc(1, ACVP_ANS_BUF_MAX);
+        if (!ctx->sample_buf) {
+            fprintf(stderr, "\nmalloc failed in curl write ans func\n");
+            return 0;
+        }
+    }
+    json_buf = ctx->sample_buf;
 
     if ((ctx->read_ctr + nmemb) > ACVP_ANS_BUF_MAX) {
         fprintf(stderr, "\nAnswer response is too large\n");
@@ -430,111 +465,137 @@ static size_t acvp_curl_write_register_func(void *ptr, size_t size, size_t nmemb
 }
 
 /*
- * This is the transport function used within libacvp to register
- * the DUT with the ACVP server.
- *
- * The reg parameter is the JSON encoded registration message that
- * will be sent to the server.
+ * This is the internal send function that takes the URI as an extra
+ * parameter. This removes repeated code without having to change the
+ * API that the library uses to send registrations
  */
-ACVP_RESULT acvp_retrieve_sample_answers(ACVP_CTX *ctx, int vs_id) {
+static ACVP_RESULT acvp_send_internal(ACVP_CTX *ctx, char *data, char *uri) {
     int rv;
-    char url[512]; //TODO: 512 is an arbitrary limit
-    ACVP_RESULT result;
+    char url[ACVP_ATTR_URL_MAX];
 
     if (!ctx) {
+        ACVP_LOG_ERR("No CTX to send");
         return ACVP_NO_CTX;
     }
 
-    if (!ctx->server_name || !ctx->server_port) {
-        ACVP_LOG_ERR("Missing server/port details; call acvp_set_server first");
+    if (!ctx->server_port || !ctx->server_name) {
+        ACVP_LOG_ERR("Call acvp_set_server to fill in server name and port");
         return ACVP_MISSING_ARG;
     }
 
-    if (!vs_id) {
-        ACVP_LOG_ERR("Missing vs_id from retrieve sample answers");
-        return ACVP_MISSING_ARG;
-    }
-
-    memset(url, 0x0, 512);
-    snprintf(url, 511, "https://%s:%d/%svalidation/acvp/vectors/answers?vsId=%d", ctx->server_name, ctx->server_port,
-             ctx->path_segment, vs_id);
-
-    ACVP_LOG_STATUS("GET acvp/validation/acvp/vectors/answers?vsId=%d", vs_id);
-
-    rv = acvp_curl_http_get(ctx, url, &acvp_curl_write_ans_func);
-    if (rv != HTTP_OK) {
-        if (rv == HTTP_UNAUTH) {
-            ACVP_LOG_ERR("JWT authorization has timed out curl rv=%d\n", rv);
-            /* give it one more try after the refresh */
-            result = acvp_refresh(ctx);
-            if (result == ACVP_SUCCESS) {
-                rv = acvp_curl_http_get(ctx, url, &acvp_curl_write_ans_func);
-                if (rv != HTTP_OK) {
-                    ACVP_LOG_ERR("Unable to get sample answers from ACVP server. curl rv=%d\n", rv);
-                    return ACVP_TRANSPORT_FAIL;
-                }
-            }
-        }
-    }
-
-    /*
-     * Update user with status
-     */
-    ACVP_LOG_STATUS("Successfully received sample answers from ACVP server");
-    printf("\n%s\n\n", ctx->ans_buf);
-
-    free(ctx->ans_buf);
-    ctx->ans_buf = NULL;
-
-    return ACVP_SUCCESS;
-}
-
-/*
- * This is the transport function used within libacvp to register
- * the DUT with the ACVP server.
- *
- * The reg parameter is the JSON encoded registration message that
- * will be sent to the server.
- */
-ACVP_RESULT acvp_send_register(ACVP_CTX *ctx, char *reg) {
-    int rv;
-    char url[512]; //TODO: 512 is an arbitrary limit
-
-    if (!ctx) {
-        ACVP_LOG_ERR("No CTX for register");
-        return ACVP_NO_CTX;
-    }
-    if (!reg) {
-        ACVP_LOG_ERR("No data for register");
+    if (!data) {
+        ACVP_LOG_ERR("No data to send");
         return ACVP_NO_DATA;
     }
 
-    memset(url, 0x0, 512);
-    snprintf(url, 511, "https://%s:%d/%svalidation/acvp/register", ctx->server_name, ctx->server_port,
-             ctx->path_segment);
+    memset(url, 0x0, ACVP_ATTR_URL_MAX);
+    snprintf(url, ACVP_ATTR_URL_MAX - 1, "https://%s:%d/%s%s%s", ctx->server_name, ctx->server_port,
+             ctx->api_context, ctx->path_segment, uri);
 
-    rv = acvp_curl_http_post(ctx, url, reg, &acvp_curl_write_register_func);
+    /*
+     * only need to clear jwt if logging in
+     */
+    if (strncmp(uri, "login", 5) == 0) {
+        if (ctx->jwt_token) {
+            free(ctx->jwt_token);
+        }
+        ctx->jwt_token = NULL;
+    }
+
+    rv = acvp_curl_http_post(ctx, url, data, &acvp_curl_write_register_func);
     if (rv != HTTP_OK) {
-        ACVP_LOG_ERR("Unable to register with ACVP server. curl rv=%d\n", rv);
-        ACVP_LOG_ERR("%s\n", ctx->reg_buf);
+        ACVP_LOG_ERR("Unable to register |%s| with ACVP server. curl rv=%d\n", url, rv);
+        printf("%s", ctx->reg_buf);
         return ACVP_TRANSPORT_FAIL;
     }
 
     /*
      * Update user with status
      */
-    ACVP_LOG_STATUS("Successfully received registration response from ACVP server");
+    ACVP_LOG_STATUS("Successfully received response from ACVP server");
 
     return ACVP_SUCCESS;
+}
+
+/*
+ * This is the transport function used within libacvp to register
+ * the DUT attributes with the ACVP server.
+ *
+ * The reg parameter is the JSON encoded registration message that
+ * will be sent to the server.
+ */
+#define ACVP_VENDORS_URI "vendors"
+ACVP_RESULT acvp_send_vendor_registration(ACVP_CTX *ctx, char *reg) {
+    return acvp_send_internal(ctx, reg, ACVP_VENDORS_URI);
+}
+
+/*
+ * This is the transport function used within libacvp to register
+ * the DUT attributes with the ACVP server.
+ *
+ * The reg parameter is the JSON encoded registration message that
+ * will be sent to the server.
+ */
+#define ACVP_MODULES_URI "modules"
+ACVP_RESULT acvp_send_module_registration(ACVP_CTX *ctx, char *reg) {
+    return acvp_send_internal(ctx, reg, ACVP_MODULES_URI);
+}
+
+/*
+ * This is the transport function used within libacvp to register
+ * the DUT attributes with the ACVP server.
+ *
+ * The reg parameter is the JSON encoded registration message that
+ * will be sent to the server.
+ */
+#define ACVP_DEPS_URI "dependencies"
+ACVP_RESULT acvp_send_dep_registration(ACVP_CTX *ctx, char *reg) {
+    return acvp_send_internal(ctx, reg, ACVP_DEPS_URI);
+}
+
+/*
+ * This is the transport function used within libacvp to register
+ * the DUT attributes with the ACVP server.
+ *
+ * The reg parameter is the JSON encoded registration message that
+ * will be sent to the server.
+ */
+#define ACVP_OES_URI "oes"
+ACVP_RESULT acvp_send_oe_registration(ACVP_CTX *ctx, char *reg) {
+    return acvp_send_internal(ctx, reg, ACVP_OES_URI);
+}
+
+/*
+ * This is the transport function used within libacvp to register
+ * the DUT attributes with the ACVP server.
+ *
+ * The reg parameter is the JSON encoded registration message that
+ * will be sent to the server.
+ */
+#define ACVP_TEST_SESSIONS_URI "testSessions"
+ACVP_RESULT acvp_send_test_session_registration(ACVP_CTX *ctx, char *reg) {
+    return acvp_send_internal(ctx, reg, ACVP_TEST_SESSIONS_URI);
+}
+
+/*
+ * This is the transport function used within libacvp to login before
+ * it is able to register parameters with the server
+ *
+ * The reg parameter is the JSON encoded registration message that
+ * will be sent to the server.
+ */
+#define ACVP_LOGIN_URI "login"
+ACVP_RESULT acvp_send_login(ACVP_CTX *ctx, char *login) {
+    return acvp_send_internal(ctx, login, ACVP_LOGIN_URI);
 }
 
 /*
  * This is the top level function used within libacvp to retrieve
  * a KAT vector set from the ACVP server.
  */
-ACVP_RESULT acvp_retrieve_vector_set(ACVP_CTX *ctx, int vs_id) {
+ACVP_RESULT acvp_retrieve_vector_set(ACVP_CTX *ctx, char *vsid_url) {
     int rv;
-    char url[512]; //TODO: 512 is an arbitrary limit
+    char url[ACVP_ATTR_URL_MAX];
     ACVP_RESULT result;
 
     if (!ctx) {
@@ -546,21 +607,22 @@ ACVP_RESULT acvp_retrieve_vector_set(ACVP_CTX *ctx, int vs_id) {
         return ACVP_MISSING_ARG;
     }
 
-    if (!vs_id) {
-        ACVP_LOG_ERR("Missing vs_id from retrieve vector set");
+    if (!vsid_url) {
+        ACVP_LOG_ERR("Missing vsid_url from retrieve vector set");
         return ACVP_MISSING_ARG;
     }
 
-    memset(url, 0x0, 512);
-    snprintf(url, 511, "https://%s:%d/%svalidation/acvp/vectors?vsId=%d", ctx->server_name, ctx->server_port,
-             ctx->path_segment, vs_id);
+    memset(url, 0x0, ACVP_ATTR_URL_MAX);
+    snprintf(url, ACVP_ATTR_URL_MAX - 1, "https://%s:%d/%s%s", ctx->server_name, ctx->server_port,
+             ctx->api_context, vsid_url);
 
-    ACVP_LOG_STATUS("GET acvp/validation/acvp/vectors?vsId=%d", vs_id);
+    ACVP_LOG_STATUS("GET %s", url);
     if (ctx->kat_buf) {
         memset(ctx->kat_buf, 0x0, ACVP_KAT_BUF_MAX);
     }
     rv = acvp_curl_http_get(ctx, url, &acvp_curl_write_kat_func);
     if (rv != HTTP_OK) {
+        ACVP_LOG_ERR("Unable to get vector set from ACVP server. curl rv=%d\n", rv);
         if (rv == HTTP_UNAUTH) {
             ACVP_LOG_ERR("JWT authorization has timed out curl rv=%d\n", rv);
             /* give it one more try after the refresh */
@@ -568,7 +630,7 @@ ACVP_RESULT acvp_retrieve_vector_set(ACVP_CTX *ctx, int vs_id) {
             if (result == ACVP_SUCCESS) {
                 rv = acvp_curl_http_get(ctx, url, &acvp_curl_write_kat_func);
                 if (rv != HTTP_OK) {
-                    ACVP_LOG_ERR("Unable to get vector set from ACVP server. curl rv=%d\n", rv);
+                    ACVP_LOG_ERR("Refreshed + retried, get vector sets fails. curl rv=%d\n", rv);
                     ACVP_LOG_ERR("%s\n", ctx->kat_buf);
                     return ACVP_TRANSPORT_FAIL;
                 }
@@ -584,48 +646,13 @@ ACVP_RESULT acvp_retrieve_vector_set(ACVP_CTX *ctx, int vs_id) {
     return ACVP_SUCCESS;
 }
 
-ACVP_RESULT acvp_send_login(ACVP_CTX *ctx, char *login) {
-    int rv;
-    char url[512]; //TODO: 512 is an arbitrary limit
-
-    if (!ctx) {
-        ACVP_LOG_ERR("No CTX for login");
-        return ACVP_NO_CTX;
-    }
-    if (!login) {
-        ACVP_LOG_ERR("No data for login");
-        return ACVP_NO_DATA;
-    }
-
-    memset(url, 0x0, 512);
-    snprintf(url, 511, "https://%s:%d/%svalidation/acvp/login", ctx->server_name, ctx->server_port,
-             ctx->path_segment);
-
-    if (ctx->jwt_token) {
-        free(ctx->jwt_token);
-    }
-    ctx->jwt_token = NULL;
-    rv = acvp_curl_http_post(ctx, url, login, &acvp_curl_write_register_func);
-    if (rv != HTTP_OK) {
-        ACVP_LOG_ERR("Unable to register with ACVP server. curl rv=%d\n", rv);
-        return ACVP_TRANSPORT_FAIL;
-    }
-
-    /*
-     * Update user with status
-     */
-    ACVP_LOG_STATUS("Successfully received login response from ACVP server");
-
-    return ACVP_SUCCESS;
-}
-
 /*
  * This function is used to submit a vector set response
  * to the ACV server.
  */
 ACVP_RESULT acvp_submit_vector_responses(ACVP_CTX *ctx) {
     int rv;
-    char url[512]; //TODO: 512 is an arbitrary limit
+    char url[ACVP_ATTR_URL_MAX];
     char *resp;
     ACVP_RESULT result;
 
@@ -643,9 +670,11 @@ ACVP_RESULT acvp_submit_vector_responses(ACVP_CTX *ctx) {
         return ACVP_MISSING_ARG;
     }
 
-    memset(url, 0x0, 512);
-    snprintf(url, 511, "https://%s:%d/%svalidation/acvp/vectors?vsId=%d", ctx->server_name, ctx->server_port,
-             ctx->path_segment, ctx->vs_id);
+    memset(url, 0x0, ACVP_ATTR_URL_MAX);
+    snprintf(url, ACVP_ATTR_URL_MAX - 1, "https://%s:%d/%s%s/results", ctx->server_name, ctx->server_port,
+             ctx->api_context, ctx->vsid_url);
+
+    ACVP_LOG_STATUS("Submitting vector responses to %s", url);
 
     resp = json_serialize_to_string_pretty(ctx->kat_resp);
     rv = acvp_curl_http_post(ctx, url, resp, &acvp_curl_write_upld_func);
@@ -653,6 +682,7 @@ ACVP_RESULT acvp_submit_vector_responses(ACVP_CTX *ctx) {
     ctx->kat_resp = NULL;
     json_free_serialized_string(resp);
     if (rv != HTTP_OK) {
+        ACVP_LOG_ERR("Unable to submit vector set responses: curl rv=%d\n", url, rv);
         if (rv == HTTP_UNAUTH) {
             ACVP_LOG_ERR("JWT authorization has timed out curl rv=%d\n", rv);
             /* give it one more try after the refresh */
@@ -660,7 +690,7 @@ ACVP_RESULT acvp_submit_vector_responses(ACVP_CTX *ctx) {
             if (result == ACVP_SUCCESS) {
                 rv = acvp_curl_http_post(ctx, url, resp, &acvp_curl_write_upld_func);
                 if (rv != HTTP_OK) {
-                    ACVP_LOG_ERR("Unable to get vector responses from ACVP server. curl rv=%d\n", rv);
+                    ACVP_LOG_ERR("Refreshed + retried, submit vector responses fails. curl rv=%d\n", rv);
                     ACVP_LOG_ERR("%s\n", ctx->upld_buf);
                     return ACVP_TRANSPORT_FAIL;
                 }
@@ -668,17 +698,19 @@ ACVP_RESULT acvp_submit_vector_responses(ACVP_CTX *ctx) {
         }
     }
 
-    ACVP_LOG_STATUS("Successfully submitted KAT vector responses");
+    ACVP_LOG_STATUS("Finished POSTing KAT vector responses");
     return ACVP_SUCCESS;
 }
 
 /*
  * This is the top level function used within libacvp to retrieve
  * the test result for a given KAT vector set from the ACVP server.
+ * It can be used to get the results for an entire session, or
+ * more specifically for a vectorSet
  */
-ACVP_RESULT acvp_retrieve_vector_set_result(ACVP_CTX *ctx, int vs_id) {
+ACVP_RESULT acvp_retrieve_result(ACVP_CTX *ctx, char *api_url) {
     int rv;
-    char url[512]; //TODO: 512 is an arbitrary limit
+    char url[ACVP_ATTR_URL_MAX];
     ACVP_RESULT result;
 
     if (!ctx) {
@@ -690,26 +722,26 @@ ACVP_RESULT acvp_retrieve_vector_set_result(ACVP_CTX *ctx, int vs_id) {
         return ACVP_MISSING_ARG;
     }
 
-    if (!vs_id) {
+    if (!api_url) {
         ACVP_LOG_ERR("Missing vs_id from retrieve vector set");
         return ACVP_MISSING_ARG;
     }
 
-    memset(url, 0x0, 512);
-    snprintf(url, 511, "https://%s:%d/%svalidation/acvp/results?vsId=%d", ctx->server_name, ctx->server_port,
-             ctx->path_segment, vs_id);
+    memset(url, 0x0, ACVP_ATTR_URL_MAX);
+    snprintf(url, ACVP_ATTR_URL_MAX - 1, "https://%s:%d/%s%s/results", ctx->server_name, ctx->server_port,
+             ctx->api_context, api_url);
 
     if (ctx->kat_buf) {
         memset(ctx->kat_buf, 0x0, ACVP_KAT_BUF_MAX);
     }
-    rv = acvp_curl_http_get(ctx, url, &acvp_curl_write_kat_func);
+    rv = acvp_curl_http_get(ctx, url, &acvp_curl_write_vs_func);
     if (rv != HTTP_OK) {
         if (rv == HTTP_UNAUTH) {
             ACVP_LOG_ERR("JWT authorization has timed out curl rv=%d\n", rv);
             /* give it one more try after the refresh */
             result = acvp_refresh(ctx);
             if (result == ACVP_SUCCESS) {
-                rv = acvp_curl_http_get(ctx, url, &acvp_curl_write_kat_func);
+                rv = acvp_curl_http_get(ctx, url, &acvp_curl_write_vs_func);
                 if (rv != HTTP_OK) {
                     ACVP_LOG_ERR("Unable to get vector result from server. curl rv=%d\n", rv);
                     ACVP_LOG_ERR("%s\n", ctx->kat_buf);
@@ -723,6 +755,63 @@ ACVP_RESULT acvp_retrieve_vector_set_result(ACVP_CTX *ctx, int vs_id) {
      * Update user with status
      */
     ACVP_LOG_STATUS("Successfully retrieved KAT vector set response");
+
+    return ACVP_SUCCESS;
+}
+
+/*
+ * This is the top level function used within libacvp to retrieve
+ * the test result for a given KAT vector set from the ACVP server.
+ * It can be used to get the results for an entire session, or
+ * more specifically for a vectorSet
+ */
+ACVP_RESULT acvp_retrieve_expected_result(ACVP_CTX *ctx, char *api_url) {
+    int rv;
+    char url[ACVP_ATTR_URL_MAX];
+    ACVP_RESULT result;
+
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+
+    if (!ctx->server_name || !ctx->server_port) {
+        ACVP_LOG_ERR("Missing server/port details; call acvp_set_server first");
+        return ACVP_MISSING_ARG;
+    }
+
+    if (!api_url) {
+        ACVP_LOG_ERR("Missing vs_id from retrieve vector set");
+        return ACVP_MISSING_ARG;
+    }
+
+    memset(url, 0x0, ACVP_ATTR_URL_MAX);
+    snprintf(url, ACVP_ATTR_URL_MAX - 1, "https://%s:%d/%s%s/expected", ctx->server_name, ctx->server_port,
+             ctx->api_context, api_url);
+
+    if (ctx->sample_buf) {
+        memset(ctx->sample_buf, 0x0, ACVP_KAT_BUF_MAX);
+    }
+    rv = acvp_curl_http_get(ctx, url, &acvp_curl_write_sample_func);
+    if (rv != HTTP_OK) {
+        if (rv == HTTP_UNAUTH) {
+            ACVP_LOG_ERR("JWT authorization has timed out curl rv=%d\n", rv);
+            /* give it one more try after the refresh */
+            result = acvp_refresh(ctx);
+            if (result == ACVP_SUCCESS) {
+                rv = acvp_curl_http_get(ctx, url, &acvp_curl_write_sample_func);
+                if (rv != HTTP_OK) {
+                    ACVP_LOG_ERR("Unable to get vector result from server. curl rv=%d\n", rv);
+                    ACVP_LOG_ERR("%s\n", ctx->sample_buf);
+                    return ACVP_TRANSPORT_FAIL;
+                }
+            }
+        }
+    }
+
+    /*
+     * Update user with status
+     */
+    ACVP_LOG_STATUS("Successfully retrieved expected results");
 
     return ACVP_SUCCESS;
 }

@@ -140,6 +140,7 @@ static ACVP_RESULT app_des_keywrap_handler(ACVP_TEST_CASE *test_case);
 typedef struct app_config {
     ACVP_LOG_LVL level;
     int sample;
+    int dev;
     int json;
     char json_file[JSON_FILENAME_LENGTH];
 
@@ -167,9 +168,13 @@ char *ca_chain_file;
 char *cert_file;
 char *key_file;
 char *path_segment;
+char *api_context;
 char value[] = "same";
 
 static EVP_CIPHER_CTX *glb_cipher_ctx = NULL; /* need to maintain across calls for MCT */
+int current_tg = 0;
+BIGNUM *group_n = NULL;
+RSA *group_rsa = NULL;
 
 #define CHECK_ENABLE_CAP_RV(rv) \
     if (rv != ACVP_SUCCESS) { \
@@ -194,6 +199,9 @@ static void setup_session_parameters() {
 
     path_segment = getenv("ACV_URI_PREFIX");
     if (!path_segment) path_segment = "";
+
+    api_context = getenv("ACV_API_CONTEXT");
+    if (!api_context) api_context = "";
 
     ca_chain_file = getenv("ACV_CA_FILE");
     if (!ca_chain_file) ca_chain_file = DEFAULT_CA_CHAIN;
@@ -281,6 +289,9 @@ static void print_usage(int err) {
     printf("If you are running a sample registration (querying for correct answers\n");
     printf("in addition to the normal registration flow) use:\n");
     printf("      --sample\n");
+    printf("\n");
+    printf("If you want to include \"debugRequest\" in your registration, use:\n");
+    printf("      --dev\n");
     printf("\n");
     printf("In addition some options are passed to acvp_app using\n");
     printf("environment variables.  The following variables can be set:\n\n");
@@ -375,6 +386,8 @@ static int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
         }
         if (strcmp(*argv, "--sample") == 0) {
             cfg->sample = 1;
+        } else if (strncmp(*argv, "--dev", strlen("--dev")) == 0) {
+            cfg->dev = 1;
         } else if (strncmp(*argv, "--info", strlen("--info")) == 0) {
             if (log_lvl) {
                 printf(ANSI_COLOR_RED "Command error... [%s]"ANSI_COLOR_RESET
@@ -637,6 +650,8 @@ int main(int argc, char **argv) {
     ACVP_CTX *ctx = NULL;
     char ssl_version[10];
     APP_CONFIG cfg = { 0 };
+    char *oe_name = "Ubuntu Linux 3.1 on AMD 6272 Opteron Processor with Acme package installed";
+    ACVP_KV_LIST *key_val_list = calloc(1, sizeof(ACVP_KV_LIST));
 
     if (ingest_cli(&cfg, argc, argv)) {
         return 1;
@@ -667,6 +682,14 @@ int main(int argc, char **argv) {
         goto end;
     }
 
+    if (cfg.dev) {
+        rv = acvp_enable_debug_request(ctx);
+        if (rv != ACVP_SUCCESS) {
+            printf("Failed to enable debug request: %s\n", acvp_lookup_error_string(rv));
+            goto end;
+        }
+    }
+
     /*
      * Next we specify the ACVP server address
      */
@@ -695,15 +718,34 @@ int main(int argc, char **argv) {
         goto end;
     }
 
+    key_val_list->key = strndup("type", 4);
+    key_val_list->value = strndup("software", 8);
+    key_val_list->next = calloc(1, sizeof(ACVP_KV_LIST));
+    key_val_list->next->key = strndup("name", 4);
+    key_val_list->next->value = strndup("Linux 3.1", 9);
+
+    rv = acvp_add_oe_dependency(ctx, oe_name, key_val_list);
+    if (rv != ACVP_SUCCESS) {
+        printf("Failed to set module info\n");
+        goto end;
+    }
+
+    /*
+     * Set the api context prefix if needed
+     */
+    rv = acvp_set_api_context(ctx, api_context);
+    if (rv != ACVP_SUCCESS) {
+        printf("Failed to set URI prefix\n");
+        goto end;
+    }
+
     /*
      * Set the path segment prefix if needed
      */
-    if (strnlen(path_segment, 255) > 0) {
-        rv = acvp_set_path_segment(ctx, path_segment);
-        if (rv != ACVP_SUCCESS) {
-            printf("Failed to set URI prefix\n");
-            goto end;
-        }
+    rv = acvp_set_path_segment(ctx, path_segment);
+    if (rv != ACVP_SUCCESS) {
+        printf("Failed to set URI prefix\n");
+        goto end;
     }
 
     /*
@@ -837,7 +879,8 @@ int main(int argc, char **argv) {
 
 end:
     if (glb_cipher_ctx) EVP_CIPHER_CTX_free(glb_cipher_ctx);
-
+    if (group_rsa) RSA_free(group_rsa);
+    if (group_n) BN_free(group_n);
     /* Free all memory associated with libacvp */
     rv = acvp_cleanup(ctx);
 
@@ -1424,15 +1467,15 @@ static int enable_cmac(ACVP_CTX *ctx) {
      */
     rv = acvp_cap_cmac_enable(ctx, ACVP_CMAC_AES, &app_cmac_handler);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_cmac_set_parm(ctx, ACVP_CMAC_AES, ACVP_CMAC_BLK_DIVISIBLE_1, 0);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_cmac_set_parm(ctx, ACVP_CMAC_AES, ACVP_CMAC_BLK_DIVISIBLE_2, 128);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_cmac_set_parm(ctx, ACVP_CMAC_AES, ACVP_CMAC_BLK_NOT_DIVISIBLE_1, 72);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_cmac_set_parm(ctx, ACVP_CMAC_AES, ACVP_CMAC_BLK_NOT_DIVISIBLE_2, 200);
+    rv = acvp_cap_cmac_set_domain(ctx, ACVP_CMAC_AES, ACVP_CMAC_MSGLEN, 0, 65536, 8);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_cmac_set_parm(ctx, ACVP_CMAC_AES, ACVP_CMAC_MACLEN, 128);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_set_prereq(ctx, ACVP_CMAC_AES, ACVP_PREREQ_AES, value);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_cmac_set_parm(ctx, ACVP_CMAC_AES, ACVP_CMAC_DIRECTION_GEN, 1);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_cmac_set_parm(ctx, ACVP_CMAC_AES, ACVP_CMAC_DIRECTION_VER, 1);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_cmac_set_parm(ctx, ACVP_CMAC_AES, ACVP_CMAC_KEYLEN, 128);
     CHECK_ENABLE_CAP_RV(rv);
@@ -1440,30 +1483,18 @@ static int enable_cmac(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_cmac_set_parm(ctx, ACVP_CMAC_AES, ACVP_CMAC_KEYLEN, 256);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_cmac_set_parm(ctx, ACVP_CMAC_AES, ACVP_CMAC_DIRECTION_GEN, 1);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_cmac_set_parm(ctx, ACVP_CMAC_AES, ACVP_CMAC_DIRECTION_VER, 1);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_set_prereq(ctx, ACVP_CMAC_AES, ACVP_PREREQ_AES, value);
-    CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_cap_cmac_enable(ctx, ACVP_CMAC_TDES, &app_cmac_handler);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_cmac_set_parm(ctx, ACVP_CMAC_TDES, ACVP_CMAC_BLK_DIVISIBLE_1, 0);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_cmac_set_parm(ctx, ACVP_CMAC_TDES, ACVP_CMAC_BLK_DIVISIBLE_2, 256);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_cmac_set_parm(ctx, ACVP_CMAC_TDES, ACVP_CMAC_BLK_NOT_DIVISIBLE_1, 120);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_cmac_set_parm(ctx, ACVP_CMAC_TDES, ACVP_CMAC_BLK_NOT_DIVISIBLE_2, 248);
+    rv = acvp_cap_cmac_set_domain(ctx, ACVP_CMAC_TDES, ACVP_CMAC_MSGLEN, 0, 65536, 8);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_cmac_set_parm(ctx, ACVP_CMAC_TDES, ACVP_CMAC_MACLEN, 64);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_cmac_set_parm(ctx, ACVP_CMAC_TDES, ACVP_CMAC_KEYING_OPTION, 1);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_cmac_set_parm(ctx, ACVP_CMAC_TDES, ACVP_CMAC_DIRECTION_GEN, 1);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_cmac_set_parm(ctx, ACVP_CMAC_TDES, ACVP_CMAC_DIRECTION_VER, 1);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_cmac_set_parm(ctx, ACVP_CMAC_TDES, ACVP_CMAC_KEYING_OPTION, 1);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_CMAC_TDES, ACVP_PREREQ_TDES, value);
     CHECK_ENABLE_CAP_RV(rv);
@@ -3554,7 +3585,7 @@ static ACVP_RESULT app_cmac_handler(ACVP_TEST_CASE *test_case) {
 
     switch (tc->cipher) {
     case ACVP_CMAC_AES:
-        switch (tc->key_len) {
+        switch (tc->key_len * 8) {
         case 128:
             c = EVP_aes_128_cbc();
             break;
@@ -3567,7 +3598,7 @@ static ACVP_RESULT app_cmac_handler(ACVP_TEST_CASE *test_case) {
         default:
             break;
         }
-        key_len = (tc->key_len) / 8;
+        key_len = (tc->key_len);
         for (i = 0; i < key_len; i++) {
             full_key[i] = tc->key[i];
         }
@@ -5123,6 +5154,9 @@ err:
 /*
  * RSA SigGen handler
  * requires Makefile.fom to function
+ *
+ * group values are decalred near the top so that they
+ * can be freed at the end of main execution
  */
 static ACVP_RESULT app_rsa_sig_handler(ACVP_TEST_CASE *test_case) {
     EVP_MD *tc_md = NULL;
@@ -5249,24 +5283,33 @@ static ACVP_RESULT app_rsa_sig_handler(ACVP_TEST_CASE *test_case) {
 
         tc->ver_disposition = FIPS_rsa_verify(rsa, tc->msg, tc->msg_len, tc_md, pad_mode, salt_len, NULL, tc->signature, tc->sig_len);
     } else {
-        if (!FIPS_rsa_x931_generate_key_ex(rsa, tc->modulo, bn_e, NULL)) {
-            printf("\nError: Issue with keygen during siggen handling\n");
-            rv = ACVP_CRYPTO_MODULE_FAIL;
-            goto err;
-        }
+        if (current_tg != tc->tg_id) {
+            current_tg = tc->tg_id;
+            if (group_rsa) RSA_free(group_rsa);
+            group_rsa = RSA_new();
+            if (!FIPS_rsa_x931_generate_key_ex(group_rsa, tc->modulo, bn_e, NULL)) {
+                printf("\nError: Issue with keygen during siggen handling\n");
+                rv = ACVP_CRYPTO_MODULE_FAIL;
+                goto err;
+            }
 #if OPENSSL_VERSION_NUMBER <= 0x10100000L
-        e = rsa->e;
-        n = rsa->n;
+            e = group_rsa->e;
+            n = group_rsa->n;
+            group_n = BN_dup(n);
 #else
-        RSA_get0_key(rsa, (const BIGNUM **)&n, (const BIGNUM **)&e, NULL);
+            RSA_get0_key(rsa, (const BIGNUM **)&n, (const BIGNUM **)&e, NULL);
 #endif
+        } else {
+            e = BN_dup(bn_e);
+            n = BN_dup(group_n);
+        }
         tc->e_len = BN_bn2bin(e, tc->e);
         tc->n_len = BN_bn2bin(n, tc->n);
 
         if (tc->msg && tc_md) {
-            siglen = RSA_size(rsa);
+            siglen = RSA_size(group_rsa);
 
-            if (!FIPS_rsa_sign(rsa, tc->msg, tc->msg_len, tc_md, pad_mode, salt_len, NULL,
+            if (!FIPS_rsa_sign(group_rsa, tc->msg, tc->msg_len, tc_md, pad_mode, salt_len, NULL,
                                tc->signature, (unsigned int *)&siglen)) {
                 printf("\nError: RSA Signature Generation fail\n");
                 rv = ACVP_CRYPTO_MODULE_FAIL;
