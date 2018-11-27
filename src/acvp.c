@@ -1996,6 +1996,7 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
                             ACVP_LOG_ERR("%s", ctx->sample_buf);
                         }
                         free(ctx->sample_buf);
+                        ctx->sample_buf = NULL;
                     }
                 }
             }
