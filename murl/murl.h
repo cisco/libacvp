@@ -224,6 +224,19 @@ typedef CURL_TYPEOF_CURL_OFF_T curl_off_t;
 #define CURLOPTTYPE_FUNCTIONPOINT 20000
 #define CURLOPTTYPE_OFF_T         30000
 
+enum {
+  CURL_SSLVERSION_DEFAULT,
+  CURL_SSLVERSION_TLSv1, /* TLS 1.x */
+  CURL_SSLVERSION_SSLv2,
+  CURL_SSLVERSION_SSLv3,
+  CURL_SSLVERSION_TLSv1_0,
+  CURL_SSLVERSION_TLSv1_1,
+  CURL_SSLVERSION_TLSv1_2,
+  CURL_SSLVERSION_TLSv1_3,
+
+  CURL_SSLVERSION_LAST /* never use, keep last */
+};
+
 /* name is uppercase CURLOPT_<name>,
    type is one of the defined CURLOPTTYPE_<type>
    number is unique identifier */
@@ -260,6 +273,10 @@ typedef enum {
     /* send FILE * or void * to store headers to, if you use a callback it
        is simply passed to the callback unmodified */
     CINIT(HEADERDATA, OBJECTPOINT, 29),
+
+    /* What version to specifically try to use.
+       See CURL_SSLVERSION defines below. */
+    CINIT(SSLVERSION, LONG, 32),
 
     CINIT(CUSTOMREQUEST, OBJECTPOINT, 36),
 
