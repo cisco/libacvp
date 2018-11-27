@@ -684,7 +684,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             }
         }
 
-        ptlen = (unsigned int)json_object_get_number(groupobj, "ptLen");
+        ptlen = (unsigned int)json_object_get_number(groupobj, "payloadLen");
         if (ptlen > ACVP_SYM_PT_BIT_MAX) {
             ACVP_LOG_ERR("'ptLen' too large (%u), max allowed=(%d)",
                          ptlen, ACVP_SYM_PT_BIT_MAX);
@@ -726,7 +726,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             }
 
             if (alg_id == ACVP_AES_CFB1) {
-                datalen = (unsigned int)json_object_get_number(testobj, "dataLen");
+                datalen = (unsigned int)json_object_get_number(testobj, "payloadLen");
                 if (datalen > ACVP_SYM_PT_BIT_MAX) {
                     ACVP_LOG_ERR("'dataLen' too large (%u), max allowed=(%d)",
                                  datalen, ACVP_SYM_PT_BIT_MAX);
@@ -946,19 +946,18 @@ static ACVP_RESULT acvp_aes_output_tc(ACVP_CTX *ctx,
     if (stc->direction == ACVP_SYM_CIPH_DIR_ENCRYPT) {
         memset(tmp, 0x0, ACVP_SYM_CT_MAX);
         if (stc->cipher == ACVP_AES_CFB1) {
-            json_object_set_number(tc_rsp, "dataLen", stc->data_len);
+            json_object_set_number(tc_rsp, "payloadLen", stc->data_len);
             rv = acvp_bin_to_hexstr(stc->ct, stc->pt_len, tmp, ACVP_SYM_CT_MAX);
-            if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("hex conversion failure (ct)");
-                goto err;
-            }
+        } else if (stc->cipher == ACVP_AES_GCM) {
+            rv = acvp_bin_to_hexstr(stc->ct, stc->pt_len, tmp, ACVP_SYM_CT_MAX);
         } else {
             rv = acvp_bin_to_hexstr(stc->ct, stc->ct_len, tmp, ACVP_SYM_CT_MAX);
-            if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("hex conversion failure (ct)");
-                goto err;
-            }
         }
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("hex conversion failure (ct)");
+            goto err;
+        }
+
         if (stc->cipher == ACVP_AES_CTR) {
             json_object_set_string(tc_rsp, "cipherText", tmp);
             if (stc->test_type == ACVP_SYM_TEST_TYPE_CTR) {
@@ -991,31 +990,29 @@ static ACVP_RESULT acvp_aes_output_tc(ACVP_CTX *ctx,
             json_object_set_string(tc_rsp, "tag", tmp);
         }
     } else {
-        if (opt_rv != ACVP_SUCCESS) {
-            if ((stc->cipher == ACVP_AES_GCM || stc->cipher == ACVP_AES_CCM)) {
+        if (stc->cipher == ACVP_AES_GCM || stc->cipher == ACVP_AES_CCM ||
+            stc->cipher == ACVP_AES_KW || stc->cipher == ACVP_AES_KWP) {
+            if (opt_rv != ACVP_SUCCESS) {
                 json_object_set_boolean(tc_rsp, "testPassed", 0);
                 free(tmp);
                 return ACVP_SUCCESS;
-            } else if ((stc->cipher == ACVP_AES_KW || stc->cipher == ACVP_AES_KWP)) {
-                json_object_set_boolean(tc_rsp, "testPassed", 0);
-                free(tmp);
-                return ACVP_SUCCESS;
+            } else {
+                json_object_set_boolean(tc_rsp, "testPassed", 1);
             }
         }
 
         if (stc->cipher == ACVP_AES_CFB1) {
             rv = acvp_bin_to_hexstr(stc->pt, stc->pt_len, tmp, ACVP_SYM_PT_MAX);
-            if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("hex conversion failure (pt)");
-                goto err;
-            }
+        } else if (stc->cipher == ACVP_AES_GCM) {
+            rv = acvp_bin_to_hexstr(stc->pt, stc->ct_len, tmp, ACVP_SYM_PT_MAX);
         } else {
             rv = acvp_bin_to_hexstr(stc->pt, stc->pt_len, tmp, ACVP_SYM_PT_MAX);
-            if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("hex conversion failure (pt)");
-                goto err;
-            }
         }
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("hex conversion failure (pt)");
+            goto err;
+        }
+
         if (stc->cipher == ACVP_AES_CTR) {
             json_object_set_string(tc_rsp, "plainText", tmp);
             if (stc->test_type == ACVP_SYM_TEST_TYPE_CTR) {

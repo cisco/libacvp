@@ -34,6 +34,7 @@
 
 static ACVP_RESULT acvp_dsa_keygen_init_tc(ACVP_CTX *ctx,
                                            ACVP_DSA_TC *stc,
+                                           int tg_id,
                                            unsigned int tc_id,
                                            ACVP_CIPHER alg_id,
                                            unsigned int num,
@@ -42,6 +43,8 @@ static ACVP_RESULT acvp_dsa_keygen_init_tc(ACVP_CTX *ctx,
                                            int n) {
     stc->l = l;
     stc->n = n;
+    stc->tc_id = tc_id;
+    stc->tg_id = tg_id;
 
     if (stc->l == 0) {
         return ACVP_INVALID_ARG;
@@ -66,6 +69,7 @@ static ACVP_RESULT acvp_dsa_keygen_init_tc(ACVP_CTX *ctx,
 
 static ACVP_RESULT acvp_dsa_siggen_init_tc(ACVP_CTX *ctx,
                                            ACVP_DSA_TC *stc,
+                                           int tg_id,
                                            unsigned int tc_id,
                                            ACVP_CIPHER alg_id,
                                            unsigned int num,
@@ -75,6 +79,9 @@ static ACVP_RESULT acvp_dsa_siggen_init_tc(ACVP_CTX *ctx,
                                            ACVP_HASH_ALG sha,
                                            char *msg) {
     ACVP_RESULT rv;
+
+    stc->tg_id = tg_id;
+    stc->tc_id = tc_id;
 
     stc->l = l;
     stc->n = n;
@@ -414,39 +421,6 @@ static ACVP_RESULT acvp_dsa_output_tc(ACVP_CTX *ctx, ACVP_DSA_TC *stc, JSON_Obje
             ACVP_LOG_ERR("Unable to malloc in acvp_dsa_output_tc");
             return ACVP_MALLOC_FAIL;
         }
-
-        rv = acvp_bin_to_hexstr(stc->p, stc->p_len, tmp, ACVP_DSA_PQG_MAX);
-        if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("hex conversion failure (p)");
-            goto err;
-        }
-        json_object_set_string(r_tobj, "p", (const char *)tmp);
-        memset(tmp, 0x0, ACVP_DSA_PQG_MAX);
-
-        rv = acvp_bin_to_hexstr(stc->q, stc->q_len, tmp, ACVP_DSA_PQG_MAX);
-        if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("hex conversion failure (q)");
-            goto err;
-        }
-        json_object_set_string(r_tobj, "q", (const char *)tmp);
-        memset(tmp, 0x0, ACVP_DSA_PQG_MAX);
-
-        rv = acvp_bin_to_hexstr(stc->g, stc->g_len, tmp, ACVP_DSA_PQG_MAX);
-        if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("hex conversion failure (g)");
-            goto err;
-        }
-        json_object_set_string(r_tobj, "g", (const char *)tmp);
-        memset(tmp, 0x0, ACVP_DSA_PQG_MAX);
-
-        rv = acvp_bin_to_hexstr(stc->y, stc->y_len, tmp, ACVP_DSA_PQG_MAX);
-        if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("hex conversion failure (y)");
-            goto err;
-        }
-        json_object_set_string(r_tobj, "y", (const char *)tmp);
-        memset(tmp, 0x0, ACVP_DSA_PQG_MAX);
-
         rv = acvp_bin_to_hexstr(stc->r, stc->r_len, tmp, ACVP_DSA_PQG_MAX);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("hex conversion failure (r)");
@@ -473,29 +447,6 @@ static ACVP_RESULT acvp_dsa_output_tc(ACVP_CTX *ctx, ACVP_DSA_TC *stc, JSON_Obje
             ACVP_LOG_ERR("Unable to malloc in acvp_dsa_output_tc");
             return ACVP_MALLOC_FAIL;
         }
-        rv = acvp_bin_to_hexstr(stc->p, stc->p_len, tmp, ACVP_DSA_PQG_MAX);
-        if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("hex conversion failure (p)");
-            goto err;
-        }
-        json_object_set_string(r_tobj, "p", (const char *)tmp);
-        memset(tmp, 0x0, ACVP_DSA_PQG_MAX);
-
-        rv = acvp_bin_to_hexstr(stc->q, stc->q_len, tmp, ACVP_DSA_PQG_MAX);
-        if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("hex conversion failure (q)");
-            goto err;
-        }
-        json_object_set_string(r_tobj, "q", (const char *)tmp);
-        memset(tmp, 0x0, ACVP_DSA_PQG_MAX);
-
-        rv = acvp_bin_to_hexstr(stc->g, stc->g_len, tmp, ACVP_DSA_PQG_MAX);
-        if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("hex conversion failure (g)");
-            goto err;
-        }
-        json_object_set_string(r_tobj, "g", (const char *)tmp);
-        memset(tmp, 0x0, ACVP_DSA_PQG_MAX);
 
         rv = acvp_bin_to_hexstr(stc->y, stc->y_len, tmp, ACVP_DSA_PQG_MAX);
         if (rv != ACVP_SUCCESS) {
@@ -551,7 +502,9 @@ ACVP_RESULT acvp_dsa_keygen_handler(ACVP_CTX *ctx,
                                     ACVP_TEST_CASE tc,
                                     ACVP_CAPS_LIST *cap,
                                     JSON_Array *r_tarr,
-                                    JSON_Object *groupobj) {
+                                    JSON_Object *groupobj,
+                                    int tg_id,
+                                    JSON_Object *r_gobj) {
     unsigned char *index = NULL;
     JSON_Array *tests;
     JSON_Value *testval;
@@ -615,31 +568,62 @@ ACVP_RESULT acvp_dsa_keygen_handler(ACVP_CTX *ctx,
          * TODO: this does mallocs, we can probably do the mallocs once for
          *       the entire vector set to be more efficient
          */
-        rv = acvp_dsa_keygen_init_tc(ctx, stc, tc_id, stc->cipher, num, index, l, n);
+        rv = acvp_dsa_keygen_init_tc(ctx, stc, tg_id, tc_id, stc->cipher, num, index, l, n);
         if (rv != ACVP_SUCCESS) {
-            acvp_dsa_release_tc(stc);
-            return rv;
+            goto err;
         }
 
         /* Process the current DSA test vector... */
         rv = (cap->crypto_handler)(&tc);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("crypto module failed the operation");
-            acvp_dsa_release_tc(stc);
-            return ACVP_CRYPTO_MODULE_FAIL;
+            goto err;
         }
 
         mval = json_value_init_object();
         mobj = json_value_get_object(mval);
         json_object_set_number(mobj, "tcId", tc_id);
+
+        /*
+         * Set the values for the group (p,q,g)
+         */
+        char *tmp = calloc(ACVP_DSA_PQG_MAX + 1, sizeof(char));
+        if (!tmp) {
+            ACVP_LOG_ERR("Unable to malloc in acvp_dsa_output_tc");
+            return ACVP_MALLOC_FAIL;
+        }
+        rv = acvp_bin_to_hexstr(stc->p, stc->p_len, tmp, ACVP_DSA_PQG_MAX);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("hex conversion failure (p)");
+            goto err;
+        }
+        json_object_set_string(r_gobj, "p", (const char *)tmp);
+        memset(tmp, 0x0, ACVP_DSA_PQG_MAX);
+
+        rv = acvp_bin_to_hexstr(stc->q, stc->q_len, tmp, ACVP_DSA_PQG_MAX);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("hex conversion failure (q)");
+            goto err;
+        }
+        json_object_set_string(r_gobj, "q", (const char *)tmp);
+        memset(tmp, 0x0, ACVP_DSA_PQG_MAX);
+
+        rv = acvp_bin_to_hexstr(stc->g, stc->g_len, tmp, ACVP_DSA_PQG_MAX);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("hex conversion failure (g)");
+            goto err;
+        }
+        json_object_set_string(r_gobj, "g", (const char *)tmp);
+        memset(tmp, 0x0, ACVP_DSA_PQG_MAX);
+        free(tmp);
+
         /*
          * Output the test case results using JSON
          */
         rv = acvp_dsa_output_tc(ctx, stc, mobj);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("JSON output failure in DSA module");
-            acvp_dsa_release_tc(stc);
-            return rv;
+            goto err;
         }
 
         /* Append the test response value to array */
@@ -648,6 +632,10 @@ ACVP_RESULT acvp_dsa_keygen_handler(ACVP_CTX *ctx,
     }
     /* Append the test response value to array */
     json_array_append_value(r_tarr, r_tval);
+    return ACVP_SUCCESS;
+
+err:
+    acvp_dsa_release_tc(stc);
     return rv;
 }
 
@@ -884,7 +872,9 @@ ACVP_RESULT acvp_dsa_siggen_handler(ACVP_CTX *ctx,
                                     ACVP_TEST_CASE tc,
                                     ACVP_CAPS_LIST *cap,
                                     JSON_Array *r_tarr,
-                                    JSON_Object *groupobj) {
+                                    JSON_Object *groupobj,
+                                    int tg_id,
+                                    JSON_Object *r_gobj) {
     unsigned char *index = NULL;
     char *msg = NULL;
     JSON_Array *tests;
@@ -970,31 +960,71 @@ ACVP_RESULT acvp_dsa_siggen_handler(ACVP_CTX *ctx,
          * TODO: this does mallocs, we can probably do the mallocs once for
          *       the entire vector set to be more efficient
          */
-        rv = acvp_dsa_siggen_init_tc(ctx, stc, tc_id, stc->cipher, num, index, l, n, sha, msg);
+        rv = acvp_dsa_siggen_init_tc(ctx, stc, tg_id, tc_id, stc->cipher, num, index, l, n, sha, msg);
         if (rv != ACVP_SUCCESS) {
-            acvp_dsa_release_tc(stc);
-            return rv;
+            goto err;
         }
 
         /* Process the current DSA test vector... */
         rv = (cap->crypto_handler)(&tc);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("crypto module failed the operation");
-            acvp_dsa_release_tc(stc);
-            return ACVP_CRYPTO_MODULE_FAIL;
+            goto err;
         }
 
         mval = json_value_init_object();
         mobj = json_value_get_object(mval);
         json_object_set_number(mobj, "tcId", tc_id);
+
+        /*
+         * Set the p,q,g,y values in the group obj
+         */
+        char *tmp = calloc(ACVP_DSA_PQG_MAX + 1, sizeof(char));
+        if (!tmp) {
+            ACVP_LOG_ERR("Unable to malloc in acvp_dsa_siggen_handler");
+            return ACVP_MALLOC_FAIL;
+        }
+
+        rv = acvp_bin_to_hexstr(stc->p, stc->p_len, tmp, ACVP_DSA_PQG_MAX);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("hex conversion failure (p)");
+            goto err;
+        }
+        json_object_set_string(r_gobj, "p", (const char *)tmp);
+        memset(tmp, 0x0, ACVP_DSA_PQG_MAX);
+
+        rv = acvp_bin_to_hexstr(stc->q, stc->q_len, tmp, ACVP_DSA_PQG_MAX);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("hex conversion failure (q)");
+            goto err;
+        }
+        json_object_set_string(r_gobj, "q", (const char *)tmp);
+        memset(tmp, 0x0, ACVP_DSA_PQG_MAX);
+
+        rv = acvp_bin_to_hexstr(stc->g, stc->g_len, tmp, ACVP_DSA_PQG_MAX);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("hex conversion failure (g)");
+            goto err;
+        }
+        json_object_set_string(r_gobj, "g", (const char *)tmp);
+        memset(tmp, 0x0, ACVP_DSA_PQG_MAX);
+
+        rv = acvp_bin_to_hexstr(stc->y, stc->y_len, tmp, ACVP_DSA_PQG_MAX);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("hex conversion failure (y)");
+            goto err;
+        }
+        json_object_set_string(r_gobj, "y", (const char *)tmp);
+        memset(tmp, 0x0, ACVP_DSA_PQG_MAX);
+        free(tmp);
+
         /*
          * Output the test case results using JSON
          */
         rv = acvp_dsa_output_tc(ctx, stc, mobj);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("JSON output failure in DSA module");
-            acvp_dsa_release_tc(stc);
-            return rv;
+            goto err;
         }
         acvp_dsa_release_tc(stc);
         /* Append the test response value to array */
@@ -1002,6 +1032,10 @@ ACVP_RESULT acvp_dsa_siggen_handler(ACVP_CTX *ctx,
     }
     /* Append the test response value to array */
     json_array_append_value(r_tarr, r_tval);
+    return ACVP_SUCCESS;
+
+err:
+    acvp_dsa_release_tc(stc);
     return rv;
 }
 
@@ -1711,7 +1745,7 @@ ACVP_RESULT acvp_dsa_siggen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
         ACVP_LOG_INFO("    Test group: %d", i);
 
-        rv = acvp_dsa_siggen_handler(ctx, tc, cap, r_tarr, groupobj);
+        rv = acvp_dsa_siggen_handler(ctx, tc, cap, r_tarr, groupobj, tgId, r_gobj);
         if (rv != ACVP_SUCCESS) {
             return rv;
         }
@@ -1833,7 +1867,7 @@ ACVP_RESULT acvp_dsa_keygen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
         ACVP_LOG_INFO("    Test group: %d", i);
 
-        rv = acvp_dsa_keygen_handler(ctx, tc, cap, r_tarr, groupobj);
+        rv = acvp_dsa_keygen_handler(ctx, tc, cap, r_tarr, groupobj, tgId, r_gobj);
         if (rv != ACVP_SUCCESS) {
             return rv;
         }

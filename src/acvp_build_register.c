@@ -402,7 +402,7 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
      */
     json_object_set_value(cap_obj, "payloadLen", json_value_init_array());
     opts_arr = json_object_get_array(cap_obj, "payloadLen");
-    
+
     sl_list = sym_cap->ptlen;
     while (sl_list) {
         json_array_append_number(opts_arr, sl_list->length);

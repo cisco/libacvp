@@ -172,9 +172,25 @@ char *api_context;
 char value[] = "same";
 
 static EVP_CIPHER_CTX *glb_cipher_ctx = NULL; /* need to maintain across calls for MCT */
-int current_tg = 0;
+
+/* RSA group values */
+int rsa_current_tg = 0;
 BIGNUM *group_n = NULL;
 RSA *group_rsa = NULL;
+
+/* ECDSA group values */
+int ecdsa_current_tg = 0;
+BIGNUM *ecdsa_group_Qx = NULL;
+BIGNUM *ecdsa_group_Qy = NULL;
+EC_KEY *ecdsa_group_key = NULL;
+
+/* DSA group values */
+DSA *group_dsa = NULL;
+int dsa_current_tg = 0;
+BIGNUM *group_p = NULL;
+BIGNUM *group_q = NULL;
+BIGNUM *group_g = NULL;
+BIGNUM *group_pub_key = NULL;
 
 #define CHECK_ENABLE_CAP_RV(rv) \
     if (rv != ACVP_SUCCESS) { \
@@ -879,8 +895,19 @@ int main(int argc, char **argv) {
 
 end:
     if (glb_cipher_ctx) EVP_CIPHER_CTX_free(glb_cipher_ctx);
+    /* free RSA group vals */
     if (group_rsa) RSA_free(group_rsa);
     if (group_n) BN_free(group_n);
+    /* free DSA group vals */
+    if (group_dsa) DSA_free(group_dsa);
+    if (group_p) BN_free(group_p);
+    if (group_q) BN_free(group_q);
+    if (group_g) BN_free(group_g);
+    if (group_pub_key) BN_free(group_pub_key);
+    /* free ECDSA group vals */
+    if (ecdsa_group_Qx) BN_free(ecdsa_group_Qx);
+    if (ecdsa_group_Qy) BN_free(ecdsa_group_Qy);
+    if (ecdsa_group_key) EC_KEY_free(ecdsa_group_key);
     /* Free all memory associated with libacvp */
     rv = acvp_cleanup(ctx);
 
@@ -1612,7 +1639,6 @@ static int enable_kdf(ACVP_CTX *ctx) {
     rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_SSH, ACVP_PREREQ_AES, value);
     CHECK_ENABLE_CAP_RV(rv);
 
-
     //Bit flags for kdf135_ssh sha capabilities
     flags = ACVP_SHA1 | ACVP_SHA224 | ACVP_SHA256
             | ACVP_SHA384 | ACVP_SHA512;
@@ -2110,8 +2136,6 @@ static int enable_rsa(ACVP_CTX *ctx) {
     // RSA w/ sigType: PKCS1v1.5
     rv = acvp_cap_rsa_siggen_set_type(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15, 2048, ACVP_SHA1, 0);
-    CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15, 2048, ACVP_SHA224, 0);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15, 2048, ACVP_SHA256, 0);
@@ -2119,8 +2143,6 @@ static int enable_rsa(ACVP_CTX *ctx) {
     rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15, 2048, ACVP_SHA384, 0);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15, 2048, ACVP_SHA512, 0);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15, 3072, ACVP_SHA1, 0);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15, 3072, ACVP_SHA224, 0);
     CHECK_ENABLE_CAP_RV(rv);
@@ -2131,8 +2153,6 @@ static int enable_rsa(ACVP_CTX *ctx) {
     rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15, 3072, ACVP_SHA512, 0);
     CHECK_ENABLE_CAP_RV(rv);
 #if 0 // mod 4096 isn't supported by the server just yet
-    rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15, 4096, ACVP_SHA1, 0);
-    CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15, 4096, ACVP_SHA224, 0);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15, 4096, ACVP_SHA256, 0);
@@ -2146,8 +2166,6 @@ static int enable_rsa(ACVP_CTX *ctx) {
     // RSA w/ sigType: PKCS1PSS -- has salt
     rv = acvp_cap_rsa_siggen_set_type(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS, 2048, ACVP_SHA1, 0);
-    CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS, 2048, ACVP_SHA224, 0);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS, 2048, ACVP_SHA256, 0);
@@ -2155,8 +2173,6 @@ static int enable_rsa(ACVP_CTX *ctx) {
     rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS, 2048, ACVP_SHA384, 0);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS, 2048, ACVP_SHA512, 0);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS, 3072, ACVP_SHA1, 0);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS, 3072, ACVP_SHA224, 0);
     CHECK_ENABLE_CAP_RV(rv);
@@ -3337,7 +3353,7 @@ static ACVP_RESULT app_aes_handler_aead(ACVP_TEST_CASE *test_case) {
             /*
              * Decrypt the CT
              */
-            EVP_Cipher(cipher_ctx, tc->pt, tc->ct, tc->pt_len);
+            EVP_Cipher(cipher_ctx, tc->pt, tc->ct, tc->ct_len);
             /*
              * Check the tag
              */
@@ -3384,7 +3400,7 @@ static ACVP_RESULT app_aes_handler_aead(ACVP_TEST_CASE *test_case) {
             /*
              * Decrypt and check the tag
              */
-            ret = EVP_Cipher(cipher_ctx, tc->pt, tc->ct, tc->pt_len);
+            ret = EVP_Cipher(cipher_ctx, tc->pt, tc->ct, tc->ct_len);
             if (ret < 0) {
                 rc = ACVP_CRYPTO_TAG_FAIL;
                 goto end;
@@ -3951,6 +3967,10 @@ static ACVP_RESULT app_kdf135_ssh_handler(ACVP_TEST_CASE *test_case) {
 
 //Must be commented out if the user is Making with Makefile.fom
 #ifdef ACVP_NO_RUNTIME
+/*
+ * group values are declared near the top so that they
+ * can be freed at the end of main execution
+ */
 static ACVP_RESULT app_dsa_handler(ACVP_TEST_CASE *test_case) {
     int L, N, n, r;
     const EVP_MD        *md = NULL;
@@ -3969,51 +3989,60 @@ static ACVP_RESULT app_dsa_handler(ACVP_TEST_CASE *test_case) {
     tc = test_case->tc.dsa;
     switch (tc->mode) {
     case ACVP_DSA_MODE_KEYGEN:
-        dsa = FIPS_dsa_new();
-        if (!dsa) {
-            printf("Failed to allocate DSA strcut\n");
-            return ACVP_CRYPTO_MODULE_FAIL;
-        }
-        L = tc->l;
-        N = tc->n;
+        if (dsa_current_tg != tc->tg_id) {
+            dsa_current_tg = tc->tg_id;
 
-        if (dsa_builtin_paramgen2(dsa, L, N, NULL, NULL, 0, -1,
-                                  NULL, NULL, NULL, NULL) <= 0) {
-            printf("Parameter Generation error\n");
-            FIPS_dsa_free(dsa);
-            return ACVP_CRYPTO_MODULE_FAIL;
-        }
+            if (group_dsa) FIPS_dsa_free(group_dsa);
+            if (group_p) BN_free(group_p);
+            if (group_q) BN_free(group_q);
+            if (group_g) BN_free(group_g);
+            if (group_pub_key) BN_free(group_pub_key);
+
+            group_dsa = FIPS_dsa_new();
+            if (!group_dsa) {
+                printf("Failed to allocate DSA strcut\n");
+                return ACVP_CRYPTO_MODULE_FAIL;
+            }
+            L = tc->l;
+            N = tc->n;
+
+            if (dsa_builtin_paramgen2(group_dsa, L, N, md, NULL, 0, -1,
+                                      NULL, NULL, NULL, NULL) <= 0) {
+                printf("Parameter Generation error\n");
+                FIPS_dsa_free(group_dsa);
+                return ACVP_CRYPTO_MODULE_FAIL;
+            }
 
 #if OPENSSL_VERSION_NUMBER <= 0x10100000L
-        p = dsa->p;
-        q = dsa->q;
-        g = dsa->g;
+            group_p = BN_dup(group_dsa->p);
+            group_q = BN_dup(group_dsa->q);
+            group_g = BN_dup(group_dsa->g);
 #else
-        DSA_get0_pqg(dsa, (const BIGNUM **)&p,
-                     (const BIGNUM **)&q, (const BIGNUM **)&g);
+            DSA_get0_pqg(group_dsa, (const BIGNUM **)&group_p,
+                         (const BIGNUM **)&group_q, (const BIGNUM **)&group_g);
 #endif
+        }
 
-        tc->p_len = BN_bn2bin(p, tc->p);
-        tc->q_len = BN_bn2bin(q, tc->q);
-        tc->g_len = BN_bn2bin(g, tc->g);
+        tc->p_len = BN_bn2bin(group_p, tc->p);
+        tc->q_len = BN_bn2bin(group_q, tc->q);
+        tc->g_len = BN_bn2bin(group_g, tc->g);
 
-        if (!DSA_generate_key(dsa)) {
+        if (!DSA_generate_key(group_dsa)) {
             printf("\n DSA_generate_key failed");
-            FIPS_dsa_free(dsa);
+            FIPS_dsa_free(group_dsa);
             return ACVP_CRYPTO_MODULE_FAIL;
         }
 
 #if OPENSSL_VERSION_NUMBER <= 0x10100000L
-        priv_key = dsa->priv_key;
-        pub_key = dsa->pub_key;
+        priv_key = group_dsa->priv_key;
+        pub_key = group_dsa->pub_key;
 #else
-        DSA_get0_key(dsa, (const BIGNUM **)&pub_key,
+        DSA_get0_key(group_dsa, (const BIGNUM **)&pub_key,
                      (const BIGNUM **)&priv_key);
 #endif
 
         tc->x_len = BN_bn2bin(priv_key, tc->x);
         tc->y_len = BN_bn2bin(pub_key, tc->y);
-        FIPS_dsa_free(dsa);
         break;
 
     case ACVP_DSA_MODE_PQGVER:
@@ -4237,47 +4266,58 @@ static ACVP_RESULT app_dsa_handler(ACVP_TEST_CASE *test_case) {
             break;
         }
 
-        dsa = FIPS_dsa_new();
-        if (!dsa) {
-            printf("Failed to allocate DSA strcut\n");
-            return ACVP_CRYPTO_MODULE_FAIL;
-        }
-        L = tc->l;
-        N = tc->n;
+        if (dsa_current_tg != tc->tg_id) {
+            dsa_current_tg = tc->tg_id;
 
-        if (dsa_builtin_paramgen2(dsa, L, N, md, NULL, 0, -1,
-                                  NULL, NULL, NULL, NULL) <= 0) {
-            printf("Parameter Generation error\n");
-            FIPS_dsa_free(dsa);
-            return ACVP_CRYPTO_MODULE_FAIL;
-        }
+            if (group_dsa) FIPS_dsa_free(group_dsa);
+            if (group_p) BN_free(group_p);
+            if (group_q) BN_free(group_q);
+            if (group_g) BN_free(group_g);
+            if (group_pub_key) BN_free(group_pub_key);
 
-        if (!DSA_generate_key(dsa)) {
-            printf("\n DSA_generate_key failed");
-            FIPS_dsa_free(dsa);
-            return ACVP_CRYPTO_MODULE_FAIL;
-        }
+            group_dsa = FIPS_dsa_new();
+            if (!group_dsa) {
+                printf("Failed to allocate DSA strcut\n");
+                return ACVP_CRYPTO_MODULE_FAIL;
+            }
+            L = tc->l;
+            N = tc->n;
+
+            if (dsa_builtin_paramgen2(group_dsa, L, N, md, NULL, 0, -1,
+                                      NULL, NULL, NULL, NULL) <= 0) {
+                printf("Parameter Generation error\n");
+                FIPS_dsa_free(group_dsa);
+                return ACVP_CRYPTO_MODULE_FAIL;
+            }
+
+            if (!DSA_generate_key(group_dsa)) {
+                printf("\n DSA_generate_key failed");
+                FIPS_dsa_free(group_dsa);
+                return ACVP_CRYPTO_MODULE_FAIL;
+            }
 
 #if OPENSSL_VERSION_NUMBER <= 0x10100000L
-        tc->p_len = BN_bn2bin(dsa->p, tc->p);
-        tc->q_len = BN_bn2bin(dsa->q, tc->q);
-        tc->g_len = BN_bn2bin(dsa->g, tc->g);
+            group_p = BN_dup(group_dsa->p);
+            group_q = BN_dup(group_dsa->q);
+            group_g = BN_dup(group_dsa->g);
 #else
-        DSA_get0_pqg(dsa, (const BIGNUM **)&p,
-                     (const BIGNUM **)&q, (const BIGNUM **)&g);
-        tc->p_len = BN_bn2bin(p, tc->p);
-        tc->q_len = BN_bn2bin(q, tc->q);
-        tc->g_len = BN_bn2bin(g, tc->g);
+            DSA_get0_pqg(group_dsa, (const BIGNUM **)&group_p,
+                         (const BIGNUM **)&group_q, (const BIGNUM **)&group_g);
 #endif
 
 #if OPENSSL_VERSION_NUMBER <= 0x10100000L
-        pub_key = dsa->pub_key;
+            group_pub_key = BN_dup(group_dsa->pub_key);
 #else
-        DSA_get0_key(dsa, (const BIGNUM **)&pub_key, NULL);
+            DSA_get0_key(group_dsa, (const BIGNUM **)&group_pub_key, NULL);
 #endif
-        tc->y_len = BN_bn2bin(pub_key, tc->y);
+        }
 
-        sig = FIPS_dsa_sign(dsa, tc->msg, tc->msglen, md);
+        tc->p_len = BN_bn2bin(group_p, tc->p);
+        tc->q_len = BN_bn2bin(group_q, tc->q);
+        tc->g_len = BN_bn2bin(group_g, tc->g);
+        tc->y_len = BN_bn2bin(group_pub_key, tc->y);
+
+        sig = FIPS_dsa_sign(group_dsa, tc->msg, tc->msglen, md);
 
 #if OPENSSL_VERSION_NUMBER <= 0x10100000L
         sig_r = sig->r;
@@ -4289,7 +4329,6 @@ static ACVP_RESULT app_dsa_handler(ACVP_TEST_CASE *test_case) {
         tc->r_len = BN_bn2bin(sig_r, tc->r);
         tc->s_len = BN_bn2bin(sig_s, tc->s);
         FIPS_dsa_sig_free(sig);
-        FIPS_dsa_free(dsa);
         break;
 
     case ACVP_DSA_MODE_PQGGEN:
@@ -4872,6 +4911,10 @@ static int ec_get_pubkey(EC_KEY *key, BIGNUM *x, BIGNUM *y) {
     return rv;
 }
 
+/*
+ * group values are declared near the top so that they
+ * can be freed at the end of main execution
+ */
 static ACVP_RESULT app_ecdsa_handler(ACVP_TEST_CASE *test_case) {
     ACVP_ECDSA_TC    *tc;
     ACVP_RESULT rv = ACVP_SUCCESS;
@@ -4884,7 +4927,6 @@ static ACVP_RESULT app_ecdsa_handler(ACVP_TEST_CASE *test_case) {
     BIGNUM *r = NULL, *s = NULL;
     const BIGNUM *d = NULL;
     EC_KEY *key = NULL;
-    unsigned char *msg = NULL;
 
 
     if (!test_case) {
@@ -4893,6 +4935,11 @@ static ACVP_RESULT app_ecdsa_handler(ACVP_TEST_CASE *test_case) {
         goto err;
     }
     tc = test_case->tc.ecdsa;
+    if (!tc) {
+        printf("\nError: test case not found in ECDSA handler\n");
+        rv = ACVP_INVALID_ARG;
+        goto err;
+    }
     mode = tc->cipher;
 
     if (mode == ACVP_ECDSA_SIGGEN || mode == ACVP_ECDSA_SIGVER) {
@@ -5022,33 +5069,38 @@ static ACVP_RESULT app_ecdsa_handler(ACVP_TEST_CASE *test_case) {
         }
         break;
     case ACVP_ECDSA_SIGGEN:
-        Qx = FIPS_bn_new();
-        Qy = FIPS_bn_new();
-        if (!Qx || !Qy) {
-            printf("Error BIGNUM malloc\n");
-            rv = ACVP_CRYPTO_MODULE_FAIL;
-            goto err;
-        }
-        key = EC_KEY_new_by_curve_name(nid);
-        if (!key) {
-            printf("Failed to instantiate ECDSA key\n");
-            rv = ACVP_CRYPTO_MODULE_FAIL;
-            goto err;
-        }
+        if (ecdsa_current_tg != tc->tg_id) {
+            ecdsa_current_tg = tc->tg_id;
+            if (ecdsa_group_key) EC_KEY_free(ecdsa_group_key);
 
-        if (!EC_KEY_generate_key(key)) {
-            printf("Error generating ECDSA key\n");
-            rv = ACVP_CRYPTO_MODULE_FAIL;
-            goto err;
-        }
+            ecdsa_group_Qx = FIPS_bn_new();
+            ecdsa_group_Qy = FIPS_bn_new();
+            if (!ecdsa_group_Qx || !ecdsa_group_Qy) {
+                printf("Error BIGNUM malloc\n");
+                rv = ACVP_CRYPTO_MODULE_FAIL;
+                goto err;
+            }
+            ecdsa_group_key = EC_KEY_new_by_curve_name(nid);
+            if (!ecdsa_group_key) {
+                printf("Failed to instantiate ECDSA key\n");
+                rv = ACVP_CRYPTO_MODULE_FAIL;
+                goto err;
+            }
 
-        if (!ec_get_pubkey(key, Qx, Qy)) {
-            printf("Error getting ECDSA key attributes\n");
-            rv = ACVP_CRYPTO_MODULE_FAIL;
-            goto err;
+            if (!EC_KEY_generate_key(ecdsa_group_key)) {
+                printf("Error generating ECDSA key\n");
+                rv = ACVP_CRYPTO_MODULE_FAIL;
+                goto err;
+            }
+
+            if (!ec_get_pubkey(ecdsa_group_key, ecdsa_group_Qx, ecdsa_group_Qy)) {
+                printf("Error getting ECDSA key attributes\n");
+                rv = ACVP_CRYPTO_MODULE_FAIL;
+                goto err;
+            }
         }
         msg_len = tc->msg_len;
-        sig = FIPS_ecdsa_sign(key, tc->message, msg_len, md);
+        sig = FIPS_ecdsa_sign(ecdsa_group_key, tc->message, msg_len, md);
         if (!sig) {
             printf("Error signing message\n");
             rv = ACVP_CRYPTO_MODULE_FAIL;
@@ -5063,8 +5115,8 @@ static ACVP_RESULT app_ecdsa_handler(ACVP_TEST_CASE *test_case) {
                        (const BIGNUM **)&s);
 #endif
 
-        tc->qx_len = BN_bn2bin(Qx, tc->qx);
-        tc->qy_len = BN_bn2bin(Qy, tc->qy);
+        tc->qx_len = BN_bn2bin(ecdsa_group_Qx, tc->qx);
+        tc->qy_len = BN_bn2bin(ecdsa_group_Qy, tc->qy);
         tc->r_len = BN_bn2bin(r, tc->r);
         tc->s_len = BN_bn2bin(s, tc->s);
 
@@ -5132,7 +5184,6 @@ points_err:
 
 err:
     if (sig) FIPS_ecdsa_sig_free(sig);
-    if (msg) free(msg);
     if (Qx) FIPS_bn_free(Qx);
     if (Qy) FIPS_bn_free(Qy);
     if (key) EC_KEY_free(key);
@@ -5148,7 +5199,6 @@ err:
  */
 static ACVP_RESULT app_rsa_sig_handler(ACVP_TEST_CASE *test_case) {
     EVP_MD *tc_md = NULL;
-    unsigned char *msg = NULL;
     int siglen, pad_mode;
     BIGNUM *bn_e = NULL, *e = NULL, *n = NULL;
     ACVP_RSA_SIG_TC    *tc;
@@ -5271,8 +5321,8 @@ static ACVP_RESULT app_rsa_sig_handler(ACVP_TEST_CASE *test_case) {
 
         tc->ver_disposition = FIPS_rsa_verify(rsa, tc->msg, tc->msg_len, tc_md, pad_mode, salt_len, NULL, tc->signature, tc->sig_len);
     } else {
-        if (current_tg != tc->tg_id) {
-            current_tg = tc->tg_id;
+        if (rsa_current_tg != tc->tg_id) {
+            rsa_current_tg = tc->tg_id;
             if (group_rsa) RSA_free(group_rsa);
             group_rsa = RSA_new();
             if (!FIPS_rsa_x931_generate_key_ex(group_rsa, tc->modulo, bn_e, NULL)) {
@@ -5308,7 +5358,6 @@ static ACVP_RESULT app_rsa_sig_handler(ACVP_TEST_CASE *test_case) {
         }
     }
 err:
-    if (msg) free(msg);
     if (bn_e) BN_free(bn_e);
     if (rsa) FIPS_rsa_free(rsa);
 

@@ -291,8 +291,7 @@ static ACVP_RESULT acvp_des_output_mct_tc(ACVP_CTX *ctx,
                 goto err;
             }
             json_object_set_string(r_tobj, "pt", tmp_pt);
-            json_object_set_number(r_tobj, "ptLen", 1);
-            json_object_set_number(r_tobj, "ctLen", 1);
+            json_object_set_number(r_tobj, "payloadLen", 1);
         } else {
             rv = acvp_bin_to_hexstr(stc->pt, stc->pt_len, tmp_pt, ACVP_SYM_PT_MAX);
             if (rv != ACVP_SUCCESS) {
@@ -319,8 +318,7 @@ static ACVP_RESULT acvp_des_output_mct_tc(ACVP_CTX *ctx,
                 goto err;
             }
             json_object_set_string(r_tobj, "ct", tmp_ct);
-            json_object_set_number(r_tobj, "ctLen", 1);
-            json_object_set_number(r_tobj, "ptLen", 1);
+            json_object_set_number(r_tobj, "payloadLen", 1);
         } else {
             rv = acvp_bin_to_hexstr(stc->ct, stc->ct_len, tmp_ct, ACVP_SYM_CT_MAX);
             if (rv != ACVP_SUCCESS) {
@@ -789,8 +787,7 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
                 if (alg_id == ACVP_TDES_CFB1) {
                     unsigned int tmp_pt_len = 0;
-
-                    tmp_pt_len = (unsigned int)json_object_get_number(testobj, "ptLen");
+                    tmp_pt_len = (unsigned int)json_object_get_number(testobj, "payloadLen");
                     if (tmp_pt_len) {
                         // Replace with the provided ptLen
                         ptlen = tmp_pt_len;
@@ -816,8 +813,7 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
                 if (alg_id == ACVP_TDES_CFB1) {
                     unsigned int tmp_ct_len = 0;
-
-                    tmp_ct_len = (unsigned int)json_object_get_number(testobj, "ctLen");
+                    tmp_ct_len = (unsigned int)json_object_get_number(testobj, "payloadLen");
                     if (tmp_ct_len) {
                         // Replace with the provided ctLen
                         ctlen = tmp_ct_len;
@@ -966,7 +962,7 @@ static ACVP_RESULT acvp_des_output_tc(ACVP_CTX *ctx,
                 return rv;
             }
             json_object_set_string(tc_rsp, "ct", tmp);
-            json_object_set_number(tc_rsp, "ctLen", stc->ct_len);
+            json_object_set_number(tc_rsp, "payloadLen", stc->ct_len);
         } else {
             rv = acvp_bin_to_hexstr(stc->ct, stc->ct_len, tmp, ACVP_SYM_CT_MAX);
             if (rv != ACVP_SUCCESS) {
@@ -1006,7 +1002,7 @@ static ACVP_RESULT acvp_des_output_tc(ACVP_CTX *ctx,
                 return rv;
             }
             json_object_set_string(tc_rsp, "pt", tmp);
-            json_object_set_number(tc_rsp, "ptLen", stc->pt_len);
+            json_object_set_number(tc_rsp, "payloadLen", stc->pt_len);
         } else {
             rv = acvp_bin_to_hexstr(stc->pt, stc->pt_len, tmp, ACVP_SYM_CT_MAX);
             if (rv != ACVP_SUCCESS) {
