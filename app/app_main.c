@@ -3641,19 +3641,7 @@ static ACVP_RESULT app_cmac_handler(ACVP_TEST_CASE *test_case) {
             goto cleanup;
         }
 
-        /*
-         * Reformat the MAC - in "gen" mode, this formatting happens
-         * when we build the response JSON. Since the comparison
-         * happens here for "ver" we have to reformat here as well
-         */
-        char formatted_mac_compare[65]; // TODO max len for now
-        rv = acvp_bin_to_hexstr(mac_compare, mac_cmp_len, formatted_mac_compare, 64);
-        if (rv != ACVP_SUCCESS) {
-            printf("\nFailed to convert to hex string\n");
-            goto cleanup;
-        }
-
-        if (strncmp(formatted_mac_compare, (const char *)tc->mac, tc->mac_len * 2) == 0) {
+        if (strncmp((const char *)mac_compare, (const char *)tc->mac, tc->mac_len) == 0) {
             tc->ver_disposition = ACVP_TEST_DISPOSITION_PASS;
         } else {
             tc->ver_disposition = ACVP_TEST_DISPOSITION_FAIL;

@@ -74,6 +74,15 @@ static ACVP_RESULT acvp_cmac_init_tc(ACVP_CTX *ctx,
     if (!stc->mac) { return ACVP_MALLOC_FAIL; }
     stc->key = calloc(1, ACVP_CMAC_KEY_MAX);
     if (!stc->key) { return ACVP_MALLOC_FAIL; }
+    stc->mac_len = mac_len;
+
+    if (direction_verify) {
+        rv = acvp_hexstr_to_bin(mac, stc->mac, ACVP_CMAC_MACLEN_MAX, (int *)&(stc->mac_len));
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Hex converstion failure (mac)");
+            return rv;
+        }
+    }
 
     stc->key2 = calloc(1, ACVP_CMAC_KEY_MAX);
     if (!stc->key2) { return ACVP_MALLOC_FAIL; }
