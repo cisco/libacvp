@@ -1639,7 +1639,6 @@ static int enable_kdf(ACVP_CTX *ctx) {
     rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_SSH, ACVP_PREREQ_AES, value);
     CHECK_ENABLE_CAP_RV(rv);
 
-
     //Bit flags for kdf135_ssh sha capabilities
     flags = ACVP_SHA1 | ACVP_SHA224 | ACVP_SHA256
             | ACVP_SHA384 | ACVP_SHA512;
@@ -4307,7 +4306,7 @@ static ACVP_RESULT app_dsa_handler(ACVP_TEST_CASE *test_case) {
 #endif
 
 #if OPENSSL_VERSION_NUMBER <= 0x10100000L
-            group_pub_key = group_dsa->pub_key;
+            group_pub_key = BN_dup(group_dsa->pub_key);
 #else
             DSA_get0_key(group_dsa, (const BIGNUM **)&group_pub_key, NULL);
 #endif
