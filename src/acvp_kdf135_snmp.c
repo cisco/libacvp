@@ -207,7 +207,7 @@ ACVP_RESULT acvp_kdf135_snmp_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 return ACVP_MISSING_ARG;
             }
             int actual_len = strnlen(password, ACVP_KDF135_SNMP_PASSWORD_MAX);
-            if (actual_len != p_len / 8) {
+            if (actual_len != p_len) {
                 ACVP_LOG_ERR("pLen(%d) or password length(%d) incorrect", p_len, actual_len);
                 return ACVP_INVALID_ARG;
             }
