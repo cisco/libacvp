@@ -286,6 +286,11 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
         }
     }
 
+    if ((cap_entry->cipher == ACVP_AES_CTR) || (cap_entry->cipher == ACVP_TDES_CTR)) {
+        json_object_set_boolean(cap_obj, "incrementalCounter", sym_cap->ctr_incr);
+        json_object_set_boolean(cap_obj, "overflowCounter", sym_cap->ctr_ovrflw);
+    }
+
     /*
      * Set the IV generation source if applicable
      */
