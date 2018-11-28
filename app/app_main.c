@@ -1416,30 +1416,6 @@ static int enable_tdes(ACVP_CTX *ctx) {
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CFB1, ACVP_SYM_CIPH_PTLEN, 64);
     CHECK_ENABLE_CAP_RV(rv);
 
-    /*
-     * Enable TDES-CTR
-     */
-    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_TDES_CTR, &app_des_handler);
-    CHECK_ENABLE_CAP_RV(rv);
-
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CTR, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CTR, ACVP_SYM_CIPH_PARM_KO, ACVP_SYM_CIPH_KO_THREE);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CTR, ACVP_SYM_CIPH_PARM_IVGEN_SRC, ACVP_SYM_CIPH_IVGEN_SRC_NA);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CTR, ACVP_SYM_CIPH_PARM_IVGEN_MODE, ACVP_SYM_CIPH_IVGEN_MODE_NA);
-    CHECK_ENABLE_CAP_RV(rv);
-
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CTR, ACVP_SYM_CIPH_PARM_CTR_INCR, 1);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CTR, ACVP_SYM_CIPH_PARM_CTR_OVRFLW, 1);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CTR, ACVP_SYM_CIPH_KEYLEN, 192);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CTR, ACVP_SYM_CIPH_PTLEN, 64);
-    CHECK_ENABLE_CAP_RV(rv);
-
 end:
 
     return rv;
@@ -2791,9 +2767,6 @@ static ACVP_RESULT app_des_handler(ACVP_TEST_CASE *test_case) {
         cipher = EVP_des_ede3_cfb1();
         break;
     case ACVP_TDES_CTR:
-        iv = tc->iv;
-        cipher = EVP_des_ede3_ctr();
-        break;
     /*
      * IMPORTANT: if this mode is supported in your crypto module,
      * you will need to fill that out here. It is set to fall
