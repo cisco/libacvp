@@ -363,7 +363,7 @@ static ACVP_RESULT acvp_aes_mct_tc(ACVP_CTX *ctx,
             memset(tmp, 0x0, ACVP_SYM_CT_MAX);
 
             if (stc->cipher == ACVP_AES_CFB1) {
-                rv = acvp_bin_to_bit(stc->pt, 1, (unsigned char *)tmp);
+                rv = acvp_bin_to_hexstr(stc->pt, 1, tmp, ACVP_SYM_PT_MAX);
 
                 if (rv != ACVP_SUCCESS) {
                     ACVP_LOG_ERR("hex conversion failure (pt)");
@@ -946,8 +946,7 @@ static ACVP_RESULT acvp_aes_output_tc(ACVP_CTX *ctx,
     if (stc->direction == ACVP_SYM_CIPH_DIR_ENCRYPT) {
         memset(tmp, 0x0, ACVP_SYM_CT_MAX);
         if (stc->cipher == ACVP_AES_CFB1) {
-            json_object_set_number(tc_rsp, "payloadLen", stc->data_len);
-            rv = acvp_bin_to_hexstr(stc->ct, stc->pt_len, tmp, ACVP_SYM_CT_MAX);
+            rv = acvp_bin_to_hexstr(stc->ct, (stc->ct_len+7)/8, tmp, ACVP_SYM_CT_MAX);
         } else if (stc->cipher == ACVP_AES_GCM) {
             rv = acvp_bin_to_hexstr(stc->ct, stc->pt_len, tmp, ACVP_SYM_CT_MAX);
         } else {
@@ -1002,7 +1001,7 @@ static ACVP_RESULT acvp_aes_output_tc(ACVP_CTX *ctx,
         }
 
         if (stc->cipher == ACVP_AES_CFB1) {
-            rv = acvp_bin_to_hexstr(stc->pt, stc->pt_len, tmp, ACVP_SYM_PT_MAX);
+            rv = acvp_bin_to_hexstr(stc->pt, (stc->pt_len+7)/8, tmp, ACVP_SYM_PT_MAX);
         } else if (stc->cipher == ACVP_AES_GCM) {
             rv = acvp_bin_to_hexstr(stc->pt, stc->ct_len, tmp, ACVP_SYM_PT_MAX);
         } else {
@@ -1094,13 +1093,13 @@ static ACVP_RESULT acvp_aes_init_tc(ACVP_CTX *ctx,
 
     if (j_pt) {
         if (alg_id == ACVP_AES_CFB1) {
-            rv = acvp_bit_to_bin((const unsigned char *)j_pt, data_len, stc->pt);
+            rv = acvp_hexstr_to_bin(j_pt, stc->pt, ACVP_SYM_PT_BYTE_MAX, NULL);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("Hex conversion failure (pt)");
                 return rv;
             }
             stc->data_len = data_len;
-            stc->pt_len = 1;
+            stc->pt_len = data_len;
         } else {
             rv = acvp_hexstr_to_bin(j_pt, stc->pt, ACVP_SYM_PT_BYTE_MAX, NULL);
             if (rv != ACVP_SUCCESS) {
@@ -1117,11 +1116,12 @@ static ACVP_RESULT acvp_aes_init_tc(ACVP_CTX *ctx,
 
     if (j_ct) {
         if (alg_id == ACVP_AES_CFB1) {
-            rv = acvp_bit_to_bin((const unsigned char *)j_ct, data_len, stc->ct);
+            rv = acvp_hexstr_to_bin(j_ct, stc->ct, ACVP_SYM_CT_BYTE_MAX, NULL);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("Hex conversion failure (ct)");
                 return rv;
             }
+            stc->data_len = data_len;
             stc->ct_len = data_len;
         } else {
             rv = acvp_hexstr_to_bin(j_ct, stc->ct, ACVP_SYM_CT_BYTE_MAX, NULL);
