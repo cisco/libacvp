@@ -236,7 +236,6 @@ static void acvp_cap_free_rsa_keygen_list(ACVP_CAPS_LIST *cap_list) {
 
     while (keygen_cap) {
         if (keygen_cap->fixed_pub_exp) {
-            //FIXME
             free(keygen_cap->fixed_pub_exp);
         }
 
@@ -1618,7 +1617,6 @@ static ACVP_RESULT acvp_parse_test_session_register(ACVP_CTX *ctx) {
         ACVP_LOG_ERR("JSON parse error");
         return ACVP_JSON_ERR;
     }
-
     obj = acvp_get_obj_from_rsp(val);
 
     /*
@@ -1858,9 +1856,6 @@ static ACVP_RESULT acvp_dispatch_vector_set(ACVP_CTX *ctx, JSON_Object *obj) {
 
     ACVP_LOG_STATUS("vs: %d", vs_id);
     ACVP_LOG_STATUS("ACV Operation: %s", alg);
-    // TODO: make sure this is included where relevant only
-    ACVP_LOG_INFO("ACV Direction: %s", dir);
-
     ACVP_LOG_INFO("ACV version: %s", json_object_get_string(obj, "acvVersion"));
 
     for (i = 0; i < ACVP_ALG_MAX; i++) {
@@ -1904,7 +1899,6 @@ static ACVP_RESULT acvp_process_vector_set(ACVP_CTX *ctx, JSON_Object *obj) {
     }
 
     ACVP_LOG_STATUS("Successfully processed KAT vector set");
-
     return ACVP_SUCCESS;
 }
 

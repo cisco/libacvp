@@ -474,7 +474,6 @@
 #define ACVP_KDF108_IV_BYTE_MAX (ACVP_KDF108_IV_BIT_MAX >> 3)
 #define ACVP_KDF108_IV_STR_MAX (ACVP_KDF108_IV_BIT_MAX >> 2)
 
-// TODO make sure the lengths for kdf108 fixed data are okay
 #define ACVP_KDF108_FIXED_DATA_BIT_MAX 512 /**< Arbitrary */
 #define ACVP_KDF108_FIXED_DATA_BYTE_MAX (ACVP_KDF108_FIXED_DATA_BIT_MAX >> 3)
 #define ACVP_KDF108_FIXED_DATA_STR_MAX (ACVP_KDF108_FIXED_DATA_BIT_MAX >> 2)
@@ -540,7 +539,7 @@
 #define ACVP_REG_BUF_MAX        1024 * 128
 #define ACVP_RETRY_TIME_MAX     60 /* seconds */
 #define ACVP_JWT_TOKEN_MAX      1024
-#define ACVP_ATTR_URL_MAX     512 /* TODO arbitrary */
+#define ACVP_ATTR_URL_MAX       2083 /* MS IE's limit - arbitrary */
 
 #define ACVP_SESSION_PARAMS_STR_LEN_MAX 256
 #define ACVP_PATH_SEGMENT_DEFAULT ""
@@ -1177,5 +1176,12 @@ char *acvp_lookup_ec_curve_name(ACVP_CIPHER cipher, ACVP_EC_CURVE id);
 void ctr64_inc(unsigned char *counter);
 void ctr128_inc(unsigned char *counter);
 ACVP_RESULT acvp_refresh(ACVP_CTX *ctx);
+
+ACVP_RESULT acvp_setup_json_rsp_group (ACVP_CTX **ctx,
+                                       JSON_Value **outer_arr_val,
+                                       JSON_Value **r_vs_val,
+                                       JSON_Object **r_vs,
+                                       const char *alg_str,
+                                       JSON_Array **groups_arr);
 
 #endif

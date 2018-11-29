@@ -118,11 +118,6 @@ static ACVP_RESULT app_drbg_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_rsa_keygen_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_rsa_sig_handler(ACVP_TEST_CASE *test_case);
 static ACVP_RESULT app_ecdsa_handler(ACVP_TEST_CASE *test_case);
-
-#if 0
-/* openssl does not support FIPS compliant des keywrap */
-static ACVP_RESULT app_des_keywrap_handler(ACVP_TEST_CASE *test_case);
-#endif
 #endif
 
 #define JSON_FILENAME_LENGTH 24
@@ -2072,16 +2067,8 @@ static int enable_rsa(ACVP_CTX *ctx) {
     rv = acvp_cap_rsa_keygen_set_primes(ctx, ACVP_RSA_KEYGEN_B34, 2048,
                                         ACVP_RSA_PRIME_HASH_ALG, ACVP_SHA256);
     CHECK_ENABLE_CAP_RV(rv);
-    // TODO: leaving this in here as a workaround until the server allows it as optional
-    rv = acvp_cap_rsa_keygen_set_primes(ctx, ACVP_RSA_KEYGEN_B34, 2048,
-                                        ACVP_RSA_PRIME_TEST, ACVP_RSA_PRIME_TEST_TBLC2);
-    CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_rsa_keygen_set_primes(ctx, ACVP_RSA_KEYGEN_B34, 3072,
                                         ACVP_RSA_PRIME_HASH_ALG, ACVP_SHA256);
-    CHECK_ENABLE_CAP_RV(rv);
-    // TODO: leaving this in here as a workaround until the server allows it as optional
-    rv = acvp_cap_rsa_keygen_set_primes(ctx, ACVP_RSA_KEYGEN_B34, 3072,
-                                        ACVP_RSA_PRIME_TEST, ACVP_RSA_PRIME_TEST_TBLC2);
     CHECK_ENABLE_CAP_RV(rv);
 
     /*
@@ -3030,7 +3017,6 @@ static ACVP_RESULT app_aes_handler(ACVP_TEST_CASE *test_case) {
             break;
         }
         break;
-        break;
     default:
         printf("Error: Unsupported AES mode requested by ACVP server\n");
         return ACVP_NO_CAP;
@@ -3186,55 +3172,6 @@ end:
 
     return rc;
 }
-
-/* TODO: I don't believe that openssl's 3DES keywrap is FIPS compliant */
-#if 0
-static ACVP_RESULT app_des_keywrap_handler(ACVP_TEST_CASE *test_case) {
-    ACVP_SYM_CIPHER_TC      *tc;
-    EVP_CIPHER_CTX cipher_ctx;
-    const EVP_CIPHER        *cipher;
-    int c_len;
-
-    if (!test_case) {
-        return ACVP_INVALID_ARG;
-    }
-
-    tc = test_case->tc.symmetric;
-
-    /* Begin encrypt code section */
-    EVP_CIPHER_CTX_init(&cipher_ctx);
-
-    cipher = EVP_des_ede3_wrap();
-
-    if (tc->direction == ACVP_SYM_CIPH_DIR_ENCRYPT) {
-        EVP_CIPHER_CTX_set_flags(&cipher_ctx, EVP_CIPHER_CTX_FLAG_WRAP_ALLOW);
-        EVP_CipherInit_ex(&cipher_ctx, cipher, NULL, tc->key, NULL, 1);
-        c_len = EVP_Cipher(&cipher_ctx, tc->ct, tc->pt, tc->pt_len);
-        if (c_len <= 0) {
-            printf("Error: key wrap operation failed (%d)\n", c_len);
-            return ACVP_CRYPTO_MODULE_FAIL;
-        } else {
-            tc->ct_len = c_len;
-        }
-    } else if (tc->direction == ACVP_SYM_CIPH_DIR_DECRYPT) {
-        EVP_CIPHER_CTX_set_flags(&cipher_ctx, EVP_CIPHER_CTX_FLAG_WRAP_ALLOW);
-        EVP_CipherInit_ex(&cipher_ctx, cipher, NULL, tc->key, NULL, 0);
-        c_len = EVP_Cipher(&cipher_ctx, tc->pt, tc->ct, tc->ct_len);
-        if (c_len <= 0) {
-            return ACVP_CRYPTO_WRAP_FAIL;
-        } else {
-            tc->pt_len = c_len;
-        }
-    } else {
-        printf("Unsupported direction\n");
-        return ACVP_UNSUPPORTED_OP;
-    }
-
-    EVP_CIPHER_CTX_cleanup(&cipher_ctx);
-
-    return ACVP_SUCCESS;
-}
-#endif
 
 /*
  * This fuction is invoked by libacvp when an AES crypto
@@ -3543,10 +3480,7 @@ static ACVP_RESULT app_hmac_handler(ACVP_TEST_CASE *test_case) {
         printf("\nCrypto module error, HMAC_Update failed\n");
         goto end;
     }
-
-    /* TODO ? - we only support standard mac lengths so we return it, but
-       the mac length was passed in and could be used to define how much to
-       return */
+    
     if (!HMAC_Final(hmac_ctx, tc->mac, &tc->mac_len)) {
         printf("\nCrypto module error, HMAC_Final failed\n");
         goto end;

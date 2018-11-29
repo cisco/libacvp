@@ -63,7 +63,6 @@ static ACVP_RESULT acvp_aes_init_tc(ACVP_CTX *ctx,
 
 static ACVP_RESULT acvp_aes_release_tc(ACVP_SYM_CIPHER_TC *stc);
 
-
 static unsigned char key[101][32];
 static unsigned char iv[101][16];
 static unsigned char ptext[1001][32];
@@ -504,21 +503,12 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
     /*
      * Start to build the JSON response
-     * TODO: This code will likely be common to all the algorithms, need to move this
      */
-    if (ctx->kat_resp) {
-        json_value_free(ctx->kat_resp);
+    rv = acvp_setup_json_rsp_group(&ctx, &reg_arry_val, &r_vs_val, &r_vs, alg_str, &r_garr);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Failed to setup json response");
+        return rv;
     }
-    ctx->kat_resp = reg_arry_val;
-    r_vs_val = json_value_init_object();
-    r_vs = json_value_get_object(r_vs_val);
-    json_object_set_number(r_vs, "vsId", ctx->vs_id);
-    json_object_set_string(r_vs, "algorithm", alg_str);
-    /*
-     * create an array of response test groups
-     */
-    json_object_set_value(r_vs, "testGroups", json_value_init_array());
-    r_garr = json_object_get_array(r_vs, "testGroups");
 
     groups = json_object_get_array(obj, "testGroups");
     g_cnt = json_array_get_count(groups);
@@ -573,9 +563,6 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         if (!strcmp(test_type_str, "MCT")) {
             test_type = ACVP_SYM_TEST_TYPE_MCT;
         } else if (!strcmp(test_type_str, "AFT")) {
-            test_type = ACVP_SYM_TEST_TYPE_AFT;
-        } else if (!strcmp(test_type_str, "aft")) {
-            // FIXME this is only temporary fix for XTS
             test_type = ACVP_SYM_TEST_TYPE_AFT;
         } else if (!strcmp(test_type_str, "CTR")) {
             test_type = ACVP_SYM_TEST_TYPE_CTR;
@@ -736,7 +723,6 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
             if (dir == ACVP_SYM_CIPH_DIR_ENCRYPT) {
                 unsigned int tmp_pt_len = 0;
-
                 pt = json_object_get_string(testobj, "pt");
                 if (!pt) {
                     ACVP_LOG_ERR("Server JSON missing 'pt'");
@@ -843,8 +829,6 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             /*
              * Setup the test case data that will be passed down to
              * the crypto module.
-             * TODO: this does mallocs, we can probably do the mallocs once for
-             *       the entire vector set to be more efficient
              */
             rv = acvp_aes_init_tc(ctx, &stc, tc_id, test_type, key, pt, ct, iv, tag, aad, kwcipher, keylen, ivlen,
                                   datalen,
@@ -1033,8 +1017,6 @@ static ACVP_RESULT acvp_aes_init_tc(ACVP_CTX *ctx,
                                     ACVP_SYM_CIPH_IVGEN_MODE iv_gen_mode,
                                     unsigned int aad_len) {
     ACVP_RESULT rv;
-
-    //FIXME:  check lengths do not exceed MAX values below
 
     memset(stc, 0x0, sizeof(ACVP_SYM_CIPHER_TC));
 

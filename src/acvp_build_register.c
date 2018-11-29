@@ -2473,9 +2473,6 @@ ACVP_RESULT acvp_build_test_session(ACVP_CTX *ctx, char **reg) {
 
     /*
      * Iterate through all the capabilities the user has enabled
-     * TODO: This logic is written for the symmetric cipher sub-spec.
-     *       This will need rework when implementing the other
-     *       sub-specifications.
      */
     if (ctx->caps_list) {
         cap_entry = ctx->caps_list;

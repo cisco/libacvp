@@ -565,8 +565,6 @@ ACVP_RESULT acvp_dsa_keygen_handler(ACVP_CTX *ctx,
         /*
          * Setup the test case data that will be passed down to
          * the crypto module.
-         * TODO: this does mallocs, we can probably do the mallocs once for
-         *       the entire vector set to be more efficient
          */
         rv = acvp_dsa_keygen_init_tc(ctx, stc, tg_id, tc_id, stc->cipher, num, index, l, n);
         if (rv != ACVP_SUCCESS) {
@@ -781,8 +779,6 @@ ACVP_RESULT acvp_dsa_pqggen_handler(ACVP_CTX *ctx,
         /*
          * Setup the test case data that will be passed down to
          * the crypto module.
-         * TODO: this does mallocs, we can probably do the mallocs once for
-         *       the entire vector set to be more efficient
          */
 
         switch (gpq) {
@@ -957,8 +953,6 @@ ACVP_RESULT acvp_dsa_siggen_handler(ACVP_CTX *ctx,
         /*
          * Setup the test case data that will be passed down to
          * the crypto module.
-         * TODO: this does mallocs, we can probably do the mallocs once for
-         *       the entire vector set to be more efficient
          */
         rv = acvp_dsa_siggen_init_tc(ctx, stc, tg_id, tc_id, stc->cipher, num, index, l, n, sha, msg);
         if (rv != ACVP_SUCCESS) {
@@ -1193,8 +1187,6 @@ ACVP_RESULT acvp_dsa_pqgver_handler(ACVP_CTX *ctx,
         /*
          * Setup the test case data that will be passed down to
          * the crypto module.
-         * TODO: this does mallocs, we can probably do the mallocs once for
-         *       the entire vector set to be more efficient
          */
         rv = acvp_dsa_pqgver_init_tc(ctx, stc, tc_id, stc->cipher, num,
                                      l, n, c, index, sha, p, q, g, seed, gpq);
@@ -1360,8 +1352,6 @@ ACVP_RESULT acvp_dsa_sigver_handler(ACVP_CTX *ctx,
         /*
          * Setup the test case data that will be passed down to
          * the crypto module.
-         * TODO: this does mallocs, we can probably do the mallocs once for
-         *       the entire vector set to be more efficient
          */
         rv = acvp_dsa_sigver_init_tc(ctx, stc, tc_id, stc->cipher, num, index,
                                      l, n, sha, p, q, g, r, s, y, msg);
@@ -1451,22 +1441,12 @@ ACVP_RESULT acvp_dsa_pqgver_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
     /*
      * Start to build the JSON response
-     * TODO: This code will likely be common to all the algorithms, need to move this
      */
-    if (ctx->kat_resp) {
-        json_value_free(ctx->kat_resp);
+    rv = acvp_setup_json_rsp_group(&ctx, &reg_arry_val, &r_vs_val, &r_vs, alg_str, &r_garr);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Failed to setup json response");
+        return rv;
     }
-    ctx->kat_resp = reg_arry_val;
-    r_vs_val = json_value_init_object();
-    r_vs = json_value_get_object(r_vs_val);
-
-    json_object_set_number(r_vs, "vsId", ctx->vs_id);
-    json_object_set_string(r_vs, "algorithm", alg_str);
-    /*
-     * create an array of response test groups
-     */
-    json_object_set_value(r_vs, "testGroups", json_value_init_array());
-    r_garr = json_object_get_array(r_vs, "testGroups");
 
     groups = json_object_get_array(obj, "testGroups");
     if (!groups) {
@@ -1576,22 +1556,12 @@ ACVP_RESULT acvp_dsa_pqggen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
     /*
      * Start to build the JSON response
-     * TODO: This code will likely be common to all the algorithms, need to move this
      */
-    if (ctx->kat_resp) {
-        json_value_free(ctx->kat_resp);
+    rv = acvp_setup_json_rsp_group(&ctx, &reg_arry_val, &r_vs_val, &r_vs, alg_str, &r_garr);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Failed to setup json response");
+        return rv;
     }
-    ctx->kat_resp = reg_arry_val;
-    r_vs_val = json_value_init_object();
-    r_vs = json_value_get_object(r_vs_val);
-
-    json_object_set_number(r_vs, "vsId", ctx->vs_id);
-    json_object_set_string(r_vs, "algorithm", alg_str);
-    /*
-     * create an array of response test groups
-     */
-    json_object_set_value(r_vs, "testGroups", json_value_init_array());
-    r_garr = json_object_get_array(r_vs, "testGroups");
 
     groups = json_object_get_array(obj, "testGroups");
     if (!groups) {
@@ -1696,22 +1666,12 @@ ACVP_RESULT acvp_dsa_siggen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
     /*
      * Start to build the JSON response
-     * TODO: This code will likely be common to all the algorithms, need to move this
      */
-    if (ctx->kat_resp) {
-        json_value_free(ctx->kat_resp);
+    rv = acvp_setup_json_rsp_group(&ctx, &reg_arry_val, &r_vs_val, &r_vs, alg_str, &r_garr);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Failed to setup json response");
+        return rv;
     }
-    ctx->kat_resp = reg_arry_val;
-    r_vs_val = json_value_init_object();
-    r_vs = json_value_get_object(r_vs_val);
-
-    json_object_set_number(r_vs, "vsId", ctx->vs_id);
-    json_object_set_string(r_vs, "algorithm", alg_str);
-    /*
-     * create an array of response test groups
-     */
-    json_object_set_value(r_vs, "testGroups", json_value_init_array());
-    r_garr = json_object_get_array(r_vs, "testGroups");
 
     groups = json_object_get_array(obj, "testGroups");
     if (!groups) {
@@ -1756,7 +1716,6 @@ ACVP_RESULT acvp_dsa_siggen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     json_array_append_value(reg_arry, r_vs_val);
     json_result = json_serialize_to_string_pretty(ctx->kat_resp);
 
-/* TODO: we should check the return code */
     if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
         printf("\n\n%s\n\n", json_result);
     } else {
@@ -1818,22 +1777,12 @@ ACVP_RESULT acvp_dsa_keygen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
     /*
      * Start to build the JSON response
-     * TODO: This code will likely be common to all the algorithms, need to move this
      */
-    if (ctx->kat_resp) {
-        json_value_free(ctx->kat_resp);
+    rv = acvp_setup_json_rsp_group(&ctx, &reg_arry_val, &r_vs_val, &r_vs, alg_str, &r_garr);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Failed to setup json response");
+        return rv;
     }
-    ctx->kat_resp = reg_arry_val;
-    r_vs_val = json_value_init_object();
-    r_vs = json_value_get_object(r_vs_val);
-
-    json_object_set_number(r_vs, "vsId", ctx->vs_id);
-    json_object_set_string(r_vs, "algorithm", alg_str);
-    /*
-     * create an array of response test groups
-     */
-    json_object_set_value(r_vs, "testGroups", json_value_init_array());
-    r_garr = json_object_get_array(r_vs, "testGroups");
 
     groups = json_object_get_array(obj, "testGroups");
     if (!groups) {
@@ -1878,7 +1827,6 @@ ACVP_RESULT acvp_dsa_keygen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     json_array_append_value(reg_arry, r_vs_val);
     json_result = json_serialize_to_string_pretty(ctx->kat_resp);
 
-/* TODO: we should check the return code */
     if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
         printf("\n\n%s\n\n", json_result);
     } else {
@@ -1940,22 +1888,12 @@ ACVP_RESULT acvp_dsa_sigver_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
     /*
      * Start to build the JSON response
-     * TODO: This code will likely be common to all the algorithms, need to move this
      */
-    if (ctx->kat_resp) {
-        json_value_free(ctx->kat_resp);
+    rv = acvp_setup_json_rsp_group(&ctx, &reg_arry_val, &r_vs_val, &r_vs, alg_str, &r_garr);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Failed to setup json response");
+        return rv;
     }
-    ctx->kat_resp = reg_arry_val;
-    r_vs_val = json_value_init_object();
-    r_vs = json_value_get_object(r_vs_val);
-
-    json_object_set_number(r_vs, "vsId", ctx->vs_id);
-    json_object_set_string(r_vs, "algorithm", alg_str);
-    /*
-     * create an array of response test groups
-     */
-    json_object_set_value(r_vs, "testGroups", json_value_init_array());
-    r_garr = json_object_get_array(r_vs, "testGroups");
 
     groups = json_object_get_array(obj, "testGroups");
     if (!groups) {

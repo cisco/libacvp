@@ -259,20 +259,11 @@ ACVP_RESULT acvp_kdf108_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     /*
      * Start to build the JSON response
      */
-    if (ctx->kat_resp) {
-        json_value_free(ctx->kat_resp);
+    rv = acvp_setup_json_rsp_group(&ctx, &reg_arry_val, &r_vs_val, &r_vs, alg_str, &r_garr);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Failed to setup json response");
+        return rv;
     }
-    ctx->kat_resp = reg_arry_val;
-    r_vs_val = json_value_init_object();
-    r_vs = json_value_get_object(r_vs_val);
-
-    json_object_set_number(r_vs, "vsId", ctx->vs_id);
-    json_object_set_string(r_vs, "algorithm", alg_str);
-    /*
-     * create an array of response test groups
-     */
-    json_object_set_value(r_vs, "testGroups", json_value_init_array());
-    r_garr = json_object_get_array(r_vs, "testGroups");
 
     groups = json_object_get_array(obj, "testGroups");
     g_cnt = json_array_get_count(groups);
@@ -487,8 +478,6 @@ ACVP_RESULT acvp_kdf108_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             /*
              * Setup the test case data that will be passed down to
              * the crypto module.
-             * TODO: this does mallocs, we can probably do the mallocs once for
-             *       the entire vector set to be more efficient
              */
             rv = acvp_kdf108_init_tc(ctx, &stc, tc_id, kdf_mode, mac_mode,
                                      ctr_loc, key_in_str, iv_str, key_in_len,
