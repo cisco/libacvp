@@ -207,9 +207,7 @@ static long acvp_curl_http_post(ACVP_CTX *ctx, char *url, char *data, void *writ
      * Set the Content-Type header in the HTTP request
      */
     slist = NULL;
-    slist = curl_slist_append(slist, "Content-Type:application/octet-stream");
-    //FIXME: v0.2 spec says to use application/json
-    //slist = curl_slist_append(slist, "Content-Type:application/json");
+    slist = curl_slist_append(slist, "Content-Type:application/json");
 
     /*
      * Create the Authorzation header if needed

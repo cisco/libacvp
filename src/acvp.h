@@ -350,9 +350,6 @@ typedef enum acvp_kdf135_snmp_param {
     ACVP_KDF135_SNMP_ENGID
 } ACVP_KDF135_SNMP_PARAM;
 
-// TODO: most of the specs are moving toward "SHA2..." but
-// not all of them have been updated. The duplicates can
-// be removed once all are updated.
 #define ACVP_STR_SHA_1          "SHA-1"
 #define ACVP_STR_SHA2_224       "SHA2-224"
 #define ACVP_STR_SHA2_256       "SHA2-256"
@@ -2365,7 +2362,6 @@ ACVP_RESULT acvp_cap_kdf108_set_domain(ACVP_CTX *ctx,
 
     @return ACVP_RESULT
  */
-
 ACVP_RESULT acvp_cap_set_prereq(ACVP_CTX *ctx,
                                 ACVP_CIPHER cipher,
                                 ACVP_PREREQ_ALG pre_req_cap,

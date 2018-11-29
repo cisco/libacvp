@@ -161,7 +161,6 @@ static ACVP_RESULT acvp_rsa_output_tc(ACVP_CTX *ctx, ACVP_RSA_KEYGEN_TC *stc, JS
             json_array_append_number(bitlens_array, stc->bitlen3);
             json_array_append_number(bitlens_array, stc->bitlen4);
         }
-        // TODO: need to handle other rand_pq types
     }
 
 err:
@@ -336,23 +335,13 @@ ACVP_RESULT acvp_rsa_keygen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
     /*
      * Start to build the JSON response
-     * TODO: This code will likely be common to all the algorithms, need to move this
      */
-    if (ctx->kat_resp) {
-        json_value_free(ctx->kat_resp);
+    rv = acvp_setup_json_rsp_group(&ctx, &reg_arry_val, &r_vs_val, &r_vs, alg_str, &r_garr);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Failed to setup json response");
+        return rv;
     }
-    ctx->kat_resp = reg_arry_val;
-    r_vs_val = json_value_init_object();
-    r_vs = json_value_get_object(r_vs_val);
-
-    json_object_set_number(r_vs, "vsId", ctx->vs_id);
-    json_object_set_string(r_vs, "algorithm", alg_str);
     json_object_set_string(r_vs, "mode", mode_str);
-    /*
-     * create an array of response test groups
-     */
-    json_object_set_value(r_vs, "testGroups", json_value_init_array());
-    r_garr = json_object_get_array(r_vs, "testGroups");
 
     groups = json_object_get_array(obj, "testGroups");
     g_cnt = json_array_get_count(groups);

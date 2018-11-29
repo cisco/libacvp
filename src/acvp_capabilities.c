@@ -610,7 +610,6 @@ static ACVP_RESULT acvp_dsa_set_modulo(ACVP_DSA_CAP_MODE *dsa_cap_mode,
         attrs->modulo = param;
         attrs->next = NULL;
     }
-    /* TODO check range of modulo and value */
     while (1) {
         if (attrs->modulo == param) {
             attrs->sha |= value;
@@ -678,7 +677,6 @@ static ACVP_RESULT acvp_add_dsa_pqggen_parm(ACVP_CTX *ctx,
             break;
         default:
             return ACVP_INVALID_ARG;
-
             break;
         }
         break;
@@ -692,25 +690,20 @@ static ACVP_RESULT acvp_add_dsa_pqggen_parm(ACVP_CTX *ctx,
             break;
         default:
             return ACVP_INVALID_ARG;
-
             break;
         }
         break;
     case ACVP_DSA_LN2048_224:
         return acvp_add_dsa_mode_parm(ctx, dsa_cap_mode, param, value);
-
         break;
     case ACVP_DSA_LN2048_256:
         return acvp_add_dsa_mode_parm(ctx, dsa_cap_mode, param, value);
-
         break;
     case ACVP_DSA_LN3072_256:
         return acvp_add_dsa_mode_parm(ctx, dsa_cap_mode, param, value);
-
         break;
     default:
         return ACVP_INVALID_ARG;
-
         break;
     }
 
@@ -1798,12 +1791,33 @@ static ACVP_RESULT acvp_validate_drbg_parm_value(ACVP_DRBG_PARM parm, int value)
         retval = is_valid_tf_param(value);
         break;
     case ACVP_DRBG_ENTROPY_LEN:
+        if (value >= ACVP_DRBG_ENTPY_IN_BIT_MIN &&
+            value <= ACVP_DRBG_ENTPY_IN_BIT_MAX) {
+            retval = ACVP_SUCCESS;
+        }
+        break;
     case ACVP_DRBG_NONCE_LEN:
+        if (value >= ACVP_DRBG_NONCE_BIT_MIN &&
+            value <= ACVP_DRBG_NONCE_BIT_MAX) {
+            retval = ACVP_SUCCESS;
+        }
+        break;
     case ACVP_DRBG_PERSO_LEN:
+        if (value <= ACVP_DRBG_PER_SO_BIT_MAX) {
+            retval = ACVP_SUCCESS;
+        }
+        break;
     case ACVP_DRBG_ADD_IN_LEN:
+        if (value <= ACVP_DRBG_ADDI_IN_BIT_MAX) {
+            retval = ACVP_SUCCESS;
+        }
+        break;
     case ACVP_DRBG_RET_BITS_LEN:
+        if (value <= ACVP_DRB_BIT_MAX) {
+            retval = ACVP_SUCCESS;
+        }
+        break;
     case ACVP_DRBG_PRE_REQ_VALS:
-        // TODO: add proper validation for these parameters
         retval = ACVP_SUCCESS;
         break;
     default:
@@ -2490,7 +2504,6 @@ ACVP_RESULT acvp_cap_rsa_keygen_set_exponent(ACVP_CTX *ctx,
 /*
  * The user should call this after invoking acvp_enable_rsa_sigver_cap_parm().
  */
-// TODO: maybe we can collapse these bignums into a shared internal method
 ACVP_RESULT acvp_cap_rsa_sigver_set_exponent(ACVP_CTX *ctx,
                                              ACVP_RSA_PARM param,
                                              char *value) {

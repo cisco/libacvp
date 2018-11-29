@@ -417,9 +417,6 @@ ACVP_EC_CURVE acvp_lookup_ec_curve(ACVP_CIPHER cipher, const char *name) {
     return 0;
 }
 
-//TODO: the next 3 functions could possibly be replaced using OpenSSL bignum,
-//      which has support for reading/writing hex strings.  But do we want
-//      to include a new dependency on OpenSSL?
 /*
  * Convert a byte array from source to a hexadecimal string which is
  * stored in the destination.
@@ -696,4 +693,28 @@ void acvp_free_kv_list(ACVP_KV_LIST *kv_list) {
         if (tmp->key) free(tmp->key);
         if (tmp->value) free(tmp->value);
     }
+}
+
+ACVP_RESULT acvp_setup_json_rsp_group (ACVP_CTX **ctx,
+                                       JSON_Value **outer_arr_val,
+                                       JSON_Value **r_vs_val,
+                                       JSON_Object **r_vs,
+                                       const char *alg_str,
+                                       JSON_Array **groups_arr) {
+    if ((*ctx)->kat_resp) {
+        json_value_free((*ctx)->kat_resp);
+    }
+    (*ctx)->kat_resp = *outer_arr_val;
+    *r_vs_val = json_value_init_object();
+    *r_vs = json_value_get_object(*r_vs_val);
+    
+    json_object_set_number(*r_vs, "vsId", (*ctx)->vs_id);
+    json_object_set_string(*r_vs, "algorithm", alg_str);
+    /*
+     * create an array of response test groups
+     */
+    json_object_set_value(*r_vs, "testGroups", json_value_init_array());
+    (*groups_arr) = json_object_get_array(*r_vs, "testGroups");
+    
+    return ACVP_SUCCESS;
 }
