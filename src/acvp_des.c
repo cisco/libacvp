@@ -686,7 +686,7 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             test_type = ACVP_SYM_TEST_TYPE_MCT;
         } else if (!strncmp(test_type_str, "AFT", strlen("AFT"))) {
             test_type = ACVP_SYM_TEST_TYPE_AFT;
-        } else if (!strncmp(test_type_str, "counter", strlen("counter"))) {
+        } else if (!strncmp(test_type_str, "CTR", strlen("CTR"))) {
             test_type = ACVP_SYM_TEST_TYPE_CTR;
         } else {
             return ACVP_INVALID_ARG;
@@ -941,8 +941,6 @@ static ACVP_RESULT acvp_des_output_tc(ACVP_CTX *ctx,
                                       ACVP_RESULT opt_rv) {
     ACVP_RESULT rv;
     char *tmp = NULL;
-    JSON_Array *ivs_array = NULL; /* IVs testarray */
-    int i;
 
     tmp = calloc(ACVP_SYM_CT_MAX + 1, sizeof(char));
     if (!tmp) {
@@ -967,20 +965,7 @@ static ACVP_RESULT acvp_des_output_tc(ACVP_CTX *ctx,
                 free(tmp);
                 return rv;
             }
-            if (stc->cipher == ACVP_TDES_CTR) {
-                json_object_set_string(tc_rsp, "cipherText", tmp);
-                if (stc->test_type == ACVP_SYM_TEST_TYPE_CTR) {
-                    json_object_set_value(tc_rsp, "ivs", json_value_init_array());
-                    ivs_array = json_object_get_array(tc_rsp, "ivs");
-                    for (i = 0; i < (stc->ct_len / 8); i++) {
-                        rv = acvp_bin_to_hexstr(stc->iv, stc->iv_len, tmp, ACVP_SYM_CT_MAX);
-                        json_array_append_string(ivs_array, tmp);
-                        ctr64_inc(stc->iv);
-                    }
-                }
-            } else {
-                json_object_set_string(tc_rsp, "ct", tmp);
-            }
+            json_object_set_string(tc_rsp, "ct", tmp);
         }
     } else {
         if ((stc->cipher == ACVP_TDES_KW) &&
@@ -1006,20 +991,7 @@ static ACVP_RESULT acvp_des_output_tc(ACVP_CTX *ctx,
                 free(tmp);
                 return rv;
             }
-            if (stc->cipher == ACVP_TDES_CTR) {
-                json_object_set_string(tc_rsp, "plainText", tmp);
-                if (stc->test_type == ACVP_SYM_TEST_TYPE_CTR) {
-                    json_object_set_value(tc_rsp, "ivs", json_value_init_array());
-                    ivs_array = json_object_get_array(tc_rsp, "ivs");
-                    for (i = 0; i < (stc->pt_len / 8); i++) {
-                        rv = acvp_bin_to_hexstr(stc->iv, stc->iv_len, tmp, ACVP_SYM_CT_MAX);
-                        json_array_append_string(ivs_array, tmp);
-                        ctr64_inc(stc->iv);
-                    }
-                }
-            } else {
-                json_object_set_string(tc_rsp, "pt", tmp);
-            }
+            json_object_set_string(tc_rsp, "pt", tmp);
         }
     }
 

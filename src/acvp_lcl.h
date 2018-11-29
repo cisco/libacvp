@@ -264,13 +264,13 @@
 #define ACVP_SYM_KEY_MAX_BYTES 64       /**< 256 bits, 64 characters */
 #define ACVP_SYM_KEY_MAX_BITS 256
 
-#define ACVP_SYM_PT_BIT_MAX 65536                       /**< 65536 bits */
-#define ACVP_SYM_PT_MAX (ACVP_SYM_PT_BIT_MAX >> 2)      /**< 16384 characters */
-#define ACVP_SYM_PT_BYTE_MAX (ACVP_SYM_PT_BIT_MAX >> 3) /**< 8192 bytes */
+#define ACVP_SYM_PT_BIT_MAX 131072                      /**< 131072 bits */
+#define ACVP_SYM_PT_MAX (ACVP_SYM_PT_BIT_MAX >> 2)      /**< 32768 characters */
+#define ACVP_SYM_PT_BYTE_MAX (ACVP_SYM_PT_BIT_MAX >> 3) /**< 16384 bytes */
 
-#define ACVP_SYM_CT_BIT_MAX 65536                       /**< 65536 bits */
-#define ACVP_SYM_CT_MAX (ACVP_SYM_CT_BIT_MAX >> 2)      /**< 16384 characters */
-#define ACVP_SYM_CT_BYTE_MAX (ACVP_SYM_CT_BIT_MAX >> 3) /**< 8192 bytes */
+#define ACVP_SYM_CT_BIT_MAX 131072                      /**< 131072 bits */
+#define ACVP_SYM_CT_MAX (ACVP_SYM_CT_BIT_MAX >> 2)      /**< 32768 characters */
+#define ACVP_SYM_CT_BYTE_MAX (ACVP_SYM_CT_BIT_MAX >> 3) /**< 16384 bytes */
 
 #define ACVP_SYM_IV_BIT_MAX 1024                        /**< 1024 bits */
 #define ACVP_SYM_IV_MAX (ACVP_SYM_IV_BIT_MAX >> 2)      /**< 256 characters */
@@ -658,6 +658,8 @@ typedef struct acvp_sym_cipher_capability {
     ACVP_SYM_CIPH_KO keying_option;
     ACVP_SYM_CIPH_IVGEN_SRC ivgen_source;
     ACVP_SYM_CIPH_IVGEN_MODE ivgen_mode;
+    unsigned int ctr_incr;
+    unsigned int ctr_ovrflw;
     ACVP_SL_LIST *keylen;
     ACVP_SL_LIST *ptlen;
     ACVP_SL_LIST *tweak;

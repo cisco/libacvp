@@ -1124,6 +1124,24 @@ ACVP_RESULT acvp_cap_sym_cipher_set_parm(ACVP_CTX *ctx,
             return ACVP_INVALID_ARG;
         }
 
+    case ACVP_SYM_CIPH_PARM_CTR_INCR:
+        if (value == 0 || value == 1) {
+            cap->cap.sym_cap->ctr_incr = value;
+            return ACVP_SUCCESS;
+        } else {
+            ACVP_LOG_ERR("Invalid parameter 'value' for param ACVP_SYM_CIPH_PARM_CTR_INCR");
+            return ACVP_INVALID_ARG;
+        }
+
+    case ACVP_SYM_CIPH_PARM_CTR_OVRFLW:
+        if (value == 0 || value == 1) {
+            cap->cap.sym_cap->ctr_ovrflw = value;
+            return ACVP_SUCCESS;
+        } else {
+            ACVP_LOG_ERR("Invalid parameter 'value' for param ACVP_SYM_CIPH_PARM_CTR_OVRFLW");
+            return ACVP_INVALID_ARG;
+        }
+
     case ACVP_SYM_CIPH_PARM_IVGEN_SRC:
         if (value != 0 && value < ACVP_SYM_CIPH_IVGEN_SRC_MAX) {
             cap->cap.sym_cap->ivgen_source = value;
