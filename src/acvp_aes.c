@@ -362,7 +362,7 @@ static ACVP_RESULT acvp_aes_mct_tc(ACVP_CTX *ctx,
             memset(tmp, 0x0, ACVP_SYM_CT_MAX);
 
             if (stc->cipher == ACVP_AES_CFB1) {
-                rv = acvp_bin_to_bit(stc->pt, 1, (unsigned char *)tmp);
+                rv = acvp_bin_to_hexstr(stc->pt, 1, tmp, ACVP_SYM_PT_MAX);
 
                 if (rv != ACVP_SUCCESS) {
                     ACVP_LOG_ERR("hex conversion failure (pt)");
@@ -564,7 +564,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             test_type = ACVP_SYM_TEST_TYPE_MCT;
         } else if (!strcmp(test_type_str, "AFT")) {
             test_type = ACVP_SYM_TEST_TYPE_AFT;
-        } else if (!strcmp(test_type_str, "counter")) {
+        } else if (!strcmp(test_type_str, "CTR")) {
             test_type = ACVP_SYM_TEST_TYPE_CTR;
         } else {
             ACVP_LOG_ERR("Server JSON invalid 'testType'");
@@ -906,8 +906,6 @@ static ACVP_RESULT acvp_aes_output_tc(ACVP_CTX *ctx,
                                       ACVP_RESULT opt_rv) {
     ACVP_RESULT rv;
     char *tmp = NULL;
-    JSON_Array *ivs_array = NULL; /* IVs testarray */
-    int i;
 
     tmp = calloc(ACVP_SYM_CT_MAX + 1, sizeof(char));
     if (!tmp) {
@@ -930,8 +928,7 @@ static ACVP_RESULT acvp_aes_output_tc(ACVP_CTX *ctx,
     if (stc->direction == ACVP_SYM_CIPH_DIR_ENCRYPT) {
         memset(tmp, 0x0, ACVP_SYM_CT_MAX);
         if (stc->cipher == ACVP_AES_CFB1) {
-            json_object_set_number(tc_rsp, "payloadLen", stc->data_len);
-            rv = acvp_bin_to_hexstr(stc->ct, stc->pt_len, tmp, ACVP_SYM_CT_MAX);
+            rv = acvp_bin_to_hexstr(stc->ct, (stc->ct_len+7)/8, tmp, ACVP_SYM_CT_MAX);
         } else if (stc->cipher == ACVP_AES_GCM) {
             rv = acvp_bin_to_hexstr(stc->ct, stc->pt_len, tmp, ACVP_SYM_CT_MAX);
         } else {
@@ -941,25 +938,7 @@ static ACVP_RESULT acvp_aes_output_tc(ACVP_CTX *ctx,
             ACVP_LOG_ERR("hex conversion failure (ct)");
             goto err;
         }
-
-        if (stc->cipher == ACVP_AES_CTR) {
-            json_object_set_string(tc_rsp, "cipherText", tmp);
-            if (stc->test_type == ACVP_SYM_TEST_TYPE_CTR) {
-                json_object_set_value(tc_rsp, "ivs", json_value_init_array());
-                ivs_array = json_object_get_array(tc_rsp, "ivs");
-                for (i = 0; i < (stc->pt_len / 16); i++) {
-                    rv = acvp_bin_to_hexstr(stc->iv, stc->iv_len, tmp, ACVP_SYM_CT_MAX);
-                    if (rv != ACVP_SUCCESS) {
-                        ACVP_LOG_ERR("hex conversion failure (tag)");
-                        goto err;
-                    }
-                    json_array_append_string(ivs_array, tmp);
-                    ctr128_inc(stc->iv);
-                }
-            }
-        } else {
-            json_object_set_string(tc_rsp, "ct", tmp);
-        }
+        json_object_set_string(tc_rsp, "ct", tmp);
 
         /*
          * AES-GCM ciphers need to include the tag
@@ -986,7 +965,7 @@ static ACVP_RESULT acvp_aes_output_tc(ACVP_CTX *ctx,
         }
 
         if (stc->cipher == ACVP_AES_CFB1) {
-            rv = acvp_bin_to_hexstr(stc->pt, stc->pt_len, tmp, ACVP_SYM_PT_MAX);
+            rv = acvp_bin_to_hexstr(stc->pt, (stc->pt_len+7)/8, tmp, ACVP_SYM_PT_MAX);
         } else if (stc->cipher == ACVP_AES_GCM) {
             rv = acvp_bin_to_hexstr(stc->pt, stc->ct_len, tmp, ACVP_SYM_PT_MAX);
         } else {
@@ -996,21 +975,7 @@ static ACVP_RESULT acvp_aes_output_tc(ACVP_CTX *ctx,
             ACVP_LOG_ERR("hex conversion failure (pt)");
             goto err;
         }
-
-        if (stc->cipher == ACVP_AES_CTR) {
-            json_object_set_string(tc_rsp, "plainText", tmp);
-            if (stc->test_type == ACVP_SYM_TEST_TYPE_CTR) {
-                json_object_set_value(tc_rsp, "ivs", json_value_init_array());
-                ivs_array = json_object_get_array(tc_rsp, "ivs");
-                for (i = 0; i < (stc->pt_len / 16); i++) {
-                    rv = acvp_bin_to_hexstr(stc->iv, stc->iv_len, tmp, ACVP_SYM_CT_MAX);
-                    json_array_append_string(ivs_array, tmp);
-                    ctr128_inc(stc->iv);
-                }
-            }
-        } else {
-            json_object_set_string(tc_rsp, "pt", tmp);
-        }
+        json_object_set_string(tc_rsp, "pt", tmp);
     }
     free(tmp);
 
@@ -1076,13 +1041,13 @@ static ACVP_RESULT acvp_aes_init_tc(ACVP_CTX *ctx,
 
     if (j_pt) {
         if (alg_id == ACVP_AES_CFB1) {
-            rv = acvp_bit_to_bin((const unsigned char *)j_pt, data_len, stc->pt);
+            rv = acvp_hexstr_to_bin(j_pt, stc->pt, ACVP_SYM_PT_BYTE_MAX, NULL);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("Hex conversion failure (pt)");
                 return rv;
             }
             stc->data_len = data_len;
-            stc->pt_len = 1;
+            stc->pt_len = data_len;
         } else {
             rv = acvp_hexstr_to_bin(j_pt, stc->pt, ACVP_SYM_PT_BYTE_MAX, NULL);
             if (rv != ACVP_SUCCESS) {
@@ -1099,11 +1064,12 @@ static ACVP_RESULT acvp_aes_init_tc(ACVP_CTX *ctx,
 
     if (j_ct) {
         if (alg_id == ACVP_AES_CFB1) {
-            rv = acvp_bit_to_bin((const unsigned char *)j_ct, data_len, stc->ct);
+            rv = acvp_hexstr_to_bin(j_ct, stc->ct, ACVP_SYM_CT_BYTE_MAX, NULL);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("Hex conversion failure (ct)");
                 return rv;
             }
+            stc->data_len = data_len;
             stc->ct_len = data_len;
         } else {
             rv = acvp_hexstr_to_bin(j_ct, stc->ct, ACVP_SYM_CT_BYTE_MAX, NULL);
