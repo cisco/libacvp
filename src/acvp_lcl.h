@@ -960,7 +960,7 @@ typedef struct acvp_caps_list_t {
         ACVP_KAS_FFC_CAP *kas_ffc_cap;
     } cap;
 
-    ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case);
+    int (*crypto_handler)(ACVP_TEST_CASE *test_case);
 
     struct acvp_caps_list_t *next;
 } ACVP_CAPS_LIST;

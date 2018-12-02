@@ -453,8 +453,7 @@ static ACVP_RESULT acvp_ecdsa_kat_handler_internal(ACVP_CTX *ctx, JSON_Object *o
 
             /* Process the current test vector... */
             if (rv == ACVP_SUCCESS) {
-                rv = (cap->crypto_handler)(&tc);
-                if (rv != ACVP_SUCCESS) {
+                if ((cap->crypto_handler)(&tc)) {
                     ACVP_LOG_ERR("ERROR: crypto module failed the operation");
                     rv = ACVP_CRYPTO_MODULE_FAIL;
                     goto key_err;

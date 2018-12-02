@@ -163,7 +163,7 @@ static ACVP_KAS_FFC_CAP *allocate_kas_ffc_cap(void) {
 static ACVP_RESULT acvp_cap_list_append(ACVP_CTX *ctx,
                                         ACVP_CAP_TYPE type,
                                         ACVP_CIPHER cipher,
-                                        ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
+                                        int (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
     ACVP_CAPS_LIST *cap_entry, *cap_e2;
     ACVP_RESULT rv = ACVP_SUCCESS;
 
@@ -1201,7 +1201,7 @@ ACVP_RESULT acvp_cap_sym_cipher_set_parm(ACVP_CTX *ctx,
  */
 ACVP_RESULT acvp_cap_sym_cipher_enable(ACVP_CTX *ctx,
                                        ACVP_CIPHER cipher,
-                                       ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
+                                       int (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
     ACVP_RESULT result = ACVP_SUCCESS;
 
     if (!ctx) {
@@ -1256,7 +1256,7 @@ ACVP_RESULT acvp_cap_sym_cipher_enable(ACVP_CTX *ctx,
 
 ACVP_RESULT acvp_cap_hash_enable(ACVP_CTX *ctx,
                                  ACVP_CIPHER cipher,
-                                 ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
+                                 int (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
     ACVP_RESULT result = ACVP_SUCCESS;
 
     if (!ctx) {
@@ -1412,7 +1412,7 @@ static ACVP_RESULT acvp_validate_hmac_parm_value(ACVP_CIPHER cipher,
 
 ACVP_RESULT acvp_cap_hmac_enable(ACVP_CTX *ctx,
                                  ACVP_CIPHER cipher,
-                                 ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
+                                 int (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
     ACVP_RESULT result = ACVP_SUCCESS;
 
     if (!ctx) {
@@ -1537,7 +1537,7 @@ static ACVP_RESULT acvp_validate_cmac_parm_value(ACVP_CMAC_PARM parm, int value)
 
 ACVP_RESULT acvp_cap_cmac_enable(ACVP_CTX *ctx,
                                  ACVP_CIPHER cipher,
-                                 ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
+                                 int (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
     ACVP_RESULT result = ACVP_SUCCESS;
 
     if (!ctx) {
@@ -2177,7 +2177,7 @@ ACVP_RESULT acvp_cap_drbg_set_parm(ACVP_CTX *ctx,
 
 ACVP_RESULT acvp_cap_drbg_enable(ACVP_CTX *ctx,
                                  ACVP_CIPHER cipher,
-                                 ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
+                                 int (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
     ACVP_RESULT result = ACVP_SUCCESS;
 
     if (!ctx) {
@@ -2309,7 +2309,7 @@ ACVP_RESULT acvp_cap_rsa_keygen_set_parm(ACVP_CTX *ctx,
 
 ACVP_RESULT acvp_cap_rsa_keygen_enable(ACVP_CTX *ctx,
                                        ACVP_CIPHER cipher,
-                                       ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
+                                       int (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
     ACVP_RESULT result;
 
     if (!ctx) {
@@ -2927,7 +2927,7 @@ ACVP_RESULT acvp_cap_rsa_siggen_set_mod_parm(ACVP_CTX *ctx,
 
 static ACVP_RESULT internal_cap_rsa_sig_enable(ACVP_CTX *ctx,
                                                ACVP_CIPHER cipher,
-                                               ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
+                                               int (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
     ACVP_CAP_TYPE type = 0;
     ACVP_RESULT result = ACVP_SUCCESS;
 
@@ -2957,7 +2957,7 @@ static ACVP_RESULT internal_cap_rsa_sig_enable(ACVP_CTX *ctx,
 
 ACVP_RESULT acvp_cap_rsa_sig_enable(ACVP_CTX *ctx,
                                     ACVP_CIPHER cipher,
-                                    ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
+                                    int (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
     ACVP_RESULT result = ACVP_SUCCESS;
     char *cap_message_str = NULL;
 
@@ -3117,7 +3117,7 @@ ACVP_RESULT acvp_cap_ecdsa_set_parm(ACVP_CTX *ctx,
 
 ACVP_RESULT acvp_cap_ecdsa_enable(ACVP_CTX *ctx,
                                   ACVP_CIPHER cipher,
-                                  ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
+                                  int (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
     ACVP_CAP_TYPE type = 0;
     ACVP_RESULT result = ACVP_SUCCESS;
 
@@ -3224,7 +3224,7 @@ ACVP_RESULT acvp_cap_dsa_set_parm(ACVP_CTX *ctx,
 }
 
 ACVP_RESULT acvp_cap_kdf135_tls_enable(ACVP_CTX *ctx,
-                                       ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
+                                       int (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
     ACVP_RESULT result = ACVP_SUCCESS;
 
     if (!ctx) {
@@ -3392,7 +3392,7 @@ ACVP_RESULT acvp_cap_kdf135_tls_set_parm(ACVP_CTX *ctx,
 }
 
 ACVP_RESULT acvp_cap_kdf135_srtp_enable(ACVP_CTX *ctx,
-                                        ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
+                                        int (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
     ACVP_RESULT result = ACVP_SUCCESS;
 
     if (!ctx) {
@@ -3415,7 +3415,7 @@ ACVP_RESULT acvp_cap_kdf135_srtp_enable(ACVP_CTX *ctx,
 }
 
 ACVP_RESULT acvp_cap_kdf135_ikev2_enable(ACVP_CTX *ctx,
-                                         ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
+                                         int (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
     ACVP_RESULT result = ACVP_SUCCESS;
 
     if (!ctx) {
@@ -3438,7 +3438,7 @@ ACVP_RESULT acvp_cap_kdf135_ikev2_enable(ACVP_CTX *ctx,
 }
 
 ACVP_RESULT acvp_cap_kdf135_x963_enable(ACVP_CTX *ctx,
-                                        ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
+                                        int (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
     ACVP_RESULT result = ACVP_SUCCESS;
 
     if (!ctx) {
@@ -3461,7 +3461,7 @@ ACVP_RESULT acvp_cap_kdf135_x963_enable(ACVP_CTX *ctx,
 }
 
 ACVP_RESULT acvp_cap_kdf135_ikev1_enable(ACVP_CTX *ctx,
-                                         ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
+                                         int (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
     ACVP_RESULT result = ACVP_SUCCESS;
 
     if (!ctx) {
@@ -3484,7 +3484,7 @@ ACVP_RESULT acvp_cap_kdf135_ikev1_enable(ACVP_CTX *ctx,
 }
 
 ACVP_RESULT acvp_cap_kdf108_enable(ACVP_CTX *ctx,
-                                   ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
+                                   int (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
     ACVP_RESULT result = ACVP_SUCCESS;
 
     if (!ctx) {
@@ -3507,7 +3507,7 @@ ACVP_RESULT acvp_cap_kdf108_enable(ACVP_CTX *ctx,
 }
 
 ACVP_RESULT acvp_cap_kdf135_snmp_enable(ACVP_CTX *ctx,
-                                        ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
+                                        int (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
     ACVP_RESULT result = ACVP_SUCCESS;
 
     if (!ctx) {
@@ -3531,7 +3531,7 @@ ACVP_RESULT acvp_cap_kdf135_snmp_enable(ACVP_CTX *ctx,
 }
 
 ACVP_RESULT acvp_cap_kdf135_ssh_enable(ACVP_CTX *ctx,
-                                       ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
+                                       int (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
     ACVP_RESULT result = ACVP_SUCCESS;
 
     if (!ctx) {
@@ -3840,7 +3840,7 @@ ACVP_RESULT acvp_cap_kdf135_srtp_set_parm(ACVP_CTX *ctx,
 
 ACVP_RESULT acvp_cap_dsa_enable(ACVP_CTX *ctx,
                                 ACVP_CIPHER cipher,
-                                ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
+                                int (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
     ACVP_RESULT result = ACVP_SUCCESS;
 
     if (!ctx) {
@@ -4426,7 +4426,7 @@ ACVP_RESULT acvp_cap_kas_ecc_set_prereq(ACVP_CTX *ctx,
 
 ACVP_RESULT acvp_cap_kas_ecc_enable(ACVP_CTX *ctx,
                                     ACVP_CIPHER cipher,
-                                    ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
+                                    int (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
     ACVP_CAP_TYPE type = 0;
     ACVP_RESULT result = ACVP_SUCCESS;
 
@@ -4800,7 +4800,7 @@ ACVP_RESULT acvp_cap_kas_ffc_set_prereq(ACVP_CTX *ctx,
 
 ACVP_RESULT acvp_cap_kas_ffc_enable(ACVP_CTX *ctx,
                                     ACVP_CIPHER cipher,
-                                    ACVP_RESULT (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
+                                    int (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
     ACVP_CAP_TYPE type = 0;
     ACVP_RESULT result = ACVP_SUCCESS;
 

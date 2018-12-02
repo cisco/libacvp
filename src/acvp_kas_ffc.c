@@ -386,8 +386,7 @@ static ACVP_RESULT acvp_kas_ffc_comp(ACVP_CTX *ctx,
             }
 
             /* Process the current KAT test vector... */
-            rv = (cap->crypto_handler)(tc);
-            if (rv != ACVP_SUCCESS) {
+            if ((cap->crypto_handler)(tc)) {
                 acvp_kas_ffc_release_tc(stc);
                 return ACVP_CRYPTO_MODULE_FAIL;
             }
