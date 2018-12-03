@@ -1420,8 +1420,9 @@ enum acvp_result {
         (e.g. internal or external)
     @param ivgen_mode The IV generation mode
     @param crypto_handler Address of function implemented by application that
-       is invoked by libacvp when the crypto capablity is needed during
-       a test session.
+       is invoked by libacvp when the crypto capability is needed during
+       a test session. This crypto_handler function is expected to return
+       0 on success and 1 for failure.
 
     @return ACVP_RESULT
  */
@@ -1474,8 +1475,9 @@ ACVP_RESULT acvp_cap_sym_cipher_set_parm(ACVP_CTX *ctx,
     @param ctx Address of pointer to a previously allocated ACVP_CTX.
     @param cipher ACVP_CIPHER enum value identifying the crypto capability.
     @param crypto_handler Address of function implemented by application that
-       is invoked by libacvp when the crypto capablity is needed during
-       a test session.
+       is invoked by libacvp when the crypto capability is needed during
+       a test session. This crypto_handler function is expected to return
+       0 on success and 1 for failure.
 
     @return ACVP_RESULT
  */
@@ -1525,8 +1527,9 @@ ACVP_RESULT acvp_cap_hash_set_parm(ACVP_CTX *ctx,
     @param ctx Address of pointer to a previously allocated ACVP_CTX.
     @param cipher ACVP_CIPHER enum value identifying the crypto capability.
     @param crypto_handler Address of function implemented by application that
-       is invoked by libacvp when the crypto capablity is needed during
-       a test session.
+       is invoked by libacvp when the crypto capability is needed during
+       a test session. This crypto_handler function is expected to return
+       0 on success and 1 for failure.
 
     @return ACVP_RESULT
  */
@@ -1621,8 +1624,9 @@ ACVP_RESULT acvp_cap_drbg_set_length(ACVP_CTX *ctx,
    @param ctx Address of pointer to a previously allocated ACVP_CTX.
    @param cipher ACVP_CIPHER enum value identifying the crypto capability.
    @param crypto_handler Address of function implemented by application that
-      is invoked by libacvp when the crypto capability is needed during
-      a test session.
+       is invoked by libacvp when the crypto capability is needed during
+       a test session. This crypto_handler function is expected to return
+       0 on success and 1 for failure.
 
    @return ACVP_RESULT
  */
@@ -1666,8 +1670,9 @@ ACVP_RESULT acvp_cap_dsa_set_parm(ACVP_CTX *ctx,
    @param ctx Address of pointer to a previously allocated ACVP_CTX.
    @param cipher ACVP_CIPHER enum value identifying the crypto capability.
    @param crypto_handler Address of function implemented by application that
-      is invoked by libacvp when the crypto capability is needed during
-      a test session.
+       is invoked by libacvp when the crypto capability is needed during
+       a test session. This crypto_handler function is expected to return
+       0 on success and 1 for failure.
 
    @return ACVP_RESULT
  */
@@ -1742,8 +1747,9 @@ ACVP_RESULT acvp_cap_kas_ecc_set_scheme(ACVP_CTX *ctx,
    @param ctx Address of pointer to a previously allocated ACVP_CTX.
    @param cipher ACVP_CIPHER enum value identifying the crypto capability.
    @param crypto_handler Address of function implemented by application that
-      is invoked by libacvp when the crypto capability is needed during
-      a test session.
+       is invoked by libacvp when the crypto capability is needed during
+       a test session. This crypto_handler function is expected to return
+       0 on success and 1 for failure.
 
    @return ACVP_RESULT
  */
@@ -1839,8 +1845,9 @@ ACVP_RESULT acvp_cap_kas_ffc_set_scheme(ACVP_CTX *ctx,
    @param ctx Address of pointer to a previously allocated ACVP_CTX.
    @param cipher ACVP_CIPHER enum value identifying the crypto capability.
    @param crypto_handler Address of function implemented by application that
-      is invoked by libacvp when the crypto capablity is needed during
-      a test session.
+       is invoked by libacvp when the crypto capability is needed during
+       a test session. This crypto_handler function is expected to return
+       0 on success and 1 for failure.
 
    @return ACVP_RESULT
  */
@@ -1975,8 +1982,9 @@ ACVP_RESULT acvp_cap_rsa_keygen_set_primes(ACVP_CTX *ctx,
     @param ctx Address of pointer to a previously allocated ACVP_CTX.
     @param cipher ACVP_CIPHER enum value identifying the crypto capability.
     @param crypto_handler Address of function implemented by application that
-       is invoked by libacvp when the crypto capablity is needed during
-       a test session.
+       is invoked by libacvp when the crypto capability is needed during
+       a test session. This crypto_handler function is expected to return
+       0 on success and 1 for failure.
 
     @return ACVP_RESULT
  */
@@ -2018,8 +2026,9 @@ ACVP_RESULT acvp_cap_hmac_set_parm(ACVP_CTX *ctx,
     @param ctx Address of pointer to a previously allocated ACVP_CTX.
     @param cipher ACVP_CIPHER enum value identifying the crypto capability.
     @param crypto_handler Address of function implemented by application that
-       is invoked by libacvp when the crypto capablity is needed during
-       a test session.
+       is invoked by libacvp when the crypto capability is needed during
+       a test session. This crypto_handler function is expected to return
+       0 on success and 1 for failure.
 
     @return ACVP_RESULT
  */
@@ -2079,8 +2088,9 @@ ACVP_RESULT acvp_cap_cmac_set_domain(ACVP_CTX *ctx,
     @param ctx Address of pointer to a previously allocated ACVP_CTX.
     @param cipher ACVP_CIPHER enum value identifying the crypto capability.
     @param crypto_handler Address of function implemented by application that
-       is invoked by libacvp when the crypto capablity is needed during
-       a test session.
+       is invoked by libacvp when the crypto capability is needed during
+       a test session. This crypto_handler function is expected to return
+       0 on success and 1 for failure.
 
     @return ACVP_RESULT
  */
