@@ -396,8 +396,7 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 }
             } else {
                 /* Process the current test vector... */
-                rv = (cap->crypto_handler)(&tc);
-                if (rv != ACVP_SUCCESS) {
+                if ((cap->crypto_handler)(&tc)) {
                     ACVP_LOG_ERR("crypto module failed the operation");
                     acvp_hash_release_tc(&stc);
                     json_value_free(r_tval);

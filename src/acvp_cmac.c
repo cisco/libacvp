@@ -423,8 +423,7 @@ ACVP_RESULT acvp_cmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             }
 
             /* Process the current test vector... */
-            rv = (cap->crypto_handler)(&tc);
-            if (rv != ACVP_SUCCESS) {
+            if ((cap->crypto_handler)(&tc)) {
                 ACVP_LOG_ERR("ERROR: crypto module failed the operation");
                 acvp_cmac_release_tc(&stc);
                 return ACVP_CRYPTO_MODULE_FAIL;
