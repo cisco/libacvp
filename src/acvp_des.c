@@ -52,7 +52,9 @@ static ACVP_RESULT acvp_des_init_tc(ACVP_CTX *ctx,
                                     unsigned int pt_len,
                                     unsigned int ct_len,
                                     ACVP_CIPHER alg_id,
-                                    ACVP_SYM_CIPH_DIR dir);
+                                    ACVP_SYM_CIPH_DIR dir,
+                                    unsigned int incr_ctr,
+                                    unsigned int ovrflw_ctr);
 
 static ACVP_RESULT acvp_des_release_tc(ACVP_SYM_CIPHER_TC *stc);
 
@@ -578,6 +580,7 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     char *json_result = NULL;
     const char *test_type_str = NULL, *dir_str = NULL;
     unsigned int tc_id = 0, keylen = 0;
+    unsigned int ovrflw_ctr = 0, incr_ctr = 0;  /* assume false */
 
     if (!ctx) {
         ACVP_LOG_ERR("No ctx for handler operation");
@@ -678,6 +681,16 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             test_type = ACVP_SYM_TEST_TYPE_AFT;
         } else if (!strncmp(test_type_str, "CTR", strlen("CTR"))) {
             test_type = ACVP_SYM_TEST_TYPE_CTR;
+            incr_ctr = json_object_get_boolean(groupobj, "incrementalCounter");
+            ovrflw_ctr = json_object_get_boolean(groupobj, "overflowCounter");
+            if (ovrflw_ctr != 0 && ovrflw_ctr != 1) {
+                ACVP_LOG_ERR("Server JSON invalid 'overflowCounter'");
+                return ACVP_MALFORMED_JSON;
+            }
+            if (incr_ctr != 0 && incr_ctr != 1) {
+                ACVP_LOG_ERR("Server JSON invalid 'incrementalCounter'");
+                return ACVP_MALFORMED_JSON;
+            }
         } else {
             return ACVP_INVALID_ARG;
         }
@@ -689,6 +702,8 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         ACVP_LOG_INFO("        keylen: %d", keylen);
         ACVP_LOG_INFO("         dir:   %s", dir_str);
         ACVP_LOG_INFO("      testtype: %s", test_type_str);
+        ACVP_LOG_INFO("      incr_ctr: %d", incr_ctr);
+        ACVP_LOG_INFO("    ovrflw_ctr: %d", ovrflw_ctr);
 
         tests = json_object_get_array(groupobj, "tests");
         t_cnt = json_array_get_count(tests);
@@ -848,7 +863,8 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
              * the crypto module.
              */
             rv = acvp_des_init_tc(ctx, &stc, tc_id, test_type, key, pt, ct, iv,
-                                  keylen, ivlen, ptlen, ctlen, alg_id, dir);
+                                  keylen, ivlen, ptlen, ctlen, alg_id, dir,
+                                  incr_ctr, ovrflw_ctr);
             if (rv != ACVP_SUCCESS) {
                 acvp_des_release_tc(&stc);
                 free(key);
@@ -1006,7 +1022,9 @@ static ACVP_RESULT acvp_des_init_tc(ACVP_CTX *ctx,
                                     unsigned int pt_len,
                                     unsigned int ct_len,
                                     ACVP_CIPHER alg_id,
-                                    ACVP_SYM_CIPH_DIR dir) {
+                                    ACVP_SYM_CIPH_DIR dir,
+                                    unsigned int incr_ctr,
+                                    unsigned int ovrflw_ctr) {
     ACVP_RESULT rv;
     memset(stc, 0x0, sizeof(ACVP_SYM_CIPHER_TC));
 
@@ -1087,6 +1105,8 @@ static ACVP_RESULT acvp_des_init_tc(ACVP_CTX *ctx,
     stc->cipher = alg_id;
     stc->direction = dir;
     stc->test_type = test_type;
+    stc->incr_ctr = incr_ctr;
+    stc->ovrflw_ctr = ovrflw_ctr;
 
     return ACVP_SUCCESS;
 }

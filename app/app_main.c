@@ -4018,7 +4018,7 @@ static ACVP_RESULT app_dsa_handler(ACVP_TEST_CASE *test_case) {
 #endif
 
             if (BN_cmp(p2, p) || BN_cmp(q2, q))
-                r = -1;
+                r = 0;
             else
                 r = 1;
 

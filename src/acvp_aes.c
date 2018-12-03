@@ -59,7 +59,9 @@ static ACVP_RESULT acvp_aes_init_tc(ACVP_CTX *ctx,
                                     ACVP_SYM_CIPH_DIR dir,
                                     ACVP_SYM_CIPH_IVGEN_SRC iv_gen,
                                     ACVP_SYM_CIPH_IVGEN_MODE iv_gen_mode,
-                                    unsigned int aad_len);
+                                    unsigned int aad_len,
+                                    unsigned int incr_ctr,
+                                    unsigned int ovrflw_ctr);
 
 static ACVP_RESULT acvp_aes_release_tc(ACVP_SYM_CIPHER_TC *stc);
 
@@ -460,7 +462,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     ACVP_SYM_CIPHER_TC stc;
     ACVP_TEST_CASE tc;
     ACVP_RESULT rv;
-
+    unsigned int ovrflw_ctr = 0, incr_ctr = 0;  /* assume false */
     char *json_result = NULL;
     const char *alg_str = NULL;
     ACVP_CIPHER alg_id = 0;
@@ -566,6 +568,17 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             test_type = ACVP_SYM_TEST_TYPE_AFT;
         } else if (!strcmp(test_type_str, "CTR")) {
             test_type = ACVP_SYM_TEST_TYPE_CTR;
+            /* TODO: NIST needs to fix these keywords, ie add Counter at the end */
+            incr_ctr = json_object_get_boolean(groupobj, "incremental");
+            ovrflw_ctr = json_object_get_boolean(groupobj, "overflow");
+            if (ovrflw_ctr != 0 && ovrflw_ctr != 1) {
+                ACVP_LOG_ERR("Server JSON invalid 'overflowCounter'");
+                return ACVP_MALFORMED_JSON;
+            }
+            if (incr_ctr != 0 && incr_ctr != 1) {
+                ACVP_LOG_ERR("Server JSON invalid 'incrementalCounter'");
+                return ACVP_MALFORMED_JSON;
+            }
         } else {
             ACVP_LOG_ERR("Server JSON invalid 'testType'");
             return ACVP_INVALID_ARG;
@@ -687,6 +700,8 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         ACVP_LOG_INFO("        aadlen: %d", aadlen);
         ACVP_LOG_INFO("        taglen: %d", taglen);
         ACVP_LOG_INFO("      testtype: %s", test_type_str);
+        ACVP_LOG_INFO("      incr_ctr: %d", incr_ctr);
+        ACVP_LOG_INFO("    ovrflw_ctr: %d", ovrflw_ctr);
 
         tests = json_object_get_array(groupobj, "tests");
         t_cnt = json_array_get_count(tests);
@@ -832,7 +847,9 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
              */
             rv = acvp_aes_init_tc(ctx, &stc, tc_id, test_type, key, pt, ct, iv, tag, aad, kwcipher, keylen, ivlen,
                                   datalen,
-                                  ptlen, taglen, alg_id, dir, iv_gen, iv_gen_mode, aadlen);
+                                  ptlen, taglen, alg_id, dir, iv_gen, iv_gen_mode, aadlen,
+                                  incr_ctr, ovrflw_ctr);
+
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("Init for stc (test case) failed");
                 acvp_aes_release_tc(&stc);
@@ -1015,7 +1032,9 @@ static ACVP_RESULT acvp_aes_init_tc(ACVP_CTX *ctx,
                                     ACVP_SYM_CIPH_DIR dir,
                                     ACVP_SYM_CIPH_IVGEN_SRC iv_gen,
                                     ACVP_SYM_CIPH_IVGEN_MODE iv_gen_mode,
-                                    unsigned int aad_len) {
+                                    unsigned int aad_len,
+                                    unsigned int incr_ctr,
+                                    unsigned int ovrflw_ctr) {
     ACVP_RESULT rv;
 
     memset(stc, 0x0, sizeof(ACVP_SYM_CIPHER_TC));
@@ -1127,6 +1146,8 @@ static ACVP_RESULT acvp_aes_init_tc(ACVP_CTX *ctx,
     stc->direction = dir;
     stc->ivgen_source = iv_gen;
     stc->ivgen_mode = iv_gen_mode;
+    stc->incr_ctr = incr_ctr;
+    stc->ovrflw_ctr = ovrflw_ctr;
 
     return ACVP_SUCCESS;
 }

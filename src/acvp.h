@@ -642,6 +642,8 @@ typedef struct acvp_sym_cipher_tc_t {
     unsigned int ct_len;
     unsigned int tag_len;
     unsigned int mct_index;  /* used to identify init vs. update */
+    unsigned int incr_ctr;
+    unsigned int ovrflw_ctr;
 } ACVP_SYM_CIPHER_TC;
 
 /*!
