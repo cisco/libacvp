@@ -945,7 +945,7 @@ static ACVP_RESULT acvp_aes_output_tc(ACVP_CTX *ctx,
     if (stc->direction == ACVP_SYM_CIPH_DIR_ENCRYPT) {
         memset(tmp, 0x0, ACVP_SYM_CT_MAX);
         if (stc->cipher == ACVP_AES_CFB1) {
-            rv = acvp_bin_to_hexstr(stc->ct, (stc->ct_len+7)/8, tmp, ACVP_SYM_CT_MAX);
+            rv = acvp_bin_to_hexstr(stc->ct, (stc->ct_len + 7) / 8, tmp, ACVP_SYM_CT_MAX);
         } else if (stc->cipher == ACVP_AES_GCM) {
             rv = acvp_bin_to_hexstr(stc->ct, stc->pt_len, tmp, ACVP_SYM_CT_MAX);
         } else {
@@ -982,7 +982,7 @@ static ACVP_RESULT acvp_aes_output_tc(ACVP_CTX *ctx,
         }
 
         if (stc->cipher == ACVP_AES_CFB1) {
-            rv = acvp_bin_to_hexstr(stc->pt, (stc->pt_len+7)/8, tmp, ACVP_SYM_PT_MAX);
+            rv = acvp_bin_to_hexstr(stc->pt, (stc->pt_len + 7) / 8, tmp, ACVP_SYM_PT_MAX);
         } else if (stc->cipher == ACVP_AES_GCM) {
             rv = acvp_bin_to_hexstr(stc->pt, stc->ct_len, tmp, ACVP_SYM_PT_MAX);
         } else {

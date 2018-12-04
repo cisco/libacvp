@@ -138,7 +138,7 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         ACVP_LOG_ERR("Failed to setup json response");
         return rv;
     }
-    
+
     groups = json_object_get_array(obj, "testGroups");
     g_cnt = json_array_get_count(groups);
     ACVP_LOG_INFO("Number of TestGroups: %d", g_cnt);

@@ -833,7 +833,7 @@ ACVP_RESULT acvp_dsa_pqggen_handler(ACVP_CTX *ctx,
                 acvp_dsa_release_tc(stc);
                 return rv;
             }
-    
+
             if ((cap->crypto_handler)(&tc)) {
                 ACVP_LOG_ERR("crypto module failed the operation");
                 acvp_dsa_release_tc(stc);

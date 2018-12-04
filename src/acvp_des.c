@@ -951,7 +951,7 @@ static ACVP_RESULT acvp_des_output_tc(ACVP_CTX *ctx,
     if (stc->direction == ACVP_SYM_CIPH_DIR_ENCRYPT) {
         memset(tmp, 0x0, ACVP_SYM_CT_MAX);
         if (stc->cipher == ACVP_TDES_CFB1) {
-            rv = acvp_bin_to_hexstr(stc->ct, (stc->ct_len+7)/8, tmp, ACVP_SYM_CT_MAX);
+            rv = acvp_bin_to_hexstr(stc->ct, (stc->ct_len + 7) / 8, tmp, ACVP_SYM_CT_MAX);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("hex conversion failure (ct)");
                 free(tmp);
@@ -976,7 +976,7 @@ static ACVP_RESULT acvp_des_output_tc(ACVP_CTX *ctx,
 
         memset(tmp, 0x0, ACVP_SYM_CT_MAX);
         if (stc->cipher == ACVP_TDES_CFB1) {
-            rv = acvp_bin_to_hexstr(stc->pt, (stc->pt_len+7)/8, tmp, ACVP_SYM_CT_MAX);
+            rv = acvp_bin_to_hexstr(stc->pt, (stc->pt_len + 7) / 8, tmp, ACVP_SYM_CT_MAX);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("hex conversion failure (pt)");
                 free(tmp);
@@ -1024,6 +1024,7 @@ static ACVP_RESULT acvp_des_init_tc(ACVP_CTX *ctx,
                                     unsigned int incr_ctr,
                                     unsigned int ovrflw_ctr) {
     ACVP_RESULT rv;
+
     memset(stc, 0x0, sizeof(ACVP_SYM_CIPHER_TC));
 
     stc->key = calloc(1, ACVP_SYM_KEY_MAX_BYTES);

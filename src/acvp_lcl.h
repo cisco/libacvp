@@ -482,8 +482,16 @@
  */
 
 #define ACVP_HMAC_MSG_MAX       1024
-#define ACVP_HMAC_MAC_MAX       128       /**< 512 bits, 128 characters */
-#define ACVP_HMAC_KEY_MAX       131072    /**< 524288 bits, 131072 characters */
+
+#define ACVP_HMAC_MAC_BIT_MIN 32  /**< 32 bits */
+#define ACVP_HMAC_MAC_BIT_MAX 512 /**< 512 bits */
+#define ACVP_HMAC_MAC_BYTE_MAX (ACVP_HMAC_MAC_BIT_MAX >> 3)
+#define ACVP_HMAC_MAC_STR_MAX (ACVP_HMAC_MAC_BIT_MAX >> 2)
+
+#define ACVP_HMAC_KEY_BIT_MIN 8      /**< 8 bits */
+#define ACVP_HMAC_KEY_BIT_MAX 524288 /**< 524288 bits */
+#define ACVP_HMAC_KEY_BYTE_MAX (ACVP_HMAC_KEY_BIT_MAX >> 3)
+#define ACVP_HMAC_KEY_STR_MAX (ACVP_HMAC_KEY_BIT_MAX >> 2)
 
 #define ACVP_CMAC_MSGLEN_MAX_STR       131072    /**< 524288 bits, 131072 characters */
 #define ACVP_CMAC_MSGLEN_MAX       524288
@@ -734,9 +742,8 @@ typedef struct acvp_kdf135_x963_capability {
 } ACVP_KDF135_X963_CAP;
 
 typedef struct acvp_hmac_capability {
-    int key_len_min;       // 8-524288
-    int key_len_max;       // 8-524288
-    ACVP_SL_LIST *mac_len; // 32-512
+    ACVP_JSON_DOMAIN_OBJ key_len; // 8-524288
+    ACVP_JSON_DOMAIN_OBJ mac_len; // 32-512
 } ACVP_HMAC_CAP;
 
 typedef struct acvp_cmac_capability {
@@ -1177,11 +1184,11 @@ void ctr64_inc(unsigned char *counter);
 void ctr128_inc(unsigned char *counter);
 ACVP_RESULT acvp_refresh(ACVP_CTX *ctx);
 
-ACVP_RESULT acvp_setup_json_rsp_group (ACVP_CTX **ctx,
-                                       JSON_Value **outer_arr_val,
-                                       JSON_Value **r_vs_val,
-                                       JSON_Object **r_vs,
-                                       const char *alg_str,
-                                       JSON_Array **groups_arr);
+ACVP_RESULT acvp_setup_json_rsp_group(ACVP_CTX **ctx,
+                                      JSON_Value **outer_arr_val,
+                                      JSON_Value **r_vs_val,
+                                      JSON_Object **r_vs,
+                                      const char *alg_str,
+                                      JSON_Array **groups_arr);
 
 #endif
