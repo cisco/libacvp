@@ -3462,7 +3462,7 @@ static int app_hmac_handler(ACVP_TEST_CASE *test_case) {
         printf("\nCrypto module error, HMAC_Update failed\n");
         goto end;
     }
-    
+
     if (!HMAC_Final(hmac_ctx, tc->mac, &tc->mac_len)) {
         printf("\nCrypto module error, HMAC_Final failed\n");
         goto end;

@@ -677,6 +677,7 @@ static ACVP_RESULT acvp_add_dsa_pqggen_parm(ACVP_CTX *ctx,
             break;
         default:
             return ACVP_INVALID_ARG;
+
             break;
         }
         break;
@@ -690,20 +691,25 @@ static ACVP_RESULT acvp_add_dsa_pqggen_parm(ACVP_CTX *ctx,
             break;
         default:
             return ACVP_INVALID_ARG;
+
             break;
         }
         break;
     case ACVP_DSA_LN2048_224:
         return acvp_add_dsa_mode_parm(ctx, dsa_cap_mode, param, value);
+
         break;
     case ACVP_DSA_LN2048_256:
         return acvp_add_dsa_mode_parm(ctx, dsa_cap_mode, param, value);
+
         break;
     case ACVP_DSA_LN3072_256:
         return acvp_add_dsa_mode_parm(ctx, dsa_cap_mode, param, value);
+
         break;
     default:
         return ACVP_INVALID_ARG;
+
         break;
     }
 
