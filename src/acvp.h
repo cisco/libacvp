@@ -563,8 +563,7 @@ typedef enum acvp_hash_testtype {
 
 /*! @struct ACVP_HMAC_PARM */
 typedef enum acvp_hmac_parameter {
-    ACVP_HMAC_KEYLEN_MIN = 0,
-    ACVP_HMAC_KEYLEN_MAX,
+    ACVP_HMAC_KEYLEN = 1,
     ACVP_HMAC_KEYBLOCK,
     ACVP_HMAC_MACLEN
 } ACVP_HMAC_PARM;
@@ -2012,6 +2011,28 @@ ACVP_RESULT acvp_cap_hmac_set_parm(ACVP_CTX *ctx,
                                    ACVP_CIPHER cipher,
                                    ACVP_HMAC_PARM parm,
                                    int value);
+
+/*! @brief Allows an application to specify operational parameters for use
+        during a test session with the ACVP server.
+
+        This function allows the application to specify parameters for use
+        when registering HMAC capability with the server.
+
+   @param ctx Address of pointer to a previously allocated ACVP_CTX.
+   @param cipher ACVP_CIPHER enum value identifying the crypto capability.
+   @param parm ACVP_HMAC_PARM enum value specifying parameter
+   @param min Minumum supported value for the corresponding parameter
+   @param max Maximum supported value for the corresponding parameter
+   @param increment Increment value supported
+
+   @return ACVP_RESULT
+ */
+ACVP_RESULT acvp_cap_hmac_set_domain(ACVP_CTX *ctx,
+                                     ACVP_CIPHER cipher,
+                                     ACVP_HMAC_PARM parm,
+                                     int min,
+                                     int max,
+                                     int increment);
 
 /*! @brief acvp_enable_cmac_cap() allows an application to specify an
        CMAC capability to be tested by the ACVP server.

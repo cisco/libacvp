@@ -1367,9 +1367,10 @@ static ACVP_RESULT acvp_validate_hmac_parm_value(ACVP_CIPHER cipher,
     int max_val = 0;
 
     switch (parm) {
-    case ACVP_HMAC_KEYLEN_MIN:
-    case ACVP_HMAC_KEYLEN_MAX:
-        if (value >= 8 && value <= 524288) {
+    case ACVP_HMAC_KEYLEN:
+        if (value >= ACVP_HMAC_KEY_BIT_MIN &&
+            value <= ACVP_HMAC_KEY_BIT_MAX &&
+            value % 8 == 0) {
             retval = ACVP_SUCCESS;
         }
         break;
@@ -1399,7 +1400,9 @@ static ACVP_RESULT acvp_validate_hmac_parm_value(ACVP_CIPHER cipher,
         default:
             break;
         }
-        if (value >= 32 && value <= max_val) {
+        if (value >= ACVP_HMAC_MAC_BIT_MIN &&
+            value <= max_val &&
+            value % 8 == 0) {
             retval = ACVP_SUCCESS;
         }
         break;
@@ -1452,6 +1455,57 @@ ACVP_RESULT acvp_cap_hmac_enable(ACVP_CTX *ctx,
     return result;
 }
 
+ACVP_RESULT acvp_cap_hmac_set_domain(ACVP_CTX *ctx,
+                                     ACVP_CIPHER cipher,
+                                     ACVP_HMAC_PARM parm,
+                                     int min,
+                                     int max,
+                                     int increment) {
+    ACVP_CAPS_LIST *cap_list;
+    ACVP_JSON_DOMAIN_OBJ *domain;
+    ACVP_HMAC_CAP *current_hmac_cap;
+
+    cap_list = acvp_locate_cap_entry(ctx, cipher);
+    if (!cap_list) {
+        ACVP_LOG_ERR("Cap entry not found.");
+        return ACVP_NO_CAP;
+    }
+    current_hmac_cap = cap_list->cap.hmac_cap;
+
+    switch (parm) {
+    case ACVP_HMAC_KEYLEN:
+        if (min < ACVP_HMAC_KEY_BIT_MIN ||
+            max > ACVP_HMAC_KEY_BIT_MAX) {
+            ACVP_LOG_ERR("min or max outside of acceptable range");
+            return ACVP_INVALID_ARG;
+        }
+        domain = &current_hmac_cap->key_len;
+        break;
+    case ACVP_HMAC_MACLEN:
+        if (min < ACVP_HMAC_MAC_BIT_MIN ||
+            max > ACVP_HMAC_MAC_BIT_MAX) {
+            ACVP_LOG_ERR("min or max outside of acceptable range");
+            return ACVP_INVALID_ARG;
+        }
+        domain = &current_hmac_cap->mac_len;
+        break;
+    default:
+        return ACVP_INVALID_ARG;
+    }
+
+    if (increment % 8 != 0) {
+        ACVP_LOG_ERR("increment must be mod 8");
+        return ACVP_INVALID_ARG;
+    }
+
+    domain->min = min;
+    domain->max = max;
+    domain->increment = increment;
+    domain->value = 0;
+
+    return ACVP_SUCCESS;
+}
+
 /*
  * The user should call this after invoking acvp_enable_hmac_cap()
  * to specify the supported key ranges, keyblock value, and
@@ -1474,18 +1528,16 @@ ACVP_RESULT acvp_cap_hmac_set_parm(ACVP_CTX *ctx,
     }
 
     if (acvp_validate_hmac_parm_value(cipher, parm, value) != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Invalid parm or value");
         return ACVP_INVALID_ARG;
     }
 
     switch (parm) {
-    case ACVP_HMAC_KEYLEN_MIN:
-        cap->cap.hmac_cap->key_len_min = value;
-        break;
-    case ACVP_HMAC_KEYLEN_MAX:
-        cap->cap.hmac_cap->key_len_max = value;
+    case ACVP_HMAC_KEYLEN:
+        cap->cap.hmac_cap->key_len.value = value;
         break;
     case ACVP_HMAC_MACLEN:
-        acvp_cap_add_length(&cap->cap.hmac_cap->mac_len, value);
+        cap->cap.hmac_cap->mac_len.value = value;
         break;
     default:
         return ACVP_INVALID_ARG;

@@ -1510,60 +1510,47 @@ end:
 static int enable_hmac(ACVP_CTX *ctx) {
     ACVP_RESULT rv = ACVP_SUCCESS;
 
-    /*
-     * Enable HMAC: TODO - need to add increment value in bits, default to 64 now.
-     */
     rv = acvp_cap_hmac_enable(ctx, ACVP_HMAC_SHA1, &app_hmac_handler);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_hmac_set_parm(ctx, ACVP_HMAC_SHA1, ACVP_HMAC_KEYLEN_MIN, 32 * 8);
+    rv = acvp_cap_hmac_set_domain(ctx, ACVP_HMAC_SHA1, ACVP_HMAC_KEYLEN, 256, 448, 8);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_hmac_set_parm(ctx, ACVP_HMAC_SHA1, ACVP_HMAC_KEYLEN_MAX, 56 * 8);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_hmac_set_parm(ctx, ACVP_HMAC_SHA1, ACVP_HMAC_MACLEN, 160);
+    rv = acvp_cap_hmac_set_domain(ctx, ACVP_HMAC_SHA1, ACVP_HMAC_MACLEN, 32, 160, 8);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_HMAC_SHA1, ACVP_PREREQ_SHA, value);
     CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_cap_hmac_enable(ctx, ACVP_HMAC_SHA2_224, &app_hmac_handler);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_hmac_set_parm(ctx, ACVP_HMAC_SHA2_224, ACVP_HMAC_KEYLEN_MIN, 32 * 8);
+    rv = acvp_cap_hmac_set_domain(ctx, ACVP_HMAC_SHA2_224, ACVP_HMAC_KEYLEN, 256, 448, 8);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_hmac_set_parm(ctx, ACVP_HMAC_SHA2_224, ACVP_HMAC_KEYLEN_MAX, 56 * 8);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_hmac_set_parm(ctx, ACVP_HMAC_SHA2_224, ACVP_HMAC_MACLEN, 224);
+    rv = acvp_cap_hmac_set_domain(ctx, ACVP_HMAC_SHA2_224, ACVP_HMAC_MACLEN, 32, 224, 8);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_HMAC_SHA2_224, ACVP_PREREQ_SHA, value);
     CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_cap_hmac_enable(ctx, ACVP_HMAC_SHA2_256, &app_hmac_handler);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_hmac_set_parm(ctx, ACVP_HMAC_SHA2_256, ACVP_HMAC_KEYLEN_MIN, 32 * 8);
+    rv = acvp_cap_hmac_set_domain(ctx, ACVP_HMAC_SHA2_256, ACVP_HMAC_KEYLEN, 256, 448, 8);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_hmac_set_parm(ctx, ACVP_HMAC_SHA2_256, ACVP_HMAC_KEYLEN_MAX, 56 * 8);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_hmac_set_parm(ctx, ACVP_HMAC_SHA2_256, ACVP_HMAC_MACLEN, 256);
+    rv = acvp_cap_hmac_set_domain(ctx, ACVP_HMAC_SHA2_256, ACVP_HMAC_MACLEN, 32, 256, 8);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_HMAC_SHA2_256, ACVP_PREREQ_SHA, value);
     CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_cap_hmac_enable(ctx, ACVP_HMAC_SHA2_384, &app_hmac_handler);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_hmac_set_parm(ctx, ACVP_HMAC_SHA2_384, ACVP_HMAC_KEYLEN_MIN, 32 * 8);
+    rv = acvp_cap_hmac_set_domain(ctx, ACVP_HMAC_SHA2_384, ACVP_HMAC_KEYLEN, 256, 448, 8);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_hmac_set_parm(ctx, ACVP_HMAC_SHA2_384, ACVP_HMAC_KEYLEN_MAX, 56 * 8);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_hmac_set_parm(ctx, ACVP_HMAC_SHA2_384, ACVP_HMAC_MACLEN, 384);
+    rv = acvp_cap_hmac_set_domain(ctx, ACVP_HMAC_SHA2_384, ACVP_HMAC_MACLEN, 32, 384, 8);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_HMAC_SHA2_384, ACVP_PREREQ_SHA, value);
     CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_cap_hmac_enable(ctx, ACVP_HMAC_SHA2_512, &app_hmac_handler);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_hmac_set_parm(ctx, ACVP_HMAC_SHA2_512, ACVP_HMAC_KEYLEN_MIN, 32 * 8);
+    rv = acvp_cap_hmac_set_domain(ctx, ACVP_HMAC_SHA2_512, ACVP_HMAC_KEYLEN, 256, 448, 8);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_hmac_set_parm(ctx, ACVP_HMAC_SHA2_512, ACVP_HMAC_KEYLEN_MAX, 56 * 8);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_hmac_set_parm(ctx, ACVP_HMAC_SHA2_512, ACVP_HMAC_MACLEN, 512);
+    rv = acvp_cap_hmac_set_domain(ctx, ACVP_HMAC_SHA2_512, ACVP_HMAC_MACLEN, 32, 512, 8);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_HMAC_SHA2_512, ACVP_PREREQ_SHA, value);
     CHECK_ENABLE_CAP_RV(rv);
