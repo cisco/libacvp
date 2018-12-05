@@ -325,22 +325,6 @@ ACVP_RESULT is_valid_rsa_mod(int value) {
     } else { return ACVP_SUCCESS; }
 }
 
-char *lower_string(const char *s) {
-    int c = 0;
-    int length = strnlen(s, ACVP_ATTR_URL_MAX); // arbitrary
-    char *lowered = calloc(length, sizeof(char));
-
-    while (s[c] != '\0') {
-        if (s[c] >= 'A' && s[c] <= 'Z') {
-            lowered[c] = (char)(s[c] + 32);
-        } else {
-            lowered[c] = s[c];
-        }
-        c++;
-    }
-    return lowered;
-}
-
 /*
  * Local table for matching ACVP_EC_CURVE to name string and vice versa.
  */
@@ -398,7 +382,7 @@ ACVP_EC_CURVE acvp_lookup_ec_curve(ACVP_CIPHER cipher, const char *name) {
     int i = 0;
 
     for (i = 0; i < ec_curve_tbl_length; i++) {
-        if (!strncmp(lower_string(name), lower_string(ec_curve_tbl[i].name),
+        if (!strncmp(name, ec_curve_tbl[i].name,
                      strlen(ec_curve_tbl[i].name))) {
             return ec_curve_tbl[i].id;
         }
@@ -407,7 +391,7 @@ ACVP_EC_CURVE acvp_lookup_ec_curve(ACVP_CIPHER cipher, const char *name) {
     if (cipher == ACVP_ECDSA_KEYVER || cipher == ACVP_ECDSA_SIGVER) {
         /* Check the deprecated curves */
         for (i = 0; i < ec_curve_depr_tbl_length; i++) {
-            if (!strncmp(lower_string(name), lower_string(ec_curve_depr_tbl[i].name),
+            if (!strncmp(name, ec_curve_depr_tbl[i].name,
                          strlen(ec_curve_depr_tbl[i].name))) {
                 return ec_curve_depr_tbl[i].id;
             }
