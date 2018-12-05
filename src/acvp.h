@@ -722,7 +722,7 @@ typedef struct acvp_kdf135_ikev2_tc_t {
     int init_spi_len;
     int resp_spi_len;
     int dh_secret_len;
-    int keying_material_len;
+    int keying_material_len; /**< Keying material length (in bytes) */
     unsigned char *init_nonce;
     unsigned char *resp_nonce;
     unsigned char *init_spi;
@@ -748,10 +748,10 @@ typedef struct acvp_kdf135_ikev1_tc_t {
     unsigned int tc_id; /**< Test case id */
     ACVP_HASH_ALG hash_alg;
     ACVP_KDF135_IKEV1_AUTH_METHOD auth_method;
-    int init_nonce_len;
-    int resp_nonce_len;
-    int dh_secret_len;
-    int psk_len;
+    int init_nonce_len; /**< Initiator nonce length (in bytes) */
+    int resp_nonce_len; /**< Responder nonce length (in bytes) */
+    int dh_secret_len;  /**< Diffie-Hellman Secret length (in bytes) */
+    int psk_len;        /**< Preshared Key length (in bytes) */
     unsigned char *init_nonce;
     unsigned char *resp_nonce;
     unsigned char *init_ckey;
@@ -1327,13 +1327,13 @@ typedef struct acvp_drbg_tc_t {
     unsigned char *nonce;
     unsigned char *drb; /* The resulting pseudo random generated for the test case */
 
-    unsigned int additional_input_len;
-    unsigned int pred_resist_enabled;
-    unsigned int perso_string_len;
     unsigned int der_func_enabled;
-    unsigned int entropy_len;
-    unsigned int nonce_len;
-    unsigned int drb_len;
+    unsigned int pred_resist_enabled;
+    unsigned int additional_input_len; /**< Additional Input length (in bytes) */
+    unsigned int perso_string_len;     /**< Personalization String length (in bytes) */
+    unsigned int entropy_len;          /**< Entropy length (in bytes) */
+    unsigned int nonce_len;            /**< Nonce length (in bytes) */
+    unsigned int drb_len;              /**< Expected drb length (in bytes) */
 } ACVP_DRBG_TC;
 
 /*!

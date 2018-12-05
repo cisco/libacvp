@@ -5401,10 +5401,10 @@ static int app_drbg_handler(ACVP_TEST_CASE *test_case) {
      * Set entropy and nonce
      */
     entropy_nonce.ent = tc->entropy;
-    entropy_nonce.entlen = drbg_entropy_len / 8;
+    entropy_nonce.entlen = drbg_entropy_len;
 
     entropy_nonce.nonce = nonce;
-    entropy_nonce.noncelen = tc->nonce_len / 8;
+    entropy_nonce.noncelen = tc->nonce_len;
 
     FIPS_drbg_set_app_data(drbg_ctx, &entropy_nonce);
 
@@ -5424,7 +5424,7 @@ static int app_drbg_handler(ACVP_TEST_CASE *test_case) {
     }
 
     fips_rc = FIPS_drbg_instantiate(drbg_ctx, (const unsigned char *)tc->perso_string,
-                                    (size_t)tc->perso_string_len / 8);
+                                    (size_t)tc->perso_string_len);
     if (!fips_rc) {
         progress("ERROR: failed to instantiate DRBG ctx");
         long l = 9;
@@ -5440,13 +5440,13 @@ static int app_drbg_handler(ACVP_TEST_CASE *test_case) {
      */
     if (tc->pred_resist_enabled) {
         entropy_nonce.ent = tc->entropy_input_pr;
-        entropy_nonce.entlen = drbg_entropy_len / 8;
+        entropy_nonce.entlen = drbg_entropy_len;
 
         fips_rc =  FIPS_drbg_generate(drbg_ctx, (unsigned char *)tc->drb,
-                                      (size_t)(tc->drb_len / 8),
+                                      (size_t)(tc->drb_len),
                                       (int)1,
                                       (const unsigned char *)tc->additional_input,
-                                      (size_t)(tc->additional_input_len / 8));
+                                      (size_t)(tc->additional_input_len));
         if (!fips_rc) {
             progress("ERROR: failed to generate drb");
             long l;
@@ -5457,13 +5457,13 @@ static int app_drbg_handler(ACVP_TEST_CASE *test_case) {
         }
 
         entropy_nonce.ent = tc->entropy_input_pr_1;
-        entropy_nonce.entlen = drbg_entropy_len / 8;
+        entropy_nonce.entlen = drbg_entropy_len;
 
         fips_rc =  FIPS_drbg_generate(drbg_ctx, (unsigned char *)tc->drb,
-                                      (size_t)(tc->drb_len / 8),
+                                      (size_t)(tc->drb_len),
                                       (int)1,
                                       (const unsigned char *)tc->additional_input_1,
-                                      (size_t)(tc->additional_input_len / 8));
+                                      (size_t)(tc->additional_input_len));
         if (!fips_rc) {
             progress("ERROR: failed to generate drb");
             long l;
@@ -5474,10 +5474,10 @@ static int app_drbg_handler(ACVP_TEST_CASE *test_case) {
         }
     } else {
         fips_rc = FIPS_drbg_generate(drbg_ctx, (unsigned char *)tc->drb,
-                                     (size_t)(tc->drb_len / 8),
+                                     (size_t)(tc->drb_len),
                                      (int)0,
                                      (const unsigned char *)tc->additional_input,
-                                     (size_t)(tc->additional_input_len / 8));
+                                     (size_t)(tc->additional_input_len));
         if (!fips_rc) {
             progress("ERROR: failed to generate drb");
             long l;
