@@ -327,6 +327,7 @@ static ACVP_RESULT acvp_kdf135_snmp_init_tc(ACVP_CTX *ctx,
  */
 static ACVP_RESULT acvp_kdf135_snmp_release_tc(ACVP_KDF135_SNMP_TC *stc) {
     free(stc->s_key);
+    free(stc->engine_id);
     memset(stc, 0x0, sizeof(ACVP_KDF135_SNMP_TC));
     return ACVP_SUCCESS;
 }
