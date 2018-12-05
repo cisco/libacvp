@@ -42,19 +42,14 @@ static ACVP_RESULT acvp_rsa_sig_kat_handler_internal(ACVP_CTX *ctx, JSON_Object 
  */
 static ACVP_RESULT acvp_rsa_sig_output_tc(ACVP_CTX *ctx, ACVP_RSA_SIG_TC *stc, JSON_Object *tc_rsp) {
     ACVP_RESULT rv = ACVP_SUCCESS;
-    char *tmp = calloc(ACVP_RSA_EXP_LEN_MAX + 1, sizeof(char));
-
-    if (!tmp) {
-        ACVP_LOG_ERR("Unable to malloc in acvp_kdf135 tpm_output_tc");
-        return ACVP_MALLOC_FAIL;
-    }
+    char *tmp = NULL;
 
     if (stc->sig_mode == ACVP_RSA_SIGVER) {
         json_object_set_boolean(tc_rsp, "testPassed", stc->ver_disposition);
     } else {
         tmp = calloc(ACVP_RSA_SIGNATURE_MAX + 1, sizeof(char));
         if (!tmp) {
-            ACVP_LOG_ERR("Unable to malloc in acvp_kdf135 tpm_output_tc");
+            ACVP_LOG_ERR("Unable to malloc in rsa_sigver tpm_output_tc");
             return ACVP_MALLOC_FAIL;
         }
         rv = acvp_bin_to_hexstr(stc->signature, stc->sig_len, tmp, ACVP_RSA_SIGNATURE_MAX);
@@ -420,12 +415,13 @@ static ACVP_RESULT acvp_rsa_sig_kat_handler_internal(ACVP_CTX *ctx, JSON_Object 
             if (alg_id == ACVP_RSA_SIGGEN) {
                 char *tmp = calloc(ACVP_RSA_EXP_LEN_MAX + 1, sizeof(char));
                 if (!tmp) {
-                    ACVP_LOG_ERR("Unable to malloc in acvp_kdf135 tpm_output_tc");
+                    ACVP_LOG_ERR("Unable to malloc in rsa_siggen tpm_output_tc");
                     return ACVP_MALLOC_FAIL;
                 }
                 rv = acvp_bin_to_hexstr(stc.e, stc.e_len, tmp, ACVP_RSA_EXP_LEN_MAX);
                 if (rv != ACVP_SUCCESS) {
                     ACVP_LOG_ERR("hex conversion failure (e)");
+                    free(tmp);
                     goto end;
                 }
                 json_object_set_string(r_gobj, "e", (const char *)tmp);
@@ -434,6 +430,7 @@ static ACVP_RESULT acvp_rsa_sig_kat_handler_internal(ACVP_CTX *ctx, JSON_Object 
                 rv = acvp_bin_to_hexstr(stc.n, stc.n_len, tmp, ACVP_RSA_EXP_LEN_MAX);
                 if (rv != ACVP_SUCCESS) {
                     ACVP_LOG_ERR("hex conversion failure (n)");
+                    free(tmp);
                     goto end;
                 }
                 json_object_set_string(r_gobj, "n", (const char *)tmp);

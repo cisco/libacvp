@@ -592,6 +592,7 @@ ACVP_RESULT acvp_dsa_keygen_handler(ACVP_CTX *ctx,
         rv = acvp_bin_to_hexstr(stc->p, stc->p_len, tmp, ACVP_DSA_PQG_MAX);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("hex conversion failure (p)");
+            free(tmp);
             goto err;
         }
         json_object_set_string(r_gobj, "p", (const char *)tmp);
@@ -600,6 +601,7 @@ ACVP_RESULT acvp_dsa_keygen_handler(ACVP_CTX *ctx,
         rv = acvp_bin_to_hexstr(stc->q, stc->q_len, tmp, ACVP_DSA_PQG_MAX);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("hex conversion failure (q)");
+            free(tmp);
             goto err;
         }
         json_object_set_string(r_gobj, "q", (const char *)tmp);
@@ -608,6 +610,7 @@ ACVP_RESULT acvp_dsa_keygen_handler(ACVP_CTX *ctx,
         rv = acvp_bin_to_hexstr(stc->g, stc->g_len, tmp, ACVP_DSA_PQG_MAX);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("hex conversion failure (g)");
+            free(tmp);
             goto err;
         }
         json_object_set_string(r_gobj, "g", (const char *)tmp);
@@ -978,6 +981,7 @@ ACVP_RESULT acvp_dsa_siggen_handler(ACVP_CTX *ctx,
         rv = acvp_bin_to_hexstr(stc->p, stc->p_len, tmp, ACVP_DSA_PQG_MAX);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("hex conversion failure (p)");
+            free(tmp);
             goto err;
         }
         json_object_set_string(r_gobj, "p", (const char *)tmp);
@@ -986,6 +990,7 @@ ACVP_RESULT acvp_dsa_siggen_handler(ACVP_CTX *ctx,
         rv = acvp_bin_to_hexstr(stc->q, stc->q_len, tmp, ACVP_DSA_PQG_MAX);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("hex conversion failure (q)");
+            free(tmp);
             goto err;
         }
         json_object_set_string(r_gobj, "q", (const char *)tmp);
@@ -994,6 +999,7 @@ ACVP_RESULT acvp_dsa_siggen_handler(ACVP_CTX *ctx,
         rv = acvp_bin_to_hexstr(stc->g, stc->g_len, tmp, ACVP_DSA_PQG_MAX);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("hex conversion failure (g)");
+            free(tmp);
             goto err;
         }
         json_object_set_string(r_gobj, "g", (const char *)tmp);
@@ -1002,6 +1008,7 @@ ACVP_RESULT acvp_dsa_siggen_handler(ACVP_CTX *ctx,
         rv = acvp_bin_to_hexstr(stc->y, stc->y_len, tmp, ACVP_DSA_PQG_MAX);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("hex conversion failure (y)");
+            free(tmp);
             goto err;
         }
         json_object_set_string(r_gobj, "y", (const char *)tmp);

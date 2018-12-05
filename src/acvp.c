@@ -209,7 +209,7 @@ static void acvp_cap_free_dsa_attrs(ACVP_CAPS_LIST *cap_entry) {
     ACVP_DSA_CAP_MODE *dsa_cap_mode = NULL;
     int i;
 
-    for (i = 0; i <= ACVP_DSA_MAX_MODES; i++) {
+    for (i = 0; i <= ACVP_DSA_MAX_MODES - 1; i++) {
         dsa_cap_mode = &cap_entry->cap.dsa_cap->dsa_cap_mode[i];
         if (dsa_cap_mode->defined) {
             next = dsa_cap_mode->dsa_attrs;
@@ -220,7 +220,7 @@ static void acvp_cap_free_dsa_attrs(ACVP_CAPS_LIST *cap_entry) {
             }
         }
     }
-    dsa_cap_mode = &cap_entry->cap.dsa_cap->dsa_cap_mode[0];
+    dsa_cap_mode = cap_entry->cap.dsa_cap->dsa_cap_mode;
     free(dsa_cap_mode);
 }
 
@@ -1139,10 +1139,13 @@ end:
  */
 ACVP_RESULT acvp_register(ACVP_CTX *ctx) {
     ACVP_RESULT rv = ACVP_SUCCESS;
-    char *reg = NULL, *vendors = NULL, *modules = NULL, *oes = NULL, *dep = NULL;
+    char *reg = NULL;
+#if 0 // TODO these endpoints are NOT availble via API yet
+    char *vendors = NULL, *modules = NULL, *oes = NULL, *dep = NULL;
+    ACVP_DEPENDENCY_LIST *current_dep;
+#endif
     char *login = NULL;
     JSON_Value *tmp_json_from_file;
-    ACVP_DEPENDENCY_LIST *current_dep;
 
     if (!ctx) {
         return ACVP_NO_CTX;
@@ -1181,7 +1184,7 @@ ACVP_RESULT acvp_register(ACVP_CTX *ctx) {
     }
 
     if (ctx->use_json != 1) {
-#if 0 // TODO these endpoints are availble via API yet
+#if 0 // TODO these endpoints are NOT availble via API yet
         /*
          * Construct the registration message based on the capabilities
          * the user has enabled.
@@ -1294,11 +1297,12 @@ ACVP_RESULT acvp_register(ACVP_CTX *ctx) {
 
 end:
     if (reg) json_free_serialized_string(reg);
+#if 0 // TODO these endpoints are NOT availble via API yet
     if (vendors) json_free_serialized_string(vendors);
     if (modules) json_free_serialized_string(modules);
     if (oes) json_free_serialized_string(oes);
     if (dep) json_free_serialized_string(dep);
-
+#endif
     return rv;
 }
 
@@ -1842,7 +1846,6 @@ static ACVP_RESULT acvp_dispatch_vector_set(ACVP_CTX *ctx, JSON_Object *obj) {
     int i;
     const char *alg = json_object_get_string(obj, "algorithm");
     const char *mode = json_object_get_string(obj, "mode");
-    const char *dir = json_object_get_string(obj, "direction");
     int vs_id = json_object_get_number(obj, "vsId");
 
     ctx->vs_id = vs_id;
