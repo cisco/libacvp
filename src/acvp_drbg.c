@@ -476,7 +476,7 @@ static ACVP_RESULT acvp_drbg_output_tc(ACVP_CTX *ctx, ACVP_DRBG_TC *stc, JSON_Ob
         return ACVP_MALLOC_FAIL;
     }
 
-    rv = acvp_bin_to_hexstr(stc->drb, stc->drb_len / 8, tmp, ACVP_DRB_STR_MAX);
+    rv = acvp_bin_to_hexstr(stc->drb, stc->drb_len, tmp, ACVP_DRB_STR_MAX);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("hex conversion failure (returnedBits)");
         goto end;
@@ -592,13 +592,14 @@ static ACVP_RESULT acvp_drbg_init_tc(ACVP_CTX *ctx,
         }
     }
 
-    stc->additional_input_len = additional_input_len;
-    stc->pred_resist_enabled = pred_resist_enabled;
-    stc->perso_string_len = perso_string_len;
     stc->der_func_enabled = der_func_enabled;
-    stc->entropy_len = entropy_len;
-    stc->nonce_len = nonce_len;
-    stc->drb_len = drb_len;
+    stc->pred_resist_enabled = pred_resist_enabled;
+    stc->additional_input_len = ACVP_BIT2BYTE(additional_input_len);
+    stc->perso_string_len = ACVP_BIT2BYTE(perso_string_len);
+    stc->entropy_len = ACVP_BIT2BYTE(entropy_len);
+    stc->nonce_len = ACVP_BIT2BYTE(nonce_len);
+    stc->drb_len = ACVP_BIT2BYTE(drb_len);
+
     stc->tc_id = tc_id;
     stc->mode = mode_id;
     stc->cipher = alg_id;
