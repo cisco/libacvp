@@ -637,13 +637,22 @@ typedef struct acvp_param_list_t {
 } ACVP_PARAM_LIST;
 
 /*
- * list of strings to be used for supported algs,
+ * list of STATIC strings to be used for supported algs,
  * prime_tests, etc.
  */
 typedef struct acvp_name_list_t {
     char *name;
     struct acvp_name_list_t *next;
 } ACVP_NAME_LIST;
+
+/*
+ * list of CALLOC'd strings to be used for supported algs,
+ * vsid_url etc.
+ */
+typedef struct acvp_string_list_t {
+    char *string;
+    struct acvp_string_list_t *next;
+} ACVP_STRING_LIST;
 
 typedef struct acvp_json_domain_obj_t {
     int min;
@@ -1013,7 +1022,7 @@ struct acvp_ctx_t {
     char *module_desc;
     char *oe_name;
     ACVP_DEPENDENCY_LIST *dependency_list;
-    ACVP_NAME_LIST *vsid_url_list;
+    ACVP_STRING_LIST *vsid_url_list;
     char *session_url;
 
     char *vendor_url; /*<< URL for vendor on validating server >>*/

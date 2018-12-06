@@ -1107,11 +1107,6 @@ static ACVP_RESULT acvp_build_kdf108_register_cap(JSON_Object *cap_obj, ACVP_CAP
     json_object_set_value(cap_obj, "capabilities", json_value_init_array());
     alg_specs_array = json_object_get_array(cap_obj, "capabilities");
 
-    alg_specs_counter_val = json_value_init_object();
-    alg_specs_counter_obj = json_value_get_object(alg_specs_counter_val);
-    alg_specs_counter_val = json_value_init_object();
-    alg_specs_counter_obj = json_value_get_object(alg_specs_counter_val);
-
     if (cap_entry->cap.kdf108_cap->counter_mode.kdf_mode) {
         alg_specs_counter_val = json_value_init_object();
         alg_specs_counter_obj = json_value_get_object(alg_specs_counter_val);

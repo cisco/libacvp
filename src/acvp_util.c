@@ -676,6 +676,7 @@ void acvp_free_kv_list(ACVP_KV_LIST *kv_list) {
         kv_list = kv_list->next;
         if (tmp->key) free(tmp->key);
         if (tmp->value) free(tmp->value);
+        free(tmp);
     }
 }
 
@@ -702,3 +703,4 @@ ACVP_RESULT acvp_setup_json_rsp_group(ACVP_CTX **ctx,
 
     return ACVP_SUCCESS;
 }
+
