@@ -1196,15 +1196,15 @@ ACVP_RESULT acvp_register(ACVP_CTX *ctx) {
          * Send the login to the ACVP server and get the response,
          */
         rv = acvp_send_login(ctx, login);
-        free(login);
         if (rv == ACVP_SUCCESS) {
             ACVP_LOG_STATUS("200 OK %s", ctx->reg_buf);
             rv = acvp_parse_login(ctx);
         } else {
-            ACVP_LOG_STATUS("Login Response Failed %s", ctx->reg_buf);
+            ACVP_LOG_STATUS("Login Send Failed %s", ctx->reg_buf);
+            goto end;
         }
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_STATUS("Login Send Failed");
+            ACVP_LOG_STATUS("Login Response Failed");
             goto end;
         }
     }
@@ -1322,6 +1322,7 @@ ACVP_RESULT acvp_register(ACVP_CTX *ctx) {
     }
 
 end:
+    if (login) free(login);
     if (reg) json_free_serialized_string(reg);
 #if 0 // TODO these endpoints are NOT availble via API yet
     if (vendors) json_free_serialized_string(vendors);
@@ -1744,18 +1745,18 @@ ACVP_RESULT acvp_check_test_results(ACVP_CTX *ctx) {
 ***************************************************************************************************************/
 
 ACVP_RESULT acvp_refresh(ACVP_CTX *ctx) {
+    char *login = NULL;
+    ACVP_RESULT rv = ACVP_SUCCESS;
+
     if (!ctx) {
         return ACVP_NO_CTX;
     }
-
-    char *login = NULL;
-    ACVP_RESULT rv;
 
     if (ctx->totp_cb) {
         rv = acvp_build_login(ctx, &login, 1);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Unable to build login message");
-            return rv;
+            goto end;
         }
 
         if (ctx->debug >= ACVP_LOG_LVL_STATUS) {
@@ -1768,19 +1769,20 @@ ACVP_RESULT acvp_refresh(ACVP_CTX *ctx) {
          * Send the login to the ACVP server and get the response,
          */
         rv = acvp_send_login(ctx, login);
-        free(login);
         if (rv == ACVP_SUCCESS) {
             ACVP_LOG_STATUS("200 OK %s", ctx->reg_buf);
             rv = acvp_parse_login(ctx);
         } else {
-            ACVP_LOG_STATUS("Login Response Failed %s", ctx->reg_buf);
+            ACVP_LOG_STATUS("Login Send Failed %s", ctx->reg_buf);
+            goto end;
         }
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_STATUS("Login Send Failed");
-            return rv;
+            ACVP_LOG_STATUS("Login Response Failed, %d", rv);
         }
     }
-    return ACVP_SUCCESS;
+end:
+    free(login);
+    return rv;
 }
 
 /*
@@ -1964,7 +1966,6 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
             return ACVP_JSON_ERR;
         }
         obj = acvp_get_obj_from_rsp(val);
-        json_value_free(val);
 
         results = json_object_get_array(obj, "results");
         count = (int)json_array_get_count(results);
@@ -1991,6 +1992,7 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
                 } else {
                     retry = 0;
                 }
+                json_value_free(val);
                 break;
             } else {
                 retry = 0;
@@ -2030,6 +2032,7 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
     ACVP_LOG_STATUS("Received all dispositions for test session");
 
 end:
+    json_value_free(val);
     return rv;
 }
 
