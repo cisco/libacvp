@@ -86,9 +86,9 @@ static ACVP_RESULT acvp_kdf135_x963_init_tc(ACVP_CTX *ctx,
 
     stc->tc_id = tc_id;
     stc->hash_alg = hash_alg;
-    stc->field_size = field_size;
-    stc->key_data_len = key_data_length;
-    stc->shared_info_len = shared_info_length;
+    stc->field_size = ACVP_BIT2BYTE(field_size);
+    stc->key_data_len = ACVP_BIT2BYTE(key_data_length);
+    stc->shared_info_len = ACVP_BIT2BYTE(shared_info_length);
 
     stc->z = calloc(ACVP_KDF135_X963_INPUT_MAX, sizeof(char));
     if (!stc->z) { return ACVP_MALLOC_FAIL; }
@@ -319,8 +319,7 @@ ACVP_RESULT acvp_kdf135_x963_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             }
 
             /* Process the current test vector... */
-            rv = (cap->crypto_handler)(&tc);
-            if (rv != ACVP_SUCCESS) {
+            if ((cap->crypto_handler)(&tc)) {
                 ACVP_LOG_ERR("crypto module failed the KDF SSH operation");
                 acvp_kdf135_x963_release_tc(&stc);
                 return ACVP_CRYPTO_MODULE_FAIL;

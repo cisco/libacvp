@@ -105,10 +105,10 @@ static ACVP_RESULT acvp_kdf135_ikev1_init_tc(ACVP_CTX *ctx,
     stc->hash_alg = hash_alg;
     stc->auth_method = auth_method;
 
-    stc->init_nonce_len = init_nonce_len;
-    stc->resp_nonce_len = resp_nonce_len;
-    stc->dh_secret_len = dh_secret_len;
-    stc->psk_len = psk_len;
+    stc->init_nonce_len = ACVP_BIT2BYTE(init_nonce_len);
+    stc->resp_nonce_len = ACVP_BIT2BYTE(resp_nonce_len);
+    stc->dh_secret_len = ACVP_BIT2BYTE(dh_secret_len);
+    stc->psk_len = ACVP_BIT2BYTE(psk_len);
 
     stc->init_nonce = calloc(ACVP_KDF135_IKEV1_INIT_NONCE_BYTE_MAX,
                              sizeof(unsigned char));
@@ -503,8 +503,7 @@ ACVP_RESULT acvp_kdf135_ikev1_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             }
 
             /* Process the current test vector... */
-            rv = (cap->crypto_handler)(&tc);
-            if (rv != ACVP_SUCCESS) {
+            if ((cap->crypto_handler)(&tc)) {
                 ACVP_LOG_ERR("crypto module failed the KDF IKEv1 operation");
                 acvp_kdf135_ikev1_release_tc(&stc);
                 return ACVP_CRYPTO_MODULE_FAIL;

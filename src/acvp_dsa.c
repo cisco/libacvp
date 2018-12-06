@@ -572,8 +572,7 @@ ACVP_RESULT acvp_dsa_keygen_handler(ACVP_CTX *ctx,
         }
 
         /* Process the current DSA test vector... */
-        rv = (cap->crypto_handler)(&tc);
-        if (rv != ACVP_SUCCESS) {
+        if ((cap->crypto_handler)(&tc)) {
             ACVP_LOG_ERR("crypto module failed the operation");
             goto err;
         }
@@ -801,8 +800,7 @@ ACVP_RESULT acvp_dsa_pqggen_handler(ACVP_CTX *ctx,
             }
 
             /* Process the current DSA test vector... */
-            rv = (cap->crypto_handler)(&tc);
-            if (rv != ACVP_SUCCESS) {
+            if ((cap->crypto_handler)(&tc)) {
                 ACVP_LOG_ERR("crypto module failed the operation");
                 acvp_dsa_release_tc(stc);
                 return ACVP_CRYPTO_MODULE_FAIL;
@@ -839,8 +837,7 @@ ACVP_RESULT acvp_dsa_pqggen_handler(ACVP_CTX *ctx,
                 return rv;
             }
 
-            rv = (cap->crypto_handler)(&tc);
-            if (rv != ACVP_SUCCESS) {
+            if ((cap->crypto_handler)(&tc)) {
                 ACVP_LOG_ERR("crypto module failed the operation");
                 acvp_dsa_release_tc(stc);
                 return ACVP_CRYPTO_MODULE_FAIL;
@@ -963,8 +960,7 @@ ACVP_RESULT acvp_dsa_siggen_handler(ACVP_CTX *ctx,
         }
 
         /* Process the current DSA test vector... */
-        rv = (cap->crypto_handler)(&tc);
-        if (rv != ACVP_SUCCESS) {
+        if ((cap->crypto_handler)(&tc)) {
             ACVP_LOG_ERR("crypto module failed the operation");
             goto err;
         }
@@ -1203,8 +1199,7 @@ ACVP_RESULT acvp_dsa_pqgver_handler(ACVP_CTX *ctx,
         }
 
         /* Process the current DSA test vector... */
-        rv = (cap->crypto_handler)(&tc);
-        if (rv != ACVP_SUCCESS) {
+        if ((cap->crypto_handler)(&tc)) {
             ACVP_LOG_ERR("crypto module failed the operation");
             acvp_dsa_release_tc(stc);
             return ACVP_CRYPTO_MODULE_FAIL;
@@ -1368,8 +1363,7 @@ ACVP_RESULT acvp_dsa_sigver_handler(ACVP_CTX *ctx,
         }
 
         /* Process the current DSA test vector... */
-        rv = (cap->crypto_handler)(&tc);
-        if (rv != ACVP_SUCCESS) {
+        if ((cap->crypto_handler)(&tc)) {
             ACVP_LOG_ERR("crypto module failed the operation");
             acvp_dsa_release_tc(stc);
             return ACVP_CRYPTO_MODULE_FAIL;

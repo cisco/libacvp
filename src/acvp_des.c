@@ -37,7 +37,7 @@
 static ACVP_RESULT acvp_des_output_tc(ACVP_CTX *ctx,
                                       ACVP_SYM_CIPHER_TC *stc,
                                       JSON_Object *tc_rsp,
-                                      ACVP_RESULT opt_rv);
+                                      int opt_rv);
 
 static ACVP_RESULT acvp_des_init_tc(ACVP_CTX *ctx,
                                     ACVP_SYM_CIPHER_TC *stc,
@@ -434,8 +434,7 @@ static ACVP_RESULT acvp_des_mct_tc(ACVP_CTX *ctx,
             }
             stc->mct_index = j;    /* indicates init vs. update */
             /* Process the current DES encrypt test vector... */
-            rv = (cap->crypto_handler)(tc);
-            if (rv != ACVP_SUCCESS) {
+            if ((cap->crypto_handler)(tc)) {
                 ACVP_LOG_ERR("crypto module failed the operation");
                 free(tmp);
                 json_value_free(r_tval);
@@ -886,8 +885,8 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 }
             } else {
                 /* Process the current DES encrypt test vector... */
-                rv = (cap->crypto_handler)(&tc);
-                if (rv != ACVP_SUCCESS) {
+                int t_rv = (cap->crypto_handler)(&tc);
+                if (t_rv) {
                     if (rv != ACVP_CRYPTO_WRAP_FAIL) {
                         ACVP_LOG_ERR("ERROR: crypto module failed the operation");
                         acvp_des_release_tc(&stc);
@@ -898,7 +897,7 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 /*
                  * Output the test case results using JSON
                  */
-                rv = acvp_des_output_tc(ctx, &stc, r_tobj, rv);
+                rv = acvp_des_output_tc(ctx, &stc, r_tobj, t_rv);
                 if (rv != ACVP_SUCCESS) {
                     ACVP_LOG_ERR("JSON output failure in 3DES module");
                     acvp_des_release_tc(&stc);
@@ -939,7 +938,7 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 static ACVP_RESULT acvp_des_output_tc(ACVP_CTX *ctx,
                                       ACVP_SYM_CIPHER_TC *stc,
                                       JSON_Object *tc_rsp,
-                                      ACVP_RESULT opt_rv) {
+                                      int opt_rv) {
     ACVP_RESULT rv;
     char *tmp = NULL;
 
@@ -952,7 +951,7 @@ static ACVP_RESULT acvp_des_output_tc(ACVP_CTX *ctx,
     if (stc->direction == ACVP_SYM_CIPH_DIR_ENCRYPT) {
         memset(tmp, 0x0, ACVP_SYM_CT_MAX);
         if (stc->cipher == ACVP_TDES_CFB1) {
-            rv = acvp_bin_to_hexstr(stc->ct, (stc->ct_len+7)/8, tmp, ACVP_SYM_CT_MAX);
+            rv = acvp_bin_to_hexstr(stc->ct, (stc->ct_len + 7) / 8, tmp, ACVP_SYM_CT_MAX);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("hex conversion failure (ct)");
                 free(tmp);
@@ -969,8 +968,7 @@ static ACVP_RESULT acvp_des_output_tc(ACVP_CTX *ctx,
             json_object_set_string(tc_rsp, "ct", tmp);
         }
     } else {
-        if ((stc->cipher == ACVP_TDES_KW) &&
-            (opt_rv == ACVP_CRYPTO_WRAP_FAIL)) {
+        if ((stc->cipher == ACVP_TDES_KW) && (opt_rv != 0)) {
             json_object_set_boolean(tc_rsp, "testPassed", 1);
             free(tmp);
             return ACVP_SUCCESS;
@@ -978,7 +976,7 @@ static ACVP_RESULT acvp_des_output_tc(ACVP_CTX *ctx,
 
         memset(tmp, 0x0, ACVP_SYM_CT_MAX);
         if (stc->cipher == ACVP_TDES_CFB1) {
-            rv = acvp_bin_to_hexstr(stc->pt, (stc->pt_len+7)/8, tmp, ACVP_SYM_CT_MAX);
+            rv = acvp_bin_to_hexstr(stc->pt, (stc->pt_len + 7) / 8, tmp, ACVP_SYM_CT_MAX);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("hex conversion failure (pt)");
                 free(tmp);
@@ -1026,6 +1024,7 @@ static ACVP_RESULT acvp_des_init_tc(ACVP_CTX *ctx,
                                     unsigned int incr_ctr,
                                     unsigned int ovrflw_ctr) {
     ACVP_RESULT rv;
+
     memset(stc, 0x0, sizeof(ACVP_SYM_CIPHER_TC));
 
     stc->key = calloc(1, ACVP_SYM_KEY_MAX_BYTES);

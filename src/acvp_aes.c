@@ -37,7 +37,7 @@
 static ACVP_RESULT acvp_aes_output_tc(ACVP_CTX *ctx,
                                       ACVP_SYM_CIPHER_TC *stc,
                                       JSON_Object *tc_rsp,
-                                      ACVP_RESULT opt_rv);
+                                      int opt_rv);
 
 static ACVP_RESULT acvp_aes_init_tc(ACVP_CTX *ctx,
                                     ACVP_SYM_CIPHER_TC *stc,
@@ -285,8 +285,7 @@ static ACVP_RESULT acvp_aes_mct_tc(ACVP_CTX *ctx,
         for (j = 0; j < ACVP_AES_MCT_INNER; ++j) {
             stc->mct_index = j;    /* indicates init vs. update */
             /* Process the current AES encrypt test vector... */
-            rv = (cap->crypto_handler)(tc);
-            if (rv != ACVP_SUCCESS) {
+            if ((cap->crypto_handler)(tc)) {
                 ACVP_LOG_ERR("crypto module failed the operation");
                 free(tmp);
                 return ACVP_CRYPTO_MODULE_FAIL;
@@ -868,9 +867,10 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 }
             } else {
                 /* Process the current AES KAT test vector... */
-                rv = (cap->crypto_handler)(&tc);
-                if (rv != ACVP_SUCCESS) {
-                    if ((rv != ACVP_CRYPTO_TAG_FAIL) && (rv != ACVP_CRYPTO_WRAP_FAIL)) {
+                int t_rv = (cap->crypto_handler)(&tc);
+                if (t_rv) {
+                    if (alg_id != ACVP_AES_KW && alg_id != ACVP_AES_GCM &&
+                        alg_id != ACVP_AES_CCM && alg_id != ACVP_AES_KWP) {
                         ACVP_LOG_ERR("ERROR: crypto module failed the operation");
                         acvp_aes_release_tc(&stc);
                         return ACVP_CRYPTO_MODULE_FAIL;
@@ -880,7 +880,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 /*
                  * Output the test case results using JSON
                  */
-                rv = acvp_aes_output_tc(ctx, &stc, r_tobj, rv);
+                rv = acvp_aes_output_tc(ctx, &stc, r_tobj, t_rv);
                 if (rv != ACVP_SUCCESS) {
                     ACVP_LOG_ERR("JSON output failure in AES module");
                     acvp_aes_release_tc(&stc);
@@ -920,7 +920,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 static ACVP_RESULT acvp_aes_output_tc(ACVP_CTX *ctx,
                                       ACVP_SYM_CIPHER_TC *stc,
                                       JSON_Object *tc_rsp,
-                                      ACVP_RESULT opt_rv) {
+                                      int opt_rv) {
     ACVP_RESULT rv;
     char *tmp = NULL;
 
@@ -945,7 +945,7 @@ static ACVP_RESULT acvp_aes_output_tc(ACVP_CTX *ctx,
     if (stc->direction == ACVP_SYM_CIPH_DIR_ENCRYPT) {
         memset(tmp, 0x0, ACVP_SYM_CT_MAX);
         if (stc->cipher == ACVP_AES_CFB1) {
-            rv = acvp_bin_to_hexstr(stc->ct, (stc->ct_len+7)/8, tmp, ACVP_SYM_CT_MAX);
+            rv = acvp_bin_to_hexstr(stc->ct, (stc->ct_len + 7) / 8, tmp, ACVP_SYM_CT_MAX);
         } else if (stc->cipher == ACVP_AES_GCM) {
             rv = acvp_bin_to_hexstr(stc->ct, stc->pt_len, tmp, ACVP_SYM_CT_MAX);
         } else {
@@ -972,7 +972,7 @@ static ACVP_RESULT acvp_aes_output_tc(ACVP_CTX *ctx,
     } else {
         if (stc->cipher == ACVP_AES_GCM || stc->cipher == ACVP_AES_CCM ||
             stc->cipher == ACVP_AES_KW || stc->cipher == ACVP_AES_KWP) {
-            if (opt_rv != ACVP_SUCCESS) {
+            if (opt_rv != 0) {
                 json_object_set_boolean(tc_rsp, "testPassed", 0);
                 free(tmp);
                 return ACVP_SUCCESS;
@@ -982,7 +982,7 @@ static ACVP_RESULT acvp_aes_output_tc(ACVP_CTX *ctx,
         }
 
         if (stc->cipher == ACVP_AES_CFB1) {
-            rv = acvp_bin_to_hexstr(stc->pt, (stc->pt_len+7)/8, tmp, ACVP_SYM_PT_MAX);
+            rv = acvp_bin_to_hexstr(stc->pt, (stc->pt_len + 7) / 8, tmp, ACVP_SYM_PT_MAX);
         } else if (stc->cipher == ACVP_AES_GCM) {
             rv = acvp_bin_to_hexstr(stc->pt, stc->ct_len, tmp, ACVP_SYM_PT_MAX);
         } else {

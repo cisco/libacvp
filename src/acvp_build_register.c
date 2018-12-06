@@ -113,10 +113,8 @@ static ACVP_RESULT acvp_build_hash_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
 
 static ACVP_RESULT acvp_build_hmac_register_cap(JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry) {
     JSON_Array *temp_arr = NULL;
-    JSON_Value *val = NULL;
-    JSON_Object *obj = NULL;
-    ACVP_SL_LIST *sl_list;
     ACVP_RESULT result;
+    ACVP_HMAC_CAP *hmac_cap = cap_entry->cap.hmac_cap;
 
     if (!cap_entry->cap.hmac_cap) {
         return ACVP_NO_CAP;
@@ -125,26 +123,44 @@ static ACVP_RESULT acvp_build_hmac_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
     result = acvp_lookup_prereqVals(cap_obj, cap_entry);
     if (result != ACVP_SUCCESS) { return result; }
 
+    /*
+     * Set the supported key lengths
+     */
     json_object_set_value(cap_obj, "keyLen", json_value_init_array());
     temp_arr = json_object_get_array(cap_obj, "keyLen");
+    if (hmac_cap->key_len.value) {
+        json_array_append_number(temp_arr, hmac_cap->key_len.value);
+    } else {
+        JSON_Value *key_len_val = NULL;
+        JSON_Object *key_len_obj = NULL;
 
-    val = json_value_init_object();
-    obj = json_value_get_object(val);
+        key_len_val = json_value_init_object();
+        key_len_obj = json_value_get_object(key_len_val);
 
-    json_object_set_number(obj, "min", cap_entry->cap.hmac_cap->key_len_min);
-    json_object_set_number(obj, "max", cap_entry->cap.hmac_cap->key_len_max);
-    json_object_set_number(obj, "increment", 64);
+        json_object_set_number(key_len_obj, "min", hmac_cap->key_len.min);
+        json_object_set_number(key_len_obj, "max", hmac_cap->key_len.max);
+        json_object_set_number(key_len_obj, "increment", hmac_cap->key_len.increment);
+        json_array_append_value(temp_arr, key_len_val);
+    }
 
-    json_array_append_value(temp_arr, val);
     /*
      * Set the supported mac lengths
      */
     json_object_set_value(cap_obj, "macLen", json_value_init_array());
     temp_arr = json_object_get_array(cap_obj, "macLen");
-    sl_list = cap_entry->cap.hmac_cap->mac_len;
-    while (sl_list) {
-        json_array_append_number(temp_arr, sl_list->length);
-        sl_list = sl_list->next;
+    if (hmac_cap->mac_len.value) {
+        json_array_append_number(temp_arr, hmac_cap->mac_len.value);
+    } else {
+        JSON_Value *mac_len_val = NULL;
+        JSON_Object *mac_len_obj = NULL;
+
+        mac_len_val = json_value_init_object();
+        mac_len_obj = json_value_get_object(mac_len_val);
+
+        json_object_set_number(mac_len_obj, "min", hmac_cap->mac_len.min);
+        json_object_set_number(mac_len_obj, "max", hmac_cap->mac_len.max);
+        json_object_set_number(mac_len_obj, "increment", hmac_cap->mac_len.increment);
+        json_array_append_value(temp_arr, mac_len_val);
     }
 
     return ACVP_SUCCESS;

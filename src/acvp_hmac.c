@@ -47,9 +47,9 @@ static ACVP_RESULT acvp_hmac_init_tc(ACVP_CTX *ctx,
 
     stc->msg = calloc(1, ACVP_HMAC_MSG_MAX);
     if (!stc->msg) { return ACVP_MALLOC_FAIL; }
-    stc->mac = calloc(1, ACVP_HMAC_MAC_MAX);
+    stc->mac = calloc(1, ACVP_HMAC_MAC_BYTE_MAX);
     if (!stc->mac) { return ACVP_MALLOC_FAIL; }
-    stc->key = calloc(1, ACVP_HMAC_KEY_MAX);
+    stc->key = calloc(1, ACVP_HMAC_KEY_BYTE_MAX);
     if (!stc->key) { return ACVP_MALLOC_FAIL; }
 
     rv = acvp_hexstr_to_bin(msg, stc->msg, ACVP_HMAC_MSG_MAX, NULL);
@@ -58,7 +58,7 @@ static ACVP_RESULT acvp_hmac_init_tc(ACVP_CTX *ctx,
         return rv;
     }
 
-    rv = acvp_hexstr_to_bin(key, stc->key, ACVP_HMAC_KEY_MAX, NULL);
+    rv = acvp_hexstr_to_bin(key, stc->key, ACVP_HMAC_KEY_BYTE_MAX, NULL);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Hex converstion failure (key)");
         return rv;
@@ -83,13 +83,13 @@ static ACVP_RESULT acvp_hmac_output_tc(ACVP_CTX *ctx, ACVP_HMAC_TC *stc, JSON_Ob
     ACVP_RESULT rv = ACVP_SUCCESS;
     char *tmp = NULL;
 
-    tmp = calloc(ACVP_HMAC_MAC_MAX + 1, sizeof(char));
+    tmp = calloc(ACVP_HMAC_MAC_STR_MAX + 1, sizeof(char));
     if (!tmp) {
         ACVP_LOG_ERR("Unable to malloc in acvp_hmac_output_tc");
         return ACVP_MALLOC_FAIL;
     }
 
-    rv = acvp_bin_to_hexstr(stc->mac, stc->mac_len, tmp, ACVP_HMAC_MAC_MAX);
+    rv = acvp_bin_to_hexstr(stc->mac, stc->mac_len, tmp, ACVP_HMAC_MAC_STR_MAX);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("hex conversion failure (mac)");
         goto end;
@@ -284,9 +284,9 @@ ACVP_RESULT acvp_hmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 return ACVP_MISSING_ARG;
             }
 
-            if (strnlen((char *)key, ACVP_HMAC_KEY_MAX) != keylen * 2 / 8) {
+            if (strnlen((char *)key, ACVP_HMAC_KEY_STR_MAX) != (keylen / 4)) {
                 ACVP_LOG_ERR("keyLen(%d) or key length(%d) incorrect",
-                             keylen, strnlen((char *)key, ACVP_HMAC_KEY_MAX) * 8 / 2);
+                             keylen, strnlen((char *)key, ACVP_HMAC_KEY_STR_MAX) * 4);
                 return ACVP_INVALID_ARG;
             }
 
@@ -317,8 +317,7 @@ ACVP_RESULT acvp_hmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             }
 
             /* Process the current test vector... */
-            rv = (cap->crypto_handler)(&tc);
-            if (rv != ACVP_SUCCESS) {
+            if ((cap->crypto_handler)(&tc)) {
                 ACVP_LOG_ERR("ERROR: crypto module failed the operation");
                 acvp_hmac_release_tc(&stc);
                 return ACVP_CRYPTO_MODULE_FAIL;

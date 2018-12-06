@@ -680,12 +680,12 @@ void acvp_free_kv_list(ACVP_KV_LIST *kv_list) {
     }
 }
 
-ACVP_RESULT acvp_setup_json_rsp_group (ACVP_CTX **ctx,
-                                       JSON_Value **outer_arr_val,
-                                       JSON_Value **r_vs_val,
-                                       JSON_Object **r_vs,
-                                       const char *alg_str,
-                                       JSON_Array **groups_arr) {
+ACVP_RESULT acvp_setup_json_rsp_group(ACVP_CTX **ctx,
+                                      JSON_Value **outer_arr_val,
+                                      JSON_Value **r_vs_val,
+                                      JSON_Object **r_vs,
+                                      const char *alg_str,
+                                      JSON_Array **groups_arr) {
     if ((*ctx)->kat_resp) {
         json_value_free((*ctx)->kat_resp);
     }

@@ -660,7 +660,6 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx) {
                     acvp_free_drbg_struct(cap_entry);
                     break;
                 case ACVP_HMAC_TYPE:
-                    acvp_cap_free_sl(cap_entry->cap.hmac_cap->mac_len);
                     free(cap_entry->cap.hmac_cap);
                     break;
                 case ACVP_CMAC_TYPE:

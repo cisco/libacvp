@@ -60,7 +60,7 @@ static ACVP_RESULT acvp_kdf135_ikev2_output_tc(ACVP_CTX *ctx, ACVP_KDF135_IKEV2_
 
 
     tmp = calloc(ACVP_KDF135_IKEV2_DKEY_MATERIAL_STR_MAX, sizeof(char));
-    rv = acvp_bin_to_hexstr(stc->derived_keying_material, stc->keying_material_len / 8, tmp, ACVP_KDF135_IKEV2_DKEY_MATERIAL_STR_MAX);
+    rv = acvp_bin_to_hexstr(stc->derived_keying_material, stc->keying_material_len, tmp, ACVP_KDF135_IKEV2_DKEY_MATERIAL_STR_MAX);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("hex conversion failure (derived_keying_material)");
         goto err;
@@ -68,7 +68,7 @@ static ACVP_RESULT acvp_kdf135_ikev2_output_tc(ACVP_CTX *ctx, ACVP_KDF135_IKEV2_
     json_object_set_string(tc_rsp, "derivedKeyingMaterial", (const char *)tmp);
     memset(tmp, 0x0, ACVP_KDF135_IKEV2_DKEY_MATERIAL_STR_MAX);
 
-    rv = acvp_bin_to_hexstr(stc->derived_keying_material_child, stc->keying_material_len / 8, tmp, ACVP_KDF135_IKEV2_DKEY_MATERIAL_STR_MAX);
+    rv = acvp_bin_to_hexstr(stc->derived_keying_material_child, stc->keying_material_len, tmp, ACVP_KDF135_IKEV2_DKEY_MATERIAL_STR_MAX);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("hex conversion failure (derived_keying_material)");
         goto err;
@@ -76,7 +76,7 @@ static ACVP_RESULT acvp_kdf135_ikev2_output_tc(ACVP_CTX *ctx, ACVP_KDF135_IKEV2_
     json_object_set_string(tc_rsp, "derivedKeyingMaterialChild", (const char *)tmp);
     memset(tmp, 0x0, ACVP_KDF135_IKEV2_DKEY_MATERIAL_STR_MAX);
 
-    rv = acvp_bin_to_hexstr(stc->derived_keying_material_child_dh, stc->keying_material_len / 8, tmp, ACVP_KDF135_IKEV2_DKEY_MATERIAL_STR_MAX);
+    rv = acvp_bin_to_hexstr(stc->derived_keying_material_child_dh, stc->keying_material_len, tmp, ACVP_KDF135_IKEV2_DKEY_MATERIAL_STR_MAX);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("hex conversion failure (derived_keying_material)");
         goto err;
@@ -114,7 +114,7 @@ static ACVP_RESULT acvp_kdf135_ikev2_init_tc(ACVP_CTX *ctx,
     stc->resp_nonce_len = resp_nonce_len;
 
     stc->dh_secret_len = dh_secret_len;
-    stc->keying_material_len = keying_material_len;
+    stc->keying_material_len = ACVP_BIT2BYTE(keying_material_len);
 
     stc->init_nonce = calloc(ACVP_KDF135_IKEV2_INIT_NONCE_BYTE_MAX,
                              sizeof(unsigned char));
@@ -480,8 +480,7 @@ ACVP_RESULT acvp_kdf135_ikev2_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             }
 
             /* Process the current test vector... */
-            rv = (cap->crypto_handler)(&tc);
-            if (rv != ACVP_SUCCESS) {
+            if ((cap->crypto_handler)(&tc)) {
                 ACVP_LOG_ERR("crypto module failed");
                 acvp_kdf135_ikev2_release_tc(&stc);
                 return ACVP_CRYPTO_MODULE_FAIL;

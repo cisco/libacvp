@@ -423,8 +423,7 @@ static ACVP_RESULT acvp_kas_ecc_cdh(ACVP_CTX *ctx,
             }
 
             /* Process the current KAT test vector... */
-            rv = (cap->crypto_handler)(tc);
-            if (rv != ACVP_SUCCESS) {
+            if ((cap->crypto_handler)(tc)) {
                 acvp_kas_ecc_release_tc(stc);
                 return ACVP_CRYPTO_MODULE_FAIL;
             }
@@ -657,8 +656,7 @@ static ACVP_RESULT acvp_kas_ecc_comp(ACVP_CTX *ctx,
             }
 
             /* Process the current KAT test vector... */
-            rv = (cap->crypto_handler)(tc);
-            if (rv != ACVP_SUCCESS) {
+            if ((cap->crypto_handler)(tc)) {
                 acvp_kas_ecc_release_tc(stc);
                 return ACVP_CRYPTO_MODULE_FAIL;
             }
