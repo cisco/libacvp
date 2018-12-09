@@ -1980,7 +1980,6 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
          * a failure or the disposition being incomplete
          */
         for (i = 0; i < count; i++) {
-            if (current) json_value_free((JSON_Value *)current);
             current = json_array_get_object(results, i);
             if (!strncmp(json_object_get_string(current, "status"), "incomplete", 10)) {
                 rv = acvp_retry_handler(ctx, 30);
@@ -1991,7 +1990,8 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
                 } else {
                     retry = 0;
                 }
-                json_value_free(val);
+                if (val) json_value_free(val);
+                val = NULL;
                 break;
             } else {
                 retry = 0;
@@ -2031,7 +2031,7 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
     ACVP_LOG_STATUS("Received all dispositions for test session");
 
 end:
-    json_value_free(val);
+    if (val) json_value_free(val);
     return rv;
 }
 
