@@ -617,7 +617,16 @@ static ACVP_RESULT inspect_http_code(ACVP_CTX *ctx, int code) {
         }
 
         obj = json_value_get_object(root_value);
+        if (!obj) {
+            ACVP_LOG_ERR("HTTP body doesn't contain top-level JSON object");
+            goto end;
+        }
+
         err_str = json_object_get_string(obj, "error");
+        if (!err_str) {
+            ACVP_LOG_ERR("JSON object doesn't contain 'error'");
+            goto end;
+        }
 
         if (strncmp(err_str, JWT_EXPIRED_STR, JWT_EXPIRED_STR_LEN) == 0) {
             result = ACVP_JWT_EXPIRED;
