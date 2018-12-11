@@ -40,6 +40,13 @@
 
 #define ACVP_AUTH_BEARER_TITLE_LEN 23
 
+typedef enum acvp_net_action {
+    ACVP_NET_ACTION_GET_RESULT = 1,
+    ACVP_NET_ACTION_GET_VECTOR_SET,
+    ACVP_NET_ACTION_GET_SAMPLE,
+    ACVP_NET_ACTION_POST_VECTOR_RESP
+} ACVP_NET_ACTION;
+
 static struct curl_slist *acvp_add_auth_hdr(ACVP_CTX *ctx, struct curl_slist *slist) {
     int bearer_size;
     char *bearer;
@@ -587,14 +594,172 @@ ACVP_RESULT acvp_send_login(ACVP_CTX *ctx, char *login) {
     return acvp_send_internal(ctx, login, ACVP_LOGIN_URI);
 }
 
+#define JWT_EXPIRED_STR "JWT expired"
+#define JWT_EXPIRED_STR_LEN 11
+#define JWT_INVALID_STR "JWT signature does not match"
+#define JWT_INVALID_STR_LEN 28
+static ACVP_RESULT inspect_http_code(ACVP_CTX *ctx, int code) {
+    ACVP_RESULT result = ACVP_TRANSPORT_FAIL; /* Generic failure */
+    JSON_Value *root_value = NULL;
+    const JSON_Object *obj = NULL;
+    const char *err_str = NULL;
+
+    if (code == HTTP_OK) {
+        /* 200 */
+        return ACVP_SUCCESS;
+    }
+
+    if (code == HTTP_UNAUTH) {
+        if (ctx->sample_buf) {
+            root_value = json_parse_string(ctx->sample_buf);
+        } else if (ctx->kat_buf) {
+            root_value = json_parse_string(ctx->kat_buf);
+        }
+
+        obj = json_value_get_object(root_value);
+        if (!obj) {
+            ACVP_LOG_ERR("HTTP body doesn't contain top-level JSON object");
+            goto end;
+        }
+
+        err_str = json_object_get_string(obj, "error");
+        if (!err_str) {
+            ACVP_LOG_ERR("JSON object doesn't contain 'error'");
+            goto end;
+        }
+
+        if (strncmp(err_str, JWT_EXPIRED_STR, JWT_EXPIRED_STR_LEN) == 0) {
+            result = ACVP_JWT_EXPIRED;
+            goto end;
+        } else if (strncmp(err_str, JWT_INVALID_STR, JWT_INVALID_STR_LEN) == 0) {
+            result = ACVP_JWT_INVALID;
+            goto end;
+        }
+    }
+
+end:
+    if (root_value) json_value_free(root_value);
+
+    return result;
+}
+
+static ACVP_RESULT execute_network_action(ACVP_CTX *ctx,
+                                          ACVP_NET_ACTION action,
+                                          char *url,
+                                          void *curl_callback) {
+    ACVP_RESULT result = ACVP_TRANSPORT_FAIL;
+    char *resp = NULL;
+    int rc = 0;
+
+    switch(action) {
+    case ACVP_NET_ACTION_GET_RESULT:
+    case ACVP_NET_ACTION_GET_VECTOR_SET:
+    case ACVP_NET_ACTION_GET_SAMPLE:
+        rc = acvp_curl_http_get(ctx, url, curl_callback);
+        break;
+    case ACVP_NET_ACTION_POST_VECTOR_RESP:
+        resp = json_serialize_to_string_pretty(ctx->kat_resp);
+
+        rc = acvp_curl_http_post(ctx, url, resp, curl_callback);
+        json_value_free(ctx->kat_resp);
+        ctx->kat_resp = NULL;
+        break;
+    default:
+        ACVP_LOG_ERR("Unknown ACVP_NET_ACTION");
+        return ACVP_INVALID_ARG;
+    }
+
+    /* Peek at the HTTP code */
+    result = inspect_http_code(ctx, rc);
+
+    if (result != ACVP_SUCCESS) {
+        if (result == ACVP_JWT_EXPIRED) {
+            /*
+             * Expired JWT
+              * We are going to refresh the session
+              * and try to obtain a new JWT!
+              */
+            ACVP_LOG_ERR("JWT authorization has timed out, curl rc=%d.\n"
+                         "Refreshing session...", rc);
+
+            result = acvp_refresh(ctx);
+            if (result != ACVP_SUCCESS) {
+                ACVP_LOG_ERR("JWT refresh failed.");
+                goto end;
+            }
+
+            /* Try action again after the refresh */
+            switch(action) {
+            case ACVP_NET_ACTION_GET_RESULT:
+            case ACVP_NET_ACTION_GET_VECTOR_SET:
+            case ACVP_NET_ACTION_GET_SAMPLE:
+                rc = acvp_curl_http_get(ctx, url, curl_callback);
+                break;
+            case ACVP_NET_ACTION_POST_VECTOR_RESP:
+                rc = acvp_curl_http_post(ctx, url, resp, curl_callback);
+                break;
+            }
+
+            result = inspect_http_code(ctx, rc);
+            if (result != ACVP_SUCCESS) {
+                ACVP_LOG_ERR("Refreshed + retried, HTTP transport fails. curl rc=%d\n", rc);
+                goto end;
+            }
+        } else if (result == ACVP_JWT_INVALID) {
+            /*
+             * Invalid JWT
+             */
+            ACVP_LOG_ERR("JWT invalid. curl rc=%d.\n", rc);
+            goto end;
+        }
+
+        /* Generic error */
+        goto end;
+    }
+
+    result = ACVP_SUCCESS;
+
+end:
+    /* Log any errors */
+    switch(action) {
+    case ACVP_NET_ACTION_GET_RESULT:
+        if (result != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Unable to get vector result from server. curl rc=%d\n", rc);
+            ACVP_LOG_ERR("%s\n", ctx->kat_buf);
+        }
+        break;
+    case ACVP_NET_ACTION_GET_VECTOR_SET:
+        if (result != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Unable to get vector set from ACVP server. curl rc=%d\n", rc);
+            ACVP_LOG_ERR("%s\n", ctx->kat_buf);
+        }
+        break;
+    case ACVP_NET_ACTION_GET_SAMPLE:
+        if (result != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Unable to get vector result samples from server. curl rc=%d\n", rc);
+            ACVP_LOG_ERR("%s\n", ctx->sample_buf);
+        }
+        break;
+    case ACVP_NET_ACTION_POST_VECTOR_RESP:
+        if (result != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Unable to submit vector set responses. curl rc=%d\n", rc);
+            ACVP_LOG_ERR("%s\n", ctx->kat_buf);
+        }
+        break;
+    }
+
+    if (resp) json_free_serialized_string(resp);
+
+    return result;
+}
+
 /*
  * This is the top level function used within libacvp to retrieve
  * a KAT vector set from the ACVP server.
  */
 ACVP_RESULT acvp_retrieve_vector_set(ACVP_CTX *ctx, char *vsid_url) {
-    int rv;
     char url[ACVP_ATTR_URL_MAX];
-    ACVP_RESULT result;
+    ACVP_RESULT result = ACVP_SUCCESS;
 
     if (!ctx) {
         return ACVP_NO_CTX;
@@ -615,30 +780,19 @@ ACVP_RESULT acvp_retrieve_vector_set(ACVP_CTX *ctx, char *vsid_url) {
              ctx->api_context, vsid_url);
 
     ACVP_LOG_STATUS("GET %s", url);
+
     if (ctx->kat_buf) {
         memset(ctx->kat_buf, 0x0, ACVP_KAT_BUF_MAX);
     }
-    rv = acvp_curl_http_get(ctx, url, &acvp_curl_write_kat_func);
-    if (rv != HTTP_OK) {
-        ACVP_LOG_ERR("Unable to get vector set from ACVP server. curl rv=%d\n", rv);
-        if (rv == HTTP_UNAUTH) {
-            ACVP_LOG_ERR("JWT authorization has timed out curl rv=%d\n", rv);
-            /* give it one more try after the refresh */
-            result = acvp_refresh(ctx);
-            if (result == ACVP_SUCCESS) {
-                rv = acvp_curl_http_get(ctx, url, &acvp_curl_write_kat_func);
-                if (rv != HTTP_OK) {
-                    ACVP_LOG_ERR("Refreshed + retried, get vector sets fails. curl rv=%d\n", rv);
-                    ACVP_LOG_ERR("%s\n", ctx->kat_buf);
-                    return ACVP_TRANSPORT_FAIL;
-                }
-            }
-        }
+
+    result = execute_network_action(ctx, ACVP_NET_ACTION_GET_VECTOR_SET,
+                                    url, &acvp_curl_write_kat_func);
+    if (result != ACVP_SUCCESS) {
+        /* Failed to transport */
+        ACVP_LOG_ERR("Transport failure.");
+        return result;
     }
 
-    /*
-     * Update user with status
-     */
     ACVP_LOG_STATUS("KAT vector set response received");
 
     return ACVP_SUCCESS;
@@ -649,10 +803,8 @@ ACVP_RESULT acvp_retrieve_vector_set(ACVP_CTX *ctx, char *vsid_url) {
  * to the ACV server.
  */
 ACVP_RESULT acvp_submit_vector_responses(ACVP_CTX *ctx) {
-    int rv;
     char url[ACVP_ATTR_URL_MAX];
-    char *resp;
-    ACVP_RESULT result;
+    ACVP_RESULT result = ACVP_SUCCESS;
 
     if (!ctx) {
         return ACVP_NO_CTX;
@@ -674,26 +826,12 @@ ACVP_RESULT acvp_submit_vector_responses(ACVP_CTX *ctx) {
 
     ACVP_LOG_STATUS("Submitting vector responses to %s", url);
 
-    resp = json_serialize_to_string_pretty(ctx->kat_resp);
-    rv = acvp_curl_http_post(ctx, url, resp, &acvp_curl_write_upld_func);
-    json_value_free(ctx->kat_resp);
-    ctx->kat_resp = NULL;
-    json_free_serialized_string(resp);
-    if (rv != HTTP_OK) {
-        ACVP_LOG_ERR("Unable to submit vector set responses: curl rv=%d\n", url, rv);
-        if (rv == HTTP_UNAUTH) {
-            ACVP_LOG_ERR("JWT authorization has timed out curl rv=%d\n", rv);
-            /* give it one more try after the refresh */
-            result = acvp_refresh(ctx);
-            if (result == ACVP_SUCCESS) {
-                rv = acvp_curl_http_post(ctx, url, resp, &acvp_curl_write_upld_func);
-                if (rv != HTTP_OK) {
-                    ACVP_LOG_ERR("Refreshed + retried, submit vector responses fails. curl rv=%d\n", rv);
-                    ACVP_LOG_ERR("%s\n", ctx->upld_buf);
-                    return ACVP_TRANSPORT_FAIL;
-                }
-            }
-        }
+    result = execute_network_action(ctx, ACVP_NET_ACTION_POST_VECTOR_RESP,
+                                    url, &acvp_curl_write_upld_func);
+    if (result != ACVP_SUCCESS) {
+        /* Failed to transport */
+        ACVP_LOG_ERR("Transport failure.");
+        return result;
     }
 
     ACVP_LOG_STATUS("Finished POSTing KAT vector responses");
@@ -707,9 +845,8 @@ ACVP_RESULT acvp_submit_vector_responses(ACVP_CTX *ctx) {
  * more specifically for a vectorSet
  */
 ACVP_RESULT acvp_retrieve_result(ACVP_CTX *ctx, char *api_url) {
-    int rv;
     char url[ACVP_ATTR_URL_MAX];
-    ACVP_RESULT result;
+    ACVP_RESULT result = ACVP_SUCCESS;
 
     if (!ctx) {
         return ACVP_NO_CTX;
@@ -732,26 +869,15 @@ ACVP_RESULT acvp_retrieve_result(ACVP_CTX *ctx, char *api_url) {
     if (ctx->kat_buf) {
         memset(ctx->kat_buf, 0x0, ACVP_KAT_BUF_MAX);
     }
-    rv = acvp_curl_http_get(ctx, url, &acvp_curl_write_vs_func);
-    if (rv != HTTP_OK) {
-        if (rv == HTTP_UNAUTH) {
-            ACVP_LOG_ERR("JWT authorization has timed out curl rv=%d\n", rv);
-            /* give it one more try after the refresh */
-            result = acvp_refresh(ctx);
-            if (result == ACVP_SUCCESS) {
-                rv = acvp_curl_http_get(ctx, url, &acvp_curl_write_vs_func);
-                if (rv != HTTP_OK) {
-                    ACVP_LOG_ERR("Unable to get vector result from server. curl rv=%d\n", rv);
-                    ACVP_LOG_ERR("%s\n", ctx->kat_buf);
-                    return ACVP_TRANSPORT_FAIL;
-                }
-            }
-        }
+
+    result = execute_network_action(ctx, ACVP_NET_ACTION_GET_RESULT,
+                                    url, &acvp_curl_write_vs_func);
+    if (result != ACVP_SUCCESS) {
+        /* Failed to transport */
+        ACVP_LOG_ERR("Transport failure.");
+        return result;
     }
 
-    /*
-     * Update user with status
-     */
     ACVP_LOG_STATUS("Successfully retrieved KAT vector set response");
 
     return ACVP_SUCCESS;
@@ -764,9 +890,8 @@ ACVP_RESULT acvp_retrieve_result(ACVP_CTX *ctx, char *api_url) {
  * more specifically for a vectorSet
  */
 ACVP_RESULT acvp_retrieve_expected_result(ACVP_CTX *ctx, char *api_url) {
-    int rv;
     char url[ACVP_ATTR_URL_MAX];
-    ACVP_RESULT result;
+    ACVP_RESULT result = ACVP_SUCCESS;
 
     if (!ctx) {
         return ACVP_NO_CTX;
@@ -789,27 +914,16 @@ ACVP_RESULT acvp_retrieve_expected_result(ACVP_CTX *ctx, char *api_url) {
     if (ctx->sample_buf) {
         memset(ctx->sample_buf, 0x0, ACVP_KAT_BUF_MAX);
     }
-    rv = acvp_curl_http_get(ctx, url, &acvp_curl_write_sample_func);
-    if (rv != HTTP_OK) {
-        if (rv == HTTP_UNAUTH) {
-            ACVP_LOG_ERR("JWT authorization has timed out curl rv=%d\n", rv);
-            /* give it one more try after the refresh */
-            result = acvp_refresh(ctx);
-            if (result == ACVP_SUCCESS) {
-                rv = acvp_curl_http_get(ctx, url, &acvp_curl_write_sample_func);
-                if (rv != HTTP_OK) {
-                    ACVP_LOG_ERR("Unable to get vector result from server. curl rv=%d\n", rv);
-                    ACVP_LOG_ERR("%s\n", ctx->sample_buf);
-                    return ACVP_TRANSPORT_FAIL;
-                }
-            }
-        }
+
+    result = execute_network_action(ctx, ACVP_NET_ACTION_GET_SAMPLE,
+                                    url, &acvp_curl_write_sample_func);
+    if (result != ACVP_SUCCESS) {
+        /* Failed to transport */
+        ACVP_LOG_ERR("Transport failure.");
+        return result;
     }
 
-    /*
-     * Update user with status
-     */
-    ACVP_LOG_STATUS("Successfully retrieved expected results");
+    ACVP_LOG_STATUS("Successfully retrieved sample results");
 
     return ACVP_SUCCESS;
 }
