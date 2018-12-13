@@ -31,6 +31,7 @@
 #include "acvp.h"
 #include "acvp_lcl.h"
 #include "parson.h"
+#include "safe_lib.h"
 
 /*
  * Forward prototypes for local functions
@@ -193,6 +194,22 @@ static ACVP_RESULT acvp_hash_mct_tc(ACVP_CTX *ctx,
     return ACVP_SUCCESS;
 }
 
+static ACVP_HASH_TESTTYPE read_test_type(const char *tt_str) {
+    int diff = 0;
+
+    strcmp_s("MCT", strlen("MCT"), tt_str, &diff);
+    if (!diff) {
+        return ACVP_HASH_TEST_TYPE_MCT;
+    }
+
+    strcmp_s("AFT", strlen("AFT"), tt_str, &diff);
+    if (!diff) {
+        return ACVP_HASH_TEST_TYPE_AFT;
+    }
+
+    return 0;
+}
+
 ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     unsigned int tc_id, msglen;
     JSON_Value *groupval;
@@ -221,7 +238,6 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     ACVP_RESULT rv = ACVP_SUCCESS;
     ACVP_CIPHER alg_id = 0;
     char *json_result = NULL;
-    ACVP_HASH_TESTTYPE test_type = 0;
     const char *alg_str = NULL;
     const char *test_type_str, *msg = NULL;
 
@@ -276,7 +292,10 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     groups = json_object_get_array(obj, "testGroups");
     g_cnt = json_array_get_count(groups);
     for (i = 0; i < g_cnt; i++) {
+        ACVP_HASH_TESTTYPE test_type = 0;
         int tgId = 0;
+        int diff = 0;
+
         groupval = json_array_get_value(groups, i);
         groupobj = json_value_get_object(groupval);
 
@@ -303,11 +322,9 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             return ACVP_MISSING_ARG;
         }
 
-        if (!strncmp(test_type_str, "MCT", strlen("MCT"))) {
-            test_type = ACVP_HASH_TEST_TYPE_MCT;
-        } else if (!strncmp(test_type_str, "AFT", strlen("AFT"))) {
-            test_type = ACVP_HASH_TEST_TYPE_AFT;
-        } else {
+        test_type = read_test_type(test_type_str);
+        if (!test_type) {
+            ACVP_LOG_ERR("Server JSON invalid 'testType'");
             return ACVP_INVALID_ARG;
         }
 
@@ -328,7 +345,7 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 ACVP_LOG_ERR("Server JSON missing 'msg'");
                 return ACVP_MISSING_ARG;
             }
-            tmp_msg_len = strnlen(msg, ACVP_HASH_MSG_STR_MAX + 1);
+            tmp_msg_len = strnlen_s(msg, ACVP_HASH_MSG_STR_MAX + 1);
             if (tmp_msg_len > ACVP_HASH_MSG_STR_MAX) {
                 ACVP_LOG_ERR("'msg' too long, max allowed=(%d)",
                              ACVP_HASH_MSG_STR_MAX);

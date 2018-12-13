@@ -40,6 +40,7 @@
 #endif
 #include <fcntl.h>
 #include "acvp.h"
+#include "safe_lib.h"
 
 #ifdef USE_MURL
 #include <murl/murl.h>
@@ -3733,7 +3734,7 @@ static int app_kdf135_snmp_handler(ACVP_TEST_CASE *test_case) {
         return ret;
     }
 
-    tc->skey_len = strnlen((const char *)s_key, ACVP_KDF135_SNMP_SKEY_MAX);
+    tc->skey_len = strnlen_s((const char *)s_key, ACVP_KDF135_SNMP_SKEY_MAX);
 
     return ret;
 }
