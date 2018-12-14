@@ -133,6 +133,7 @@ static ACVP_RESULT acvp_hash_mct_tc(ACVP_CTX *ctx,
         if (!msg) {
             ACVP_LOG_ERR("Unable to malloc");
             free(tmp);
+            json_value_free(r_tval);
             return ACVP_MALLOC_FAIL;
         }
 
@@ -145,6 +146,7 @@ static ACVP_RESULT acvp_hash_mct_tc(ACVP_CTX *ctx,
             ACVP_LOG_ERR("hex conversion failure (msg)");
             free(msg);
             free(tmp);
+            json_value_free(r_tval);
             return rv;
         }
         json_object_set_string(r_tobj, "msg", tmp);
@@ -155,6 +157,7 @@ static ACVP_RESULT acvp_hash_mct_tc(ACVP_CTX *ctx,
                 ACVP_LOG_ERR("crypto module failed the operation");
                 free(msg);
                 free(tmp);
+                json_value_free(r_tval);
                 return ACVP_CRYPTO_MODULE_FAIL;
             }
 
@@ -166,6 +169,7 @@ static ACVP_RESULT acvp_hash_mct_tc(ACVP_CTX *ctx,
                 ACVP_LOG_ERR("Failed the MCT iteration changes");
                 free(msg);
                 free(tmp);
+                json_value_free(r_tval);
                 return rv;
             }
         }
@@ -177,6 +181,7 @@ static ACVP_RESULT acvp_hash_mct_tc(ACVP_CTX *ctx,
             ACVP_LOG_ERR("JSON output failure in HASH module");
             free(msg);
             free(tmp);
+            json_value_free(r_tval);
             return rv;
         }
 
@@ -289,7 +294,8 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         tgId = json_object_get_number(groupobj, "tgId");
         if (!tgId) {
             ACVP_LOG_ERR("Missing tgid from server JSON groub obj");
-            return ACVP_MALFORMED_JSON;
+            rv = ACVP_MALFORMED_JSON;
+            goto err;
         }
         json_object_set_number(r_gobj, "tgId", tgId);
         json_object_set_value(r_gobj, "tests", json_value_init_array());
@@ -300,7 +306,8 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         test_type_str = json_object_get_string(groupobj, "testType");
         if (!test_type_str) {
             ACVP_LOG_ERR("Server JSON missing 'testType'");
-            return ACVP_MISSING_ARG;
+            rv = ACVP_MISSING_ARG;
+            goto err;
         }
 
         if (!strncmp(test_type_str, "MCT", strlen("MCT"))) {
@@ -308,7 +315,8 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         } else if (!strncmp(test_type_str, "AFT", strlen("AFT"))) {
             test_type = ACVP_HASH_TEST_TYPE_AFT;
         } else {
-            return ACVP_INVALID_ARG;
+            rv = ACVP_INVALID_ARG;
+            goto err;
         }
 
         tests = json_object_get_array(groupobj, "tests");
@@ -326,13 +334,15 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             msg = json_object_get_string(testobj, "msg");
             if (!msg) {
                 ACVP_LOG_ERR("Server JSON missing 'msg'");
-                return ACVP_MISSING_ARG;
+                rv = ACVP_MISSING_ARG;
+                goto err;
             }
             tmp_msg_len = strnlen(msg, ACVP_HASH_MSG_STR_MAX + 1);
             if (tmp_msg_len > ACVP_HASH_MSG_STR_MAX) {
                 ACVP_LOG_ERR("'msg' too long, max allowed=(%d)",
                              ACVP_HASH_MSG_STR_MAX);
-                return ACVP_INVALID_ARG;
+                rv = ACVP_INVALID_ARG;
+                goto err;
             }
 
             // Convert to bits
@@ -347,13 +357,15 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 if (tmp_msg_len != 0 && strncmp(msg, "00", 2)) {
                     // The msg string is not empty and not equal to "00"
                     ACVP_LOG_ERR("Server JSON 'len' is 0 or missing");
-                    return ACVP_INVALID_ARG;
+                    rv = ACVP_INVALID_ARG;
+                    goto err;
                 }
             }
             if (msglen > ACVP_HASH_MSG_BIT_MAX) {
                 ACVP_LOG_ERR("'len' too long, max allowed=(%d)",
                              ACVP_HASH_MSG_BIT_MAX);
-                return ACVP_INVALID_ARG;
+                rv = ACVP_INVALID_ARG;
+                goto err;
             }
 #endif
 
@@ -380,7 +392,7 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 ACVP_LOG_ERR("Init for stc (test case) failed");
                 acvp_hash_release_tc(&stc);
                 json_value_free(r_tval);
-                return rv;
+                goto err;
             }
 
             /* If Monte Carlo start that here */
@@ -392,7 +404,7 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                     ACVP_LOG_ERR("crypto module failed the HASH MCT operation");
                     acvp_hash_release_tc(&stc);
                     json_value_free(r_tval);
-                    return ACVP_CRYPTO_MODULE_FAIL;
+                    goto err;
                 }
             } else {
                 /* Process the current test vector... */
@@ -400,7 +412,8 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                     ACVP_LOG_ERR("crypto module failed the operation");
                     acvp_hash_release_tc(&stc);
                     json_value_free(r_tval);
-                    return ACVP_CRYPTO_MODULE_FAIL;
+                    rv = ACVP_CRYPTO_MODULE_FAIL;
+                    goto err;
                 }
 
                 /*
@@ -411,7 +424,7 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                     ACVP_LOG_ERR("JSON output failure in hash module");
                     acvp_hash_release_tc(&stc);
                     json_value_free(r_tval);
-                    return rv;
+                    goto err;
                 }
             }
             /*
@@ -434,8 +447,13 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         ACVP_LOG_INFO("\n\n%s\n\n", json_result);
     }
     json_free_serialized_string(json_result);
+    rv = ACVP_SUCCESS;
 
-    return ACVP_SUCCESS;
+err:
+    if (rv != ACVP_SUCCESS) {
+        acvp_release_json(r_vs_val, r_gval);
+    }
+    return rv;
 }
 
 /*
