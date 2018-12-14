@@ -281,7 +281,8 @@ ACVP_RESULT acvp_kdf108_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         tgId = json_object_get_number(groupobj, "tgId");
         if (!tgId) {
             ACVP_LOG_ERR("Missing tgid from server JSON groub obj");
-            return ACVP_MALFORMED_JSON;
+            rv = ACVP_MALFORMED_JSON;
+            goto err;
         }
         json_object_set_number(r_gobj, "tgId", tgId);
         json_object_set_value(r_gobj, "tests", json_value_init_array());
@@ -290,7 +291,8 @@ ACVP_RESULT acvp_kdf108_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         kdf_mode_str = json_object_get_string(groupobj, "kdfMode");
         if (!kdf_mode_str) {
             ACVP_LOG_ERR("Failed to include kdfMode");
-            return ACVP_MISSING_ARG;
+            rv = ACVP_MISSING_ARG;
+            goto err;
         }
 
         /*
@@ -308,13 +310,15 @@ ACVP_RESULT acvp_kdf108_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             kdf_mode = ACVP_KDF108_MODE_DPI;
         } else {
             ACVP_LOG_ERR("Server JSON invalid kdfMode");
-            return ACVP_INVALID_ARG;
+            rv = ACVP_INVALID_ARG;
+            goto err;
         }
 
         mac_mode_str = json_object_get_string(groupobj, "macMode");
         if (!mac_mode_str) {
             ACVP_LOG_ERR("Server JSON missing macMode");
-            return ACVP_MISSING_ARG;
+            rv = ACVP_MISSING_ARG;
+            goto err;
         }
 
         /*
@@ -350,13 +354,15 @@ ACVP_RESULT acvp_kdf108_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             mac_mode = ACVP_KDF108_MAC_MODE_CMAC_TDES;
         } else {
             ACVP_LOG_ERR("Server JSON invalid macMode");
-            return ACVP_INVALID_ARG;
+            rv = ACVP_INVALID_ARG;
+            goto err;
         }
 
         key_out_bit_len = json_object_get_number(groupobj, "keyOutLength");
         if (!key_out_bit_len || key_out_bit_len > ACVP_KDF108_KEYOUT_BIT_MAX) {
             ACVP_LOG_ERR("Server JSON invalid keyOutLength, (%d)", key_out_len);
-            return ACVP_INVALID_ARG;
+            rv = ACVP_INVALID_ARG;
+            goto err;
         }
         // Get the keyout byte length  (+1 for overflow bits)
         key_out_len = (key_out_bit_len + 7) / 8;
@@ -367,14 +373,16 @@ ACVP_RESULT acvp_kdf108_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             if (ctr_len != 8 && ctr_len != 16 &&
                 ctr_len != 24 && ctr_len != 32) {
                 ACVP_LOG_ERR("Server JSON invalid counterLength, (%d)", ctr_len);
-                return ACVP_INVALID_ARG;
+                rv = ACVP_INVALID_ARG;
+                goto err;
             }
         }
 
         ctr_loc_str = json_object_get_string(groupobj, "counterLocation");
         if (!ctr_loc_str) {
             ACVP_LOG_ERR("Server JSON missing counterLocation");
-            return ACVP_MISSING_ARG;
+            rv = ACVP_MISSING_ARG;
+            goto err;
         }
 
         /*
@@ -398,7 +406,8 @@ ACVP_RESULT acvp_kdf108_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             ctr_loc = ACVP_KDF108_FIXED_DATA_ORDER_BEFORE_ITERATOR;
         } else {
             ACVP_LOG_ERR("Server JSON invalid counterLocation.");
-            return ACVP_INVALID_ARG;
+            rv = ACVP_INVALID_ARG;
+            goto err;
         }
 
         /*
@@ -423,14 +432,16 @@ ACVP_RESULT acvp_kdf108_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             key_in_str = json_object_get_string(testobj, "keyIn");
             if (!key_in_str) {
                 ACVP_LOG_ERR("Server JSON missing keyIn");
-                return ACVP_MISSING_ARG;
+                rv = ACVP_MISSING_ARG;
+                goto err;
             }
 
             key_in_len = strnlen(key_in_str, ACVP_KDF108_KEYIN_STR_MAX + 1);
             if (key_in_len > ACVP_KDF108_KEYIN_STR_MAX) {
                 ACVP_LOG_ERR("keyIn too long, max allowed=(%d)",
                              ACVP_KDF108_KEYIN_STR_MAX);
-                return ACVP_INVALID_ARG;
+                rv = ACVP_INVALID_ARG;
+                goto err;
             }
             // Convert to byte length
             key_in_len = key_in_len / 2;
@@ -439,14 +450,16 @@ ACVP_RESULT acvp_kdf108_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 iv_str = json_object_get_string(testobj, "iv");
                 if (!iv_str) {
                     ACVP_LOG_ERR("Server JSON missing iv");
-                    return ACVP_MISSING_ARG;
-                }
+                    rv = ACVP_MISSING_ARG;
+                    goto err;
+               }
 
                 iv_len = strnlen(iv_str, ACVP_KDF108_IV_STR_MAX + 1);
                 if (iv_len > ACVP_KDF108_IV_STR_MAX) {
                     ACVP_LOG_ERR("iv too long, max allowed=(%d)",
                                  ACVP_KDF108_IV_STR_MAX);
-                    return ACVP_INVALID_ARG;
+                    rv = ACVP_INVALID_ARG;
+                    goto err;
                 }
 
                 // Convert to byte length
@@ -456,7 +469,8 @@ ACVP_RESULT acvp_kdf108_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             deferred = json_object_get_boolean(testobj, "deferred");
             if (deferred == -1 && ctr_loc == ACVP_KDF108_FIXED_DATA_ORDER_MIDDLE) {
                 ACVP_LOG_ERR("Server JSON missing deferred");
-                return ACVP_MISSING_ARG;
+                rv = ACVP_MISSING_ARG;
+                goto err;
             }
 
             /*
@@ -484,14 +498,15 @@ ACVP_RESULT acvp_kdf108_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                                      key_out_len, iv_len, ctr_len, deferred);
             if (rv != ACVP_SUCCESS) {
                 acvp_kdf108_release_tc(&stc);
-                return rv;
+                goto err;
             }
 
             /* Process the current test vector... */
             if ((cap->crypto_handler)(&tc)) {
                 ACVP_LOG_ERR("crypto module failed the operation");
                 acvp_kdf108_release_tc(&stc);
-                return ACVP_CRYPTO_MODULE_FAIL;
+                rv = ACVP_CRYPTO_MODULE_FAIL;
+                goto err;
             }
 
             /*
@@ -501,7 +516,7 @@ ACVP_RESULT acvp_kdf108_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("JSON output failure in kdf135 tpm module");
                 acvp_kdf108_release_tc(&stc);
-                return rv;
+                goto err;
             }
             /*
              * Release all the memory associated with the test case
@@ -523,6 +538,11 @@ ACVP_RESULT acvp_kdf108_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         ACVP_LOG_INFO("\n\n%s\n\n", json_result);
     }
     json_free_serialized_string(json_result);
+    rv = ACVP_SUCCESS;
 
-    return ACVP_SUCCESS;
+err:
+    if (rv != ACVP_SUCCESS) {
+        acvp_release_json(r_vs_val, r_gval);
+    }
+    return rv;
 }

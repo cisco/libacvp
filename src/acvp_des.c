@@ -425,6 +425,7 @@ static ACVP_RESULT acvp_des_mct_tc(ACVP_CTX *ctx,
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("JSON output failure in DES module");
             free(tmp);
+            json_value_free(r_tval);
             return rv;
         }
 
@@ -645,7 +646,8 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         tgId = json_object_get_number(groupobj, "tgId");
         if (!tgId) {
             ACVP_LOG_ERR("Missing tgid from server JSON groub obj");
-            return ACVP_MALFORMED_JSON;
+            rv = ACVP_MALFORMED_JSON;
+            goto err;
         }
         json_object_set_number(r_gobj, "tgId", tgId);
         json_object_set_value(r_gobj, "tests", json_value_init_array());
@@ -654,7 +656,8 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         dir_str = json_object_get_string(groupobj, "direction");
         if (!dir_str) {
             ACVP_LOG_ERR("Server JSON missing 'direction'");
-            return ACVP_MISSING_ARG;
+            rv = ACVP_MISSING_ARG;
+            goto err;
         }
         /*
          * verify the direction is valid
@@ -665,13 +668,15 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             dir = ACVP_SYM_CIPH_DIR_DECRYPT;
         } else {
             ACVP_LOG_ERR("Server JSON invalid 'direction'");
-            return ACVP_INVALID_ARG;
+            rv = ACVP_INVALID_ARG;
+            goto err;
         }
 
         test_type_str = json_object_get_string(groupobj, "testType");
         if (!test_type_str) {
             ACVP_LOG_ERR("Server JSON missing 'testType'");
-            return ACVP_MISSING_ARG;
+            rv = ACVP_MISSING_ARG;
+            goto err;
         }
 
         if (!strncmp(test_type_str, "MCT", strlen("MCT"))) {
@@ -684,14 +689,17 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             ovrflw_ctr = json_object_get_boolean(groupobj, "overflowCounter");
             if (ovrflw_ctr != 0 && ovrflw_ctr != 1) {
                 ACVP_LOG_ERR("Server JSON invalid 'overflowCounter'");
-                return ACVP_MALFORMED_JSON;
+                rv = ACVP_MALFORMED_JSON;
+                goto err;
             }
             if (incr_ctr != 0 && incr_ctr != 1) {
                 ACVP_LOG_ERR("Server JSON invalid 'incrementalCounter'");
-                return ACVP_MALFORMED_JSON;
+                rv = ACVP_MALFORMED_JSON;
+                goto err;
             }
         } else {
-            return ACVP_INVALID_ARG;
+            rv = ACVP_INVALID_ARG;
+            goto err;
         }
 
         // keyLen will always be the same for TDES
@@ -721,44 +729,51 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             key1 = json_object_get_string(testobj, "key1");
             if (!key1) {
                 ACVP_LOG_ERR("Server JSON missing 'key1'");
-                return ACVP_MISSING_ARG;
+                rv = ACVP_MISSING_ARG;
+                goto err;
             }
             tmp_key_len = strnlen(key1, ACVP_SYM_KEY_MAX_BYTES + 1);
             if (tmp_key_len != (ACVP_TDES_KEY_STR_LEN / 3)) {
                 ACVP_LOG_ERR("'key1' wrong length (%u). Expected (%d)",
                              tmp_key_len, (ACVP_TDES_KEY_STR_LEN / 3));
-                return ACVP_INVALID_ARG;
+                rv = ACVP_INVALID_ARG;
+                goto err;
             }
 
             key2 = json_object_get_string(testobj, "key2");
             if (!key2) {
                 ACVP_LOG_ERR("Server JSON missing 'key2'");
-                return ACVP_MISSING_ARG;
+                rv = ACVP_MISSING_ARG;
+                goto err;
             }
             tmp_key_len = strnlen(key2, ACVP_SYM_KEY_MAX_BYTES + 1);
             if (tmp_key_len != (ACVP_TDES_KEY_STR_LEN / 3)) {
                 ACVP_LOG_ERR("'key2' wrong length (%u). Expected (%d)",
                              tmp_key_len, (ACVP_TDES_KEY_STR_LEN / 3));
-                return ACVP_INVALID_ARG;
+                rv = ACVP_INVALID_ARG;
+                goto err;
             }
 
             key3 = json_object_get_string(testobj, "key3");
             if (!key3) {
                 ACVP_LOG_ERR("Server JSON missing 'key3'");
-                return ACVP_MISSING_ARG;
+                rv = ACVP_MISSING_ARG;
+                goto err;
             }
             tmp_key_len = strnlen(key3, ACVP_SYM_KEY_MAX_BYTES + 1);
             if (tmp_key_len != (ACVP_TDES_KEY_STR_LEN / 3)) {
                 ACVP_LOG_ERR("'key3' wrong length (%u). Expected (%d)",
                              tmp_key_len, (ACVP_TDES_KEY_STR_LEN / 3));
-                return ACVP_INVALID_ARG;
+                rv = ACVP_INVALID_ARG;
+                goto err;
             }
 
             if (key == NULL) {
                 key = calloc(ACVP_SYM_KEY_MAX_BYTES + 1, sizeof(char));
                 if (!key) {
                     ACVP_LOG_ERR("Unable to malloc");
-                    return ACVP_MALLOC_FAIL;
+                    rv = ACVP_MALLOC_FAIL;
+                    goto err;
                 }
 
                 strncpy(key, key1, (ACVP_TDES_KEY_STR_LEN / 3));
@@ -771,7 +786,8 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 if (!pt) {
                     ACVP_LOG_ERR("Server JSON missing 'pt'");
                     free(key);
-                    return ACVP_MISSING_ARG;
+                    rv = ACVP_MISSING_ARG;
+                    goto err;
                 }
 
                 ptlen = strnlen(pt, ACVP_SYM_PT_MAX + 1);
@@ -779,7 +795,8 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                     ACVP_LOG_ERR("'pt' too long, max allowed=(%d)",
                                  ACVP_SYM_PT_MAX);
                     free(key);
-                    return ACVP_INVALID_ARG;
+                    rv = ACVP_INVALID_ARG;
+                    goto err;
                 }
                 // Convert to bits
                 ptlen = ptlen * 4;
@@ -797,7 +814,8 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 if (!ct) {
                     ACVP_LOG_ERR("Server JSON missing 'ct'");
                     free(key);
-                    return ACVP_MISSING_ARG;
+                    rv = ACVP_MISSING_ARG;
+                    goto err;
                 }
 
                 ctlen = strnlen(ct, ACVP_SYM_CT_MAX + 1);
@@ -805,7 +823,8 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                     ACVP_LOG_ERR("'ct' too long, max allowed=(%d)",
                                  ACVP_SYM_CT_MAX);
                     free(key);
-                    return ACVP_INVALID_ARG;
+                    rv = ACVP_INVALID_ARG;
+                    goto err;
                 }
                 // Convert to bits
                 ctlen = ctlen * 4;
@@ -825,14 +844,16 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 if (!iv) {
                     ACVP_LOG_ERR("Server JSON missing 'iv'");
                     free(key);
-                    return ACVP_MISSING_ARG;
+                    rv = ACVP_MISSING_ARG;
+                    goto err;
                 }
 
                 ivlen = strnlen(iv, ACVP_SYM_IV_MAX + 1);
                 if (ivlen != 16) {
                     ACVP_LOG_ERR("Invalid 'iv' length (%u). Expected (%u)", ivlen, 16);
                     free(key);
-                    return ACVP_INVALID_ARG;
+                    rv = ACVP_INVALID_ARG;
+                    goto err;
                 }
                 // Convert to bits
                 ivlen = ivlen * 4;
@@ -867,7 +888,7 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             if (rv != ACVP_SUCCESS) {
                 acvp_des_release_tc(&stc);
                 free(key);
-                return rv;
+                goto err;
             }
 
             // Key has been copied, we can free here
@@ -879,9 +900,11 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 res_tarr = json_object_get_array(r_tobj, "resultsArray");
                 rv = acvp_des_mct_tc(ctx, cap, &tc, &stc, res_tarr);
                 if (rv != ACVP_SUCCESS) {
+                    json_value_free(r_tval);
                     ACVP_LOG_ERR("crypto module failed the DES MCT operation");
                     acvp_des_release_tc(&stc);
-                    return ACVP_CRYPTO_MODULE_FAIL;
+                    rv = ACVP_CRYPTO_MODULE_FAIL;
+                    goto err;
                 }
             } else {
                 /* Process the current DES encrypt test vector... */
@@ -890,7 +913,8 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                     if (rv != ACVP_CRYPTO_WRAP_FAIL) {
                         ACVP_LOG_ERR("ERROR: crypto module failed the operation");
                         acvp_des_release_tc(&stc);
-                        return ACVP_CRYPTO_MODULE_FAIL;
+                        rv = ACVP_CRYPTO_MODULE_FAIL;
+                        goto err;
                     }
                 }
 
@@ -901,7 +925,7 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 if (rv != ACVP_SUCCESS) {
                     ACVP_LOG_ERR("JSON output failure in 3DES module");
                     acvp_des_release_tc(&stc);
-                    return rv;
+                    goto err;
                 }
             }
 
@@ -917,6 +941,7 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     }
 
     json_array_append_value(reg_arry, r_vs_val);
+    rv = ACVP_SUCCESS;
 
     json_result = json_serialize_to_string_pretty(ctx->kat_resp);
     if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
@@ -926,7 +951,11 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     }
     json_free_serialized_string(json_result);
 
-    return ACVP_SUCCESS;
+err:
+    if (rv != ACVP_SUCCESS) {
+        acvp_release_json(r_vs_val, r_gval);
+    }
+    return rv;
 }
 
 /*
