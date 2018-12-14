@@ -167,7 +167,7 @@ static int test_murl_parse_http_response ()
     int rv = 1;
     int i;
 
-    val = json_parse_string_with_comments(http_response);
+    val = json_parse_string(http_response);
     if (!val) {
         fprintf(stderr, "JSON parse error in %s", __FUNCTION__);
         return rv;

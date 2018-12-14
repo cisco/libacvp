@@ -1410,7 +1410,7 @@ static ACVP_RESULT acvp_parse_login(ACVP_CTX *ctx) {
     /*
      * Parse the JSON
      */
-    val = json_parse_string_with_comments(json_buf);
+    val = json_parse_string(json_buf);
     if (!val) {
         ACVP_LOG_ERR("JSON parse error");
         return ACVP_JSON_ERR;
@@ -1461,7 +1461,7 @@ static ACVP_RESULT acvp_parse_vendors(ACVP_CTX *ctx) {
     /*
      * Parse the JSON
      */
-    val = json_parse_string_with_comments(json_buf);
+    val = json_parse_string(json_buf);
     if (!val) {
         ACVP_LOG_ERR("JSON parse error");
         return ACVP_JSON_ERR;
@@ -1506,7 +1506,7 @@ static ACVP_RESULT acvp_parse_oes(ACVP_CTX *ctx) {
     /*
      * Parse the JSON
      */
-    val = json_parse_string_with_comments(json_buf);
+    val = json_parse_string(json_buf);
     if (!val) {
         ACVP_LOG_ERR("JSON parse error");
         return ACVP_JSON_ERR;
@@ -1551,7 +1551,7 @@ static ACVP_RESULT acvp_parse_modules(ACVP_CTX *ctx) {
     /*
      * Parse the JSON
      */
-    val = json_parse_string_with_comments(json_buf);
+    val = json_parse_string(json_buf);
     if (!val) {
         ACVP_LOG_ERR("JSON parse error");
         return ACVP_JSON_ERR;
@@ -1596,7 +1596,7 @@ static ACVP_RESULT acvp_parse_dependencies(ACVP_CTX *ctx, ACVP_DEPENDENCY_LIST *
     /*
      * Parse the JSON
      */
-    val = json_parse_string_with_comments(json_buf);
+    val = json_parse_string(json_buf);
     if (!val) {
         ACVP_LOG_ERR("JSON parse error");
         return ACVP_JSON_ERR;
@@ -1641,7 +1641,7 @@ static ACVP_RESULT acvp_parse_test_session_register(ACVP_CTX *ctx) {
     /*
      * Parse the JSON
      */
-    val = json_parse_string_with_comments(json_buf);
+    val = json_parse_string(json_buf);
     if (!val) {
         ACVP_LOG_ERR("JSON parse error");
         return ACVP_JSON_ERR;
@@ -1819,7 +1819,7 @@ static ACVP_RESULT acvp_process_vsid(ACVP_CTX *ctx, char *vsid_url) {
         } else {
             ACVP_LOG_STATUS("200 OK %s\n", ctx->kat_buf);
         }
-        val = json_parse_string_with_comments(json_buf);
+        val = json_parse_string(json_buf);
         if (!val) {
             ACVP_LOG_ERR("JSON parse error");
             rv = ACVP_JSON_ERR;
@@ -1959,7 +1959,7 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
         } else {
             ACVP_LOG_ERR("%s", ctx->test_sess_buf);
         }
-        val = json_parse_string_with_comments(json_buf);
+        val = json_parse_string(json_buf);
         if (!val) {
             ACVP_LOG_ERR("JSON parse error");
             return ACVP_JSON_ERR;

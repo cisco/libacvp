@@ -369,6 +369,7 @@ static void default_config(APP_CONFIG *cfg) {
 
 static int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
     char *log_lvl = NULL;
+    int diff = 0;
     int aes_status = 0, tdes_status = 0,
         hash_status = 0, cmac_status = 0,
         hmac_status = 0;
@@ -384,6 +385,7 @@ static int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
 
 #define ALG_DISABLE 0
 #define ALG_ENABLE 1
+#define OPTION_STR_MAX 16
 
     /* Set the default configuration values */
     default_config(cfg);
@@ -392,15 +394,20 @@ static int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
     argc--;
     while (argc >= 1) {
         /* version option used by itself, ignore remaining command line */
-        if (strncmp(*argv, "--version", strlen("--version")) == 0) {
+        strcmp_s("--version", strnlen_s("--version", OPTION_STR_MAX), *argv, &diff);
+        if (!diff) {
             printf("\nACVP library version(protocol version): %s(%s)\n", acvp_version(), acvp_protocol_version());
             return 1;
         }
-        if (strcmp(*argv, "--sample") == 0) {
-            cfg->sample = 1;
-        } else if (strncmp(*argv, "--dev", strlen("--dev")) == 0) {
-            cfg->dev = 1;
-        } else if (strncmp(*argv, "--info", strlen("--info")) == 0) {
+
+        strcmp_s("--help", strnlen_s("--help", OPTION_STR_MAX), *argv, &diff);
+        if (!diff) {
+            print_usage(0);
+            return 1;
+        }
+
+        strcmp_s("--info", strnlen_s("--info", OPTION_STR_MAX), *argv, &diff);
+        if (!diff) {
             if (log_lvl) {
                 printf(ANSI_COLOR_RED "Command error... [%s]"ANSI_COLOR_RESET
                        "\nLog Level already set to \"%s\"."
@@ -410,7 +417,11 @@ static int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
             }
             cfg->level = ACVP_LOG_LVL_INFO;
             log_lvl = "info";
-        } else if (strncmp(*argv, "--status", strlen("--status")) == 0) {
+            goto next;
+        }
+
+        strcmp_s("--status", strnlen_s("--status", OPTION_STR_MAX), *argv, &diff);
+        if (!diff) {
             if (log_lvl) {
                 printf(ANSI_COLOR_RED "Command error... [%s]"ANSI_COLOR_RESET
                        "\nLog Level already set to \"%s\"."
@@ -420,7 +431,11 @@ static int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
             }
             cfg->level = ACVP_LOG_LVL_STATUS;
             log_lvl = "status";
-        } else if (strncmp(*argv, "--warn", strlen("--warn")) == 0) {
+            goto next;
+        }
+
+        strcmp_s("--warn", strnlen_s("--warn", OPTION_STR_MAX), *argv, &diff);
+        if (!diff) {
             if (log_lvl) {
                 printf(ANSI_COLOR_RED "Command error... [%s]"ANSI_COLOR_RESET
                        "\nLog Level already set to \"%s\"."
@@ -430,7 +445,11 @@ static int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
             }
             cfg->level = ACVP_LOG_LVL_WARN;
             log_lvl = "warn";
-        } else if (strncmp(*argv, "--error", strlen("--error")) == 0) {
+            goto next;
+        }
+
+        strcmp_s("--error", strnlen_s("--error", OPTION_STR_MAX), *argv, &diff);
+        if (!diff) {
             if (log_lvl) {
                 printf(ANSI_COLOR_RED "Command error... [%s]"ANSI_COLOR_RESET
                        "\nLog Level already set to \"%s\"."
@@ -440,7 +459,11 @@ static int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
             }
             cfg->level = ACVP_LOG_LVL_ERR;
             log_lvl = "error";
-        } else if (strncmp(*argv, "--none", strlen("--none")) == 0) {
+            goto next;
+        }
+
+        strcmp_s("--none", strnlen_s("--none", OPTION_STR_MAX), *argv, &diff);
+        if (!diff) {
             if (log_lvl) {
                 printf(ANSI_COLOR_RED "Command error... [%s]"ANSI_COLOR_RESET
                        "\nLog Level already set to \"%s\"."
@@ -450,7 +473,11 @@ static int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
             }
             cfg->level = ACVP_LOG_LVL_NONE;
             log_lvl = "none";
-        } else if (strncmp(*argv, "--verbose", strlen("--verbose")) == 0) {
+            goto next;
+        }
+
+        strcmp_s("--verbose", strnlen_s("--verbose", OPTION_STR_MAX), *argv, &diff);
+        if (!diff) {
             if (log_lvl) {
                 printf(ANSI_COLOR_RED "Command error... [%s]"ANSI_COLOR_RESET
                        "\nLog Level already set to \"%s\"."
@@ -460,10 +487,11 @@ static int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
             }
             cfg->level = ACVP_LOG_LVL_VERBOSE;
             log_lvl = "verbose";
-        } else if (strcmp(*argv, "--help") == 0) {
-            print_usage(0);
-            return 1;
-        } else if (strcmp(*argv, "--json") == 0) {
+            goto next;
+        }
+
+        strcmp_s("--json", strnlen_s("--json", OPTION_STR_MAX), *argv, &diff);
+        if (!diff) {
             int filename_len = 0;
 
             cfg->json = 1;
@@ -477,7 +505,7 @@ static int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
                 return 1;
             }
 
-            filename_len = strnlen(*argv, JSON_FILENAME_LENGTH + 1);
+            filename_len = strnlen_s(*argv, JSON_FILENAME_LENGTH + 1);
             if (filename_len > JSON_FILENAME_LENGTH) {
                 printf(ANSI_COLOR_RED "Command error... [%s]"ANSI_COLOR_RESET
                        "\nThe <file> \"%s\", has a name that is too long."
@@ -487,38 +515,93 @@ static int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
                 return 1;
             }
 
-            strcpy(cfg->json_file, *argv);
-        } else if (strncmp(*argv, "--aes", strlen("--aes")) == 0) {
+            strcpy_s(cfg->json_file, JSON_FILENAME_LENGTH, *argv);
+        }
+
+        strcmp_s("--sample", strnlen_s("--sample", OPTION_STR_MAX), *argv, &diff);
+        if (!diff) {
+            cfg->sample = 1;
+            goto next;
+        }
+
+        strcmp_s("--dev", strnlen_s("--dev", OPTION_STR_MAX), *argv, &diff);
+        if (!diff) {
+            cfg->dev = 1;
+            goto next;
+        }
+
+        strcmp_s("--aes", strnlen_s("--aes", OPTION_STR_MAX), *argv, &diff);
+        if (!diff) {
             if (cli_alg_option(&cfg->aes, &aes_status, ALG_ENABLE,
                                "--aes", "--no_aes")) return 1;
-        } else if (strncmp(*argv, "--no_aes", strlen("--no_aes")) == 0) {
+            goto next;
+        }
+
+        strcmp_s("--no_aes", strnlen_s("--no_aes", OPTION_STR_MAX), *argv, &diff);
+        if (!diff) {
             if (cli_alg_option(&cfg->aes, &aes_status, ALG_DISABLE,
                                "--aes", "--no_aes")) return 1;
-        } else if (strncmp(*argv, "--tdes", strlen("--tdes")) == 0) {
+            goto next;
+        }
+
+        strcmp_s("--tdes", strnlen_s("--tdes", OPTION_STR_MAX), *argv, &diff);
+        if (!diff) {
             if (cli_alg_option(&cfg->tdes, &tdes_status, ALG_ENABLE,
                                "--tdes", "--no_tdes")) return 1;
-        } else if (strncmp(*argv, "--no_tdes", strlen("--no_tdes")) == 0) {
+            goto next;
+        }
+
+        strcmp_s("--no_tdes", strnlen_s("--no_tdes", OPTION_STR_MAX), *argv, &diff);
+        if (!diff) {
             if (cli_alg_option(&cfg->tdes, &tdes_status, ALG_DISABLE,
                                "--tdes", "--no_tdes")) return 1;
-        } else if (strncmp(*argv, "--hash", strlen("--hash")) == 0) {
+            goto next;
+        }
+
+        strcmp_s("--hash", strnlen_s("--hash", OPTION_STR_MAX), *argv, &diff);
+        if (!diff) {
             if (cli_alg_option(&cfg->hash, &hash_status, ALG_ENABLE,
                                "--hash", "--no_hash")) return 1;
-        } else if (strncmp(*argv, "--no_hash", strlen("--no_hash")) == 0) {
+            goto next;
+        }
+
+        strcmp_s("--no_hash", strnlen_s("--no_hash", OPTION_STR_MAX), *argv, &diff);
+        if (!diff) {
             if (cli_alg_option(&cfg->hash, &hash_status, ALG_DISABLE,
                                "--hash", "--no_hash")) return 1;
-        } else if (strncmp(*argv, "--cmac", strlen("--cmac")) == 0) {
+            goto next;
+        }
+
+        strcmp_s("--cmac", strnlen_s("--cmac", OPTION_STR_MAX), *argv, &diff);
+        if (!diff) {
             if (cli_alg_option(&cfg->cmac, &cmac_status, ALG_ENABLE,
                                "--cmac", "--no_cmac")) return 1;
-        } else if (strncmp(*argv, "--no_cmac", strlen("--no_cmac")) == 0) {
+            goto next;
+        }
+
+        strcmp_s("--no_cmac", strnlen_s("--no_cmac", OPTION_STR_MAX), *argv, &diff);
+        if (!diff) {
             if (cli_alg_option(&cfg->cmac, &cmac_status, ALG_DISABLE,
                                "--cmac", "--no_cmac")) return 1;
-        } else if (strncmp(*argv, "--hmac", strlen("--hmac")) == 0) {
+            goto next;
+        }
+
+        strcmp_s("--hmac", strnlen_s("--hmac", OPTION_STR_MAX), *argv, &diff);
+        if (!diff) {
             if (cli_alg_option(&cfg->hmac, &hmac_status, ALG_ENABLE,
                                "--hmac", "--no_hmac")) return 1;
-        } else if (strncmp(*argv, "--no_hmac", strlen("--no_hmac")) == 0) {
+            goto next;
+        }
+
+        strcmp_s("--no_hmac", strnlen_s("--no_hmac", OPTION_STR_MAX), *argv, &diff);
+        if (!diff) {
             if (cli_alg_option(&cfg->hmac, &hmac_status, ALG_DISABLE,
                                "--hmac", "--no_hmac")) return 1;
-        } else if (strncmp(*argv, "--kdf", strlen("--kdf")) == 0) {
+            goto next;
+        }
+
+        strcmp_s("--kdf", strnlen_s("--kdf", OPTION_STR_MAX), *argv, &diff);
+        if (!diff) {
 #ifdef OPENSSL_KDF_SUPPORT
             if (cli_alg_option(&cfg->kdf, &kdf_status, ALG_ENABLE,
                                "--kdf", "--no_kdf")) return 1;
@@ -527,7 +610,11 @@ static int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
                    "\nMissing compile flag -DOPENSSL_KDF_SUPPORT"
                    "\nThis option will have no effect.\n", "--kdf");
 #endif
-        } else if (strncmp(*argv, "--no_kdf", strlen("--no_kdf")) == 0) {
+            goto next;
+        }
+
+        strcmp_s("--no_kdf", strnlen_s("--no_kdf", OPTION_STR_MAX), *argv, &diff);
+        if (!diff) {
 #ifdef OPENSSL_KDF_SUPPORT
             if (cli_alg_option(&cfg->kdf, &kdf_status, ALG_DISABLE,
                                "--kdf", "--no_kdf")) return 1;
@@ -536,7 +623,11 @@ static int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
                    "\nMissing compile flag -DOPENSSL_KDF_SUPPORT"
                    "\nThis option will have no effect.\n", "--no_kdf");
 #endif
-        } else if (strncmp(*argv, "--dsa", strlen("--dsa")) == 0) {
+            goto next;
+        }
+
+        strcmp_s("--dsa", strnlen_s("--dsa", OPTION_STR_MAX), *argv, &diff);
+        if (!diff) {
 #ifdef ACVP_NO_RUNTIME
             if (cli_alg_option(&cfg->dsa, &dsa_status, ALG_ENABLE,
                                "--dsa", "--no_dsa")) return 1;
@@ -545,7 +636,11 @@ static int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
                    "\nMissing compile flag -DACVP_NO_RUNTIME"
                    "\nThis option will have no effect.\n", "--dsa");
 #endif
-        } else if (strncmp(*argv, "--no_dsa", strlen("--no_dsa")) == 0) {
+            goto next;
+        }
+
+        strcmp_s("--no_dsa", strnlen_s("--no_dsa", OPTION_STR_MAX), *argv, &diff);
+        if (!diff) {
 #ifdef ACVP_NO_RUNTIME
             if (cli_alg_option(&cfg->dsa, &dsa_status, ALG_DISABLE,
                                "--dsa", "--no_dsa")) return 1;
@@ -554,7 +649,11 @@ static int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
                    "\nMissing compile flag -DACVP_NO_RUNTIME"
                    "\nThis option will have no effect.\n", "--no_dsa");
 #endif
-        } else if (strncmp(*argv, "--rsa", strlen("--rsa")) == 0) {
+            goto next;
+        }
+
+        strcmp_s("--rsa", strnlen_s("--rsa", OPTION_STR_MAX), *argv, &diff);
+        if (!diff) {
 #ifdef ACVP_NO_RUNTIME
             if (cli_alg_option(&cfg->rsa, &rsa_status, ALG_ENABLE,
                                "--rsa", "--no_rsa")) return 1;
@@ -563,7 +662,11 @@ static int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
                    "\nMissing compile flag -DACVP_NO_RUNTIME"
                    "\nThis option will have no effect.\n", "--rsa");
 #endif
-        } else if (strncmp(*argv, "--no_rsa", strlen("--no_rsa")) == 0) {
+            goto next;
+        }
+
+        strcmp_s("--no_rsa", strnlen_s("--no_rsa", OPTION_STR_MAX), *argv, &diff);
+        if (!diff) {
 #ifdef ACVP_NO_RUNTIME
             if (cli_alg_option(&cfg->rsa, &rsa_status, ALG_DISABLE,
                                "--rsa", "--no_rsa")) return 1;
@@ -572,7 +675,11 @@ static int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
                    "\nMissing compile flag -DACVP_NO_RUNTIME"
                    "\nThis option will have no effect.\n", "--no_rsa");
 #endif
-        } else if (strncmp(*argv, "--drbg", strlen("--drbg")) == 0) {
+            goto next;
+        }
+
+        strcmp_s("--drbg", strnlen_s("--drbg", OPTION_STR_MAX), *argv, &diff);
+        if (!diff) {
 #ifdef ACVP_NO_RUNTIME
             if (cli_alg_option(&cfg->drbg, &drbg_status, ALG_ENABLE,
                                "--drbg", "--no_drbg")) return 1;
@@ -581,7 +688,11 @@ static int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
                    "\nMissing compile flag -DACVP_NO_RUNTIME"
                    "\nThis option will have no effect\n", "--drbg");
 #endif
-        } else if (strncmp(*argv, "--no_drbg", strlen("--no_drbg")) == 0) {
+            goto next;
+        }
+
+        strcmp_s("--no_drbg", strnlen_s("--no_drbg", OPTION_STR_MAX), *argv, &diff);
+        if (!diff) {
 #ifdef ACVP_NO_RUNTIME
             if (cli_alg_option(&cfg->drbg, &drbg_status, ALG_DISABLE,
                                "--drbg", "--no_drbg")) return 1;
@@ -590,7 +701,11 @@ static int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
                    "\nMissing compile flag -DACVP_NO_RUNTIME"
                    "\nTHis option will have no effect.\n", "--no_drbg");
 #endif
-        } else if (strncmp(*argv, "--ecdsa", strlen("--ecdsa")) == 0) {
+            goto next;
+        }
+
+        strcmp_s("--ecdsa", strnlen_s("--ecdsa", OPTION_STR_MAX), *argv, &diff);
+        if (!diff) {
 #ifdef ACVP_NO_RUNTIME
             if (cli_alg_option(&cfg->ecdsa, &ecdsa_status, ALG_ENABLE,
                                "--ecdsa", "--no_ecdsa")) return 1;
@@ -599,7 +714,11 @@ static int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
                    "\nMissing compile flag -DACVP_NO_RUNTIME"
                    "\nThis option will have no effect.\n", "--ecdsa");
 #endif
-        } else if (strncmp(*argv, "--no_ecdsa", strlen("--no_ecdsa")) == 0) {
+            goto next;
+        }
+
+        strcmp_s("--no_ecdsa", strnlen_s("--no_ecdsa", OPTION_STR_MAX), *argv, &diff);
+        if (!diff) {
 #ifdef ACVP_NO_RUNTIME
             if (cli_alg_option(&cfg->ecdsa, &ecdsa_status, ALG_DISABLE,
                                "--ecdsa", "--no_ecdsa")) return 1;
@@ -608,7 +727,11 @@ static int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
                    "\nMissing compile flag -DACVP_NO_RUNTIME"
                    "\nThis options will have no effect.\n", "--no_ecdsa");
 #endif
-        } else if (strncmp(*argv, "--kas_ecc", strlen("--kas_ecc")) == 0) {
+            goto next;
+        }
+
+        strcmp_s("--kas_ecc", strnlen_s("--kas_ecc", OPTION_STR_MAX), *argv, &diff);
+        if (!diff) {
 #ifdef ACVP_NO_RUNTIME
             if (cli_alg_option(&cfg->kas_ecc, &kas_ecc_status, ALG_ENABLE,
                                "--kas_ecc", "--no_kas_ecc")) return 1;
@@ -617,6 +740,11 @@ static int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
                    "\nMissing compile flag -DACVP_NO_RUNTIME"
                    "\nThis option will have no effect.\n", "--kas_ecc");
 #endif
+            goto next;
+        }
+
+        strcmp_s("--no_kas_ecc", strnlen_s("--no_kas_ecc", OPTION_STR_MAX), *argv, &diff);
+        if (!diff) {
         } else if (strncmp(*argv, "--no_kas_ecc", strlen("--no_kas_ecc")) == 0) {
 #ifdef ACVP_NO_RUNTIME
             if (cli_alg_option(&cfg->kas_ecc, &kas_ecc_status, ALG_DISABLE,
@@ -626,7 +754,11 @@ static int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
                    "\nMissing compile flag -DACVP_NO_RUNTIME"
                    "\nThis option will have no effect.\n", "--no_kas_ecc");
 #endif
-        } else if (strncmp(*argv, "--kas_ffc", strlen("--kas_ffc")) == 0) {
+            goto next;
+        }
+
+        strcmp_s("--kas_ffc", strnlen_s("--kas_ffc", OPTION_STR_MAX), *argv, &diff);
+        if (!diff) {
 #ifdef ACVP_NO_RUNTIME
             if (cli_alg_option(&cfg->kas_ffc, &kas_ffc_status, ALG_ENABLE,
                                "--kas_ffc", "--no_kas_ffc")) return 1;
@@ -635,7 +767,11 @@ static int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
                    "\nMissing compile flag -DACVP_NO_RUNTIME"
                    "\nThis option will have no effect.\n", "--kas_ffc");
 #endif
-        } else if (strncmp(*argv, "--no_kas_ffc", strlen("--no_kas_ffc")) == 0) {
+            goto next;
+        }
+
+        strcmp_s("--no_kas_ffc", strnlen_s("--no_kas_ffc", OPTION_STR_MAX), *argv, &diff);
+        if (!diff) {
 #ifdef ACVP_NO_RUNTIME
             if (cli_alg_option(&cfg->kas_ffc, &kas_ffc_status, ALG_DISABLE,
                                "--kas_ffc", "--no_kas_ffc")) return 1;
@@ -644,11 +780,14 @@ static int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
                    "\nMissing compile flag -DACVP_NO_RUNTIME"
                    "\nThis option will have no effect.\n", "--no_kas_ffc");
 #endif
-        } else {
-            printf("Command error... Option not recognized: \"%s\"", *argv);
-            print_usage(1);
-            return 1;
+            goto next;
         }
+
+        /* If you get here, the command wasn't recognized */
+        printf("Command error... Option not recognized: \"%s\"", *argv);
+        print_usage(1);
+        return 1;
+next:
         argv++;
         argc--;
     }
@@ -3550,12 +3689,15 @@ static int app_cmac_handler(ACVP_TEST_CASE *test_case) {
     }
 
     if (tc->verify) {
+        int diff = 0;
+
         if (!CMAC_Final(cmac_ctx, mac_compare, (size_t *)&mac_cmp_len)) {
             printf("\nCrypto module error, CMAC_Final failed\n");
             goto cleanup;
         }
 
-        if (strncmp((const char *)mac_compare, (const char *)tc->mac, tc->mac_len) == 0) {
+        memcmp_s(tc->mac, tc->mac_len, mac_compare, mac_cmp_len, &diff);
+        if (!diff) {
             tc->ver_disposition = ACVP_TEST_DISPOSITION_PASS;
         } else {
             tc->ver_disposition = ACVP_TEST_DISPOSITION_FAIL;
@@ -5628,14 +5770,13 @@ end:
 }
 
 static ACVP_RESULT totp(char **token) {
-    char msg[T_LEN];
-    char hash[MAX_LEN];
+    char hash[MAX_LEN] = {0};
     int os, bin, otp;
     int md_len;
     char format[5];
     time_t t;
-    unsigned char token_buff[T_LEN + 1];
-    char *new_seed = malloc(ACVP_TOTP_TOKEN_MAX);
+    unsigned char token_buff[T_LEN + 1] = {0};
+    char *new_seed = calloc(ACVP_TOTP_TOKEN_MAX, sizeof(char));
     char *seed = NULL;
     int seed_len = 0;
 
@@ -5652,11 +5793,8 @@ static ACVP_RESULT totp(char **token) {
     }
 
     t = time(NULL);
-    memset(new_seed, 0, ACVP_TOTP_TOKEN_MAX);
 
     // RFC4226
-    memset(msg, 0, T_LEN);
-    memset(token_buff, 0, T_LEN);
     t = t / 30;
     token_buff[0] = (t >> T_LEN * 7) & 0xff;
     token_buff[1] = (t >> T_LEN * 6) & 0xff;
@@ -5666,8 +5804,6 @@ static ACVP_RESULT totp(char **token) {
     token_buff[5] = (t >> T_LEN * 2) & 0xff;
     token_buff[6] = (t >> T_LEN * 1) & 0xff;
     token_buff[7] = t & 0xff;
-
-    memset(hash, 0, MAX_LEN);
 
     seed_len = base64_decode(seed, strlen(seed), (unsigned char *)new_seed);
     if (seed_len  == 0) {

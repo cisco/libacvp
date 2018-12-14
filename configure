@@ -12127,6 +12127,7 @@ SSL_CFLAGS="-I$ssldir/include"
 
 SSL_LDFLAGS="-L$ssldir/lib -lssl -lcrypto"
 
+LDFLAGS="$LDFLAGS -L$ssldir/lib"
 
 
 # Hold onto the LIBS variable before AC_SEARCH_LIBS modifies it
@@ -12381,7 +12382,6 @@ See \`config.log' for more details" "$LINENO" 5; }
 fi
 
 
-LIBS="$pre_libs"
 
 ##
 # Libcurl installation directory path
@@ -12400,6 +12400,7 @@ if test "x$with_libcurldir" != xno; then :
 
        LIBCURL_LDFLAGS="-L$libcurldir/lib -lcurl"
 
+       LDFLAGS="$LDFLAGS -L$libcurldir/lib"
        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing curl_easy_init" >&5
 $as_echo_n "checking for library containing curl_easy_init... " >&6; }
 if ${ac_cv_search_curl_easy_init+:} false; then :
@@ -12551,6 +12552,8 @@ SAFEC_CFLAGS="-I$safecdir/include"
 SAFEC_LDFLAGS="-L$safecdir/lib -lsafe_lib"
 
 
+# Reset LIBS to original
+LIBS="$pre_libs"
 
 # Default installation directory
 

@@ -58,6 +58,7 @@ AC_ARG_WITH([ssl-dir],
 	    [ssldir="/usr/local/ssl"])
 AC_SUBST([SSL_CFLAGS], "-I$ssldir/include")
 AC_SUBST([SSL_LDFLAGS], "-L$ssldir/lib -lssl -lcrypto")
+LDFLAGS="$LDFLAGS -L$ssldir/lib"
 
 
 # Hold onto the LIBS variable before AC_SEARCH_LIBS modifies it
@@ -76,7 +77,6 @@ fi
 AC_SEARCH_LIBS([SSL_CTX_new], [ssl], [],
                [AC_MSG_FAILURE([can't find openssl ssl lib])], [])
 
-LIBS="$pre_libs"
 
 ##
 # Libcurl installation directory path
@@ -90,6 +90,7 @@ AC_ARG_WITH([libcurl-dir],
 AS_IF([test "x$with_libcurldir" != xno],
       [AC_SUBST([LIBCURL_CFLAGS], "-I$libcurldir/include")
        AC_SUBST([LIBCURL_LDFLAGS], "-L$libcurldir/lib -lcurl")
+       LDFLAGS="$LDFLAGS -L$libcurldir/lib"
        AC_SEARCH_LIBS([curl_easy_init], [curl], [],
                       [AC_MSG_FAILURE([--with-libcurl-dir was given, but test for libcurl failed])]
        )
@@ -159,6 +160,8 @@ safecdir="$SAFEC_STUB_DIR"
 AC_SUBST([SAFEC_CFLAGS], "-I$safecdir/include")
 AC_SUBST([SAFEC_LDFLAGS], "-L$safecdir/lib -lsafe_lib")
 
+# Reset LIBS to original
+LIBS="$pre_libs"
 
 # Default installation directory
 AC_PREFIX_DEFAULT([/usr/local/acvp])

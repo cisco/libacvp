@@ -1,5 +1,5 @@
 lib_LTLIBRARIES = libacvp.la
-AM_CFLAGS = -I../.. $(SSL_CFLAGS) $(SAFEC_CFLAGS) $(LIBCURL_CFLAGS)
+AM_CFLAGS = -I../.. $(SAFEC_CFLAGS) $(LIBCURL_CFLAGS)
 libacvp_la_SOURCES =  acvp.c \
                     acvp_build_register.c \
                     acvp_capabilities.c \
