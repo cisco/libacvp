@@ -306,7 +306,8 @@ ACVP_RESULT acvp_kdf135_ikev2_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         tgId = json_object_get_number(groupobj, "tgId");
         if (!tgId) {
             ACVP_LOG_ERR("Missing tgid from server JSON groub obj");
-            return ACVP_MALFORMED_JSON;
+            rv = ACVP_MALFORMED_JSON;
+            goto err;
         }
         json_object_set_number(r_gobj, "tgId", tgId);
         json_object_set_value(r_gobj, "tests", json_value_init_array());
@@ -315,35 +316,40 @@ ACVP_RESULT acvp_kdf135_ikev2_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         hash_alg_str = json_object_get_string(groupobj, "hashAlg");
         if (!hash_alg_str) {
             ACVP_LOG_ERR("Failed to include hashAlg");
-            return ACVP_MISSING_ARG;
+            rv = ACVP_MISSING_ARG;
+            goto err;
         }
 
         init_nonce_len = json_object_get_number(groupobj, "nInitLength");
         if (!(init_nonce_len >= ACVP_KDF135_IKEV2_INIT_NONCE_BIT_MIN &&
               init_nonce_len <= ACVP_KDF135_IKEV2_INIT_NONCE_BIT_MAX)) {
             ACVP_LOG_ERR("nInitLength incorrect, %d", init_nonce_len);
-            return ACVP_INVALID_ARG;
+            rv = ACVP_INVALID_ARG;
+            goto err;
         }
 
         resp_nonce_len = json_object_get_number(groupobj, "nRespLength");
         if (!(resp_nonce_len >= ACVP_KDF135_IKEV2_RESP_NONCE_BIT_MIN &&
               resp_nonce_len <= ACVP_KDF135_IKEV2_RESP_NONCE_BIT_MAX)) {
             ACVP_LOG_ERR("nRespLength incorrect, %d", resp_nonce_len);
-            return ACVP_INVALID_ARG;
+            rv = ACVP_INVALID_ARG;
+            goto err;
         }
 
         dh_secret_len = json_object_get_number(groupobj, "dhLength");
         if (!(dh_secret_len >= ACVP_KDF135_IKEV2_DH_SHARED_SECRET_BIT_MIN &&
               dh_secret_len <= ACVP_KDF135_IKEV2_DH_SHARED_SECRET_BIT_MAX)) {
             ACVP_LOG_ERR("dhLength incorrect, %d", dh_secret_len);
-            return ACVP_INVALID_ARG;
+            rv = ACVP_INVALID_ARG;
+            goto err;
         }
 
         keying_material_len = json_object_get_number(groupobj, "derivedKeyingMaterialLength");
         if (!(keying_material_len >= ACVP_KDF135_IKEV2_DKEY_MATERIAL_BIT_MIN &&
               keying_material_len <= ACVP_KDF135_IKEV2_DKEY_MATERIAL_BIT_MAX)) {
             ACVP_LOG_ERR("derivedKeyingMaterialLength incorrect, %d", keying_material_len);
-            return ACVP_INVALID_ARG;
+            rv = ACVP_INVALID_ARG;
+            goto err;
         }
 
         /*
@@ -361,7 +367,8 @@ ACVP_RESULT acvp_kdf135_ikev2_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             hash_alg = ACVP_SHA512;
         } else {
             ACVP_LOG_ERR("ACVP server requesting invalid hash alg");
-            return ACVP_INVALID_ARG;
+            rv = ACVP_INVALID_ARG;
+            goto err;
         }
 
         ACVP_LOG_INFO("\n    Test group: %d", i);
@@ -384,73 +391,85 @@ ACVP_RESULT acvp_kdf135_ikev2_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             init_nonce = (char *)json_object_get_string(testobj, "nInit");
             if (!init_nonce) {
                 ACVP_LOG_ERR("Failed to include nInit");
-                return ACVP_MISSING_ARG;
+                rv = ACVP_MISSING_ARG;
+                goto err;
             }
             if (strnlen(init_nonce, init_nonce_len) != init_nonce_len / 4) {
                 ACVP_LOG_ERR("nInit length(%d) incorrect, expected(%d)",
                              strnlen((char *)init_nonce, ACVP_KDF135_IKEV2_INIT_NONCE_STR_MAX),
                              init_nonce_len / 4);
-                return ACVP_INVALID_ARG;
+                rv = ACVP_INVALID_ARG;
+                goto err;
             }
 
             resp_nonce = (char *)json_object_get_string(testobj, "nResp");
             if (!resp_nonce) {
                 ACVP_LOG_ERR("Failed to include nResp");
-                return ACVP_MISSING_ARG;
+                rv = ACVP_MISSING_ARG;
+                goto err;
             }
             if (strnlen(resp_nonce, resp_nonce_len) != resp_nonce_len / 4) {
                 ACVP_LOG_ERR("nResp length(%d) incorrect, expected(%d)",
                              strnlen((char *)resp_nonce, ACVP_KDF135_IKEV2_RESP_NONCE_STR_MAX),
                              resp_nonce_len / 4);
-                return ACVP_INVALID_ARG;
+                rv = ACVP_INVALID_ARG;
+                goto err;
             }
 
             init_spi = (char *)json_object_get_string(testobj, "spiInit");
             if (!init_spi) {
                 ACVP_LOG_ERR("Failed to include spiInit");
-                return ACVP_MISSING_ARG;
+                rv = ACVP_MISSING_ARG;
+                goto err;
             }
             if (strnlen(init_spi, ACVP_KDF135_IKEV2_SPI_STR_MAX + 1)
                 > ACVP_KDF135_IKEV2_SPI_STR_MAX) {
                 ACVP_LOG_ERR("spiInit too long, max allowed=(%d)",
                              ACVP_KDF135_IKEV2_SPI_STR_MAX);
-                return ACVP_INVALID_ARG;
+                rv = ACVP_INVALID_ARG;
+                goto err;
             }
 
             resp_spi = (char *)json_object_get_string(testobj, "spiResp");
             if (!resp_spi) {
                 ACVP_LOG_ERR("Failed to include spiResp");
-                return ACVP_MISSING_ARG;
+                rv = ACVP_MISSING_ARG;
+                goto err;
             }
             if (strnlen(resp_spi, ACVP_KDF135_IKEV2_SPI_STR_MAX + 1)
                 > ACVP_KDF135_IKEV2_SPI_STR_MAX) {
                 ACVP_LOG_ERR("spiResp too long, max allowed=(%d)",
                              ACVP_KDF135_IKEV2_SPI_STR_MAX);
-                return ACVP_INVALID_ARG;
+                rv = ACVP_INVALID_ARG;
+                goto err;
             }
 
             gir = (char *)json_object_get_string(testobj, "gir");
             if (!gir) {
                 ACVP_LOG_ERR("Failed to include gir");
-                return ACVP_MISSING_ARG;
+                rv = ACVP_MISSING_ARG;
+                goto err;
             }
             if (strnlen(gir, ACVP_KDF135_IKEV2_DH_SHARED_SECRET_STR_MAX + 1)
                 > ACVP_KDF135_IKEV2_DH_SHARED_SECRET_STR_MAX) {
                 ACVP_LOG_ERR("gir too long, max allowed=(%d)",
                              ACVP_KDF135_IKEV2_DH_SHARED_SECRET_STR_MAX);
-                return ACVP_INVALID_ARG;
+                rv = ACVP_INVALID_ARG;
+                goto err;
             }
 
             gir_new = (char *)json_object_get_string(testobj, "girNew");
             if (!gir_new) {
                 ACVP_LOG_ERR("Failed to include girNew");
-                return ACVP_MISSING_ARG;
+                rv = ACVP_MISSING_ARG;
+                goto err;
             }
             if (strnlen(gir_new, ACVP_KDF135_IKEV2_DH_SHARED_SECRET_STR_MAX + 1)
                 > ACVP_KDF135_IKEV2_DH_SHARED_SECRET_STR_MAX) {
                 ACVP_LOG_ERR("girNew too long, max allowed=(%d)",
                              ACVP_KDF135_IKEV2_DH_SHARED_SECRET_STR_MAX);
-                return ACVP_INVALID_ARG;
+                rv = ACVP_INVALID_ARG;
+                goto err;
             }
 
             ACVP_LOG_INFO("        Test case: %d", j);
@@ -483,7 +502,8 @@ ACVP_RESULT acvp_kdf135_ikev2_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             if ((cap->crypto_handler)(&tc)) {
                 ACVP_LOG_ERR("crypto module failed");
                 acvp_kdf135_ikev2_release_tc(&stc);
-                return ACVP_CRYPTO_MODULE_FAIL;
+                rv = ACVP_CRYPTO_MODULE_FAIL;
+                goto err;
             }
 
             /*
@@ -493,7 +513,7 @@ ACVP_RESULT acvp_kdf135_ikev2_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("JSON output failure");
                 acvp_kdf135_ikev2_release_tc(&stc);
-                return rv;
+                goto err;
             }
             /*
              * Release all the memory associated with the test case
@@ -515,6 +535,11 @@ ACVP_RESULT acvp_kdf135_ikev2_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         ACVP_LOG_INFO("\n\n%s\n\n", json_result);
     }
     json_free_serialized_string(json_result);
+    rv = ACVP_SUCCESS;
 
-    return ACVP_SUCCESS;
+err:
+    if (rv != ACVP_SUCCESS) {
+        acvp_release_json(r_vs_val, r_gval);
+    }
+    return rv;
 }
