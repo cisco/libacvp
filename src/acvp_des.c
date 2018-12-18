@@ -30,6 +30,7 @@
 #include "acvp.h"
 #include "acvp_lcl.h"
 #include "parson.h"
+#include "safe_lib.h"
 
 /*
  * Forward prototypes for local functions
@@ -58,18 +59,29 @@ static ACVP_RESULT acvp_des_init_tc(ACVP_CTX *ctx,
 
 static ACVP_RESULT acvp_des_release_tc(ACVP_SYM_CIPHER_TC *stc);
 
+#define OLD_IV_LEN 8
+#define TEXT_COL_LEN 10001
+#define TEXT_ROW_LEN 8
+static unsigned char old_iv[OLD_IV_LEN];
+static unsigned char ptext[TEXT_COL_LEN][TEXT_ROW_LEN];
+static unsigned char ctext[TEXT_COL_LEN][TEXT_ROW_LEN];
 
-static unsigned char old_iv[8];
-static unsigned char ptext[10001][8];
-static unsigned char ctext[10001][8];
-
-static void shiftin(unsigned char *dst, unsigned char *src, int nbits) {
-    int n;
+static void shiftin(unsigned char *dst, int dst_max, unsigned char *src, int nbits) {
+    int n = 0, move_bytes = 0, copy_bytes = 0;
+    unsigned char *dst_pos = NULL, *src_pos = NULL;
 
     /* move the bytes... */
-    memmove(dst, dst + nbits / 8, 3 * 8 - nbits / 8);
+    dst_pos = dst;
+    src_pos = dst + nbits / 8;
+    move_bytes = (3 * 8) - (nbits / 8);
+    memmove_s(dst_pos, dst_max, src_pos, move_bytes);
+
     /* append new data */
-    memcpy(dst + 3 * 8 - nbits / 8, src, (nbits + 7) / 8);
+    dst_pos = dst + move_bytes;
+    src_pos = src;
+    copy_bytes = (nbits + 7) / 8;
+    memcpy_s(dst_pos, dst_max, src_pos, copy_bytes);
+
     /* left shift the bits */
     if (nbits % 8) {
         for (n = 0; n < 3 * 8; ++n) {
@@ -90,14 +102,14 @@ static ACVP_RESULT acvp_des_mct_iterate_tc(ACVP_CTX *ctx,
     int j = stc->mct_index;
     int n;
 
-    memcpy(ctext[j], stc->ct, stc->ct_len);
-    memcpy(ptext[j], stc->pt, stc->pt_len);
+    memcpy_s(ctext[j], TEXT_ROW_LEN,  stc->ct, stc->ct_len);
+    memcpy_s(ptext[j], TEXT_ROW_LEN, stc->pt, stc->pt_len);
 
     switch (stc->cipher) {
     case ACVP_TDES_CBC:
         if (stc->direction == ACVP_SYM_CIPH_DIR_ENCRYPT) {
             if (j == 0) {
-                memcpy(stc->pt, old_iv, 8);
+                memcpy_s(stc->pt, ACVP_SYM_PT_BYTE_MAX, old_iv, 8);
             } else {
                 for (n = 0; n < 8; ++n) {
                     stc->pt[n] = ctext[j - 1][n];
@@ -120,7 +132,7 @@ static ACVP_RESULT acvp_des_mct_iterate_tc(ACVP_CTX *ctx,
     case ACVP_TDES_CFB64:
         if (stc->direction == ACVP_SYM_CIPH_DIR_ENCRYPT) {
             if (j == 0) {
-                memcpy(stc->pt, old_iv, 8);
+                memcpy_s(stc->pt, ACVP_SYM_PT_BYTE_MAX, old_iv, 8);
             } else {
                 for (n = 0; n < 8; ++n) {
                     stc->pt[n] = ctext[j - 1][n];
@@ -142,7 +154,7 @@ static ACVP_RESULT acvp_des_mct_iterate_tc(ACVP_CTX *ctx,
     case ACVP_TDES_OFB:
         if (stc->direction == ACVP_SYM_CIPH_DIR_ENCRYPT) {
             if (j == 0) {
-                memcpy(stc->pt, old_iv, 8);
+                memcpy_s(stc->pt, ACVP_SYM_PT_BYTE_MAX, old_iv, 8);
             } else {
                 for (n = 0; n < 8; ++n) {
                     stc->pt[n] = stc->iv_ret[n];
@@ -150,7 +162,7 @@ static ACVP_RESULT acvp_des_mct_iterate_tc(ACVP_CTX *ctx,
             }
         } else {
             if (j == 0) {
-                memcpy(stc->ct, old_iv, 8);
+                memcpy_s(stc->ct, ACVP_SYM_CT_BYTE_MAX, old_iv, 8);
             } else {
                 for (n = 0; n < 8; ++n) {
                     stc->ct[n] = stc->iv_ret[n];
@@ -162,7 +174,7 @@ static ACVP_RESULT acvp_des_mct_iterate_tc(ACVP_CTX *ctx,
     case ACVP_TDES_CFB8:
         if (stc->direction == ACVP_SYM_CIPH_DIR_ENCRYPT) {
             if (j == 0) {
-                memcpy(stc->pt, old_iv, 8);
+                memcpy_s(stc->pt, ACVP_SYM_PT_BYTE_MAX, old_iv, 8);
             } else {
                 for (n = 0; n < 8; ++n) {
                     stc->pt[n] = stc->iv_ret[n];
@@ -180,9 +192,9 @@ static ACVP_RESULT acvp_des_mct_iterate_tc(ACVP_CTX *ctx,
 
     case ACVP_TDES_ECB:
         if (stc->direction == ACVP_SYM_CIPH_DIR_ENCRYPT) {
-            memcpy(stc->pt, stc->ct, stc->ct_len);
+            memcpy_s(stc->pt, ACVP_SYM_PT_BYTE_MAX, stc->ct, stc->ct_len);
         } else {
-            memcpy(stc->ct, stc->pt, stc->pt_len);
+            memcpy_s(stc->ct, ACVP_SYM_CT_BYTE_MAX, stc->pt, stc->pt_len);
         }
         break;
     default:
@@ -383,7 +395,8 @@ static ACVP_RESULT acvp_des_mct_tc(ACVP_CTX *ctx,
     JSON_Value *r_tval = NULL;  /* Response testval */
     JSON_Object *r_tobj = NULL; /* Response testobj */
     char *tmp = NULL;
-    unsigned char nk[4 * 8]; /* longest key+8 */
+#define NK_LEN 32 /* Longest key + 8 */
+    unsigned char nk[NK_LEN];
 
     tmp = calloc(1, ACVP_SYM_CT_MAX + 1);
     if (!tmp) {
@@ -431,7 +444,7 @@ static ACVP_RESULT acvp_des_mct_tc(ACVP_CTX *ctx,
 
         for (j = 0; j < ACVP_DES_MCT_INNER; ++j) {
             if (j == 0) {
-                memcpy(old_iv, stc->iv, stc->iv_len);
+                memcpy_s(old_iv, OLD_IV_LEN, stc->iv, stc->iv_len);
             }
             stc->mct_index = j;    /* indicates init vs. update */
             /* Process the current DES encrypt test vector... */
@@ -445,9 +458,9 @@ static ACVP_RESULT acvp_des_mct_tc(ACVP_CTX *ctx,
              * Adjust the parameters for next iteration if needed.
              */
             if (stc->direction == ACVP_SYM_CIPH_DIR_ENCRYPT) {
-                shiftin(nk, stc->ct, bit_len);
+                shiftin(nk, NK_LEN, stc->ct, bit_len);
             } else {
-                shiftin(nk, stc->pt, bit_len);
+                shiftin(nk, NK_LEN, stc->pt, bit_len);
             }
             rv = acvp_des_mct_iterate_tc(ctx, stc, i, r_tobj);
             if (rv != ACVP_SUCCESS) {
@@ -476,7 +489,7 @@ static ACVP_RESULT acvp_des_mct_tc(ACVP_CTX *ctx,
 #endif
 
         acvp_des_set_odd_parity(stc->key);
-        memcpy(stc->iv, stc->iv_ret_after, 8); /* only on encrypt */
+        memcpy_s(stc->iv, ACVP_SYM_IV_BYTE_MAX, stc->iv_ret_after, 8); /* only on encrypt */
 
         if (stc->cipher == ACVP_TDES_OFB) {
             if (stc->direction == ACVP_SYM_CIPH_DIR_ENCRYPT) {
@@ -491,7 +504,7 @@ static ACVP_RESULT acvp_des_mct_tc(ACVP_CTX *ctx,
         }
 
         if (stc->direction == ACVP_SYM_CIPH_DIR_ENCRYPT) {
-            memset(tmp, 0x0, ACVP_SYM_CT_MAX);
+            memzero_s(tmp, ACVP_SYM_CT_MAX);
             if (stc->cipher == ACVP_TDES_CFB1) {
                 stc->ct[0] &= ACVP_CFB1_BIT_MASK;
                 rv = acvp_bin_to_hexstr(stc->ct, 1, tmp, ACVP_SYM_CT_MAX);
@@ -512,7 +525,7 @@ static ACVP_RESULT acvp_des_mct_tc(ACVP_CTX *ctx,
             }
             json_object_set_string(r_tobj, "ct", tmp);
         } else {
-            memset(tmp, 0x0, ACVP_SYM_CT_MAX);
+            memzero_s(tmp, ACVP_SYM_CT_MAX);
             if (stc->cipher == ACVP_TDES_CFB1) {
                 rv = acvp_bin_to_hexstr(stc->pt, 1, tmp, ACVP_SYM_CT_MAX);
                 if (rv != ACVP_SUCCESS) {
@@ -540,6 +553,58 @@ static ACVP_RESULT acvp_des_mct_tc(ACVP_CTX *ctx,
     free(tmp);
 
     return ACVP_SUCCESS;
+}
+
+/**
+ * @brief Read the \p str reprenting the test type and
+ *        convert to enum.
+ *
+ * @param[in] str The char* string representing the test type.
+ *
+ * @return ACVP_SYM_CIPH_TESTTYPE
+ * @return 0 for fail
+ */
+static ACVP_SYM_CIPH_TESTTYPE read_test_type(const char *str) {
+    int diff = 0;
+
+    strcmp_s("MCT", 3, str, &diff);
+    if (!diff) {
+        return ACVP_SYM_TEST_TYPE_MCT;
+    }
+    strcmp_s("AFT", 3, str, &diff);
+    if (!diff) {
+        return ACVP_SYM_TEST_TYPE_AFT;
+    }
+    strcmp_s("CTR", 3, str, &diff);
+    if (!diff) {
+        return ACVP_SYM_TEST_TYPE_CTR;
+    }
+
+    return 0;
+}
+
+/**
+ * @brief Read the \p str reprenting the direction and
+ *        convert to enum.
+ *
+ * @param[in] str The char* string representing the direction.
+ *
+ * @return ACVP_SYM_CIPH_DIR
+ * @return 0 for fail
+ */
+static ACVP_SYM_CIPH_DIR read_direction(const char *str) {
+    int diff = 0;
+
+    strcmp_s("encrypt", 7, str, &diff);
+    if (!diff) {
+        return ACVP_SYM_CIPH_DIR_ENCRYPT;
+    }
+    strcmp_s("decrypt", 7, str, &diff);
+    if (!diff) {
+        return ACVP_SYM_CIPH_DIR_DECRYPT;
+    }
+
+    return 0;
 }
 
 /*
@@ -659,14 +724,8 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             rv = ACVP_MISSING_ARG;
             goto err;
         }
-        /*
-         * verify the direction is valid
-         */
-        if (!strncmp(dir_str, "encrypt", strlen("encrypt"))) {
-            dir = ACVP_SYM_CIPH_DIR_ENCRYPT;
-        } else if (!strncmp(dir_str, "decrypt", strlen("decrypt"))) {
-            dir = ACVP_SYM_CIPH_DIR_DECRYPT;
-        } else {
+        dir = read_direction(dir_str);
+        if (!dir) {
             ACVP_LOG_ERR("Server JSON invalid 'direction'");
             rv = ACVP_INVALID_ARG;
             goto err;
@@ -679,12 +738,13 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             goto err;
         }
 
-        if (!strncmp(test_type_str, "MCT", strlen("MCT"))) {
-            test_type = ACVP_SYM_TEST_TYPE_MCT;
-        } else if (!strncmp(test_type_str, "AFT", strlen("AFT"))) {
-            test_type = ACVP_SYM_TEST_TYPE_AFT;
-        } else if (!strncmp(test_type_str, "CTR", strlen("CTR"))) {
-            test_type = ACVP_SYM_TEST_TYPE_CTR;
+        test_type = read_test_type(test_type_str);
+        if (!test_type) {
+            ACVP_LOG_ERR("Server JSON invalid 'testType'");
+            rv = ACVP_INVALID_ARG;
+            goto err;
+        }
+        if (test_type == ACVP_SYM_TEST_TYPE_CTR) {
             incr_ctr = json_object_get_boolean(groupobj, "incrementalCounter");
             ovrflw_ctr = json_object_get_boolean(groupobj, "overflowCounter");
             if (ovrflw_ctr != 0 && ovrflw_ctr != 1) {
@@ -697,9 +757,6 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 rv = ACVP_MALFORMED_JSON;
                 goto err;
             }
-        } else {
-            rv = ACVP_INVALID_ARG;
-            goto err;
         }
 
         // keyLen will always be the same for TDES
@@ -732,7 +789,7 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 rv = ACVP_MISSING_ARG;
                 goto err;
             }
-            tmp_key_len = strnlen(key1, ACVP_SYM_KEY_MAX_BYTES + 1);
+            tmp_key_len = strnlen_s(key1, ACVP_SYM_KEY_MAX_STR + 1);
             if (tmp_key_len != (ACVP_TDES_KEY_STR_LEN / 3)) {
                 ACVP_LOG_ERR("'key1' wrong length (%u). Expected (%d)",
                              tmp_key_len, (ACVP_TDES_KEY_STR_LEN / 3));
@@ -746,7 +803,7 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 rv = ACVP_MISSING_ARG;
                 goto err;
             }
-            tmp_key_len = strnlen(key2, ACVP_SYM_KEY_MAX_BYTES + 1);
+            tmp_key_len = strnlen_s(key2, ACVP_SYM_KEY_MAX_STR + 1);
             if (tmp_key_len != (ACVP_TDES_KEY_STR_LEN / 3)) {
                 ACVP_LOG_ERR("'key2' wrong length (%u). Expected (%d)",
                              tmp_key_len, (ACVP_TDES_KEY_STR_LEN / 3));
@@ -760,7 +817,7 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 rv = ACVP_MISSING_ARG;
                 goto err;
             }
-            tmp_key_len = strnlen(key3, ACVP_SYM_KEY_MAX_BYTES + 1);
+            tmp_key_len = strnlen_s(key3, ACVP_SYM_KEY_MAX_STR + 1);
             if (tmp_key_len != (ACVP_TDES_KEY_STR_LEN / 3)) {
                 ACVP_LOG_ERR("'key3' wrong length (%u). Expected (%d)",
                              tmp_key_len, (ACVP_TDES_KEY_STR_LEN / 3));
@@ -769,16 +826,16 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             }
 
             if (key == NULL) {
-                key = calloc(ACVP_SYM_KEY_MAX_BYTES + 1, sizeof(char));
+                key = calloc(ACVP_SYM_KEY_MAX_STR + 1, sizeof(char));
                 if (!key) {
                     ACVP_LOG_ERR("Unable to malloc");
                     rv = ACVP_MALLOC_FAIL;
                     goto err;
                 }
 
-                strncpy(key, key1, (ACVP_TDES_KEY_STR_LEN / 3));
-                strncpy(key + 16, key2, (ACVP_TDES_KEY_STR_LEN / 3));
-                strncpy(key + 32, key3, (ACVP_TDES_KEY_STR_LEN / 3));
+                strcpy_s(key, ACVP_SYM_KEY_MAX_STR, key1);
+                strcpy_s(key + 16, (ACVP_SYM_KEY_MAX_STR - 16), key2);
+                strcpy_s(key + 32, (ACVP_SYM_KEY_MAX_STR - 32), key3);
             }
 
             if (dir == ACVP_SYM_CIPH_DIR_ENCRYPT) {
@@ -790,7 +847,7 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                     goto err;
                 }
 
-                ptlen = strnlen(pt, ACVP_SYM_PT_MAX + 1);
+                ptlen = strnlen_s(pt, ACVP_SYM_PT_MAX + 1);
                 if (ptlen > ACVP_SYM_PT_MAX) {
                     ACVP_LOG_ERR("'pt' too long, max allowed=(%d)",
                                  ACVP_SYM_PT_MAX);
@@ -818,7 +875,7 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                     goto err;
                 }
 
-                ctlen = strnlen(ct, ACVP_SYM_CT_MAX + 1);
+                ctlen = strnlen_s(ct, ACVP_SYM_CT_MAX + 1);
                 if (ctlen > ACVP_SYM_CT_MAX) {
                     ACVP_LOG_ERR("'ct' too long, max allowed=(%d)",
                                  ACVP_SYM_CT_MAX);
@@ -848,7 +905,7 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                     goto err;
                 }
 
-                ivlen = strnlen(iv, ACVP_SYM_IV_MAX + 1);
+                ivlen = strnlen_s(iv, ACVP_SYM_IV_MAX + 1);
                 if (ivlen != 16) {
                     ACVP_LOG_ERR("Invalid 'iv' length (%u). Expected (%u)", ivlen, 16);
                     free(key);
@@ -978,7 +1035,7 @@ static ACVP_RESULT acvp_des_output_tc(ACVP_CTX *ctx,
     }
 
     if (stc->direction == ACVP_SYM_CIPH_DIR_ENCRYPT) {
-        memset(tmp, 0x0, ACVP_SYM_CT_MAX);
+        memzero_s(tmp, ACVP_SYM_CT_MAX);
         if (stc->cipher == ACVP_TDES_CFB1) {
             rv = acvp_bin_to_hexstr(stc->ct, (stc->ct_len + 7) / 8, tmp, ACVP_SYM_CT_MAX);
             if (rv != ACVP_SUCCESS) {
@@ -1003,7 +1060,7 @@ static ACVP_RESULT acvp_des_output_tc(ACVP_CTX *ctx,
             return ACVP_SUCCESS;
         }
 
-        memset(tmp, 0x0, ACVP_SYM_CT_MAX);
+        memzero_s(tmp, ACVP_SYM_CT_MAX);
         if (stc->cipher == ACVP_TDES_CFB1) {
             rv = acvp_bin_to_hexstr(stc->pt, (stc->pt_len + 7) / 8, tmp, ACVP_SYM_CT_MAX);
             if (rv != ACVP_SUCCESS) {
@@ -1054,19 +1111,19 @@ static ACVP_RESULT acvp_des_init_tc(ACVP_CTX *ctx,
                                     unsigned int ovrflw_ctr) {
     ACVP_RESULT rv;
 
-    memset(stc, 0x0, sizeof(ACVP_SYM_CIPHER_TC));
+    memzero_s(stc, sizeof(ACVP_SYM_CIPHER_TC));
 
     stc->key = calloc(1, ACVP_SYM_KEY_MAX_BYTES);
     if (!stc->key) { return ACVP_MALLOC_FAIL; }
-    stc->pt = calloc(1, ACVP_SYM_PT_MAX);
+    stc->pt = calloc(1, ACVP_SYM_PT_BYTE_MAX);
     if (!stc->pt) { return ACVP_MALLOC_FAIL; }
-    stc->ct = calloc(1, ACVP_SYM_CT_MAX);
+    stc->ct = calloc(1, ACVP_SYM_CT_BYTE_MAX);
     if (!stc->ct) { return ACVP_MALLOC_FAIL; }
-    stc->iv = calloc(1, ACVP_SYM_IV_MAX);
+    stc->iv = calloc(1, ACVP_SYM_IV_BYTE_MAX);
     if (!stc->iv) { return ACVP_MALLOC_FAIL; }
-    stc->iv_ret = calloc(1, ACVP_SYM_IV_MAX);
+    stc->iv_ret = calloc(1, ACVP_SYM_IV_BYTE_MAX);
     if (!stc->iv_ret) { return ACVP_MALLOC_FAIL; }
-    stc->iv_ret_after = calloc(1, ACVP_SYM_IV_MAX);
+    stc->iv_ret_after = calloc(1, ACVP_SYM_IV_BYTE_MAX);
     if (!stc->iv_ret_after) { return ACVP_MALLOC_FAIL; }
 
     rv = acvp_hexstr_to_bin(j_key, stc->key, ACVP_SYM_KEY_MAX_BYTES, NULL);
@@ -1150,7 +1207,7 @@ static ACVP_RESULT acvp_des_release_tc(ACVP_SYM_CIPHER_TC *stc) {
     if (stc->iv) free(stc->iv);
     if (stc->iv_ret) free(stc->iv_ret);
     if (stc->iv_ret_after) free(stc->iv_ret_after);
-    memset(stc, 0x0, sizeof(ACVP_SYM_CIPHER_TC));
+    memzero_s(stc, sizeof(ACVP_SYM_CIPHER_TC));
 
     return ACVP_SUCCESS;
 }
