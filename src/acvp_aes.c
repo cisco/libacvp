@@ -285,6 +285,7 @@ static ACVP_RESULT acvp_aes_mct_tc(ACVP_CTX *ctx,
         rv = acvp_aes_output_mct_tc(ctx, stc, r_tobj);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("JSON output failure in AES module");
+            json_value_free(r_tval);
             free(tmp);
             return rv;
         }
@@ -295,6 +296,7 @@ static ACVP_RESULT acvp_aes_mct_tc(ACVP_CTX *ctx,
             if ((cap->crypto_handler)(tc)) {
                 ACVP_LOG_ERR("crypto module failed the operation");
                 free(tmp);
+                json_value_free(r_tval);
                 return ACVP_CRYPTO_MODULE_FAIL;
             }
 
@@ -374,6 +376,7 @@ static ACVP_RESULT acvp_aes_mct_tc(ACVP_CTX *ctx,
 
                 if (rv != ACVP_SUCCESS) {
                     ACVP_LOG_ERR("hex conversion failure (pt)");
+                    json_value_free(r_tval);
                     free(tmp);
                     return rv;
                 }
@@ -382,6 +385,7 @@ static ACVP_RESULT acvp_aes_mct_tc(ACVP_CTX *ctx,
                 if (rv != ACVP_SUCCESS) {
                     ACVP_LOG_ERR("hex conversion failure (pt)");
                     free(tmp);
+                    json_value_free(r_tval);
                     return rv;
                 }
             }
@@ -667,7 +671,8 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         tgId = json_object_get_number(groupobj, "tgId");
         if (!tgId) {
             ACVP_LOG_ERR("Missing tgid from server JSON groub obj");
-            return ACVP_MALFORMED_JSON;
+            rv = ACVP_MALFORMED_JSON;
+            goto err;
         }
         json_object_set_number(r_gobj, "tgId", tgId);
         json_object_set_value(r_gobj, "tests", json_value_init_array());
@@ -676,24 +681,28 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         dir_str = json_object_get_string(groupobj, "direction");
         if (!dir_str) {
             ACVP_LOG_ERR("Server JSON missing 'direction'");
-            return ACVP_MISSING_ARG;
+            rv = ACVP_MISSING_ARG;
+            goto err;
         }
 
         dir = read_direction(dir_str);
         if (!dir) {
             ACVP_LOG_ERR("Server JSON invalid 'direction'");
-            return ACVP_INVALID_ARG;
+            rv = ACVP_INVALID_ARG;
+            goto err;
         }
 
         test_type_str = json_object_get_string(groupobj, "testType");
         if (!test_type_str) {
             ACVP_LOG_ERR("Server JSON missing 'testType'");
-            return ACVP_MISSING_ARG;
+            rv = ACVP_MISSING_ARG;
+            goto err;
         }
         test_type = read_test_type(test_type_str);
         if (!test_type) {
             ACVP_LOG_ERR("Server JSON invalid 'testType'");
-            return ACVP_INVALID_ARG;
+            rv = ACVP_INVALID_ARG;
+            goto err;
         }
         if (test_type == ACVP_SYM_TEST_TYPE_CTR) {
             /* TODO: NIST needs to fix these keywords, ie add Counter at the end */
@@ -701,11 +710,13 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             ovrflw_ctr = json_object_get_boolean(groupobj, "overflow");
             if (ovrflw_ctr != 0 && ovrflw_ctr != 1) {
                 ACVP_LOG_ERR("Server JSON invalid 'overflowCounter'");
-                return ACVP_MALFORMED_JSON;
+                rv = ACVP_MALFORMED_JSON;
+                goto err;
             }
             if (incr_ctr != 0 && incr_ctr != 1) {
                 ACVP_LOG_ERR("Server JSON invalid 'incrementalCounter'");
-                return ACVP_MALFORMED_JSON;
+                rv = ACVP_MALFORMED_JSON;
+                goto err;
             }
         }
 
@@ -714,20 +725,23 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             kwcipher_str = json_object_get_string(groupobj, "kwCipher");
             if (!kwcipher_str) {
                 ACVP_LOG_ERR("Server JSON missing 'kwCipher'");
-                return ACVP_MISSING_ARG;
+                rv = ACVP_MISSING_ARG;
+                goto err;
             }
 
             kwcipher = read_kw_mode(kwcipher_str);
             if (!kwcipher) {
                 ACVP_LOG_ERR("Server JSON invalid 'kwCipher'");
-                return ACVP_INVALID_ARG;
+                rv = ACVP_INVALID_ARG;
+                goto err;
             }
         }
 
         keylen = (unsigned int)json_object_get_number(groupobj, "keyLen");
         if (keylen != 128 && keylen != 192 && keylen != 256) {
             ACVP_LOG_ERR("Server JSON invalid 'keyLen', (%u)", keylen);
-            return ACVP_INVALID_ARG;
+            rv = ACVP_INVALID_ARG;
+            goto err;
         }
 
         if ((alg_id != ACVP_AES_ECB) && (alg_id != ACVP_AES_KW) &&
@@ -738,37 +752,43 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             ivlen = (unsigned int)json_object_get_number(groupobj, "ivLen");
             if (!ivlen) {
                 ACVP_LOG_ERR("Server JSON missing 'ivlen'");
-                return ACVP_MISSING_ARG;
+                rv = ACVP_MISSING_ARG;
+                goto err;
             }
 
             if (alg_id == ACVP_AES_GCM) {
                 if (!(ivlen >= ACVP_AES_GCM_IV_BIT_MIN &&
                       ivlen <= ACVP_AES_GCM_IV_BIT_MAX)) {
                     ACVP_LOG_ERR("Server JSON invalid 'ivlen', (%u)", ivlen);
-                    return ACVP_INVALID_ARG;
+                    rv = ACVP_INVALID_ARG;
+                    goto err;
                 }
 
                 iv_gen_str = json_object_get_string(groupobj, "ivGen");
                 if (!iv_gen_str) {
                     ACVP_LOG_ERR("Server JSON missing 'ivGen'");
-                    return ACVP_MISSING_ARG;
+                    rv = ACVP_MISSING_ARG;
+                    goto err;
                 }
                 iv_gen = read_ivgen_source(iv_gen_str);
                 if (!iv_gen) {
                     ACVP_LOG_ERR("Server JSON invalid 'ivGen'");
-                    return ACVP_INVALID_ARG;
+                    rv = ACVP_INVALID_ARG;
+                    goto err;
                 }
 
                 if (iv_gen == ACVP_SYM_CIPH_IVGEN_SRC_INT) {
                     iv_gen_mode_str = json_object_get_string(groupobj, "ivGenMode");
                     if (!iv_gen_mode_str) {
                         ACVP_LOG_ERR("Server JSON missing 'ivGenMode'");
-                        return ACVP_MISSING_ARG;
+                        rv = ACVP_MISSING_ARG;
+                        goto err;
                     }
                     iv_gen_mode = read_ivgen_mode(iv_gen_mode_str);
                     if (!iv_gen_mode) {
                         ACVP_LOG_ERR("Server JSON invalid 'ivGenMode'");
-                        return ACVP_INVALID_ARG;
+                        rv = ACVP_INVALID_ARG;
+                        goto err;
                     }
                 }
             } else {
@@ -777,11 +797,13 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                     if (ivlen % 8 != 0) {
                         // Only increments of 8 allowed
                         ACVP_LOG_ERR("Server JSON 'ivlen' (%u) mod 8 != 0", ivlen);
-                        return ACVP_INVALID_ARG;
+                        rv = ACVP_INVALID_ARG;
+                        goto err;
                     }
                 } else {
                     ACVP_LOG_ERR("Server JSON invalid 'ivlen', (%u)", ivlen);
-                    return ACVP_INVALID_ARG;
+                    rv = ACVP_INVALID_ARG;
+                    goto err;
                 }
             }
 
@@ -789,14 +811,16 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             if (aadlen > ACVP_SYM_AAD_BIT_MAX) {
                 ACVP_LOG_ERR("'aadLen' too large (%u), max allowed=(%d)",
                              aadlen, ACVP_SYM_AAD_BIT_MAX);
-                return ACVP_INVALID_ARG;
+                rv = ACVP_INVALID_ARG;
+                goto err;
             }
 
             taglen = (unsigned int)json_object_get_number(groupobj, "tagLen");
             if (!(taglen >= ACVP_SYM_TAG_BIT_MIN &&
                   taglen <= ACVP_SYM_TAG_BIT_MAX)) {
                 ACVP_LOG_ERR("Server JSON invalid 'taglen', (%u)", taglen);
-                return ACVP_INVALID_ARG;
+                rv = ACVP_INVALID_ARG;
+                goto err;
             }
         }
 
@@ -804,7 +828,8 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         if (ptlen > ACVP_SYM_PT_BIT_MAX) {
             ACVP_LOG_ERR("'ptLen' too large (%u), max allowed=(%d)",
                          ptlen, ACVP_SYM_PT_BIT_MAX);
-            return ACVP_INVALID_ARG;
+            rv = ACVP_INVALID_ARG;
+            goto err;
         }
 
         ACVP_LOG_INFO("    Test group: %d", i);
@@ -836,11 +861,13 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             key = json_object_get_string(testobj, "key");
             if (!key) {
                 ACVP_LOG_ERR("Server JSON missing 'key'");
-                return ACVP_MISSING_ARG;
+                rv = ACVP_MISSING_ARG;
+                goto err;
             }
             if (strnlen_s(key, ACVP_SYM_KEY_MAX_STR + 1) > ACVP_SYM_KEY_MAX_STR) {
                 ACVP_LOG_ERR("'key' length exceeds max aes key string length (%d)", ACVP_SYM_KEY_MAX_STR);
-                return ACVP_INVALID_ARG;
+                rv = ACVP_INVALID_ARG;
+                goto err;
             }
 
             if (alg_id == ACVP_AES_CFB1) {
@@ -848,7 +875,8 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 if (datalen > ACVP_SYM_PT_BIT_MAX) {
                     ACVP_LOG_ERR("'dataLen' too large (%u), max allowed=(%d)",
                                  datalen, ACVP_SYM_PT_BIT_MAX);
-                    return ACVP_INVALID_ARG;
+                    rv = ACVP_INVALID_ARG;
+                    goto err;
                 }
             }
 
@@ -857,13 +885,15 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 pt = json_object_get_string(testobj, "pt");
                 if (!pt) {
                     ACVP_LOG_ERR("Server JSON missing 'pt'");
-                    return ACVP_MISSING_ARG;
+                    rv = ACVP_MISSING_ARG;
+                    goto err;
                 }
                 tmp_pt_len = strnlen_s(pt, ACVP_SYM_PT_MAX + 1);
                 if (tmp_pt_len > ACVP_SYM_PT_MAX) {
                     ACVP_LOG_ERR("'pt' too long, max allowed=(%d)",
                                  ACVP_SYM_PT_MAX);
-                    return ACVP_INVALID_ARG;
+                    rv = ACVP_INVALID_ARG;
+                    goto err;
                 }
             } else {
                 unsigned int tmp_ct_len = 0;
@@ -871,25 +901,29 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 ct = json_object_get_string(testobj, "ct");
                 if (!ct) {
                     ACVP_LOG_ERR("Server JSON missing 'ct'");
-                    return ACVP_MISSING_ARG;
+                    rv = ACVP_MISSING_ARG;
+                    goto err;
                 }
                 tmp_ct_len = strnlen_s(ct, ACVP_SYM_CT_MAX + 1);
                 if (tmp_ct_len > ACVP_SYM_CT_MAX) {
                     ACVP_LOG_ERR("'ct' too long, max allowed=(%d)",
                                  ACVP_SYM_CT_MAX);
-                    return ACVP_INVALID_ARG;
+                    rv = ACVP_INVALID_ARG;
+                    goto err;
                 }
 
                 if (alg_id == ACVP_AES_GCM) {
                     tag = json_object_get_string(testobj, "tag");
                     if (!tag) {
                         ACVP_LOG_ERR("Server JSON missing 'tag'");
-                        return ACVP_MISSING_ARG;
+                        rv = ACVP_MISSING_ARG;
+                        goto err;
                     }
                     if (strnlen_s(tag, ACVP_SYM_TAG_MAX + 1) > ACVP_SYM_TAG_MAX) {
                         ACVP_LOG_ERR("'tag' too long, max allowed=(%d)",
                                      ACVP_SYM_TAG_MAX);
-                        return ACVP_INVALID_ARG;
+                        rv = ACVP_INVALID_ARG;
+                        goto err;
                     }
                 }
             }
@@ -905,23 +939,27 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                     iv = json_object_get_string(testobj, "tweakValue");
                     if (!iv) {
                         ACVP_LOG_ERR("Server JSON missing 'tweakValue'");
-                        return ACVP_MISSING_ARG;
+                        rv = ACVP_MISSING_ARG;
+                        goto err;
                     }
                     if (strnlen_s(iv, ACVP_SYM_IV_MAX + 1) > ACVP_SYM_IV_MAX) {
                         ACVP_LOG_ERR("'i' too long, max allowed=(%d)",
                                      ACVP_SYM_IV_MAX);
-                        return ACVP_INVALID_ARG;
+                        rv = ACVP_INVALID_ARG;
+                        goto err;
                     }
                 } else {
                     iv = json_object_get_string(testobj, "iv");
                     if (!iv) {
                         ACVP_LOG_ERR("Server JSON missing 'iv'");
-                        return ACVP_MISSING_ARG;
+                        rv = ACVP_MISSING_ARG;
+                        goto err;
                     }
                     if (strnlen_s(iv, ACVP_SYM_IV_MAX + 1) > ACVP_SYM_IV_MAX) {
                         ACVP_LOG_ERR("'iv' too long, max allowed=(%d)",
                                      ACVP_SYM_IV_MAX);
-                        return ACVP_INVALID_ARG;
+                        rv = ACVP_INVALID_ARG;
+                        goto err;
                     }
                 }
             }
@@ -930,12 +968,14 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 aad = json_object_get_string(testobj, "aad");
                 if (!aad) {
                     ACVP_LOG_ERR("Server JSON missing 'aad'");
-                    return ACVP_MISSING_ARG;
+                    rv = ACVP_MISSING_ARG;
+                    goto err;
                 }
                 if (strnlen_s(aad, ACVP_SYM_AAD_MAX + 1) > ACVP_SYM_AAD_MAX) {
                     ACVP_LOG_ERR("'aad' too long, max allowed=(%d)",
                                  ACVP_SYM_AAD_MAX);
-                    return ACVP_INVALID_ARG;
+                    rv = ACVP_INVALID_ARG;
+                    goto err;
                 }
             }
 
@@ -961,15 +1001,14 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
              * Setup the test case data that will be passed down to
              * the crypto module.
              */
-            rv = acvp_aes_init_tc(ctx, &stc, tc_id, test_type, key, pt, ct, iv, tag, aad, kwcipher, keylen, ivlen,
-                                  datalen,
-                                  ptlen, taglen, alg_id, dir, iv_gen, iv_gen_mode, aadlen,
+            rv = acvp_aes_init_tc(ctx, &stc, tc_id, test_type, key, pt, ct, iv, tag, 
+                                  aad, kwcipher, keylen, ivlen, datalen, ptlen,
+                                  taglen, alg_id, dir, iv_gen, iv_gen_mode, aadlen,
                                   incr_ctr, ovrflw_ctr);
-
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("Init for stc (test case) failed");
                 acvp_aes_release_tc(&stc);
-                return rv;
+                goto err;
             }
 
             /* If Monte Carlo start that here */
@@ -979,8 +1018,9 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 rv = acvp_aes_mct_tc(ctx, cap, &tc, &stc, res_tarr);
                 if (rv != ACVP_SUCCESS) {
                     ACVP_LOG_ERR("crypto module failed the MCT operation");
+                    json_value_free(r_tval);
                     acvp_aes_release_tc(&stc);
-                    return ACVP_CRYPTO_MODULE_FAIL;
+                    goto err;
                 }
             } else {
                 /* Process the current AES KAT test vector... */
@@ -990,7 +1030,8 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                         alg_id != ACVP_AES_CCM && alg_id != ACVP_AES_KWP) {
                         ACVP_LOG_ERR("ERROR: crypto module failed the operation");
                         acvp_aes_release_tc(&stc);
-                        return ACVP_CRYPTO_MODULE_FAIL;
+                        rv = ACVP_CRYPTO_MODULE_FAIL;
+                        goto err;
                     }
                 }
 
@@ -1001,7 +1042,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 if (rv != ACVP_SUCCESS) {
                     ACVP_LOG_ERR("JSON output failure in AES module");
                     acvp_aes_release_tc(&stc);
-                    return rv;
+                    goto err;
                 }
             }
 
@@ -1016,6 +1057,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         json_array_append_value(r_garr, r_gval);
     }
     json_array_append_value(reg_arry, r_vs_val);
+    rv = ACVP_SUCCESS;
 
     json_result = json_serialize_to_string_pretty(ctx->kat_resp);
     if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
@@ -1025,7 +1067,11 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     }
     json_free_serialized_string(json_result);
 
-    return ACVP_SUCCESS;
+err:
+    if (rv != ACVP_SUCCESS) {
+        acvp_release_json(r_vs_val, r_gval);
+    }
+    return rv;
 }
 
 /*

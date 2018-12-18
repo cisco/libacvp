@@ -141,7 +141,7 @@ ACVP_RESULT acvp_kdf135_tls_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     rv = acvp_setup_json_rsp_group(&ctx, &reg_arry_val, &r_vs_val, &r_vs, alg_str, &r_garr);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Failed to setup json response");
-        return rv;
+        goto err;
     }
 
     groups = json_object_get_array(obj, "testGroups");
@@ -160,7 +160,8 @@ ACVP_RESULT acvp_kdf135_tls_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         tgId = json_object_get_number(groupobj, "tgId");
         if (!tgId) {
             ACVP_LOG_ERR("Missing tgid from server JSON groub obj");
-            return ACVP_MALFORMED_JSON;
+            rv = ACVP_MALFORMED_JSON;
+            goto err;
         }
         json_object_set_number(r_gobj, "tgId", tgId);
         json_object_set_value(r_gobj, "tests", json_value_init_array());
@@ -169,25 +170,29 @@ ACVP_RESULT acvp_kdf135_tls_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         pm_len = (unsigned int)json_object_get_number(groupobj, "preMasterSecretLength");
         if (!pm_len) {
             ACVP_LOG_ERR("preMasterSecretLength incorrect, %d", pm_len);
-            return ACVP_INVALID_ARG;
+            rv = ACVP_INVALID_ARG;
+            goto err;
         }
 
         kb_len = (unsigned int)json_object_get_number(groupobj, "keyBlockLength");
         if (!kb_len) {
             ACVP_LOG_ERR("keyBlockLength incorrect, %d", kb_len);
-            return ACVP_INVALID_ARG;
+            rv = ACVP_INVALID_ARG;
+            goto err;
         }
 
         method = json_object_get_string(groupobj, "tlsVersion");
         if (!method) {
             ACVP_LOG_ERR("Failed to include tlsVersion");
-            return ACVP_MISSING_ARG;
+            rv = ACVP_MISSING_ARG;
+            goto err;
         }
 
         sha = json_object_get_string(groupobj, "hashAlg");
         if (!sha) {
             ACVP_LOG_ERR("Failed to include hashAlg");
-            return ACVP_MISSING_ARG;
+            rv = ACVP_MISSING_ARG;
+            goto err;
         }
 
         if (!strncmp(method, "v1.2", 4)) {
@@ -196,7 +201,8 @@ ACVP_RESULT acvp_kdf135_tls_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             meth = ACVP_KDF135_TLS10_TLS11;
         } else {
             ACVP_LOG_ERR("Not TLS method");
-            return ACVP_NO_CAP;
+            rv = ACVP_NO_CAP;
+            goto err;
         }
 
         if (!strncmp(sha, "SHA2-256", 8)) {
@@ -207,7 +213,8 @@ ACVP_RESULT acvp_kdf135_tls_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             md = ACVP_SHA512;
         } else {
             ACVP_LOG_ERR("Not TLS SHA");
-            return ACVP_NO_CAP;
+            rv = ACVP_NO_CAP;
+            goto err;
         }
 
         ACVP_LOG_INFO("    Test group: %d", i);
@@ -228,36 +235,42 @@ ACVP_RESULT acvp_kdf135_tls_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             pm_secret = json_object_get_string(testobj, "preMasterSecret");
             if (!pm_secret) {
                 ACVP_LOG_ERR("Failed to include preMasterSecret");
-                return ACVP_MISSING_ARG;
+                rv = ACVP_MISSING_ARG;
+                goto err;
             }
             if (strnlen(pm_secret, pm_len) != pm_len / 4) {
                 ACVP_LOG_ERR("pmLen(%d) or pmSecret length(%d) incorrect",
                              pm_len / 4, strnlen(pm_secret, ACVP_KDF135_TLS_PMSECRET_STR_MAX));
-                return ACVP_INVALID_ARG;
+                rv = ACVP_INVALID_ARG;
+                goto err;
             }
 
             sh_rnd = json_object_get_string(testobj, "serverHelloRandom");
             if (!sh_rnd) {
                 ACVP_LOG_ERR("Failed to include serverHelloRandom");
-                return ACVP_MISSING_ARG;
+                rv = ACVP_MISSING_ARG;
+                goto err;
             }
 
             ch_rnd = json_object_get_string(testobj, "clientHelloRandom");
             if (!ch_rnd) {
                 ACVP_LOG_ERR("Failed to include clientHelloRandom");
-                return ACVP_MISSING_ARG;
+                rv = ACVP_MISSING_ARG;
+                goto err;
             }
 
             s_rnd = json_object_get_string(testobj, "serverRandom");
             if (!s_rnd) {
                 ACVP_LOG_ERR("Failed to include serverRandom");
-                return ACVP_MISSING_ARG;
+                rv = ACVP_MISSING_ARG;
+                goto err;
             }
 
             c_rnd = json_object_get_string(testobj, "clientRandom");
             if (!c_rnd) {
                 ACVP_LOG_ERR("Failed to include clientRandom");
-                return ACVP_MISSING_ARG;
+                rv = ACVP_MISSING_ARG;
+                goto err;
             }
 
             ACVP_LOG_INFO("        Test case: %d", j);
@@ -284,14 +297,15 @@ ACVP_RESULT acvp_kdf135_tls_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                                          kb_len, pm_secret, sh_rnd, ch_rnd, s_rnd, c_rnd);
             if (rv != ACVP_SUCCESS) {
                 acvp_kdf135_tls_release_tc(&stc);
-                return rv;
+                goto err;
             }
 
             /* Process the current test vector... */
             if ((cap->crypto_handler)(&tc)) {
                 ACVP_LOG_ERR("crypto module failed the operation");
                 acvp_kdf135_tls_release_tc(&stc);
-                return ACVP_CRYPTO_MODULE_FAIL;
+                rv = ACVP_CRYPTO_MODULE_FAIL;
+                goto err;
             }
 
             /*
@@ -301,7 +315,7 @@ ACVP_RESULT acvp_kdf135_tls_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("JSON output failure in hash module");
                 acvp_kdf135_tls_release_tc(&stc);
-                return rv;
+                goto err;
             }
 
             /*
@@ -324,8 +338,13 @@ ACVP_RESULT acvp_kdf135_tls_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         ACVP_LOG_INFO("\n\n%s\n\n", json_result);
     }
     json_free_serialized_string(json_result);
+    rv = ACVP_SUCCESS;
 
-    return ACVP_SUCCESS;
+err:
+    if (rv != ACVP_SUCCESS) {
+        acvp_release_json(r_vs_val, r_gval);
+    }
+    return rv;
 }
 
 /*

@@ -277,7 +277,8 @@ ACVP_RESULT acvp_cmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         tgId = json_object_get_number(groupobj, "tgId");
         if (!tgId) {
             ACVP_LOG_ERR("Missing tgid from server JSON groub obj");
-            return ACVP_MALFORMED_JSON;
+            rv = ACVP_MALFORMED_JSON;
+            goto err;
         }
         json_object_set_number(r_gobj, "tgId", tgId);
         json_object_set_value(r_gobj, "tests", json_value_init_array());
@@ -287,34 +288,39 @@ ACVP_RESULT acvp_cmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             keyLen = (unsigned int)json_object_get_number(groupobj, "keyLen");
             if (!keyLen) {
                 ACVP_LOG_ERR("keylen missing from cmac aes json");
-                return ACVP_MISSING_ARG;
+                rv = ACVP_MISSING_ARG;
+                goto err;
             }
         } else if (alg_id == ACVP_CMAC_TDES) {
             keyingOption = (unsigned int)json_object_get_number(groupobj, "keyingOption");
             if (keyingOption <= ACVP_CMAC_TDES_KEYING_OPTION_MIN ||
                 keyingOption >= ACVP_CMAC_TDES_KEYING_OPTION_MAX) {
                 ACVP_LOG_ERR("keyingOption missing or wrong from cmac tdes json");
-                return ACVP_INVALID_ARG;
+                rv = ACVP_INVALID_ARG;
+                goto err;
             }
         }
 
         direction = (char *)json_object_get_string(groupobj, "direction");
         if (!direction) {
             ACVP_LOG_ERR("Unable to parse 'direction' from JSON.");
-            return ACVP_MALFORMED_JSON;
+            rv = ACVP_MALFORMED_JSON;
+            goto err;
         }
         if (strncmp((const char *)direction, "ver", 3) == 0) {
             verify = 1;
         } else if (strncmp((const char *)direction, "gen", 3) != 0) {
             ACVP_LOG_ERR("'direction' should be 'gen' or 'ver'");
-            return ACVP_UNSUPPORTED_OP;
+            rv = ACVP_UNSUPPORTED_OP;
+            goto err;
         }
         msglen = (unsigned int)json_object_get_number(groupobj, "msgLen") / 8;
 
         maclen = (unsigned int)json_object_get_number(groupobj, "macLen") / 8;
         if (!maclen) {
             ACVP_LOG_ERR("Server JSON missing 'macLen'");
-            return ACVP_MISSING_ARG;
+            rv = ACVP_MISSING_ARG;
+            goto err;
         }
 
         ACVP_LOG_INFO("\n\n    Test group: %d", i);
@@ -334,27 +340,32 @@ ACVP_RESULT acvp_cmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 json_msglen = strnlen(msg, ACVP_CMAC_MSGLEN_MAX_STR + 1);
                 if (json_msglen > ACVP_CMAC_MSGLEN_MAX_STR) {
                     ACVP_LOG_ERR("'msg' too long");
-                    return ACVP_INVALID_ARG;
+                    rv = ACVP_INVALID_ARG;
+                    goto err;
                 }
                 if (!msglen && json_msglen > 0) {
                     ACVP_LOG_ERR("Server JSON missing 'msgLen'");
-                    return ACVP_MISSING_ARG;
+                    rv = ACVP_MISSING_ARG;
+                    goto err;
                 }
             } else if (msglen) {
                 ACVP_LOG_ERR("msglen is nonzero, expected 'msg' in json");
-                return ACVP_MISSING_ARG;
+                rv = ACVP_MISSING_ARG;
+                goto err;
             }
 
             if (alg_id == ACVP_CMAC_AES) {
                 key1 = (char *)json_object_get_string(testobj, "key");
                 if (!key1) {
                     ACVP_LOG_ERR("Server JSON missing 'key'");
-                    return ACVP_MISSING_ARG;
+                    rv = ACVP_MISSING_ARG;
+                    goto err;
                 }
                 key1_len = strnlen(key1, ACVP_CMAC_KEY_MAX + 1);
                 if (key1_len > ACVP_CMAC_KEY_MAX) {
                     ACVP_LOG_ERR("Invalid length for 'key' attribute in CMAC-AES test");
-                    return ACVP_INVALID_ARG;
+                    rv = ACVP_INVALID_ARG;
+                    goto err;
                 }
             } else if (alg_id == ACVP_CMAC_TDES) {
                 key1 = (char *)json_object_get_string(testobj, "key1");
@@ -362,7 +373,8 @@ ACVP_RESULT acvp_cmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 key3 = (char *)json_object_get_string(testobj, "key3");
                 if (!key1 || !key2 || !key3) {
                     ACVP_LOG_ERR("Server JSON missing 'key(1,2,3)' value");
-                    return ACVP_MISSING_ARG;
+                    rv = ACVP_MISSING_ARG;
+                    goto err;
                 }
                 key1_len = strnlen(key1, ACVP_CMAC_KEY_MAX + 1);
                 key2_len = strnlen(key2, ACVP_CMAC_KEY_MAX + 1);
@@ -371,7 +383,8 @@ ACVP_RESULT acvp_cmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                     key2_len > ACVP_CMAC_KEY_MAX ||
                     key3_len > ACVP_CMAC_KEY_MAX) {
                     ACVP_LOG_ERR("Invalid length for 'key(1|2|3)' attribute in CMAC-TDES test");
-                    return ACVP_INVALID_ARG;
+                    rv = ACVP_INVALID_ARG;
+                    goto err;
                 }
             }
 
@@ -379,7 +392,8 @@ ACVP_RESULT acvp_cmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 mac = (char *)json_object_get_string(testobj, "mac");
                 if (!mac) {
                     ACVP_LOG_ERR("Server JSON missing 'mac'");
-                    return ACVP_MISSING_ARG;
+                    rv = ACVP_MISSING_ARG;
+                    goto err;
                 }
             }
 
@@ -419,14 +433,15 @@ ACVP_RESULT acvp_cmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                                    verify, mac, maclen, alg_id);
             if (rv != ACVP_SUCCESS) {
                 acvp_cmac_release_tc(&stc);
-                return rv;
+                goto err;
             }
 
             /* Process the current test vector... */
             if ((cap->crypto_handler)(&tc)) {
                 ACVP_LOG_ERR("ERROR: crypto module failed the operation");
                 acvp_cmac_release_tc(&stc);
-                return ACVP_CRYPTO_MODULE_FAIL;
+                rv = ACVP_CRYPTO_MODULE_FAIL;
+                goto err;
             }
 
             /*
@@ -436,7 +451,7 @@ ACVP_RESULT acvp_cmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("ERROR: JSON output failure in hash module");
                 acvp_cmac_release_tc(&stc);
-                return rv;
+                goto err;
             }
 
             /*
@@ -459,6 +474,11 @@ ACVP_RESULT acvp_cmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         ACVP_LOG_INFO("\n\n%s\n\n", json_result);
     }
     json_free_serialized_string(json_result);
+    rv = ACVP_SUCCESS;
 
-    return ACVP_SUCCESS;
+err:
+    if (rv != ACVP_SUCCESS) {
+        acvp_release_json(r_vs_val, r_gval);
+    }
+    return rv;
 }

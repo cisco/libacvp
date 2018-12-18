@@ -129,7 +129,8 @@ ACVP_RESULT acvp_kdf135_snmp_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     groups = json_object_get_array(obj, "testGroups");
     if (!groups) {
         ACVP_LOG_ERR("Failed to include testGroups. ");
-        return ACVP_MISSING_ARG;
+        rv = ACVP_MISSING_ARG;
+        goto err;
     }
 
     g_cnt = json_array_get_count(groups);
@@ -147,7 +148,8 @@ ACVP_RESULT acvp_kdf135_snmp_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         tgId = json_object_get_number(groupobj, "tgId");
         if (!tgId) {
             ACVP_LOG_ERR("Missing tgid from server JSON groub obj");
-            return ACVP_MALFORMED_JSON;
+            rv = ACVP_MALFORMED_JSON;
+            goto err;
         }
         json_object_set_number(r_gobj, "tgId", tgId);
         json_object_set_value(r_gobj, "tests", json_value_init_array());
@@ -156,13 +158,15 @@ ACVP_RESULT acvp_kdf135_snmp_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         p_len = (unsigned int)json_object_get_number(groupobj, "passwordLength");
         if (!p_len) {
             ACVP_LOG_ERR("pLen incorrect, %d", p_len);
-            return ACVP_INVALID_ARG;
+            rv = ACVP_INVALID_ARG;
+            goto err;
         }
 
         engine_id = (char *)json_object_get_string(groupobj, "engineId");
         if (!engine_id) {
             ACVP_LOG_ERR("Failed to include engineId. ");
-            return ACVP_MISSING_ARG;
+            rv = ACVP_MISSING_ARG;
+            goto err;
         }
 
         ACVP_LOG_INFO("    Test group: %d", i);
@@ -172,13 +176,15 @@ ACVP_RESULT acvp_kdf135_snmp_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         tests = json_object_get_array(groupobj, "tests");
         if (!tests) {
             ACVP_LOG_ERR("Failed to include tests. ");
-            return ACVP_MISSING_ARG;
+            rv = ACVP_MISSING_ARG;
+            goto err;
         }
 
         t_cnt = json_array_get_count(tests);
         if (!t_cnt) {
             ACVP_LOG_ERR("Failed to include tests in array. ");
-            return ACVP_MISSING_ARG;
+            rv = ACVP_MISSING_ARG;
+            goto err;
         }
 
         for (j = 0; j < t_cnt; j++) {
@@ -189,18 +195,21 @@ ACVP_RESULT acvp_kdf135_snmp_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             tc_id = (unsigned int)json_object_get_number(testobj, "tcId");
             if (!tc_id) {
                 ACVP_LOG_ERR("Failed to include tc_id. ");
-                return ACVP_MISSING_ARG;
+                rv = ACVP_MISSING_ARG;
+                goto err;
             }
 
             password = json_object_get_string(testobj, "password");
             if (!password) {
                 ACVP_LOG_ERR("Failed to include password");
-                return ACVP_MISSING_ARG;
+                rv = ACVP_MISSING_ARG;
+                goto err;
             }
             int actual_len = strnlen(password, ACVP_KDF135_SNMP_PASSWORD_MAX);
             if (actual_len != p_len) {
                 ACVP_LOG_ERR("pLen(%d) or password length(%d) incorrect", p_len, actual_len);
-                return ACVP_INVALID_ARG;
+                rv = ACVP_INVALID_ARG;
+                goto err;
             }
 
             ACVP_LOG_INFO("        Test case: %d", j);
@@ -222,14 +231,15 @@ ACVP_RESULT acvp_kdf135_snmp_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             rv = acvp_kdf135_snmp_init_tc(ctx, &stc, tc_id, alg_id, engine_id, password, p_len);
             if (rv != ACVP_SUCCESS) {
                 acvp_kdf135_snmp_release_tc(&stc);
-                return rv;
+                goto err;
             }
 
             /* Process the current test vector... */
             if ((cap->crypto_handler)(&tc)) {
                 ACVP_LOG_ERR("crypto module failed the operation");
                 acvp_kdf135_snmp_release_tc(&stc);
-                return ACVP_CRYPTO_MODULE_FAIL;
+                rv = ACVP_CRYPTO_MODULE_FAIL;
+                goto err;
             }
 
             /*
@@ -239,7 +249,7 @@ ACVP_RESULT acvp_kdf135_snmp_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("JSON output failure in hash module");
                 acvp_kdf135_snmp_release_tc(&stc);
-                return rv;
+                goto err;
             }
             /*
              * Release all the memory associated with the test case
@@ -261,8 +271,13 @@ ACVP_RESULT acvp_kdf135_snmp_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         ACVP_LOG_INFO("\n\n%s\n\n", json_result);
     }
     json_free_serialized_string(json_result);
+    rv = ACVP_SUCCESS;
 
-    return ACVP_SUCCESS;
+err:
+    if (rv != ACVP_SUCCESS) {
+        acvp_release_json(r_vs_val, r_gval);
+    }
+    return rv;
 }
 
 /*

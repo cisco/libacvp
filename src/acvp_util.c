@@ -704,3 +704,10 @@ ACVP_RESULT acvp_setup_json_rsp_group(ACVP_CTX **ctx,
     return ACVP_SUCCESS;
 }
 
+void acvp_release_json(JSON_Value *r_vs_val,
+                       JSON_Value *r_gval) {
+
+    if (r_gval) json_value_free(r_gval);
+    if (r_vs_val) json_value_free(r_vs_val);
+}
+
