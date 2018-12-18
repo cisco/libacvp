@@ -92,6 +92,8 @@ extern "C"
 #include <openssl/fips_rand.h>
 #include <openssl/fips.h>
 
+#include "safe_mem_lib.h"
+
 #if defined(dsa_builtin_paramgen2) && OPENSSL_VERSION_NUMBER <= 0x10100000L
 # undef dsa_builtin_paramgen2
 int dsa_builtin_paramgen2(DSA *ret, size_t L, size_t N,
@@ -258,7 +260,7 @@ static void fips_algtest_init_nofips(void)
 	for (i = 0; i < sizeof(dummy_entropy); i++)
 		dummy_entropy[i] = i & 0xff;
 	if (entropy_stick)
-		memcpy(dummy_entropy + 32, dummy_entropy + 16, 16);
+		memcpy_s(dummy_entropy + 32, (sizeof(dummy_entropy) - 32), dummy_entropy + 16, 16);
 	ctx = FIPS_get_default_drbg();
 	FIPS_drbg_init(ctx, NID_aes_256_ctr, DRBG_FLAG_CTR_USE_DF);
 	FIPS_drbg_set_callbacks(ctx, dummy_cb, 0, 16, dummy_cb, 0);

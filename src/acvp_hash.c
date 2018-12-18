@@ -197,12 +197,12 @@ static ACVP_RESULT acvp_hash_mct_tc(ACVP_CTX *ctx,
 static ACVP_HASH_TESTTYPE read_test_type(const char *tt_str) {
     int diff = 0;
 
-    strcmp_s("MCT", strlen("MCT"), tt_str, &diff);
+    strcmp_s("MCT", 3, tt_str, &diff);
     if (!diff) {
         return ACVP_HASH_TEST_TYPE_MCT;
     }
 
-    strcmp_s("AFT", strlen("AFT"), tt_str, &diff);
+    strcmp_s("AFT", 3, tt_str, &diff);
     if (!diff) {
         return ACVP_HASH_TEST_TYPE_AFT;
     }
@@ -294,7 +294,6 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     for (i = 0; i < g_cnt; i++) {
         ACVP_HASH_TESTTYPE test_type = 0;
         int tgId = 0;
-        int diff = 0;
 
         groupval = json_array_get_value(groups, i);
         groupobj = json_value_get_object(groupval);
