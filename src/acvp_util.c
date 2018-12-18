@@ -29,7 +29,7 @@
 #include <stdarg.h>
 #include "acvp.h"
 #include "acvp_lcl.h"
-#include "safe_str_lib.h"
+#include "safe_lib.h"
 
 #ifdef USE_MURL
 #include <murl/murl.h>
