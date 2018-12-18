@@ -187,6 +187,7 @@ static ACVP_RESULT acvp_build_cmac_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
     json_object_set_value(capabilities_obj, "direction", json_value_init_array());
     temp_arr = json_object_get_array(capabilities_obj, "direction");
     if (!cap_entry->cap.cmac_cap->direction_gen && !cap_entry->cap.cmac_cap->direction_ver) {
+        json_value_free(capabilities_val);
         return ACVP_MISSING_ARG;
     }
     if (cap_entry->cap.cmac_cap->direction_gen) { json_array_append_string(temp_arr, "gen"); }
@@ -240,6 +241,7 @@ static ACVP_RESULT acvp_build_cmac_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
         temp_arr = json_object_get_array(capabilities_obj, "keyingOption");
         sl_list = cap_entry->cap.cmac_cap->keying_option;
         if (!sl_list) {
+            json_value_free(capabilities_val);
             return ACVP_MISSING_ARG;
         }
         while (sl_list) {
@@ -352,6 +354,7 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
             json_array_append_number(opts_arr, 2);
         }
     }
+
     /*
      * Set the supported key lengths
      */
@@ -920,14 +923,14 @@ static ACVP_RESULT acvp_build_ecdsa_register_cap(ACVP_CIPHER cipher, JSON_Object
         json_object_set_value(cap_obj, "capabilities", json_value_init_array());
         caps_arr = json_object_get_array(cap_obj, "capabilities");
     }
-    alg_caps_val = json_value_init_object();
-    alg_caps_obj = json_value_get_object(alg_caps_val);
 
     /*
-     * Iterate through list of RSA modes and create registration object
+     * Iterate through list of ECDSA modes and create registration object
      * for each one, appending to the array as we go
      */
     if (cipher == ACVP_ECDSA_SIGVER || cipher == ACVP_ECDSA_SIGGEN) {
+        alg_caps_val = json_value_init_object();
+        alg_caps_obj = json_value_get_object(alg_caps_val);
         json_object_set_value(alg_caps_obj, "curve", json_value_init_array());
         curves_arr = json_object_get_array(alg_caps_obj, "curve");
     } else {
@@ -935,10 +938,12 @@ static ACVP_RESULT acvp_build_ecdsa_register_cap(ACVP_CIPHER cipher, JSON_Object
         curves_arr = json_object_get_array(cap_obj, "curve");
     }
     if (!current_curve) {
+        if (alg_caps_val)  json_value_free(alg_caps_val);
         return ACVP_MISSING_ARG;
     }
     while (current_curve) {
         if (!current_curve->name) {
+            if (alg_caps_val)  json_value_free(alg_caps_val);
             return ACVP_MISSING_ARG;
         }
         json_array_append_string(curves_arr, current_curve->name);
@@ -962,6 +967,7 @@ static ACVP_RESULT acvp_build_ecdsa_register_cap(ACVP_CIPHER cipher, JSON_Object
         hash_arr = json_object_get_array(alg_caps_obj, "hashAlg");
         while (current_hash) {
             if (!current_hash->name) {
+                if (alg_caps_val)  json_value_free(alg_caps_val);
                 return ACVP_MISSING_ARG;
             }
             json_array_append_string(hash_arr, current_hash->name);
@@ -969,7 +975,6 @@ static ACVP_RESULT acvp_build_ecdsa_register_cap(ACVP_CIPHER cipher, JSON_Object
         }
         json_array_append_value(caps_arr, alg_caps_val);
     }
-
     return ACVP_SUCCESS;
 }
 
@@ -2000,7 +2005,6 @@ static ACVP_RESULT acvp_build_kas_ecc_register_cap(ACVP_CTX *ctx,
                     set_obj = json_value_get_object(set_val);
 
                     set = current_pset->set;
-
                     curve_str = acvp_lookup_ec_curve_name(kas_ecc_cap->cipher,
                                                           current_pset->curve);
                     if (!curve_str) {
@@ -2392,7 +2396,6 @@ ACVP_RESULT acvp_build_dependency(ACVP_DEPENDENCY_LIST *dep, char **reg) {
     JSON_Object *ver_obj = NULL;
     ACVP_KV_LIST *kv_list;
     JSON_Array *reg_arry = NULL;
-
     JSON_Value *val = NULL;
     JSON_Object *obj = NULL;
 
@@ -2613,11 +2616,17 @@ ACVP_RESULT acvp_build_test_session(ACVP_CTX *ctx, char **reg) {
                 break;
             default:
                 ACVP_LOG_ERR("Cap entry not found, %d.", cap_entry->cipher);
+                json_value_free(cap_val);
+                json_value_free(val);
+                json_value_free(reg_arry_val);
                 return ACVP_NO_CAP;
             }
 
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("failed to build registration for cipher %s (%d)", acvp_lookup_cipher_name(cap_entry->cipher), rv);
+                json_value_free(cap_val);
+                json_value_free(val);
+                json_value_free(reg_arry_val);
                 return rv;
             }
 
@@ -2632,6 +2641,8 @@ ACVP_RESULT acvp_build_test_session(ACVP_CTX *ctx, char **reg) {
         }
     } else {
         ACVP_LOG_ERR("No capabilities added to ctx");
+        json_value_free(val);
+        json_value_free(reg_arry_val);
         return ACVP_NO_CAP;
     }
 
