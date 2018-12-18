@@ -91,6 +91,8 @@
 
 #define ACVP_ALG_MAX ACVP_CIPHER_END - 1  /* Used by alg_tbl[] */
 
+#define ACVP_ALG_NAME_MAX 32 /**< Always make sure this is >= the length of ACVP_ALG* strings */
+
 #define ACVP_ALG_AES_ECB             "AES-ECB"
 #define ACVP_ALG_AES_CBC             "AES-CBC"
 #define ACVP_ALG_AES_CFB1            "AES-CFB1"
