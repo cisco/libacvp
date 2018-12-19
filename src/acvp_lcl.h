@@ -92,6 +92,7 @@
 #define ACVP_ALG_MAX ACVP_CIPHER_END - 1  /* Used by alg_tbl[] */
 
 #define ACVP_ALG_NAME_MAX 32 /**< Always make sure this is >= the length of ACVP_ALG* strings */
+#define ACVP_ALG_MODE_MAX 32 /**< Always make sure this is >= the length of ACVP_MODE* strings */
 
 #define ACVP_ALG_AES_ECB             "AES-ECB"
 #define ACVP_ALG_AES_CBC             "AES-CBC"
@@ -179,7 +180,9 @@
 #define ACVP_ALG_KAS_FFC_KEYREGEN    "keyRegen"
 
 #define ACVP_ECDSA_EXTRA_BITS_STR "extra bits"
+#define ACVP_ECDSA_EXTRA_BITS_STR_LEN 10
 #define ACVP_ECDSA_TESTING_CANDIDATES_STR "testing candidates"
+#define ACVP_ECDSA_TESTING_CANDIDATES_STR_LEN 18
 
 #define ACVP_RSA_PRIME_TEST_TBLC2_STR "tblC2"
 #define ACVP_RSA_PRIME_TEST_TBLC3_STR "tblC3"
@@ -1169,6 +1172,9 @@ ACVP_CAPS_LIST *acvp_locate_cap_entry(ACVP_CTX *ctx, ACVP_CIPHER cipher);
 char *acvp_lookup_cipher_name(ACVP_CIPHER alg);
 
 ACVP_CIPHER acvp_lookup_cipher_index(const char *algorithm);
+
+ACVP_CIPHER acvp_lookup_cipher_w_mode_index(const char *algorithm,
+                                            const char *mode);
 
 ACVP_DRBG_MODE acvp_lookup_drbg_mode_index(const char *mode);
 

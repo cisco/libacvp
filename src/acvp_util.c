@@ -135,23 +135,28 @@ char *acvp_lookup_cipher_name(ACVP_CIPHER alg) {
     return NULL;
 }
 
-/*
- * This function returns the ID of a cipher given an
- * algorithm name (as defined in the ACVP spec).  It
- * returns 0 if none match.
+/**
+ * @brief Loop through all entries in alg_tbl, trying to match
+ *        \p algorithm to each name field. If successful, will
+ *        return the ACVP_CIPHER id field.
  *
- * IMPORTANT: This only works accurately for symmetric
- * ciphers
+ * IMPORTANT: This only works accurately for algorithms that have
+ * a 1:1 name to id entry. I.e. does not work for algorithms that
+ * have multiple entries with the same name but different mode.
+ * Use acvp_lookup_cipher_w_mode_index() for that!
+ *
+ * @return ACVP_CIPHER
+ * @return 0 if no-match
  */
 ACVP_CIPHER acvp_lookup_cipher_index(const char *algorithm) {
     int i = 0;
 
     if (!algorithm) {
-        return ACVP_CIPHER_START;
+        return 0;
     }
 
     for (i = 0; i < ACVP_ALG_MAX; i++) {
-        int diff = 0;
+        int diff = 1;
 
         strcmp_s(alg_tbl[i].name,
                  strnlen_s(alg_tbl[i].name, ACVP_ALG_NAME_MAX),
@@ -162,7 +167,48 @@ ACVP_CIPHER acvp_lookup_cipher_index(const char *algorithm) {
         }
     }
 
-    return ACVP_CIPHER_START;
+    return 0;
+}
+
+/**
+ * @brief Loop through all entries in alg_tbl, trying to match
+ *        both \p algorithm and \p mode to their respective fields.
+ *        If successful, will return the ACVP_CIPHER id field.
+ *
+ * Useful for algorithms that have multiple modes (i.e. asymmetric).
+ *
+ * @return ACVP_CIPHER
+ * @return 0 if no-match
+ */
+ACVP_CIPHER acvp_lookup_cipher_w_mode_index(const char *algorithm,
+                                            const char *mode) {
+    int i = 0;
+
+    if (!algorithm || !mode) {
+        return 0;
+    }
+
+    for (i = 0; i < ACVP_ALG_MAX; i++) {
+        int diff = 0;
+
+        if (alg_tbl[i].mode == NULL) continue;
+
+        /* Compare the algorithm string */
+        strcmp_s(alg_tbl[i].name,
+                 strnlen_s(alg_tbl[i].name, ACVP_ALG_NAME_MAX),
+                 algorithm, &diff);
+
+        if (!diff) {
+            /* Compare the mode string */
+            strcmp_s(alg_tbl[i].mode,
+                     strnlen_s(alg_tbl[i].mode, ACVP_ALG_MODE_MAX),
+                     mode, &diff);
+
+            if (!diff) return alg_tbl[i].cipher;
+        }
+    }
+
+    return 0;
 }
 
 /*
