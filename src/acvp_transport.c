@@ -34,6 +34,7 @@
 #include <stdlib.h>
 #include "acvp.h"
 #include "acvp_lcl.h"
+#include "safe_lib.h"
 
 #define HTTP_OK    200
 #define HTTP_UNAUTH    401
@@ -55,7 +56,7 @@ static struct curl_slist *acvp_add_auth_hdr(ACVP_CTX *ctx, struct curl_slist *sl
      * Create the Authorzation header if needed
      */
     if (ctx->jwt_token) {
-        bearer_size = strnlen(ctx->jwt_token, ACVP_JWT_TOKEN_MAX) + ACVP_AUTH_BEARER_TITLE_LEN;
+        bearer_size = strnlen_s(ctx->jwt_token, ACVP_JWT_TOKEN_MAX) + ACVP_AUTH_BEARER_TITLE_LEN;
         bearer = calloc(1, bearer_size);
         if (!bearer) {
             ACVP_LOG_ERR("unable to allocate memory.");
@@ -322,7 +323,7 @@ static size_t acvp_curl_write_upld_func(void *ptr, size_t size, size_t nmemb, vo
         return 0;
     }
 
-    memcpy(&http_buf[ctx->read_ctr], ptr, nmemb);
+    memcpy_s(&http_buf[ctx->read_ctr], (ACVP_KAT_BUF_MAX - ctx->read_ctr), ptr, nmemb);
     http_buf[ctx->read_ctr + nmemb] = 0;
     ctx->read_ctr += nmemb;
 
@@ -357,7 +358,7 @@ static size_t acvp_curl_write_vs_func(void *ptr, size_t size, size_t nmemb, void
         return 0;
     }
 
-    memcpy(&json_buf[ctx->read_ctr], ptr, nmemb);
+    memcpy_s(&json_buf[ctx->read_ctr], (ACVP_ANS_BUF_MAX - ctx->read_ctr), ptr, nmemb);
     json_buf[ctx->read_ctr + nmemb] = 0;
     ctx->read_ctr += nmemb;
 
@@ -392,7 +393,7 @@ static size_t acvp_curl_write_sample_func(void *ptr, size_t size, size_t nmemb, 
         return 0;
     }
 
-    memcpy(&json_buf[ctx->read_ctr], ptr, nmemb);
+    memcpy_s(&json_buf[ctx->read_ctr], (ACVP_ANS_BUF_MAX - ctx->read_ctr), ptr, nmemb);
     json_buf[ctx->read_ctr + nmemb] = 0;
     ctx->read_ctr += nmemb;
 
@@ -427,7 +428,7 @@ static size_t acvp_curl_write_kat_func(void *ptr, size_t size, size_t nmemb, voi
         return 0;
     }
 
-    memcpy(&json_buf[ctx->read_ctr], ptr, nmemb);
+    memcpy_s(&json_buf[ctx->read_ctr], (ACVP_KAT_BUF_MAX - ctx->read_ctr), ptr, nmemb);
     json_buf[ctx->read_ctr + nmemb] = 0;
     ctx->read_ctr += nmemb;
 
@@ -462,7 +463,7 @@ static size_t acvp_curl_write_register_func(void *ptr, size_t size, size_t nmemb
         return 0;
     }
 
-    memcpy(&json_buf[ctx->read_ctr], ptr, nmemb);
+    memcpy_s(&json_buf[ctx->read_ctr], (ACVP_REG_BUF_MAX - ctx->read_ctr), ptr, nmemb);
     json_buf[ctx->read_ctr + nmemb] = 0;
     ctx->read_ctr += nmemb;
 
@@ -476,7 +477,8 @@ static size_t acvp_curl_write_register_func(void *ptr, size_t size, size_t nmemb
  */
 static ACVP_RESULT acvp_send_internal(ACVP_CTX *ctx, char *data, char *uri) {
     int rv;
-    char url[ACVP_ATTR_URL_MAX];
+    int diff = 1;
+    char url[ACVP_ATTR_URL_MAX] = {0};
 
     if (!ctx) {
         ACVP_LOG_ERR("No CTX to send");
@@ -493,14 +495,14 @@ static ACVP_RESULT acvp_send_internal(ACVP_CTX *ctx, char *data, char *uri) {
         return ACVP_NO_DATA;
     }
 
-    memset(url, 0x0, ACVP_ATTR_URL_MAX);
     snprintf(url, ACVP_ATTR_URL_MAX - 1, "https://%s:%d/%s%s%s", ctx->server_name, ctx->server_port,
              ctx->api_context, ctx->path_segment, uri);
 
     /*
      * only need to clear jwt if logging in
      */
-    if (strncmp(uri, "login", 5) == 0) {
+    strcmp_s("login", 5, uri, &diff);
+    if (!diff) {
         if (ctx->jwt_token) {
             free(ctx->jwt_token);
         }
@@ -610,6 +612,8 @@ static ACVP_RESULT inspect_http_code(ACVP_CTX *ctx, int code) {
     }
 
     if (code == HTTP_UNAUTH) {
+        int diff = 1;
+
         if (ctx->sample_buf) {
             root_value = json_parse_string(ctx->sample_buf);
         } else if (ctx->kat_buf) {
@@ -628,10 +632,14 @@ static ACVP_RESULT inspect_http_code(ACVP_CTX *ctx, int code) {
             goto end;
         }
 
-        if (strncmp(err_str, JWT_EXPIRED_STR, JWT_EXPIRED_STR_LEN) == 0) {
+        strcmp_s(JWT_EXPIRED_STR, JWT_EXPIRED_STR_LEN, err_str, &diff);
+        if (!diff) {
             result = ACVP_JWT_EXPIRED;
             goto end;
-        } else if (strncmp(err_str, JWT_INVALID_STR, JWT_INVALID_STR_LEN) == 0) {
+        }
+
+        strcmp_s(JWT_INVALID_STR, JWT_INVALID_STR_LEN, err_str, &diff);
+        if (!diff) {
             result = ACVP_JWT_INVALID;
             goto end;
         }
@@ -758,7 +766,7 @@ end:
  * a KAT vector set from the ACVP server.
  */
 ACVP_RESULT acvp_retrieve_vector_set(ACVP_CTX *ctx, char *vsid_url) {
-    char url[ACVP_ATTR_URL_MAX];
+    char url[ACVP_ATTR_URL_MAX] = {0};
     ACVP_RESULT result = ACVP_SUCCESS;
 
     if (!ctx) {
@@ -775,14 +783,13 @@ ACVP_RESULT acvp_retrieve_vector_set(ACVP_CTX *ctx, char *vsid_url) {
         return ACVP_MISSING_ARG;
     }
 
-    memset(url, 0x0, ACVP_ATTR_URL_MAX);
     snprintf(url, ACVP_ATTR_URL_MAX - 1, "https://%s:%d/%s%s", ctx->server_name, ctx->server_port,
              ctx->api_context, vsid_url);
 
     ACVP_LOG_STATUS("GET %s", url);
 
     if (ctx->kat_buf) {
-        memset(ctx->kat_buf, 0x0, ACVP_KAT_BUF_MAX);
+        memzero_s(ctx->kat_buf, ACVP_KAT_BUF_MAX);
     }
 
     result = execute_network_action(ctx, ACVP_NET_ACTION_GET_VECTOR_SET,
@@ -803,7 +810,7 @@ ACVP_RESULT acvp_retrieve_vector_set(ACVP_CTX *ctx, char *vsid_url) {
  * to the ACV server.
  */
 ACVP_RESULT acvp_submit_vector_responses(ACVP_CTX *ctx) {
-    char url[ACVP_ATTR_URL_MAX];
+    char url[ACVP_ATTR_URL_MAX] = {0};
     ACVP_RESULT result = ACVP_SUCCESS;
 
     if (!ctx) {
@@ -820,7 +827,6 @@ ACVP_RESULT acvp_submit_vector_responses(ACVP_CTX *ctx) {
         return ACVP_MISSING_ARG;
     }
 
-    memset(url, 0x0, ACVP_ATTR_URL_MAX);
     snprintf(url, ACVP_ATTR_URL_MAX - 1, "https://%s:%d/%s%s/results", ctx->server_name, ctx->server_port,
              ctx->api_context, ctx->vsid_url);
 
@@ -845,7 +851,7 @@ ACVP_RESULT acvp_submit_vector_responses(ACVP_CTX *ctx) {
  * more specifically for a vectorSet
  */
 ACVP_RESULT acvp_retrieve_result(ACVP_CTX *ctx, char *api_url) {
-    char url[ACVP_ATTR_URL_MAX];
+    char url[ACVP_ATTR_URL_MAX] = {0};
     ACVP_RESULT result = ACVP_SUCCESS;
 
     if (!ctx) {
@@ -862,12 +868,11 @@ ACVP_RESULT acvp_retrieve_result(ACVP_CTX *ctx, char *api_url) {
         return ACVP_MISSING_ARG;
     }
 
-    memset(url, 0x0, ACVP_ATTR_URL_MAX);
     snprintf(url, ACVP_ATTR_URL_MAX - 1, "https://%s:%d/%s%s/results", ctx->server_name, ctx->server_port,
              ctx->api_context, api_url);
 
     if (ctx->kat_buf) {
-        memset(ctx->kat_buf, 0x0, ACVP_KAT_BUF_MAX);
+        memzero_s(ctx->kat_buf, ACVP_KAT_BUF_MAX);
     }
 
     result = execute_network_action(ctx, ACVP_NET_ACTION_GET_RESULT,
@@ -890,7 +895,7 @@ ACVP_RESULT acvp_retrieve_result(ACVP_CTX *ctx, char *api_url) {
  * more specifically for a vectorSet
  */
 ACVP_RESULT acvp_retrieve_expected_result(ACVP_CTX *ctx, char *api_url) {
-    char url[ACVP_ATTR_URL_MAX];
+    char url[ACVP_ATTR_URL_MAX] = {0};
     ACVP_RESULT result = ACVP_SUCCESS;
 
     if (!ctx) {
@@ -907,12 +912,11 @@ ACVP_RESULT acvp_retrieve_expected_result(ACVP_CTX *ctx, char *api_url) {
         return ACVP_MISSING_ARG;
     }
 
-    memset(url, 0x0, ACVP_ATTR_URL_MAX);
     snprintf(url, ACVP_ATTR_URL_MAX - 1, "https://%s:%d/%s%s/expected", ctx->server_name, ctx->server_port,
              ctx->api_context, api_url);
 
     if (ctx->sample_buf) {
-        memset(ctx->sample_buf, 0x0, ACVP_KAT_BUF_MAX);
+        memzero_s(ctx->sample_buf, ACVP_KAT_BUF_MAX);
     }
 
     result = execute_network_action(ctx, ACVP_NET_ACTION_GET_SAMPLE,
