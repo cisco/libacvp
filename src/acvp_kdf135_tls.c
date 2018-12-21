@@ -244,7 +244,7 @@ ACVP_RESULT acvp_kdf135_tls_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             }
             if (strnlen_s(pm_secret, pm_len) != pm_len / 4) {
                 ACVP_LOG_ERR("pmLen(%d) or pmSecret length(%d) incorrect",
-                             pm_len / 4, strnlen(pm_secret, ACVP_KDF135_TLS_PMSECRET_STR_MAX));
+                             pm_len / 4, strnlen_s(pm_secret, ACVP_KDF135_TLS_PMSECRET_STR_MAX));
                 rv = ACVP_INVALID_ARG;
                 goto err;
             }

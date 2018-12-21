@@ -745,7 +745,6 @@ static int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
 
         strcmp_s("--no_kas_ecc", strnlen_s("--no_kas_ecc", OPTION_STR_MAX), *argv, &diff);
         if (!diff) {
-        } else if (strncmp(*argv, "--no_kas_ecc", strlen("--no_kas_ecc")) == 0) {
 #ifdef ACVP_NO_RUNTIME
             if (cli_alg_option(&cfg->kas_ecc, &kas_ecc_status, ALG_DISABLE,
                                "--kas_ecc", "--no_kas_ecc")) return 1;
@@ -5805,7 +5804,8 @@ static ACVP_RESULT totp(char **token) {
     token_buff[6] = (t >> T_LEN * 1) & 0xff;
     token_buff[7] = t & 0xff;
 
-    seed_len = base64_decode(seed, strlen(seed), (unsigned char *)new_seed);
+#define MAX_SEED_LEN 64
+    seed_len = base64_decode(seed, strnlen_s(seed, MAX_SEED_LEN), (unsigned char *)new_seed);
     if (seed_len  == 0) {
         printf("Failed to decode TOTP seed\n");
         free(new_seed);

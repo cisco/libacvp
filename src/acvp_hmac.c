@@ -284,7 +284,7 @@ ACVP_RESULT acvp_hmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
             if (strnlen_s((char *)msg, ACVP_HMAC_MSG_MAX) != msglen * 2 / 8) {
                 ACVP_LOG_ERR("msgLen(%d) or msg length(%d) incorrect",
-                             msglen, strnlen((char *)msg, ACVP_HMAC_MSG_MAX) * 8 / 2);
+                             msglen, strnlen_s((char *)msg, ACVP_HMAC_MSG_MAX) * 8 / 2);
                 rv = ACVP_INVALID_ARG;
                 goto err;
             }
@@ -298,7 +298,7 @@ ACVP_RESULT acvp_hmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
             if (strnlen_s((char *)key, ACVP_HMAC_KEY_STR_MAX) != (keylen / 4)) {
                 ACVP_LOG_ERR("keyLen(%d) or key length(%d) incorrect",
-                             keylen, strnlen((char *)key, ACVP_HMAC_KEY_STR_MAX) * 4);
+                             keylen, strnlen_s((char *)key, ACVP_HMAC_KEY_STR_MAX) * 4);
                 rv = ACVP_INVALID_ARG;
                 goto err;
             }

@@ -414,7 +414,7 @@ ACVP_RESULT acvp_kdf135_ikev1_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             if (strnlen_s((char *)init_nonce,
                         ACVP_KDF135_IKEV1_INIT_NONCE_STR_MAX + 1) != ((init_nonce_len + 7) / 8) * 2) {
                 ACVP_LOG_ERR("nInit length(%d) incorrect, expected(%d)",
-                             strnlen((char *)init_nonce,
+                             strnlen_s((char *)init_nonce,
                                      ACVP_KDF135_IKEV1_INIT_NONCE_STR_MAX + 1),
                              ((init_nonce_len + 7) / 8) * 2);
                 rv = ACVP_INVALID_ARG;
@@ -430,7 +430,7 @@ ACVP_RESULT acvp_kdf135_ikev1_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             if (strnlen_s((char *)resp_nonce,
                         ACVP_KDF135_IKEV1_RESP_NONCE_STR_MAX + 1) != ((resp_nonce_len + 7) / 8) * 2) {
                 ACVP_LOG_ERR("nResp length(%d) incorrect, expected(%d)",
-                             strnlen((char *)resp_nonce,
+                             strnlen_s((char *)resp_nonce,
                                      ACVP_KDF135_IKEV1_RESP_NONCE_STR_MAX + 1),
                              ((resp_nonce_len + 7) / 8) * 2);
                 rv = ACVP_INVALID_ARG;

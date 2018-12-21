@@ -472,8 +472,8 @@ static ACVP_RESULT acvp_kdf135_ssh_init_tc(ACVP_CTX *ctx,
     memzero_s(stc, sizeof(ACVP_KDF135_SSH_TC));
 
     // Get the byte lengths
-    shared_secret_len = strnlen(shared_secret_k, ACVP_KDF135_SSH_STR_IN_MAX) / 2;
-    session_id_len = strnlen(session_id, ACVP_KDF135_SSH_STR_IN_MAX) / 2;
+    shared_secret_len = strnlen_s(shared_secret_k, ACVP_KDF135_SSH_STR_IN_MAX) / 2;
+    session_id_len = strnlen_s(session_id, ACVP_KDF135_SSH_STR_IN_MAX) / 2;
 
     stc->shared_secret_k = calloc(shared_secret_len, sizeof(unsigned char));
     if (!stc->shared_secret_k) { return ACVP_MALLOC_FAIL; }
