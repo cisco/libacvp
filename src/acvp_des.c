@@ -1000,7 +1000,7 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     json_array_append_value(reg_arry, r_vs_val);
     rv = ACVP_SUCCESS;
 
-    json_result = json_serialize_to_string_pretty(ctx->kat_resp);
+    json_result = json_serialize_to_string_pretty(ctx->kat_resp, NULL);
     if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
         printf("\n\n%s\n\n", json_result);
     } else {

@@ -270,7 +270,7 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
 
-            json_result = json_serialize_to_string_pretty(testval);
+            json_result = json_serialize_to_string_pretty(testval, NULL);
             ACVP_LOG_INFO("json testval count: %d\n %s\n", i, json_result);
             json_free_serialized_string(json_result);
 
@@ -450,7 +450,7 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     }
     json_array_append_value(reg_arry, r_vs_val);
 
-    json_result = json_serialize_to_string_pretty(ctx->kat_resp);
+    json_result = json_serialize_to_string_pretty(ctx->kat_resp, NULL);
     if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
         printf("\n\n%s\n\n", json_result);
     } else {

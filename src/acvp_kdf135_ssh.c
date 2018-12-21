@@ -357,7 +357,7 @@ ACVP_RESULT acvp_kdf135_ssh_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
     json_array_append_value(reg_arry, r_vs_val);
 
-    json_result = json_serialize_to_string_pretty(ctx->kat_resp);
+    json_result = json_serialize_to_string_pretty(ctx->kat_resp, NULL);
     if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
         printf("\n\n%s\n\n", json_result);
     } else {

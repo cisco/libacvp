@@ -1522,7 +1522,7 @@ ACVP_RESULT acvp_dsa_pqgver_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     }
     memzero_s(&stc, sizeof(ACVP_DSA_TC));
     json_array_append_value(reg_arry, r_vs_val);
-    json_result = json_serialize_to_string_pretty(ctx->kat_resp);
+    json_result = json_serialize_to_string_pretty(ctx->kat_resp, NULL);
     if (!json_result) {
         ACVP_LOG_ERR("JSON unable to be serialized");
         return ACVP_JSON_ERR;
@@ -1637,7 +1637,7 @@ ACVP_RESULT acvp_dsa_pqggen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
     memzero_s(&stc, sizeof(ACVP_DSA_TC));
     json_array_append_value(reg_arry, r_vs_val);
-    json_result = json_serialize_to_string_pretty(ctx->kat_resp);
+    json_result = json_serialize_to_string_pretty(ctx->kat_resp, NULL);
     if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
         printf("\n\n%s\n\n", json_result);
     } else {
@@ -1747,7 +1747,7 @@ ACVP_RESULT acvp_dsa_siggen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
     memzero_s(&stc, sizeof(ACVP_DSA_TC));
     json_array_append_value(reg_arry, r_vs_val);
-    json_result = json_serialize_to_string_pretty(ctx->kat_resp);
+    json_result = json_serialize_to_string_pretty(ctx->kat_resp, NULL);
 
     if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
         printf("\n\n%s\n\n", json_result);
@@ -1858,7 +1858,7 @@ ACVP_RESULT acvp_dsa_keygen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
     memzero_s(&stc, sizeof(ACVP_DSA_TC));
     json_array_append_value(reg_arry, r_vs_val);
-    json_result = json_serialize_to_string_pretty(ctx->kat_resp);
+    json_result = json_serialize_to_string_pretty(ctx->kat_resp, NULL);
 
     if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
         printf("\n\n%s\n\n", json_result);
@@ -1969,7 +1969,7 @@ ACVP_RESULT acvp_dsa_sigver_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
     memzero_s(&stc, sizeof(ACVP_DSA_TC));
     json_array_append_value(reg_arry, r_vs_val);
-    json_result = json_serialize_to_string_pretty(ctx->kat_resp);
+    json_result = json_serialize_to_string_pretty(ctx->kat_resp, NULL);
     if (!json_result) {
         ACVP_LOG_ERR("JSON unable to be serialized");
         return ACVP_JSON_ERR;

@@ -1124,7 +1124,7 @@ ACVP_RESULT acvp_mark_as_sample(ACVP_CTX *ctx) {
  * second of the two-factor authentications using
  * a TOTP.
  */
-static ACVP_RESULT acvp_build_login(ACVP_CTX *ctx, char **login, int refresh) {
+static ACVP_RESULT acvp_build_login(ACVP_CTX *ctx, char **login, int *login_len, int refresh) {
     ACVP_RESULT rv = ACVP_SUCCESS;
     JSON_Value *reg_arry_val = NULL;
     JSON_Value *ver_val = NULL;
@@ -1135,6 +1135,7 @@ static ACVP_RESULT acvp_build_login(ACVP_CTX *ctx, char **login, int refresh) {
     char *token = malloc(ACVP_TOTP_TOKEN_MAX);
 
     if (!token) return ACVP_MALLOC_FAIL;
+    if (!login_len) return ACVP_INVALID_ARG;
 
     memzero_s(token, ACVP_TOTP_TOKEN_MAX);
 
@@ -1168,7 +1169,7 @@ static ACVP_RESULT acvp_build_login(ACVP_CTX *ctx, char **login, int refresh) {
     json_array_append_value(reg_arry, pw_val);
 
 end:
-    *login = json_serialize_to_string_pretty(reg_arry_val);
+    *login = json_serialize_to_string_pretty(reg_arry_val, login_len);
     free(token);
     json_value_free(reg_arry_val);
     return rv;
@@ -1188,6 +1189,7 @@ ACVP_RESULT acvp_register(ACVP_CTX *ctx) {
     ACVP_DEPENDENCY_LIST *current_dep;
 #endif
     char *login = NULL;
+    int login_len = 0, reg_len = 0;
     JSON_Value *tmp_json_from_file;
 
     if (!ctx) {
@@ -1198,7 +1200,7 @@ ACVP_RESULT acvp_register(ACVP_CTX *ctx) {
      * Construct the login message
      */
     if (ctx->totp_cb) {
-        rv = acvp_build_login(ctx, &login, 0);
+        rv = acvp_build_login(ctx, &login, &login_len, 0);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Unable to build login message");
             goto end;
@@ -1213,7 +1215,7 @@ ACVP_RESULT acvp_register(ACVP_CTX *ctx) {
         /*
          * Send the login to the ACVP server and get the response,
          */
-        rv = acvp_send_login(ctx, login);
+        rv = acvp_send_login(ctx, login, login_len);
         if (rv == ACVP_SUCCESS) {
             ACVP_LOG_STATUS("200 OK %s", ctx->reg_buf);
             rv = acvp_parse_login(ctx);
@@ -1310,12 +1312,12 @@ ACVP_RESULT acvp_register(ACVP_CTX *ctx) {
          * Send the capabilities to the ACVP server and get the response,
          * which should be a list of vector set ID urls
          */
-        rv = acvp_build_test_session(ctx, &reg);
+        rv = acvp_build_test_session(ctx, &reg, &reg_len);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Unable to build register message");
             goto end;
         }
-        rv = acvp_send_test_session_registration(ctx, reg);
+        rv = acvp_send_test_session_registration(ctx, reg, reg_len);
         ACVP_LOG_STATUS("Sending registration: %s", ctx->reg_buf);
         if (rv == ACVP_SUCCESS) {
             ACVP_LOG_STATUS("200 OK");
@@ -1329,7 +1331,7 @@ ACVP_RESULT acvp_register(ACVP_CTX *ctx) {
         }
     } else {
         tmp_json_from_file = json_parse_file(ctx->json_filename);
-        reg = json_serialize_to_string_pretty(tmp_json_from_file);
+        reg = json_serialize_to_string_pretty(tmp_json_from_file, NULL);
         json_value_free(tmp_json_from_file);
     }
 
@@ -1763,6 +1765,7 @@ ACVP_RESULT acvp_check_test_results(ACVP_CTX *ctx) {
 
 ACVP_RESULT acvp_refresh(ACVP_CTX *ctx) {
     char *login = NULL;
+    int login_len = 0;
     ACVP_RESULT rv = ACVP_SUCCESS;
 
     if (!ctx) {
@@ -1770,7 +1773,7 @@ ACVP_RESULT acvp_refresh(ACVP_CTX *ctx) {
     }
 
     if (ctx->totp_cb) {
-        rv = acvp_build_login(ctx, &login, 1);
+        rv = acvp_build_login(ctx, &login, &login_len, 1);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Unable to build login message");
             goto end;
@@ -1785,7 +1788,7 @@ ACVP_RESULT acvp_refresh(ACVP_CTX *ctx) {
         /*
          * Send the login to the ACVP server and get the response,
          */
-        rv = acvp_send_login(ctx, login);
+        rv = acvp_send_login(ctx, login, login_len);
         if (rv == ACVP_SUCCESS) {
             ACVP_LOG_STATUS("200 OK %s", ctx->reg_buf);
             rv = acvp_parse_login(ctx);

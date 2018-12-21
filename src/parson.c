@@ -1612,7 +1612,7 @@ JSON_Status json_serialize_to_buffer_pretty(const JSON_Value *value, char *buf, 
 JSON_Status json_serialize_to_file_pretty(const JSON_Value *value, const char *filename) {
     JSON_Status return_code = JSONSuccess;
     FILE *fp = NULL;
-    char *serialized_string = json_serialize_to_string_pretty(value);
+    char *serialized_string = json_serialize_to_string_pretty(value, NULL);
     if (serialized_string == NULL) {
         return JSONFailure;
     }
@@ -1631,12 +1631,16 @@ JSON_Status json_serialize_to_file_pretty(const JSON_Value *value, const char *f
     return return_code;
 }
 
-char * json_serialize_to_string_pretty(const JSON_Value *value) {
+char * json_serialize_to_string_pretty(const JSON_Value *value, int *len) {
     JSON_Status serialization_result = JSONFailure;
     size_t buf_size_bytes = json_serialization_size_pretty(value);
     char *buf = NULL;
     if (buf_size_bytes == 0) {
         return NULL;
+    }
+    if (len != NULL) {
+        /* The user wants to be provided with the string length */
+        *len = buf_size_bytes;
     }
     buf = (char*)parson_malloc(buf_size_bytes);
     if (buf == NULL) {

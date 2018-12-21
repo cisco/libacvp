@@ -2382,6 +2382,7 @@ static ACVP_RESULT acvp_build_kas_ffc_register_cap(ACVP_CTX *ctx,
     return ACVP_SUCCESS;
 }
 
+#if 0
 /*
  * This function builds the JSON message to register an OE dependency
  * with the validating server
@@ -2427,13 +2428,14 @@ ACVP_RESULT acvp_build_dependency(ACVP_DEPENDENCY_LIST *dep, char **reg) {
 
     return ACVP_SUCCESS;
 }
+#endif
 
 /*
  * This function builds the JSON register message that
  * will be sent to the ACVP server to advertised the crypto
  * capabilities of the module under test.
  */
-ACVP_RESULT acvp_build_test_session(ACVP_CTX *ctx, char **reg) {
+ACVP_RESULT acvp_build_test_session(ACVP_CTX *ctx, char **reg, int *out_len) {
     ACVP_RESULT rv = ACVP_SUCCESS;
     ACVP_CAPS_LIST *cap_entry;
 
@@ -2639,12 +2641,13 @@ ACVP_RESULT acvp_build_test_session(ACVP_CTX *ctx, char **reg) {
      * Add the entire caps exchange section to the top object
      */
     json_array_append_value(reg_arry, val);
-    *reg = json_serialize_to_string_pretty(reg_arry_val);
+    *reg = json_serialize_to_string_pretty(reg_arry_val, out_len);
     json_value_free(reg_arry_val);
 
     return ACVP_SUCCESS;
 }
 
+#if 0
 /*
  * This function builds the JSON message to register an OE with the
  * validating crypto server
@@ -2810,3 +2813,4 @@ ACVP_RESULT acvp_build_vendors(ACVP_CTX *ctx, char **reg) {
 
     return ACVP_SUCCESS;
 }
+#endif

@@ -1076,8 +1076,10 @@ struct acvp_ctx_t {
     char *ans_buf;  /* holds the queried answers on a sample registration */
 };
 
-ACVP_RESULT acvp_send_test_session_registration(ACVP_CTX *ctx, char *reg);
+ACVP_RESULT acvp_send_test_session_registration(ACVP_CTX *ctx, char *reg, int len);
 
+#if 0 /* Needs to be refactored to provide data length for underlying functions
+         Due to SafeC */
 ACVP_RESULT acvp_send_vendor_registration(ACVP_CTX *ctx, char *reg);
 
 ACVP_RESULT acvp_send_module_registration(ACVP_CTX *ctx, char *reg);
@@ -1085,8 +1087,9 @@ ACVP_RESULT acvp_send_module_registration(ACVP_CTX *ctx, char *reg);
 ACVP_RESULT acvp_send_oe_registration(ACVP_CTX *ctx, char *reg);
 
 ACVP_RESULT acvp_send_dep_registration(ACVP_CTX *ctx, char *reg);
+#endif
 
-ACVP_RESULT acvp_send_login(ACVP_CTX *ctx, char *login);
+ACVP_RESULT acvp_send_login(ACVP_CTX *ctx, char *login, int len);
 
 ACVP_RESULT acvp_retrieve_vector_set(ACVP_CTX *ctx, char *vsid_url);
 
@@ -1164,15 +1167,21 @@ ACVP_RESULT acvp_kas_ffc_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 /*
  * ACVP build registration functions used internally
  */
+#if 0 /* Needs to be refactored to provide data length for underlying functions
+         Due to SafeC */
 ACVP_RESULT acvp_build_vendors(ACVP_CTX *ctx, char **reg);
 
 ACVP_RESULT acvp_build_modules(ACVP_CTX *ctx, char **reg);
 
 ACVP_RESULT acvp_build_oes(ACVP_CTX *ctx, char **reg);
+#endif
 
-ACVP_RESULT acvp_build_test_session(ACVP_CTX *ctx, char **reg);
+ACVP_RESULT acvp_build_test_session(ACVP_CTX *ctx, char **reg, int *out_len);
 
+#if 0 /* Needs to be refactored to provide data length for underlying functions
+         Due to SafeC */
 ACVP_RESULT acvp_build_dependency(ACVP_DEPENDENCY_LIST *dep, char **reg);
+#endif
 
 /*
  * ACVP utility functions used internally

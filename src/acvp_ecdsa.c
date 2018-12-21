@@ -515,7 +515,7 @@ key_err:
 end:
     json_array_append_value(reg_arry, r_vs_val);
 
-    json_result = json_serialize_to_string_pretty(ctx->kat_resp);
+    json_result = json_serialize_to_string_pretty(ctx->kat_resp, NULL);
     if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
         printf("\n\n%s\n\n", json_result);
     } else {

@@ -205,7 +205,7 @@ static long acvp_curl_http_get(ACVP_CTX *ctx, char *url, void *writefunc) {
  * Return value is the HTTP status value from the server
  *	    (e.g. 200 for HTTP OK)
  */
-static long acvp_curl_http_post(ACVP_CTX *ctx, char *url, char *data, void *writefunc) {
+static long acvp_curl_http_post(ACVP_CTX *ctx, char *url, char *data, int data_len, void *writefunc) {
     long http_code = 0;
     CURL *hnd;
     CURLcode crv;
@@ -235,7 +235,7 @@ static long acvp_curl_http_post(ACVP_CTX *ctx, char *url, char *data, void *writ
     curl_easy_setopt(hnd, CURLOPT_CUSTOMREQUEST, "POST");
     curl_easy_setopt(hnd, CURLOPT_POST, 1L);
     curl_easy_setopt(hnd, CURLOPT_POSTFIELDS, data);
-    curl_easy_setopt(hnd, CURLOPT_POSTFIELDSIZE_LARGE, (curl_off_t)strlen(data));
+    curl_easy_setopt(hnd, CURLOPT_POSTFIELDSIZE_LARGE, (curl_off_t)data_len);
     curl_easy_setopt(hnd, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_2);
     //FIXME: we should always to TLS peer auth
     if (ctx->verify_peer && ctx->cacerts_file) {
@@ -475,7 +475,7 @@ static size_t acvp_curl_write_register_func(void *ptr, size_t size, size_t nmemb
  * parameter. This removes repeated code without having to change the
  * API that the library uses to send registrations
  */
-static ACVP_RESULT acvp_send_internal(ACVP_CTX *ctx, char *data, char *uri) {
+static ACVP_RESULT acvp_send_internal(ACVP_CTX *ctx, char *data, int data_len, char *uri) {
     int rv;
     int diff = 1;
     char url[ACVP_ATTR_URL_MAX] = {0};
@@ -509,7 +509,7 @@ static ACVP_RESULT acvp_send_internal(ACVP_CTX *ctx, char *data, char *uri) {
         ctx->jwt_token = NULL;
     }
 
-    rv = acvp_curl_http_post(ctx, url, data, &acvp_curl_write_register_func);
+    rv = acvp_curl_http_post(ctx, url, data, data_len, &acvp_curl_write_register_func);
     if (rv != HTTP_OK) {
         ACVP_LOG_ERR("Unable to register |%s| with ACVP server. curl rv=%d\n", url, rv);
         printf("%s", ctx->reg_buf);
@@ -524,6 +524,7 @@ static ACVP_RESULT acvp_send_internal(ACVP_CTX *ctx, char *data, char *uri) {
     return ACVP_SUCCESS;
 }
 
+#if 0
 /*
  * This is the transport function used within libacvp to register
  * the DUT attributes with the ACVP server.
@@ -571,6 +572,7 @@ ACVP_RESULT acvp_send_dep_registration(ACVP_CTX *ctx, char *reg) {
 ACVP_RESULT acvp_send_oe_registration(ACVP_CTX *ctx, char *reg) {
     return acvp_send_internal(ctx, reg, ACVP_OES_URI);
 }
+#endif
 
 /*
  * This is the transport function used within libacvp to register
@@ -580,8 +582,8 @@ ACVP_RESULT acvp_send_oe_registration(ACVP_CTX *ctx, char *reg) {
  * will be sent to the server.
  */
 #define ACVP_TEST_SESSIONS_URI "testSessions"
-ACVP_RESULT acvp_send_test_session_registration(ACVP_CTX *ctx, char *reg) {
-    return acvp_send_internal(ctx, reg, ACVP_TEST_SESSIONS_URI);
+ACVP_RESULT acvp_send_test_session_registration(ACVP_CTX *ctx, char *reg, int len) {
+    return acvp_send_internal(ctx, reg, len, ACVP_TEST_SESSIONS_URI);
 }
 
 /*
@@ -592,8 +594,8 @@ ACVP_RESULT acvp_send_test_session_registration(ACVP_CTX *ctx, char *reg) {
  * will be sent to the server.
  */
 #define ACVP_LOGIN_URI "login"
-ACVP_RESULT acvp_send_login(ACVP_CTX *ctx, char *login) {
-    return acvp_send_internal(ctx, login, ACVP_LOGIN_URI);
+ACVP_RESULT acvp_send_login(ACVP_CTX *ctx, char *login, int len) {
+    return acvp_send_internal(ctx, login, len, ACVP_LOGIN_URI);
 }
 
 #define JWT_EXPIRED_STR "JWT expired"
@@ -657,6 +659,7 @@ static ACVP_RESULT execute_network_action(ACVP_CTX *ctx,
                                           void *curl_callback) {
     ACVP_RESULT result = ACVP_TRANSPORT_FAIL;
     char *resp = NULL;
+    int resp_len = 0;
     int rc = 0;
 
     switch(action) {
@@ -666,9 +669,9 @@ static ACVP_RESULT execute_network_action(ACVP_CTX *ctx,
         rc = acvp_curl_http_get(ctx, url, curl_callback);
         break;
     case ACVP_NET_ACTION_POST_VECTOR_RESP:
-        resp = json_serialize_to_string_pretty(ctx->kat_resp);
+        resp = json_serialize_to_string_pretty(ctx->kat_resp, &resp_len);
 
-        rc = acvp_curl_http_post(ctx, url, resp, curl_callback);
+        rc = acvp_curl_http_post(ctx, url, resp, resp_len, curl_callback);
         json_value_free(ctx->kat_resp);
         ctx->kat_resp = NULL;
         break;
@@ -704,7 +707,7 @@ static ACVP_RESULT execute_network_action(ACVP_CTX *ctx,
                 rc = acvp_curl_http_get(ctx, url, curl_callback);
                 break;
             case ACVP_NET_ACTION_POST_VECTOR_RESP:
-                rc = acvp_curl_http_post(ctx, url, resp, curl_callback);
+                rc = acvp_curl_http_post(ctx, url, resp, resp_len, curl_callback);
                 break;
             }
 
