@@ -1239,7 +1239,7 @@ static ACVP_RESULT acvp_aes_init_tc(ACVP_CTX *ctx,
             if (alg_id == ACVP_AES_CCM) {
                 stc->pt_len = pt_len / 8;
             } else {
-                stc->pt_len = strlen(j_pt) / 2;
+                stc->pt_len = strnlen_s(j_pt, ACVP_SYM_PT_MAX) / 2;
             }
         }
     }
@@ -1262,7 +1262,7 @@ static ACVP_RESULT acvp_aes_init_tc(ACVP_CTX *ctx,
             if (alg_id == ACVP_AES_CCM) {
                 stc->ct_len = pt_len / 8;
             } else {
-                stc->ct_len = strlen(j_ct) / 2;
+                stc->ct_len = strnlen_s(j_ct, ACVP_SYM_CT_MAX) / 2;
             }
         }
     }

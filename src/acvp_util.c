@@ -582,7 +582,7 @@ ACVP_RESULT acvp_hexstr_to_bin(const char *src, unsigned char *dest, int dest_ma
         return ACVP_INVALID_ARG;
     }
 
-    src_len = (int)strlen((char *)src);
+    src_len = strnlen_s((char *)src, ACVP_HEXSTR_MAX);
 
     /*
      * Make sure the hex value isn't too large

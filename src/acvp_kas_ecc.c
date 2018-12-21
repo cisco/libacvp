@@ -98,13 +98,16 @@ static ACVP_RESULT acvp_kas_ecc_output_comp_tc(ACVP_CTX *ctx,
     }
 
     if (stc->test_type == ACVP_KAS_ECC_TT_VAL) {
+        int diff = 1;
+
         memzero_s(tmp, ACVP_KAS_ECC_STR_MAX);
         rv = acvp_bin_to_hexstr(stc->chash, stc->chashlen, tmp, ACVP_KAS_ECC_STR_MAX);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("hex conversion failure (Z)");
             goto end;
         }
-        if (!memcmp(stc->z, stc->chash, stc->zlen)) {
+        memcmp_s(stc->chash, ACVP_KAS_ECC_BYTE_MAX, stc->z, stc->zlen, &diff);
+        if (!diff) {
             json_object_set_boolean(tc_rsp, "testPassed", 1);
         } else {
             json_object_set_boolean(tc_rsp, "testPassed", 0);

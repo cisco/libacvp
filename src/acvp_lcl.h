@@ -237,6 +237,10 @@
 
 #define ACVP_CAPABILITY_STR_MAX 512 /**< Arbitrary string length limit */
 
+#define ACVP_HEXSTR_MAX (ACVP_DRBG_ENTPY_IN_BIT_MAX >> 2) /**< Represents the largest hexstr that the client will accept.
+                                                               Should always be set the the highest hexstr (i.e. bit length)
+                                                               the the client will accept from server JSON string field */
+
 /*
  *  Defines the key lengths and block lengths (in bytes)
  *  of symmetric block ciphers.

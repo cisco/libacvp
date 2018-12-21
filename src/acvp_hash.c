@@ -60,9 +60,9 @@ static ACVP_RESULT acvp_hash_mct_iterate_tc(ACVP_CTX *ctx,
                                             int i,
                                             JSON_Object *r_tobj) {
     /* feed hash into the next message for MCT */
-    memcpy(stc->m1, stc->m2, stc->md_len);
-    memcpy(stc->m2, stc->m3, stc->md_len);
-    memcpy(stc->m3, stc->md, stc->md_len);
+    memcpy_s(stc->m1, ACVP_HASH_MD_BYTE_MAX, stc->m2, stc->md_len);
+    memcpy_s(stc->m2, ACVP_HASH_MD_BYTE_MAX, stc->m3, stc->md_len);
+    memcpy_s(stc->m3, ACVP_HASH_MD_BYTE_MAX, stc->md, stc->md_len);
 
     return ACVP_SUCCESS;
 }
@@ -119,9 +119,9 @@ static ACVP_RESULT acvp_hash_mct_tc(ACVP_CTX *ctx,
         return ACVP_MALLOC_FAIL;
     }
 
-    memcpy(stc->m1, stc->msg, stc->msg_len);
-    memcpy(stc->m2, stc->msg, stc->msg_len);
-    memcpy(stc->m3, stc->msg, stc->msg_len);
+    memcpy_s(stc->m1, ACVP_HASH_MD_BYTE_MAX, stc->msg, stc->msg_len);
+    memcpy_s(stc->m2, ACVP_HASH_MD_BYTE_MAX, stc->msg, stc->msg_len);
+    memcpy_s(stc->m3, ACVP_HASH_MD_BYTE_MAX, stc->msg, stc->msg_len);
 
     for (i = 0; i < ACVP_HASH_MCT_OUTER; ++i) {
         /*
@@ -138,9 +138,9 @@ static ACVP_RESULT acvp_hash_mct_tc(ACVP_CTX *ctx,
             return ACVP_MALLOC_FAIL;
         }
 
-        memcpy(msg, stc->m1, stc->msg_len);
-        memcpy(msg + stc->msg_len, stc->m2, stc->msg_len);
-        memcpy(msg + (stc->msg_len * 2), stc->m3, stc->msg_len);
+        memcpy_s(msg, ACVP_HASH_MSG_BYTE_MAX, stc->m1, stc->msg_len);
+        memcpy_s(msg + stc->msg_len, (ACVP_HASH_MSG_BYTE_MAX - stc->msg_len), stc->m2, stc->msg_len);
+        memcpy_s(msg + (stc->msg_len * 2), (ACVP_HASH_MSG_BYTE_MAX - (stc->msg_len * 2)), stc->m3, stc->msg_len);
 
         rv = acvp_bin_to_hexstr(msg, stc->msg_len * 3, tmp, ACVP_HASH_MSG_STR_MAX * 3);
         if (rv != ACVP_SUCCESS) {
@@ -189,8 +189,8 @@ static ACVP_RESULT acvp_hash_mct_tc(ACVP_CTX *ctx,
         /* Append the test response value to array */
         json_array_append_value(res_array, r_tval);
 
-        memcpy(stc->m1, stc->m3, stc->msg_len);
-        memcpy(stc->m2, stc->m3, stc->msg_len);
+        memcpy_s(stc->m1, ACVP_HASH_MD_BYTE_MAX, stc->m3, stc->msg_len);
+        memcpy_s(stc->m2, ACVP_HASH_MD_BYTE_MAX, stc->m3, stc->msg_len);
 
         free(msg);
     }
@@ -510,7 +510,7 @@ static ACVP_RESULT acvp_hash_init_tc(ACVP_CTX *ctx,
                                      ACVP_CIPHER alg_id) {
     ACVP_RESULT rv;
 
-    memset(stc, 0x0, sizeof(ACVP_HASH_TC));
+    memzero_s(stc, sizeof(ACVP_HASH_TC));
 
     stc->msg = calloc(1, ACVP_HASH_MSG_BYTE_MAX);
     if (!stc->msg) { return ACVP_MALLOC_FAIL; }
@@ -551,7 +551,7 @@ static ACVP_RESULT acvp_hash_release_tc(ACVP_HASH_TC *stc) {
     if (stc->m1) free(stc->m1);
     if (stc->m2) free(stc->m2);
     if (stc->m3) free(stc->m3);
-    memset(stc, 0x0, sizeof(ACVP_HASH_TC));
+    memzero_s(stc, sizeof(ACVP_HASH_TC));
 
     return ACVP_SUCCESS;
 }
