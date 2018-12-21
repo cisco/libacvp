@@ -818,6 +818,7 @@ ACVP_RESULT acvp_dsa_pqggen_handler(ACVP_CTX *ctx,
 
             stc->seedlen = 0;
             stc->counter = 0;
+            if (stc->seed) free(stc->seed);
             stc->seed = 0;
             break;
 
@@ -1452,7 +1453,8 @@ ACVP_RESULT acvp_dsa_pqgver_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     groups = json_object_get_array(obj, "testGroups");
     if (!groups) {
         ACVP_LOG_ERR("Failed to include testGroups. ");
-        return ACVP_MISSING_ARG;
+        rv = ACVP_MISSING_ARG;
+        goto err;
     }
 
     g_cnt = json_array_get_count(groups);
@@ -1472,7 +1474,8 @@ ACVP_RESULT acvp_dsa_pqgver_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         tgId = json_object_get_number(groupobj, "tgId");
         if (!tgId) {
             ACVP_LOG_ERR("Missing tgid from server JSON groub obj");
-            return ACVP_MALFORMED_JSON;
+            rv = ACVP_MALFORMED_JSON;
+            goto err;
         }
         json_object_set_number(r_gobj, "tgId", tgId);
         json_object_set_value(r_gobj, "tests", json_value_init_array());
@@ -1484,16 +1487,18 @@ ACVP_RESULT acvp_dsa_pqgver_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
         rv = acvp_dsa_pqgver_handler(ctx, tc, cap, r_tarr, groupobj);
         if (rv != ACVP_SUCCESS) {
-            return rv;
+            goto err;
         }
         json_array_append_value(r_garr, r_gval);
+        acvp_dsa_release_tc(&stc);
     }
     memset(&stc, 0x0, sizeof(ACVP_DSA_TC));
     json_array_append_value(reg_arry, r_vs_val);
     json_result = json_serialize_to_string_pretty(ctx->kat_resp);
     if (!json_result) {
         ACVP_LOG_ERR("JSON unable to be serialized");
-        return ACVP_JSON_ERR;
+        rv = ACVP_JSON_ERR;
+        goto err;
     }
 
     if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
@@ -1502,8 +1507,14 @@ ACVP_RESULT acvp_dsa_pqgver_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         ACVP_LOG_INFO("\n\n%s\n\n", json_result);
     }
     json_free_serialized_string(json_result);
+    rv = ACVP_SUCCESS;
 
-    return ACVP_SUCCESS;
+err:
+    if (rv != ACVP_SUCCESS) {
+        acvp_dsa_release_tc(&stc);
+        acvp_release_json(r_vs_val, r_gval);
+    }
+    return rv;
 }
 
 ACVP_RESULT acvp_dsa_pqggen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
@@ -1567,7 +1578,8 @@ ACVP_RESULT acvp_dsa_pqggen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     groups = json_object_get_array(obj, "testGroups");
     if (!groups) {
         ACVP_LOG_ERR("Failed to include testGroups. ");
-        return ACVP_MISSING_ARG;
+        rv = ACVP_MISSING_ARG;
+        goto err;
     }
     g_cnt = json_array_get_count(groups);
 
@@ -1586,7 +1598,8 @@ ACVP_RESULT acvp_dsa_pqggen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         tgId = json_object_get_number(groupobj, "tgId");
         if (!tgId) {
             ACVP_LOG_ERR("Missing tgid from server JSON groub obj");
-            return ACVP_MALFORMED_JSON;
+            rv = ACVP_MALFORMED_JSON;
+            goto err;
         }
         json_object_set_number(r_gobj, "tgId", tgId);
         json_object_set_value(r_gobj, "tests", json_value_init_array());
@@ -1598,9 +1611,10 @@ ACVP_RESULT acvp_dsa_pqggen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
         rv = acvp_dsa_pqggen_handler(ctx, tc, cap, r_tarr, groupobj);
         if (rv != ACVP_SUCCESS) {
-            return rv;
+            goto err;
         }
         json_array_append_value(r_garr, r_gval);
+        acvp_dsa_release_tc(&stc);
     }
 
     memset(&stc, 0x0, sizeof(ACVP_DSA_TC));
@@ -1612,8 +1626,14 @@ ACVP_RESULT acvp_dsa_pqggen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         ACVP_LOG_INFO("\n\n%s\n\n", json_result);
     }
     json_free_serialized_string(json_result);
+    rv = ACVP_SUCCESS;
 
-    return ACVP_SUCCESS;
+err:
+    if (rv != ACVP_SUCCESS) {
+        acvp_dsa_release_tc(&stc);
+        acvp_release_json(r_vs_val, r_gval);
+    }
+    return rv;
 }
 
 ACVP_RESULT acvp_dsa_siggen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
@@ -1677,7 +1697,8 @@ ACVP_RESULT acvp_dsa_siggen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     groups = json_object_get_array(obj, "testGroups");
     if (!groups) {
         ACVP_LOG_ERR("Failed to include testGroups. ");
-        return ACVP_MISSING_ARG;
+        rv = ACVP_MISSING_ARG;
+        goto err;
     }
     g_cnt = json_array_get_count(groups);
 
@@ -1696,7 +1717,8 @@ ACVP_RESULT acvp_dsa_siggen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         tgId = json_object_get_number(groupobj, "tgId");
         if (!tgId) {
             ACVP_LOG_ERR("Missing tgid from server JSON groub obj");
-            return ACVP_MALFORMED_JSON;
+            rv = ACVP_MALFORMED_JSON;
+            goto err;
         }
         json_object_set_number(r_gobj, "tgId", tgId);
         json_object_set_value(r_gobj, "tests", json_value_init_array());
@@ -1708,9 +1730,11 @@ ACVP_RESULT acvp_dsa_siggen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
         rv = acvp_dsa_siggen_handler(ctx, tc, cap, r_tarr, groupobj, tgId, r_gobj);
         if (rv != ACVP_SUCCESS) {
-            return rv;
+            goto err;
+
         }
         json_array_append_value(r_garr, r_gval);
+        acvp_dsa_release_tc(&stc);
     }
 
     memset(&stc, 0x0, sizeof(ACVP_DSA_TC));
@@ -1723,8 +1747,14 @@ ACVP_RESULT acvp_dsa_siggen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         ACVP_LOG_INFO("\n\n%s\n\n", json_result);
     }
     json_free_serialized_string(json_result);
+    rv = ACVP_SUCCESS;
 
-    return ACVP_SUCCESS;
+err:
+    if (rv != ACVP_SUCCESS) {
+        acvp_dsa_release_tc(&stc);
+        acvp_release_json(r_vs_val, r_gval);
+    }
+    return rv;
 }
 
 ACVP_RESULT acvp_dsa_keygen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
@@ -1788,7 +1818,8 @@ ACVP_RESULT acvp_dsa_keygen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     groups = json_object_get_array(obj, "testGroups");
     if (!groups) {
         ACVP_LOG_ERR("Failed to include testGroups. ");
-        return ACVP_MISSING_ARG;
+        rv = ACVP_MISSING_ARG;
+        goto err;
     }
     g_cnt = json_array_get_count(groups);
 
@@ -1807,7 +1838,8 @@ ACVP_RESULT acvp_dsa_keygen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         tgId = json_object_get_number(groupobj, "tgId");
         if (!tgId) {
             ACVP_LOG_ERR("Missing tgid from server JSON groub obj");
-            return ACVP_MALFORMED_JSON;
+            rv = ACVP_MALFORMED_JSON;
+            goto err;
         }
         json_object_set_number(r_gobj, "tgId", tgId);
         json_object_set_value(r_gobj, "tests", json_value_init_array());
@@ -1819,9 +1851,10 @@ ACVP_RESULT acvp_dsa_keygen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
         rv = acvp_dsa_keygen_handler(ctx, tc, cap, r_tarr, groupobj, tgId, r_gobj);
         if (rv != ACVP_SUCCESS) {
-            return rv;
+            goto err;
         }
         json_array_append_value(r_garr, r_gval);
+        acvp_dsa_release_tc(&stc);
     }
 
     memset(&stc, 0x0, sizeof(ACVP_DSA_TC));
@@ -1834,8 +1867,14 @@ ACVP_RESULT acvp_dsa_keygen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         ACVP_LOG_INFO("\n\n%s\n\n", json_result);
     }
     json_free_serialized_string(json_result);
+    rv = ACVP_SUCCESS;
 
-    return ACVP_SUCCESS;
+err:
+    if (rv != ACVP_SUCCESS) {
+        acvp_dsa_release_tc(&stc);
+        acvp_release_json(r_vs_val, r_gval);
+    }
+    return rv;
 }
 
 ACVP_RESULT acvp_dsa_sigver_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
@@ -1899,7 +1938,8 @@ ACVP_RESULT acvp_dsa_sigver_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     groups = json_object_get_array(obj, "testGroups");
     if (!groups) {
         ACVP_LOG_ERR("Failed to include testGroups. ");
-        return ACVP_MISSING_ARG;
+        rv = ACVP_MISSING_ARG;
+        goto err;
     }
     g_cnt = json_array_get_count(groups);
 
@@ -1918,7 +1958,8 @@ ACVP_RESULT acvp_dsa_sigver_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         tgId = json_object_get_number(groupobj, "tgId");
         if (!tgId) {
             ACVP_LOG_ERR("Missing tgid from server JSON groub obj");
-            return ACVP_MALFORMED_JSON;
+            rv = ACVP_MALFORMED_JSON;
+            goto err;
         }
         json_object_set_number(r_gobj, "tgId", tgId);
         json_object_set_value(r_gobj, "tests", json_value_init_array());
@@ -1930,9 +1971,10 @@ ACVP_RESULT acvp_dsa_sigver_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
         rv = acvp_dsa_sigver_handler(ctx, tc, cap, r_tarr, groupobj);
         if (rv != ACVP_SUCCESS) {
-            return rv;
+            goto err;
         }
         json_array_append_value(r_garr, r_gval);
+        acvp_dsa_release_tc(&stc);
     }
 
     memset(&stc, 0x0, sizeof(ACVP_DSA_TC));
@@ -1940,7 +1982,8 @@ ACVP_RESULT acvp_dsa_sigver_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     json_result = json_serialize_to_string_pretty(ctx->kat_resp);
     if (!json_result) {
         ACVP_LOG_ERR("JSON unable to be serialized");
-        return ACVP_JSON_ERR;
+        rv = ACVP_JSON_ERR;
+        goto err;
     }
 
     if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
@@ -1949,8 +1992,14 @@ ACVP_RESULT acvp_dsa_sigver_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         ACVP_LOG_INFO("\n\n%s\n\n", json_result);
     }
     json_free_serialized_string(json_result);
+    rv = ACVP_SUCCESS;
 
-    return ACVP_SUCCESS;
+err:
+    if (rv != ACVP_SUCCESS) {
+        acvp_dsa_release_tc(&stc);
+        acvp_release_json(r_vs_val, r_gval);
+    }
+    return rv;
 }
 
 ACVP_RESULT acvp_dsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
