@@ -1060,7 +1060,7 @@ struct acvp_ctx_t {
     ACVP_RESULT (*test_progress_cb) (char *msg);
 
     /* Two-factor authentication callback */
-    ACVP_RESULT (*totp_cb) (char **token);
+    ACVP_RESULT (*totp_cb) (char **token, int token_max);
 
     /* Transitory values */
     char *login_buf;      /* holds the 2-FA authentication response */

@@ -182,7 +182,7 @@ ACVP_RESULT acvp_create_test_session(ACVP_CTX **ctx,
     return ACVP_SUCCESS;
 }
 
-ACVP_RESULT acvp_set_2fa_callback(ACVP_CTX *ctx, ACVP_RESULT (*totp_cb)(char **token)) {
+ACVP_RESULT acvp_set_2fa_callback(ACVP_CTX *ctx, ACVP_RESULT (*totp_cb)(char **token, int token_max)) {
     if (totp_cb == NULL) {
         return ACVP_MISSING_ARG;
     }
@@ -1132,12 +1132,10 @@ static ACVP_RESULT acvp_build_login(ACVP_CTX *ctx, char **login, int *login_len,
     JSON_Value *pw_val = NULL;
     JSON_Object *pw_obj = NULL;
     JSON_Array *reg_arry = NULL;
-    char *token = malloc(ACVP_TOTP_TOKEN_MAX);
+    char *token = calloc(ACVP_TOTP_TOKEN_MAX, sizeof(char));
 
     if (!token) return ACVP_MALLOC_FAIL;
     if (!login_len) return ACVP_INVALID_ARG;
-
-    memzero_s(token, ACVP_TOTP_TOKEN_MAX);
 
     /*
      * Start the login array
@@ -1154,7 +1152,7 @@ static ACVP_RESULT acvp_build_login(ACVP_CTX *ctx, char **login, int *login_len,
     pw_val = json_value_init_object();
     pw_obj = json_value_get_object(pw_val);
 
-    ctx->totp_cb(&token);
+    ctx->totp_cb(&token, ACVP_TOTP_TOKEN_MAX);
     if (strnlen_s(token, ACVP_TOTP_TOKEN_MAX + 1) > ACVP_TOTP_TOKEN_MAX) {
         ACVP_LOG_ERR("totp cb generated a token that is too long");
         rv = ACVP_INVALID_ARG;

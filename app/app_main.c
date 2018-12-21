@@ -74,7 +74,7 @@
 extern int fips_selftest_fail;
 extern int fips_mode;
 #endif
-static ACVP_RESULT totp(char **token);
+static ACVP_RESULT totp(char **token, int token_max);
 static int enable_aes(ACVP_CTX *ctx);
 static int enable_tdes(ACVP_CTX *ctx);
 static int enable_hash(ACVP_CTX *ctx);
@@ -2905,13 +2905,14 @@ static int app_des_handler(ACVP_TEST_CASE *test_case) {
         ctx_iv = EVP_CIPHER_CTX_iv(cipher_ctx);
 #endif
 
+#define SYM_IV_BYTE_MAX 128
         if (tc->direction == ACVP_SYM_CIPH_DIR_ENCRYPT) {
             if (tc->mct_index == 0) {
                 EVP_EncryptInit_ex(cipher_ctx, cipher, NULL, tc->key, iv);
                 EVP_CIPHER_CTX_set_padding(cipher_ctx, 0);
             } else {
                 /* TDES needs the pre-operation IV returned */
-                memcpy(tc->iv_ret, ctx_iv, 8);
+                memcpy_s(tc->iv_ret, SYM_IV_BYTE_MAX, ctx_iv, 8);
             }
             if (tc->cipher == ACVP_TDES_CFB1) {
                 EVP_CIPHER_CTX_set_flags(cipher_ctx, EVP_CIPH_FLAG_LENGTH_BITS);
@@ -2920,14 +2921,14 @@ static int app_des_handler(ACVP_TEST_CASE *test_case) {
             EVP_EncryptUpdate(cipher_ctx, tc->ct, &ct_len, tc->pt, tc->pt_len);
             tc->ct_len = ct_len;
             /* TDES needs the post-operation IV returned */
-            memcpy(tc->iv_ret_after, ctx_iv, 8);
+            memcpy_s(tc->iv_ret_after, SYM_IV_BYTE_MAX, ctx_iv, 8);
         } else if (tc->direction == ACVP_SYM_CIPH_DIR_DECRYPT) {
             if (tc->mct_index == 0) {
                 EVP_DecryptInit_ex(cipher_ctx, cipher, NULL, tc->key, iv);
                 EVP_CIPHER_CTX_set_padding(cipher_ctx, 0);
             } else {
                 /* TDES needs the pre-operation IV returned */
-                memcpy(tc->iv_ret, ctx_iv, 8);
+                memcpy_s(tc->iv_ret, SYM_IV_BYTE_MAX, ctx_iv, 8);
             }
             if (tc->cipher == ACVP_TDES_CFB1) {
                 EVP_CIPHER_CTX_set_flags(cipher_ctx, EVP_CIPH_FLAG_LENGTH_BITS);
@@ -2935,7 +2936,7 @@ static int app_des_handler(ACVP_TEST_CASE *test_case) {
             EVP_DecryptUpdate(cipher_ctx, tc->pt, &pt_len, tc->ct, tc->ct_len);
             tc->pt_len = pt_len;
             /* TDES needs the post-operation IV returned */
-            memcpy(tc->iv_ret_after, ctx_iv, 8);
+            memcpy_s(tc->iv_ret_after, SYM_IV_BYTE_MAX, ctx_iv, 8);
         } else {
             printf("Unsupported direction\n");
             return 1;
@@ -4450,7 +4451,8 @@ static int app_dsa_handler(ACVP_TEST_CASE *test_case) {
             tc->counter = counter;
             tc->h = h;
 
-            memcpy(tc->seed, &seed, EVP_MD_size(md));
+#define DSA_MAX_SEED 3072
+            memcpy_s(tc->seed, DSA_MAX_SEED, &seed, EVP_MD_size(md));
             tc->seedlen = EVP_MD_size(md);
             tc->counter = counter;
             FIPS_dsa_free(dsa);
@@ -4693,8 +4695,9 @@ static int app_kas_ecc_handler(ACVP_TEST_CASE *test_case) {
         goto error;
     }
 
+#define KAS_ECC_Z_MAX 512
     if (tc->test_type == ACVP_KAS_ECC_TT_AFT) {
-        memcpy(tc->z, Z, Zlen);
+        memcpy_s(tc->z, KAS_ECC_Z_MAX, Z, Zlen);
         tc->zlen = Zlen;
     }
     if (tc->mode == ACVP_KAS_ECC_MODE_COMPONENT) {
@@ -4814,8 +4817,9 @@ static int app_kas_ffc_handler(ACVP_TEST_CASE *test_case) {
     FIPS_digest(Z, Zlen, (unsigned char *)tc->chash, NULL, md);
     tc->chashlen = EVP_MD_size(md);
 
+#define KAS_FFC_Z_MAX 512
     if (tc->test_type == ACVP_KAS_FFC_TT_AFT) {
-        memcpy(tc->z, Z, Zlen);
+        memcpy_s(tc->z, KAS_FFC_Z_MAX, Z, Zlen);
         tc->zlen = Zlen;
     }
 
@@ -5737,6 +5741,7 @@ static
 int hmac_totp(const char *key,
               const unsigned char *msg,
               char *hash,
+              int hash_max,
               const EVP_MD *md,
               unsigned int key_len) {
     int len = 0;
@@ -5756,7 +5761,7 @@ int hmac_totp(const char *key,
     if (!HMAC_Init_ex(ctx, key, key_len, md, NULL)) goto end;
     if (!HMAC_Update(ctx, msg, T_LEN)) goto end;
     if (!HMAC_Final(ctx, buff, (unsigned int *)&len)) goto end;
-    memcpy(hash, buff, len);
+    memcpy_s(hash, hash_max, buff, len);
 
 end:
 #if OPENSSL_VERSION_NUMBER <= 0x10100000L
@@ -5768,7 +5773,7 @@ end:
     return len;
 }
 
-static ACVP_RESULT totp(char **token) {
+static ACVP_RESULT totp(char **token, int token_max) {
     char hash[MAX_LEN] = {0};
     int os, bin, otp;
     int md_len;
@@ -5814,7 +5819,7 @@ static ACVP_RESULT totp(char **token) {
 
 
     // use passed hash function
-    md_len = hmac_totp(new_seed, token_buff, hash, EVP_sha256(), seed_len);
+    md_len = hmac_totp(new_seed, token_buff, hash, sizeof(hash), EVP_sha256(), seed_len);
     if (md_len == 0) {
         printf("Failed to create TOTP\n");
         free(new_seed);
@@ -5833,7 +5838,7 @@ static ACVP_RESULT totp(char **token) {
     sprintf(format, "%c0%ldd", '%', (long int)ACVP_TOTP_LENGTH);
 
     sprintf((char *)token_buff, format, otp);
-    memcpy((char *)*token, token_buff, ACVP_TOTP_LENGTH);
+    memcpy_s((char *)*token, token_max, token_buff, ACVP_TOTP_LENGTH);
     free(new_seed);
     return ACVP_SUCCESS;
 }
