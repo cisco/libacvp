@@ -164,7 +164,7 @@ ACVP_RESULT acvp_create_test_session(ACVP_CTX **ctx,
         return ACVP_INVALID_ARG;
     }
     if (*ctx) {
-        printf("Err: cannot initialize non-null ctx; clear ctx & set to NULL first\n");
+        printf("ERROR: Cannot initialize non-null ctx; clear ctx & set to NULL first\n");
         return ACVP_DUPLICATE_CTX;
     }
     *ctx = calloc(1, sizeof(ACVP_CTX));
@@ -282,6 +282,9 @@ static void acvp_cap_free_rsa_sig_list(ACVP_CAPS_LIST *cap_list) {
         ACVP_RSA_MODE_CAPS_LIST *mode_list = sig_cap->mode_capabilities;
         ACVP_RSA_MODE_CAPS_LIST *temp_mode_list;
 
+        if (sig_cap->fixed_pub_exp) {
+            free(sig_cap->fixed_pub_exp);
+        }
         while (mode_list) {
             acvp_cap_free_hash_pairs(mode_list->hash_pair);
 
@@ -615,6 +618,7 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx) {
         if (ctx->cacerts_file) { free(ctx->cacerts_file); }
         if (ctx->tls_cert) { free(ctx->tls_cert); }
         if (ctx->tls_key) { free(ctx->tls_key); }
+        if (ctx->json_filename) { free(ctx->json_filename); }
         if (ctx->vs_list) {
             vs_entry = ctx->vs_list;
             while (vs_entry) {
@@ -692,18 +696,22 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx) {
                 case ACVP_ECDSA_KEYGEN_TYPE:
                     acvp_cap_free_nl(cap_entry->cap.ecdsa_keygen_cap->curves);
                     acvp_cap_free_nl(cap_entry->cap.ecdsa_keygen_cap->secret_gen_modes);
+                    free(cap_entry->cap.ecdsa_keygen_cap);
                     break;
                 case ACVP_ECDSA_KEYVER_TYPE:
                     acvp_cap_free_nl(cap_entry->cap.ecdsa_keyver_cap->curves);
                     acvp_cap_free_nl(cap_entry->cap.ecdsa_keyver_cap->secret_gen_modes);
+                    free(cap_entry->cap.ecdsa_keyver_cap);
                     break;
                 case ACVP_ECDSA_SIGGEN_TYPE:
                     acvp_cap_free_nl(cap_entry->cap.ecdsa_siggen_cap->curves);
                     acvp_cap_free_nl(cap_entry->cap.ecdsa_siggen_cap->hash_algs);
+                    free(cap_entry->cap.ecdsa_siggen_cap);
                     break;
                 case ACVP_ECDSA_SIGVER_TYPE:
                     acvp_cap_free_nl(cap_entry->cap.ecdsa_sigver_cap->curves);
                     acvp_cap_free_nl(cap_entry->cap.ecdsa_sigver_cap->hash_algs);
+                    free(cap_entry->cap.ecdsa_sigver_cap);
                     break;
                 case ACVP_KDF135_SRTP_TYPE:
                     acvp_cap_free_sl(cap_entry->cap.kdf135_srtp_cap->aes_keylens);
@@ -1155,8 +1163,9 @@ static ACVP_RESULT acvp_build_login(ACVP_CTX *ctx, char **login, int *login_len,
     ctx->totp_cb(&token, ACVP_TOTP_TOKEN_MAX);
     if (strnlen_s(token, ACVP_TOTP_TOKEN_MAX + 1) > ACVP_TOTP_TOKEN_MAX) {
         ACVP_LOG_ERR("totp cb generated a token that is too long");
+        json_value_free(pw_val);
         rv = ACVP_INVALID_ARG;
-        goto end;
+        goto err;
     }
 
     json_object_set_string(pw_obj, "password", token);
@@ -1166,7 +1175,7 @@ static ACVP_RESULT acvp_build_login(ACVP_CTX *ctx, char **login, int *login_len,
     }
     json_array_append_value(reg_arry, pw_val);
 
-end:
+err:
     *login = json_serialize_to_string_pretty(reg_arry_val, login_len);
     free(token);
     json_value_free(reg_arry_val);

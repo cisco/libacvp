@@ -182,7 +182,8 @@ EC_KEY *ecdsa_group_key = NULL;
 
 /* DSA group values */
 DSA *group_dsa = NULL;
-int dsa_current_tg = 0;
+int dsa_current_keygen_tg = 0;
+int dsa_current_siggen_tg = 0;
 BIGNUM *group_p = NULL;
 BIGNUM *group_q = NULL;
 BIGNUM *group_g = NULL;
@@ -4020,8 +4021,8 @@ static int app_dsa_handler(ACVP_TEST_CASE *test_case) {
     tc = test_case->tc.dsa;
     switch (tc->mode) {
     case ACVP_DSA_MODE_KEYGEN:
-        if (dsa_current_tg != tc->tg_id) {
-            dsa_current_tg = tc->tg_id;
+        if (dsa_current_keygen_tg != tc->tg_id) {
+            dsa_current_keygen_tg = tc->tg_id;
 
             if (group_dsa) FIPS_dsa_free(group_dsa);
             if (group_p) BN_free(group_p);
@@ -4297,8 +4298,8 @@ static int app_dsa_handler(ACVP_TEST_CASE *test_case) {
             break;
         }
 
-        if (dsa_current_tg != tc->tg_id) {
-            dsa_current_tg = tc->tg_id;
+        if (dsa_current_siggen_tg != tc->tg_id) {
+            dsa_current_siggen_tg = tc->tg_id;
 
             if (group_dsa) FIPS_dsa_free(group_dsa);
             if (group_p) BN_free(group_p);
