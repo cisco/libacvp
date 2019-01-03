@@ -31,6 +31,7 @@
 #include "acvp.h"
 #include "acvp_lcl.h"
 #include "parson.h"
+#include "safe_lib.h"
 
 static ACVP_RESULT acvp_dsa_keygen_init_tc(ACVP_CTX *ctx,
                                            ACVP_DSA_TC *stc,
@@ -375,7 +376,7 @@ static ACVP_RESULT acvp_dsa_output_tc(ACVP_CTX *ctx, ACVP_DSA_TC *stc, JSON_Obje
                 goto err;
             }
             json_object_set_string(r_tobj, "g", (const char *)tmp);
-            memset(tmp, 0x0, ACVP_DSA_PQG_MAX + 1);
+            memzero_s(tmp, ACVP_DSA_PQG_MAX + 1);
             break;
         case ACVP_DSA_PROBABLE:
         case ACVP_DSA_PROVABLE:
@@ -390,7 +391,7 @@ static ACVP_RESULT acvp_dsa_output_tc(ACVP_CTX *ctx, ACVP_DSA_TC *stc, JSON_Obje
                 goto err;
             }
             json_object_set_string(r_tobj, "p", (const char *)tmp);
-            memset(tmp, 0x0, ACVP_DSA_PQG_MAX + 1);
+            memzero_s(tmp, ACVP_DSA_PQG_MAX + 1);
 
             rv = acvp_bin_to_hexstr(stc->q, stc->q_len, tmp, ACVP_DSA_PQG_MAX);
             if (rv != ACVP_SUCCESS) {
@@ -399,7 +400,7 @@ static ACVP_RESULT acvp_dsa_output_tc(ACVP_CTX *ctx, ACVP_DSA_TC *stc, JSON_Obje
             }
             json_object_set_string(r_tobj, "q", (const char *)tmp);
 
-            memset(tmp, 0x0, ACVP_DSA_SEED_MAX);
+            memzero_s(tmp, ACVP_DSA_SEED_MAX);
             rv = acvp_bin_to_hexstr(stc->seed, stc->seedlen, tmp, ACVP_DSA_SEED_MAX);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("hex conversion failure (p)");
@@ -427,7 +428,7 @@ static ACVP_RESULT acvp_dsa_output_tc(ACVP_CTX *ctx, ACVP_DSA_TC *stc, JSON_Obje
             goto err;
         }
         json_object_set_string(r_tobj, "r", (const char *)tmp);
-        memset(tmp, 0x0, ACVP_DSA_PQG_MAX);
+        memzero_s(tmp, ACVP_DSA_PQG_MAX);
 
         rv = acvp_bin_to_hexstr(stc->s, stc->s_len, tmp, ACVP_DSA_PQG_MAX);
         if (rv != ACVP_SUCCESS) {
@@ -435,7 +436,7 @@ static ACVP_RESULT acvp_dsa_output_tc(ACVP_CTX *ctx, ACVP_DSA_TC *stc, JSON_Obje
             goto err;
         }
         json_object_set_string(r_tobj, "s", (const char *)tmp);
-        memset(tmp, 0x0, ACVP_DSA_PQG_MAX);
+        memzero_s(tmp, ACVP_DSA_PQG_MAX);
 
         break;
     case ACVP_DSA_MODE_SIGVER:
@@ -454,7 +455,7 @@ static ACVP_RESULT acvp_dsa_output_tc(ACVP_CTX *ctx, ACVP_DSA_TC *stc, JSON_Obje
             goto err;
         }
         json_object_set_string(r_tobj, "y", (const char *)tmp);
-        memset(tmp, 0x0, ACVP_DSA_PQG_MAX);
+        memzero_s(tmp, ACVP_DSA_PQG_MAX);
 
         rv = acvp_bin_to_hexstr(stc->x, stc->x_len, tmp, ACVP_DSA_PQG_MAX);
         if (rv != ACVP_SUCCESS) {
@@ -462,7 +463,7 @@ static ACVP_RESULT acvp_dsa_output_tc(ACVP_CTX *ctx, ACVP_DSA_TC *stc, JSON_Obje
             goto err;
         }
         json_object_set_string(r_tobj, "x", (const char *)tmp);
-        memset(tmp, 0x0, ACVP_DSA_PQG_MAX);
+        memzero_s(tmp, ACVP_DSA_PQG_MAX);
 
         break;
     case ACVP_DSA_MODE_PQGVER:
@@ -493,7 +494,7 @@ static ACVP_RESULT acvp_dsa_release_tc(ACVP_DSA_TC *stc) {
     if (stc->seed) free(stc->seed);
     if (stc->msg) free(stc->msg);
 
-    memset(stc, 0x0, sizeof(ACVP_DSA_TC));
+    memzero_s(stc, sizeof(ACVP_DSA_TC));
 
     return ACVP_SUCCESS;
 }
@@ -596,7 +597,7 @@ ACVP_RESULT acvp_dsa_keygen_handler(ACVP_CTX *ctx,
             goto err;
         }
         json_object_set_string(r_gobj, "p", (const char *)tmp);
-        memset(tmp, 0x0, ACVP_DSA_PQG_MAX);
+        memzero_s(tmp, ACVP_DSA_PQG_MAX);
 
         rv = acvp_bin_to_hexstr(stc->q, stc->q_len, tmp, ACVP_DSA_PQG_MAX);
         if (rv != ACVP_SUCCESS) {
@@ -605,7 +606,7 @@ ACVP_RESULT acvp_dsa_keygen_handler(ACVP_CTX *ctx,
             goto err;
         }
         json_object_set_string(r_gobj, "q", (const char *)tmp);
-        memset(tmp, 0x0, ACVP_DSA_PQG_MAX);
+        memzero_s(tmp, ACVP_DSA_PQG_MAX);
 
         rv = acvp_bin_to_hexstr(stc->g, stc->g_len, tmp, ACVP_DSA_PQG_MAX);
         if (rv != ACVP_SUCCESS) {
@@ -614,7 +615,7 @@ ACVP_RESULT acvp_dsa_keygen_handler(ACVP_CTX *ctx,
             goto err;
         }
         json_object_set_string(r_gobj, "g", (const char *)tmp);
-        memset(tmp, 0x0, ACVP_DSA_PQG_MAX);
+        memzero_s(tmp, ACVP_DSA_PQG_MAX);
         free(tmp);
 
         /*
@@ -639,12 +640,44 @@ err:
     return rv;
 }
 
+static ACVP_DSA_GEN_PARM read_gen_g(const char *str) {
+    int diff = 0;
+
+    strcmp_s("canonical", 9, str, &diff);
+    if (!diff) {
+        return ACVP_DSA_CANONICAL;
+    }
+
+    strcmp_s("unverifiable", 12, str, &diff);
+    if (!diff) {
+        return ACVP_DSA_UNVERIFIABLE;
+    }
+
+    return 0;
+}
+
+static ACVP_DSA_GEN_PARM read_gen_pq(const char *str) {
+    int diff = 0;
+
+    strcmp_s("probable", 8, str, &diff);
+    if (!diff) {
+        return ACVP_DSA_PROBABLE;
+    }
+
+    strcmp_s("provable", 8, str, &diff);
+    if (!diff) {
+        return ACVP_DSA_PROVABLE;
+    }
+
+    return 0;
+}
+
 ACVP_RESULT acvp_dsa_pqggen_handler(ACVP_CTX *ctx,
                                     ACVP_TEST_CASE tc,
                                     ACVP_CAPS_LIST *cap,
                                     JSON_Array *r_tarr,
                                     JSON_Object *groupobj) {
-    unsigned char *gen_pq = NULL, *index = NULL, *gen_g = NULL;
+    unsigned char *index = NULL;
     JSON_Array *tests;
     JSON_Value *testval;
     JSON_Object *testobj = NULL;
@@ -656,10 +689,10 @@ ACVP_RESULT acvp_dsa_pqggen_handler(ACVP_CTX *ctx,
     char *p = NULL, *q = NULL, *seed = NULL;
     ACVP_DSA_TC *stc;
     ACVP_HASH_ALG sha = 0;
-    const char *sha_str = NULL;
+    const char *sha_str = NULL, *gen_g = NULL, *gen_pq = NULL;
 
-    gen_pq = (unsigned char *)json_object_get_string(groupobj, "pqMode");
-    gen_g = (unsigned char *)json_object_get_string(groupobj, "gMode");
+    gen_pq = json_object_get_string(groupobj, "pqMode");
+    gen_g = json_object_get_string(groupobj, "gMode");
     if (!gen_pq && !gen_g) {
         ACVP_LOG_ERR("Failed to include either gen_pq or gen_g. ");
         return ACVP_MISSING_ARG;
@@ -727,7 +760,14 @@ ACVP_RESULT acvp_dsa_pqggen_handler(ACVP_CTX *ctx,
         ACVP_LOG_INFO("       Test case: %d", j);
         ACVP_LOG_INFO("            tcId: %d", tc_id);
         if (gen_g) {
-            if (!strncmp((char *)gen_g, "canonical", 9)) {
+            gpq = read_gen_g(gen_g);
+
+            if (!gpq) {
+                ACVP_LOG_ERR("Server JSON invalid 'genG'");
+                return ACVP_INVALID_ARG;
+            }
+
+            if (gpq == ACVP_DSA_CANONICAL) {
                 seed = (char *)json_object_get_string(testobj, "domainSeed");
                 if (!seed) {
                     ACVP_LOG_ERR("Failed to include domainSeed. ");
@@ -744,11 +784,6 @@ ACVP_RESULT acvp_dsa_pqggen_handler(ACVP_CTX *ctx,
 
                 ACVP_LOG_INFO("            seed: %s", seed);
                 ACVP_LOG_INFO("           index: %s", index);
-            } else if (!strncmp((char *)gen_g, "unverifiable", 12)) {
-                gpq = ACVP_DSA_UNVERIFIABLE;
-            } else {
-                ACVP_LOG_ERR("Server JSON invalid 'genG'");
-                return ACVP_INVALID_ARG;
             }
 
             p = (char *)json_object_get_string(testobj, "p");
@@ -768,11 +803,8 @@ ACVP_RESULT acvp_dsa_pqggen_handler(ACVP_CTX *ctx,
         }
 
         if (gen_pq) {
-            if (!strncmp((char *)gen_pq, "probable", 8)) {
-                gpq = ACVP_DSA_PROBABLE;
-            } else if (!strncmp((char *)gen_pq, "provable", 8)) {
-                gpq = ACVP_DSA_PROVABLE;
-            } else {
+            gpq = read_gen_pq(gen_pq);
+            if (!gpq) {
                 ACVP_LOG_ERR("Server JSON invalid 'genPQ'");
                 return ACVP_INVALID_ARG;
             }
@@ -986,7 +1018,7 @@ ACVP_RESULT acvp_dsa_siggen_handler(ACVP_CTX *ctx,
             goto err;
         }
         json_object_set_string(r_gobj, "p", (const char *)tmp);
-        memset(tmp, 0x0, ACVP_DSA_PQG_MAX);
+        memzero_s(tmp, ACVP_DSA_PQG_MAX);
 
         rv = acvp_bin_to_hexstr(stc->q, stc->q_len, tmp, ACVP_DSA_PQG_MAX);
         if (rv != ACVP_SUCCESS) {
@@ -995,7 +1027,7 @@ ACVP_RESULT acvp_dsa_siggen_handler(ACVP_CTX *ctx,
             goto err;
         }
         json_object_set_string(r_gobj, "q", (const char *)tmp);
-        memset(tmp, 0x0, ACVP_DSA_PQG_MAX);
+        memzero_s(tmp, ACVP_DSA_PQG_MAX);
 
         rv = acvp_bin_to_hexstr(stc->g, stc->g_len, tmp, ACVP_DSA_PQG_MAX);
         if (rv != ACVP_SUCCESS) {
@@ -1004,7 +1036,7 @@ ACVP_RESULT acvp_dsa_siggen_handler(ACVP_CTX *ctx,
             goto err;
         }
         json_object_set_string(r_gobj, "g", (const char *)tmp);
-        memset(tmp, 0x0, ACVP_DSA_PQG_MAX);
+        memzero_s(tmp, ACVP_DSA_PQG_MAX);
 
         rv = acvp_bin_to_hexstr(stc->y, stc->y_len, tmp, ACVP_DSA_PQG_MAX);
         if (rv != ACVP_SUCCESS) {
@@ -1013,7 +1045,7 @@ ACVP_RESULT acvp_dsa_siggen_handler(ACVP_CTX *ctx,
             goto err;
         }
         json_object_set_string(r_gobj, "y", (const char *)tmp);
-        memset(tmp, 0x0, ACVP_DSA_PQG_MAX);
+        memzero_s(tmp, ACVP_DSA_PQG_MAX);
         free(tmp);
 
         /*
@@ -1152,14 +1184,14 @@ ACVP_RESULT acvp_dsa_pqgver_handler(ACVP_CTX *ctx,
 
         /* find the mode */
         if (gmode) {
-            if (!strncmp(gmode, "canonical", 9)) {
-                gpq = ACVP_DSA_CANONICAL;
-            }
+            int diff = 0;
+            strcmp_s("canonical", 9, gmode, &diff);
+            if (!diff) gpq = ACVP_DSA_CANONICAL;
         }
         if (pqmode) {
-            if (!strncmp(pqmode, "probable", 8)) {
-                gpq = ACVP_DSA_PROBABLE;
-            }
+            int diff = 0;
+            strcmp_s("probable", 8, gmode, &diff);
+            if (!diff) gpq = ACVP_DSA_PROBABLE;
         }
         if (gpq == 0) {
             ACVP_LOG_ERR("Failed to include valid gen_pq. ");
@@ -1420,7 +1452,7 @@ ACVP_RESULT acvp_dsa_pqgver_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
      * Get a reference to the abstracted test case
      */
     tc.tc.dsa = &stc;
-    memset(&stc, 0x0, sizeof(ACVP_DSA_TC));
+    memzero_s(&stc, sizeof(ACVP_DSA_TC));
 
     /*
      * Get the crypto module handler for DSA mode
@@ -1492,9 +1524,9 @@ ACVP_RESULT acvp_dsa_pqgver_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         json_array_append_value(r_garr, r_gval);
         acvp_dsa_release_tc(&stc);
     }
-    memset(&stc, 0x0, sizeof(ACVP_DSA_TC));
+    memzero_s(&stc, sizeof(ACVP_DSA_TC));
     json_array_append_value(reg_arry, r_vs_val);
-    json_result = json_serialize_to_string_pretty(ctx->kat_resp);
+    json_result = json_serialize_to_string_pretty(ctx->kat_resp, NULL);
     if (!json_result) {
         ACVP_LOG_ERR("JSON unable to be serialized");
         rv = ACVP_JSON_ERR;
@@ -1545,7 +1577,7 @@ ACVP_RESULT acvp_dsa_pqggen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
      * Get a reference to the abstracted test case
      */
     tc.tc.dsa = &stc;
-    memset(&stc, 0x0, sizeof(ACVP_DSA_TC));
+    memzero_s(&stc, sizeof(ACVP_DSA_TC));
 
     /*
      * Get the crypto module handler for DSA mode
@@ -1617,9 +1649,9 @@ ACVP_RESULT acvp_dsa_pqggen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         acvp_dsa_release_tc(&stc);
     }
 
-    memset(&stc, 0x0, sizeof(ACVP_DSA_TC));
+    memzero_s(&stc, sizeof(ACVP_DSA_TC));
     json_array_append_value(reg_arry, r_vs_val);
-    json_result = json_serialize_to_string_pretty(ctx->kat_resp);
+    json_result = json_serialize_to_string_pretty(ctx->kat_resp, NULL);
     if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
         printf("\n\n%s\n\n", json_result);
     } else {
@@ -1664,7 +1696,7 @@ ACVP_RESULT acvp_dsa_siggen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
      * Get a reference to the abstracted test case
      */
     tc.tc.dsa = &stc;
-    memset(&stc, 0x0, sizeof(ACVP_DSA_TC));
+    memzero_s(&stc, sizeof(ACVP_DSA_TC));
 
     /*
      * Get the crypto module handler for DSA mode
@@ -1737,9 +1769,9 @@ ACVP_RESULT acvp_dsa_siggen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         acvp_dsa_release_tc(&stc);
     }
 
-    memset(&stc, 0x0, sizeof(ACVP_DSA_TC));
+    memzero_s(&stc, sizeof(ACVP_DSA_TC));
     json_array_append_value(reg_arry, r_vs_val);
-    json_result = json_serialize_to_string_pretty(ctx->kat_resp);
+    json_result = json_serialize_to_string_pretty(ctx->kat_resp, NULL);
 
     if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
         printf("\n\n%s\n\n", json_result);
@@ -1785,7 +1817,7 @@ ACVP_RESULT acvp_dsa_keygen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
      * Get a reference to the abstracted test case
      */
     tc.tc.dsa = &stc;
-    memset(&stc, 0x0, sizeof(ACVP_DSA_TC));
+    memzero_s(&stc, sizeof(ACVP_DSA_TC));
 
     /*
      * Get the crypto module handler for DSA mode
@@ -1857,9 +1889,9 @@ ACVP_RESULT acvp_dsa_keygen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         acvp_dsa_release_tc(&stc);
     }
 
-    memset(&stc, 0x0, sizeof(ACVP_DSA_TC));
+    memzero_s(&stc, sizeof(ACVP_DSA_TC));
     json_array_append_value(reg_arry, r_vs_val);
-    json_result = json_serialize_to_string_pretty(ctx->kat_resp);
+    json_result = json_serialize_to_string_pretty(ctx->kat_resp, NULL);
 
     if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
         printf("\n\n%s\n\n", json_result);
@@ -1905,7 +1937,7 @@ ACVP_RESULT acvp_dsa_sigver_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
      * Get a reference to the abstracted test case
      */
     tc.tc.dsa = &stc;
-    memset(&stc, 0x0, sizeof(ACVP_DSA_TC));
+    memzero_s(&stc, sizeof(ACVP_DSA_TC));
 
     /*
      * Get the crypto module handler for DSA mode
@@ -1977,9 +2009,9 @@ ACVP_RESULT acvp_dsa_sigver_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         acvp_dsa_release_tc(&stc);
     }
 
-    memset(&stc, 0x0, sizeof(ACVP_DSA_TC));
+    memzero_s(&stc, sizeof(ACVP_DSA_TC));
     json_array_append_value(reg_arry, r_vs_val);
-    json_result = json_serialize_to_string_pretty(ctx->kat_resp);
+    json_result = json_serialize_to_string_pretty(ctx->kat_resp, NULL);
     if (!json_result) {
         ACVP_LOG_ERR("JSON unable to be serialized");
         rv = ACVP_JSON_ERR;
@@ -2002,8 +2034,11 @@ err:
     return rv;
 }
 
+#define DSA_MODE_STR_MAX 6
+
 ACVP_RESULT acvp_dsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     const char *mode = json_object_get_string(obj, "mode");
+    int diff = 0;
 
     if (!ctx) {
         ACVP_LOG_ERR("CTX is NULL. ");
@@ -2020,20 +2055,20 @@ ACVP_RESULT acvp_dsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         return ACVP_MISSING_ARG;
     }
 
-    if (!strncmp(mode, ACVP_ALG_DSA_PQGGEN, 6)) {
-        return acvp_dsa_pqggen_kat_handler(ctx, obj);
-    }
-    if (!strncmp(mode, ACVP_ALG_DSA_PQGVER, 6)) {
-        return acvp_dsa_pqgver_kat_handler(ctx, obj);
-    }
-    if (!strncmp(mode, ACVP_ALG_DSA_SIGGEN, 6)) {
-        return acvp_dsa_siggen_kat_handler(ctx, obj);
-    }
-    if (!strncmp(mode, ACVP_ALG_DSA_SIGVER, 6)) {
-        return acvp_dsa_sigver_kat_handler(ctx, obj);
-    }
-    if (!strncmp(mode, ACVP_ALG_DSA_KEYGEN, 6)) {
-        return acvp_dsa_keygen_kat_handler(ctx, obj);
-    }
+    strcmp_s(ACVP_ALG_DSA_PQGGEN, DSA_MODE_STR_MAX, mode, &diff);
+    if (!diff) acvp_dsa_pqggen_kat_handler(ctx, obj);
+
+    strcmp_s(ACVP_ALG_DSA_PQGVER, DSA_MODE_STR_MAX, mode, &diff);
+    if (!diff) acvp_dsa_pqgver_kat_handler(ctx, obj);
+
+    strcmp_s(ACVP_ALG_DSA_SIGGEN, DSA_MODE_STR_MAX, mode, &diff);
+    if (!diff) acvp_dsa_siggen_kat_handler(ctx, obj);
+
+    strcmp_s(ACVP_ALG_DSA_SIGVER, DSA_MODE_STR_MAX, mode, &diff);
+    if (!diff) acvp_dsa_sigver_kat_handler(ctx, obj);
+
+    strcmp_s(ACVP_ALG_DSA_KEYGEN, DSA_MODE_STR_MAX, mode, &diff);
+    if (!diff) acvp_dsa_keygen_kat_handler(ctx, obj);
+
     return ACVP_INVALID_ARG;
 }

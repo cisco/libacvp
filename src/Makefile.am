@@ -1,7 +1,6 @@
-
 lib_LTLIBRARIES = libacvp.la
-AM_CFLAGS = -I$(SSL_CFLAGS) -I../.. -I$(SAFEC_CFLAGS)/include $(LIBCURL_CFLAGS)
-libacvp_la_SOURCES =  acvp.c\
+AM_CFLAGS = -I../.. $(SAFEC_CFLAGS) $(LIBCURL_CFLAGS)
+libacvp_la_SOURCES =  acvp.c \
                     acvp_build_register.c \
                     acvp_capabilities.c \
                     acvp_aes.c \
@@ -27,6 +26,7 @@ libacvp_la_SOURCES =  acvp.c\
                     acvp_kas_ecc.c \
                     acvp_kas_ffc.c \
                     acvp_ecdsa.c
-libacvp_la_LIBADD = $(SAFEC_LDFLAGS) $(LIBOBJS)
+
+libacvp_la_LIBADD = $(SAFEC_LDFLAGS) $(LIBCURL_LDFLAGS)
 library_includedir=$(includedir)/acvp
 library_include_HEADERS = acvp.h

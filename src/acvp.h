@@ -2664,7 +2664,7 @@ ACVP_RESULT acvp_check_test_results(ACVP_CTX *ctx);
 
     @return ACVP_RESULT
  */
-ACVP_RESULT acvp_set_2fa_callback(ACVP_CTX *ctx, ACVP_RESULT (*totp_cb)(char **token));
+ACVP_RESULT acvp_set_2fa_callback(ACVP_CTX *ctx, ACVP_RESULT (*totp_cb)(char **token, int token_max));
 
 /*! @brief acvp_bin_to_hexstr() Converts a binary string to hex
 

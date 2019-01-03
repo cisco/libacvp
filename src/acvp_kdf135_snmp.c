@@ -30,6 +30,7 @@
 #include "acvp.h"
 #include "acvp_lcl.h"
 #include "parson.h"
+#include "safe_lib.h"
 
 /*
  * Forward prototypes for local functions
@@ -73,6 +74,7 @@ ACVP_RESULT acvp_kdf135_snmp_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     ACVP_TEST_CASE tc;
     ACVP_RESULT rv;
     const char *alg_str = json_object_get_string(obj, "algorithm");
+    const char *mode_str = NULL;
     ACVP_CIPHER alg_id;
     const char *password = NULL;
     char *engine_id = NULL;
@@ -90,8 +92,15 @@ ACVP_RESULT acvp_kdf135_snmp_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         return ACVP_MALFORMED_JSON;
     }
 
-    if (strncmp(alg_str, "kdf-components", 14)) {
-        ACVP_LOG_ERR("Invalid algorithm for this function %s", alg_str);
+    mode_str = json_object_get_string(obj, "mode");
+    if (!mode_str) {
+        ACVP_LOG_ERR("unable to parse 'mode' from JSON");
+        return ACVP_MALFORMED_JSON;
+    }
+
+    alg_id = acvp_lookup_cipher_w_mode_index(alg_str, mode_str);
+    if (alg_id != ACVP_KDF135_SNMP) {
+        ACVP_LOG_ERR("Server JSON invalid 'algorithm' or 'mode'");
         return ACVP_INVALID_ARG;
     }
 
@@ -99,7 +108,6 @@ ACVP_RESULT acvp_kdf135_snmp_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
      * Get a reference to the abstracted test case
      */
     tc.tc.kdf135_snmp = &stc;
-    alg_id = ACVP_KDF135_SNMP;
     stc.cipher = alg_id;
 
     cap = acvp_locate_cap_entry(ctx, alg_id);
@@ -205,7 +213,7 @@ ACVP_RESULT acvp_kdf135_snmp_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 rv = ACVP_MISSING_ARG;
                 goto err;
             }
-            int actual_len = strnlen(password, ACVP_KDF135_SNMP_PASSWORD_MAX);
+            int actual_len = strnlen_s(password, ACVP_KDF135_SNMP_PASSWORD_MAX);
             if (actual_len != p_len) {
                 ACVP_LOG_ERR("pLen(%d) or password length(%d) incorrect", p_len, actual_len);
                 rv = ACVP_INVALID_ARG;
@@ -264,7 +272,7 @@ ACVP_RESULT acvp_kdf135_snmp_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
     json_array_append_value(reg_arry, r_vs_val);
 
-    json_result = json_serialize_to_string_pretty(ctx->kat_resp);
+    json_result = json_serialize_to_string_pretty(ctx->kat_resp, NULL);
     if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
         printf("\n\n%s\n\n", json_result);
     } else {
@@ -313,7 +321,7 @@ static ACVP_RESULT acvp_kdf135_snmp_init_tc(ACVP_CTX *ctx,
                                             unsigned int p_len) {
     ACVP_RESULT rv;
 
-    memset(stc, 0x0, sizeof(ACVP_KDF135_SNMP_TC));
+    memzero_s(stc, sizeof(ACVP_KDF135_SNMP_TC));
 
     stc->s_key = calloc(ACVP_KDF135_SNMP_SKEY_MAX * 2, sizeof(char));
     if (!stc->s_key) { return ACVP_MALLOC_FAIL; }
@@ -342,6 +350,6 @@ static ACVP_RESULT acvp_kdf135_snmp_init_tc(ACVP_CTX *ctx,
 static ACVP_RESULT acvp_kdf135_snmp_release_tc(ACVP_KDF135_SNMP_TC *stc) {
     free(stc->s_key);
     free(stc->engine_id);
-    memset(stc, 0x0, sizeof(ACVP_KDF135_SNMP_TC));
+    memzero_s(stc, sizeof(ACVP_KDF135_SNMP_TC));
     return ACVP_SUCCESS;
 }

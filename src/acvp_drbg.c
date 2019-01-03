@@ -31,6 +31,7 @@
 #include "acvp.h"
 #include "acvp_lcl.h"
 #include "parson.h"
+#include "safe_lib.h"
 
 /*
  * Forward prototypes for local functions
@@ -279,7 +280,7 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
 
-            json_result = json_serialize_to_string_pretty(testval);
+            json_result = json_serialize_to_string_pretty(testval, NULL);
             ACVP_LOG_INFO("json testval count: %d\n %s\n", i, json_result);
             json_free_serialized_string(json_result);
 
@@ -291,7 +292,7 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 rv = ACVP_MISSING_ARG;
                 goto err;
             }
-            if (strnlen(perso_string, ACVP_DRBG_PER_SO_STR_MAX + 1)
+            if (strnlen_s(perso_string, ACVP_DRBG_PER_SO_STR_MAX + 1)
                 > ACVP_DRBG_PER_SO_STR_MAX) {
                 ACVP_LOG_ERR("persoString too long, max allowed=(%d)",
                              ACVP_DRBG_PER_SO_STR_MAX);
@@ -305,7 +306,7 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 rv = ACVP_MISSING_ARG;
                 goto err;
             }
-            if (strnlen(entropy, ACVP_DRBG_ENTPY_IN_STR_MAX + 1)
+            if (strnlen_s(entropy, ACVP_DRBG_ENTPY_IN_STR_MAX + 1)
                 > ACVP_DRBG_ENTPY_IN_STR_MAX) {
                 ACVP_LOG_ERR("entropyInput too long, max allowed=(%d)",
                              ACVP_DRBG_ENTPY_IN_STR_MAX);
@@ -319,7 +320,7 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 rv = ACVP_MISSING_ARG;
                 goto err;
             }
-            if (strnlen(nonce, ACVP_DRBG_NONCE_STR_MAX + 1)
+            if (strnlen_s(nonce, ACVP_DRBG_NONCE_STR_MAX + 1)
                 > ACVP_DRBG_NONCE_STR_MAX) {
                 ACVP_LOG_ERR("nonce too long, max allowed=(%d)",
                              ACVP_DRBG_NONCE_STR_MAX);
@@ -362,7 +363,7 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 rv = ACVP_MISSING_ARG;
                 goto err;
             }
-            if (strnlen(additional_input, ACVP_DRBG_ADDI_IN_STR_MAX + 1)
+            if (strnlen_s(additional_input, ACVP_DRBG_ADDI_IN_STR_MAX + 1)
                 > ACVP_DRBG_ADDI_IN_STR_MAX) {
                 ACVP_LOG_ERR("In otherInput[%d], additionalInput too long. Max allowed=(%d)",
                              0, ACVP_DRBG_ADDI_IN_STR_MAX);
@@ -376,7 +377,7 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 rv = ACVP_MISSING_ARG;
                 goto err;
             }
-            if (strnlen(entropy_input_pr, ACVP_DRBG_ENTPY_IN_STR_MAX + 1)
+            if (strnlen_s(entropy_input_pr, ACVP_DRBG_ENTPY_IN_STR_MAX + 1)
                 > ACVP_DRBG_ENTPY_IN_STR_MAX) {
                 ACVP_LOG_ERR("In otherInput[%d], entropyInput too long. Max allowed=(%d)",
                              0, ACVP_DRBG_ENTPY_IN_STR_MAX);
@@ -397,7 +398,7 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                     rv = ACVP_MISSING_ARG;
                     goto err;
                 }
-                if (strnlen(additional_input_1, ACVP_DRBG_ADDI_IN_STR_MAX + 1)
+                if (strnlen_s(additional_input_1, ACVP_DRBG_ADDI_IN_STR_MAX + 1)
                     > ACVP_DRBG_ADDI_IN_STR_MAX) {
                     ACVP_LOG_ERR("In otherInput[%d], additionalInput too long. Max allowed=(%d)",
                                  1, ACVP_DRBG_ADDI_IN_STR_MAX);
@@ -411,7 +412,7 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                     rv = ACVP_MISSING_ARG;
                     goto err;
                 }
-                if (strnlen(entropy_input_pr_1, ACVP_DRBG_ENTPY_IN_STR_MAX + 1)
+                if (strnlen_s(entropy_input_pr_1, ACVP_DRBG_ENTPY_IN_STR_MAX + 1)
                     > ACVP_DRBG_ENTPY_IN_STR_MAX) {
                     ACVP_LOG_ERR("In otherInput[%d], entropyInput too long. Max allowed=(%d)",
                                  1, ACVP_DRBG_ENTPY_IN_STR_MAX);
@@ -476,7 +477,7 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     }
     json_array_append_value(reg_arry, r_vs_val);
 
-    json_result = json_serialize_to_string_pretty(ctx->kat_resp);
+    json_result = json_serialize_to_string_pretty(ctx->kat_resp, NULL);
     if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
         printf("\n\n%s\n\n", json_result);
     } else {
@@ -542,7 +543,7 @@ static ACVP_RESULT acvp_drbg_init_tc(ACVP_CTX *ctx,
                                      ACVP_CIPHER alg_id) {
     ACVP_RESULT rv;
 
-    memset(stc, 0x0, sizeof(ACVP_DRBG_TC));
+    memzero_s(stc, sizeof(ACVP_DRBG_TC));
 
     stc->drb = calloc(ACVP_DRB_BYTE_MAX, sizeof(unsigned char));
     if (!stc->drb) { return ACVP_MALLOC_FAIL; }
@@ -653,6 +654,6 @@ static ACVP_RESULT acvp_drbg_release_tc(ACVP_DRBG_TC *stc) {
     if (stc->nonce) free(stc->nonce);
     if (stc->perso_string) free(stc->perso_string);
 
-    memset(stc, 0x0, sizeof(ACVP_DRBG_TC));
+    memzero_s(stc, sizeof(ACVP_DRBG_TC));
     return ACVP_SUCCESS;
 }

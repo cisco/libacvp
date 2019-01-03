@@ -35,6 +35,7 @@
 #include "acvp.h"
 #include "acvp_lcl.h"
 #include "parson.h"
+#include "safe_str_lib.h"
 
 /*
  * Adds the length provided to the linked list of
@@ -1020,7 +1021,7 @@ ACVP_RESULT acvp_cap_set_prereq(ACVP_CTX *ctx,
     if (!ctx) {
         return ACVP_NO_CTX;
     }
-    if (!value || strnlen(value, 12) == 0) {
+    if (!value || strnlen_s(value, 12) == 0) {
         return ACVP_INVALID_ARG;
     }
 
@@ -2552,7 +2553,7 @@ ACVP_RESULT acvp_cap_rsa_keygen_set_exponent(ACVP_CTX *ctx,
     case ACVP_RSA_PARM_FIXED_PUB_EXP_VAL:
         if (cap->pub_exp_mode == ACVP_RSA_PUB_EXP_MODE_FIXED) {
             if (cap->fixed_pub_exp == NULL) {
-                unsigned int len = strnlen(value, ACVP_CAPABILITY_STR_MAX + 1);
+                unsigned int len = strnlen_s(value, ACVP_CAPABILITY_STR_MAX + 1);
 
                 if (len > ACVP_CAPABILITY_STR_MAX) {
                     ACVP_LOG_ERR("Parameter 'value' string is too long. "
@@ -2562,8 +2563,8 @@ ACVP_RESULT acvp_cap_rsa_keygen_set_exponent(ACVP_CTX *ctx,
                 }
 
                 /* Make sure this is deallocated */
-                cap->fixed_pub_exp = calloc(len, sizeof(char));
-                strncpy(cap->fixed_pub_exp, value, len);
+                cap->fixed_pub_exp = calloc(len + 1, sizeof(char));
+                strcpy_s(cap->fixed_pub_exp, len, value);
             } else {
                 ACVP_LOG_ERR("ACVP_FIXED_PUB_EXP_VAL has already been set.");
                 return ACVP_UNSUPPORTED_OP;
@@ -2602,7 +2603,7 @@ ACVP_RESULT acvp_cap_rsa_sigver_set_exponent(ACVP_CTX *ctx,
     case ACVP_RSA_PARM_FIXED_PUB_EXP_VAL:
         if (cap->pub_exp_mode == ACVP_RSA_PUB_EXP_MODE_FIXED) {
             if (cap->fixed_pub_exp == NULL) {
-                unsigned int len = strnlen(value, ACVP_CAPABILITY_STR_MAX + 1);
+                unsigned int len = strnlen_s(value, ACVP_CAPABILITY_STR_MAX + 1);
 
                 if (len > ACVP_CAPABILITY_STR_MAX) {
                     ACVP_LOG_ERR("Parameter 'value' string is too long. "
@@ -2612,8 +2613,8 @@ ACVP_RESULT acvp_cap_rsa_sigver_set_exponent(ACVP_CTX *ctx,
                 }
 
                 /* Make sure this is deallocated */
-                cap->fixed_pub_exp = calloc(len, sizeof(char));
-                strncpy(cap->fixed_pub_exp, value, len);
+                cap->fixed_pub_exp = calloc(len + 1, sizeof(char));
+                strcpy_s(cap->fixed_pub_exp, len, value);
             } else {
                 ACVP_LOG_ERR("ACVP_FIXED_PUB_EXP_VAL has already been set.");
                 return ACVP_UNSUPPORTED_OP;
@@ -3377,7 +3378,7 @@ ACVP_RESULT acvp_cap_kdf135_snmp_set_engid(ACVP_CTX *ctx,
     if (!engid) {
         return ACVP_INVALID_ARG;
     }
-    if (strnlen(engid, ACVP_KDF135_SNMP_ENGID_MAX_STR + 1) > ACVP_KDF135_SNMP_ENGID_MAX_STR) {
+    if (strnlen_s(engid, ACVP_KDF135_SNMP_ENGID_MAX_STR + 1) > ACVP_KDF135_SNMP_ENGID_MAX_STR) {
         ACVP_LOG_ERR("engid too long");
         return ACVP_INVALID_ARG;
     }
@@ -4083,16 +4084,16 @@ ACVP_RESULT acvp_cap_kdf135_ikev1_set_parm(ACVP_CTX *ctx,
     } else if (param == ACVP_KDF_IKEv1_AUTH_METHOD) {
         switch (value) {
         case ACVP_KDF135_IKEV1_AMETH_DSA:
-            strncpy(cap->auth_method, ACVP_AUTH_METHOD_DSA_STR,
-                    ACVP_AUTH_METHOD_STR_MAX);
+            strcpy_s(cap->auth_method, ACVP_AUTH_METHOD_STR_MAX,
+                     ACVP_AUTH_METHOD_DSA_STR);
             break;
         case ACVP_KDF135_IKEV1_AMETH_PSK:
-            strncpy(cap->auth_method, ACVP_AUTH_METHOD_PSK_STR,
-                    ACVP_AUTH_METHOD_STR_MAX);
+            strcpy_s(cap->auth_method, ACVP_AUTH_METHOD_STR_MAX,
+                     ACVP_AUTH_METHOD_PSK_STR);
             break;
         case ACVP_KDF135_IKEV1_AMETH_PKE:
-            strncpy(cap->auth_method, ACVP_AUTH_METHOD_PKE_STR,
-                    ACVP_AUTH_METHOD_STR_MAX);
+            strcpy_s(cap->auth_method, ACVP_AUTH_METHOD_STR_MAX,
+                     ACVP_AUTH_METHOD_PKE_STR);
             break;
         default:
             ACVP_LOG_ERR("Invalid authentication method.");

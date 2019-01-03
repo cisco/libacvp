@@ -91,6 +91,9 @@
 
 #define ACVP_ALG_MAX ACVP_CIPHER_END - 1  /* Used by alg_tbl[] */
 
+#define ACVP_ALG_NAME_MAX 18 /**< Always make sure this is >= the length of ACVP_ALG* strings */
+#define ACVP_ALG_MODE_MAX 26 /**< Always make sure this is >= the length of ACVP_MODE* strings */
+
 #define ACVP_ALG_AES_ECB             "AES-ECB"
 #define ACVP_ALG_AES_CBC             "AES-CBC"
 #define ACVP_ALG_AES_CFB1            "AES-CFB1"
@@ -177,10 +180,14 @@
 #define ACVP_ALG_KAS_FFC_KEYREGEN    "keyRegen"
 
 #define ACVP_ECDSA_EXTRA_BITS_STR "extra bits"
+#define ACVP_ECDSA_EXTRA_BITS_STR_LEN 10
 #define ACVP_ECDSA_TESTING_CANDIDATES_STR "testing candidates"
+#define ACVP_ECDSA_TESTING_CANDIDATES_STR_LEN 18
 
 #define ACVP_RSA_PRIME_TEST_TBLC2_STR "tblC2"
+#define ACVP_RSA_PRIME_TEST_TBLC2_STR_LEN 5
 #define ACVP_RSA_PRIME_TEST_TBLC3_STR "tblC3"
+#define ACVP_RSA_PRIME_TEST_TBLC3_STR_LEN 5
 
 #define ACVP_RSA_SIG_TYPE_X931_STR      "ansx9.31"
 #define ACVP_RSA_SIG_TYPE_PKCS1V15_STR  "pkcs1v1.5"
@@ -229,6 +236,10 @@
 #define ACVP_ALG_KDF135_X963     "ansix9.63"
 
 #define ACVP_CAPABILITY_STR_MAX 512 /**< Arbitrary string length limit */
+
+#define ACVP_HEXSTR_MAX (ACVP_DRBG_ENTPY_IN_BIT_MAX >> 2) /**< Represents the largest hexstr that the client will accept.
+                                                               Should always be set the the highest hexstr (i.e. bit length)
+                                                               the the client will accept from server JSON string field */
 
 /*
  *  Defines the key lengths and block lengths (in bytes)
@@ -526,9 +537,13 @@
 #define ACVP_RSA_MSGLEN_MAX     1024
 #define ACVP_RSA_SIGNATURE_MAX  2048
 #define ACVP_RSA_PUB_EXP_MODE_FIXED_STR "fixed"
+#define ACVP_RSA_PUB_EXP_MODE_FIXED_STR_LEN 5
 #define ACVP_RSA_PUB_EXP_MODE_RANDOM_STR "random"
+#define ACVP_RSA_PUB_EXP_MODE_RANDOM_STR_LEN 6
 #define ACVP_RSA_KEY_FORMAT_STD_STR "standard"
+#define ACVP_RSA_KEY_FORMAT_STD_STR_LEN 9
 #define ACVP_RSA_KEY_FORMAT_CRT_STR "crt"
+#define ACVP_RSA_KEY_FORMAT_CRT_STR_LEN 3
 #define ACVP_RSA_RANDPQ32_STR   "B.3.2"
 #define ACVP_RSA_RANDPQ33_STR   "B.3.3"
 #define ACVP_RSA_RANDPQ34_STR   "B.3.4"
@@ -1045,7 +1060,7 @@ struct acvp_ctx_t {
     ACVP_RESULT (*test_progress_cb) (char *msg);
 
     /* Two-factor authentication callback */
-    ACVP_RESULT (*totp_cb) (char **token);
+    ACVP_RESULT (*totp_cb) (char **token, int token_max);
 
     /* Transitory values */
     char *login_buf;      /* holds the 2-FA authentication response */
@@ -1061,8 +1076,10 @@ struct acvp_ctx_t {
     char *ans_buf;  /* holds the queried answers on a sample registration */
 };
 
-ACVP_RESULT acvp_send_test_session_registration(ACVP_CTX *ctx, char *reg);
+ACVP_RESULT acvp_send_test_session_registration(ACVP_CTX *ctx, char *reg, int len);
 
+#if 0 /* Needs to be refactored to provide data length for underlying functions
+         Due to SafeC */
 ACVP_RESULT acvp_send_vendor_registration(ACVP_CTX *ctx, char *reg);
 
 ACVP_RESULT acvp_send_module_registration(ACVP_CTX *ctx, char *reg);
@@ -1070,8 +1087,9 @@ ACVP_RESULT acvp_send_module_registration(ACVP_CTX *ctx, char *reg);
 ACVP_RESULT acvp_send_oe_registration(ACVP_CTX *ctx, char *reg);
 
 ACVP_RESULT acvp_send_dep_registration(ACVP_CTX *ctx, char *reg);
+#endif
 
-ACVP_RESULT acvp_send_login(ACVP_CTX *ctx, char *login);
+ACVP_RESULT acvp_send_login(ACVP_CTX *ctx, char *login, int len);
 
 ACVP_RESULT acvp_retrieve_vector_set(ACVP_CTX *ctx, char *vsid_url);
 
@@ -1149,15 +1167,21 @@ ACVP_RESULT acvp_kas_ffc_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 /*
  * ACVP build registration functions used internally
  */
+#if 0 /* Needs to be refactored to provide data length for underlying functions
+         Due to SafeC */
 ACVP_RESULT acvp_build_vendors(ACVP_CTX *ctx, char **reg);
 
 ACVP_RESULT acvp_build_modules(ACVP_CTX *ctx, char **reg);
 
 ACVP_RESULT acvp_build_oes(ACVP_CTX *ctx, char **reg);
+#endif
 
-ACVP_RESULT acvp_build_test_session(ACVP_CTX *ctx, char **reg);
+ACVP_RESULT acvp_build_test_session(ACVP_CTX *ctx, char **reg, int *out_len);
 
+#if 0 /* Needs to be refactored to provide data length for underlying functions
+         Due to SafeC */
 ACVP_RESULT acvp_build_dependency(ACVP_DEPENDENCY_LIST *dep, char **reg);
+#endif
 
 /*
  * ACVP utility functions used internally
@@ -1167,6 +1191,9 @@ ACVP_CAPS_LIST *acvp_locate_cap_entry(ACVP_CTX *ctx, ACVP_CIPHER cipher);
 char *acvp_lookup_cipher_name(ACVP_CIPHER alg);
 
 ACVP_CIPHER acvp_lookup_cipher_index(const char *algorithm);
+
+ACVP_CIPHER acvp_lookup_cipher_w_mode_index(const char *algorithm,
+                                            const char *mode);
 
 ACVP_DRBG_MODE acvp_lookup_drbg_mode_index(const char *mode);
 

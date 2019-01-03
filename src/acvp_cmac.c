@@ -31,6 +31,7 @@
 #include "acvp.h"
 #include "acvp_lcl.h"
 #include "parson.h"
+#include "safe_lib.h"
 
 static ACVP_RESULT acvp_cmac_init_tc(ACVP_CTX *ctx,
                                      ACVP_CMAC_TC *stc,
@@ -65,7 +66,7 @@ static ACVP_RESULT acvp_cmac_init_tc(ACVP_CTX *ctx,
         }
     }
 
-    memset(stc, 0x0, sizeof(ACVP_CMAC_TC));
+    memzero_s(stc, sizeof(ACVP_CMAC_TC));
 
     stc->msg = calloc(1, ACVP_CMAC_MSGLEN_MAX_STR);
     if (!stc->msg) { return ACVP_MALLOC_FAIL; }
@@ -173,7 +174,7 @@ static ACVP_RESULT acvp_cmac_release_tc(ACVP_CMAC_TC *stc) {
     if (stc->key) free(stc->key);
     if (stc->key2) free(stc->key2);
     if (stc->key3) free(stc->key3);
-    memset(stc, 0x0, sizeof(ACVP_CMAC_TC));
+    memzero_s(stc, sizeof(ACVP_CMAC_TC));
 
     return ACVP_SUCCESS;
 }
@@ -265,6 +266,8 @@ ACVP_RESULT acvp_cmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     g_cnt = json_array_get_count(groups);
     for (i = 0; i < g_cnt; i++) {
         int tgId = 0;
+        int diff = 0;
+
         groupval = json_array_get_value(groups, i);
         groupobj = json_value_get_object(groupval);
 
@@ -307,13 +310,19 @@ ACVP_RESULT acvp_cmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             rv = ACVP_MALFORMED_JSON;
             goto err;
         }
-        if (strncmp((const char *)direction, "ver", 3) == 0) {
+
+        strcmp_s("ver", 3, direction, &diff);
+        if (!diff) {
             verify = 1;
-        } else if (strncmp((const char *)direction, "gen", 3) != 0) {
-            ACVP_LOG_ERR("'direction' should be 'gen' or 'ver'");
-            rv = ACVP_UNSUPPORTED_OP;
-            goto err;
+        } else {
+            strcmp_s("gen", 3, direction, &diff);
+            if (diff) {
+                ACVP_LOG_ERR("'direction' should be 'gen' or 'ver'");
+                rv = ACVP_UNSUPPORTED_OP;
+                goto err;
+            }
         }
+
         msglen = (unsigned int)json_object_get_number(groupobj, "msgLen") / 8;
 
         maclen = (unsigned int)json_object_get_number(groupobj, "macLen") / 8;
@@ -337,7 +346,7 @@ ACVP_RESULT acvp_cmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
             /* msg can be null if msglen is 0 */
             if (msg) {
-                json_msglen = strnlen(msg, ACVP_CMAC_MSGLEN_MAX_STR + 1);
+                json_msglen = strnlen_s(msg, ACVP_CMAC_MSGLEN_MAX_STR + 1);
                 if (json_msglen > ACVP_CMAC_MSGLEN_MAX_STR) {
                     ACVP_LOG_ERR("'msg' too long");
                     rv = ACVP_INVALID_ARG;
@@ -361,7 +370,7 @@ ACVP_RESULT acvp_cmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                     rv = ACVP_MISSING_ARG;
                     goto err;
                 }
-                key1_len = strnlen(key1, ACVP_CMAC_KEY_MAX + 1);
+                key1_len = strnlen_s(key1, ACVP_CMAC_KEY_MAX + 1);
                 if (key1_len > ACVP_CMAC_KEY_MAX) {
                     ACVP_LOG_ERR("Invalid length for 'key' attribute in CMAC-AES test");
                     rv = ACVP_INVALID_ARG;
@@ -376,9 +385,9 @@ ACVP_RESULT acvp_cmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                     rv = ACVP_MISSING_ARG;
                     goto err;
                 }
-                key1_len = strnlen(key1, ACVP_CMAC_KEY_MAX + 1);
-                key2_len = strnlen(key2, ACVP_CMAC_KEY_MAX + 1);
-                key3_len = strnlen(key3, ACVP_CMAC_KEY_MAX + 1);
+                key1_len = strnlen_s(key1, ACVP_CMAC_KEY_MAX + 1);
+                key2_len = strnlen_s(key2, ACVP_CMAC_KEY_MAX + 1);
+                key3_len = strnlen_s(key3, ACVP_CMAC_KEY_MAX + 1);
                 if (key1_len > ACVP_CMAC_KEY_MAX ||
                     key2_len > ACVP_CMAC_KEY_MAX ||
                     key3_len > ACVP_CMAC_KEY_MAX) {
@@ -467,7 +476,7 @@ ACVP_RESULT acvp_cmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
     json_array_append_value(reg_arry, r_vs_val);
 
-    json_result = json_serialize_to_string_pretty(ctx->kat_resp);
+    json_result = json_serialize_to_string_pretty(ctx->kat_resp, NULL);
     if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
         printf("\n\n%s\n\n", json_result);
     } else {

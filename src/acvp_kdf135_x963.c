@@ -30,6 +30,7 @@
 #include "acvp.h"
 #include "acvp_lcl.h"
 #include "parson.h"
+#include "safe_lib.h"
 
 /*
  * After the test case has been processed by the DUT, the results
@@ -49,7 +50,7 @@ static ACVP_RESULT acvp_kdf135_x963_output_tc(ACVP_CTX *ctx, ACVP_KDF135_X963_TC
         goto err;
     }
     json_object_set_string(tc_rsp, "keyData", (const char *)tmp);
-    memset(tmp, 0x0, ACVP_KDF135_X963_KEYDATA_MAX_BYTES);
+    memzero_s(tmp, ACVP_KDF135_X963_KEYDATA_MAX_BYTES);
 err:
     free(tmp);
     return ACVP_SUCCESS;
@@ -77,7 +78,7 @@ static ACVP_RESULT acvp_kdf135_x963_init_tc(ACVP_CTX *ctx,
                                             char *shared_info) {
     ACVP_RESULT rv = ACVP_SUCCESS;
 
-    memset(stc, 0x0, sizeof(ACVP_KDF135_X963_TC));
+    memzero_s(stc, sizeof(ACVP_KDF135_X963_TC));
 
     if (!hash_alg || !z || !shared_info) {
         ACVP_LOG_ERR("Missing parameters - initalize KDF135 X963 test case");
@@ -139,18 +140,12 @@ ACVP_RESULT acvp_kdf135_x963_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     ACVP_RESULT rv;
     char *alg_str = ACVP_KDF135_ALG_STR;
     const char *alg_str_test = NULL;
+    const char *mode_str = NULL;
     ACVP_CIPHER alg_id;
     char *json_result;
 
     int field_size, key_data_length, shared_info_len;
     char *z = NULL, *shared_info = NULL;
-
-    /*
-     * Get a reference to the abstracted test case
-     */
-    tc.tc.kdf135_x963 = &stc;
-    alg_id = ACVP_KDF135_X963;
-    stc.cipher = alg_id;
 
     if (!ctx) {
         ACVP_LOG_ERR("No ctx for handler operation");
@@ -167,10 +162,24 @@ ACVP_RESULT acvp_kdf135_x963_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         ACVP_LOG_ERR("Server JSON missing 'algorithm'");
         return ACVP_MISSING_ARG;
     }
-    if (strncmp(alg_str_test, "kdf-components", 14)) {
-        ACVP_LOG_ERR("Invalid algorithm for this function %s", alg_str_test);
+
+    mode_str = json_object_get_string(obj, "mode");
+    if (!mode_str) {
+        ACVP_LOG_ERR("Server JSON missing 'mode'");
+        return ACVP_MISSING_ARG;
+    }
+    
+    alg_id = acvp_lookup_cipher_w_mode_index(alg_str, mode_str);
+    if (alg_id != ACVP_KDF135_X963) {
+        ACVP_LOG_ERR("Server JSON invalid 'algorithm' or 'mode'");
         return ACVP_INVALID_ARG;
     }
+
+    /*
+     * Get a reference to the abstracted test case
+     */
+    tc.tc.kdf135_x963 = &stc;
+    stc.cipher = alg_id;
 
     cap = acvp_locate_cap_entry(ctx, alg_id);
     if (!cap) {
@@ -251,19 +260,9 @@ ACVP_RESULT acvp_kdf135_x963_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             rv = ACVP_MISSING_ARG;
             goto err;
         }
-        if (!strncmp(hash_alg_str, ACVP_STR_SHA2_224,
-                     strlen(ACVP_STR_SHA2_224))) {
-            hash_alg = ACVP_SHA224;
-        } else if (!strncmp(hash_alg_str, ACVP_STR_SHA2_256,
-                            strlen(ACVP_STR_SHA2_256))) {
-            hash_alg = ACVP_SHA256;
-        } else if (!strncmp(hash_alg_str, ACVP_STR_SHA2_384,
-                            strlen(ACVP_STR_SHA2_384))) {
-            hash_alg = ACVP_SHA384;
-        } else if (!strncmp(hash_alg_str, ACVP_STR_SHA2_512,
-                            strlen(ACVP_STR_SHA2_512))) {
-            hash_alg = ACVP_SHA512;
-        } else {
+        hash_alg = acvp_lookup_hash_alg(hash_alg_str);
+        if (hash_alg != ACVP_SHA224 && hash_alg != ACVP_SHA256 &&
+            hash_alg != ACVP_SHA384 && hash_alg != ACVP_SHA512) {
             ACVP_LOG_ERR("Server JSON invalid 'hashAlg'");
             rv = ACVP_INVALID_ARG;
             goto err;
@@ -357,7 +356,7 @@ ACVP_RESULT acvp_kdf135_x963_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
     json_array_append_value(reg_arry, r_vs_val);
 
-    json_result = json_serialize_to_string_pretty(ctx->kat_resp);
+    json_result = json_serialize_to_string_pretty(ctx->kat_resp, NULL);
     if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
         printf("\n\n%s\n\n", json_result);
     } else {

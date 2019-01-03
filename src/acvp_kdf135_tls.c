@@ -30,6 +30,7 @@
 #include "acvp.h"
 #include "acvp_lcl.h"
 #include "parson.h"
+#include "safe_lib.h"
 
 /*
  * Forward prototypes for local functions
@@ -52,6 +53,17 @@ static ACVP_RESULT acvp_kdf135_tls_init_tc(ACVP_CTX *ctx,
 
 static ACVP_RESULT acvp_kdf135_tls_release_tc(ACVP_KDF135_TLS_TC *stc);
 
+static ACVP_KDF135_TLS_METHOD read_version(const char *str) {
+    int diff = 1;
+
+    strcmp_s("v1.2", 4, str, &diff);
+    if (!diff) return ACVP_KDF135_TLS12;
+
+    strcmp_s("v1.0/1.1", 8, str, &diff);
+    if (!diff) return ACVP_KDF135_TLS10_TLS11;
+
+    return 0; 
+}
 
 ACVP_RESULT acvp_kdf135_tls_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     unsigned int tc_id;
@@ -79,6 +91,7 @@ ACVP_RESULT acvp_kdf135_tls_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     ACVP_TEST_CASE tc;
     ACVP_RESULT rv;
     const char *alg_str = json_object_get_string(obj, "algorithm");
+    const char *mode_str = NULL;
     ACVP_CIPHER alg_id;
     ACVP_HASH_ALG md = 0;
     ACVP_KDF135_TLS_METHOD meth = 0;
@@ -102,8 +115,15 @@ ACVP_RESULT acvp_kdf135_tls_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         return ACVP_MALFORMED_JSON;
     }
 
-    if (strncmp(alg_str, "kdf-components", strlen("kdf-components"))) {
-        ACVP_LOG_ERR("Invalid algorithm for this function %s", alg_str);
+    mode_str = json_object_get_string(obj, "mode");
+    if (!mode_str) {
+        ACVP_LOG_ERR("unable to parse 'mode' from JSON");
+        return ACVP_MALFORMED_JSON;
+    }
+
+    alg_id = acvp_lookup_cipher_w_mode_index(alg_str, mode_str);
+    if (alg_id != ACVP_KDF135_TLS) {
+        ACVP_LOG_ERR("Server JSON invalid 'algorithm' or 'mode'");
         return ACVP_INVALID_ARG;
     }
 
@@ -112,14 +132,6 @@ ACVP_RESULT acvp_kdf135_tls_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
      */
     tc.tc.kdf135_tls = &stc;
 
-    /*
-     * Get the crypto module handler for this hash algorithm
-     */
-    alg_id = acvp_lookup_cipher_index(alg_str);
-    if (alg_id < ACVP_CIPHER_START) {
-        ACVP_LOG_ERR("unsupported algorithm (%s)", alg_str);
-        return ACVP_UNSUPPORTED_OP;
-    }
     cap = acvp_locate_cap_entry(ctx, alg_id);
     if (!cap) {
         ACVP_LOG_ERR("ACVP server requesting unsupported capability");
@@ -188,30 +200,22 @@ ACVP_RESULT acvp_kdf135_tls_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             goto err;
         }
 
+        meth = read_version(method);
+        if (!meth) {
+            ACVP_LOG_ERR("Not TLS method");
+            rv = ACVP_NO_CAP;
+            goto err;
+        }
+
         sha = json_object_get_string(groupobj, "hashAlg");
         if (!sha) {
             ACVP_LOG_ERR("Failed to include hashAlg");
             rv = ACVP_MISSING_ARG;
             goto err;
         }
-
-        if (!strncmp(method, "v1.2", 4)) {
-            meth = ACVP_KDF135_TLS12;
-        } else if (!strncmp(method, "v1.0/1.1", 8)) {
-            meth = ACVP_KDF135_TLS10_TLS11;
-        } else {
-            ACVP_LOG_ERR("Not TLS method");
-            rv = ACVP_NO_CAP;
-            goto err;
-        }
-
-        if (!strncmp(sha, "SHA2-256", 8)) {
-            md = ACVP_SHA256;
-        } else if (!strncmp(sha, "SHA2-384", 8)) {
-            md = ACVP_SHA384;
-        } else if (!strncmp(sha, "SHA2-512", 8)) {
-            md = ACVP_SHA512;
-        } else {
+        md = acvp_lookup_hash_alg(sha);
+        if (md != ACVP_SHA256 && md != ACVP_SHA384 &&
+            md != ACVP_SHA512) {
             ACVP_LOG_ERR("Not TLS SHA");
             rv = ACVP_NO_CAP;
             goto err;
@@ -238,9 +242,9 @@ ACVP_RESULT acvp_kdf135_tls_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 rv = ACVP_MISSING_ARG;
                 goto err;
             }
-            if (strnlen(pm_secret, pm_len) != pm_len / 4) {
+            if (strnlen_s(pm_secret, pm_len) != pm_len / 4) {
                 ACVP_LOG_ERR("pmLen(%d) or pmSecret length(%d) incorrect",
-                             pm_len / 4, strnlen(pm_secret, ACVP_KDF135_TLS_PMSECRET_STR_MAX));
+                             pm_len / 4, strnlen_s(pm_secret, ACVP_KDF135_TLS_PMSECRET_STR_MAX));
                 rv = ACVP_INVALID_ARG;
                 goto err;
             }
@@ -331,7 +335,7 @@ ACVP_RESULT acvp_kdf135_tls_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
     json_array_append_value(reg_arry, r_vs_val);
 
-    json_result = json_serialize_to_string_pretty(ctx->kat_resp);
+    json_result = json_serialize_to_string_pretty(ctx->kat_resp, NULL);
     if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
         printf("\n\n%s\n\n", json_result);
     } else {
@@ -369,7 +373,7 @@ static ACVP_RESULT acvp_kdf135_tls_output_tc(ACVP_CTX *ctx, ACVP_KDF135_TLS_TC *
         goto err;
     }
     json_object_set_string(tc_rsp, "masterSecret", tmp);
-    memset(tmp, 0x0, ACVP_KDF135_TLS_MSG_MAX);
+    memzero_s(tmp, ACVP_KDF135_TLS_MSG_MAX);
 
     rv = acvp_bin_to_hexstr(stc->kblock1, stc->kb_len, tmp, ACVP_KDF135_TLS_MSG_MAX);
     if (rv != ACVP_SUCCESS) {
@@ -399,7 +403,7 @@ static ACVP_RESULT acvp_kdf135_tls_init_tc(ACVP_CTX *ctx,
                                            const char *c_rnd) {
     ACVP_RESULT rv;
 
-    memset(stc, 0x0, sizeof(ACVP_KDF135_TLS_TC));
+    memzero_s(stc, sizeof(ACVP_KDF135_TLS_TC));
 
     stc->pm_secret = calloc(1, ACVP_KDF135_TLS_MSG_MAX);
     if (!stc->pm_secret) { return ACVP_MALLOC_FAIL; }
@@ -453,11 +457,6 @@ static ACVP_RESULT acvp_kdf135_tls_init_tc(ACVP_CTX *ctx,
     stc->kblock2 = calloc(1, ACVP_KDF135_TLS_MSG_MAX);
     if (!stc->kblock2) { return ACVP_MALLOC_FAIL; }
 
-    memset(stc->msecret1, 0, ACVP_KDF135_TLS_MSG_MAX);
-    memset(stc->msecret2, 0, ACVP_KDF135_TLS_MSG_MAX);
-    memset(stc->kblock1, 0, ACVP_KDF135_TLS_MSG_MAX);
-    memset(stc->kblock2, 0, ACVP_KDF135_TLS_MSG_MAX);
-
     stc->tc_id = tc_id;
     stc->cipher = alg_id;
     stc->pm_len = pm_len / 8;
@@ -483,6 +482,6 @@ static ACVP_RESULT acvp_kdf135_tls_release_tc(ACVP_KDF135_TLS_TC *stc) {
     free(stc->kblock1);
     free(stc->kblock2);
 
-    memset(stc, 0x0, sizeof(ACVP_KDF135_TLS_TC));
+    memzero_s(stc, sizeof(ACVP_KDF135_TLS_TC));
     return ACVP_SUCCESS;
 }

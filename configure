@@ -636,10 +636,16 @@ ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
 LIBOBJS
+SAFEC_LDFLAGS
+SAFEC_CFLAGS
 SAFEC_STUB_DIR
 USE_FOM_FALSE
 USE_FOM_TRUE
+FOM_LDFLAGS
+FOM_CFLAGS
 FOM_OBJ_DIR
+LIBCURL_LDFLAGS
+LIBCURL_CFLAGS
 SSL_LDFLAGS
 SSL_CFLAGS
 CPP
@@ -739,6 +745,7 @@ infodir
 docdir
 oldincludedir
 includedir
+runstatedir
 localstatedir
 sharedstatedir
 sysconfdir
@@ -777,7 +784,6 @@ with_libcurl_dir
 with_libmurl_dir
 with_fom_dir
 with_gcov
-with_safec_dir
 '
       ac_precious_vars='build_alias
 host_alias
@@ -828,6 +834,7 @@ datadir='${datarootdir}'
 sysconfdir='${prefix}/etc'
 sharedstatedir='${prefix}/com'
 localstatedir='${prefix}/var'
+runstatedir='${localstatedir}/run'
 includedir='${prefix}/include'
 oldincludedir='/usr/include'
 docdir='${datarootdir}/doc/${PACKAGE_TARNAME}'
@@ -1080,6 +1087,15 @@ do
   | -silent | --silent | --silen | --sile | --sil)
     silent=yes ;;
 
+  -runstatedir | --runstatedir | --runstatedi | --runstated \
+  | --runstate | --runstat | --runsta | --runst | --runs \
+  | --run | --ru | --r)
+    ac_prev=runstatedir ;;
+  -runstatedir=* | --runstatedir=* | --runstatedi=* | --runstated=* \
+  | --runstate=* | --runstat=* | --runsta=* | --runst=* | --runs=* \
+  | --run=* | --ru=* | --r=*)
+    runstatedir=$ac_optarg ;;
+
   -sbindir | --sbindir | --sbindi | --sbind | --sbin | --sbi | --sb)
     ac_prev=sbindir ;;
   -sbindir=* | --sbindir=* | --sbindi=* | --sbind=* | --sbin=* \
@@ -1217,7 +1233,7 @@ fi
 for ac_var in	exec_prefix prefix bindir sbindir libexecdir datarootdir \
 		datadir sysconfdir sharedstatedir localstatedir includedir \
 		oldincludedir docdir infodir htmldir dvidir pdfdir psdir \
-		libdir localedir mandir
+		libdir localedir mandir runstatedir
 do
   eval ac_val=\$$ac_var
   # Remove trailing slashes.
@@ -1370,6 +1386,7 @@ Fine tuning of the installation directories:
   --sysconfdir=DIR        read-only single-machine data [PREFIX/etc]
   --sharedstatedir=DIR    modifiable architecture-independent data [PREFIX/com]
   --localstatedir=DIR     modifiable single-machine data [PREFIX/var]
+  --runstatedir=DIR       modifiable per-process data [LOCALSTATEDIR/run]
   --libdir=DIR            object code libraries [EPREFIX/lib]
   --includedir=DIR        C header files [PREFIX/include]
   --oldincludedir=DIR     C header files for non-gcc [/usr/include]
@@ -1440,8 +1457,6 @@ Optional Packages:
   --with-libmurl-dir      enable support for client proxy using libmurl
   --with-fom-dir          Path to FOM install directory
   --gcov                  flag to indicate use of coverage - true|false
-  --with-safec-dir        location of SAFEC install folder, This is a required
-                          option. --disable-safec can be used to override
 
 Some influential environment variables:
   CC          C compiler command
@@ -2151,6 +2166,8 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 # Safety checks in case user overwritten --srcdir
 SUBDIRS=src
+
+
 
 
 # Store the auxiliary build tools (e.g., install-sh, config.sub, config.guess)
@@ -12075,19 +12092,10 @@ CC=$lt_save_CC
 # We can add more checks in this section
 
 
-# Check whether --with-ssl-dir was given.
-if test "${with_ssl_dir+set}" = set; then :
-  withval=$with_ssl_dir; ssldir="$withval"
-else
-  ssldir="/usr/local/ssl"
-fi
-
-SSL_CFLAGS="$ssldir/include"
-
-SSL_LDFLAGS="$ssldir/lib"
-
-
-CFLAGS="$CFLAGS -Wall -fstack-protector-all -D_FORTIFY_SOURCE=2 -I$ssldir/include"
+##
+# Set the CFLAGS
+##
+CFLAGS="$CFLAGS -Wall -fstack-protector-all -D_FORTIFY_SOURCE=2"
 
 ##
 # OSX doesn't need/support -z,noexecstack
@@ -12104,15 +12112,96 @@ if test "$gcc_z_support" = "yes"; then :
   CFLAGS="$CFLAGS -z,noexecstack"
 fi
 
+##
+# OpenSSL variables
+##
+
+# Check whether --with-ssl-dir was given.
+if test "${with_ssl_dir+set}" = set; then :
+  withval=$with_ssl_dir; ssldir="$withval"
+else
+  ssldir="/usr/local/ssl"
+fi
+
+SSL_CFLAGS="-I$ssldir/include"
+
+SSL_LDFLAGS="-L$ssldir/lib -lssl -lcrypto"
+
 LDFLAGS="$LDFLAGS -L$ssldir/lib"
+
+
+# Hold onto the LIBS variable before AC_SEARCH_LIBS modifies it
+pre_libs="$LIBS"
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing EVP_EncryptInit" >&5
+$as_echo_n "checking for library containing EVP_EncryptInit... " >&6; }
+if ${ac_cv_search_EVP_EncryptInit+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_func_search_save_LIBS=$LIBS
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char EVP_EncryptInit ();
+int
+main ()
+{
+return EVP_EncryptInit ();
+  ;
+  return 0;
+}
+_ACEOF
+for ac_lib in '' crypto; do
+  if test -z "$ac_lib"; then
+    ac_res="none required"
+  else
+    ac_res=-l$ac_lib
+    LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
+  fi
+  if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_search_EVP_EncryptInit=$ac_res
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext
+  if ${ac_cv_search_EVP_EncryptInit+:} false; then :
+  break
+fi
+done
+if ${ac_cv_search_EVP_EncryptInit+:} false; then :
+
+else
+  ac_cv_search_EVP_EncryptInit=no
+fi
+rm conftest.$ac_ext
+LIBS=$ac_func_search_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_search_EVP_EncryptInit" >&5
+$as_echo "$ac_cv_search_EVP_EncryptInit" >&6; }
+ac_res=$ac_cv_search_EVP_EncryptInit
+if test "$ac_res" != no; then :
+  test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
+
+else
+  { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
+$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
+as_fn_error $? "can't find openssl crypto lib
+See \`config.log' for more details" "$LINENO" 5; }
+fi
+
+
 if test "$is_freebsd" = "1" ; then
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for EVP_EncryptInit in -lcrypto" >&5
-$as_echo_n "checking for EVP_EncryptInit in -lcrypto... " >&6; }
-if ${ac_cv_lib_crypto_EVP_EncryptInit+:} false; then :
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing EVP_EncryptInit" >&5
+$as_echo_n "checking for library containing EVP_EncryptInit... " >&6; }
+if ${ac_cv_search_EVP_EncryptInit+:} false; then :
   $as_echo_n "(cached) " >&6
 else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lcrypto  $LIBS"
+  ac_func_search_save_LIBS=$LIBS
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -12131,40 +12220,50 @@ return EVP_EncryptInit ();
   return 0;
 }
 _ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_crypto_EVP_EncryptInit=yes
-else
-  ac_cv_lib_crypto_EVP_EncryptInit=no
+for ac_lib in '' crypto; do
+  if test -z "$ac_lib"; then
+    ac_res="none required"
+  else
+    ac_res=-l$ac_lib
+    LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
+  fi
+  if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_search_EVP_EncryptInit=$ac_res
 fi
 rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
+    conftest$ac_exeext
+  if ${ac_cv_search_EVP_EncryptInit+:} false; then :
+  break
 fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_crypto_EVP_EncryptInit" >&5
-$as_echo "$ac_cv_lib_crypto_EVP_EncryptInit" >&6; }
-if test "x$ac_cv_lib_crypto_EVP_EncryptInit" = xyes; then :
-  cat >>confdefs.h <<_ACEOF
-#define HAVE_LIBCRYPTO 1
-_ACEOF
+done
+if ${ac_cv_search_EVP_EncryptInit+:} false; then :
 
-  LIBS="-lcrypto $LIBS"
+else
+  ac_cv_search_EVP_EncryptInit=no
+fi
+rm conftest.$ac_ext
+LIBS=$ac_func_search_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_search_EVP_EncryptInit" >&5
+$as_echo "$ac_cv_search_EVP_EncryptInit" >&6; }
+ac_res=$ac_cv_search_EVP_EncryptInit
+if test "$ac_res" != no; then :
+  test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
 
 else
   { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
 $as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
 as_fn_error $? "can't find openssl crypto lib
 See \`config.log' for more details" "$LINENO" 5; }
-
 fi
 
 else
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for EVP_EncryptInit in -lcrypto" >&5
-$as_echo_n "checking for EVP_EncryptInit in -lcrypto... " >&6; }
-if ${ac_cv_lib_crypto_EVP_EncryptInit+:} false; then :
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing EVP_EncryptInit" >&5
+$as_echo_n "checking for library containing EVP_EncryptInit... " >&6; }
+if ${ac_cv_search_EVP_EncryptInit+:} false; then :
   $as_echo_n "(cached) " >&6
 else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lcrypto  $LIBS"
+  ac_func_search_save_LIBS=$LIBS
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -12183,40 +12282,50 @@ return EVP_EncryptInit ();
   return 0;
 }
 _ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_crypto_EVP_EncryptInit=yes
-else
-  ac_cv_lib_crypto_EVP_EncryptInit=no
+for ac_lib in '' crypto; do
+  if test -z "$ac_lib"; then
+    ac_res="none required"
+  else
+    ac_res=-l$ac_lib
+    LIBS="-l$ac_lib -ldl $ac_func_search_save_LIBS"
+  fi
+  if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_search_EVP_EncryptInit=$ac_res
 fi
 rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
+    conftest$ac_exeext
+  if ${ac_cv_search_EVP_EncryptInit+:} false; then :
+  break
 fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_crypto_EVP_EncryptInit" >&5
-$as_echo "$ac_cv_lib_crypto_EVP_EncryptInit" >&6; }
-if test "x$ac_cv_lib_crypto_EVP_EncryptInit" = xyes; then :
-  cat >>confdefs.h <<_ACEOF
-#define HAVE_LIBCRYPTO 1
-_ACEOF
+done
+if ${ac_cv_search_EVP_EncryptInit+:} false; then :
 
-  LIBS="-lcrypto $LIBS"
+else
+  ac_cv_search_EVP_EncryptInit=no
+fi
+rm conftest.$ac_ext
+LIBS=$ac_func_search_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_search_EVP_EncryptInit" >&5
+$as_echo "$ac_cv_search_EVP_EncryptInit" >&6; }
+ac_res=$ac_cv_search_EVP_EncryptInit
+if test "$ac_res" != no; then :
+  test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
 
 else
   { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
 $as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
 as_fn_error $? "can't find openssl crypto lib
 See \`config.log' for more details" "$LINENO" 5; }
-	     -ldl
 fi
 
 fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for SSL_CTX_new in -lssl" >&5
-$as_echo_n "checking for SSL_CTX_new in -lssl... " >&6; }
-if ${ac_cv_lib_ssl_SSL_CTX_new+:} false; then :
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing SSL_CTX_new" >&5
+$as_echo_n "checking for library containing SSL_CTX_new... " >&6; }
+if ${ac_cv_search_SSL_CTX_new+:} false; then :
   $as_echo_n "(cached) " >&6
 else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lssl  $LIBS"
+  ac_func_search_save_LIBS=$LIBS
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -12235,23 +12344,35 @@ return SSL_CTX_new ();
   return 0;
 }
 _ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_ssl_SSL_CTX_new=yes
-else
-  ac_cv_lib_ssl_SSL_CTX_new=no
+for ac_lib in '' ssl; do
+  if test -z "$ac_lib"; then
+    ac_res="none required"
+  else
+    ac_res=-l$ac_lib
+    LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
+  fi
+  if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_search_SSL_CTX_new=$ac_res
 fi
 rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
+    conftest$ac_exeext
+  if ${ac_cv_search_SSL_CTX_new+:} false; then :
+  break
 fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_ssl_SSL_CTX_new" >&5
-$as_echo "$ac_cv_lib_ssl_SSL_CTX_new" >&6; }
-if test "x$ac_cv_lib_ssl_SSL_CTX_new" = xyes; then :
-  cat >>confdefs.h <<_ACEOF
-#define HAVE_LIBSSL 1
-_ACEOF
+done
+if ${ac_cv_search_SSL_CTX_new+:} false; then :
 
-  LIBS="-lssl $LIBS"
+else
+  ac_cv_search_SSL_CTX_new=no
+fi
+rm conftest.$ac_ext
+LIBS=$ac_func_search_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_search_SSL_CTX_new" >&5
+$as_echo "$ac_cv_search_SSL_CTX_new" >&6; }
+ac_res=$ac_cv_search_SSL_CTX_new
+if test "$ac_res" != no; then :
+  test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
 
 else
   { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
@@ -12259,6 +12380,7 @@ $as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
 as_fn_error $? "can't find openssl ssl lib
 See \`config.log' for more details" "$LINENO" 5; }
 fi
+
 
 
 ##
@@ -12274,15 +12396,17 @@ fi
 
 
 if test "x$with_libcurldir" != xno; then :
-  CFLAGS="$CFLAGS -I$libcurldir/include"
-      LDFLAGS="$LDFLAGS -L$libcurldir/lib -lcurl"
-      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for curl_easy_init in -lcurl" >&5
-$as_echo_n "checking for curl_easy_init in -lcurl... " >&6; }
-if ${ac_cv_lib_curl_curl_easy_init+:} false; then :
+  LIBCURL_CFLAGS="-I$libcurldir/include"
+
+       LIBCURL_LDFLAGS="-L$libcurldir/lib -lcurl"
+
+       LDFLAGS="$LDFLAGS -L$libcurldir/lib"
+       { $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing curl_easy_init" >&5
+$as_echo_n "checking for library containing curl_easy_init... " >&6; }
+if ${ac_cv_search_curl_easy_init+:} false; then :
   $as_echo_n "(cached) " >&6
 else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lcurl  $LIBS"
+  ac_func_search_save_LIBS=$LIBS
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -12301,27 +12425,40 @@ return curl_easy_init ();
   return 0;
 }
 _ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_curl_curl_easy_init=yes
-else
-  ac_cv_lib_curl_curl_easy_init=no
+for ac_lib in '' curl; do
+  if test -z "$ac_lib"; then
+    ac_res="none required"
+  else
+    ac_res=-l$ac_lib
+    LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
+  fi
+  if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_search_curl_easy_init=$ac_res
 fi
 rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
+    conftest$ac_exeext
+  if ${ac_cv_search_curl_easy_init+:} false; then :
+  break
 fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_curl_curl_easy_init" >&5
-$as_echo "$ac_cv_lib_curl_curl_easy_init" >&6; }
-if test "x$ac_cv_lib_curl_curl_easy_init" = xyes; then :
+done
+if ${ac_cv_search_curl_easy_init+:} false; then :
 
-
-$as_echo "#define HAVE_LIBCURL 1" >>confdefs.h
-
+else
+  ac_cv_search_curl_easy_init=no
+fi
+rm conftest.$ac_ext
+LIBS=$ac_func_search_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_search_curl_easy_init" >&5
+$as_echo "$ac_cv_search_curl_easy_init" >&6; }
+ac_res=$ac_cv_search_curl_easy_init
+if test "$ac_res" != no; then :
+  test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
 
 else
   { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
 $as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
-as_fn_error $? "--with-libcurl was given, but test for libcurl failed
+as_fn_error $? "--with-libcurl-dir was given, but test for libcurl failed
 See \`config.log' for more details" "$LINENO" 5; }
 
 fi
@@ -12329,6 +12466,7 @@ fi
 
 
 fi
+
 
 ##
 # Libmurl installation directory path
@@ -12353,6 +12491,8 @@ fi
 # FOM installation directory path
 ##
 
+
+
 # Check whether --with-fom-dir was given.
 if test "${with_fom_dir+set}" = set; then :
   withval=$with_fom_dir; fomdir="$withval"
@@ -12362,9 +12502,13 @@ fi
 
 
 if test "x$with_fomdir" != xno; then :
-  CFLAGS="$CFLAGS -DACVP_NO_RUNTIME -DOPENSSL_FIPS -DOPENSSL_KDF_SUPPORT -I$fomdir/include"
-      LDFLAGS="$LDFLAGS -L$fomdir/lib -lcurl"
-      FOM_OBJ_DIR=$fomdir/lib
+  FOM_CFLAGS="-DACVP_NO_RUNTIME -DOPENSSL_FIPS -DOPENSSL_KDF_SUPPORT -I$fomdir/include"
+
+       FOM_LDFLAGS="-L$fomdir/lib"
+
+       FOM_OBJ_DIR="$fomdir/lib"
+
+
 
 fi
  if test "x$with_fomdir" != xno; then
@@ -12374,6 +12518,8 @@ else
   USE_FOM_TRUE='#'
   USE_FOM_FALSE=
 fi
+
+
 
 ##
 # Gcoverage
@@ -12394,20 +12540,20 @@ if test "x$with_gcov" != xno; then :
 
 fi
 
+
+##
+# SafeC Stub
+##
 SAFEC_STUB_DIR='$(abs_top_builddir)/safe_c_stub'
 
+safecdir="$SAFEC_STUB_DIR"
+SAFEC_CFLAGS="-I$safecdir/include"
 
-##
-# SafeC installation directory path
-##
+SAFEC_LDFLAGS="-L$safecdir/lib -lsafe_lib"
 
-# Check whether --with-safec-dir was given.
-if test "${with_safec_dir+set}" = set; then :
-  withval=$with_safec_dir; safecdir="$withval"
-else
-  safecdir="no"
-fi
 
+# Reset LIBS to original
+LIBS="$pre_libs"
 
 # Default installation directory
 

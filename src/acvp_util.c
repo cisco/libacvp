@@ -29,6 +29,7 @@
 #include <stdarg.h>
 #include "acvp.h"
 #include "acvp_lcl.h"
+#include "safe_lib.h"
 
 #ifdef USE_MURL
 #include <murl/murl.h>
@@ -134,27 +135,80 @@ char *acvp_lookup_cipher_name(ACVP_CIPHER alg) {
     return NULL;
 }
 
-/*
- * This function returns the ID of a cipher given an
- * algorithm name (as defined in the ACVP spec).  It
- * returns 0 if none match.
+/**
+ * @brief Loop through all entries in alg_tbl, trying to match
+ *        \p algorithm to each name field. If successful, will
+ *        return the ACVP_CIPHER id field.
  *
- * IMPORTANT: This only works accurately for symmetric
- * ciphers
+ * IMPORTANT: This only works accurately for algorithms that have
+ * a 1:1 name to id entry. I.e. does not work for algorithms that
+ * have multiple entries with the same name but different mode.
+ * Use acvp_lookup_cipher_w_mode_index() for that!
+ *
+ * @return ACVP_CIPHER
+ * @return 0 if no-match
  */
 ACVP_CIPHER acvp_lookup_cipher_index(const char *algorithm) {
+    int i = 0;
+
     if (!algorithm) {
-        return ACVP_CIPHER_START;
+        return 0;
     }
-    int i;
 
     for (i = 0; i < ACVP_ALG_MAX; i++) {
-        if (!strncmp(algorithm, alg_tbl[i].name, strlen(alg_tbl[i].name)) &&
-            (strlen(alg_tbl[i].name) == strlen(algorithm))) {
+        int diff = 1;
+
+        strcmp_s(alg_tbl[i].name,
+                 strnlen_s(alg_tbl[i].name, ACVP_ALG_NAME_MAX),
+                 algorithm, &diff);
+
+        if (!diff) {
             return alg_tbl[i].cipher;
         }
     }
-    return ACVP_CIPHER_START;
+
+    return 0;
+}
+
+/**
+ * @brief Loop through all entries in alg_tbl, trying to match
+ *        both \p algorithm and \p mode to their respective fields.
+ *        If successful, will return the ACVP_CIPHER id field.
+ *
+ * Useful for algorithms that have multiple modes (i.e. asymmetric).
+ *
+ * @return ACVP_CIPHER
+ * @return 0 if no-match
+ */
+ACVP_CIPHER acvp_lookup_cipher_w_mode_index(const char *algorithm,
+                                            const char *mode) {
+    int i = 0;
+
+    if (!algorithm || !mode) {
+        return 0;
+    }
+
+    for (i = 0; i < ACVP_ALG_MAX; i++) {
+        int diff = 0;
+
+        if (alg_tbl[i].mode == NULL) continue;
+
+        /* Compare the algorithm string */
+        strcmp_s(alg_tbl[i].name,
+                 strnlen_s(alg_tbl[i].name, ACVP_ALG_NAME_MAX),
+                 algorithm, &diff);
+
+        if (!diff) {
+            /* Compare the mode string */
+            strcmp_s(alg_tbl[i].mode,
+                     strnlen_s(alg_tbl[i].mode, ACVP_ALG_MODE_MAX),
+                     mode, &diff);
+
+            if (!diff) return alg_tbl[i].cipher;
+        }
+    }
+
+    return 0;
 }
 
 /*
@@ -184,17 +238,31 @@ char *acvp_lookup_rsa_randpq_name(int value) {
 }
 
 int acvp_lookup_rsa_randpq_index(const char *value) {
+    int diff = 0;
+
     if (!value) {
         return 0;
     }
-    if (strncmp(value, "B.3.2", 5) == 0) { return ACVP_RSA_KEYGEN_B32; }
-    if (strncmp(value, "B.3.3", 5) == 0) { return ACVP_RSA_KEYGEN_B33; }
-    if (strncmp(value, "B.3.4", 5) == 0) { return ACVP_RSA_KEYGEN_B34; }
-    if (strncmp(value, "B.3.5", 5) == 0) { return ACVP_RSA_KEYGEN_B35; }
-    if (strncmp(value, "B.3.6", 5) == 0) { return ACVP_RSA_KEYGEN_B36; }
+
+    strcmp_s("B.3.2", 5, value, &diff);
+    if (!diff) return ACVP_RSA_KEYGEN_B32;
+
+    strcmp_s("B.3.3", 5, value, &diff);
+    if (!diff) return ACVP_RSA_KEYGEN_B33;
+
+    strcmp_s("B.3.4", 5, value, &diff);
+    if (!diff) return ACVP_RSA_KEYGEN_B34;
+
+    strcmp_s("B.3.5", 5, value, &diff);
+    if (!diff) return ACVP_RSA_KEYGEN_B35;
+
+    strcmp_s("B.3.6", 5, value, &diff);
+    if (!diff) return ACVP_RSA_KEYGEN_B36;
+
     return 0;
 }
 
+#define DRBG_MODE_NAME_MAX 12
 static struct acvp_drbg_mode_name_t drbg_mode_tbl[] = {
     { ACVP_DRBG_SHA_1,       ACVP_STR_SHA_1          },
     { ACVP_DRBG_SHA_224,     ACVP_STR_SHA2_224       },
@@ -220,7 +288,12 @@ ACVP_DRBG_MODE acvp_lookup_drbg_mode_index(const char *mode) {
     int i = 0;
 
     for (i = 0; i < drbg_mode_tbl_length; i++) {
-        if (!strncmp(mode, drbg_mode_tbl[i].name, strlen(drbg_mode_tbl[i].name))) {
+        int diff = 0;
+        strcmp_s(drbg_mode_tbl[i].name,
+                 strnlen_s(drbg_mode_tbl[i].name, DRBG_MODE_NAME_MAX),
+                 mode, &diff);
+
+        if (!diff) {
             return drbg_mode_tbl[i].mode;
         }
     }
@@ -234,6 +307,7 @@ ACVP_RESULT is_valid_tf_param(int value) {
     if (value == 0 || value == 1) { return ACVP_SUCCESS; } else { return ACVP_INVALID_ARG; }
 }
 
+#define HASH_ALG_NAME_MAX 12
 /*
  * Local table for matching ACVP_HASH_ALG to name string and vice versa.
  */
@@ -263,8 +337,13 @@ ACVP_HASH_ALG acvp_lookup_hash_alg(const char *name) {
     if (!name) return 0;
 
     for (i = 0; i < hash_alg_tbl_length; i++) {
-        if (!strncmp(name, hash_alg_tbl[i].name,
-                     strlen(hash_alg_tbl[i].name))) {
+        int diff = 0;
+
+        strcmp_s(hash_alg_tbl[i].name,
+                 strnlen_s(hash_alg_tbl[i].name, HASH_ALG_NAME_MAX),
+                 name, &diff);
+
+        if (!diff) {
             return hash_alg_tbl[i].id;
         }
     }
@@ -309,11 +388,17 @@ char *acvp_lookup_rsa_prime_test_name(ACVP_RSA_PRIME_TEST_TYPE type) {
 
 /* This function checks to see if the value is a valid prime test (RSA) */
 ACVP_RESULT is_valid_prime_test(char *value) {
+    int diff = 0;
+
     if (!value) { return ACVP_INVALID_ARG; }
-    if (strncmp(value, ACVP_RSA_PRIME_TEST_TBLC2_STR, 5) != 0 &&
-        strncmp(value, ACVP_RSA_PRIME_TEST_TBLC3_STR, 5) != 0) {
-        return ACVP_INVALID_ARG;
-    } else { return ACVP_SUCCESS; }
+
+    strcmp_s(ACVP_RSA_PRIME_TEST_TBLC2_STR, 5, value, &diff);
+    if (!diff) return ACVP_SUCCESS;
+
+    strcmp_s(ACVP_RSA_PRIME_TEST_TBLC3_STR, 5, value, &diff);
+    if (!diff) return ACVP_SUCCESS;
+
+    return ACVP_INVALID_ARG;
 }
 
 /* This function checks to see if the value is a valid prime test (RSA) */
@@ -325,6 +410,7 @@ ACVP_RESULT is_valid_rsa_mod(int value) {
     } else { return ACVP_SUCCESS; }
 }
 
+#define EC_CURVE_NAME_MAX 5
 /*
  * Local table for matching ACVP_EC_CURVE to name string and vice versa.
  */
@@ -382,8 +468,13 @@ ACVP_EC_CURVE acvp_lookup_ec_curve(ACVP_CIPHER cipher, const char *name) {
     int i = 0;
 
     for (i = 0; i < ec_curve_tbl_length; i++) {
-        if (!strncmp(name, ec_curve_tbl[i].name,
-                     strlen(ec_curve_tbl[i].name))) {
+        int diff = 0;
+
+        strcmp_s(ec_curve_tbl[i].name,
+                 strnlen_s(ec_curve_tbl[i].name, EC_CURVE_NAME_MAX),
+                 name, &diff);
+
+        if (!diff) {
             return ec_curve_tbl[i].id;
         }
     }
@@ -391,8 +482,13 @@ ACVP_EC_CURVE acvp_lookup_ec_curve(ACVP_CIPHER cipher, const char *name) {
     if (cipher == ACVP_ECDSA_KEYVER || cipher == ACVP_ECDSA_SIGVER) {
         /* Check the deprecated curves */
         for (i = 0; i < ec_curve_depr_tbl_length; i++) {
-            if (!strncmp(name, ec_curve_depr_tbl[i].name,
-                         strlen(ec_curve_depr_tbl[i].name))) {
+            int diff = 0;
+
+            strcmp_s(ec_curve_depr_tbl[i].name,
+                     strnlen_s(ec_curve_depr_tbl[i].name, EC_CURVE_NAME_MAX),
+                     name, &diff);
+
+            if (!diff) {
                 return ec_curve_depr_tbl[i].id;
             }
         }
@@ -444,7 +540,7 @@ ACVP_RESULT acvp_bit_to_bin(const unsigned char *in, int len, unsigned char *out
         return ACVP_INVALID_ARG;
     }
 
-    memset(out, 0, len);
+    memzero_s(out, len);
     for (n = 0; n < len; ++n) {
         if (in[n] == '1') {
             out[n / 8] |= (0x80 >> (n % 8));
@@ -486,7 +582,7 @@ ACVP_RESULT acvp_hexstr_to_bin(const char *src, unsigned char *dest, int dest_ma
         return ACVP_INVALID_ARG;
     }
 
-    src_len = (int)strlen((char *)src);
+    src_len = strnlen_s((char *)src, ACVP_HEXSTR_MAX);
 
     /*
      * Make sure the hex value isn't too large

@@ -31,6 +31,7 @@
 #include "acvp.h"
 #include "acvp_lcl.h"
 #include "parson.h"
+#include "safe_lib.h"
 
 /*
  * Forward prototypes for local functions
@@ -59,9 +60,9 @@ static ACVP_RESULT acvp_hash_mct_iterate_tc(ACVP_CTX *ctx,
                                             int i,
                                             JSON_Object *r_tobj) {
     /* feed hash into the next message for MCT */
-    memcpy(stc->m1, stc->m2, stc->md_len);
-    memcpy(stc->m2, stc->m3, stc->md_len);
-    memcpy(stc->m3, stc->md, stc->md_len);
+    memcpy_s(stc->m1, ACVP_HASH_MD_BYTE_MAX, stc->m2, stc->md_len);
+    memcpy_s(stc->m2, ACVP_HASH_MD_BYTE_MAX, stc->m3, stc->md_len);
+    memcpy_s(stc->m3, ACVP_HASH_MD_BYTE_MAX, stc->md, stc->md_len);
 
     return ACVP_SUCCESS;
 }
@@ -118,9 +119,9 @@ static ACVP_RESULT acvp_hash_mct_tc(ACVP_CTX *ctx,
         return ACVP_MALLOC_FAIL;
     }
 
-    memcpy(stc->m1, stc->msg, stc->msg_len);
-    memcpy(stc->m2, stc->msg, stc->msg_len);
-    memcpy(stc->m3, stc->msg, stc->msg_len);
+    memcpy_s(stc->m1, ACVP_HASH_MD_BYTE_MAX, stc->msg, stc->msg_len);
+    memcpy_s(stc->m2, ACVP_HASH_MD_BYTE_MAX, stc->msg, stc->msg_len);
+    memcpy_s(stc->m3, ACVP_HASH_MD_BYTE_MAX, stc->msg, stc->msg_len);
 
     for (i = 0; i < ACVP_HASH_MCT_OUTER; ++i) {
         /*
@@ -137,9 +138,9 @@ static ACVP_RESULT acvp_hash_mct_tc(ACVP_CTX *ctx,
             return ACVP_MALLOC_FAIL;
         }
 
-        memcpy(msg, stc->m1, stc->msg_len);
-        memcpy(msg + stc->msg_len, stc->m2, stc->msg_len);
-        memcpy(msg + (stc->msg_len * 2), stc->m3, stc->msg_len);
+        memcpy_s(msg, ACVP_HASH_MSG_BYTE_MAX, stc->m1, stc->msg_len);
+        memcpy_s(msg + stc->msg_len, (ACVP_HASH_MSG_BYTE_MAX - stc->msg_len), stc->m2, stc->msg_len);
+        memcpy_s(msg + (stc->msg_len * 2), (ACVP_HASH_MSG_BYTE_MAX - (stc->msg_len * 2)), stc->m3, stc->msg_len);
 
         rv = acvp_bin_to_hexstr(msg, stc->msg_len * 3, tmp, ACVP_HASH_MSG_STR_MAX * 3);
         if (rv != ACVP_SUCCESS) {
@@ -188,14 +189,30 @@ static ACVP_RESULT acvp_hash_mct_tc(ACVP_CTX *ctx,
         /* Append the test response value to array */
         json_array_append_value(res_array, r_tval);
 
-        memcpy(stc->m1, stc->m3, stc->msg_len);
-        memcpy(stc->m2, stc->m3, stc->msg_len);
+        memcpy_s(stc->m1, ACVP_HASH_MD_BYTE_MAX, stc->m3, stc->msg_len);
+        memcpy_s(stc->m2, ACVP_HASH_MD_BYTE_MAX, stc->m3, stc->msg_len);
 
         free(msg);
     }
 
     free(tmp);
     return ACVP_SUCCESS;
+}
+
+static ACVP_HASH_TESTTYPE read_test_type(const char *tt_str) {
+    int diff = 0;
+
+    strcmp_s("MCT", 3, tt_str, &diff);
+    if (!diff) {
+        return ACVP_HASH_TEST_TYPE_MCT;
+    }
+
+    strcmp_s("AFT", 3, tt_str, &diff);
+    if (!diff) {
+        return ACVP_HASH_TEST_TYPE_AFT;
+    }
+
+    return 0;
 }
 
 ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
@@ -226,7 +243,6 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     ACVP_RESULT rv = ACVP_SUCCESS;
     ACVP_CIPHER alg_id = 0;
     char *json_result = NULL;
-    ACVP_HASH_TESTTYPE test_type = 0;
     const char *alg_str = NULL;
     const char *test_type_str, *msg = NULL;
 
@@ -281,7 +297,9 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     groups = json_object_get_array(obj, "testGroups");
     g_cnt = json_array_get_count(groups);
     for (i = 0; i < g_cnt; i++) {
+        ACVP_HASH_TESTTYPE test_type = 0;
         int tgId = 0;
+
         groupval = json_array_get_value(groups, i);
         groupobj = json_value_get_object(groupval);
 
@@ -310,11 +328,9 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             goto err;
         }
 
-        if (!strncmp(test_type_str, "MCT", strlen("MCT"))) {
-            test_type = ACVP_HASH_TEST_TYPE_MCT;
-        } else if (!strncmp(test_type_str, "AFT", strlen("AFT"))) {
-            test_type = ACVP_HASH_TEST_TYPE_AFT;
-        } else {
+        test_type = read_test_type(test_type_str);
+        if (!test_type) {
+            ACVP_LOG_ERR("Server JSON invalid 'testType'");
             rv = ACVP_INVALID_ARG;
             goto err;
         }
@@ -337,7 +353,7 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 rv = ACVP_MISSING_ARG;
                 goto err;
             }
-            tmp_msg_len = strnlen(msg, ACVP_HASH_MSG_STR_MAX + 1);
+            tmp_msg_len = strnlen_s(msg, ACVP_HASH_MSG_STR_MAX + 1);
             if (tmp_msg_len > ACVP_HASH_MSG_STR_MAX) {
                 ACVP_LOG_ERR("'msg' too long, max allowed=(%d)",
                              ACVP_HASH_MSG_STR_MAX);
@@ -440,7 +456,7 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
     json_array_append_value(reg_arry, r_vs_val);
 
-    json_result = json_serialize_to_string_pretty(ctx->kat_resp);
+    json_result = json_serialize_to_string_pretty(ctx->kat_resp, NULL);
     if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
         printf("\n\n%s\n\n", json_result);
     } else {
@@ -494,7 +510,7 @@ static ACVP_RESULT acvp_hash_init_tc(ACVP_CTX *ctx,
                                      ACVP_CIPHER alg_id) {
     ACVP_RESULT rv;
 
-    memset(stc, 0x0, sizeof(ACVP_HASH_TC));
+    memzero_s(stc, sizeof(ACVP_HASH_TC));
 
     stc->msg = calloc(1, ACVP_HASH_MSG_BYTE_MAX);
     if (!stc->msg) { return ACVP_MALLOC_FAIL; }
@@ -535,7 +551,7 @@ static ACVP_RESULT acvp_hash_release_tc(ACVP_HASH_TC *stc) {
     if (stc->m1) free(stc->m1);
     if (stc->m2) free(stc->m2);
     if (stc->m3) free(stc->m3);
-    memset(stc, 0x0, sizeof(ACVP_HASH_TC));
+    memzero_s(stc, sizeof(ACVP_HASH_TC));
 
     return ACVP_SUCCESS;
 }

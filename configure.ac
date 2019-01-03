@@ -28,15 +28,10 @@ LT_INIT
 # We can add more checks in this section
 AC_CANONICAL_HOST
 
-AC_ARG_WITH([ssl-dir],
-	    [AS_HELP_STRING([--with-ssl-dir],
-		[location of OpenSSL install folder, defaults to /usr/local/ssl])],
-	    [ssldir="$withval"],
-	    [ssldir="/usr/local/ssl"])
-AC_SUBST([SSL_CFLAGS], "$ssldir/include")
-AC_SUBST([SSL_LDFLAGS], "$ssldir/lib")
-
-CFLAGS="$CFLAGS -Wall -fstack-protector-all -D_FORTIFY_SOURCE=2 -I$ssldir/include"
+##
+# Set the CFLAGS
+##
+CFLAGS="$CFLAGS -Wall -fstack-protector-all -D_FORTIFY_SOURCE=2"
 
 ##
 # OSX doesn't need/support -z,noexecstack
@@ -53,18 +48,35 @@ AS_IF(
     [test "$gcc_z_support" = "yes"],
     [[CFLAGS="$CFLAGS -z,noexecstack"]])
 
+##
+# OpenSSL variables
+##
+AC_ARG_WITH([ssl-dir],
+	    [AS_HELP_STRING([--with-ssl-dir],
+		[location of OpenSSL install folder, defaults to /usr/local/ssl])],
+	    [ssldir="$withval"],
+	    [ssldir="/usr/local/ssl"])
+AC_SUBST([SSL_CFLAGS], "-I$ssldir/include")
+AC_SUBST([SSL_LDFLAGS], "-L$ssldir/lib -lssl -lcrypto")
 LDFLAGS="$LDFLAGS -L$ssldir/lib"
+
+
+# Hold onto the LIBS variable before AC_SEARCH_LIBS modifies it
+pre_libs="$LIBS"
+
+AC_SEARCH_LIBS([EVP_EncryptInit], [crypto], [],
+               [AC_MSG_FAILURE([can't find openssl crypto lib])], [])
+
 if test "$is_freebsd" = "1" ; then
-AC_CHECK_LIB([crypto], [EVP_EncryptInit], [],
-             [AC_MSG_FAILURE([can't find openssl crypto lib])]
-	     [])
+AC_SEARCH_LIBS([EVP_EncryptInit], [crypto], [],
+               [AC_MSG_FAILURE([can't find openssl crypto lib])], [])
 else
-AC_CHECK_LIB([crypto], [EVP_EncryptInit], [],
-             [AC_MSG_FAILURE([can't find openssl crypto lib])]
-	     [-ldl])
+AC_SEARCH_LIBS([EVP_EncryptInit], [crypto], [],
+               [AC_MSG_FAILURE([can't find openssl crypto lib])], [-ldl])
 fi
-AC_CHECK_LIB([ssl], [SSL_CTX_new], [],
-             [AC_MSG_FAILURE([can't find openssl ssl lib])])
+AC_SEARCH_LIBS([SSL_CTX_new], [ssl], [],
+               [AC_MSG_FAILURE([can't find openssl ssl lib])], [])
+
 
 ##
 # Libcurl installation directory path
@@ -75,20 +87,15 @@ AC_ARG_WITH([libcurl-dir],
     [libcurldir="$withval"],
     [with_libcurldir=no])
 
-AS_IF(
-     [test "x$with_libcurldir" != xno],
-     [[CFLAGS="$CFLAGS -I$libcurldir/include"]
-      [LDFLAGS="$LDFLAGS -L$libcurldir/lib -lcurl"]
-      AC_CHECK_LIB(
-           [curl],
-           [curl_easy_init],
-          [
-            AC_DEFINE([HAVE_LIBCURL],[1],[Define if you have libcurl])
-           ],
-           [AC_MSG_FAILURE([--with-libcurl was given, but test for libcurl failed])]
-          )
-     ]
-    )
+AS_IF([test "x$with_libcurldir" != xno],
+      [AC_SUBST([LIBCURL_CFLAGS], "-I$libcurldir/include")
+       AC_SUBST([LIBCURL_LDFLAGS], "-L$libcurldir/lib -lcurl")
+       LDFLAGS="$LDFLAGS -L$libcurldir/lib"
+       AC_SEARCH_LIBS([curl_easy_init], [curl], [],
+                      [AC_MSG_FAILURE([--with-libcurl-dir was given, but test for libcurl failed])]
+       )
+      ]
+     )
 
 
 ##
@@ -118,12 +125,12 @@ AC_ARG_WITH([fom-dir],
     [fomdir="$withval"],
     [with_fomdir=no])
 
-AS_IF(
-     [test "x$with_fomdir" != xno],
-     [[CFLAGS="$CFLAGS -DACVP_NO_RUNTIME -DOPENSSL_FIPS -DOPENSSL_KDF_SUPPORT -I$fomdir/include"]
-      [LDFLAGS="$LDFLAGS -L$fomdir/lib -lcurl"]
-      [FOM_OBJ_DIR=$fomdir/lib]]
-    )
+AS_IF([test "x$with_fomdir" != xno],
+      [AC_SUBST([FOM_CFLAGS], "-DACVP_NO_RUNTIME -DOPENSSL_FIPS -DOPENSSL_KDF_SUPPORT -I$fomdir/include")
+       AC_SUBST([FOM_LDFLAGS], "-L$fomdir/lib")
+       AC_SUBST([FOM_OBJ_DIR], "$fomdir/lib")
+      ]
+     )
 AM_CONDITIONAL([USE_FOM], [test "x$with_fomdir" != xno])
 
 
@@ -143,17 +150,18 @@ AS_IF(
  ]
 )
 
-SAFEC_STUB_DIR='$(abs_top_builddir)/safe_c_stub'
-AC_SUBST(SAFEC_STUB_DIR)
 
 ##
-# SafeC installation directory path
+# SafeC Stub
 ##
-AC_ARG_WITH([safec-dir],
-            [AS_HELP_STRING([--with-safec-dir],
-            [location of SAFEC install folder, This is a required option. --disable-safec can be used to override])],
-            [safecdir="$withval"],
-            [safecdir="no"])
+SAFEC_STUB_DIR='$(abs_top_builddir)/safe_c_stub'
+AC_SUBST(SAFEC_STUB_DIR)
+safecdir="$SAFEC_STUB_DIR"
+AC_SUBST([SAFEC_CFLAGS], "-I$safecdir/include")
+AC_SUBST([SAFEC_LDFLAGS], "-L$safecdir/lib -lsafe_lib")
+
+# Reset LIBS to original
+LIBS="$pre_libs"
 
 # Default installation directory
 AC_PREFIX_DEFAULT([/usr/local/acvp])

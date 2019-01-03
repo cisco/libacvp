@@ -30,6 +30,7 @@
 #include "acvp.h"
 #include "acvp_lcl.h"
 #include "parson.h"
+#include "safe_lib.h"
 
 /*
  * After the test case has been processed by the DUT, the results
@@ -50,7 +51,7 @@ static ACVP_RESULT acvp_kdf135_srtp_output_tc(ACVP_CTX *ctx, ACVP_KDF135_SRTP_TC
         goto err;
     }
     json_object_set_string(tc_rsp, "srtpKe", (const char *)tmp);
-    memset(tmp, 0x0, ACVP_KDF135_SRTP_OUTPUT_MAX);
+    memzero_s(tmp, ACVP_KDF135_SRTP_OUTPUT_MAX);
 
     rv = acvp_bin_to_hexstr(stc->srtp_ka, 160 / 8, tmp, ACVP_KDF135_SRTP_OUTPUT_MAX);
     if (rv != ACVP_SUCCESS) {
@@ -58,7 +59,7 @@ static ACVP_RESULT acvp_kdf135_srtp_output_tc(ACVP_CTX *ctx, ACVP_KDF135_SRTP_TC
         goto err;
     }
     json_object_set_string(tc_rsp, "srtpKa", (const char *)tmp);
-    memset(tmp, 0x0, ACVP_KDF135_SRTP_OUTPUT_MAX);
+    memzero_s(tmp, ACVP_KDF135_SRTP_OUTPUT_MAX);
 
     rv = acvp_bin_to_hexstr(stc->srtp_ks, 112 / 8, tmp, ACVP_KDF135_SRTP_OUTPUT_MAX);
     if (rv != ACVP_SUCCESS) {
@@ -66,7 +67,7 @@ static ACVP_RESULT acvp_kdf135_srtp_output_tc(ACVP_CTX *ctx, ACVP_KDF135_SRTP_TC
         goto err;
     }
     json_object_set_string(tc_rsp, "srtpKs", (const char *)tmp);
-    memset(tmp, 0x0, ACVP_KDF135_SRTP_OUTPUT_MAX);
+    memzero_s(tmp, ACVP_KDF135_SRTP_OUTPUT_MAX);
 
     rv = acvp_bin_to_hexstr(stc->srtcp_ke, stc->aes_keylen / 8, tmp, ACVP_KDF135_SRTP_OUTPUT_MAX);
     if (rv != ACVP_SUCCESS) {
@@ -74,7 +75,7 @@ static ACVP_RESULT acvp_kdf135_srtp_output_tc(ACVP_CTX *ctx, ACVP_KDF135_SRTP_TC
         goto err;
     }
     json_object_set_string(tc_rsp, "srtcpKe", (const char *)tmp);
-    memset(tmp, 0x0, ACVP_KDF135_SRTP_OUTPUT_MAX);
+    memzero_s(tmp, ACVP_KDF135_SRTP_OUTPUT_MAX);
 
     rv = acvp_bin_to_hexstr(stc->srtcp_ka, 160 / 8, tmp, ACVP_KDF135_SRTP_OUTPUT_MAX);
     if (rv != ACVP_SUCCESS) {
@@ -82,7 +83,7 @@ static ACVP_RESULT acvp_kdf135_srtp_output_tc(ACVP_CTX *ctx, ACVP_KDF135_SRTP_TC
         goto err;
     }
     json_object_set_string(tc_rsp, "srtcpKa", (const char *)tmp);
-    memset(tmp, 0x0, ACVP_KDF135_SRTP_OUTPUT_MAX);
+    memzero_s(tmp, ACVP_KDF135_SRTP_OUTPUT_MAX);
 
     rv = acvp_bin_to_hexstr(stc->srtcp_ks, 112 / 8, tmp, ACVP_KDF135_SRTP_OUTPUT_MAX);
     if (rv != ACVP_SUCCESS) {
@@ -90,7 +91,7 @@ static ACVP_RESULT acvp_kdf135_srtp_output_tc(ACVP_CTX *ctx, ACVP_KDF135_SRTP_TC
         goto err;
     }
     json_object_set_string(tc_rsp, "srtcpKs", (const char *)tmp);
-    memset(tmp, 0x0, ACVP_KDF135_SRTP_OUTPUT_MAX);
+    memzero_s(tmp, ACVP_KDF135_SRTP_OUTPUT_MAX);
 
 err:
     free(tmp);
@@ -127,7 +128,7 @@ static ACVP_RESULT acvp_kdf135_srtp_init_tc(ACVP_CTX *ctx,
                                             char *srtcp_index) {
     ACVP_RESULT rv = ACVP_SUCCESS;
 
-    memset(stc, 0x0, sizeof(ACVP_KDF135_SRTP_TC));
+    memzero_s(stc, sizeof(ACVP_KDF135_SRTP_TC));
 
     if (!kdr || !master_key || !master_salt || !index || !srtcp_index) {
         ACVP_LOG_ERR("Missing parameters - initalize KDF SRTP test case");
@@ -223,6 +224,7 @@ ACVP_RESULT acvp_kdf135_srtp_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     ACVP_TEST_CASE tc;
     ACVP_RESULT rv;
     const char *alg_str = json_object_get_string(obj, "algorithm");
+    const char *mode_str = NULL;
     ACVP_CIPHER alg_id;
     char *json_result;
 
@@ -239,8 +241,15 @@ ACVP_RESULT acvp_kdf135_srtp_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         return ACVP_MALFORMED_JSON;
     }
 
-    if (strncmp(alg_str, "kdf-components", strlen("kdf-components"))) {
-        ACVP_LOG_ERR("Invalid algorithm for this function %s", alg_str);
+    mode_str = json_object_get_string(obj, "mode");
+    if (!mode_str) {
+        ACVP_LOG_ERR("unable to parse 'mode' from JSON.");
+        return ACVP_MALFORMED_JSON;
+    }
+
+    alg_id = acvp_lookup_cipher_w_mode_index(alg_str, mode_str);
+    if (alg_id != ACVP_KDF135_SRTP) {
+        ACVP_LOG_ERR("Server JSON invalid 'algorithm' or 'mode'");
         return ACVP_INVALID_ARG;
     }
 
@@ -248,7 +257,6 @@ ACVP_RESULT acvp_kdf135_srtp_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
      * Get a reference to the abstracted test case
      */
     tc.tc.kdf135_srtp = &stc;
-    alg_id = ACVP_KDF135_SRTP;
     stc.cipher = alg_id;
 
     cap = acvp_locate_cap_entry(ctx, alg_id);
@@ -409,7 +417,7 @@ ACVP_RESULT acvp_kdf135_srtp_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
     json_array_append_value(reg_arry, r_vs_val);
 
-    json_result = json_serialize_to_string_pretty(ctx->kat_resp);
+    json_result = json_serialize_to_string_pretty(ctx->kat_resp, NULL);
     if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
         printf("\n\n%s\n\n", json_result);
     } else {
