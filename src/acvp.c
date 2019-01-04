@@ -171,7 +171,6 @@ ACVP_RESULT acvp_create_test_session(ACVP_CTX **ctx,
     if (!*ctx) {
         return ACVP_MALLOC_FAIL;
     }
-    (*ctx)->path_segment = strdup(ACVP_PATH_SEGMENT_DEFAULT);
 
     if (progress_cb) {
         (*ctx)->test_progress_cb = progress_cb;

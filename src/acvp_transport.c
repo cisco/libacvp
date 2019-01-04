@@ -490,6 +490,21 @@ static ACVP_RESULT acvp_send_internal(ACVP_CTX *ctx, char *data, int data_len, c
         return ACVP_MISSING_ARG;
     }
 
+    if (!uri) {
+        ACVP_LOG_ERR("URI required for transmission");
+        return ACVP_MISSING_ARG;
+    }
+
+    if (!ctx->api_context) {
+        ACVP_LOG_ERR("No api context, need to call acvp_set_api_context first");
+        return ACVP_MISSING_ARG;
+    }
+
+    if (!ctx->path_segment) {
+        ACVP_LOG_ERR("No path segment, need to call acvp_set_path_segment first");
+        return ACVP_MISSING_ARG;
+    }
+
     if (!data) {
         ACVP_LOG_ERR("No data to send");
         return ACVP_NO_DATA;
