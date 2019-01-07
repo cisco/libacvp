@@ -869,11 +869,17 @@ int main(int argc, char **argv) {
         goto end;
     }
 
-    key_val_list->key = strndup("type", 4);
-    key_val_list->value = strndup("software", 8);
+    key_val_list->key = calloc(4 + 1, sizeof(char));
+    strcpy_s(key_val_list->key, 4, "type");
+    key_val_list->value = calloc(8 + 1, sizeof(char));
+    strcpy_s(key_val_list->value, 8, "software");
+
     key_val_list->next = calloc(1, sizeof(ACVP_KV_LIST));
-    key_val_list->next->key = strndup("name", 4);
-    key_val_list->next->value = strndup("Linux 3.1", 9);
+
+    key_val_list->next->key = calloc(4 + 1, sizeof(char));
+    strcpy_s(key_val_list->next->key, 4, "name");
+    key_val_list->next->value = calloc(9 + 1, sizeof(char));
+    strcpy_s(key_val_list->next->value, 9, "Linux 3.1");
 
     rv = acvp_add_oe_dependency(ctx, oe_name, key_val_list);
     if (rv != ACVP_SUCCESS) {

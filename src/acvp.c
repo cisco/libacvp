@@ -832,7 +832,15 @@ ACVP_RESULT acvp_set_json_filename(ACVP_CTX *ctx, const char *json_filename) {
         return ACVP_MISSING_ARG;
     }
     if (ctx->json_filename) { free(ctx->json_filename); }
-    ctx->json_filename = strdup(json_filename);
+
+    if (strnlen_s(json_filename, ACVP_JSON_FILENAME_MAX + 1) > ACVP_JSON_FILENAME_MAX) {
+        ACVP_LOG_ERR("Provided json_filename length > max(%d)", ACVP_JSON_FILENAME_MAX);
+        return ACVP_INVALID_ARG;
+    }
+
+    ctx->json_filename = calloc(ACVP_JSON_FILENAME_MAX + 1, sizeof(char));
+    strcpy_s(ctx->json_filename, ACVP_JSON_FILENAME_MAX, json_filename);
+
     ctx->use_json = 1;
 
     return ACVP_SUCCESS;
