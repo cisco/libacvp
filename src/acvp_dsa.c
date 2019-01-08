@@ -2056,19 +2056,19 @@ ACVP_RESULT acvp_dsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     }
 
     strcmp_s(ACVP_ALG_DSA_PQGGEN, DSA_MODE_STR_MAX, mode, &diff);
-    if (!diff) acvp_dsa_pqggen_kat_handler(ctx, obj);
+    if (!diff) return acvp_dsa_pqggen_kat_handler(ctx, obj);
 
     strcmp_s(ACVP_ALG_DSA_PQGVER, DSA_MODE_STR_MAX, mode, &diff);
-    if (!diff) acvp_dsa_pqgver_kat_handler(ctx, obj);
+    if (!diff) return acvp_dsa_pqgver_kat_handler(ctx, obj);
 
     strcmp_s(ACVP_ALG_DSA_SIGGEN, DSA_MODE_STR_MAX, mode, &diff);
-    if (!diff) acvp_dsa_siggen_kat_handler(ctx, obj);
+    if (!diff) return acvp_dsa_siggen_kat_handler(ctx, obj);
 
     strcmp_s(ACVP_ALG_DSA_SIGVER, DSA_MODE_STR_MAX, mode, &diff);
-    if (!diff) acvp_dsa_sigver_kat_handler(ctx, obj);
+    if (!diff) return acvp_dsa_sigver_kat_handler(ctx, obj);
 
     strcmp_s(ACVP_ALG_DSA_KEYGEN, DSA_MODE_STR_MAX, mode, &diff);
-    if (!diff) acvp_dsa_keygen_kat_handler(ctx, obj);
+    if (!diff) return acvp_dsa_keygen_kat_handler(ctx, obj);
 
     return ACVP_INVALID_ARG;
 }

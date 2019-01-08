@@ -42,11 +42,6 @@
 #include "acvp.h"
 #include "safe_lib.h"
 
-#ifdef USE_MURL
-#include <murl/murl.h>
-#else
-#include <curl/curl.h>
-#endif
 #include <openssl/ossl_typ.h>
 #include <openssl/evp.h>
 #include <openssl/aes.h>
