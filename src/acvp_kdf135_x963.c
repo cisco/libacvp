@@ -138,8 +138,7 @@ ACVP_RESULT acvp_kdf135_x963_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     ACVP_KDF135_X963_TC stc;
     ACVP_TEST_CASE tc;
     ACVP_RESULT rv;
-    char *alg_str = ACVP_KDF135_ALG_STR;
-    const char *alg_str_test = NULL;
+    const char *alg_str = NULL;
     const char *mode_str = NULL;
     ACVP_CIPHER alg_id;
     char *json_result;
@@ -157,8 +156,8 @@ ACVP_RESULT acvp_kdf135_x963_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         return ACVP_MALFORMED_JSON;
     }
 
-    alg_str_test = json_object_get_string(obj, "algorithm");
-    if (!alg_str_test) {
+    alg_str = json_object_get_string(obj, "algorithm");
+    if (!alg_str) {
         ACVP_LOG_ERR("Server JSON missing 'algorithm'");
         return ACVP_MISSING_ARG;
     }
