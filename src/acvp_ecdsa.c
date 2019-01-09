@@ -278,7 +278,7 @@ static ACVP_RESULT acvp_ecdsa_kat_handler_internal(ACVP_CTX *ctx, JSON_Object *o
         return ACVP_MALFORMED_JSON;
     }
 
-    memset(&stc, 0x0, sizeof(ACVP_ECDSA_TC));
+    memzero_s(&stc, sizeof(ACVP_ECDSA_TC));
     tc.tc.ecdsa = &stc;
     mode_str = (char *)json_object_get_string(obj, "mode");
     if (!mode_str) {

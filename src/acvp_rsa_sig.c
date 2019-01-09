@@ -249,7 +249,7 @@ static ACVP_RESULT acvp_rsa_sig_kat_handler_internal(ACVP_CTX *ctx, JSON_Object 
     }
 
     tc.tc.rsa_sig = &stc;
-    memset(&stc, 0x0, sizeof(ACVP_RSA_SIG_TC));
+    memzero_s(&stc, sizeof(ACVP_RSA_SIG_TC));
     stc.sig_mode = alg_id;
 
     cap = acvp_locate_cap_entry(ctx, alg_id);

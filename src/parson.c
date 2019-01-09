@@ -270,8 +270,10 @@ static int is_decimal(const char *string, size_t length) {
     if (length > 1 && string[0] == '0' && string[1] != '.') {
         return 0;
     }
-    if (length > 2 && !strncmp(string, "-0", 2) && string[2] != '.') {
-        return 0;
+    if (length > 2 && string[2] != '.') {
+        int diff = 1;
+        strcmp_s("-0", 2, string, &diff); /* SAFEC */
+        if (!diff) return 0;
     }
     while (length--) {
         /* SAFEC */
@@ -442,12 +444,14 @@ static JSON_Status json_object_resize(JSON_Object *object, size_t new_capacity) 
 
 static JSON_Value * json_object_getn_value(const JSON_Object *object, const char *name, size_t name_len) {
     size_t i, name_length;
+    int diff = 1;
     for (i = 0; i < json_object_get_count(object); i++) {
         name_length = strnlen_s(object->names[i], STRING_NAME_MAX);
         if (name_length != name_len) {
             continue;
         }
-        if (strncmp(object->names[i], name, name_len) == 0) {
+        strcmp_s(name, name_len, object->names[i], &diff); /* SAFEC */
+        if (!diff) {
             return object->values[i];
         }
     }
@@ -461,7 +465,9 @@ static JSON_Status json_object_remove_internal(JSON_Object *object, const char *
     }
     last_item_index = json_object_get_count(object) - 1;
     for (i = 0; i < json_object_get_count(object); i++) {
-        if (strcmp(object->names[i], name) == 0) {
+        int diff = 1;
+        strcmp_s(object->names[i], STRING_NAME_MAX, name, &diff); /* SAFEC */
+        if (!diff) {
             parson_free(object->names[i]);
             if (free_value) {
                 json_value_free(object->values[i]);
@@ -862,10 +868,14 @@ static JSON_Value * parse_string_value(const char **string) {
 static JSON_Value * parse_boolean_value(const char **string) {
     size_t true_token_size = SIZEOF_TOKEN("true");
     size_t false_token_size = SIZEOF_TOKEN("false");
-    if (strncmp("true", *string, true_token_size) == 0) {
+    int diff = 1;
+    strcmp_s("true", true_token_size, *string, &diff); /* SAFEC */
+    if (!diff) {
         *string += true_token_size;
         return json_value_init_boolean(1);
-    } else if (strncmp("false", *string, false_token_size) == 0) {
+    }
+    strcmp_s("false", false_token_size, *string, &diff);
+    if (!diff) {
         *string += false_token_size;
         return json_value_init_boolean(0);
     }
@@ -886,7 +896,9 @@ static JSON_Value * parse_number_value(const char **string) {
 
 static JSON_Value * parse_null_value(const char **string) {
     size_t token_size = SIZEOF_TOKEN("null");
-    if (strncmp("null", *string, token_size) == 0) {
+    int diff = 1;
+    strcmp_s("null", token_size, *string, &diff); /* SAFEC */
+    if (!diff) {
         *string += token_size;
         return json_value_init_null();
     }
@@ -1807,7 +1819,9 @@ JSON_Status json_object_set_value(JSON_Object *object, const char *name, JSON_Va
     if (old_value != NULL) { /* free and overwrite old value */
         json_value_free(old_value);
         for (i = 0; i < json_object_get_count(object); i++) {
-            if (strcmp(object->names[i], name) == 0) {
+            int diff = 1;
+            strcmp_s(object->names[i], STRING_NAME_MAX, name, &diff); /* SAFEC */
+            if (!diff) {
                 value->parent = json_object_get_wrapping_value(object);
                 object->values[i] = value;
                 return JSONSuccess;
@@ -2015,6 +2029,7 @@ int json_value_equals(const JSON_Value *a, const JSON_Value *b) {
     const char *a_string = NULL, *b_string = NULL;
     const char *key = NULL;
     size_t a_count = 0, b_count = 0, i = 0;
+    int diff = 1;
     JSON_Value_Type a_type, b_type;
     a_type = json_value_get_type(a);
     b_type = json_value_get_type(b);
@@ -2059,7 +2074,8 @@ int json_value_equals(const JSON_Value *a, const JSON_Value *b) {
             if (a_string == NULL || b_string == NULL) {
                 return 0; /* shouldn't happen */
             }
-            return strcmp(a_string, b_string) == 0;
+            strcmp_s(a_string, STRING_VALUE_MAX, b_string, &diff); /* SAFEC */
+            return diff == 0;
         case JSONBoolean:
             return json_value_get_boolean(a) == json_value_get_boolean(b);
         case JSONNumber:
