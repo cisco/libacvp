@@ -355,7 +355,7 @@ ACVP_RESULT acvp_rsa_keygen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     }
 
     tc.tc.rsa_keygen = &stc;
-    memset(&stc, 0x0, sizeof(ACVP_RSA_KEYGEN_TC));
+    memzero_s(&stc, sizeof(ACVP_RSA_KEYGEN_TC));
 
     cap = acvp_locate_cap_entry(ctx, alg_id);
     if (!cap) {

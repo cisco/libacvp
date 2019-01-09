@@ -5538,7 +5538,7 @@ static int app_drbg_handler(ACVP_TEST_CASE *test_case) {
 
     DRBG_CTX *drbg_ctx = NULL;
     DRBG_TEST_ENT entropy_nonce;
-    memset(&entropy_nonce, 0, sizeof(DRBG_TEST_ENT));
+    memzero_s(&entropy_nonce, sizeof(DRBG_TEST_ENT));
     drbg_ctx = FIPS_drbg_new(nid, der_func | DRBG_FLAG_TEST);
     if (!drbg_ctx) {
         progress("ERROR: failed to create DRBG Context.");
