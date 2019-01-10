@@ -969,6 +969,7 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 if (t_rv) {
                     if (rv != ACVP_CRYPTO_WRAP_FAIL) {
                         ACVP_LOG_ERR("ERROR: crypto module failed the operation");
+                        json_value_free(r_tval);
                         acvp_des_release_tc(&stc);
                         rv = ACVP_CRYPTO_MODULE_FAIL;
                         goto err;

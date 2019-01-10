@@ -575,6 +575,7 @@ ACVP_RESULT acvp_dsa_keygen_handler(ACVP_CTX *ctx,
         /* Process the current DSA test vector... */
         if ((cap->crypto_handler)(&tc)) {
             ACVP_LOG_ERR("crypto module failed the operation");
+            rv = ACVP_CRYPTO_MODULE_FAIL;
             goto err;
         }
 
@@ -828,6 +829,7 @@ ACVP_RESULT acvp_dsa_pqggen_handler(ACVP_CTX *ctx,
             rv = acvp_dsa_pqggen_init_tc(ctx, stc, tc_id, stc->cipher, gpq, index, l, n, sha, p, q, seed);
             if (rv != ACVP_SUCCESS) {
                 acvp_dsa_release_tc(stc);
+                json_value_free(r_tval);
                 return rv;
             }
 
@@ -835,6 +837,7 @@ ACVP_RESULT acvp_dsa_pqggen_handler(ACVP_CTX *ctx,
             if ((cap->crypto_handler)(&tc)) {
                 ACVP_LOG_ERR("crypto module failed the operation");
                 acvp_dsa_release_tc(stc);
+                json_value_free(r_tval);
                 return ACVP_CRYPTO_MODULE_FAIL;
             }
 
@@ -844,6 +847,7 @@ ACVP_RESULT acvp_dsa_pqggen_handler(ACVP_CTX *ctx,
             rv = acvp_dsa_output_tc(ctx, stc, r_tobj);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("JSON output failure in DSA module");
+                json_value_free(r_tval);
                 acvp_dsa_release_tc(stc);
                 return rv;
             }
@@ -867,12 +871,14 @@ ACVP_RESULT acvp_dsa_pqggen_handler(ACVP_CTX *ctx,
             rv = acvp_dsa_pqggen_init_tc(ctx, stc, tc_id, stc->cipher, gpq, index, l, n, sha, p, q, seed);
             if (rv != ACVP_SUCCESS) {
                 acvp_dsa_release_tc(stc);
+                json_value_free(r_tval);
                 return rv;
             }
 
             if ((cap->crypto_handler)(&tc)) {
                 ACVP_LOG_ERR("crypto module failed the operation");
                 acvp_dsa_release_tc(stc);
+                json_value_free(r_tval);
                 return ACVP_CRYPTO_MODULE_FAIL;
             }
 
@@ -883,11 +889,13 @@ ACVP_RESULT acvp_dsa_pqggen_handler(ACVP_CTX *ctx,
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("JSON output failure in DSA module");
                 acvp_dsa_release_tc(stc);
+                json_value_free(r_tval);
                 return rv;
             }
             break;
         default:
             ACVP_LOG_ERR("Invalid DSA PQGGen mode");
+            json_value_free(r_tval);
             rv = ACVP_INVALID_ARG;
             break;
         }
@@ -995,6 +1003,7 @@ ACVP_RESULT acvp_dsa_siggen_handler(ACVP_CTX *ctx,
         /* Process the current DSA test vector... */
         if ((cap->crypto_handler)(&tc)) {
             ACVP_LOG_ERR("crypto module failed the operation");
+            rv = ACVP_CRYPTO_MODULE_FAIL;
             goto err;
         }
 
