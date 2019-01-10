@@ -64,6 +64,7 @@ static ACVP_RESULT acvp_kdf135_x963_release_tc(ACVP_KDF135_X963_TC *stc) {
     if (stc->z) free(stc->z);
     if (stc->shared_info) free(stc->shared_info);
     if (stc->key_data) free(stc->key_data);
+    memzero_s(stc, sizeof(ACVP_KDF135_X963_TC));
     return ACVP_SUCCESS;
 }
 

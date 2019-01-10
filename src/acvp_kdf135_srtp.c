@@ -114,6 +114,7 @@ static ACVP_RESULT acvp_kdf135_srtp_release_tc(ACVP_KDF135_SRTP_TC *stc) {
     if (stc->srtcp_ke) free(stc->srtcp_ke);
     if (stc->srtcp_ka) free(stc->srtcp_ka);
     if (stc->srtcp_ks) free(stc->srtcp_ks);
+    memzero_s(stc, sizeof(ACVP_KDF135_SRTP_TC));
     return ACVP_SUCCESS;
 }
 

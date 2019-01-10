@@ -179,6 +179,7 @@ static ACVP_RESULT acvp_kas_ffc_release_tc(ACVP_KAS_FFC_TC *stc) {
     if (stc->p) free(stc->p);
     if (stc->q) free(stc->q);
     if (stc->g) free(stc->g);
+    memzero_s(stc, sizeof(ACVP_KAS_FFC_TC));
     return ACVP_SUCCESS;
 }
 
