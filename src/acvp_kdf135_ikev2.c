@@ -207,6 +207,7 @@ static ACVP_RESULT acvp_kdf135_ikev2_release_tc(ACVP_KDF135_IKEV2_TC *stc) {
     if (stc->derived_keying_material) { free(stc->derived_keying_material); }
     if (stc->derived_keying_material_child) { free(stc->derived_keying_material_child); }
     if (stc->derived_keying_material_child_dh) { free(stc->derived_keying_material_child_dh); }
+    memzero_s(stc, sizeof(ACVP_KDF135_IKEV2_TC));
     return ACVP_SUCCESS;
 }
 

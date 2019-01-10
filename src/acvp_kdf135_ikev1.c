@@ -195,6 +195,7 @@ static ACVP_RESULT acvp_kdf135_ikev1_release_tc(ACVP_KDF135_IKEV1_TC *stc) {
     if (stc->s_key_id_d) { free(stc->s_key_id_d); }
     if (stc->s_key_id_a) { free(stc->s_key_id_a); }
     if (stc->s_key_id_e) { free(stc->s_key_id_e); }
+    memzero_s(stc, sizeof(ACVP_KDF135_IKEV1_TC));
     return ACVP_SUCCESS;
 }
 

@@ -181,6 +181,7 @@ static ACVP_RESULT acvp_rsa_keygen_release_tc(ACVP_RSA_KEYGEN_TC *stc) {
     if (stc->q) { free(stc->q); }
     if (stc->n) { free(stc->n); }
     if (stc->d) { free(stc->d); }
+    memzero_s(stc, sizeof(ACVP_RSA_KEYGEN_TC));
 
     return ACVP_SUCCESS;
 }

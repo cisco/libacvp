@@ -77,6 +77,7 @@ static ACVP_RESULT acvp_rsa_siggen_release_tc(ACVP_RSA_SIG_TC *stc) {
     if (stc->n) { free(stc->n); }
     if (stc->signature) { free(stc->signature); }
     if (stc->salt) { free(stc->salt); }
+    memzero_s(stc, sizeof(ACVP_RSA_SIG_TC));
     return ACVP_SUCCESS;
 }
 

@@ -111,6 +111,7 @@ static ACVP_RESULT acvp_ecdsa_release_tc(ACVP_ECDSA_TC *stc) {
     if (stc->r) { free(stc->r); }
     if (stc->s) { free(stc->s); }
     if (stc->message) { free(stc->message); }
+    memzero_s(stc, sizeof(ACVP_ECDSA_TC));
 
     return ACVP_SUCCESS;
 }
