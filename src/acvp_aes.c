@@ -1030,6 +1030,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                         alg_id != ACVP_AES_CCM && alg_id != ACVP_AES_KWP) {
                         ACVP_LOG_ERR("ERROR: crypto module failed the operation");
                         acvp_aes_release_tc(&stc);
+                        json_value_free(r_tval);
                         rv = ACVP_CRYPTO_MODULE_FAIL;
                         goto err;
                     }
@@ -1041,6 +1042,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 rv = acvp_aes_output_tc(ctx, &stc, r_tobj, t_rv);
                 if (rv != ACVP_SUCCESS) {
                     ACVP_LOG_ERR("JSON output failure in AES module");
+                    json_value_free(r_tval);
                     acvp_aes_release_tc(&stc);
                     goto err;
                 }
@@ -1198,6 +1200,7 @@ static ACVP_RESULT acvp_aes_init_tc(ACVP_CTX *ctx,
                                     unsigned int aad_len,
                                     unsigned int incr_ctr,
                                     unsigned int ovrflw_ctr) {
+
     ACVP_RESULT rv;
 
     memzero_s(stc, sizeof(ACVP_SYM_CIPHER_TC));

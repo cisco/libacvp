@@ -326,6 +326,7 @@ ACVP_RESULT acvp_hmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             rv = acvp_hmac_init_tc(ctx, &stc, tc_id, msglen, msg, maclen, keylen, key, alg_id);
             if (rv != ACVP_SUCCESS) {
                 acvp_hmac_release_tc(&stc);
+                json_value_free(r_tval);
                 goto err;
             }
 
@@ -333,6 +334,7 @@ ACVP_RESULT acvp_hmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             if ((cap->crypto_handler)(&tc)) {
                 ACVP_LOG_ERR("ERROR: crypto module failed the operation");
                 acvp_hmac_release_tc(&stc);
+                json_value_free(r_tval);
                 rv = ACVP_CRYPTO_MODULE_FAIL;
                 goto err;
             }
@@ -343,6 +345,7 @@ ACVP_RESULT acvp_hmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             rv = acvp_hmac_output_tc(ctx, &stc, r_tobj);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("ERROR: JSON output failure in hash module");
+                json_value_free(r_tval);
                 acvp_hmac_release_tc(&stc);
                 goto err;
             }
