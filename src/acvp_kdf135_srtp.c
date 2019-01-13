@@ -385,6 +385,7 @@ ACVP_RESULT acvp_kdf135_srtp_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             rv = acvp_kdf135_srtp_init_tc(ctx, &stc, tc_id, aes_key_length, kdr, master_key, master_salt, index, srtcp_index);
             if (rv != ACVP_SUCCESS) {
                 acvp_kdf135_srtp_release_tc(&stc);
+                json_value_free(r_tval);
                 goto err;
             }
 
@@ -393,6 +394,7 @@ ACVP_RESULT acvp_kdf135_srtp_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 ACVP_LOG_ERR("crypto module failed");
                 acvp_kdf135_srtp_release_tc(&stc);
                 rv = ACVP_CRYPTO_MODULE_FAIL;
+                json_value_free(r_tval);
                 goto err;
             }
 
@@ -403,6 +405,7 @@ ACVP_RESULT acvp_kdf135_srtp_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("JSON output failure");
                 acvp_kdf135_srtp_release_tc(&stc);
+                json_value_free(r_tval);
                 goto err;
             }
             /*
