@@ -493,7 +493,8 @@ ACVP_RESULT acvp_kdf135_ikev2_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                                            gir, gir_new);
             if (rv != ACVP_SUCCESS) {
                 acvp_kdf135_ikev2_release_tc(&stc);
-                return rv;
+                json_value_free(r_tval);
+                goto err;
             }
 
             /* Process the current test vector... */
@@ -501,6 +502,7 @@ ACVP_RESULT acvp_kdf135_ikev2_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 ACVP_LOG_ERR("crypto module failed");
                 acvp_kdf135_ikev2_release_tc(&stc);
                 rv = ACVP_CRYPTO_MODULE_FAIL;
+                json_value_free(r_tval);
                 goto err;
             }
 
@@ -511,6 +513,7 @@ ACVP_RESULT acvp_kdf135_ikev2_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("JSON output failure");
                 acvp_kdf135_ikev2_release_tc(&stc);
+                json_value_free(r_tval);
                 goto err;
             }
             /*

@@ -324,6 +324,7 @@ ACVP_RESULT acvp_kdf135_ssh_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                                          shared_secret_str, hash_str, session_id_str);
             if (rv != ACVP_SUCCESS) {
                 acvp_kdf135_ssh_release_tc(&stc);
+                json_value_free(r_tval);
                 goto err;
             }
 
@@ -332,6 +333,7 @@ ACVP_RESULT acvp_kdf135_ssh_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 ACVP_LOG_ERR("crypto module failed the KDF SSH operation");
                 acvp_kdf135_ssh_release_tc(&stc);
                 rv = ACVP_CRYPTO_MODULE_FAIL;
+                json_value_free(r_tval);
                 goto err;
             }
 
@@ -342,6 +344,7 @@ ACVP_RESULT acvp_kdf135_ssh_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("JSON output failure in hash module");
                 acvp_kdf135_ssh_release_tc(&stc);
+                json_value_free(r_tval);
                 goto err;
             }
             /*
