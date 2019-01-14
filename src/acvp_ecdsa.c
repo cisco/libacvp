@@ -408,6 +408,11 @@ static ACVP_RESULT acvp_ecdsa_kat_handler_internal(ACVP_CTX *ctx, JSON_Object *o
 
         tests = json_object_get_array(groupobj, "tests");
         t_cnt = json_array_get_count(tests);
+        if (!t_cnt) {
+            ACVP_LOG_ERR("Test array count is zero");
+            rv = ACVP_MISSING_ARG;
+            goto err;
+        }
 
         for (j = 0; j < t_cnt; j++) {
             ACVP_LOG_INFO("Found new ECDSA test vector...");
@@ -477,10 +482,12 @@ static ACVP_RESULT acvp_ecdsa_kat_handler_internal(ACVP_CTX *ctx, JSON_Object *o
                 if ((cap->crypto_handler)(&tc)) {
                     ACVP_LOG_ERR("ERROR: crypto module failed the operation");
                     rv = ACVP_CRYPTO_MODULE_FAIL;
+                    json_value_free(r_tval);
                     goto err;
                 }
             } else {
                 ACVP_LOG_ERR("Failed to initialize ECDSA test case");
+                json_value_free(r_tval);
                 goto err;
             }
 
@@ -492,6 +499,8 @@ static ACVP_RESULT acvp_ecdsa_kat_handler_internal(ACVP_CTX *ctx, JSON_Object *o
                 rv = acvp_bin_to_hexstr(stc.qy, stc.qy_len, tmp, ACVP_ECDSA_EXP_LEN_MAX);
                 if (rv != ACVP_SUCCESS) {
                     ACVP_LOG_ERR("hex conversion failure (qy)");
+                    free(tmp);
+                    json_value_free(r_tval);
                     goto err;
                 }
                 json_object_set_string(r_gobj, "qy", (const char *)tmp);
@@ -500,6 +509,8 @@ static ACVP_RESULT acvp_ecdsa_kat_handler_internal(ACVP_CTX *ctx, JSON_Object *o
                 rv = acvp_bin_to_hexstr(stc.qx, stc.qx_len, tmp, ACVP_ECDSA_EXP_LEN_MAX);
                 if (rv != ACVP_SUCCESS) {
                     ACVP_LOG_ERR("hex conversion failure (qx)");
+                    free(tmp);
+                    json_value_free(r_tval);
                     goto err;
                 }
                 json_object_set_string(r_gobj, "qx", (const char *)tmp);
@@ -509,6 +520,7 @@ static ACVP_RESULT acvp_ecdsa_kat_handler_internal(ACVP_CTX *ctx, JSON_Object *o
             rv = acvp_ecdsa_output_tc(ctx, alg_id, &stc, r_tobj);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("ERROR: JSON output failure in hash module");
+                json_value_free(r_tval);
                 goto err;
             }
 

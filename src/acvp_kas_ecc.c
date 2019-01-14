@@ -404,12 +404,14 @@ static ACVP_RESULT acvp_kas_ecc_cdh(ACVP_CTX *ctx,
             if (!psx) {
                 ACVP_LOG_ERR("Server JSON missing 'publicServerX'");
                 rv = ACVP_MISSING_ARG;
+                json_value_free(r_tval);
                 goto err;
             }
             if (strnlen_s(psx, ACVP_KAS_ECC_STR_MAX + 1) > ACVP_KAS_ECC_STR_MAX) {
                 ACVP_LOG_ERR("publicServerX too long, max allowed=(%d)",
                              ACVP_KAS_ECC_STR_MAX);
                 rv = ACVP_INVALID_ARG;
+                json_value_free(r_tval);
                 goto err;
             }
 
@@ -417,12 +419,14 @@ static ACVP_RESULT acvp_kas_ecc_cdh(ACVP_CTX *ctx,
             if (!psy) {
                 ACVP_LOG_ERR("Server JSON missing 'publicServerY'");
                 rv = ACVP_MISSING_ARG;
+                json_value_free(r_tval);
                 goto err;
             }
             if (strnlen_s(psy, ACVP_KAS_ECC_STR_MAX + 1) > ACVP_KAS_ECC_STR_MAX) {
                 ACVP_LOG_ERR("publicServerY too long, max allowed=(%d)",
                              ACVP_KAS_ECC_STR_MAX);
                 rv = ACVP_INVALID_ARG;
+                json_value_free(r_tval);
                 goto err;
             }
 
@@ -437,13 +441,16 @@ static ACVP_RESULT acvp_kas_ecc_cdh(ACVP_CTX *ctx,
                                           curve, psx, psy);
             if (rv != ACVP_SUCCESS) {
                 acvp_kas_ecc_release_tc(stc);
+                json_value_free(r_tval);
                 goto err;
             }
 
             /* Process the current KAT test vector... */
             if ((cap->crypto_handler)(tc)) {
                 acvp_kas_ecc_release_tc(stc);
+                ACVP_LOG_ERR("crypto module failed the operation");
                 rv = ACVP_CRYPTO_MODULE_FAIL;
+                json_value_free(r_tval);
                 goto err;
             }
 
@@ -454,6 +461,7 @@ static ACVP_RESULT acvp_kas_ecc_cdh(ACVP_CTX *ctx,
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("JSON output failure in KAS-ECC module");
                 acvp_kas_ecc_release_tc(stc);
+                json_value_free(r_tval);
                 goto err;
             }
 
@@ -471,7 +479,6 @@ static ACVP_RESULT acvp_kas_ecc_cdh(ACVP_CTX *ctx,
 
 err:
     if (rv != ACVP_SUCCESS) {
-        json_value_free(r_tval);
         json_value_free(r_gval);
     }
     return rv;
@@ -594,12 +601,14 @@ static ACVP_RESULT acvp_kas_ecc_comp(ACVP_CTX *ctx,
             if (!psx) {
                 ACVP_LOG_ERR("Server JSON missing 'ephemeralPublicServerX'");
                 rv = ACVP_MISSING_ARG;
+                json_value_free(r_tval);
                 goto err;
             }
             if (strnlen_s(psx, ACVP_KAS_ECC_STR_MAX + 1) > ACVP_KAS_ECC_STR_MAX) {
                 ACVP_LOG_ERR("ephemeralPublicServerX too long, max allowed=(%d)",
                              ACVP_KAS_ECC_STR_MAX);
                 rv = ACVP_INVALID_ARG;
+                json_value_free(r_tval);
                 goto err;
             }
 
@@ -607,12 +616,14 @@ static ACVP_RESULT acvp_kas_ecc_comp(ACVP_CTX *ctx,
             if (!psy) {
                 ACVP_LOG_ERR("Server JSON missing 'ephemeralPublicServerY'");
                 rv = ACVP_MISSING_ARG;
+                json_value_free(r_tval);
                 goto err;
             }
             if (strnlen_s(psy, ACVP_KAS_ECC_STR_MAX + 1) > ACVP_KAS_ECC_STR_MAX) {
                 ACVP_LOG_ERR("ephemeralPublicServerY too long, max allowed=(%d)",
                              ACVP_KAS_ECC_STR_MAX);
                 rv = ACVP_INVALID_ARG;
+                json_value_free(r_tval);
                 goto err;
             }
 
@@ -624,12 +635,14 @@ static ACVP_RESULT acvp_kas_ecc_comp(ACVP_CTX *ctx,
                 if (!pix) {
                     ACVP_LOG_ERR("Server JSON missing 'ephemeralPublicIutX'");
                     rv = ACVP_MISSING_ARG;
+                    json_value_free(r_tval);
                     goto err;
                 }
                 if (strnlen_s(pix, ACVP_KAS_ECC_STR_MAX + 1) > ACVP_KAS_ECC_STR_MAX) {
                     ACVP_LOG_ERR("ephemeralPublicIutX too long, max allowed=(%d)",
                                  ACVP_KAS_ECC_STR_MAX);
                     rv = ACVP_INVALID_ARG;
+                    json_value_free(r_tval);
                     goto err;
                 }
 
@@ -637,12 +650,14 @@ static ACVP_RESULT acvp_kas_ecc_comp(ACVP_CTX *ctx,
                 if (!piy) {
                     ACVP_LOG_ERR("Server JSON missing 'ephemeralPublicIutY'");
                     rv = ACVP_MISSING_ARG;
+                    json_value_free(r_tval);
                     goto err;
                 }
                 if (strnlen_s(piy, ACVP_KAS_ECC_STR_MAX + 1) > ACVP_KAS_ECC_STR_MAX) {
                     ACVP_LOG_ERR("ephemeralPublicIutY too long, max allowed=(%d)",
                                  ACVP_KAS_ECC_STR_MAX);
                     rv = ACVP_INVALID_ARG;
+                    json_value_free(r_tval);
                     goto err;
                 }
 
@@ -650,12 +665,14 @@ static ACVP_RESULT acvp_kas_ecc_comp(ACVP_CTX *ctx,
                 if (!d) {
                     ACVP_LOG_ERR("Server JSON missing 'ephemeralPrivateIut'");
                     rv = ACVP_MISSING_ARG;
+                    json_value_free(r_tval);
                     goto err;
                 }
                 if (strnlen_s(d, ACVP_KAS_ECC_STR_MAX + 1) > ACVP_KAS_ECC_STR_MAX) {
                     ACVP_LOG_ERR("ephemeralPrivateIut too long, max allowed=(%d)",
                                  ACVP_KAS_ECC_STR_MAX);
                     rv = ACVP_INVALID_ARG;
+                    json_value_free(r_tval);
                     goto err;
                 }
 
@@ -663,12 +680,14 @@ static ACVP_RESULT acvp_kas_ecc_comp(ACVP_CTX *ctx,
                 if (!z) {
                     ACVP_LOG_ERR("Server JSON missing 'hashZIut'");
                     rv = ACVP_MISSING_ARG;
+                    json_value_free(r_tval);
                     goto err;
                 }
                 if (strnlen_s(z, ACVP_KAS_ECC_STR_MAX + 1) > ACVP_KAS_ECC_STR_MAX) {
                     ACVP_LOG_ERR("hashZIut too long, max allowed=(%d)",
                                  ACVP_KAS_ECC_STR_MAX);
                     rv = ACVP_INVALID_ARG;
+                    json_value_free(r_tval);
                     goto err;
                 }
 
@@ -687,13 +706,16 @@ static ACVP_RESULT acvp_kas_ecc_comp(ACVP_CTX *ctx,
                                            d, pix, piy, z);
             if (rv != ACVP_SUCCESS) {
                 acvp_kas_ecc_release_tc(stc);
+                json_value_free(r_tval);
                 goto err;
             }
 
             /* Process the current KAT test vector... */
             if ((cap->crypto_handler)(tc)) {
                 acvp_kas_ecc_release_tc(stc);
+                ACVP_LOG_ERR("crypto module failed the operation");
                 rv = ACVP_CRYPTO_MODULE_FAIL;
+                json_value_free(r_tval);
                 goto err;
             }
 
@@ -704,6 +726,7 @@ static ACVP_RESULT acvp_kas_ecc_comp(ACVP_CTX *ctx,
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("JSON output failure in KAS-ECC module");
                 acvp_kas_ecc_release_tc(stc);
+                json_value_free(r_tval);
                 goto err;
             }
 
@@ -721,7 +744,6 @@ static ACVP_RESULT acvp_kas_ecc_comp(ACVP_CTX *ctx,
 
 err:
     if (rv != ACVP_SUCCESS) {
-        json_value_free(r_tval);
         json_value_free(r_gval);
     }
     return rv;

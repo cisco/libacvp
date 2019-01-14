@@ -444,6 +444,7 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
             if (rv != ACVP_SUCCESS) {
                 acvp_drbg_release_tc(&stc);
+                json_value_free(r_tval);
                 goto err;
             }
 
@@ -452,6 +453,7 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 ACVP_LOG_ERR("crypto module failed the operation");
                 rv = ACVP_CRYPTO_MODULE_FAIL;
                 acvp_drbg_release_tc(&stc);
+                json_value_free(r_tval);
                 goto err;
             }
 
@@ -462,6 +464,7 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("JSON output failure in DRBG module");
                 acvp_drbg_release_tc(&stc);
+                json_value_free(r_tval);
                 goto err;
             }
 
