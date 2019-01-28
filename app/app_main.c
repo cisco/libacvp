@@ -39,7 +39,7 @@
 #include <unistd.h>
 #endif
 #include <fcntl.h>
-#include "acvp.h"
+#include "acvp/acvp.h"
 #include "safe_lib.h"
 
 #include <openssl/ossl_typ.h>

@@ -97,8 +97,8 @@ am__aclocal_m4_deps = $(top_srcdir)/m4/libtool.m4 \
 	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
-DIST_COMMON = $(srcdir)/Makefile.am $(library_include_HEADERS) \
-	$(am__DIST_COMMON)
+DIST_COMMON = $(srcdir)/Makefile.am $(libacvp_include_HEADERS) \
+	$(noinst_HEADERS) $(am__DIST_COMMON)
 mkinstalldirs = $(install_sh) -d
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
@@ -130,7 +130,7 @@ am__uninstall_files_from_dir = { \
          $(am__cd) "$$dir" && rm -f $$files; }; \
   }
 am__installdirs = "$(DESTDIR)$(libdir)" \
-	"$(DESTDIR)$(library_includedir)"
+	"$(DESTDIR)$(libacvp_includedir)"
 LTLIBRARIES = $(lib_LTLIBRARIES)
 am__DEPENDENCIES_1 =
 libacvp_la_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
@@ -188,7 +188,7 @@ am__can_run_installinfo = \
     n|no|NO) false;; \
     *) (install-info --version) >/dev/null 2>&1;; \
   esac
-HEADERS = $(library_include_HEADERS)
+HEADERS = $(libacvp_include_HEADERS) $(noinst_HEADERS)
 am__tagged_files = $(HEADERS) $(SOURCES) $(TAGS_FILES) $(LISP)
 # Read a list of newline-separated strings from the standard input,
 # and print each of them once, without duplicates.  Input order is
@@ -338,7 +338,7 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 lib_LTLIBRARIES = libacvp.la
-AM_CFLAGS = -I../.. $(SAFEC_CFLAGS) $(LIBCURL_CFLAGS)
+AM_CFLAGS = -I$(top_srcdir)/include/acvp $(SAFEC_CFLAGS) $(LIBCURL_CFLAGS)
 libacvp_la_SOURCES = acvp.c \
                     acvp_build_register.c \
                     acvp_capabilities.c \
@@ -367,8 +367,11 @@ libacvp_la_SOURCES = acvp.c \
                     acvp_ecdsa.c
 
 libacvp_la_LIBADD = $(SAFEC_LDFLAGS) $(LIBCURL_LDFLAGS)
-library_includedir = $(includedir)/acvp
-library_include_HEADERS = acvp.h
+libacvp_includedir = $(includedir)/acvp
+libacvp_include_HEADERS = $(top_srcdir)/include/acvp/acvp.h \
+						  $(top_srcdir)/include/acvp/parson.h
+
+noinst_HEADERS = $(top_srcdir)/include/acvp/acvp_lcl.h
 all: all-am
 
 .SUFFIXES:
@@ -503,27 +506,27 @@ mostlyclean-libtool:
 
 clean-libtool:
 	-rm -rf .libs _libs
-install-library_includeHEADERS: $(library_include_HEADERS)
+install-libacvp_includeHEADERS: $(libacvp_include_HEADERS)
 	@$(NORMAL_INSTALL)
-	@list='$(library_include_HEADERS)'; test -n "$(library_includedir)" || list=; \
+	@list='$(libacvp_include_HEADERS)'; test -n "$(libacvp_includedir)" || list=; \
 	if test -n "$$list"; then \
-	  echo " $(MKDIR_P) '$(DESTDIR)$(library_includedir)'"; \
-	  $(MKDIR_P) "$(DESTDIR)$(library_includedir)" || exit 1; \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(libacvp_includedir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(libacvp_includedir)" || exit 1; \
 	fi; \
 	for p in $$list; do \
 	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
 	  echo "$$d$$p"; \
 	done | $(am__base_list) | \
 	while read files; do \
-	  echo " $(INSTALL_HEADER) $$files '$(DESTDIR)$(library_includedir)'"; \
-	  $(INSTALL_HEADER) $$files "$(DESTDIR)$(library_includedir)" || exit $$?; \
+	  echo " $(INSTALL_HEADER) $$files '$(DESTDIR)$(libacvp_includedir)'"; \
+	  $(INSTALL_HEADER) $$files "$(DESTDIR)$(libacvp_includedir)" || exit $$?; \
 	done
 
-uninstall-library_includeHEADERS:
+uninstall-libacvp_includeHEADERS:
 	@$(NORMAL_UNINSTALL)
-	@list='$(library_include_HEADERS)'; test -n "$(library_includedir)" || list=; \
+	@list='$(libacvp_include_HEADERS)'; test -n "$(libacvp_includedir)" || list=; \
 	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
-	dir='$(DESTDIR)$(library_includedir)'; $(am__uninstall_files_from_dir)
+	dir='$(DESTDIR)$(libacvp_includedir)'; $(am__uninstall_files_from_dir)
 
 ID: $(am__tagged_files)
 	$(am__define_uniq_tagged_files); mkid -fID $$unique
@@ -611,7 +614,7 @@ check-am: all-am
 check: check-am
 all-am: Makefile $(LTLIBRARIES) $(HEADERS)
 installdirs:
-	for dir in "$(DESTDIR)$(libdir)" "$(DESTDIR)$(library_includedir)"; do \
+	for dir in "$(DESTDIR)$(libdir)" "$(DESTDIR)$(libacvp_includedir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-am
@@ -667,7 +670,7 @@ info: info-am
 
 info-am:
 
-install-data-am: install-library_includeHEADERS
+install-data-am: install-libacvp_includeHEADERS
 
 install-dvi: install-dvi-am
 
@@ -714,7 +717,7 @@ ps: ps-am
 ps-am:
 
 uninstall-am: uninstall-libLTLIBRARIES \
-	uninstall-library_includeHEADERS
+	uninstall-libacvp_includeHEADERS
 
 .MAKE: install-am install-strip
 
@@ -726,13 +729,13 @@ uninstall-am: uninstall-libLTLIBRARIES \
 	install-data-am install-dvi install-dvi-am install-exec \
 	install-exec-am install-html install-html-am install-info \
 	install-info-am install-libLTLIBRARIES \
-	install-library_includeHEADERS install-man install-pdf \
+	install-libacvp_includeHEADERS install-man install-pdf \
 	install-pdf-am install-ps install-ps-am install-strip \
 	installcheck installcheck-am installdirs maintainer-clean \
 	maintainer-clean-generic mostlyclean mostlyclean-compile \
 	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
 	tags tags-am uninstall uninstall-am uninstall-libLTLIBRARIES \
-	uninstall-library_includeHEADERS
+	uninstall-libacvp_includeHEADERS
 
 .PRECIOUS: Makefile
 

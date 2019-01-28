@@ -1,8 +1,20 @@
-# Must init the autoconf setup
-# The first parameter is project name
-# second is version number
-# third is bug report address
-AC_INIT([libacvp], [0.5], [ccsm-support@cisco.com])
+#                                               -*- Autoconf -*-
+# Process this file with autoconf to produce a configure script.
+# When to bump versions.
+# Major - Bumped if an API or ABI changes, Build changes etc.
+# Minor - Bumped for every release of software
+# Micro - Bumped for patch releases only
+# age - Represents how many revisions back of the Major/Current this library
+#       supports. Each library client, Mgmt, common can be ABI compatible
+#       depending on the change in the library.
+#
+#       Once a number gets incremented all numbers to the left get reset to zero.
+# Shared objects are named library.so.Major.age.Minor by autotools
+#
+m4_define([libacvp_major_version], [0])
+m4_define([libacvp_minor_version], [5])
+m4_define([libacvp_micro_version], [0])
+AC_INIT([libacvp], [libacvp_major_version.libacvp_minor_version.libacvp_micro_version], [ccsm-support@cisco.com])
 
 # Safety checks in case user overwritten --srcdir
 SUBDIRS=src
