@@ -3473,6 +3473,7 @@ static int app_sha_handler(ACVP_TEST_CASE *test_case) {
     }
 
     tc = test_case->tc.hash;
+    if (!tc) return rc;
 
     switch (tc->cipher) {
     case ACVP_HASH_SHA1:
@@ -3496,13 +3497,21 @@ static int app_sha_handler(ACVP_TEST_CASE *test_case) {
 
         break;
     }
-
+    
+    if (!tc->md) {
+        printf("\nCrypto module error, md memory not allocated by library\n");
+        goto end;
+    }
     md_ctx = EVP_MD_CTX_create();
 
     /* If Monte Carlo we need to be able to init and then update
      * one thousand times before we complete each iteration.
      */
     if (tc->test_type == ACVP_HASH_TEST_TYPE_MCT) {
+        if (!tc->m1 || !tc->m2 || !tc->m3) {
+            printf("\nCrypto module error, m1, m2, or m3 missing in sha mct test case\n");
+            goto end;
+        }
         if (!EVP_DigestInit_ex(md_ctx, md, NULL)) {
             printf("\nCrypto module error, EVP_DigestInit_ex failed\n");
             goto end;
@@ -3524,6 +3533,10 @@ static int app_sha_handler(ACVP_TEST_CASE *test_case) {
             goto end;
         }
     } else {
+        if (!tc->msg) {
+            printf("\nCrypto module error, msg missing in sha test case\n");
+            goto end;
+        }
         if (!EVP_DigestInit_ex(md_ctx, md, NULL)) {
             printf("\nCrypto module error, EVP_DigestInit_ex failed\n");
             goto end;
@@ -3563,7 +3576,8 @@ static int app_hmac_handler(ACVP_TEST_CASE *test_case) {
     }
 
     tc = test_case->tc.hmac;
-
+    if (!tc) return rc;
+    
     switch (tc->cipher) {
     case ACVP_HMAC_SHA1:
         md = EVP_sha1();
@@ -3637,6 +3651,8 @@ static int app_cmac_handler(ACVP_TEST_CASE *test_case) {
     }
 
     tc = test_case->tc.cmac;
+    if (!tc) return rv;
+    if (!tc->key) return rv;
 
     switch (tc->cipher) {
     case ACVP_CMAC_AES:
@@ -5072,6 +5088,10 @@ static int app_ecdsa_handler(ACVP_TEST_CASE *test_case) {
     case ACVP_ECDSA_KEYVER:
         Qx = FIPS_bn_new();
         Qy = FIPS_bn_new();
+        if (!tc->qx || !tc->qy) {
+            printf("missing qx or qy: ecdsa keyver\n");
+            goto err;
+        }
         BN_bin2bn(tc->qx, tc->qx_len, Qx);
         BN_bin2bn(tc->qy, tc->qy_len, Qy);
         if (!Qx || !Qy) {
@@ -5119,6 +5139,10 @@ static int app_ecdsa_handler(ACVP_TEST_CASE *test_case) {
             }
         }
         msg_len = tc->msg_len;
+        if (!tc->message) {
+            printf("ecdsa siggen missing msg\n");
+            goto err;
+        }
         sig = FIPS_ecdsa_sign(ecdsa_group_key, tc->message, msg_len, md);
         if (!sig) {
             printf("Error signing message\n");
@@ -5140,6 +5164,18 @@ static int app_ecdsa_handler(ACVP_TEST_CASE *test_case) {
 
         break;
     case ACVP_ECDSA_SIGVER:
+        if (!tc->message) {
+            printf("missing sigver message - nothing to verify\n");
+            goto err;
+        }
+        if (!tc->r) {
+            printf("missing r ecdsa sigver\n");
+            goto err;
+        }
+        if (!tc->s) {
+            printf("missing s ecdsa sigver\n");
+            goto err;
+        }
         sig = ECDSA_SIG_new();
         if (!sig) {
             printf("Error generating ecdsa signature\n");
@@ -5183,6 +5219,10 @@ static int app_ecdsa_handler(ACVP_TEST_CASE *test_case) {
             goto points_err;
         }
 
+        if (!tc->message) {
+            printf("ecdsa siggen missing msg\n");
+            goto err;
+        }
         if (FIPS_ecdsa_verify(key, tc->message, tc->msg_len, md, sig) == 1) {
             tc->ver_disposition = ACVP_TEST_DISPOSITION_PASS;
         } else {
