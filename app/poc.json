@@ -9,12 +9,12 @@
   "encryptAtRest": "yes",
   "oeInformation": {
     "vendor": {
-      "name": "Cisco Systems",
-      "website": "www.cisco.com",
+      "name": "Acme Fictional Corporation",
+      "website": "www.acme-fictional.com",
       "contact": [
         {
-          "name": "Barry Fussell",
-          "email": "bfussell@cisco.com"
+          "name": "Wile E. Coyote",
+          "email": "wcoyote@acme-fictional.com"
         }
       ]
     },
