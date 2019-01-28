@@ -848,7 +848,7 @@ int main(int argc, char **argv) {
     /*
      * Setup the vendor attributes
      */
-    rv = acvp_set_vendor_info(ctx, "Cisco Systems", "www.cisco.com", "Barry Fussell", "bfussell@cisco.com");
+    rv = acvp_set_vendor_info(ctx, "Acme Fictional Corporation", "www.acme-fictional.com", "Wyle E. Coyote", "wcoyote@acme-fictional.com");
     if (rv != ACVP_SUCCESS) {
         printf("Failed to set vendor info\n");
         goto end;
