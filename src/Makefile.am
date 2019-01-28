@@ -1,5 +1,5 @@
 lib_LTLIBRARIES = libacvp.la
-AM_CFLAGS = -I../.. $(SAFEC_CFLAGS) $(LIBCURL_CFLAGS)
+AM_CFLAGS = -I$(top_srcdir)/include/acvp $(SAFEC_CFLAGS) $(LIBCURL_CFLAGS)
 libacvp_la_SOURCES =  acvp.c \
                     acvp_build_register.c \
                     acvp_capabilities.c \
@@ -28,5 +28,7 @@ libacvp_la_SOURCES =  acvp.c \
                     acvp_ecdsa.c
 
 libacvp_la_LIBADD = $(SAFEC_LDFLAGS) $(LIBCURL_LDFLAGS)
-library_includedir=$(includedir)/acvp
-library_include_HEADERS = acvp.h
+libacvp_includedir=$(includedir)/acvp
+libacvp_include_HEADERS = $(top_srcdir)/include/acvp/acvp.h \
+						  $(top_srcdir)/include/acvp/parson.h
+noinst_HEADERS = $(top_srcdir)/include/acvp/acvp_lcl.h

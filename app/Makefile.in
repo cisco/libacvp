@@ -304,8 +304,8 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 acvp_app_includedir = $(includedir)/acvp
-acvp_app_SOURCES = app_main.c
-acvp_app_CFLAGS = -g -fPIE -I../.. -I$(srcdir)/../src $(SSL_CFLAGS) $(FOM_CFLAGS) $(SAFEC_CFLAGS)
+acvp_app_SOURCES = app_main.c app_lcl.h
+acvp_app_CFLAGS = -g -fPIE -I$(top_srcdir)/include $(SSL_CFLAGS) $(FOM_CFLAGS) $(SAFEC_CFLAGS)
 acvp_app_LDFLAGS = -L../src/.libs -ldl -lacvp $(SSL_LDFLAGS) $(FOM_LDFLAGS)
 @USE_FOM_TRUE@acvp_app_LDADD = $(FOM_OBJ_DIR)/fipscanister.o
 all: all-am

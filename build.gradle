@@ -84,7 +84,7 @@ model {
 								include "*.c"
 							}
 							exportedHeaders {
-									srcDir "src"
+									srcDir "include/acvp"
 									if(System.getenv('DISABLE_SAFEC').equals("TRUE")) {
 										srcDir "safe_c_stub/include"
 									}
