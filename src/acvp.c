@@ -1190,7 +1190,7 @@ err:
 }
 
 /*
- * This function is used to regitser the DUT with the server.
+ * This function is used to register the DUT with the server.
  * Registration allows the DUT to advertise it's capabilities to
  * the server.  The server will respond with a set of vector set
  * identifiers that the client will need to process.
