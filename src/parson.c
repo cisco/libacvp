@@ -1651,8 +1651,11 @@ char * json_serialize_to_string_pretty(const JSON_Value *value, int *len) {
         return NULL;
     }
     if (len != NULL) {
-        /* The user wants to be provided with the string length */
-        *len = buf_size_bytes;
+        /*
+         * The user wants to be provided with the string length
+         * Subtract by 1 to get string length (ommitting the added NULL byte).
+         */
+        *len = buf_size_bytes - 1;
     }
     buf = (char*)parson_malloc(buf_size_bytes);
     if (buf == NULL) {
