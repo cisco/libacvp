@@ -12549,7 +12549,7 @@ SAFEC_STUB_DIR='$(abs_top_builddir)/safe_c_stub'
 safecdir="$SAFEC_STUB_DIR"
 SAFEC_CFLAGS="-I$safecdir/include"
 
-SAFEC_LDFLAGS="-L$safecdir/lib -lsafe_lib"
+SAFEC_LDFLAGS="$safecdir/lib/libsafe_lib.la"
 
 
 # Reset LIBS to original

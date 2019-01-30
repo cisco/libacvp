@@ -170,7 +170,7 @@ SAFEC_STUB_DIR='$(abs_top_builddir)/safe_c_stub'
 AC_SUBST(SAFEC_STUB_DIR)
 safecdir="$SAFEC_STUB_DIR"
 AC_SUBST([SAFEC_CFLAGS], "-I$safecdir/include")
-AC_SUBST([SAFEC_LDFLAGS], "-L$safecdir/lib -lsafe_lib")
+AC_SUBST([SAFEC_LDFLAGS], "$safecdir/lib/libsafe_lib.la")
 
 # Reset LIBS to original
 LIBS="$pre_libs"
