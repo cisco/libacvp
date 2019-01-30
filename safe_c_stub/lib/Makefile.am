@@ -1,4 +1,3 @@
-
 #
 # Unfortunately the real safec library does not follow
 # Linux convention having libraries start with lib.
@@ -7,16 +6,11 @@
 # used with safec
 #
 #
-noinst_LIBRARIES= libsafe_lib.a
+noinst_LTLIBRARIES= libsafe_lib.la
 
-libsafe_lib_a_SOURCES =  \
+libsafe_lib_la_SOURCES =  \
 ../src/safe_mem_stub.c \
 ../src/safe_str_stub.c
 
-libsafe_lib_a_CFLAGS=-I../include -fPIC
-
-
-
-
-
+libsafe_lib_la_CFLAGS=-I../include -fPIC
 

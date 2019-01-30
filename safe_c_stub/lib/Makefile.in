@@ -100,19 +100,20 @@ DIST_COMMON = $(srcdir)/Makefile.am $(am__DIST_COMMON)
 mkinstalldirs = $(install_sh) -d
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
-LIBRARIES = $(noinst_LIBRARIES)
-ARFLAGS = cru
-AM_V_AR = $(am__v_AR_@AM_V@)
-am__v_AR_ = $(am__v_AR_@AM_DEFAULT_V@)
-am__v_AR_0 = @echo "  AR      " $@;
-am__v_AR_1 = 
-libsafe_lib_a_AR = $(AR) $(ARFLAGS)
-libsafe_lib_a_LIBADD =
+LTLIBRARIES = $(noinst_LTLIBRARIES)
+libsafe_lib_la_LIBADD =
 am__dirstamp = $(am__leading_dot)dirstamp
-am_libsafe_lib_a_OBJECTS =  \
-	../src/libsafe_lib_a-safe_mem_stub.$(OBJEXT) \
-	../src/libsafe_lib_a-safe_str_stub.$(OBJEXT)
-libsafe_lib_a_OBJECTS = $(am_libsafe_lib_a_OBJECTS)
+am_libsafe_lib_la_OBJECTS = ../src/libsafe_lib_la-safe_mem_stub.lo \
+	../src/libsafe_lib_la-safe_str_stub.lo
+libsafe_lib_la_OBJECTS = $(am_libsafe_lib_la_OBJECTS)
+AM_V_lt = $(am__v_lt_@AM_V@)
+am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
+am__v_lt_0 = --silent
+am__v_lt_1 = 
+libsafe_lib_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
+	$(libsafe_lib_la_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o \
+	$@
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -129,10 +130,6 @@ DEFAULT_INCLUDES = -I.@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/config/depcomp
 am__depfiles_maybe = depfiles
 am__mv = mv -f
-AM_V_lt = $(am__v_lt_@AM_V@)
-am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
-am__v_lt_0 = --silent
-am__v_lt_1 = 
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 LTCOMPILE = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
@@ -151,8 +148,8 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = $(libsafe_lib_a_SOURCES)
-DIST_SOURCES = $(libsafe_lib_a_SOURCES)
+SOURCES = $(libsafe_lib_la_SOURCES)
+DIST_SOURCES = $(libsafe_lib_la_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -315,12 +312,12 @@ top_srcdir = @top_srcdir@
 # used with safec
 #
 #
-noinst_LIBRARIES = libsafe_lib.a
-libsafe_lib_a_SOURCES = \
+noinst_LTLIBRARIES = libsafe_lib.la
+libsafe_lib_la_SOURCES = \
 ../src/safe_mem_stub.c \
 ../src/safe_str_stub.c
 
-libsafe_lib_a_CFLAGS = -I../include -fPIC
+libsafe_lib_la_CFLAGS = -I../include -fPIC
 all: all-am
 
 .SUFFIXES:
@@ -355,33 +352,40 @@ $(ACLOCAL_M4): @MAINTAINER_MODE_TRUE@ $(am__aclocal_m4_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 $(am__aclocal_m4_deps):
 
-clean-noinstLIBRARIES:
-	-test -z "$(noinst_LIBRARIES)" || rm -f $(noinst_LIBRARIES)
+clean-noinstLTLIBRARIES:
+	-test -z "$(noinst_LTLIBRARIES)" || rm -f $(noinst_LTLIBRARIES)
+	@list='$(noinst_LTLIBRARIES)'; \
+	locs=`for p in $$list; do echo $$p; done | \
+	      sed 's|^[^/]*$$|.|; s|/[^/]*$$||; s|$$|/so_locations|' | \
+	      sort -u`; \
+	test -z "$$locs" || { \
+	  echo rm -f $${locs}; \
+	  rm -f $${locs}; \
+	}
 ../src/$(am__dirstamp):
 	@$(MKDIR_P) ../src
 	@: > ../src/$(am__dirstamp)
 ../src/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) ../src/$(DEPDIR)
 	@: > ../src/$(DEPDIR)/$(am__dirstamp)
-../src/libsafe_lib_a-safe_mem_stub.$(OBJEXT): ../src/$(am__dirstamp) \
+../src/libsafe_lib_la-safe_mem_stub.lo: ../src/$(am__dirstamp) \
 	../src/$(DEPDIR)/$(am__dirstamp)
-../src/libsafe_lib_a-safe_str_stub.$(OBJEXT): ../src/$(am__dirstamp) \
+../src/libsafe_lib_la-safe_str_stub.lo: ../src/$(am__dirstamp) \
 	../src/$(DEPDIR)/$(am__dirstamp)
 
-libsafe_lib.a: $(libsafe_lib_a_OBJECTS) $(libsafe_lib_a_DEPENDENCIES) $(EXTRA_libsafe_lib_a_DEPENDENCIES) 
-	$(AM_V_at)-rm -f libsafe_lib.a
-	$(AM_V_AR)$(libsafe_lib_a_AR) libsafe_lib.a $(libsafe_lib_a_OBJECTS) $(libsafe_lib_a_LIBADD)
-	$(AM_V_at)$(RANLIB) libsafe_lib.a
+libsafe_lib.la: $(libsafe_lib_la_OBJECTS) $(libsafe_lib_la_DEPENDENCIES) $(EXTRA_libsafe_lib_la_DEPENDENCIES) 
+	$(AM_V_CCLD)$(libsafe_lib_la_LINK)  $(libsafe_lib_la_OBJECTS) $(libsafe_lib_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
 	-rm -f ../src/*.$(OBJEXT)
+	-rm -f ../src/*.lo
 
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@../src/$(DEPDIR)/libsafe_lib_a-safe_mem_stub.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@../src/$(DEPDIR)/libsafe_lib_a-safe_str_stub.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@../src/$(DEPDIR)/libsafe_lib_la-safe_mem_stub.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@../src/$(DEPDIR)/libsafe_lib_la-safe_str_stub.Plo@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(AM_V_CC)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
@@ -407,39 +411,26 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LTCOMPILE) -c -o $@ $<
 
-../src/libsafe_lib_a-safe_mem_stub.o: ../src/safe_mem_stub.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libsafe_lib_a_CFLAGS) $(CFLAGS) -MT ../src/libsafe_lib_a-safe_mem_stub.o -MD -MP -MF ../src/$(DEPDIR)/libsafe_lib_a-safe_mem_stub.Tpo -c -o ../src/libsafe_lib_a-safe_mem_stub.o `test -f '../src/safe_mem_stub.c' || echo '$(srcdir)/'`../src/safe_mem_stub.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../src/$(DEPDIR)/libsafe_lib_a-safe_mem_stub.Tpo ../src/$(DEPDIR)/libsafe_lib_a-safe_mem_stub.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../src/safe_mem_stub.c' object='../src/libsafe_lib_a-safe_mem_stub.o' libtool=no @AMDEPBACKSLASH@
+../src/libsafe_lib_la-safe_mem_stub.lo: ../src/safe_mem_stub.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libsafe_lib_la_CFLAGS) $(CFLAGS) -MT ../src/libsafe_lib_la-safe_mem_stub.lo -MD -MP -MF ../src/$(DEPDIR)/libsafe_lib_la-safe_mem_stub.Tpo -c -o ../src/libsafe_lib_la-safe_mem_stub.lo `test -f '../src/safe_mem_stub.c' || echo '$(srcdir)/'`../src/safe_mem_stub.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../src/$(DEPDIR)/libsafe_lib_la-safe_mem_stub.Tpo ../src/$(DEPDIR)/libsafe_lib_la-safe_mem_stub.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../src/safe_mem_stub.c' object='../src/libsafe_lib_la-safe_mem_stub.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libsafe_lib_a_CFLAGS) $(CFLAGS) -c -o ../src/libsafe_lib_a-safe_mem_stub.o `test -f '../src/safe_mem_stub.c' || echo '$(srcdir)/'`../src/safe_mem_stub.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libsafe_lib_la_CFLAGS) $(CFLAGS) -c -o ../src/libsafe_lib_la-safe_mem_stub.lo `test -f '../src/safe_mem_stub.c' || echo '$(srcdir)/'`../src/safe_mem_stub.c
 
-../src/libsafe_lib_a-safe_mem_stub.obj: ../src/safe_mem_stub.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libsafe_lib_a_CFLAGS) $(CFLAGS) -MT ../src/libsafe_lib_a-safe_mem_stub.obj -MD -MP -MF ../src/$(DEPDIR)/libsafe_lib_a-safe_mem_stub.Tpo -c -o ../src/libsafe_lib_a-safe_mem_stub.obj `if test -f '../src/safe_mem_stub.c'; then $(CYGPATH_W) '../src/safe_mem_stub.c'; else $(CYGPATH_W) '$(srcdir)/../src/safe_mem_stub.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../src/$(DEPDIR)/libsafe_lib_a-safe_mem_stub.Tpo ../src/$(DEPDIR)/libsafe_lib_a-safe_mem_stub.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../src/safe_mem_stub.c' object='../src/libsafe_lib_a-safe_mem_stub.obj' libtool=no @AMDEPBACKSLASH@
+../src/libsafe_lib_la-safe_str_stub.lo: ../src/safe_str_stub.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libsafe_lib_la_CFLAGS) $(CFLAGS) -MT ../src/libsafe_lib_la-safe_str_stub.lo -MD -MP -MF ../src/$(DEPDIR)/libsafe_lib_la-safe_str_stub.Tpo -c -o ../src/libsafe_lib_la-safe_str_stub.lo `test -f '../src/safe_str_stub.c' || echo '$(srcdir)/'`../src/safe_str_stub.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../src/$(DEPDIR)/libsafe_lib_la-safe_str_stub.Tpo ../src/$(DEPDIR)/libsafe_lib_la-safe_str_stub.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../src/safe_str_stub.c' object='../src/libsafe_lib_la-safe_str_stub.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libsafe_lib_a_CFLAGS) $(CFLAGS) -c -o ../src/libsafe_lib_a-safe_mem_stub.obj `if test -f '../src/safe_mem_stub.c'; then $(CYGPATH_W) '../src/safe_mem_stub.c'; else $(CYGPATH_W) '$(srcdir)/../src/safe_mem_stub.c'; fi`
-
-../src/libsafe_lib_a-safe_str_stub.o: ../src/safe_str_stub.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libsafe_lib_a_CFLAGS) $(CFLAGS) -MT ../src/libsafe_lib_a-safe_str_stub.o -MD -MP -MF ../src/$(DEPDIR)/libsafe_lib_a-safe_str_stub.Tpo -c -o ../src/libsafe_lib_a-safe_str_stub.o `test -f '../src/safe_str_stub.c' || echo '$(srcdir)/'`../src/safe_str_stub.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../src/$(DEPDIR)/libsafe_lib_a-safe_str_stub.Tpo ../src/$(DEPDIR)/libsafe_lib_a-safe_str_stub.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../src/safe_str_stub.c' object='../src/libsafe_lib_a-safe_str_stub.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libsafe_lib_a_CFLAGS) $(CFLAGS) -c -o ../src/libsafe_lib_a-safe_str_stub.o `test -f '../src/safe_str_stub.c' || echo '$(srcdir)/'`../src/safe_str_stub.c
-
-../src/libsafe_lib_a-safe_str_stub.obj: ../src/safe_str_stub.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libsafe_lib_a_CFLAGS) $(CFLAGS) -MT ../src/libsafe_lib_a-safe_str_stub.obj -MD -MP -MF ../src/$(DEPDIR)/libsafe_lib_a-safe_str_stub.Tpo -c -o ../src/libsafe_lib_a-safe_str_stub.obj `if test -f '../src/safe_str_stub.c'; then $(CYGPATH_W) '../src/safe_str_stub.c'; else $(CYGPATH_W) '$(srcdir)/../src/safe_str_stub.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../src/$(DEPDIR)/libsafe_lib_a-safe_str_stub.Tpo ../src/$(DEPDIR)/libsafe_lib_a-safe_str_stub.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../src/safe_str_stub.c' object='../src/libsafe_lib_a-safe_str_stub.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libsafe_lib_a_CFLAGS) $(CFLAGS) -c -o ../src/libsafe_lib_a-safe_str_stub.obj `if test -f '../src/safe_str_stub.c'; then $(CYGPATH_W) '../src/safe_str_stub.c'; else $(CYGPATH_W) '$(srcdir)/../src/safe_str_stub.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libsafe_lib_la_CFLAGS) $(CFLAGS) -c -o ../src/libsafe_lib_la-safe_str_stub.lo `test -f '../src/safe_str_stub.c' || echo '$(srcdir)/'`../src/safe_str_stub.c
 
 mostlyclean-libtool:
 	-rm -f *.lo
 
 clean-libtool:
 	-rm -rf .libs _libs
+	-rm -rf ../src/.libs ../src/_libs
 
 ID: $(am__tagged_files)
 	$(am__define_uniq_tagged_files); mkid -fID $$unique
@@ -525,7 +516,7 @@ distdir: $(DISTFILES)
 	done
 check-am: all-am
 check: check-am
-all-am: Makefile $(LIBRARIES)
+all-am: Makefile $(LTLIBRARIES)
 installdirs:
 install: install-am
 install-exec: install-exec-am
@@ -561,7 +552,7 @@ maintainer-clean-generic:
 	@echo "it deletes files that may require special tools to rebuild."
 clean: clean-am
 
-clean-am: clean-generic clean-libtool clean-noinstLIBRARIES \
+clean-am: clean-generic clean-libtool clean-noinstLTLIBRARIES \
 	mostlyclean-am
 
 distclean: distclean-am
@@ -633,7 +624,7 @@ uninstall-am:
 .MAKE: install-am install-strip
 
 .PHONY: CTAGS GTAGS TAGS all all-am check check-am clean clean-generic \
-	clean-libtool clean-noinstLIBRARIES cscopelist-am ctags \
+	clean-libtool clean-noinstLTLIBRARIES cscopelist-am ctags \
 	ctags-am distclean distclean-compile distclean-generic \
 	distclean-libtool distclean-tags distdir dvi dvi-am html \
 	html-am info info-am install install-am install-data \
