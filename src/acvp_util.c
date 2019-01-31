@@ -159,7 +159,7 @@ ACVP_CIPHER acvp_lookup_cipher_index(const char *algorithm) {
         int diff = 1;
 
         strcmp_s(alg_tbl[i].name,
-                 strnlen_s(alg_tbl[i].name, ACVP_ALG_NAME_MAX),
+                 ACVP_ALG_NAME_MAX,
                  algorithm, &diff);
 
         if (!diff) {
@@ -195,13 +195,13 @@ ACVP_CIPHER acvp_lookup_cipher_w_mode_index(const char *algorithm,
 
         /* Compare the algorithm string */
         strcmp_s(alg_tbl[i].name,
-                 strnlen_s(alg_tbl[i].name, ACVP_ALG_NAME_MAX),
+                 ACVP_ALG_NAME_MAX,
                  algorithm, &diff);
 
         if (!diff) {
             /* Compare the mode string */
             strcmp_s(alg_tbl[i].mode,
-                     strnlen_s(alg_tbl[i].mode, ACVP_ALG_MODE_MAX),
+                     ACVP_ALG_MODE_MAX,
                      mode, &diff);
 
             if (!diff) return alg_tbl[i].cipher;
@@ -290,7 +290,7 @@ ACVP_DRBG_MODE acvp_lookup_drbg_mode_index(const char *mode) {
     for (i = 0; i < drbg_mode_tbl_length; i++) {
         int diff = 0;
         strcmp_s(drbg_mode_tbl[i].name,
-                 strnlen_s(drbg_mode_tbl[i].name, DRBG_MODE_NAME_MAX),
+                 DRBG_MODE_NAME_MAX,
                  mode, &diff);
 
         if (!diff) {
@@ -340,7 +340,7 @@ ACVP_HASH_ALG acvp_lookup_hash_alg(const char *name) {
         int diff = 0;
 
         strcmp_s(hash_alg_tbl[i].name,
-                 strnlen_s(hash_alg_tbl[i].name, HASH_ALG_NAME_MAX),
+                 HASH_ALG_NAME_MAX,
                  name, &diff);
 
         if (!diff) {
@@ -471,7 +471,7 @@ ACVP_EC_CURVE acvp_lookup_ec_curve(ACVP_CIPHER cipher, const char *name) {
         int diff = 0;
 
         strcmp_s(ec_curve_tbl[i].name,
-                 strnlen_s(ec_curve_tbl[i].name, EC_CURVE_NAME_MAX),
+                 EC_CURVE_NAME_MAX,
                  name, &diff);
 
         if (!diff) {
@@ -485,7 +485,7 @@ ACVP_EC_CURVE acvp_lookup_ec_curve(ACVP_CIPHER cipher, const char *name) {
             int diff = 0;
 
             strcmp_s(ec_curve_depr_tbl[i].name,
-                     strnlen_s(ec_curve_depr_tbl[i].name, EC_CURVE_NAME_MAX),
+                     EC_CURVE_NAME_MAX,
                      name, &diff);
 
             if (!diff) {

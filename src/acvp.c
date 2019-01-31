@@ -1932,7 +1932,7 @@ static ACVP_RESULT acvp_dispatch_vector_set(ACVP_CTX *ctx, JSON_Object *obj) {
 
     for (i = 0; i < ACVP_ALG_MAX; i++) {
         strcmp_s(alg_tbl[i].name,
-                 strnlen_s(alg_tbl[i].name, ACVP_ALG_NAME_MAX),
+                 ACVP_ALG_NAME_MAX,
                  alg, &diff);
         if (!diff) {
             if (mode == NULL) {
@@ -1942,7 +1942,7 @@ static ACVP_RESULT acvp_dispatch_vector_set(ACVP_CTX *ctx, JSON_Object *obj) {
 
             if (alg_tbl[i].mode != NULL) {
                 strcmp_s(alg_tbl[i].mode,
-                        strnlen_s(alg_tbl[i].mode, ACVP_ALG_MODE_MAX),
+                        ACVP_ALG_MODE_MAX,
                         mode, &diff);
                 if (!diff) {
                     rv = (alg_tbl[i].handler)(ctx, obj);

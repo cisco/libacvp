@@ -199,47 +199,47 @@ static ACVP_KDF108_MAC_MODE_VAL read_mac_mode(const char *str) {
     int diff = 1;
 
     strcmp_s(ACVP_ALG_HMAC_SHA1,
-             strnlen_s(ACVP_ALG_HMAC_SHA1, ACVP_ALG_NAME_MAX),
+             ACVP_ALG_NAME_MAX,
              str, &diff);
     if (!diff) return ACVP_KDF108_MAC_MODE_HMAC_SHA1;
 
     strcmp_s(ACVP_ALG_HMAC_SHA2_224,
-             strnlen_s(ACVP_ALG_HMAC_SHA2_224, ACVP_ALG_NAME_MAX),
+             ACVP_ALG_NAME_MAX,
              str, &diff);
     if (!diff) return ACVP_KDF108_MAC_MODE_HMAC_SHA224;
 
     strcmp_s(ACVP_ALG_HMAC_SHA2_256,
-             strnlen_s(ACVP_ALG_HMAC_SHA2_256, ACVP_ALG_NAME_MAX),
+             ACVP_ALG_NAME_MAX,
              str, &diff);
     if (!diff) return ACVP_KDF108_MAC_MODE_HMAC_SHA256;
 
     strcmp_s(ACVP_ALG_HMAC_SHA2_384,
-             strnlen_s(ACVP_ALG_HMAC_SHA2_384, ACVP_ALG_NAME_MAX),
+             ACVP_ALG_NAME_MAX,
              str, &diff);
     if (!diff) return ACVP_KDF108_MAC_MODE_HMAC_SHA384;
 
     strcmp_s(ACVP_ALG_HMAC_SHA2_512,
-             strnlen_s(ACVP_ALG_HMAC_SHA2_512, ACVP_ALG_NAME_MAX),
+             ACVP_ALG_NAME_MAX,
              str, &diff);
     if (!diff) return ACVP_KDF108_MAC_MODE_HMAC_SHA512;
 
     strcmp_s(ACVP_ALG_CMAC_AES_128,
-             strnlen_s(ACVP_ALG_CMAC_AES_128, ACVP_ALG_NAME_MAX),
+             ACVP_ALG_NAME_MAX,
              str, &diff);
     if (!diff) return ACVP_KDF108_MAC_MODE_CMAC_AES128;
 
     strcmp_s(ACVP_ALG_CMAC_AES_192,
-             strnlen_s(ACVP_ALG_CMAC_AES_192, ACVP_ALG_NAME_MAX),
+             ACVP_ALG_NAME_MAX,
              str, &diff);
     if (!diff) return ACVP_KDF108_MAC_MODE_CMAC_AES192;
 
     strcmp_s(ACVP_ALG_CMAC_AES_256,
-             strnlen_s(ACVP_ALG_CMAC_AES_256, ACVP_ALG_NAME_MAX),
+             ACVP_ALG_NAME_MAX,
              str, &diff);
     if (!diff) return ACVP_KDF108_MAC_MODE_CMAC_AES256;
 
     strcmp_s(ACVP_ALG_CMAC_TDES,
-             strnlen_s(ACVP_ALG_CMAC_TDES, ACVP_ALG_NAME_MAX),
+             ACVP_ALG_NAME_MAX,
              str, &diff);
     if (!diff) return ACVP_KDF108_MAC_MODE_CMAC_TDES;
 
