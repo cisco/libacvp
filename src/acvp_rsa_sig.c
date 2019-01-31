@@ -172,20 +172,17 @@ static ACVP_RSA_SIG_TYPE read_sig_type(const char *str) {
     int diff = 1;
 
     strcmp_s(ACVP_RSA_SIG_TYPE_X931_STR,
-             strnlen_s(ACVP_RSA_SIG_TYPE_X931_STR,
-                       ACVP_RSA_SIG_TYPE_LEN_MAX),
+             ACVP_RSA_SIG_TYPE_LEN_MAX,
              str, &diff);
     if (!diff) return ACVP_RSA_SIG_TYPE_X931;
 
     strcmp_s(ACVP_RSA_SIG_TYPE_PKCS1V15_STR,
-             strnlen_s(ACVP_RSA_SIG_TYPE_PKCS1V15_STR,
-                       ACVP_RSA_SIG_TYPE_LEN_MAX),
+             ACVP_RSA_SIG_TYPE_LEN_MAX,
              str, &diff);
     if (!diff) return ACVP_RSA_SIG_TYPE_PKCS1V15;
 
     strcmp_s(ACVP_RSA_SIG_TYPE_PKCS1PSS_STR,
-             strnlen_s(ACVP_RSA_SIG_TYPE_PKCS1PSS_STR,
-                       ACVP_RSA_SIG_TYPE_LEN_MAX),
+             ACVP_RSA_SIG_TYPE_LEN_MAX,
              str, &diff);
     if (!diff) return ACVP_RSA_SIG_TYPE_PKCS1PSS;
 
