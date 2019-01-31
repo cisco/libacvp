@@ -874,7 +874,7 @@ static ACVP_RESULT acvp_build_ecdsa_register_cap(ACVP_CIPHER cipher, JSON_Object
     JSON_Array *caps_arr = NULL, *curves_arr = NULL, *secret_modes_arr = NULL, *hash_arr = NULL;
     ACVP_NAME_LIST *current_curve = NULL, *current_secret_mode = NULL, *current_hash = NULL;
     JSON_Value *alg_caps_val = NULL;
-    JSON_Object *alg_caps_obj;
+    JSON_Object *alg_caps_obj = NULL;
 
     json_object_set_string(cap_obj, "algorithm", "ECDSA");
 

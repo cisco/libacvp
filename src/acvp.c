@@ -43,6 +43,7 @@
  */
 static ACVP_RESULT acvp_parse_login(ACVP_CTX *ctx);
 
+#if 0
 static ACVP_RESULT acvp_parse_vendors(ACVP_CTX *ctx);
 
 static ACVP_RESULT acvp_parse_modules(ACVP_CTX *ctx);
@@ -50,6 +51,7 @@ static ACVP_RESULT acvp_parse_modules(ACVP_CTX *ctx);
 static ACVP_RESULT acvp_parse_oes(ACVP_CTX *ctx);
 
 static ACVP_RESULT acvp_parse_dependencies(ACVP_CTX *ctx, ACVP_DEPENDENCY_LIST *current_dep);
+#endif
 
 static ACVP_RESULT acvp_parse_test_session_register(ACVP_CTX *ctx);
 
@@ -1481,6 +1483,7 @@ end:
     return rv;
 }
 
+#if 0
 /*
  * This routine performs the JSON parsing of the vendor response
  * from the ACVP server.  The response should contain a url to
@@ -1656,6 +1659,7 @@ end:
     json_value_free(val);
     return rv;
 }
+#endif
 
 /*
  * This routine performs the JSON parsing of the test session registration
