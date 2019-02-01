@@ -133,7 +133,7 @@ typedef struct app_config {
     int sample;
     int dev;
     int json;
-    char json_file[JSON_FILENAME_LENGTH];
+    char json_file[JSON_FILENAME_LENGTH + 1];
 
     /*
      * Algorithm Flags
@@ -511,7 +511,7 @@ static int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
                 return 1;
             }
 
-            strcpy_s(cfg->json_file, JSON_FILENAME_LENGTH, *argv);
+            strcpy_s(cfg->json_file, JSON_FILENAME_LENGTH + 1, *argv);
         }
 
         strcmp_s("--sample", strnlen_s("--sample", OPTION_STR_MAX), *argv, &diff);
@@ -865,16 +865,16 @@ int main(int argc, char **argv) {
     }
 
     key_val_list->key = calloc(4 + 1, sizeof(char));
-    strcpy_s(key_val_list->key, 4, "type");
+    strcpy_s(key_val_list->key, 4 + 1, "type");
     key_val_list->value = calloc(8 + 1, sizeof(char));
-    strcpy_s(key_val_list->value, 8, "software");
+    strcpy_s(key_val_list->value, 8 + 1, "software");
 
     key_val_list->next = calloc(1, sizeof(ACVP_KV_LIST));
 
     key_val_list->next->key = calloc(4 + 1, sizeof(char));
-    strcpy_s(key_val_list->next->key, 4, "name");
+    strcpy_s(key_val_list->next->key, 4 + 1, "name");
     key_val_list->next->value = calloc(9 + 1, sizeof(char));
-    strcpy_s(key_val_list->next->value, 9, "Linux 3.1");
+    strcpy_s(key_val_list->next->value, 9 + 1, "Linux 3.1");
 
     rv = acvp_add_oe_dependency(ctx, oe_name, key_val_list);
     if (rv != ACVP_SUCCESS) {

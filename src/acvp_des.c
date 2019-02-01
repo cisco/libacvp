@@ -833,9 +833,9 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                     goto err;
                 }
 
-                strcpy_s(key, ACVP_SYM_KEY_MAX_STR, key1);
-                strcpy_s(key + 16, (ACVP_SYM_KEY_MAX_STR - 16), key2);
-                strcpy_s(key + 32, (ACVP_SYM_KEY_MAX_STR - 32), key3);
+                strcpy_s(key, ACVP_SYM_KEY_MAX_STR + 1, key1);
+                strcpy_s(key + 16, ((ACVP_SYM_KEY_MAX_STR + 1) - 16), key2);
+                strcpy_s(key + 32, ((ACVP_SYM_KEY_MAX_STR + 1) - 32), key3);
             }
 
             if (dir == ACVP_SYM_CIPH_DIR_ENCRYPT) {
