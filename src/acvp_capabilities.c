@@ -2564,7 +2564,7 @@ ACVP_RESULT acvp_cap_rsa_keygen_set_exponent(ACVP_CTX *ctx,
 
                 /* Make sure this is deallocated */
                 cap->fixed_pub_exp = calloc(len + 1, sizeof(char));
-                strcpy_s(cap->fixed_pub_exp, len, value);
+                strcpy_s(cap->fixed_pub_exp, len + 1, value);
             } else {
                 ACVP_LOG_ERR("ACVP_FIXED_PUB_EXP_VAL has already been set.");
                 return ACVP_UNSUPPORTED_OP;
@@ -2614,7 +2614,7 @@ ACVP_RESULT acvp_cap_rsa_sigver_set_exponent(ACVP_CTX *ctx,
 
                 /* Make sure this is deallocated */
                 cap->fixed_pub_exp = calloc(len + 1, sizeof(char));
-                strcpy_s(cap->fixed_pub_exp, len, value);
+                strcpy_s(cap->fixed_pub_exp, len + 1, value);
             } else {
                 ACVP_LOG_ERR("ACVP_FIXED_PUB_EXP_VAL has already been set.");
                 return ACVP_UNSUPPORTED_OP;
@@ -4084,15 +4084,15 @@ ACVP_RESULT acvp_cap_kdf135_ikev1_set_parm(ACVP_CTX *ctx,
     } else if (param == ACVP_KDF_IKEv1_AUTH_METHOD) {
         switch (value) {
         case ACVP_KDF135_IKEV1_AMETH_DSA:
-            strcpy_s(cap->auth_method, ACVP_AUTH_METHOD_STR_MAX,
+            strcpy_s(cap->auth_method, ACVP_AUTH_METHOD_STR_MAX_PLUS,
                      ACVP_AUTH_METHOD_DSA_STR);
             break;
         case ACVP_KDF135_IKEV1_AMETH_PSK:
-            strcpy_s(cap->auth_method, ACVP_AUTH_METHOD_STR_MAX,
+            strcpy_s(cap->auth_method, ACVP_AUTH_METHOD_STR_MAX_PLUS,
                      ACVP_AUTH_METHOD_PSK_STR);
             break;
         case ACVP_KDF135_IKEV1_AMETH_PKE:
-            strcpy_s(cap->auth_method, ACVP_AUTH_METHOD_STR_MAX,
+            strcpy_s(cap->auth_method, ACVP_AUTH_METHOD_STR_MAX_PLUS,
                      ACVP_AUTH_METHOD_PKE_STR);
             break;
         default:

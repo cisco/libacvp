@@ -321,6 +321,7 @@ errno_t strncat_s (char *dest, rsize_t dmax, const char *src, rsize_t slen) {
 errno_t strcpy_s (char *dest, rsize_t dmax, const char *src) {
     if (!src || !dest) return (ESNULLP);
     if (dmax == 0) return (ESZEROL);
+    if (strnlen(src, dmax) >= dmax) return (ESNOSPC);
     strncpy(dest, src, dmax);
     return (EOK);
 }

@@ -841,7 +841,7 @@ ACVP_RESULT acvp_set_json_filename(ACVP_CTX *ctx, const char *json_filename) {
     }
 
     ctx->json_filename = calloc(ACVP_JSON_FILENAME_MAX + 1, sizeof(char));
-    strcpy_s(ctx->json_filename, ACVP_JSON_FILENAME_MAX, json_filename);
+    strcpy_s(ctx->json_filename, ACVP_JSON_FILENAME_MAX + 1, json_filename);
 
     ctx->use_json = 1;
 
@@ -884,10 +884,10 @@ ACVP_RESULT acvp_set_vendor_info(ACVP_CTX *ctx,
     ctx->contact_name = calloc(ACVP_SESSION_PARAMS_STR_LEN_MAX + 1, sizeof(char));
     ctx->contact_email = calloc(ACVP_SESSION_PARAMS_STR_LEN_MAX + 1, sizeof(char));
 
-    strcpy_s(ctx->vendor_name, ACVP_SESSION_PARAMS_STR_LEN_MAX, vendor_name);
-    strcpy_s(ctx->vendor_website, ACVP_SESSION_PARAMS_STR_LEN_MAX, vendor_url);
-    strcpy_s(ctx->contact_name, ACVP_SESSION_PARAMS_STR_LEN_MAX, contact_name);
-    strcpy_s(ctx->contact_email, ACVP_SESSION_PARAMS_STR_LEN_MAX, contact_email);
+    strcpy_s(ctx->vendor_name, ACVP_SESSION_PARAMS_STR_LEN_MAX + 1, vendor_name);
+    strcpy_s(ctx->vendor_website, ACVP_SESSION_PARAMS_STR_LEN_MAX + 1, vendor_url);
+    strcpy_s(ctx->contact_name, ACVP_SESSION_PARAMS_STR_LEN_MAX + 1, contact_name);
+    strcpy_s(ctx->contact_email, ACVP_SESSION_PARAMS_STR_LEN_MAX + 1, contact_email);
 
     return ACVP_SUCCESS;
 }
@@ -929,10 +929,10 @@ ACVP_RESULT acvp_set_module_info(ACVP_CTX *ctx,
     ctx->module_version = calloc(ACVP_SESSION_PARAMS_STR_LEN_MAX + 1, sizeof(char));
     ctx->module_desc = calloc(ACVP_SESSION_PARAMS_STR_LEN_MAX + 1, sizeof(char));
 
-    strcpy_s(ctx->module_name, ACVP_SESSION_PARAMS_STR_LEN_MAX, module_name);
-    strcpy_s(ctx->module_type, ACVP_SESSION_PARAMS_STR_LEN_MAX, module_type);
-    strcpy_s(ctx->module_version, ACVP_SESSION_PARAMS_STR_LEN_MAX, module_version);
-    strcpy_s(ctx->module_desc, ACVP_SESSION_PARAMS_STR_LEN_MAX, module_description);
+    strcpy_s(ctx->module_name, ACVP_SESSION_PARAMS_STR_LEN_MAX + 1, module_name);
+    strcpy_s(ctx->module_type, ACVP_SESSION_PARAMS_STR_LEN_MAX + 1, module_type);
+    strcpy_s(ctx->module_version, ACVP_SESSION_PARAMS_STR_LEN_MAX + 1, module_version);
+    strcpy_s(ctx->module_desc, ACVP_SESSION_PARAMS_STR_LEN_MAX + 1, module_description);
 
     return ACVP_SUCCESS;
 }
@@ -962,7 +962,7 @@ ACVP_RESULT acvp_add_oe_dependency(ACVP_CTX *ctx,
 
     if (ctx->oe_name) free(ctx->oe_name);
     ctx->oe_name = calloc(ACVP_SESSION_PARAMS_STR_LEN_MAX + 1, sizeof(char));
-    strcpy_s(ctx->oe_name, ACVP_SESSION_PARAMS_STR_LEN_MAX, oe_name);
+    strcpy_s(ctx->oe_name, ACVP_SESSION_PARAMS_STR_LEN_MAX + 1, oe_name);
 
     if (!ctx->dependency_list) {
         ctx->dependency_list = calloc(1, sizeof(ACVP_DEPENDENCY_LIST));
@@ -1010,7 +1010,7 @@ ACVP_RESULT acvp_set_server(ACVP_CTX *ctx, char *server_name, int port) {
         free(ctx->server_name);
     }
     ctx->server_name = calloc(ACVP_SESSION_PARAMS_STR_LEN_MAX + 1, sizeof(char));
-    strcpy_s(ctx->server_name, ACVP_SESSION_PARAMS_STR_LEN_MAX, server_name);
+    strcpy_s(ctx->server_name, ACVP_SESSION_PARAMS_STR_LEN_MAX + 1, server_name);
 
     ctx->server_port = port;
 
@@ -1034,7 +1034,7 @@ ACVP_RESULT acvp_set_path_segment(ACVP_CTX *ctx, char *path_segment) {
     }
     if (ctx->path_segment) { free(ctx->path_segment); }
     ctx->path_segment = calloc(ACVP_SESSION_PARAMS_STR_LEN_MAX + 1, sizeof(char));
-    strcpy_s(ctx->path_segment, ACVP_SESSION_PARAMS_STR_LEN_MAX, path_segment);
+    strcpy_s(ctx->path_segment, ACVP_SESSION_PARAMS_STR_LEN_MAX + 1, path_segment);
 
     return ACVP_SUCCESS;
 }
@@ -1056,7 +1056,7 @@ ACVP_RESULT acvp_set_api_context(ACVP_CTX *ctx, char *api_context) {
     }
     if (ctx->api_context) { free(ctx->api_context); }
     ctx->api_context = calloc(ACVP_SESSION_PARAMS_STR_LEN_MAX + 1, sizeof(char));
-    strcpy_s(ctx->api_context, ACVP_SESSION_PARAMS_STR_LEN_MAX, api_context);
+    strcpy_s(ctx->api_context, ACVP_SESSION_PARAMS_STR_LEN_MAX + 1, api_context);
 
     return ACVP_SUCCESS;
 }
@@ -1085,7 +1085,7 @@ ACVP_RESULT acvp_set_cacerts(ACVP_CTX *ctx, char *ca_file) {
 
     if (ctx->cacerts_file) { free(ctx->cacerts_file); }
     ctx->cacerts_file = calloc(ACVP_SESSION_PARAMS_STR_LEN_MAX + 1, sizeof(char));
-    strcpy_s(ctx->cacerts_file, ACVP_SESSION_PARAMS_STR_LEN_MAX, ca_file);
+    strcpy_s(ctx->cacerts_file, ACVP_SESSION_PARAMS_STR_LEN_MAX + 1, ca_file);
 
     /*
      * Enable peer verification when CA certs are provided.
@@ -1118,11 +1118,11 @@ ACVP_RESULT acvp_set_certkey(ACVP_CTX *ctx, char *cert_file, char *key_file) {
     }
     if (ctx->tls_cert) { free(ctx->tls_cert); }
     ctx->tls_cert = calloc(ACVP_SESSION_PARAMS_STR_LEN_MAX + 1, sizeof(char));
-    strcpy_s(ctx->tls_cert, ACVP_SESSION_PARAMS_STR_LEN_MAX, cert_file);
+    strcpy_s(ctx->tls_cert, ACVP_SESSION_PARAMS_STR_LEN_MAX + 1, cert_file);
 
     if (ctx->tls_key) { free(ctx->tls_key); }
     ctx->tls_key = calloc(ACVP_SESSION_PARAMS_STR_LEN_MAX + 1, sizeof(char));
-    strcpy_s(ctx->tls_key, ACVP_SESSION_PARAMS_STR_LEN_MAX, key_file);
+    strcpy_s(ctx->tls_key, ACVP_SESSION_PARAMS_STR_LEN_MAX + 1, key_file);
 
     return ACVP_SUCCESS;
 }
@@ -1382,7 +1382,7 @@ static ACVP_RESULT acvp_append_vsid_url(ACVP_CTX *ctx, char *vsid_url) {
     }
     vs_entry->string = calloc(ACVP_ATTR_URL_MAX + 1, sizeof(char));
     if (!vs_entry->string) return ACVP_MALLOC_FAIL;
-    strcpy_s(vs_entry->string, ACVP_ATTR_URL_MAX, vsid_url);
+    strcpy_s(vs_entry->string, ACVP_ATTR_URL_MAX + 1, vsid_url);
 
     if (!ctx->vsid_url_list) {
         ctx->vsid_url_list = vs_entry;
@@ -1474,7 +1474,7 @@ static ACVP_RESULT acvp_parse_login(ACVP_CTX *ctx) {
         }
 
         ctx->jwt_token = calloc(ACVP_JWT_TOKEN_MAX + 1, sizeof(char));
-        strcpy_s(ctx->jwt_token, ACVP_JWT_TOKEN_MAX, jwt);
+        strcpy_s(ctx->jwt_token, ACVP_JWT_TOKEN_MAX + 1, jwt);
 
         ACVP_LOG_STATUS("JWT: %s", ctx->jwt_token);
     }
@@ -1693,7 +1693,7 @@ static ACVP_RESULT acvp_parse_test_session_register(ACVP_CTX *ctx) {
     test_session_url = (char *)json_object_get_string(obj, "url");
 
     ctx->session_url = calloc(ACVP_ATTR_URL_MAX + 1, sizeof(char));
-    strcpy_s(ctx->session_url, ACVP_ATTR_URL_MAX, test_session_url);
+    strcpy_s(ctx->session_url, ACVP_ATTR_URL_MAX + 1, test_session_url);
 
     vect_sets = json_object_get_array(obj, "vectorSetUrls");
     vs_cnt = json_array_get_count(vect_sets);

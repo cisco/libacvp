@@ -160,7 +160,7 @@ static char * parson_strndup(const char *string, size_t n) {
         return NULL;
     }
     output_string[n] = '\0';
-    strcpy_s(output_string, n, string); /* SAFEC */
+    strcpy_s(output_string, n + 1, string); /* SAFEC */
     return output_string;
 }
 
