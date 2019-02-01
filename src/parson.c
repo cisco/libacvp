@@ -272,7 +272,7 @@ static int is_decimal(const char *string, size_t length) {
     }
     if (length > 2 && string[2] != '.') {
         int diff = 1;
-        strcmp_s("-0", 2, string, &diff); /* SAFEC */
+        strncmp_s("-0", 2, string, 2, &diff); /* SAFEC */
         if (!diff) return 0;
     }
     while (length--) {
@@ -869,12 +869,12 @@ static JSON_Value * parse_boolean_value(const char **string) {
     size_t true_token_size = SIZEOF_TOKEN("true");
     size_t false_token_size = SIZEOF_TOKEN("false");
     int diff = 1;
-    strcmp_s("true", true_token_size, *string, &diff); /* SAFEC */
+    strncmp_s("true", true_token_size, *string, true_token_size, &diff); /* SAFEC */
     if (!diff) {
         *string += true_token_size;
         return json_value_init_boolean(1);
     }
-    strcmp_s("false", false_token_size, *string, &diff);
+    strncmp_s("false", false_token_size, *string, false_token_size, &diff);
     if (!diff) {
         *string += false_token_size;
         return json_value_init_boolean(0);
@@ -897,7 +897,7 @@ static JSON_Value * parse_number_value(const char **string) {
 static JSON_Value * parse_null_value(const char **string) {
     size_t token_size = SIZEOF_TOKEN("null");
     int diff = 1;
-    strcmp_s("null", token_size, *string, &diff); /* SAFEC */
+    strncmp_s("null", token_size, *string, token_size, &diff); /* SAFEC */
     if (!diff) {
         *string += token_size;
         return json_value_init_null();

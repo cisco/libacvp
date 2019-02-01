@@ -1199,7 +1199,7 @@ ACVP_RESULT acvp_dsa_pqgver_handler(ACVP_CTX *ctx,
         }
         if (pqmode) {
             int diff = 0;
-            strcmp_s("probable", 8, gmode, &diff);
+            strcmp_s("probable", 8, pqmode, &diff);
             if (!diff) gpq = ACVP_DSA_PROBABLE;
         }
         if (gpq == 0) {
