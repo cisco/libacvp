@@ -49,8 +49,8 @@ model {
 				ciscosafec {
 					headers.srcDir System.getenv('SAFEC_DIR') + "\\include"
 					binaries.withType(SharedLibraryBinary) {
-							sharedLibraryFile = file(System.getenv('SAFEC_DIR') + "\\bin\\libciscosafec.dll")
-							sharedLibraryLinkFile = file(System.getenv('SAFEC_DIR') + "\\lib\\libciscosafec.lib")
+                        sharedLibraryFile = file(System.getenv('SAFEC_DIR') + "\\safeclib.dll")
+                        sharedLibraryLinkFile = file(System.getenv('SAFEC_DIR') + "\\safeclib.lib")
 					}
 				}
 			}
@@ -66,12 +66,22 @@ model {
 				linker.args "-lcurl"
 			} else {
 				cCompiler.define "WIN32"
+                cCompiler.define "__STDC_WANT_SECURE_LIB__=0"
+                cCompiler.args "/I${projectDir}\\include"
 			}
 		}
 	}
 }
 
 model {
+    platforms {
+        x86 {
+            architecture "x86"
+        }
+        x64 {
+            architecture "x86_64"
+        }
+    }
 	components {
 		acvp(NativeLibrarySpec) {
 			sources {
@@ -104,6 +114,13 @@ model {
 						lib library: "ciscosafec", linkage: "shared"
 				}
 			}
+            if (System.getenv('PROCESSOR_ARCHITECTURE').equals("x86")) {
+                // 32 bit
+                targetPlatform "x86"
+            } else {
+                // Default to 64 bit
+                targetPlatform "x64"
+            }
 		}
 		example(NativeExecutableSpec) {
 			sources {
@@ -133,6 +150,13 @@ model {
 						lib library: "ciscosafec", linkage: "shared"
 				}
 			}
+            if (System.getenv('PROCESSOR_ARCHITECTURE').equals("x86")) {
+                // 32 bit
+                targetPlatform "x86"
+            } else {
+                // Default to 64 bit
+                targetPlatform "x64"
+            }
 		}
 	}
 }
