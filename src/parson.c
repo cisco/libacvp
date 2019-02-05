@@ -1564,7 +1564,7 @@ JSON_Status json_serialize_to_buffer(const JSON_Value *value, char *buf, size_t 
 JSON_Status json_serialize_to_file(const JSON_Value *value, const char *filename) {
     JSON_Status return_code = JSONSuccess;
     FILE *fp = NULL;
-    char *serialized_string = json_serialize_to_string(value);
+    char *serialized_string = json_serialize_to_string(value, NULL);
     if (serialized_string == NULL) {
         return JSONFailure;
     }
@@ -1583,12 +1583,19 @@ JSON_Status json_serialize_to_file(const JSON_Value *value, const char *filename
     return return_code;
 }
 
-char * json_serialize_to_string(const JSON_Value *value) {
+char * json_serialize_to_string(const JSON_Value *value, int *len) {
     JSON_Status serialization_result = JSONFailure;
     size_t buf_size_bytes = json_serialization_size(value);
     char *buf = NULL;
     if (buf_size_bytes == 0) {
         return NULL;
+    }
+    if (len != NULL) {
+        /*
+         * The user wants to be provided with the string length
+         * Subtract by 1 to get string length (ommitting the added NULL byte).
+         */
+        *len = buf_size_bytes - 1;
     }
     buf = (char*)parson_malloc(buf_size_bytes);
     if (buf == NULL) {

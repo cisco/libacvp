@@ -2652,7 +2652,7 @@ ACVP_RESULT acvp_build_test_session(ACVP_CTX *ctx, char **reg, int *out_len) {
      * Add the entire caps exchange section to the top object
      */
     json_array_append_value(reg_arry, val);
-    *reg = json_serialize_to_string_pretty(reg_arry_val, out_len);
+    *reg = json_serialize_to_string(reg_arry_val, out_len);
     json_value_free(reg_arry_val);
 
     return ACVP_SUCCESS;
