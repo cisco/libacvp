@@ -684,7 +684,7 @@ static ACVP_RESULT execute_network_action(ACVP_CTX *ctx,
         rc = acvp_curl_http_get(ctx, url, curl_callback);
         break;
     case ACVP_NET_ACTION_POST_VECTOR_RESP:
-        resp = json_serialize_to_string_pretty(ctx->kat_resp, &resp_len);
+        resp = json_serialize_to_string(ctx->kat_resp, &resp_len);
 
         rc = acvp_curl_http_post(ctx, url, resp, resp_len, curl_callback);
         json_value_free(ctx->kat_resp);
