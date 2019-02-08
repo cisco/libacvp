@@ -44,6 +44,7 @@ static ACVP_RESULT acvp_hash_init_tc(ACVP_CTX *ctx,
                                      ACVP_HASH_TESTTYPE test_type,
                                      unsigned int msg_len,
                                      const char *msg,
+                                     unsigned int xof_len,
                                      ACVP_CIPHER alg_id);
 
 static ACVP_RESULT acvp_hash_release_tc(ACVP_HASH_TC *stc);
@@ -212,6 +213,11 @@ static ACVP_HASH_TESTTYPE read_test_type(const char *tt_str) {
         return ACVP_HASH_TEST_TYPE_AFT;
     }
 
+    strcmp_s("VOT", 3, tt_str, &diff);
+    if (!diff) {
+        return ACVP_HASH_TEST_TYPE_VOT;
+    }
+
     return 0;
 }
 
@@ -334,12 +340,20 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             rv = ACVP_INVALID_ARG;
             goto err;
         }
+        if (test_type == ACVP_HASH_TEST_TYPE_VOT &&
+            !(alg_id == ACVP_HASH_SHAKE_128 || alg_id == ACVP_HASH_SHAKE_256)) {
+            ACVP_LOG_ERR("Server JSON 'testType' == VOT, not valid for cipher '%s'",
+                         acvp_lookup_cipher_name(alg_id));
+            rv = ACVP_INVALID_ARG;
+            goto err;
+        }
 
         tests = json_object_get_array(groupobj, "tests");
         t_cnt = json_array_get_count(tests);
 
         for (j = 0; j < t_cnt; j++) {
             unsigned int tmp_msg_len = 0;
+            unsigned int xof_len = 0;
 
             ACVP_LOG_INFO("Found new hash test vector...");
             testval = json_array_get_value(tests, j);
@@ -360,35 +374,26 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 rv = ACVP_INVALID_ARG;
                 goto err;
             }
-
             // Convert to bits
             msglen = tmp_msg_len * 4;
-#if 0
-            msglen = (unsigned int)json_object_get_number(testobj, "len");
-            if (!msglen) {
-                /*
-                 * The "len" can be == 0 if the "msg" string is
-                 * empty or equal to "00".
-                 */
-                if (tmp_msg_len != 0 && strncmp(msg, "00", 2)) {
-                    // The msg string is not empty and not equal to "00"
-                    ACVP_LOG_ERR("Server JSON 'len' is 0 or missing");
+
+            if (test_type == ACVP_HASH_TEST_TYPE_VOT) {
+                xof_len = (unsigned int)json_object_get_number(testobj, "outputLen");
+                if (!(xof_len >= ACVP_HASH_XOF_MD_BIT_MAX &&
+                      xof_len <= ACVP_HASH_XOF_MD_BIT_MAX)) {
+                    ACVP_LOG_ERR("Server JSON invalid 'outputLen'(%d)", xof_len);
                     rv = ACVP_INVALID_ARG;
                     goto err;
                 }
             }
-            if (msglen > ACVP_HASH_MSG_BIT_MAX) {
-                ACVP_LOG_ERR("'len' too long, max allowed=(%d)",
-                             ACVP_HASH_MSG_BIT_MAX);
-                rv = ACVP_INVALID_ARG;
-                goto err;
-            }
-#endif
 
             ACVP_LOG_INFO("        Test case: %d", j);
             ACVP_LOG_INFO("             tcId: %d", tc_id);
             ACVP_LOG_INFO("              len: %d", msglen);
             ACVP_LOG_INFO("              msg: %s", msg);
+            if (test_type == ACVP_HASH_TEST_TYPE_VOT) {
+                ACVP_LOG_INFO("    outputLen: %s", xof_len);
+            }
             ACVP_LOG_INFO("         testtype: %s", test_type_str);
 
             /*
@@ -403,7 +408,7 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
              * Setup the test case data that will be passed down to
              * the crypto module.
              */
-            rv = acvp_hash_init_tc(ctx, &stc, tc_id, test_type, msglen, msg, alg_id);
+            rv = acvp_hash_init_tc(ctx, &stc, tc_id, test_type, msglen, msg, xof_len,alg_id);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("Init for stc (test case) failed");
                 acvp_hash_release_tc(&stc);
@@ -482,13 +487,21 @@ static ACVP_RESULT acvp_hash_output_tc(ACVP_CTX *ctx, ACVP_HASH_TC *stc, JSON_Ob
     ACVP_RESULT rv = ACVP_SUCCESS;
     char *tmp = NULL;
 
-    tmp = calloc(ACVP_HASH_MD_STR_MAX + 1, sizeof(char));
+    if (stc->test_type == ACVP_HASH_TEST_TYPE_VOT) {
+        tmp = calloc(ACVP_HASH_XOF_MD_STR_MAX + 1, sizeof(char));
+    } else {
+        tmp = calloc(ACVP_HASH_MD_STR_MAX + 1, sizeof(char));
+    }
     if (!tmp) {
         ACVP_LOG_ERR("Unable to malloc in acvp_hash_output_tc");
         return ACVP_MALLOC_FAIL;
     }
 
-    rv = acvp_bin_to_hexstr(stc->md, stc->md_len, tmp, ACVP_HASH_MD_STR_MAX);
+    if (stc->test_type == ACVP_HASH_TEST_TYPE_VOT) {
+        rv = acvp_bin_to_hexstr(stc->md, stc->md_len, tmp, ACVP_HASH_XOF_MD_STR_MAX);
+    } else {
+        rv = acvp_bin_to_hexstr(stc->md, stc->md_len, tmp, ACVP_HASH_MD_STR_MAX);
+    }
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("hex conversion failure (msg)");
         goto end;
@@ -507,6 +520,7 @@ static ACVP_RESULT acvp_hash_init_tc(ACVP_CTX *ctx,
                                      ACVP_HASH_TESTTYPE test_type,
                                      unsigned int msg_len,
                                      const char *msg,
+                                     unsigned int xof_len,
                                      ACVP_CIPHER alg_id) {
     ACVP_RESULT rv;
 
@@ -515,17 +529,28 @@ static ACVP_RESULT acvp_hash_init_tc(ACVP_CTX *ctx,
     stc->msg = calloc(1, ACVP_HASH_MSG_BYTE_MAX);
     if (!stc->msg) { return ACVP_MALLOC_FAIL; }
 
-    stc->md = calloc(1, ACVP_HASH_MD_BYTE_MAX);
-    if (!stc->md) { return ACVP_MALLOC_FAIL; }
+    if (test_type == ACVP_HASH_TEST_TYPE_AFT) {
+        /* AFT */
+        stc->md = calloc(1, ACVP_HASH_MD_BYTE_MAX);
+        if (!stc->md) { return ACVP_MALLOC_FAIL; }
+    } else if (test_type == ACVP_HASH_TEST_TYPE_VOT) {
+        /* VOT */
+        stc->md = calloc(1, ACVP_HASH_XOF_MD_BYTE_MAX);
+        if (!stc->md) { return ACVP_MALLOC_FAIL; }
+    } else {
+        /* MCT */
+        stc->md = calloc(1, ACVP_HASH_MD_BYTE_MAX);
+        if (!stc->md) { return ACVP_MALLOC_FAIL; }
 
-    stc->m1 = calloc(1, ACVP_HASH_MD_BYTE_MAX);
-    if (!stc->m1) { return ACVP_MALLOC_FAIL; }
+        stc->m1 = calloc(1, ACVP_HASH_MD_BYTE_MAX);
+        if (!stc->m1) { return ACVP_MALLOC_FAIL; }
 
-    stc->m2 = calloc(1, ACVP_HASH_MD_BYTE_MAX);
-    if (!stc->m2) { return ACVP_MALLOC_FAIL; }
+        stc->m2 = calloc(1, ACVP_HASH_MD_BYTE_MAX);
+        if (!stc->m2) { return ACVP_MALLOC_FAIL; }
 
-    stc->m3 = calloc(1, ACVP_HASH_MD_BYTE_MAX);
-    if (!stc->m3) { return ACVP_MALLOC_FAIL; }
+        stc->m3 = calloc(1, ACVP_HASH_MD_BYTE_MAX);
+        if (!stc->m3) { return ACVP_MALLOC_FAIL; }
+    }
 
     rv = acvp_hexstr_to_bin(msg, stc->msg, ACVP_HASH_MSG_BYTE_MAX, NULL);
     if (rv != ACVP_SUCCESS) {
@@ -535,6 +560,8 @@ static ACVP_RESULT acvp_hash_init_tc(ACVP_CTX *ctx,
 
     stc->tc_id = tc_id;
     stc->msg_len = (msg_len + 7) / 8;
+    stc->xof_len = (xof_len + 7) / 8;
+    stc->xof_bit_len = xof_len;
     stc->cipher = alg_id;
     stc->test_type = test_type;
 

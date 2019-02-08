@@ -124,6 +124,12 @@
 #define ACVP_ALG_SHA256              "SHA2-256"
 #define ACVP_ALG_SHA384              "SHA2-384"
 #define ACVP_ALG_SHA512              "SHA2-512"
+#define ACVP_ALG_SHA3_224            "SHA3-224"
+#define ACVP_ALG_SHA3_256            "SHA3-256"
+#define ACVP_ALG_SHA3_384            "SHA3-384"
+#define ACVP_ALG_SHA3_512            "SHA3-512"
+#define ACVP_ALG_SHAKE_128           "SHAKE-128"
+#define ACVP_ALG_SHAKE_256           "SHAKE-256"
 #define ACVP_ALG_HASHDRBG            "hashDRBG"
 #define ACVP_ALG_HMACDRBG            "hmacDRBG"
 #define ACVP_ALG_CTRDRBG             "ctrDRBG"
@@ -333,6 +339,11 @@
 #define ACVP_HASH_MD_BIT_MAX 512                            /**< 512 bits */
 #define ACVP_HASH_MD_STR_MAX (ACVP_HASH_MD_BIT_MAX >> 2)    /**< 128 characters */
 #define ACVP_HASH_MD_BYTE_MAX (ACVP_HASH_MD_BIT_MAX >> 3)   /**< 64 bytes */
+
+#define ACVP_HASH_XOF_MD_BIT_MIN 16 /**< XOF (extendable output format) outLength minimum (in bits) */
+#define ACVP_HASH_XOF_MD_BIT_MAX 65536 /**< XOF (extendable output format) outLength maximum (in bits) */
+#define ACVP_HASH_XOF_MD_STR_MAX (ACVP_HASH_XOF_MD_BIT_MAX >> 2) /**< 16,384 characters */
+#define ACVP_HASH_XOF_MD_BYTE_MAX (ACVP_HASH_XOF_MD_BIT_MAX >> 3) /**< 8,192 bytes */
 
 #define ACVP_HASH_MCT_INNER     1000
 #define ACVP_HASH_MCT_OUTER     100
@@ -706,6 +717,10 @@ typedef struct acvp_sym_cipher_capability {
 typedef struct acvp_hash_capability {
     int in_bit;   /* defaults to false */
     int in_empty; /* defaults to false */
+    int out_bit; /**< 1 for true, 0 for false
+                      Defaults to false.
+                      Only for ACVP_HASH_SHAKE_* */
+    ACVP_JSON_DOMAIN_OBJ out_len; /**< Required for ACVP_HASH_SHAKE_* */
 } ACVP_HASH_CAP;
 
 typedef struct acvp_kdf135_tls_capability {

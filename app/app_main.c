@@ -1598,6 +1598,59 @@ static int enable_hash(ACVP_CTX *ctx) {
     rv = acvp_cap_hash_set_parm(ctx, ACVP_HASH_SHA512, ACVP_HASH_IN_EMPTY, 1);
     CHECK_ENABLE_CAP_RV(rv);
 
+#if OPENSSL_VERSION_NUMBER >= 0x10101010L /* OpenSSL 1.1.1 or greater */
+    /* SHA3 and SHAKE */
+    rv = acvp_cap_hash_enable(ctx, ACVP_HASH_SHA3_224, &app_sha_handler);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_hash_set_parm(ctx, ACVP_HASH_SHA3_224, ACVP_HASH_IN_BIT, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_hash_set_parm(ctx, ACVP_HASH_SHA3_224, ACVP_HASH_IN_EMPTY, 1);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    rv = acvp_cap_hash_enable(ctx, ACVP_HASH_SHA3_256, &app_sha_handler);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_hash_set_parm(ctx, ACVP_HASH_SHA3_256, ACVP_HASH_IN_BIT, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_hash_set_parm(ctx, ACVP_HASH_SHA3_256, ACVP_HASH_IN_EMPTY, 1);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    rv = acvp_cap_hash_enable(ctx, ACVP_HASH_SHA3_384, &app_sha_handler);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_hash_set_parm(ctx, ACVP_HASH_SHA3_384, ACVP_HASH_IN_BIT, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_hash_set_parm(ctx, ACVP_HASH_SHA3_384, ACVP_HASH_IN_EMPTY, 1);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    rv = acvp_cap_hash_enable(ctx, ACVP_HASH_SHA3_512, &app_sha_handler);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_hash_set_parm(ctx, ACVP_HASH_SHA3_512, ACVP_HASH_IN_BIT, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_hash_set_parm(ctx, ACVP_HASH_SHA3_512, ACVP_HASH_IN_EMPTY, 1);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    rv = acvp_cap_hash_enable(ctx, ACVP_HASH_SHAKE_128, &app_sha_handler);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_hash_set_parm(ctx, ACVP_HASH_SHAKE_128, ACVP_HASH_IN_BIT, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_hash_set_parm(ctx, ACVP_HASH_SHAKE_128, ACVP_HASH_OUT_BIT, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_hash_set_parm(ctx, ACVP_HASH_SHAKE_128, ACVP_HASH_IN_EMPTY, 1);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_hash_set_domain(ctx, ACVP_HASH_SHAKE_128, ACVP_HASH_OUT_LENGTH, 16, 65536, 8);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    rv = acvp_cap_hash_enable(ctx, ACVP_HASH_SHAKE_256, &app_sha_handler);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_hash_set_parm(ctx, ACVP_HASH_SHAKE_256, ACVP_HASH_IN_BIT, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_hash_set_parm(ctx, ACVP_HASH_SHAKE_256, ACVP_HASH_OUT_BIT, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_hash_set_parm(ctx, ACVP_HASH_SHAKE_256, ACVP_HASH_IN_EMPTY, 1);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_hash_set_domain(ctx, ACVP_HASH_SHAKE_256, ACVP_HASH_OUT_LENGTH, 16, 65536, 8);
+    CHECK_ENABLE_CAP_RV(rv);
+#endif
+
 end:
 
     return rv;
@@ -3491,11 +3544,29 @@ static int app_sha_handler(ACVP_TEST_CASE *test_case) {
     case ACVP_HASH_SHA512:
         md = EVP_sha512();
         break;
+#if OPENSSL_VERSION_NUMBER >= 0x10101010L /* OpenSSL 1.1.1 or greater */
+    case ACVP_HASH_SHA3_224:
+        md = EVP_sha3_224();
+        break;
+    case ACVP_HASH_SHA3_256:
+        md = EVP_sha3_256();
+        break;
+    case ACVP_HASH_SHA3_384:
+        md = EVP_sha3_384();
+        break;
+    case ACVP_HASH_SHA3_512:
+        md = EVP_sha3_512();
+        break;
+    case ACVP_HASH_SHAKE_128:
+        md = EVP_shake128();
+        break;
+    case ACVP_HASH_SHAKE_256:
+        md = EVP_shake256();
+        break;
+#endif
     default:
         printf("Error: Unsupported hash algorithm requested by ACVP server\n");
         return ACVP_NO_CAP;
-
-        break;
     }
     
     if (!tc->md) {
@@ -3546,6 +3617,23 @@ static int app_sha_handler(ACVP_TEST_CASE *test_case) {
             printf("\nCrypto module error, EVP_DigestUpdate failed\n");
             goto end;
         }
+
+#if OPENSSL_VERSION_NUMBER >= 0x10101010L /* OpenSSL 1.1.1 or greater */
+        if (tc->test_type == ACVP_HASH_TEST_TYPE_VOT) {
+            /*
+             * Use the XOF oriented function.
+             * Skip past the other "EVP_DigestFinal".
+             */
+            if (!EVP_DigestFinalXOF(md_ctx, tc->md, tc->xof_len)) {
+                printf("\nCrypto module error, EVP_DigestFinal failed\n");
+                goto end;
+            }
+            tc->md_len = tc->xof_len;
+            rc = 0;
+            goto end;
+        }
+#endif
+
         if (!EVP_DigestFinal(md_ctx, tc->md, &tc->md_len)) {
             printf("\nCrypto module error, EVP_DigestFinal failed\n");
             goto end;

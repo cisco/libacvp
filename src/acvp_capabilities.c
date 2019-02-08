@@ -1280,6 +1280,12 @@ ACVP_RESULT acvp_cap_hash_enable(ACVP_CTX *ctx,
     case ACVP_HASH_SHA256:
     case ACVP_HASH_SHA384:
     case ACVP_HASH_SHA512:
+    case ACVP_HASH_SHA3_224:
+    case ACVP_HASH_SHA3_256:
+    case ACVP_HASH_SHA3_384:
+    case ACVP_HASH_SHA3_512:
+    case ACVP_HASH_SHAKE_128:
+    case ACVP_HASH_SHAKE_256:
         break;
     default:
         ACVP_LOG_ERR("Invalid parameter 'cipher'");
@@ -1303,6 +1309,7 @@ static ACVP_RESULT acvp_validate_hash_parm_value(ACVP_HASH_PARM parm, int value)
     switch (parm) {
     case ACVP_HASH_IN_BIT:
     case ACVP_HASH_IN_EMPTY:
+    case ACVP_HASH_OUT_BIT:
         retval = is_valid_tf_param(value);
         break;
     default:
@@ -1326,6 +1333,23 @@ ACVP_RESULT acvp_cap_hash_set_parm(ACVP_CTX *ctx,
         return ACVP_NO_CTX;
     }
 
+    switch (cipher) {
+    case ACVP_HASH_SHA1:
+    case ACVP_HASH_SHA224:
+    case ACVP_HASH_SHA256:
+    case ACVP_HASH_SHA384:
+    case ACVP_HASH_SHA512:
+    case ACVP_HASH_SHA3_224:
+    case ACVP_HASH_SHA3_256:
+    case ACVP_HASH_SHA3_384:
+    case ACVP_HASH_SHA3_512:
+    case ACVP_HASH_SHAKE_128:
+    case ACVP_HASH_SHAKE_256:
+        break;
+    default:
+        return ACVP_INVALID_ARG;
+    }
+
     cap = acvp_locate_cap_entry(ctx, cipher);
     if (!cap) {
         return ACVP_NO_CAP;
@@ -1340,30 +1364,81 @@ ACVP_RESULT acvp_cap_hash_set_parm(ACVP_CTX *ctx,
         return ACVP_INVALID_ARG;
     }
 
-    switch (cipher) {
-    case ACVP_HASH_SHA1:
-    case ACVP_HASH_SHA224:
-    case ACVP_HASH_SHA256:
-    case ACVP_HASH_SHA384:
-    case ACVP_HASH_SHA512:
-        switch (param) {
-        case ACVP_HASH_IN_BIT:
-            hash_cap->in_bit = value;
-            break;
-        case ACVP_HASH_IN_EMPTY:
-            hash_cap->in_empty = value;
+    switch (param) {
+    case ACVP_HASH_IN_BIT:
+        hash_cap->in_bit = value;
+        break;
+    case ACVP_HASH_IN_EMPTY:
+        hash_cap->in_empty = value;
+        break;
+    case ACVP_HASH_OUT_BIT:
+        switch (cipher) {
+        case ACVP_HASH_SHAKE_128:
+        case ACVP_HASH_SHAKE_256:
             break;
         default:
+            ACVP_LOG_ERR("parm 'ACVP_HASH_OUT_BIT' only allowed for ACVP_HASH_SHAKE_* ");
             return ACVP_INVALID_ARG;
-
-            break;
         }
+
+        hash_cap->out_bit = value;
         break;
     default:
         return ACVP_INVALID_ARG;
-
-        break;
     }
+
+    return ACVP_SUCCESS;
+}
+
+ACVP_RESULT acvp_cap_hash_set_domain(ACVP_CTX *ctx,
+                                     ACVP_CIPHER cipher,
+                                     ACVP_HASH_PARM parm,
+                                     int min,
+                                     int max,
+                                     int increment) {
+    ACVP_CAPS_LIST *cap_list;
+    ACVP_JSON_DOMAIN_OBJ *domain;
+    ACVP_HASH_CAP *current_hash_cap;
+
+    switch (cipher) {
+    case ACVP_HASH_SHAKE_128:
+    case ACVP_HASH_SHAKE_256:
+        break;
+    default:
+        ACVP_LOG_ERR("Invalid 'cipher'. This function only supports ACVP_HASH_SHAKE_*");
+        return ACVP_INVALID_ARG;
+    }
+
+    cap_list = acvp_locate_cap_entry(ctx, cipher);
+    if (!cap_list) {
+        ACVP_LOG_ERR("Cap entry not found.");
+        return ACVP_NO_CAP;
+    }
+    current_hash_cap = cap_list->cap.hash_cap;
+
+    switch (parm) {
+    case ACVP_HASH_OUT_LENGTH:
+        if (min < ACVP_HASH_XOF_MD_BIT_MIN ||
+            max > ACVP_HASH_XOF_MD_BIT_MAX) {
+            ACVP_LOG_ERR("'ACVP_HASH_OUT_LENGTH' min or max outside of acceptable range");
+            return ACVP_INVALID_ARG;
+        }
+        if (increment + min > ACVP_HASH_XOF_MD_BIT_MAX) {
+            ACVP_LOG_ERR("'ACVP_HASH_OUT_LENGTH' increment(%d) + min(%d) > max(%d)",
+                         increment, min, ACVP_HASH_XOF_MD_BIT_MAX);
+            return ACVP_INVALID_ARG;
+        }
+        domain = &current_hash_cap->out_len;
+        break;
+    default:
+        return ACVP_INVALID_ARG;
+    }
+
+    domain->min = min;
+    domain->max = max;
+    domain->increment = increment;
+    domain->value = 0;
+
     return ACVP_SUCCESS;
 }
 
