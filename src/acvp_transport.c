@@ -39,6 +39,8 @@
 #define HTTP_OK    200
 #define HTTP_UNAUTH    401
 
+#define USER_AGENT_STR_MAX 32
+
 #define ACVP_AUTH_BEARER_TITLE_LEN 23
 
 typedef enum acvp_net_action {
@@ -115,6 +117,7 @@ static long acvp_curl_http_get(ACVP_CTX *ctx, char *url, void *writefunc) {
     long http_code = 0;
     CURL *hnd;
     struct curl_slist *slist;
+    char user_agent_str[USER_AGENT_STR_MAX + 1];
 
     slist = NULL;
     /*
@@ -125,12 +128,17 @@ static long acvp_curl_http_get(ACVP_CTX *ctx, char *url, void *writefunc) {
     ctx->read_ctr = 0;
 
     /*
+     * Create the HTTP User Agent value
+     */
+    snprintf(user_agent_str, USER_AGENT_STR_MAX, "libacvp/%s", ACVP_VERSION);
+
+    /*
      * Setup Curl
      */
     hnd = curl_easy_init();
     curl_easy_setopt(hnd, CURLOPT_URL, url);
     curl_easy_setopt(hnd, CURLOPT_NOPROGRESS, 1L);
-    curl_easy_setopt(hnd, CURLOPT_USERAGENT, "curl/7.27.0");
+    curl_easy_setopt(hnd, CURLOPT_USERAGENT, user_agent_str);
     curl_easy_setopt(hnd, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_2);
     if (slist) {
         curl_easy_setopt(hnd, CURLOPT_HTTPHEADER, slist);
@@ -210,6 +218,7 @@ static long acvp_curl_http_post(ACVP_CTX *ctx, char *url, char *data, int data_l
     CURL *hnd;
     CURLcode crv;
     struct curl_slist *slist;
+    char user_agent_str[USER_AGENT_STR_MAX + 1];
 
     /*
      * Set the Content-Type header in the HTTP request
@@ -225,12 +234,17 @@ static long acvp_curl_http_post(ACVP_CTX *ctx, char *url, char *data, int data_l
     ctx->read_ctr = 0;
 
     /*
+     * Create the HTTP User Agent value
+     */
+    snprintf(user_agent_str, USER_AGENT_STR_MAX, "libacvp/%s", ACVP_VERSION);
+
+    /*
      * Setup Curl
      */
     hnd = curl_easy_init();
     curl_easy_setopt(hnd, CURLOPT_URL, url);
     curl_easy_setopt(hnd, CURLOPT_NOPROGRESS, 1L);
-    curl_easy_setopt(hnd, CURLOPT_USERAGENT, "libacvp");
+    curl_easy_setopt(hnd, CURLOPT_USERAGENT, user_agent_str);
     curl_easy_setopt(hnd, CURLOPT_HTTPHEADER, slist);
     curl_easy_setopt(hnd, CURLOPT_CUSTOMREQUEST, "POST");
     curl_easy_setopt(hnd, CURLOPT_POST, 1L);
@@ -649,13 +663,13 @@ static ACVP_RESULT inspect_http_code(ACVP_CTX *ctx, int code) {
             goto end;
         }
 
-        strcmp_s(JWT_EXPIRED_STR, JWT_EXPIRED_STR_LEN, err_str, &diff);
+        strncmp_s(JWT_EXPIRED_STR, JWT_EXPIRED_STR_LEN, err_str, JWT_EXPIRED_STR_LEN, &diff);
         if (!diff) {
             result = ACVP_JWT_EXPIRED;
             goto end;
         }
 
-        strcmp_s(JWT_INVALID_STR, JWT_INVALID_STR_LEN, err_str, &diff);
+        strncmp_s(JWT_INVALID_STR, JWT_INVALID_STR_LEN, err_str, JWT_INVALID_STR_LEN, &diff);
         if (!diff) {
             result = ACVP_JWT_INVALID;
             goto end;
