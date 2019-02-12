@@ -1,0 +1,28 @@
+[
+  {
+    "acvVersion": "0.5"
+  }, 
+  {
+    "vsId": 22678, 
+    "testGroups": [
+      {
+        "macLen": 64, 
+        "tests": [
+          {
+            "key3": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", 
+            "key2": "29D57A7D5675F17F", 
+            "message": "", 
+            "tcId": 1, 
+            "key1": "D878E220A6188E4F"
+          }
+        ], 
+        "tgId": 999, 
+        "direction": "gen", 
+        "keyingOption": 1, 
+        "testType": "AFT", 
+        "msgLen": 0
+      }
+    ], 
+    "algorithm": "CMAC-TDES"
+  }
+]

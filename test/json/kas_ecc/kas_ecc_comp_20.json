@@ -1,0 +1,34 @@
+[
+  {
+    "acvVersion": "0.5"
+  }, 
+  {
+    "testGroups": [
+      {
+        "tests": [
+          {
+            "ephemeralPublicServerY": "0B1B2E24882275B0948F9BFCFBC78DB809D15F9D2575221DEB46B95E", 
+            "ephemeralPublicServerX": "6092E5368B26ECB6B5C77E74CBD5BA731178245E7B7D3E9A0754FFF0", 
+            "hashZIut": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", 
+            "ephemeralPublicIutY": "D2AC329BCBA762400191F0C06915DDA37BF0C40F183989028745DEE6", 
+            "ephemeralPublicIutX": "4276AA3763104A5564F2637259E6AB72E9B2FC501F80509D3220D6CB", 
+            "ephemeralPrivateIut": "FD0681DB5A5A7E57E4003CE8A93F86B7FE5206E51D062CD87C1E97", 
+            "tcId": 81
+          }
+        ], 
+        "tgId": 9, 
+        "curve": "P-224", 
+        "hashAlg": "SHA2-224", 
+        "kasRole": "initiator", 
+        "kasMode": "noKdfNoKc", 
+        "parmSet": "eb", 
+        "scheme": "ephemeralUnified", 
+        "testType": "VAL"
+      }
+    ], 
+    "isSample": false, 
+    "algorithm": "KAS-ECC", 
+    "vsId": 4049, 
+    "mode": "Component"
+  }
+]

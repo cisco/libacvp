@@ -131,6 +131,22 @@ Building
         4. The library is in build/libs/acvp and the example executable
             is in build/exe/
 
+
+Testing
+
+    Move to the test directory and see the README.md there. The tests depend upon
+    a C test framework called Criterion, found here: https://github.com/Snaipe/Criterion
+
+
+Contributing
+
+    Before opening a pull request on libacvp, please ensure that all unit tests are
+    passing. Additionally, new tests should be added for new library features.
+
+    We also run the uncrustify tool as a linter to keep code-style consistent
+    throughout the library. That can be found in the 'uncrustify' directory.
+
+
 Credits
 
         This package was initially written by John Foley of Cisco Systems.

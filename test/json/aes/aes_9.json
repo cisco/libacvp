@@ -1,0 +1,53 @@
+[
+  {
+    "acvVersion": "0.5"
+  }, 
+  {
+    "testGroups": [
+      {
+        "tests": [
+          {
+            "aad": "", 
+            "tcId": 1, 
+            "key": "00000000000000000000000000000000", 
+            "pt": "F34481EC3CC627BACD5DC3FB08F273E6", 
+            "iv": "00000000000000000000000000000000"
+          }
+        ], 
+        "ivGen": "internal", 
+        "tgId": 999, 
+        "testType": "AFT", 
+        "direction": "encrypt", 
+        "ivGenMode": "8.2.1", 
+        "aadLen": 0, 
+        "ptLen": 0, 
+        "tagLen": 96, 
+        "keyLen": 128
+      }, 
+      {
+        "tests": [
+          {
+            "aad": "", 
+            "iv": "CD26CE857B0CDCDEE932FFC0", 
+            "tag": "D7A8C84F848BA472165472A4", 
+            "key": "00000000000000000000000000000000", 
+            "tcId": 1040, 
+            "ct": "0336763E966D92595A567CC9CE537F5E"
+          }
+        ], 
+        "ivGen": "internal", 
+        "ivLen": 96, 
+        "tgId": 999, 
+        "testType": "AFT", 
+        "direction": "decrypt", 
+        "ivGenMode": "8.2.1", 
+        "aadLen": 0, 
+        "ptLen": 0, 
+        "tagLen": 96, 
+        "keyLen": 128
+      }
+    ], 
+    "algorithm": "AES-GCM", 
+    "vsId": 23207
+  }
+]

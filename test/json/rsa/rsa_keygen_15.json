@@ -1,0 +1,35 @@
+[
+  {
+    "acvVersion": "0.5"
+  }, 
+  {
+    "vsId": 20618, 
+    "algorithm": "RSA", 
+    "testGroups": [
+      {
+        "infoGeneratedByServer": true, 
+        "tests": [
+          {
+            "seed": "182EF0B3E64082BC0B2330EFF7ECFFC8ECC610304F2E5C2B9E247EF7", 
+            "tcId": 1, 
+            "bitlens": [
+              314, 
+              166, 
+              329, 
+              161
+            ]
+          }
+        ], 
+        "modulo": 1024, 
+        "tgId": 999, 
+        "randPQ": "B.3.4", 
+        "pubExp": "fixed", 
+        "hashAlg": "SHA2-256", 
+        "fixedPubExp": "010001", 
+        "keyFormat": "standard", 
+        "testType": "aft"
+      }
+    ], 
+    "mode": "keyGen"
+  }
+]

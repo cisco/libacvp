@@ -1,0 +1,32 @@
+[
+  {
+    "acvVersion": "0.5"
+  },
+  {
+    "vsId": 1564,
+    "algorithm": "ECDSA",
+    "mode": "keyVer",
+    "testGroups": [
+      {
+        "tgId": 1,
+        "curve": "P-192",
+        "tests": [
+          {
+            "tcId": 1,
+            "qx": "01ED77E3F1591D2EC730D0ED6D592F8DD24158D0E696408DBD",
+            "qy": "BF31C6463EB1B6B55C8930550B88CF8D1F6432A832B40FB4"
+          }
+        ]
+      }, {
+        "tgId": 2,
+        "tests": [
+          {
+            "tcId": 1,
+            "qx": "01ED77E3F1591D2EC730D0ED6D592F8DD24158D0E696408DBD",
+            "qy": "BF31C6463EB1B6B55C8930550B88CF8D1F6432A832B40FB4"
+          }
+        ]
+      }
+    ]
+  }
+]

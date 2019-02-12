@@ -1,0 +1,78 @@
+[ {
+  "acvVersion": "0.5"
+}, {
+  "vsId" : 586,
+  "algorithm" : "HMAC-SHA-1",
+  "testGroups" : [ {
+    "tgId": 999,
+    "testType" : "AFT",
+    "keyLen" : 320,
+    "msgLen" : 128,
+    "macLen" : 160,
+    "tests" : [ {
+      "tcId" : 1,
+      "key" : "E81D7DBA3BABF4BC723E7BA94C7F92417232632B0AE0C1F2A17C71371FEB35AFAD1A6E256BDEAB1C",
+      "msg" : "B81148076A21CD11AD599D07F06DC2D3"
+    } ]
+  } ]
+ }, {
+  "vsId" : 587,
+  "algorithm" : "HMAC-SHA2-224",
+  "testGroups" : [ {
+    "tgId": 999,
+    "testType" : "AFT",
+    "keyLen" : 320,
+    "msgLen" : 128,
+    "macLen" : 224,
+    "tests" : [ {
+      "tcId" : 1,
+      "key" : "C801288D9E9A3227E575CED756AEB37F631AC7CB71F1C898D5BBD608D9F08D56FF5B97DB9422BD9C",
+      "msg" : "D57A02E40E7D37B233E6AB9E2C6EB84D"
+    } ]
+  } ]
+}, {
+  "vsId" : 588,
+  "algorithm" : "HMAC-SHA2-256",
+  "testGroups" : [ {
+    "tgId": 999,
+    "testType" : "AFT",
+    "keyLen" : 256,
+    "msgLen" : 128,
+    "macLen" : 256,
+    "tests" : [ {
+      "tcId" : 1,
+      "key" : "0FFD202CA8864C56EEF8A06CB2DA76A6D3667FEDCED18F1822F779CB79A53136",
+      "msg" : "12025117C3D05DD77A6C53FF51C33165"
+    } ]
+  } ]
+}, {
+  "vsId" : 589,
+  "algorithm" : "HMAC-SHA2-384",
+  "testGroups" : [ {
+    "tgId": 999,
+    "testType" : "AFT",
+    "keyLen" : 320,
+    "msgLen" : 128,
+    "macLen" : 384,
+    "tests" : [ {
+      "tcId" : 1,
+      "key" : "16C517FA483EA230DE88F82630BE07CB325F132FB31F38AAF82DF7D73958C82D8219EDD10FDC0298",
+      "msg" : "8430A70215FB97D821DC2BFFE799743D"
+     } ]
+  } ]
+}, {
+  "vsId" : 590,
+  "algorithm" : "HMAC-SHA2-512",
+  "testGroups" : [ {
+    "tgId": 999,
+    "testType" : "AFT",
+    "keyLen" : 320,
+    "msgLen" : 128,
+    "macLen" : 512,
+    "tests" : [ {
+      "tcId" : 1,
+      "key" : "76D7DBB87B20914FE9EAEF16DB7C57DD909C4D01F2BF1DA94B7BF04710BA6057E7EC4ECA0EB1B686",
+      "msg" : "39F5E5E5245B0C92C26B4ABF53E644E9"
+      } ]
+  } ]
+} ]

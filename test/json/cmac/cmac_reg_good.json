@@ -1,0 +1,65 @@
+[
+  {
+    "acvVersion": "0.5"
+  },
+  {
+    "capabilityExchange": {
+      "algorithms": [
+        {
+          "algorithm": "CMAC-AES",
+          "prereqVals": [
+            {
+              "algorithm": "AES",
+              "valValue": "same"
+            }
+          ],
+          "direction": [
+            "gen",
+            "ver"
+          ],
+          "msgLen": [
+            0,
+            128,
+            72,
+            200,
+            0
+          ],
+          "macLen": [
+            128
+          ],
+          "keyLen": [
+            128,
+            192,
+            256
+          ]
+        },
+        {
+          "algorithm": "CMAC-TDES",
+          "prereqVals": [
+            {
+              "algorithm": "TDES",
+              "valValue": "same"
+            }
+          ],
+          "direction": [
+            "gen",
+            "ver"
+          ],
+          "msgLen": [
+            0,
+            256,
+            120,
+            248,
+            0
+          ],
+          "macLen": [
+            64
+          ],
+          "keyingOption": [
+            1
+          ]
+        }
+      ]
+    }
+  }
+]

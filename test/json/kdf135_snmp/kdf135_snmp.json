@@ -1,0 +1,44 @@
+[ {
+  "acvVersion": "0.5"
+}, {
+  "vsId" : 359,
+  "algorithm" : "kdf-components",
+  "mode" : "snmp",
+  "testGroups" : [ {
+    "tgId": 999,
+    "engineId" : "800002B805123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456",
+    "passwordLength" : 64,
+    "tests" : [ {
+      "tcId" : 1,
+      "password" : "HVExHjfY"
+    }, {
+      "tcId" : 2,
+      "password" : "MFuZZkDA"
+    }, {
+      "tcId" : 3,
+      "password" : "OmHKCZKr"
+    }, {
+      "tcId" : 4,
+      "password" : "WOvAJxgA"
+    }, {
+      "tcId" : 5,
+      "password" : "LFaddGOQ"
+    }, {
+      "tcId" : 6,
+      "password" : "eFGcuFLI"
+    }, {
+      "tcId" : 7,
+      "password" : "tyPuuaUH"
+    }, {
+      "tcId" : 8,
+      "password" : "lnATOFpo"
+    }, {
+      "tcId" : 9,
+      "password" : "zTnujzwh"
+    }, {
+      "tcId" : 10,
+      "password" : "yQFWsHWr"
+    }
+  ]
+ } ]
+} ]

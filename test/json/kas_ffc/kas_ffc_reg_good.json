@@ -1,0 +1,68 @@
+[
+  {
+    "acvVersion": "0.5"
+  },
+  {
+    "capabilityExchange": {
+      "algorithms": [
+        {
+          "algorithm": "KAS-FFC",
+          "mode": "Component",
+          "prereqVals": [
+            {
+              "algorithm": "DSA",
+              "valValue": "same"
+            },
+            {
+              "algorithm": "SHA",
+              "valValue": "same"
+            },
+            {
+              "algorithm": "DRBG",
+              "valValue": "same"
+            },
+            {
+              "algorithm": "CCM",
+              "valValue": "same"
+            },
+            {
+              "algorithm": "CMAC",
+              "valValue": "same"
+            },
+            {
+              "algorithm": "HMAC",
+              "valValue": "same"
+            }
+          ],
+          "function": [
+            "dpGen",
+            "dpVal"
+          ],
+          "scheme": {
+            "dhEphem": {
+              "kasRole": [
+                "initiator",
+                "responder"
+              ],
+              "noKdfNoKc": {
+                "parameterSet": {
+                  "fb": {
+                    "hashAlg": [
+                      "SHA2-224",
+                      "SHA2-256"
+                    ]
+                  },
+                  "fc": {
+                    "hashAlg": [
+                      "SHA2-256"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+]
