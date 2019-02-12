@@ -1,0 +1,142 @@
+[ {
+  "acvVersion": "0.5"
+}, {
+  "vsId" : 695,
+  "algorithm" : "DSA",
+  "mode" : "pqgGen",
+  "testGroups" : [ {
+    "tgId": 999,
+    "l" : 2048,
+    "n" : 224,
+    "hashAlg" : "SHA2-224",
+    "testType" : "GDT",
+    "pqMode" : "probable",
+    "tests" : [ {
+      "tcId" : 1
+    }, {
+      "tcId" : 2
+    } ]
+  }, {
+    "tgId": 999,
+    "l" : 2048,
+    "n" : 224,
+    "hashAlg" : "SHA2-256",
+    "testType" : "GDT",
+    "pqMode" : "probable",
+    "tests" : [ {
+      "tcId" : 3
+    }, {
+      "tcId" : 4
+    } ]
+  }, {
+    "tgId": 999,
+    "l" : 2048,
+    "n" : 224,
+    "hashAlg" : "SHA2-384",
+    "testType" : "GDT",
+    "pqMode" : "probable",
+    "tests" : [ {
+      "tcId" : 5
+    }, {
+      "tcId" : 6
+    } ]
+  }, {
+    "tgId": 999,
+    "l" : 2048,
+    "n" : 224,
+    "hashAlg" : "SHA2-512",
+    "testType" : "GDT",
+    "pqMode" : "probable",
+    "tests" : [ {
+      "tcId" : 7
+    }, {
+      "tcId" : 8
+    } ]
+  }, {
+    "tgId": 999,
+    "l" : 2048,
+    "n" : 256,
+    "hashAlg" : "SHA2-256",
+    "testType" : "GDT",
+    "pqMode" : "probable",
+    "tests" : [ {
+      "tcId" : 9
+    }, {
+      "tcId" : 10
+    } ]
+  }, {
+    "tgId": 999,
+    "l" : 2048,
+    "n" : 256,
+    "hashAlg" : "SHA2-384",
+    "testType" : "GDT",
+    "pqMode" : "probable",
+    "tests" : [ {
+      "tcId" : 11
+    }, {
+      "tcId" : 12
+    } ]
+  }, {
+    "tgId": 999,
+    "l" : 2048,
+    "n" : 256,
+    "hashAlg" : "SHA2-512",
+    "testType" : "GDT",
+    "pqMode" : "probable",
+    "tests" : [ {
+      "tcId" : 13
+    }, {
+      "tcId" : 14
+    } ]
+  }, {
+    "tgId": 999,
+    "l" : 3072,
+    "n" : 256,
+    "hashAlg" : "SHA2-256",
+    "testType" : "GDT",
+    "pqMode" : "probable",
+    "tests" : [ {
+      "tcId" : 15
+    }, {
+      "tcId" : 16
+    } ]
+  }, {
+    "tgId": 999,
+    "l" : 3072,
+    "n" : 256,
+    "hashAlg" : "SHA2-384",
+    "testType" : "GDT",
+    "pqMode" : "probable",
+    "tests" : [ {
+      "tcId" : 17
+    }, {
+      "tcId" : 18
+    } ]
+  }, {
+    "tgId": 999,
+    "l" : 3072,
+    "n" : 256,
+    "hashAlg" : "SHA2-512",
+    "testType" : "GDT",
+    "pqMode" : "probable",
+    "tests" : [ {
+      "tcId" : 19
+    }, {
+      "tcId" : 20
+    } ]
+  }, {
+    "tgId": 999,
+    "l" : 2048,
+    "n" : 224,
+    "hashAlg" : "SHA2-224",
+    "testType" : "GDT",
+    "gMode" : "canonical",
+    "tests" : [ {
+      "tcId" : 21,
+      "q" : "835D63824BB2409CC69929C9FD8042AAC75EBBFB191B32718D7E08EB",
+      "domainSeed" : "E594B5DB3126D10FF00B58537D063C4B8FA9F1755E027F0E59977D75E594B5DB3126D10FF00B58537D063C4B8FA9F1755E027F0E59979427E594B5DB3126D10FF00B58537D063C4B8FA9F1755E027F0E59977DF7",
+      "index" : "82"
+    } ]
+  } ]
+} ]
+

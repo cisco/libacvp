@@ -1,0 +1,23 @@
+[
+  {
+    "acvVersion": "0.4"
+  }, 
+  {
+    "vsId": 105, 
+    "algorithm": "KAS-ECC", 
+    "testGroups": [
+      {
+        "tgId": 999, 
+        "testType": "AFT", 
+        "tests": [
+          {
+            "publicServerY": "0CE8A67126BEA5E35F7CE9642C12C6D72FB28C00BDF215282C3653FB", 
+            "tcId": 1
+          }
+        ], 
+        "curve": "P-224"
+      }
+    ], 
+    "mode": "CDH-Component"
+  }
+]

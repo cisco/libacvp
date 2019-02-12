@@ -1,0 +1,21 @@
+[ {
+  "acvVersion": "0.5"
+}, {
+  "vsId" : 13133,
+  "algorithm" : "kdf-components",
+  "mode" : "tls",
+  "testGroups" : [ {
+    "tgId": 999,
+    "tlsVersion" : "v1.2",
+    "hashAlg" : "SHA2-256",
+    "preMasterSecretLength" : 384,
+    "keyBlockLength" : 1024,
+    "tests" : [ {
+      "tcId" : 1,
+      "clientHelloRandom" : "1B27B3FBBF7100EE2D37751E549ED7C97945CF7D5904AE0B2B65504C84AC6CB0",
+      "serverHelloRandom" : "5730A5DE4C957E353AE386D8FCE23BC0F8A9DB8939F2BC3A5D452338482096F5",
+      "serverRandom" : "981787E8C734F5A65C8670A664F583D937B6816D976B3CFAC449C1779FB29B8C",
+      "preMasterSecret" : "02DB76D3ACB405C726358DE8FDE8A0AE92A8E4B5D198D091FB60AFC5392623BA1F7307F44C69715DFAA0152995A96BDB"
+    } ]
+  } ]
+} ]

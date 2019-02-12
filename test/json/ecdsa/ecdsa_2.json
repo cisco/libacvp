@@ -1,0 +1,21 @@
+[
+  {
+    "acvVersion": "0.5"
+  },
+  {
+    "vsId": 1564,
+    "algorithm": "ECDSA",
+    "testGroups": [
+      {
+        "tgId": 1,
+        "curve": "P-224",
+        "secretGenerationMode": "extra bits",
+        "tests": [
+          {
+            "tcId": 1
+          }
+        ]
+      }
+    ]
+  }
+]

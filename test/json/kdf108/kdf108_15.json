@@ -1,0 +1,20 @@
+[ {
+  "acvVersion": "0.5"
+}, {
+  "vsId" : 13466,
+  "algorithm" : "KDF",
+  "testGroups" : [ {
+    "tgId": 999,
+    "kdfMode" : "feedback",
+    "macMode" : "HMAC-SHA-1",
+    "counterLocation" : "none",
+    "keyOutLength" : 160,
+    "counterLength" : 0,
+    "tests" : [ {
+      "tcId" : 1,
+      "keyIn" : "6EEBD56976011E56A7AA658CCD09A659",
+      "iv" : "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "deferred" : true
+    } ]
+  } ]
+} ]

@@ -1,0 +1,107 @@
+[
+  {
+    "acvVersion": "0.5"
+  },
+  {
+    "capabilityExchange": {
+      "algorithms": [
+        {
+          "algorithm": "KAS-ECC",
+          "mode": "CDH-Component",
+          "prereqVals": [
+            {
+              "algorithm": "ECDSA",
+              "valValue": "same"
+            }
+          ],
+          "function": [
+            "partialVal"
+          ],
+          "curve": [
+            "P-224",
+            "P-256",
+            "P-384",
+            "P-521",
+            "K-233",
+            "K-283",
+            "K-409",
+            "K-571",
+            "B-233",
+            "B-283",
+            "B-409",
+            "B-571"
+          ]
+        },
+        {
+          "algorithm": "KAS-ECC",
+          "mode": "Component",
+          "prereqVals": [
+            {
+              "algorithm": "ECDSA",
+              "valValue": "same"
+            },
+            {
+              "algorithm": "SHA",
+              "valValue": "same"
+            },
+            {
+              "algorithm": "DRBG",
+              "valValue": "same"
+            },
+            {
+              "algorithm": "CCM",
+              "valValue": "same"
+            },
+            {
+              "algorithm": "CMAC",
+              "valValue": "same"
+            },
+            {
+              "algorithm": "HMAC",
+              "valValue": "same"
+            }
+          ],
+          "function": [
+            "partialVal"
+          ],
+          "scheme": {
+            "ephemeralUnified": {
+              "kasRole": [
+                "initiator",
+                "responder"
+              ],
+              "noKdfNoKc": {
+                "parameterSet": {
+                  "eb": {
+                    "curve": "P-224",
+                    "hashAlg": [
+                      "SHA2-224"
+                    ]
+                  },
+                  "ec": {
+                    "curve": "P-256",
+                    "hashAlg": [
+                      "SHA2-256"
+                    ]
+                  },
+                  "ed": {
+                    "curve": "P-384",
+                    "hashAlg": [
+                      "SHA2-384"
+                    ]
+                  },
+                  "ee": {
+                    "curve": "P-521",
+                    "hashAlg": [
+                      "SHA2-512"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+]

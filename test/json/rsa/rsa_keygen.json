@@ -1,0 +1,98 @@
+[
+  {
+    "acvVersion": "0.5"
+  }, 
+  {
+    "testGroups": [
+      {
+        "infoGeneratedByServer": true, 
+        "tests": [
+          {
+            "seed": "182EF0B3E64082BC0B2330EFF7ECFFC8ECC610304F2E5C2B9E247EF7", 
+            "tcId": 1, 
+            "bitlens": [
+              314, 
+              166, 
+              329, 
+              161
+            ]
+          }, 
+          {
+            "seed": "3BEB3D3E75E64ED718CF7EBE566BB1EC1F9B1FBAB1D114000D0299B7", 
+            "tcId": 2, 
+            "bitlens": [
+              202, 
+              156, 
+              263, 
+              166
+            ]
+          }, 
+          {
+            "seed": "C2CF8DB369EF8393BE5AD78401FA21E79D50715FDAF7DFFC2F34FF74", 
+            "tcId": 3, 
+            "bitlens": [
+              230, 
+              188, 
+              264, 
+              218
+            ]
+          }
+        ], 
+        "modulo": 2048, 
+        "tgId": 999, 
+        "randPQ": "B.3.4", 
+        "pubExp": "fixed", 
+        "hashAlg": "SHA2-256", 
+        "fixedPubExp": "010001", 
+        "keyFormat": "standard", 
+        "testType": "aft"
+      }, 
+      {
+        "infoGeneratedByServer": true, 
+        "tests": [
+          {
+            "seed": "8DD6A51DFDF57928260E43163E91EA0C68A37E57CEAD549D17A302CD1E604080", 
+            "tcId": 4, 
+            "bitlens": [
+              175, 
+              530, 
+              286, 
+              426
+            ]
+          }, 
+          {
+            "seed": "D446238FA4198D10C91CB6092B596E6AE939E5C7A1E595E11B4945372D283E99", 
+            "tcId": 5, 
+            "bitlens": [
+              512, 
+              236, 
+              405, 
+              186
+            ]
+          }, 
+          {
+            "seed": "BFEBA4091E542174EF13BB7D07827E0244E027B2F5CA11D975916757CF18BBD3", 
+            "tcId": 6, 
+            "bitlens": [
+              522, 
+              222, 
+              192, 
+              549
+            ]
+          }
+        ], 
+        "modulo": 3072, 
+        "tgId": 999, 
+        "randPQ": "B.3.4", 
+        "pubExp": "fixed", 
+        "hashAlg": "SHA2-256", 
+        "fixedPubExp": "010001", 
+        "keyFormat": "standard", 
+        "testType": "aft"
+      }
+    ], 
+    "algorithm": "RSA", 
+    "vsId": 20618, 
+    "mode": "keyGen"
+  }
+]

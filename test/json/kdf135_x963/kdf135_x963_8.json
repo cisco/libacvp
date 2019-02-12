@@ -1,0 +1,70 @@
+[ {
+    "acvVersion": "0.5"
+  }, {
+      "vsId" : 1277,
+      "algorithm" : "kdf-components",
+      "mode" : "ansix9.63",
+      "testGroups" : [ {
+        "tgId": 999,
+        "hashAlg" : "SHA2-224",
+      "fieldSize" : 224,
+      "keyDataLength" : 256,
+      "sharedInfoLength" : 0,
+      "notests" : [ {
+              "tcId" : 1,
+              "z" : "F22D259B7D764A2003B054FF67901838CB8BA76228F31B8AF10F4E32",
+              "sharedInfo" : ""
+              }, {
+              "tcId" : 2,
+              "z" : "E7289F7BD1EF29C6F10BD0535A6679A9D0C0244642F1C4A4FAFF10E4",
+              "sharedInfo" : ""
+              }, {
+              "tcId" : 3,
+              "z" : "BB2C3C1ACB2A1CE3A75ADF94DB204E27742790A7524400ED655591D7",
+              "sharedInfo" : ""
+              }, {
+              "tcId" : 4,
+              "z" : "BB0381449C3C140878C996A9C2B21434A8E35BCEB46A099B057E2E20",
+              "sharedInfo" : ""
+              }, {
+              "tcId" : 5,
+              "z" : "0CB2B37283226869CF72B1FC390D6BE31ED92111783189D4B04A8A66",
+              "sharedInfo" : ""
+              }, {
+              "tcId" : 6,
+              "z" : "FE51340E92A003069C95AABD87B03AE2AAD43210444DAF0519C0E2F1",
+              "sharedInfo" : ""
+              }, {
+              "tcId" : 7,
+              "z" : "EE05161EC7C69BB72FEDC7DDC929C91D3419BF602F8625D6203DC767",
+              "sharedInfo" : ""
+              }, {
+              "tcId" : 8,
+              "z" : "CC46224746B5D7DA3D7E6191FD2681B3BDD3B3F449DC4F5DD10B2E42",
+              "sharedInfo" : ""
+              }, {
+              "tcId" : 9,
+              "z" : "6B14C897BD36C874367B30F329D4E0ECCED648B432ED981FC0027600",
+              "sharedInfo" : ""
+              }, {
+              "tcId" : 10,
+              "z" : "375810A617538B02F950AF8A4949F4931A9D13B17E480F083A8AC478",
+              "sharedInfo" : ""
+              }, {
+              "tcId" : 11,
+              "z" : "ED681A78E733EC7F80A26192E0785597DDC69CBEF0B9828456294540",
+              "sharedInfo" : ""
+              }, {
+              "tcId" : 12,
+              "z" : "53B7D86D45847213AC6273E9ED8B593A119646E96C3E11B7F7947271",
+              "sharedInfo" : ""
+              }, {
+              "tcId" : 13,
+              "z" : "FEDABBB705FE4561264590CA4BF60C178525CE084B7ECC1969DE4112",
+              "sharedInfo" : ""
+              }
+              ]
+            }
+          ]
+  }
+]

@@ -1,0 +1,35 @@
+[
+  {
+    "acvVersion": "0.5"
+  }, 
+  {
+    "vsId": 1163, 
+    "algorithm": "RSA", 
+    "testGroups": [
+      {
+        "tgId": 1, 
+        "sigType": "ansx9.31", 
+        "tests": [
+          {
+            "message": "f648ffc4ed74845803fec53ba865d3889b3892e402d96c5eba814698ec84b32ce1d7684917cff19d942ba2787a55cf2edce540bdd067dfafc55eb442178913c7e164144813f2446dc4ba9aa0c90fad708695233304016df04420b27cd31b08e29ff9ea080965e7903bb297fdbc1cd31741512590c7307ee7ded0278d48c4fa47", 
+            "tcId": 1165
+          }
+        ], 
+        "modulo": 2048, 
+        "hashAlg": "SHA2-256"
+      }, 
+      {
+        "tgId": 2, 
+        "sigType": "pkcs1v1.5", 
+        "tests": [
+          {
+            "message": "5af283b1b76ab2a695d794c23b35ca7371fc779e92ebf589e304c7f923d8cf976304c19818fcd89d6f07c8d8e08bf371068bdf28ae6ee83b2e02328af8c0e2f96e528e16f852f1fc5455e4772e288a68f159ca6bdcf902b858a1f94789b3163823e2d0717ff56689eec7d0e54d93f520d96e1eb04515abc70ae90578ff38d31b", 
+            "tcId": 1167
+          }
+        ], 
+        "modulo": 2048
+      }
+    ], 
+    "mode": "sigGen"
+  }
+]

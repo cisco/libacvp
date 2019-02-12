@@ -1,0 +1,27 @@
+[
+  {
+    "acvVersion": "0.5"
+  }, 
+  {
+    "vsId": 1173, 
+    "algorithm": "RSA", 
+    "testGroups": [
+      {
+        "tests": [
+          {
+            "message": "ff17e5e88ad5cd0dc463ae0b286273b3905271939c60ed70577edef018b9f596a7c7dbf3a1e0ba1b1ed0fe5790495d19ef7d143513ec744d617b9e8da9c78b994fb84fc4a9599e83a9e78f21bc28a0b4f1fdfa4f5e3bf779c0b7e2de61a0fe453f12c9c26ae7812daed1e8d272a6456ae0faab4b46f37ddbbc59324a08ed5681", 
+            "tcId": 1174, 
+            "signature": "299f16d55cc0405a9459a3b7cbbb05ce1983d165674579f3b2b5e1436a4fbdc44e0c14e578e19212cd87afe7765cafd93b112e83903104e1e98e9765c3582eecc298cc10fe42e539ba58c84f8a9318bbb2ec372429db637b7c5678c96798b95dc7b2be73b5cab0f5bac6fffaf1f63554735b793431e3ad116d52b38c0c7cb6e0ffbdb0edb1f6ed6696c98da9a9591d7d2104bb746465041259c116ec0acc61f2704107e4dbb455be24c54e1892d9c98ffeb8ed56ca502d02ab40e7806fbb0b2c583236cc43a9488ec2df558310cea60e4c0a5cc8d84a162dd01c01f6dc817f484f69ea9ce8f6c8bc2d574c4b1f2626cd6f9552630d55d7d69aeacfc42348c22f"
+          }
+        ], 
+        "modulo": 2048, 
+        "tgId": 1, 
+        "hashAlg": "SHA2-256", 
+        "sigType": "ansx9.31", 
+        "e": "166f67", 
+        "testType": "aft"
+      }
+    ], 
+    "mode": "sigVer"
+  }
+]

@@ -1,0 +1,36 @@
+[
+  {
+    "acvVersion": "0.5"
+  },
+  {
+    "capabilityExchange": {
+      "algorithms": [
+        {
+          "algorithm": "SHA-1",
+          "inBit": false,
+          "inEmpty": true
+        },
+        {
+          "algorithm": "SHA-224",
+          "inBit": false,
+          "inEmpty": true
+        },
+        {
+          "algorithm": "SHA-256",
+          "inBit": false,
+          "inEmpty": true
+        },
+        {
+          "algorithm": "SHA-384",
+          "inBit": false,
+          "inEmpty": true
+        },
+        {
+          "algorithm": "SHA-512",
+          "inBit": false,
+          "inEmpty": true
+        }
+      ]
+    }
+  }
+]

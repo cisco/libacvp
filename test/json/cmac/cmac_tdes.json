@@ -1,0 +1,141 @@
+[
+  {
+    "acvVersion": "0.5"
+  }, 
+  {
+    "algorithm": "CMAC-TDES", 
+    "testGroups": [
+      {
+        "macLen": 64, 
+        "tests": [
+          {
+            "key3": "2C643506D0652889", 
+            "key2": "29D57A7D5675F17F", 
+            "message": "", 
+            "tcId": 1, 
+            "key1": "D878E220A6188E4F"
+          }, 
+          {
+            "key3": "C1B0F325834CAA02", 
+            "key2": "B0A319E63F42AEDF", 
+            "message": "", 
+            "tcId": 2, 
+            "key1": "EBED110CDD55B348"
+          }, 
+          {
+            "key3": "A7256E6E02FF560A", 
+            "key2": "8C07E0E85BCE8CAF", 
+            "message": "", 
+            "tcId": 3, 
+            "key1": "35429538CF76B340"
+          }
+        ], 
+        "tgId": 999, 
+        "direction": "gen", 
+        "keyingOption": 1, 
+        "testType": "AFT", 
+        "msgLen": 0
+      }, 
+      {
+        "macLen": 64, 
+        "tests": [
+          {
+            "key3": "29DA46E5204A8F93", 
+            "key2": "C2F49B67ADE94E65", 
+            "message": "2EDA23EED04234C3D122C5A724087F", 
+            "tcId": 9, 
+            "key1": "63DEE4FA61EFE410"
+          }, 
+          {
+            "key3": "F74992FE25F29A5E", 
+            "key2": "9D67D295E3CF5A5A", 
+            "message": "E0BF07C691B6369F06CA2478257C42", 
+            "tcId": 10, 
+            "key1": "643321DCA1E7B1AF"
+          }, 
+          {
+            "key3": "3C3EF64CC91035D1", 
+            "key2": "52383C3C21A5CCF0", 
+            "message": "E657CB6B15D1EF95A141DFAD2F548F", 
+            "tcId": 11, 
+            "key1": "D3D06C81E28E673C"
+          }
+        ], 
+        "tgId": 999, 
+        "direction": "gen", 
+        "keyingOption": 1, 
+        "testType": "AFT", 
+        "msgLen": 120
+      }, 
+      {
+        "macLen": 64, 
+        "tests": [
+          {
+            "key3": "BE4EA3F34DFCC6BD", 
+            "key2": "F2ACD0FD13B0911C", 
+            "key1": "240E4226CEF4F01E", 
+            "mac": "46F84E0C12390CBC", 
+            "message": "", 
+            "tcId": 25
+          }, 
+          {
+            "key3": "165629128A775810", 
+            "key2": "E96EF16191E38EFF", 
+            "key1": "B87A5C67F4F09E21", 
+            "mac": "B7420FAB159737BD", 
+            "message": "", 
+            "tcId": 26
+          }, 
+          {
+            "key3": "9DC70C673477ECCD", 
+            "key2": "9DCA2E932AB426B7", 
+            "key1": "DEB3DE045E6EF050", 
+            "mac": "E4C2B62BA85BAE25", 
+            "message": "", 
+            "tcId": 27
+          }
+        ], 
+        "tgId": 999, 
+        "direction": "ver", 
+        "keyingOption": 1, 
+        "testType": "AFT", 
+        "msgLen": 0
+      }, 
+      {
+        "macLen": 64, 
+        "tests": [
+          {
+            "key3": "781FBF457B36E0F1", 
+            "key2": "BEE8E574BD706775", 
+            "key1": "13FBE3DD207F3926", 
+            "mac": "07761150AF9DC5EF", 
+            "message": "0D3F8B9C1723CCFADF0678659215ECB079CB9182AC5578FF09349DD4A1F14AB0", 
+            "tcId": 65
+          }, 
+          {
+            "key3": "32D7A47DCDFACA22", 
+            "key2": "6E953C3C8FFBBD66", 
+            "key1": "4338AD69CEF16F05", 
+            "mac": "89C09030C7F1F01A", 
+            "message": "757B3F4E1C96A88D8FBE4F0ABAFF5F3E4733ABD0C65FC84838736D1D7A07A712", 
+            "tcId": 66
+          }, 
+          {
+            "key3": "49F8155D9CD5BBB7", 
+            "key2": "3B5A9ECFDD7447C2", 
+            "key1": "E9C3387DAE098FA9", 
+            "mac": "C276E9EACB02BC25", 
+            "message": "7E14C671AFA5E03B0ABEB24A074771064AE0AA5DEF1833EA4C09EA57D774EC77", 
+            "tcId": 67
+          }
+        ], 
+        "tgId": 999, 
+        "direction": "ver", 
+        "keyingOption": 1, 
+        "testType": "AFT", 
+        "msgLen": 256
+      }
+    ], 
+    "vsId": 22678
+  }
+]

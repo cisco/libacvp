@@ -1,0 +1,18 @@
+[ {
+  "acvVersion": "0.5"
+}, {
+  "vsId" : 13462,
+  "algorithm" : "kdf-components",
+  "mode" : "srtp",
+  "testGroups" : [ {
+    "tgId": 999,
+    "kdr" : "01",
+    "aesKeyLength" : 128,
+    "tests" : [ {
+      "tcId" : 1,
+      "masterKey" : "E3FA4E33EE20ADFAC583E3BB9B87B8DC",
+      "masterSalt" : "E1AA1C163B6BF98554427BDC80E0",
+      "index" : "DE030B8421F0"
+    } ]
+  } ]
+} ]
