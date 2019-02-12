@@ -95,11 +95,13 @@ static ACVP_RESULT acvp_kas_ffc_init_comp_tc(ACVP_CTX *ctx,
                                              const char *eps,
                                              const char *epri,
                                              const char *epui,
-                                             const char *z) {
+                                             const char *z,
+                                             ACVP_KAS_FFC_TEST_TYPE test_type) {
     ACVP_RESULT rv;
 
     stc->mode = ACVP_KAS_FFC_MODE_COMPONENT;
     stc->md = hash_alg;
+    stc->test_type = test_type;
 
     stc->p = calloc(1, ACVP_KAS_FFC_BYTE_MAX);
     if (!stc->p) { return ACVP_MALLOC_FAIL; }
@@ -215,7 +217,8 @@ static ACVP_RESULT acvp_kas_ffc_comp(ACVP_CTX *ctx,
     unsigned int i, g_cnt;
     int j, t_cnt, tc_id;
     ACVP_RESULT rv;
-    const char *test_type;
+    const char *test_type_str;
+    ACVP_KAS_FFC_TEST_TYPE test_type;
 
     groups = json_object_get_array(obj, "testGroups");
     g_cnt = json_array_get_count(groups);
@@ -255,14 +258,15 @@ static ACVP_RESULT acvp_kas_ffc_comp(ACVP_CTX *ctx,
             goto err;
         }
 
-        test_type = json_object_get_string(groupobj, "testType");
-        if (!test_type) {
+        test_type_str = json_object_get_string(groupobj, "testType");
+        if (!test_type_str) {
             ACVP_LOG_ERR("Server JSON missing 'testType'");
             rv = ACVP_MISSING_ARG;
             goto err;
         }
-        stc->test_type = read_test_type(test_type);
-        if (!stc->test_type) {
+
+        test_type = read_test_type(test_type_str);
+        if (!test_type) {
             ACVP_LOG_ERR("Server JSON invalid 'testType'");
             rv = ACVP_INVALID_ARG;
             goto err;
@@ -308,7 +312,7 @@ static ACVP_RESULT acvp_kas_ffc_comp(ACVP_CTX *ctx,
         }
 
         ACVP_LOG_INFO("    Test group: %d", i);
-        ACVP_LOG_INFO("      test type: %s", test_type);
+        ACVP_LOG_INFO("      test type: %s", test_type_str);
         ACVP_LOG_INFO("           hash: %s", hash_str);
         ACVP_LOG_INFO("              p: %s", p);
         ACVP_LOG_INFO("              q: %s", q);
@@ -339,7 +343,7 @@ static ACVP_RESULT acvp_kas_ffc_comp(ACVP_CTX *ctx,
                 goto err;
             }
 
-            if (stc->test_type == ACVP_KAS_FFC_TT_VAL) {
+            if (test_type == ACVP_KAS_FFC_TT_VAL) {
                 /*
                  * Validate
                  */
@@ -403,7 +407,7 @@ static ACVP_RESULT acvp_kas_ffc_comp(ACVP_CTX *ctx,
              * the crypto module.
              */
             rv = acvp_kas_ffc_init_comp_tc(ctx, stc, tc_id, hash_alg,
-                                           p, q, g, eps, epri, epui, z);
+                                           p, q, g, eps, epri, epui, z, test_type);
             if (rv != ACVP_SUCCESS) {
                 acvp_kas_ffc_release_tc(stc);
                 json_value_free(r_tval);
