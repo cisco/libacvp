@@ -251,7 +251,7 @@ Test(TRANSPORT_RETRIEVE_RESULT, incomplete_ctx, .init = setup, .fini = teardown)
 Test(TRANSPORT_RETRIEVE_RESULT, missing_vsid_url, .init = setup, .fini = teardown) {
     rv = acvp_set_server(ctx, "demo.acvts.nist.gov", 443);
     cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_retrieve_result(ctx, NULL);
+    rv = acvp_retrieve_vector_set_result(ctx, NULL);
     cr_assert(rv == ACVP_MISSING_ARG);
 }
 
@@ -259,7 +259,7 @@ Test(TRANSPORT_RETRIEVE_RESULT, missing_vsid_url, .init = setup, .fini = teardow
  * null ctx
  */
 Test(TRANSPORT_RETRIEVE_RESULT, missing_ctx) {
-    rv = acvp_retrieve_result(NULL, vsid_url);
+    rv = acvp_retrieve_vector_set_result(NULL, vsid_url);
     cr_assert(rv == ACVP_NO_CTX);
 }
 
@@ -273,7 +273,7 @@ Test(TRANSPORT_RETRIEVE_RESULT, good, .init = setup, .fini = teardown) {
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_send_test_session_registration(ctx, little_reg);
     cr_assert(rv == ACVP_TRANSPORT_FAIL);
-    rv = acvp_retrieve_result(ctx, vsid_url);
+    rv = acvp_retrieve_vector_set_result(ctx, vsid_url);
     cr_assert(rv == ACVP_SUCCESS);
 }
 

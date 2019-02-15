@@ -559,9 +559,7 @@
  * END RSA
  */
 
-#define ACVP_KAT_BUF_MAX        1024 * 1024 * 4
-#define ACVP_ANS_BUF_MAX        1024 * 1024 * 4
-#define ACVP_REG_BUF_MAX        1024 * 128
+#define ACVP_CURL_BUF_MAX       (1024 * 1024 * 4) /**< 4 MB */
 #define ACVP_RETRY_TIME_MAX     60 /* seconds */
 #define ACVP_JWT_TOKEN_MAX      1024
 #define ACVP_ATTR_URL_MAX       2083 /* MS IE's limit - arbitrary */
@@ -1064,17 +1062,13 @@ struct acvp_ctx_t {
     ACVP_RESULT (*totp_cb) (char **token, int token_max);
 
     /* Transitory values */
-    char *login_buf;      /* holds the 2-FA authentication response */
-    char *reg_buf;        /* holds the JSON registration response */
-    char *kat_buf;        /* holds the current set of vectors being processed */
-    char *upld_buf;       /* holds the HTTP response from server when uploading results */
-    JSON_Value *kat_resp; /* holds the current set of vector responses */
-    int read_ctr;         /* used during curl processing */
-    char *test_sess_buf;
-    char *sample_buf;
     int vs_id;      /* vs_id currently being processed */
     char *vsid_url; /* vs currently being processed */
-    char *ans_buf;  /* holds the queried answers on a sample registration */
+
+    JSON_Value *kat_resp; /* holds the current set of vector responses */
+
+    char *curl_buf;       /**< Data buffer for inbound Curl messages */
+    int curl_read_ctr;    /**< Total number of bytes written to the curl_buf */
 };
 
 ACVP_RESULT acvp_send_test_session_registration(ACVP_CTX *ctx, char *reg, int len);
@@ -1095,8 +1089,6 @@ ACVP_RESULT acvp_send_login(ACVP_CTX *ctx, char *login, int len);
 ACVP_RESULT acvp_retrieve_vector_set(ACVP_CTX *ctx, char *vsid_url);
 
 ACVP_RESULT acvp_retrieve_vector_set_result(ACVP_CTX *ctx, char *vsid_url);
-
-ACVP_RESULT acvp_retrieve_result(ACVP_CTX *ctx, char *api_url);
 
 ACVP_RESULT acvp_retrieve_expected_result(ACVP_CTX *ctx, char *api_url);
 
