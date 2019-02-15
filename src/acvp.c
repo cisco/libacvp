@@ -1836,7 +1836,7 @@ static ACVP_RESULT acvp_process_vsid(ACVP_CTX *ctx, char *vsid_url) {
     ACVP_RESULT rv = ACVP_SUCCESS;
     JSON_Value *val = NULL;
     JSON_Object *obj = NULL;
-    char *json_buf = NULL;
+    unsigned int retry_period = 0;
     int retry = 1;
 
     //TODO: do we want to limit the number of retries?
@@ -1845,56 +1845,50 @@ static ACVP_RESULT acvp_process_vsid(ACVP_CTX *ctx, char *vsid_url) {
          * Get the KAT vector set
          */
         rv = acvp_retrieve_vector_set(ctx, vsid_url);
-        if (rv != ACVP_SUCCESS) {
-            goto end;
-        }
-        json_buf = ctx->curl_buf;
+        if (rv != ACVP_SUCCESS) goto end;
+
         if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
             printf("\n200 OK %s\n", ctx->curl_buf);
         } else {
             ACVP_LOG_STATUS("200 OK %s\n", ctx->curl_buf);
         }
-        val = json_parse_string(json_buf);
+
+        val = json_parse_string(ctx->curl_buf);
         if (!val) {
             ACVP_LOG_ERR("JSON parse error");
             rv = ACVP_JSON_ERR;
             goto end;
         }
         obj = acvp_get_obj_from_rsp(val);
-        ctx->vsid_url = vsid_url;
 
         /*
          * Check if we received a retry response
          */
-        unsigned int retry_period = json_object_get_number(obj, "retry");
+        retry_period = (unsigned int)json_object_get_number(obj, "retry");
         if (retry_period) {
-            rv = acvp_retry_handler(ctx, retry_period);
+            /*
+             * Wait and try again to retrieve the VectorSet
+             */
+            acvp_retry_handler(ctx, retry_period);
+            retry = 1;
         } else {
             /*
-             * Process the KAT vectors
+             * Process the KAT VectorSet
              */
             rv = acvp_process_vector_set(ctx, obj);
-        }
-        json_value_free(val);
-
-        /*
-         * Check if we need to retry the download because
-         * the KAT values were not ready
-         */
-        if (ACVP_KAT_DOWNLOAD_RETRY == rv) {
-            retry = 1;
-        } else if (rv != ACVP_SUCCESS) {
-            return rv;
-        } else {
             retry = 0;
         }
+
+        json_value_free(val);
+        if (rv != ACVP_SUCCESS) return rv;
     }
 
     /*
      * Send the responses to the ACVP server
      */
     ACVP_LOG_STATUS("POST vector set response vsId: %d", ctx->vs_id);
-    rv = acvp_submit_vector_responses(ctx);
+    rv = acvp_submit_vector_responses(ctx, vsid_url);
+
 end:
     return rv;
 }

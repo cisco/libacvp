@@ -400,6 +400,25 @@ ACVP_RESULT acvp_send_oe_registration(ACVP_CTX *ctx, char *reg) {
 }
 #endif
 
+static ACVP_RESULT sanity_check_ctx(ACVP_CTX *ctx) {
+    if (!ctx) {
+        ACVP_LOG_ERR("Missing ctx");
+        return ACVP_NO_CTX;
+    }
+
+    if (!ctx->server_port || !ctx->server_name) {
+        ACVP_LOG_ERR("Call acvp_set_server to fill in server name and port");
+        return ACVP_MISSING_ARG;
+    }
+
+    if (!ctx->api_context) {
+        ACVP_LOG_ERR("No api context, need to call acvp_set_api_context first");
+        return ACVP_MISSING_ARG;
+    }
+
+    return ACVP_SUCCESS;
+}
+
 /*
  * This is the transport function used within libacvp to register
  * the DUT attributes with the ACVP server.
@@ -409,7 +428,16 @@ ACVP_RESULT acvp_send_oe_registration(ACVP_CTX *ctx, char *reg) {
  */
 #define ACVP_TEST_SESSIONS_URI "testSessions"
 ACVP_RESULT acvp_send_test_session_registration(ACVP_CTX *ctx, char *reg, int len) {
+    ACVP_RESULT rv = 0;
     char url[ACVP_ATTR_URL_MAX] = {0};
+
+    rv = sanity_check_ctx(ctx);
+    if (ACVP_SUCCESS != rv) return rv;
+
+    if (!ctx->path_segment) {
+        ACVP_LOG_ERR("No path segment, need to call acvp_set_path_segment first");
+        return ACVP_MISSING_ARG;
+    }
 
     snprintf(url, ACVP_ATTR_URL_MAX - 1,
              "https://%s:%d/%s%s%s", ctx->server_name,
@@ -427,7 +455,16 @@ ACVP_RESULT acvp_send_test_session_registration(ACVP_CTX *ctx, char *reg, int le
  */
 #define ACVP_LOGIN_URI "login"
 ACVP_RESULT acvp_send_login(ACVP_CTX *ctx, char *login, int len) {
+    ACVP_RESULT rv = 0;
     char url[ACVP_ATTR_URL_MAX] = {0};
+
+    rv = sanity_check_ctx(ctx);
+    if (ACVP_SUCCESS != rv) return rv;
+
+    if (!ctx->path_segment) {
+        ACVP_LOG_ERR("No path segment, need to call acvp_set_path_segment first");
+        return ACVP_MISSING_ARG;
+    }
 
     snprintf(url, ACVP_ATTR_URL_MAX - 1,
              "https://%s:%d/%s%s%s",
@@ -441,18 +478,22 @@ ACVP_RESULT acvp_send_login(ACVP_CTX *ctx, char *login, int len) {
  * This function is used to submit a vector set response
  * to the ACV server.
  */
-ACVP_RESULT acvp_submit_vector_responses(ACVP_CTX *ctx) {
+ACVP_RESULT acvp_submit_vector_responses(ACVP_CTX *ctx, char *vsid_url) {
+    ACVP_RESULT rv = 0;
     char url[ACVP_ATTR_URL_MAX] = {0};
 
-    if (!ctx->vs_id) {
-        ACVP_LOG_ERR("Missing vs_id");
+    rv = sanity_check_ctx(ctx);
+    if (ACVP_SUCCESS != rv) return rv;
+
+    if (!vsid_url) {
+        ACVP_LOG_ERR("Missing vsid_url");
         return ACVP_MISSING_ARG;
     }
 
     snprintf(url, ACVP_ATTR_URL_MAX - 1,
             "https://%s:%d/%s%s/results",
             ctx->server_name, ctx->server_port,
-            ctx->api_context, ctx->vsid_url);
+            ctx->api_context, vsid_url);
 
     return acvp_network_action(ctx, ACVP_NET_POST_VS_RESP, url, NULL, 0);
 }
@@ -462,7 +503,11 @@ ACVP_RESULT acvp_submit_vector_responses(ACVP_CTX *ctx) {
  * a KAT vector set from the ACVP server.
  */
 ACVP_RESULT acvp_retrieve_vector_set(ACVP_CTX *ctx, char *vsid_url) {
+    ACVP_RESULT rv = 0;
     char url[ACVP_ATTR_URL_MAX] = {0};
+
+    rv = sanity_check_ctx(ctx);
+    if (ACVP_SUCCESS != rv) return rv;
 
     if (!vsid_url) {
         ACVP_LOG_ERR("Missing vsid_url");
@@ -484,10 +529,14 @@ ACVP_RESULT acvp_retrieve_vector_set(ACVP_CTX *ctx, char *vsid_url) {
  * more specifically for a vectorSet
  */
 ACVP_RESULT acvp_retrieve_vector_set_result(ACVP_CTX *ctx, char *api_url) {
+    ACVP_RESULT rv = 0;
     char url[ACVP_ATTR_URL_MAX] = {0};
 
+    rv = sanity_check_ctx(ctx);
+    if (ACVP_SUCCESS != rv) return rv;
+
     if (!api_url) {
-        ACVP_LOG_ERR("Missing vs_id from retrieve vector set");
+        ACVP_LOG_ERR("Missing api_url");
         return ACVP_MISSING_ARG;
     }
 
@@ -500,7 +549,16 @@ ACVP_RESULT acvp_retrieve_vector_set_result(ACVP_CTX *ctx, char *api_url) {
 }
 
 ACVP_RESULT acvp_retrieve_expected_result(ACVP_CTX *ctx, char *api_url) {
+    ACVP_RESULT rv = 0;
     char url[ACVP_ATTR_URL_MAX] = {0};
+
+    rv = sanity_check_ctx(ctx);
+    if (ACVP_SUCCESS != rv) return rv;
+
+    if (!api_url) {
+        ACVP_LOG_ERR("Missing api_url");
+        return ACVP_MISSING_ARG;
+    }
 
     snprintf(url, ACVP_ATTR_URL_MAX - 1,
             "https://%s:%d/%s%s/expected",
@@ -745,9 +803,10 @@ static ACVP_RESULT acvp_network_action(ACVP_CTX *ctx,
                                        int data_len) {
     ACVP_RESULT rv = ACVP_SUCCESS;
     ACVP_NET_ACTION generic_action = 0;
+    int check_data = 0;
 
     if (!ctx) {
-        ACVP_LOG_ERR("No CTX to send");
+        ACVP_LOG_ERR("Missing ctx");
         return ACVP_NO_CTX;
     }
 
@@ -756,20 +815,7 @@ static ACVP_RESULT acvp_network_action(ACVP_CTX *ctx,
         return ACVP_MISSING_ARG;
     }
 
-    if (!ctx->server_port || !ctx->server_name) {
-        ACVP_LOG_ERR("Call acvp_set_server to fill in server name and port");
-        return ACVP_MISSING_ARG;
-    }
-
-    if (!ctx->api_context) {
-        ACVP_LOG_ERR("No api context, need to call acvp_set_api_context first");
-        return ACVP_MISSING_ARG;
-    }
-
-    if (!ctx->path_segment) {
-        ACVP_LOG_ERR("No path segment, need to call acvp_set_path_segment first");
-        return ACVP_MISSING_ARG;
-    }
+    
 
     if (ctx->curl_buf) {
         /* Clear the HTTP buffer for next server response */
@@ -786,6 +832,7 @@ static ACVP_RESULT acvp_network_action(ACVP_CTX *ctx,
 
     case ACVP_NET_POST:
     case ACVP_NET_POST_REG:
+        check_data = 1;
         generic_action = ACVP_NET_POST;
         break;
 
@@ -793,12 +840,19 @@ static ACVP_RESULT acvp_network_action(ACVP_CTX *ctx,
         /* Clear jwt if logging in */
         if (ctx->jwt_token) free(ctx->jwt_token);
         ctx->jwt_token = NULL;
+        check_data = 1;
         generic_action = ACVP_NET_POST_LOGIN;
         break;
 
     case ACVP_NET_POST_VS_RESP:
+        check_data = 1;
         generic_action = ACVP_NET_POST_VS_RESP;
         break;
+    }
+
+    if (check_data && (!data || !data_len)) {
+        ACVP_LOG_ERR("POST action requires non-zero data/data_len");
+        return ACVP_NO_DATA;
     }
 
     rv = execute_network_action(ctx, generic_action, url, data, data_len);

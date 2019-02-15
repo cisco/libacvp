@@ -215,7 +215,7 @@ Test(TRANSPORT_RETRIEVE_VECTOR_SET, good, .init = setup, .fini = teardown) {
  * ctx has not set server and port
  */
 Test(TRANSPORT_SUBMIT_VECTOR_SET, incomplete_ctx, .init = setup, .fini = teardown) {
-    rv = acvp_submit_vector_responses(ctx);
+    rv = acvp_submit_vector_responses(ctx, vsid_url);
     cr_assert(rv == ACVP_MISSING_ARG);
 }
 
@@ -223,17 +223,17 @@ Test(TRANSPORT_SUBMIT_VECTOR_SET, incomplete_ctx, .init = setup, .fini = teardow
  * null ctx
  */
 Test(TRANSPORT_SUBMIT_VECTOR_SET, missing_ctx) {
-    rv = acvp_submit_vector_responses(NULL);
+    rv = acvp_submit_vector_responses(NULL, NULL);
     cr_assert(rv == ACVP_NO_CTX);
 }
 
 /*
- * missing vsId in ctx
+ * missing vsid_url
  */
 Test(TRANSPORT_SUBMIT_VECTOR_SET, missing_vsid, .init = setup, .fini = teardown) {
     rv = acvp_set_server(ctx, "demo.acvts.nist.gov", 443);
     cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_submit_vector_responses(ctx);
+    rv = acvp_submit_vector_responses(ctx, NULL);
     cr_assert(rv == ACVP_MISSING_ARG);
 }
 
@@ -241,7 +241,7 @@ Test(TRANSPORT_SUBMIT_VECTOR_SET, missing_vsid, .init = setup, .fini = teardown)
  * ctx has not set server and port
  */
 Test(TRANSPORT_RETRIEVE_RESULT, incomplete_ctx, .init = setup, .fini = teardown) {
-    rv = acvp_retrieve_result(ctx, vsid_url);
+    rv = acvp_retrieve_vector_set_result(ctx, vsid_url);
     cr_assert(rv == ACVP_MISSING_ARG);
 }
 
@@ -271,7 +271,7 @@ Test(TRANSPORT_RETRIEVE_RESULT, missing_ctx) {
 Test(TRANSPORT_RETRIEVE_RESULT, good, .init = setup, .fini = teardown) {
     rv = acvp_set_server(ctx, "demo.acvts.nist.gov", 443);
     cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_send_test_session_registration(ctx, little_reg);
+    rv = acvp_send_test_session_registration(ctx, little_reg, strlen(little_reg));
     cr_assert(rv == ACVP_TRANSPORT_FAIL);
     rv = acvp_retrieve_vector_set_result(ctx, vsid_url);
     cr_assert(rv == ACVP_SUCCESS);
@@ -283,7 +283,7 @@ Test(TRANSPORT_RETRIEVE_RESULT, good, .init = setup, .fini = teardown) {
 Test(TRANSPORT_SEND_TEST_SESSION_REG, missing_reg, .init = setup, .fini = teardown) {
     rv = acvp_set_server(ctx, "demo.acvts.nist.gov", 443);
     cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_send_test_session_registration(ctx, NULL);
+    rv = acvp_send_test_session_registration(ctx, NULL, 0);
     cr_assert(rv == ACVP_NO_DATA);
 }
 
@@ -291,7 +291,7 @@ Test(TRANSPORT_SEND_TEST_SESSION_REG, missing_reg, .init = setup, .fini = teardo
  * null ctx
  */
 Test(TRANSPORT_SEND_TEST_SESSION_REG, missing_ctx) {
-    rv = acvp_send_test_session_registration(NULL, reg);
+    rv = acvp_send_test_session_registration(NULL, reg, strlen(reg));
     cr_assert(rv == ACVP_NO_CTX);
 }
 
@@ -299,7 +299,7 @@ Test(TRANSPORT_SEND_TEST_SESSION_REG, missing_ctx) {
  * missing vector set id url
  */
 Test(TRANSPORT_SEND_TEST_SESSION_REG, incomplete_ctx, .init = setup, .fini = teardown) {
-    rv = acvp_send_test_session_registration(ctx, reg);
+    rv = acvp_send_test_session_registration(ctx, reg, strlen(reg));
     cr_assert(rv == ACVP_MISSING_ARG);
 }
 
@@ -308,7 +308,7 @@ Test(TRANSPORT_SEND_TEST_SESSION_REG, incomplete_ctx, .init = setup, .fini = tea
  * a 401 (unaurhtorized) which gives ACVP_TRANSPORT_FAIL
  */
 Test(TRANSPORT_SEND_TEST_SESSION_REG, good, .init = setup_session_parameters, .fini = teardown) {
-    rv = acvp_send_test_session_registration(ctx, little_reg);
+    rv = acvp_send_test_session_registration(ctx, little_reg, strlen(little_reg));
     cr_assert(rv == ACVP_TRANSPORT_FAIL);
 }
 
@@ -318,7 +318,7 @@ Test(TRANSPORT_SEND_TEST_SESSION_REG, good, .init = setup_session_parameters, .f
 Test(TRANSPORT_SEND_LOGIN, missing_reg, .init = setup, .fini = teardown) {
     rv = acvp_set_server(ctx, "demo.acvts.nist.gov", 443);
     cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_send_login(ctx, NULL);
+    rv = acvp_send_login(ctx, NULL, 0);
     cr_assert(rv == ACVP_NO_DATA);
 }
 
@@ -326,7 +326,7 @@ Test(TRANSPORT_SEND_LOGIN, missing_reg, .init = setup, .fini = teardown) {
  * null ctx
  */
 Test(TRANSPORT_SEND_LOGIN, missing_ctx) {
-    rv = acvp_send_login(NULL, reg);
+    rv = acvp_send_login(NULL, reg, strlen(reg));
     cr_assert(rv == ACVP_NO_CTX);
 }
 
@@ -334,7 +334,7 @@ Test(TRANSPORT_SEND_LOGIN, missing_ctx) {
  * missing vector set id url
  */
 Test(TRANSPORT_SEND_LOGIN, incomplete_ctx, .init = setup, .fini = teardown) {
-    rv = acvp_send_login(ctx, reg);
+    rv = acvp_send_login(ctx, reg, strlen(reg));
     cr_assert(rv == ACVP_MISSING_ARG);
 }
 
@@ -343,7 +343,7 @@ Test(TRANSPORT_SEND_LOGIN, incomplete_ctx, .init = setup, .fini = teardown) {
  * a 401 (unaurhtorized) which gives ACVP_TRANSPORT_FAIL
  */
 Test(TRANSPORT_SEND_LOGIN, good, .init = setup_session_parameters, .fini = teardown) {
-    rv = acvp_send_login(ctx, login_reg);
+    rv = acvp_send_login(ctx, login_reg, strlen(login_reg));
     cr_assert(rv == ACVP_TRANSPORT_FAIL);
 }
 

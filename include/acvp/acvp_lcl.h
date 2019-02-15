@@ -1063,7 +1063,6 @@ struct acvp_ctx_t {
 
     /* Transitory values */
     int vs_id;      /* vs_id currently being processed */
-    char *vsid_url; /* vs currently being processed */
 
     JSON_Value *kat_resp; /* holds the current set of vector responses */
 
@@ -1092,7 +1091,7 @@ ACVP_RESULT acvp_retrieve_vector_set_result(ACVP_CTX *ctx, char *vsid_url);
 
 ACVP_RESULT acvp_retrieve_expected_result(ACVP_CTX *ctx, char *api_url);
 
-ACVP_RESULT acvp_submit_vector_responses(ACVP_CTX *ctx);
+ACVP_RESULT acvp_submit_vector_responses(ACVP_CTX *ctx, char *vsid_url);
 
 void acvp_log_msg(ACVP_CTX *ctx, ACVP_LOG_LVL level, const char *format, ...);
 
