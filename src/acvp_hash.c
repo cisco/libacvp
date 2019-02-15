@@ -200,6 +200,104 @@ static ACVP_RESULT acvp_hash_mct_tc(ACVP_CTX *ctx,
     return ACVP_SUCCESS;
 }
 
+/*
+ * This is the handler for SHA MCT values.  This will parse
+ * a JSON encoded vector set for DES.  Each test case is
+ * parsed, processed, and a response is generated to be sent
+ * back to the ACV server by the transport layer.
+ */
+static ACVP_RESULT acvp_hash_sha3_mct(ACVP_CTX *ctx,
+                                      ACVP_CAPS_LIST *cap,
+                                      ACVP_TEST_CASE *tc,
+                                      ACVP_HASH_TC *stc,
+                                      JSON_Array *res_array) {
+    int i = 0, j = 0;
+    ACVP_RESULT rv = 0;
+    JSON_Value *r_tval = NULL;  /* Response testval */
+    JSON_Object *r_tobj = NULL; /* Response testobj */
+    char *tmp = NULL;
+
+    tmp = calloc(ACVP_HASH_MSG_STR_MAX, sizeof(char));
+    if (!tmp) {
+        ACVP_LOG_ERR("Unable to malloc");
+        return ACVP_MALLOC_FAIL;
+    }
+
+    /* ***********
+     * OUTER LOOP
+     * ***********
+     */
+    for (j = 0; j < ACVP_HASH_MCT_OUTER; j++) {
+        /*
+         * Create a new test case in the response
+         */
+        r_tval = json_value_init_object();
+        r_tobj = json_value_get_object(r_tval);
+
+        rv = acvp_bin_to_hexstr(stc->msg, stc->msg_len, tmp, ACVP_HASH_MSG_STR_MAX);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("hex conversion failure (msg)");
+            goto end;
+        }
+
+        json_object_set_string(r_tobj, "msg", tmp);
+
+        /* ***********
+         * INNER LOOP
+         * ***********
+         */
+        for (i = 0; i <= ACVP_HASH_MCT_INNER; i++) {
+            if (i != 0) {
+                /*
+                 * Use the MD[i-1] as the new Msg
+                 * Zeroize the msg buffer, and copy in the md.
+                 */
+                memzero_s(stc->msg, ACVP_HASH_MSG_BYTE_MAX);
+                memcpy_s(stc->msg, ACVP_HASH_MSG_BYTE_MAX, stc->md, stc->md_len);
+                stc->msg_len = stc->md_len;
+
+                /* Now clear the md buffer */
+                memzero_s(stc->md, ACVP_HASH_MD_BYTE_MAX);
+
+                if (i == ACVP_HASH_MCT_INNER) {
+                    /*
+                     * We will use the final MD as the starting MSG
+                     * for next outer loop. Break here before
+                     * doing another digest.
+                     */
+                    break;
+                }
+            }
+
+            /* Process the current SHA test vector... */
+            rv = (cap->crypto_handler)(tc);
+            if (rv != ACVP_SUCCESS) {
+                ACVP_LOG_ERR("crypto module failed the operation");
+                rv = ACVP_CRYPTO_MODULE_FAIL;
+                goto end;
+            }
+        }
+
+        /*
+         * Output the test case request values using JSON
+         */
+        rv = acvp_hash_output_mct_tc(ctx, stc, r_tobj);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("JSON output failure");
+            goto end;
+        }
+
+        /* Append the test response value to array */
+        json_array_append_value(res_array, r_tval);
+    }
+
+end:
+    if (tmp) free(tmp);
+    if (rv != ACVP_SUCCESS && r_tval) json_value_free(r_tval);
+
+    return rv;
+}
+
 static ACVP_HASH_TESTTYPE read_test_type(const char *tt_str) {
     int diff = 0;
 
@@ -420,7 +518,15 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             if (stc.test_type == ACVP_HASH_TEST_TYPE_MCT) {
                 json_object_set_value(r_tobj, "resultsArray", json_value_init_array());
                 res_tarr = json_object_get_array(r_tobj, "resultsArray");
-                rv = acvp_hash_mct_tc(ctx, cap, &tc, &stc, res_tarr);
+
+                if (alg_id == ACVP_HASH_SHA3_224 || alg_id == ACVP_HASH_SHA3_256 ||
+                    alg_id == ACVP_HASH_SHA3_384 || alg_id == ACVP_HASH_SHA3_512) {
+
+                    rv = acvp_hash_sha3_mct(ctx, cap, &tc, &stc, res_tarr);
+                } else {
+                    rv = acvp_hash_mct_tc(ctx, cap, &tc, &stc, res_tarr);
+                }
+
                 if (rv != ACVP_SUCCESS) {
                     ACVP_LOG_ERR("crypto module failed the HASH MCT operation");
                     acvp_hash_release_tc(&stc);

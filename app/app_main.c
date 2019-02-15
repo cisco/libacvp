@@ -3520,6 +3520,7 @@ static int app_sha_handler(ACVP_TEST_CASE *test_case) {
     EVP_MD_CTX *md_ctx = NULL;
     /* assume fail */
     int rc = 1;
+    int sha3 = 0, shake = 0;
 
     if (!test_case) {
         return 1;
@@ -3547,21 +3548,27 @@ static int app_sha_handler(ACVP_TEST_CASE *test_case) {
 #if OPENSSL_VERSION_NUMBER >= 0x10101010L /* OpenSSL 1.1.1 or greater */
     case ACVP_HASH_SHA3_224:
         md = EVP_sha3_224();
+        sha3 = 1;
         break;
     case ACVP_HASH_SHA3_256:
         md = EVP_sha3_256();
+        sha3 = 1;
         break;
     case ACVP_HASH_SHA3_384:
         md = EVP_sha3_384();
+        sha3 = 1;
         break;
     case ACVP_HASH_SHA3_512:
         md = EVP_sha3_512();
+        sha3 = 1;
         break;
     case ACVP_HASH_SHAKE_128:
         md = EVP_shake128();
+        shake = 1;
         break;
     case ACVP_HASH_SHAKE_256:
         md = EVP_shake256();
+        shake = 1;
         break;
 #endif
     default:
@@ -3575,10 +3582,11 @@ static int app_sha_handler(ACVP_TEST_CASE *test_case) {
     }
     md_ctx = EVP_MD_CTX_create();
 
-    /* If Monte Carlo we need to be able to init and then update
-     * one thousand times before we complete each iteration.
-     */
-    if (tc->test_type == ACVP_HASH_TEST_TYPE_MCT) {
+    if (tc->test_type == ACVP_HASH_TEST_TYPE_MCT && !sha3) {
+        /* If Monte Carlo we need to be able to init and then update
+         * one thousand times before we complete each iteration.
+         * This style doesn't apply to sha3 MCT.
+         */
         if (!tc->m1 || !tc->m2 || !tc->m3) {
             printf("\nCrypto module error, m1, m2, or m3 missing in sha mct test case\n");
             goto end;
