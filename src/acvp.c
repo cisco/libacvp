@@ -1744,7 +1744,7 @@ ACVP_RESULT acvp_process_tests(ACVP_CTX *ctx) {
  * the client.
  */
 static ACVP_RESULT acvp_retry_handler(ACVP_CTX *ctx, unsigned int retry_period) {
-    ACVP_LOG_STATUS("200 OK KAT values not ready, server requests we wait and try again...");
+    ACVP_LOG_STATUS("200 OK KAT values not ready, server requests we wait %u seconds and try again...", retry_period);
     if (retry_period <= 0 || retry_period > ACVP_RETRY_TIME_MAX) {
         retry_period = ACVP_RETRY_TIME_MAX;
         ACVP_LOG_WARN("retry_period not found, using max retry period!");

@@ -815,8 +815,6 @@ static ACVP_RESULT acvp_network_action(ACVP_CTX *ctx,
         return ACVP_MISSING_ARG;
     }
 
-    
-
     if (ctx->curl_buf) {
         /* Clear the HTTP buffer for next server response */
         memzero_s(ctx->curl_buf, ACVP_CURL_BUF_MAX);
@@ -845,7 +843,6 @@ static ACVP_RESULT acvp_network_action(ACVP_CTX *ctx,
         break;
 
     case ACVP_NET_POST_VS_RESP:
-        check_data = 1;
         generic_action = ACVP_NET_POST_VS_RESP;
         break;
     }
