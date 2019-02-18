@@ -256,9 +256,6 @@ static ACVP_RESULT acvp_hash_sha3_mct(ACVP_CTX *ctx,
                 memcpy_s(stc->msg, ACVP_HASH_MSG_BYTE_MAX, stc->md, stc->md_len);
                 stc->msg_len = stc->md_len;
 
-                /* Now clear the md buffer */
-                memzero_s(stc->md, ACVP_HASH_MD_BYTE_MAX);
-
                 if (i == ACVP_HASH_MCT_INNER) {
                     /*
                      * We will use the final MD as the starting MSG
@@ -268,6 +265,9 @@ static ACVP_RESULT acvp_hash_sha3_mct(ACVP_CTX *ctx,
                     break;
                 }
             }
+
+            /* Now clear the md buffer */
+            memzero_s(stc->md, ACVP_HASH_MD_BYTE_MAX);
 
             /* Process the current SHA test vector... */
             rv = (cap->crypto_handler)(tc);
