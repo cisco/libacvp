@@ -1,0 +1,49 @@
+[
+  {
+    "acvVersion": "0.5"
+  }, 
+  {
+    "testGroups": [
+      {
+        "tests": [
+          {
+            "aad": "", 
+            "tcId": 1, 
+            "key": "00000000000000000000000000000000", 
+            "pt": "1BA6CBDC341BAFE3F50C17C30932984A1D558C0A19E40D73", 
+            "iv": "5C41BE4BC85191"
+          }
+        ], 
+        "ptLen": 192, 
+        "ivLen": 105, 
+        "tgId": 999, 
+        "testType": "AFT", 
+        "direction": "encrypt", 
+        "aadLen": 0, 
+        "tagLen": 128, 
+        "keyLen": 128
+      }, 
+      {
+        "tests": [
+          {
+            "aad": "", 
+            "ct": "0336763E966D92595A567CC9CE537F5E", 
+            "tcId": 1040, 
+            "key": "00000000000000000000000000000000", 
+            "iv": "EE24D187504BB0"
+          }
+        ], 
+        "ptLen": 0, 
+        "ivLen": 56, 
+        "tgId": 999, 
+        "testType": "AFT", 
+        "direction": "decrypt", 
+        "aadLen": 0, 
+        "tagLen": 32, 
+        "keyLen": 128
+      }
+    ], 
+    "algorithm": "AES-CCM", 
+    "vsId": 23207
+  }
+]

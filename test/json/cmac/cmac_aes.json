@@ -1,0 +1,123 @@
+[
+  {
+    "acvVersion": "0.5"
+  }, 
+  {
+    "vsId": 22677, 
+    "testGroups": [
+      {
+        "macLen": 128, 
+        "tests": [
+          {
+            "message": "", 
+            "tcId": 1, 
+            "key": "AFCAE94C869CBDEC8218D08AF900B0D8"
+          }, 
+          {
+            "message": "", 
+            "tcId": 2, 
+            "key": "671BDA1A0E3686DF3B286193FDC63164"
+          }, 
+          {
+            "message": "", 
+            "tcId": 3, 
+            "key": "4AB709F471608F608C54B4A7CC3F19C1"
+          }
+        ], 
+        "tgId": 999, 
+        "keyLen": 128, 
+        "direction": "gen", 
+        "testType": "AFT", 
+        "msgLen": 0
+      }, 
+      {
+        "macLen": 128, 
+        "tests": [
+          {
+            "message": "64A9DDDA278C40ABAA", 
+            "tcId": 33, 
+            "key": "87267C88E69F87CADDFD06D0E70771903AF5524C9E0FADE1"
+          }, 
+          {
+            "message": "5E94B6136812A0F388", 
+            "tcId": 34, 
+            "key": "8664629C06DEEE680D790DCF3AF9E37507D49A9E1D32B958"
+          }, 
+          {
+            "message": "652C619EC1F9AA95AB", 
+            "tcId": 35, 
+            "key": "54F5C8A2FEEBBE7FC69EDB4D2D9912DECBED2CBFCB4D7782"
+          }
+        ], 
+        "tgId": 999, 
+        "keyLen": 192, 
+        "direction": "gen", 
+        "testType": "AFT", 
+        "msgLen": 72
+      }, 
+      {
+        "macLen": 128, 
+        "tests": [
+          {
+            "mac": "8314A9CACB83B4DF87035D492B0FD5FE", 
+            "tcId": 73, 
+            "message": "", 
+            "key": "E4760DFDBC9F3E67D670C396A7872A94"
+          }, 
+          {
+            "mac": "8B959D0BED0EB61F83CD4BB7FE84637F", 
+            "tcId": 74, 
+            "message": "", 
+            "key": "5E60CBCDD0F9AD9857E3C2CE255434C3"
+          }, 
+          {
+            "mac": "A00B0CD18A9115E2A5CE0167758F1400", 
+            "tcId": 75, 
+            "message": "", 
+            "key": "5413B932649C93B8F23C15BE21D83938"
+          }
+        ], 
+        "tgId": 999, 
+        "keyLen": 128, 
+        "direction": "ver", 
+        "testType": "AFT", 
+        "msgLen": 0
+      }, 
+      {
+        "macLen": 128, 
+        "tests": [
+          {
+            "mac": "210318686E2D542C436CDC43E877C4A0", 
+            "tcId": 233, 
+            "message": "78D86C0CA0CE5708B1F384D34F0C2F6D45AB1A06D215ABAF72", 
+            "key": "153B8E26847DAE737487E2D48AB9D61585CD478596E9235667D49B65183900BA"
+          }, 
+          {
+            "mac": "8058EBAE4E1B515E221B16A48FF82352", 
+            "tcId": 234, 
+            "message": "8D059EFD2505C792114855F957AFAF7B24672CF58E62610D9D", 
+            "key": "D24366746D371ED28A29A0257AB367450DBC0EB3B79CD523D4E8C7404F1DB7A5"
+          }, 
+          {
+            "mac": "FD8DAD7530D6848450367B1B541E7D1F", 
+            "tcId": 235, 
+            "message": "59A35F1315F4A7D9CA7713B89BAFDF8D1CF21CA8D60A79FBD5", 
+            "key": "5C6E9FAD3E9EE15BEEC9D9337AF0AA564B3A4F7F59ACA51AC992BD5F7B90227C"
+          }, 
+          {
+            "mac": "C44791901E1F08BE8CF63BD70DE26EE0", 
+            "tcId": 236, 
+            "message": "339429EF24407E01E8C10ABC8247E0F6AF7C4F3FA9B9B51766", 
+            "key": "F9649AA08E334A786472C8D49E8934B1D59CC2467AF8D47327CEA35219F9A65D"
+          }
+        ], 
+        "tgId": 999, 
+        "keyLen": 256, 
+        "direction": "ver", 
+        "testType": "AFT", 
+        "msgLen": 200
+      }
+    ], 
+    "algorithm": "CMAC-AES"
+  }
+]

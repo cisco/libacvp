@@ -1,0 +1,106 @@
+[
+  {
+    "acvVersion": "0.5"
+  },
+  {
+    "capabilityExchange": {
+      "algorithms": [
+        {
+          "algorithm": "HMAC-SHA-1",
+          "prereqVals": [
+            {
+              "algorithm": "SHA",
+              "valValue": "same"
+            }
+          ],
+          "keyLen": [
+            {
+              "min": 256,
+              "max": 448,
+              "increment": 64
+            }
+          ],
+          "macLen": [
+            160
+          ]
+        },
+        {
+          "algorithm": "HMAC-SHA2-224",
+          "prereqVals": [
+            {
+              "algorithm": "SHA",
+              "valValue": "same"
+            }
+          ],
+          "keyLen": [
+            {
+              "min": 256,
+              "max": 448,
+              "increment": 64
+            }
+          ],
+          "macLen": [
+            224
+          ]
+        },
+        {
+          "algorithm": "HMAC-SHA2-256",
+          "prereqVals": [
+            {
+              "algorithm": "SHA",
+              "valValue": "same"
+            }
+          ],
+          "keyLen": [
+            {
+              "min": 256,
+              "max": 448,
+              "increment": 64
+            }
+          ],
+          "macLen": [
+            256
+          ]
+        },
+        {
+          "algorithm": "HMAC-SHA2-384",
+          "prereqVals": [
+            {
+              "algorithm": "SHA",
+              "valValue": "same"
+            }
+          ],
+          "keyLen": [
+            {
+              "min": 256,
+              "max": 448,
+              "increment": 64
+            }
+          ],
+          "macLen": [
+            384
+          ]
+        },
+        {
+          "algorithm": "HMAC-SHA2-512",
+          "prereqVals": [
+            {
+              "algorithm": "SHA",
+              "valValue": "same"
+            }
+          ],
+          "keyLen": [
+            {
+              "min": 256,
+              "max": 448,
+              "increment": 64
+            }
+          ],
+          "macLen": [
+            512
+          ]
+        }
+      ]
+    }
+  }
+]

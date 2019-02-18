@@ -1,0 +1,23 @@
+[
+  {
+    "acvVersion": "0.5"
+  }, 
+  {
+    "vsId": 1163, 
+    "algorithm": "RSA", 
+    "testGroups": [
+      {
+        "tgId": 1, 
+        "sigType": "ansx9.31", 
+        "tests": [
+          {
+            "message": "f648ffc4ed74845803fec53ba865d3889b3892e402d96c5eba814698ec84b32ce1d7684917cff19d942ba2787a55cf2edce540bdd067dfafc55eb442178913c7e164144813f2446dc4ba9aa0c90fad708695233304016df04420b27cd31b08e29ff9ea080965e7903bb297fdbc1cd31741512590c7307ee7ded0278d48c4fa47", 
+            "tcId": 1165
+          }
+        ], 
+        "modulo": 2048, 
+        "hashAlg": "SHA2-256"
+      }
+    ]
+  }
+]

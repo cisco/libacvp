@@ -4048,7 +4048,7 @@ static int app_dsa_handler(ACVP_TEST_CASE *test_case) {
 #endif
 
             if (BN_cmp(g2, g)) {
-                r = -1;
+                r = 0;
             } else {
                 r = 1;
             }
@@ -4135,7 +4135,7 @@ static int app_dsa_handler(ACVP_TEST_CASE *test_case) {
 
         FIPS_dsa_free(dsa);
         FIPS_dsa_sig_free(sig);
-        /* return result, -1 is failure, 1 is pass */
+        /* return result, 0 is failure, 1 is pass */
         tc->result = r;
         break;
 

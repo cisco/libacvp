@@ -1,0 +1,32 @@
+[ {
+  "acvVersion": "0.5"
+}, {
+  "vsId" : 873,
+  "algorithm" : "DSA",
+  "testGroups" : [ {
+    "tgId": 999,
+    "l" : 2048,
+    "n" : 224,
+    "tests" : [ {
+      "tcId" : 1
+    }, {
+      "tcId" : 2
+    }, {
+      "tcId" : 3
+    }, {
+      "tcId" : 4
+    }, {
+      "tcId" : 5
+    }, {
+      "tcId" : 6
+    }, {
+      "tcId" : 7
+    }, {
+      "tcId" : 8
+    }, {
+      "tcId" : 9
+    }, {
+      "tcId" : 10
+    } ]
+  } ]
+} ]

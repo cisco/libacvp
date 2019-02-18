@@ -1,0 +1,129 @@
+[
+  {
+    "acvVersion": "0.5"
+  },
+  {
+    "capabilityExchange": {
+      "algorithms": [
+        {
+          "algorithm": "TDES-ECB",
+          "direction": [
+            "encrypt",
+            "decrypt"
+          ],
+          "keyingOption": [
+            1
+          ],
+          "keyLen": [
+            192
+          ],
+          "ptLen": [
+            512
+          ]
+        },
+        {
+          "algorithm": "TDES-CBC",
+          "direction": [
+            "encrypt",
+            "decrypt"
+          ],
+          "keyingOption": [
+            1
+          ],
+          "keyLen": [
+            192
+          ],
+          "ptLen": [
+            64,
+            128,
+            192,
+            768
+          ]
+        },
+        {
+          "algorithm": "TDES-OFB",
+          "direction": [
+            "encrypt",
+            "decrypt"
+          ],
+          "keyingOption": [
+            1
+          ],
+          "keyLen": [
+            192
+          ],
+          "ptLen": [
+            64
+          ]
+        },
+        {
+          "algorithm": "TDES-CFB64",
+          "direction": [
+            "encrypt",
+            "decrypt"
+          ],
+          "keyingOption": [
+            1
+          ],
+          "keyLen": [
+            192
+          ],
+          "ptLen": [
+            320
+          ]
+        },
+        {
+          "algorithm": "TDES-CFB8",
+          "direction": [
+            "encrypt",
+            "decrypt"
+          ],
+          "keyingOption": [
+            1
+          ],
+          "keyLen": [
+            192
+          ],
+          "ptLen": [
+            64,
+            256
+          ]
+        },
+        {
+          "algorithm": "TDES-CFB1",
+          "direction": [
+            "encrypt",
+            "decrypt"
+          ],
+          "keyingOption": [
+            1
+          ],
+          "keyLen": [
+            192
+          ],
+          "ptLen": [
+            64
+          ]
+        },
+        {
+          "algorithm": "TDES-CTR",
+          "direction": [
+              "encrypt",
+              "decrypt"
+          ],
+          "incrementalCounter": true,
+          "overflowCounter": true,
+          "keyingOption": [
+              1
+          ],
+          "keyLen": [
+              192
+          ],
+          "payloadLen": [
+              64
+          ]
+        }
+      ]
+    }
+  }
+]

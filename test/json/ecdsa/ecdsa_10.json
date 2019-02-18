@@ -1,0 +1,22 @@
+[
+  {
+    "acvVersion": "0.5"
+  },
+  {
+    "vsId": 1564,
+    "algorithm": "ECDSA",
+    "mode": "sigGen",
+    "testGroups": [
+      {
+        "tgId": 1,
+        "curve": "P-224",
+        "hashAlg": "SHA2-224",
+        "tests": [
+          {
+            "tcId": 1
+          }
+        ]
+      }
+    ]
+  }
+]

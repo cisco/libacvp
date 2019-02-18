@@ -1,0 +1,1231 @@
+[ {
+  "acvVersion": "0.5"
+}, {
+  "vsId" : 13462,
+  "algorithm" : "kdf-components",
+  "mode" : "srtp",
+  "testGroups" : [ {
+    "tgId": 999,
+    "kdr" : "01",
+    "aesKeyLength" : 128,
+    "tests" : [ {
+      "tcId" : 1,
+      "masterKey" : "E3FA4E33EE20ADFAC583E3BB9B87B8DC",
+      "masterSalt" : "E1AA1C163B6BF98554427BDC80E0",
+      "index" : "DE030B8421F0",
+      "srtcpIndex" : "0D39CCDF"
+    }, {
+      "tcId" : 2,
+      "masterKey" : "889D6AFB9BF980905B8162CE1DBB2C0A",
+      "masterSalt" : "1C4B2869FEBD181A67CD7F2F8D33",
+      "index" : "1670CF461404",
+      "srtcpIndex" : "092B6898"
+    } ]
+  }, {
+    "tgId": 999,
+    "kdr" : "02",
+    "aesKeyLength" : 128,
+    "tests" : [ {
+      "tcId" : 3,
+      "masterKey" : "A23FBA9C52AA7B6D1A2554E82A8BBABA",
+      "masterSalt" : "86F92B54E57C741059F8CF5FA211",
+      "index" : "12C52662CBEF",
+      "srtcpIndex" : "6830EFDB"
+    }, {
+      "tcId" : 4,
+      "masterKey" : "60105B08F604CD8F8C77B171CFBA4FD8",
+      "masterSalt" : "2DF476F0DF8CE621F90002AD16AA",
+      "index" : "A9F6F77122C7",
+      "srtcpIndex" : "CA03409F"
+    } ]
+  }, {
+    "tgId": 999,
+    "kdr" : "04",
+    "aesKeyLength" : 128,
+    "tests" : [ {
+      "tcId" : 5,
+      "masterKey" : "DF672E41C568641506C2F8822B9BC86E",
+      "masterSalt" : "67641184E206629700C19243D32E",
+      "index" : "3894E31369C1",
+      "srtcpIndex" : "9364F55D"
+    }, {
+      "tcId" : 6,
+      "masterKey" : "6D0871FDCB7B178F43E001C49060E91D",
+      "masterSalt" : "2F9A5EB1FFA2AEA2B0749F243930",
+      "index" : "D874B06E3881",
+      "srtcpIndex" : "049E07A0"
+    } ]
+  }, {
+    "tgId": 999,
+    "kdr" : "08",
+    "aesKeyLength" : 128,
+    "tests" : [ {
+      "tcId" : 7,
+      "masterKey" : "6C1EC4D1240726DAA26CF6EC4C824101",
+      "masterSalt" : "30FC4C5C42965FA88150C4EEB247",
+      "index" : "339D1F9A29CD",
+      "srtcpIndex" : "ABC2552E"
+    }, {
+      "tcId" : 8,
+      "masterKey" : "80B4D918EE900891A9675C2773840F93",
+      "masterSalt" : "EB26B18ADE59A9A61F99A9B62298",
+      "index" : "413142EFF23E",
+      "srtcpIndex" : "3A3735FD"
+    } ]
+  }, {
+    "tgId": 999,
+    "kdr" : "10",
+    "aesKeyLength" : 128,
+    "tests" : [ {
+      "tcId" : 9,
+      "masterKey" : "7312189F0B9B1D6AC010DFA0F3BBB2DB",
+      "masterSalt" : "73A7D6FE9EC9A683B5D1491ADB68",
+      "index" : "E6CE7BEB6383",
+      "srtcpIndex" : "7A09B264"
+    }, {
+      "tcId" : 10,
+      "masterKey" : "2568EE1A21D8BE2FD75333500946C9CD",
+      "masterSalt" : "2B4A2320379AF71839E00129152F",
+      "index" : "087BA0D2B60F",
+      "srtcpIndex" : "96557A6E"
+    } ]
+  }, {
+    "tgId": 999,
+    "kdr" : "20",
+    "aesKeyLength" : 128,
+    "tests" : [ {
+      "tcId" : 11,
+      "masterKey" : "939907884EB7A813FC48619AE9A6274B",
+      "masterSalt" : "6072794F22AE048C2F12186E4FB0",
+      "index" : "B9B692BFB5B6",
+      "srtcpIndex" : "385C2F93"
+    }, {
+      "tcId" : 12,
+      "masterKey" : "1B843D0B1F57E707CA2DC074A10F23EF",
+      "masterSalt" : "DF50F68F01F2B389CE11783AA29A",
+      "index" : "EF2935F28100",
+      "srtcpIndex" : "ED8FEB20"
+    } ]
+  }, {
+    "tgId": 999,
+    "kdr" : "40",
+    "aesKeyLength" : 128,
+    "tests" : [ {
+      "tcId" : 13,
+      "masterKey" : "2027E4F4F01F9B0E82AA97088B7285F5",
+      "masterSalt" : "9414D52CD6E6287A373172AF5C99",
+      "index" : "8C834D12AEFB",
+      "srtcpIndex" : "5BAAFE5C"
+    }, {
+      "tcId" : 14,
+      "masterKey" : "BEBC1D3CC355080E0E8C10BFB5E70C57",
+      "masterSalt" : "9A60A7DE709F796ED46A32A44A0A",
+      "index" : "241A54B19BC4",
+      "srtcpIndex" : "D668C44F"
+    } ]
+  }, {
+    "tgId": 999,
+    "kdr" : "80",
+    "aesKeyLength" : 128,
+    "tests" : [ {
+      "tcId" : 15,
+      "masterKey" : "82F0785A1181C590F571373F0BC61E49",
+      "masterSalt" : "9702E812B94473ADE5324F156D9E",
+      "index" : "4BE9CDE2466E",
+      "srtcpIndex" : "683A620D"
+    }, {
+      "tcId" : 16,
+      "masterKey" : "63A419AFE28598633841B2199B16E8FE",
+      "masterSalt" : "A48F8C2F3B57F8F2892586C75270",
+      "index" : "4950AD333C74",
+      "srtcpIndex" : "915A12CE"
+    } ]
+  }, {
+    "tgId": 999,
+    "kdr" : "0100",
+    "aesKeyLength" : 128,
+    "tests" : [ {
+      "tcId" : 17,
+      "masterKey" : "7542B49BBBDB8528C9968B116A85D978",
+      "masterSalt" : "5BC901AF4923BEA9B483DD441DF6",
+      "index" : "4B0D35F85D94",
+      "srtcpIndex" : "CBE78804"
+    }, {
+      "tcId" : 18,
+      "masterKey" : "C30E7DCEB152DA6A7EA0B9C9096466A4",
+      "masterSalt" : "F6A666C27DF0CC0094DBC747C72F",
+      "index" : "1D3978366D71",
+      "srtcpIndex" : "69F49F50"
+    } ]
+  }, {
+    "tgId": 999,
+    "kdr" : "0200",
+    "aesKeyLength" : 128,
+    "tests" : [ {
+      "tcId" : 19,
+      "masterKey" : "0FEF1F413D1C4A277A8FE308EE9730A9",
+      "masterSalt" : "F043567AE46973D83AF64B199765",
+      "index" : "AB1EDDD29072",
+      "srtcpIndex" : "0DC311FD"
+    }, {
+      "tcId" : 20,
+      "masterKey" : "6F72A986B8B72988172C34DA5B3E48EE",
+      "masterSalt" : "4400636B8BD73636396824852458",
+      "index" : "AE5C0BD45312",
+      "srtcpIndex" : "35987CFB"
+    } ]
+  }, {
+    "tgId": 999,
+    "kdr" : "0400",
+    "aesKeyLength" : 128,
+    "tests" : [ {
+      "tcId" : 21,
+      "masterKey" : "B5A49F8CD852AF6A280ABA381ACD63B8",
+      "masterSalt" : "C44C7AE463174416C8C94F830811",
+      "index" : "056B4F8CDB73",
+      "srtcpIndex" : "1DFD1C6B"
+    }, {
+      "tcId" : 22,
+      "masterKey" : "EF6B49F8F39DA76734C739F151F94281",
+      "masterSalt" : "9F333C4C763CA6DC8FD5D502894D",
+      "index" : "86CD660AF449",
+      "srtcpIndex" : "DE52C5CF"
+    } ]
+  }, {
+    "tgId": 999,
+    "kdr" : "0800",
+    "aesKeyLength" : 128,
+    "tests" : [ {
+      "tcId" : 23,
+      "masterKey" : "F1472819E2B87CE442E27F26A512AF9C",
+      "masterSalt" : "E57B92E9A95DC8008AEC7A155266",
+      "index" : "253824368720",
+      "srtcpIndex" : "BC80367C"
+    }, {
+      "tcId" : 24,
+      "masterKey" : "12F1D7B07C20DC1EE1DA67E7B7580993",
+      "masterSalt" : "21EFF4AB305CFEC750967C474AAE",
+      "index" : "E2E758D22F74",
+      "srtcpIndex" : "F6E14931"
+    } ]
+  }, {
+    "tgId": 999,
+    "kdr" : "1000",
+    "aesKeyLength" : 128,
+    "tests" : [ {
+      "tcId" : 25,
+      "masterKey" : "432503EF327726335FD7A3C49F7407CE",
+      "masterSalt" : "0EF057AAF067FCF1E5BBB65B5942",
+      "index" : "8FAE506965E0",
+      "srtcpIndex" : "B83928DC"
+    }, {
+      "tcId" : 26,
+      "masterKey" : "E93B2AEDD79FA333CE4042AAC9C14C58",
+      "masterSalt" : "96559EC81145246F80F8D4387715",
+      "index" : "6F5EA21F1A67",
+      "srtcpIndex" : "25512824"
+    } ]
+  }, {
+    "tgId": 999,
+    "kdr" : "2000",
+    "aesKeyLength" : 128,
+    "tests" : [ {
+      "tcId" : 27,
+      "masterKey" : "D8C065F06479C5153E77086E4C24DBB0",
+      "masterSalt" : "CCCC4AB7853C9C79A17999839DDD",
+      "index" : "1C231325EDC5",
+      "srtcpIndex" : "3CB5225C"
+    }, {
+      "tcId" : 28,
+      "masterKey" : "0FABB8A4869286E2B92A021C90898A99",
+      "masterSalt" : "A342DD3E8CFF49722C50E9108762",
+      "index" : "EFFF46E7BA7B",
+      "srtcpIndex" : "3A80E818"
+    } ]
+  }, {
+    "tgId": 999,
+    "kdr" : "4000",
+    "aesKeyLength" : 128,
+    "tests" : [ {
+      "tcId" : 29,
+      "masterKey" : "6CEBCB12D5BA14676D483E3A4668FD5A",
+      "masterSalt" : "BCB85D9ED70A3F774DC38F903F17",
+      "index" : "528ED50679F7",
+      "srtcpIndex" : "C10F2CC4"
+    }, {
+      "tcId" : 30,
+      "masterKey" : "0D77F058D8D8925A1CA8A6E82E75D144",
+      "masterSalt" : "983D3CCE401DABB4EA9F623B2886",
+      "index" : "F24BCE2FEAA7",
+      "srtcpIndex" : "635649D7"
+    } ]
+  }, {
+    "tgId": 999,
+    "kdr" : "8000",
+    "aesKeyLength" : 128,
+    "tests" : [ {
+      "tcId" : 31,
+      "masterKey" : "5922ACF09CCC815E15201EE42502822E",
+      "masterSalt" : "85A589A9EDEAC2DE6BD7A811CA1C",
+      "index" : "1C33D7D13D35",
+      "srtcpIndex" : "FEC68FE7"
+    }, {
+      "tcId" : 32,
+      "masterKey" : "C38CAE380DD5F1AC83FA0BCCBCDDB91F",
+      "masterSalt" : "057918CA8F4BD9709675F63A40A4",
+      "index" : "1E8812038D72",
+      "srtcpIndex" : "DFF5228E"
+    } ]
+  }, {
+    "tgId": 999,
+    "kdr" : "010000",
+    "aesKeyLength" : 128,
+    "tests" : [ {
+      "tcId" : 33,
+      "masterKey" : "8889CF54A678704B230428AFB3DD26F2",
+      "masterSalt" : "6E262509487FA609E1403C700448",
+      "index" : "4F045B4B8135",
+      "srtcpIndex" : "222ABCB9"
+    }, {
+      "tcId" : 34,
+      "masterKey" : "119EB8B18AD5FF883339CB8C08CDA78A",
+      "masterSalt" : "3ACBF85BF73BDDFDDF1E6634361C",
+      "index" : "99B24ED98CCF",
+      "srtcpIndex" : "B4190114"
+    } ]
+  }, {
+    "tgId": 999,
+    "kdr" : "020000",
+    "aesKeyLength" : 128,
+    "tests" : [ {
+      "tcId" : 35,
+      "masterKey" : "AB04C3878232F2BC92D0AB98269DD60F",
+      "masterSalt" : "050663B049304D67406F95CDEFAA",
+      "index" : "4857801C1BFD",
+      "srtcpIndex" : "9044D641"
+    }, {
+      "tcId" : 36,
+      "masterKey" : "CF44843324EF064916044C08D93CC927",
+      "masterSalt" : "BB6B076617F5B68B6CFA4FF6506E",
+      "index" : "A56E3CAAD369",
+      "srtcpIndex" : "E3458E03"
+    } ]
+  }, {
+    "tgId": 999,
+    "kdr" : "040000",
+    "aesKeyLength" : 128,
+    "tests" : [ {
+      "tcId" : 37,
+      "masterKey" : "BA95F5E0F1D9883B98E7D816FF199A45",
+      "masterSalt" : "9F15F6791B9D8DAAFCE6F0E3853D",
+      "index" : "6009130AE0CB",
+      "srtcpIndex" : "1DA08B52"
+    }, {
+      "tcId" : 38,
+      "masterKey" : "48FC55AA7D67B4A7B5F378E2E3CCCD30",
+      "masterSalt" : "35EBCDE6F9BC9C83F05FFB628CF0",
+      "index" : "19BFC6E5B167",
+      "srtcpIndex" : "24ABC630"
+    } ]
+  }, {
+    "tgId": 999,
+    "kdr" : "080000",
+    "aesKeyLength" : 128,
+    "tests" : [ {
+      "tcId" : 39,
+      "masterKey" : "40BEA429C670C116B5354D37614FC428",
+      "masterSalt" : "E395E497B54C71C92691E8272F4A",
+      "index" : "9AD33DE02917",
+      "srtcpIndex" : "6E6522A0"
+    }, {
+      "tcId" : 40,
+      "masterKey" : "0193C29F00CE7F084088A1C42AB631C4",
+      "masterSalt" : "23D1EBE646A9322050B68114DDFB",
+      "index" : "5F24B8CA289F",
+      "srtcpIndex" : "ABAC9E6F"
+    } ]
+  }, {
+    "tgId": 999,
+    "kdr" : "100000",
+    "aesKeyLength" : 128,
+    "tests" : [ {
+      "tcId" : 41,
+      "masterKey" : "74B8E30DC29FD1AA1D8A171415DC572D",
+      "masterSalt" : "339EE635A6E0E46F9CBA7E808411",
+      "index" : "5F5369305C92",
+      "srtcpIndex" : "921D0A74"
+    }, {
+      "tcId" : 42,
+      "masterKey" : "90F02E1EEA4EB000E61ADC840041C8BC",
+      "masterSalt" : "5990A391423E767EA3E16E34F7E7",
+      "index" : "F2C2EE6706FF",
+      "srtcpIndex" : "03606E5B"
+    } ]
+  }, {
+    "tgId": 999,
+    "kdr" : "200000",
+    "aesKeyLength" : 128,
+    "tests" : [ {
+      "tcId" : 43,
+      "masterKey" : "18B0AFD57C77C378023EA7E4EEE64F8B",
+      "masterSalt" : "FE6C2F8348B0A656764A41C1CB49",
+      "index" : "92E231967935",
+      "srtcpIndex" : "979190BD"
+    }, {
+      "tcId" : 44,
+      "masterKey" : "14B81FAD90A8A93DB73083E2CC2B8F04",
+      "masterSalt" : "1ECDA4E5FD8E7A950E239C3E3FF8",
+      "index" : "BB3C2A39B95A",
+      "srtcpIndex" : "2CC48A4B"
+    } ]
+  }, {
+    "tgId": 999,
+    "kdr" : "400000",
+    "aesKeyLength" : 128,
+    "tests" : [ {
+      "tcId" : 45,
+      "masterKey" : "F673F4517D9ACD7876CCA455C2F1CC17",
+      "masterSalt" : "FDE38256EF4F1FEA8B9DE43EB0F9",
+      "index" : "5784117B6EC9",
+      "srtcpIndex" : "E925D31C"
+    }, {
+      "tcId" : 46,
+      "masterKey" : "8C8FDF4C9BC246B64468DD83FF2C6E31",
+      "masterSalt" : "1B703F022C047A93494E6573D2E1",
+      "index" : "2EB3548A26D9",
+      "srtcpIndex" : "719BEA5F"
+    } ]
+  }, {
+    "tgId": 999,
+    "kdr" : "800000",
+    "aesKeyLength" : 128,
+    "tests" : [ {
+      "tcId" : 47,
+      "masterKey" : "E89BBF5F4A76F8829B222D3B9DCC1286",
+      "masterSalt" : "602CF7109B6C9BD428DA57FBB1DB",
+      "index" : "3CDF0136F72C",
+      "srtcpIndex" : "D63FF67D"
+    }, {
+      "tcId" : 48,
+      "masterKey" : "5E9743EEAD53CBB9CBC68FA577BC6609",
+      "masterSalt" : "5FE05E137ECB226F2A1D9F30303D",
+      "index" : "744E2571E46A",
+      "srtcpIndex" : "DDF55D6C"
+    } ]
+  }, {
+    "tgId": 999,
+    "kdr" : "01",
+    "aesKeyLength" : 192,
+    "tests" : [ {
+      "tcId" : 49,
+      "masterKey" : "5AEA687B26AB9AF7DFB8A0C64CFE806AF2087F0D613E45D5",
+      "masterSalt" : "0DECD8C9523BDFF223F5C93B6E60",
+      "index" : "5FF321764C14",
+      "srtcpIndex" : "D11E1E60"
+    }, {
+      "tcId" : 50,
+      "masterKey" : "E9F2E0D673111E8E47FD3E439E00E35A6C62CEB1D17C6E6C",
+      "masterSalt" : "20A6865D6A4F42F98B745AB05E86",
+      "index" : "087E5CF06C2E",
+      "srtcpIndex" : "3708750C"
+    } ]
+  }, {
+    "tgId": 999,
+    "kdr" : "02",
+    "aesKeyLength" : 192,
+    "tests" : [ {
+      "tcId" : 51,
+      "masterKey" : "6EA076E1D94EBEEACFF8081D534B927C8BFAAB0C41D0AC24",
+      "masterSalt" : "B7BAC836795510DCE9627982A4F0",
+      "index" : "130AD16FA435",
+      "srtcpIndex" : "E84EDBD5"
+    }, {
+      "tcId" : 52,
+      "masterKey" : "32142FD2A4FD3BB5922980286851620BAD552F274E1EAF64",
+      "masterSalt" : "8ECBB3159A5515998C6B0F69AA88",
+      "index" : "57BC882326E8",
+      "srtcpIndex" : "EF7CCD66"
+    } ]
+  }, {
+    "tgId": 999,
+    "kdr" : "04",
+    "aesKeyLength" : 192,
+    "tests" : [ {
+      "tcId" : 53,
+      "masterKey" : "27C6766B8D123BC97F4245C67DC5EB9A3416AADD995D78A8",
+      "masterSalt" : "FF2FF3677A2DBBCCBC734A81D652",
+      "index" : "E018E084AB37",
+      "srtcpIndex" : "DD5F6BC8"
+    }, {
+      "tcId" : 54,
+      "masterKey" : "CA4F4FDE4C4F0A1EDDC1CC28074736B13283EEBB2A8E3D45",
+      "masterSalt" : "A12E3604A377E65EE65D8A096603",
+      "index" : "F84135F63FFF",
+      "srtcpIndex" : "B78230B7"
+    } ]
+  }, {
+    "tgId": 999,
+    "kdr" : "08",
+    "aesKeyLength" : 192,
+    "tests" : [ {
+      "tcId" : 55,
+      "masterKey" : "7CAF8AC7858F60D8CBD4F9E45426C4EDF6FF131CBEC13B1F",
+      "masterSalt" : "9F24226B51E3D312570EA855100A",
+      "index" : "6A480EA364CA",
+      "srtcpIndex" : "FD5AAA7B"
+    }, {
+      "tcId" : 56,
+      "masterKey" : "38A7B28E927153B196E757BD0CB3448B94F0FDA056207560",
+      "masterSalt" : "BB36984858B560014541B9E22B96",
+      "index" : "DF96D661E632",
+      "srtcpIndex" : "4CA6BEEC"
+    } ]
+  }, {
+    "tgId": 999,
+    "kdr" : "10",
+    "aesKeyLength" : 192,
+    "tests" : [ {
+      "tcId" : 57,
+      "masterKey" : "F55F4E0F645653434653361B75C0E8CEAD6FC73927B8B226",
+      "masterSalt" : "DA8C8F929584D84BC71CB7318B20",
+      "index" : "4ECA9AE9ED26",
+      "srtcpIndex" : "2ACBBDFB"
+    }, {
+      "tcId" : 58,
+      "masterKey" : "69BAC3A385F0E79C0691B796AE06C253D73D4167999C4F83",
+      "masterSalt" : "B22BCD3406BF63FA1184747B692C",
+      "index" : "CA3BBB574370",
+      "srtcpIndex" : "315678D3"
+    } ]
+  }, {
+    "tgId": 999,
+    "kdr" : "20",
+    "aesKeyLength" : 192,
+    "tests" : [ {
+      "tcId" : 59,
+      "masterKey" : "EADBC48290EEA3C74153C8C5FE6C3395BF8645CD13B1C308",
+      "masterSalt" : "E65FC06C4A12B495F088E82DAC77",
+      "index" : "F838757F7A96",
+      "srtcpIndex" : "8F7D7246"
+    }, {
+      "tcId" : 60,
+      "masterKey" : "E0E1925C7BEBB89DA4369E17209CC7E844AEC68A2F02F968",
+      "masterSalt" : "66ED8E809E2F04A3E28C0D10740D",
+      "index" : "98D7279B4C2A",
+      "srtcpIndex" : "E162754A"
+    } ]
+  }, {
+    "tgId": 999,
+    "kdr" : "40",
+    "aesKeyLength" : 192,
+    "tests" : [ {
+      "tcId" : 61,
+      "masterKey" : "37B7A81D79F0982305B8A1B515222117D53301868D5A933E",
+      "masterSalt" : "1687F9CE2F12979649BA34E09F8E",
+      "index" : "CC76AA6B2D7D",
+      "srtcpIndex" : "F9961443"
+    }, {
+      "tcId" : 62,
+      "masterKey" : "0D7DBED285038B8ACE1AFE21E7FF23DB95C3E885B275D16F",
+      "masterSalt" : "E4D3E8C4E60879F3EA32730EC21A",
+      "index" : "641D386C2912",
+      "srtcpIndex" : "6C0C9616"
+    } ]
+  }, {
+    "tgId": 999,
+    "kdr" : "80",
+    "aesKeyLength" : 192,
+    "tests" : [ {
+      "tcId" : 63,
+      "masterKey" : "A6FA323A3BDE852FF1634FD9C2976854B1271010B741A78F",
+      "masterSalt" : "3BA88AE3A2B684F619A19919D979",
+      "index" : "6B9413BEF869",
+      "srtcpIndex" : "1C4F4F4C"
+    }, {
+      "tcId" : 64,
+      "masterKey" : "F448D96C370B13723A0F8DF7363E9BAD5D31D1B791342BD5",
+      "masterSalt" : "65E575C4FC8A29598F9D277CE61C",
+      "index" : "0DDD8570E5CC",
+      "srtcpIndex" : "310032FD"
+    } ]
+  }, {
+    "tgId": 999,
+    "kdr" : "0100",
+    "aesKeyLength" : 192,
+    "tests" : [ {
+      "tcId" : 65,
+      "masterKey" : "0D559AC8FAAC15411DC00A55D17440E2FBB0184439F85A03",
+      "masterSalt" : "209643234AE5EAF63BFCE6C72647",
+      "index" : "A492C94C71E5",
+      "srtcpIndex" : "6590FAF0"
+    }, {
+      "tcId" : 66,
+      "masterKey" : "20867DE70AEC8A49A7FEC9501DF1EB0469680685E7CBBFC5",
+      "masterSalt" : "0F703D2161964C1CB007FFAD3B30",
+      "index" : "AA3EBAE2DF65",
+      "srtcpIndex" : "8320C72F"
+    } ]
+  }, {
+    "tgId": 999,
+    "kdr" : "0200",
+    "aesKeyLength" : 192,
+    "tests" : [ {
+      "tcId" : 67,
+      "masterKey" : "3A36C1A7EF87A5CF546168584AB7AA39477E860E655BEBCB",
+      "masterSalt" : "B6541C342A1A68F1DB3F2C270C25",
+      "index" : "C503D9E3103D",
+      "srtcpIndex" : "79861A57"
+    }, {
+      "tcId" : 68,
+      "masterKey" : "18FF45342E304EB95D08515E014020B409DB314089DBE959",
+      "masterSalt" : "67FF55D3AE860AE270BDCE0B7667",
+      "index" : "34672A4EE828",
+      "srtcpIndex" : "91B13C76"
+    } ]
+  }, {
+    "tgId": 999,
+    "kdr" : "0400",
+    "aesKeyLength" : 192,
+    "tests" : [ {
+      "tcId" : 69,
+      "masterKey" : "515EB27EB07A353D434C0D26C922C3EA144457EA080CA6D1",
+      "masterSalt" : "DA6417FC79C42BA1CBDD09E04826",
+      "index" : "3C6BBF692F20",
+      "srtcpIndex" : "40C15F45"
+    }, {
+      "tcId" : 70,
+      "masterKey" : "63DF3410AC04F6211E363B76A2E2BB471E1301C140F623DE",
+      "masterSalt" : "60D5B92BA086C70B2247BF474B15",
+      "index" : "A8CFDE66C36A",
+      "srtcpIndex" : "2EB87DF7"
+    } ]
+  }, {
+    "tgId": 999,
+    "kdr" : "0800",
+    "aesKeyLength" : 192,
+    "tests" : [ {
+      "tcId" : 71,
+      "masterKey" : "C1497C0FD61C1BB025D654BA752B9243A92F145A4F1A4D88",
+      "masterSalt" : "BC08FA361992986C37653246418C",
+      "index" : "43758170716C",
+      "srtcpIndex" : "1209F435"
+    }, {
+      "tcId" : 72,
+      "masterKey" : "F41DDC1DA1E293260C44FDCE19C259030B1EE161DCF8A907",
+      "masterSalt" : "903EBB2A3437988B06068D66AAAE",
+      "index" : "AEF62AFAB136",
+      "srtcpIndex" : "73A253F9"
+    } ]
+  }, {
+    "tgId": 999,
+    "kdr" : "1000",
+    "aesKeyLength" : 192,
+    "tests" : [ {
+      "tcId" : 73,
+      "masterKey" : "95CD88D29AE12ACDFD04907BB62D038B2AF46811A21C693D",
+      "masterSalt" : "E9E99D50F3075BFA6EE6F2A6315C",
+      "index" : "3B2F003FCF86",
+      "srtcpIndex" : "6A357F62"
+    }, {
+      "tcId" : 74,
+      "masterKey" : "E414673F88AFD1091C4402C1E045879BB4A10871CFE1F826",
+      "masterSalt" : "2B8DEECC3CFCDD329258D15B11A4",
+      "index" : "62029C52FFE9",
+      "srtcpIndex" : "3D0EA5A3"
+    } ]
+  }, {
+    "tgId": 999,
+    "kdr" : "2000",
+    "aesKeyLength" : 192,
+    "tests" : [ {
+      "tcId" : 75,
+      "masterKey" : "DE8F563585E46854085BCFAD602AFCE3BF2AADD0913112BB",
+      "masterSalt" : "A16146161D03FE40B264A336B0E8",
+      "index" : "900A0D124F0D",
+      "srtcpIndex" : "82518900"
+    }, {
+      "tcId" : 76,
+      "masterKey" : "B2A715B98F5C2CBC305A86761FA85383650788C13B0DFA40",
+      "masterSalt" : "05A46A62B35E5FDDFE4B2872945B",
+      "index" : "0DC2B0167A3C",
+      "srtcpIndex" : "8BD8EDF9"
+    } ]
+  }, {
+    "tgId": 999,
+    "kdr" : "4000",
+    "aesKeyLength" : 192,
+    "tests" : [ {
+      "tcId" : 77,
+      "masterKey" : "B68BEF23C3C049758419DE162CDF5B532BC9C12CD3D4D9B2",
+      "masterSalt" : "0A2A7275E7BC6EB899520879E2F0",
+      "index" : "491737E99C32",
+      "srtcpIndex" : "37640F25"
+    }, {
+      "tcId" : 78,
+      "masterKey" : "6B5AA7692F7071A3B9D8C1484AE31E4DC267152CAF983D96",
+      "masterSalt" : "09001571417DE09042D8ECD92317",
+      "index" : "0C24B27FA741",
+      "srtcpIndex" : "2854E826"
+    } ]
+  }, {
+    "tgId": 999,
+    "kdr" : "8000",
+    "aesKeyLength" : 192,
+    "tests" : [ {
+      "tcId" : 79,
+      "masterKey" : "9AB9C34F07CC038D0AEA7B3B08982CE3EFCD359FB4A55D5E",
+      "masterSalt" : "DC9C7A8EB1CF2F454E82B7AFC930",
+      "index" : "D33282734841",
+      "srtcpIndex" : "036C3970"
+    }, {
+      "tcId" : 80,
+      "masterKey" : "B16E6FEC893869E7946C1685D6840BA49BD84C1B227E19C7",
+      "masterSalt" : "22D069EFAC5CF729E591CD9384C2",
+      "index" : "90D6F3D98213",
+      "srtcpIndex" : "5CC36B57"
+    } ]
+  }, {
+    "tgId": 999,
+    "kdr" : "010000",
+    "aesKeyLength" : 192,
+    "tests" : [ {
+      "tcId" : 81,
+      "masterKey" : "C5C40327D9798DE2BF0A0AB99760CCAB5817E20007EB9D15",
+      "masterSalt" : "22F9F3B736C1575ADD98F9AFB555",
+      "index" : "03BE96947AF6",
+      "srtcpIndex" : "CEC97CC1"
+    }, {
+      "tcId" : 82,
+      "masterKey" : "BFC5165282D60972CEBF1D324AB126D81235E9F1CAAE17E9",
+      "masterSalt" : "8F2E8110E1ECD904C0459044FE96",
+      "index" : "D31AA501D765",
+      "srtcpIndex" : "7747AC70"
+    } ]
+  }, {
+    "tgId": 999,
+    "kdr" : "020000",
+    "aesKeyLength" : 192,
+    "tests" : [ {
+      "tcId" : 83,
+      "masterKey" : "E29F3E0C515ED82218CDA4A5F234EE51D27B47A6B791EFD7",
+      "masterSalt" : "4C2F55B9CCB7EA4FF2FCAD81FEA4",
+      "index" : "3F303E65A432",
+      "srtcpIndex" : "5C31725B"
+    }, {
+      "tcId" : 84,
+      "masterKey" : "D5E977EAD83B499F5ED6CEC5A713AE4F996AF64D98B102D7",
+      "masterSalt" : "B641F9D524CD3187600DCEECB9A5",
+      "index" : "80052062C19C",
+      "srtcpIndex" : "96DF8A39"
+    } ]
+  }, {
+    "tgId": 999,
+    "kdr" : "040000",
+    "aesKeyLength" : 192,
+    "tests" : [ {
+      "tcId" : 85,
+      "masterKey" : "E81DDCF8A0DAE127EF8B9B0994F2DB195F71583611A0D167",
+      "masterSalt" : "75C03C6655DA1B9C6972CA767AAD",
+      "index" : "66E075B374FB",
+      "srtcpIndex" : "C6B708C4"
+    }, {
+      "tcId" : 86,
+      "masterKey" : "B12F4E35B4B9D73FB0EDA7E2BB64B7B48B9E3EB057581695",
+      "masterSalt" : "44105C34B0C3A424B6FB83ED66E6",
+      "index" : "0888DBB79B6B",
+      "srtcpIndex" : "0B913F11"
+    } ]
+  }, {
+    "tgId": 999,
+    "kdr" : "080000",
+    "aesKeyLength" : 192,
+    "tests" : [ {
+      "tcId" : 87,
+      "masterKey" : "FA9F917231F8BF92FD8F1A504971A6E64790024EED273087",
+      "masterSalt" : "378FCBFBE2D4A6A026C559FD1E6C",
+      "index" : "6975ED1FC055",
+      "srtcpIndex" : "9C4B21D3"
+    }, {
+      "tcId" : 88,
+      "masterKey" : "5B6DC41F6E74CA06C081370530802C91F698604751768B4B",
+      "masterSalt" : "4EB03A0D60D24A26351C85123769",
+      "index" : "623A0549745F",
+      "srtcpIndex" : "E8BB25B6"
+    } ]
+  }, {
+    "tgId": 999,
+    "kdr" : "100000",
+    "aesKeyLength" : 192,
+    "tests" : [ {
+      "tcId" : 89,
+      "masterKey" : "B70F4629A45D36065BD9134E0FE71A1D877DDDAC0963B56C",
+      "masterSalt" : "1DD26718297B44A50A891924006A",
+      "index" : "951D86E3F59E",
+      "srtcpIndex" : "36264F67"
+    }, {
+      "tcId" : 90,
+      "masterKey" : "E88872FA2493A37512FD63B9AC9EABA526BF16C7805CDF2B",
+      "masterSalt" : "24ADAAEEEDDA1B507929A2C16798",
+      "index" : "26C1F26A657C",
+      "srtcpIndex" : "803CF17F"
+    } ]
+  }, {
+    "tgId": 999,
+    "kdr" : "200000",
+    "aesKeyLength" : 192,
+    "tests" : [ {
+      "tcId" : 91,
+      "masterKey" : "50645374CBD2835B2CFD1C5460E77456B93B01BBC3200A88",
+      "masterSalt" : "8C591E1A412BA66962B108BA2E27",
+      "index" : "395435B1D85F",
+      "srtcpIndex" : "4D101C3D"
+    }, {
+      "tcId" : 92,
+      "masterKey" : "CFD3DE011334410AF30733478D9CCFA5350B711FFCCA94F5",
+      "masterSalt" : "6D971C126C1D0A132BFE3F19F923",
+      "index" : "8979E535BA86",
+      "srtcpIndex" : "7E90D2EF"
+    } ]
+  }, {
+    "tgId": 999,
+    "kdr" : "400000",
+    "aesKeyLength" : 192,
+    "tests" : [ {
+      "tcId" : 93,
+      "masterKey" : "9D5CEB20DB6F92BC7A36CB5725D8FAC1174BFCE7FB2F602D",
+      "masterSalt" : "17FB9E129A6951E049641CDD7ABA",
+      "index" : "9C5AFB202122",
+      "srtcpIndex" : "6A626194"
+    }, {
+      "tcId" : 94,
+      "masterKey" : "A47E98B8BCBC871A77B22F1F6D419104415DB5625CCDFFAE",
+      "masterSalt" : "837C656E73175909BF9024BA4E6F",
+      "index" : "6A99D13DB4EE",
+      "srtcpIndex" : "F101B5D6"
+    } ]
+  }, {
+    "tgId": 999,
+    "kdr" : "800000",
+    "aesKeyLength" : 192,
+    "tests" : [ {
+      "tcId" : 95,
+      "masterKey" : "96FB4DC1AB55E78844B038FA14ED288016B1A5A40D82E249",
+      "masterSalt" : "FC3CAEDBC94CB9CD14FEE77F0898",
+      "index" : "53E457C272B4",
+      "srtcpIndex" : "04B9DA96"
+    }, {
+      "tcId" : 96,
+      "masterKey" : "8C08025D30C8335B6C17C9259C74EBE7FC2F565FEEE25520",
+      "masterSalt" : "DE31A9C77B4EBE00A76869E9E333",
+      "index" : "51C6DF9AF55A",
+      "srtcpIndex" : "F84C1787"
+    } ]
+  }, {
+    "tgId": 999,
+    "kdr" : "01",
+    "aesKeyLength" : 256,
+    "tests" : [ {
+      "tcId" : 97,
+      "masterKey" : "1B04B73B7D96D2D97C3A6E02AA4EB6EB3F93C66D7CBB554C1DA7891162F8773F",
+      "masterSalt" : "DE23DC5CA9D3C5AC9EAFF129F096",
+      "index" : "D065874CD488",
+      "srtcpIndex" : "D1F6A2C9"
+    }, {
+      "tcId" : 98,
+      "masterKey" : "F4523451B431C24AFB595E1258D6880A4C8FA29C7CE59F5195E229F23F897B3C",
+      "masterSalt" : "0BF9838BC6C7A9D26C1534B458FA",
+      "index" : "40C619F7A937",
+      "srtcpIndex" : "DEBE9DCB"
+    } ]
+  }, {
+    "tgId": 999,
+    "kdr" : "02",
+    "aesKeyLength" : 256,
+    "tests" : [ {
+      "tcId" : 99,
+      "masterKey" : "5C29126D38BC878A3E01D6D34B912CB69D375BED4382F04D1C442DF830F58D21",
+      "masterSalt" : "F48808366E8299B1A1778712D699",
+      "index" : "9E8929E19CBB",
+      "srtcpIndex" : "4B0A730B"
+    }, {
+      "tcId" : 100,
+      "masterKey" : "26508B88445620CB96B6F8A065C9F77B1525B04817A926C63AAF0C7071A6B68C",
+      "masterSalt" : "A44A6242FBBE75293FFBC0FBC7CC",
+      "index" : "132274033153",
+      "srtcpIndex" : "93ABA4AA"
+    } ]
+  }, {
+    "tgId": 999,
+    "kdr" : "04",
+    "aesKeyLength" : 256,
+    "tests" : [ {
+      "tcId" : 101,
+      "masterKey" : "277B3C68144024CD274B53B6A4A653CE3B1965B4814B83D53BB26BB64FA51000",
+      "masterSalt" : "D158C78D064853BFD99AEBBF681B",
+      "index" : "5745E65A9D7C",
+      "srtcpIndex" : "ACDC06FE"
+    }, {
+      "tcId" : 102,
+      "masterKey" : "142924F781B9A2A7FBCE83C6AF5B5293F5A12EA54C65240798D39E2A91827EC4",
+      "masterSalt" : "306B34C0F433AA292D571B26128B",
+      "index" : "ABC34F442CF8",
+      "srtcpIndex" : "40E62CAA"
+    } ]
+  }, {
+    "tgId": 999,
+    "kdr" : "08",
+    "aesKeyLength" : 256,
+    "tests" : [ {
+      "tcId" : 103,
+      "masterKey" : "5F6A7D61A73C8CAA77909AC3D27CB129659E860792C050FAE2A051E587EA86AF",
+      "masterSalt" : "656F1A39DD53E1C5A143D06BE62C",
+      "index" : "F9825DB1BE24",
+      "srtcpIndex" : "157C14B0"
+    }, {
+      "tcId" : 104,
+      "masterKey" : "18AE70FB03F67D6845077560E67E9AEC8721CD1A216661E67C81F81558DD72F6",
+      "masterSalt" : "02FE0D33BC5C5ACC6DC4D1DA5569",
+      "index" : "150DFA3CE3A3",
+      "srtcpIndex" : "80B59696"
+    } ]
+  }, {
+    "tgId": 999,
+    "kdr" : "10",
+    "aesKeyLength" : 256,
+    "tests" : [ {
+      "tcId" : 105,
+      "masterKey" : "D282986300C612D96646F941A38A23CE7FC250F3C4B84EB275817E0297EF976A",
+      "masterSalt" : "DE4AB05ABE3BDD58347D2C6659A0",
+      "index" : "72478E37EBF0",
+      "srtcpIndex" : "713F120C"
+    }, {
+      "tcId" : 106,
+      "masterKey" : "8DC60F51D5C8DB21FB1B969E8367ACCA990196EA9924E5CC1A1180B7F0BD8951",
+      "masterSalt" : "57BA64E440ACBB266877F3DBF519",
+      "index" : "5FA7AE8CA101",
+      "srtcpIndex" : "BBD2BCAA"
+    } ]
+  }, {
+    "tgId": 999,
+    "kdr" : "20",
+    "aesKeyLength" : 256,
+    "tests" : [ {
+      "tcId" : 107,
+      "masterKey" : "5DE36767A34927D9CA40B7B25DD7AC8662220DBAF47F961EBCC93CB7DCCEC26D",
+      "masterSalt" : "0CD72345277770044A99B4862022",
+      "index" : "FED9458B7EE7",
+      "srtcpIndex" : "B60974E5"
+    }, {
+      "tcId" : 108,
+      "masterKey" : "AE78E48D2217CA3FCCF31D718AE667A73BC96D879AD222B3B75525F290030481",
+      "masterSalt" : "4C3AB56F8ED1517D73479533CF17",
+      "index" : "7D569D7B1DF7",
+      "srtcpIndex" : "64457E8E"
+    } ]
+  }, {
+    "tgId": 999,
+    "kdr" : "40",
+    "aesKeyLength" : 256,
+    "tests" : [ {
+      "tcId" : 109,
+      "masterKey" : "981FFA8DF0A6F9D2F2913DADE2B994E934F4333AB78323A9CF29330E28503610",
+      "masterSalt" : "40C9160BA0649E4355231084CE8A",
+      "index" : "F99422A848E3",
+      "srtcpIndex" : "D3B662C5"
+    }, {
+      "tcId" : 110,
+      "masterKey" : "28D326666A475E1692297B320D7D1A519410E4AF6B2CEA04AE41398D15555DA5",
+      "masterSalt" : "7713DF125D5F2B112DFFC56BB118",
+      "index" : "AAA8FF11C498",
+      "srtcpIndex" : "29A1A9E4"
+    } ]
+  }, {
+    "tgId": 999,
+    "kdr" : "80",
+    "aesKeyLength" : 256,
+    "tests" : [ {
+      "tcId" : 111,
+      "masterKey" : "6F43297D675983C59E7E4968D4AD520923954A79FD530416DD48D6F22EFEC334",
+      "masterSalt" : "9B240FC934158839E22E3C914110",
+      "index" : "91A1856AC74A",
+      "srtcpIndex" : "EAC1CCFB"
+    }, {
+      "tcId" : 112,
+      "masterKey" : "4374B288F7FC91382A7A6F8033BF241926F458B937EDE3C0EC60E17D6F695F44",
+      "masterSalt" : "13AD404FDCD3340BCA78CEF7A680",
+      "index" : "D6787A91110D",
+      "srtcpIndex" : "D56A8D0C"
+    } ]
+  }, {
+    "tgId": 999,
+    "kdr" : "0100",
+    "aesKeyLength" : 256,
+    "tests" : [ {
+      "tcId" : 113,
+      "masterKey" : "F2379E390E66EB84257C3920A3608B194FAE256112B7A96E0E6469E4EB363FE5",
+      "masterSalt" : "FB5B03D240786A4F209338E9223C",
+      "index" : "81BC28CB6BB0",
+      "srtcpIndex" : "ABB4C62D"
+    }, {
+      "tcId" : 114,
+      "masterKey" : "75C5B5E11142FA3A88C97967DF2BF53BF9BC763B3ED6C472D0D45602F86711C3",
+      "masterSalt" : "72249690016C226856B881753E6E",
+      "index" : "3745C36C552F",
+      "srtcpIndex" : "4943D59B"
+    } ]
+  }, {
+    "tgId": 999,
+    "kdr" : "0200",
+    "aesKeyLength" : 256,
+    "tests" : [ {
+      "tcId" : 115,
+      "masterKey" : "98D98D6F1EA4EDCAC86433E86672098DE4403A00FDD061FFBDEFC31307BEDE48",
+      "masterSalt" : "32A2C397D312A90E6098DA392BFA",
+      "index" : "91AA61823254",
+      "srtcpIndex" : "1461DD62"
+    }, {
+      "tcId" : 116,
+      "masterKey" : "1D3647E30E9B72989826A09B1554C9FA2C4B6601D5023787714DD01E253CF57A",
+      "masterSalt" : "7F2F6A3C2585418AE823A36024CA",
+      "index" : "99977E151C30",
+      "srtcpIndex" : "DA794B88"
+    } ]
+  }, {
+    "tgId": 999,
+    "kdr" : "0400",
+    "aesKeyLength" : 256,
+    "tests" : [ {
+      "tcId" : 117,
+      "masterKey" : "7E949DB065F87F411868BB63758F133E1108A805DC0AE5003F8E3F35AC8DA4CE",
+      "masterSalt" : "53744A6AFD97460BDD5B7FD486AB",
+      "index" : "755A85756D16",
+      "srtcpIndex" : "137603BC"
+    }, {
+      "tcId" : 118,
+      "masterKey" : "A8C21F432BF08A68EDA31E5165DD480761B689D37F318C50628E2846B66B743B",
+      "masterSalt" : "9722E8F9076F6FFF5572E643C10F",
+      "index" : "736EF9CEEB9A",
+      "srtcpIndex" : "1CC11025"
+    } ]
+  }, {
+    "tgId": 999,
+    "kdr" : "0800",
+    "aesKeyLength" : 256,
+    "tests" : [ {
+      "tcId" : 119,
+      "masterKey" : "FF834EB14A5C04F0D1CBBB2549F66E48B1EECF45116F89CA311F6238BC4D7DD0",
+      "masterSalt" : "8827981EC7E80C364307F41526FF",
+      "index" : "B62BBC0AFFA5",
+      "srtcpIndex" : "15F77819"
+    }, {
+      "tcId" : 120,
+      "masterKey" : "87E5CC23F43F5D5F67AA329C5D61EA3804A9F9BA1F1170067B80D50634CB7CB1",
+      "masterSalt" : "8676B692A247130502778B43002F",
+      "index" : "2F7D26121044",
+      "srtcpIndex" : "7E789917"
+    } ]
+  }, {
+    "tgId": 999,
+    "kdr" : "1000",
+    "aesKeyLength" : 256,
+    "tests" : [ {
+      "tcId" : 121,
+      "masterKey" : "956FB54FFDE22E18D8F0F3A0FA164DE4368D1EB6B9EF8A8B39588B95A8D464D1",
+      "masterSalt" : "8A96EC2B5949BB7D5C2D13B9C487",
+      "index" : "C94A4699F45A",
+      "srtcpIndex" : "DEDE7E83"
+    }, {
+      "tcId" : 122,
+      "masterKey" : "0912A66B0863EED48D4204C847B05AD087097964F232591BD5E95BA96790FC73",
+      "masterSalt" : "67583CD0556FEE1216CC31A0DBE5",
+      "index" : "28F8C23D1F8F",
+      "srtcpIndex" : "6E1597CD"
+    } ]
+  }, {
+    "tgId": 999,
+    "kdr" : "2000",
+    "aesKeyLength" : 256,
+    "tests" : [ {
+      "tcId" : 123,
+      "masterKey" : "4D3BE9ADA8CB445E6C35053373D7C247BABBD8D8880D2947756AE0F7BA9202B9",
+      "masterSalt" : "075A2FF55BEA8EF65783C97731C5",
+      "index" : "0BE03E076547",
+      "srtcpIndex" : "B43AA2C0"
+    }, {
+      "tcId" : 124,
+      "masterKey" : "228D2F086EA166FC57120610D88948CCF036F160A7C3BFEE5EC8C215B35C25CD",
+      "masterSalt" : "9F439A409793277942FB5EFCC2F6",
+      "index" : "773FF0081504",
+      "srtcpIndex" : "C7A46219"
+    } ]
+  }, {
+    "tgId": 999,
+    "kdr" : "4000",
+    "aesKeyLength" : 256,
+    "tests" : [ {
+      "tcId" : 125,
+      "masterKey" : "930916F017668B625D1378C5784461CF89F4D8F59EB0A031BE555921AEB60512",
+      "masterSalt" : "66EFA36982413906CA8BF64B341E",
+      "index" : "B8A7B5FC301F",
+      "srtcpIndex" : "9A022B1E"
+    }, {
+      "tcId" : 126,
+      "masterKey" : "F275516E3B1B356CFC6D6F0E43370A5A04FEFD8CC17F1C961BCE3DF3954C59F1",
+      "masterSalt" : "5EE6D30C4EB30446717E3104B032",
+      "index" : "135DA3B6FEA3",
+      "srtcpIndex" : "818BBFF4"
+    } ]
+  }, {
+    "tgId": 999,
+    "kdr" : "8000",
+    "aesKeyLength" : 256,
+    "tests" : [ {
+      "tcId" : 127,
+      "masterKey" : "73FD61F3CB841C920E169A63C08F32C4E986CCF8DC8F8DA645AC9221BD2850EC",
+      "masterSalt" : "C7CE582CC6A121E288482E458324",
+      "index" : "C24E741CEA05",
+      "srtcpIndex" : "521ECA2F"
+    }, {
+      "tcId" : 128,
+      "masterKey" : "5A433B137EAE9A16CB3FBD6E9C1F6D503CA0588775B71C8F4552E00D052B1A39",
+      "masterSalt" : "900FB2C8E774C113DD5D2EF4F364",
+      "index" : "C17112D4C463",
+      "srtcpIndex" : "7BE381AB"
+    } ]
+  }, {
+    "tgId": 999,
+    "kdr" : "010000",
+    "aesKeyLength" : 256,
+    "tests" : [ {
+      "tcId" : 129,
+      "masterKey" : "E2AE81C900AAEA3686BB8DF587285E5A72DF716393115DD95432D43173EE5FDA",
+      "masterSalt" : "CF7EB2D974B59F8F9FEEFD54780F",
+      "index" : "4D67FF336260",
+      "srtcpIndex" : "4D865C59"
+    }, {
+      "tcId" : 130,
+      "masterKey" : "B2896019CACD4789670709B380D188CEBA84E11DEA842EAE578A3129473C67A3",
+      "masterSalt" : "754B500381EA83764863865A06F2",
+      "index" : "D07FAC7B5144",
+      "srtcpIndex" : "9A99058A"
+    } ]
+  }, {
+    "tgId": 999,
+    "kdr" : "020000",
+    "aesKeyLength" : 256,
+    "tests" : [ {
+      "tcId" : 131,
+      "masterKey" : "EC27B9E16C4F7B02131BB70532964E128657FD8716F8D1A44E3DBF64E2BDD560",
+      "masterSalt" : "2E7D7AABB5442A1F938A8D26C06D",
+      "index" : "3CBDF8557DCA",
+      "srtcpIndex" : "A994676E"
+    }, {
+      "tcId" : 132,
+      "masterKey" : "067DEBFBE917D1B1D496A10B4FED6C2E7EFCCAD6C7A90CA9EB6CD070E8DFAABA",
+      "masterSalt" : "038470D0C04973B937B4E0D37D2B",
+      "index" : "020E3FFB8BA7",
+      "srtcpIndex" : "199D4479"
+    } ]
+  }, {
+    "tgId": 999,
+    "kdr" : "040000",
+    "aesKeyLength" : 256,
+    "tests" : [ {
+      "tcId" : 133,
+      "masterKey" : "E68D7BDDBCED8B2AAD4F25D04B067AB2F7CA1CF6599BA38EBEEF82B99E370A13",
+      "masterSalt" : "4D67E1E212D0C6BA1BFFA9CCBADF",
+      "index" : "FE4F1674DF94",
+      "srtcpIndex" : "ED49513E"
+    }, {
+      "tcId" : 134,
+      "masterKey" : "8EA78E2BC6470EF7DD466E43BD7B3FC097F7204F3C79B51613E133952D7389BB",
+      "masterSalt" : "57D4B1CBCE319D318CA776EEDE70",
+      "index" : "FE3EB81E538F",
+      "srtcpIndex" : "4CA98BD6"
+    } ]
+  }, {
+    "tgId": 999,
+    "kdr" : "080000",
+    "aesKeyLength" : 256,
+    "tests" : [ {
+      "tcId" : 135,
+      "masterKey" : "E5B7A85072A7F37E9F0894A2748BDD0E33EF813270CBEB0E87E71AEB87369643",
+      "masterSalt" : "1E8CE8A343E716B1A9561033A135",
+      "index" : "F8EF0AC99D21",
+      "srtcpIndex" : "AEA935FF"
+    }, {
+      "tcId" : 136,
+      "masterKey" : "00E5BEB846A90AD25F1320F05E8D752C65DDDE4E903BE63465377472F708968D",
+      "masterSalt" : "90E2A5B43E0C72A3B9A0C08384F7",
+      "index" : "8ACC8A2DEA4E",
+      "srtcpIndex" : "6DBD4BA7"
+    } ]
+  }, {
+    "tgId": 999,
+    "kdr" : "100000",
+    "aesKeyLength" : 256,
+    "tests" : [ {
+      "tcId" : 137,
+      "masterKey" : "AC585AF12E18BFBB427D6E6BB2521BD172C41D5BC9993B0175ACF1CA6824A983",
+      "masterSalt" : "84F6A6A33F921BA73B95F73C15C6",
+      "index" : "8CB95AC60F8F",
+      "srtcpIndex" : "15020BF8"
+    }, {
+      "tcId" : 138,
+      "masterKey" : "BAB3CCA097670930364BD6CA2B1F377395DDCCE04503ECE3A7837ED80BACE22B",
+      "masterSalt" : "49810AC3FBBB14429C8FB2CB2713",
+      "index" : "C118247CF92F",
+      "srtcpIndex" : "554AD6EC"
+    } ]
+  }, {
+    "tgId": 999,
+    "kdr" : "200000",
+    "aesKeyLength" : 256,
+    "tests" : [ {
+      "tcId" : 139,
+      "masterKey" : "3CCEF2B47C1A6ED9E6B54112CE700BF4D7062A01B83248381607EC16CFDB7596",
+      "masterSalt" : "761738D1ACF4CFFE73C0191C75DD",
+      "index" : "E0CC401E52F7",
+      "srtcpIndex" : "55437B66"
+    }, {
+      "tcId" : 140,
+      "masterKey" : "61D6ED25735DC87663CE7C7065D9A00D8117EC0E8BDBF57A46628AD1A7F5F4BF",
+      "masterSalt" : "6C9B21BE8A4A69FE567DCB59C632",
+      "index" : "C5D34B293143",
+      "srtcpIndex" : "43E4DEA1"
+    } ]
+  }, {
+    "tgId": 999,
+    "kdr" : "400000",
+    "aesKeyLength" : 256,
+    "tests" : [ {
+      "tcId" : 141,
+      "masterKey" : "54BF111ADA4A2C850AC7ADBEE51B6FA2B6034B924759791E8C21EE2C08309225",
+      "masterSalt" : "FB13210332695B3DF526EBA516E2",
+      "index" : "31221D47DE9F",
+      "srtcpIndex" : "7885FEC3"
+    }, {
+      "tcId" : 142,
+      "masterKey" : "E3918DEFFC926B8C89F7A6A98B7CBF32AC8F18A57B6504BA0D7247A4008325CA",
+      "masterSalt" : "23960E67F6C022B63C7200202C91",
+      "index" : "03FF758D2F38",
+      "srtcpIndex" : "23CFF982"
+    } ]
+  }, {
+    "tgId": 999,
+    "kdr" : "800000",
+    "tests" : [ {
+      "tcId" : 143,
+      "masterKey" : "98618D8E796F633369F2E93FB3CB5A08F63A8FF778EA82732C1D75B43974F92E",
+      "masterSalt" : "BF39149A3BD84A6D7DC878D2FC5D",
+      "index" : "28FA083BFE37",
+      "srtcpIndex" : "44E41B2D"
+    }, {
+      "tcId" : 144,
+      "masterKey" : "426A3893863E712B7330DE4F04DB81EC8B2EC1BDFB1B5221E59DA40651050A07",
+      "masterSalt" : "3CA4E6F3B49D33441C77BD718D18",
+      "index" : "AC3B6FD97940",
+      "srtcpIndex" : "28F5DF3F"
+    } ]
+  } ]
+} ]

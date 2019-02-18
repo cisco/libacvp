@@ -1,0 +1,235 @@
+[
+  {
+    "acvVersion": "0.5"
+  },
+  {
+    "capabilityExchange": {
+      "algorithms": [
+        {
+          "algorithm": "AES-GCM",
+          "prereqVals": [
+            {
+              "algorithm": "AES",
+              "valValue": "same"
+            },
+            {
+              "algorithm": "DRBG",
+              "valValue": "same"
+            }
+          ],
+          "direction": [
+            "encrypt",
+            "decrypt"
+          ],
+          "ivGen": "internal",
+          "ivGenMode": "8.2.1",
+          "keyLen": [
+            128,
+            192,
+            256
+          ],
+          "tagLen": [
+            96,
+            128
+          ],
+          "ivLen": [
+            96
+          ],
+          "ptLen": [
+            0,
+            128,
+            136,
+            256,
+            264
+          ],
+          "aadLen": [
+            0,
+            128,
+            136,
+            256
+          ]
+        },
+        {
+          "algorithm": "AES-ECB",
+          "direction": [
+            "encrypt",
+            "decrypt"
+          ],
+          "keyLen": [
+            128,
+            192,
+            256
+          ],
+          "dataLen": [
+            1536
+          ]
+        },
+        {
+          "algorithm": "AES-CBC",
+          "direction": [
+            "encrypt",
+            "decrypt"
+          ],
+          "keyLen": [
+            128,
+            192,
+            256
+          ],
+          "dataLen": [
+            1536
+          ]
+        },
+        {
+          "algorithm": "AES-CFB1",
+          "direction": [
+            "encrypt",
+            "decrypt"
+          ],
+          "keyLen": [
+            128,
+            192,
+            256
+          ],
+          "dataLen": [
+            128
+          ]
+        },
+        {
+          "algorithm": "AES-CFB8",
+          "direction": [
+            "encrypt",
+            "decrypt"
+          ],
+          "keyLen": [
+            128,
+            192,
+            256
+          ],
+          "dataLen": [
+            256
+          ]
+        },
+        {
+          "algorithm": "AES-CFB128",
+          "direction": [
+            "encrypt",
+            "decrypt"
+          ],
+          "keyLen": [
+            128,
+            192,
+            256
+          ],
+          "dataLen": [
+            1536
+          ]
+        },
+        {
+          "algorithm": "AES-OFB",
+          "direction": [
+            "encrypt",
+            "decrypt"
+          ],
+          "keyLen": [
+            128,
+            192,
+            256
+          ],
+          "dataLen": [
+            1536
+          ]
+        },
+        {
+          "algorithm": "AES-CCM",
+          "prereqVals": [
+            {
+              "algorithm": "AES",
+              "valValue": "same"
+            }
+          ],
+          "direction": [
+            "encrypt",
+            "decrypt"
+          ],
+          "keyLen": [
+            128,
+            192,
+            256
+          ],
+          "tagLen": [
+            32,
+            128
+          ],
+          "ivLen": [
+            56,
+            104
+          ],
+          "ptLen": [
+            0,
+            192
+          ],
+          "aadLen": [
+            0,
+            128
+          ]
+        },
+        {
+          "algorithm": "AES-KW",
+          "direction": [
+            "encrypt",
+            "decrypt"
+          ],
+          "kwCipher": [
+            "cipher"
+          ],
+          "keyLen": [
+            128,
+            192,
+            256
+          ],
+          "ptLen": [
+            128,
+            192,
+            256,
+            320,
+            1280
+          ]
+        },
+        {
+          "algorithm": "AES-XTS",
+          "direction": [
+            "encrypt",
+            "decrypt"
+          ],
+          "keyLen": [
+            128,
+            256
+          ],
+          "ptLen": [
+            65536
+          ],
+          "tweakMode": [
+            "hex"
+          ]
+        },
+        {
+          "algorithm": "AES-CTR",
+          "direction": [
+              "encrypt",
+              "decrypt"
+          ],
+          "incrementalCounter": true,
+          "overflowCounter": true,
+          "keyLen": [
+              128,
+              192,
+              256
+          ],
+          "payloadLen": [
+              128
+          ]
+        }
+      ]
+    }
+  }
+]

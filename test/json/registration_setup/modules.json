@@ -1,0 +1,11 @@
+[
+  {
+    "acvVersion": "0.5"
+  },
+  {
+    "name": "OpenSSL",
+    "version": "100020c0",
+    "type": "software",
+    "implementationDescription": "FOM 6.2a"
+  }
+]

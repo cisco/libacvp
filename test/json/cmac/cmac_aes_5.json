@@ -1,0 +1,25 @@
+[
+  {
+    "acvVersion": "0.5"
+  }, 
+  {
+    "algorithm": "CMAC-AES", 
+    "testGroups": [
+      {
+        "macLen": 128, 
+        "tests": [
+          {
+            "message": "abcde", 
+            "tcId": 1, 
+            "key": "AFCAE94C869CBDEC8218D08AF900B0D8"
+          }
+        ], 
+        "tgId": 999, 
+        "testType": "AFT", 
+        "direction": "gen", 
+        "keyLen": 128
+      }
+    ], 
+    "vsId": 22677
+  }
+]

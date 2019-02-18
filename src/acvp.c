@@ -599,13 +599,8 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx) {
     ACVP_DEPENDENCY_LIST *dep_entry, *dep_e2;
 
     if (ctx) {
-        if (ctx->reg_buf) { free(ctx->reg_buf); }
-        if (ctx->ans_buf) { free(ctx->ans_buf); }
-        if (ctx->login_buf) { free(ctx->login_buf); }
-        if (ctx->test_sess_buf) { free(ctx->test_sess_buf); }
-        if (ctx->kat_buf) { free(ctx->kat_buf); }
-        if (ctx->upld_buf) { free(ctx->upld_buf); }
         if (ctx->kat_resp) { json_value_free(ctx->kat_resp); }
+        if (ctx->curl_buf) { free(ctx->curl_buf); }
         if (ctx->server_name) { free(ctx->server_name); }
         if (ctx->vendor_url) { free(ctx->vendor_url); }
         if (ctx->module_url) { free(ctx->module_url); }
@@ -1205,12 +1200,11 @@ err:
  */
 ACVP_RESULT acvp_register(ACVP_CTX *ctx) {
     ACVP_RESULT rv = ACVP_SUCCESS;
-    char *reg = NULL;
 #if 0 // TODO these endpoints are NOT availble via API yet
     char *vendors = NULL, *modules = NULL, *oes = NULL, *dep = NULL;
     ACVP_DEPENDENCY_LIST *current_dep;
 #endif
-    char *login = NULL;
+    char *login = NULL, *reg = NULL;
     int login_len = 0, reg_len = 0;
     JSON_Value *tmp_json_from_file;
 
@@ -1239,10 +1233,10 @@ ACVP_RESULT acvp_register(ACVP_CTX *ctx) {
          */
         rv = acvp_send_login(ctx, login, login_len);
         if (rv == ACVP_SUCCESS) {
-            ACVP_LOG_STATUS("200 OK %s", ctx->reg_buf);
+            ACVP_LOG_STATUS("200 OK %s", ctx->curl_buf);
             rv = acvp_parse_login(ctx);
         } else {
-            ACVP_LOG_STATUS("Login Send Failed %s", ctx->reg_buf);
+            ACVP_LOG_STATUS("Login Send Failed %s", ctx->curl_buf);
             goto end;
         }
         if (rv != ACVP_SUCCESS) {
@@ -1340,7 +1334,7 @@ ACVP_RESULT acvp_register(ACVP_CTX *ctx) {
             goto end;
         }
         rv = acvp_send_test_session_registration(ctx, reg, reg_len);
-        ACVP_LOG_STATUS("Sending registration: %s", ctx->reg_buf);
+        ACVP_LOG_STATUS("Sending registration: %s", ctx->curl_buf);
         if (rv == ACVP_SUCCESS) {
             ACVP_LOG_STATUS("200 OK");
             rv = acvp_parse_test_session_register(ctx);
@@ -1447,7 +1441,7 @@ static JSON_Object *acvp_get_obj_from_rsp(JSON_Value *arry_val) {
 static ACVP_RESULT acvp_parse_login(ACVP_CTX *ctx) {
     JSON_Value *val;
     JSON_Object *obj = NULL;
-    char *json_buf = ctx->reg_buf;
+    char *json_buf = ctx->curl_buf;
     const char *jwt;
     ACVP_RESULT rv = ACVP_SUCCESS;
 
@@ -1630,7 +1624,7 @@ end:
 static ACVP_RESULT acvp_parse_dependencies(ACVP_CTX *ctx, ACVP_DEPENDENCY_LIST *current_dep) {
     JSON_Value *val;
     JSON_Object *obj = NULL;
-    char *json_buf = ctx->reg_buf;
+    char *json_buf = ctx->curl_buf;
     const char *dep_url;
     ACVP_RESULT rv = ACVP_SUCCESS;
 
@@ -1676,7 +1670,7 @@ static ACVP_RESULT acvp_parse_test_session_register(ACVP_CTX *ctx) {
     JSON_Value *val;
     JSON_Object *obj = NULL;
     ACVP_RESULT rv;
-    char *json_buf = ctx->reg_buf;
+    char *json_buf = ctx->curl_buf;
     JSON_Array *vect_sets;
     char *test_session_url;
     int i, vs_cnt;
@@ -1756,7 +1750,7 @@ ACVP_RESULT acvp_process_tests(ACVP_CTX *ctx) {
  * the client.
  */
 static ACVP_RESULT acvp_retry_handler(ACVP_CTX *ctx, unsigned int retry_period) {
-    ACVP_LOG_STATUS("200 OK KAT values not ready, server requests we wait and try again...");
+    ACVP_LOG_STATUS("200 OK KAT values not ready, server requests we wait %u seconds and try again...", retry_period);
     if (retry_period <= 0 || retry_period > ACVP_RETRY_TIME_MAX) {
         retry_period = ACVP_RETRY_TIME_MAX;
         ACVP_LOG_WARN("retry_period not found, using max retry period!");
@@ -1816,10 +1810,10 @@ ACVP_RESULT acvp_refresh(ACVP_CTX *ctx) {
          */
         rv = acvp_send_login(ctx, login, login_len);
         if (rv == ACVP_SUCCESS) {
-            ACVP_LOG_STATUS("200 OK %s", ctx->reg_buf);
+            ACVP_LOG_STATUS("200 OK %s", ctx->curl_buf);
             rv = acvp_parse_login(ctx);
         } else {
-            ACVP_LOG_STATUS("Login Send Failed %s", ctx->reg_buf);
+            ACVP_LOG_STATUS("Login Send Failed %s", ctx->curl_buf);
             goto end;
         }
         if (rv != ACVP_SUCCESS) {
@@ -1848,7 +1842,7 @@ static ACVP_RESULT acvp_process_vsid(ACVP_CTX *ctx, char *vsid_url) {
     ACVP_RESULT rv = ACVP_SUCCESS;
     JSON_Value *val = NULL;
     JSON_Object *obj = NULL;
-    char *json_buf = NULL;
+    unsigned int retry_period = 0;
     int retry = 1;
 
     //TODO: do we want to limit the number of retries?
@@ -1857,56 +1851,50 @@ static ACVP_RESULT acvp_process_vsid(ACVP_CTX *ctx, char *vsid_url) {
          * Get the KAT vector set
          */
         rv = acvp_retrieve_vector_set(ctx, vsid_url);
-        if (rv != ACVP_SUCCESS) {
-            goto end;
-        }
-        json_buf = ctx->kat_buf;
+        if (rv != ACVP_SUCCESS) goto end;
+
         if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
-            printf("\n200 OK %s\n", ctx->kat_buf);
+            printf("\n200 OK %s\n", ctx->curl_buf);
         } else {
-            ACVP_LOG_STATUS("200 OK %s\n", ctx->kat_buf);
+            ACVP_LOG_STATUS("200 OK %s\n", ctx->curl_buf);
         }
-        val = json_parse_string(json_buf);
+
+        val = json_parse_string(ctx->curl_buf);
         if (!val) {
             ACVP_LOG_ERR("JSON parse error");
             rv = ACVP_JSON_ERR;
             goto end;
         }
         obj = acvp_get_obj_from_rsp(val);
-        ctx->vsid_url = vsid_url;
 
         /*
          * Check if we received a retry response
          */
-        unsigned int retry_period = json_object_get_number(obj, "retry");
+        retry_period = (unsigned int)json_object_get_number(obj, "retry");
         if (retry_period) {
-            rv = acvp_retry_handler(ctx, retry_period);
+            /*
+             * Wait and try again to retrieve the VectorSet
+             */
+            acvp_retry_handler(ctx, retry_period);
+            retry = 1;
         } else {
             /*
-             * Process the KAT vectors
+             * Process the KAT VectorSet
              */
             rv = acvp_process_vector_set(ctx, obj);
-        }
-        json_value_free(val);
-
-        /*
-         * Check if we need to retry the download because
-         * the KAT values were not ready
-         */
-        if (ACVP_KAT_DOWNLOAD_RETRY == rv) {
-            retry = 1;
-        } else if (rv != ACVP_SUCCESS) {
-            return rv;
-        } else {
             retry = 0;
         }
+
+        json_value_free(val);
+        if (rv != ACVP_SUCCESS) return rv;
     }
 
     /*
      * Send the responses to the ACVP server
      */
     ACVP_LOG_STATUS("POST vector set response vsId: %d", ctx->vs_id);
-    rv = acvp_submit_vector_responses(ctx);
+    rv = acvp_submit_vector_responses(ctx, vsid_url);
+
 end:
     return rv;
 }
@@ -2003,16 +1991,16 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
         /*
          * Get the KAT vector set
          */
-        rv = acvp_retrieve_result(ctx, session_url);
+        rv = acvp_retrieve_vector_set_result(ctx, session_url);
         if (rv != ACVP_SUCCESS) {
             goto end;
         }
-        json_buf = ctx->test_sess_buf;
+        json_buf = ctx->curl_buf;
 
         if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
-            printf("%s\n", ctx->test_sess_buf);
+            printf("%s\n", ctx->curl_buf);
         } else {
-            ACVP_LOG_ERR("%s", ctx->test_sess_buf);
+            ACVP_LOG_ERR("%s", ctx->curl_buf);
         }
         val = json_parse_string(json_buf);
         if (!val) {
@@ -2060,16 +2048,16 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
 
                     if (!diff) {
                         ACVP_LOG_STATUS("Getting more details on failed vector set...");
-                        rv = acvp_retrieve_result(ctx, (char *)json_object_get_string(current, "vectorSetUrl"));
+                        rv = acvp_retrieve_vector_set_result(ctx, (char *)json_object_get_string(current, "vectorSetUrl"));
                         if (rv != ACVP_SUCCESS) {
                             goto end;
                         }
-                        json_buf = ctx->test_sess_buf;
+                        json_buf = ctx->curl_buf;
 
                         if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
-                            printf("%s\n", ctx->test_sess_buf);
+                            printf("%s\n", ctx->curl_buf);
                         } else {
-                            ACVP_LOG_ERR("%s", ctx->test_sess_buf);
+                            ACVP_LOG_ERR("%s", ctx->curl_buf);
                         }
                     }
                     if (ctx->is_sample) {
@@ -2078,12 +2066,10 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
                             goto end;
                         }
                         if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
-                            printf("%s\n", ctx->sample_buf);
+                            printf("%s\n", ctx->curl_buf);
                         } else {
-                            ACVP_LOG_ERR("%s", ctx->sample_buf);
+                            ACVP_LOG_ERR("%s", ctx->curl_buf);
                         }
-                        free(ctx->sample_buf);
-                        ctx->sample_buf = NULL;
                     }
                 }
             }

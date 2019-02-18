@@ -1,0 +1,146 @@
+[
+  {
+    "acvVersion": "0.5"
+  },
+  {
+    "capabilityExchange": {
+      "algorithms": [
+        {
+          "algorithm": "ECDSA",
+          "mode": "keyGen",
+          "prereqVals": [
+            {
+              "algorithm": "SHA",
+              "valValue": "same"
+            },
+            {
+              "algorithm": "DRBG",
+              "valValue": "same"
+            }
+          ],
+          "curve": [
+            "P-224",
+            "P-256",
+            "P-384",
+            "P-521",
+            "K-233",
+            "K-283",
+            "K-409",
+            "K-571",
+            "B-233",
+            "B-283",
+            "B-409",
+            "B-571"
+          ],
+          "secretGenerationMode": [
+            "testing candidates"
+          ]
+        },
+        {
+          "algorithm": "ECDSA",
+          "mode": "keyVer",
+          "prereqVals": [
+            {
+              "algorithm": "SHA",
+              "valValue": "same"
+            },
+            {
+              "algorithm": "DRBG",
+              "valValue": "same"
+            }
+          ],
+          "curve": [
+            "P-224",
+            "P-256",
+            "P-384",
+            "P-521",
+            "K-233",
+            "K-283",
+            "K-409",
+            "K-571",
+            "B-233",
+            "B-283",
+            "B-409",
+            "B-571"
+          ]
+        },
+        {
+          "algorithm": "ECDSA",
+          "mode": "sigGen",
+          "prereqVals": [
+            {
+              "algorithm": "SHA",
+              "valValue": "same"
+            },
+            {
+              "algorithm": "DRBG",
+              "valValue": "same"
+            }
+          ],
+          "capabilities": [
+            {
+              "curve": [
+                "P-224",
+                "P-256",
+                "P-384",
+                "P-521",
+                "K-233",
+                "K-283",
+                "K-409",
+                "K-571",
+                "B-233",
+                "B-283",
+                "B-409",
+                "B-571"
+              ],
+              "hashAlg": [
+                "SHA2-224",
+                "SHA2-256",
+                "SHA2-384",
+                "SHA2-512"
+              ]
+            }
+          ]
+        },
+        {
+          "algorithm": "ECDSA",
+          "mode": "sigVer",
+          "prereqVals": [
+            {
+              "algorithm": "SHA",
+              "valValue": "same"
+            },
+            {
+              "algorithm": "DRBG",
+              "valValue": "same"
+            }
+          ],
+          "capabilities": [
+            {
+              "curve": [
+                "P-224",
+                "P-256",
+                "P-384",
+                "P-521",
+                "K-233",
+                "K-283",
+                "K-409",
+                "K-571",
+                "B-233",
+                "B-283",
+                "B-409",
+                "B-571"
+              ],
+              "hashAlg": [
+                "SHA2-224",
+                "SHA2-256",
+                "SHA2-384",
+                "SHA2-512"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
+]

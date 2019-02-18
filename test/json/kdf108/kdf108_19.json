@@ -1,0 +1,182 @@
+[ {
+  "acvVersion": "0.5"
+}, {
+  "vsId" : 13466,
+  "algorithm" : "KDF",
+  "testGroups" : [ {
+    "tgId": 999,
+    "kdfMode" : "counter",
+    "macMode" : "HMAC-SHA-1",
+    "counterLocation" : "after fixed data",
+    "keyOutLength" : 160,
+    "counterLength" : 8,
+    "tests" : [ {
+      "tcId" : 1,
+      "keyIn" : "6EEBD56976011E56A7AA658CCD09A659",
+      "deferred" : true
+    }, {
+      "tcId" : 2,
+      "keyIn" : "4617AAE97C02CCCABE2529FC6D351C42",
+      "deferred" : true
+    } ]
+  }, {
+    "tgId": 999,
+    "kdfMode" : "counter",
+    "macMode" : "HMAC-SHA-1",
+    "counterLocation" : "after fixed data",
+    "keyOutLength" : 320,
+    "counterLength" : 8,
+    "tests" : [ {
+      "tcId" : 3,
+      "keyIn" : "7770548482B5B94ADF4B73DA1A40DCFD",
+      "deferred" : true
+    }, {
+      "tcId" : 4,
+      "keyIn" : "BDCC2A71BF677616A138DBE450437525",
+      "deferred" : true
+    } ]
+  }, {
+    "tgId": 999,
+    "kdfMode" : "counter",
+    "macMode" : "HMAC-SHA-1",
+    "counterLocation" : "after fixed data",
+    "keyOutLength" : 352,
+    "counterLength" : 8,
+    "tests" : [ {
+      "tcId" : 5,
+      "keyIn" : "77F41C7ECAEC19DD2BA500B545E224E5",
+      "deferred" : true
+    }, {
+      "tcId" : 6,
+      "keyIn" : "21ECFEF01E3F3B4ED9C93C4BF4A4288C",
+      "deferred" : true
+    } ]
+  }, {
+    "tgId": 999,
+    "kdfMode" : "counter",
+    "macMode" : "HMAC-SHA-1",
+    "counterLocation" : "after fixed data",
+    "keyOutLength" : 368,
+    "counterLength" : 8,
+    "tests" : [ {
+      "tcId" : 7,
+      "keyIn" : "32D9A91F1165E5721B7ACC9ED56AD6F5",
+      "deferred" : true
+    }, {
+      "tcId" : 8,
+      "keyIn" : "029335AE83A35AD292541B89700B78DB",
+      "deferred" : true
+    } ]
+  }, {
+    "tgId": 999,
+    "kdfMode" : "counter",
+    "macMode" : "HMAC-SHA2-224",
+    "counterLocation" : "after fixed data",
+    "keyOutLength" : 224,
+    "counterLength" : 8,
+    "tests" : [ {
+      "tcId" : 9,
+      "keyIn" : "ECD2B1B90EE6F51AAE5357295D562BA6",
+      "deferred" : true
+    }, {
+      "tcId" : 10,
+      "keyIn" : "4FFB34B3EA804C662B7596252F951D40",
+      "deferred" : true
+    } ]
+  }, {
+    "tgId": 999,
+    "kdfMode" : "counter",
+    "macMode" : "HMAC-SHA2-224",
+    "counterLocation" : "after fixed data",
+    "keyOutLength" : 312,
+    "counterLength" : 8,
+    "tests" : [ {
+      "tcId" : 11,
+      "keyIn" : "18C4F47D9CAE3CB94EECD0171B2C31B3",
+      "deferred" : true
+    }, {
+      "tcId" : 12,
+      "keyIn" : "820D69AB3E8D60A1B9285E7852918DE0",
+      "deferred" : true
+    } ]
+  }, {
+    "tgId": 999,
+    "kdfMode" : "counter",
+    "macMode" : "HMAC-SHA2-224",
+    "counterLocation" : "after fixed data",
+    "keyOutLength" : 304,
+    "counterLength" : 8,
+    "tests" : [ {
+      "tcId" : 13,
+      "keyIn" : "C74C002B01143CC5941A6D4356CAC273",
+      "deferred" : true
+    }, {
+      "tcId" : 14,
+      "keyIn" : "D2BB9AD429125E43DB2D0973DDCE3D85",
+      "deferred" : true
+    } ]
+  }, {
+    "tgId": 999,
+    "kdfMode" : "counter",
+    "macMode" : "HMAC-SHA2-256",
+    "counterLocation" : "after fixed data",
+    "keyOutLength" : 256,
+    "counterLength" : 8,
+    "tests" : [ {
+      "tcId" : 15,
+      "keyIn" : "EDE5274C6442E68C393F8CD00AABE231",
+      "deferred" : true
+    }, {
+      "tcId" : 16,
+      "keyIn" : "0BD59632B439D77BD0291A23A2C2456D",
+      "deferred" : true
+    } ]
+  }, {
+    "tgId": 999,
+    "kdfMode" : "counter",
+    "macMode" : "HMAC-SHA2-256",
+    "counterLocation" : "after fixed data",
+    "keyOutLength" : 264,
+    "counterLength" : 8,
+    "tests" : [ {
+      "tcId" : 17,
+      "keyIn" : "549232CBD2E1D17F87690F1D7AA38CC5",
+      "deferred" : true
+    }, {
+      "tcId" : 18,
+      "keyIn" : "1B4976ECFB9C1EE80AA734FEE609E92F",
+      "deferred" : true
+    } ]
+  }, {
+    "tgId": 999,
+    "kdfMode" : "counter",
+    "macMode" : "HMAC-SHA2-256",
+    "counterLocation" : "after fixed data",
+    "keyOutLength" : 320,
+    "counterLength" : 8,
+    "tests" : [ {
+      "tcId" : 19,
+      "keyIn" : "B6E7BE55FD2729DBDEC03FF3A38D869B",
+      "deferred" : true
+    }, {
+      "tcId" : 20,
+      "keyIn" : "9A807621F04F46171CAB4A4C080688E3",
+      "deferred" : true
+    } ]
+  }, {
+    "tgId": 999,
+    "kdfMode" : "counter",
+    "macMode" : "HMAC-SHA2-384",
+    "counterLocation" : "after fixed data",
+    "keyOutLength" : 384,
+    "counterLength" : 8,
+    "tests" : [ {
+      "tcId" : 21,
+      "keyIn" : "89A4680C35AC74794048A51EA37496BA",
+      "deferred" : true
+    }, {
+      "tcId" : 22,
+      "deferred" : true
+    } ]
+  } ]
+} ]

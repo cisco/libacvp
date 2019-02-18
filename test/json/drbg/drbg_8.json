@@ -1,0 +1,44 @@
+[
+  {
+    "acvVersion": "0.4"
+  }, 
+  {
+    "vsId": 10231, 
+    "algorithm": "ctrDRBG", 
+    "testGroups": [
+      {
+        "nonceLen": 64, 
+        "predResistance": true, 
+        "persoStringLen": 0, 
+        "tgId": 999, 
+        "derFunc": true, 
+        "tests": [
+          {
+            "nonce": "BA7C736B3D409457", 
+            "entropyInput": "72EBE6DA2EF6E30519572A2D0BF024CC", 
+            "persoString": "", 
+            "tcId": 1, 
+            "otherInput": [
+              {
+                "intendedUse": "generate", 
+                "additionalInput": "", 
+                "entropyInput": "F72B6D7CC4925C38D46CF66D20D5EFDF"
+              }, 
+              {
+                "intendedUse": "generate", 
+                "additionalInput": "", 
+                "entropyInput": "5935987415D3EAC153A4458B1B719C37"
+              }
+            ]
+          }
+        ], 
+        "additionalInputLen": 0, 
+        "mode": "AES-128", 
+        "returnedBitsLen": 256, 
+        "testType": "AFT", 
+        "reSeed": false, 
+        "entropyInputLen": 79
+      }
+    ]
+  }
+]

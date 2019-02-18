@@ -1,0 +1,159 @@
+[
+  {
+    "acvVersion": "0.5"
+  },
+  {
+    "capabilityExchange": {
+      "algorithms": [
+        {
+          "algorithm": "hashDRBG",
+          "prereqVals": [
+            {
+              "algorithm": "SHA",
+              "valValue": "same"
+            }
+          ],
+          "predResistanceEnabled": [
+            true
+          ],
+          "reseedImplemented": true,
+          "capabilities": [
+            {
+              "mode": "SHA-1",
+              "derFuncEnabled": false,
+              "entropyInputLen": [
+                {
+                  "max": 256,
+                  "min": 128,
+                  "step": 64
+                }
+              ],
+              "nonceLen": [
+                {
+                  "max": 128,
+                  "min": 96,
+                  "step": 32
+                }
+              ],
+              "persoStringLen": [
+                {
+                  "max": 256,
+                  "min": 0,
+                  "step": 128
+                }
+              ],
+              "additionalInputLen": [
+                {
+                  "max": 256,
+                  "min": 0,
+                  "step": 128
+                }
+              ],
+              "returnedBitsLen": 160
+            }
+          ]
+        },
+        {
+          "algorithm": "hmacDRBG",
+          "prereqVals": [
+            {
+              "algorithm": "SHA",
+              "valValue": "same"
+            },
+            {
+              "algorithm": "HMAC",
+              "valValue": "same"
+            }
+          ],
+          "predResistanceEnabled": [
+            true
+          ],
+          "reseedImplemented": true,
+          "capabilities": [
+            {
+              "mode": "SHA2-224",
+              "derFuncEnabled": true,
+              "entropyInputLen": [
+                {
+                  "max": 256,
+                  "min": 192,
+                  "step": 64
+                }
+              ],
+              "nonceLen": [
+                {
+                  "max": 256,
+                  "min": 192,
+                  "step": 64
+                }
+              ],
+              "persoStringLen": [
+                {
+                  "max": 256,
+                  "min": 0,
+                  "step": 128
+                }
+              ],
+              "additionalInputLen": [
+                {
+                  "max": 256,
+                  "min": 0,
+                  "step": 128
+                }
+              ],
+              "returnedBitsLen": 224
+            }
+          ]
+        },
+        {
+          "algorithm": "ctrDRBG",
+          "prereqVals": [
+            {
+              "algorithm": "AES",
+              "valValue": "same"
+            }
+          ],
+          "predResistanceEnabled": [
+            true
+          ],
+          "reseedImplemented": false,
+          "capabilities": [
+            {
+              "mode": "AES-128",
+              "derFuncEnabled": true,
+              "entropyInputLen": [
+                {
+                  "max": 256,
+                  "min": 128,
+                  "step": 128
+                }
+              ],
+              "nonceLen": [
+                {
+                  "max": 128,
+                  "min": 64,
+                  "step": 64
+                }
+              ],
+              "persoStringLen": [
+                {
+                  "max": 256,
+                  "min": 0,
+                  "step": 256
+                }
+              ],
+              "additionalInputLen": [
+                {
+                  "max": 256,
+                  "min": 0,
+                  "step": 256
+                }
+              ],
+              "returnedBitsLen": 256
+            }
+          ]
+        }
+      ]
+    }
+  }
+]

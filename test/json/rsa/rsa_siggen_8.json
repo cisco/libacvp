@@ -1,0 +1,23 @@
+[
+  {
+    "acvVersion": "0.5"
+  }, 
+  {
+    "vsId": 1163, 
+    "algorithm": "RSA", 
+    "testGroups": [
+      {
+        "tgId": 1, 
+        "sigType": "ansx9.31", 
+        "tests": [
+          {
+            "tcId": 1165
+          }
+        ], 
+        "modulo": 2048, 
+        "hashAlg": "SHA2-256"
+      }
+    ], 
+    "mode": "sigGen"
+  }
+]
