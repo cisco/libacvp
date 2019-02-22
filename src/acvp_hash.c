@@ -645,17 +645,30 @@ static ACVP_RESULT acvp_hash_init_tc(ACVP_CTX *ctx,
         if (!stc->md) { return ACVP_MALLOC_FAIL; }
     } else {
         /* MCT */
-        stc->md = calloc(1, ACVP_HASH_MD_BYTE_MAX);
-        if (!stc->md) { return ACVP_MALLOC_FAIL; }
+        if (alg_id == ACVP_HASH_SHA3_224 || alg_id == ACVP_HASH_SHA3_256 ||
+            alg_id == ACVP_HASH_SHA3_384 || alg_id == ACVP_HASH_SHA3_512) {
+            /* SHA3 only needs the md buffer */
+            stc->md = calloc(1, ACVP_HASH_MD_BYTE_MAX);
+            if (!stc->md) { return ACVP_MALLOC_FAIL; }
+        } else if (alg_id == ACVP_HASH_SHAKE_128 ||
+                   alg_id == ACVP_HASH_SHAKE_256) {
+            /* SHAKE needs the md to support XOF length */
+            stc->md = calloc(1, ACVP_HASH_XOF_MD_BYTE_MAX);
+            if (!stc->md) { return ACVP_MALLOC_FAIL; }
+        } else {
+            /* SHA/SHA2 */
+            stc->md = calloc(1, ACVP_HASH_MD_BYTE_MAX);
+            if (!stc->md) { return ACVP_MALLOC_FAIL; }
 
-        stc->m1 = calloc(1, ACVP_HASH_MD_BYTE_MAX);
-        if (!stc->m1) { return ACVP_MALLOC_FAIL; }
+            stc->m1 = calloc(1, ACVP_HASH_MD_BYTE_MAX);
+            if (!stc->m1) { return ACVP_MALLOC_FAIL; }
 
-        stc->m2 = calloc(1, ACVP_HASH_MD_BYTE_MAX);
-        if (!stc->m2) { return ACVP_MALLOC_FAIL; }
+            stc->m2 = calloc(1, ACVP_HASH_MD_BYTE_MAX);
+            if (!stc->m2) { return ACVP_MALLOC_FAIL; }
 
-        stc->m3 = calloc(1, ACVP_HASH_MD_BYTE_MAX);
-        if (!stc->m3) { return ACVP_MALLOC_FAIL; }
+            stc->m3 = calloc(1, ACVP_HASH_MD_BYTE_MAX);
+            if (!stc->m3) { return ACVP_MALLOC_FAIL; }
+        }
     }
 
     rv = acvp_hexstr_to_bin(msg, stc->msg, ACVP_HASH_MSG_BYTE_MAX, NULL);
