@@ -103,7 +103,14 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
-am_acvp_app_OBJECTS = acvp_app-app_main.$(OBJEXT)
+am_acvp_app_OBJECTS = acvp_app-app_main.$(OBJEXT) \
+	acvp_app-app_aes.$(OBJEXT) acvp_app-app_cli.$(OBJEXT) \
+	acvp_app-app_cmac.$(OBJEXT) acvp_app-app_des.$(OBJEXT) \
+	acvp_app-app_drbg.$(OBJEXT) acvp_app-app_dsa.$(OBJEXT) \
+	acvp_app-app_ecdsa.$(OBJEXT) acvp_app-app_hmac.$(OBJEXT) \
+	acvp_app-app_kas.$(OBJEXT) acvp_app-app_kdf.$(OBJEXT) \
+	acvp_app-app_rsa.$(OBJEXT) acvp_app-app_sha.$(OBJEXT) \
+	acvp_app-app_utils.$(OBJEXT)
 acvp_app_OBJECTS = $(am_acvp_app_OBJECTS)
 @USE_FOM_TRUE@acvp_app_DEPENDENCIES = $(FOM_OBJ_DIR)/fipscanister.o
 AM_V_lt = $(am__v_lt_@AM_V@)
@@ -304,7 +311,24 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 acvp_app_includedir = $(includedir)/acvp
-acvp_app_SOURCES = app_main.c app_lcl.h
+acvp_app_SOURCES = app_main.c \
+				   app_aes.c \
+				   app_cli.c \
+				   app_cmac.c \
+				   app_des.c \
+				   app_drbg.c \
+				   app_dsa.c \
+				   app_ecdsa.c \
+				   app_hmac.c \
+				   app_kas.c \
+				   app_kdf.c \
+				   app_rsa.c \
+				   app_sha.c \
+				   app_utils.c \
+				   app_fips_lcl.h \
+				   app_fips_init_lcl.h \
+				   app_lcl.h
+
 acvp_app_CFLAGS = -g -fPIE -I$(top_srcdir)/include $(SSL_CFLAGS) $(FOM_CFLAGS) $(SAFEC_CFLAGS)
 acvp_app_LDFLAGS = -L../src/.libs -ldl -lacvp $(SSL_LDFLAGS) $(FOM_LDFLAGS)
 @USE_FOM_TRUE@acvp_app_LDADD = $(FOM_OBJ_DIR)/fipscanister.o
@@ -401,7 +425,20 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/acvp_app-app_aes.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/acvp_app-app_cli.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/acvp_app-app_cmac.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/acvp_app-app_des.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/acvp_app-app_drbg.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/acvp_app-app_dsa.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/acvp_app-app_ecdsa.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/acvp_app-app_hmac.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/acvp_app-app_kas.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/acvp_app-app_kdf.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/acvp_app-app_main.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/acvp_app-app_rsa.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/acvp_app-app_sha.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/acvp_app-app_utils.Po@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(AM_V_CC)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
@@ -440,6 +477,188 @@ acvp_app-app_main.obj: app_main.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='app_main.c' object='acvp_app-app_main.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -c -o acvp_app-app_main.obj `if test -f 'app_main.c'; then $(CYGPATH_W) 'app_main.c'; else $(CYGPATH_W) '$(srcdir)/app_main.c'; fi`
+
+acvp_app-app_aes.o: app_aes.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -MT acvp_app-app_aes.o -MD -MP -MF $(DEPDIR)/acvp_app-app_aes.Tpo -c -o acvp_app-app_aes.o `test -f 'app_aes.c' || echo '$(srcdir)/'`app_aes.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/acvp_app-app_aes.Tpo $(DEPDIR)/acvp_app-app_aes.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='app_aes.c' object='acvp_app-app_aes.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -c -o acvp_app-app_aes.o `test -f 'app_aes.c' || echo '$(srcdir)/'`app_aes.c
+
+acvp_app-app_aes.obj: app_aes.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -MT acvp_app-app_aes.obj -MD -MP -MF $(DEPDIR)/acvp_app-app_aes.Tpo -c -o acvp_app-app_aes.obj `if test -f 'app_aes.c'; then $(CYGPATH_W) 'app_aes.c'; else $(CYGPATH_W) '$(srcdir)/app_aes.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/acvp_app-app_aes.Tpo $(DEPDIR)/acvp_app-app_aes.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='app_aes.c' object='acvp_app-app_aes.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -c -o acvp_app-app_aes.obj `if test -f 'app_aes.c'; then $(CYGPATH_W) 'app_aes.c'; else $(CYGPATH_W) '$(srcdir)/app_aes.c'; fi`
+
+acvp_app-app_cli.o: app_cli.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -MT acvp_app-app_cli.o -MD -MP -MF $(DEPDIR)/acvp_app-app_cli.Tpo -c -o acvp_app-app_cli.o `test -f 'app_cli.c' || echo '$(srcdir)/'`app_cli.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/acvp_app-app_cli.Tpo $(DEPDIR)/acvp_app-app_cli.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='app_cli.c' object='acvp_app-app_cli.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -c -o acvp_app-app_cli.o `test -f 'app_cli.c' || echo '$(srcdir)/'`app_cli.c
+
+acvp_app-app_cli.obj: app_cli.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -MT acvp_app-app_cli.obj -MD -MP -MF $(DEPDIR)/acvp_app-app_cli.Tpo -c -o acvp_app-app_cli.obj `if test -f 'app_cli.c'; then $(CYGPATH_W) 'app_cli.c'; else $(CYGPATH_W) '$(srcdir)/app_cli.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/acvp_app-app_cli.Tpo $(DEPDIR)/acvp_app-app_cli.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='app_cli.c' object='acvp_app-app_cli.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -c -o acvp_app-app_cli.obj `if test -f 'app_cli.c'; then $(CYGPATH_W) 'app_cli.c'; else $(CYGPATH_W) '$(srcdir)/app_cli.c'; fi`
+
+acvp_app-app_cmac.o: app_cmac.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -MT acvp_app-app_cmac.o -MD -MP -MF $(DEPDIR)/acvp_app-app_cmac.Tpo -c -o acvp_app-app_cmac.o `test -f 'app_cmac.c' || echo '$(srcdir)/'`app_cmac.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/acvp_app-app_cmac.Tpo $(DEPDIR)/acvp_app-app_cmac.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='app_cmac.c' object='acvp_app-app_cmac.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -c -o acvp_app-app_cmac.o `test -f 'app_cmac.c' || echo '$(srcdir)/'`app_cmac.c
+
+acvp_app-app_cmac.obj: app_cmac.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -MT acvp_app-app_cmac.obj -MD -MP -MF $(DEPDIR)/acvp_app-app_cmac.Tpo -c -o acvp_app-app_cmac.obj `if test -f 'app_cmac.c'; then $(CYGPATH_W) 'app_cmac.c'; else $(CYGPATH_W) '$(srcdir)/app_cmac.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/acvp_app-app_cmac.Tpo $(DEPDIR)/acvp_app-app_cmac.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='app_cmac.c' object='acvp_app-app_cmac.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -c -o acvp_app-app_cmac.obj `if test -f 'app_cmac.c'; then $(CYGPATH_W) 'app_cmac.c'; else $(CYGPATH_W) '$(srcdir)/app_cmac.c'; fi`
+
+acvp_app-app_des.o: app_des.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -MT acvp_app-app_des.o -MD -MP -MF $(DEPDIR)/acvp_app-app_des.Tpo -c -o acvp_app-app_des.o `test -f 'app_des.c' || echo '$(srcdir)/'`app_des.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/acvp_app-app_des.Tpo $(DEPDIR)/acvp_app-app_des.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='app_des.c' object='acvp_app-app_des.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -c -o acvp_app-app_des.o `test -f 'app_des.c' || echo '$(srcdir)/'`app_des.c
+
+acvp_app-app_des.obj: app_des.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -MT acvp_app-app_des.obj -MD -MP -MF $(DEPDIR)/acvp_app-app_des.Tpo -c -o acvp_app-app_des.obj `if test -f 'app_des.c'; then $(CYGPATH_W) 'app_des.c'; else $(CYGPATH_W) '$(srcdir)/app_des.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/acvp_app-app_des.Tpo $(DEPDIR)/acvp_app-app_des.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='app_des.c' object='acvp_app-app_des.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -c -o acvp_app-app_des.obj `if test -f 'app_des.c'; then $(CYGPATH_W) 'app_des.c'; else $(CYGPATH_W) '$(srcdir)/app_des.c'; fi`
+
+acvp_app-app_drbg.o: app_drbg.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -MT acvp_app-app_drbg.o -MD -MP -MF $(DEPDIR)/acvp_app-app_drbg.Tpo -c -o acvp_app-app_drbg.o `test -f 'app_drbg.c' || echo '$(srcdir)/'`app_drbg.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/acvp_app-app_drbg.Tpo $(DEPDIR)/acvp_app-app_drbg.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='app_drbg.c' object='acvp_app-app_drbg.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -c -o acvp_app-app_drbg.o `test -f 'app_drbg.c' || echo '$(srcdir)/'`app_drbg.c
+
+acvp_app-app_drbg.obj: app_drbg.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -MT acvp_app-app_drbg.obj -MD -MP -MF $(DEPDIR)/acvp_app-app_drbg.Tpo -c -o acvp_app-app_drbg.obj `if test -f 'app_drbg.c'; then $(CYGPATH_W) 'app_drbg.c'; else $(CYGPATH_W) '$(srcdir)/app_drbg.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/acvp_app-app_drbg.Tpo $(DEPDIR)/acvp_app-app_drbg.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='app_drbg.c' object='acvp_app-app_drbg.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -c -o acvp_app-app_drbg.obj `if test -f 'app_drbg.c'; then $(CYGPATH_W) 'app_drbg.c'; else $(CYGPATH_W) '$(srcdir)/app_drbg.c'; fi`
+
+acvp_app-app_dsa.o: app_dsa.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -MT acvp_app-app_dsa.o -MD -MP -MF $(DEPDIR)/acvp_app-app_dsa.Tpo -c -o acvp_app-app_dsa.o `test -f 'app_dsa.c' || echo '$(srcdir)/'`app_dsa.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/acvp_app-app_dsa.Tpo $(DEPDIR)/acvp_app-app_dsa.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='app_dsa.c' object='acvp_app-app_dsa.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -c -o acvp_app-app_dsa.o `test -f 'app_dsa.c' || echo '$(srcdir)/'`app_dsa.c
+
+acvp_app-app_dsa.obj: app_dsa.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -MT acvp_app-app_dsa.obj -MD -MP -MF $(DEPDIR)/acvp_app-app_dsa.Tpo -c -o acvp_app-app_dsa.obj `if test -f 'app_dsa.c'; then $(CYGPATH_W) 'app_dsa.c'; else $(CYGPATH_W) '$(srcdir)/app_dsa.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/acvp_app-app_dsa.Tpo $(DEPDIR)/acvp_app-app_dsa.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='app_dsa.c' object='acvp_app-app_dsa.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -c -o acvp_app-app_dsa.obj `if test -f 'app_dsa.c'; then $(CYGPATH_W) 'app_dsa.c'; else $(CYGPATH_W) '$(srcdir)/app_dsa.c'; fi`
+
+acvp_app-app_ecdsa.o: app_ecdsa.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -MT acvp_app-app_ecdsa.o -MD -MP -MF $(DEPDIR)/acvp_app-app_ecdsa.Tpo -c -o acvp_app-app_ecdsa.o `test -f 'app_ecdsa.c' || echo '$(srcdir)/'`app_ecdsa.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/acvp_app-app_ecdsa.Tpo $(DEPDIR)/acvp_app-app_ecdsa.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='app_ecdsa.c' object='acvp_app-app_ecdsa.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -c -o acvp_app-app_ecdsa.o `test -f 'app_ecdsa.c' || echo '$(srcdir)/'`app_ecdsa.c
+
+acvp_app-app_ecdsa.obj: app_ecdsa.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -MT acvp_app-app_ecdsa.obj -MD -MP -MF $(DEPDIR)/acvp_app-app_ecdsa.Tpo -c -o acvp_app-app_ecdsa.obj `if test -f 'app_ecdsa.c'; then $(CYGPATH_W) 'app_ecdsa.c'; else $(CYGPATH_W) '$(srcdir)/app_ecdsa.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/acvp_app-app_ecdsa.Tpo $(DEPDIR)/acvp_app-app_ecdsa.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='app_ecdsa.c' object='acvp_app-app_ecdsa.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -c -o acvp_app-app_ecdsa.obj `if test -f 'app_ecdsa.c'; then $(CYGPATH_W) 'app_ecdsa.c'; else $(CYGPATH_W) '$(srcdir)/app_ecdsa.c'; fi`
+
+acvp_app-app_hmac.o: app_hmac.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -MT acvp_app-app_hmac.o -MD -MP -MF $(DEPDIR)/acvp_app-app_hmac.Tpo -c -o acvp_app-app_hmac.o `test -f 'app_hmac.c' || echo '$(srcdir)/'`app_hmac.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/acvp_app-app_hmac.Tpo $(DEPDIR)/acvp_app-app_hmac.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='app_hmac.c' object='acvp_app-app_hmac.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -c -o acvp_app-app_hmac.o `test -f 'app_hmac.c' || echo '$(srcdir)/'`app_hmac.c
+
+acvp_app-app_hmac.obj: app_hmac.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -MT acvp_app-app_hmac.obj -MD -MP -MF $(DEPDIR)/acvp_app-app_hmac.Tpo -c -o acvp_app-app_hmac.obj `if test -f 'app_hmac.c'; then $(CYGPATH_W) 'app_hmac.c'; else $(CYGPATH_W) '$(srcdir)/app_hmac.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/acvp_app-app_hmac.Tpo $(DEPDIR)/acvp_app-app_hmac.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='app_hmac.c' object='acvp_app-app_hmac.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -c -o acvp_app-app_hmac.obj `if test -f 'app_hmac.c'; then $(CYGPATH_W) 'app_hmac.c'; else $(CYGPATH_W) '$(srcdir)/app_hmac.c'; fi`
+
+acvp_app-app_kas.o: app_kas.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -MT acvp_app-app_kas.o -MD -MP -MF $(DEPDIR)/acvp_app-app_kas.Tpo -c -o acvp_app-app_kas.o `test -f 'app_kas.c' || echo '$(srcdir)/'`app_kas.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/acvp_app-app_kas.Tpo $(DEPDIR)/acvp_app-app_kas.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='app_kas.c' object='acvp_app-app_kas.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -c -o acvp_app-app_kas.o `test -f 'app_kas.c' || echo '$(srcdir)/'`app_kas.c
+
+acvp_app-app_kas.obj: app_kas.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -MT acvp_app-app_kas.obj -MD -MP -MF $(DEPDIR)/acvp_app-app_kas.Tpo -c -o acvp_app-app_kas.obj `if test -f 'app_kas.c'; then $(CYGPATH_W) 'app_kas.c'; else $(CYGPATH_W) '$(srcdir)/app_kas.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/acvp_app-app_kas.Tpo $(DEPDIR)/acvp_app-app_kas.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='app_kas.c' object='acvp_app-app_kas.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -c -o acvp_app-app_kas.obj `if test -f 'app_kas.c'; then $(CYGPATH_W) 'app_kas.c'; else $(CYGPATH_W) '$(srcdir)/app_kas.c'; fi`
+
+acvp_app-app_kdf.o: app_kdf.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -MT acvp_app-app_kdf.o -MD -MP -MF $(DEPDIR)/acvp_app-app_kdf.Tpo -c -o acvp_app-app_kdf.o `test -f 'app_kdf.c' || echo '$(srcdir)/'`app_kdf.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/acvp_app-app_kdf.Tpo $(DEPDIR)/acvp_app-app_kdf.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='app_kdf.c' object='acvp_app-app_kdf.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -c -o acvp_app-app_kdf.o `test -f 'app_kdf.c' || echo '$(srcdir)/'`app_kdf.c
+
+acvp_app-app_kdf.obj: app_kdf.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -MT acvp_app-app_kdf.obj -MD -MP -MF $(DEPDIR)/acvp_app-app_kdf.Tpo -c -o acvp_app-app_kdf.obj `if test -f 'app_kdf.c'; then $(CYGPATH_W) 'app_kdf.c'; else $(CYGPATH_W) '$(srcdir)/app_kdf.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/acvp_app-app_kdf.Tpo $(DEPDIR)/acvp_app-app_kdf.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='app_kdf.c' object='acvp_app-app_kdf.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -c -o acvp_app-app_kdf.obj `if test -f 'app_kdf.c'; then $(CYGPATH_W) 'app_kdf.c'; else $(CYGPATH_W) '$(srcdir)/app_kdf.c'; fi`
+
+acvp_app-app_rsa.o: app_rsa.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -MT acvp_app-app_rsa.o -MD -MP -MF $(DEPDIR)/acvp_app-app_rsa.Tpo -c -o acvp_app-app_rsa.o `test -f 'app_rsa.c' || echo '$(srcdir)/'`app_rsa.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/acvp_app-app_rsa.Tpo $(DEPDIR)/acvp_app-app_rsa.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='app_rsa.c' object='acvp_app-app_rsa.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -c -o acvp_app-app_rsa.o `test -f 'app_rsa.c' || echo '$(srcdir)/'`app_rsa.c
+
+acvp_app-app_rsa.obj: app_rsa.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -MT acvp_app-app_rsa.obj -MD -MP -MF $(DEPDIR)/acvp_app-app_rsa.Tpo -c -o acvp_app-app_rsa.obj `if test -f 'app_rsa.c'; then $(CYGPATH_W) 'app_rsa.c'; else $(CYGPATH_W) '$(srcdir)/app_rsa.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/acvp_app-app_rsa.Tpo $(DEPDIR)/acvp_app-app_rsa.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='app_rsa.c' object='acvp_app-app_rsa.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -c -o acvp_app-app_rsa.obj `if test -f 'app_rsa.c'; then $(CYGPATH_W) 'app_rsa.c'; else $(CYGPATH_W) '$(srcdir)/app_rsa.c'; fi`
+
+acvp_app-app_sha.o: app_sha.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -MT acvp_app-app_sha.o -MD -MP -MF $(DEPDIR)/acvp_app-app_sha.Tpo -c -o acvp_app-app_sha.o `test -f 'app_sha.c' || echo '$(srcdir)/'`app_sha.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/acvp_app-app_sha.Tpo $(DEPDIR)/acvp_app-app_sha.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='app_sha.c' object='acvp_app-app_sha.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -c -o acvp_app-app_sha.o `test -f 'app_sha.c' || echo '$(srcdir)/'`app_sha.c
+
+acvp_app-app_sha.obj: app_sha.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -MT acvp_app-app_sha.obj -MD -MP -MF $(DEPDIR)/acvp_app-app_sha.Tpo -c -o acvp_app-app_sha.obj `if test -f 'app_sha.c'; then $(CYGPATH_W) 'app_sha.c'; else $(CYGPATH_W) '$(srcdir)/app_sha.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/acvp_app-app_sha.Tpo $(DEPDIR)/acvp_app-app_sha.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='app_sha.c' object='acvp_app-app_sha.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -c -o acvp_app-app_sha.obj `if test -f 'app_sha.c'; then $(CYGPATH_W) 'app_sha.c'; else $(CYGPATH_W) '$(srcdir)/app_sha.c'; fi`
+
+acvp_app-app_utils.o: app_utils.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -MT acvp_app-app_utils.o -MD -MP -MF $(DEPDIR)/acvp_app-app_utils.Tpo -c -o acvp_app-app_utils.o `test -f 'app_utils.c' || echo '$(srcdir)/'`app_utils.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/acvp_app-app_utils.Tpo $(DEPDIR)/acvp_app-app_utils.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='app_utils.c' object='acvp_app-app_utils.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -c -o acvp_app-app_utils.o `test -f 'app_utils.c' || echo '$(srcdir)/'`app_utils.c
+
+acvp_app-app_utils.obj: app_utils.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -MT acvp_app-app_utils.obj -MD -MP -MF $(DEPDIR)/acvp_app-app_utils.Tpo -c -o acvp_app-app_utils.obj `if test -f 'app_utils.c'; then $(CYGPATH_W) 'app_utils.c'; else $(CYGPATH_W) '$(srcdir)/app_utils.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/acvp_app-app_utils.Tpo $(DEPDIR)/acvp_app-app_utils.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='app_utils.c' object='acvp_app-app_utils.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -c -o acvp_app-app_utils.obj `if test -f 'app_utils.c'; then $(CYGPATH_W) 'app_utils.c'; else $(CYGPATH_W) '$(srcdir)/app_utils.c'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo
