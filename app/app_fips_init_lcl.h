@@ -27,6 +27,8 @@
 #ifndef LIBACVP_APP_FIPS_INIT_LCL_H
 #define LIBACVP_APP_FIPS_INIT_LCL_H
 
+#ifdef ACVP_NO_RUNTIME
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -101,6 +103,8 @@ static void fips_algtest_init_nofips(void)
 #ifdef __cplusplus
 }
 #endif
+
+#endif // ACVP_NO_RUNTIME
 
 #endif // LIBACVP_APP_FIPS_INIT_LCL_H
 
