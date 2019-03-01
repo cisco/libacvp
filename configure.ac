@@ -149,18 +149,37 @@ AM_CONDITIONAL([USE_FOM], [test "x$with_fomdir" != xno])
 ##
 # Gcoverage
 ##
-AC_ARG_WITH([gcov],
-[AS_HELP_STRING([--gcov],
-[flag to indicate use of coverage - true|false])],
-[gcov="$withval"],
-[with_gcov=no])
+AC_ARG_ENABLE([gcov],
+[AS_HELP_STRING([--enable-gcov],
+[Flag to indicate use of gcov tool])],
+[gcov="$enableval"],
+[enable_gcov=false])
 
 AS_IF(
- [test "x$with_gcov" != xno],
+ [test "x$enable_gcov" != "xfalse"],
  [[CFLAGS="$CFLAGS --coverage"]
   [LDFLAGS="$LDFLAGS -lgcov"]
  ]
 )
+
+if test "x$enable_gcov" != "xfalse" ; then
+  CLEANFILES="app/*.gcda app/*.gcno src/*.gcda src/*.gcno test/*.gcda test/*.gcno safe_c_stub/src/*.gcno"
+  AC_SUBST(CLEANFILES)
+fi
+
+
+AC_ARG_WITH([criterion-dir],
+	    [AS_HELP_STRING([--with-criterion-dir],
+		[location of Criterion install folder])],
+	    [criteriondir="$withval"],
+	    [with_criteriondir="no"])
+
+AS_IF([test "x$with_criterion" != xno],
+      [AC_SUBST([CRITERION_CFLAGS], "-I$criteriondir/include")
+       AC_SUBST([CRITERION_LDFLAGS], "-L$criteriondir/lib -lcriterion")
+      ]
+     )
+AM_CONDITIONAL([UNIT_TEST_SUPPORTED], [test "x$with_criteriondir" != "xno"])
 
 
 ##
@@ -180,6 +199,6 @@ AC_PREFIX_DEFAULT([/usr/local/acvp])
 
 cp confdefs.h acvp_config.h
 
-AC_CONFIG_FILES([Makefile safe_c_stub/Makefile safe_c_stub/lib/Makefile src/Makefile app/Makefile])
+AC_CONFIG_FILES([Makefile safe_c_stub/Makefile safe_c_stub/lib/Makefile src/Makefile app/Makefile test/Makefile])
 AC_OUTPUT
 

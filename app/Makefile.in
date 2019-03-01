@@ -194,8 +194,11 @@ AWK = @AWK@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
+CLEANFILES = @CLEANFILES@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
+CRITERION_CFLAGS = @CRITERION_CFLAGS@
+CRITERION_LDFLAGS = @CRITERION_LDFLAGS@
 CYGPATH_W = @CYGPATH_W@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
@@ -777,6 +780,7 @@ install-strip:
 mostlyclean-generic:
 
 clean-generic:
+	-test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
 
 distclean-generic:
 	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)

@@ -1,4 +1,9 @@
 ACLOCAL_AMFLAGS = -I m4
-
 AUTOMAKE_OPTIONS=foreign
-SUBDIRS = safe_c_stub src app
+
+if UNIT_TEST_SUPPORTED
+TEST_DIR=test
+endif
+
+SUBDIRS = safe_c_stub src app $(TEST_DIR)
+

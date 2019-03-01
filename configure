@@ -639,6 +639,11 @@ LIBOBJS
 SAFEC_LDFLAGS
 SAFEC_CFLAGS
 SAFEC_STUB_DIR
+UNIT_TEST_SUPPORTED_FALSE
+UNIT_TEST_SUPPORTED_TRUE
+CRITERION_LDFLAGS
+CRITERION_CFLAGS
+CLEANFILES
 USE_FOM_FALSE
 USE_FOM_TRUE
 FOM_LDFLAGS
@@ -783,7 +788,8 @@ with_ssl_dir
 with_libcurl_dir
 with_libmurl_dir
 with_fom_dir
-with_gcov
+enable_gcov
+with_criterion_dir
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1439,6 +1445,7 @@ Optional Features:
   --enable-fast-install[=PKGS]
                           optimize for fast installation [default=yes]
   --disable-libtool-lock  avoid locking (might break parallel builds)
+  --enable-gcov           Flag to indicate use of gcov tool
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -1456,7 +1463,7 @@ Optional Packages:
   --with-libcurl-dir      enable support for client proxy using libcurl
   --with-libmurl-dir      enable support for client proxy using libmurl
   --with-fom-dir          Path to FOM install directory
-  --gcov                  flag to indicate use of coverage - true|false
+  --with-criterion-dir    location of Criterion install folder
 
 Some influential environment variables:
   CC          C compiler command
@@ -12524,21 +12531,52 @@ fi
 ##
 # Gcoverage
 ##
-
-# Check whether --with-gcov was given.
-if test "${with_gcov+set}" = set; then :
-  withval=$with_gcov; gcov="$withval"
+# Check whether --enable-gcov was given.
+if test "${enable_gcov+set}" = set; then :
+  enableval=$enable_gcov; gcov="$enableval"
 else
-  with_gcov=no
+  enable_gcov=false
 fi
 
 
-if test "x$with_gcov" != xno; then :
+if test "x$enable_gcov" != "xfalse"; then :
   CFLAGS="$CFLAGS --coverage"
   LDFLAGS="$LDFLAGS -lgcov"
 
 
 fi
+
+if test "x$enable_gcov" != "xfalse" ; then
+  CLEANFILES="app/*.gcda app/*.gcno src/*.gcda src/*.gcno test/*.gcda test/*.gcno safe_c_stub/src/*.gcno"
+
+fi
+
+
+
+# Check whether --with-criterion-dir was given.
+if test "${with_criterion_dir+set}" = set; then :
+  withval=$with_criterion_dir; criteriondir="$withval"
+else
+  with_criteriondir="no"
+fi
+
+
+if test "x$with_criterion" != xno; then :
+  CRITERION_CFLAGS="-I$criteriondir/include"
+
+       CRITERION_LDFLAGS="-L$criteriondir/lib -lcriterion"
+
+
+
+fi
+ if test "x$with_criteriondir" != "xno"; then
+  UNIT_TEST_SUPPORTED_TRUE=
+  UNIT_TEST_SUPPORTED_FALSE='#'
+else
+  UNIT_TEST_SUPPORTED_TRUE='#'
+  UNIT_TEST_SUPPORTED_FALSE=
+fi
+
 
 
 ##
@@ -12560,7 +12598,7 @@ LIBS="$pre_libs"
 
 cp confdefs.h acvp_config.h
 
-ac_config_files="$ac_config_files Makefile safe_c_stub/Makefile safe_c_stub/lib/Makefile src/Makefile app/Makefile"
+ac_config_files="$ac_config_files Makefile safe_c_stub/Makefile safe_c_stub/lib/Makefile src/Makefile app/Makefile test/Makefile"
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -12737,6 +12775,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${USE_FOM_TRUE}" && test -z "${USE_FOM_FALSE}"; then
   as_fn_error $? "conditional \"USE_FOM\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${UNIT_TEST_SUPPORTED_TRUE}" && test -z "${UNIT_TEST_SUPPORTED_FALSE}"; then
+  as_fn_error $? "conditional \"UNIT_TEST_SUPPORTED\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 
@@ -13601,6 +13643,7 @@ do
     "safe_c_stub/lib/Makefile") CONFIG_FILES="$CONFIG_FILES safe_c_stub/lib/Makefile" ;;
     "src/Makefile") CONFIG_FILES="$CONFIG_FILES src/Makefile" ;;
     "app/Makefile") CONFIG_FILES="$CONFIG_FILES app/Makefile" ;;
+    "test/Makefile") CONFIG_FILES="$CONFIG_FILES test/Makefile" ;;
 
   *) as_fn_error $? "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
   esac
