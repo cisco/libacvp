@@ -31,6 +31,8 @@
 #include <criterion/logging.h>
 #include "parson.h"
 #include "acvp.h"
+#include "app_lcl.h"
+#include "app_fips_lcl.h"
 
 int counter_set;
 int counter_fail;
