@@ -30,6 +30,7 @@
 #include <criterion/criterion.h>
 #include <criterion/logging.h>
 #include "parson.h"
+#include "safe_lib.h"
 #include "acvp.h"
 #include "app_lcl.h"
 #include "app_fips_lcl.h"
