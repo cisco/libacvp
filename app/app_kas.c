@@ -203,6 +203,11 @@ int app_kas_ecc_handler(ACVP_TEST_CASE *test_case) {
         return rv;
     }
 
+    if (!tc->psx || !tc->psy) {
+        printf("missing required psx or psy from kas ecc\n");
+        goto error;
+    }
+
     cx = FIPS_bn_new();
     cy = FIPS_bn_new();
     BN_bin2bn(tc->psx, tc->psxlen, cx);
@@ -217,6 +222,10 @@ int app_kas_ecc_handler(ACVP_TEST_CASE *test_case) {
         goto error;
     }
     if (tc->test_type == ACVP_KAS_ECC_TT_VAL) {
+        if (!tc->pix || !tc->piy || !tc->d) {
+            printf("missing required pix, piy, or d from kas ecc\n");
+            goto error;
+        }
         ix = FIPS_bn_new();
         iy = FIPS_bn_new();
         id = FIPS_bn_new();
@@ -320,6 +329,13 @@ int app_kas_ffc_handler(ACVP_TEST_CASE *test_case) {
         return rv;
     }
 
+    if (!tc->p || !tc->q || !tc->g || !tc->eps ||
+        !tc->plen || !tc->qlen || !tc->glen || !tc->epslen) {
+        printf("Missing required p,q,g, or eps\n");
+        FIPS_dh_free(dh);
+        return rv;
+    }
+
     p = FIPS_bn_new();
     q = FIPS_bn_new();
     g = FIPS_bn_new();
@@ -344,6 +360,10 @@ int app_kas_ffc_handler(ACVP_TEST_CASE *test_case) {
 #endif
 
     if (tc->test_type == ACVP_KAS_FFC_TT_VAL) {
+        if (!tc->epri || !tc->epui || !tc->eprilen || !tc->epuilen) {
+            printf("missing epri or epui\n");
+            goto error;
+        }
         pub_key = FIPS_bn_new();
         priv_key = FIPS_bn_new();
         BN_bin2bn(tc->epri, tc->eprilen, priv_key);
@@ -373,6 +393,11 @@ int app_kas_ffc_handler(ACVP_TEST_CASE *test_case) {
         goto error;
     }
 
+    if (!tc->chash || !tc->piut) {
+        printf("Unallocated buffers in kas ffc tc, no place to put answers\n");
+        goto error;
+    }
+
     Zlen = DH_compute_key_padded(Z, peerkey, dh);
     FIPS_digest(Z, Zlen, (unsigned char *)tc->chash, NULL, md);
     tc->chashlen = EVP_MD_size(md);
@@ -394,10 +419,10 @@ int app_kas_ffc_handler(ACVP_TEST_CASE *test_case) {
 error:
     if (Z) {
         OPENSSL_cleanse(Z, Zlen);
+        FIPS_free(Z);
     }
-    FIPS_free(Z);
-    BN_clear_free(peerkey);
-    FIPS_dh_free(dh);
+    if (peerkey) BN_clear_free(peerkey);
+    if (dh) FIPS_dh_free(dh);
     return rv;
 }
 

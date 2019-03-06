@@ -57,7 +57,7 @@ int app_rsa_keygen_handler(ACVP_TEST_CASE *test_case) {
     int rv = 1;
     RSA       *rsa;
     BIGNUM *p = NULL, *q = NULL, *n = NULL, *d = NULL;
-    BIGNUM *e = BN_new();
+    BIGNUM *e = NULL;
 
     if (!test_case) {
         goto err;
@@ -67,8 +67,12 @@ int app_rsa_keygen_handler(ACVP_TEST_CASE *test_case) {
     rsa = FIPS_rsa_new();
 
     e = FIPS_bn_new();
-    BN_bin2bn(tc->e, tc->e_len, e);
     if (!e) {
+        printf("Failed to allocate BN for e\n");
+        goto err;
+    }
+    BN_bin2bn(tc->e, tc->e_len, e);
+    if (!tc->e_len) {
         printf("Error converting e to BN\n");
         goto err;
     }
@@ -102,10 +106,14 @@ int app_rsa_keygen_handler(ACVP_TEST_CASE *test_case) {
     tc->n_len = BN_bn2bin(n, tc->n);
     tc->d_len = BN_bn2bin(d, tc->d);
 
-    FIPS_rsa_free(rsa);
     rv = 0;
 err:
+    if (rsa) FIPS_rsa_free(rsa);
     if (e) BN_free(e);
+    if (p) FIPS_bn_free(p);
+    if (q) FIPS_bn_free(q);
+    if (d) FIPS_bn_free(d);
+    if (n) FIPS_bn_free(n);
     return rv;
 }
 

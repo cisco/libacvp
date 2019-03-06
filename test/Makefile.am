@@ -26,7 +26,14 @@ runtest_SOURCES = ut_common.c \
 	  test_acvp_ecdsa.c \
 	  test_acvp_kas_ecc.c \
 	  test_acvp_kas_ffc.c \
-	  test_app_cmac.c
+	  test_app_cmac.c \
+	  test_app_ecdsa.c \
+	  test_app_hmac.c \
+	  test_app_kas_ecc.c \
+	  test_app_kas_ffc.c \
+	  test_app_rsa_keygen.c \
+	  test_app_rsa_sig.c \
+	  test_app_sha.c
 
 APP_LINK = ../app/acvp_app-app_sha.o \
            ../app/acvp_app-app_hmac.o \
