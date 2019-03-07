@@ -1,8 +1,7 @@
-/** @file */
 /*****************************************************************************
 * Copyright (c) 2019, Cisco Systems, Inc.
 * All rights reserved.
-
+*
 * Redistribution and use in source and binary forms, with or without modification,
 * are permitted provided that the following conditions are met:
 *
@@ -25,23 +24,48 @@
 * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *****************************************************************************/
 
-#include <string.h>
-#include <stdio.h>
-#include <criterion/criterion.h>
-#include <criterion/logging.h>
-#include "parson.h"
-#include "safe_lib.h"
-#include "acvp.h"
+#ifdef OPENSSL_KDF_SUPPORT
+
+#include <openssl/evp.h>
+#include <openssl/bn.h>
+#include <openssl/kdf.h>
 #include "app_lcl.h"
-#include "app_fips_lcl.h"
 
-int counter_set;
-int counter_fail;
+#define TLS_MD_MASTER_SECRET_CONST              "master secret"
+#define TLS_MD_MASTER_SECRET_CONST_SIZE         13
+#define TLS_MD_KEY_EXPANSION_CONST              "key expansion"
+#define TLS_MD_KEY_EXPANSION_CONST_SIZE         13
 
-void teardown_ctx(ACVP_CTX **ctx);
-ACVP_RESULT progress(char *msg);
-void setup_empty_ctx(ACVP_CTX **ctx);
-int dummy_handler_success(ACVP_TEST_CASE *test_case);
-int dummy_handler_failure(ACVP_TEST_CASE *test_case);
-JSON_Object *ut_get_obj_from_rsp (JSON_Value *arry_val);
-ACVP_RESULT totp(char **token, int token_max);
+int app_kdf135_srtp_handler(ACVP_TEST_CASE *test_case) {
+    return 1;
+}
+
+int app_kdf135_ikev2_handler(ACVP_TEST_CASE *test_case) {
+    return 1;
+}
+
+int app_kdf135_ikev1_handler(ACVP_TEST_CASE *test_case) {
+    return 1;
+}
+
+int app_kdf135_x963_handler(ACVP_TEST_CASE *test_case) {
+    return 1;
+}
+
+int app_kdf108_handler(ACVP_TEST_CASE *test_case) {
+    return 1;
+}
+
+int app_kdf135_tls_handler(ACVP_TEST_CASE *test_case) {
+    return 1; 
+}
+
+int app_kdf135_snmp_handler(ACVP_TEST_CASE *test_case) {
+    return 1;
+}
+
+int app_kdf135_ssh_handler(ACVP_TEST_CASE *test_case) {
+    return 1;
+}
+
+#endif // OPENSSL_KDF_SUPPORT
