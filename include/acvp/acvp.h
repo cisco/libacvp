@@ -199,12 +199,6 @@ typedef enum acvp_prereq_mode_t {
     ACVP_PREREQ_TDES
 } ACVP_PREREQ_ALG;
 
-#define ACVP_KDF135_SNMP_ENGID_MAX_BYTES 32
-#define ACVP_KDF135_SNMP_ENGID_MAX_STR 64
-#define ACVP_KDF135_SNMP_SKEY_MAX 64
-#define ACVP_KDF135_TPM_SKEY_MAX 32
-#define ACVP_KDF135_SNMP_PASSWORD_MAX 8192
-
 /*!
  * @enum ACVP_HASH_ALG
  * @brief Represents the general hash algorithms.
@@ -779,7 +773,7 @@ typedef struct acvp_kdf135_snmp_tc_t {
     ACVP_CIPHER cipher;
     unsigned int tc_id;    /* Test case id */
     unsigned char *engine_id;
-    char *engine_id_str;
+    unsigned int engine_id_len;
     const char *password;
     unsigned int p_len;
     unsigned char *s_key;
