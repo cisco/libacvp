@@ -52,18 +52,17 @@ static int ec_get_pubkey(EC_KEY *key, BIGNUM *x, BIGNUM *y) {
     const EC_POINT *pt;
     const EC_GROUP *grp;
     const EC_METHOD *meth;
-    int rv;
+    int rv = 0;
     BN_CTX *ctx;
 
     ctx = BN_CTX_new();
-    if (!ctx)
-        return 0;
+    if (!ctx) return 0;
 
     grp = EC_KEY_get0_group(key);
-    if (!grp) return 0;
+    if (!grp) goto end;
 
     pt = EC_KEY_get0_public_key(key);
-    if (!pt) return 0;
+    if (!pt) goto end;
 
     meth = EC_GROUP_method_of(grp);
     if (EC_METHOD_get_field_type(meth) == NID_X9_62_prime_field) {
@@ -72,7 +71,8 @@ static int ec_get_pubkey(EC_KEY *key, BIGNUM *x, BIGNUM *y) {
         rv = EC_POINT_get_affine_coordinates_GF2m(grp, pt, x, y, ctx);
     }
 
-    BN_CTX_free(ctx);
+end:
+    if (ctx) BN_CTX_free(ctx);
     return rv;
 }
 
@@ -92,12 +92,12 @@ int app_ecdsa_handler(ACVP_TEST_CASE *test_case) {
 
     if (!test_case) {
         printf("No test case found\n");
-        goto err;
+        return 1;
     }
     tc = test_case->tc.ecdsa;
     if (!tc) {
         printf("\nError: test case not found in ECDSA handler\n");
-        goto err;
+        return 1;
     }
     mode = tc->cipher;
 

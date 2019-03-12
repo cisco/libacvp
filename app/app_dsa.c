@@ -90,7 +90,6 @@ int app_dsa_handler(ACVP_TEST_CASE *test_case) {
             if (dsa_builtin_paramgen2(group_dsa, L, N, md, NULL, 0, -1,
                                       NULL, NULL, NULL, NULL) <= 0) {
                 printf("Parameter Generation error\n");
-                FIPS_dsa_free(group_dsa);
                 return 1;
             }
 
@@ -110,7 +109,6 @@ int app_dsa_handler(ACVP_TEST_CASE *test_case) {
 
         if (!DSA_generate_key(group_dsa)) {
             printf("\n DSA_generate_key failed");
-            FIPS_dsa_free(group_dsa);
             return 1;
         }
 
@@ -364,13 +362,11 @@ int app_dsa_handler(ACVP_TEST_CASE *test_case) {
             if (dsa_builtin_paramgen2(group_dsa, L, N, md, NULL, 0, -1,
                                       NULL, NULL, NULL, NULL) <= 0) {
                 printf("Parameter Generation error\n");
-                FIPS_dsa_free(group_dsa);
                 return 1;
             }
 
             if (!DSA_generate_key(group_dsa)) {
                 printf("\n DSA_generate_key failed");
-                FIPS_dsa_free(group_dsa);
                 return 1;
             }
 

@@ -53,18 +53,23 @@ int app_rsa_keygen_handler(ACVP_TEST_CASE *test_case) {
      * in this example app.
      */
 
-    ACVP_RSA_KEYGEN_TC    *tc;
+    ACVP_RSA_KEYGEN_TC *tc = NULL;
     int rv = 1;
-    RSA       *rsa;
+    RSA *rsa = NULL;
     BIGNUM *p = NULL, *q = NULL, *n = NULL, *d = NULL;
     BIGNUM *e = NULL;
 
     if (!test_case) {
-        goto err;
+        printf("Missing test_case\n");
+        return 1;
     }
     tc = test_case->tc.rsa_keygen;
 
     rsa = FIPS_rsa_new();
+    if (!rsa) {
+        printf("Rsa_new failure\n");
+        return 1;
+    }
 
     e = FIPS_bn_new();
     if (!e) {
@@ -110,10 +115,6 @@ int app_rsa_keygen_handler(ACVP_TEST_CASE *test_case) {
 err:
     if (rsa) FIPS_rsa_free(rsa);
     if (e) BN_free(e);
-    if (p) FIPS_bn_free(p);
-    if (q) FIPS_bn_free(q);
-    if (d) FIPS_bn_free(d);
-    if (n) FIPS_bn_free(n);
     return rv;
 }
 
@@ -251,10 +252,10 @@ int app_rsa_sig_handler(ACVP_TEST_CASE *test_case) {
 #if OPENSSL_VERSION_NUMBER <= 0x10100000L
             e = group_rsa->e;
             n = group_rsa->n;
-            group_n = BN_dup(n);
 #else
-            RSA_get0_key(rsa, (const BIGNUM **)&n, (const BIGNUM **)&e, NULL);
+            RSA_get0_key(group_rsa, (const BIGNUM **)&n, (const BIGNUM **)&e, NULL);
 #endif
+            group_n = BN_dup(n);
         } else {
             e = BN_dup(bn_e);
             n = BN_dup(group_n);
@@ -274,10 +275,15 @@ int app_rsa_sig_handler(ACVP_TEST_CASE *test_case) {
             tc->sig_len = siglen;
         }
     }
+
+    /* Success */
     rv = 0;
+
 err:
     if (bn_e) BN_free(bn_e);
     if (rsa) FIPS_rsa_free(rsa);
+    if (e) BN_free(e);
+    if (n) BN_free(n);
 
     return rv;
 }

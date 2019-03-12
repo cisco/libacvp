@@ -34,9 +34,9 @@
 #include "safe_mem_lib.h"
 
 static EC_POINT *make_peer(EC_GROUP *group, BIGNUM *x, BIGNUM *y) {
-    EC_POINT *peer;
-    int rv;
-    BN_CTX *c;
+    EC_POINT *peer = NULL;
+    BN_CTX *c = NULL;
+    int rv = 0;
 
     peer = EC_POINT_new(group);
     if (!peer) {
@@ -46,7 +46,7 @@ static EC_POINT *make_peer(EC_GROUP *group, BIGNUM *x, BIGNUM *y) {
     c = BN_CTX_new();
     if (!c) {
         printf("BN_CTX_new failed\n");
-        return NULL;
+        goto end;
     }
     if (EC_METHOD_get_field_type(EC_GROUP_method_of(group))
         == NID_X9_62_prime_field) {
@@ -55,12 +55,13 @@ static EC_POINT *make_peer(EC_GROUP *group, BIGNUM *x, BIGNUM *y) {
         rv = EC_POINT_set_affine_coordinates_GF2m(group, peer, x, y, c);
     }
 
-    BN_CTX_free(c);
-    if (rv) {
-        return peer;
+end:
+    if (rv == 0) {
+        if (peer) EC_POINT_free(peer);
+        peer = NULL;
     }
-    EC_POINT_free(peer);
-    return NULL;
+    if (c) BN_CTX_free(c);
+    return peer;
 }
 
 static int ec_print_key(ACVP_KAS_ECC_TC *tc, EC_KEY *key, int add_e, int exout) {
@@ -192,15 +193,13 @@ int app_kas_ecc_handler(ACVP_TEST_CASE *test_case) {
 
     ec = EC_KEY_new();
     if (ec == NULL) {
-        EC_GROUP_free(group);
         printf("No EC_KEY_new\n");
-        return rv;
+        goto error;
     }
     EC_KEY_set_flags(ec, EC_FLAG_COFACTOR_ECDH);
     if (!EC_KEY_set_group(ec, group)) {
-        EC_GROUP_free(group);
         printf("No EC_KEY_set_group\n");
-        return rv;
+        goto error;
     }
 
     if (!tc->psx || !tc->psy) {
@@ -210,12 +209,13 @@ int app_kas_ecc_handler(ACVP_TEST_CASE *test_case) {
 
     cx = FIPS_bn_new();
     cy = FIPS_bn_new();
-    BN_bin2bn(tc->psx, tc->psxlen, cx);
-    BN_bin2bn(tc->psy, tc->psylen, cy);
     if (!cx || !cy) {
-        printf("BN_bin2bn failed psx psy\n");
+        printf("BN_new failed psx psy\n");
         goto error;
     }
+    BN_bin2bn(tc->psx, tc->psxlen, cx);
+    BN_bin2bn(tc->psy, tc->psylen, cy);
+
     peerkey = make_peer(group, cx, cy);
     if (peerkey == NULL) {
         printf("Peerkey failed\n");
@@ -229,14 +229,13 @@ int app_kas_ecc_handler(ACVP_TEST_CASE *test_case) {
         ix = FIPS_bn_new();
         iy = FIPS_bn_new();
         id = FIPS_bn_new();
+        if (!ix || !iy || !id) {
+            printf("BN_new failed pix piy d");
+            goto error;
+        }
         BN_bin2bn(tc->pix, tc->pixlen, ix);
         BN_bin2bn(tc->piy, tc->piylen, iy);
         BN_bin2bn(tc->d, tc->dlen, id);
-
-        if (!ix || !iy || !id) {
-            printf("BN_bin2bn failed pix piy d");
-            goto error;
-        }
 
         EC_KEY_set_public_key_affine_coordinates(ec, ix, iy);
         EC_KEY_set_private_key(ec, id);
@@ -278,16 +277,16 @@ int app_kas_ecc_handler(ACVP_TEST_CASE *test_case) {
 error:
     if (Z) {
         OPENSSL_cleanse(Z, Zlen);
+        FIPS_free(Z);
     }
-    FIPS_free(Z);
-    EC_KEY_free(ec);
-    EC_POINT_free(peerkey);
-    EC_GROUP_free(group);
-    BN_free(cx);
-    BN_free(cy);
-    BN_free(ix);
-    BN_free(iy);
-    BN_free(id);
+    if (ec) EC_KEY_free(ec);
+    if (peerkey) EC_POINT_free(peerkey);
+    if (group) EC_GROUP_free(group);
+    if (cx) BN_free(cx);
+    if (cy) BN_free(cy);
+    if (ix) BN_free(ix);
+    if (iy) BN_free(iy);
+    if (id) BN_free(id);
     return rv;
 }
 
@@ -332,24 +331,22 @@ int app_kas_ffc_handler(ACVP_TEST_CASE *test_case) {
     if (!tc->p || !tc->q || !tc->g || !tc->eps ||
         !tc->plen || !tc->qlen || !tc->glen || !tc->epslen) {
         printf("Missing required p,q,g, or eps\n");
-        FIPS_dh_free(dh);
-        return rv;
+        goto error;
     }
 
     p = FIPS_bn_new();
     q = FIPS_bn_new();
     g = FIPS_bn_new();
+    peerkey = FIPS_bn_new();
+    if (!peerkey || !p || !q || !g) {
+        printf("BN_new failed p q g eps\n");
+        goto error;
+    }
+
     BN_bin2bn(tc->p, tc->plen, p);
     BN_bin2bn(tc->q, tc->qlen, q);
     BN_bin2bn(tc->g, tc->glen, g);
-
-    peerkey = FIPS_bn_new();
     BN_bin2bn(tc->eps, tc->epslen, peerkey);
-
-    if (!peerkey || !p || !q || !g) {
-        printf("BN_bin2bn failed p q g eps\n");
-        goto error;
-    }
 
 #if OPENSSL_VERSION_NUMBER <= 0x10100000L
     dh->p = BN_dup(p);
@@ -366,13 +363,14 @@ int app_kas_ffc_handler(ACVP_TEST_CASE *test_case) {
         }
         pub_key = FIPS_bn_new();
         priv_key = FIPS_bn_new();
+        if (!pub_key || !priv_key) {
+            printf("BN_new failed epri epui\n");
+            goto error;
+        }
+
         BN_bin2bn(tc->epri, tc->eprilen, priv_key);
         BN_bin2bn(tc->epui, tc->epuilen, pub_key);
 
-        if (!pub_key || !priv_key) {
-            printf("BN_bin2bn failed epri epui\n");
-            goto error;
-        }
 #if OPENSSL_VERSION_NUMBER <= 0x10100000L
         dh->pub_key = BN_dup(pub_key);
         dh->priv_key = BN_dup(priv_key);
@@ -423,6 +421,11 @@ error:
     }
     if (peerkey) BN_clear_free(peerkey);
     if (dh) FIPS_dh_free(dh);
+    if (pub_key) BN_free(pub_key);
+    if (priv_key) BN_free(priv_key);
+    if (p) BN_free(p);
+    if (q) BN_free(q);
+    if (g) BN_free(g);
     return rv;
 }
 
