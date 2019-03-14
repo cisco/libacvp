@@ -1173,23 +1173,115 @@ ACVP_RESULT acvp_cap_sym_cipher_set_parm(ACVP_CTX *ctx,
         acvp_cap_add_length(&cap->cap.sym_cap->keylen, value);
         break;
     case ACVP_SYM_CIPH_TAGLEN:
-        acvp_cap_add_length(&cap->cap.sym_cap->taglen, value);
+        acvp_cap_add_length(&cap->cap.sym_cap->taglen.lengths, value);
         break;
     case ACVP_SYM_CIPH_IVLEN:
-        acvp_cap_add_length(&cap->cap.sym_cap->ivlen, value);
+        acvp_cap_add_length(&cap->cap.sym_cap->ivlen.lengths, value);
         break;
     case ACVP_SYM_CIPH_PTLEN:
-        acvp_cap_add_length(&cap->cap.sym_cap->ptlen, value);
+        acvp_cap_add_length(&cap->cap.sym_cap->ptlen.lengths, value);
         break;
     case ACVP_SYM_CIPH_TWEAK:
         acvp_cap_add_length(&cap->cap.sym_cap->tweak, value);
         break;
     case ACVP_SYM_CIPH_AADLEN:
-        acvp_cap_add_length(&cap->cap.sym_cap->aadlen, value);
+        acvp_cap_add_length(&cap->cap.sym_cap->aadlen.lengths, value);
         break;
     default:
         return ACVP_INVALID_ARG;
     }
+
+    return ACVP_SUCCESS;
+}
+
+ACVP_RESULT acvp_cap_sym_cipher_set_domain(ACVP_CTX *ctx,
+                                           ACVP_CIPHER cipher,
+                                           ACVP_SYM_CIPH_PARM parm,
+                                           int min,
+                                           int max,
+                                           int increment) {
+    ACVP_CAPS_LIST *cap_ptr = NULL;
+    ACVP_JSON_DOMAIN_OBJ *domain = NULL;
+
+    switch (cipher) {
+    case ACVP_AES_GCM:
+    case ACVP_AES_CCM:
+    case ACVP_AES_ECB:
+    case ACVP_AES_CBC:
+    case ACVP_AES_CFB1:
+    case ACVP_AES_CFB8:
+    case ACVP_AES_CFB128:
+    case ACVP_AES_OFB:
+    case ACVP_AES_CTR:
+    case ACVP_AES_XTS:
+    case ACVP_AES_KW:
+    case ACVP_AES_KWP:
+    case ACVP_TDES_ECB:
+    case ACVP_TDES_CBC:
+    case ACVP_TDES_CBCI:
+    case ACVP_TDES_OFB:
+    case ACVP_TDES_OFBI:
+    case ACVP_TDES_CFB1:
+    case ACVP_TDES_CFB8:
+    case ACVP_TDES_CFB64:
+    case ACVP_TDES_CFBP1:
+    case ACVP_TDES_CFBP8:
+    case ACVP_TDES_CFBP64:
+    case ACVP_TDES_CTR:
+    case ACVP_TDES_KW:
+        break;
+    default:
+        return ACVP_INVALID_ARG;
+    }
+
+    /*
+     * Locate this cipher in the caps array
+     */
+    cap_ptr = acvp_locate_cap_entry(ctx, cipher);
+    if (!cap_ptr) {
+        ACVP_LOG_ERR("Cap entry not found, use acvp_enable_sym_cipher_cap() first.");
+        return ACVP_NO_CAP;
+    }
+
+    switch (parm) {
+    case ACVP_SYM_CIPH_PTLEN:
+        if (min < 0 || max > ACVP_SYM_PT_BIT_MAX) {
+            ACVP_LOG_ERR("min or max outside of acceptable range");
+            return ACVP_INVALID_ARG;
+        }
+        domain = &cap_ptr->cap.sym_cap->ptlen.domain;
+        cap_ptr->cap.sym_cap->ptlen.flag_domain = 1;
+        break;
+    case ACVP_SYM_CIPH_IVLEN:
+        if (min < 0 || max > ACVP_SYM_IV_BIT_MAX) {
+            ACVP_LOG_ERR("min or max outside of acceptable range");
+            return ACVP_INVALID_ARG;
+        }
+        domain = &cap_ptr->cap.sym_cap->ivlen.domain;
+        cap_ptr->cap.sym_cap->ivlen.flag_domain = 1;
+        break;
+    case ACVP_SYM_CIPH_AADLEN:
+        if (min < 0 || max > ACVP_SYM_AAD_BIT_MAX) {
+            ACVP_LOG_ERR("min or max outside of acceptable range");
+            return ACVP_INVALID_ARG;
+        }
+        domain = &cap_ptr->cap.sym_cap->aadlen.domain;
+        cap_ptr->cap.sym_cap->aadlen.flag_domain = 1;
+        break;
+    case ACVP_SYM_CIPH_TAGLEN:
+        if (min < ACVP_SYM_TAG_BIT_MIN || max > ACVP_SYM_TAG_BIT_MAX) {
+            ACVP_LOG_ERR("min or max outside of acceptable range");
+            return ACVP_INVALID_ARG;
+        }
+        domain = &cap_ptr->cap.sym_cap->taglen.domain;
+        cap_ptr->cap.sym_cap->taglen.flag_domain = 1;
+        break;
+    default:
+        return ACVP_INVALID_ARG;
+    }
+    domain->min = min;
+    domain->max = max;
+    domain->increment = increment;
 
     return ACVP_SUCCESS;
 }

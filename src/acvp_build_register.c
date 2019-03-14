@@ -255,6 +255,23 @@ static ACVP_RESULT acvp_build_cmac_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
     return ACVP_SUCCESS;
 }
 
+static void acvp_json_array_append_domain(JSON_Array *array,
+                                          ACVP_JSON_DOMAIN_OBJ *domain) {
+    JSON_Value *tmp_val = NULL;
+    JSON_Object *tmp_obj = NULL;
+
+    if (!array || !domain) {
+        return;
+    }
+
+    tmp_val = json_value_init_object();
+    tmp_obj = json_value_get_object(tmp_val);
+    json_object_set_number(tmp_obj, "min", domain->min);
+    json_object_set_number(tmp_obj, "max", domain->max);
+    json_object_set_number(tmp_obj, "increment", domain->increment);
+    json_array_append_value(array, tmp_val);
+}
+
 static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry) {
     JSON_Array *kwc_arr = NULL;
     JSON_Array *mode_arr = NULL;
@@ -375,7 +392,12 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
     if ((cap_entry->cipher == ACVP_AES_GCM) || (cap_entry->cipher == ACVP_AES_CCM)) {
         json_object_set_value(cap_obj, "tagLen", json_value_init_array());
         opts_arr = json_object_get_array(cap_obj, "tagLen");
-        sl_list = sym_cap->taglen;
+
+        if (sym_cap->taglen.flag_domain) {
+            acvp_json_array_append_domain(opts_arr, &sym_cap->taglen.domain);
+        }
+
+        sl_list = sym_cap->taglen.lengths;
         while (sl_list) {
             json_array_append_number(opts_arr, sl_list->length);
             sl_list = sl_list->next;
@@ -413,7 +435,12 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
     default:
         json_object_set_value(cap_obj, "ivLen", json_value_init_array());
         opts_arr = json_object_get_array(cap_obj, "ivLen");
-        sl_list = sym_cap->ivlen;
+
+        if (sym_cap->ivlen.flag_domain) {
+            acvp_json_array_append_domain(opts_arr, &sym_cap->ivlen.domain);
+        }
+
+        sl_list = sym_cap->ivlen.lengths;
         while (sl_list) {
             json_array_append_number(opts_arr, sl_list->length);
             sl_list = sl_list->next;
@@ -427,7 +454,11 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
     json_object_set_value(cap_obj, "payloadLen", json_value_init_array());
     opts_arr = json_object_get_array(cap_obj, "payloadLen");
 
-    sl_list = sym_cap->ptlen;
+    if (sym_cap->ptlen.flag_domain) {
+        acvp_json_array_append_domain(opts_arr, &sym_cap->ptlen.domain);
+    }
+
+    sl_list = sym_cap->ptlen.lengths;
     while (sl_list) {
         json_array_append_number(opts_arr, sl_list->length);
         sl_list = sl_list->next;
@@ -458,7 +489,12 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
     if ((cap_entry->cipher == ACVP_AES_GCM) || (cap_entry->cipher == ACVP_AES_CCM)) {
         json_object_set_value(cap_obj, "aadLen", json_value_init_array());
         opts_arr = json_object_get_array(cap_obj, "aadLen");
-        sl_list = sym_cap->aadlen;
+
+        if (sym_cap->aadlen.flag_domain) {
+            acvp_json_array_append_domain(opts_arr, &sym_cap->aadlen.domain);
+        }
+
+        sl_list = sym_cap->aadlen.lengths;
         while (sl_list) {
             json_array_append_number(opts_arr, sl_list->length);
             sl_list = sl_list->next;

@@ -678,6 +678,12 @@ typedef struct acvp_json_domain_obj_t {
     int value; // for single values
 } ACVP_JSON_DOMAIN_OBJ;
 
+typedef struct acvp_supported_lengths {
+    ACVP_SL_LIST *lengths;
+    ACVP_JSON_DOMAIN_OBJ domain;
+    int flag_domain;
+} ACVP_SUPPORTED_LENGTHS;
+
 typedef struct acvp_prereq_alg_val {
     ACVP_PREREQ_ALG alg;
     char *val;
@@ -696,11 +702,11 @@ typedef struct acvp_sym_cipher_capability {
     unsigned int ctr_incr;
     unsigned int ctr_ovrflw;
     ACVP_SL_LIST *keylen;
-    ACVP_SL_LIST *ptlen;
     ACVP_SL_LIST *tweak;
-    ACVP_SL_LIST *ivlen;
-    ACVP_SL_LIST *aadlen;
-    ACVP_SL_LIST *taglen;
+    ACVP_SUPPORTED_LENGTHS ptlen;
+    ACVP_SUPPORTED_LENGTHS ivlen;
+    ACVP_SUPPORTED_LENGTHS aadlen;
+    ACVP_SUPPORTED_LENGTHS taglen;
     int kw_mode;
 } ACVP_SYM_CIPHER_CAP;
 

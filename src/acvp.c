@@ -204,6 +204,25 @@ static void acvp_free_prereqs(ACVP_CAPS_LIST *cap_list) {
 }
 
 /*
+ * Free Internal memory for Symmetric Cipher Capabilitiy
+ */
+static void acvp_cap_free_sym_cipher(ACVP_CAPS_LIST *cap_list) {
+    ACVP_SYM_CIPHER_CAP *cap = cap_list->cap.sym_cap;
+
+    if (!cap) return;
+
+    acvp_cap_free_sl(cap->keylen);
+    acvp_cap_free_sl(cap->tweak);
+    acvp_cap_free_sl(cap->ptlen.lengths);
+    acvp_cap_free_sl(cap->ivlen.lengths);
+    acvp_cap_free_sl(cap->aadlen.lengths);
+    acvp_cap_free_sl(cap->taglen.lengths);
+
+    free(cap_list->cap.sym_cap);
+    cap_list->cap.sym_cap = NULL;
+}
+
+/*
  * Free Internal memory for DSA operations. Since it supports
  * multiple modes, we have to free the whole list
  */
@@ -645,13 +664,7 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx) {
                 }
                 switch (cap_entry->cap_type) {
                 case ACVP_SYM_TYPE:
-                    acvp_cap_free_sl(cap_entry->cap.sym_cap->keylen);
-                    acvp_cap_free_sl(cap_entry->cap.sym_cap->ptlen);
-                    acvp_cap_free_sl(cap_entry->cap.sym_cap->ivlen);
-                    acvp_cap_free_sl(cap_entry->cap.sym_cap->aadlen);
-                    acvp_cap_free_sl(cap_entry->cap.sym_cap->taglen);
-                    acvp_cap_free_sl(cap_entry->cap.sym_cap->tweak);
-                    free(cap_entry->cap.sym_cap);
+                    acvp_cap_free_sym_cipher(cap_entry);
                     break;
                 case ACVP_HASH_TYPE:
                     free(cap_entry->cap.hash_cap);

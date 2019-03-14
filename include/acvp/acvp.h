@@ -1457,6 +1457,25 @@ ACVP_RESULT acvp_cap_sym_cipher_set_parm(ACVP_CTX *ctx,
                                          ACVP_SYM_CIPH_PARM parm,
                                          int length);
 
+/*! @brief Allows the application to specify "domain" parameters for use
+           when registering SYM_CIPHER capability with the server.
+
+   @param ctx Address of pointer to a previously allocated ACVP_CTX.
+   @param cipher ACVP_CIPHER enum value identifying the crypto capability.
+   @param parm ACVP_SYM_CIPH_PARM enum value specifying parameter
+   @param min Minumum supported value for the corresponding parameter
+   @param max Maximum supported value for the corresponding parameter
+   @param increment Increment value supported
+
+   @return ACVP_RESULT
+ */
+ACVP_RESULT acvp_cap_sym_cipher_set_domain(ACVP_CTX *ctx,
+                                           ACVP_CIPHER cipher,
+                                           ACVP_SYM_CIPH_PARM parm,
+                                           int min,
+                                           int max,
+                                           int increment);
+
 /*! @brief acvp_enable_hash_cap() allows an application to specify a
        hash capability to be tested by the ACVP server.
 
