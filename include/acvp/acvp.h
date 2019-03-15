@@ -2609,6 +2609,17 @@ ACVP_RESULT acvp_set_vendor_info(ACVP_CTX *ctx,
 ACVP_RESULT acvp_set_json_filename(ACVP_CTX *ctx, const char *json_filename);
 
 
+/*! @brief acvp_load_kat_filename loads and processes JSON kat vector file
+ *  This option will not communicate with the server at all.
+ *
+ * @param ctx Pointer to ACVP_CTX that was previously created by
+        calling acvp_create_test_session.
+ * @param kat_filename Name of the file that contains the JSON
+ *      kat vectors
+ * @return ACVP_RESULT
+ */
+ACVP_RESULT acvp_load_kat_filename(ACVP_CTX *ctx, const char *kat_filename);
+
 /*! @brief acvp_set_module_info() specifies the crypto module attributes
     for the test session.
 

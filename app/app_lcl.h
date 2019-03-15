@@ -49,7 +49,9 @@ typedef struct app_config {
     int sample;
     int dev;
     int json;
+    int kat;
     char json_file[JSON_FILENAME_LENGTH + 1];
+    char kat_file[JSON_FILENAME_LENGTH + 1];
 
     /*
      * Algorithm Flags

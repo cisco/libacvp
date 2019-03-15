@@ -341,6 +341,12 @@ int main(int argc, char **argv) {
         }
 #endif
     }
+
+    if (cfg.kat) {
+       rv = acvp_load_kat_filename(ctx, cfg.kat_file);
+       goto end;
+    }
+
     /*
      * Now that we have a test session, we register with
      * the server to advertise our capabilities and receive

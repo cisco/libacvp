@@ -817,6 +817,45 @@ static void acvp_cap_free_hash_pairs(ACVP_RSA_HASH_PAIR_LIST *list) {
 }
 
 /*
+ * Allows application to load JSON kat vector file within context
+ * to be read in and used for vector testing
+ */
+ACVP_RESULT acvp_load_kat_filename(ACVP_CTX *ctx, const char *kat_filename) {
+    JSON_Object *obj = NULL;
+    JSON_Value *val = NULL;
+    ACVP_RESULT rv = ACVP_SUCCESS;
+    JSON_Array *reg_array;
+
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+    if (!kat_filename) {
+        ACVP_LOG_ERR("Must provide value for JSON filename");
+        return ACVP_MISSING_ARG;
+    }
+
+    if (strnlen_s(kat_filename, ACVP_JSON_FILENAME_MAX + 1) > ACVP_JSON_FILENAME_MAX) {
+        ACVP_LOG_ERR("Provided kat_filename length > max(%d)", ACVP_JSON_FILENAME_MAX);
+        return ACVP_INVALID_ARG;
+    }
+
+    val = json_parse_file(kat_filename);
+
+    reg_array = json_value_get_array(val);
+    obj = json_array_get_object(reg_array, 1);
+    if (!obj) {
+        ACVP_LOG_ERR("JSON obj parse error");
+        json_value_free(val);
+        return ACVP_INVALID_ARG;
+    }
+
+    /* Process the kat vector(s) */
+    rv  = acvp_dispatch_vector_set(ctx, obj);
+    json_value_free(val);
+    return rv;
+}
+
+/*
  * Allows application to set JSON filename within context
  * to be read in during registration
  */
