@@ -29,6 +29,7 @@ libacvp_la_SOURCES =  acvp.c \
 
 libacvp_la_LIBADD = $(SAFEC_LDFLAGS) $(LIBCURL_LDFLAGS)
 libacvp_includedir=$(includedir)/acvp
-libacvp_include_HEADERS = $(top_srcdir)/include/acvp/acvp.h \
-						  $(top_srcdir)/include/acvp/parson.h
-noinst_HEADERS = $(top_srcdir)/include/acvp/acvp_lcl.h
+libacvp_include_HEADERS = $(top_srcdir)/include/acvp/acvp.h
+noinst_HEADERS = $(top_srcdir)/include/acvp/acvp_lcl.h \
+				 $(top_srcdir)/include/acvp/parson.h
+
