@@ -85,34 +85,6 @@ static struct curl_slist *acvp_add_auth_hdr(ACVP_CTX *ctx, struct curl_slist *sl
 }
 
 /*
- * This routine will log the TLS peer certificate chain, which
- * allows auditing the peer identity by inspecting the logs.
- */
-static void acvp_curl_log_peer_cert(ACVP_CTX *ctx, CURL *hnd) {
-    int rv;
-
-    union {
-        struct curl_slist *to_info;
-        struct curl_certinfo *to_certinfo;
-    } ptr;
-    int i;
-    struct curl_slist *slist;
-
-    ptr.to_certinfo = NULL;
-
-    rv = curl_easy_getinfo(hnd, CURLINFO_CERTINFO, &ptr.to_certinfo);
-
-    if (!rv && ptr.to_certinfo) {
-        ACVP_LOG_INFO("TLS peer presented the following %d certificates...", ptr.to_certinfo->num_of_certs);
-        for (i = 0; i < ptr.to_certinfo->num_of_certs; i++) {
-            for (slist = ptr.to_certinfo->certinfo[i]; slist; slist = slist->next) {
-                ACVP_LOG_INFO("%s", slist->data);
-            }
-        }
-    }
-}
-
-/*
  * This is a callback used by curl to send the HTTP body
  * to the application (us).  We will store the HTTP body
  * in the ACVP_CTX curl_buf field.
@@ -216,13 +188,6 @@ static long acvp_curl_http_get(ACVP_CTX *ctx, char *url) {
     curl_easy_perform(hnd);
 
     /*
-     * Get the cert info from the TLS peer
-     */
-    if (ctx->verify_peer) {
-        acvp_curl_log_peer_cert(ctx, hnd);
-    }
-
-    /*
      * Get the HTTP reponse status code from the server
      */
     curl_easy_getinfo(hnd, CURLINFO_RESPONSE_CODE, &http_code);
@@ -324,13 +289,6 @@ static long acvp_curl_http_post(ACVP_CTX *ctx, char *url, char *data, int data_l
     crv = curl_easy_perform(hnd);
     if (crv != CURLE_OK) {
         ACVP_LOG_ERR("Curl failed with code %d (%s)\n", crv, curl_easy_strerror(crv));
-    }
-
-    /*
-     * Get the cert info from the TLS peer
-     */
-    if (ctx->verify_peer) {
-        acvp_curl_log_peer_cert(ctx, hnd);
     }
 
     /*
