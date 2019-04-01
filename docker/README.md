@@ -23,24 +23,18 @@ cd libacvp/
 ```
 cd docker/openssl_102
 docker build -t libacvp_w_openssl102 .
-cd ../../
-docker run -v $(pwd):/home/docker/libacvp --user $(id -u) -it libacvp_w_openssl102
 ```
 
 #### Libacvp with OpenSSL 1.1.0
 ```
 cd docker/openssl_110
 docker build -t libacvp_w_openssl110 .
-cd ../../
-docker run -v $(pwd):/home/docker/libacvp --user $(id -u) -it libacvp_w_openssl110
 ```
 
 #### Libacvp with OpenSSL 1.1.1
 ```
 cd docker/openssl_111
 docker build -t libacvp_w_openssl111 .
-cd ../../
-docker run -v $(pwd):/home/docker/libacvp --user $(id -u) -it libacvp_w_openssl111
 ```
 
 **Note:** The sudo password inside the running container is “docker”.
