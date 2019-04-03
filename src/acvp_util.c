@@ -807,3 +807,21 @@ void acvp_release_json(JSON_Value *r_vs_val,
     if (r_vs_val) json_value_free(r_vs_val);
 }
 
+/**
+ * @brief Determine if the given \p string fits within the \p max_allowed length.
+ *
+ * Measure the length of the \p string to see whether it's length
+ * (not including terminator) is <= \p max_allowed.
+ *
+ * @return 1 Length of \string <= \p max_allowed
+ * @return 0 Length of \string > \p max_allowed
+ * 
+ */
+int string_fits(const char *string, unsigned int max_allowed) {
+    if (strnlen_s(string, max_allowed + 1) > max_allowed) {
+        return 0;
+    }
+
+    return 1;
+}
+

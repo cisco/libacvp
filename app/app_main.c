@@ -124,6 +124,68 @@ static ACVP_RESULT progress(char *msg) {
     return ACVP_SUCCESS;
 }
 
+#define MAX_DEPENDENCIES 16
+static int setup_operating_environment(ACVP_CTX *ctx) {
+    ACVP_RESULT rv = ACVP_SUCCESS;
+    unsigned int dependency_ids[MAX_DEPENDENCIES];
+    int dependency_count = 0;
+    unsigned int dep_id = 0, oe_id = 0;
+    char *oe_name = NULL;
+    char ssl_version[10];
+    int i = 0;
+
+    /*
+     * Setup the vendor attributes
+     */
+    rv = acvp_set_vendor_info(ctx, "Acme Fictional Corporation",
+                              "www.acme-fictional.com", "Wyle E. Coyote",
+                              "wcoyote@acme-fictional.com");
+    if (rv != ACVP_SUCCESS) {
+        printf("Failed to set vendor info\n");
+        return 1;
+    }
+
+    /*
+     * Setup the crypto module attributes
+     */
+    snprintf(ssl_version, 10, "%08x", (unsigned int)SSLeay());
+    rv = acvp_set_module_info(ctx, "OpenSSL",
+                              "software", ssl_version,
+                              "FOM 6.2a");
+    if (rv != ACVP_SUCCESS) {
+        printf("Failed to set module info\n");
+        return 1;
+    }
+
+    /* New Dependency */
+    dep_id = acvp_dependency_new(ctx);
+    if (dep_id == 0) return 1;
+    dependency_ids[dependency_count] = dep_id;
+    dependency_count++;
+    acvp_dependency_add_attribute(ctx, dep_id, "type", "software");
+
+    /* New Dependency */
+    dep_id = acvp_dependency_new(ctx);
+    if (dep_id == 0) return 1;
+    dependency_ids[dependency_count] = dep_id;
+    dependency_count++;
+    acvp_dependency_add_attribute(ctx, dep_id, "name", "Linux 3.1");
+
+    /* New OE */
+    oe_name = "Ubuntu Linux 3.1 on AMD 6272 Opteron Processor with Acme package installed";
+    oe_id = acvp_oe_new(ctx, oe_name);
+    if (oe_id == 0) return 1;
+
+    /* Add the Dependencies to the OE */
+    for (i = 0; i < dependency_count; i++) {
+        rv = acvp_oe_add_dependency(ctx, oe_id, dependency_ids[i]);
+        if (rv != ACVP_SUCCESS) return 1;
+    }
+
+    /* Sucess */
+    return 0;
+}
+
 static void app_cleanup(ACVP_CTX *ctx) {
     // Routines for libacvp
     acvp_cleanup(ctx);
@@ -141,10 +203,7 @@ static void app_cleanup(ACVP_CTX *ctx) {
 int main(int argc, char **argv) {
     ACVP_RESULT rv = ACVP_SUCCESS;
     ACVP_CTX *ctx = NULL;
-    char ssl_version[10];
     APP_CONFIG cfg = { 0 };
-    char *oe_name = "Ubuntu Linux 3.1 on AMD 6272 Opteron Processor with Acme package installed";
-    ACVP_KV_LIST *key_val_list = calloc(1, sizeof(ACVP_KV_LIST));
 
     if (ingest_cli(&cfg, argc, argv)) {
         return 1;
@@ -185,40 +244,10 @@ int main(int argc, char **argv) {
         goto end;
     }
 
-    /*
-     * Setup the vendor attributes
-     */
-    rv = acvp_set_vendor_info(ctx, "Acme Fictional Corporation", "www.acme-fictional.com", "Wyle E. Coyote", "wcoyote@acme-fictional.com");
-    if (rv != ACVP_SUCCESS) {
-        printf("Failed to set vendor info\n");
-        goto end;
-    }
-
-    /*
-     * Setup the crypto module attributes
-     */
-    snprintf(ssl_version, 10, "%08x", (unsigned int)SSLeay());
-    rv = acvp_set_module_info(ctx, "OpenSSL", "software", ssl_version, "FOM 6.2a");
-    if (rv != ACVP_SUCCESS) {
-        printf("Failed to set module info\n");
-        goto end;
-    }
-
-    key_val_list->key = calloc(4 + 1, sizeof(char));
-    strcpy_s(key_val_list->key, 4 + 1, "type");
-    key_val_list->value = calloc(8 + 1, sizeof(char));
-    strcpy_s(key_val_list->value, 8 + 1, "software");
-
-    key_val_list->next = calloc(1, sizeof(ACVP_KV_LIST));
-
-    key_val_list->next->key = calloc(4 + 1, sizeof(char));
-    strcpy_s(key_val_list->next->key, 4 + 1, "name");
-    key_val_list->next->value = calloc(9 + 1, sizeof(char));
-    strcpy_s(key_val_list->next->value, 9 + 1, "Linux 3.1");
-
-    rv = acvp_add_oe_dependency(ctx, oe_name, key_val_list);
-    if (rv != ACVP_SUCCESS) {
-        printf("Failed to set module info\n");
+    /* Now to setup all of the information pertaining to Operating Environment(s) */
+    rv = setup_operating_environment(ctx);
+    if (rv) {
+        printf("Failed to setup Operating Environment\n");
         goto end;
     }
 

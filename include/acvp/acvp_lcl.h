@@ -1000,16 +1000,60 @@ typedef struct acvp_caps_list_t {
     struct acvp_caps_list_t *next;
 } ACVP_CAPS_LIST;
 
-/*
- * to keep track of OEs with multiple dependencies
- * It includes a key/value list to be added as a flexible JSON obj
- * and the URL that the server returns once the dep is registered
+/*! @struct ACVP_KV_LIST
+ * @brief This struct is a list of key/value pairs
+ * to be added to flexible JSON objects during registration
+ *
+ * For example, dependencies can have different key/value
+ * pairs depending on their type, so if the attributes are
+ * added to this list, then the list can get translated into
+ * proper JSON during dependency registration.
  */
-typedef struct acvp_dependency_list_t {
-    ACVP_KV_LIST *attrs_list;
-    char *url; /* returned from the server */
-    struct acvp_dependency_list_t *next;
-} ACVP_DEPENDENCY_LIST;
+typedef struct acvp_kv_list_t {
+    char *key;
+    char *value;
+    struct acvp_kv_list_t *next;
+} ACVP_KV_LIST;
+
+typedef struct acvp_dependency_t {
+    ACVP_KV_LIST *attribute_list; /**< Key/value list */
+    char *url; /**< Returned from the server */
+} ACVP_DEPENDENCY;
+
+#define LIBACVP_DEPENDENCIES_MAX 16
+typedef struct acvp_dependencies_t {
+    ACVP_DEPENDENCY deps[LIBACVP_DEPENDENCIES_MAX];
+    unsigned int count;
+} ACVP_DEPENDENCIES;
+
+typedef struct acvp_vendor_t {
+    char *name;
+    char *website;
+    char *contact_name;
+    char *contact_email;
+    char *url; /**< ID URL returned from the server */
+} ACVP_VENDOR;
+
+typedef struct acvp_module_t {
+    char *name;
+    char *type;
+    char *version;
+    char *description;
+    char *url; /**< ID URL returned from the server */
+} ACVP_MODULE;
+
+typedef struct acvp_oe_t {
+    char *name; /**< Name of the Operating Environment */
+    char *url; /**< ID URL returned from the server */
+    ACVP_DEPENDENCY *deps[LIBACVP_DEPENDENCIES_MAX]; /**< Array of pointers to the actual dependencies structs */
+    unsigned int num_deps; /**< Number of entries in deps */
+} ACVP_OE;
+
+#define LIBACVP_OES_MAX 8
+typedef struct acvp_oes_t {
+    ACVP_OE oe[LIBACVP_OES_MAX];
+    unsigned int count;
+} ACVP_OES;
 
 /*
  * This struct holds all the global data for a test session, such
@@ -1029,22 +1073,13 @@ struct acvp_ctx_t {
     int verify_peer;        /* enables TLS peer verification via Curl */
     char *tls_cert;         /* Location of PEM encoded X509 cert to use for TLS client auth */
     char *tls_key;          /* Location of PEM encoded priv key to use for TLS client auth */
-    char *vendor_name;
-    char *vendor_website;
-    char *contact_name;
-    char *contact_email;
-    char *module_name;
-    char *module_type;
-    char *module_version;
-    char *module_desc;
-    char *oe_name;
-    ACVP_DEPENDENCY_LIST *dependency_list;
+    
+    ACVP_OES oes; /**< Operating Environments */
+    ACVP_VENDOR vendor; /** Vendor Information */
+    ACVP_MODULE module; /** Module Information */
+    ACVP_DEPENDENCIES dependencies; /** Dependencies */
     ACVP_STRING_LIST *vsid_url_list;
     char *session_url;
-
-    char *vendor_url; /*<< URL for vendor on validating server >>*/
-    char *module_url;
-    char *oe_url;
 
     char *json_filename;
     int use_json;
@@ -1075,16 +1110,13 @@ struct acvp_ctx_t {
 
 ACVP_RESULT acvp_send_test_session_registration(ACVP_CTX *ctx, char *reg, int len);
 
-#if 0 /* Needs to be refactored to provide data length for underlying functions
-         Due to SafeC */
-ACVP_RESULT acvp_send_vendor_registration(ACVP_CTX *ctx, char *reg);
+ACVP_RESULT acvp_transport_send_oe_registration(ACVP_CTX *ctx, char *reg, int len);
 
-ACVP_RESULT acvp_send_module_registration(ACVP_CTX *ctx, char *reg);
+ACVP_RESULT acvp_transport_send_dependency_registration(ACVP_CTX *ctx, char *reg, int len);
 
-ACVP_RESULT acvp_send_oe_registration(ACVP_CTX *ctx, char *reg);
+ACVP_RESULT acvp_transport_send_vendor_registration(ACVP_CTX *ctx, char *reg, int len);
 
-ACVP_RESULT acvp_send_dep_registration(ACVP_CTX *ctx, char *reg);
-#endif
+ACVP_RESULT acvp_transport_send_module_registration(ACVP_CTX *ctx, char *reg, int len);
 
 ACVP_RESULT acvp_send_login(ACVP_CTX *ctx, char *login, int len);
 
@@ -1162,21 +1194,15 @@ ACVP_RESULT acvp_kas_ffc_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 /*
  * ACVP build registration functions used internally
  */
-#if 0 /* Needs to be refactored to provide data length for underlying functions
-         Due to SafeC */
-ACVP_RESULT acvp_build_vendors(ACVP_CTX *ctx, char **reg);
-
-ACVP_RESULT acvp_build_modules(ACVP_CTX *ctx, char **reg);
-
-ACVP_RESULT acvp_build_oes(ACVP_CTX *ctx, char **reg);
-#endif
-
 ACVP_RESULT acvp_build_test_session(ACVP_CTX *ctx, char **reg, int *out_len);
 
-#if 0 /* Needs to be refactored to provide data length for underlying functions
-         Due to SafeC */
-ACVP_RESULT acvp_build_dependency(ACVP_DEPENDENCY_LIST *dep, char **reg);
-#endif
+ACVP_RESULT acvp_register_build_oe(ACVP_CTX *ctx, ACVP_OE *oe, char **reg, int *out_len);
+
+ACVP_RESULT acvp_register_build_dependency(ACVP_CTX *ctx, ACVP_DEPENDENCY *dep, char **reg, int *out_len);
+
+ACVP_RESULT acvp_register_build_vendor(ACVP_CTX *ctx, ACVP_VENDOR *vendor, char **reg, int *out_len);
+
+ACVP_RESULT acvp_register_build_module(ACVP_CTX *ctx, ACVP_MODULE *module, char **reg, int *out_len);
 
 /*
  * ACVP utility functions used internally
@@ -1226,4 +1252,9 @@ ACVP_RESULT acvp_setup_json_rsp_group(ACVP_CTX **ctx,
 
 void acvp_release_json(JSON_Value *r_vs_val,
                        JSON_Value *r_gval);
+
+void acvp_free_kv_list(ACVP_KV_LIST *kv_list);
+
+int string_fits(const char *string, unsigned int max_allowed);
+
 #endif

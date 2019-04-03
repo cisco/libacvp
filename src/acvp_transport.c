@@ -308,56 +308,6 @@ static long acvp_curl_http_post(ACVP_CTX *ctx, char *url, char *data, int data_l
     return http_code;
 }
 
-#if 0
-/*
- * This is the transport function used within libacvp to register
- * the DUT attributes with the ACVP server.
- *
- * The reg parameter is the JSON encoded registration message that
- * will be sent to the server.
- */
-#define ACVP_VENDORS_URI "vendors"
-ACVP_RESULT acvp_send_vendor_registration(ACVP_CTX *ctx, char *reg) {
-    return acvp_send_internal(ctx, reg, ACVP_VENDORS_URI);
-}
-
-/*
- * This is the transport function used within libacvp to register
- * the DUT attributes with the ACVP server.
- *
- * The reg parameter is the JSON encoded registration message that
- * will be sent to the server.
- */
-#define ACVP_MODULES_URI "modules"
-ACVP_RESULT acvp_send_module_registration(ACVP_CTX *ctx, char *reg) {
-    return acvp_send_internal(ctx, reg, ACVP_MODULES_URI);
-}
-
-/*
- * This is the transport function used within libacvp to register
- * the DUT attributes with the ACVP server.
- *
- * The reg parameter is the JSON encoded registration message that
- * will be sent to the server.
- */
-#define ACVP_DEPS_URI "dependencies"
-ACVP_RESULT acvp_send_dep_registration(ACVP_CTX *ctx, char *reg) {
-    return acvp_send_internal(ctx, reg, ACVP_DEPS_URI);
-}
-
-/*
- * This is the transport function used within libacvp to register
- * the DUT attributes with the ACVP server.
- *
- * The reg parameter is the JSON encoded registration message that
- * will be sent to the server.
- */
-#define ACVP_OES_URI "oes"
-ACVP_RESULT acvp_send_oe_registration(ACVP_CTX *ctx, char *reg) {
-    return acvp_send_internal(ctx, reg, ACVP_OES_URI);
-}
-#endif
-
 static ACVP_RESULT sanity_check_ctx(ACVP_CTX *ctx) {
     if (!ctx) {
         ACVP_LOG_ERR("Missing ctx");
@@ -375,6 +325,110 @@ static ACVP_RESULT sanity_check_ctx(ACVP_CTX *ctx) {
     }
 
     return ACVP_SUCCESS;
+}
+
+/*
+ * This is the transport function used within libacvp to register
+ * the DUT attributes with the ACVP server.
+ *
+ * The reg parameter is the JSON encoded registration message that
+ * will be sent to the server.
+ */
+#define ACVP_OES_URI "oes"
+ACVP_RESULT acvp_transport_send_oe_registration(ACVP_CTX *ctx, char *reg, int len) {
+    ACVP_RESULT rv = 0;
+    char url[ACVP_ATTR_URL_MAX] = {0};
+
+    rv = sanity_check_ctx(ctx);
+    if (ACVP_SUCCESS != rv) return rv;
+
+    if (!ctx->path_segment) {
+        ACVP_LOG_ERR("No path segment, need to call acvp_set_path_segment first");
+        return ACVP_MISSING_ARG;
+    }
+
+    snprintf(url, ACVP_ATTR_URL_MAX - 1, "https://%s:%d/%s%s%s", ctx->server_name,
+             ctx->server_port, ctx->api_context, ctx->path_segment, ACVP_OES_URI);
+
+    return acvp_network_action(ctx, ACVP_NET_POST_REG, url, reg, len);
+}
+
+/*
+ * This is the transport function used within libacvp to register
+ * the DUT attributes with the ACVP server.
+ *
+ * The reg parameter is the JSON encoded registration message that
+ * will be sent to the server.
+ */
+#define ACVP_DEPS_URI "dependencies"
+ACVP_RESULT acvp_transport_send_dependency_registration(ACVP_CTX *ctx, char *reg, int len) {
+    ACVP_RESULT rv = 0;
+    char url[ACVP_ATTR_URL_MAX] = {0};
+
+    rv = sanity_check_ctx(ctx);
+    if (ACVP_SUCCESS != rv) return rv;
+
+    if (!ctx->path_segment) {
+        ACVP_LOG_ERR("No path segment, need to call acvp_set_path_segment first");
+        return ACVP_MISSING_ARG;
+    }
+
+    snprintf(url, ACVP_ATTR_URL_MAX - 1, "https://%s:%d/%s%s%s", ctx->server_name,
+             ctx->server_port, ctx->api_context, ctx->path_segment, ACVP_DEPS_URI);
+
+    return acvp_network_action(ctx, ACVP_NET_POST_REG, url, reg, len);
+}
+
+/*
+ * This is the transport function used within libacvp to register
+ * the DUT attributes with the ACVP server.
+ *
+ * The reg parameter is the JSON encoded registration message that
+ * will be sent to the server.
+ */
+#define ACVP_VENDORS_URI "vendors"
+ACVP_RESULT acvp_transport_send_vendor_registration(ACVP_CTX *ctx, char *reg, int len) {
+    ACVP_RESULT rv = 0;
+    char url[ACVP_ATTR_URL_MAX] = {0};
+
+    rv = sanity_check_ctx(ctx);
+    if (ACVP_SUCCESS != rv) return rv;
+
+    if (!ctx->path_segment) {
+        ACVP_LOG_ERR("No path segment, need to call acvp_set_path_segment first");
+        return ACVP_MISSING_ARG;
+    }
+
+    snprintf(url, ACVP_ATTR_URL_MAX - 1, "https://%s:%d/%s%s%s", ctx->server_name,
+             ctx->server_port, ctx->api_context, ctx->path_segment, ACVP_VENDORS_URI);
+
+    return acvp_network_action(ctx, ACVP_NET_POST_REG, url, reg, len);
+}
+
+/*
+ * This is the transport function used within libacvp to register
+ * the DUT attributes with the ACVP server.
+ *
+ * The reg parameter is the JSON encoded registration message that
+ * will be sent to the server.
+ */
+#define ACVP_MODULES_URI "modules"
+ACVP_RESULT acvp_transport_send_module_registration(ACVP_CTX *ctx, char *reg, int len) {
+    ACVP_RESULT rv = 0;
+    char url[ACVP_ATTR_URL_MAX] = {0};
+
+    rv = sanity_check_ctx(ctx);
+    if (ACVP_SUCCESS != rv) return rv;
+
+    if (!ctx->path_segment) {
+        ACVP_LOG_ERR("No path segment, need to call acvp_set_path_segment first");
+        return ACVP_MISSING_ARG;
+    }
+
+    snprintf(url, ACVP_ATTR_URL_MAX - 1, "https://%s:%d/%s%s%s", ctx->server_name,
+             ctx->server_port, ctx->api_context, ctx->path_segment, ACVP_MODULES_URI);
+
+    return acvp_network_action(ctx, ACVP_NET_POST_REG, url, reg, len);
 }
 
 /*

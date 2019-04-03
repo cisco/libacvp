@@ -52,23 +52,6 @@ typedef enum acvp_log_lvl {
     ACVP_LOG_LVL_VERBOSE,
 } ACVP_LOG_LVL;
 
-/*! @struct ACVP_KV_LIST
- * @brief This struct is a list of key/value pairs
- * to be added to flexible JSON objects during registration
- *
- * For example, dependencies can have different key/value
- * pairs depending on their type, so if the attributes are
- * added to this list, then the list can get translated into
- * proper JSON during dependency registration.
- */
-typedef struct acvp_kv_list_t {
-    char *key;
-    char *value;
-    struct acvp_kv_list_t *next;
-} ACVP_KV_LIST;
-
-void acvp_free_kv_list(ACVP_KV_LIST *kv_list);
-
 /*! @struct ACVP_CTX
  *  @brief This opaque structure is used to maintain the state of a test session
  *         with an ACVP server.  A single instance of this context
@@ -2638,16 +2621,18 @@ ACVP_RESULT acvp_set_module_info(ACVP_CTX *ctx,
                                  const char *module_version,
                                  const char *module_description);
 
-/*! @brief acvp_add_oe_dependency() adds a list of key/value pairs for
- * a flexible json OE dependency
- * @param ctx
- * @param oe_name
- * @param key_val_list
- * @return ACVP_RESULT
- */
-ACVP_RESULT acvp_add_oe_dependency(ACVP_CTX *ctx,
-                                   const char *oe_name,
-                                   ACVP_KV_LIST *key_val_list);
+unsigned int acvp_dependency_new(ACVP_CTX *ctx);
+
+ACVP_RESULT acvp_dependency_add_attribute(ACVP_CTX *ctx,
+                                          unsigned int dependency_id,
+                                          const char *key,
+                                          const char *value);
+
+unsigned int acvp_oe_new(ACVP_CTX *ctx, const char *oe_name);
+
+ACVP_RESULT acvp_oe_add_dependency(ACVP_CTX *ctx,
+                                   unsigned int oe_id,
+                                   unsigned int dependency_id);
 
 /*! @brief acvp_check_test_results() allows the application to fetch vector
         set results from the server during a test session.
