@@ -800,6 +800,37 @@ ACVP_RESULT acvp_setup_json_rsp_group(ACVP_CTX **ctx,
     return ACVP_SUCCESS;
 }
 
+static char *acvp_get_version_from_rsp(JSON_Value *arry_val) {
+    char *version = NULL;
+    JSON_Object *ver_obj = NULL;
+
+    JSON_Array *reg_array;
+
+    reg_array = json_value_get_array(arry_val);
+    ver_obj = json_array_get_object(reg_array, 0);
+    version = (char *)json_object_get_string(ver_obj, "acvVersion");
+    if (version == NULL) {
+        return NULL;
+    }
+
+    return version;
+}
+
+JSON_Object *acvp_get_obj_from_rsp(JSON_Value *arry_val) {
+    JSON_Object *obj = NULL;
+    JSON_Array *reg_array;
+    char *ver = NULL;
+
+    reg_array = json_value_get_array(arry_val);
+    ver = acvp_get_version_from_rsp(arry_val);
+    if (ver == NULL) {
+        return NULL;
+    }
+
+    obj = json_array_get_object(reg_array, 1);
+    return obj;
+}
+
 void acvp_release_json(JSON_Value *r_vs_val,
                        JSON_Value *r_gval) {
 

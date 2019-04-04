@@ -2386,53 +2386,6 @@ static ACVP_RESULT acvp_build_kas_ffc_register_cap(ACVP_CTX *ctx,
     return ACVP_SUCCESS;
 }
 
-#if 0
-/*
- * This function builds the JSON message to register an OE dependency
- * with the validating server
- */
-ACVP_RESULT acvp_build_dependency(ACVP_DEPENDENCY_LIST *dep, char **reg) {
-    JSON_Value *reg_arry_val = NULL;
-    JSON_Value *ver_val = NULL;
-    JSON_Object *ver_obj = NULL;
-    ACVP_KV_LIST *kv_list;
-    JSON_Array *reg_arry = NULL;
-    JSON_Value *val = NULL;
-    JSON_Object *obj = NULL;
-
-    if (!dep) {
-        return ACVP_MISSING_ARG;
-    }
-
-    /*
-     * Start the registration array
-     */
-    reg_arry_val = json_value_init_array();
-    reg_arry = json_array((const JSON_Value *)reg_arry_val);
-
-    ver_val = json_value_init_object();
-    ver_obj = json_value_get_object(ver_val);
-
-    json_object_set_string(ver_obj, "acvVersion", ACVP_VERSION);
-    json_array_append_value(reg_arry, ver_val);
-
-    val = json_value_init_object();
-    obj = json_value_get_object(val);
-
-    kv_list = dep->attrs_list;
-    while (kv_list) {
-        json_object_set_string(obj, kv_list->key, kv_list->value);
-        kv_list = kv_list->next;
-    }
-
-    json_array_append_value(reg_arry, val);
-    *reg = json_serialize_to_string_pretty(reg_arry_val);
-    json_value_free(reg_arry_val);
-
-    return ACVP_SUCCESS;
-}
-#endif
-
 /*
  * This function builds the JSON register message that
  * will be sent to the ACVP server to advertised the crypto
@@ -2473,12 +2426,8 @@ ACVP_RESULT acvp_build_test_session(ACVP_CTX *ctx, char **reg, int *out_len) {
     val = json_value_init_object();
     obj = json_value_get_object(val);
 
-    json_object_set_string(obj, "moduleUrl", ctx->module.url);
     if (ctx->is_sample) {
         json_object_set_boolean(obj, "isSample", 1);
-    }
-    if (ctx->debug_request) {
-        json_object_set_string(obj, "debugRequest", "yes");
     }
 
     /*
@@ -2679,7 +2628,7 @@ ACVP_RESULT acvp_register_build_oe(ACVP_CTX *ctx,
                                     char **reg,
                                     int *out_len) {
     JSON_Value *reg_arry_val = NULL, *val = NULL;
-    JSON_Array *reg_arry = NULL, *dep_array_val = NULL;
+    JSON_Array *reg_arry = NULL, *dep_array = NULL;
     JSON_Object *obj = NULL;
     int i = 0;
 
@@ -2701,11 +2650,11 @@ ACVP_RESULT acvp_register_build_oe(ACVP_CTX *ctx,
      */
     json_object_set_string(obj, "name", oe->name);
     json_object_set_value(obj, "dependencyUrls", json_value_init_array());
-    dep_array_val = json_object_get_array(obj, "dependencyUrls");
+    dep_array = json_object_get_array(obj, "dependencyUrls");
 
     for (i = 0; i < oe->num_deps; i++) {
         ACVP_DEPENDENCY *dependency = oe->deps[i];
-        json_array_append_string(dep_array_val, dependency->url);
+        json_array_append_string(dep_array, dependency->url);
     }
 
     json_array_append_value(reg_arry, val);
@@ -2760,6 +2709,7 @@ ACVP_RESULT acvp_register_build_dependency(ACVP_CTX *ctx,
  * This function builds the JSON message that registers a module with
  * the validating crypto server
  */
+#if 0
 ACVP_RESULT acvp_register_build_module(ACVP_CTX *ctx,
                                        ACVP_MODULE *module,
                                        char **reg,
@@ -2793,6 +2743,7 @@ ACVP_RESULT acvp_register_build_module(ACVP_CTX *ctx,
 
     return ACVP_SUCCESS;
 }
+#endif
 
 /*
  * This function builds the JSON message to register a vendor with the
@@ -2805,9 +2756,13 @@ ACVP_RESULT acvp_register_build_vendor(ACVP_CTX *ctx,
                                        ACVP_VENDOR *vendor,
                                        char **reg,
                                        int *out_len) {
-    JSON_Array *reg_arry = NULL, *contact_array = NULL, *email_array = NULL;
-    JSON_Value *reg_arry_val = NULL, *contact_val = NULL, *val = NULL;
-    JSON_Object *contact_obj = NULL, *obj = NULL;
+    JSON_Array *reg_arry = NULL, *phone_array = NULL,
+               *address_array = NULL;
+    JSON_Value *reg_arry_val = NULL, *phone_val = NULL,
+               *address_val = NULL, *val = NULL;
+    JSON_Object *phone_obj = NULL, *address_obj = NULL,
+                *obj = NULL;
+    int i = 0;
 
     if (!ctx) return ACVP_NO_CTX;
 
@@ -2827,31 +2782,118 @@ ACVP_RESULT acvp_register_build_vendor(ACVP_CTX *ctx,
     if (vendor->website) {
         json_object_set_string(obj, "website", vendor->website);
     }
+    if (vendor->email) {
+        json_object_set_string(obj, "email", vendor->email);
+    }
+    if (vendor->phone_number) {
+        json_object_set_value(obj, "phoneNumbers", json_value_init_array());
+        phone_array = json_object_get_array(obj, "phoneNumbers");
 
-    if (vendor->contact_name || vendor->contact_email) {
-        json_object_set_value(obj, "contacts", json_value_init_array());
-        contact_array = json_object_get_array(obj, "contacts");
+        phone_val = json_value_init_object();
+        phone_obj = json_value_get_object(phone_val);
 
-        contact_val = json_value_init_object();
-        contact_obj = json_value_get_object(contact_val);
+        json_object_set_string(phone_obj, "number", vendor->phone_number);
 
-        if (vendor->contact_name) {
-            json_object_set_string(contact_obj, "name", vendor->contact_name);
+        json_array_append_value(phone_array, phone_val);
+    }
+
+    if (vendor->addresses.count) {
+        json_object_set_value(obj, "addresses", json_value_init_array());
+        address_array = json_object_get_array(obj, "addresses");
+
+        for (i = 0; i < vendor->addresses.count; i++) {
+            ACVP_VENDOR_ADDRESS *address = &vendor->addresses.address[i];
+
+            address_val = json_value_init_object();
+            address_obj = json_value_get_object(address_val);
+
+            if (address->street) {
+                json_object_set_string(address_obj, "street", address->street);
+            }
+            if (address->locality) {
+                json_object_set_string(address_obj, "locality", address->locality);
+            }
+            if (address->region) {
+                json_object_set_string(address_obj, "region", address->region);
+            }
+            if (address->country) {
+                json_object_set_string(address_obj, "country", address->country);
+            }
+            if (address->postal_code) {
+                json_object_set_string(address_obj, "postal_code", address->postal_code);
+            }
+
+            json_array_append_value(address_array, address_val);
         }
-
-        if (vendor->contact_email) {
-            json_object_set_value(contact_obj, "emails", json_value_init_array());
-            email_array = json_object_get_array(obj, "emails");
-            json_array_append_string(email_array, vendor->contact_email);
-        }
-
-        json_array_append_value(contact_array, contact_val);
     }
 
     /* Append the value to JSON array */
     json_array_append_value(reg_arry, val);
 
     /* Convert JSON to string */
+    *reg = json_serialize_to_string_pretty(reg_arry_val, out_len);
+
+    if (reg_arry_val) json_value_free(reg_arry_val);
+
+    return ACVP_SUCCESS;
+}
+
+ACVP_RESULT acvp_register_build_person(ACVP_CTX *ctx,
+                                       ACVP_PERSON *person,
+                                       char *vendor_url,
+                                       char **reg,
+                                       int *out_len) {
+    JSON_Value *reg_arry_val = NULL, *val = NULL;
+    JSON_Array *reg_arry = NULL, *phone_array = NULL,
+               *email_array = NULL;
+    JSON_Object *obj = NULL;
+
+    if (!ctx) return ACVP_NO_CTX;
+
+    /*
+     * Start the registration array
+     */
+    reg_arry_val = json_value_init_array();
+    reg_arry = json_array((const JSON_Value *)reg_arry_val);
+
+    json_array_append_value(reg_arry, acvp_version_json_value());
+
+    val = json_value_init_object();
+    obj = json_value_get_object(val);
+
+    /*
+     * Add the Person fields
+     */
+    json_object_set_string(obj, "fullName", person->full_name);
+
+    /*
+     * Add the Vendor Url that this person is associated with
+     */
+    json_object_set_string(obj, "vendorUrl", vendor_url);
+
+    if (person->email) {
+        /*
+         * Construct the "emails" field.
+         * TODO add support for multiple emails
+         */
+        json_object_set_value(obj, "emails", json_value_init_array());
+        email_array = json_object_get_array(obj, "emails");
+
+        json_array_append_string(email_array, person->email);
+    }
+
+    if (person->phone_number) {
+        /*
+         * Construct the "phoneNumbers" field.
+         * TODO add support for multiple phone numbers
+         */
+        json_object_set_value(obj, "phoneNumbers", json_value_init_array());
+        phone_array = json_object_get_array(obj, "phoneNumbers");
+
+        json_array_append_string(phone_array, person->phone_number);
+    }
+
+    json_array_append_value(reg_arry, val);
     *reg = json_serialize_to_string_pretty(reg_arry_val, out_len);
 
     if (reg_arry_val) json_value_free(reg_arry_val);

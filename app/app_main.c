@@ -129,19 +129,55 @@ static int setup_operating_environment(ACVP_CTX *ctx) {
     ACVP_RESULT rv = ACVP_SUCCESS;
     unsigned int dependency_ids[MAX_DEPENDENCIES];
     int dependency_count = 0;
-    unsigned int dep_id = 0, oe_id = 0;
+    unsigned int dep_id = 0, oe_id,
+                 vendor_id = 0, person_id = 0;
     char *oe_name = NULL;
     char ssl_version[10];
     int i = 0;
 
     /*
-     * Setup the vendor attributes
+     * New Vendor
      */
-    rv = acvp_set_vendor_info(ctx, "Acme Fictional Corporation",
-                              "www.acme-fictional.com", "Wyle E. Coyote",
-                              "wcoyote@acme-fictional.com");
+    vendor_id = acvp_oe_vendor_new(ctx, "Acme Fictional Corporation");
+    if (vendor_id == 0) return 1;
+
+    /* Set the Vendor email, website, and phone */
+    rv = acvp_oe_vendor_set_email_website_phone(ctx, vendor_id,
+                                                "acme@acme-fictional.com",
+                                                "www.acme-fictional.com",
+                                                "000-000-0000");
     if (rv != ACVP_SUCCESS) {
         printf("Failed to set vendor info\n");
+        return 1;
+    }
+
+    /* Set the Vendor address */
+    rv = acvp_oe_vendor_add_address(ctx, vendor_id, "Street", "Town", "State",
+                                    "Country", "Postal Code");
+    if (rv != ACVP_SUCCESS) {
+        printf("Failed to set Vendor address\n");
+        return 1;
+    }
+
+    /*
+     * New Person
+     */
+    person_id = acvp_oe_person_new(ctx, "Wyle E. Coyote");
+    if (person_id == 0) return 1;
+
+    /* Set the Person email, phone */
+    rv = acvp_oe_person_set_email_phone(ctx, person_id,
+                                        "wcoyote@acme-fictional.com",
+                                        "000-000-0000");
+    if (rv != ACVP_SUCCESS) {
+        printf("Failed to set Person info\n");
+        return 1;
+    }
+
+    /* Associate this Person with a Vendor */
+    acvp_oe_person_add_vendor(ctx, person_id, vendor_id);
+    if (rv != ACVP_SUCCESS) {
+        printf("Failed to link Person with Vendor\n");
         return 1;
     }
 
@@ -158,31 +194,31 @@ static int setup_operating_environment(ACVP_CTX *ctx) {
     }
 
     /* New Dependency */
-    dep_id = acvp_dependency_new(ctx);
+    dep_id = acvp_oe_dependency_new(ctx);
     if (dep_id == 0) return 1;
     dependency_ids[dependency_count] = dep_id;
     dependency_count++;
-    acvp_dependency_add_attribute(ctx, dep_id, "type", "software");
+    acvp_oe_dependency_add_attribute(ctx, dep_id, "type", "software");
 
     /* New Dependency */
-    dep_id = acvp_dependency_new(ctx);
+    dep_id = acvp_oe_dependency_new(ctx);
     if (dep_id == 0) return 1;
     dependency_ids[dependency_count] = dep_id;
     dependency_count++;
-    acvp_dependency_add_attribute(ctx, dep_id, "name", "Linux 3.1");
+    acvp_oe_dependency_add_attribute(ctx, dep_id, "name", "Linux 3.1");
 
     /* New OE */
     oe_name = "Ubuntu Linux 3.1 on AMD 6272 Opteron Processor with Acme package installed";
-    oe_id = acvp_oe_new(ctx, oe_name);
+    oe_id = acvp_oe_oe_new(ctx, oe_name);
     if (oe_id == 0) return 1;
 
     /* Add the Dependencies to the OE */
     for (i = 0; i < dependency_count; i++) {
-        rv = acvp_oe_add_dependency(ctx, oe_id, dependency_ids[i]);
+        rv = acvp_oe_oe_add_dependency(ctx, oe_id, dependency_ids[i]);
         if (rv != ACVP_SUCCESS) return 1;
     }
 
-    /* Sucess */
+    /* Success */
     return 0;
 }
 

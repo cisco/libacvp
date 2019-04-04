@@ -2561,23 +2561,44 @@ ACVP_RESULT acvp_register(ACVP_CTX *ctx);
  */
 ACVP_RESULT acvp_process_tests(ACVP_CTX *ctx);
 
-/*! @brief acvp_set_vendor_info() specifies the vendor attributes
+/*! @brief acvp_oe_vendor_new() specifies the vendor attributes
     for the test session.
 
     @param ctx Pointer to ACVP_CTX that was previously created by
         calling acvp_create_test_session.
-    @param vendor_name Name of the vendor that owns the crypto module.
+    @param name Name of the vendor that owns the crypto module.
     @param vendor_url The Vendor's URL.
     @param contact_name Name of contact at Vendor.
     @param contact_email Email of vendor contact.
 
     @return ACVP_RESULT
  */
-ACVP_RESULT acvp_set_vendor_info(ACVP_CTX *ctx,
-                                 const char *vendor_name,
-                                 const char *vendor_url,
-                                 const char *contact_name,
-                                 const char *contact_email);
+ACVP_RESULT acvp_oe_vendor_new(ACVP_CTX *ctx, const char *name);
+
+ACVP_RESULT acvp_oe_vendor_set_email_website_phone(ACVP_CTX *ctx,
+                                                   unsigned int id,
+                                                   const char *email,
+                                                   const char *website,
+                                                   const char *phone);
+
+ACVP_RESULT acvp_oe_vendor_add_address(ACVP_CTX *ctx,
+                                       unsigned int id,
+                                       const char *street,
+                                       const char *locality,
+                                       const char *region,
+                                       const char *country,
+                                       const char *postal_code);
+
+unsigned int acvp_oe_person_new(ACVP_CTX *ctx, const char *name);
+
+ACVP_RESULT acvp_oe_person_add_vendor(ACVP_CTX *ctx,
+                                      unsigned int person_id,
+                                      unsigned int vendor_id);
+
+ACVP_RESULT acvp_oe_person_set_email_phone(ACVP_CTX *ctx,
+                                           unsigned int id,
+                                           const char *email,
+                                           const char *phone);
 
 /*! @brief acvp_set_json_filename specifies JSON registration file
  *  to be used during registration. This allows the app to skip the
@@ -2621,18 +2642,18 @@ ACVP_RESULT acvp_set_module_info(ACVP_CTX *ctx,
                                  const char *module_version,
                                  const char *module_description);
 
-unsigned int acvp_dependency_new(ACVP_CTX *ctx);
+unsigned int acvp_oe_dependency_new(ACVP_CTX *ctx);
 
-ACVP_RESULT acvp_dependency_add_attribute(ACVP_CTX *ctx,
-                                          unsigned int dependency_id,
-                                          const char *key,
-                                          const char *value);
+ACVP_RESULT acvp_oe_dependency_add_attribute(ACVP_CTX *ctx,
+                                             unsigned int dependency_id,
+                                             const char *key,
+                                             const char *value);
 
-unsigned int acvp_oe_new(ACVP_CTX *ctx, const char *oe_name);
+unsigned int acvp_oe_oe_new(ACVP_CTX *ctx, const char *oe_name);
 
-ACVP_RESULT acvp_oe_add_dependency(ACVP_CTX *ctx,
-                                   unsigned int oe_id,
-                                   unsigned int dependency_id);
+ACVP_RESULT acvp_oe_oe_add_dependency(ACVP_CTX *ctx,
+                                      unsigned int oe_id,
+                                      unsigned int dependency_id);
 
 /*! @brief acvp_check_test_results() allows the application to fetch vector
         set results from the server during a test session.

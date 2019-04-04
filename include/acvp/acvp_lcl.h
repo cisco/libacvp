@@ -1026,13 +1026,50 @@ typedef struct acvp_dependencies_t {
     unsigned int count;
 } ACVP_DEPENDENCIES;
 
+typedef struct acvp_vendor_address_t {
+    char *street;
+    char *locality;
+    char *region;
+    char *country;
+    char *postal_code;
+    char *url; /**< ID URL returned from the server */
+} ACVP_VENDOR_ADDRESS;
+
+#define VENDOR_ADDRESSES_MAX 4
+typedef struct acvp_vendor_addresses_t {
+    ACVP_VENDOR_ADDRESS address[VENDOR_ADDRESSES_MAX];
+    unsigned int count; /**< The number of items in address[] */
+} ACVP_VENDOR_ADDRESSES;
+
 typedef struct acvp_vendor_t {
     char *name;
     char *website;
-    char *contact_name;
-    char *contact_email;
+    char *email;
+    char *phone_number;
     char *url; /**< ID URL returned from the server */
+    ACVP_VENDOR_ADDRESSES addresses;
 } ACVP_VENDOR;
+
+#define LIBACVP_VENDORS_MAX 8
+typedef struct acvp_vendors_t {
+    ACVP_VENDOR v[LIBACVP_VENDORS_MAX];
+    unsigned int count;
+} ACVP_VENDORS;
+
+typedef struct acvp_person_t {
+    char *full_name;
+    char *phone_number;
+    char *email;
+    char *url; /**< ID URL returned from the server */
+    ACVP_VENDOR *vendor[LIBACVP_VENDORS_MAX]; /**< Array of (pointers to) Vendors that this person belongs to */
+    unsigned int num_vendors; /**< Number of entries in vendor[] */
+} ACVP_PERSON;
+
+#define LIBACVP_PERSONS_MAX 16
+typedef struct acvp_persons_t {
+    ACVP_PERSON person[LIBACVP_PERSONS_MAX];
+    unsigned int count;
+} ACVP_PERSONS;
 
 typedef struct acvp_module_t {
     char *name;
@@ -1075,9 +1112,10 @@ struct acvp_ctx_t {
     char *tls_key;          /* Location of PEM encoded priv key to use for TLS client auth */
     
     ACVP_OES oes; /**< Operating Environments */
-    ACVP_VENDOR vendor; /** Vendor Information */
-    ACVP_MODULE module; /** Module Information */
-    ACVP_DEPENDENCIES dependencies; /** Dependencies */
+    ACVP_VENDORS vendors; /**< Vendors */
+    ACVP_PERSONS persons; /**< Persons */
+    ACVP_MODULE module; /**< Modules */
+    ACVP_DEPENDENCIES dependencies; /**< Dependencies */
     ACVP_STRING_LIST *vsid_url_list;
     char *session_url;
 
@@ -1115,6 +1153,8 @@ ACVP_RESULT acvp_transport_send_oe_registration(ACVP_CTX *ctx, char *reg, int le
 ACVP_RESULT acvp_transport_send_dependency_registration(ACVP_CTX *ctx, char *reg, int len);
 
 ACVP_RESULT acvp_transport_send_vendor_registration(ACVP_CTX *ctx, char *reg, int len);
+
+ACVP_RESULT acvp_transport_send_person_registration(ACVP_CTX *ctx, char *reg, int len);
 
 ACVP_RESULT acvp_transport_send_module_registration(ACVP_CTX *ctx, char *reg, int len);
 
@@ -1204,6 +1244,18 @@ ACVP_RESULT acvp_register_build_vendor(ACVP_CTX *ctx, ACVP_VENDOR *vendor, char 
 
 ACVP_RESULT acvp_register_build_module(ACVP_CTX *ctx, ACVP_MODULE *module, char **reg, int *out_len);
 
+ACVP_RESULT acvp_register_build_person(ACVP_CTX *ctx,
+                                       ACVP_PERSON *person,
+                                       char *vendor_url,
+                                       char **reg,
+                                       int *out_len);
+
+/*
+ * Operating Environment functions
+ */
+ACVP_RESULT acvp_oe_register_operating_env(ACVP_CTX *ctx);
+void acvp_oe_free_operating_env(ACVP_CTX *ctx);
+
 /*
  * ACVP utility functions used internally
  */
@@ -1252,6 +1304,8 @@ ACVP_RESULT acvp_setup_json_rsp_group(ACVP_CTX **ctx,
 
 void acvp_release_json(JSON_Value *r_vs_val,
                        JSON_Value *r_gval);
+
+JSON_Object *acvp_get_obj_from_rsp(JSON_Value *arry_val);
 
 void acvp_free_kv_list(ACVP_KV_LIST *kv_list);
 
