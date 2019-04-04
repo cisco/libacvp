@@ -129,7 +129,7 @@ static int setup_operating_environment(ACVP_CTX *ctx) {
     ACVP_RESULT rv = ACVP_SUCCESS;
     unsigned int dependency_ids[MAX_DEPENDENCIES];
     int dependency_count = 0;
-    unsigned int dep_id = 0, oe_id,
+    unsigned int dep_id = 0, oe_id, module_id = 0,
                  vendor_id = 0, person_id = 0;
     char *oe_name = NULL;
     char ssl_version[10];
@@ -185,11 +185,13 @@ static int setup_operating_environment(ACVP_CTX *ctx) {
      * Setup the crypto module attributes
      */
     snprintf(ssl_version, 10, "%08x", (unsigned int)SSLeay());
-    rv = acvp_set_module_info(ctx, "OpenSSL",
-                              "software", ssl_version,
-                              "FOM 6.2a");
+    module_id = acvp_oe_module_new(ctx, vendor_id, "OpenSSL");
+    if (module_id == 0) return 1;
+
+    rv = acvp_oe_module_set_type_version_desc(ctx, module_id, "software",
+                                              ssl_version, "FOM 6.2a");
     if (rv != ACVP_SUCCESS) {
-        printf("Failed to set module info\n");
+        printf("Failed to set Module info\n");
         return 1;
     }
 

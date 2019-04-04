@@ -2600,6 +2600,16 @@ ACVP_RESULT acvp_oe_person_set_email_phone(ACVP_CTX *ctx,
                                            const char *email,
                                            const char *phone);
 
+unsigned int acvp_oe_module_new(ACVP_CTX *ctx,
+                                unsigned int vendor_id,
+                                const char *name);
+
+ACVP_RESULT acvp_oe_module_set_type_version_desc(ACVP_CTX *ctx,
+                                                 unsigned int id,
+                                                 const char *type,
+                                                 const char *version,
+                                                 const char *description);
+
 /*! @brief acvp_set_json_filename specifies JSON registration file
  *  to be used during registration. This allows the app to skip the
  *  acvp_enable_* API calls

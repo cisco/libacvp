@@ -514,85 +514,110 @@ ACVP_RESULT acvp_oe_person_set_email_phone(ACVP_CTX *ctx,
     return ACVP_SUCCESS;
 }
 
-/*
- * Allows application to specify the crypto module attributes for
- * the test session.
+/**
+ * @brief Designate a new Module entry for this session.
+ *
+ * @param name Name of the module
+ *
+ * @return non-zero value representing the "id"
+ * @return 0 fail
  */
-ACVP_RESULT acvp_set_module_info(ACVP_CTX *ctx,
-                                 const char *module_name,
-                                 const char *module_type,
-                                 const char *module_version,
-                                 const char *module_description) {
+unsigned int acvp_oe_module_new(ACVP_CTX *ctx,
+                                unsigned int vendor_id,
+                                const char *name) {
+    ACVP_MODULES *modules = NULL;
+    ACVP_MODULE *new_module = NULL;
+    ACVP_VENDOR *vendor = NULL;
+    ACVP_RESULT rv = 0;
+
+    if (!ctx) return 0;
+
+    /* Get a handle on the OES */
+    modules = &ctx->modules;
+
+    if (modules->count == LIBACVP_MODULES_MAX) {
+        ACVP_LOG_ERR("Libacvp already reached max MODULE capacity (%u)",
+                     LIBACVP_MODULES_MAX);
+        return 0;
+    }
+
+    new_module = &modules->module[modules->count];
+    modules->count++;
+
+    /* Insert a pointer to the actual Vendor struct location */
+    if (!(vendor = find_vendor(ctx, vendor_id))) {
+        return ACVP_INVALID_ARG;
+    }
+    new_module->vendor = vendor;
+
+    copy_oe_string(&new_module->name, name);
+    if (ACVP_INVALID_ARG == rv) {
+        ACVP_LOG_ERR("'name` string too long");
+        return 0;
+    }
+    if (ACVP_MISSING_ARG == rv) {
+        ACVP_LOG_ERR("Required parameter 'name` is NULL");
+        return 0;
+    }
+
+    return modules->count; /** Return the array position + 1 */
+}
+
+static ACVP_MODULE *find_module(ACVP_CTX *ctx,
+                                unsigned int id) {
+    ACVP_MODULES *modules = NULL;
+
+    if (!ctx) return NULL;
+
+    modules = &ctx->modules;
+
+    if (id == 0 || id > modules->count) {
+        ACVP_LOG_ERR("Invalid 'id', please make sure you are using a value returned from acvp_module_new()");
+        return NULL;
+    }
+
+    return &modules->module[id - 1];
+}
+
+ACVP_RESULT acvp_oe_module_set_type_version_desc(ACVP_CTX *ctx,
+                                                 unsigned int id,
+                                                 const char *type,
+                                                 const char *version,
+                                                 const char *description) {
     ACVP_MODULE *module = NULL;
+    ACVP_RESULT rv = 0;
 
     if (!ctx) return ACVP_NO_CTX;
 
-    if (!module_name) {
-        ACVP_LOG_ERR("Required parameter `module_name` is NULL");
+    if (!type && !version && !description) {
+        ACVP_LOG_ERR("Need at least 1 of the parameters to be non-NULL");
         return ACVP_INVALID_ARG;
-    }
-    if (!module_type) {
-        ACVP_LOG_ERR("Required parameter `module_type` is NULL");
-        return ACVP_INVALID_ARG;
-    }
-    if (!module_version) {
-        ACVP_LOG_ERR("Required parameter `module_version` is NULL");
-        return ACVP_INVALID_ARG;
-    }
-    if (!module_description) {
-        ACVP_LOG_ERR("Required parameter `module_description` is NULL");
-        return ACVP_INVALID_ARG;
-    }
+    } 
 
-    /* Verify parameter string lengths */
-    if (!string_fits(module_name, ACVP_SESSION_PARAMS_STR_LEN_MAX)) {
-        ACVP_LOG_ERR("'module_name` string too long");
-        return ACVP_INVALID_ARG;
-    }
-    if (!string_fits(module_type, ACVP_SESSION_PARAMS_STR_LEN_MAX)) {
-        ACVP_LOG_ERR("'module_type` string too long");
-        return ACVP_INVALID_ARG;
-    }
-    if (!string_fits(module_version, ACVP_SESSION_PARAMS_STR_LEN_MAX)) {
-        ACVP_LOG_ERR("'module_version` string too long");
-        return ACVP_INVALID_ARG;
-    }
-    if (!string_fits(module_description, ACVP_SESSION_PARAMS_STR_LEN_MAX)) {
-        ACVP_LOG_ERR("'module_description` string too long");
-        return ACVP_INVALID_ARG;
-    }
+    module = find_module(ctx, id);
+    if (!module) return ACVP_INVALID_ARG;
 
-    /* Get handle on module fields */
-    module = &ctx->module;
-
-    if (module->name) { 
-        memzero_s(module->name, ACVP_SESSION_PARAMS_STR_LEN_MAX + 1);
-    } else {
-        module->name = calloc(ACVP_SESSION_PARAMS_STR_LEN_MAX + 1, sizeof(char));
+    if (type) {
+        copy_oe_string(&module->type, type);
+        if (ACVP_INVALID_ARG == rv) {
+            ACVP_LOG_ERR("'type' string too long");
+            return rv;
+        }
     }
-
-    if (module->type) { 
-        memzero_s(module->type, ACVP_SESSION_PARAMS_STR_LEN_MAX + 1);
-    } else {
-        module->type = calloc(ACVP_SESSION_PARAMS_STR_LEN_MAX + 1, sizeof(char));
+    if (version) {
+        copy_oe_string(&module->version, version);
+        if (ACVP_INVALID_ARG == rv) {
+            ACVP_LOG_ERR("'version' string too long");
+            return rv;
+        }
     }
-
-    if (module->version) { 
-        memzero_s(module->version, ACVP_SESSION_PARAMS_STR_LEN_MAX + 1);
-    } else {
-        module->version = calloc(ACVP_SESSION_PARAMS_STR_LEN_MAX + 1, sizeof(char));
+    if (description) {
+        copy_oe_string(&module->description, description);
+        if (ACVP_INVALID_ARG == rv) {
+            ACVP_LOG_ERR("'description' string too long");
+            return rv;
+        }
     }
-
-    if (module->description) { 
-        memzero_s(module->description, ACVP_SESSION_PARAMS_STR_LEN_MAX + 1);
-    } else {
-        module->description = calloc(ACVP_SESSION_PARAMS_STR_LEN_MAX + 1, sizeof(char));
-    }
-
-    strcpy_s(module->name, ACVP_SESSION_PARAMS_STR_LEN_MAX + 1, module_name);
-    strcpy_s(module->type, ACVP_SESSION_PARAMS_STR_LEN_MAX + 1, module_type);
-    strcpy_s(module->version, ACVP_SESSION_PARAMS_STR_LEN_MAX + 1, module_version);
-    strcpy_s(module->description, ACVP_SESSION_PARAMS_STR_LEN_MAX + 1, module_description);
 
     return ACVP_SUCCESS;
 }
@@ -922,33 +947,40 @@ end:
 ACVP_RESULT acvp_oe_register_modules(ACVP_CTX *ctx) {
     ACVP_RESULT rv = 0;
     char *json_str = NULL;
-    int json_len = 0;
+    int i = 0;
 
     if (!ctx) return ACVP_NO_CTX;
 
-#if 0
-    rv = acvp_register_build_module(ctx, &ctx->module, &json_str, &json_len);
-    if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("Unable to build Module message");
-        goto end;
-    }
+    for (i = 0; i < ctx->modules.count; i++) {
+        ACVP_MODULE *cur_module = &ctx->modules.module[i];
+        int json_len = 0;
 
-    rv = acvp_transport_send_module_registration(ctx, json_str, json_len);
-    if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("Failed to send Module registration");
-        goto end;
-    }
-    ACVP_LOG_STATUS("200 OK %s", ctx->curl_buf);
+        rv = acvp_register_build_module(ctx, cur_module, &json_str, &json_len);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Unable to build Module message");
+            goto end;
+        }
 
-    rv = acvp_oe_module_record_identifier(ctx, &ctx->module);
-    if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("Failed to parse Module response");
-        goto end;
+        rv = acvp_transport_send_module_registration(ctx, json_str, json_len);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Failed to send Module registration");
+            goto end;
+        }
+        ACVP_LOG_STATUS("200 OK %s", ctx->curl_buf);
+
+        rv = acvp_oe_module_record_identifier(ctx, cur_module);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Failed to parse Module response");
+            goto end;
+        }
+
+        /* Free for the next iteration */
+        if (json_str) json_free_serialized_string(json_str);
+        json_str = NULL;
     }
 
 end:
     if (json_str) json_free_serialized_string(json_str);
-#endif
 
     return rv;
 }
@@ -1028,11 +1060,6 @@ static void acvp_dependencies_free(ACVP_CTX *ctx) {
 static void acvp_oes_free(ACVP_CTX *ctx) {
     int i = 0;
 
-    if (ctx->oes.count == 0) {
-        /* Nothing to free */
-        return;
-    }
-
     for (i = 0; i < ctx->oes.count; i++) {
         ACVP_OE *oe = &ctx->oes.oe[i];
         if (oe->name) free(oe->name);
@@ -1058,11 +1085,6 @@ static void acvp_vendor_free_addresses(ACVP_VENDOR *vendor) {
 static void acvp_vendors_free(ACVP_CTX *ctx) {
     int i = 0;
 
-    if (ctx->vendors.count == 0) {
-        /* Nothing to free */
-        return;
-    }
-
     for (i = 0; i < ctx->vendors.count; i++) {
         ACVP_VENDOR *vendor = &ctx->vendors.v[i];
 
@@ -1079,26 +1101,28 @@ static void acvp_vendors_free(ACVP_CTX *ctx) {
 static void acvp_persons_free(ACVP_CTX *ctx) {
     int i = 0;
 
-    if (ctx->persons.count == 0) {
-        /* Nothing to free */
-        return;
-    }
-
     for (i = 0; i < ctx->persons.count; i++) {
         ACVP_PERSON *person = &ctx->persons.person[i];
 
         if (person->full_name) free(person->full_name);
         if (person->email) free(person->email);
         if (person->phone_number) free(person->phone_number);
+        if (person->url) free(person->url);
     }
 }
 
 static void acvp_modules_free(ACVP_CTX *ctx) {
-    if (ctx->module.name) free(ctx->module.name);
-    if (ctx->module.type) free(ctx->module.type);
-    if (ctx->module.version) free(ctx->module.version);
-    if (ctx->module.description) free(ctx->module.description);
-    if (ctx->module.url) free(ctx->module.url);
+    int i = 0;
+
+    for (i = 0; i < ctx->modules.count; i++) {
+        ACVP_MODULE *module = &ctx->modules.module[i];
+
+        if (module->name) free(module->name);
+        if (module->type) free(module->type);
+        if (module->version) free(module->version);
+        if (module->description) free(module->description);
+        if (module->url) free(module->url);
+    }
 }
 
 void acvp_oe_free_operating_env(ACVP_CTX *ctx) {

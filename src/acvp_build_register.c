@@ -2709,7 +2709,6 @@ ACVP_RESULT acvp_register_build_dependency(ACVP_CTX *ctx,
  * This function builds the JSON message that registers a module with
  * the validating crypto server
  */
-#if 0
 ACVP_RESULT acvp_register_build_module(ACVP_CTX *ctx,
                                        ACVP_MODULE *module,
                                        char **reg,
@@ -2734,16 +2733,17 @@ ACVP_RESULT acvp_register_build_module(ACVP_CTX *ctx,
     json_object_set_string(obj, "name", module->name);
     json_object_set_string(obj, "version", module->version);
     json_object_set_string(obj, "type", module->type);
-    json_object_set_string(obj, "vendorUrl", ctx->vendor.url);
-    json_object_set_string(obj, "implementationDescription", module->description);
+    json_object_set_string(obj, "vendorUrl", module->vendor->url);
+    json_object_set_string(obj, "description", module->description);
 
     json_array_append_value(reg_arry, val);
+
     *reg = json_serialize_to_string_pretty(reg_arry_val, out_len);
+
     if (reg_arry_val) json_value_free(reg_arry_val);
 
     return ACVP_SUCCESS;
 }
-#endif
 
 /*
  * This function builds the JSON message to register a vendor with the

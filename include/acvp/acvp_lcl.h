@@ -1077,7 +1077,14 @@ typedef struct acvp_module_t {
     char *version;
     char *description;
     char *url; /**< ID URL returned from the server */
+    ACVP_VENDOR *vendor;
 } ACVP_MODULE;
+
+#define LIBACVP_MODULES_MAX 32
+typedef struct acvp_modules_t {
+    ACVP_MODULE module[LIBACVP_MODULES_MAX];
+    unsigned int count;
+} ACVP_MODULES;
 
 typedef struct acvp_oe_t {
     char *name; /**< Name of the Operating Environment */
@@ -1114,7 +1121,7 @@ struct acvp_ctx_t {
     ACVP_OES oes; /**< Operating Environments */
     ACVP_VENDORS vendors; /**< Vendors */
     ACVP_PERSONS persons; /**< Persons */
-    ACVP_MODULE module; /**< Modules */
+    ACVP_MODULES modules; /**< Modules */
     ACVP_DEPENDENCIES dependencies; /**< Dependencies */
     ACVP_STRING_LIST *vsid_url_list;
     char *session_url;
