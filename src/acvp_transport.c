@@ -541,6 +541,26 @@ ACVP_RESULT acvp_retrieve_expected_result(ACVP_CTX *ctx, char *api_url) {
     return acvp_network_action(ctx, ACVP_NET_GET_VS_SAMPLE, url, NULL, 0);
 }
 
+ACVP_RESULT acvp_transport_get(ACVP_CTX *ctx, const char *url) {
+    ACVP_RESULT rv = 0;
+    char full_url[ACVP_ATTR_URL_MAX] = {0};
+
+    rv = sanity_check_ctx(ctx);
+    if (ACVP_SUCCESS != rv) return rv;
+
+    if (!url) {
+        ACVP_LOG_ERR("Missing url");
+        return ACVP_MISSING_ARG;
+    }
+
+    snprintf(full_url, ACVP_ATTR_URL_MAX - 1,
+            "https://%s:%d/%s%s",
+            ctx->server_name, ctx->server_port,
+            ctx->api_context, url);
+
+    return acvp_network_action(ctx, ACVP_NET_GET, full_url, NULL, 0);
+}
+
 #define JWT_EXPIRED_STR "JWT expired"
 #define JWT_EXPIRED_STR_LEN 11
 #define JWT_INVALID_STR "JWT signature does not match"

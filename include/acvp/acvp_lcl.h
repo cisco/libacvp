@@ -1167,6 +1167,8 @@ ACVP_RESULT acvp_transport_send_module_registration(ACVP_CTX *ctx, char *reg, in
 
 ACVP_RESULT acvp_send_login(ACVP_CTX *ctx, char *login, int len);
 
+ACVP_RESULT acvp_transport_get(ACVP_CTX *ctx, const char *url);
+
 ACVP_RESULT acvp_retrieve_vector_set(ACVP_CTX *ctx, char *vsid_url);
 
 ACVP_RESULT acvp_retrieve_vector_set_result(ACVP_CTX *ctx, char *vsid_url);

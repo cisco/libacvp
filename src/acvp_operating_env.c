@@ -27,6 +27,12 @@
 
 #include <stdlib.h>
 
+#ifdef WIN32
+# include <windows.h>
+#else
+# include <unistd.h>
+#endif
+
 #include "acvp.h"
 #include "acvp_lcl.h"
 #include "parson.h"
@@ -622,58 +628,139 @@ ACVP_RESULT acvp_oe_module_set_type_version_desc(ACVP_CTX *ctx,
     return ACVP_SUCCESS;
 }
 
+static ACVP_RESULT acvp_identifier_status(JSON_Value *val) {
+    JSON_Object *obj = acvp_get_obj_from_rsp(val);
+    const char *status = NULL;
+    int diff = 1;
+
+    status = json_object_get_string(obj, "status");
+
+    strcmp_s("approved", 8, status, &diff);
+    if (!diff) return ACVP_SUCCESS;
+
+    strcmp_s("initial", 7, status, &diff);
+    if (!diff) return ACVP_OE_RETRY;
+
+    strcmp_s("processing", 10, status, &diff);
+    if (!diff) return ACVP_OE_RETRY;
+
+    strcmp_s("rejected", 8, status, &diff);
+    if (!diff) return ACVP_UNSUPPORTED_OP;
+
+    /* Fail */
+    return ACVP_JSON_ERR;
+}
+
+#define OE_RETRY_WAIT 30 /* 30 seconds */
+#define MAX_OE_REQUEST_RETRIES 10 /* 5 minutes */
+
 /*
  * Verify that the JSON contains the 'approvedUrl' key.
  * Also checks to make sure the value is within
  * accepted string length bounds.
  */
-static JSON_Value *acvp_json_validate_identifier(ACVP_CTX *ctx) {
-    JSON_Value *val = NULL;
+static JSON_Value *acvp_validate_identifier(ACVP_CTX *ctx) {
+    JSON_Value *val = NULL, *request_val = NULL;
     JSON_Object *obj = NULL;
-    const char *url = NULL;
+    const char *request_url = NULL, *approved_url = NULL;
+    ACVP_RESULT rv = ACVP_SUCCESS;
+    unsigned int num_retries = 0;
 
+    /*
+     * Parse the request url
+     */
     val = json_parse_string(ctx->curl_buf);
     if (!val) {
         ACVP_LOG_ERR("JSON parse error");
-        return NULL;
+        goto err;
     }
 
     obj = acvp_get_obj_from_rsp(val);
-    url = json_object_get_string(obj, "approvedUrl");
-    if (!url) {
-        ACVP_LOG_ERR("Server JSON 'approvedUrl' missing");
-        goto error;
+    request_url = json_object_get_string(obj, "url");
+
+    while (1) {
+        /*
+         * Poke the request url for the status of the identifier
+         */
+        rv = acvp_transport_get(ctx, request_url);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Failed to get Request");
+            goto err;
+        }
+        ACVP_LOG_STATUS("200 OK %s", ctx->curl_buf);
+
+        request_val = json_parse_string(ctx->curl_buf);
+        if (!request_val) {
+            ACVP_LOG_ERR("JSON parse error");
+            goto err;
+        }
+
+        /* Check the status */
+        rv = acvp_identifier_status(request_val);
+        if (rv != ACVP_OE_RETRY) {
+            /* Exit the loop */
+            break;
+        }
+        if (num_retries == MAX_OE_REQUEST_RETRIES) {
+            /* Exit the loop */
+            ACVP_LOG_ERR("Hit maximum number of retries");
+            break;
+        }
+
+        /* Free this for the next iteration */
+        if (request_val) json_value_free(request_val);
+
+        ACVP_LOG_STATUS("Identifier not ready yet... trying again in %d seconds",
+                        OE_RETRY_WAIT);
+        num_retries++;
+#ifdef WIN32
+        Sleep(OE_RETRY_WAIT);
+#else
+        sleep(OE_RETRY_WAIT);
+#endif
     }
 
-    if (!string_fits(url, ACVP_ATTR_URL_MAX)) {
-        ACVP_LOG_ERR("Server JSON 'approvedUrl' string too long");
-        goto error;
+    if (rv == ACVP_SUCCESS) {
+        JSON_Object *req_obj = acvp_get_obj_from_rsp(request_val);
+
+        approved_url = json_object_get_string(req_obj, "approvedUrl");
+
+        if (!approved_url) {
+            ACVP_LOG_ERR("Server JSON 'approvedUrl' missing");
+            goto err;
+        }
+        if (!string_fits(approved_url, ACVP_ATTR_URL_MAX)) {
+            ACVP_LOG_ERR("Server JSON 'approvedUrl' string too long");
+            goto err;
+        }
+
+        /* Success */
+        if (val) json_value_free(val);
+        return request_val;
     }
 
-    /* Success */
-    return val;
-
-error:
+    /*
+     * Failed
+     */
+err:
     if (val) json_value_free(val);
+    if (request_val) json_value_free(request_val);
     return NULL;
-}
-
-static const char *acvp_json_value_get_identifier(JSON_Value *val) {
-    JSON_Object *obj = acvp_get_obj_from_rsp(val);
-    return json_object_get_string(obj, "approvedUrl");
 }
 
 static ACVP_RESULT acvp_oe_vendor_record_identifier(ACVP_CTX *ctx,
                                                     ACVP_VENDOR *vendor) {
     ACVP_RESULT rv = ACVP_SUCCESS;
     JSON_Value *val = NULL;
+    JSON_Object *obj = NULL;
     const char *url = NULL;
 
-    val = acvp_json_validate_identifier(ctx);
+    val = acvp_validate_identifier(ctx);
     if (!val) return ACVP_JSON_ERR;
 
     /* Grab the 'approvedUrl' identifier */
-    url = acvp_json_value_get_identifier(val);
+    obj = acvp_get_obj_from_rsp(val);
+    url = json_object_get_string(obj, "approvedUrl");
 
     /* Record it */
     vendor->url = calloc(ACVP_ATTR_URL_MAX + 1, sizeof(char));
@@ -688,13 +775,15 @@ static ACVP_RESULT acvp_oe_person_record_identifier(ACVP_CTX *ctx,
                                                     ACVP_PERSON *person) {
     ACVP_RESULT rv = ACVP_SUCCESS;
     JSON_Value *val = NULL;
+    JSON_Object *obj = NULL;
     const char *url = NULL;
 
-    val = acvp_json_validate_identifier(ctx);
+    val = acvp_validate_identifier(ctx);
     if (!val) return ACVP_JSON_ERR;
 
     /* Grab the 'approvedUrl' identifier */
-    url = acvp_json_value_get_identifier(val);
+    obj = acvp_get_obj_from_rsp(val);
+    url = json_object_get_string(obj, "approvedUrl");
 
     /* Record it */
     person->url = calloc(ACVP_ATTR_URL_MAX + 1, sizeof(char));
@@ -709,13 +798,15 @@ static ACVP_RESULT acvp_oe_oe_record_identifier(ACVP_CTX *ctx,
                                                 ACVP_OE *oe) {
     ACVP_RESULT rv = ACVP_SUCCESS;
     JSON_Value *val = NULL;
+    JSON_Object *obj = NULL;
     const char *url = NULL;
 
-    val = acvp_json_validate_identifier(ctx);
+    val = acvp_validate_identifier(ctx);
     if (!val) return ACVP_JSON_ERR;
 
     /* Grab the 'approvedUrl' identifier */
-    url = acvp_json_value_get_identifier(val);
+    obj = acvp_get_obj_from_rsp(val);
+    url = json_object_get_string(obj, "approvedUrl");
 
     /* Record it */
     oe->url = calloc(ACVP_ATTR_URL_MAX + 1, sizeof(char));
@@ -730,13 +821,15 @@ static ACVP_RESULT acvp_oe_dependency_record_identifier(ACVP_CTX *ctx,
                                                         ACVP_DEPENDENCY *dep) {
     ACVP_RESULT rv = ACVP_SUCCESS;
     JSON_Value *val = NULL;
+    JSON_Object *obj = NULL;
     const char *url = NULL;
 
-    val = acvp_json_validate_identifier(ctx);
+    val = acvp_validate_identifier(ctx);
     if (!val) return ACVP_JSON_ERR;
 
     /* Grab the 'approvedUrl' identifier */
-    url = acvp_json_value_get_identifier(val);
+    obj = acvp_get_obj_from_rsp(val);
+    url = json_object_get_string(obj, "approvedUrl");
 
     /* Record it */
     dep->url = calloc(ACVP_ATTR_URL_MAX + 1, sizeof(char));
@@ -755,13 +848,15 @@ static ACVP_RESULT acvp_oe_dependency_record_identifier(ACVP_CTX *ctx,
 static ACVP_RESULT acvp_oe_module_record_identifier(ACVP_CTX *ctx, ACVP_MODULE *module) {
     ACVP_RESULT rv = ACVP_SUCCESS;
     JSON_Value *val = NULL;
+    JSON_Object *obj = NULL;
     const char *url = NULL;
 
-    val = acvp_json_validate_identifier(ctx);
+    val = acvp_validate_identifier(ctx);
     if (!val) return ACVP_JSON_ERR;
 
     /* Grab the 'approvedUrl' identifier */
-    url = acvp_json_value_get_identifier(val);
+    obj = acvp_get_obj_from_rsp(val);
+    url = json_object_get_string(obj, "approvedUrl");
 
     /* Record it */
     module->url = calloc(ACVP_ATTR_URL_MAX + 1, sizeof(char));
@@ -798,7 +893,7 @@ ACVP_RESULT acvp_oe_register_oes(ACVP_CTX *ctx) {
 
         rv = acvp_oe_oe_record_identifier(ctx, cur_oe);
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("Failed to parse oe response");
+            ACVP_LOG_ERR("Failed to record OE identifier");
             goto end;
         }
 
@@ -839,7 +934,7 @@ ACVP_RESULT acvp_oe_register_dependencies(ACVP_CTX *ctx) {
 
         rv = acvp_oe_dependency_record_identifier(ctx, cur_dep);
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("Failed to parse oe response");
+            ACVP_LOG_ERR("Failed to record Dependency identifier");
             goto end;
         }
 
@@ -880,7 +975,7 @@ ACVP_RESULT acvp_oe_register_vendors(ACVP_CTX *ctx) {
 
         rv = acvp_oe_vendor_record_identifier(ctx, cur_vendor);
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("Failed to parse Vendor response");
+            ACVP_LOG_ERR("Failed to record Vendor identifier");
             goto end;
         }
 
@@ -928,7 +1023,7 @@ ACVP_RESULT acvp_oe_register_persons(ACVP_CTX *ctx) {
 
             rv = acvp_oe_person_record_identifier(ctx, cur_person);
             if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("Failed to parse Person response");
+                ACVP_LOG_ERR("Failed to record Person identifier");
                 goto end;
             }
 
@@ -970,7 +1065,7 @@ ACVP_RESULT acvp_oe_register_modules(ACVP_CTX *ctx) {
 
         rv = acvp_oe_module_record_identifier(ctx, cur_module);
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("Failed to parse Module response");
+            ACVP_LOG_ERR("Failed to record Module identifier");
             goto end;
         }
 

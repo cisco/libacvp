@@ -2757,7 +2757,7 @@ ACVP_RESULT acvp_register_build_vendor(ACVP_CTX *ctx,
                                        char **reg,
                                        int *out_len) {
     JSON_Array *reg_arry = NULL, *phone_array = NULL,
-               *address_array = NULL;
+               *address_array = NULL, *email_array = NULL;
     JSON_Value *reg_arry_val = NULL, *phone_val = NULL,
                *address_val = NULL, *val = NULL;
     JSON_Object *phone_obj = NULL, *address_obj = NULL,
@@ -2779,12 +2779,19 @@ ACVP_RESULT acvp_register_build_vendor(ACVP_CTX *ctx,
     obj = json_value_get_object(val);
 
     json_object_set_string(obj, "name", vendor->name);
+
     if (vendor->website) {
         json_object_set_string(obj, "website", vendor->website);
     }
+
     if (vendor->email) {
-        json_object_set_string(obj, "email", vendor->email);
+        json_object_set_value(obj, "emails", json_value_init_array());
+        email_array = json_object_get_array(obj, "emails");
+
+        json_array_append_string(email_array, vendor->email);
     }
+
+#if 0
     if (vendor->phone_number) {
         json_object_set_value(obj, "phoneNumbers", json_value_init_array());
         phone_array = json_object_get_array(obj, "phoneNumbers");
@@ -2796,6 +2803,7 @@ ACVP_RESULT acvp_register_build_vendor(ACVP_CTX *ctx,
 
         json_array_append_value(phone_array, phone_val);
     }
+#endif
 
     if (vendor->addresses.count) {
         json_object_set_value(obj, "addresses", json_value_init_array());
@@ -2808,7 +2816,7 @@ ACVP_RESULT acvp_register_build_vendor(ACVP_CTX *ctx,
             address_obj = json_value_get_object(address_val);
 
             if (address->street) {
-                json_object_set_string(address_obj, "street", address->street);
+                json_object_set_string(address_obj, "street1", address->street);
             }
             if (address->locality) {
                 json_object_set_string(address_obj, "locality", address->locality);
@@ -2820,7 +2828,7 @@ ACVP_RESULT acvp_register_build_vendor(ACVP_CTX *ctx,
                 json_object_set_string(address_obj, "country", address->country);
             }
             if (address->postal_code) {
-                json_object_set_string(address_obj, "postal_code", address->postal_code);
+                json_object_set_string(address_obj, "postalCode", address->postal_code);
             }
 
             json_array_append_value(address_array, address_val);
