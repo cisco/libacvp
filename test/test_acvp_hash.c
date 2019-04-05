@@ -38,9 +38,7 @@ static void setup(void) {
 
     rv = acvp_cap_hash_enable(ctx, ACVP_HASH_SHA256, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_hash_set_parm(ctx, ACVP_HASH_SHA256, ACVP_HASH_IN_BIT, 0);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_hash_set_parm(ctx, ACVP_HASH_SHA256, ACVP_HASH_IN_EMPTY, 1);
+    rv = acvp_cap_hash_set_domain(ctx, ACVP_HASH_SHA256, ACVP_HASH_MESSAGE_LEN, 0, 65528, 8);
     cr_assert(rv == ACVP_SUCCESS);
 }
 
@@ -49,9 +47,7 @@ static void fail_setup(void) {
 
     rv = acvp_cap_hash_enable(ctx, ACVP_HASH_SHA256, &dummy_handler_failure);
     cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_hash_set_parm(ctx, ACVP_HASH_SHA256, ACVP_HASH_IN_BIT, 0);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_hash_set_parm(ctx, ACVP_HASH_SHA256, ACVP_HASH_IN_EMPTY, 1);
+    rv = acvp_cap_hash_set_domain(ctx, ACVP_HASH_SHA256, ACVP_HASH_MESSAGE_LEN, 0, 65528, 8);
     cr_assert(rv == ACVP_SUCCESS);
 }
 
@@ -67,37 +63,27 @@ Test(HASH_CAPABILITY, good) {
 
     rv = acvp_cap_hash_enable(ctx, ACVP_HASH_SHA1, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_hash_set_parm(ctx, ACVP_HASH_SHA1, ACVP_HASH_IN_BIT, 0);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_hash_set_parm(ctx, ACVP_HASH_SHA1, ACVP_HASH_IN_EMPTY, 1);
+    rv = acvp_cap_hash_set_domain(ctx, ACVP_HASH_SHA1, ACVP_HASH_MESSAGE_LEN, 0, 65528, 8);
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_hash_enable(ctx, ACVP_HASH_SHA224, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_hash_set_parm(ctx, ACVP_HASH_SHA224, ACVP_HASH_IN_BIT, 0);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_hash_set_parm(ctx, ACVP_HASH_SHA224, ACVP_HASH_IN_EMPTY, 1);
+    rv = acvp_cap_hash_set_domain(ctx, ACVP_HASH_SHA224, ACVP_HASH_MESSAGE_LEN, 0, 65528, 8);
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_hash_enable(ctx, ACVP_HASH_SHA256, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_hash_set_parm(ctx, ACVP_HASH_SHA256, ACVP_HASH_IN_BIT, 0);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_hash_set_parm(ctx, ACVP_HASH_SHA256, ACVP_HASH_IN_EMPTY, 1);
+    rv = acvp_cap_hash_set_domain(ctx, ACVP_HASH_SHA256, ACVP_HASH_MESSAGE_LEN, 0, 65528, 8);
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_hash_enable(ctx, ACVP_HASH_SHA384, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_hash_set_parm(ctx, ACVP_HASH_SHA384, ACVP_HASH_IN_BIT, 0);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_hash_set_parm(ctx, ACVP_HASH_SHA384, ACVP_HASH_IN_EMPTY, 1);
+    rv = acvp_cap_hash_set_domain(ctx, ACVP_HASH_SHA384, ACVP_HASH_MESSAGE_LEN, 0, 65528, 8);
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_hash_enable(ctx, ACVP_HASH_SHA512, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_hash_set_parm(ctx, ACVP_HASH_SHA512, ACVP_HASH_IN_BIT, 0);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_hash_set_parm(ctx, ACVP_HASH_SHA512, ACVP_HASH_IN_EMPTY, 1);
+    rv = acvp_cap_hash_set_domain(ctx, ACVP_HASH_SHA512, ACVP_HASH_MESSAGE_LEN, 0, 65528, 8);
     cr_assert(rv == ACVP_SUCCESS);
 
     teardown_ctx(&ctx);
