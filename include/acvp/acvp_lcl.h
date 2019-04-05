@@ -327,9 +327,10 @@
  * END DRBG
  */
 
-#define ACVP_HASH_MSG_BIT_MAX 102400                        /**< 102400 bits */
-#define ACVP_HASH_MSG_STR_MAX (ACVP_HASH_MSG_BIT_MAX >> 2)  /**< 25600 characters */
-#define ACVP_HASH_MSG_BYTE_MAX (ACVP_HASH_MSG_BIT_MAX >> 3) /**< 12800 bytes */
+#define ACVP_HASH_MSG_BIT_MIN 0                             /**< 0 bits */
+#define ACVP_HASH_MSG_BIT_MAX 65535                         /**< 65535 bits */
+#define ACVP_HASH_MSG_STR_MAX (ACVP_HASH_MSG_BIT_MAX >> 2)  /**< 16384 characters */
+#define ACVP_HASH_MSG_BYTE_MAX (ACVP_HASH_MSG_BIT_MAX >> 3) /**< 8192 bytes */
 #define ACVP_HASH_MD_BIT_MAX 512                            /**< 512 bits */
 #define ACVP_HASH_MD_STR_MAX (ACVP_HASH_MD_BIT_MAX >> 2)    /**< 128 characters */
 #define ACVP_HASH_MD_BYTE_MAX (ACVP_HASH_MD_BIT_MAX >> 3)   /**< 64 bytes */
@@ -705,8 +706,7 @@ typedef struct acvp_sym_cipher_capability {
 } ACVP_SYM_CIPHER_CAP;
 
 typedef struct acvp_hash_capability {
-    int in_bit;   /* defaults to false */
-    int in_empty; /* defaults to false */
+    ACVP_JSON_DOMAIN_OBJ msg_length;
 } ACVP_HASH_CAP;
 
 typedef struct acvp_kdf135_tls_capability {

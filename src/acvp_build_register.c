@@ -101,12 +101,26 @@ static ACVP_RESULT acvp_lookup_prereqVals(JSON_Object *cap_obj, ACVP_CAPS_LIST *
 }
 
 static ACVP_RESULT acvp_build_hash_register_cap(JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry) {
+    JSON_Array *msg_array = NULL;
+    JSON_Value *msg_val = NULL;
+    JSON_Object *msg_obj = NULL;
+    ACVP_HASH_CAP *hash_cap = cap_entry->cap.hash_cap;
+
     json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
     if (!cap_entry->cap.hash_cap) {
         return ACVP_MISSING_ARG;
     }
-    json_object_set_boolean(cap_obj, "inBit", cap_entry->cap.hash_cap->in_bit);
-    json_object_set_boolean(cap_obj, "inEmpty", cap_entry->cap.hash_cap->in_empty);
+
+    json_object_set_value(cap_obj, "messageLength", json_value_init_array());
+    msg_array = json_object_get_array(cap_obj, "messageLength");
+
+    msg_val = json_value_init_object();
+    msg_obj = json_value_get_object(msg_val);
+
+    json_object_set_number(msg_obj, "min", hash_cap->msg_length.min);
+    json_object_set_number(msg_obj, "max", hash_cap->msg_length.max);
+    json_object_set_number(msg_obj, "increment", hash_cap->msg_length.increment);
+    json_array_append_value(msg_array, msg_val);
 
     return ACVP_SUCCESS;
 }
@@ -2473,12 +2487,8 @@ ACVP_RESULT acvp_build_test_session(ACVP_CTX *ctx, char **reg, int *out_len) {
     val = json_value_init_object();
     obj = json_value_get_object(val);
 
-    json_object_set_string(obj, "moduleUrl", ctx->module_url);
     if (ctx->is_sample) {
         json_object_set_boolean(obj, "isSample", 1);
-    }
-    if (ctx->debug_request) {
-        json_object_set_string(obj, "debugRequest", "yes");
     }
 
     /*
