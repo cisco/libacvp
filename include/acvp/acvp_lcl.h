@@ -97,7 +97,6 @@
  * ******************************************************
  ********************************************************
  */
-#define ACVP_SHA_REVISION "1.0"
 #define ACVP_REVISION_LATEST "1.0"
 
 /* AES */
@@ -130,11 +129,11 @@
 #define ACVP_REV_TDES_KW             ACVP_REVISION_LATEST
 
 /* SHA */
-#define ACVP_REV_SHA1                ACVP_REVISION_LATEST
-#define ACVP_REV_SHA224              ACVP_REVISION_LATEST
-#define ACVP_REV_SHA256              ACVP_REVISION_LATEST
-#define ACVP_REV_SHA384              ACVP_REVISION_LATEST
-#define ACVP_REV_SHA512              ACVP_REVISION_LATEST
+#define ACVP_REV_HASH_SHA1           ACVP_REVISION_LATEST
+#define ACVP_REV_HASH_SHA224         ACVP_REVISION_LATEST
+#define ACVP_REV_HASH_SHA256         ACVP_REVISION_LATEST
+#define ACVP_REV_HASH_SHA384         ACVP_REVISION_LATEST
+#define ACVP_REV_HASH_SHA512         ACVP_REVISION_LATEST
 
 /* DRBG */
 #define ACVP_REV_HASHDRBG            ACVP_REVISION_LATEST
@@ -159,11 +158,30 @@
 #define ACVP_REV_CMAC_TDES           ACVP_REVISION_LATEST
 
 /* DSA */
-#define ACVP_REV_DSA_PQGGEN          ACVP_REVISION_LATEST
-#define ACVP_REV_DSA_PQGVER          ACVP_REVISION_LATEST
-#define ACVP_REV_DSA_KEYGEN          ACVP_REVISION_LATEST
-#define ACVP_REV_DSA_SIGGEN          ACVP_REVISION_LATEST
-#define ACVP_REV_DSA_SIGVER          ACVP_REVISION_LATEST
+#define ACVP_REV_DSA                 ACVP_REVISION_LATEST
+
+/* RSA */
+#define ACVP_REV_RSA                 ACVP_REVISION_LATEST
+
+/* RSA */
+#define ACVP_REV_ECDSA               ACVP_REVISION_LATEST
+
+/* KAS_ECC */
+#define ACVP_REV_KAS_ECC             ACVP_REVISION_LATEST
+
+/* KAS_FFC */
+#define ACVP_REV_KAS_FFC             ACVP_REVISION_LATEST
+
+/* KDF */
+#define ACVP_REV_KDF135_TLS          ACVP_REVISION_LATEST
+#define ACVP_REV_KDF135_SNMP         ACVP_REVISION_LATEST
+#define ACVP_REV_KDF135_SSH          ACVP_REVISION_LATEST
+#define ACVP_REV_KDF135_SRTP         ACVP_REVISION_LATEST
+#define ACVP_REV_KDF135_IKEV2        ACVP_REVISION_LATEST
+#define ACVP_REV_KDF135_IKEV1        ACVP_REVISION_LATEST
+#define ACVP_REV_KDF135_TPM          ACVP_REVISION_LATEST
+#define ACVP_REV_KDF135_X963         ACVP_REVISION_LATEST
+#define ACVP_REV_KDF108              ACVP_REVISION_LATEST
 
 
 /********************************************************
@@ -664,6 +682,7 @@ struct acvp_alg_handler_t {
 
     char *name;
     char *mode; /** < Should be NULL unless using an asymmetric alg */
+    const char *revision;
 };
 
 typedef struct acvp_vs_list_t {
@@ -1272,6 +1291,8 @@ ACVP_CIPHER acvp_lookup_cipher_index(const char *algorithm);
 
 ACVP_CIPHER acvp_lookup_cipher_w_mode_index(const char *algorithm,
                                             const char *mode);
+
+const char *acvp_lookup_cipher_revision(ACVP_CIPHER alg);
 
 ACVP_DRBG_MODE acvp_lookup_drbg_mode_index(const char *mode);
 
