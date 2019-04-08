@@ -1255,25 +1255,18 @@ ACVP_RESULT acvp_register(ACVP_CTX *ctx) {
             goto end;
         }
 
-        if (ctx->debug >= ACVP_LOG_LVL_STATUS) {
-            printf("\nPOST %s\n", login);
-        } else {
-            ACVP_LOG_INFO("POST %s", login);
-        }
-
         /*
          * Send the login to the ACVP server and get the response,
          */
         rv = acvp_send_login(ctx, login, login_len);
-        if (rv == ACVP_SUCCESS) {
-            ACVP_LOG_STATUS("200 OK %s", ctx->curl_buf);
-            rv = acvp_parse_login(ctx);
-        } else {
-            ACVP_LOG_STATUS("Login Send Failed %s", ctx->curl_buf);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_STATUS("Login Send Failed");
             goto end;
         }
+
+        rv = acvp_parse_login(ctx);
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_STATUS("Login Response Failed");
+            ACVP_LOG_ERR("Unable to parse login response");
             goto end;
         }
     }
@@ -1366,28 +1359,21 @@ ACVP_RESULT acvp_register(ACVP_CTX *ctx) {
             ACVP_LOG_ERR("Unable to build register message");
             goto end;
         }
+        ACVP_LOG_STATUS("Sending registration...");
         rv = acvp_send_test_session_registration(ctx, reg, reg_len);
-        ACVP_LOG_STATUS("Sending registration: %s", ctx->curl_buf);
         if (rv == ACVP_SUCCESS) {
-            ACVP_LOG_STATUS("200 OK");
             rv = acvp_parse_test_session_register(ctx);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("Failed to parse test session response");
                 goto end;
             }
         } else {
-            ACVP_LOG_ERR("Failed to send registration, err=%d, %s", rv, acvp_lookup_error_string(rv));
+            ACVP_LOG_ERR("Failed to send registration");
         }
     } else {
         tmp_json_from_file = json_parse_file(ctx->json_filename);
         reg = json_serialize_to_string_pretty(tmp_json_from_file, NULL);
         json_value_free(tmp_json_from_file);
-    }
-
-    if (ctx->debug >= ACVP_LOG_LVL_STATUS) {
-        printf("\nPOST %s\n", reg);
-    } else {
-        ACVP_LOG_INFO("POST %s", reg);
     }
 
 end:
@@ -1700,19 +1686,17 @@ end:
  * can be queried to get the test parameters.
  */
 static ACVP_RESULT acvp_parse_test_session_register(ACVP_CTX *ctx) {
-    JSON_Value *val;
+    JSON_Value *val = NULL;
     JSON_Object *obj = NULL;
-    ACVP_RESULT rv;
-    char *json_buf = ctx->curl_buf;
-    JSON_Array *vect_sets;
-    char *test_session_url;
-    int i, vs_cnt;
-    char *vsid_url;
+    JSON_Array *vect_sets = NULL;
+    const char *test_session_url = NULL, *access_token = NULL;
+    int i = 0, vs_cnt = 0;
+    ACVP_RESULT rv = 0;
 
     /*
      * Parse the JSON
      */
-    val = json_parse_string(json_buf);
+    val = json_parse_string(ctx->curl_buf);
     if (!val) {
         ACVP_LOG_ERR("JSON parse error");
         return ACVP_JSON_ERR;
@@ -1720,26 +1704,33 @@ static ACVP_RESULT acvp_parse_test_session_register(ACVP_CTX *ctx) {
     obj = acvp_get_obj_from_rsp(val);
 
     /*
-     * Identify the VS identifiers provided by the server, save them for
-     * processing later.
+     * This is the identifiers provided by the server
+     * for this specific test session!
      */
-    test_session_url = (char *)json_object_get_string(obj, "url");
-
+    test_session_url = json_object_get_string(obj, "url");
     ctx->session_url = calloc(ACVP_ATTR_URL_MAX + 1, sizeof(char));
     strcpy_s(ctx->session_url, ACVP_ATTR_URL_MAX + 1, test_session_url);
 
+    /*
+     * The accessToken needed for this specific test session.
+     */
+    access_token = json_object_get_string(obj, "accessToken");
+    memzero_s(ctx->jwt_token, ACVP_JWT_TOKEN_MAX + 1);
+    strcpy_s(ctx->jwt_token, ACVP_JWT_TOKEN_MAX + 1, access_token);
+
+    /*
+     * Identify the VS identifiers provided by the server, save them for
+     * processing later.
+     */
     vect_sets = json_object_get_array(obj, "vectorSetUrls");
     vs_cnt = json_array_get_count(vect_sets);
     for (i = 0; i < vs_cnt; i++) {
-        vsid_url = (char *)json_array_get_string(vect_sets, i);
+        char *vsid_url = (char*)json_array_get_string(vect_sets, i);
 
         rv = acvp_append_vsid_url(ctx, vsid_url);
-        if (rv != ACVP_SUCCESS) {
-            goto end;
-        }
+        if (rv != ACVP_SUCCESS) goto end;
         ACVP_LOG_INFO("Received vsid_url=%s", vsid_url);
     }
-    ACVP_LOG_INFO("Successfully processed test session registration response from server");
 
 end:
     if (val) json_value_free(val);
@@ -1832,23 +1823,16 @@ ACVP_RESULT acvp_refresh(ACVP_CTX *ctx) {
             goto end;
         }
 
-        if (ctx->debug >= ACVP_LOG_LVL_STATUS) {
-            printf("\nPOST %s\n", login);
-        } else {
-            ACVP_LOG_INFO("POST %s", login);
-        }
-
         /*
          * Send the login to the ACVP server and get the response,
          */
         rv = acvp_send_login(ctx, login, login_len);
-        if (rv == ACVP_SUCCESS) {
-            ACVP_LOG_STATUS("200 OK %s", ctx->curl_buf);
-            rv = acvp_parse_login(ctx);
-        } else {
-            ACVP_LOG_STATUS("Login Send Failed %s", ctx->curl_buf);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_STATUS("Login Send Failed");
             goto end;
         }
+
+        rv = acvp_parse_login(ctx);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_STATUS("Login Response Failed, %d", rv);
         }
@@ -1885,12 +1869,6 @@ static ACVP_RESULT acvp_process_vsid(ACVP_CTX *ctx, char *vsid_url) {
          */
         rv = acvp_retrieve_vector_set(ctx, vsid_url);
         if (rv != ACVP_SUCCESS) goto end;
-
-        if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
-            printf("\n200 OK %s\n", ctx->curl_buf);
-        } else {
-            ACVP_LOG_STATUS("200 OK %s\n", ctx->curl_buf);
-        }
 
         val = json_parse_string(ctx->curl_buf);
         if (!val) {
@@ -2030,11 +2008,6 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
         }
         json_buf = ctx->curl_buf;
 
-        if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
-            printf("%s\n", ctx->curl_buf);
-        } else {
-            ACVP_LOG_ERR("%s", ctx->curl_buf);
-        }
         val = json_parse_string(json_buf);
         if (!val) {
             ACVP_LOG_ERR("JSON parse error");
@@ -2085,23 +2058,11 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
                         if (rv != ACVP_SUCCESS) {
                             goto end;
                         }
-                        json_buf = ctx->curl_buf;
-
-                        if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
-                            printf("%s\n", ctx->curl_buf);
-                        } else {
-                            ACVP_LOG_ERR("%s", ctx->curl_buf);
-                        }
                     }
                     if (ctx->is_sample) {
                         rv = acvp_retrieve_expected_result(ctx, (char *)json_object_get_string(current, "vectorSetUrl"));
                         if (rv != ACVP_SUCCESS) {
                             goto end;
-                        }
-                        if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
-                            printf("%s\n", ctx->curl_buf);
-                        } else {
-                            ACVP_LOG_ERR("%s", ctx->curl_buf);
                         }
                     }
                 }

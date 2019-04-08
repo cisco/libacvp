@@ -28,7 +28,7 @@
 
 #include "parson.h"
 
-#define ACVP_VERSION    "0.5"
+#define ACVP_VERSION    "1.0"
 #define ACVP_LIBRARY_VERSION    "libacvp-1.0.0"
 
 #ifndef ACVP_LOG_INFO
@@ -91,6 +91,87 @@
 
 #define ACVP_ALG_MAX ACVP_CIPHER_END - 1  /* Used by alg_tbl[] */
 
+/********************************************************
+ * ******************************************************
+ * REVISIONS
+ * ******************************************************
+ ********************************************************
+ */
+#define ACVP_SHA_REVISION "1.0"
+#define ACVP_REVISION_LATEST "1.0"
+
+/* AES */
+#define ACVP_REV_AES_ECB             ACVP_REVISION_LATEST
+#define ACVP_REV_AES_CBC             ACVP_REVISION_LATEST
+#define ACVP_REV_AES_CFB1            ACVP_REVISION_LATEST
+#define ACVP_REV_AES_CFB8            ACVP_REVISION_LATEST
+#define ACVP_REV_AES_CFB128          ACVP_REVISION_LATEST
+#define ACVP_REV_AES_OFB             ACVP_REVISION_LATEST
+#define ACVP_REV_AES_CTR             ACVP_REVISION_LATEST
+#define ACVP_REV_AES_GCM             ACVP_REVISION_LATEST
+#define ACVP_REV_AES_CCM             ACVP_REVISION_LATEST
+#define ACVP_REV_AES_XTS             ACVP_REVISION_LATEST
+#define ACVP_REV_AES_KW              ACVP_REVISION_LATEST
+#define ACVP_REV_AES_KWP             ACVP_REVISION_LATEST
+
+/* TDES */
+#define ACVP_REV_TDES_OFB            ACVP_REVISION_LATEST
+#define ACVP_REV_TDES_OFBI           ACVP_REVISION_LATEST
+#define ACVP_REV_TDES_CFB1           ACVP_REVISION_LATEST
+#define ACVP_REV_TDES_CFB8           ACVP_REVISION_LATEST
+#define ACVP_REV_TDES_CFB64          ACVP_REVISION_LATEST
+#define ACVP_REV_TDES_CFBP1          ACVP_REVISION_LATEST
+#define ACVP_REV_TDES_CFBP8          ACVP_REVISION_LATEST
+#define ACVP_REV_TDES_CFBP64         ACVP_REVISION_LATEST
+#define ACVP_REV_TDES_ECB            ACVP_REVISION_LATEST
+#define ACVP_REV_TDES_CBC            ACVP_REVISION_LATEST
+#define ACVP_REV_TDES_CBCI           ACVP_REVISION_LATEST
+#define ACVP_REV_TDES_CTR            ACVP_REVISION_LATEST
+#define ACVP_REV_TDES_KW             ACVP_REVISION_LATEST
+
+/* SHA */
+#define ACVP_REV_SHA1                ACVP_REVISION_LATEST
+#define ACVP_REV_SHA224              ACVP_REVISION_LATEST
+#define ACVP_REV_SHA256              ACVP_REVISION_LATEST
+#define ACVP_REV_SHA384              ACVP_REVISION_LATEST
+#define ACVP_REV_SHA512              ACVP_REVISION_LATEST
+
+/* DRBG */
+#define ACVP_REV_HASHDRBG            ACVP_REVISION_LATEST
+#define ACVP_REV_HMACDRBG            ACVP_REVISION_LATEST
+#define ACVP_REV_CTRDRBG             ACVP_REVISION_LATEST
+
+/* HMAC */
+#define ACVP_REV_HMAC_SHA1           ACVP_REVISION_LATEST
+#define ACVP_REV_HMAC_SHA2_224       ACVP_REVISION_LATEST
+#define ACVP_REV_HMAC_SHA2_256       ACVP_REVISION_LATEST
+#define ACVP_REV_HMAC_SHA2_384       ACVP_REVISION_LATEST
+#define ACVP_REV_HMAC_SHA2_512       ACVP_REVISION_LATEST
+#define ACVP_REV_HMAC_SHA2_512_224   ACVP_REVISION_LATEST
+#define ACVP_REV_HMAC_SHA2_512_256   ACVP_REVISION_LATEST
+#define ACVP_REV_HMAC_SHA3_224       ACVP_REVISION_LATEST
+#define ACVP_REV_HMAC_SHA3_256       ACVP_REVISION_LATEST
+#define ACVP_REV_HMAC_SHA3_384       ACVP_REVISION_LATEST
+#define ACVP_REV_HMAC_SHA3_512       ACVP_REVISION_LATEST
+
+/* CMAC */
+#define ACVP_REV_CMAC_AES            ACVP_REVISION_LATEST
+#define ACVP_REV_CMAC_TDES           ACVP_REVISION_LATEST
+
+/* DSA */
+#define ACVP_REV_DSA_PQGGEN          ACVP_REVISION_LATEST
+#define ACVP_REV_DSA_PQGVER          ACVP_REVISION_LATEST
+#define ACVP_REV_DSA_KEYGEN          ACVP_REVISION_LATEST
+#define ACVP_REV_DSA_SIGGEN          ACVP_REVISION_LATEST
+#define ACVP_REV_DSA_SIGVER          ACVP_REVISION_LATEST
+
+
+/********************************************************
+ * ******************************************************
+ * ALGORITHM STRINGS
+ * ******************************************************
+ ********************************************************
+ */
 #define ACVP_ALG_NAME_MAX 18 /**< Always make sure this is >= the length of ACVP_ALG* strings */
 #define ACVP_ALG_MODE_MAX 26 /**< Always make sure this is >= the length of ACVP_MODE* strings */
 
@@ -563,7 +644,7 @@
  * END RSA
  */
 
-#define ACVP_CURL_BUF_MAX       (1024 * 1024 * 4) /**< 4 MB */
+#define ACVP_CURL_BUF_MAX       (1024 * 1024 * 16) /**< 16 MB */
 #define ACVP_RETRY_TIME_MAX     60 /* seconds */
 #define ACVP_JWT_TOKEN_MAX      1024
 #define ACVP_ATTR_URL_MAX       2083 /* MS IE's limit - arbitrary */
@@ -1087,6 +1168,8 @@ ACVP_RESULT acvp_send_dep_registration(ACVP_CTX *ctx, char *reg);
 #endif
 
 ACVP_RESULT acvp_send_login(ACVP_CTX *ctx, char *login, int len);
+
+ACVP_RESULT acvp_transport_get(ACVP_CTX *ctx, const char *url);
 
 ACVP_RESULT acvp_retrieve_vector_set(ACVP_CTX *ctx, char *vsid_url);
 

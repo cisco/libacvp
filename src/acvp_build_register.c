@@ -106,10 +106,12 @@ static ACVP_RESULT acvp_build_hash_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
     JSON_Object *msg_obj = NULL;
     ACVP_HASH_CAP *hash_cap = cap_entry->cap.hash_cap;
 
-    json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
-    if (!cap_entry->cap.hash_cap) {
+    if (!hash_cap) {
         return ACVP_MISSING_ARG;
     }
+
+    json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
+    json_object_set_string(cap_obj, "revision", ACVP_SHA_REVISION);
 
     json_object_set_value(cap_obj, "messageLength", json_value_init_array());
     msg_array = json_object_get_array(cap_obj, "messageLength");
