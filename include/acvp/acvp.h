@@ -336,8 +336,7 @@ typedef enum acvp_kdf135_snmp_param {
 #define ACVP_STR_SHA2_512_256   "SHA2-512/256"
 #define ACVP_STR_SHA_MAX        12
 typedef enum acvp_hash_param {
-    ACVP_HASH_IN_BIT = 0,
-    ACVP_HASH_IN_EMPTY
+    ACVP_HASH_MESSAGE_LEN = 1
 } ACVP_HASH_PARM;
 
 /*
@@ -1488,10 +1487,12 @@ ACVP_RESULT acvp_cap_hash_enable(ACVP_CTX *ctx,
 
     @return ACVP_RESULT
  */
-ACVP_RESULT acvp_cap_hash_set_parm(ACVP_CTX *ctx,
-                                   ACVP_CIPHER cipher,
-                                   ACVP_HASH_PARM param,
-                                   int value);
+ACVP_RESULT acvp_cap_hash_set_domain(ACVP_CTX *ctx,
+                                     ACVP_CIPHER cipher,
+                                     ACVP_HASH_PARM param,
+                                     int min,
+                                     int max,
+                                     int increment);
 
 /*! @brief acvp_enable_drbg_cap() allows an application to specify a
        hash capability to be tested by the ACVP server.

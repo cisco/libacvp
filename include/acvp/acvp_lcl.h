@@ -28,7 +28,7 @@
 
 #include "parson.h"
 
-#define ACVP_VERSION    "0.5"
+#define ACVP_VERSION    "1.0"
 #define ACVP_LIBRARY_VERSION    "libacvp-1.0.0"
 
 #ifndef ACVP_LOG_INFO
@@ -91,6 +91,105 @@
 
 #define ACVP_ALG_MAX ACVP_CIPHER_END - 1  /* Used by alg_tbl[] */
 
+/********************************************************
+ * ******************************************************
+ * REVISIONS
+ * ******************************************************
+ ********************************************************
+ */
+#define ACVP_REVISION_LATEST "1.0"
+
+/* AES */
+#define ACVP_REV_AES_ECB             ACVP_REVISION_LATEST
+#define ACVP_REV_AES_CBC             ACVP_REVISION_LATEST
+#define ACVP_REV_AES_CFB1            ACVP_REVISION_LATEST
+#define ACVP_REV_AES_CFB8            ACVP_REVISION_LATEST
+#define ACVP_REV_AES_CFB128          ACVP_REVISION_LATEST
+#define ACVP_REV_AES_OFB             ACVP_REVISION_LATEST
+#define ACVP_REV_AES_CTR             ACVP_REVISION_LATEST
+#define ACVP_REV_AES_GCM             ACVP_REVISION_LATEST
+#define ACVP_REV_AES_CCM             ACVP_REVISION_LATEST
+#define ACVP_REV_AES_XTS             ACVP_REVISION_LATEST
+#define ACVP_REV_AES_KW              ACVP_REVISION_LATEST
+#define ACVP_REV_AES_KWP             ACVP_REVISION_LATEST
+
+/* TDES */
+#define ACVP_REV_TDES_OFB            ACVP_REVISION_LATEST
+#define ACVP_REV_TDES_OFBI           ACVP_REVISION_LATEST
+#define ACVP_REV_TDES_CFB1           ACVP_REVISION_LATEST
+#define ACVP_REV_TDES_CFB8           ACVP_REVISION_LATEST
+#define ACVP_REV_TDES_CFB64          ACVP_REVISION_LATEST
+#define ACVP_REV_TDES_CFBP1          ACVP_REVISION_LATEST
+#define ACVP_REV_TDES_CFBP8          ACVP_REVISION_LATEST
+#define ACVP_REV_TDES_CFBP64         ACVP_REVISION_LATEST
+#define ACVP_REV_TDES_ECB            ACVP_REVISION_LATEST
+#define ACVP_REV_TDES_CBC            ACVP_REVISION_LATEST
+#define ACVP_REV_TDES_CBCI           ACVP_REVISION_LATEST
+#define ACVP_REV_TDES_CTR            ACVP_REVISION_LATEST
+#define ACVP_REV_TDES_KW             ACVP_REVISION_LATEST
+
+/* SHA */
+#define ACVP_REV_HASH_SHA1           ACVP_REVISION_LATEST
+#define ACVP_REV_HASH_SHA224         ACVP_REVISION_LATEST
+#define ACVP_REV_HASH_SHA256         ACVP_REVISION_LATEST
+#define ACVP_REV_HASH_SHA384         ACVP_REVISION_LATEST
+#define ACVP_REV_HASH_SHA512         ACVP_REVISION_LATEST
+
+/* DRBG */
+#define ACVP_REV_HASHDRBG            ACVP_REVISION_LATEST
+#define ACVP_REV_HMACDRBG            ACVP_REVISION_LATEST
+#define ACVP_REV_CTRDRBG             ACVP_REVISION_LATEST
+
+/* HMAC */
+#define ACVP_REV_HMAC_SHA1           ACVP_REVISION_LATEST
+#define ACVP_REV_HMAC_SHA2_224       ACVP_REVISION_LATEST
+#define ACVP_REV_HMAC_SHA2_256       ACVP_REVISION_LATEST
+#define ACVP_REV_HMAC_SHA2_384       ACVP_REVISION_LATEST
+#define ACVP_REV_HMAC_SHA2_512       ACVP_REVISION_LATEST
+#define ACVP_REV_HMAC_SHA2_512_224   ACVP_REVISION_LATEST
+#define ACVP_REV_HMAC_SHA2_512_256   ACVP_REVISION_LATEST
+#define ACVP_REV_HMAC_SHA3_224       ACVP_REVISION_LATEST
+#define ACVP_REV_HMAC_SHA3_256       ACVP_REVISION_LATEST
+#define ACVP_REV_HMAC_SHA3_384       ACVP_REVISION_LATEST
+#define ACVP_REV_HMAC_SHA3_512       ACVP_REVISION_LATEST
+
+/* CMAC */
+#define ACVP_REV_CMAC_AES            ACVP_REVISION_LATEST
+#define ACVP_REV_CMAC_TDES           ACVP_REVISION_LATEST
+
+/* DSA */
+#define ACVP_REV_DSA                 ACVP_REVISION_LATEST
+
+/* RSA */
+#define ACVP_REV_RSA                 ACVP_REVISION_LATEST
+
+/* RSA */
+#define ACVP_REV_ECDSA               ACVP_REVISION_LATEST
+
+/* KAS_ECC */
+#define ACVP_REV_KAS_ECC             ACVP_REVISION_LATEST
+
+/* KAS_FFC */
+#define ACVP_REV_KAS_FFC             ACVP_REVISION_LATEST
+
+/* KDF */
+#define ACVP_REV_KDF135_TLS          ACVP_REVISION_LATEST
+#define ACVP_REV_KDF135_SNMP         ACVP_REVISION_LATEST
+#define ACVP_REV_KDF135_SSH          ACVP_REVISION_LATEST
+#define ACVP_REV_KDF135_SRTP         ACVP_REVISION_LATEST
+#define ACVP_REV_KDF135_IKEV2        ACVP_REVISION_LATEST
+#define ACVP_REV_KDF135_IKEV1        ACVP_REVISION_LATEST
+#define ACVP_REV_KDF135_TPM          ACVP_REVISION_LATEST
+#define ACVP_REV_KDF135_X963         ACVP_REVISION_LATEST
+#define ACVP_REV_KDF108              ACVP_REVISION_LATEST
+
+
+/********************************************************
+ * ******************************************************
+ * ALGORITHM STRINGS
+ * ******************************************************
+ ********************************************************
+ */
 #define ACVP_ALG_NAME_MAX 18 /**< Always make sure this is >= the length of ACVP_ALG* strings */
 #define ACVP_ALG_MODE_MAX 26 /**< Always make sure this is >= the length of ACVP_MODE* strings */
 
@@ -327,9 +426,10 @@
  * END DRBG
  */
 
-#define ACVP_HASH_MSG_BIT_MAX 102400                        /**< 102400 bits */
-#define ACVP_HASH_MSG_STR_MAX (ACVP_HASH_MSG_BIT_MAX >> 2)  /**< 25600 characters */
-#define ACVP_HASH_MSG_BYTE_MAX (ACVP_HASH_MSG_BIT_MAX >> 3) /**< 12800 bytes */
+#define ACVP_HASH_MSG_BIT_MIN 0                             /**< 0 bits */
+#define ACVP_HASH_MSG_BIT_MAX 65535                         /**< 65535 bits */
+#define ACVP_HASH_MSG_STR_MAX (ACVP_HASH_MSG_BIT_MAX >> 2)  /**< 16384 characters */
+#define ACVP_HASH_MSG_BYTE_MAX (ACVP_HASH_MSG_BIT_MAX >> 3) /**< 8192 bytes */
 #define ACVP_HASH_MD_BIT_MAX 512                            /**< 512 bits */
 #define ACVP_HASH_MD_STR_MAX (ACVP_HASH_MD_BIT_MAX >> 2)    /**< 128 characters */
 #define ACVP_HASH_MD_BYTE_MAX (ACVP_HASH_MD_BIT_MAX >> 3)   /**< 64 bytes */
@@ -562,7 +662,7 @@
  * END RSA
  */
 
-#define ACVP_CURL_BUF_MAX       (1024 * 1024 * 4) /**< 4 MB */
+#define ACVP_CURL_BUF_MAX       (1024 * 1024 * 16) /**< 16 MB */
 #define ACVP_RETRY_TIME_MAX     60 /* seconds */
 #define ACVP_JWT_TOKEN_MAX      1024
 #define ACVP_ATTR_URL_MAX       2083 /* MS IE's limit - arbitrary */
@@ -582,6 +682,7 @@ struct acvp_alg_handler_t {
 
     char *name;
     char *mode; /** < Should be NULL unless using an asymmetric alg */
+    const char *revision;
 };
 
 typedef struct acvp_vs_list_t {
@@ -705,8 +806,7 @@ typedef struct acvp_sym_cipher_capability {
 } ACVP_SYM_CIPHER_CAP;
 
 typedef struct acvp_hash_capability {
-    int in_bit;   /* defaults to false */
-    int in_empty; /* defaults to false */
+    ACVP_JSON_DOMAIN_OBJ msg_length;
 } ACVP_HASH_CAP;
 
 typedef struct acvp_kdf135_tls_capability {
@@ -1276,6 +1376,8 @@ ACVP_CIPHER acvp_lookup_cipher_index(const char *algorithm);
 
 ACVP_CIPHER acvp_lookup_cipher_w_mode_index(const char *algorithm,
                                             const char *mode);
+
+const char *acvp_lookup_cipher_revision(ACVP_CIPHER alg);
 
 ACVP_DRBG_MODE acvp_lookup_drbg_mode_index(const char *mode);
 

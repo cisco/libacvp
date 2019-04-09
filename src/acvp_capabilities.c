@@ -1297,33 +1297,32 @@ ACVP_RESULT acvp_cap_hash_enable(ACVP_CTX *ctx,
     return result;
 }
 
-static ACVP_RESULT acvp_validate_hash_parm_value(ACVP_HASH_PARM parm, int value) {
-    ACVP_RESULT retval = ACVP_INVALID_ARG;
-
-    switch (parm) {
-    case ACVP_HASH_IN_BIT:
-    case ACVP_HASH_IN_EMPTY:
-        retval = is_valid_tf_param(value);
-        break;
-    default:
-        break;
-    }
-
-    return retval;
-}
-
 /*
  * Add HASH(SHA) parameters
  */
-ACVP_RESULT acvp_cap_hash_set_parm(ACVP_CTX *ctx,
-                                   ACVP_CIPHER cipher,
-                                   ACVP_HASH_PARM param,
-                                   int value) {
+ACVP_RESULT acvp_cap_hash_set_domain(ACVP_CTX *ctx,
+                                     ACVP_CIPHER cipher,
+                                     ACVP_HASH_PARM parm,
+                                     int min,
+                                     int max,
+                                     int increment) {
     ACVP_CAPS_LIST *cap;
     ACVP_HASH_CAP *hash_cap;
+    ACVP_JSON_DOMAIN_OBJ *domain;
 
     if (!ctx) {
         return ACVP_NO_CTX;
+    }
+
+    switch (cipher) {
+    case ACVP_HASH_SHA1:
+    case ACVP_HASH_SHA224:
+    case ACVP_HASH_SHA256:
+    case ACVP_HASH_SHA384:
+    case ACVP_HASH_SHA512:
+        break;
+    default:
+        return ACVP_INVALID_ARG;
     }
 
     cap = acvp_locate_cap_entry(ctx, cipher);
@@ -1336,34 +1335,32 @@ ACVP_RESULT acvp_cap_hash_set_parm(ACVP_CTX *ctx,
         return ACVP_NO_CAP;
     }
 
-    if (acvp_validate_hash_parm_value(param, value) != ACVP_SUCCESS) {
-        return ACVP_INVALID_ARG;
-    }
-
-    switch (cipher) {
-    case ACVP_HASH_SHA1:
-    case ACVP_HASH_SHA224:
-    case ACVP_HASH_SHA256:
-    case ACVP_HASH_SHA384:
-    case ACVP_HASH_SHA512:
-        switch (param) {
-        case ACVP_HASH_IN_BIT:
-            hash_cap->in_bit = value;
-            break;
-        case ACVP_HASH_IN_EMPTY:
-            hash_cap->in_empty = value;
-            break;
-        default:
+    switch (parm) {
+    case ACVP_HASH_MESSAGE_LEN:
+        if (min < ACVP_HASH_MSG_BIT_MIN ||
+            max > ACVP_HASH_MSG_BIT_MAX) {
+            ACVP_LOG_ERR("min or max outside of acceptable range");
             return ACVP_INVALID_ARG;
-
-            break;
         }
+        domain = &hash_cap->msg_length;
         break;
     default:
         return ACVP_INVALID_ARG;
-
-        break;
     }
+
+    if (min % increment != 0) {
+        ACVP_LOG_ERR("min(%d) MODULO increment(%d) must equal 0", min, increment);
+        return ACVP_INVALID_ARG;
+    }
+    if (max % increment != 0) {
+        ACVP_LOG_ERR("max(%d) MODULO increment(%d) must equal 0", max, increment);
+        return ACVP_INVALID_ARG;
+    }
+
+    domain->min = min;
+    domain->max = max;
+    domain->increment = increment;
+
     return ACVP_SUCCESS;
 }
 

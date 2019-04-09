@@ -135,6 +135,30 @@ char *acvp_lookup_cipher_name(ACVP_CIPHER alg) {
     return NULL;
 }
 
+/*
+ * @brief This function returns the revision of an algorithm given
+ *        a ACVP_CIPHER value.
+ *
+ * If the mode is given, then it will also use that to
+ * narrow down the search to entries that only match
+ * both the \p alg and \p mode.
+ *
+ * @return String representing the Revision
+ * @return NULL no match
+ *
+ */
+const char *acvp_lookup_cipher_revision(ACVP_CIPHER alg) {
+    int i = 0;
+
+    for (i = 0; i < ACVP_ALG_MAX; i++) {
+        if (alg_tbl[i].cipher == alg) {
+            return alg_tbl[i].revision;
+        }
+    }
+
+    return NULL;
+}
+
 /**
  * @brief Loop through all entries in alg_tbl, trying to match
  *        \p algorithm to each name field. If successful, will

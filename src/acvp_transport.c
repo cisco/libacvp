@@ -64,23 +64,30 @@ static ACVP_RESULT acvp_network_action(ACVP_CTX *ctx, ACVP_NET_ACTION action,
                                        char *url, char *data, int data_len);
 
 static struct curl_slist *acvp_add_auth_hdr(ACVP_CTX *ctx, struct curl_slist *slist) {
-    int bearer_size;
-    char *bearer;
+    char *bearer = NULL;
+    char bearer_title[] = "Authorization: Bearer ";
+    int bearer_title_size = (int)sizeof(bearer_title) - 1;
+    int bearer_size = 0;
 
-    /*
-     * Create the Authorzation header if needed
-     */
-    if (ctx->jwt_token) {
-        bearer_size = strnlen_s(ctx->jwt_token, ACVP_JWT_TOKEN_MAX) + ACVP_AUTH_BEARER_TITLE_LEN;
-        bearer = calloc(1, bearer_size);
-        if (!bearer) {
-            ACVP_LOG_ERR("unable to allocate memory.");
-            return slist;
-        }
-        snprintf(bearer, bearer_size + 1, "Authorization: Bearer %s", ctx->jwt_token);
-        slist = curl_slist_append(slist, bearer);
-        free(bearer);
+    if (!ctx->jwt_token) {
+        /*
+         * We don't have a token to embed
+         */
+        return slist;
     }
+
+    bearer_size = strnlen_s(ctx->jwt_token, ACVP_JWT_TOKEN_MAX) + bearer_title_size;
+    bearer = calloc(bearer_size + 1, sizeof(char));
+    if (!bearer) {
+        ACVP_LOG_ERR("unable to allocate memory.");
+        return slist;
+    }
+
+    snprintf(bearer, bearer_size + 1, "%s%s", bearer_title, ctx->jwt_token);
+    slist = curl_slist_append(slist, bearer);
+
+    free(bearer);
+
     return slist;
 }
 
@@ -192,10 +199,6 @@ static long acvp_curl_http_get(ACVP_CTX *ctx, char *url) {
      */
     curl_easy_getinfo(hnd, CURLINFO_RESPONSE_CODE, &http_code);
 
-    if (http_code != HTTP_OK) {
-        ACVP_LOG_ERR("HTTP response: %d\n", (int)http_code);
-    }
-
     curl_easy_cleanup(hnd);
     hnd = NULL;
     if (slist) {
@@ -296,10 +299,6 @@ static long acvp_curl_http_post(ACVP_CTX *ctx, char *url, char *data, int data_l
      */
     curl_easy_getinfo(hnd, CURLINFO_RESPONSE_CODE, &http_code);
 
-    if (http_code != HTTP_OK) {
-        ACVP_LOG_ERR("HTTP response: %d\n", (int)http_code);
-    }
-
     curl_easy_cleanup(hnd);
     hnd = NULL;
     curl_slist_free_all(slist);
@@ -316,11 +315,6 @@ static ACVP_RESULT sanity_check_ctx(ACVP_CTX *ctx) {
 
     if (!ctx->server_port || !ctx->server_name) {
         ACVP_LOG_ERR("Call acvp_set_server to fill in server name and port");
-        return ACVP_MISSING_ARG;
-    }
-
-    if (!ctx->api_context) {
-        ACVP_LOG_ERR("No api context, need to call acvp_set_api_context first");
         return ACVP_MISSING_ARG;
     }
 
@@ -464,9 +458,8 @@ ACVP_RESULT acvp_submit_vector_responses(ACVP_CTX *ctx, char *vsid_url) {
     }
 
     snprintf(url, ACVP_ATTR_URL_MAX - 1,
-            "https://%s:%d/%s%s/results",
-            ctx->server_name, ctx->server_port,
-            ctx->api_context, vsid_url);
+            "https://%s:%d/%s/results",
+            ctx->server_name, ctx->server_port, vsid_url);
 
     return acvp_network_action(ctx, ACVP_NET_POST_VS_RESP, url, NULL, 0);
 }
@@ -488,16 +481,14 @@ ACVP_RESULT acvp_retrieve_vector_set(ACVP_CTX *ctx, char *vsid_url) {
     }
 
     snprintf(url, ACVP_ATTR_URL_MAX - 1,
-            "https://%s:%d/%s%s",
-            ctx->server_name, ctx->server_port,
-            ctx->api_context, vsid_url);
+            "https://%s:%d/%s",
+            ctx->server_name, ctx->server_port, vsid_url);
 
     return acvp_network_action(ctx, ACVP_NET_GET_VS, url, NULL, 0);
 }
 
 /*
  * This is the top level function used within libacvp to retrieve
- * the test result for a given KAT vector set from the ACVP server.
  * It can be used to get the results for an entire session, or
  * more specifically for a vectorSet
  */
@@ -514,9 +505,8 @@ ACVP_RESULT acvp_retrieve_vector_set_result(ACVP_CTX *ctx, char *api_url) {
     }
 
     snprintf(url, ACVP_ATTR_URL_MAX - 1,
-            "https://%s:%d/%s%s/results",
-            ctx->server_name, ctx->server_port,
-            ctx->api_context, api_url);
+            "https://%s:%d/%s/results",
+            ctx->server_name, ctx->server_port, api_url);
 
     return acvp_network_action(ctx, ACVP_NET_GET_VS_RESULT, url, NULL, 0);
 }
@@ -534,9 +524,8 @@ ACVP_RESULT acvp_retrieve_expected_result(ACVP_CTX *ctx, char *api_url) {
     }
 
     snprintf(url, ACVP_ATTR_URL_MAX - 1,
-            "https://%s:%d/%s%s/expected",
-            ctx->server_name, ctx->server_port,
-            ctx->api_context, api_url);
+            "https://%s:%d/%s/expected",
+            ctx->server_name, ctx->server_port, api_url);
 
     return acvp_network_action(ctx, ACVP_NET_GET_VS_SAMPLE, url, NULL, 0);
 }
@@ -554,9 +543,8 @@ ACVP_RESULT acvp_transport_get(ACVP_CTX *ctx, const char *url) {
     }
 
     snprintf(full_url, ACVP_ATTR_URL_MAX - 1,
-            "https://%s:%d/%s%s",
-            ctx->server_name, ctx->server_port,
-            ctx->api_context, url);
+            "https://%s:%d/%s",
+            ctx->server_name, ctx->server_port, url);
 
     return acvp_network_action(ctx, ACVP_NET_GET, full_url, NULL, 0);
 }
@@ -616,7 +604,8 @@ static ACVP_RESULT execute_network_action(ACVP_CTX *ctx,
                                           ACVP_NET_ACTION action,
                                           char *url,
                                           char *data,
-                                          int data_len) {
+                                          int data_len,
+                                          int *curl_code) {
     ACVP_RESULT result = 0;
     char *resp = NULL;
     int resp_len = 0;
@@ -716,71 +705,48 @@ static ACVP_RESULT execute_network_action(ACVP_CTX *ctx,
 end:
     if (resp) json_free_serialized_string(resp);
 
+    *curl_code = rc;
+
     return result;
 }
 
-// TODO add URL to status
 static void log_network_status(ACVP_CTX *ctx,
                                ACVP_NET_ACTION action,
-                               ACVP_RESULT rc) {
-    if (rc == ACVP_SUCCESS) {
-        switch(action) {
-        case ACVP_NET_GET:
-            ACVP_LOG_STATUS("Successful GET from server.");
-            break;
-        case ACVP_NET_GET_VS:
-            ACVP_LOG_STATUS("Getting VS... successful GET from server.");
-            break;
-        case ACVP_NET_GET_VS_RESULT:
-            ACVP_LOG_STATUS("Getting VS Result... successful GET from server.");
-            break;
-        case ACVP_NET_GET_VS_SAMPLE:
-            ACVP_LOG_STATUS("Getting VS Sample... successful GET from server.");
-            break;
-        case ACVP_NET_POST:
-            ACVP_LOG_STATUS("Successful POST to server.");
-            break;
-        case ACVP_NET_POST_LOGIN:
-            ACVP_LOG_STATUS("Login... successful POST to server.");
-            break;
-        case ACVP_NET_POST_REG:
-            ACVP_LOG_STATUS("Registration... successful POST to server.");
-            break;
-        case ACVP_NET_POST_VS_RESP:
-            ACVP_LOG_STATUS("VS Response Submission... successful POST to server.");
-            break;
-        }
-    } else {
-        switch(action) {
-        case ACVP_NET_GET:
-            ACVP_LOG_ERR("Bad GET from server. curl rc=%d", rc);
-            break;
-        case ACVP_NET_GET_VS:
-            ACVP_LOG_ERR("Getting VS... bad GET from server. curl rc=%d", rc);
-            break;
-        case ACVP_NET_GET_VS_RESULT:
-            ACVP_LOG_ERR("Getting VS Result... bad GET from server. curl rc=%d", rc);
-            break;
-        case ACVP_NET_GET_VS_SAMPLE:
-            ACVP_LOG_ERR("Getting VS Sample... bad GET from server. curl rc=%d", rc);
-            break;
-        case ACVP_NET_POST:
-            ACVP_LOG_ERR("Bad POST to server. curl rc=%d", rc);
-            break;
-        case ACVP_NET_POST_LOGIN:
-            ACVP_LOG_ERR("Login... bad POST to server. curl rc=%d", rc);
-            break;
-        case ACVP_NET_POST_REG:
-            ACVP_LOG_ERR("Registration... bad POST to server. curl rc=%d", rc);
-            break;
-        case ACVP_NET_POST_VS_RESP:
-            ACVP_LOG_ERR("VS Response Submission... bad POST to server. curl rc=%d", rc);
-            break;
-        }
-    }
-
-    if (rc != ACVP_SUCCESS && ctx->curl_buf) {
-        ACVP_LOG_ERR("%s\n", ctx->curl_buf);
+                               int curl_code,
+                               const char *url) {
+    switch(action) {
+    case ACVP_NET_GET:
+        ACVP_LOG_STATUS("GET...\n\tStatus: %d\n\tUrl: %s\n\tResp:\n%s\n",
+                        curl_code, url, ctx->curl_buf);
+        break;
+    case ACVP_NET_GET_VS:
+        ACVP_LOG_STATUS("GET Vector Set...\n\tStatus: %d\n\tUrl: %s\n\tResp:\n%s\n",
+                        curl_code, url, ctx->curl_buf);
+        break;
+    case ACVP_NET_GET_VS_RESULT:
+        ACVP_LOG_STATUS("GET Vector Set Result...\n\tStatus: %d\n\tUrl: %s\n\tResp:\n%s\n",
+                        curl_code, url, ctx->curl_buf);
+        break;
+    case ACVP_NET_GET_VS_SAMPLE:
+        ACVP_LOG_STATUS("GET Vector Set Sample...\n\tStatus: %d\n\tUrl: %s\n\tResp:\n%s\n",
+                        curl_code, url, ctx->curl_buf);
+        break;
+    case ACVP_NET_POST:
+        ACVP_LOG_STATUS("POST...\n\tStatus: %d\n\tUrl: %s\n\tResp: %s\n",
+                        curl_code, url, ctx->curl_buf);
+        break;
+    case ACVP_NET_POST_LOGIN:
+        ACVP_LOG_STATUS("POST Login...\n\tStatus: %d\n\tUrl: %s\n\tResp:\n%s\n",
+                        curl_code, url, ctx->curl_buf);
+        break;
+    case ACVP_NET_POST_REG:
+        ACVP_LOG_STATUS("POST Registration...\n\tStatus: %d\n\tUrl: %s\n\tResp:\n%s\n",
+                        curl_code, url, ctx->curl_buf);
+        break;
+    case ACVP_NET_POST_VS_RESP:
+        ACVP_LOG_STATUS("POST Response Submission...\n\tStatus: %d\n\tUrl: %s\n\tResp:\n%s\n",
+                        curl_code, url, ctx->curl_buf);
+        break;
     }
 }
 
@@ -797,6 +763,7 @@ static ACVP_RESULT acvp_network_action(ACVP_CTX *ctx,
     ACVP_RESULT rv = ACVP_SUCCESS;
     ACVP_NET_ACTION generic_action = 0;
     int check_data = 0;
+    int curl_code = 0;
 
     if (!ctx) {
         ACVP_LOG_ERR("Missing ctx");
@@ -845,10 +812,11 @@ static ACVP_RESULT acvp_network_action(ACVP_CTX *ctx,
         return ACVP_NO_DATA;
     }
 
-    rv = execute_network_action(ctx, generic_action, url, data, data_len);
+    rv = execute_network_action(ctx, generic_action, url,
+                                data, data_len, &curl_code);
 
     /* Log to the console */
-    log_network_status(ctx, action, rv);
+    log_network_status(ctx, action, curl_code, url);
 
     return rv;
 }
