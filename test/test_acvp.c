@@ -542,26 +542,6 @@ Test(FREE_TEST_SESSION, good_full, .init = setup_full_ctx) {
 }
 
 /*
- * Calls register with missing api context
- */
-Test(REGISTER, missing_api, .init = setup_full_ctx, .fini = teardown) {
-    rv = acvp_set_server(ctx, test_server, port);
-    cr_assert(rv == ACVP_SUCCESS);
-    
-    rv = acvp_set_path_segment(ctx, path_segment);
-    cr_assert(rv == ACVP_SUCCESS);
-    
-    rv = acvp_set_server(ctx, test_server, port);
-    cr_assert(rv == ACVP_SUCCESS);
-    
-    rv = acvp_set_2fa_callback(ctx, &totp);
-    cr_assert(rv == ACVP_SUCCESS);
-
-    rv = acvp_register(ctx);
-    cr_assert(rv == ACVP_MISSING_ARG);
-}
-
-/*
  * Calls register with missing path segment
  */
 Test(REGISTER, missing_path, .init = setup_full_ctx, .fini = teardown) {
