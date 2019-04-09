@@ -337,8 +337,8 @@ static ACVP_RESULT acvp_send_with_path_seg(ACVP_CTX *ctx,
         return ACVP_MISSING_ARG;
     }
 
-    snprintf(url, ACVP_ATTR_URL_MAX - 1, "https://%s:%d/%s%s%s", ctx->server_name,
-             ctx->server_port, ctx->api_context, ctx->path_segment, uri);
+    snprintf(url, ACVP_ATTR_URL_MAX - 1, "https://%s:%d/%s%s", ctx->server_name,
+             ctx->server_port, ctx->path_segment, uri);
 
     return acvp_network_action(ctx, action, url, data, data_len);
 }

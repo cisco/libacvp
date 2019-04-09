@@ -282,12 +282,14 @@ int main(int argc, char **argv) {
         goto end;
     }
 
+#if 0
     /* Now to setup all of the information pertaining to Operating Environment(s) */
     rv = setup_operating_environment(ctx);
     if (rv) {
         printf("Failed to setup Operating Environment\n");
         goto end;
     }
+#endif
 
     /*
      * Set the api context prefix if needed
