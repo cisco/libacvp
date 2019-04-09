@@ -41,7 +41,20 @@ Test(EnableCapHash, properly, .fini = teardown) {
     rv = acvp_cap_hash_enable(ctx, ACVP_HASH_SHA1, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_hash_set_parm(ctx, ACVP_HASH_SHA1, ACVP_HASH_IN_BIT, 0);
+    rv = acvp_cap_hash_set_domain(ctx, ACVP_HASH_SHA1, ACVP_HASH_MESSAGE_LEN,
+                                  0, 65528, 8);
+    cr_assert(rv == ACVP_SUCCESS);
+
+    rv = acvp_cap_hash_set_domain(ctx, ACVP_HASH_SHA1, ACVP_HASH_MESSAGE_LEN,
+                                  0, 65532, 4);
+    cr_assert(rv == ACVP_SUCCESS);
+
+    rv = acvp_cap_hash_set_domain(ctx, ACVP_HASH_SHA1, ACVP_HASH_MESSAGE_LEN,
+                                  0, 65534, 2);
+    cr_assert(rv == ACVP_SUCCESS);
+
+    rv = acvp_cap_hash_set_domain(ctx, ACVP_HASH_SHA1, ACVP_HASH_MESSAGE_LEN,
+                                  0, 65535, 1);
     cr_assert(rv == ACVP_SUCCESS);
 }
 
@@ -56,7 +69,8 @@ Test(EnableCapHash, param_alg_mismatch, .fini = teardown) {
     rv = acvp_cap_hash_enable(ctx, ACVP_HASH_SHA1, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     
-    rv = acvp_cap_hash_set_parm(ctx, ACVP_HASH_SHA256, ACVP_HASH_IN_BIT, 0);
+    rv = acvp_cap_hash_set_domain(ctx, ACVP_HASH_SHA256, ACVP_HASH_MESSAGE_LEN,
+                                  0, 65535, 1);
     cr_assert(rv == ACVP_NO_CAP);
 }
 
@@ -78,14 +92,17 @@ Test(EnableCapHash, invalid_args, .fini = teardown) {
     
     rv = acvp_cap_hash_enable(ctx, ACVP_HASH_SHA1, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
-    
-    rv = acvp_cap_hash_set_parm(ctx, ACVP_HASH_SHA1, ACVP_HASH_IN_BIT, 3);
+
+    rv = acvp_cap_hash_set_domain(ctx, ACVP_HASH_SHA1, ACVP_HASH_MESSAGE_LEN,
+                                  0, 65535, 2);
     cr_assert(rv == ACVP_INVALID_ARG);
-    rv = acvp_cap_hash_set_parm(ctx, ACVP_HASH_SHA1, ACVP_HASH_IN_BIT, -1);
+
+    rv = acvp_cap_hash_set_domain(ctx, ACVP_HASH_SHA1, ACVP_HASH_MESSAGE_LEN,
+                                  0, 65535, 4);
     cr_assert(rv == ACVP_INVALID_ARG);
-    rv = acvp_cap_hash_set_parm(ctx, ACVP_HASH_SHA1, ACVP_HASH_IN_EMPTY, 3);
-    cr_assert(rv == ACVP_INVALID_ARG);
-    rv = acvp_cap_hash_set_parm(ctx, ACVP_HASH_SHA1, ACVP_HASH_IN_EMPTY, -1);
+
+    rv = acvp_cap_hash_set_domain(ctx, ACVP_HASH_SHA1, ACVP_HASH_MESSAGE_LEN,
+                                  0, 65535, 8);
     cr_assert(rv == ACVP_INVALID_ARG);
 }
 

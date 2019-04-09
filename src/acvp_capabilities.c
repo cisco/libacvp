@@ -1319,9 +1319,6 @@ static ACVP_RESULT acvp_validate_hash_parm_value(ACVP_HASH_PARM parm, int value)
     return retval;
 }
 
-/*
- * Add HASH(SHA) parameters
- */
 ACVP_RESULT acvp_cap_hash_set_parm(ACVP_CTX *ctx,
                                    ACVP_CIPHER cipher,
                                    ACVP_HASH_PARM param,
@@ -1334,11 +1331,6 @@ ACVP_RESULT acvp_cap_hash_set_parm(ACVP_CTX *ctx,
     }
 
     switch (cipher) {
-    case ACVP_HASH_SHA1:
-    case ACVP_HASH_SHA224:
-    case ACVP_HASH_SHA256:
-    case ACVP_HASH_SHA384:
-    case ACVP_HASH_SHA512:
     case ACVP_HASH_SHA3_224:
     case ACVP_HASH_SHA3_256:
     case ACVP_HASH_SHA3_384:
@@ -1390,34 +1382,62 @@ ACVP_RESULT acvp_cap_hash_set_parm(ACVP_CTX *ctx,
     return ACVP_SUCCESS;
 }
 
+/*
+ * Add HASH(SHA) parameters
+ */
 ACVP_RESULT acvp_cap_hash_set_domain(ACVP_CTX *ctx,
                                      ACVP_CIPHER cipher,
                                      ACVP_HASH_PARM parm,
                                      int min,
                                      int max,
                                      int increment) {
-    ACVP_CAPS_LIST *cap_list;
+    ACVP_CAPS_LIST *cap;
+    ACVP_HASH_CAP *hash_cap;
     ACVP_JSON_DOMAIN_OBJ *domain;
-    ACVP_HASH_CAP *current_hash_cap;
+
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
 
     switch (cipher) {
+    case ACVP_HASH_SHA1:
+    case ACVP_HASH_SHA224:
+    case ACVP_HASH_SHA256:
+    case ACVP_HASH_SHA384:
+    case ACVP_HASH_SHA512:
     case ACVP_HASH_SHAKE_128:
     case ACVP_HASH_SHAKE_256:
         break;
     default:
-        ACVP_LOG_ERR("Invalid 'cipher'. This function only supports ACVP_HASH_SHAKE_*");
         return ACVP_INVALID_ARG;
     }
 
-    cap_list = acvp_locate_cap_entry(ctx, cipher);
-    if (!cap_list) {
+    cap = acvp_locate_cap_entry(ctx, cipher);
+    if (!cap) {
         ACVP_LOG_ERR("Cap entry not found.");
         return ACVP_NO_CAP;
     }
-    current_hash_cap = cap_list->cap.hash_cap;
+
+    hash_cap = cap->cap.hash_cap;
+    if (!hash_cap) {
+        return ACVP_NO_CAP;
+    }
 
     switch (parm) {
+    case ACVP_HASH_MESSAGE_LEN:
+        if (min < ACVP_HASH_MSG_BIT_MIN ||
+            max > ACVP_HASH_MSG_BIT_MAX) {
+            ACVP_LOG_ERR("min or max outside of acceptable range");
+            return ACVP_INVALID_ARG;
+        }
+        domain = &hash_cap->msg_length;
+        break;
     case ACVP_HASH_OUT_LENGTH:
+        if (cipher != ACVP_HASH_SHAKE_128 &&
+            cipher != ACVP_HASH_SHAKE_256) {
+            ACVP_LOG_ERR("Only SHAKE_128 or SHAKE_256 allowed for ACVP_HASH_OUT_LENGTH");
+            return ACVP_INVALID_ARG;
+        }
         if (min < ACVP_HASH_XOF_MD_BIT_MIN ||
             max > ACVP_HASH_XOF_MD_BIT_MAX) {
             ACVP_LOG_ERR("'ACVP_HASH_OUT_LENGTH' min or max outside of acceptable range");
@@ -1428,16 +1448,25 @@ ACVP_RESULT acvp_cap_hash_set_domain(ACVP_CTX *ctx,
                          increment, min, ACVP_HASH_XOF_MD_BIT_MAX);
             return ACVP_INVALID_ARG;
         }
-        domain = &current_hash_cap->out_len;
+        domain = &hash_cap->out_len;
         break;
     default:
+        ACVP_LOG_ERR("Invalid 'parm'");
+        return ACVP_INVALID_ARG;
+    }
+
+    if (min % increment != 0) {
+        ACVP_LOG_ERR("min(%d) MODULO increment(%d) must equal 0", min, increment);
+        return ACVP_INVALID_ARG;
+    }
+    if (max % increment != 0) {
+        ACVP_LOG_ERR("max(%d) MODULO increment(%d) must equal 0", max, increment);
         return ACVP_INVALID_ARG;
     }
 
     domain->min = min;
     domain->max = max;
     domain->increment = increment;
-    domain->value = 0;
 
     return ACVP_SUCCESS;
 }

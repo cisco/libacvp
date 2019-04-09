@@ -83,6 +83,9 @@ static void print_usage(int err) {
     printf("To register a formatted JSON file use:\n");
     printf("      --json <file>\n");
     printf("\n");
+    printf("To process kat vectors from a JSON file use:\n");
+    printf("      --kat <file>\n");
+    printf("\n");
     printf("If you are running a sample registration (querying for correct answers\n");
     printf("in addition to the normal registration flow) use:\n");
     printf("      --sample\n");
@@ -301,6 +304,36 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
             }
 
             strcpy_s(cfg->json_file, JSON_FILENAME_LENGTH + 1, *argv);
+            goto next;
+        }
+
+        strcmp_s("--kat", strnlen_s("--kat", OPTION_STR_MAX), *argv, &diff);
+        if (!diff) {
+            int filename_len = 0;
+
+            cfg->kat = 1;
+            argc--;
+            argv++;
+
+            if (*argv == NULL) {
+                printf(ANSI_COLOR_RED "Command error... [%s]"ANSI_COLOR_RESET
+                       "\nMissing <file>.\n", "--kat");
+                print_usage(1);
+                return 1;
+            }
+
+            filename_len = strnlen_s(*argv, JSON_FILENAME_LENGTH + 1);
+            if (filename_len > JSON_FILENAME_LENGTH) {
+                printf(ANSI_COLOR_RED "Command error... [%s]"ANSI_COLOR_RESET
+                       "\nThe <file> \"%s\", has a name that is too long."
+                       "\nMax allowed <file> name length is (%d).\n",
+                       "--kat", *argv, JSON_FILENAME_LENGTH);
+                print_usage(1);
+                return 1;
+            }
+
+            strcpy_s(cfg->kat_file, JSON_FILENAME_LENGTH + 1, *argv);
+            goto next;
         }
 
         strcmp_s("--sample", strnlen_s("--sample", OPTION_STR_MAX), *argv, &diff);
