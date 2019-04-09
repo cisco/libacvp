@@ -114,6 +114,7 @@ static ACVP_RESULT acvp_build_hash_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
     json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
 
     revision = acvp_lookup_cipher_revision(cap_entry->cipher);
+    if (revision == NULL) return ACVP_INVALID_ARG;
     json_object_set_string(cap_obj, "revision", revision);
 
     json_object_set_value(cap_obj, "messageLength", json_value_init_array());
@@ -142,6 +143,7 @@ static ACVP_RESULT acvp_build_hmac_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
     json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
 
     revision = acvp_lookup_cipher_revision(cap_entry->cipher);
+    if (revision == NULL) return ACVP_INVALID_ARG;
     json_object_set_string(cap_obj, "revision", revision);
 
     result = acvp_lookup_prereqVals(cap_obj, cap_entry);
@@ -202,6 +204,7 @@ static ACVP_RESULT acvp_build_cmac_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
     json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
 
     revision = acvp_lookup_cipher_revision(cap_entry->cipher);
+    if (revision == NULL) return ACVP_INVALID_ARG;
     json_object_set_string(cap_obj, "revision", revision);
 
     result = acvp_lookup_prereqVals(cap_obj, cap_entry);
@@ -296,6 +299,7 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
     json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
 
     revision = acvp_lookup_cipher_revision(cap_entry->cipher);
+    if (revision == NULL) return ACVP_INVALID_ARG;
     json_object_set_string(cap_obj, "revision", revision);
 
     sym_cap = cap_entry->cap.sym_cap;
@@ -619,6 +623,7 @@ static ACVP_RESULT acvp_build_drbg_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
     json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
 
     revision = acvp_lookup_cipher_revision(cap_entry->cipher);
+    if (revision == NULL) return ACVP_INVALID_ARG;
     json_object_set_string(cap_obj, "revision", revision);
 
     result = acvp_lookup_drbg_prereqVals(cap_obj, drbg_cap_mode);
@@ -786,6 +791,7 @@ static ACVP_RESULT acvp_build_rsa_keygen_register_cap(JSON_Object *cap_obj, ACVP
     json_object_set_string(cap_obj, "algorithm", "RSA");
 
     revision = acvp_lookup_cipher_revision(cap_entry->cipher);
+    if (revision == NULL) return ACVP_INVALID_ARG;
     json_object_set_string(cap_obj, "revision", revision);
 
     json_object_set_string(cap_obj, "mode", "keyGen");
@@ -849,6 +855,7 @@ static ACVP_RESULT acvp_build_rsa_sig_register_cap(JSON_Object *cap_obj, ACVP_CA
     json_object_set_string(cap_obj, "algorithm", "RSA");
 
     revision = acvp_lookup_cipher_revision(cap_entry->cipher);
+    if (revision == NULL) return ACVP_INVALID_ARG;
     json_object_set_string(cap_obj, "revision", revision);
 
     if (cap_entry->cipher == ACVP_RSA_SIGGEN) {
@@ -927,6 +934,7 @@ static ACVP_RESULT acvp_build_ecdsa_register_cap(ACVP_CIPHER cipher, JSON_Object
     json_object_set_string(cap_obj, "algorithm", "ECDSA");
 
     revision = acvp_lookup_cipher_revision(cap_entry->cipher);
+    if (revision == NULL) return ACVP_INVALID_ARG;
     json_object_set_string(cap_obj, "revision", revision);
 
     switch (cipher) {
@@ -1037,6 +1045,7 @@ static ACVP_RESULT acvp_build_kdf135_tls_register_cap(JSON_Object *cap_obj, ACVP
     json_object_set_string(cap_obj, "algorithm", ACVP_KDF135_ALG_STR);
 
     revision = acvp_lookup_cipher_revision(cap_entry->cipher);
+    if (revision == NULL) return ACVP_INVALID_ARG;
     json_object_set_string(cap_obj, "revision", revision);
 
     json_object_set_string(cap_obj, "mode", ACVP_ALG_KDF135_TLS);
@@ -1082,6 +1091,7 @@ static ACVP_RESULT acvp_build_kdf135_snmp_register_cap(JSON_Object *cap_obj, ACV
     json_object_set_string(cap_obj, "algorithm", ACVP_KDF135_ALG_STR);
 
     revision = acvp_lookup_cipher_revision(cap_entry->cipher);
+    if (revision == NULL) return ACVP_INVALID_ARG;
     json_object_set_string(cap_obj, "revision", revision);
 
     json_object_set_string(cap_obj, "mode", ACVP_ALG_KDF135_SNMP);
@@ -1169,6 +1179,7 @@ static ACVP_RESULT acvp_build_kdf108_register_cap(JSON_Object *cap_obj, ACVP_CAP
     json_object_set_string(cap_obj, "algorithm", "KDF");
 
     revision = acvp_lookup_cipher_revision(cap_entry->cipher);
+    if (revision == NULL) return ACVP_INVALID_ARG;
     json_object_set_string(cap_obj, "revision", revision);
 
     result = acvp_lookup_prereqVals(cap_obj, cap_entry);
@@ -1212,6 +1223,7 @@ static ACVP_RESULT acvp_build_kdf135_x963_register_cap(JSON_Object *cap_obj, ACV
     json_object_set_string(cap_obj, "algorithm", ACVP_KDF135_ALG_STR);
 
     revision = acvp_lookup_cipher_revision(cap_entry->cipher);
+    if (revision == NULL) return ACVP_INVALID_ARG;
     json_object_set_string(cap_obj, "revision", revision);
 
     json_object_set_string(cap_obj, "mode", "ansix9.63");
@@ -1270,6 +1282,7 @@ static ACVP_RESULT acvp_build_kdf135_ikev2_register_cap(JSON_Object *cap_obj, AC
     json_object_set_string(cap_obj, "algorithm", ACVP_KDF135_ALG_STR);
 
     revision = acvp_lookup_cipher_revision(cap_entry->cipher);
+    if (revision == NULL) return ACVP_INVALID_ARG;
     json_object_set_string(cap_obj, "revision", revision);
 
     json_object_set_string(cap_obj, "mode", ACVP_ALG_KDF135_IKEV2);
@@ -1363,6 +1376,7 @@ static ACVP_RESULT acvp_build_kdf135_ikev1_register_cap(JSON_Object *cap_obj, AC
     json_object_set_string(cap_obj, "algorithm", ACVP_KDF135_ALG_STR);
 
     revision = acvp_lookup_cipher_revision(cap_entry->cipher);
+    if (revision == NULL) return ACVP_INVALID_ARG;
     json_object_set_string(cap_obj, "revision", revision);
 
     json_object_set_string(cap_obj, "mode", ACVP_ALG_KDF135_IKEV1);
@@ -1441,6 +1455,7 @@ static ACVP_RESULT acvp_build_kdf135_srtp_register_cap(JSON_Object *cap_obj, ACV
     json_object_set_string(cap_obj, "algorithm", ACVP_KDF135_ALG_STR);
 
     revision = acvp_lookup_cipher_revision(cap_entry->cipher);
+    if (revision == NULL) return ACVP_INVALID_ARG;
     json_object_set_string(cap_obj, "revision", revision);
 
     json_object_set_string(cap_obj, "mode", ACVP_ALG_KDF135_SRTP);
@@ -1477,6 +1492,7 @@ static ACVP_RESULT acvp_build_kdf135_ssh_register_cap(JSON_Object *cap_obj, ACVP
     json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
 
     revision = acvp_lookup_cipher_revision(cap_entry->cipher);
+    if (revision == NULL) return ACVP_INVALID_ARG;
     json_object_set_string(cap_obj, "revision", revision);
 
     json_object_set_string(cap_obj, "mode", ACVP_ALG_KDF135_SSH);
@@ -1839,6 +1855,7 @@ static ACVP_RESULT acvp_build_dsa_register_cap(JSON_Object *cap_obj,
     json_object_set_string(cap_obj, "algorithm", "DSA");
 
     revision = acvp_lookup_cipher_revision(cap_entry->cipher);
+    if (revision == NULL) return ACVP_INVALID_ARG;
     json_object_set_string(cap_obj, "revision", revision);
 
     switch (mode) {
@@ -1986,6 +2003,7 @@ static ACVP_RESULT acvp_build_kas_ecc_register_cap(ACVP_CTX *ctx,
         json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
 
         revision = acvp_lookup_cipher_revision(cap_entry->cipher);
+        if (revision == NULL) return ACVP_INVALID_ARG;
         json_object_set_string(cap_obj, "revision", revision);
 
         switch (kas_ecc_mode->cap_mode) {
@@ -2312,6 +2330,7 @@ static ACVP_RESULT acvp_build_kas_ffc_register_cap(ACVP_CTX *ctx,
         json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
 
         revision = acvp_lookup_cipher_revision(cap_entry->cipher);
+        if (revision == NULL) return ACVP_INVALID_ARG;
         json_object_set_string(cap_obj, "revision", revision);
 
         switch (kas_ffc_mode->cap_mode) {
