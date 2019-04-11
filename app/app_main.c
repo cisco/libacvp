@@ -75,7 +75,7 @@ static void setup_session_parameters() {
     if (!port) port = DEFAULT_PORT;
 
     path_segment = getenv("ACV_URI_PREFIX");
-    if (!path_segment) path_segment = "";
+    if (!path_segment) path_segment = DEFAULT_URI_PREFIX;
 
     api_context = getenv("ACV_API_CONTEXT");
     if (!api_context) api_context = "";
