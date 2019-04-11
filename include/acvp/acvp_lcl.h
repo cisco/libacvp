@@ -422,10 +422,11 @@
  * END DRBG
  */
 
+#define ACVP_HASH_SHA1_SHA2_MSG_BIT_MAX 65535               /**< 65535 bits */
 #define ACVP_HASH_MSG_BIT_MIN 0                             /**< 0 bits */
-#define ACVP_HASH_MSG_BIT_MAX 65535                         /**< 65535 bits */
-#define ACVP_HASH_MSG_STR_MAX (ACVP_HASH_MSG_BIT_MAX >> 2)  /**< 16384 characters */
-#define ACVP_HASH_MSG_BYTE_MAX (ACVP_HASH_MSG_BIT_MAX >> 3) /**< 8192 bytes */
+#define ACVP_HASH_MSG_BIT_MAX 140000                        /**< 140000 bits */
+#define ACVP_HASH_MSG_STR_MAX (ACVP_HASH_MSG_BIT_MAX >> 2)  /**< 35000 characters */
+#define ACVP_HASH_MSG_BYTE_MAX (ACVP_HASH_MSG_BIT_MAX >> 3) /**< 17500 bytes */
 #define ACVP_HASH_MD_BIT_MAX 512                            /**< 512 bits */
 #define ACVP_HASH_MD_STR_MAX (ACVP_HASH_MD_BIT_MAX >> 2)    /**< 128 characters */
 #define ACVP_HASH_MD_BYTE_MAX (ACVP_HASH_MD_BIT_MAX >> 3)   /**< 64 bytes */

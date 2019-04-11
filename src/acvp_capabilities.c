@@ -1410,7 +1410,7 @@ ACVP_RESULT acvp_cap_hash_set_domain(ACVP_CTX *ctx,
     switch (parm) {
     case ACVP_HASH_MESSAGE_LEN:
         if (min < ACVP_HASH_MSG_BIT_MIN ||
-            max > ACVP_HASH_MSG_BIT_MAX) {
+            max > ACVP_HASH_SHA1_SHA2_MSG_BIT_MAX) {
             ACVP_LOG_ERR("min or max outside of acceptable range");
             return ACVP_INVALID_ARG;
         }
