@@ -39,9 +39,7 @@ extern "C"
  */
 #define DEFAULT_SERVER "127.0.0.1"
 #define DEFAULT_PORT 443
-#define DEFAULT_CA_CHAIN "certs/acvp-private-root-ca.crt.pem"
-#define DEFAULT_CERT "certs/my-client-cert.pem"
-#define DEFAULT_KEY "certs/my-client-key.pem"
+#define DEFAULT_URI_PREFIX "acvp/v1/"
 #define JSON_FILENAME_LENGTH 24
 
 typedef struct app_config {
@@ -73,7 +71,7 @@ typedef struct app_config {
 
 
 int ingest_cli(APP_CONFIG *cfg, int argc, char **argv);
-ACVP_RESULT totp(char **token, int token_max);
+int app_setup_two_factor_auth(ACVP_CTX *ctx);
 
 void app_aes_cleanup(void);
 void app_des_cleanup(void);

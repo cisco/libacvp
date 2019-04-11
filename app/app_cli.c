@@ -97,11 +97,11 @@ static void print_usage(int err) {
     printf("environment variables.  The following variables can be set:\n\n");
     printf("    ACV_SERVER (when not set, defaults to %s)\n", DEFAULT_SERVER);
     printf("    ACV_PORT (when not set, defaults to %d)\n", DEFAULT_PORT);
-    printf("    ACV_URI_PREFIX (when not set, defaults to null)\n");
-    printf("    ACV_CA_FILE (when not set, defaults to %s)\n", DEFAULT_CA_CHAIN);
-    printf("    ACV_CERT_FILE (when not set, defaults to %s)\n", DEFAULT_CERT);
-    printf("    ACV_KEY_FILE (when not set, defaults to %s)\n", DEFAULT_KEY);
-    printf("    ACV_TOTP_SEED (when not set, client will not use Two-factor authentication)\n\n");
+    printf("    ACV_URI_PREFIX (when not set, defaults to %s)\n", DEFAULT_URI_PREFIX);
+    printf("    ACV_TOTP_SEED (when not set, client will not use Two-factor authentication)\n");
+    printf("    ACV_CA_FILE\n");
+    printf("    ACV_CERT_FILE\n");
+    printf("    ACV_KEY_FILE\n\n");
     printf("The CA certificates, cert and key should be PEM encoded. There should be no\n");
     printf("password on the key file.\n");
 }
