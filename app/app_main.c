@@ -1,28 +1,12 @@
-/*****************************************************************************
-* Copyright (c) 2019, Cisco Systems, Inc.
-* All rights reserved.
+/*
+ * Copyright (c) 2019, Cisco Systems, Inc.
+ *
+ * Licensed under the Apache License 2.0 (the "License").  You may not use
+ * this file except in compliance with the License.  You can obtain a copy
+ * in the file LICENSE in the source distribution or at
+ * https://github.com/cisco/libacvp/LICENSE
+ */
 
-* Redistribution and use in source and binary forms, with or without modification,
-* are permitted provided that the following conditions are met:
-*
-* 1. Redistributions of source code must retain the above copyright notice,
-*    this list of conditions and the following disclaimer.
-*
-* 2. Redistributions in binary form must reproduce the above copyright notice,
-*    this list of conditions and the following disclaimer in the documentation
-*    and/or other materials provided with the distribution.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-* DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-* FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-* CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-* OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-* USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*****************************************************************************/
 /*
  * This module is not part of libacvp.  Rather, it's a simple app that
  * demonstrates how to use libacvp. Software that use libacvp
@@ -97,21 +81,16 @@ static void setup_session_parameters() {
     if (!api_context) api_context = "";
 
     ca_chain_file = getenv("ACV_CA_FILE");
-    if (!ca_chain_file) ca_chain_file = DEFAULT_CA_CHAIN;
-
     cert_file = getenv("ACV_CERT_FILE");
-    if (!cert_file) cert_file = DEFAULT_CERT;
-
     key_file = getenv("ACV_KEY_FILE");
-    if (!key_file) key_file = DEFAULT_KEY;
 
     printf("Using the following parameters:\n\n");
     printf("    ACV_SERVER:     %s\n", server);
     printf("    ACV_PORT:       %d\n", port);
     printf("    ACV_URI_PREFIX: %s\n", path_segment);
-    printf("    ACV_CA_FILE:    %s\n", ca_chain_file);
-    printf("    ACV_CERT_FILE:  %s\n", cert_file);
-    printf("    ACV_KEY_FILE:   %s\n\n", key_file);
+    if (ca_chain_file) printf("    ACV_CA_FILE:    %s\n", ca_chain_file);
+    if (cert_file) printf("    ACV_CERT_FILE:  %s\n", cert_file);
+    if (key_file) printf("    ACV_KEY_FILE:   %s\n\n", key_file);
 }
 
 /*
@@ -240,33 +219,35 @@ int main(int argc, char **argv) {
         goto end;
     }
 
-    /*
-     * Next we provide the CA certs to be used by libacvp
-     * to verify the ACVP TLS certificate.
-     */
-    rv = acvp_set_cacerts(ctx, ca_chain_file);
-    if (rv != ACVP_SUCCESS) {
-        printf("Failed to set CA certs\n");
-        goto end;
+    if (ca_chain_file) {
+        /*
+         * Next we provide the CA certs to be used by libacvp
+         * to verify the ACVP TLS certificate.
+         */
+        rv = acvp_set_cacerts(ctx, ca_chain_file);
+        if (rv != ACVP_SUCCESS) {
+            printf("Failed to set CA certs\n");
+            goto end;
+        }
+    }
+
+    if (cert_file && key_file) {
+        /*
+         * Specify the certificate and private key the client should used
+         * for TLS client auth.
+         */
+        rv = acvp_set_certkey(ctx, cert_file, key_file);
+        if (rv != ACVP_SUCCESS) {
+            printf("Failed to set TLS cert/key\n");
+            goto end;
+        }
     }
 
     /*
-     * Specify the certificate and private key the client should used
-     * for TLS client auth.
+     * Setup the Two-factor authentication
+     * This may or may not be turned on...
      */
-    rv = acvp_set_certkey(ctx, cert_file, key_file);
-    if (rv != ACVP_SUCCESS) {
-        printf("Failed to set TLS cert/key\n");
-        goto end;
-    }
-
-    /*
-     * Specify the callback to be used for 2-FA to perform
-     * TOTP calculation
-     */
-    rv = acvp_set_2fa_callback(ctx, &totp);
-    if (rv != ACVP_SUCCESS) {
-        printf("Failed to set Two-factor authentication callback\n");
+    if (app_setup_two_factor_auth(ctx)) {
         goto end;
     }
 

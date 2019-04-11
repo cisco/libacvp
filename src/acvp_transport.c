@@ -1,28 +1,13 @@
-/*****************************************************************************
-* Copyright (c) 2016-2017, Cisco Systems, Inc.
-* All rights reserved.
+/** @file */
+/*
+ * Copyright (c) 2019, Cisco Systems, Inc.
+ *
+ * Licensed under the Apache License 2.0 (the "License").  You may not use
+ * this file except in compliance with the License.  You can obtain a copy
+ * in the file LICENSE in the source distribution or at
+ * https://github.com/cisco/libacvp/LICENSE
+ */
 
-* Redistribution and use in source and binary forms, with or without modification,
-* are permitted provided that the following conditions are met:
-*
-* 1. Redistributions of source code must retain the above copyright notice,
-*    this list of conditions and the following disclaimer.
-*
-* 2. Redistributions in binary form must reproduce the above copyright notice,
-*    this list of conditions and the following disclaimer in the documentation
-*    and/or other materials provided with the distribution.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-* DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-* FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-* CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-* OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-* USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*****************************************************************************/
 #ifdef USE_MURL
 # include <murl/murl.h>
 #else
@@ -162,19 +147,24 @@ static long acvp_curl_http_get(ACVP_CTX *ctx, char *url) {
     curl_easy_setopt(hnd, CURLOPT_URL, url);
     curl_easy_setopt(hnd, CURLOPT_NOPROGRESS, 1L);
     curl_easy_setopt(hnd, CURLOPT_USERAGENT, user_agent_str);
+    curl_easy_setopt(hnd, CURLOPT_TCP_KEEPALIVE, 1L);
     curl_easy_setopt(hnd, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_2);
     if (slist) {
         curl_easy_setopt(hnd, CURLOPT_HTTPHEADER, slist);
     }
-    if (ctx->verify_peer && ctx->cacerts_file) {
+
+    /*
+     * Always verify the server
+     */
+    curl_easy_setopt(hnd, CURLOPT_SSL_VERIFYPEER, 1L);
+    if (ctx->cacerts_file) {
         curl_easy_setopt(hnd, CURLOPT_CAINFO, ctx->cacerts_file);
-        curl_easy_setopt(hnd, CURLOPT_SSL_VERIFYPEER, 1L);
         curl_easy_setopt(hnd, CURLOPT_CERTINFO, 1L);
-    } else {
-        curl_easy_setopt(hnd, CURLOPT_SSL_VERIFYPEER, 0L);
-        ACVP_LOG_WARN("TLS peer verification has not been enabled.\n");
     }
-    curl_easy_setopt(hnd, CURLOPT_TCP_KEEPALIVE, 1L);
+
+    /*
+     * Mutual-auth
+     */
     if (ctx->tls_cert && ctx->tls_key) {
         curl_easy_setopt(hnd, CURLOPT_SSLCERTTYPE, "PEM");
         curl_easy_setopt(hnd, CURLOPT_SSLCERT, ctx->tls_cert);
@@ -261,17 +251,21 @@ static long acvp_curl_http_post(ACVP_CTX *ctx, char *url, char *data, int data_l
     curl_easy_setopt(hnd, CURLOPT_POST, 1L);
     curl_easy_setopt(hnd, CURLOPT_POSTFIELDS, data);
     curl_easy_setopt(hnd, CURLOPT_POSTFIELDSIZE_LARGE, (curl_off_t)data_len);
-    curl_easy_setopt(hnd, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_2);
-    //FIXME: we should always to TLS peer auth
-    if (ctx->verify_peer && ctx->cacerts_file) {
-        curl_easy_setopt(hnd, CURLOPT_CAINFO, ctx->cacerts_file);
-        curl_easy_setopt(hnd, CURLOPT_SSL_VERIFYPEER, 1L);
-        curl_easy_setopt(hnd, CURLOPT_CERTINFO, 1L);
-    } else {
-        curl_easy_setopt(hnd, CURLOPT_SSL_VERIFYPEER, 0L);
-        ACVP_LOG_WARN("TLS peer verification has not been enabled.");
-    }
     curl_easy_setopt(hnd, CURLOPT_TCP_KEEPALIVE, 1L);
+    curl_easy_setopt(hnd, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_2);
+
+    /*
+     * Always verify the server
+     */
+    curl_easy_setopt(hnd, CURLOPT_SSL_VERIFYPEER, 1L);
+    if (ctx->cacerts_file) {
+        curl_easy_setopt(hnd, CURLOPT_CAINFO, ctx->cacerts_file);
+        curl_easy_setopt(hnd, CURLOPT_CERTINFO, 1L);
+    }
+
+    /*
+     * Mutual-auth
+     */
     if (ctx->tls_cert && ctx->tls_key) {
         curl_easy_setopt(hnd, CURLOPT_SSLCERTTYPE, "PEM");
         curl_easy_setopt(hnd, CURLOPT_SSLCERT, ctx->tls_cert);

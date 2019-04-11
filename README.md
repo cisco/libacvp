@@ -9,16 +9,15 @@
         The ACVP specification is a work-in-progress and can be found at
         https://github.com/usnistgov/ACVP
 
+License
+        Libacvp is licensed under the Apache License 2.0, which means that
+        you are free to get and use it for commercial and non-commercial
+        purposes as long as you fulfill its conditions. See the LICENSE
+        file for details.
 
 Recent Changes!
-    
-    The library API has been updated as of **August 2018** to store hex buffers
-    as their equivalent byte arrays. This simplifies the responsibilities of
-    the application layer as most C crypto libraries ingest/output byte
-    arrays by default. From now on, test case properties that show in the ACVP
-    spec as hex strings will be stored as byte arrays, and the library will
-    expect the application to populate result attributes as byte arrays and to
-    fill in the corresponding length attribute. For examples, see app/app_main.c.
+        The client library has been updated to be compatible with the
+        ACVP spec version 1.0, see https://github.com/usnistgov/ACVP
 
 Overview
 
