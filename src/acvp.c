@@ -1170,8 +1170,10 @@ static ACVP_RESULT acvp_build_login(ACVP_CTX *ctx, char **login, int *login_len,
     char *token = calloc(ACVP_TOTP_TOKEN_MAX, sizeof(char));
 
     if (!token) return ACVP_MALLOC_FAIL;
-    if (!login_len) return ACVP_INVALID_ARG;
-
+    if (!login_len) {
+         free(token);
+         return ACVP_INVALID_ARG;
+    }
     /*
      * Start the login array
      */
