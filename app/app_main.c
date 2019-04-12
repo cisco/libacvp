@@ -75,27 +75,22 @@ static void setup_session_parameters() {
     if (!port) port = DEFAULT_PORT;
 
     path_segment = getenv("ACV_URI_PREFIX");
-    if (!path_segment) path_segment = "";
+    if (!path_segment) path_segment = DEFAULT_URI_PREFIX;
 
     api_context = getenv("ACV_API_CONTEXT");
     if (!api_context) api_context = "";
 
     ca_chain_file = getenv("ACV_CA_FILE");
-    if (!ca_chain_file) ca_chain_file = DEFAULT_CA_CHAIN;
-
     cert_file = getenv("ACV_CERT_FILE");
-    if (!cert_file) cert_file = DEFAULT_CERT;
-
     key_file = getenv("ACV_KEY_FILE");
-    if (!key_file) key_file = DEFAULT_KEY;
 
     printf("Using the following parameters:\n\n");
     printf("    ACV_SERVER:     %s\n", server);
     printf("    ACV_PORT:       %d\n", port);
     printf("    ACV_URI_PREFIX: %s\n", path_segment);
-    printf("    ACV_CA_FILE:    %s\n", ca_chain_file);
-    printf("    ACV_CERT_FILE:  %s\n", cert_file);
-    printf("    ACV_KEY_FILE:   %s\n\n", key_file);
+    if (ca_chain_file) printf("    ACV_CA_FILE:    %s\n", ca_chain_file);
+    if (cert_file) printf("    ACV_CERT_FILE:  %s\n", cert_file);
+    if (key_file) printf("    ACV_KEY_FILE:   %s\n\n", key_file);
 }
 
 /*
@@ -224,33 +219,35 @@ int main(int argc, char **argv) {
         goto end;
     }
 
-    /*
-     * Next we provide the CA certs to be used by libacvp
-     * to verify the ACVP TLS certificate.
-     */
-    rv = acvp_set_cacerts(ctx, ca_chain_file);
-    if (rv != ACVP_SUCCESS) {
-        printf("Failed to set CA certs\n");
-        goto end;
+    if (ca_chain_file) {
+        /*
+         * Next we provide the CA certs to be used by libacvp
+         * to verify the ACVP TLS certificate.
+         */
+        rv = acvp_set_cacerts(ctx, ca_chain_file);
+        if (rv != ACVP_SUCCESS) {
+            printf("Failed to set CA certs\n");
+            goto end;
+        }
+    }
+
+    if (cert_file && key_file) {
+        /*
+         * Specify the certificate and private key the client should used
+         * for TLS client auth.
+         */
+        rv = acvp_set_certkey(ctx, cert_file, key_file);
+        if (rv != ACVP_SUCCESS) {
+            printf("Failed to set TLS cert/key\n");
+            goto end;
+        }
     }
 
     /*
-     * Specify the certificate and private key the client should used
-     * for TLS client auth.
+     * Setup the Two-factor authentication
+     * This may or may not be turned on...
      */
-    rv = acvp_set_certkey(ctx, cert_file, key_file);
-    if (rv != ACVP_SUCCESS) {
-        printf("Failed to set TLS cert/key\n");
-        goto end;
-    }
-
-    /*
-     * Specify the callback to be used for 2-FA to perform
-     * TOTP calculation
-     */
-    rv = acvp_set_2fa_callback(ctx, &totp);
-    if (rv != ACVP_SUCCESS) {
-        printf("Failed to set Two-factor authentication callback\n");
+    if (app_setup_two_factor_auth(ctx)) {
         goto end;
     }
 

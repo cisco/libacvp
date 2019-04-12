@@ -140,27 +140,27 @@ end:
     return len;
 }
 
-ACVP_RESULT totp(char **token, int token_max) {
+static ACVP_RESULT totp(char **token, int token_max) {
     char hash[MAX_LEN] = {0};
     int os, bin, otp;
     int md_len;
     char format[5];
     time_t t;
     unsigned char token_buff[T_LEN + 1] = {0};
-    char *new_seed = calloc(ACVP_TOTP_TOKEN_MAX, sizeof(char));
+    char *new_seed = NULL;
     char *seed = NULL;
     int seed_len = 0;
 
+    seed = getenv("ACV_TOTP_SEED");
+    if (!seed) {
+        /* Not required to use 2-factor auth */
+        return ACVP_SUCCESS;
+    }
+
+    new_seed = calloc(ACVP_TOTP_TOKEN_MAX, sizeof(char));
     if (!new_seed) {
         printf("Failed to malloc new_seed\n");
         return ACVP_MALLOC_FAIL;
-    }
-
-    seed = getenv("ACV_TOTP_SEED");
-    if (!seed) {
-        printf("Failed to get TOTP seed\n");
-        free(new_seed);
-        return ACVP_TOTP_MISSING_SEED;
     }
 
     t = time(NULL);
@@ -208,5 +208,23 @@ ACVP_RESULT totp(char **token, int token_max) {
     memcpy_s((char *)*token, token_max, token_buff, ACVP_TOTP_LENGTH);
     free(new_seed);
     return ACVP_SUCCESS;
+}
+
+int app_setup_two_factor_auth(ACVP_CTX *ctx) {
+    ACVP_RESULT rv = 0;
+
+    if (getenv("ACV_TOTP_SEED")) {
+        /*
+         * Specify the callback to be used for 2-FA to perform
+         * TOTP calculation
+         */
+        rv = acvp_set_2fa_callback(ctx, &totp);
+        if (rv != ACVP_SUCCESS) {
+            printf("Failed to set Two-factor authentication callback\n");
+            return 1;
+        }
+    }
+
+    return 0;
 }
 
