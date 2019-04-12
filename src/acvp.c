@@ -1384,7 +1384,10 @@ static ACVP_RESULT acvp_append_vsid_url(ACVP_CTX *ctx, char *vsid_url) {
         return ACVP_MALLOC_FAIL;
     }
     vs_entry->string = calloc(ACVP_ATTR_URL_MAX + 1, sizeof(char));
-    if (!vs_entry->string) return ACVP_MALLOC_FAIL;
+    if (!vs_entry->string) {
+        free(vs_entry);
+        return ACVP_MALLOC_FAIL;
+    }
     strcpy_s(vs_entry->string, ACVP_ATTR_URL_MAX + 1, vsid_url);
 
     if (!ctx->vsid_url_list) {

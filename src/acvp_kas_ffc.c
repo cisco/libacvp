@@ -449,7 +449,7 @@ ACVP_RESULT acvp_kas_ffc_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     ACVP_TEST_CASE tc;
     ACVP_KAS_FFC_TC stc;
     ACVP_RESULT rv = ACVP_SUCCESS;
-    const char *alg_str = json_object_get_string(obj, "algorithm");
+    const char *alg_str = NULL;
     char *json_result = NULL;
     const char *mode_str = NULL;
 
