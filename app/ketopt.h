@@ -6,11 +6,14 @@
 #ifndef KETOPT_H
 #define KETOPT_H
 
-#include <string.h> /* for strchr() and strncmp() */
+#include <safe_str_lib.h> /* for strstr_s() and strncmp_s() */
 
 #define ko_no_argument       0
 #define ko_required_argument 1
 #define ko_optional_argument 2
+
+#define OPTION_NAME_MAX 16
+#define OSTR_MAX 2 /* Change according to the ostr parameter in app_cli.c */
 
 typedef struct {
 	int ind;   /* equivalent to optind */
@@ -81,11 +84,14 @@ static int ketopt(ketopt_t *s, int argc, char *argv[], int permute, const char *
 			int k, n_exact = 0, n_partial = 0;
 			const ko_longopt_t *o = 0, *o_exact = 0, *o_partial = 0;
 			for (j = 2; argv[s->i][j] != '\0' && argv[s->i][j] != '='; ++j) {} /* find the end of the option name */
-			for (k = 0; longopts[k].name != 0; ++k)
-				if (strncmp(&argv[s->i][2], longopts[k].name, j - 2) == 0) {
+			for (k = 0; longopts[k].name != 0; ++k) {
+                int diff = 1;
+				strncmp_s(&argv[s->i][2], OPTION_NAME_MAX, longopts[k].name, j - 2, &diff);
+                if (!diff) {
 					if (longopts[k].name[j - 2] == 0) ++n_exact, o_exact = &longopts[k];
 					else ++n_partial, o_partial = &longopts[k];
 				}
+            }
 			if (n_exact > 1 || (n_exact == 0 && n_partial > 1)) return '?';
 			o = n_exact == 1? o_exact : n_partial == 1? o_partial : 0;
 			if (o) {
@@ -98,10 +104,13 @@ static int ketopt(ketopt_t *s, int argc, char *argv[], int permute, const char *
 			}
 		}
 	} else { /* a short option */
-		const char *p;
+		char *p = NULL;
+        char short_opt[2];
 		if (s->pos == 0) s->pos = 1;
 		opt = s->opt = argv[s->i][s->pos++];
-		p = strchr((char*)ostr, opt);
+        short_opt[0] = opt;
+        short_opt[1] = '\0';
+        strstr_s((char *)ostr, OSTR_MAX, short_opt, 1, &p);
 		if (p == 0) {
 			opt = '?'; /* unknown option */
 		} else if (p[1] == ':') {

@@ -140,7 +140,15 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
     /* Set the default configuration values */
     default_config(cfg);
 
-    while ((c = ketopt(&opt, argc, argv, 1, "xy:", longopts)) >= 0) {
+    while ((c = ketopt(&opt, argc, argv, 1, "vh", longopts)) >= 0) {
+        if (c == 'v') {
+            printf("\nACVP library version(protocol version): %s(%s)\n", acvp_version(), acvp_protocol_version());
+            return 1;
+        }
+        if (c == 'h') {
+            print_usage(0);
+            return 1;
+        }
         if (c == 301) {
             printf("\nACVP library version(protocol version): %s(%s)\n", acvp_version(), acvp_protocol_version());
             return 1;
