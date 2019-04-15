@@ -2419,16 +2419,6 @@ ACVP_RESULT acvp_create_test_session(ACVP_CTX **ctx,
  */
 ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx);
 
-/*! @brief acvp_enable_debug_request() sets a flag in the acvp ctx that
-    asks the server to send debug messages
-
-    @param ctx Pointer to ACVP_CTX that was previously created by
-        calling acvp_create_test_session.
-
-    @return ACVP_RESULT
- */
-ACVP_RESULT acvp_enable_debug_request(ACVP_CTX *ctx);
-
 /*! @brief acvp_set_server() specifies the ACVP server and TCP port
        number to use when contacting the server.
 

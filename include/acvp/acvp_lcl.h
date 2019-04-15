@@ -1104,7 +1104,6 @@ typedef struct acvp_dependency_list_t {
 struct acvp_ctx_t {
     /* Global config values for the session */
     ACVP_LOG_LVL debug;
-    int debug_request;
     char *server_name;
     char *path_segment;
     char *api_context;
