@@ -700,16 +700,31 @@ static void log_network_status(ACVP_CTX *ctx,
                         curl_code, url, ctx->curl_buf);
         break;
     case ACVP_NET_GET_VS:
-        ACVP_LOG_STATUS("GET Vector Set...\n\tStatus: %d\n\tUrl: %s\n\tResp:\n%s\n",
-                        curl_code, url, ctx->curl_buf);
+        if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
+            printf("GET Vector Set...\n\tStatus: %d\n\tUrl: %s\n\tResp:\n%s\n",
+                   curl_code, url, ctx->curl_buf);
+        } else {
+            ACVP_LOG_STATUS("GET Vector Set...\n\tStatus: %d\n\tUrl: %s\n\tResp:\n%s\n",
+                            curl_code, url, ctx->curl_buf);
+        }
         break;
     case ACVP_NET_GET_VS_RESULT:
-        ACVP_LOG_STATUS("GET Vector Set Result...\n\tStatus: %d\n\tUrl: %s\n\tResp:\n%s\n",
-                        curl_code, url, ctx->curl_buf);
+        if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
+            printf("GET Vector Set Result...\n\tStatus: %d\n\tUrl: %s\n\tResp:\n%s\n",
+                   curl_code, url, ctx->curl_buf);
+        } else {
+            ACVP_LOG_STATUS("GET Vector Set Result...\n\tStatus: %d\n\tUrl: %s\n\tResp:\n%s\n",
+                            curl_code, url, ctx->curl_buf);
+        }
         break;
     case ACVP_NET_GET_VS_SAMPLE:
-        ACVP_LOG_STATUS("GET Vector Set Sample...\n\tStatus: %d\n\tUrl: %s\n\tResp:\n%s\n",
-                        curl_code, url, ctx->curl_buf);
+        if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
+            printf("GET Vector Set Sample...\n\tStatus: %d\n\tUrl: %s\n\tResp:\n%s\n",
+                   curl_code, url, ctx->curl_buf);
+        } else {
+            ACVP_LOG_STATUS("GET Vector Set Sample...\n\tStatus: %d\n\tUrl: %s\n\tResp:\n%s\n",
+                            curl_code, url, ctx->curl_buf);
+        }
         break;
     case ACVP_NET_POST:
         ACVP_LOG_STATUS("POST...\n\tStatus: %d\n\tUrl: %s\n\tResp: %s\n",
