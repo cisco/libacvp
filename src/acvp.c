@@ -998,18 +998,6 @@ ACVP_RESULT acvp_add_oe_dependency(ACVP_CTX *ctx,
 }
 
 /*
- * This function is used to allow "debugRequest" in the registration
- */
-ACVP_RESULT acvp_enable_debug_request(ACVP_CTX *ctx) {
-    if (!ctx) {
-        return ACVP_NO_CTX;
-    }
-    ctx->debug_request = 1;
-
-    return ACVP_SUCCESS;
-}
-
-/*
  * This function is used by the application to specify the
  * ACVP server address and TCP port#.
  */
