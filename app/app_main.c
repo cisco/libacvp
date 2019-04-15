@@ -147,14 +147,6 @@ int main(int argc, char **argv) {
         goto end;
     }
 
-    if (cfg.dev) {
-        rv = acvp_enable_debug_request(ctx);
-        if (rv != ACVP_SUCCESS) {
-            printf("Failed to enable debug request: %s\n", acvp_lookup_error_string(rv));
-            goto end;
-        }
-    }
-
     /*
      * Next we specify the ACVP server address
      */

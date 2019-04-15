@@ -28,7 +28,6 @@ extern "C"
 typedef struct app_config {
     ACVP_LOG_LVL level;
     int sample;
-    int dev;
     int json;
     int kat;
     char json_file[JSON_FILENAME_LENGTH + 1];

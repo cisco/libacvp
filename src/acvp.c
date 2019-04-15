@@ -1004,18 +1004,6 @@ ACVP_RESULT acvp_add_oe_dependency(ACVP_CTX *ctx,
 }
 
 /*
- * This function is used to allow "debugRequest" in the registration
- */
-ACVP_RESULT acvp_enable_debug_request(ACVP_CTX *ctx) {
-    if (!ctx) {
-        return ACVP_NO_CTX;
-    }
-    ctx->debug_request = 1;
-
-    return ACVP_SUCCESS;
-}
-
-/*
  * This function is used by the application to specify the
  * ACVP server address and TCP port#.
  */
@@ -1389,7 +1377,10 @@ static ACVP_RESULT acvp_append_vsid_url(ACVP_CTX *ctx, char *vsid_url) {
         return ACVP_MALLOC_FAIL;
     }
     vs_entry->string = calloc(ACVP_ATTR_URL_MAX + 1, sizeof(char));
-    if (!vs_entry->string) return ACVP_MALLOC_FAIL;
+    if (!vs_entry->string) {
+        free(vs_entry);
+        return ACVP_MALLOC_FAIL;
+    }
     strcpy_s(vs_entry->string, ACVP_ATTR_URL_MAX + 1, vsid_url);
 
     if (!ctx->vsid_url_list) {
