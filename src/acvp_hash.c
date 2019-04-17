@@ -316,7 +316,7 @@ static ACVP_RESULT acvp_hash_shake_mct(ACVP_CTX *ctx,
     unsigned int leftmost_bytes = 0;
     unsigned int min_xof_bytes = (min_xof_bits / 8);
     unsigned int max_xof_bytes = (max_xof_bits / 8);
-    unsigned int range = 0;
+    unsigned int range = max_xof_bytes - min_xof_bytes + 1;
 
     /*
      * Initial Outputlen = (floor(maxoutlen/8) )*8
@@ -324,8 +324,6 @@ static ACVP_RESULT acvp_hash_shake_mct(ACVP_CTX *ctx,
     xof_len = (max_xof_bits / 8) * 8;
     /* Convert from bits to bytes */
     stc->xof_len = (xof_len + 7) / 8;
-
-    range = max_xof_bytes - min_xof_bytes + 1;
 
     if (cap->cipher == ACVP_HASH_SHAKE_128) leftmost_bytes = 16;
     else if (cap->cipher == ACVP_HASH_SHAKE_256) leftmost_bytes = 32;
@@ -373,7 +371,7 @@ static ACVP_RESULT acvp_hash_shake_mct(ACVP_CTX *ctx,
             }
 
             /* Now clear the md buffer */
-            memzero_s(stc->md, ACVP_HASH_MD_BYTE_MAX);
+            memzero_s(stc->md, ACVP_HASH_XOF_MD_BYTE_MAX);
 
             /* Process the current SHA test vector... */
             rv = (cap->crypto_handler)(tc);
