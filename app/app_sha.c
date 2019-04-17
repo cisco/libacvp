@@ -81,7 +81,7 @@ int app_sha_handler(ACVP_TEST_CASE *test_case) {
     }
     md_ctx = EVP_MD_CTX_create();
 
-    if (tc->test_type == ACVP_HASH_TEST_TYPE_MCT && !sha3) {
+    if (tc->test_type == ACVP_HASH_TEST_TYPE_MCT && !sha3 && !shake) {
         /* If Monte Carlo we need to be able to init and then update
          * one thousand times before we complete each iteration.
          * This style doesn't apply to sha3 MCT.
@@ -126,7 +126,8 @@ int app_sha_handler(ACVP_TEST_CASE *test_case) {
         }
 
 #if OPENSSL_VERSION_NUMBER >= 0x10101010L /* OpenSSL 1.1.1 or greater */
-        if (tc->test_type == ACVP_HASH_TEST_TYPE_VOT) {
+        if (tc->test_type == ACVP_HASH_TEST_TYPE_VOT ||
+            (tc->test_type == ACVP_HASH_TEST_TYPE_MCT && shake)) {
             /*
              * Use the XOF oriented function.
              * Skip past the other "EVP_DigestFinal".
