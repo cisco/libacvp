@@ -1161,6 +1161,8 @@ struct acvp_ctx_t {
     /* test session data */
     ACVP_VS_LIST *vs_list;
     char *jwt_token; /* access_token provided by server for authenticating REST calls */
+    char *tmp_jwt; /* access_token provided by server for authenticating a single REST call */
+    int use_tmp_jwt; /* 1 if the tmp_jwt should be used */
 
     /* crypto module capabilities list */
     ACVP_CAPS_LIST *caps_list;
@@ -1178,6 +1180,10 @@ struct acvp_ctx_t {
 
     char *curl_buf;       /**< Data buffer for inbound Curl messages */
     int curl_read_ctr;    /**< Total number of bytes written to the curl_buf */
+    int post_size_constraint;  /**< The number of bytes that the body of an HTTP POST may contain
+                                    without requiring the use of the /large endpoint. If the POST body
+                                    is larger than this value, then use of the /large endpoint is necessary */
+
 };
 
 ACVP_RESULT acvp_send_test_session_registration(ACVP_CTX *ctx, char *reg, int len);
@@ -1196,6 +1202,8 @@ ACVP_RESULT acvp_send_dep_registration(ACVP_CTX *ctx, char *reg);
 ACVP_RESULT acvp_send_login(ACVP_CTX *ctx, char *login, int len);
 
 ACVP_RESULT acvp_transport_get(ACVP_CTX *ctx, const char *url);
+
+ACVP_RESULT acvp_transport_post(ACVP_CTX *ctx, const char *uri, char *data, int data_len);
 
 ACVP_RESULT acvp_retrieve_vector_set(ACVP_CTX *ctx, char *vsid_url);
 
@@ -1286,6 +1294,11 @@ ACVP_RESULT acvp_build_test_session(ACVP_CTX *ctx, char **reg, int *out_len);
          Due to SafeC */
 ACVP_RESULT acvp_build_dependency(ACVP_DEPENDENCY_LIST *dep, char **reg);
 #endif
+
+ACVP_RESULT acvp_notify_large(ACVP_CTX *ctx,
+                              const char *url,
+                              char *large_url,
+                              unsigned int data_len);
 
 /*
  * ACVP utility functions used internally
