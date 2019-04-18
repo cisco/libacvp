@@ -1264,6 +1264,12 @@ ACVP_RESULT acvp_cap_hash_enable(ACVP_CTX *ctx,
     case ACVP_HASH_SHA256:
     case ACVP_HASH_SHA384:
     case ACVP_HASH_SHA512:
+    case ACVP_HASH_SHA3_224:
+    case ACVP_HASH_SHA3_256:
+    case ACVP_HASH_SHA3_384:
+    case ACVP_HASH_SHA3_512:
+    case ACVP_HASH_SHAKE_128:
+    case ACVP_HASH_SHAKE_256:
         break;
     default:
         ACVP_LOG_ERR("Invalid parameter 'cipher'");
@@ -1279,6 +1285,85 @@ ACVP_RESULT acvp_cap_hash_enable(ACVP_CTX *ctx,
     }
 
     return result;
+}
+
+static ACVP_RESULT acvp_validate_hash_parm_value(ACVP_HASH_PARM parm, int value) {
+    ACVP_RESULT retval = ACVP_INVALID_ARG;
+
+    switch (parm) {
+    case ACVP_HASH_IN_BIT:
+    case ACVP_HASH_IN_EMPTY:
+    case ACVP_HASH_OUT_BIT:
+        retval = is_valid_tf_param(value);
+        break;
+    default:
+        break;
+    }
+
+    return retval;
+}
+
+ACVP_RESULT acvp_cap_hash_set_parm(ACVP_CTX *ctx,
+                                   ACVP_CIPHER cipher,
+                                   ACVP_HASH_PARM param,
+                                   int value) {
+    ACVP_CAPS_LIST *cap;
+    ACVP_HASH_CAP *hash_cap;
+
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+
+    switch (cipher) {
+    case ACVP_HASH_SHA3_224:
+    case ACVP_HASH_SHA3_256:
+    case ACVP_HASH_SHA3_384:
+    case ACVP_HASH_SHA3_512:
+    case ACVP_HASH_SHAKE_128:
+    case ACVP_HASH_SHAKE_256:
+        break;
+    default:
+        return ACVP_INVALID_ARG;
+    }
+
+    cap = acvp_locate_cap_entry(ctx, cipher);
+    if (!cap) {
+        return ACVP_NO_CAP;
+    }
+
+    hash_cap = cap->cap.hash_cap;
+    if (!hash_cap) {
+        return ACVP_NO_CAP;
+    }
+
+    if (acvp_validate_hash_parm_value(param, value) != ACVP_SUCCESS) {
+        return ACVP_INVALID_ARG;
+    }
+
+    switch (param) {
+    case ACVP_HASH_IN_BIT:
+        hash_cap->in_bit = value;
+        break;
+    case ACVP_HASH_IN_EMPTY:
+        hash_cap->in_empty = value;
+        break;
+    case ACVP_HASH_OUT_BIT:
+        switch (cipher) {
+        case ACVP_HASH_SHAKE_128:
+        case ACVP_HASH_SHAKE_256:
+            break;
+        default:
+            ACVP_LOG_ERR("parm 'ACVP_HASH_OUT_BIT' only allowed for ACVP_HASH_SHAKE_* ");
+            return ACVP_INVALID_ARG;
+        }
+
+        hash_cap->out_bit = value;
+        break;
+    default:
+        return ACVP_INVALID_ARG;
+    }
+
+    return ACVP_SUCCESS;
 }
 
 /*
@@ -1304,6 +1389,8 @@ ACVP_RESULT acvp_cap_hash_set_domain(ACVP_CTX *ctx,
     case ACVP_HASH_SHA256:
     case ACVP_HASH_SHA384:
     case ACVP_HASH_SHA512:
+    case ACVP_HASH_SHAKE_128:
+    case ACVP_HASH_SHAKE_256:
         break;
     default:
         return ACVP_INVALID_ARG;
@@ -1311,6 +1398,7 @@ ACVP_RESULT acvp_cap_hash_set_domain(ACVP_CTX *ctx,
 
     cap = acvp_locate_cap_entry(ctx, cipher);
     if (!cap) {
+        ACVP_LOG_ERR("Cap entry not found.");
         return ACVP_NO_CAP;
     }
 
@@ -1322,13 +1410,32 @@ ACVP_RESULT acvp_cap_hash_set_domain(ACVP_CTX *ctx,
     switch (parm) {
     case ACVP_HASH_MESSAGE_LEN:
         if (min < ACVP_HASH_MSG_BIT_MIN ||
-            max > ACVP_HASH_MSG_BIT_MAX) {
+            max > ACVP_HASH_SHA1_SHA2_MSG_BIT_MAX) {
             ACVP_LOG_ERR("min or max outside of acceptable range");
             return ACVP_INVALID_ARG;
         }
         domain = &hash_cap->msg_length;
         break;
+    case ACVP_HASH_OUT_LENGTH:
+        if (cipher != ACVP_HASH_SHAKE_128 &&
+            cipher != ACVP_HASH_SHAKE_256) {
+            ACVP_LOG_ERR("Only SHAKE_128 or SHAKE_256 allowed for ACVP_HASH_OUT_LENGTH");
+            return ACVP_INVALID_ARG;
+        }
+        if (min < ACVP_HASH_XOF_MD_BIT_MIN ||
+            max > ACVP_HASH_XOF_MD_BIT_MAX) {
+            ACVP_LOG_ERR("'ACVP_HASH_OUT_LENGTH' min or max outside of acceptable range");
+            return ACVP_INVALID_ARG;
+        }
+        if (increment + min > ACVP_HASH_XOF_MD_BIT_MAX) {
+            ACVP_LOG_ERR("'ACVP_HASH_OUT_LENGTH' increment(%d) + min(%d) > max(%d)",
+                         increment, min, ACVP_HASH_XOF_MD_BIT_MAX);
+            return ACVP_INVALID_ARG;
+        }
+        domain = &hash_cap->out_len;
+        break;
     default:
+        ACVP_LOG_ERR("Invalid 'parm'");
         return ACVP_INVALID_ARG;
     }
 

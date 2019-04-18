@@ -118,6 +118,12 @@
 #define ACVP_REV_HASH_SHA256         ACVP_REVISION_LATEST
 #define ACVP_REV_HASH_SHA384         ACVP_REVISION_LATEST
 #define ACVP_REV_HASH_SHA512         ACVP_REVISION_LATEST
+#define ACVP_REV_HASH_SHA3_224       ACVP_REVISION_LATEST
+#define ACVP_REV_HASH_SHA3_256       ACVP_REVISION_LATEST
+#define ACVP_REV_HASH_SHA3_384       ACVP_REVISION_LATEST
+#define ACVP_REV_HASH_SHA3_512       ACVP_REVISION_LATEST
+#define ACVP_REV_HASH_SHAKE_128      ACVP_REVISION_LATEST
+#define ACVP_REV_HASH_SHAKE_256      ACVP_REVISION_LATEST
 
 /* DRBG */
 #define ACVP_REV_HASHDRBG            ACVP_REVISION_LATEST
@@ -207,6 +213,12 @@
 #define ACVP_ALG_SHA256              "SHA2-256"
 #define ACVP_ALG_SHA384              "SHA2-384"
 #define ACVP_ALG_SHA512              "SHA2-512"
+#define ACVP_ALG_SHA3_224            "SHA3-224"
+#define ACVP_ALG_SHA3_256            "SHA3-256"
+#define ACVP_ALG_SHA3_384            "SHA3-384"
+#define ACVP_ALG_SHA3_512            "SHA3-512"
+#define ACVP_ALG_SHAKE_128           "SHAKE-128"
+#define ACVP_ALG_SHAKE_256           "SHAKE-256"
 #define ACVP_ALG_HASHDRBG            "hashDRBG"
 #define ACVP_ALG_HMACDRBG            "hmacDRBG"
 #define ACVP_ALG_CTRDRBG             "ctrDRBG"
@@ -410,13 +422,19 @@
  * END DRBG
  */
 
+#define ACVP_HASH_SHA1_SHA2_MSG_BIT_MAX 65535               /**< 65535 bits */
 #define ACVP_HASH_MSG_BIT_MIN 0                             /**< 0 bits */
-#define ACVP_HASH_MSG_BIT_MAX 65535                         /**< 65535 bits */
-#define ACVP_HASH_MSG_STR_MAX (ACVP_HASH_MSG_BIT_MAX >> 2)  /**< 16384 characters */
-#define ACVP_HASH_MSG_BYTE_MAX (ACVP_HASH_MSG_BIT_MAX >> 3) /**< 8192 bytes */
+#define ACVP_HASH_MSG_BIT_MAX 140000                        /**< 140000 bits */
+#define ACVP_HASH_MSG_STR_MAX (ACVP_HASH_MSG_BIT_MAX >> 2)  /**< 35000 characters */
+#define ACVP_HASH_MSG_BYTE_MAX (ACVP_HASH_MSG_BIT_MAX >> 3) /**< 17500 bytes */
 #define ACVP_HASH_MD_BIT_MAX 512                            /**< 512 bits */
 #define ACVP_HASH_MD_STR_MAX (ACVP_HASH_MD_BIT_MAX >> 2)    /**< 128 characters */
 #define ACVP_HASH_MD_BYTE_MAX (ACVP_HASH_MD_BIT_MAX >> 3)   /**< 64 bytes */
+
+#define ACVP_HASH_XOF_MD_BIT_MIN 16 /**< XOF (extendable output format) outLength minimum (in bits) */
+#define ACVP_HASH_XOF_MD_BIT_MAX 65536 /**< XOF (extendable output format) outLength maximum (in bits) */
+#define ACVP_HASH_XOF_MD_STR_MAX (ACVP_HASH_XOF_MD_BIT_MAX >> 2) /**< 16,384 characters */
+#define ACVP_HASH_XOF_MD_BYTE_MAX (ACVP_HASH_XOF_MD_BIT_MAX >> 3) /**< 8,192 bytes */
 
 #define ACVP_HASH_MCT_INNER     1000
 #define ACVP_HASH_MCT_OUTER     100
@@ -790,6 +808,12 @@ typedef struct acvp_sym_cipher_capability {
 } ACVP_SYM_CIPHER_CAP;
 
 typedef struct acvp_hash_capability {
+    int in_bit;   /* defaults to false */
+    int in_empty; /* defaults to false */
+    int out_bit; /**< 1 for true, 0 for false
+                      Defaults to false.
+                      Only for ACVP_HASH_SHAKE_* */
+    ACVP_JSON_DOMAIN_OBJ out_len; /**< Required for ACVP_HASH_SHAKE_* */
     ACVP_JSON_DOMAIN_OBJ msg_length;
 } ACVP_HASH_CAP;
 
@@ -1137,6 +1161,8 @@ struct acvp_ctx_t {
     /* test session data */
     ACVP_VS_LIST *vs_list;
     char *jwt_token; /* access_token provided by server for authenticating REST calls */
+    char *tmp_jwt; /* access_token provided by server for authenticating a single REST call */
+    int use_tmp_jwt; /* 1 if the tmp_jwt should be used */
 
     /* crypto module capabilities list */
     ACVP_CAPS_LIST *caps_list;
@@ -1154,6 +1180,10 @@ struct acvp_ctx_t {
 
     char *curl_buf;       /**< Data buffer for inbound Curl messages */
     int curl_read_ctr;    /**< Total number of bytes written to the curl_buf */
+    int post_size_constraint;  /**< The number of bytes that the body of an HTTP POST may contain
+                                    without requiring the use of the /large endpoint. If the POST body
+                                    is larger than this value, then use of the /large endpoint is necessary */
+
 };
 
 ACVP_RESULT acvp_send_test_session_registration(ACVP_CTX *ctx, char *reg, int len);
@@ -1172,6 +1202,8 @@ ACVP_RESULT acvp_send_dep_registration(ACVP_CTX *ctx, char *reg);
 ACVP_RESULT acvp_send_login(ACVP_CTX *ctx, char *login, int len);
 
 ACVP_RESULT acvp_transport_get(ACVP_CTX *ctx, const char *url);
+
+ACVP_RESULT acvp_transport_post(ACVP_CTX *ctx, const char *uri, char *data, int data_len);
 
 ACVP_RESULT acvp_retrieve_vector_set(ACVP_CTX *ctx, char *vsid_url);
 
@@ -1262,6 +1294,11 @@ ACVP_RESULT acvp_build_test_session(ACVP_CTX *ctx, char **reg, int *out_len);
          Due to SafeC */
 ACVP_RESULT acvp_build_dependency(ACVP_DEPENDENCY_LIST *dep, char **reg);
 #endif
+
+ACVP_RESULT acvp_notify_large(ACVP_CTX *ctx,
+                              const char *url,
+                              char *large_url,
+                              unsigned int data_len);
 
 /*
  * ACVP utility functions used internally

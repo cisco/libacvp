@@ -96,6 +96,12 @@ ACVP_ALG_HANDLER alg_tbl[ACVP_ALG_MAX] = {
     { ACVP_HASH_SHA256,       &acvp_hash_kat_handler,         ACVP_ALG_SHA256,            NULL, ACVP_REV_HASH_SHA256},
     { ACVP_HASH_SHA384,       &acvp_hash_kat_handler,         ACVP_ALG_SHA384,            NULL, ACVP_REV_HASH_SHA384},
     { ACVP_HASH_SHA512,       &acvp_hash_kat_handler,         ACVP_ALG_SHA512,            NULL, ACVP_REV_HASH_SHA512},
+    { ACVP_HASH_SHA3_224,     &acvp_hash_kat_handler,         ACVP_ALG_SHA3_224,          NULL, ACVP_REV_HASH_SHA3_224},
+    { ACVP_HASH_SHA3_256,     &acvp_hash_kat_handler,         ACVP_ALG_SHA3_256,          NULL, ACVP_REV_HASH_SHA3_256},
+    { ACVP_HASH_SHA3_384,     &acvp_hash_kat_handler,         ACVP_ALG_SHA3_384,          NULL, ACVP_REV_HASH_SHA3_384},
+    { ACVP_HASH_SHA3_512,     &acvp_hash_kat_handler,         ACVP_ALG_SHA3_512,          NULL, ACVP_REV_HASH_SHA3_512},
+    { ACVP_HASH_SHAKE_128,    &acvp_hash_kat_handler,         ACVP_ALG_SHAKE_128,         NULL, ACVP_REV_HASH_SHAKE_128},
+    { ACVP_HASH_SHAKE_256,    &acvp_hash_kat_handler,         ACVP_ALG_SHAKE_256,         NULL, ACVP_REV_HASH_SHAKE_256},
     { ACVP_HASHDRBG,          &acvp_drbg_kat_handler,         ACVP_ALG_HASHDRBG,          NULL, ACVP_REV_HASHDRBG},
     { ACVP_HMACDRBG,          &acvp_drbg_kat_handler,         ACVP_ALG_HMACDRBG,          NULL, ACVP_REV_HMACDRBG},
     { ACVP_CTRDRBG,           &acvp_drbg_kat_handler,         ACVP_ALG_CTRDRBG,           NULL, ACVP_REV_CTRDRBG},
@@ -735,6 +741,7 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx) {
             }
         }
         if (ctx->jwt_token) { free(ctx->jwt_token); }
+        if (ctx->tmp_jwt) { free(ctx->tmp_jwt); }
         free(ctx);
     } else {
         ACVP_LOG_STATUS("No ctx to free");
@@ -1436,6 +1443,7 @@ static ACVP_RESULT acvp_parse_login(ACVP_CTX *ctx) {
     JSON_Object *obj = NULL;
     char *json_buf = ctx->curl_buf;
     const char *jwt;
+    int large_required = 0;
     ACVP_RESULT rv = ACVP_SUCCESS;
 
     /*
@@ -1448,6 +1456,13 @@ static ACVP_RESULT acvp_parse_login(ACVP_CTX *ctx) {
     }
 
     obj = acvp_get_obj_from_rsp(val);
+
+    large_required = json_object_get_boolean(obj, "largeEndpointRequired");
+
+    if (large_required) {
+        /* Grab the large submission sizeConstraint */
+        ctx->post_size_constraint = (unsigned int)json_object_get_number(obj, "sizeConstraint");
+    }
 
     /*
      * Get the JWT assigned to this session by the server.  This will need
@@ -1473,6 +1488,105 @@ static ACVP_RESULT acvp_parse_login(ACVP_CTX *ctx) {
     }
 end:
     json_value_free(val);
+    return rv;
+}
+
+ACVP_RESULT acvp_notify_large(ACVP_CTX *ctx,
+                              const char *url,
+                              char *large_url,
+                              unsigned int data_len) {
+    ACVP_RESULT rv = ACVP_SUCCESS;
+    JSON_Value *arr_val = NULL, *val = NULL,
+               *ver_val = NULL, *server_val = NULL;
+    JSON_Object *obj = NULL, *ver_obj = NULL, *server_obj = NULL;
+    JSON_Array *arr = NULL;
+    char *substr = NULL;
+    char snipped_url[ACVP_ATTR_URL_MAX + 1] = {0} ;
+    char *large_notify = NULL;
+    const char *jwt = NULL;
+    int notify_len = 0;
+
+    if (!url) return ACVP_MISSING_ARG;
+    if (!large_url) return ACVP_MISSING_ARG;
+    if (!(data_len > ctx->post_size_constraint)) return ACVP_INVALID_ARG;
+
+    arr_val = json_value_init_array();
+    arr = json_array((const JSON_Value *)arr_val);
+
+    ver_val = json_value_init_object();
+    ver_obj = json_value_get_object(ver_val);
+
+    json_object_set_string(ver_obj, "acvVersion", ACVP_VERSION);
+    json_array_append_value(arr, ver_val);
+
+    /*
+     * Start the large/ array
+     */
+    val = json_value_init_object();
+    obj = json_value_get_object(val);
+
+    /* 
+     * Cut off the https://name:port/ prefix and /results suffix
+     */
+    strstr_s((char *)url, ACVP_ATTR_URL_MAX, "/acvp/v1", 8, &substr);
+    strcpy_s(snipped_url, ACVP_ATTR_URL_MAX, substr);
+    strstr_s(snipped_url, ACVP_ATTR_URL_MAX, "/results", 8, &substr);
+    if (!substr) {
+        rv = ACVP_INVALID_ARG;
+        goto err;
+    }
+    *substr = '\0';
+
+    json_object_set_string(obj, "vectorSetUrl", snipped_url);
+    json_object_set_number(obj, "submissionSize", data_len);
+    
+    json_array_append_value(arr, val);
+
+    large_notify = json_serialize_to_string(arr_val, &notify_len);
+
+    ACVP_LOG_ERR("Notifying /large endpoint for this submission... %s", large_notify);
+    rv = acvp_transport_post(ctx, "large", large_notify, notify_len);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Failed to notify /large endpoint");
+        goto err;
+    }
+
+    server_val = json_parse_string(ctx->curl_buf);
+    if (!server_val) {
+        ACVP_LOG_ERR("JSON parse error");
+        rv = ACVP_JSON_ERR;
+        goto err;
+    }
+    server_obj = acvp_get_obj_from_rsp(server_val);
+
+    /* Grab the full large/ endpoint URL */
+    strcpy_s(large_url, ACVP_ATTR_URL_MAX, json_object_get_string(server_obj, "url"));
+
+    jwt = json_object_get_string(server_obj, "accessToken");
+    if (jwt) {
+        /*
+         * A single-use JWT was given.
+         */
+        if (strnlen_s(jwt, ACVP_JWT_TOKEN_MAX + 1) > ACVP_JWT_TOKEN_MAX) {
+            ACVP_LOG_ERR("access_token too large");
+            rv = ACVP_NO_TOKEN;
+            goto err;
+        }
+
+        if (ctx->tmp_jwt) {
+            memzero_s(ctx->tmp_jwt, ACVP_JWT_TOKEN_MAX);
+        } else {
+            ctx->tmp_jwt = calloc(ACVP_JWT_TOKEN_MAX + 1, sizeof(char));
+        }
+        strcpy_s(ctx->tmp_jwt, ACVP_JWT_TOKEN_MAX + 1, jwt);
+
+        ctx->use_tmp_jwt = 1;
+    }
+
+err:
+    if (arr_val) json_value_free(arr_val);
+    if (server_val) json_value_free(server_val);
+    if (large_notify) json_free_serialized_string(large_notify);
     return rv;
 }
 

@@ -663,8 +663,12 @@ Test(GET_PROTOCOL_VERSION, good) {
  * calls acvp_refresh with good params, didn't add totp callback
  */
 Test(REFRESH, good_without_totp, .init = setup_full_ctx, .fini = teardown) {
-    rv = acvp_refresh(ctx);
+    rv = acvp_set_server(ctx, test_server, port);
     cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_set_path_segment(ctx, path_segment);
+    cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_refresh(ctx);
+    cr_assert(rv == ACVP_TRANSPORT_FAIL);
 }
 
 /*

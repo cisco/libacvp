@@ -285,7 +285,7 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
                 return 1;
             }
 
-            strcpy_s(cfg->kat_file, JSON_FILENAME_LENGTH + 1, *argv);
+            strcpy_s(cfg->kat_file, JSON_FILENAME_LENGTH + 1, opt.arg);
             continue;
         }
 
