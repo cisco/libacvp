@@ -643,6 +643,7 @@ static ACVP_RESULT execute_network_action(ACVP_CTX *ctx,
     ACVP_RESULT result = 0;
     char *resp = NULL;
     char large_url[ACVP_ATTR_URL_MAX + 1] = {0};
+    int large_submission = 0;
     int resp_len = 0;
     int rc = 0;
 
@@ -670,6 +671,11 @@ static ACVP_RESULT execute_network_action(ACVP_CTX *ctx,
         ctx->kat_resp = NULL;
 
         if (ctx->post_size_constraint && resp_len > ctx->post_size_constraint) {
+            /* Determine if this POST body goes over the "constraint" */
+            large_submission = 1;
+        }
+
+        if (large_submission) {
             /*
              * Need to tell the server about this large submission.
              * The server will supply us with a one-time "large" URL;
@@ -726,7 +732,7 @@ static ACVP_RESULT execute_network_action(ACVP_CTX *ctx,
                 break;
 
             case ACVP_NET_POST_VS_RESP:
-                if (resp_len > ctx->post_size_constraint) {
+                if (large_submission) {
                     rc = acvp_curl_http_post(ctx, large_url, resp, resp_len);
                 } else {
                     rc = acvp_curl_http_post(ctx, url, resp, resp_len);

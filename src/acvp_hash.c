@@ -20,6 +20,8 @@
 #include "parson.h"
 #include "safe_lib.h"
 
+#define ACVP_HOST_LITTLE_ENDIAN (__BYTE_ORDER == __LITTLE_ENDIAN)
+
 /*
  * Forward prototypes for local functions
  */
@@ -313,7 +315,7 @@ static ACVP_RESULT acvp_hash_shake_mct(ACVP_CTX *ctx,
     JSON_Value *r_tval = NULL;  /* Response testval */
     JSON_Object *r_tobj = NULL; /* Response testobj */
     unsigned int xof_len = 0;
-    unsigned int leftmost_bytes = 0;
+    unsigned int leftmost_bytes = 16;
     unsigned int min_xof_bytes = (min_xof_bits / 8);
     unsigned int max_xof_bytes = (max_xof_bits / 8);
     unsigned int range = max_xof_bytes - min_xof_bytes + 1;
@@ -325,8 +327,10 @@ static ACVP_RESULT acvp_hash_shake_mct(ACVP_CTX *ctx,
     /* Convert from bits to bytes */
     stc->xof_len = (xof_len + 7) / 8;
 
+#if 0
     if (cap->cipher == ACVP_HASH_SHAKE_128) leftmost_bytes = 16;
     else if (cap->cipher == ACVP_HASH_SHAKE_256) leftmost_bytes = 32;
+#endif
 
     /* ***********
      * OUTER LOOP
@@ -355,10 +359,9 @@ static ACVP_RESULT acvp_hash_shake_mct(ACVP_CTX *ctx,
                 if (stc->md_len <= leftmost_bytes) {
                     memcpy_s(stc->msg, ACVP_HASH_MSG_BYTE_MAX, stc->md, stc->md_len);
                 } else {
-                    /* Only copy the leftmost (128 or 256) bits */
+                    /* Only copy the leftmost 128 bits */
                     memcpy_s(stc->msg, ACVP_HASH_MSG_BYTE_MAX, stc->md, leftmost_bytes);
                 }
-                stc->msg_len = leftmost_bytes;
 
                 if (i == ACVP_HASH_MCT_INNER) {
                     /*
@@ -369,6 +372,7 @@ static ACVP_RESULT acvp_hash_shake_mct(ACVP_CTX *ctx,
                     break;
                 }
             }
+            stc->msg_len = leftmost_bytes;
 
             /* Now clear the md buffer */
             memzero_s(stc->md, ACVP_HASH_XOF_MD_BYTE_MAX);
@@ -385,7 +389,11 @@ static ACVP_RESULT acvp_hash_shake_mct(ACVP_CTX *ctx,
 #ifdef WIN32
             rightmost_out_bits = _byteswap_ushort(*(uint16_t *)(stc->md + stc->md_len - 2));
 #else
+# if ACVP_HOST_LITTLE_ENDIAN
             rightmost_out_bits = bswap_16(*(uint16_t *)(stc->md + stc->md_len - 2));
+# else
+            rightmost_out_bits = *(uint16_t *)(stc->md + stc->md_len - 2);
+# endif
 #endif
 
             /* Calculate the next expected outputLen */
