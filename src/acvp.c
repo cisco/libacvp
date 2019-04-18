@@ -1531,7 +1531,10 @@ ACVP_RESULT acvp_notify_large(ACVP_CTX *ctx,
     strstr_s((char *)url, ACVP_ATTR_URL_MAX, "/acvp/v1", 8, &substr);
     strcpy_s(snipped_url, ACVP_ATTR_URL_MAX, substr);
     strstr_s(snipped_url, ACVP_ATTR_URL_MAX, "/results", 8, &substr);
-    if (!substr) return ACVP_INVALID_ARG;
+    if (!substr) {
+        rv = ACVP_INVALID_ARG;
+        goto err;
+    }
     *substr = '\0';
 
     json_object_set_string(obj, "vectorSetUrl", snipped_url);

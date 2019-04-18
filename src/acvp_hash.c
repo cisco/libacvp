@@ -327,11 +327,6 @@ static ACVP_RESULT acvp_hash_shake_mct(ACVP_CTX *ctx,
     /* Convert from bits to bytes */
     stc->xof_len = (xof_len + 7) / 8;
 
-#if 0
-    if (cap->cipher == ACVP_HASH_SHAKE_128) leftmost_bytes = 16;
-    else if (cap->cipher == ACVP_HASH_SHAKE_256) leftmost_bytes = 32;
-#endif
-
     /* ***********
      * OUTER LOOP
      * ***********
