@@ -129,12 +129,12 @@ def gen(j=None):
     s = copy.deepcopy(single)
     tg, t = ref_testgroup_and_test(s)
 
-    t["msg"] = "a" * 25601 # ACVP_HASH_MSG_STR_MAX
+    t["msg"] = "a" * 35001 # ACVP_HASH_MSG_STR_MAX
     with open(os.path.join(cur_dir, "hash_5.json"), "w") as fp:
         json.dump(s, fp, indent=2)
 
     ##
-    # The value for key:"msg" string is too long.
+    # The key:"tgId" is missing.
     ##
     s = copy.deepcopy(single)
     tg, t = ref_testgroup_and_test(s)
