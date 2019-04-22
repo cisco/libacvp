@@ -1572,29 +1572,6 @@ ACVP_RESULT acvp_cap_drbg_set_parm(ACVP_CTX *ctx,
                                    ACVP_DRBG_PARM param,
                                    int value);
 
-/*! @brief acvp_enable_drbg_prereq_cap() allows an application to specify
-        a prerequisite algorithm for a given DRBG during a test session
-        with the ACVP server.
-
-        This function should be called to enable a prerequisite for
-        a DRBG capability that will be tested by the server.
-
-   @param ctx Address of pointer to a previously allocated ACVP_CTX.
-   @param cipher ACVP_CIPHER enum value identifying the crypto capability.
-   @param mode ACVP_DRBG_MODE enum value specifying mode. An example would be
-        ACVP_DRBG_SHA_1
-   @param pre_req ACVP_PREREQ_ALG enum that the specified cipher/mode
-        depends on
-   @param value "same" or number
-
-   @return ACVP_RESULT
- */
-ACVP_RESULT acvp_cap_drbg_set_prereq(ACVP_CTX *ctx,
-                                     ACVP_CIPHER cipher,
-                                     ACVP_DRBG_MODE mode,
-                                     ACVP_PREREQ_ALG pre_req,
-                                     char *value);
-
 /*! @brief acvp_enable_drbg_length_cap() allows an application to register
         a DRBG capability length-based paramter.
 

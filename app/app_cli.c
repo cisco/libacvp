@@ -134,7 +134,8 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
 #endif
         { "all_algs", ko_no_argument, 322 },
         { "json", ko_required_argument, 400 },
-        { "kat", ko_required_argument, 401 }
+        { "kat", ko_required_argument, 401 },
+        { NULL, 0, 0 }
     };
 
     /* Set the default configuration values */
