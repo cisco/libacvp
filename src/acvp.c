@@ -2131,10 +2131,18 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
             current = json_array_get_object(results, i);
 
             strcmp_s("fail", 4, json_object_get_string(current, "status"), &diff);
-            if (!diff && ctx->is_sample) {
-                ACVP_LOG_STATUS("Getting expected results for failed Vector Set...");
-                rv = acvp_retrieve_expected_result(ctx, (char *)json_object_get_string(current, "vectorSetUrl"));
+            if (!diff) {
+                char *vs_url = (char *)json_object_get_string(current, "vectorSetUrl");
+
+                ACVP_LOG_STATUS("Getting details for failed Vector Set...");
+                rv = acvp_retrieve_vector_set_result(ctx, vs_url);
                 if (rv != ACVP_SUCCESS) goto end;
+
+                if (ctx->is_sample) {
+                    ACVP_LOG_STATUS("Getting expected results for failed Vector Set...");
+                    rv = acvp_retrieve_expected_result(ctx, vs_url);
+                    if (rv != ACVP_SUCCESS) goto end;
+                }
             }
         }
 
