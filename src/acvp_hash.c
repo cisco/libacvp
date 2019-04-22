@@ -11,9 +11,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#ifndef WIN32
-# include <byteswap.h>
-#endif
 
 #include "acvp.h"
 #include "acvp_lcl.h"
@@ -21,6 +18,7 @@
 #include "safe_lib.h"
 
 #define ACVP_HOST_LITTLE_ENDIAN (__BYTE_ORDER == __LITTLE_ENDIAN)
+#define SWAP_16(x) ((x>>8) | (x<<8))
 
 /*
  * Forward prototypes for local functions
@@ -381,14 +379,10 @@ static ACVP_RESULT acvp_hash_shake_mct(ACVP_CTX *ctx,
             }
 
             /* Get the right-most 16bits and convert to an integer */
-#ifdef WIN32
-            rightmost_out_bits = _byteswap_ushort(*(uint16_t *)(stc->md + stc->md_len - 2));
+#if ACVP_HOST_LITTLE_ENDIAN || defined(WIN32) || defined(__APPLE__)
+            rightmost_out_bits = SWAP_16(*(uint16_t *)(stc->md + stc->md_len - 2));
 #else
-# if ACVP_HOST_LITTLE_ENDIAN
-            rightmost_out_bits = bswap_16(*(uint16_t *)(stc->md + stc->md_len - 2));
-# else
             rightmost_out_bits = *(uint16_t *)(stc->md + stc->md_len - 2);
-# endif
 #endif
 
             /* Calculate the next expected outputLen */
