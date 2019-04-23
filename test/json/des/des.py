@@ -105,11 +105,11 @@ def ref_testgroup_and_test(j_list, group_type=ENCRYPT):
 
 
 def convert_to_ctr(s):
-    if s[1]["algorithm"] == "TDES-CTR":
+    if s[1]["algorithm"] == "ACVP-TDES-CTR":
         # Already CTR mode
         return
 
-    s[1]["algorithm"] = "TDES-CTR"
+    s[1]["algorithm"] = "ACVP-TDES-CTR"
 
     tg, t = ref_testgroup_and_test(s, ENCRYPT)
     tg["incrementalCounter"] = True
@@ -298,9 +298,9 @@ def gen(j=None):
     ##
     s = copy.deepcopy(j)
     tg, t = ref_testgroup_and_test(s, ENCRYPT)
-    if s[1]["algorithm"] == "TDES-ECB":
+    if s[1]["algorithm"] == "ACVP-TDES-ECB":
         # ECB doesn't have iv
-        s[1]["algorithm"] = "TDES-CBC"
+        s[1]["algorithm"] = "ACVP-TDES-CBC"
     else:
         del t["iv"]
 
@@ -313,9 +313,9 @@ def gen(j=None):
     s = copy.deepcopy(j)
     tg, t = ref_testgroup_and_test(s, ENCRYPT)
 
-    if s[1]["algorithm"] == "TDES-ECB":
+    if s[1]["algorithm"] == "ACVP-TDES-ECB":
         # ECB doesn't have iv
-        s[1]["algorithm"] = "TDES-CBC"
+        s[1]["algorithm"] = "ACVP-TDES-CBC"
 
     t["iv"] = "a" * 257
     with open(os.path.join(cur_dir, "des_17.json"), "w") as fp:
@@ -331,7 +331,7 @@ def gen(j=None):
         json.dump(s, fp, indent=2)
 
     ##
-    # The boolean for "incrementalCounter" is not a boolean for TDES-CTR
+    # The boolean for "incrementalCounter" is not a boolean for ACVP-TDES-CTR
     ##
     s = copy.deepcopy(j)
     convert_to_ctr(s)
@@ -343,7 +343,7 @@ def gen(j=None):
         json.dump(s, fp, indent=2)
 
     ##
-    # The boolean for "overflowCounter" is not a boolean for TDES-CTR
+    # The boolean for "overflowCounter" is not a boolean for ACVP-TDES-CTR
     ##
     s = copy.deepcopy(j)
     convert_to_ctr(s)

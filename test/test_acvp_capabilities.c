@@ -1470,7 +1470,7 @@ Test(EnableCapDRBG, good_ctr, .fini = teardown) {
                                      ACVP_PREREQ_TDES, value);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_CTRDRBG, 
-                                     ACVP_PREREQ_SHA, value);
+                                     ACVP_PREREQ_AES, value);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_drbg_set_length(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128,
                                      ACVP_DRBG_ENTROPY_LEN, (int)128, (int)128, (int) 256);
