@@ -1,28 +1,12 @@
-/*****************************************************************************
-* Copyright (c) 2016-2017, Cisco Systems, Inc.
-* All rights reserved.
+/*
+ * Copyright (c) 2019, Cisco Systems, Inc.
+ *
+ * Licensed under the Apache License 2.0 (the "License").  You may not use
+ * this file except in compliance with the License.  You can obtain a copy
+ * in the file LICENSE in the source distribution or at
+ * https://github.com/cisco/libacvp/LICENSE
+ */
 
-* Redistribution and use in source and binary forms, with or without modification,
-* are permitted provided that the following conditions are met:
-*
-* 1. Redistributions of source code must retain the above copyright notice,
-*    this list of conditions and the following disclaimer.
-*
-* 2. Redistributions in binary form must reproduce the above copyright notice,
-*    this list of conditions and the following disclaimer in the documentation
-*    and/or other materials provided with the distribution.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-* DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-* FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-* CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-* OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-* USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*****************************************************************************/
 #ifndef acvp_lcl_h
 #define acvp_lcl_h
 
@@ -134,6 +118,12 @@
 #define ACVP_REV_HASH_SHA256         ACVP_REVISION_LATEST
 #define ACVP_REV_HASH_SHA384         ACVP_REVISION_LATEST
 #define ACVP_REV_HASH_SHA512         ACVP_REVISION_LATEST
+#define ACVP_REV_HASH_SHA3_224       ACVP_REVISION_LATEST
+#define ACVP_REV_HASH_SHA3_256       ACVP_REVISION_LATEST
+#define ACVP_REV_HASH_SHA3_384       ACVP_REVISION_LATEST
+#define ACVP_REV_HASH_SHA3_512       ACVP_REVISION_LATEST
+#define ACVP_REV_HASH_SHAKE_128      ACVP_REVISION_LATEST
+#define ACVP_REV_HASH_SHAKE_256      ACVP_REVISION_LATEST
 
 /* DRBG */
 #define ACVP_REV_HASHDRBG            ACVP_REVISION_LATEST
@@ -193,36 +183,42 @@
 #define ACVP_ALG_NAME_MAX 18 /**< Always make sure this is >= the length of ACVP_ALG* strings */
 #define ACVP_ALG_MODE_MAX 26 /**< Always make sure this is >= the length of ACVP_MODE* strings */
 
-#define ACVP_ALG_AES_ECB             "AES-ECB"
-#define ACVP_ALG_AES_CBC             "AES-CBC"
-#define ACVP_ALG_AES_CFB1            "AES-CFB1"
-#define ACVP_ALG_AES_CFB8            "AES-CFB8"
-#define ACVP_ALG_AES_CFB128          "AES-CFB128"
-#define ACVP_ALG_AES_OFB             "AES-OFB"
-#define ACVP_ALG_AES_CTR             "AES-CTR"
-#define ACVP_ALG_AES_GCM             "AES-GCM"
-#define ACVP_ALG_AES_CCM             "AES-CCM"
-#define ACVP_ALG_AES_XTS             "AES-XTS"
-#define ACVP_ALG_AES_KW              "AES-KW"
-#define ACVP_ALG_AES_KWP             "AES-KWP"
-#define ACVP_ALG_TDES_OFB            "TDES-OFB"
-#define ACVP_ALG_TDES_OFBI           "TDES-OFBI"
-#define ACVP_ALG_TDES_CFB1           "TDES-CFB1"
-#define ACVP_ALG_TDES_CFB8           "TDES-CFB8"
-#define ACVP_ALG_TDES_CFB64          "TDES-CFB64"
-#define ACVP_ALG_TDES_CFBP1          "TDES-CFBP1"
-#define ACVP_ALG_TDES_CFBP8          "TDES-CFBP8"
-#define ACVP_ALG_TDES_CFBP64         "TDES-CFBP64"
-#define ACVP_ALG_TDES_ECB            "TDES-ECB"
-#define ACVP_ALG_TDES_CBC            "TDES-CBC"
-#define ACVP_ALG_TDES_CBCI           "TDES-CBCI"
-#define ACVP_ALG_TDES_CTR            "TDES-CTR"
-#define ACVP_ALG_TDES_KW             "TDES-KW"
+#define ACVP_ALG_AES_ECB             "ACVP-AES-ECB"
+#define ACVP_ALG_AES_CBC             "ACVP-AES-CBC"
+#define ACVP_ALG_AES_CFB1            "ACVP-AES-CFB1"
+#define ACVP_ALG_AES_CFB8            "ACVP-AES-CFB8"
+#define ACVP_ALG_AES_CFB128          "ACVP-AES-CFB128"
+#define ACVP_ALG_AES_OFB             "ACVP-AES-OFB"
+#define ACVP_ALG_AES_CTR             "ACVP-AES-CTR"
+#define ACVP_ALG_AES_GCM             "ACVP-AES-GCM"
+#define ACVP_ALG_AES_CCM             "ACVP-AES-CCM"
+#define ACVP_ALG_AES_XTS             "ACVP-AES-XTS"
+#define ACVP_ALG_AES_KW              "ACVP-AES-KW"
+#define ACVP_ALG_AES_KWP             "ACVP-AES-KWP"
+#define ACVP_ALG_TDES_OFB            "ACVP-TDES-OFB"
+#define ACVP_ALG_TDES_OFBI           "ACVP-TDES-OFBI"
+#define ACVP_ALG_TDES_CFB1           "ACVP-TDES-CFB1"
+#define ACVP_ALG_TDES_CFB8           "ACVP-TDES-CFB8"
+#define ACVP_ALG_TDES_CFB64          "ACVP-TDES-CFB64"
+#define ACVP_ALG_TDES_CFBP1          "ACVP-TDES-CFBP1"
+#define ACVP_ALG_TDES_CFBP8          "ACVP-TDES-CFBP8"
+#define ACVP_ALG_TDES_CFBP64         "ACVP-TDES-CFBP64"
+#define ACVP_ALG_TDES_ECB            "ACVP-TDES-ECB"
+#define ACVP_ALG_TDES_CBC            "ACVP-TDES-CBC"
+#define ACVP_ALG_TDES_CBCI           "ACVP-TDES-CBCI"
+#define ACVP_ALG_TDES_CTR            "ACVP-TDES-CTR"
+#define ACVP_ALG_TDES_KW             "ACVP-TDES-KW"
 #define ACVP_ALG_SHA1                "SHA-1"
 #define ACVP_ALG_SHA224              "SHA2-224"
 #define ACVP_ALG_SHA256              "SHA2-256"
 #define ACVP_ALG_SHA384              "SHA2-384"
 #define ACVP_ALG_SHA512              "SHA2-512"
+#define ACVP_ALG_SHA3_224            "SHA3-224"
+#define ACVP_ALG_SHA3_256            "SHA3-256"
+#define ACVP_ALG_SHA3_384            "SHA3-384"
+#define ACVP_ALG_SHA3_512            "SHA3-512"
+#define ACVP_ALG_SHAKE_128           "SHAKE-128"
+#define ACVP_ALG_SHAKE_256           "SHAKE-256"
 #define ACVP_ALG_HASHDRBG            "hashDRBG"
 #define ACVP_ALG_HMACDRBG            "hmacDRBG"
 #define ACVP_ALG_CTRDRBG             "ctrDRBG"
@@ -426,13 +422,19 @@
  * END DRBG
  */
 
+#define ACVP_HASH_SHA1_SHA2_MSG_BIT_MAX 65535               /**< 65535 bits */
 #define ACVP_HASH_MSG_BIT_MIN 0                             /**< 0 bits */
-#define ACVP_HASH_MSG_BIT_MAX 65535                         /**< 65535 bits */
-#define ACVP_HASH_MSG_STR_MAX (ACVP_HASH_MSG_BIT_MAX >> 2)  /**< 16384 characters */
-#define ACVP_HASH_MSG_BYTE_MAX (ACVP_HASH_MSG_BIT_MAX >> 3) /**< 8192 bytes */
+#define ACVP_HASH_MSG_BIT_MAX 140000                        /**< 140000 bits */
+#define ACVP_HASH_MSG_STR_MAX (ACVP_HASH_MSG_BIT_MAX >> 2)  /**< 35000 characters */
+#define ACVP_HASH_MSG_BYTE_MAX (ACVP_HASH_MSG_BIT_MAX >> 3) /**< 17500 bytes */
 #define ACVP_HASH_MD_BIT_MAX 512                            /**< 512 bits */
 #define ACVP_HASH_MD_STR_MAX (ACVP_HASH_MD_BIT_MAX >> 2)    /**< 128 characters */
 #define ACVP_HASH_MD_BYTE_MAX (ACVP_HASH_MD_BIT_MAX >> 3)   /**< 64 bytes */
+
+#define ACVP_HASH_XOF_MD_BIT_MIN 16 /**< XOF (extendable output format) outLength minimum (in bits) */
+#define ACVP_HASH_XOF_MD_BIT_MAX 65536 /**< XOF (extendable output format) outLength maximum (in bits) */
+#define ACVP_HASH_XOF_MD_STR_MAX (ACVP_HASH_XOF_MD_BIT_MAX >> 2) /**< 16,384 characters */
+#define ACVP_HASH_XOF_MD_BYTE_MAX (ACVP_HASH_XOF_MD_BIT_MAX >> 3) /**< 8,192 bytes */
 
 #define ACVP_HASH_MCT_INNER     1000
 #define ACVP_HASH_MCT_OUTER     100
@@ -806,6 +808,12 @@ typedef struct acvp_sym_cipher_capability {
 } ACVP_SYM_CIPHER_CAP;
 
 typedef struct acvp_hash_capability {
+    int in_bit;   /* defaults to false */
+    int in_empty; /* defaults to false */
+    int out_bit; /**< 1 for true, 0 for false
+                      Defaults to false.
+                      Only for ACVP_HASH_SHAKE_* */
+    ACVP_JSON_DOMAIN_OBJ out_len; /**< Required for ACVP_HASH_SHAKE_* */
     ACVP_JSON_DOMAIN_OBJ msg_length;
 } ACVP_HASH_CAP;
 
@@ -1208,7 +1216,6 @@ typedef struct acvp_oes_t {
 struct acvp_ctx_t {
     /* Global config values for the session */
     ACVP_LOG_LVL debug;
-    int debug_request;
     char *server_name;
     char *path_segment;
     char *api_context;
@@ -1234,6 +1241,8 @@ struct acvp_ctx_t {
     /* test session data */
     ACVP_VS_LIST *vs_list;
     char *jwt_token; /* access_token provided by server for authenticating REST calls */
+    char *tmp_jwt; /* access_token provided by server for authenticating a single REST call */
+    int use_tmp_jwt; /* 1 if the tmp_jwt should be used */
 
     /* crypto module capabilities list */
     ACVP_CAPS_LIST *caps_list;
@@ -1251,6 +1260,10 @@ struct acvp_ctx_t {
 
     char *curl_buf;       /**< Data buffer for inbound Curl messages */
     int curl_read_ctr;    /**< Total number of bytes written to the curl_buf */
+    int post_size_constraint;  /**< The number of bytes that the body of an HTTP POST may contain
+                                    without requiring the use of the /large endpoint. If the POST body
+                                    is larger than this value, then use of the /large endpoint is necessary */
+
 };
 
 ACVP_RESULT acvp_send_test_session_registration(ACVP_CTX *ctx, char *reg, int len);
@@ -1268,6 +1281,8 @@ ACVP_RESULT acvp_transport_send_module_registration(ACVP_CTX *ctx, char *reg, in
 ACVP_RESULT acvp_send_login(ACVP_CTX *ctx, char *login, int len);
 
 ACVP_RESULT acvp_transport_get(ACVP_CTX *ctx, const char *url);
+
+ACVP_RESULT acvp_transport_post(ACVP_CTX *ctx, const char *uri, char *data, int data_len);
 
 ACVP_RESULT acvp_retrieve_vector_set(ACVP_CTX *ctx, char *vsid_url);
 
@@ -1364,6 +1379,11 @@ ACVP_RESULT acvp_register_build_person(ACVP_CTX *ctx,
  */
 ACVP_RESULT acvp_oe_register_operating_env(ACVP_CTX *ctx);
 void acvp_oe_free_operating_env(ACVP_CTX *ctx);
+
+ACVP_RESULT acvp_notify_large(ACVP_CTX *ctx,
+                              const char *url,
+                              char *large_url,
+                              unsigned int data_len);
 
 /*
  * ACVP utility functions used internally

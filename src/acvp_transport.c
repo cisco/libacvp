@@ -1,28 +1,13 @@
-/*****************************************************************************
-* Copyright (c) 2016-2017, Cisco Systems, Inc.
-* All rights reserved.
+/** @file */
+/*
+ * Copyright (c) 2019, Cisco Systems, Inc.
+ *
+ * Licensed under the Apache License 2.0 (the "License").  You may not use
+ * this file except in compliance with the License.  You can obtain a copy
+ * in the file LICENSE in the source distribution or at
+ * https://github.com/cisco/libacvp/LICENSE
+ */
 
-* Redistribution and use in source and binary forms, with or without modification,
-* are permitted provided that the following conditions are met:
-*
-* 1. Redistributions of source code must retain the above copyright notice,
-*    this list of conditions and the following disclaimer.
-*
-* 2. Redistributions in binary form must reproduce the above copyright notice,
-*    this list of conditions and the following disclaimer in the documentation
-*    and/or other materials provided with the distribution.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-* DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-* FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-* CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-* OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-* USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*****************************************************************************/
 #ifdef USE_MURL
 # include <murl/murl.h>
 #else
@@ -69,24 +54,48 @@ static struct curl_slist *acvp_add_auth_hdr(ACVP_CTX *ctx, struct curl_slist *sl
     int bearer_title_size = (int)sizeof(bearer_title) - 1;
     int bearer_size = 0;
 
-    if (!ctx->jwt_token) {
+    if (!ctx->jwt_token && !(ctx->tmp_jwt && ctx->use_tmp_jwt)) {
         /*
          * We don't have a token to embed
          */
         return slist;
     }
 
-    bearer_size = strnlen_s(ctx->jwt_token, ACVP_JWT_TOKEN_MAX) + bearer_title_size;
-    bearer = calloc(bearer_size + 1, sizeof(char));
-    if (!bearer) {
-        ACVP_LOG_ERR("unable to allocate memory.");
+    if (ctx->use_tmp_jwt && !ctx->tmp_jwt) {
+        ACVP_LOG_ERR("Trying to use tmp_jwt, but it is NULL");
         return slist;
     }
 
-    snprintf(bearer, bearer_size + 1, "%s%s", bearer_title, ctx->jwt_token);
+    if (ctx->use_tmp_jwt) {
+        bearer_size = strnlen_s(ctx->tmp_jwt, ACVP_JWT_TOKEN_MAX) + bearer_title_size;
+    } else {
+        bearer_size = strnlen_s(ctx->jwt_token, ACVP_JWT_TOKEN_MAX) + bearer_title_size;
+    }
+
+    bearer = calloc(bearer_size + 1, sizeof(char));
+    if (!bearer) {
+        ACVP_LOG_ERR("unable to allocate memory.");
+        goto end;
+    }
+
+    if (ctx->use_tmp_jwt) {
+        snprintf(bearer, bearer_size + 1, "%s%s", bearer_title, ctx->tmp_jwt);
+    } else {
+        snprintf(bearer, bearer_size + 1, "%s%s", bearer_title, ctx->jwt_token);
+    }
+
     slist = curl_slist_append(slist, bearer);
 
     free(bearer);
+
+end:
+    if (ctx->use_tmp_jwt) {
+        /* 
+         * This was a single-use token.
+         * Turn it off now... the library might turn it back on later.
+         */
+        ctx->use_tmp_jwt = 0;
+    }
 
     return slist;
 }
@@ -162,19 +171,24 @@ static long acvp_curl_http_get(ACVP_CTX *ctx, char *url) {
     curl_easy_setopt(hnd, CURLOPT_URL, url);
     curl_easy_setopt(hnd, CURLOPT_NOPROGRESS, 1L);
     curl_easy_setopt(hnd, CURLOPT_USERAGENT, user_agent_str);
+    curl_easy_setopt(hnd, CURLOPT_TCP_KEEPALIVE, 1L);
     curl_easy_setopt(hnd, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_2);
     if (slist) {
         curl_easy_setopt(hnd, CURLOPT_HTTPHEADER, slist);
     }
-    if (ctx->verify_peer && ctx->cacerts_file) {
+
+    /*
+     * Always verify the server
+     */
+    curl_easy_setopt(hnd, CURLOPT_SSL_VERIFYPEER, 1L);
+    if (ctx->cacerts_file) {
         curl_easy_setopt(hnd, CURLOPT_CAINFO, ctx->cacerts_file);
-        curl_easy_setopt(hnd, CURLOPT_SSL_VERIFYPEER, 1L);
         curl_easy_setopt(hnd, CURLOPT_CERTINFO, 1L);
-    } else {
-        curl_easy_setopt(hnd, CURLOPT_SSL_VERIFYPEER, 0L);
-        ACVP_LOG_WARN("TLS peer verification has not been enabled.\n");
     }
-    curl_easy_setopt(hnd, CURLOPT_TCP_KEEPALIVE, 1L);
+
+    /*
+     * Mutual-auth
+     */
     if (ctx->tls_cert && ctx->tls_key) {
         curl_easy_setopt(hnd, CURLOPT_SSLCERTTYPE, "PEM");
         curl_easy_setopt(hnd, CURLOPT_SSLCERT, ctx->tls_cert);
@@ -188,6 +202,11 @@ static long acvp_curl_http_get(ACVP_CTX *ctx, char *url) {
      */
     curl_easy_setopt(hnd, CURLOPT_WRITEDATA, ctx);
     curl_easy_setopt(hnd, CURLOPT_WRITEFUNCTION, &acvp_curl_write_callback);
+
+    if (ctx->curl_buf) {
+        /* Clear the HTTP buffer for next server response */
+        memzero_s(ctx->curl_buf, ACVP_CURL_BUF_MAX);
+    }
 
     /*
      * Send the HTTP GET request
@@ -261,17 +280,21 @@ static long acvp_curl_http_post(ACVP_CTX *ctx, char *url, char *data, int data_l
     curl_easy_setopt(hnd, CURLOPT_POST, 1L);
     curl_easy_setopt(hnd, CURLOPT_POSTFIELDS, data);
     curl_easy_setopt(hnd, CURLOPT_POSTFIELDSIZE_LARGE, (curl_off_t)data_len);
-    curl_easy_setopt(hnd, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_2);
-    //FIXME: we should always to TLS peer auth
-    if (ctx->verify_peer && ctx->cacerts_file) {
-        curl_easy_setopt(hnd, CURLOPT_CAINFO, ctx->cacerts_file);
-        curl_easy_setopt(hnd, CURLOPT_SSL_VERIFYPEER, 1L);
-        curl_easy_setopt(hnd, CURLOPT_CERTINFO, 1L);
-    } else {
-        curl_easy_setopt(hnd, CURLOPT_SSL_VERIFYPEER, 0L);
-        ACVP_LOG_WARN("TLS peer verification has not been enabled.");
-    }
     curl_easy_setopt(hnd, CURLOPT_TCP_KEEPALIVE, 1L);
+    curl_easy_setopt(hnd, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_2);
+
+    /*
+     * Always verify the server
+     */
+    curl_easy_setopt(hnd, CURLOPT_SSL_VERIFYPEER, 1L);
+    if (ctx->cacerts_file) {
+        curl_easy_setopt(hnd, CURLOPT_CAINFO, ctx->cacerts_file);
+        curl_easy_setopt(hnd, CURLOPT_CERTINFO, 1L);
+    }
+
+    /*
+     * Mutual-auth
+     */
     if (ctx->tls_cert && ctx->tls_key) {
         curl_easy_setopt(hnd, CURLOPT_SSLCERTTYPE, "PEM");
         curl_easy_setopt(hnd, CURLOPT_SSLCERT, ctx->tls_cert);
@@ -285,6 +308,11 @@ static long acvp_curl_http_post(ACVP_CTX *ctx, char *url, char *data, int data_l
      */
     curl_easy_setopt(hnd, CURLOPT_WRITEDATA, ctx);
     curl_easy_setopt(hnd, CURLOPT_WRITEFUNCTION, &acvp_curl_write_callback);
+
+    if (ctx->curl_buf) {
+        /* Clear the HTTP buffer for next server response */
+        memzero_s(ctx->curl_buf, ACVP_CURL_BUF_MAX);
+    }
 
     /*
      * Send the HTTP POST request
@@ -464,6 +492,26 @@ ACVP_RESULT acvp_submit_vector_responses(ACVP_CTX *ctx, char *vsid_url) {
     return acvp_network_action(ctx, ACVP_NET_POST_VS_RESP, url, NULL, 0);
 }
 
+ACVP_RESULT acvp_transport_post(ACVP_CTX *ctx, const char *uri, char *data, int data_len) {
+    ACVP_RESULT rv = 0;
+    char constructed_url[ACVP_ATTR_URL_MAX] = {0};
+
+    rv = sanity_check_ctx(ctx);
+    if (ACVP_SUCCESS != rv) return rv;
+
+    if (!uri) {
+        ACVP_LOG_ERR("Missing uri");
+        return ACVP_MISSING_ARG;
+    }
+
+    snprintf(constructed_url, ACVP_ATTR_URL_MAX - 1,
+             "https://%s:%d/%s%s",
+             ctx->server_name, ctx->server_port,
+             ctx->path_segment, uri);
+
+    return acvp_network_action(ctx, ACVP_NET_POST, constructed_url, data, data_len);
+}
+
 /*
  * This is the top level function used within libacvp to retrieve
  * a KAT vector set from the ACVP server.
@@ -608,6 +656,8 @@ static ACVP_RESULT execute_network_action(ACVP_CTX *ctx,
                                           int *curl_code) {
     ACVP_RESULT result = 0;
     char *resp = NULL;
+    char large_url[ACVP_ATTR_URL_MAX + 1] = {0};
+    int large_submission = 0;
     int resp_len = 0;
     int rc = 0;
 
@@ -627,10 +677,31 @@ static ACVP_RESULT execute_network_action(ACVP_CTX *ctx,
 
     case ACVP_NET_POST_VS_RESP:
         resp = json_serialize_to_string(ctx->kat_resp, &resp_len);
-
-        rc = acvp_curl_http_post(ctx, url, resp, resp_len);
+        if (!resp) {
+            ACVP_LOG_ERR("Faled to serialize JSON to string");
+            return ACVP_JSON_ERR;
+        }
         json_value_free(ctx->kat_resp);
         ctx->kat_resp = NULL;
+
+        if (ctx->post_size_constraint && resp_len > ctx->post_size_constraint) {
+            /* Determine if this POST body goes over the "constraint" */
+            large_submission = 1;
+        }
+
+        if (large_submission) {
+            /*
+             * Need to tell the server about this large submission.
+             * The server will supply us with a one-time "large" URL;
+             */
+            result = acvp_notify_large(ctx, url, large_url, resp_len);
+            if (result != ACVP_SUCCESS) goto end;
+
+            rc = acvp_curl_http_post(ctx, large_url, resp, resp_len);
+        } else {
+            rc = acvp_curl_http_post(ctx, url, resp, resp_len);
+        }
+
         break;
 
     default:
@@ -675,7 +746,11 @@ static ACVP_RESULT execute_network_action(ACVP_CTX *ctx,
                 break;
 
             case ACVP_NET_POST_VS_RESP:
-                rc = acvp_curl_http_post(ctx, url, resp, resp_len);
+                if (large_submission) {
+                    rc = acvp_curl_http_post(ctx, large_url, resp, resp_len);
+                } else {
+                    rc = acvp_curl_http_post(ctx, url, resp, resp_len);
+                }
                 break;
 
             case ACVP_NET_POST_LOGIN:
@@ -720,16 +795,31 @@ static void log_network_status(ACVP_CTX *ctx,
                         curl_code, url, ctx->curl_buf);
         break;
     case ACVP_NET_GET_VS:
-        ACVP_LOG_STATUS("GET Vector Set...\n\tStatus: %d\n\tUrl: %s\n\tResp:\n%s\n",
-                        curl_code, url, ctx->curl_buf);
+        if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
+            printf("GET Vector Set...\n\tStatus: %d\n\tUrl: %s\n\tResp:\n%s\n",
+                   curl_code, url, ctx->curl_buf);
+        } else {
+            ACVP_LOG_STATUS("GET Vector Set...\n\tStatus: %d\n\tUrl: %s\n\tResp:\n%s\n",
+                            curl_code, url, ctx->curl_buf);
+        }
         break;
     case ACVP_NET_GET_VS_RESULT:
-        ACVP_LOG_STATUS("GET Vector Set Result...\n\tStatus: %d\n\tUrl: %s\n\tResp:\n%s\n",
-                        curl_code, url, ctx->curl_buf);
+        if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
+            printf("GET Vector Set Result...\n\tStatus: %d\n\tUrl: %s\n\tResp:\n%s\n",
+                   curl_code, url, ctx->curl_buf);
+        } else {
+            ACVP_LOG_STATUS("GET Vector Set Result...\n\tStatus: %d\n\tUrl: %s\n\tResp:\n%s\n",
+                            curl_code, url, ctx->curl_buf);
+        }
         break;
     case ACVP_NET_GET_VS_SAMPLE:
-        ACVP_LOG_STATUS("GET Vector Set Sample...\n\tStatus: %d\n\tUrl: %s\n\tResp:\n%s\n",
-                        curl_code, url, ctx->curl_buf);
+        if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
+            printf("GET Vector Set Sample...\n\tStatus: %d\n\tUrl: %s\n\tResp:\n%s\n",
+                   curl_code, url, ctx->curl_buf);
+        } else {
+            ACVP_LOG_STATUS("GET Vector Set Sample...\n\tStatus: %d\n\tUrl: %s\n\tResp:\n%s\n",
+                            curl_code, url, ctx->curl_buf);
+        }
         break;
     case ACVP_NET_POST:
         ACVP_LOG_STATUS("POST...\n\tStatus: %d\n\tUrl: %s\n\tResp: %s\n",
@@ -773,11 +863,6 @@ static ACVP_RESULT acvp_network_action(ACVP_CTX *ctx,
     if (!url) {
         ACVP_LOG_ERR("URL required for transmission");
         return ACVP_MISSING_ARG;
-    }
-
-    if (ctx->curl_buf) {
-        /* Clear the HTTP buffer for next server response */
-        memzero_s(ctx->curl_buf, ACVP_CURL_BUF_MAX);
     }
 
     switch (action) {

@@ -2,31 +2,14 @@
  *  This is the public header file to be included by applications
  *  using libacvp.
  */
-/*****************************************************************************
-* Copyright (c) 2016-2017, Cisco Systems, Inc.
-* All rights reserved.
-
-* Redistribution and use in source and binary forms, with or without modification,
-* are permitted provided that the following conditions are met:
-*
-* 1. Redistributions of source code must retain the above copyright notice,
-*    this list of conditions and the following disclaimer.
-*
-* 2. Redistributions in binary form must reproduce the above copyright notice,
-*    this list of conditions and the following disclaimer in the documentation
-*    and/or other materials provided with the distribution.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-* DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-* FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-* CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-* OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-* USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*****************************************************************************/
+/*
+ * Copyright (c) 2019, Cisco Systems, Inc.
+ *
+ * Licensed under the Apache License 2.0 (the "License").  You may not use
+ * this file except in compliance with the License.  You can obtain a copy
+ * in the file LICENSE in the source distribution or at
+ * https://github.com/cisco/libacvp/LICENSE
+ */
 
 #ifndef acvp_h
 #define acvp_h
@@ -119,6 +102,12 @@ typedef enum acvp_cipher {
     ACVP_HASH_SHA256,
     ACVP_HASH_SHA384,
     ACVP_HASH_SHA512,
+    ACVP_HASH_SHA3_224,
+    ACVP_HASH_SHA3_256,
+    ACVP_HASH_SHA3_384,
+    ACVP_HASH_SHA3_512,
+    ACVP_HASH_SHAKE_128,
+    ACVP_HASH_SHAKE_256,
     ACVP_HASHDRBG,
     ACVP_HMACDRBG,
     ACVP_CTRDRBG,
@@ -336,7 +325,11 @@ typedef enum acvp_kdf135_snmp_param {
 #define ACVP_STR_SHA2_512_256   "SHA2-512/256"
 #define ACVP_STR_SHA_MAX        12
 typedef enum acvp_hash_param {
-    ACVP_HASH_MESSAGE_LEN = 1
+    ACVP_HASH_IN_BIT = 1,
+    ACVP_HASH_IN_EMPTY,
+    ACVP_HASH_OUT_BIT, /**< Used for ACVP_HASH_SHAKE_128, ACVP_HASH_SHAKE_256 */
+    ACVP_HASH_OUT_LENGTH, /**< Used for ACVP_HASH_SHAKE_128, ACVP_HASH_SHAKE_256 */
+    ACVP_HASH_MESSAGE_LEN
 } ACVP_HASH_PARM;
 
 /*
@@ -534,7 +527,8 @@ typedef enum acvp_sym_cipher_testtype {
 typedef enum acvp_hash_testtype {
     ACVP_HASH_TEST_TYPE_NONE = 0,
     ACVP_HASH_TEST_TYPE_AFT,
-    ACVP_HASH_TEST_TYPE_MCT
+    ACVP_HASH_TEST_TYPE_MCT,
+    ACVP_HASH_TEST_TYPE_VOT
 } ACVP_HASH_TESTTYPE;
 
 /*! @struct ACVP_HMAC_PARM */
@@ -642,15 +636,28 @@ typedef struct acvp_entropy_tc_t {
  */
 typedef struct acvp_hash_tc_t {
     ACVP_CIPHER cipher;
-    unsigned int tc_id;           /* Test case id */
-    ACVP_HASH_TESTTYPE test_type; /* KAT or MCT */
-    unsigned char *msg;
-    unsigned char *m1;
-    unsigned char *m2;
-    unsigned char *m3;
-    unsigned int msg_len;
-    unsigned char *md; /* The resulting digest calculated for the test case */
-    unsigned int md_len;
+    unsigned int tc_id;           /**< Test case id */
+    ACVP_HASH_TESTTYPE test_type; /**< KAT or MCT or VOT */
+    unsigned char *msg; /**< Message input */
+    unsigned char *m1; /**< Mesage input #1
+                            Provided when \ref ACVP_HASH_TC.test_type is MCT */
+    unsigned char *m2; /**< Mesage input #2
+                            Provided when \ref ACVP_HASH_TC.test_type is MCT */
+    unsigned char *m3; /**< Mesage input #3
+                            Provided when \ref ACVP_HASH_TC.test_type is MCT */
+    unsigned int msg_len; /**< Length (in bytes) of...
+                               \ref ACVP_HASH_TC.msg , \ref ACVP_HASH_TC.m1 ,
+                               \ref ACVP_HASH_TC.m2 , \ref ACVP_HASH_TC.m3 */
+    unsigned int xof_len; /**< XOF (extendable output format) length
+                               The expected length (in bytes) of \ref ACVP_HASH_TC.md
+                               Only provided when \ref ACVP_HASH_TC.test_type is VOT */
+    unsigned int xof_bit_len; /**< XOF (extendable output format) length
+                                   The expected length (in bits) of \ref ACVP_HASH_TC.md
+                                   Only provided when \ref ACVP_HASH_TC.test_type is VOT */
+    unsigned char *md; /**< The resulting digest calculated for the test case.
+                            SUPPLIED BY USER */
+    unsigned int md_len; /**< The length (in bytes) of \ref ACVP_HASH_TC.md
+                              SUPPLIED BY USER */
 } ACVP_HASH_TC;
 
 /*!
@@ -1487,9 +1494,14 @@ ACVP_RESULT acvp_cap_hash_enable(ACVP_CTX *ctx,
 
     @return ACVP_RESULT
  */
+ACVP_RESULT acvp_cap_hash_set_parm(ACVP_CTX *ctx,
+                                   ACVP_CIPHER cipher,
+                                   ACVP_HASH_PARM param,
+                                   int value);
+
 ACVP_RESULT acvp_cap_hash_set_domain(ACVP_CTX *ctx,
                                      ACVP_CIPHER cipher,
-                                     ACVP_HASH_PARM param,
+                                     ACVP_HASH_PARM parm,
                                      int min,
                                      int max,
                                      int increment);
@@ -1543,29 +1555,6 @@ ACVP_RESULT acvp_cap_drbg_set_parm(ACVP_CTX *ctx,
                                    ACVP_DRBG_MODE mode,
                                    ACVP_DRBG_PARM param,
                                    int value);
-
-/*! @brief acvp_enable_drbg_prereq_cap() allows an application to specify
-        a prerequisite algorithm for a given DRBG during a test session
-        with the ACVP server.
-
-        This function should be called to enable a prerequisite for
-        a DRBG capability that will be tested by the server.
-
-   @param ctx Address of pointer to a previously allocated ACVP_CTX.
-   @param cipher ACVP_CIPHER enum value identifying the crypto capability.
-   @param mode ACVP_DRBG_MODE enum value specifying mode. An example would be
-        ACVP_DRBG_SHA_1
-   @param pre_req ACVP_PREREQ_ALG enum that the specified cipher/mode
-        depends on
-   @param value "same" or number
-
-   @return ACVP_RESULT
- */
-ACVP_RESULT acvp_cap_drbg_set_prereq(ACVP_CTX *ctx,
-                                     ACVP_CIPHER cipher,
-                                     ACVP_DRBG_MODE mode,
-                                     ACVP_PREREQ_ALG pre_req,
-                                     char *value);
 
 /*! @brief acvp_enable_drbg_length_cap() allows an application to register
         a DRBG capability length-based paramter.
@@ -2419,16 +2408,6 @@ ACVP_RESULT acvp_create_test_session(ACVP_CTX **ctx,
     @return ACVP_RESULT
  */
 ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx);
-
-/*! @brief acvp_enable_debug_request() sets a flag in the acvp ctx that
-    asks the server to send debug messages
-
-    @param ctx Pointer to ACVP_CTX that was previously created by
-        calling acvp_create_test_session.
-
-    @return ACVP_RESULT
- */
-ACVP_RESULT acvp_enable_debug_request(ACVP_CTX *ctx);
 
 /*! @brief acvp_set_server() specifies the ACVP server and TCP port
        number to use when contacting the server.

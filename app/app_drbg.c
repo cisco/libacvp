@@ -1,28 +1,12 @@
-/*****************************************************************************
-* Copyright (c) 2019, Cisco Systems, Inc.
-* All rights reserved.
-*
-* Redistribution and use in source and binary forms, with or without modification,
-* are permitted provided that the following conditions are met:
-*
-* 1. Redistributions of source code must retain the above copyright notice,
-*    this list of conditions and the following disclaimer.
-*
-* 2. Redistributions in binary form must reproduce the above copyright notice,
-*    this list of conditions and the following disclaimer in the documentation
-*    and/or other materials provided with the distribution.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-* DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-* FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-* CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-* OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-* USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*****************************************************************************/
+/*
+ * Copyright (c) 2019, Cisco Systems, Inc.
+ *
+ * Licensed under the Apache License 2.0 (the "License").  You may not use
+ * this file except in compliance with the License.  You can obtain a copy
+ * in the file LICENSE in the source distribution or at
+ * https://github.com/cisco/libacvp/LICENSE
+ */
+
 
 #ifdef ACVP_NO_RUNTIME
 
@@ -50,8 +34,8 @@ static size_t drbg_test_entropy(DRBG_CTX *dctx,
     DRBG_TEST_ENT *t = (DRBG_TEST_ENT *)FIPS_drbg_get_app_data(dctx);
     if (!t) return 0;
 
-    if (t->entlen < min_len) printf("entropy data len < min_len: %zu\n", t->entlen);
-    if (t->entlen > max_len) printf("entropy data len > max_len: %zu\n", t->entlen);
+    if (t->entlen < min_len) printf("entropy data len %zu < min_len: %zu\n", t->entlen, min_len);
+    if (t->entlen > max_len) printf("entropy data len %zu > max_len: %zu\n", t->entlen, max_len);
     *pout = (unsigned char *)t->ent;
     return t->entlen;
 }
@@ -65,8 +49,8 @@ static size_t drbg_test_nonce(DRBG_CTX *dctx,
 
     DRBG_TEST_ENT *t = (DRBG_TEST_ENT *)FIPS_drbg_get_app_data(dctx);
 
-    if (t->noncelen < min_len) printf("nonce data len < min_len: %zu\n", t->noncelen);
-    if (t->noncelen > max_len) printf("nonce data len > max_len: %zu\n", t->noncelen);
+    if (t->noncelen < min_len) printf("nonce data len %zu < min_len: %zu\n", t->noncelen, min_len);
+    if (t->noncelen > max_len) printf("nonce data len %zu > max_len: %zu\n", t->noncelen, max_len);
     *pout = (unsigned char *)t->nonce;
     return t->noncelen;
 }
@@ -99,7 +83,7 @@ int app_drbg_handler(ACVP_TEST_CASE *test_case) {
             nid = NID_sha1;
             break;
         case ACVP_DRBG_SHA_224:
-            nid = NID_sha256;
+            nid = NID_sha224;
             break;
         case ACVP_DRBG_SHA_256:
             nid = NID_sha256;

@@ -1,29 +1,13 @@
 /** @file */
-/*****************************************************************************
-* Copyright (c) 2016-2017, Cisco Systems, Inc.
-* All rights reserved.
+/*
+ * Copyright (c) 2019, Cisco Systems, Inc.
+ *
+ * Licensed under the Apache License 2.0 (the "License").  You may not use
+ * this file except in compliance with the License.  You can obtain a copy
+ * in the file LICENSE in the source distribution or at
+ * https://github.com/cisco/libacvp/LICENSE
+ */
 
-* Redistribution and use in source and binary forms, with or without modification,
-* are permitted provided that the following conditions are met:
-*
-* 1. Redistributions of source code must retain the above copyright notice,
-*    this list of conditions and the following disclaimer.
-*
-* 2. Redistributions in binary form must reproduce the above copyright notice,
-*    this list of conditions and the following disclaimer in the documentation
-*    and/or other materials provided with the distribution.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-* DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-* FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-* CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-* OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-* USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*****************************************************************************/
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -102,6 +86,12 @@ ACVP_ALG_HANDLER alg_tbl[ACVP_ALG_MAX] = {
     { ACVP_HASH_SHA256,       &acvp_hash_kat_handler,         ACVP_ALG_SHA256,            NULL, ACVP_REV_HASH_SHA256},
     { ACVP_HASH_SHA384,       &acvp_hash_kat_handler,         ACVP_ALG_SHA384,            NULL, ACVP_REV_HASH_SHA384},
     { ACVP_HASH_SHA512,       &acvp_hash_kat_handler,         ACVP_ALG_SHA512,            NULL, ACVP_REV_HASH_SHA512},
+    { ACVP_HASH_SHA3_224,     &acvp_hash_kat_handler,         ACVP_ALG_SHA3_224,          NULL, ACVP_REV_HASH_SHA3_224},
+    { ACVP_HASH_SHA3_256,     &acvp_hash_kat_handler,         ACVP_ALG_SHA3_256,          NULL, ACVP_REV_HASH_SHA3_256},
+    { ACVP_HASH_SHA3_384,     &acvp_hash_kat_handler,         ACVP_ALG_SHA3_384,          NULL, ACVP_REV_HASH_SHA3_384},
+    { ACVP_HASH_SHA3_512,     &acvp_hash_kat_handler,         ACVP_ALG_SHA3_512,          NULL, ACVP_REV_HASH_SHA3_512},
+    { ACVP_HASH_SHAKE_128,    &acvp_hash_kat_handler,         ACVP_ALG_SHAKE_128,         NULL, ACVP_REV_HASH_SHAKE_128},
+    { ACVP_HASH_SHAKE_256,    &acvp_hash_kat_handler,         ACVP_ALG_SHAKE_256,         NULL, ACVP_REV_HASH_SHAKE_256},
     { ACVP_HASHDRBG,          &acvp_drbg_kat_handler,         ACVP_ALG_HASHDRBG,          NULL, ACVP_REV_HASHDRBG},
     { ACVP_HMACDRBG,          &acvp_drbg_kat_handler,         ACVP_ALG_HMACDRBG,          NULL, ACVP_REV_HMACDRBG},
     { ACVP_CTRDRBG,           &acvp_drbg_kat_handler,         ACVP_ALG_CTRDRBG,           NULL, ACVP_REV_CTRDRBG},
@@ -596,6 +586,7 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx) {
     if (ctx->tls_key) { free(ctx->tls_key); }
     if (ctx->json_filename) { free(ctx->json_filename); }
     if (ctx->jwt_token) { free(ctx->jwt_token); }
+    if (ctx->tmp_jwt) { free(ctx->tmp_jwt); }
     if (ctx->vs_list) {
         vs_entry = ctx->vs_list;
         while (vs_entry) {
@@ -858,18 +849,6 @@ ACVP_RESULT acvp_set_json_filename(ACVP_CTX *ctx, const char *json_filename) {
 }
 
 /*
- * This function is used to allow "debugRequest" in the registration
- */
-ACVP_RESULT acvp_enable_debug_request(ACVP_CTX *ctx) {
-    if (!ctx) {
-        return ACVP_NO_CTX;
-    }
-    ctx->debug_request = 1;
-
-    return ACVP_SUCCESS;
-}
-
-/*
  * This function is used by the application to specify the
  * ACVP server address and TCP port#.
  */
@@ -965,11 +944,6 @@ ACVP_RESULT acvp_set_cacerts(ACVP_CTX *ctx, char *ca_file) {
     ctx->cacerts_file = calloc(ACVP_SESSION_PARAMS_STR_LEN_MAX + 1, sizeof(char));
     strcpy_s(ctx->cacerts_file, ACVP_SESSION_PARAMS_STR_LEN_MAX + 1, ca_file);
 
-    /*
-     * Enable peer verification when CA certs are provided.
-     */
-    ctx->verify_peer = 1;
-
     return ACVP_SUCCESS;
 }
 
@@ -1015,9 +989,9 @@ ACVP_RESULT acvp_mark_as_sample(ACVP_CTX *ctx) {
 
 /*
  * This function builds the JSON login message that
- * will be sent to the ACVP server to perform the
- * second of the two-factor authentications using
- * a TOTP.
+ * will be sent to the ACVP server. If enabled,
+ * it will perform the second of the two-factor
+ * authentications using a TOTP.
  */
 static ACVP_RESULT acvp_build_login(ACVP_CTX *ctx, char **login, int *login_len, int refresh) {
     ACVP_RESULT rv = ACVP_SUCCESS;
@@ -1027,9 +1001,8 @@ static ACVP_RESULT acvp_build_login(ACVP_CTX *ctx, char **login, int *login_len,
     JSON_Value *pw_val = NULL;
     JSON_Object *pw_obj = NULL;
     JSON_Array *reg_arry = NULL;
-    char *token = calloc(ACVP_TOTP_TOKEN_MAX, sizeof(char));
+    char *token = NULL;
 
-    if (!token) return ACVP_MALLOC_FAIL;
     if (!login_len) return ACVP_INVALID_ARG;
 
     /*
@@ -1044,27 +1017,34 @@ static ACVP_RESULT acvp_build_login(ACVP_CTX *ctx, char **login, int *login_len,
     json_object_set_string(ver_obj, "acvVersion", ACVP_VERSION);
     json_array_append_value(reg_arry, ver_val);
 
-    pw_val = json_value_init_object();
-    pw_obj = json_value_get_object(pw_val);
-
-    ctx->totp_cb(&token, ACVP_TOTP_TOKEN_MAX);
-    if (strnlen_s(token, ACVP_TOTP_TOKEN_MAX + 1) > ACVP_TOTP_TOKEN_MAX) {
-        ACVP_LOG_ERR("totp cb generated a token that is too long");
-        json_value_free(pw_val);
-        rv = ACVP_INVALID_ARG;
-        goto err;
+    if (ctx->totp_cb || refresh) {
+        pw_val = json_value_init_object();
+        pw_obj = json_value_get_object(pw_val);
     }
 
-    json_object_set_string(pw_obj, "password", token);
+    if (ctx->totp_cb) {
+        token = calloc(ACVP_TOTP_TOKEN_MAX, sizeof(char));
+        if (!token) return ACVP_MALLOC_FAIL;
+
+        ctx->totp_cb(&token, ACVP_TOTP_TOKEN_MAX);
+        if (strnlen_s(token, ACVP_TOTP_TOKEN_MAX + 1) > ACVP_TOTP_TOKEN_MAX) {
+            ACVP_LOG_ERR("totp cb generated a token that is too long");
+            json_value_free(pw_val);
+            rv = ACVP_INVALID_ARG;
+            goto err;
+        }
+
+        json_object_set_string(pw_obj, "password", token);
+    }
 
     if (refresh) {
         json_object_set_string(pw_obj, "accessToken", ctx->jwt_token);
     }
-    json_array_append_value(reg_arry, pw_val);
+    if (pw_val) json_array_append_value(reg_arry, pw_val);
 
 err:
     *login = json_serialize_to_string(reg_arry_val, login_len);
-    free(token);
+    if (token) free(token);
     json_value_free(reg_arry_val);
     return rv;
 }
@@ -1088,27 +1068,25 @@ ACVP_RESULT acvp_register(ACVP_CTX *ctx) {
     /*
      * Construct the login message
      */
-    if (ctx->totp_cb) {
-        rv = acvp_build_login(ctx, &login, &login_len, 0);
-        if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("Unable to build login message");
-            goto end;
-        }
+    rv = acvp_build_login(ctx, &login, &login_len, 0);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Unable to build login message");
+        goto end;
+    }
 
-        /*
-         * Send the login to the ACVP server and get the response,
-         */
-        rv = acvp_send_login(ctx, login, login_len);
-        if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_STATUS("Login Send Failed");
-            goto end;
-        }
+    /*
+     * Send the login to the ACVP server and get the response,
+     */
+    rv = acvp_send_login(ctx, login, login_len);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_STATUS("Login Send Failed");
+        goto end;
+    }
 
-        rv = acvp_parse_login(ctx);
-        if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("Unable to parse login response");
-            goto end;
-        }
+    rv = acvp_parse_login(ctx);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Unable to parse login response");
+        goto end;
     }
 
     if (ctx->use_json) {
@@ -1167,7 +1145,10 @@ static ACVP_RESULT acvp_append_vsid_url(ACVP_CTX *ctx, char *vsid_url) {
         return ACVP_MALLOC_FAIL;
     }
     vs_entry->string = calloc(ACVP_ATTR_URL_MAX + 1, sizeof(char));
-    if (!vs_entry->string) return ACVP_MALLOC_FAIL;
+    if (!vs_entry->string) {
+        free(vs_entry);
+        return ACVP_MALLOC_FAIL;
+    }
     strcpy_s(vs_entry->string, ACVP_ATTR_URL_MAX + 1, vsid_url);
 
     if (!ctx->vsid_url_list) {
@@ -1192,6 +1173,7 @@ static ACVP_RESULT acvp_parse_login(ACVP_CTX *ctx) {
     JSON_Object *obj = NULL;
     char *json_buf = ctx->curl_buf;
     const char *jwt;
+    int large_required = 0;
     ACVP_RESULT rv = ACVP_SUCCESS;
 
     /*
@@ -1204,6 +1186,13 @@ static ACVP_RESULT acvp_parse_login(ACVP_CTX *ctx) {
     }
 
     obj = acvp_get_obj_from_rsp(val);
+
+    large_required = json_object_get_boolean(obj, "largeEndpointRequired");
+
+    if (large_required) {
+        /* Grab the large submission sizeConstraint */
+        ctx->post_size_constraint = (unsigned int)json_object_get_number(obj, "sizeConstraint");
+    }
 
     /*
      * Get the JWT assigned to this session by the server.  This will need
@@ -1229,6 +1218,105 @@ static ACVP_RESULT acvp_parse_login(ACVP_CTX *ctx) {
     }
 end:
     json_value_free(val);
+    return rv;
+}
+
+ACVP_RESULT acvp_notify_large(ACVP_CTX *ctx,
+                              const char *url,
+                              char *large_url,
+                              unsigned int data_len) {
+    ACVP_RESULT rv = ACVP_SUCCESS;
+    JSON_Value *arr_val = NULL, *val = NULL,
+               *ver_val = NULL, *server_val = NULL;
+    JSON_Object *obj = NULL, *ver_obj = NULL, *server_obj = NULL;
+    JSON_Array *arr = NULL;
+    char *substr = NULL;
+    char snipped_url[ACVP_ATTR_URL_MAX + 1] = {0} ;
+    char *large_notify = NULL;
+    const char *jwt = NULL;
+    int notify_len = 0;
+
+    if (!url) return ACVP_MISSING_ARG;
+    if (!large_url) return ACVP_MISSING_ARG;
+    if (!(data_len > ctx->post_size_constraint)) return ACVP_INVALID_ARG;
+
+    arr_val = json_value_init_array();
+    arr = json_array((const JSON_Value *)arr_val);
+
+    ver_val = json_value_init_object();
+    ver_obj = json_value_get_object(ver_val);
+
+    json_object_set_string(ver_obj, "acvVersion", ACVP_VERSION);
+    json_array_append_value(arr, ver_val);
+
+    /*
+     * Start the large/ array
+     */
+    val = json_value_init_object();
+    obj = json_value_get_object(val);
+
+    /* 
+     * Cut off the https://name:port/ prefix and /results suffix
+     */
+    strstr_s((char *)url, ACVP_ATTR_URL_MAX, "/acvp/v1", 8, &substr);
+    strcpy_s(snipped_url, ACVP_ATTR_URL_MAX, substr);
+    strstr_s(snipped_url, ACVP_ATTR_URL_MAX, "/results", 8, &substr);
+    if (!substr) {
+        rv = ACVP_INVALID_ARG;
+        goto err;
+    }
+    *substr = '\0';
+
+    json_object_set_string(obj, "vectorSetUrl", snipped_url);
+    json_object_set_number(obj, "submissionSize", data_len);
+    
+    json_array_append_value(arr, val);
+
+    large_notify = json_serialize_to_string(arr_val, &notify_len);
+
+    ACVP_LOG_ERR("Notifying /large endpoint for this submission... %s", large_notify);
+    rv = acvp_transport_post(ctx, "large", large_notify, notify_len);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Failed to notify /large endpoint");
+        goto err;
+    }
+
+    server_val = json_parse_string(ctx->curl_buf);
+    if (!server_val) {
+        ACVP_LOG_ERR("JSON parse error");
+        rv = ACVP_JSON_ERR;
+        goto err;
+    }
+    server_obj = acvp_get_obj_from_rsp(server_val);
+
+    /* Grab the full large/ endpoint URL */
+    strcpy_s(large_url, ACVP_ATTR_URL_MAX, json_object_get_string(server_obj, "url"));
+
+    jwt = json_object_get_string(server_obj, "accessToken");
+    if (jwt) {
+        /*
+         * A single-use JWT was given.
+         */
+        if (strnlen_s(jwt, ACVP_JWT_TOKEN_MAX + 1) > ACVP_JWT_TOKEN_MAX) {
+            ACVP_LOG_ERR("access_token too large");
+            rv = ACVP_NO_TOKEN;
+            goto err;
+        }
+
+        if (ctx->tmp_jwt) {
+            memzero_s(ctx->tmp_jwt, ACVP_JWT_TOKEN_MAX);
+        } else {
+            ctx->tmp_jwt = calloc(ACVP_JWT_TOKEN_MAX + 1, sizeof(char));
+        }
+        strcpy_s(ctx->tmp_jwt, ACVP_JWT_TOKEN_MAX + 1, jwt);
+
+        ctx->use_tmp_jwt = 1;
+    }
+
+err:
+    if (arr_val) json_value_free(arr_val);
+    if (server_val) json_value_free(server_val);
+    if (large_notify) json_free_serialized_string(large_notify);
     return rv;
 }
 
@@ -1368,26 +1456,24 @@ ACVP_RESULT acvp_refresh(ACVP_CTX *ctx) {
         return ACVP_NO_CTX;
     }
 
-    if (ctx->totp_cb) {
-        rv = acvp_build_login(ctx, &login, &login_len, 1);
-        if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("Unable to build login message");
-            goto end;
-        }
+    rv = acvp_build_login(ctx, &login, &login_len, 1);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Unable to build login message");
+        goto end;
+    }
 
-        /*
-         * Send the login to the ACVP server and get the response,
-         */
-        rv = acvp_send_login(ctx, login, login_len);
-        if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_STATUS("Login Send Failed");
-            goto end;
-        }
+    /*
+     * Send the login to the ACVP server and get the response,
+     */
+    rv = acvp_send_login(ctx, login, login_len);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_STATUS("Login Send Failed");
+        goto end;
+    }
 
-        rv = acvp_parse_login(ctx);
-        if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_STATUS("Login Response Failed, %d", rv);
-        }
+    rv = acvp_parse_login(ctx);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_STATUS("Login Response Failed, %d", rv);
     }
 end:
     free(login);
@@ -1597,10 +1683,18 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
             current = json_array_get_object(results, i);
 
             strcmp_s("fail", 4, json_object_get_string(current, "status"), &diff);
-            if (!diff && ctx->is_sample) {
-                ACVP_LOG_STATUS("Getting expected results for failed Vector Set...");
-                rv = acvp_retrieve_expected_result(ctx, (char *)json_object_get_string(current, "vectorSetUrl"));
+            if (!diff) {
+                char *vs_url = (char *)json_object_get_string(current, "vectorSetUrl");
+
+                ACVP_LOG_STATUS("Getting details for failed Vector Set...");
+                rv = acvp_retrieve_vector_set_result(ctx, vs_url);
                 if (rv != ACVP_SUCCESS) goto end;
+
+                if (ctx->is_sample) {
+                    ACVP_LOG_STATUS("Getting expected results for failed Vector Set...");
+                    rv = acvp_retrieve_expected_result(ctx, vs_url);
+                    if (rv != ACVP_SUCCESS) goto end;
+                }
             }
         }
 

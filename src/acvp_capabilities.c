@@ -1,29 +1,13 @@
 /** @file */
-/*****************************************************************************
-* Copyright (c) 2018, Cisco Systems, Inc.
-* All rights reserved.
+/*
+ * Copyright (c) 2019, Cisco Systems, Inc.
+ *
+ * Licensed under the Apache License 2.0 (the "License").  You may not use
+ * this file except in compliance with the License.  You can obtain a copy
+ * in the file LICENSE in the source distribution or at
+ * https://github.com/cisco/libacvp/LICENSE
+ */
 
-* Redistribution and use in source and binary forms, with or without modification,
-* are permitted provided that the following conditions are met:
-*
-* 1. Redistributions of source code must retain the above copyright notice,
-*    this list of conditions and the following disclaimer.
-*
-* 2. Redistributions in binary form must reproduce the above copyright notice,
-*    this list of conditions and the following disclaimer in the documentation
-*    and/or other materials provided with the distribution.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-* DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-* FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-* CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-* OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-* USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*****************************************************************************/
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -855,15 +839,22 @@ static ACVP_RESULT acvp_validate_prereq_val(ACVP_CIPHER cipher, ACVP_PREREQ_ALG 
 
         break;
     case ACVP_HASHDRBG:
-    case ACVP_HMACDRBG:
-    case ACVP_CTRDRBG:
-        if (pre_req == ACVP_PREREQ_AES ||
-            pre_req == ACVP_PREREQ_DRBG ||
-            pre_req == ACVP_PREREQ_SHA ||
-            pre_req == ACVP_PREREQ_TDES) {
+        if (pre_req == ACVP_PREREQ_SHA) {
             return ACVP_SUCCESS;
         }
         break;
+     case ACVP_HMACDRBG:
+        if (pre_req == ACVP_PREREQ_SHA ||
+            pre_req == ACVP_PREREQ_HMAC) {
+                return ACVP_SUCCESS;
+        }
+        break;
+     case ACVP_CTRDRBG:
+         if (pre_req == ACVP_PREREQ_AES ||
+             pre_req == ACVP_PREREQ_TDES) {
+             return ACVP_SUCCESS;
+         }
+         break;
     case ACVP_HMAC_SHA1:
     case ACVP_HMAC_SHA2_224:
     case ACVP_HMAC_SHA2_256:
@@ -1280,6 +1271,12 @@ ACVP_RESULT acvp_cap_hash_enable(ACVP_CTX *ctx,
     case ACVP_HASH_SHA256:
     case ACVP_HASH_SHA384:
     case ACVP_HASH_SHA512:
+    case ACVP_HASH_SHA3_224:
+    case ACVP_HASH_SHA3_256:
+    case ACVP_HASH_SHA3_384:
+    case ACVP_HASH_SHA3_512:
+    case ACVP_HASH_SHAKE_128:
+    case ACVP_HASH_SHAKE_256:
         break;
     default:
         ACVP_LOG_ERR("Invalid parameter 'cipher'");
@@ -1295,6 +1292,85 @@ ACVP_RESULT acvp_cap_hash_enable(ACVP_CTX *ctx,
     }
 
     return result;
+}
+
+static ACVP_RESULT acvp_validate_hash_parm_value(ACVP_HASH_PARM parm, int value) {
+    ACVP_RESULT retval = ACVP_INVALID_ARG;
+
+    switch (parm) {
+    case ACVP_HASH_IN_BIT:
+    case ACVP_HASH_IN_EMPTY:
+    case ACVP_HASH_OUT_BIT:
+        retval = is_valid_tf_param(value);
+        break;
+    default:
+        break;
+    }
+
+    return retval;
+}
+
+ACVP_RESULT acvp_cap_hash_set_parm(ACVP_CTX *ctx,
+                                   ACVP_CIPHER cipher,
+                                   ACVP_HASH_PARM param,
+                                   int value) {
+    ACVP_CAPS_LIST *cap;
+    ACVP_HASH_CAP *hash_cap;
+
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+
+    switch (cipher) {
+    case ACVP_HASH_SHA3_224:
+    case ACVP_HASH_SHA3_256:
+    case ACVP_HASH_SHA3_384:
+    case ACVP_HASH_SHA3_512:
+    case ACVP_HASH_SHAKE_128:
+    case ACVP_HASH_SHAKE_256:
+        break;
+    default:
+        return ACVP_INVALID_ARG;
+    }
+
+    cap = acvp_locate_cap_entry(ctx, cipher);
+    if (!cap) {
+        return ACVP_NO_CAP;
+    }
+
+    hash_cap = cap->cap.hash_cap;
+    if (!hash_cap) {
+        return ACVP_NO_CAP;
+    }
+
+    if (acvp_validate_hash_parm_value(param, value) != ACVP_SUCCESS) {
+        return ACVP_INVALID_ARG;
+    }
+
+    switch (param) {
+    case ACVP_HASH_IN_BIT:
+        hash_cap->in_bit = value;
+        break;
+    case ACVP_HASH_IN_EMPTY:
+        hash_cap->in_empty = value;
+        break;
+    case ACVP_HASH_OUT_BIT:
+        switch (cipher) {
+        case ACVP_HASH_SHAKE_128:
+        case ACVP_HASH_SHAKE_256:
+            break;
+        default:
+            ACVP_LOG_ERR("parm 'ACVP_HASH_OUT_BIT' only allowed for ACVP_HASH_SHAKE_* ");
+            return ACVP_INVALID_ARG;
+        }
+
+        hash_cap->out_bit = value;
+        break;
+    default:
+        return ACVP_INVALID_ARG;
+    }
+
+    return ACVP_SUCCESS;
 }
 
 /*
@@ -1320,6 +1396,8 @@ ACVP_RESULT acvp_cap_hash_set_domain(ACVP_CTX *ctx,
     case ACVP_HASH_SHA256:
     case ACVP_HASH_SHA384:
     case ACVP_HASH_SHA512:
+    case ACVP_HASH_SHAKE_128:
+    case ACVP_HASH_SHAKE_256:
         break;
     default:
         return ACVP_INVALID_ARG;
@@ -1327,6 +1405,7 @@ ACVP_RESULT acvp_cap_hash_set_domain(ACVP_CTX *ctx,
 
     cap = acvp_locate_cap_entry(ctx, cipher);
     if (!cap) {
+        ACVP_LOG_ERR("Cap entry not found.");
         return ACVP_NO_CAP;
     }
 
@@ -1338,13 +1417,32 @@ ACVP_RESULT acvp_cap_hash_set_domain(ACVP_CTX *ctx,
     switch (parm) {
     case ACVP_HASH_MESSAGE_LEN:
         if (min < ACVP_HASH_MSG_BIT_MIN ||
-            max > ACVP_HASH_MSG_BIT_MAX) {
+            max > ACVP_HASH_SHA1_SHA2_MSG_BIT_MAX) {
             ACVP_LOG_ERR("min or max outside of acceptable range");
             return ACVP_INVALID_ARG;
         }
         domain = &hash_cap->msg_length;
         break;
+    case ACVP_HASH_OUT_LENGTH:
+        if (cipher != ACVP_HASH_SHAKE_128 &&
+            cipher != ACVP_HASH_SHAKE_256) {
+            ACVP_LOG_ERR("Only SHAKE_128 or SHAKE_256 allowed for ACVP_HASH_OUT_LENGTH");
+            return ACVP_INVALID_ARG;
+        }
+        if (min < ACVP_HASH_XOF_MD_BIT_MIN ||
+            max > ACVP_HASH_XOF_MD_BIT_MAX) {
+            ACVP_LOG_ERR("'ACVP_HASH_OUT_LENGTH' min or max outside of acceptable range");
+            return ACVP_INVALID_ARG;
+        }
+        if (increment + min > ACVP_HASH_XOF_MD_BIT_MAX) {
+            ACVP_LOG_ERR("'ACVP_HASH_OUT_LENGTH' increment(%d) + min(%d) > max(%d)",
+                         increment, min, ACVP_HASH_XOF_MD_BIT_MAX);
+            return ACVP_INVALID_ARG;
+        }
+        domain = &hash_cap->out_len;
+        break;
     default:
+        ACVP_LOG_ERR("Invalid 'parm'");
         return ACVP_INVALID_ARG;
     }
 
@@ -2076,93 +2174,6 @@ static ACVP_RESULT acvp_add_hmac_drbg_cap_parm(ACVP_DRBG_CAP_MODE *drbg_cap_mode
 }
 
 /*
- * Append a DRBG pre req val to the
- */
-static ACVP_RESULT acvp_add_drbg_prereq_val(ACVP_DRBG_CAP_MODE *drbg_cap_mode,
-                                            ACVP_DRBG_MODE mode,
-                                            ACVP_PREREQ_ALG pre_req,
-                                            char *value) {
-    ACVP_PREREQ_LIST *prereq_entry, *prereq_entry_2;
-
-    prereq_entry = calloc(1, sizeof(ACVP_PREREQ_LIST));
-    if (!prereq_entry) {
-        return ACVP_MALLOC_FAIL;
-    }
-    prereq_entry->prereq_alg_val.alg = pre_req;
-    prereq_entry->prereq_alg_val.val = value;
-
-    /*
-     * 1st entry
-     */
-    if (!drbg_cap_mode->prereq_vals) {
-        drbg_cap_mode->prereq_vals = prereq_entry;
-    } else {
-        /*
-         * append to the last in the list
-         */
-        prereq_entry_2 = drbg_cap_mode->prereq_vals;
-        while (prereq_entry_2->next) {
-            prereq_entry_2 = prereq_entry_2->next;
-        }
-        prereq_entry_2->next = prereq_entry;
-    }
-    return ACVP_SUCCESS;
-}
-
-ACVP_RESULT acvp_cap_drbg_set_prereq(ACVP_CTX *ctx,
-                                     ACVP_CIPHER cipher,
-                                     ACVP_DRBG_MODE mode,
-                                     ACVP_PREREQ_ALG pre_req,
-                                     char *value) {
-    ACVP_DRBG_CAP_MODE_LIST *drbg_cap_mode_list;
-    ACVP_CAPS_LIST *cap_list;
-
-    if (!ctx) {
-        return ACVP_NO_CTX;
-    }
-
-    switch (pre_req) {
-    case ACVP_PREREQ_AES:
-    case ACVP_PREREQ_TDES:
-    case ACVP_PREREQ_DRBG:
-    case ACVP_PREREQ_HMAC:
-    case ACVP_PREREQ_SHA:
-        break;
-    default:
-        return ACVP_INVALID_ARG;
-    }
-
-    /*
-     * Locate this cipher in the caps array
-     */
-    cap_list = acvp_locate_cap_entry(ctx, cipher);
-    if (!cap_list) {
-        ACVP_LOG_ERR("Cap entry not found.");
-        return ACVP_NO_CAP;
-    }
-
-    /*
-     * Locate cap mode from array
-     * if the mode does not exist yet then create it.
-     */
-    drbg_cap_mode_list = acvp_locate_drbg_mode_entry(cap_list, mode);
-    if (!drbg_cap_mode_list) {
-        drbg_cap_mode_list = calloc(1, sizeof(ACVP_DRBG_CAP_MODE_LIST));
-        if (!drbg_cap_mode_list) {
-            ACVP_LOG_ERR("Malloc Failed.");
-            return ACVP_MALLOC_FAIL;
-        }
-        drbg_cap_mode_list->cap_mode.mode = mode;
-        cap_list->cap.drbg_cap->drbg_cap_mode_list = drbg_cap_mode_list;
-    }
-
-    /*
-     * Add the value to the cap
-     */
-    return acvp_add_drbg_prereq_val(&drbg_cap_mode_list->cap_mode, mode, pre_req, value);
-}
-
-/*
  * The user should call this after invoking acvp_enable_drbg_cap_parm().
  */
 ACVP_RESULT acvp_cap_drbg_set_parm(ACVP_CTX *ctx,
@@ -2171,6 +2182,7 @@ ACVP_RESULT acvp_cap_drbg_set_parm(ACVP_CTX *ctx,
                                    ACVP_DRBG_PARM param,
                                    int value) {
     ACVP_DRBG_CAP_MODE_LIST *drbg_cap_mode_list;
+    ACVP_DRBG_CAP_MODE_LIST *drbg_cap_mode_list_tmp;
     ACVP_CAPS_LIST *cap_list;
     ACVP_RESULT result;
 
@@ -2208,7 +2220,15 @@ ACVP_RESULT acvp_cap_drbg_set_parm(ACVP_CTX *ctx,
         }
 
         drbg_cap_mode_list->cap_mode.mode = mode;
-        cap_list->cap.drbg_cap->drbg_cap_mode_list = drbg_cap_mode_list;
+        if (cap_list->cap.drbg_cap->drbg_cap_mode_list == NULL) {
+            cap_list->cap.drbg_cap->drbg_cap_mode_list = drbg_cap_mode_list;
+        } else {
+            drbg_cap_mode_list_tmp = cap_list->cap.drbg_cap->drbg_cap_mode_list;
+            while (drbg_cap_mode_list_tmp->next) {
+                drbg_cap_mode_list_tmp = drbg_cap_mode_list_tmp->next;
+            }
+            drbg_cap_mode_list_tmp->next = drbg_cap_mode_list;
+        }
     }
 
     /*

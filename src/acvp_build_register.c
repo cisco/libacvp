@@ -1,29 +1,13 @@
 /** @file */
-/*****************************************************************************
-* Copyright (c) 2018, Cisco Systems, Inc.
-* All rights reserved.
+/*
+ * Copyright (c) 2019, Cisco Systems, Inc.
+ *
+ * Licensed under the Apache License 2.0 (the "License").  You may not use
+ * this file except in compliance with the License.  You can obtain a copy
+ * in the file LICENSE in the source distribution or at
+ * https://github.com/cisco/libacvp/LICENSE
+ */
 
-* Redistribution and use in source and binary forms, with or without modification,
-* are permitted provided that the following conditions are met:
-*
-* 1. Redistributions of source code must retain the above copyright notice,
-*    this list of conditions and the following disclaimer.
-*
-* 2. Redistributions in binary form must reproduce the above copyright notice,
-*    this list of conditions and the following disclaimer in the documentation
-*    and/or other materials provided with the distribution.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-* DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-* FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-* CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-* OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-* USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*****************************************************************************/
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -117,16 +101,47 @@ static ACVP_RESULT acvp_build_hash_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
     if (revision == NULL) return ACVP_INVALID_ARG;
     json_object_set_string(cap_obj, "revision", revision);
 
-    json_object_set_value(cap_obj, "messageLength", json_value_init_array());
-    msg_array = json_object_get_array(cap_obj, "messageLength");
+    if (cap_entry->cipher == ACVP_HASH_SHA3_224 ||
+        cap_entry->cipher == ACVP_HASH_SHA3_256 ||
+        cap_entry->cipher == ACVP_HASH_SHA3_384 ||
+        cap_entry->cipher == ACVP_HASH_SHA3_512 ||
+        cap_entry->cipher == ACVP_HASH_SHAKE_128 ||
+        cap_entry->cipher == ACVP_HASH_SHAKE_256) {
+        json_object_set_boolean(cap_obj, "inBit", cap_entry->cap.hash_cap->in_bit);
+        json_object_set_boolean(cap_obj, "inEmpty", cap_entry->cap.hash_cap->in_empty);
 
-    msg_val = json_value_init_object();
-    msg_obj = json_value_get_object(msg_val);
+        if (cap_entry->cipher == ACVP_HASH_SHAKE_128 ||
+            cap_entry->cipher == ACVP_HASH_SHAKE_256) {
+            /* SHAKE specific capabilities */
+            JSON_Array *tmp_arr = NULL;
+            JSON_Value *tmp_val = NULL;
+            JSON_Object *tmp_obj = NULL;
 
-    json_object_set_number(msg_obj, "min", hash_cap->msg_length.min);
-    json_object_set_number(msg_obj, "max", hash_cap->msg_length.max);
-    json_object_set_number(msg_obj, "increment", hash_cap->msg_length.increment);
-    json_array_append_value(msg_array, msg_val);
+            json_object_set_boolean(cap_obj, "outBit", cap_entry->cap.hash_cap->out_bit);
+
+            json_object_set_value(cap_obj, "outputLength", json_value_init_array());
+            tmp_arr = json_object_get_array(cap_obj, "outputLength");
+            tmp_val = json_value_init_object();
+            tmp_obj = json_value_get_object(tmp_val);
+
+            json_object_set_number(tmp_obj, "min", cap_entry->cap.hash_cap->out_len.min);
+            json_object_set_number(tmp_obj, "max", cap_entry->cap.hash_cap->out_len.max);
+            json_object_set_number(tmp_obj, "increment", cap_entry->cap.hash_cap->out_len.increment);
+
+            json_array_append_value(tmp_arr, tmp_val);
+        }
+    } else {
+        json_object_set_value(cap_obj, "messageLength", json_value_init_array());
+        msg_array = json_object_get_array(cap_obj, "messageLength");
+
+        msg_val = json_value_init_object();
+        msg_obj = json_value_get_object(msg_val);
+
+        json_object_set_number(msg_obj, "min", hash_cap->msg_length.min);
+        json_object_set_number(msg_obj, "max", hash_cap->msg_length.max);
+        json_object_set_number(msg_obj, "increment", hash_cap->msg_length.increment);
+        json_array_append_value(msg_array, msg_val);
+    }
 
     return ACVP_SUCCESS;
 }
@@ -504,61 +519,10 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
     return ACVP_SUCCESS;
 }
 
-static ACVP_RESULT acvp_lookup_drbg_prereqVals(JSON_Object *cap_obj, ACVP_DRBG_CAP_MODE *drbg_cap_mode) {
-    JSON_Array *prereq_array = NULL;
-    ACVP_PREREQ_LIST *prereq_vals, *next_pre_req;
-    ACVP_PREREQ_ALG_VAL *pre_req;
-    char *alg_str;
-    int i;
-
-    if (!drbg_cap_mode) { return ACVP_INVALID_ARG; }
-
-    /*
-     * Init json array
-     */
-    json_object_set_value(cap_obj, ACVP_PREREQ_OBJ_STR, json_value_init_array());
-    prereq_array = json_object_get_array(cap_obj, ACVP_PREREQ_OBJ_STR);
-
-    /*
-     * return OK if nothing present
-     */
-    prereq_vals = drbg_cap_mode->prereq_vals;
-    if (!prereq_vals) {
-        return ACVP_SUCCESS;
-    }
-
-
-    while (prereq_vals) {
-        JSON_Value *val = NULL;
-        JSON_Object *obj = NULL;
-        val = json_value_init_object();
-        obj = json_value_get_object(val);
-        pre_req = &prereq_vals->prereq_alg_val;
-
-        for (i = 0; i < ACVP_NUM_PREREQS; i++) {
-            if (acvp_prereqs_tbl[i].alg == pre_req->alg) {
-                alg_str = acvp_prereqs_tbl[i].name;
-                json_object_set_string(obj, "algorithm", alg_str);
-                json_object_set_string(obj, ACVP_PREREQ_VAL_STR, pre_req->val);
-                break;
-            }
-        }
-
-        json_array_append_value(prereq_array, val);
-        next_pre_req = prereq_vals->next;
-        prereq_vals = next_pre_req;
-    }
-    return ACVP_SUCCESS;
-}
-
-static char *acvp_lookup_drbg_mode_string(ACVP_CAPS_LIST *cap_entry) {
+static char *acvp_lookup_drbg_mode_string(ACVP_DRBG_CAP_MODE *drbg_cap_mode) {
     char *mode_str = NULL;
 
-    if (!cap_entry) { return NULL; }
-    if (!cap_entry->cap.drbg_cap) { return NULL; }
-    if (!cap_entry->cap.drbg_cap->drbg_cap_mode_list) { return NULL; }
-
-    switch (cap_entry->cap.drbg_cap->drbg_cap_mode_list->cap_mode.mode) {
+    switch (drbg_cap_mode->mode) {
     case ACVP_DRBG_SHA_1:
         mode_str = ACVP_STR_SHA_1;
         break;
@@ -605,10 +569,11 @@ static ACVP_RESULT acvp_build_drbg_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
     JSON_Value *len_val = NULL;
     JSON_Array *array = NULL;
     const char *revision = NULL;
-
-    char *mode_str = acvp_lookup_drbg_mode_string(cap_entry);
-
-    if (!mode_str) { return ACVP_INVALID_ARG; }
+    ACVP_DRBG_CAP_MODE_LIST *drbg_cap_mode_list = NULL;
+    JSON_Value *val = NULL;
+    JSON_Object *capabilities_obj = NULL;
+    JSON_Array *capabilities_array = NULL;
+    char *mode_str = NULL;
 
     if (!&cap_entry->cap.drbg_cap) {
         return ACVP_NO_CAP;
@@ -626,7 +591,7 @@ static ACVP_RESULT acvp_build_drbg_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
     if (revision == NULL) return ACVP_INVALID_ARG;
     json_object_set_string(cap_obj, "revision", revision);
 
-    result = acvp_lookup_drbg_prereqVals(cap_obj, drbg_cap_mode);
+    result = acvp_lookup_prereqVals(cap_obj, cap_entry);
     if (result != ACVP_SUCCESS) { return result; }
 
     json_object_set_value(cap_obj, "predResistanceEnabled", json_value_init_array());
@@ -634,90 +599,95 @@ static ACVP_RESULT acvp_build_drbg_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
     json_array_append_boolean(array, drbg_cap_mode->pred_resist_enabled);
     json_object_set_boolean(cap_obj, "reseedImplemented", drbg_cap_mode->reseed_implemented);
 
-    JSON_Array *capabilities_array = NULL;
     json_object_set_value(cap_obj, "capabilities", json_value_init_array());
     capabilities_array = json_object_get_array(cap_obj, "capabilities");
-    JSON_Value *val = NULL;
-    JSON_Object *capabilities_obj = NULL;
-    val = json_value_init_object();
-    capabilities_obj = json_value_get_object(val);
-    json_object_set_string(capabilities_obj, "mode", mode_str);
-    json_object_set_boolean(capabilities_obj, "derFuncEnabled", drbg_cap_mode->der_func_enabled);
 
-    //Set entropy range
-    json_object_set_value(capabilities_obj, "entropyInputLen", json_value_init_array());
-    array = json_object_get_array(capabilities_obj, "entropyInputLen");
-    if (!drbg_cap_mode->entropy_len_step) {
-        if (drbg_cap_mode->entropy_len_min) {
-            json_array_append_number(array, drbg_cap_mode->entropy_len_min);
-        } else if (drbg_cap_mode->entropy_len_max) {
-            json_array_append_number(array, drbg_cap_mode->entropy_len_max);
+    drbg_cap_mode_list = cap_entry->cap.drbg_cap->drbg_cap_mode_list;
+
+     while(drbg_cap_mode_list) {
+        drbg_cap_mode = &drbg_cap_mode_list->cap_mode;
+        mode_str = acvp_lookup_drbg_mode_string(drbg_cap_mode);
+        if (!mode_str) { return ACVP_INVALID_ARG; }
+
+        val = json_value_init_object();
+        capabilities_obj = json_value_get_object(val);
+        json_object_set_string(capabilities_obj, "mode", mode_str);
+        json_object_set_boolean(capabilities_obj, "derFuncEnabled", drbg_cap_mode->der_func_enabled);
+
+        //Set entropy range
+        json_object_set_value(capabilities_obj, "entropyInputLen", json_value_init_array());
+        array = json_object_get_array(capabilities_obj, "entropyInputLen");
+        if (!drbg_cap_mode->entropy_len_step) {
+            if (drbg_cap_mode->entropy_len_min) {
+                json_array_append_number(array, drbg_cap_mode->entropy_len_min);
+            } else if (drbg_cap_mode->entropy_len_max) {
+                json_array_append_number(array, drbg_cap_mode->entropy_len_max);
+            }
+        } else {
+            len_val = json_value_init_object();
+            len_obj = json_value_get_object(len_val);
+            json_object_set_number(len_obj, "max", drbg_cap_mode->entropy_len_max);
+            json_object_set_number(len_obj, "min", drbg_cap_mode->entropy_len_min);
+            json_object_set_number(len_obj, "step", drbg_cap_mode->entropy_len_step);
+            json_array_append_value(array, len_val);
         }
-    } else {
-        len_val = json_value_init_object();
-        len_obj = json_value_get_object(len_val);
-        json_object_set_number(len_obj, "max", drbg_cap_mode->entropy_len_max);
-        json_object_set_number(len_obj, "min", drbg_cap_mode->entropy_len_min);
-        json_object_set_number(len_obj, "step", drbg_cap_mode->entropy_len_step);
-        json_array_append_value(array, len_val);
-    }
 
-    json_object_set_value(capabilities_obj, "nonceLen", json_value_init_array());
-    array = json_object_get_array(capabilities_obj, "nonceLen");
-    if (!drbg_cap_mode->nonce_len_step) {
-        if (drbg_cap_mode->nonce_len_min) {
-            json_array_append_number(array, drbg_cap_mode->nonce_len_min);
-        } else if (drbg_cap_mode->nonce_len_max) {
-            json_array_append_number(array, drbg_cap_mode->nonce_len_max);
+        json_object_set_value(capabilities_obj, "nonceLen", json_value_init_array());
+        array = json_object_get_array(capabilities_obj, "nonceLen");
+        if (!drbg_cap_mode->nonce_len_step) {
+            if (drbg_cap_mode->nonce_len_min) {
+                json_array_append_number(array, drbg_cap_mode->nonce_len_min);
+            } else if (drbg_cap_mode->nonce_len_max) {
+                json_array_append_number(array, drbg_cap_mode->nonce_len_max);
+            }
+        } else {
+            len_val = json_value_init_object();
+            len_obj = json_value_get_object(len_val);
+            json_object_set_number(len_obj, "max", drbg_cap_mode->nonce_len_max);
+            json_object_set_number(len_obj, "min", drbg_cap_mode->nonce_len_min);
+            json_object_set_number(len_obj, "step", drbg_cap_mode->nonce_len_step);
+            json_array_append_value(array, len_val);
         }
-    } else {
-        len_val = json_value_init_object();
-        len_obj = json_value_get_object(len_val);
-        json_object_set_number(len_obj, "max", drbg_cap_mode->nonce_len_max);
-        json_object_set_number(len_obj, "min", drbg_cap_mode->nonce_len_min);
-        json_object_set_number(len_obj, "step", drbg_cap_mode->nonce_len_step);
-        json_array_append_value(array, len_val);
-    }
 
-    json_object_set_value(capabilities_obj, "persoStringLen", json_value_init_array());
-    array = json_object_get_array(capabilities_obj, "persoStringLen");
-    if (!drbg_cap_mode->perso_len_step) {
-        if (drbg_cap_mode->perso_len_min) {
-            json_array_append_number(array, drbg_cap_mode->perso_len_min);
-        } else if (drbg_cap_mode->perso_len_max) {
-            json_array_append_number(array, drbg_cap_mode->perso_len_max);
+        json_object_set_value(capabilities_obj, "persoStringLen", json_value_init_array());
+        array = json_object_get_array(capabilities_obj, "persoStringLen");
+        if (!drbg_cap_mode->perso_len_step) {
+            if (drbg_cap_mode->perso_len_min) {
+                json_array_append_number(array, drbg_cap_mode->perso_len_min);
+            } else if (drbg_cap_mode->perso_len_max) {
+                json_array_append_number(array, drbg_cap_mode->perso_len_max);
+            }
+        } else {
+            len_val = json_value_init_object();
+            len_obj = json_value_get_object(len_val);
+            json_object_set_number(len_obj, "max", drbg_cap_mode->perso_len_max);
+            json_object_set_number(len_obj, "min", drbg_cap_mode->perso_len_min);
+            json_object_set_number(len_obj, "step", drbg_cap_mode->perso_len_step);
+            json_array_append_value(array, len_val);
         }
-    } else {
-        len_val = json_value_init_object();
-        len_obj = json_value_get_object(len_val);
-        json_object_set_number(len_obj, "max", drbg_cap_mode->perso_len_max);
-        json_object_set_number(len_obj, "min", drbg_cap_mode->perso_len_min);
-        json_object_set_number(len_obj, "step", drbg_cap_mode->perso_len_step);
-        json_array_append_value(array, len_val);
-    }
 
-    json_object_set_value(capabilities_obj, "additionalInputLen", json_value_init_array());
-    array = json_object_get_array(capabilities_obj, "additionalInputLen");
-    if (!drbg_cap_mode->additional_in_len_step) {
-        if (drbg_cap_mode->additional_in_len_min) {
-            json_array_append_number(array, drbg_cap_mode->additional_in_len_min);
-        } else if (drbg_cap_mode->additional_in_len_max) {
-            json_array_append_number(array, drbg_cap_mode->additional_in_len_max);
+        json_object_set_value(capabilities_obj, "additionalInputLen", json_value_init_array());
+        array = json_object_get_array(capabilities_obj, "additionalInputLen");
+        if (!drbg_cap_mode->additional_in_len_step) {
+            if (drbg_cap_mode->additional_in_len_min) {
+                json_array_append_number(array, drbg_cap_mode->additional_in_len_min);
+            } else if (drbg_cap_mode->additional_in_len_max) {
+                json_array_append_number(array, drbg_cap_mode->additional_in_len_max);
+            }
+        } else {
+            len_val = json_value_init_object();
+            len_obj = json_value_get_object(len_val);
+            json_object_set_number(len_obj, "max", drbg_cap_mode->additional_in_len_max);
+            json_object_set_number(len_obj, "min", drbg_cap_mode->additional_in_len_min);
+            json_object_set_number(len_obj, "step", drbg_cap_mode->additional_in_len_step);
+            json_array_append_value(array, len_val);
         }
-    } else {
-        len_val = json_value_init_object();
-        len_obj = json_value_get_object(len_val);
-        json_object_set_number(len_obj, "max", drbg_cap_mode->additional_in_len_max);
-        json_object_set_number(len_obj, "min", drbg_cap_mode->additional_in_len_min);
-        json_object_set_number(len_obj, "step", drbg_cap_mode->additional_in_len_step);
-        json_array_append_value(array, len_val);
+
+        //Set DRBG Length
+        json_object_set_number(capabilities_obj, "returnedBitsLen", drbg_cap_mode->returned_bits_len);
+        json_array_append_value(capabilities_array, val);
+        drbg_cap_mode_list = drbg_cap_mode_list->next;
     }
-
-    //Set DRBG Length
-    json_object_set_number(capabilities_obj, "returnedBitsLen", drbg_cap_mode->returned_bits_len);
-
-    json_array_append_value(capabilities_array, val);
-
     return ACVP_SUCCESS;
 }
 
@@ -2603,6 +2573,12 @@ ACVP_RESULT acvp_build_test_session(ACVP_CTX *ctx, char **reg, int *out_len) {
             case ACVP_HASH_SHA256:
             case ACVP_HASH_SHA384:
             case ACVP_HASH_SHA512:
+            case ACVP_HASH_SHA3_224:
+            case ACVP_HASH_SHA3_256:
+            case ACVP_HASH_SHA3_384:
+            case ACVP_HASH_SHA3_512:
+            case ACVP_HASH_SHAKE_128:
+            case ACVP_HASH_SHAKE_256:
                 rv = acvp_build_hash_register_cap(cap_obj, cap_entry);
                 break;
             case ACVP_HASHDRBG:

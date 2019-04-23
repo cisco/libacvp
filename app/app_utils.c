@@ -1,28 +1,12 @@
-/*****************************************************************************
-* Copyright (c) 2019, Cisco Systems, Inc.
-* All rights reserved.
-*
-* Redistribution and use in source and binary forms, with or without modification,
-* are permitted provided that the following conditions are met:
-*
-* 1. Redistributions of source code must retain the above copyright notice,
-*    this list of conditions and the following disclaimer.
-*
-* 2. Redistributions in binary form must reproduce the above copyright notice,
-*    this list of conditions and the following disclaimer in the documentation
-*    and/or other materials provided with the distribution.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-* DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-* FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-* CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-* OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-* USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*****************************************************************************/
+/*
+ * Copyright (c) 2019, Cisco Systems, Inc.
+ *
+ * Licensed under the Apache License 2.0 (the "License").  You may not use
+ * this file except in compliance with the License.  You can obtain a copy
+ * in the file LICENSE in the source distribution or at
+ * https://github.com/cisco/libacvp/LICENSE
+ */
+
 
 #include <openssl/evp.h>
 #include <openssl/hmac.h>
@@ -156,27 +140,27 @@ end:
     return len;
 }
 
-ACVP_RESULT totp(char **token, int token_max) {
+static ACVP_RESULT totp(char **token, int token_max) {
     char hash[MAX_LEN] = {0};
     int os, bin, otp;
     int md_len;
     char format[5];
     time_t t;
     unsigned char token_buff[T_LEN + 1] = {0};
-    char *new_seed = calloc(ACVP_TOTP_TOKEN_MAX, sizeof(char));
+    char *new_seed = NULL;
     char *seed = NULL;
     int seed_len = 0;
 
+    seed = getenv("ACV_TOTP_SEED");
+    if (!seed) {
+        /* Not required to use 2-factor auth */
+        return ACVP_SUCCESS;
+    }
+
+    new_seed = calloc(ACVP_TOTP_TOKEN_MAX, sizeof(char));
     if (!new_seed) {
         printf("Failed to malloc new_seed\n");
         return ACVP_MALLOC_FAIL;
-    }
-
-    seed = getenv("ACV_TOTP_SEED");
-    if (!seed) {
-        printf("Failed to get TOTP seed\n");
-        free(new_seed);
-        return ACVP_TOTP_MISSING_SEED;
     }
 
     t = time(NULL);
@@ -224,5 +208,23 @@ ACVP_RESULT totp(char **token, int token_max) {
     memcpy_s((char *)*token, token_max, token_buff, ACVP_TOTP_LENGTH);
     free(new_seed);
     return ACVP_SUCCESS;
+}
+
+int app_setup_two_factor_auth(ACVP_CTX *ctx) {
+    ACVP_RESULT rv = 0;
+
+    if (getenv("ACV_TOTP_SEED")) {
+        /*
+         * Specify the callback to be used for 2-FA to perform
+         * TOTP calculation
+         */
+        rv = acvp_set_2fa_callback(ctx, &totp);
+        if (rv != ACVP_SUCCESS) {
+            printf("Failed to set Two-factor authentication callback\n");
+            return 1;
+        }
+    }
+
+    return 0;
 }
 
