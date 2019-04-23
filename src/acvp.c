@@ -39,8 +39,6 @@ static void acvp_cap_free_sl(ACVP_SL_LIST *list);
 
 static void acvp_cap_free_nl(ACVP_NAME_LIST *list);
 
-static void acvp_cap_free_strl(ACVP_STRING_LIST *list);
-
 static void acvp_cap_free_hash_pairs(ACVP_RSA_HASH_PAIR_LIST *list);
 
 static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url);
@@ -596,7 +594,7 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx) {
         }
     }
     if (ctx->vsid_url_list) {
-        acvp_cap_free_strl(ctx->vsid_url_list);
+        acvp_cap_free_str_list(&ctx->vsid_url_list);
     }
     if (ctx->caps_list) {
         cap_entry = ctx->caps_list;
@@ -754,23 +752,7 @@ static void acvp_cap_free_nl(ACVP_NAME_LIST *list) {
     }
 }
 
-/*
- * Simple utility function to free a string
- * list from the capabilities structure.
- */
-static void acvp_cap_free_strl(ACVP_STRING_LIST *list) {
-    ACVP_STRING_LIST *top = list;
-    ACVP_STRING_LIST *tmp;
-
-    while (top) {
-        tmp = top;
-        top = top->next;
-        free(tmp->string);
-        free(tmp);
-    }
-}
-
-static void acvp_cap_free_hash_pairs(ACVP_RSA_HASH_PAIR_LIST *list) {
+tatic void acvp_cap_free_hash_pairs(ACVP_RSA_HASH_PAIR_LIST *list) {
     ACVP_RSA_HASH_PAIR_LIST *top = list;
     ACVP_RSA_HASH_PAIR_LIST *tmp;
 

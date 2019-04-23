@@ -492,24 +492,12 @@ ACVP_RESULT acvp_submit_vector_responses(ACVP_CTX *ctx, char *vsid_url) {
     return acvp_network_action(ctx, ACVP_NET_POST_VS_RESP, url, NULL, 0);
 }
 
-ACVP_RESULT acvp_transport_post(ACVP_CTX *ctx, const char *uri, char *data, int data_len) {
-    ACVP_RESULT rv = 0;
-    char constructed_url[ACVP_ATTR_URL_MAX] = {0};
-
-    rv = sanity_check_ctx(ctx);
-    if (ACVP_SUCCESS != rv) return rv;
-
-    if (!uri) {
-        ACVP_LOG_ERR("Missing uri");
-        return ACVP_MISSING_ARG;
-    }
-
-    snprintf(constructed_url, ACVP_ATTR_URL_MAX - 1,
-             "https://%s:%d/%s%s",
-             ctx->server_name, ctx->server_port,
-             ctx->path_segment, uri);
-
-    return acvp_network_action(ctx, ACVP_NET_POST, constructed_url, data, data_len);
+ACVP_RESULT acvp_transport_post(ACVP_CTX *ctx,
+                                const char *uri,
+                                char *data,
+                                int data_len) {
+    return acvp_send_with_path_seg(ctx, ACVP_NET_POST,
+                                   uri, data, data_len);
 }
 
 /*

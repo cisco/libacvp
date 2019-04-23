@@ -671,7 +671,7 @@
 
 #define ACVP_SESSION_PARAMS_STR_LEN_MAX 256
 #define ACVP_PATH_SEGMENT_DEFAULT ""
-#define ACVP_JSON_FILENAME_MAX 24
+#define ACVP_JSON_FILENAME_MAX 128
 
 #define ACVP_CFB1_BIT_MASK      0x80
 
@@ -1143,49 +1143,50 @@ typedef struct acvp_vendor_address_t {
     char *url; /**< ID URL returned from the server */
 } ACVP_VENDOR_ADDRESS;
 
-#define VENDOR_ADDRESSES_MAX 4
-typedef struct acvp_vendor_addresses_t {
-    ACVP_VENDOR_ADDRESS address[VENDOR_ADDRESSES_MAX];
-    unsigned int count; /**< The number of items in address[] */
-} ACVP_VENDOR_ADDRESSES;
-
-typedef struct acvp_vendor_t {
-    char *name;
-    char *website;
-    char *email;
-    char *phone_number;
-    char *url; /**< ID URL returned from the server */
-    ACVP_VENDOR_ADDRESSES addresses;
-} ACVP_VENDOR;
-
-#define LIBACVP_VENDORS_MAX 8
-typedef struct acvp_vendors_t {
-    ACVP_VENDOR v[LIBACVP_VENDORS_MAX];
-    unsigned int count;
-} ACVP_VENDORS;
+typedef struct acvp_oe_phone_list_t {
+    char *number;
+    char *type;
+    struct acvp_oe_phone_list_t *next;
+} ACVP_OE_PHONE_LIST;
 
 typedef struct acvp_person_t {
-    char *full_name;
-    char *phone_number;
-    char *email;
     char *url; /**< ID URL returned from the server */
-    ACVP_VENDOR *vendor[LIBACVP_VENDORS_MAX]; /**< Array of (pointers to) Vendors that this person belongs to */
-    unsigned int num_vendors; /**< Number of entries in vendor[] */
+    char *full_name;
+    ACVP_OE_PHONE_LIST *phone_numbers;
+    ACVP_STRING_LIST *emails;
 } ACVP_PERSON;
 
-#define LIBACVP_PERSONS_MAX 16
+#define LIBACVP_PERSONS_MAX 8
 typedef struct acvp_persons_t {
     ACVP_PERSON person[LIBACVP_PERSONS_MAX];
     unsigned int count;
 } ACVP_PERSONS;
 
+typedef struct acvp_vendor_t {
+    unsigned int id; /**< For library tracking purposes */
+    char *url; /**< ID URL returned from the server */
+    char *name;
+    char *website;
+    ACVP_OE_PHONE_LIST *phone_numbers;
+    ACVP_STRING_LIST emails;
+    ACVP_VENDOR_ADDRESS address;
+    ACVP_PERSONS persons;
+} ACVP_VENDOR;
+
+#define LIBACVP_VENDORS_MAX 8
+typedef struct acvp_vendors_t {
+    ACVP_VENDOR v[LIBACVP_VENDORS_MAX];
+    int count;
+} ACVP_VENDORS;
+
 typedef struct acvp_module_t {
+    unsigned int id; /**< For library tracking purposes */
     char *name;
     char *type;
     char *version;
     char *description;
     char *url; /**< ID URL returned from the server */
-    ACVP_VENDOR *vendor;
+    ACVP_VENDOR *vendor; /**< Poinetr to the Vendor to use */
 } ACVP_MODULE;
 
 #define LIBACVP_MODULES_MAX 32
@@ -1195,10 +1196,10 @@ typedef struct acvp_modules_t {
 } ACVP_MODULES;
 
 typedef struct acvp_oe_t {
+    int id; /**< For library tracking purposes */
     char *name; /**< Name of the Operating Environment */
     char *url; /**< ID URL returned from the server */
-    ACVP_DEPENDENCY *deps[LIBACVP_DEPENDENCIES_MAX]; /**< Array of pointers to the actual dependencies structs */
-    unsigned int num_deps; /**< Number of entries in deps */
+    ACVP_DEPENDENCY *dependency; /**< Pointer to the Dependency to use */
 } ACVP_OE;
 
 #define LIBACVP_OES_MAX 8
@@ -1206,6 +1207,13 @@ typedef struct acvp_oes_t {
     ACVP_OE oe[LIBACVP_OES_MAX];
     unsigned int count;
 } ACVP_OES;
+
+typedef struct acvp_operating_env_t {
+    ACVP_VENDORS vendors; /**< Vendors */
+    ACVP_DEPENDENCIES; /** Dependencies */
+    ACVP_MODULES modules; /**< Modules */
+    ACVP_OES oes; /**< Operating Environments */
+} ACVP_OPERATING_ENV;
 
 /*
  * This struct holds all the global data for a test session, such
@@ -1225,11 +1233,7 @@ struct acvp_ctx_t {
     char *tls_cert;         /* Location of PEM encoded X509 cert to use for TLS client auth */
     char *tls_key;          /* Location of PEM encoded priv key to use for TLS client auth */
     
-    ACVP_OES oes; /**< Operating Environments */
-    ACVP_VENDORS vendors; /**< Vendors */
-    ACVP_PERSONS persons; /**< Persons */
-    ACVP_MODULES modules; /**< Modules */
-    ACVP_DEPENDENCIES dependencies; /**< Dependencies */
+    ACVP_OPERATING_ENV op_env; /**< The Operating Environment resources available */
     ACVP_STRING_LIST *vsid_url_list;
     char *session_url;
 
@@ -1441,5 +1445,7 @@ JSON_Object *acvp_get_obj_from_rsp(JSON_Value *arry_val);
 void acvp_free_kv_list(ACVP_KV_LIST *kv_list);
 
 int string_fits(const char *string, unsigned int max_allowed);
+
+void acvp_cap_free_str_list(ACVP_STRING_LIST **list);
 
 #endif

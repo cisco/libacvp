@@ -865,3 +865,25 @@ int string_fits(const char *string, unsigned int max_allowed) {
     return 1;
 }
 
+/*
+ * Simple utility function to free a string
+ * list.
+ */
+void acvp_free_str_list(ACVP_STRING_LIST **list) {
+    ACVP_STRING_LIST *top = NULL;
+    ACVP_STRING_LIST *tmp = NULL;;
+
+    if (list == NULL) return;
+    top = *list;
+    if (top == NULL) return;
+
+    while (top) {
+        if (top->string) free(top->string);
+        tmp = top;
+        top = top->next;
+        free(tmp);
+    }
+
+    *list = NULL;
+}
+
