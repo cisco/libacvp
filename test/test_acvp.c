@@ -137,7 +137,7 @@ static void setup_full_ctx(void) {
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_drbg_set_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1,  ACVP_DRBG_DER_FUNC_ENABLED, 0);
     cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_drbg_set_prereq(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1, ACVP_PREREQ_SHA, value);
+    rv = acvp_cap_set_prereq(ctx, ACVP_HASHDRBG, ACVP_PREREQ_SHA, value);
     cr_assert(rv == ACVP_SUCCESS);
 
 }

@@ -28,7 +28,7 @@ static void setup(void) {
                                     ACVP_DRBG_DER_FUNC_ENABLED, 0);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_drbg_set_prereq(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1,
+    rv = acvp_cap_set_prereq(ctx, ACVP_HASHDRBG, 
             ACVP_PREREQ_SHA, value);
     cr_assert(rv == ACVP_SUCCESS);
 
@@ -63,10 +63,10 @@ static void setup(void) {
     rv = acvp_cap_drbg_enable(ctx, ACVP_HMACDRBG, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_drbg_set_prereq(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224,
+    rv = acvp_cap_set_prereq(ctx, ACVP_HMACDRBG, 
             ACVP_PREREQ_SHA, value);
     cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_drbg_set_prereq(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224,
+    rv = acvp_cap_set_prereq(ctx, ACVP_HMACDRBG, 
             ACVP_PREREQ_HMAC, value);
     cr_assert(rv == ACVP_SUCCESS);
 
@@ -105,10 +105,6 @@ static void setup(void) {
 
     // ACVP_CTRDRBG
     rv = acvp_cap_drbg_enable(ctx, ACVP_CTRDRBG, &dummy_handler_success);
-    cr_assert(rv == ACVP_SUCCESS);
-
-    rv = acvp_cap_drbg_set_prereq(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128,
-            ACVP_PREREQ_DRBG, value);
     cr_assert(rv == ACVP_SUCCESS);
 
     //Add length range
@@ -155,7 +151,7 @@ static void setup_fail(void) {
                                     ACVP_DRBG_DER_FUNC_ENABLED, 0);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_drbg_set_prereq(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1,
+    rv = acvp_cap_set_prereq(ctx, ACVP_HASHDRBG, 
             ACVP_PREREQ_SHA, value);
     cr_assert(rv == ACVP_SUCCESS);
 
@@ -190,10 +186,10 @@ static void setup_fail(void) {
     rv = acvp_cap_drbg_enable(ctx, ACVP_HMACDRBG, &dummy_handler_failure);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_drbg_set_prereq(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224,
+    rv = acvp_cap_set_prereq(ctx, ACVP_HMACDRBG, 
             ACVP_PREREQ_SHA, value);
     cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_drbg_set_prereq(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224,
+    rv = acvp_cap_set_prereq(ctx, ACVP_HMACDRBG, 
             ACVP_PREREQ_HMAC, value);
     cr_assert(rv == ACVP_SUCCESS);
 
@@ -232,10 +228,6 @@ static void setup_fail(void) {
 
     // ACVP_CTRDRBG
     rv = acvp_cap_drbg_enable(ctx, ACVP_CTRDRBG, &dummy_handler_failure);
-    cr_assert(rv == ACVP_SUCCESS);
-
-    rv = acvp_cap_drbg_set_prereq(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128,
-            ACVP_PREREQ_DRBG, value);
     cr_assert(rv == ACVP_SUCCESS);
 
     //Add length range
@@ -289,7 +281,7 @@ Test(DRBG_CAPABILITY, good) {
                                     ACVP_DRBG_DER_FUNC_ENABLED, 0);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_drbg_set_prereq(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1,
+    rv = acvp_cap_set_prereq(ctx, ACVP_HASHDRBG, 
             ACVP_PREREQ_SHA, value);
     cr_assert(rv == ACVP_SUCCESS);
 
@@ -324,10 +316,10 @@ Test(DRBG_CAPABILITY, good) {
     rv = acvp_cap_drbg_enable(ctx, ACVP_HMACDRBG, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_drbg_set_prereq(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224,
+    rv = acvp_cap_set_prereq(ctx, ACVP_HMACDRBG, 
             ACVP_PREREQ_SHA, value);
     cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_drbg_set_prereq(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224,
+    rv = acvp_cap_set_prereq(ctx, ACVP_HMACDRBG, 
             ACVP_PREREQ_HMAC, value);
     cr_assert(rv == ACVP_SUCCESS);
 
@@ -366,10 +358,6 @@ Test(DRBG_CAPABILITY, good) {
 
     // ACVP_CTRDRBG
     rv = acvp_cap_drbg_enable(ctx, ACVP_CTRDRBG, &dummy_handler_success);
-    cr_assert(rv == ACVP_SUCCESS);
-
-    rv = acvp_cap_drbg_set_prereq(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128,
-            ACVP_PREREQ_DRBG, value);
     cr_assert(rv == ACVP_SUCCESS);
 
     //Add length range

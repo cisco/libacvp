@@ -519,61 +519,10 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
     return ACVP_SUCCESS;
 }
 
-static ACVP_RESULT acvp_lookup_drbg_prereqVals(JSON_Object *cap_obj, ACVP_DRBG_CAP_MODE *drbg_cap_mode) {
-    JSON_Array *prereq_array = NULL;
-    ACVP_PREREQ_LIST *prereq_vals, *next_pre_req;
-    ACVP_PREREQ_ALG_VAL *pre_req;
-    char *alg_str;
-    int i;
-
-    if (!drbg_cap_mode) { return ACVP_INVALID_ARG; }
-
-    /*
-     * Init json array
-     */
-    json_object_set_value(cap_obj, ACVP_PREREQ_OBJ_STR, json_value_init_array());
-    prereq_array = json_object_get_array(cap_obj, ACVP_PREREQ_OBJ_STR);
-
-    /*
-     * return OK if nothing present
-     */
-    prereq_vals = drbg_cap_mode->prereq_vals;
-    if (!prereq_vals) {
-        return ACVP_SUCCESS;
-    }
-
-
-    while (prereq_vals) {
-        JSON_Value *val = NULL;
-        JSON_Object *obj = NULL;
-        val = json_value_init_object();
-        obj = json_value_get_object(val);
-        pre_req = &prereq_vals->prereq_alg_val;
-
-        for (i = 0; i < ACVP_NUM_PREREQS; i++) {
-            if (acvp_prereqs_tbl[i].alg == pre_req->alg) {
-                alg_str = acvp_prereqs_tbl[i].name;
-                json_object_set_string(obj, "algorithm", alg_str);
-                json_object_set_string(obj, ACVP_PREREQ_VAL_STR, pre_req->val);
-                break;
-            }
-        }
-
-        json_array_append_value(prereq_array, val);
-        next_pre_req = prereq_vals->next;
-        prereq_vals = next_pre_req;
-    }
-    return ACVP_SUCCESS;
-}
-
-static char *acvp_lookup_drbg_mode_string(ACVP_CAPS_LIST *cap_entry) {
+static char *acvp_lookup_drbg_mode_string(ACVP_DRBG_CAP_MODE *drbg_cap_mode) {
     char *mode_str = NULL;
 
-    if (!cap_entry) { return NULL; }
-    if (!cap_entry->cap.drbg_cap) { return NULL; }
-    if (!cap_entry->cap.drbg_cap->drbg_cap_mode_list) { return NULL; }
-
-    switch (cap_entry->cap.drbg_cap->drbg_cap_mode_list->cap_mode.mode) {
+    switch (drbg_cap_mode->mode) {
     case ACVP_DRBG_SHA_1:
         mode_str = ACVP_STR_SHA_1;
         break;
@@ -620,10 +569,11 @@ static ACVP_RESULT acvp_build_drbg_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
     JSON_Value *len_val = NULL;
     JSON_Array *array = NULL;
     const char *revision = NULL;
-
-    char *mode_str = acvp_lookup_drbg_mode_string(cap_entry);
-
-    if (!mode_str) { return ACVP_INVALID_ARG; }
+    ACVP_DRBG_CAP_MODE_LIST *drbg_cap_mode_list = NULL;
+    JSON_Value *val = NULL;
+    JSON_Object *capabilities_obj = NULL;
+    JSON_Array *capabilities_array = NULL;
+    char *mode_str = NULL;
 
     if (!&cap_entry->cap.drbg_cap) {
         return ACVP_NO_CAP;
@@ -641,7 +591,7 @@ static ACVP_RESULT acvp_build_drbg_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
     if (revision == NULL) return ACVP_INVALID_ARG;
     json_object_set_string(cap_obj, "revision", revision);
 
-    result = acvp_lookup_drbg_prereqVals(cap_obj, drbg_cap_mode);
+    result = acvp_lookup_prereqVals(cap_obj, cap_entry);
     if (result != ACVP_SUCCESS) { return result; }
 
     json_object_set_value(cap_obj, "predResistanceEnabled", json_value_init_array());
@@ -649,90 +599,95 @@ static ACVP_RESULT acvp_build_drbg_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
     json_array_append_boolean(array, drbg_cap_mode->pred_resist_enabled);
     json_object_set_boolean(cap_obj, "reseedImplemented", drbg_cap_mode->reseed_implemented);
 
-    JSON_Array *capabilities_array = NULL;
     json_object_set_value(cap_obj, "capabilities", json_value_init_array());
     capabilities_array = json_object_get_array(cap_obj, "capabilities");
-    JSON_Value *val = NULL;
-    JSON_Object *capabilities_obj = NULL;
-    val = json_value_init_object();
-    capabilities_obj = json_value_get_object(val);
-    json_object_set_string(capabilities_obj, "mode", mode_str);
-    json_object_set_boolean(capabilities_obj, "derFuncEnabled", drbg_cap_mode->der_func_enabled);
 
-    //Set entropy range
-    json_object_set_value(capabilities_obj, "entropyInputLen", json_value_init_array());
-    array = json_object_get_array(capabilities_obj, "entropyInputLen");
-    if (!drbg_cap_mode->entropy_len_step) {
-        if (drbg_cap_mode->entropy_len_min) {
-            json_array_append_number(array, drbg_cap_mode->entropy_len_min);
-        } else if (drbg_cap_mode->entropy_len_max) {
-            json_array_append_number(array, drbg_cap_mode->entropy_len_max);
+    drbg_cap_mode_list = cap_entry->cap.drbg_cap->drbg_cap_mode_list;
+
+     while(drbg_cap_mode_list) {
+        drbg_cap_mode = &drbg_cap_mode_list->cap_mode;
+        mode_str = acvp_lookup_drbg_mode_string(drbg_cap_mode);
+        if (!mode_str) { return ACVP_INVALID_ARG; }
+
+        val = json_value_init_object();
+        capabilities_obj = json_value_get_object(val);
+        json_object_set_string(capabilities_obj, "mode", mode_str);
+        json_object_set_boolean(capabilities_obj, "derFuncEnabled", drbg_cap_mode->der_func_enabled);
+
+        //Set entropy range
+        json_object_set_value(capabilities_obj, "entropyInputLen", json_value_init_array());
+        array = json_object_get_array(capabilities_obj, "entropyInputLen");
+        if (!drbg_cap_mode->entropy_len_step) {
+            if (drbg_cap_mode->entropy_len_min) {
+                json_array_append_number(array, drbg_cap_mode->entropy_len_min);
+            } else if (drbg_cap_mode->entropy_len_max) {
+                json_array_append_number(array, drbg_cap_mode->entropy_len_max);
+            }
+        } else {
+            len_val = json_value_init_object();
+            len_obj = json_value_get_object(len_val);
+            json_object_set_number(len_obj, "max", drbg_cap_mode->entropy_len_max);
+            json_object_set_number(len_obj, "min", drbg_cap_mode->entropy_len_min);
+            json_object_set_number(len_obj, "step", drbg_cap_mode->entropy_len_step);
+            json_array_append_value(array, len_val);
         }
-    } else {
-        len_val = json_value_init_object();
-        len_obj = json_value_get_object(len_val);
-        json_object_set_number(len_obj, "max", drbg_cap_mode->entropy_len_max);
-        json_object_set_number(len_obj, "min", drbg_cap_mode->entropy_len_min);
-        json_object_set_number(len_obj, "step", drbg_cap_mode->entropy_len_step);
-        json_array_append_value(array, len_val);
-    }
 
-    json_object_set_value(capabilities_obj, "nonceLen", json_value_init_array());
-    array = json_object_get_array(capabilities_obj, "nonceLen");
-    if (!drbg_cap_mode->nonce_len_step) {
-        if (drbg_cap_mode->nonce_len_min) {
-            json_array_append_number(array, drbg_cap_mode->nonce_len_min);
-        } else if (drbg_cap_mode->nonce_len_max) {
-            json_array_append_number(array, drbg_cap_mode->nonce_len_max);
+        json_object_set_value(capabilities_obj, "nonceLen", json_value_init_array());
+        array = json_object_get_array(capabilities_obj, "nonceLen");
+        if (!drbg_cap_mode->nonce_len_step) {
+            if (drbg_cap_mode->nonce_len_min) {
+                json_array_append_number(array, drbg_cap_mode->nonce_len_min);
+            } else if (drbg_cap_mode->nonce_len_max) {
+                json_array_append_number(array, drbg_cap_mode->nonce_len_max);
+            }
+        } else {
+            len_val = json_value_init_object();
+            len_obj = json_value_get_object(len_val);
+            json_object_set_number(len_obj, "max", drbg_cap_mode->nonce_len_max);
+            json_object_set_number(len_obj, "min", drbg_cap_mode->nonce_len_min);
+            json_object_set_number(len_obj, "step", drbg_cap_mode->nonce_len_step);
+            json_array_append_value(array, len_val);
         }
-    } else {
-        len_val = json_value_init_object();
-        len_obj = json_value_get_object(len_val);
-        json_object_set_number(len_obj, "max", drbg_cap_mode->nonce_len_max);
-        json_object_set_number(len_obj, "min", drbg_cap_mode->nonce_len_min);
-        json_object_set_number(len_obj, "step", drbg_cap_mode->nonce_len_step);
-        json_array_append_value(array, len_val);
-    }
 
-    json_object_set_value(capabilities_obj, "persoStringLen", json_value_init_array());
-    array = json_object_get_array(capabilities_obj, "persoStringLen");
-    if (!drbg_cap_mode->perso_len_step) {
-        if (drbg_cap_mode->perso_len_min) {
-            json_array_append_number(array, drbg_cap_mode->perso_len_min);
-        } else if (drbg_cap_mode->perso_len_max) {
-            json_array_append_number(array, drbg_cap_mode->perso_len_max);
+        json_object_set_value(capabilities_obj, "persoStringLen", json_value_init_array());
+        array = json_object_get_array(capabilities_obj, "persoStringLen");
+        if (!drbg_cap_mode->perso_len_step) {
+            if (drbg_cap_mode->perso_len_min) {
+                json_array_append_number(array, drbg_cap_mode->perso_len_min);
+            } else if (drbg_cap_mode->perso_len_max) {
+                json_array_append_number(array, drbg_cap_mode->perso_len_max);
+            }
+        } else {
+            len_val = json_value_init_object();
+            len_obj = json_value_get_object(len_val);
+            json_object_set_number(len_obj, "max", drbg_cap_mode->perso_len_max);
+            json_object_set_number(len_obj, "min", drbg_cap_mode->perso_len_min);
+            json_object_set_number(len_obj, "step", drbg_cap_mode->perso_len_step);
+            json_array_append_value(array, len_val);
         }
-    } else {
-        len_val = json_value_init_object();
-        len_obj = json_value_get_object(len_val);
-        json_object_set_number(len_obj, "max", drbg_cap_mode->perso_len_max);
-        json_object_set_number(len_obj, "min", drbg_cap_mode->perso_len_min);
-        json_object_set_number(len_obj, "step", drbg_cap_mode->perso_len_step);
-        json_array_append_value(array, len_val);
-    }
 
-    json_object_set_value(capabilities_obj, "additionalInputLen", json_value_init_array());
-    array = json_object_get_array(capabilities_obj, "additionalInputLen");
-    if (!drbg_cap_mode->additional_in_len_step) {
-        if (drbg_cap_mode->additional_in_len_min) {
-            json_array_append_number(array, drbg_cap_mode->additional_in_len_min);
-        } else if (drbg_cap_mode->additional_in_len_max) {
-            json_array_append_number(array, drbg_cap_mode->additional_in_len_max);
+        json_object_set_value(capabilities_obj, "additionalInputLen", json_value_init_array());
+        array = json_object_get_array(capabilities_obj, "additionalInputLen");
+        if (!drbg_cap_mode->additional_in_len_step) {
+            if (drbg_cap_mode->additional_in_len_min) {
+                json_array_append_number(array, drbg_cap_mode->additional_in_len_min);
+            } else if (drbg_cap_mode->additional_in_len_max) {
+                json_array_append_number(array, drbg_cap_mode->additional_in_len_max);
+            }
+        } else {
+            len_val = json_value_init_object();
+            len_obj = json_value_get_object(len_val);
+            json_object_set_number(len_obj, "max", drbg_cap_mode->additional_in_len_max);
+            json_object_set_number(len_obj, "min", drbg_cap_mode->additional_in_len_min);
+            json_object_set_number(len_obj, "step", drbg_cap_mode->additional_in_len_step);
+            json_array_append_value(array, len_val);
         }
-    } else {
-        len_val = json_value_init_object();
-        len_obj = json_value_get_object(len_val);
-        json_object_set_number(len_obj, "max", drbg_cap_mode->additional_in_len_max);
-        json_object_set_number(len_obj, "min", drbg_cap_mode->additional_in_len_min);
-        json_object_set_number(len_obj, "step", drbg_cap_mode->additional_in_len_step);
-        json_array_append_value(array, len_val);
+
+        //Set DRBG Length
+        json_object_set_number(capabilities_obj, "returnedBitsLen", drbg_cap_mode->returned_bits_len);
+        json_array_append_value(capabilities_array, val);
+        drbg_cap_mode_list = drbg_cap_mode_list->next;
     }
-
-    //Set DRBG Length
-    json_object_set_number(capabilities_obj, "returnedBitsLen", drbg_cap_mode->returned_bits_len);
-
-    json_array_append_value(capabilities_array, val);
-
     return ACVP_SUCCESS;
 }
 

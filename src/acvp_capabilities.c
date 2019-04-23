@@ -839,15 +839,22 @@ static ACVP_RESULT acvp_validate_prereq_val(ACVP_CIPHER cipher, ACVP_PREREQ_ALG 
 
         break;
     case ACVP_HASHDRBG:
-    case ACVP_HMACDRBG:
-    case ACVP_CTRDRBG:
-        if (pre_req == ACVP_PREREQ_AES ||
-            pre_req == ACVP_PREREQ_DRBG ||
-            pre_req == ACVP_PREREQ_SHA ||
-            pre_req == ACVP_PREREQ_TDES) {
+        if (pre_req == ACVP_PREREQ_SHA) {
             return ACVP_SUCCESS;
         }
         break;
+     case ACVP_HMACDRBG:
+        if (pre_req == ACVP_PREREQ_SHA ||
+            pre_req == ACVP_PREREQ_HMAC) {
+                return ACVP_SUCCESS;
+        }
+        break;
+     case ACVP_CTRDRBG:
+         if (pre_req == ACVP_PREREQ_AES ||
+             pre_req == ACVP_PREREQ_TDES) {
+             return ACVP_SUCCESS;
+         }
+         break;
     case ACVP_HMAC_SHA1:
     case ACVP_HMAC_SHA2_224:
     case ACVP_HMAC_SHA2_256:
@@ -2167,93 +2174,6 @@ static ACVP_RESULT acvp_add_hmac_drbg_cap_parm(ACVP_DRBG_CAP_MODE *drbg_cap_mode
 }
 
 /*
- * Append a DRBG pre req val to the
- */
-static ACVP_RESULT acvp_add_drbg_prereq_val(ACVP_DRBG_CAP_MODE *drbg_cap_mode,
-                                            ACVP_DRBG_MODE mode,
-                                            ACVP_PREREQ_ALG pre_req,
-                                            char *value) {
-    ACVP_PREREQ_LIST *prereq_entry, *prereq_entry_2;
-
-    prereq_entry = calloc(1, sizeof(ACVP_PREREQ_LIST));
-    if (!prereq_entry) {
-        return ACVP_MALLOC_FAIL;
-    }
-    prereq_entry->prereq_alg_val.alg = pre_req;
-    prereq_entry->prereq_alg_val.val = value;
-
-    /*
-     * 1st entry
-     */
-    if (!drbg_cap_mode->prereq_vals) {
-        drbg_cap_mode->prereq_vals = prereq_entry;
-    } else {
-        /*
-         * append to the last in the list
-         */
-        prereq_entry_2 = drbg_cap_mode->prereq_vals;
-        while (prereq_entry_2->next) {
-            prereq_entry_2 = prereq_entry_2->next;
-        }
-        prereq_entry_2->next = prereq_entry;
-    }
-    return ACVP_SUCCESS;
-}
-
-ACVP_RESULT acvp_cap_drbg_set_prereq(ACVP_CTX *ctx,
-                                     ACVP_CIPHER cipher,
-                                     ACVP_DRBG_MODE mode,
-                                     ACVP_PREREQ_ALG pre_req,
-                                     char *value) {
-    ACVP_DRBG_CAP_MODE_LIST *drbg_cap_mode_list;
-    ACVP_CAPS_LIST *cap_list;
-
-    if (!ctx) {
-        return ACVP_NO_CTX;
-    }
-
-    switch (pre_req) {
-    case ACVP_PREREQ_AES:
-    case ACVP_PREREQ_TDES:
-    case ACVP_PREREQ_DRBG:
-    case ACVP_PREREQ_HMAC:
-    case ACVP_PREREQ_SHA:
-        break;
-    default:
-        return ACVP_INVALID_ARG;
-    }
-
-    /*
-     * Locate this cipher in the caps array
-     */
-    cap_list = acvp_locate_cap_entry(ctx, cipher);
-    if (!cap_list) {
-        ACVP_LOG_ERR("Cap entry not found.");
-        return ACVP_NO_CAP;
-    }
-
-    /*
-     * Locate cap mode from array
-     * if the mode does not exist yet then create it.
-     */
-    drbg_cap_mode_list = acvp_locate_drbg_mode_entry(cap_list, mode);
-    if (!drbg_cap_mode_list) {
-        drbg_cap_mode_list = calloc(1, sizeof(ACVP_DRBG_CAP_MODE_LIST));
-        if (!drbg_cap_mode_list) {
-            ACVP_LOG_ERR("Malloc Failed.");
-            return ACVP_MALLOC_FAIL;
-        }
-        drbg_cap_mode_list->cap_mode.mode = mode;
-        cap_list->cap.drbg_cap->drbg_cap_mode_list = drbg_cap_mode_list;
-    }
-
-    /*
-     * Add the value to the cap
-     */
-    return acvp_add_drbg_prereq_val(&drbg_cap_mode_list->cap_mode, mode, pre_req, value);
-}
-
-/*
  * The user should call this after invoking acvp_enable_drbg_cap_parm().
  */
 ACVP_RESULT acvp_cap_drbg_set_parm(ACVP_CTX *ctx,
@@ -2262,6 +2182,7 @@ ACVP_RESULT acvp_cap_drbg_set_parm(ACVP_CTX *ctx,
                                    ACVP_DRBG_PARM param,
                                    int value) {
     ACVP_DRBG_CAP_MODE_LIST *drbg_cap_mode_list;
+    ACVP_DRBG_CAP_MODE_LIST *drbg_cap_mode_list_tmp;
     ACVP_CAPS_LIST *cap_list;
     ACVP_RESULT result;
 
@@ -2299,7 +2220,15 @@ ACVP_RESULT acvp_cap_drbg_set_parm(ACVP_CTX *ctx,
         }
 
         drbg_cap_mode_list->cap_mode.mode = mode;
-        cap_list->cap.drbg_cap->drbg_cap_mode_list = drbg_cap_mode_list;
+        if (cap_list->cap.drbg_cap->drbg_cap_mode_list == NULL) {
+            cap_list->cap.drbg_cap->drbg_cap_mode_list = drbg_cap_mode_list;
+        } else {
+            drbg_cap_mode_list_tmp = cap_list->cap.drbg_cap->drbg_cap_mode_list;
+            while (drbg_cap_mode_list_tmp->next) {
+                drbg_cap_mode_list_tmp = drbg_cap_mode_list_tmp->next;
+            }
+            drbg_cap_mode_list_tmp->next = drbg_cap_mode_list;
+        }
     }
 
     /*

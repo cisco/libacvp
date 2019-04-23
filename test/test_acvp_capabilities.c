@@ -1388,7 +1388,7 @@ Test(EnableCapDRBG, good_hash, .fini = teardown) {
     rv = acvp_cap_drbg_set_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1,
                                    ACVP_DRBG_DER_FUNC_ENABLED, 0);
     cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_drbg_set_prereq(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1,
+    rv = acvp_cap_set_prereq(ctx, ACVP_HASHDRBG, 
                                      ACVP_PREREQ_SHA, value);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_drbg_set_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1,
@@ -1422,9 +1422,10 @@ Test(EnableCapDRBG, good_hmac, .fini = teardown) {
     
     rv = acvp_cap_drbg_enable(ctx, ACVP_HMACDRBG, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_drbg_set_prereq(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224,
+    rv = acvp_cap_set_prereq(ctx, ACVP_HMACDRBG, 
                                      ACVP_PREREQ_SHA, value);
-    cr_assert(rv == ACVP_SUCCESS);    rv = acvp_cap_drbg_set_prereq(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224,
+    cr_assert(rv == ACVP_SUCCESS);    
+    rv = acvp_cap_set_prereq(ctx, ACVP_HMACDRBG, 
                                      ACVP_PREREQ_HMAC, value);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224,
@@ -1462,13 +1463,13 @@ Test(EnableCapDRBG, good_ctr, .fini = teardown) {
     
     rv = acvp_cap_drbg_enable(ctx, ACVP_CTRDRBG, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_drbg_set_prereq(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128,
+    rv = acvp_cap_set_prereq(ctx, ACVP_CTRDRBG, 
                                      ACVP_PREREQ_AES, value);
     cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_drbg_set_prereq(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128,
+    rv = acvp_cap_set_prereq(ctx, ACVP_CTRDRBG, 
                                      ACVP_PREREQ_TDES, value);
     cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_drbg_set_prereq(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128,
+    rv = acvp_cap_set_prereq(ctx, ACVP_CTRDRBG, 
                                      ACVP_PREREQ_SHA, value);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_drbg_set_length(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128,

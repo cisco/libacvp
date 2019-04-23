@@ -34,8 +34,8 @@ static size_t drbg_test_entropy(DRBG_CTX *dctx,
     DRBG_TEST_ENT *t = (DRBG_TEST_ENT *)FIPS_drbg_get_app_data(dctx);
     if (!t) return 0;
 
-    if (t->entlen < min_len) printf("entropy data len < min_len: %zu\n", t->entlen);
-    if (t->entlen > max_len) printf("entropy data len > max_len: %zu\n", t->entlen);
+    if (t->entlen < min_len) printf("entropy data len %zu < min_len: %zu\n", t->entlen, min_len);
+    if (t->entlen > max_len) printf("entropy data len %zu > max_len: %zu\n", t->entlen, max_len);
     *pout = (unsigned char *)t->ent;
     return t->entlen;
 }
@@ -49,8 +49,8 @@ static size_t drbg_test_nonce(DRBG_CTX *dctx,
 
     DRBG_TEST_ENT *t = (DRBG_TEST_ENT *)FIPS_drbg_get_app_data(dctx);
 
-    if (t->noncelen < min_len) printf("nonce data len < min_len: %zu\n", t->noncelen);
-    if (t->noncelen > max_len) printf("nonce data len > max_len: %zu\n", t->noncelen);
+    if (t->noncelen < min_len) printf("nonce data len %zu < min_len: %zu\n", t->noncelen, min_len);
+    if (t->noncelen > max_len) printf("nonce data len %zu > max_len: %zu\n", t->noncelen, max_len);
     *pout = (unsigned char *)t->nonce;
     return t->noncelen;
 }
@@ -83,7 +83,7 @@ int app_drbg_handler(ACVP_TEST_CASE *test_case) {
             nid = NID_sha1;
             break;
         case ACVP_DRBG_SHA_224:
-            nid = NID_sha256;
+            nid = NID_sha224;
             break;
         case ACVP_DRBG_SHA_256:
             nid = NID_sha256;
