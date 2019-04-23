@@ -1714,7 +1714,7 @@ Test(BUILD_TEST_SESSION, drbg_missing_cap_parms, .fini = teardown) {
     cr_assert(rv == ACVP_SUCCESS);
 
     rv  = acvp_build_test_session(ctx, &reg, NULL);
-    cr_assert(rv == ACVP_INVALID_ARG);
+    cr_assert(rv == ACVP_MISSING_ARG);
 }
 
 /*
