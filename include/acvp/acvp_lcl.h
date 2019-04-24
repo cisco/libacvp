@@ -670,6 +670,7 @@
 #define ACVP_ATTR_URL_MAX       2083 /* MS IE's limit - arbitrary */
 
 #define ACVP_SESSION_PARAMS_STR_LEN_MAX 256
+#define ACVP_OE_STR_MAX 256
 #define ACVP_PATH_SEGMENT_DEFAULT ""
 #define ACVP_JSON_FILENAME_MAX 128
 
@@ -1168,7 +1169,7 @@ typedef struct acvp_vendor_t {
     char *name;
     char *website;
     ACVP_OE_PHONE_LIST *phone_numbers;
-    ACVP_STRING_LIST emails;
+    ACVP_STRING_LIST *emails;
     ACVP_VENDOR_ADDRESS address;
     ACVP_PERSONS persons;
 } ACVP_VENDOR;

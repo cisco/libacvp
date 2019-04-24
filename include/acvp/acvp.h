@@ -2542,45 +2542,6 @@ ACVP_RESULT acvp_register(ACVP_CTX *ctx);
  */
 ACVP_RESULT acvp_process_tests(ACVP_CTX *ctx);
 
-/*! @brief acvp_oe_vendor_new() specifies the vendor attributes
-    for the test session.
-
-    @param ctx Pointer to ACVP_CTX that was previously created by
-        calling acvp_create_test_session.
-    @param name Name of the vendor that owns the crypto module.
-    @param vendor_url The Vendor's URL.
-    @param contact_name Name of contact at Vendor.
-    @param contact_email Email of vendor contact.
-
-    @return ACVP_RESULT
- */
-ACVP_RESULT acvp_oe_vendor_new(ACVP_CTX *ctx, const char *name);
-
-ACVP_RESULT acvp_oe_vendor_set_email_website_phone(ACVP_CTX *ctx,
-                                                   unsigned int id,
-                                                   const char *email,
-                                                   const char *website,
-                                                   const char *phone);
-
-ACVP_RESULT acvp_oe_vendor_add_address(ACVP_CTX *ctx,
-                                       unsigned int id,
-                                       const char *street,
-                                       const char *locality,
-                                       const char *region,
-                                       const char *country,
-                                       const char *postal_code);
-
-unsigned int acvp_oe_person_new(ACVP_CTX *ctx, const char *name);
-
-ACVP_RESULT acvp_oe_person_add_vendor(ACVP_CTX *ctx,
-                                      unsigned int person_id,
-                                      unsigned int vendor_id);
-
-ACVP_RESULT acvp_oe_person_set_email_phone(ACVP_CTX *ctx,
-                                           unsigned int id,
-                                           const char *email,
-                                           const char *phone);
-
 unsigned int acvp_oe_module_new(ACVP_CTX *ctx,
                                 unsigned int vendor_id,
                                 const char *name);

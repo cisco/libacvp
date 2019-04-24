@@ -62,16 +62,16 @@ static ACVP_RESULT copy_oe_string(char **dest, const char *src) {
     if (src == NULL) {
         return ACVP_MISSING_ARG;
     }
-    if (!string_fits(src, ACVP_SESSION_PARAMS_STR_LEN_MAX)) {
+    if (!string_fits(src, ACVP_OE_STR_MAX)) {
         return ACVP_INVALID_ARG;
     }
 
     if (*dest) { 
-        memzero_s(*dest, ACVP_SESSION_PARAMS_STR_LEN_MAX + 1);
+        memzero_s(*dest, ACVP_OE_STR_MAX + 1);
     } else {
-        *dest = calloc(ACVP_SESSION_PARAMS_STR_LEN_MAX + 1, sizeof(char));
+        *dest = calloc(ACVP_OE_STR_MAX + 1, sizeof(char));
     }
-    strcpy_s(*dest, ACVP_SESSION_PARAMS_STR_LEN_MAX + 1, src);
+    strcpy_s(*dest, ACVP_OE_STR_MAX + 1, src);
 
     return ACVP_SUCCESS;
 }
@@ -387,51 +387,6 @@ static ACVP_RESULT acvp_oe_vendor_add_address(ACVP_CTX *ctx,
     return ACVP_SUCCESS;
 }
 
-ACVP_RESULT acvp_oe_vendor_set_email_website_phone(ACVP_CTX *ctx,
-                                                   unsigned int id,
-                                                   const char *email,
-                                                   const char *website,
-                                                   const char *phone) {
-    ACVP_VENDOR *vendor = NULL;
-    ACVP_RESULT rv = 0;
-
-    if (!ctx) return ACVP_NO_CTX;
-
-    if (!email && !website && !phone) {
-        ACVP_LOG_ERR("Need at least 1 of the parameters to be non-NULL");
-        return ACVP_INVALID_ARG;
-    } 
-
-    vendor = find_vendor(ctx, id);
-    if (!vendor) return ACVP_INVALID_ARG;
-
-    if (email) {
-        copy_oe_string(&vendor->email, email);
-        if (ACVP_INVALID_ARG == rv) {
-            ACVP_LOG_ERR("'email' string too long");
-            return rv;
-        }
-    }
-
-    if (website) {
-        copy_oe_string(&vendor->website, website);
-        if (ACVP_INVALID_ARG == rv) {
-            ACVP_LOG_ERR("'website' string too long");
-            return rv;
-        }
-    }
-
-    if (phone) {
-        copy_oe_string(&vendor->phone_number, phone);
-        if (ACVP_INVALID_ARG == rv) {
-            ACVP_LOG_ERR("'phone' string too long");
-            return rv;
-        }
-    }
-
-    return ACVP_SUCCESS;
-}
-
 /**
  * @brief Designate a new Person entry for this session.
  *
@@ -470,89 +425,6 @@ unsigned int acvp_oe_person_new(ACVP_CTX *ctx, const char *name) {
     }
 
     return persons->count; /** Return the array position + 1 */
-}
-
-static ACVP_PERSON *find_person(ACVP_CTX *ctx,
-                                unsigned int id) {
-    ACVP_PERSONS *persons = NULL;
-
-    if (!ctx) return NULL;
-
-    /* Get a handle on the Vendors */
-    persons = &ctx->persons;
-
-    if (id == 0 || id > persons->count) {
-        ACVP_LOG_ERR("Invalid 'id', please make sure you are using a value returned from acvp_person_new()");
-        return NULL;
-    }
-
-    return &persons->person[id - 1];
-}
-
-ACVP_RESULT acvp_oe_person_add_vendor(ACVP_CTX *ctx,
-                                      unsigned int person_id,
-                                      unsigned int vendor_id) {
-    ACVP_PERSON *person = NULL;
-    ACVP_VENDOR *vendor = NULL;
-
-    if (!ctx) return ACVP_NO_CTX;
-
-    /* Get a handle on the selected Person */
-    if (!(person = find_person(ctx, person_id))) {
-        return ACVP_INVALID_ARG;
-    }
-
-    /* Make sure we have a slot to store the Vendor */
-    if (person->num_vendors == LIBACVP_VENDORS_MAX) {
-        ACVP_LOG_ERR("Person corresponding to `person_id' (%u) already reached max Vendor capacity (%u)",
-                     person_id, LIBACVP_VENDORS_MAX);
-        return ACVP_UNSUPPORTED_OP;
-    }
-
-    /* Insert a pointer to the actual Vendor struct location */
-    if (!(vendor = find_vendor(ctx, vendor_id))) {
-        return ACVP_INVALID_ARG;
-    }
-    person->vendor[person->num_vendors] = vendor;
-    person->num_vendors++;
-
-    return ACVP_SUCCESS;
-}
-
-ACVP_RESULT acvp_oe_person_set_email_phone(ACVP_CTX *ctx,
-                                           unsigned int id,
-                                           const char *email,
-                                           const char *phone) {
-    ACVP_PERSON *person = NULL;
-    ACVP_RESULT rv = 0;
-
-    if (!ctx) return ACVP_NO_CTX;
-
-    if (!email && !phone) {
-        ACVP_LOG_ERR("Need at least 1 of the parameters to be non-NULL");
-        return ACVP_INVALID_ARG;
-    } 
-
-    person = find_person(ctx, id);
-    if (!person) return ACVP_INVALID_ARG;
-
-    if (email) {
-        copy_oe_string(&person->email, email);
-        if (ACVP_INVALID_ARG == rv) {
-            ACVP_LOG_ERR("'email' string too long");
-            return rv;
-        }
-    }
-
-    if (phone) {
-        copy_oe_string(&person->phone_number, phone);
-        if (ACVP_INVALID_ARG == rv) {
-            ACVP_LOG_ERR("'phone' string too long");
-            return rv;
-        }
-    }
-
-    return ACVP_SUCCESS;
 }
 
 /**
@@ -663,126 +535,7 @@ ACVP_RESULT acvp_oe_module_set_type_version_desc(ACVP_CTX *ctx,
     return ACVP_SUCCESS;
 }
 
-static ACVP_RESULT acvp_identifier_status(JSON_Value *val) {
-    JSON_Object *obj = acvp_get_obj_from_rsp(val);
-    const char *status = NULL;
-    int diff = 1;
-
-    status = json_object_get_string(obj, "status");
-
-    strcmp_s("approved", 8, status, &diff);
-    if (!diff) return ACVP_SUCCESS;
-
-    strcmp_s("initial", 7, status, &diff);
-    if (!diff) return ACVP_OE_RETRY;
-
-    strcmp_s("processing", 10, status, &diff);
-    if (!diff) return ACVP_OE_RETRY;
-
-    strcmp_s("rejected", 8, status, &diff);
-    if (!diff) return ACVP_UNSUPPORTED_OP;
-
-    /* Fail */
-    return ACVP_JSON_ERR;
-}
-
-#define OE_RETRY_WAIT 30 /* 30 seconds */
-#define MAX_OE_REQUEST_RETRIES 10 /* 5 minutes */
-
-/*
- * Verify that the JSON contains the 'approvedUrl' key.
- * Also checks to make sure the value is within
- * accepted string length bounds.
- */
-static JSON_Value *acvp_validate_identifier(ACVP_CTX *ctx) {
-    JSON_Value *val = NULL, *request_val = NULL;
-    JSON_Object *obj = NULL;
-    const char *request_url = NULL, *approved_url = NULL;
-    ACVP_RESULT rv = ACVP_SUCCESS;
-    unsigned int num_retries = 0;
-
-    /*
-     * Parse the request url
-     */
-    val = json_parse_string(ctx->curl_buf);
-    if (!val) {
-        ACVP_LOG_ERR("JSON parse error");
-        goto err;
-    }
-
-    obj = acvp_get_obj_from_rsp(val);
-    request_url = json_object_get_string(obj, "url");
-
-    while (1) {
-        /*
-         * Poke the request url for the status of the identifier
-         */
-        rv = acvp_transport_get(ctx, request_url);
-        if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("Failed to get Request");
-            goto err;
-        }
-        ACVP_LOG_STATUS("200 OK %s", ctx->curl_buf);
-
-        request_val = json_parse_string(ctx->curl_buf);
-        if (!request_val) {
-            ACVP_LOG_ERR("JSON parse error");
-            goto err;
-        }
-
-        /* Check the status */
-        rv = acvp_identifier_status(request_val);
-        if (rv != ACVP_OE_RETRY) {
-            /* Exit the loop */
-            break;
-        }
-        if (num_retries == MAX_OE_REQUEST_RETRIES) {
-            /* Exit the loop */
-            ACVP_LOG_ERR("Hit maximum number of retries");
-            break;
-        }
-
-        /* Free this for the next iteration */
-        if (request_val) json_value_free(request_val);
-
-        ACVP_LOG_STATUS("Identifier not ready yet... trying again in %d seconds",
-                        OE_RETRY_WAIT);
-        num_retries++;
-#ifdef WIN32
-        Sleep(OE_RETRY_WAIT);
-#else
-        sleep(OE_RETRY_WAIT);
-#endif
-    }
-
-    if (rv == ACVP_SUCCESS) {
-        JSON_Object *req_obj = acvp_get_obj_from_rsp(request_val);
-
-        approved_url = json_object_get_string(req_obj, "approvedUrl");
-
-        if (!approved_url) {
-            ACVP_LOG_ERR("Server JSON 'approvedUrl' missing");
-            goto err;
-        }
-        if (!string_fits(approved_url, ACVP_ATTR_URL_MAX)) {
-            ACVP_LOG_ERR("Server JSON 'approvedUrl' string too long");
-            goto err;
-        }
-
-        /* Success */
-        if (val) json_value_free(val);
-        return request_val;
-    }
-
-    /*
-     * Failed
-     */
-err:
-    if (val) json_value_free(val);
-    if (request_val) json_value_free(request_val);
-    return NULL;
-}
-
+#if 0
 static ACVP_RESULT acvp_oe_vendor_record_identifier(ACVP_CTX *ctx,
                                                     ACVP_VENDOR *vendor) {
     ACVP_RESULT rv = ACVP_SUCCESS;
@@ -901,6 +654,7 @@ static ACVP_RESULT acvp_oe_module_record_identifier(ACVP_CTX *ctx, ACVP_MODULE *
 
     return rv;
 }
+#endif
 
 ACVP_RESULT acvp_oe_register_oes(ACVP_CTX *ctx) {
     ACVP_RESULT rv = 0;
@@ -1206,8 +960,8 @@ static void acvp_vendor_free_persons(ACVP_VENDOR *vendor) {
 
         if (person->url) free(person->url);
         if (person->full_name) free(person->full_name);
-        acvp_free_str_list(person->emails);
-        acvp_oe_phone_list_free(person->phone_numbers);
+        acvp_free_str_list(&person->emails);
+        acvp_oe_phone_list_free(&person->phone_numbers);
     }
 }
 
@@ -1222,17 +976,17 @@ static void acvp_vendor_free_address(ACVP_VENDOR *vendor) {
     if (address->url) free(address->url);
 }
 
-static void acvp_vendors_free(ACVP_CTX *ctx) {
+static void acvp_vendors_free(ACVP_VENDORS *vendors) {
     int i = 0;
 
-    for (i = 0; i < ctx->vendors.count; i++) {
-        ACVP_VENDOR *vendor = &ctx->vendors.v[i];
+    for (i = 0; i < vendors->count; i++) {
+        ACVP_VENDOR *vendor = &vendors->v[i];
 
         if (vendor->url) free(vendor->url);
         if (vendor->name) free(vendor->name);
         if (vendor->website) free(vendor->website);
-        acvp_free_str_list(vendor->email);
-        acvp_oe_phone_list_free(vendor->phone_number);
+        acvp_free_str_list(&vendor->email);
+        acvp_oe_phone_list_free(&vendor->phone_numbers);
 
         acvp_vendor_free_address(vendor);
         acvp_vendor_free_persons(vendor);
@@ -1256,8 +1010,7 @@ static void acvp_modules_free(ACVP_CTX *ctx) {
 void acvp_oe_free_operating_env(ACVP_CTX *ctx) {
     acvp_oes_free(ctx);
     acvp_dependencies_free(ctx);
-    acvp_vendors_free(ctx);
-    acvp_persons_free(ctx);
+    acvp_vendors_free(&ctx->op_env.vendors);
     acvp_modules_free(ctx);
 }
 
@@ -1280,7 +1033,10 @@ static ACVP_RESULT acvp_oe_metadata_parse_vendor_address(ACVP_CTX *ctx,
     }
 
     a_obj = json_object_get_object(obj, "address");
-    if (!a_obj) return ACVP_SUCCESS; /* Not required to supply this */
+    if (!a_obj) {
+        ACVP_LOG_ERR("Json missing 'address'");
+        return ACVP_MISSING_ARG;
+    }
 
     street = json_object_get_string(obj, "street");
     locality = json_object_get_string(obj, "locality");
@@ -1298,12 +1054,199 @@ static ACVP_RESULT acvp_oe_metadata_parse_vendor_address(ACVP_CTX *ctx,
     return ACVP_SUCCESS;
 }
 
+static ACVP_RESULT acvp_oe_metadata_parse_emails(ACVP_CTX *ctx,
+                                                 JSON_Object *obj,
+                                                 ACVP_STRING_LIST **email_list) {
+    JSON_Array *emails_array = NULL;
+    ACVP_STRING_LIST *email = NULL;
+    int i = 0, count = 0;
+    ACVP_RESULT rv = ACVP_SUCCESS;
+
+    if (!ctx) return ACVP_NO_CTX;
+    if (!obj) {
+        ACVP_LOG_ERR("Requried parameter 'obj' is NULL");
+        return ACVP_INVALID_ARG;
+    }
+    if (!email_list) {
+        ACVP_LOG_ERR("Requried parameter 'email_list' is NULL");
+        return ACVP_INVALID_ARG;
+    }
+    if (*email_list != NULL) {
+        ACVP_LOG_ERR("Dereferencing parameter 'email_list' must be NULL");
+        return ACVP_INVALID_ARG;
+    }
+
+    /* Get handle on the head of string list */
+    email = *email_list;
+
+    emails_array = json_object_get_array(obj, "emails");
+    count = (int)json_array_get_count(emails_array);
+    if (emails_array && count) {
+        for (i = 0; i < count; i++) {
+            const char *email_str = json_array_get_string(emails_array, i);
+            if (!email_str) {
+                ACVP_LOG_ERR("Problem parsing email string from JSON");
+                return ACVP_JSON_ERR;
+            }
+
+            email = calloc(1, sizeof(ACVP_STRING_LIST));
+            copy_oe_string(&email->string, email_str);
+            if (ACVP_INVALID_ARG == rv) {
+                ACVP_LOG_ERR("'street' string too long");
+                return rv;
+            }
+
+            /* Point to the next one */
+            email = email->next;
+        }
+    }
+
+    return ACVP_SUCCESS;
+}
+
+static ACVP_RESULT acvp_oe_metadata_parse_phone_numbers(ACVP_CTX *ctx,
+                                                        JSON_Object *obj,
+                                                        ACVP_OE_PHONE_LIST **phone_list) {
+    JSON_Array *phones_array = NULL;
+    ACVP_OE_PHONE_LIST *phone = NULL;
+    int i = 0, count = 0;
+    ACVP_RESULT rv = ACVP_SUCCESS;
+
+    if (!ctx) return ACVP_NO_CTX;
+    if (!obj) {
+        ACVP_LOG_ERR("Requried parameter 'obj' is NULL");
+        return ACVP_INVALID_ARG;
+    }
+    if (!phone_list) {
+        ACVP_LOG_ERR("Requried parameter 'phone_list' is NULL");
+        return ACVP_INVALID_ARG;
+    }
+    if (*phone_list != NULL) {
+        ACVP_LOG_ERR("Dereferencing parameter 'phone_list' must be NULL");
+        return ACVP_INVALID_ARG;
+    }
+
+    /* Get handle on the head of phone list */
+    phone = *phone_list;
+
+    phones_array = json_object_get_array(obj, "phone_numbers");
+    count = (int)json_array_get_count(phones_array);
+    if (phones_array && count) {
+        for (i = 0; i < count; i++) {
+            JSON_Object *phone_obj = NULL;
+            const char *number_str = NULL, *type_str = NULL;
+
+            phone_obj = json_array_get_object(phones_array, i);
+            if (!phone_obj) {
+                ACVP_LOG_ERR("Problem parsing phone object from JSON");
+                return ACVP_JSON_ERR;
+            }
+
+            number_str = json_object_get_string(phone_obj, "number");
+            if (!number_str) {
+                ACVP_LOG_ERR("Problem parsing 'number' string from JSON");
+                return ACVP_JSON_ERR;
+            }
+
+            type_str = json_object_get_string(phone_obj, "type");
+            if (!type_str) {
+                ACVP_LOG_ERR("Problem parsing 'type' string from JSON");
+                return ACVP_JSON_ERR;
+            }
+
+            phone = calloc(1, sizeof(ACVP_OE_PHONE_LIST));
+            copy_oe_string(&phone->number, number_str);
+            if (ACVP_INVALID_ARG == rv) {
+                ACVP_LOG_ERR("'number' string too long");
+                return rv;
+            }
+            copy_oe_string(&phone->type, type_str);
+            if (ACVP_INVALID_ARG == rv) {
+                ACVP_LOG_ERR("'type' string too long");
+                return rv;
+            }
+
+            /* Point to the next one */
+            phone = phone->next;
+        }
+    }
+
+    return ACVP_SUCCESS;
+}
+
+static ACVP_RESULT acvp_oe_metadata_parse_vendor_contacts(ACVP_CTX *ctx,
+                                                          JSON_Object *obj,
+                                                          ACVP_VENDOR *vendor) {
+    JSON_Array *contacts_array = NULL;
+    int i = 0, count = 0;
+    ACVP_RESULT rv = ACVP_SUCCESS;
+
+    if (!ctx) return ACVP_NO_CTX;
+    if (!obj) {
+        ACVP_LOG_ERR("Requried parameter 'obj' is NULL");
+        return ACVP_INVALID_ARG;
+    }
+    if (!vendor) {
+        ACVP_LOG_ERR("Requried parameter 'vendor' is NULL");
+        return ACVP_INVALID_ARG;
+    }
+
+    if (vendor->persons.count) {
+        ACVP_LOG_ERR("Need to start with person.count == 0");
+        return ACVP_INVALID_ARG;
+    }
+
+    contacts_array = json_object_get_array(obj, "contacts");
+    count = (int)json_array_get_count(contacts_array);
+    if (count > LIBACVP_PERSONS_MAX) {
+        ACVP_LOG_ERR("Number of contacts (%d) > max allowed (%d)", count, LIBACVP_PERSONS_MAX);
+        return ACVP_JSON_ERR;
+    }
+    if (count == 0) {
+        ACVP_LOG_ERR("Need at least 1 contact");
+        return ACVP_JSON_ERR;
+    }
+
+    for (i = 0; i < count; i++) {
+        const char *name_str = NULL;
+        ACVP_PERSON *person = &vendor->persons.person[i];
+        JSON_Object *contact_obj = json_array_get_object(contacts_array, i);
+        if (!person_obj) {
+            ACVP_LOG_ERR("Problem parsing 'contact' object from JSON");
+            return ACVP_JSON_ERR;
+        }
+
+        /* Increment (in case of error below, we will still cleanup) */
+        vendor->persons.count++;
+
+        name_str = json_object_get_string(contact_obj, "full_name");
+        if (!name_str) {
+            ACVP_LOG_ERR("Problem parsing 'full_name' string from JSON");
+            return ACVP_JSON_ERR;
+        }
+        copy_oe_string(&person->full_name, name_str);
+        if (ACVP_INVALID_ARG == rv) {
+            ACVP_LOG_ERR("'full_name' string too long");
+            return rv;
+        }
+
+        /* Parse the Emails (if it exists)*/
+        rv = acvp_oe_metadata_parse_emails(ctx, obj, &person->emails);
+        if (ACVP_SUCCESS != rv) return rv;
+
+        /* Parse the Phone Numbers (if it exists)*/
+        rv = acvp_oe_metadata_parse_phone_numbers(ctx, obj, &person->phone_numbers);
+        if (ACVP_SUCCESS != rv) return rv;
+    }
+
+    return ACVP_SUCCESS;
+}
+
 static ACVP_RESULT acvp_oe_metadata_parse_vendor(ACVP_CTX *ctx, JSON_Object *obj) {
     ACVP_VENDOR *vendor = NULL;
-    JSON_Array *emails_array = NULL;
     const char *name = NULL, *website = NULL;
     unsigned int vendor_id = 0;
-    int ret = 0;
+    int ret = 0, i = 0, count = 0;
 
     if (!ctx) return ACVP_NO_CTX;
     if (!obj) {
@@ -1331,13 +1274,33 @@ static ACVP_RESULT acvp_oe_metadata_parse_vendor(ACVP_CTX *ctx, JSON_Object *obj
     vendor = find_vendor(ctx, vendor_id);
     if (!vendor) return ACVP_INVALID_ARG;
 
-    /* Parse the Address (if it exists)*/
+    website = json_object_get_string(obj, "website");
+    if (website) {
+        /* Copy the "website" */
+        copy_oe_string(&vendor->website, website);
+        if (ACVP_INVALID_ARG == rv) {
+            ACVP_LOG_ERR("'website' string too long");
+            return rv;
+        }
+    }
+
+    /* Parse the Emails (if it exists) */
+    rv = acvp_oe_metadata_parse_emails(ctx, obj, &vendor->emails);
+    if (ACVP_SUCCESS != rv) return rv;
+
+    /* Parse the Phone Numbers (if it exists) */
+    rv = acvp_oe_metadata_parse_phone_numbers(ctx, obj, &vendor->phone_numbers);
+    if (ACVP_SUCCESS != rv) return rv;
+
+    /* Parse the Address */
     rv = acvp_oe_metadata_parse_vendor_address(ctx, obj, vendor);
     if (ACVP_SUCCESS != rv) return rv;
 
-    emails_array = json_object_get_array(obj, "emails");
-    if (emails_array) {
-    }
+    /* Parse the Contacts */
+    rv = acvp_oe_metadata_parse_vendor_contacts(ctx, obj, vendor);
+    if (ACVP_SUCCESS != rv) return rv;
+
+    return ACVP_SUCCESS
 }
 
 static ACVP_RESULT acvp_oe_metadata_parse_vendors(ACVP_CTX *ctx, JSON_Object *obj) {
@@ -1363,13 +1326,13 @@ static ACVP_RESULT acvp_oe_metadata_parse_vendors(ACVP_CTX *ctx, JSON_Object *ob
         return ACVP_MALFORMED_JSON;
     }
     for (i = 0; i < vendors_count; i++) {
-        JSON_Object *vendor = json_array_get_object(vendors_array, i);
-        if (!vendor) {
+        JSON_Object *vendor_obj = json_array_get_object(vendors_array, i);
+        if (!vendor_obj) {
             ACVP_LOG_ERR("Unable to parse object at 'vendors'[%d]", i);
             return ACVP_JSON_ERR;
         }
 
-        rv = acvp_oe_metadata_parse_vendor(ctx, vendor);
+        rv = acvp_oe_metadata_parse_vendor(ctx, vendor_obj);
         if (ACVP_SUCCESS != rv) return rv; /* Fail */
     }
 
@@ -1398,7 +1361,11 @@ ACVP_RESULT acvp_oe_ingest_metadata(ACVP_CTX *ctx, const char *metadata_file) {
     obj = json_value_get_object(val);
     if (!obj) rv = ACVP_JSON_ERR; goto end;
 
-
+    rv = acvp_oe_metadata_parse_vendors(ctx, obj);
+    if (ACVP_SUCCESS != rv) {
+        ACVP_LOG_ERR("Failed to parse 'vendors' from metadata JSON");
+        goto end;
+    }
 
 end:
     if (val) json_value_free(val);
