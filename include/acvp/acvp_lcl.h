@@ -1124,17 +1124,6 @@ typedef struct acvp_kv_list_t {
     struct acvp_kv_list_t *next;
 } ACVP_KV_LIST;
 
-typedef struct acvp_dependency_t {
-    ACVP_KV_LIST *attribute_list; /**< Key/value list */
-    char *url; /**< Returned from the server */
-} ACVP_DEPENDENCY;
-
-#define LIBACVP_DEPENDENCIES_MAX 16
-typedef struct acvp_dependencies_t {
-    ACVP_DEPENDENCY deps[LIBACVP_DEPENDENCIES_MAX];
-    unsigned int count;
-} ACVP_DEPENDENCIES;
-
 typedef struct acvp_vendor_address_t {
     char *street;
     char *locality;
@@ -1160,7 +1149,7 @@ typedef struct acvp_person_t {
 #define LIBACVP_PERSONS_MAX 8
 typedef struct acvp_persons_t {
     ACVP_PERSON person[LIBACVP_PERSONS_MAX];
-    unsigned int count;
+    int count;
 } ACVP_PERSONS;
 
 typedef struct acvp_vendor_t {
@@ -1193,11 +1182,23 @@ typedef struct acvp_module_t {
 #define LIBACVP_MODULES_MAX 32
 typedef struct acvp_modules_t {
     ACVP_MODULE module[LIBACVP_MODULES_MAX];
-    unsigned int count;
+    int count;
 } ACVP_MODULES;
 
+typedef struct acvp_dependency_t {
+    unsigned int id; /**< For library tracking purposes */
+    ACVP_KV_LIST *attribute_list; /**< Key/value list */
+    char *url; /**< Returned from the server */
+} ACVP_DEPENDENCY;
+
+#define LIBACVP_DEPENDENCIES_MAX 16
+typedef struct acvp_dependencies_t {
+    ACVP_DEPENDENCY deps[LIBACVP_DEPENDENCIES_MAX];
+    int count;
+} ACVP_DEPENDENCIES;
+
 typedef struct acvp_oe_t {
-    int id; /**< For library tracking purposes */
+    unsigned int id; /**< For library tracking purposes */
     char *name; /**< Name of the Operating Environment */
     char *url; /**< ID URL returned from the server */
     ACVP_DEPENDENCY *dependency; /**< Pointer to the Dependency to use */
@@ -1206,13 +1207,13 @@ typedef struct acvp_oe_t {
 #define LIBACVP_OES_MAX 8
 typedef struct acvp_oes_t {
     ACVP_OE oe[LIBACVP_OES_MAX];
-    unsigned int count;
+    int count;
 } ACVP_OES;
 
 typedef struct acvp_operating_env_t {
     ACVP_VENDORS vendors; /**< Vendors */
-    ACVP_DEPENDENCIES; /** Dependencies */
     ACVP_MODULES modules; /**< Modules */
+    ACVP_DEPENDENCIES dependencies; /** Dependencies */
     ACVP_OES oes; /**< Operating Environments */
 } ACVP_OPERATING_ENV;
 
@@ -1447,6 +1448,6 @@ void acvp_free_kv_list(ACVP_KV_LIST *kv_list);
 
 int string_fits(const char *string, unsigned int max_allowed);
 
-void acvp_cap_free_str_list(ACVP_STRING_LIST **list);
+void acvp_free_str_list(ACVP_STRING_LIST **list);
 
 #endif

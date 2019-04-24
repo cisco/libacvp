@@ -38,25 +38,8 @@
 #include "parson.h"
 #include "safe_lib.h"
 
-
-static void acvp_oe_phone_list_free(ACVP_OE_PHONE_LIST **phone_list) {
-    ACVP_OE_PHONE_LIST *p = NULL;
-    ACVP_OE_PHONE_LIST *tmp = NULL;
-
-    if (phone_list == NULL) return;
-    p = *phone_list;
-    if (p == NULL) return;
-
-    while (p) {
-        if (p->number) free(p->number);
-        if (p->type) free(p->type);
-        tmp = p;
-        p = p->next;
-        free(tmp);
-    }
-
-    *phone_list = NULL;
-}
+/* Keeps track of what to use the next Dependency ID */
+static unsigned int glb_dependency_id = 1; 
 
 static ACVP_RESULT copy_oe_string(char **dest, const char *src) {
     if (src == NULL) {
@@ -77,20 +60,28 @@ static ACVP_RESULT copy_oe_string(char **dest, const char *src) {
 }
 
 static ACVP_DEPENDENCY *find_dependency(ACVP_CTX *ctx,
-                                        unsigned int dependency_id) {
+                                        unsigned int id) {
     ACVP_DEPENDENCIES *dependencies = NULL;
+    int k = 0;
 
     if (!ctx) return NULL;
 
     /* Get a handle on the Dependencies */
-    dependencies = &ctx->dependencies;
+    dependencies = &ctx->op_env.dependencies;
 
-    if (dependency_id == 0 || dependency_id > dependencies->count) {
-        ACVP_LOG_ERR("Invalid 'dependency_id', please make sure you are using a value returned from acvp_dependency_new()");
+    if (id == 0) {
+        ACVP_LOG_ERR("Invalid 'id', must be non-zero");
         return NULL;
     }
+    for (k = 0; k < dependencies->count; k++) {
+        if (id == dependencies->deps[k].id) {
+            /* Match */
+            return &dependencies->deps[k];
+        }
+    }
 
-    return &dependencies->deps[dependency_id - 1];
+    ACVP_LOG_ERR("Invalid 'id' (%u)", id);
+    return NULL;
 }
 
 /**
@@ -99,13 +90,15 @@ static ACVP_DEPENDENCY *find_dependency(ACVP_CTX *ctx,
  * @return non-zero value representing the "dependency_id"
  * @return 0 fail
  */
-unsigned int acvp_oe_dependency_new(ACVP_CTX *ctx) {
+ACVP_RESULT acvp_oe_dependency_new(ACVP_CTX *ctx, unsigned int id) {
     ACVP_DEPENDENCIES *dependencies = NULL;
+    ACVP_DEPENDENCY *new_dep = NULL;
+    int k = 0;
 
     if (!ctx) return 0;
 
     /* Get a handle on the Dependencies */
-    dependencies = &ctx->dependencies;
+    dependencies = &ctx->op_env.dependencies;
 
     if (dependencies->count == LIBACVP_DEPENDENCIES_MAX) {
         ACVP_LOG_ERR("Libacvp already reached max Dependency capacity (%u)",
@@ -113,8 +106,25 @@ unsigned int acvp_oe_dependency_new(ACVP_CTX *ctx) {
         return 0;
     }
 
+    if (!id) {
+        ACVP_LOG_ERR("Required parameter 'id' must be non-zero");
+        return ACVP_INVALID_ARG;
+    }
+
+    for (k = 0; k < dependencies->count; k++) {
+        if (id == dependencies->deps[k].id) {
+            ACVP_LOG_ERR("A Dependency already exists with this same 'id'(%d)", id);
+            return ACVP_INVALID_ARG;
+        }
+    }
+
+    new_dep = &dependencies->deps[dependencies->count];
     dependencies->count++;
-    return dependencies->count; /** Return the array position + 1 */
+
+    /* Set the ID */
+    new_dep->id = id;
+
+    return ACVP_SUCCESS;
 }
 
 ACVP_RESULT acvp_oe_dependency_add_attribute(ACVP_CTX *ctx,
@@ -173,56 +183,82 @@ ACVP_RESULT acvp_oe_dependency_add_attribute(ACVP_CTX *ctx,
  * @return non-zero value representing the "oe_id"
  * @return 0 fail
  */
-unsigned int acvp_oe_oe_new(ACVP_CTX *ctx, const char *name) {
+ACVP_RESULT acvp_oe_oe_new(ACVP_CTX *ctx,
+                           unsigned int id,
+                           const char *name) {
     ACVP_OES *oes = NULL;
     ACVP_OE *new_oe = NULL;
     ACVP_RESULT rv = 0;
+    int k = 0;
 
     if (!ctx) return 0;
 
     /* Get a handle on the OES */
-    oes = &ctx->oes;
+    oes = &ctx->op_env.oes;
 
     if (oes->count == LIBACVP_OES_MAX) {
         ACVP_LOG_ERR("Libacvp already reached max OE capacity (%u)",
                      LIBACVP_OES_MAX);
-        return 0;
+        return ACVP_UNSUPPORTED_OP;
+    }
+
+    if (!id) {
+        ACVP_LOG_ERR("Required parameter 'id' must be non-zero");
+        return ACVP_INVALID_ARG;
+    }
+
+    for (k = 0; k < oes->count; k++) {
+        if (id == oes->oe[k].id) {
+            ACVP_LOG_ERR("An OE already exists with this same 'id'(%d)", id);
+            return ACVP_INVALID_ARG;
+        }
     }
 
     new_oe = &oes->oe[oes->count];
     oes->count++;
 
+    /* Set the ID */
+    new_oe->id = id;
+
     copy_oe_string(&new_oe->name, name);
     if (ACVP_INVALID_ARG == rv) {
         ACVP_LOG_ERR("'name` string too long");
-        return 0;
+        return rv;
     }
     if (ACVP_MISSING_ARG == rv) {
         ACVP_LOG_ERR("Required parameter 'name` is NULL");
-        return 0;
+        return rv;
     }
 
-    return oes->count; /** Return the array position + 1 */
+    return ACVP_SUCCESS;
 }
 
 static ACVP_OE *find_oe(ACVP_CTX *ctx,
                         unsigned int id) {
     ACVP_OES *oes = NULL;
+    int k = 0;
 
     if (!ctx) return NULL;
 
     /* Get a handle on the Vendors */
-    oes = &ctx->oes;
+    oes = &ctx->op_env.oes;
 
-    if (id == 0 || id > oes->count) {
-        ACVP_LOG_ERR("Invalid 'id', please make sure you are using a value returned from acvp_oe_new()");
+    if (id == 0) {
+        ACVP_LOG_ERR("Invalid 'id', must be non-zero");
         return NULL;
     }
+    for (k = 0; k < oes->count; k++) {
+        if (id == oes->oe[k].id) {
+            /* Match */
+            return &oes->oe[k];
+        }
+    }
 
-    return &oes->oe[id - 1];
+    ACVP_LOG_ERR("Invalid 'id' (%u)", id);
+    return NULL;
 }
 
-ACVP_RESULT acvp_oe_oe_add_dependency(ACVP_CTX *ctx,
+ACVP_RESULT acvp_oe_oe_set_dependency(ACVP_CTX *ctx,
                                       unsigned int oe_id,
                                       unsigned int dependency_id) {
     ACVP_OE *oe = NULL;
@@ -235,19 +271,13 @@ ACVP_RESULT acvp_oe_oe_add_dependency(ACVP_CTX *ctx,
         return ACVP_INVALID_ARG;
     }
 
-    /* Make sure we have a slot to store the dep */
-    if (oe->num_deps == LIBACVP_DEPENDENCIES_MAX) {
-        ACVP_LOG_ERR("OE corresponding to `oe_id' (%u) already reached max Dependency capacity (%u)",
-                     oe_id, LIBACVP_DEPENDENCIES_MAX);
-        return ACVP_UNSUPPORTED_OP;
-    }
-
     /* Insert a pointer to the actual Dependency struct location */
     if (!(dep = find_dependency(ctx, dependency_id))) {
         return ACVP_INVALID_ARG;
     }
-    oe->deps[oe->num_deps] = dep;
-    oe->num_deps++;
+
+    /* Set pointer to the dependency */
+    oe->dependency = dep;
 
     return ACVP_SUCCESS;
 }
@@ -311,6 +341,9 @@ static ACVP_RESULT acvp_oe_vendor_new(ACVP_CTX *ctx,
     new_vendor = &vendors->v[vendors->count];
     vendors->count++;
 
+    /* Set the ID */
+    new_vendor->id = id;
+
     copy_oe_string(&new_vendor->name, name);
     if (ACVP_INVALID_ARG == rv) {
         ACVP_LOG_ERR("'name` string too long");
@@ -320,9 +353,6 @@ static ACVP_RESULT acvp_oe_vendor_new(ACVP_CTX *ctx,
         ACVP_LOG_ERR("Required parameter 'name` is NULL");
         return rv;
     }
-
-    /* Set the ID */
-    new_vendor->id = id;
 
     return ACVP_SUCCESS;
 }
@@ -388,46 +418,6 @@ static ACVP_RESULT acvp_oe_vendor_add_address(ACVP_CTX *ctx,
 }
 
 /**
- * @brief Designate a new Person entry for this session.
- *
- * @param name Full-Name of the person
- *
- * @return non-zero value representing the "id"
- * @return 0 fail
- */
-unsigned int acvp_oe_person_new(ACVP_CTX *ctx, const char *name) {
-    ACVP_PERSONS *persons = NULL;
-    ACVP_PERSON *new_person = NULL;
-    ACVP_RESULT rv = 0;
-
-    if (!ctx) return 0;
-
-    /* Get a handle on the OES */
-    persons = &ctx->persons;
-
-    if (persons->count == LIBACVP_PERSONS_MAX) {
-        ACVP_LOG_ERR("Libacvp already reached max PERSON capacity (%u)",
-                     LIBACVP_PERSONS_MAX);
-        return 0;
-    }
-
-    new_person = &persons->person[persons->count];
-    persons->count++;
-
-    copy_oe_string(&new_person->full_name, name);
-    if (ACVP_INVALID_ARG == rv) {
-        ACVP_LOG_ERR("'name` string too long");
-        return 0;
-    }
-    if (ACVP_MISSING_ARG == rv) {
-        ACVP_LOG_ERR("Required parameter 'name` is NULL");
-        return 0;
-    }
-
-    return persons->count; /** Return the array position + 1 */
-}
-
-/**
  * @brief Designate a new Module entry for this session.
  *
  * @param name Name of the module
@@ -435,61 +425,83 @@ unsigned int acvp_oe_person_new(ACVP_CTX *ctx, const char *name) {
  * @return non-zero value representing the "id"
  * @return 0 fail
  */
-unsigned int acvp_oe_module_new(ACVP_CTX *ctx,
-                                unsigned int vendor_id,
-                                const char *name) {
+ACVP_RESULT acvp_oe_module_new(ACVP_CTX *ctx,
+                               unsigned int id,
+                               unsigned int vendor_id,
+                               const char *name) {
     ACVP_MODULES *modules = NULL;
     ACVP_MODULE *new_module = NULL;
     ACVP_VENDOR *vendor = NULL;
     ACVP_RESULT rv = 0;
+    int k = 0;
 
     if (!ctx) return 0;
 
-    /* Get a handle on the OES */
-    modules = &ctx->modules;
+    /* Get a handle on the Modules */
+    modules = &ctx->op_env.modules;
 
     if (modules->count == LIBACVP_MODULES_MAX) {
         ACVP_LOG_ERR("Libacvp already reached max MODULE capacity (%u)",
                      LIBACVP_MODULES_MAX);
-        return 0;
+        return ACVP_UNSUPPORTED_OP;
+    }
+    if (!id) {
+        ACVP_LOG_ERR("Required parameter 'id' must be non-zero");
+        return ACVP_INVALID_ARG;
+    }
+
+    for (k = 0; k < modules->count; k++) {
+        if (id == modules->module[k].id) {
+            ACVP_LOG_ERR("A Module already exists with this same 'id'(%d)", id);
+            return ACVP_INVALID_ARG;
+        }
     }
 
     new_module = &modules->module[modules->count];
     modules->count++;
 
+    /* Set the ID */
+    new_module->id = id;
+
     /* Insert a pointer to the actual Vendor struct location */
-    if (!(vendor = find_vendor(ctx, vendor_id))) {
-        return ACVP_INVALID_ARG;
-    }
+    if (!(vendor = find_vendor(ctx, vendor_id))) return ACVP_INVALID_ARG;
     new_module->vendor = vendor;
 
     copy_oe_string(&new_module->name, name);
     if (ACVP_INVALID_ARG == rv) {
         ACVP_LOG_ERR("'name` string too long");
-        return 0;
+        return rv;
     }
     if (ACVP_MISSING_ARG == rv) {
         ACVP_LOG_ERR("Required parameter 'name` is NULL");
-        return 0;
+        return rv;
     }
 
-    return modules->count; /** Return the array position + 1 */
+    return ACVP_SUCCESS; /** Return the array position + 1 */
 }
 
 static ACVP_MODULE *find_module(ACVP_CTX *ctx,
                                 unsigned int id) {
     ACVP_MODULES *modules = NULL;
+    int k = 0;
 
     if (!ctx) return NULL;
 
-    modules = &ctx->modules;
+    modules = &ctx->op_env.modules;
 
-    if (id == 0 || id > modules->count) {
-        ACVP_LOG_ERR("Invalid 'id', please make sure you are using a value returned from acvp_module_new()");
+    if (id == 0) {
+        ACVP_LOG_ERR("Invalid 'id', must be non-zero");
         return NULL;
     }
+    for (k = 0; k < modules->count; k++) {
+        if (id == modules->module[k].id) {
+            /* Match */
+            return &modules->module[k];
+        }
+    }
 
-    return &modules->module[id - 1];
+    ACVP_LOG_ERR("Invalid 'id' (%u)", id);
+    return NULL;
 }
 
 ACVP_RESULT acvp_oe_module_set_type_version_desc(ACVP_CTX *ctx,
@@ -654,7 +666,6 @@ static ACVP_RESULT acvp_oe_module_record_identifier(ACVP_CTX *ctx, ACVP_MODULE *
 
     return rv;
 }
-#endif
 
 ACVP_RESULT acvp_oe_register_oes(ACVP_CTX *ctx) {
     ACVP_RESULT rv = 0;
@@ -779,55 +790,6 @@ end:
     return rv;
 }
 
-ACVP_RESULT acvp_oe_register_persons(ACVP_CTX *ctx) {
-    ACVP_RESULT rv = 0;
-    char *json_str = NULL;
-    int i = 0;
-
-    if (!ctx) return ACVP_NO_CTX;
-
-    for (i = 0; i < ctx->persons.count; i++) {
-        ACVP_PERSON *cur_person = &ctx->persons.person[i];
-        int json_len = 0;
-        int k = 0;
-        
-        for (k = 0; k < cur_person->num_vendors; k++) {
-            ACVP_VENDOR *vendor = find_vendor(ctx, k + 1);
-
-            /*
-             * Need to send a message for each Vendor this person belongs to
-             */
-            rv = acvp_register_build_person(ctx, cur_person, vendor->url, &json_str, &json_len);
-            if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("Unable to build Person message");
-                goto end;
-            }
-
-            rv = acvp_transport_send_person_registration(ctx, json_str, json_len);
-            if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("Person registration failed");
-                goto end;
-            }
-            ACVP_LOG_STATUS("200 OK %s", ctx->curl_buf);
-
-            rv = acvp_oe_person_record_identifier(ctx, cur_person);
-            if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("Failed to record Person identifier");
-                goto end;
-            }
-
-            /* Free for the next iteration */
-            if (json_str) json_free_serialized_string(json_str);
-            json_str = NULL;
-        }
-    }
-
-end:
-    if (json_str) json_free_serialized_string(json_str);
-
-    return rv;
-}
-
 ACVP_RESULT acvp_oe_register_modules(ACVP_CTX *ctx) {
     ACVP_RESULT rv = 0;
     char *json_str = NULL;
@@ -882,15 +844,6 @@ ACVP_RESULT acvp_oe_register_operating_env(ACVP_CTX *ctx) {
     }
 
     /*
-     * Register the Persons
-     */
-    rv = acvp_oe_register_persons(ctx);
-    if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("Unable to register Persons");
-        return rv;
-    }
-
-    /*
      * Register the Modules
      */
     rv = acvp_oe_register_modules(ctx);
@@ -919,6 +872,7 @@ ACVP_RESULT acvp_oe_register_operating_env(ACVP_CTX *ctx) {
 
     return ACVP_SUCCESS;
 }
+#endif
 
 /******************
  * ****************
@@ -926,46 +880,60 @@ ACVP_RESULT acvp_oe_register_operating_env(ACVP_CTX *ctx) {
  * ****************
  *****************/
 
-static void acvp_dependencies_free(ACVP_CTX *ctx) {
-    int i = 0;
+static void free_phone_list(ACVP_OE_PHONE_LIST **phone_list) {
+    ACVP_OE_PHONE_LIST *p = NULL;
+    ACVP_OE_PHONE_LIST *tmp = NULL;
 
-    if (ctx->dependencies.count == 0) {
-        /* Nothing to free */
-        return;
+    if (phone_list == NULL) return;
+    p = *phone_list;
+    if (p == NULL) return;
+
+    while (p) {
+        if (p->number) free(p->number);
+        if (p->type) free(p->type);
+        tmp = p;
+        p = p->next;
+        free(tmp);
     }
 
-    for (i = 0; i < ctx->dependencies.count; i++) {
-        ACVP_DEPENDENCY *dep = &ctx->dependencies.deps[i];
+    *phone_list = NULL;
+}
+
+static void free_dependencies(ACVP_DEPENDENCIES *dependencies) {
+    int i = 0;
+
+    for (i = 0; i < dependencies->count; i++) {
+        ACVP_DEPENDENCY *dep = &dependencies->deps[i];
         if (dep->url) free(dep->url);
         acvp_free_kv_list(dep->attribute_list);
     }
 }
 
-static void acvp_oes_free(ACVP_CTX *ctx) {
+static void free_oes(ACVP_OES *oes) {
     int i = 0;
 
-    for (i = 0; i < ctx->oes.count; i++) {
-        ACVP_OE *oe = &ctx->oes.oe[i];
+    for (i = 0; i < oes->count; i++) {
+        ACVP_OE *oe = &oes->oe[i];
         if (oe->name) free(oe->name);
         if (oe->url) free(oe->url);
     }
 }
 
-static void acvp_vendor_free_persons(ACVP_VENDOR *vendor) {
+static void free_vendor_persons(ACVP_VENDOR *vendor) {
     ACVP_PERSONS *persons = &vendor->persons;
     int i = 0;
 
-    for (i = 0; i < persons.count; i++) {
-        ACVP_PERSON *person = &persons.person[i];
+    for (i = 0; i < persons->count; i++) {
+        ACVP_PERSON *person = &persons->person[i];
 
         if (person->url) free(person->url);
         if (person->full_name) free(person->full_name);
         acvp_free_str_list(&person->emails);
-        acvp_oe_phone_list_free(&person->phone_numbers);
+        free_phone_list(&person->phone_numbers);
     }
 }
 
-static void acvp_vendor_free_address(ACVP_VENDOR *vendor) {
+static void free_vendor_address(ACVP_VENDOR *vendor) {
     ACVP_VENDOR_ADDRESS *address = &vendor->address;
 
     if (address->street) free(address->street);
@@ -976,7 +944,7 @@ static void acvp_vendor_free_address(ACVP_VENDOR *vendor) {
     if (address->url) free(address->url);
 }
 
-static void acvp_vendors_free(ACVP_VENDORS *vendors) {
+static void free_vendors(ACVP_VENDORS *vendors) {
     int i = 0;
 
     for (i = 0; i < vendors->count; i++) {
@@ -985,19 +953,19 @@ static void acvp_vendors_free(ACVP_VENDORS *vendors) {
         if (vendor->url) free(vendor->url);
         if (vendor->name) free(vendor->name);
         if (vendor->website) free(vendor->website);
-        acvp_free_str_list(&vendor->email);
-        acvp_oe_phone_list_free(&vendor->phone_numbers);
+        acvp_free_str_list(&vendor->emails);
+        free_phone_list(&vendor->phone_numbers);
 
-        acvp_vendor_free_address(vendor);
-        acvp_vendor_free_persons(vendor);
+        free_vendor_address(vendor);
+        free_vendor_persons(vendor);
     }
 }
 
-static void acvp_modules_free(ACVP_CTX *ctx) {
+static void free_modules(ACVP_MODULES *modules) {
     int i = 0;
 
-    for (i = 0; i < ctx->modules.count; i++) {
-        ACVP_MODULE *module = &ctx->modules.module[i];
+    for (i = 0; i < modules->count; i++) {
+        ACVP_MODULE *module = &modules->module[i];
 
         if (module->name) free(module->name);
         if (module->type) free(module->type);
@@ -1008,11 +976,17 @@ static void acvp_modules_free(ACVP_CTX *ctx) {
 }
 
 void acvp_oe_free_operating_env(ACVP_CTX *ctx) {
-    acvp_oes_free(ctx);
-    acvp_dependencies_free(ctx);
-    acvp_vendors_free(&ctx->op_env.vendors);
-    acvp_modules_free(ctx);
+    free_vendors(&ctx->op_env.vendors);
+    free_modules(&ctx->op_env.modules);
+    free_dependencies(&ctx->op_env.dependencies);
+    free_oes(&ctx->op_env.oes);
 }
+
+/******************
+ * ****************
+ * Metadata functions
+ * ****************
+ *****************/
 
 static ACVP_RESULT acvp_oe_metadata_parse_vendor_address(ACVP_CTX *ctx,
                                                          JSON_Object *obj,
@@ -1211,7 +1185,7 @@ static ACVP_RESULT acvp_oe_metadata_parse_vendor_contacts(ACVP_CTX *ctx,
         const char *name_str = NULL;
         ACVP_PERSON *person = &vendor->persons.person[i];
         JSON_Object *contact_obj = json_array_get_object(contacts_array, i);
-        if (!person_obj) {
+        if (!contact_obj) {
             ACVP_LOG_ERR("Problem parsing 'contact' object from JSON");
             return ACVP_JSON_ERR;
         }
@@ -1246,7 +1220,7 @@ static ACVP_RESULT acvp_oe_metadata_parse_vendor(ACVP_CTX *ctx, JSON_Object *obj
     ACVP_VENDOR *vendor = NULL;
     const char *name = NULL, *website = NULL;
     unsigned int vendor_id = 0;
-    int ret = 0, i = 0, count = 0;
+    ACVP_RESULT rv = ACVP_SUCCESS;
 
     if (!ctx) return ACVP_NO_CTX;
     if (!obj) {
@@ -1300,7 +1274,7 @@ static ACVP_RESULT acvp_oe_metadata_parse_vendor(ACVP_CTX *ctx, JSON_Object *obj
     rv = acvp_oe_metadata_parse_vendor_contacts(ctx, obj, vendor);
     if (ACVP_SUCCESS != rv) return rv;
 
-    return ACVP_SUCCESS
+    return ACVP_SUCCESS;
 }
 
 static ACVP_RESULT acvp_oe_metadata_parse_vendors(ACVP_CTX *ctx, JSON_Object *obj) {
@@ -1321,7 +1295,7 @@ static ACVP_RESULT acvp_oe_metadata_parse_vendors(ACVP_CTX *ctx, JSON_Object *ob
     }
 
     vendors_count = json_array_get_count(vendors_array);
-    if (vendors_count = 0) {
+    if (vendors_count == 0) {
         ACVP_LOG_ERR("Need at least one object in the 'vendors' array");
         return ACVP_MALFORMED_JSON;
     }
@@ -1333,6 +1307,262 @@ static ACVP_RESULT acvp_oe_metadata_parse_vendors(ACVP_CTX *ctx, JSON_Object *ob
         }
 
         rv = acvp_oe_metadata_parse_vendor(ctx, vendor_obj);
+        if (ACVP_SUCCESS != rv) return rv; /* Fail */
+    }
+
+    /* Success */
+    return ACVP_SUCCESS;
+}
+
+static ACVP_RESULT acvp_oe_metadata_parse_module(ACVP_CTX *ctx, JSON_Object *obj) {
+    const char *name = NULL, *version = NULL, *type = NULL, *description = NULL;
+    unsigned int module_id = 0, vendor_id = 0;
+    ACVP_RESULT rv = ACVP_SUCCESS;
+
+    if (!ctx) return ACVP_NO_CTX;
+    if (!obj) {
+        ACVP_LOG_ERR("Requried parameter 'obj' is NULL");
+        return ACVP_INVALID_ARG;
+    } 
+
+    module_id = (unsigned int)json_object_get_number(obj, "id");
+    if (module_id == 0) {
+        ACVP_LOG_ERR("Metadata JSON 'id' must be non-zero");
+        return ACVP_INVALID_ARG;
+    }
+
+    vendor_id = (unsigned int)json_object_get_number(obj, "vendor_id");
+    if (vendor_id == 0) {
+        ACVP_LOG_ERR("Metadata JSON 'vendor_id' must be non-zero");
+        return ACVP_INVALID_ARG;
+    }
+
+    name = json_object_get_string(obj, "name");
+    if (!name) {
+        ACVP_LOG_ERR("Metadata JSON missing 'name'");
+        return ACVP_INVALID_ARG;
+    }
+
+    /* Designate and init new Module struct */
+    rv = acvp_oe_module_new(ctx, module_id, vendor_id, name);
+    if (rv != ACVP_SUCCESS) return rv;
+
+    type = json_object_get_string(obj, "type");
+    version = json_object_get_string(obj, "version");
+    description = json_object_get_string(obj, "description");
+
+    rv = acvp_oe_module_set_type_version_desc(ctx, module_id, type, version, description);
+    if (ACVP_SUCCESS != rv) return rv;
+
+    return ACVP_SUCCESS;
+}
+
+static ACVP_RESULT acvp_oe_metadata_parse_modules(ACVP_CTX *ctx, JSON_Object *obj) {
+    ACVP_RESULT rv = ACVP_SUCCESS;
+    JSON_Array *modules_array = NULL;
+    int i = 0, modules_count = 0;
+
+    if (!ctx) return ACVP_NO_CTX;
+    if (!obj) {
+        ACVP_LOG_ERR("Requried parameter 'obj' is NULL");
+        return ACVP_INVALID_ARG;
+    }
+
+    modules_array = json_object_get_array(obj, "modules");
+    if (!modules_array) {
+        ACVP_LOG_ERR("Unable to resolve the 'modules' array");
+        return ACVP_JSON_ERR;
+    }
+
+    modules_count = json_array_get_count(modules_array);
+    /* 
+     * Not required to be in the metadata file.
+     * The user can specify modules via libacvp API.
+     */
+    if (modules_count == 0) return ACVP_SUCCESS; 
+
+    for (i = 0; i < modules_count; i++) {
+        JSON_Object *module_obj = json_array_get_object(modules_array, i);
+        if (!module_obj) {
+            ACVP_LOG_ERR("Unable to parse object at 'modules'[%d]", i);
+            return ACVP_JSON_ERR;
+        }
+
+        rv = acvp_oe_metadata_parse_module(ctx, module_obj);
+        if (ACVP_SUCCESS != rv) return rv; /* Fail */
+    }
+
+    /* Success */
+    return ACVP_SUCCESS;
+}
+
+static unsigned int match_dependency(ACVP_CTX *ctx,
+                                     ACVP_KV_LIST *kv) {
+    if (!ctx) return 0;
+    if (!kv) return 0;
+
+    // TODO Exact match compare
+
+    return 0;
+}
+
+static ACVP_RESULT acvp_oe_metadata_parse_oe_dependency(ACVP_CTX *ctx,
+                                                        JSON_Object *obj,
+                                                        unsigned int oe_id) {
+    JSON_Object *dep_obj = NULL;
+    ACVP_KV_LIST *head_kv = NULL, *kv = NULL;
+    int i = 0, count = 0, saved = 0;
+    unsigned int dep_id = 0;
+    ACVP_RESULT rv = ACVP_SUCCESS;
+
+    if (!ctx) return ACVP_NO_CTX;
+    if (!obj) {
+        ACVP_LOG_ERR("Requried parameter 'obj' is NULL");
+        return ACVP_INVALID_ARG;
+    }
+
+    dep_obj = json_object_get_object(obj, "dependency");
+    if (!dep_obj) {
+        ACVP_LOG_ERR("Missing 'dependency' object in JSON");
+        return ACVP_JSON_ERR;
+    }
+    count = (int)json_object_get_count(dep_obj);
+    if (!count) {
+        ACVP_LOG_ERR("Requires at least 1 item in 'dependency' object JSON");
+        return ACVP_JSON_ERR;
+    }
+
+    for (i = 0; i < count; i++) {
+        const char *key = NULL, *value = NULL;
+
+        key = json_object_get_name(dep_obj, i);
+        if (!key) {
+            ACVP_LOG_ERR("Problem parsing JSON key");
+            rv = ACVP_JSON_ERR;
+            goto end;
+        }
+
+        value = json_object_get_string(dep_obj, key);
+        if (!value) {
+            ACVP_LOG_ERR("Problem parsing JSON value");
+            rv = ACVP_JSON_ERR;
+            goto end;
+        }
+
+        kv = calloc(1, sizeof(ACVP_KV_LIST));
+        if (i == 0) head_kv = kv; /* This first one, set the head */
+
+        copy_oe_string(&kv->key, key);
+        if (ACVP_INVALID_ARG == rv) {
+            ACVP_LOG_ERR("'key' string too long");
+            goto end;
+        }
+        copy_oe_string(&kv->value, value);
+        if (ACVP_INVALID_ARG == rv) {
+            ACVP_LOG_ERR("'key' string too long");
+            goto end;
+        }
+
+        /* Point to the next one */
+        kv = kv->next;
+    }
+
+    dep_id = match_dependency(ctx, kv);
+    if (dep_id == 0) {
+        /*
+         * We didn't find a Dependency in memory that matches exactly.
+         * Make a new one!
+         */
+        rv = acvp_oe_dependency_new(ctx, glb_dependency_id);
+        if (ACVP_SUCCESS != rv) {
+            ACVP_LOG_ERR("Failed to create new Dependency");
+            goto end;
+        }
+
+        saved = 1;
+        dep_id = glb_dependency_id;
+        glb_dependency_id++;
+    }
+
+    /* Add the Dependency to the OE */
+    acvp_oe_oe_set_dependency(ctx, oe_id, dep_id);
+
+end:
+    if (ACVP_SUCCESS != rv || !saved) {
+        if (head_kv) acvp_free_kv_list(head_kv);
+    }
+
+    return rv;
+}
+
+static ACVP_RESULT acvp_oe_metadata_parse_oe(ACVP_CTX *ctx, JSON_Object *obj) {
+    const char *name = NULL;
+    unsigned int oe_id = 0;
+    ACVP_RESULT rv = ACVP_SUCCESS;
+
+    if (!ctx) return ACVP_NO_CTX;
+    if (!obj) {
+        ACVP_LOG_ERR("Requried parameter 'obj' is NULL");
+        return ACVP_INVALID_ARG;
+    } 
+
+    oe_id = (unsigned int)json_object_get_number(obj, "id");
+    if (oe_id == 0) {
+        ACVP_LOG_ERR("Metadata JSON 'id' must be non-zero");
+        return ACVP_INVALID_ARG;
+    }
+
+    name = json_object_get_string(obj, "name");
+    if (!name) {
+        ACVP_LOG_ERR("Metadata JSON missing 'name'");
+        return ACVP_INVALID_ARG;
+    }
+
+    /* Designate and init new OE struct */
+    rv = acvp_oe_oe_new(ctx, oe_id, name);
+    if (rv != ACVP_SUCCESS) return rv;
+
+    /*
+     * Parse the dependencies
+     */
+    rv = acvp_oe_metadata_parse_oe_dependency(ctx, obj, oe_id);
+    if (ACVP_SUCCESS != rv) return rv;
+
+    return ACVP_SUCCESS;
+}
+
+static ACVP_RESULT acvp_oe_metadata_parse_oes(ACVP_CTX *ctx, JSON_Object *obj) {
+    ACVP_RESULT rv = ACVP_SUCCESS;
+    JSON_Array *oes_array = NULL;
+    int i = 0, oes_count = 0;
+
+    if (!ctx) return ACVP_NO_CTX;
+    if (!obj) {
+        ACVP_LOG_ERR("Requried parameter 'obj' is NULL");
+        return ACVP_INVALID_ARG;
+    }
+
+    oes_array = json_object_get_array(obj, "operating_environments");
+    if (!oes_array) {
+        ACVP_LOG_ERR("Unable to resolve the 'operating_environments' array");
+        return ACVP_JSON_ERR;
+    }
+
+    oes_count = json_array_get_count(oes_array);
+    /* 
+     * Not required to be in the metadata file.
+     * The user can specify oes via libacvp API.
+     */
+    if (oes_count == 0) return ACVP_SUCCESS; 
+
+    for (i = 0; i < oes_count; i++) {
+        JSON_Object *oe_obj = json_array_get_object(oes_array, i);
+        if (!oe_obj) {
+            ACVP_LOG_ERR("Unable to parse object at 'operating_environments'[%d]", i);
+            return ACVP_JSON_ERR;
+        }
+
+        rv = acvp_oe_metadata_parse_oe(ctx, oe_obj);
         if (ACVP_SUCCESS != rv) return rv; /* Fail */
     }
 
@@ -1367,8 +1597,21 @@ ACVP_RESULT acvp_oe_ingest_metadata(ACVP_CTX *ctx, const char *metadata_file) {
         goto end;
     }
 
+    rv = acvp_oe_metadata_parse_modules(ctx, obj);
+    if (ACVP_SUCCESS != rv) {
+        ACVP_LOG_ERR("Failed to parse 'modules' from metadata JSON");
+        goto end;
+    }
+
+    rv = acvp_oe_metadata_parse_oes(ctx, obj);
+    if (ACVP_SUCCESS != rv) {
+        ACVP_LOG_ERR("Failed to parse 'operating_environments' from metadata JSON");
+        goto end;
+    }
+
 end:
     if (val) json_value_free(val);
 
     return rv;
 }
+

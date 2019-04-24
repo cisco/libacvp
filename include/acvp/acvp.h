@@ -2542,15 +2542,31 @@ ACVP_RESULT acvp_register(ACVP_CTX *ctx);
  */
 ACVP_RESULT acvp_process_tests(ACVP_CTX *ctx);
 
-unsigned int acvp_oe_module_new(ACVP_CTX *ctx,
-                                unsigned int vendor_id,
-                                const char *name);
+ACVP_RESULT acvp_oe_module_new(ACVP_CTX *ctx,
+                               unsigned int id,
+                               unsigned int vendor_id,
+                               const char *name);
 
 ACVP_RESULT acvp_oe_module_set_type_version_desc(ACVP_CTX *ctx,
                                                  unsigned int id,
                                                  const char *type,
                                                  const char *version,
                                                  const char *description);
+
+ACVP_RESULT acvp_oe_dependency_new(ACVP_CTX *ctx, unsigned int id);
+
+ACVP_RESULT acvp_oe_dependency_add_attribute(ACVP_CTX *ctx,
+                                             unsigned int dependency_id,
+                                             const char *key,
+                                             const char *value);
+
+ACVP_RESULT acvp_oe_oe_new(ACVP_CTX *ctx,
+                           unsigned int id,
+                           const char *oe_name);
+
+ACVP_RESULT acvp_oe_oe_set_dependency(ACVP_CTX *ctx,
+                                      unsigned int oe_id,
+                                      unsigned int dependency_id);
 
 /*! @brief acvp_set_json_filename specifies JSON registration file
  *  to be used during registration. This allows the app to skip the
@@ -2575,37 +2591,6 @@ ACVP_RESULT acvp_set_json_filename(ACVP_CTX *ctx, const char *json_filename);
  * @return ACVP_RESULT
  */
 ACVP_RESULT acvp_load_kat_filename(ACVP_CTX *ctx, const char *kat_filename);
-
-/*! @brief acvp_set_module_info() specifies the crypto module attributes
-    for the test session.
-
-    @param ctx Pointer to ACVP_CTX that was previously created by
-        calling acvp_create_test_session.
-    @param module_name Name of the crypto module under test.
-    @param module_type The crypto module type: software, hardware, or hybrid.
-    @param module_version The version# of the crypto module under test.
-    @param module_description A brief description of the crypto module under test.
-
-    @return ACVP_RESULT
- */
-ACVP_RESULT acvp_set_module_info(ACVP_CTX *ctx,
-                                 const char *module_name,
-                                 const char *module_type,
-                                 const char *module_version,
-                                 const char *module_description);
-
-unsigned int acvp_oe_dependency_new(ACVP_CTX *ctx);
-
-ACVP_RESULT acvp_oe_dependency_add_attribute(ACVP_CTX *ctx,
-                                             unsigned int dependency_id,
-                                             const char *key,
-                                             const char *value);
-
-unsigned int acvp_oe_oe_new(ACVP_CTX *ctx, const char *oe_name);
-
-ACVP_RESULT acvp_oe_oe_add_dependency(ACVP_CTX *ctx,
-                                      unsigned int oe_id,
-                                      unsigned int dependency_id);
 
 /*! @brief acvp_check_test_results() allows the application to fetch vector
         set results from the server during a test session.
