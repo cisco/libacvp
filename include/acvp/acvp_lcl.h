@@ -1217,6 +1217,15 @@ typedef struct acvp_operating_env_t {
     ACVP_OES oes; /**< Operating Environments */
 } ACVP_OPERATING_ENV;
 
+typedef struct acvp_fips_t {
+    int do_validation; /* Flag indicating whether a FIPS validation
+                          should be performed on this testSession. 1 for yes */
+    int metadata_loaded; /* Flag indicating whether the metadata necessary for
+                           a FIPS validation was successfully loaded into memory. 1 for yes */
+    int metadata_ready; /* Flag indicating whether the metadata necessary for
+                           a FIPS validation has passed all stages (loaded and verified). 1 for yes */
+} ACVP_FIPS;
+
 /*
  * This struct holds all the global data for a test session, such
  * as the server name, port#, etc.  Some of the values in this
@@ -1241,8 +1250,9 @@ struct acvp_ctx_t {
 
     char *json_filename;
     int use_json;
-
     int is_sample;
+
+    ACVP_FIPS fips; /* Information related to a FIPS validation */
 
     /* test session data */
     ACVP_VS_LIST *vs_list;
@@ -1383,7 +1393,6 @@ ACVP_RESULT acvp_register_build_person(ACVP_CTX *ctx,
 /*
  * Operating Environment functions
  */
-ACVP_RESULT acvp_oe_register_operating_env(ACVP_CTX *ctx);
 void acvp_oe_free_operating_env(ACVP_CTX *ctx);
 
 ACVP_RESULT acvp_notify_large(ACVP_CTX *ctx,

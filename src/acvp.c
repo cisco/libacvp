@@ -594,7 +594,7 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx) {
         }
     }
     if (ctx->vsid_url_list) {
-        acvp_cap_free_str_list(&ctx->vsid_url_list);
+        acvp_free_str_list(&ctx->vsid_url_list);
     }
     if (ctx->caps_list) {
         cap_entry = ctx->caps_list;
@@ -752,7 +752,7 @@ static void acvp_cap_free_nl(ACVP_NAME_LIST *list) {
     }
 }
 
-tatic void acvp_cap_free_hash_pairs(ACVP_RSA_HASH_PAIR_LIST *list) {
+static void acvp_cap_free_hash_pairs(ACVP_RSA_HASH_PAIR_LIST *list) {
     ACVP_RSA_HASH_PAIR_LIST *top = list;
     ACVP_RSA_HASH_PAIR_LIST *tmp;
 
@@ -1037,7 +1037,7 @@ err:
  * the server.  The server will respond with a set of vector set
  * identifiers that the client will need to process.
  */
-ACVP_RESULT acvp_register(ACVP_CTX *ctx) {
+static ACVP_RESULT acvp_register(ACVP_CTX *ctx) {
     ACVP_RESULT rv = ACVP_SUCCESS;
     char *login = NULL, *reg = NULL;
     int login_len = 0, reg_len = 0;
@@ -1076,15 +1076,6 @@ ACVP_RESULT acvp_register(ACVP_CTX *ctx) {
         reg = json_serialize_to_string_pretty(tmp_json_from_file, NULL);
         json_value_free(tmp_json_from_file);
 
-        goto end;
-    }
-
-    /*
-     * Register the whole Operating Environment (oes, vendors, modukes, etc.)
-     */
-    rv = acvp_oe_register_operating_env(ctx);
-    if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("Unable to register Operating Environment");
         goto end;
     }
 
@@ -1365,7 +1356,7 @@ end:
  * by libacvp.  This function will block the caller.  Therefore,
  * it should be run on a separate thread if needed.
  */
-ACVP_RESULT acvp_process_tests(ACVP_CTX *ctx) {
+static ACVP_RESULT acvp_process_tests(ACVP_CTX *ctx) {
     ACVP_RESULT rv = ACVP_SUCCESS;
     ACVP_STRING_LIST *vs_entry = NULL;
 
@@ -1414,7 +1405,7 @@ static ACVP_RESULT acvp_retry_handler(ACVP_CTX *ctx, unsigned int retry_period) 
  * This routine will iterate through all the vector sets, requesting
  * the test result from the server for each set.
  */
-ACVP_RESULT acvp_check_test_results(ACVP_CTX *ctx) {
+static ACVP_RESULT acvp_check_test_results(ACVP_CTX *ctx) {
     ACVP_RESULT rv = ACVP_SUCCESS;
 
     if (!ctx) {
@@ -1686,6 +1677,53 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
 
 end:
     if (val) json_value_free(val);
+    return rv;
+}
+
+ACVP_RESULT acvp_run(ACVP_CTX *ctx, int fips_validation) {
+    ACVP_RESULT rv = ACVP_SUCCESS;
+
+    if (fips_validation) {
+        /*
+         * Check that everything needed for the FIPS validation is sane.
+         */
+        if (!ctx->fips.metadata_loaded) {
+            ACVP_LOG_ERR("User needs to load a valid metadata JSON file via acvp_oe_ingest_metadata");
+            return ACVP_INVALID_ARG;
+        }
+    }
+
+    /*
+     * Register with the server to advertise our capabilities and receive
+     * the vector sets identifiers.
+     */
+    rv = acvp_register(ctx);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Failed to register with ACVP server");
+        goto end;
+    }
+
+    /*
+     * Now we process the test cases given to us during
+     * registration earlier.
+     */
+    rv = acvp_process_tests(ctx);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Failed to process vectors");
+        goto end;
+    }
+
+    /*
+     * Check the test results.
+     */
+    ACVP_LOG_STATUS("Tests complete, checking results...");
+    rv = acvp_check_test_results(ctx);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Unable to retrieve test results");
+        goto end;
+    }
+
+end:
     return rv;
 }
 

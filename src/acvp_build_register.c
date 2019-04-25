@@ -2718,6 +2718,7 @@ static JSON_Value *acvp_version_json_value(void) {
     return version_val;
 }
 
+#if 0
 /*
  * This function builds the JSON message to register an OE with the
  * validating crypto server
@@ -3007,4 +3008,5 @@ ACVP_RESULT acvp_register_build_person(ACVP_CTX *ctx,
 
     return ACVP_SUCCESS;
 }
+#endif
 

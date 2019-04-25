@@ -103,106 +103,6 @@ static ACVP_RESULT progress(char *msg) {
     return ACVP_SUCCESS;
 }
 
-#define MAX_DEPENDENCIES 16
-static int setup_operating_environment(ACVP_CTX *ctx) {
-    ACVP_RESULT rv = ACVP_SUCCESS;
-    unsigned int dependency_ids[MAX_DEPENDENCIES];
-    int dependency_count = 0;
-    unsigned int dep_id = 0, oe_id, module_id = 0,
-                 vendor_id = 0, person_id = 0;
-    char *oe_name = NULL;
-    char ssl_version[10];
-    int i = 0;
-
-    /*
-     * New Vendor
-     */
-    vendor_id = acvp_oe_vendor_new(ctx, "Acme Fictional Corporation");
-    if (vendor_id == 0) return 1;
-
-    /* Set the Vendor email, website, and phone */
-    rv = acvp_oe_vendor_set_email_website_phone(ctx, vendor_id,
-                                                "acme@acme-fictional.com",
-                                                "www.acme-fictional.com",
-                                                "000-000-0000");
-    if (rv != ACVP_SUCCESS) {
-        printf("Failed to set vendor info\n");
-        return 1;
-    }
-
-    /* Set the Vendor address */
-    rv = acvp_oe_vendor_add_address(ctx, vendor_id, "Street", "Town", "State",
-                                    "Country", "Postal Code");
-    if (rv != ACVP_SUCCESS) {
-        printf("Failed to set Vendor address\n");
-        return 1;
-    }
-
-    /*
-     * New Person
-     */
-    person_id = acvp_oe_person_new(ctx, "Wyle E. Coyote");
-    if (person_id == 0) return 1;
-
-    /* Set the Person email, phone */
-    rv = acvp_oe_person_set_email_phone(ctx, person_id,
-                                        "wcoyote@acme-fictional.com",
-                                        "000-000-0000");
-    if (rv != ACVP_SUCCESS) {
-        printf("Failed to set Person info\n");
-        return 1;
-    }
-
-    /* Associate this Person with a Vendor */
-    acvp_oe_person_add_vendor(ctx, person_id, vendor_id);
-    if (rv != ACVP_SUCCESS) {
-        printf("Failed to link Person with Vendor\n");
-        return 1;
-    }
-
-    /*
-     * Setup the crypto module attributes
-     */
-    snprintf(ssl_version, 10, "%08x", (unsigned int)SSLeay());
-    module_id = acvp_oe_module_new(ctx, vendor_id, "OpenSSL");
-    if (module_id == 0) return 1;
-
-    rv = acvp_oe_module_set_type_version_desc(ctx, module_id, "software",
-                                              ssl_version, "FOM 6.2a");
-    if (rv != ACVP_SUCCESS) {
-        printf("Failed to set Module info\n");
-        return 1;
-    }
-
-    /* New Dependency */
-    dep_id = acvp_oe_dependency_new(ctx);
-    if (dep_id == 0) return 1;
-    dependency_ids[dependency_count] = dep_id;
-    dependency_count++;
-    acvp_oe_dependency_add_attribute(ctx, dep_id, "type", "software");
-
-    /* New Dependency */
-    dep_id = acvp_oe_dependency_new(ctx);
-    if (dep_id == 0) return 1;
-    dependency_ids[dependency_count] = dep_id;
-    dependency_count++;
-    acvp_oe_dependency_add_attribute(ctx, dep_id, "name", "Linux 3.1");
-
-    /* New OE */
-    oe_name = "Ubuntu Linux 3.1 on AMD 6272 Opteron Processor with Acme package installed";
-    oe_id = acvp_oe_oe_new(ctx, oe_name);
-    if (oe_id == 0) return 1;
-
-    /* Add the Dependencies to the OE */
-    for (i = 0; i < dependency_count; i++) {
-        rv = acvp_oe_oe_add_dependency(ctx, oe_id, dependency_ids[i]);
-        if (rv != ACVP_SUCCESS) return 1;
-    }
-
-    /* Success */
-    return 0;
-}
-
 static void app_cleanup(ACVP_CTX *ctx) {
     // Routines for libacvp
     acvp_cleanup(ctx);
@@ -232,7 +132,7 @@ int main(int argc, char **argv) {
     fips_algtest_init_nofips();
 #endif
 
-    setup_session_parameters();
+     setup_session_parameters();
 
     /*
      * We begin the libacvp usage flow here.
@@ -252,15 +152,6 @@ int main(int argc, char **argv) {
         printf("Failed to set server/port\n");
         goto end;
     }
-
-#if 0
-    /* Now to setup all of the information pertaining to Operating Environment(s) */
-    rv = setup_operating_environment(ctx);
-    if (rv) {
-        printf("Failed to setup Operating Environment\n");
-        goto end;
-    }
-#endif
 
     /*
      * Set the api context prefix if needed
@@ -389,33 +280,22 @@ int main(int argc, char **argv) {
        goto end;
     }
 
-    /*
-     * Now that we have a test session, we register with
-     * the server to advertise our capabilities and receive
-     * the KAT vector sets the server demands that we process.
-     */
-    rv = acvp_register(ctx);
-    if (rv != ACVP_SUCCESS) {
-        printf("Failed to register with ACVP server (rv=%d)\n", rv);
-        goto end;
+    if (cfg.fips_validation) {
+        /*
+         * Provide the metadata needed for a FIPS validation.
+         */
+        rv = acvp_oe_ingest_metadata(ctx, cfg.validation_metadata_file);
+        if (rv != ACVP_SUCCESS) {
+            printf("Failed to read validation_metadata_file\n");
+            goto end;
+        }
     }
 
     /*
-     * Now we process the test cases given to us during
-     * registration earlier.
+     * Run the test session.
+     * Perform a FIPS validation on this test session if specified.
      */
-    rv = acvp_process_tests(ctx);
-    if (rv != ACVP_SUCCESS) {
-        printf("Failed to process vectors (%d)\n", rv);
-        goto end;
-    }
-
-    printf("\nTests complete, checking results...\n");
-    rv = acvp_check_test_results(ctx);
-    if (rv != ACVP_SUCCESS) {
-        printf("Unable to retrieve test results (%d)\n", rv);
-        goto end;
-    }
+    acvp_run(ctx, cfg.fips_validation);
 
 end:
     /*

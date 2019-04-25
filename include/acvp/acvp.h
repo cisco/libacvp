@@ -2513,34 +2513,25 @@ ACVP_RESULT acvp_set_certkey(ACVP_CTX *ctx, char *cert_file, char *key_file);
  */
 ACVP_RESULT acvp_mark_as_sample(ACVP_CTX *ctx);
 
-/*! @brief acvp_register() registers the DUT with the ACVP server.
-
-    This function is used to register the DUT with the server.
-    Registration allows the DUT to advertise it's capabilities to
-    the server.  The server will respond with a set of vector set
-    identifiers that the client will need to process.
-
-    @param ctx Pointer to ACVP_CTX that was previously created by
-        calling acvp_create_test_session.
-
-    @return ACVP_RESULT
+/*! @brief Performs the ACVP testing procedures.
+ *
+ * This function will do the following actions:
+ *   1. Verify the provided metadata if user has specified \p fips_validation.
+ *   2. Register a new testSession with the ACVP server with the capabilities attached to the \p ctx.
+ *   3. Communicate with the ACVP server to acquire the test vectors, calculate the results
+ *      and upload the results to the server.
+ *   4. Check the results of each vector associated with the testSession. The success or failure
+ *      information will be printed to stderr.
+ *   5. Request that the ACVP server perform a FIPS validation (if \p fips_validation == 1 and testSession is passed).
+ *
+ * @param ctx Pointer to ACVP_CTX that was previously created by
+ *            calling acvp_create_test_session.
+ *
+ * @return ACVP_RESULT
  */
-ACVP_RESULT acvp_register(ACVP_CTX *ctx);
+ACVP_RESULT acvp_run(ACVP_CTX *ctx, int fips_validation);
 
-/*! @brief acvp_process_tests() performs the ACVP testing procedures.
-
-    This function will commence the test session after the DUT has
-    been registered with the ACVP server.  This function should be
-    invoked after acvp_register() finishes.  When invoked, this function
-    will download the vector sets from the ACVP server, process the
-    vectors, and upload the results to the server.
-
-    @param ctx Pointer to ACVP_CTX that was previously created by
-        calling acvp_create_test_session.
-
-    @return ACVP_RESULT
- */
-ACVP_RESULT acvp_process_tests(ACVP_CTX *ctx);
+ACVP_RESULT acvp_oe_ingest_metadata(ACVP_CTX *ctx, const char *metadata_file);
 
 ACVP_RESULT acvp_oe_module_new(ACVP_CTX *ctx,
                                unsigned int id,
@@ -2580,7 +2571,6 @@ ACVP_RESULT acvp_oe_oe_set_dependency(ACVP_CTX *ctx,
  */
 ACVP_RESULT acvp_set_json_filename(ACVP_CTX *ctx, const char *json_filename);
 
-
 /*! @brief acvp_load_kat_filename loads and processes JSON kat vector file
  *  This option will not communicate with the server at all.
  *
@@ -2591,15 +2581,6 @@ ACVP_RESULT acvp_set_json_filename(ACVP_CTX *ctx, const char *json_filename);
  * @return ACVP_RESULT
  */
 ACVP_RESULT acvp_load_kat_filename(ACVP_CTX *ctx, const char *kat_filename);
-
-/*! @brief acvp_check_test_results() allows the application to fetch vector
-        set results from the server during a test session.
-
-   @param ctx Address of pointer to a previously allocated ACVP_CTX.
-
-   @return ACVP_RESULT
- */
-ACVP_RESULT acvp_check_test_results(ACVP_CTX *ctx);
 
 /*! @brief acvp_set_2fa_callback() sets a callback function which
     will create or obtain a TOTP password for the second part of

@@ -351,7 +351,7 @@ static ACVP_RESULT sanity_check_ctx(ACVP_CTX *ctx) {
 
 static ACVP_RESULT acvp_send_with_path_seg(ACVP_CTX *ctx,
                                            ACVP_NET_ACTION action,
-                                           char *uri,
+                                           const char *uri,
                                            char *data,
                                            int data_len) {
     ACVP_RESULT rv = 0;

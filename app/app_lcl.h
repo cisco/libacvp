@@ -23,15 +23,17 @@ extern "C"
 #define DEFAULT_SERVER "127.0.0.1"
 #define DEFAULT_PORT 443
 #define DEFAULT_URI_PREFIX "acvp/v1/"
-#define JSON_FILENAME_LENGTH 24
+#define JSON_FILENAME_LENGTH 128
 
 typedef struct app_config {
     ACVP_LOG_LVL level;
     int sample;
     int json;
     int kat;
+    int fips_validation;
     char json_file[JSON_FILENAME_LENGTH + 1];
     char kat_file[JSON_FILENAME_LENGTH + 1];
+    char validation_metadata_file[JSON_FILENAME_LENGTH + 1];
 
     /*
      * Algorithm Flags

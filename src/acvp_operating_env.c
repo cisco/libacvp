@@ -42,6 +42,9 @@
 static unsigned int glb_dependency_id = 1; 
 
 static ACVP_RESULT copy_oe_string(char **dest, const char *src) {
+    if (dest == NULL) {
+        return ACVP_MISSING_ARG;
+    }
     if (src == NULL) {
         return ACVP_MISSING_ARG;
     }
@@ -1012,11 +1015,11 @@ static ACVP_RESULT acvp_oe_metadata_parse_vendor_address(ACVP_CTX *ctx,
         return ACVP_MISSING_ARG;
     }
 
-    street = json_object_get_string(obj, "street");
-    locality = json_object_get_string(obj, "locality");
-    region = json_object_get_string(obj, "region");
-    country = json_object_get_string(obj, "country");
-    postal_code = json_object_get_string(obj, "postal_code");
+    street = json_object_get_string(a_obj, "street");
+    locality = json_object_get_string(a_obj, "locality");
+    region = json_object_get_string(a_obj, "region");
+    country = json_object_get_string(a_obj, "country");
+    postal_code = json_object_get_string(a_obj, "postal_code");
 
     rv = acvp_oe_vendor_add_address(ctx, vendor, street, locality,
                                     region, country, postal_code);
@@ -1050,9 +1053,6 @@ static ACVP_RESULT acvp_oe_metadata_parse_emails(ACVP_CTX *ctx,
         return ACVP_INVALID_ARG;
     }
 
-    /* Get handle on the head of string list */
-    email = *email_list;
-
     emails_array = json_object_get_array(obj, "emails");
     count = (int)json_array_get_count(emails_array);
     if (emails_array && count) {
@@ -1063,7 +1063,13 @@ static ACVP_RESULT acvp_oe_metadata_parse_emails(ACVP_CTX *ctx,
                 return ACVP_JSON_ERR;
             }
 
-            email = calloc(1, sizeof(ACVP_STRING_LIST));
+            if (i == 0) {
+                *email_list = calloc(1, sizeof(ACVP_STRING_LIST));
+                email = *email_list;
+            } else {
+                email = calloc(1, sizeof(ACVP_STRING_LIST));
+            }
+
             copy_oe_string(&email->string, email_str);
             if (ACVP_INVALID_ARG == rv) {
                 ACVP_LOG_ERR("'street' string too long");
@@ -1100,9 +1106,6 @@ static ACVP_RESULT acvp_oe_metadata_parse_phone_numbers(ACVP_CTX *ctx,
         return ACVP_INVALID_ARG;
     }
 
-    /* Get handle on the head of phone list */
-    phone = *phone_list;
-
     phones_array = json_object_get_array(obj, "phone_numbers");
     count = (int)json_array_get_count(phones_array);
     if (phones_array && count) {
@@ -1128,7 +1131,13 @@ static ACVP_RESULT acvp_oe_metadata_parse_phone_numbers(ACVP_CTX *ctx,
                 return ACVP_JSON_ERR;
             }
 
-            phone = calloc(1, sizeof(ACVP_OE_PHONE_LIST));
+            if (i == 0) {
+                *phone_list = calloc(1, sizeof(ACVP_OE_PHONE_LIST));
+                phone = *phone_list;
+            }else {
+                phone = calloc(1, sizeof(ACVP_OE_PHONE_LIST));
+            }
+
             copy_oe_string(&phone->number, number_str);
             if (ACVP_INVALID_ARG == rv) {
                 ACVP_LOG_ERR("'number' string too long");
@@ -1396,12 +1405,43 @@ static ACVP_RESULT acvp_oe_metadata_parse_modules(ACVP_CTX *ctx, JSON_Object *ob
     return ACVP_SUCCESS;
 }
 
+static int compare_kv_list(const ACVP_KV_LIST *a, const ACVP_KV_LIST *b) {
+    int diff = 0;
+
+    while (a && b) {
+        strcmp_s(a->key, ACVP_OE_STR_MAX, b->key, &diff);
+        if (diff) return 0;
+
+        strcmp_s(a->value, ACVP_OE_STR_MAX, b->value, &diff);
+        if (diff) return 0;
+
+        /* Reached the end, we have a match */
+        if (a->next == NULL && b->next == NULL) return 1;
+        a = a->next;
+        b = b->next;
+    }
+
+    return 0;
+}
+
 static unsigned int match_dependency(ACVP_CTX *ctx,
                                      ACVP_KV_LIST *kv) {
+    int i = 0;
+
     if (!ctx) return 0;
     if (!kv) return 0;
 
-    // TODO Exact match compare
+    if (ctx->op_env.dependencies.count == 0) return 0;
+
+    for (i = 0; i < ctx->op_env.dependencies.count; i++) {
+        ACVP_DEPENDENCY *dep = &ctx->op_env.dependencies.deps[i];
+        ACVP_KV_LIST *dep_kv = dep->attribute_list;
+        int match = 0;
+
+        if  (dep_kv == NULL) continue;
+        match = compare_kv_list(kv, dep_kv);
+        if (match) return dep->id;
+    }
 
     return 0;
 }
@@ -1409,8 +1449,9 @@ static unsigned int match_dependency(ACVP_CTX *ctx,
 static ACVP_RESULT acvp_oe_metadata_parse_oe_dependency(ACVP_CTX *ctx,
                                                         JSON_Object *obj,
                                                         unsigned int oe_id) {
+    ACVP_DEPENDENCY *dep = NULL;
     JSON_Object *dep_obj = NULL;
-    ACVP_KV_LIST *head_kv = NULL, *kv = NULL;
+    ACVP_KV_LIST *head_kv = NULL, *next_kv = NULL, *kv = NULL;
     int i = 0, count = 0, saved = 0;
     unsigned int dep_id = 0;
     ACVP_RESULT rv = ACVP_SUCCESS;
@@ -1435,6 +1476,20 @@ static ACVP_RESULT acvp_oe_metadata_parse_oe_dependency(ACVP_CTX *ctx,
     for (i = 0; i < count; i++) {
         const char *key = NULL, *value = NULL;
 
+        if (i == 0) {
+            kv = calloc(1, sizeof(ACVP_KV_LIST));
+            head_kv = kv;
+        } else {
+            /* Grab the next one (already allocated) */
+            kv = next_kv;
+        }
+
+        if (i < (count - 1)) {
+            /* There will be another, pre-allocate and attach */
+            next_kv = calloc(1, sizeof(ACVP_KV_LIST));
+            kv->next = next_kv;
+        }
+
         key = json_object_get_name(dep_obj, i);
         if (!key) {
             ACVP_LOG_ERR("Problem parsing JSON key");
@@ -1449,9 +1504,6 @@ static ACVP_RESULT acvp_oe_metadata_parse_oe_dependency(ACVP_CTX *ctx,
             goto end;
         }
 
-        kv = calloc(1, sizeof(ACVP_KV_LIST));
-        if (i == 0) head_kv = kv; /* This first one, set the head */
-
         copy_oe_string(&kv->key, key);
         if (ACVP_INVALID_ARG == rv) {
             ACVP_LOG_ERR("'key' string too long");
@@ -1462,9 +1514,6 @@ static ACVP_RESULT acvp_oe_metadata_parse_oe_dependency(ACVP_CTX *ctx,
             ACVP_LOG_ERR("'key' string too long");
             goto end;
         }
-
-        /* Point to the next one */
-        kv = kv->next;
     }
 
     dep_id = match_dependency(ctx, kv);
@@ -1478,6 +1527,15 @@ static ACVP_RESULT acvp_oe_metadata_parse_oe_dependency(ACVP_CTX *ctx,
             ACVP_LOG_ERR("Failed to create new Dependency");
             goto end;
         }
+
+        dep = find_dependency(ctx, glb_dependency_id);
+        if (!dep) {
+            rv = ACVP_INVALID_ARG;
+            goto end;
+        }
+
+        /* Attach the KV list to the newly created dependency */
+        dep->attribute_list = head_kv;
 
         saved = 1;
         dep_id = glb_dependency_id;
@@ -1589,7 +1647,10 @@ ACVP_RESULT acvp_oe_ingest_metadata(ACVP_CTX *ctx, const char *metadata_file) {
     val = json_parse_file(metadata_file);
     if (!val) return ACVP_JSON_ERR;
     obj = json_value_get_object(val);
-    if (!obj) rv = ACVP_JSON_ERR; goto end;
+    if (!obj) {
+        rv = ACVP_JSON_ERR;
+        goto end;
+    }
 
     rv = acvp_oe_metadata_parse_vendors(ctx, obj);
     if (ACVP_SUCCESS != rv) {
@@ -1608,6 +1669,12 @@ ACVP_RESULT acvp_oe_ingest_metadata(ACVP_CTX *ctx, const char *metadata_file) {
         ACVP_LOG_ERR("Failed to parse 'operating_environments' from metadata JSON");
         goto end;
     }
+
+    /*
+     * The metadata is loaded into memory.
+     * It must be verified before running a validation on a testSession.
+     */
+    ctx->fips.metadata_loaded = 1;
 
 end:
     if (val) json_value_free(val);
