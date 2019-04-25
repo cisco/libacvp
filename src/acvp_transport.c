@@ -486,7 +486,7 @@ ACVP_RESULT acvp_submit_vector_responses(ACVP_CTX *ctx, char *vsid_url) {
     }
 
     snprintf(url, ACVP_ATTR_URL_MAX - 1,
-            "https://%s:%d/%s/results",
+            "https://%s:%d%s/results",
             ctx->server_name, ctx->server_port, vsid_url);
 
     return acvp_network_action(ctx, ACVP_NET_POST_VS_RESP, url, NULL, 0);
@@ -517,7 +517,7 @@ ACVP_RESULT acvp_retrieve_vector_set(ACVP_CTX *ctx, char *vsid_url) {
     }
 
     snprintf(url, ACVP_ATTR_URL_MAX - 1,
-            "https://%s:%d/%s",
+            "https://%s:%d%s",
             ctx->server_name, ctx->server_port, vsid_url);
 
     return acvp_network_action(ctx, ACVP_NET_GET_VS, url, NULL, 0);
@@ -541,7 +541,7 @@ ACVP_RESULT acvp_retrieve_vector_set_result(ACVP_CTX *ctx, char *api_url) {
     }
 
     snprintf(url, ACVP_ATTR_URL_MAX - 1,
-            "https://%s:%d/%s/results",
+            "https://%s:%d%s/results",
             ctx->server_name, ctx->server_port, api_url);
 
     return acvp_network_action(ctx, ACVP_NET_GET_VS_RESULT, url, NULL, 0);
@@ -560,7 +560,7 @@ ACVP_RESULT acvp_retrieve_expected_result(ACVP_CTX *ctx, char *api_url) {
     }
 
     snprintf(url, ACVP_ATTR_URL_MAX - 1,
-            "https://%s:%d/%s/expected",
+            "https://%s:%d%s/expected",
             ctx->server_name, ctx->server_port, api_url);
 
     return acvp_network_action(ctx, ACVP_NET_GET_VS_SAMPLE, url, NULL, 0);
@@ -578,9 +578,9 @@ ACVP_RESULT acvp_transport_get(ACVP_CTX *ctx, const char *url) {
         return ACVP_MISSING_ARG;
     }
 
-    snprintf(full_url, ACVP_ATTR_URL_MAX - 1,
-            "https://%s:%d/%s",
-            ctx->server_name, ctx->server_port, url);
+    snprintf(constructed_url, ACVP_ATTR_URL_MAX - 1,
+             "https://%s:%d%s",
+             ctx->server_name, ctx->server_port, url);
 
     return acvp_network_action(ctx, ACVP_NET_GET, full_url, NULL, 0);
 }

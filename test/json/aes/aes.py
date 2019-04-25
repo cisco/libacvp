@@ -116,11 +116,11 @@ def ref_testgroup_and_test(j_list, group_type=ENCRYPT):
 
 
 def convert_to_gcm(s):
-    if s[1]["algorithm"] == "AES-GCM":
+    if s[1]["algorithm"] == "ACVP-AES-GCM":
         # Already GCM mode
         return
 
-    s[1]["algorithm"] = "AES-GCM"
+    s[1]["algorithm"] = "ACVP-AES-GCM"
 
     tg, t = ref_testgroup_and_test(s, ENCRYPT)
     tg["ivGen"] = "internal"
@@ -144,11 +144,11 @@ def convert_to_gcm(s):
 
 
 def convert_to_ctr(s):
-    if s[1]["algorithm"] == "AES-CTR":
+    if s[1]["algorithm"] == "ACVP-AES-CTR":
         # Already CTR mode
         return
 
-    s[1]["algorithm"] = "AES-CTR"
+    s[1]["algorithm"] = "ACVP-AES-CTR"
 
     tg, t = ref_testgroup_and_test(s, ENCRYPT)
     tg["incrementalCounter"] = True
@@ -156,11 +156,11 @@ def convert_to_ctr(s):
 
 
 def convert_to_ccm(s):
-    if s[1]["algorithm"] == "AES-CCM":
+    if s[1]["algorithm"] == "ACVP-AES-CCM":
         # Already CCM mode
         return
 
-    s[1]["algorithm"] = "AES-CCM"
+    s[1]["algorithm"] = "ACVP-AES-CCM"
 
     tg, t = ref_testgroup_and_test(s, ENCRYPT)
     tg["ivLen"] = 56
@@ -523,7 +523,7 @@ def gen(j=None):
         json.dump(s, fp, indent=2)
 
     ##
-    # The boolean for "incrementalCounter" is not a boolean for AES-CTR
+    # The boolean for "incrementalCounter" is not a boolean for ACVP-AES-CTR
     ##
     s = copy.deepcopy(j)
     convert_to_ctr(s)
@@ -535,7 +535,7 @@ def gen(j=None):
         json.dump(s, fp, indent=2)
 
     ##
-    # The boolean for "overflowCounter" is not a boolean for AES-CTR
+    # The boolean for "overflowCounter" is not a boolean for ACVP-AES-CTR
     ##
     s = copy.deepcopy(j)
     convert_to_ctr(s)

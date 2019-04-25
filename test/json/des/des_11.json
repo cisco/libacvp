@@ -1,43 +1,43 @@
 [
   {
     "acvVersion": "0.5"
-  }, 
+  },
   {
     "testGroups": [
       {
-        "tgId": 999, 
-        "keyingOption": 3, 
-        "direction": "encrypt", 
-        "testType": "AFT", 
+        "testType": "AFT",
+        "tgId": 999,
+        "keyingOption": 3,
         "tests": [
           {
-            "pt": "0000000000000000", 
-            "key3": "aaaaaaaaaaaaaaaaa", 
-            "key2": "1046913489980131", 
-            "key1": "1046913489980131", 
-            "iv": "0000000000000000", 
-            "tcId": 1
+            "key2": "1046913489980131",
+            "pt": "0000000000000000",
+            "key1": "1046913489980131",
+            "key3": "aaaaaaaaaaaaaaaaa",
+            "tcId": 1,
+            "iv": "0000000000000000"
           }
-        ]
-      }, 
+        ],
+        "direction": "encrypt"
+      },
       {
-        "tgId": 999, 
-        "keyingOption": 3, 
-        "direction": "decrypt", 
-        "testType": "AFT", 
+        "testType": "AFT",
+        "tgId": 999,
+        "keyingOption": 3,
         "tests": [
           {
-            "key3": "1046913489980131", 
-            "key2": "1046913489980131", 
-            "key1": "1046913489980131", 
-            "iv": "0000000000000000", 
-            "tcId": 236, 
-            "ct": "88D55E54F54C97B4"
+            "key2": "1046913489980131",
+            "key1": "1046913489980131",
+            "key3": "1046913489980131",
+            "ct": "88D55E54F54C97B4",
+            "tcId": 236,
+            "iv": "0000000000000000"
           }
-        ]
+        ],
+        "direction": "decrypt"
       }
-    ], 
-    "algorithm": "TDES-CBC", 
-    "vsId": 21906
+    ],
+    "vsId": 21906,
+    "algorithm": "ACVP-TDES-CBC"
   }
 ]
