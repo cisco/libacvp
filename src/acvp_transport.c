@@ -201,7 +201,7 @@ static long acvp_curl_http_get(ACVP_CTX *ctx, char *url) {
      * set the callback function.
      */
     curl_easy_setopt(hnd, CURLOPT_WRITEDATA, ctx);
-    curl_easy_setopt(hnd, CURLOPT_WRITEFUNCTION, &acvp_curl_write_callback);
+    curl_easy_setopt(hnd, CURLOPT_WRITEFUNCTION, acvp_curl_write_callback);
 
     if (ctx->curl_buf) {
         /* Clear the HTTP buffer for next server response */
@@ -307,7 +307,7 @@ static long acvp_curl_http_post(ACVP_CTX *ctx, char *url, char *data, int data_l
      * set the callback function.
      */
     curl_easy_setopt(hnd, CURLOPT_WRITEDATA, ctx);
-    curl_easy_setopt(hnd, CURLOPT_WRITEFUNCTION, &acvp_curl_write_callback);
+    curl_easy_setopt(hnd, CURLOPT_WRITEFUNCTION, acvp_curl_write_callback);
 
     if (ctx->curl_buf) {
         /* Clear the HTTP buffer for next server response */
