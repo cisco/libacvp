@@ -1,29 +1,12 @@
 /** @file */
-/*****************************************************************************
-* Copyright (c) 2019, Cisco Systems, Inc.
-* All rights reserved.
-
-* Redistribution and use in source and binary forms, with or without modification,
-* are permitted provided that the following conditions are met:
-*
-* 1. Redistributions of source code must retain the above copyright notice,
-*    this list of conditions and the following disclaimer.
-*
-* 2. Redistributions in binary form must reproduce the above copyright notice,
-*    this list of conditions and the following disclaimer in the documentation
-*    and/or other materials provided with the distribution.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-* DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-* FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-* CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-* OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-* USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*****************************************************************************/
+/*
+ * Copyright (c) 2019, Cisco Systems, Inc.
+ *
+ * Licensed under the Apache License 2.0 (the "License").  You may not use
+ * this file except in compliance with the License.  You can obtain a copy
+ * in the file LICENSE in the source distribution or at
+ * https://github.com/cisco/libacvp/LICENSE
+ */
 
 #include <stdlib.h>
 
@@ -1406,22 +1389,52 @@ static ACVP_RESULT acvp_oe_metadata_parse_modules(ACVP_CTX *ctx, JSON_Object *ob
 }
 
 static int compare_kv_list(const ACVP_KV_LIST *a, const ACVP_KV_LIST *b) {
-    int diff = 0;
+    int a_count = 0, b_count = 0;
+    const ACVP_KV_LIST *tmp = NULL;
 
-    while (a && b) {
-        strcmp_s(a->key, ACVP_OE_STR_MAX, b->key, &diff);
-        if (diff) return 0;
-
-        strcmp_s(a->value, ACVP_OE_STR_MAX, b->value, &diff);
-        if (diff) return 0;
-
-        /* Reached the end, we have a match */
-        if (a->next == NULL && b->next == NULL) return 1;
-        a = a->next;
-        b = b->next;
+    /*
+     * Although a bit redundant, we first count both of the lists
+     * to see if their lengths are equal. This is to catch if either
+     * list has duplicate key/value pairs i.e. a[0].key == a[1].key
+     * and a[0].value == a[1].value. Both of those pairs would match
+     * against a single pair in b.
+     */
+    tmp = a;
+    while (tmp) {
+        a_count++;
+        tmp = tmp->next;
     }
 
-    return 0;
+    tmp = b;
+    while (tmp) {
+        b_count++;
+        tmp = b->next;
+    }
+
+    /* Count is not the same, can't be identical */
+    if (a_count != b_count) return 0;
+
+    tmp = b;
+    while (a) {
+        while (tmp) {
+            int diff = 0;
+
+            strcmp_s(a->key, ACVP_OE_STR_MAX, tmp->key, &diff);
+            if (diff == 0) {
+                strcmp_s(a->value, ACVP_OE_STR_MAX, tmp->value, &diff);
+                if (diff == 0) break; /* This key/value pair are the same */
+            }
+
+            if (tmp->next == NULL) return 0; /* This pair in a didn't match any in b */
+            tmp = tmp->next;
+        }
+
+        tmp = b; /* Go back to head of b for next round */
+        a = a->next;
+    }
+
+    /* Reached the end, we have a full match */
+    return 1;
 }
 
 static unsigned int match_dependency(ACVP_CTX *ctx,

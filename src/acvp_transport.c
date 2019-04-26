@@ -578,7 +578,7 @@ ACVP_RESULT acvp_transport_get(ACVP_CTX *ctx, const char *url) {
         return ACVP_MISSING_ARG;
     }
 
-    snprintf(constructed_url, ACVP_ATTR_URL_MAX - 1,
+    snprintf(full_url, ACVP_ATTR_URL_MAX - 1,
              "https://%s:%d%s",
              ctx->server_name, ctx->server_port, url);
 
