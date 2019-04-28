@@ -1559,6 +1559,12 @@ ACVP_RESULT acvp_notify_large(ACVP_CTX *ctx,
     }
     server_obj = acvp_get_obj_from_rsp(server_val);
 
+    if (!server_obj) {
+        ACVP_LOG_ERR("JSON parse error no server object");
+        rv = ACVP_JSON_ERR;
+        goto err;
+    }
+
     /* Grab the full large/ endpoint URL */
     strcpy_s(large_url, ACVP_ATTR_URL_MAX, json_object_get_string(server_obj, "url"));
 
@@ -1803,6 +1809,10 @@ static ACVP_RESULT acvp_parse_test_session_register(ACVP_CTX *ctx) {
      * The accessToken needed for this specific test session.
      */
     access_token = json_object_get_string(obj, "accessToken");
+    if (!access_token) {
+        ACVP_LOG_ERR("JSON parse error");
+        return ACVP_JSON_ERR;
+    }
     memzero_s(ctx->jwt_token, ACVP_JWT_TOKEN_MAX + 1);
     strcpy_s(ctx->jwt_token, ACVP_JWT_TOKEN_MAX + 1, access_token);
 
