@@ -1366,7 +1366,7 @@ end:
  * by libacvp.  This function will block the caller.  Therefore,
  * it should be run on a separate thread if needed.
  */
-static ACVP_RESULT acvp_process_tests(ACVP_CTX *ctx) {
+ACVP_RESULT acvp_process_tests(ACVP_CTX *ctx) {
     ACVP_RESULT rv = ACVP_SUCCESS;
     ACVP_STRING_LIST *vs_entry = NULL;
 
@@ -1415,7 +1415,7 @@ static ACVP_RESULT acvp_retry_handler(ACVP_CTX *ctx, unsigned int retry_period) 
  * This routine will iterate through all the vector sets, requesting
  * the test result from the server for each set.
  */
-static ACVP_RESULT acvp_check_test_results(ACVP_CTX *ctx) {
+ACVP_RESULT acvp_check_test_results(ACVP_CTX *ctx) {
     ACVP_RESULT rv = ACVP_SUCCESS;
 
     if (!ctx) {

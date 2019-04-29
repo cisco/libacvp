@@ -1381,26 +1381,6 @@ static void add_kas_ffc_details_good(void) {
     cr_assert(rv == ACVP_SUCCESS);
 }
 
-static void setup_empty_with_vendor_and_module_info() {
-    setup_empty_ctx(&ctx);
-    
-    rv = acvp_set_vendor_info(ctx, "Cisco Systems", "www.cisco.com", "Barry Fussell", "bfussell@cisco.com");
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_set_module_info(ctx, "OpenSSL", "software", "100020c0", "FOM 6.2a");
-    cr_assert(rv == ACVP_SUCCESS);
-    
-    char *oe_name = "Ubuntu Linux 3.1 on AMD 6272 Opteron Processor with Acme package installed";
-    ACVP_KV_LIST *key_val_list = calloc(1, sizeof(ACVP_KV_LIST));
-    key_val_list->key = strndup("type", 4);
-    key_val_list->value = strndup("software", 8);
-    key_val_list->next = calloc(1, sizeof(ACVP_KV_LIST));
-    key_val_list->next->key = strndup("name", 4);
-    key_val_list->next->value = strndup("Linux 3.1", 9);
-    
-    rv = acvp_add_oe_dependency(ctx, oe_name, key_val_list);
-    cr_assert(rv == ACVP_SUCCESS);
-}
-
 static void teardown(void) {
     if (ctx) teardown_ctx(&ctx);
     ctx = NULL;
@@ -1574,7 +1554,8 @@ Test(BUILD_TEST_SESSION, np_caps_ctx, .fini = teardown) {
  * This makes sure that the output of a good registration matches
  * the correct json structure
  */
-Test(BUILD_TEST_SESSION, good_aes_output, .init = setup_empty_with_vendor_and_module_info, .fini = teardown) {
+Test(BUILD_TEST_SESSION, good_aes_output, .fini = teardown) {
+    setup_empty_ctx(&ctx);
     add_aes_details_good();
     
     rv = acvp_build_test_session(ctx, &reg, NULL);
@@ -1658,7 +1639,8 @@ Test(BUILD_TEST_SESSION, missing_required_direction_aes, .fini = teardown) {
 /*
  * The ctx has a good hash registration
  */
-Test(BUILD_TEST_SESSION, good_hash, .init = setup_empty_with_vendor_and_module_info, .fini = teardown) {
+Test(BUILD_TEST_SESSION, good_hash, .fini = teardown) {
+    setup_empty_ctx(&ctx);
     add_hash_details_good();
     
     rv  = acvp_build_test_session(ctx, &reg, NULL);
@@ -1683,7 +1665,8 @@ Test(BUILD_TEST_SESSION, good_hash, .init = setup_empty_with_vendor_and_module_i
 /*
  * The ctx has a good drbg registration
  */
-Test(BUILD_TEST_SESSION, good_drbg, .init = setup_empty_with_vendor_and_module_info, .fini = teardown) {
+Test(BUILD_TEST_SESSION, good_drbg, .fini = teardown) {
+    setup_empty_ctx(&ctx);
     add_drbg_details_good();
     
     rv  = acvp_build_test_session(ctx, &reg, NULL);
@@ -1721,7 +1704,8 @@ Test(BUILD_TEST_SESSION, drbg_missing_cap_parms, .fini = teardown) {
  * This makes sure that the output of a good registration matches
  * the correct json structure
  */
-Test(BUILD_TEST_SESSION, good_cmac_output, .init = setup_empty_with_vendor_and_module_info, .fini = teardown) {
+Test(BUILD_TEST_SESSION, good_cmac_output, .fini = teardown) {
+    setup_empty_ctx(&ctx);
     add_cmac_details_good();
     
     rv = acvp_build_test_session(ctx, &reg, NULL);
@@ -1786,7 +1770,8 @@ Test(BUILD_TEST_SESSION, cmac_missing_tdes_ko, .fini = teardown) {
 /*
  * The ctx has a good hmac registration
  */
-Test(BUILD_TEST_SESSION, good_hmac, .init = setup_empty_with_vendor_and_module_info, .fini = teardown) {
+Test(BUILD_TEST_SESSION, good_hmac, .fini = teardown) {
+    setup_empty_ctx(&ctx);
     add_hmac_details_good();
     
     rv  = acvp_build_test_session(ctx, &reg, NULL);
@@ -1811,7 +1796,8 @@ Test(BUILD_TEST_SESSION, good_hmac, .init = setup_empty_with_vendor_and_module_i
 /*
  * The ctx has a good dsa registration
  */
-Test(BUILD_TEST_SESSION, good_dsa, .init = setup_empty_with_vendor_and_module_info, .fini = teardown) {
+Test(BUILD_TEST_SESSION, good_dsa, .fini = teardown) {
+    setup_empty_ctx(&ctx);
     add_dsa_details_good();
     
     rv  = acvp_build_test_session(ctx, &reg, NULL);
@@ -1916,7 +1902,8 @@ Test(BUILD_TEST_SESSION, dsa_missing_hashalgs, .fini = teardown) {
  * This makes sure that the output of a good registration matches
  * the correct json structure
  */
-Test(BUILD_TEST_SESSION, good_des_output, .init = setup_empty_with_vendor_and_module_info, .fini = teardown) {
+Test(BUILD_TEST_SESSION, good_des_output, .fini = teardown) {
+    setup_empty_ctx(&ctx);
     add_des_details_good();
     
     rv = acvp_build_test_session(ctx, &reg, NULL);
@@ -1942,7 +1929,8 @@ Test(BUILD_TEST_SESSION, good_des_output, .init = setup_empty_with_vendor_and_mo
 /*
  * The ctx has a good rsa registration
  */
-Test(BUILD_TEST_SESSION, good_rsa, .init = setup_empty_with_vendor_and_module_info, .fini = teardown) {
+Test(BUILD_TEST_SESSION, good_rsa, .fini = teardown) {
+    setup_empty_ctx(&ctx);
     add_rsa_details_good();
     
     rv  = acvp_build_test_session(ctx, &reg, NULL);
@@ -1980,7 +1968,8 @@ Test(BUILD_TEST_SESSION, rsa_no_params, .fini = teardown) {
 /*
  * The ctx has a good ecdsa registration
  */
-Test(BUILD_TEST_SESSION, good_ecdsa, .init = setup_empty_with_vendor_and_module_info, .fini = teardown) {
+Test(BUILD_TEST_SESSION, good_ecdsa, .fini = teardown) {
+    setup_empty_ctx(&ctx);
     add_ecdsa_details_good();
     
     rv  = acvp_build_test_session(ctx, &reg, NULL);
@@ -2018,7 +2007,8 @@ Test(BUILD_TEST_SESSION, ecdsa_no_params, .fini = teardown) {
 /*
  * The ctx has a good kdf registration
  */
-Test(BUILD_TEST_SESSION, good_kdf, .init = setup_empty_with_vendor_and_module_info, .fini = teardown) {
+Test(BUILD_TEST_SESSION, good_kdf, .fini = teardown) {
+    setup_empty_ctx(&ctx);
     add_kdf_details_good();
     
     rv  = acvp_build_test_session(ctx, &reg, NULL);
@@ -2129,7 +2119,8 @@ Test(BUILD_TEST_SESSION, kdf_more_modes, .fini = teardown) {
 /*
  * The ctx has a good kas ecc registration
  */
-Test(BUILD_TEST_SESSION, good_kas_ecc, .init = setup_empty_with_vendor_and_module_info, .fini = teardown) {
+Test(BUILD_TEST_SESSION, good_kas_ecc, .fini = teardown) {
+    setup_empty_ctx(&ctx);
     add_kas_ecc_details_good();
     
     rv  = acvp_build_test_session(ctx, &reg, NULL);
@@ -2167,7 +2158,8 @@ Test(BUILD_TEST_SESSION, kas_ecc_no_params, .fini = teardown) {
 /*
  * The ctx has a good kas ffc registration
  */
-Test(BUILD_TEST_SESSION, good_kas_ffc, .init = setup_empty_with_vendor_and_module_info, .fini = teardown) {
+Test(BUILD_TEST_SESSION, good_kas_ffc, .fini = teardown) {
+    setup_empty_ctx(&ctx);
     add_kas_ffc_details_good();
     
     rv  = acvp_build_test_session(ctx, &reg, NULL);

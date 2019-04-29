@@ -47,8 +47,10 @@ Test(SetupSessionParams, proper_ctx_params) {
      */
     rv = acvp_set_server(ctx, server, port);
     cr_assert(rv == ACVP_SUCCESS);
+#if 0
     rv = acvp_set_vendor_info(ctx, "Cisco", "www.cisco.com", "Unit Tests", "ut@123.com");
     cr_assert(rv == ACVP_SUCCESS);
+#endif
 
     teardown_ctx(&ctx);
 }
@@ -71,6 +73,7 @@ Test(SetupSessionParams, null_server_param) {
     teardown_ctx(&ctx);
 }
 
+#if 0
 Test(SetupSessionParams, null_vendor_info_params) {
     ACVP_RESULT rv;
     setup_empty_ctx(&ctx);
@@ -86,3 +89,4 @@ Test(SetupSessionParams, null_vendor_info_params) {
     
     teardown_ctx(&ctx);
 }
+#endif
