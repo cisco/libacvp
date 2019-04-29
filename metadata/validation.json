@@ -1,0 +1,54 @@
+{
+    "vendors": [
+        {
+            "name": "Acme Fictional Corporation",
+            "website": "www.acme-fictional.com",
+            "emails": [
+                "acme@acme-fictional.com"
+            ],
+            "phone_numbers": [
+                { "number": "000-000-0000", "type": "voice" }
+            ],
+            "contacts": [
+                {
+                    "full_name": "Wyle E. Coyote",
+                    "emails": [
+                        "wcoyote@acme-fictional.com"
+                    ],
+                    "phone_numbers": [
+                        { "number": "000-000-0000", "type": "voice" }
+                    ]
+                }
+            ],
+            "address": {
+                "street": "Street",
+                "locality": "Town",
+                "region": "State",
+                "country": "USA",
+                "postal_code": "00000"
+            },
+            "id": 1
+        }
+    ],
+    "modules": [
+        {
+            "name": "OpenSSL",
+            "version": "1.1.1b",
+            "type": "Software",
+            "description": "FOM",
+            "vendor_id": 1,
+            "id": 1
+        }
+    ],
+    "operating_environments": [
+        {
+            "name": "Ubuntu Linux 3.1 on AMD 6272 Opteron Processor with Acme package installed",
+            "dependency" : {
+                "type": "Software",
+                "name": "Linux 3.1"
+            },
+            "id": 1
+        }
+    ]
+}
+

@@ -809,10 +809,81 @@ ACVP_RESULT acvp_setup_json_rsp_group(ACVP_CTX **ctx,
     return ACVP_SUCCESS;
 }
 
+static char *acvp_get_version_from_rsp(JSON_Value *arry_val) {
+    char *version = NULL;
+    JSON_Object *ver_obj = NULL;
+
+    JSON_Array *reg_array;
+
+    reg_array = json_value_get_array(arry_val);
+    ver_obj = json_array_get_object(reg_array, 0);
+    version = (char *)json_object_get_string(ver_obj, "acvVersion");
+    if (version == NULL) {
+        return NULL;
+    }
+
+    return version;
+}
+
+JSON_Object *acvp_get_obj_from_rsp(JSON_Value *arry_val) {
+    JSON_Object *obj = NULL;
+    JSON_Array *reg_array;
+    char *ver = NULL;
+
+    reg_array = json_value_get_array(arry_val);
+    ver = acvp_get_version_from_rsp(arry_val);
+    if (ver == NULL) {
+        return NULL;
+    }
+
+    obj = json_array_get_object(reg_array, 1);
+    return obj;
+}
+
 void acvp_release_json(JSON_Value *r_vs_val,
                        JSON_Value *r_gval) {
 
     if (r_gval) json_value_free(r_gval);
     if (r_vs_val) json_value_free(r_vs_val);
+}
+
+/**
+ * @brief Determine if the given \p string fits within the \p max_allowed length.
+ *
+ * Measure the length of the \p string to see whether it's length
+ * (not including terminator) is <= \p max_allowed.
+ *
+ * @return 1 Length of \string <= \p max_allowed
+ * @return 0 Length of \string > \p max_allowed
+ * 
+ */
+int string_fits(const char *string, unsigned int max_allowed) {
+    if (strnlen_s(string, max_allowed + 1) > max_allowed) {
+        return 0;
+    }
+
+    return 1;
+}
+
+/*
+ * Simple utility function to free a string
+ * list.
+ */
+void acvp_free_str_list(ACVP_STRING_LIST **list) {
+    ACVP_STRING_LIST *top = NULL;
+    ACVP_STRING_LIST *tmp = NULL;;
+
+    if (list == NULL) return;
+    top = *list;
+    if (top == NULL) return;
+
+    while (top) {
+        if (top->string) free(top->string);
+        tmp = top;
+        top = top->next;
+        free(tmp);
+    }
+
+    *list = NULL;
 }
 

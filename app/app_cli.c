@@ -135,6 +135,7 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
         { "all_algs", ko_no_argument, 322 },
         { "json", ko_required_argument, 400 },
         { "kat", ko_required_argument, 401 },
+        { "fips_validation", ko_required_argument, 402 },
         { NULL, 0, 0 }
     };
 
@@ -287,6 +288,23 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
             }
 
             strcpy_s(cfg->kat_file, JSON_FILENAME_LENGTH + 1, opt.arg);
+            continue;
+        }
+        if (c == 402) {
+            int filename_len = 0;
+            cfg->fips_validation = 1;
+
+            filename_len = strnlen_s(opt.arg, JSON_FILENAME_LENGTH + 1);
+            if (filename_len > JSON_FILENAME_LENGTH) {
+                printf(ANSI_COLOR_RED "Command error... [%s]"ANSI_COLOR_RESET
+                       "\nThe <file> \"%s\", has a name that is too long."
+                       "\nMax allowed <file> name length is (%d).\n",
+                       "--fips_validation", opt.arg, JSON_FILENAME_LENGTH);
+                print_usage(1);
+                return 1;
+            }
+
+            strcpy_s(cfg->validation_metadata_file, JSON_FILENAME_LENGTH + 1, opt.arg);
             continue;
         }
 

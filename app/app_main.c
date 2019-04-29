@@ -120,10 +120,7 @@ static void app_cleanup(ACVP_CTX *ctx) {
 int main(int argc, char **argv) {
     ACVP_RESULT rv = ACVP_SUCCESS;
     ACVP_CTX *ctx = NULL;
-    char ssl_version[10];
     APP_CONFIG cfg = { 0 };
-    char *oe_name = "Ubuntu Linux 3.1 on AMD 6272 Opteron Processor with Acme package installed";
-    ACVP_KV_LIST *key_val_list = calloc(1, sizeof(ACVP_KV_LIST));
 
     if (ingest_cli(&cfg, argc, argv)) {
         return 1;
@@ -135,7 +132,7 @@ int main(int argc, char **argv) {
     fips_algtest_init_nofips();
 #endif
 
-    setup_session_parameters();
+     setup_session_parameters();
 
     /*
      * We begin the libacvp usage flow here.
@@ -153,43 +150,6 @@ int main(int argc, char **argv) {
     rv = acvp_set_server(ctx, server, port);
     if (rv != ACVP_SUCCESS) {
         printf("Failed to set server/port\n");
-        goto end;
-    }
-
-    /*
-     * Setup the vendor attributes
-     */
-    rv = acvp_set_vendor_info(ctx, "Acme Fictional Corporation", "www.acme-fictional.com", "Wyle E. Coyote", "wcoyote@acme-fictional.com");
-    if (rv != ACVP_SUCCESS) {
-        printf("Failed to set vendor info\n");
-        goto end;
-    }
-
-    /*
-     * Setup the crypto module attributes
-     */
-    snprintf(ssl_version, 10, "%08x", (unsigned int)SSLeay());
-    rv = acvp_set_module_info(ctx, "OpenSSL", "software", ssl_version, "FOM 6.2a");
-    if (rv != ACVP_SUCCESS) {
-        printf("Failed to set module info\n");
-        goto end;
-    }
-
-    key_val_list->key = calloc(4 + 1, sizeof(char));
-    strcpy_s(key_val_list->key, 4 + 1, "type");
-    key_val_list->value = calloc(8 + 1, sizeof(char));
-    strcpy_s(key_val_list->value, 8 + 1, "software");
-
-    key_val_list->next = calloc(1, sizeof(ACVP_KV_LIST));
-
-    key_val_list->next->key = calloc(4 + 1, sizeof(char));
-    strcpy_s(key_val_list->next->key, 4 + 1, "name");
-    key_val_list->next->value = calloc(9 + 1, sizeof(char));
-    strcpy_s(key_val_list->next->value, 9 + 1, "Linux 3.1");
-
-    rv = acvp_add_oe_dependency(ctx, oe_name, key_val_list);
-    if (rv != ACVP_SUCCESS) {
-        printf("Failed to set module info\n");
         goto end;
     }
 
@@ -320,33 +280,22 @@ int main(int argc, char **argv) {
        goto end;
     }
 
-    /*
-     * Now that we have a test session, we register with
-     * the server to advertise our capabilities and receive
-     * the KAT vector sets the server demands that we process.
-     */
-    rv = acvp_register(ctx);
-    if (rv != ACVP_SUCCESS) {
-        printf("Failed to register with ACVP server (rv=%d)\n", rv);
-        goto end;
+    if (cfg.fips_validation) {
+        /*
+         * Provide the metadata needed for a FIPS validation.
+         */
+        rv = acvp_oe_ingest_metadata(ctx, cfg.validation_metadata_file);
+        if (rv != ACVP_SUCCESS) {
+            printf("Failed to read validation_metadata_file\n");
+            goto end;
+        }
     }
 
     /*
-     * Now we process the test cases given to us during
-     * registration earlier.
+     * Run the test session.
+     * Perform a FIPS validation on this test session if specified.
      */
-    rv = acvp_process_tests(ctx);
-    if (rv != ACVP_SUCCESS) {
-        printf("Failed to process vectors (%d)\n", rv);
-        goto end;
-    }
-
-    printf("\nTests complete, checking results...\n");
-    rv = acvp_check_test_results(ctx);
-    if (rv != ACVP_SUCCESS) {
-        printf("Unable to retrieve test results (%d)\n", rv);
-        goto end;
-    }
+    acvp_run(ctx, cfg.fips_validation);
 
 end:
     /*
