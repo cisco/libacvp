@@ -12,6 +12,7 @@
 #include "ut_common.h"
 #include "acvp_lcl.h"
 
+#ifdef TEST_TRANSPORT
 char *vsid_url = "/acvp/v1/testSessions/0/vectorSets/0";
 ACVP_CTX *ctx = NULL;
 ACVP_RESULT rv;
@@ -105,7 +106,6 @@ static void add_hash_details_good(void) {
     cr_assert(rv == ACVP_SUCCESS);
 }
 
-#ifdef TEST_TRANSPORT
 static void setup(void) {
     setup_empty_ctx(&ctx);
 }

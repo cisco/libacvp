@@ -1282,6 +1282,10 @@ struct acvp_ctx_t {
 
 };
 
+ACVP_RESULT acvp_check_test_results(ACVP_CTX *ctx);
+
+ACVP_RESULT acvp_process_tests(ACVP_CTX *ctx);
+
 ACVP_RESULT acvp_send_test_session_registration(ACVP_CTX *ctx, char *reg, int len);
 
 ACVP_RESULT acvp_transport_send_oe_registration(ACVP_CTX *ctx, char *reg, int len);

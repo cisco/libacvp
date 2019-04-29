@@ -28,8 +28,6 @@ static void setup(void) {
 
 static void setup_full_ctx(void) {
     setup_empty_ctx(&ctx);
-    rv = acvp_set_vendor_info(ctx, "for test", "testing", "test", "test");
-    rv = acvp_set_module_info(ctx, "OpenSSL", "software", "test", "test");
     
     rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_GCM, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
@@ -260,92 +258,6 @@ Test(SET_SESSION_PARAMS, set_input_json_null_params, .init = setup, .fini = tear
 }
 
 /*
- * This test sets vendor info
- */
-Test(SET_SESSION_PARAMS, set_vendor_good, .init = setup, .fini = teardown) {
-    rv = acvp_set_vendor_info(ctx, "for test", "testing", "test", "test");
-    cr_assert(rv == ACVP_SUCCESS);
-}
-
-/*
- * This test sets vendor info with NULL params
- */
-Test(SET_SESSION_PARAMS, set_vendor_null_params, .init = setup, .fini = teardown) {
-    rv = acvp_set_vendor_info(ctx, NULL, "testing", "test", "test");
-    cr_assert(rv == ACVP_INVALID_ARG);
-    rv = acvp_set_vendor_info(ctx, "for test", NULL, "test", "test");
-    cr_assert(rv == ACVP_INVALID_ARG);
-    rv = acvp_set_vendor_info(ctx, "for test", "testing", NULL, "test");
-    cr_assert(rv == ACVP_INVALID_ARG);
-    rv = acvp_set_vendor_info(ctx, "for test", "testing", "test", NULL);
-    cr_assert(rv == ACVP_INVALID_ARG);
-}
-
-/*
- * This test sets vendor info with long params
- */
-Test(SET_SESSION_PARAMS, set_vendor_overflow, .init = setup, .fini = teardown) {
-    char long_str[1000];
-    int i;
-    for (i = 0; i < 999; i++) {
-        long_str[i] = 'a';
-    }
-    long_str[999] = '\0';
-
-    rv = acvp_set_vendor_info(ctx, long_str, "testing", "test", "test");
-    cr_assert(rv == ACVP_INVALID_ARG);
-    rv = acvp_set_vendor_info(ctx, "for test", long_str, "test", "test");
-    cr_assert(rv == ACVP_INVALID_ARG);
-    rv = acvp_set_vendor_info(ctx, "for test", "testing", long_str, "test");
-    cr_assert(rv == ACVP_INVALID_ARG);
-    rv = acvp_set_vendor_info(ctx, "for test", "testing", "test", long_str);
-    cr_assert(rv == ACVP_INVALID_ARG);
-}
-
-/*
- * This test sets module info
- */
-Test(SET_SESSION_PARAMS, set_module_good, .init = setup, .fini = teardown) {
-    rv = acvp_set_module_info(ctx, "for test", "testing", "test", "test");
-    cr_assert(rv == ACVP_SUCCESS);
-}
-
-/*
- * This test sets module info with NULL params
- */
-Test(SET_SESSION_PARAMS, set_module_null_params, .init = setup, .fini = teardown) {
-    rv = acvp_set_module_info(ctx, NULL, "testing", "test", "test");
-    cr_assert(rv == ACVP_INVALID_ARG);
-    rv = acvp_set_module_info(ctx, "for test", NULL, "test", "test");
-    cr_assert(rv == ACVP_INVALID_ARG);
-    rv = acvp_set_module_info(ctx, "for test", "testing", NULL, "test");
-    cr_assert(rv == ACVP_INVALID_ARG);
-    rv = acvp_set_module_info(ctx, "for test", "testing", "test", NULL);
-    cr_assert(rv == ACVP_INVALID_ARG);
-}
-
-/*
- * This test sets module info with long params
- */
-Test(SET_SESSION_PARAMS, set_module_overflow, .init = setup, .fini = teardown) {
-    char long_str[1000];
-    int i;
-    for (i = 0; i < 999; i++) {
-        long_str[i] = 'a';
-    }
-    long_str[999] = '\0';
-    
-    rv = acvp_set_module_info(ctx, long_str, "testing", "test", "test");
-    cr_assert(rv == ACVP_INVALID_ARG);
-    rv = acvp_set_module_info(ctx, "for test", long_str, "test", "test");
-    cr_assert(rv == ACVP_INVALID_ARG);
-    rv = acvp_set_module_info(ctx, "for test", "testing", long_str, "test");
-    cr_assert(rv == ACVP_INVALID_ARG);
-    rv = acvp_set_module_info(ctx, "for test", "testing", "test", long_str);
-    cr_assert(rv == ACVP_INVALID_ARG);
-}
-
-/*
  * This test sets server info
  */
 Test(SET_SESSION_PARAMS, set_server_good, .init = setup, .fini = teardown) {
@@ -526,9 +438,9 @@ Test(FREE_TEST_SESSION, good_full, .init = setup_full_ctx) {
 }
 
 /*
- * Calls register with missing path segment
+ * Calls run with missing path segment
  */
-Test(REGISTER, missing_path, .init = setup_full_ctx, .fini = teardown) {
+Test(RUN, missing_path, .init = setup_full_ctx, .fini = teardown) {
     rv = acvp_set_server(ctx, test_server, port);
     cr_assert(rv == ACVP_SUCCESS);
     
@@ -541,19 +453,19 @@ Test(REGISTER, missing_path, .init = setup_full_ctx, .fini = teardown) {
     rv = acvp_set_2fa_callback(ctx, &totp);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_register(ctx);
+    rv = acvp_run(ctx, 0);
     cr_assert(rv == ACVP_MISSING_ARG);
 }
 
 /*
- * Calls register with good values
+ * Calls run with good values
  * transport fail is exptected - we made it through the register
  * API successfully to try to send the registration. that part
  * will fail - no actual connection to server here.
  * This expects ACVP_TRANSPORT_FAIL because refresh sends
  * but we don't receive HTTP_OK
  */
-Test(REGISTER, good, .init = setup_full_ctx, .fini = teardown) {
+Test(RUN, good, .init = setup_full_ctx, .fini = teardown) {
     rv = acvp_set_server(ctx, test_server, port);
     cr_assert(rv == ACVP_SUCCESS);
     
@@ -569,47 +481,37 @@ Test(REGISTER, good, .init = setup_full_ctx, .fini = teardown) {
     rv = acvp_set_2fa_callback(ctx, &totp);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_register(ctx);
+    rv = acvp_run(ctx, 0);
     cr_assert(rv == ACVP_TRANSPORT_FAIL);
 }
 
 /*
- * This calls register with an overflow totp that will get
+ * This calls run with an overflow totp that will get
  * triggered in build_login
  */
-Test(REGISTER, bad_totp_cb, .init = setup_full_ctx, .fini = teardown) {
+Test(RUN, bad_totp_cb, .init = setup_full_ctx, .fini = teardown) {
     rv = acvp_set_2fa_callback(ctx, &dummy_totp_overflow);
     cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_register(ctx);
+    rv = acvp_run(ctx, 0);
     cr_assert(rv == ACVP_INVALID_ARG);
 }
 
 /*
- * This calls register without adding totp callback - we expect
+ * This calls run without adding totp callback - we expect
  * transport fail because we should make it through the rest
  * of the register api, but fail because we aren't going to be
  * able to successfully connect to NIST
  */
-Test(REGISTER, good_without_totp, .init = setup_full_ctx, .fini = teardown) {
-    rv = acvp_register(ctx);
+Test(RUN, good_without_totp, .init = setup_full_ctx, .fini = teardown) {
+    rv = acvp_run(ctx, 0);
     cr_assert(rv == ACVP_MISSING_ARG);
 }
 
 /*
- * Check test results with full ctx - should return ACVP_MISSING_ARG for
- * now, at least until mock server is set up (because we didn't receive
- * any vectors to load in)
+ * Run with null ctx
  */
-Test(CHECK_RESULTS, good, .init = setup_full_ctx, .fini = teardown) {
-    rv = acvp_check_test_results(ctx);
-    cr_assert(rv == ACVP_MISSING_ARG);
-}
-
-/*
- * Check test results with null ctx
- */
-Test(CHECK_RESULTS, null_ctx, .fini = teardown) {
-    rv = acvp_check_test_results(NULL);
+Test(RUN, null_ctx, .fini = teardown) {
+    rv = acvp_run(NULL, 0);
     cr_assert(rv == ACVP_NO_CTX);
 }
 
