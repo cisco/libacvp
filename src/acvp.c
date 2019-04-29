@@ -1158,7 +1158,7 @@ static ACVP_RESULT acvp_parse_login(ACVP_CTX *ctx) {
         return ACVP_JSON_ERR;
     }
 
-    obj = acvp_get_obj_from_rsp(val);
+    obj = acvp_get_obj_from_rsp(ctx, val);
 
     large_required = json_object_get_boolean(obj, "largeEndpointRequired");
 
@@ -1208,6 +1208,7 @@ ACVP_RESULT acvp_notify_large(ACVP_CTX *ctx,
     char *large_notify = NULL;
     const char *jwt = NULL;
     int notify_len = 0;
+    const char *large_url_str = NULL;
 
     if (!url) return ACVP_MISSING_ARG;
     if (!large_url) return ACVP_MISSING_ARG;
@@ -1260,7 +1261,7 @@ ACVP_RESULT acvp_notify_large(ACVP_CTX *ctx,
         rv = ACVP_JSON_ERR;
         goto err;
     }
-    server_obj = acvp_get_obj_from_rsp(server_val);
+    server_obj = acvp_get_obj_from_rsp(ctx, server_val);
 
     if (!server_obj) {
         ACVP_LOG_ERR("JSON parse error no server object");
@@ -1269,7 +1270,14 @@ ACVP_RESULT acvp_notify_large(ACVP_CTX *ctx,
     }
 
     /* Grab the full large/ endpoint URL */
-    strcpy_s(large_url, ACVP_ATTR_URL_MAX, json_object_get_string(server_obj, "url"));
+    large_url_str = json_object_get_string(server_obj, "url");
+    if (!large_url_str) {
+        ACVP_LOG_ERR("JSON parse error no large URL object");
+        rv = ACVP_JSON_ERR;
+        goto err;
+    }
+
+    strcpy_s(large_url, ACVP_ATTR_URL_MAX, large_url_str);
 
     jwt = json_object_get_string(server_obj, "accessToken");
     if (jwt) {
@@ -1320,13 +1328,18 @@ static ACVP_RESULT acvp_parse_test_session_register(ACVP_CTX *ctx) {
         ACVP_LOG_ERR("JSON parse error");
         return ACVP_JSON_ERR;
     }
-    obj = acvp_get_obj_from_rsp(val);
+    obj = acvp_get_obj_from_rsp(ctx, val);
 
     /*
      * This is the identifiers provided by the server
      * for this specific test session!
      */
     test_session_url = json_object_get_string(obj, "url");
+    if (!test_session_url) {
+        ACVP_LOG_ERR("JSON parse error");
+        return ACVP_JSON_ERR;
+    }
+
     ctx->session_url = calloc(ACVP_ATTR_URL_MAX + 1, sizeof(char));
     strcpy_s(ctx->session_url, ACVP_ATTR_URL_MAX + 1, test_session_url);
 
@@ -1349,6 +1362,11 @@ static ACVP_RESULT acvp_parse_test_session_register(ACVP_CTX *ctx) {
     vs_cnt = json_array_get_count(vect_sets);
     for (i = 0; i < vs_cnt; i++) {
         char *vsid_url = (char*)json_array_get_string(vect_sets, i);
+
+        if (!vsid_url) {
+            ACVP_LOG_ERR("No vsid_url");
+            goto end;
+        }
 
         rv = acvp_append_vsid_url(ctx, vsid_url);
         if (rv != ACVP_SUCCESS) goto end;
@@ -1497,7 +1515,7 @@ static ACVP_RESULT acvp_process_vsid(ACVP_CTX *ctx, char *vsid_url) {
             rv = ACVP_JSON_ERR;
             goto end;
         }
-        obj = acvp_get_obj_from_rsp(val);
+        obj = acvp_get_obj_from_rsp(ctx, val);
 
         /*
          * Check if we received a retry response
@@ -1554,7 +1572,6 @@ static ACVP_RESULT acvp_dispatch_vector_set(ACVP_CTX *ctx, JSON_Object *obj) {
 
     ACVP_LOG_STATUS("vs: %d", vs_id);
     ACVP_LOG_STATUS("ACV Operation: %s", alg);
-    ACVP_LOG_INFO("ACV version: %s", json_object_get_string(obj, "acvVersion"));
 
     for (i = 0; i < ACVP_ALG_MAX; i++) {
         strcmp_s(alg_tbl[i].name,
@@ -1616,6 +1633,7 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
     int count = 0, i = 0, passed = 0;
     JSON_Array *results = NULL;
     JSON_Object *current = NULL;
+    const char *status = NULL;
 
     while (1) {
         /*
@@ -1631,7 +1649,7 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
             ACVP_LOG_ERR("JSON parse error");
             return ACVP_JSON_ERR;
         }
-        obj = acvp_get_obj_from_rsp(val);
+        obj = acvp_get_obj_from_rsp(ctx, val);
 
         results = json_object_get_array(obj, "results");
         count = (int)json_array_get_count(results);
@@ -1665,9 +1683,17 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
             int diff = 1;
             current = json_array_get_object(results, i);
 
-            strcmp_s("fail", 4, json_object_get_string(current, "status"), &diff);
+            status = json_object_get_string(current, "status");
+            if (!status) {
+                goto end;
+            }
+            strcmp_s("fail", 4, status, &diff);
             if (!diff) {
                 char *vs_url = (char *)json_object_get_string(current, "vectorSetUrl");
+                if (!vs_url) {
+                    ACVP_LOG_ERR("No vector set URL");
+                    goto end;
+                }
 
                 ACVP_LOG_STATUS("Getting details for failed Vector Set...");
                 rv = acvp_retrieve_vector_set_result(ctx, vs_url);

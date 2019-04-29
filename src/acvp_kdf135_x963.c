@@ -287,6 +287,17 @@ ACVP_RESULT acvp_kdf135_x963_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
             z = (char *)json_object_get_string(testobj, "z");
             shared_info = (char *)json_object_get_string(testobj, "sharedInfo");
+            if (!z) {
+                ACVP_LOG_ERR("Failed to include z. ");
+                rv = ACVP_INVALID_ARG;
+                goto err;
+            }
+
+            if (!shared_info) {
+                ACVP_LOG_ERR("Failed to include shared_info. ");
+                rv = ACVP_INVALID_ARG;
+                goto err;
+            }
 
             ACVP_LOG_INFO("        Test case: %d", j);
             ACVP_LOG_INFO("             tcId: %d", tc_id);

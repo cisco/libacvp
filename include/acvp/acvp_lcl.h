@@ -1455,7 +1455,7 @@ ACVP_RESULT acvp_setup_json_rsp_group(ACVP_CTX **ctx,
 void acvp_release_json(JSON_Value *r_vs_val,
                        JSON_Value *r_gval);
 
-JSON_Object *acvp_get_obj_from_rsp(JSON_Value *arry_val);
+JSON_Object *acvp_get_obj_from_rsp(ACVP_CTX *ctx, JSON_Value *arry_val);
 
 void acvp_free_kv_list(ACVP_KV_LIST *kv_list);
 

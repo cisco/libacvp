@@ -825,7 +825,7 @@ static char *acvp_get_version_from_rsp(JSON_Value *arry_val) {
     return version;
 }
 
-JSON_Object *acvp_get_obj_from_rsp(JSON_Value *arry_val) {
+JSON_Object *acvp_get_obj_from_rsp(ACVP_CTX *ctx, JSON_Value *arry_val) {
     JSON_Object *obj = NULL;
     JSON_Array *reg_array;
     char *ver = NULL;
@@ -835,6 +835,7 @@ JSON_Object *acvp_get_obj_from_rsp(JSON_Value *arry_val) {
     if (ver == NULL) {
         return NULL;
     }
+    ACVP_LOG_INFO("ACV version: %s", ver);
 
     obj = json_array_get_object(reg_array, 1);
     return obj;

@@ -547,6 +547,7 @@ static ACVP_RESULT acvp_oe_vendor_record_identifier(ACVP_CTX *ctx,
     /* Grab the 'approvedUrl' identifier */
     obj = acvp_get_obj_from_rsp(val);
     url = json_object_get_string(obj, "approvedUrl");
+    if (!url) return ACVP_JSON_ERR;
 
     /* Record it */
     vendor->url = calloc(ACVP_ATTR_URL_MAX + 1, sizeof(char));
@@ -570,6 +571,7 @@ static ACVP_RESULT acvp_oe_person_record_identifier(ACVP_CTX *ctx,
     /* Grab the 'approvedUrl' identifier */
     obj = acvp_get_obj_from_rsp(val);
     url = json_object_get_string(obj, "approvedUrl");
+    if (!url) return ACVP_JSON_ERR;
 
     /* Record it */
     person->url = calloc(ACVP_ATTR_URL_MAX + 1, sizeof(char));
@@ -593,6 +595,7 @@ static ACVP_RESULT acvp_oe_oe_record_identifier(ACVP_CTX *ctx,
     /* Grab the 'approvedUrl' identifier */
     obj = acvp_get_obj_from_rsp(val);
     url = json_object_get_string(obj, "approvedUrl");
+    if (!url) return ACVP_JSON_ERR;
 
     /* Record it */
     oe->url = calloc(ACVP_ATTR_URL_MAX + 1, sizeof(char));
@@ -616,6 +619,7 @@ static ACVP_RESULT acvp_oe_dependency_record_identifier(ACVP_CTX *ctx,
     /* Grab the 'approvedUrl' identifier */
     obj = acvp_get_obj_from_rsp(val);
     url = json_object_get_string(obj, "approvedUrl");
+    if (!url) return ACVP_JSON_ERR;
 
     /* Record it */
     dep->url = calloc(ACVP_ATTR_URL_MAX + 1, sizeof(char));
@@ -643,6 +647,7 @@ static ACVP_RESULT acvp_oe_module_record_identifier(ACVP_CTX *ctx, ACVP_MODULE *
     /* Grab the 'approvedUrl' identifier */
     obj = acvp_get_obj_from_rsp(val);
     url = json_object_get_string(obj, "approvedUrl");
+    if (!url) return ACVP_JSON_ERR;
 
     /* Record it */
     module->url = calloc(ACVP_ATTR_URL_MAX + 1, sizeof(char));
