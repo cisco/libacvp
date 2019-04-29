@@ -1491,6 +1491,7 @@ static ACVP_RESULT acvp_oe_metadata_parse_oe_dependency(ACVP_CTX *ctx,
 
         if (i == 0) {
             kv = calloc(1, sizeof(ACVP_KV_LIST));
+            if (!kv) return ACVP_MALLOC_FAIL;
             head_kv = kv;
         } else {
             /* Grab the next one (already allocated) */
@@ -1500,6 +1501,7 @@ static ACVP_RESULT acvp_oe_metadata_parse_oe_dependency(ACVP_CTX *ctx,
         if (i < (count - 1)) {
             /* There will be another, pre-allocate and attach */
             next_kv = calloc(1, sizeof(ACVP_KV_LIST));
+            if (!next_kv) return ACVP_MALLOC_FAIL;
             kv->next = next_kv;
         }
 
