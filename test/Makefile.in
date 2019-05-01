@@ -14,6 +14,7 @@
 
 @SET_MAKE@
 
+
 VPATH = @srcdir@
 am__is_gnu_make = { \
   if test -z '$(MAKELEVEL)'; then \
@@ -98,7 +99,8 @@ am__aclocal_m4_deps = $(top_srcdir)/m4/libtool.m4 \
 	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
-DIST_COMMON = $(srcdir)/Makefile.am $(am__DIST_COMMON)
+DIST_COMMON = $(srcdir)/Makefile.am $(runtest_HEADERS) \
+	$(am__DIST_COMMON)
 mkinstalldirs = $(install_sh) -d
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
@@ -187,6 +189,35 @@ am__can_run_installinfo = \
     n|no|NO) false;; \
     *) (install-info --version) >/dev/null 2>&1;; \
   esac
+am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
+am__vpath_adj = case $$p in \
+    $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
+    *) f=$$p;; \
+  esac;
+am__strip_dir = f=`echo $$p | sed -e 's|^.*/||'`;
+am__install_max = 40
+am__nobase_strip_setup = \
+  srcdirstrip=`echo "$(srcdir)" | sed 's/[].[^$$\\*|]/\\\\&/g'`
+am__nobase_strip = \
+  for p in $$list; do echo "$$p"; done | sed -e "s|$$srcdirstrip/||"
+am__nobase_list = $(am__nobase_strip_setup); \
+  for p in $$list; do echo "$$p $$p"; done | \
+  sed "s| $$srcdirstrip/| |;"' / .*\//!s/ .*/ ./; s,\( .*\)/[^/]*$$,\1,' | \
+  $(AWK) 'BEGIN { files["."] = "" } { files[$$2] = files[$$2] " " $$1; \
+    if (++n[$$2] == $(am__install_max)) \
+      { print $$2, files[$$2]; n[$$2] = 0; files[$$2] = "" } } \
+    END { for (dir in files) print dir, files[dir] }'
+am__base_list = \
+  sed '$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;s/\n/ /g' | \
+  sed '$$!N;$$!N;$$!N;$$!N;s/\n/ /g'
+am__uninstall_files_from_dir = { \
+  test -z "$$files" \
+    || { test ! -d "$$dir" && test ! -f "$$dir" && test ! -r "$$dir"; } \
+    || { echo " ( cd '$$dir' && rm -f" $$files ")"; \
+         $(am__cd) "$$dir" && rm -f $$files; }; \
+  }
+am__installdirs = "$(DESTDIR)$(runtestdir)"
+HEADERS = $(runtest_HEADERS)
 am__tagged_files = $(HEADERS) $(SOURCES) $(TAGS_FILES) $(LISP)
 # Read a list of newline-separated strings from the standard input,
 # and print each of them once, without duplicates.  Input order is
@@ -329,7 +360,6 @@ pdfdir = @pdfdir@
 prefix = @prefix@
 program_transform_name = @program_transform_name@
 psdir = @psdir@
-runstatedir = @runstatedir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 srcdir = @srcdir@
@@ -341,58 +371,60 @@ top_srcdir = @top_srcdir@
 runtest_SOURCES = ut_common.c \
       create_session.c \
       test_acvp_utils.c \
-	  test_acvp_drbg.c \
+      test_acvp_drbg.c \
       test_acvp_dsa.c \
       test_acvp_hmac.c \
       test_acvp_kdf135_ssh.c \
       test_acvp_kdf135_snmp.c \
-	  test_acvp_kdf135_x963.c \
-	  test_acvp_kdf135_tls.c \
-	  test_acvp_kdf135_srtp.c \
-	  test_acvp_kdf135_ikev2.c \
-	  test_acvp_kdf135_ikev1.c \
-	  test_acvp_kdf108.c \
+      test_acvp_kdf135_x963.c \
+      test_acvp_kdf135_tls.c \
+      test_acvp_kdf135_srtp.c \
+      test_acvp_kdf135_ikev2.c \
+      test_acvp_kdf135_ikev1.c \
+      test_acvp_kdf108.c \
       test_acvp_rsa_keygen.c \
       test_acvp_cmac.c \
-	  test_acvp_des.c \
-	  test_acvp_rsa_sig.c \
-	  test_acvp_capabilities.c \
-	  test_acvp_hash.c \
-	  test_acvp_build_register.c \
-	  test_acvp_aes.c \
-	  test_acvp.c \
-	  test_acvp_transport.c \
-	  test_acvp_ecdsa.c \
-	  test_acvp_kas_ecc.c \
-	  test_acvp_kas_ffc.c \
-	  test_app_cmac.c \
-	  test_app_ecdsa.c \
-	  test_app_hmac.c \
-	  test_app_kas_ecc.c \
-	  test_app_kas_ffc.c \
-	  test_app_rsa_keygen.c \
-	  test_app_rsa_sig.c \
-	  test_app_sha.c
+      test_acvp_des.c \
+      test_acvp_rsa_sig.c \
+      test_acvp_capabilities.c \
+      test_acvp_hash.c \
+      test_acvp_build_register.c \
+      test_acvp_aes.c \
+      test_acvp.c \
+      test_acvp_transport.c \
+      test_acvp_ecdsa.c \
+      test_acvp_kas_ecc.c \
+      test_acvp_kas_ffc.c \
+      test_app_cmac.c \
+      test_app_ecdsa.c \
+      test_app_hmac.c \
+      test_app_kas_ecc.c \
+      test_app_kas_ffc.c \
+      test_app_rsa_keygen.c \
+      test_app_rsa_sig.c \
+      test_app_sha.c
 
 APP_LINK = ../app/acvp_app-app_sha.o \
            ../app/acvp_app-app_hmac.o \
-		   ../app/acvp_app-app_aes.o \
-		   ../app/acvp_app-app_des.o \
-		   ../app/acvp_app-app_cmac.o \
-		   ../app/acvp_app-app_kdf.o \
-		   ../app/acvp_app-app_dsa.o \
-		   ../app/acvp_app-app_kas.o \
-		   ../app/acvp_app-app_rsa.o \
-		   ../app/acvp_app-app_ecdsa.o \
-		   ../app/acvp_app-app_drbg.o
+           ../app/acvp_app-app_aes.o \
+           ../app/acvp_app-app_des.o \
+           ../app/acvp_app-app_cmac.o \
+           ../app/acvp_app-app_kdf.o \
+           ../app/acvp_app-app_dsa.o \
+           ../app/acvp_app-app_kas.o \
+           ../app/acvp_app-app_rsa.o \
+           ../app/acvp_app-app_ecdsa.o \
+           ../app/acvp_app-app_drbg.o
 
 runtest_CFLAGS = -g -O0 -Wall -DNO_SSL_DL -I$(top_srcdir)/include -I$(top_srcdir)/include/acvp -I$(top_srcdir)/app \
-				 $(SSL_CFLAGS) $(FOM_CFLAGS) $(SAFEC_CFLAGS) $(LIBCURL_CFLAGS) $(CRITERION_CFLAGS)
+                 $(SSL_CFLAGS) $(FOM_CFLAGS) $(SAFEC_CFLAGS) $(LIBCURL_CFLAGS) $(CRITERION_CFLAGS)
 
 runtest_LDFLAGS = -L../src/.libs -ldl -lacvp \
-				  $(SSL_LDFLAGS) $(LIBCURL_LDFLAGS) $(CRITERION_LDFLAGS) $(FOM_LDFLAGS)
+                  $(SSL_LDFLAGS) $(LIBCURL_LDFLAGS) $(CRITERION_LDFLAGS) $(FOM_LDFLAGS)
 
 runtest_LDADD = $(APP_LINK) $(am__append_1)
+runtestdir = 
+runtest_HEADERS = ut_common.h
 all: all-am
 
 .SUFFIXES:
@@ -1001,6 +1033,27 @@ mostlyclean-libtool:
 
 clean-libtool:
 	-rm -rf .libs _libs
+install-runtestHEADERS: $(runtest_HEADERS)
+	@$(NORMAL_INSTALL)
+	@list='$(runtest_HEADERS)'; test -n "$(runtestdir)" || list=; \
+	if test -n "$$list"; then \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(runtestdir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(runtestdir)" || exit 1; \
+	fi; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_HEADER) $$files '$(DESTDIR)$(runtestdir)'"; \
+	  $(INSTALL_HEADER) $$files "$(DESTDIR)$(runtestdir)" || exit $$?; \
+	done
+
+uninstall-runtestHEADERS:
+	@$(NORMAL_UNINSTALL)
+	@list='$(runtest_HEADERS)'; test -n "$(runtestdir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	dir='$(DESTDIR)$(runtestdir)'; $(am__uninstall_files_from_dir)
 
 ID: $(am__tagged_files)
 	$(am__define_uniq_tagged_files); mkid -fID $$unique
@@ -1086,8 +1139,11 @@ distdir: $(DISTFILES)
 	done
 check-am: all-am
 check: check-am
-all-am: Makefile $(PROGRAMS)
+all-am: Makefile $(PROGRAMS) $(HEADERS)
 installdirs:
+	for dir in "$(DESTDIR)$(runtestdir)"; do \
+	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
+	done
 install: install-am
 install-exec: install-exec-am
 install-data: install-data-am
@@ -1142,7 +1198,7 @@ info: info-am
 
 info-am:
 
-install-data-am:
+install-data-am: install-runtestHEADERS
 
 install-dvi: install-dvi-am
 
@@ -1188,7 +1244,7 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am:
+uninstall-am: uninstall-runtestHEADERS
 
 .MAKE: install-am install-strip
 
@@ -1200,11 +1256,11 @@ uninstall-am:
 	install-data-am install-dvi install-dvi-am install-exec \
 	install-exec-am install-html install-html-am install-info \
 	install-info-am install-man install-pdf install-pdf-am \
-	install-ps install-ps-am install-strip installcheck \
-	installcheck-am installdirs maintainer-clean \
+	install-ps install-ps-am install-runtestHEADERS install-strip \
+	installcheck installcheck-am installdirs maintainer-clean \
 	maintainer-clean-generic mostlyclean mostlyclean-compile \
 	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
-	tags tags-am uninstall uninstall-am
+	tags tags-am uninstall uninstall-am uninstall-runtestHEADERS
 
 .PRECIOUS: Makefile
 

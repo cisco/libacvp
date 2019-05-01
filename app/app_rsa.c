@@ -234,8 +234,8 @@ int app_rsa_sig_handler(ACVP_TEST_CASE *test_case) {
                 goto err;
             }
 #if OPENSSL_VERSION_NUMBER <= 0x10100000L
-            e = group_rsa->e;
-            n = group_rsa->n;
+            e = BN_dup(group_rsa->e);
+            n = BN_dup(group_rsa->n);
 #else
             RSA_get0_key(group_rsa, (const BIGNUM **)&n, (const BIGNUM **)&e, NULL);
 #endif
