@@ -140,7 +140,7 @@ ACVP_RESULT acvp_oe_dependency_add_attribute(ACVP_CTX *ctx,
     }
 
     
-    copy_oe_string(&kv->key, key);
+    rv = copy_oe_string(&kv->key, key);
     if (ACVP_INVALID_ARG == rv) {
         ACVP_LOG_ERR("'key` string too long");
         return rv;
@@ -150,7 +150,7 @@ ACVP_RESULT acvp_oe_dependency_add_attribute(ACVP_CTX *ctx,
         return rv;
     }
 
-    copy_oe_string(&kv->value, value);
+    rv = copy_oe_string(&kv->value, value);
     if (ACVP_INVALID_ARG == rv) {
         ACVP_LOG_ERR("'value` string too long");
         return rv;
@@ -206,7 +206,7 @@ ACVP_RESULT acvp_oe_oe_new(ACVP_CTX *ctx,
     /* Set the ID */
     new_oe->id = id;
 
-    copy_oe_string(&new_oe->name, name);
+    rv = copy_oe_string(&new_oe->name, name);
     if (ACVP_INVALID_ARG == rv) {
         ACVP_LOG_ERR("'name` string too long");
         return rv;
@@ -330,7 +330,7 @@ static ACVP_RESULT acvp_oe_vendor_new(ACVP_CTX *ctx,
     /* Set the ID */
     new_vendor->id = id;
 
-    copy_oe_string(&new_vendor->name, name);
+    rv = copy_oe_string(&new_vendor->name, name);
     if (ACVP_INVALID_ARG == rv) {
         ACVP_LOG_ERR("'name` string too long");
         return rv;
@@ -365,35 +365,35 @@ static ACVP_RESULT acvp_oe_vendor_add_address(ACVP_CTX *ctx,
     address = &vendor->address;
 
     if (street) {
-        copy_oe_string(&address->street, street);
+        rv = copy_oe_string(&address->street, street);
         if (ACVP_INVALID_ARG == rv) {
             ACVP_LOG_ERR("'street' string too long");
             return rv;
         }
     }
     if (locality) {
-        copy_oe_string(&address->locality, locality);
+        rv = copy_oe_string(&address->locality, locality);
         if (ACVP_INVALID_ARG == rv) {
             ACVP_LOG_ERR("'locality' string too long");
             return rv;
         }
     }
     if (region) {
-        copy_oe_string(&address->region, region);
+        rv = copy_oe_string(&address->region, region);
         if (ACVP_INVALID_ARG == rv) {
             ACVP_LOG_ERR("'region' string too long");
             return rv;
         }
     }
     if (country) {
-        copy_oe_string(&address->country, country);
+        rv = copy_oe_string(&address->country, country);
         if (ACVP_INVALID_ARG == rv) {
             ACVP_LOG_ERR("'country' string too long");
             return rv;
         }
     }
     if (postal_code) {
-        copy_oe_string(&address->postal_code, postal_code);
+        rv = copy_oe_string(&address->postal_code, postal_code);
         if (ACVP_INVALID_ARG == rv) {
             ACVP_LOG_ERR("'postal_code' string too long");
             return rv;
@@ -453,7 +453,7 @@ ACVP_RESULT acvp_oe_module_new(ACVP_CTX *ctx,
     if (!(vendor = find_vendor(ctx, vendor_id))) return ACVP_INVALID_ARG;
     new_module->vendor = vendor;
 
-    copy_oe_string(&new_module->name, name);
+    rv = copy_oe_string(&new_module->name, name);
     if (ACVP_INVALID_ARG == rv) {
         ACVP_LOG_ERR("'name` string too long");
         return rv;
@@ -509,21 +509,21 @@ ACVP_RESULT acvp_oe_module_set_type_version_desc(ACVP_CTX *ctx,
     if (!module) return ACVP_INVALID_ARG;
 
     if (type) {
-        copy_oe_string(&module->type, type);
+        rv = copy_oe_string(&module->type, type);
         if (ACVP_INVALID_ARG == rv) {
             ACVP_LOG_ERR("'type' string too long");
             return rv;
         }
     }
     if (version) {
-        copy_oe_string(&module->version, version);
+        rv = copy_oe_string(&module->version, version);
         if (ACVP_INVALID_ARG == rv) {
             ACVP_LOG_ERR("'version' string too long");
             return rv;
         }
     }
     if (description) {
-        copy_oe_string(&module->description, description);
+        rv = copy_oe_string(&module->description, description);
         if (ACVP_INVALID_ARG == rv) {
             ACVP_LOG_ERR("'description' string too long");
             return rv;
@@ -1058,7 +1058,7 @@ static ACVP_RESULT acvp_oe_metadata_parse_emails(ACVP_CTX *ctx,
                 email = calloc(1, sizeof(ACVP_STRING_LIST));
             }
 
-            copy_oe_string(&email->string, email_str);
+            rv = copy_oe_string(&email->string, email_str);
             if (ACVP_INVALID_ARG == rv) {
                 ACVP_LOG_ERR("'street' string too long");
                 return rv;
@@ -1126,12 +1126,12 @@ static ACVP_RESULT acvp_oe_metadata_parse_phone_numbers(ACVP_CTX *ctx,
                 phone = calloc(1, sizeof(ACVP_OE_PHONE_LIST));
             }
 
-            copy_oe_string(&phone->number, number_str);
+            rv = copy_oe_string(&phone->number, number_str);
             if (ACVP_INVALID_ARG == rv) {
                 ACVP_LOG_ERR("'number' string too long");
                 return rv;
             }
-            copy_oe_string(&phone->type, type_str);
+            rv = copy_oe_string(&phone->type, type_str);
             if (ACVP_INVALID_ARG == rv) {
                 ACVP_LOG_ERR("'type' string too long");
                 return rv;
@@ -1195,7 +1195,7 @@ static ACVP_RESULT acvp_oe_metadata_parse_vendor_contacts(ACVP_CTX *ctx,
             ACVP_LOG_ERR("Problem parsing 'full_name' string from JSON");
             return ACVP_JSON_ERR;
         }
-        copy_oe_string(&person->full_name, name_str);
+        rv = copy_oe_string(&person->full_name, name_str);
         if (ACVP_INVALID_ARG == rv) {
             ACVP_LOG_ERR("'full_name' string too long");
             return rv;
@@ -1248,7 +1248,7 @@ static ACVP_RESULT acvp_oe_metadata_parse_vendor(ACVP_CTX *ctx, JSON_Object *obj
     website = json_object_get_string(obj, "website");
     if (website) {
         /* Copy the "website" */
-        copy_oe_string(&vendor->website, website);
+        rv = copy_oe_string(&vendor->website, website);
         if (ACVP_INVALID_ARG == rv) {
             ACVP_LOG_ERR("'website' string too long");
             return rv;
@@ -1524,12 +1524,12 @@ static ACVP_RESULT acvp_oe_metadata_parse_oe_dependency(ACVP_CTX *ctx,
             goto end;
         }
 
-        copy_oe_string(&kv->key, key);
+        rv = copy_oe_string(&kv->key, key);
         if (ACVP_INVALID_ARG == rv) {
             ACVP_LOG_ERR("'key' string too long");
             goto end;
         }
-        copy_oe_string(&kv->value, value);
+        rv = copy_oe_string(&kv->value, value);
         if (ACVP_INVALID_ARG == rv) {
             ACVP_LOG_ERR("'key' string too long");
             goto end;
