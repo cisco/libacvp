@@ -1053,9 +1053,12 @@ static ACVP_RESULT acvp_oe_metadata_parse_emails(ACVP_CTX *ctx,
 
             if (i == 0) {
                 *email_list = calloc(1, sizeof(ACVP_STRING_LIST));
+                if (*email_list == NULL) return ACVP_MALLOC_FAIL;
                 email = *email_list;
             } else {
-                email = calloc(1, sizeof(ACVP_STRING_LIST));
+                email->next = calloc(1, sizeof(ACVP_STRING_LIST));
+                if (email->next == NULL) return ACVP_MALLOC_FAIL;
+                email = email->next;
             }
 
             rv = copy_oe_string(&email->string, email_str);
@@ -1063,9 +1066,6 @@ static ACVP_RESULT acvp_oe_metadata_parse_emails(ACVP_CTX *ctx,
                 ACVP_LOG_ERR("'street' string too long");
                 return rv;
             }
-
-            /* Point to the next one */
-            email = email->next;
         }
     }
 
@@ -1121,9 +1121,12 @@ static ACVP_RESULT acvp_oe_metadata_parse_phone_numbers(ACVP_CTX *ctx,
 
             if (i == 0) {
                 *phone_list = calloc(1, sizeof(ACVP_OE_PHONE_LIST));
+                if (*phone_list == NULL) return ACVP_MALLOC_FAIL;
                 phone = *phone_list;
             }else {
-                phone = calloc(1, sizeof(ACVP_OE_PHONE_LIST));
+                phone->next = calloc(1, sizeof(ACVP_OE_PHONE_LIST));
+                if (phone->next == NULL) return ACVP_MALLOC_FAIL;
+                phone = phone->next;
             }
 
             rv = copy_oe_string(&phone->number, number_str);
@@ -1136,9 +1139,6 @@ static ACVP_RESULT acvp_oe_metadata_parse_phone_numbers(ACVP_CTX *ctx,
                 ACVP_LOG_ERR("'type' string too long");
                 return rv;
             }
-
-            /* Point to the next one */
-            phone = phone->next;
         }
     }
 
@@ -1469,7 +1469,7 @@ static ACVP_RESULT acvp_oe_metadata_parse_oe_dependency(ACVP_CTX *ctx,
                                                         unsigned int oe_id) {
     ACVP_DEPENDENCY *dep = NULL;
     JSON_Object *dep_obj = NULL;
-    ACVP_KV_LIST *head_kv = NULL, *next_kv = NULL, *kv = NULL;
+    ACVP_KV_LIST *head_kv = NULL, *kv = NULL;
     int i = 0, count = 0, saved = 0;
     unsigned int dep_id = 0;
     ACVP_RESULT rv = ACVP_SUCCESS;
@@ -1499,15 +1499,9 @@ static ACVP_RESULT acvp_oe_metadata_parse_oe_dependency(ACVP_CTX *ctx,
             if (!kv) return ACVP_MALLOC_FAIL;
             head_kv = kv;
         } else {
-            /* Grab the next one (already allocated) */
-            kv = next_kv;
-        }
-
-        if (i < (count - 1)) {
-            /* There will be another, pre-allocate and attach */
-            next_kv = calloc(1, sizeof(ACVP_KV_LIST));
-            if (!next_kv) return ACVP_MALLOC_FAIL;
-            kv->next = next_kv;
+            kv->next = calloc(1, sizeof(ACVP_KV_LIST));
+            if (!kv->next) return ACVP_MALLOC_FAIL;
+            kv = kv->next;
         }
 
         key = json_object_get_name(dep_obj, i);
