@@ -2533,6 +2533,10 @@ ACVP_RESULT acvp_run(ACVP_CTX *ctx, int fips_validation);
 
 ACVP_RESULT acvp_oe_ingest_metadata(ACVP_CTX *ctx, const char *metadata_file);
 
+ACVP_RESULT acvp_oe_set_fips_validation_metadata(ACVP_CTX *ctx,
+                                                 unsigned int module_id,
+                                                 unsigned int oe_id);
+
 ACVP_RESULT acvp_oe_module_new(ACVP_CTX *ctx,
                                unsigned int id,
                                unsigned int vendor_id,

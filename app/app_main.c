@@ -281,12 +281,24 @@ int main(int argc, char **argv) {
     }
 
     if (cfg.fips_validation) {
+        unsigned int module_id = 1, oe_id = 1;
+
         /*
          * Provide the metadata needed for a FIPS validation.
          */
         rv = acvp_oe_ingest_metadata(ctx, cfg.validation_metadata_file);
         if (rv != ACVP_SUCCESS) {
             printf("Failed to read validation_metadata_file\n");
+            goto end;
+        }
+
+        /*
+         * Tell the library which Module and Operating Environment to use
+         * when doing the FIPS validation.
+         */
+        rv = acvp_oe_set_fips_validation_metadata(ctx, module_id, oe_id);
+        if (rv != ACVP_SUCCESS) {
+            printf("Failed to set metadata for FIPS validation\n");
             goto end;
         }
     }
