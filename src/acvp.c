@@ -1716,17 +1716,37 @@ end:
     return rv;
 }
 
+static ACVP_RESULT metadata_ready(ACVP_CTX *ctx) {
+    if (ctx == NULL) return ACVP_NO_CTX;
+
+    if (ctx->fips.module == NULL) {
+        ACVP_LOG_ERR("Need to specify 'Module' via acvp_oe_set_fips_validation_metadata()");
+        return ACVP_UNSUPPORTED_OP;
+    }
+
+    if (ctx->fips.oe == NULL) {
+        ACVP_LOG_ERR("Need to specify 'Operating Environment' via acvp_oe_set_fips_validation_metadata()");
+        return ACVP_UNSUPPORTED_OP;
+    }
+
+    // TODO query that the metata exists and is in server DB
+
+    return ACVP_SUCCESS;
+}
+
 ACVP_RESULT acvp_run(ACVP_CTX *ctx, int fips_validation) {
     ACVP_RESULT rv = ACVP_SUCCESS;
 
     if (fips_validation) {
-        /*
-         * Check that everything needed for the FIPS validation is sane.
-         */
-        if (!ctx->fips.metadata_loaded) {
-            ACVP_LOG_ERR("User needs to load a valid metadata JSON file via acvp_oe_ingest_metadata");
-            return ACVP_INVALID_ARG;
+        rv = metadata_ready(ctx);
+        if (ACVP_SUCCESS != rv) {
+            ACVP_LOG_ERR("Validation metadata not ready");
+            return ACVP_UNSUPPORTED_OP;
         }
+
+        ctx->fips.do_validation = 1; /* Enable */
+    } else {
+        ctx->fips.do_validation = 0; /* Disable */
     }
 
     /*

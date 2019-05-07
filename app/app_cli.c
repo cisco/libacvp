@@ -25,6 +25,8 @@ static void print_usage(int err) {
         printf("\n===== ACVP_APP USAGE ======");
         printf("\n===========================\n");
     }
+    printf("Perform a FIPS Validation for this testSession:\n");
+    printf("      --fips_validation\n");
     printf("This program does not require any argument, however logging level can be\n");
     printf("controlled using:\n");
     printf("      --none\n");

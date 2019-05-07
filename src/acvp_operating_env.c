@@ -1696,3 +1696,50 @@ end:
     return rv;
 }
 
+ACVP_RESULT acvp_oe_set_fips_validation_metadata(ACVP_CTX *ctx,
+                                                 unsigned int module_id,
+                                                 unsigned int oe_id) {
+    ACVP_MODULE *module = NULL;
+    ACVP_OE *oe = NULL;
+
+    if (ctx == NULL) return ACVP_NO_CTX;
+
+    /*
+     * Check that everything needed for the FIPS validation is sane.
+     */
+    if (!ctx->fips.metadata_loaded) {
+        ACVP_LOG_ERR("User needs to load a valid metadata JSON file via acvp_oe_ingest_metadata()");
+        return ACVP_INVALID_ARG;
+    }
+
+    if (module_id == 0 && oe_id == 0) {
+        ACVP_LOG_ERR("Required parameters 'module_id' and 'oe_id' both == 0."
+                     "At least one parameter must be non-zero");
+        return ACVP_INVALID_ARG;
+    }
+
+    if (module_id) {
+        module = find_module(ctx, module_id);
+        if (module == NULL) {
+            ACVP_LOG_ERR("Failed to find module with id(%u)", module_id);
+            return ACVP_INVALID_ARG;
+        }
+
+        // Set the Module for the validation
+        ctx->fips.module = module;
+    }
+
+    if (oe_id) {
+        oe = find_oe(ctx, oe_id);
+        if (oe == NULL) {
+            ACVP_LOG_ERR("Failed to find oe with id(%u)", oe_id);
+            return ACVP_INVALID_ARG;
+        }
+
+        // Set the OE for the validation
+        ctx->fips.oe = oe;
+    }
+
+    return ACVP_SUCCESS;
+}
+

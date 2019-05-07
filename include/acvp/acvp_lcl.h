@@ -1224,6 +1224,8 @@ typedef struct acvp_fips_t {
                            a FIPS validation was successfully loaded into memory. 1 for yes */
     int metadata_ready; /* Flag indicating whether the metadata necessary for
                            a FIPS validation has passed all stages (loaded and verified). 1 for yes */
+    ACVP_MODULE *module; /* Pointer to the Module to use for this validation */
+    ACVP_OE *oe; /* Pointer to the Operating Environment to use for this validation */
 } ACVP_FIPS;
 
 /*
