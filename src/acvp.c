@@ -1737,6 +1737,8 @@ static ACVP_RESULT metadata_ready(ACVP_CTX *ctx) {
 ACVP_RESULT acvp_run(ACVP_CTX *ctx, int fips_validation) {
     ACVP_RESULT rv = ACVP_SUCCESS;
 
+    if (ctx == NULL) return ACVP_NO_CTX;
+
     if (fips_validation) {
         rv = metadata_ready(ctx);
         if (ACVP_SUCCESS != rv) {
