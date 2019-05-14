@@ -14,6 +14,9 @@ import time
 import requests
 import json
 import argparse
+import pyotp
+import hashlib
+import base64
 
 ACVP_VERSION = "1.0"
 ACV_API_PREFIX = "acvp/v1"
@@ -32,13 +35,13 @@ else:
 
 CA_FILE = os.environ.get('ACV_CA_FILE')
 
+TOTP_SEED = os.environ.get('ACV_TOTP_SEED')
 ACCESS_TOKEN = None  # JWT
 HEADERS = None
 
 
 class Resource:
     def __init__(self, data=None):
-        self.id = None
         self.url = None
         self.status_url = None
         self.error_msg = None
@@ -95,6 +98,10 @@ class Vendor(Resource):
         except KeyError:
             # Not required
             pass
+
+        # This will throw away all of the fields that we didn't add above
+        # in case there are any stragglers
+        return clean_data
 
 
 class Person(Resource):
@@ -492,15 +499,25 @@ def check_request_statuses(request_urls=None):
             print(deets)
 
 
+def totp():
+    if not TOTP_SEED:
+        return None
+    seed = base64.b64decode(TOTP_SEED.encode())
+    seed_b32 = base64.b32encode(seed)
+    otp = pyotp.totp.TOTP(seed_b32, digits=8, digest=hashlib.sha256)
+    return otp.now()
+
+
 def login(refresh=False):
     global ACCESS_TOKEN, HEADERS
 
     if refresh:
         j = [{"acvVersion": ACVP_VERSION}, {"accessToken": ACCESS_TOKEN}]
     else:
-        # TODO generate TOTP
-        totp = None
-        j = [{"acvVersion": ACVP_VERSION}, {"password": totp}]
+        if TOTP_SEED:
+            j = [{"acvVersion": ACVP_VERSION}, {"password": totp()}]
+        else:
+            j = [{"acvVersion": ACVP_VERSION}]
 
     request = {
         'url': f"https://{ACV_SERVER}/{ACV_API_PREFIX}/login",
