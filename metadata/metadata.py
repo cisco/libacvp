@@ -279,6 +279,11 @@ def verify_person_linked_vendor(person, vendors):
             raise ValueError(f"vendor_id({person.vendor_id}) does not match any from 'vendors' JSON")
 
         # TODO query the server DB to make sure the vendor exists
+        if vendor.url:
+            person.vendor_url = vendor.url
+            person.data["vendorUrl"] = person.vendor_url
+        else:
+            raise ValueError("Linked Vendor does not have approved URL")
 
     else:
         raise ValueError("Need either vendor_url or vendor_id")
