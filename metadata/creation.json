@@ -1,0 +1,37 @@
+{
+  "vendors": [
+    {
+      "id": 1,
+      "name": "Acme Fictional Corporation",
+      "website": "www.acme-fictional.com",
+      "emails" : [ "acme@acme-fictional.com" ],
+      "addresses" : [{
+          "street1": "Street",
+          "locality": "Town",
+          "region": "State",
+          "country": "USA",
+          "postalCode": "00000"
+      }]
+    }
+  ],
+  "persons": [
+    {
+      "fullName": "Jane Smith",
+      "vendorId": 1,
+      "vendorUrl": null,
+      "emails": [
+        "jane.smith@acme.acme"
+      ],
+      "phoneNumbers": [
+        {
+          "number": "555-555-0001",
+          "type": "fax"
+        },
+        {
+          "number": "555-555-0002",
+          "type": "voice"
+        }
+      ]
+    }
+  ]
+}
