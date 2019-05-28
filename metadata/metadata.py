@@ -90,10 +90,21 @@ class Vendor(Resource):
                 if not isinstance(x, dict):
                     raise ValueError("This item needs to be a dict")
                 for key, value in x.items():
-                    if key not in ["street1", "locality", "region", "country", "postalCode"]:
+                    if key not in ["street1", "street2", "street3", "locality",
+                                   "region", "country", "postalCode"]:
                         raise ValueError(f"This dict contains an unknown key({key})")
                     if not isinstance(value, str):
                         raise ValueError("This value needs to be a str")
+
+                    if "street2" in x:
+                        if x["street2"] is None:
+                            # Don't include for null values
+                            del x["street2"]
+
+                    if "street3" in x:
+                        if x["street3"] is None:
+                            # Don't include for null values
+                            del x["street3"]
 
             clean_data["addresses"] = addresses
         except KeyError:
@@ -108,45 +119,86 @@ class Vendor(Resource):
         v = self.data
 
         # Use this to compare lists as unordered
-        def compare(x, y): return collections.Counter(x) == collections.Counter(y)
+        def compare_unordered_list(x, y): return collections.Counter(x) == collections.Counter(y)
+
+        def compare_name(this, their):
+            if this["name"] != their["name"]:
+                return False
+            return True
+
+        def compare_website(this, their):
+            if "website" in this:
+                if this["website"] != their["website"]:
+                    # The "website" string doesn't match
+                    return False
+            else:
+                if their["website"] is not None:
+                    # The candidate has "website" string, but our vendor doesn't
+                    return False
+            return True
+
+        def compare_emails(this, their):
+            if "emails" in this:
+                if not compare_unordered_list(this["emails"], their["emails"]):
+                    # The emails string lists are not equal
+                    return False
+            else:
+                if len(their["emails"]) != 0:
+                    # The candidate has a non-empty "emails" list, but our vendor does not
+                    return False
+            return True
+
+        def compare_phone_numbers(this, their):
+            if "phoneNumbers" in this:
+                if not compare_unordered_list(this["phoneNumbers"], their["phoneNumbers"]):
+                    # The list of phoneNumber dicts are not equal
+                    return False
+            else:
+                if len(their["phoneNumbers"]) != 0:
+                    # The candidate has a non-empty "phoneNumbers" list, but our vendor does not
+                    return False
+            return True
+
+        def compare_addresses(this, their):
+            if "addresses" in v:
+                if len(this["addresses"]) != len(their["addresses"]):
+                    # The length of the lists are not the same
+                    return False
+
+                for this_address in this["addresses"]:
+                    match = False
+
+                    for their_address in their["addresses"]:
+                        # First we remove anything from the candidate that has "null" value.
+                        their_address = {key: val for key, val in their_address.items() if val is not None}
+                        # Also remove the "url" field.
+                        del their_address["url"]
+
+                        if this_address == their_address:
+                            # Match here!
+                            match = True
+                            break
+
+                    if not match:
+                        # None of the candidate addresses equal this address, so total miss.
+                        return False
+            else:
+                if len(their["addresses"]) != 0:
+                    # The candidate has a non-empty "addresses" list, but our vendor does not
+                    return False
+            return True
 
         for c in candidates:
-            if v["name"] != c["name"]:
+            if not compare_name(v, c):
                 continue
-
-            if "website" in v:
-                if v["website"] != c["website"]:
-                    # The "website" string doesn't match
-                    continue
-            else:
-                if c["website"] is not None:
-                    # The candidate has "website" string, but our vendor doesn't
-                    continue
-
-            if "emails" in v:
-                if not compare(v["emails"], c["emails"]):
-                    # The emails string lists are not equal
-                    continue
-            else:
-                if len(c["emails"]) != 0:
-                    # The candidate has a non-empty "emails" list, but our vendor does not
-                    continue
-
-            if "phoneNumbers" in v:
-                if not compare(v["phoneNumbers"], c["phoneNumbers"]):
-                    # The list of phoneNumber dicts are not equal
-                    continue
-            else:
-                if len(c["phoneNumbers"]) != 0:
-                    # The candidate has a non-empty "phoneNumbers" list, but our vendor does not
-                    continue
-
-            if "addresses" in v:
-                if len(v["addresses"]) != len(c["addresses"]):
-                    # The length of the lists are not the same
-                    continue
-
-            # TODO
+            if not compare_website(v, c):
+                continue
+            if not compare_emails(v, c):
+                continue
+            if not compare_phone_numbers(v, c):
+                continue
+            if not compare_addresses(v, c):
+                continue
 
             ##
             # Go with the first match (assume no duplicates)
