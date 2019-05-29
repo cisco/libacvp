@@ -41,6 +41,34 @@ ACCESS_TOKEN = None  # JWT
 HEADERS = None
 
 
+# Use this to compare lists as unordered
+def compare_unordered_list(x, y): return collections.Counter(x) == collections.Counter(y)
+
+
+def compare_emails(this, their):
+    if "emails" in this:
+        if not compare_unordered_list(this["emails"], their["emails"]):
+            # The emails string lists are not equal
+            return False
+    else:
+        if len(their["emails"]) != 0:
+            # The candidate has a non-empty "emails" list, but our vendor does not
+            return False
+    return True
+
+
+def compare_phone_numbers(this, their):
+    if "phoneNumbers" in this:
+        if not compare_unordered_list(this["phoneNumbers"], their["phoneNumbers"]):
+            # The list of phoneNumber dicts are not equal
+            return False
+    else:
+        if len(their["phoneNumbers"]) != 0:
+            # The candidate has a non-empty "phoneNumbers" list, but our vendor does not
+            return False
+    return True
+
+
 class Resource:
     def __init__(self, data=None):
         self.url = None
@@ -82,6 +110,25 @@ class Vendor(Resource):
             pass
 
         try:
+            phone_numbers = data["phoneNumbers"]
+
+            if type(phone_numbers) is not list:
+                raise ValueError("JSON field 'phoneNumbers' must be a list")
+            for x in phone_numbers:
+                if not isinstance(x, dict):
+                    raise ValueError("This item needs to be a dict")
+                for key, value in x.items():
+                    if key not in ["number", "type"]:
+                        raise ValueError(f"This dict contains an unknown key({key})")
+                    if not isinstance(value, str):
+                        raise ValueError("This value needs to be a str")
+
+            clean_data["phoneNumbers"] = phone_numbers
+        except KeyError:
+            # Not required
+            pass
+
+        try:
             addresses = data["addresses"]
 
             if type(addresses) is not list:
@@ -116,11 +163,6 @@ class Vendor(Resource):
         return clean_data
 
     def _match_exact(self, candidates):
-        v = self.data
-
-        # Use this to compare lists as unordered
-        def compare_unordered_list(x, y): return collections.Counter(x) == collections.Counter(y)
-
         def compare_name(this, their):
             if this["name"] != their["name"]:
                 return False
@@ -137,30 +179,8 @@ class Vendor(Resource):
                     return False
             return True
 
-        def compare_emails(this, their):
-            if "emails" in this:
-                if not compare_unordered_list(this["emails"], their["emails"]):
-                    # The emails string lists are not equal
-                    return False
-            else:
-                if len(their["emails"]) != 0:
-                    # The candidate has a non-empty "emails" list, but our vendor does not
-                    return False
-            return True
-
-        def compare_phone_numbers(this, their):
-            if "phoneNumbers" in this:
-                if not compare_unordered_list(this["phoneNumbers"], their["phoneNumbers"]):
-                    # The list of phoneNumber dicts are not equal
-                    return False
-            else:
-                if len(their["phoneNumbers"]) != 0:
-                    # The candidate has a non-empty "phoneNumbers" list, but our vendor does not
-                    return False
-            return True
-
         def compare_addresses(this, their):
-            if "addresses" in v:
+            if "addresses" in this:
                 if len(this["addresses"]) != len(their["addresses"]):
                     # The length of the lists are not the same
                     return False
@@ -189,15 +209,15 @@ class Vendor(Resource):
             return True
 
         for c in candidates:
-            if not compare_name(v, c):
+            if not compare_name(self.data, c):
                 continue
-            if not compare_website(v, c):
+            if not compare_website(self.data, c):
                 continue
-            if not compare_emails(v, c):
+            if not compare_emails(self.data, c):
                 continue
-            if not compare_phone_numbers(v, c):
+            if not compare_phone_numbers(self.data, c):
                 continue
-            if not compare_addresses(v, c):
+            if not compare_addresses(self.data, c):
                 continue
 
             ##
@@ -354,7 +374,81 @@ class Person(Resource):
         # in case there are any stragglers
         return clean_data
 
-    def _verify_linked_vendor(self, vendors):
+    def _match_exact(self, candidates):
+        def compare_full_name(this, their):
+            if this["fullName"] != their["fullName"]:
+                return False
+            return True
+
+        for c in candidates:
+            if not compare_full_name(self.data, c):
+                continue
+            if not compare_emails(self.data, c):
+                continue
+            if not compare_phone_numbers(self.data, c):
+                continue
+
+            ##
+            # Go with the first match (assume no duplicates)
+            ##
+            self.server_data = c
+            self.url = c["url"]
+            self.complete = True
+            return
+
+    def _query(self, next_endpoint=None):
+        params = None
+
+        if not next_endpoint:
+            # First page.
+            # Need to form the query syntax
+            url = f"https://{ACV_SERVER}/{ACV_API_PREFIX}/persons"
+            params = dict()
+
+            # Full name
+            params["fullName[0]"] = ":".join(["eq", self.data["fullName"]])
+
+            # Vendor ID. Split the url string and get last element.
+            vendor_id = self.vendor_url.split("/")[-1]
+            params["vendorId[0]"] = ":".join(["eq", vendor_id])
+
+            if self.data["emails"]:
+                for i, email in enumerate(self.data["emails"]):
+                    params[f"email[{i}]"] = ":".join(["eq", email])
+        else:
+            # Use next_endpoint.
+            # Preserved query syntax with proper offset.
+            url = f"https://{ACV_SERVER}{next_endpoint}"
+
+        r = {
+            'url': url,
+            'headers': HEADERS,
+            'cert': CERT,
+        }
+        if CA_FILE:
+            r['verify'] = CA_FILE
+        if params:
+            r['params'] = params
+
+        response = requests.get(**r)
+        resp_json = response.json()
+
+        print(json.dumps(resp_json, indent=2))
+
+        # Exact match here against the list of partial matches
+        self._match_exact(resp_json[1]["data"])
+        if self.complete is True:
+            return
+
+        if resp_json[1]["incomplete"] is True:
+            # Get the next page of partial matches, and try to match again
+            next_link = resp_json[1]["links"]["next"]
+            self._query(next_endpoint=next_link)
+
+    def _verify(self, vendors):
+        ##
+        # First we get the vendorUrl that this Person is linked with
+        ##
         if self.vendor_url:
             # Make a new Resource (representing Vendor) for querying the URL
             r = Resource()
@@ -384,9 +478,23 @@ class Person(Resource):
         else:
             raise ValueError("Need either vendor_url or vendor_id")
 
+        ##
+        # Now query the server to see if the Person has already been registered.
+        ##
+        self._query()
+
     def register(self, vendors):
-        # Make sure the linked vendor is valid
-        self._verify_linked_vendor(vendors)
+        # Check linked vendor, and query to see if Person already exists
+        self._verify(vendors)
+        if self.complete:
+            info = (
+                f"--Preexisting Person--\n"
+                f"url: {self.url}\n"
+                f"Person: {self.data}\n"
+                f"Server Resource: {self.server_data}\n"
+            )
+            print(info)
+            return
 
         request = {
             'url': f"https://{ACV_SERVER}/{ACV_API_PREFIX}/persons",
@@ -407,7 +515,7 @@ class Person(Resource):
             info = (
                 f"--Initial/Processing--\n"
                 f"requestUrl: {self.status_url}\n"
-                f"vendor: {self.data}\n"
+                f"Person: {self.data}\n"
             )
             print(info)
 
