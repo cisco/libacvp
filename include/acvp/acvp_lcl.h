@@ -1253,6 +1253,9 @@ struct acvp_ctx_t {
     char *json_filename;
     int use_json;
     int is_sample;
+    char *vector_req_file;
+    int vector_req;
+    int vector_rsp;
 
     ACVP_FIPS fips; /* Information related to a FIPS validation */
 

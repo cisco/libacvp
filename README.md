@@ -122,9 +122,6 @@ Building
 
     On Windows:
         1. Update and run the scripts/gradle_env.bat script
-            Note: some of the required .dll's and include headers are in the windows directory.
-                  If these aren't the version you are looking for, you will need to point
-                  the environment variables to your own install.
         2. 'gradle build'
         3. Update and run the scripts/nist_setup.bat script
         4. The library is in build/libs/acvp and the example executable

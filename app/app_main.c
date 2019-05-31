@@ -207,6 +207,16 @@ int main(int argc, char **argv) {
         acvp_mark_as_sample(ctx);
     }
 
+    if (cfg.vector_req && !cfg.vector_rsp) {
+        acvp_mark_as_request_only(ctx, cfg.vector_req_file);
+    }
+
+    if (!cfg.vector_req && cfg.vector_rsp) {
+        printf("Offline vector processing requires both options, --vector_req and --vector_rsp\n");
+        goto end;
+    }
+
+
     if (cfg.json) {
         /*
          * Using a JSON to register allows us to skip the
@@ -277,6 +287,16 @@ int main(int argc, char **argv) {
 
     if (cfg.kat) {
        rv = acvp_load_kat_filename(ctx, cfg.kat_file);
+       goto end;
+    }
+
+    if (cfg.vector_req && cfg.vector_rsp) {
+       rv = acvp_run_vectors_from_file(ctx, cfg.vector_req_file, cfg.vector_rsp_file);
+       goto end;
+    }
+
+    if (cfg.vector_upload) {
+       rv = acvp_upload_vectors_from_file(ctx, cfg.vector_upload_file);
        goto end;
     }
 
@@ -1499,6 +1519,7 @@ static int enable_rsa(ACVP_CTX *ctx) {
     /*
      * Enable RSA keygen...
      */
+#ifdef NOT_SUPPORTED_BY_OPENSSL
     rv = acvp_cap_rsa_keygen_enable(ctx, ACVP_RSA_KEYGEN, &app_rsa_keygen_handler);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_RSA_KEYGEN, ACVP_PREREQ_SHA, value);
@@ -1523,13 +1544,13 @@ static int enable_rsa(ACVP_CTX *ctx) {
     rv = acvp_cap_rsa_keygen_set_primes(ctx, ACVP_RSA_KEYGEN_B34, 3072,
                                         ACVP_RSA_PRIME_HASH_ALG, ACVP_SHA256);
     CHECK_ENABLE_CAP_RV(rv);
-
+#endif
     /*
      * Enable siggen
      */
     rv = acvp_cap_rsa_sig_enable(ctx, ACVP_RSA_SIGGEN, &app_rsa_sig_handler);
     CHECK_ENABLE_CAP_RV(rv);
-
+#ifdef NOT_SUPPORTED_BY_OPENSSL
     // RSA w/ sigType: X9.31
     rv = acvp_cap_rsa_siggen_set_type(ctx, ACVP_RSA_SIG_TYPE_X931);
     CHECK_ENABLE_CAP_RV(rv);
@@ -1552,6 +1573,7 @@ static int enable_rsa(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_X931, 4096, ACVP_SHA512, 0);
     CHECK_ENABLE_CAP_RV(rv);
+#endif
 #endif
 
     // RSA w/ sigType: PKCS1v1.5

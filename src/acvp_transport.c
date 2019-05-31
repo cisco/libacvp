@@ -666,7 +666,7 @@ static ACVP_RESULT execute_network_action(ACVP_CTX *ctx,
     case ACVP_NET_POST_VS_RESP:
         resp = json_serialize_to_string(ctx->kat_resp, &resp_len);
         if (!resp) {
-            ACVP_LOG_ERR("Faled to serialize JSON to string");
+            ACVP_LOG_ERR("Failed to serialize JSON to string");
             return ACVP_JSON_ERR;
         }
         json_value_free(ctx->kat_resp);

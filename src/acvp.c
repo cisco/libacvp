@@ -25,11 +25,13 @@
 /*
  * Forward prototypes for local functions
  */
+static ACVP_RESULT acvp_append_vsid_url(ACVP_CTX *ctx, char *vsid_url);
+
 static ACVP_RESULT acvp_parse_login(ACVP_CTX *ctx);
 
 static ACVP_RESULT acvp_parse_test_session_register(ACVP_CTX *ctx);
 
-static ACVP_RESULT acvp_process_vsid(ACVP_CTX *ctx, char *vsid_url);
+static ACVP_RESULT acvp_process_vsid(ACVP_CTX *ctx, char *vsid_url, int count);
 
 static ACVP_RESULT acvp_process_vector_set(ACVP_CTX *ctx, JSON_Object *obj);
 
@@ -583,6 +585,8 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx) {
     if (ctx->tls_cert) { free(ctx->tls_cert); }
     if (ctx->tls_key) { free(ctx->tls_key); }
     if (ctx->json_filename) { free(ctx->json_filename); }
+    if (ctx->session_url) { free(ctx->session_url); }
+    if (ctx->vector_req_file) { free(ctx->vector_req_file); }
     if (ctx->jwt_token) { free(ctx->jwt_token); }
     if (ctx->tmp_jwt) { free(ctx->tmp_jwt); }
     if (ctx->vs_list) {
@@ -804,6 +808,334 @@ ACVP_RESULT acvp_load_kat_filename(ACVP_CTX *ctx, const char *kat_filename) {
 }
 
 /*
+ * Allows application to load JSON vector file(req_filename) within context
+ * to be read in and used for vector testing. The results are
+ * then saved in a response file(rsp_filename).
+ */
+ACVP_RESULT acvp_run_vectors_from_file(ACVP_CTX *ctx, const char *req_filename, const char *rsp_filename) {
+    JSON_Object *obj = NULL;
+    JSON_Value *val = NULL;
+    JSON_Array *reg_array;
+    JSON_Value *file_val = NULL;
+    JSON_Value *kat_val = NULL;
+    JSON_Array *kat_array;
+    JSON_Object *rsp_obj = NULL;
+    JSON_Value *rsp_val = NULL;
+    JSON_Array *rsp_array;
+    ACVP_RESULT rv = ACVP_SUCCESS;
+    int n, i;
+    ACVP_STRING_LIST *vs_entry;
+    JSON_Array *vect_sets = NULL;
+    const char *test_session_url = NULL;
+    int vs_cnt = 0;
+    const char *jwt = NULL;
+    char *json_result = NULL;
+
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+    if (!req_filename) {
+        ACVP_LOG_ERR("Must provide value for JSON filename");
+        return ACVP_MISSING_ARG;
+    }
+
+    if (strnlen_s(req_filename, ACVP_JSON_FILENAME_MAX + 1) > ACVP_JSON_FILENAME_MAX) {
+        ACVP_LOG_ERR("Provided req_filename length > max(%d)", ACVP_JSON_FILENAME_MAX);
+        return ACVP_INVALID_ARG;
+    }
+
+    val = json_parse_file(req_filename);
+
+    n = 0;
+    reg_array = json_value_get_array(val);
+    obj = json_array_get_object(reg_array, n);
+    if (!obj) {
+        ACVP_LOG_ERR("JSON obj parse error");
+        goto end;
+    }
+
+    /*
+     * This is the identifiers provided by the server
+     * for this specific test session!
+     */
+    test_session_url = json_object_get_string(obj, "url");
+    if (test_session_url) {
+        ctx->session_url = calloc(ACVP_ATTR_URL_MAX + 1, sizeof(char));
+        strcpy_s(ctx->session_url, ACVP_ATTR_URL_MAX + 1, test_session_url);
+    } else {
+        ACVP_LOG_WARN("Missing session URL, results will not be POSTed to server");
+        goto end;
+    }
+
+    jwt = json_object_get_string(obj, "jwt");
+    if (jwt) {
+        ctx->jwt_token = calloc(ACVP_JWT_TOKEN_MAX + 1, sizeof(char));
+        strcpy_s(ctx->jwt_token, ACVP_JWT_TOKEN_MAX + 1, jwt);
+    } else {
+        ACVP_LOG_WARN("Missing JWT, results will not be POSTed to server");
+        goto end;
+    }
+
+    vect_sets = json_object_get_array(obj, "vectorSetUrls");
+    vs_cnt = json_array_get_count(vect_sets);
+    for (i = 0; i < vs_cnt; i++) {
+        char *vsid_url = (char*)json_array_get_string(vect_sets, i);
+
+        if (!vsid_url) {
+            ACVP_LOG_WARN("No vsId URL, results will not be POSTed to server");
+            goto end;
+        }
+
+        rv = acvp_append_vsid_url(ctx, vsid_url);
+        if (rv != ACVP_SUCCESS) goto end;
+        ACVP_LOG_INFO("Received vsid_url=%s", vsid_url);
+    }
+
+    n++;        /* bump past the version or url, jwt, url sets */
+    obj = json_array_get_object(reg_array, n);
+    if (!obj) {
+        ACVP_LOG_ERR("JSON obj parse error");
+        goto end;
+    }
+
+    vs_entry = ctx->vsid_url_list;
+    if (!vs_entry) {
+        goto end;
+    }
+
+    while (obj) {
+        if (!vs_entry) {
+            goto end;
+        }
+        /* Process the kat vector(s) */
+        rv  = acvp_dispatch_vector_set(ctx, obj);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("KAT dispatch error");
+            json_value_free(val);
+            goto end;
+        }
+        ACVP_LOG_STATUS("Write vector set response vsId: %d", ctx->vs_id);
+
+        /* 
+         * Convert the JSON from a fully qualified to a value that can be 
+         * added to the file. Kind of klumsy, but it works.
+         */
+        kat_array = json_value_get_array(ctx->kat_resp);
+        kat_val = json_array_get_value(kat_array, 1);
+        if (!kat_val) {
+            ACVP_LOG_ERR("JSON val parse error");
+            goto end;
+        }
+        json_result = json_serialize_to_string_pretty(kat_val, NULL);
+        file_val = json_parse_string(json_result);
+        json_free_serialized_string(json_result);
+
+        /* track first vector set with file count */
+        if (n == 1) {
+            ACVP_STRING_LIST *vs_entry = NULL;
+
+            rsp_val = json_value_init_object();
+            rsp_obj = json_value_get_object(rsp_val);
+
+            if (!rsp_obj) {
+                json_value_free(rsp_val);
+                json_value_free(file_val);
+                ACVP_LOG_ERR("JSON obj parse error");
+                goto end;
+            }
+
+            json_object_set_string(rsp_obj, "jwt", ctx->jwt_token);
+            json_object_set_string(rsp_obj, "url", ctx->session_url);
+
+            json_object_set_value(rsp_obj, "vectorSetUrls", json_value_init_array());
+            rsp_array = json_object_get_array(rsp_obj, "vectorSetUrls");
+
+            vs_entry = ctx->vsid_url_list;
+            while (vs_entry) {
+                json_array_append_string(rsp_array, vs_entry->string);
+                vs_entry = vs_entry->next;
+            }
+            /* start the file with the '[' and identifiers array */
+            json_serialize_to_file_pretty_w(rsp_val, rsp_filename);
+            /* append the first vector set */
+            json_serialize_to_file_pretty_a(file_val, rsp_filename);
+            json_value_free(rsp_val);
+        } else {
+            /* append subsequent vector sets */
+            json_serialize_to_file_pretty_a(file_val, rsp_filename);
+        }
+        json_value_free(file_val);
+        n++;
+        obj = json_array_get_object(reg_array, n);
+        vs_entry = vs_entry->next;
+    }
+    /* append the final ']' to make the JSON work */ 
+    json_serialize_to_file_pretty_a(NULL, rsp_filename);
+end:
+    json_value_free(val);
+    //ctx->kat_resp = NULL;
+    return rv;
+}
+
+/*
+ * Allows application to read JSON vector responses from a file(rsp_filename)
+ * and upload them to the server for verification.
+ */
+ACVP_RESULT acvp_upload_vectors_from_file(ACVP_CTX *ctx, const char *rsp_filename) {
+    JSON_Object *obj = NULL;
+    JSON_Object *rsp_obj = NULL;
+    JSON_Object *ver_obj = NULL;
+    JSON_Value *vs_val = NULL;
+    JSON_Value *new_val = NULL;
+    JSON_Value *ver_val = NULL;
+    JSON_Value *val = NULL;
+    ACVP_RESULT rv = ACVP_SUCCESS;
+    JSON_Array *reg_array;
+    int n, i;
+    ACVP_STRING_LIST *vs_entry;
+    JSON_Array *vect_sets = NULL;
+    const char *test_session_url = NULL;
+    int vs_cnt = 0;
+    const char *jwt = NULL;
+    char *json_result = NULL;
+    JSON_Array *vec_array = NULL;
+    JSON_Value *vec_array_val = NULL;
+
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+    if (!rsp_filename) {
+        ACVP_LOG_ERR("Must provide value for JSON filename");
+        return ACVP_MISSING_ARG;
+    }
+
+    if (strnlen_s(rsp_filename, ACVP_JSON_FILENAME_MAX + 1) > ACVP_JSON_FILENAME_MAX) {
+        ACVP_LOG_ERR("Provided rsp_filename length > max(%d)", ACVP_JSON_FILENAME_MAX);
+        return ACVP_INVALID_ARG;
+    }
+
+    val = json_parse_file(rsp_filename);
+    if (!val) {
+        ACVP_LOG_ERR("JSON val parse error");
+        return ACVP_MALFORMED_JSON;
+    }
+    reg_array = json_value_get_array(val);
+    obj = json_array_get_object(reg_array, 0);
+    if (!obj) {
+        ACVP_LOG_ERR("JSON obj parse error");
+        rv = ACVP_MALFORMED_JSON;
+        goto end;
+    }
+
+    /*
+     * This is the identifiers provided by the server
+     * for this specific test session!
+     */
+    test_session_url = json_object_get_string(obj, "url");
+    if (!test_session_url) {
+        ACVP_LOG_ERR("Missing session URL");
+        rv = ACVP_MALFORMED_JSON;
+        goto end;
+    }
+
+    ctx->session_url = calloc(ACVP_ATTR_URL_MAX + 1, sizeof(char));
+    if (!ctx->session_url) {
+        rv = ACVP_MALLOC_FAIL;
+        goto end;
+    }
+    strcpy_s(ctx->session_url, ACVP_ATTR_URL_MAX + 1, test_session_url);
+
+    jwt = json_object_get_string(obj, "jwt");
+    if (!jwt) {
+        rv = ACVP_MALFORMED_JSON;
+        goto end;
+    }
+    ctx->jwt_token = calloc(ACVP_JWT_TOKEN_MAX + 1, sizeof(char));
+    if (!ctx->jwt_token) {
+        rv = ACVP_MALLOC_FAIL;
+        goto end;
+    }
+    strcpy_s(ctx->jwt_token, ACVP_JWT_TOKEN_MAX + 1, jwt);
+
+    vect_sets = json_object_get_array(obj, "vectorSetUrls");
+    vs_cnt = json_array_get_count(vect_sets);
+    for (i = 0; i < vs_cnt; i++) {
+        char *vsid_url = (char*)json_array_get_string(vect_sets, i);
+
+        if (!vsid_url) {
+            ACVP_LOG_ERR("No vsId URL, results will not be POSTed to server");
+            rv = ACVP_MALFORMED_JSON;
+            goto end;
+        }
+
+        rv = acvp_append_vsid_url(ctx, vsid_url);
+        if (rv != ACVP_SUCCESS) goto end;
+        ACVP_LOG_INFO("Received vsid_url=%s", vsid_url);
+    }
+
+    vs_entry = ctx->vsid_url_list;
+    if (!vs_entry) {
+        goto end;
+    }
+
+    n = 1;    /* start with second array index */
+    reg_array = json_value_get_array(val);
+    vs_val = json_array_get_value(reg_array, n);
+
+    while (vs_entry) {
+
+        /* check vsId compared to vs URL */
+        rsp_obj = json_array_get_object(reg_array, n);
+        ctx->vs_id = json_object_get_number(rsp_obj, "vsId");
+
+        vec_array_val = json_value_init_array();
+        vec_array = json_array((const JSON_Value *)vec_array_val);
+
+        ver_val = json_value_init_object();
+        ver_obj = json_value_get_object(ver_val);
+
+        json_object_set_string(ver_obj, "acvVersion", ACVP_VERSION);
+        json_array_append_value(vec_array, ver_val);
+
+        json_result = json_serialize_to_string_pretty(vs_val, NULL);
+        new_val = json_parse_string(json_result);
+        json_free_serialized_string(json_result);
+
+        json_array_append_value(vec_array, new_val);
+
+        ctx->kat_resp = vec_array_val;
+
+        json_result = json_serialize_to_string_pretty(ctx->kat_resp, NULL);
+        if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
+            printf("\n\n%s\n\n", json_result);
+        } else {
+            ACVP_LOG_INFO("\n\n%s\n\n", json_result);
+        }
+        json_free_serialized_string(json_result);
+
+        rv = acvp_submit_vector_responses(ctx, vs_entry->string);
+
+        n++;
+        vs_val = json_array_get_value(reg_array, n);
+        vs_entry = vs_entry->next;
+    }
+
+    /*
+     * Check the test results.
+     */
+    ACVP_LOG_STATUS("Tests complete, checking results...");
+    rv = acvp_check_test_results(ctx);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Unable to retrieve test results");
+    }
+
+end:
+    json_value_free(val);
+
+    return rv;
+}
+
+/*
  * Allows application to set JSON filename within context
  * to be read in during registration
  */
@@ -966,6 +1298,25 @@ ACVP_RESULT acvp_mark_as_sample(ACVP_CTX *ctx) {
         return ACVP_NO_CTX;
     }
     ctx->is_sample = 1;
+    return ACVP_SUCCESS;
+}
+
+ACVP_RESULT acvp_mark_as_request_only(ACVP_CTX *ctx, char *filename) {
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    } 
+    if (!filename) {
+        return ACVP_MISSING_ARG;
+    }
+    if (strnlen_s(filename, ACVP_SESSION_PARAMS_STR_LEN_MAX + 1) > ACVP_SESSION_PARAMS_STR_LEN_MAX) {
+         ACVP_LOG_ERR("Vector filename is suspiciously long...");
+        return ACVP_INVALID_ARG;
+    }
+
+    if (ctx->vector_req_file) { free(ctx->vector_req_file); }
+    ctx->vector_req_file = calloc(ACVP_SESSION_PARAMS_STR_LEN_MAX + 1, sizeof(char));
+    strcpy_s(ctx->vector_req_file, ACVP_SESSION_PARAMS_STR_LEN_MAX + 1, filename);
+    ctx->vector_req = 1;
     return ACVP_SUCCESS;
 }
 
@@ -1387,6 +1738,7 @@ end:
 ACVP_RESULT acvp_process_tests(ACVP_CTX *ctx) {
     ACVP_RESULT rv = ACVP_SUCCESS;
     ACVP_STRING_LIST *vs_entry = NULL;
+    int count = 0;
 
     if (!ctx) {
         return ACVP_NO_CTX;
@@ -1402,10 +1754,14 @@ ACVP_RESULT acvp_process_tests(ACVP_CTX *ctx) {
         return ACVP_MISSING_ARG;
     }
     while (vs_entry) {
-        rv = acvp_process_vsid(ctx, vs_entry->string);
+        rv = acvp_process_vsid(ctx, vs_entry->string, count);
         vs_entry = vs_entry->next;
+        count++;
     }
-
+    /* Need to add the ending ']' here */
+    if (ctx->vector_req) {
+        json_serialize_to_file_pretty_a(NULL, ctx->vector_req_file);
+    }
     return rv;
 }
 
@@ -1481,6 +1837,7 @@ end:
     return rv;
 }
 
+
 /*
  * This function will process a single KAT vector set.  Each KAT
  * vector set has an identifier associated with it, called
@@ -1494,10 +1851,16 @@ end:
  *	d) Generate the response data
  *	e) Send the response data back to the ACVP server
  */
-static ACVP_RESULT acvp_process_vsid(ACVP_CTX *ctx, char *vsid_url) {
+static ACVP_RESULT acvp_process_vsid(ACVP_CTX *ctx, char *vsid_url, int count) {
     ACVP_RESULT rv = ACVP_SUCCESS;
     JSON_Value *val = NULL;
+    JSON_Value *alg_val = NULL;
+    JSON_Array *alg_array = NULL;
+    JSON_Array *url_arr = NULL;
+    JSON_Value *ts_val = NULL;
+    JSON_Object *ts_obj = NULL;
     JSON_Object *obj = NULL;
+    ACVP_STRING_LIST *vs_entry = NULL;
     unsigned int retry_period = 0;
     int retry = 1;
 
@@ -1528,15 +1891,52 @@ static ACVP_RESULT acvp_process_vsid(ACVP_CTX *ctx, char *vsid_url) {
             acvp_retry_handler(ctx, retry_period);
             retry = 1;
         } else {
+
+            /*
+             * Save the KAT VectorSet to file
+             */
+            if (ctx->vector_req) {
+                alg_array = json_value_get_array(val);
+                alg_val = json_array_get_value(alg_array, 1);
+
+                /* track first vector set with file count */
+                if (count == 0) {
+                    ts_val = json_value_init_object();
+                    ts_obj = json_value_get_object(ts_val);
+
+                    json_object_set_string(ts_obj, "jwt", ctx->jwt_token);
+                    json_object_set_string(ts_obj, "url", ctx->session_url);
+
+                    json_object_set_value(ts_obj, "vectorSetUrls", json_value_init_array());
+                    url_arr = json_object_get_array(ts_obj, "vectorSetUrls");
+
+                    vs_entry = ctx->vsid_url_list;
+                    while (vs_entry) {
+                        json_array_append_string(url_arr, vs_entry->string);
+                        vs_entry = vs_entry->next;
+                    }
+                    /* Start with identifiers */
+                    json_serialize_to_file_pretty_w(ts_val, ctx->vector_req_file);
+                    /* append first vector set */
+                    json_serialize_to_file_pretty_a(alg_val, ctx->vector_req_file);
+                    json_value_free(ts_val);
+                    goto end;
+                } else {
+                    /* append subsequent vector set */
+                    json_serialize_to_file_pretty_a(alg_val, ctx->vector_req_file);
+                    json_value_free(ts_val);
+                    goto end;
+                }
+            }
             /*
              * Process the KAT VectorSet
              */
             rv = acvp_process_vector_set(ctx, obj);
+            json_value_free(ts_val);
             retry = 0;
         }
 
-        json_value_free(val);
-        if (rv != ACVP_SUCCESS) return rv;
+        if (rv != ACVP_SUCCESS) goto end;
     }
 
     /*
@@ -1546,6 +1946,7 @@ static ACVP_RESULT acvp_process_vsid(ACVP_CTX *ctx, char *vsid_url) {
     rv = acvp_submit_vector_responses(ctx, vsid_url);
 
 end:
+    json_value_free(val);
     return rv;
 }
 
@@ -1769,6 +2170,9 @@ ACVP_RESULT acvp_run(ACVP_CTX *ctx, int fips_validation) {
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Failed to process vectors");
         goto end;
+    }
+    if (ctx->vector_req) {
+        return ACVP_SUCCESS;
     }
 
     /*
