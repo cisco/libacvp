@@ -2,13 +2,16 @@
   "vendors": [
     {
       "id": 1,
-      "name": "Acme Fictional Corporation",
-      "website": "www.acme-fictional.com",
-      "emails" : [ "acme@acme-fictional.com" ],
+      "name": "Acme Fictional",
+      "website": "fictional-acme.com",
+      "emails" : [ "acme@acme.com" ],
+      "phoneNumbers": [
+        { "number": "1-800-000-0000", "type": "voice" }
+      ],
       "addresses" : [{
-          "street1": "Street",
-          "locality": "Town",
-          "region": "State",
+          "street1": "Beach Dr.",
+          "locality": "Acme Town",
+          "region": "NC",
           "country": "USA",
           "postalCode": "00000"
       }]

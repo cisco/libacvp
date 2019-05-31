@@ -13,6 +13,7 @@ import os
 import time
 import requests
 import json
+import collections
 import argparse
 import pyotp
 import hashlib
@@ -38,6 +39,34 @@ CA_FILE = os.environ.get('ACV_CA_FILE')
 TOTP_SEED = os.environ.get('ACV_TOTP_SEED')
 ACCESS_TOKEN = None  # JWT
 HEADERS = None
+
+
+# Use this to compare lists as unordered
+def compare_unordered_list(x, y): return collections.Counter(x) == collections.Counter(y)
+
+
+def compare_emails(this, their):
+    if "emails" in this:
+        if not compare_unordered_list(this["emails"], their["emails"]):
+            # The emails string lists are not equal
+            return False
+    else:
+        if len(their["emails"]) != 0:
+            # The candidate has a non-empty "emails" list, but our vendor does not
+            return False
+    return True
+
+
+def compare_phone_numbers(this, their):
+    if "phoneNumbers" in this:
+        if not compare_unordered_list(this["phoneNumbers"], their["phoneNumbers"]):
+            # The list of phoneNumber dicts are not equal
+            return False
+    else:
+        if len(their["phoneNumbers"]) != 0:
+            # The candidate has a non-empty "phoneNumbers" list, but our vendor does not
+            return False
+    return True
 
 
 class Resource:
@@ -81,6 +110,25 @@ class Vendor(Resource):
             pass
 
         try:
+            phone_numbers = data["phoneNumbers"]
+
+            if type(phone_numbers) is not list:
+                raise ValueError("JSON field 'phoneNumbers' must be a list")
+            for x in phone_numbers:
+                if not isinstance(x, dict):
+                    raise ValueError("This item needs to be a dict")
+                for key, value in x.items():
+                    if key not in ["number", "type"]:
+                        raise ValueError(f"This dict contains an unknown key({key})")
+                    if not isinstance(value, str):
+                        raise ValueError("This value needs to be a str")
+
+            clean_data["phoneNumbers"] = phone_numbers
+        except KeyError:
+            # Not required
+            pass
+
+        try:
             addresses = data["addresses"]
 
             if type(addresses) is not list:
@@ -89,10 +137,21 @@ class Vendor(Resource):
                 if not isinstance(x, dict):
                     raise ValueError("This item needs to be a dict")
                 for key, value in x.items():
-                    if key not in ["street1", "locality", "region", "country", "postalCode"]:
+                    if key not in ["street1", "street2", "street3", "locality",
+                                   "region", "country", "postalCode"]:
                         raise ValueError(f"This dict contains an unknown key({key})")
                     if not isinstance(value, str):
                         raise ValueError("This value needs to be a str")
+
+                    if "street2" in x:
+                        if x["street2"] is None:
+                            # Don't include for null values
+                            del x["street2"]
+
+                    if "street3" in x:
+                        if x["street3"] is None:
+                            # Don't include for null values
+                            del x["street3"]
 
             clean_data["addresses"] = addresses
         except KeyError:
@@ -102,6 +161,158 @@ class Vendor(Resource):
         # This will throw away all of the fields that we didn't add above
         # in case there are any stragglers
         return clean_data
+
+    def _match_exact(self, candidates):
+        def compare_name(this, their):
+            if this["name"] != their["name"]:
+                return False
+            return True
+
+        def compare_website(this, their):
+            if "website" in this:
+                if this["website"] != their["website"]:
+                    # The "website" string doesn't match
+                    return False
+            else:
+                if their["website"] is not None:
+                    # The candidate has "website" string, but our vendor doesn't
+                    return False
+            return True
+
+        def compare_addresses(this, their):
+            if "addresses" in this:
+                if len(this["addresses"]) != len(their["addresses"]):
+                    # The length of the lists are not the same
+                    return False
+
+                for this_address in this["addresses"]:
+                    match = False
+
+                    for their_address in their["addresses"]:
+                        # First we remove anything from the candidate that has "null" value.
+                        their_address = {key: val for key, val in their_address.items() if val is not None}
+                        # Also remove the "url" field.
+                        del their_address["url"]
+
+                        if this_address == their_address:
+                            # Match here!
+                            match = True
+                            break
+
+                    if not match:
+                        # None of the candidate addresses equal this address, so total miss.
+                        return False
+            else:
+                if len(their["addresses"]) != 0:
+                    # The candidate has a non-empty "addresses" list, but our vendor does not
+                    return False
+            return True
+
+        for c in candidates:
+            if not compare_name(self.data, c):
+                continue
+            if not compare_website(self.data, c):
+                continue
+            if not compare_emails(self.data, c):
+                continue
+            if not compare_phone_numbers(self.data, c):
+                continue
+            if not compare_addresses(self.data, c):
+                continue
+
+            ##
+            # Go with the first match (assume no duplicates)
+            ##
+            self.server_data = c
+            self.url = c["url"]
+            self.complete = True
+            return
+
+    def _query(self, next_endpoint=None):
+        params = None
+
+        if not next_endpoint:
+            # First page.
+            # Need to form the query syntax
+            url = f"https://{ACV_SERVER}/{ACV_API_PREFIX}/vendors"
+            params = dict()
+
+            params["name[0]"] = ":".join(["eq", self.data["name"]])
+
+            if "website" in self.data:
+                params["website[0]"] = ":".join(["eq", self.data["website"]])
+
+            if self.data["emails"]:
+                for i, email in enumerate(self.data["emails"]):
+                    params[f"email[{i}]"] = ":".join(["eq", email])
+
+            # TODO add phone number here
+
+        else:
+            # Use next_endpoint.
+            # Preserved query syntax with proper offset.
+            url = f"https://{ACV_SERVER}{next_endpoint}"
+
+        r = {
+            'url': url,
+            'headers': HEADERS,
+            'cert': CERT,
+        }
+        if CA_FILE:
+            r['verify'] = CA_FILE
+        if params:
+            r['params'] = params
+
+        response = requests.get(**r)
+        resp_json = response.json()
+
+        print(json.dumps(resp_json, indent=2))
+
+        # Exact match here against the list of partial matches
+        self._match_exact(resp_json[1]["data"])
+        if self.complete is True:
+            return
+
+        if resp_json[1]["incomplete"] is True:
+            # Get the next page of partial matches, and try to match again
+            next_link = resp_json[1]["links"]["next"]
+            self._query(next_endpoint=next_link)
+
+    def register(self):
+        # Query the server DB to see if this vendor already exists
+        self._query()
+        if self.complete:
+            info = (
+                f"--Preexisting Vendor--\n"
+                f"url: {self.url}\n"
+                f"Vendor: {self.data}\n"
+                f"Server Resource: {self.server_data}\n"
+            )
+            print(info)
+            return
+
+        request = {
+            'url': f"https://{ACV_SERVER}/{ACV_API_PREFIX}/vendors",
+            'json': self.to_send,
+            'headers': HEADERS,
+            'cert': CERT
+        }
+        if CA_FILE:
+            request['verify'] = CA_FILE
+
+        response = requests.post(**request)
+
+        # The URL given by server to check the "request" details
+        self.status_url = response.json()[1]["url"]
+        get_request_status(self)
+
+        if not self.complete:
+            info = (
+                f"--Initial/Processing--\n"
+                f"requestUrl: {self.status_url}\n"
+                f"vendor: {self.data}\n"
+            )
+            print(info)
 
 
 class Person(Resource):
@@ -118,6 +329,7 @@ class Person(Resource):
             # The url was provided, so use that as priority
             vendor_url = data["vendorUrl"]
             if vendor_url is None:
+                # The JSON value is null
                 raise ValueError
 
             clean_data["vendorUrl"] = vendor_url
@@ -161,6 +373,151 @@ class Person(Resource):
         # This will throw away all of the fields that we didn't add above
         # in case there are any stragglers
         return clean_data
+
+    def _match_exact(self, candidates):
+        def compare_full_name(this, their):
+            if this["fullName"] != their["fullName"]:
+                return False
+            return True
+
+        for c in candidates:
+            if not compare_full_name(self.data, c):
+                continue
+            if not compare_emails(self.data, c):
+                continue
+            if not compare_phone_numbers(self.data, c):
+                continue
+
+            ##
+            # Go with the first match (assume no duplicates)
+            ##
+            self.server_data = c
+            self.url = c["url"]
+            self.complete = True
+            return
+
+    def _query(self, next_endpoint=None):
+        params = None
+
+        if not next_endpoint:
+            # First page.
+            # Need to form the query syntax
+            url = f"https://{ACV_SERVER}/{ACV_API_PREFIX}/persons"
+            params = dict()
+
+            # Full name
+            params["fullName[0]"] = ":".join(["eq", self.data["fullName"]])
+
+            # Vendor ID. Split the url string and get last element.
+            vendor_id = self.vendor_url.split("/")[-1]
+            params["vendorId[0]"] = ":".join(["eq", vendor_id])
+
+            if self.data["emails"]:
+                for i, email in enumerate(self.data["emails"]):
+                    params[f"email[{i}]"] = ":".join(["eq", email])
+        else:
+            # Use next_endpoint.
+            # Preserved query syntax with proper offset.
+            url = f"https://{ACV_SERVER}{next_endpoint}"
+
+        r = {
+            'url': url,
+            'headers': HEADERS,
+            'cert': CERT,
+        }
+        if CA_FILE:
+            r['verify'] = CA_FILE
+        if params:
+            r['params'] = params
+
+        response = requests.get(**r)
+        resp_json = response.json()
+
+        print(json.dumps(resp_json, indent=2))
+
+        # Exact match here against the list of partial matches
+        self._match_exact(resp_json[1]["data"])
+        if self.complete is True:
+            return
+
+        if resp_json[1]["incomplete"] is True:
+            # Get the next page of partial matches, and try to match again
+            next_link = resp_json[1]["links"]["next"]
+            self._query(next_endpoint=next_link)
+
+    def _verify(self, vendors):
+        ##
+        # First we get the vendorUrl that this Person is linked with
+        ##
+        if self.vendor_url:
+            # Make a new Resource (representing Vendor) for querying the URL
+            r = Resource()
+            r.url = self.vendor_url
+
+            # If the Vendor exists, this will succeed.
+            # Otherwise, an HTTP exception will be raised.
+            r.server_data = get_resource_server_data(r)
+
+        elif self.vendor_id:
+            vendor = None
+            for v in vendors:
+                if v.id == self.vendor_id:
+                    vendor = v
+                    break
+
+            if not vendor:
+                raise ValueError(f"vendor_id({self.vendor_id}) does not match any from 'vendors' JSON")
+
+            if vendor.url:
+                # This Vendor should already have been verified as existing by this point
+                self.vendor_url = vendor.url
+                self.data["vendorUrl"] = self.vendor_url
+            else:
+                raise ValueError("Linked Vendor does not have approved URL")
+
+        else:
+            raise ValueError("Need either vendor_url or vendor_id")
+
+        ##
+        # Now query the server to see if the Person has already been registered.
+        ##
+        self._query()
+
+    def register(self, vendors):
+        # Check linked vendor, and query to see if Person already exists
+        self._verify(vendors)
+        if self.complete:
+            info = (
+                f"--Preexisting Person--\n"
+                f"url: {self.url}\n"
+                f"Person: {self.data}\n"
+                f"Server Resource: {self.server_data}\n"
+            )
+            print(info)
+            return
+
+        request = {
+            'url': f"https://{ACV_SERVER}/{ACV_API_PREFIX}/persons",
+            'json': self.to_send,
+            'headers': HEADERS,
+            'cert': CERT
+        }
+        if CA_FILE:
+            request['verify'] = CA_FILE
+
+        response = requests.post(**request)
+
+        # The URL given by server to check the "request" details
+        self.status_url = response.json()[1]["url"]
+        get_request_status(self)
+
+        if not self.complete:
+            info = (
+                f"--Initial/Processing--\n"
+                f"requestUrl: {self.status_url}\n"
+                f"Person: {self.data}\n"
+            )
+            print(info)
 
 
 def print_resource_details(resource):
@@ -258,71 +615,6 @@ def get_request_status(resource, stop=False):
             raise requests.exceptions.HTTPError(f"Hard Stop with HTTP Error... code {response.status_code}")
 
 
-def verify_person_linked_vendor(person, vendors):
-    if person.vendor_url:
-        # Make a new Resource (representing Vendor) for querying the URL
-        r = Resource()
-        r.url = person.vendor_url
-
-        # If the Vendor exists, this will succeed.
-        # Otherwise, an HTTP exception will be raised.
-        r.server_data = get_resource_server_data(r)
-
-    elif person.vendor_id:
-        vendor = None
-        for v in vendors:
-            if v.id == person.vendor_id:
-                vendor = v
-                break
-
-        if not vendor:
-            raise ValueError(f"vendor_id({person.vendor_id}) does not match any from 'vendors' JSON")
-
-        # TODO query the server DB to make sure the vendor exists
-        if vendor.url:
-            person.vendor_url = vendor.url
-            person.data["vendorUrl"] = person.vendor_url
-        else:
-            raise ValueError("Linked Vendor does not have approved URL")
-
-    else:
-        raise ValueError("Need either vendor_url or vendor_id")
-
-
-def send_vendor(vendor):
-    request = {
-        'url': f"https://{ACV_SERVER}/{ACV_API_PREFIX}/vendors",
-        'json': vendor.to_send,
-        'headers': HEADERS,
-        'cert': CERT
-    }
-    if CA_FILE:
-        request['verify'] = CA_FILE
-
-    response = requests.post(**request)
-
-    # The URL given by server to check the "request" details
-    vendor.status_url = response.json()[1]["url"]
-    get_request_status(vendor)
-
-
-def send_person(person):
-    request = {
-        'url': f"https://{ACV_SERVER}/{ACV_API_PREFIX}/persons",
-        'json': person.to_send,
-        'headers': HEADERS,
-        'cert': CERT
-    }
-    if CA_FILE:
-        request['verify'] = CA_FILE
-
-    response = requests.post(**request)
-
-    # The URL given by server to check the "request" details
-    person.status_url = response.json()[1]["url"]
-    get_request_status(person)
-
-
 def register_vendors(vendors):
     complete = True
     total = len(vendors)
@@ -334,17 +626,12 @@ def register_vendors(vendors):
 
     # Go through and register each Vendor
     for v in vendors:
-        send_vendor(v)
-        if not v.complete:
-            complete = False
-            deets = (
-                f"--Initial/Processing--\n"
-                f"requestUrl: {v.status_url}\n"
-                f"vendor: {v.data}\n"
-            )
-            print(deets)
-        else:
+        v.register()
+
+        if v.complete:
             remaining -= 1
+        else:
+            complete = False
 
     print(f"Vendors {total-remaining}/{total} complete.\n")
 
@@ -355,8 +642,8 @@ def register_vendors(vendors):
     ##
     try:
         while not complete:
-            # Wait 30 seconds
-            time.sleep(30)
+            # Wait 60 seconds
+            time.sleep(60)
 
             # Reset here, because this time everything might be done
             complete = True
@@ -369,11 +656,11 @@ def register_vendors(vendors):
 
                 # Ask the server what the request status is
                 get_request_status(v)
-                if not v.complete:
-                    complete = False
-                else:
+                if v.complete:
                     remaining -= 1
                     show_progress = True
+                else:
+                    complete = False
 
             if show_progress:
                 print(f"Vendors {total - remaining}/{total} complete.\n")
@@ -392,21 +679,11 @@ def register_persons(persons, vendors):
 
     # Go through and register each Person
     for p in persons:
-        # Make sure the linked vendor is valid
-        verify_person_linked_vendor(p, vendors)
-
-        # Submit this Person
-        send_person(p)
-        if not p.complete:
-            complete = False
-            deets = (
-                f"--Initial/Processing--\n"
-                f"requestUrl: {p.status_url}\n"
-                f"vendor: {p.data}\n"
-            )
-            print(deets)
-        else:
+        p.register(vendors)
+        if p.complete:
             remaining -= 1
+        else:
+            complete = False
 
     print(f"Persons {total-remaining}/{total} complete.\n")
 
@@ -417,8 +694,8 @@ def register_persons(persons, vendors):
     ##
     try:
         while not complete:
-            # Wait 30 seconds
-            time.sleep(30)
+            # Wait 60 seconds
+            time.sleep(60)
 
             # Reset here, because this time everything might be done
             complete = True
@@ -431,11 +708,11 @@ def register_persons(persons, vendors):
 
                 # Ask the server what the request status is
                 get_request_status(p)
-                if not p.complete:
-                    complete = False
-                else:
+                if p.complete:
                     remaining -= 1
                     show_progress = True
+                else:
+                    complete = False
 
             if show_progress:
                 print(f"Persons {total - remaining}/{total} complete.\n")
