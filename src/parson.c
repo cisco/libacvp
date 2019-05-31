@@ -1650,65 +1650,6 @@ JSON_Status json_serialize_to_file_pretty(const JSON_Value *value, const char *f
     return return_code;
 }
 
-JSON_Status json_serialize_to_file_pretty_a(const JSON_Value *value, const char *filename) {
-    JSON_Status return_code = JSONSuccess;
-    FILE *fp = NULL;
-    char *serialized_string = NULL; 
-
-    fp = fopen(filename, "a");
-    if (fp == NULL) {
-        json_free_serialized_string(serialized_string);
-        return JSONFailure;
-    }
-    if (!value) {
-        if (fputs(" ]", fp) == EOF) {
-            return_code = JSONFailure;
-        }
-    } else {
-
-        serialized_string = json_serialize_to_string_pretty(value, NULL);
-        if (serialized_string == NULL) {
-            return JSONFailure;
-        }
-        if (fputs(", ", fp) == EOF) {
-            return_code = JSONFailure;
-        }
-        if (fputs(serialized_string, fp) == EOF) {
-            return_code = JSONFailure;
-        }
-    }
-    if (fclose(fp) == EOF) {
-        return_code = JSONFailure;
-    }
-    json_free_serialized_string(serialized_string);
-    return return_code;
-}
-
-JSON_Status json_serialize_to_file_pretty_w(const JSON_Value *value, const char *filename) {
-    JSON_Status return_code = JSONSuccess;
-    FILE *fp = NULL;
-    char *serialized_string = json_serialize_to_string_pretty(value, NULL);
-    if (serialized_string == NULL) {
-        return JSONFailure;
-    }
-    fp = fopen(filename, "w");
-    if (fp == NULL) {
-        json_free_serialized_string(serialized_string);
-        return JSONFailure;
-    }
-    if (fputs("[ ", fp) == EOF) {
-        return_code = JSONFailure;
-    }
-    if (fputs(serialized_string, fp) == EOF) {
-        return_code = JSONFailure;
-    }
-    if (fclose(fp) == EOF) {
-        return_code = JSONFailure;
-    }
-    json_free_serialized_string(serialized_string);
-    return return_code;
-}
-
 char * json_serialize_to_string_pretty(const JSON_Value *value, int *len) {
     JSON_Status serialization_result = JSONFailure;
     size_t buf_size_bytes = json_serialization_size_pretty(value);

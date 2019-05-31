@@ -888,3 +888,61 @@ void acvp_free_str_list(ACVP_STRING_LIST **list) {
     *list = NULL;
 }
 
+ACVP_RESULT acvp_json_serialize_to_file_pretty_a(const JSON_Value *value, const char *filename) {
+    ACVP_RESULT return_code = ACVP_SUCCESS;
+    FILE *fp = NULL;
+    char *serialized_string = NULL; 
+
+    fp = fopen(filename, "a");
+    if (fp == NULL) {
+        return ACVP_JSON_ERR;
+    }
+    if (!value) {
+        if (fputs(" ]", fp) == EOF) {
+            return_code = ACVP_JSON_ERR;
+        }
+    } else {
+
+        serialized_string = json_serialize_to_string_pretty(value, NULL);
+        if (serialized_string == NULL) {
+            return ACVP_JSON_ERR;
+        }
+        if (fputs(", ", fp) == EOF) {
+            return_code = ACVP_JSON_ERR;
+        }
+        if (fputs(serialized_string, fp) == EOF) {
+            return_code = ACVP_JSON_ERR;
+        }
+    }
+    if (fclose(fp) == EOF) {
+        return_code = ACVP_JSON_ERR;
+    }
+    json_free_serialized_string(serialized_string);
+    return return_code;
+}
+
+ACVP_RESULT acvp_json_serialize_to_file_pretty_w(const JSON_Value *value, const char *filename) {
+    ACVP_RESULT return_code = ACVP_SUCCESS;
+    FILE *fp = NULL;
+    char *serialized_string = json_serialize_to_string_pretty(value, NULL);
+    if (serialized_string == NULL) {
+        return ACVP_JSON_ERR;
+    }
+    fp = fopen(filename, "w");
+    if (fp == NULL) {
+        json_free_serialized_string(serialized_string);
+        return ACVP_JSON_ERR;
+    }
+    if (fputs("[ ", fp) == EOF) {
+        return_code = ACVP_JSON_ERR;
+    }
+    if (fputs(serialized_string, fp) == EOF) {
+        return_code = ACVP_JSON_ERR;
+    }
+    if (fclose(fp) == EOF) {
+        return_code = ACVP_JSON_ERR;
+    }
+    json_free_serialized_string(serialized_string);
+    return return_code;
+}
+

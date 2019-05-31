@@ -956,21 +956,19 @@ ACVP_RESULT acvp_run_vectors_from_file(ACVP_CTX *ctx, const char *req_filename, 
                 vs_entry = vs_entry->next;
             }
             /* start the file with the '[' and identifiers array */
-            json_serialize_to_file_pretty_w(rsp_val, rsp_filename);
-            /* append the first vector set */
-            json_serialize_to_file_pretty_a(file_val, rsp_filename);
+            acvp_json_serialize_to_file_pretty_w(rsp_val, rsp_filename);
             json_value_free(rsp_val);
-        } else {
-            /* append subsequent vector sets */
-            json_serialize_to_file_pretty_a(file_val, rsp_filename);
-        }
+        } 
+        /* append vector sets */
+        acvp_json_serialize_to_file_pretty_a(file_val, rsp_filename);
+
         json_value_free(file_val);
         n++;
         obj = json_array_get_object(reg_array, n);
         vs_entry = vs_entry->next;
     }
     /* append the final ']' to make the JSON work */ 
-    json_serialize_to_file_pretty_a(NULL, rsp_filename);
+    acvp_json_serialize_to_file_pretty_a(NULL, rsp_filename);
 end:
     json_value_free(val);
     //ctx->kat_resp = NULL;
@@ -1760,7 +1758,7 @@ ACVP_RESULT acvp_process_tests(ACVP_CTX *ctx) {
     }
     /* Need to add the ending ']' here */
     if (ctx->vector_req) {
-        json_serialize_to_file_pretty_a(NULL, ctx->vector_req_file);
+        acvp_json_serialize_to_file_pretty_a(NULL, ctx->vector_req_file);
     }
     return rv;
 }
@@ -1916,17 +1914,12 @@ static ACVP_RESULT acvp_process_vsid(ACVP_CTX *ctx, char *vsid_url, int count) {
                         vs_entry = vs_entry->next;
                     }
                     /* Start with identifiers */
-                    json_serialize_to_file_pretty_w(ts_val, ctx->vector_req_file);
-                    /* append first vector set */
-                    json_serialize_to_file_pretty_a(alg_val, ctx->vector_req_file);
-                    json_value_free(ts_val);
-                    goto end;
-                } else {
-                    /* append subsequent vector set */
-                    json_serialize_to_file_pretty_a(alg_val, ctx->vector_req_file);
-                    json_value_free(ts_val);
-                    goto end;
-                }
+                    acvp_json_serialize_to_file_pretty_w(ts_val, ctx->vector_req_file);
+                } 
+                /* append vector set */
+                acvp_json_serialize_to_file_pretty_a(alg_val, ctx->vector_req_file);
+                json_value_free(ts_val);
+                goto end;
             }
             /*
              * Process the KAT VectorSet

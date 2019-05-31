@@ -2520,6 +2520,8 @@ ACVP_RESULT acvp_mark_as_sample(ACVP_CTX *ctx);
 
     @param ctx Pointer to ACVP_CTX that was previously created by
         calling acvp_create_test_session.
+    @param filename Name of the file to be used for the request vectors
+
  */
 ACVP_RESULT acvp_mark_as_request_only(ACVP_CTX *ctx, char *filename);
 
