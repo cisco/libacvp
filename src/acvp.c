@@ -932,32 +932,10 @@ ACVP_RESULT acvp_run_vectors_from_file(ACVP_CTX *ctx, const char *req_filename, 
 
         /* track first vector set with file count */
         if (n == 1) {
-            ACVP_STRING_LIST *vs_entry = NULL;
 
-            rsp_val = json_value_init_object();
-            rsp_obj = json_value_get_object(rsp_val);
-
-            if (!rsp_obj) {
-                json_value_free(rsp_val);
-                json_value_free(file_val);
-                ACVP_LOG_ERR("JSON obj parse error");
-                goto end;
-            }
-
-            json_object_set_string(rsp_obj, "jwt", ctx->jwt_token);
-            json_object_set_string(rsp_obj, "url", ctx->session_url);
-
-            json_object_set_value(rsp_obj, "vectorSetUrls", json_value_init_array());
-            rsp_array = json_object_get_array(rsp_obj, "vectorSetUrls");
-
-            vs_entry = ctx->vsid_url_list;
-            while (vs_entry) {
-                json_array_append_string(rsp_array, vs_entry->string);
-                vs_entry = vs_entry->next;
-            }
+            rsp_val = json_array_get_value(reg_array, 0);
             /* start the file with the '[' and identifiers array */
             acvp_json_serialize_to_file_pretty_w(rsp_val, rsp_filename);
-            json_value_free(rsp_val);
         } 
         /* append vector sets */
         acvp_json_serialize_to_file_pretty_a(file_val, rsp_filename);
@@ -971,7 +949,6 @@ ACVP_RESULT acvp_run_vectors_from_file(ACVP_CTX *ctx, const char *req_filename, 
     acvp_json_serialize_to_file_pretty_a(NULL, rsp_filename);
 end:
     json_value_free(val);
-    //ctx->kat_resp = NULL;
     return rv;
 }
 
