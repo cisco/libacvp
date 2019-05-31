@@ -59,6 +59,16 @@ static void print_usage(int err) {
     printf("To register a formatted JSON file use:\n");
     printf("      --json <file>\n");
     printf("\n");
+    printf("To register and save the vectors to file:\n");
+    printf("      --vector_req <file>\n");
+    printf("\n");
+    printf("To process saved vectors and write results/responses to file:\n");
+    printf("      --vector_req <file>\n");
+    printf("      --vector_rsp <file>\n");
+    printf("\n");
+    printf("To upload vector responses from file:\n");
+    printf("      --vector_upload <file>\n");
+    printf("\n");
     printf("To process kat vectors from a JSON file use:\n");
     printf("      --kat <file>\n");
     printf("\n");
@@ -138,6 +148,9 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
         { "json", ko_required_argument, 400 },
         { "kat", ko_required_argument, 401 },
         { "fips_validation", ko_required_argument, 402 },
+        { "vector_req", ko_required_argument, 403 },
+        { "vector_rsp", ko_required_argument, 404 },
+        { "vector_upload", ko_required_argument, 405 },
         { NULL, 0, 0 }
     };
 
@@ -307,6 +320,60 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
             }
 
             strcpy_s(cfg->validation_metadata_file, JSON_FILENAME_LENGTH + 1, opt.arg);
+            continue;
+        }
+
+        if (c == 403) {
+            int filename_len = 0;
+            cfg->vector_req = 1;
+
+            filename_len = strnlen_s(opt.arg, JSON_FILENAME_LENGTH + 1);
+            if (filename_len > JSON_FILENAME_LENGTH) {
+                printf(ANSI_COLOR_RED "Command error... [%s]"ANSI_COLOR_RESET
+                       "\nThe <file> \"%s\", has a name that is too long."
+                       "\nMax allowed <file> name length is (%d).\n",
+                       "--vector_req", opt.arg, JSON_FILENAME_LENGTH);
+                print_usage(1);
+                return 1;
+            }
+
+            strcpy_s(cfg->vector_req_file, JSON_FILENAME_LENGTH + 1, opt.arg);
+            continue;
+        }
+
+        if (c == 404) {
+            int rsp_filename_len = 0;
+            cfg->vector_rsp = 1;
+
+            rsp_filename_len = strnlen_s(opt.arg, JSON_FILENAME_LENGTH + 1);
+            if (rsp_filename_len > JSON_FILENAME_LENGTH) {
+                printf(ANSI_COLOR_RED "Command error... [%s]"ANSI_COLOR_RESET
+                       "\nThe <file> \"%s\", has a name that is too long."
+                       "\nMax allowed <file> name length is (%d).\n",
+                       "--vector_rsp", opt.arg, JSON_FILENAME_LENGTH);
+                print_usage(1);
+                return 1;
+            }
+
+            strcpy_s(cfg->vector_rsp_file, JSON_FILENAME_LENGTH + 1, opt.arg);
+            continue;
+        }
+
+        if (c == 405) {
+            int upload_filename_len = 0;
+            cfg->vector_upload = 1;
+
+            upload_filename_len = strnlen_s(opt.arg, JSON_FILENAME_LENGTH + 1);
+            if (upload_filename_len > JSON_FILENAME_LENGTH) {
+                printf(ANSI_COLOR_RED "Command error... [%s]"ANSI_COLOR_RESET
+                       "\nThe <file> \"%s\", has a name that is too long."
+                       "\nMax allowed <file> name length is (%d).\n",
+                       "--vector_upload", opt.arg, JSON_FILENAME_LENGTH);
+                print_usage(1);
+                return 1;
+            }
+
+            strcpy_s(cfg->vector_upload_file, JSON_FILENAME_LENGTH + 1, opt.arg);
             continue;
         }
 

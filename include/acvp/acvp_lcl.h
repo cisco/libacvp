@@ -1250,9 +1250,12 @@ struct acvp_ctx_t {
     ACVP_STRING_LIST *vsid_url_list;
     char *session_url;
 
-    char *json_filename;
-    int use_json;
-    int is_sample;
+    char *json_filename;    /* filename of registration JSON */
+    int use_json;           /* flag to indicate a JSON file is being used for registration */
+    int is_sample;          /* flag to idicate that we are requesting sample vector responses */
+    char *vector_req_file;  /* filename to use to store vector request JSON */
+    int vector_req;         /* flag to indicate we are storing vector request JSON in a file */
+    int vector_rsp;         /* flag to indicate we are storing vector responses JSON in a file */
 
     ACVP_FIPS fips; /* Information related to a FIPS validation */
 
@@ -1464,5 +1467,8 @@ void acvp_free_kv_list(ACVP_KV_LIST *kv_list);
 int string_fits(const char *string, unsigned int max_allowed);
 
 void acvp_free_str_list(ACVP_STRING_LIST **list);
+
+ACVP_RESULT acvp_json_serialize_to_file_pretty_a(const JSON_Value *value, const char *filename);
+ACVP_RESULT acvp_json_serialize_to_file_pretty_w(const JSON_Value *value, const char *filename);
 
 #endif

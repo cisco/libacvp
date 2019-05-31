@@ -2513,6 +2513,19 @@ ACVP_RESULT acvp_set_certkey(ACVP_CTX *ctx, char *cert_file, char *key_file);
  */
 ACVP_RESULT acvp_mark_as_sample(ACVP_CTX *ctx);
 
+/*! @brief acvp_mark_as_request_only() marks the registration as a request only.
+
+    This function sets a flag that will allow the client to retrieve
+    the vectors from the server and store them in a file for later use.
+
+    @param ctx Pointer to ACVP_CTX that was previously created by
+        calling acvp_create_test_session.
+    @param filename Name of the file to be used for the request vectors
+
+ */
+ACVP_RESULT acvp_mark_as_request_only(ACVP_CTX *ctx, char *filename);
+
+
 /*! @brief Performs the ACVP testing procedures.
  *
  * This function will do the following actions:
@@ -2585,6 +2598,8 @@ ACVP_RESULT acvp_set_json_filename(ACVP_CTX *ctx, const char *json_filename);
  * @return ACVP_RESULT
  */
 ACVP_RESULT acvp_load_kat_filename(ACVP_CTX *ctx, const char *kat_filename);
+ACVP_RESULT acvp_upload_vectors_from_file(ACVP_CTX *ctx, const char *rsp_filename);
+ACVP_RESULT acvp_run_vectors_from_file(ACVP_CTX *ctx, const char *req_filename, const char *rsp_filename);
 
 /*! @brief acvp_set_2fa_callback() sets a callback function which
     will create or obtain a TOTP password for the second part of
