@@ -237,7 +237,7 @@ class Vendor(Resource):
             if "website" in self.data:
                 params["website[0]"] = ":".join(["eq", self.data["website"]])
 
-            if self.data["emails"]:
+            if "emails" in self.data:
                 for i, email in enumerate(self.data["emails"]):
                     params[f"email[{i}]"] = ":".join(["eq", email])
 
@@ -405,7 +405,7 @@ class Person(Resource):
             vendor_id = self.vendor_url.split("/")[-1]
             params["vendorId[0]"] = ":".join(["eq", vendor_id])
 
-            if self.data["emails"]:
+            if "emails" in self.data:
                 for i, email in enumerate(self.data["emails"]):
                     params[f"email[{i}]"] = ":".join(["eq", email])
         else:
