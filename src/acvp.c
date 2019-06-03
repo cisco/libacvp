@@ -819,9 +819,7 @@ ACVP_RESULT acvp_run_vectors_from_file(ACVP_CTX *ctx, const char *req_filename, 
     JSON_Value *file_val = NULL;
     JSON_Value *kat_val = NULL;
     JSON_Array *kat_array;
-    JSON_Object *rsp_obj = NULL;
     JSON_Value *rsp_val = NULL;
-    JSON_Array *rsp_array;
     ACVP_RESULT rv = ACVP_SUCCESS;
     int n, i;
     ACVP_STRING_LIST *vs_entry;
@@ -938,7 +936,12 @@ ACVP_RESULT acvp_run_vectors_from_file(ACVP_CTX *ctx, const char *req_filename, 
             acvp_json_serialize_to_file_pretty_w(rsp_val, rsp_filename);
         } 
         /* append vector sets */
-        acvp_json_serialize_to_file_pretty_a(file_val, rsp_filename);
+        rv = acvp_json_serialize_to_file_pretty_a(file_val, rsp_filename);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("File write error");
+            json_value_free(file_val);
+            goto end;
+        }
 
         json_value_free(file_val);
         n++;
@@ -946,7 +949,7 @@ ACVP_RESULT acvp_run_vectors_from_file(ACVP_CTX *ctx, const char *req_filename, 
         vs_entry = vs_entry->next;
     }
     /* append the final ']' to make the JSON work */ 
-    acvp_json_serialize_to_file_pretty_a(NULL, rsp_filename);
+    rv = acvp_json_serialize_to_file_pretty_a(NULL, rsp_filename);
 end:
     json_value_free(val);
     return rv;
@@ -1089,6 +1092,10 @@ ACVP_RESULT acvp_upload_vectors_from_file(ACVP_CTX *ctx, const char *rsp_filenam
         json_free_serialized_string(json_result);
 
         rv = acvp_submit_vector_responses(ctx, vs_entry->string);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Failed to submit test results");
+            goto end;
+        }
 
         n++;
         vs_val = json_array_get_value(reg_array, n);
@@ -1735,7 +1742,7 @@ ACVP_RESULT acvp_process_tests(ACVP_CTX *ctx) {
     }
     /* Need to add the ending ']' here */
     if (ctx->vector_req) {
-        acvp_json_serialize_to_file_pretty_a(NULL, ctx->vector_req_file);
+        rv = acvp_json_serialize_to_file_pretty_a(NULL, ctx->vector_req_file);
     }
     return rv;
 }
@@ -1891,10 +1898,15 @@ static ACVP_RESULT acvp_process_vsid(ACVP_CTX *ctx, char *vsid_url, int count) {
                         vs_entry = vs_entry->next;
                     }
                     /* Start with identifiers */
-                    acvp_json_serialize_to_file_pretty_w(ts_val, ctx->vector_req_file);
+                    rv = acvp_json_serialize_to_file_pretty_w(ts_val, ctx->vector_req_file);
+                    if (rv != ACVP_SUCCESS) {
+                        ACVP_LOG_ERR("File write error");
+                        json_value_free(ts_val);
+                        goto end;
+                    }
                 } 
                 /* append vector set */
-                acvp_json_serialize_to_file_pretty_a(alg_val, ctx->vector_req_file);
+                rv = acvp_json_serialize_to_file_pretty_a(alg_val, ctx->vector_req_file);
                 json_value_free(ts_val);
                 goto end;
             }
