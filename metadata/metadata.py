@@ -13,7 +13,6 @@ import os
 import time
 import requests
 import json
-import collections
 import argparse
 import pyotp
 import hashlib
@@ -41,13 +40,9 @@ ACCESS_TOKEN = None  # JWT
 HEADERS = None
 
 
-# Use this to compare lists as unordered
-def compare_unordered_list(x, y): return collections.Counter(x) == collections.Counter(y)
-
-
 def compare_emails(this, their):
     if "emails" in this:
-        if not compare_unordered_list(this["emails"], their["emails"]):
+        if this["emails"] != their["emails"]:
             # The emails string lists are not equal
             return False
     else:
@@ -59,7 +54,7 @@ def compare_emails(this, their):
 
 def compare_phone_numbers(this, their):
     if "phoneNumbers" in this:
-        if not compare_unordered_list(this["phoneNumbers"], their["phoneNumbers"]):
+        if this["phoneNumbers"] != their["phoneNumbers"]:
             # The list of phoneNumber dicts are not equal
             return False
     else:
@@ -266,8 +261,6 @@ class Vendor(Resource):
         response = requests.get(**r)
         resp_json = response.json()
 
-        print(json.dumps(resp_json, indent=2))
-
         # Exact match here against the list of partial matches
         self._match_exact(resp_json[1]["data"])
         if self.complete is True:
@@ -432,8 +425,6 @@ class Person(Resource):
 
         response = requests.get(**r)
         resp_json = response.json()
-
-        print(json.dumps(resp_json, indent=2))
 
         # Exact match here against the list of partial matches
         self._match_exact(resp_json[1]["data"])
