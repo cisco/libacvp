@@ -905,17 +905,18 @@ ACVP_RESULT acvp_json_serialize_to_file_pretty_a(const JSON_Value *value, const 
 
         serialized_string = json_serialize_to_string_pretty(value, NULL);
         if (serialized_string == NULL) {
+            fclose(fp);
             return ACVP_JSON_ERR;
         }
         if (fputs(", ", fp) == EOF) {
-            json_free_serialized_string(serialized_string);
             return_code = ACVP_JSON_ERR;
+            goto end;
         }
         if (fputs(serialized_string, fp) == EOF) {
-            json_free_serialized_string(serialized_string);
             return_code = ACVP_JSON_ERR;
         }
     }
+end:
     if (fclose(fp) == EOF) {
         return_code = ACVP_JSON_ERR;
     }
@@ -936,15 +937,15 @@ ACVP_RESULT acvp_json_serialize_to_file_pretty_w(const JSON_Value *value, const 
         return ACVP_JSON_ERR;
     }
     if (fputs("[ ", fp) == EOF) {
-        json_free_serialized_string(serialized_string);
         return_code = ACVP_JSON_ERR;
+        goto end;
     }
     if (fputs(serialized_string, fp) == EOF) {
         json_free_serialized_string(serialized_string);
         return_code = ACVP_JSON_ERR;
     }
+end:
     if (fclose(fp) == EOF) {
-        json_free_serialized_string(serialized_string);
         return_code = ACVP_JSON_ERR;
     }
     json_free_serialized_string(serialized_string);
