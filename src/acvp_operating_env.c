@@ -345,7 +345,9 @@ static ACVP_RESULT acvp_oe_vendor_new(ACVP_CTX *ctx,
 
 static ACVP_RESULT acvp_oe_vendor_add_address(ACVP_CTX *ctx,
                                               ACVP_VENDOR *vendor,
-                                              const char *street,
+                                              const char *street_1,
+                                              const char *street_2,
+                                              const char *street_3,
                                               const char *locality,
                                               const char *region,
                                               const char *country,
@@ -355,8 +357,8 @@ static ACVP_RESULT acvp_oe_vendor_add_address(ACVP_CTX *ctx,
 
     if (!ctx) return ACVP_NO_CTX;
 
-    if (!street && !locality && !region &&
-        !country && !postal_code) {
+    if (!street_1 && !street_2 && !street_3 &&
+        !locality && !region && !country && !postal_code) {
         ACVP_LOG_ERR("Need at least 1 of the parameters to be non-NULL");
         return ACVP_INVALID_ARG;
     }
@@ -364,10 +366,24 @@ static ACVP_RESULT acvp_oe_vendor_add_address(ACVP_CTX *ctx,
     /* Get handle on the address field */
     address = &vendor->address;
 
-    if (street) {
-        rv = copy_oe_string(&address->street, street);
+    if (street_1) {
+        rv = copy_oe_string(&address->street_1, street_1);
         if (ACVP_INVALID_ARG == rv) {
-            ACVP_LOG_ERR("'street' string too long");
+            ACVP_LOG_ERR("'street1' string too long");
+            return rv;
+        }
+    }
+    if (street_2) {
+        rv = copy_oe_string(&address->street_2, street_2);
+        if (ACVP_INVALID_ARG == rv) {
+            ACVP_LOG_ERR("'street2' string too long");
+            return rv;
+        }
+    }
+    if (street_3) {
+        rv = copy_oe_string(&address->street_3, street_3);
+        if (ACVP_INVALID_ARG == rv) {
+            ACVP_LOG_ERR("'street3' string too long");
             return rv;
         }
     }
@@ -927,7 +943,9 @@ static void free_vendor_persons(ACVP_VENDOR *vendor) {
 static void free_vendor_address(ACVP_VENDOR *vendor) {
     ACVP_VENDOR_ADDRESS *address = &vendor->address;
 
-    if (address->street) free(address->street);
+    if (address->street_1) free(address->street_1);
+    if (address->street_2) free(address->street_2);
+    if (address->street_3) free(address->street_3);
     if (address->locality) free(address->locality);
     if (address->region) free(address->region);
     if (address->country) free(address->country);
@@ -983,8 +1001,9 @@ static ACVP_RESULT acvp_oe_metadata_parse_vendor_address(ACVP_CTX *ctx,
                                                          JSON_Object *obj,
                                                          ACVP_VENDOR *vendor) {
     JSON_Object *a_obj = NULL;
-    const char *street = NULL, *locality = NULL, *region= NULL,
-               *country = NULL, *postal_code = NULL;
+    const char *street_1 = NULL, *street_2 = NULL, *street_3 = NULL,
+               *locality = NULL, *region= NULL, *country = NULL,
+               *postal_code = NULL;
     ACVP_RESULT rv = ACVP_SUCCESS;
 
     if (!ctx) return ACVP_NO_CTX;
@@ -1003,14 +1022,16 @@ static ACVP_RESULT acvp_oe_metadata_parse_vendor_address(ACVP_CTX *ctx,
         return ACVP_MISSING_ARG;
     }
 
-    street = json_object_get_string(a_obj, "street");
+    street_1 = json_object_get_string(a_obj, "street1");
+    street_2 = json_object_get_string(a_obj, "street2");
+    street_3 = json_object_get_string(a_obj, "street3");
     locality = json_object_get_string(a_obj, "locality");
     region = json_object_get_string(a_obj, "region");
     country = json_object_get_string(a_obj, "country");
-    postal_code = json_object_get_string(a_obj, "postal_code");
+    postal_code = json_object_get_string(a_obj, "postalCode");
 
-    rv = acvp_oe_vendor_add_address(ctx, vendor, street, locality,
-                                    region, country, postal_code);
+    rv = acvp_oe_vendor_add_address(ctx, vendor, street_1, street_2, street_3,
+                                    locality, region, country, postal_code);
     if (ACVP_SUCCESS != rv) {
         ACVP_LOG_ERR("Failed to parse Vendor Address");
         return rv;
@@ -1094,7 +1115,7 @@ static ACVP_RESULT acvp_oe_metadata_parse_phone_numbers(ACVP_CTX *ctx,
         return ACVP_INVALID_ARG;
     }
 
-    phones_array = json_object_get_array(obj, "phone_numbers");
+    phones_array = json_object_get_array(obj, "phoneNumbers");
     count = (int)json_array_get_count(phones_array);
     if (phones_array && count) {
         for (i = 0; i < count; i++) {
@@ -1190,14 +1211,14 @@ static ACVP_RESULT acvp_oe_metadata_parse_vendor_contacts(ACVP_CTX *ctx,
         /* Increment (in case of error below, we will still cleanup) */
         vendor->persons.count++;
 
-        name_str = json_object_get_string(contact_obj, "full_name");
+        name_str = json_object_get_string(contact_obj, "fullName");
         if (!name_str) {
-            ACVP_LOG_ERR("Problem parsing 'full_name' string from JSON");
+            ACVP_LOG_ERR("Problem parsing 'fullName' string from JSON");
             return ACVP_JSON_ERR;
         }
         rv = copy_oe_string(&person->full_name, name_str);
         if (ACVP_INVALID_ARG == rv) {
-            ACVP_LOG_ERR("'full_name' string too long");
+            ACVP_LOG_ERR("'fullName' string too long");
             return rv;
         }
 
@@ -1328,9 +1349,9 @@ static ACVP_RESULT acvp_oe_metadata_parse_module(ACVP_CTX *ctx, JSON_Object *obj
         return ACVP_INVALID_ARG;
     }
 
-    vendor_id = (unsigned int)json_object_get_number(obj, "vendor_id");
+    vendor_id = (unsigned int)json_object_get_number(obj, "vendorId");
     if (vendor_id == 0) {
-        ACVP_LOG_ERR("Metadata JSON 'vendor_id' must be non-zero");
+        ACVP_LOG_ERR("Metadata JSON 'vendorId' must be non-zero");
         return ACVP_INVALID_ARG;
     }
 

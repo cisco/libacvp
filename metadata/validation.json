@@ -1,32 +1,33 @@
 {
     "vendors": [
         {
-            "name": "Acme Fictional Corporation",
-            "website": "www.acme-fictional.com",
-            "emails": [
-                "acme@acme-fictional.com"
+            "name": "Acme Fictional",
+            "website": "http:fictional-acme.com",
+            "emails" : [ "acme@acme.com" ],
+            "phoneNumbers": [
+                { "number": "1-800-000-0000", "type": "voice" }
             ],
-            "phone_numbers": [
-                { "number": "000-000-0000", "type": "voice" }
-            ],
+            "address": {
+                "street1": "Beach Dr.",
+                "street2": null,
+                "street3": null,
+                "locality": "Acme Town",
+                "region": "NC",
+                "country": "USA",
+                "postalCode": "00000"
+            },
             "contacts": [
                 {
-                    "full_name": "Wyle E. Coyote",
+                    "fullName": "Jane Smith",
                     "emails": [
-                        "wcoyote@acme-fictional.com"
+                        "jane.smith@acme.acme"
                     ],
-                    "phone_numbers": [
-                        { "number": "000-000-0000", "type": "voice" }
+                    "phoneNumbers": [
+                        { "number": "555-555-0001", "type": "fax" },
+                        { "number": "555-555-0002", "type": "voice" }
                     ]
                 }
             ],
-            "address": {
-                "street": "Street",
-                "locality": "Town",
-                "region": "State",
-                "country": "USA",
-                "postal_code": "00000"
-            },
             "id": 1
         }
     ],
@@ -36,7 +37,7 @@
             "version": "1.1.1b",
             "type": "Software",
             "description": "FOM",
-            "vendor_id": 1,
+            "vendorId": 1,
             "id": 1
         }
     ],

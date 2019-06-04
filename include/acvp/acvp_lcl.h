@@ -1125,7 +1125,9 @@ typedef struct acvp_kv_list_t {
 } ACVP_KV_LIST;
 
 typedef struct acvp_vendor_address_t {
-    char *street;
+    char *street_1;
+    char *street_2;
+    char *street_3;
     char *locality;
     char *region;
     char *country;
