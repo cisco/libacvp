@@ -773,18 +773,6 @@ void ctr128_inc(unsigned char *counter) {
     } while (n);
 }
 
-void acvp_free_kv_list(ACVP_KV_LIST *kv_list) {
-    ACVP_KV_LIST *tmp;
-
-    while (kv_list) {
-        tmp = kv_list;
-        kv_list = kv_list->next;
-        if (tmp->key) free(tmp->key);
-        if (tmp->value) free(tmp->value);
-        free(tmp);
-    }
-}
-
 ACVP_RESULT acvp_setup_json_rsp_group(ACVP_CTX **ctx,
                                       JSON_Value **outer_arr_val,
                                       JSON_Value **r_vs_val,

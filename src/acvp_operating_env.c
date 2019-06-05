@@ -10,12 +10,6 @@
 
 #include <stdlib.h>
 
-#ifdef WIN32
-# include <windows.h>
-#else
-# include <unistd.h>
-#endif
-
 #include "acvp.h"
 #include "acvp_lcl.h"
 #include "parson.h"
@@ -81,7 +75,7 @@ ACVP_RESULT acvp_oe_dependency_new(ACVP_CTX *ctx, unsigned int id) {
     ACVP_DEPENDENCY *new_dep = NULL;
     int k = 0;
 
-    if (!ctx) return 0;
+    if (!ctx) return ACVP_NO_CTX;
 
     /* Get a handle on the Dependencies */
     dependencies = &ctx->op_env.dependencies;
@@ -113,46 +107,38 @@ ACVP_RESULT acvp_oe_dependency_new(ACVP_CTX *ctx, unsigned int id) {
     return ACVP_SUCCESS;
 }
 
-ACVP_RESULT acvp_oe_dependency_add_attribute(ACVP_CTX *ctx,
-                                             unsigned int dependency_id,
-                                             const char *key,
-                                             const char *value) {
-    ACVP_DEPENDENCY *dep = NULL;
-    ACVP_KV_LIST *kv = NULL;
+typedef enum dependency_field {
+    DEPENDENCY_FIELD_TYPE = 1,
+    DEPENDENCY_FIELD_NAME,
+    DEPENDENCY_FIELD_DESC
+} DEPENDENCY_FIELD;
+
+static ACVP_RESULT acvp_oe_dependency_set_field(ACVP_CTX *ctx,
+                                                ACVP_DEPENDENCY *dep,
+                                                DEPENDENCY_FIELD field,
+                                                const char *value) {
     ACVP_RESULT rv = 0;
 
-    if (!ctx) return 0;
+    if (!ctx) return ACVP_NO_CTX;
 
-    if (!(dep = find_dependency(ctx, dependency_id))) {
+    if (dep == NULL) {
+        ACVP_LOG_ERR("Required parameter 'dep' is NULL");
         return ACVP_INVALID_ARG;
     }
 
-    if (!dep->attribute_list) {
-        dep->attribute_list = calloc(1, sizeof(ACVP_KV_LIST));
-        kv = dep->attribute_list;
+    if (DEPENDENCY_FIELD_TYPE == field) {
+        rv = copy_oe_string(&dep->type, value);
+    } else if (DEPENDENCY_FIELD_NAME == field) {
+        rv = copy_oe_string(&dep->name, value);
+    } else if (DEPENDENCY_FIELD_DESC == field) {
+        rv = copy_oe_string(&dep->description, value);
     } else {
-        ACVP_KV_LIST *current_attr = dep->attribute_list;
-        while (current_attr->next) {
-            current_attr = current_attr->next;
-        }
-        current_attr->next = calloc(1, sizeof(ACVP_KV_LIST));
-        kv = current_attr;
+        ACVP_LOG_ERR("Invalid value for parameter 'field'");
+        return ACVP_INVALID_ARG;
     }
 
-    
-    rv = copy_oe_string(&kv->key, key);
     if (ACVP_INVALID_ARG == rv) {
-        ACVP_LOG_ERR("'key` string too long");
-        return rv;
-    }
-    if (ACVP_MISSING_ARG == rv) {
-        ACVP_LOG_ERR("Required parameter 'key` is NULL");
-        return rv;
-    }
-
-    rv = copy_oe_string(&kv->value, value);
-    if (ACVP_INVALID_ARG == rv) {
-        ACVP_LOG_ERR("'value` string too long");
+        ACVP_LOG_ERR("'value' string too long");
         return rv;
     }
     if (ACVP_MISSING_ARG == rv) {
@@ -161,6 +147,48 @@ ACVP_RESULT acvp_oe_dependency_add_attribute(ACVP_CTX *ctx,
     }
 
     return ACVP_SUCCESS; 
+}
+
+ACVP_RESULT acvp_oe_dependency_set_type(ACVP_CTX *ctx,
+                                        unsigned int dependency_id,
+                                        const char *value) {
+    ACVP_DEPENDENCY *dep = NULL;
+
+    if (!ctx) return ACVP_NO_CTX;
+
+    if (!(dep = find_dependency(ctx, dependency_id))) {
+        return ACVP_INVALID_ARG;
+    }
+
+    return acvp_oe_dependency_set_field(ctx, dep, DEPENDENCY_FIELD_TYPE, value);
+}
+
+ACVP_RESULT acvp_oe_dependency_set_name(ACVP_CTX *ctx,
+                                        unsigned int dependency_id,
+                                        const char *value) {
+    ACVP_DEPENDENCY *dep = NULL;
+
+    if (!ctx) return ACVP_NO_CTX;
+
+    if (!(dep = find_dependency(ctx, dependency_id))) {
+        return ACVP_INVALID_ARG;
+    }
+
+    return acvp_oe_dependency_set_field(ctx, dep, DEPENDENCY_FIELD_NAME, value);
+}
+
+ACVP_RESULT acvp_oe_dependency_set_description(ACVP_CTX *ctx,
+                                               unsigned int dependency_id,
+                                               const char *value) {
+    ACVP_DEPENDENCY *dep = NULL;
+
+    if (!ctx) return ACVP_NO_CTX;
+
+    if (!(dep = find_dependency(ctx, dependency_id))) {
+        return ACVP_INVALID_ARG;
+    }
+
+    return acvp_oe_dependency_set_field(ctx, dep, DEPENDENCY_FIELD_DESC, value);
 }
 
 /**
@@ -177,7 +205,7 @@ ACVP_RESULT acvp_oe_oe_new(ACVP_CTX *ctx,
     ACVP_RESULT rv = 0;
     int k = 0;
 
-    if (!ctx) return 0;
+    if (!ctx) return ACVP_NO_CTX;
 
     /* Get a handle on the OES */
     oes = &ctx->op_env.oes;
@@ -262,8 +290,15 @@ ACVP_RESULT acvp_oe_oe_set_dependency(ACVP_CTX *ctx,
         return ACVP_INVALID_ARG;
     }
 
+    if (oe->dependencies.count == LIBACVP_DEPENDENCIES_MAX) {
+        ACVP_LOG_ERR("Libacvp already reached max OE(%u) dependency capacity (%u)",
+                     oe_id, LIBACVP_VENDORS_MAX);
+        return ACVP_UNSUPPORTED_OP;
+    }
+
     /* Set pointer to the dependency */
-    oe->dependency = dep;
+    oe->dependencies.deps[oe->dependencies.count] = dep;
+    oe->dependencies.count++;
 
     return ACVP_SUCCESS;
 }
@@ -437,7 +472,7 @@ ACVP_RESULT acvp_oe_module_new(ACVP_CTX *ctx,
     ACVP_RESULT rv = 0;
     int k = 0;
 
-    if (!ctx) return 0;
+    if (!ctx) return ACVP_NO_CTX;
 
     /* Get a handle on the Modules */
     modules = &ctx->op_env.modules;
@@ -912,7 +947,9 @@ static void free_dependencies(ACVP_DEPENDENCIES *dependencies) {
     for (i = 0; i < dependencies->count; i++) {
         ACVP_DEPENDENCY *dep = &dependencies->deps[i];
         if (dep->url) free(dep->url);
-        acvp_free_kv_list(dep->attribute_list);
+        if (dep->type) free(dep->type);
+        if (dep->name) free(dep->name);
+        if (dep->description) free(dep->description);
     }
 }
 
@@ -1414,85 +1451,50 @@ static ACVP_RESULT acvp_oe_metadata_parse_modules(ACVP_CTX *ctx, JSON_Object *ob
     return ACVP_SUCCESS;
 }
 
-static int compare_kv_list(const ACVP_KV_LIST *a, const ACVP_KV_LIST *b) {
-    int a_count = 0, b_count = 0;
-    const ACVP_KV_LIST *tmp = NULL;
+static int compare_dependencies(const ACVP_DEPENDENCY *a, const ACVP_DEPENDENCY *b) {
+    int diff = 0;
 
-    /*
-     * Although a bit redundant, we first count both of the lists
-     * to see if their lengths are equal. This is to catch if either
-     * list has duplicate key/value pairs i.e. a[0].key == a[1].key
-     * and a[0].value == a[1].value. Both of those pairs would match
-     * against a single pair in b.
-     */
-    tmp = a;
-    while (tmp) {
-        a_count++;
-        tmp = tmp->next;
-    }
+    strcmp_s(a->type, ACVP_OE_STR_MAX, b->type, &diff);
+    if (diff != 0) return 0;
 
-    tmp = b;
-    while (tmp) {
-        b_count++;
-        tmp = b->next;
-    }
+    strcmp_s(a->name, ACVP_OE_STR_MAX, b->name, &diff);
+    if (diff != 0) return 0;
 
-    /* Count is not the same, can't be identical */
-    if (a_count != b_count) return 0;
-
-    tmp = b;
-    while (a) {
-        while (tmp) {
-            int diff = 0;
-
-            strcmp_s(a->key, ACVP_OE_STR_MAX, tmp->key, &diff);
-            if (diff == 0) {
-                strcmp_s(a->value, ACVP_OE_STR_MAX, tmp->value, &diff);
-                if (diff == 0) break; /* This key/value pair are the same */
-            }
-
-            if (tmp->next == NULL) return 0; /* This pair in a didn't match any in b */
-            tmp = tmp->next;
-        }
-
-        tmp = b; /* Go back to head of b for next round */
-        a = a->next;
-    }
+    strcmp_s(a->description, ACVP_OE_STR_MAX, b->description, &diff);
+    if (diff != 0) return 0;
 
     /* Reached the end, we have a full match */
     return 1;
 }
 
-static unsigned int match_dependency(ACVP_CTX *ctx,
-                                     ACVP_KV_LIST *kv) {
+static unsigned int match_dependency(ACVP_CTX *ctx, const ACVP_DEPENDENCY *dep) {
     int i = 0;
 
     if (!ctx) return 0;
-    if (!kv) return 0;
+    if (dep == NULL) {
+        ACVP_LOG_ERR("Required parameter 'dep' must be non-NULL");
+        return 0;
+    }
 
     if (ctx->op_env.dependencies.count == 0) return 0;
 
     for (i = 0; i < ctx->op_env.dependencies.count; i++) {
-        ACVP_DEPENDENCY *dep = &ctx->op_env.dependencies.deps[i];
-        ACVP_KV_LIST *dep_kv = dep->attribute_list;
+        ACVP_DEPENDENCY *this_dep = &ctx->op_env.dependencies.deps[i];
         int match = 0;
 
-        if  (dep_kv == NULL) continue;
-        match = compare_kv_list(kv, dep_kv);
+        match = compare_dependencies(dep, this_dep);
         if (match) return dep->id;
     }
 
     return 0;
 }
 
-static ACVP_RESULT acvp_oe_metadata_parse_oe_dependency(ACVP_CTX *ctx,
-                                                        JSON_Object *obj,
-                                                        unsigned int oe_id) {
+static ACVP_RESULT acvp_oe_metadata_parse_oe_dependencies(ACVP_CTX *ctx,
+                                                          JSON_Object *obj,
+                                                          unsigned int oe_id) {
     ACVP_DEPENDENCY *dep = NULL;
-    JSON_Object *dep_obj = NULL;
-    ACVP_KV_LIST *head_kv = NULL, *kv = NULL;
-    int i = 0, count = 0, saved = 0;
-    unsigned int dep_id = 0;
+    JSON_Array *deps_array = NULL;
+    int i = 0, count = 0;
     ACVP_RESULT rv = ACVP_SUCCESS;
 
     if (!ctx) return ACVP_NO_CTX;
@@ -1501,88 +1503,73 @@ static ACVP_RESULT acvp_oe_metadata_parse_oe_dependency(ACVP_CTX *ctx,
         return ACVP_INVALID_ARG;
     }
 
-    dep_obj = json_object_get_object(obj, "dependency");
-    if (!dep_obj) {
-        ACVP_LOG_ERR("Missing 'dependency' object in JSON");
+    deps_array = json_object_get_array(obj, "dependencies");
+    if (!deps_array) {
+        ACVP_LOG_ERR("Missing 'dependencies' array in JSON");
         return ACVP_JSON_ERR;
     }
-    count = (int)json_object_get_count(dep_obj);
+    count = (int)json_array_get_count(deps_array);
     if (!count) {
-        ACVP_LOG_ERR("Requires at least 1 item in 'dependency' object JSON");
+        ACVP_LOG_ERR("Requires at least 1 item in 'dependencies' array JSON");
         return ACVP_JSON_ERR;
     }
 
     for (i = 0; i < count; i++) {
-        const char *key = NULL, *value = NULL;
+        ACVP_DEPENDENCY tmp_dep = {0};
+        const char *type_str = NULL, *name_str = NULL, *desc_str = NULL;
+        JSON_Object *dep_obj = json_array_get_object(deps_array, i);
+        unsigned int dep_id = 0;
 
-        if (i == 0) {
-            kv = calloc(1, sizeof(ACVP_KV_LIST));
-            if (!kv) return ACVP_MALLOC_FAIL;
-            head_kv = kv;
-        } else {
-            kv->next = calloc(1, sizeof(ACVP_KV_LIST));
-            if (!kv->next) return ACVP_MALLOC_FAIL;
-            kv = kv->next;
+        type_str = json_object_get_string(dep_obj, "type");
+        name_str = json_object_get_string(dep_obj, "name");
+        desc_str = json_object_get_string(dep_obj, "description");
+
+        // Soft copy, no need to free
+        tmp_dep.type = (char*)type_str;
+        tmp_dep.name = (char*)name_str;
+        tmp_dep.description = (char*)desc_str;
+
+        dep_id = match_dependency(ctx, &tmp_dep);
+        if (dep_id == 0) {
+            /*
+             * We didn't find a Dependency in memory that matches exactly.
+             * Make a new one!
+             */
+            dep_id = glb_dependency_id;
+
+            rv = acvp_oe_dependency_new(ctx, dep_id);
+            if (ACVP_SUCCESS != rv) {
+                ACVP_LOG_ERR("Failed to create new Dependency");
+                return rv;
+            }
+
+            dep = find_dependency(ctx, dep_id);
+            if (!dep) {
+                rv = ACVP_INVALID_ARG;
+                return rv;
+            }
+
+            if (type_str) {
+                rv = acvp_oe_dependency_set_type(ctx, dep_id, type_str);
+                if (ACVP_SUCCESS != rv) return rv;
+            }
+
+            if (name_str) {
+                rv = acvp_oe_dependency_set_name(ctx, dep_id, name_str);
+                if (ACVP_SUCCESS != rv) return rv;
+            }
+
+            if (desc_str) {
+                rv = acvp_oe_dependency_set_description(ctx, dep_id, desc_str);
+                if (ACVP_SUCCESS != rv) return rv;
+            }
+
+            /* Increment Global dependency ID*/
+            glb_dependency_id++;
         }
 
-        key = json_object_get_name(dep_obj, i);
-        if (!key) {
-            ACVP_LOG_ERR("Problem parsing JSON key");
-            rv = ACVP_JSON_ERR;
-            goto end;
-        }
-
-        value = json_object_get_string(dep_obj, key);
-        if (!value) {
-            ACVP_LOG_ERR("Problem parsing JSON value");
-            rv = ACVP_JSON_ERR;
-            goto end;
-        }
-
-        rv = copy_oe_string(&kv->key, key);
-        if (ACVP_INVALID_ARG == rv) {
-            ACVP_LOG_ERR("'key' string too long");
-            goto end;
-        }
-        rv = copy_oe_string(&kv->value, value);
-        if (ACVP_INVALID_ARG == rv) {
-            ACVP_LOG_ERR("'key' string too long");
-            goto end;
-        }
-    }
-
-    dep_id = match_dependency(ctx, kv);
-    if (dep_id == 0) {
-        /*
-         * We didn't find a Dependency in memory that matches exactly.
-         * Make a new one!
-         */
-        rv = acvp_oe_dependency_new(ctx, glb_dependency_id);
-        if (ACVP_SUCCESS != rv) {
-            ACVP_LOG_ERR("Failed to create new Dependency");
-            goto end;
-        }
-
-        dep = find_dependency(ctx, glb_dependency_id);
-        if (!dep) {
-            rv = ACVP_INVALID_ARG;
-            goto end;
-        }
-
-        /* Attach the KV list to the newly created dependency */
-        dep->attribute_list = head_kv;
-
-        saved = 1;
-        dep_id = glb_dependency_id;
-        glb_dependency_id++;
-    }
-
-    /* Add the Dependency to the OE */
-    acvp_oe_oe_set_dependency(ctx, oe_id, dep_id);
-
-end:
-    if (ACVP_SUCCESS != rv || !saved) {
-        if (head_kv) acvp_free_kv_list(head_kv);
+        /* Add the Dependency to the OE */
+        acvp_oe_oe_set_dependency(ctx, oe_id, dep_id);
     }
 
     return rv;
@@ -1618,7 +1605,7 @@ static ACVP_RESULT acvp_oe_metadata_parse_oe(ACVP_CTX *ctx, JSON_Object *obj) {
     /*
      * Parse the dependencies
      */
-    rv = acvp_oe_metadata_parse_oe_dependency(ctx, obj, oe_id);
+    rv = acvp_oe_metadata_parse_oe_dependencies(ctx, obj, oe_id);
     if (ACVP_SUCCESS != rv) return rv;
 
     return ACVP_SUCCESS;

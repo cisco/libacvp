@@ -1109,21 +1109,6 @@ typedef struct acvp_caps_list_t {
     struct acvp_caps_list_t *next;
 } ACVP_CAPS_LIST;
 
-/*! @struct ACVP_KV_LIST
- * @brief This struct is a list of key/value pairs
- * to be added to flexible JSON objects during registration
- *
- * For example, dependencies can have different key/value
- * pairs depending on their type, so if the attributes are
- * added to this list, then the list can get translated into
- * proper JSON during dependency registration.
- */
-typedef struct acvp_kv_list_t {
-    char *key;
-    char *value;
-    struct acvp_kv_list_t *next;
-} ACVP_KV_LIST;
-
 typedef struct acvp_vendor_address_t {
     char *street_1;
     char *street_2;
@@ -1189,21 +1174,28 @@ typedef struct acvp_modules_t {
 
 typedef struct acvp_dependency_t {
     unsigned int id; /**< For library tracking purposes */
-    ACVP_KV_LIST *attribute_list; /**< Key/value list */
     char *url; /**< Returned from the server */
+    char *type;
+    char *name;
+    char *description;
 } ACVP_DEPENDENCY;
 
-#define LIBACVP_DEPENDENCIES_MAX 16
+#define LIBACVP_DEPENDENCIES_MAX 64
 typedef struct acvp_dependencies_t {
     ACVP_DEPENDENCY deps[LIBACVP_DEPENDENCIES_MAX];
     int count;
 } ACVP_DEPENDENCIES;
 
+typedef struct acvp_oe_dependencies_t {
+    ACVP_DEPENDENCY *deps[LIBACVP_DEPENDENCIES_MAX]; /* Array to pointers of linked dependencies */
+    int count;
+} ACVP_OE_DEPENDENCIES;
+
 typedef struct acvp_oe_t {
     unsigned int id; /**< For library tracking purposes */
     char *name; /**< Name of the Operating Environment */
     char *url; /**< ID URL returned from the server */
-    ACVP_DEPENDENCY *dependency; /**< Pointer to the Dependency to use */
+    ACVP_OE_DEPENDENCIES dependencies; /**< Pointers to attached dependencies */
 } ACVP_OE;
 
 #define LIBACVP_OES_MAX 8
@@ -1463,8 +1455,6 @@ void acvp_release_json(JSON_Value *r_vs_val,
                        JSON_Value *r_gval);
 
 JSON_Object *acvp_get_obj_from_rsp(ACVP_CTX *ctx, JSON_Value *arry_val);
-
-void acvp_free_kv_list(ACVP_KV_LIST *kv_list);
 
 int string_fits(const char *string, unsigned int max_allowed);
 
