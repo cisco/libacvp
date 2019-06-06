@@ -1398,6 +1398,8 @@ ACVP_RESULT acvp_register_build_person(ACVP_CTX *ctx,
  */
 void acvp_oe_free_operating_env(ACVP_CTX *ctx);
 
+ACVP_RESULT acvp_oe_verify_fips_operating_env(ACVP_CTX *ctx);
+
 ACVP_RESULT acvp_notify_large(ACVP_CTX *ctx,
                               const char *url,
                               char *large_url,

@@ -2099,7 +2099,9 @@ end:
     return rv;
 }
 
-static ACVP_RESULT metadata_ready(ACVP_CTX *ctx) {
+static ACVP_RESULT fips_metadata_ready(ACVP_CTX *ctx) {
+    ACVP_RESULT rv = 0;
+
     if (ctx == NULL) return ACVP_NO_CTX;
 
     if (ctx->fips.module == NULL) {
@@ -2112,7 +2114,15 @@ static ACVP_RESULT metadata_ready(ACVP_CTX *ctx) {
         return ACVP_UNSUPPORTED_OP;
     }
 
-    // TODO query that the metata exists and is in server DB
+    /*
+     * Verify that the selected FIPS metadata is sane.
+     * A.k.a. check that the resources exist on the server DB, if required.
+     */
+    rv = acvp_oe_verify_fips_operating_env(ctx);
+    if (ACVP_SUCCESS != rv) {
+        ACVP_LOG_ERR("Failed to verify the FIPS metadata with server");
+        return rv;
+    }
 
     return ACVP_SUCCESS;
 }
@@ -2123,7 +2133,7 @@ ACVP_RESULT acvp_run(ACVP_CTX *ctx, int fips_validation) {
     if (ctx == NULL) return ACVP_NO_CTX;
 
     if (fips_validation) {
-        rv = metadata_ready(ctx);
+        rv = fips_metadata_ready(ctx);
         if (ACVP_SUCCESS != rv) {
             ACVP_LOG_ERR("Validation metadata not ready");
             return ACVP_UNSUPPORTED_OP;
@@ -2165,6 +2175,13 @@ ACVP_RESULT acvp_run(ACVP_CTX *ctx, int fips_validation) {
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Unable to retrieve test results");
         goto end;
+    }
+
+    if (fips_validation) {
+        /*
+         * Tell the server to provision a FIPS certificate for this testSession.
+         */
+        // TODO
     }
 
 end:

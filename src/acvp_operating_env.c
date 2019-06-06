@@ -9,6 +9,7 @@
  */
 
 #include <stdlib.h>
+#include <stdio.h>
 
 #include "acvp.h"
 #include "acvp_lcl.h"
@@ -584,220 +585,306 @@ ACVP_RESULT acvp_oe_module_set_type_version_desc(ACVP_CTX *ctx,
     return ACVP_SUCCESS;
 }
 
+static int compare_dependencies(const ACVP_DEPENDENCY *a, const ACVP_DEPENDENCY *b) {
+    int diff = 0;
+
+    strcmp_s(a->type, ACVP_OE_STR_MAX, b->type, &diff);
+    if (diff != 0) return 0;
+
+    strcmp_s(a->name, ACVP_OE_STR_MAX, b->name, &diff);
+    if (diff != 0) return 0;
+
+    strcmp_s(a->description, ACVP_OE_STR_MAX, b->description, &diff);
+    if (diff != 0) return 0;
+
+    /* Reached the end, we have a full match */
+    return 1;
+}
+
+static ACVP_RESULT match_dependencies_page(ACVP_CTX *ctx,
+                                           ACVP_DEPENDENCY *dep,
+                                           int *match,
+                                           char **next_endpoint) {
+    ACVP_RESULT rv = 0;
+    JSON_Value *val = NULL;
+    JSON_Object *obj = NULL, *links_obj = NULL;
+    JSON_Array *data_array = NULL;
+    const char *next = NULL;
+    int i = 0, data_count = 0;
+
+    if (!ctx) return ACVP_NO_CTX;
+    if (dep == NULL) {
+        ACVP_LOG_ERR("Parameter 'dependency' must be non-NULL");
+    }
+
+    val = json_parse_string(ctx->curl_buf);
+    if (!val) {
+        ACVP_LOG_ERR("JSON parse error");
+        return ACVP_JSON_ERR;
+    }
+
+    obj = acvp_get_obj_from_rsp(ctx, val);
+    if (!obj) {
+        rv = ACVP_JSON_ERR;
+        goto end;
+    }
+
+    data_array = json_object_get_array(obj, "data"); 
+    data_count = json_array_get_count(data_array);
+
+    for (i = 0; i < data_count; i++) {
+        int this_match = 0;
+        ACVP_DEPENDENCY tmp_dep = {0};
+        JSON_Object *dep_obj = json_array_get_object(data_array, i);
+        if (dep_obj == NULL)  {
+            rv = ACVP_JSON_ERR;
+            goto end;
+        }
+
+        // Soft copy so don't need to free
+        tmp_dep.type = (char*)json_object_get_string(dep_obj, "type");
+        tmp_dep.name = (char*)json_object_get_string(dep_obj, "name");
+        tmp_dep.description = (char*)json_object_get_string(dep_obj, "description");
+
+        this_match = compare_dependencies(dep, &tmp_dep);
+        if (this_match) {
+            /*
+             * Found a match.
+             * Copy the url and skip to end.
+             */
+            dep->url = calloc(ACVP_ATTR_URL_MAX + 1, sizeof(char));
+            if (dep->url == NULL) {
+                ACVP_LOG_ERR("Failed to malloc");
+                return ACVP_MALLOC_FAIL;
+            }
+            strcpy_s(dep->url, ACVP_ATTR_URL_MAX + 1, json_object_get_string(dep_obj, "url"));
+            *match = 1; 
+            goto end;
+        }
+    }
+
+    *match = 0;
+
+    links_obj = json_object_get_object(obj, "links");
+    if (links_obj == NULL) {
+        rv = ACVP_JSON_ERR;
+        goto end;
+    }
+    next = json_object_get_string(links_obj, "next");
+    if (next) {
+        // Copy the next page endpoint
+        *next_endpoint = calloc(ACVP_ATTR_URL_MAX + 1, sizeof(char));
+        if (*next_endpoint == NULL) {
+            ACVP_LOG_ERR("Failed to malloc");
+            rv = ACVP_MALLOC_FAIL;
+            goto end;
+        }
+        strcpy_s(*next_endpoint, ACVP_ATTR_URL_MAX + 1, next);
+    }
+
+end:
+    if (val) json_value_free(val);
+
+    return rv;
+}
+
+static ACVP_RESULT query_dependency(ACVP_CTX *ctx,
+                                    ACVP_DEPENDENCY *dep,
+                                    int allowed_pages,
+                                    const char *endpoint) {
+    ACVP_RESULT rv = 0;
+    char *first_endpoint = NULL, *next_endpoint = NULL;
+    int match = 0, max_url = ACVP_ATTR_URL_MAX + 1;
+
+    if (!ctx) return ACVP_NO_CTX;
+    if (dep == NULL) {
+        ACVP_LOG_ERR("Parameter 'dependency' must be non-NULL");
+    }
+
+    if (dep->url) {
+        /*
+         * This resource has already been verified as existing.
+         */
+        return ACVP_SUCCESS;
+    }
+
+    if (endpoint == NULL) {
+        first_endpoint = calloc(max_url, sizeof(char));
+        if (first_endpoint == NULL) {
+            ACVP_LOG_ERR("Failed to malloc");
+            return ACVP_MALLOC_FAIL;
+        }
+        endpoint = first_endpoint;
+        int rem_space = max_url, join = 0;
+
+        /*
+         * Formulate the query syntax.
+         */
+        snprintf(first_endpoint, max_url - 1, "%s%s",
+                 ctx->path_segment, "dependencies?");
+        if (dep->type) {
+            rem_space = rem_space - strnlen_s(first_endpoint, max_url);
+            if (join) {
+                strcat_s(first_endpoint, rem_space, "&type[0]=eq:");
+            } else {
+                strcat_s(first_endpoint, rem_space, "type[0]=eq:");
+            }
+
+            rem_space = rem_space - strnlen_s(first_endpoint, max_url);
+            strcat_s(first_endpoint, rem_space, dep->type);
+
+            join = 1;
+        }
+
+        if (dep->name) {
+            rem_space = rem_space - strnlen_s(first_endpoint, max_url);
+            if (join) {
+                strcat_s(first_endpoint, rem_space, "&name[0]=eq:");
+            } else {
+                strcat_s(first_endpoint, rem_space, "name[0]=eq:");
+            }
+
+            rem_space = rem_space - strnlen_s(first_endpoint, max_url);
+            strcat_s(first_endpoint, rem_space, dep->name);
+
+            join = 1;
+        }
+
+        if (dep->description) {
+            rem_space = rem_space - strnlen_s(first_endpoint, max_url);
+            if (join) {
+                strcat_s(first_endpoint, rem_space, "&description[0]=eq:");
+            } else {
+                strcat_s(first_endpoint, rem_space, "description[0]=eq:");
+            }
+
+            rem_space = rem_space - strnlen_s(first_endpoint, max_url);
+            strcat_s(first_endpoint, rem_space, dep->description);
+
+            join = 1;
+        }
+    }
+
+    /*
+     * Query the server DB.
+     */
+    rv = acvp_transport_get(ctx, endpoint);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Unable to query Dependency");
+        goto end;
+    }
+
+    /*
+     * Try to match the dependency against the page returned by server.
+     */
+    rv = match_dependencies_page(ctx, dep, &match, &next_endpoint);
+    if (ACVP_SUCCESS != rv) goto end;
+
+    /* Only query the next page if we are within the limit */
+    if (!match && next_endpoint && allowed_pages > 0) {
+        /* Recurse */
+        query_dependency(ctx, dep, allowed_pages - 1, next_endpoint);
+    }
+
+end:
+    if (first_endpoint) free(first_endpoint);
+    if (next_endpoint) free(next_endpoint);
+
+    return rv;
+}
+
+static ACVP_RESULT verify_fips_oe_dependencies(ACVP_CTX *ctx,
+                                               ACVP_OE_DEPENDENCIES *dependencies) {
+    ACVP_RESULT rv = 0;
+    int i = 0;
+
+    if (!ctx) return ACVP_NO_CTX;
+    if (dependencies == NULL) {
+        ACVP_LOG_ERR("Parameter 'dependencies' must be non-NULL");
+        return ACVP_INVALID_ARG;
+    }
+
+    for (i = 0; i < dependencies->count; i++) {
+        ACVP_DEPENDENCY *cur_dep = dependencies->deps[i];
+
+        rv = query_dependency(ctx, cur_dep, 100, NULL);
+        if (ACVP_SUCCESS != rv) {
+            ACVP_LOG_ERR("Unable to query this Dependency[%d]", i);
+            return rv;
+        }
+    }
+
+    return ACVP_SUCCESS;
+}
+
+static ACVP_RESULT verify_fips_oe(ACVP_CTX *ctx) {
+    ACVP_RESULT rv = 0;
+    //char *json_str = NULL;
+    int i = 0;
+    //int json_len = 0;
+
+    if (!ctx) return ACVP_NO_CTX;
+
+    /*
+     * First, check the linked Dependencies because some/all of them may already exist.
+     */
+    rv = verify_fips_oe_dependencies(ctx, &ctx->fips.oe->dependencies);
+    if (ACVP_SUCCESS != rv) {
+        ACVP_LOG_ERR("Failed to verify linked Dependencies of OE(%u)", ctx->fips.oe->id);
+        return rv;
+    }
+
+    for (i = 0; i < ctx->fips.oe->dependencies.count; i++) {
+        if (ctx->fips.oe->dependencies.deps[i]->url == NULL) {
+            /*
+             * At least one of the Dependencies doesn't exist yet.
+             * This means we need to ask the server to create this OE.
+             * No need to query.
+             */
+        }
+    }
+
+    // TODO compare the OE description, and then all of the dependencies to see if it exists yet
+
 #if 0
-static ACVP_RESULT acvp_oe_vendor_record_identifier(ACVP_CTX *ctx,
-                                                    ACVP_VENDOR *vendor) {
-    ACVP_RESULT rv = ACVP_SUCCESS;
-    JSON_Value *val = NULL;
-    JSON_Object *obj = NULL;
-    const char *url = NULL;
-
-    val = acvp_validate_identifier(ctx);
-    if (!val) return ACVP_JSON_ERR;
-
-    /* Grab the 'approvedUrl' identifier */
-    obj = acvp_get_obj_from_rsp(val);
-    url = json_object_get_string(obj, "approvedUrl");
-    if (!url) return ACVP_JSON_ERR;
-
-    /* Record it */
-    vendor->url = calloc(ACVP_ATTR_URL_MAX + 1, sizeof(char));
-    strcpy_s(vendor->url, ACVP_ATTR_URL_MAX, url);
-
-    json_value_free(val);
-
-    return rv;
-}
-
-static ACVP_RESULT acvp_oe_person_record_identifier(ACVP_CTX *ctx,
-                                                    ACVP_PERSON *person) {
-    ACVP_RESULT rv = ACVP_SUCCESS;
-    JSON_Value *val = NULL;
-    JSON_Object *obj = NULL;
-    const char *url = NULL;
-
-    val = acvp_validate_identifier(ctx);
-    if (!val) return ACVP_JSON_ERR;
-
-    /* Grab the 'approvedUrl' identifier */
-    obj = acvp_get_obj_from_rsp(val);
-    url = json_object_get_string(obj, "approvedUrl");
-    if (!url) return ACVP_JSON_ERR;
-
-    /* Record it */
-    person->url = calloc(ACVP_ATTR_URL_MAX + 1, sizeof(char));
-    strcpy_s(person->url, ACVP_ATTR_URL_MAX, url);
-
-    json_value_free(val);
-
-    return rv;
-}
-
-static ACVP_RESULT acvp_oe_oe_record_identifier(ACVP_CTX *ctx,
-                                                ACVP_OE *oe) {
-    ACVP_RESULT rv = ACVP_SUCCESS;
-    JSON_Value *val = NULL;
-    JSON_Object *obj = NULL;
-    const char *url = NULL;
-
-    val = acvp_validate_identifier(ctx);
-    if (!val) return ACVP_JSON_ERR;
-
-    /* Grab the 'approvedUrl' identifier */
-    obj = acvp_get_obj_from_rsp(val);
-    url = json_object_get_string(obj, "approvedUrl");
-    if (!url) return ACVP_JSON_ERR;
-
-    /* Record it */
-    oe->url = calloc(ACVP_ATTR_URL_MAX + 1, sizeof(char));
-    strcpy_s(oe->url, ACVP_ATTR_URL_MAX, url);
-
-    json_value_free(val);
-
-    return rv;
-}
-
-static ACVP_RESULT acvp_oe_dependency_record_identifier(ACVP_CTX *ctx,
-                                                        ACVP_DEPENDENCY *dep) {
-    ACVP_RESULT rv = ACVP_SUCCESS;
-    JSON_Value *val = NULL;
-    JSON_Object *obj = NULL;
-    const char *url = NULL;
-
-    val = acvp_validate_identifier(ctx);
-    if (!val) return ACVP_JSON_ERR;
-
-    /* Grab the 'approvedUrl' identifier */
-    obj = acvp_get_obj_from_rsp(val);
-    url = json_object_get_string(obj, "approvedUrl");
-    if (!url) return ACVP_JSON_ERR;
-
-    /* Record it */
-    dep->url = calloc(ACVP_ATTR_URL_MAX + 1, sizeof(char));
-    strcpy_s(dep->url, ACVP_ATTR_URL_MAX, url);
-
-    json_value_free(val);
-
-    return rv;
-}
-
-/*
- * This routine performs the JSON parsing of the modules response
- * from the ACVP server.  The response should contain a url to
- * access the registered module
- */
-static ACVP_RESULT acvp_oe_module_record_identifier(ACVP_CTX *ctx, ACVP_MODULE *module) {
-    ACVP_RESULT rv = ACVP_SUCCESS;
-    JSON_Value *val = NULL;
-    JSON_Object *obj = NULL;
-    const char *url = NULL;
-
-    val = acvp_validate_identifier(ctx);
-    if (!val) return ACVP_JSON_ERR;
-
-    /* Grab the 'approvedUrl' identifier */
-    obj = acvp_get_obj_from_rsp(val);
-    url = json_object_get_string(obj, "approvedUrl");
-    if (!url) return ACVP_JSON_ERR;
-
-    /* Record it */
-    module->url = calloc(ACVP_ATTR_URL_MAX + 1, sizeof(char));
-    strcpy_s(module->url, ACVP_ATTR_URL_MAX, url);
-
-    json_value_free(val);
-
-    return rv;
-}
-
-ACVP_RESULT acvp_oe_register_oes(ACVP_CTX *ctx) {
-    ACVP_RESULT rv = 0;
-    char *json_str = NULL;
-    int i = 0;
-
-    if (!ctx) return ACVP_NO_CTX;
-
-    for (i = 0; i < ctx->oes.count; i++) {
-        ACVP_OE *cur_oe = &ctx->oes.oe[i];
-        int json_len = 0;
-
-        rv = acvp_register_build_oe(ctx, cur_oe, &json_str, &json_len);
-        if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("Unable to build oe message");
-            goto end;
-        }
-
-        rv = acvp_transport_send_oe_registration(ctx, json_str, json_len);
-        if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("Failed to send OE registration");
-            goto end;
-        }
-        ACVP_LOG_STATUS("200 OK %s", ctx->curl_buf);
-
-        rv = acvp_oe_oe_record_identifier(ctx, cur_oe);
-        if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("Failed to record OE identifier");
-            goto end;
-        }
-
-        /* Free for the next iteration */
-        if (json_str) json_free_serialized_string(json_str);
-        json_str = NULL;
+    rv = acvp_register_build_oe(ctx, cur_oe, &json_str, &json_len);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Unable to build oe message");
+        goto end;
     }
+
+    rv = acvp_transport_send_oe_registration(ctx, json_str, json_len);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Failed to send OE registration");
+        goto end;
+    }
+    ACVP_LOG_STATUS("200 OK %s", ctx->curl_buf);
+
+    rv = acvp_oe_oe_record_identifier(ctx, cur_oe);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Failed to record OE identifier");
+        goto end;
+    }
+
+    /* Free for the next iteration */
+    if (json_str) json_free_serialized_string(json_str);
+    json_str = NULL;
 
 end:
     if (json_str) json_free_serialized_string(json_str);
+#endif
 
     return rv;
 }
 
-ACVP_RESULT acvp_oe_register_dependencies(ACVP_CTX *ctx) {
+static ACVP_RESULT verify_fips_vendor(ACVP_CTX *ctx) {
     ACVP_RESULT rv = 0;
-    char *json_str = NULL;
-    int i = 0;
+    //char *json_str = NULL;
+    //int i = 0;
 
     if (!ctx) return ACVP_NO_CTX;
 
-    for (i = 0; i < ctx->dependencies.count; i++) {
-        ACVP_DEPENDENCY *cur_dep = &ctx->dependencies.deps[i];
-        int json_len = 0;
-
-        rv = acvp_register_build_dependency(ctx, cur_dep, &json_str, &json_len);
-        if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("Unable to build Dependency message");
-            goto end;
-        }
-
-        rv = acvp_transport_send_dependency_registration(ctx, json_str, json_len);
-        if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("Failed to send Dependency registration");
-            goto end;
-        }
-        ACVP_LOG_STATUS("200 OK %s", ctx->curl_buf);
-
-        rv = acvp_oe_dependency_record_identifier(ctx, cur_dep);
-        if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("Failed to record Dependency identifier");
-            goto end;
-        }
-
-        /* Free for the next iteration */
-        if (json_str) json_free_serialized_string(json_str);
-        json_str = NULL;
-    }
-
-end:
-    if (json_str) json_free_serialized_string(json_str);
-
-    return rv;
-}
-
-ACVP_RESULT acvp_oe_register_vendors(ACVP_CTX *ctx) {
-    ACVP_RESULT rv = 0;
-    char *json_str = NULL;
-    int i = 0;
-
-    if (!ctx) return ACVP_NO_CTX;
-
+#if 0
     for (i = 0; i < ctx->vendors.count; i++) {
         ACVP_VENDOR *cur_vendor = &ctx->vendors.v[i];
         int json_len = 0;
@@ -828,17 +915,19 @@ ACVP_RESULT acvp_oe_register_vendors(ACVP_CTX *ctx) {
 
 end:
     if (json_str) json_free_serialized_string(json_str);
+#endif
 
     return rv;
 }
 
-ACVP_RESULT acvp_oe_register_modules(ACVP_CTX *ctx) {
+static ACVP_RESULT verify_fips_module(ACVP_CTX *ctx) {
     ACVP_RESULT rv = 0;
-    char *json_str = NULL;
-    int i = 0;
+    //char *json_str = NULL;
+    //int i = 0;
 
     if (!ctx) return ACVP_NO_CTX;
 
+#if 0
     for (i = 0; i < ctx->modules.count; i++) {
         ACVP_MODULE *cur_module = &ctx->modules.module[i];
         int json_len = 0;
@@ -869,52 +958,53 @@ ACVP_RESULT acvp_oe_register_modules(ACVP_CTX *ctx) {
 
 end:
     if (json_str) json_free_serialized_string(json_str);
+#endif
 
     return rv;
 }
 
-ACVP_RESULT acvp_oe_register_operating_env(ACVP_CTX *ctx) {
+/**
+ * @brief Verify that the selected FIPS validation metadata is sane.
+ *
+ * If the Vendor and it's sub-objects are not found in the server DB,
+ * then this function will return failure.
+ *
+ * If the Module or OE is not found in the server DB, then the client
+ * will attempt to create this resource later on during the
+ * PUT /testSessions/{testSessionId}.
+ *
+ * For the OE, any linked Dependencies not found will be created during
+ * the PUT /testSessions/{testSessionId}. Conversely, any Dependencies that
+ * are found will have their 'url' field set to a valid resource endpoint.
+ *
+ * @return ACVP_RESULT
+ *
+ */
+ACVP_RESULT acvp_oe_verify_fips_operating_env(ACVP_CTX *ctx) {
     ACVP_RESULT rv = 0;
 
     /*
-     * Register the Vendors
+     * Verify the Module.
+     * This includes the linked Vendor.
      */
-    rv = acvp_oe_register_vendors(ctx);
+    rv = verify_fips_module(ctx);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("Unable to register Vendors");
+        ACVP_LOG_ERR("Unable to verify Vendor");
         return rv;
     }
 
     /*
-     * Register the Modules
+     * Verify the OE.
+     * This includes the linked Dependencies.
      */
-    rv = acvp_oe_register_modules(ctx);
+    rv = verify_fips_oe(ctx);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("Unable to register Modules");
-        return rv;
-    }
-
-    /*
-     * Register the Dependencies
-     */
-    rv = acvp_oe_register_dependencies(ctx);
-    if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("Unable to register Dependencies");
-        return rv;
-    }
-
-    /*
-     * Register the Operating Environments (OES)
-     */
-    rv = acvp_oe_register_oes(ctx);
-    if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("Unable to register OES");
+        ACVP_LOG_ERR("Unable to verify Module");
         return rv;
     }
 
     return ACVP_SUCCESS;
 }
-#endif
 
 /******************
  * ****************
@@ -1449,22 +1539,6 @@ static ACVP_RESULT acvp_oe_metadata_parse_modules(ACVP_CTX *ctx, JSON_Object *ob
 
     /* Success */
     return ACVP_SUCCESS;
-}
-
-static int compare_dependencies(const ACVP_DEPENDENCY *a, const ACVP_DEPENDENCY *b) {
-    int diff = 0;
-
-    strcmp_s(a->type, ACVP_OE_STR_MAX, b->type, &diff);
-    if (diff != 0) return 0;
-
-    strcmp_s(a->name, ACVP_OE_STR_MAX, b->name, &diff);
-    if (diff != 0) return 0;
-
-    strcmp_s(a->description, ACVP_OE_STR_MAX, b->description, &diff);
-    if (diff != 0) return 0;
-
-    /* Reached the end, we have a full match */
-    return 1;
 }
 
 static unsigned int match_dependency(ACVP_CTX *ctx, const ACVP_DEPENDENCY *dep) {
