@@ -566,10 +566,15 @@ ACVP_RESULT acvp_retrieve_expected_result(ACVP_CTX *ctx, char *api_url) {
     return acvp_network_action(ctx, ACVP_NET_GET_VS_SAMPLE, url, NULL, 0);
 }
 
-ACVP_RESULT acvp_transport_get(ACVP_CTX *ctx, const char *url) {
+ACVP_RESULT acvp_transport_get(ACVP_CTX *ctx,
+                               const char *url,
+                               const ACVP_KV_LIST *parameters) {
     ACVP_RESULT rv = 0;
-    char *full_url = NULL, *escaped_url = NULL;
     CURL *curl_hnd = NULL;
+    char *full_url = NULL, *escaped_value = NULL;
+    int max_url = ACVP_ATTR_URL_MAX + 1;
+    int rem_space = max_url - 1;
+    int join = 0, len = 0;
 
     rv = sanity_check_ctx(ctx);
     if (ACVP_SUCCESS != rv) return rv;
@@ -579,19 +584,6 @@ ACVP_RESULT acvp_transport_get(ACVP_CTX *ctx, const char *url) {
         return ACVP_MISSING_ARG;
     }
 
-    curl_hnd = curl_easy_init();
-    if (curl_hnd == NULL) {
-        ACVP_LOG_ERR("Failed to intialize curl handle");
-        return ACVP_TRANSPORT_FAIL;
-    }
-
-    escaped_url = curl_easy_escape(curl_hnd, url, strnlen_s(url, ACVP_ATTR_URL_MAX));
-    if (escaped_url == NULL) {
-        ACVP_LOG_ERR("Failed curl_easy_escape()");
-        rv = ACVP_TRANSPORT_FAIL;
-        goto end;
-    }
-
     full_url = calloc(ACVP_ATTR_URL_MAX, sizeof(char));
     if (full_url == NULL) {
         ACVP_LOG_ERR("Failed to malloc");
@@ -599,19 +591,55 @@ ACVP_RESULT acvp_transport_get(ACVP_CTX *ctx, const char *url) {
         goto end;
     }
 
-    snprintf(full_url, ACVP_ATTR_URL_MAX - 1,
-             "https://%s:%d%s",
-             ctx->server_name, ctx->server_port, escaped_url);
+    len = snprintf(full_url, max_url - 1, "https://%s:%d%s",
+                   ctx->server_name, ctx->server_port, url);
+    rem_space = rem_space - strnlen_s(full_url, max_url);
 
-    /* Don't need these anymore */
-    curl_easy_cleanup(curl_hnd); curl_hnd = NULL;
-    curl_free(escaped_url); escaped_url = NULL;
+    if (parameters) {
+        const ACVP_KV_LIST *param = parameters;
+
+        curl_hnd = curl_easy_init();
+        if (curl_hnd == NULL) {
+            ACVP_LOG_ERR("Failed to intialize curl handle");
+            rv = ACVP_TRANSPORT_FAIL;
+            goto end;
+        }
+
+        while (1) {
+            if (join) {
+                len += snprintf(full_url+len, rem_space, "&%s[0]=eq:", param->key);
+                rem_space = rem_space - strnlen_s(full_url, max_url);
+            } else {
+                len += snprintf(full_url+len, rem_space, "%s[0]=eq:", param->key);
+                rem_space = rem_space - strnlen_s(full_url, max_url);
+                join = 1;
+            }
+
+            escaped_value = curl_easy_escape(curl_hnd, param->value, 0);
+            if (escaped_value == NULL) {
+                ACVP_LOG_ERR("Failed curl_easy_escape()");
+                rv = ACVP_TRANSPORT_FAIL;
+                goto end;
+            }
+
+            len += snprintf(full_url+len, rem_space, "%s", escaped_value);
+            rem_space = rem_space - strnlen_s(full_url, max_url);
+
+            if (param->next == NULL) break;
+            param = param->next;
+            curl_free(escaped_value); escaped_value = NULL;
+        }
+
+        /* Don't need these anymore */
+        curl_easy_cleanup(curl_hnd); curl_hnd = NULL;
+        curl_free(escaped_value); escaped_value = NULL;
+    }
 
     rv = acvp_network_action(ctx, ACVP_NET_GET, full_url, NULL, 0);
 
 end:
     if (curl_hnd) curl_easy_cleanup(curl_hnd);
-    if (escaped_url) curl_free(escaped_url);
+    if (escaped_value) curl_free(escaped_value);
     if (full_url) free(full_url);
     return rv;
 }

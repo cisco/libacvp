@@ -775,6 +775,17 @@ typedef struct acvp_string_list_t {
     struct acvp_string_list_t *next;
 } ACVP_STRING_LIST;
 
+/**
+ * @struct ACVP_KV_LIST
+ * @brief This struct is a list of key/value pairs.
+ *
+ */
+typedef struct acvp_kv_list_t {
+    char *key;
+    char *value;
+    struct acvp_kv_list_t *next;
+} ACVP_KV_LIST;
+
 typedef struct acvp_json_domain_obj_t {
     int min;
     int max;
@@ -1299,7 +1310,7 @@ ACVP_RESULT acvp_transport_send_module_registration(ACVP_CTX *ctx, char *reg, in
 
 ACVP_RESULT acvp_send_login(ACVP_CTX *ctx, char *login, int len);
 
-ACVP_RESULT acvp_transport_get(ACVP_CTX *ctx, const char *url);
+ACVP_RESULT acvp_transport_get(ACVP_CTX *ctx, const char *url, const ACVP_KV_LIST *parameters);
 
 ACVP_RESULT acvp_transport_post(ACVP_CTX *ctx, const char *uri, char *data, int data_len);
 
@@ -1459,6 +1470,12 @@ void acvp_release_json(JSON_Value *r_vs_val,
 JSON_Object *acvp_get_obj_from_rsp(ACVP_CTX *ctx, JSON_Value *arry_val);
 
 int string_fits(const char *string, unsigned int max_allowed);
+
+ACVP_RESULT acvp_kv_list_append(ACVP_KV_LIST **kv_list,
+                                const char *key,
+                                const char *value);
+
+void acvp_kv_list_free(ACVP_KV_LIST *kv_list);
 
 void acvp_free_str_list(ACVP_STRING_LIST **list);
 

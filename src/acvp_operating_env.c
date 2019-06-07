@@ -693,8 +693,9 @@ static ACVP_RESULT query_dependency(ACVP_CTX *ctx,
                                     int allowed_pages,
                                     const char *endpoint) {
     ACVP_RESULT rv = 0;
+    ACVP_KV_LIST *parameters = NULL;
     char *first_endpoint = NULL, *next_endpoint = NULL;
-    int match = 0, max_url = ACVP_ATTR_URL_MAX + 1;
+    int match = 0;
 
     if (!ctx) return ACVP_NO_CTX;
     if (dep == NULL) {
@@ -709,66 +710,48 @@ static ACVP_RESULT query_dependency(ACVP_CTX *ctx,
     }
 
     if (endpoint == NULL) {
-        first_endpoint = calloc(max_url, sizeof(char));
+        first_endpoint = calloc(ACVP_ATTR_URL_MAX + 1, sizeof(char));
         if (first_endpoint == NULL) {
             ACVP_LOG_ERR("Failed to malloc");
             return ACVP_MALLOC_FAIL;
         }
         endpoint = first_endpoint;
-        int rem_space = max_url, join = 0;
 
         /*
-         * Formulate the query syntax.
+         * Prepare the first query.
          */
-        snprintf(first_endpoint, max_url - 1, "%s%s",
+        snprintf(first_endpoint, ACVP_ATTR_URL_MAX, "%s%s",
                  ctx->path_segment, "dependencies?");
+
         if (dep->type) {
-            rem_space = rem_space - strnlen_s(first_endpoint, max_url);
-            if (join) {
-                strcat_s(first_endpoint, rem_space, "&type[0]=eq:");
-            } else {
-                strcat_s(first_endpoint, rem_space, "type[0]=eq:");
+            rv = acvp_kv_list_append(&parameters, "type", dep->type);
+            if (ACVP_SUCCESS != rv) {
+                ACVP_LOG_ERR("Failed acvp_kv_list_append()");
+                goto end;
             }
-
-            rem_space = rem_space - strnlen_s(first_endpoint, max_url);
-            strcat_s(first_endpoint, rem_space, dep->type);
-
-            join = 1;
         }
 
         if (dep->name) {
-            rem_space = rem_space - strnlen_s(first_endpoint, max_url);
-            if (join) {
-                strcat_s(first_endpoint, rem_space, "&name[0]=eq:");
-            } else {
-                strcat_s(first_endpoint, rem_space, "name[0]=eq:");
+            rv = acvp_kv_list_append(&parameters, "name", dep->name);
+            if (ACVP_SUCCESS != rv) {
+                ACVP_LOG_ERR("Failed acvp_kv_list_append()");
+                goto end;
             }
-
-            rem_space = rem_space - strnlen_s(first_endpoint, max_url);
-            strcat_s(first_endpoint, rem_space, dep->name);
-
-            join = 1;
         }
 
         if (dep->description) {
-            rem_space = rem_space - strnlen_s(first_endpoint, max_url);
-            if (join) {
-                strcat_s(first_endpoint, rem_space, "&description[0]=eq:");
-            } else {
-                strcat_s(first_endpoint, rem_space, "description[0]=eq:");
+            rv = acvp_kv_list_append(&parameters, "description", dep->description);
+            if (ACVP_SUCCESS != rv) {
+                ACVP_LOG_ERR("Failed acvp_kv_list_append()");
+                goto end;
             }
-
-            rem_space = rem_space - strnlen_s(first_endpoint, max_url);
-            strcat_s(first_endpoint, rem_space, dep->description);
-
-            join = 1;
         }
     }
 
     /*
      * Query the server DB.
      */
-    rv = acvp_transport_get(ctx, endpoint);
+    rv = acvp_transport_get(ctx, endpoint, parameters);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Unable to query Dependency");
         goto end;
@@ -789,6 +772,7 @@ static ACVP_RESULT query_dependency(ACVP_CTX *ctx,
 end:
     if (first_endpoint) free(first_endpoint);
     if (next_endpoint) free(next_endpoint);
+    if (parameters) acvp_kv_list_free(parameters);
 
     return rv;
 }
