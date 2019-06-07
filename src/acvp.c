@@ -1372,36 +1372,12 @@ err:
  */
 static ACVP_RESULT acvp_register(ACVP_CTX *ctx) {
     ACVP_RESULT rv = ACVP_SUCCESS;
-    char *login = NULL, *reg = NULL;
-    int login_len = 0, reg_len = 0;
+    char *reg = NULL;
+    int reg_len = 0;
     JSON_Value *tmp_json_from_file;
 
     if (!ctx) {
         return ACVP_NO_CTX;
-    }
-
-    /*
-     * Construct the login message
-     */
-    rv = acvp_build_login(ctx, &login, &login_len, 0);
-    if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("Unable to build login message");
-        goto end;
-    }
-
-    /*
-     * Send the login to the ACVP server and get the response,
-     */
-    rv = acvp_send_login(ctx, login, login_len);
-    if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_STATUS("Login Send Failed");
-        goto end;
-    }
-
-    rv = acvp_parse_login(ctx);
-    if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("Unable to parse login response");
-        goto end;
     }
 
     if (ctx->use_json) {
@@ -1434,7 +1410,6 @@ static ACVP_RESULT acvp_register(ACVP_CTX *ctx) {
     }
 
 end:
-    if (login) free(login);
     if (reg) json_free_serialized_string(reg);
     return rv;
 }
@@ -1786,16 +1761,12 @@ ACVP_RESULT acvp_check_test_results(ACVP_CTX *ctx) {
 * Begin vector processing logic.  This code should probably go into another module.
 ***************************************************************************************************************/
 
-ACVP_RESULT acvp_refresh(ACVP_CTX *ctx) {
+static ACVP_RESULT acvp_login(ACVP_CTX *ctx, int refresh) {
+    ACVP_RESULT rv = ACVP_SUCCESS;
     char *login = NULL;
     int login_len = 0;
-    ACVP_RESULT rv = ACVP_SUCCESS;
 
-    if (!ctx) {
-        return ACVP_NO_CTX;
-    }
-
-    rv = acvp_build_login(ctx, &login, &login_len, 1);
+    rv = acvp_build_login(ctx, &login, &login_len, refresh);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Unable to build login message");
         goto end;
@@ -1814,9 +1785,18 @@ ACVP_RESULT acvp_refresh(ACVP_CTX *ctx) {
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_STATUS("Login Response Failed, %d", rv);
     }
+
 end:
-    free(login);
+    if (login) free(login);
     return rv;
+}
+
+ACVP_RESULT acvp_refresh(ACVP_CTX *ctx) {
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+
+    return acvp_login(ctx, 1);
 }
 
 
@@ -2131,6 +2111,12 @@ ACVP_RESULT acvp_run(ACVP_CTX *ctx, int fips_validation) {
     ACVP_RESULT rv = ACVP_SUCCESS;
 
     if (ctx == NULL) return ACVP_NO_CTX;
+
+    rv = acvp_login(ctx, 0);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Failed to login with ACVP server");
+        goto end;
+    }
 
     if (fips_validation) {
         rv = fips_metadata_ready(ctx);

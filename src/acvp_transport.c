@@ -568,7 +568,8 @@ ACVP_RESULT acvp_retrieve_expected_result(ACVP_CTX *ctx, char *api_url) {
 
 ACVP_RESULT acvp_transport_get(ACVP_CTX *ctx, const char *url) {
     ACVP_RESULT rv = 0;
-    char full_url[ACVP_ATTR_URL_MAX] = {0};
+    char *full_url = NULL, *escaped_url = NULL;
+    CURL *curl_hnd = NULL;
 
     rv = sanity_check_ctx(ctx);
     if (ACVP_SUCCESS != rv) return rv;
@@ -578,11 +579,41 @@ ACVP_RESULT acvp_transport_get(ACVP_CTX *ctx, const char *url) {
         return ACVP_MISSING_ARG;
     }
 
+    curl_hnd = curl_easy_init();
+    if (curl_hnd == NULL) {
+        ACVP_LOG_ERR("Failed to intialize curl handle");
+        return ACVP_TRANSPORT_FAIL;
+    }
+
+    escaped_url = curl_easy_escape(curl_hnd, url, strnlen_s(url, ACVP_ATTR_URL_MAX));
+    if (escaped_url == NULL) {
+        ACVP_LOG_ERR("Failed curl_easy_escape()");
+        rv = ACVP_TRANSPORT_FAIL;
+        goto end;
+    }
+
+    full_url = calloc(ACVP_ATTR_URL_MAX, sizeof(char));
+    if (full_url == NULL) {
+        ACVP_LOG_ERR("Failed to malloc");
+        rv = ACVP_TRANSPORT_FAIL;
+        goto end;
+    }
+
     snprintf(full_url, ACVP_ATTR_URL_MAX - 1,
              "https://%s:%d%s",
-             ctx->server_name, ctx->server_port, url);
+             ctx->server_name, ctx->server_port, escaped_url);
 
-    return acvp_network_action(ctx, ACVP_NET_GET, full_url, NULL, 0);
+    /* Don't need these anymore */
+    curl_easy_cleanup(curl_hnd); curl_hnd = NULL;
+    curl_free(escaped_url); escaped_url = NULL;
+
+    rv = acvp_network_action(ctx, ACVP_NET_GET, full_url, NULL, 0);
+
+end:
+    if (curl_hnd) curl_easy_cleanup(curl_hnd);
+    if (escaped_url) curl_free(escaped_url);
+    if (full_url) free(full_url);
+    return rv;
 }
 
 #define JWT_EXPIRED_STR "JWT expired"
