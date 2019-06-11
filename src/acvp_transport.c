@@ -10,9 +10,48 @@
 
 #ifdef USE_MURL
 # include <murl/murl.h>
+# ifdef ACVP_OFFLINE
+
+/* Stub out the curl/murl functions for offline mode */
+CURL *curl_easy_init(void) {
+     return NULL;
+}
+
+void curl_global_cleanup(void) {
+}
+
+CURLcode curl_easy_setopt(CURL *curl, CURLoption option, ...) {
+    return CURLE_OK;
+}
+
+CURLcode curl_easy_perform(CURL *curl) {
+    return CURLE_OK;
+}
+
+void curl_easy_cleanup(CURL *curl) {
+}
+
+CURLcode curl_easy_getinfo(CURL *curl, CURLINFO info, ...) {
+    return CURLE_OK;
+}
+
+struct curl_slist *curl_slist_append(struct curl_slist *list, const char *data) {
+    return NULL;
+}
+
+void curl_slist_free_all(struct curl_slist *list) {
+}
+
+const char * curl_easy_strerror(CURLcode error) {
+    return NULL;
+}
+# endif
 #else
 # include <curl/curl.h>
 #endif
+
+
+
 
 #include <stdio.h>
 #include <string.h>
