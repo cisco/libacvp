@@ -42,6 +42,7 @@ typedef enum acvp_net_action {
     ACVP_NET_POST_VS_RESP /**< Vector set response (post) */
 } ACVP_NET_ACTION;
 
+#ifndef ACVP_OFFLINE
 /*
  * Prototypes
  */
@@ -370,7 +371,7 @@ static ACVP_RESULT acvp_send_with_path_seg(ACVP_CTX *ctx,
 
     return acvp_network_action(ctx, action, url, data, data_len);
 }
-
+#endif
 /*
  * This is the transport function used within libacvp to register
  * the DUT attributes with the ACVP server.
@@ -382,8 +383,13 @@ static ACVP_RESULT acvp_send_with_path_seg(ACVP_CTX *ctx,
 ACVP_RESULT acvp_transport_send_oe_registration(ACVP_CTX *ctx,
                                                 char *reg,
                                                 int len) {
+#ifdef ACVP_OFFLINE 
+    ACVP_LOG_ERR("Curl not linked, exiting function"); 
+    return ACVP_TRANSPORT_FAIL;
+#else
     return acvp_send_with_path_seg(ctx, ACVP_NET_POST_REG,
                                    ACVP_OES_URI, reg, len);
+#endif
 }
 
 /*
@@ -397,8 +403,13 @@ ACVP_RESULT acvp_transport_send_oe_registration(ACVP_CTX *ctx,
 ACVP_RESULT acvp_transport_send_dependency_registration(ACVP_CTX *ctx,
                                                         char *reg,
                                                         int len) {
+#ifdef ACVP_OFFLINE 
+    ACVP_LOG_ERR("Curl not linked, exiting function"); 
+    return ACVP_TRANSPORT_FAIL;
+#else
     return acvp_send_with_path_seg(ctx, ACVP_NET_POST_REG,
                                    ACVP_DEPS_URI, reg, len);
+#endif
 }
 
 /*
@@ -412,16 +423,26 @@ ACVP_RESULT acvp_transport_send_dependency_registration(ACVP_CTX *ctx,
 ACVP_RESULT acvp_transport_send_vendor_registration(ACVP_CTX *ctx,
                                                     char *reg,
                                                     int len) {
+#ifdef ACVP_OFFLINE 
+    ACVP_LOG_ERR("Curl not linked, exiting function"); 
+    return ACVP_TRANSPORT_FAIL;
+#else
     return acvp_send_with_path_seg(ctx, ACVP_NET_POST_REG,
                                    ACVP_VENDORS_URI, reg, len);
+#endif
 }
 
 #define ACVP_PERSONS_URI "persons"
 ACVP_RESULT acvp_transport_send_person_registration(ACVP_CTX *ctx,
                                                     char *reg,
                                                     int len) {
+#ifdef ACVP_OFFLINE 
+    ACVP_LOG_ERR("Curl not linked, exiting function"); 
+    return ACVP_TRANSPORT_FAIL;
+#else
     return acvp_send_with_path_seg(ctx, ACVP_NET_POST_REG,
                                    ACVP_PERSONS_URI, reg, len);
+#endif
 }
 
 /*
@@ -435,8 +456,13 @@ ACVP_RESULT acvp_transport_send_person_registration(ACVP_CTX *ctx,
 ACVP_RESULT acvp_transport_send_module_registration(ACVP_CTX *ctx,
                                                     char *reg,
                                                     int len) {
+#ifdef ACVP_OFFLINE 
+    ACVP_LOG_ERR("Curl not linked, exiting function"); 
+    return ACVP_TRANSPORT_FAIL;
+#else
     return acvp_send_with_path_seg(ctx, ACVP_NET_POST_REG,
                                    ACVP_MODULES_URI, reg, len);
+#endif
 }
 
 /*
@@ -450,8 +476,13 @@ ACVP_RESULT acvp_transport_send_module_registration(ACVP_CTX *ctx,
 ACVP_RESULT acvp_send_test_session_registration(ACVP_CTX *ctx,
                                                 char *reg,
                                                 int len) {
+#ifdef ACVP_OFFLINE 
+    ACVP_LOG_ERR("Curl not linked, exiting function"); 
+    return ACVP_TRANSPORT_FAIL;
+#else
     return acvp_send_with_path_seg(ctx, ACVP_NET_POST_REG,
                                    ACVP_TEST_SESSIONS_URI, reg, len);
+#endif
 }
 
 /*
@@ -465,8 +496,13 @@ ACVP_RESULT acvp_send_test_session_registration(ACVP_CTX *ctx,
 ACVP_RESULT acvp_send_login(ACVP_CTX *ctx,
                             char *login,
                             int len) {
+#ifdef ACVP_OFFLINE 
+    ACVP_LOG_ERR("Curl not linked, exiting function"); 
+    return ACVP_TRANSPORT_FAIL;
+#else
     return acvp_send_with_path_seg(ctx, ACVP_NET_POST_LOGIN,
                                    ACVP_LOGIN_URI, login, len);
+#endif
 }
 
 /*
@@ -474,6 +510,10 @@ ACVP_RESULT acvp_send_login(ACVP_CTX *ctx,
  * to the ACV server.
  */
 ACVP_RESULT acvp_submit_vector_responses(ACVP_CTX *ctx, char *vsid_url) {
+#ifdef ACVP_OFFLINE 
+    ACVP_LOG_ERR("Curl not linked, exiting function"); 
+    return ACVP_TRANSPORT_FAIL;
+#else
     ACVP_RESULT rv = 0;
     char url[ACVP_ATTR_URL_MAX] = {0};
 
@@ -490,14 +530,20 @@ ACVP_RESULT acvp_submit_vector_responses(ACVP_CTX *ctx, char *vsid_url) {
             ctx->server_name, ctx->server_port, vsid_url);
 
     return acvp_network_action(ctx, ACVP_NET_POST_VS_RESP, url, NULL, 0);
+#endif
 }
 
 ACVP_RESULT acvp_transport_post(ACVP_CTX *ctx,
                                 const char *uri,
                                 char *data,
                                 int data_len) {
+#ifdef ACVP_OFFLINE 
+    ACVP_LOG_ERR("Curl not linked, exiting function"); 
+    return ACVP_TRANSPORT_FAIL;
+#else
     return acvp_send_with_path_seg(ctx, ACVP_NET_POST,
                                    uri, data, data_len);
+#endif
 }
 
 /*
@@ -505,6 +551,10 @@ ACVP_RESULT acvp_transport_post(ACVP_CTX *ctx,
  * a KAT vector set from the ACVP server.
  */
 ACVP_RESULT acvp_retrieve_vector_set(ACVP_CTX *ctx, char *vsid_url) {
+#ifdef ACVP_OFFLINE 
+    ACVP_LOG_ERR("Curl not linked, exiting function"); 
+    return ACVP_TRANSPORT_FAIL;
+#else
     ACVP_RESULT rv = 0;
     char url[ACVP_ATTR_URL_MAX] = {0};
 
@@ -521,6 +571,7 @@ ACVP_RESULT acvp_retrieve_vector_set(ACVP_CTX *ctx, char *vsid_url) {
             ctx->server_name, ctx->server_port, vsid_url);
 
     return acvp_network_action(ctx, ACVP_NET_GET_VS, url, NULL, 0);
+#endif
 }
 
 /*
@@ -529,6 +580,10 @@ ACVP_RESULT acvp_retrieve_vector_set(ACVP_CTX *ctx, char *vsid_url) {
  * more specifically for a vectorSet
  */
 ACVP_RESULT acvp_retrieve_vector_set_result(ACVP_CTX *ctx, char *api_url) {
+#ifdef ACVP_OFFLINE 
+    ACVP_LOG_ERR("Curl not linked, exiting function"); 
+    return ACVP_TRANSPORT_FAIL;
+#else
     ACVP_RESULT rv = 0;
     char url[ACVP_ATTR_URL_MAX] = {0};
 
@@ -545,9 +600,14 @@ ACVP_RESULT acvp_retrieve_vector_set_result(ACVP_CTX *ctx, char *api_url) {
             ctx->server_name, ctx->server_port, api_url);
 
     return acvp_network_action(ctx, ACVP_NET_GET_VS_RESULT, url, NULL, 0);
+#endif
 }
 
 ACVP_RESULT acvp_retrieve_expected_result(ACVP_CTX *ctx, char *api_url) {
+#ifdef ACVP_OFFLINE 
+    ACVP_LOG_ERR("Curl not linked, exiting function"); 
+    return ACVP_TRANSPORT_FAIL;
+#else
     ACVP_RESULT rv = 0;
     char url[ACVP_ATTR_URL_MAX] = {0};
 
@@ -564,9 +624,14 @@ ACVP_RESULT acvp_retrieve_expected_result(ACVP_CTX *ctx, char *api_url) {
             ctx->server_name, ctx->server_port, api_url);
 
     return acvp_network_action(ctx, ACVP_NET_GET_VS_SAMPLE, url, NULL, 0);
+#endif
 }
 
 ACVP_RESULT acvp_transport_get(ACVP_CTX *ctx, const char *url) {
+#ifdef ACVP_OFFLINE 
+    ACVP_LOG_ERR("Curl not linked, exiting function"); 
+    return ACVP_TRANSPORT_FAIL;
+#else
     ACVP_RESULT rv = 0;
     char full_url[ACVP_ATTR_URL_MAX] = {0};
 
@@ -583,8 +648,10 @@ ACVP_RESULT acvp_transport_get(ACVP_CTX *ctx, const char *url) {
              ctx->server_name, ctx->server_port, url);
 
     return acvp_network_action(ctx, ACVP_NET_GET, full_url, NULL, 0);
+#endif
 }
 
+#ifndef ACVP_OFFLINE
 #define JWT_EXPIRED_STR "JWT expired"
 #define JWT_EXPIRED_STR_LEN 11
 #define JWT_INVALID_STR "JWT signature does not match"
@@ -894,3 +961,4 @@ static ACVP_RESULT acvp_network_action(ACVP_CTX *ctx,
     return rv;
 }
 
+#endif
