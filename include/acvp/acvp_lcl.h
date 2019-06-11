@@ -1298,10 +1298,6 @@ ACVP_RESULT acvp_process_tests(ACVP_CTX *ctx);
 
 ACVP_RESULT acvp_send_test_session_registration(ACVP_CTX *ctx, char *reg, int len);
 
-ACVP_RESULT acvp_transport_send_oe_registration(ACVP_CTX *ctx, char *reg, int len);
-
-ACVP_RESULT acvp_transport_send_dependency_registration(ACVP_CTX *ctx, char *reg, int len);
-
 ACVP_RESULT acvp_transport_send_vendor_registration(ACVP_CTX *ctx, char *reg, int len);
 
 ACVP_RESULT acvp_transport_send_person_registration(ACVP_CTX *ctx, char *reg, int len);

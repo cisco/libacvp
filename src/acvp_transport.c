@@ -378,36 +378,6 @@ static ACVP_RESULT acvp_send_with_path_seg(ACVP_CTX *ctx,
  * The reg parameter is the JSON encoded registration message that
  * will be sent to the server.
  */
-#define ACVP_OES_URI "oes"
-ACVP_RESULT acvp_transport_send_oe_registration(ACVP_CTX *ctx,
-                                                char *reg,
-                                                int len) {
-    return acvp_send_with_path_seg(ctx, ACVP_NET_POST_REG,
-                                   ACVP_OES_URI, reg, len);
-}
-
-/*
- * This is the transport function used within libacvp to register
- * the DUT attributes with the ACVP server.
- *
- * The reg parameter is the JSON encoded registration message that
- * will be sent to the server.
- */
-#define ACVP_DEPS_URI "dependencies"
-ACVP_RESULT acvp_transport_send_dependency_registration(ACVP_CTX *ctx,
-                                                        char *reg,
-                                                        int len) {
-    return acvp_send_with_path_seg(ctx, ACVP_NET_POST_REG,
-                                   ACVP_DEPS_URI, reg, len);
-}
-
-/*
- * This is the transport function used within libacvp to register
- * the DUT attributes with the ACVP server.
- *
- * The reg parameter is the JSON encoded registration message that
- * will be sent to the server.
- */
 #define ACVP_VENDORS_URI "vendors"
 ACVP_RESULT acvp_transport_send_vendor_registration(ACVP_CTX *ctx,
                                                     char *reg,
@@ -607,10 +577,10 @@ ACVP_RESULT acvp_transport_get(ACVP_CTX *ctx,
 
         while (1) {
             if (join) {
-                len += snprintf(full_url+len, rem_space, "&%s[0]=eq:", param->key);
+                len += snprintf(full_url+len, rem_space, "&%s", param->key);
                 rem_space = rem_space - strnlen_s(full_url, max_url);
             } else {
-                len += snprintf(full_url+len, rem_space, "%s[0]=eq:", param->key);
+                len += snprintf(full_url+len, rem_space, "%s", param->key);
                 rem_space = rem_space - strnlen_s(full_url, max_url);
                 join = 1;
             }
