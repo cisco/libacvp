@@ -74,9 +74,9 @@ ACVP_RESULT acvp_cleanup(ACVP_CTX *ctx) {
             ACVP_LOG_ERR("Failed to free parameter 'ctx'");
         }
     }
-
+#ifndef ACVP_OFFLINE
     curl_global_cleanup();
-
+#endif
     return rv;
 }
 

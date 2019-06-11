@@ -149,9 +149,6 @@ AM_CONDITIONAL([USE_FOM], [test "x$with_fomdir" != xno])
 ##
 # Offline mode
 ##
-MURL_STUB_DIR='$(abs_top_builddir)/murl'
-AC_SUBST(MURL_STUB_DIR)
-murldir="$MURL_STUB_DIR"
 AC_ARG_ENABLE([offline],
 [AS_HELP_STRING([--enable-offline],
 [Flag to indicate use of offline mode])],
@@ -161,7 +158,7 @@ AC_SUBST([SSL_LDFLAGS], "-L$ssldir/lib -lcrypto")
 
 AS_IF(
  [test "x$enable_offline" != "xfalse"],
- [[CFLAGS="$CFLAGS -I$murldir/include -DACVP_OFFLINE -DUSE_MURL"]
+ [[CFLAGS="$CFLAGS -DACVP_OFFLINE"]
   [LDFLAGS="-static $LDFLAGS"]
  ]
 )
