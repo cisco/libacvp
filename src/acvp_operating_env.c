@@ -1005,93 +1005,291 @@ static ACVP_RESULT verify_fips_oe(ACVP_CTX *ctx) {
         return rv;
     }
 
-    return rv;
+    return ACVP_SUCCESS;
 }
 
 static ACVP_RESULT verify_fips_vendor(ACVP_CTX *ctx) {
     ACVP_RESULT rv = 0;
-    //char *json_str = NULL;
-    //int i = 0;
 
     if (!ctx) return ACVP_NO_CTX;
 
+    return rv;
+}
+
+static int compare_modules(const ACVP_MODULE *a, const ACVP_MODULE *b) {
+    int diff = 0;
+
+    strcmp_s(a->type, ACVP_OE_STR_MAX, b->type, &diff);
+    if (diff != 0) return 0;
+
+    strcmp_s(a->name, ACVP_OE_STR_MAX, b->name, &diff);
+    if (diff != 0) return 0;
+
+    strcmp_s(a->version, ACVP_OE_STR_MAX, b->version, &diff);
+    if (diff != 0) return 0;
+
+    strcmp_s(a->description, ACVP_OE_STR_MAX, b->description, &diff);
+    if (diff != 0) return 0;
+
+    strcmp_s(a->vendor->url, ACVP_OE_STR_MAX, b->vendor->url, &diff);
+    if (diff != 0) return 0;
+
+    strcmp_s(a->vendor->address.url, ACVP_OE_STR_MAX, b->vendor->address.url, &diff);
+    if (diff != 0) return 0;
+
+    /* Reached the end, we have a full match */
+    return 1;
+}
+
+static ACVP_RESULT match_modules_page(ACVP_CTX *ctx,
+                                      ACVP_MODULE *module,
+                                      int *match,
+                                      char **next_endpoint) {
+    ACVP_RESULT rv = 0;
+    JSON_Value *val = NULL;
+    JSON_Object *obj = NULL, *links_obj = NULL;
+    JSON_Array *data_array = NULL;
+    const char *next = NULL;
+    int i = 0, data_count = 0;
+
+    if (!ctx) return ACVP_NO_CTX;
+    if (module == NULL) {
+        ACVP_LOG_ERR("Parameter 'module' must be non-NULL");
+    }
+
+    val = json_parse_string(ctx->curl_buf);
+    if (!val) {
+        ACVP_LOG_ERR("JSON parse error");
+        return ACVP_JSON_ERR;
+    }
+
+    obj = acvp_get_obj_from_rsp(ctx, val);
+    if (!obj) {
+        rv = ACVP_JSON_ERR;
+        goto end;
+    }
+
+    data_array = json_object_get_array(obj, "data");
+    data_count = json_array_get_count(data_array);
+
+    for (i = 0; i < data_count; i++) {
+        int this_match = 0;
+        ACVP_MODULE tmp_module = {0};
+        ACVP_VENDOR tmp_vendor = {0};
+        JSON_Array *contact_urls = NULL;
+        JSON_Object *module_obj = json_array_get_object(data_array, i);
+
+        if (module_obj == NULL)  {
+            rv = ACVP_JSON_ERR;
+            goto end;
+        }
+
+        // Soft copy so don't need to free
+        tmp_module.type = (char*)json_object_get_string(module_obj, "type");
+        tmp_module.name = (char*)json_object_get_string(module_obj, "name");
+        tmp_module.version = (char*)json_object_get_string(module_obj, "version");
+        tmp_module.description = (char*)json_object_get_string(module_obj, "description");
+
+        tmp_module.vendor = &tmp_vendor;
+        tmp_vendor.url = (char*)json_object_get_string(module_obj, "vendorUrl");
+        tmp_vendor.address.url = (char*)json_object_get_string(module_obj, "addressUrl");
+
+        // TODO construct the tmp_vendor.persons
+        contact_urls = json_object_get_array(module_obj, "contactUrls");
+        if (contact_urls == NULL)  {
+            rv = ACVP_JSON_ERR;
+            goto end;
+        }
+
+        this_match = compare_modules(module, &tmp_module);
+        if (this_match) {
+            /*
+             * Found a match.
+             * Copy the url and skip to end.
+             */
+            module->url = calloc(ACVP_ATTR_URL_MAX + 1, sizeof(char));
+            if (module->url == NULL) {
+                ACVP_LOG_ERR("Failed to malloc");
+                return ACVP_MALLOC_FAIL;
+            }
+            strcpy_s(module->url, ACVP_ATTR_URL_MAX + 1, json_object_get_string(module_obj, "url"));
+            *match = 1; 
+            goto end;
+        }
+
 #if 0
-    for (i = 0; i < ctx->vendors.count; i++) {
-        ACVP_VENDOR *cur_vendor = &ctx->vendors.v[i];
-        int json_len = 0;
-
-        rv = acvp_register_build_vendor(ctx, cur_vendor, &json_str, &json_len);
-        if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("Unable to build Vendor message");
+        if (oe->dependencies.count == (int)json_array_get_count(dependency_urls)) {
+            /*
+             * Found a match.
+             * Copy the url and skip to end.
+             */
+            oe->url = calloc(ACVP_ATTR_URL_MAX + 1, sizeof(char));
+            if (oe->url == NULL) {
+                ACVP_LOG_ERR("Failed to malloc");
+                return ACVP_MALLOC_FAIL;
+            }
+            strcpy_s(oe->url, ACVP_ATTR_URL_MAX + 1, json_object_get_string(oe_obj, "url"));
+            *match = 1;
             goto end;
         }
+#endif
+    }
 
-        rv = acvp_transport_send_vendor_registration(ctx, json_str, json_len);
-        if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("Failed to send Vendor registration");
+    *match = 0;
+
+    links_obj = json_object_get_object(obj, "links");
+    if (links_obj == NULL) {
+        rv = ACVP_JSON_ERR;
+        goto end;
+    }
+    next = json_object_get_string(links_obj, "next");
+    if (next) {
+        // Copy the next page endpoint
+        *next_endpoint = calloc(ACVP_ATTR_URL_MAX + 1, sizeof(char));
+        if (*next_endpoint == NULL) {
+            ACVP_LOG_ERR("Failed to malloc");
+            rv = ACVP_MALLOC_FAIL;
             goto end;
         }
-        ACVP_LOG_STATUS("200 OK %s", ctx->curl_buf);
-
-        rv = acvp_oe_vendor_record_identifier(ctx, cur_vendor);
-        if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("Failed to record Vendor identifier");
-            goto end;
-        }
-
-        /* Free for the next iteration */
-        if (json_str) json_free_serialized_string(json_str);
-        json_str = NULL;
+        strcpy_s(*next_endpoint, ACVP_ATTR_URL_MAX + 1, next);
     }
 
 end:
-    if (json_str) json_free_serialized_string(json_str);
-#endif
+    if (val) json_value_free(val);
+
+    return rv;
+}
+
+static ACVP_RESULT query_module(ACVP_CTX *ctx,
+                                ACVP_MODULE *module,
+                                int allowed_pages,
+                                const char *endpoint) {
+    ACVP_RESULT rv = 0;
+    ACVP_KV_LIST *parameters = NULL;
+    char *first_endpoint = NULL, *next_endpoint = NULL;
+    int match = 0;
+
+    if (!ctx) return ACVP_NO_CTX;
+    if (module == NULL) {
+        ACVP_LOG_ERR("Parameter 'module' must be non-NULL");
+    }
+
+    if (module->url) {
+        /*
+         * This resource has already been verified as existing.
+         */
+        return ACVP_SUCCESS;
+    }
+
+    if (endpoint == NULL) {
+        size_t vendor_url_len = 0;
+        char *ptr2str = NULL, *ptr2tok = NULL;  
+
+        first_endpoint = calloc(ACVP_ATTR_URL_MAX + 1, sizeof(char));
+        if (first_endpoint == NULL) {
+            ACVP_LOG_ERR("Failed to malloc");
+            return ACVP_MALLOC_FAIL;
+        }
+        endpoint = first_endpoint;
+
+        /*
+         * Prepare the first query.
+         */
+        snprintf(first_endpoint, ACVP_ATTR_URL_MAX, "%s%s",
+                 ctx->path_segment, "modules?");
+
+        if (module->name) {
+            rv = acvp_kv_list_append(&parameters, "name[0]=eq:", module->name);
+            if (ACVP_SUCCESS != rv) {
+                ACVP_LOG_ERR("Failed acvp_kv_list_append()");
+                goto end;
+            }
+        }
+
+        if (module->type) {
+            rv = acvp_kv_list_append(&parameters, "type[0]=eq:", module->type);
+            if (ACVP_SUCCESS != rv) {
+                ACVP_LOG_ERR("Failed acvp_kv_list_append()");
+                goto end;
+            }
+        }
+
+        if (module->version) {
+            rv = acvp_kv_list_append(&parameters, "version[0]=eq:", module->version);
+            if (ACVP_SUCCESS != rv) {
+                ACVP_LOG_ERR("Failed acvp_kv_list_append()");
+                goto end;
+            }
+        }
+
+        if (module->description) {
+            rv = acvp_kv_list_append(&parameters, "description[0]=eq:", module->description);
+            if (ACVP_SUCCESS != rv) {
+                ACVP_LOG_ERR("Failed acvp_kv_list_append()");
+                goto end;
+            }
+        }
+
+        /* Parse the vendorId */
+        vendor_url_len = strnlen_s(module->vendor->url, ACVP_ATTR_URL_MAX);
+        ptr2tok = strtok_s(module->vendor->url, &vendor_url_len, "/", &ptr2str);
+        while(ptr2tok && vendor_url_len) {
+            ptr2tok = strtok_s(NULL, &vendor_url_len, "/", &ptr2str);
+        }
+
+        rv = acvp_kv_list_append(&parameters, "vendorId[0]=eq:", ptr2str);
+        if (ACVP_SUCCESS != rv) {
+            ACVP_LOG_ERR("Failed acvp_kv_list_append()");
+            goto end;
+        }
+    }
+
+    /*
+     * Query the server DB.
+     */
+    rv = acvp_transport_get(ctx, endpoint, parameters);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Unable to query Operating Environment");
+        goto end;
+    }
+
+    /*
+     * Try to match the dependency against the page returned by server.
+     */
+    rv = match_modules_page(ctx, module, &match, &next_endpoint);
+    if (ACVP_SUCCESS != rv) goto end;
+
+    /* Only query the next page if we are within the limit */
+    if (!match && next_endpoint && allowed_pages > 0) {
+        /* Recurse */
+        query_module(ctx, module, allowed_pages - 1, next_endpoint);
+    }
+
+end:
+    if (first_endpoint) free(first_endpoint);
+    if (next_endpoint) free(next_endpoint);
+    if (parameters) acvp_kv_list_free(parameters);
 
     return rv;
 }
 
 static ACVP_RESULT verify_fips_module(ACVP_CTX *ctx) {
     ACVP_RESULT rv = 0;
-    //char *json_str = NULL;
-    //int i = 0;
 
     if (!ctx) return ACVP_NO_CTX;
 
-#if 0
-    for (i = 0; i < ctx->modules.count; i++) {
-        ACVP_MODULE *cur_module = &ctx->modules.module[i];
-        int json_len = 0;
+    // TODO need to verify the Vendor first. If no URL is found, then error
 
-        rv = acvp_register_build_module(ctx, cur_module, &json_str, &json_len);
-        if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("Unable to build Module message");
-            goto end;
-        }
-
-        rv = acvp_transport_send_module_registration(ctx, json_str, json_len);
-        if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("Failed to send Module registration");
-            goto end;
-        }
-        ACVP_LOG_STATUS("200 OK %s", ctx->curl_buf);
-
-        rv = acvp_oe_module_record_identifier(ctx, cur_module);
-        if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("Failed to record Module identifier");
-            goto end;
-        }
-
-        /* Free for the next iteration */
-        if (json_str) json_free_serialized_string(json_str);
-        json_str = NULL;
+    /*
+     * Query the module to verify sanity
+     */
+    rv = query_module(ctx, ctx->fips.module, 100, NULL);
+    if (ACVP_SUCCESS != rv) {
+        ACVP_LOG_ERR("Unable to query the Module(%u)", ctx->fips.module->id);
+        return rv;
     }
 
-end:
-    if (json_str) json_free_serialized_string(json_str);
-#endif
-
-    return rv;
+    return ACVP_SUCCESS;
 }
 
 /**

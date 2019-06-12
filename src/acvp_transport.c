@@ -378,44 +378,6 @@ static ACVP_RESULT acvp_send_with_path_seg(ACVP_CTX *ctx,
  * The reg parameter is the JSON encoded registration message that
  * will be sent to the server.
  */
-#define ACVP_VENDORS_URI "vendors"
-ACVP_RESULT acvp_transport_send_vendor_registration(ACVP_CTX *ctx,
-                                                    char *reg,
-                                                    int len) {
-    return acvp_send_with_path_seg(ctx, ACVP_NET_POST_REG,
-                                   ACVP_VENDORS_URI, reg, len);
-}
-
-#define ACVP_PERSONS_URI "persons"
-ACVP_RESULT acvp_transport_send_person_registration(ACVP_CTX *ctx,
-                                                    char *reg,
-                                                    int len) {
-    return acvp_send_with_path_seg(ctx, ACVP_NET_POST_REG,
-                                   ACVP_PERSONS_URI, reg, len);
-}
-
-/*
- * This is the transport function used within libacvp to register
- * the DUT attributes with the ACVP server.
- *
- * The reg parameter is the JSON encoded registration message that
- * will be sent to the server.
- */
-#define ACVP_MODULES_URI "modules"
-ACVP_RESULT acvp_transport_send_module_registration(ACVP_CTX *ctx,
-                                                    char *reg,
-                                                    int len) {
-    return acvp_send_with_path_seg(ctx, ACVP_NET_POST_REG,
-                                   ACVP_MODULES_URI, reg, len);
-}
-
-/*
- * This is the transport function used within libacvp to register
- * the DUT attributes with the ACVP server.
- *
- * The reg parameter is the JSON encoded registration message that
- * will be sent to the server.
- */
 #define ACVP_TEST_SESSIONS_URI "testSessions"
 ACVP_RESULT acvp_send_test_session_registration(ACVP_CTX *ctx,
                                                 char *reg,

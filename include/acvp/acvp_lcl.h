@@ -1298,12 +1298,6 @@ ACVP_RESULT acvp_process_tests(ACVP_CTX *ctx);
 
 ACVP_RESULT acvp_send_test_session_registration(ACVP_CTX *ctx, char *reg, int len);
 
-ACVP_RESULT acvp_transport_send_vendor_registration(ACVP_CTX *ctx, char *reg, int len);
-
-ACVP_RESULT acvp_transport_send_person_registration(ACVP_CTX *ctx, char *reg, int len);
-
-ACVP_RESULT acvp_transport_send_module_registration(ACVP_CTX *ctx, char *reg, int len);
-
 ACVP_RESULT acvp_send_login(ACVP_CTX *ctx, char *login, int len);
 
 ACVP_RESULT acvp_transport_get(ACVP_CTX *ctx, const char *url, const ACVP_KV_LIST *parameters);
@@ -1390,15 +1384,7 @@ ACVP_RESULT acvp_register_build_oe(ACVP_CTX *ctx, ACVP_OE *oe, char **reg, int *
 
 ACVP_RESULT acvp_register_build_dependency(ACVP_CTX *ctx, ACVP_DEPENDENCY *dep, char **reg, int *out_len);
 
-ACVP_RESULT acvp_register_build_vendor(ACVP_CTX *ctx, ACVP_VENDOR *vendor, char **reg, int *out_len);
-
 ACVP_RESULT acvp_register_build_module(ACVP_CTX *ctx, ACVP_MODULE *module, char **reg, int *out_len);
-
-ACVP_RESULT acvp_register_build_person(ACVP_CTX *ctx,
-                                       ACVP_PERSON *person,
-                                       char *vendor_url,
-                                       char **reg,
-                                       int *out_len);
 
 /*
  * Operating Environment functions
