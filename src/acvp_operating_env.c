@@ -833,6 +833,8 @@ static ACVP_RESULT match_oes_page(ACVP_CTX *ctx,
     data_count = json_array_get_count(data_array);
 
     for (i = 0; i < data_count; i++) {
+        int k = 0;
+        int equal = 1;
         JSON_Array *dependency_urls = NULL;
         JSON_Object *oe_obj = json_array_get_object(data_array, i);
         if (oe_obj == NULL)  {
@@ -846,7 +848,24 @@ static ACVP_RESULT match_oes_page(ACVP_CTX *ctx,
             goto end;
         }
 
-        if (oe->dependencies.count == (int)json_array_get_count(dependency_urls)) {
+        if (oe->dependencies.count != (int)json_array_get_count(dependency_urls)) {
+            /* The number of array elements must be same */
+            continue;
+        }
+
+        for (k = 0; k < oe->dependencies.count; k++) {
+            int diff = 0;
+            const char *parsed_url = json_array_get_string(dependency_urls, k);
+
+            strcmp_s(oe->dependencies.deps[k]->url, ACVP_ATTR_URL_MAX,
+                     parsed_url, &diff);
+            if (diff != 0) {
+                equal = 0;
+                break;
+            }
+        }
+
+        if (equal) {
             /*
              * Found a match.
              * Copy the url and skip to end.
@@ -856,7 +875,8 @@ static ACVP_RESULT match_oes_page(ACVP_CTX *ctx,
                 ACVP_LOG_ERR("Failed to malloc");
                 return ACVP_MALLOC_FAIL;
             }
-            strcpy_s(oe->url, ACVP_ATTR_URL_MAX + 1, json_object_get_string(oe_obj, "url"));
+            strcpy_s(oe->url, ACVP_ATTR_URL_MAX + 1,
+                     json_object_get_string(oe_obj, "url"));
             *match = 1;
             goto end;
         }
@@ -895,7 +915,6 @@ static ACVP_RESULT query_oe(ACVP_CTX *ctx,
     ACVP_KV_LIST *parameters = NULL;
     char *first_endpoint = NULL, *next_endpoint = NULL;
     int match = 0;
-    int i = 0;
 
     if (!ctx) return ACVP_NO_CTX;
     if (oe == NULL) {
@@ -925,18 +944,6 @@ static ACVP_RESULT query_oe(ACVP_CTX *ctx,
 
         if (oe->name) {
             rv = acvp_kv_list_append(&parameters, "name[0]=eq:", oe->name);
-            if (ACVP_SUCCESS != rv) {
-                ACVP_LOG_ERR("Failed acvp_kv_list_append()");
-                goto end;
-            }
-        }
-
-#define DEPENDENCY_URL_MAX 64
-        for (i = 0; i < oe->dependencies.count; i++) {
-            char dependency_url[DEPENDENCY_URL_MAX + 1] = {0};
-            snprintf(dependency_url, DEPENDENCY_URL_MAX, "dependencyUrls[%d]=eq:", i);
-
-            rv = acvp_kv_list_append(&parameters, dependency_url, oe->dependencies.deps[i]->url);
             if (ACVP_SUCCESS != rv) {
                 ACVP_LOG_ERR("Failed acvp_kv_list_append()");
                 goto end;
@@ -1018,6 +1025,7 @@ static ACVP_RESULT verify_fips_vendor(ACVP_CTX *ctx) {
 
 static int compare_modules(const ACVP_MODULE *a, const ACVP_MODULE *b) {
     int diff = 0;
+    int i = 0;
 
     strcmp_s(a->type, ACVP_OE_STR_MAX, b->type, &diff);
     if (diff != 0) return 0;
@@ -1031,11 +1039,19 @@ static int compare_modules(const ACVP_MODULE *a, const ACVP_MODULE *b) {
     strcmp_s(a->description, ACVP_OE_STR_MAX, b->description, &diff);
     if (diff != 0) return 0;
 
-    strcmp_s(a->vendor->url, ACVP_OE_STR_MAX, b->vendor->url, &diff);
+    strcmp_s(a->vendor->url, ACVP_ATTR_URL_MAX,
+             b->vendor->url, &diff);
     if (diff != 0) return 0;
 
-    strcmp_s(a->vendor->address.url, ACVP_OE_STR_MAX, b->vendor->address.url, &diff);
+    strcmp_s(a->vendor->address.url, ACVP_ATTR_URL_MAX,
+             b->vendor->address.url, &diff);
     if (diff != 0) return 0;
+
+    for (i = 0; i < a->vendor->persons.count; i++) {
+        strcmp_s(a->vendor->persons.person[i].url, ACVP_ATTR_URL_MAX,
+                 b->vendor->persons.person[i].url, &diff);
+        if (diff != 0) return 0;
+    }
 
     /* Reached the end, we have a full match */
     return 1;
@@ -1073,7 +1089,7 @@ static ACVP_RESULT match_modules_page(ACVP_CTX *ctx,
     data_count = json_array_get_count(data_array);
 
     for (i = 0; i < data_count; i++) {
-        int this_match = 0;
+        int this_match = 0, num_contacts = 0, k = 0;
         ACVP_MODULE tmp_module = {0};
         ACVP_VENDOR tmp_vendor = {0};
         JSON_Array *contact_urls = NULL;
@@ -1094,11 +1110,29 @@ static ACVP_RESULT match_modules_page(ACVP_CTX *ctx,
         tmp_vendor.url = (char*)json_object_get_string(module_obj, "vendorUrl");
         tmp_vendor.address.url = (char*)json_object_get_string(module_obj, "addressUrl");
 
-        // TODO construct the tmp_vendor.persons
+        /*
+         * Construct the tmp_vendor.persons
+         */
         contact_urls = json_object_get_array(module_obj, "contactUrls");
         if (contact_urls == NULL)  {
             rv = ACVP_JSON_ERR;
             goto end;
+        }
+
+        num_contacts = json_array_get_count(contact_urls);
+        if (num_contacts != module->vendor->persons.count ||
+            num_contacts > LIBACVP_PERSONS_MAX) {
+            /* Length of the contactsUrl array is different */
+            continue;
+        }
+
+        for (k = 0; k < num_contacts; k++) {
+            /*
+             * Soft copy the array of contactUrls
+             * Assume they are in same order.
+             */
+            tmp_module.vendor->persons.person[i].url =
+                (char*)json_array_get_string(contact_urls, i);
         }
 
         this_match = compare_modules(module, &tmp_module);
@@ -1112,27 +1146,11 @@ static ACVP_RESULT match_modules_page(ACVP_CTX *ctx,
                 ACVP_LOG_ERR("Failed to malloc");
                 return ACVP_MALLOC_FAIL;
             }
-            strcpy_s(module->url, ACVP_ATTR_URL_MAX + 1, json_object_get_string(module_obj, "url"));
+            strcpy_s(module->url, ACVP_ATTR_URL_MAX + 1,
+                     json_object_get_string(module_obj, "url"));
             *match = 1; 
             goto end;
         }
-
-#if 0
-        if (oe->dependencies.count == (int)json_array_get_count(dependency_urls)) {
-            /*
-             * Found a match.
-             * Copy the url and skip to end.
-             */
-            oe->url = calloc(ACVP_ATTR_URL_MAX + 1, sizeof(char));
-            if (oe->url == NULL) {
-                ACVP_LOG_ERR("Failed to malloc");
-                return ACVP_MALLOC_FAIL;
-            }
-            strcpy_s(oe->url, ACVP_ATTR_URL_MAX + 1, json_object_get_string(oe_obj, "url"));
-            *match = 1;
-            goto end;
-        }
-#endif
     }
 
     *match = 0;
