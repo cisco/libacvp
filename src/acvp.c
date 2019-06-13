@@ -909,7 +909,6 @@ ACVP_RESULT acvp_run_vectors_from_file(ACVP_CTX *ctx, const char *req_filename, 
         rv  = acvp_dispatch_vector_set(ctx, obj);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("KAT dispatch error");
-            json_value_free(val);
             goto end;
         }
         ACVP_LOG_STATUS("Write vector set response vsId: %d", ctx->vs_id);
