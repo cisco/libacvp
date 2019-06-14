@@ -1081,7 +1081,7 @@ static ACVP_RESULT compare_phone_numbers(ACVP_OE_PHONE_LIST *phone_list,
     tmp_ptr = phone_list;
     while (tmp_ptr) {
         phone_list_len++;
-        tmp_ptr = phone_list->next;
+        tmp_ptr = tmp_ptr->next;
     }
 
     if (phone_list_len != json_array_get_count(candidate_phones)) {
@@ -2277,11 +2277,11 @@ static ACVP_RESULT acvp_oe_metadata_parse_vendor_contacts(ACVP_CTX *ctx,
         }
 
         /* Parse the Emails (if it exists)*/
-        rv = acvp_oe_metadata_parse_emails(ctx, obj, &person->emails);
+        rv = acvp_oe_metadata_parse_emails(ctx, contact_obj, &person->emails);
         if (ACVP_SUCCESS != rv) return rv;
 
         /* Parse the Phone Numbers (if it exists)*/
-        rv = acvp_oe_metadata_parse_phone_numbers(ctx, obj, &person->phone_numbers);
+        rv = acvp_oe_metadata_parse_phone_numbers(ctx, contact_obj, &person->phone_numbers);
         if (ACVP_SUCCESS != rv) return rv;
     }
 
