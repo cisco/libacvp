@@ -34,6 +34,9 @@ static ACVP_RESULT copy_oe_string(char **dest, const char *src) {
         memzero_s(*dest, ACVP_OE_STR_MAX + 1);
     } else {
         *dest = calloc(ACVP_OE_STR_MAX + 1, sizeof(char));
+        if (NULL == *dest) {
+            return ACVP_MALLOC_FAIL;
+        }
     }
     strcpy_s(*dest, ACVP_OE_STR_MAX + 1, src);
 
@@ -616,6 +619,11 @@ static ACVP_RESULT match_dependencies_page(ACVP_CTX *ctx,
     if (dep == NULL) {
         ACVP_LOG_ERR("Parameter 'dependency' must be non-NULL");
     }
+    if (match == NULL) {
+        ACVP_LOG_ERR("Parameter 'match' must be non-NULL");
+        return ACVP_INVALID_ARG;
+    }
+    *match = 0;
 
     val = json_parse_string(ctx->curl_buf);
     if (!val) {
@@ -662,8 +670,6 @@ static ACVP_RESULT match_dependencies_page(ACVP_CTX *ctx,
             goto end;
         }
     }
-
-    *match = 0;
 
     links_obj = json_object_get_object(obj, "links");
     if (links_obj == NULL) {
@@ -816,6 +822,11 @@ static ACVP_RESULT match_oes_page(ACVP_CTX *ctx,
     if (oe == NULL) {
         ACVP_LOG_ERR("Parameter 'oe' must be non-NULL");
     }
+    if (match == NULL) {
+        ACVP_LOG_ERR("Parameter 'match' must be non-NULL");
+        return ACVP_INVALID_ARG;
+    }
+    *match = 0;
 
     val = json_parse_string(ctx->curl_buf);
     if (!val) {
@@ -881,8 +892,6 @@ static ACVP_RESULT match_oes_page(ACVP_CTX *ctx,
             goto end;
         }
     }
-
-    *match = 0;
 
     links_obj = json_object_get_object(obj, "links");
     if (links_obj == NULL) {
@@ -1015,10 +1024,560 @@ static ACVP_RESULT verify_fips_oe(ACVP_CTX *ctx) {
     return ACVP_SUCCESS;
 }
 
-static ACVP_RESULT verify_fips_vendor(ACVP_CTX *ctx) {
+static int compare_emails(ACVP_STRING_LIST *email_list,
+                          JSON_Array *candidate_emails,
+                          int *match) {
+    ACVP_STRING_LIST *tmp_ptr = NULL;
+    size_t email_list_len = 0;
+    int i = 0;
+
+    if (email_list == NULL || candidate_emails == NULL || match == NULL) {
+        return ACVP_INVALID_ARG;
+    }
+
+    tmp_ptr = email_list;
+    while (tmp_ptr) {
+        email_list_len++;
+        tmp_ptr = email_list->next;
+    }
+
+    if (email_list_len != json_array_get_count(candidate_emails)) {
+        /* Must be same length */
+        *match = 0;
+        return ACVP_SUCCESS;
+    }
+
+    while (email_list) {
+        int diff = 0;
+        char *email = email_list->string;
+        const char *tmp_email = NULL;
+
+        tmp_email = json_array_get_string(candidate_emails, i);
+        strcmp_s(email, ACVP_OE_STR_MAX, tmp_email, &diff);
+        if (diff != 0) {
+            *match = 0;
+            return ACVP_SUCCESS;
+        }
+
+        email_list = email_list->next;
+        i++;
+    }
+
+    *match = 1;
+    return ACVP_SUCCESS;
+}
+
+static ACVP_RESULT compare_phone_numbers(ACVP_OE_PHONE_LIST *phone_list,
+                                                JSON_Array *candidate_phones,
+                                                int *match) {
+    ACVP_OE_PHONE_LIST *tmp_ptr = NULL;
+    size_t phone_list_len = 0;
+    int i = 0;
+
+    if (phone_list == NULL || candidate_phones == NULL || match == NULL) {
+        return ACVP_INVALID_ARG;
+    }
+
+    tmp_ptr = phone_list;
+    while (tmp_ptr) {
+        phone_list_len++;
+        tmp_ptr = phone_list->next;
+    }
+
+    if (phone_list_len != json_array_get_count(candidate_phones)) {
+        /* Must be same length */
+        *match = 0;
+        return ACVP_SUCCESS;
+    }
+
+    while (phone_list) {
+        JSON_Object *obj = NULL;
+        const char *tmp_number = NULL, *tmp_type = NULL;
+        int diff = 0;
+
+        obj = json_array_get_object(candidate_phones, i);
+        if (NULL == obj) {
+            return ACVP_JSON_ERR;
+        }
+
+        tmp_number = json_object_get_string(obj, "number");
+        strcmp_s(phone_list->number, ACVP_OE_STR_MAX, tmp_number, &diff);
+        if (diff != 0) {
+            *match = 0;
+            return ACVP_SUCCESS;
+        }
+
+        tmp_type = json_object_get_string(obj, "type");
+        strcmp_s(phone_list->type, ACVP_OE_STR_MAX, tmp_type, &diff);
+        if (diff != 0) {
+            *match = 0;
+            return ACVP_SUCCESS;
+        }
+
+        phone_list = phone_list->next;
+        i++;
+    }
+
+    *match = 1;
+    return ACVP_SUCCESS;
+}
+
+static ACVP_RESULT compare_vendor_address(ACVP_VENDOR_ADDRESS *address,
+                                          JSON_Array *candidate_addresses,
+                                          int *match) {
+    size_t i = 0;
+    size_t num_candidates = 0;
+
+    if (address == NULL || candidate_addresses == NULL || match == NULL) {
+        return ACVP_INVALID_ARG;
+    }
+
+    *match = 0;
+    num_candidates = json_array_get_count(candidate_addresses);
+    for (i = 0; i < num_candidates; i++) {
+        const char *street_1 = NULL, *street_2 = NULL,
+                   *street_3 = NULL, *locality = NULL,
+                   *region = NULL, *country = NULL,
+                   *postal_code = NULL;
+        JSON_Object *obj = NULL;
+        int diff = 0;
+
+        obj = json_array_get_object(candidate_addresses, i);
+        if (NULL == obj) {
+            return ACVP_JSON_ERR;
+        }
+
+        street_1 = json_object_get_string(obj, "street1");
+        if ((address->street_1 && !street_1) || (street_1 && !address->street_1)) {
+            // Either of them is missing, automatic disqualify
+            continue;
+        } else if (address->street_1 && street_1) {
+            // Both exist, compare
+            strcmp_s(address->street_1, ACVP_OE_STR_MAX, street_1, &diff);
+            if (diff != 0) continue; // Not equal
+        }
+
+        street_2 = json_object_get_string(obj, "street2");
+        if ((address->street_2 && !street_2) || (street_2 && !address->street_2)) {
+            // Either of them is missing, automatic disqualify
+            continue;
+        } else if (address->street_2 && street_2) {
+            // Both exist, compare
+            strcmp_s(address->street_2, ACVP_OE_STR_MAX, street_2, &diff);
+            if (diff != 0) continue; // Not equal
+        }
+
+        street_3 = json_object_get_string(obj, "street3");
+        if ((address->street_3 && !street_3) || (street_3 && !address->street_3)) {
+            // Either of them is missing, automatic disqualify
+            continue;
+        } else if (address->street_3 && street_3) {
+            // Both exist, compare
+            strcmp_s(address->street_3, ACVP_OE_STR_MAX, street_3, &diff);
+            if (diff != 0) continue; // Not equal
+        }
+
+        locality = json_object_get_string(obj, "locality");
+        if ((address->locality && !locality) || (locality && !address->locality)) {
+            // Either of them is missing, automatic disqualify
+            continue;
+        } else if (address->locality && locality) {
+            // Both exist, compare
+            strcmp_s(address->locality, ACVP_OE_STR_MAX, locality, &diff);
+            if (diff != 0) continue; // Not equal
+        }
+
+        region = json_object_get_string(obj, "region");
+        if ((address->region && !region) || (region && !address->region)) {
+            // Either of them is missing, automatic disqualify
+            continue;
+        } else if (address->region && region) {
+            // Both exist, compare
+            strcmp_s(address->region, ACVP_OE_STR_MAX, region, &diff);
+            if (diff != 0) continue; // Not equal
+        }
+
+        country = json_object_get_string(obj, "country");
+        if ((address->country && !country) || (country && !address->country)) {
+            // Either of them is missing, automatic disqualify
+            continue;
+        } else if (address->country && country) {
+            // Both exist, compare
+            strcmp_s(address->country, ACVP_OE_STR_MAX, country, &diff);
+            if (diff != 0) continue; // Not equal
+        }
+
+        postal_code = json_object_get_string(obj, "postalCode");
+        if ((address->postal_code && !postal_code) || (postal_code && !address->postal_code)) {
+            // Either of them is missing, automatic disqualify
+            continue;
+        } else if (address->postal_code && postal_code) {
+            // Both exist, compare
+            strcmp_s(address->postal_code, ACVP_OE_STR_MAX, postal_code, &diff);
+            if (diff != 0) continue; // Not equal
+        }
+
+        /*
+         * Found a match.
+         * Copy the url and return.
+         */
+        if (address->url) {
+            memzero_s(address->url, ACVP_ATTR_URL_MAX + 1);
+        } else {
+            address->url = calloc(ACVP_ATTR_URL_MAX + 1, sizeof(char));
+            if (address->url == NULL) {
+                return ACVP_MALLOC_FAIL;
+            }
+        }
+        strcpy_s(address->url, ACVP_ATTR_URL_MAX + 1,
+                 json_object_get_string(obj, "url"));
+        *match = 1;
+
+        return ACVP_SUCCESS;
+    }
+
+    // None of the candidates matched.
+    return ACVP_SUCCESS;
+}
+
+static ACVP_RESULT query_vendor_contacts(ACVP_CTX *ctx,
+                                         ACVP_PERSONS *persons,
+                                         const char *endpoint,
+                                         int *match) {
     ACVP_RESULT rv = 0;
+    JSON_Value *val = NULL;
+    JSON_Object *obj = NULL;
+    JSON_Array *data_array = NULL;
+    int i = 0, k = 0, data_count = 0;
+
+    if (persons == NULL || match == NULL) {
+        return ACVP_INVALID_ARG;
+    }
+    *match = 0;
+
+    if (endpoint == NULL) {
+        if (persons->count == 0) {
+            // They are both empty
+            *match = 1;
+            return ACVP_SUCCESS;
+        } else {
+            return ACVP_SUCCESS; // No match
+        }
+    }
+
+    /*
+     * Query the server DB.
+     */
+    rv = acvp_transport_get(ctx, endpoint, NULL);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Unable to query endpoint");
+        return rv;
+    }
+
+    val = json_parse_string(ctx->curl_buf);
+    if (!val) {
+        ACVP_LOG_ERR("JSON parse error");
+        return ACVP_JSON_ERR;
+    }
+    obj = acvp_get_obj_from_rsp(ctx, val);
+    if (!obj) {
+        rv = ACVP_JSON_ERR;
+        goto end;
+    }
+
+    data_array = json_object_get_array(obj, "data");
+    data_count = json_array_get_count(data_array);
+
+    for (k = 0; k < persons->count; k++) {
+        ACVP_PERSON *person = &persons->person[k];
+        int matched_contact = 0;
+
+        for (i = 0; i < data_count; i++) {
+            int equal = 1, diff = 0;
+            const char *full_name = NULL;
+            JSON_Array *emails = NULL, *phone_numbers = NULL;
+            JSON_Object *contact_obj = json_array_get_object(data_array, i);
+            if (contact_obj == NULL)  {
+                rv = ACVP_JSON_ERR;
+                goto end;
+            }
+
+            full_name = json_object_get_string(contact_obj, "fullName");
+            if (full_name == NULL) {
+                rv = ACVP_JSON_ERR;
+                goto end;
+            }
+            strcmp_s(person->full_name, ACVP_OE_STR_MAX, full_name, &diff);
+            if (diff != 0) continue; // Not equal
+
+            emails = json_object_get_array(contact_obj, "emails");
+            if (emails == NULL)  {
+                rv = ACVP_JSON_ERR;
+                goto end;
+            }
+            rv = compare_emails(person->emails, emails, &equal);
+            if (ACVP_SUCCESS != rv) {
+                ACVP_LOG_ERR("Problem comparing person emails");
+                goto end;
+            }
+            if (!equal) continue;
+
+            phone_numbers = json_object_get_array(contact_obj, "phoneNumbers");
+            if (phone_numbers == NULL)  {
+                rv = ACVP_JSON_ERR;
+                goto end;
+            }
+            rv = compare_phone_numbers(person->phone_numbers, phone_numbers, &equal);
+            if (ACVP_SUCCESS != rv) {
+                ACVP_LOG_ERR("Problem comparing person phone numbers");
+                goto end;
+            }
+            if (!equal) continue;
+
+            /*
+             * Found a match.
+             * Copy the url.
+             */
+            if (person->url) {
+                memzero_s(person->url, ACVP_ATTR_URL_MAX + 1);
+            } else {
+                person->url = calloc(ACVP_ATTR_URL_MAX + 1, sizeof(char));
+                if (person->url == NULL) {
+                    return ACVP_MALLOC_FAIL;
+                }
+            }
+
+            strcpy_s(person->url, ACVP_ATTR_URL_MAX + 1,
+                     json_object_get_string(contact_obj, "url"));
+
+            matched_contact = 1;
+
+            break;
+        }
+
+        if (!matched_contact) {
+            /*
+             * We didn't fine a match for this Person.
+             */
+            goto end;
+        }
+    }
+
+    // Got thorugh all of the linked Persons
+    *match = 1;
+
+end:
+    if (val) json_value_free(val);
+    return rv;
+}
+
+static ACVP_RESULT match_vendors_page(ACVP_CTX *ctx,
+                                      ACVP_VENDOR *vendor,
+                                      int *match,
+                                      char **next_endpoint) {
+    ACVP_RESULT rv = 0;
+    JSON_Value *val = NULL;
+    JSON_Object *obj = NULL, *links_obj = NULL;
+    JSON_Array *data_array = NULL;
+    const char *next = NULL;
+    int i = 0, data_count = 0;
 
     if (!ctx) return ACVP_NO_CTX;
+    if (vendor == NULL) {
+        ACVP_LOG_ERR("Parameter 'vendor' must be non-NULL");
+        return ACVP_INVALID_ARG;
+    }
+    if (match == NULL) {
+        ACVP_LOG_ERR("Parameter 'match' must be non-NULL");
+        return ACVP_INVALID_ARG;
+    }
+    *match = 0;
+
+    val = json_parse_string(ctx->curl_buf);
+    if (!val) {
+        ACVP_LOG_ERR("JSON parse error");
+        return ACVP_JSON_ERR;
+    }
+
+    obj = acvp_get_obj_from_rsp(ctx, val);
+    if (!obj) {
+        rv = ACVP_JSON_ERR;
+        goto end;
+    }
+
+    data_array = json_object_get_array(obj, "data");
+    data_count = json_array_get_count(data_array);
+
+    for (i = 0; i < data_count; i++) {
+        int equal = 1;
+        const char *contacts_url = NULL;
+        JSON_Array *emails = NULL, *phone_numbers = NULL, *addresses = NULL;
+        JSON_Object *vendor_obj = json_array_get_object(data_array, i);
+        if (vendor_obj == NULL)  {
+            rv = ACVP_JSON_ERR;
+            goto end;
+        }
+
+        emails = json_object_get_array(vendor_obj, "emails");
+        if (emails == NULL)  {
+            rv = ACVP_JSON_ERR;
+            goto end;
+        }
+        rv = compare_emails(vendor->emails, emails, &equal);
+        if (ACVP_SUCCESS != rv) {
+            ACVP_LOG_ERR("Problem comparing vendor emails");
+            goto end;
+        }
+        if (!equal) continue;
+
+        phone_numbers = json_object_get_array(vendor_obj, "phoneNumbers");
+        if (phone_numbers == NULL)  {
+            rv = ACVP_JSON_ERR;
+            goto end;
+        }
+        rv = compare_phone_numbers(vendor->phone_numbers, phone_numbers, &equal);
+        if (ACVP_SUCCESS != rv) {
+            ACVP_LOG_ERR("Problem comparing vendor phone numbers");
+            goto end;
+        }
+        if (!equal) continue;
+
+        addresses = json_object_get_array(vendor_obj, "addresses");
+        if (addresses == NULL)  {
+            rv = ACVP_JSON_ERR;
+            goto end;
+        }
+        rv = compare_vendor_address(&vendor->address, addresses, &equal);
+        if (ACVP_SUCCESS != rv) {
+            ACVP_LOG_ERR("Problem comparing vendor address");
+            goto end;
+        }
+        if (!equal) continue;
+
+        contacts_url = json_object_get_string(vendor_obj, "contactsUrl");
+        query_vendor_contacts(ctx, &vendor->persons, contacts_url, &equal);
+        if (ACVP_SUCCESS != rv) {
+            ACVP_LOG_ERR("Problem comparing vendor contacts");
+            goto end;
+        }
+        if (!equal) continue;
+
+        /*
+         * Found a match.
+         * Copy the url and skip to end.
+         */
+        vendor->url = calloc(ACVP_ATTR_URL_MAX + 1, sizeof(char));
+        if (vendor->url == NULL) {
+            ACVP_LOG_ERR("Failed to malloc");
+            return ACVP_MALLOC_FAIL;
+        }
+        strcpy_s(vendor->url, ACVP_ATTR_URL_MAX + 1,
+                 json_object_get_string(vendor_obj, "url"));
+        *match = 1;
+        goto end;
+    }
+
+
+    links_obj = json_object_get_object(obj, "links");
+    if (links_obj == NULL) {
+        rv = ACVP_JSON_ERR;
+        goto end;
+    }
+    next = json_object_get_string(links_obj, "next");
+    if (next) {
+        // Copy the next page endpoint
+        *next_endpoint = calloc(ACVP_ATTR_URL_MAX + 1, sizeof(char));
+        if (*next_endpoint == NULL) {
+            ACVP_LOG_ERR("Failed to malloc");
+            rv = ACVP_MALLOC_FAIL;
+            goto end;
+        }
+        strcpy_s(*next_endpoint, ACVP_ATTR_URL_MAX + 1, next);
+    }
+
+end:
+    if (val) json_value_free(val);
+
+    return rv;
+}
+
+static ACVP_RESULT query_vendor(ACVP_CTX *ctx,
+                                ACVP_VENDOR *vendor,
+                                int allowed_pages,
+                                const char *endpoint) {
+    ACVP_RESULT rv = 0;
+    ACVP_KV_LIST *parameters = NULL;
+    char *first_endpoint = NULL, *next_endpoint = NULL;
+    int match = 0;
+
+    if (!ctx) return ACVP_NO_CTX;
+    if (vendor == NULL) {
+        ACVP_LOG_ERR("Parameter 'vendor' must be non-NULL");
+    }
+
+    if (vendor->url) {
+        /*
+         * This resource has already been verified as existing.
+         */
+        return ACVP_SUCCESS;
+    }
+
+    if (endpoint == NULL) {
+        first_endpoint = calloc(ACVP_ATTR_URL_MAX + 1, sizeof(char));
+        if (first_endpoint == NULL) {
+            ACVP_LOG_ERR("Failed to malloc");
+            return ACVP_MALLOC_FAIL;
+        }
+        endpoint = first_endpoint;
+
+        /*
+         * Prepare the first query.
+         */
+        snprintf(first_endpoint, ACVP_ATTR_URL_MAX, "%s%s",
+                 ctx->path_segment, "vendors?");
+
+        if (vendor->name) {
+            rv = acvp_kv_list_append(&parameters, "name[0]=eq:", vendor->name);
+            if (ACVP_SUCCESS != rv) {
+                ACVP_LOG_ERR("Failed acvp_kv_list_append()");
+                goto end;
+            }
+        }
+
+        if (vendor->website) {
+            rv = acvp_kv_list_append(&parameters, "website[0]=eq:", vendor->website);
+            if (ACVP_SUCCESS != rv) {
+                ACVP_LOG_ERR("Failed acvp_kv_list_append()");
+                goto end;
+            }
+        }
+    }
+
+    /*
+     * Query the server DB.
+     */
+    rv = acvp_transport_get(ctx, endpoint, parameters);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Unable to query Operating Environment");
+        goto end;
+    }
+
+    /*
+     * Try to match the vendor against the page returned by server.
+     */
+    rv = match_vendors_page(ctx, vendor, &match, &next_endpoint);
+    if (ACVP_SUCCESS != rv) goto end;
+
+    /* Only query the next page if we are within the limit */
+    if (!match && next_endpoint && allowed_pages > 0) {
+        /* Recurse */
+        query_vendor(ctx, vendor, allowed_pages - 1, next_endpoint);
+    }
+
+end:
+    if (first_endpoint) free(first_endpoint);
+    if (next_endpoint) free(next_endpoint);
+    if (parameters) acvp_kv_list_free(parameters);
 
     return rv;
 }
@@ -1072,6 +1631,11 @@ static ACVP_RESULT match_modules_page(ACVP_CTX *ctx,
     if (module == NULL) {
         ACVP_LOG_ERR("Parameter 'module' must be non-NULL");
     }
+    if (match == NULL) {
+        ACVP_LOG_ERR("Parameter 'match' must be non-NULL");
+        return ACVP_INVALID_ARG;
+    }
+    *match = 0;
 
     val = json_parse_string(ctx->curl_buf);
     if (!val) {
@@ -1152,8 +1716,6 @@ static ACVP_RESULT match_modules_page(ACVP_CTX *ctx,
             goto end;
         }
     }
-
-    *match = 0;
 
     links_obj = json_object_get_object(obj, "links");
     if (links_obj == NULL) {
@@ -1296,7 +1858,25 @@ static ACVP_RESULT verify_fips_module(ACVP_CTX *ctx) {
 
     if (!ctx) return ACVP_NO_CTX;
 
-    // TODO need to verify the Vendor first. If no URL is found, then error
+    /*
+     * Query the Vendor first.
+     */
+    rv = query_vendor(ctx, ctx->fips.module->vendor, 100, NULL);
+    if (ACVP_SUCCESS != rv) {
+        ACVP_LOG_ERR("Failed to query the Vendor(%u)", ctx->fips.module->vendor->id);
+        return rv;
+    }
+    if (ctx->fips.module->vendor->url == NULL) {
+        /*
+         * The Vendor data does not exist on server DB.
+         * It cannot be created during the PUT operation.
+         * The user must create the Vendor using some other program
+         * such as metadata.py
+         */
+        ACVP_LOG_ERR("The Vendor(%u) does not exist in server DB. Must create first!",
+                     ctx->fips.module->vendor->id);
+        return ACVP_INVALID_ARG;
+    }
 
     /*
      * Query the module to verify sanity
