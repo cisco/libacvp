@@ -118,7 +118,24 @@ Building
     To run:
         1. export LD_LIBRARY_PATH=<path to ssl lib>
         2. update and run scripts/nist_setup.sh
-        3. ./app/acvp_app
+        3. ./app/acvp_app --<options>
+
+            To test offline:
+               a) Download vectors on network accessible device
+                   ./app/acvp_app --<algs of choice or all_algs> --vector_req <filename1>
+               b) Copy vectors and acvp_app to target
+                   ./app/acvp_app --all_algs --vector_req <filename1> --vector_rsp <filename2>
+               c) Copy respones(filename2) to network accessible device
+                   ./app/acvp_app --all_algs --vector_upload <filename2>
+
+               Note: If the target in step b does not have the standard libraries used by
+                     libacvp you may ./configure a special app used only for step b. This
+                     can be done by using --enable-offline and --enable-static when running 
+                     ./configure and do not use --with-libcurl-dir or --with-libmurl-dir which
+                     will  minimize the library dependencies to libcrypto.so only(for the case
+                     of FOM testing). For example:
+
+              ./configure --with-ssl-dir=<ciscossl install> --prefix=<libacvp install> --with-fom-dir=<fom install> --enable-static --enable-offline
 
     On Windows:
         1. Update and run the scripts/gradle_env.bat script
@@ -126,6 +143,7 @@ Building
         3. Update and run the scripts/nist_setup.bat script
         4. The library is in build/libs/acvp and the example executable
             is in build/exe/
+
 
 
 Testing
