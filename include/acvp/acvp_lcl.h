@@ -1197,9 +1197,17 @@ typedef struct acvp_dependencies_t {
     int count;
 } ACVP_DEPENDENCIES;
 
+typedef enum acvp_resource_status {
+    ACVP_RESOURCE_STATUS_COMPLETE = 1,
+    ACVP_RESOURCE_STATUS_PARTIAL,
+    ACVP_RESOURCE_STATUS_INCOMPLETE,
+} ACVP_RESOURCE_STATUS;
+
 typedef struct acvp_oe_dependencies_t {
     ACVP_DEPENDENCY *deps[LIBACVP_DEPENDENCIES_MAX]; /* Array to pointers of linked dependencies */
     int count;
+    ACVP_RESOURCE_STATUS status; /**< PARTIAL indicates that at least one of the linked Dependencies does not
+                                      exist. INCOMPLETE indicates all of the 'url' are missing */
 } ACVP_OE_DEPENDENCIES;
 
 typedef struct acvp_oe_t {
@@ -1254,6 +1262,7 @@ struct acvp_ctx_t {
     ACVP_OPERATING_ENV op_env; /**< The Operating Environment resources available */
     ACVP_STRING_LIST *vsid_url_list;
     char *session_url;
+    int session_passed;
 
     char *json_filename;    /* filename of registration JSON */
     int use_json;           /* flag to indicate a JSON file is being used for registration */
@@ -1299,6 +1308,8 @@ ACVP_RESULT acvp_process_tests(ACVP_CTX *ctx);
 ACVP_RESULT acvp_send_test_session_registration(ACVP_CTX *ctx, char *reg, int len);
 
 ACVP_RESULT acvp_send_login(ACVP_CTX *ctx, char *login, int len);
+
+ACVP_RESULT acvp_transport_put_validation(ACVP_CTX *ctx, const char *data, int data_len);
 
 ACVP_RESULT acvp_transport_get(ACVP_CTX *ctx, const char *url, const ACVP_KV_LIST *parameters);
 
@@ -1380,11 +1391,7 @@ ACVP_RESULT acvp_kas_ffc_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
  */
 ACVP_RESULT acvp_build_test_session(ACVP_CTX *ctx, char **reg, int *out_len);
 
-ACVP_RESULT acvp_register_build_oe(ACVP_CTX *ctx, ACVP_OE *oe, char **reg, int *out_len);
-
-ACVP_RESULT acvp_register_build_dependency(ACVP_CTX *ctx, ACVP_DEPENDENCY *dep, char **reg, int *out_len);
-
-ACVP_RESULT acvp_register_build_module(ACVP_CTX *ctx, ACVP_MODULE *module, char **reg, int *out_len);
+ACVP_RESULT acvp_build_validation(ACVP_CTX *ctx, char **out, int *out_len);
 
 /*
  * Operating Environment functions

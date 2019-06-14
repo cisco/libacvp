@@ -39,14 +39,16 @@ typedef enum acvp_net_action {
     ACVP_NET_POST, /**< Generic (post) */
     ACVP_NET_POST_LOGIN, /**< Login (post) */
     ACVP_NET_POST_REG, /**< Registration (post) */
-    ACVP_NET_POST_VS_RESP /**< Vector set response (post) */
+    ACVP_NET_POST_VS_RESP, /**< Vector set response (post) */
+    ACVP_NET_PUT, /**< Generic (put) */
+    ACVP_NET_PUT_VALIDATION /**< Submit testSession for validation (put) */
 } ACVP_NET_ACTION;
 
 /*
  * Prototypes
  */
 static ACVP_RESULT acvp_network_action(ACVP_CTX *ctx, ACVP_NET_ACTION action,
-                                       char *url, char *data, int data_len);
+                                       const char *url, const char *data, int data_len);
 
 static struct curl_slist *acvp_add_auth_hdr(ACVP_CTX *ctx, struct curl_slist *slist) {
     char *bearer = NULL;
@@ -145,7 +147,7 @@ static size_t acvp_curl_write_callback(void *ptr, size_t size, size_t nmemb, voi
  * Return value is the HTTP status value from the server
  *	    (e.g. 200 for HTTP OK)
  */
-static long acvp_curl_http_get(ACVP_CTX *ctx, char *url) {
+static long acvp_curl_http_get(ACVP_CTX *ctx, const char *url) {
     long http_code = 0;
     CURL *hnd;
     struct curl_slist *slist;
@@ -243,7 +245,7 @@ static long acvp_curl_http_get(ACVP_CTX *ctx, char *url) {
  * Return value is the HTTP status value from the server
  *	    (e.g. 200 for HTTP OK)
  */
-static long acvp_curl_http_post(ACVP_CTX *ctx, char *url, char *data, int data_len) {
+static long acvp_curl_http_post(ACVP_CTX *ctx, const char *url, const char *data, int data_len) {
     long http_code = 0;
     CURL *hnd;
     CURLcode crv;
@@ -331,6 +333,107 @@ static long acvp_curl_http_post(ACVP_CTX *ctx, char *url, char *data, int data_l
     hnd = NULL;
     curl_slist_free_all(slist);
     slist = NULL;
+
+    return http_code;
+}
+
+/**
+ * @brief Uses libcurl to send a simple HTTP PUT.
+ *
+ * TLS peer verification is enabled, but not mutual authentication.
+ *
+ * @param ctx Ptr to ACVP_CTX, which contains the server name
+ * @param url URL to use for the PUT operation
+ * @param data: data to PUT to the server
+ * @param data_len: Length of \p data (in bytes)
+ *
+ * @return HTTP status value from the server
+ *	       (e.g. 200 for HTTP OK)
+ */
+static long acvp_curl_http_put(ACVP_CTX *ctx, const char *url, const char *data, int data_len) {
+    long http_code = 0;
+    CURL *hnd;
+    CURLcode crv;
+    struct curl_slist *slist;
+    char user_agent_str[USER_AGENT_STR_MAX + 1];
+
+    ctx->curl_read_ctr = 0;
+    /*
+     * Create the HTTP User Agent value
+     */
+    snprintf(user_agent_str, USER_AGENT_STR_MAX, "libacvp/%s", ACVP_VERSION);
+
+    /*
+     * Set the Content-Type header in the HTTP request
+     */
+    slist = NULL;
+    slist = curl_slist_append(slist, "Content-Type:application/json");
+
+    /*
+     * Create the Authorzation header if needed
+     */
+    slist = acvp_add_auth_hdr(ctx, slist);
+
+    /*
+     * Setup Curl
+     */
+    hnd = curl_easy_init();
+    curl_easy_setopt(hnd, CURLOPT_URL, url);
+    curl_easy_setopt(hnd, CURLOPT_NOPROGRESS, 1L);
+    curl_easy_setopt(hnd, CURLOPT_USERAGENT, user_agent_str);
+    curl_easy_setopt(hnd, CURLOPT_HTTPHEADER, slist);
+    curl_easy_setopt(hnd, CURLOPT_CUSTOMREQUEST, "PUT");
+    curl_easy_setopt(hnd, CURLOPT_POSTFIELDS, data);
+    curl_easy_setopt(hnd, CURLOPT_POSTFIELDSIZE_LARGE, (curl_off_t)data_len);
+    curl_easy_setopt(hnd, CURLOPT_TCP_KEEPALIVE, 1L);
+    curl_easy_setopt(hnd, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_2);
+
+    /*
+     * Always verify the server
+     */
+    curl_easy_setopt(hnd, CURLOPT_SSL_VERIFYPEER, 1L);
+    if (ctx->cacerts_file) {
+        curl_easy_setopt(hnd, CURLOPT_CAINFO, ctx->cacerts_file);
+        curl_easy_setopt(hnd, CURLOPT_CERTINFO, 1L);
+    }
+
+    /*
+     * Mutual-auth
+     */
+    if (ctx->tls_cert && ctx->tls_key) {
+        curl_easy_setopt(hnd, CURLOPT_SSLCERTTYPE, "PEM");
+        curl_easy_setopt(hnd, CURLOPT_SSLCERT, ctx->tls_cert);
+        curl_easy_setopt(hnd, CURLOPT_SSLKEYTYPE, "PEM");
+        curl_easy_setopt(hnd, CURLOPT_SSLKEY, ctx->tls_key);
+    }
+
+    /*
+     * To record the HTTP data recieved from the server,
+     * set the callback function.
+     */
+    curl_easy_setopt(hnd, CURLOPT_WRITEDATA, ctx);
+    curl_easy_setopt(hnd, CURLOPT_WRITEFUNCTION, acvp_curl_write_callback);
+
+    if (ctx->curl_buf) {
+        /* Clear the HTTP buffer for next server response */
+        memzero_s(ctx->curl_buf, ACVP_CURL_BUF_MAX);
+    }
+
+    /*
+     * Send the HTTP PUT request
+     */
+    crv = curl_easy_perform(hnd);
+    if (crv != CURLE_OK) {
+        ACVP_LOG_ERR("Curl failed with code %d (%s)\n", crv, curl_easy_strerror(crv));
+    }
+
+    /*
+     * Get the HTTP reponse status code from the server
+     */
+    curl_easy_getinfo(hnd, CURLINFO_RESPONSE_CODE, &http_code);
+
+    curl_easy_cleanup(hnd);
+    curl_slist_free_all(slist);
 
     return http_code;
 }
@@ -498,6 +601,37 @@ ACVP_RESULT acvp_retrieve_expected_result(ACVP_CTX *ctx, char *api_url) {
     return acvp_network_action(ctx, ACVP_NET_GET_VS_SAMPLE, url, NULL, 0);
 }
 
+ACVP_RESULT acvp_transport_put(ACVP_CTX *ctx,
+                               const char *endpoint,
+                               const char *data,
+                               int data_len) {
+    ACVP_RESULT rv = 0;
+    char url[ACVP_ATTR_URL_MAX] = {0};
+
+    rv = sanity_check_ctx(ctx);
+    if (ACVP_SUCCESS != rv) return rv;
+
+    if (!endpoint) {
+        ACVP_LOG_ERR("Missing endpoint");
+        return ACVP_MISSING_ARG;
+    }
+
+    snprintf(url, ACVP_ATTR_URL_MAX - 1,
+            "https://%s:%d%s",
+            ctx->server_name, ctx->server_port, endpoint);
+
+    return acvp_network_action(ctx, ACVP_NET_PUT_VALIDATION, url, data, data_len);
+}
+
+ACVP_RESULT acvp_transport_put_validation(ACVP_CTX *ctx,
+                                          const char *validation,
+                                          int validation_len) {
+    if (!ctx) return ACVP_NO_CTX;
+    if (validation == NULL) return ACVP_INVALID_ARG;
+
+    return acvp_transport_put(ctx, ctx->session_url, validation, validation_len);
+}
+
 ACVP_RESULT acvp_transport_get(ACVP_CTX *ctx,
                                const char *url,
                                const ACVP_KV_LIST *parameters) {
@@ -629,8 +763,8 @@ end:
 
 static ACVP_RESULT execute_network_action(ACVP_CTX *ctx,
                                           ACVP_NET_ACTION action,
-                                          char *url,
-                                          char *data,
+                                          const char *url,
+                                          const char *data,
                                           int data_len,
                                           int *curl_code) {
     ACVP_RESULT result = 0;
@@ -652,6 +786,11 @@ static ACVP_RESULT execute_network_action(ACVP_CTX *ctx,
     case ACVP_NET_POST_LOGIN:
     case ACVP_NET_POST_REG:
         rc = acvp_curl_http_post(ctx, url, data, data_len);
+        break;
+
+    case ACVP_NET_PUT:
+    case ACVP_NET_PUT_VALIDATION:
+        rc = acvp_curl_http_put(ctx, url, data, data_len);
         break;
 
     case ACVP_NET_POST_VS_RESP:
@@ -722,6 +861,11 @@ static ACVP_RESULT execute_network_action(ACVP_CTX *ctx,
             case ACVP_NET_POST:
             case ACVP_NET_POST_REG:
                 rc = acvp_curl_http_post(ctx, url, data, data_len);
+                break;
+
+            case ACVP_NET_PUT:
+            case ACVP_NET_PUT_VALIDATION:
+                rc = acvp_curl_http_put(ctx, url, data, data_len);
                 break;
 
             case ACVP_NET_POST_VS_RESP:
@@ -816,6 +960,14 @@ static void log_network_status(ACVP_CTX *ctx,
         ACVP_LOG_STATUS("POST Response Submission...\n\tStatus: %d\n\tUrl: %s\n\tResp:\n%s\n",
                         curl_code, url, ctx->curl_buf);
         break;
+    case ACVP_NET_PUT:
+        ACVP_LOG_STATUS("PUT...\n\tStatus: %d\n\tUrl: %s\n\tResp: %s\n",
+                        curl_code, url, ctx->curl_buf);
+        break;
+    case ACVP_NET_PUT_VALIDATION:
+        ACVP_LOG_STATUS("PUT testSession Validation...\n\tStatus: %d\n\tUrl: %s\n\tResp: %s\n",
+                        curl_code, url, ctx->curl_buf);
+        break;
     }
 }
 
@@ -826,8 +978,8 @@ static void log_network_status(ACVP_CTX *ctx,
  */
 static ACVP_RESULT acvp_network_action(ACVP_CTX *ctx,
                                        ACVP_NET_ACTION action,
-                                       char *url,
-                                       char *data,
+                                       const char *url,
+                                       const char *data,
                                        int data_len) {
     ACVP_RESULT rv = ACVP_SUCCESS;
     ACVP_NET_ACTION generic_action = 0;
@@ -868,6 +1020,12 @@ static ACVP_RESULT acvp_network_action(ACVP_CTX *ctx,
 
     case ACVP_NET_POST_VS_RESP:
         generic_action = ACVP_NET_POST_VS_RESP;
+        break;
+
+    case ACVP_NET_PUT:
+    case ACVP_NET_PUT_VALIDATION:
+        check_data = 1;
+        generic_action = ACVP_NET_PUT;
         break;
     }
 

@@ -786,7 +786,7 @@ end:
 static ACVP_RESULT verify_fips_oe_dependencies(ACVP_CTX *ctx,
                                                ACVP_OE_DEPENDENCIES *dependencies) {
     ACVP_RESULT rv = 0;
-    int i = 0;
+    int i = 0, all_incomplete = 1;
 
     if (!ctx) return ACVP_NO_CTX;
     if (dependencies == NULL) {
@@ -794,6 +794,7 @@ static ACVP_RESULT verify_fips_oe_dependencies(ACVP_CTX *ctx,
         return ACVP_INVALID_ARG;
     }
 
+    dependencies->status = ACVP_RESOURCE_STATUS_COMPLETE; // Start with this
     for (i = 0; i < dependencies->count; i++) {
         ACVP_DEPENDENCY *cur_dep = dependencies->deps[i];
 
@@ -802,6 +803,19 @@ static ACVP_RESULT verify_fips_oe_dependencies(ACVP_CTX *ctx,
             ACVP_LOG_ERR("Unable to query this Dependency[%d]", i);
             return rv;
         }
+
+        if (cur_dep->url == NULL) {
+            /* This dependency does not exist. Mark the flag :) */
+            dependencies->status = ACVP_RESOURCE_STATUS_PARTIAL;
+        } else {
+            /* At least this Dependency exists */
+            all_incomplete = 0;
+        }
+    }
+
+    if (all_incomplete) {
+        // None of the dependencies exist
+        dependencies->status = ACVP_RESOURCE_STATUS_INCOMPLETE;
     }
 
     return ACVP_SUCCESS;

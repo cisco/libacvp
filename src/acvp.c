@@ -2031,6 +2031,7 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
              * Pass, exit loop
              */
             ACVP_LOG_STATUS("Passed all vectors in testSession");
+            ctx->session_passed = 1;
             goto end;
         } else {
             /*
@@ -2107,6 +2108,44 @@ static ACVP_RESULT fips_metadata_ready(ACVP_CTX *ctx) {
     return ACVP_SUCCESS;
 }
 
+ACVP_RESULT acvp_validate_test_session(ACVP_CTX *ctx) {
+    ACVP_RESULT rv = ACVP_SUCCESS;
+    char *validation = NULL;
+    int validation_len = 0;
+
+    if (ctx == NULL) return ACVP_NO_CTX;
+
+    if (ctx->session_passed != 1) {
+        ACVP_LOG_ERR("This testSession cannot be certified. Required disposition == 'pass'.");
+        return ACVP_SUCCESS; // Technically no error occurred
+    }
+
+    rv = acvp_build_validation(ctx, &validation, &validation_len);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Unable to build Validation message");
+        goto end;
+    }
+
+    /*
+     * PUT the validation with the ACVP server and get the response,
+     */
+    rv = acvp_transport_put_validation(ctx, validation, validation_len);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_STATUS("Validation send failed");
+        goto end;
+    }
+
+    rv = acvp_parse_login(ctx);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_STATUS("Failed to parse Validation response");
+    }
+
+end:
+    if (validation) free(validation);
+
+    return rv;
+}
+
 ACVP_RESULT acvp_run(ACVP_CTX *ctx, int fips_validation) {
     ACVP_RESULT rv = ACVP_SUCCESS;
 
@@ -2167,7 +2206,11 @@ ACVP_RESULT acvp_run(ACVP_CTX *ctx, int fips_validation) {
         /*
          * Tell the server to provision a FIPS certificate for this testSession.
          */
-        // TODO
+        rv = acvp_validate_test_session(ctx);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Failed to perform Validation of testSession");
+            goto end;
+        }
     }
 
 end:
