@@ -1777,7 +1777,7 @@ static ACVP_RESULT query_module(ACVP_CTX *ctx,
 
     if (endpoint == NULL) {
         size_t vendor_url_len = 0;
-        char *ptr2str = NULL, *ptr2tok = NULL;  
+        char *ptr = NULL, *ptr_old = NULL;
 
         first_endpoint = calloc(ACVP_ATTR_URL_MAX + 1, sizeof(char));
         if (first_endpoint == NULL) {
@@ -1826,12 +1826,21 @@ static ACVP_RESULT query_module(ACVP_CTX *ctx,
 
         /* Parse the vendorId */
         vendor_url_len = strnlen_s(module->vendor->url, ACVP_ATTR_URL_MAX);
-        ptr2tok = strtok_s(module->vendor->url, &vendor_url_len, "/", &ptr2str);
-        while(ptr2tok && vendor_url_len) {
-            ptr2tok = strtok_s(NULL, &vendor_url_len, "/", &ptr2str);
-        }
 
-        rv = acvp_kv_list_append(&parameters, "vendorId[0]=eq:", ptr2str);
+        ptr = module->vendor->url;
+        ptr_old = ptr;
+        while (1) {
+            int remaining_space = vendor_url_len - (ptr - ptr_old);
+
+            strstr_s(ptr, remaining_space, "/", 1, &ptr);
+            if (ptr == NULL) break;
+            ptr_old = ptr;
+            /* Need to move past this occurence */
+            ptr += 1;
+        }
+        ptr = ptr_old; // The position of the last delimiter
+
+        rv = acvp_kv_list_append(&parameters, "vendorId[0]=eq:", ptr + 1);
         if (ACVP_SUCCESS != rv) {
             ACVP_LOG_ERR("Failed acvp_kv_list_append()");
             goto end;

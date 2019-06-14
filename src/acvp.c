@@ -1502,6 +1502,48 @@ end:
     return rv;
 }
 
+static ACVP_RESULT acvp_parse_validation(ACVP_CTX *ctx) {
+    JSON_Value *val = NULL;
+    JSON_Object *obj = NULL;
+    const char *url = NULL, *status = NULL;
+    ACVP_RESULT rv = ACVP_SUCCESS;
+
+    /*
+     * Parse the JSON
+     */
+    val = json_parse_string(ctx->curl_buf);
+    if (!val) {
+        ACVP_LOG_ERR("JSON parse error");
+        return ACVP_JSON_ERR;
+    }
+
+    obj = acvp_get_obj_from_rsp(ctx, val);
+
+    /*
+     * Get the url of the 'request' status sent by server.
+     */
+    url = json_object_get_string(obj, "url");
+    if (!url) {
+        ACVP_LOG_ERR("Validation response JSON missing 'url'");
+        rv = ACVP_JSON_ERR;
+        goto end;
+    }
+
+    status = json_object_get_string(obj, "status");
+    if (!status) {
+        ACVP_LOG_ERR("Validation response JSON missing 'status'");
+        rv = ACVP_JSON_ERR;
+        goto end;
+    }
+
+    /* Print the request info to screen */
+    ACVP_LOG_STATUS("Validation requested -- status %s -- url: %s", status, url);
+
+end:
+    if (val) json_value_free(val);
+    return rv;
+}
+
 ACVP_RESULT acvp_notify_large(ACVP_CTX *ctx,
                               const char *url,
                               char *large_url,
@@ -2135,7 +2177,7 @@ ACVP_RESULT acvp_validate_test_session(ACVP_CTX *ctx) {
         goto end;
     }
 
-    rv = acvp_parse_login(ctx);
+    rv = acvp_parse_validation(ctx);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_STATUS("Failed to parse Validation response");
     }
