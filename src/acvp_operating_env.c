@@ -2937,6 +2937,11 @@ static ACVP_RESULT acvp_oe_metadata_parse_oe_dependencies(ACVP_CTX *ctx,
         name_str = json_object_get_string(dep_obj, "name");
         desc_str = json_object_get_string(dep_obj, "description");
 
+        if (!type_str && !name_str && !desc_str) {
+            ACVP_LOG_ERR("Need at least 1 of type, name, description");
+            return ACVP_JSON_ERR;
+        }
+
         // Soft copy, no need to free
         tmp_dep.type = (char*)type_str;
         tmp_dep.name = (char*)name_str;
