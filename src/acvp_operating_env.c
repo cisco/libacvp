@@ -69,10 +69,12 @@ static ACVP_DEPENDENCY *find_dependency(ACVP_CTX *ctx,
 }
 
 /**
- * @brief Designate a new Dependency entry for this session.
+ * @brief Create a new Dependency for FIPS.
  *
- * @return non-zero value representing the "dependency_id"
- * @return 0 fail
+ * @param ctx ACVP_CTX
+ * @param id ID that will be assigned to this Dependency (user defined)
+ *
+ * @return ACVP_RESULT
  */
 ACVP_RESULT acvp_oe_dependency_new(ACVP_CTX *ctx, unsigned int id) {
     ACVP_DEPENDENCIES *dependencies = NULL;
@@ -153,6 +155,15 @@ static ACVP_RESULT acvp_oe_dependency_set_field(ACVP_CTX *ctx,
     return ACVP_SUCCESS; 
 }
 
+/**
+ * @brief Set the type for a given Dependency.
+ *
+ * @param ctx ACVP_CTX
+ * @param dependency_id ID of this Dependency
+ * @param value String representing "type"
+ *
+ * @return ACVP_RESULT
+ */
 ACVP_RESULT acvp_oe_dependency_set_type(ACVP_CTX *ctx,
                                         unsigned int dependency_id,
                                         const char *value) {
@@ -167,6 +178,15 @@ ACVP_RESULT acvp_oe_dependency_set_type(ACVP_CTX *ctx,
     return acvp_oe_dependency_set_field(ctx, dep, DEPENDENCY_FIELD_TYPE, value);
 }
 
+/**
+ * @brief Set the name for a given Dependency.
+ *
+ * @param ctx ACVP_CTX
+ * @param dependency_id ID of this Dependency
+ * @param value String representing "name"
+ *
+ * @return ACVP_RESULT
+ */
 ACVP_RESULT acvp_oe_dependency_set_name(ACVP_CTX *ctx,
                                         unsigned int dependency_id,
                                         const char *value) {
@@ -181,6 +201,15 @@ ACVP_RESULT acvp_oe_dependency_set_name(ACVP_CTX *ctx,
     return acvp_oe_dependency_set_field(ctx, dep, DEPENDENCY_FIELD_NAME, value);
 }
 
+/**
+ * @brief Set the description for a given Dependency.
+ *
+ * @param ctx ACVP_CTX
+ * @param dependency_id ID of this Dependency
+ * @param value String representing "description"
+ *
+ * @return ACVP_RESULT
+ */
 ACVP_RESULT acvp_oe_dependency_set_description(ACVP_CTX *ctx,
                                                unsigned int dependency_id,
                                                const char *value) {
@@ -196,10 +225,13 @@ ACVP_RESULT acvp_oe_dependency_set_description(ACVP_CTX *ctx,
 }
 
 /**
- * @brief Designate a new OE entry for this session.
+ * @brief Create a new Operating Environment for FIPS.
  *
- * @return non-zero value representing the "oe_id"
- * @return 0 fail
+ * @param ctx ACVP_CTX
+ * @param id ID that will be assigned to this OE (user defined)
+ * @param name String representing "name" 
+ *
+ * @return ACVP_RESULT
  */
 ACVP_RESULT acvp_oe_oe_new(ACVP_CTX *ctx,
                            unsigned int id,
@@ -276,6 +308,15 @@ static ACVP_OE *find_oe(ACVP_CTX *ctx,
     return NULL;
 }
 
+/**
+ * @brief Add a dependency to an Operating Environment.
+ *
+ * @param ctx ACVP_CTX
+ * @param id ID for this operating environment
+ * @param vendor_id ID of dependency to attach to this module
+ *
+ * @return ACVP_RESULT
+ */
 ACVP_RESULT acvp_oe_oe_set_dependency(ACVP_CTX *ctx,
                                       unsigned int oe_id,
                                       unsigned int dependency_id) {
@@ -459,12 +500,14 @@ static ACVP_RESULT acvp_oe_vendor_add_address(ACVP_CTX *ctx,
 }
 
 /**
- * @brief Designate a new Module entry for this session.
+ * @brief Create a new Module for the Operating Environment.
  *
- * @param name Name of the module
+ * @param ctx ACVP_CTX
+ * @param id ID for this module (defined by user)
+ * @param vendor_id ID of vendor to attach to this module
+ * @param name String representing "name"
  *
- * @return non-zero value representing the "id"
- * @return 0 fail
+ * @return ACVP_RESULT
  */
 ACVP_RESULT acvp_oe_module_new(ACVP_CTX *ctx,
                                unsigned int id,
@@ -518,7 +561,7 @@ ACVP_RESULT acvp_oe_module_new(ACVP_CTX *ctx,
         return rv;
     }
 
-    return ACVP_SUCCESS; /** Return the array position + 1 */
+    return ACVP_SUCCESS;
 }
 
 static ACVP_MODULE *find_module(ACVP_CTX *ctx,
@@ -545,6 +588,19 @@ static ACVP_MODULE *find_module(ACVP_CTX *ctx,
     return NULL;
 }
 
+/**
+ * @brief Set the module type, version or description.
+ *
+ * The user does not need to provide each of \p type,
+ * \p version, \p description but must provide at least one.
+ *
+ * @param ctx ACVP_CTX
+ * @param type String representing "type"
+ * @param version String representing "version"
+ * @param description String representing "description"
+ *
+ * @return ACVP_RESULT
+ */
 ACVP_RESULT acvp_oe_module_set_type_version_desc(ACVP_CTX *ctx,
                                                  unsigned int id,
                                                  const char *type,
@@ -588,6 +644,14 @@ ACVP_RESULT acvp_oe_module_set_type_version_desc(ACVP_CTX *ctx,
     return ACVP_SUCCESS;
 }
 
+/**
+ * @brief Compare two dependencies to see if they are equal.
+ *
+ * @param a First dependency
+ * @param b Second dependency
+ *
+ * @return 1 for equal, 0 for not-equal
+ */
 static int compare_dependencies(const ACVP_DEPENDENCY *a, const ACVP_DEPENDENCY *b) {
     int diff = 0;
 
@@ -604,6 +668,24 @@ static int compare_dependencies(const ACVP_DEPENDENCY *a, const ACVP_DEPENDENCY 
     return 1;
 }
 
+/**
+ * @brief Compare the page of Dependencies returned by server DB to the
+ *        specified Dependency data.
+ *
+ * This will compare each Dependency object in the "page" returned by the server DB
+ * with the specified Dependency. If a match is found, then the \p match parameter
+ * is set to 1 and the URL is copied.
+ *
+ * If a match is not found, then the function will allocate and copy the "next" page
+ * URL into \p next_endpoint, which should be compared next.
+ *
+ * @param ctx ACVP_CTX
+ * @param dep Pointer to the Dependency data which will be compared
+ * @param match Pointer to int which will be set to 1 if match is found
+ * @param next_endpoint The next page URL endpoint
+ *
+ * @return ACVP_RESULT
+ */
 static ACVP_RESULT match_dependencies_page(ACVP_CTX *ctx,
                                            ACVP_DEPENDENCY *dep,
                                            int *match,
@@ -694,6 +776,23 @@ end:
     return rv;
 }
 
+/**
+ * @brief Query the server DB for the specified Dependency data.
+ *
+ * This will query the server DB to check if the data exists, and it will retrieve
+ * the Dependency URL.
+ *
+ * This function parameter \p allowed_pages is needed because the function may
+ * recursively call itself, and the allocated memory in the 1st, 2nd .. Nth invocation
+ * is not freed until the recursion stops. 
+ *
+ * @param ctx ACVP_CTX
+ * @param dep Pointer to the Dependency data which will be queried
+ * @param allowed_pages The maximum number of "pages" which we will ask the server for
+ * @param endpoint The URL endpoint string
+ *
+ * @return ACVP_RESULT
+ */
 static ACVP_RESULT query_dependency(ACVP_CTX *ctx,
                                     ACVP_DEPENDENCY *dep,
                                     int allowed_pages,
@@ -783,6 +882,21 @@ end:
     return rv;
 }
 
+/**
+ * @brief Verify the OE dependencies data which the user intends to send for a FIPS validation.
+ *
+ * This will query the server DB to check if the data exists, and it will retrieve
+ * the Dependencies URLs.
+ *
+ * - If all dependencies are found, then status COMPLETE is given
+ * - If only a subset of the dependencies are found, then PARTIAL
+ * - If none of the dependencies are found, then INCOMPLETE
+ *
+ * @param ctx ACVP_CTX
+ * @param dependencies Pointer to array of dependencies
+ *
+ * @return ACVP_RESULT
+ */
 static ACVP_RESULT verify_fips_oe_dependencies(ACVP_CTX *ctx,
                                                ACVP_OE_DEPENDENCIES *dependencies) {
     ACVP_RESULT rv = 0;
@@ -821,6 +935,23 @@ static ACVP_RESULT verify_fips_oe_dependencies(ACVP_CTX *ctx,
     return ACVP_SUCCESS;
 }
 
+/**
+ * @brief Compare the page of OES returned by server DB to the specified OE data.
+ *
+ * This will compare each OE object in the "page" returned by the server DB
+ * with the specified OE. If a match is found, then the \p match parameter is set to 1
+ * and the URL is copied.
+ *
+ * If a match is not found, then the function will allocate and copy the "next" page
+ * URL into \p next_endpoint, which should be compared next.
+ *
+ * @param ctx ACVP_CTX
+ * @param oe Pointer to the OE data which will be compared
+ * @param match Pointer to int which will be set to 1 if match is found
+ * @param next_endpoint The next page URL endpoint
+ *
+ * @return ACVP_RESULT
+ */
 static ACVP_RESULT match_oes_page(ACVP_CTX *ctx,
                                   ACVP_OE *oe,
                                   int *match,
@@ -930,6 +1061,23 @@ end:
     return rv;
 }
 
+/**
+ * @brief Query the server DB for the specified Operating Environment data.
+ *
+ * This will query the server DB to check if the data exists, and it will retrieve
+ * the Operating Environment URL.
+ *
+ * This function parameter \p allowed_pages is needed because the function may
+ * recursively call itself, and the allocated memory in the 1st, 2nd .. Nth invocation
+ * is not freed until the recursion stops. 
+ *
+ * @param ctx ACVP_CTX
+ * @param oe Pointer to the Operating Environment data which will be queried
+ * @param allowed_pages The maximum number of "pages" which we will ask the server for
+ * @param endpoint The URL endpoint string
+ *
+ * @return ACVP_RESULT
+ */
 static ACVP_RESULT query_oe(ACVP_CTX *ctx,
                             ACVP_OE *oe,
                             int allowed_pages,
@@ -984,7 +1132,7 @@ static ACVP_RESULT query_oe(ACVP_CTX *ctx,
     }
 
     /*
-     * Try to match the dependency against the page returned by server.
+     * Try to match against the page returned by server.
      */
     rv = match_oes_page(ctx, oe, &match, &next_endpoint);
     if (ACVP_SUCCESS != rv) goto end;
@@ -1003,6 +1151,20 @@ end:
     return rv;
 }
 
+/**
+ * @brief Verify the OE data which the user intends to send for a FIPS validation.
+ *
+ * This will query the server DB to check if the data exists, and it will retrieve
+ * the OE URL along with all of its sub-object URLs.
+ *
+ * The OE will be created during the PUT operation if:
+ * - The OE with given name or other fields are not found
+ * - Any of the attached dependencies are not found
+ *
+ * @param ctx ACVP_CTX Holds the fips.oe
+ *
+ * @return ACVP_RESULT
+ */
 static ACVP_RESULT verify_fips_oe(ACVP_CTX *ctx) {
     ACVP_RESULT rv = 0;
     int i = 0;
@@ -1038,6 +1200,19 @@ static ACVP_RESULT verify_fips_oe(ACVP_CTX *ctx) {
     return ACVP_SUCCESS;
 }
 
+/**
+ * @brief Compare the JSON array of emails with the specified emails.
+ *
+ * This will compare each email string in the JSON array with the
+ * specified list of emails. If a match is found, then the \p match
+ * parameter is set to 1.
+ *
+ * @param emails Pointer to the list of emails which will be compared
+ * @param candidate_emails Pointer to the JSON array of emails
+ * @param match Pointer to int which will be set to 1 if match is found
+ *
+ * @return ACVP_RESULT
+ */
 static int compare_emails(ACVP_STRING_LIST *email_list,
                           JSON_Array *candidate_emails,
                           int *match) {
@@ -1081,9 +1256,23 @@ static int compare_emails(ACVP_STRING_LIST *email_list,
     return ACVP_SUCCESS;
 }
 
+/**
+ * @brief Compare the JSON array of vendor phone numbers with the specified
+ *        Vendor phone numbers.
+ *
+ * This will compare each vendor phone number object in the JSON array with the
+ * specified list of Vendor phone numbers. If a match is found, then the \p match
+ * parameter is set to 1.
+ *
+ * @param phone_list Pointer to list of vendor phone numbers which will be compared
+ * @param candidate_phones Pointer to the JSON array of vendor phone numbers
+ * @param match Pointer to int which will be set to 1 if match is found
+ *
+ * @return ACVP_RESULT
+ */
 static ACVP_RESULT compare_phone_numbers(ACVP_OE_PHONE_LIST *phone_list,
-                                                JSON_Array *candidate_phones,
-                                                int *match) {
+                                         JSON_Array *candidate_phones,
+                                         int *match) {
     ACVP_OE_PHONE_LIST *tmp_ptr = NULL;
     size_t phone_list_len = 0;
     int i = 0;
@@ -1136,6 +1325,18 @@ static ACVP_RESULT compare_phone_numbers(ACVP_OE_PHONE_LIST *phone_list,
     return ACVP_SUCCESS;
 }
 
+/**
+ * @brief Compare the JSON array of vendor addresses with the specified Vendor address data.
+ *
+ * This will compare each vendor address object in the array with the specified Vendor
+ * address. If a match is found, then the \p match parameter is set to 1.
+ *
+ * @param address Pointer to the vendor address which will be compared
+ * @param candidate_addresses Pointer to the JSON array of vendor addresses
+ * @param match Pointer to int which will be set to 1 if match is found
+ *
+ * @return ACVP_RESULT
+ */
 static ACVP_RESULT compare_vendor_address(ACVP_VENDOR_ADDRESS *address,
                                           JSON_Array *candidate_addresses,
                                           int *match) {
@@ -1254,6 +1455,21 @@ static ACVP_RESULT compare_vendor_address(ACVP_VENDOR_ADDRESS *address,
     return ACVP_SUCCESS;
 }
 
+/**
+ * @brief Query the server DB for the specified Vendor contacts data.
+ *
+ * This will query the server DB to ensure that the data exists, and it will retrieve
+ * the Vendor contact URLs.
+ *
+ * This function will only try to find a match in the first page for each given contact.
+ *
+ * @param ctx ACVP_CTX
+ * @param persons Pointer to the vendor persons which will be queried
+ * @param endpoint The URL endpoint string
+ * @param match Pointer to int which will be set to 1 if match is found
+ *
+ * @return ACVP_RESULT
+ */
 static ACVP_RESULT query_vendor_contacts(ACVP_CTX *ctx,
                                          ACVP_PERSONS *persons,
                                          const char *endpoint,
@@ -1385,6 +1601,23 @@ end:
     return rv;
 }
 
+/**
+ * @brief Compare the page of vendors returned by server DB to the specified Vendor data.
+ *
+ * This will compare each vendor object in the "page" returned by the server DB
+ * with the specified Vendor. If a match is found, then the \p match parameter is set to 1
+ * and the URL is copied.
+ *
+ * If a match is not found, then the function will allocate and copy the "next" page
+ * URL into \p next_endpoint, which should be compared next.
+ *
+ * @param ctx ACVP_CTX
+ * @param vendor Pointer to the vendor data which will be compared
+ * @param match Pointer to int which will be set to 1 if match is found
+ * @param next_endpoint The next page URL endpoint
+ *
+ * @return ACVP_RESULT
+ */
 static ACVP_RESULT match_vendors_page(ACVP_CTX *ctx,
                                       ACVP_VENDOR *vendor,
                                       int *match,
@@ -1515,6 +1748,23 @@ end:
     return rv;
 }
 
+/**
+ * @brief Query the server DB for the specified Vendor data.
+ *
+ * This will query the server DB to ensure that the data exists, and it will retrieve
+ * the Vendor URL along with all of its sub-object URLs.
+ *
+ * This function parameter \p allowed_pages is needed because the function may
+ * recursively call itself, and the allocated memory in the 1st, 2nd .. Nth invocation
+ * is not freed until the recursion stops. 
+ *
+ * @param ctx ACVP_CTX
+ * @param vendor Pointer to the vendor data which will be queried
+ * @param allowed_pages The maximum number of "pages" which we will ask the server for
+ * @param endpoint The URL endpoint string
+ *
+ * @return ACVP_RESULT
+ */
 static ACVP_RESULT query_vendor(ACVP_CTX *ctx,
                                 ACVP_VENDOR *vendor,
                                 int allowed_pages,
@@ -1577,7 +1827,7 @@ static ACVP_RESULT query_vendor(ACVP_CTX *ctx,
     }
 
     /*
-     * Try to match the vendor against the page returned by server.
+     * Try to match against the page returned by server.
      */
     rv = match_vendors_page(ctx, vendor, &match, &next_endpoint);
     if (ACVP_SUCCESS != rv) goto end;
@@ -1596,6 +1846,14 @@ end:
     return rv;
 }
 
+/**
+ * @brief Compare two modules to see if they are equal.
+ *
+ * @param a First module 
+ * @param b Second module 
+ *
+ * @return 1 for equal, 0 for not-equal
+ */
 static int compare_modules(const ACVP_MODULE *a, const ACVP_MODULE *b) {
     int diff = 0;
     int i = 0;
@@ -1630,6 +1888,23 @@ static int compare_modules(const ACVP_MODULE *a, const ACVP_MODULE *b) {
     return 1;
 }
 
+/**
+ * @brief Compare the page of modules returned by server DB to the specified Module data.
+ *
+ * This will compare each module object in the "page" returned by the server DB
+ * with the specified Module. If a match is found, then the \p match parameter is set to 1
+ * and the URL is copied.
+ *
+ * If a match is not found, then the function will allocate and copy the "next" page
+ * URL into \p next_endpoint, which should be compared next.
+ *
+ * @param ctx ACVP_CTX
+ * @param module Pointer to the module data which will be compared
+ * @param match Pointer to int which will be set to 1 if match is found
+ * @param next_endpoint The next page URL endpoint
+ *
+ * @return ACVP_RESULT
+ */
 static ACVP_RESULT match_modules_page(ACVP_CTX *ctx,
                                       ACVP_MODULE *module,
                                       int *match,
@@ -1754,6 +2029,23 @@ end:
     return rv;
 }
 
+/**
+ * @brief Query the server DB for the specified Module data.
+ *
+ * This will query the server DB to ensure that the data exists, and it will retrieve
+ * the Module URL.
+ *
+ * This function parameter \p allowed_pages is needed because the function may
+ * recursively call itself, and the allocated memory in the 1st, 2nd .. Nth invocation
+ * is not freed until the recursion stops. 
+ *
+ * @param ctx ACVP_CTX
+ * @param module Pointer to the module data which will be queried
+ * @param allowed_pages The maximum number of "pages" which we will ask the server for
+ * @param endpoint The URL endpoint string
+ *
+ * @return ACVP_RESULT
+ */
 static ACVP_RESULT query_module(ACVP_CTX *ctx,
                                 ACVP_MODULE *module,
                                 int allowed_pages,
@@ -1857,7 +2149,7 @@ static ACVP_RESULT query_module(ACVP_CTX *ctx,
     }
 
     /*
-     * Try to match the dependency against the page returned by server.
+     * Try to match against the page returned by server.
      */
     rv = match_modules_page(ctx, module, &match, &next_endpoint);
     if (ACVP_SUCCESS != rv) goto end;
@@ -1876,6 +2168,18 @@ end:
     return rv;
 }
 
+/**
+ * @brief Verify the Module data which the user intends to send for a FIPS validation.
+ *
+ * This will query the server DB to ensure that the data exists, and it will retrieve
+ * the Module URL along with all of its sub-object URLs. If the attached Vendor is not
+ * successfully verified, then this function will fail (because it cannot be created during
+ * the PUT operation).
+ *
+ * @param ctx ACVP_CTX Holds the fips.module
+ *
+ * @return ACVP_RESULT
+ */
 static ACVP_RESULT verify_fips_module(ACVP_CTX *ctx) {
     ACVP_RESULT rv = 0;
 
@@ -1927,8 +2231,9 @@ static ACVP_RESULT verify_fips_module(ACVP_CTX *ctx) {
  * the PUT /testSessions/{testSessionId}. Conversely, any Dependencies that
  * are found will have their 'url' field set to a valid resource endpoint.
  *
- * @return ACVP_RESULT
+ * @param ctx ACVP_CTX
  *
+ * @return ACVP_RESULT
  */
 ACVP_RESULT acvp_oe_verify_fips_operating_env(ACVP_CTX *ctx) {
     ACVP_RESULT rv = 0;
@@ -2061,6 +2366,13 @@ static void free_modules(ACVP_MODULES *modules) {
     }
 }
 
+/**
+ * @brief Free all of the memory associated with the Operating Environment.
+ *
+ * Frees anything under ctx->op_env
+ *
+ * @param ctx ACVP_CTX
+ */
 void acvp_oe_free_operating_env(ACVP_CTX *ctx) {
     free_vendors(&ctx->op_env.vendors);
     free_modules(&ctx->op_env.modules);
@@ -2074,6 +2386,15 @@ void acvp_oe_free_operating_env(ACVP_CTX *ctx) {
  * ****************
  *****************/
 
+/**
+ * @brief Parse the Vendor.address from the JSON and load into library memory.
+ *
+ * @param ctx ACVP_CTX
+ * @param obj The JSON object holding Vendor data.
+ * @param vendor Pointer to the Vendor library struct.
+ *
+ * @return ACVP_RESULT
+ */
 static ACVP_RESULT acvp_oe_metadata_parse_vendor_address(ACVP_CTX *ctx,
                                                          JSON_Object *obj,
                                                          ACVP_VENDOR *vendor) {
@@ -2117,6 +2438,15 @@ static ACVP_RESULT acvp_oe_metadata_parse_vendor_address(ACVP_CTX *ctx,
     return ACVP_SUCCESS;
 }
 
+/**
+ * @brief Parse the emails from the JSON and load into library memory.
+ *
+ * @param ctx ACVP_CTX
+ * @param obj The JSON object holding emails.
+ * @param email_list Pointer to the ACVP_STRING_LIST that will be constructed.
+ *
+ * @return ACVP_RESULT
+ */
 static ACVP_RESULT acvp_oe_metadata_parse_emails(ACVP_CTX *ctx,
                                                  JSON_Object *obj,
                                                  ACVP_STRING_LIST **email_list) {
@@ -2170,6 +2500,15 @@ static ACVP_RESULT acvp_oe_metadata_parse_emails(ACVP_CTX *ctx,
     return ACVP_SUCCESS;
 }
 
+/**
+ * @brief Parse the phone numbers from the JSON and load into library memory.
+ *
+ * @param ctx ACVP_CTX
+ * @param obj The JSON object holding phone numbers.
+ * @param phone_list Pointer to ACVP_OE_PHONE_LIST that will be constructed.
+ *
+ * @return ACVP_RESULT
+ */
 static ACVP_RESULT acvp_oe_metadata_parse_phone_numbers(ACVP_CTX *ctx,
                                                         JSON_Object *obj,
                                                         ACVP_OE_PHONE_LIST **phone_list) {
@@ -2243,6 +2582,15 @@ static ACVP_RESULT acvp_oe_metadata_parse_phone_numbers(ACVP_CTX *ctx,
     return ACVP_SUCCESS;
 }
 
+/**
+ * @brief Parse the Vendor contacts from the JSON and load into library memory.
+ *
+ * @param ctx ACVP_CTX
+ * @param obj The JSON object holding contacts.
+ * @param vendor Pointer to the ACVP_VENDOR struct.
+ *
+ * @return ACVP_RESULT
+ */
 static ACVP_RESULT acvp_oe_metadata_parse_vendor_contacts(ACVP_CTX *ctx,
                                                           JSON_Object *obj,
                                                           ACVP_VENDOR *vendor) {
@@ -2311,6 +2659,14 @@ static ACVP_RESULT acvp_oe_metadata_parse_vendor_contacts(ACVP_CTX *ctx,
     return ACVP_SUCCESS;
 }
 
+/**
+ * @brief Parse the Vendor from the JSON and load into library memory.
+ *
+ * @param ctx ACVP_CTX
+ * @param obj The JSON object holding Vendor data.
+ *
+ * @return ACVP_RESULT
+ */
 static ACVP_RESULT acvp_oe_metadata_parse_vendor(ACVP_CTX *ctx, JSON_Object *obj) {
     ACVP_VENDOR *vendor = NULL;
     const char *name = NULL, *website = NULL;
@@ -2372,6 +2728,14 @@ static ACVP_RESULT acvp_oe_metadata_parse_vendor(ACVP_CTX *ctx, JSON_Object *obj
     return ACVP_SUCCESS;
 }
 
+/**
+ * @brief Parse the array of Vendors from the JSON and load into library memory.
+ *
+ * @param ctx ACVP_CTX
+ * @param obj The JSON object holding the array of Vendors.
+ *
+ * @return ACVP_RESULT
+ */
 static ACVP_RESULT acvp_oe_metadata_parse_vendors(ACVP_CTX *ctx, JSON_Object *obj) {
     ACVP_RESULT rv = ACVP_SUCCESS;
     JSON_Array *vendors_array = NULL;
@@ -2409,6 +2773,14 @@ static ACVP_RESULT acvp_oe_metadata_parse_vendors(ACVP_CTX *ctx, JSON_Object *ob
     return ACVP_SUCCESS;
 }
 
+/**
+ * @brief Parse the Module from the JSON and load into library memory.
+ *
+ * @param ctx ACVP_CTX
+ * @param obj The JSON object holding the Module data.
+ *
+ * @return ACVP_RESULT
+ */
 static ACVP_RESULT acvp_oe_metadata_parse_module(ACVP_CTX *ctx, JSON_Object *obj) {
     const char *name = NULL, *version = NULL, *type = NULL, *description = NULL;
     unsigned int module_id = 0, vendor_id = 0;
@@ -2452,6 +2824,14 @@ static ACVP_RESULT acvp_oe_metadata_parse_module(ACVP_CTX *ctx, JSON_Object *obj
     return ACVP_SUCCESS;
 }
 
+/**
+ * @brief Parse the array of Modules from the JSON and load into library memory.
+ *
+ * @param ctx ACVP_CTX
+ * @param obj The JSON object holding the array of Modules.
+ *
+ * @return ACVP_RESULT
+ */
 static ACVP_RESULT acvp_oe_metadata_parse_modules(ACVP_CTX *ctx, JSON_Object *obj) {
     ACVP_RESULT rv = ACVP_SUCCESS;
     JSON_Array *modules_array = NULL;
@@ -2513,6 +2893,15 @@ static unsigned int match_dependency(ACVP_CTX *ctx, const ACVP_DEPENDENCY *dep) 
     return 0;
 }
 
+/**
+ * @brief Parse the array of Dependencies from the JSON and load into library memory.
+ *
+ * @param ctx ACVP_CTX
+ * @param obj The JSON object holding the array of Dependencies
+ * @param oe_id The ID of the ACVP_OE that the dependencies will be saved into
+ *
+ * @return ACVP_RESULT
+ */
 static ACVP_RESULT acvp_oe_metadata_parse_oe_dependencies(ACVP_CTX *ctx,
                                                           JSON_Object *obj,
                                                           unsigned int oe_id) {
@@ -2599,6 +2988,14 @@ static ACVP_RESULT acvp_oe_metadata_parse_oe_dependencies(ACVP_CTX *ctx,
     return rv;
 }
 
+/**
+ * @brief Parse the Operating Environment from the JSON and load into library memory.
+ *
+ * @param ctx ACVP_CTX
+ * @param obj The JSON object holding the Operating Environment data
+ *
+ * @return ACVP_RESULT
+ */
 static ACVP_RESULT acvp_oe_metadata_parse_oe(ACVP_CTX *ctx, JSON_Object *obj) {
     const char *name = NULL;
     unsigned int oe_id = 0;
@@ -2635,6 +3032,14 @@ static ACVP_RESULT acvp_oe_metadata_parse_oe(ACVP_CTX *ctx, JSON_Object *obj) {
     return ACVP_SUCCESS;
 }
 
+/**
+ * @brief Parse the array of Operating Environment from the JSON and load into library memory.
+ *
+ * @param ctx ACVP_CTX
+ * @param obj The JSON object holding the array of Operating Environment data
+ *
+ * @return ACVP_RESULT
+ */
 static ACVP_RESULT acvp_oe_metadata_parse_oes(ACVP_CTX *ctx, JSON_Object *obj) {
     ACVP_RESULT rv = ACVP_SUCCESS;
     JSON_Array *oes_array = NULL;
@@ -2674,6 +3079,19 @@ static ACVP_RESULT acvp_oe_metadata_parse_oes(ACVP_CTX *ctx, JSON_Object *obj) {
     return ACVP_SUCCESS;
 }
 
+/**
+ * @brief Load the operating environment metadata from a JSON file.
+ *
+ * This metadata MUST be provided by the user when attempting to do a
+ * FIPS validation. This function will fail if the file cannot be found.
+ * The function will fail if the JSON is not properly formatted according
+ * to the instructions.
+ *
+ * @param ctx ACVP_CTX
+ * @param metadata_file The absolute path to JSON file holding the Operating Environment data
+ *
+ * @return ACVP_RESULT
+ */
 ACVP_RESULT acvp_oe_ingest_metadata(ACVP_CTX *ctx, const char *metadata_file) {
     JSON_Value *val = NULL;
     JSON_Object *obj = NULL;
@@ -2728,6 +3146,27 @@ end:
     return rv;
 }
 
+/**
+ * @brief Specify which Operating Environment and Module to use for a FIPS validation.
+ *
+ * This metadata MUST have already been loaded, either by acvp_oe_ingest_metadata and/or
+ * the proper library API.
+ *
+ * This function will fail if the \p module_id or \p oe_id are not valid.
+ * The user may choose to invoke this function with both \p module_id and \p oe_id or
+ * each of them seperately so long as the pair is eventually set. I.e. \p module_id for
+ * first invocation then \p oe_id for the second invocation.
+ *
+ * This function can be invoked in order to change either \p module_id or \p oe_id after
+ * they have been set previously in order to do a FIPS validation with different metadata
+ * without the need to exit program.
+ *
+ * @param ctx ACVP_CTX
+ * @param module_id The ID of the Module
+ * @param oe_id The ID of the Operating Environment
+ *
+ * @return ACVP_RESULT
+ */
 ACVP_RESULT acvp_oe_set_fips_validation_metadata(ACVP_CTX *ctx,
                                                  unsigned int module_id,
                                                  unsigned int oe_id) {
