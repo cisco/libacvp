@@ -773,7 +773,51 @@ void ctr128_inc(unsigned char *counter) {
     } while (n);
 }
 
-void acvp_free_kv_list(ACVP_KV_LIST *kv_list) {
+#define ACVP_UTIL_KV_STR_MAX 256
+
+ACVP_RESULT acvp_kv_list_append(ACVP_KV_LIST **kv_list,
+                                const char *key,
+                                const char *value) {
+    ACVP_KV_LIST *kv = NULL;
+
+    if (kv_list == NULL || key == NULL || value == NULL) {
+        return ACVP_INVALID_ARG;
+    }
+    if (!string_fits(key, ACVP_UTIL_KV_STR_MAX)) {
+        return ACVP_INVALID_ARG;
+    }
+    if (!string_fits(value, ACVP_UTIL_KV_STR_MAX)) {
+        return ACVP_INVALID_ARG;
+    }
+
+    if (*kv_list == NULL) {
+        *kv_list = calloc(1, sizeof(ACVP_KV_LIST));
+        if (*kv_list == NULL) return ACVP_MALLOC_FAIL;
+        kv = *kv_list;
+    } else {
+        ACVP_KV_LIST *current = *kv_list;
+        while (current->next) {
+            current = current->next;
+        }
+
+        // Append the next entry
+        current->next = calloc(1, sizeof(ACVP_KV_LIST));
+        if (current->next == NULL) return ACVP_MALLOC_FAIL;
+        kv = current->next;
+    }
+
+    kv->key = calloc(ACVP_UTIL_KV_STR_MAX + 1, sizeof(char));
+    if (kv->key == NULL) return ACVP_MALLOC_FAIL;
+    kv->value = calloc(ACVP_UTIL_KV_STR_MAX + 1, sizeof(char));
+    if (kv->value == NULL) return ACVP_MALLOC_FAIL;
+
+    strcpy_s(kv->key, ACVP_UTIL_KV_STR_MAX + 1, key);
+    strcpy_s(kv->value, ACVP_UTIL_KV_STR_MAX + 1, value);
+
+    return ACVP_SUCCESS;
+}
+
+void acvp_kv_list_free(ACVP_KV_LIST *kv_list) {
     ACVP_KV_LIST *tmp;
 
     while (kv_list) {

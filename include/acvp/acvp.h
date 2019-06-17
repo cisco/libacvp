@@ -2563,10 +2563,17 @@ ACVP_RESULT acvp_oe_module_set_type_version_desc(ACVP_CTX *ctx,
 
 ACVP_RESULT acvp_oe_dependency_new(ACVP_CTX *ctx, unsigned int id);
 
-ACVP_RESULT acvp_oe_dependency_add_attribute(ACVP_CTX *ctx,
-                                             unsigned int dependency_id,
-                                             const char *key,
-                                             const char *value);
+ACVP_RESULT acvp_oe_dependency_set_type(ACVP_CTX *ctx,
+                                        unsigned int dependency_id,
+                                        const char *value);
+
+ACVP_RESULT acvp_oe_dependency_set_name(ACVP_CTX *ctx,
+                                        unsigned int dependency_id,
+                                        const char *value);
+
+ACVP_RESULT acvp_oe_dependency_set_description(ACVP_CTX *ctx,
+                                               unsigned int dependency_id,
+                                               const char *value);
 
 ACVP_RESULT acvp_oe_oe_new(ACVP_CTX *ctx,
                            unsigned int id,

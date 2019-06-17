@@ -775,6 +775,17 @@ typedef struct acvp_string_list_t {
     struct acvp_string_list_t *next;
 } ACVP_STRING_LIST;
 
+/**
+ * @struct ACVP_KV_LIST
+ * @brief This struct is a list of key/value pairs.
+ *
+ */
+typedef struct acvp_kv_list_t {
+    char *key;
+    char *value;
+    struct acvp_kv_list_t *next;
+} ACVP_KV_LIST;
+
 typedef struct acvp_json_domain_obj_t {
     int min;
     int max;
@@ -1109,23 +1120,10 @@ typedef struct acvp_caps_list_t {
     struct acvp_caps_list_t *next;
 } ACVP_CAPS_LIST;
 
-/*! @struct ACVP_KV_LIST
- * @brief This struct is a list of key/value pairs
- * to be added to flexible JSON objects during registration
- *
- * For example, dependencies can have different key/value
- * pairs depending on their type, so if the attributes are
- * added to this list, then the list can get translated into
- * proper JSON during dependency registration.
- */
-typedef struct acvp_kv_list_t {
-    char *key;
-    char *value;
-    struct acvp_kv_list_t *next;
-} ACVP_KV_LIST;
-
 typedef struct acvp_vendor_address_t {
-    char *street;
+    char *street_1;
+    char *street_2;
+    char *street_3;
     char *locality;
     char *region;
     char *country;
@@ -1187,21 +1185,36 @@ typedef struct acvp_modules_t {
 
 typedef struct acvp_dependency_t {
     unsigned int id; /**< For library tracking purposes */
-    ACVP_KV_LIST *attribute_list; /**< Key/value list */
     char *url; /**< Returned from the server */
+    char *type;
+    char *name;
+    char *description;
 } ACVP_DEPENDENCY;
 
-#define LIBACVP_DEPENDENCIES_MAX 16
+#define LIBACVP_DEPENDENCIES_MAX 64
 typedef struct acvp_dependencies_t {
     ACVP_DEPENDENCY deps[LIBACVP_DEPENDENCIES_MAX];
     int count;
 } ACVP_DEPENDENCIES;
 
+typedef enum acvp_resource_status {
+    ACVP_RESOURCE_STATUS_COMPLETE = 1,
+    ACVP_RESOURCE_STATUS_PARTIAL,
+    ACVP_RESOURCE_STATUS_INCOMPLETE,
+} ACVP_RESOURCE_STATUS;
+
+typedef struct acvp_oe_dependencies_t {
+    ACVP_DEPENDENCY *deps[LIBACVP_DEPENDENCIES_MAX]; /* Array to pointers of linked dependencies */
+    int count;
+    ACVP_RESOURCE_STATUS status; /**< PARTIAL indicates that at least one of the linked Dependencies does not
+                                      exist. INCOMPLETE indicates all of the 'url' are missing */
+} ACVP_OE_DEPENDENCIES;
+
 typedef struct acvp_oe_t {
     unsigned int id; /**< For library tracking purposes */
     char *name; /**< Name of the Operating Environment */
     char *url; /**< ID URL returned from the server */
-    ACVP_DEPENDENCY *dependency; /**< Pointer to the Dependency to use */
+    ACVP_OE_DEPENDENCIES dependencies; /**< Pointers to attached dependencies */
 } ACVP_OE;
 
 #define LIBACVP_OES_MAX 8
@@ -1249,6 +1262,7 @@ struct acvp_ctx_t {
     ACVP_OPERATING_ENV op_env; /**< The Operating Environment resources available */
     ACVP_STRING_LIST *vsid_url_list;
     char *session_url;
+    int session_passed;
 
     char *json_filename;    /* filename of registration JSON */
     int use_json;           /* flag to indicate a JSON file is being used for registration */
@@ -1293,19 +1307,11 @@ ACVP_RESULT acvp_process_tests(ACVP_CTX *ctx);
 
 ACVP_RESULT acvp_send_test_session_registration(ACVP_CTX *ctx, char *reg, int len);
 
-ACVP_RESULT acvp_transport_send_oe_registration(ACVP_CTX *ctx, char *reg, int len);
-
-ACVP_RESULT acvp_transport_send_dependency_registration(ACVP_CTX *ctx, char *reg, int len);
-
-ACVP_RESULT acvp_transport_send_vendor_registration(ACVP_CTX *ctx, char *reg, int len);
-
-ACVP_RESULT acvp_transport_send_person_registration(ACVP_CTX *ctx, char *reg, int len);
-
-ACVP_RESULT acvp_transport_send_module_registration(ACVP_CTX *ctx, char *reg, int len);
-
 ACVP_RESULT acvp_send_login(ACVP_CTX *ctx, char *login, int len);
 
-ACVP_RESULT acvp_transport_get(ACVP_CTX *ctx, const char *url);
+ACVP_RESULT acvp_transport_put_validation(ACVP_CTX *ctx, const char *data, int data_len);
+
+ACVP_RESULT acvp_transport_get(ACVP_CTX *ctx, const char *url, const ACVP_KV_LIST *parameters);
 
 ACVP_RESULT acvp_transport_post(ACVP_CTX *ctx, const char *uri, char *data, int data_len);
 
@@ -1385,24 +1391,14 @@ ACVP_RESULT acvp_kas_ffc_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
  */
 ACVP_RESULT acvp_build_test_session(ACVP_CTX *ctx, char **reg, int *out_len);
 
-ACVP_RESULT acvp_register_build_oe(ACVP_CTX *ctx, ACVP_OE *oe, char **reg, int *out_len);
-
-ACVP_RESULT acvp_register_build_dependency(ACVP_CTX *ctx, ACVP_DEPENDENCY *dep, char **reg, int *out_len);
-
-ACVP_RESULT acvp_register_build_vendor(ACVP_CTX *ctx, ACVP_VENDOR *vendor, char **reg, int *out_len);
-
-ACVP_RESULT acvp_register_build_module(ACVP_CTX *ctx, ACVP_MODULE *module, char **reg, int *out_len);
-
-ACVP_RESULT acvp_register_build_person(ACVP_CTX *ctx,
-                                       ACVP_PERSON *person,
-                                       char *vendor_url,
-                                       char **reg,
-                                       int *out_len);
+ACVP_RESULT acvp_build_validation(ACVP_CTX *ctx, char **out, int *out_len);
 
 /*
  * Operating Environment functions
  */
 void acvp_oe_free_operating_env(ACVP_CTX *ctx);
+
+ACVP_RESULT acvp_oe_verify_fips_operating_env(ACVP_CTX *ctx);
 
 ACVP_RESULT acvp_notify_large(ACVP_CTX *ctx,
                               const char *url,
@@ -1462,9 +1458,13 @@ void acvp_release_json(JSON_Value *r_vs_val,
 
 JSON_Object *acvp_get_obj_from_rsp(ACVP_CTX *ctx, JSON_Value *arry_val);
 
-void acvp_free_kv_list(ACVP_KV_LIST *kv_list);
-
 int string_fits(const char *string, unsigned int max_allowed);
+
+ACVP_RESULT acvp_kv_list_append(ACVP_KV_LIST **kv_list,
+                                const char *key,
+                                const char *value);
+
+void acvp_kv_list_free(ACVP_KV_LIST *kv_list);
 
 void acvp_free_str_list(ACVP_STRING_LIST **list);
 

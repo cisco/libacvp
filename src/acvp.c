@@ -1371,36 +1371,12 @@ err:
  */
 static ACVP_RESULT acvp_register(ACVP_CTX *ctx) {
     ACVP_RESULT rv = ACVP_SUCCESS;
-    char *login = NULL, *reg = NULL;
-    int login_len = 0, reg_len = 0;
+    char *reg = NULL;
+    int reg_len = 0;
     JSON_Value *tmp_json_from_file;
 
     if (!ctx) {
         return ACVP_NO_CTX;
-    }
-
-    /*
-     * Construct the login message
-     */
-    rv = acvp_build_login(ctx, &login, &login_len, 0);
-    if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("Unable to build login message");
-        goto end;
-    }
-
-    /*
-     * Send the login to the ACVP server and get the response,
-     */
-    rv = acvp_send_login(ctx, login, login_len);
-    if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_STATUS("Login Send Failed");
-        goto end;
-    }
-
-    rv = acvp_parse_login(ctx);
-    if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("Unable to parse login response");
-        goto end;
     }
 
     if (ctx->use_json) {
@@ -1433,7 +1409,6 @@ static ACVP_RESULT acvp_register(ACVP_CTX *ctx) {
     }
 
 end:
-    if (login) free(login);
     if (reg) json_free_serialized_string(reg);
     return rv;
 }
@@ -1523,6 +1498,48 @@ static ACVP_RESULT acvp_parse_login(ACVP_CTX *ctx) {
     }
 end:
     json_value_free(val);
+    return rv;
+}
+
+static ACVP_RESULT acvp_parse_validation(ACVP_CTX *ctx) {
+    JSON_Value *val = NULL;
+    JSON_Object *obj = NULL;
+    const char *url = NULL, *status = NULL;
+    ACVP_RESULT rv = ACVP_SUCCESS;
+
+    /*
+     * Parse the JSON
+     */
+    val = json_parse_string(ctx->curl_buf);
+    if (!val) {
+        ACVP_LOG_ERR("JSON parse error");
+        return ACVP_JSON_ERR;
+    }
+
+    obj = acvp_get_obj_from_rsp(ctx, val);
+
+    /*
+     * Get the url of the 'request' status sent by server.
+     */
+    url = json_object_get_string(obj, "url");
+    if (!url) {
+        ACVP_LOG_ERR("Validation response JSON missing 'url'");
+        rv = ACVP_JSON_ERR;
+        goto end;
+    }
+
+    status = json_object_get_string(obj, "status");
+    if (!status) {
+        ACVP_LOG_ERR("Validation response JSON missing 'status'");
+        rv = ACVP_JSON_ERR;
+        goto end;
+    }
+
+    /* Print the request info to screen */
+    ACVP_LOG_STATUS("Validation requested -- status %s -- url: %s", status, url);
+
+end:
+    if (val) json_value_free(val);
     return rv;
 }
 
@@ -1785,16 +1802,12 @@ ACVP_RESULT acvp_check_test_results(ACVP_CTX *ctx) {
 * Begin vector processing logic.  This code should probably go into another module.
 ***************************************************************************************************************/
 
-ACVP_RESULT acvp_refresh(ACVP_CTX *ctx) {
+static ACVP_RESULT acvp_login(ACVP_CTX *ctx, int refresh) {
+    ACVP_RESULT rv = ACVP_SUCCESS;
     char *login = NULL;
     int login_len = 0;
-    ACVP_RESULT rv = ACVP_SUCCESS;
 
-    if (!ctx) {
-        return ACVP_NO_CTX;
-    }
-
-    rv = acvp_build_login(ctx, &login, &login_len, 1);
+    rv = acvp_build_login(ctx, &login, &login_len, refresh);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Unable to build login message");
         goto end;
@@ -1813,9 +1826,18 @@ ACVP_RESULT acvp_refresh(ACVP_CTX *ctx) {
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_STATUS("Login Response Failed, %d", rv);
     }
+
 end:
-    free(login);
+    if (login) free(login);
     return rv;
+}
+
+ACVP_RESULT acvp_refresh(ACVP_CTX *ctx) {
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+
+    return acvp_login(ctx, 1);
 }
 
 
@@ -2050,6 +2072,7 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
              * Pass, exit loop
              */
             ACVP_LOG_STATUS("Passed all vectors in testSession");
+            ctx->session_passed = 1;
             goto end;
         } else {
             /*
@@ -2098,7 +2121,9 @@ end:
     return rv;
 }
 
-static ACVP_RESULT metadata_ready(ACVP_CTX *ctx) {
+static ACVP_RESULT fips_metadata_ready(ACVP_CTX *ctx) {
+    ACVP_RESULT rv = 0;
+
     if (ctx == NULL) return ACVP_NO_CTX;
 
     if (ctx->fips.module == NULL) {
@@ -2111,9 +2136,55 @@ static ACVP_RESULT metadata_ready(ACVP_CTX *ctx) {
         return ACVP_UNSUPPORTED_OP;
     }
 
-    // TODO query that the metata exists and is in server DB
+    /*
+     * Verify that the selected FIPS metadata is sane.
+     * A.k.a. check that the resources exist on the server DB, if required.
+     */
+    rv = acvp_oe_verify_fips_operating_env(ctx);
+    if (ACVP_SUCCESS != rv) {
+        ACVP_LOG_ERR("Failed to verify the FIPS metadata with server");
+        return rv;
+    }
 
     return ACVP_SUCCESS;
+}
+
+ACVP_RESULT acvp_validate_test_session(ACVP_CTX *ctx) {
+    ACVP_RESULT rv = ACVP_SUCCESS;
+    char *validation = NULL;
+    int validation_len = 0;
+
+    if (ctx == NULL) return ACVP_NO_CTX;
+
+    if (ctx->session_passed != 1) {
+        ACVP_LOG_ERR("This testSession cannot be certified. Required disposition == 'pass'.");
+        return ACVP_SUCCESS; // Technically no error occurred
+    }
+
+    rv = acvp_build_validation(ctx, &validation, &validation_len);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Unable to build Validation message");
+        goto end;
+    }
+
+    /*
+     * PUT the validation with the ACVP server and get the response,
+     */
+    rv = acvp_transport_put_validation(ctx, validation, validation_len);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_STATUS("Validation send failed");
+        goto end;
+    }
+
+    rv = acvp_parse_validation(ctx);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_STATUS("Failed to parse Validation response");
+    }
+
+end:
+    if (validation) free(validation);
+
+    return rv;
 }
 
 ACVP_RESULT acvp_run(ACVP_CTX *ctx, int fips_validation) {
@@ -2121,8 +2192,14 @@ ACVP_RESULT acvp_run(ACVP_CTX *ctx, int fips_validation) {
 
     if (ctx == NULL) return ACVP_NO_CTX;
 
+    rv = acvp_login(ctx, 0);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Failed to login with ACVP server");
+        goto end;
+    }
+
     if (fips_validation) {
-        rv = metadata_ready(ctx);
+        rv = fips_metadata_ready(ctx);
         if (ACVP_SUCCESS != rv) {
             ACVP_LOG_ERR("Validation metadata not ready");
             return ACVP_UNSUPPORTED_OP;
@@ -2164,6 +2241,17 @@ ACVP_RESULT acvp_run(ACVP_CTX *ctx, int fips_validation) {
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Unable to retrieve test results");
         goto end;
+    }
+
+    if (fips_validation) {
+        /*
+         * Tell the server to provision a FIPS certificate for this testSession.
+         */
+        rv = acvp_validate_test_session(ctx);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Failed to perform Validation of testSession");
+            goto end;
+        }
     }
 
 end:
