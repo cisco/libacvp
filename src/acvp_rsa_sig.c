@@ -200,11 +200,11 @@ static ACVP_RESULT acvp_rsa_sig_kat_handler_internal(ACVP_CTX *ctx, JSON_Object 
 
     ACVP_CIPHER alg_id;
     char *json_result = NULL, *mode_str;
-    unsigned int mod = 0;
-    char *msg, *signature = NULL;
+    unsigned int mod = 0, padding = 0;
+    char *msg, *signature = NULL, *tmp_signature = NULL;
     char *e_str = NULL, *n_str = NULL;
     char *salt = NULL, *alg_str;
-    int salt_len = 0, json_msglen, json_siglen;
+    int salt_len = 0, json_msglen, json_siglen, p;
     ACVP_RESULT rv;
 
     if (!ctx) {
@@ -399,26 +399,47 @@ static ACVP_RESULT acvp_rsa_sig_kat_handler_internal(ACVP_CTX *ctx, JSON_Object 
 
 
             if (alg_id == ACVP_RSA_SIGVER) {
-                signature = (char *)json_object_get_string(testobj, "signature");
-                if (!signature) {
+                tmp_signature = (char *)json_object_get_string(testobj, "signature");
+                if (!tmp_signature) {
                     ACVP_LOG_ERR("Missing 'signature' from server json");
                     rv = ACVP_MISSING_ARG;
                     json_value_free(r_tval);
                     goto err;
                 }
-                json_siglen = strnlen_s(signature, ACVP_RSA_SIGNATURE_MAX + 1);
+                json_siglen = strnlen_s(tmp_signature, ACVP_RSA_SIGNATURE_MAX + 1);
                 if (json_siglen > ACVP_RSA_SIGNATURE_MAX) {
                     ACVP_LOG_ERR("'signature' too long in server json");
                     rv = ACVP_INVALID_ARG;
                     json_value_free(r_tval);
                     goto err;
                 }
+
+                if (json_siglen != mod/4) {
+                    signature = calloc(mod/4 +1, sizeof(char));                    
+                    if (!signature) {
+                        ACVP_LOG_ERR("Unable to malloc for signature");
+                        rv = ACVP_MALLOC_FAIL;
+                        goto err;
+                    }
+                    padding = mod/4 - json_siglen;
+                    for (p=0;p<padding;p++) {
+                        signature[p] = 0x30;
+                    }
+                    memcpy_s(signature + padding, mod/4, tmp_signature, json_siglen);
+                } else {
+                    padding = 0;
+                    signature = tmp_signature;
+                }
+
                 salt = (char *)json_object_get_string(testobj, "salt");
             }
 
             rv = acvp_rsa_sig_init_tc(ctx, alg_id, &stc, tgId, tc_id,
                                       sig_type, mod, hash_alg, e_str,
                                       n_str, msg, signature, salt, salt_len);
+            if (padding) {
+                free(signature);
+            }
 
             /* Process the current test vector... */
             if (rv == ACVP_SUCCESS) {

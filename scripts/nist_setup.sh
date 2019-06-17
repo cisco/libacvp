@@ -6,5 +6,5 @@ export ACV_KEY_FILE=<procure from nist>
 export ACV_CERT_FILE=<procure from nist>
 export ACV_TOTP_SEED=<procure from nist>
 export ACV_PORT=443
-export ACV_SERVER=demo.acvp.nist.gov
+export ACV_SERVER=demo.acvts.nist.gov
 
