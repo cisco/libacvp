@@ -1,5 +1,5 @@
 #!/bin/bash
-export ACV_URI_PREFIX=acvp/v1/
+export ACV_URI_PREFIX=/acvp/v1/
 export ACV_API_CONTEXT=acvp/
 export ACV_CA_FILE=certs/acvp.nist.gov.crt
 export ACV_KEY_FILE=<procure from nist>
