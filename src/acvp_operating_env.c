@@ -743,12 +743,21 @@ static ACVP_RESULT match_dependencies_page(ACVP_CTX *ctx,
              * Found a match.
              * Copy the url and skip to end.
              */
+            const char *url = json_object_get_string(dep_obj, "url");
+            if (url == NULL) {
+                ACVP_LOG_ERR("JSON dependency object missing 'url'");
+                rv = ACVP_JSON_ERR;
+                goto end;
+            }
+
             dep->url = calloc(ACVP_ATTR_URL_MAX + 1, sizeof(char));
             if (dep->url == NULL) {
                 ACVP_LOG_ERR("Failed to malloc");
-                return ACVP_MALLOC_FAIL;
+                rv = ACVP_MALLOC_FAIL;
+                goto end;
             }
-            strcpy_s(dep->url, ACVP_ATTR_URL_MAX + 1, json_object_get_string(dep_obj, "url"));
+
+            strcpy_s(dep->url, ACVP_ATTR_URL_MAX + 1, url);
             *match = 1; 
             goto end;
         }
@@ -1029,13 +1038,21 @@ static ACVP_RESULT match_oes_page(ACVP_CTX *ctx,
              * Found a match.
              * Copy the url and skip to end.
              */
+            const char *url = json_object_get_string(oe_obj, "url");
+            if (url == NULL) {
+                ACVP_LOG_ERR("JSON oe object missing 'url'");
+                rv = ACVP_JSON_ERR;
+                goto end;
+            }
+
             oe->url = calloc(ACVP_ATTR_URL_MAX + 1, sizeof(char));
             if (oe->url == NULL) {
                 ACVP_LOG_ERR("Failed to malloc");
-                return ACVP_MALLOC_FAIL;
+                rv = ACVP_MALLOC_FAIL;
+                goto end;
             }
-            strcpy_s(oe->url, ACVP_ATTR_URL_MAX + 1,
-                     json_object_get_string(oe_obj, "url"));
+
+            strcpy_s(oe->url, ACVP_ATTR_URL_MAX + 1, url);
             *match = 1;
             goto end;
         }
@@ -1664,7 +1681,7 @@ static ACVP_RESULT match_vendors_page(ACVP_CTX *ctx,
 
     for (i = 0; i < data_count; i++) {
         int equal = 1;
-        const char *contacts_url = NULL;
+        const char *contacts_url = NULL, *url = NULL;
         JSON_Array *emails = NULL, *phone_numbers = NULL, *addresses = NULL;
         JSON_Object *vendor_obj = json_array_get_object(data_array, i);
         if (vendor_obj == NULL)  {
@@ -1720,13 +1737,21 @@ static ACVP_RESULT match_vendors_page(ACVP_CTX *ctx,
          * Found a match.
          * Copy the url and skip to end.
          */
+        url = json_object_get_string(vendor_obj, "url");
+        if (url == NULL) {
+            ACVP_LOG_ERR("JSON object missing 'url'");
+            rv = ACVP_JSON_ERR;
+            goto end;
+        }
+
         vendor->url = calloc(ACVP_ATTR_URL_MAX + 1, sizeof(char));
         if (vendor->url == NULL) {
             ACVP_LOG_ERR("Failed to malloc");
-            return ACVP_MALLOC_FAIL;
+            rv = ACVP_MALLOC_FAIL;
+            goto end;
         }
-        strcpy_s(vendor->url, ACVP_ATTR_URL_MAX + 1,
-                 json_object_get_string(vendor_obj, "url"));
+
+        strcpy_s(vendor->url, ACVP_ATTR_URL_MAX + 1, url);
         *match = 1;
         goto end;
     }
@@ -2003,13 +2028,21 @@ static ACVP_RESULT match_modules_page(ACVP_CTX *ctx,
              * Found a match.
              * Copy the url and skip to end.
              */
+            const char *url = json_object_get_string(module_obj, "url");
+            if (url == NULL) {
+                ACVP_LOG_ERR("JSON module object missing 'url'");
+                rv = ACVP_JSON_ERR;
+                goto end;
+            }
+
             module->url = calloc(ACVP_ATTR_URL_MAX + 1, sizeof(char));
             if (module->url == NULL) {
                 ACVP_LOG_ERR("Failed to malloc");
-                return ACVP_MALLOC_FAIL;
+                rv = ACVP_MALLOC_FAIL;
+                goto end;
             }
-            strcpy_s(module->url, ACVP_ATTR_URL_MAX + 1,
-                     json_object_get_string(module_obj, "url"));
+
+            strcpy_s(module->url, ACVP_ATTR_URL_MAX + 1, url);
             *match = 1; 
             goto end;
         }
