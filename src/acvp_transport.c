@@ -751,7 +751,6 @@ ACVP_RESULT acvp_transport_get(ACVP_CTX *ctx,
 
 end:
     if (curl_hnd) curl_easy_cleanup(curl_hnd);
-    if (escaped_value) curl_free(escaped_value);
     if (full_url) free(full_url);
     return rv;
 #endif

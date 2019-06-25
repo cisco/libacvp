@@ -2728,10 +2728,12 @@ ACVP_RESULT acvp_build_validation(ACVP_CTX *ctx,
     JSON_Value *top_array_val = NULL, *val = NULL;
     JSON_Array *top_array = NULL;
     JSON_Object *obj = NULL;
-    ACVP_OE *oe = ctx->fips.oe;
-    ACVP_MODULE *module = ctx->fips.module;
+    ACVP_OE *oe = NULL;
+    ACVP_MODULE *module = NULL;
 
     if (!ctx) return ACVP_NO_CTX;
+    oe = ctx->fips.oe;
+    module = ctx->fips.module;
 
     /*
      * Start top-level array

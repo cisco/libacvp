@@ -700,6 +700,7 @@ static ACVP_RESULT match_dependencies_page(ACVP_CTX *ctx,
     if (!ctx) return ACVP_NO_CTX;
     if (dep == NULL) {
         ACVP_LOG_ERR("Parameter 'dependency' must be non-NULL");
+        return ACVP_INVALID_ARG;
     }
     if (match == NULL) {
         ACVP_LOG_ERR("Parameter 'match' must be non-NULL");
@@ -805,6 +806,7 @@ static ACVP_RESULT query_dependency(ACVP_CTX *ctx,
     if (!ctx) return ACVP_NO_CTX;
     if (dep == NULL) {
         ACVP_LOG_ERR("Parameter 'dependency' must be non-NULL");
+        return ACVP_INVALID_ARG;
     }
 
     if (dep->url) {
@@ -966,6 +968,7 @@ static ACVP_RESULT match_oes_page(ACVP_CTX *ctx,
     if (!ctx) return ACVP_NO_CTX;
     if (oe == NULL) {
         ACVP_LOG_ERR("Parameter 'oe' must be non-NULL");
+        return ACVP_INVALID_ARG;
     }
     if (match == NULL) {
         ACVP_LOG_ERR("Parameter 'match' must be non-NULL");
@@ -1090,6 +1093,7 @@ static ACVP_RESULT query_oe(ACVP_CTX *ctx,
     if (!ctx) return ACVP_NO_CTX;
     if (oe == NULL) {
         ACVP_LOG_ERR("Parameter 'oe' must be non-NULL");
+        return ACVP_INVALID_ARG;
     }
 
     if (oe->url) {
@@ -1354,6 +1358,7 @@ static ACVP_RESULT compare_vendor_address(ACVP_VENDOR_ADDRESS *address,
                    *street_3 = NULL, *locality = NULL,
                    *region = NULL, *country = NULL,
                    *postal_code = NULL;
+        const char *url = NULL;
         JSON_Object *obj = NULL;
         int diff = 0;
 
@@ -1432,23 +1437,25 @@ static ACVP_RESULT compare_vendor_address(ACVP_VENDOR_ADDRESS *address,
             if (diff != 0) continue; // Not equal
         }
 
-        /*
-         * Found a match.
-         * Copy the url and return.
-         */
-        if (address->url) {
-            memzero_s(address->url, ACVP_ATTR_URL_MAX + 1);
-        } else {
-            address->url = calloc(ACVP_ATTR_URL_MAX + 1, sizeof(char));
-            if (address->url == NULL) {
-                return ACVP_MALLOC_FAIL;
+        url = json_object_get_string(obj, "url");
+        if (url) {
+            /*
+             * Found a match.
+             * Copy the url and return.
+             */
+            if (address->url) {
+                memzero_s(address->url, ACVP_ATTR_URL_MAX + 1);
+            } else {
+                address->url = calloc(ACVP_ATTR_URL_MAX + 1, sizeof(char));
+                if (address->url == NULL) {
+                    return ACVP_MALLOC_FAIL;
+                }
             }
-        }
-        strcpy_s(address->url, ACVP_ATTR_URL_MAX + 1,
-                 json_object_get_string(obj, "url"));
-        *match = 1;
+            strcpy_s(address->url, ACVP_ATTR_URL_MAX + 1, url);
+            *match = 1;
 
-        return ACVP_SUCCESS;
+            return ACVP_SUCCESS;
+        }
     }
 
     // None of the candidates matched.
@@ -1777,6 +1784,7 @@ static ACVP_RESULT query_vendor(ACVP_CTX *ctx,
     if (!ctx) return ACVP_NO_CTX;
     if (vendor == NULL) {
         ACVP_LOG_ERR("Parameter 'vendor' must be non-NULL");
+        return ACVP_INVALID_ARG;
     }
 
     if (vendor->url) {
@@ -1919,6 +1927,7 @@ static ACVP_RESULT match_modules_page(ACVP_CTX *ctx,
     if (!ctx) return ACVP_NO_CTX;
     if (module == NULL) {
         ACVP_LOG_ERR("Parameter 'module' must be non-NULL");
+        return ACVP_INVALID_ARG;
     }
     if (match == NULL) {
         ACVP_LOG_ERR("Parameter 'match' must be non-NULL");
@@ -2058,6 +2067,7 @@ static ACVP_RESULT query_module(ACVP_CTX *ctx,
     if (!ctx) return ACVP_NO_CTX;
     if (module == NULL) {
         ACVP_LOG_ERR("Parameter 'module' must be non-NULL");
+        return ACVP_INVALID_ARG;
     }
 
     if (module->url) {
