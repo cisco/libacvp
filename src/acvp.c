@@ -25,6 +25,10 @@
 /*
  * Forward prototypes for local functions
  */
+static ACVP_RESULT acvp_validate_test_session(ACVP_CTX *ctx);
+
+static ACVP_RESULT fips_metadata_ready(ACVP_CTX *ctx);
+
 static ACVP_RESULT acvp_append_vsid_url(ACVP_CTX *ctx, char *vsid_url);
 
 static ACVP_RESULT acvp_parse_login(ACVP_CTX *ctx);
@@ -958,7 +962,7 @@ end:
  * Allows application to read JSON vector responses from a file(rsp_filename)
  * and upload them to the server for verification.
  */
-ACVP_RESULT acvp_upload_vectors_from_file(ACVP_CTX *ctx, const char *rsp_filename) {
+ACVP_RESULT acvp_upload_vectors_from_file(ACVP_CTX *ctx, const char *rsp_filename, int fips_validation) {
     JSON_Object *obj = NULL;
     JSON_Object *rsp_obj = NULL;
     JSON_Object *ver_obj = NULL;
@@ -1055,6 +1059,18 @@ ACVP_RESULT acvp_upload_vectors_from_file(ACVP_CTX *ctx, const char *rsp_filenam
         goto end;
     }
 
+    if (fips_validation) {
+        rv = fips_metadata_ready(ctx);
+        if (ACVP_SUCCESS != rv) {
+            ACVP_LOG_ERR("Validation metadata not ready");
+            return ACVP_UNSUPPORTED_OP;
+        }
+
+        ctx->fips.do_validation = 1; /* Enable */
+    } else {
+        ctx->fips.do_validation = 0; /* Disable */
+    }
+
     n = 1;    /* start with second array index */
     reg_array = json_value_get_array(val);
     vs_val = json_array_get_value(reg_array, n);
@@ -1110,6 +1126,16 @@ ACVP_RESULT acvp_upload_vectors_from_file(ACVP_CTX *ctx, const char *rsp_filenam
         ACVP_LOG_ERR("Unable to retrieve test results");
     }
 
+    if (fips_validation) {
+        /*
+         * Tell the server to provision a FIPS certificate for this testSession.
+         */
+        rv = acvp_validate_test_session(ctx);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Failed to perform Validation of testSession");
+            goto end;
+        }
+    }
 end:
     json_value_free(val);
 
@@ -1940,6 +1966,7 @@ static ACVP_RESULT acvp_process_vsid(ACVP_CTX *ctx, char *vsid_url, int count) {
         }
 
         if (rv != ACVP_SUCCESS) goto end;
+        json_value_free(val);
     }
 
     /*
@@ -2149,7 +2176,7 @@ static ACVP_RESULT fips_metadata_ready(ACVP_CTX *ctx) {
     return ACVP_SUCCESS;
 }
 
-ACVP_RESULT acvp_validate_test_session(ACVP_CTX *ctx) {
+static ACVP_RESULT acvp_validate_test_session(ACVP_CTX *ctx) {
     ACVP_RESULT rv = ACVP_SUCCESS;
     char *validation = NULL;
     int validation_len = 0;

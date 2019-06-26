@@ -295,11 +295,6 @@ int main(int argc, char **argv) {
        goto end;
     }
 
-    if (cfg.vector_upload) {
-       rv = acvp_upload_vectors_from_file(ctx, cfg.vector_upload_file);
-       goto end;
-    }
-
     if (cfg.fips_validation) {
         unsigned int module_id = 1, oe_id = 1;
 
@@ -321,6 +316,11 @@ int main(int argc, char **argv) {
             printf("Failed to set metadata for FIPS validation\n");
             goto end;
         }
+    }
+
+    if (cfg.vector_upload) {
+       rv = acvp_upload_vectors_from_file(ctx, cfg.vector_upload_file, cfg.fips_validation);
+       goto end;
     }
 
     /*

@@ -2605,7 +2605,7 @@ ACVP_RESULT acvp_set_json_filename(ACVP_CTX *ctx, const char *json_filename);
  * @return ACVP_RESULT
  */
 ACVP_RESULT acvp_load_kat_filename(ACVP_CTX *ctx, const char *kat_filename);
-ACVP_RESULT acvp_upload_vectors_from_file(ACVP_CTX *ctx, const char *rsp_filename);
+ACVP_RESULT acvp_upload_vectors_from_file(ACVP_CTX *ctx, const char *rsp_filename, int fips_validation);
 ACVP_RESULT acvp_run_vectors_from_file(ACVP_CTX *ctx, const char *req_filename, const char *rsp_filename);
 
 /*! @brief acvp_set_2fa_callback() sets a callback function which
