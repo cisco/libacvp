@@ -1063,7 +1063,7 @@ ACVP_RESULT acvp_upload_vectors_from_file(ACVP_CTX *ctx, const char *rsp_filenam
         rv = fips_metadata_ready(ctx);
         if (ACVP_SUCCESS != rv) {
             ACVP_LOG_ERR("Validation metadata not ready");
-            return ACVP_UNSUPPORTED_OP;
+            goto end;
         }
 
         ctx->fips.do_validation = 1; /* Enable */
