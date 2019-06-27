@@ -1967,6 +1967,7 @@ static ACVP_RESULT acvp_process_vsid(ACVP_CTX *ctx, char *vsid_url, int count) {
 
         if (rv != ACVP_SUCCESS) goto end;
         json_value_free(val);
+        val = NULL;
     }
 
     /*
@@ -1976,7 +1977,7 @@ static ACVP_RESULT acvp_process_vsid(ACVP_CTX *ctx, char *vsid_url, int count) {
     rv = acvp_submit_vector_responses(ctx, vsid_url);
 
 end:
-    json_value_free(val);
+    if (val) json_value_free(val);
     return rv;
 }
 
