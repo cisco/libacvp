@@ -591,6 +591,7 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx) {
     if (ctx->json_filename) { free(ctx->json_filename); }
     if (ctx->session_url) { free(ctx->session_url); }
     if (ctx->vector_req_file) { free(ctx->vector_req_file); }
+    if (ctx->status_string) { free(ctx->status_string); }
     if (ctx->jwt_token) { free(ctx->jwt_token); }
     if (ctx->tmp_jwt) { free(ctx->tmp_jwt); }
     if (ctx->vs_list) {
@@ -1324,6 +1325,26 @@ ACVP_RESULT acvp_mark_as_request_only(ACVP_CTX *ctx, char *filename) {
     ctx->vector_req_file = calloc(ACVP_SESSION_PARAMS_STR_LEN_MAX + 1, sizeof(char));
     strcpy_s(ctx->vector_req_file, ACVP_SESSION_PARAMS_STR_LEN_MAX + 1, filename);
     ctx->vector_req = 1;
+    return ACVP_SUCCESS;
+}
+
+ACVP_RESULT acvp_mark_as_status_only(ACVP_CTX *ctx, char *string) {
+
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    } 
+    if (!string) {
+        return ACVP_MISSING_ARG;
+    }
+    if (strnlen_s(string, ACVP_REQUEST_STR_LEN_MAX + 1) > ACVP_REQUEST_STR_LEN_MAX) {
+         ACVP_LOG_ERR("Request string is suspiciously long...");
+        return ACVP_INVALID_ARG;
+    }
+
+    if (ctx->status_string) { free(ctx->status_string); }
+    ctx->status_string = calloc(ACVP_REQUEST_STR_LEN_MAX + 1, sizeof(char));
+    strcpy_s(ctx->status_string, ACVP_REQUEST_STR_LEN_MAX + 1, string);
+    ctx->req_status = 1;
     return ACVP_SUCCESS;
 }
 
@@ -2223,6 +2244,12 @@ ACVP_RESULT acvp_run(ACVP_CTX *ctx, int fips_validation) {
     rv = acvp_login(ctx, 0);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Failed to login with ACVP server");
+        goto end;
+    }
+
+
+    if (ctx->req_status) { 
+        rv = acvp_get_request_status(ctx, ctx->status_string);
         goto end;
     }
 

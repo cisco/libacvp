@@ -670,6 +670,7 @@
 #define ACVP_ATTR_URL_MAX       2083 /* MS IE's limit - arbitrary */
 
 #define ACVP_SESSION_PARAMS_STR_LEN_MAX 256
+#define ACVP_REQUEST_STR_LEN_MAX 128
 #define ACVP_OE_STR_MAX 256
 #define ACVP_PATH_SEGMENT_DEFAULT ""
 #define ACVP_JSON_FILENAME_MAX 128
@@ -1270,6 +1271,8 @@ struct acvp_ctx_t {
     char *vector_req_file;  /* filename to use to store vector request JSON */
     int vector_req;         /* flag to indicate we are storing vector request JSON in a file */
     int vector_rsp;         /* flag to indicate we are storing vector responses JSON in a file */
+    int req_status;         /* flag to indicate we are only requesting validation status */
+    char *status_string;    /* string used for status request */
 
     ACVP_FIPS fips; /* Information related to a FIPS validation */
 
@@ -1470,5 +1473,7 @@ void acvp_free_str_list(ACVP_STRING_LIST **list);
 
 ACVP_RESULT acvp_json_serialize_to_file_pretty_a(const JSON_Value *value, const char *filename);
 ACVP_RESULT acvp_json_serialize_to_file_pretty_w(const JSON_Value *value, const char *filename);
+ACVP_RESULT acvp_get_request_status (ACVP_CTX *ctx, const char *url);
+
 
 #endif
