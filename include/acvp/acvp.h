@@ -2525,6 +2525,18 @@ ACVP_RESULT acvp_mark_as_sample(ACVP_CTX *ctx);
  */
 ACVP_RESULT acvp_mark_as_request_only(ACVP_CTX *ctx, char *filename);
 
+/*! @brief acvp_mark_as_status_only() marks the registration as a GET status only.
+
+    This function will take the string parameter and perform a GET to check
+    the status of a specific request.  The request ID must be part of the string.
+
+    @param ctx Pointer to ACVP_CTX that was previously created by
+        calling acvp_create_test_session.
+    @param string used for the request, such as '/acvp/v1/requests/383'
+
+ */
+ACVP_RESULT acvp_mark_as_status_only(ACVP_CTX *ctx, char *string);
+
 
 /*! @brief Performs the ACVP testing procedures.
  *

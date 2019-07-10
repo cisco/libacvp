@@ -72,6 +72,9 @@ static void print_usage(int err) {
     printf("To process kat vectors from a JSON file use:\n");
     printf("      --kat <file>\n");
     printf("\n");
+    printf("To GET status of request, such as validation:\n");
+    printf("      --req_status <request string URL including ID>\n");
+    printf("\n");
     printf("If you are running a sample registration (querying for correct answers\n");
     printf("in addition to the normal registration flow) use:\n");
     printf("      --sample\n");
@@ -151,6 +154,7 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
         { "vector_req", ko_required_argument, 403 },
         { "vector_rsp", ko_required_argument, 404 },
         { "vector_upload", ko_required_argument, 405 },
+        { "req_status", ko_required_argument, 406 },
         { NULL, 0, 0 }
     };
 
@@ -374,6 +378,25 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
             }
 
             strcpy_s(cfg->vector_upload_file, JSON_FILENAME_LENGTH + 1, opt.arg);
+            continue;
+        }
+
+
+        if (c == 406) {
+            int status_string_len = 0;
+            cfg->req_status = 1;
+
+            status_string_len = strnlen_s(opt.arg, JSON_REQUEST_LENGTH + 1);
+            if (status_string_len > JSON_REQUEST_LENGTH) {
+                printf(ANSI_COLOR_RED "Command error... [%s]"ANSI_COLOR_RESET
+                       "\nThe <string> \"%s\", is too long."
+                       "\nMax allowed <string> length is (%d).\n",
+                       "--req_status", opt.arg, JSON_REQUEST_LENGTH);
+                print_usage(1);
+                return 1;
+            }
+
+            strcpy_s(cfg->status_string, JSON_REQUEST_LENGTH + 1, opt.arg);
             continue;
         }
 

@@ -47,6 +47,7 @@
             "dependencies" : [
                 { "type": "software", "name": "Linux 3.1" }
             ],
+            "description": "My linux operating environment",
             "id": 1
         }
     ]
