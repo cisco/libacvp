@@ -1475,10 +1475,6 @@ void acvp_free_str_list(ACVP_STRING_LIST **list);
 
 ACVP_RESULT acvp_json_serialize_to_file_pretty_a(const JSON_Value *value, const char *filename);
 ACVP_RESULT acvp_json_serialize_to_file_pretty_w(const JSON_Value *value, const char *filename);
-ACVP_RESULT acvp_get(ACVP_CTX *ctx, const char *url);
-ACVP_RESULT acvp_post(ACVP_CTX *ctx, 
-                      const char *url,
-                      char *data);
 
 
 #endif
