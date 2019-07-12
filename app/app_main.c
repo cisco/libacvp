@@ -207,8 +207,12 @@ int main(int argc, char **argv) {
         acvp_mark_as_sample(ctx);
     }
 
-    if (cfg.req_status) {
-        acvp_mark_as_status_only(ctx, cfg.status_string);
+    if (cfg.get) {
+        acvp_mark_as_get_only(ctx, cfg.get_string);
+    }
+
+    if (cfg.post) {
+        acvp_mark_as_post_only(ctx, cfg.post_filename);
     }
 
     if (cfg.vector_req && !cfg.vector_rsp) {

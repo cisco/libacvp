@@ -25,6 +25,8 @@
 /*
  * Forward prototypes for local functions
  */
+static ACVP_RESULT acvp_login(ACVP_CTX *ctx, int refresh);
+
 static ACVP_RESULT acvp_validate_test_session(ACVP_CTX *ctx);
 
 static ACVP_RESULT fips_metadata_ready(ACVP_CTX *ctx);
@@ -591,7 +593,8 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx) {
     if (ctx->json_filename) { free(ctx->json_filename); }
     if (ctx->session_url) { free(ctx->session_url); }
     if (ctx->vector_req_file) { free(ctx->vector_req_file); }
-    if (ctx->status_string) { free(ctx->status_string); }
+    if (ctx->get_string) { free(ctx->get_string); }
+    if (ctx->post_filename) { free(ctx->post_filename); }
     if (ctx->jwt_token) { free(ctx->jwt_token); }
     if (ctx->tmp_jwt) { free(ctx->tmp_jwt); }
     if (ctx->vs_list) {
@@ -1328,7 +1331,7 @@ ACVP_RESULT acvp_mark_as_request_only(ACVP_CTX *ctx, char *filename) {
     return ACVP_SUCCESS;
 }
 
-ACVP_RESULT acvp_mark_as_status_only(ACVP_CTX *ctx, char *string) {
+ACVP_RESULT acvp_mark_as_get_only(ACVP_CTX *ctx, char *string) {
 
     if (!ctx) {
         return ACVP_NO_CTX;
@@ -1341,10 +1344,30 @@ ACVP_RESULT acvp_mark_as_status_only(ACVP_CTX *ctx, char *string) {
         return ACVP_INVALID_ARG;
     }
 
-    if (ctx->status_string) { free(ctx->status_string); }
-    ctx->status_string = calloc(ACVP_REQUEST_STR_LEN_MAX + 1, sizeof(char));
-    strcpy_s(ctx->status_string, ACVP_REQUEST_STR_LEN_MAX + 1, string);
-    ctx->req_status = 1;
+    if (ctx->get_string) { free(ctx->get_string); }
+    ctx->get_string = calloc(ACVP_REQUEST_STR_LEN_MAX + 1, sizeof(char));
+    strcpy_s(ctx->get_string, ACVP_REQUEST_STR_LEN_MAX + 1, string);
+    ctx->get = 1;
+    return ACVP_SUCCESS;
+}
+
+ACVP_RESULT acvp_mark_as_post_only(ACVP_CTX *ctx, char *filename) {
+
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    } 
+    if (!filename) {
+        return ACVP_MISSING_ARG;
+    }
+    if (strnlen_s(filename, ACVP_REQUEST_STR_LEN_MAX + 1) > ACVP_SESSION_PARAMS_STR_LEN_MAX) {
+         ACVP_LOG_ERR("Request filename is suspiciously long...");
+        return ACVP_INVALID_ARG;
+    }
+
+    if (ctx->post_filename) { free(ctx->post_filename); }
+    ctx->post_filename = calloc(ACVP_SESSION_PARAMS_STR_LEN_MAX + 1, sizeof(char));
+    strcpy_s(ctx->post_filename, ACVP_SESSION_PARAMS_STR_LEN_MAX + 1, filename);
+    ctx->post = 1;
     return ACVP_SUCCESS;
 }
 
@@ -2236,6 +2259,84 @@ end:
     return rv;
 }
 
+
+static
+ACVP_RESULT acvp_post_data(ACVP_CTX *ctx, char *filename) {
+    ACVP_RESULT rv = ACVP_SUCCESS;
+    JSON_Value *reg_arry_val = NULL;
+    JSON_Object *reg_obj = NULL;
+    JSON_Array *reg_arry = NULL;
+    JSON_Array *data_array = NULL;
+    JSON_Object *obj = NULL;
+    JSON_Value *val = NULL;
+    JSON_Value *post_val = NULL;
+    JSON_Value *raw_val = NULL;
+    const char *path = NULL;
+    char *json_result = NULL;
+
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+    if (!filename) {
+        ACVP_LOG_ERR("Must provide value for JSON filename");
+        return ACVP_MISSING_ARG;
+    }
+
+    if (strnlen_s(filename, ACVP_JSON_FILENAME_MAX + 1) > ACVP_JSON_FILENAME_MAX) {
+        ACVP_LOG_ERR("Provided filename length > max(%d)", ACVP_JSON_FILENAME_MAX);
+        return ACVP_INVALID_ARG;
+    }
+
+    val = json_parse_file(filename);
+    if (!val) {
+        ACVP_LOG_ERR("JSON val parse error");
+        return ACVP_MALFORMED_JSON;
+    }
+
+    data_array = json_value_get_array(val);
+    obj = json_array_get_object(data_array, 0);
+    if (!obj) {
+        ACVP_LOG_ERR("JSON obj parse error");
+        goto end;
+    }
+    path = json_object_get_string(obj, "url");
+    if (!path) {
+        ACVP_LOG_WARN("Missing path, POST aborted");
+        goto end;
+    }
+
+    raw_val = json_array_get_value(data_array, 1);
+    json_result = json_serialize_to_string_pretty(raw_val, NULL);
+    post_val = json_parse_string(json_result);
+    json_free_serialized_string(json_result);
+
+    rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
+    json_array_append_value(reg_arry, post_val);
+
+    json_result = json_serialize_to_string_pretty(reg_arry_val, NULL);
+    if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
+        printf("\nPOST Data: %s\n\n", json_result);
+    } else {
+        ACVP_LOG_INFO("\n\n%s\n\n", json_result);
+    }
+    json_value_free(reg_arry_val);
+
+    rv = acvp_login(ctx, 0);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Failed to login with ACVP server");
+        json_free_serialized_string(json_result);
+        goto end;
+    }
+
+    rv = acvp_post(ctx, path, json_result);
+    json_free_serialized_string(json_result);
+
+end:
+    json_value_free(val);
+    return rv;
+
+}
+
 ACVP_RESULT acvp_run(ACVP_CTX *ctx, int fips_validation) {
     ACVP_RESULT rv = ACVP_SUCCESS;
 
@@ -2248,8 +2349,16 @@ ACVP_RESULT acvp_run(ACVP_CTX *ctx, int fips_validation) {
     }
 
 
-    if (ctx->req_status) { 
-        rv = acvp_get_request_status(ctx, ctx->status_string);
+    if (ctx->get) { 
+        rv = acvp_get(ctx, ctx->get_string);
+        if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
+            printf("\nGET Response: %s\n\n", ctx->curl_buf);
+        }
+        goto end;
+    }
+
+    if (ctx->post) { 
+        rv = acvp_post_data(ctx, ctx->post_filename);
         goto end;
     }
 
