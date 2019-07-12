@@ -434,7 +434,8 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
         }
     }
 
-    if (empty_alg) {
+    /* allopw post and get without algs defined */
+    if (empty_alg && !cfg->post && !cfg->get) {
         /* The user needs to select at least 1 algorithm */
         printf(ANSI_COLOR_RED "Requires at least 1 Algorithm Test Suite\n"ANSI_COLOR_RESET);
         print_usage(1);
