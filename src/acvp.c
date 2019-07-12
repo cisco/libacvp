@@ -1166,6 +1166,9 @@ ACVP_RESULT acvp_set_json_filename(ACVP_CTX *ctx, const char *json_filename) {
     }
 
     ctx->json_filename = calloc(ACVP_JSON_FILENAME_MAX + 1, sizeof(char));
+    if (!ctx->json_filename) {
+        return ACVP_MALLOC_FAIL;
+    }
     strcpy_s(ctx->json_filename, ACVP_JSON_FILENAME_MAX + 1, json_filename);
 
     ctx->use_json = 1;
@@ -1192,6 +1195,9 @@ ACVP_RESULT acvp_set_server(ACVP_CTX *ctx, char *server_name, int port) {
         free(ctx->server_name);
     }
     ctx->server_name = calloc(ACVP_SESSION_PARAMS_STR_LEN_MAX + 1, sizeof(char));
+    if (!ctx->server_name) {
+        return ACVP_MALLOC_FAIL;
+    }
     strcpy_s(ctx->server_name, ACVP_SESSION_PARAMS_STR_LEN_MAX + 1, server_name);
 
     ctx->server_port = port;
@@ -1216,6 +1222,9 @@ ACVP_RESULT acvp_set_path_segment(ACVP_CTX *ctx, char *path_segment) {
     }
     if (ctx->path_segment) { free(ctx->path_segment); }
     ctx->path_segment = calloc(ACVP_SESSION_PARAMS_STR_LEN_MAX + 1, sizeof(char));
+    if (!ctx->path_segment) {
+        return ACVP_MALLOC_FAIL;
+    }
     strcpy_s(ctx->path_segment, ACVP_SESSION_PARAMS_STR_LEN_MAX + 1, path_segment);
 
     return ACVP_SUCCESS;
@@ -1238,6 +1247,9 @@ ACVP_RESULT acvp_set_api_context(ACVP_CTX *ctx, char *api_context) {
     }
     if (ctx->api_context) { free(ctx->api_context); }
     ctx->api_context = calloc(ACVP_SESSION_PARAMS_STR_LEN_MAX + 1, sizeof(char));
+    if (!ctx->api_context) {
+        return ACVP_MALLOC_FAIL;
+    }
     strcpy_s(ctx->api_context, ACVP_SESSION_PARAMS_STR_LEN_MAX + 1, api_context);
 
     return ACVP_SUCCESS;
@@ -1267,6 +1279,9 @@ ACVP_RESULT acvp_set_cacerts(ACVP_CTX *ctx, char *ca_file) {
 
     if (ctx->cacerts_file) { free(ctx->cacerts_file); }
     ctx->cacerts_file = calloc(ACVP_SESSION_PARAMS_STR_LEN_MAX + 1, sizeof(char));
+    if (!ctx->cacerts_file) {
+        return ACVP_MALLOC_FAIL;
+    }
     strcpy_s(ctx->cacerts_file, ACVP_SESSION_PARAMS_STR_LEN_MAX + 1, ca_file);
 
     return ACVP_SUCCESS;
@@ -1295,10 +1310,18 @@ ACVP_RESULT acvp_set_certkey(ACVP_CTX *ctx, char *cert_file, char *key_file) {
     }
     if (ctx->tls_cert) { free(ctx->tls_cert); }
     ctx->tls_cert = calloc(ACVP_SESSION_PARAMS_STR_LEN_MAX + 1, sizeof(char));
+    if (!ctx->tls_cert) {
+        return ACVP_MALLOC_FAIL;
+    }
     strcpy_s(ctx->tls_cert, ACVP_SESSION_PARAMS_STR_LEN_MAX + 1, cert_file);
 
     if (ctx->tls_key) { free(ctx->tls_key); }
     ctx->tls_key = calloc(ACVP_SESSION_PARAMS_STR_LEN_MAX + 1, sizeof(char));
+    if (!ctx->tls_key) {
+        free(ctx->tls_cert);
+        ctx->tls_cert = NULL;
+        return ACVP_MALLOC_FAIL;
+    }
     strcpy_s(ctx->tls_key, ACVP_SESSION_PARAMS_STR_LEN_MAX + 1, key_file);
 
     return ACVP_SUCCESS;
@@ -1326,6 +1349,9 @@ ACVP_RESULT acvp_mark_as_request_only(ACVP_CTX *ctx, char *filename) {
 
     if (ctx->vector_req_file) { free(ctx->vector_req_file); }
     ctx->vector_req_file = calloc(ACVP_SESSION_PARAMS_STR_LEN_MAX + 1, sizeof(char));
+    if (!ctx->vector_req_file) {
+        return ACVP_MALLOC_FAIL;
+    }
     strcpy_s(ctx->vector_req_file, ACVP_SESSION_PARAMS_STR_LEN_MAX + 1, filename);
     ctx->vector_req = 1;
     return ACVP_SUCCESS;
@@ -1346,6 +1372,10 @@ ACVP_RESULT acvp_mark_as_get_only(ACVP_CTX *ctx, char *string) {
 
     if (ctx->get_string) { free(ctx->get_string); }
     ctx->get_string = calloc(ACVP_REQUEST_STR_LEN_MAX + 1, sizeof(char));
+    if (!ctx->get_string) {
+        return ACVP_MALLOC_FAIL;
+    }
+
     strcpy_s(ctx->get_string, ACVP_REQUEST_STR_LEN_MAX + 1, string);
     ctx->get = 1;
     return ACVP_SUCCESS;
@@ -1366,6 +1396,10 @@ ACVP_RESULT acvp_mark_as_post_only(ACVP_CTX *ctx, char *filename) {
 
     if (ctx->post_filename) { free(ctx->post_filename); }
     ctx->post_filename = calloc(ACVP_SESSION_PARAMS_STR_LEN_MAX + 1, sizeof(char));
+    if (!ctx->post_filename) {
+        return ACVP_MALLOC_FAIL;
+    }
+
     strcpy_s(ctx->post_filename, ACVP_SESSION_PARAMS_STR_LEN_MAX + 1, filename);
     ctx->post = 1;
     return ACVP_SUCCESS;
