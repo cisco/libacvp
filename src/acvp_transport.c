@@ -756,25 +756,6 @@ end:
 #endif
 }
 
-ACVP_RESULT acvp_get_request_status (ACVP_CTX *ctx, 
-                                     const char *url) {
-    ACVP_RESULT rv = ACVP_SUCCESS;
-
-    if (!ctx) {
-        ACVP_LOG_ERR("Missing ctx");
-        return ACVP_NO_CTX;
-    }
-
-    if (!url) {
-        ACVP_LOG_ERR("Missing url");
-        return ACVP_MISSING_ARG;
-    }
-
-    rv = acvp_transport_get(ctx, url, NULL);
-    return rv;
-}
-
-
 #ifndef ACVP_OFFLINE
 #define JWT_EXPIRED_STR "JWT expired"
 #define JWT_EXPIRED_STR_LEN 11

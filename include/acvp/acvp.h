@@ -2525,17 +2525,29 @@ ACVP_RESULT acvp_mark_as_sample(ACVP_CTX *ctx);
  */
 ACVP_RESULT acvp_mark_as_request_only(ACVP_CTX *ctx, char *filename);
 
-/*! @brief acvp_mark_as_status_only() marks the registration as a GET status only.
+/*! @brief acvp_mark_as_get_only() marks the operation as a GET only.
 
     This function will take the string parameter and perform a GET to check
-    the status of a specific request.  The request ID must be part of the string.
+    the get of a specific request.  The request ID must be part of the string.
 
     @param ctx Pointer to ACVP_CTX that was previously created by
         calling acvp_create_test_session.
-    @param string used for the request, such as '/acvp/v1/requests/383'
+    @param string used for the get, such as '/acvp/v1/requests/383'
 
  */
-ACVP_RESULT acvp_mark_as_status_only(ACVP_CTX *ctx, char *string);
+ACVP_RESULT acvp_mark_as_get_only(ACVP_CTX *ctx, char *string);
+
+/*! @brief acvp_mark_as_post_only() marks the operation as a POST only.
+
+    This function will take the filename and perform a POST of the data
+    in the file to the URL /acvp/v1/<first field in file>
+
+    @param ctx Pointer to ACVP_CTX that was previously created by
+        calling acvp_create_test_session.
+    @param filename
+
+ */
+ACVP_RESULT acvp_mark_as_post_only(ACVP_CTX *ctx, char *filename);
 
 
 /*! @brief Performs the ACVP testing procedures.

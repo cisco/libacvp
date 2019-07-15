@@ -72,8 +72,12 @@ static void print_usage(int err) {
     printf("To process kat vectors from a JSON file use:\n");
     printf("      --kat <file>\n");
     printf("\n");
-    printf("To GET status of request, such as validation:\n");
-    printf("      --req_status <request string URL including ID>\n");
+    printf("To GET status of request, such as validation or metadata:\n");
+    printf("      --get <request string URL including ID>\n");
+    printf("\n");
+    printf("\n");
+    printf("To POST metadata for vendor, person, etc.:\n");
+    printf("      --post <metadata file>\n");
     printf("\n");
     printf("If you are running a sample registration (querying for correct answers\n");
     printf("in addition to the normal registration flow) use:\n");
@@ -154,7 +158,8 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
         { "vector_req", ko_required_argument, 403 },
         { "vector_rsp", ko_required_argument, 404 },
         { "vector_upload", ko_required_argument, 405 },
-        { "req_status", ko_required_argument, 406 },
+        { "get", ko_required_argument, 406 },
+        { "post", ko_required_argument, 407 },
         { NULL, 0, 0 }
     };
 
@@ -381,22 +386,39 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
             continue;
         }
 
-
         if (c == 406) {
-            int status_string_len = 0;
-            cfg->req_status = 1;
+            int get_string_len = 0;
+            cfg->get = 1;
 
-            status_string_len = strnlen_s(opt.arg, JSON_REQUEST_LENGTH + 1);
-            if (status_string_len > JSON_REQUEST_LENGTH) {
+            get_string_len = strnlen_s(opt.arg, JSON_REQUEST_LENGTH + 1);
+            if (get_string_len > JSON_REQUEST_LENGTH) {
                 printf(ANSI_COLOR_RED "Command error... [%s]"ANSI_COLOR_RESET
                        "\nThe <string> \"%s\", is too long."
                        "\nMax allowed <string> length is (%d).\n",
-                       "--req_status", opt.arg, JSON_REQUEST_LENGTH);
+                       "--get", opt.arg, JSON_REQUEST_LENGTH);
                 print_usage(1);
                 return 1;
             }
 
-            strcpy_s(cfg->status_string, JSON_REQUEST_LENGTH + 1, opt.arg);
+            strcpy_s(cfg->get_string, JSON_REQUEST_LENGTH + 1, opt.arg);
+            continue;
+        }
+
+        if (c == 407) {
+            int post_filename_len = 0;
+            cfg->post = 1;
+
+            post_filename_len = strnlen_s(opt.arg, JSON_FILENAME_LENGTH + 1);
+            if (post_filename_len > JSON_REQUEST_LENGTH) {
+                printf(ANSI_COLOR_RED "Command error... [%s]"ANSI_COLOR_RESET
+                       "\nThe <file> \"%s\", has a name that is too long."
+                       "\nMax allowed <file> name length is (%d).\n",
+                       "--post", opt.arg, JSON_FILENAME_LENGTH);
+                print_usage(1);
+                return 1;
+            }
+
+            strcpy_s(cfg->post_filename, JSON_FILENAME_LENGTH + 1, opt.arg);
             continue;
         }
 
@@ -412,7 +434,8 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
         }
     }
 
-    if (empty_alg) {
+    /* allopw post and get without algs defined */
+    if (empty_alg && !cfg->post && !cfg->get) {
         /* The user needs to select at least 1 algorithm */
         printf(ANSI_COLOR_RED "Requires at least 1 Algorithm Test Suite\n"ANSI_COLOR_RESET);
         print_usage(1);

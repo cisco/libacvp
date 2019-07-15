@@ -1,0 +1,22 @@
+[
+    {
+      "url": "persons"
+    }, 
+    {
+      "fullName": "Jane Smithers",
+      "vendorUrl": "/acvp/v1/vendors/11175",
+      "emails": [
+        "jane.smithers@acme.acme"
+      ],
+      "phoneNumbers": [
+        {
+          "number": "555-555-0001",
+          "type": "fax"
+        },
+        {
+          "number": "555-555-0002",
+          "type": "voice"
+        }
+      ]
+    }
+]
