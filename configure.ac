@@ -58,7 +58,7 @@ esac
 
 AS_IF(
     [test "$gcc_z_support" = "yes"],
-    [[CFLAGS="$CFLAGS -z,noexecstack"]])
+    [[CFLAGS="$CFLAGS -Wl,-z,noexecstack"]])
 
 ##
 # OpenSSL variables
