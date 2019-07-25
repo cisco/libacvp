@@ -10777,7 +10777,7 @@ case "${host_os}" in
 esac
 
 if test "$gcc_z_support" = "yes"; then :
-  CFLAGS="$CFLAGS -z,noexecstack"
+  CFLAGS="$CFLAGS -Wl,-z,noexecstack"
 fi
 
 ##
