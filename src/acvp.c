@@ -51,6 +51,8 @@ static void acvp_cap_free_hash_pairs(ACVP_RSA_HASH_PAIR_LIST *list);
 
 static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url);
 
+static ACVP_RESULT acvp_put_data_from_ctx(ACVP_CTX *ctx);
+
 /*
  * This table maps ACVP operations to handlers within libacvp.
  * Each ACVP operation may have unique parameters.  For instance,
@@ -595,6 +597,7 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx) {
     if (ctx->vector_req_file) { free(ctx->vector_req_file); }
     if (ctx->get_string) { free(ctx->get_string); }
     if (ctx->post_filename) { free(ctx->post_filename); }
+    if (ctx->put_filename) { free(ctx->put_filename); }
     if (ctx->jwt_token) { free(ctx->jwt_token); }
     if (ctx->tmp_jwt) { free(ctx->tmp_jwt); }
     if (ctx->vs_list) {
@@ -1381,6 +1384,28 @@ ACVP_RESULT acvp_mark_as_get_only(ACVP_CTX *ctx, char *string) {
     return ACVP_SUCCESS;
 }
 
+ACVP_RESULT acvp_mark_as_put_after_test(ACVP_CTX *ctx, char *filename) {
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    } 
+    if (!filename) {
+        return ACVP_MISSING_ARG;
+    }
+    if (strnlen_s(filename, ACVP_SESSION_PARAMS_STR_LEN_MAX + 1) > ACVP_SESSION_PARAMS_STR_LEN_MAX) {
+         ACVP_LOG_ERR("Vector filename is suspiciously long...");
+        return ACVP_INVALID_ARG;
+    }
+
+    if (ctx->put_filename) { free(ctx->put_filename); }
+    ctx->put_filename = calloc(ACVP_SESSION_PARAMS_STR_LEN_MAX + 1, sizeof(char));
+    if (!ctx->put_filename) {
+        return ACVP_MALLOC_FAIL;
+    }
+    strcpy_s(ctx->put_filename, ACVP_SESSION_PARAMS_STR_LEN_MAX + 1, filename);
+    ctx->put = 1;
+    return ACVP_SUCCESS;
+}
+
 ACVP_RESULT acvp_mark_as_post_only(ACVP_CTX *ctx, char *filename) {
 
     if (!ctx) {
@@ -1557,7 +1582,9 @@ static ACVP_RESULT acvp_parse_login(ACVP_CTX *ctx) {
     JSON_Object *obj = NULL;
     char *json_buf = ctx->curl_buf;
     const char *jwt;
+#ifdef ACVP_DEPRECATED
     int large_required = 0;
+#endif
     ACVP_RESULT rv = ACVP_SUCCESS;
 
     /*
@@ -1570,14 +1597,14 @@ static ACVP_RESULT acvp_parse_login(ACVP_CTX *ctx) {
     }
 
     obj = acvp_get_obj_from_rsp(ctx, val);
-
+#ifdef ACVP_DEPRECATED
     large_required = json_object_get_boolean(obj, "largeEndpointRequired");
 
     if (large_required) {
         /* Grab the large submission sizeConstraint */
         ctx->post_size_constraint = (unsigned int)json_object_get_number(obj, "sizeConstraint");
     }
-
+#endif
     /*
      * Get the JWT assigned to this session by the server.  This will need
      * to be included when sending the vector responses back to the server
@@ -1647,6 +1674,7 @@ end:
     return rv;
 }
 
+#ifdef ACVP_DEPRECATED
 ACVP_RESULT acvp_notify_large(ACVP_CTX *ctx,
                               const char *url,
                               char *large_url,
@@ -1759,6 +1787,7 @@ err:
     if (large_notify) json_free_serialized_string(large_notify);
     return rv;
 }
+#endif
 
 /*
  * This routine performs the JSON parsing of the test session registration
@@ -2372,6 +2401,56 @@ end:
 
 }
 
+#define TEST_SESSION "testSessions/"
+
+static
+ACVP_RESULT acvp_write_session_info(ACVP_CTX *ctx) {
+    ACVP_RESULT rv = ACVP_SUCCESS;
+    JSON_Value *ts_val = NULL;
+    JSON_Object *ts_obj = NULL;
+    char *filename = NULL, *ptr = NULL;
+    int diff;
+
+    filename = calloc(ACVP_JSON_FILENAME_MAX + 1, sizeof(char));
+    if (!filename) {
+        return ACVP_MALLOC_FAIL;
+    }
+
+    ts_val = json_value_init_object();
+    ts_obj = json_value_get_object(ts_val);
+
+    json_object_set_string(ts_obj, "url", ctx->session_url);
+    json_object_set_string(ts_obj, "jwt", ctx->jwt_token);
+
+    /* pull test session ID out of URL */
+    ptr = ctx->session_url;
+    while(*ptr != 0) {
+        memcmp_s(ptr, strlen(TEST_SESSION), TEST_SESSION, strlen(TEST_SESSION), &diff);
+        if (!diff) {
+            break;
+        }
+        ptr++;
+    }
+    ptr+= strlen(TEST_SESSION);
+    snprintf(filename, ACVP_JSON_FILENAME_MAX, "%s%s.json", "testSession_", ptr);
+    rv = acvp_json_serialize_to_file_pretty_w(ts_val, filename);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("File write error");
+        goto end;
+    }
+
+    rv = acvp_json_serialize_to_file_pretty_a(NULL, filename);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("File write error");
+    }
+end:
+    if (ts_val) json_value_free(ts_val);
+    free(filename);
+    return rv;
+}
+
+
+
 ACVP_RESULT acvp_run(ACVP_CTX *ctx, int fips_validation) {
     ACVP_RESULT rv = ACVP_SUCCESS;
 
@@ -2453,6 +2532,11 @@ ACVP_RESULT acvp_run(ACVP_CTX *ctx, int fips_validation) {
         }
     }
 
+   if (ctx->put) {
+       rv = acvp_put_data_from_ctx(ctx);
+   } else {
+       rv = acvp_write_session_info(ctx);
+   }
 end:
     return rv;
 }
@@ -2464,3 +2548,190 @@ char *acvp_version(void) {
 char *acvp_protocol_version(void) {
     return ACVP_VERSION;
 }
+
+ACVP_RESULT acvp_put_data_from_file(ACVP_CTX *ctx, const char *put_filename) {
+    JSON_Object *obj = NULL;
+    JSON_Value *val = NULL;
+    ACVP_RESULT rv = ACVP_SUCCESS;
+    JSON_Array *reg_array;
+    const char *test_session_url = NULL;
+    const char *jwt = NULL;
+    JSON_Value *put_val = NULL;
+    JSON_Value *reg_arry_val = NULL;
+    JSON_Object *reg_obj = NULL;
+    JSON_Array *reg_arry = NULL;
+    int len = 0;
+    int validation = 0;
+    char *json_result = NULL;
+
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+    if (!put_filename) {
+        ACVP_LOG_ERR("Must provide value for JSON filename");
+        return ACVP_MISSING_ARG;
+    }
+
+    if (strnlen_s(put_filename, ACVP_JSON_FILENAME_MAX + 1) > ACVP_JSON_FILENAME_MAX) {
+        ACVP_LOG_ERR("Provided put_filename length > max(%d)", ACVP_JSON_FILENAME_MAX);
+        return ACVP_INVALID_ARG;
+    }
+
+    val = json_parse_file(put_filename);
+    if (!val) {
+        ACVP_LOG_ERR("JSON val parse error");
+        return ACVP_MALFORMED_JSON;
+    }
+    reg_array = json_value_get_array(val);
+    obj = json_array_get_object(reg_array, 0);
+    if (!obj) {
+        ACVP_LOG_ERR("JSON obj parse error");
+        rv = ACVP_MALFORMED_JSON;
+        goto end;
+    }
+
+    /*
+     * This is the identifiers provided by the server
+     * for this specific test session!
+     */
+    test_session_url = json_object_get_string(obj, "url");
+    if (!test_session_url) {
+        ACVP_LOG_ERR("Missing session URL");
+        rv = ACVP_MALFORMED_JSON;
+        goto end;
+    }
+
+    jwt = json_object_get_string(obj, "jwt");
+    if (jwt) {
+        ctx->jwt_token = calloc(ACVP_JWT_TOKEN_MAX + 1, sizeof(char));
+        if (!ctx->jwt_token) {
+            rv = ACVP_MALLOC_FAIL;
+            goto end;
+        }
+    
+        strcpy_s(ctx->jwt_token, ACVP_JWT_TOKEN_MAX + 1, jwt);
+        validation = 1;
+    } else {
+        rv = acvp_login(ctx, 0);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Failed to login with ACVP server");
+            goto end;
+        }
+    }
+    json_value_free(val);
+
+    val = json_array_get_value(reg_array, 1);
+    if (!obj) {
+        ACVP_LOG_ERR("JSON obj parse error");
+        rv = ACVP_MALFORMED_JSON;
+        goto end;
+    }
+    json_result = json_serialize_to_string(val, &len);
+
+    put_val = json_parse_string(json_result);
+    json_free_serialized_string(json_result);
+
+    rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_STATUS("Failed to create array");
+        goto end;
+    }
+    json_array_append_value(reg_arry, put_val);
+    json_result = json_serialize_to_string_pretty(reg_arry_val, &len);
+
+    rv = acvp_transport_put(ctx, test_session_url, json_result, len);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_STATUS("Failed to perform PUT");
+        goto end;
+    }
+    json_free_serialized_string(json_result);
+
+    /*
+     * Check the test results.
+     */
+    if (validation) {
+        ACVP_LOG_STATUS("Tests complete, checking results...");
+        rv = acvp_parse_validation(ctx);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_STATUS("Failed to parse Validation response");
+        }
+    }
+end:
+    if (val) {json_value_free(val);}
+    if (put_val) {json_value_free(put_val);}
+    if (reg_arry_val)  {json_value_free(reg_arry_val); }
+    return rv;
+}
+
+static
+ACVP_RESULT acvp_put_data_from_ctx(ACVP_CTX *ctx) {
+
+    ACVP_RESULT rv = ACVP_SUCCESS;
+    JSON_Array *reg_array;
+    char *json_result = NULL;
+    JSON_Value *val = NULL;
+    JSON_Value *put_val = NULL;
+    JSON_Value *reg_arry_val = NULL;
+    JSON_Object *reg_obj = NULL;
+    JSON_Array *reg_arry = NULL;
+    int len = 0;
+
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+
+    if (strnlen_s(ctx->put_filename, ACVP_JSON_FILENAME_MAX + 1) > ACVP_JSON_FILENAME_MAX) {
+        ACVP_LOG_ERR("Provided put_filename length > max(%d)", ACVP_JSON_FILENAME_MAX);
+        return ACVP_INVALID_ARG;
+    }
+
+    val = json_parse_file(ctx->put_filename);
+    if (!val) {
+        ACVP_LOG_ERR("JSON val parse error");
+        return ACVP_MALFORMED_JSON;
+    }
+    reg_array = json_value_get_array(val);
+    json_value_free(val);
+
+    val = json_array_get_value(reg_array, 0);
+    if (!val) {
+        ACVP_LOG_ERR("JSON obj parse error");
+        rv = ACVP_MALFORMED_JSON;
+        goto end;
+    }
+
+    json_result = json_serialize_to_string(val, &len);
+
+    put_val = json_parse_string(json_result);
+    json_free_serialized_string(json_result);
+
+    rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_STATUS("Failed to create array");
+        goto end;
+    }
+    json_array_append_value(reg_arry, put_val);
+    json_result = json_serialize_to_string_pretty(reg_arry_val, &len);
+
+    rv = acvp_transport_put(ctx, ctx->session_url, json_result, len);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_STATUS("Failed to perform PUT");
+        goto end;
+    }
+    json_free_serialized_string(json_result);
+    /*
+     * Check the test results.
+     */
+    ACVP_LOG_STATUS("Tests complete, checking results...");
+    rv = acvp_parse_validation(ctx);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_STATUS("Failed to parse Validation response");
+    }
+
+end:
+    if (put_val) {json_value_free(put_val);}
+    if (val) {json_value_free(val);}
+    if (reg_arry_val)  {json_value_free(reg_arry_val); }
+    return rv;
+}
+

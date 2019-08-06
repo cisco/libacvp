@@ -1,6 +1,6 @@
 [
     {
-      "url": "persons"
+      "url": "/acvp/v1/persons"
     }, 
     {
       "fullName": "Jane Smithers",

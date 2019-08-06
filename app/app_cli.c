@@ -79,6 +79,9 @@ static void print_usage(int err) {
     printf("To POST metadata for vendor, person, etc.:\n");
     printf("      --post <metadata file>\n");
     printf("\n");
+    printf("To PUT(modify)  metadata for vendor, person, etc. or PUT for validation:\n");
+    printf("      --put <metadata file>\n");
+    printf("\n");
     printf("If you are running a sample registration (querying for correct answers\n");
     printf("in addition to the normal registration flow) use:\n");
     printf("      --sample\n");
@@ -123,7 +126,8 @@ static void enable_all_algorithms(APP_CONFIG *cfg) {
 int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
     ketopt_t opt = KETOPT_INIT;
     int c = 0;
-    int empty_alg = 1;
+
+    cfg->empty_alg = 1;
 
     static ko_longopt_t longopts[] = {
         { "version", ko_no_argument, 301 },
@@ -160,6 +164,7 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
         { "vector_upload", ko_required_argument, 405 },
         { "get", ko_required_argument, 406 },
         { "post", ko_required_argument, 407 },
+        { "put", ko_required_argument, 408 },
         { NULL, 0, 0 }
     };
 
@@ -213,71 +218,71 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
         }
         if (c == 310) {
             cfg->aes = 1;
-            empty_alg = 0;
+            cfg->empty_alg = 0;
             continue;
         }
         if (c == 311) {
             cfg->tdes = 1;
-            empty_alg = 0;
+            cfg->empty_alg = 0;
             continue;
         }
         if (c == 312) {
             cfg->hash = 1;
-            empty_alg = 0;
+            cfg->empty_alg = 0;
             continue;
         }
         if (c == 313) {
             cfg->cmac = 1;
-            empty_alg = 0;
+            cfg->empty_alg = 0;
             continue;
         }
         if (c == 314) {
             cfg->hmac = 1;
-            empty_alg = 0;
+            cfg->empty_alg = 0;
             continue;
         }
 #ifdef OPENSSL_KDF_SUPPORT
         if (c == 315) {
             cfg->kdf = 1;
-            empty_alg = 0;
+            cfg->empty_alg = 0;
             continue;
         }
 #endif
 #ifdef ACVP_NO_RUNTIME
         if (c == 316) {
             cfg->dsa = 1;
-            empty_alg = 0;
+            cfg->empty_alg = 0;
             continue;
         }
         if (c == 317) {
             cfg->rsa = 1;
-            empty_alg = 0;
+            cfg->empty_alg = 0;
             continue;
         }
         if (c == 318) {
             cfg->drbg = 1;
-            empty_alg = 0;
+            cfg->empty_alg = 0;
             continue;
         }
         if (c == 319) {
             cfg->ecdsa = 1;
-            empty_alg = 0;
+            cfg->empty_alg = 0;
             continue;
         }
         if (c == 320) {
             cfg->kas_ecc = 1;
-            empty_alg = 0;
+            cfg->empty_alg = 0;
             continue;
         }
         if (c == 321) {
             cfg->kas_ffc = 1;
-            empty_alg = 0;
+            cfg->empty_alg = 0;
             continue;
         }
 #endif
         if (c == 322) {
             enable_all_algorithms(cfg);
-            empty_alg = 0;
+            cfg->empty_alg = 0;
             continue;
         }
         if (c == 400) {
@@ -422,6 +427,24 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
             continue;
         }
 
+        if (c == 408) {
+            int put_filename_len = 0;
+            cfg->put = 1;
+
+            put_filename_len = strnlen_s(opt.arg, JSON_FILENAME_LENGTH + 1);
+            if (put_filename_len > JSON_REQUEST_LENGTH) {
+                printf(ANSI_COLOR_RED "Command error... [%s]"ANSI_COLOR_RESET
+                       "\nThe <file> \"%s\", has a name that is too long."
+                       "\nMax allowed <file> name length is (%d).\n",
+                       "--put", opt.arg, JSON_FILENAME_LENGTH);
+                print_usage(1);
+                return 1;
+            }
+
+            strcpy_s(cfg->put_filename, JSON_FILENAME_LENGTH + 1, opt.arg);
+            continue;
+        }
+
         if (c == '?') {
             printf(ANSI_COLOR_RED "unknown option: %s\n"ANSI_COLOR_RESET, *(argv + opt.ind - 1));
             print_usage(1);
@@ -434,8 +457,8 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
         }
     }
 
-    /* allopw post and get without algs defined */
-    if (empty_alg && !cfg->post && !cfg->get) {
+    /* allopw put, post and get without algs defined */
+    if (cfg->empty_alg && !cfg->post && !cfg->get && !cfg->put) {
         /* The user needs to select at least 1 algorithm */
         printf(ANSI_COLOR_RED "Requires at least 1 Algorithm Test Suite\n"ANSI_COLOR_RESET);
         print_usage(1);

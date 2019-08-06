@@ -1275,6 +1275,8 @@ struct acvp_ctx_t {
     char *get_string;       /* string used for get request */
     int post;               /* flag to indicate we are only posting metadata */
     char *post_filename;    /* string used for post */
+    int put;                /* flag to indicate we are only putting metadata  for post test validation*/
+    char *put_filename;     /* string used for put */
 
     ACVP_FIPS fips; /* Information related to a FIPS validation */
 
@@ -1319,6 +1321,8 @@ ACVP_RESULT acvp_transport_put_validation(ACVP_CTX *ctx, const char *data, int d
 ACVP_RESULT acvp_transport_get(ACVP_CTX *ctx, const char *url, const ACVP_KV_LIST *parameters);
 
 ACVP_RESULT acvp_transport_post(ACVP_CTX *ctx, const char *uri, char *data, int data_len);
+
+ACVP_RESULT acvp_transport_put(ACVP_CTX *ctx, const char *endpoint, const char *data, int data_len);
 
 ACVP_RESULT acvp_retrieve_vector_set(ACVP_CTX *ctx, char *vsid_url);
 

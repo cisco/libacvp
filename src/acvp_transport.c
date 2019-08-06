@@ -552,10 +552,26 @@ ACVP_RESULT acvp_transport_post(ACVP_CTX *ctx,
     ACVP_LOG_ERR("Curl not linked, exiting function"); 
     return ACVP_TRANSPORT_FAIL;
 #else
-    return acvp_send_with_path_seg(ctx, ACVP_NET_POST,
-                                   uri, data, data_len);
+    ACVP_RESULT rv = 0;
+    char url[ACVP_ATTR_URL_MAX] = {0};
+
+    rv = sanity_check_ctx(ctx);
+    if (ACVP_SUCCESS != rv) return rv;
+
+    if (!uri) {
+        ACVP_LOG_ERR("Missing endpoint");
+        return ACVP_MISSING_ARG;
+    }
+
+    snprintf(url, ACVP_ATTR_URL_MAX - 1,
+            "https://%s:%d%s",
+            ctx->server_name, ctx->server_port, uri);
+
+    printf("\nPUT: %s: %s\n", url, data);
+    return acvp_network_action(ctx, ACVP_NET_POST, url, data, data_len);
 #endif
 }
+
 
 /*
  * This is the top level function used within libacvp to retrieve
@@ -661,6 +677,7 @@ ACVP_RESULT acvp_transport_put(ACVP_CTX *ctx,
             "https://%s:%d%s",
             ctx->server_name, ctx->server_port, endpoint);
 
+    printf("\nPUT: %s: %s\n", url, data);
     return acvp_network_action(ctx, ACVP_NET_PUT_VALIDATION, url, data, data_len);
 #endif
 }
@@ -816,8 +833,10 @@ static ACVP_RESULT execute_network_action(ACVP_CTX *ctx,
                                           int *curl_code) {
     ACVP_RESULT result = 0;
     char *resp = NULL;
+#ifdef ACVP_DEPRECATED
     char large_url[ACVP_ATTR_URL_MAX + 1] = {0};
     int large_submission = 0;
+#endif
     int resp_len = 0;
     int rc = 0;
 
@@ -849,6 +868,7 @@ static ACVP_RESULT execute_network_action(ACVP_CTX *ctx,
         json_value_free(ctx->kat_resp);
         ctx->kat_resp = NULL;
 
+#ifdef ACVP_DEPRECATED
         if (ctx->post_size_constraint && resp_len > ctx->post_size_constraint) {
             /* Determine if this POST body goes over the "constraint" */
             large_submission = 1;
@@ -864,9 +884,11 @@ static ACVP_RESULT execute_network_action(ACVP_CTX *ctx,
 
             rc = acvp_curl_http_post(ctx, large_url, resp, resp_len);
         } else {
+#endif
             rc = acvp_curl_http_post(ctx, url, resp, resp_len);
+#ifdef ACVP_DEPRECATED
         }
-
+#endif
         break;
 
     default:
@@ -916,11 +938,15 @@ static ACVP_RESULT execute_network_action(ACVP_CTX *ctx,
                 break;
 
             case ACVP_NET_POST_VS_RESP:
+#ifdef ACVP_DEPRECATED
                 if (large_submission) {
                     rc = acvp_curl_http_post(ctx, large_url, resp, resp_len);
                 } else {
+#endif
                     rc = acvp_curl_http_post(ctx, url, resp, resp_len);
+#ifdef ACVP_DEPRECATED
                 }
+#endif
                 break;
 
             case ACVP_NET_POST_LOGIN:

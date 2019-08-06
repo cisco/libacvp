@@ -331,6 +331,15 @@ int main(int argc, char **argv) {
        goto end;
     }
 
+    /* PUT without algorithms submits put_filename for validation using save JWT and testSession ID */
+    if (cfg.empty_alg && cfg.put) {
+         rv = acvp_put_data_from_file(ctx, cfg.put_filename);
+         goto end;
+    }
+    /* PUT with alg testing will submit put_filename with module/oe information */
+    if (!cfg.empty_alg && cfg.put) {
+        acvp_mark_as_put_after_test(ctx, cfg.put_filename);
+    }
     /*
      * Run the test session.
      * Perform a FIPS validation on this test session if specified.

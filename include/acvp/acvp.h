@@ -2548,6 +2548,7 @@ ACVP_RESULT acvp_mark_as_get_only(ACVP_CTX *ctx, char *string);
 
  */
 ACVP_RESULT acvp_mark_as_post_only(ACVP_CTX *ctx, char *filename);
+ACVP_RESULT acvp_mark_as_put_after_test(ACVP_CTX *ctx, char *filename);
 
 
 /*! @brief Performs the ACVP testing procedures.
@@ -2631,6 +2632,7 @@ ACVP_RESULT acvp_set_json_filename(ACVP_CTX *ctx, const char *json_filename);
 ACVP_RESULT acvp_load_kat_filename(ACVP_CTX *ctx, const char *kat_filename);
 ACVP_RESULT acvp_upload_vectors_from_file(ACVP_CTX *ctx, const char *rsp_filename, int fips_validation);
 ACVP_RESULT acvp_run_vectors_from_file(ACVP_CTX *ctx, const char *req_filename, const char *rsp_filename);
+ACVP_RESULT acvp_put_data_from_file(ACVP_CTX *ctx, const char *put_filename);
 
 /*! @brief acvp_set_2fa_callback() sets a callback function which
     will create or obtain a TOTP password for the second part of
