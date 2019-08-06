@@ -35,7 +35,9 @@ typedef struct app_config {
     int vector_upload;
     int get;
     int post;
+    int put;
     int kat;
+    int empty_alg;
     int fips_validation;
     char json_file[JSON_FILENAME_LENGTH + 1];
     char vector_req_file[JSON_FILENAME_LENGTH + 1];
@@ -43,6 +45,7 @@ typedef struct app_config {
     char vector_upload_file[JSON_FILENAME_LENGTH + 1];
     char get_string[JSON_REQUEST_LENGTH + 1];
     char post_filename[JSON_FILENAME_LENGTH + 1];
+    char put_filename[JSON_FILENAME_LENGTH + 1];
     char kat_file[JSON_FILENAME_LENGTH + 1];
     char validation_metadata_file[JSON_FILENAME_LENGTH + 1];
 
