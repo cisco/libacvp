@@ -1010,7 +1010,7 @@ static ACVP_RESULT match_oes_page(ACVP_CTX *ctx,
             goto end;
         }
 
-        dependency_urls = json_object_get_array(oe_obj, "dependencyUrls");
+        dependency_urls = json_object_get_array(oe_obj, "dependencies");
         if (dependency_urls == NULL)  {
             rv = ACVP_JSON_ERR;
             goto end;
