@@ -2552,6 +2552,7 @@ char *acvp_protocol_version(void) {
 ACVP_RESULT acvp_put_data_from_file(ACVP_CTX *ctx, const char *put_filename) {
     JSON_Object *obj = NULL;
     JSON_Value *val = NULL;
+    JSON_Value *meta_val = NULL;
     ACVP_RESULT rv = ACVP_SUCCESS;
     JSON_Array *reg_array;
     const char *test_session_url = NULL;
@@ -2618,18 +2619,18 @@ ACVP_RESULT acvp_put_data_from_file(ACVP_CTX *ctx, const char *put_filename) {
             goto end;
         }
     }
-    json_value_free(val);
 
-    val = json_array_get_value(reg_array, 1);
+    meta_val = json_array_get_value(reg_array, 1);
     if (!obj) {
         ACVP_LOG_ERR("JSON obj parse error");
         rv = ACVP_MALFORMED_JSON;
         goto end;
     }
-    json_result = json_serialize_to_string(val, &len);
+    json_result = json_serialize_to_string(meta_val, &len);
 
     put_val = json_parse_string(json_result);
     json_free_serialized_string(json_result);
+    json_result = NULL;
 
     rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
     if (rv != ACVP_SUCCESS) {
@@ -2644,7 +2645,6 @@ ACVP_RESULT acvp_put_data_from_file(ACVP_CTX *ctx, const char *put_filename) {
         ACVP_LOG_STATUS("Failed to perform PUT");
         goto end;
     }
-    json_free_serialized_string(json_result);
 
     /*
      * Check the test results.
@@ -2657,9 +2657,9 @@ ACVP_RESULT acvp_put_data_from_file(ACVP_CTX *ctx, const char *put_filename) {
         }
     }
 end:
+    if (json_result) {json_free_serialized_string(json_result);}
     if (val) {json_value_free(val);}
     if (put_val) {json_value_free(put_val);}
-    if (reg_arry_val)  {json_value_free(reg_arry_val); }
     return rv;
 }
 
@@ -2670,6 +2670,7 @@ ACVP_RESULT acvp_put_data_from_ctx(ACVP_CTX *ctx) {
     JSON_Array *reg_array;
     char *json_result = NULL;
     JSON_Value *val = NULL;
+    JSON_Value *meta_val = NULL;
     JSON_Value *put_val = NULL;
     JSON_Value *reg_arry_val = NULL;
     JSON_Object *reg_obj = NULL;
@@ -2691,19 +2692,19 @@ ACVP_RESULT acvp_put_data_from_ctx(ACVP_CTX *ctx) {
         return ACVP_MALFORMED_JSON;
     }
     reg_array = json_value_get_array(val);
-    json_value_free(val);
 
-    val = json_array_get_value(reg_array, 0);
+    meta_val = json_array_get_value(reg_array, 0);
     if (!val) {
         ACVP_LOG_ERR("JSON obj parse error");
         rv = ACVP_MALFORMED_JSON;
         goto end;
     }
 
-    json_result = json_serialize_to_string(val, &len);
+    json_result = json_serialize_to_string(meta_val, &len);
 
     put_val = json_parse_string(json_result);
     json_free_serialized_string(json_result);
+    json_result = NULL;
 
     rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
     if (rv != ACVP_SUCCESS) {
@@ -2718,7 +2719,7 @@ ACVP_RESULT acvp_put_data_from_ctx(ACVP_CTX *ctx) {
         ACVP_LOG_STATUS("Failed to perform PUT");
         goto end;
     }
-    json_free_serialized_string(json_result);
+
     /*
      * Check the test results.
      */
@@ -2729,9 +2730,9 @@ ACVP_RESULT acvp_put_data_from_ctx(ACVP_CTX *ctx) {
     }
 
 end:
+    if (json_result) {json_free_serialized_string(json_result);}
     if (put_val) {json_value_free(put_val);}
     if (val) {json_value_free(val);}
-    if (reg_arry_val)  {json_value_free(reg_arry_val); }
     return rv;
 }
 
