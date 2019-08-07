@@ -677,7 +677,6 @@ ACVP_RESULT acvp_transport_put(ACVP_CTX *ctx,
             "https://%s:%d%s",
             ctx->server_name, ctx->server_port, endpoint);
 
-    printf("\nPUT: %s: %s\n", url, data);
     return acvp_network_action(ctx, ACVP_NET_PUT_VALIDATION, url, data, data_len);
 #endif
 }
