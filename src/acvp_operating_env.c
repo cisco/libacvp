@@ -655,6 +655,14 @@ ACVP_RESULT acvp_oe_module_set_type_version_desc(ACVP_CTX *ctx,
 static int compare_dependencies(const ACVP_DEPENDENCY *a, const ACVP_DEPENDENCY *b) {
     int diff = 0;
 
+    if (!a->type || !a->name || !a->description) {
+        return 0;
+    }
+
+    if (!b->type || !b->name || !b->description) {
+        return 0;
+    }
+
     strcmp_s(a->type, ACVP_OE_STR_MAX, b->type, &diff);
     if (diff != 0) return 0;
 
@@ -1891,6 +1899,14 @@ static int compare_modules(const ACVP_MODULE *a, const ACVP_MODULE *b) {
     int diff = 0;
     int i = 0;
 
+    if (!a->type || !a->name || !a->description || !a->version || !a->vendor->url || !a->vendor->address.url) {
+        return 0;
+    }
+
+    if (!b->type || !b->name || !b->description || !b->version || !b->vendor->url || !b->vendor->address.url) {
+        return 0;
+    }
+
     strcmp_s(a->type, ACVP_OE_STR_MAX, b->type, &diff);
     if (diff != 0) return 0;
 
@@ -1912,6 +1928,9 @@ static int compare_modules(const ACVP_MODULE *a, const ACVP_MODULE *b) {
     if (diff != 0) return 0;
 
     for (i = 0; i < a->vendor->persons.count; i++) {
+        if (!a->vendor->persons.person[i].url || !b->vendor->persons.person[i].url) {
+            return 0;
+        }
         strcmp_s(a->vendor->persons.person[i].url, ACVP_ATTR_URL_MAX,
                  b->vendor->persons.person[i].url, &diff);
         if (diff != 0) return 0;
