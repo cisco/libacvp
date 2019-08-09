@@ -10,6 +10,76 @@ This directory also contains a file named `validation.json` which is an example 
 which must be fed into Libacvp when attempting to perform a FIPS validation. That file in particular specifies
 metadata which will be fed into the library to become available for usage in the validation operation.
 
+#### Creating Metadata
+
+As previously mentioned, there is a helper Python program within this directory named `metadata.py`.
+This program has 2 primary purposes:
+
+1. Create a new "Vendor" or "Person".
+2. Querying the status of a "request" (the state a resource is in prior to being "approved").
+
+When the program is used with the "--metadata-file" option, the user must supply a valid JSON file which
+contains a list of "vendors" or "persons" or both. While the program scans the file, it will first
+check to see if any of the "vendors" or "persons" are already existing within the server database.
+If any are found to be pre-existing, the program will display the information and continue to any
+other entries within the file. Otherwise the program will submit the "vendor" or "person" data to the
+server, at which point the submission will eventually be manually approved or declined.
+This manual step of approving or declining is unfortunately out of our hands, and the best
+we can do is either poll the status and wait, or check again later.
+
+It's important to keep in mind that a "vendor" is a dependency of a "person" (via "vendorUrl").
+This means that a "person" cannot be created without the attached "vendor" already existing
+and available within the server database. Thus the program will not be able to submit a "person"
+until the attached "vendor" is approved.
+
+The following subsection goes over the format requirements for a "--metadata-file".
+
+##### --metadata-file format
+
+At the top level, everything is contained within a JSON object.
+Within the top-level object, there can be either a list named "vendors" or a list named "persons.
+
+###### vendors
+
+This list can contain 1 or many objects.
+Each object must follow the following format:
+
+* "id"
+    * Used for program tracking purposes
+    * Type: positive integer
+    * MUST be unique
+
+* "name"
+    * Type: String
+    * Required
+
+* "website"
+    * Type: String
+    * Optional
+
+* "emails"
+    * Type: List of strings
+    * Optional
+
+* "phoneNumbers"
+    * Type: List of objects where each object MUST contain:
+        * "number"
+        * "type"
+    * The value for "number" and "type" MUST be of type string.
+    * Optional
+
+* "addresses"
+    * Type: List of objects where each object MAY contain:
+        * "street1"
+        * "street2"
+        * "street3"
+        * "locality"
+        * "region"
+        * "country"
+        * "postalCode"
+    * The value for all of the above MUST be of type string.
+    * Optional
+
 #### Libacvp FIPS Validation
 The example validation.json file shows how the library expects the data to be formatted in order
 for it to be successfully loaded for usage.
