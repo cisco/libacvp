@@ -11205,6 +11205,7 @@ SSL_LDFLAGS="-L$ssldir/lib -lcrypto"
 if test "x$enable_offline" != "xfalse"; then :
   CFLAGS="$CFLAGS -DACVP_OFFLINE"
   LDFLAGS="-static $LDFLAGS"
+  CC="$fomdir/bin/fipsld"
 
 
 fi

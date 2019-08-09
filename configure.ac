@@ -160,6 +160,7 @@ AS_IF(
  [test "x$enable_offline" != "xfalse"],
  [[CFLAGS="$CFLAGS -DACVP_OFFLINE"]
   [LDFLAGS="-static $LDFLAGS"]
+  [CC="$fomdir/bin/fipsld"]
  ]
 )
 
