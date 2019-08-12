@@ -33,6 +33,7 @@ typedef enum acvp_log_lvl {
     ACVP_LOG_LVL_STATUS,
     ACVP_LOG_LVL_INFO,
     ACVP_LOG_LVL_VERBOSE,
+    ACVP_LOG_LVL_MAX = ACVP_LOG_LVL_VERBOSE,
 } ACVP_LOG_LVL;
 
 /*! @struct ACVP_CTX

@@ -1336,10 +1336,6 @@ void acvp_log_msg(ACVP_CTX *ctx, ACVP_LOG_LVL level, const char *format, ...);
 
 ACVP_RESULT acvp_hexstr_to_bin(const char *src, unsigned char *dest, int dest_max, int *converted_len);
 
-ACVP_RESULT acvp_bin_to_bit(const unsigned char *in, int len, unsigned char *out);
-
-ACVP_RESULT acvp_bit_to_bin(const unsigned char *in, int len, unsigned char *out);
-
 /*
  * These are the handler routines for each KAT operation
  */
@@ -1451,8 +1447,6 @@ char *acvp_lookup_hash_alg_name(ACVP_HASH_ALG id);
 ACVP_EC_CURVE acvp_lookup_ec_curve(ACVP_CIPHER cipher, const char *name);
 char *acvp_lookup_ec_curve_name(ACVP_CIPHER cipher, ACVP_EC_CURVE id);
 
-void ctr64_inc(unsigned char *counter);
-void ctr128_inc(unsigned char *counter);
 ACVP_RESULT acvp_refresh(ACVP_CTX *ctx);
 
 ACVP_RESULT acvp_setup_json_rsp_group(ACVP_CTX **ctx,

@@ -539,44 +539,6 @@ ACVP_RESULT acvp_bin_to_hexstr(const unsigned char *src, int src_len, char *dest
 }
 
 /*
- * Convert a bit character string from *char ptr to
- * the destination as a concatenated bit value with bit0 = 0x80
- */
-ACVP_RESULT acvp_bit_to_bin(const unsigned char *in, int len, unsigned char *out) {
-    int n;
-
-    if (!out || !in) {
-        return ACVP_INVALID_ARG;
-    }
-
-    memzero_s(out, len);
-    for (n = 0; n < len; ++n) {
-        if (in[n] == '1') {
-            out[n / 8] |= (0x80 >> (n % 8));
-        }
-    }
-
-    return ACVP_SUCCESS;
-}
-
-/*
- * Convert characters in hexidecimal format from a *char ptr to a
- * the destination as a binary bit string
- */
-ACVP_RESULT acvp_bin_to_bit(const unsigned char *in, int len, unsigned char *out) {
-    int n;
-
-    if (!len || !out || !in) {
-        return ACVP_INVALID_ARG;
-    }
-    for (n = 0; n < len; ++n) {
-        out[n] = (in[n / 8] & (0x80 >> (n % 8))) ? '1' : '0';
-    }
-
-    return ACVP_SUCCESS;
-}
-
-/*
  * Convert a source hexadecimal string to a byte array which is stored
  * in the destination.
  * TODO: Enable the function to handle odd number of hex characters
@@ -746,33 +708,6 @@ char *acvp_lookup_error_string(ACVP_RESULT rv) {
     return "Unknown error";
 }
 
-/* increment counter (64-bit int) by 1 */
-void ctr64_inc(unsigned char *counter) {
-    int n = 8;
-    unsigned char c;
-
-    do {
-        --n;
-        c = counter[n];
-        ++c;
-        counter[n] = c;
-        if (c)
-            return;
-    } while (n);
-}
-
-/* increment counter (128-bit int) by 1 */
-void ctr128_inc(unsigned char *counter) {
-    unsigned int n = 16, c = 1;
-
-    do {
-        --n;
-        c += counter[n];
-        counter[n] = (unsigned char)c;
-        c >>= 8;
-    } while (n);
-}
-
 #define ACVP_UTIL_KV_STR_MAX 256
 
 ACVP_RESULT acvp_kv_list_append(ACVP_KV_LIST **kv_list,
@@ -874,12 +809,16 @@ JSON_Object *acvp_get_obj_from_rsp(ACVP_CTX *ctx, JSON_Value *arry_val) {
     JSON_Array *reg_array;
     char *ver = NULL;
 
+    if (!ctx || !arry_val) {
+        ACVP_LOG_ERR("Missing arguments");
+        return ;
+    }
     reg_array = json_value_get_array(arry_val);
     ver = acvp_get_version_from_rsp(arry_val);
     if (ver == NULL) {
         return NULL;
     }
-    ACVP_LOG_INFO("ACV version: %s", ver);
+
 
     obj = json_array_get_object(reg_array, 1);
     return obj;
@@ -937,6 +876,10 @@ ACVP_RESULT acvp_json_serialize_to_file_pretty_a(const JSON_Value *value, const 
     FILE *fp = NULL;
     char *serialized_string = NULL; 
 
+    if (!filename) {
+        return ACVP_INVALID_ARG;
+    }
+
     fp = fopen(filename, "a");
     if (fp == NULL) {
         return ACVP_JSON_ERR;
@@ -971,7 +914,16 @@ end:
 ACVP_RESULT acvp_json_serialize_to_file_pretty_w(const JSON_Value *value, const char *filename) {
     ACVP_RESULT return_code = ACVP_SUCCESS;
     FILE *fp = NULL;
-    char *serialized_string = json_serialize_to_string_pretty(value, NULL);
+    char *serialized_string = NULL;
+
+    if (!value) {
+        return ACVP_JSON_ERR;
+    }
+    if (!filename) {
+        return ACVP_INVALID_ARG;
+    }
+
+    serialized_string = json_serialize_to_string_pretty(value, NULL);
     if (serialized_string == NULL) {
         return ACVP_JSON_ERR;
     }
