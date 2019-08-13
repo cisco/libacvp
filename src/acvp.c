@@ -843,7 +843,7 @@ ACVP_RESULT acvp_run_vectors_from_file(ACVP_CTX *ctx, const char *req_filename, 
     if (!ctx) {
         return ACVP_NO_CTX;
     }
-    if (!req_filename) {
+    if (!req_filename || !rsp_filename) {
         ACVP_LOG_ERR("Must provide value for JSON filename");
         return ACVP_MISSING_ARG;
     }
@@ -1549,6 +1549,10 @@ end:
 static ACVP_RESULT acvp_append_vsid_url(ACVP_CTX *ctx, char *vsid_url) {
     ACVP_STRING_LIST *vs_entry, *vs_e2;
 
+
+    if (!ctx || !vsid_url) {
+        return ACVP_MISSING_ARG;
+    }
     vs_entry = calloc(1, sizeof(ACVP_STRING_LIST));
     if (!vs_entry) {
         return ACVP_MALLOC_FAIL;
