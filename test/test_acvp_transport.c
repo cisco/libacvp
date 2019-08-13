@@ -12,7 +12,6 @@
 #include "ut_common.h"
 #include "acvp_lcl.h"
 
-#ifdef TEST_TRANSPORT
 char *vsid_url = "/acvp/v1/testSessions/0/vectorSets/0";
 ACVP_CTX *ctx = NULL;
 ACVP_RESULT rv;
@@ -94,6 +93,7 @@ static void setup_session_parameters(void)
     acvp_set_2fa_callback(ctx, &totp);
 }
 
+#ifdef TEST_TRANSPORT
 static void add_hash_details_good(void) {
     rv = acvp_cap_hash_enable(ctx, ACVP_HASH_SHA1, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
@@ -105,7 +105,7 @@ static void add_hash_details_good(void) {
     rv = acvp_cap_hash_set_domain(ctx, ACVP_HASH_SHA512, ACVP_HASH_MESSAGE_LEN, 0, 65528, 8);
     cr_assert(rv == ACVP_SUCCESS);
 }
-
+#endif
 static void setup(void) {
     setup_empty_ctx(&ctx);
 }
@@ -150,7 +150,8 @@ Test(TRANSPORT_RETRIEVE_SAMPLE_ANSWERS, good, .init = setup, .fini = teardown) {
     rv = acvp_set_server(ctx, "demo.acvts.nist.gov", 443);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_retrieve_expected_result(ctx, vsid_url);
-    cr_assert(rv == ACVP_SUCCESS);
+    cr_assert(rv == ACVP_TRANSPORT_FAIL);
+
 }
 
 /*
@@ -188,7 +189,8 @@ Test(TRANSPORT_RETRIEVE_VECTOR_SET, good, .init = setup, .fini = teardown) {
     rv = acvp_set_server(ctx, "demo.acvts.nist.gov", 443);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_retrieve_vector_set(ctx, vsid_url);
-    cr_assert(rv == ACVP_SUCCESS);
+    cr_assert(rv == ACVP_TRANSPORT_FAIL);
+
 }
 
 /*
@@ -252,9 +254,11 @@ Test(TRANSPORT_RETRIEVE_RESULT, good, .init = setup, .fini = teardown) {
     rv = acvp_set_server(ctx, "demo.acvts.nist.gov", 443);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_send_test_session_registration(ctx, little_reg, strlen(little_reg));
-    cr_assert(rv == ACVP_TRANSPORT_FAIL);
+    cr_assert(rv == ACVP_MISSING_ARG);
+
     rv = acvp_retrieve_vector_set_result(ctx, vsid_url);
-    cr_assert(rv == ACVP_SUCCESS);
+    cr_assert(rv == ACVP_TRANSPORT_FAIL);
+
 }
 
 /*
@@ -264,7 +268,8 @@ Test(TRANSPORT_SEND_TEST_SESSION_REG, missing_reg, .init = setup, .fini = teardo
     rv = acvp_set_server(ctx, "demo.acvts.nist.gov", 443);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_send_test_session_registration(ctx, NULL, 0);
-    cr_assert(rv == ACVP_NO_DATA);
+    cr_assert(rv == ACVP_MISSING_ARG);
+
 }
 
 /*
@@ -299,7 +304,8 @@ Test(TRANSPORT_SEND_LOGIN, missing_reg, .init = setup, .fini = teardown) {
     rv = acvp_set_server(ctx, "demo.acvts.nist.gov", 443);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_send_login(ctx, NULL, 0);
-    cr_assert(rv == ACVP_NO_DATA);
+    cr_assert(rv == ACVP_MISSING_ARG);
+
 }
 
 /*
@@ -327,6 +333,7 @@ Test(TRANSPORT_SEND_LOGIN, good, .init = setup_session_parameters, .fini = teard
     cr_assert(rv == ACVP_TRANSPORT_FAIL);
 }
 
+#if 0
 Test(TRANSPORT_FULL_INTERACTION, good, .init = setup_session_parameters, .fini = teardown) {
     add_hash_details_good();
     
@@ -339,6 +346,143 @@ Test(TRANSPORT_FULL_INTERACTION, good, .init = setup_session_parameters, .fini =
     rv = acvp_check_test_results(ctx);
     cr_assert(rv == ACVP_SUCCESS);
 }
+#endif
+
+/*
+ * Exercise acvp_transport_post logic
+ * 
+ */
+Test(TRANSPORT_POST, good, .init = setup_session_parameters, .fini = teardown) {
+    char *save_ptr = NULL;
+    int save_int = 0;
+    rv = acvp_transport_post(NULL, "uri", "data", 4);
+    cr_assert(rv == ACVP_NO_CTX);
+
+    save_int = ctx->server_port;
+    ctx->server_port = 0;
+    rv = acvp_transport_post(ctx, "uri", "data", 4);
+    cr_assert(rv == ACVP_MISSING_ARG);
+
+    ctx->server_port = save_int;
+    
+    save_ptr = ctx->server_name;
+    ctx->server_name = NULL;
+    rv = acvp_transport_post(ctx, "uri", "data", 4);
+    cr_assert(rv == ACVP_MISSING_ARG);
+
+    ctx->server_name = save_ptr;
+
+    rv = acvp_transport_post(ctx, NULL, "data", 4);
+    cr_assert(rv == ACVP_MISSING_ARG);
+
+    rv = acvp_transport_post(ctx, "uri", "data", 4);
+    cr_assert(rv == ACVP_TRANSPORT_FAIL);
+}
+
+/*
+ * Exercise acvp_transport_put logic
+ * 
+ */
+Test(TRANSPORT_PUT, good, .init = setup_session_parameters, .fini = teardown) {
+    char *save_ptr = NULL;
+    int save_int = 0;
+    rv = acvp_transport_put(NULL, "uri", "data", 4);
+    cr_assert(rv == ACVP_NO_CTX);
+
+    save_int = ctx->server_port;
+    ctx->server_port = 0;
+    rv = acvp_transport_put(ctx, "uri", "data", 4);
+    cr_assert(rv == ACVP_MISSING_ARG);
+
+    ctx->server_port = save_int;
+    
+    save_ptr = ctx->server_name;
+    ctx->server_name = NULL;
+    rv = acvp_transport_put(ctx, "uri", "data", 4);
+    cr_assert(rv == ACVP_MISSING_ARG);
+
+    ctx->server_name = save_ptr;
+
+    rv = acvp_transport_put(ctx, NULL, "data", 4);
+    cr_assert(rv == ACVP_MISSING_ARG);
+
+    rv = acvp_transport_put(ctx, "uri", "data", 4);
+    cr_assert(rv == ACVP_TRANSPORT_FAIL);
+}
+
+/*
+ * Exercise acvp_transport_put_validation logic
+ * 
+ */
+Test(TRANSPORT_PUT_VALIDATION, good, .init = setup_session_parameters, .fini = teardown) {
+    char *save_ptr = NULL;
+    int save_int = 0;
+
+    rv = acvp_transport_put_validation(NULL, "data", 4);
+    cr_assert(rv == ACVP_NO_CTX);
+
+    save_int = ctx->server_port;
+    ctx->server_port = 0;
+    rv = acvp_transport_put_validation(ctx, "data", 4);
+    cr_assert(rv == ACVP_MISSING_ARG);
+
+    ctx->server_port = save_int;
+    
+    save_ptr = ctx->server_name;
+    ctx->server_name = NULL;
+    rv = acvp_transport_put_validation(ctx, "data", 4);
+    cr_assert(rv == ACVP_MISSING_ARG);
+
+    ctx->server_name = save_ptr;
+
+    rv = acvp_transport_put_validation(ctx, NULL, 4);
+    cr_assert(rv == ACVP_INVALID_ARG);
+
+    rv = acvp_transport_put_validation(ctx, "data", 4);
+    cr_assert(rv == ACVP_MISSING_ARG);
+}
+
+/*
+ * Exercise acvp_transport_get logic
+ * 
+ */
+Test(TRANSPORT_GET, good, .init = setup_session_parameters, .fini = teardown) {
+    char *save_ptr = NULL, *key = NULL, *value = NULL;
+    int save_int = 0;
+    ACVP_KV_LIST *parms = NULL;
+
+    rv = acvp_transport_get(NULL, "uri", parms);
+    cr_assert(rv == ACVP_NO_CTX);
+
+    save_int = ctx->server_port;
+    ctx->server_port = 0;
+    rv = acvp_transport_get(ctx, "uri", parms);
+    cr_assert(rv == ACVP_MISSING_ARG);
+
+    ctx->server_port = save_int;
+    
+    save_ptr = ctx->server_name;
+    ctx->server_name = NULL;
+    rv = acvp_transport_get(ctx, "uri", parms);
+    cr_assert(rv == ACVP_MISSING_ARG);
+
+    ctx->server_name = save_ptr;
+
+    rv = acvp_transport_get(ctx, NULL, parms);
+    cr_assert(rv == ACVP_MISSING_ARG);
+
+
+    key = calloc(strlen("this is the key"), sizeof(char));
+    value = calloc(strlen("value"), sizeof(char));
+    memcpy(value, "value", 5);
+    memcpy(key, "This is the key", 15);
+    rv = acvp_kv_list_append(&parms, key, value);
+
+    rv = acvp_transport_get(ctx, "uri", parms);
+    cr_assert(rv == ACVP_TRANSPORT_FAIL);
+    acvp_kv_list_free(parms);
+}
+
 
 #if 0 // TODO NIST does not have these enabled via API, we don't have Cisco server yet
 /*
@@ -490,4 +634,4 @@ Test(TRANSPORT_SEND_OE_REG, good, .init = setup, .fini = teardown) {
 }
 #endif
 
-#endif
+
