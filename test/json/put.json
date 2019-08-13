@@ -1,0 +1,14 @@
+[
+    {
+      "url": "/acvp/v1/modules/11298"
+    }, 
+    {
+        "name": "CiscoSSL FOM Cryptographic Algorithm Implementation",
+        "version": "6.2b",
+        "type": "Firmware",
+        "vendorUrl": "/acvp/v1/vendors/11204",
+        "addressUrl": "/acvp/v1/vendors/11204/addresses/11158",
+        "contactUrls": ["/acvp/v1/persons/14969" ],
+        "description" : "Firmware FIPS Object Module"
+    }
+]

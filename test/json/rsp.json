@@ -1,0 +1,1482 @@
+[ {
+    "jwt": "eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiIwNzBhYmY0Zi1kMzBjLTQyMjktOTA2ZS1kZDQ4YmE5MDAzOGEiLCJpYXQiOjE1NjE1NzM1MjIsInN1YiI6IjEuMi44NDAuMTEzNTQ5LjEuOS4xPSMxNjEyNjI2Njc1NzM3MzY1NmM2YzQwNjM2OTczNjM2ZjJlNjM2ZjZkLENOPUFDVlBfQ2lzY28sT1U9U1RPLE89Q2lzY28sTD1SVFAsU1Q9TkMsQz1VUyIsImlzcyI6Ik5JU1QgQUNWVFMiLCJleHAiOjE1NjE1NzUzMjIsInZzSWQiOiJbNzk2OCwgNzk2OV0iLCJ0c0lkIjoiMjE1MyJ9.gmHrHAxYYAzRRP8zkFUNFlGgBrCfSI0sUoHrdVcNLcU",
+    "url": "\/acvp\/v1\/testSessions\/2153",
+    "vectorSetUrls": [
+        "\/acvp\/v1\/testSessions\/2153\/vectorSets\/7968",
+        "\/acvp\/v1\/testSessions\/2153\/vectorSets\/7969"
+    ]
+}, {
+    "vsId": 7968,
+    "algorithm": "CMAC-AES",
+    "testGroups": [
+        {
+            "tgId": 1,
+            "tests": [
+                {
+                    "tcId": 1,
+                    "mac": "635C670EC63FF67B0C659D82511BF44A"
+                },
+                {
+                    "tcId": 2,
+                    "mac": "272751E94483D8647DD2F0C557840291"
+                },
+                {
+                    "tcId": 3,
+                    "mac": "F11E6EB8D7BB5D7214D73BE232B95755"
+                },
+                {
+                    "tcId": 4,
+                    "mac": "2784A1DCD1BE1B94858095CCBF0F9B8D"
+                },
+                {
+                    "tcId": 5,
+                    "mac": "1673665DFE21C5178B63FB0763A58D11"
+                },
+                {
+                    "tcId": 6,
+                    "mac": "7E8FC5811F125F660003BE61B348F0B9"
+                },
+                {
+                    "tcId": 7,
+                    "mac": "8E8CDA84512D77634A14862ECA89B201"
+                },
+                {
+                    "tcId": 8,
+                    "mac": "55D30F0E560958DC711B72F327F885C1"
+                }
+            ]
+        },
+        {
+            "tgId": 2,
+            "tests": [
+                {
+                    "tcId": 9,
+                    "mac": "4E557BFC8DFE0E864A404BACE0E1B984"
+                },
+                {
+                    "tcId": 10,
+                    "mac": "73C11315A192CB67066D4C7EDB276877"
+                },
+                {
+                    "tcId": 11,
+                    "mac": "2F2F26F98222A4613AA210704AAB3E45"
+                },
+                {
+                    "tcId": 12,
+                    "mac": "C6CA5EFDA9831A07AF648FDE3289425F"
+                },
+                {
+                    "tcId": 13,
+                    "mac": "F2A65AF13BC1073A05CE2AED5779220F"
+                },
+                {
+                    "tcId": 14,
+                    "mac": "4EB46D66460E7297484E36F30E67081D"
+                },
+                {
+                    "tcId": 15,
+                    "mac": "385B39E9911861758347D3937BFB3643"
+                },
+                {
+                    "tcId": 16,
+                    "mac": "35C0C291B7B5D6E6B95857A75E975E3F"
+                }
+            ]
+        },
+        {
+            "tgId": 3,
+            "tests": [
+                {
+                    "tcId": 17,
+                    "mac": "4D159521A51B0B56917233B1AB499624"
+                },
+                {
+                    "tcId": 18,
+                    "mac": "0B6D50EB7337770BEBAA253E0F52992A"
+                },
+                {
+                    "tcId": 19,
+                    "mac": "1C5C1EE2DF8CEE26D75613403358D5B0"
+                },
+                {
+                    "tcId": 20,
+                    "mac": "122BCDB1D8BEF55C3ABDFAD839B9F7C4"
+                },
+                {
+                    "tcId": 21,
+                    "mac": "B435B862A8A8019DFFBAE595596FBA96"
+                },
+                {
+                    "tcId": 22,
+                    "mac": "48E79F50FE432BD902EAE661CF28E915"
+                },
+                {
+                    "tcId": 23,
+                    "mac": "1574432E0AF63468D64888089D35696F"
+                },
+                {
+                    "tcId": 24,
+                    "mac": "863A699422D9DBF09DF380820582042B"
+                }
+            ]
+        },
+        {
+            "tgId": 4,
+            "tests": [
+                {
+                    "tcId": 25,
+                    "mac": "2F7C948D67B210FC88873374B9E53B07"
+                },
+                {
+                    "tcId": 26,
+                    "mac": "3B99BB2661EA12B19A587491DD98CB5F"
+                },
+                {
+                    "tcId": 27,
+                    "mac": "216C4ED37CD3695E88BB88F10552B415"
+                },
+                {
+                    "tcId": 28,
+                    "mac": "2BD5B04BC62A5EE744BC13548F0FFBC3"
+                },
+                {
+                    "tcId": 29,
+                    "mac": "2BDBAE5E2AE8B72F32FE4964B002C4D9"
+                },
+                {
+                    "tcId": 30,
+                    "mac": "0F4C28C83ED94B50E339898181B9AB80"
+                },
+                {
+                    "tcId": 31,
+                    "mac": "DDFC81E44839C79D0BB5FAA05D309C61"
+                },
+                {
+                    "tcId": 32,
+                    "mac": "B4C812A0E0564E42998934359AFC4CFD"
+                }
+            ]
+        },
+        {
+            "tgId": 5,
+            "tests": [
+                {
+                    "tcId": 33,
+                    "mac": "3C79D362873F76254DBC1259E490F773"
+                },
+                {
+                    "tcId": 34,
+                    "mac": "13FC65BCF37AEA9D10A6E6CEA9E444F5"
+                },
+                {
+                    "tcId": 35,
+                    "mac": "F48A9AC8A2A0B21E410A3C8FA792AF59"
+                },
+                {
+                    "tcId": 36,
+                    "mac": "58809FA080FDCEC7B8069417D131CC85"
+                },
+                {
+                    "tcId": 37,
+                    "mac": "E7F427AB0C84FF29C40CFA1E46470AB7"
+                },
+                {
+                    "tcId": 38,
+                    "mac": "84AD18640D24F8D7B6A4223FB6C6D9F6"
+                },
+                {
+                    "tcId": 39,
+                    "mac": "11D6215D189814B988A35D74A566C32C"
+                },
+                {
+                    "tcId": 40,
+                    "mac": "95EB744BD1D664E3D46A450BF9C3F5D4"
+                }
+            ]
+        },
+        {
+            "tgId": 6,
+            "tests": [
+                {
+                    "tcId": 41,
+                    "mac": "BEEC68E43B08DB7D30646C7DFDDC808F"
+                },
+                {
+                    "tcId": 42,
+                    "mac": "6DB0DF07365697E63D3D76FB06B48D07"
+                },
+                {
+                    "tcId": 43,
+                    "mac": "3BA880A250DC4224237A50802C23AE7D"
+                },
+                {
+                    "tcId": 44,
+                    "mac": "5DE36D334504DBB0E3E1F123B6E7FA53"
+                },
+                {
+                    "tcId": 45,
+                    "mac": "1098790D9E83905BF5EF1A7C18B9D203"
+                },
+                {
+                    "tcId": 46,
+                    "mac": "C5C447BBADCA52E553FE9B10F28A74D6"
+                },
+                {
+                    "tcId": 47,
+                    "mac": "011F9BAC262D7F672C741B78341C40E4"
+                },
+                {
+                    "tcId": 48,
+                    "mac": "C1F728D3B5812416CB1093C2F8AA40BB"
+                }
+            ]
+        },
+        {
+            "tgId": 7,
+            "tests": [
+                {
+                    "tcId": 49,
+                    "mac": "522B6C1330A2C2E9B753CF76C525A927"
+                },
+                {
+                    "tcId": 50,
+                    "mac": "A3E08A42DAF9BB1B18140010689CD31D"
+                },
+                {
+                    "tcId": 51,
+                    "mac": "C615F5FF155EE2D499F8A56C1F084F0B"
+                },
+                {
+                    "tcId": 52,
+                    "mac": "35747F022A3A0662062E1A4424149CF1"
+                },
+                {
+                    "tcId": 53,
+                    "mac": "A24E7304598DCDDB2E10C41B388520CF"
+                },
+                {
+                    "tcId": 54,
+                    "mac": "57221D2C186209E004E1C42ED79B505A"
+                },
+                {
+                    "tcId": 55,
+                    "mac": "13C7E6813CBDB2B6D8E7B20E05DC9472"
+                },
+                {
+                    "tcId": 56,
+                    "mac": "CA272E695C4E0C57A0DAA676021C6110"
+                }
+            ]
+        },
+        {
+            "tgId": 8,
+            "tests": [
+                {
+                    "tcId": 57,
+                    "mac": "712B035867D8361BC32ADB2E9240A66F"
+                },
+                {
+                    "tcId": 58,
+                    "mac": "5ECB773A0624554044F435FFE2F9E865"
+                },
+                {
+                    "tcId": 59,
+                    "mac": "0FE704F05BF8D89C86E70F4FADC2950E"
+                },
+                {
+                    "tcId": 60,
+                    "mac": "9815321EBDEC51CBB766AE1B8DD2E311"
+                },
+                {
+                    "tcId": 61,
+                    "mac": "35720D46898A503F516F4937968E6B09"
+                },
+                {
+                    "tcId": 62,
+                    "mac": "1618D115649F533A057B4DE4DD6F045B"
+                },
+                {
+                    "tcId": 63,
+                    "mac": "468CCA5E75B08002A986D2C8CF2466EB"
+                },
+                {
+                    "tcId": 64,
+                    "mac": "857A66DE06CBA986940A5318A899D2D0"
+                }
+            ]
+        },
+        {
+            "tgId": 9,
+            "tests": [
+                {
+                    "tcId": 65,
+                    "mac": "DD54C435E582F9F35DC066B225EC700D"
+                },
+                {
+                    "tcId": 66,
+                    "mac": "915EDC72911FCED044626C2465131DE1"
+                },
+                {
+                    "tcId": 67,
+                    "mac": "532ECC4E709963D6B3804BE9A2BE3090"
+                },
+                {
+                    "tcId": 68,
+                    "mac": "BC2FA7430E6E264A7599B88590817D2C"
+                },
+                {
+                    "tcId": 69,
+                    "mac": "D8A9E5B52FD55C98EBD16402D73DD7CD"
+                },
+                {
+                    "tcId": 70,
+                    "mac": "568887872340192CE28C7D2DCDD705BE"
+                },
+                {
+                    "tcId": 71,
+                    "mac": "3CA5AA3CC341365C7BF7F2928460315B"
+                },
+                {
+                    "tcId": 72,
+                    "mac": "F59A727C4502285F44D9D1AEC1F94FDB"
+                }
+            ]
+        },
+        {
+            "tgId": 10,
+            "tests": [
+                {
+                    "tcId": 73,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 74,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 75,
+                    "testPassed": false
+                },
+                {
+                    "tcId": 76,
+                    "testPassed": false
+                },
+                {
+                    "tcId": 77,
+                    "testPassed": false
+                },
+                {
+                    "tcId": 78,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 79,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 80,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 81,
+                    "testPassed": false
+                },
+                {
+                    "tcId": 82,
+                    "testPassed": false
+                },
+                {
+                    "tcId": 83,
+                    "testPassed": false
+                },
+                {
+                    "tcId": 84,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 85,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 86,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 87,
+                    "testPassed": false
+                },
+                {
+                    "tcId": 88,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 89,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 90,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 91,
+                    "testPassed": false
+                },
+                {
+                    "tcId": 92,
+                    "testPassed": false
+                }
+            ]
+        },
+        {
+            "tgId": 11,
+            "tests": [
+                {
+                    "tcId": 93,
+                    "testPassed": false
+                },
+                {
+                    "tcId": 94,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 95,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 96,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 97,
+                    "testPassed": false
+                },
+                {
+                    "tcId": 98,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 99,
+                    "testPassed": false
+                },
+                {
+                    "tcId": 100,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 101,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 102,
+                    "testPassed": false
+                },
+                {
+                    "tcId": 103,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 104,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 105,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 106,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 107,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 108,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 109,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 110,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 111,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 112,
+                    "testPassed": true
+                }
+            ]
+        },
+        {
+            "tgId": 12,
+            "tests": [
+                {
+                    "tcId": 113,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 114,
+                    "testPassed": false
+                },
+                {
+                    "tcId": 115,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 116,
+                    "testPassed": false
+                },
+                {
+                    "tcId": 117,
+                    "testPassed": false
+                },
+                {
+                    "tcId": 118,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 119,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 120,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 121,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 122,
+                    "testPassed": false
+                },
+                {
+                    "tcId": 123,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 124,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 125,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 126,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 127,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 128,
+                    "testPassed": false
+                },
+                {
+                    "tcId": 129,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 130,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 131,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 132,
+                    "testPassed": true
+                }
+            ]
+        },
+        {
+            "tgId": 13,
+            "tests": [
+                {
+                    "tcId": 133,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 134,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 135,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 136,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 137,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 138,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 139,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 140,
+                    "testPassed": false
+                },
+                {
+                    "tcId": 141,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 142,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 143,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 144,
+                    "testPassed": false
+                },
+                {
+                    "tcId": 145,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 146,
+                    "testPassed": false
+                },
+                {
+                    "tcId": 147,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 148,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 149,
+                    "testPassed": false
+                },
+                {
+                    "tcId": 150,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 151,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 152,
+                    "testPassed": true
+                }
+            ]
+        },
+        {
+            "tgId": 14,
+            "tests": [
+                {
+                    "tcId": 153,
+                    "testPassed": false
+                },
+                {
+                    "tcId": 154,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 155,
+                    "testPassed": false
+                },
+                {
+                    "tcId": 156,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 157,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 158,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 159,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 160,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 161,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 162,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 163,
+                    "testPassed": false
+                },
+                {
+                    "tcId": 164,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 165,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 166,
+                    "testPassed": false
+                },
+                {
+                    "tcId": 167,
+                    "testPassed": false
+                },
+                {
+                    "tcId": 168,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 169,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 170,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 171,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 172,
+                    "testPassed": true
+                }
+            ]
+        },
+        {
+            "tgId": 15,
+            "tests": [
+                {
+                    "tcId": 173,
+                    "testPassed": false
+                },
+                {
+                    "tcId": 174,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 175,
+                    "testPassed": false
+                },
+                {
+                    "tcId": 176,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 177,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 178,
+                    "testPassed": false
+                },
+                {
+                    "tcId": 179,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 180,
+                    "testPassed": false
+                },
+                {
+                    "tcId": 181,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 182,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 183,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 184,
+                    "testPassed": false
+                },
+                {
+                    "tcId": 185,
+                    "testPassed": false
+                },
+                {
+                    "tcId": 186,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 187,
+                    "testPassed": false
+                },
+                {
+                    "tcId": 188,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 189,
+                    "testPassed": false
+                },
+                {
+                    "tcId": 190,
+                    "testPassed": false
+                },
+                {
+                    "tcId": 191,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 192,
+                    "testPassed": true
+                }
+            ]
+        },
+        {
+            "tgId": 16,
+            "tests": [
+                {
+                    "tcId": 193,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 194,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 195,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 196,
+                    "testPassed": false
+                },
+                {
+                    "tcId": 197,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 198,
+                    "testPassed": false
+                },
+                {
+                    "tcId": 199,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 200,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 201,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 202,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 203,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 204,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 205,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 206,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 207,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 208,
+                    "testPassed": false
+                },
+                {
+                    "tcId": 209,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 210,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 211,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 212,
+                    "testPassed": true
+                }
+            ]
+        },
+        {
+            "tgId": 17,
+            "tests": [
+                {
+                    "tcId": 213,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 214,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 215,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 216,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 217,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 218,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 219,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 220,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 221,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 222,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 223,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 224,
+                    "testPassed": false
+                },
+                {
+                    "tcId": 225,
+                    "testPassed": false
+                },
+                {
+                    "tcId": 226,
+                    "testPassed": false
+                },
+                {
+                    "tcId": 227,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 228,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 229,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 230,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 231,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 232,
+                    "testPassed": true
+                }
+            ]
+        },
+        {
+            "tgId": 18,
+            "tests": [
+                {
+                    "tcId": 233,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 234,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 235,
+                    "testPassed": false
+                },
+                {
+                    "tcId": 236,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 237,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 238,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 239,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 240,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 241,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 242,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 243,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 244,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 245,
+                    "testPassed": false
+                },
+                {
+                    "tcId": 246,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 247,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 248,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 249,
+                    "testPassed": false
+                },
+                {
+                    "tcId": 250,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 251,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 252,
+                    "testPassed": true
+                }
+            ]
+        }
+    ]
+}, {
+    "vsId": 7969,
+    "algorithm": "CMAC-TDES",
+    "testGroups": [
+        {
+            "tgId": 1,
+            "tests": [
+                {
+                    "tcId": 1,
+                    "mac": "713EB3FA7B2ACA26"
+                },
+                {
+                    "tcId": 2,
+                    "mac": "678640E3A27F5566"
+                },
+                {
+                    "tcId": 3,
+                    "mac": "D238BD6CF8971A58"
+                },
+                {
+                    "tcId": 4,
+                    "mac": "E05DB173BCEF0CB7"
+                },
+                {
+                    "tcId": 5,
+                    "mac": "BE985C7A40A95FC3"
+                },
+                {
+                    "tcId": 6,
+                    "mac": "0B4492AF35B8818C"
+                },
+                {
+                    "tcId": 7,
+                    "mac": "DB9242FAF3F93E63"
+                },
+                {
+                    "tcId": 8,
+                    "mac": "62A238FBD54249F7"
+                }
+            ]
+        },
+        {
+            "tgId": 2,
+            "tests": [
+                {
+                    "tcId": 9,
+                    "mac": "5290ED20B32663FF"
+                },
+                {
+                    "tcId": 10,
+                    "mac": "BA2080B391CAAD2E"
+                },
+                {
+                    "tcId": 11,
+                    "mac": "18F56E5E50632957"
+                },
+                {
+                    "tcId": 12,
+                    "mac": "B2B1110AD488F306"
+                },
+                {
+                    "tcId": 13,
+                    "mac": "6CFF84E8137BA8D0"
+                },
+                {
+                    "tcId": 14,
+                    "mac": "0C5F77425323DA28"
+                },
+                {
+                    "tcId": 15,
+                    "mac": "3B7A42CAE4B6F48D"
+                },
+                {
+                    "tcId": 16,
+                    "mac": "62B167449B4814D1"
+                }
+            ]
+        },
+        {
+            "tgId": 3,
+            "tests": [
+                {
+                    "tcId": 17,
+                    "mac": "E6FF58BF0A554F4B"
+                },
+                {
+                    "tcId": 18,
+                    "mac": "6FD5453823823BF4"
+                },
+                {
+                    "tcId": 19,
+                    "mac": "E28891A518852C49"
+                },
+                {
+                    "tcId": 20,
+                    "mac": "1163B848AD05FCEB"
+                },
+                {
+                    "tcId": 21,
+                    "mac": "AAA25597B136D318"
+                },
+                {
+                    "tcId": 22,
+                    "mac": "7C719F3799722FCC"
+                },
+                {
+                    "tcId": 23,
+                    "mac": "1E8AE4A2A118780A"
+                },
+                {
+                    "tcId": 24,
+                    "mac": "577FF4C389BDC75C"
+                }
+            ]
+        },
+        {
+            "tgId": 4,
+            "tests": [
+                {
+                    "tcId": 25,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 26,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 27,
+                    "testPassed": false
+                },
+                {
+                    "tcId": 28,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 29,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 30,
+                    "testPassed": false
+                },
+                {
+                    "tcId": 31,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 32,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 33,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 34,
+                    "testPassed": false
+                },
+                {
+                    "tcId": 35,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 36,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 37,
+                    "testPassed": false
+                },
+                {
+                    "tcId": 38,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 39,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 40,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 41,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 42,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 43,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 44,
+                    "testPassed": true
+                }
+            ]
+        },
+        {
+            "tgId": 5,
+            "tests": [
+                {
+                    "tcId": 45,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 46,
+                    "testPassed": false
+                },
+                {
+                    "tcId": 47,
+                    "testPassed": false
+                },
+                {
+                    "tcId": 48,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 49,
+                    "testPassed": false
+                },
+                {
+                    "tcId": 50,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 51,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 52,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 53,
+                    "testPassed": false
+                },
+                {
+                    "tcId": 54,
+                    "testPassed": false
+                },
+                {
+                    "tcId": 55,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 56,
+                    "testPassed": false
+                },
+                {
+                    "tcId": 57,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 58,
+                    "testPassed": false
+                },
+                {
+                    "tcId": 59,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 60,
+                    "testPassed": false
+                },
+                {
+                    "tcId": 61,
+                    "testPassed": false
+                },
+                {
+                    "tcId": 62,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 63,
+                    "testPassed": false
+                },
+                {
+                    "tcId": 64,
+                    "testPassed": true
+                }
+            ]
+        },
+        {
+            "tgId": 6,
+            "tests": [
+                {
+                    "tcId": 65,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 66,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 67,
+                    "testPassed": false
+                },
+                {
+                    "tcId": 68,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 69,
+                    "testPassed": false
+                },
+                {
+                    "tcId": 70,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 71,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 72,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 73,
+                    "testPassed": false
+                },
+                {
+                    "tcId": 74,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 75,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 76,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 77,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 78,
+                    "testPassed": false
+                },
+                {
+                    "tcId": 79,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 80,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 81,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 82,
+                    "testPassed": false
+                },
+                {
+                    "tcId": 83,
+                    "testPassed": true
+                },
+                {
+                    "tcId": 84,
+                    "testPassed": true
+                }
+            ]
+        }
+    ]
+} ]

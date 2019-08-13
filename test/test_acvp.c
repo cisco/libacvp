@@ -29,6 +29,27 @@ static void setup(void) {
 static void setup_full_ctx(void) {
     setup_empty_ctx(&ctx);
     
+    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_CBC, &dummy_handler_success);
+    cr_assert(rv == ACVP_SUCCESS);
+
+    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_CBC, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
+    cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_CBC, ACVP_SYM_CIPH_PARM_KO, ACVP_SYM_CIPH_KO_NA);
+    cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_CBC, ACVP_SYM_CIPH_PARM_IVGEN_SRC, ACVP_SYM_CIPH_IVGEN_SRC_NA);
+    cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_CBC, ACVP_SYM_CIPH_PARM_IVGEN_MODE, ACVP_SYM_CIPH_IVGEN_MODE_NA);
+    cr_assert(rv == ACVP_SUCCESS);
+
+    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_CBC, ACVP_SYM_CIPH_KEYLEN, 128);
+    cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_CBC, ACVP_SYM_CIPH_KEYLEN, 192);
+    cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_CBC, ACVP_SYM_CIPH_KEYLEN, 256);
+    cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_CBC, ACVP_SYM_CIPH_PTLEN, 1536);
+    cr_assert(rv == ACVP_SUCCESS);
+
     rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_GCM, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_AES_GCM, ACVP_PREREQ_AES, value);
@@ -609,3 +630,141 @@ Test(FREE_CTX, good, .init = setup_full_ctx) {
     rv = acvp_free_test_session(ctx);
     cr_assert(rv == ACVP_SUCCESS);
 }
+
+/*
+ * Test acvp_run_vectors_from_file logic
+ */
+Test(PROCESS_TESTS, run_vectors_from_file, .init = setup_full_ctx, .fini = teardown) {
+
+    rv = acvp_run_vectors_from_file(NULL, "test", "test");
+    cr_assert(rv == ACVP_NO_CTX);
+
+    rv = acvp_run_vectors_from_file(ctx, NULL, "test");
+    cr_assert(rv == ACVP_MISSING_ARG);
+
+    rv = acvp_run_vectors_from_file(ctx, "test", NULL);
+    cr_assert(rv == ACVP_MISSING_ARG);
+
+    rv = acvp_run_vectors_from_file(ctx, "json/req.json", "json/rsp1.json");
+    cr_assert(rv == ACVP_SUCCESS);
+
+}
+
+/*
+ * Test acvp_load_kat_filename
+ */
+Test(PROCESS_TESTS, load_kat_filename, .init = setup_full_ctx, .fini = teardown) {
+
+    rv = acvp_load_kat_filename(NULL, "test");
+    cr_assert(rv == ACVP_NO_CTX);
+
+    rv = acvp_load_kat_filename(ctx, NULL);
+    cr_assert(rv == ACVP_MISSING_ARG);
+
+    rv = acvp_load_kat_filename(ctx, "json/aes/aes.json");
+    cr_assert(rv == ACVP_SUCCESS);
+
+}
+
+/*
+ * Test acvp_upload_vectors_from_file
+ */
+Test(PROCESS_TESTS, upload_vectors_from_file, .init = setup_full_ctx, .fini = teardown) {
+
+    rv = acvp_upload_vectors_from_file(NULL, "test", 0);
+    cr_assert(rv == ACVP_NO_CTX);
+
+    rv = acvp_upload_vectors_from_file(ctx, NULL, 0);
+    cr_assert(rv == ACVP_MISSING_ARG);
+
+    rv = acvp_upload_vectors_from_file(ctx, "json/rsp.json", 0);
+    cr_assert(rv == ACVP_MISSING_ARG);
+}
+
+/*
+ * Test acvp_put_data_from_file
+ */
+Test(PROCESS_TESTS, put_data_from_file, .init = setup_full_ctx, .fini = teardown) {
+
+    rv = acvp_put_data_from_file(NULL, "test");
+    cr_assert(rv == ACVP_NO_CTX);
+
+    rv = acvp_put_data_from_file(ctx, NULL);
+    cr_assert(rv == ACVP_MISSING_ARG);
+
+    rv = acvp_put_data_from_file(ctx, "json/put.json");
+    cr_assert(rv == ACVP_MISSING_ARG);
+}
+
+/*
+ * Test acvp_mark_as_sample
+ */
+Test(PROCESS_TESTS, mark_as_sample, .init = setup_full_ctx, .fini = teardown) {
+
+    rv = acvp_mark_as_sample(NULL);
+    cr_assert(rv == ACVP_NO_CTX);
+
+    rv = acvp_mark_as_sample(ctx);
+    cr_assert(rv == ACVP_SUCCESS);
+}
+
+/*
+ * Test acvp_mark_as_post_only
+ */
+Test(PROCESS_TESTS, mark_as_post_only, .init = setup_full_ctx, .fini = teardown) {
+
+    rv = acvp_mark_as_post_only(NULL, "test");
+    cr_assert(rv == ACVP_NO_CTX);
+
+    rv = acvp_mark_as_post_only(ctx, NULL);
+    cr_assert(rv == ACVP_MISSING_ARG);
+
+    rv = acvp_mark_as_post_only(ctx, "test");
+    cr_assert(rv == ACVP_SUCCESS);
+}
+
+/*
+ * Test acvp_mark_as_request_only
+ */
+Test(PROCESS_TESTS, mark_as_request_only, .init = setup_full_ctx, .fini = teardown) {
+
+    rv = acvp_mark_as_request_only(NULL, "test");
+    cr_assert(rv == ACVP_NO_CTX);
+
+    rv = acvp_mark_as_request_only(ctx, NULL);
+    cr_assert(rv == ACVP_MISSING_ARG);
+
+    rv = acvp_mark_as_request_only(ctx, "test");
+    cr_assert(rv == ACVP_SUCCESS);
+}
+
+/*
+ * Test acvp_mark_as_get_only
+ */
+Test(PROCESS_TESTS, mark_as_get_only, .init = setup_full_ctx, .fini = teardown) {
+
+    rv = acvp_mark_as_get_only(NULL, "test");
+    cr_assert(rv == ACVP_NO_CTX);
+
+    rv = acvp_mark_as_get_only(ctx, NULL);
+    cr_assert(rv == ACVP_MISSING_ARG);
+
+    rv = acvp_mark_as_get_only(ctx, "test");
+    cr_assert(rv == ACVP_SUCCESS);
+}
+
+/*
+ * Test acvp_mark_as_put_after_test
+ */
+Test(PROCESS_TESTS, mark_as_put_after_test, .init = setup_full_ctx, .fini = teardown) {
+
+    rv = acvp_mark_as_put_after_test(NULL, "test");
+    cr_assert(rv == ACVP_NO_CTX);
+
+    rv = acvp_mark_as_put_after_test(ctx, NULL);
+    cr_assert(rv == ACVP_MISSING_ARG);
+
+    rv = acvp_mark_as_put_after_test(ctx, "test");
+    cr_assert(rv == ACVP_SUCCESS);
+}
+
