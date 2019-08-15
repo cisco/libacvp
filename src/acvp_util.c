@@ -811,7 +811,7 @@ JSON_Object *acvp_get_obj_from_rsp(ACVP_CTX *ctx, JSON_Value *arry_val) {
 
     if (!ctx || !arry_val) {
         ACVP_LOG_ERR("Missing arguments");
-        return ;
+        return NULL;
     }
     reg_array = json_value_get_array(arry_val);
     ver = acvp_get_version_from_rsp(arry_val);
