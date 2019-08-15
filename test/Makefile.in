@@ -128,6 +128,7 @@ am_runtest_OBJECTS = runtest-ut_common.$(OBJEXT) \
 	runtest-test_acvp_build_register.$(OBJEXT) \
 	runtest-test_acvp_aes.$(OBJEXT) runtest-test_acvp.$(OBJEXT) \
 	runtest-test_acvp_transport.$(OBJEXT) \
+	runtest-test_acvp_operating_env.$(OBJEXT) \
 	runtest-test_acvp_ecdsa.$(OBJEXT) \
 	runtest-test_acvp_kas_ecc.$(OBJEXT) \
 	runtest-test_acvp_kas_ffc.$(OBJEXT) \
@@ -390,6 +391,7 @@ runtest_SOURCES = ut_common.c \
       test_acvp_aes.c \
       test_acvp.c \
       test_acvp_transport.c \
+      test_acvp_operating_env.c \
       test_acvp_ecdsa.c \
       test_acvp_kas_ecc.c \
       test_acvp_kas_ffc.c \
@@ -498,6 +500,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtest-test_acvp_kdf135_ssh.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtest-test_acvp_kdf135_tls.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtest-test_acvp_kdf135_x963.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtest-test_acvp_operating_env.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtest-test_acvp_rsa_keygen.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtest-test_acvp_rsa_sig.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtest-test_acvp_transport.Po@am__quote@
@@ -871,6 +874,20 @@ runtest-test_acvp_transport.obj: test_acvp_transport.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_acvp_transport.c' object='runtest-test_acvp_transport.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o runtest-test_acvp_transport.obj `if test -f 'test_acvp_transport.c'; then $(CYGPATH_W) 'test_acvp_transport.c'; else $(CYGPATH_W) '$(srcdir)/test_acvp_transport.c'; fi`
+
+runtest-test_acvp_operating_env.o: test_acvp_operating_env.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT runtest-test_acvp_operating_env.o -MD -MP -MF $(DEPDIR)/runtest-test_acvp_operating_env.Tpo -c -o runtest-test_acvp_operating_env.o `test -f 'test_acvp_operating_env.c' || echo '$(srcdir)/'`test_acvp_operating_env.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/runtest-test_acvp_operating_env.Tpo $(DEPDIR)/runtest-test_acvp_operating_env.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_acvp_operating_env.c' object='runtest-test_acvp_operating_env.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o runtest-test_acvp_operating_env.o `test -f 'test_acvp_operating_env.c' || echo '$(srcdir)/'`test_acvp_operating_env.c
+
+runtest-test_acvp_operating_env.obj: test_acvp_operating_env.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT runtest-test_acvp_operating_env.obj -MD -MP -MF $(DEPDIR)/runtest-test_acvp_operating_env.Tpo -c -o runtest-test_acvp_operating_env.obj `if test -f 'test_acvp_operating_env.c'; then $(CYGPATH_W) 'test_acvp_operating_env.c'; else $(CYGPATH_W) '$(srcdir)/test_acvp_operating_env.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/runtest-test_acvp_operating_env.Tpo $(DEPDIR)/runtest-test_acvp_operating_env.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_acvp_operating_env.c' object='runtest-test_acvp_operating_env.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o runtest-test_acvp_operating_env.obj `if test -f 'test_acvp_operating_env.c'; then $(CYGPATH_W) 'test_acvp_operating_env.c'; else $(CYGPATH_W) '$(srcdir)/test_acvp_operating_env.c'; fi`
 
 runtest-test_acvp_ecdsa.o: test_acvp_ecdsa.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT runtest-test_acvp_ecdsa.o -MD -MP -MF $(DEPDIR)/runtest-test_acvp_ecdsa.Tpo -c -o runtest-test_acvp_ecdsa.o `test -f 'test_acvp_ecdsa.c' || echo '$(srcdir)/'`test_acvp_ecdsa.c

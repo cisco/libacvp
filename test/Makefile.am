@@ -23,6 +23,7 @@ runtest_SOURCES = ut_common.c \
       test_acvp_aes.c \
       test_acvp.c \
       test_acvp_transport.c \
+      test_acvp_operating_env.c \
       test_acvp_ecdsa.c \
       test_acvp_kas_ecc.c \
       test_acvp_kas_ffc.c \
