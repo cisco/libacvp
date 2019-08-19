@@ -257,6 +257,12 @@ ACVP_RESULT acvp_oe_oe_new(ACVP_CTX *ctx,
         return ACVP_INVALID_ARG;
     }
 
+
+    if (!name) {
+        ACVP_LOG_ERR("Required parameter 'name' must be non-null");
+        return ACVP_MISSING_ARG;
+    }
+
     for (k = 0; k < oes->count; k++) {
         if (id == oes->oe[k].id) {
             ACVP_LOG_ERR("An OE already exists with this same 'id'(%d)", id);
@@ -2300,6 +2306,8 @@ static ACVP_RESULT verify_fips_module(ACVP_CTX *ctx) {
 ACVP_RESULT acvp_oe_verify_fips_operating_env(ACVP_CTX *ctx) {
     ACVP_RESULT rv = 0;
 
+    if (!ctx) return ACVP_NO_CTX;
+
     /*
      * Verify the Module.
      * This includes the linked Vendor.
@@ -2436,10 +2444,12 @@ static void free_modules(ACVP_MODULES *modules) {
  * @param ctx ACVP_CTX
  */
 void acvp_oe_free_operating_env(ACVP_CTX *ctx) {
-    free_vendors(&ctx->op_env.vendors);
-    free_modules(&ctx->op_env.modules);
-    free_dependencies(&ctx->op_env.dependencies);
-    free_oes(&ctx->op_env.oes);
+    if (ctx) {
+        free_vendors(&ctx->op_env.vendors);
+        free_modules(&ctx->op_env.modules);
+        free_dependencies(&ctx->op_env.dependencies);
+        free_oes(&ctx->op_env.oes);
+    }
 }
 
 /******************

@@ -1,0 +1,55 @@
+{
+    "vendors": [
+        {
+            "name": "Acme Fictional",
+            "website": "http:fictional-acme.com",
+            "emails" : [ "acme@acme.com" ],
+            "phoneNumbers": [
+                { "number": "1-800-000-0000", "type": "voice" }
+            ],
+            "address": {
+                "street1": "Beach Dr.",
+                "street2": null,
+                "street3": null,
+                "locality": "Acme Town",
+                "region": "NC",
+                "country": "USA",
+                "postalCode": "00000"
+            },
+            "contacts": [
+                {
+                    "fullName": "Jane Smith",
+                    "emails": [
+                        "jane.smith@acme.acme"
+                    ],
+                    "phoneNumbers": [
+                        { "number": "555-555-0001", "type": "fax" },
+                        { "number": "555-555-0002", "type": "voice" }
+                    ]
+                }
+            ],
+            "id": 1
+        }
+    ],
+    "modules": [
+        {
+            "name": "OpenSSL",
+            "version": "1.1.1b",
+            "type": "Software",
+            "description": "FOM",
+            "vendorId": 1,
+            "id": 1
+        }
+    ],
+    "operating_environments": [
+        {
+            "name": "Ubuntu Linux 3.1 on AMD 6272 Opteron Processor with Acme package installed",
+            "dependencies" : [
+                { "type": "software", "name": "Linux 3.1", "description" : "OE details" }
+            ],
+            "description": "My linux operating environment",
+            "id": 1
+        }
+    ]
+}
+
