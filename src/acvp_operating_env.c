@@ -779,6 +779,7 @@ static ACVP_RESULT match_dependencies_page(ACVP_CTX *ctx,
 
     links_obj = json_object_get_object(obj, "links");
     if (links_obj == NULL) {
+        ACVP_LOG_ERR("No links object");
         rv = ACVP_JSON_ERR;
         goto end;
     }
@@ -1026,6 +1027,7 @@ static ACVP_RESULT match_oes_page(ACVP_CTX *ctx,
 
         dependency_urls = json_object_get_array(oe_obj, "dependencies");
         if (dependency_urls == NULL)  {
+            ACVP_LOG_ERR("No dependencies object");
             rv = ACVP_JSON_ERR;
             goto end;
         }
@@ -1038,12 +1040,13 @@ static ACVP_RESULT match_oes_page(ACVP_CTX *ctx,
         for (k = 0; k < oe->dependencies.count; k++) {
             int diff = 0;
             const char *parsed_url = json_array_get_string(dependency_urls, k);
-
-            strcmp_s(oe->dependencies.deps[k]->url, ACVP_ATTR_URL_MAX,
-                     parsed_url, &diff);
-            if (diff != 0) {
-                equal = 0;
-                break;
+            if (parsed_url) {
+                strcmp_s(oe->dependencies.deps[k]->url, ACVP_ATTR_URL_MAX,
+                         parsed_url, &diff);
+                if (diff != 0) {
+                    equal = 0;
+                    break;
+                }
             }
         }
 
@@ -1074,6 +1077,7 @@ static ACVP_RESULT match_oes_page(ACVP_CTX *ctx,
 
     links_obj = json_object_get_object(obj, "links");
     if (links_obj == NULL) {
+        ACVP_LOG_ERR("No links object");
         rv = ACVP_JSON_ERR;
         goto end;
     }
@@ -1277,10 +1281,12 @@ static int compare_emails(ACVP_STRING_LIST *email_list,
         const char *tmp_email = NULL;
 
         tmp_email = json_array_get_string(candidate_emails, i);
-        strcmp_s(email, ACVP_OE_STR_MAX, tmp_email, &diff);
-        if (diff != 0) {
-            *match = 0;
-            return ACVP_SUCCESS;
+        if (tmp_email) {
+            strcmp_s(email, ACVP_OE_STR_MAX, tmp_email, &diff);
+            if (diff != 0) {
+                *match = 0;
+                return ACVP_SUCCESS;
+            }
         }
 
         email_list = email_list->next;
@@ -1312,7 +1318,16 @@ static ACVP_RESULT compare_phone_numbers(ACVP_OE_PHONE_LIST *phone_list,
     size_t phone_list_len = 0;
     int i = 0;
 
-    if (phone_list == NULL || candidate_phones == NULL || match == NULL) {
+    if (candidate_phones == NULL || match == NULL) {
+        return ACVP_INVALID_ARG;
+    }
+
+    if (phone_list == NULL && json_array_get_count(candidate_phones) == 0) {
+        *match = 1;
+        return ACVP_SUCCESS;
+    }
+
+    if (phone_list == NULL) {
         return ACVP_INVALID_ARG;
     }
 
@@ -1339,17 +1354,21 @@ static ACVP_RESULT compare_phone_numbers(ACVP_OE_PHONE_LIST *phone_list,
         }
 
         tmp_number = json_object_get_string(obj, "number");
-        strcmp_s(phone_list->number, ACVP_OE_STR_MAX, tmp_number, &diff);
-        if (diff != 0) {
-            *match = 0;
-            return ACVP_SUCCESS;
+        if (tmp_number) {
+            strcmp_s(phone_list->number, ACVP_OE_STR_MAX, tmp_number, &diff);
+            if (diff != 0) {
+                *match = 0;
+                return ACVP_SUCCESS;
+            }
         }
 
         tmp_type = json_object_get_string(obj, "type");
-        strcmp_s(phone_list->type, ACVP_OE_STR_MAX, tmp_type, &diff);
-        if (diff != 0) {
-            *match = 0;
-            return ACVP_SUCCESS;
+        if (tmp_type) {
+            strcmp_s(phone_list->type, ACVP_OE_STR_MAX, tmp_type, &diff);
+            if (diff != 0) {
+                *match = 0;
+                return ACVP_SUCCESS;
+            }
         }
 
         phone_list = phone_list->next;
@@ -1372,7 +1391,7 @@ static ACVP_RESULT compare_phone_numbers(ACVP_OE_PHONE_LIST *phone_list,
  *
  * @return ACVP_RESULT
  */
-static ACVP_RESULT compare_vendor_address(ACVP_VENDOR_ADDRESS *address,
+static ACVP_RESULT compare_vendor_address(ACVP_CTX *ctx, ACVP_VENDOR_ADDRESS *address,
                                           JSON_Array *candidate_addresses,
                                           int *match) {
     size_t i = 0;
@@ -1405,7 +1424,10 @@ static ACVP_RESULT compare_vendor_address(ACVP_VENDOR_ADDRESS *address,
         } else if (address->street_1 && street_1) {
             // Both exist, compare
             strcmp_s(address->street_1, ACVP_OE_STR_MAX, street_1, &diff);
-            if (diff != 0) continue; // Not equal
+            if (diff != 0) {
+                 ACVP_LOG_INFO("Street1 not equal");
+                 continue; // Not equal
+            }
         }
 
         street_2 = json_object_get_string(obj, "street2");
@@ -1415,7 +1437,10 @@ static ACVP_RESULT compare_vendor_address(ACVP_VENDOR_ADDRESS *address,
         } else if (address->street_2 && street_2) {
             // Both exist, compare
             strcmp_s(address->street_2, ACVP_OE_STR_MAX, street_2, &diff);
-            if (diff != 0) continue; // Not equal
+            if (diff != 0) {
+                 ACVP_LOG_INFO("Street2 mismatch");
+                 continue; // Not equal
+            }
         }
 
         street_3 = json_object_get_string(obj, "street3");
@@ -1425,7 +1450,10 @@ static ACVP_RESULT compare_vendor_address(ACVP_VENDOR_ADDRESS *address,
         } else if (address->street_3 && street_3) {
             // Both exist, compare
             strcmp_s(address->street_3, ACVP_OE_STR_MAX, street_3, &diff);
-            if (diff != 0) continue; // Not equal
+            if (diff != 0) {
+                 ACVP_LOG_INFO("Street3 not equal");
+                 continue; // Not equal
+            }
         }
 
         locality = json_object_get_string(obj, "locality");
@@ -1435,7 +1463,10 @@ static ACVP_RESULT compare_vendor_address(ACVP_VENDOR_ADDRESS *address,
         } else if (address->locality && locality) {
             // Both exist, compare
             strcmp_s(address->locality, ACVP_OE_STR_MAX, locality, &diff);
-            if (diff != 0) continue; // Not equal
+            if (diff != 0) {
+                 ACVP_LOG_INFO("Locality not equal");
+                 continue; // Not equal
+            }
         }
 
         region = json_object_get_string(obj, "region");
@@ -1445,7 +1476,10 @@ static ACVP_RESULT compare_vendor_address(ACVP_VENDOR_ADDRESS *address,
         } else if (address->region && region) {
             // Both exist, compare
             strcmp_s(address->region, ACVP_OE_STR_MAX, region, &diff);
-            if (diff != 0) continue; // Not equal
+            if (diff != 0) {
+                 ACVP_LOG_INFO("Region not equal");
+                 continue; // Not equal
+            }
         }
 
         country = json_object_get_string(obj, "country");
@@ -1455,7 +1489,10 @@ static ACVP_RESULT compare_vendor_address(ACVP_VENDOR_ADDRESS *address,
         } else if (address->country && country) {
             // Both exist, compare
             strcmp_s(address->country, ACVP_OE_STR_MAX, country, &diff);
-            if (diff != 0) continue; // Not equal
+            if (diff != 0) {
+                 ACVP_LOG_INFO("Country not equal");
+                 continue; // Not equal
+            }
         }
 
         postal_code = json_object_get_string(obj, "postalCode");
@@ -1465,7 +1502,10 @@ static ACVP_RESULT compare_vendor_address(ACVP_VENDOR_ADDRESS *address,
         } else if (address->postal_code && postal_code) {
             // Both exist, compare
             strcmp_s(address->postal_code, ACVP_OE_STR_MAX, postal_code, &diff);
-            if (diff != 0) continue; // Not equal
+            if (diff != 0) {
+                 ACVP_LOG_INFO("Postal code not equal");
+                 continue; // Not equal
+            }
         }
 
         url = json_object_get_string(obj, "url");
@@ -1572,14 +1612,19 @@ static ACVP_RESULT query_vendor_contacts(ACVP_CTX *ctx,
 
             full_name = json_object_get_string(contact_obj, "fullName");
             if (full_name == NULL) {
+                ACVP_LOG_ERR("No fullName object");
                 rv = ACVP_JSON_ERR;
                 goto end;
             }
             strcmp_s(person->full_name, ACVP_OE_STR_MAX, full_name, &diff);
-            if (diff != 0) continue; // Not equal
+            if (diff != 0) {
+                 ACVP_LOG_INFO("Name not equal");
+                 continue; // Not equal
+            }
 
             emails = json_object_get_array(contact_obj, "emails");
             if (emails == NULL)  {
+                ACVP_LOG_ERR("No emails object");
                 rv = ACVP_JSON_ERR;
                 goto end;
             }
@@ -1588,10 +1633,14 @@ static ACVP_RESULT query_vendor_contacts(ACVP_CTX *ctx,
                 ACVP_LOG_ERR("Problem comparing person emails");
                 goto end;
             }
-            if (!equal) continue;
+            if (!equal) {
+                ACVP_LOG_INFO("Emails do not match");
+                continue;
+            }
 
             phone_numbers = json_object_get_array(contact_obj, "phoneNumbers");
             if (phone_numbers == NULL)  {
+                ACVP_LOG_ERR("No phoneNumbers object");
                 rv = ACVP_JSON_ERR;
                 goto end;
             }
@@ -1600,7 +1649,10 @@ static ACVP_RESULT query_vendor_contacts(ACVP_CTX *ctx,
                 ACVP_LOG_ERR("Problem comparing person phone numbers");
                 goto end;
             }
-            if (!equal) continue;
+            if (!equal) {
+                ACVP_LOG_INFO("Phone numbers do not match");
+                continue;
+            }
 
             /*
              * Found a match.
@@ -1705,6 +1757,7 @@ static ACVP_RESULT match_vendors_page(ACVP_CTX *ctx,
 
         emails = json_object_get_array(vendor_obj, "emails");
         if (emails == NULL)  {
+            ACVP_LOG_ERR("No emails object");
             rv = ACVP_JSON_ERR;
             goto end;
         }
@@ -1713,10 +1766,14 @@ static ACVP_RESULT match_vendors_page(ACVP_CTX *ctx,
             ACVP_LOG_ERR("Problem comparing vendor emails");
             goto end;
         }
-        if (!equal) continue;
+        if (!equal) {
+            ACVP_LOG_INFO("Emails do not match");
+            continue;
+        }
 
         phone_numbers = json_object_get_array(vendor_obj, "phoneNumbers");
         if (phone_numbers == NULL)  {
+            ACVP_LOG_ERR("No phoneNumberss object");
             rv = ACVP_JSON_ERR;
             goto end;
         }
@@ -1725,19 +1782,26 @@ static ACVP_RESULT match_vendors_page(ACVP_CTX *ctx,
             ACVP_LOG_ERR("Problem comparing vendor phone numbers");
             goto end;
         }
-        if (!equal) continue;
+        if (!equal) {
+            ACVP_LOG_INFO("Phone numbers do not match");
+            continue;
+        }
 
         addresses = json_object_get_array(vendor_obj, "addresses");
         if (addresses == NULL)  {
+            ACVP_LOG_ERR("No addresses object");
             rv = ACVP_JSON_ERR;
             goto end;
         }
-        rv = compare_vendor_address(&vendor->address, addresses, &equal);
+        rv = compare_vendor_address(ctx, &vendor->address, addresses, &equal);
         if (ACVP_SUCCESS != rv) {
             ACVP_LOG_ERR("Problem comparing vendor address");
             goto end;
         }
-        if (!equal) continue;
+        if (!equal) {
+            ACVP_LOG_INFO("Addresses do not match");
+            continue;
+        }
 
         contacts_url = json_object_get_string(vendor_obj, "contactsUrl");
         query_vendor_contacts(ctx, &vendor->persons, contacts_url, &equal);
@@ -1745,7 +1809,10 @@ static ACVP_RESULT match_vendors_page(ACVP_CTX *ctx,
             ACVP_LOG_ERR("Problem comparing vendor contacts");
             goto end;
         }
-        if (!equal) continue;
+        if (!equal) {
+            ACVP_LOG_INFO("Contact URLs do not match");
+            continue;
+        }
 
         /*
          * Found a match.
@@ -1754,6 +1821,7 @@ static ACVP_RESULT match_vendors_page(ACVP_CTX *ctx,
         url = json_object_get_string(vendor_obj, "url");
         if (url == NULL) {
             ACVP_LOG_ERR("JSON object missing 'url'");
+            ACVP_LOG_ERR("No url object");
             rv = ACVP_JSON_ERR;
             goto end;
         }
@@ -1773,6 +1841,7 @@ static ACVP_RESULT match_vendors_page(ACVP_CTX *ctx,
 
     links_obj = json_object_get_object(obj, "links");
     if (links_obj == NULL) {
+        ACVP_LOG_ERR("No links object");
         rv = ACVP_JSON_ERR;
         goto end;
     }
@@ -2027,6 +2096,7 @@ static ACVP_RESULT match_modules_page(ACVP_CTX *ctx,
          */
         contact_urls = json_object_get_array(module_obj, "contactUrls");
         if (contact_urls == NULL)  {
+            ACVP_LOG_ERR("No contactUrls object");
             rv = ACVP_JSON_ERR;
             goto end;
         }
@@ -2075,6 +2145,7 @@ static ACVP_RESULT match_modules_page(ACVP_CTX *ctx,
 
     links_obj = json_object_get_object(obj, "links");
     if (links_obj == NULL) {
+        ACVP_LOG_ERR("No links object");
         rv = ACVP_JSON_ERR;
         goto end;
     }
