@@ -1040,12 +1040,13 @@ static ACVP_RESULT match_oes_page(ACVP_CTX *ctx,
         for (k = 0; k < oe->dependencies.count; k++) {
             int diff = 0;
             const char *parsed_url = json_array_get_string(dependency_urls, k);
-
-            strcmp_s(oe->dependencies.deps[k]->url, ACVP_ATTR_URL_MAX,
-                     parsed_url, &diff);
-            if (diff != 0) {
-                equal = 0;
-                break;
+            if (parsed_url) {
+                strcmp_s(oe->dependencies.deps[k]->url, ACVP_ATTR_URL_MAX,
+                         parsed_url, &diff);
+                if (diff != 0) {
+                    equal = 0;
+                    break;
+                }
             }
         }
 
@@ -1280,10 +1281,12 @@ static int compare_emails(ACVP_STRING_LIST *email_list,
         const char *tmp_email = NULL;
 
         tmp_email = json_array_get_string(candidate_emails, i);
-        strcmp_s(email, ACVP_OE_STR_MAX, tmp_email, &diff);
-        if (diff != 0) {
-            *match = 0;
-            return ACVP_SUCCESS;
+        if (tmp_email) {
+            strcmp_s(email, ACVP_OE_STR_MAX, tmp_email, &diff);
+            if (diff != 0) {
+                *match = 0;
+                return ACVP_SUCCESS;
+            }
         }
 
         email_list = email_list->next;
@@ -1351,17 +1354,21 @@ static ACVP_RESULT compare_phone_numbers(ACVP_OE_PHONE_LIST *phone_list,
         }
 
         tmp_number = json_object_get_string(obj, "number");
-        strcmp_s(phone_list->number, ACVP_OE_STR_MAX, tmp_number, &diff);
-        if (diff != 0) {
-            *match = 0;
-            return ACVP_SUCCESS;
+        if (tmp_number) {
+            strcmp_s(phone_list->number, ACVP_OE_STR_MAX, tmp_number, &diff);
+            if (diff != 0) {
+                *match = 0;
+                return ACVP_SUCCESS;
+            }
         }
 
         tmp_type = json_object_get_string(obj, "type");
-        strcmp_s(phone_list->type, ACVP_OE_STR_MAX, tmp_type, &diff);
-        if (diff != 0) {
-            *match = 0;
-            return ACVP_SUCCESS;
+        if (tmp_type) {
+            strcmp_s(phone_list->type, ACVP_OE_STR_MAX, tmp_type, &diff);
+            if (diff != 0) {
+                *match = 0;
+                return ACVP_SUCCESS;
+            }
         }
 
         phone_list = phone_list->next;
