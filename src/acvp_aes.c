@@ -810,7 +810,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         }
 
         ptlen = (unsigned int)json_object_get_number(groupobj, "payloadLen");
-        if(alg_id == ACVP_AES_GMAC && ptlen != 0) {
+        if (alg_id == ACVP_AES_GMAC && ptlen != 0) {
             ACVP_LOG_ERR("'ptlen' not allowed for AES-GMAC");
             rv = ACVP_INVALID_ARG;
             goto err;
@@ -873,8 +873,8 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             if (dir == ACVP_SYM_CIPH_DIR_ENCRYPT) {
                 unsigned int tmp_pt_len = 0;
                 pt = json_object_get_string(testobj, "pt");
-                if(alg_id == ACVP_AES_GMAC) {
-                    if(pt) {
+                if (alg_id == ACVP_AES_GMAC) {
+                    if (pt) {
                         ACVP_LOG_ERR("'pt' not allowed for AES-GMAC");
                         rv = ACVP_INVALID_ARG;
                         goto err;
@@ -897,8 +897,8 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 unsigned int tmp_ct_len = 0;
 
                 ct = json_object_get_string(testobj, "ct");
-                if(alg_id == ACVP_AES_GMAC) {
-                    if(ct) {
+                if (alg_id == ACVP_AES_GMAC) {
+                    if (ct) {
                         ACVP_LOG_ERR("'ct' not allowed for AES-GMAC");
                         rv = ACVP_INVALID_ARG;
                         goto err;
@@ -1128,7 +1128,7 @@ static ACVP_RESULT acvp_aes_output_tc(ACVP_CTX *ctx,
             ACVP_LOG_ERR("hex conversion failure (ct)");
             goto err;
         }
-        if(stc->cipher != ACVP_AES_GMAC) {
+        if (stc->cipher != ACVP_AES_GMAC) {
             json_object_set_string(tc_rsp, "ct", tmp);
         }
 
@@ -1168,7 +1168,7 @@ static ACVP_RESULT acvp_aes_output_tc(ACVP_CTX *ctx,
             ACVP_LOG_ERR("hex conversion failure (pt)");
             goto err;
         }
-        if(stc->cipher != ACVP_AES_GMAC) {
+        if (stc->cipher != ACVP_AES_GMAC) {
             json_object_set_string(tc_rsp, "pt", tmp);
         }
     }

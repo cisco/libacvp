@@ -386,7 +386,7 @@ int app_aes_handler_aead(ACVP_TEST_CASE *test_case) {
     switch (tc->cipher) {
     case ACVP_AES_GMAC:
     case ACVP_AES_GCM:
-        if(tc->cipher == ACVP_AES_GMAC && (tc->pt_len || tc->ct_len ||
+        if (tc->cipher == ACVP_AES_GMAC && (tc->pt_len || tc->ct_len ||
                 strnlen_s((const char *)tc->ct, 1) || strnlen_s((const char *)tc->pt, 1))) {
             printf("Invalid AES-GMAC ct/pt data\n");
             rc = 1;
@@ -422,7 +422,7 @@ int app_aes_handler_aead(ACVP_TEST_CASE *test_case) {
             if (tc->aad_len) {
                 EVP_Cipher(cipher_ctx, NULL, tc->aad, tc->aad_len);
             }
-            if(tc->cipher != ACVP_AES_GMAC) {
+            if (tc->cipher != ACVP_AES_GMAC) {
                 EVP_Cipher(cipher_ctx, tc->ct, tc->pt, tc->pt_len);
             }
             EVP_Cipher(cipher_ctx, NULL, NULL, 0);
@@ -453,7 +453,7 @@ int app_aes_handler_aead(ACVP_TEST_CASE *test_case) {
             /*
              * Decrypt the CT
              */
-            if(tc->cipher != ACVP_AES_GMAC) {
+            if (tc->cipher != ACVP_AES_GMAC) {
                 EVP_Cipher(cipher_ctx, tc->pt, tc->ct, tc->ct_len);
             }
             /*
