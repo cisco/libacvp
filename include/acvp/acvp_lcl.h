@@ -215,6 +215,8 @@
 #define ACVP_ALG_SHA256              "SHA2-256"
 #define ACVP_ALG_SHA384              "SHA2-384"
 #define ACVP_ALG_SHA512              "SHA2-512"
+#define ACVP_ALG_SHA_512_224         "SHA2-512/224"
+#define ACVP_ALG_SHA_512_256         "SHA2-512/256"
 #define ACVP_ALG_SHA3_224            "SHA3-224"
 #define ACVP_ALG_SHA3_256            "SHA3-256"
 #define ACVP_ALG_SHA3_384            "SHA3-384"
