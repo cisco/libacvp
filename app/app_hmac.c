@@ -20,7 +20,7 @@ int app_hmac_handler(ACVP_TEST_CASE *test_case) {
     int msg_len;
     int rc = 1;
 
-#if OPENSSL_VERSION_NUMBER <= 0x10100000L
+#if OPENSSL_VERSION_NUMBER <= 0x10100000L /* OpenSSL 1.1.0 or less */
     HMAC_CTX static_ctx;
 #endif
 
@@ -47,6 +47,12 @@ int app_hmac_handler(ACVP_TEST_CASE *test_case) {
     case ACVP_HMAC_SHA2_512:
         md = EVP_sha512();
         break;
+    case ACVP_HMAC_SHA2_512_224:
+        md = EVP_sha512_224();
+        break;
+    case ACVP_HMAC_SHA2_512_256:
+        md = EVP_sha512_256();
+        break;
     default:
         printf("Error: Unsupported hash algorithm requested by ACVP server\n");
         return rc;
@@ -54,7 +60,7 @@ int app_hmac_handler(ACVP_TEST_CASE *test_case) {
         break;
     }
 
-#if OPENSSL_VERSION_NUMBER <= 0x10100000L
+#if OPENSSL_VERSION_NUMBER <= 0x10100000L /* OpenSSL 1.1.0 or less */
     hmac_ctx = &static_ctx;
     HMAC_CTX_init(hmac_ctx);
 #else
@@ -80,7 +86,7 @@ int app_hmac_handler(ACVP_TEST_CASE *test_case) {
     rc = 0;
 
 end:
-#if OPENSSL_VERSION_NUMBER <= 0x10100000L
+#if OPENSSL_VERSION_NUMBER <= 0x10100000L /* OpenSSL 1.1.0 or less */
     HMAC_CTX_cleanup(hmac_ctx);
 #else
     if (hmac_ctx) HMAC_CTX_free(hmac_ctx);

@@ -102,6 +102,12 @@ int app_ecdsa_handler(ACVP_TEST_CASE *test_case) {
         case ACVP_SHA512:
             md = EVP_sha512();
             break;
+        case ACVP_SHA512_224:
+            md = EVP_sha512_224();
+            break;
+        case ACVP_SHA512_256:
+            md = EVP_sha_512_256();
+            break;
         default:
             printf("Unsupported hash alg in ECDSA\n");
             goto err;
@@ -252,7 +258,7 @@ int app_ecdsa_handler(ACVP_TEST_CASE *test_case) {
             goto err;
         }
 
-#if OPENSSL_VERSION_NUMBER <= 0x10100000L
+#if OPENSSL_VERSION_NUMBER <= 0x10100000L /* OpenSSL 1.1.0 or less */
         r = sig->r;
         s = sig->s;
 #else
@@ -285,7 +291,7 @@ int app_ecdsa_handler(ACVP_TEST_CASE *test_case) {
             goto err;
         }
 
-#if OPENSSL_VERSION_NUMBER <= 0x10100000L
+#if OPENSSL_VERSION_NUMBER <= 0x10100000L /* OpenSSL 1.1.0 or less */
         r = sig->r;
         s = sig->s;
 #else

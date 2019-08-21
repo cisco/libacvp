@@ -95,6 +95,8 @@ ACVP_ALG_HANDLER alg_tbl[ACVP_ALG_MAX] = {
     { ACVP_HASH_SHA256,       &acvp_hash_kat_handler,         ACVP_ALG_SHA256,            NULL, ACVP_REV_HASH_SHA256},
     { ACVP_HASH_SHA384,       &acvp_hash_kat_handler,         ACVP_ALG_SHA384,            NULL, ACVP_REV_HASH_SHA384},
     { ACVP_HASH_SHA512,       &acvp_hash_kat_handler,         ACVP_ALG_SHA512,            NULL, ACVP_REV_HASH_SHA512},
+    { ACVP_HASH_SHA512_224,   &acvp_hash_kat_handler,         ACVP_ALG_SHA512_224,        NULL, ACVP_REV_HASH_SHA512_224},
+    { ACVP_HASH_SHA512_256,   &acvp_hash_kat_handler,         ACVP_ALG_SHA512_256,        NULL, ACVP_REV_HASH_SHA512_256},
     { ACVP_HASH_SHA3_224,     &acvp_hash_kat_handler,         ACVP_ALG_SHA3_224,          NULL, ACVP_REV_HASH_SHA3_224},
     { ACVP_HASH_SHA3_256,     &acvp_hash_kat_handler,         ACVP_ALG_SHA3_256,          NULL, ACVP_REV_HASH_SHA3_256},
     { ACVP_HASH_SHA3_384,     &acvp_hash_kat_handler,         ACVP_ALG_SHA3_384,          NULL, ACVP_REV_HASH_SHA3_384},

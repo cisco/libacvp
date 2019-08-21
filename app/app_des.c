@@ -97,7 +97,7 @@ int app_des_handler(ACVP_TEST_CASE *test_case) {
         const unsigned char *ctx_iv = NULL;
 
 
-#if OPENSSL_VERSION_NUMBER <= 0x10100000L
+#if OPENSSL_VERSION_NUMBER <= 0x10100000L /* OpenSSL 1.1.0 or less */
         ctx_iv = cipher_ctx->iv;
 #else
         ctx_iv = EVP_CIPHER_CTX_iv(cipher_ctx);

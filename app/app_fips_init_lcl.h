@@ -44,7 +44,7 @@ static void put_err_cb(int lib, int func,int reason,const char *file,int line)
 	{
 	if (no_err)
 		return;
-#if OPENSSL_VERSION_NUMBER < 0x10100000L
+#if OPENSSL_VERSION_NUMBER < 0x10100000L /* OpenSSL versions less than 1.1.0 */
 	fprintf(stderr, "ERROR:%08lX:lib=%d,func=%d,reason=%d"
 				":file=%s:line=%d\n",
 			ERR_PACK(lib, func, reason),

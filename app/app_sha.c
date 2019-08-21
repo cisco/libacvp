@@ -45,6 +45,12 @@ int app_sha_handler(ACVP_TEST_CASE *test_case) {
         md = EVP_sha512();
         break;
 #if OPENSSL_VERSION_NUMBER >= 0x10101010L /* OpenSSL 1.1.1 or greater */
+    case ACVP_HASH_SHA512_224:
+        md = EVP_sha512_224();
+        break;
+    case ACVP_HASH_SHA512_256:
+        md = EVP_sha512_256();
+        break;
     case ACVP_HASH_SHA3_224:
         md = EVP_sha3_224();
         sha3 = 1;

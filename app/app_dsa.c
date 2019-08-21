@@ -77,7 +77,7 @@ int app_dsa_handler(ACVP_TEST_CASE *test_case) {
                 return 1;
             }
 
-#if OPENSSL_VERSION_NUMBER <= 0x10100000L
+#if OPENSSL_VERSION_NUMBER <= 0x10100000L /* OpenSSL 1.1.0 or less */
             group_p = BN_dup(group_dsa->p);
             group_q = BN_dup(group_dsa->q);
             group_g = BN_dup(group_dsa->g);
@@ -96,7 +96,7 @@ int app_dsa_handler(ACVP_TEST_CASE *test_case) {
             return 1;
         }
 
-#if OPENSSL_VERSION_NUMBER <= 0x10100000L
+#if OPENSSL_VERSION_NUMBER <= 0x10100000L /* OpenSSL 1.1.0 or less */
         priv_key = group_dsa->priv_key;
         pub_key = group_dsa->pub_key;
 #else
@@ -126,7 +126,11 @@ int app_dsa_handler(ACVP_TEST_CASE *test_case) {
             md = EVP_sha512();
             break;
         case ACVP_SHA512_224:
+            md = EVP_sha512_224();
+            break;
         case ACVP_SHA512_256:
+            md = EVP_sha512_256();
+            break;
         default:
             printf("DSA sha value not supported %d\n", tc->sha);
             return 1;
@@ -157,7 +161,7 @@ int app_dsa_handler(ACVP_TEST_CASE *test_case) {
                 return 1;
             }
 
-#if OPENSSL_VERSION_NUMBER <= 0x10100000L
+#if OPENSSL_VERSION_NUMBER <= 0x10100000L /* OpenSSL 1.1.0 or less */
             p2 = BN_dup(dsa->p);
             q2 = BN_dup(dsa->q);
 #else
@@ -190,7 +194,7 @@ int app_dsa_handler(ACVP_TEST_CASE *test_case) {
             BN_bin2bn(tc->q, tc->q_len, q);
             BN_bin2bn(tc->g, tc->g_len, g);
 
-#if OPENSSL_VERSION_NUMBER <= 0x10100000L
+#if OPENSSL_VERSION_NUMBER <= 0x10100000L /* OpenSSL 1.1.0 or less */
             dsa->p = BN_dup(p);
             dsa->q = BN_dup(q);
 #else
@@ -205,7 +209,7 @@ int app_dsa_handler(ACVP_TEST_CASE *test_case) {
                 return 1;
             }
 
-#if OPENSSL_VERSION_NUMBER <= 0x10100000L
+#if OPENSSL_VERSION_NUMBER <= 0x10100000L /* OpenSSL 1.1.0 or less */
             g2 = BN_dup(dsa->g);
 #else
             DSA_get0_pqg(dsa, NULL, NULL, (const BIGNUM **)&g2);
@@ -245,7 +249,11 @@ int app_dsa_handler(ACVP_TEST_CASE *test_case) {
             md = EVP_sha512();
             break;
         case ACVP_SHA512_224:
+            md = EVP_sha512_224();
+            break;
         case ACVP_SHA512_256:
+            md = EVP_sha512_256();
+            break;
         default:
             printf("DSA sha value not supported %d\n", tc->sha);
             return 1;
@@ -267,7 +275,7 @@ int app_dsa_handler(ACVP_TEST_CASE *test_case) {
         L = tc->l;
         N = tc->n;
 
-#if OPENSSL_VERSION_NUMBER <= 0x10100000L
+#if OPENSSL_VERSION_NUMBER <= 0x10100000L /* OpenSSL 1.1.0 or less */
         dsa->p = BN_new();
         dsa->q = BN_new();
         dsa->g = BN_new();
@@ -321,7 +329,11 @@ int app_dsa_handler(ACVP_TEST_CASE *test_case) {
             md = EVP_sha512();
             break;
         case ACVP_SHA512_224:
+            md = EVP_sha512_224();
+            break;
         case ACVP_SHA512_256:
+            md = EVP_sha512_256();
+            break;
         default:
             printf("DSA sha value not supported %d\n", tc->sha);
             return 1;
@@ -354,7 +366,7 @@ int app_dsa_handler(ACVP_TEST_CASE *test_case) {
                 return 1;
             }
 
-#if OPENSSL_VERSION_NUMBER <= 0x10100000L
+#if OPENSSL_VERSION_NUMBER <= 0x10100000L /* OpenSSL 1.1.0 or less */
             group_p = BN_dup(group_dsa->p);
             group_q = BN_dup(group_dsa->q);
             group_g = BN_dup(group_dsa->g);
@@ -363,7 +375,7 @@ int app_dsa_handler(ACVP_TEST_CASE *test_case) {
                          (const BIGNUM **)&group_q, (const BIGNUM **)&group_g);
 #endif
 
-#if OPENSSL_VERSION_NUMBER <= 0x10100000L
+#if OPENSSL_VERSION_NUMBER <= 0x10100000L /* OpenSSL 1.1.0 or less */
             group_pub_key = BN_dup(group_dsa->pub_key);
 #else
             DSA_get0_key(group_dsa, (const BIGNUM **)&group_pub_key, NULL);
@@ -377,7 +389,7 @@ int app_dsa_handler(ACVP_TEST_CASE *test_case) {
 
         sig = FIPS_dsa_sign(group_dsa, tc->msg, tc->msglen, md);
 
-#if OPENSSL_VERSION_NUMBER <= 0x10100000L
+#if OPENSSL_VERSION_NUMBER <= 0x10100000L /* OpenSSL 1.1.0 or less */
         sig_r = sig->r;
         sig_s = sig->s;
 #else
@@ -407,7 +419,11 @@ int app_dsa_handler(ACVP_TEST_CASE *test_case) {
             md = EVP_sha512();
             break;
         case ACVP_SHA512_224:
+            md = EVP_sha512_224();
+            break;
         case ACVP_SHA512_256:
+            md = EVP_sha512_256();
+            break;
         default:
             printf("DSA sha value not supported %d\n", tc->sha);
             return 1;
@@ -429,7 +445,7 @@ int app_dsa_handler(ACVP_TEST_CASE *test_case) {
             BN_bin2bn(tc->p, tc->p_len, p);
             BN_bin2bn(tc->q, tc->q_len, q);
 
-#if OPENSSL_VERSION_NUMBER <= 0x10100000L
+#if OPENSSL_VERSION_NUMBER <= 0x10100000L /* OpenSSL 1.1.0 or less */
             dsa->p = BN_dup(p);
             dsa->q = BN_dup(q);
 #else
@@ -444,7 +460,7 @@ int app_dsa_handler(ACVP_TEST_CASE *test_case) {
                 FIPS_dsa_free(dsa);
                 return 1;
             }
-#if OPENSSL_VERSION_NUMBER <= 0x10100000L
+#if OPENSSL_VERSION_NUMBER <= 0x10100000L /* OpenSSL 1.1.0 or less */
             tc->g_len = BN_bn2bin(dsa->g, tc->g);
 #else
             tc->g_len = BN_bn2bin(g, tc->g);
@@ -465,7 +481,7 @@ int app_dsa_handler(ACVP_TEST_CASE *test_case) {
                 return 1;
             }
 
-#if OPENSSL_VERSION_NUMBER <= 0x10100000L
+#if OPENSSL_VERSION_NUMBER <= 0x10100000L /* OpenSSL 1.1.0 or less */
             p = dsa->p;
             q = dsa->q;
 #else

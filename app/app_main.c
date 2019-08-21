@@ -937,6 +937,20 @@ static int enable_hash(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
 
 #if OPENSSL_VERSION_NUMBER >= 0x10101010L /* OpenSSL 1.1.1 or greater */
+
+    /* SHA2-512/224 and SHA2-512/256 */
+    rv = acvp_cap_hash_enable(ctx, ACVP_HASH_SHA512_224, &app_sha_handler);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_hash_set_domain(ctx, ACVP_HASH_SHA512_224, ACVP_HASH_MESSAGE_LEN,
+                                  0, 65528, 8);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    rv = acvp_cap_hash_enable(ctx, ACVP_HASH_SHA512_256, &app_sha_handler);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_hash_set_domain(ctx, ACVP_HASH_SHA512_256, ACVP_HASH_MESSAGE_LEN,
+                                  0, 65528, 8);
+    CHECK_ENABLE_CAP_RV(rv);
+
     /* SHA3 and SHAKE */
     rv = acvp_cap_hash_enable(ctx, ACVP_HASH_SHA3_224, &app_sha_handler);
     CHECK_ENABLE_CAP_RV(rv);

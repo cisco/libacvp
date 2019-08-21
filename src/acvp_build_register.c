@@ -1534,10 +1534,10 @@ static ACVP_RESULT acvp_build_dsa_hashalgs(JSON_Object *cap_obj,
         json_array_append_string(sha_arr, "SHA2-512");
     }
     if (attrs->sha & ACVP_SHA512_224) {
-        json_array_append_string(sha_arr, "SHA2-512-224");
+        json_array_append_string(sha_arr, "SHA2-512/224");
     }
     if (attrs->sha & ACVP_SHA512_256) {
-        json_array_append_string(sha_arr, "SHA2-512-256");
+        json_array_append_string(sha_arr, "SHA2-512/256");
     }
 
     if (json_array_get_count(sha_arr) == 0) {
@@ -2576,6 +2576,8 @@ ACVP_RESULT acvp_build_test_session(ACVP_CTX *ctx, char **reg, int *out_len) {
             case ACVP_HASH_SHA256:
             case ACVP_HASH_SHA384:
             case ACVP_HASH_SHA512:
+            case ACVP_HASH_SHA512_224:
+            case ACVP_HASH_SHA512_256:
             case ACVP_HASH_SHA3_224:
             case ACVP_HASH_SHA3_256:
             case ACVP_HASH_SHA3_384:
@@ -2594,6 +2596,8 @@ ACVP_RESULT acvp_build_test_session(ACVP_CTX *ctx, char **reg, int *out_len) {
             case ACVP_HMAC_SHA2_256:
             case ACVP_HMAC_SHA2_384:
             case ACVP_HMAC_SHA2_512:
+            case ACVP_HMAC_SHA2_512_224:
+            case ACVP_HMAC_SHA2_512_256:
                 rv = acvp_build_hmac_register_cap(cap_obj, cap_entry);
                 break;
             case ACVP_CMAC_AES:

@@ -78,7 +78,7 @@ int app_rsa_keygen_handler(ACVP_TEST_CASE *test_case) {
         goto err;
     }
 
-#if OPENSSL_VERSION_NUMBER <= 0x10100000L
+#if OPENSSL_VERSION_NUMBER <= 0x10100000L /* OpenSSL 1.1.0 or less */
     p = rsa->p;
     q = rsa->q;
     n = rsa->n;
@@ -185,6 +185,12 @@ int app_rsa_sig_handler(ACVP_TEST_CASE *test_case) {
     case ACVP_SHA512:
         tc_md = (EVP_MD *)EVP_sha512();
         break;
+    case ACVP_SHA512_224:
+        tc_md = (EVP_MD *)EVP_sha512_224();
+        break;
+    case ACVP_SHA512_256:
+        tc_md = (EVP_MD *)EVP_sha512_256();
+        break;
     default:
         printf("\nError: hashAlg not supported for RSA SigGen\n");
         goto err;
@@ -209,7 +215,7 @@ int app_rsa_sig_handler(ACVP_TEST_CASE *test_case) {
         }
         BN_bin2bn(tc->n, tc->n_len, n);
 
-#if OPENSSL_VERSION_NUMBER <= 0x10100000L
+#if OPENSSL_VERSION_NUMBER <= 0x10100000L /* OpenSSL 1.1.0 or less */
         rsa->e = BN_dup(e);
         rsa->n = BN_dup(n);
 #else
@@ -233,7 +239,7 @@ int app_rsa_sig_handler(ACVP_TEST_CASE *test_case) {
                 printf("\nError: Issue with keygen during siggen handling\n");
                 goto err;
             }
-#if OPENSSL_VERSION_NUMBER <= 0x10100000L
+#if OPENSSL_VERSION_NUMBER <= 0x10100000L /* OpenSSL 1.1.0 or less */
             e = BN_dup(group_rsa->e);
             n = BN_dup(group_rsa->n);
 #else

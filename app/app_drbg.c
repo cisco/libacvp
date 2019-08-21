@@ -94,9 +94,12 @@ int app_drbg_handler(ACVP_TEST_CASE *test_case) {
         case ACVP_DRBG_SHA_512:
             nid = NID_sha512;
             break;
-
         case ACVP_DRBG_SHA_512_224:
+            nid = NID_sha512_224;
+            break;
         case ACVP_DRBG_SHA_512_256:
+            nid = NID_sha512_256;
+            break;
         default:
             printf("%s: Unsupported algorithm/mode %d/%d (tc_id=%d)\n", __FUNCTION__, tc->tc_id,
                    tc->cipher, tc->mode);
@@ -125,7 +128,11 @@ int app_drbg_handler(ACVP_TEST_CASE *test_case) {
             nid =   NID_hmacWithSHA512;
             break;
         case ACVP_DRBG_SHA_512_224:
+            nid =   NID_hmacWithSHA512_224;
+            break;
         case ACVP_DRBG_SHA_512_256:
+            nid =   NID_hmacWithSHA512_256;
+            break;
         default:
             printf("%s: Unsupported algorithm/mode %d/%d (tc_id=%d)\n", __FUNCTION__, tc->tc_id,
                    tc->cipher, tc->mode);
