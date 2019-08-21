@@ -85,6 +85,7 @@ typedef enum acvp_cipher {
     ACVP_AES_XTS,
     ACVP_AES_KW,
     ACVP_AES_KWP,
+    ACVP_AES_GMAC,
     ACVP_TDES_ECB,
     ACVP_TDES_CBC,
     ACVP_TDES_CBCI,

@@ -11,6 +11,7 @@
 #include <openssl/evp.h>
 #include "acvp/acvp.h"
 #include "app_lcl.h"
+#include "safe_lib.h"
 
 static EVP_CIPHER_CTX *glb_cipher_ctx = NULL; /* need to maintain across calls for MCT */
 
@@ -383,7 +384,14 @@ int app_aes_handler_aead(ACVP_TEST_CASE *test_case) {
 
     /* Validate key length and assign OpenSSL EVP cipher */
     switch (tc->cipher) {
+    case ACVP_AES_GMAC:
     case ACVP_AES_GCM:
+        if(tc->cipher == ACVP_AES_GMAC && (tc->pt_len || tc->ct_len ||
+                strnlen_s((const char *)tc->ct, 1) || strnlen_s((const char *)tc->pt, 1))) {
+            printf("Invalid AES-GMAC ct/pt data\n");
+            rc = 1;
+            goto end;
+        }
         switch (tc->key_len) {
         case 128:
             cipher = EVP_aes_128_gcm();
@@ -414,7 +422,9 @@ int app_aes_handler_aead(ACVP_TEST_CASE *test_case) {
             if (tc->aad_len) {
                 EVP_Cipher(cipher_ctx, NULL, tc->aad, tc->aad_len);
             }
-            EVP_Cipher(cipher_ctx, tc->ct, tc->pt, tc->pt_len);
+            if(tc->cipher != ACVP_AES_GMAC) {
+                EVP_Cipher(cipher_ctx, tc->ct, tc->pt, tc->pt_len);
+            }
             EVP_Cipher(cipher_ctx, NULL, NULL, 0);
             EVP_CIPHER_CTX_ctrl(cipher_ctx, EVP_CTRL_GCM_GET_TAG, tc->tag_len, tc->tag);
         } else if (tc->direction == ACVP_SYM_CIPH_DIR_DECRYPT) {
@@ -443,7 +453,9 @@ int app_aes_handler_aead(ACVP_TEST_CASE *test_case) {
             /*
              * Decrypt the CT
              */
-            EVP_Cipher(cipher_ctx, tc->pt, tc->ct, tc->ct_len);
+            if(tc->cipher != ACVP_AES_GMAC) {
+                EVP_Cipher(cipher_ctx, tc->pt, tc->ct, tc->ct_len);
+            }
             /*
              * Check the tag
              */
