@@ -96,6 +96,7 @@
 #define ACVP_REV_AES_XTS             ACVP_REVISION_LATEST
 #define ACVP_REV_AES_KW              ACVP_REVISION_LATEST
 #define ACVP_REV_AES_KWP             ACVP_REVISION_LATEST
+#define ACVP_REV_AES_GMAC            ACVP_REVISION_LATEST
 
 /* TDES */
 #define ACVP_REV_TDES_OFB            ACVP_REVISION_LATEST
@@ -195,6 +196,7 @@
 #define ACVP_ALG_AES_XTS             "ACVP-AES-XTS"
 #define ACVP_ALG_AES_KW              "ACVP-AES-KW"
 #define ACVP_ALG_AES_KWP             "ACVP-AES-KWP"
+#define ACVP_ALG_AES_GMAC            "ACVP-AES-GMAC"
 #define ACVP_ALG_TDES_OFB            "ACVP-TDES-OFB"
 #define ACVP_ALG_TDES_OFBI           "ACVP-TDES-OFBI"
 #define ACVP_ALG_TDES_CFB1           "ACVP-TDES-CFB1"

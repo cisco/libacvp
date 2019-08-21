@@ -750,6 +750,7 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
         case ACVP_AES_CFB128:
         case ACVP_AES_OFB:
         case ACVP_AES_CTR:
+        case ACVP_AES_GMAC:
             if (value >= 4 && value <= 128) {
                 retval = ACVP_SUCCESS;
             }
@@ -780,6 +781,7 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
         case ACVP_AES_CFB128:
         case ACVP_AES_OFB:
         case ACVP_AES_CTR:
+        case ACVP_AES_GMAC:
             if (value >= 0 && value <= 65536) {
                 retval = ACVP_SUCCESS;
             }
@@ -789,9 +791,15 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
         }
         break;
     case ACVP_SYM_CIPH_PTLEN:
-        if (value >= 0 && value <= 65536) {
-            retval = ACVP_SUCCESS;
-        }
+        switch(cipher) {
+            case ACVP_AES_GMAC:
+                break;
+            default:
+                if (value >= 0 && value <= 65536) {
+                    retval = ACVP_SUCCESS;
+                }
+                break;
+         }
         break;
     default:
         break;
@@ -814,6 +822,7 @@ static ACVP_RESULT acvp_validate_prereq_val(ACVP_CIPHER cipher, ACVP_PREREQ_ALG 
     case ACVP_AES_KW:
     case ACVP_AES_KWP:
     case ACVP_AES_XTS:
+    case ACVP_AES_GMAC:
         if (pre_req == ACVP_PREREQ_AES ||
             pre_req == ACVP_PREREQ_DRBG) {
             return ACVP_SUCCESS;
@@ -1057,6 +1066,7 @@ ACVP_RESULT acvp_cap_sym_cipher_set_parm(ACVP_CTX *ctx,
     case ACVP_AES_XTS:
     case ACVP_AES_KW:
     case ACVP_AES_KWP:
+    case ACVP_AES_GMAC:
     case ACVP_TDES_ECB:
     case ACVP_TDES_CBC:
     case ACVP_TDES_CBCI:
@@ -1223,6 +1233,7 @@ ACVP_RESULT acvp_cap_sym_cipher_enable(ACVP_CTX *ctx,
     case ACVP_AES_XTS:
     case ACVP_AES_KW:
     case ACVP_AES_KWP:
+    case ACVP_AES_GMAC:
     case ACVP_TDES_ECB:
     case ACVP_TDES_CBC:
     case ACVP_TDES_CBCI:

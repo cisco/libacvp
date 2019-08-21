@@ -76,6 +76,7 @@ ACVP_ALG_HANDLER alg_tbl[ACVP_ALG_MAX] = {
     { ACVP_AES_XTS,           &acvp_aes_kat_handler,          ACVP_ALG_AES_XTS,           NULL, ACVP_REV_AES_XTS},
     { ACVP_AES_KW,            &acvp_aes_kat_handler,          ACVP_ALG_AES_KW,            NULL, ACVP_REV_AES_KW},
     { ACVP_AES_KWP,           &acvp_aes_kat_handler,          ACVP_ALG_AES_KWP,           NULL, ACVP_REV_AES_KWP},
+    { ACVP_AES_GMAC,          &acvp_aes_kat_handler,          ACVP_ALG_AES_GMAC,          NULL, ACVP_REV_AES_GMAC},
     { ACVP_TDES_ECB,          &acvp_des_kat_handler,          ACVP_ALG_TDES_ECB,          NULL, ACVP_REV_TDES_ECB},
     { ACVP_TDES_CBC,          &acvp_des_kat_handler,          ACVP_ALG_TDES_CBC,          NULL, ACVP_REV_TDES_CBC},
     { ACVP_TDES_CBCI,         &acvp_des_kat_handler,          ACVP_ALG_TDES_CBCI,         NULL, ACVP_REV_TDES_CBCI},
