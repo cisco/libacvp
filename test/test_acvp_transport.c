@@ -63,7 +63,7 @@ char *api_context;
  * Read the operational parameters from the various environment
  * variables.
  */
-static void setup_session_parameters(void)
+static void test_setup_session_parameters(void)
 {
     setup_empty_ctx(&ctx);
     
@@ -292,7 +292,7 @@ Test(TRANSPORT_SEND_TEST_SESSION_REG, incomplete_ctx, .init = setup, .fini = tea
  * Because we aren't calling acvp_register which logs in the session, we expect
  * a 401 (unaurhtorized) which gives ACVP_TRANSPORT_FAIL
  */
-Test(TRANSPORT_SEND_TEST_SESSION_REG, good, .init = setup_session_parameters, .fini = teardown) {
+Test(TRANSPORT_SEND_TEST_SESSION_REG, good, .init = test_setup_session_parameters, .fini = teardown) {
     rv = acvp_send_test_session_registration(ctx, little_reg, strlen(little_reg));
     cr_assert(rv == ACVP_TRANSPORT_FAIL);
 }
@@ -328,13 +328,13 @@ Test(TRANSPORT_SEND_LOGIN, incomplete_ctx, .init = setup, .fini = teardown) {
  * Because we aren't calling acvp_register which builds login JSON, we expect
  * a 401 (unaurhtorized) which gives ACVP_TRANSPORT_FAIL
  */
-Test(TRANSPORT_SEND_LOGIN, good, .init = setup_session_parameters, .fini = teardown) {
+Test(TRANSPORT_SEND_LOGIN, good, .init = test_setup_session_parameters, .fini = teardown) {
     rv = acvp_send_login(ctx, login_reg, strlen(login_reg));
     cr_assert(rv == ACVP_TRANSPORT_FAIL);
 }
 
 #if 0
-Test(TRANSPORT_FULL_INTERACTION, good, .init = setup_session_parameters, .fini = teardown) {
+Test(TRANSPORT_FULL_INTERACTION, good, .init = test_setup_session_parameters, .fini = teardown) {
     add_hash_details_good();
     
     rv = acvp_register(ctx);
@@ -352,7 +352,7 @@ Test(TRANSPORT_FULL_INTERACTION, good, .init = setup_session_parameters, .fini =
  * Exercise acvp_transport_post logic
  * 
  */
-Test(TRANSPORT_POST, good, .init = setup_session_parameters, .fini = teardown) {
+Test(TRANSPORT_POST, good, .init = test_setup_session_parameters, .fini = teardown) {
     char *save_ptr = NULL;
     int save_int = 0;
     rv = acvp_transport_post(NULL, "uri", "data", 4);
@@ -383,7 +383,7 @@ Test(TRANSPORT_POST, good, .init = setup_session_parameters, .fini = teardown) {
  * Exercise acvp_transport_put logic
  * 
  */
-Test(TRANSPORT_PUT, good, .init = setup_session_parameters, .fini = teardown) {
+Test(TRANSPORT_PUT, good, .init = test_setup_session_parameters, .fini = teardown) {
     char *save_ptr = NULL;
     int save_int = 0;
     rv = acvp_transport_put(NULL, "uri", "data", 4);
@@ -414,7 +414,7 @@ Test(TRANSPORT_PUT, good, .init = setup_session_parameters, .fini = teardown) {
  * Exercise acvp_transport_put_validation logic
  * 
  */
-Test(TRANSPORT_PUT_VALIDATION, good, .init = setup_session_parameters, .fini = teardown) {
+Test(TRANSPORT_PUT_VALIDATION, good, .init = test_setup_session_parameters, .fini = teardown) {
     char *save_ptr = NULL;
     int save_int = 0;
 
@@ -446,7 +446,7 @@ Test(TRANSPORT_PUT_VALIDATION, good, .init = setup_session_parameters, .fini = t
  * Exercise acvp_transport_get logic
  * 
  */
-Test(TRANSPORT_GET, good, .init = setup_session_parameters, .fini = teardown) {
+Test(TRANSPORT_GET, good, .init = test_setup_session_parameters, .fini = teardown) {
     char *save_ptr = NULL, *key = NULL, *value = NULL;
     int save_int = 0;
     ACVP_KV_LIST *parms = NULL;
