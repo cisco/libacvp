@@ -119,8 +119,8 @@ static ACVP_RESULT acvp_build_hash_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
 
             json_object_set_boolean(cap_obj, "outBit", cap_entry->cap.hash_cap->out_bit);
 
-            json_object_set_value(cap_obj, "outputLength", json_value_init_array());
-            tmp_arr = json_object_get_array(cap_obj, "outputLength");
+            json_object_set_value(cap_obj, "outputLen", json_value_init_array());
+            tmp_arr = json_object_get_array(cap_obj, "outputLen");
             tmp_val = json_value_init_object();
             tmp_obj = json_value_get_object(tmp_val);
 
