@@ -294,7 +294,9 @@ Test(TRANSPORT_SEND_TEST_SESSION_REG, incomplete_ctx, .init = setup, .fini = tea
  */
 Test(TRANSPORT_SEND_TEST_SESSION_REG, good, .init = test_setup_session_parameters, .fini = teardown) {
     rv = acvp_send_test_session_registration(ctx, little_reg, strlen(little_reg));
+#ifdef TEST_TRANSPORT
     cr_assert(rv == ACVP_TRANSPORT_FAIL);
+#endif
 }
 
 /*
@@ -330,7 +332,9 @@ Test(TRANSPORT_SEND_LOGIN, incomplete_ctx, .init = setup, .fini = teardown) {
  */
 Test(TRANSPORT_SEND_LOGIN, good, .init = test_setup_session_parameters, .fini = teardown) {
     rv = acvp_send_login(ctx, login_reg, strlen(login_reg));
+#ifdef TEST_TRANSPORT
     cr_assert(rv == ACVP_TRANSPORT_FAIL);
+#endif
 }
 
 #if 0
@@ -375,8 +379,10 @@ Test(TRANSPORT_POST, good, .init = test_setup_session_parameters, .fini = teardo
     rv = acvp_transport_post(ctx, NULL, "data", 4);
     cr_assert(rv == ACVP_MISSING_ARG);
 
+#ifdef TEST_TRANSPORT
     rv = acvp_transport_post(ctx, "uri", "data", 4);
     cr_assert(rv == ACVP_TRANSPORT_FAIL);
+#endif
 }
 
 /*
@@ -406,8 +412,10 @@ Test(TRANSPORT_PUT, good, .init = test_setup_session_parameters, .fini = teardow
     rv = acvp_transport_put(ctx, NULL, "data", 4);
     cr_assert(rv == ACVP_MISSING_ARG);
 
+#ifdef TEST_TRANSPORT
     rv = acvp_transport_put(ctx, "uri", "data", 4);
     cr_assert(rv == ACVP_TRANSPORT_FAIL);
+#endif
 }
 
 /*
@@ -478,8 +486,10 @@ Test(TRANSPORT_GET, good, .init = test_setup_session_parameters, .fini = teardow
     memcpy(key, "This is the key", 15);
     rv = acvp_kv_list_append(&parms, key, value);
 
+#ifdef TEST_TRANSPORT
     rv = acvp_transport_get(ctx, "uri", parms);
     cr_assert(rv == ACVP_TRANSPORT_FAIL);
+#endif
     acvp_kv_list_free(parms);
 }
 
