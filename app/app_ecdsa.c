@@ -106,7 +106,7 @@ int app_ecdsa_handler(ACVP_TEST_CASE *test_case) {
             md = EVP_sha512_224();
             break;
         case ACVP_SHA512_256:
-            md = EVP_sha_512_256();
+            md = EVP_sha512_256();
             break;
         default:
             printf("Unsupported hash alg in ECDSA\n");
