@@ -20,7 +20,7 @@ int app_hmac_handler(ACVP_TEST_CASE *test_case) {
     int msg_len;
     int rc = 1;
 
-#if OPENSSL_VERSION_NUMBER <= 0x10100000L /* OpenSSL 1.1.0 or less */
+#if OPENSSL_VERSION_NUMBER <= 0x10100000L
     HMAC_CTX static_ctx;
 #endif
 
@@ -60,7 +60,7 @@ int app_hmac_handler(ACVP_TEST_CASE *test_case) {
         break;
     }
 
-#if OPENSSL_VERSION_NUMBER <= 0x10100000L /* OpenSSL 1.1.0 or less */
+#if OPENSSL_VERSION_NUMBER <= 0x10100000L
     hmac_ctx = &static_ctx;
     HMAC_CTX_init(hmac_ctx);
 #else
@@ -86,7 +86,7 @@ int app_hmac_handler(ACVP_TEST_CASE *test_case) {
     rc = 0;
 
 end:
-#if OPENSSL_VERSION_NUMBER <= 0x10100000L /* OpenSSL 1.1.0 or less */
+#if OPENSSL_VERSION_NUMBER <= 0x10100000L
     HMAC_CTX_cleanup(hmac_ctx);
 #else
     if (hmac_ctx) HMAC_CTX_free(hmac_ctx);

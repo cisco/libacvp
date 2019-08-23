@@ -115,7 +115,7 @@ static int hmac_totp(const char *key,
     unsigned char buff[MAX_LEN];
     HMAC_CTX *ctx;
 
-#if OPENSSL_VERSION_NUMBER <= 0x10100000L /* OpenSSL 1.1.0 or less */
+#if OPENSSL_VERSION_NUMBER <= 0x10100000L
     HMAC_CTX static_ctx;
 
     ctx = &static_ctx;
@@ -131,7 +131,7 @@ static int hmac_totp(const char *key,
     memcpy_s(hash, hash_max, buff, len);
 
 end:
-#if OPENSSL_VERSION_NUMBER <= 0x10100000L /* OpenSSL 1.1.0 or less */
+#if OPENSSL_VERSION_NUMBER <= 0x10100000L
     HMAC_CTX_cleanup(ctx);
 #else
     if (ctx) HMAC_CTX_free(ctx);

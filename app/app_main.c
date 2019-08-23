@@ -938,7 +938,8 @@ static int enable_hash(ACVP_CTX *ctx) {
 
 #if OPENSSL_VERSION_NUMBER >= 0x10101010L /* OpenSSL 1.1.1 or greater */
 
-    /* SHA2-512/224 and SHA2-512/256 */
+/* SHA2-512/224 and SHA2-512/256 */
+#ifndef ACVP_NO_RUNTIME //currently no FIPS support
     rv = acvp_cap_hash_enable(ctx, ACVP_HASH_SHA512_224, &app_sha_handler);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_hash_set_domain(ctx, ACVP_HASH_SHA512_224, ACVP_HASH_MESSAGE_LEN,
@@ -950,6 +951,7 @@ static int enable_hash(ACVP_CTX *ctx) {
     rv = acvp_cap_hash_set_domain(ctx, ACVP_HASH_SHA512_256, ACVP_HASH_MESSAGE_LEN,
                                   0, 65528, 8);
     CHECK_ENABLE_CAP_RV(rv);
+#endif
 
     /* SHA3 and SHAKE */
     rv = acvp_cap_hash_enable(ctx, ACVP_HASH_SHA3_224, &app_sha_handler);
@@ -1110,6 +1112,7 @@ static int enable_hmac(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
 
     #if OPENSSL_VERSION_NUMBER >= 0x10101010L /* OpenSSL 1.1.1 or greater */
+    #ifndef ACVP_NO_RUNTIME
     rv = acvp_cap_hmac_enable(ctx, ACVP_HMAC_SHA2_512_224, &app_hmac_handler);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_hmac_set_domain(ctx, ACVP_HMAC_SHA2_512_224, ACVP_HMAC_KEYLEN, 256, 448, 8);
@@ -1127,6 +1130,7 @@ static int enable_hmac(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_HMAC_SHA2_512_256, ACVP_PREREQ_SHA, value);
     CHECK_ENABLE_CAP_RV(rv);
+    #endif
     #endif
 end:
 
@@ -1458,6 +1462,23 @@ static int enable_dsa(ACVP_CTX *ctx) {
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_PQGGEN, ACVP_DSA_MODE_PQGGEN, ACVP_DSA_LN3072_256, ACVP_SHA512);
     CHECK_ENABLE_CAP_RV(rv);
 
+    #if OPENSSL_VERSION_NUMBER >= 0x10101010L /* OpenSSL 1.1.1 or greater */
+    #ifndef ACVP_NO_RUNTIME
+    rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_PQGGEN, ACVP_DSA_MODE_PQGGEN, ACVP_DSA_LN2048_224, ACVP_SHA512_224);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_PQGGEN, ACVP_DSA_MODE_PQGGEN, ACVP_DSA_LN2048_224, ACVP_SHA512_256);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_PQGGEN, ACVP_DSA_MODE_PQGGEN, ACVP_DSA_LN2048_256, ACVP_SHA512_224);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_PQGGEN, ACVP_DSA_MODE_PQGGEN, ACVP_DSA_LN2048_256, ACVP_SHA512_256);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_PQGGEN, ACVP_DSA_MODE_PQGGEN, ACVP_DSA_LN3072_256, ACVP_SHA512_224);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_PQGGEN, ACVP_DSA_MODE_PQGGEN, ACVP_DSA_LN3072_256, ACVP_SHA512_256);
+    CHECK_ENABLE_CAP_RV(rv);
+    #endif
+    #endif
+
     rv = acvp_cap_dsa_enable(ctx, ACVP_DSA_PQGVER, &app_dsa_handler);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_DSA_PQGVER, ACVP_PREREQ_SHA, value);
@@ -1489,6 +1510,22 @@ static int enable_dsa(ACVP_CTX *ctx) {
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_PQGVER, ACVP_DSA_MODE_PQGVER, ACVP_DSA_LN3072_256, ACVP_SHA512);
     CHECK_ENABLE_CAP_RV(rv);
 
+    #if OPENSSL_VERSION_NUMBER >= 0x10101010L /* OpenSSL 1.1.1 or greater */
+    #ifndef ACVP_NO_RUNTIME
+    rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_PQGVER, ACVP_DSA_MODE_PQGVER, ACVP_DSA_LN2048_224, ACVP_SHA512_224);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_PQGVER, ACVP_DSA_MODE_PQGVER, ACVP_DSA_LN2048_224, ACVP_SHA512_256);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_PQGVER, ACVP_DSA_MODE_PQGVER, ACVP_DSA_LN2048_256, ACVP_SHA512_224);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_PQGVER, ACVP_DSA_MODE_PQGVER, ACVP_DSA_LN2048_256, ACVP_SHA512_256);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_PQGVER, ACVP_DSA_MODE_PQGVER, ACVP_DSA_LN3072_256, ACVP_SHA512_224);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_PQGVER, ACVP_DSA_MODE_PQGVER, ACVP_DSA_LN3072_256, ACVP_SHA512_256);
+    CHECK_ENABLE_CAP_RV(rv);
+    #endif
+    #endif
 
     rv = acvp_cap_dsa_enable(ctx, ACVP_DSA_KEYGEN, &app_dsa_handler);
     CHECK_ENABLE_CAP_RV(rv);
@@ -1521,6 +1558,22 @@ static int enable_dsa(ACVP_CTX *ctx) {
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_KEYGEN, ACVP_DSA_MODE_KEYGEN, ACVP_DSA_LN3072_256, ACVP_SHA512);
     CHECK_ENABLE_CAP_RV(rv);
 
+    #if OPENSSL_VERSION_NUMBER >= 0x10101010L /* OpenSSL 1.1.1 or greater */
+    #ifndef ACVP_NO_RUNTIME
+    rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_KEYGEN, ACVP_DSA_MODE_KEYGEN, ACVP_DSA_LN2048_224, ACVP_SHA512_224);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_KEYGEN, ACVP_DSA_MODE_KEYGEN, ACVP_DSA_LN2048_224, ACVP_SHA512_256);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_KEYGEN, ACVP_DSA_MODE_KEYGEN, ACVP_DSA_LN2048_256, ACVP_SHA512_224);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_KEYGEN, ACVP_DSA_MODE_KEYGEN, ACVP_DSA_LN2048_256, ACVP_SHA512_256);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_KEYGEN, ACVP_DSA_MODE_KEYGEN, ACVP_DSA_LN3072_256, ACVP_SHA512_224);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_KEYGEN, ACVP_DSA_MODE_KEYGEN, ACVP_DSA_LN3072_256, ACVP_SHA512_256);
+    CHECK_ENABLE_CAP_RV(rv);
+    #endif
+    #endif
 
     rv = acvp_cap_dsa_enable(ctx, ACVP_DSA_SIGGEN, &app_dsa_handler);
     CHECK_ENABLE_CAP_RV(rv);
@@ -1553,6 +1606,22 @@ static int enable_dsa(ACVP_CTX *ctx) {
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_SIGGEN, ACVP_DSA_MODE_SIGGEN, ACVP_DSA_LN3072_256, ACVP_SHA512);
     CHECK_ENABLE_CAP_RV(rv);
 
+    #if OPENSSL_VERSION_NUMBER >= 0x10101010L /* OpenSSL 1.1.1 or greater */
+    #ifndef ACVP_NO_RUNTIME
+    rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_SIGGEN, ACVP_DSA_MODE_SIGGEN, ACVP_DSA_LN2048_224, ACVP_SHA512_224);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_SIGGEN, ACVP_DSA_MODE_SIGGEN, ACVP_DSA_LN2048_224, ACVP_SHA512_256);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_SIGGEN, ACVP_DSA_MODE_SIGGEN, ACVP_DSA_LN2048_256, ACVP_SHA512_224);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_SIGGEN, ACVP_DSA_MODE_SIGGEN, ACVP_DSA_LN2048_256, ACVP_SHA512_256);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_SIGGEN, ACVP_DSA_MODE_SIGGEN, ACVP_DSA_LN3072_256, ACVP_SHA512_224);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_SIGGEN, ACVP_DSA_MODE_SIGGEN, ACVP_DSA_LN3072_256, ACVP_SHA512_256);
+    CHECK_ENABLE_CAP_RV(rv);
+    #endif
+    #endif
 
     rv = acvp_cap_dsa_enable(ctx, ACVP_DSA_SIGVER, &app_dsa_handler);
     CHECK_ENABLE_CAP_RV(rv);
@@ -1584,6 +1653,23 @@ static int enable_dsa(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_SIGVER, ACVP_DSA_MODE_SIGVER, ACVP_DSA_LN3072_256, ACVP_SHA512);
     CHECK_ENABLE_CAP_RV(rv);
+
+    #if OPENSSL_VERSION_NUMBER >= 0x10101010L /* OpenSSL 1.1.1 or greater */
+    #ifndef ACVP_NO_RUNTIME
+    rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_SIGVER, ACVP_DSA_MODE_SIGVER, ACVP_DSA_LN2048_224, ACVP_SHA512_224);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_SIGVER, ACVP_DSA_MODE_SIGVER, ACVP_DSA_LN2048_224, ACVP_SHA512_256);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_SIGVER, ACVP_DSA_MODE_SIGVER, ACVP_DSA_LN2048_256, ACVP_SHA512_224);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_SIGVER, ACVP_DSA_MODE_SIGVER, ACVP_DSA_LN2048_256, ACVP_SHA512_256);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_SIGVER, ACVP_DSA_MODE_SIGVER, ACVP_DSA_LN3072_256, ACVP_SHA512_224);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_SIGVER, ACVP_DSA_MODE_SIGVER, ACVP_DSA_LN3072_256, ACVP_SHA512_256);
+    CHECK_ENABLE_CAP_RV(rv);
+    #endif
+    #endif
 
 end:
 
@@ -1661,6 +1747,25 @@ static int enable_rsa(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
 #endif
 
+#if OPENSSL_VERSION_NUMBER >= 0x10101010L /* OpenSSL 1.1.1 or greater */
+#ifndef ACVP_NO_RUNTIME
+    rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_X931, 2048, ACVP_SHA512_224, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_X931, 2048, ACVP_SHA512_256, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_X931, 3072, ACVP_SHA512_224, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_X931, 3072, ACVP_SHA512_256, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+#if 0 //No mod 4096 support on server yet
+    rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_X931, 4096, ACVP_SHA512_224, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_X931, 4096, ACVP_SHA512_256, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+#endif
+#endif
+#endif
+
     // RSA w/ sigType: PKCS1v1.5
     rv = acvp_cap_rsa_siggen_set_type(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15);
     CHECK_ENABLE_CAP_RV(rv);
@@ -1690,6 +1795,25 @@ static int enable_rsa(ACVP_CTX *ctx) {
     rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15, 4096, ACVP_SHA512, 0);
     CHECK_ENABLE_CAP_RV(rv);
 #endif
+    
+#if OPENSSL_VERSION_NUMBER >= 0x10101010L /* OpenSSL 1.1.1 or greater */
+#ifndef ACVP_NO_RUNTIME
+    rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15, 2048, ACVP_SHA512_224, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15, 2048, ACVP_SHA512_256, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15, 3072, ACVP_SHA512_224, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15, 3072, ACVP_SHA512_256, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+#if 0 //No mod 4096 support on server yet
+    rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15, 4096, ACVP_SHA512_224, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15, 4096, ACVP_SHA512_256, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+#endif
+#endif
+#endif
 
     // RSA w/ sigType: PKCS1PSS -- has salt
     rv = acvp_cap_rsa_siggen_set_type(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS);
@@ -1710,6 +1834,19 @@ static int enable_rsa(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS, 3072, ACVP_SHA512, 0);
     CHECK_ENABLE_CAP_RV(rv);
+
+    #if OPENSSL_VERSION_NUMBER >= 0x10101010L /* OpenSSL 1.1.1 or greater */
+    #ifndef ACVP_NO_RUNTIME
+    rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS, 2048, ACVP_SHA512_224, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS, 2048, ACVP_SHA512_256, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS, 3072, ACVP_SHA512_224, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS, 3072, ACVP_SHA512_256, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    #endif
+    #endif
 
     /*
      * Enable sigver
@@ -1742,6 +1879,19 @@ static int enable_rsa(ACVP_CTX *ctx) {
     rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_X931, 3072, ACVP_SHA512, 0);
     CHECK_ENABLE_CAP_RV(rv);
 
+    #if OPENSSL_VERSION_NUMBER >= 0x10101010L /* OpenSSL 1.1.1 or greater */
+    #ifndef ACVP_NO_RUNTIME
+    rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_X931, 2048, ACVP_SHA512_224, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_X931, 2048, ACVP_SHA512_256, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_X931, 3072, ACVP_SHA512_224, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_X931, 3072, ACVP_SHA512_256, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    #endif
+    #endif
+
     // RSA w/ sigType: PKCS1v1.5
     rv = acvp_cap_rsa_sigver_set_type(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15);
     CHECK_ENABLE_CAP_RV(rv);
@@ -1766,6 +1916,19 @@ static int enable_rsa(ACVP_CTX *ctx) {
     rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15, 3072, ACVP_SHA512, 0);
     CHECK_ENABLE_CAP_RV(rv);
 
+    #if OPENSSL_VERSION_NUMBER >= 0x10101010L /* OpenSSL 1.1.1 or greater */
+    #ifndef ACVP_NO_RUNTIME
+    rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15, 2048, ACVP_SHA512_224, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15, 2048, ACVP_SHA512_256, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15, 3072, ACVP_SHA512_224, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15, 3072, ACVP_SHA512_256, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    #endif
+    #endif
+
     // RSA w/ sigType: PKCS1PSS -- has salt
     rv = acvp_cap_rsa_sigver_set_type(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS);
     CHECK_ENABLE_CAP_RV(rv);
@@ -1789,6 +1952,15 @@ static int enable_rsa(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS, 3072, ACVP_SHA512, 0);
     CHECK_ENABLE_CAP_RV(rv);
+
+    #if OPENSSL_VERSION_NUMBER >= 0x10101010L /* OpenSSL 1.1.1 or greater */
+    #ifndef ACVP_NO_RUNTIME
+    rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS, 2048, ACVP_SHA512_224, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS, 3072, ACVP_SHA512_256, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    #endif
+    #endif
 
 end:
     if (expo_str) free(expo_str);
@@ -1912,6 +2084,15 @@ static int enable_ecdsa(ACVP_CTX *ctx) {
     rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_ECDSA_HASH_ALG, ACVP_SHA512);
     CHECK_ENABLE_CAP_RV(rv);
 
+    #if OPENSSL_VERSION_NUMBER >= 0x10101010L /* OpenSSL 1.1.1 or greater */
+    #ifndef ACVP_NO_RUNTIME
+    rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_ECDSA_HASH_ALG, ACVP_SHA512_224);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_ECDSA_HASH_ALG, ACVP_SHA512_256);
+    CHECK_ENABLE_CAP_RV(rv);
+    #endif
+    #endif
+
     /*
      * Enable ECDSA sigVer...
      */
@@ -1954,6 +2135,14 @@ static int enable_ecdsa(ACVP_CTX *ctx) {
     rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_ECDSA_HASH_ALG, ACVP_SHA512);
     CHECK_ENABLE_CAP_RV(rv);
 
+    #if OPENSSL_VERSION_NUMBER >= 0x10101010L /* OpenSSL 1.1.1 or greater */
+    #ifndef ACVP_NO_RUNTIME
+    rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_ECDSA_HASH_ALG, ACVP_SHA512_224);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_ECDSA_HASH_ALG, ACVP_SHA512_256);
+    CHECK_ENABLE_CAP_RV(rv);
+    #endif
+    #endif
 end:
 
     return rv;
@@ -2157,6 +2346,85 @@ static int enable_drbg(ACVP_CTX *ctx) {
                                 ACVP_DRBG_RET_BITS_LEN, 512);
     CHECK_ENABLE_CAP_RV(rv);
 
+    /* set same params for hashDRBG with SHA_512_224 and SHA_512_256 */
+    #if OPENSSL_VERSION_NUMBER >= 0x10101010L /* OpenSSL 1.1.1 or greater */
+    #ifndef ACVP_NO_RUNTIME
+
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_512_224,
+                                ACVP_DRBG_DER_FUNC_ENABLED, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_512_224,
+                                ACVP_DRBG_PRED_RESIST_ENABLED, 1);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_512_224,
+                                ACVP_DRBG_PRED_RESIST_ENABLED, 1);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_512_224,
+                                ACVP_DRBG_RESEED_ENABLED, 1);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_512_224,
+                                  ACVP_DRBG_ENTROPY_LEN, (int)192, (int)64, (int)256);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_512_224,
+                                  ACVP_DRBG_NONCE_LEN, (int)128, (int)32, (int)160);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_512_224,
+                                  ACVP_DRBG_PERSO_LEN, (int)0, (int)128, (int)256);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_512_224,
+                                  ACVP_DRBG_ADD_IN_LEN, (int)0, (int)128, (int)256);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_512_224,
+                                ACVP_DRBG_RET_BITS_LEN, 224);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_512_256,
+                                ACVP_DRBG_DER_FUNC_ENABLED, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_512_256,
+                                ACVP_DRBG_PRED_RESIST_ENABLED, 1);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_512_256,
+                                ACVP_DRBG_PRED_RESIST_ENABLED, 1);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_512_256,
+                                ACVP_DRBG_RESEED_ENABLED, 1);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_512_256,
+                                  ACVP_DRBG_ENTROPY_LEN, (int)256, (int)64, (int)320);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_512_256,
+                                  ACVP_DRBG_NONCE_LEN, (int)128, (int)32, (int)160);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_512_256,
+                                  ACVP_DRBG_PERSO_LEN, (int)0, (int)128, (int)256);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_512_256,
+                                  ACVP_DRBG_ADD_IN_LEN, (int)0, (int)128, (int)256);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_512_256,
+                                ACVP_DRBG_RET_BITS_LEN, 256);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    #endif
+    #endif
+
     //ACVP_HMACDRBG
     rv = acvp_cap_drbg_enable(ctx, ACVP_HMACDRBG, &app_drbg_handler);
     CHECK_ENABLE_CAP_RV(rv);
@@ -2332,6 +2600,77 @@ static int enable_drbg(ACVP_CTX *ctx) {
     rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_512,
                                   ACVP_DRBG_ADD_IN_LEN, (int)0, (int)128, (int)256);
     CHECK_ENABLE_CAP_RV(rv);
+
+    /* set same params for hmacDRBG with SHA_512_224 and SHA_512_256 */
+    #if OPENSSL_VERSION_NUMBER >= 0x10101010L /* OpenSSL 1.1.1 or greater */
+    #ifndef ACVP_NO_RUNTIME
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_512_224,
+                                ACVP_DRBG_DER_FUNC_ENABLED, 1);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_512_224,
+                                ACVP_DRBG_PRED_RESIST_ENABLED, 1);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_512_224,
+                                ACVP_DRBG_RESEED_ENABLED, 1);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_512_224,
+                                ACVP_DRBG_RET_BITS_LEN, 224);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    //Add length range
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_512_224,
+                                  ACVP_DRBG_ENTROPY_LEN, (int)192, (int)64, (int)256);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_512_224,
+                                  ACVP_DRBG_NONCE_LEN, (int)0, (int)0, (int)128);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_512_224,
+                                  ACVP_DRBG_PERSO_LEN, (int)0, (int)128, (int)256);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_512_224,
+                                  ACVP_DRBG_ADD_IN_LEN, (int)0, (int)128, (int)256);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_512_256,
+                                ACVP_DRBG_DER_FUNC_ENABLED, 1);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_512_256,
+                                ACVP_DRBG_PRED_RESIST_ENABLED, 1);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_512_256,
+                                ACVP_DRBG_RESEED_ENABLED, 1);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_512_256,
+                                ACVP_DRBG_RET_BITS_LEN, 256);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    //Add length range
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_512_256,
+                                  ACVP_DRBG_ENTROPY_LEN, (int)256, (int)64, (int)512);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_512_256,
+                                  ACVP_DRBG_NONCE_LEN, (int)0, (int)0, (int)128);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_512_256,
+                                  ACVP_DRBG_PERSO_LEN, (int)0, (int)128, (int)256);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_512_256,
+                                  ACVP_DRBG_ADD_IN_LEN, (int)0, (int)128, (int)256);
+    CHECK_ENABLE_CAP_RV(rv);
+    #endif
+    #endif
 
     // ACVP_CTRDRBG
     rv = acvp_cap_drbg_enable(ctx, ACVP_CTRDRBG, &app_drbg_handler);

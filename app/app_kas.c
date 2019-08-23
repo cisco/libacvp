@@ -332,7 +332,7 @@ int app_kas_ffc_handler(ACVP_TEST_CASE *test_case) {
     BN_bin2bn(tc->g, tc->glen, g);
     BN_bin2bn(tc->eps, tc->epslen, peerkey);
 
-#if OPENSSL_VERSION_NUMBER <= 0x10100000L /* OpenSSL 1.1.0 or less */
+#if OPENSSL_VERSION_NUMBER <= 0x10100000L
     dh->p = BN_dup(p);
     dh->q = BN_dup(q);
     dh->g = BN_dup(g);
@@ -355,7 +355,7 @@ int app_kas_ffc_handler(ACVP_TEST_CASE *test_case) {
         BN_bin2bn(tc->epri, tc->eprilen, priv_key);
         BN_bin2bn(tc->epui, tc->epuilen, pub_key);
 
-#if OPENSSL_VERSION_NUMBER <= 0x10100000L /* OpenSSL 1.1.0 or less */
+#if OPENSSL_VERSION_NUMBER <= 0x10100000L
         dh->pub_key = BN_dup(pub_key);
         dh->priv_key = BN_dup(priv_key);
 #else
@@ -390,7 +390,7 @@ int app_kas_ffc_handler(ACVP_TEST_CASE *test_case) {
         tc->zlen = Zlen;
     }
 
-#if OPENSSL_VERSION_NUMBER <= 0x10100000L /* OpenSSL 1.1.0 or less */
+#if OPENSSL_VERSION_NUMBER <= 0x10100000L
     tc->piutlen = BN_bn2bin(dh->pub_key, tc->piut);
 #else
     tc->piutlen = BN_bn2bin(pub_key, tc->piut);

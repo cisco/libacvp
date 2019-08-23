@@ -78,7 +78,7 @@ int app_rsa_keygen_handler(ACVP_TEST_CASE *test_case) {
         goto err;
     }
 
-#if OPENSSL_VERSION_NUMBER <= 0x10100000L /* OpenSSL 1.1.0 or less */
+#if OPENSSL_VERSION_NUMBER <= 0x10100000L
     p = rsa->p;
     q = rsa->q;
     n = rsa->n;
@@ -215,7 +215,7 @@ int app_rsa_sig_handler(ACVP_TEST_CASE *test_case) {
         }
         BN_bin2bn(tc->n, tc->n_len, n);
 
-#if OPENSSL_VERSION_NUMBER <= 0x10100000L /* OpenSSL 1.1.0 or less */
+#if OPENSSL_VERSION_NUMBER <= 0x10100000L
         rsa->e = BN_dup(e);
         rsa->n = BN_dup(n);
 #else
@@ -239,7 +239,7 @@ int app_rsa_sig_handler(ACVP_TEST_CASE *test_case) {
                 printf("\nError: Issue with keygen during siggen handling\n");
                 goto err;
             }
-#if OPENSSL_VERSION_NUMBER <= 0x10100000L /* OpenSSL 1.1.0 or less */
+#if OPENSSL_VERSION_NUMBER <= 0x10100000L
             e = BN_dup(group_rsa->e);
             n = BN_dup(group_rsa->n);
 #else

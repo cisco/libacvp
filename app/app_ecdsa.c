@@ -258,7 +258,7 @@ int app_ecdsa_handler(ACVP_TEST_CASE *test_case) {
             goto err;
         }
 
-#if OPENSSL_VERSION_NUMBER <= 0x10100000L /* OpenSSL 1.1.0 or less */
+#if OPENSSL_VERSION_NUMBER <= 0x10100000L
         r = sig->r;
         s = sig->s;
 #else
@@ -291,7 +291,7 @@ int app_ecdsa_handler(ACVP_TEST_CASE *test_case) {
             goto err;
         }
 
-#if OPENSSL_VERSION_NUMBER <= 0x10100000L /* OpenSSL 1.1.0 or less */
+#if OPENSSL_VERSION_NUMBER <= 0x10100000L
         r = sig->r;
         s = sig->s;
 #else
