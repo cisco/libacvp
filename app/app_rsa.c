@@ -103,7 +103,7 @@ err:
 }
 
 int app_rsa_sig_handler(ACVP_TEST_CASE *test_case) {
-    EVP_MD *tc_md = NULL;
+    const EVP_MD *tc_md = NULL;
     int siglen, pad_mode;
     BIGNUM *bn_e = NULL, *e = NULL, *n = NULL;
     ACVP_RSA_SIG_TC    *tc;
@@ -171,26 +171,26 @@ int app_rsa_sig_handler(ACVP_TEST_CASE *test_case) {
      */
     switch (tc->hash_alg) {
     case ACVP_SHA1:
-        tc_md = (EVP_MD *)EVP_sha1();
+        tc_md = EVP_sha1();
         break;
     case ACVP_SHA224:
-        tc_md = (EVP_MD *)EVP_sha224();
+        tc_md = EVP_sha224();
         break;
     case ACVP_SHA256:
-        tc_md = (EVP_MD *)EVP_sha256();
+        tc_md = EVP_sha256();
         break;
     case ACVP_SHA384:
-        tc_md = (EVP_MD *)EVP_sha384();
+        tc_md = EVP_sha384();
         break;
     case ACVP_SHA512:
-        tc_md = (EVP_MD *)EVP_sha512();
+        tc_md = EVP_sha512();
         break;
     #if OPENSSL_VERSION_NUMBER >= 0x10101010L /* OpenSSL 1.1.1 or greater */
     case ACVP_SHA512_224:
-        tc_md = (EVP_MD *)EVP_sha512_224();
+        tc_md = EVP_sha512_224();
         break;
     case ACVP_SHA512_256:
-        tc_md = (EVP_MD *)EVP_sha512_256();
+        tc_md = EVP_sha512_256();
         break;
     #endif
     default:
