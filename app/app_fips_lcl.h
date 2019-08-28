@@ -160,6 +160,7 @@ int FIPS_dsa_verify(DSA *dsa, const unsigned char *msg, size_t msglen,
 DSA_SIG * FIPS_dsa_sign(DSA *dsa, const unsigned char *msg, size_t msglen,
 			const EVP_MD *mhash);
 void FIPS_dsa_sig_get0(const DSA_SIG *sig, const BIGNUM **pr, const BIGNUM **ps);
+void FIPS_dsa_sig_set0(const DSA_SIG *sig, BIGNUM *pr, BIGNUM *ps);
 DSA_SIG *FIPS_dsa_sig_new(void);
 void FIPS_dsa_sig_free(DSA_SIG *sig);
 BIGNUM *fips_bn_ctx_get(BN_CTX *ctx);
