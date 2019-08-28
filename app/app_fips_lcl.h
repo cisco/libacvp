@@ -205,6 +205,11 @@ ECDSA_SIG * FIPS_ecdsa_sign(EC_KEY *key,
                             const EVP_MD *mhash);
 int FIPS_ecdsa_verify(EC_KEY *key, const unsigned char *msg, size_t msglen,
 			          const EVP_MD *mhash, ECDSA_SIG *s);
+ECDSA_SIG * FIPS_ecdsa_sign_md(EC_KEY *key,
+                               const unsigned char *msg, size_t msglen,
+                               const EVP_MD *mhash);
+int FIPS_ecdsa_verify_md(EC_KEY *key, const unsigned char *msg, size_t msglen,
+			 const EVP_MD *mhash, ECDSA_SIG *s);
 int FIPS_ecdh_compute_key(void *out, size_t outlen, const EC_POINT *pub_key,
                           EC_KEY *ecdh, void *(*KDF) (const void *in, size_t inlen,
                                                       void *out, size_t *outlen));
