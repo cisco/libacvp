@@ -92,6 +92,7 @@
 #define ACVP_REV_AES_OFB             ACVP_REVISION_LATEST
 #define ACVP_REV_AES_CTR             ACVP_REVISION_LATEST
 #define ACVP_REV_AES_GCM             ACVP_REVISION_LATEST
+#define ACVP_REV_AES_GCM_SIV         ACVP_REVISION_LATEST
 #define ACVP_REV_AES_CCM             ACVP_REVISION_LATEST
 #define ACVP_REV_AES_XTS             ACVP_REVISION_LATEST
 #define ACVP_REV_AES_KW              ACVP_REVISION_LATEST
@@ -194,6 +195,7 @@
 #define ACVP_ALG_AES_OFB             "ACVP-AES-OFB"
 #define ACVP_ALG_AES_CTR             "ACVP-AES-CTR"
 #define ACVP_ALG_AES_GCM             "ACVP-AES-GCM"
+#define ACVP_ALG_AES_GCM_SIV         "ACVP-AES-GCM-SIV"
 #define ACVP_ALG_AES_CCM             "ACVP-AES-CCM"
 #define ACVP_ALG_AES_XTS             "ACVP-AES-XTS"
 #define ACVP_ALG_AES_KW              "ACVP-AES-KW"

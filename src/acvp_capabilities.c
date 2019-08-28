@@ -773,6 +773,7 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
     case ACVP_SYM_CIPH_AADLEN:
         switch (cipher) {
         case ACVP_AES_GCM:
+        case ACVP_AES_GCM_SIV:
         case ACVP_AES_CCM:
         case ACVP_AES_ECB:
         case ACVP_AES_CBC:
@@ -811,6 +812,7 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
 static ACVP_RESULT acvp_validate_prereq_val(ACVP_CIPHER cipher, ACVP_PREREQ_ALG pre_req) {
     switch (cipher) {
     case ACVP_AES_GCM:
+    case ACVP_AES_GCM_SIV:
     case ACVP_AES_CCM:
     case ACVP_AES_ECB:
     case ACVP_AES_CFB1:
@@ -1059,6 +1061,7 @@ ACVP_RESULT acvp_cap_sym_cipher_set_parm(ACVP_CTX *ctx,
 
     switch (cipher) {
     case ACVP_AES_GCM:
+    case ACVP_AES_GCM_SIV:
     case ACVP_AES_CCM:
     case ACVP_AES_ECB:
     case ACVP_AES_CBC:
@@ -1226,6 +1229,7 @@ ACVP_RESULT acvp_cap_sym_cipher_enable(ACVP_CTX *ctx,
 
     switch (cipher) {
     case ACVP_AES_GCM:
+    case ACVP_AES_GCM_SIV:
     case ACVP_AES_CCM:
     case ACVP_AES_ECB:
     case ACVP_AES_CBC:
