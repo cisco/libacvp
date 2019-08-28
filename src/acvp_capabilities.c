@@ -844,6 +844,8 @@ static ACVP_RESULT acvp_validate_prereq_val(ACVP_CIPHER cipher, ACVP_PREREQ_ALG 
     case ACVP_HASH_SHA256:
     case ACVP_HASH_SHA384:
     case ACVP_HASH_SHA512:
+    case ACVP_HASH_SHA512_224:
+    case ACVP_HASH_SHA512_256:
         return ACVP_INVALID_ARG;
 
         break;
@@ -869,6 +871,8 @@ static ACVP_RESULT acvp_validate_prereq_val(ACVP_CIPHER cipher, ACVP_PREREQ_ALG 
     case ACVP_HMAC_SHA2_256:
     case ACVP_HMAC_SHA2_384:
     case ACVP_HMAC_SHA2_512:
+    case ACVP_HMAC_SHA2_512_224:
+    case ACVP_HMAC_SHA2_512_256:
         if (pre_req == ACVP_PREREQ_SHA) {
             return ACVP_SUCCESS;
         }
@@ -1282,6 +1286,8 @@ ACVP_RESULT acvp_cap_hash_enable(ACVP_CTX *ctx,
     case ACVP_HASH_SHA256:
     case ACVP_HASH_SHA384:
     case ACVP_HASH_SHA512:
+    case ACVP_HASH_SHA512_224:
+    case ACVP_HASH_SHA512_256:
     case ACVP_HASH_SHA3_224:
     case ACVP_HASH_SHA3_256:
     case ACVP_HASH_SHA3_384:
@@ -1407,6 +1413,8 @@ ACVP_RESULT acvp_cap_hash_set_domain(ACVP_CTX *ctx,
     case ACVP_HASH_SHA256:
     case ACVP_HASH_SHA384:
     case ACVP_HASH_SHA512:
+    case ACVP_HASH_SHA512_224:
+    case ACVP_HASH_SHA512_256:
     case ACVP_HASH_SHAKE_128:
     case ACVP_HASH_SHAKE_256:
         break;
@@ -2085,6 +2093,8 @@ static ACVP_RESULT acvp_add_hash_drbg_cap_parm(ACVP_DRBG_CAP_MODE *drbg_cap_mode
     case ACVP_DRBG_SHA_256:
     case ACVP_DRBG_SHA_384:
     case ACVP_DRBG_SHA_512:
+    case ACVP_DRBG_SHA_512_224:
+    case ACVP_DRBG_SHA_512_256:
         drbg_cap_mode->mode = mode;
         switch (param) {
         case ACVP_DRBG_DER_FUNC_ENABLED:
@@ -2118,8 +2128,6 @@ static ACVP_RESULT acvp_add_hash_drbg_cap_parm(ACVP_DRBG_CAP_MODE *drbg_cap_mode
             break;
         }
         break;
-    case ACVP_DRBG_SHA_512_224:
-    case ACVP_DRBG_SHA_512_256:
     default:
         return ACVP_INVALID_ARG;
 
@@ -2141,6 +2149,8 @@ static ACVP_RESULT acvp_add_hmac_drbg_cap_parm(ACVP_DRBG_CAP_MODE *drbg_cap_mode
     case ACVP_DRBG_SHA_256:
     case ACVP_DRBG_SHA_384:
     case ACVP_DRBG_SHA_512:
+    case ACVP_DRBG_SHA_512_224:
+    case ACVP_DRBG_SHA_512_256:
         drbg_cap_mode->mode = mode;
         switch (param) {
         case ACVP_DRBG_DER_FUNC_ENABLED:
@@ -2172,9 +2182,6 @@ static ACVP_RESULT acvp_add_hmac_drbg_cap_parm(ACVP_DRBG_CAP_MODE *drbg_cap_mode
             return ACVP_INVALID_ARG;
         }
         break;
-
-    case ACVP_DRBG_SHA_512_224:
-    case ACVP_DRBG_SHA_512_256:
     default:
         return ACVP_INVALID_ARG;
 
