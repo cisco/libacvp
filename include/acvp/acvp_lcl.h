@@ -675,7 +675,9 @@
  */
 
 #define ACVP_CURL_BUF_MAX       (1024 * 1024 * 16) /**< 16 MB */
-#define ACVP_RETRY_TIME_MAX     60 /* seconds */
+#define ACVP_RETRY_TIME_MAX     300 /* seconds */
+#define ACVP_MAX_WAIT_TIME      3600
+#define ACVP_RETRY_TIME         30
 #define ACVP_JWT_TOKEN_MAX      1024
 #define ACVP_ATTR_URL_MAX       2083 /* MS IE's limit - arbitrary */
 
@@ -1269,7 +1271,6 @@ struct acvp_ctx_t {
     int verify_peer;        /* enables TLS peer verification via Curl */
     char *tls_cert;         /* Location of PEM encoded X509 cert to use for TLS client auth */
     char *tls_key;          /* Location of PEM encoded priv key to use for TLS client auth */
-    
     ACVP_OPERATING_ENV op_env; /**< The Operating Environment resources available */
     ACVP_STRING_LIST *vsid_url_list;
     char *session_url;

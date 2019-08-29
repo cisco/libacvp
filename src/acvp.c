@@ -2182,6 +2182,9 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
     JSON_Object *current = NULL;
     const char *status = NULL;
 
+    int time_waited_so_far = 0;
+    int retry_interval = ACVP_RETRY_TIME;
+
     while (1) {
         /*
          * Get the KAT vector set
@@ -2206,8 +2209,20 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
             /*
              * Retry
              */
+            if(time_waited_so_far + retry_interval > ACVP_MAX_WAIT_TIME) {
+                retry_interval = ACVP_MAX_WAIT_TIME - time_waited_so_far;
+            }
             ACVP_LOG_STATUS("TestSession results incomplete...");
-            acvp_retry_handler(ctx, 30);
+            acvp_retry_handler(ctx, retry_interval);
+            time_waited_so_far += retry_interval;
+            if ((retry_interval *= 2) > ACVP_RETRY_TIME_MAX) {
+                retry_interval = ACVP_RETRY_TIME_MAX;
+            }
+            if(time_waited_so_far >= ACVP_MAX_WAIT_TIME) {
+                ACVP_LOG_STATUS("Maximum wait time with server reached! (Max: %d seconds)", ACVP_MAX_WAIT_TIME);
+                rv = ACVP_TRANSPORT_FAIL;
+                goto end;
+            }
             if (val) json_value_free(val);
             continue;
         } else if (passed == 1) {
