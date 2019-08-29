@@ -106,6 +106,9 @@ int app_rsa_sig_handler(ACVP_TEST_CASE *test_case) {
     const EVP_MD *tc_md = NULL;
     int siglen, pad_mode;
     BIGNUM *bn_e = NULL, *e = NULL, *n = NULL;
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+    BIGNUM  *tmp_e = NULL, *tmp_n = NULL;
+#endif
     ACVP_RSA_SIG_TC    *tc;
     RSA *rsa = NULL;
     int salt_len = -1;
@@ -185,15 +188,15 @@ int app_rsa_sig_handler(ACVP_TEST_CASE *test_case) {
     case ACVP_SHA512:
         tc_md = EVP_sha512();
         break;
-    #if OPENSSL_VERSION_NUMBER >= 0x10101010L /* OpenSSL 1.1.1 or greater */
+ #if OPENSSL_VERSION_NUMBER >= 0x10101010L /* OpenSSL 1.1.1 or greater */
     case ACVP_SHA512_224:
         tc_md = EVP_sha512_224();
         break;
     case ACVP_SHA512_256:
         tc_md = EVP_sha512_256();
         break;
-    #endif
-    default:
+ #endif
+     default:
         printf("\nError: hashAlg not supported for RSA SigGen\n");
         goto err;
     }
@@ -224,7 +227,9 @@ int app_rsa_sig_handler(ACVP_TEST_CASE *test_case) {
         RSA_set0_key(rsa, n, e, NULL);
 #endif
 
-        tc->ver_disposition = FIPS_rsa_verify(rsa, tc->msg, tc->msg_len, tc_md, pad_mode, salt_len, NULL, tc->signature, tc->sig_len);
+        tc->ver_disposition = FIPS_rsa_verify(rsa, tc->msg, tc->msg_len, (const struct env_md_st *)tc_md, 
+                                              pad_mode, salt_len, NULL, tc->signature, 
+                                              tc->sig_len);
     } else {
         if (rsa_current_tg != tc->tg_id) {
             rsa_current_tg = tc->tg_id;
@@ -245,7 +250,9 @@ int app_rsa_sig_handler(ACVP_TEST_CASE *test_case) {
             e = BN_dup(group_rsa->e);
             n = BN_dup(group_rsa->n);
 #else
-            RSA_get0_key(group_rsa, (const BIGNUM **)&n, (const BIGNUM **)&e, NULL);
+            RSA_get0_key(group_rsa, (const BIGNUM **)&tmp_n, (const BIGNUM **)&tmp_e, NULL);
+            e = BN_dup(tmp_e);
+            n = BN_dup(tmp_n);
 #endif
             group_n = BN_dup(n);
         } else {
@@ -258,7 +265,8 @@ int app_rsa_sig_handler(ACVP_TEST_CASE *test_case) {
         if (tc->msg && tc_md) {
             siglen = RSA_size(group_rsa);
 
-            if (!FIPS_rsa_sign(group_rsa, tc->msg, tc->msg_len, tc_md, pad_mode, salt_len, NULL,
+            if (!FIPS_rsa_sign(group_rsa, tc->msg, tc->msg_len, (const struct env_md_st *)tc_md, 
+                               pad_mode, salt_len, NULL,
                                tc->signature, (unsigned int *)&siglen)) {
                 printf("\nError: RSA Signature Generation fail\n");
                 goto err;

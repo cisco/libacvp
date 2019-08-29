@@ -84,6 +84,26 @@ static size_t dummy_cb(DRBG_CTX *ctx, unsigned char **pout,
 
 static int entropy_stick = 0;
 
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+void FIPS_set_locking_callbacks(CRYPTO_RWLOCK *(*FIPS_thread_lock_new)(void),
+                   int (*FIPS_thread_read_lock)(CRYPTO_RWLOCK *lock),
+                   int (*FIPS_thread_write_lock)(CRYPTO_RWLOCK *lock),
+                   int (*FIPS_thread_unlock)(CRYPTO_RWLOCK *lock),
+                   void (*FIPS_thread_lock_free)(CRYPTO_RWLOCK *lock),
+                   CRYPTO_THREAD_ID (*FIPS_thread_get_current_id)(void),
+                   int (*FIPS_thread_compare_id)(CRYPTO_THREAD_ID a, CRYPTO_THREAD_ID b),
+                   int (*FIPS_atomic_add)(int *val, int amount, int *ret, CRYPTO_RWLOCK *lock));
+
+/* Dummy lock CBs*/
+static int dummy_alg_testing_lock = 5;
+static CRYPTO_RWLOCK* fips_test_suite_dummy_new_lock(){
+	return (CRYPTO_RWLOCK*) &dummy_alg_testing_lock;
+}
+static void fips_test_suite_dummy_free_lock(CRYPTO_RWLOCK* lock){
+	// do nothing
+	(void)lock;
+}
+#endif
 static void fips_algtest_init_nofips(void)
 	{
 	DRBG_CTX *ctx;
@@ -98,6 +118,17 @@ static void fips_algtest_init_nofips(void)
 	FIPS_drbg_set_callbacks(ctx, dummy_cb, 0, 16, dummy_cb, 0);
 	FIPS_drbg_instantiate(ctx, dummy_entropy, 10);
 	FIPS_rand_set_method(FIPS_drbg_method());
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+        FIPS_set_locking_callbacks(&fips_test_suite_dummy_new_lock,
+                                   NULL,
+                                   NULL,
+                                   NULL,
+                                   &fips_test_suite_dummy_free_lock,
+                                   NULL,
+                                   NULL,
+                                   NULL);
+#endif
+
 	}
 
 #ifdef __cplusplus

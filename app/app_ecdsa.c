@@ -254,7 +254,12 @@ int app_ecdsa_handler(ACVP_TEST_CASE *test_case) {
             printf("ecdsa siggen missing msg\n");
             goto err;
         }
+#if OPENSSL_VERSION_NUMBER <= 0x10100000L
         sig = FIPS_ecdsa_sign(ecdsa_group_key, tc->message, msg_len, md);
+#else
+        sig = FIPS_ecdsa_sign_md(ecdsa_group_key, tc->message, msg_len, md);
+#endif
+
         if (!sig) {
             printf("Error signing message\n");
             goto err;
@@ -297,26 +302,27 @@ int app_ecdsa_handler(ACVP_TEST_CASE *test_case) {
         r = sig->r;
         s = sig->s;
 #else
-        ECDSA_SIG_get0(sig, (const BIGNUM **)&r,
-                       (const BIGNUM **)&s);
+        r = FIPS_bn_new();
+        s = FIPS_bn_new();
+        ECDSA_SIG_set0(sig, r, s);
 #endif
 
         Qx = FIPS_bn_new();
         Qy = FIPS_bn_new();
 
-        BN_bin2bn(tc->qx, tc->qx_len, Qx);
-        BN_bin2bn(tc->qy, tc->qy_len, Qy);
         if (!Qx || !Qy) {
             printf("Error BIGNUM conversion\n");
             goto err;
         }
+        BN_bin2bn(tc->qx, tc->qx_len, Qx);
+        BN_bin2bn(tc->qy, tc->qy_len, Qy);
 
-        BN_bin2bn(tc->r, tc->r_len, r);
-        BN_bin2bn(tc->s, tc->s_len, s);
         if (!r || !s) {
             printf("Error BIGNUM conversion\n");
             goto err;
         }
+        BN_bin2bn(tc->r, tc->r_len, r);
+        BN_bin2bn(tc->s, tc->s_len, s);
 
         key = EC_KEY_new_by_curve_name(nid);
         if (!key) {
@@ -334,7 +340,11 @@ int app_ecdsa_handler(ACVP_TEST_CASE *test_case) {
             printf("ecdsa siggen missing msg\n");
             goto err;
         }
+#if OPENSSL_VERSION_NUMBER <= 0x10100000L
         if (FIPS_ecdsa_verify(key, tc->message, tc->msg_len, md, sig) == 1) {
+#else
+        if (FIPS_ecdsa_verify_md(key, tc->message, tc->msg_len, md, sig) == 1) {
+#endif
             tc->ver_disposition = ACVP_TEST_DISPOSITION_PASS;
         } else {
             tc->ver_disposition = ACVP_TEST_DISPOSITION_FAIL;
