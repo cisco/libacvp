@@ -808,8 +808,11 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             }
 
             taglen = (unsigned int)json_object_get_number(groupobj, "tagLen");
-            if (!(taglen >= ACVP_SYM_TAG_BIT_MIN &&
-                  taglen <= ACVP_SYM_TAG_BIT_MAX)) {
+            if (alg_id == ACVP_AES_GCM_SIV && taglen != 128) {
+                ACVP_LOG_ERR("Incorrect server JSON value 'taglen' for AES-GCM-SIV (%u)", taglen);
+                rv = ACVP_INVALID_ARG;
+                goto err;
+            } else if (!(taglen >= ACVP_SYM_TAG_BIT_MIN && taglen <= ACVP_SYM_TAG_BIT_MAX)) {
                 ACVP_LOG_ERR("Server JSON invalid 'taglen', (%u)", taglen);
                 rv = ACVP_INVALID_ARG;
                 goto err;

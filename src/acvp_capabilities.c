@@ -760,8 +760,14 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
         }
         break;
     case ACVP_SYM_CIPH_IVLEN:
-        if (value >= 8 && value <= 1024) {
-            retval = ACVP_SUCCESS;
+        switch (cipher) {
+        case ACVP_AES_GCM_SIV:
+            break;
+        default:
+            if (value >= 8 && value <= 1024) {
+                retval = ACVP_SUCCESS;
+            }
+            break;
         }
         break;
     case ACVP_SYM_CIPH_TWEAK:
@@ -793,13 +799,13 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
         break;
     case ACVP_SYM_CIPH_PTLEN:
         switch(cipher) {
-            case ACVP_AES_GMAC:
-                break;
-            default:
-                if (value >= 0 && value <= 65536) {
-                    retval = ACVP_SUCCESS;
-                }
-                break;
+        case ACVP_AES_GMAC:
+            break;
+        default:
+            if (value >= 0 && value <= 65536) {
+                retval = ACVP_SUCCESS;
+            }
+            break;
          }
         break;
     default:
