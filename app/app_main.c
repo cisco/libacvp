@@ -26,17 +26,6 @@
 # include "app_fips_init_lcl.h"
 extern int fips_selftest_fail;
 extern int fips_mode;
-
-#if OPENSSL_VERSION_NUMBER >= 0x10100000L
-void FINGERPRINT_premain(void) {
-     return;
-}
-
-int FIPS_get_selftest_completed(int version)
-{
-    return 0;
-}
-#endif
 #endif
 
 static int enable_aes(ACVP_CTX *ctx);

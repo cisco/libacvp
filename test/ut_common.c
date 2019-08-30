@@ -11,6 +11,7 @@
 
 #include "ut_common.h"
 #include <openssl/hmac.h>
+#include "app_fips_init_lcl.h"
 
 int counter_set = 0;
 int counter_fail = 0;

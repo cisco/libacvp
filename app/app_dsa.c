@@ -503,7 +503,10 @@ int app_dsa_handler(ACVP_TEST_CASE *test_case) {
             dsa->p = BN_dup(p);
             dsa->q = BN_dup(q);
 #else
-            DSA_set0_pqg(dsa, p, q, g);
+            tmp_p = BN_dup(p);
+            tmp_q = BN_dup(q);
+            tmp_g = BN_dup(g);
+            DSA_set0_pqg(dsa, tmp_p, tmp_q, tmp_g);
 #endif
             L = tc->l;
             N = tc->n;

@@ -39,6 +39,18 @@ extern "C"
 #include <openssl/fips_rand.h>
 #include "safe_mem_lib.h"
 
+/*
+ * These stubs are needed when linking with FOM7.0,
+ * otherwise we get "undefined reference".
+ */
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+int FIPS_get_selftest_completed(int version)
+{
+    return 0;
+}
+void FINGERPRINT_premain(void) {}
+#endif
+
 static int no_err;
 static void put_err_cb(int lib, int func,int reason,const char *file,int line)
 	{
