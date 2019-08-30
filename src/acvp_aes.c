@@ -733,11 +733,17 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             (alg_id != ACVP_AES_KWP)) {
             ivlen = 128;
         }
-        if (alg_id == ACVP_AES_GCM || alg_id == ACVP_AES_CCM || alg_id == ACVP_AES_GCM_SIV 
-                                                             || alg_id == ACVP_AES_GMAC) {
+
+        /* TODO: This value is supposed to be included in server JSON, but is not currently.
+         * Update when fixed on server end. */
+        if(alg_id == ACVP_AES_GCM_SIV) {
+            ivlen = ACVP_AES_GCM_SIV_IVLEN;
+        }
+        
+        if (alg_id == ACVP_AES_GCM || alg_id == ACVP_AES_CCM || alg_id == ACVP_AES_GMAC) {
             ivlen = (unsigned int)json_object_get_number(groupobj, "ivLen");
             if (!ivlen) {
-                ACVP_LOG_ERR("Server JSON missing 'ivlen'");
+                ACVP_LOG_ERR("Server JSON missing 'ivLen'");
                 rv = ACVP_MISSING_ARG;
                 goto err;
             }
@@ -745,7 +751,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             if (alg_id == ACVP_AES_GCM || alg_id == ACVP_AES_GMAC) {
                 if (!(ivlen >= ACVP_AES_GCM_IV_BIT_MIN &&
                       ivlen <= ACVP_AES_GCM_IV_BIT_MAX)) {
-                    ACVP_LOG_ERR("Server JSON invalid 'ivlen', (%u)", ivlen);
+                    ACVP_LOG_ERR("Server JSON invalid 'ivLen', (%u)", ivlen);
                     rv = ACVP_INVALID_ARG;
                     goto err;
                 }
@@ -782,18 +788,18 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                     ivlen <= ACVP_AES_CCM_IV_BIT_MAX) {
                     if (ivlen % 8 != 0) {
                         // Only increments of 8 allowed
-                        ACVP_LOG_ERR("Server JSON 'ivlen' (%u) mod 8 != 0", ivlen);
+                        ACVP_LOG_ERR("Server JSON 'ivLen' (%u) mod 8 != 0", ivlen);
                         rv = ACVP_INVALID_ARG;
                         goto err;
                     }
                 } else {
-                    ACVP_LOG_ERR("Server JSON invalid 'ivlen', (%u)", ivlen);
+                    ACVP_LOG_ERR("Server JSON invalid 'ivLen', (%u)", ivlen);
                     rv = ACVP_INVALID_ARG;
                     goto err;
                 }
             } else if (alg_id == ACVP_AES_GCM_SIV) {
-                if (ivlen != 96) {
-                    ACVP_LOG_ERR("Server JSON invalid 'ivlen', (%u)", ivlen);
+                if (ivlen != ACVP_AES_GCM_SIV_IVLEN) {
+                    ACVP_LOG_ERR("Server JSON invalid 'ivLen', (%u)", ivlen);
                     rv = ACVP_INVALID_ARG;
                     goto err;
                 }
@@ -808,7 +814,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             }
 
             taglen = (unsigned int)json_object_get_number(groupobj, "tagLen");
-            if (alg_id == ACVP_AES_GCM_SIV && taglen != 128) {
+            if (alg_id == ACVP_AES_GCM_SIV && taglen != ACVP_AES_GCM_SIV_TAGLEN) {
                 ACVP_LOG_ERR("Incorrect server JSON value 'taglen' for AES-GCM-SIV (%u)", taglen);
                 rv = ACVP_INVALID_ARG;
                 goto err;
