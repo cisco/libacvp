@@ -760,8 +760,14 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
         }
         break;
     case ACVP_SYM_CIPH_IVLEN:
-        if (value >= 8 && value <= 1024) {
-            retval = ACVP_SUCCESS;
+        switch (cipher) {
+        case ACVP_AES_GCM_SIV:
+            break;
+        default:
+            if (value >= 8 && value <= 1024) {
+                retval = ACVP_SUCCESS;
+            }
+            break;
         }
         break;
     case ACVP_SYM_CIPH_TWEAK:
@@ -773,6 +779,7 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
     case ACVP_SYM_CIPH_AADLEN:
         switch (cipher) {
         case ACVP_AES_GCM:
+        case ACVP_AES_GCM_SIV:
         case ACVP_AES_CCM:
         case ACVP_AES_ECB:
         case ACVP_AES_CBC:
@@ -792,13 +799,13 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
         break;
     case ACVP_SYM_CIPH_PTLEN:
         switch(cipher) {
-            case ACVP_AES_GMAC:
-                break;
-            default:
-                if (value >= 0 && value <= 65536) {
-                    retval = ACVP_SUCCESS;
-                }
-                break;
+        case ACVP_AES_GMAC:
+            break;
+        default:
+            if (value >= 0 && value <= 65536) {
+                retval = ACVP_SUCCESS;
+            }
+            break;
          }
         break;
     default:
@@ -811,6 +818,7 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
 static ACVP_RESULT acvp_validate_prereq_val(ACVP_CIPHER cipher, ACVP_PREREQ_ALG pre_req) {
     switch (cipher) {
     case ACVP_AES_GCM:
+    case ACVP_AES_GCM_SIV:
     case ACVP_AES_CCM:
     case ACVP_AES_ECB:
     case ACVP_AES_CFB1:
@@ -1059,6 +1067,7 @@ ACVP_RESULT acvp_cap_sym_cipher_set_parm(ACVP_CTX *ctx,
 
     switch (cipher) {
     case ACVP_AES_GCM:
+    case ACVP_AES_GCM_SIV:
     case ACVP_AES_CCM:
     case ACVP_AES_ECB:
     case ACVP_AES_CBC:
@@ -1226,6 +1235,7 @@ ACVP_RESULT acvp_cap_sym_cipher_enable(ACVP_CTX *ctx,
 
     switch (cipher) {
     case ACVP_AES_GCM:
+    case ACVP_AES_GCM_SIV:
     case ACVP_AES_CCM:
     case ACVP_AES_ECB:
     case ACVP_AES_CBC:

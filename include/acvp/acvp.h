@@ -74,6 +74,7 @@ typedef enum acvp_result ACVP_RESULT;
 typedef enum acvp_cipher {
     ACVP_CIPHER_START = 0,
     ACVP_AES_GCM,
+    ACVP_AES_GCM_SIV,
     ACVP_AES_CCM,
     ACVP_AES_ECB,
     ACVP_AES_CBC,

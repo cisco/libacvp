@@ -92,6 +92,7 @@
 #define ACVP_REV_AES_OFB             ACVP_REVISION_LATEST
 #define ACVP_REV_AES_CTR             ACVP_REVISION_LATEST
 #define ACVP_REV_AES_GCM             ACVP_REVISION_LATEST
+#define ACVP_REV_AES_GCM_SIV         ACVP_REVISION_LATEST
 #define ACVP_REV_AES_CCM             ACVP_REVISION_LATEST
 #define ACVP_REV_AES_XTS             ACVP_REVISION_LATEST
 #define ACVP_REV_AES_KW              ACVP_REVISION_LATEST
@@ -194,6 +195,7 @@
 #define ACVP_ALG_AES_OFB             "ACVP-AES-OFB"
 #define ACVP_ALG_AES_CTR             "ACVP-AES-CTR"
 #define ACVP_ALG_AES_GCM             "ACVP-AES-GCM"
+#define ACVP_ALG_AES_GCM_SIV         "ACVP-AES-GCM-SIV"
 #define ACVP_ALG_AES_CCM             "ACVP-AES-CCM"
 #define ACVP_ALG_AES_XTS             "ACVP-AES-XTS"
 #define ACVP_ALG_AES_KW              "ACVP-AES-KW"
@@ -389,11 +391,13 @@
 #define ACVP_SYM_IV_BIT_MAX 1024                        /**< 1024 bits */
 #define ACVP_SYM_IV_MAX (ACVP_SYM_IV_BIT_MAX >> 2)      /**< 256 characters */
 #define ACVP_SYM_IV_BYTE_MAX (ACVP_SYM_IV_BIT_MAX >> 3) /**< 128 bytes */
+#define ACVP_AES_GCM_SIV_IVLEN 96
 
 #define ACVP_SYM_TAG_BIT_MIN 4                            /**< 128 bits */
 #define ACVP_SYM_TAG_BIT_MAX 128                          /**< 128 bits */
 #define ACVP_SYM_TAG_MAX (ACVP_SYM_TAG_BIT_MAX >> 2)      /**< 32 characters */
 #define ACVP_SYM_TAG_BYTE_MAX (ACVP_SYM_TAG_BIT_MAX >> 3) /**< 16 bytes */
+#define ACVP_AES_GCM_SIV_TAGLEN 128
 
 #define ACVP_SYM_AAD_BIT_MAX 65536                        /**< 65536 bits */
 #define ACVP_SYM_AAD_MAX (ACVP_SYM_AAD_BIT_MAX >> 2)      /**< 16384 characters */
