@@ -15,6 +15,18 @@
 #include "ut_common.h"
 #include "acvp_lcl.h"
 
+/* These need to be defined in the test code somewhere */
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+void FINGERPRINT_premain(void) {
+     return;
+}
+
+int FIPS_get_selftest_completed(int version)
+{
+    return 0;
+}
+#endif
+
 ACVP_CTX *ctx;
 ACVP_TEST_CASE *test_case;
 ACVP_CMAC_TC *cmac_tc;

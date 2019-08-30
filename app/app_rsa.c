@@ -224,7 +224,9 @@ int app_rsa_sig_handler(ACVP_TEST_CASE *test_case) {
         rsa->e = BN_dup(e);
         rsa->n = BN_dup(n);
 #else
-        RSA_set0_key(rsa, n, e, NULL);
+        tmp_e = BN_dup(e);
+        tmp_n = BN_dup(n);
+        RSA_set0_key(rsa, tmp_n, tmp_e, NULL);
 #endif
 
         tc->ver_disposition = FIPS_rsa_verify(rsa, tc->msg, tc->msg_len, (const struct env_md_st *)tc_md, 

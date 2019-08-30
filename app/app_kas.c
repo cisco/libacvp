@@ -282,8 +282,10 @@ int app_kas_ffc_handler(ACVP_TEST_CASE *test_case) {
     int Zlen = 0;
     DH *dh = NULL;
     BIGNUM *p = NULL, *q = NULL, *g = NULL;
+    BIGNUM *tmp_p = NULL, *tmp_q = NULL, *tmp_g = NULL;
     BIGNUM *pub_key = NULL, *priv_key = NULL;
-    BIGNUM *peerkey = NULL;
+    BIGNUM *tmp_pub_key = NULL, *tmp_priv_key = NULL;
+    BIGNUM *peerkey = NULL, *tmp_key = NULL;
 
     tc = test_case->tc.kas_ffc;
 
@@ -337,7 +339,10 @@ int app_kas_ffc_handler(ACVP_TEST_CASE *test_case) {
     dh->q = BN_dup(q);
     dh->g = BN_dup(g);
 #else
-    DH_set0_pqg(dh, p, q, g);
+    tmp_p = BN_dup(p);
+    tmp_q = BN_dup(q);
+    tmp_g = BN_dup(g);
+    DH_set0_pqg(dh, tmp_p, tmp_q, tmp_g);
 #endif
 
     if (tc->test_type == ACVP_KAS_FFC_TT_VAL) {
@@ -359,7 +364,9 @@ int app_kas_ffc_handler(ACVP_TEST_CASE *test_case) {
         dh->pub_key = BN_dup(pub_key);
         dh->priv_key = BN_dup(priv_key);
 #else
-        DH_set0_key(dh, pub_key, priv_key);
+        tmp_pub_key = BN_dup(pub_key);
+        tmp_priv_key = BN_dup(priv_key);
+        DH_set0_key(dh, tmp_pub_key, tmp_priv_key);
 #endif
     }
 
@@ -393,7 +400,8 @@ int app_kas_ffc_handler(ACVP_TEST_CASE *test_case) {
 #if OPENSSL_VERSION_NUMBER <= 0x10100000L
     tc->piutlen = BN_bn2bin(dh->pub_key, tc->piut);
 #else
-    tc->piutlen = BN_bn2bin(pub_key, tc->piut);
+    DH_get0_key(dh, &tmp_key, NULL);
+    tc->piutlen = BN_bn2bin(tmp_key, tc->piut);
 #endif
 
     rv = 0;
