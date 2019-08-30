@@ -736,7 +736,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
         /* TODO: This value is supposed to be included in server JSON, but is not currently.
          * Update when fixed on server end. */
-        if(alg_id == ACVP_AES_GCM_SIV) {
+        if (alg_id == ACVP_AES_GCM_SIV) {
             ivlen = ACVP_AES_GCM_SIV_IVLEN;
         }
         
