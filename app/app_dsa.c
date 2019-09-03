@@ -53,12 +53,12 @@ int app_dsa_handler(ACVP_TEST_CASE *test_case) {
 #if OPENSSL_VERSION_NUMBER >= 0x10100000L
     BIGNUM              *tmp_q = NULL, *tmp_p = NULL, *tmp_g = NULL;
     BIGNUM              *tmp_q2 = NULL, *tmp_p2 = NULL, *tmp_g2 = NULL;
+    BIGNUM *tmp_r = NULL, *tmp_s = NULL;
+    BIGNUM *tmp_priv_key = NULL, *tmp_pub_key = NULL;
 #endif
     BIGNUM              *q2 = NULL, *p2 = NULL, *g2 = NULL;
     BIGNUM *priv_key = NULL, *pub_key = NULL;
-    BIGNUM *tmp_priv_key = NULL, *tmp_pub_key = NULL;
     BIGNUM *sig_r = NULL, *sig_s = NULL;
-    BIGNUM *tmp_r = NULL, *tmp_s = NULL;
 
     tc = test_case->tc.dsa;
     switch (tc->mode) {
@@ -117,10 +117,12 @@ int app_dsa_handler(ACVP_TEST_CASE *test_case) {
 
         tc->x_len = BN_bn2bin(priv_key, tc->x);
         tc->y_len = BN_bn2bin(pub_key, tc->y);
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
         if (tmp_pub_key && tmp_priv_key) {
             FIPS_bn_free(pub_key);
             FIPS_bn_free(priv_key);
         }
+#endif
         break;
 
     case ACVP_DSA_MODE_PQGVER:
@@ -445,10 +447,12 @@ int app_dsa_handler(ACVP_TEST_CASE *test_case) {
 
         tc->r_len = BN_bn2bin(sig_r, tc->r);
         tc->s_len = BN_bn2bin(sig_s, tc->s);
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
         if (tmp_r && tmp_s) {
             FIPS_bn_free(sig_r);
             FIPS_bn_free(sig_s);
         }
+#endif
         FIPS_dsa_sig_free(sig);
         break;
 

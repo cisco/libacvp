@@ -282,10 +282,13 @@ int app_kas_ffc_handler(ACVP_TEST_CASE *test_case) {
     int Zlen = 0;
     DH *dh = NULL;
     BIGNUM *p = NULL, *q = NULL, *g = NULL;
-    BIGNUM *tmp_p = NULL, *tmp_q = NULL, *tmp_g = NULL;
     BIGNUM *pub_key = NULL, *priv_key = NULL;
+    BIGNUM *peerkey = NULL;
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+    BIGNUM *tmp_p = NULL, *tmp_q = NULL, *tmp_g = NULL;
     BIGNUM *tmp_pub_key = NULL, *tmp_priv_key = NULL;
-    BIGNUM *peerkey = NULL, *tmp_key = NULL;
+    const BIGNUM *tmp_key = NULL;
+#endif
 
     tc = test_case->tc.kas_ffc;
 
