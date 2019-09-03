@@ -2059,8 +2059,7 @@ static ACVP_RESULT acvp_process_vsid(ACVP_CTX *ctx, char *vsid_url, int count) {
             /*
              * Wait and try again to retrieve the VectorSet
              */
-            if (acvp_retry_handler(ctx, (unsigned int *)&retry_period, (unsigned int *)&time_waited_so_far, 1)
-                    != ACVP_KAT_DOWNLOAD_RETRY) {
+            if (acvp_retry_handler(ctx, &retry_period, &time_waited_so_far, 1) != ACVP_KAT_DOWNLOAD_RETRY) {
                 ACVP_LOG_STATUS("Maximum wait time with server reached! (Max: %d seconds)", ACVP_MAX_WAIT_TIME);
                 rv = ACVP_TRANSPORT_FAIL;
                 goto end;
@@ -2242,8 +2241,7 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
              * Retry
              */
             ACVP_LOG_STATUS("TestSession results incomplete...");
-            if (acvp_retry_handler(ctx, (unsigned int *)&retry_interval, (unsigned int *)&time_waited_so_far, 2)
-                    != ACVP_KAT_DOWNLOAD_RETRY) {
+            if (acvp_retry_handler(ctx, &retry_interval, &time_waited_so_far, 2) != ACVP_KAT_DOWNLOAD_RETRY) {
                 ACVP_LOG_STATUS("Maximum wait time with server reached! (Max: %d seconds)", ACVP_MAX_WAIT_TIME);
                 rv = ACVP_TRANSPORT_FAIL;
                 goto end;
