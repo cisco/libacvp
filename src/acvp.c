@@ -1911,7 +1911,7 @@ ACVP_RESULT acvp_process_tests(ACVP_CTX *ctx) {
 /*
  * This is a retry handler, which pauses for a specific time.
  * This allows the server time to generate the vectors on behalf of
- * the client and to process the vector responses. This caller of this function
+ * the client and to process the vector responses. The caller of this function
  * can choose to implement a retry backoff using 'modifier'. Additionally, this
  * function will ensure that retry periods will sum to no longer than ACVP_MAX_WAIT_TIME.
  */
@@ -1922,7 +1922,7 @@ static ACVP_RESULT acvp_retry_handler(ACVP_CTX *ctx, unsigned int *retry_period,
         return ACVP_TRANSPORT_FAIL;
     }
     
-    if(*waited_so_far + *retry_period > ACVP_MAX_WAIT_TIME) {
+    if (*waited_so_far + *retry_period > ACVP_MAX_WAIT_TIME) {
         *retry_period = ACVP_MAX_WAIT_TIME - *waited_so_far;
     }
     if (*retry_period <= 0 || *retry_period > ACVP_RETRY_TIME_MAX) {
@@ -1939,11 +1939,11 @@ static ACVP_RESULT acvp_retry_handler(ACVP_CTX *ctx, unsigned int *retry_period,
     #endif
 
     /* ensure that all parameters are valid and that we do not wait longer than ACVP_MAX_WAIT_TIME */
-    if(modifier < 1 || modifier > ACVP_RETRY_MODIFIER_MAX) {
+    if (modifier < 1 || modifier > ACVP_RETRY_MODIFIER_MAX) {
         ACVP_LOG_WARN("retry modifier not valid, defaulting to 1 (no change)");
         modifier = 1;
     }
-    if((*retry_period *= modifier) > ACVP_RETRY_TIME_MAX) {
+    if ((*retry_period *= modifier) > ACVP_RETRY_TIME_MAX) {
         *retry_period = ACVP_RETRY_TIME_MAX;
     }
 
@@ -2059,7 +2059,8 @@ static ACVP_RESULT acvp_process_vsid(ACVP_CTX *ctx, char *vsid_url, int count) {
             /*
              * Wait and try again to retrieve the VectorSet
              */
-            if (acvp_retry_handler(ctx, (unsigned int *)&retry_period, (unsigned int *)&time_waited_so_far, 1) != ACVP_KAT_DOWNLOAD_RETRY) {
+            if (acvp_retry_handler(ctx, (unsigned int *)&retry_period, (unsigned int *)&time_waited_so_far, 1)
+                    != ACVP_KAT_DOWNLOAD_RETRY) {
                 ACVP_LOG_STATUS("Maximum wait time with server reached! (Max: %d seconds)", ACVP_MAX_WAIT_TIME);
                 rv = ACVP_TRANSPORT_FAIL;
                 goto end;
