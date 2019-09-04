@@ -1174,7 +1174,7 @@ ACVP_RESULT acvp_get_results_from_server(ACVP_CTX *ctx, const char *request_file
     }
     
     if (strnlen_s(request_filename, ACVP_JSON_FILENAME_MAX + 1) > ACVP_JSON_FILENAME_MAX) {
-        ACVP_LOG_ERR("Provided rsp_filename length > max(%d)", ACVP_JSON_FILENAME_MAX);
+        ACVP_LOG_ERR("Provided request_filename length > max(%d)", ACVP_JSON_FILENAME_MAX);
         return ACVP_INVALID_ARG;
     }
     
@@ -1216,7 +1216,9 @@ ACVP_RESULT acvp_get_results_from_server(ACVP_CTX *ctx, const char *request_file
         goto end;
     }
     strcpy_s(ctx->jwt_token, ACVP_JWT_TOKEN_MAX + 1, jwt);
+
     rv = acvp_check_test_results(ctx);
+    
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Unable to retrieve test results");
     }

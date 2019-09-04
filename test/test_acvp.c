@@ -782,6 +782,6 @@ Test(PROCESS_TESTS, acvp_get_results_from_server, .init = setup_full_ctx, .fini 
     rv = acvp_get_results_from_server(ctx, "testFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLong");
     cr_assert(rv == ACVP_INVALID_ARG);
 
-    rv = acvp_get_results_from_server(ctx, "noFileHere.json");
+    rv = acvp_get_results_from_server(ctx, "json/getResults.json");
     cr_assert(rv = ACVP_MALFORMED_JSON);
 }
