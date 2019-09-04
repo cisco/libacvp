@@ -34,6 +34,7 @@ typedef struct app_config {
     int vector_rsp;
     int vector_upload;
     int get;
+    int get_results;
     int post;
     int put;
     int kat;
@@ -44,6 +45,7 @@ typedef struct app_config {
     char vector_rsp_file[JSON_FILENAME_LENGTH + 1];
     char vector_upload_file[JSON_FILENAME_LENGTH + 1];
     char get_string[JSON_REQUEST_LENGTH + 1];
+    char get_results_file[JSON_FILENAME_LENGTH + 1];
     char post_filename[JSON_FILENAME_LENGTH + 1];
     char put_filename[JSON_FILENAME_LENGTH + 1];
     char kat_file[JSON_FILENAME_LENGTH + 1];
