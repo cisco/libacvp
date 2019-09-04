@@ -72,9 +72,11 @@ static void print_usage(int err) {
     printf("To process kat vectors from a JSON file use:\n");
     printf("      --kat <file>\n");
     printf("\n");
+    printf("To get the results of a previous test session:\n");
+    printf("      --get_results <file>\n");
+    printf("\n");
     printf("To GET status of request, such as validation or metadata:\n");
     printf("      --get <request string URL including ID>\n");
-    printf("\n");
     printf("\n");
     printf("To POST metadata for vendor, person, etc.:\n");
     printf("      --post <metadata file>\n");
@@ -165,6 +167,7 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
         { "get", ko_required_argument, 406 },
         { "post", ko_required_argument, 407 },
         { "put", ko_required_argument, 408 },
+        { "get_results", ko_required_argument, 409},
         { NULL, 0, 0 }
     };
 
@@ -445,6 +448,24 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
             continue;
         }
 
+        if (c == 409) {
+            int result_filename_len = 0;
+            cfg->get_results = 1;
+
+            result_filename_len = strnlen_s(opt.arg, JSON_FILENAME_LENGTH + 1);
+            if (result_filename_len > JSON_REQUEST_LENGTH) {
+                printf(ANSI_COLOR_RED "Command error... [%s]"ANSI_COLOR_RESET
+                    "\nThe <file> \"%s\", has a name that is too long."
+                    "\nMax allowed <file> name length is (%d).\n",
+                    "--get_results", opt.arg, JSON_FILENAME_LENGTH);
+                print_usage(1);
+                return 1;
+            }
+
+            strcpy_s(cfg->get_results_file, JSON_FILENAME_LENGTH + 1, opt.arg);
+            continue;
+        }
+
         if (c == '?') {
             printf(ANSI_COLOR_RED "unknown option: %s\n"ANSI_COLOR_RESET, *(argv + opt.ind - 1));
             print_usage(1);
@@ -458,7 +479,8 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
     }
 
     /* allopw put, post and get without algs defined */
-    if (cfg->empty_alg && !cfg->post && !cfg->get && !cfg->put) {
+    if (cfg->empty_alg && !cfg->post && !cfg->get && !cfg->put && !cfg->get_results
+                                                            && !cfg->vector_upload) {
         /* The user needs to select at least 1 algorithm */
         printf(ANSI_COLOR_RED "Requires at least 1 Algorithm Test Suite\n"ANSI_COLOR_RESET);
         print_usage(1);

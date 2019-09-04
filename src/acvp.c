@@ -1153,6 +1153,79 @@ end:
     return rv;
 }
 
+/**
+ * Allows application (with proper authentication) to connect to server and get results
+ * of previous test session.
+ */
+ACVP_RESULT acvp_get_results_from_server(ACVP_CTX *ctx, const char *request_filename) {
+    JSON_Value *val = NULL;
+    JSON_Array *reg_array;
+    JSON_Object *obj = NULL;
+    const char *test_session_url = NULL;
+    const char *jwt = NULL;
+    ACVP_RESULT rv = ACVP_SUCCESS;
+
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+    if (!request_filename) {
+        ACVP_LOG_ERR("Must provide value for JSON filename");
+        return ACVP_MISSING_ARG;
+    }
+    
+    if (strnlen_s(request_filename, ACVP_JSON_FILENAME_MAX + 1) > ACVP_JSON_FILENAME_MAX) {
+        ACVP_LOG_ERR("Provided rsp_filename length > max(%d)", ACVP_JSON_FILENAME_MAX);
+        return ACVP_INVALID_ARG;
+    }
+    
+    val = json_parse_file(request_filename);
+    if (!val) {
+        ACVP_LOG_ERR("JSON val parse error");
+        return ACVP_MALFORMED_JSON;
+    }
+    reg_array = json_value_get_array(val);
+    obj = json_array_get_object(reg_array, 0);
+    if (!obj) {
+        ACVP_LOG_ERR("JSON obj parse error");
+        rv = ACVP_MALFORMED_JSON;
+        goto end;
+    }
+
+    test_session_url = json_object_get_string(obj, "url");
+    if (!test_session_url) {
+        ACVP_LOG_ERR("Missing session URL");
+        rv = ACVP_MALFORMED_JSON;
+        goto end;
+    }
+
+    ctx->session_url = calloc(ACVP_ATTR_URL_MAX + 1, sizeof(char));
+    if (!ctx->session_url) {
+        rv = ACVP_MALLOC_FAIL;
+        goto end;
+    }
+    strcpy_s(ctx->session_url, ACVP_ATTR_URL_MAX + 1, test_session_url);
+
+    jwt = json_object_get_string(obj, "jwt");
+    if (!jwt) {
+        rv = ACVP_MALFORMED_JSON;
+        goto end;
+    }
+    ctx->jwt_token = calloc(ACVP_JWT_TOKEN_MAX + 1, sizeof(char));
+    if (!ctx->jwt_token) {
+        rv = ACVP_MALLOC_FAIL;
+        goto end;
+    }
+    strcpy_s(ctx->jwt_token, ACVP_JWT_TOKEN_MAX + 1, jwt);
+    rv = acvp_check_test_results(ctx);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Unable to retrieve test results");
+    }
+    
+end:
+    json_value_free(val);
+    return rv;
+}
+
 /*
  * Allows application to set JSON filename within context
  * to be read in during registration
@@ -2558,6 +2631,11 @@ ACVP_RESULT acvp_run(ACVP_CTX *ctx, int fips_validation) {
         return ACVP_SUCCESS;
     }
 
+    //write session info so if we time out or lose connection waiting for results, we can recheck later on
+    if (!ctx->put) {
+        acvp_write_session_info(ctx);
+    }
+
     /*
      * Check the test results.
      */
@@ -2581,8 +2659,6 @@ ACVP_RESULT acvp_run(ACVP_CTX *ctx, int fips_validation) {
 
    if (ctx->put) {
        rv = acvp_put_data_from_ctx(ctx);
-   } else {
-       rv = acvp_write_session_info(ctx);
    }
 end:
     return rv;
@@ -2710,8 +2786,7 @@ end:
     return rv;
 }
 
-static
-ACVP_RESULT acvp_put_data_from_ctx(ACVP_CTX *ctx) {
+static ACVP_RESULT acvp_put_data_from_ctx(ACVP_CTX *ctx) {
 
     ACVP_RESULT rv = ACVP_SUCCESS;
     JSON_Array *reg_array;
