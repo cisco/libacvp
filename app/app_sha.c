@@ -12,6 +12,9 @@
 
 #include "acvp/acvp.h"
 #include "app_lcl.h"
+#ifdef ACVP_NO_RUNTIME
+# include "app_fips_lcl.h"
+#endif
 
 int app_sha_handler(ACVP_TEST_CASE *test_case) {
     ACVP_HASH_TC    *tc;

@@ -996,6 +996,7 @@ static int enable_hash(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
 #endif
 
+#ifndef ACVP_NO_RUNTIME  /* Waiting for FOM support */
     /* SHA3 and SHAKE */
     rv = acvp_cap_hash_enable(ctx, ACVP_HASH_SHA3_224, &app_sha_handler);
     CHECK_ENABLE_CAP_RV(rv);
@@ -1054,6 +1055,7 @@ static int enable_hash(ACVP_CTX *ctx) {
 #endif
     rv = acvp_cap_hash_set_domain(ctx, ACVP_HASH_SHAKE_256, ACVP_HASH_OUT_LENGTH, 16, 1024, 8);
     CHECK_ENABLE_CAP_RV(rv);
+#endif
 #endif
 
 end:
@@ -2198,12 +2200,6 @@ static int enable_drbg(ACVP_CTX *ctx) {
      * Register DRBG
      */
     ERR_load_crypto_strings();
-
-    int fips_rc = FIPS_mode_set(1);
-    if (!fips_rc) {
-        (printf("Failed to enable FIPS mode.\n"));
-        return 1;
-    }
 
     //ACVP_HASHDRBG
     rv = acvp_cap_drbg_enable(ctx, ACVP_HASHDRBG, &app_drbg_handler);

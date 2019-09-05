@@ -16,6 +16,9 @@
 #include "app_fips_lcl.h" /* All regular OpenSSL headers must come before here */
 #include "app_lcl.h"
 #include "safe_mem_lib.h"
+#ifdef ACVP_NO_RUNTIME
+# include "app_fips_lcl.h"
+#endif
 
 static EC_POINT *make_peer(EC_GROUP *group, BIGNUM *x, BIGNUM *y) {
     EC_POINT *peer = NULL;

@@ -121,6 +121,10 @@ int dsa_builtin_paramgen2(DSA *ret, size_t L, size_t N,
  * These are here so that the app knows about
  * the FOM specific API's being used
  */
+#define M_EVP_CIPHER_CTX_set_flags(ctx,flgs) ((ctx)->flags|=(flgs))
+
+#define EVP_CIPHER_CTX_set_padding(ctx, pad) {}
+
 EVP_CIPHER_CTX *FIPS_cipher_ctx_new(void);
 void FIPS_cipher_ctx_init(EVP_CIPHER_CTX *ctx);
 void FIPS_cipher_ctx_free(EVP_CIPHER_CTX *a);

@@ -13,6 +13,9 @@
 #include "acvp/acvp.h"
 #include "app_lcl.h"
 #include "safe_lib.h"
+#ifdef ACVP_NO_RUNTIME
+# include "app_fips_lcl.h"
+#endif
 
 static EVP_CIPHER_CTX *glb_cipher_ctx = NULL; /* need to maintain across calls for MCT */
 
@@ -25,7 +28,6 @@ int app_des_handler(ACVP_TEST_CASE *test_case) {
     ACVP_SYM_CIPHER_TC      *tc;
     EVP_CIPHER_CTX *cipher_ctx;
     const EVP_CIPHER        *cipher;
-    int ct_len, pt_len;
     unsigned char *iv = 0;
 
     if (!test_case) {
@@ -106,7 +108,7 @@ int app_des_handler(ACVP_TEST_CASE *test_case) {
 #define SYM_IV_BYTE_MAX 128
         if (tc->direction == ACVP_SYM_CIPH_DIR_ENCRYPT) {
             if (tc->mct_index == 0) {
-                EVP_EncryptInit_ex(cipher_ctx, cipher, NULL, tc->key, iv);
+                EVP_CipherInit_ex(cipher_ctx, cipher, NULL, tc->key, iv, 1);
                 EVP_CIPHER_CTX_set_padding(cipher_ctx, 0);
             } else {
                 /* TDES needs the pre-operation IV returned */
@@ -116,13 +118,13 @@ int app_des_handler(ACVP_TEST_CASE *test_case) {
                 EVP_CIPHER_CTX_set_flags(cipher_ctx, EVP_CIPH_FLAG_LENGTH_BITS);
             }
 
-            EVP_EncryptUpdate(cipher_ctx, tc->ct, &ct_len, tc->pt, tc->pt_len);
-            tc->ct_len = ct_len;
+            EVP_Cipher(cipher_ctx, tc->ct, tc->pt, tc->pt_len);
+            tc->ct_len = tc->pt_len;
             /* TDES needs the post-operation IV returned */
             memcpy_s(tc->iv_ret_after, SYM_IV_BYTE_MAX, ctx_iv, 8);
         } else if (tc->direction == ACVP_SYM_CIPH_DIR_DECRYPT) {
             if (tc->mct_index == 0) {
-                EVP_DecryptInit_ex(cipher_ctx, cipher, NULL, tc->key, iv);
+                EVP_CipherInit_ex(cipher_ctx, cipher, NULL, tc->key, iv, 0);
                 EVP_CIPHER_CTX_set_padding(cipher_ctx, 0);
             } else {
                 /* TDES needs the pre-operation IV returned */
@@ -131,8 +133,8 @@ int app_des_handler(ACVP_TEST_CASE *test_case) {
             if (tc->cipher == ACVP_TDES_CFB1) {
                 EVP_CIPHER_CTX_set_flags(cipher_ctx, EVP_CIPH_FLAG_LENGTH_BITS);
             }
-            EVP_DecryptUpdate(cipher_ctx, tc->pt, &pt_len, tc->ct, tc->ct_len);
-            tc->pt_len = pt_len;
+            EVP_Cipher(cipher_ctx, tc->pt, tc->ct, tc->ct_len);
+            tc->pt_len = tc->ct_len;
             /* TDES needs the post-operation IV returned */
             memcpy_s(tc->iv_ret_after, SYM_IV_BYTE_MAX, ctx_iv, 8);
         } else {
@@ -144,25 +146,21 @@ int app_des_handler(ACVP_TEST_CASE *test_case) {
         }
     } else {
         if (tc->direction == ACVP_SYM_CIPH_DIR_ENCRYPT) {
-            EVP_EncryptInit_ex(cipher_ctx, cipher, NULL, tc->key, iv);
+            EVP_CipherInit_ex(cipher_ctx, cipher, NULL, tc->key, iv, 1);
             EVP_CIPHER_CTX_set_padding(cipher_ctx, 0);
             if (tc->cipher == ACVP_TDES_CFB1) {
                 EVP_CIPHER_CTX_set_flags(cipher_ctx, EVP_CIPH_FLAG_LENGTH_BITS);
             }
-            EVP_EncryptUpdate(cipher_ctx, tc->ct, &ct_len, tc->pt, tc->pt_len);
-            tc->ct_len = ct_len;
-            EVP_EncryptFinal_ex(cipher_ctx, tc->ct + ct_len, &ct_len);
-            tc->ct_len += ct_len;
+            EVP_Cipher(cipher_ctx, tc->ct, tc->pt, tc->pt_len);
+            tc->ct_len = tc->pt_len;
         } else if (tc->direction == ACVP_SYM_CIPH_DIR_DECRYPT) {
-            EVP_DecryptInit_ex(cipher_ctx, cipher, NULL, tc->key, iv);
+            EVP_CipherInit_ex(cipher_ctx, cipher, NULL, tc->key, iv, 0);
             EVP_CIPHER_CTX_set_padding(cipher_ctx, 0);
             if (tc->cipher == ACVP_TDES_CFB1) {
                 EVP_CIPHER_CTX_set_flags(cipher_ctx, EVP_CIPH_FLAG_LENGTH_BITS);
             }
-            EVP_DecryptUpdate(cipher_ctx, tc->pt, &pt_len, tc->ct, tc->ct_len);
-            tc->pt_len = pt_len;
-            EVP_DecryptFinal_ex(cipher_ctx, tc->pt + pt_len, &pt_len);
-            tc->pt_len += pt_len;
+            EVP_Cipher(cipher_ctx, tc->pt, tc->ct, tc->ct_len);
+            tc->pt_len = tc->ct_len;
         } else {
             printf("Unsupported direction\n");
             return 1;
