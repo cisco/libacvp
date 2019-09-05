@@ -14,6 +14,9 @@
 #include <openssl/bn.h>
 #include <openssl/kdf.h>
 #include "app_lcl.h"
+#ifdef ACVP_NO_RUNTIME
+# include "app_fips_lcl.h"
+#endif
 
 #define TLS_MD_MASTER_SECRET_CONST              "master secret"
 #define TLS_MD_MASTER_SECRET_CONST_SIZE         13

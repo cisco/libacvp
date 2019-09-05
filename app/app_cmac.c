@@ -14,6 +14,10 @@
 #include "app_lcl.h"
 #include "safe_lib.h"
 
+#ifdef ACVP_NO_RUNTIME
+# include "app_fips_lcl.h"
+#endif
+
 int app_cmac_handler(ACVP_TEST_CASE *test_case) {
     ACVP_CMAC_TC    *tc;
     int rv = 1;
