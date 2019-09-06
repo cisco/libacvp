@@ -20,6 +20,14 @@
 #include "acvp.h"
 #include "acvp_lcl.h"
 #include "safe_lib.h"
+#ifdef WIN32
+#include <Windows.h>
+#include <intrin.h>
+#elif defined __linux__
+#include <cpuid.h>
+#include <sys/utsname.h>
+#endif
+
 
 /*
  * Macros
@@ -27,7 +35,7 @@
 #define HTTP_OK    200
 #define HTTP_UNAUTH    401
 
-#define USER_AGENT_STR_MAX 32
+#define USER_AGENT_STR_MAX 128
 
 #define ACVP_AUTH_BEARER_TITLE_LEN 23
 
@@ -136,6 +144,114 @@ static size_t acvp_curl_write_callback(void *ptr, size_t size, size_t nmemb, voi
     return nmemb;
 }
 
+static void acvp_http_user_agent_handler(ACVP_CTX *ctx, char *agent_string) {
+    snprintf(agent_string, USER_AGENT_STR_MAX, "libacvp/%s;", ACVP_VERSION);
+
+#ifdef __linux__
+    //collects OS name/version
+    struct utsname info;
+    uname(&info);
+    //usually "Linux"
+    strncat_s(agent_string, USER_AGENT_STR_MAX, info.sysname, sizeof(info.sysname));
+    strncat_s(agent_string, USER_AGENT_STR_MAX, "/", 1 );
+    //usually linux kernel version
+    strncat_s(agent_string, USER_AGENT_STR_MAX, info.release, sizeof(info.release));
+    strncat_s(agent_string, USER_AGENT_STR_MAX, ";", 1);
+    //architecture
+    strncat_s(agent_string, USER_AGENT_STR_MAX, info.machine, sizeof(info.machine));
+    strncat_s(agent_string, USER_AGENT_STR_MAX, ";", 1);
+
+#if defined __i386__ || defined __x86_64__
+    //48 byte CPU brand string, obtained via CPUID opcode in x86/amd64 processors
+    unsigned int registers[3];
+    char *brandString = calloc(48, sizeof(char));
+    __get_cpuid(0x80000002, &registers[0], &registers[1], &registers[2], &registers[3]);
+    memcpy_s(brandString, 16, &registers, 16);
+    __get_cpuid(0x80000003, &registers[0], &registers[1], &registers[2], &registers[3]);
+    memcpy_s(brandString + 16, 16, &registers, 16);
+    __get_cpuid(0x80000004, &registers[0], &registers[1], &registers[2], &registers[3]);
+    memcpy_s(brandString + 32, 16, &registers, 16);
+    strncat_s(agent_string, USER_AGENT_STR_MAX, brandString, strnlen_s(brandString, 48));
+    strncat_s(agent_string, USER_AGENT_STR_MAX, ";", 1);
+#else
+    //TODO: Check for user input
+    strncat_s(agent_string, USER_AGENT_STR_MAX, ";", 1);
+#endif
+
+#ifdef __GNUC__
+    strncat_s(agent_string, USER_AGENT_STR_MAX, "GCC/", 4);
+
+    char versionBuffer[4];
+    snprintf(versionBuffer, 4, "%d", __GNUC__);
+    strncat_s(agent_string, USER_AGENT_STR_MAX, versionBuffer, 4);
+#endif
+
+#ifdef __GNUC_MINOR__
+    strncat_s(agent_string, USER_AGENT_STR_MAX, ".", 1);
+    snprintf(versionBuffer, 4, "%d", __GNUC_MINOR__);
+    strncat_s(agent_string, USER_AGENT_STR_MAX, versionBuffer, 4);
+#endif
+
+#ifdef __GNUC_PATCHLEVEL__
+    strncat_s(agent_string, USER_AGENT_STR_MAX, ".", 1);
+    snprintf(versionBuffer, 4, "%d", __GNUC_PATCHLEVEL__);
+    strncat_s(agent_string, USER_AGENT_STR_MAX, versionBuffer, 4);
+#endif
+
+    ACVP_LOG_INFO("%s\n", agent_string);
+#elif defined WIN32
+    SYSTEM_INFO sysInfo = NULL;
+    GetNativeSystemInfo(&sysInfo);
+    if(!sysInfo) {
+        ACVP_LOG_INFO("Unable to access Windows system info, Omitting from HTTP user-agent.");
+    } else {
+        //TODO: get the actual build number and server editions, this is just a worthless placeholder to keep logically organized
+        if(IsWindows10OrGreater()) {
+            strncat_s(agent_string, "Win10:", 6, USER_AGENT_STR_MAX);
+        } else if (ISWindows8OrGreater()) {
+            strncat_s(agent_string, "Win8:", 5, USER_AGENT_STR_MAX);
+        } else if (IsWindows7OrGreater()) {
+            strncat_s(agent_string, "Win7;", 5, USER_AGENT_STR_MAX);
+        } else if (IsWindowsServer()) {
+            strncat_s(agent_string, "WinServer;", 10, USER_AGENT_STR_MAX);
+        }
+
+        switch(sysInfo.wProcessorArchitecture) {
+        case PROCESSOR_ARCHITECTURE_AMD64:
+            break;
+        case PROCESSOR_ARCHITECTURE_INTEL:
+            /* In x86, there is a CPUID opcode, which can access a 48 byte "brand string". More info can
+            be found in the "Intel® 64 and IA-32 Architectures Software Developer’s Manual" - this
+            also applies to most if not all other x86/amd64 processor manufactors */
+            char *brandString = calloc(49, sizeof(char));
+            int* brandString_resp = calloc(4, sizeof(int));
+            __cpuid(brandString_resp, 0x80000002);
+            memcpy_s(brandString, 16, brandString_resp, 16);
+            __cpuid(brandString_resp, 0x80000003);
+            memcpy_s(brandString + 16, 16, brandString_resp, 16);
+            __cpuid(brandString_resp, 0x80000004);
+            memcpy_s(brandString + 32, 16, brandString_resp, 16);
+            free(brandString);
+            free(brandString_resp);
+     
+            break;
+        case PROCESSOR_ARCHITECTURE_ARM64:
+            break;
+        case PROCESSOR_ARCHITECTURE_ARM:
+            break;
+        case PROCESSOR_ARCHITECTURE_PPC:
+            break;
+        case PROCESSOR_ARCHITECTURE_MIPS:
+            break;
+        default:
+            break;
+        }    
+    }
+#elif defined(__APPLE__)
+
+#endif
+}
+
 /*
  * This function uses libcurl to send a simple HTTP GET
  * request with no Content-Type header.
@@ -152,7 +268,7 @@ static long acvp_curl_http_get(ACVP_CTX *ctx, const char *url) {
     long http_code = 0;
     CURL *hnd;
     struct curl_slist *slist;
-    char user_agent_str[USER_AGENT_STR_MAX + 1];
+    char *user_agent_str = calloc(USER_AGENT_STR_MAX + 1, sizeof(char));
 
     slist = NULL;
     /*
@@ -165,7 +281,8 @@ static long acvp_curl_http_get(ACVP_CTX *ctx, const char *url) {
     /*
      * Create the HTTP User Agent value
      */
-    snprintf(user_agent_str, USER_AGENT_STR_MAX, "libacvp/%s", ACVP_VERSION);
+
+    acvp_http_user_agent_handler(ctx, user_agent_str);
 
     /*
      * Setup Curl
@@ -227,7 +344,7 @@ static long acvp_curl_http_get(ACVP_CTX *ctx, const char *url) {
         curl_slist_free_all(slist);
         slist = NULL;
     }
-
+    free(user_agent_str);
     return http_code;
 }
 
@@ -251,7 +368,7 @@ static long acvp_curl_http_post(ACVP_CTX *ctx, const char *url, const char *data
     CURL *hnd;
     CURLcode crv;
     struct curl_slist *slist;
-    char user_agent_str[USER_AGENT_STR_MAX + 1];
+    char *user_agent_str = calloc(USER_AGENT_STR_MAX + 1, sizeof(char));
 
     /*
      * Set the Content-Type header in the HTTP request
@@ -269,7 +386,7 @@ static long acvp_curl_http_post(ACVP_CTX *ctx, const char *url, const char *data
     /*
      * Create the HTTP User Agent value
      */
-    snprintf(user_agent_str, USER_AGENT_STR_MAX, "libacvp/%s", ACVP_VERSION);
+    acvp_http_user_agent_handler(ctx, user_agent_str);
 
     /*
      * Setup Curl
@@ -335,6 +452,7 @@ static long acvp_curl_http_post(ACVP_CTX *ctx, const char *url, const char *data
     curl_slist_free_all(slist);
     slist = NULL;
 
+    free(user_agent_str);
     return http_code;
 }
 
@@ -356,13 +474,13 @@ static long acvp_curl_http_put(ACVP_CTX *ctx, const char *url, const char *data,
     CURL *hnd;
     CURLcode crv;
     struct curl_slist *slist;
-    char user_agent_str[USER_AGENT_STR_MAX + 1];
+    char *user_agent_str = calloc(USER_AGENT_STR_MAX + 1, sizeof(char));
 
     ctx->curl_read_ctr = 0;
     /*
      * Create the HTTP User Agent value
      */
-    snprintf(user_agent_str, USER_AGENT_STR_MAX, "libacvp/%s", ACVP_VERSION);
+    acvp_http_user_agent_handler(ctx, user_agent_str);
 
     /*
      * Set the Content-Type header in the HTTP request
@@ -436,6 +554,7 @@ static long acvp_curl_http_put(ACVP_CTX *ctx, const char *url, const char *data,
     curl_easy_cleanup(hnd);
     curl_slist_free_all(slist);
 
+    free(user_agent_str);
     return http_code;
 }
 
