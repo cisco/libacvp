@@ -690,6 +690,29 @@
 
 #define ACVP_CFB1_BIT_MASK      0x80
 
+
+#define ACVP_USER_AGENT_STR_MAX 255
+/*
+ * Max lengths for different values in the HTTP user-agent string, arbitrarily selected
+ */
+#define ACVP_USER_AGENT_ACVP_STR_MAX 16
+#define ACVP_USER_AGENT_OSNAME_STR_MAX 32
+#define ACVP_USER_AGENT_OSVER_STR_MAX 64
+#define ACVP_USER_AGENT_ARCH_STR_MAX 16
+#define ACVP_USER_AGENT_PROC_STR_MAX 64
+#define ACVP_USER_AGENT_COMP_STR_MAX 32
+
+/*
+ * If library cannot detect hardware or software info for HTTP user-agent string, we can check for them
+ * in environmental variables, which are defined here
+ */
+#define ACVP_USER_AGENT_ENV_NAME_MAX 19 //all values below must have length <= this
+#define ACVP_USER_AGENT_OSNAME_ENV "ACV_OE_OSNAME"
+#define ACVP_USER_AGENT_OSVER_ENV "ACV_OE_OSVERSION"
+#define ACVP_USER_AGENT_ARCH_ENV "ACV_OE_ARCHITECTURE"
+#define ACVP_USER_AGENT_PROC_ENV "ACV_OE_PROCESSOR"
+#define ACVP_USER_AGENT_COMP_ENV "ACV_OE_COMPILER"
+
 typedef struct acvp_alg_handler_t ACVP_ALG_HANDLER;
 
 struct acvp_alg_handler_t {
@@ -1272,6 +1295,8 @@ struct acvp_ctx_t {
     int verify_peer;        /* enables TLS peer verification via Curl */
     char *tls_cert;         /* Location of PEM encoded X509 cert to use for TLS client auth */
     char *tls_key;          /* Location of PEM encoded priv key to use for TLS client auth */
+
+    char *http_user_agent;   /* String containing info to be sent with HTTP requests, currently OE info */
     
     ACVP_OPERATING_ENV op_env; /**< The Operating Environment resources available */
     ACVP_STRING_LIST *vsid_url_list;

@@ -596,6 +596,7 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx) {
     if (ctx->cacerts_file) { free(ctx->cacerts_file); }
     if (ctx->tls_cert) { free(ctx->tls_cert); }
     if (ctx->tls_key) { free(ctx->tls_key); }
+    if (ctx->http_user_agent) { free(ctx->http_user_agent); }
     if (ctx->json_filename) { free(ctx->json_filename); }
     if (ctx->session_url) { free(ctx->session_url); }
     if (ctx->vector_req_file) { free(ctx->vector_req_file); }
