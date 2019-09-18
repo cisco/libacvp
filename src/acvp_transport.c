@@ -326,7 +326,7 @@ static void acvp_http_user_agent_handler(ACVP_CTX *ctx, char *agent_string) {
 #elif defined WIN32
 
     HKEY key;
-    long status = RegOpenKeyExW(HKEY_LOCAL_MACHINE, "Software\\Microsoft\\Windows NT\\CurrentVersion", 0,
+    long status = RegOpenKeyExA(HKEY_LOCAL_MACHINE, "Software\\Microsoft\\Windows NT\\CurrentVersion", 0,
                   KEY_QUERY_VALUE | KEY_WOW64_64KEY, &key);
 
     if (status != ERROR_SUCCESS) {
@@ -335,48 +335,50 @@ static void acvp_http_user_agent_handler(ACVP_CTX *ctx, char *agent_string) {
     } else {
         //product name string, containing general version of windows
         DWORD bufferLength;
-        if (RegQueryValueRxW(key, "ProductName", NULL, NULL, NULL, &bufferLength != ERROR_SUCCESS) {
+        if (RegQueryValueRxW(key, "ProductName", NULL, NULL, NULL, &bufferLength != ERROR_SUCCESS)) {
             acvp_http_user_agent_check_env_for_var(ctx, agent_string, ACVP_USER_AGENT_OSNAME);
         } else {
             //get string - registry strings not garuanteed to be null terminated
-            char productNameBuffer[bufferLength + 1];
-            memset_s(&productNameBuffer, bufferLength + 1, '\0', bufferLength + 1);
-            if (RegQueryValueRxW(key, "ProductName", NULL, NULL, productNameBuffer, &bufferLength) != ERROR_SUCCESS) {
+            char *productNameBuffer = calloc(bufferLength + 1, sizeof(char));
+            memset_s(productNameBuffer, bufferLength + 1, '\0', bufferLength + 1);
+            if (RegQueryValueRxA(key, "ProductName", NULL, NULL, productNameBuffer, &bufferLength) != ERROR_SUCCESS) {
                 ACVP_LOG_INFO("Unable to access Windows version name, omitting from HTTP user-agent\n");
             } else {
                 strncat_s(agent_string, ACVP_USER_AGENT_STR_MAX, productNameBuffer, ACVP_USER_AGENT_OSNAME_STR_MAX);
                 strncat_s(agent_string, ACVP_USER_AGENT_STR_MAX, ";", 1);
             }
+            free(productNameBuffer);
         }
 
         //get the "BuildLab" string, which contains more specific windows build information
-        if (RegQueryValueRxW(key, "BuildLab", NULL, NULL, NULL, &bufferLength != ERROR_SUCCESS) {
+        if (RegQueryValueRxA(key, "BuildLab", NULL, NULL, NULL, &bufferLength != ERROR_SUCCESS)) {
             acvp_http_user_agent_check_env_for_var(ctx, agent_string, ACVP_USER_AGENT_OSVER);
         } else {
             //get string
-            char buildLabBuffer[bufferLength + 1];
-            memset_s(&buildLabBuffer, bufferLength + 1, '\0', bufferLength + 1);
+            char *buildLabBuffer = calloc(bufferLength + 1, sizeof(char));
+            memset_s(buildLabBuffer, bufferLength + 1, '\0', bufferLength + 1);
             if (RegQueryValueRxW(key, "BuildLab", NULL, NULL, buildLabBuffer, &bufferLength) != ERROR_SUCCESS) {
                 ACVP_LOG_WARN("Unable to access Windows version build, omitting from HTTP user-agent\n");
             } else {
                 strncat_s(agent_string, ACVP_USER_AGENT_STR_MAX, buildLabBuffer, ACVP_USER_AGENT_OSNAME_STR_MAX);
                 strncat_s(agent_string, ACVP_USER_AGENT_STR_MAX, ";", 1);
             }
+            free(buildLabBuffer);
         }
     }
 
-    SYSTEM_INFO sysInfo = NULL;
-    GetNativeSystemInfo(&sysInfo);
+    SYSTEM_INFO *sysInfo = NULL;
+    GetNativeSystemInfo(sysInfo);
     if(!sysInfo) {
         acvp_http_user_agent_check_env_for_var(ctx, agent_string, ACVP_USER_AGENT_ARCH);
         acvp_http_user_agent_check_env_for_var(ctx, agent_string, ACVP_USER_AGENT_PROC);
     } else {
-        switch(sysInfo.wProcessorArchitecture) {
+        char brandString[48];
+        int brandString_resp[4];
+        switch(sysInfo->wProcessorArchitecture) {
         case PROCESSOR_ARCHITECTURE_AMD64:
             strncat_s(agent_string, ACVP_USER_AGENT_STR_MAX, "x86_64;", 7);
              //get CPU model string 
-            char brandString[48];
-            int brandString_resp[4];
             __cpuid(brandString_resp, 0x80000002);
             memcpy_s(brandString, 16, &brandString_resp, 16);
             __cpuid(brandString_resp, 0x80000003);
@@ -388,14 +390,12 @@ static void acvp_http_user_agent_handler(ACVP_CTX *ctx, char *agent_string) {
         case PROCESSOR_ARCHITECTURE_INTEL:
             strncat_s(agent_string, ACVP_USER_AGENT_STR_MAX, "x86;", 4);
             //get CPU model string 
-            char brandString[48];
-            int brandString_resp[4];
-            __cpuid(&brandString_resp, 0x80000002);
-            memcpy_s(&brandString, 16, &brandString_resp, 16);
-            __cpuid(&brandString_resp, 0x80000003);
-            memcpy_s(&brandString + 16, 16, &brandString_resp, 16);
-            __cpuid(&brandString_resp, 0x80000004);
-            memcpy_s(&brandString + 32, 16, &brandString_resp, 16);
+            __cpuid(brandString_resp, 0x80000002);
+            memcpy_s(brandString, 16, &brandString_resp, 16);
+            __cpuid(brandString_resp, 0x80000003);
+            memcpy_s(brandString + 16, 16, &brandString_resp, 16);
+            __cpuid(brandString_resp, 0x80000004);
+            memcpy_s(brandString + 32, 16, &brandString_resp, 16);
             strncat_s(agent_string, ACVP_USER_AGENT_STR_MAX, brandString, ACVP_USER_AGENT_PROC_STR_MAX);
             break;
         case PROCESSOR_ARCHITECTURE_ARM64:
