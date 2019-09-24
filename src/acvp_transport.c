@@ -26,7 +26,9 @@
 #include <intrin.h>
 
 #elif defined __linux__
+#if defined __x86_64__ || defined __i386__
 #include <cpuid.h>
+#endif
 #include <sys/utsname.h>
 
 #elif defined __APPLE__
@@ -293,44 +295,32 @@ static void acvp_http_user_agent_handler(ACVP_CTX *ctx, char *agent_string) {
         strncpy_s(arch, ACVP_USER_AGENT_ARCH_STR_MAX + 1, info.machine, ACVP_USER_AGENT_ARCH_STR_MAX);
     }
 
-    //checks if the 'machine' string indicates x86 or x86/64
-    int isX86orX64 = 0;
-    int diff = 1;
-    strncmp_s(info.machine, sizeof(info.machine), "i386", 4, &diff);
-    if (!diff) isX86orX64++;
-    strncmp_s(info.machine, sizeof(info.machine), "i686", 4, &diff);
-    if (!diff) isX86orX64++;
-    strncmp_s(info.machine, sizeof(info.machine), "x86_64", 7, &diff);
-    if (!diff) isX86orX64++;
+#if defined __x86_64__ || defined __i386__
+    /* 48 byte CPU brand string, obtained via CPUID opcode in x86/amd64 processors.
+    The 0x8000000X values are specifically for that opcode.
+    Each __get_cpuid call gets 16 bytes, or 1/3 of the brand string */
+    unsigned int registers[4];
+    char brandString[48];
 
-    //get CPU model
-    if (isX86orX64) {
-        /* 48 byte CPU brand string, obtained via CPUID opcode in x86/amd64 processors.
-        The 0x8000000X values are specifically for that opcode.
-        Each __get_cpuid call gets 16 bytes, or 1/3 of the brand string */
-        unsigned int registers[4];
-        char brandString[48];
-
-        if (!__get_cpuid(0x80000002, &registers[0], &registers[1], &registers[2], &registers[3])) {
-            acvp_http_user_agent_check_env_for_var(ctx, proc, ACVP_USER_AGENT_PROC);
-        } else {
-            memcpy_s(brandString, 16, &registers, 16);
-        }
-        if (!__get_cpuid(0x80000003, &registers[0], &registers[1], &registers[2], &registers[3])) {
-            acvp_http_user_agent_check_env_for_var(ctx, proc, ACVP_USER_AGENT_PROC);
-        } else {
-            memcpy_s(brandString + 16, 16, &registers, 16);
-        }
-        if (!__get_cpuid(0x80000004, &registers[0], &registers[1], &registers[2], &registers[3])) {
-            acvp_http_user_agent_check_env_for_var(ctx, proc, ACVP_USER_AGENT_PROC);
-        } else {
-            memcpy_s(brandString + 32, 16, &registers, 16);
-            strncpy_s(proc, ACVP_USER_AGENT_PROC_STR_MAX + 1, brandString, ACVP_USER_AGENT_PROC_STR_MAX);
-
-        }
-    } else {
+    if (!__get_cpuid(0x80000002, &registers[0], &registers[1], &registers[2], &registers[3])) {
         acvp_http_user_agent_check_env_for_var(ctx, proc, ACVP_USER_AGENT_PROC);
+    } else {
+        memcpy_s(brandString, 16, &registers, 16);
     }
+    if (!__get_cpuid(0x80000003, &registers[0], &registers[1], &registers[2], &registers[3])) {
+        acvp_http_user_agent_check_env_for_var(ctx, proc, ACVP_USER_AGENT_PROC);
+    } else {
+        memcpy_s(brandString + 16, 16, &registers, 16);
+    }
+    if (!__get_cpuid(0x80000004, &registers[0], &registers[1], &registers[2], &registers[3])) {
+        acvp_http_user_agent_check_env_for_var(ctx, proc, ACVP_USER_AGENT_PROC);
+    } else {
+        memcpy_s(brandString + 32, 16, &registers, 16);
+        strncpy_s(proc, ACVP_USER_AGENT_PROC_STR_MAX + 1, brandString, ACVP_USER_AGENT_PROC_STR_MAX);
+    }
+#else
+    acvp_http_user_agent_check_env_for_var(ctx, proc, ACVP_USER_AGENT_PROC);
+#endif
 
     //gets compiler version, or checks environment for it
     acvp_http_user_agent_check_compiler_ver(ctx, comp);
