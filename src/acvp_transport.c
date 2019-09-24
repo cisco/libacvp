@@ -264,6 +264,7 @@ static void acvp_http_user_agent_handler(ACVP_CTX *ctx, char *agent_string) {
         return;
     } else if (strnlen_s(agent_string, 1) > 0) {
         ACVP_LOG_WARN("HTTP user-agent string already contains data, skipping...\n");
+        return;
     }
 
     char *libver = calloc(ACVP_USER_AGENT_ACVP_STR_MAX + 1, sizeof(char));
@@ -370,7 +371,7 @@ static void acvp_http_user_agent_handler(ACVP_CTX *ctx, char *agent_string) {
                 //Windows uses UTF16, and everyone else uses UTF8
                 char *utf8String = calloc(bufferLength + 1, sizeof(char));
                 if (!WideCharToMultiByte(CP_UTF8, 0, buildLabBuffer, -1, utf8String, bufferLength + 1, NULL, NULL)) {
-                    ACVP_LOG_ERR("Error converting Windows build info to UTF8! Checking environment or omitting...");
+                    ACVP_LOG_ERR("Error converting Windows build info to UTF8! Checking environment or omitting from HTTP user-agent...");
                     acvp_http_user_agent_check_env_for_var(ctx, osver, ACVP_USER_AGENT_OSVER);
                 } else {
                     strncpy_s(osver, ACVP_USER_AGENT_OSVER_STR_MAX + 1, utf8String, ACVP_USER_AGENT_OSVER_STR_MAX);

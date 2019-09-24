@@ -710,7 +710,6 @@
  * If library cannot detect hardware or software info for HTTP user-agent string, we can check for them
  * in environmental variables, which are defined here
  */
-#define ACVP_USER_AGENT_ENV_NAME_MAX 19 //all values below must have length <= this
 #define ACVP_USER_AGENT_OSNAME_ENV "ACV_OE_OSNAME"
 #define ACVP_USER_AGENT_OSVER_ENV "ACV_OE_OSVERSION"
 #define ACVP_USER_AGENT_ARCH_ENV "ACV_OE_ARCHITECTURE"
