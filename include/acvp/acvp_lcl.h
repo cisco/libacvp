@@ -692,8 +692,10 @@
 
 
 #define ACVP_USER_AGENT_STR_MAX 255
-//each char in this string cannot exist in the actual values for the user-agent
-#define ACVP_USER_AGENT_DELIMITERS "/;"
+//char cannot exist in any string for http user agent for parsing reasons
+#define ACVP_USER_AGENT_DELIMITER ';'
+#define ACVP_USER_AGENT_CHAR_REPLACEMENT '_';
+
 /*
  * Max lengths for different values in the HTTP user-agent string, arbitrarily selected
  */

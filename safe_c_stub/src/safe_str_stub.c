@@ -588,3 +588,72 @@ strtok_s (char *dest, rsize_t *dmax, const char *src, char **ptr)
     *dmax = dlen;
     return (ptoken);
 }
+
+/*
+ * strremovews_s
+ */
+errno_t strremovews_s (char *s, rsize_t smax) {
+	if (!s) return (ESNULLP);
+	if (smax == 0) return (ESZEROL);
+	
+	    if (smax <= RSIZE_MIN_STR) {
+        *s = '\0';
+        return (EOK);
+    }
+
+    char *orig_s;
+    rsize_t orig_smax;
+    char *new_s;
+
+    orig_s = s;
+    orig_smax = smax;
+    new_s = s;
+
+    while ((*s == ' ') || (*s == '\t')) {
+
+        if (smax == 0) {
+            while (orig_smax) { *orig_s++ = '\0';  orig_smax--; }
+            return (ESUNTERM);
+        }
+        smax--; 
+
+        s++;
+    } 
+
+
+	
+    if (new_s != s) { 
+        while (*s) {
+
+            if (smax == 0) {
+                while (orig_smax) { *orig_s++ = '\0';  orig_smax--; }
+                return (ESUNTERM);
+            }
+            smax--;
+
+            *new_s++ = *s;
+            *s++ = ' '; 
+        } 
+        *new_s = '\0';
+
+    } else { 
+        while (*s) {
+
+            if (smax == 0) {
+                while (orig_smax) { *orig_s++ = '\0';  orig_smax--; };
+                return (ESUNTERM);
+            }
+            smax--;
+
+            s++;
+        }
+    }  
+
+    s--; 
+    while ((*s == ' ') || (*s == '\t') || (*s == '\0')) {
+        *s = '\0'; 
+        s--;
+    } 
+
+    return (EOK);
+}
