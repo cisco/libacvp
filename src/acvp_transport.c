@@ -439,6 +439,10 @@ static void acvp_http_user_agent_handler(ACVP_CTX *ctx, char *agent_string) {
     acvp_http_user_agent_check_compiler_ver(ctx, comp);
 
 #else
+    /*******************************************************
+     * Code for getting OE information on platforms that   *
+     * are not Windows, Linux, or Mac OS can be added here *
+     *******************************************************/
     acvp_http_user_agent_check_env_for_var(ctx, osname, ACVP_USER_AGENT_OSNAME);
     acvp_http_user_agent_check_env_for_var(ctx, osver, ACVP_USER_AGENT_OSVER);
     acvp_http_user_agent_check_env_for_var(ctx, arch, ACVP_USER_AGENT_ARCH);
