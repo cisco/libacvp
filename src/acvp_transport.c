@@ -203,13 +203,12 @@ static void acvp_http_user_agent_check_env_for_var(ACVP_CTX *ctx, char *var_stri
         if (strnlen_s(envVal, maxLength + 1) > maxLength) {
             ACVP_LOG_WARN("Environment-provided %s string too long! (%d char max.) Omitting...\n", var, maxLength);
         } else {
-            strncat_s(var_string, maxLength + 1, envVal, maxLength);
+            strncpy_s(var_string, maxLength + 1, envVal, maxLength);
         }
     } else {
         ACVP_LOG_WARN("Unable to collect info for HTTP user-agent - please define %s (%d char max.)", var, maxLength);
     }
 }
-
 
 static void acvp_http_user_agent_check_compiler_ver(ACVP_CTX *ctx, char *comp_string) {
     char versionBuffer[16];
