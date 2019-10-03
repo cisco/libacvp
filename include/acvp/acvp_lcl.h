@@ -675,7 +675,8 @@
  */
 
 #define ACVP_CURL_BUF_MAX       (1024 * 1024 * 16) /**< 16 MB */
-#define ACVP_RETRY_TIME_MAX     300 /* seconds */
+#define ACVP_RETRY_TIME_MIN     5 /* seconds */
+#define ACVP_RETRY_TIME_MAX     300 
 #define ACVP_MAX_WAIT_TIME      3600
 #define ACVP_RETRY_TIME         30
 #define ACVP_RETRY_MODIFIER_MAX 10

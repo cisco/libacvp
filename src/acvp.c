@@ -2001,7 +2001,7 @@ static ACVP_RESULT acvp_retry_handler(ACVP_CTX *ctx, unsigned int *retry_period,
     if (*waited_so_far + *retry_period > ACVP_MAX_WAIT_TIME) {
         *retry_period = ACVP_MAX_WAIT_TIME - *waited_so_far;
     }
-    if (*retry_period <= 0 || *retry_period > ACVP_RETRY_TIME_MAX) {
+    if (*retry_period <= ACVP_RETRY_TIME_MIN || *retry_period > ACVP_RETRY_TIME_MAX) {
         *retry_period = ACVP_RETRY_TIME_MAX;
         ACVP_LOG_WARN("retry_period not found, using max retry period!");
     }

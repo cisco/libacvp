@@ -273,6 +273,11 @@ static void acvp_http_user_agent_handler(ACVP_CTX *ctx, char *agent_string) {
     char *proc = calloc(ACVP_USER_AGENT_PROC_STR_MAX + 1, sizeof(char));
     char *comp = calloc(ACVP_USER_AGENT_COMP_STR_MAX + 1, sizeof(char));
 
+    if(!libver || !osname || !osver || !arch || !proc || !comp) {
+        ACVP_LOG_ERR("Unable to allocate memory for HTTP user-agent, skipping...\n");
+        goto end;
+    }
+
     snprintf(libver, ACVP_USER_AGENT_ACVP_STR_MAX, "libacvp/%s", ACVP_VERSION);
 
 
@@ -337,47 +342,57 @@ static void acvp_http_user_agent_handler(ACVP_CTX *ctx, char *agent_string) {
         //product name string, containing general version of windows
         DWORD bufferLength;
         if (RegQueryValueExW(key, L"ProductName", NULL, NULL, NULL, &bufferLength) != ERROR_SUCCESS) {
+            ACVP_LOG_WARN("Unable to access Windows OS name, checking environment or omitting from HTTP user-agent...\n");
             acvp_http_user_agent_check_env_for_var(ctx, osname, ACVP_USER_AGENT_OSNAME);
         } else {
             //get string - registry strings not garuanteed to be null terminated
             wchar_t *productNameBuffer = calloc(bufferLength + 1, sizeof(wchar_t));
-            if (RegQueryValueExW(key, L"ProductName", NULL, NULL, productNameBuffer, &bufferLength) != ERROR_SUCCESS) {
-                ACVP_LOG_INFO("Unable to access Windows version name, checking environment or omitting from HTTP user-agent...\n");
+            if (!productNameBuffer) {
+                ACVP_LOG_ERR("Unable to allocate memory while generating windows OS name, skipping...\n");
+            } else if (RegQueryValueExW(key, L"ProductName", NULL, NULL, productNameBuffer, &bufferLength) != ERROR_SUCCESS) {
+                ACVP_LOG_WARN("Unable to access Windows OS name, checking environment or omitting from HTTP user-agent...\n");
+                free(productNameBuffer);
                 acvp_http_user_agent_check_env_for_var(ctx, osname, ACVP_USER_AGENT_OSNAME);
             } else {
                 //Windows uses UTF16, and everyone else uses UTF8
                 char *utf8String = calloc(bufferLength + 1, sizeof(char));
                 if (!WideCharToMultiByte(CP_UTF8, 0, productNameBuffer, -1, utf8String, bufferLength + 1, NULL, NULL)) {
-                    ACVP_LOG_ERR("Error converting Windows version to UTF8! Checking environment or omitting from HTTP user-agent...");
+                    ACVP_LOG_ERR("Error converting Windows version to UTF8, checking environment or omitting from HTTP user-agent...\n");
                     acvp_http_user_agent_check_env_for_var(ctx, osver, ACVP_USER_AGENT_OSVER);
                 } else {
                     strncpy_s(osname, ACVP_USER_AGENT_OSNAME_STR_MAX + 1, utf8String, ACVP_USER_AGENT_OSNAME_STR_MAX);
                 }
                 free(utf8String);
+                free(productNameBuffer);
             }
-            free(productNameBuffer);
+
         }
 
         //get the "BuildLab" string, which contains more specific windows build information
         if (RegQueryValueExW(key, L"BuildLab", NULL, NULL, NULL, &bufferLength) != ERROR_SUCCESS) {
+            ACVP_LOG_WARN("Unable to access Windows version, checking environment or omitting from HTTP user-agent...\n");
             acvp_http_user_agent_check_env_for_var(ctx, osver, ACVP_USER_AGENT_OSVER);
         } else {
             //get string - registry strings not garuanteed to be null terminated
             wchar_t *buildLabBuffer = calloc(bufferLength + 1, sizeof(wchar_t));
-            if (RegQueryValueExW(key, L"BuildLab", NULL, NULL, buildLabBuffer, &bufferLength) != ERROR_SUCCESS) {
-                ACVP_LOG_WARN("Unable to access Windows version build, omitting from HTTP user-agent\n");
+            if (!buildLabBuffer) {
+                ACVP_LOG_ERR("Unable to allocate memory while generating windows OS version, skipping...\n");
+            } else if (RegQueryValueExW(key, L"BuildLab", NULL, NULL, buildLabBuffer, &bufferLength) != ERROR_SUCCESS) {
+                ACVP_LOG_WARN("Unable to access Windows version, checking environment or omitting from HTTP user-agent...\n");
+                acvp_http_user_agent_check_env_for_var(ctx, osver, ACVP_USER_AGENT_OSVER);
+                free(buildLabBuffer);
             } else {
                 //Windows uses UTF16, and everyone else uses UTF8
                 char *utf8String = calloc(bufferLength + 1, sizeof(char));
                 if (!WideCharToMultiByte(CP_UTF8, 0, buildLabBuffer, -1, utf8String, bufferLength + 1, NULL, NULL)) {
-                    ACVP_LOG_ERR("Error converting Windows build info to UTF8! Checking environment or omitting from HTTP user-agent...");
+                    ACVP_LOG_ERR("Error converting Windows build info to UTF8, checking environment or omitting from HTTP user-agent...\n");
                     acvp_http_user_agent_check_env_for_var(ctx, osver, ACVP_USER_AGENT_OSVER);
                 } else {
                     strncpy_s(osver, ACVP_USER_AGENT_OSVER_STR_MAX + 1, utf8String, ACVP_USER_AGENT_OSVER_STR_MAX);
                 }
                 free(utf8String);
+                free(buildLabBuffer);
             }
-            free(buildLabBuffer);
         }
     } 
     
@@ -457,14 +472,15 @@ static void acvp_http_user_agent_handler(ACVP_CTX *ctx, char *agent_string) {
     acvp_http_user_agent_string_clean(comp);
 
     snprintf(agent_string, ACVP_USER_AGENT_STR_MAX, "%s;%s;%s;%s;%s;%s", libver, osname, osver, arch, proc, comp);
+    ACVP_LOG_INFO("HTTP User-Agent: %s\n", agent_string);
 
+end:
     free(libver);
     free(osname);
     free(osver);
     free(arch);
     free(proc);
     free(comp);
-    ACVP_LOG_INFO("HTTP User-Agent: %s\n", agent_string);
 }
 
 /*
