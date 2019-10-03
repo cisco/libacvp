@@ -273,7 +273,7 @@ static void acvp_http_user_agent_handler(ACVP_CTX *ctx, char *agent_string) {
     char *proc = calloc(ACVP_USER_AGENT_PROC_STR_MAX + 1, sizeof(char));
     char *comp = calloc(ACVP_USER_AGENT_COMP_STR_MAX + 1, sizeof(char));
 
-    if(!libver || !osname || !osver || !arch || !proc || !comp) {
+    if (!libver || !osname || !osver || !arch || !proc || !comp) {
         ACVP_LOG_ERR("Unable to allocate memory for HTTP user-agent, skipping...\n");
         goto end;
     }
@@ -513,7 +513,11 @@ static long acvp_curl_http_get(ACVP_CTX *ctx, const char *url) {
      */
     if (!ctx->http_user_agent) {
         ctx->http_user_agent = calloc(ACVP_USER_AGENT_STR_MAX + 1, sizeof(char));
-        acvp_http_user_agent_handler(ctx, ctx->http_user_agent);
+        if (!ctx->http_user_agent) {
+            ACVP_LOG_ERR("Unable to allocate memory for HTTP user-agent, skipping...\n");
+        } else {
+            acvp_http_user_agent_handler(ctx, ctx->http_user_agent);
+        }
     }
 
     /*
@@ -618,7 +622,11 @@ static long acvp_curl_http_post(ACVP_CTX *ctx, const char *url, const char *data
      */
     if (!ctx->http_user_agent) {
         ctx->http_user_agent = calloc(ACVP_USER_AGENT_STR_MAX + 1, sizeof(char));
-        acvp_http_user_agent_handler(ctx, ctx->http_user_agent);
+        if (!ctx->http_user_agent) {
+            ACVP_LOG_ERR("Unable to allocate memory for HTTP user-agent, skipping...\n");
+        } else {
+            acvp_http_user_agent_handler(ctx, ctx->http_user_agent);
+        }
     }
 
 
@@ -716,7 +724,11 @@ static long acvp_curl_http_put(ACVP_CTX *ctx, const char *url, const char *data,
      */
     if (!ctx->http_user_agent) {
         ctx->http_user_agent = calloc(ACVP_USER_AGENT_STR_MAX + 1, sizeof(char));
-        acvp_http_user_agent_handler(ctx, ctx->http_user_agent);
+        if (!ctx->http_user_agent) {
+            ACVP_LOG_ERR("Unable to allocate memory for HTTP user-agent, skipping...\n");
+        } else {
+            acvp_http_user_agent_handler(ctx, ctx->http_user_agent);
+        }
     }
 
 
