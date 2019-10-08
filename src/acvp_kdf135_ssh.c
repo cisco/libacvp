@@ -22,8 +22,7 @@
  */
 static ACVP_RESULT acvp_kdf135_ssh_output_tc(ACVP_CTX *ctx, ACVP_KDF135_SSH_TC *stc, JSON_Object *tc_rsp);
 
-static ACVP_RESULT acvp_kdf135_ssh_init_tc(ACVP_CTX *ctx,
-                                           ACVP_KDF135_SSH_TC *stc,
+static ACVP_RESULT acvp_kdf135_ssh_init_tc(ACVP_KDF135_SSH_TC *stc,
                                            unsigned int tc_id,
                                            ACVP_CIPHER alg_id,
                                            unsigned int sha_type,
@@ -304,7 +303,7 @@ ACVP_RESULT acvp_kdf135_ssh_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
              * Setup the test case data that will be passed down to
              * the crypto module.
              */
-            rv = acvp_kdf135_ssh_init_tc(ctx, &stc, tc_id, alg_id,
+            rv = acvp_kdf135_ssh_init_tc(&stc, tc_id, alg_id,
                                          sha_type, e_key_len, i_key_len, iv_len, hash_len,
                                          shared_secret_str, hash_str, session_id_str);
             if (rv != ACVP_SUCCESS) {
@@ -441,8 +440,7 @@ err:
     return rv;
 }
 
-static ACVP_RESULT acvp_kdf135_ssh_init_tc(ACVP_CTX *ctx,
-                                           ACVP_KDF135_SSH_TC *stc,
+static ACVP_RESULT acvp_kdf135_ssh_init_tc(ACVP_KDF135_SSH_TC *stc,
                                            unsigned int tc_id,
                                            ACVP_CIPHER alg_id,
                                            ACVP_HASH_ALG sha_type,

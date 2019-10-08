@@ -22,7 +22,7 @@
 
 typedef struct acvp_prereqs_mode_name_t {
     ACVP_PREREQ_ALG alg;
-    char *name;
+    const char *name;
 } ACVP_PREREQ_MODE_NAME;
 
 #define ACVP_NUM_PREREQS 10
@@ -43,7 +43,7 @@ static ACVP_RESULT acvp_lookup_prereqVals(JSON_Object *cap_obj, ACVP_CAPS_LIST *
     JSON_Array *prereq_array = NULL;
     ACVP_PREREQ_LIST *prereq_vals, *next_pre_req;
     ACVP_PREREQ_ALG_VAL *pre_req;
-    char *alg_str;
+    const char *alg_str;
     int i = 0;
 
     if (!cap_entry) { return ACVP_INVALID_ARG; }
@@ -521,8 +521,8 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
     return ACVP_SUCCESS;
 }
 
-static char *acvp_lookup_drbg_mode_string(ACVP_DRBG_CAP_MODE *drbg_cap_mode) {
-    char *mode_str = NULL;
+static const char *acvp_lookup_drbg_mode_string(ACVP_DRBG_CAP_MODE *drbg_cap_mode) {
+    const char *mode_str = NULL;
 
     switch (drbg_cap_mode->mode) {
     case ACVP_DRBG_SHA_1:
@@ -575,7 +575,7 @@ static ACVP_RESULT acvp_build_drbg_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
     JSON_Value *val = NULL;
     JSON_Object *capabilities_obj = NULL;
     JSON_Array *capabilities_array = NULL;
-    char *mode_str = NULL;
+    const char *mode_str = NULL;
 
     if (!&cap_entry->cap.drbg_cap) {
         return ACVP_NO_CAP;
@@ -1511,7 +1511,6 @@ static ACVP_RESULT acvp_build_kdf135_ssh_register_cap(JSON_Object *cap_obj, ACVP
 }
 
 static ACVP_RESULT acvp_build_dsa_hashalgs(JSON_Object *cap_obj,
-                                           JSON_Array *temp_arr,
                                            ACVP_DSA_ATTRS *attrs) {
     JSON_Array *sha_arr = NULL;
 
@@ -1608,7 +1607,7 @@ static ACVP_RESULT acvp_build_dsa_pqggen_register(JSON_Array *meth_array,
 
             break;
         }
-        rv = acvp_build_dsa_hashalgs(new_cap_obj, temp_arr, attrs);
+        rv = acvp_build_dsa_hashalgs(new_cap_obj, attrs);
         if (rv != ACVP_SUCCESS) {
             return rv;
         }
@@ -1675,7 +1674,7 @@ static ACVP_RESULT acvp_build_dsa_pqgver_register(JSON_Array *meth_array,
         default:
             break;
         }
-        result = acvp_build_dsa_hashalgs(new_cap_obj, temp_arr, attrs);
+        result = acvp_build_dsa_hashalgs(new_cap_obj, attrs);
         if (result != ACVP_SUCCESS) {
             return result;
         }
@@ -1760,7 +1759,7 @@ static ACVP_RESULT acvp_build_dsa_siggen_register(JSON_Array *meth_array,
         default:
             break;
         }
-        rv = acvp_build_dsa_hashalgs(new_cap_obj, meth_array, attrs);
+        rv = acvp_build_dsa_hashalgs(new_cap_obj, attrs);
         if (rv != ACVP_SUCCESS) {
             return rv;
         }
@@ -1802,7 +1801,7 @@ static ACVP_RESULT acvp_build_dsa_sigver_register(JSON_Array *meth_array,
         default:
             break;
         }
-        rv = acvp_build_dsa_hashalgs(new_cap_obj, meth_array, attrs);
+        rv = acvp_build_dsa_hashalgs(new_cap_obj, attrs);
         if (rv != ACVP_SUCCESS) {
             return rv;
         }
@@ -1886,6 +1885,8 @@ static ACVP_RESULT acvp_build_dsa_register_cap(JSON_Object *cap_obj,
             if (result != ACVP_SUCCESS) { return result; }
         }
         break;
+    default:
+        return ACVP_NO_CAP;
     }
     return ACVP_SUCCESS;
 }
@@ -1895,7 +1896,7 @@ static ACVP_RESULT acvp_lookup_kas_ecc_prereqVals(JSON_Object *cap_obj,
     JSON_Array *prereq_array = NULL;
     ACVP_PREREQ_LIST *prereq_vals, *next_pre_req;
     ACVP_PREREQ_ALG_VAL *pre_req;
-    char *alg_str;
+    const char *alg_str;
     int i;
 
     if (!kas_ecc_mode) { return ACVP_INVALID_ARG; }
@@ -2032,7 +2033,7 @@ static ACVP_RESULT acvp_build_kas_ecc_register_cap(ACVP_CTX *ctx,
             temp_arr = json_object_get_array(cap_obj, "curve");
             current_curve = kas_ecc_mode->curve;
             while (current_curve) {
-                char *curve_str = NULL;
+                const char *curve_str = NULL;
 
                 curve_str = acvp_lookup_ec_curve_name(kas_ecc_cap->cipher,
                                                       current_curve->param);
@@ -2088,7 +2089,7 @@ static ACVP_RESULT acvp_build_kas_ecc_register_cap(ACVP_CTX *ctx,
                 scheme = current_scheme->scheme;
                 current_pset = current_scheme->pset;
                 while (current_pset) {
-                    char *curve_str = NULL;
+                    const char *curve_str = NULL;
 
                     set_val = json_value_init_object();
                     set_obj = json_value_get_object(set_val);
@@ -2223,7 +2224,7 @@ static ACVP_RESULT acvp_lookup_kas_ffc_prereqVals(JSON_Object *cap_obj,
     JSON_Array *prereq_array = NULL;
     ACVP_PREREQ_LIST *prereq_vals, *next_pre_req;
     ACVP_PREREQ_ALG_VAL *pre_req;
-    char *alg_str;
+    const char *alg_str;
     int i;
 
     if (!kas_ffc_mode) { return ACVP_INVALID_ARG; }
@@ -2777,7 +2778,7 @@ ACVP_RESULT acvp_build_validation(ACVP_CTX *ctx,
              * There are some "complete" urls to record.
              */
             JSON_Array *dep_url_array = NULL;
-            int i = 0;
+            unsigned int i = 0;
 
             json_object_set_value(oe_obj, "dependencyUrls", json_value_init_array());
             dep_url_array = json_object_get_array(oe_obj, "dependencyUrls");
@@ -2796,7 +2797,7 @@ ACVP_RESULT acvp_build_validation(ACVP_CTX *ctx,
              * There are some dependencies that we need to create.
              */
             JSON_Array *dep_array = NULL;
-            int i = 0;
+            unsigned int i = 0;
 
             json_object_set_value(oe_obj, "dependencies", json_value_init_array());
             dep_array = json_object_get_array(oe_obj, "dependencies");

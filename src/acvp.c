@@ -31,7 +31,7 @@ static ACVP_RESULT acvp_validate_test_session(ACVP_CTX *ctx);
 
 static ACVP_RESULT fips_metadata_ready(ACVP_CTX *ctx);
 
-static ACVP_RESULT acvp_append_vsid_url(ACVP_CTX *ctx, char *vsid_url);
+static ACVP_RESULT acvp_append_vsid_url(ACVP_CTX *ctx, const char *vsid_url);
 
 static ACVP_RESULT acvp_parse_login(ACVP_CTX *ctx);
 
@@ -892,7 +892,7 @@ ACVP_RESULT acvp_run_vectors_from_file(ACVP_CTX *ctx, const char *req_filename, 
     vect_sets = json_object_get_array(obj, "vectorSetUrls");
     vs_cnt = json_array_get_count(vect_sets);
     for (i = 0; i < vs_cnt; i++) {
-        char *vsid_url = (char*)json_array_get_string(vect_sets, i);
+        const char *vsid_url = json_array_get_string(vect_sets, i);
 
         if (!vsid_url) {
             ACVP_LOG_WARN("No vsId URL, results will not be POSTed to server");
@@ -1052,7 +1052,7 @@ ACVP_RESULT acvp_upload_vectors_from_file(ACVP_CTX *ctx, const char *rsp_filenam
     vect_sets = json_object_get_array(obj, "vectorSetUrls");
     vs_cnt = json_array_get_count(vect_sets);
     for (i = 0; i < vs_cnt; i++) {
-        char *vsid_url = (char*)json_array_get_string(vect_sets, i);
+        const char *vsid_url = json_array_get_string(vect_sets, i);
 
         if (!vsid_url) {
             ACVP_LOG_ERR("No vsId URL, results will not be POSTed to server");
@@ -1262,7 +1262,7 @@ ACVP_RESULT acvp_set_json_filename(ACVP_CTX *ctx, const char *json_filename) {
  * This function is used by the application to specify the
  * ACVP server address and TCP port#.
  */
-ACVP_RESULT acvp_set_server(ACVP_CTX *ctx, char *server_name, int port) {
+ACVP_RESULT acvp_set_server(ACVP_CTX *ctx, const char *server_name, int port) {
     if (!ctx) {
         return ACVP_NO_CTX;
     }
@@ -1291,7 +1291,7 @@ ACVP_RESULT acvp_set_server(ACVP_CTX *ctx, char *server_name, int port) {
  * This function is used by the application to specify the
  * ACVP server URI path segment prefix.
  */
-ACVP_RESULT acvp_set_path_segment(ACVP_CTX *ctx, char *path_segment) {
+ACVP_RESULT acvp_set_path_segment(ACVP_CTX *ctx, const char *path_segment) {
     if (!ctx) {
         return ACVP_NO_CTX;
     }
@@ -1316,7 +1316,7 @@ ACVP_RESULT acvp_set_path_segment(ACVP_CTX *ctx, char *path_segment) {
  * This function is used by the application to specify the
  * ACVP server URI path segment prefix.
  */
-ACVP_RESULT acvp_set_api_context(ACVP_CTX *ctx, char *api_context) {
+ACVP_RESULT acvp_set_api_context(ACVP_CTX *ctx, const char *api_context) {
     if (!ctx) {
         return ACVP_NO_CTX;
     }
@@ -1345,7 +1345,7 @@ ACVP_RESULT acvp_set_api_context(ACVP_CTX *ctx, char *api_context) {
  * enabled, which is not recommended (but provided as an operational
  * mode for testing).
  */
-ACVP_RESULT acvp_set_cacerts(ACVP_CTX *ctx, char *ca_file) {
+ACVP_RESULT acvp_set_cacerts(ACVP_CTX *ctx, const char *ca_file) {
     if (!ctx) {
         return ACVP_NO_CTX;
     }
@@ -1625,7 +1625,7 @@ end:
  * Append a VS identifier to the list of VS identifiers
  * that will need to be downloaded and processed later.
  */
-static ACVP_RESULT acvp_append_vsid_url(ACVP_CTX *ctx, char *vsid_url) {
+static ACVP_RESULT acvp_append_vsid_url(ACVP_CTX *ctx, const char *vsid_url) {
     ACVP_STRING_LIST *vs_entry, *vs_e2;
 
 
@@ -1926,7 +1926,7 @@ static ACVP_RESULT acvp_parse_test_session_register(ACVP_CTX *ctx) {
     vect_sets = json_object_get_array(obj, "vectorSetUrls");
     vs_cnt = json_array_get_count(vect_sets);
     for (i = 0; i < vs_cnt; i++) {
-        char *vsid_url = (char*)json_array_get_string(vect_sets, i);
+        const char *vsid_url = json_array_get_string(vect_sets, i);
 
         if (!vsid_url) {
             ACVP_LOG_ERR("No vsid_url");
@@ -2351,7 +2351,7 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
             }
             strcmp_s("fail", 4, status, &diff);
             if (!diff) {
-                char *vs_url = (char *)json_object_get_string(current, "vectorSetUrl");
+                const char *vs_url = json_object_get_string(current, "vectorSetUrl");
                 if (!vs_url) {
                     ACVP_LOG_ERR("No vector set URL");
                     goto end;
@@ -2666,11 +2666,11 @@ end:
     return rv;
 }
 
-char *acvp_version(void) {
+const char *acvp_version(void) {
     return ACVP_LIBRARY_VERSION;
 }
 
-char *acvp_protocol_version(void) {
+const char *acvp_protocol_version(void) {
     return ACVP_VERSION;
 }
 

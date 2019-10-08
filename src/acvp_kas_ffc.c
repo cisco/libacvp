@@ -72,7 +72,6 @@ end:
 
 static ACVP_RESULT acvp_kas_ffc_init_comp_tc(ACVP_CTX *ctx,
                                              ACVP_KAS_FFC_TC *stc,
-                                             unsigned int tc_id,
                                              ACVP_HASH_ALG hash_alg,
                                              const char *p,
                                              const char *q,
@@ -198,7 +197,7 @@ static ACVP_RESULT acvp_kas_ffc_comp(ACVP_CTX *ctx,
     JSON_Object *r_tobj = NULL, *r_gobj = NULL; /* Response testobj, groupobj */
     const char *hash_str = NULL;
     ACVP_HASH_ALG hash_alg = 0;
-    char *p = NULL, *q = NULL, *g = NULL;
+    const char *p = NULL, *q = NULL, *g = NULL;
     unsigned int i, g_cnt;
     int j, t_cnt, tc_id;
     ACVP_RESULT rv;
@@ -257,7 +256,7 @@ static ACVP_RESULT acvp_kas_ffc_comp(ACVP_CTX *ctx,
             goto err;
         }
 
-        p = (char *)json_object_get_string(groupobj, "p");
+        p = json_object_get_string(groupobj, "p");
         if (!p) {
             ACVP_LOG_ERR("Server JSON missing 'p'");
             rv = ACVP_MISSING_ARG;
@@ -270,7 +269,7 @@ static ACVP_RESULT acvp_kas_ffc_comp(ACVP_CTX *ctx,
             goto err;
         }
 
-        q = (char *)json_object_get_string(groupobj, "q");
+        q = json_object_get_string(groupobj, "q");
         if (!q) {
             ACVP_LOG_ERR("Server JSON missing 'q'");
             rv = ACVP_MISSING_ARG;
@@ -283,7 +282,7 @@ static ACVP_RESULT acvp_kas_ffc_comp(ACVP_CTX *ctx,
             goto err;
         }
 
-        g = (char *)json_object_get_string(groupobj, "g");
+        g = json_object_get_string(groupobj, "g");
         if (!g) {
             ACVP_LOG_ERR("Server JSON missing 'g'");
             rv = ACVP_MISSING_ARG;
@@ -391,7 +390,7 @@ static ACVP_RESULT acvp_kas_ffc_comp(ACVP_CTX *ctx,
              * Setup the test case data that will be passed down to
              * the crypto module.
              */
-            rv = acvp_kas_ffc_init_comp_tc(ctx, stc, tc_id, hash_alg,
+            rv = acvp_kas_ffc_init_comp_tc(ctx, stc, hash_alg,
                                            p, q, g, eps, epri, epui, z, test_type);
             if (rv != ACVP_SUCCESS) {
                 acvp_kas_ffc_release_tc(stc);

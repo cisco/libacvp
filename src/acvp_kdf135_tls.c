@@ -209,8 +209,8 @@ ACVP_RESULT acvp_kdf135_tls_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         ACVP_LOG_INFO("    Test group: %d", i);
         ACVP_LOG_INFO("            pmLen: %d", pm_len);
         ACVP_LOG_INFO("            kbLen: %d", kb_len);
-        ACVP_LOG_INFO("           method: %d", method);
-        ACVP_LOG_INFO("              sha: %d", sha);
+        ACVP_LOG_INFO("           method: %s", method);
+        ACVP_LOG_INFO("              sha: %s", sha);
 
         tests = json_object_get_array(groupobj, "tests");
         t_cnt = json_array_get_count(tests);
@@ -229,7 +229,7 @@ ACVP_RESULT acvp_kdf135_tls_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             }
             if (strnlen_s(pm_secret, pm_len) != pm_len / 4) {
                 ACVP_LOG_ERR("pmLen(%d) or pmSecret length(%d) incorrect",
-                             pm_len / 4, strnlen_s(pm_secret, ACVP_KDF135_TLS_PMSECRET_STR_MAX));
+                             pm_len / 4, (int)strnlen_s(pm_secret, ACVP_KDF135_TLS_PMSECRET_STR_MAX));
                 rv = ACVP_INVALID_ARG;
                 goto err;
             }

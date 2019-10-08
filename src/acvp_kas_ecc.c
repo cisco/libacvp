@@ -140,7 +140,6 @@ end:
 
 static ACVP_RESULT acvp_kas_ecc_init_cdh_tc(ACVP_CTX *ctx,
                                             ACVP_KAS_ECC_TC *stc,
-                                            unsigned int tc_id,
                                             ACVP_KAS_ECC_TEST_TYPE test_type,
                                             ACVP_EC_CURVE curve,
                                             const char *psx,
@@ -184,7 +183,6 @@ static ACVP_RESULT acvp_kas_ecc_init_cdh_tc(ACVP_CTX *ctx,
 
 static ACVP_RESULT acvp_kas_ecc_init_comp_tc(ACVP_CTX *ctx,
                                              ACVP_KAS_ECC_TC *stc,
-                                             unsigned int tc_id,
                                              ACVP_KAS_ECC_TEST_TYPE test_type,
                                              ACVP_EC_CURVE curve,
                                              ACVP_HASH_ALG hash,
@@ -422,7 +420,7 @@ static ACVP_RESULT acvp_kas_ecc_cdh(ACVP_CTX *ctx,
              * Setup the test case data that will be passed down to
              * the crypto module.
              */
-            rv = acvp_kas_ecc_init_cdh_tc(ctx, stc, tc_id, test_type,
+            rv = acvp_kas_ecc_init_cdh_tc(ctx, stc, test_type,
                                           curve, psx, psy);
             if (rv != ACVP_SUCCESS) {
                 acvp_kas_ecc_release_tc(stc);
@@ -686,7 +684,7 @@ static ACVP_RESULT acvp_kas_ecc_comp(ACVP_CTX *ctx,
              * Setup the test case data that will be passed down to
              * the crypto module.
              */
-            rv = acvp_kas_ecc_init_comp_tc(ctx, stc, tc_id, test_type,
+            rv = acvp_kas_ecc_init_comp_tc(ctx, stc, test_type,
                                            curve, hash, psx, psy,
                                            d, pix, piy, z);
             if (rv != ACVP_SUCCESS) {

@@ -26,7 +26,7 @@ static ACVP_RESULT acvp_kdf135_snmp_init_tc(ACVP_CTX *ctx,
                                             ACVP_KDF135_SNMP_TC *stc,
                                             unsigned int tc_id,
                                             ACVP_CIPHER alg_id,
-                                            char *engine_id,
+                                            const char *engine_id,
                                             const char *password,
                                             unsigned int p_len);
 
@@ -62,7 +62,7 @@ ACVP_RESULT acvp_kdf135_snmp_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     const char *mode_str = NULL;
     ACVP_CIPHER alg_id;
     const char *password = NULL;
-    char *engine_id = NULL;
+    const char *engine_id = NULL;
     unsigned int p_len;
     char *json_result;
 
@@ -155,7 +155,7 @@ ACVP_RESULT acvp_kdf135_snmp_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             goto err;
         }
 
-        engine_id = (char *)json_object_get_string(groupobj, "engineId");
+        engine_id = json_object_get_string(groupobj, "engineId");
         if (!engine_id) {
             ACVP_LOG_ERR("Failed to include engineId. ");
             rv = ACVP_MISSING_ARG;
@@ -198,7 +198,7 @@ ACVP_RESULT acvp_kdf135_snmp_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 rv = ACVP_MISSING_ARG;
                 goto err;
             }
-            int actual_len = strnlen_s(password, ACVP_KDF135_SNMP_PASS_LEN_MAX);
+            unsigned int actual_len = strnlen_s(password, ACVP_KDF135_SNMP_PASS_LEN_MAX);
             if (actual_len != p_len) {
                 ACVP_LOG_ERR("pLen(%d) or password length(%d) incorrect", p_len, actual_len);
                 rv = ACVP_INVALID_ARG;
@@ -304,7 +304,7 @@ static ACVP_RESULT acvp_kdf135_snmp_init_tc(ACVP_CTX *ctx,
                                             ACVP_KDF135_SNMP_TC *stc,
                                             unsigned int tc_id,
                                             ACVP_CIPHER alg_id,
-                                            char *engine_id,
+                                            const char *engine_id,
                                             const char *password,
                                             unsigned int p_len) {
     ACVP_RESULT rv;

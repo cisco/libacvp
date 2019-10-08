@@ -83,12 +83,12 @@ static ACVP_RESULT acvp_kdf135_ikev2_init_tc(ACVP_CTX *ctx,
                                              int resp_nonce_len,
                                              int dh_secret_len,
                                              int keying_material_len,
-                                             char *init_nonce,
-                                             char *resp_nonce,
-                                             char *init_spi,
-                                             char *resp_spi,
-                                             char *gir,
-                                             char *gir_new) {
+                                             const char *init_nonce,
+                                             const char *resp_nonce,
+                                             const char *init_spi,
+                                             const char *resp_spi,
+                                             const char *gir,
+                                             const char *gir_new) {
     ACVP_RESULT rv = ACVP_SUCCESS;
 
     memzero_s(stc, sizeof(ACVP_KDF135_IKEV2_TC));
@@ -228,9 +228,10 @@ ACVP_RESULT acvp_kdf135_ikev2_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
     ACVP_HASH_ALG hash_alg;
     const char *hash_alg_str = NULL;
-    char *init_nonce = NULL, *resp_nonce = NULL, *init_spi = NULL;
-    char *resp_spi = NULL, *gir = NULL, *gir_new = NULL;
-    int init_nonce_len = 0, resp_nonce_len = 0, dh_secret_len = 0, keying_material_len = 0;
+    const char *init_nonce = NULL, *resp_nonce = NULL, *init_spi = NULL;
+    const char *resp_spi = NULL, *gir = NULL, *gir_new = NULL;
+    unsigned int init_nonce_len = 0, resp_nonce_len = 0;
+    int  dh_secret_len = 0, keying_material_len = 0;
 
     if (!ctx) {
         ACVP_LOG_ERR("No ctx for handler operation");
@@ -371,7 +372,7 @@ ACVP_RESULT acvp_kdf135_ikev2_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
             tc_id = (unsigned int)json_object_get_number(testobj, "tcId");
 
-            init_nonce = (char *)json_object_get_string(testobj, "nInit");
+            init_nonce = json_object_get_string(testobj, "nInit");
             if (!init_nonce) {
                 ACVP_LOG_ERR("Failed to include nInit");
                 rv = ACVP_MISSING_ARG;
@@ -379,13 +380,13 @@ ACVP_RESULT acvp_kdf135_ikev2_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             }
             if (strnlen_s(init_nonce, init_nonce_len) != init_nonce_len / 4) {
                 ACVP_LOG_ERR("nInit length(%d) incorrect, expected(%d)",
-                             strnlen_s((char *)init_nonce, ACVP_KDF135_IKEV2_INIT_NONCE_STR_MAX),
+                             (int)strnlen_s(init_nonce, ACVP_KDF135_IKEV2_INIT_NONCE_STR_MAX),
                              init_nonce_len / 4);
                 rv = ACVP_INVALID_ARG;
                 goto err;
             }
 
-            resp_nonce = (char *)json_object_get_string(testobj, "nResp");
+            resp_nonce = json_object_get_string(testobj, "nResp");
             if (!resp_nonce) {
                 ACVP_LOG_ERR("Failed to include nResp");
                 rv = ACVP_MISSING_ARG;
@@ -393,13 +394,13 @@ ACVP_RESULT acvp_kdf135_ikev2_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             }
             if (strnlen_s(resp_nonce, resp_nonce_len) != resp_nonce_len / 4) {
                 ACVP_LOG_ERR("nResp length(%d) incorrect, expected(%d)",
-                             strnlen_s((char *)resp_nonce, ACVP_KDF135_IKEV2_RESP_NONCE_STR_MAX),
+                             (int)strnlen_s(resp_nonce, ACVP_KDF135_IKEV2_RESP_NONCE_STR_MAX),
                              resp_nonce_len / 4);
                 rv = ACVP_INVALID_ARG;
                 goto err;
             }
 
-            init_spi = (char *)json_object_get_string(testobj, "spiInit");
+            init_spi = json_object_get_string(testobj, "spiInit");
             if (!init_spi) {
                 ACVP_LOG_ERR("Failed to include spiInit");
                 rv = ACVP_MISSING_ARG;
@@ -413,7 +414,7 @@ ACVP_RESULT acvp_kdf135_ikev2_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            resp_spi = (char *)json_object_get_string(testobj, "spiResp");
+            resp_spi = json_object_get_string(testobj, "spiResp");
             if (!resp_spi) {
                 ACVP_LOG_ERR("Failed to include spiResp");
                 rv = ACVP_MISSING_ARG;
@@ -427,7 +428,7 @@ ACVP_RESULT acvp_kdf135_ikev2_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            gir = (char *)json_object_get_string(testobj, "gir");
+            gir = json_object_get_string(testobj, "gir");
             if (!gir) {
                 ACVP_LOG_ERR("Failed to include gir");
                 rv = ACVP_MISSING_ARG;
@@ -441,7 +442,7 @@ ACVP_RESULT acvp_kdf135_ikev2_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            gir_new = (char *)json_object_get_string(testobj, "girNew");
+            gir_new = json_object_get_string(testobj, "girNew");
             if (!gir_new) {
                 ACVP_LOG_ERR("Failed to include girNew");
                 rv = ACVP_MISSING_ARG;

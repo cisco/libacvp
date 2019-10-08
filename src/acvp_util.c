@@ -109,7 +109,7 @@ ACVP_CAPS_LIST *acvp_locate_cap_entry(ACVP_CTX *ctx, ACVP_CIPHER cipher) {
  * IMPORTANT: If using an asymmetric cipher with a mode,
  * note that this API only returns the alg string
  */
-char *acvp_lookup_cipher_name(ACVP_CIPHER alg) {
+const char *acvp_lookup_cipher_name(ACVP_CIPHER alg) {
     int i;
 
     for (i = 0; i < ACVP_ALG_MAX; i++) {
@@ -224,7 +224,7 @@ ACVP_CIPHER acvp_lookup_cipher_w_mode_index(const char *algorithm,
  * This method returns the string that corresponds to a randPQ
  * index value
  */
-char *acvp_lookup_rsa_randpq_name(int value) {
+const char *acvp_lookup_rsa_randpq_name(int value) {
     switch (value) {
     case ACVP_RSA_KEYGEN_B32:
         return "B.3.2"; // "provRP"
@@ -368,7 +368,7 @@ ACVP_HASH_ALG acvp_lookup_hash_alg(const char *name) {
  * @return char*
  * @return NULL - fail
  */
-char *acvp_lookup_hash_alg_name(ACVP_HASH_ALG id) {
+const char *acvp_lookup_hash_alg_name(ACVP_HASH_ALG id) {
     int i = 0;
 
     if (!id) return NULL;
@@ -382,7 +382,7 @@ char *acvp_lookup_hash_alg_name(ACVP_HASH_ALG id) {
     return NULL;
 }
 
-char *acvp_lookup_rsa_prime_test_name(ACVP_RSA_PRIME_TEST_TYPE type) {
+const char *acvp_lookup_rsa_prime_test_name(ACVP_RSA_PRIME_TEST_TYPE type) {
     switch (type) {
     case ACVP_RSA_PRIME_TEST_TBLC2:
         return ACVP_RSA_PRIME_TEST_TBLC2_STR;
@@ -396,7 +396,7 @@ char *acvp_lookup_rsa_prime_test_name(ACVP_RSA_PRIME_TEST_TYPE type) {
 }
 
 /* This function checks to see if the value is a valid prime test (RSA) */
-ACVP_RESULT is_valid_prime_test(char *value) {
+ACVP_RESULT is_valid_prime_test(const char *value) {
     int diff = 0;
 
     if (!value) { return ACVP_INVALID_ARG; }
@@ -452,7 +452,7 @@ static struct acvp_ec_curve_info ec_curve_depr_tbl[] = {
 static int ec_curve_depr_tbl_length =
     sizeof(ec_curve_depr_tbl) / sizeof(struct acvp_ec_curve_info);
 
-char *acvp_lookup_ec_curve_name(ACVP_CIPHER cipher, ACVP_EC_CURVE id) {
+const char *acvp_lookup_ec_curve_name(ACVP_CIPHER cipher, ACVP_EC_CURVE id) {
     int i = 0;
 
     for (i = 0; i < ec_curve_tbl_length; i++) {
@@ -553,7 +553,7 @@ ACVP_RESULT acvp_hexstr_to_bin(const char *src, unsigned char *dest, int dest_ma
         return ACVP_INVALID_ARG;
     }
 
-    src_len = strnlen_s((char *)src, ACVP_HEXSTR_MAX);
+    src_len = strnlen_s(src, ACVP_HEXSTR_MAX);
 
     /*
      * Make sure the hex value isn't too large
@@ -674,7 +674,7 @@ ACVP_RESULT acvp_create_array(JSON_Object **obj, JSON_Value **val, JSON_Array **
  * This function returns a string that describes the error
  * code passed in.
  */
-char *acvp_lookup_error_string(ACVP_RESULT rv) {
+const char *acvp_lookup_error_string(ACVP_RESULT rv) {
     int i;
     struct acvp_result_desc_t error_desc_tbl[ACVP_RESULT_MAX - 1] = {
         { ACVP_MALLOC_FAIL,        "Error allocating memory"                          },
@@ -788,15 +788,15 @@ ACVP_RESULT acvp_setup_json_rsp_group(ACVP_CTX **ctx,
     return ACVP_SUCCESS;
 }
 
-static char *acvp_get_version_from_rsp(JSON_Value *arry_val) {
-    char *version = NULL;
+static const char *acvp_get_version_from_rsp(JSON_Value *arry_val) {
+    const char *version = NULL;
     JSON_Object *ver_obj = NULL;
 
     JSON_Array *reg_array;
 
     reg_array = json_value_get_array(arry_val);
     ver_obj = json_array_get_object(reg_array, 0);
-    version = (char *)json_object_get_string(ver_obj, "acvVersion");
+    version = json_object_get_string(ver_obj, "acvVersion");
     if (version == NULL) {
         return NULL;
     }
@@ -807,7 +807,7 @@ static char *acvp_get_version_from_rsp(JSON_Value *arry_val) {
 JSON_Object *acvp_get_obj_from_rsp(ACVP_CTX *ctx, JSON_Value *arry_val) {
     JSON_Object *obj = NULL;
     JSON_Array *reg_array;
-    char *ver = NULL;
+    const char *ver = NULL;
 
     if (!ctx || !arry_val) {
         ACVP_LOG_ERR("Missing arguments");
