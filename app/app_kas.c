@@ -51,7 +51,7 @@ end:
     return peer;
 }
 
-static int ec_print_key(ACVP_KAS_ECC_TC *tc, EC_KEY *key, int add_e, int exout) {
+static int ec_print_key(ACVP_KAS_ECC_TC *tc, EC_KEY *key) {
     const EC_POINT *pt;
     const EC_GROUP *grp;
     const EC_METHOD *meth;
@@ -96,7 +96,7 @@ static int ec_print_key(ACVP_KAS_ECC_TC *tc, EC_KEY *key, int add_e, int exout) 
 int app_kas_ecc_handler(ACVP_TEST_CASE *test_case) {
     EC_GROUP *group = NULL;
     ACVP_KAS_ECC_TC         *tc;
-    int nid = 0, exout = 0;
+    int nid = 0;
     EC_KEY *ec = NULL;
     EC_POINT *peerkey = NULL;
     unsigned char *Z = NULL;
@@ -233,8 +233,7 @@ int app_kas_ecc_handler(ACVP_TEST_CASE *test_case) {
         }
     }
 
-    exout = md ? 1 : 0;
-    ec_print_key(tc, ec, md ? 1 : 0, exout);
+    ec_print_key(tc, ec);
     Zlen = (EC_GROUP_get_degree(group) + 7) / 8;
     if (!Zlen) {
         printf("Zlen degree failure\n");

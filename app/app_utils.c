@@ -92,6 +92,9 @@ base64_decode(const char *in, unsigned int inlen, unsigned char *out) {
             continue;
         case 3:
             out[j++] += (unsigned char)c;
+            continue;;
+        default:
+            return 0;
         }
     }
 
@@ -144,7 +147,6 @@ static ACVP_RESULT totp(char **token, int token_max) {
     char hash[MAX_LEN] = {0};
     int os, bin, otp;
     int md_len;
-    char format[5];
     time_t t;
     unsigned char token_buff[T_LEN + 1] = {0};
     char *new_seed = NULL;
@@ -201,10 +203,12 @@ static ACVP_RESULT totp(char **token, int token_max) {
 
     otp = bin % DIGITS_POWER[ACVP_TOTP_LENGTH];
 
-    // generate format string like "%06d" to fix digits using 0
-    sprintf(format, "%c0%ldd", '%', (long int)ACVP_TOTP_LENGTH);
-
-    sprintf((char *)token_buff, format, otp);
+    /* If we ever change the size then it will fail hard here */
+    if (ACVP_TOTP_LENGTH != 8) {
+        return ACVP_TOTP_DECODE_FAIL;
+    }
+    // generate format string like "%08d" to fix digits using 0
+    sprintf((char *)token_buff, "%08d", otp);
     memcpy_s((char *)*token, token_max, token_buff, ACVP_TOTP_LENGTH);
     free(new_seed);
     return ACVP_SUCCESS;

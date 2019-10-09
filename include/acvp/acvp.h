@@ -833,8 +833,8 @@ typedef struct acvp_kdf135_srtp_tc_t {
     int aes_keylen;
     char *master_key;
     char *master_salt;
-    char *index;
-    char *srtcp_index;
+    char *idx;
+    char *srtcp_idx;
 
     unsigned char *srtp_ke;
     unsigned char *srtp_ka;
@@ -935,7 +935,7 @@ typedef struct acvp_rsa_keygen_tc_t {
     ACVP_RSA_PUB_EXP_MODE pub_exp_mode;
     ACVP_RSA_KEY_FORMAT key_format;
     int info_gen_by_server;
-    int modulo;
+    unsigned int modulo;
     int e_len;
 
     unsigned char *e;
@@ -1876,13 +1876,13 @@ ACVP_RESULT acvp_cap_rsa_sigver_set_type(ACVP_CTX *ctx,
 
 ACVP_RESULT acvp_cap_rsa_siggen_set_mod_parm(ACVP_CTX *ctx,
                                              ACVP_RSA_SIG_TYPE sig_type,
-                                             int mod,
+                                             unsigned int mod,
                                              int hash_alg,
                                              int salt_len);
 
 ACVP_RESULT acvp_cap_rsa_sigver_set_mod_parm(ACVP_CTX *ctx,
                                              ACVP_RSA_SIG_TYPE sig_type,
-                                             int mod,
+                                             unsigned int mod,
                                              int hash_alg,
                                              int salt_len);
 
@@ -1939,7 +1939,7 @@ ACVP_RESULT acvp_cap_rsa_sigver_set_exponent(ACVP_CTX *ctx,
  */
 ACVP_RESULT acvp_cap_rsa_keygen_set_primes(ACVP_CTX *ctx,
                                            ACVP_RSA_KEYGEN_MODE mode,
-                                           int mod,
+                                           unsigned int mod,
                                            ACVP_RSA_PRIME_PARAM param,
                                            int value);
 
@@ -2248,7 +2248,7 @@ ACVP_RESULT acvp_cap_kdf135_snmp_set_parm(ACVP_CTX *ctx,
  */
 ACVP_RESULT acvp_cap_kdf135_snmp_set_engid(ACVP_CTX *ctx,
                                            ACVP_CIPHER kcap,
-                                           char *engid);
+                                           const char *engid);
 
 /*! @brief acvp_enable_kdf135_ikev2_cap_param() allows an application to specify
         operational parameters to be used during a test session with the ACVP
@@ -2428,7 +2428,7 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx);
 
     @return ACVP_RESULT
  */
-ACVP_RESULT acvp_set_server(ACVP_CTX *ctx, char *server_name, int port);
+ACVP_RESULT acvp_set_server(ACVP_CTX *ctx, const char *server_name, int port);
 
 /*! @brief acvp_set_path_segment() specifies the URI prefix used by
        the ACVP server.
@@ -2446,7 +2446,7 @@ ACVP_RESULT acvp_set_server(ACVP_CTX *ctx, char *server_name, int port);
 
     @return ACVP_RESULT
  */
-ACVP_RESULT acvp_set_path_segment(ACVP_CTX *ctx, char *path_segment);
+ACVP_RESULT acvp_set_path_segment(ACVP_CTX *ctx, const char *path_segment);
 
 /*! @brief acvp_set_api_context() specifies the URI prefix used by
        the ACVP server.
@@ -2464,7 +2464,7 @@ ACVP_RESULT acvp_set_path_segment(ACVP_CTX *ctx, char *path_segment);
 
     @return ACVP_RESULT
  */
-ACVP_RESULT acvp_set_api_context(ACVP_CTX *ctx, char *api_context);
+ACVP_RESULT acvp_set_api_context(ACVP_CTX *ctx, const char *api_context);
 
 /*! @brief acvp_set_cacerts() specifies PEM encoded certificates to use
        as the root trust anchors for establishing the TLS session with
@@ -2484,7 +2484,7 @@ ACVP_RESULT acvp_set_api_context(ACVP_CTX *ctx, char *api_context);
 
     @return ACVP_RESULT
  */
-ACVP_RESULT acvp_set_cacerts(ACVP_CTX *ctx, char *ca_file);
+ACVP_RESULT acvp_set_cacerts(ACVP_CTX *ctx, const char *ca_file);
 
 /*! @brief acvp_set_certkey() specifies PEM encoded certificate and
        private key to use for establishing the TLS session with the
@@ -2681,7 +2681,7 @@ ACVP_RESULT acvp_hexstr_to_bin(const char *src, unsigned char *dest, int dest_ma
  *
  * @return (char *) error string
  */
-char *acvp_lookup_error_string(ACVP_RESULT rv);
+const char *acvp_lookup_error_string(ACVP_RESULT rv);
 
 char *lower_string(const char *s);
 
@@ -2696,13 +2696,13 @@ ACVP_RESULT acvp_cleanup(ACVP_CTX *ctx);
  *
  * @return (char *) library string, formatted like: libacvp-1.0.0
  */
-char *acvp_version(void);
+const char *acvp_version(void);
 
 /*! @brief acvp_protocol_version() fetch the protocol version string
  *
  * @return (char *) protocol version, formated like: 0.5
  */
-char *acvp_protocol_version(void);
+const char *acvp_protocol_version(void);
 
 #ifdef __cplusplus
 }

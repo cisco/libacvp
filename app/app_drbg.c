@@ -29,7 +29,7 @@ static size_t drbg_test_entropy(DRBG_CTX *dctx,
                                 int entropy,
                                 size_t min_len,
                                 size_t max_len) {
-    if (!dctx || !pout) return 0;
+    if (!dctx || !pout || !entropy) return 0;
 
     DRBG_TEST_ENT *t = (DRBG_TEST_ENT *)FIPS_drbg_get_app_data(dctx);
     if (!t) return 0;
@@ -45,7 +45,7 @@ static size_t drbg_test_nonce(DRBG_CTX *dctx,
                               int entropy,
                               size_t min_len,
                               size_t max_len) {
-    if (!dctx || !pout) return 0;
+    if (!dctx || !pout || !entropy) return 0;
 
     DRBG_TEST_ENT *t = (DRBG_TEST_ENT *)FIPS_drbg_get_app_data(dctx);
 

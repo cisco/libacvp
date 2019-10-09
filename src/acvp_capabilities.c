@@ -3411,7 +3411,7 @@ ACVP_RESULT acvp_cap_kdf135_snmp_set_parm(ACVP_CTX *ctx,
  */
 ACVP_RESULT acvp_cap_kdf135_snmp_set_engid(ACVP_CTX *ctx,
                                            ACVP_CIPHER kcap,
-                                           char *engid) {
+                                           const char *engid) {
     ACVP_CAPS_LIST *cap;
     ACVP_KDF135_SNMP_CAP *kdf135_snmp_cap;
     ACVP_NAME_LIST *engids;
