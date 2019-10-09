@@ -138,7 +138,7 @@ int app_rsa_sig_handler(ACVP_TEST_CASE *test_case) {
     }
 
     bn_e = BN_new();
-    if (!bn_e || !BN_set_word(bn_e, 0x1001)) {
+    if (!bn_e || !BN_set_word(bn_e, 0x10001)) {
         printf("\nError: Issue with exponent in RSA Sig\n");
         goto err;
     }
