@@ -79,6 +79,9 @@
 #undef  ESNOTFND
 #define ESNOTFND        ( 409 )       /* not found                   */ 
 
+#undef  EINVAL
+#define EINVAL          ( 422 )       /* invalid                     */ 
+
 #endif 
 
 

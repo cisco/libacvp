@@ -121,6 +121,7 @@ static void fips_test_suite_dummy_free_lock(CRYPTO_RWLOCK* lock){
 	(void)lock;
 }
 #endif
+#ifdef ACVP_NO_RUNTIME
 static void fips_algtest_init_nofips(void)
 	{
 	DRBG_CTX *ctx;
@@ -147,7 +148,7 @@ static void fips_algtest_init_nofips(void)
 #endif
 
 	}
-
+#endif
 #ifdef __cplusplus
 }
 #endif

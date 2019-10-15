@@ -149,7 +149,7 @@ Test(ValidRsaMod, null_ctx) {
  * Exercise acvp_lookup_error_string logic
  */
 Test(LookupErrorString, null_ctx) {
-    char *str = NULL;
+    const char *str = NULL;
     char *dup = "ctx already initialized";
     char *ukn = "Unknown error";
 

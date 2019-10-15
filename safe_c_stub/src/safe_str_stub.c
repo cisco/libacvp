@@ -62,6 +62,7 @@ errno_t strcmp_s (const char *dest, rsize_t dmax, const char *src, int *indicato
 errno_t strncmp_s (const char *dest, rsize_t dmax, const char *src, rsize_t smax, int *indicator) {
     if (!src || !dest) return (ESNULLP);
     if (dmax == 0) return (ESZEROL);
+    if (smax > RSIZE_MAX_STR) return (EINVAL);
     *indicator = strncmp(dest, src, dmax);
     return (EOK);
 }
