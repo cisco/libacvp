@@ -267,7 +267,7 @@ static int is_valid_utf8(const char *string, size_t string_len) {
 }
 
 static int is_decimal(const char *string, size_t length) {
-    char xX[2] = "xX";
+    char xX[3] = "xX\0";
 
     if (length > 1 && string[0] == '0' && string[1] != '.') {
         return 0;
@@ -498,6 +498,7 @@ static JSON_Status json_object_dotremove_internal(JSON_Object *object, const cha
     if (name2 == NULL) {
         return JSONFailure;
     }
+    memcpy_s(name2, name_len, name, name_len);
     strstr_s(name2, name_len, ".", 1, &dot_pos);
     free(name2);
 
@@ -1235,6 +1236,7 @@ JSON_Value * json_object_dotget_value(const JSON_Object *object, const char *nam
     if (name2 == NULL) {
         return NULL;
     }
+    memcpy_s(name2, name_len, name, name_len);
     strstr_s(name2, name_len, ".", 1, &dot_position);
     free(name2);
 
@@ -1890,40 +1892,46 @@ JSON_Status json_object_dotset_value(JSON_Object *object, const char *name, JSON
     if (name2 == NULL) {
         return JSONFailure;
     }
-    strncpy_s(name2, STRING_NAME_MAX, name, name_len);
+    memcpy_s(name2, STRING_NAME_MAX, name, name_len);
     strstr_s(name2, name_len, ".", 1, &dot_pos);
-    free(name2);
 
     if (dot_pos == NULL) {
-        return json_object_set_value(object, name, value);
+        status = json_object_set_value(object, name2, value);
+        free(name2);
+        return status;
     }
-    name_len = dot_pos - name;
-    temp_value = json_object_getn_value(object, name, name_len);
+    name_len = dot_pos - name2;
+    temp_value = json_object_getn_value(object, name2, name_len);
     if (temp_value) {
         /* Don't overwrite existing non-object (unlike json_object_set_value, but it shouldn't be changed at this point) */
         if (json_value_get_type(temp_value) != JSONObject) {
-            return JSONFailure;
+            goto err;
         }
         temp_object = json_value_get_object(temp_value);
+        free(name2);
         return json_object_dotset_value(temp_object, dot_pos + 1, value);
     }
     new_value = json_value_init_object();
     if (new_value == NULL) {
-        return JSONFailure;
+        status = JSONFailure;
+        goto err;
     }
     new_object = json_value_get_object(new_value);
     status = json_object_dotset_value(new_object, dot_pos + 1, value);
     if (status != JSONSuccess) {
         json_value_free(new_value);
-        return JSONFailure;
+        goto err;
     }
-    status = json_object_addn(object, name, name_len, new_value);
+    status = json_object_addn(object, name2, name_len, new_value);
     if (status != JSONSuccess) {
         json_object_dotremove_internal(new_object, dot_pos + 1, 0);
         json_value_free(new_value);
-        return JSONFailure;
+        goto err;
     }
-    return JSONSuccess;
+    status = JSONSuccess;
+err:
+    free(name2);
+    return status;
 }
 
 JSON_Status json_object_dotset_string(JSON_Object *object, const char *name, const char *string) {
