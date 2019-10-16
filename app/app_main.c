@@ -45,13 +45,13 @@ static int enable_kas_ffc(ACVP_CTX *ctx);
 static int enable_kdf(ACVP_CTX *ctx);
 #endif
 
-char *server;
+const char *server;
 int port;
-char *ca_chain_file;
+const char *ca_chain_file;
 char *cert_file;
 char *key_file;
-char *path_segment;
-char *api_context;
+const char *path_segment;
+const char *api_context;
 char value[] = "same";
 
 #define CHECK_ENABLE_CAP_RV(rv) \
@@ -64,7 +64,7 @@ char value[] = "same";
  * Read the operational parameters from the various environment
  * variables.
  */
-static void setup_session_parameters() {
+static void setup_session_parameters(void) {
     char *tmp;
 
     server = getenv("ACV_SERVER");

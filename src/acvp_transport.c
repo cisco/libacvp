@@ -605,7 +605,7 @@ ACVP_RESULT acvp_retrieve_vector_set(ACVP_CTX *ctx, char *vsid_url) {
  * It can be used to get the results for an entire session, or
  * more specifically for a vectorSet
  */
-ACVP_RESULT acvp_retrieve_vector_set_result(ACVP_CTX *ctx, char *api_url) {
+ACVP_RESULT acvp_retrieve_vector_set_result(ACVP_CTX *ctx, const char *api_url) {
 #ifdef ACVP_OFFLINE 
     ACVP_LOG_ERR("Curl not linked, exiting function"); 
     return ACVP_TRANSPORT_FAIL;
@@ -629,7 +629,7 @@ ACVP_RESULT acvp_retrieve_vector_set_result(ACVP_CTX *ctx, char *api_url) {
 #endif
 }
 
-ACVP_RESULT acvp_retrieve_expected_result(ACVP_CTX *ctx, char *api_url) {
+ACVP_RESULT acvp_retrieve_expected_result(ACVP_CTX *ctx, const char *api_url) {
 #ifdef ACVP_OFFLINE 
     ACVP_LOG_ERR("Curl not linked, exiting function"); 
     return ACVP_TRANSPORT_FAIL;
@@ -948,6 +948,7 @@ static ACVP_RESULT execute_network_action(ACVP_CTX *ctx,
                 break;
 
             case ACVP_NET_POST_LOGIN:
+            default:
                 ACVP_LOG_ERR("We should never be here!");
                 break;
             }
@@ -1039,6 +1040,9 @@ static void log_network_status(ACVP_CTX *ctx,
         ACVP_LOG_STATUS("PUT testSession Validation...\n\tStatus: %d\n\tUrl: %s\n\tResp: %s\n",
                         curl_code, url, ctx->curl_buf);
         break;
+    default:
+        ACVP_LOG_ERR("We should never be here!");
+        break;
     }
 }
 
@@ -1097,6 +1101,9 @@ static ACVP_RESULT acvp_network_action(ACVP_CTX *ctx,
     case ACVP_NET_PUT_VALIDATION:
         check_data = 1;
         generic_action = ACVP_NET_PUT;
+        break;
+    default:
+        ACVP_LOG_ERR("We should never be here!");
         break;
     }
 

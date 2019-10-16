@@ -60,8 +60,8 @@ static ACVP_RESULT acvp_kdf135_x963_init_tc(ACVP_CTX *ctx,
                                             int field_size,
                                             int key_data_length,
                                             int shared_info_length,
-                                            char *z,
-                                            char *shared_info) {
+                                            const char *z,
+                                            const char *shared_info) {
     ACVP_RESULT rv = ACVP_SUCCESS;
 
     memzero_s(stc, sizeof(ACVP_KDF135_X963_TC));
@@ -130,7 +130,7 @@ ACVP_RESULT acvp_kdf135_x963_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     char *json_result;
 
     int field_size, key_data_length, shared_info_len;
-    char *z = NULL, *shared_info = NULL;
+    const char *z = NULL, *shared_info = NULL;
 
     if (!ctx) {
         ACVP_LOG_ERR("No ctx for handler operation");
@@ -285,8 +285,8 @@ ACVP_RESULT acvp_kdf135_x963_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            z = (char *)json_object_get_string(testobj, "z");
-            shared_info = (char *)json_object_get_string(testobj, "sharedInfo");
+            z = json_object_get_string(testobj, "z");
+            shared_info = json_object_get_string(testobj, "sharedInfo");
             if (!z) {
                 ACVP_LOG_ERR("Failed to include z. ");
                 rv = ACVP_INVALID_ARG;

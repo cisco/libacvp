@@ -45,8 +45,9 @@ static ACVP_RESULT acvp_hash_release_tc(ACVP_HASH_TC *stc);
  */
 static ACVP_RESULT acvp_hash_mct_iterate_tc(ACVP_CTX *ctx,
                                             ACVP_HASH_TC *stc,
-                                            int i,
-                                            JSON_Object *r_tobj) {
+                                            int i) {
+
+    ACVP_LOG_INFO("MCT Interation %d", i);
     /* feed hash into the next message for MCT */
     memcpy_s(stc->m1, ACVP_HASH_MD_BYTE_MAX, stc->m2, stc->md_len);
     memcpy_s(stc->m2, ACVP_HASH_MD_BYTE_MAX, stc->m3, stc->md_len);
@@ -163,7 +164,7 @@ static ACVP_RESULT acvp_hash_mct_tc(ACVP_CTX *ctx,
             /*
              * Adjust the parameters for next iteration if needed.
              */
-            rv = acvp_hash_mct_iterate_tc(ctx, stc, i, r_tobj);
+            rv = acvp_hash_mct_iterate_tc(ctx, stc, i);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("Failed the MCT iteration changes");
                 free(msg);

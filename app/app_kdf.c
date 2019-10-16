@@ -24,34 +24,58 @@
 #define TLS_MD_KEY_EXPANSION_CONST_SIZE         13
 
 int app_kdf135_srtp_handler(ACVP_TEST_CASE *test_case) {
+    if (!test_case) {
+        return -1;
+    }
     return 1;
 }
 
 int app_kdf135_ikev2_handler(ACVP_TEST_CASE *test_case) {
+    if (!test_case) {
+        return -1;
+    }
     return 1;
 }
 
 int app_kdf135_ikev1_handler(ACVP_TEST_CASE *test_case) {
+    if (!test_case) {
+        return -1;
+    }
     return 1;
 }
 
 int app_kdf135_x963_handler(ACVP_TEST_CASE *test_case) {
+    if (!test_case) {
+        return -1;
+    }
     return 1;
 }
 
 int app_kdf108_handler(ACVP_TEST_CASE *test_case) {
+    if (!test_case) {
+        return -1;
+    }
     return 1;
 }
 
 int app_kdf135_tls_handler(ACVP_TEST_CASE *test_case) {
+    if (!test_case) {
+        return -1;
+    }
     return 1; 
 }
 
 int app_kdf135_snmp_handler(ACVP_TEST_CASE *test_case) {
+    if (!test_case) {
+        return -1;
+    }
     return 1;
 }
 
 int app_kdf135_ssh_handler(ACVP_TEST_CASE *test_case) {
+    if (!test_case) {
+        return -1;
+    }
     return 1;
 }
 

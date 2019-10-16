@@ -178,7 +178,6 @@ const BIGNUM *FIPS_ec_key_get0_private_key(const EC_KEY *key);
 const EC_POINT *FIPS_ec_key_get0_public_key(const EC_KEY *key);
 const EC_GROUP *FIPS_ec_key_get0_group(const EC_KEY *key);
 const EC_METHOD *FIPS_ec_group_method_of(const EC_GROUP *group);
-EC_GROUP *FIPS_ec_group_new_by_curve_name(int nid);
 void fips_ec_group_free(EC_GROUP *group);
 int FIPS_ec_group_get_degree(const EC_GROUP *group);
 int FIPS_ec_method_get_field_type(const EC_METHOD *meth);
@@ -198,7 +197,6 @@ EC_KEY *FIPS_ec_key_new(void);
 EC_KEY *FIPS_ec_key_new_by_curve_name(int nid);
 void FIPS_ec_key_free(EC_KEY *key);
 void FIPS_ec_key_set_flags(EC_KEY *key, int flags);
-int FIPS_ec_key_set_group(EC_KEY *key, const EC_GROUP *group);
 int FIPS_ec_key_set_private_key(EC_KEY *key, const BIGNUM *prv);
 int FIPS_ec_key_set_public_key_affine_coordinates(EC_KEY *key, BIGNUM *x,
                                                   BIGNUM *y);
@@ -226,11 +224,6 @@ void FIPS_free(void *ptr);
 int FIPS_digest(const void *data, size_t count,
                 unsigned char *md, unsigned int *size, const EVP_MD *type);
 void FIPS_openssl_cleanse(void *ptr, size_t len);
-int FIPS_rsa_verify(struct rsa_st *rsa, const unsigned char *msg, int msglen,
-			const struct env_md_st *mhash, int rsa_pad_mode,
-			int saltlen, const struct env_md_st *mgf1Hash,
-			const unsigned char *sigbuf, unsigned int siglen);
-
 #endif // ACVP_NO_RUNTIME
 
 #ifdef __cplusplus

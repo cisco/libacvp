@@ -82,11 +82,11 @@ static void shiftin(unsigned char *dst, int dst_max, unsigned char *src, int nbi
  */
 static ACVP_RESULT acvp_des_mct_iterate_tc(ACVP_CTX *ctx,
                                            ACVP_SYM_CIPHER_TC *stc,
-                                           int i,
-                                           JSON_Object *r_tobj) {
+                                           int i) {
     int j = stc->mct_index;
     int n;
 
+    ACVP_LOG_INFO("MCT Interation %d", i);
     memcpy_s(ctext[j], TEXT_ROW_LEN,  stc->ct, stc->ct_len);
     memcpy_s(ptext[j], TEXT_ROW_LEN, stc->pt, stc->pt_len);
 
@@ -356,7 +356,7 @@ static const unsigned char odd_parity[256] = {
     241, 241, 242, 242, 244, 244, 247, 247, 248, 248, 251, 251, 253, 253, 254, 254
 };
 
-void acvp_des_set_odd_parity(unsigned char *key) {
+static void acvp_des_set_odd_parity(unsigned char *key) {
     unsigned int i;
 
     for (i = 0; i < 24; i++) {
@@ -447,7 +447,7 @@ static ACVP_RESULT acvp_des_mct_tc(ACVP_CTX *ctx,
             } else {
                 shiftin(nk, NK_LEN, stc->pt, bit_len);
             }
-            rv = acvp_des_mct_iterate_tc(ctx, stc, i, r_tobj);
+            rv = acvp_des_mct_iterate_tc(ctx, stc, i);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("Failed the MCT iteration changes");
                 free(tmp);

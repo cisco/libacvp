@@ -44,9 +44,11 @@ extern "C"
  * otherwise we get "undefined reference".
  */
 #if OPENSSL_VERSION_NUMBER >= 0x10100000L
+void FINGERPRINT_premain(void);
+
 int FIPS_get_selftest_completed(int version)
 {
-    return 0;
+    return version;
 }
 void FINGERPRINT_premain(void) {}
 #endif
@@ -90,6 +92,9 @@ static unsigned char dummy_entropy[1024];
 static size_t dummy_cb(DRBG_CTX *ctx, unsigned char **pout,
                                 int entropy, size_t min_len, size_t max_len)
 	{
+        if (!ctx || !entropy || !max_len) {
+            return min_len;
+        }
 	*pout = dummy_entropy;
 	return min_len;
 	}
@@ -108,7 +113,7 @@ void FIPS_set_locking_callbacks(CRYPTO_RWLOCK *(*FIPS_thread_lock_new)(void),
 
 /* Dummy lock CBs*/
 static int dummy_alg_testing_lock = 5;
-static CRYPTO_RWLOCK* fips_test_suite_dummy_new_lock(){
+static CRYPTO_RWLOCK* fips_test_suite_dummy_new_lock(void) {
 	return (CRYPTO_RWLOCK*) &dummy_alg_testing_lock;
 }
 static void fips_test_suite_dummy_free_lock(CRYPTO_RWLOCK* lock){
@@ -116,6 +121,7 @@ static void fips_test_suite_dummy_free_lock(CRYPTO_RWLOCK* lock){
 	(void)lock;
 }
 #endif
+#ifdef ACVP_NO_RUNTIME
 static void fips_algtest_init_nofips(void)
 	{
 	DRBG_CTX *ctx;
@@ -142,7 +148,7 @@ static void fips_algtest_init_nofips(void)
 #endif
 
 	}
-
+#endif
 #ifdef __cplusplus
 }
 #endif

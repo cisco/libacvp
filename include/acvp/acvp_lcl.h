@@ -697,8 +697,8 @@ struct acvp_alg_handler_t {
 
     ACVP_RESULT (*handler) (ACVP_CTX *ctx, JSON_Object *obj);
 
-    char *name;
-    char *mode; /** < Should be NULL unless using an asymmetric alg */
+    const char *name;
+    const char *mode; /** < Should be NULL unless using an asymmetric alg */
     const char *revision;
 };
 
@@ -709,17 +709,17 @@ typedef struct acvp_vs_list_t {
 
 struct acvp_result_desc_t {
     ACVP_RESULT rv;
-    char *desc;
+    const char *desc;
 };
 
 struct acvp_hash_alg_info {
     ACVP_HASH_ALG id;
-    char *name;
+    const char *name;
 };
 
 struct acvp_ec_curve_info {
     ACVP_EC_CURVE id;
-    char *name;
+    const char *name;
 };
 
 /*
@@ -776,7 +776,7 @@ typedef struct acvp_param_list_t {
  * prime_tests, etc.
  */
 typedef struct acvp_name_list_t {
-    char *name;
+    const char *name;
     struct acvp_name_list_t *next;
 } ACVP_NAME_LIST;
 
@@ -854,7 +854,7 @@ typedef struct acvp_kdf135_snmp_capability {
 } ACVP_KDF135_SNMP_CAP;
 
 typedef struct acvp_kdf108_mode_params {
-    char *kdf_mode;
+    const char *kdf_mode;
     ACVP_NAME_LIST *mac_mode;
     ACVP_JSON_DOMAIN_OBJ supported_lens;
     ACVP_NAME_LIST *data_order;
@@ -954,17 +954,17 @@ typedef struct acvp_drbg_capability {
 
 struct acvp_drbg_mode_name_t {
     ACVP_DRBG_MODE mode;
-    char *name;
+    const char *name;
 };
 
 typedef struct acvp_rsa_hash_pair_list {
-    char *name;
+    const char *name;
     int salt;
     struct acvp_rsa_hash_pair_list *next;
 } ACVP_RSA_HASH_PAIR_LIST;
 
 typedef struct acvp_rsa_mode_caps_list {
-    int modulo; // 2048, 3072, 4096 -- defined as macros
+    unsigned int modulo; // 2048, 3072, 4096 -- defined as macros
     int salt;   // only valid for siggen mode
     ACVP_NAME_LIST *hash_algs;
     ACVP_RSA_HASH_PAIR_LIST *hash_pair;
@@ -977,7 +977,7 @@ typedef struct acvp_rsa_keygen_capability_t {
     ACVP_RSA_PUB_EXP_MODE pub_exp_mode;
     char *fixed_pub_exp;               // hex value of e
     ACVP_RSA_KEYGEN_MODE rand_pq;      // as defined in FIPS186-4
-    char *rand_pq_str;
+    const char *rand_pq_str;
     int info_gen_by_server;                  // boolean
     ACVP_RSA_MODE_CAPS_LIST *mode_capabilities;
     struct acvp_rsa_keygen_capability_t *next; // to support multiple randPQ values
@@ -991,8 +991,8 @@ typedef struct acvp_ecdsa_capability_t {
 } ACVP_ECDSA_CAP;
 
 typedef struct acvp_rsa_sig_capability_t {
-    char *sig_type_str;
-    int sig_type;
+    const char *sig_type_str;
+    unsigned int sig_type;
     int pub_exp_mode;                           // for sigVer only
     char *fixed_pub_exp;                        // hex value of e
     ACVP_RSA_MODE_CAPS_LIST *mode_capabilities; //holds modRSASigGen (int) and hashSigGen (list)
@@ -1001,7 +1001,7 @@ typedef struct acvp_rsa_sig_capability_t {
 
 
 typedef struct acvp_dsa_attrs {
-    int modulo;
+    unsigned int modulo;
     int sha;
     struct acvp_dsa_attrs *next;
 } ACVP_DSA_ATTRS;
@@ -1032,7 +1032,7 @@ typedef struct acvp_kas_ecc_mac {
 } ACVP_KAS_ECC_MAC;
 
 typedef struct acvp_kas_ecc_pset {
-    int set;
+    unsigned int set;
     int curve;
     ACVP_PARAM_LIST *sha;
     ACVP_KAS_ECC_MAC *mac;
@@ -1071,7 +1071,7 @@ typedef struct acvp_kas_ffc_mac {
 } ACVP_KAS_FFC_MAC;
 
 typedef struct acvp_kas_ffc_pset {
-    int set;
+    unsigned int set;
     ACVP_PARAM_LIST *sha;
     ACVP_KAS_FFC_MAC *mac;
     struct acvp_kas_ffc_pset *next;
@@ -1208,7 +1208,7 @@ typedef struct acvp_dependency_t {
 #define LIBACVP_DEPENDENCIES_MAX 64
 typedef struct acvp_dependencies_t {
     ACVP_DEPENDENCY deps[LIBACVP_DEPENDENCIES_MAX];
-    int count;
+    unsigned int count;
 } ACVP_DEPENDENCIES;
 
 typedef enum acvp_resource_status {
@@ -1219,7 +1219,7 @@ typedef enum acvp_resource_status {
 
 typedef struct acvp_oe_dependencies_t {
     ACVP_DEPENDENCY *deps[LIBACVP_DEPENDENCIES_MAX]; /* Array to pointers of linked dependencies */
-    int count;
+    unsigned int count;
     ACVP_RESOURCE_STATUS status; /**< PARTIAL indicates that at least one of the linked Dependencies does not
                                       exist. INCOMPLETE indicates all of the 'url' are missing */
 } ACVP_OE_DEPENDENCIES;
@@ -1339,15 +1339,13 @@ ACVP_RESULT acvp_transport_put(ACVP_CTX *ctx, const char *endpoint, const char *
 
 ACVP_RESULT acvp_retrieve_vector_set(ACVP_CTX *ctx, char *vsid_url);
 
-ACVP_RESULT acvp_retrieve_vector_set_result(ACVP_CTX *ctx, char *vsid_url);
+ACVP_RESULT acvp_retrieve_vector_set_result(ACVP_CTX *ctx, const char *vsid_url);
 
-ACVP_RESULT acvp_retrieve_expected_result(ACVP_CTX *ctx, char *api_url);
+ACVP_RESULT acvp_retrieve_expected_result(ACVP_CTX *ctx, const char *api_url);
 
 ACVP_RESULT acvp_submit_vector_responses(ACVP_CTX *ctx, char *vsid_url);
 
-void acvp_log_msg(ACVP_CTX *ctx, ACVP_LOG_LVL level, const char *format, ...);
-
-ACVP_RESULT acvp_hexstr_to_bin(const char *src, unsigned char *dest, int dest_max, int *converted_len);
+void acvp_log_msg(ACVP_CTX *ctx, ACVP_LOG_LVL level, const char *format, ...) __attribute__ ((format (gnu_printf, 3, 4)));
 
 /*
  * These are the handler routines for each KAT operation
@@ -1398,8 +1396,6 @@ ACVP_RESULT acvp_kdf108_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
 ACVP_RESULT acvp_dsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
-ACVP_RESULT acvp_dsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
-
 ACVP_RESULT acvp_kas_ecc_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
 ACVP_RESULT acvp_kas_ffc_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
@@ -1428,7 +1424,7 @@ ACVP_RESULT acvp_notify_large(ACVP_CTX *ctx,
  */
 ACVP_CAPS_LIST *acvp_locate_cap_entry(ACVP_CTX *ctx, ACVP_CIPHER cipher);
 
-char *acvp_lookup_cipher_name(ACVP_CIPHER alg);
+const char *acvp_lookup_cipher_name(ACVP_CIPHER alg);
 
 ACVP_CIPHER acvp_lookup_cipher_index(const char *algorithm);
 
@@ -1441,7 +1437,7 @@ ACVP_DRBG_MODE acvp_lookup_drbg_mode_index(const char *mode);
 
 ACVP_DRBG_CAP_MODE_LIST *acvp_locate_drbg_mode_entry(ACVP_CAPS_LIST *cap, ACVP_DRBG_MODE mode);
 
-char *acvp_lookup_rsa_randpq_name(int value);
+const char *acvp_lookup_rsa_randpq_name(int value);
 
 int acvp_lookup_rsa_randpq_index(const char *value);
 
@@ -1449,16 +1445,16 @@ ACVP_RESULT acvp_create_array(JSON_Object **obj, JSON_Value **val, JSON_Array **
 
 ACVP_RESULT is_valid_tf_param(int value);
 
-char *acvp_lookup_rsa_prime_test_name(ACVP_RSA_PRIME_TEST_TYPE type);
-ACVP_RESULT is_valid_prime_test(char *value);
+const char *acvp_lookup_rsa_prime_test_name(ACVP_RSA_PRIME_TEST_TYPE type);
+ACVP_RESULT is_valid_prime_test(const char *value);
 
 ACVP_RESULT is_valid_rsa_mod(int value);
 
 ACVP_HASH_ALG acvp_lookup_hash_alg(const char *name);
-char *acvp_lookup_hash_alg_name(ACVP_HASH_ALG id);
+const char *acvp_lookup_hash_alg_name(ACVP_HASH_ALG id);
 
 ACVP_EC_CURVE acvp_lookup_ec_curve(ACVP_CIPHER cipher, const char *name);
-char *acvp_lookup_ec_curve_name(ACVP_CIPHER cipher, ACVP_EC_CURVE id);
+const char *acvp_lookup_ec_curve_name(ACVP_CIPHER cipher, ACVP_EC_CURVE id);
 
 ACVP_RESULT acvp_refresh(ACVP_CTX *ctx);
 

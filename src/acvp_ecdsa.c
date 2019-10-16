@@ -108,11 +108,11 @@ static ACVP_RESULT acvp_ecdsa_init_tc(ACVP_CTX *ctx,
                                       ACVP_EC_CURVE curve,
                                       ACVP_ECDSA_SECRET_GEN_MODE secret_gen_mode,
                                       ACVP_HASH_ALG hash_alg,
-                                      char *qx,
-                                      char *qy,
-                                      char *message,
-                                      char *r,
-                                      char *s) {
+                                      const char *qx,
+                                      const char *qy,
+                                      const char *message,
+                                      const char *r,
+                                      const char *s) {
     ACVP_RESULT rv = ACVP_SUCCESS;
 
     memzero_s(stc, sizeof(ACVP_ECDSA_TC));
@@ -250,14 +250,14 @@ static ACVP_RESULT acvp_ecdsa_kat_handler_internal(ACVP_CTX *ctx, JSON_Object *o
 
     ACVP_CIPHER alg_id;
     char *json_result = NULL;
-    char *alg_str, *mode_str, *qx = NULL, *qy = NULL, *r = NULL, *s = NULL, *message = NULL;
+    const char *alg_str, *mode_str, *qx = NULL, *qy = NULL, *r = NULL, *s = NULL, *message = NULL;
 
     if (!ctx) {
         ACVP_LOG_ERR("No ctx for handler operation");
         return ACVP_NO_CTX;
     }
 
-    alg_str = (char *)json_object_get_string(obj, "algorithm");
+    alg_str = json_object_get_string(obj, "algorithm");
     if (!alg_str) {
         ACVP_LOG_ERR("ERROR: unable to parse 'algorithm' from JSON");
         return ACVP_MALFORMED_JSON;
@@ -265,7 +265,7 @@ static ACVP_RESULT acvp_ecdsa_kat_handler_internal(ACVP_CTX *ctx, JSON_Object *o
 
     memzero_s(&stc, sizeof(ACVP_ECDSA_TC));
     tc.tc.ecdsa = &stc;
-    mode_str = (char *)json_object_get_string(obj, "mode");
+    mode_str = json_object_get_string(obj, "mode");
     if (!mode_str) {
         ACVP_LOG_ERR("Server JSON missing 'mode_str'");
         return ACVP_MALFORMED_JSON;
@@ -405,8 +405,8 @@ static ACVP_RESULT acvp_ecdsa_kat_handler_internal(ACVP_CTX *ctx, JSON_Object *o
             tc_id = (unsigned int)json_object_get_number(testobj, "tcId");
 
             if (alg_id == ACVP_ECDSA_KEYVER || alg_id == ACVP_ECDSA_SIGVER) {
-                qx = (char *)json_object_get_string(testobj, "qx");
-                qy = (char *)json_object_get_string(testobj, "qy");
+                qx = json_object_get_string(testobj, "qx");
+                qy = json_object_get_string(testobj, "qy");
                 if (!qx || !qy) {
                     ACVP_LOG_ERR("Server JSON missing 'qx' or 'qy'");
                     rv = ACVP_MISSING_ARG;
@@ -420,7 +420,7 @@ static ACVP_RESULT acvp_ecdsa_kat_handler_internal(ACVP_CTX *ctx, JSON_Object *o
                 }
             }
             if (alg_id == ACVP_ECDSA_SIGGEN || alg_id == ACVP_ECDSA_SIGVER) {
-                message = (char *)json_object_get_string(testobj, "message");
+                message = json_object_get_string(testobj, "message");
                 if (!message) {
                     ACVP_LOG_ERR("Server JSON missing 'message'");
                     rv = ACVP_MISSING_ARG;
@@ -433,8 +433,8 @@ static ACVP_RESULT acvp_ecdsa_kat_handler_internal(ACVP_CTX *ctx, JSON_Object *o
                 }
             }
             if (alg_id == ACVP_ECDSA_SIGVER) {
-                r = (char *)json_object_get_string(testobj, "r");
-                s = (char *)json_object_get_string(testobj, "s");
+                r = json_object_get_string(testobj, "r");
+                s = json_object_get_string(testobj, "s");
                 if (!r || !s) {
                     ACVP_LOG_ERR("Server JSON missing 'r' or 's'");
                     rv = ACVP_MISSING_ARG;

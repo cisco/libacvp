@@ -94,10 +94,8 @@ int app_kdf135_ssh_handler(ACVP_TEST_CASE *test_case);
 int app_kdf135_srtp_handler(ACVP_TEST_CASE *test_case);
 int app_kdf135_ikev2_handler(ACVP_TEST_CASE *test_case);
 int app_kdf108_handler(ACVP_TEST_CASE *test_case);
-#if 0 /* ikev1 and x963 are not supported by CiscoSSL/FOM */
 int app_kdf135_ikev1_handler(ACVP_TEST_CASE *test_case);
 int app_kdf135_x963_handler(ACVP_TEST_CASE *test_case);
-#endif
 #endif // OPENSSL_KDF_SUPPORT
 
 #ifdef ACVP_NO_RUNTIME

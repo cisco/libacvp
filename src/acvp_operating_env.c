@@ -10,6 +10,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "acvp.h"
 #include "acvp_lcl.h"
@@ -46,7 +47,7 @@ static ACVP_RESULT copy_oe_string(char **dest, const char *src) {
 static ACVP_DEPENDENCY *find_dependency(ACVP_CTX *ctx,
                                         unsigned int id) {
     ACVP_DEPENDENCIES *dependencies = NULL;
-    int k = 0;
+    unsigned int k = 0;
 
     if (!ctx) return NULL;
 
@@ -79,7 +80,7 @@ static ACVP_DEPENDENCY *find_dependency(ACVP_CTX *ctx,
 ACVP_RESULT acvp_oe_dependency_new(ACVP_CTX *ctx, unsigned int id) {
     ACVP_DEPENDENCIES *dependencies = NULL;
     ACVP_DEPENDENCY *new_dep = NULL;
-    int k = 0;
+    unsigned int k = 0;
 
     if (!ctx) return ACVP_NO_CTX;
 
@@ -746,10 +747,10 @@ static ACVP_RESULT match_dependencies_page(ACVP_CTX *ctx,
             goto end;
         }
 
-        // Soft copy so don't need to free
-        tmp_dep.type = (char*)json_object_get_string(dep_obj, "type");
-        tmp_dep.name = (char*)json_object_get_string(dep_obj, "name");
-        tmp_dep.description = (char*)json_object_get_string(dep_obj, "description");
+        // Soft copy, but still have to free
+        strcpy_s(tmp_dep.type, ACVP_OE_STR_MAX + 1, json_object_get_string(dep_obj, "type"));
+        strcpy_s(tmp_dep.name, ACVP_OE_STR_MAX + 1, json_object_get_string(dep_obj, "name"));
+        strcpy_s(tmp_dep.description, ACVP_OE_STR_MAX + 1, json_object_get_string(dep_obj, "description"));
 
         this_match = compare_dependencies(dep, &tmp_dep);
         if (this_match) {
@@ -775,6 +776,9 @@ static ACVP_RESULT match_dependencies_page(ACVP_CTX *ctx,
             *match = 1; 
             goto end;
         }
+        free(tmp_dep.type);
+        free(tmp_dep.name);
+        free(tmp_dep.description);
     }
 
     links_obj = json_object_get_object(obj, "links");
@@ -926,7 +930,7 @@ end:
 static ACVP_RESULT verify_fips_oe_dependencies(ACVP_CTX *ctx,
                                                ACVP_OE_DEPENDENCIES *dependencies) {
     ACVP_RESULT rv = 0;
-    int i = 0, all_incomplete = 1;
+    unsigned int i = 0, all_incomplete = 1;
 
     if (!ctx) return ACVP_NO_CTX;
     if (dependencies == NULL) {
@@ -1016,7 +1020,7 @@ static ACVP_RESULT match_oes_page(ACVP_CTX *ctx,
     data_count = json_array_get_count(data_array);
 
     for (i = 0; i < data_count; i++) {
-        int k = 0;
+        unsigned int k = 0;
         int equal = 1;
         JSON_Array *dependency_urls = NULL;
         JSON_Object *oe_obj = json_array_get_object(data_array, i);
@@ -1032,7 +1036,7 @@ static ACVP_RESULT match_oes_page(ACVP_CTX *ctx,
             goto end;
         }
 
-        if (oe->dependencies.count != (int)json_array_get_count(dependency_urls)) {
+        if (oe->dependencies.count != json_array_get_count(dependency_urls)) {
             /* The number of array elements must be same */
             continue;
         }
@@ -1206,7 +1210,7 @@ end:
  */
 static ACVP_RESULT verify_fips_oe(ACVP_CTX *ctx) {
     ACVP_RESULT rv = 0;
-    int i = 0;
+    unsigned int i = 0;
 
     if (!ctx) return ACVP_NO_CTX;
 
@@ -2081,15 +2085,15 @@ static ACVP_RESULT match_modules_page(ACVP_CTX *ctx,
             goto end;
         }
 
-        // Soft copy so don't need to free
-        tmp_module.type = (char*)json_object_get_string(module_obj, "type");
-        tmp_module.name = (char*)json_object_get_string(module_obj, "name");
-        tmp_module.version = (char*)json_object_get_string(module_obj, "version");
-        tmp_module.description = (char*)json_object_get_string(module_obj, "description");
+        // Soft copy, but still have to free
+        strcpy_s(tmp_module.type, ACVP_OE_STR_MAX + 1, json_object_get_string(module_obj, "type"));
+        strcpy_s(tmp_module.name, ACVP_OE_STR_MAX + 1, json_object_get_string(module_obj, "name"));
+        strcpy_s(tmp_module.version, ACVP_OE_STR_MAX + 1, json_object_get_string(module_obj, "version"));
+        strcpy_s(tmp_module.description, ACVP_OE_STR_MAX + 1, json_object_get_string(module_obj, "description"));
 
         tmp_module.vendor = &tmp_vendor;
-        tmp_vendor.url = (char*)json_object_get_string(module_obj, "vendorUrl");
-        tmp_vendor.address.url = (char*)json_object_get_string(module_obj, "addressUrl");
+        strcpy_s(tmp_vendor.url, ACVP_OE_STR_MAX + 1, json_object_get_string(module_obj, "vendorUrl"));
+        strcpy_s(tmp_vendor.address.url, ACVP_OE_STR_MAX + 1, json_object_get_string(module_obj, "addressUrl"));
 
         /*
          * Construct the tmp_vendor.persons
@@ -2113,8 +2117,8 @@ static ACVP_RESULT match_modules_page(ACVP_CTX *ctx,
              * Soft copy the array of contactUrls
              * Assume they are in same order.
              */
-            tmp_module.vendor->persons.person[i].url =
-                (char*)json_array_get_string(contact_urls, i);
+            strcpy_s(tmp_module.vendor->persons.person[i].url, ACVP_OE_STR_MAX + 1, 
+                     json_array_get_string(contact_urls, i));
         }
 
         this_match = compare_modules(module, &tmp_module);
@@ -2428,7 +2432,7 @@ static void free_phone_list(ACVP_OE_PHONE_LIST **phone_list) {
 }
 
 static void free_dependencies(ACVP_DEPENDENCIES *dependencies) {
-    int i = 0;
+    unsigned int i = 0;
 
     for (i = 0; i < dependencies->count; i++) {
         ACVP_DEPENDENCY *dep = &dependencies->deps[i];
@@ -2613,7 +2617,7 @@ static ACVP_RESULT acvp_oe_metadata_parse_emails(ACVP_CTX *ctx,
     }
 
     emails_array = json_object_get_array(obj, "emails");
-    count = (int)json_array_get_count(emails_array);
+    count = json_array_get_count(emails_array);
     if (emails_array && count) {
         for (i = 0; i < count; i++) {
             const char *email_str = json_array_get_string(emails_array, i);
@@ -2675,7 +2679,7 @@ static ACVP_RESULT acvp_oe_metadata_parse_phone_numbers(ACVP_CTX *ctx,
     }
 
     phones_array = json_object_get_array(obj, "phoneNumbers");
-    count = (int)json_array_get_count(phones_array);
+    count = json_array_get_count(phones_array);
     if (phones_array && count) {
         for (i = 0; i < count; i++) {
             JSON_Object *phone_obj = NULL;
@@ -2757,7 +2761,7 @@ static ACVP_RESULT acvp_oe_metadata_parse_vendor_contacts(ACVP_CTX *ctx,
     }
 
     contacts_array = json_object_get_array(obj, "contacts");
-    count = (int)json_array_get_count(contacts_array);
+    count = json_array_get_count(contacts_array);
     if (count > LIBACVP_PERSONS_MAX) {
         ACVP_LOG_ERR("Number of contacts (%d) > max allowed (%d)", count, LIBACVP_PERSONS_MAX);
         return ACVP_JSON_ERR;
@@ -3015,7 +3019,7 @@ static ACVP_RESULT acvp_oe_metadata_parse_modules(ACVP_CTX *ctx, JSON_Object *ob
 }
 
 static unsigned int match_dependency(ACVP_CTX *ctx, const ACVP_DEPENDENCY *dep) {
-    int i = 0;
+    unsigned int i = 0;
 
     if (!ctx) return 0;
     if (dep == NULL) {
@@ -3064,7 +3068,7 @@ static ACVP_RESULT acvp_oe_metadata_parse_oe_dependencies(ACVP_CTX *ctx,
         ACVP_LOG_ERR("Missing 'dependencies' array in JSON");
         return ACVP_JSON_ERR;
     }
-    count = (int)json_array_get_count(deps_array);
+    count = json_array_get_count(deps_array);
     if (!count) {
         ACVP_LOG_ERR("Requires at least 1 item in 'dependencies' array JSON");
         return ACVP_JSON_ERR;
@@ -3085,10 +3089,10 @@ static ACVP_RESULT acvp_oe_metadata_parse_oe_dependencies(ACVP_CTX *ctx,
             return ACVP_JSON_ERR;
         }
 
-        // Soft copy, no need to free
-        tmp_dep.type = (char*)type_str;
-        tmp_dep.name = (char*)name_str;
-        tmp_dep.description = (char*)desc_str;
+        // Soft copy, but need to free anyway
+        strcpy_s(tmp_dep.type, ACVP_OE_STR_MAX + 1, type_str);
+        strcpy_s(tmp_dep.name, ACVP_OE_STR_MAX + 1, name_str);
+        strcpy_s(tmp_dep.description, ACVP_OE_STR_MAX + 1, desc_str);
 
         dep_id = match_dependency(ctx, &tmp_dep);
         if (dep_id == 0) {

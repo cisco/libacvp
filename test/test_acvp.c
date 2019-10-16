@@ -571,13 +571,13 @@ Test(PROCESS_TESTS, no_vs_list, .init = setup, .fini = teardown) {
 }
 
 Test(GET_LIBRARY_VERSION, good) {
-    char *version = acvp_version();
+    const char *version = acvp_version();
     cr_assert(version != NULL);
     cr_assert(strlen(version) > 0);
 }
 
 Test(GET_PROTOCOL_VERSION, good) {
-    char *version = acvp_protocol_version();
+    const char *version = acvp_protocol_version();
     cr_assert(version != NULL);
     cr_assert(strlen(version) > 0);
 }

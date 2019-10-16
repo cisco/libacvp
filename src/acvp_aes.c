@@ -57,8 +57,8 @@ static ACVP_RESULT acvp_aes_release_tc(ACVP_SYM_CIPHER_TC *stc);
 #define IV_ROW_LEN 16
 #define TEXT_COL_LEN 1001
 #define TEXT_ROW_LEN 32
-static unsigned char key[KEY_COL_LEN][KEY_ROW_LEN];
-static unsigned char iv[IV_COL_LEN][IV_ROW_LEN];
+static unsigned char mkey[KEY_COL_LEN][KEY_ROW_LEN];
+static unsigned char miv[IV_COL_LEN][IV_ROW_LEN];
 static unsigned char ptext[TEXT_COL_LEN][TEXT_ROW_LEN];
 static unsigned char ctext[TEXT_COL_LEN][TEXT_ROW_LEN];
 
@@ -73,7 +73,7 @@ static unsigned char ctext[TEXT_COL_LEN][TEXT_ROW_LEN];
 static ACVP_RESULT acvp_aes_mct_iterate_tc(ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *stc, int i) {
     int j = stc->mct_index;
 
-
+    ACVP_LOG_INFO("MCT interation %d", j);
     if (stc->cipher != ACVP_AES_CFB1) {
         memcpy_s(ctext[j], TEXT_ROW_LEN, stc->ct, stc->ct_len);
         memcpy_s(ptext[j], TEXT_ROW_LEN, stc->pt, stc->pt_len);
@@ -82,7 +82,7 @@ static ACVP_RESULT acvp_aes_mct_iterate_tc(ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *st
         ptext[j][0] = stc->pt[0];
     }
     if (j == 0) {
-        memcpy_s(key[j], KEY_ROW_LEN, stc->key, stc->key_len / 8);
+        memcpy_s(mkey[j], KEY_ROW_LEN, stc->key, stc->key_len / 8);
     }
 
     switch (stc->cipher) {
@@ -134,14 +134,14 @@ static ACVP_RESULT acvp_aes_mct_iterate_tc(ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *st
     case ACVP_AES_CFB1:
         if (stc->direction == ACVP_SYM_CIPH_DIR_ENCRYPT) {
             if (j < 128) {
-                sb(ptext[j + 1], 0, gb(iv[i], j));
+                sb(ptext[j + 1], 0, gb(miv[i], j));
             } else {
                 sb(ptext[j + 1], 0, gb(ctext[j - 128], 0));
             }
             stc->pt[0] = ptext[j + 1][0];
         } else {
             if (j < 128) {
-                sb(ctext[j + 1], 0, gb(iv[i], j));
+                sb(ctext[j + 1], 0, gb(miv[i], j));
             } else {
                 sb(ctext[j + 1], 0, gb(ptext[j - 128], 0));
             }
@@ -242,7 +242,7 @@ static ACVP_RESULT acvp_aes_mct_tc(ACVP_CTX *ctx,
                                    ACVP_TEST_CASE *tc,
                                    ACVP_SYM_CIPHER_TC *stc,
                                    JSON_Array *res_array) {
-    int i, j, n, n1, n2;
+    unsigned int i, j, n, n1, n2;
     ACVP_RESULT rv;
     JSON_Value *r_tval = NULL;  /* Response testval */
     JSON_Object *r_tobj = NULL; /* Response testobj */
@@ -256,7 +256,7 @@ static ACVP_RESULT acvp_aes_mct_tc(ACVP_CTX *ctx,
         return ACVP_MALLOC_FAIL;
     }
 
-    memcpy_s(iv[0], IV_ROW_LEN, stc->iv, stc->iv_len);
+    memcpy_s(miv[0], IV_ROW_LEN, stc->iv, stc->iv_len);
     for (i = 0; i < ACVP_AES_MCT_OUTER; ++i) {
         /*
          * Create a new test case in the response
@@ -333,11 +333,11 @@ static ACVP_RESULT acvp_aes_mct_tc(ACVP_CTX *ctx,
                 }
 
                 for (n1 = 0, n2 = 127; n1 < 128; ++n1, --n2) {
-                    sb(iv[i + 1], n1, gb(ctext[j - n2], 0));
+                    sb(miv[i + 1], n1, gb(ctext[j - n2], 0));
                 }
                 ptext[0][0] = ctext[j - 128][0] & 0x80;
                 stc->pt[0] = ptext[0][0];
-                memcpy_s(stc->iv, ACVP_SYM_IV_BYTE_MAX, iv[i + 1], stc->iv_len);
+                memcpy_s(stc->iv, ACVP_SYM_IV_BYTE_MAX, miv[i + 1], stc->iv_len);
             } else {
                 switch (stc->key_len) {
                 case 128:
@@ -350,6 +350,9 @@ static ACVP_RESULT acvp_aes_mct_tc(ACVP_CTX *ctx,
                 case 256:
                     memcpy_s(ciphertext, MCT_CT_LEN, ctext[j - 1], 16);
                     memcpy_s(ciphertext + 16, (MCT_CT_LEN - 16), ctext[j], 16);
+                    break;
+                default:
+                    ACVP_LOG_ERR("Illegal case switch %d", stc->key_len);
                     break;
                 }
             }
@@ -392,11 +395,11 @@ static ACVP_RESULT acvp_aes_mct_tc(ACVP_CTX *ctx,
                 }
 
                 for (n1 = 0, n2 = 127; n1 < 128; ++n1, --n2) {
-                    sb(iv[i + 1], n1, gb(ptext[j - n2], 0));
+                    sb(miv[i + 1], n1, gb(ptext[j - n2], 0));
                 }
                 ctext[0][0] = ptext[j - 128][0] & 0x80;
                 stc->ct[0] = ctext[0][0];
-                memcpy_s(stc->iv, ACVP_SYM_IV_BYTE_MAX, iv[i + 1], stc->iv_len);
+                memcpy_s(stc->iv, ACVP_SYM_IV_BYTE_MAX, miv[i + 1], stc->iv_len);
             } else {
                 switch (stc->key_len) {
                 case 128:
@@ -410,13 +413,16 @@ static ACVP_RESULT acvp_aes_mct_tc(ACVP_CTX *ctx,
                     memcpy_s(ciphertext, MCT_CT_LEN, ptext[j - 1], 16);
                     memcpy_s(ciphertext + 16, (MCT_CT_LEN - 16), ptext[j], 16);
                     break;
+                default:
+                    ACVP_LOG_ERR("Illegal case switch %d", stc->key_len);
+                    break;
                 }
             }
         }
 
         /* create the key for the next loop */
         for (n = 0; n < stc->key_len / 8; ++n) {
-            stc->key[n] = key[0][n] ^ ciphertext[n];
+            stc->key[n] = mkey[0][n] ^ ciphertext[n];
         }
 
         /* Append the test response value to array */

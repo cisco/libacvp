@@ -21,10 +21,10 @@ static ACVP_RESULT acvp_hmac_init_tc(ACVP_CTX *ctx,
                                      ACVP_HMAC_TC *stc,
                                      unsigned int tc_id,
                                      unsigned int msg_len,
-                                     char *msg,
+                                     const char *msg,
                                      unsigned int mac_len,
                                      unsigned int key_len,
-                                     char *key,
+                                     const char *key,
                                      ACVP_CIPHER alg_id) {
     ACVP_RESULT rv;
 
@@ -102,7 +102,7 @@ static ACVP_RESULT acvp_hmac_release_tc(ACVP_HMAC_TC *stc) {
 
 ACVP_RESULT acvp_hmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     unsigned int tc_id = 0, msglen = 0, keylen = 0, maclen = 0;
-    char *msg = NULL, *key = NULL;
+    const char *msg = NULL, *key = NULL;
     JSON_Value *groupval;
     JSON_Object *groupobj = NULL;
     JSON_Value *testval;
@@ -253,36 +253,36 @@ ACVP_RESULT acvp_hmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
 
-            tc_id = (unsigned int)json_object_get_number(testobj, "tcId");
+            tc_id = json_object_get_number(testobj, "tcId");
             if (!tc_id) {
                 ACVP_LOG_ERR("Failed to include tc_id. ");
                 rv = ACVP_MISSING_ARG;
                 goto err;
             }
-            msg = (char *)json_object_get_string(testobj, "msg");
+            msg = json_object_get_string(testobj, "msg");
             if (!msg) {
                 ACVP_LOG_ERR("Failed to include msg. ");
                 rv = ACVP_MISSING_ARG;
                 goto err;
             }
 
-            if (strnlen_s((char *)msg, ACVP_HMAC_MSG_MAX) != msglen * 2 / 8) {
-                ACVP_LOG_ERR("msgLen(%d) or msg length(%d) incorrect",
-                             msglen, strnlen_s((char *)msg, ACVP_HMAC_MSG_MAX) * 8 / 2);
+            if (strnlen_s(msg, ACVP_HMAC_MSG_MAX) != msglen * 2 / 8) {
+                ACVP_LOG_ERR("msgLen(%d) or msg length(%zu) incorrect",
+                             msglen, strnlen_s(msg, ACVP_HMAC_MSG_MAX) * 8 / 2);
                 rv = ACVP_INVALID_ARG;
                 goto err;
             }
 
-            key = (char *)json_object_get_string(testobj, "key");
+            key = json_object_get_string(testobj, "key");
             if (!key) {
                 ACVP_LOG_ERR("Failed to include key. ");
                 rv = ACVP_MISSING_ARG;
                 goto err;
             }
 
-            if (strnlen_s((char *)key, ACVP_HMAC_KEY_STR_MAX) != (keylen / 4)) {
-                ACVP_LOG_ERR("keyLen(%d) or key length(%d) incorrect",
-                             keylen, strnlen_s((char *)key, ACVP_HMAC_KEY_STR_MAX) * 4);
+            if (strnlen_s(key, ACVP_HMAC_KEY_STR_MAX) != (keylen / 4)) {
+                ACVP_LOG_ERR("keyLen(%d) or key length(%zu) incorrect",
+                             keylen, strnlen_s(key, ACVP_HMAC_KEY_STR_MAX) * 4);
                 rv = ACVP_INVALID_ARG;
                 goto err;
             }

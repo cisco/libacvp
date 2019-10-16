@@ -11,8 +11,9 @@
 
 #include "ut_common.h"
 #include <openssl/hmac.h>
+#ifdef ACVP_NO_RUNTIME
 #include "app_fips_init_lcl.h"
-
+#endif
 int counter_set = 0;
 int counter_fail = 0;
 ACVP_RESULT totp(char **token, int token_max);

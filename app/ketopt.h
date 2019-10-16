@@ -18,14 +18,14 @@
 typedef struct {
 	int ind;   /* equivalent to optind */
 	int opt;   /* equivalent to optopt */
-	char *arg; /* equivalent to optarg */
+	const char *arg; /* equivalent to optarg */
 	int longidx; /* index of a long option; or -1 if short */
 	/* private variables not intended for external uses */
 	int i, pos, n_args;
 } ketopt_t;
 
 typedef struct {
-	char *name;
+	const char *name;
 	int has_arg;
 	int val;
 } ko_longopt_t;
@@ -63,7 +63,14 @@ static void ketopt_permute(char *argv[], int j, int n) /* move argv[j] over n el
  */
 static int ketopt(ketopt_t *s, int argc, char *argv[], int permute, const char *ostr, const ko_longopt_t *longopts)
 {
+        char ostr2[OSTR_MAX+1] = "vh";
 	int opt = -1, i0, j;
+        int odiff = 0;
+
+        strncmp_s(ostr, OSTR_MAX, ostr2, OSTR_MAX, &odiff);
+        if (odiff) {
+            return -1;
+        }
 	if (permute) {
 		while (s->i < argc && (argv[s->i][0] != '-' || argv[s->i][1] == '\0'))
 			++s->i, ++s->n_args;
@@ -110,7 +117,8 @@ static int ketopt(ketopt_t *s, int argc, char *argv[], int permute, const char *
 		opt = s->opt = argv[s->i][s->pos++];
         short_opt[0] = opt;
         short_opt[1] = '\0';
-        strstr_s((char *)ostr, OSTR_MAX, short_opt, 1, &p);
+        
+        strstr_s(ostr2, OSTR_MAX, short_opt, 1, &p);
 		if (p == 0) {
 			opt = '?'; /* unknown option */
 		} else if (p[1] == ':') {

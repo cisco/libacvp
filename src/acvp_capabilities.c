@@ -2345,19 +2345,19 @@ ACVP_RESULT acvp_cap_rsa_keygen_set_mode(ACVP_CTX *ctx,
     keygen_cap->rand_pq = value;
     switch (value) {
     case ACVP_RSA_KEYGEN_B32:
-        keygen_cap->rand_pq_str = (char *)ACVP_RSA_RANDPQ32_STR;
+        keygen_cap->rand_pq_str = ACVP_RSA_RANDPQ32_STR;
         break;
     case ACVP_RSA_KEYGEN_B33:
-        keygen_cap->rand_pq_str = (char *)ACVP_RSA_RANDPQ33_STR;
+        keygen_cap->rand_pq_str = ACVP_RSA_RANDPQ33_STR;
         break;
     case ACVP_RSA_KEYGEN_B34:
-        keygen_cap->rand_pq_str = (char *)ACVP_RSA_RANDPQ34_STR;
+        keygen_cap->rand_pq_str = ACVP_RSA_RANDPQ34_STR;
         break;
     case ACVP_RSA_KEYGEN_B35:
-        keygen_cap->rand_pq_str = (char *)ACVP_RSA_RANDPQ35_STR;
+        keygen_cap->rand_pq_str = ACVP_RSA_RANDPQ35_STR;
         break;
     case ACVP_RSA_KEYGEN_B36:
-        keygen_cap->rand_pq_str = (char *)ACVP_RSA_RANDPQ36_STR;
+        keygen_cap->rand_pq_str = ACVP_RSA_RANDPQ36_STR;
         break;
     default:
         break;
@@ -2679,14 +2679,14 @@ ACVP_RESULT acvp_cap_rsa_sigver_set_exponent(ACVP_CTX *ctx,
  */
 ACVP_RESULT acvp_cap_rsa_keygen_set_primes(ACVP_CTX *ctx,
                                            ACVP_RSA_KEYGEN_MODE mode,
-                                           int mod,
+                                           unsigned int mod,
                                            ACVP_RSA_PRIME_PARAM param,
                                            int value) {
     ACVP_RSA_KEYGEN_CAP *keygen_cap;
     ACVP_CAPS_LIST *cap_list;
     ACVP_RSA_MODE_CAPS_LIST *current_prime = NULL;
     int found = 0;
-    char *string = NULL;
+    const char *string = NULL;
 
     cap_list = acvp_locate_cap_entry(ctx, ACVP_RSA_KEYGEN);
     if (!cap_list) {
@@ -2817,14 +2817,14 @@ ACVP_RESULT acvp_cap_rsa_keygen_set_primes(ACVP_CTX *ctx,
  */
 ACVP_RESULT acvp_cap_rsa_sigver_set_mod_parm(ACVP_CTX *ctx,
                                              ACVP_RSA_SIG_TYPE sig_type,
-                                             int mod,
+                                             unsigned int mod,
                                              int hash_alg,
                                              int salt_len) {
     ACVP_RSA_SIG_CAP *sigver_cap;
     ACVP_CAPS_LIST *cap_list;
     ACVP_RSA_MODE_CAPS_LIST *current_cap = NULL;
     ACVP_RSA_HASH_PAIR_LIST *current_hash = NULL;
-    char *string = NULL;
+    const char *string = NULL;
     int found = 0;
 
     if (!ctx) {
@@ -2926,14 +2926,14 @@ ACVP_RESULT acvp_cap_rsa_sigver_set_mod_parm(ACVP_CTX *ctx,
  */
 ACVP_RESULT acvp_cap_rsa_siggen_set_mod_parm(ACVP_CTX *ctx,
                                              ACVP_RSA_SIG_TYPE sig_type,
-                                             int mod,
+                                             unsigned int mod,
                                              int hash_alg,
                                              int salt_len) {
     ACVP_RSA_SIG_CAP *siggen_cap;
     ACVP_CAPS_LIST *cap_list;
     ACVP_RSA_MODE_CAPS_LIST *current_cap = NULL;
     ACVP_RSA_HASH_PAIR_LIST *current_hash = NULL;
-    char *string = NULL;
+    const char *string = NULL;
     int found = 0;
 
     if (!ctx) {
@@ -3063,7 +3063,7 @@ ACVP_RESULT acvp_cap_rsa_sig_enable(ACVP_CTX *ctx,
                                     ACVP_CIPHER cipher,
                                     int (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
     ACVP_RESULT result = ACVP_SUCCESS;
-    char *cap_message_str = NULL;
+    const char *cap_message_str = NULL;
 
     if (!ctx) {
         return ACVP_NO_CTX;
@@ -3109,7 +3109,7 @@ ACVP_RESULT acvp_cap_ecdsa_set_parm(ACVP_CTX *ctx,
     ACVP_CAPS_LIST *cap_list;
     ACVP_NAME_LIST *current_curve, *current_secret_mode, *current_hash;
     ACVP_ECDSA_CAP *cap;
-    char *string = NULL;
+    const char *string = NULL;
 
     cap_list = acvp_locate_cap_entry(ctx, cipher);
     if (!cap_list) {
@@ -3411,7 +3411,7 @@ ACVP_RESULT acvp_cap_kdf135_snmp_set_parm(ACVP_CTX *ctx,
  */
 ACVP_RESULT acvp_cap_kdf135_snmp_set_engid(ACVP_CTX *ctx,
                                            ACVP_CIPHER kcap,
-                                           char *engid) {
+                                           const char *engid) {
     ACVP_CAPS_LIST *cap;
     ACVP_KDF135_SNMP_CAP *kdf135_snmp_cap;
     ACVP_NAME_LIST *engids;
@@ -4450,12 +4450,13 @@ ACVP_RESULT acvp_cap_kdf108_set_domain(ACVP_CTX *ctx,
 /*
  * Append a KAS-ECC pre req val to the capabilities
  */
-static ACVP_RESULT acvp_add_kas_ecc_prereq_val(ACVP_KAS_ECC_CAP_MODE *kas_ecc_mode,
+static ACVP_RESULT acvp_add_kas_ecc_prereq_val(ACVP_CTX *ctx, ACVP_KAS_ECC_CAP_MODE *kas_ecc_mode,
                                                ACVP_KAS_ECC_MODE mode,
                                                ACVP_PREREQ_ALG pre_req,
                                                char *value) {
     ACVP_PREREQ_LIST *prereq_entry, *prereq_entry_2;
 
+    ACVP_LOG_INFO("\nKAS-ECC mode %d", mode);
     prereq_entry = calloc(1, sizeof(ACVP_PREREQ_LIST));
     if (!prereq_entry) {
         return ACVP_MALLOC_FAIL;
@@ -4525,7 +4526,7 @@ ACVP_RESULT acvp_cap_kas_ecc_set_prereq(ACVP_CTX *ctx,
     /*
      * Add the value to the cap
      */
-    return acvp_add_kas_ecc_prereq_val(kas_ecc_mode, mode, pre_req, value);
+    return acvp_add_kas_ecc_prereq_val(ctx, kas_ecc_mode, mode, pre_req, value);
 }
 
 ACVP_RESULT acvp_cap_kas_ecc_enable(ACVP_CTX *ctx,
@@ -4824,12 +4825,13 @@ ACVP_RESULT acvp_cap_kas_ecc_set_scheme(ACVP_CTX *ctx,
 /*
  * Append a KAS-FFC pre req val to the capabilities
  */
-static ACVP_RESULT acvp_add_kas_ffc_prereq_val(ACVP_KAS_FFC_CAP_MODE *kas_ffc_mode,
+static ACVP_RESULT acvp_add_kas_ffc_prereq_val(ACVP_CTX *ctx, ACVP_KAS_FFC_CAP_MODE *kas_ffc_mode,
                                                ACVP_KAS_FFC_MODE mode,
                                                ACVP_PREREQ_ALG pre_req,
                                                char *value) {
     ACVP_PREREQ_LIST *prereq_entry, *prereq_entry_2;
 
+    ACVP_LOG_INFO("\nKAS-FFC mode %d", mode);
     prereq_entry = calloc(1, sizeof(ACVP_PREREQ_LIST));
     if (!prereq_entry) {
         return ACVP_MALLOC_FAIL;
@@ -4899,7 +4901,7 @@ ACVP_RESULT acvp_cap_kas_ffc_set_prereq(ACVP_CTX *ctx,
     /*
      * Add the value to the cap
      */
-    return acvp_add_kas_ffc_prereq_val(kas_ffc_mode, mode, pre_req, value);
+    return acvp_add_kas_ffc_prereq_val(ctx, kas_ffc_mode, mode, pre_req, value);
 }
 
 ACVP_RESULT acvp_cap_kas_ffc_enable(ACVP_CTX *ctx,
