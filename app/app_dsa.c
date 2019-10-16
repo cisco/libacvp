@@ -149,6 +149,9 @@ int app_dsa_handler(ACVP_TEST_CASE *test_case) {
         case ACVP_SHA512_256:
             md = EVP_sha512_256();
             break;
+#else
+        case ACVP_SHA512_224:
+        case ACVP_SHA512_256:
 #endif
         default:
             printf("DSA sha value not supported %d\n", tc->sha);
@@ -286,6 +289,9 @@ int app_dsa_handler(ACVP_TEST_CASE *test_case) {
         case ACVP_SHA512_256:
             md = EVP_sha512_256();
             break;
+#else
+        case ACVP_SHA512_224:
+        case ACVP_SHA512_256:
 #endif
         default:
             printf("DSA sha value not supported %d\n", tc->sha);
@@ -376,6 +382,9 @@ int app_dsa_handler(ACVP_TEST_CASE *test_case) {
         case ACVP_SHA512_256:
             md = EVP_sha512_256();
             break;
+#else
+        case ACVP_SHA512_224:
+        case ACVP_SHA512_256:
 #endif
         default:
             printf("DSA sha value not supported %d\n", tc->sha);
@@ -480,6 +489,9 @@ int app_dsa_handler(ACVP_TEST_CASE *test_case) {
         case ACVP_SHA512_256:
             md = EVP_sha512_256();
             break;
+#else
+        case ACVP_SHA512_224:
+        case ACVP_SHA512_256:
 #endif
         default:
             printf("DSA sha value not supported %d\n", tc->sha);

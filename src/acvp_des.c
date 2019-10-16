@@ -652,7 +652,7 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
      * Get the crypto module handler for DES mode
      */
     alg_id = acvp_lookup_cipher_index(alg_str);
-    if (alg_id < ACVP_CIPHER_START) {
+    if (alg_id == 0) {
         ACVP_LOG_ERR("unsupported algorithm (%s)", alg_str);
         return ACVP_UNSUPPORTED_OP;
     }
@@ -766,7 +766,7 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
 
-            tc_id = (unsigned int)json_object_get_number(testobj, "tcId");
+            tc_id = json_object_get_number(testobj, "tcId");
 
             key1 = json_object_get_string(testobj, "key1");
             if (!key1) {
@@ -845,7 +845,7 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
                 if (alg_id == ACVP_TDES_CFB1) {
                     unsigned int tmp_pt_len = 0;
-                    tmp_pt_len = (unsigned int)json_object_get_number(testobj, "payloadLen");
+                    tmp_pt_len = json_object_get_number(testobj, "payloadLen");
                     if (tmp_pt_len) {
                         // Replace with the provided ptLen
                         ptlen = tmp_pt_len;
@@ -873,7 +873,7 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
                 if (alg_id == ACVP_TDES_CFB1) {
                     unsigned int tmp_ct_len = 0;
-                    tmp_ct_len = (unsigned int)json_object_get_number(testobj, "payloadLen");
+                    tmp_ct_len = json_object_get_number(testobj, "payloadLen");
                     if (tmp_ct_len) {
                         // Replace with the provided ctLen
                         ctlen = tmp_ct_len;

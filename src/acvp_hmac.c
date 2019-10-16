@@ -154,7 +154,7 @@ ACVP_RESULT acvp_hmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
      * Get the crypto module handler for this hash algorithm
      */
     alg_id = acvp_lookup_cipher_index(alg_str);
-    if (alg_id < ACVP_CIPHER_START) {
+    if (alg_id == 0) {
         ACVP_LOG_ERR("ERROR: unsupported algorithm (%s)", alg_str);
         return ACVP_UNSUPPORTED_OP;
     }
@@ -210,21 +210,21 @@ ACVP_RESULT acvp_hmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         json_object_set_value(r_gobj, "tests", json_value_init_array());
         r_tarr = json_object_get_array(r_gobj, "tests");
 
-        msglen = (unsigned int)json_object_get_number(groupobj, "msgLen");
+        msglen = json_object_get_number(groupobj, "msgLen");
         if (!msglen) {
             ACVP_LOG_ERR("Failed to include msgLen. ");
             rv = ACVP_MISSING_ARG;
             goto err;
         }
 
-        keylen = (unsigned int)json_object_get_number(groupobj, "keyLen");
+        keylen = json_object_get_number(groupobj, "keyLen");
         if (!keylen) {
             ACVP_LOG_ERR("Failed to include keyLen. ");
             rv = ACVP_MISSING_ARG;
             goto err;
         }
 
-        maclen = (unsigned int)json_object_get_number(groupobj, "macLen");
+        maclen = json_object_get_number(groupobj, "macLen");
         if (!maclen) {
             ACVP_LOG_ERR("Failed to include macLen. ");
             rv = ACVP_MISSING_ARG;

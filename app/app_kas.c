@@ -165,6 +165,9 @@ int app_kas_ecc_handler(ACVP_TEST_CASE *test_case) {
         case ACVP_SHA512:
             md = EVP_sha512();
             break;
+        case ACVP_SHA1:
+        case ACVP_SHA512_224:
+        case ACVP_SHA512_256:
         default:
             printf("No valid hash name %d\n", tc->md);
             return rv;
@@ -307,6 +310,9 @@ int app_kas_ffc_handler(ACVP_TEST_CASE *test_case) {
     case ACVP_SHA512:
         md = EVP_sha512();
         break;
+    case ACVP_SHA1:
+    case ACVP_SHA512_224:
+    case ACVP_SHA512_256:
     default:
         printf("No valid hash name %d\n", tc->md);
         return rv;

@@ -203,10 +203,6 @@ static ACVP_RESULT totp(char **token, int token_max) {
 
     otp = bin % DIGITS_POWER[ACVP_TOTP_LENGTH];
 
-    /* If we ever change the size then it will fail hard here */
-    if (ACVP_TOTP_LENGTH != 8) {
-        return ACVP_TOTP_DECODE_FAIL;
-    }
     // generate format string like "%08d" to fix digits using 0
     sprintf((char *)token_buff, "%08d", otp);
     memcpy_s((char *)*token, token_max, token_buff, ACVP_TOTP_LENGTH);

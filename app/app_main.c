@@ -19,7 +19,6 @@
 #include <openssl/bn.h>
 
 #include "app_lcl.h"
-#include "safe_lib.h"
 
 #ifdef ACVP_NO_RUNTIME
 # include "app_fips_lcl.h"
@@ -120,8 +119,9 @@ static void app_cleanup(ACVP_CTX *ctx) {
 int main(int argc, char **argv) {
     ACVP_RESULT rv = ACVP_SUCCESS;
     ACVP_CTX *ctx = NULL;
-    APP_CONFIG cfg = { 0 };
+    APP_CONFIG cfg;
 
+    memset_s(&cfg, sizeof(APP_CONFIG), 0, sizeof(APP_CONFIG));
     if (ingest_cli(&cfg, argc, argv)) {
         return 1;
     }

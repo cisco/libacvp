@@ -8,15 +8,16 @@
  * https://github.com/cisco/libacvp/LICENSE
  */
 
-#include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
 #ifdef WIN32
 #include <io.h>
 #include <Windows.h>
 #else
 #include <unistd.h>
 #endif
+#include <math.h>
 #include "acvp.h"
 #include "acvp_lcl.h"
 #include "parson.h"
@@ -1685,7 +1686,7 @@ static ACVP_RESULT acvp_parse_login(ACVP_CTX *ctx) {
 
     if (large_required) {
         /* Grab the large submission sizeConstraint */
-        ctx->post_size_constraint = (unsigned int)json_object_get_number(obj, "sizeConstraint");
+        ctx->post_size_constraint = json_object_get_number(obj, "sizeConstraint");
     }
 #endif
     /*
@@ -1990,7 +1991,7 @@ ACVP_RESULT acvp_process_tests(ACVP_CTX *ctx) {
  * can choose to implement a retry backoff using 'modifier'. Additionally, this
  * function will ensure that retry periods will sum to no longer than ACVP_MAX_WAIT_TIME.
  */
-static ACVP_RESULT acvp_retry_handler(ACVP_CTX *ctx, unsigned int *retry_period, unsigned int *waited_so_far, int modifier) {
+static ACVP_RESULT acvp_retry_handler(ACVP_CTX *ctx, int *retry_period, unsigned int *waited_so_far, int modifier) {
     /* perform check at beginning of function call, so library can check one more time when max
      * time is reached to see if server status has changed */
     if (*waited_so_far >= ACVP_MAX_WAIT_TIME) {
@@ -2108,7 +2109,7 @@ static ACVP_RESULT acvp_process_vsid(ACVP_CTX *ctx, char *vsid_url, int count) {
     JSON_Object *ts_obj = NULL;
     JSON_Object *obj = NULL;
     ACVP_STRING_LIST *vs_entry = NULL;
-    unsigned int retry_period = 0;
+    int retry_period = 0;
     int retry = 1;
     unsigned int time_waited_so_far = 0;
     while (retry) {
@@ -2129,7 +2130,7 @@ static ACVP_RESULT acvp_process_vsid(ACVP_CTX *ctx, char *vsid_url, int count) {
         /*
          * Check if we received a retry response
          */
-        retry_period = (unsigned int)json_object_get_number(obj, "retry");
+        retry_period = json_object_get_number(obj, "retry");
         if (retry_period) {
             /*
              * Wait and try again to retrieve the VectorSet
@@ -2289,7 +2290,7 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
     const char *status = NULL;
 
     unsigned int time_waited_so_far = 0;
-    unsigned int retry_interval = ACVP_RETRY_TIME;
+    int retry_interval = ACVP_RETRY_TIME;
 
     while (1) {
         /*

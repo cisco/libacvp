@@ -164,14 +164,14 @@ ACVP_RESULT acvp_kdf135_tls_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         json_object_set_value(r_gobj, "tests", json_value_init_array());
         r_tarr = json_object_get_array(r_gobj, "tests");
 
-        pm_len = (unsigned int)json_object_get_number(groupobj, "preMasterSecretLength");
+        pm_len = json_object_get_number(groupobj, "preMasterSecretLength");
         if (!pm_len) {
             ACVP_LOG_ERR("preMasterSecretLength incorrect, %d", pm_len);
             rv = ACVP_INVALID_ARG;
             goto err;
         }
 
-        kb_len = (unsigned int)json_object_get_number(groupobj, "keyBlockLength");
+        kb_len = json_object_get_number(groupobj, "keyBlockLength");
         if (!kb_len) {
             ACVP_LOG_ERR("keyBlockLength incorrect, %d", kb_len);
             rv = ACVP_INVALID_ARG;
@@ -219,7 +219,7 @@ ACVP_RESULT acvp_kdf135_tls_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
 
-            tc_id = (unsigned int)json_object_get_number(testobj, "tcId");
+            tc_id = json_object_get_number(testobj, "tcId");
 
             pm_secret = json_object_get_string(testobj, "preMasterSecret");
             if (!pm_secret) {

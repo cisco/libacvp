@@ -402,7 +402,7 @@ static ACVP_RESULT acvp_ecdsa_kat_handler_internal(ACVP_CTX *ctx, JSON_Object *o
             ACVP_LOG_INFO("Found new ECDSA test vector...");
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
-            tc_id = (unsigned int)json_object_get_number(testobj, "tcId");
+            tc_id = json_object_get_number(testobj, "tcId");
 
             if (alg_id == ACVP_ECDSA_KEYVER || alg_id == ACVP_ECDSA_SIGVER) {
                 qx = json_object_get_string(testobj, "qx");

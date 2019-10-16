@@ -373,7 +373,7 @@ static ACVP_RESULT acvp_kas_ecc_cdh(ACVP_CTX *ctx,
             ACVP_LOG_INFO("Found new KAS-ECC CDH test vector...");
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
-            tc_id = (unsigned int)json_object_get_number(testobj, "tcId");
+            tc_id = json_object_get_number(testobj, "tcId");
 
             /*
              * Create a new test case in the response
@@ -570,7 +570,7 @@ static ACVP_RESULT acvp_kas_ecc_comp(ACVP_CTX *ctx,
             ACVP_LOG_INFO("Found new KAS-ECC Component test vector...");
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
-            tc_id = (unsigned int)json_object_get_number(testobj, "tcId");
+            tc_id = json_object_get_number(testobj, "tcId");
 
             /*
              * Create a new test case in the response

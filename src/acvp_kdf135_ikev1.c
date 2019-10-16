@@ -390,7 +390,7 @@ ACVP_RESULT acvp_kdf135_ikev1_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
 
-            tc_id = (unsigned int)json_object_get_number(testobj, "tcId");
+            tc_id = json_object_get_number(testobj, "tcId");
 
             init_nonce = json_object_get_string(testobj, "nInit");
             if (!init_nonce) {

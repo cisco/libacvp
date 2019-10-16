@@ -102,14 +102,17 @@ int app_ecdsa_handler(ACVP_TEST_CASE *test_case) {
         case ACVP_SHA512:
             md = EVP_sha512();
             break;
-        #if OPENSSL_VERSION_NUMBER >= 0x10101010L /* OpenSSL 1.1.1 or greater */
+#if OPENSSL_VERSION_NUMBER >= 0x10101010L /* OpenSSL 1.1.1 or greater */
         case ACVP_SHA512_224:
             md = EVP_sha512_224();
             break;
         case ACVP_SHA512_256:
             md = EVP_sha512_256();
             break;
-        #endif
+#else
+        case ACVP_SHA512_224:
+        case ACVP_SHA512_256:
+#endif
         default:
             printf("Unsupported hash alg in ECDSA\n");
             goto err;
@@ -154,6 +157,9 @@ int app_ecdsa_handler(ACVP_TEST_CASE *test_case) {
         nid = NID_secp521r1;
         break;
     default:
+    case ACVP_EC_CURVE_P192:
+    case ACVP_EC_CURVE_B163:
+    case ACVP_EC_CURVE_K163:
         printf("Unsupported curve\n");
         goto err;
     }

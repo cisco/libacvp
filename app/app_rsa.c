@@ -195,8 +195,11 @@ int app_rsa_sig_handler(ACVP_TEST_CASE *test_case) {
     case ACVP_SHA512_256:
         tc_md = EVP_sha512_256();
         break;
- #endif
-     default:
+#else
+    case ACVP_SHA512_224:
+    case ACVP_SHA512_256:
+#endif
+    default:
         printf("\nError: hashAlg not supported for RSA SigGen\n");
         goto err;
     }

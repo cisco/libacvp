@@ -609,7 +609,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
      * Get the crypto module handler for AES mode
      */
     alg_id = acvp_lookup_cipher_index(alg_str);
-    if (alg_id < ACVP_CIPHER_START) {
+    if (alg_id == 0) {
         ACVP_LOG_ERR("unsupported algorithm (%s)", alg_str);
         return ACVP_UNSUPPORTED_OP;
     }
@@ -728,7 +728,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             }
         }
 
-        keylen = (unsigned int)json_object_get_number(groupobj, "keyLen");
+        keylen = json_object_get_number(groupobj, "keyLen");
         if (keylen != 128 && keylen != 192 && keylen != 256) {
             ACVP_LOG_ERR("Server JSON invalid 'keyLen', (%u)", keylen);
             rv = ACVP_INVALID_ARG;
@@ -747,7 +747,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         }
         
         if (alg_id == ACVP_AES_GCM || alg_id == ACVP_AES_CCM || alg_id == ACVP_AES_GMAC) {
-            ivlen = (unsigned int)json_object_get_number(groupobj, "ivLen");
+            ivlen = json_object_get_number(groupobj, "ivLen");
             if (!ivlen) {
                 ACVP_LOG_ERR("Server JSON missing 'ivLen'");
                 rv = ACVP_MISSING_ARG;
@@ -811,7 +811,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 }
             }
 
-            aadlen = (unsigned int)json_object_get_number(groupobj, "aadLen");
+            aadlen = json_object_get_number(groupobj, "aadLen");
             if (aadlen > ACVP_SYM_AAD_BIT_MAX) {
                 ACVP_LOG_ERR("'aadLen' too large (%u), max allowed=(%d)",
                              aadlen, ACVP_SYM_AAD_BIT_MAX);
@@ -819,7 +819,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            taglen = (unsigned int)json_object_get_number(groupobj, "tagLen");
+            taglen = json_object_get_number(groupobj, "tagLen");
             if (alg_id == ACVP_AES_GCM_SIV && taglen != ACVP_AES_GCM_SIV_TAGLEN) {
                 ACVP_LOG_ERR("Incorrect server JSON value 'taglen' for AES-GCM-SIV (%u)", taglen);
                 rv = ACVP_INVALID_ARG;
@@ -831,7 +831,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             }
         }
 
-        ptlen = (unsigned int)json_object_get_number(groupobj, "payloadLen");
+        ptlen = json_object_get_number(groupobj, "payloadLen");
         if (alg_id == ACVP_AES_GMAC && ptlen != 0) {
             ACVP_LOG_ERR("'ptlen' not allowed for AES-GMAC");
             rv = ACVP_INVALID_ARG;
@@ -868,7 +868,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
 
-            tc_id = (unsigned int)json_object_get_number(testobj, "tcId");
+            tc_id = json_object_get_number(testobj, "tcId");
 
             key = json_object_get_string(testobj, "key");
             if (!key) {
@@ -883,7 +883,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             }
 
             if (alg_id == ACVP_AES_CFB1) {
-                datalen = (unsigned int)json_object_get_number(testobj, "payloadLen");
+                datalen = json_object_get_number(testobj, "payloadLen");
                 if (datalen > ACVP_SYM_PT_BIT_MAX) {
                     ACVP_LOG_ERR("'dataLen' too large (%u), max allowed=(%d)",
                                  datalen, ACVP_SYM_PT_BIT_MAX);

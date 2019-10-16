@@ -187,7 +187,7 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             }
         }
 
-        entropy_len = (unsigned int)json_object_get_number(groupobj, "entropyInputLen");
+        entropy_len = json_object_get_number(groupobj, "entropyInputLen");
         if (entropy_len < ACVP_DRBG_ENTPY_IN_BIT_MIN ||
             entropy_len > ACVP_DRBG_ENTPY_IN_BIT_MAX) {
             ACVP_LOG_ERR("Server JSON invalid 'entropyInputLen'(%u)",
@@ -196,7 +196,7 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             goto err;
         }
 
-        nonce_len = (unsigned int)json_object_get_number(groupobj, "nonceLen");
+        nonce_len = json_object_get_number(groupobj, "nonceLen");
         if (!(alg_id == ACVP_CTRDRBG && !der_func_enabled)) {
             /* Allowed to be 0 when counter mode and not using derivation func */
             if (nonce_len < ACVP_DRBG_NONCE_BIT_MIN ||
@@ -208,7 +208,7 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             }
         }
 
-        perso_string_len = (unsigned int)json_object_get_number(groupobj, "persoStringLen");
+        perso_string_len = json_object_get_number(groupobj, "persoStringLen");
         if (perso_string_len > ACVP_DRBG_PER_SO_BIT_MAX) {
             ACVP_LOG_ERR("Server JSON invalid 'persoStringLen'(%u)",
                          nonce_len);
@@ -216,7 +216,7 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             goto err;
         }
 
-        drb_len = (unsigned int)json_object_get_number(groupobj, "returnedBitsLen");
+        drb_len = json_object_get_number(groupobj, "returnedBitsLen");
         if (!drb_len || drb_len > ACVP_DRB_BIT_MAX) {
             ACVP_LOG_ERR("Server JSON invalid 'returnedBitsLen'(%u)",
                          drb_len);
@@ -268,7 +268,7 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             ACVP_LOG_INFO("json testval count: %d\n %s\n", i, json_result);
             json_free_serialized_string(json_result);
 
-            tc_id = (unsigned int)json_object_get_number(testobj, "tcId");
+            tc_id = json_object_get_number(testobj, "tcId");
 
             perso_string = json_object_get_string(testobj, "persoString");
             if (!perso_string) {

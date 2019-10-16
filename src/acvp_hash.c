@@ -481,7 +481,7 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
      * Get the crypto module handler for this hash algorithm
      */
     alg_id = acvp_lookup_cipher_index(alg_str);
-    if (alg_id < ACVP_CIPHER_START) {
+    if (alg_id == 0) {
         ACVP_LOG_ERR("unsupported algorithm (%s)", alg_str);
         return ACVP_UNSUPPORTED_OP;
     }
@@ -559,14 +559,14 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         }
         if (test_type == ACVP_HASH_TEST_TYPE_MCT &&
             (alg_id == ACVP_HASH_SHAKE_128 || alg_id == ACVP_HASH_SHAKE_256)) {
-            min_xof_len = (unsigned int)json_object_get_number(groupobj, "minOutLen");
+            min_xof_len = json_object_get_number(groupobj, "minOutLen");
             if (min_xof_len < ACVP_HASH_XOF_MD_BIT_MIN) {
                 ACVP_LOG_ERR("Server JSON invalid 'minOutLen' (%u)",
                              min_xof_len);
                 rv = ACVP_INVALID_ARG;
                 goto err;
             }
-            max_xof_len = (unsigned int)json_object_get_number(groupobj, "maxOutLen");
+            max_xof_len = json_object_get_number(groupobj, "maxOutLen");
             if (max_xof_len > ACVP_HASH_XOF_MD_BIT_MAX) {
                 ACVP_LOG_ERR("Server JSON invalid 'maxOutLen' (%u)",
                              max_xof_len);
@@ -586,7 +586,7 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
 
-            tc_id = (unsigned int)json_object_get_number(testobj, "tcId");
+            tc_id = json_object_get_number(testobj, "tcId");
 
             msg = json_object_get_string(testobj, "msg");
             if (!msg) {
@@ -605,7 +605,7 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             msglen = tmp_msg_len * 4;
 
             if (test_type == ACVP_HASH_TEST_TYPE_VOT) {
-                xof_len = (unsigned int)json_object_get_number(testobj, "outLen");
+                xof_len = json_object_get_number(testobj, "outLen");
                 if (!(xof_len >= ACVP_HASH_XOF_MD_BIT_MIN &&
                       xof_len <= ACVP_HASH_XOF_MD_BIT_MAX)) {
                     ACVP_LOG_ERR("Server JSON invalid 'outLen'(%d)", xof_len);
