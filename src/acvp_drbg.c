@@ -162,7 +162,7 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             goto err;
         }
         mode_id = acvp_lookup_drbg_mode_index(mode_str);
-        if (mode_id == ACVP_DRBG_MODE_END) {
+        if (mode_id == 0) {
             ACVP_LOG_ERR("unsupported DRBG mode (%s)", mode_str);
             rv = ACVP_UNSUPPORTED_OP;
             goto err;

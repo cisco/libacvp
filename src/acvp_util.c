@@ -291,7 +291,7 @@ static int drbg_mode_tbl_length =
 /*
  * This function returns the ID of a DRBG mode given an
  * algorithm name (as defined in the ACVP spec).  It
- * returns ACVP_DRBG_MODE_END if none match.
+ * returns 0 if none match.
  */
 ACVP_DRBG_MODE acvp_lookup_drbg_mode_index(const char *mode) {
     int i = 0;
@@ -307,7 +307,7 @@ ACVP_DRBG_MODE acvp_lookup_drbg_mode_index(const char *mode) {
         }
     }
 
-    return ACVP_DRBG_MODE_END;
+    return 0;
 }
 
 /* This function checks to see if the value is a valid

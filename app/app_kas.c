@@ -144,6 +144,11 @@ int app_kas_ecc_handler(ACVP_TEST_CASE *test_case) {
     case ACVP_EC_CURVE_K571:
         nid = NID_sect571k1;
         break;
+    case ACVP_EC_CURVE_P192:
+    case ACVP_EC_CURVE_B163:
+    case ACVP_EC_CURVE_K163:
+    case ACVP_EC_CURVE_START:
+    case ACVP_EC_CURVE_END:
     default:
         printf("Invalid curve %d\n", tc->curve);
         return rv;
@@ -168,6 +173,7 @@ int app_kas_ecc_handler(ACVP_TEST_CASE *test_case) {
         case ACVP_SHA1:
         case ACVP_SHA512_224:
         case ACVP_SHA512_256:
+        case ACVP_HASH_ALG_MAX:
         default:
             printf("No valid hash name %d\n", tc->md);
             return rv;
@@ -313,6 +319,7 @@ int app_kas_ffc_handler(ACVP_TEST_CASE *test_case) {
     case ACVP_SHA1:
     case ACVP_SHA512_224:
     case ACVP_SHA512_256:
+    case ACVP_HASH_ALG_MAX:
     default:
         printf("No valid hash name %d\n", tc->md);
         return rv;

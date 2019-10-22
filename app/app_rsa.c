@@ -40,7 +40,11 @@ int app_rsa_keygen_handler(ACVP_TEST_CASE *test_case) {
     ACVP_RSA_KEYGEN_TC *tc = NULL;
     int rv = 1;
     RSA *rsa = NULL;
+#if OPENSSL_VERSION_NUMBER <= 0x10100000L
     BIGNUM *p = NULL, *q = NULL, *n = NULL, *d = NULL;
+#else
+    const BIGNUM *p1 = NULL, *q1 = NULL, *n1 = NULL, *d1 = NULL;
+#endif
     BIGNUM *e = NULL;
 
     if (!test_case) {
@@ -83,17 +87,19 @@ int app_rsa_keygen_handler(ACVP_TEST_CASE *test_case) {
     q = rsa->q;
     n = rsa->n;
     d = rsa->d;
-#else
-    RSA_get0_key(rsa, (const BIGNUM **)&n, NULL,
-                 (const BIGNUM **)&d);
-    RSA_get0_factors(rsa, (const BIGNUM **)&p,
-                     (const BIGNUM **)&q);
-#endif
-
     tc->p_len = BN_bn2bin(p, tc->p);
     tc->q_len = BN_bn2bin(q, tc->q);
     tc->n_len = BN_bn2bin(n, tc->n);
     tc->d_len = BN_bn2bin(d, tc->d);
+#else
+    RSA_get0_key(rsa, &n1, NULL, &d1);
+    RSA_get0_factors(rsa, &p1, &q1);
+
+    tc->p_len = BN_bn2bin(p1, tc->p);
+    tc->q_len = BN_bn2bin(q1, tc->q);
+    tc->n_len = BN_bn2bin(n1, tc->n);
+    tc->d_len = BN_bn2bin(d1, tc->d);
+#endif
 
     rv = 0;
 err:
@@ -108,6 +114,7 @@ int app_rsa_sig_handler(ACVP_TEST_CASE *test_case) {
     BIGNUM *bn_e = NULL, *e = NULL, *n = NULL;
 #if OPENSSL_VERSION_NUMBER >= 0x10100000L
     BIGNUM  *tmp_e = NULL, *tmp_n = NULL;
+    const BIGNUM  *tmp_e1 = NULL, *tmp_n1 = NULL;
 #endif
     ACVP_RSA_SIG_TC    *tc;
     RSA *rsa = NULL;
@@ -199,6 +206,7 @@ int app_rsa_sig_handler(ACVP_TEST_CASE *test_case) {
     case ACVP_SHA512_224:
     case ACVP_SHA512_256:
 #endif
+    case ACVP_HASH_ALG_MAX:
     default:
         printf("\nError: hashAlg not supported for RSA SigGen\n");
         goto err;
@@ -255,9 +263,9 @@ int app_rsa_sig_handler(ACVP_TEST_CASE *test_case) {
             e = BN_dup(group_rsa->e);
             n = BN_dup(group_rsa->n);
 #else
-            RSA_get0_key(group_rsa, (const BIGNUM **)&tmp_n, (const BIGNUM **)&tmp_e, NULL);
-            e = BN_dup(tmp_e);
-            n = BN_dup(tmp_n);
+            RSA_get0_key(group_rsa, &tmp_n1, &tmp_e1, NULL);
+            e = BN_dup(tmp_e1);
+            n = BN_dup(tmp_n1);
 #endif
             group_n = BN_dup(n);
         } else {

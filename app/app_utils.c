@@ -12,6 +12,9 @@
 #include <openssl/hmac.h>
 #include "app_lcl.h"
 #include "safe_lib.h"
+#ifdef ACVP_NO_RUNTIME
+# include "app_fips_lcl.h"
+#endif
 
 /* This is a public domain base64 implementation written by WEI Zhicheng. */
 enum { BASE64_OK = 0, BASE64_INVALID };

@@ -371,6 +371,8 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
     case ACVP_SYM_CIPH_IVGEN_SRC_EXT:
         json_object_set_string(cap_obj, "ivGen", "external");
         break;
+    case ACVP_SYM_CIPH_IVGEN_SRC_NA:
+    case ACVP_SYM_CIPH_IVGEN_SRC_MAX:
     default:
         /* do nothing, this is an optional capability */
         break;
@@ -386,6 +388,8 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
     case ACVP_SYM_CIPH_IVGEN_MODE_822:
         json_object_set_string(cap_obj, "ivGenMode", "8.2.2");
         break;
+    case ACVP_SYM_CIPH_IVGEN_MODE_NA:
+    case ACVP_SYM_CIPH_IVGEN_MODE_MAX:
     default:
         /* do nothing, this is an optional capability */
         break;
@@ -463,6 +467,66 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
     case ACVP_AES_KWP:
     case ACVP_AES_XTS:
         break;
+    case ACVP_CIPHER_START:
+    case ACVP_AES_GCM:
+    case ACVP_AES_GCM_SIV:
+    case ACVP_AES_CCM:
+    case ACVP_AES_GMAC:
+    case ACVP_HASH_SHA1:
+    case ACVP_HASH_SHA224:
+    case ACVP_HASH_SHA256:
+    case ACVP_HASH_SHA384:
+    case ACVP_HASH_SHA512:
+    case ACVP_HASH_SHA512_224:
+    case ACVP_HASH_SHA512_256:
+    case ACVP_HASH_SHA3_224:
+    case ACVP_HASH_SHA3_256:
+    case ACVP_HASH_SHA3_384:
+    case ACVP_HASH_SHA3_512:
+    case ACVP_HASH_SHAKE_128:
+    case ACVP_HASH_SHAKE_256:
+    case ACVP_HASHDRBG:
+    case ACVP_HMACDRBG:
+    case ACVP_CTRDRBG:
+    case ACVP_HMAC_SHA1:
+    case ACVP_HMAC_SHA2_224:
+    case ACVP_HMAC_SHA2_256:
+    case ACVP_HMAC_SHA2_384:
+    case ACVP_HMAC_SHA2_512:
+    case ACVP_HMAC_SHA2_512_224:
+    case ACVP_HMAC_SHA2_512_256:
+    case ACVP_HMAC_SHA3_224:
+    case ACVP_HMAC_SHA3_256:
+    case ACVP_HMAC_SHA3_384:
+    case ACVP_HMAC_SHA3_512:
+    case ACVP_CMAC_AES:
+    case ACVP_CMAC_TDES:
+    case ACVP_DSA_KEYGEN:
+    case ACVP_DSA_PQGGEN:
+    case ACVP_DSA_PQGVER:
+    case ACVP_DSA_SIGGEN:
+    case ACVP_DSA_SIGVER:
+    case ACVP_RSA_KEYGEN:
+    case ACVP_RSA_SIGGEN:
+    case ACVP_RSA_SIGVER:
+    case ACVP_ECDSA_KEYGEN:
+    case ACVP_ECDSA_KEYVER:
+    case ACVP_ECDSA_SIGGEN:
+    case ACVP_ECDSA_SIGVER:
+    case ACVP_KDF135_TLS:
+    case ACVP_KDF135_SNMP:
+    case ACVP_KDF135_SSH:
+    case ACVP_KDF135_SRTP:
+    case ACVP_KDF135_IKEV2:
+    case ACVP_KDF135_IKEV1:
+    case ACVP_KDF135_X963:
+    case ACVP_KDF108:
+    case ACVP_KAS_ECC_CDH:
+    case ACVP_KAS_ECC_COMP:
+    case ACVP_KAS_ECC_NOCOMP:
+    case ACVP_KAS_FFC_COMP:
+    case ACVP_KAS_FFC_NOCOMP:
+    case ACVP_CIPHER_END:
     default:
         json_object_set_value(cap_obj, "ivLen", json_value_init_array());
         opts_arr = json_object_get_array(cap_obj, "ivLen");
@@ -941,6 +1005,85 @@ static ACVP_RESULT acvp_build_ecdsa_register_cap(ACVP_CIPHER cipher, JSON_Object
         current_curve = cap_entry->cap.ecdsa_sigver_cap->curves;
         current_hash = cap_entry->cap.ecdsa_sigver_cap->hash_algs;
         break;
+    case ACVP_CIPHER_START:
+    case ACVP_AES_GCM:
+    case ACVP_AES_GCM_SIV:
+    case ACVP_AES_CCM:
+    case ACVP_AES_ECB:
+    case ACVP_AES_CBC:
+    case ACVP_AES_CFB1:
+    case ACVP_AES_CFB8:
+    case ACVP_AES_CFB128:
+    case ACVP_AES_OFB:
+    case ACVP_AES_CTR:
+    case ACVP_AES_XTS:
+    case ACVP_AES_KW:
+    case ACVP_AES_KWP:
+    case ACVP_AES_GMAC:
+    case ACVP_TDES_ECB:
+    case ACVP_TDES_CBC:
+    case ACVP_TDES_CBCI:
+    case ACVP_TDES_OFB:
+    case ACVP_TDES_OFBI:
+    case ACVP_TDES_CFB1:
+    case ACVP_TDES_CFB8:
+    case ACVP_TDES_CFB64:
+    case ACVP_TDES_CFBP1:
+    case ACVP_TDES_CFBP8:
+    case ACVP_TDES_CFBP64:
+    case ACVP_TDES_CTR:
+    case ACVP_TDES_KW:
+    case ACVP_HASH_SHA1:
+    case ACVP_HASH_SHA224:
+    case ACVP_HASH_SHA256:
+    case ACVP_HASH_SHA384:
+    case ACVP_HASH_SHA512:
+    case ACVP_HASH_SHA512_224:
+    case ACVP_HASH_SHA512_256:
+    case ACVP_HASH_SHA3_224:
+    case ACVP_HASH_SHA3_256:
+    case ACVP_HASH_SHA3_384:
+    case ACVP_HASH_SHA3_512:
+    case ACVP_HASH_SHAKE_128:
+    case ACVP_HASH_SHAKE_256:
+    case ACVP_HASHDRBG:
+    case ACVP_HMACDRBG:
+    case ACVP_CTRDRBG:
+    case ACVP_HMAC_SHA1:
+    case ACVP_HMAC_SHA2_224:
+    case ACVP_HMAC_SHA2_256:
+    case ACVP_HMAC_SHA2_384:
+    case ACVP_HMAC_SHA2_512:
+    case ACVP_HMAC_SHA2_512_224:
+    case ACVP_HMAC_SHA2_512_256:
+    case ACVP_HMAC_SHA3_224:
+    case ACVP_HMAC_SHA3_256:
+    case ACVP_HMAC_SHA3_384:
+    case ACVP_HMAC_SHA3_512:
+    case ACVP_CMAC_AES:
+    case ACVP_CMAC_TDES:
+    case ACVP_DSA_KEYGEN:
+    case ACVP_DSA_PQGGEN:
+    case ACVP_DSA_PQGVER:
+    case ACVP_DSA_SIGGEN:
+    case ACVP_DSA_SIGVER:
+    case ACVP_RSA_KEYGEN:
+    case ACVP_RSA_SIGGEN:
+    case ACVP_RSA_SIGVER:
+    case ACVP_KDF135_TLS:
+    case ACVP_KDF135_SNMP:
+    case ACVP_KDF135_SSH:
+    case ACVP_KDF135_SRTP:
+    case ACVP_KDF135_IKEV2:
+    case ACVP_KDF135_IKEV1:
+    case ACVP_KDF135_X963:
+    case ACVP_KDF108:
+    case ACVP_KAS_ECC_CDH:
+    case ACVP_KAS_ECC_COMP:
+    case ACVP_KAS_ECC_NOCOMP:
+    case ACVP_KAS_FFC_COMP:
+    case ACVP_KAS_FFC_NOCOMP:
+    case ACVP_CIPHER_END:
     default:
         return ACVP_INVALID_ARG;
 
@@ -1987,6 +2130,7 @@ static ACVP_RESULT acvp_build_kas_ecc_register_cap(ACVP_CTX *ctx,
             json_object_set_string(cap_obj, "mode", "Component");
             break;
         case ACVP_KAS_ECC_MODE_NOCOMP:
+        case ACVP_KAS_ECC_MAX_MODES:
         default:
             ACVP_LOG_ERR("\nUnsupported KAS-ECC mode %d", kas_ecc_mode->cap_mode);
             return ACVP_INVALID_ARG;
@@ -2181,6 +2325,7 @@ static ACVP_RESULT acvp_build_kas_ecc_register_cap(ACVP_CTX *ctx,
                 case ACVP_KAS_ECC_KDFKC:
                     json_object_set_value(func_obj, "kdfKc", kdf_val);
                     break;
+                case ACVP_KAS_ECC_PARMSET:
                 default:
                     ACVP_LOG_ERR("\nUnsupported KAS-ECC kdf %d", kdf);
                     return ACVP_INVALID_ARG;
@@ -2197,6 +2342,7 @@ static ACVP_RESULT acvp_build_kas_ecc_register_cap(ACVP_CTX *ctx,
                 case ACVP_KAS_ECC_ONEPASS_MQV:
                 case ACVP_KAS_ECC_ONEPASS_UNIFIED:
                 case ACVP_KAS_ECC_STATIC_UNIFIED:
+                case ACVP_KAS_ECC_SCHEMES_MAX:
                 default:
                     ACVP_LOG_ERR("\nUnsupported KAS-ECC scheme %d", scheme);
                     return ACVP_INVALID_ARG;
@@ -2311,6 +2457,7 @@ static ACVP_RESULT acvp_build_kas_ffc_register_cap(ACVP_CTX *ctx,
             json_object_set_string(cap_obj, "mode", "Component");
             break;
         case ACVP_KAS_FFC_MODE_NOCOMP:
+        case ACVP_KAS_FFC_MAX_MODES:
         default:
             ACVP_LOG_ERR("\nUnsupported KAS-FFC mode %d", kas_ffc_mode->cap_mode);
             return ACVP_INVALID_ARG;
@@ -2444,6 +2591,7 @@ static ACVP_RESULT acvp_build_kas_ffc_register_cap(ACVP_CTX *ctx,
                 case ACVP_KAS_FFC_KDFKC:
                     json_object_set_value(func_obj, "kdfKc", kdf_val);
                     break;
+                case ACVP_KAS_FFC_PARMSET:
                 default:
                     ACVP_LOG_ERR("\nUnsupported KAS-FFC kdf %d", kdf);
                     return ACVP_INVALID_ARG;
@@ -2460,6 +2608,7 @@ static ACVP_RESULT acvp_build_kas_ffc_register_cap(ACVP_CTX *ctx,
                 case ACVP_KAS_FFC_DH_HYBRID_ONEFLOW:
                 case ACVP_KAS_FFC_DH_ONEFLOW:
                 case ACVP_KAS_FFC_DH_STATIC:
+                case ACVP_KAS_FFC_MAX_SCHEMES:
                 default:
                     ACVP_LOG_ERR("\nUnsupported KAS-FFC scheme %d", scheme);
                     return ACVP_INVALID_ARG;
@@ -2673,6 +2822,17 @@ ACVP_RESULT acvp_build_test_session(ACVP_CTX *ctx, char **reg, int *out_len) {
             case ACVP_KAS_FFC_NOCOMP:
                 rv = acvp_build_kas_ffc_register_cap(ctx, cap_obj, cap_entry, ACVP_KAS_FFC_MODE_NOCOMP);
                 break;
+           case ACVP_CIPHER_START:
+           case ACVP_TDES_CBCI:
+           case ACVP_TDES_OFBI:
+           case ACVP_TDES_CFBP1:
+           case ACVP_TDES_CFBP8:
+           case ACVP_TDES_CFBP64:
+           case ACVP_HMAC_SHA3_224:
+           case ACVP_HMAC_SHA3_256:
+           case ACVP_HMAC_SHA3_384:
+           case ACVP_HMAC_SHA3_512:
+           case ACVP_CIPHER_END:
             default:
                 ACVP_LOG_ERR("Cap entry not found, %d.", cap_entry->cipher);
                 json_value_free(cap_val);

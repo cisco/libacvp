@@ -26,6 +26,7 @@
 extern int fips_selftest_fail;
 extern int fips_mode;
 #endif
+#include "safe_mem_lib.h"
 
 static int enable_aes(ACVP_CTX *ctx);
 static int enable_tdes(ACVP_CTX *ctx);
@@ -1523,7 +1524,6 @@ static int enable_dsa(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     #endif
     #endif
-
     rv = acvp_cap_dsa_enable(ctx, ACVP_DSA_PQGVER, &app_dsa_handler);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_DSA_PQGVER, ACVP_PREREQ_SHA, value);
@@ -1571,7 +1571,6 @@ static int enable_dsa(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     #endif
     #endif
-
     rv = acvp_cap_dsa_enable(ctx, ACVP_DSA_KEYGEN, &app_dsa_handler);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_DSA_KEYGEN, ACVP_PREREQ_SHA, value);
@@ -1619,7 +1618,6 @@ static int enable_dsa(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     #endif
     #endif
-
     rv = acvp_cap_dsa_enable(ctx, ACVP_DSA_SIGGEN, &app_dsa_handler);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_DSA_SIGGEN, ACVP_PREREQ_SHA, value);
@@ -1667,7 +1665,6 @@ static int enable_dsa(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     #endif
     #endif
-
     rv = acvp_cap_dsa_enable(ctx, ACVP_DSA_SIGVER, &app_dsa_handler);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_DSA_SIGVER, ACVP_PREREQ_SHA, value);
@@ -1715,7 +1712,6 @@ static int enable_dsa(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     #endif
     #endif
-
 end:
 
     return rv;
@@ -2085,7 +2081,6 @@ static int enable_ecdsa(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_KEYVER, ACVP_ECDSA_CURVE, ACVP_EC_CURVE_B571);
     CHECK_ENABLE_CAP_RV(rv);
-
 
     /*
      * Enable ECDSA sigGen...
