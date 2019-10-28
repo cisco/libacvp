@@ -292,7 +292,7 @@ ACVP_RESULT acvp_kdf135_srtp_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         json_object_set_value(r_gobj, "tests", json_value_init_array());
         r_tarr = json_object_get_array(r_gobj, "tests");
 
-        aes_key_length = (unsigned int)json_object_get_number(groupobj, "aesKeyLength");
+        aes_key_length = json_object_get_number(groupobj, "aesKeyLength");
         if (!aes_key_length) {
             ACVP_LOG_ERR("aesKeyLength incorrect, %d", aes_key_length);
             rv = ACVP_INVALID_ARG;
@@ -318,7 +318,7 @@ ACVP_RESULT acvp_kdf135_srtp_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
 
-            tc_id = (unsigned int)json_object_get_number(testobj, "tcId");
+            tc_id = json_object_get_number(testobj, "tcId");
 
             master_key = json_object_get_string(testobj, "masterKey");
             if (!master_key) {

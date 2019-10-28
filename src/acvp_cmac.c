@@ -218,7 +218,7 @@ ACVP_RESULT acvp_cmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
      * Get the crypto module handler for this hash algorithm
      */
     alg_id = acvp_lookup_cipher_index(alg_str);
-    if (alg_id < ACVP_CIPHER_START) {
+    if (alg_id == 0) {
         ACVP_LOG_ERR("ERROR: unsupported algorithm (%s)", alg_str);
         return ACVP_UNSUPPORTED_OP;
     }
@@ -272,7 +272,7 @@ ACVP_RESULT acvp_cmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         r_tarr = json_object_get_array(r_gobj, "tests");
 
         if (alg_id == ACVP_CMAC_AES) {
-            keyLen = (unsigned int)json_object_get_number(groupobj, "keyLen");
+            keyLen = json_object_get_number(groupobj, "keyLen");
             if (!keyLen) {
                 ACVP_LOG_ERR("keylen missing from cmac aes json");
                 rv = ACVP_MISSING_ARG;

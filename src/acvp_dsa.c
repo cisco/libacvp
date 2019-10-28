@@ -521,7 +521,7 @@ ACVP_RESULT acvp_dsa_keygen_handler(ACVP_CTX *ctx,
         testval = json_array_get_value(tests, j);
         testobj = json_value_get_object(testval);
 
-        tc_id = (unsigned int)json_object_get_number(testobj, "tcId");
+        tc_id = json_object_get_number(testobj, "tcId");
         if (!tc_id) {
             ACVP_LOG_ERR("Failed to include tc_id. ");
             return ACVP_MISSING_ARG;
@@ -720,7 +720,7 @@ ACVP_RESULT acvp_dsa_pqggen_handler(ACVP_CTX *ctx,
         testval = json_array_get_value(tests, j);
         testobj = json_value_get_object(testval);
 
-        tc_id = (unsigned int)json_object_get_number(testobj, "tcId");
+        tc_id = json_object_get_number(testobj, "tcId");
         if (!tc_id) {
             ACVP_LOG_ERR("Failed to include tc_id. ");
             return ACVP_MISSING_ARG;
@@ -942,7 +942,7 @@ ACVP_RESULT acvp_dsa_siggen_handler(ACVP_CTX *ctx,
         testval = json_array_get_value(tests, j);
         testobj = json_value_get_object(testval);
 
-        tc_id = (unsigned int)json_object_get_number(testobj, "tcId");
+        tc_id = json_object_get_number(testobj, "tcId");
         if (!tc_id) {
             ACVP_LOG_ERR("Failed to include tc_id. ");
             return ACVP_MISSING_ARG;
@@ -1123,7 +1123,7 @@ ACVP_RESULT acvp_dsa_pqgver_handler(ACVP_CTX *ctx,
         testval = json_array_get_value(tests, j);
         testobj = json_value_get_object(testval);
 
-        tc_id = (unsigned int)json_object_get_number(testobj, "tcId");
+        tc_id = json_object_get_number(testobj, "tcId");
         if (!tc_id) {
             ACVP_LOG_ERR("Failed to include tc_id. ");
             return ACVP_MISSING_ARG;

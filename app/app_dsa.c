@@ -52,9 +52,11 @@ int app_dsa_handler(ACVP_TEST_CASE *test_case) {
     BIGNUM              *q = NULL, *p = NULL, *g = NULL;
 #if OPENSSL_VERSION_NUMBER >= 0x10100000L
     BIGNUM              *tmp_q = NULL, *tmp_p = NULL, *tmp_g = NULL;
-    BIGNUM              *tmp_q2 = NULL, *tmp_p2 = NULL, *tmp_g2 = NULL;
-    BIGNUM *tmp_r = NULL, *tmp_s = NULL;
-    BIGNUM *tmp_priv_key = NULL, *tmp_pub_key = NULL;
+    const BIGNUM              *tmp_q1 = NULL, *tmp_p1 = NULL, *tmp_g1 = NULL;
+    const BIGNUM              *tmp_q2 = NULL, *tmp_p2 = NULL, *tmp_g2 = NULL;
+    const BIGNUM *tmp_r = NULL, *tmp_s = NULL;
+    const BIGNUM *tmp_priv_key = NULL, *tmp_pub_key = NULL;
+    const BIGNUM              *q1 = NULL, *p1 = NULL;
 #endif
     BIGNUM              *q2 = NULL, *p2 = NULL, *g2 = NULL;
     BIGNUM *priv_key = NULL, *pub_key = NULL;
@@ -88,11 +90,11 @@ int app_dsa_handler(ACVP_TEST_CASE *test_case) {
             group_q = BN_dup(group_dsa->q);
             group_g = BN_dup(group_dsa->g);
 #else
-            DSA_get0_pqg(group_dsa, (const BIGNUM **)&tmp_p,
-                         (const BIGNUM **)&tmp_q, (const BIGNUM **)&tmp_g);
-            group_p = BN_dup(tmp_p);
-            group_q = BN_dup(tmp_q);
-            group_g = BN_dup(tmp_g);
+            DSA_get0_pqg(group_dsa, &tmp_p1,
+                         &tmp_q1, &tmp_g1);
+            group_p = BN_dup(tmp_p1);
+            group_q = BN_dup(tmp_q1);
+            group_g = BN_dup(tmp_g1);
 #endif
         }
 
@@ -109,8 +111,7 @@ int app_dsa_handler(ACVP_TEST_CASE *test_case) {
         priv_key = group_dsa->priv_key;
         pub_key = group_dsa->pub_key;
 #else
-        DSA_get0_key(group_dsa, (const BIGNUM **)&tmp_pub_key,
-                     (const BIGNUM **)&tmp_priv_key);
+        DSA_get0_key(group_dsa, &tmp_pub_key, &tmp_priv_key);
         pub_key = BN_dup(tmp_pub_key);
         priv_key = BN_dup(tmp_priv_key);
 #endif
@@ -149,7 +150,11 @@ int app_dsa_handler(ACVP_TEST_CASE *test_case) {
         case ACVP_SHA512_256:
             md = EVP_sha512_256();
             break;
+#else
+        case ACVP_SHA512_224:
+        case ACVP_SHA512_256:
 #endif
+        case ACVP_HASH_ALG_MAX:
         default:
             printf("DSA sha value not supported %d\n", tc->sha);
             return 1;
@@ -184,8 +189,7 @@ int app_dsa_handler(ACVP_TEST_CASE *test_case) {
             p2 = BN_dup(dsa->p);
             q2 = BN_dup(dsa->q);
 #else
-            DSA_get0_pqg(dsa, (const BIGNUM **)&tmp_p2,
-                         (const BIGNUM **)&tmp_q2, NULL);
+            DSA_get0_pqg(dsa, &tmp_p2, &tmp_q2, NULL);
             p2 = BN_dup(tmp_p2);
             q2 = BN_dup(tmp_q2);
 #endif
@@ -237,7 +241,7 @@ int app_dsa_handler(ACVP_TEST_CASE *test_case) {
 #if OPENSSL_VERSION_NUMBER <= 0x10100000L
             g2 = BN_dup(dsa->g);
 #else
-            DSA_get0_pqg(dsa, NULL, NULL, (const BIGNUM **)&tmp_g2);
+            DSA_get0_pqg(dsa, NULL, NULL, &tmp_g2);
             g2 = BN_dup(tmp_g2);
 #endif
 
@@ -286,7 +290,11 @@ int app_dsa_handler(ACVP_TEST_CASE *test_case) {
         case ACVP_SHA512_256:
             md = EVP_sha512_256();
             break;
+#else
+        case ACVP_SHA512_224:
+        case ACVP_SHA512_256:
 #endif
+        case ACVP_HASH_ALG_MAX:
         default:
             printf("DSA sha value not supported %d\n", tc->sha);
             return 1;
@@ -376,7 +384,11 @@ int app_dsa_handler(ACVP_TEST_CASE *test_case) {
         case ACVP_SHA512_256:
             md = EVP_sha512_256();
             break;
+#else
+        case ACVP_SHA512_224:
+        case ACVP_SHA512_256:
 #endif
+        case ACVP_HASH_ALG_MAX:
         default:
             printf("DSA sha value not supported %d\n", tc->sha);
             return 1;
@@ -414,17 +426,16 @@ int app_dsa_handler(ACVP_TEST_CASE *test_case) {
             group_q = BN_dup(group_dsa->q);
             group_g = BN_dup(group_dsa->g);
 #else
-            DSA_get0_pqg(group_dsa, (const BIGNUM **)&tmp_p,
-                         (const BIGNUM **)&tmp_q, (const BIGNUM **)&tmp_g);
-            group_p = BN_dup(tmp_p);
-            group_q = BN_dup(tmp_q);
-            group_g = BN_dup(tmp_g);
+            DSA_get0_pqg(group_dsa, &tmp_p1, &tmp_q1, &tmp_g1);
+            group_p = BN_dup(tmp_p1);
+            group_q = BN_dup(tmp_q1);
+            group_g = BN_dup(tmp_g1);
 #endif
 
 #if OPENSSL_VERSION_NUMBER <= 0x10100000L
             group_pub_key = BN_dup(group_dsa->pub_key);
 #else
-            DSA_get0_key(group_dsa, (const BIGNUM **)&tmp_pub_key, NULL);
+            DSA_get0_key(group_dsa, &tmp_pub_key, NULL);
             group_pub_key = BN_dup(tmp_pub_key);
 #endif
         }
@@ -440,7 +451,7 @@ int app_dsa_handler(ACVP_TEST_CASE *test_case) {
         sig_r = sig->r;
         sig_s = sig->s;
 #else
-        DSA_SIG_get0(sig, (const BIGNUM **)&tmp_r, (const BIGNUM **)&tmp_s);
+        DSA_SIG_get0(sig, &tmp_r, &tmp_s);
         sig_r = BN_dup(tmp_r);
         sig_s = BN_dup(tmp_s);
 #endif
@@ -480,7 +491,11 @@ int app_dsa_handler(ACVP_TEST_CASE *test_case) {
         case ACVP_SHA512_256:
             md = EVP_sha512_256();
             break;
+#else
+        case ACVP_SHA512_224:
+        case ACVP_SHA512_256:
 #endif
+        case ACVP_HASH_ALG_MAX:
         default:
             printf("DSA sha value not supported %d\n", tc->sha);
             return 1;
@@ -524,8 +539,8 @@ int app_dsa_handler(ACVP_TEST_CASE *test_case) {
 #if OPENSSL_VERSION_NUMBER <= 0x10100000L
             tc->g_len = BN_bn2bin(dsa->g, tc->g);
 #else
-            DSA_get0_pqg(dsa, NULL, NULL, (const BIGNUM **)&tmp_g);
-            tc->g_len = BN_bn2bin(tmp_g, tc->g);
+            DSA_get0_pqg(dsa, NULL, NULL, &tmp_g1);
+            tc->g_len = BN_bn2bin(tmp_g1, tc->g);
 #endif
             FIPS_bn_free(p);
             FIPS_bn_free(q);
@@ -549,13 +564,14 @@ int app_dsa_handler(ACVP_TEST_CASE *test_case) {
 #if OPENSSL_VERSION_NUMBER <= 0x10100000L
             p = dsa->p;
             q = dsa->q;
-#else
-            DSA_get0_pqg(dsa, (const BIGNUM **)&p,
-                         (const BIGNUM **)&q, NULL);
-#endif
-
             tc->p_len = BN_bn2bin(p, tc->p);
             tc->q_len = BN_bn2bin(q, tc->q);
+#else
+            DSA_get0_pqg(dsa, &p1, &q1, NULL);
+            tc->p_len = BN_bn2bin(p1, tc->p);
+            tc->q_len = BN_bn2bin(q1, tc->q);
+#endif
+
             tc->counter = counter;
             tc->h = h;
 

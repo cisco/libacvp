@@ -178,6 +178,8 @@ const BIGNUM *FIPS_ec_key_get0_private_key(const EC_KEY *key);
 const EC_POINT *FIPS_ec_key_get0_public_key(const EC_KEY *key);
 const EC_GROUP *FIPS_ec_key_get0_group(const EC_KEY *key);
 const EC_METHOD *FIPS_ec_group_method_of(const EC_GROUP *group);
+int EC_KEY_set_group(EC_KEY *key, const EC_GROUP *group);
+EC_GROUP *FIPS_ec_group_new_by_curve_name(int nid);
 void fips_ec_group_free(EC_GROUP *group);
 int FIPS_ec_group_get_degree(const EC_GROUP *group);
 int FIPS_ec_method_get_field_type(const EC_METHOD *meth);

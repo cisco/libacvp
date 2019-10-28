@@ -70,6 +70,9 @@ int app_ecdsa_handler(ACVP_TEST_CASE *test_case) {
     int nid = NID_undef, rc = 0, msg_len = 0;
     BIGNUM *Qx = NULL, *Qy = NULL;
     BIGNUM *r = NULL, *s = NULL;
+#if OPENSSL_VERSION_NUMBER >= 0x10101010L /* OpenSSL 1.1.1 or greater */
+    const BIGNUM *a = NULL, *b = NULL;
+#endif
     const BIGNUM *d = NULL;
     EC_KEY *key = NULL;
 
@@ -102,14 +105,18 @@ int app_ecdsa_handler(ACVP_TEST_CASE *test_case) {
         case ACVP_SHA512:
             md = EVP_sha512();
             break;
-        #if OPENSSL_VERSION_NUMBER >= 0x10101010L /* OpenSSL 1.1.1 or greater */
+#if OPENSSL_VERSION_NUMBER >= 0x10101010L /* OpenSSL 1.1.1 or greater */
         case ACVP_SHA512_224:
             md = EVP_sha512_224();
             break;
         case ACVP_SHA512_256:
             md = EVP_sha512_256();
             break;
-        #endif
+#else
+        case ACVP_SHA512_224:
+        case ACVP_SHA512_256:
+#endif
+        case ACVP_HASH_ALG_MAX:
         default:
             printf("Unsupported hash alg in ECDSA\n");
             goto err;
@@ -154,6 +161,11 @@ int app_ecdsa_handler(ACVP_TEST_CASE *test_case) {
         nid = NID_secp521r1;
         break;
     default:
+    case ACVP_EC_CURVE_P192:
+    case ACVP_EC_CURVE_B163:
+    case ACVP_EC_CURVE_K163:
+    case ACVP_EC_CURVE_START:
+    case ACVP_EC_CURVE_END:
         printf("Unsupported curve\n");
         goto err;
     }
@@ -269,8 +281,9 @@ int app_ecdsa_handler(ACVP_TEST_CASE *test_case) {
         r = sig->r;
         s = sig->s;
 #else
-        ECDSA_SIG_get0(sig, (const BIGNUM **)&r,
-                       (const BIGNUM **)&s);
+        ECDSA_SIG_get0(sig, &a, &b);
+        r = BN_dup(a);
+        s = BN_dup(b);
 #endif
 
         tc->qx_len = BN_bn2bin(ecdsa_group_Qx, tc->qx);
@@ -351,6 +364,85 @@ int app_ecdsa_handler(ACVP_TEST_CASE *test_case) {
         }
 points_err:
         break;
+    case ACVP_CIPHER_START:
+    case ACVP_AES_GCM:
+    case ACVP_AES_GCM_SIV:
+    case ACVP_AES_CCM:
+    case ACVP_AES_ECB:
+    case ACVP_AES_CBC:
+    case ACVP_AES_CFB1:
+    case ACVP_AES_CFB8:
+    case ACVP_AES_CFB128:
+    case ACVP_AES_OFB:
+    case ACVP_AES_CTR:
+    case ACVP_AES_XTS:
+    case ACVP_AES_KW:
+    case ACVP_AES_KWP:
+    case ACVP_AES_GMAC:
+    case ACVP_TDES_ECB:
+    case ACVP_TDES_CBC:
+    case ACVP_TDES_CBCI:
+    case ACVP_TDES_OFB:
+    case ACVP_TDES_OFBI:
+    case ACVP_TDES_CFB1:
+    case ACVP_TDES_CFB8:
+    case ACVP_TDES_CFB64:
+    case ACVP_TDES_CFBP1:
+    case ACVP_TDES_CFBP8:
+    case ACVP_TDES_CFBP64:
+    case ACVP_TDES_CTR:
+    case ACVP_TDES_KW:
+    case ACVP_HASH_SHA1:
+    case ACVP_HASH_SHA224:
+    case ACVP_HASH_SHA256:
+    case ACVP_HASH_SHA384:
+    case ACVP_HASH_SHA512:
+    case ACVP_HASH_SHA512_224:
+    case ACVP_HASH_SHA512_256:
+    case ACVP_HASH_SHA3_224:
+    case ACVP_HASH_SHA3_256:
+    case ACVP_HASH_SHA3_384:
+    case ACVP_HASH_SHA3_512:
+    case ACVP_HASH_SHAKE_128:
+    case ACVP_HASH_SHAKE_256:
+    case ACVP_HASHDRBG:
+    case ACVP_HMACDRBG:
+    case ACVP_CTRDRBG:
+    case ACVP_HMAC_SHA1:
+    case ACVP_HMAC_SHA2_224:
+    case ACVP_HMAC_SHA2_256:
+    case ACVP_HMAC_SHA2_384:
+    case ACVP_HMAC_SHA2_512:
+    case ACVP_HMAC_SHA2_512_224:
+    case ACVP_HMAC_SHA2_512_256:
+    case ACVP_HMAC_SHA3_224:
+    case ACVP_HMAC_SHA3_256:
+    case ACVP_HMAC_SHA3_384:
+    case ACVP_HMAC_SHA3_512:
+    case ACVP_CMAC_AES:
+    case ACVP_CMAC_TDES:
+    case ACVP_DSA_KEYGEN:
+    case ACVP_DSA_PQGGEN:
+    case ACVP_DSA_PQGVER:
+    case ACVP_DSA_SIGGEN:
+    case ACVP_DSA_SIGVER:
+    case ACVP_RSA_KEYGEN:
+    case ACVP_RSA_SIGGEN:
+    case ACVP_RSA_SIGVER:
+    case ACVP_KDF135_TLS:
+    case ACVP_KDF135_SNMP:
+    case ACVP_KDF135_SSH:
+    case ACVP_KDF135_SRTP:
+    case ACVP_KDF135_IKEV2:
+    case ACVP_KDF135_IKEV1:
+    case ACVP_KDF135_X963:
+    case ACVP_KDF108:
+    case ACVP_KAS_ECC_CDH:
+    case ACVP_KAS_ECC_COMP:
+    case ACVP_KAS_ECC_NOCOMP:
+    case ACVP_KAS_FFC_COMP:
+    case ACVP_KAS_FFC_NOCOMP:
+    case ACVP_CIPHER_END:
     default:
         printf("Unsupported ECDSA mode\n");
         break;

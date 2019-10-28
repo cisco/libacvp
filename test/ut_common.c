@@ -18,6 +18,14 @@ int counter_set = 0;
 int counter_fail = 0;
 ACVP_RESULT totp(char **token, int token_max);
 
+
+/* Here just to avoid warning */
+
+void dummy_call(void)
+{
+    fips_algtest_init_nofips();
+}
+
 /*
  * This is a minimal and rudimentary logging handler.
  * libacvp calls this function to for debugs, warnings,

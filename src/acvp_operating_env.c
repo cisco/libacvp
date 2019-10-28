@@ -740,7 +740,7 @@ static ACVP_RESULT match_dependencies_page(ACVP_CTX *ctx,
 
     for (i = 0; i < data_count; i++) {
         int this_match = 0;
-        ACVP_DEPENDENCY tmp_dep = {0};
+        ACVP_DEPENDENCY tmp_dep = {0, 0, 0, 0, 0};
         JSON_Object *dep_obj = json_array_get_object(data_array, i);
         if (dep_obj == NULL)  {
             rv = ACVP_JSON_ERR;
@@ -2075,11 +2075,13 @@ static ACVP_RESULT match_modules_page(ACVP_CTX *ctx,
 
     for (i = 0; i < data_count; i++) {
         int this_match = 0, num_contacts = 0, k = 0;
-        ACVP_MODULE tmp_module = {0};
-        ACVP_VENDOR tmp_vendor = {0};
+        ACVP_MODULE tmp_module;
+        ACVP_VENDOR tmp_vendor;
         JSON_Array *contact_urls = NULL;
         JSON_Object *module_obj = json_array_get_object(data_array, i);
 
+        memset_s(&tmp_module, sizeof(ACVP_MODULE), 0, sizeof(ACVP_MODULE));
+        memset_s(&tmp_vendor, sizeof(ACVP_VENDOR), 0, sizeof(ACVP_VENDOR));
         if (module_obj == NULL)  {
             rv = ACVP_JSON_ERR;
             goto end;
@@ -2817,7 +2819,7 @@ static ACVP_RESULT acvp_oe_metadata_parse_vendor_contacts(ACVP_CTX *ctx,
 static ACVP_RESULT acvp_oe_metadata_parse_vendor(ACVP_CTX *ctx, JSON_Object *obj) {
     ACVP_VENDOR *vendor = NULL;
     const char *name = NULL, *website = NULL;
-    unsigned int vendor_id = 0;
+    int vendor_id = 0;
     ACVP_RESULT rv = ACVP_SUCCESS;
 
     if (!ctx) return ACVP_NO_CTX;
@@ -2826,7 +2828,7 @@ static ACVP_RESULT acvp_oe_metadata_parse_vendor(ACVP_CTX *ctx, JSON_Object *obj
         return ACVP_INVALID_ARG;
     } 
 
-    vendor_id = (unsigned int)json_object_get_number(obj, "id");
+    vendor_id = json_object_get_number(obj, "id");
     if (vendor_id == 0) {
         ACVP_LOG_ERR("Metadata JSON 'id' must be non-zero");
         return ACVP_INVALID_ARG;
@@ -2930,7 +2932,7 @@ static ACVP_RESULT acvp_oe_metadata_parse_vendors(ACVP_CTX *ctx, JSON_Object *ob
  */
 static ACVP_RESULT acvp_oe_metadata_parse_module(ACVP_CTX *ctx, JSON_Object *obj) {
     const char *name = NULL, *version = NULL, *type = NULL, *description = NULL;
-    unsigned int module_id = 0, vendor_id = 0;
+    int module_id = 0, vendor_id = 0;
     ACVP_RESULT rv = ACVP_SUCCESS;
 
     if (!ctx) return ACVP_NO_CTX;
@@ -2939,13 +2941,13 @@ static ACVP_RESULT acvp_oe_metadata_parse_module(ACVP_CTX *ctx, JSON_Object *obj
         return ACVP_INVALID_ARG;
     } 
 
-    module_id = (unsigned int)json_object_get_number(obj, "id");
+    module_id = json_object_get_number(obj, "id");
     if (module_id == 0) {
         ACVP_LOG_ERR("Metadata JSON 'id' must be non-zero");
         return ACVP_INVALID_ARG;
     }
 
-    vendor_id = (unsigned int)json_object_get_number(obj, "vendorId");
+    vendor_id = json_object_get_number(obj, "vendorId");
     if (vendor_id == 0) {
         ACVP_LOG_ERR("Metadata JSON 'vendorId' must be non-zero");
         return ACVP_INVALID_ARG;
@@ -3075,7 +3077,7 @@ static ACVP_RESULT acvp_oe_metadata_parse_oe_dependencies(ACVP_CTX *ctx,
     }
 
     for (i = 0; i < count; i++) {
-        ACVP_DEPENDENCY tmp_dep = {0};
+        ACVP_DEPENDENCY tmp_dep = {0, 0, 0, 0, 0};
         const char *type_str = NULL, *name_str = NULL, *desc_str = NULL;
         JSON_Object *dep_obj = json_array_get_object(deps_array, i);
         unsigned int dep_id = 0;
@@ -3150,7 +3152,7 @@ static ACVP_RESULT acvp_oe_metadata_parse_oe_dependencies(ACVP_CTX *ctx,
  */
 static ACVP_RESULT acvp_oe_metadata_parse_oe(ACVP_CTX *ctx, JSON_Object *obj) {
     const char *name = NULL;
-    unsigned int oe_id = 0;
+    int oe_id = 0;
     ACVP_RESULT rv = ACVP_SUCCESS;
 
     if (!ctx) return ACVP_NO_CTX;
@@ -3159,7 +3161,7 @@ static ACVP_RESULT acvp_oe_metadata_parse_oe(ACVP_CTX *ctx, JSON_Object *obj) {
         return ACVP_INVALID_ARG;
     } 
 
-    oe_id = (unsigned int)json_object_get_number(obj, "id");
+    oe_id = json_object_get_number(obj, "id");
     if (oe_id == 0) {
         ACVP_LOG_ERR("Metadata JSON 'id' must be non-zero");
         return ACVP_INVALID_ARG;

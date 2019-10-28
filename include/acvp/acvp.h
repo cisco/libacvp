@@ -217,11 +217,9 @@ typedef enum acvp_kdf135_ikev1_auth_method {
 
 /*! @struct ACVP_KDF135_SRTP_PARAM */
 typedef enum acvp_kdf135_srtp_param {
-    ACVP_SRTP_PARAM_MIN,
-    ACVP_SRTP_AES_KEYLEN,
+    ACVP_SRTP_AES_KEYLEN = 1,
     ACVP_SRTP_SUPPORT_ZERO_KDR,
-    ACVP_SRTP_KDF_EXPONENT,
-    ACVP_SRTP_PARAM_MAX
+    ACVP_SRTP_KDF_EXPONENT
 } ACVP_KDF135_SRTP_PARAM;
 
 #define ACVP_KDF108_KEYOUT_MAX 64     /**< SHA2-512 */
@@ -229,11 +227,9 @@ typedef enum acvp_kdf135_srtp_param {
 
 /*! @struct ACVP_KDF108_MODE */
 typedef enum acvp_kdf108_mode {
-    ACVP_KDF108_MODE_MIN,
-    ACVP_KDF108_MODE_COUNTER,
+    ACVP_KDF108_MODE_COUNTER = 1,
     ACVP_KDF108_MODE_FEEDBACK,
-    ACVP_KDF108_MODE_DPI,
-    ACVP_KDF108_MODE_MAX
+    ACVP_KDF108_MODE_DPI
 } ACVP_KDF108_MODE;
 
 /*! @struct ACVP_KDF108_MAC_MODE_VAL */
@@ -343,8 +339,7 @@ typedef enum acvp_hash_param {
  */
 /*! @struct ACVP_DRBG_MODE */
 typedef enum acvp_drbg_mode {
-    ACVP_DRBG_MODE_START = 0,
-    ACVP_DRBG_SHA_1,
+    ACVP_DRBG_SHA_1 = 1,
     ACVP_DRBG_SHA_224,
     ACVP_DRBG_SHA_256,
     ACVP_DRBG_SHA_384,
@@ -354,8 +349,7 @@ typedef enum acvp_drbg_mode {
     ACVP_DRBG_3KEYTDEA,
     ACVP_DRBG_AES_128,
     ACVP_DRBG_AES_192,
-    ACVP_DRBG_AES_256,
-    ACVP_DRBG_MODE_END
+    ACVP_DRBG_AES_256
 } ACVP_DRBG_MODE;
 
 /*! @struct ACVP_DRBG_PARM */
@@ -473,8 +467,7 @@ typedef enum acvp_rsa_prime_test_type {
 
 /*! @struct ACVP_RSA_KEYGEN_MODE */
 typedef enum acvp_rsa_keygen_mode_t {
-    ACVP_RSA_KEYGEN_START = 0,
-    ACVP_RSA_KEYGEN_B32,
+    ACVP_RSA_KEYGEN_B32 = 1,
     ACVP_RSA_KEYGEN_B33,
     ACVP_RSA_KEYGEN_B34,
     ACVP_RSA_KEYGEN_B35,

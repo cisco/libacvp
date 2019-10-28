@@ -148,7 +148,7 @@ ACVP_RESULT acvp_kdf135_snmp_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         json_object_set_value(r_gobj, "tests", json_value_init_array());
         r_tarr = json_object_get_array(r_gobj, "tests");
 
-        p_len = (unsigned int)json_object_get_number(groupobj, "passwordLength");
+        p_len = json_object_get_number(groupobj, "passwordLength");
         if (!p_len) {
             ACVP_LOG_ERR("pLen incorrect, %d", p_len);
             rv = ACVP_INVALID_ARG;
@@ -185,7 +185,7 @@ ACVP_RESULT acvp_kdf135_snmp_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
 
-            tc_id = (unsigned int)json_object_get_number(testobj, "tcId");
+            tc_id = json_object_get_number(testobj, "tcId");
             if (!tc_id) {
                 ACVP_LOG_ERR("Failed to include tc_id. ");
                 rv = ACVP_MISSING_ARG;
