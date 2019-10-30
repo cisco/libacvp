@@ -709,8 +709,9 @@ static ACVP_RESULT match_dependencies_page(ACVP_CTX *ctx,
     JSON_Value *val = NULL;
     JSON_Object *obj = NULL, *links_obj = NULL;
     JSON_Array *data_array = NULL;
-    const char *next = NULL;
+    const char *next = NULL, *name = NULL, *type = NULL, *description = NULL;
     int i = 0, data_count = 0;
+    ACVP_DEPENDENCY tmp_dep = {0, 0, 0, 0, 0};
 
     if (!ctx) return ACVP_NO_CTX;
     if (dep == NULL) {
@@ -740,17 +741,20 @@ static ACVP_RESULT match_dependencies_page(ACVP_CTX *ctx,
 
     for (i = 0; i < data_count; i++) {
         int this_match = 0;
-        ACVP_DEPENDENCY tmp_dep = {0, 0, 0, 0, 0};
         JSON_Object *dep_obj = json_array_get_object(data_array, i);
         if (dep_obj == NULL)  {
             rv = ACVP_JSON_ERR;
             goto end;
         }
 
-        // Soft copy, but still have to free
-        strcpy_s(tmp_dep.type, ACVP_OE_STR_MAX + 1, json_object_get_string(dep_obj, "type"));
-        strcpy_s(tmp_dep.name, ACVP_OE_STR_MAX + 1, json_object_get_string(dep_obj, "name"));
-        strcpy_s(tmp_dep.description, ACVP_OE_STR_MAX + 1, json_object_get_string(dep_obj, "description"));
+        // Soft copy so don't need to free
+        type = json_object_get_string(dep_obj, "type");
+        name = json_object_get_string(dep_obj, "name");
+        description = json_object_get_string(dep_obj, "description");
+
+        tmp_dep.type = strdup(type);
+        tmp_dep.name = strdup(name);
+        tmp_dep.description = strdup(description);
 
         this_match = compare_dependencies(dep, &tmp_dep);
         if (this_match) {
@@ -779,6 +783,9 @@ static ACVP_RESULT match_dependencies_page(ACVP_CTX *ctx,
         free(tmp_dep.type);
         free(tmp_dep.name);
         free(tmp_dep.description);
+        tmp_dep.type = NULL;
+        tmp_dep.name = NULL;
+        tmp_dep.description = NULL;
     }
 
     links_obj = json_object_get_object(obj, "links");
@@ -800,6 +807,9 @@ static ACVP_RESULT match_dependencies_page(ACVP_CTX *ctx,
     }
 
 end:
+    free(tmp_dep.type);
+    free(tmp_dep.name);
+    free(tmp_dep.description);
     if (val) json_value_free(val);
 
     return rv;
@@ -2046,6 +2056,9 @@ static ACVP_RESULT match_modules_page(ACVP_CTX *ctx,
     JSON_Array *data_array = NULL;
     const char *next = NULL;
     int i = 0, data_count = 0;
+    const char *aurl = NULL, *vurl = NULL, *name = NULL, *description = NULL, *type = NULL, *version = NULL;
+    ACVP_MODULE tmp_module;
+    ACVP_VENDOR tmp_vendor;
 
     if (!ctx) return ACVP_NO_CTX;
     if (module == NULL) {
@@ -2075,8 +2088,6 @@ static ACVP_RESULT match_modules_page(ACVP_CTX *ctx,
 
     for (i = 0; i < data_count; i++) {
         int this_match = 0, num_contacts = 0, k = 0;
-        ACVP_MODULE tmp_module;
-        ACVP_VENDOR tmp_vendor;
         JSON_Array *contact_urls = NULL;
         JSON_Object *module_obj = json_array_get_object(data_array, i);
 
@@ -2087,15 +2098,22 @@ static ACVP_RESULT match_modules_page(ACVP_CTX *ctx,
             goto end;
         }
 
-        // Soft copy, but still have to free
-        strcpy_s(tmp_module.type, ACVP_OE_STR_MAX + 1, json_object_get_string(module_obj, "type"));
-        strcpy_s(tmp_module.name, ACVP_OE_STR_MAX + 1, json_object_get_string(module_obj, "name"));
-        strcpy_s(tmp_module.version, ACVP_OE_STR_MAX + 1, json_object_get_string(module_obj, "version"));
-        strcpy_s(tmp_module.description, ACVP_OE_STR_MAX + 1, json_object_get_string(module_obj, "description"));
+        // Soft copy 
+        type = json_object_get_string(module_obj, "type");
+        name = json_object_get_string(module_obj, "name");
+        version = json_object_get_string(module_obj, "version");
+        description = json_object_get_string(module_obj, "description");
+
+        tmp_module.type = strdup(type);
+        tmp_module.name = strdup(name);
+        tmp_module.version = strdup(version);
+        tmp_module.description = strdup(description);
 
         tmp_module.vendor = &tmp_vendor;
-        strcpy_s(tmp_vendor.url, ACVP_OE_STR_MAX + 1, json_object_get_string(module_obj, "vendorUrl"));
-        strcpy_s(tmp_vendor.address.url, ACVP_OE_STR_MAX + 1, json_object_get_string(module_obj, "addressUrl"));
+        vurl = json_object_get_string(module_obj, "vendorUrl");
+        aurl = json_object_get_string(module_obj, "addressUrl");
+        tmp_vendor.url = strdup(vurl);
+        tmp_vendor.address.url = strdup(aurl);
 
         /*
          * Construct the tmp_vendor.persons
@@ -2124,6 +2142,18 @@ static ACVP_RESULT match_modules_page(ACVP_CTX *ctx,
         }
 
         this_match = compare_modules(module, &tmp_module);
+        free(tmp_module.type);
+        free(tmp_module.name);
+        free(tmp_module.version);
+        free(tmp_module.description);
+        free(tmp_vendor.url);
+        free(tmp_vendor.address.url);
+        tmp_module.type = NULL;
+        tmp_module.name = NULL;
+        tmp_module.version = NULL;
+        tmp_module.description = NULL;
+        tmp_vendor.url = NULL;
+        tmp_vendor.address.url = NULL;
         if (this_match) {
             /*
              * Found a match.
@@ -2168,6 +2198,13 @@ static ACVP_RESULT match_modules_page(ACVP_CTX *ctx,
     }
 
 end:
+    free(tmp_module.type);
+    free(tmp_module.name);
+    free(tmp_module.version);
+    free(tmp_module.description);
+    free(tmp_vendor.url);
+    free(tmp_vendor.address.url);
+
     if (val) json_value_free(val);
 
     return rv;
@@ -3091,12 +3128,16 @@ static ACVP_RESULT acvp_oe_metadata_parse_oe_dependencies(ACVP_CTX *ctx,
             return ACVP_JSON_ERR;
         }
 
-        // Soft copy, but need to free anyway
-        strcpy_s(tmp_dep.type, ACVP_OE_STR_MAX + 1, type_str);
-        strcpy_s(tmp_dep.name, ACVP_OE_STR_MAX + 1, name_str);
-        strcpy_s(tmp_dep.description, ACVP_OE_STR_MAX + 1, desc_str);
+        // Soft copy, no need to free
+        tmp_dep.type = strdup(type_str);
+        tmp_dep.name = strdup(name_str);
+        tmp_dep.description = strdup(desc_str);
+
 
         dep_id = match_dependency(ctx, &tmp_dep);
+        free(tmp_dep.type);
+        free(tmp_dep.name);
+        free(tmp_dep.description);
         if (dep_id == 0) {
             /*
              * We didn't find a Dependency in memory that matches exactly.
