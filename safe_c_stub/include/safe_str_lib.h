@@ -91,4 +91,7 @@ extern errno_t strspn_s(const char *dest, rsize_t dmax, const char *src,  rsize_
 /* determine if character is a digit*/
 extern int strisdigit_s(const char *dest, rsize_t dmax);
 
+/* remove leading and trailing whitespace*/
+extern errno_t strremovews_s(char *s, rsize_t smax);
+
 #endif /* __SAFE_STR_LIB_H__ */

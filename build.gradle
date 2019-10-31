@@ -66,8 +66,9 @@ model {
 				linker.args "-lcurl"
 			} else {
 				cCompiler.define "WIN32"
-                cCompiler.define "__STDC_WANT_SECURE_LIB__=0"
-                cCompiler.args "/I${projectDir}\\include"
+                                cCompiler.define "__STDC_WANT_SECURE_LIB__=0"
+                                cCompiler.args "/I${projectDir}\\include"
+                                linker.args "advapi32.lib"
 			}
 		}
 	}

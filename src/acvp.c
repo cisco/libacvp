@@ -597,6 +597,7 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx) {
     if (ctx->cacerts_file) { free(ctx->cacerts_file); }
     if (ctx->tls_cert) { free(ctx->tls_cert); }
     if (ctx->tls_key) { free(ctx->tls_key); }
+    if (ctx->http_user_agent) { free(ctx->http_user_agent); }
     if (ctx->json_filename) { free(ctx->json_filename); }
     if (ctx->session_url) { free(ctx->session_url); }
     if (ctx->vector_req_file) { free(ctx->vector_req_file); }
@@ -2001,7 +2002,7 @@ static ACVP_RESULT acvp_retry_handler(ACVP_CTX *ctx, int *retry_period, unsigned
     if (*waited_so_far + *retry_period > ACVP_MAX_WAIT_TIME) {
         *retry_period = ACVP_MAX_WAIT_TIME - *waited_so_far;
     }
-    if (*retry_period <= 0 || *retry_period > ACVP_RETRY_TIME_MAX) {
+    if (*retry_period <= ACVP_RETRY_TIME_MIN || *retry_period > ACVP_RETRY_TIME_MAX) {
         *retry_period = ACVP_RETRY_TIME_MAX;
         ACVP_LOG_WARN("retry_period not found, using max retry period!");
     }
