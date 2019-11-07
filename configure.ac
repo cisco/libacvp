@@ -166,7 +166,7 @@ AS_IF(
 
 AC_ARG_ENABLE([cflags],
 [AS_HELP_STRING([--enable-cflags],
-[Flag to indicate use of enhanced CFLGAS])],
+[Flag to indicate use of enhanced CFLAGS])],
 [cflags="$enableval"],
 [enable_cflags=false])
 

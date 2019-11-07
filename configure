@@ -1570,7 +1570,7 @@ Optional Features:
                           optimize for fast installation [default=yes]
   --disable-libtool-lock  avoid locking (might break parallel builds)
   --enable-offline        Flag to indicate use of offline mode
-  --enable-cflags         Flag to indicate use of enhanced CFLGAS
+  --enable-cflags         Flag to indicate use of enhanced CFLAGS
   --enable-gcov           Flag to indicate use of gcov tool
 
 Optional Packages:
