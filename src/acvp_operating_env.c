@@ -2213,14 +2213,18 @@ static ACVP_RESULT match_modules_page(ACVP_CTX *ctx,
     }
 
 end:
-    if (tmp_module->type) free(tmp_module->type);
-    if (tmp_module->name) free(tmp_module->name);
-    if (tmp_module->version) free(tmp_module->version);
-    if (tmp_module->description) free(tmp_module->description);
-    if (tmp_vendor->url) free(tmp_vendor->url);
-    if (tmp_vendor->address.url) free(tmp_vendor->address.url);
-    free(tmp_module);
-    free(tmp_vendor);
+    if (tmp_module) {
+        if (tmp_module->type) free(tmp_module->type);
+        if (tmp_module->name) free(tmp_module->name);
+        if (tmp_module->version) free(tmp_module->version);
+        if (tmp_module->description) free(tmp_module->description);
+        free(tmp_module);
+    }
+    if (tmp_vendor) {
+        if (tmp_vendor->url) free(tmp_vendor->url);
+        if (tmp_vendor->address.url) free(tmp_vendor->address.url);
+        free(tmp_vendor);
+    }
 
     if (val) json_value_free(val);
 
