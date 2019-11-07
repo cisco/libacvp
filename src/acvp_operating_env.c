@@ -2058,8 +2058,8 @@ static ACVP_RESULT match_modules_page(ACVP_CTX *ctx,
     const char *next = NULL, *c_urls = NULL;
     int i = 0, data_count = 0;
     const char *aurl = NULL, *vurl = NULL, *name = NULL, *description = NULL, *type = NULL, *version = NULL;
-    ACVP_MODULE tmp_module;
-    ACVP_VENDOR tmp_vendor;
+    ACVP_MODULE *tmp_module = NULL;
+    ACVP_VENDOR *tmp_vendor = NULL;
 
     if (!ctx) return ACVP_NO_CTX;
     if (module == NULL) {
@@ -2078,6 +2078,15 @@ static ACVP_RESULT match_modules_page(ACVP_CTX *ctx,
         return ACVP_JSON_ERR;
     }
 
+    tmp_module = calloc(sizeof(ACVP_MODULE), sizeof(char));
+    if (!tmp_module) {
+        return ACVP_MALLOC_FAIL;
+    }
+    tmp_vendor = calloc(sizeof(ACVP_VENDOR), sizeof(char));
+    if (!tmp_vendor) {
+        return ACVP_MALLOC_FAIL;
+    }
+
     obj = acvp_get_obj_from_rsp(ctx, val);
     if (!obj) {
         rv = ACVP_JSON_ERR;
@@ -2092,8 +2101,8 @@ static ACVP_RESULT match_modules_page(ACVP_CTX *ctx,
         JSON_Array *contact_urls = NULL;
         JSON_Object *module_obj = json_array_get_object(data_array, i);
 
-        memset_s(&tmp_module, sizeof(ACVP_MODULE), 0, sizeof(ACVP_MODULE));
-        memset_s(&tmp_vendor, sizeof(ACVP_VENDOR), 0, sizeof(ACVP_VENDOR));
+        memset_s(tmp_module, sizeof(ACVP_MODULE), 0, sizeof(ACVP_MODULE));
+        memset_s(tmp_vendor, sizeof(ACVP_VENDOR), 0, sizeof(ACVP_VENDOR));
         if (module_obj == NULL)  {
             rv = ACVP_JSON_ERR;
             goto end;
@@ -2105,19 +2114,19 @@ static ACVP_RESULT match_modules_page(ACVP_CTX *ctx,
         version = json_object_get_string(module_obj, "version");
         description = json_object_get_string(module_obj, "description");
 
-        tmp_module.type = strdup(type);
-        tmp_module.name = strdup(name);
-        tmp_module.version = strdup(version);
-        tmp_module.description = strdup(description);
+        tmp_module->type = strdup(type);
+        tmp_module->name = strdup(name);
+        tmp_module->version = strdup(version);
+        tmp_module->description = strdup(description);
 
-        tmp_module.vendor = &tmp_vendor;
+        tmp_module->vendor = tmp_vendor;
         vurl = json_object_get_string(module_obj, "vendorUrl");
         aurl = json_object_get_string(module_obj, "addressUrl");
-        tmp_vendor.url = strdup(vurl);
-        tmp_vendor.address.url = strdup(aurl);
+        tmp_vendor->url = strdup(vurl);
+        tmp_vendor->address.url = strdup(aurl);
 
         /*
-         * Construct the tmp_vendor.persons
+         * Construct the tmp_vendor->persons
          */
         contact_urls = json_object_get_array(module_obj, "contactUrls");
         if (contact_urls == NULL)  {
@@ -2139,25 +2148,25 @@ static ACVP_RESULT match_modules_page(ACVP_CTX *ctx,
              * Assume they are in same order.
              */
             c_urls = json_array_get_string(contact_urls, i);
-            if (c_urls && tmp_module.vendor->persons.person[i].url) {
-                strcpy_s(tmp_module.vendor->persons.person[i].url, ACVP_OE_STR_MAX + 1, 
+            if (c_urls && tmp_module->vendor->persons.person[i].url) {
+                strcpy_s(tmp_module->vendor->persons.person[i].url, ACVP_OE_STR_MAX + 1, 
                          c_urls);
             }
         }
 
-        this_match = compare_modules(module, &tmp_module);
-        free(tmp_module.type);
-        free(tmp_module.name);
-        free(tmp_module.version);
-        free(tmp_module.description);
-        free(tmp_vendor.url);
-        free(tmp_vendor.address.url);
-        tmp_module.type = NULL;
-        tmp_module.name = NULL;
-        tmp_module.version = NULL;
-        tmp_module.description = NULL;
-        tmp_vendor.url = NULL;
-        tmp_vendor.address.url = NULL;
+        this_match = compare_modules(module, tmp_module);
+        free(tmp_module->type);
+        free(tmp_module->name);
+        free(tmp_module->version);
+        free(tmp_module->description);
+        free(tmp_vendor->url);
+        free(tmp_vendor->address.url);
+        tmp_module->type = NULL;
+        tmp_module->name = NULL;
+        tmp_module->version = NULL;
+        tmp_module->description = NULL;
+        tmp_vendor->url = NULL;
+        tmp_vendor->address.url = NULL;
         if (this_match) {
             /*
              * Found a match.
@@ -2202,12 +2211,14 @@ static ACVP_RESULT match_modules_page(ACVP_CTX *ctx,
     }
 
 end:
-    if (tmp_module.type) free(tmp_module.type);
-    if (tmp_module.name) free(tmp_module.name);
-    if (tmp_module.version) free(tmp_module.version);
-    if (tmp_module.description) free(tmp_module.description);
-    if (tmp_vendor.url) free(tmp_vendor.url);
-    if (tmp_vendor.address.url) free(tmp_vendor.address.url);
+    if (tmp_module->type) free(tmp_module->type);
+    if (tmp_module->name) free(tmp_module->name);
+    if (tmp_module->version) free(tmp_module->version);
+    if (tmp_module->description) free(tmp_module->description);
+    if (tmp_vendor->url) free(tmp_vendor->url);
+    if (tmp_vendor->address.url) free(tmp_vendor->address.url);
+    free(tmp_module);
+    free(tmp_vendor);
 
     if (val) json_value_free(val);
 
