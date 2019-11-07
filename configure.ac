@@ -164,6 +164,18 @@ AS_IF(
  ]
 )
 
+AC_ARG_ENABLE([cflags],
+[AS_HELP_STRING([--enable-cflags],
+[Flag to indicate use of enhanced CFLAGS])],
+[cflags="$enableval"],
+[enable_cflags=false])
+
+AS_IF(
+ [test "x$enable-cflags" != "xfalse"],
+ [[CFLAGS="$CFLAGS -Wcast-align -Wchar-subscripts -Wcomment -Wdeprecated-declarations -Wdisabled-optimization -Wdiv-by-zero -Wendif-labels  -Wformat -Wformat-extra-args  -Wformat-security -Wformat-y2k -Wimplicit -Wimplicit-function-declaration -Wimplicit-int -Wimport -Winvalid-pch -Wmain -Wmissing-braces  -Wmissing-format-attribute -Wmissing-noreturn  -Wmultichar -Wnested-externs -Wnonnull -Wparentheses -Wpointer-arith -Wreturn-type -Wsequence-point -Wshadow -Wsign-compare -Wstrict-aliasing -Wstrict-prototypes -Wswitch -Wswitch-default -Wtrigraphs  -Wunknown-pragmas -Wunused -Wunused-function -Wunused-label -Wunused-parameter -Wunused-value -Wunused-variable -Wwrite-strings -Wno-pointer-sign  -Wcast-qual -Wfloat-equal  -Wuninitialized -Wno-error=unreachable-code -Winline -Wno-error=cast-align -Wbad-function-cast  -Wswitch-enum -Wsystem-headers -Wunused-but-set-variable -Wextra -Wno-error=unreachable-code"]
+ ]
+)
+
 ##
 # Gcoverage
 ##
