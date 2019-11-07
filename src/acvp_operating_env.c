@@ -1571,6 +1571,7 @@ static ACVP_RESULT query_vendor_contacts(ACVP_CTX *ctx,
     JSON_Object *obj = NULL;
     JSON_Array *data_array = NULL;
     int i = 0, k = 0, data_count = 0;
+    const char *url = NULL;
 
     if (persons == NULL || match == NULL) {
         return ACVP_INVALID_ARG;
@@ -1681,11 +1682,11 @@ static ACVP_RESULT query_vendor_contacts(ACVP_CTX *ctx,
                 }
             }
 
-            strcpy_s(person->url, ACVP_ATTR_URL_MAX + 1,
-                     json_object_get_string(contact_obj, "url"));
-
-            matched_contact = 1;
-
+            url = json_object_get_string(contact_obj, "url");
+            if (url) {
+                strcpy_s(person->url, ACVP_ATTR_URL_MAX + 1, url);
+                matched_contact = 1;
+            }
             break;
         }
 
@@ -2054,7 +2055,7 @@ static ACVP_RESULT match_modules_page(ACVP_CTX *ctx,
     JSON_Value *val = NULL;
     JSON_Object *obj = NULL, *links_obj = NULL;
     JSON_Array *data_array = NULL;
-    const char *next = NULL;
+    const char *next = NULL, *c_urls = NULL;
     int i = 0, data_count = 0;
     const char *aurl = NULL, *vurl = NULL, *name = NULL, *description = NULL, *type = NULL, *version = NULL;
     ACVP_MODULE tmp_module;
@@ -2137,8 +2138,11 @@ static ACVP_RESULT match_modules_page(ACVP_CTX *ctx,
              * Soft copy the array of contactUrls
              * Assume they are in same order.
              */
-            strcpy_s(tmp_module.vendor->persons.person[i].url, ACVP_OE_STR_MAX + 1, 
-                     json_array_get_string(contact_urls, i));
+            c_urls = json_array_get_string(contact_urls, i);
+            if (c_urls && tmp_module.vendor->persons.person[i].url) {
+                strcpy_s(tmp_module.vendor->persons.person[i].url, ACVP_OE_STR_MAX + 1, 
+                         c_urls);
+            }
         }
 
         this_match = compare_modules(module, &tmp_module);
@@ -3129,9 +3133,15 @@ static ACVP_RESULT acvp_oe_metadata_parse_oe_dependencies(ACVP_CTX *ctx,
         }
 
         // Soft copy, no need to free
-        tmp_dep.type = strdup(type_str);
-        tmp_dep.name = strdup(name_str);
-        tmp_dep.description = strdup(desc_str);
+        if (type_str) {
+            tmp_dep.type = strdup(type_str);
+        }
+        if (name_str) {
+            tmp_dep.name = strdup(name_str);
+        }
+        if (desc_str) {
+            tmp_dep.description = strdup(desc_str);
+        }
 
 
         dep_id = match_dependency(ctx, &tmp_dep);

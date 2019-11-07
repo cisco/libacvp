@@ -169,8 +169,8 @@ static size_t acvp_curl_write_callback(void *ptr, size_t size, size_t nmemb, voi
  * for the HTTP user-agent string when the library cannot automatically find it
  */
 static void acvp_http_user_agent_check_env_for_var(ACVP_CTX *ctx, char *var_string, ACVP_OE_ENV_VAR var_to_check) {
-    int maxLength = 0;
-    char *var;
+    unsigned int maxLength = 0;
+    const char *var;
 
     switch(var_to_check) {
     case ACVP_USER_AGENT_OSNAME:
@@ -193,6 +193,7 @@ static void acvp_http_user_agent_check_env_for_var(ACVP_CTX *ctx, char *var_stri
         var = ACVP_USER_AGENT_COMP_ENV;
         maxLength = ACVP_USER_AGENT_COMP_STR_MAX;
         break;
+    case ACVP_USER_AGENT_NONE:
     default:
         return;
     }
@@ -212,6 +213,8 @@ static void acvp_http_user_agent_check_env_for_var(ACVP_CTX *ctx, char *var_stri
 
 static void acvp_http_user_agent_check_compiler_ver(ACVP_CTX *ctx, char *comp_string) {
     char versionBuffer[16];
+
+    ACVP_LOG_INFO("Checking compiler version");
 #ifdef __GNUC__
     strncpy_s(comp_string, ACVP_USER_AGENT_COMP_STR_MAX + 1, "GCC/", ACVP_USER_AGENT_COMP_STR_MAX);
 
@@ -244,13 +247,13 @@ static void acvp_http_user_agent_check_compiler_ver(ACVP_CTX *ctx, char *comp_st
  * remove delimiter characters, check for leading and trailing whitespace
  */
 static void acvp_http_user_agent_string_clean(char *str) {
-
+    int i = 0;
     int len = strnlen_s(str, ACVP_USER_AGENT_STR_MAX);
     //remove any leading or trailing whitespace
     strremovews_s(str, len);
     len = strnlen_s(str, ACVP_USER_AGENT_STR_MAX);
 
-    for (int i = 0; i < len; i++) {
+    for (i = 0; i < len; i++) {
         if (str[i] == ACVP_USER_AGENT_DELIMITER) {
             str[i] = ACVP_USER_AGENT_CHAR_REPLACEMENT;
         }
