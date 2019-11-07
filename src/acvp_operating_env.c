@@ -2080,11 +2080,13 @@ static ACVP_RESULT match_modules_page(ACVP_CTX *ctx,
 
     tmp_module = calloc(sizeof(ACVP_MODULE), sizeof(char));
     if (!tmp_module) {
-        return ACVP_MALLOC_FAIL;
+        rv = ACVP_MALLOC_FAIL;
+        goto end;
     }
     tmp_vendor = calloc(sizeof(ACVP_VENDOR), sizeof(char));
     if (!tmp_vendor) {
-        return ACVP_MALLOC_FAIL;
+        rv = ACVP_MALLOC_FAIL;
+        goto end;
     }
 
     obj = acvp_get_obj_from_rsp(ctx, val);
