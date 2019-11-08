@@ -17,7 +17,6 @@
 #include "parson.h"
 #include "safe_lib.h"
 
-int compare_modules(const ACVP_MODULE *a, const ACVP_MODULE *b);
 
 /* Keeps track of what to use the next Dependency ID */
 static unsigned int glb_dependency_id = 1; 
@@ -1993,7 +1992,7 @@ end:
  *
  * @return 1 for equal, 0 for not-equal
  */
-int compare_modules(const ACVP_MODULE *a, const ACVP_MODULE *b) {
+static int compare_modules(const ACVP_MODULE *a, const ACVP_MODULE *b) {
     int diff = 0;
     int i = 0;
 
