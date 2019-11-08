@@ -17,6 +17,8 @@
 #include "parson.h"
 #include "safe_lib.h"
 
+int compare_modules(const ACVP_MODULE *a, const ACVP_MODULE *b);
+
 /* Keeps track of what to use the next Dependency ID */
 static unsigned int glb_dependency_id = 1; 
 
@@ -775,7 +777,7 @@ static ACVP_RESULT match_dependencies_page(ACVP_CTX *ctx,
                 rv = ACVP_MALLOC_FAIL;
                 goto end;
             }
-
+            ACVP_LOG_INFO("Dependencies Match");
             strcpy_s(dep->url, ACVP_ATTR_URL_MAX + 1, url);
             *match = 1; 
             goto end;
@@ -1085,6 +1087,7 @@ static ACVP_RESULT match_oes_page(ACVP_CTX *ctx,
 
             strcpy_s(oe->url, ACVP_ATTR_URL_MAX + 1, url);
             *match = 1;
+            ACVP_LOG_INFO("OE Match");
             goto end;
         }
     }
@@ -1538,7 +1541,7 @@ static ACVP_RESULT compare_vendor_address(ACVP_CTX *ctx, ACVP_VENDOR_ADDRESS *ad
             }
             strcpy_s(address->url, ACVP_ATTR_URL_MAX + 1, url);
             *match = 1;
-
+            ACVP_LOG_INFO("Vendor Address Match");
             return ACVP_SUCCESS;
         }
     }
@@ -1582,6 +1585,7 @@ static ACVP_RESULT query_vendor_contacts(ACVP_CTX *ctx,
         if (persons->count == 0) {
             // They are both empty
             *match = 1;
+            ACVP_LOG_INFO("Vendor No Contacts Match");
             return ACVP_SUCCESS;
         } else {
             return ACVP_SUCCESS; // No match
@@ -1652,6 +1656,7 @@ static ACVP_RESULT query_vendor_contacts(ACVP_CTX *ctx,
                 ACVP_LOG_INFO("Emails do not match");
                 continue;
             }
+            ACVP_LOG_INFO("Email Match");
 
             phone_numbers = json_object_get_array(contact_obj, "phoneNumbers");
             if (phone_numbers == NULL)  {
@@ -1668,6 +1673,7 @@ static ACVP_RESULT query_vendor_contacts(ACVP_CTX *ctx,
                 ACVP_LOG_INFO("Phone numbers do not match");
                 continue;
             }
+            ACVP_LOG_INFO("Phone Match");
 
             /*
              * Found a match.
@@ -1699,6 +1705,7 @@ static ACVP_RESULT query_vendor_contacts(ACVP_CTX *ctx,
     }
 
     // Got thorugh all of the linked Persons
+    ACVP_LOG_INFO("Contacts Match");
     *match = 1;
 
 end:
@@ -1849,6 +1856,7 @@ static ACVP_RESULT match_vendors_page(ACVP_CTX *ctx,
         }
 
         strcpy_s(vendor->url, ACVP_ATTR_URL_MAX + 1, url);
+        ACVP_LOG_INFO("Vendors Match");
         *match = 1;
         goto end;
     }
@@ -1985,7 +1993,7 @@ end:
  *
  * @return 1 for equal, 0 for not-equal
  */
-static int compare_modules(const ACVP_MODULE *a, const ACVP_MODULE *b) {
+int compare_modules(const ACVP_MODULE *a, const ACVP_MODULE *b) {
     int diff = 0;
     int i = 0;
 
@@ -2150,13 +2158,17 @@ static ACVP_RESULT match_modules_page(ACVP_CTX *ctx,
              * Assume they are in same order.
              */
             c_urls = json_array_get_string(contact_urls, i);
-            if (c_urls && tmp_module->vendor->persons.person[i].url) {
-                strcpy_s(tmp_module->vendor->persons.person[i].url, ACVP_OE_STR_MAX + 1, 
-                         c_urls);
+            if (c_urls && (tmp_module->vendor != NULL)) {
+                tmp_module->vendor->persons.person[k].url = strdup(c_urls);
             }
         }
 
         this_match = compare_modules(module, tmp_module);
+        for (k = 0; k < num_contacts; k++) {
+            if (tmp_module->vendor->persons.person[k].url) {
+                free(tmp_module->vendor->persons.person[k].url);
+            }
+        }
         free(tmp_module->type);
         free(tmp_module->name);
         free(tmp_module->version);
@@ -2189,6 +2201,7 @@ static ACVP_RESULT match_modules_page(ACVP_CTX *ctx,
             }
 
             strcpy_s(module->url, ACVP_ATTR_URL_MAX + 1, url);
+            ACVP_LOG_INFO("Modules Match");
             *match = 1; 
             goto end;
         }
