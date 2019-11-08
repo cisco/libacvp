@@ -129,7 +129,7 @@ export CROSS_COMPILE=powerpc-buildroot-linux-uclibc
 ```
 
 Example with build and host information:
-`./configure --build=<localx86_64-unknown-linux-gnu --host=mips64-octeon-linux-gnu --with-ssl-dir=<path to ssl dir> --with-libcurl-dir=<path to curl dir>`
+`./configure --build=localx86_64-unknown-linux-gnu --host=mips64-octeon-linux-gnu --with-ssl-dir=<path to ssl dir> --with-libcurl-dir=<path to curl dir>`
 
 All dependent libraries must have been built with the same cross compile.
 
@@ -153,7 +153,7 @@ libacvp you may ./configure a special app used only for Step 2. This
 can be done by using --enable-offline and --enable-static when running 
 ./configure and do not use --with-libcurl-dir or --with-libmurl-dir which
 will  minimize the library dependencies. Note that openssl with FOM must also
-be built as static).
+be built as static.
 
 For example:
 ```
