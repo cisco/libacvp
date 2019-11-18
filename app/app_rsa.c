@@ -240,7 +240,7 @@ int app_rsa_sig_handler(ACVP_TEST_CASE *test_case) {
         RSA_set0_key(rsa, tmp_n, tmp_e, NULL);
 #endif
 
-        tc->ver_disposition = FIPS_rsa_verify(rsa, tc->msg, tc->msg_len, (const struct env_md_st *)tc_md, 
+        tc->ver_disposition = FIPS_rsa_verify(rsa, tc->msg, tc->msg_len, tc_md, 
                                               pad_mode, salt_len, NULL, tc->signature, 
                                               tc->sig_len);
     } else {
@@ -278,7 +278,7 @@ int app_rsa_sig_handler(ACVP_TEST_CASE *test_case) {
         if (tc->msg && tc_md) {
             siglen = RSA_size(group_rsa);
 
-            if (!FIPS_rsa_sign(group_rsa, tc->msg, tc->msg_len, (const struct env_md_st *)tc_md, 
+            if (!FIPS_rsa_sign(group_rsa, tc->msg, tc->msg_len, tc_md, 
                                pad_mode, salt_len, NULL,
                                tc->signature, (unsigned int *)&siglen)) {
                 printf("\nError: RSA Signature Generation fail\n");
