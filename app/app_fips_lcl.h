@@ -125,6 +125,9 @@ int dsa_builtin_paramgen2(DSA *ret, size_t L, size_t N,
 
 #define EVP_CIPHER_CTX_set_padding(ctx, pad) {}
 
+int fips_evp_MD_size(const EVP_MD *md);
+const unsigned char *fips_EVP_CIPHER_CTX_iv(const EVP_CIPHER_CTX *ctx);
+void fips_evp_CIPHER_CTX_set_flags(EVP_CIPHER_CTX *ctx, int flags);
 EVP_CIPHER_CTX *FIPS_cipher_ctx_new(void);
 void FIPS_cipher_ctx_init(EVP_CIPHER_CTX *ctx);
 void FIPS_cipher_ctx_free(EVP_CIPHER_CTX *a);
@@ -157,12 +160,18 @@ int rsa_generate_key_internal(BIGNUM **p, BIGNUM **q, BIGNUM **n, BIGNUM **d,
                               BIGNUM *e_value, unsigned int nlen, BN_GENCB *cb);
 int RSA_X931_generate_key_ex(RSA *rsa, int bits, const BIGNUM *e, BN_GENCB *cb);
 int RSA_size(const RSA *r);
+int fips_RSA_set0_key(RSA *r, BIGNUM *n, BIGNUM *e, BIGNUM *d);
+void fips_RSA_get0_key(const RSA *r,
+                  const BIGNUM **n, const BIGNUM **e, const BIGNUM **d);
+
 DSA *	FIPS_dsa_new(void);
 void	FIPS_dsa_free (DSA *r);
 int FIPS_dsa_verify(DSA *dsa, const unsigned char *msg, size_t msglen,
 			const EVP_MD *mhash, DSA_SIG *s);
 DSA_SIG * FIPS_dsa_sign(DSA *dsa, const unsigned char *msg, size_t msglen,
 			const EVP_MD *mhash);
+void fips_DSA_get0_key(const DSA *d,
+                       const BIGNUM **pub_key, const BIGNUM **priv_key);
 void FIPS_dsa_sig_get0(const DSA_SIG *sig, const BIGNUM **pr, const BIGNUM **ps);
 void FIPS_dsa_sig_set0(const DSA_SIG *sig, BIGNUM *pr, BIGNUM *ps);
 DSA_SIG *FIPS_dsa_sig_new(void);
@@ -173,6 +182,9 @@ int	fips_bn_cmp(const BIGNUM *a, const BIGNUM *b);
 BIGNUM *fips_bn_dup(const BIGNUM *a);
 int FIPS_bn_num_bits(const BIGNUM *a);
 EC_POINT *FIPS_ec_point_new(const EC_GROUP *group);
+int fips_EC_POINT_set_affine_coordinates(const EC_GROUP *group, EC_POINT *p,
+                                        const BIGNUM *x, const BIGNUM *y,
+                                        BN_CTX *ctx);
 void FIPS_ec_point_free(EC_POINT *point);
 const BIGNUM *FIPS_ec_key_get0_private_key(const EC_KEY *key);
 const EC_POINT *FIPS_ec_key_get0_public_key(const EC_KEY *key);
@@ -202,6 +214,15 @@ void FIPS_ec_key_set_flags(EC_KEY *key, int flags);
 int FIPS_ec_key_set_private_key(EC_KEY *key, const BIGNUM *prv);
 int FIPS_ec_key_set_public_key_affine_coordinates(EC_KEY *key, BIGNUM *x,
                                                   BIGNUM *y);
+const EVP_MD *fips_evp_sha512_224(void);
+const EVP_MD *fips_evp_sha512_256(void);
+const EVP_MD *FIPS_evp_sha3_224(void);
+const EVP_MD *FIPS_evp_sha3_256(void);
+const EVP_MD *FIPS_evp_sha3_384(void);
+const EVP_MD *FIPS_evp_sha3_512(void);
+const EVP_MD *FIPS_evp_shake128(void);
+const EVP_MD *FIPS_evp_shake256(void);
+
 ECDSA_SIG *FIPS_ecdsa_sig_new(void);
 void FIPS_ecdsa_sig_free(ECDSA_SIG *sig);
 ECDSA_SIG * FIPS_ecdsa_sign(EC_KEY *key,
