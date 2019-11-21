@@ -26,7 +26,7 @@ int app_cmac_handler(ACVP_TEST_CASE *test_case) {
     int key_len, i;
     unsigned char mac_compare[16] = { 0 };
     char full_key[32] = { 0 };
-    int mac_cmp_len;
+    size_t mac_cmp_len;
 
     if (!test_case) {
         return rv;
@@ -172,7 +172,7 @@ int app_cmac_handler(ACVP_TEST_CASE *test_case) {
     if (tc->verify) {
         int diff = 0;
 
-        if (!CMAC_Final(cmac_ctx, mac_compare, (size_t *)&mac_cmp_len)) {
+        if (!CMAC_Final(cmac_ctx, mac_compare, &mac_cmp_len)) {
             printf("\nCrypto module error, CMAC_Final failed\n");
             goto cleanup;
         }
@@ -184,10 +184,11 @@ int app_cmac_handler(ACVP_TEST_CASE *test_case) {
             tc->ver_disposition = ACVP_TEST_DISPOSITION_FAIL;
         }
     } else {
-        if (!CMAC_Final(cmac_ctx, tc->mac, (size_t *)&tc->mac_len)) {
+        if (!CMAC_Final(cmac_ctx, tc->mac, &mac_cmp_len)) {
             printf("\nCrypto module error, CMAC_Final failed\n");
             goto cleanup;
         }
+        tc->mac_len = (int)mac_cmp_len;
     }
     rv = 0;
 

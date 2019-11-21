@@ -1371,7 +1371,7 @@ static void log_network_status(ACVP_CTX *ctx,
         }
         break;
     case ACVP_NET_GET_VS_RESULT:
-        if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
+        if (ctx->debug >= ACVP_LOG_LVL_STATUS) {
             printf("GET Vector Set Result...\n\tStatus: %d\n\tUrl: %s\n\tResp:\n%s\n",
                    curl_code, url, ctx->curl_buf);
         } else {
