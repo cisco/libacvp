@@ -823,16 +823,11 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 if (alg_id == ACVP_AES_GCM_SIV) {
                     //GCM-SIV has a static ivlen of 96, not required to be sent by server
                     ivlen = ACVP_AES_GCM_SIV_IVLEN;
+                } else {
+                    ACVP_LOG_ERR("Server JSON missing 'ivLen'");
+                    rv = ACVP_MISSING_ARG;
+                    goto err;
                 }
-                ACVP_LOG_ERR("Server JSON missing 'ivLen'");
-                rv = ACVP_MISSING_ARG;
-                goto err;
-            }
-            
-            if (alg_id == ACVP_AES_GCM_SIV && ivlen != ACVP_AES_GCM_SIV_IVLEN) {
-                ACVP_LOG_ERR("Server JSON invalid 'ivLen', (%u)", ivlen);
-                rv = ACVP_INVALID_ARG;
-                goto err;
             }
 
             if (alg_id == ACVP_AES_GCM || alg_id == ACVP_AES_GMAC) {
@@ -884,12 +879,10 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                     rv = ACVP_INVALID_ARG;
                     goto err;
                 }
-            } else if (alg_id == ACVP_AES_GCM_SIV) {
-                if (ivlen != ACVP_AES_GCM_SIV_IVLEN) {
-                    ACVP_LOG_ERR("Server JSON invalid 'ivLen', (%u)", ivlen);
-                    rv = ACVP_INVALID_ARG;
-                    goto err;
-                }
+            } else if (alg_id == ACVP_AES_GCM_SIV && ivlen != ACVP_AES_GCM_SIV_IVLEN) {
+                ACVP_LOG_ERR("Server JSON invalid 'ivLen', (%u)", ivlen);
+                rv = ACVP_INVALID_ARG;
+                goto err;
             }
 
             aadlen = json_object_get_number(groupobj, "aadLen");
@@ -901,18 +894,15 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             }
 
             taglen = json_object_get_number(groupobj, "tagLen");
-            if (!taglen) {
-                if (alg_id == ACVP_AES_GCM_SIV) {
+            if (alg_id == ACVP_AES_GCM_SIV) {
+                if (!taglen) {
                     //GCM-SIV has a static taglen of 128, not required to be sent by server
-                    ivlen = ACVP_AES_GCM_SIV_TAGLEN;
+                    taglen = ACVP_AES_GCM_SIV_TAGLEN;
+                } else if (taglen != ACVP_AES_GCM_SIV_TAGLEN) {
+                    ACVP_LOG_ERR("Server JSON invalid 'tagLen', (%u)", taglen);
+                    rv = ACVP_INVALID_ARG;
+                    goto err;
                 }
-                ACVP_LOG_ERR("Server JSON missing 'tagLen'");
-                rv = ACVP_MISSING_ARG;
-                goto err;
-            } else if (alg_id == ACVP_AES_GCM_SIV && taglen != ACVP_AES_GCM_SIV_TAGLEN) {
-                ACVP_LOG_ERR("Server JSON invalid 'tagLen', (%u)", taglen);
-                rv = ACVP_INVALID_ARG;
-                goto err;
             } else if (!(taglen >= ACVP_SYM_TAG_BIT_MIN && taglen <= ACVP_SYM_TAG_BIT_MAX)) {
                 ACVP_LOG_ERR("Server JSON invalid 'tagLen', (%u)", taglen);
                 rv = ACVP_INVALID_ARG;
