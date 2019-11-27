@@ -55,49 +55,49 @@ void FINGERPRINT_premain(void) {}
 
 static int no_err;
 static void put_err_cb(int lib, int func,int reason,const char *file,int line)
-	{
-	if (no_err)
-		return;
+    {
+    if (no_err)
+        return;
 #if OPENSSL_VERSION_NUMBER < 0x10100000L
-	fprintf(stderr, "ERROR:%08lX:lib=%d,func=%d,reason=%d"
-				":file=%s:line=%d\n",
-			ERR_PACK(lib, func, reason),
-			lib, func, reason, file, line);
+    fprintf(stderr, "ERROR:%08lX:lib=%d,func=%d,reason=%d"
+                ":file=%s:line=%d\n",
+            ERR_PACK(lib, func, reason),
+            lib, func, reason, file, line);
 #else
     fprintf(stderr, "ERROR:%08X:lib=%d,func=%d,reason=%d"
-				":file=%s:line=%d\n",
-			ERR_PACK(lib, func, reason),
-			lib, func, reason, file, line);
+                ":file=%s:line=%d\n",
+            ERR_PACK(lib, func, reason),
+            lib, func, reason, file, line);
 #endif
-	}
+    }
 
 static void add_err_cb(int num, va_list args)
-	{
-	int i;
-	char *str;
-	if (no_err)
-		return;
-	fputs("\t", stderr);
-	for (i = 0; i < num; i++)
-		{
-		str = va_arg(args, char *);
-		if (str)
-			fputs(str, stderr);
-		}
-	fputs("\n", stderr);
-	}
+    {
+    int i;
+    char *str;
+    if (no_err)
+        return;
+    fputs("\t", stderr);
+    for (i = 0; i < num; i++)
+        {
+        str = va_arg(args, char *);
+        if (str)
+            fputs(str, stderr);
+        }
+    fputs("\n", stderr);
+    }
 
 static unsigned char dummy_entropy[1024];
 
 static size_t dummy_cb(DRBG_CTX *ctx, unsigned char **pout,
                                 int entropy, size_t min_len, size_t max_len)
-	{
+    {
         if (!ctx || !entropy || !max_len) {
             return min_len;
         }
-	*pout = dummy_entropy;
-	return min_len;
-	}
+    *pout = dummy_entropy;
+    return min_len;
+    }
 
 static int entropy_stick = 0;
 
@@ -114,40 +114,40 @@ void FIPS_set_locking_callbacks(CRYPTO_RWLOCK *(*FIPS_thread_lock_new)(void),
 /* Dummy lock CBs*/
 static int dummy_alg_testing_lock = 5;
 static CRYPTO_RWLOCK* fips_test_suite_dummy_new_lock(void) {
-	return (CRYPTO_RWLOCK*) &dummy_alg_testing_lock;
+    return (CRYPTO_RWLOCK*) &dummy_alg_testing_lock;
 }
 static void fips_test_suite_dummy_free_lock(CRYPTO_RWLOCK* lock){
-	// do nothing
-	(void)lock;
+    // do nothing
+    (void)lock;
 }
 #endif
 #ifdef ACVP_NO_RUNTIME
 static void fips_algtest_init_nofips(void)
-	{
-	DRBG_CTX *ctx;
-	size_t i;
-	FIPS_set_error_callbacks(put_err_cb, add_err_cb);
-	for (i = 0; i < sizeof(dummy_entropy); i++)
-		dummy_entropy[i] = i & 0xff;
-	if (entropy_stick)
-		memcpy_s(dummy_entropy + 32, (sizeof(dummy_entropy) - 32), dummy_entropy + 16, 16);
-	ctx = FIPS_get_default_drbg();
-	FIPS_drbg_init(ctx, NID_aes_256_ctr, DRBG_FLAG_CTR_USE_DF);
-	FIPS_drbg_set_callbacks(ctx, dummy_cb, 0, 16, dummy_cb, 0);
-	FIPS_drbg_instantiate(ctx, dummy_entropy, 10);
-	FIPS_rand_set_method(FIPS_drbg_method());
+    {
+    DRBG_CTX *ctx;
+    size_t i;
+    FIPS_set_error_callbacks(put_err_cb, add_err_cb);
+    for (i = 0; i < sizeof(dummy_entropy); i++)
+        dummy_entropy[i] = i & 0xff;
+    if (entropy_stick)
+        memcpy_s(dummy_entropy + 32, (sizeof(dummy_entropy) - 32), dummy_entropy + 16, 16);
+    ctx = FIPS_get_default_drbg();
+    FIPS_drbg_init(ctx, NID_aes_256_ctr, DRBG_FLAG_CTR_USE_DF);
+    FIPS_drbg_set_callbacks(ctx, dummy_cb, 0, 16, dummy_cb, 0);
+    FIPS_drbg_instantiate(ctx, dummy_entropy, 10);
+    FIPS_rand_set_method(FIPS_drbg_method());
 #if OPENSSL_VERSION_NUMBER >= 0x10100000L
-        FIPS_set_locking_callbacks(&fips_test_suite_dummy_new_lock,
-                                   NULL,
-                                   NULL,
-                                   NULL,
-                                   &fips_test_suite_dummy_free_lock,
-                                   NULL,
-                                   NULL,
-                                   NULL);
+    FIPS_set_locking_callbacks(&fips_test_suite_dummy_new_lock,
+                               NULL,
+                               NULL,
+                               NULL,
+                               &fips_test_suite_dummy_free_lock,
+                               NULL,
+                               NULL,
+                               NULL);
 #endif
 
-	}
+    }
 #endif
 #ifdef __cplusplus
 }

@@ -2094,11 +2094,11 @@ ACVP_RESULT acvp_refresh(ACVP_CTX *ctx) {
  * list of vs_id's that need to be processed during the test
  * session.  This routine will execute the test flow for a single
  * vs_id.  The flow is:
- *	a) Download the KAT vector set from the server using the vs_id
- *	b) Parse the KAT vectors
- *	c) Process each test case in the KAT vector set
- *	d) Generate the response data
- *	e) Send the response data back to the ACVP server
+ *    a) Download the KAT vector set from the server using the vs_id
+ *    b) Parse the KAT vectors
+ *    c) Process each test case in the KAT vector set
+ *    d) Generate the response data
+ *    e) Send the response data back to the ACVP server
  */
 static ACVP_RESULT acvp_process_vsid(ACVP_CTX *ctx, char *vsid_url, int count) {
     ACVP_RESULT rv = ACVP_SUCCESS;
@@ -2261,10 +2261,10 @@ static ACVP_RESULT acvp_dispatch_vector_set(ACVP_CTX *ctx, JSON_Object *obj) {
  * here to know which vectors need to be processed.
  *
  * The processing logic is:
- *	a) JSON parse the data
- *	b) Identify the ACVP operation to be performed (e.g. AES encrypt)
- *	c) Dispatch the vectors to the handler for the
- *	   specified ACVP operation.
+ *    a) JSON parse the data
+ *    b) Identify the ACVP operation to be performed (e.g. AES encrypt)
+ *    c) Dispatch the vectors to the handler for the
+ *       specified ACVP operation.
  */
 static ACVP_RESULT acvp_process_vector_set(ACVP_CTX *ctx, JSON_Object *obj) {
     ACVP_RESULT rv;

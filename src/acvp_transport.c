@@ -496,7 +496,7 @@ end:
  * url: URL to use for the GET request
  *
  * Return value is the HTTP status value from the server
- *	    (e.g. 200 for HTTP OK)
+ * (e.g. 200 for HTTP OK)
  */
 static long acvp_curl_http_get(ACVP_CTX *ctx, const char *url) {
     long http_code = 0;
@@ -599,7 +599,7 @@ static long acvp_curl_http_get(ACVP_CTX *ctx, const char *url) {
  *            from the HTTP body received from the server.
  *
  * Return value is the HTTP status value from the server
- *	    (e.g. 200 for HTTP OK)
+ * (e.g. 200 for HTTP OK)
  */
 static long acvp_curl_http_post(ACVP_CTX *ctx, const char *url, const char *data, int data_len) {
     long http_code = 0;
@@ -711,7 +711,7 @@ static long acvp_curl_http_post(ACVP_CTX *ctx, const char *url, const char *data
  * @param data_len: Length of \p data (in bytes)
  *
  * @return HTTP status value from the server
- *	       (e.g. 200 for HTTP OK)
+ * (e.g. 200 for HTTP OK)
  */
 static long acvp_curl_http_put(ACVP_CTX *ctx, const char *url, const char *data, int data_len) {
     long http_code = 0;

@@ -817,17 +817,21 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             ivlen = 128;
         }
 
-        /* TODO: This value is supposed to be included in server JSON, but is not currently.
-         * Update when fixed on server end. */
-        if (alg_id == ACVP_AES_GCM_SIV) {
-            ivlen = ACVP_AES_GCM_SIV_IVLEN;
-        }
-        
-        if (alg_id == ACVP_AES_GCM || alg_id == ACVP_AES_CCM || alg_id == ACVP_AES_GMAC) {
+        if (alg_id == ACVP_AES_GCM || alg_id == ACVP_AES_CCM || alg_id == ACVP_AES_GMAC || alg_id == ACVP_AES_GCM_SIV) {
             ivlen = json_object_get_number(groupobj, "ivLen");
             if (!ivlen) {
+                if (alg_id == ACVP_AES_GCM_SIV) {
+                    //GCM-SIV has a static ivlen of 96, not required to be sent by server
+                    ivlen = ACVP_AES_GCM_SIV_IVLEN;
+                }
                 ACVP_LOG_ERR("Server JSON missing 'ivLen'");
                 rv = ACVP_MISSING_ARG;
+                goto err;
+            }
+            
+            if (alg_id == ACVP_AES_GCM_SIV && ivlen != ACVP_AES_GCM_SIV_IVLEN) {
+                ACVP_LOG_ERR("Server JSON invalid 'ivLen', (%u)", ivlen);
+                rv = ACVP_INVALID_ARG;
                 goto err;
             }
 
@@ -897,12 +901,20 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             }
 
             taglen = json_object_get_number(groupobj, "tagLen");
-            if (alg_id == ACVP_AES_GCM_SIV && taglen != ACVP_AES_GCM_SIV_TAGLEN) {
-                ACVP_LOG_ERR("Incorrect server JSON value 'taglen' for AES-GCM-SIV (%u)", taglen);
+            if (!taglen) {
+                if (alg_id == ACVP_AES_GCM_SIV) {
+                    //GCM-SIV has a static taglen of 128, not required to be sent by server
+                    ivlen = ACVP_AES_GCM_SIV_TAGLEN;
+                }
+                ACVP_LOG_ERR("Server JSON missing 'tagLen'");
+                rv = ACVP_MISSING_ARG;
+                goto err;
+            } else if (alg_id == ACVP_AES_GCM_SIV && taglen != ACVP_AES_GCM_SIV_TAGLEN) {
+                ACVP_LOG_ERR("Server JSON invalid 'tagLen', (%u)", taglen);
                 rv = ACVP_INVALID_ARG;
                 goto err;
             } else if (!(taglen >= ACVP_SYM_TAG_BIT_MIN && taglen <= ACVP_SYM_TAG_BIT_MAX)) {
-                ACVP_LOG_ERR("Server JSON invalid 'taglen', (%u)", taglen);
+                ACVP_LOG_ERR("Server JSON invalid 'tagLen', (%u)", taglen);
                 rv = ACVP_INVALID_ARG;
                 goto err;
             }
@@ -910,7 +922,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
         ptlen = json_object_get_number(groupobj, "payloadLen");
         if (alg_id == ACVP_AES_GMAC && ptlen != 0) {
-            ACVP_LOG_ERR("'ptlen' not allowed for AES-GMAC");
+            ACVP_LOG_ERR("Server provided 'ptlen' not allowed for AES-GMAC");
             rv = ACVP_INVALID_ARG;
             goto err;
         }
