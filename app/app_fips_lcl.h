@@ -151,7 +151,7 @@ void FIPS_bn_free(BIGNUM *a);
 int fips_BN_hex2bn(BIGNUM **bn, const char *a);
 char *fips_BN_bn2hex(const BIGNUM *a);
 BIGNUM *FIPS_bn_bin2bn(const unsigned char *s,int len,BIGNUM *ret);
-int	FIPS_bn_bn2bin(const BIGNUM *a, unsigned char *to);
+int FIPS_bn_bn2bin(const BIGNUM *a, unsigned char *to);
 int fips_bn_set_word(BIGNUM *a, BN_ULONG w);
 int rsa_generate_key_internal(BIGNUM **p, BIGNUM **q, BIGNUM **n, BIGNUM **d,
                               void *seed, unsigned int seed_len,
@@ -164,12 +164,12 @@ int fips_RSA_set0_key(RSA *r, BIGNUM *n, BIGNUM *e, BIGNUM *d);
 void fips_RSA_get0_key(const RSA *r,
                   const BIGNUM **n, const BIGNUM **e, const BIGNUM **d);
 
-DSA *	FIPS_dsa_new(void);
-void	FIPS_dsa_free (DSA *r);
+DSA * FIPS_dsa_new(void);
+void FIPS_dsa_free(DSA *r);
 int FIPS_dsa_verify(DSA *dsa, const unsigned char *msg, size_t msglen,
-			const EVP_MD *mhash, DSA_SIG *s);
+            const EVP_MD *mhash, DSA_SIG *s);
 DSA_SIG * FIPS_dsa_sign(DSA *dsa, const unsigned char *msg, size_t msglen,
-			const EVP_MD *mhash);
+            const EVP_MD *mhash);
 void fips_DSA_get0_key(const DSA *d,
                        const BIGNUM **pub_key, const BIGNUM **priv_key);
 void FIPS_dsa_sig_get0(const DSA_SIG *sig, const BIGNUM **pr, const BIGNUM **ps);
@@ -178,7 +178,7 @@ DSA_SIG *FIPS_dsa_sig_new(void);
 void FIPS_dsa_sig_free(DSA_SIG *sig);
 BIGNUM *fips_bn_ctx_get(BN_CTX *ctx);
 void FIPS_bn_clear_free(BIGNUM *a);
-int	fips_bn_cmp(const BIGNUM *a, const BIGNUM *b);
+int fips_bn_cmp(const BIGNUM *a, const BIGNUM *b);
 BIGNUM *fips_bn_dup(const BIGNUM *a);
 int FIPS_bn_num_bits(const BIGNUM *a);
 EC_POINT *FIPS_ec_point_new(const EC_GROUP *group);
@@ -229,12 +229,12 @@ ECDSA_SIG * FIPS_ecdsa_sign(EC_KEY *key,
                             const unsigned char *msg, size_t msglen,
                             const EVP_MD *mhash);
 int FIPS_ecdsa_verify(EC_KEY *key, const unsigned char *msg, size_t msglen,
-			          const EVP_MD *mhash, ECDSA_SIG *s);
+                      const EVP_MD *mhash, ECDSA_SIG *s);
 ECDSA_SIG * FIPS_ecdsa_sign_md(EC_KEY *key,
                                const unsigned char *msg, size_t msglen,
                                const EVP_MD *mhash);
 int FIPS_ecdsa_verify_md(EC_KEY *key, const unsigned char *msg, size_t msglen,
-			 const EVP_MD *mhash, ECDSA_SIG *s);
+             const EVP_MD *mhash, ECDSA_SIG *s);
 int FIPS_ecdh_compute_key(void *out, size_t outlen, const EC_POINT *pub_key,
                           EC_KEY *ecdh, void *(*KDF) (const void *in, size_t inlen,
                                                       void *out, size_t *outlen));

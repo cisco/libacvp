@@ -1174,6 +1174,12 @@ static ACVP_RESULT acvp_validate_prereq_val(ACVP_CIPHER cipher, ACVP_PREREQ_ALG 
     case ACVP_HASH_SHA512:
     case ACVP_HASH_SHA512_224:
     case ACVP_HASH_SHA512_256:
+    case ACVP_HASH_SHA3_224:
+    case ACVP_HASH_SHA3_256:
+    case ACVP_HASH_SHA3_384:
+    case ACVP_HASH_SHA3_512:
+    case ACVP_HASH_SHAKE_128:
+    case ACVP_HASH_SHAKE_256:
         return ACVP_INVALID_ARG;
 
         break;
@@ -1201,6 +1207,10 @@ static ACVP_RESULT acvp_validate_prereq_val(ACVP_CIPHER cipher, ACVP_PREREQ_ALG 
     case ACVP_HMAC_SHA2_512:
     case ACVP_HMAC_SHA2_512_224:
     case ACVP_HMAC_SHA2_512_256:
+    case ACVP_HMAC_SHA3_224:
+    case ACVP_HMAC_SHA3_256:
+    case ACVP_HMAC_SHA3_384:
+    case ACVP_HMAC_SHA3_512:
         if (pre_req == ACVP_PREREQ_SHA) {
             return ACVP_SUCCESS;
         }
@@ -1304,16 +1314,6 @@ static ACVP_RESULT acvp_validate_prereq_val(ACVP_CIPHER cipher, ACVP_PREREQ_ALG 
     case ACVP_TDES_CFBP8:
     case ACVP_TDES_CFBP64:
     case ACVP_TDES_CTR:
-    case ACVP_HASH_SHA3_224:
-    case ACVP_HASH_SHA3_256:
-    case ACVP_HASH_SHA3_384:
-    case ACVP_HASH_SHA3_512:
-    case ACVP_HASH_SHAKE_128:
-    case ACVP_HASH_SHAKE_256:
-    case ACVP_HMAC_SHA3_224:
-    case ACVP_HMAC_SHA3_256:
-    case ACVP_HMAC_SHA3_384:
-    case ACVP_HMAC_SHA3_512:
     case ACVP_CIPHER_END:
     default:
         break;

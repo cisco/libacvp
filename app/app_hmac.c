@@ -57,6 +57,25 @@ int app_hmac_handler(ACVP_TEST_CASE *test_case) {
     case ACVP_HMAC_SHA2_512_256:
         md = EVP_sha512_256();
         break;
+    case ACVP_HMAC_SHA3_224:
+        md = EVP_sha3_224();
+        break;
+    case ACVP_HMAC_SHA3_256:
+        md = EVP_sha3_256();
+        break;
+    case ACVP_HMAC_SHA3_384:
+        md = EVP_sha3_384();
+        break;
+    case ACVP_HMAC_SHA3_512:
+        md = EVP_sha3_512();
+        break;
+#else
+    case ACVP_HMAC_SHA2_512_224:
+    case ACVP_HMAC_SHA2_512_256:
+    case ACVP_HMAC_SHA3_224:
+    case ACVP_HMAC_SHA3_256:
+    case ACVP_HMAC_SHA3_384:
+    case ACVP_HMAC_SHA3_512:
 #endif
     case ACVP_CIPHER_START:
     case ACVP_AES_GCM:
@@ -102,10 +121,6 @@ int app_hmac_handler(ACVP_TEST_CASE *test_case) {
     case ACVP_HASHDRBG:
     case ACVP_HMACDRBG:
     case ACVP_CTRDRBG:
-    case ACVP_HMAC_SHA3_224:
-    case ACVP_HMAC_SHA3_256:
-    case ACVP_HMAC_SHA3_384:
-    case ACVP_HMAC_SHA3_512:
     case ACVP_CMAC_AES:
     case ACVP_CMAC_TDES:
     case ACVP_DSA_KEYGEN:
@@ -134,10 +149,6 @@ int app_hmac_handler(ACVP_TEST_CASE *test_case) {
     case ACVP_KAS_FFC_COMP:
     case ACVP_KAS_FFC_NOCOMP:
     case ACVP_CIPHER_END:
-#if OPENSSL_VERSION_NUMBER< 0x10101010L /* Less than OpenSSL 1.1.1 */
-    case ACVP_HMAC_SHA2_512_224:
-    case ACVP_HMAC_SHA2_512_256:
-#endif
     default:
         printf("Error: Unsupported hash algorithm requested by ACVP server\n");
         return rc;

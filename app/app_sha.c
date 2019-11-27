@@ -78,6 +78,15 @@ int app_sha_handler(ACVP_TEST_CASE *test_case) {
         md = EVP_shake256();
         shake = 1;
         break;
+#else
+    case ACVP_HASH_SHA512_224:
+    case ACVP_HASH_SHA512_256:
+    case ACVP_HASH_SHA3_224:
+    case ACVP_HASH_SHA3_256:
+    case ACVP_HASH_SHA3_384:
+    case ACVP_HASH_SHA3_512:
+    case ACVP_HASH_SHAKE_128:
+    case ACVP_HASH_SHAKE_256:
 #endif
     case ACVP_CIPHER_START:
     case ACVP_AES_GCM:
@@ -149,16 +158,6 @@ int app_sha_handler(ACVP_TEST_CASE *test_case) {
     case ACVP_KAS_FFC_COMP:
     case ACVP_KAS_FFC_NOCOMP:
     case ACVP_CIPHER_END:
-#if OPENSSL_VERSION_NUMBER < 0x10101010L /* Less than OpenSSL 1.1.1 */
-    case ACVP_HASH_SHA512_224:
-    case ACVP_HASH_SHA512_256:
-    case ACVP_HASH_SHA3_224:
-    case ACVP_HASH_SHA3_256:
-    case ACVP_HASH_SHA3_384:
-    case ACVP_HASH_SHA3_512:
-    case ACVP_HASH_SHAKE_128:
-    case ACVP_HASH_SHAKE_256:
-#endif
     default:
         printf("Error: Unsupported hash algorithm requested by ACVP server\n");
         return ACVP_NO_CAP;

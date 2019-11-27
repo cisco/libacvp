@@ -2749,6 +2749,10 @@ ACVP_RESULT acvp_build_test_session(ACVP_CTX *ctx, char **reg, int *out_len) {
             case ACVP_HMAC_SHA2_512:
             case ACVP_HMAC_SHA2_512_224:
             case ACVP_HMAC_SHA2_512_256:
+            case ACVP_HMAC_SHA3_224:
+            case ACVP_HMAC_SHA3_256:
+            case ACVP_HMAC_SHA3_384:
+            case ACVP_HMAC_SHA3_512:
                 rv = acvp_build_hmac_register_cap(cap_obj, cap_entry);
                 break;
             case ACVP_CMAC_AES:
@@ -2828,10 +2832,6 @@ ACVP_RESULT acvp_build_test_session(ACVP_CTX *ctx, char **reg, int *out_len) {
            case ACVP_TDES_CFBP1:
            case ACVP_TDES_CFBP8:
            case ACVP_TDES_CFBP64:
-           case ACVP_HMAC_SHA3_224:
-           case ACVP_HMAC_SHA3_256:
-           case ACVP_HMAC_SHA3_384:
-           case ACVP_HMAC_SHA3_512:
            case ACVP_CIPHER_END:
             default:
                 ACVP_LOG_ERR("Cap entry not found, %d.", cap_entry->cipher);
