@@ -121,8 +121,8 @@ AC_ARG_WITH([libmurl-dir],
 
 AS_IF(
      [test "x$with_libmurldir" != xno],
-     [[CFLAGS="$CFLAGS -I$libmurldir/include -DUSE_MURL"]
-      [LDFLAGS="$LDFLAGS -L$libmurldir/lib -lmurl"]]
+     [[CFLAGS="$CFLAGS -I$libmurldir -DUSE_MURL"]
+      [LDFLAGS="$LDFLAGS -L$libmurldir -lmurl"]]
       )
 
 

@@ -11151,8 +11151,8 @@ fi
 
 
 if test "x$with_libmurldir" != xno; then :
-  CFLAGS="$CFLAGS -I$libmurldir/include -DUSE_MURL"
-      LDFLAGS="$LDFLAGS -L$libmurldir/lib -lmurl"
+  CFLAGS="$CFLAGS -I$libmurldir -DUSE_MURL"
+      LDFLAGS="$LDFLAGS -L$libmurldir -lmurl"
 
 fi
 

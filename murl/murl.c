@@ -71,6 +71,7 @@ static int Curl_ossl_init(void)
 {
     ENGINE_load_builtin_engines();
 
+#if OPENSSL_VERSION_NUMBER < 0x10101010L
     /* Lets get nice error messages */
     SSL_load_error_strings();
 
@@ -79,7 +80,14 @@ static int Curl_ossl_init(void)
         return 0;
 
     OpenSSL_add_all_algorithms();
+#else 
+   OPENSSL_init_crypto(OPENSSL_INIT_ADD_ALL_CIPHERS \
+                        | OPENSSL_INIT_ADD_ALL_DIGESTS, NULL);
+   if (!OPENSSL_init_ssl(OPENSSL_INIT_ENGINE_ALL_BUILTIN
+                         | OPENSSL_INIT_LOAD_CONFIG, NULL))
+        return 0;
 
+#endif
     return 1;
 }
 
@@ -240,7 +248,6 @@ CURLcode Curl_setopt(CURL *ctx, CURLoption option, va_list param)
          */
         data->ssl_verify_hostname = (0 != va_arg(param, long)) ? 1 : 0;
         break;
-
     default:
         /* Silent failure since we don't support most Curl options */
         DEBUGF(fprintf(stderr, "Warning: unsupported Curl option requested from Murl\n"));
@@ -1093,6 +1100,7 @@ void curl_slist_free_all(struct curl_slist *list)
 
 static void Curl_ossl_cleanup(void)
 {
+#if OPENSSL_VERSION_NUMBER < 0x10101010L
     /* Free ciphers and digests lists */
     EVP_cleanup();
 
@@ -1104,7 +1112,7 @@ static void Curl_ossl_cleanup(void)
 
     /* Free OpenSSL error strings */
     ERR_free_strings();
-
+#endif
 #if OPENSSL_VERSION_NUMBER < 0x10100000L
     /* Free thread local error state, destroying hash upon zero refcount */
     ERR_remove_thread_state(NULL);
@@ -1425,5 +1433,4 @@ const char * curl_easy_strerror(CURLcode error)
         return "Error";
 #endif
 }
-
 

@@ -35,12 +35,16 @@ static EC_POINT *make_peer(EC_GROUP *group, BIGNUM *x, BIGNUM *y) {
         printf("BN_CTX_new failed\n");
         goto end;
     }
+#if defined ACVP_NO_RUNTIME && FIPS_MODULE_VERSION_NUMBER >= 0x70000002L
+    rv = EC_POINT_set_affine_coordinates(group, peer, x, y, c);
+#else
     if (EC_METHOD_get_field_type(EC_GROUP_method_of(group))
         == NID_X9_62_prime_field) {
         rv = EC_POINT_set_affine_coordinates_GFp(group, peer, x, y, c);
     } else {
         rv = EC_POINT_set_affine_coordinates_GF2m(group, peer, x, y, c);
     }
+#endif
 
 end:
     if (rv == 0) {

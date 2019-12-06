@@ -9,7 +9,7 @@
  */
 
 #ifdef USE_MURL
-# include <murl/murl.h>
+# include "murl.h"
 #else
 # include <curl/curl.h>
 #endif
@@ -1103,7 +1103,7 @@ ACVP_RESULT acvp_transport_get(ACVP_CTX *ctx,
             rv = ACVP_TRANSPORT_FAIL;
             goto end;
         }
-
+#ifndef USE_MURL
         while (1) {
             if (join) {
                 len += snprintf(full_url+len, rem_space, "&%s", param->key);
@@ -1128,7 +1128,7 @@ ACVP_RESULT acvp_transport_get(ACVP_CTX *ctx,
             param = param->next;
             curl_free(escaped_value); escaped_value = NULL;
         }
-
+#endif
         /* Don't need these anymore */
         curl_easy_cleanup(curl_hnd); curl_hnd = NULL;
         curl_free(escaped_value); escaped_value = NULL;
