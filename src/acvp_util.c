@@ -17,7 +17,7 @@
 #include "safe_lib.h"
 
 #ifdef USE_MURL
-#include <murl/murl.h>
+#include "murl.h"
 #else
 #include <curl/curl.h>
 #endif

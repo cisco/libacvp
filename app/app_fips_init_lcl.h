@@ -126,7 +126,11 @@ static void fips_algtest_init_nofips(void)
     {
     DRBG_CTX *ctx;
     size_t i;
+#if FIPS_MODULE_VERSION_NUMBER >= 0x70000002L
+    FIPS_set_error_callbacks(put_err_cb, add_err_cb, NULL, NULL, NULL, NULL);
+#else
     FIPS_set_error_callbacks(put_err_cb, add_err_cb);
+#endif
     for (i = 0; i < sizeof(dummy_entropy); i++)
         dummy_entropy[i] = i & 0xff;
     if (entropy_stick)

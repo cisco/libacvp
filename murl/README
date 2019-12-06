@@ -43,7 +43,11 @@ Limitations:
       process.
     * Murl only provides HTTPS support for GET and POST.  Any other
       protocol or HTTP method will fail.
-
+    * You must use INCDIRS and LDFLAGS to point to the include ad lib dirs
+      of your openssl transport installation
+    * No static analysis has been run on murl
+    * No UT is available
+    * We do not escape characters in the data
 
 Murl CLI:
     A sample program is provided to show how to use Murl.  After doing 'make',
