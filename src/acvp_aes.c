@@ -73,7 +73,9 @@ static unsigned char ctext[TEXT_COL_LEN][TEXT_ROW_LEN];
 static ACVP_RESULT acvp_aes_mct_iterate_tc(ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *stc, int i) {
     int j = stc->mct_index;
 
-    ACVP_LOG_INFO("MCT interation %d", j);
+    if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
+        ACVP_LOG_INFO("MCT Iteration %d", j);
+    }
     if (stc->cipher != ACVP_AES_CFB1) {
         memcpy_s(ctext[j], TEXT_ROW_LEN, stc->ct, stc->ct_len);
         memcpy_s(ptext[j], TEXT_ROW_LEN, stc->pt, stc->pt_len);
