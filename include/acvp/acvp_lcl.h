@@ -1244,6 +1244,11 @@ typedef enum acvp_resource_status {
     ACVP_RESOURCE_STATUS_INCOMPLETE,
 } ACVP_RESOURCE_STATUS;
 
+typedef enum acvp_waiting_status {
+    ACVP_WAITING_FOR_TESTS = 1,
+    ACVP_WAITING_FOR_RESULTS,
+} ACVP_WAITING_STATUS;
+
 typedef struct acvp_oe_dependencies_t {
     ACVP_DEPENDENCY *deps[LIBACVP_DEPENDENCIES_MAX]; /* Array to pointers of linked dependencies */
     unsigned int count;

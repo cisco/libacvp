@@ -1992,7 +1992,7 @@ ACVP_RESULT acvp_process_tests(ACVP_CTX *ctx) {
  * can choose to implement a retry backoff using 'modifier'. Additionally, this
  * function will ensure that retry periods will sum to no longer than ACVP_MAX_WAIT_TIME.
  */
-static ACVP_RESULT acvp_retry_handler(ACVP_CTX *ctx, int *retry_period, unsigned int *waited_so_far, int modifier) {
+static ACVP_RESULT acvp_retry_handler(ACVP_CTX *ctx, int *retry_period, unsigned int *waited_so_far, int modifier, ACVP_WAITING_STATUS situation) {
     /* perform check at beginning of function call, so library can check one more time when max
      * time is reached to see if server status has changed */
     if (*waited_so_far >= ACVP_MAX_WAIT_TIME) {
@@ -2006,8 +2006,13 @@ static ACVP_RESULT acvp_retry_handler(ACVP_CTX *ctx, int *retry_period, unsigned
         *retry_period = ACVP_RETRY_TIME_MAX;
         ACVP_LOG_WARN("retry_period not found, using max retry period!");
     }
-
-    ACVP_LOG_STATUS("200 OK KAT values not ready, server requests we wait %u seconds and try again...", *retry_period);
+    if (situation == ACVP_WAITING_FOR_TESTS) {
+        ACVP_LOG_STATUS("200 OK KAT values not ready, server requests we wait %u seconds and try again...", *retry_period);
+    } else if (situation == ACVP_WAITING_FOR_RESULTS) {
+        ACVP_LOG_STATUS("200 OK results not ready, waiting %u seconds and trying again...", *retry_period);
+    } else {
+        ACVP_LOG_STATUS("200 OK, waiting %u seconds and trying again...", *retry_period);
+    }
 
     #ifdef WIN32
     Sleep(*retry_period);
@@ -2136,7 +2141,7 @@ static ACVP_RESULT acvp_process_vsid(ACVP_CTX *ctx, char *vsid_url, int count) {
             /*
              * Wait and try again to retrieve the VectorSet
              */
-            if (acvp_retry_handler(ctx, &retry_period, &time_waited_so_far, 1) != ACVP_KAT_DOWNLOAD_RETRY) {
+            if (acvp_retry_handler(ctx, &retry_period, &time_waited_so_far, 1, ACVP_WAITING_FOR_TESTS) != ACVP_KAT_DOWNLOAD_RETRY) {
                 ACVP_LOG_STATUS("Maximum wait time with server reached! (Max: %d seconds)", ACVP_MAX_WAIT_TIME);
                 rv = ACVP_TRANSPORT_FAIL;
                 goto end;
@@ -2318,7 +2323,7 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
              * Retry
              */
             ACVP_LOG_STATUS("TestSession results incomplete...");
-            if (acvp_retry_handler(ctx, &retry_interval, &time_waited_so_far, 2) != ACVP_KAT_DOWNLOAD_RETRY) {
+            if (acvp_retry_handler(ctx, &retry_interval, &time_waited_so_far, 2, ACVP_WAITING_FOR_RESULTS) != ACVP_KAT_DOWNLOAD_RETRY) {
                 ACVP_LOG_STATUS("Maximum wait time with server reached! (Max: %d seconds)", ACVP_MAX_WAIT_TIME);
                 rv = ACVP_TRANSPORT_FAIL;
                 goto end;
