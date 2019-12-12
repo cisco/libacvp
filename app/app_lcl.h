@@ -24,7 +24,10 @@ extern "C"
 #define DEFAULT_PORT 443
 #define DEFAULT_URI_PREFIX "/acvp/v1/"
 #define JSON_FILENAME_LENGTH 128
+#define JSON_STRING_LENGTH 32
 #define JSON_REQUEST_LENGTH 128
+
+char value[JSON_STRING_LENGTH];
 
 typedef struct app_config {
     ACVP_LOG_LVL level;

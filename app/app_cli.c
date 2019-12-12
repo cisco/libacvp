@@ -57,6 +57,9 @@ static void print_usage(int err) {
     printf("Perform a FIPS Validation for this testSession:\n");
     printf("      --fips_validation <full metadata file>\n");
     printf("\n");
+    printf("To specify a cert number associated with all prerequistes:\n");
+    printf("      --certnum <string>\n");
+    printf("\n");
     printf("To register a formatted JSON file use:\n");
     printf("      --json <file>\n");
     printf("\n");
@@ -169,6 +172,7 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
         { "post", ko_required_argument, 407 },
         { "put", ko_required_argument, 408 },
         { "get_results", ko_required_argument, 409},
+        { "certnum", ko_required_argument, 410 },
         { NULL, 0, 0 }
     };
 
@@ -467,6 +471,20 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
             continue;
         }
 
+        if (c == 410) {
+            int certnum_len = 0;
+            certnum_len = strnlen_s(opt.arg, JSON_STRING_LENGTH + 1);
+            if (certnum_len > JSON_STRING_LENGTH) {
+                printf(ANSI_COLOR_RED "Command error... [%s]"ANSI_COLOR_RESET
+                       "\nThe string used is too long."
+                       "\nMax allowed string length is %d.\n",
+                       "--certnum", JSON_STRING_LENGTH);
+                print_usage(1);
+                return 1;
+            }
+            strcpy_s(value, JSON_STRING_LENGTH, opt.arg);
+            continue;
+        }
         if (c == '?') {
             printf(ANSI_COLOR_RED "unknown option: %s\n"ANSI_COLOR_RESET, *(argv + opt.ind - 1));
             print_usage(1);

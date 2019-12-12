@@ -52,7 +52,7 @@ char *cert_file;
 char *key_file;
 const char *path_segment;
 const char *api_context;
-char value[] = "same";
+char value[JSON_STRING_LENGTH] = "same";
 
 #define CHECK_ENABLE_CAP_RV(rv) \
     if (rv != ACVP_SUCCESS) { \
@@ -1793,6 +1793,10 @@ static int enable_rsa(ACVP_CTX *ctx) {
      */
     rv = acvp_cap_rsa_sig_enable(ctx, ACVP_RSA_SIGGEN, &app_rsa_sig_handler);
     CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_set_prereq(ctx, ACVP_RSA_SIGGEN, ACVP_PREREQ_SHA, value);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_set_prereq(ctx, ACVP_RSA_SIGGEN, ACVP_PREREQ_DRBG, value);
+    CHECK_ENABLE_CAP_RV(rv);
     // RSA w/ sigType: X9.31
     rv = acvp_cap_rsa_siggen_set_type(ctx, ACVP_RSA_SIG_TYPE_X931);
     CHECK_ENABLE_CAP_RV(rv);
@@ -1922,6 +1926,10 @@ static int enable_rsa(ACVP_CTX *ctx) {
      * Enable sigver
      */
     rv = acvp_cap_rsa_sig_enable(ctx, ACVP_RSA_SIGVER, &app_rsa_sig_handler);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_set_prereq(ctx, ACVP_RSA_SIGVER, ACVP_PREREQ_SHA, value);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_set_prereq(ctx, ACVP_RSA_SIGVER, ACVP_PREREQ_DRBG, value);
     CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_cap_rsa_sigver_set_parm(ctx, ACVP_RSA_PARM_PUB_EXP_MODE, ACVP_RSA_PUB_EXP_MODE_FIXED);
