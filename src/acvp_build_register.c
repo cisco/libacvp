@@ -900,12 +900,16 @@ static ACVP_RESULT acvp_build_rsa_sig_register_cap(JSON_Object *cap_obj, ACVP_CA
         if (!rsa_cap_mode) {
             return ACVP_MISSING_ARG;
         }
+        result = acvp_lookup_prereqVals(cap_obj, cap_entry);
+        if (result != ACVP_SUCCESS) { return result; }
     } else if (cap_entry->cipher == ACVP_RSA_SIGVER) {
         json_object_set_string(cap_obj, "mode", "sigVer");
         rsa_cap_mode = cap_entry->cap.rsa_sigver_cap;
         if (!rsa_cap_mode) {
             return ACVP_MISSING_ARG;
         }
+        result = acvp_lookup_prereqVals(cap_obj, cap_entry);
+        if (result != ACVP_SUCCESS) { return result; }
         json_object_set_string(cap_obj, "pubExpMode", rsa_cap_mode->pub_exp_mode ? "fixed" : "random");
         if (cap_entry->cap.rsa_sigver_cap->pub_exp_mode) {
             json_object_set_string(cap_obj, "fixedPubExp", (const char *)cap_entry->cap.rsa_sigver_cap->fixed_pub_exp);
