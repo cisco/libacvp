@@ -474,6 +474,14 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
         if (c == 410) {
             int certnum_len = 0;
             certnum_len = strnlen_s(opt.arg, JSON_STRING_LENGTH + 1);
+            if (certnum_len > JSON_STRING_LENGTH) {
+                printf(ANSI_COLOR_RED "Command error... [%s]"ANSI_COLOR_RESET
+                       "\nThe string used is too long."
+                       "\nMax allowed string length is %d.\n",
+                       "--certnum", JSON_STRING_LENGTH);
+                print_usage(1);
+                return 1;
+            }
             strcpy_s(value, JSON_STRING_LENGTH, opt.arg);
             continue;
         }
