@@ -47,7 +47,9 @@ static ACVP_RESULT acvp_hash_mct_iterate_tc(ACVP_CTX *ctx,
                                             ACVP_HASH_TC *stc,
                                             int i) {
 
-    ACVP_LOG_INFO("MCT Interation %d", i);
+    if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
+        ACVP_LOG_INFO("MCT Iteration %d", i);
+    }
     /* feed hash into the next message for MCT */
     memcpy_s(stc->m1, ACVP_HASH_MD_BYTE_MAX, stc->m2, stc->md_len);
     memcpy_s(stc->m2, ACVP_HASH_MD_BYTE_MAX, stc->m3, stc->md_len);

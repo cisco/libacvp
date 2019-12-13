@@ -792,6 +792,10 @@ static long acvp_curl_http_put(ACVP_CTX *ctx, const char *url, const char *data,
         memzero_s(ctx->curl_buf, ACVP_CURL_BUF_MAX);
     }
 
+    if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
+        printf("\nHTTP PUT:\n\n%s\n", data);
+    }
+
     /*
      * Send the HTTP PUT request
      */

@@ -85,8 +85,9 @@ static ACVP_RESULT acvp_des_mct_iterate_tc(ACVP_CTX *ctx,
                                            int i) {
     int j = stc->mct_index;
     int n;
-
-    ACVP_LOG_INFO("MCT Interation %d", i);
+    if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
+        ACVP_LOG_INFO("MCT Iteration %d", i);
+    }
     memcpy_s(ctext[j], TEXT_ROW_LEN,  stc->ct, stc->ct_len);
     memcpy_s(ptext[j], TEXT_ROW_LEN, stc->pt, stc->pt_len);
 
