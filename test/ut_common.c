@@ -23,7 +23,9 @@ ACVP_RESULT totp(char **token, int token_max);
 
 void dummy_call(void)
 {
+#ifdef ACVP_NO_RUNTIME
     fips_algtest_init_nofips();
+#endif
 }
 
 /*

@@ -8,7 +8,6 @@
  */
 
 
-#ifdef ACVP_NO_RUNTIME
 
 #include <stdlib.h>
 #include <openssl/rand.h>
@@ -16,6 +15,7 @@
 #include "app_fips_lcl.h" /* All regular OpenSSL headers must come before here */
 #include "app_lcl.h"
 #include "safe_mem_lib.h"
+#ifdef ACVP_NO_RUNTIME
 
 typedef struct {
     unsigned char *ent;
@@ -402,6 +402,13 @@ end:
     FIPS_drbg_free(drbg_ctx);
 
     return result;
+}
+#else
+int app_drbg_handler(ACVP_TEST_CASE *test_case) {
+    if (!test_case) {
+        return -1;
+    }
+    return 1;
 }
 
 #endif // ACVP_NO_RUNTIME

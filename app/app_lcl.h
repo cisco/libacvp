@@ -62,14 +62,10 @@ typedef struct app_config {
     int hash; int cmac;
     int hmac;
     /* These require the fom */
-#ifdef ACVP_NO_RUNTIME
     int dsa; int rsa;
     int drbg; int ecdsa;
     int kas_ecc; int kas_ffc;
-#endif
-#ifdef OPENSSL_KDF_SUPPORT
     int kdf;
-#endif
 } APP_CONFIG;
 
 
@@ -87,7 +83,6 @@ int app_sha_handler(ACVP_TEST_CASE *test_case);
 int app_hmac_handler(ACVP_TEST_CASE *test_case);
 int app_cmac_handler(ACVP_TEST_CASE *test_case);
 
-#ifdef OPENSSL_KDF_SUPPORT
 #define ENGID1 "800002B805123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456"
 #define ENGID2 "000002b87766554433221100"
 
@@ -99,9 +94,7 @@ int app_kdf135_ikev2_handler(ACVP_TEST_CASE *test_case);
 int app_kdf108_handler(ACVP_TEST_CASE *test_case);
 int app_kdf135_ikev1_handler(ACVP_TEST_CASE *test_case);
 int app_kdf135_x963_handler(ACVP_TEST_CASE *test_case);
-#endif // OPENSSL_KDF_SUPPORT
 
-#ifdef ACVP_NO_RUNTIME
 void app_dsa_cleanup(void);
 void app_rsa_cleanup(void);
 void app_ecdsa_cleanup(void);
@@ -113,7 +106,6 @@ int app_rsa_keygen_handler(ACVP_TEST_CASE *test_case);
 int app_rsa_sig_handler(ACVP_TEST_CASE *test_case);
 int app_ecdsa_handler(ACVP_TEST_CASE *test_case);
 int app_drbg_handler(ACVP_TEST_CASE *test_case);
-#endif // ACVP_NO_RUNTIME
 
 #ifdef __cplusplus
 }

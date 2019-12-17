@@ -8,7 +8,6 @@
  */
 
 
-#ifdef ACVP_NO_RUNTIME
 
 #include <openssl/evp.h>
 #include <openssl/bn.h>
@@ -17,6 +16,7 @@
 #include "app_fips_lcl.h" /* All regular OpenSSL headers must come before here */
 #include <openssl/fips.h>
 #include "app_lcl.h"
+#ifdef ACVP_NO_RUNTIME
 
 static BIGNUM *ecdsa_group_Qx = NULL;
 static BIGNUM *ecdsa_group_Qy = NULL;
@@ -456,6 +456,12 @@ err:
     if (key) EC_KEY_free(key);
     return rv;
 }
-
+#else
+int app_ecdsa_handler(ACVP_TEST_CASE *test_case) {
+    if (!test_case) {
+        return -1;
+    }
+    return 1;
+}
 #endif // ACVP_NO_RUNTIME
 

@@ -42,17 +42,13 @@ static void print_usage(int err) {
     printf("      --hash\n");
     printf("      --cmac\n");
     printf("      --hmac\n");
-#ifdef OPENSSL_KDF_SUPPORT
     printf("      --kdf\n");
-#endif
-#ifdef ACVP_NO_RUNTIME
     printf("      --dsa\n");
     printf("      --rsa\n");
     printf("      --ecdsa\n");
     printf("      --drbg\n");
     printf("      --kas_ecc\n");
     printf("      --kas_ffc\n");
-#endif
     printf("\n");
     printf("Perform a FIPS Validation for this testSession:\n");
     printf("      --fips_validation <full metadata file>\n");
@@ -116,17 +112,13 @@ static void enable_all_algorithms(APP_CONFIG *cfg) {
     cfg->cmac = 1;
     cfg->hmac = 1;
     /* These require the fom */
-#ifdef ACVP_NO_RUNTIME
     cfg->dsa = 1;
     cfg->rsa = 1;
     cfg->drbg = 1;
     cfg->ecdsa = 1;
     cfg->kas_ecc = 1;
     cfg->kas_ffc = 1;
-#endif
-#ifdef OPENSSL_KDF_SUPPORT
     cfg->kdf = 1;
-#endif
 }
 
 int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
@@ -150,17 +142,13 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
         { "hash", ko_no_argument, 312 },
         { "cmac", ko_no_argument, 313 },
         { "hmac", ko_no_argument, 314 },
-#ifdef OPENSSL_KDF_SUPPORT
         { "kdf", ko_no_argument, 315 },
-#endif
-#ifdef ACVP_NO_RUNTIME
         { "dsa", ko_no_argument, 316 },
         { "rsa", ko_no_argument, 317 },
         { "drbg", ko_no_argument, 318 },
         { "ecdsa", ko_no_argument, 319 },
         { "kas_ecc", ko_no_argument, 320 },
         { "kas_ffc", ko_no_argument, 321 },
-#endif
         { "all_algs", ko_no_argument, 322 },
         { "json", ko_required_argument, 400 },
         { "kat", ko_required_argument, 401 },
@@ -249,14 +237,11 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
             cfg->empty_alg = 0;
             continue;
         }
-#ifdef OPENSSL_KDF_SUPPORT
         if (c == 315) {
             cfg->kdf = 1;
             cfg->empty_alg = 0;
             continue;
         }
-#endif
-#ifdef ACVP_NO_RUNTIME
         if (c == 316) {
             cfg->dsa = 1;
             cfg->empty_alg = 0;
@@ -287,7 +272,6 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
             cfg->empty_alg = 0;
             continue;
         }
-#endif
         if (c == 322) {
             enable_all_algorithms(cfg);
             cfg->empty_alg = 0;

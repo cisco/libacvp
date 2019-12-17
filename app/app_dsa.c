@@ -8,7 +8,6 @@
  */
 
 
-#ifdef ACVP_NO_RUNTIME
 
 #include <openssl/evp.h>
 #include <openssl/bn.h>
@@ -18,6 +17,7 @@
 
 #include "app_lcl.h"
 #include "safe_lib.h"
+#ifdef ACVP_NO_RUNTIME
 
 static DSA *group_dsa = NULL;
 static BIGNUM *group_p = NULL;
@@ -597,5 +597,12 @@ int app_dsa_handler(ACVP_TEST_CASE *test_case) {
     return 0;
 }
 
+#else
+int app_dsa_handler(ACVP_TEST_CASE *test_case) {
+    if (!test_case) {
+        return -1;
+    }
+    return 1;
+}
 #endif // ACVP_NO_RUNTIME
 
