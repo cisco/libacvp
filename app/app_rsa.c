@@ -301,7 +301,7 @@ err:
     return rv;
 }
 #else
-int app_rsa_handler(ACVP_TEST_CASE *test_case) {
+int app_rsa_keygen_handler(ACVP_TEST_CASE *test_case) {
     if (!test_case) {
         return -1;
     }
