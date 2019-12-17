@@ -12,10 +12,10 @@
 #include <openssl/evp.h>
 #include <openssl/bn.h>
 #include <openssl/rsa.h>
-#include "app_fips_lcl.h" /* All regular OpenSSL headers must come before here */
-#include <openssl/fips.h>
 #include "app_lcl.h"
 #ifdef ACVP_NO_RUNTIME
+#include "app_fips_lcl.h" /* All regular OpenSSL headers must come before here */
+#include <openssl/fips.h>
 
 BIGNUM *group_n = NULL;
 RSA *group_rsa = NULL;

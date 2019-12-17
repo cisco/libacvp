@@ -13,10 +13,10 @@
 #include <openssl/bn.h>
 #include <openssl/ecdsa.h>
 #include <openssl/ec.h>
-#include "app_fips_lcl.h" /* All regular OpenSSL headers must come before here */
-#include <openssl/fips.h>
 #include "app_lcl.h"
 #ifdef ACVP_NO_RUNTIME
+#include "app_fips_lcl.h" /* All regular OpenSSL headers must come before here */
+#include <openssl/fips.h>
 
 static BIGNUM *ecdsa_group_Qx = NULL;
 static BIGNUM *ecdsa_group_Qy = NULL;
