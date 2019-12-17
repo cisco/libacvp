@@ -16,14 +16,14 @@ static ACVP_CTX *ctx = NULL;
 static ACVP_RESULT rv = 0;
 static JSON_Object *obj = NULL;
 static JSON_Value *val = NULL;
-static char value[] = "same";
+static char cvalue[] = "same";
 
 static void setup(void) {
     setup_empty_ctx(&ctx);
 
     rv = acvp_cap_kdf108_enable(ctx, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_set_prereq(ctx, ACVP_KDF108, ACVP_PREREQ_HMAC, value);
+    rv = acvp_cap_set_prereq(ctx, ACVP_KDF108, ACVP_PREREQ_HMAC, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_kdf108_set_domain(ctx, ACVP_KDF108_MODE_COUNTER, ACVP_KDF108_SUPPORTED_LEN, 8, 384, 8);
     cr_assert(rv == ACVP_SUCCESS);
@@ -50,7 +50,7 @@ static void fail_setup(void) {
 
     rv = acvp_cap_kdf108_enable(ctx, &dummy_handler_failure);
     cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_set_prereq(ctx, ACVP_KDF108, ACVP_PREREQ_HMAC, value);
+    rv = acvp_cap_set_prereq(ctx, ACVP_KDF108, ACVP_PREREQ_HMAC, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_kdf108_set_domain(ctx, ACVP_KDF108_MODE_COUNTER, ACVP_KDF108_SUPPORTED_LEN, 8, 384, 8);
     cr_assert(rv == ACVP_SUCCESS);
@@ -84,7 +84,7 @@ Test(KDF108_CAPABILITY, good) {
 
     rv = acvp_cap_kdf108_enable(ctx, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_set_prereq(ctx, ACVP_KDF108, ACVP_PREREQ_HMAC, value);
+    rv = acvp_cap_set_prereq(ctx, ACVP_KDF108, ACVP_PREREQ_HMAC, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_kdf108_set_domain(ctx, ACVP_KDF108_MODE_COUNTER, ACVP_KDF108_SUPPORTED_LEN, 8, 384, 8);
     cr_assert(rv == ACVP_SUCCESS);

@@ -13,7 +13,7 @@
 #include "acvp_lcl.h"
 
 ACVP_CTX *ctx;
-static char value[] = "same";
+static char cvalue[] = "same";
 
 /*
  * Test kdf135 SNMP handler API inputs
@@ -40,7 +40,7 @@ Test(Kdf135SnmpApi, null_ctx) {
     /* Enable capabilites */
     rv = acvp_cap_kdf135_snmp_enable(ctx, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_SNMP, ACVP_PREREQ_SHA, value);
+    rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_SNMP, ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_kdf135_snmp_set_parm(ctx, ACVP_KDF135_SNMP, ACVP_KDF135_SNMP_PASS_LEN, 64);
     cr_assert(rv == ACVP_SUCCESS);
@@ -73,7 +73,7 @@ Test(Kdf135SnmpFunc, null_ctx) {
     /* Enable capabilites */
     rv = acvp_cap_kdf135_snmp_enable(ctx, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_SNMP, ACVP_PREREQ_SHA, value);
+    rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_SNMP, ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_kdf135_snmp_set_parm(ctx, ACVP_KDF135_SNMP, ACVP_KDF135_SNMP_PASS_LEN, 64);
     cr_assert(rv == ACVP_SUCCESS);
@@ -219,7 +219,7 @@ Test(Kdf135SnmpFail, cryptoFail1) {
     /* Enable capabilites */
     rv = acvp_cap_kdf135_snmp_enable(ctx, &dummy_handler_failure);
     cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_SNMP, ACVP_PREREQ_SHA, value);
+    rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_SNMP, ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_kdf135_snmp_set_parm(ctx, ACVP_KDF135_SNMP, ACVP_KDF135_SNMP_PASS_LEN, 64);
     cr_assert(rv == ACVP_SUCCESS);
@@ -254,7 +254,7 @@ Test(Kdf135SnmpFail, cryptoFail2) {
     /* Enable capabilites */
     rv = acvp_cap_kdf135_snmp_enable(ctx, &dummy_handler_failure);
     cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_SNMP, ACVP_PREREQ_SHA, value);
+    rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_SNMP, ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_kdf135_snmp_set_parm(ctx, ACVP_KDF135_SNMP, ACVP_KDF135_SNMP_PASS_LEN, 64);
     cr_assert(rv == ACVP_SUCCESS);
@@ -289,7 +289,7 @@ Test(Kdf135SnmpFail, tcidFail) {
     /* Enable capabilites */
     rv = acvp_cap_kdf135_snmp_enable(ctx, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_SNMP, ACVP_PREREQ_SHA, value);
+    rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_SNMP, ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_kdf135_snmp_set_parm(ctx, ACVP_KDF135_SNMP, ACVP_KDF135_SNMP_PASS_LEN, 64);
     cr_assert(rv == ACVP_SUCCESS);
@@ -322,7 +322,7 @@ Test(Kdf135SnmpFail, tcFail) {
     /* Enable capabilites */
     rv = acvp_cap_kdf135_snmp_enable(ctx, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_SNMP, ACVP_PREREQ_SHA, value);
+    rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_SNMP, ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_kdf135_snmp_set_parm(ctx, ACVP_KDF135_SNMP, ACVP_KDF135_SNMP_PASS_LEN, 64);
     cr_assert(rv == ACVP_SUCCESS);

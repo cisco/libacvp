@@ -16,7 +16,7 @@ static ACVP_CTX *ctx = NULL;
 static ACVP_RESULT rv = 0;
 static JSON_Object *obj = NULL;
 static JSON_Value *val = NULL;
-static char value[] = "same";
+static char cvalue[] = "same";
 
 static void setup(void) {
     setup_empty_ctx(&ctx);
@@ -29,7 +29,7 @@ static void setup(void) {
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_set_prereq(ctx, ACVP_HASHDRBG, 
-            ACVP_PREREQ_SHA, value);
+            ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_drbg_set_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1,
@@ -64,10 +64,10 @@ static void setup(void) {
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_set_prereq(ctx, ACVP_HMACDRBG, 
-            ACVP_PREREQ_SHA, value);
+            ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_HMACDRBG, 
-            ACVP_PREREQ_HMAC, value);
+            ACVP_PREREQ_HMAC, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224,
@@ -152,7 +152,7 @@ static void setup_fail(void) {
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_set_prereq(ctx, ACVP_HASHDRBG, 
-            ACVP_PREREQ_SHA, value);
+            ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_drbg_set_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1,
@@ -187,10 +187,10 @@ static void setup_fail(void) {
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_set_prereq(ctx, ACVP_HMACDRBG, 
-            ACVP_PREREQ_SHA, value);
+            ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_HMACDRBG, 
-            ACVP_PREREQ_HMAC, value);
+            ACVP_PREREQ_HMAC, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224,
@@ -282,7 +282,7 @@ Test(DRBG_CAPABILITY, good) {
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_set_prereq(ctx, ACVP_HASHDRBG, 
-            ACVP_PREREQ_SHA, value);
+            ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_drbg_set_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1,
@@ -317,10 +317,10 @@ Test(DRBG_CAPABILITY, good) {
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_set_prereq(ctx, ACVP_HMACDRBG, 
-            ACVP_PREREQ_SHA, value);
+            ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_HMACDRBG, 
-            ACVP_PREREQ_HMAC, value);
+            ACVP_PREREQ_HMAC, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224,

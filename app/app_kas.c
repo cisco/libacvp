@@ -8,7 +8,6 @@
  */
 
 
-#ifdef ACVP_NO_RUNTIME
 
 #include <openssl/evp.h>
 #include <openssl/bn.h>
@@ -17,8 +16,6 @@
 #include "app_lcl.h"
 #include "safe_mem_lib.h"
 #ifdef ACVP_NO_RUNTIME
-# include "app_fips_lcl.h"
-#endif
 
 static EC_POINT *make_peer(EC_GROUP *group, BIGNUM *x, BIGNUM *y) {
     EC_POINT *peer = NULL;
@@ -441,6 +438,19 @@ error:
     if (q) BN_free(q);
     if (g) BN_free(g);
     return rv;
+}
+#else
+int app_kas_ecc_handler(ACVP_TEST_CASE *test_case) {
+    if (!test_case) {
+        return -1;
+    }
+    return 1;
+}
+int app_kas_ffc_handler(ACVP_TEST_CASE *test_case) {
+    if (!test_case) {
+        return -1;
+    }
+    return 1;
 }
 
 #endif // ACVP_NO_RUNTIME
