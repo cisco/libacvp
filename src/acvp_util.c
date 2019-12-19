@@ -855,7 +855,7 @@ int string_fits(const char *string, unsigned int max_allowed) {
  */
 void acvp_free_str_list(ACVP_STRING_LIST **list) {
     ACVP_STRING_LIST *top = NULL;
-    ACVP_STRING_LIST *tmp = NULL;;
+    ACVP_STRING_LIST *tmp = NULL;
 
     if (list == NULL) return;
     top = *list;
@@ -869,6 +869,41 @@ void acvp_free_str_list(ACVP_STRING_LIST **list) {
     }
 
     *list = NULL;
+}
+
+/**
+ * Simple utility function to add a string to a string list.
+ * Note that the string is COPIED and not referenced.
+ */
+ACVP_RESULT acvp_append_str_list(ACVP_STRING_LIST **list, char *string) {
+    ACVP_STRING_LIST *top = NULL;
+    ACVP_STRING_LIST *tmp = NULL;
+    if (!list) {
+        return ACVP_NO_DATA;
+    }
+    if (*list == NULL) {
+        *list = calloc(1, sizeof(ACVP_STRING_LIST));
+        if (!list) {
+            return ACVP_MALLOC_FAIL;
+        }
+    }
+    top = *list;
+    if (!top) {
+        return ACVP_NO_DATA;
+    }
+    tmp = top;
+    while (tmp->next) {
+        tmp = tmp->next;
+    }
+    
+    tmp->next = calloc(1, sizeof(ACVP_STRING_LIST));
+    int len = strnlen_s(string, ACVP_STRING_LIST_MAX_LEN);
+    tmp->string = calloc(len + 1, sizeof(char));
+    if(!tmp->string) {
+        return ACVP_MALLOC_FAIL;
+    }
+    strncpy_s(tmp->string, len + 1, string, len);
+    return ACVP_SUCCESS;
 }
 
 ACVP_RESULT acvp_json_serialize_to_file_pretty_a(const JSON_Value *value, const char *filename) {

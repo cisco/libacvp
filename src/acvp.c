@@ -785,6 +785,21 @@ static void acvp_cap_free_hash_pairs(ACVP_RSA_HASH_PAIR_LIST *list) {
     }
 }
 
+static void acvp_list_failing_algorithms(ACVP_CTX *ctx, ACVP_STRING_LIST **list) {
+    if (!list || *list == NULL) {
+        return;
+    }
+    ACVP_LOG_STATUS("Failing algorithms:\n");
+    ACVP_STRING_LIST *iterator = *list;
+    if (!iterator) {
+        return;
+    }
+    while (iterator) {
+        ACVP_LOG_STATUS("    %s\n", iterator->string);
+        iterator = iterator->next;
+    }
+}
+
 /*
  * Allows application to load JSON kat vector file within context
  * to be read in and used for vector testing
@@ -2284,7 +2299,7 @@ static ACVP_RESULT acvp_process_vector_set(ACVP_CTX *ctx, JSON_Object *obj) {
 }
 
 /*
- * This function will get the test results for a single KAT vector set.
+ * This function will get the test results for a test session by checking the results of each vector set
  */
 static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url) {
     ACVP_RESULT rv = ACVP_SUCCESS;
@@ -2297,8 +2312,11 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
 
     unsigned int time_waited_so_far = 0;
     int retry_interval = ACVP_RETRY_TIME;
+    ACVP_STRING_LIST **failedAlgList = calloc(1, sizeof(ACVP_STRING_LIST*));
 
     while (1) {
+        int allTestsCompleted = 1;
+        
         /*
          * Get the KAT vector set
          */
@@ -2314,13 +2332,80 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
         }
         obj = acvp_get_obj_from_rsp(ctx, val);
 
+        /*
+         * Check the results for each vector set - flag if some are incomplete,
+         * or name failed algorithms (even if others are still incomplete)
+         */
         results = json_object_get_array(obj, "results");
         count = (int)json_array_get_count(results);
+        for (int i = 0; i < count; i++) {
+            int diff = 1;
+            current = json_array_get_object(results, i);
+            status = json_object_get_string(current, "status");
+            if (!status) {
+                goto end;
+            }
+            /*
+             * If the result is incomplete, set the flag so it keeps retrying
+             */
+            strcmp_s("incomplete", 10, status, &diff);
+            if (!diff) {
+                allTestsCompleted = 0;
+                continue;
+            } else {
+                /*
+                 * If the result is fail, retrieve vector set, get algorithm name, add to list
+                 */
+                strcmp_s("fail", 4, status, &diff);
+                if (!diff) {
+                    const char *vsurl = json_object_get_string(current, "vectorSetUrl");
+                    if (!vsurl) {
+                        ACVP_LOG_ERR("No vector set URL when generating failed algorithm list");
+                        break;
+                    }
+                    
+                    //retrieve_vector_set expects a non-const string
+                    char *vs_url = calloc(strnlen_s(vsurl, ACVP_REQUEST_STR_LEN_MAX + 1), sizeof(char));
+                    if (!vs_url) {
+                        ACVP_LOG_ERR("Unable to calloc when reporting failed algorithms, skipping...");
+                        break;                        
+                    }
+                    strncpy_s(vs_url, ACVP_REQUEST_STR_LEN_MAX + 1, vsurl, ACVP_REQUEST_STR_LEN_MAX);
+                    rv = acvp_retrieve_vector_set(ctx, vs_url);
+                    free(vs_url);
+                    if (rv != ACVP_SUCCESS) goto end;
+
+                    val = json_parse_string(ctx->curl_buf);
+                    if (!val) {
+                        ACVP_LOG_ERR("JSON parse error");
+                        rv = ACVP_JSON_ERR;
+                        break;
+                    }
+                    obj = acvp_get_obj_from_rsp(ctx, val);
+                    const char *alg = json_object_get_string(obj, "algorithm");
+                    if (!alg) {
+                        ACVP_LOG_ERR("JSON parse error: ACV algorithm not found");
+                        break;
+                    }
+                    char *algorithm = calloc(strnlen_s(alg, ACVP_REQUEST_STR_LEN_MAX + 1), sizeof(char));
+                    if (!algorithm) {
+                        ACVP_LOG_ERR("Unable to calloc when reporting failed algorithms, skipping...");
+                        break;                        
+                    }
+                    strncpy_s(algorithm, ACVP_REQUEST_STR_LEN_MAX + 1, alg, ACVP_REQUEST_STR_LEN_MAX);
+                    acvp_append_str_list(failedAlgList, algorithm);
+                    free(algorithm);
+                    
+                    acvp_list_failing_algorithms(ctx, failedAlgList);
+                    
+                }
+            }
+        }
 
         passed = json_object_get_boolean(obj, "passed");
-        if (passed == -1) {
+        if (!allTestsCompleted) {
             /*
-             * Retry
+             * If any tests are incomplete, retry, even if some have failed
              */
             ACVP_LOG_STATUS("TestSession results incomplete...");
             if (acvp_retry_handler(ctx, &retry_interval, &time_waited_so_far, 2, ACVP_WAITING_FOR_RESULTS) != ACVP_KAT_DOWNLOAD_RETRY) {
@@ -2328,7 +2413,9 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
                 rv = ACVP_TRANSPORT_FAIL;
                 goto end;
             }
-
+            if (failedAlgList) {
+                acvp_list_failing_algorithms(ctx, failedAlgList);
+            }
             if (val) json_value_free(val);
             continue;
         } else if (passed == 1) {
@@ -2344,34 +2431,34 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
              */
             ACVP_LOG_STATUS("Failed testSession");
         }
+        acvp_list_failing_algorithms(ctx, failedAlgList);
+        if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
+          for (i = 0; i < count; i++) {
+                /*
+                 * Get the sample results if the user had requested them.
+                 */
+                int diff = 1;
+                current = json_array_get_object(results, i);
 
-        for (i = 0; i < count; i++) {
-            /*
-             * Get the sample results if the user had requestd them.
-             */
-            int diff = 1;
-            current = json_array_get_object(results, i);
-
-            status = json_object_get_string(current, "status");
-            if (!status) {
-                goto end;
-            }
-            strcmp_s("fail", 4, status, &diff);
-            if (!diff) {
-                const char *vs_url = json_object_get_string(current, "vectorSetUrl");
-                if (!vs_url) {
-                    ACVP_LOG_ERR("No vector set URL");
+                status = json_object_get_string(current, "status");
+                if (!status) {
                     goto end;
                 }
-
-                ACVP_LOG_STATUS("Getting details for failed Vector Set...");
-                rv = acvp_retrieve_vector_set_result(ctx, vs_url);
-                if (rv != ACVP_SUCCESS) goto end;
-
-                if (ctx->is_sample) {
-                    ACVP_LOG_STATUS("Getting expected results for failed Vector Set...");
-                    rv = acvp_retrieve_expected_result(ctx, vs_url);
+                strcmp_s("fail", 4, status, &diff);
+                if (!diff) {
+                    const char *vs_url = json_object_get_string(current, "vectorSetUrl");
+                    ACVP_LOG_STATUS("Getting details for failed Vector Set...");
+                    /*
+                     * Get the vector set to retrieve the algorithm name associated with it
+                     */
+                    rv = acvp_retrieve_vector_set_result(ctx, vs_url);
                     if (rv != ACVP_SUCCESS) goto end;
+
+                    if (ctx->is_sample) {
+                        ACVP_LOG_STATUS("Getting expected results for failed Vector Set...");
+                        rv = acvp_retrieve_expected_result(ctx, vs_url);
+                        if (rv != ACVP_SUCCESS) goto end;
+                    }
                 }
             }
         }
@@ -2382,6 +2469,10 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
 
 end:
     if (val) json_value_free(val);
+    if (failedAlgList) {
+        acvp_free_str_list(failedAlgList);
+        free(failedAlgList);
+    }
     return rv;
 }
 

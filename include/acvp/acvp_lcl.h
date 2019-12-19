@@ -707,6 +707,8 @@
 #define ACVP_USER_AGENT_PROC_STR_MAX 64
 #define ACVP_USER_AGENT_COMP_STR_MAX 32
 
+#define ACVP_STRING_LIST_MAX_LEN 256 //arbitrary max character count for a string in ACVP_STRING_LIST
+
 /*
  * If library cannot detect hardware or software info for HTTP user-agent string, we can check for them
  * in environmental variables, which are defined here
@@ -815,6 +817,16 @@ typedef struct acvp_string_list_t {
     char *string;
     struct acvp_string_list_t *next;
 } ACVP_STRING_LIST;
+
+/*
+ * A list that maintains a list of vector set URLs next to 
+ * which algorithm that vector set is for
+ */
+typedef struct acvp_vector_algname_list_t {
+    char *vs_url;
+    char *alg_name;
+    struct acvp_vector_algname_list_t *next;
+} ACVP_VECTOR_ALGNAME_LIST;
 
 /**
  * @struct ACVP_KV_LIST
@@ -1513,6 +1525,7 @@ ACVP_RESULT acvp_kv_list_append(ACVP_KV_LIST **kv_list,
 void acvp_kv_list_free(ACVP_KV_LIST *kv_list);
 
 void acvp_free_str_list(ACVP_STRING_LIST **list);
+ACVP_RESULT acvp_append_str_list(ACVP_STRING_LIST **list, char *string);
 
 ACVP_RESULT acvp_json_serialize_to_file_pretty_a(const JSON_Value *value, const char *filename);
 ACVP_RESULT acvp_json_serialize_to_file_pretty_w(const JSON_Value *value, const char *filename);

@@ -548,13 +548,13 @@ int app_aes_handler_aead(ACVP_TEST_CASE *test_case) {
         }
         switch (tc->key_len) {
         case 128:
-            cipher = EVP_aes_128_gcm();
+            cipher = EVP_aes_128_ccm();
             break;
         case 192:
-            cipher = EVP_aes_192_gcm();
+            cipher = EVP_aes_192_ccm();
             break;
         case 256:
-            cipher = EVP_aes_256_gcm();
+            cipher = EVP_aes_256_ccm();
             break;
         default:
             printf("Unsupported AES-GCM key length\n");
