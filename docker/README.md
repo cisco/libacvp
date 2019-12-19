@@ -15,7 +15,7 @@ The resulting Docker container will have Vim and Emacs installed by default… o
 
 #### Getting Libacvp
 ```
-git clone https://github.com/libacvp.git
+git clone https://github.com/cisco/libacvp.git
 cd libacvp/
 ```
 
