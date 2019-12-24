@@ -875,14 +875,13 @@ void acvp_free_str_list(ACVP_STRING_LIST **list) {
  * Simple utility function to add a string to a string list.
  * Note that the string is COPIED and not referenced.
  */
-ACVP_RESULT acvp_append_str_list(ACVP_STRING_LIST **list, char *string) {
+ACVP_RESULT acvp_append_str_list(ACVP_STRING_LIST **list, const char *string) {
     ACVP_STRING_LIST *top = NULL;
     ACVP_STRING_LIST *tmp = NULL;
-    if (!list) {
-        return ACVP_NO_DATA;
-    }
-    if (*list == NULL) {
-        *list = calloc(1, sizeof(ACVP_STRING_LIST));
+    if (!list || *list == NULL) {
+        tmp = calloc(1, sizeof(ACVP_STRING_LIST));
+        *list = tmp;
+        list = &tmp;
         if (!list) {
             return ACVP_MALLOC_FAIL;
         }
@@ -904,6 +903,32 @@ ACVP_RESULT acvp_append_str_list(ACVP_STRING_LIST **list, char *string) {
     }
     strncpy_s(tmp->string, len + 1, string, len);
     return ACVP_SUCCESS;
+}
+
+/**
+ * Simple utility for looking to see if a string already exists
+ * inside of a string list.
+ */
+int acvp_lookup_str_list(ACVP_STRING_LIST **list, const char *string) {
+    ACVP_STRING_LIST *tmp = NULL;
+    if (!list) {
+        return 0;
+    }
+    if(*list == NULL) {
+        return 0;
+    }
+    tmp = *list;
+    int diff = 1;
+    while(tmp && tmp->string) {
+        strncmp_s(tmp->string, strnlen_s(tmp->string, ACVP_STRING_LIST_MAX_LEN),
+                  string, strnlen_s(string, ACVP_STRING_LIST_MAX_LEN), &diff);
+        if (!diff) {
+            return 1;
+        }
+        tmp = tmp->next;
+    }
+    return 0;
+    
 }
 
 ACVP_RESULT acvp_json_serialize_to_file_pretty_a(const JSON_Value *value, const char *filename) {

@@ -213,8 +213,7 @@ static void acvp_http_user_agent_check_env_for_var(ACVP_CTX *ctx, char *var_stri
 
 static void acvp_http_user_agent_check_compiler_ver(ACVP_CTX *ctx, char *comp_string) {
     char versionBuffer[16];
-
-    ACVP_LOG_INFO("Checking compiler version");
+    
 #ifdef __GNUC__
     strncpy_s(comp_string, ACVP_USER_AGENT_COMP_STR_MAX + 1, "GCC/", ACVP_USER_AGENT_COMP_STR_MAX);
 
@@ -1283,13 +1282,13 @@ static ACVP_RESULT execute_network_action(ACVP_CTX *ctx,
              * This should not ever happen during "login"...
              * and we need to avoid an infinite loop (via acvp_refesh).
              */
-            ACVP_LOG_ERR("JWT authorization has timed out, curl rc=%d.\n"
-                         "Refreshing session...", rc);
-
+            ACVP_LOG_WARN("JWT authorization has timed out, curl rc=%d. Refreshing session...", rc);
             result = acvp_refresh(ctx);
             if (result != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("JWT refresh failed.");
                 goto end;
+            } else {
+                ACVP_LOG_STATUS("Refresh successful, attempting to continue...");
             }
 
             /* Try action again after the refresh */
@@ -1366,47 +1365,47 @@ static void log_network_status(ACVP_CTX *ctx,
                         curl_code, url, ctx->curl_buf);
         break;
     case ACVP_NET_GET_VS:
-        if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
-            printf("GET Vector Set...\n\tStatus: %d\n\tUrl: %s\n\tResp:\n%s\n",
-                   curl_code, url, ctx->curl_buf);
-        } else {
+        if (ctx->debug >= ACVP_LOG_LVL_INFO) {
             ACVP_LOG_STATUS("GET Vector Set...\n\tStatus: %d\n\tUrl: %s\n\tResp:\n%s\n",
                             curl_code, url, ctx->curl_buf);
+        } else {
+            ACVP_LOG_STATUS("GET Vector Set...\n\tStatus: %d\n\tUrl: %s\n",
+                            curl_code, url);
         }
         break;
     case ACVP_NET_GET_VS_RESULT:
-        if (ctx->debug >= ACVP_LOG_LVL_STATUS) {
-            printf("GET Vector Set Result...\n\tStatus: %d\n\tUrl: %s\n\tResp:\n%s\n",
-                   curl_code, url, ctx->curl_buf);
-        } else {
-            ACVP_LOG_STATUS("GET Vector Set Result...\n\tStatus: %d\n\tUrl: %s\n\tResp:\n%s\n",
-                            curl_code, url, ctx->curl_buf);
-        }
+        ACVP_LOG_STATUS("GET Vector Set Result...\n\tStatus: %d\n\tUrl: %s\n\tResp:\n%s\n",
+                        curl_code, url, ctx->curl_buf);
         break;
     case ACVP_NET_GET_VS_SAMPLE:
-        if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
-            printf("GET Vector Set Sample...\n\tStatus: %d\n\tUrl: %s\n\tResp:\n%s\n",
-                   curl_code, url, ctx->curl_buf);
-        } else {
-            ACVP_LOG_STATUS("GET Vector Set Sample...\n\tStatus: %d\n\tUrl: %s\n\tResp:\n%s\n",
-                            curl_code, url, ctx->curl_buf);
-        }
+        ACVP_LOG_STATUS("GET Vector Set Sample...\n\tStatus: %d\n\tUrl: %s\n\tResp:\n%s\n",
+                        curl_code, url, ctx->curl_buf);
         break;
     case ACVP_NET_POST:
         ACVP_LOG_STATUS("POST...\n\tStatus: %d\n\tUrl: %s\n\tResp: %s\n",
                         curl_code, url, ctx->curl_buf);
         break;
     case ACVP_NET_POST_LOGIN:
-        ACVP_LOG_STATUS("POST Login...\n\tStatus: %d\n\tUrl: %s\n\tResp:\n%s\n",
+        if (ctx->debug >= ACVP_LOG_LVL_INFO) {
+            ACVP_LOG_STATUS("POST Login...\n\tStatus: %d\n\tUrl: %s\n\tResp:\n%s\n",
                         curl_code, url, ctx->curl_buf);
+        } else {
+            ACVP_LOG_STATUS("POST Login...\n\tStatus: %d\n\tUrl: %s\n",
+                        curl_code, url);
+        }
         break;
     case ACVP_NET_POST_REG:
         ACVP_LOG_STATUS("POST Registration...\n\tStatus: %d\n\tUrl: %s\n\tResp:\n%s\n",
                         curl_code, url, ctx->curl_buf);
         break;
     case ACVP_NET_POST_VS_RESP:
-        ACVP_LOG_STATUS("POST Response Submission...\n\tStatus: %d\n\tUrl: %s\n\tResp:\n%s\n",
-                        curl_code, url, ctx->curl_buf);
+        if (ctx->debug >= ACVP_LOG_LVL_INFO) {
+            ACVP_LOG_STATUS("POST Response Submission...\n\tStatus: %d\n\tUrl: %s\n\tResp:\n%s\n",
+                             curl_code, url, ctx->curl_buf);
+        } else {
+            ACVP_LOG_STATUS("POST Response Submission...\n\tStatus: %d\n\tUrl: %s\n",
+                             curl_code, url);
+        }
         break;
     case ACVP_NET_PUT:
         ACVP_LOG_STATUS("PUT...\n\tStatus: %d\n\tUrl: %s\n\tResp: %s\n",

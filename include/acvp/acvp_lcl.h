@@ -15,19 +15,6 @@
 #define ACVP_VERSION    "1.0"
 #define ACVP_LIBRARY_VERSION    "libacvp-1.0.0"
 
-#ifndef ACVP_LOG_INFO
-#ifdef WIN32
-#define ACVP_LOG_INFO(format, ...) do { \
-        acvp_log_msg(ctx, ACVP_LOG_LVL_INFO, "***ACVP [INFO][%s:%d]--> " format "\n", \
-                     __func__, __LINE__, __VA_ARGS__); \
-} while (0)
-#else
-#define ACVP_LOG_INFO(format, args ...) do { \
-        acvp_log_msg(ctx, ACVP_LOG_LVL_INFO, "***ACVP [INFO][%s:%d]--> " format "\n", \
-                     __func__, __LINE__, ##args); \
-} while (0)
-#endif
-#endif
 
 #ifndef ACVP_LOG_ERR
 #ifdef WIN32
@@ -38,6 +25,20 @@
 #else
 #define ACVP_LOG_ERR(format, args ...) do { \
         acvp_log_msg(ctx, ACVP_LOG_LVL_ERR, "***ACVP [ERR][%s:%d]--> " format "\n", \
+                     __func__, __LINE__, ##args); \
+} while (0)
+#endif
+#endif
+
+#ifndef ACVP_LOG_WARN
+#ifdef WIN32
+#define ACVP_LOG_WARN(format, ...) do { \
+        acvp_log_msg(ctx, ACVP_LOG_LVL_WARN, "***ACVP [WARN][%s:%d]--> " format "\n", \
+                     __func__, __LINE__, __VA_ARGS__); \
+} while (0)
+#else
+#define ACVP_LOG_WARN(format, args ...) do { \
+        acvp_log_msg(ctx, ACVP_LOG_LVL_WARN, "***ACVP [WARN][%s:%d]--> " format "\n", \
                      __func__, __LINE__, ##args); \
 } while (0)
 #endif
@@ -57,15 +58,15 @@
 #endif
 #endif
 
-#ifndef ACVP_LOG_WARN
+#ifndef ACVP_LOG_INFO
 #ifdef WIN32
-#define ACVP_LOG_WARN(format, ...) do { \
-        acvp_log_msg(ctx, ACVP_LOG_LVL_WARN, "***ACVP [WARN][%s:%d]--> " format "\n", \
+#define ACVP_LOG_INFO(format, ...) do { \
+        acvp_log_msg(ctx, ACVP_LOG_LVL_INFO, "***ACVP [INFO][%s:%d]--> " format "\n", \
                      __func__, __LINE__, __VA_ARGS__); \
 } while (0)
 #else
-#define ACVP_LOG_WARN(format, args ...) do { \
-        acvp_log_msg(ctx, ACVP_LOG_LVL_WARN, "***ACVP [WARN][%s:%d]--> " format "\n", \
+#define ACVP_LOG_INFO(format, args ...) do { \
+        acvp_log_msg(ctx, ACVP_LOG_LVL_INFO, "***ACVP [INFO][%s:%d]--> " format "\n", \
                      __func__, __LINE__, ##args); \
 } while (0)
 #endif
@@ -818,16 +819,6 @@ typedef struct acvp_string_list_t {
     struct acvp_string_list_t *next;
 } ACVP_STRING_LIST;
 
-/*
- * A list that maintains a list of vector set URLs next to 
- * which algorithm that vector set is for
- */
-typedef struct acvp_vector_algname_list_t {
-    char *vs_url;
-    char *alg_name;
-    struct acvp_vector_algname_list_t *next;
-} ACVP_VECTOR_ALGNAME_LIST;
-
 /**
  * @struct ACVP_KV_LIST
  * @brief This struct is a list of key/value pairs.
@@ -1525,7 +1516,8 @@ ACVP_RESULT acvp_kv_list_append(ACVP_KV_LIST **kv_list,
 void acvp_kv_list_free(ACVP_KV_LIST *kv_list);
 
 void acvp_free_str_list(ACVP_STRING_LIST **list);
-ACVP_RESULT acvp_append_str_list(ACVP_STRING_LIST **list, char *string);
+ACVP_RESULT acvp_append_str_list(ACVP_STRING_LIST **list, const char *string);
+int acvp_lookup_str_list(ACVP_STRING_LIST **list, const char *string);
 
 ACVP_RESULT acvp_json_serialize_to_file_pretty_a(const JSON_Value *value, const char *filename);
 ACVP_RESULT acvp_json_serialize_to_file_pretty_w(const JSON_Value *value, const char *filename);
