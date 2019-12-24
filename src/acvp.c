@@ -2326,7 +2326,7 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
      ACVP_STRING_LIST *failedVsList = NULL;
 
     while (1) {
-        int allTestsCompleted = 1;
+        int testsCompleted = 0;
         
         /*
          * Get the KAT vector set
@@ -2344,6 +2344,11 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
             goto end;
         }
         obj = acvp_get_obj_from_rsp(ctx, val);
+        if (!obj) {
+            ACVP_LOG_ERR("Error while parsing json from server!");
+            rv = ACVP_JSON_ERR;
+            goto end;
+        }
 
         /*
          * Check the results for each vector set - flag if some are incomplete,
@@ -2363,7 +2368,6 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
              */
             strcmp_s("incomplete", 10, status, &diff);
             if (!diff) {
-                allTestsCompleted = 0;
                 continue;
             }
             /*
@@ -2420,10 +2424,11 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
                     }
                 }
             }
+            testsCompleted++;
         }
-        
-        if(allTestsCompleted) {
+        if(testsCompleted >= count) {
             passed = json_object_get_boolean(obj, "passed");
+            ACVP_LOG_STATUS("%d", passed);
             if (passed == 1) {
                 /*
                  * Pass, exit loop
@@ -2432,14 +2437,7 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
                 ctx->session_passed = 1;
                 rv = ACVP_SUCCESS;
                 goto end;
-            } else if (passed == -1) {
-                /*
-                 * We should never be here!
-                 */
-                 ACVP_LOG_ERR("Server not reporting 'passed' boolean status properly!");
-                 rv = ACVP_MALFORMED_JSON;
-                 goto end;
-             } else {
+            } else {
                  /*
                   * Fail, continue with reporting results
                   */
@@ -2460,10 +2458,11 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
                 rv = ACVP_TRANSPORT_FAIL;
                 goto end;
             }
+            
             if (val) json_value_free(val);
             continue;
         }
-        
+
         for (i = 0; i < count; i++) {
             int diff = 1;
             current = json_array_get_object(results, i);
