@@ -2327,7 +2327,7 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
 
     while (1) {
         int testsCompleted = 0;
-        
+
         /*
          * Get the KAT vector set
          */
@@ -2428,7 +2428,6 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
         }
         if(testsCompleted >= count) {
             passed = json_object_get_boolean(obj, "passed");
-            ACVP_LOG_STATUS("%d", passed);
             if (passed == 1) {
                 /*
                  * Pass, exit loop
@@ -2458,7 +2457,7 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
                 rv = ACVP_TRANSPORT_FAIL;
                 goto end;
             }
-            
+
             if (val) json_value_free(val);
             continue;
         }
@@ -2479,7 +2478,6 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
                     rv = acvp_retrieve_vector_set_result(ctx, vs_url);
                     if (rv != ACVP_SUCCESS) goto end;
                 }
-                
                 /*
                  * Get the sample results if the user had requested them.
                  */
@@ -2490,6 +2488,7 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
                 }
             }
         }
+        
         /* If we got here, the testSession failed, exit loop*/
         break;
     }

@@ -213,7 +213,7 @@ static void acvp_http_user_agent_check_env_for_var(ACVP_CTX *ctx, char *var_stri
 
 static void acvp_http_user_agent_check_compiler_ver(ACVP_CTX *ctx, char *comp_string) {
     char versionBuffer[16];
-    
+
 #ifdef __GNUC__
     strncpy_s(comp_string, ACVP_USER_AGENT_COMP_STR_MAX + 1, "GCC/", ACVP_USER_AGENT_COMP_STR_MAX);
 

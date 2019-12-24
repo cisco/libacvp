@@ -928,7 +928,6 @@ int acvp_lookup_str_list(ACVP_STRING_LIST **list, const char *string) {
         tmp = tmp->next;
     }
     return 0;
-    
 }
 
 ACVP_RESULT acvp_json_serialize_to_file_pretty_a(const JSON_Value *value, const char *filename) {
