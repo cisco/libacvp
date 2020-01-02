@@ -15,19 +15,6 @@
 #define ACVP_VERSION    "1.0"
 #define ACVP_LIBRARY_VERSION    "libacvp-1.0.0"
 
-#ifndef ACVP_LOG_INFO
-#ifdef WIN32
-#define ACVP_LOG_INFO(format, ...) do { \
-        acvp_log_msg(ctx, ACVP_LOG_LVL_INFO, "***ACVP [INFO][%s:%d]--> " format "\n", \
-                     __func__, __LINE__, __VA_ARGS__); \
-} while (0)
-#else
-#define ACVP_LOG_INFO(format, args ...) do { \
-        acvp_log_msg(ctx, ACVP_LOG_LVL_INFO, "***ACVP [INFO][%s:%d]--> " format "\n", \
-                     __func__, __LINE__, ##args); \
-} while (0)
-#endif
-#endif
 
 #ifndef ACVP_LOG_ERR
 #ifdef WIN32
@@ -38,6 +25,20 @@
 #else
 #define ACVP_LOG_ERR(format, args ...) do { \
         acvp_log_msg(ctx, ACVP_LOG_LVL_ERR, "***ACVP [ERR][%s:%d]--> " format "\n", \
+                     __func__, __LINE__, ##args); \
+} while (0)
+#endif
+#endif
+
+#ifndef ACVP_LOG_WARN
+#ifdef WIN32
+#define ACVP_LOG_WARN(format, ...) do { \
+        acvp_log_msg(ctx, ACVP_LOG_LVL_WARN, "***ACVP [WARN][%s:%d]--> " format "\n", \
+                     __func__, __LINE__, __VA_ARGS__); \
+} while (0)
+#else
+#define ACVP_LOG_WARN(format, args ...) do { \
+        acvp_log_msg(ctx, ACVP_LOG_LVL_WARN, "***ACVP [WARN][%s:%d]--> " format "\n", \
                      __func__, __LINE__, ##args); \
 } while (0)
 #endif
@@ -57,15 +58,15 @@
 #endif
 #endif
 
-#ifndef ACVP_LOG_WARN
+#ifndef ACVP_LOG_INFO
 #ifdef WIN32
-#define ACVP_LOG_WARN(format, ...) do { \
-        acvp_log_msg(ctx, ACVP_LOG_LVL_WARN, "***ACVP [WARN][%s:%d]--> " format "\n", \
+#define ACVP_LOG_INFO(format, ...) do { \
+        acvp_log_msg(ctx, ACVP_LOG_LVL_INFO, "***ACVP [INFO][%s:%d]--> " format "\n", \
                      __func__, __LINE__, __VA_ARGS__); \
 } while (0)
 #else
-#define ACVP_LOG_WARN(format, args ...) do { \
-        acvp_log_msg(ctx, ACVP_LOG_LVL_WARN, "***ACVP [WARN][%s:%d]--> " format "\n", \
+#define ACVP_LOG_INFO(format, args ...) do { \
+        acvp_log_msg(ctx, ACVP_LOG_LVL_INFO, "***ACVP [INFO][%s:%d]--> " format "\n", \
                      __func__, __LINE__, ##args); \
 } while (0)
 #endif
@@ -706,6 +707,8 @@
 #define ACVP_USER_AGENT_ARCH_STR_MAX 16
 #define ACVP_USER_AGENT_PROC_STR_MAX 64
 #define ACVP_USER_AGENT_COMP_STR_MAX 32
+
+#define ACVP_STRING_LIST_MAX_LEN 256 //arbitrary max character count for a string in ACVP_STRING_LIST
 
 /*
  * If library cannot detect hardware or software info for HTTP user-agent string, we can check for them
@@ -1513,6 +1516,8 @@ ACVP_RESULT acvp_kv_list_append(ACVP_KV_LIST **kv_list,
 void acvp_kv_list_free(ACVP_KV_LIST *kv_list);
 
 void acvp_free_str_list(ACVP_STRING_LIST **list);
+ACVP_RESULT acvp_append_str_list(ACVP_STRING_LIST **list, const char *string);
+int acvp_lookup_str_list(ACVP_STRING_LIST **list, const char *string);
 
 ACVP_RESULT acvp_json_serialize_to_file_pretty_a(const JSON_Value *value, const char *filename);
 ACVP_RESULT acvp_json_serialize_to_file_pretty_w(const JSON_Value *value, const char *filename);
