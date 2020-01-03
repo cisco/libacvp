@@ -2356,7 +2356,7 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
          */
         results = json_object_get_array(obj, "results");
         count = (int)json_array_get_count(results);
-        for (int i = 0; i < count; i++) {
+        for (i = 0; i < count; i++) {
             int diff = 1;
             current = json_array_get_object(results, i);
             status = json_object_get_string(current, "status");
