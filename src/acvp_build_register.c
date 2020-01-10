@@ -706,6 +706,9 @@ static ACVP_RESULT acvp_build_drbg_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
             } else if (drbg_cap_mode->nonce_len_max) {
                 json_array_append_number(array, drbg_cap_mode->nonce_len_max);
             }
+            if (!drbg_cap_mode->nonce_len_min && !drbg_cap_mode->nonce_len_max) {
+                json_array_append_number(array, 0);
+            }
         } else {
             len_val = json_value_init_object();
             len_obj = json_value_get_object(len_val);
