@@ -1938,6 +1938,10 @@ static ACVP_RESULT acvp_parse_test_session_register(ACVP_CTX *ctx) {
         ACVP_LOG_ERR("JSON parse error");
         return ACVP_JSON_ERR;
     }
+    if (strnlen_s(access_token, ACVP_JWT_TOKEN_MAX + 1) > ACVP_JWT_TOKEN_MAX) {
+        ACVP_LOG_ERR("access_token too large");
+        return ACVP_NO_TOKEN;
+    }
     memzero_s(ctx->jwt_token, ACVP_JWT_TOKEN_MAX + 1);
     strcpy_s(ctx->jwt_token, ACVP_JWT_TOKEN_MAX + 1, access_token);
 

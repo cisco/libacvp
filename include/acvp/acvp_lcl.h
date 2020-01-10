@@ -681,7 +681,7 @@
 #define ACVP_MAX_WAIT_TIME      3600
 #define ACVP_RETRY_TIME         30
 #define ACVP_RETRY_MODIFIER_MAX 10
-#define ACVP_JWT_TOKEN_MAX      1024
+#define ACVP_JWT_TOKEN_MAX      2048
 #define ACVP_ATTR_URL_MAX       2083 /* MS IE's limit - arbitrary */
 
 #define ACVP_SESSION_PARAMS_STR_LEN_MAX 256
