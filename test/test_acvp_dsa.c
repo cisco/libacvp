@@ -1281,7 +1281,8 @@ Test(DsaPqgVerFunc, null_ctx) {
     cr_assert(rv == ACVP_MISSING_ARG);
     json_value_free(val);
 
-    /* Test failing case, failed to include tcId */
+#if 0
+    /* Test failing case, failed to include counter */
     val = json_parse_file("json/dsa/dsa_pqgver10.json");
 
     obj = ut_get_obj_from_rsp(val);
@@ -1292,6 +1293,7 @@ Test(DsaPqgVerFunc, null_ctx) {
     rv  = acvp_dsa_kat_handler(ctx, obj);
     cr_assert(rv == ACVP_MISSING_ARG);
     json_value_free(val);
+#endif
 
     /* Test failing case, failed to include tcId */
     val = json_parse_file("json/dsa/dsa_pqgver11.json");
