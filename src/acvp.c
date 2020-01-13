@@ -2392,7 +2392,7 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
                         continue;
                     }
                     //retrieve_vector_set expects a non-const string
-                    char *vs_url = calloc(strnlen_s(vsurl, ACVP_REQUEST_STR_LEN_MAX + 1), sizeof(char));
+                    char *vs_url = calloc(ACVP_REQUEST_STR_LEN_MAX + 1, sizeof(char));
                     if (!vs_url) {
                         ACVP_LOG_ERR("Unable to calloc when reporting failed algorithms, skipping...");
                         continue;                    
