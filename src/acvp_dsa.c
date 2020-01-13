@@ -1190,10 +1190,6 @@ ACVP_RESULT acvp_dsa_pqgver_handler(ACVP_CTX *ctx,
                 ACVP_LOG_ERR("Failed to include seed. ");
                 return ACVP_MISSING_ARG;
             }
-            if (!c) {
-                ACVP_LOG_ERR("Failed to include counter. ");
-                return ACVP_MISSING_ARG;
-            }
         }
 
         /*
