@@ -876,33 +876,44 @@ void acvp_free_str_list(ACVP_STRING_LIST **list) {
  * Note that the string is COPIED and not referenced.
  */
 ACVP_RESULT acvp_append_str_list(ACVP_STRING_LIST **list, const char *string) {
-    ACVP_STRING_LIST *top = NULL;
-    ACVP_STRING_LIST *tmp = NULL;
-    if (!list || *list == NULL) {
-        tmp = calloc(1, sizeof(ACVP_STRING_LIST));
-        *list = tmp;
-        list = &tmp;
-        if (!list) {
-            return ACVP_MALLOC_FAIL;
-        }
-    }
-    top = *list;
-    if (!top) {
+    ACVP_STRING_LIST *current = NULL;
+    ACVP_STRING_LIST *prev = NULL;
+    char *word = NULL;
+
+    if (!list) {
         return ACVP_NO_DATA;
     }
-    tmp = top;
-    while (tmp->next) {
-        tmp = tmp->next;
-    }
-    
-    tmp->next = calloc(1, sizeof(ACVP_STRING_LIST));
+
     int len = strnlen_s(string, ACVP_STRING_LIST_MAX_LEN);
-    tmp->string = calloc(len + 1, sizeof(char));
-    if(!tmp->string) {
+    word = calloc(len + 1, sizeof(char));
+    if (!word) {
         return ACVP_MALLOC_FAIL;
     }
-    strncpy_s(tmp->string, len + 1, string, len);
-    return ACVP_SUCCESS;
+    strncpy_s(word, len + 1, string, len);
+
+    if (*list == NULL) {
+        *list = calloc(1, sizeof(ACVP_STRING_LIST));
+        if (*list == NULL) {
+            free(word);
+            return ACVP_MALLOC_FAIL;
+        }
+        (*list)->string = word;
+        return ACVP_SUCCESS;
+    } else {
+        current = *list;
+        while (current) {
+            prev = current;
+            current = current->next;
+        }
+        prev->next = calloc(1, sizeof(ACVP_STRING_LIST));
+        if (!prev->next) {
+            free(word);
+            return ACVP_MALLOC_FAIL;
+        }
+        prev->next->string = word;
+        return ACVP_SUCCESS;
+    }
+
 }
 
 /**
@@ -911,10 +922,7 @@ ACVP_RESULT acvp_append_str_list(ACVP_STRING_LIST **list, const char *string) {
  */
 int acvp_lookup_str_list(ACVP_STRING_LIST **list, const char *string) {
     ACVP_STRING_LIST *tmp = NULL;
-    if (!list) {
-        return 0;
-    }
-    if(*list == NULL) {
+    if (!list || *list == NULL) {
         return 0;
     }
     tmp = *list;
