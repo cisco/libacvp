@@ -480,8 +480,8 @@ Test(TRANSPORT_GET, good, .init = test_setup_session_parameters, .fini = teardow
     cr_assert(rv == ACVP_MISSING_ARG);
 
 
-    key = calloc(strlen("this is the key"), sizeof(char));
-    value = calloc(strlen("value"), sizeof(char));
+    key = calloc(strlen("this is the key") + 1, sizeof(char));
+    value = calloc(strlen("value") + 1, sizeof(char));
     memcpy(value, "value", 5);
     memcpy(key, "This is the key", 15);
     rv = acvp_kv_list_append(&parms, key, value);
@@ -491,6 +491,9 @@ Test(TRANSPORT_GET, good, .init = test_setup_session_parameters, .fini = teardow
     cr_assert(rv == ACVP_TRANSPORT_FAIL);
 #endif
     acvp_kv_list_free(parms);
+    free(key);
+    free(value);
+    
 }
 
 

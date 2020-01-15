@@ -80,6 +80,8 @@ Test(APP_HMAC_HANDLER, missing_msg) {
     cr_assert_neq(rv, 0);
     
     free_hmac_tc(hmac_tc);
+    free(hmac_tc);
+    free(test_case);
 }
 
 /*
@@ -100,6 +102,8 @@ Test(APP_HMAC_HANDLER, missing_key) {
     cr_assert_neq(rv, 0);
     
     free_hmac_tc(hmac_tc);
+    free(hmac_tc);
+    free(test_case);
 }
 
 /*
@@ -122,4 +126,6 @@ Test(APP_HMAC_HANDLER, disposition_mem_not_allocated) {
     cr_assert_neq(rv, 0);
     
     free_hmac_tc(hmac_tc);
+    free(hmac_tc);
+    free(test_case);
 }

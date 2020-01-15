@@ -29,6 +29,8 @@ Test(LogMsg, null_ctx) {
 
     acvp_log_msg(ctx, ACVP_LOG_LVL_MAX, NULL);
     cr_assert(rv == ACVP_SUCCESS);
+    
+    acvp_cleanup(ctx);
 }
 
 /*
@@ -91,7 +93,7 @@ Test(LookupRSARandPQIndex, null_param) {
 
 Test(JsonSerializeToFilePrettyW, null_param) {
     ACVP_RESULT rv = ACVP_SUCCESS;
-    const JSON_Value *value;
+    JSON_Value *value;
 
     rv = acvp_json_serialize_to_file_pretty_w(NULL, "test");
     cr_assert(rv == ACVP_JSON_ERR);
@@ -102,11 +104,13 @@ Test(JsonSerializeToFilePrettyW, null_param) {
 
     rv = acvp_json_serialize_to_file_pretty_w(value, "no_file");
     cr_assert(rv == ACVP_SUCCESS);
+    
+    json_value_free(value);
 }
 
 Test(JsonSerializeToFilePrettyA, null_param) {
     ACVP_RESULT rv = ACVP_SUCCESS;
-    const JSON_Value *value;
+    JSON_Value *value;
 
     rv = acvp_json_serialize_to_file_pretty_a(NULL, "test");
     cr_assert(rv == ACVP_SUCCESS);
@@ -117,6 +121,8 @@ Test(JsonSerializeToFilePrettyA, null_param) {
 
     rv = acvp_json_serialize_to_file_pretty_a(value, "no_file");
     cr_assert(rv == ACVP_SUCCESS);
+    
+    json_value_free(value);
 }
 
 /*
@@ -179,8 +185,8 @@ Test(KvList, null_ctx) {
     rv = acvp_kv_list_append(&kv, "this is the key", NULL);
     cr_assert(rv == ACVP_INVALID_ARG);
 
-    key = calloc(strlen("this is the key"), sizeof(char));
-    value = calloc(strlen("value"), sizeof(char));
+    key = calloc(strlen("this is the key") + 1, sizeof(char));
+    value = calloc(strlen("value") + 1, sizeof(char));
     memcpy(value, "value", 5);
     memcpy(key, "This is the key", 15);
     rv = acvp_kv_list_append(&kv, key, value);
@@ -214,6 +220,8 @@ Test(GetObjFromRsp, null_ctx) {
     val = json_parse_file("json/aes/aes.json");
     obj = acvp_get_obj_from_rsp(ctx, val);
     cr_assert(obj != NULL);
-
+    
+    json_value_free(val);
+    acvp_free_test_session(ctx);
 }
 
