@@ -524,6 +524,7 @@ ACVP_RESULT acvp_kdf108_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             rv = acvp_kdf108_output_tc(ctx, &stc, r_tobj);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("JSON output failure in kdf135 tpm module");
+                json_value_free(r_tval);
                 acvp_kdf108_release_tc(&stc);
                 goto err;
             }
