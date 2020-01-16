@@ -1567,7 +1567,7 @@ static ACVP_RESULT acvp_build_login(ACVP_CTX *ctx, char **login, int *login_len,
     }
 
     if (ctx->totp_cb) {
-        token = calloc(ACVP_TOTP_TOKEN_MAX, sizeof(char));
+        token = calloc(ACVP_TOTP_TOKEN_MAX + 1, sizeof(char));
         if (!token) return ACVP_MALLOC_FAIL;
 
         ctx->totp_cb(&token, ACVP_TOTP_TOKEN_MAX);
@@ -2340,7 +2340,7 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
             ACVP_LOG_ERR("Error retrieving vector set results!");
             goto end;
         }
-
+        if (val) json_value_free(val);
         val = json_parse_string(ctx->curl_buf);
         if (!val) {
             ACVP_LOG_ERR("Error while parsing json from server!");

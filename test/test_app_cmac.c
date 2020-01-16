@@ -125,6 +125,8 @@ Test(APP_CMAC_HANDLER, missing_msg) {
     cr_assert_neq(rv, 0);
     
     free_cmac_tc(cmac_tc);
+    free(cmac_tc);
+    free(test_case);
 }
 
 /*
@@ -145,6 +147,8 @@ Test(APP_CMAC_HANDLER, missing_key_aes) {
     cr_assert_neq(rv, 0);
     
     free_cmac_tc(cmac_tc);
+    free(cmac_tc);
+    free(test_case);
 }
 
 /*
@@ -165,6 +169,8 @@ Test(APP_CMAC_HANDLER, missing_keys_tdes) {
     cr_assert_neq(rv, 0);
     
     free_cmac_tc(cmac_tc);
+    free(cmac_tc);
+    free(test_case);
 }
 
 /*
@@ -187,5 +193,7 @@ Test(APP_CMAC_HANDLER, disposition_mem_not_allocated) {
     cr_assert_neq(rv, 0);
     
     free_cmac_tc(cmac_tc);
+    free(cmac_tc);
+    free(test_case);
 }
 

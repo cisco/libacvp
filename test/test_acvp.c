@@ -166,7 +166,7 @@ static void teardown(void) {
 }
 
 static ACVP_RESULT dummy_totp_success(char **token, int token_max) {
-    strncpy(*token, "test", 4);
+    strncpy_s(*token, ACVP_TOTP_TOKEN_MAX + 1, "test", 4);
     return ACVP_SUCCESS;
 }
 

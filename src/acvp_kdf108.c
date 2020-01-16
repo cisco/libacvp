@@ -491,14 +491,6 @@ ACVP_RESULT acvp_kdf108_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             ACVP_LOG_INFO("         deferred: %d", deferred);
 
             /*
-             * Create a new test case in the response
-             */
-            r_tval = json_value_init_object();
-            r_tobj = json_value_get_object(r_tval);
-
-            json_object_set_number(r_tobj, "tcId", tc_id);
-
-            /*
              * Setup the test case data that will be passed down to
              * the crypto module.
              */
@@ -519,11 +511,20 @@ ACVP_RESULT acvp_kdf108_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             }
 
             /*
+             * Create a new test case in the response
+             */
+            r_tval = json_value_init_object();
+            r_tobj = json_value_get_object(r_tval);
+
+            json_object_set_number(r_tobj, "tcId", tc_id);
+
+            /*
              * Output the test case results using JSON
              */
             rv = acvp_kdf108_output_tc(ctx, &stc, r_tobj);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("JSON output failure in kdf135 tpm module");
+                json_value_free(r_tval);
                 acvp_kdf108_release_tc(&stc);
                 goto err;
             }
