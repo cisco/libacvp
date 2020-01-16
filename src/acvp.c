@@ -2313,7 +2313,9 @@ static ACVP_RESULT acvp_process_vector_set(ACVP_CTX *ctx, JSON_Object *obj) {
 static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url) {
     ACVP_RESULT rv = ACVP_SUCCESS;
     JSON_Value *val = NULL;
+    JSON_Value *val2 = NULL;
     JSON_Object *obj = NULL;
+    JSON_Object *obj2 = NULL;
     int count = 0, i = 0, passed = 0;
     JSON_Array *results = NULL;
     JSON_Object *current = NULL;
@@ -2340,7 +2342,7 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
             ACVP_LOG_ERR("Error retrieving vector set results!");
             goto end;
         }
-        if (val) json_value_free(val);
+
         val = json_parse_string(ctx->curl_buf);
         if (!val) {
             ACVP_LOG_ERR("Error while parsing json from server!");
@@ -2349,6 +2351,7 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
         }
         obj = acvp_get_obj_from_rsp(ctx, val);
         if (!obj) {
+            if (val) json_value_free(val);
             ACVP_LOG_ERR("Error while parsing json from server!");
             rv = ACVP_JSON_ERR;
             goto end;
@@ -2405,22 +2408,25 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
                         continue;
                     }
 
-                    val = json_parse_string(ctx->curl_buf);
-                    if (!val) {
+                    val2 = json_parse_string(ctx->curl_buf);
+                    if (!val2) {
                         ACVP_LOG_ERR("JSON parse error while reporting failed algorithms, skipping...");
                         continue;
                     }
-                    obj = acvp_get_obj_from_rsp(ctx, val);
-                    if (!obj) {
+                    obj2 = acvp_get_obj_from_rsp(ctx, val2);
+                    if (!obj2) {
+                        json_value_free(val2);
                         ACVP_LOG_ERR("JSON parse error while reporting failed algorithms, skipping...");
+                        continue;
                     }
-                    const char *alg = json_object_get_string(obj, "algorithm");
+                    const char *alg = json_object_get_string(obj2, "algorithm");
                     if (!alg) {
                         ACVP_LOG_ERR("JSON parse error while reporting failed algorithms, skipping...");
                         continue;
                     }
                     if (!acvp_lookup_str_list(&failedAlgList, alg)) {
                         rv = acvp_append_str_list(&failedAlgList, alg);
+                        if (val2) json_value_free(val2);
                         if (rv != ACVP_SUCCESS) {
                             ACVP_LOG_ERR("Error appending failed algorithm name to list, skipping...");
                             continue;
