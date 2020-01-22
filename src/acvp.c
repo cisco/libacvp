@@ -2039,7 +2039,10 @@ static ACVP_RESULT acvp_retry_handler(ACVP_CTX *ctx, int *retry_period, unsigned
     }
 
     #ifdef WIN32
-    Sleep(*retry_period);
+    /*
+     * Windows uses milliseconds
+     */
+    Sleep(*retry_period * 1000);
     #else
     sleep(*retry_period);
     #endif

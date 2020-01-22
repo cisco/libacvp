@@ -123,7 +123,7 @@ model {
                 targetPlatform "x64"
             }
 		}
-		example(NativeExecutableSpec) {
+		acvp_app(NativeExecutableSpec) {
 			sources {
 				c {
 					source {
