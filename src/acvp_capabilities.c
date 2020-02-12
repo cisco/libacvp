@@ -647,67 +647,6 @@ static ACVP_RESULT acvp_add_dsa_mode_parm(ACVP_CTX *ctx,
 }
 
 /*
- * Add top level DSA ver parameters
- */
-static ACVP_RESULT acvp_add_dsa_ver_parm(ACVP_CTX *ctx,
-                                            ACVP_DSA_CAP_MODE *dsa_cap_mode,
-                                            ACVP_DSA_PARM param,
-                                            int value) {
-    switch (param) {
-    case ACVP_DSA_GENPQ:
-        switch (value) {
-        case ACVP_DSA_PROVABLE:
-            dsa_cap_mode->gen_pq_prov = 1;
-            break;
-        case ACVP_DSA_PROBABLE:
-            dsa_cap_mode->gen_pq_prob = 1;
-            break;
-        default:
-            return ACVP_INVALID_ARG;
-
-            break;
-        }
-        break;
-    case ACVP_DSA_GENG:
-        switch (value) {
-        case ACVP_DSA_CANONICAL:
-            dsa_cap_mode->gen_g_can = 1;
-            break;
-        case ACVP_DSA_UNVERIFIABLE:
-            dsa_cap_mode->gen_g_unv = 1;
-            break;
-        default:
-            return ACVP_INVALID_ARG;
-
-            break;
-        }
-        break;
-    case ACVP_DSA_LN1024_160:
-        return acvp_add_dsa_mode_parm(ctx, dsa_cap_mode, param, value);
-
-        break;
-    case ACVP_DSA_LN2048_224:
-        return acvp_add_dsa_mode_parm(ctx, dsa_cap_mode, param, value);
-
-        break;
-    case ACVP_DSA_LN2048_256:
-        return acvp_add_dsa_mode_parm(ctx, dsa_cap_mode, param, value);
-
-        break;
-    case ACVP_DSA_LN3072_256:
-        return acvp_add_dsa_mode_parm(ctx, dsa_cap_mode, param, value);
-
-        break;
-    default:
-        return ACVP_INVALID_ARG;
-
-        break;
-    }
-
-    return ACVP_SUCCESS;
-}
-
-/*
  * Add top level DSA pqggen parameters
  */
 static ACVP_RESULT acvp_add_dsa_pqggen_parm(ACVP_CTX *ctx,
@@ -4798,7 +4737,7 @@ ACVP_RESULT acvp_cap_dsa_set_parm(ACVP_CTX *ctx,
             ACVP_LOG_ERR("Invalid param to enable_dsa_cap_parm.");
         break;
     case ACVP_DSA_MODE_PQGVER:
-        result = acvp_add_dsa_ver_parm(ctx, dsa_cap_mode, param, value);
+        result = acvp_add_dsa_pqggen_parm(ctx, dsa_cap_mode, param, value);
         if (result != ACVP_SUCCESS)
             ACVP_LOG_ERR("Invalid param to enable_dsa_cap_parm.");
         break;
@@ -4813,7 +4752,7 @@ ACVP_RESULT acvp_cap_dsa_set_parm(ACVP_CTX *ctx,
             ACVP_LOG_ERR("Invalid param to enable_dsa_cap_parm.");
         break;
     case ACVP_DSA_MODE_SIGVER:
-        result = acvp_add_dsa_ver_parm(ctx, dsa_cap_mode, param, value);
+        result = acvp_add_dsa_pqggen_parm(ctx, dsa_cap_mode, param, value);
         if (result != ACVP_SUCCESS)
             ACVP_LOG_ERR("Invalid param to enable_dsa_cap_parm.");
         break;
