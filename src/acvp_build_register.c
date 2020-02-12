@@ -1668,7 +1668,7 @@ static ACVP_RESULT acvp_build_dsa_hashalgs(JSON_Object *cap_obj,
     sha_arr = json_object_get_array(cap_obj, "hashAlg");
 
     if (attrs->sha & ACVP_SHA1) {
-        json_array_append_string(sha_arr, "SHA2-1");
+        json_array_append_string(sha_arr, "SHA-1");
     }
     if (attrs->sha & ACVP_SHA224) {
         json_array_append_string(sha_arr, "SHA2-224");
