@@ -64,7 +64,11 @@ static void setup_session_parameters(void) {
     char *tmp;
 
     server = getenv("ACV_SERVER");
-    if (!server) server = DEFAULT_SERVER;
+    if (!server) {
+         printf("Warning: No server set, using default. Please define ACV_SERVER in your environment.\n");
+         printf("Run acvp_app --help for more information on this and other environment variables.\n");
+         server = DEFAULT_SERVER;
+     }
 
     tmp = getenv("ACV_PORT");
     if (tmp) port = atoi(tmp);
