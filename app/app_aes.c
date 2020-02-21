@@ -29,7 +29,7 @@ int app_aes_handler(ACVP_TEST_CASE *test_case) {
     const EVP_CIPHER        *cipher;
     unsigned char *iv = 0;
     /* assume fail at first */
-    int rv = 1;
+    int rv = 0;
 
     if (!test_case) {
         return rv;
@@ -65,9 +65,8 @@ int app_aes_handler(ACVP_TEST_CASE *test_case) {
             break;
         default:
             printf("Unsupported AES key length\n");
-            return rv;
-
-            break;
+            rv = 1;
+            goto end;
         }
         break;
     case ACVP_AES_CTR:
@@ -84,9 +83,8 @@ int app_aes_handler(ACVP_TEST_CASE *test_case) {
             break;
         default:
             printf("Unsupported AES key length\n");
-            return rv;
-
-            break;
+            rv = 1;
+            goto end;
         }
         break;
     case ACVP_AES_CFB1:
@@ -103,9 +101,8 @@ int app_aes_handler(ACVP_TEST_CASE *test_case) {
             break;
         default:
             printf("Unsupported AES key length\n");
-            return rv;
-
-            break;
+            rv = 1;
+            goto end;
         }
         break;
     case ACVP_AES_CFB8:
@@ -122,9 +119,8 @@ int app_aes_handler(ACVP_TEST_CASE *test_case) {
             break;
         default:
             printf("Unsupported AES key length\n");
-            return rv;
-
-            break;
+            rv = 1;
+            goto end;
         }
         break;
     case ACVP_AES_CFB128:
@@ -141,9 +137,8 @@ int app_aes_handler(ACVP_TEST_CASE *test_case) {
             break;
         default:
             printf("Unsupported AES key length\n");
-            return rv;
-
-            break;
+            rv = 1;
+            goto end;
         }
         break;
     case ACVP_AES_OFB:
@@ -160,9 +155,8 @@ int app_aes_handler(ACVP_TEST_CASE *test_case) {
             break;
         default:
             printf("Unsupported AES key length\n");
-            return rv;
-
-            break;
+            rv = 1;
+            goto end;
         }
         break;
     case ACVP_AES_CBC:
@@ -179,9 +173,8 @@ int app_aes_handler(ACVP_TEST_CASE *test_case) {
             break;
         default:
             printf("Unsupported AES key length\n");
-            return rv;
-
-            break;
+            rv = 1;
+            goto end;
         }
         break;
     case ACVP_AES_XTS:
@@ -195,9 +188,8 @@ int app_aes_handler(ACVP_TEST_CASE *test_case) {
             break;
         default:
             printf("Unsupported AES key length\n");
-            return rv;
-
-            break;
+            rv = 1;
+            goto end;
         }
         break;
     case ACVP_CIPHER_START:
@@ -277,9 +269,8 @@ int app_aes_handler(ACVP_TEST_CASE *test_case) {
     case ACVP_CIPHER_END:
     default:
         printf("Error: Unsupported AES mode requested by ACVP server\n");
-        return rv;
-
-        break;
+        rv = 1;
+        goto end;
     }
 
     /* If Monte Carlo we need to be able to init and then update
@@ -308,10 +299,11 @@ int app_aes_handler(ACVP_TEST_CASE *test_case) {
             tc->pt_len = tc->ct_len;
         } else {
             printf("Unsupported direction\n");
-            return rv;
+            rv = 1;
+            goto end;
         }
         if (tc->mct_index == 999) {
-            EVP_CIPHER_CTX_cleanup(cipher_ctx);
+            EVP_CIPHER_CTX_free(cipher_ctx);
         }
     } else {
         if (tc->direction == ACVP_SYM_CIPH_DIR_ENCRYPT) {
@@ -332,13 +324,14 @@ int app_aes_handler(ACVP_TEST_CASE *test_case) {
             tc->pt_len = tc->ct_len;
         } else {
             printf("Unsupported direction\n");
-            return rv;
+            rv = 1;
+            goto end;
         }
-        EVP_CIPHER_CTX_cleanup(cipher_ctx);
+        EVP_CIPHER_CTX_free(cipher_ctx);
     }
-
-    if (cipher_ctx) EVP_CIPHER_CTX_cleanup(cipher_ctx);
-    return 0;
+end:
+    if (cipher_ctx) EVP_CIPHER_CTX_free(cipher_ctx);
+    return rv;
 }
 
 /* NOTE - openssl does not support inverse option */
