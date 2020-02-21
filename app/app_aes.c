@@ -337,6 +337,7 @@ int app_aes_handler(ACVP_TEST_CASE *test_case) {
         EVP_CIPHER_CTX_cleanup(cipher_ctx);
     }
 
+    if (cipher_ctx) EVP_CIPHER_CTX_cleanup(cipher_ctx);
     return 0;
 }
 
@@ -355,6 +356,7 @@ int app_aes_keywrap_handler(ACVP_TEST_CASE *test_case) {
     tc = test_case->tc.symmetric;
 
     if (tc->kwcipher != ACVP_SYM_KW_CIPHER) {
+        printf("Invalid cipher for AES keywrap operation\n");
         return rc;
     }
 
@@ -487,6 +489,7 @@ int app_aes_keywrap_handler(ACVP_TEST_CASE *test_case) {
 #endif
         c_len = EVP_Cipher(cipher_ctx, tc->pt, tc->ct, tc->ct_len);
         if (c_len <= 0) {
+            printf("Error: key wrap operation failed (%d)\n", c_len);
             goto end;
         } else {
             tc->pt_len = c_len;
@@ -534,6 +537,11 @@ int app_aes_handler_aead(ACVP_TEST_CASE *test_case) {
 
     /* Begin encrypt code section */
     cipher_ctx = EVP_CIPHER_CTX_new();
+    if (!cipher_ctx) {
+        printf("Error initializing cipher CTX\n");
+        rc = 1;
+        goto end;
+    }
     EVP_CIPHER_CTX_init(cipher_ctx);
 
     /* Validate key length and assign OpenSSL EVP cipher */
@@ -615,6 +623,7 @@ int app_aes_handler_aead(ACVP_TEST_CASE *test_case) {
              */
             ret = EVP_Cipher(cipher_ctx, NULL, NULL, 0);
             if (ret) {
+                printf("Error performing decrypt operation GCM/GMAC\n");
                 rc = 1;
                 goto end;
             }
@@ -643,7 +652,12 @@ int app_aes_handler_aead(ACVP_TEST_CASE *test_case) {
             EVP_CipherInit(cipher_ctx, NULL, tc->key, tc->iv, 1);
             EVP_Cipher(cipher_ctx, NULL, NULL, tc->pt_len);
             EVP_Cipher(cipher_ctx, NULL, tc->aad, tc->aad_len);
-            EVP_Cipher(cipher_ctx, tc->ct, tc->pt, tc->pt_len);
+            ret = EVP_Cipher(cipher_ctx, tc->ct, tc->pt, tc->pt_len);
+            if (ret < 0) {
+                printf("Error performing encrypt operation CCM\n");
+                rc = 1;
+                goto end;
+            }
             EVP_CIPHER_CTX_ctrl(cipher_ctx, EVP_CTRL_CCM_GET_TAG, tc->tag_len, tc->ct + tc->ct_len);
             tc->ct_len += tc->tag_len;
         } else if (tc->direction == ACVP_SYM_CIPH_DIR_DECRYPT) {
@@ -658,6 +672,7 @@ int app_aes_handler_aead(ACVP_TEST_CASE *test_case) {
              */
             ret = EVP_Cipher(cipher_ctx, tc->pt, tc->ct, tc->ct_len);
             if (ret < 0) {
+                printf("Error performing decrypt operation CCM\n");
                 rc = 1;
                 goto end;
             }

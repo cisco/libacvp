@@ -132,6 +132,7 @@ am_runtest_OBJECTS = runtest-ut_common.$(OBJEXT) \
 	runtest-test_acvp_ecdsa.$(OBJEXT) \
 	runtest-test_acvp_kas_ecc.$(OBJEXT) \
 	runtest-test_acvp_kas_ffc.$(OBJEXT) \
+        runtest-test_app_aes.$(OBJEXT) \
 	runtest-test_app_cmac.$(OBJEXT) \
 	runtest-test_app_ecdsa.$(OBJEXT) \
 	runtest-test_app_hmac.$(OBJEXT) \
@@ -395,6 +396,7 @@ runtest_SOURCES = ut_common.c \
       test_acvp_ecdsa.c \
       test_acvp_kas_ecc.c \
       test_acvp_kas_ffc.c \
+      test_app_aes.c \
       test_app_cmac.c \
       test_app_ecdsa.c \
       test_app_hmac.c \
@@ -505,6 +507,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtest-test_acvp_rsa_sig.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtest-test_acvp_transport.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtest-test_acvp_utils.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtest-test_app_aes.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtest-test_app_cmac.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtest-test_app_ecdsa.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtest-test_app_hmac.Po@am__quote@
@@ -930,6 +933,20 @@ runtest-test_acvp_kas_ffc.obj: test_acvp_kas_ffc.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_acvp_kas_ffc.c' object='runtest-test_acvp_kas_ffc.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o runtest-test_acvp_kas_ffc.obj `if test -f 'test_acvp_kas_ffc.c'; then $(CYGPATH_W) 'test_acvp_kas_ffc.c'; else $(CYGPATH_W) '$(srcdir)/test_acvp_kas_ffc.c'; fi`
+
+runtest-test_app_aes.o: test_app_aes.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT runtest-test_app_aes.o -MD -MP -MF $(DEPDIR)/runtest-test_app_aes.Tpo -c -o runtest-test_app_aes.o `test -f 'test_app_aes.c' || echo '$(srcdir)/'`test_app_aes.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/runtest-test_app_aes.Tpo $(DEPDIR)/runtest-test_app_aes.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_app_aes.c' object='runtest-test_app_aes.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o runtest-test_app_aes.o `test -f 'test_app_aes.c' || echo '$(srcdir)/'`test_app_aes.c
+
+runtest-test_app_aes.obj: test_app_aes.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT runtest-test_app_aes.obj -MD -MP -MF $(DEPDIR)/runtest-test_app_aes.Tpo -c -o runtest-test_app_aes.obj `if test -f 'test_app_aes.c'; then $(CYGPATH_W) 'test_app_aes.c'; else $(CYGPATH_W) '$(srcdir)/test_app_aes.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/runtest-test_app_aes.Tpo $(DEPDIR)/runtest-test_app_aes.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_app_aes.c' object='runtest-test_app_aes.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o runtest-test_app_aes.obj `if test -f 'test_app_aes.c'; then $(CYGPATH_W) 'test_app_aes.c'; else $(CYGPATH_W) '$(srcdir)/test_app_aes.c'; fi`
 
 runtest-test_app_cmac.o: test_app_cmac.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT runtest-test_app_cmac.o -MD -MP -MF $(DEPDIR)/runtest-test_app_cmac.Tpo -c -o runtest-test_app_cmac.o `test -f 'test_app_cmac.c' || echo '$(srcdir)/'`test_app_cmac.c
