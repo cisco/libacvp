@@ -1,4 +1,6 @@
 The test framework for the C ACVP library leverages Criterion --> https://github.com/Snaipe/Criterion
+NOTE: The test suite does not initialize the crypto library if ACVP is built with a FOM - Any tests that test 
+the return values of crypto library functions when built with a fom will NOT be reliable.
 
 - update the test_env.sh script
 - 'source test_env.sh'
