@@ -85,21 +85,26 @@ including the header files.
 ###### Dealing with system-default dependencies
 This codebase uses features in OpenSSL >= 1.0.2.
 If the system-default install does not meet this requirement,
-you will need to download, compile and install OpenSSL 1.0.2 on your system.
+you will need to download, compile and install at least OpenSSL 1.0.2 on your system.
 The new OpenSSL resources should typically be installed into /usr/local/ssl to avoid
 overwriting the default OpenSSL that comes with your distro.
 
+It is highly recommended to use versions of OpenSSL 1.1.1 or greater when possible, 
+as all previous versions have reached end of life status. 
+
 The next problem is the default libcurl on the Linux distro may be linked against
-the previously mentioned dfault OpenSSL. This could result in linker failures when trying to use
+the previously mentioned default OpenSSL. This could result in linker failures when trying to use
 the system default libcurl with the new OpenSSL install (due to missing symbols).
 Therefore, you SHOULD download the Curl source, compile it against the "new" OpenSSL
-header files, and link libcurl against the "new" OpenSSL. OpenSSL 1.0.2
-is used for AES keywrap support, which isn't available in OpenSSL 1.0.1.
-libacvp can also be used with 1.1.X versions of OpenSSL and uses compile
-time macro logic to address differences in the API.
+header files, and link libcurl against the "new" OpenSSL. 
+libacvp uses compile time macro logic to address differences in the APIs of different OpenSSL
+versions.
 
 
 ## Building
+
+`--prefix<path to install dir>` can be used with any configure options to specify where you would
+like the library and application to install to. 
 
 #### To build for runtime testing
 
@@ -129,27 +134,44 @@ export CROSS_COMPILE=powerpc-buildroot-linux-uclibc
 ```
 
 Example with build and host information:
-`./configure --build=localx86_64-unknown-linux-gnu --host=mips64-octeon-linux-gnu --with-ssl-dir=<path to ssl dir> --with-libcurl-dir=<path to curl dir>`
-
+```
+./configure --build=localx86_64-unknown-linux-gnu --host=mips64-octeon-linux-gnu --with-ssl-dir=<path to ssl dir> --with-libcurl-dir=<path to curl dir>`
+```
 All dependent libraries must have been built with the same cross compile.
+
+## Windows
+1. Modify and run `scripts/gradle_env.bat`
+2. Run `gradle build`
+3. Modify and run `scripts/nist_setup.bat`
+
+After successfully completing, the .dll and .lib library files are loacted in `build/libs/acvp`
+and the example executable is located in `build/exe/`.
+*Note:* Windows executables require that dependent libraries be in very specific locations
+(or in the Windows path). One of these locations is the base directory of the executable.
 
 ## Running
 1. `export LD_LIBRARY_PATH=<path to ssl lib>`
 2. Modify and run `scripts/nist_setup.sh`
 3. `./app/acvp_app --<options>`
 
+Use `./app/acvp_app --help` for more information on available options.
+
 #### How to test offline
 1. Download vectors on network accessible device:
 `./app/acvp_app --<algs of choice or all_algs> --vector_req <filename1>`
+ - where <filename1> is the file you are saving the tests to.
 
 2. Copy vectors and acvp_app to target:
 `./app/acvp_app --all_algs --vector_req <filename1> --vector_rsp <filename2>`
+ - where <filename1> is the file the tests are saved in, and <filename2> is the file
+you want to save your results to.
 
 3. Copy respones(filename2) to network accessible device:
 `./app/acvp_app --all_algs --vector_upload <filename2>`
+ - where <filename2> is the file containing the results of the tests.
 
 *Note:* If the target in Step 2 does not have the standard libraries used by
-libacvp you may ./configure a special app used only for Step 2. This
+libacvp you may configure and build a special app used only for Step 2. This
 can be done by using --enable-offline and --enable-static when running 
 ./configure and do not use --with-libcurl-dir or --with-libmurl-dir which
 will  minimize the library dependencies. Note that openssl with FOM must also
@@ -161,13 +183,6 @@ export FIPSLD_CC=gcc     (or whatever compiler is being used)
 ./configure --with-ssl-dir=<ciscossl install> --with-fom-dir=<fom install> --prefix=<libacvp install> --enable-static --enable-offline
 ```
 
-## Windows
-1. Modify and run `scripts/gradle_env.bat`
-2. Run `gradle build`
-3. Modify and run `scripts/nist_setup.bat`
-
-After successfully completing, the .dll and .lib library files are loacted in `build/libs/acvp`
-and the example executable is located in `build/exe/`.
 
 
 ## Testing

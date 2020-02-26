@@ -24,9 +24,9 @@ void app_aes_cleanup(void) {
 }
 
 int app_aes_handler(ACVP_TEST_CASE *test_case) {
-    ACVP_SYM_CIPHER_TC      *tc;
-    EVP_CIPHER_CTX *cipher_ctx;
-    const EVP_CIPHER        *cipher;
+    ACVP_SYM_CIPHER_TC  *tc = NULL;
+    EVP_CIPHER_CTX *cipher_ctx = NULL;
+    const EVP_CIPHER  *cipher = NULL;
     unsigned char *iv = 0;
     /* assume fail at first */
     int rv = 0;
@@ -66,7 +66,7 @@ int app_aes_handler(ACVP_TEST_CASE *test_case) {
         default:
             printf("Unsupported AES key length\n");
             rv = 1;
-            goto end;
+            goto err;
         }
         break;
     case ACVP_AES_CTR:
@@ -84,7 +84,7 @@ int app_aes_handler(ACVP_TEST_CASE *test_case) {
         default:
             printf("Unsupported AES key length\n");
             rv = 1;
-            goto end;
+            goto err;
         }
         break;
     case ACVP_AES_CFB1:
@@ -102,7 +102,7 @@ int app_aes_handler(ACVP_TEST_CASE *test_case) {
         default:
             printf("Unsupported AES key length\n");
             rv = 1;
-            goto end;
+            goto err;
         }
         break;
     case ACVP_AES_CFB8:
@@ -120,7 +120,7 @@ int app_aes_handler(ACVP_TEST_CASE *test_case) {
         default:
             printf("Unsupported AES key length\n");
             rv = 1;
-            goto end;
+            goto err;
         }
         break;
     case ACVP_AES_CFB128:
@@ -138,7 +138,7 @@ int app_aes_handler(ACVP_TEST_CASE *test_case) {
         default:
             printf("Unsupported AES key length\n");
             rv = 1;
-            goto end;
+            goto err;
         }
         break;
     case ACVP_AES_OFB:
@@ -156,7 +156,7 @@ int app_aes_handler(ACVP_TEST_CASE *test_case) {
         default:
             printf("Unsupported AES key length\n");
             rv = 1;
-            goto end;
+            goto err;
         }
         break;
     case ACVP_AES_CBC:
@@ -174,7 +174,7 @@ int app_aes_handler(ACVP_TEST_CASE *test_case) {
         default:
             printf("Unsupported AES key length\n");
             rv = 1;
-            goto end;
+            goto err;
         }
         break;
     case ACVP_AES_XTS:
@@ -189,7 +189,7 @@ int app_aes_handler(ACVP_TEST_CASE *test_case) {
         default:
             printf("Unsupported AES key length\n");
             rv = 1;
-            goto end;
+            goto err;
         }
         break;
     case ACVP_CIPHER_START:
@@ -270,7 +270,7 @@ int app_aes_handler(ACVP_TEST_CASE *test_case) {
     default:
         printf("Error: Unsupported AES mode requested by ACVP server\n");
         rv = 1;
-        goto end;
+        goto err;
     }
 
     /* If Monte Carlo we need to be able to init and then update
@@ -300,10 +300,11 @@ int app_aes_handler(ACVP_TEST_CASE *test_case) {
         } else {
             printf("Unsupported direction\n");
             rv = 1;
-            goto end;
+            goto err;
         }
         if (tc->mct_index == 999) {
             EVP_CIPHER_CTX_free(cipher_ctx);
+            glb_cipher_ctx = NULL;
         }
     } else {
         if (tc->direction == ACVP_SYM_CIPH_DIR_ENCRYPT) {
@@ -325,12 +326,15 @@ int app_aes_handler(ACVP_TEST_CASE *test_case) {
         } else {
             printf("Unsupported direction\n");
             rv = 1;
-            goto end;
+            goto err;
         }
         EVP_CIPHER_CTX_free(cipher_ctx);
+        glb_cipher_ctx = NULL;
     }
-end:
+    return rv;
+err:
     if (cipher_ctx) EVP_CIPHER_CTX_free(cipher_ctx);
+    glb_cipher_ctx = NULL;
     return rv;
 }
 
@@ -466,7 +470,6 @@ int app_aes_keywrap_handler(ACVP_TEST_CASE *test_case) {
         EVP_CipherInit_ex(cipher_ctx, cipher, NULL, tc->key, NULL, 1);
         c_len = EVP_Cipher(cipher_ctx, tc->ct, tc->pt, tc->pt_len);
         if (c_len <= 0) {
-            printf("Error: key wrap operation failed (%d)\n", c_len);
             goto end;
         } else {
             tc->ct_len = c_len;
@@ -482,7 +485,6 @@ int app_aes_keywrap_handler(ACVP_TEST_CASE *test_case) {
 #endif
         c_len = EVP_Cipher(cipher_ctx, tc->pt, tc->ct, tc->ct_len);
         if (c_len <= 0) {
-            printf("Error: key wrap operation failed (%d)\n", c_len);
             goto end;
         } else {
             tc->pt_len = c_len;
@@ -616,7 +618,6 @@ int app_aes_handler_aead(ACVP_TEST_CASE *test_case) {
              */
             ret = EVP_Cipher(cipher_ctx, NULL, NULL, 0);
             if (ret) {
-                printf("Error performing decrypt operation GCM/GMAC\n");
                 rc = 1;
                 goto end;
             }
