@@ -783,34 +783,34 @@ static long acvp_curl_http_put(ACVP_CTX *ctx, const char *url, const char *data,
      */
     hnd = curl_easy_init();
     if (!hnd) { ACVP_LOG_ERR("Error initializing Curl structure, stopping"); goto end; }
-    curl_easy_setopt(hnd, CURLOPT_URL, url);
+    crv = curl_easy_setopt(hnd, CURLOPT_URL, url);
     if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_URL, stopping"); goto end; }
-    curl_easy_setopt(hnd, CURLOPT_NOPROGRESS, 1L);
+    crv = curl_easy_setopt(hnd, CURLOPT_NOPROGRESS, 1L);
     if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_NOPROGRESS, stopping"); goto end; }
-    curl_easy_setopt(hnd, CURLOPT_USERAGENT, ctx->http_user_agent);
+    crv = curl_easy_setopt(hnd, CURLOPT_USERAGENT, ctx->http_user_agent);
     if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_USERAGENT, stopping"); goto end; }
-    curl_easy_setopt(hnd, CURLOPT_HTTPHEADER, slist);
+    crv = curl_easy_setopt(hnd, CURLOPT_HTTPHEADER, slist);
     if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_HTTPHEADER, stopping"); goto end; }
-    curl_easy_setopt(hnd, CURLOPT_CUSTOMREQUEST, "PUT");
+    crv = curl_easy_setopt(hnd, CURLOPT_CUSTOMREQUEST, "PUT");
     if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_CUSTOMREQUEST, stopping"); goto end; }
-    curl_easy_setopt(hnd, CURLOPT_POSTFIELDS, data);
+    crv = curl_easy_setopt(hnd, CURLOPT_POSTFIELDS, data);
     if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_POSTFIELDS, stopping"); goto end; }
-    curl_easy_setopt(hnd, CURLOPT_POSTFIELDSIZE_LARGE, (curl_off_t)data_len);
+    crv = curl_easy_setopt(hnd, CURLOPT_POSTFIELDSIZE_LARGE, (curl_off_t)data_len);
     if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_POSTFIELDSIZE_LARGE, stopping"); goto end; }
-    curl_easy_setopt(hnd, CURLOPT_TCP_KEEPALIVE, 1L);
+    crv = curl_easy_setopt(hnd, CURLOPT_TCP_KEEPALIVE, 1L);
     if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_TCP_KEEPALIVE, stopping"); goto end; }
-    curl_easy_setopt(hnd, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_2);
+    crv = curl_easy_setopt(hnd, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_2);
     if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_SSLVERSION, stopping"); goto end; }
     
     /*
      * Always verify the server
      */
-    curl_easy_setopt(hnd, CURLOPT_SSL_VERIFYPEER, 1L);
+    crv = curl_easy_setopt(hnd, CURLOPT_SSL_VERIFYPEER, 1L);
     if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_SSL_VERIFYPEER, stopping"); goto end; }
     if (ctx->cacerts_file) {
-        curl_easy_setopt(hnd, CURLOPT_CAINFO, ctx->cacerts_file);
+        crv = curl_easy_setopt(hnd, CURLOPT_CAINFO, ctx->cacerts_file);
         if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_CAINFO, stopping"); goto end; }
-        curl_easy_setopt(hnd, CURLOPT_CERTINFO, 1L);
+        crv = curl_easy_setopt(hnd, CURLOPT_CERTINFO, 1L);
         if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_CERTINFO, stopping"); goto end; }
     }
 
@@ -818,13 +818,13 @@ static long acvp_curl_http_put(ACVP_CTX *ctx, const char *url, const char *data,
      * Mutual-auth
      */
     if (ctx->tls_cert && ctx->tls_key) {
-        curl_easy_setopt(hnd, CURLOPT_SSLCERTTYPE, "PEM");
+        crv = curl_easy_setopt(hnd, CURLOPT_SSLCERTTYPE, "PEM");
         if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_SSLCERTTYPE, stopping"); goto end; }
-        curl_easy_setopt(hnd, CURLOPT_SSLCERT, ctx->tls_cert);
+        crv = curl_easy_setopt(hnd, CURLOPT_SSLCERT, ctx->tls_cert);
         if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_SSLCERT, stopping"); goto end; }
-        curl_easy_setopt(hnd, CURLOPT_SSLKEYTYPE, "PEM");
+        crv = curl_easy_setopt(hnd, CURLOPT_SSLKEYTYPE, "PEM");
         if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_SSLKEYTYPE, stopping"); goto end; }
-        curl_easy_setopt(hnd, CURLOPT_SSLKEY, ctx->tls_key);
+        crv = curl_easy_setopt(hnd, CURLOPT_SSLKEY, ctx->tls_key);
         if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_SSLKEY, stopping"); goto end; }
     }
 
@@ -832,9 +832,9 @@ static long acvp_curl_http_put(ACVP_CTX *ctx, const char *url, const char *data,
      * To record the HTTP data recieved from the server,
      * set the callback function.
      */
-    curl_easy_setopt(hnd, CURLOPT_WRITEDATA, ctx);
+    crv = curl_easy_setopt(hnd, CURLOPT_WRITEDATA, ctx);
     if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_WRITEDATA, stopping"); goto end; }
-    curl_easy_setopt(hnd, CURLOPT_WRITEFUNCTION, acvp_curl_write_callback);
+    crv = curl_easy_setopt(hnd, CURLOPT_WRITEFUNCTION, acvp_curl_write_callback);
     if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_WRITEFUNCTION, stopping"); goto end; }
 
     if (ctx->curl_buf) {
