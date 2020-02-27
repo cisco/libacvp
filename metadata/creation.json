@@ -3,7 +3,7 @@
     {
       "id": 1,
       "name": "Acme Fictional",
-      "website": "http:fictional-acme.com",
+      "website": "fictional-acme.com",
       "emails" : [ "acme@acme.com" ],
       "phoneNumbers": [
         { "number": "1-800-000-0000", "type": "voice" }
