@@ -306,15 +306,15 @@ ACVP_RESULT acvp_kdf135_srtp_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             goto err;
         }
 
-        ACVP_LOG_INFO("\n    Test group: %d", i);
-        ACVP_LOG_INFO("           kdr: %s", kdr);
-        ACVP_LOG_INFO("    key length: %d", aes_key_length);
+        ACVP_LOG_VERBOSE("\n    Test group: %d", i);
+        ACVP_LOG_VERBOSE("           kdr: %s", kdr);
+        ACVP_LOG_VERBOSE("    key length: %d", aes_key_length);
 
         tests = json_object_get_array(groupobj, "tests");
         t_cnt = json_array_get_count(tests);
 
         for (j = 0; j < t_cnt; j++) {
-            ACVP_LOG_INFO("Found new KDF SRTP test vector...");
+            ACVP_LOG_VERBOSE("Found new KDF SRTP test vector...");
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
 
@@ -348,12 +348,12 @@ ACVP_RESULT acvp_kdf135_srtp_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            ACVP_LOG_INFO("        Test case: %d", j);
-            ACVP_LOG_INFO("             tcId: %d", tc_id);
-            ACVP_LOG_INFO("        masterKey: %s", master_key);
-            ACVP_LOG_INFO("       masterSalt: %s", master_salt);
-            ACVP_LOG_INFO("            idx: %s", idx);
-            ACVP_LOG_INFO("       srtcpIndex: %s", srtcp_idx);
+            ACVP_LOG_VERBOSE("        Test case: %d", j);
+            ACVP_LOG_VERBOSE("             tcId: %d", tc_id);
+            ACVP_LOG_VERBOSE("        masterKey: %s", master_key);
+            ACVP_LOG_VERBOSE("       masterSalt: %s", master_salt);
+            ACVP_LOG_VERBOSE("            idx: %s", idx);
+            ACVP_LOG_VERBOSE("       srtcpIndex: %s", srtcp_idx);
 
             /*
              * Create a new test case in the response
@@ -407,11 +407,7 @@ ACVP_RESULT acvp_kdf135_srtp_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     json_array_append_value(reg_arry, r_vs_val);
 
     json_result = json_serialize_to_string_pretty(ctx->kat_resp, NULL);
-    if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
-        printf("\n\n%s\n\n", json_result);
-    } else {
-        ACVP_LOG_INFO("\n\n%s\n\n", json_result);
-    }
+    ACVP_LOG_VERBOSE("\n\n%s\n\n", json_result);
     json_free_serialized_string(json_result);
     rv = ACVP_SUCCESS;
 

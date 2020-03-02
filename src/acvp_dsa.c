@@ -497,8 +497,8 @@ ACVP_RESULT acvp_dsa_keygen_handler(ACVP_CTX *ctx,
         return ACVP_MISSING_ARG;
     }
 
-    ACVP_LOG_INFO("             l: %d", l);
-    ACVP_LOG_INFO("             n: %d", n);
+    ACVP_LOG_VERBOSE("             l: %d", l);
+    ACVP_LOG_VERBOSE("             n: %d", n);
 
     tests = json_object_get_array(groupobj, "tests");
     if (!tests) {
@@ -515,7 +515,7 @@ ACVP_RESULT acvp_dsa_keygen_handler(ACVP_CTX *ctx,
     stc = tc.tc.dsa;
 
     for (j = 0; j < t_cnt; j++) {
-        ACVP_LOG_INFO("Found new DSA KeyGen test vector...");
+        ACVP_LOG_VERBOSE("Found new DSA KeyGen test vector...");
         stc->mode = ACVP_DSA_MODE_KEYGEN;
 
         testval = json_array_get_value(tests, j);
@@ -527,8 +527,8 @@ ACVP_RESULT acvp_dsa_keygen_handler(ACVP_CTX *ctx,
             return ACVP_MISSING_ARG;
         }
 
-        ACVP_LOG_INFO("       Test case: %d", j);
-        ACVP_LOG_INFO("            tcId: %d", tc_id);
+        ACVP_LOG_VERBOSE("       Test case: %d", j);
+        ACVP_LOG_VERBOSE("            tcId: %d", tc_id);
 
         /*
          * Setup the test case data that will be passed down to
@@ -690,14 +690,14 @@ ACVP_RESULT acvp_dsa_pqggen_handler(ACVP_CTX *ctx,
     }
 
     if (gen_pq) {
-        ACVP_LOG_INFO("         genPQ: %s", gen_pq);
+        ACVP_LOG_VERBOSE("         genPQ: %s", gen_pq);
     }
     if (gen_g) {
-        ACVP_LOG_INFO("          genG: %s", gen_g);
+        ACVP_LOG_VERBOSE("          genG: %s", gen_g);
     }
-    ACVP_LOG_INFO("             l: %d", l);
-    ACVP_LOG_INFO("             n: %d", n);
-    ACVP_LOG_INFO("           sha: %s", sha_str);
+    ACVP_LOG_VERBOSE("             l: %d", l);
+    ACVP_LOG_VERBOSE("             n: %d", n);
+    ACVP_LOG_VERBOSE("           sha: %s", sha_str);
 
     tests = json_object_get_array(groupobj, "tests");
     if (!tests) {
@@ -714,7 +714,7 @@ ACVP_RESULT acvp_dsa_pqggen_handler(ACVP_CTX *ctx,
     stc = tc.tc.dsa;
 
     for (j = 0; j < t_cnt; j++) {
-        ACVP_LOG_INFO("Found new DSA PQGGen test vector...");
+        ACVP_LOG_VERBOSE("Found new DSA PQGGen test vector...");
         stc->mode = ACVP_DSA_MODE_PQGGEN;
 
         testval = json_array_get_value(tests, j);
@@ -726,8 +726,8 @@ ACVP_RESULT acvp_dsa_pqggen_handler(ACVP_CTX *ctx,
             return ACVP_MISSING_ARG;
         }
 
-        ACVP_LOG_INFO("       Test case: %d", j);
-        ACVP_LOG_INFO("            tcId: %d", tc_id);
+        ACVP_LOG_VERBOSE("       Test case: %d", j);
+        ACVP_LOG_VERBOSE("            tcId: %d", tc_id);
         if (gen_g) {
             gpq = read_gen_g(gen_g);
 
@@ -751,8 +751,8 @@ ACVP_RESULT acvp_dsa_pqggen_handler(ACVP_CTX *ctx,
 
                 gpq = ACVP_DSA_CANONICAL;
 
-                ACVP_LOG_INFO("            seed: %s", seed);
-                ACVP_LOG_INFO("           idx: %s", idx);
+                ACVP_LOG_VERBOSE("            seed: %s", seed);
+                ACVP_LOG_VERBOSE("           idx: %s", idx);
             }
 
             p = json_object_get_string(testobj, "p");
@@ -767,8 +767,8 @@ ACVP_RESULT acvp_dsa_pqggen_handler(ACVP_CTX *ctx,
                 return ACVP_MISSING_ARG;
             }
 
-            ACVP_LOG_INFO("               p: %s", p);
-            ACVP_LOG_INFO("               q: %s", q);
+            ACVP_LOG_VERBOSE("               p: %s", p);
+            ACVP_LOG_VERBOSE("               q: %s", q);
         }
 
         if (gen_pq) {
@@ -917,9 +917,9 @@ ACVP_RESULT acvp_dsa_siggen_handler(ACVP_CTX *ctx,
         return ACVP_INVALID_ARG;
     }
 
-    ACVP_LOG_INFO("             l: %d", l);
-    ACVP_LOG_INFO("             n: %d", n);
-    ACVP_LOG_INFO("           sha: %s", sha_str);
+    ACVP_LOG_VERBOSE("             l: %d", l);
+    ACVP_LOG_VERBOSE("             n: %d", n);
+    ACVP_LOG_VERBOSE("           sha: %s", sha_str);
 
     tests = json_object_get_array(groupobj, "tests");
     if (!tests) {
@@ -936,7 +936,7 @@ ACVP_RESULT acvp_dsa_siggen_handler(ACVP_CTX *ctx,
     stc = tc.tc.dsa;
 
     for (j = 0; j < t_cnt; j++) {
-        ACVP_LOG_INFO("Found new DSA SigGen test vector...");
+        ACVP_LOG_VERBOSE("Found new DSA SigGen test vector...");
         stc->mode = ACVP_DSA_MODE_SIGGEN;
 
         testval = json_array_get_value(tests, j);
@@ -954,9 +954,9 @@ ACVP_RESULT acvp_dsa_siggen_handler(ACVP_CTX *ctx,
             return ACVP_MISSING_ARG;
         }
 
-        ACVP_LOG_INFO("       Test case: %d", j);
-        ACVP_LOG_INFO("            tcId: %d", tc_id);
-        ACVP_LOG_INFO("             msg: %s", msg);
+        ACVP_LOG_VERBOSE("       Test case: %d", j);
+        ACVP_LOG_VERBOSE("            tcId: %d", tc_id);
+        ACVP_LOG_VERBOSE("             msg: %s", msg);
 
         /*
          * Setup the test case data that will be passed down to
@@ -1096,11 +1096,11 @@ ACVP_RESULT acvp_dsa_pqgver_handler(ACVP_CTX *ctx,
         return ACVP_MISSING_ARG;
     }
 
-    ACVP_LOG_INFO("             l: %d", l);
-    ACVP_LOG_INFO("             n: %d", n);
-    ACVP_LOG_INFO("           sha: %s", sha_str);
-    ACVP_LOG_INFO("         gmode: %s", gmode);
-    ACVP_LOG_INFO("        pqmode: %s", pqmode);
+    ACVP_LOG_VERBOSE("             l: %d", l);
+    ACVP_LOG_VERBOSE("             n: %d", n);
+    ACVP_LOG_VERBOSE("           sha: %s", sha_str);
+    ACVP_LOG_VERBOSE("         gmode: %s", gmode);
+    ACVP_LOG_VERBOSE("        pqmode: %s", pqmode);
 
     tests = json_object_get_array(groupobj, "tests");
     if (!tests) {
@@ -1117,7 +1117,7 @@ ACVP_RESULT acvp_dsa_pqgver_handler(ACVP_CTX *ctx,
     stc = tc.tc.dsa;
 
     for (j = 0; j < t_cnt; j++) {
-        ACVP_LOG_INFO("Found new DSA PQGVer test vector...");
+        ACVP_LOG_VERBOSE("Found new DSA PQGVer test vector...");
         stc->mode = ACVP_DSA_MODE_PQGVER;
 
         testval = json_array_get_value(tests, j);
@@ -1147,16 +1147,16 @@ ACVP_RESULT acvp_dsa_pqgver_handler(ACVP_CTX *ctx,
 
         g = json_object_get_string(testobj, "g");
 
-        ACVP_LOG_INFO("       Test case: %d", j);
-        ACVP_LOG_INFO("            tcId: %d", tc_id);
-        ACVP_LOG_INFO("            seed: %s", seed);
-        ACVP_LOG_INFO("               p: %s", p);
-        ACVP_LOG_INFO("               q: %s", q);
-        ACVP_LOG_INFO("               g: %s", g);
-        ACVP_LOG_INFO("          pqMode: %s", pqmode);
-        ACVP_LOG_INFO("           gMode: %s", gmode);
-        ACVP_LOG_INFO("               c: %d", c);
-        ACVP_LOG_INFO("           idx: %s", idx);
+        ACVP_LOG_VERBOSE("       Test case: %d", j);
+        ACVP_LOG_VERBOSE("            tcId: %d", tc_id);
+        ACVP_LOG_VERBOSE("            seed: %s", seed);
+        ACVP_LOG_VERBOSE("               p: %s", p);
+        ACVP_LOG_VERBOSE("               q: %s", q);
+        ACVP_LOG_VERBOSE("               g: %s", g);
+        ACVP_LOG_VERBOSE("          pqMode: %s", pqmode);
+        ACVP_LOG_VERBOSE("           gMode: %s", gmode);
+        ACVP_LOG_VERBOSE("               c: %d", c);
+        ACVP_LOG_VERBOSE("           idx: %s", idx);
 
         /* find the mode */
         if (gmode) {
@@ -1274,9 +1274,9 @@ ACVP_RESULT acvp_dsa_sigver_handler(ACVP_CTX *ctx,
         return ACVP_INVALID_ARG;
     }
 
-    ACVP_LOG_INFO("             l: %d", l);
-    ACVP_LOG_INFO("             n: %d", n);
-    ACVP_LOG_INFO("           sha: %s", sha_str);
+    ACVP_LOG_VERBOSE("             l: %d", l);
+    ACVP_LOG_VERBOSE("             n: %d", n);
+    ACVP_LOG_VERBOSE("           sha: %s", sha_str);
 
     tests = json_object_get_array(groupobj, "tests");
     if (!tests) {
@@ -1311,7 +1311,7 @@ ACVP_RESULT acvp_dsa_sigver_handler(ACVP_CTX *ctx,
     }
 
     for (j = 0; j < t_cnt; j++) {
-        ACVP_LOG_INFO("Found new DSA SigVer test vector...");
+        ACVP_LOG_VERBOSE("Found new DSA SigVer test vector...");
         stc->mode = ACVP_DSA_MODE_SIGVER;
 
         testval = json_array_get_value(tests, j);
@@ -1344,15 +1344,15 @@ ACVP_RESULT acvp_dsa_sigver_handler(ACVP_CTX *ctx,
             return ACVP_MISSING_ARG;
         }
 
-        ACVP_LOG_INFO("       Test case: %d", j);
-        ACVP_LOG_INFO("            tcId: %d", tc_id);
-        ACVP_LOG_INFO("             msg: %s", msg);
-        ACVP_LOG_INFO("               p: %s", p);
-        ACVP_LOG_INFO("               q: %s", q);
-        ACVP_LOG_INFO("               g: %s", g);
-        ACVP_LOG_INFO("               r: %s", r);
-        ACVP_LOG_INFO("               s: %s", s);
-        ACVP_LOG_INFO("               y: %s", y);
+        ACVP_LOG_VERBOSE("       Test case: %d", j);
+        ACVP_LOG_VERBOSE("            tcId: %d", tc_id);
+        ACVP_LOG_VERBOSE("             msg: %s", msg);
+        ACVP_LOG_VERBOSE("               p: %s", p);
+        ACVP_LOG_VERBOSE("               q: %s", q);
+        ACVP_LOG_VERBOSE("               g: %s", g);
+        ACVP_LOG_VERBOSE("               r: %s", r);
+        ACVP_LOG_VERBOSE("               s: %s", s);
+        ACVP_LOG_VERBOSE("               y: %s", y);
 
         /*
          * Setup the test case data that will be passed down to
@@ -1485,7 +1485,7 @@ ACVP_RESULT acvp_dsa_pqgver_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
         stc.mode = ACVP_DSA_MODE_PQGVER;
 
-        ACVP_LOG_INFO("    Test group: %d", i);
+        ACVP_LOG_VERBOSE("    Test group: %d", i);
 
         rv = acvp_dsa_pqgver_handler(ctx, tc, cap, r_tarr, groupobj);
         if (rv != ACVP_SUCCESS) {
@@ -1503,11 +1503,8 @@ ACVP_RESULT acvp_dsa_pqgver_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         goto err;
     }
 
-    if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
-        printf("\n\n%s\n\n", json_result);
-    } else {
-        ACVP_LOG_INFO("\n\n%s\n\n", json_result);
-    }
+    ACVP_LOG_VERBOSE("\n\n%s\n\n", json_result);
+
     json_free_serialized_string(json_result);
     rv = ACVP_SUCCESS;
 
@@ -1610,7 +1607,7 @@ ACVP_RESULT acvp_dsa_pqggen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
         stc.mode = ACVP_DSA_MODE_PQGGEN;
 
-        ACVP_LOG_INFO("    Test group: %d", i);
+        ACVP_LOG_VERBOSE("    Test group: %d", i);
 
         rv = acvp_dsa_pqggen_handler(ctx, tc, cap, r_tarr, groupobj);
         if (rv != ACVP_SUCCESS) {
@@ -1623,11 +1620,7 @@ ACVP_RESULT acvp_dsa_pqggen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     memzero_s(&stc, sizeof(ACVP_DSA_TC));
     json_array_append_value(reg_arry, r_vs_val);
     json_result = json_serialize_to_string_pretty(ctx->kat_resp, NULL);
-    if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
-        printf("\n\n%s\n\n", json_result);
-    } else {
-        ACVP_LOG_INFO("\n\n%s\n\n", json_result);
-    }
+    ACVP_LOG_VERBOSE("\n\n%s\n\n", json_result);
     json_free_serialized_string(json_result);
     rv = ACVP_SUCCESS;
 
@@ -1730,7 +1723,7 @@ ACVP_RESULT acvp_dsa_siggen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
         stc.mode = ACVP_DSA_MODE_SIGGEN;
 
-        ACVP_LOG_INFO("    Test group: %d", i);
+        ACVP_LOG_VERBOSE("    Test group: %d", i);
 
         rv = acvp_dsa_siggen_handler(ctx, tc, cap, r_tarr, groupobj, tgId, r_gobj);
         if (rv != ACVP_SUCCESS) {
@@ -1745,11 +1738,7 @@ ACVP_RESULT acvp_dsa_siggen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     json_array_append_value(reg_arry, r_vs_val);
     json_result = json_serialize_to_string_pretty(ctx->kat_resp, NULL);
 
-    if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
-        printf("\n\n%s\n\n", json_result);
-    } else {
-        ACVP_LOG_INFO("\n\n%s\n\n", json_result);
-    }
+    ACVP_LOG_VERBOSE("\n\n%s\n\n", json_result);
     json_free_serialized_string(json_result);
     rv = ACVP_SUCCESS;
 
@@ -1852,7 +1841,7 @@ ACVP_RESULT acvp_dsa_keygen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
         stc.mode = ACVP_DSA_MODE_KEYGEN;
 
-        ACVP_LOG_INFO("    Test group: %d", i);
+        ACVP_LOG_VERBOSE("    Test group: %d", i);
 
         rv = acvp_dsa_keygen_handler(ctx, tc, cap, r_tarr, groupobj, tgId, r_gobj);
         if (rv != ACVP_SUCCESS) {
@@ -1866,11 +1855,7 @@ ACVP_RESULT acvp_dsa_keygen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     json_array_append_value(reg_arry, r_vs_val);
     json_result = json_serialize_to_string_pretty(ctx->kat_resp, NULL);
 
-    if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
-        printf("\n\n%s\n\n", json_result);
-    } else {
-        ACVP_LOG_INFO("\n\n%s\n\n", json_result);
-    }
+    ACVP_LOG_VERBOSE("\n\n%s\n\n", json_result);
     json_free_serialized_string(json_result);
     rv = ACVP_SUCCESS;
 
@@ -1973,7 +1958,7 @@ ACVP_RESULT acvp_dsa_sigver_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
         stc.mode = ACVP_DSA_MODE_SIGVER;
 
-        ACVP_LOG_INFO("    Test group: %d", i);
+        ACVP_LOG_VERBOSE("    Test group: %d", i);
 
         rv = acvp_dsa_sigver_handler(ctx, tc, cap, r_tarr, groupobj);
         if (rv != ACVP_SUCCESS) {
@@ -1992,11 +1977,7 @@ ACVP_RESULT acvp_dsa_sigver_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         goto err;
     }
 
-    if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
-        printf("\n\n%s\n\n", json_result);
-    } else {
-        ACVP_LOG_INFO("\n\n%s\n\n", json_result);
-    }
+    ACVP_LOG_VERBOSE("\n\n%s\n\n", json_result);
     json_free_serialized_string(json_result);
     rv = ACVP_SUCCESS;
 

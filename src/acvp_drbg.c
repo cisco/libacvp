@@ -84,7 +84,7 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         return ACVP_MALFORMED_JSON;
     }
 
-    ACVP_LOG_INFO("    DRBG alg: %s", alg_str);
+    ACVP_LOG_VERBOSE("    DRBG alg: %s", alg_str);
 
     /*
      * Get a reference to the abstracted test case
@@ -126,7 +126,7 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
     groups = json_object_get_array(obj, "testGroups");
     g_cnt = json_array_get_count(groups);
-    ACVP_LOG_INFO("Number of TestGroups: %d", g_cnt);
+    ACVP_LOG_VERBOSE("Number of TestGroups: %d", g_cnt);
     for (i = 0; i < g_cnt; i++) {
         int tgId = 0;
         const char *mode_str = NULL;
@@ -234,24 +234,24 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             }
         }
 
-        ACVP_LOG_INFO("    Test group:");
-        ACVP_LOG_INFO("    DRBG mode: %s", mode_str);
-        ACVP_LOG_INFO("    derFunc: %s", der_func_enabled ? "true" : "false");
-        ACVP_LOG_INFO("    predResistance: %s", pred_resist_enabled ? "true" : "false");
-        ACVP_LOG_INFO("    entropyInputLen: %d", entropy_len);
+        ACVP_LOG_VERBOSE("    Test group:");
+        ACVP_LOG_VERBOSE("    DRBG mode: %s", mode_str);
+        ACVP_LOG_VERBOSE("    derFunc: %s", der_func_enabled ? "true" : "false");
+        ACVP_LOG_VERBOSE("    predResistance: %s", pred_resist_enabled ? "true" : "false");
+        ACVP_LOG_VERBOSE("    entropyInputLen: %d", entropy_len);
         if (pred_resist_enabled) {
-            ACVP_LOG_INFO("    additionalInputLen: %d", additional_input_len);
+            ACVP_LOG_VERBOSE("    additionalInputLen: %d", additional_input_len);
         }
-        ACVP_LOG_INFO("    persoStringLen: %d", perso_string_len);
-        ACVP_LOG_INFO("    nonceLen: %d", nonce_len);
-        ACVP_LOG_INFO("    returnedBitsLen: %d", drb_len);
+        ACVP_LOG_VERBOSE("    persoStringLen: %d", perso_string_len);
+        ACVP_LOG_VERBOSE("    nonceLen: %d", nonce_len);
+        ACVP_LOG_VERBOSE("    returnedBitsLen: %d", drb_len);
 
         /*
          * Handle test array
          */
         tests = json_object_get_array(groupobj, "tests");
         t_cnt = json_array_get_count(tests);
-        ACVP_LOG_INFO("Number of Tests: %d", t_cnt);
+        ACVP_LOG_VERBOSE("Number of Tests: %d", t_cnt);
         for (j = 0; j < t_cnt; j++) {
             JSON_Value *pr_input_val = NULL;
             JSON_Object *pr_input_obj = NULL;
@@ -260,12 +260,12 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                        *additional_input_1 = NULL, *entropy_input_pr_1 = NULL,
                        *perso_string = NULL, *entropy = NULL, *nonce = NULL;
 
-            ACVP_LOG_INFO("Found new DRBG test vector...");
+            ACVP_LOG_VERBOSE("Found new DRBG test vector...");
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
 
             json_result = json_serialize_to_string_pretty(testval, NULL);
-            ACVP_LOG_INFO("json testval count: %d\n %s\n", i, json_result);
+            ACVP_LOG_VERBOSE("json testval count: %d\n %s\n", i, json_result);
             json_free_serialized_string(json_result);
 
             tc_id = json_object_get_number(testobj, "tcId");
@@ -312,11 +312,11 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            ACVP_LOG_INFO("        Test case: %d", j);
-            ACVP_LOG_INFO("             tcId: %d", tc_id);
-            ACVP_LOG_INFO("             entropyInput: %s", entropy);
-            ACVP_LOG_INFO("             perso_string: %s", perso_string);
-            ACVP_LOG_INFO("             nonce: %s", nonce);
+            ACVP_LOG_VERBOSE("        Test case: %d", j);
+            ACVP_LOG_VERBOSE("             tcId: %d", tc_id);
+            ACVP_LOG_VERBOSE("             entropyInput: %s", entropy);
+            ACVP_LOG_VERBOSE("             perso_string: %s", perso_string);
+            ACVP_LOG_VERBOSE("             nonce: %s", nonce);
 
             /*
              * Handle pred_resist_input array. Has at most 2 elements
@@ -335,7 +335,7 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            ACVP_LOG_INFO("Found new DRBG Prediction Input...");
+            ACVP_LOG_VERBOSE("Found new DRBG Prediction Input...");
 
             /* Get 1st element from the array */
             pr_input_val = json_array_get_value(pred_resist_input, 0);
@@ -465,11 +465,7 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     json_array_append_value(reg_arry, r_vs_val);
 
     json_result = json_serialize_to_string_pretty(ctx->kat_resp, NULL);
-    if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
-        printf("\n\n%s\n\n", json_result);
-    } else {
-        ACVP_LOG_INFO("\n\n%s\n\n", json_result);
-    }
+    ACVP_LOG_VERBOSE("\n\n%s\n\n", json_result);
     json_free_serialized_string(json_result);
 
     rv = ACVP_SUCCESS;

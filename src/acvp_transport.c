@@ -1413,60 +1413,51 @@ static void log_network_status(ACVP_CTX *ctx,
                                ACVP_NET_ACTION action,
                                int curl_code,
                                const char *url) {
+                                   
+    if (curl_code < 200 || curl_code >= 300) {
+        ACVP_LOG_ERR("%d error recieved from server. Message:", curl_code);
+        ACVP_LOG_ERR("%s", ctx->curl_buf);
+    }
+    
     switch(action) {
     case ACVP_NET_GET:
-        ACVP_LOG_STATUS("GET...\n\tStatus: %d\n\tUrl: %s\n\tResp:\n%s\n",
-                        curl_code, url, ctx->curl_buf);
+        ACVP_LOG_INFO("GET...\n\tStatus: %d\n\tUrl: %s\n\tResp:\n%s\n",
+                      curl_code, url, ctx->curl_buf);
         break;
     case ACVP_NET_GET_VS:
-        if (ctx->debug >= ACVP_LOG_LVL_INFO) {
-            ACVP_LOG_STATUS("GET Vector Set...\n\tStatus: %d\n\tUrl: %s\n\tResp:\n%s\n",
-                            curl_code, url, ctx->curl_buf);
-        } else {
-            ACVP_LOG_STATUS("GET Vector Set...\n\tStatus: %d\n\tUrl: %s\n",
-                            curl_code, url);
-        }
+        ACVP_LOG_INFO("GET Vector Set...\n\tStatus: %d\n\tUrl: %s\n\tResp:\n%s\n",
+                         curl_code, url, ctx->curl_buf);
         break;
     case ACVP_NET_GET_VS_RESULT:
-        ACVP_LOG_STATUS("GET Vector Set Result...\n\tStatus: %d\n\tUrl: %s\n\tResp:\n%s\n",
+        ACVP_LOG_INFO("GET Vector Set Result...\n\tStatus: %d\n\tUrl: %s\n\tResp:\n%s\n",
                         curl_code, url, ctx->curl_buf);
         break;
     case ACVP_NET_GET_VS_SAMPLE:
-        ACVP_LOG_STATUS("GET Vector Set Sample...\n\tStatus: %d\n\tUrl: %s\n\tResp:\n%s\n",
+        ACVP_LOG_INFO("GET Vector Set Sample...\n\tStatus: %d\n\tUrl: %s\n\tResp:\n%s\n",
                         curl_code, url, ctx->curl_buf);
         break;
     case ACVP_NET_POST:
-        ACVP_LOG_STATUS("POST...\n\tStatus: %d\n\tUrl: %s\n\tResp: %s\n",
+        ACVP_LOG_INFO("POST...\n\tStatus: %d\n\tUrl: %s\n\tResp: %s\n",
                         curl_code, url, ctx->curl_buf);
         break;
     case ACVP_NET_POST_LOGIN:
-        if (ctx->debug >= ACVP_LOG_LVL_INFO) {
-            ACVP_LOG_STATUS("POST Login...\n\tStatus: %d\n\tUrl: %s\n\tResp:\n%s\n",
-                        curl_code, url, ctx->curl_buf);
-        } else {
-            ACVP_LOG_STATUS("POST Login...\n\tStatus: %d\n\tUrl: %s\n",
-                        curl_code, url);
-        }
+        ACVP_LOG_INFO("POST Login...\n\tStatus: %d\n\tUrl: %s\n\tResp: Recieved\n",
+                      curl_code, url);
         break;
     case ACVP_NET_POST_REG:
-        ACVP_LOG_STATUS("POST Registration...\n\tStatus: %d\n\tUrl: %s\n\tResp:\n%s\n",
+        ACVP_LOG_INFO("POST Registration...\n\tStatus: %d\n\tUrl: %s\n\tResp: Recieved\n",
                         curl_code, url, ctx->curl_buf);
         break;
     case ACVP_NET_POST_VS_RESP:
-        if (ctx->debug >= ACVP_LOG_LVL_INFO) {
-            ACVP_LOG_STATUS("POST Response Submission...\n\tStatus: %d\n\tUrl: %s\n\tResp:\n%s\n",
-                             curl_code, url, ctx->curl_buf);
-        } else {
-            ACVP_LOG_STATUS("POST Response Submission...\n\tStatus: %d\n\tUrl: %s\n",
-                             curl_code, url);
-        }
+        ACVP_LOG_INFO("POST Response Submission...\n\tStatus: %d\n\tUrl: %s\n\tResp:\n%s\n",
+                      curl_code, url, ctx->curl_buf);
         break;
     case ACVP_NET_PUT:
-        ACVP_LOG_STATUS("PUT...\n\tStatus: %d\n\tUrl: %s\n\tResp: %s\n",
+        ACVP_LOG_INFO("PUT...\n\tStatus: %d\n\tUrl: %s\n\tResp: %s\n",
                         curl_code, url, ctx->curl_buf);
         break;
     case ACVP_NET_PUT_VALIDATION:
-        ACVP_LOG_STATUS("PUT testSession Validation...\n\tStatus: %d\n\tUrl: %s\n\tResp: %s\n",
+        ACVP_LOG_INFO("PUT testSession Validation...\n\tStatus: %d\n\tUrl: %s\n\tResp: %s\n",
                         curl_code, url, ctx->curl_buf);
         break;
     default:

@@ -493,22 +493,22 @@ ACVP_RESULT acvp_rsa_keygen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             }
         }
 
-        ACVP_LOG_INFO("    Test group: %d", i);
-        ACVP_LOG_INFO("  infoGenByServer: %s", info_gen_by_server ? "true" : "false");
-        ACVP_LOG_INFO("       pubExpMode: %s", pub_exp_mode_str);
-        ACVP_LOG_INFO("        keyFormat: %s", key_format_str);
+        ACVP_LOG_VERBOSE("    Test group: %d", i);
+        ACVP_LOG_VERBOSE("  infoGenByServer: %s", info_gen_by_server ? "true" : "false");
+        ACVP_LOG_VERBOSE("       pubExpMode: %s", pub_exp_mode_str);
+        ACVP_LOG_VERBOSE("        keyFormat: %s", key_format_str);
 
         tests = json_object_get_array(groupobj, "tests");
         t_cnt = json_array_get_count(tests);
 
         for (j = 0; j < t_cnt; j++) {
-            ACVP_LOG_INFO("Found new RSA test vector...");
+            ACVP_LOG_VERBOSE("Found new RSA test vector...");
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
             tc_id = json_object_get_number(testobj, "tcId");
 
-            ACVP_LOG_INFO("        Test case: %d", j);
-            ACVP_LOG_INFO("             tcId: %d", tc_id);
+            ACVP_LOG_VERBOSE("        Test case: %d", j);
+            ACVP_LOG_VERBOSE("             tcId: %d", tc_id);
 
             /*
              * Create a new test case in the response
@@ -612,11 +612,7 @@ ACVP_RESULT acvp_rsa_keygen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     json_array_append_value(reg_arry, r_vs_val);
 
     json_result = json_serialize_to_string_pretty(ctx->kat_resp, NULL);
-    if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
-        printf("\n\n%s\n\n", json_result);
-    } else {
-        ACVP_LOG_INFO("\n\n%s\n\n", json_result);
-    }
+    ACVP_LOG_VERBOSE("\n\n%s\n\n", json_result);
     json_free_serialized_string(json_result);
     rv = ACVP_SUCCESS;
 

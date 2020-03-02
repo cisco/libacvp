@@ -72,6 +72,20 @@
 #endif
 #endif
 
+#ifndef ACVP_LOG_VERBOSE
+#ifdef WIN32
+#define ACVP_LOG_VERBOSE(format, ...) do { \
+        acvp_log_msg(ctx, ACVP_LOG_LVL_VERBOSE, "***ACVP [INFO][%s:%d]--> " format "\n", \
+                     __func__, __LINE__, __VA_ARGS__); \
+} while (0)
+#else
+#define ACVP_LOG_VERBOSE(format, args ...) do { \
+        acvp_log_msg(ctx, ACVP_LOG_LVL_VERBOSE, "***ACVP [INFO][%s:%d]--> " format "\n", \
+                     __func__, __LINE__, ##args); \
+} while (0)
+#endif
+#endif
+
 #define ACVP_BIT2BYTE(x) ((x + 7) >> 3) /**< Convert bit length (x, of type integer) into byte length */
 
 #define ACVP_ALG_MAX ACVP_CIPHER_END - 1  /* Used by alg_tbl[] */
@@ -678,7 +692,7 @@
 #define ACVP_CURL_BUF_MAX       (1024 * 1024 * 16) /**< 16 MB */
 #define ACVP_RETRY_TIME_MIN     5 /* seconds */
 #define ACVP_RETRY_TIME_MAX     300 
-#define ACVP_MAX_WAIT_TIME      3600
+#define ACVP_MAX_WAIT_TIME      7200
 #define ACVP_RETRY_TIME         30
 #define ACVP_RETRY_MODIFIER_MAX 10
 #define ACVP_JWT_TOKEN_MAX      2048

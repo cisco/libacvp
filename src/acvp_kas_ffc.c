@@ -295,12 +295,12 @@ static ACVP_RESULT acvp_kas_ffc_comp(ACVP_CTX *ctx,
             goto err;
         }
 
-        ACVP_LOG_INFO("    Test group: %d", i);
-        ACVP_LOG_INFO("      test type: %s", test_type_str);
-        ACVP_LOG_INFO("           hash: %s", hash_str);
-        ACVP_LOG_INFO("              p: %s", p);
-        ACVP_LOG_INFO("              q: %s", q);
-        ACVP_LOG_INFO("              g: %s", g);
+        ACVP_LOG_VERBOSE("    Test group: %d", i);
+        ACVP_LOG_VERBOSE("      test type: %s", test_type_str);
+        ACVP_LOG_VERBOSE("           hash: %s", hash_str);
+        ACVP_LOG_VERBOSE("              p: %s", p);
+        ACVP_LOG_VERBOSE("              q: %s", q);
+        ACVP_LOG_VERBOSE("              g: %s", g);
 
         tests = json_object_get_array(groupobj, "tests");
         t_cnt = json_array_get_count(tests);
@@ -308,7 +308,7 @@ static ACVP_RESULT acvp_kas_ffc_comp(ACVP_CTX *ctx,
         for (j = 0; j < t_cnt; j++) {
             const char *eps = NULL, *z = NULL, *epri = NULL, *epui = NULL;
 
-            ACVP_LOG_INFO("Found new KAS-FFC Component test vector...");
+            ACVP_LOG_VERBOSE("Found new KAS-FFC Component test vector...");
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
             tc_id = json_object_get_number(testobj, "tcId");
@@ -374,10 +374,10 @@ static ACVP_RESULT acvp_kas_ffc_comp(ACVP_CTX *ctx,
                 }
             }
 
-            ACVP_LOG_INFO("            eps: %s", eps);
-            ACVP_LOG_INFO("              z: %s", z);
-            ACVP_LOG_INFO("           epri: %s", epri);
-            ACVP_LOG_INFO("           epui: %s", epui);
+            ACVP_LOG_VERBOSE("            eps: %s", eps);
+            ACVP_LOG_VERBOSE("              z: %s", z);
+            ACVP_LOG_VERBOSE("           epri: %s", epri);
+            ACVP_LOG_VERBOSE("           epui: %s", epui);
 
             /*
              * Create a new test case in the response
@@ -605,11 +605,7 @@ ACVP_RESULT acvp_kas_ffc_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     json_array_append_value(reg_arry, r_vs_val);
 
     json_result = json_serialize_to_string_pretty(ctx->kat_resp, NULL);
-    if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
-        printf("\n\n%s\n\n", json_result);
-    } else {
-        ACVP_LOG_INFO("\n\n%s\n\n", json_result);
-    }
+    ACVP_LOG_VERBOSE("\n\n%s\n\n", json_result);
     json_free_serialized_string(json_result);
     rv = ACVP_SUCCESS;
 
