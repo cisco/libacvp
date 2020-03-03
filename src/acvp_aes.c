@@ -73,9 +73,6 @@ static unsigned char ctext[TEXT_COL_LEN][TEXT_ROW_LEN];
 static ACVP_RESULT acvp_aes_mct_iterate_tc(ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *stc, int i) {
     int j = stc->mct_index;
 
-    if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
-        ACVP_LOG_INFO("MCT Iteration %d", j);
-    }
     if (stc->cipher != ACVP_AES_CFB1) {
         memcpy_s(ctext[j], TEXT_ROW_LEN, stc->ct, stc->ct_len);
         memcpy_s(ptext[j], TEXT_ROW_LEN, stc->pt, stc->pt_len);
@@ -925,17 +922,17 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             goto err;
         }
 
-        ACVP_LOG_INFO("    Test group: %d", i);
-        ACVP_LOG_INFO("           dir: %s", dir_str);
-        ACVP_LOG_INFO("            kw: %s", kwcipher_str);
-        ACVP_LOG_INFO("        keylen: %d", keylen);
-        ACVP_LOG_INFO("         ivlen: %d", ivlen);
-        ACVP_LOG_INFO("         ptlen: %d", ptlen);
-        ACVP_LOG_INFO("        aadlen: %d", aadlen);
-        ACVP_LOG_INFO("        taglen: %d", taglen);
-        ACVP_LOG_INFO("      testtype: %s", test_type_str);
-        ACVP_LOG_INFO("      incr_ctr: %d", incr_ctr);
-        ACVP_LOG_INFO("    ovrflw_ctr: %d", ovrflw_ctr);
+        ACVP_LOG_VERBOSE("    Test group: %d", i);
+        ACVP_LOG_VERBOSE("           dir: %s", dir_str);
+        ACVP_LOG_VERBOSE("            kw: %s", kwcipher_str);
+        ACVP_LOG_VERBOSE("        keylen: %d", keylen);
+        ACVP_LOG_VERBOSE("         ivlen: %d", ivlen);
+        ACVP_LOG_VERBOSE("         ptlen: %d", ptlen);
+        ACVP_LOG_VERBOSE("        aadlen: %d", aadlen);
+        ACVP_LOG_VERBOSE("        taglen: %d", taglen);
+        ACVP_LOG_VERBOSE("      testtype: %s", test_type_str);
+        ACVP_LOG_VERBOSE("      incr_ctr: %d", incr_ctr);
+        ACVP_LOG_VERBOSE("    ovrflw_ctr: %d", ovrflw_ctr);
 
         tests = json_object_get_array(groupobj, "tests");
         t_cnt = json_array_get_count(tests);
@@ -945,7 +942,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                        *key = NULL, *tag = NULL, *aad = NULL;
             unsigned int tc_id = 0;
 
-            ACVP_LOG_INFO("Found new AES test vector...");
+            ACVP_LOG_VERBOSE("Found new AES test vector...");
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
 
@@ -1090,15 +1087,15 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 }
             }
 
-            ACVP_LOG_INFO("        Test case: %d", j);
-            ACVP_LOG_INFO("            tcId: %d", tc_id);
-            ACVP_LOG_INFO("              key: %s", key);
-            ACVP_LOG_INFO("               pt: %s", pt);
-            ACVP_LOG_INFO("          dataLen: %d", datalen);
-            ACVP_LOG_INFO("               ct: %s", ct);
-            ACVP_LOG_INFO("               iv: %s", iv);
-            ACVP_LOG_INFO("              tag: %s", tag);
-            ACVP_LOG_INFO("              aad: %s", aad);
+            ACVP_LOG_VERBOSE("        Test case: %d", j);
+            ACVP_LOG_VERBOSE("            tcId: %d", tc_id);
+            ACVP_LOG_VERBOSE("              key: %s", key);
+            ACVP_LOG_VERBOSE("               pt: %s", pt);
+            ACVP_LOG_VERBOSE("          dataLen: %d", datalen);
+            ACVP_LOG_VERBOSE("               ct: %s", ct);
+            ACVP_LOG_VERBOSE("               iv: %s", iv);
+            ACVP_LOG_VERBOSE("              tag: %s", tag);
+            ACVP_LOG_VERBOSE("              aad: %s", aad);
 
             /*
              * Create a new test case in the response
@@ -1174,11 +1171,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     rv = ACVP_SUCCESS;
 
     json_result = json_serialize_to_string_pretty(ctx->kat_resp, NULL);
-    if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
-        printf("\n\n%s\n\n", json_result);
-    } else {
-        ACVP_LOG_INFO("\n\n%s\n\n", json_result);
-    }
+    ACVP_LOG_VERBOSE("\n\n%s\n\n", json_result);
     json_free_serialized_string(json_result);
 
 err:

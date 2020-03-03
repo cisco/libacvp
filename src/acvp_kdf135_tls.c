@@ -206,16 +206,16 @@ ACVP_RESULT acvp_kdf135_tls_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             goto err;
         }
 
-        ACVP_LOG_INFO("    Test group: %d", i);
-        ACVP_LOG_INFO("            pmLen: %d", pm_len);
-        ACVP_LOG_INFO("            kbLen: %d", kb_len);
-        ACVP_LOG_INFO("           method: %s", method);
-        ACVP_LOG_INFO("              sha: %s", sha);
+        ACVP_LOG_VERBOSE("    Test group: %d", i);
+        ACVP_LOG_VERBOSE("            pmLen: %d", pm_len);
+        ACVP_LOG_VERBOSE("            kbLen: %d", kb_len);
+        ACVP_LOG_VERBOSE("           method: %s", method);
+        ACVP_LOG_VERBOSE("              sha: %s", sha);
 
         tests = json_object_get_array(groupobj, "tests");
         t_cnt = json_array_get_count(tests);
         for (j = 0; j < t_cnt; j++) {
-            ACVP_LOG_INFO("Found new hash test vector...");
+            ACVP_LOG_VERBOSE("Found new hash test vector...");
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
 
@@ -262,13 +262,13 @@ ACVP_RESULT acvp_kdf135_tls_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            ACVP_LOG_INFO("        Test case: %d", j);
-            ACVP_LOG_INFO("             tcId: %d", tc_id);
-            ACVP_LOG_INFO("         pmSecret: %s", pm_secret);
-            ACVP_LOG_INFO("            shRND: %s", sh_rnd);
-            ACVP_LOG_INFO("            chRND: %s", ch_rnd);
-            ACVP_LOG_INFO("             sRND: %s", s_rnd);
-            ACVP_LOG_INFO("             cRND: %s", c_rnd);
+            ACVP_LOG_VERBOSE("        Test case: %d", j);
+            ACVP_LOG_VERBOSE("             tcId: %d", tc_id);
+            ACVP_LOG_VERBOSE("         pmSecret: %s", pm_secret);
+            ACVP_LOG_VERBOSE("            shRND: %s", sh_rnd);
+            ACVP_LOG_VERBOSE("            chRND: %s", ch_rnd);
+            ACVP_LOG_VERBOSE("             sRND: %s", s_rnd);
+            ACVP_LOG_VERBOSE("             cRND: %s", c_rnd);
 
             /*
              * Create a new test case in the response
@@ -324,11 +324,7 @@ ACVP_RESULT acvp_kdf135_tls_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     json_array_append_value(reg_arry, r_vs_val);
 
     json_result = json_serialize_to_string_pretty(ctx->kat_resp, NULL);
-    if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
-        printf("\n\n%s\n\n", json_result);
-    } else {
-        ACVP_LOG_INFO("\n\n%s\n\n", json_result);
-    }
+    ACVP_LOG_VERBOSE("\n\n%s\n\n", json_result);
     json_free_serialized_string(json_result);
     rv = ACVP_SUCCESS;
 

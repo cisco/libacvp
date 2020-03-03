@@ -316,12 +316,12 @@ ACVP_RESULT acvp_cmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             goto err;
         }
 
-        ACVP_LOG_INFO("\n\n    Test group: %d", i);
+        ACVP_LOG_VERBOSE("\n\n    Test group: %d", i);
 
         tests = json_object_get_array(groupobj, "tests");
         t_cnt = json_array_get_count(tests);
         for (j = 0; j < t_cnt; j++) {
-            ACVP_LOG_INFO("Found new cmac test vector...");
+            ACVP_LOG_VERBOSE("Found new cmac test vector...");
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
 
@@ -390,24 +390,24 @@ ACVP_RESULT acvp_cmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 }
             }
 
-            ACVP_LOG_INFO("\n        Test case: %d", j);
-            ACVP_LOG_INFO("             tcId: %d", tc_id);
-            ACVP_LOG_INFO("        direction: %s", direction);
+            ACVP_LOG_VERBOSE("\n        Test case: %d", j);
+            ACVP_LOG_VERBOSE("             tcId: %d", tc_id);
+            ACVP_LOG_VERBOSE("        direction: %s", direction);
 
-            ACVP_LOG_INFO("           msgLen: %d", msglen);
-            ACVP_LOG_INFO("              msg: %s", msg);
+            ACVP_LOG_VERBOSE("           msgLen: %d", msglen);
+            ACVP_LOG_VERBOSE("              msg: %s", msg);
             if (alg_id == ACVP_CMAC_AES) {
-                ACVP_LOG_INFO("           keyLen: %d", keyLen);
-                ACVP_LOG_INFO("              key: %s", key1);
+                ACVP_LOG_VERBOSE("           keyLen: %d", keyLen);
+                ACVP_LOG_VERBOSE("              key: %s", key1);
             } else if (alg_id == ACVP_CMAC_TDES) {
-                ACVP_LOG_INFO("     keyingOption: %d", keyingOption);
-                ACVP_LOG_INFO("             key1: %s", key1);
-                ACVP_LOG_INFO("             key2: %s", key2);
-                ACVP_LOG_INFO("             key3: %s", key3);
+                ACVP_LOG_VERBOSE("     keyingOption: %d", keyingOption);
+                ACVP_LOG_VERBOSE("             key1: %s", key1);
+                ACVP_LOG_VERBOSE("             key2: %s", key2);
+                ACVP_LOG_VERBOSE("             key3: %s", key3);
             }
 
             if (verify) {
-                ACVP_LOG_INFO("              mac: %s", mac);
+                ACVP_LOG_VERBOSE("              mac: %s", mac);
             }
 
             /*
@@ -464,11 +464,7 @@ ACVP_RESULT acvp_cmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     json_array_append_value(reg_arry, r_vs_val);
 
     json_result = json_serialize_to_string_pretty(ctx->kat_resp, NULL);
-    if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
-        printf("\n\n%s\n\n", json_result);
-    } else {
-        ACVP_LOG_INFO("\n\n%s\n\n", json_result);
-    }
+     ACVP_LOG_VERBOSE("\n\n%s\n\n", json_result);
     json_free_serialized_string(json_result);
     rv = ACVP_SUCCESS;
 

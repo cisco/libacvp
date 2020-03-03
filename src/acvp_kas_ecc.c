@@ -361,8 +361,8 @@ static ACVP_RESULT acvp_kas_ecc_cdh(ACVP_CTX *ctx,
             goto err;
         }
 
-        ACVP_LOG_INFO("    Test group: %d", i);
-        ACVP_LOG_INFO("          curve: %s", curve_str);
+        ACVP_LOG_VERBOSE("    Test group: %d", i);
+        ACVP_LOG_VERBOSE("          curve: %s", curve_str);
 
         tests = json_object_get_array(groupobj, "tests");
         t_cnt = json_array_get_count(tests);
@@ -370,7 +370,7 @@ static ACVP_RESULT acvp_kas_ecc_cdh(ACVP_CTX *ctx,
         for (j = 0; j < t_cnt; j++) {
             const char *psx = NULL, *psy = NULL;
 
-            ACVP_LOG_INFO("Found new KAS-ECC CDH test vector...");
+            ACVP_LOG_VERBOSE("Found new KAS-ECC CDH test vector...");
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
             tc_id = json_object_get_number(testobj, "tcId");
@@ -413,8 +413,8 @@ static ACVP_RESULT acvp_kas_ecc_cdh(ACVP_CTX *ctx,
                 goto err;
             }
 
-            ACVP_LOG_INFO("            psx: %s", psx);
-            ACVP_LOG_INFO("            psy: %s", psy);
+            ACVP_LOG_VERBOSE("            psx: %s", psx);
+            ACVP_LOG_VERBOSE("            psy: %s", psy);
 
             /*
              * Setup the test case data that will be passed down to
@@ -555,10 +555,10 @@ static ACVP_RESULT acvp_kas_ecc_comp(ACVP_CTX *ctx,
             goto err;
         }
 
-        ACVP_LOG_INFO("    Test group: %d", i);
-        ACVP_LOG_INFO("      test type: %s", test_type_str);
-        ACVP_LOG_INFO("          curve: %s", curve_str);
-        ACVP_LOG_INFO("           hash: %s", hash_str);
+        ACVP_LOG_VERBOSE("    Test group: %d", i);
+        ACVP_LOG_VERBOSE("      test type: %s", test_type_str);
+        ACVP_LOG_VERBOSE("          curve: %s", curve_str);
+        ACVP_LOG_VERBOSE("           hash: %s", hash_str);
 
         tests = json_object_get_array(groupobj, "tests");
         t_cnt = json_array_get_count(tests);
@@ -567,7 +567,7 @@ static ACVP_RESULT acvp_kas_ecc_comp(ACVP_CTX *ctx,
             const char *psx = NULL, *psy = NULL, *pix = NULL,
                        *piy = NULL, *d = NULL, *z = NULL;
 
-            ACVP_LOG_INFO("Found new KAS-ECC Component test vector...");
+            ACVP_LOG_VERBOSE("Found new KAS-ECC Component test vector...");
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
             tc_id = json_object_get_number(testobj, "tcId");
@@ -610,8 +610,8 @@ static ACVP_RESULT acvp_kas_ecc_comp(ACVP_CTX *ctx,
                 goto err;
             }
 
-            ACVP_LOG_INFO("            psx: %s", psx);
-            ACVP_LOG_INFO("            psy: %s", psy);
+            ACVP_LOG_VERBOSE("            psx: %s", psx);
+            ACVP_LOG_VERBOSE("            psy: %s", psy);
 
             if (test_type == ACVP_KAS_ECC_TT_VAL) {
                 pix = json_object_get_string(testobj, "ephemeralPublicIutX");
@@ -674,10 +674,10 @@ static ACVP_RESULT acvp_kas_ecc_comp(ACVP_CTX *ctx,
                     goto err;
                 }
 
-                ACVP_LOG_INFO("              d: %s", d);
-                ACVP_LOG_INFO("            pix: %s", pix);
-                ACVP_LOG_INFO("            piy: %s", piy);
-                ACVP_LOG_INFO("              z: %s", z);
+                ACVP_LOG_VERBOSE("              d: %s", d);
+                ACVP_LOG_VERBOSE("            pix: %s", pix);
+                ACVP_LOG_VERBOSE("            piy: %s", piy);
+                ACVP_LOG_VERBOSE("              z: %s", z);
             }
 
             /*
@@ -914,11 +914,7 @@ ACVP_RESULT acvp_kas_ecc_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     json_array_append_value(reg_arry, r_vs_val);
 
     json_result = json_serialize_to_string_pretty(ctx->kat_resp, NULL);
-    if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
-        printf("\n\n%s\n\n", json_result);
-    } else {
-        ACVP_LOG_INFO("\n\n%s\n\n", json_result);
-    }
+    ACVP_LOG_VERBOSE("\n\n%s\n\n", json_result);
     json_free_serialized_string(json_result);
     rv = ACVP_SUCCESS;
 

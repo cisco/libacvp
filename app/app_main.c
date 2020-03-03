@@ -90,7 +90,8 @@ static void setup_session_parameters(void) {
     printf("    ACV_URI_PREFIX: %s\n", path_segment);
     if (ca_chain_file) printf("    ACV_CA_FILE:    %s\n", ca_chain_file);
     if (cert_file) printf("    ACV_CERT_FILE:  %s\n", cert_file);
-    if (key_file) printf("    ACV_KEY_FILE:   %s\n\n", key_file);
+    if (key_file) printf("    ACV_KEY_FILE:   %s\n", key_file);
+    printf("\n");
 }
 
 /*

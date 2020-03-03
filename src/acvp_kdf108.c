@@ -422,17 +422,17 @@ ACVP_RESULT acvp_kdf108_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         /*
          * Log Test Group information...
          */
-        ACVP_LOG_INFO("    Test group: %d", i);
-        ACVP_LOG_INFO("       kdfMode: %s", kdf_mode_str);
-        ACVP_LOG_INFO("       macMode: %s", mac_mode_str);
-        ACVP_LOG_INFO("     keyOutLen: %d", key_out_bit_len);
-        ACVP_LOG_INFO("    counterLen: %d", ctr_len);
-        ACVP_LOG_INFO("    counterLoc: %s", ctr_loc_str);
+        ACVP_LOG_VERBOSE("    Test group: %d", i);
+        ACVP_LOG_VERBOSE("       kdfMode: %s", kdf_mode_str);
+        ACVP_LOG_VERBOSE("       macMode: %s", mac_mode_str);
+        ACVP_LOG_VERBOSE("     keyOutLen: %d", key_out_bit_len);
+        ACVP_LOG_VERBOSE("    counterLen: %d", ctr_len);
+        ACVP_LOG_VERBOSE("    counterLoc: %s", ctr_loc_str);
 
         tests = json_object_get_array(groupobj, "tests");
         t_cnt = json_array_get_count(tests);
         for (j = 0; j < t_cnt; j++) {
-            ACVP_LOG_INFO("Found new kdf108 test vector...");
+            ACVP_LOG_VERBOSE("Found new kdf108 test vector...");
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
 
@@ -485,10 +485,10 @@ ACVP_RESULT acvp_kdf108_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             /*
              * Log Test Case information...
              */
-            ACVP_LOG_INFO("        Test case: %d", j);
-            ACVP_LOG_INFO("             tcId: %d", tc_id);
-            ACVP_LOG_INFO("            keyIn: %s", key_in_str);
-            ACVP_LOG_INFO("         deferred: %d", deferred);
+            ACVP_LOG_VERBOSE("        Test case: %d", j);
+            ACVP_LOG_VERBOSE("             tcId: %d", tc_id);
+            ACVP_LOG_VERBOSE("            keyIn: %s", key_in_str);
+            ACVP_LOG_VERBOSE("         deferred: %d", deferred);
 
             /*
              * Setup the test case data that will be passed down to
@@ -542,11 +542,7 @@ ACVP_RESULT acvp_kdf108_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     json_array_append_value(reg_arry, r_vs_val);
 
     json_result = json_serialize_to_string_pretty(ctx->kat_resp, NULL);
-    if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
-        printf("\n\n%s\n\n", json_result);
-    } else {
-        ACVP_LOG_INFO("\n\n%s\n\n", json_result);
-    }
+    ACVP_LOG_VERBOSE("\n\n%s\n\n", json_result);
     json_free_serialized_string(json_result);
     rv = ACVP_SUCCESS;
 

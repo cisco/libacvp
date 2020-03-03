@@ -282,7 +282,7 @@ static ACVP_RESULT acvp_ecdsa_kat_handler_internal(ACVP_CTX *ctx, JSON_Object *o
         ACVP_LOG_ERR("ERROR: ACVP server requesting unsupported capability");
         return ACVP_UNSUPPORTED_OP;
     }
-    ACVP_LOG_INFO("    ECDSA mode: %s", mode_str);
+    ACVP_LOG_VERBOSE("    ECDSA mode: %s", mode_str);
 
     /*
      * Create ACVP array for response
@@ -385,10 +385,10 @@ static ACVP_RESULT acvp_ecdsa_kat_handler_internal(ACVP_CTX *ctx, JSON_Object *o
             }
         }
 
-        ACVP_LOG_INFO("           Test group: %d", i);
-        ACVP_LOG_INFO("                curve: %s", curve_str);
-        ACVP_LOG_INFO(" secretGenerationMode: %s", secret_gen_mode_str);
-        ACVP_LOG_INFO("              hashAlg: %s", hash_alg_str);
+        ACVP_LOG_VERBOSE("           Test group: %d", i);
+        ACVP_LOG_VERBOSE("                curve: %s", curve_str);
+        ACVP_LOG_VERBOSE(" secretGenerationMode: %s", secret_gen_mode_str);
+        ACVP_LOG_VERBOSE("              hashAlg: %s", hash_alg_str);
 
         tests = json_object_get_array(groupobj, "tests");
         t_cnt = json_array_get_count(tests);
@@ -399,7 +399,7 @@ static ACVP_RESULT acvp_ecdsa_kat_handler_internal(ACVP_CTX *ctx, JSON_Object *o
         }
 
         for (j = 0; j < t_cnt; j++) {
-            ACVP_LOG_INFO("Found new ECDSA test vector...");
+            ACVP_LOG_VERBOSE("Found new ECDSA test vector...");
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
             tc_id = json_object_get_number(testobj, "tcId");
@@ -448,8 +448,8 @@ static ACVP_RESULT acvp_ecdsa_kat_handler_internal(ACVP_CTX *ctx, JSON_Object *o
                 }
             }
 
-            ACVP_LOG_INFO("        Test case: %d", j);
-            ACVP_LOG_INFO("             tcId: %d", tc_id);
+            ACVP_LOG_VERBOSE("        Test case: %d", j);
+            ACVP_LOG_VERBOSE("             tcId: %d", tc_id);
 
             /*
              * Create a new test case in the response
@@ -522,11 +522,7 @@ static ACVP_RESULT acvp_ecdsa_kat_handler_internal(ACVP_CTX *ctx, JSON_Object *o
     json_array_append_value(reg_arry, r_vs_val);
 
     json_result = json_serialize_to_string_pretty(ctx->kat_resp, NULL);
-    if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
-        printf("\n\n%s\n\n", json_result);
-    } else {
-        ACVP_LOG_INFO("\n\n%s\n\n", json_result);
-    }
+    ACVP_LOG_VERBOSE("\n\n%s\n\n", json_result);
     json_free_serialized_string(json_result);
     rv = ACVP_SUCCESS;
 

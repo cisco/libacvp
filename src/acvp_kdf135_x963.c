@@ -253,11 +253,11 @@ ACVP_RESULT acvp_kdf135_x963_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             goto err;
         }
 
-        ACVP_LOG_INFO("\n    Test group: %d", i);
-        ACVP_LOG_INFO("         hashAlg: %s", hash_alg_str);
-        ACVP_LOG_INFO("       fieldSize: %d", field_size);
-        ACVP_LOG_INFO("   sharedInfoLen: %d", shared_info_len);
-        ACVP_LOG_INFO("   keyDataLength: %d", key_data_length);
+        ACVP_LOG_VERBOSE("\n    Test group: %d", i);
+        ACVP_LOG_VERBOSE("         hashAlg: %s", hash_alg_str);
+        ACVP_LOG_VERBOSE("       fieldSize: %d", field_size);
+        ACVP_LOG_VERBOSE("   sharedInfoLen: %d", shared_info_len);
+        ACVP_LOG_VERBOSE("   keyDataLength: %d", key_data_length);
 
         tests = json_object_get_array(groupobj, "tests");
         if (!tests) {
@@ -274,7 +274,7 @@ ACVP_RESULT acvp_kdf135_x963_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         }
 
         for (j = 0; j < t_cnt; j++) {
-            ACVP_LOG_INFO("Found new KDF135 X963 test vector...");
+            ACVP_LOG_VERBOSE("Found new KDF135 X963 test vector...");
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
 
@@ -299,8 +299,8 @@ ACVP_RESULT acvp_kdf135_x963_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            ACVP_LOG_INFO("        Test case: %d", j);
-            ACVP_LOG_INFO("             tcId: %d", tc_id);
+            ACVP_LOG_VERBOSE("        Test case: %d", j);
+            ACVP_LOG_VERBOSE("             tcId: %d", tc_id);
 
             /*
              * Create a new test case in the response
@@ -356,11 +356,7 @@ ACVP_RESULT acvp_kdf135_x963_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     json_array_append_value(reg_arry, r_vs_val);
 
     json_result = json_serialize_to_string_pretty(ctx->kat_resp, NULL);
-    if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
-        printf("\n\n%s\n\n", json_result);
-    } else {
-        ACVP_LOG_INFO("\n\n%s\n\n", json_result);
-    }
+    ACVP_LOG_VERBOSE("\n\n%s\n\n", json_result);
     json_free_serialized_string(json_result);
     rv = ACVP_SUCCESS;
 

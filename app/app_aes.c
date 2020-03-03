@@ -666,7 +666,6 @@ int app_aes_handler_aead(ACVP_TEST_CASE *test_case) {
              */
             ret = EVP_Cipher(cipher_ctx, tc->pt, tc->ct, tc->ct_len);
             if (ret < 0) {
-                printf("Error performing decrypt operation CCM\n");
                 rc = 1;
                 goto end;
             }

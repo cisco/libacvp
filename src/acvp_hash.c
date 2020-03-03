@@ -47,9 +47,6 @@ static ACVP_RESULT acvp_hash_mct_iterate_tc(ACVP_CTX *ctx,
                                             ACVP_HASH_TC *stc,
                                             int i) {
 
-    if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
-        ACVP_LOG_INFO("MCT Iteration %d", i);
-    }
     /* feed hash into the next message for MCT */
     memcpy_s(stc->m1, ACVP_HASH_MD_BYTE_MAX, stc->m2, stc->md_len);
     memcpy_s(stc->m2, ACVP_HASH_MD_BYTE_MAX, stc->m3, stc->md_len);
@@ -537,7 +534,7 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         json_object_set_value(r_gobj, "tests", json_value_init_array());
         r_tarr = json_object_get_array(r_gobj, "tests");
 
-        ACVP_LOG_INFO("    Test group: %d", i);
+        ACVP_LOG_VERBOSE("    Test group: %d", i);
 
         test_type_str = json_object_get_string(groupobj, "testType");
         if (!test_type_str) {
@@ -584,7 +581,7 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             unsigned int tmp_msg_len = 0;
             unsigned int xof_len = 0;
 
-            ACVP_LOG_INFO("Found new hash test vector...");
+            ACVP_LOG_VERBOSE("Found new hash test vector...");
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
 
@@ -616,14 +613,14 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 }
             }
 
-            ACVP_LOG_INFO("        Test case: %d", j);
-            ACVP_LOG_INFO("             tcId: %d", tc_id);
-            ACVP_LOG_INFO("              len: %d", msglen);
-            ACVP_LOG_INFO("              msg: %s", msg);
+            ACVP_LOG_VERBOSE("        Test case: %d", j);
+            ACVP_LOG_VERBOSE("             tcId: %d", tc_id);
+            ACVP_LOG_VERBOSE("              len: %d", msglen);
+            ACVP_LOG_VERBOSE("              msg: %s", msg);
             if (test_type == ACVP_HASH_TEST_TYPE_VOT) {
-                ACVP_LOG_INFO("    outLen: %d", xof_len);
+                ACVP_LOG_VERBOSE("    outLen: %d", xof_len);
             }
-            ACVP_LOG_INFO("         testtype: %s", test_type_str);
+            ACVP_LOG_VERBOSE("         testtype: %s", test_type_str);
 
             /*
              * Create a new test case in the response
@@ -701,11 +698,7 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     json_array_append_value(reg_arry, r_vs_val);
 
     json_result = json_serialize_to_string_pretty(ctx->kat_resp, NULL);
-    if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
-        printf("\n\n%s\n\n", json_result);
-    } else {
-        ACVP_LOG_INFO("\n\n%s\n\n", json_result);
-    }
+    ACVP_LOG_VERBOSE("\n\n%s\n\n", json_result);
     json_free_serialized_string(json_result);
     rv = ACVP_SUCCESS;
 

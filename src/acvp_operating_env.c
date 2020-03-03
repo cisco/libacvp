@@ -1441,7 +1441,7 @@ static ACVP_RESULT compare_vendor_address(ACVP_CTX *ctx, ACVP_VENDOR_ADDRESS *ad
             // Both exist, compare
             strcmp_s(address->street_1, ACVP_OE_STR_MAX, street_1, &diff);
             if (diff != 0) {
-                 ACVP_LOG_INFO("Street1 not equal");
+                 ACVP_LOG_VERBOSE("Street1 not equal");
                  continue; // Not equal
             }
         }
@@ -1454,7 +1454,7 @@ static ACVP_RESULT compare_vendor_address(ACVP_CTX *ctx, ACVP_VENDOR_ADDRESS *ad
             // Both exist, compare
             strcmp_s(address->street_2, ACVP_OE_STR_MAX, street_2, &diff);
             if (diff != 0) {
-                 ACVP_LOG_INFO("Street2 mismatch");
+                 ACVP_LOG_VERBOSE("Street2 mismatch");
                  continue; // Not equal
             }
         }
@@ -1467,7 +1467,7 @@ static ACVP_RESULT compare_vendor_address(ACVP_CTX *ctx, ACVP_VENDOR_ADDRESS *ad
             // Both exist, compare
             strcmp_s(address->street_3, ACVP_OE_STR_MAX, street_3, &diff);
             if (diff != 0) {
-                 ACVP_LOG_INFO("Street3 not equal");
+                 ACVP_LOG_VERBOSE("Street3 not equal");
                  continue; // Not equal
             }
         }
@@ -1480,7 +1480,7 @@ static ACVP_RESULT compare_vendor_address(ACVP_CTX *ctx, ACVP_VENDOR_ADDRESS *ad
             // Both exist, compare
             strcmp_s(address->locality, ACVP_OE_STR_MAX, locality, &diff);
             if (diff != 0) {
-                 ACVP_LOG_INFO("Locality not equal");
+                 ACVP_LOG_VERBOSE("Locality not equal");
                  continue; // Not equal
             }
         }
@@ -1493,7 +1493,7 @@ static ACVP_RESULT compare_vendor_address(ACVP_CTX *ctx, ACVP_VENDOR_ADDRESS *ad
             // Both exist, compare
             strcmp_s(address->region, ACVP_OE_STR_MAX, region, &diff);
             if (diff != 0) {
-                 ACVP_LOG_INFO("Region not equal");
+                 ACVP_LOG_VERBOSE("Region not equal");
                  continue; // Not equal
             }
         }
@@ -1506,7 +1506,7 @@ static ACVP_RESULT compare_vendor_address(ACVP_CTX *ctx, ACVP_VENDOR_ADDRESS *ad
             // Both exist, compare
             strcmp_s(address->country, ACVP_OE_STR_MAX, country, &diff);
             if (diff != 0) {
-                 ACVP_LOG_INFO("Country not equal");
+                 ACVP_LOG_VERBOSE("Country not equal");
                  continue; // Not equal
             }
         }
@@ -1519,7 +1519,7 @@ static ACVP_RESULT compare_vendor_address(ACVP_CTX *ctx, ACVP_VENDOR_ADDRESS *ad
             // Both exist, compare
             strcmp_s(address->postal_code, ACVP_OE_STR_MAX, postal_code, &diff);
             if (diff != 0) {
-                 ACVP_LOG_INFO("Postal code not equal");
+                 ACVP_LOG_VERBOSE("Postal code not equal");
                  continue; // Not equal
             }
         }
@@ -1540,7 +1540,7 @@ static ACVP_RESULT compare_vendor_address(ACVP_CTX *ctx, ACVP_VENDOR_ADDRESS *ad
             }
             strcpy_s(address->url, ACVP_ATTR_URL_MAX + 1, url);
             *match = 1;
-            ACVP_LOG_INFO("Vendor Address Match");
+            ACVP_LOG_VERBOSE("Vendor Address Match");
             return ACVP_SUCCESS;
         }
     }
@@ -1584,7 +1584,7 @@ static ACVP_RESULT query_vendor_contacts(ACVP_CTX *ctx,
         if (persons->count == 0) {
             // They are both empty
             *match = 1;
-            ACVP_LOG_INFO("Vendor No Contacts Match");
+            ACVP_LOG_VERBOSE("Vendor No Contacts Match");
             return ACVP_SUCCESS;
         } else {
             return ACVP_SUCCESS; // No match
@@ -1636,7 +1636,7 @@ static ACVP_RESULT query_vendor_contacts(ACVP_CTX *ctx,
             }
             strcmp_s(person->full_name, ACVP_OE_STR_MAX, full_name, &diff);
             if (diff != 0) {
-                 ACVP_LOG_INFO("Name not equal");
+                 ACVP_LOG_VERBOSE("Name not equal");
                  continue; // Not equal
             }
 
@@ -1652,10 +1652,10 @@ static ACVP_RESULT query_vendor_contacts(ACVP_CTX *ctx,
                 goto end;
             }
             if (!equal) {
-                ACVP_LOG_INFO("Emails do not match");
+                ACVP_LOG_VERBOSE("Emails do not match");
                 continue;
             }
-            ACVP_LOG_INFO("Email Match");
+            ACVP_LOG_VERBOSE("Email Match");
 
             phone_numbers = json_object_get_array(contact_obj, "phoneNumbers");
             if (phone_numbers == NULL)  {
@@ -1669,10 +1669,10 @@ static ACVP_RESULT query_vendor_contacts(ACVP_CTX *ctx,
                 goto end;
             }
             if (!equal) {
-                ACVP_LOG_INFO("Phone numbers do not match");
+                ACVP_LOG_VERBOSE("Phone numbers do not match");
                 continue;
             }
-            ACVP_LOG_INFO("Phone Match");
+            ACVP_LOG_VERBOSE("Phone Match");
 
             /*
              * Found a match.
@@ -1704,7 +1704,7 @@ static ACVP_RESULT query_vendor_contacts(ACVP_CTX *ctx,
     }
 
     // Got thorugh all of the linked Persons
-    ACVP_LOG_INFO("Contacts Match");
+    ACVP_LOG_VERBOSE("Contacts Match");
     *match = 1;
 
 end:
@@ -1788,7 +1788,7 @@ static ACVP_RESULT match_vendors_page(ACVP_CTX *ctx,
             goto end;
         }
         if (!equal) {
-            ACVP_LOG_INFO("Emails do not match");
+            ACVP_LOG_VERBOSE("Emails do not match");
             continue;
         }
 
@@ -1804,7 +1804,7 @@ static ACVP_RESULT match_vendors_page(ACVP_CTX *ctx,
             goto end;
         }
         if (!equal) {
-            ACVP_LOG_INFO("Phone numbers do not match");
+            ACVP_LOG_VERBOSE("Phone numbers do not match");
             continue;
         }
 
@@ -1820,7 +1820,7 @@ static ACVP_RESULT match_vendors_page(ACVP_CTX *ctx,
             goto end;
         }
         if (!equal) {
-            ACVP_LOG_INFO("Addresses do not match");
+            ACVP_LOG_VERBOSE("Addresses do not match");
             continue;
         }
 
@@ -1831,7 +1831,7 @@ static ACVP_RESULT match_vendors_page(ACVP_CTX *ctx,
             goto end;
         }
         if (!equal) {
-            ACVP_LOG_INFO("Contact URLs do not match");
+            ACVP_LOG_VERBOSE("Contact URLs do not match");
             continue;
         }
 

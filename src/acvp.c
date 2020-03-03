@@ -795,12 +795,7 @@ static void acvp_list_failing_algorithms(ACVP_CTX *ctx, ACVP_STRING_LIST **list)
     }
     ACVP_LOG_STATUS("Failing algorithms:");
     while (iterator && iterator->string) {
-        if (!iterator->next || !iterator->next->string) {
-            ACVP_LOG_STATUS("    %s\n", iterator->string);
-            break;
-        } else {
-            ACVP_LOG_STATUS("    %s", iterator->string);
-        }
+        ACVP_LOG_STATUS("    %s", iterator->string);
         iterator = iterator->next;
     }
 }
@@ -865,6 +860,8 @@ ACVP_RESULT acvp_run_vectors_from_file(ACVP_CTX *ctx, const char *req_filename, 
     int vs_cnt = 0;
     const char *jwt = NULL;
     char *json_result = NULL;
+
+    ACVP_LOG_STATUS("Beginning offline processing of vector sets...");
 
     if (!ctx) {
         return ACVP_NO_CTX;
@@ -948,7 +945,7 @@ ACVP_RESULT acvp_run_vectors_from_file(ACVP_CTX *ctx, const char *req_filename, 
             ACVP_LOG_ERR("KAT dispatch error");
             goto end;
         }
-        ACVP_LOG_STATUS("Write vector set response vsId: %d", ctx->vs_id);
+        ACVP_LOG_STATUS("Writing vector set responses for vector set %d...", ctx->vs_id);
 
         /* 
          * Convert the JSON from a fully qualified to a value that can be 
@@ -986,6 +983,7 @@ ACVP_RESULT acvp_run_vectors_from_file(ACVP_CTX *ctx, const char *req_filename, 
     }
     /* append the final ']' to make the JSON work */ 
     rv = acvp_json_serialize_to_file_pretty_a(NULL, rsp_filename);
+    ACVP_LOG_STATUS("Completed processing of vector sets. Responses saved in specified file.");
 end:
     json_value_free(val);
     return rv;
@@ -1621,12 +1619,14 @@ static ACVP_RESULT acvp_register(ACVP_CTX *ctx) {
      * Send the capabilities to the ACVP server and get the response,
      * which should be a list of vector set ID urls
      */
+    ACVP_LOG_STATUS("Building registration of capabilities...");
     rv = acvp_build_test_session(ctx, &reg, &reg_len);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Unable to build register message");
         goto end;
     }
-    ACVP_LOG_STATUS("Sending registration... %s", reg);
+    ACVP_LOG_STATUS("Sending registration of capabilities...");
+    ACVP_LOG_INFO("%s", reg);
     rv = acvp_send_test_session_registration(ctx, reg, reg_len);
     if (rv == ACVP_SUCCESS) {
         rv = acvp_parse_test_session_register(ctx);
@@ -1634,6 +1634,7 @@ static ACVP_RESULT acvp_register(ACVP_CTX *ctx) {
             ACVP_LOG_ERR("Failed to parse test session response");
             goto end;
         }
+        ACVP_LOG_STATUS("Successfully sent registration and received list of vector set URLs");
     } else {
         ACVP_LOG_ERR("Failed to send registration");
     }
@@ -1729,8 +1730,6 @@ static ACVP_RESULT acvp_parse_login(ACVP_CTX *ctx) {
 
         ctx->jwt_token = calloc(ACVP_JWT_TOKEN_MAX + 1, sizeof(char));
         strcpy_s(ctx->jwt_token, ACVP_JWT_TOKEN_MAX + 1, jwt);
-
-        ACVP_LOG_INFO("JWT: %s", ctx->jwt_token);
     }
 end:
     json_value_free(val);
@@ -2085,6 +2084,7 @@ static ACVP_RESULT acvp_login(ACVP_CTX *ctx, int refresh) {
     char *login = NULL;
     int login_len = 0;
 
+    ACVP_LOG_STATUS("Logging in...");
     rv = acvp_build_login(ctx, &login, &login_len, refresh);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Unable to build login message");
@@ -2103,8 +2103,9 @@ static ACVP_RESULT acvp_login(ACVP_CTX *ctx, int refresh) {
     rv = acvp_parse_login(ctx);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_STATUS("Login Response Failed, %d", rv);
+    } else {
+        ACVP_LOG_STATUS("Login successful");
     }
-
 end:
     if (login) free(login);
     return rv;
@@ -2228,7 +2229,7 @@ static ACVP_RESULT acvp_process_vsid(ACVP_CTX *ctx, char *vsid_url, int count) {
     /*
      * Send the responses to the ACVP server
      */
-    ACVP_LOG_STATUS("POST vector set response vsId: %d", ctx->vs_id);
+    ACVP_LOG_STATUS("Posting vector set responses for vsId %d...", ctx->vs_id);
     rv = acvp_submit_vector_responses(ctx, vsid_url);
 
 end:
@@ -2257,8 +2258,8 @@ static ACVP_RESULT acvp_dispatch_vector_set(ACVP_CTX *ctx, JSON_Object *obj) {
         return ACVP_JSON_ERR;
     }
 
-    ACVP_LOG_STATUS("vs: %d", vs_id);
-    ACVP_LOG_STATUS("ACV Operation: %s", alg);
+    ACVP_LOG_STATUS("Processing vector set: %d", vs_id);
+    ACVP_LOG_STATUS("Algorithm: %s", alg);
 
     for (i = 0; i < ACVP_ALG_MAX; i++) {
         strcmp_s(alg_tbl[i].name,
@@ -2306,7 +2307,7 @@ static ACVP_RESULT acvp_process_vector_set(ACVP_CTX *ctx, JSON_Object *obj) {
         return rv;
     }
 
-    ACVP_LOG_STATUS("Successfully processed KAT vector set");
+    ACVP_LOG_STATUS("Successfully processed vector set");
     return ACVP_SUCCESS;
 }
 
@@ -2445,7 +2446,7 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
                 /*
                  * Pass, exit loop
                  */
-                ACVP_LOG_STATUS("Passed all vectors in testSession");
+                ACVP_LOG_STATUS("Passed all vectors in test session!");
                 ctx->session_passed = 1;
                 rv = ACVP_SUCCESS;
                 goto end;
@@ -2453,10 +2454,8 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
                  /*
                   * Fail, continue with reporting results
                   */
-                 ACVP_LOG_STATUS("testSession complete: some vectors failed, reporting results...");
-                 if (ctx->debug != ACVP_LOG_LVL_VERBOSE) {
-                     ACVP_LOG_STATUS("Note: Use verbose-level logging to see results of each test case");
-                 }
+                 ACVP_LOG_STATUS("Test session complete: some vectors failed, reporting results...");
+                 ACVP_LOG_STATUS("Note: Use verbose-level logging to see results of each test case");
                  acvp_list_failing_algorithms(ctx, &failedAlgList);
              }
         } else {
@@ -2758,6 +2757,8 @@ ACVP_RESULT acvp_run(ACVP_CTX *ctx, int fips_validation) {
         ACVP_LOG_ERR("Failed to register with ACVP server");
         goto end;
     }
+
+    ACVP_LOG_STATUS("Beginning to download and process vector sets...");
 
     /*
      * Now we process the test cases given to us during
