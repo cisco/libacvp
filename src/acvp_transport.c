@@ -1446,7 +1446,7 @@ static void log_network_status(ACVP_CTX *ctx,
         break;
     case ACVP_NET_POST_REG:
         ACVP_LOG_INFO("POST Registration...\n\tStatus: %d\n\tUrl: %s\n\tResp: Recieved\n",
-                        curl_code, url, ctx->curl_buf);
+                        curl_code, url);
         break;
     case ACVP_NET_POST_VS_RESP:
         ACVP_LOG_INFO("POST Response Submission...\n\tStatus: %d\n\tUrl: %s\n\tResp:\n%s\n",
