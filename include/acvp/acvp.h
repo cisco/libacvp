@@ -2687,7 +2687,7 @@ ACVP_RESULT acvp_cleanup(ACVP_CTX *ctx);
 
 /*! @brief acvp_version() fetch the library version string
  *
- * @return (char *) library string, formatted like: libacvp-1.0.0
+ * @return (char *) library string, formatted like: libacvp_oss-1.0.0
  */
 const char *acvp_version(void);
 

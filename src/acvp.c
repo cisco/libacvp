@@ -1013,6 +1013,8 @@ ACVP_RESULT acvp_upload_vectors_from_file(ACVP_CTX *ctx, const char *rsp_filenam
     JSON_Array *vec_array = NULL;
     JSON_Value *vec_array_val = NULL;
 
+    ACVP_LOG_STATUS("Uploading vectors from response file...");
+
     if (!ctx) {
         return ACVP_NO_CTX;
     }
@@ -1136,7 +1138,7 @@ ACVP_RESULT acvp_upload_vectors_from_file(ACVP_CTX *ctx, const char *rsp_filenam
             ACVP_LOG_INFO("\n\n%s\n\n", json_result);
         }
         json_free_serialized_string(json_result);
-
+        ACVP_LOG_STATUS("Sending responses for vector set %d", ctx->vs_id);
         rv = acvp_submit_vector_responses(ctx, vs_entry->string);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Failed to submit test results");
@@ -2770,6 +2772,7 @@ ACVP_RESULT acvp_run(ACVP_CTX *ctx, int fips_validation) {
         goto end;
     }
     if (ctx->vector_req) {
+        ACVP_LOG_STATUS("Successfully downloaded vector sets and saved to specified file.");
         return ACVP_SUCCESS;
     }
 
