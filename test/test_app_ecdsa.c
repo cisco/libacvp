@@ -126,7 +126,6 @@ void free_ecdsa_tc(ACVP_ECDSA_TC *stc) {
     if (stc->r) { free(stc->r); }
     if (stc->s) { free(stc->s); }
     if (stc->message) { free(stc->message); }
-    if (stc) free(stc);
 }
 
 // cipher, ecdsa tc, curve, secret gen mode, hash_alg, qx, qy, message, r, s, corrupt
@@ -149,10 +148,11 @@ Test(APP_ECDSA_HANDLER, missing_curve_app) {
     
     free_ecdsa_tc(ecdsa_tc);
     free(test_case);
+    free(ecdsa_tc);
 }
 
 /*
- * missing hash alg in ecdsa tc test case
+ * hash alg in ecdsa tc test case
  */
 Test(APP_ECDSA_HANDLER, missing_hash_alg_app) {
     ecdsa_tc = calloc(1, sizeof(ACVP_ECDSA_TC));
@@ -169,6 +169,7 @@ Test(APP_ECDSA_HANDLER, missing_hash_alg_app) {
     
     free_ecdsa_tc(ecdsa_tc);
     free(test_case);
+    free(ecdsa_tc);
 }
 
 /*
@@ -220,6 +221,7 @@ Test(APP_ECDSA_HANDLER, missing_keyver_qx_qy) {
     
     free_ecdsa_tc(ecdsa_tc);
     if (test_case) free(test_case);
+    free(ecdsa_tc);
 }
 
 /*
@@ -240,6 +242,7 @@ Test(APP_ECDSA_HANDLER, missing_siggen_msg) {
     
     free_ecdsa_tc(ecdsa_tc);
     free(test_case);
+    free(ecdsa_tc);
 }
 
 /*
@@ -264,6 +267,7 @@ Test(APP_ECDSA_HANDLER, missing_sigver_msg) {
     
     free_ecdsa_tc(ecdsa_tc);
     free(test_case);
+    free(ecdsa_tc);
 }
 
 /*
@@ -318,6 +322,7 @@ Test(APP_ECDSA_HANDLER, missing_sigver_r_s) {
     
     free_ecdsa_tc(ecdsa_tc);
     if (test_case) free(test_case);
+    free(ecdsa_tc);
 }
 
 /*
@@ -372,6 +377,7 @@ Test(APP_ECDSA_HANDLER, missing_sigver_qx_qy) {
     
     free_ecdsa_tc(ecdsa_tc);
     if (test_case) free(test_case);
+    free(ecdsa_tc);
 }
 
 #endif // ACVP_NO_RUNTIME
