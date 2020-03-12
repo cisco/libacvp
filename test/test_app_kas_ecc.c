@@ -30,7 +30,7 @@ void free_kas_ecc_tc(ACVP_KAS_ECC_TC *stc) {
     if (stc->piy) free(stc->piy);
     if (stc->d) free(stc->d);
     if (stc->z) free(stc->z);
-    memzero_s(stc, sizeof(ACVP_KAS_ECC_TC));
+    free(stc);
 }
 
 int initialize_kas_ecc_cdh_tc(ACVP_KAS_ECC_TC *stc,
@@ -211,6 +211,7 @@ Test(APP_KAS_ECC_HANDLER, invalid_curve) {
     cr_assert_neq(rv, 0);
     
     free_kas_ecc_tc(kas_ecc_tc);
+    free(test_case);
 }
 
 /*
@@ -240,6 +241,7 @@ Test(APP_KAS_ECC_HANDLER, invalid_hash_ecc_comp) {
     cr_assert_neq(rv, 0);
     
     free_kas_ecc_tc(kas_ecc_tc);
+    free(test_case);
 }
 
 /*
@@ -266,6 +268,7 @@ Test(APP_KAS_ECC_HANDLER, missing_psx) {
     cr_assert_neq(rv, 0);
     
     free_kas_ecc_tc(kas_ecc_tc);
+    free(test_case);
 }
 
 /*
@@ -292,6 +295,7 @@ Test(APP_KAS_ECC_HANDLER, missing_psy) {
     cr_assert_neq(rv, 0);
     
     free_kas_ecc_tc(kas_ecc_tc);
+    free(test_case);
 }
 
 /*
@@ -321,6 +325,7 @@ Test(APP_KAS_ECC_HANDLER, missing_pix) {
     cr_assert_neq(rv, 0);
     
     free_kas_ecc_tc(kas_ecc_tc);
+    free(test_case);
 }
 
 /*
@@ -350,6 +355,7 @@ Test(APP_KAS_ECC_HANDLER, missing_piy) {
     cr_assert_neq(rv, 0);
     
     free_kas_ecc_tc(kas_ecc_tc);
+    free(test_case);
 }
 
 #endif // ACVP_NO_RUNTIME

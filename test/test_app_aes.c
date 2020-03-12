@@ -390,6 +390,10 @@ Test(APP_AES_HANDLER, missing_dir) {
     
     rv = app_aes_handler(test_case);
     cr_assert_eq(rv, 0);
+    //skip to last iteration to ensure end works normally as well
+    aes_tc->mct_index = 999;
+    rv = app_aes_handler(test_case);
+    cr_assert_eq(rv, 0);
     
     free_aes_tc(aes_tc);
     free(test_case);

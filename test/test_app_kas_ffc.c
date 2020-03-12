@@ -32,7 +32,7 @@ void free_kas_ffc_tc(ACVP_KAS_FFC_TC *stc) {
     if (stc->p) free(stc->p);
     if (stc->q) free(stc->q);
     if (stc->g) free(stc->g);
-    memzero_s(stc, sizeof(ACVP_KAS_FFC_TC));
+    free(stc);
 }
 
 int initialize_kas_ffc_tc(ACVP_KAS_FFC_TC *stc,
@@ -139,8 +139,7 @@ int initialize_kas_ffc_tc(ACVP_KAS_FFC_TC *stc,
     }
     
     return 1;
-    
-    err:
+err:
     free_kas_ffc_tc(stc);
     return 0;
 }
@@ -172,6 +171,7 @@ Test(APP_KAS_FFC_HANDLER, invalid_hash_alg) {
     cr_assert_neq(rv, 0);
     
     free_kas_ffc_tc(kas_ffc_tc);
+    free(test_case);
 }
 
 /*
@@ -201,6 +201,7 @@ Test(APP_KAS_FFC_HANDLER, missing_p) {
     cr_assert_neq(rv, 0);
     
     free_kas_ffc_tc(kas_ffc_tc);
+    free(test_case);
 }
 
 /*
@@ -230,6 +231,7 @@ Test(APP_KAS_FFC_HANDLER, missing_q) {
     cr_assert_neq(rv, 0);
     
     free_kas_ffc_tc(kas_ffc_tc);
+    free(test_case);
 }
 
 /*
@@ -259,6 +261,7 @@ Test(APP_KAS_FFC_HANDLER, missing_g) {
     cr_assert_neq(rv, 0);
     
     free_kas_ffc_tc(kas_ffc_tc);
+    free(test_case);
 }
 
 /*
@@ -288,6 +291,7 @@ Test(APP_KAS_FFC_HANDLER, missing_eps) {
     cr_assert_neq(rv, 0);
     
     free_kas_ffc_tc(kas_ffc_tc);
+    free(test_case);
 }
 
 /*
@@ -317,6 +321,7 @@ Test(APP_KAS_FFC_HANDLER, missing_epri) {
     cr_assert_neq(rv, 0);
     
     free_kas_ffc_tc(kas_ffc_tc);
+    free(test_case);
 }
 
 /*
@@ -346,6 +351,7 @@ Test(APP_KAS_FFC_HANDLER, missing_epui) {
     cr_assert_neq(rv, 0);
     
     free_kas_ffc_tc(kas_ffc_tc);
+    free(test_case);
 }
 
 /*
@@ -376,6 +382,7 @@ Test(APP_KAS_FFC_HANDLER, missing_z) {
     cr_assert_neq(rv, 0);
     
     free_kas_ffc_tc(kas_ffc_tc);
+    free(test_case);
 }
 
 /*
@@ -405,6 +412,7 @@ Test(APP_KAS_FFC_HANDLER, unallocated_ans_bufs) {
     cr_assert_neq(rv, 0);
     
     free_kas_ffc_tc(kas_ffc_tc);
+    free(test_case);
 }
 
 #endif // ACVP_NO_RUNTIME
