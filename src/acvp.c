@@ -2466,7 +2466,7 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
              */
             acvp_list_failing_algorithms(ctx, &failedAlgList);
             ACVP_LOG_STATUS("TestSession results incomplete...");
-            if (acvp_retry_handler(ctx, &retry_interval, &time_waited_so_far, 2, ACVP_WAITING_FOR_RESULTS) != ACVP_KAT_DOWNLOAD_RETRY) {
+            if (acvp_retry_handler(ctx, &retry_interval, &time_waited_so_far, 1, ACVP_WAITING_FOR_RESULTS) != ACVP_KAT_DOWNLOAD_RETRY) {
                 ACVP_LOG_STATUS("Maximum wait time with server reached! (Max: %d seconds)", ACVP_MAX_WAIT_TIME);
                 rv = ACVP_TRANSPORT_FAIL;
                 goto end;
