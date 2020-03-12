@@ -61,6 +61,11 @@
 static unsigned int initialized = 0;
 #define DEBUGF(x) do { } while (0)
 
+void curl_free(void *p)
+{
+  free(p);
+}
+
 /**
  * Global SSL init
  *

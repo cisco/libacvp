@@ -1,4 +1,4 @@
-CC = gcc
+CC= $(CROSS_COMPILE)gcc
 CFLAGS+=-I. -I.. -g -O0 -fPIC -Wall
 LDFLAGS+=
 INCDIRS+=
