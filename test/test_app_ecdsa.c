@@ -126,6 +126,7 @@ void free_ecdsa_tc(ACVP_ECDSA_TC *stc) {
     if (stc->r) { free(stc->r); }
     if (stc->s) { free(stc->s); }
     if (stc->message) { free(stc->message); }
+    memset(stc, 0x0, sizeof(ACVP_ECDSA_TC));
 }
 
 // cipher, ecdsa tc, curve, secret gen mode, hash_alg, qx, qy, message, r, s, corrupt
