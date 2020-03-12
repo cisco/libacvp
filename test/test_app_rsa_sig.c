@@ -28,7 +28,7 @@ void free_rsa_sig_tc(ACVP_RSA_SIG_TC *stc) {
     if (stc->n) { free(stc->n); }
     if (stc->signature) { free(stc->signature); }
     if (stc->salt) { free(stc->salt); }
-    memzero_s(stc, sizeof(ACVP_RSA_SIG_TC));
+    free(stc);
 }
 
 int initialize_rsa_sig_tc(ACVP_CIPHER cipher,
@@ -154,6 +154,7 @@ Test(APP_RSA_SIG_HANDLER, invalid_hash_alg) {
     cr_assert_neq(rv, 0);
     
     free_rsa_sig_tc(rsa_sig_tc);
+    free(test_case);
 }
 
 #endif // ACVP_NO_RUNTIME

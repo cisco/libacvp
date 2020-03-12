@@ -29,7 +29,7 @@ void free_rsa_keygen_tc(ACVP_RSA_KEYGEN_TC *stc) {
     if (stc->q) { free(stc->q); }
     if (stc->n) { free(stc->n); }
     if (stc->d) { free(stc->d); }
-    memzero_s(stc, sizeof(ACVP_RSA_KEYGEN_TC));
+    free(stc);
 }
 
 int initialize_rsa_tc(ACVP_RSA_KEYGEN_TC *stc,
@@ -132,6 +132,7 @@ Test(APP_RSA_KEYGEN_HANDLER, invalid_hash_alg) {
     cr_assert_neq(rv, 0);
     
     free_rsa_keygen_tc(rsa_tc);
+    free(test_case);
 }
 
 /*
@@ -163,6 +164,7 @@ Test(APP_RSA_KEYGEN_HANDLER, invalid_key_format) {
     cr_assert_neq(rv, 0);
     
     free_rsa_keygen_tc(rsa_tc);
+    free(test_case);
 }
 
 /*
@@ -194,6 +196,7 @@ Test(APP_RSA_KEYGEN_HANDLER, invalid_pub_exp_mode) {
     cr_assert_neq(rv, 0);
     
     free_rsa_keygen_tc(rsa_tc);
+    free(test_case);
 }
 
 /*
@@ -225,6 +228,7 @@ Test(APP_RSA_KEYGEN_HANDLER, invalid_modulo) {
     cr_assert_neq(rv, 0);
     
     free_rsa_keygen_tc(rsa_tc);
+    free(test_case);
 }
 
 /*
@@ -256,6 +260,7 @@ Test(APP_RSA_KEYGEN_HANDLER, invalid_prime_test) {
     cr_assert_neq(rv, 0);
     
     free_rsa_keygen_tc(rsa_tc);
+    free(test_case);
 }
 
 /*
@@ -287,6 +292,7 @@ Test(APP_RSA_KEYGEN_HANDLER, invalid_rand_pq) {
     cr_assert_neq(rv, 0);
     
     free_rsa_keygen_tc(rsa_tc);
+    free(test_case);
 }
 
 /*
@@ -318,6 +324,7 @@ Test(APP_RSA_KEYGEN_HANDLER, missing_e) {
     cr_assert_neq(rv, 0);
     
     free_rsa_keygen_tc(rsa_tc);
+    free(test_case);
 }
 
 /*
@@ -349,6 +356,7 @@ Test(APP_RSA_KEYGEN_HANDLER, missing_seed) {
     cr_assert_neq(rv, 0);
     
     free_rsa_keygen_tc(rsa_tc);
+    free(test_case);
 }
 
 /*
@@ -380,6 +388,7 @@ Test(APP_RSA_KEYGEN_HANDLER, unallocated_ans_bufs) {
     cr_assert_neq(rv, 0);
     
     free_rsa_keygen_tc(rsa_tc);
+    free(test_case);
 }
 
 #endif // ACVP_NO_RUNTIME

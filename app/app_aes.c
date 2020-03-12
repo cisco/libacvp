@@ -333,7 +333,7 @@ int app_aes_handler(ACVP_TEST_CASE *test_case) {
     }
     return rv;
 err:
-    if (cipher_ctx) EVP_CIPHER_CTX_free(cipher_ctx);
+    if (glb_cipher_ctx) EVP_CIPHER_CTX_free(glb_cipher_ctx);
     glb_cipher_ctx = NULL;
     return rv;
 }
