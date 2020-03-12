@@ -126,7 +126,7 @@ void free_ecdsa_tc(ACVP_ECDSA_TC *stc) {
     if (stc->r) { free(stc->r); }
     if (stc->s) { free(stc->s); }
     if (stc->message) { free(stc->message); }
-    free(stc);
+    if (stc) free(stc);
 }
 
 // cipher, ecdsa tc, curve, secret gen mode, hash_alg, qx, qy, message, r, s, corrupt
@@ -191,7 +191,7 @@ Test(APP_ECDSA_HANDLER, missing_keyver_qx_qy) {
     cr_assert_neq(rv, 0);
     
     free_ecdsa_tc(ecdsa_tc);
-    free(test_case);
+    if (test_case) free(test_case);
 
     /* qy is missing */
     if (!initialize_ecdsa_tc(ACVP_ECDSA_KEYVER, ecdsa_tc, ACVP_EC_CURVE_P256, ACVP_ECDSA_SECRET_GEN_EXTRA_BITS, 0,
@@ -205,7 +205,7 @@ Test(APP_ECDSA_HANDLER, missing_keyver_qx_qy) {
     cr_assert_neq(rv, 0);
     
     free_ecdsa_tc(ecdsa_tc);
-    free(test_case);
+    if (test_case) free(test_case);
     
     /* qx is missing */
     if (!initialize_ecdsa_tc(ACVP_ECDSA_KEYVER, ecdsa_tc, ACVP_EC_CURVE_P256, ACVP_ECDSA_SECRET_GEN_EXTRA_BITS, 0,
@@ -219,7 +219,7 @@ Test(APP_ECDSA_HANDLER, missing_keyver_qx_qy) {
     cr_assert_neq(rv, 0);
     
     free_ecdsa_tc(ecdsa_tc);
-    free(test_case);
+    if (test_case) free(test_case);
 }
 
 /*
@@ -289,7 +289,7 @@ Test(APP_ECDSA_HANDLER, missing_sigver_r_s) {
     cr_assert_neq(rv, 0);
     
     free_ecdsa_tc(ecdsa_tc);
-    free(test_case);
+    if (test_case) free(test_case);
 
     /* r is missing */
     if (!initialize_ecdsa_tc(ACVP_ECDSA_SIGVER, ecdsa_tc, ACVP_EC_CURVE_P256, ACVP_ECDSA_SECRET_GEN_EXTRA_BITS, ACVP_SHA256,
@@ -303,7 +303,7 @@ Test(APP_ECDSA_HANDLER, missing_sigver_r_s) {
     cr_assert_neq(rv, 0);
     
     free_ecdsa_tc(ecdsa_tc);
-    free(test_case);
+    if (test_case) free(test_case);
     
     /* s is missing */
     if (!initialize_ecdsa_tc(ACVP_ECDSA_SIGVER, ecdsa_tc, ACVP_EC_CURVE_P256, ACVP_ECDSA_SECRET_GEN_EXTRA_BITS, ACVP_SHA256,
@@ -317,7 +317,7 @@ Test(APP_ECDSA_HANDLER, missing_sigver_r_s) {
     cr_assert_neq(rv, 0);
     
     free_ecdsa_tc(ecdsa_tc);
-    free(test_case);
+    if (test_case) free(test_case);
 }
 
 /*
@@ -343,7 +343,7 @@ Test(APP_ECDSA_HANDLER, missing_sigver_qx_qy) {
     cr_assert_neq(rv, 0);
     
     free_ecdsa_tc(ecdsa_tc);
-    free(test_case);
+    if (test_case) free(test_case);
     
     /* qy is missing */
     if (!initialize_ecdsa_tc(ACVP_ECDSA_SIGVER, ecdsa_tc, ACVP_EC_CURVE_P256, ACVP_ECDSA_SECRET_GEN_EXTRA_BITS, 0,
@@ -357,7 +357,7 @@ Test(APP_ECDSA_HANDLER, missing_sigver_qx_qy) {
     cr_assert_neq(rv, 0);
     
     free_ecdsa_tc(ecdsa_tc);
-    free(test_case);
+    if (test_case) free(test_case);
     
     /* qx is missing */
     if (!initialize_ecdsa_tc(ACVP_ECDSA_SIGVER, ecdsa_tc, ACVP_EC_CURVE_P256, ACVP_ECDSA_SECRET_GEN_EXTRA_BITS, 0,
@@ -371,7 +371,7 @@ Test(APP_ECDSA_HANDLER, missing_sigver_qx_qy) {
     cr_assert_neq(rv, 0);
     
     free_ecdsa_tc(ecdsa_tc);
-    free(test_case);
+    if (test_case) free(test_case);
 }
 
 #endif // ACVP_NO_RUNTIME
