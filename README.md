@@ -139,6 +139,11 @@ Example with build and host information:
 ```
 All dependent libraries must have been built with the same cross compile.
 
+If using murl for cross compliles use the same CROSS_COMPILE and HOSTCC used with openssl, for example:
+
+CROSS_COMPILE=arm-linux-gnueabihf-
+HOSTCC=gcc
+
 ## Windows
 1. Modify and run `scripts/gradle_env.bat`
 2. Run `gradle build`

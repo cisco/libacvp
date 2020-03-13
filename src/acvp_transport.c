@@ -9,7 +9,7 @@
  */
 
 #ifdef USE_MURL
-# include "murl.h"
+# include "../murl/murl.h"
 #else
 # include <curl/curl.h>
 #endif
@@ -1130,7 +1130,10 @@ ACVP_RESULT acvp_transport_get(ACVP_CTX *ctx,
     char *full_url = NULL, *escaped_value = NULL;
     int max_url = ACVP_ATTR_URL_MAX + 1;
     int rem_space = max_url - 1;
-    int join = 0, len = 0;
+#ifndef USE_MURL
+    int join = 0;
+#endif
+    int len = 0;
 
     rv = sanity_check_ctx(ctx);
     if (ACVP_SUCCESS != rv) return rv;
@@ -1152,8 +1155,6 @@ ACVP_RESULT acvp_transport_get(ACVP_CTX *ctx,
     rem_space = rem_space - strnlen_s(full_url, max_url);
 
     if (parameters) {
-        const ACVP_KV_LIST *param = parameters;
-
         curl_hnd = curl_easy_init();
         if (curl_hnd == NULL) {
             ACVP_LOG_ERR("Failed to intialize curl handle");
@@ -1162,6 +1163,7 @@ ACVP_RESULT acvp_transport_get(ACVP_CTX *ctx,
         }
 #ifndef USE_MURL
         while (1) {
+            const ACVP_KV_LIST *param = parameters;
             if (join) {
                 len += snprintf(full_url+len, rem_space, "&%s", param->key);
                 rem_space = rem_space - strnlen_s(full_url, max_url);

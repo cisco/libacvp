@@ -404,6 +404,8 @@ struct curl_certinfo {
    CURLINFO_HTTP_CODE */
 #define CURLINFO_HTTP_CODE CURLINFO_RESPONSE_CODE
 
+void curl_free(void *p);
+
 CURL_EXTERN CURL *curl_easy_init(void);
 CURL_EXTERN CURLcode curl_easy_setopt(CURL *curl, CURLoption option, ...);
 CURL_EXTERN CURLcode curl_easy_perform(CURL *curl);
@@ -418,7 +420,6 @@ typedef size_t (*curl_write_callback)(char *buffer,
                                       size_t size,
                                       size_t nitems,
                                       void *outstream);
-
 
 #ifdef  __cplusplus
 }
