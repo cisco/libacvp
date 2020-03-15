@@ -8,7 +8,7 @@
  */
 
 
-
+#ifdef OPENSSL_KDF_SUPPORT
 #include <openssl/evp.h>
 #include <openssl/bn.h>
 #include <openssl/kdf.h>
@@ -76,3 +76,4 @@ int app_kdf135_ssh_handler(ACVP_TEST_CASE *test_case) {
     return 1;
 }
 
+#endif // OPENSSL_KDF_SUPPORT
