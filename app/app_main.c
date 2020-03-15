@@ -39,7 +39,10 @@ static int enable_ecdsa(ACVP_CTX *ctx);
 static int enable_drbg(ACVP_CTX *ctx);
 static int enable_kas_ecc(ACVP_CTX *ctx);
 static int enable_kas_ffc(ACVP_CTX *ctx);
+#ifdef OPENSSL_KDF_SUPPORT
 static int enable_kdf(ACVP_CTX *ctx);
+#endif
+
 
 const char *server;
 int port;
@@ -263,9 +266,11 @@ int main(int argc, char **argv) {
             if (enable_hmac(ctx)) goto end;
         }
 
-        if (cfg.kdf) {
-            if (enable_kdf(ctx)) goto end;
-        }
+#ifdef OPENSSL_KDF_SUPPORT
+            if (cfg.kdf) {
+                if (enable_kdf(ctx)) goto end;
+            }
+#endif
 
         if (cfg.dsa) {
             if (enable_dsa(ctx)) goto end;
@@ -1205,6 +1210,7 @@ end:
     return rv;
 }
 
+#ifdef OPENSSL_KDF_SUPPORT
 static int enable_kdf(ACVP_CTX *ctx) {
     ACVP_RESULT rv = ACVP_SUCCESS;
     int i, flags = 0;
@@ -1374,6 +1380,7 @@ end:
 
     return rv;
 }
+#endif
 
 static int enable_kas_ecc(ACVP_CTX *ctx) {
     ACVP_RESULT rv = ACVP_SUCCESS;

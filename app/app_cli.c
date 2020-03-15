@@ -42,7 +42,9 @@ static void print_usage(int err) {
     printf("      --hash\n");
     printf("      --cmac\n");
     printf("      --hmac\n");
+#ifdef OPENSSL_KDF_SUPPORT
     printf("      --kdf\n");
+#endif
     printf("      --dsa\n");
     printf("      --rsa\n");
     printf("      --ecdsa\n");
@@ -118,7 +120,9 @@ static void enable_all_algorithms(APP_CONFIG *cfg) {
     cfg->ecdsa = 1;
     cfg->kas_ecc = 1;
     cfg->kas_ffc = 1;
+#ifdef OPENSSL_KDF_SUPPORT
     cfg->kdf = 1;
+#endif
 }
 
 int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
@@ -142,7 +146,9 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
         { "hash", ko_no_argument, 312 },
         { "cmac", ko_no_argument, 313 },
         { "hmac", ko_no_argument, 314 },
+#ifdef OPENSSL_KDF_SUPPORT
         { "kdf", ko_no_argument, 315 },
+#endif
         { "dsa", ko_no_argument, 316 },
         { "rsa", ko_no_argument, 317 },
         { "drbg", ko_no_argument, 318 },
@@ -237,11 +243,13 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
             cfg->empty_alg = 0;
             continue;
         }
+#ifdef OPENSSL_KDF_SUPPORT
         if (c == 315) {
             cfg->kdf = 1;
             cfg->empty_alg = 0;
             continue;
         }
+#endif
         if (c == 316) {
             cfg->dsa = 1;
             cfg->empty_alg = 0;
