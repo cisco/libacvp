@@ -2640,11 +2640,7 @@ ACVP_RESULT acvp_post_data(ACVP_CTX *ctx, char *filename) {
     json_array_append_value(reg_arry, post_val);
 
     json_result = json_serialize_to_string_pretty(reg_arry_val, &len);
-    if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
-        printf("\nPOST Data: %s\n\n", json_result);
-    } else {
-        ACVP_LOG_INFO("\n\n%s\n\n", json_result);
-    }
+    ACVP_LOG_INFO("\nPOST Data: %s\n\n", json_result);
     json_value_free(reg_arry_val);
 
     rv = acvp_login(ctx, 0);
@@ -2655,6 +2651,7 @@ ACVP_RESULT acvp_post_data(ACVP_CTX *ctx, char *filename) {
     }
 
     rv = acvp_transport_post(ctx, path, json_result, len);
+    ACVP_LOG_STATUS("POST response:\n\n%s\n", ctx->curl_buf);
     json_free_serialized_string(json_result);
 
 end:
@@ -2727,9 +2724,7 @@ ACVP_RESULT acvp_run(ACVP_CTX *ctx, int fips_validation) {
 
     if (ctx->get) { 
         rv = acvp_transport_get(ctx, ctx->get_string, NULL);
-        if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
-            printf("\nGET Response: %s\n\n", ctx->curl_buf);
-        }
+        ACVP_LOG_STATUS("GET Response:\n\n%s\n", ctx->curl_buf);
         goto end;
     }
 
