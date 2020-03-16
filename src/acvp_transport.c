@@ -1415,12 +1415,7 @@ static void log_network_status(ACVP_CTX *ctx,
                                ACVP_NET_ACTION action,
                                int curl_code,
                                const char *url) {
-                                   
-    if (curl_code < 200 || curl_code >= 300) {
-        ACVP_LOG_ERR("%d error recieved from server. Message:", curl_code);
-        ACVP_LOG_ERR("%s", ctx->curl_buf);
-    }
-    
+
     switch(action) {
     case ACVP_NET_GET:
         ACVP_LOG_INFO("GET...\n\tStatus: %d\n\tUrl: %s\n\tResp:\n%s\n",
@@ -1466,6 +1461,15 @@ static void log_network_status(ACVP_CTX *ctx,
         ACVP_LOG_ERR("We should never be here!");
         break;
     }
+
+
+    if (curl_code == 0) {
+        ACVP_LOG_ERR("Received no response from server.");
+    } else if (curl_code < 200 || curl_code >= 300) {
+        ACVP_LOG_ERR("%d error received from server. Message:", curl_code);
+        ACVP_LOG_ERR("%s", ctx->curl_buf);
+    }
+
 }
 
 /*

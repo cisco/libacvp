@@ -202,6 +202,21 @@ passing. Additionally, new tests should be added for new library features.
 We also run the uncrustify tool as a linter to keep code-style consistent
 throughout the library. That can be found in the `uncrustify/` directory.
 
+## FAQ
+
+`I get "unable to process test vectors" for certain algorithms when libacvp is built without a FOM. Why?`
+Some algorithms need to have internal mechanisms tested that are not available in the
+regular APIs for that algorithm. These cannot be tested at runtime and are only avaible to
+be tested when linked to a FOM for non-runtime testing. --all_algs attempts to run these
+algorithms as well, so for runtime testing without linking to a FOM, specify the algorithms
+you wish to run individually.
+
+`I get some sort of hard crash while processing vector sets - why?`
+It is probable that libacvp is linking to a different version of a library than the one
+it was configured and built with. libacvp/acvp_app depend on library versions in enabling 
+or disabling certain features at build time, so please make sure libacvp and acvp_app are 
+built and run with the same versions of each library.
+
 
 ## Credits
 This package was initially written by John Foley of Cisco Systems.
