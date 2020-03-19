@@ -1141,8 +1141,7 @@ ACVP_RESULT acvp_upload_vectors_from_file(ACVP_CTX *ctx, const char *rsp_filenam
         ACVP_LOG_STATUS("Sending responses for vector set %d", ctx->vs_id);
         rv = acvp_submit_vector_responses(ctx, vs_entry->string);
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("Failed to submit test results");
-            goto end;
+            ACVP_LOG_ERR("Failed to submit test results for vector set - skipping...");
         }
 
         n++;
@@ -1245,6 +1244,222 @@ ACVP_RESULT acvp_get_results_from_server(ACVP_CTX *ctx, const char *request_file
         ACVP_LOG_ERR("Unable to retrieve test results");
     }
     
+end:
+    json_value_free(val);
+    return rv;
+}
+
+/**
+ * Allows application to continue a previous test session by checking which KAT responses the server is missing
+ */
+ACVP_RESULT acvp_resume_test_session(ACVP_CTX *ctx, const char *request_filename, int fips_validation) {
+    JSON_Value *val = NULL;
+    JSON_Array *reg_array;
+    JSON_Object *obj = NULL;
+    const char *test_session_url = NULL;
+    const char *jwt = NULL;
+    ACVP_RESULT rv = ACVP_SUCCESS;
+    
+    ACVP_LOG_STATUS("Resuming session...");
+    if (ctx->vector_req) {
+        ACVP_LOG_STATUS("Restarting download of vector sets to file...");
+    }
+
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+    if (!request_filename) {
+        ACVP_LOG_ERR("Must provide value for JSON filename");
+        return ACVP_MISSING_ARG;
+    }
+    
+    if (strnlen_s(request_filename, ACVP_JSON_FILENAME_MAX + 1) > ACVP_JSON_FILENAME_MAX) {
+        ACVP_LOG_ERR("Provided request_filename length > max(%d)", ACVP_JSON_FILENAME_MAX);
+        return ACVP_INVALID_ARG;
+    }
+    
+    val = json_parse_file(request_filename);
+    if (!val) {
+        ACVP_LOG_ERR("JSON val parse error");
+        return ACVP_MALFORMED_JSON;
+    }
+    reg_array = json_value_get_array(val);
+    obj = json_array_get_object(reg_array, 0);
+    if (!obj) {
+        ACVP_LOG_ERR("JSON obj parse error");
+        rv = ACVP_MALFORMED_JSON;
+        goto end;
+    }
+
+    test_session_url = json_object_get_string(obj, "url");
+    if (!test_session_url) {
+        ACVP_LOG_ERR("Missing session URL");
+        rv = ACVP_MALFORMED_JSON;
+        goto end;
+    }
+
+    ctx->session_url = calloc(ACVP_ATTR_URL_MAX + 1, sizeof(char));
+    if (!ctx->session_url) {
+        rv = ACVP_MALLOC_FAIL;
+        goto end;
+    }
+    strcpy_s(ctx->session_url, ACVP_ATTR_URL_MAX + 1, test_session_url);
+
+    jwt = json_object_get_string(obj, "jwt");
+    if (!jwt) {
+        rv = ACVP_MALFORMED_JSON;
+        goto end;
+    }
+    ctx->jwt_token = calloc(ACVP_JWT_TOKEN_MAX + 1, sizeof(char));
+    if (!ctx->jwt_token) {
+        rv = ACVP_MALLOC_FAIL;
+        goto end;
+    }
+    strcpy_s(ctx->jwt_token, ACVP_JWT_TOKEN_MAX + 1, jwt);
+    
+    json_value_free(val);
+    val = NULL;
+    obj = NULL;
+
+    rv = acvp_retrieve_vector_set_result(ctx, ctx->session_url);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Error retrieving vector set results!");
+        goto end;
+    }
+
+    val = json_parse_string(ctx->curl_buf);
+    if (!val) {
+        ACVP_LOG_ERR("Error while parsing json from server!");
+        rv = ACVP_JSON_ERR;
+        goto end;
+    }
+    obj = acvp_get_obj_from_rsp(ctx, val);
+    if (!obj) {
+        if (val) json_value_free(val);
+        ACVP_LOG_ERR("Error while parsing json from server!");
+        rv = ACVP_JSON_ERR;
+        goto end;
+    }
+
+    if (fips_validation) {
+        rv = fips_metadata_ready(ctx);
+        if (ACVP_SUCCESS != rv) {
+            ACVP_LOG_ERR("Validation metadata not ready");
+            return ACVP_UNSUPPORTED_OP;
+        }
+
+        ctx->fips.do_validation = 1; /* Enable */
+    } else {
+        ctx->fips.do_validation = 0; /* Disable */
+    }
+    /*
+     * Check for vector sets the server received no response to
+     */
+
+    JSON_Array *results = NULL;
+    int count = 0, i = 0;
+
+    results = json_object_get_array(obj, "results");
+    if (!results) {
+        ACVP_LOG_ERR("Error parsing status from server");
+        rv = ACVP_JSON_ERR;
+        goto end;
+    }
+    
+    count = (int)json_array_get_count(results);
+    JSON_Object *current = NULL;
+    const char *vsid_url = NULL, *status = NULL;
+    
+    for (i = 0; i < count; i++) {
+        int diff = 1;
+        current = json_array_get_object(results, i);
+        if (!current) {
+            ACVP_LOG_ERR("Error parsing status from server");
+            rv = ACVP_JSON_ERR;
+            goto end;
+        }
+        
+        status = json_object_get_string(current, "status");
+        if (!status) {
+            ACVP_LOG_ERR("Error parsing status from server");
+            rv = ACVP_JSON_ERR;
+            goto end;
+        }
+        vsid_url = json_object_get_string(current, "vectorSetUrl");
+        if (!vsid_url) {
+            ACVP_LOG_ERR("Error parsing status from server");
+            rv = ACVP_JSON_ERR;
+            goto end;
+        }
+        
+        if (ctx->vector_req) {
+            //If we are just saving to file, we don't need to check status, download all VS
+            rv = acvp_append_vsid_url(ctx, vsid_url);
+            if (rv != ACVP_SUCCESS) {
+                ACVP_LOG_ERR("Error resuming session");
+                goto end;
+            }
+        } else {
+            strcmp_s("expired", 7, status, &diff);
+            if (!diff) {
+                ACVP_LOG_ERR("One more more vector sets has expired! Start a new session.");
+                rv = ACVP_INVALID_ARG;
+                goto end;
+            }
+            
+            /*
+             * If the result is unreceived, add it to the list of vsID urls
+             */
+            strcmp_s("unreceived", 10, status, &diff);
+            if (!diff) {
+                rv = acvp_append_vsid_url(ctx, vsid_url);
+                if (rv != ACVP_SUCCESS) {
+                    ACVP_LOG_ERR("Error resuming session");
+                    goto end;
+                }
+            }
+        }
+    }
+
+    if (!ctx->vsid_url_list) {
+        ACVP_LOG_STATUS("All vector set results already uploaded. Nothing to resume.");
+        goto end;
+    } else {
+        rv = acvp_process_tests(ctx);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Failed to process vectors");
+            goto end;
+        }
+        if (ctx->vector_req) {
+            ACVP_LOG_STATUS("Successfully downloaded vector sets and saved to specified file.");
+            return ACVP_SUCCESS;
+        }
+
+        /*
+         * Check the test results.
+         */
+        ACVP_LOG_STATUS("Tests complete, checking results...");
+        rv = acvp_check_test_results(ctx);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Unable to retrieve test results");
+            goto end;
+        }
+
+        if (fips_validation) {
+            /*
+             * Tell the server to provision a FIPS certificate for this testSession.
+             */
+            rv = acvp_validate_test_session(ctx);
+            if (rv != ACVP_SUCCESS) {
+                ACVP_LOG_ERR("Failed to perform Validation of testSession");
+                goto end;
+            }
+        }
+
+        if (ctx->put) {
+           rv = acvp_put_data_from_ctx(ctx);
+        }
+    }
 end:
     json_value_free(val);
     return rv;
@@ -2178,11 +2393,12 @@ static ACVP_RESULT acvp_process_vsid(ACVP_CTX *ctx, char *vsid_url, int count) {
             };
             retry = 1;
         } else {
-
             /*
              * Save the KAT VectorSet to file
              */
             if (ctx->vector_req) {
+                
+                ACVP_LOG_STATUS("Saving vector set %s to file...", vsid_url);
                 alg_array = json_value_get_array(val);
                 alg_val = json_array_get_value(alg_array, 1);
 
@@ -2376,6 +2592,17 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
             if (!status) {
                 goto end;
             }
+            strcmp_s("expired", 7, status, &diff);
+            if (!diff) {
+                ACVP_LOG_ERR("One or more vector sets expired before results were submitted. Please start a new test session.");
+                goto end;
+            }
+            
+            strcmp_s("unreceived", 10, status, &diff);
+            if (!diff) {
+                ACVP_LOG_ERR("Missing submissions for one or more vector sets. Please submit responses for all vector sets.");
+                goto end;
+            }
             /*
              * If the result is incomplete, set the flag so it keeps retrying
              */
@@ -2490,6 +2717,7 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
                 if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
                     ACVP_LOG_STATUS("Getting details for failed Vector Set...");
                     rv = acvp_retrieve_vector_set_result(ctx, vs_url);
+                    printf("\n%s\n", ctx->curl_buf);
                     if (rv != ACVP_SUCCESS) goto end;
                 }
                 /*
@@ -2754,6 +2982,11 @@ ACVP_RESULT acvp_run(ACVP_CTX *ctx, int fips_validation) {
         ACVP_LOG_ERR("Failed to register with ACVP server");
         goto end;
     }
+    
+    //write session info so if we time out or lose connection waiting for results, we can recheck later on
+    if (!ctx->put) {
+        acvp_write_session_info(ctx);
+    }
 
     ACVP_LOG_STATUS("Beginning to download and process vector sets...");
 
@@ -2769,11 +3002,6 @@ ACVP_RESULT acvp_run(ACVP_CTX *ctx, int fips_validation) {
     if (ctx->vector_req) {
         ACVP_LOG_STATUS("Successfully downloaded vector sets and saved to specified file.");
         return ACVP_SUCCESS;
-    }
-
-    //write session info so if we time out or lose connection waiting for results, we can recheck later on
-    if (!ctx->put) {
-        acvp_write_session_info(ctx);
     }
 
     /*

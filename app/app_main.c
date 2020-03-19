@@ -229,7 +229,6 @@ int main(int argc, char **argv) {
         goto end;
     }
 
-
     if (cfg.json) {
         /*
          * Using a JSON to register allows us to skip the
@@ -343,9 +342,14 @@ int main(int argc, char **argv) {
     if (!cfg.empty_alg && cfg.put) {
         acvp_mark_as_put_after_test(ctx, cfg.put_filename);
     }
-
+    
     if (cfg.get_results) {
         rv = acvp_get_results_from_server(ctx, cfg.get_results_file);
+        goto end;
+    }
+    
+    if (cfg.resume_session) {
+        rv = acvp_resume_test_session(ctx, cfg.resume_session_file, cfg.fips_validation);
         goto end;
     }
     
