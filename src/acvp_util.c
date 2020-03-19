@@ -27,8 +27,7 @@ extern ACVP_ALG_HANDLER alg_tbl[];
 static int acvp_char_to_int(char ch);
 
 /*
- * This is a rudimentary logging facility for libacvp.
- * We will need more when moving beyond the PoC phase.
+ * Basic logging for libacvp
  */
 void acvp_log_msg(ACVP_CTX *ctx, ACVP_LOG_LVL level, const char *format, ...) {
     va_list arguments;

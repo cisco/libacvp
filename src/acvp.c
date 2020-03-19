@@ -1142,6 +1142,8 @@ ACVP_RESULT acvp_upload_vectors_from_file(ACVP_CTX *ctx, const char *rsp_filenam
         rv = acvp_submit_vector_responses(ctx, vs_entry->string);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Failed to submit test results for vector set - skipping...");
+            json_value_free(vec_array_val);
+            ctx->kat_resp = NULL;
         }
 
         n++;
@@ -1282,7 +1284,7 @@ ACVP_RESULT acvp_resume_test_session(ACVP_CTX *ctx, const char *request_filename
     
     val = json_parse_file(request_filename);
     if (!val) {
-        ACVP_LOG_ERR("JSON val parse error");
+        ACVP_LOG_ERR("Error while trying to parse json from file - ensure it exists and is intact");
         return ACVP_MALFORMED_JSON;
     }
     reg_array = json_value_get_array(val);
@@ -1854,6 +1856,7 @@ static ACVP_RESULT acvp_register(ACVP_CTX *ctx) {
             goto end;
         }
         ACVP_LOG_STATUS("Successfully sent registration and received list of vector set URLs");
+        ACVP_LOG_STATUS("Test session URL: %s", ctx->session_url);
     } else {
         ACVP_LOG_ERR("Failed to send registration");
     }
@@ -2295,7 +2298,7 @@ ACVP_RESULT acvp_check_test_results(ACVP_CTX *ctx) {
 }
 
 /***************************************************************************************************************
-* Begin vector processing logic.  This code should probably go into another module.
+* Begin vector processing logic
 ***************************************************************************************************************/
 
 static ACVP_RESULT acvp_login(ACVP_CTX *ctx, int refresh) {
