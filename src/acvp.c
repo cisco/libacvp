@@ -1259,6 +1259,11 @@ ACVP_RESULT acvp_resume_test_session(ACVP_CTX *ctx, const char *request_filename
     const char *test_session_url = NULL;
     const char *jwt = NULL;
     ACVP_RESULT rv = ACVP_SUCCESS;
+    
+    ACVP_LOG_STATUS("Resuming session...");
+    if (ctx->vector_req) {
+        ACVP_LOG_STATUS("Restarting download of vector sets to file...");
+    }
 
     if (!ctx) {
         return ACVP_NO_CTX;
@@ -2388,11 +2393,12 @@ static ACVP_RESULT acvp_process_vsid(ACVP_CTX *ctx, char *vsid_url, int count) {
             };
             retry = 1;
         } else {
-
             /*
              * Save the KAT VectorSet to file
              */
             if (ctx->vector_req) {
+                
+                ACVP_LOG_STATUS("Saving vector set %s to file...", vsid_url);
                 alg_array = json_value_get_array(val);
                 alg_val = json_array_get_value(alg_array, 1);
 
