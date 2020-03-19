@@ -1260,14 +1260,16 @@ ACVP_RESULT acvp_resume_test_session(ACVP_CTX *ctx, const char *request_filename
     const char *jwt = NULL;
     ACVP_RESULT rv = ACVP_SUCCESS;
     
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+    
     ACVP_LOG_STATUS("Resuming session...");
     if (ctx->vector_req) {
         ACVP_LOG_STATUS("Restarting download of vector sets to file...");
     }
 
-    if (!ctx) {
-        return ACVP_NO_CTX;
-    }
+
     if (!request_filename) {
         ACVP_LOG_ERR("Must provide value for JSON filename");
         return ACVP_MISSING_ARG;
