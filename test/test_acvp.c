@@ -785,3 +785,21 @@ Test(PROCESS_TESTS, acvp_get_results_from_server, .init = setup_full_ctx, .fini 
     rv = acvp_get_results_from_server(ctx, "json/getResults.json");
     cr_assert(rv = ACVP_MALFORMED_JSON);
 }
+
+/*
+ * Test acvp_resume_test_session
+ */
+Test(PROCESS_TESTS, acvp_resume_test_session, .init = setup_full_ctx, .fini = teardown) {
+   
+    rv = acvp_resume_test_session(NULL, "test", 0);
+    cr_assert(rv == ACVP_NO_CTX);
+
+    rv = acvp_resume_test_session(ctx, NULL, 0);
+    cr_assert(rv == ACVP_MISSING_ARG);
+
+    rv = acvp_resume_test_session(ctx, "testFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLong", 0);
+    cr_assert(rv == ACVP_INVALID_ARG);
+
+    rv = acvp_resume_test_session(ctx, "json/getResults.json", 1);
+    cr_assert(rv = ACVP_MALFORMED_JSON);
+}

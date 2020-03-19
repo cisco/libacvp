@@ -52,6 +52,11 @@ static void print_usage(int err) {
     printf("      --kas_ecc\n");
     printf("      --kas_ffc\n");
     printf("\n");
+    printf("To resume a previous test session that was interupted:\n");
+    printf("      --resume_session <file>\n");
+    printf("Note: this does not save your arguments from your initial run and you MUST include them\n");
+    printf("again (e.x. --aes,  --vector_req and --fips_validation)\n");
+    printf("\n");
     printf("Perform a FIPS Validation for this testSession:\n");
     printf("      --fips_validation <full metadata file>\n");
     printf("\n");
@@ -167,6 +172,7 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
         { "put", ko_required_argument, 408 },
         { "get_results", ko_required_argument, 409},
         { "certnum", ko_required_argument, 410 },
+        { "resume_session", ko_required_argument, 411 },
         { NULL, 0, 0 }
     };
 
@@ -477,6 +483,24 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
             strcpy_s(value, JSON_STRING_LENGTH, opt.arg);
             continue;
         }
+        if (c == 411) {
+            int resume_filename_len = 0;
+            cfg->resume_session = 1;
+
+            resume_filename_len = strnlen_s(opt.arg, JSON_FILENAME_LENGTH + 1);
+            if (resume_filename_len > JSON_REQUEST_LENGTH) {
+                printf(ANSI_COLOR_RED "Command error... [%s]"ANSI_COLOR_RESET
+                    "\nThe <file> \"%s\", has a name that is too long."
+                    "\nMax allowed <file> name length is (%d).\n",
+                    "--get_results", opt.arg, JSON_FILENAME_LENGTH);
+                print_usage(1);
+                return 1;
+            }
+
+            strcpy_s(cfg->resume_session_file, JSON_FILENAME_LENGTH + 1, opt.arg);
+            continue;
+        }
+        
         if (c == '?') {
             printf(ANSI_COLOR_RED "unknown option: %s\n"ANSI_COLOR_RESET, *(argv + opt.ind - 1));
             print_usage(1);
@@ -491,7 +515,7 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
 
     /* allopw put, post and get without algs defined */
     if (cfg->empty_alg && !cfg->post && !cfg->get && !cfg->put && !cfg->get_results
-                                                            && !cfg->vector_upload) {
+                                                              && !cfg->vector_upload) {
         /* The user needs to select at least 1 algorithm */
         printf(ANSI_COLOR_RED "Requires at least 1 Algorithm Test Suite\n"ANSI_COLOR_RESET);
         print_usage(1);

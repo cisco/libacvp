@@ -2632,6 +2632,7 @@ ACVP_RESULT acvp_upload_vectors_from_file(ACVP_CTX *ctx, const char *rsp_filenam
 ACVP_RESULT acvp_run_vectors_from_file(ACVP_CTX *ctx, const char *req_filename, const char *rsp_filename);
 ACVP_RESULT acvp_put_data_from_file(ACVP_CTX *ctx, const char *put_filename);
 ACVP_RESULT acvp_get_results_from_server(ACVP_CTX *ctx, const char *request_filename);
+ACVP_RESULT acvp_resume_test_session(ACVP_CTX *ctx, const char *request_filename, int fips_validation);
 
 /*! @brief acvp_set_2fa_callback() sets a callback function which
     will create or obtain a TOTP password for the second part of
