@@ -1162,8 +1162,8 @@ ACVP_RESULT acvp_transport_get(ACVP_CTX *ctx,
             goto end;
         }
 #ifndef USE_MURL
+        const ACVP_KV_LIST *param = parameters;
         while (1) {
-            const ACVP_KV_LIST *param = parameters;
             if (join) {
                 len += snprintf(full_url+len, rem_space, "&%s", param->key);
                 rem_space = rem_space - strnlen_s(full_url, max_url);
