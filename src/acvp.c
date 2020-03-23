@@ -1324,6 +1324,12 @@ ACVP_RESULT acvp_resume_test_session(ACVP_CTX *ctx, const char *request_filename
     json_value_free(val);
     val = NULL;
     obj = NULL;
+    
+    rv = acvp_refresh(ctx);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Failed to refresh login with ACVP server");
+        goto end;
+    }
 
     rv = acvp_retrieve_vector_set_result(ctx, ctx->session_url);
     if (rv != ACVP_SUCCESS) {
