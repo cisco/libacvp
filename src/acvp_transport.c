@@ -1128,8 +1128,8 @@ ACVP_RESULT acvp_transport_get(ACVP_CTX *ctx,
     ACVP_RESULT rv = 0;
     CURL *curl_hnd = NULL;
     char *full_url = NULL, *escaped_value = NULL;
-    int max_url = ACVP_ATTR_URL_MAX + 1;
-    int rem_space = max_url - 1;
+    int max_url = ACVP_ATTR_URL_MAX;
+    int rem_space = max_url;
 #ifndef USE_MURL
     int join = 0;
 #endif
@@ -1143,16 +1143,16 @@ ACVP_RESULT acvp_transport_get(ACVP_CTX *ctx,
         return ACVP_MISSING_ARG;
     }
 
-    full_url = calloc(ACVP_ATTR_URL_MAX, sizeof(char));
+    full_url = calloc(ACVP_ATTR_URL_MAX + 1, sizeof(char));
     if (full_url == NULL) {
         ACVP_LOG_ERR("Failed to malloc");
         rv = ACVP_TRANSPORT_FAIL;
         goto end;
     }
 
-    len = snprintf(full_url, max_url - 1, "https://%s:%d%s",
+    len = snprintf(full_url, max_url, "https://%s:%d%s",
                    ctx->server_name, ctx->server_port, url);
-    rem_space = rem_space - strnlen_s(full_url, max_url);
+    rem_space = max_url - len;
 
     if (parameters) {
         curl_hnd = curl_easy_init();
@@ -1166,14 +1166,14 @@ ACVP_RESULT acvp_transport_get(ACVP_CTX *ctx,
         while (1) {
             if (join) {
                 len += snprintf(full_url+len, rem_space, "&%s", param->key);
-                rem_space = rem_space - strnlen_s(full_url, max_url);
+                rem_space = max_url - len;
             } else {
                 len += snprintf(full_url+len, rem_space, "%s", param->key);
-                rem_space = rem_space - strnlen_s(full_url, max_url);
+                rem_space = max_url - len;
                 join = 1;
             }
 
-            escaped_value = curl_easy_escape(curl_hnd, param->value, 0);
+            escaped_value = curl_easy_escape(curl_hnd, param->value, strnlen_s(param->value, rem_space));
             if (escaped_value == NULL) {
                 ACVP_LOG_ERR("Failed curl_easy_escape()");
                 rv = ACVP_TRANSPORT_FAIL;
@@ -1181,16 +1181,15 @@ ACVP_RESULT acvp_transport_get(ACVP_CTX *ctx,
             }
 
             len += snprintf(full_url+len, rem_space, "%s", escaped_value);
-            rem_space = rem_space - strnlen_s(full_url, max_url);
+            rem_space = max_url - len;
 
-            if (param->next == NULL) break;
-            param = param->next;
             curl_free(escaped_value); escaped_value = NULL;
+            if (param->next == NULL || rem_space <= 0) break;
+            param = param->next;
         }
 #endif
         /* Don't need these anymore */
         curl_easy_cleanup(curl_hnd); curl_hnd = NULL;
-        curl_free(escaped_value); escaped_value = NULL;
     }
 
     rv = acvp_network_action(ctx, ACVP_NET_GET, full_url, NULL, 0);
