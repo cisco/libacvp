@@ -1129,7 +1129,7 @@ ACVP_RESULT acvp_transport_get(ACVP_CTX *ctx,
     CURL *curl_hnd = NULL;
     char *full_url = NULL, *escaped_value = NULL;
     int max_url = ACVP_ATTR_URL_MAX;
-    int rem_space = max_url;
+    int rem_space = 0;
 #ifndef USE_MURL
     int join = 0;
 #endif
