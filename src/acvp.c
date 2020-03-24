@@ -1142,10 +1142,10 @@ ACVP_RESULT acvp_upload_vectors_from_file(ACVP_CTX *ctx, const char *rsp_filenam
         rv = acvp_submit_vector_responses(ctx, vs_entry->string);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Failed to submit test results for vector set - skipping...");
-            json_value_free(vec_array_val);
-            ctx->kat_resp = NULL;
         }
 
+        json_value_free(vec_array_val);
+        ctx->kat_resp = NULL;
         n++;
         vs_val = json_array_get_value(reg_array, n);
         vs_entry = vs_entry->next;
