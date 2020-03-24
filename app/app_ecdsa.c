@@ -289,7 +289,10 @@ int app_ecdsa_handler(ACVP_TEST_CASE *test_case) {
         tc->qy_len = BN_bn2bin(ecdsa_group_Qy, tc->qy);
         tc->r_len = BN_bn2bin(r, tc->r);
         tc->s_len = BN_bn2bin(s, tc->s);
-
+#if OPENSSL_VERSION_NUMBER > 0x10100000L
+        BN_free(s);
+        BN_free(r);
+# endif
         break;
     case ACVP_ECDSA_SIGVER:
         if (!tc->message) {
