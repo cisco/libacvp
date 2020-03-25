@@ -1240,6 +1240,12 @@ ACVP_RESULT acvp_get_results_from_server(ACVP_CTX *ctx, const char *request_file
     }
     strcpy_s(ctx->jwt_token, ACVP_JWT_TOKEN_MAX + 1, jwt);
 
+    rv = acvp_refresh(ctx);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Failed to refresh login with ACVP server");
+        goto end;
+    }
+
     rv = acvp_check_test_results(ctx);
     
     if (rv != ACVP_SUCCESS) {
