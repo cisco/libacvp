@@ -2628,10 +2628,60 @@ ACVP_RESULT acvp_set_json_filename(ACVP_CTX *ctx, const char *json_filename);
  * @return ACVP_RESULT
  */
 ACVP_RESULT acvp_load_kat_filename(ACVP_CTX *ctx, const char *kat_filename);
+
+/*! @brief Uploads a set of vector set responses that were processed from an
+ * offline vector set JSON file.
+ *
+ * @param ctx Pointer to ACVP_CTX that was previously created by
+        calling acvp_create_test_session.
+ * @param rsp_filename Name of the file that contains the completed vector set
+ *      results
+ * @param fips_validation Should be != 0 in case of fips validation (metadata must
+ *      be provided)
+ * @return ACVP_RESULT
+ */
 ACVP_RESULT acvp_upload_vectors_from_file(ACVP_CTX *ctx, const char *rsp_filename, int fips_validation);
+
+/*! @brief Runs a set of tests from vector sets that were saved to a file and saves
+ * the results in a different file.
+ *
+ * @param ctx Pointer to ACVP_CTX that was previously created by
+        calling acvp_create_test_session.
+ * @param req_filename Name of the file that contains the unprocessed vector sets
+ * @param rsp_filename Name of the file to save vector set test results to
+ * @return ACVP_RESULT
+ */
 ACVP_RESULT acvp_run_vectors_from_file(ACVP_CTX *ctx, const char *req_filename, const char *rsp_filename);
+
+/*! @brief performs an HTTP PUT on a given libacvp JSON file to the ACV server
+ *
+ * @param ctx Pointer to ACVP_CTX that was previously created by
+        calling acvp_create_test_session.
+ * @param put_filename name of the file to PUT to the ACV server
+ * @return ACVP_RESULT
+ */
 ACVP_RESULT acvp_put_data_from_file(ACVP_CTX *ctx, const char *put_filename);
+
+/*! @brief Retrieves the results of an already-completed test session
+ *
+ * @param ctx Pointer to ACVP_CTX that was previously created by
+        calling acvp_create_test_session.
+ * @param request_filename File containing the session info created by libacvp
+ * @return ACVP_RESULT
+ */
 ACVP_RESULT acvp_get_results_from_server(ACVP_CTX *ctx, const char *request_filename);
+
+/*! @brief Queries the server for any vector sets that have not received a response
+ * (e.x. in case of lose of connectivity during testing), downloads those vector sets,
+ * and continues to process them
+ *
+ * @param ctx Pointer to ACVP_CTX that was previously created by
+        calling acvp_create_test_session.
+ * @param request_filename File containing the session info created by libacvp
+ * @param fips_validation Should be != 0 in case of fips validation (metadata must
+ *      be provided)
+ * @return ACVP_RESULT
+ */
 ACVP_RESULT acvp_resume_test_session(ACVP_CTX *ctx, const char *request_filename, int fips_validation);
 
 /*! @brief acvp_set_2fa_callback() sets a callback function which
