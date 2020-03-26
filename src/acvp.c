@@ -977,6 +977,7 @@ ACVP_RESULT acvp_run_vectors_from_file(ACVP_CTX *ctx, const char *req_filename, 
         }
 
         json_value_free(file_val);
+        file_val = NULL;
         n++;
         obj = json_array_get_object(reg_array, n);
         vs_entry = vs_entry->next;
@@ -1172,7 +1173,6 @@ ACVP_RESULT acvp_upload_vectors_from_file(ACVP_CTX *ctx, const char *rsp_filenam
     }
 end:
     json_value_free(val);
-
     return rv;
 }
 
@@ -1351,7 +1351,6 @@ ACVP_RESULT acvp_resume_test_session(ACVP_CTX *ctx, const char *request_filename
     }
     obj = acvp_get_obj_from_rsp(ctx, val);
     if (!obj) {
-        if (val) json_value_free(val);
         ACVP_LOG_ERR("Error while parsing json from server!");
         rv = ACVP_JSON_ERR;
         goto end;
@@ -2590,7 +2589,6 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
         }
         obj = acvp_get_obj_from_rsp(ctx, val);
         if (!obj) {
-            if (val) json_value_free(val);
             ACVP_LOG_ERR("Error while parsing json from server!");
             rv = ACVP_JSON_ERR;
             goto end;
@@ -2717,6 +2715,7 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
             }
 
             if (val) json_value_free(val);
+            val = NULL;
             continue;
         }
 
