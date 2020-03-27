@@ -132,8 +132,7 @@ am_runtest_OBJECTS = runtest-ut_common.$(OBJEXT) \
 	runtest-test_acvp_ecdsa.$(OBJEXT) \
 	runtest-test_acvp_kas_ecc.$(OBJEXT) \
 	runtest-test_acvp_kas_ffc.$(OBJEXT) \
-        runtest-test_app_aes.$(OBJEXT) \
-	runtest-test_app_cmac.$(OBJEXT) \
+	runtest-test_app_aes.$(OBJEXT) runtest-test_app_cmac.$(OBJEXT) \
 	runtest-test_app_ecdsa.$(OBJEXT) \
 	runtest-test_app_hmac.$(OBJEXT) \
 	runtest-test_app_kas_ecc.$(OBJEXT) \
