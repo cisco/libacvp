@@ -3343,9 +3343,13 @@ ACVP_RESULT acvp_oe_ingest_metadata(ACVP_CTX *ctx, const char *metadata_file) {
     }
 
     val = json_parse_file(metadata_file);
-    if (!val) return ACVP_JSON_ERR;
+    if (!val) {
+        ACVP_LOG_ERR("Failed to parse JSON in metadata file");
+        return ACVP_JSON_ERR;
+    }
     obj = json_value_get_object(val);
     if (!obj) {
+        ACVP_LOG_ERR("Failed to parse JSON object in metadata file");
         rv = ACVP_JSON_ERR;
         goto end;
     }
