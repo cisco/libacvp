@@ -21,6 +21,7 @@ extern "C"
  * MACROS
  */
 #define DEFAULT_SERVER "127.0.0.1"
+#define DEFAULT_SERVER_LEN 9
 #define DEFAULT_PORT 443
 #define DEFAULT_URI_PREFIX "/acvp/v1/"
 #define JSON_FILENAME_LENGTH 128
