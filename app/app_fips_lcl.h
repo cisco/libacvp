@@ -119,13 +119,18 @@ int fips_dsa_builtin_paramgen2(DSA *ret, size_t L, size_t N,
 #include <openssl/fipssyms.h>
 #include <openssl/fips_rand.h>
 
-#if defined(dsa_builtin_paramgen2) && OPENSSL_VERSION_NUMBER <= 0x10100000L
-# undef dsa_builtin_paramgen2
-int dsa_builtin_paramgen2(DSA *ret, size_t L, size_t N,
+#if OPENSSL_VERSION_NUMBER <= 0x10100000L
+#define fips_dsa_builtin_paramgen2 fips_h_bad_dsa_builtin_paramgen2 
+#include <openssl/fips.h>
+#undef fips_dsa_builtin_paramgen2
+int fips_dsa_builtin_paramgen2(DSA *ret, size_t L, size_t N,
      const EVP_MD *evpmd, const unsigned char *seed_in, size_t seed_len,
      int idx, unsigned char *seed_out,
      int *counter_ret, unsigned long *h_ret, BN_GENCB *cb);
+#else
+#include <openssl/fips.h>
 #endif
+
 
 /*
  * TODO: These need to be put in fips.h

@@ -27,6 +27,7 @@ extern int fips_selftest_fail;
 extern int fips_mode;
 #endif
 #include "safe_mem_lib.h"
+#include "safe_str_lib.h"
 
 static int enable_aes(ACVP_CTX *ctx);
 static int enable_tdes(ACVP_CTX *ctx);
@@ -68,8 +69,6 @@ static void setup_session_parameters(void) {
 
     server = getenv("ACV_SERVER");
     if (!server) {
-         printf("Warning: No server set, using default. Please define ACV_SERVER in your environment.\n");
-         printf("Run acvp_app --help for more information on this and other environment variables.\n");
          server = DEFAULT_SERVER;
      }
 
@@ -125,6 +124,7 @@ int main(int argc, char **argv) {
     ACVP_RESULT rv = ACVP_SUCCESS;
     ACVP_CTX *ctx = NULL;
     APP_CONFIG cfg;
+    int diff = 0;
 
     memset_s(&cfg, sizeof(APP_CONFIG), 0, sizeof(APP_CONFIG));
     if (ingest_cli(&cfg, argc, argv)) {
@@ -303,6 +303,12 @@ int main(int argc, char **argv) {
     if (cfg.vector_req && cfg.vector_rsp) {
        rv = acvp_run_vectors_from_file(ctx, cfg.vector_req_file, cfg.vector_rsp_file);
        goto end;
+    }
+
+    strncmp_s(server, DEFAULT_SERVER_LEN, DEFAULT_SERVER, DEFAULT_SERVER_LEN, &diff);
+    if (!diff) {
+         printf("Warning: No server set, using default. Please define ACV_SERVER in your environment.\n");
+         printf("Run acvp_app --help for more information on this and other environment variables.\n\n");
     }
 
     if (cfg.fips_validation) {
