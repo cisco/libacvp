@@ -305,7 +305,7 @@ int main(int argc, char **argv) {
        goto end;
     }
 
-    strncmp_s(server, DEFAULT_SERVER_LEN, DEFAULT_SERVER, DEFAULT_SERVER_LEN, &diff);
+    strncmp_s(DEFAULT_SERVER, DEFAULT_SERVER_LEN, server, DEFAULT_SERVER_LEN, &diff);
     if (!diff) {
          printf("Warning: No server set, using default. Please define ACV_SERVER in your environment.\n");
          printf("Run acvp_app --help for more information on this and other environment variables.\n\n");

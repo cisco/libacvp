@@ -2742,7 +2742,12 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
                 if (ctx->is_sample) {
                     ACVP_LOG_STATUS("Getting expected results for failed Vector Set...");
                     rv = acvp_retrieve_expected_result(ctx, vs_url);
-                    if (rv != ACVP_SUCCESS) goto end;
+                    if (rv != ACVP_SUCCESS) {
+                        ACVP_LOG_ERR("Expected results retrieval failed %d...", rv);
+                        goto end;
+                    }
+                    /* always dump all of sample data */
+                    printf("\n%s\n", ctx->curl_buf);
                 }
             }
         }
