@@ -497,6 +497,7 @@ ACVP_RESULT acvp_rsa_keygen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         ACVP_LOG_VERBOSE("  infoGenByServer: %s", info_gen_by_server ? "true" : "false");
         ACVP_LOG_VERBOSE("       pubExpMode: %s", pub_exp_mode_str);
         ACVP_LOG_VERBOSE("        keyFormat: %s", key_format_str);
+        ACVP_LOG_VERBOSE("           modulo: %d", mod);
 
         tests = json_object_get_array(groupobj, "tests");
         t_cnt = json_array_get_count(tests);
