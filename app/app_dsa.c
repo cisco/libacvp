@@ -596,6 +596,7 @@ int app_dsa_handler(ACVP_TEST_CASE *test_case) {
     }
     return 0;
 }
+#endif // OPENSSL_NO_DSA
 
 #else
 int app_dsa_handler(ACVP_TEST_CASE *test_case) {
@@ -604,6 +605,5 @@ int app_dsa_handler(ACVP_TEST_CASE *test_case) {
     }
     return 1;
 }
-#endif // OPENSSL_NO_DSA
 #endif // ACVP_NO_RUNTIME
 
