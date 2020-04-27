@@ -17,6 +17,7 @@
 #include "safe_lib.h"
 #ifdef ACVP_NO_RUNTIME
 #include "app_fips_lcl.h" /* All regular OpenSSL headers must come before here */
+#ifndef OPENSSL_NO_DSA
 
 static DSA *group_dsa = NULL;
 static BIGNUM *group_p = NULL;
@@ -603,5 +604,6 @@ int app_dsa_handler(ACVP_TEST_CASE *test_case) {
     }
     return 1;
 }
+#endif // OPENSSL_NO_DSA
 #endif // ACVP_NO_RUNTIME
 

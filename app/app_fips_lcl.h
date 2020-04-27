@@ -123,10 +123,12 @@ int fips_dsa_builtin_paramgen2(DSA *ret, size_t L, size_t N,
 #define fips_dsa_builtin_paramgen2 fips_h_bad_dsa_builtin_paramgen2 
 #include <openssl/fips.h>
 #undef fips_dsa_builtin_paramgen2
+#ifndef OPENSSL_NO_DSA
 int fips_dsa_builtin_paramgen2(DSA *ret, size_t L, size_t N,
      const EVP_MD *evpmd, const unsigned char *seed_in, size_t seed_len,
      int idx, unsigned char *seed_out,
      int *counter_ret, unsigned long *h_ret, BN_GENCB *cb);
+#endif
 #else
 #include <openssl/fips.h>
 #endif
@@ -180,6 +182,7 @@ int fips_RSA_set0_key(RSA *r, BIGNUM *n, BIGNUM *e, BIGNUM *d);
 void fips_RSA_get0_key(const RSA *r,
                   const BIGNUM **n, const BIGNUM **e, const BIGNUM **d);
 
+#ifndef OPENSSL_NO_DSA
 DSA * FIPS_dsa_new(void);
 void FIPS_dsa_free(DSA *r);
 int FIPS_dsa_verify(DSA *dsa, const unsigned char *msg, size_t msglen,
@@ -192,6 +195,8 @@ void FIPS_dsa_sig_get0(const DSA_SIG *sig, const BIGNUM **pr, const BIGNUM **ps)
 void FIPS_dsa_sig_set0(const DSA_SIG *sig, BIGNUM *pr, BIGNUM *ps);
 DSA_SIG *FIPS_dsa_sig_new(void);
 void FIPS_dsa_sig_free(DSA_SIG *sig);
+#endif
+
 BIGNUM *fips_bn_ctx_get(BN_CTX *ctx);
 void FIPS_bn_clear_free(BIGNUM *a);
 int fips_bn_cmp(const BIGNUM *a, const BIGNUM *b);

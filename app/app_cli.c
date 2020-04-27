@@ -13,6 +13,10 @@
 #include "app_lcl.h"
 #include "safe_lib.h"
 
+#ifdef ACVP_NO_RUNTIME
+# include "app_fips_lcl.h"
+#endif
+
 #define ANSI_COLOR_RED "\x1b[31m"
 #define ANSI_COLOR_YELLOW "\x1b[33m"
 #define ANSI_COLOR_RESET "\x1b[0m"
@@ -45,12 +49,14 @@ static void print_usage(int err) {
 #ifdef OPENSSL_KDF_SUPPORT
     printf("      --kdf\n");
 #endif
+#ifndef OPENSSL_NO_DSA
     printf("      --dsa\n");
+    printf("      --kas_ffc\n");
+#endif
     printf("      --rsa\n");
     printf("      --ecdsa\n");
     printf("      --drbg\n");
     printf("      --kas_ecc\n");
-    printf("      --kas_ffc\n");
     printf("\n");
     printf("To resume a previous test session that was interupted:\n");
     printf("      --resume_session <file>\n");
@@ -119,12 +125,14 @@ static void enable_all_algorithms(APP_CONFIG *cfg) {
     cfg->cmac = 1;
     cfg->hmac = 1;
     /* These require the fom */
+#ifndef OPENSSL_NO_DSA
     cfg->dsa = 1;
+    cfg->kas_ffc = 1;
+#endif
     cfg->rsa = 1;
     cfg->drbg = 1;
     cfg->ecdsa = 1;
     cfg->kas_ecc = 1;
-    cfg->kas_ffc = 1;
 #ifdef OPENSSL_KDF_SUPPORT
     cfg->kdf = 1;
 #endif
@@ -154,12 +162,14 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
 #ifdef OPENSSL_KDF_SUPPORT
         { "kdf", ko_no_argument, 315 },
 #endif
+#ifndef OPENSSL_NO_DSA
         { "dsa", ko_no_argument, 316 },
+        { "kas_ffc", ko_no_argument, 321 },
+#endif
         { "rsa", ko_no_argument, 317 },
         { "drbg", ko_no_argument, 318 },
         { "ecdsa", ko_no_argument, 319 },
         { "kas_ecc", ko_no_argument, 320 },
-        { "kas_ffc", ko_no_argument, 321 },
         { "all_algs", ko_no_argument, 322 },
         { "json", ko_required_argument, 400 },
         { "kat", ko_required_argument, 401 },
@@ -256,11 +266,18 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
             continue;
         }
 #endif
+#ifndef OPENSSL_NO_DSA
         if (c == 316) {
             cfg->dsa = 1;
             cfg->empty_alg = 0;
             continue;
         }
+        if (c == 321) {
+            cfg->kas_ffc = 1;
+            cfg->empty_alg = 0;
+            continue;
+        }
+#endif
         if (c == 317) {
             cfg->rsa = 1;
             cfg->empty_alg = 0;
@@ -278,11 +295,6 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
         }
         if (c == 320) {
             cfg->kas_ecc = 1;
-            cfg->empty_alg = 0;
-            continue;
-        }
-        if (c == 321) {
-            cfg->kas_ffc = 1;
             cfg->empty_alg = 0;
             continue;
         }
