@@ -286,6 +286,7 @@ error:
     return rv;
 }
 
+#ifndef OPENSSL_NO_DSA
 int app_kas_ffc_handler(ACVP_TEST_CASE *test_case) {
     ACVP_KAS_FFC_TC         *tc;
     const EVP_MD *md = NULL;
@@ -439,6 +440,7 @@ error:
     if (g) BN_free(g);
     return rv;
 }
+#endif // OPENSSL_NO_DSA
 #else
 int app_kas_ecc_handler(ACVP_TEST_CASE *test_case) {
     if (!test_case) {
@@ -452,6 +454,5 @@ int app_kas_ffc_handler(ACVP_TEST_CASE *test_case) {
     }
     return 1;
 }
-
 #endif // ACVP_NO_RUNTIME
 

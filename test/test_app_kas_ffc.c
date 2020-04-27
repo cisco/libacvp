@@ -16,6 +16,7 @@
 
 #include "ut_common.h"
 #include "acvp_lcl.h"
+#ifndef OPENSSL_NO_DSA
 
 ACVP_CTX *ctx;
 ACVP_TEST_CASE *test_case;
@@ -414,6 +415,6 @@ Test(APP_KAS_FFC_HANDLER, unallocated_ans_bufs) {
     free_kas_ffc_tc(kas_ffc_tc);
     free(test_case);
 }
-
+#endif // OPENSSL_NO_DSA
 #endif // ACVP_NO_RUNTIME
 

@@ -29,17 +29,19 @@ extern int fips_mode;
 #include "safe_mem_lib.h"
 #include "safe_str_lib.h"
 
+#ifndef OPENSSL_NO_DSA
+static int enable_dsa(ACVP_CTX *ctx);
+static int enable_kas_ffc(ACVP_CTX *ctx);
+#endif
 static int enable_aes(ACVP_CTX *ctx);
 static int enable_tdes(ACVP_CTX *ctx);
 static int enable_hash(ACVP_CTX *ctx);
 static int enable_cmac(ACVP_CTX *ctx);
 static int enable_hmac(ACVP_CTX *ctx);
-static int enable_dsa(ACVP_CTX *ctx);
 static int enable_rsa(ACVP_CTX *ctx);
 static int enable_ecdsa(ACVP_CTX *ctx);
 static int enable_drbg(ACVP_CTX *ctx);
 static int enable_kas_ecc(ACVP_CTX *ctx);
-static int enable_kas_ffc(ACVP_CTX *ctx);
 #ifdef OPENSSL_KDF_SUPPORT
 static int enable_kdf(ACVP_CTX *ctx);
 #endif
@@ -114,7 +116,9 @@ static void app_cleanup(ACVP_CTX *ctx) {
     app_aes_cleanup();
     app_des_cleanup();
 #ifdef ACVP_NO_RUNTIME
+#ifndef OPENSSL_NO_DSA
     app_dsa_cleanup();
+#endif
     app_rsa_cleanup();
     app_ecdsa_cleanup();
 #endif
@@ -271,10 +275,11 @@ int main(int argc, char **argv) {
             }
 #endif
 
+#ifndef OPENSSL_NO_DSA
         if (cfg.dsa) {
             if (enable_dsa(ctx)) goto end;
         }
-
+#endif
         if (cfg.rsa) {
             if (enable_rsa(ctx)) goto end;
         }
@@ -290,9 +295,11 @@ int main(int argc, char **argv) {
         if (cfg.kas_ecc) {
             if (enable_kas_ecc(ctx)) goto end;
         }
+#ifndef OPENSSL_NO_DSA
         if (cfg.kas_ffc) {
             if (enable_kas_ffc(ctx)) goto end;
         }
+#endif
     }
 
     if (cfg.kat) {
@@ -1465,6 +1472,7 @@ end:
     return rv;
 }
 
+#ifndef OPENSSL_NO_DSA
 static int enable_kas_ffc(ACVP_CTX *ctx) {
     ACVP_RESULT rv = ACVP_SUCCESS;
 
@@ -1742,7 +1750,7 @@ end:
 
     return rv;
 }
-
+#endif
 static int enable_rsa(ACVP_CTX *ctx) {
     ACVP_RESULT rv = ACVP_SUCCESS;
     BIGNUM *expo = NULL;
