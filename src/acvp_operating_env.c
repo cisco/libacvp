@@ -118,19 +118,28 @@ ACVP_RESULT acvp_oe_dependency_new(ACVP_CTX *ctx, unsigned int id) {
 typedef enum dependency_field {
     DEPENDENCY_FIELD_TYPE = 1,
     DEPENDENCY_FIELD_NAME,
-    DEPENDENCY_FIELD_DESC
+    DEPENDENCY_FIELD_DESC,
+    DEPENDENCY_FIELD_MAN,
+    DEPENDENCY_FIELD_VERSION,
+    DEPENDENCY_FIELD_FAMILY,
+    DEPENDENCY_FIELD_SERIES
 } DEPENDENCY_FIELD;
 
 static ACVP_RESULT acvp_oe_dependency_set_field(ACVP_CTX *ctx,
-                                                ACVP_DEPENDENCY *dep,
                                                 DEPENDENCY_FIELD field,
+                                                unsigned int dep_id,
                                                 const char *value) {
     ACVP_RESULT rv = 0;
+    ACVP_DEPENDENCY *dep = NULL;
 
     if (!ctx) return ACVP_NO_CTX;
 
-    if (dep == NULL) {
+    if (!dep_id) {
         ACVP_LOG_ERR("Required parameter 'dep' is NULL");
+        return ACVP_INVALID_ARG;
+    }
+
+    if (!(dep = find_dependency(ctx, dep_id))) {
         return ACVP_INVALID_ARG;
     }
 
@@ -140,6 +149,14 @@ static ACVP_RESULT acvp_oe_dependency_set_field(ACVP_CTX *ctx,
         rv = copy_oe_string(&dep->name, value);
     } else if (DEPENDENCY_FIELD_DESC == field) {
         rv = copy_oe_string(&dep->description, value);
+    } else if (DEPENDENCY_FIELD_SERIES == field) {
+        rv = copy_oe_string(&dep->series, value);
+    } else if (DEPENDENCY_FIELD_FAMILY == field) {
+        rv = copy_oe_string(&dep->family, value);
+    } else if (DEPENDENCY_FIELD_VERSION == field) {
+        rv = copy_oe_string(&dep->version, value);
+    } else if (DEPENDENCY_FIELD_MAN == field) {
+        rv = copy_oe_string(&dep->manufacturer, value);
     } else {
         ACVP_LOG_ERR("Invalid value for parameter 'field'");
         return ACVP_INVALID_ARG;
@@ -155,75 +172,6 @@ static ACVP_RESULT acvp_oe_dependency_set_field(ACVP_CTX *ctx,
     }
 
     return ACVP_SUCCESS; 
-}
-
-/**
- * @brief Set the type for a given Dependency.
- *
- * @param ctx ACVP_CTX
- * @param dependency_id ID of this Dependency
- * @param value String representing "type"
- *
- * @return ACVP_RESULT
- */
-ACVP_RESULT acvp_oe_dependency_set_type(ACVP_CTX *ctx,
-                                        unsigned int dependency_id,
-                                        const char *value) {
-    ACVP_DEPENDENCY *dep = NULL;
-
-    if (!ctx) return ACVP_NO_CTX;
-
-    if (!(dep = find_dependency(ctx, dependency_id))) {
-        return ACVP_INVALID_ARG;
-    }
-
-    return acvp_oe_dependency_set_field(ctx, dep, DEPENDENCY_FIELD_TYPE, value);
-}
-
-/**
- * @brief Set the name for a given Dependency.
- *
- * @param ctx ACVP_CTX
- * @param dependency_id ID of this Dependency
- * @param value String representing "name"
- *
- * @return ACVP_RESULT
- */
-ACVP_RESULT acvp_oe_dependency_set_name(ACVP_CTX *ctx,
-                                        unsigned int dependency_id,
-                                        const char *value) {
-    ACVP_DEPENDENCY *dep = NULL;
-
-    if (!ctx) return ACVP_NO_CTX;
-
-    if (!(dep = find_dependency(ctx, dependency_id))) {
-        return ACVP_INVALID_ARG;
-    }
-
-    return acvp_oe_dependency_set_field(ctx, dep, DEPENDENCY_FIELD_NAME, value);
-}
-
-/**
- * @brief Set the description for a given Dependency.
- *
- * @param ctx ACVP_CTX
- * @param dependency_id ID of this Dependency
- * @param value String representing "description"
- *
- * @return ACVP_RESULT
- */
-ACVP_RESULT acvp_oe_dependency_set_description(ACVP_CTX *ctx,
-                                               unsigned int dependency_id,
-                                               const char *value) {
-    ACVP_DEPENDENCY *dep = NULL;
-
-    if (!ctx) return ACVP_NO_CTX;
-
-    if (!(dep = find_dependency(ctx, dependency_id))) {
-        return ACVP_INVALID_ARG;
-    }
-
-    return acvp_oe_dependency_set_field(ctx, dep, DEPENDENCY_FIELD_DESC, value);
 }
 
 /**
@@ -3147,14 +3095,20 @@ static ACVP_RESULT acvp_oe_metadata_parse_oe_dependencies(ACVP_CTX *ctx,
     }
 
     for (i = 0; i < count; i++) {
-        ACVP_DEPENDENCY tmp_dep = {0, 0, 0, 0, 0};
+        ACVP_DEPENDENCY tmp_dep = {0, 0, 0, 0, 0, 0, 0, 0, 0};
         const char *type_str = NULL, *name_str = NULL, *desc_str = NULL;
+        const char *family_str = NULL, *series_str = NULL, *version_str = NULL;
+        const char *man_str = NULL;
         JSON_Object *dep_obj = json_array_get_object(deps_array, i);
         unsigned int dep_id = 0;
 
         type_str = json_object_get_string(dep_obj, "type");
         name_str = json_object_get_string(dep_obj, "name");
         desc_str = json_object_get_string(dep_obj, "description");
+        family_str = json_object_get_string(dep_obj, "family");
+        series_str = json_object_get_string(dep_obj, "series");
+        man_str = json_object_get_string(dep_obj, "manufacturer");
+        version_str = json_object_get_string(dep_obj, "version");
 
         if (!type_str && !name_str && !desc_str) {
             ACVP_LOG_ERR("Need at least 1 of type, name, description");
@@ -3171,12 +3125,28 @@ static ACVP_RESULT acvp_oe_metadata_parse_oe_dependencies(ACVP_CTX *ctx,
         if (desc_str) {
             tmp_dep.description = strdup(desc_str);
         }
+        if (family_str) {
+            tmp_dep.family = strdup(family_str);
+        }
+        if (version_str) {
+            tmp_dep.version = strdup(version_str);
+        }
+        if (series_str) {
+            tmp_dep.series = strdup(series_str);
+        }
+        if (man_str) {
+            tmp_dep.manufacturer = strdup(man_str);
+        }
 
 
         dep_id = match_dependency(ctx, &tmp_dep);
         free(tmp_dep.type);
         free(tmp_dep.name);
         free(tmp_dep.description);
+        free(tmp_dep.manufacturer);
+        free(tmp_dep.version);
+        free(tmp_dep.series);
+        free(tmp_dep.family);
         if (dep_id == 0) {
             /*
              * We didn't find a Dependency in memory that matches exactly.
@@ -3197,19 +3167,41 @@ static ACVP_RESULT acvp_oe_metadata_parse_oe_dependencies(ACVP_CTX *ctx,
             }
 
             if (type_str) {
-                rv = acvp_oe_dependency_set_type(ctx, dep_id, type_str);
+                rv = acvp_oe_dependency_set_field(ctx, DEPENDENCY_FIELD_TYPE, dep_id, type_str);
                 if (ACVP_SUCCESS != rv) return rv;
             }
 
             if (name_str) {
-                rv = acvp_oe_dependency_set_name(ctx, dep_id, name_str);
+                rv = acvp_oe_dependency_set_field(ctx, DEPENDENCY_FIELD_NAME, dep_id, name_str);
                 if (ACVP_SUCCESS != rv) return rv;
             }
 
             if (desc_str) {
-                rv = acvp_oe_dependency_set_description(ctx, dep_id, desc_str);
+                rv = acvp_oe_dependency_set_field(ctx, DEPENDENCY_FIELD_DESC, dep_id, desc_str);
                 if (ACVP_SUCCESS != rv) return rv;
             }
+
+            if (man_str) {
+                rv = acvp_oe_dependency_set_field(ctx, DEPENDENCY_FIELD_MAN, dep_id, man_str);
+                if (ACVP_SUCCESS != rv) return rv;
+            }
+
+            if (version_str) {
+                rv = acvp_oe_dependency_set_field(ctx, DEPENDENCY_FIELD_VERSION, dep_id, version_str);
+                if (ACVP_SUCCESS != rv) return rv;
+            }
+
+            if (family_str) {
+                rv = acvp_oe_dependency_set_field(ctx, DEPENDENCY_FIELD_FAMILY, dep_id, family_str);
+                if (ACVP_SUCCESS != rv) return rv;
+            }
+
+            if (series_str) {
+                rv = acvp_oe_dependency_set_field(ctx, DEPENDENCY_FIELD_SERIES, dep_id, series_str);
+                if (ACVP_SUCCESS != rv) return rv;
+            }
+
+
 
             /* Increment Global dependency ID*/
             glb_dependency_id++;
@@ -3218,7 +3210,6 @@ static ACVP_RESULT acvp_oe_metadata_parse_oe_dependencies(ACVP_CTX *ctx,
         /* Add the Dependency to the OE */
         acvp_oe_oe_set_dependency(ctx, oe_id, dep_id);
     }
-
     return rv;
 }
 

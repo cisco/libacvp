@@ -13,7 +13,7 @@
 #include "parson.h"
 
 #define ACVP_VERSION    "1.0"
-#define ACVP_LIBRARY_VERSION    "libacvp_oss-1.0.0"
+#define ACVP_LIBRARY_VERSION    "libacvp_oss-1.0.1"
 
 
 #ifndef ACVP_LOG_ERR
@@ -1247,6 +1247,10 @@ typedef struct acvp_dependency_t {
     char *type;
     char *name;
     char *description;
+    char *series;
+    char *family;
+    char *version;
+    char *manufacturer;
 } ACVP_DEPENDENCY;
 
 #define LIBACVP_DEPENDENCIES_MAX 64
