@@ -117,44 +117,6 @@ Test(DEPENDENCY_NEW, dependency_new, .init = setup, .fini = teardown) {
 
 }
 
-/*
- * Test  acvp_oe_dependency_set_type
- */
-Test(DEPENDENCY_SET_TYPE, dependency_set_type, .init = setup, .fini = teardown) {
-
-    rv = acvp_oe_dependency_set_type(NULL, 1, "value");
-    cr_assert(rv == ACVP_NO_CTX);
-
-    rv = acvp_oe_dependency_set_type(ctx, 1, "value");
-    cr_assert(rv == ACVP_INVALID_ARG);
-
-}
-
-/*
- * Test  acvp_oe_dependency_set_name
- */
-Test(SEPENDENCY_SET_NAME, dependency_set_name, .init = setup, .fini = teardown) {
-
-    rv = acvp_oe_dependency_set_name(NULL, 1, "name");
-    cr_assert(rv == ACVP_NO_CTX);
-
-    rv = acvp_oe_dependency_set_name(ctx, 1, "name");
-    cr_assert(rv == ACVP_INVALID_ARG);
-
-}
-
-/*
- * Test  acvp_oe_dependency_set_description
- */
-Test(DEPENDENCY_SET_DESCRIPTION, dependency_set_description, .init = setup, .fini = teardown) {
-
-    rv = acvp_oe_dependency_set_description(NULL, 1, "description");
-    cr_assert(rv == ACVP_NO_CTX);
-
-    rv = acvp_oe_dependency_set_description(ctx, 1, "description");
-    cr_assert(rv == ACVP_INVALID_ARG);
-
-}
 
 /*
  * Test  acvp_oe_oe_new

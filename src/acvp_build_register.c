@@ -2985,6 +2985,18 @@ ACVP_RESULT acvp_build_validation(ACVP_CTX *ctx,
                     if (dependency->description) {
                         json_object_set_string(dep_obj, "description", dependency->description);
                     }
+                    if (dependency->version) {
+                        json_object_set_string(dep_obj, "version", dependency->version);
+                    }
+                    if (dependency->family) {
+                        json_object_set_string(dep_obj, "family", dependency->family);
+                    }
+                    if (dependency->series) {
+                        json_object_set_string(dep_obj, "series", dependency->series);
+                    }
+                    if (dependency->manufacturer) {
+                        json_object_set_string(dep_obj, "manufacturer", dependency->manufacturer);
+                    }
 
                     json_array_append_value(dep_array, dep_val);
                 }

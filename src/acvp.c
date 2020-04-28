@@ -2973,7 +2973,11 @@ ACVP_RESULT acvp_run(ACVP_CTX *ctx, int fips_validation) {
 
     if (ctx->get) { 
         rv = acvp_transport_get(ctx, ctx->get_string, NULL);
-        ACVP_LOG_STATUS("GET Response:\n\n%s\n", ctx->curl_buf);
+        if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
+            printf("\n\n%s\n\n", ctx->curl_buf);
+        } else {
+            ACVP_LOG_STATUS("GET Response:\n\n%s\n", ctx->curl_buf);
+        }
         goto end;
     }
 
