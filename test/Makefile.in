@@ -133,6 +133,7 @@ am_runtest_OBJECTS = runtest-ut_common.$(OBJEXT) \
 	runtest-test_acvp_kas_ecc.$(OBJEXT) \
 	runtest-test_acvp_kas_ffc.$(OBJEXT) \
 	runtest-test_app_aes.$(OBJEXT) runtest-test_app_cmac.$(OBJEXT) \
+	runtest-test_app_des.$(OBJEXT) \
 	runtest-test_app_ecdsa.$(OBJEXT) \
 	runtest-test_app_hmac.$(OBJEXT) \
 	runtest-test_app_kas_ecc.$(OBJEXT) \
@@ -508,6 +509,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtest-test_acvp_utils.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtest-test_app_aes.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtest-test_app_cmac.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtest-test_app_des.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtest-test_app_ecdsa.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtest-test_app_hmac.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtest-test_app_kas_ecc.Po@am__quote@
@@ -960,6 +962,21 @@ runtest-test_app_cmac.obj: test_app_cmac.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_app_cmac.c' object='runtest-test_app_cmac.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o runtest-test_app_cmac.obj `if test -f 'test_app_cmac.c'; then $(CYGPATH_W) 'test_app_cmac.c'; else $(CYGPATH_W) '$(srcdir)/test_app_cmac.c'; fi`
+
+runtest-test_app_des.o: test_app_des.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT runtest-test_app_des.o -MD -MP -MF $(DEPDIR)/runtest-test_app_des.Tpo -c -o runtest-test_app_des.o `test -f 'test_app_des.c' || echo '$(srcdir)/'`test_app_des.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/runtest-test_app_des.Tpo $(DEPDIR)/runtest-test_app_des.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_app_des.c' object='runtest-test_app_des.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o runtest-test_app_des.o `test -f 'test_app_des.c' || echo '$(srcdir)/'`test_app_des.c
+
+runtest-test_app_des.obj: test_app_des.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT runtest-test_app_des.obj -MD -MP -MF $(DEPDIR)/runtest-test_app_des.Tpo -c -o runtest-test_app_des.obj `if test -f 'test_app_des.c'; then $(CYGPATH_W) 'test_app_des.c'; else $(CYGPATH_W) '$(srcdir)/test_app_des.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/runtest-test_app_des.Tpo $(DEPDIR)/runtest-test_app_des.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_app_des.c' object='runtest-test_app_des.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o runtest-test_app_des.obj `if test -f 'test_app_des.c'; then $(CYGPATH_W) 'test_app_des.c'; else $(CYGPATH_W) '$(srcdir)/test_app_des.c'; fi`
+
 
 runtest-test_app_ecdsa.o: test_app_ecdsa.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT runtest-test_app_ecdsa.o -MD -MP -MF $(DEPDIR)/runtest-test_app_ecdsa.Tpo -c -o runtest-test_app_ecdsa.o `test -f 'test_app_ecdsa.c' || echo '$(srcdir)/'`test_app_ecdsa.c

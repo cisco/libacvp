@@ -31,25 +31,34 @@ int app_des_handler(ACVP_TEST_CASE *test_case) {
     unsigned char *iv = 0;
 
     if (!test_case) {
-        return 1;
+        goto err;
     }
 
     tc = test_case->tc.symmetric;
+    
+    if (!tc) {
+        goto err;
+    }
 
     /*
      * We only support 3 key DES
      */
     if (tc->key_len != 192) {
         printf("Unsupported DES key length\n");
-        return 1;
+        goto err;
     }
 
     if (glb_cipher_ctx == NULL) {
         glb_cipher_ctx = EVP_CIPHER_CTX_new();
         if (glb_cipher_ctx == NULL) {
-            printf("Failed to allocate global cipher_ctx");
-            return 1;
+            printf("Failed to allocate global cipher_ctx\n");
+            goto err;
         }
+    }
+
+    if (!tc->iv_ret || !tc->iv_ret_after) {
+        printf("iv_ret or iv_ret_after not initialized; unable to process test case\n");
+        goto err;
     }
 
     /* Begin encrypt code section */
@@ -163,7 +172,7 @@ int app_des_handler(ACVP_TEST_CASE *test_case) {
     case ACVP_CIPHER_END:
     default:
         printf("Error: Unsupported DES mode requested by ACVP server\n");
-        return 1;
+        goto err;
 
         break;
     }
@@ -215,10 +224,11 @@ int app_des_handler(ACVP_TEST_CASE *test_case) {
             memcpy_s(tc->iv_ret_after, SYM_IV_BYTE_MAX, ctx_iv, 8);
         } else {
             printf("Unsupported direction\n");
-            return 1;
+            goto err;
         }
         if (tc->mct_index == 9999) {
-            EVP_CIPHER_CTX_cleanup(cipher_ctx);
+            EVP_CIPHER_CTX_free(cipher_ctx);
+            glb_cipher_ctx = NULL;
         }
     } else {
         if (tc->direction == ACVP_SYM_CIPH_DIR_ENCRYPT) {
@@ -239,12 +249,17 @@ int app_des_handler(ACVP_TEST_CASE *test_case) {
             tc->pt_len = tc->ct_len;
         } else {
             printf("Unsupported direction\n");
-            return 1;
+            goto err;
         }
 
-        EVP_CIPHER_CTX_cleanup(cipher_ctx);
+        EVP_CIPHER_CTX_free(glb_cipher_ctx);
+        glb_cipher_ctx = NULL;
     }
 
     return 0;
+err:
+    if (glb_cipher_ctx) EVP_CIPHER_CTX_free(glb_cipher_ctx);
+    glb_cipher_ctx = NULL;
+    return 1;
 }
 

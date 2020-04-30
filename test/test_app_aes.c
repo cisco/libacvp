@@ -23,66 +23,66 @@ int initialize_aes_tc(ACVP_SYM_CIPHER_TC *aes_tc, int alg_id, char *pt,
                       ACVP_SYM_CIPH_DIR direction, ACVP_SYM_CIPH_TESTTYPE test_type) {
 
     aes_tc->ct = calloc(ACVP_SYM_CT_BYTE_MAX, sizeof(char));
-    if (!aes_tc->ct) { return -1; }
+    if (!aes_tc->ct) { return 0; }
     if (ct) {
         rv = acvp_hexstr_to_bin(ct, aes_tc->ct, ACVP_SYM_CT_BYTE_MAX, NULL);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Hex converstion failure (ct)");
-            return -1;
+            return 0;
         }
     }
 
     aes_tc->pt = calloc(ACVP_SYM_PT_BYTE_MAX, sizeof(char));
-    if (!aes_tc->pt) { return -1; }
+    if (!aes_tc->pt) { return 0; }
     if (pt) {
         rv = acvp_hexstr_to_bin(pt, aes_tc->pt, ACVP_SYM_PT_BYTE_MAX, NULL);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Hex converstion failure (pt)");
-            return -1;
+            return 0;
         }
     }
 
 
     aes_tc->key = calloc(ACVP_SYM_KEY_MAX_BYTES, sizeof(char));
-    if (!aes_tc->key) { return -1; }
+    if (!aes_tc->key) { return 0; }
     if (key) {
         rv = acvp_hexstr_to_bin(key, aes_tc->key, ACVP_SYM_KEY_MAX_BYTES, NULL);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Hex converstion failure (key)");
-            return -1;
+            return 0;
         }
     }
     
 
     aes_tc->aad = calloc(ACVP_SYM_AAD_BYTE_MAX, sizeof(char));
-    if (!aes_tc->aad) { return -1; }
+    if (!aes_tc->aad) { return 0; }
     if (aad) {
         rv = acvp_hexstr_to_bin(aad, aes_tc->aad, ACVP_SYM_AAD_BYTE_MAX, NULL);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Hex converstion failure (aad)");
-            return -1;
+            return 0;
         }
     }
     
 
     aes_tc->tag = calloc(ACVP_SYM_TAG_BYTE_MAX, sizeof(char));
-    if (!aes_tc->tag) { return -1; }
+    if (!aes_tc->tag) { return 0; }
     if (tag) {
         rv = acvp_hexstr_to_bin(tag, aes_tc->tag, ACVP_SYM_TAG_BYTE_MAX, NULL);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Hex converstion failure (tag)");
-            return -1;
+            return 0;
         }
     }
     
 
     aes_tc->iv = calloc(ACVP_SYM_IV_BYTE_MAX, sizeof(char));
-    if (!aes_tc->iv) { return -1; }
+    if (!aes_tc->iv) { return 0; }
     if (iv) {
         rv = acvp_hexstr_to_bin(iv, aes_tc->iv, ACVP_SYM_IV_BYTE_MAX, NULL);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Hex converstion failure (iv)");
-            return -1;
+            return 0;
         }
     }
         

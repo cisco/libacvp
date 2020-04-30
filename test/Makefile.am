@@ -29,6 +29,7 @@ runtest_SOURCES = ut_common.c \
       test_acvp_kas_ffc.c \
       test_app_aes.c \
       test_app_cmac.c \
+      test_app_des.c \
       test_app_ecdsa.c \
       test_app_hmac.c \
       test_app_kas_ecc.c \
