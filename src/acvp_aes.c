@@ -1102,6 +1102,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                             ACVP_LOG_ERR("Server JSON invalid 'tweakMode'");
                             rv = ACVP_MISSING_ARG;
                             goto err;
+                            break;
                         }
 
                 } else {

@@ -200,6 +200,7 @@ int app_aes_handler(ACVP_TEST_CASE *test_case) {
             printf("\nUnsupported tweak mode %d %d\n", tc->seq_num, tc->tw_mode);
             rv = 1;
             goto err;
+            break;
         }
         break;
     case ACVP_CIPHER_START:
