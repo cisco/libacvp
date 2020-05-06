@@ -47,7 +47,9 @@ static ACVP_RESULT acvp_aes_init_tc(ACVP_CTX *ctx,
                                     ACVP_SYM_CIPH_IVGEN_MODE iv_gen_mode,
                                     unsigned int aad_len,
                                     unsigned int incr_ctr,
-                                    unsigned int ovrflw_ctr);
+                                    unsigned int ovrflw_ctr,
+                                    ACVP_SYM_CIPH_TWEAK_MODE tweak_mode,
+                                    int seq_num);
 
 static ACVP_RESULT acvp_aes_release_tc(ACVP_SYM_CIPHER_TC *stc);
 
@@ -509,6 +511,22 @@ static ACVP_RESULT acvp_aes_mct_tc(ACVP_CTX *ctx,
     return ACVP_SUCCESS;
 }
 
+static ACVP_SYM_CIPH_TWEAK_MODE read_tw_mode(const char *str) {
+    int diff = 0;
+
+    strcmp_s("hex", 3, str, &diff);
+    if (!diff) {
+        return ACVP_SYM_CIPH_TWEAK_HEX;
+    }
+    strcmp_s("number", 6, str, &diff);
+    if (!diff) {
+        return ACVP_SYM_CIPH_TWEAK_NUM;
+    }
+
+    return 0;
+}
+
+
 /**
  * @brief Read the \p str reprenting the ivgen mode and
  *        convert to enum.
@@ -666,7 +684,10 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     unsigned int ovrflw_ctr = 0, incr_ctr = 0;  /* assume false */
     char *json_result = NULL;
     const char *alg_str = NULL;
+    const char *tw_mode = NULL;
     ACVP_CIPHER alg_id = 0;
+    ACVP_SYM_CIPH_TWEAK_MODE tweak_mode = 0;
+    unsigned int seq_num = 0;
 
     if (!ctx) {
         ACVP_LOG_ERR("No ctx for handler operation");
@@ -922,6 +943,9 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             goto err;
         }
 
+        if (alg_id == ACVP_AES_XTS) {
+            tw_mode = json_object_get_string(groupobj, "tweakMode");
+        }
         ACVP_LOG_VERBOSE("    Test group: %d", i);
         ACVP_LOG_VERBOSE("           dir: %s", dir_str);
         ACVP_LOG_VERBOSE("            kw: %s", kwcipher_str);
@@ -933,6 +957,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         ACVP_LOG_VERBOSE("      testtype: %s", test_type_str);
         ACVP_LOG_VERBOSE("      incr_ctr: %d", incr_ctr);
         ACVP_LOG_VERBOSE("    ovrflw_ctr: %d", ovrflw_ctr);
+        ACVP_LOG_VERBOSE("    tweak mode: %s", tw_mode);
 
         tests = json_object_get_array(groupobj, "tests");
         t_cnt = json_array_get_count(tests);
@@ -1042,19 +1067,44 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                                         && dir == ACVP_SYM_CIPH_DIR_ENCRYPT &&
                                         iv_gen == ACVP_SYM_CIPH_IVGEN_SRC_INT)) {
                 if (alg_id == ACVP_AES_XTS) {
-                    /* XTS may call it tweak value, but we treat it as an IV */
-                    iv = json_object_get_string(testobj, "tweakValue");
-                    if (!iv) {
-                        ACVP_LOG_ERR("Server JSON missing 'tweakValue'");
+                    tweak_mode = read_tw_mode(tw_mode);
+                    if (!tweak_mode) {
+                        ACVP_LOG_ERR("Server JSON wrong 'tweakMode'");
                         rv = ACVP_MISSING_ARG;
                         goto err;
                     }
-                    if (strnlen_s(iv, ACVP_SYM_IV_MAX + 1) > ACVP_SYM_IV_MAX) {
-                        ACVP_LOG_ERR("'i' too long, max allowed=(%d)",
-                                     ACVP_SYM_IV_MAX);
-                        rv = ACVP_INVALID_ARG;
-                        goto err;
-                    }
+                    switch (tweak_mode) {
+                        case ACVP_SYM_CIPH_TWEAK_HEX:
+                            /* XTS may call it tweak value, but we treat it as an IV */
+                            iv = json_object_get_string(testobj, "tweakValue");
+                            if (!iv) {
+                                ACVP_LOG_ERR("Server JSON missing hex 'tweakValue'");
+                                rv = ACVP_MISSING_ARG;
+                                goto err;
+                            }
+                            if (strnlen_s(iv, ACVP_SYM_IV_MAX + 1) > ACVP_SYM_IV_MAX) {
+                                ACVP_LOG_ERR("'i' too long, max allowed=(%d)",
+                                             ACVP_SYM_IV_MAX);
+                                rv = ACVP_INVALID_ARG;
+                                goto err;
+                            }
+                            break;
+                        case ACVP_SYM_CIPH_TWEAK_NUM:
+                            seq_num = json_object_get_number(testobj, "sequenceNumber");
+                            if ((seq_num < 0) || (seq_num > 255)) {
+                                ACVP_LOG_ERR("Server JSON invalid number 'tweakValue'");
+                                rv = ACVP_MISSING_ARG;
+                                goto err;
+                            }
+                            break;
+                        case ACVP_SYM_CIPH_TWEAK_NONE:
+                        default:
+                            ACVP_LOG_ERR("Server JSON invalid 'tweakMode'");
+                            rv = ACVP_MISSING_ARG;
+                            goto err;
+                            break;
+                        }
+
                 } else {
                     iv = json_object_get_string(testobj, "iv");
                     if (!iv) {
@@ -1112,7 +1162,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             rv = acvp_aes_init_tc(ctx, &stc, tc_id, test_type, key, pt, ct, iv, tag, 
                                   aad, kwcipher, keylen, ivlen, datalen, ptlen,
                                   taglen, alg_id, dir, iv_gen, iv_gen_mode, aadlen,
-                                  incr_ctr, ovrflw_ctr);
+                                  incr_ctr, ovrflw_ctr, tweak_mode, seq_num);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("Init for stc (test case) failed");
                 acvp_aes_release_tc(&stc);
@@ -1309,7 +1359,9 @@ static ACVP_RESULT acvp_aes_init_tc(ACVP_CTX *ctx,
                                     ACVP_SYM_CIPH_IVGEN_MODE iv_gen_mode,
                                     unsigned int aad_len,
                                     unsigned int incr_ctr,
-                                    unsigned int ovrflw_ctr) {
+                                    unsigned int ovrflw_ctr,
+                                    ACVP_SYM_CIPH_TWEAK_MODE tweak_mode,
+                                    int seq_num) {
 
     ACVP_RESULT rv;
 
@@ -1424,7 +1476,8 @@ static ACVP_RESULT acvp_aes_init_tc(ACVP_CTX *ctx,
     stc->ivgen_mode = iv_gen_mode;
     stc->incr_ctr = incr_ctr;
     stc->ovrflw_ctr = ovrflw_ctr;
-
+    stc->tw_mode = tweak_mode;
+    stc->seq_num = seq_num;
     return ACVP_SUCCESS;
 }
 

@@ -178,7 +178,6 @@ int app_aes_handler(ACVP_TEST_CASE *test_case) {
         }
         break;
     case ACVP_AES_XTS:
-        iv = tc->iv;
         switch (tc->key_len) {
         case 128:
             cipher = EVP_aes_128_xts();
@@ -190,6 +189,18 @@ int app_aes_handler(ACVP_TEST_CASE *test_case) {
             printf("Unsupported AES key length\n");
             rv = 1;
             goto err;
+        }
+        switch (tc->tw_mode) {
+        case ACVP_SYM_CIPH_TWEAK_HEX:
+            iv = tc->iv;
+            break;
+        case ACVP_SYM_CIPH_TWEAK_NUM:
+        case ACVP_SYM_CIPH_TWEAK_NONE:
+        default:
+            printf("\nUnsupported tweak mode %d %d\n", tc->seq_num, tc->tw_mode);
+            rv = 1;
+            goto err;
+            break;
         }
         break;
     case ACVP_CIPHER_START:

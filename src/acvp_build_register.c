@@ -555,7 +555,7 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
         opts_arr = json_object_get_array(cap_obj, "tweakMode");
         sl_list = sym_cap->tweak;
         while (sl_list) {
-            switch (sym_cap->tweak->length) {
+            switch (sl_list->length) {
             case ACVP_SYM_CIPH_TWEAK_HEX:
                 json_array_append_string(opts_arr, "hex");
                 break;
