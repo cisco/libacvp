@@ -687,7 +687,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     const char *tw_mode = NULL;
     ACVP_CIPHER alg_id = 0;
     ACVP_SYM_CIPH_TWEAK_MODE tweak_mode = 0;
-    unsigned int seq_num = 0;
+    int seq_num = 0;
 
     if (!ctx) {
         ACVP_LOG_ERR("No ctx for handler operation");
