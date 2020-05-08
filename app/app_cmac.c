@@ -25,7 +25,7 @@ int app_cmac_handler(ACVP_TEST_CASE *test_case) {
     CMAC_CTX       *cmac_ctx = NULL;
     int key_len, i;
     unsigned char mac_compare[16] = { 0 };
-    char full_key[32] = { 0 };
+    char full_key[33] = { 0 };
     size_t mac_cmp_len;
 
     if (!test_case) {
