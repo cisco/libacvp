@@ -155,10 +155,10 @@ Test(OE_SET_DEPENDENCY, oe_set_dependency, .init = setup, .fini = teardown) {
  */
 Test(MODULE_NEW, module_new, .init = setup, .fini = teardown) {
 
-    rv = acvp_oe_module_new(NULL, 1, 1, "name");
+    rv = acvp_oe_module_new(NULL, 1, "name");
     cr_assert(rv == ACVP_NO_CTX);
 
-    rv = acvp_oe_module_new(ctx, 1, 1, "name");
+    rv = acvp_oe_module_new(ctx, 1, "name");
     cr_assert(rv == ACVP_INVALID_ARG);
 
 }
