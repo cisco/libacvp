@@ -317,26 +317,26 @@ This package was initially written by John Foley of Cisco Systems.
 | **DSA mode: sigGen** |  Y  |  Y  |
 | **DSA mode: pqgGen** |  Y  |  Y  |
 | **DSA mode: pqgVer** |  Y  |  Y  |
-| **EDDSA mode: keyGen** |  Y  |  Y  |
-| **EDDSA mode: keyVer** |  Y  |  Y  |
-| **EDDSA mode: sigGen** |  Y  |  Y  |
-| **EDDSA mode: sigVer** |  Y  |  Y  |
+| **EDDSA mode: keyGen** |  N  |  N  |
+| **EDDSA mode: keyVer** |  N  |  N  |
+| **EDDSA mode: sigGen** |  N  |  N  |
+| **EDDSA mode: sigVer** |  N  |  N  |
 | **Key Agreement** | |
 | **KAS ECC ephemeralUnified** |  Y  |  Y  |
-| **KAS ECC fullMqv** |  Y  |  Y  |
-| **KAS ECC fullUnified** |  Y  |  Y  |
-| **KAS ECC onePassDh** |  Y  |  Y  |
-| **KAS ECC onePassMqv** |  Y  |  Y  |
-| **KAS ECC OnePassUnified** |  Y  |  Y  |
-| **KAS ECC staticUnified** |  Y  |  Y  |
+| **KAS ECC fullMqv** |  N  |  N  |
+| **KAS ECC fullUnified** |  N  |  N  |
+| **KAS ECC onePassDh** |  N  |  N  |
+| **KAS ECC onePassMqv** |  N  |  N  |
+| **KAS ECC OnePassUnified** |  N  |  N  |
+| **KAS ECC staticUnified** |  N  |  N  |
 | **KAS ECC CDH-Component** |  Y  |  Y  |
-| **KAS FFC dhHybrid1** |  Y  |  Y  |
-| **KAS FFC mqv2** |  Y  |  Y  |
+| **KAS FFC dhHybrid1** |  N  |  N  |
+| **KAS FFC mqv2** |  N  |  N  |
 | **KAS FFC dhEphem** |  Y  |  Y  |
-| **KAS FFC dhHybridOneFlow** |  Y  |  Y  |
-| **KAS FFC mqv1** |  Y  |  Y  |
-| **KAS FFC dhOneFlow** |  Y  |  Y  |
-| **KAS FFC dhStatic** |  Y  |  Y  |
+| **KAS FFC dhHybridOneFlow** |  N  |  N  |
+| **KAS FFC mqv1** |  N  |  N  |
+| **KAS FFC dhOneFlow** |  N  |  N  |
+| **KAS FFC dhStatic** |  N  |  N  |
 | **KAS IFC KAS1-basic** |  N  |  N  |
 | **KAS IFC KAS1-Party_V-confirmation** |  N  |  N  |
 | **KAS IFC KAS2-basic** |  N  |  N  |
@@ -346,7 +346,7 @@ This package was initially written by John Foley of Cisco Systems.
 | **KTS IFC KTS-OAEP-basic** |  N  |  N  |
 | **KTS IFC KTS-OAEP-Party_V-confirmation** |  N  |  N  |
 | **KDFs** | |
-| **Counter KDF** |  N  |  N  |
+| **Counter KDF** |  Y  |  N  |
 | **Feedback KDF** |  N  |  N  |
 | **Double Pipeline Iterator KDF** |  N  |  N  |
 | **IKEv1** |  Y  |  N  |
