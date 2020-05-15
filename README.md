@@ -16,8 +16,11 @@ purposes as long as you fulfill its conditions. See the LICENSE
 file for details.
 
 ### Recent Changes!
-The client library has been updated to be compatible with the
-ACVP spec version 1.0, see https://github.com/usnistgov/ACVP
+The client library is compatible with the ACVP spec version 1.0, see https://github.com/usnistgov/ACVP however not all algorithms and options are supported. See the support list in the Supported Algorithms section below.
+
+Metadata processing has been simplified and no longer requires id fields. Please review the new metadata directory sample json files to see the new format. Older formats should continue to work, but will have some unused keywords and fields.
+
+To track any and all changes please review recent commits for more detail.
 
 ## Overview
 
@@ -221,3 +224,141 @@ built and run with the same versions of each library.
 ## Credits
 This package was initially written by John Foley of Cisco Systems.
 
+## Supported Algorithms
+
+|   Algorithm Type   |    Library Support    |   Client App Support    |
+| :---------------:  | :-------------------: | :---------------------: |
+| **Block Cipher Modes** |                       |                         |   
+| **AES-CBC** |   Y  |  Y |
+| **AES-CFB1** |  Y  |  Y  |
+| **AES-CFB8** |  Y  |  Y  |
+| **AES-CFB128** |  Y  |  Y  |
+| **AES-CTR** |  Y  |  Y  |
+| **AES-ECB** |  Y  |  Y  |
+| **AES-GCM** |  Y  |  Y  |
+| **AES-GCM-SIV** |  Y  |  Y  |
+| **AES-KW** |  Y  |  Y  |
+| **AES-KWP** |  Y  |  Y  |
+| **AES-OFB** |  Y  |  Y  |
+| **AES-XPN** |  N  |  N  |
+| **AES-XTS** |  Y  |  Y  |
+| **AES-FF1** |  N  |  N  |
+| **AES-FF3-1** |  N  |  N  |
+| **TDES-CBC** |  Y  |  Y  |
+| **TDES-CBCI** |  N  |  N  |
+| **TDES-CFBP1** |  N  |  N  |
+| **TDES-CFBP8** |  N  |  N  |
+| **TDES-CFBP64** |  N  |  N  |
+| **TDES-CTR** |  Y  |  Y  |
+| **TDES-ECB** |  Y  |  Y  |
+| **TDES-KW** |  Y  |  N  |
+| **TDES-OFB** |  Y  |  Y  |
+| **TDES-OFBI** |  N  |  N  |
+| **Secure Hash** | |
+| **SHA-1** |  Y  |  Y  |
+| **SHA-224** |  Y  |  Y  |
+| **SHA-256** |  Y  |  Y  |
+| **SHA-384** |  Y  |  Y  |
+| **SHA-512** |  Y  |  Y  |
+| **SHA-512/224** |  Y  |  Y  |
+| **SHA-512/256** |  Y  |  Y  |
+| **SHA3-224** |  Y  |  Y  |
+| **SHA3-256** |  Y  |  Y  |
+| **SHA3-384** |  Y  |  Y  |
+| **SHA3-512** |  Y  |  Y  |
+| **SHAKE-128** |  Y  |  Y  |
+| **SHAKE-256** |  Y  |  Y  |
+| **XOFs** | | |
+| **cSHAKE-128** |  N  |  N  |
+| **cSHAKE-256** |  N  |  N  |
+| **KMAC-128** |  N  |  N  |
+| **KMAC-256** |  N  |  N  |
+| **ParallelHash-128** |  N  |  N  |
+| **ParallelHash-256** |  N  |  N  |
+| **TupleHash-128** |  N  |  N  |
+| **TupleHash-256** |  N  |  N  |
+| **Message Authentication** | |
+| **AES-GMAC** |  Y  |  Y  |
+| **AES-CCM** |  Y  |  Y  |
+| **CMAC-AES** |  Y  |  Y  |
+| **CMAC-TDES** |  Y  |  Y  |
+| **HMAC-SHA-1** |  Y  |  Y  |
+| **HMAC-SHA2-224** |  Y  |  Y  |
+| **HMAC-SHA2-256** |  Y  |  Y  |
+| **HMAC-SHA2-384** |  Y  |  Y  |
+| **HMAC-SHA2-512** |  Y  |  Y  |
+| **HMAC-SHA2-512/224** |  Y  |  Y  |
+| **HMAC-SHA2-512/256** |  Y  |  Y  |
+| **HMAC-SHA3-224** |  Y  |  Y  |
+| **HMAC-SHA3-256** |  Y  |  Y  |
+| **HMAC-SHA3-384** |  Y  |  Y  |
+| **HMAC-SHA3-512** |  Y  |  Y  |
+| **DRBG** | |
+| **ctrDRBG-AES-128** |  Y  |  Y  |
+| **ctrDRBG-AES-192** |  Y  |  Y  |
+| **ctrDRBG-AES-256** |  Y  |  Y  |
+| **ctrDRBG-TDES** |  N  |  N  |
+| **HASH DRBG** |  Y  |  Y  |
+| **HMAC DRBG** |  Y  |  Y  |
+| **Digital Signature** | |
+| **RSA mode: keyGen** |  Y  |  Y  |
+| **RSA mode: sigGen** |  Y  |  Y  |
+| **RSA mode: sigVer** |  Y  |  Y  |
+| **RSA mode: signatureComponent** |  N  |  N  |
+| **RSA mode: decryptionComponent** |  N  |  N  |
+| **RSA mode: legacySigVer** |  N  |  N  |
+| **ECDSA mode: sigGenComponent** |  N  |  N  |
+| **ECDSA mode: keyGen** |  Y  |  Y  |
+| **ECDSA mode: keyVer** |  Y  |  Y  |
+| **ECDSA mode: sigGen** |  Y  |  Y  |
+| **ECDSA mode: sigVer** |  Y  |  Y  |
+| **DSA mode: keyGen** |  Y  |  Y  |
+| **DSA mode: sigVer** |  Y  |  Y  |
+| **DSA mode: sigGen** |  Y  |  Y  |
+| **DSA mode: pqgGen** |  Y  |  Y  |
+| **DSA mode: pqgVer** |  Y  |  Y  |
+| **EDDSA mode: keyGen** |  N  |  N  |
+| **EDDSA mode: keyVer** |  N  |  N  |
+| **EDDSA mode: sigGen** |  N  |  N  |
+| **EDDSA mode: sigVer** |  N  |  N  |
+| **Key Agreement** | |
+| **KAS ECC ephemeralUnified** |  Y  |  Y  |
+| **KAS ECC fullMqv** |  N  |  N  |
+| **KAS ECC fullUnified** |  N  |  N  |
+| **KAS ECC onePassDh** |  N  |  N  |
+| **KAS ECC onePassMqv** |  N  |  N  |
+| **KAS ECC OnePassUnified** |  N  |  N  |
+| **KAS ECC staticUnified** |  N  |  N  |
+| **KAS ECC CDH-Component** |  Y  |  Y  |
+| **KAS FFC dhHybrid1** |  N  |  N  |
+| **KAS FFC mqv2** |  N  |  N  |
+| **KAS FFC dhEphem** |  Y  |  Y  |
+| **KAS FFC dhHybridOneFlow** |  N  |  N  |
+| **KAS FFC mqv1** |  N  |  N  |
+| **KAS FFC dhOneFlow** |  N  |  N  |
+| **KAS FFC dhStatic** |  N  |  N  |
+| **KAS IFC KAS1-basic** |  N  |  N  |
+| **KAS IFC KAS1-Party_V-confirmation** |  N  |  N  |
+| **KAS IFC KAS2-basic** |  N  |  N  |
+| **KAS IFC KAS2-bilateral-confirmation** |  N  |  N  |
+| **KAS IFC KAS2-Party_U-confirmation** |  N  |  N  |
+| **KAS IFC KAS2-Party_V-confirmation** |  N  |  N  |
+| **KTS IFC KTS-OAEP-basic** |  N  |  N  |
+| **KTS IFC KTS-OAEP-Party_V-confirmation** |  N  |  N  |
+| **KDFs** | |
+| **Counter KDF** |  Y  |  N  |
+| **Feedback KDF** |  N  |  N  |
+| **Double Pipeline Iterator KDF** |  N  |  N  |
+| **IKEv1** |  Y  |  N  |
+| **IKEv2** |  Y  |  N  |
+| **SNMP** |  Y  |  N  |
+| **SRTP** |  Y  |  N  |
+| **SSH** |  Y  |  N  |
+| **TLS** |  Y  |  N  |
+| **TPM** |  N  |  N  |
+| **ANSX9.63** |  Y  |  N  |
+| **ANSX9.42** |  N  |  N  |
+| **PBKDF** |  N  |  N  |
+| **Safe Primes** | |
+| **SafePrimes KeyGen** |  N  |  N  |
+| **SafePrimes KeyVer** |  N  |  N  |
