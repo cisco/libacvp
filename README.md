@@ -226,9 +226,9 @@ This package was initially written by John Foley of Cisco Systems.
 
 ## Supported Algorithms
 
-                             Library Support       Client App Support
+### &nbsp                          Library Support       Client App Support
 ### Block Cipher Modes    
-* AES-CBC                           Y                      Y
+* AES-CBC &nbsp                           Y                      Y
 * AES-CFB1
 * AES-CFB8
 * AES-CFB128
