@@ -16,8 +16,11 @@ purposes as long as you fulfill its conditions. See the LICENSE
 file for details.
 
 ### Recent Changes!
-The client library has been updated to be compatible with the
-ACVP spec version 1.0, see https://github.com/usnistgov/ACVP
+The client library is compatible with the ACVP spec version 1.0, see https://github.com/usnistgov/ACVP however not all algorithms and options are supported. See the support list in the Supported Algorithms section below.
+
+Metadata processing has been simplified and no longer requires id fields. Please review the new metadata directory sample json files to see the new format. Older formats should continue to work, but will have some unused keywords and fields.
+
+To track any and all changes please review recent commits for more detail.
 
 ## Overview
 
@@ -221,3 +224,144 @@ built and run with the same versions of each library.
 ## Credits
 This package was initially written by John Foley of Cisco Systems.
 
+## Supported Algorithms
+
+
+### Block Cipher Modes    Library Support       Client App Support
+* [AES-CBC]
+* [AES-CFB1]
+* [AES-CFB8]
+* [AES-CFB128]
+* [AES-CTR]
+* [AES-ECB]
+* [AES-GCM]
+* [AES-GCM-SIV]
+* [AES-KW]
+* [AES-KWP]
+* [AES-OFB]
+* [AES-XPN]
+* [AES-XTS]
+* [AES-FF1]
+* [AES-FF3-1]
+* [TDES-CBC]
+* [TDES-CBCI]
+* [TDES-CFBP1]
+* [TDES-CFBP8]
+* [TDES-CFBP64]
+* [TDES-CTR]
+* [TDES-ECB]
+* [TDES-KW]
+* [TDES-OFB]
+* [TDES-OFBI]
+
+### Secure Hash
+* [SHA-1]
+* [SHA-224]
+* [SHA-256]
+* [SHA-384]
+* [SHA-512]
+* [SHA-512/224]
+* [SHA-512/256]
+* [SHA3-224]
+* [SHA3-256]
+* [SHA3-384]
+* [SHA3-512]
+* [SHAKE-128]
+* [SHAKE-256]
+
+### XOFs
+* [cSHAKE-128]
+* [cSHAKE-256]
+* [KMAC-128]
+* [KMAC-256]
+* [ParallelHash-128]
+* [ParallelHash-256]
+* [TupleHash-128]
+* [TupleHash-256]
+
+### Message Authentication
+* [AES-GMAC](./artifacts/draft-celi-acvp-block-ciph-00.txt) - [HTML](./artifacts/draft-celi-acvp-block-ciph-00.html)
+* [AES-CCM]
+* [CMAC-AES]
+* [CMAC-TDES]
+* [HMAC-SHA-1]
+* [HMAC-SHA2-224]
+* [HMAC-SHA2-256]
+* [HMAC-SHA2-384]
+* [HMAC-SHA2-512]
+* [HMAC-SHA2-512/224]
+* [HMAC-SHA2-512/256]
+* [HMAC-SHA3-224]
+* [HMAC-SHA3-256]
+* [HMAC-SHA3-384]
+* [HMAC-SHA3-512]
+
+### DRBG
+* [ctrDRBG-AES-128]
+* [ctrDRBG-AES-192]
+* [ctrDRBG-AES-256]
+* [ctrDRBG-TDES]
+* [HASH DRBG]
+* [HMAC DRBG]
+
+### Digital Signature
+* [RSA mode: keyGen]
+* [RSA mode: sigGen]
+* [RSA mode: sigVer]
+* [RSA mode: signatureComponent]
+* [RSA mode: decryptionComponent]
+* [RSA mode: legacySigVer]
+* [ECDSA mode: sigGenComponent]
+* [ECDSA mode: keyGen](./artifacts/acvp_sub_ecdsa.txt) - [HTML](./artifacts/acvp_sub_ecdsa.html)
+* [ECDSA mode: keyVer](./artifacts/acvp_sub_ecdsa.txt) - [HTML](./artifacts/acvp_sub_ecdsa.html)
+* [ECDSA mode: sigGen](./artifacts/acvp_sub_ecdsa.txt) - [HTML](./artifacts/acvp_sub_ecdsa.html) 
+* [ECDSA mode: sigVer](./artifacts/acvp_sub_ecdsa.txt) - [HTML](./artifacts/acvp_sub_ecdsa.html)
+* [DSA mode: keyGen](./artifacts/acvp_sub_dsa.txt) - [HTML](./artifacts/acvp_sub_dsa.html)
+* [DSA mode: sigVer](./artifacts/acvp_sub_dsa.txt) - [HTML](./artifacts/acvp_sub_dsa.html)
+* [DSA mode: sigGen](./artifacts/acvp_sub_dsa.txt) - [HTML](./artifacts/acvp_sub_dsa.html)
+* [DSA mode: pqgGen](./artifacts/acvp_sub_dsa.txt) - [HTML](./artifacts/acvp_sub_dsa.html)
+* [DSA mode: pqgVer](./artifacts/acvp_sub_dsa.txt) - [HTML](./artifacts/acvp_sub_dsa.html)
+* [EDDSA mode: keyGen](./artifacts/acvp_sub_eddsa.txt) - [HTML](./artifacts/acvp_sub_eddsa.html) - DEMO only
+* [EDDSA mode: keyVer](./artifacts/acvp_sub_eddsa.txt) - [HTML](./artifacts/acvp_sub_eddsa.html) - DEMO only
+* [EDDSA mode: sigGen](./artifacts/acvp_sub_eddsa.txt) - [HTML](./artifacts/acvp_sub_eddsa.html) - DEMO only
+* [EDDSA mode: sigVer](./artifacts/acvp_sub_eddsa.txt) - [HTML](./artifacts/acvp_sub_eddsa.html) - DEMO only
+
+### Key Agreement
+* [KAS ECC ephemeralUnified](./artifacts/acvp_sub_kas_ecc.txt) - [HTML](./artifacts/acvp_sub_kas_ecc.html)
+* [KAS ECC fullMqv](./artifacts/acvp_sub_kas_ecc.txt) - [HTML](./artifacts/acvp_sub_kas_ecc.html)
+* [KAS ECC fullUnified](./artifacts/acvp_sub_kas_ecc.txt) - [HTML](./artifacts/acvp_sub_kas_ecc.html)
+* [KAS ECC onePassDh](./artifacts/acvp_sub_kas_ecc.txt) - [HTML](./artifacts/acvp_sub_kas_ecc.html)
+* [KAS ECC onePassMqv](./artifacts/acvp_sub_kas_ecc.txt) - [HTML](./artifacts/acvp_sub_kas_ecc.html)
+* [KAS ECC OnePassUnified](./artifacts/acvp_sub_kas_ecc.txt) - [HTML](./artifacts/acvp_sub_kas_ecc.html)
+* [KAS ECC staticUnified](./artifacts/acvp_sub_kas_ecc.txt) - [HTML](./artifacts/acvp_sub_kas_ecc.html)
+* [KAS ECC CDH-Component](./artifacts/acvp_sub_kas_ecc.txt) - [HTML](./artifacts/acvp_sub_kas_ecc.html)
+* [KAS FFC dhHybrid1](./artifacts/acvp_sub_kas_ffc.txt) - [HTML](./artifacts/acvp_sub_kas_ffc.html)
+* [KAS FFC mqv2](./artifacts/acvp_sub_kas_ffc.txt) - [HTML](./artifacts/acvp_sub_kas_ffc.html) 
+* [KAS FFC dhEphem](./artifacts/acvp_sub_kas_ffc.txt) - [HTML](./artifacts/acvp_sub_kas_ffc.html)
+* [KAS FFC dhHybridOneFlow](./artifacts/acvp_sub_kas_ffc.txt) - [HTML](./artifacts/acvp_sub_kas_ffc.html)
+* [KAS FFC mqv1](./artifacts/acvp_sub_kas_ffc.txt) - [HTML](./artifacts/acvp_sub_kas_ffc.html)
+* [KAS FFC dhOneFlow](./artifacts/acvp_sub_kas_ffc.txt) - [HTML](./artifacts/acvp_sub_kas_ffc.html)
+* [KAS FFC dhStatic](./artifacts/acvp_sub_kas_ffc.txt) - [HTML](./artifacts/acvp_sub_kas_ffc.html)
+* [KAS IFC KAS1-basic](./artifacts/acvp_sub_kas_ifc.txt) - [HTML](./artifacts/acvp_sub_kas_ifc.html) - DEMO only
+* [KAS IFC KAS1-Party_V-confirmation](./artifacts/acvp_sub_kas_ifc.txt) - [HTML](./artifacts/acvp_sub_kas_ifc.html) - DEMO only
+* [KAS IFC KAS2-basic](./artifacts/acvp_sub_kas_ifc.txt) - [HTML](./artifacts/acvp_sub_kas_ifc.html) - DEMO only
+* [KAS IFC KAS2-bilateral-confirmation](./artifacts/acvp_sub_kas_ifc.txt) - [HTML](./artifacts/acvp_sub_kas_ifc.html) - DEMO only
+* [KAS IFC KAS2-Party_U-confirmation](./artifacts/acvp_sub_kas_ifc.txt) - [HTML](./artifacts/acvp_sub_kas_ifc.html) - DEMO only
+* [KAS IFC KAS2-Party_V-confirmation](./artifacts/acvp_sub_kas_ifc.txt) - [HTML](./artifacts/acvp_sub_kas_ifc.html) - DEMO only
+* [KTS IFC KTS-OAEP-basic](./artifacts/acvp_sub_kas_ifc.txt) - [HTML](./artifacts/acvp_sub_kas_ifc.html) - DEMO only
+* [KTS IFC KTS-OAEP-Party_V-confirmation](./artifacts/acvp_sub_kas_ifc.txt) - [HTML](./artifacts/acvp_sub_kas_ifc.html) - DEMO only
+
+### KDFs
+* [Counter KDF](./artifacts/acvp_sub_kdf108.txt) - [HTML](./artifacts/acvp_sub_kdf108.html)
+* [Feedback KDF](./artifacts/acvp_sub_kdf108.txt) - [HTML](./artifacts/acvp_sub_kdf108.html)
+* [Double Pipeline Iterator KDF](./artifacts/acvp_sub_kdf108.txt) - [HTML](./artifacts/acvp_sub_kdf108.html)
+* [IKEv1](./artifacts/acvp_sub_kdf135_ikev1.txt) - [HTML](./artifacts/acvp_sub_kdf135_ikev1.html)
+* [IKEv2](./artifacts/acvp_sub_kdf135_ikev2.txt) - [HTML](./artifacts/acvp_sub_kdf135_ikev2.html) 
+* [SNMP](./artifacts/acvp_sub_kdf135_snmp.txt) - [HTML](./artifacts/acvp_sub_kdf135_snmp.html)
+* [SRTP](./artifacts/acvp_sub_kdf135_srtp.txt) - [HTML](./artifacts/acvp_sub_kdf135_srtp.html)
+* [SSH](./artifacts/acvp_sub_kdf135_ssh.txt) - [HTML](./artifacts/acvp_sub_kdf135_ssh.html)
+* [TLS](./artifacts/acvp_sub_kdf135_tls.txt) - [HTML](./artifacts/acvp_sub_kdf135_tls.html)
+* [TPM](./artifacts/acvp_sub_kdf135_tpm.txt) - [HTML](./artifacts/acvp_sub_kdf135_tpm.html)
+* [ANSX9.63](./artifacts/acvp_sub_kdf135_x963.txt) - [HTML](./artifacts/acvp_sub_kdf135_x963.html)
+* [ANSX9.42](./artifacts/draft-celi-acvp-ans-x942.txt) - [HTML](./artifacts/draft-celi-acvp-ans-x942.html)
+* [PBKDF](./artifacts/draft-celi-acvp-pbkdf.txt) - [HTML](./artifacts/draft-celi-acvp-pbkdf.html)
