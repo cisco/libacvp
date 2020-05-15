@@ -226,9 +226,9 @@ This package was initially written by John Foley of Cisco Systems.
 
 ## Supported Algorithms
 
-###                             Library Support       Client App Support
+                             Library Support       Client App Support
 ### Block Cipher Modes    
-* AES-CBC
+* AES-CBC                           Y                      Y
 * AES-CFB1
 * AES-CFB8
 * AES-CFB128
@@ -365,3 +365,8 @@ This package was initially written by John Foley of Cisco Systems.
 * ANSX9.63
 * ANSX9.42
 * PBKDF
+
+###Safe Primes
+
+* SafePrimes KeyGen
+* SafePrimes KeyVer
