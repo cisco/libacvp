@@ -20,6 +20,9 @@
 
 /* Keeps track of what to use the next Dependency ID */
 static unsigned int glb_dependency_id = 1; 
+static unsigned int glb_vendor_id = 1; 
+static unsigned int glb_module_id = 1; 
+static unsigned int glb_oe_id = 1; 
 
 static ACVP_RESULT copy_oe_string(char **dest, const char *src) {
     if (dest == NULL) {
@@ -269,7 +272,7 @@ static ACVP_OE *find_oe(ACVP_CTX *ctx,
  *
  * @param ctx ACVP_CTX
  * @param id ID for this operating environment
- * @param vendor_id ID of dependency to attach to this module
+ * @param dependency_id ID of dependency to attach to this module
  *
  * @return ACVP_RESULT
  */
@@ -328,6 +331,7 @@ static ACVP_VENDOR *find_vendor(ACVP_CTX *ctx,
     ACVP_LOG_ERR("Invalid 'id' (%u)", id);
     return NULL;
 }
+
 
 static ACVP_RESULT acvp_oe_vendor_new(ACVP_CTX *ctx,
                                       unsigned int id,
@@ -467,7 +471,6 @@ static ACVP_RESULT acvp_oe_vendor_add_address(ACVP_CTX *ctx,
  */
 ACVP_RESULT acvp_oe_module_new(ACVP_CTX *ctx,
                                unsigned int id,
-                               unsigned int vendor_id,
                                const char *name) {
     ACVP_MODULES *modules = NULL;
     ACVP_MODULE *new_module = NULL;
@@ -504,7 +507,7 @@ ACVP_RESULT acvp_oe_module_new(ACVP_CTX *ctx,
     new_module->id = id;
 
     /* Insert a pointer to the actual Vendor struct location */
-    if (!(vendor = find_vendor(ctx, vendor_id))) return ACVP_INVALID_ARG;
+    if (!(vendor = find_vendor(ctx, id))) return ACVP_INVALID_ARG;
     new_module->vendor = vendor;
 
     rv = copy_oe_string(&new_module->name, name);
@@ -2837,7 +2840,7 @@ static ACVP_RESULT acvp_oe_metadata_parse_vendor_contacts(ACVP_CTX *ctx,
 static ACVP_RESULT acvp_oe_metadata_parse_vendor(ACVP_CTX *ctx, JSON_Object *obj) {
     ACVP_VENDOR *vendor = NULL;
     const char *name = NULL, *website = NULL;
-    int vendor_id = 0;
+    int id = 0;
     ACVP_RESULT rv = ACVP_SUCCESS;
 
     if (!ctx) return ACVP_NO_CTX;
@@ -2846,11 +2849,8 @@ static ACVP_RESULT acvp_oe_metadata_parse_vendor(ACVP_CTX *ctx, JSON_Object *obj
         return ACVP_INVALID_ARG;
     } 
 
-    vendor_id = json_object_get_number(obj, "id");
-    if (vendor_id == 0) {
-        ACVP_LOG_ERR("Metadata JSON 'id' must be non-zero");
-        return ACVP_INVALID_ARG;
-    }
+    id = glb_vendor_id;
+    glb_vendor_id++;
 
     name = json_object_get_string(obj, "name");
     if (!name) {
@@ -2859,11 +2859,11 @@ static ACVP_RESULT acvp_oe_metadata_parse_vendor(ACVP_CTX *ctx, JSON_Object *obj
     }
 
     /* Designate and init new Vendor struct */
-    rv = acvp_oe_vendor_new(ctx, vendor_id, name);
+    rv = acvp_oe_vendor_new(ctx, id, name);
     if (rv != ACVP_SUCCESS) return rv;
 
     /* Get pointer to the new vendor */
-    vendor = find_vendor(ctx, vendor_id);
+    vendor = find_vendor(ctx, id);
     if (!vendor) return ACVP_INVALID_ARG;
 
     website = json_object_get_string(obj, "website");
@@ -2950,7 +2950,7 @@ static ACVP_RESULT acvp_oe_metadata_parse_vendors(ACVP_CTX *ctx, JSON_Object *ob
  */
 static ACVP_RESULT acvp_oe_metadata_parse_module(ACVP_CTX *ctx, JSON_Object *obj) {
     const char *name = NULL, *version = NULL, *type = NULL, *description = NULL;
-    int module_id = 0, vendor_id = 0;
+    int module_id = 0;
     ACVP_RESULT rv = ACVP_SUCCESS;
 
     if (!ctx) return ACVP_NO_CTX;
@@ -2959,18 +2959,8 @@ static ACVP_RESULT acvp_oe_metadata_parse_module(ACVP_CTX *ctx, JSON_Object *obj
         return ACVP_INVALID_ARG;
     } 
 
-    module_id = json_object_get_number(obj, "id");
-    if (module_id == 0) {
-        ACVP_LOG_ERR("Metadata JSON 'id' must be non-zero");
-        return ACVP_INVALID_ARG;
-    }
-
-    vendor_id = json_object_get_number(obj, "vendorId");
-    if (vendor_id == 0) {
-        ACVP_LOG_ERR("Metadata JSON 'vendorId' must be non-zero");
-        return ACVP_INVALID_ARG;
-    }
-
+    module_id = glb_module_id;
+    glb_module_id++;
     name = json_object_get_string(obj, "name");
     if (!name) {
         ACVP_LOG_ERR("Metadata JSON missing 'name'");
@@ -2978,7 +2968,7 @@ static ACVP_RESULT acvp_oe_metadata_parse_module(ACVP_CTX *ctx, JSON_Object *obj
     }
 
     /* Designate and init new Module struct */
-    rv = acvp_oe_module_new(ctx, module_id, vendor_id, name);
+    rv = acvp_oe_module_new(ctx, module_id, name);
     if (rv != ACVP_SUCCESS) return rv;
 
     type = json_object_get_string(obj, "type");
@@ -3232,11 +3222,8 @@ static ACVP_RESULT acvp_oe_metadata_parse_oe(ACVP_CTX *ctx, JSON_Object *obj) {
         return ACVP_INVALID_ARG;
     } 
 
-    oe_id = json_object_get_number(obj, "id");
-    if (oe_id == 0) {
-        ACVP_LOG_ERR("Metadata JSON 'id' must be non-zero");
-        return ACVP_INVALID_ARG;
-    }
+    oe_id = glb_oe_id;
+    glb_oe_id++;
 
     name = json_object_get_string(obj, "name");
     if (!name) {
