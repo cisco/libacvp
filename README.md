@@ -301,7 +301,7 @@ This package was initially written by John Foley of Cisco Systems.
 | **HASH DRBG** |  Y  |  Y  |
 | **HMAC DRBG** |  Y  |  Y  |
 | **Digital Signature** | |
-| **RSA mode: keyGen** |  Y  |  Y  |
+| **RSA mode: keyGen** |  Y  |  N  |
 | **RSA mode: sigGen** |  Y  |  Y  |
 | **RSA mode: sigVer** |  Y  |  Y  |
 | **RSA mode: signatureComponent** |  N  |  N  |
