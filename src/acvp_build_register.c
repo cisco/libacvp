@@ -694,7 +694,7 @@ static ACVP_RESULT acvp_build_drbg_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
             len_obj = json_value_get_object(len_val);
             json_object_set_number(len_obj, "max", drbg_cap_mode->entropy_len_max);
             json_object_set_number(len_obj, "min", drbg_cap_mode->entropy_len_min);
-            json_object_set_number(len_obj, "step", drbg_cap_mode->entropy_len_step);
+            json_object_set_number(len_obj, "increment", drbg_cap_mode->entropy_len_step);
             json_array_append_value(array, len_val);
         }
 
@@ -714,7 +714,7 @@ static ACVP_RESULT acvp_build_drbg_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
             len_obj = json_value_get_object(len_val);
             json_object_set_number(len_obj, "max", drbg_cap_mode->nonce_len_max);
             json_object_set_number(len_obj, "min", drbg_cap_mode->nonce_len_min);
-            json_object_set_number(len_obj, "step", drbg_cap_mode->nonce_len_step);
+            json_object_set_number(len_obj, "increment", drbg_cap_mode->nonce_len_step);
             json_array_append_value(array, len_val);
         }
 
@@ -731,7 +731,7 @@ static ACVP_RESULT acvp_build_drbg_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
             len_obj = json_value_get_object(len_val);
             json_object_set_number(len_obj, "max", drbg_cap_mode->perso_len_max);
             json_object_set_number(len_obj, "min", drbg_cap_mode->perso_len_min);
-            json_object_set_number(len_obj, "step", drbg_cap_mode->perso_len_step);
+            json_object_set_number(len_obj, "increment", drbg_cap_mode->perso_len_step);
             json_array_append_value(array, len_val);
         }
 
@@ -748,7 +748,7 @@ static ACVP_RESULT acvp_build_drbg_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
             len_obj = json_value_get_object(len_val);
             json_object_set_number(len_obj, "max", drbg_cap_mode->additional_in_len_max);
             json_object_set_number(len_obj, "min", drbg_cap_mode->additional_in_len_min);
-            json_object_set_number(len_obj, "step", drbg_cap_mode->additional_in_len_step);
+            json_object_set_number(len_obj, "increment", drbg_cap_mode->additional_in_len_step);
             json_array_append_value(array, len_val);
         }
 
