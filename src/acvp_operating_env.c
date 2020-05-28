@@ -1745,10 +1745,6 @@ static ACVP_RESULT match_vendors_page(ACVP_CTX *ctx,
 
         phone_numbers = json_object_get_array(vendor_obj, "phoneNumbers");
         if (phone_numbers != NULL)  {
-           // ACVP_LOG_ERR("No phoneNumbers object");
-            //rv = ACVP_JSON_ERR;
-            //goto end;
-          //}
             rv = compare_phone_numbers(vendor->phone_numbers, phone_numbers, &equal);
             if (ACVP_SUCCESS != rv) {
                 ACVP_LOG_ERR("Problem comparing vendor phone numbers");
