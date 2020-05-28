@@ -991,7 +991,7 @@ static ACVP_RESULT match_oes_page(ACVP_CTX *ctx,
             goto end;
         }
 
-        dependency_urls = json_object_get_array(oe_obj, "dependencies");
+        dependency_urls = json_object_get_array(oe_obj, "dependencyUrls");
         if (dependency_urls == NULL)  {
             ACVP_LOG_ERR("No dependencies object");
             rv = ACVP_JSON_ERR;
@@ -1587,7 +1587,7 @@ static ACVP_RESULT query_vendor_contacts(ACVP_CTX *ctx,
             }
             strcmp_s(person->full_name, ACVP_OE_STR_MAX, full_name, &diff);
             if (diff != 0) {
-                 ACVP_LOG_VERBOSE("Name not equal");
+                 ACVP_LOG_VERBOSE("Name not equal, checking next...");
                  continue; // Not equal
             }
 
@@ -1603,7 +1603,7 @@ static ACVP_RESULT query_vendor_contacts(ACVP_CTX *ctx,
                 goto end;
             }
             if (!equal) {
-                ACVP_LOG_VERBOSE("Emails do not match");
+                ACVP_LOG_VERBOSE("Emails do not match, checking next...");
                 continue;
             }
             ACVP_LOG_VERBOSE("Email Match");
@@ -1744,19 +1744,20 @@ static ACVP_RESULT match_vendors_page(ACVP_CTX *ctx,
         }
 
         phone_numbers = json_object_get_array(vendor_obj, "phoneNumbers");
-        if (phone_numbers == NULL)  {
-            ACVP_LOG_ERR("No phoneNumberss object");
-            rv = ACVP_JSON_ERR;
-            goto end;
-        }
-        rv = compare_phone_numbers(vendor->phone_numbers, phone_numbers, &equal);
-        if (ACVP_SUCCESS != rv) {
-            ACVP_LOG_ERR("Problem comparing vendor phone numbers");
-            goto end;
-        }
-        if (!equal) {
-            ACVP_LOG_VERBOSE("Phone numbers do not match");
-            continue;
+        if (phone_numbers != NULL)  {
+           // ACVP_LOG_ERR("No phoneNumbers object");
+            //rv = ACVP_JSON_ERR;
+            //goto end;
+          //}
+            rv = compare_phone_numbers(vendor->phone_numbers, phone_numbers, &equal);
+            if (ACVP_SUCCESS != rv) {
+                ACVP_LOG_ERR("Problem comparing vendor phone numbers");
+                goto end;
+            }
+            if (!equal) {
+                ACVP_LOG_VERBOSE("Phone numbers do not match");
+                continue;
+            }
         }
 
         addresses = json_object_get_array(vendor_obj, "addresses");
@@ -2081,7 +2082,7 @@ static ACVP_RESULT match_modules_page(ACVP_CTX *ctx,
 
         tmp_module->vendor = tmp_vendor;
         vurl = json_object_get_string(module_obj, "vendorUrl");
-        aurl = json_object_get_string(module_obj, "addressUrl");
+        aurl = json_object_get_string(module_obj, "addressUrls");
         tmp_vendor->url = strdup(vurl);
         tmp_vendor->address.url = strdup(aurl);
 
@@ -2730,7 +2731,7 @@ static ACVP_RESULT acvp_oe_metadata_parse_phone_numbers(ACVP_CTX *ctx,
                 *phone_list = calloc(1, sizeof(ACVP_OE_PHONE_LIST));
                 if (*phone_list == NULL) return ACVP_MALLOC_FAIL;
                 phone = *phone_list;
-            }else {
+            } else {
                 phone->next = calloc(1, sizeof(ACVP_OE_PHONE_LIST));
                 if (phone->next == NULL) return ACVP_MALLOC_FAIL;
                 phone = phone->next;
