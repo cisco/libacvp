@@ -1609,21 +1609,18 @@ static ACVP_RESULT query_vendor_contacts(ACVP_CTX *ctx,
             ACVP_LOG_VERBOSE("Email Match");
 
             phone_numbers = json_object_get_array(contact_obj, "phoneNumbers");
-            if (phone_numbers == NULL)  {
-                ACVP_LOG_ERR("No phoneNumbers object");
-                rv = ACVP_JSON_ERR;
-                goto end;
+            if (phone_numbers != NULL)  {
+                rv = compare_phone_numbers(person->phone_numbers, phone_numbers, &equal);
+                if (ACVP_SUCCESS != rv) {
+                    ACVP_LOG_ERR("Problem comparing person phone numbers");
+                    goto end;
+                }
+                if (!equal) {
+                    ACVP_LOG_VERBOSE("Phone numbers do not match");
+                    continue;
+                }
+                ACVP_LOG_VERBOSE("Phone Match");
             }
-            rv = compare_phone_numbers(person->phone_numbers, phone_numbers, &equal);
-            if (ACVP_SUCCESS != rv) {
-                ACVP_LOG_ERR("Problem comparing person phone numbers");
-                goto end;
-            }
-            if (!equal) {
-                ACVP_LOG_VERBOSE("Phone numbers do not match");
-                continue;
-            }
-            ACVP_LOG_VERBOSE("Phone Match");
 
             /*
              * Found a match.
