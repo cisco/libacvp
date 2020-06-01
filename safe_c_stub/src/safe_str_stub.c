@@ -434,11 +434,9 @@ errno_t strncpy_s (char *dest, rsize_t dmax, const char *src, rsize_t slen)
  *
  * Emulate subset of the functionality of strnlen_s() with strnlen_s()
  */
- #ifndef WIN32
 rsize_t strnlen_s (const char *s, rsize_t smax) {
     return (strnlen(s, smax));
 }
-#endif
 
 /*
  * strstr_s()

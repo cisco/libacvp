@@ -1,0 +1,67 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30011.22
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "acvp_app", "resources\acvp_app.vcxproj", "{6A63359B-E912-421D-B6B9-02A9B45B3067}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		fom_legacy_ssl_no_safec|x64 = fom_legacy_ssl_no_safec|x64
+		fom_legacy_ssl_no_safec|x86 = fom_legacy_ssl_no_safec|x86
+		fom_legacy_ssl|x64 = fom_legacy_ssl|x64
+		fom_legacy_ssl|x86 = fom_legacy_ssl|x86
+		fom_no_safec|x64 = fom_no_safec|x64
+		fom_no_safec|x86 = fom_no_safec|x86
+		fom|x64 = fom|x64
+		fom|x86 = fom|x86
+		nofom_legacy_ssl_no_safec|x64 = nofom_legacy_ssl_no_safec|x64
+		nofom_legacy_ssl_no_safec|x86 = nofom_legacy_ssl_no_safec|x86
+		nofom_legacy_ssl|x64 = nofom_legacy_ssl|x64
+		nofom_legacy_ssl|x86 = nofom_legacy_ssl|x86
+		nofom_no_safec|x64 = nofom_no_safec|x64
+		nofom_no_safec|x86 = nofom_no_safec|x86
+		nofom|x64 = nofom|x64
+		nofom|x86 = nofom|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6A63359B-E912-421D-B6B9-02A9B45B3067}.fom_legacy_ssl_no_safec|x64.ActiveCfg = fom_legacy_ssl_no_safec|x64
+		{6A63359B-E912-421D-B6B9-02A9B45B3067}.fom_legacy_ssl_no_safec|x64.Build.0 = fom_legacy_ssl_no_safec|x64
+		{6A63359B-E912-421D-B6B9-02A9B45B3067}.fom_legacy_ssl_no_safec|x86.ActiveCfg = fom_legacy_ssl_no_safec|Win32
+		{6A63359B-E912-421D-B6B9-02A9B45B3067}.fom_legacy_ssl_no_safec|x86.Build.0 = fom_legacy_ssl_no_safec|Win32
+		{6A63359B-E912-421D-B6B9-02A9B45B3067}.fom_legacy_ssl|x64.ActiveCfg = fom_legacy_ssl|x64
+		{6A63359B-E912-421D-B6B9-02A9B45B3067}.fom_legacy_ssl|x64.Build.0 = fom_legacy_ssl|x64
+		{6A63359B-E912-421D-B6B9-02A9B45B3067}.fom_legacy_ssl|x86.ActiveCfg = fom_legacy_ssl|Win32
+		{6A63359B-E912-421D-B6B9-02A9B45B3067}.fom_legacy_ssl|x86.Build.0 = fom_legacy_ssl|Win32
+		{6A63359B-E912-421D-B6B9-02A9B45B3067}.fom_no_safec|x64.ActiveCfg = fom_no_safec|x64
+		{6A63359B-E912-421D-B6B9-02A9B45B3067}.fom_no_safec|x64.Build.0 = fom_no_safec|x64
+		{6A63359B-E912-421D-B6B9-02A9B45B3067}.fom_no_safec|x86.ActiveCfg = fom_no_safec|Win32
+		{6A63359B-E912-421D-B6B9-02A9B45B3067}.fom_no_safec|x86.Build.0 = fom_no_safec|Win32
+		{6A63359B-E912-421D-B6B9-02A9B45B3067}.fom|x64.ActiveCfg = fom|x64
+		{6A63359B-E912-421D-B6B9-02A9B45B3067}.fom|x64.Build.0 = fom|x64
+		{6A63359B-E912-421D-B6B9-02A9B45B3067}.fom|x86.ActiveCfg = fom|Win32
+		{6A63359B-E912-421D-B6B9-02A9B45B3067}.fom|x86.Build.0 = fom|Win32
+		{6A63359B-E912-421D-B6B9-02A9B45B3067}.nofom_legacy_ssl_no_safec|x64.ActiveCfg = nofom_legacy_ssl_no_safec|x64
+		{6A63359B-E912-421D-B6B9-02A9B45B3067}.nofom_legacy_ssl_no_safec|x64.Build.0 = nofom_legacy_ssl_no_safec|x64
+		{6A63359B-E912-421D-B6B9-02A9B45B3067}.nofom_legacy_ssl_no_safec|x86.ActiveCfg = nofom_legacy_ssl_no_safec|Win32
+		{6A63359B-E912-421D-B6B9-02A9B45B3067}.nofom_legacy_ssl_no_safec|x86.Build.0 = nofom_legacy_ssl_no_safec|Win32
+		{6A63359B-E912-421D-B6B9-02A9B45B3067}.nofom_legacy_ssl|x64.ActiveCfg = nofom_legacy_ssl|x64
+		{6A63359B-E912-421D-B6B9-02A9B45B3067}.nofom_legacy_ssl|x64.Build.0 = nofom_legacy_ssl|x64
+		{6A63359B-E912-421D-B6B9-02A9B45B3067}.nofom_legacy_ssl|x86.ActiveCfg = nofom_legacy_ssl|Win32
+		{6A63359B-E912-421D-B6B9-02A9B45B3067}.nofom_legacy_ssl|x86.Build.0 = nofom_legacy_ssl|Win32
+		{6A63359B-E912-421D-B6B9-02A9B45B3067}.nofom_no_safec|x64.ActiveCfg = nofom_no_safec|x64
+		{6A63359B-E912-421D-B6B9-02A9B45B3067}.nofom_no_safec|x64.Build.0 = nofom_no_safec|x64
+		{6A63359B-E912-421D-B6B9-02A9B45B3067}.nofom_no_safec|x86.ActiveCfg = nofom_no_safec|Win32
+		{6A63359B-E912-421D-B6B9-02A9B45B3067}.nofom_no_safec|x86.Build.0 = nofom_no_safec|Win32
+		{6A63359B-E912-421D-B6B9-02A9B45B3067}.nofom|x64.ActiveCfg = nofom|x64
+		{6A63359B-E912-421D-B6B9-02A9B45B3067}.nofom|x64.Build.0 = nofom|x64
+		{6A63359B-E912-421D-B6B9-02A9B45B3067}.nofom|x86.ActiveCfg = nofom|Win32
+		{6A63359B-E912-421D-B6B9-02A9B45B3067}.nofom|x86.Build.0 = nofom|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {A681267A-2315-4DE9-B518-E89F343EEA9B}
+	EndGlobalSection
+EndGlobal
