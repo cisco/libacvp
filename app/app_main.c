@@ -23,8 +23,13 @@
 #ifdef ACVP_NO_RUNTIME
 # include "app_fips_lcl.h"
 # include "app_fips_init_lcl.h"
+#ifndef _WIN32
 extern int fips_selftest_fail;
 extern int fips_mode;
+#else
+int fips_selftest_fail;
+int fips_mode;
+#endif
 #endif
 #include "safe_mem_lib.h"
 #include "safe_str_lib.h"
