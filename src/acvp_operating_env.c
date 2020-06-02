@@ -704,9 +704,9 @@ static ACVP_RESULT match_dependencies_page(ACVP_CTX *ctx,
         name = json_object_get_string(dep_obj, "name");
         description = json_object_get_string(dep_obj, "description");
 
-        tmp_dep.type = strdup(type);
-        tmp_dep.name = strdup(name);
-        tmp_dep.description = strdup(description);
+        if (type) tmp_dep.type = strdup(type);
+        if (name) tmp_dep.name = strdup(name);
+        if (description) tmp_dep.description = strdup(description);
 
         this_match = compare_dependencies(dep, &tmp_dep);
         if (this_match) {
@@ -2068,16 +2068,16 @@ static ACVP_RESULT match_modules_page(ACVP_CTX *ctx,
         version = json_object_get_string(module_obj, "version");
         description = json_object_get_string(module_obj, "description");
 
-        tmp_module->type = strdup(type);
-        tmp_module->name = strdup(name);
-        tmp_module->version = strdup(version);
-        tmp_module->description = strdup(description);
+        if (type) tmp_module->type = strdup(type);
+        if (name) tmp_module->name = strdup(name);
+        if (version) tmp_module->version = strdup(version);
+        if (description) tmp_module->description = strdup(description);
 
         tmp_module->vendor = tmp_vendor;
         vurl = json_object_get_string(module_obj, "vendorUrl");
         aurl = json_object_get_string(module_obj, "addressUrls");
-        tmp_vendor->url = strdup(vurl);
-        tmp_vendor->address.url = strdup(aurl);
+        if (vurl) tmp_vendor->url = strdup(vurl);
+        if (aurl) tmp_vendor->address.url = strdup(aurl);
 
         /*
          * Construct the tmp_vendor->persons
