@@ -922,6 +922,7 @@ with_ssl_dir
 with_libcurl_dir
 with_libmurl_dir
 with_fom_dir
+enable_kdf
 enable_offline
 enable_cflags
 enable_gcov
@@ -1569,6 +1570,8 @@ Optional Features:
   --enable-fast-install[=PKGS]
                           optimize for fast installation [default=yes]
   --disable-libtool-lock  avoid locking (might break parallel builds)
+  --disable-kdf           For use if using a FOM with no KDF support, such as
+                          OpenSSL 1.0.2 FOM
   --enable-offline        Flag to indicate use of offline mode
   --enable-cflags         Flag to indicate use of enhanced CFLAGS
   --enable-gcov           Flag to indicate use of gcov tool
@@ -4827,13 +4830,13 @@ if ${lt_cv_nm_interface+:} false; then :
 else
   lt_cv_nm_interface="BSD nm"
   echo "int some_variable = 0;" > conftest.$ac_ext
-  (eval echo "\"\$as_me:4830: $ac_compile\"" >&5)
+  (eval echo "\"\$as_me:4833: $ac_compile\"" >&5)
   (eval "$ac_compile" 2>conftest.err)
   cat conftest.err >&5
-  (eval echo "\"\$as_me:4833: $NM \\\"conftest.$ac_objext\\\"\"" >&5)
+  (eval echo "\"\$as_me:4836: $NM \\\"conftest.$ac_objext\\\"\"" >&5)
   (eval "$NM \"conftest.$ac_objext\"" 2>conftest.err > conftest.out)
   cat conftest.err >&5
-  (eval echo "\"\$as_me:4836: output\"" >&5)
+  (eval echo "\"\$as_me:4839: output\"" >&5)
   cat conftest.out >&5
   if $GREP 'External.*some_variable' conftest.out > /dev/null; then
     lt_cv_nm_interface="MS dumpbin"
@@ -6038,7 +6041,7 @@ ia64-*-hpux*)
   ;;
 *-*-irix6*)
   # Find out which ABI we are using.
-  echo '#line 6041 "configure"' > conftest.$ac_ext
+  echo '#line 6044 "configure"' > conftest.$ac_ext
   if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_compile\""; } >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -7567,11 +7570,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:7570: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:7573: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:7574: \$? = $ac_status" >&5
+   echo "$as_me:7577: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -7906,11 +7909,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:7909: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:7912: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:7913: \$? = $ac_status" >&5
+   echo "$as_me:7916: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -8011,11 +8014,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:8014: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:8017: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:8018: \$? = $ac_status" >&5
+   echo "$as_me:8021: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -8066,11 +8069,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:8069: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:8072: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:8073: \$? = $ac_status" >&5
+   echo "$as_me:8076: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -10436,7 +10439,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10439 "configure"
+#line 10442 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -10532,7 +10535,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10535 "configure"
+#line 10538 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11171,9 +11174,23 @@ else
 fi
 
 
+# Check whether --enable-kdf was given.
+if test "${enable_kdf+set}" = set; then :
+  enableval=$enable_kdf; no-kdf="$enableval"
+else
+  disable_kdf=false
+fi
+
+
+
 if test "x$with_fomdir" != xno; then :
+  if test "x$disable_kdf" != "xfalse"; then :
+  FOM_CFLAGS="-DACVP_NO_RUNTIME -DOPENSSL_FIPS -I$fomdir/include"
+
+else
   FOM_CFLAGS="-DACVP_NO_RUNTIME -DOPENSSL_FIPS -DOPENSSL_KDF_SUPPORT -I$fomdir/include"
 
+fi
        FOM_LDFLAGS="-L$fomdir/lib"
 
        FOM_OBJ_DIR="$fomdir/lib"
