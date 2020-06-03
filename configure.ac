@@ -137,8 +137,17 @@ AC_ARG_WITH([fom-dir],
     [fomdir="$withval"],
     [with_fomdir=no])
 
+AC_ARG_ENABLE([kdf],
+[AS_HELP_STRING([--disable-kdf],
+[For use if using a FOM with no KDF support, such as OpenSSL 1.0.2 FOM])],
+[no-kdf="$enableval"],
+[disable_kdf=false])
+
+
 AS_IF([test "x$with_fomdir" != xno],
-      [AC_SUBST([FOM_CFLAGS], "-DACVP_NO_RUNTIME -DOPENSSL_FIPS -DOPENSSL_KDF_SUPPORT -I$fomdir/include")
+      [AS_IF([test "x$disable_kdf" != "xfalse"],
+          [AC_SUBST([FOM_CFLAGS], "-DACVP_NO_RUNTIME -DOPENSSL_FIPS -I$fomdir/include")],
+          [AC_SUBST([FOM_CFLAGS], "-DACVP_NO_RUNTIME -DOPENSSL_FIPS -DOPENSSL_KDF_SUPPORT -I$fomdir/include")])
        AC_SUBST([FOM_LDFLAGS], "-L$fomdir/lib")
        AC_SUBST([FOM_OBJ_DIR], "$fomdir/lib")
       ]
