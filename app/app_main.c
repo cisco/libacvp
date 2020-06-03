@@ -774,8 +774,10 @@ static int enable_aes(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_GMAC, ACVP_SYM_CIPH_AADLEN, 128);
     CHECK_ENABLE_CAP_RV(rv);
+#ifndef ACVP_NO_RUNTIME //OpenSSL FOM has compatibility issues with this
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_GMAC, ACVP_SYM_CIPH_AADLEN, 136);
     CHECK_ENABLE_CAP_RV(rv);
+#endif
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_GMAC, ACVP_SYM_CIPH_AADLEN, 256);
     CHECK_ENABLE_CAP_RV(rv);
 
