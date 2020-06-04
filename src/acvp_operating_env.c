@@ -20,6 +20,9 @@
 
 /* Keeps track of what to use the next Dependency ID */
 static unsigned int glb_dependency_id = 1; 
+static unsigned int glb_vendor_id = 1; 
+static unsigned int glb_module_id = 1; 
+static unsigned int glb_oe_id = 1; 
 
 static ACVP_RESULT copy_oe_string(char **dest, const char *src) {
     if (dest == NULL) {
@@ -269,7 +272,7 @@ static ACVP_OE *find_oe(ACVP_CTX *ctx,
  *
  * @param ctx ACVP_CTX
  * @param id ID for this operating environment
- * @param vendor_id ID of dependency to attach to this module
+ * @param dependency_id ID of dependency to attach to this module
  *
  * @return ACVP_RESULT
  */
@@ -328,6 +331,7 @@ static ACVP_VENDOR *find_vendor(ACVP_CTX *ctx,
     ACVP_LOG_ERR("Invalid 'id' (%u)", id);
     return NULL;
 }
+
 
 static ACVP_RESULT acvp_oe_vendor_new(ACVP_CTX *ctx,
                                       unsigned int id,
@@ -467,7 +471,6 @@ static ACVP_RESULT acvp_oe_vendor_add_address(ACVP_CTX *ctx,
  */
 ACVP_RESULT acvp_oe_module_new(ACVP_CTX *ctx,
                                unsigned int id,
-                               unsigned int vendor_id,
                                const char *name) {
     ACVP_MODULES *modules = NULL;
     ACVP_MODULE *new_module = NULL;
@@ -504,7 +507,7 @@ ACVP_RESULT acvp_oe_module_new(ACVP_CTX *ctx,
     new_module->id = id;
 
     /* Insert a pointer to the actual Vendor struct location */
-    if (!(vendor = find_vendor(ctx, vendor_id))) return ACVP_INVALID_ARG;
+    if (!(vendor = find_vendor(ctx, id))) return ACVP_INVALID_ARG;
     new_module->vendor = vendor;
 
     rv = copy_oe_string(&new_module->name, name);
@@ -701,9 +704,9 @@ static ACVP_RESULT match_dependencies_page(ACVP_CTX *ctx,
         name = json_object_get_string(dep_obj, "name");
         description = json_object_get_string(dep_obj, "description");
 
-        tmp_dep.type = strdup(type);
-        tmp_dep.name = strdup(name);
-        tmp_dep.description = strdup(description);
+        if (type) tmp_dep.type = strdup(type);
+        if (name) tmp_dep.name = strdup(name);
+        if (description) tmp_dep.description = strdup(description);
 
         this_match = compare_dependencies(dep, &tmp_dep);
         if (this_match) {
@@ -988,7 +991,7 @@ static ACVP_RESULT match_oes_page(ACVP_CTX *ctx,
             goto end;
         }
 
-        dependency_urls = json_object_get_array(oe_obj, "dependencies");
+        dependency_urls = json_object_get_array(oe_obj, "dependencyUrls");
         if (dependency_urls == NULL)  {
             ACVP_LOG_ERR("No dependencies object");
             rv = ACVP_JSON_ERR;
@@ -1584,7 +1587,7 @@ static ACVP_RESULT query_vendor_contacts(ACVP_CTX *ctx,
             }
             strcmp_s(person->full_name, ACVP_OE_STR_MAX, full_name, &diff);
             if (diff != 0) {
-                 ACVP_LOG_VERBOSE("Name not equal");
+                 ACVP_LOG_VERBOSE("Name not equal, checking next...");
                  continue; // Not equal
             }
 
@@ -1600,27 +1603,24 @@ static ACVP_RESULT query_vendor_contacts(ACVP_CTX *ctx,
                 goto end;
             }
             if (!equal) {
-                ACVP_LOG_VERBOSE("Emails do not match");
+                ACVP_LOG_VERBOSE("Emails do not match, checking next...");
                 continue;
             }
             ACVP_LOG_VERBOSE("Email Match");
 
             phone_numbers = json_object_get_array(contact_obj, "phoneNumbers");
-            if (phone_numbers == NULL)  {
-                ACVP_LOG_ERR("No phoneNumbers object");
-                rv = ACVP_JSON_ERR;
-                goto end;
+            if (phone_numbers != NULL)  {
+                rv = compare_phone_numbers(person->phone_numbers, phone_numbers, &equal);
+                if (ACVP_SUCCESS != rv) {
+                    ACVP_LOG_ERR("Problem comparing person phone numbers");
+                    goto end;
+                }
+                if (!equal) {
+                    ACVP_LOG_VERBOSE("Phone numbers do not match");
+                    continue;
+                }
+                ACVP_LOG_VERBOSE("Phone Match");
             }
-            rv = compare_phone_numbers(person->phone_numbers, phone_numbers, &equal);
-            if (ACVP_SUCCESS != rv) {
-                ACVP_LOG_ERR("Problem comparing person phone numbers");
-                goto end;
-            }
-            if (!equal) {
-                ACVP_LOG_VERBOSE("Phone numbers do not match");
-                continue;
-            }
-            ACVP_LOG_VERBOSE("Phone Match");
 
             /*
              * Found a match.
@@ -1741,19 +1741,16 @@ static ACVP_RESULT match_vendors_page(ACVP_CTX *ctx,
         }
 
         phone_numbers = json_object_get_array(vendor_obj, "phoneNumbers");
-        if (phone_numbers == NULL)  {
-            ACVP_LOG_ERR("No phoneNumberss object");
-            rv = ACVP_JSON_ERR;
-            goto end;
-        }
-        rv = compare_phone_numbers(vendor->phone_numbers, phone_numbers, &equal);
-        if (ACVP_SUCCESS != rv) {
-            ACVP_LOG_ERR("Problem comparing vendor phone numbers");
-            goto end;
-        }
-        if (!equal) {
-            ACVP_LOG_VERBOSE("Phone numbers do not match");
-            continue;
+        if (phone_numbers != NULL)  {
+            rv = compare_phone_numbers(vendor->phone_numbers, phone_numbers, &equal);
+            if (ACVP_SUCCESS != rv) {
+                ACVP_LOG_ERR("Problem comparing vendor phone numbers");
+                goto end;
+            }
+            if (!equal) {
+                ACVP_LOG_VERBOSE("Phone numbers do not match");
+                continue;
+            }
         }
 
         addresses = json_object_get_array(vendor_obj, "addresses");
@@ -2071,16 +2068,16 @@ static ACVP_RESULT match_modules_page(ACVP_CTX *ctx,
         version = json_object_get_string(module_obj, "version");
         description = json_object_get_string(module_obj, "description");
 
-        tmp_module->type = strdup(type);
-        tmp_module->name = strdup(name);
-        tmp_module->version = strdup(version);
-        tmp_module->description = strdup(description);
+        if (type) tmp_module->type = strdup(type);
+        if (name) tmp_module->name = strdup(name);
+        if (version) tmp_module->version = strdup(version);
+        if (description) tmp_module->description = strdup(description);
 
         tmp_module->vendor = tmp_vendor;
         vurl = json_object_get_string(module_obj, "vendorUrl");
-        aurl = json_object_get_string(module_obj, "addressUrl");
-        tmp_vendor->url = strdup(vurl);
-        tmp_vendor->address.url = strdup(aurl);
+        aurl = json_object_get_string(module_obj, "addressUrls");
+        if (vurl) tmp_vendor->url = strdup(vurl);
+        if (aurl) tmp_vendor->address.url = strdup(aurl);
 
         /*
          * Construct the tmp_vendor->persons
@@ -2727,7 +2724,7 @@ static ACVP_RESULT acvp_oe_metadata_parse_phone_numbers(ACVP_CTX *ctx,
                 *phone_list = calloc(1, sizeof(ACVP_OE_PHONE_LIST));
                 if (*phone_list == NULL) return ACVP_MALLOC_FAIL;
                 phone = *phone_list;
-            }else {
+            } else {
                 phone->next = calloc(1, sizeof(ACVP_OE_PHONE_LIST));
                 if (phone->next == NULL) return ACVP_MALLOC_FAIL;
                 phone = phone->next;
@@ -2837,7 +2834,7 @@ static ACVP_RESULT acvp_oe_metadata_parse_vendor_contacts(ACVP_CTX *ctx,
 static ACVP_RESULT acvp_oe_metadata_parse_vendor(ACVP_CTX *ctx, JSON_Object *obj) {
     ACVP_VENDOR *vendor = NULL;
     const char *name = NULL, *website = NULL;
-    int vendor_id = 0;
+    int id = 0;
     ACVP_RESULT rv = ACVP_SUCCESS;
 
     if (!ctx) return ACVP_NO_CTX;
@@ -2846,11 +2843,8 @@ static ACVP_RESULT acvp_oe_metadata_parse_vendor(ACVP_CTX *ctx, JSON_Object *obj
         return ACVP_INVALID_ARG;
     } 
 
-    vendor_id = json_object_get_number(obj, "id");
-    if (vendor_id == 0) {
-        ACVP_LOG_ERR("Metadata JSON 'id' must be non-zero");
-        return ACVP_INVALID_ARG;
-    }
+    id = glb_vendor_id;
+    glb_vendor_id++;
 
     name = json_object_get_string(obj, "name");
     if (!name) {
@@ -2859,11 +2853,11 @@ static ACVP_RESULT acvp_oe_metadata_parse_vendor(ACVP_CTX *ctx, JSON_Object *obj
     }
 
     /* Designate and init new Vendor struct */
-    rv = acvp_oe_vendor_new(ctx, vendor_id, name);
+    rv = acvp_oe_vendor_new(ctx, id, name);
     if (rv != ACVP_SUCCESS) return rv;
 
     /* Get pointer to the new vendor */
-    vendor = find_vendor(ctx, vendor_id);
+    vendor = find_vendor(ctx, id);
     if (!vendor) return ACVP_INVALID_ARG;
 
     website = json_object_get_string(obj, "website");
@@ -2950,7 +2944,7 @@ static ACVP_RESULT acvp_oe_metadata_parse_vendors(ACVP_CTX *ctx, JSON_Object *ob
  */
 static ACVP_RESULT acvp_oe_metadata_parse_module(ACVP_CTX *ctx, JSON_Object *obj) {
     const char *name = NULL, *version = NULL, *type = NULL, *description = NULL;
-    int module_id = 0, vendor_id = 0;
+    int module_id = 0;
     ACVP_RESULT rv = ACVP_SUCCESS;
 
     if (!ctx) return ACVP_NO_CTX;
@@ -2959,18 +2953,8 @@ static ACVP_RESULT acvp_oe_metadata_parse_module(ACVP_CTX *ctx, JSON_Object *obj
         return ACVP_INVALID_ARG;
     } 
 
-    module_id = json_object_get_number(obj, "id");
-    if (module_id == 0) {
-        ACVP_LOG_ERR("Metadata JSON 'id' must be non-zero");
-        return ACVP_INVALID_ARG;
-    }
-
-    vendor_id = json_object_get_number(obj, "vendorId");
-    if (vendor_id == 0) {
-        ACVP_LOG_ERR("Metadata JSON 'vendorId' must be non-zero");
-        return ACVP_INVALID_ARG;
-    }
-
+    module_id = glb_module_id;
+    glb_module_id++;
     name = json_object_get_string(obj, "name");
     if (!name) {
         ACVP_LOG_ERR("Metadata JSON missing 'name'");
@@ -2978,7 +2962,7 @@ static ACVP_RESULT acvp_oe_metadata_parse_module(ACVP_CTX *ctx, JSON_Object *obj
     }
 
     /* Designate and init new Module struct */
-    rv = acvp_oe_module_new(ctx, module_id, vendor_id, name);
+    rv = acvp_oe_module_new(ctx, module_id, name);
     if (rv != ACVP_SUCCESS) return rv;
 
     type = json_object_get_string(obj, "type");
@@ -3232,11 +3216,8 @@ static ACVP_RESULT acvp_oe_metadata_parse_oe(ACVP_CTX *ctx, JSON_Object *obj) {
         return ACVP_INVALID_ARG;
     } 
 
-    oe_id = json_object_get_number(obj, "id");
-    if (oe_id == 0) {
-        ACVP_LOG_ERR("Metadata JSON 'id' must be non-zero");
-        return ACVP_INVALID_ARG;
-    }
+    oe_id = glb_oe_id;
+    glb_oe_id++;
 
     name = json_object_get_string(obj, "name");
     if (!name) {

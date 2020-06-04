@@ -2577,7 +2577,6 @@ ACVP_RESULT acvp_oe_set_fips_validation_metadata(ACVP_CTX *ctx,
 
 ACVP_RESULT acvp_oe_module_new(ACVP_CTX *ctx,
                                unsigned int id,
-                               unsigned int vendor_id,
                                const char *name);
 
 ACVP_RESULT acvp_oe_module_set_type_version_desc(ACVP_CTX *ctx,

@@ -1,5 +1,5 @@
 if [ $(whoami) = "root" ]; then
-    apt install -y libssl1.0-dev libcurl4-gnutls-dev
+    apt install -y libssl1.1-dev libcurl4-gnutls-dev
 fi
 
 cd $1

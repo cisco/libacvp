@@ -978,7 +978,6 @@ runtest-test_app_des.obj: test_app_des.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o runtest-test_app_des.obj `if test -f 'test_app_des.c'; then $(CYGPATH_W) 'test_app_des.c'; else $(CYGPATH_W) '$(srcdir)/test_app_des.c'; fi`
 
-
 runtest-test_app_ecdsa.o: test_app_ecdsa.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT runtest-test_app_ecdsa.o -MD -MP -MF $(DEPDIR)/runtest-test_app_ecdsa.Tpo -c -o runtest-test_app_ecdsa.o `test -f 'test_app_ecdsa.c' || echo '$(srcdir)/'`test_app_ecdsa.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/runtest-test_app_ecdsa.Tpo $(DEPDIR)/runtest-test_app_ecdsa.Po

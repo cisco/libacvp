@@ -23,11 +23,15 @@
 #ifdef ACVP_NO_RUNTIME
 # include "app_fips_lcl.h"
 # include "app_fips_init_lcl.h"
-#ifndef _WIN32
+
+#ifdef fips_selftest_fail
 extern int fips_selftest_fail;
-extern int fips_mode;
 #else
 int fips_selftest_fail;
+#endif
+#ifdef fips_mode
+extern int fips_mode;
+#else
 int fips_mode;
 #endif
 #endif
@@ -771,8 +775,10 @@ static int enable_aes(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_GMAC, ACVP_SYM_CIPH_AADLEN, 128);
     CHECK_ENABLE_CAP_RV(rv);
+#ifndef ACVP_NO_RUNTIME //OpenSSL FOM has compatibility issues with this
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_GMAC, ACVP_SYM_CIPH_AADLEN, 136);
     CHECK_ENABLE_CAP_RV(rv);
+#endif
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_GMAC, ACVP_SYM_CIPH_AADLEN, 256);
     CHECK_ENABLE_CAP_RV(rv);
 
@@ -2494,7 +2500,7 @@ static int enable_drbg(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_1,
-                                ACVP_DRBG_DER_FUNC_ENABLED, 1);
+                                ACVP_DRBG_DER_FUNC_ENABLED, 0);
     CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_1,
@@ -2527,7 +2533,7 @@ static int enable_drbg(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224,
-                                ACVP_DRBG_DER_FUNC_ENABLED, 1);
+                                ACVP_DRBG_DER_FUNC_ENABLED, 0);
     CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224,
@@ -2560,7 +2566,7 @@ static int enable_drbg(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_256,
-                                ACVP_DRBG_DER_FUNC_ENABLED, 1);
+                                ACVP_DRBG_DER_FUNC_ENABLED, 0);
     CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_256,
@@ -2593,7 +2599,7 @@ static int enable_drbg(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_384,
-                                ACVP_DRBG_DER_FUNC_ENABLED, 1);
+                                ACVP_DRBG_DER_FUNC_ENABLED, 0);
     CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_384,
@@ -2626,7 +2632,7 @@ static int enable_drbg(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_512,
-                                ACVP_DRBG_DER_FUNC_ENABLED, 1);
+                                ACVP_DRBG_DER_FUNC_ENABLED, 0);
     CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_512,
@@ -2661,7 +2667,7 @@ static int enable_drbg(ACVP_CTX *ctx) {
     /* set same params for hmacDRBG with SHA_512_224 and SHA_512_256 */
     #if 0
     rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_512_224,
-                                ACVP_DRBG_DER_FUNC_ENABLED, 1);
+                                ACVP_DRBG_DER_FUNC_ENABLED, 0);
     CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_512_224,
@@ -2694,7 +2700,7 @@ static int enable_drbg(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_512_256,
-                                ACVP_DRBG_DER_FUNC_ENABLED, 1);
+                                ACVP_DRBG_DER_FUNC_ENABLED, 0);
     CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_512_256,
