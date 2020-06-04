@@ -7,16 +7,19 @@ set SSL_DIR=C:\Path\to\dir
 rem set true for SSL versions before 1.1.0
 set LEGACY_SSL=FALSE
 
-rem for non-runtime testing
+rem for non-runtime testing - will use OpenSSL as normal if empty
 set FOM_DIR=C:\Path\to\dir
 
 rem if libcurl dir is empty, we will attempt to use libmurl and directly build it in
 set LIBCURL_DIR=C:\Path\to\dir
 
+rem if SAFEC_DIR is empty, we will not use an external library and use the safeC stub instead
 set SAFEC_DIR=C:\Path\to\dir
-rem if DISABLE_SAFEC is true, we will use safe C stub
-set DISABLE_SAFEC=TRUE
 
+rem options
+rem build libacvp statically
 set STATIC_BUILD=FALSE
-rem offline builds must be static as well
+rem for static builds only; creates a version of library that can only be used for offline processing of vector sets
 set OFFLINE_BUILD=FALSE
+rem Needed for using acvp_app with a FOM that does not support NIST KDF functions, like OpenSSL fom 2.0
+set DISABLE_KDF=TRUE

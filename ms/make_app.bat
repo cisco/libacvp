@@ -21,12 +21,16 @@ if %LEGACY_SSL%==TRUE (
   set PROJ_CONFIG=%PROJ_CONFIG%_legacy_ssl
 )
 
-if %DISABLE_SAFEC%==TRUE (
+if [%SAFEC_DIR%]==[] (
   set PROJ_CONFIG=%PROJ_CONFIG%_no_safec
   set ACV_INCLUDE=%ACV_INCLUDE%;%cd%\safe_c_stub\include
 ) ELSE (
   set ACV_LIBPATH=%ACV_LIBPATH%;%SAFEC_DIR%\lib
   set ACV_INCLUDE=%ACV_INCLUDE%;%SAFEC_DIR%\include
+)
+
+if NOT %DISABLE_KDF%==TRUE (
+  set PreprocessorDefinitions=OPENSSL_KDF_SUPPORT
 )
 
 set ACV_LIBPATH=%ACV_LIBPATH%;%cd%\ms\build
