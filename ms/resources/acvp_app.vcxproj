@@ -204,7 +204,7 @@
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;libacvp.lib;fipscanister.lib;libeay32.lib;ssleay32.lib; Ws2_32.lib;safeclib.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <ClCompile>
-      <PreprocessorDefinitions>ACVP_NO_RUNTIME;__STDC_WANT_SECURE_LIB__=0;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>ACVP_NO_RUNTIME;__STDC_WANT_SECURE_LIB__=0;_UNICODE;UNICODE;$(ACV_KDF_SUPPORT);%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='fom_legacy_ssl_no_safec|Win32'">
@@ -212,7 +212,7 @@
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;libacvp.lib;fipscanister.lib;libeay32.lib;ssleay32.lib; Ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <ClCompile>
-      <PreprocessorDefinitions>ACVP_NO_RUNTIME;__STDC_WANT_SECURE_LIB__=0;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>ACVP_NO_RUNTIME;__STDC_WANT_SECURE_LIB__=0;_UNICODE;UNICODE;$(ACV_KDF_SUPPORT);%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='fom_no_safec|Win32'">
@@ -236,7 +236,7 @@
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;libacvp.lib;fipscanister.lib;libeay32.lib;ssleay32.lib; Ws2_32.lib;safeclib.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <ClCompile>
-      <PreprocessorDefinitions>ACVP_NO_RUNTIME;__STDC_WANT_SECURE_LIB__=0;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>ACVP_NO_RUNTIME;__STDC_WANT_SECURE_LIB__=0;_UNICODE;UNICODE;$(ACV_KDF_SUPPORT);%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='fom_legacy_ssl_no_safec|x64'">
@@ -244,7 +244,7 @@
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;libacvp.lib;fipscanister.lib;libeay32.lib;ssleay32.lib; Ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <ClCompile>
-      <PreprocessorDefinitions>ACVP_NO_RUNTIME;__STDC_WANT_SECURE_LIB__=0;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>ACVP_NO_RUNTIME;__STDC_WANT_SECURE_LIB__=0;_UNICODE;UNICODE;$(ACV_KDF_SUPPORT);%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='fom_no_safec|x64'">

@@ -30,7 +30,7 @@ if [%SAFEC_DIR%]==[] (
 )
 
 if NOT %DISABLE_KDF%==TRUE (
-  set PreprocessorDefinitions=OPENSSL_KDF_SUPPORT
+  set ACV_KDF_SUPPORT=OPENSSL_KDF_SUPPORT
 )
 
 set ACV_LIBPATH=%ACV_LIBPATH%;%cd%\ms\build

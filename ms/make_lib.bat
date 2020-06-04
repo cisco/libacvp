@@ -24,7 +24,7 @@ if %OFFLINE_BUILD%==TRUE (
   )
 )
 
-if %DISABLE_SAFEC%==TRUE (
+if [%SAFEC_DIR%]==[] (
   set PROJ_CONFIG=%PROJ_CONFIG%_no_safec
   set ACV_INCLUDE=%ACV_INCLUDE%;%cd%\safe_c_stub\include
 ) ELSE (
