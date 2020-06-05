@@ -7,18 +7,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libacvp", "resources\libacv
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		shared_murl|x64 = shared_murl|x64
-		shared_murl|x86 = shared_murl|x86
-		shared_no_safec_murl|x64 = shared_no_safec_murl|x64
-		shared_no_safec_murl|x86 = shared_no_safec_murl|x86
 		shared_no_safec|x64 = shared_no_safec|x64
 		shared_no_safec|x86 = shared_no_safec|x86
 		shared|x64 = shared|x64
 		shared|x86 = shared|x86
-		static_murl|x64 = static_murl|x64
-		static_murl|x86 = static_murl|x86
-		static_no_safec_murl|x64 = static_no_safec_murl|x64
-		static_no_safec_murl|x86 = static_no_safec_murl|x86
 		static_no_safec|x64 = static_no_safec|x64
 		static_no_safec|x86 = static_no_safec|x86
 		static_offline_no_safec|x64 = static_offline_no_safec|x64
@@ -29,14 +21,6 @@ Global
 		static|x86 = static|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{D96A91BF-B55A-42FF-8053-4519103AF513}.shared_murl|x64.ActiveCfg = shared_murl|x64
-		{D96A91BF-B55A-42FF-8053-4519103AF513}.shared_murl|x64.Build.0 = shared_murl|x64
-		{D96A91BF-B55A-42FF-8053-4519103AF513}.shared_murl|x86.ActiveCfg = shared_murl|Win32
-		{D96A91BF-B55A-42FF-8053-4519103AF513}.shared_murl|x86.Build.0 = shared_murl|Win32
-		{D96A91BF-B55A-42FF-8053-4519103AF513}.shared_no_safec_murl|x64.ActiveCfg = shared_no_safec_murl|x64
-		{D96A91BF-B55A-42FF-8053-4519103AF513}.shared_no_safec_murl|x64.Build.0 = shared_no_safec_murl|x64
-		{D96A91BF-B55A-42FF-8053-4519103AF513}.shared_no_safec_murl|x86.ActiveCfg = shared_no_safec_murl|Win32
-		{D96A91BF-B55A-42FF-8053-4519103AF513}.shared_no_safec_murl|x86.Build.0 = shared_no_safec_murl|Win32
 		{D96A91BF-B55A-42FF-8053-4519103AF513}.shared_no_safec|x64.ActiveCfg = shared_no_safec|x64
 		{D96A91BF-B55A-42FF-8053-4519103AF513}.shared_no_safec|x64.Build.0 = shared_no_safec|x64
 		{D96A91BF-B55A-42FF-8053-4519103AF513}.shared_no_safec|x86.ActiveCfg = shared_no_safec|Win32
@@ -45,14 +29,6 @@ Global
 		{D96A91BF-B55A-42FF-8053-4519103AF513}.shared|x64.Build.0 = shared|x64
 		{D96A91BF-B55A-42FF-8053-4519103AF513}.shared|x86.ActiveCfg = shared|Win32
 		{D96A91BF-B55A-42FF-8053-4519103AF513}.shared|x86.Build.0 = shared|Win32
-		{D96A91BF-B55A-42FF-8053-4519103AF513}.static_murl|x64.ActiveCfg = static_murl|x64
-		{D96A91BF-B55A-42FF-8053-4519103AF513}.static_murl|x64.Build.0 = static_murl|x64
-		{D96A91BF-B55A-42FF-8053-4519103AF513}.static_murl|x86.ActiveCfg = static_murl|Win32
-		{D96A91BF-B55A-42FF-8053-4519103AF513}.static_murl|x86.Build.0 = static_murl|Win32
-		{D96A91BF-B55A-42FF-8053-4519103AF513}.static_no_safec_murl|x64.ActiveCfg = static_no_safec_murl|x64
-		{D96A91BF-B55A-42FF-8053-4519103AF513}.static_no_safec_murl|x64.Build.0 = static_no_safec_murl|x64
-		{D96A91BF-B55A-42FF-8053-4519103AF513}.static_no_safec_murl|x86.ActiveCfg = static_no_safec_murl|Win32
-		{D96A91BF-B55A-42FF-8053-4519103AF513}.static_no_safec_murl|x86.Build.0 = static_no_safec_murl|Win32
 		{D96A91BF-B55A-42FF-8053-4519103AF513}.static_no_safec|x64.ActiveCfg = static_no_safec|x64
 		{D96A91BF-B55A-42FF-8053-4519103AF513}.static_no_safec|x64.Build.0 = static_no_safec|x64
 		{D96A91BF-B55A-42FF-8053-4519103AF513}.static_no_safec|x86.ActiveCfg = static_no_safec|Win32

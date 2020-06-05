@@ -102,15 +102,6 @@
     <ClCompile Include="..\..\safe_c_stub\src\safe_str_stub.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\murl\http_parser.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\murl\murl.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\murl\murl_http.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\acvp\acvp.h">
@@ -135,15 +126,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\safe_c_stub\include\safe_str_lib.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\murl\http_parser.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\murl\murl.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\murl\murl_lcl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
