@@ -167,8 +167,11 @@ For acvp_app, If you are using a FIPS Object Module with OpenSSL: you need a hea
 /include folder that maps FIPS functions to SSL ones (for example, fipssyms.h) which is sometimes
 not moved to the install path from the source path by default on Windows.
 
+For these steps, use the Visual Studio Command Prompt for your platform (x64, x86, x86_64, or 
+x64_86)
+
 Steps:
-1.) Edit ms\config_windows.bat
+1.) Edit and run ms\config_windows.bat
     -Add all of the directories for your dependencies
 	-Change any needed settings
 2.) run ms\make_lib.bat
