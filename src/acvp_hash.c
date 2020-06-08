@@ -379,7 +379,7 @@ static ACVP_RESULT acvp_hash_shake_mct(ACVP_CTX *ctx,
             }
 
             /* Get the right-most 16bits and convert to an integer */
-#if ACVP_HOST_LITTLE_ENDIAN || defined(WIN32) || defined(__APPLE__)
+#if ACVP_HOST_LITTLE_ENDIAN || defined(__WIN32) || defined(__APPLE__)
             rightmost_out_bits = SWAP_16(*(uint16_t *)(stc->md + stc->md_len - 2));
 #else
             rightmost_out_bits = *(uint16_t *)(stc->md + stc->md_len - 2);
