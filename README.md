@@ -229,6 +229,8 @@ passing. Additionally, new tests should be added for new library features.
 We also run the uncrustify tool as a linter to keep code-style consistent
 throughout the library. That can be found in the `uncrustify/` directory.
 
+Any and all new API functions must also be added to ms\resources\source.def.
+
 ## FAQ
 
 `I get "unable to process test vectors" for certain algorithms when libacvp is built without a FOM. Why?`
