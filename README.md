@@ -147,22 +147,51 @@ If using murl for cross compliles use the same CROSS_COMPILE and HOSTCC used wit
 CROSS_COMPILE=arm-linux-gnueabihf-
 HOSTCC=gcc
 
-## Windows
-1. Modify and run `scripts/gradle_env.bat`
-2. Run `gradle build`
-3. Modify and run `scripts/nist_setup.bat`
-
-After successfully completing, the .dll and .lib library files are loacted in `build/libs/acvp`
-and the example executable is located in `build/exe/`.
-*Note:* Windows executables require that dependent libraries be in very specific locations
-(or in the Windows path). One of these locations is the base directory of the executable.
-
 ## Running
 1. `export LD_LIBRARY_PATH=<path to ssl lib>`
 2. Modify and run `scripts/nist_setup.sh`
 3. `./app/acvp_app --<options>`
 
 Use `./app/acvp_app --help` for more information on available options.
+
+## Windows
+The Visual Studio projects for acvp_app and libacvp were created in Visual Studio 2019. If you are
+having issues with previous versions of Visual Studio, you can acquire just the build tools for
+2019 from the Microsoft website.
+
+Prerequisites:
+This system assumes all dependency library paths have /include folders containing all the headers
+needed to properly link. This can be altered in the scripts if needed.
+
+For acvp_app, If you are using a FIPS Object Module with OpenSSL: you need a header in your 
+/include folder that maps FIPS functions to SSL ones (for example, fipssyms.h) which is sometimes
+not moved to the install path from the source path by default on Windows.
+
+For these steps, use the Visual Studio Command Prompt for your platform (x64, x86, x86_64, or 
+x64_86)
+
+Steps:
+1.) Edit and run ms\config_windows.bat
+    -Add all of the directories for your dependencies
+	-Change any needed settings
+2.) run ms\make_lib.bat
+3.) run ms\make_app.bat
+
+The library files and app files will be placed in the ms\build\ directory.
+
+Notes:
+Windows will only search specific paths for shared libraries, and will not check the
+locations you specify in config_windows.bat by default unless they are in your path. This results
+in acvp_app not being able to run. An alternative to altering your path or moving libraries to
+system folders is moving/copying any needed .dll files to the same directory as acvp_app.
+
+If you are building statically, it is assumed for acvp_app that you have built Curl with OpenSSL, 
+and that you are linking acvp_app to the exact same version of OpenSSL that Curl is linked to. Other
+configurations are not supported, untested, and may not work. Libacvp itself is indifferent
+to which crypto and SSL libraries Curl uses, but any applications using libacvp statically
+need to link to those libraries.
+
+Murl is not supported in windows at this time.
 
 #### How to test offline
 1. Download vectors on network accessible device:
@@ -191,8 +220,6 @@ export FIPSLD_CC=gcc     (or whatever compiler is being used)
 ./configure --with-ssl-dir=<ciscossl install> --with-fom-dir=<fom install> --prefix=<libacvp install> --enable-static --enable-offline
 ```
 
-
-
 ## Testing
 Move to the test/ directory and see the README.md there. The tests depend upon
 a C test framework called Criterion, found here: https://github.com/Snaipe/Criterion
@@ -204,6 +231,8 @@ passing. Additionally, new tests should be added for new library features.
 
 We also run the uncrustify tool as a linter to keep code-style consistent
 throughout the library. That can be found in the `uncrustify/` directory.
+
+Any and all new API functions must also be added to ms\resources\source.def.
 
 ## FAQ
 

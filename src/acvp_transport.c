@@ -10,7 +10,7 @@
 
 #ifdef USE_MURL
 # include "../murl/murl.h"
-#else
+#elif !defined ACVP_OFFLINE
 # include <curl/curl.h>
 #endif
 
@@ -21,7 +21,7 @@
 #include "acvp_lcl.h"
 #include "safe_lib.h"
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <Windows.h>
 #include <intrin.h>
 
