@@ -2246,6 +2246,11 @@ ACVP_RESULT acvp_cap_hash_set_domain(ACVP_CTX *ctx,
         ACVP_LOG_ERR("Invalid 'parm'");
         return ACVP_INVALID_ARG;
     }
+    
+    if (increment <= 0) {
+        ACVP_LOG_ERR("Invalid increment (%d) for hash set domain", increment);
+        return ACVP_INVALID_ARG;
+    }
 
     if (min % increment != 0) {
         ACVP_LOG_ERR("min(%d) MODULO increment(%d) must equal 0", min, increment);

@@ -2,7 +2,7 @@ ACLOCAL_AMFLAGS = -I m4
 AUTOMAKE_OPTIONS=foreign
 
 dist_data_DATA = README.md
-EXTRA_DIST = build.gradle docker certs scripts docs metadata murl
+EXTRA_DIST = ms docker certs scripts docs metadata murl
 
 if UNIT_TEST_SUPPORTED
 TEST_DIR=test
