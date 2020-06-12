@@ -18,7 +18,7 @@
 
 #ifdef USE_MURL
 #include "murl.h"
-#else
+#elif !defined ACVP_OFFLINE
 #include <curl/curl.h>
 #endif
 

@@ -11,7 +11,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-#ifdef WIN32
+#ifdef _WIN32
 #include <io.h>
 #include <Windows.h>
 #else
@@ -2270,7 +2270,7 @@ static ACVP_RESULT acvp_retry_handler(ACVP_CTX *ctx, int *retry_period, unsigned
         ACVP_LOG_STATUS("200 OK, waiting %u seconds and trying again...", *retry_period);
     }
 
-    #ifdef WIN32
+    #ifdef _WIN32
     /*
      * Windows uses milliseconds
      */

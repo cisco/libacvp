@@ -17,7 +17,7 @@
 
 
 #ifndef ACVP_LOG_ERR
-#ifdef WIN32
+#ifdef _WIN32
 #define ACVP_LOG_ERR(format, ...) do { \
         acvp_log_msg(ctx, ACVP_LOG_LVL_ERR, "***ACVP [ERR][%s:%d]--> " format "\n", \
                      __func__, __LINE__, __VA_ARGS__); \
@@ -31,7 +31,7 @@
 #endif
 
 #ifndef ACVP_LOG_WARN
-#ifdef WIN32
+#ifdef _WIN32
 #define ACVP_LOG_WARN(format, ...) do { \
         acvp_log_msg(ctx, ACVP_LOG_LVL_WARN, "***ACVP [WARN][%s:%d]--> " format "\n", \
                      __func__, __LINE__, __VA_ARGS__); \
@@ -45,7 +45,7 @@
 #endif
 
 #ifndef ACVP_LOG_STATUS
-#ifdef WIN32
+#ifdef _WIN32
 #define ACVP_LOG_STATUS(format, ...) do { \
         acvp_log_msg(ctx, ACVP_LOG_LVL_STATUS, "***ACVP [STATUS][%s:%d]--> " format "\n", \
                      __func__, __LINE__, __VA_ARGS__); \
@@ -59,7 +59,7 @@
 #endif
 
 #ifndef ACVP_LOG_INFO
-#ifdef WIN32
+#ifdef _WIN32
 #define ACVP_LOG_INFO(format, ...) do { \
         acvp_log_msg(ctx, ACVP_LOG_LVL_INFO, "***ACVP [INFO][%s:%d]--> " format "\n", \
                      __func__, __LINE__, __VA_ARGS__); \
@@ -73,7 +73,7 @@
 #endif
 
 #ifndef ACVP_LOG_VERBOSE
-#ifdef WIN32
+#ifdef _WIN32
 #define ACVP_LOG_VERBOSE(format, ...) do { \
         acvp_log_msg(ctx, ACVP_LOG_LVL_VERBOSE, "***ACVP [INFO][%s:%d]--> " format "\n", \
                      __func__, __LINE__, __VA_ARGS__); \
@@ -1400,7 +1400,7 @@ ACVP_RESULT acvp_retrieve_expected_result(ACVP_CTX *ctx, const char *api_url);
 
 ACVP_RESULT acvp_submit_vector_responses(ACVP_CTX *ctx, char *vsid_url);
 
-#ifdef WIN32
+#ifdef _WIN32
 void acvp_log_msg(ACVP_CTX *ctx, ACVP_LOG_LVL level, const char *format, ...);
 #else
 void acvp_log_msg(ACVP_CTX *ctx, ACVP_LOG_LVL level, const char *format, ...) __attribute__ ((format (gnu_printf, 3, 4)));

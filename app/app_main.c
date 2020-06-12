@@ -23,6 +23,7 @@
 #ifdef ACVP_NO_RUNTIME
 # include "app_fips_lcl.h"
 # include "app_fips_init_lcl.h"
+
 #ifdef fips_selftest_fail
 extern int fips_selftest_fail;
 #else

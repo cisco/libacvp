@@ -1,0 +1,55 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30011.22
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libacvp", "resources\libacvp.vcxproj", "{D96A91BF-B55A-42FF-8053-4519103AF513}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		shared_no_safec|x64 = shared_no_safec|x64
+		shared_no_safec|x86 = shared_no_safec|x86
+		shared|x64 = shared|x64
+		shared|x86 = shared|x86
+		static_no_safec|x64 = static_no_safec|x64
+		static_no_safec|x86 = static_no_safec|x86
+		static_offline_no_safec|x64 = static_offline_no_safec|x64
+		static_offline_no_safec|x86 = static_offline_no_safec|x86
+		static_offline|x64 = static_offline|x64
+		static_offline|x86 = static_offline|x86
+		static|x64 = static|x64
+		static|x86 = static|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D96A91BF-B55A-42FF-8053-4519103AF513}.shared_no_safec|x64.ActiveCfg = shared_no_safec|x64
+		{D96A91BF-B55A-42FF-8053-4519103AF513}.shared_no_safec|x64.Build.0 = shared_no_safec|x64
+		{D96A91BF-B55A-42FF-8053-4519103AF513}.shared_no_safec|x86.ActiveCfg = shared_no_safec|Win32
+		{D96A91BF-B55A-42FF-8053-4519103AF513}.shared_no_safec|x86.Build.0 = shared_no_safec|Win32
+		{D96A91BF-B55A-42FF-8053-4519103AF513}.shared|x64.ActiveCfg = shared|x64
+		{D96A91BF-B55A-42FF-8053-4519103AF513}.shared|x64.Build.0 = shared|x64
+		{D96A91BF-B55A-42FF-8053-4519103AF513}.shared|x86.ActiveCfg = shared|Win32
+		{D96A91BF-B55A-42FF-8053-4519103AF513}.shared|x86.Build.0 = shared|Win32
+		{D96A91BF-B55A-42FF-8053-4519103AF513}.static_no_safec|x64.ActiveCfg = static_no_safec|x64
+		{D96A91BF-B55A-42FF-8053-4519103AF513}.static_no_safec|x64.Build.0 = static_no_safec|x64
+		{D96A91BF-B55A-42FF-8053-4519103AF513}.static_no_safec|x86.ActiveCfg = static_no_safec|Win32
+		{D96A91BF-B55A-42FF-8053-4519103AF513}.static_no_safec|x86.Build.0 = static_no_safec|Win32
+		{D96A91BF-B55A-42FF-8053-4519103AF513}.static_offline_no_safec|x64.ActiveCfg = static_offline_no_safec|x64
+		{D96A91BF-B55A-42FF-8053-4519103AF513}.static_offline_no_safec|x64.Build.0 = static_offline_no_safec|x64
+		{D96A91BF-B55A-42FF-8053-4519103AF513}.static_offline_no_safec|x86.ActiveCfg = static_offline_no_safec|Win32
+		{D96A91BF-B55A-42FF-8053-4519103AF513}.static_offline_no_safec|x86.Build.0 = static_offline_no_safec|Win32
+		{D96A91BF-B55A-42FF-8053-4519103AF513}.static_offline|x64.ActiveCfg = static_offline|x64
+		{D96A91BF-B55A-42FF-8053-4519103AF513}.static_offline|x64.Build.0 = static_offline|x64
+		{D96A91BF-B55A-42FF-8053-4519103AF513}.static_offline|x86.ActiveCfg = static_offline|Win32
+		{D96A91BF-B55A-42FF-8053-4519103AF513}.static_offline|x86.Build.0 = static_offline|Win32
+		{D96A91BF-B55A-42FF-8053-4519103AF513}.static|x64.ActiveCfg = static|x64
+		{D96A91BF-B55A-42FF-8053-4519103AF513}.static|x64.Build.0 = static|x64
+		{D96A91BF-B55A-42FF-8053-4519103AF513}.static|x86.ActiveCfg = static|Win32
+		{D96A91BF-B55A-42FF-8053-4519103AF513}.static|x86.Build.0 = static|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {04B635CC-137E-4AED-A01C-23AC998B1FAC}
+	EndGlobalSection
+EndGlobal
