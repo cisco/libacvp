@@ -2075,7 +2075,7 @@ static ACVP_RESULT match_modules_page(ACVP_CTX *ctx,
 
         tmp_module->vendor = tmp_vendor;
         vurl = json_object_get_string(module_obj, "vendorUrl");
-        aurl = json_object_get_string(module_obj, "addressUrls");
+        aurl = json_object_get_string(module_obj, "addressUrl");
         if (vurl) tmp_vendor->url = strdup(vurl);
         if (aurl) tmp_vendor->address.url = strdup(aurl);
 
