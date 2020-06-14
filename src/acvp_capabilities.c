@@ -3058,7 +3058,7 @@ static ACVP_RESULT acvp_add_ctr_drbg_cap_parm(ACVP_DRBG_CAP_MODE *drbg_cap_mode,
     }
 
     switch (mode) {
-    case ACVP_DRBG_3KEYTDEA:
+    case ACVP_DRBG_TDES:
     case ACVP_DRBG_AES_128:
     case ACVP_DRBG_AES_192:
     case ACVP_DRBG_AES_256:
@@ -3159,7 +3159,7 @@ static ACVP_RESULT acvp_add_hash_drbg_cap_parm(ACVP_DRBG_CAP_MODE *drbg_cap_mode
             break;
         }
         break;
-    case ACVP_DRBG_3KEYTDEA:
+    case ACVP_DRBG_TDES:
     case ACVP_DRBG_AES_128:
     case ACVP_DRBG_AES_192:
     case ACVP_DRBG_AES_256:
@@ -3217,7 +3217,7 @@ static ACVP_RESULT acvp_add_hmac_drbg_cap_parm(ACVP_DRBG_CAP_MODE *drbg_cap_mode
             return ACVP_INVALID_ARG;
         }
         break;
-    case ACVP_DRBG_3KEYTDEA:
+    case ACVP_DRBG_TDES:
     case ACVP_DRBG_AES_128:
     case ACVP_DRBG_AES_192:
     case ACVP_DRBG_AES_256:
