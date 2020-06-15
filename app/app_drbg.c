@@ -102,7 +102,7 @@ int app_drbg_handler(ACVP_TEST_CASE *test_case) {
             nid = NID_sha512_256;
             break;
 #endif
-        case ACVP_DRBG_3KEYTDEA:
+        case ACVP_DRBG_TDES:
         case ACVP_DRBG_AES_128:
         case ACVP_DRBG_AES_192:
         case ACVP_DRBG_AES_256:
@@ -145,7 +145,7 @@ int app_drbg_handler(ACVP_TEST_CASE *test_case) {
             nid =   NID_hmacWithSHA512_256;
             break;
 #endif
-        case ACVP_DRBG_3KEYTDEA:
+        case ACVP_DRBG_TDES:
         case ACVP_DRBG_AES_128:
         case ACVP_DRBG_AES_192:
         case ACVP_DRBG_AES_256:
@@ -192,7 +192,7 @@ int app_drbg_handler(ACVP_TEST_CASE *test_case) {
         case ACVP_DRBG_AES_256:
             nid = NID_aes_256_ctr;
             break;
-        case ACVP_DRBG_3KEYTDEA:
+        case ACVP_DRBG_TDES:
         case ACVP_DRBG_SHA_1:
         case ACVP_DRBG_SHA_224:
         case ACVP_DRBG_SHA_256:

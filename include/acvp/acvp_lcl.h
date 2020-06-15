@@ -338,7 +338,7 @@
 #define ACVP_PREREQ_VAL_STR "valValue"
 #define ACVP_PREREQ_OBJ_STR "prereqVals"
 
-#define ACVP_DRBG_MODE_3KEYTDEA      "3KeyTDEA"
+#define ACVP_DRBG_MODE_TDES          "TDES"
 #define ACVP_DRBG_MODE_AES_128       "AES-128"
 #define ACVP_DRBG_MODE_AES_192       "AES-192"
 #define ACVP_DRBG_MODE_AES_256       "AES-256"
