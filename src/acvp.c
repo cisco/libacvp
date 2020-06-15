@@ -2892,13 +2892,6 @@ ACVP_RESULT acvp_post_data(ACVP_CTX *ctx, char *filename) {
     ACVP_LOG_INFO("\nPOST Data: %s\n\n", json_result);
     json_value_free(reg_arry_val);
 
-    rv = acvp_login(ctx, 0);
-    if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("Failed to login with ACVP server");
-        json_free_serialized_string(json_result);
-        goto end;
-    }
-
     rv = acvp_transport_post(ctx, path, json_result, len);
     ACVP_LOG_STATUS("POST response:\n\n%s\n", ctx->curl_buf);
     json_free_serialized_string(json_result);
