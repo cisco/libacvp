@@ -33,7 +33,7 @@ char value[JSON_STRING_LENGTH];
 typedef struct app_config {
     ACVP_LOG_LVL level;
     int sample;
-    int json;
+    int manual_reg;
     int vector_req;
     int vector_rsp;
     int vector_upload;
@@ -45,7 +45,7 @@ typedef struct app_config {
     int kat;
     int empty_alg;
     int fips_validation;
-    char json_file[JSON_FILENAME_LENGTH + 1];
+    char reg_file[JSON_FILENAME_LENGTH + 1];
     char vector_req_file[JSON_FILENAME_LENGTH + 1];
     char vector_rsp_file[JSON_FILENAME_LENGTH + 1];
     char vector_upload_file[JSON_FILENAME_LENGTH + 1];

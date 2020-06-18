@@ -242,13 +242,13 @@ int main(int argc, char **argv) {
         goto end;
     }
 
-    if (cfg.json) {
+    if (cfg.manual_reg) {
         /*
          * Using a JSON to register allows us to skip the
          * "acvp_enable_*" API calls... could reduce the
          * size of this file if you choose to use this capability.
          */
-        rv = acvp_set_json_filename(ctx, cfg.json_file);
+        rv = acvp_set_json_filename(ctx, cfg.reg_file);
         if (rv != ACVP_SUCCESS) {
             printf("Failed to set json file within ACVP ctx (rv=%d)\n", rv);
             goto end;

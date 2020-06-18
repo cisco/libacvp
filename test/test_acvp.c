@@ -263,6 +263,8 @@ Test(SET_SESSION_PARAMS, null_params_2fa, .init = setup, .fini = teardown) {
  * This test sets json filename
  */
 Test(SET_SESSION_PARAMS, set_input_json_good, .init = setup, .fini = teardown) {
+    rv = acvp_mark_as_request_only(ctx, "test.json");
+    cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_set_json_filename(ctx, filename);
     cr_assert(rv == ACVP_SUCCESS);
 }

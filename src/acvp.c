@@ -1492,6 +1492,11 @@ ACVP_RESULT acvp_set_json_filename(ACVP_CTX *ctx, const char *json_filename) {
         ACVP_LOG_ERR("Must provide value for JSON filename");
         return ACVP_MISSING_ARG;
     }
+    if (!ctx->vector_req) {
+        ACVP_LOG_ERR("The session must be request only to use a manual registraion");
+        return ACVP_UNSUPPORTED_OP;
+    }
+
     if (ctx->json_filename) { free(ctx->json_filename); }
 
     if (strnlen_s(json_filename, ACVP_JSON_FILENAME_MAX + 1) > ACVP_JSON_FILENAME_MAX) {
@@ -1833,30 +1838,39 @@ static ACVP_RESULT acvp_register(ACVP_CTX *ctx) {
     ACVP_RESULT rv = ACVP_SUCCESS;
     char *reg = NULL;
     int reg_len = 0;
-    JSON_Value *tmp_json_from_file;
+    JSON_Value *tmp_json_from_file = NULL;
 
     if (!ctx) {
         return ACVP_NO_CTX;
-    }
-
-    if (ctx->use_json) {
-        tmp_json_from_file = json_parse_file(ctx->json_filename);
-        reg = json_serialize_to_string_pretty(tmp_json_from_file, NULL);
-        json_value_free(tmp_json_from_file);
-
-        goto end;
     }
 
     /*
      * Send the capabilities to the ACVP server and get the response,
      * which should be a list of vector set ID urls
      */
-    ACVP_LOG_STATUS("Building registration of capabilities...");
-    rv = acvp_build_test_session(ctx, &reg, &reg_len);
-    if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("Unable to build register message");
-        goto end;
+    if (ctx->use_json) {
+        ACVP_LOG_STATUS("Reading capabilities registration file...");
+        tmp_json_from_file = json_parse_file(ctx->json_filename);
+        if (!tmp_json_from_file) {
+            ACVP_LOG_ERR("Error reading capabilities file");
+            rv = ACVP_JSON_ERR;
+            goto end;
+        }
+        reg = json_serialize_to_string_pretty(tmp_json_from_file, &reg_len);
+        if (!reg) {
+            ACVP_LOG_ERR("Error loading capabilities file");
+            rv = ACVP_JSON_ERR;
+            goto end;
+        }
+    } else {
+        ACVP_LOG_STATUS("Building registration of capabilities...");
+        rv = acvp_build_test_session(ctx, &reg, &reg_len);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Unable to build register message");
+            goto end;
+        }
     }
+
     ACVP_LOG_STATUS("Sending registration of capabilities...");
     ACVP_LOG_INFO("%s", reg);
     rv = acvp_send_test_session_registration(ctx, reg, reg_len);
@@ -1873,6 +1887,7 @@ static ACVP_RESULT acvp_register(ACVP_CTX *ctx) {
     }
 
 end:
+    if (tmp_json_from_file) json_value_free(tmp_json_from_file);
     if (reg) json_free_serialized_string(reg);
     return rv;
 }
