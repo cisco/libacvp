@@ -58,19 +58,14 @@ static void print_usage(int err) {
     printf("      --drbg\n");
     printf("      --kas_ecc\n");
     printf("\n");
-    printf("To resume a previous test session that was interupted:\n");
-    printf("      --resume_session <file>\n");
-    printf("Note: this does not save your arguments from your initial run and you MUST include them\n");
-    printf("again (e.x. --aes,  --vector_req and --fips_validation)\n");
-    printf("\n");
     printf("Perform a FIPS Validation for this testSession:\n");
     printf("      --fips_validation <full metadata file>\n");
     printf("\n");
     printf("To specify a cert number associated with all prerequistes:\n");
     printf("      --certnum <string>\n");
     printf("\n");
-    printf("To register a formatted JSON file use:\n");
-    printf("      --json <file>\n");
+    printf("To register manually using a JSON file instead of application settings use:\n");
+    printf("      --manual_registration <file>\n");
     printf("\n");
     printf("To register and save the vectors to file:\n");
     printf("      --vector_req <file>\n");
@@ -84,6 +79,13 @@ static void print_usage(int err) {
     printf("\n");
     printf("To process kat vectors from a JSON file use:\n");
     printf("      --kat <file>\n");
+    printf("\n");
+    printf("Note: --resume_session and --get_results use the test session info file created automatically by the library as input\n");
+    printf("\n");
+    printf("To resume a previous test session that was interupted:\n");
+    printf("      --resume_session <file>\n");
+    printf("            Note: this does not save your arguments from your initial run and you MUST include them\n");
+    printf("            again (e.x. --aes,  --vector_req and --fips_validation)\n");
     printf("\n");
     printf("To get the results of a previous test session:\n");
     printf("      --get_results <file>\n");
@@ -171,7 +173,7 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
         { "ecdsa", ko_no_argument, 319 },
         { "kas_ecc", ko_no_argument, 320 },
         { "all_algs", ko_no_argument, 322 },
-        { "json", ko_required_argument, 400 },
+        { "manual_registration", ko_required_argument, 400 },
         { "kat", ko_required_argument, 401 },
         { "fips_validation", ko_required_argument, 402 },
         { "vector_req", ko_required_argument, 403 },
@@ -305,19 +307,19 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
         }
         if (c == 400) {
             int filename_len = 0;
-            cfg->json = 1;
+            cfg->manual_reg = 1;
 
             filename_len = strnlen_s(opt.arg, JSON_FILENAME_LENGTH + 1);
             if (filename_len > JSON_FILENAME_LENGTH) {
                 printf(ANSI_COLOR_RED "Command error... [%s]"ANSI_COLOR_RESET
                        "\nThe <file> \"%s\", has a name that is too long."
                        "\nMax allowed <file> name length is (%d).\n",
-                       "--json", opt.arg, JSON_FILENAME_LENGTH);
+                       "--manual_registration", opt.arg, JSON_FILENAME_LENGTH);
                 print_usage(1);
                 return 1;
             }
 
-            strcpy_s(cfg->json_file, JSON_FILENAME_LENGTH + 1, opt.arg);
+            strcpy_s(cfg->reg_file, JSON_FILENAME_LENGTH + 1, opt.arg);
             continue;
         }
         if (c == 401) {
@@ -527,7 +529,7 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
 
     /* allopw put, post and get without algs defined */
     if (cfg->empty_alg && !cfg->post && !cfg->get && !cfg->put && !cfg->get_results
-                                                              && !cfg->vector_upload) {
+                                        && !cfg->manual_reg && !cfg->vector_upload) {
         /* The user needs to select at least 1 algorithm */
         printf(ANSI_COLOR_RED "Requires at least 1 Algorithm Test Suite\n"ANSI_COLOR_RESET);
         print_usage(1);
