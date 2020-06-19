@@ -1210,7 +1210,9 @@ static ACVP_RESULT inspect_http_code(ACVP_CTX *ctx, int code) {
     ACVP_RESULT result = ACVP_TRANSPORT_FAIL; /* Generic failure */
     JSON_Value *root_value = NULL;
     const JSON_Object *obj = NULL;
+    const JSON_Array *arr = NULL;
     const char *err_str = NULL;
+    char *tmp_err_str = NULL;
 
     if (code == HTTP_OK) {
         /* 200 */
@@ -1218,30 +1220,46 @@ static ACVP_RESULT inspect_http_code(ACVP_CTX *ctx, int code) {
     }
 
     if (code == HTTP_UNAUTH) {
-        int diff = 1;
+        char *diff = NULL;
 
         root_value = json_parse_string(ctx->curl_buf);
 
-        obj = json_value_get_object(root_value);
-        if (!obj) {
-            ACVP_LOG_ERR("HTTP body doesn't contain top-level JSON object");
+        arr = json_value_get_array(root_value);
+        if (!arr) {
+            ACVP_LOG_ERR("HTTP body doesn't contain top-level JSON Array");
             goto end;
         }
-
+        obj = json_array_get_object(arr, 1);
+        if (!obj) {
+            ACVP_LOG_ERR("HTTP body doesn't contain expected array elements");
+            goto end;
+        }
         err_str = json_object_get_string(obj, "error");
         if (!err_str) {
             ACVP_LOG_ERR("JSON object doesn't contain 'error'");
             goto end;
         }
 
-        strncmp_s(JWT_EXPIRED_STR, JWT_EXPIRED_STR_LEN, err_str, JWT_EXPIRED_STR_LEN, &diff);
-        if (!diff) {
+        tmp_err_str = calloc(sizeof(char), strnlen_s(err_str, ACVP_CURL_BUF_MAX) + 1);
+        if (!tmp_err_str) {
+        ACVP_LOG_WARN("Issue while allocating memory to check message from server, trying to continue...");
+            goto end;
+        }
+
+        if (strncpy_s(tmp_err_str, ACVP_CURL_BUF_MAX, err_str, ACVP_CURL_BUF_MAX)) {
+        ACVP_LOG_WARN("Issue while checking message from server, trying to continue...");
+            goto end;
+        }
+
+        strstr_s(tmp_err_str, ACVP_CURL_BUF_MAX, JWT_EXPIRED_STR, JWT_EXPIRED_STR_LEN, &diff);
+
+        if (diff) {
             result = ACVP_JWT_EXPIRED;
             goto end;
         }
 
-        strncmp_s(JWT_INVALID_STR, JWT_INVALID_STR_LEN, err_str, JWT_INVALID_STR_LEN, &diff);
-        if (!diff) {
+        strstr_s(tmp_err_str, ACVP_CURL_BUF_MAX, JWT_INVALID_STR, JWT_INVALID_STR_LEN, &diff);
+        if (diff) {
             result = ACVP_JWT_INVALID;
             goto end;
         }
@@ -1249,7 +1267,7 @@ static ACVP_RESULT inspect_http_code(ACVP_CTX *ctx, int code) {
 
 end:
     if (root_value) json_value_free(root_value);
-
+    if (tmp_err_str) free(tmp_err_str);
     return result;
 }
 
