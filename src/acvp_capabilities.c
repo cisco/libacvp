@@ -4931,7 +4931,9 @@ ACVP_RESULT acvp_cap_kdf135_tls_set_parm(ACVP_CTX *ctx,
         kdf135_tls_cap->method[1] = method;
     }
 
-    kdf135_tls_cap->sha = param;
+    if (method == ACVP_KDF135_TLS12) {
+      kdf135_tls_cap->sha = param;
+    }
 
     return ACVP_SUCCESS;
 }
