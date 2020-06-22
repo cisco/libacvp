@@ -913,9 +913,12 @@ static ACVP_RESULT acvp_build_rsa_sig_register_cap(JSON_Object *cap_obj, ACVP_CA
         }
         result = acvp_lookup_prereqVals(cap_obj, cap_entry);
         if (result != ACVP_SUCCESS) { return result; }
-        json_object_set_string(cap_obj, "pubExpMode", rsa_cap_mode->pub_exp_mode ? "fixed" : "random");
-        if (cap_entry->cap.rsa_sigver_cap->pub_exp_mode) {
-            json_object_set_string(cap_obj, "fixedPubExp", (const char *)cap_entry->cap.rsa_sigver_cap->fixed_pub_exp);
+
+        json_object_set_string(cap_obj, "pubExpMode",
+                               rsa_cap_mode->pub_exp_mode == ACVP_RSA_PUB_EXP_MODE_FIXED ?
+                               ACVP_RSA_PUB_EXP_MODE_FIXED_STR : ACVP_RSA_PUB_EXP_MODE_RANDOM_STR);
+        if (rsa_cap_mode->pub_exp_mode == ACVP_RSA_PUB_EXP_MODE_FIXED) {
+            json_object_set_string(cap_obj, "fixedPubExp", (const char *)rsa_cap_mode->fixed_pub_exp);
         }
     }
 
