@@ -33,7 +33,7 @@ if %OFFLINE_BUILD%==TRUE (
 
 if [%SAFEC_DIR%]==[] (
   set PROJ_CONFIG=%PROJ_CONFIG%_no_safec
-  set ACV_INC_PATHS=%ACV_INC_PATHS%;%cd%\safe_c_stub\include
+  set ACV_INC_PATHS=%ACV_INC_PATHS%;%ACV_ROOT_PATH%\safe_c_stub\include
 ) ELSE (
   set ACV_LIB_PATHS=%ACV_LIB_PATHS%;%SAFEC_DIR%
   set ACV_INC_PATHS=%ACV_INC_PATHS%;%SAFEC_DIR%\include
