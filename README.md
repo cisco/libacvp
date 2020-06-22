@@ -155,9 +155,9 @@ HOSTCC=gcc
 Use `./app/acvp_app --help` for more information on available options.
 
 ## Windows
-The Visual Studio projects for acvp_app and libacvp were created in Visual Studio 2019. If you are
-having issues with previous versions of Visual Studio, you can acquire just the build tools for
-2019 from the Microsoft website.
+The Visual Studio projects for acvp_app and libacvp are set to use 2017 tools and are designed to
+be easily updated to use the latest versions of Microsoft build tools while being backwards
+compatible with Visual Studio 2017 and some older Windows 10 SDK versions.
 
 Prerequisites:
 This system assumes all dependency library paths have /include folders containing all the headers
@@ -174,8 +174,10 @@ Steps:
 1.) Edit and run ms\config_windows.bat
     -Add all of the directories for your dependencies
 	-Change any needed settings
-2.) run ms\make_lib.bat
-3.) run ms\make_app.bat
+2.) Open libacvp.sln and acvp_app.sln in Visual Studio and allow the dialog to update the projects'
+    versions of MSVC and windows SDK to the latest installed (May be unnecessary if versions match)
+3.) run ms\make_lib.bat
+4.) run ms\make_app.bat
 
 The library files and app files will be placed in the ms\build\ directory.
 
