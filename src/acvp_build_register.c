@@ -1178,13 +1178,8 @@ static ACVP_RESULT acvp_build_kdf135_tls_register_cap(JSON_Object *cap_obj, ACVP
     temp_arr = json_object_get_array(cap_obj, "tlsVersion");
     if (cap_entry->cap.kdf135_tls_cap->method[0] == ACVP_KDF135_TLS10_TLS11) {
         json_array_append_string(temp_arr, "v1.0/1.1");
-    } else if (cap_entry->cap.kdf135_tls_cap->method[0] == ACVP_KDF135_TLS12) {
-        json_array_append_string(temp_arr, "v1.2");
     }
-
-    if (cap_entry->cap.kdf135_tls_cap->method[1] == ACVP_KDF135_TLS10_TLS11) {
-        json_array_append_string(temp_arr, "v1.0/1.1");
-    } else if (cap_entry->cap.kdf135_tls_cap->method[1] == ACVP_KDF135_TLS12) {
+    if (cap_entry->cap.kdf135_tls_cap->method[1] == ACVP_KDF135_TLS12) {
         json_array_append_string(temp_arr, "v1.2");
     }
 

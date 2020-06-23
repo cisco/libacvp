@@ -4925,13 +4925,18 @@ ACVP_RESULT acvp_cap_kdf135_tls_set_parm(ACVP_CTX *ctx,
     }
 
     /* only support two method types so just use whichever is available */
-    if (!kdf135_tls_cap->method[0]) {
-        kdf135_tls_cap->method[0] = method;
-    } else {
-        kdf135_tls_cap->method[1] = method;
+    switch (method) {
+    case ACVP_KDF135_TLS10_TLS11:
+        kdf135_tls_cap->method[0] = ACVP_KDF135_TLS10_TLS11;
+        break;
+    case ACVP_KDF135_TLS12:
+        kdf135_tls_cap->method[1] = ACVP_KDF135_TLS12;
+        break;
+    default:
+        return ACVP_INVALID_ARG;
     }
 
-    kdf135_tls_cap->sha = param;
+    kdf135_tls_cap->sha |= param;
 
     return ACVP_SUCCESS;
 }
