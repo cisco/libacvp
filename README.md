@@ -127,6 +127,13 @@ make
 make install
 ```
 
+#### Building libacvp without the application code.
+Use the following ./configure comand line option and only the library will be built and installed.
+Note that this option is not useful when building for offline testing since the application is needed.
+ 
+--disable-app
+
+
 #### Cross Compiling
 Requires options --build and --host.
 Your `$PATH` must contain a path the gcc.
@@ -195,7 +202,7 @@ need to link to those libraries.
 
 Murl is not supported in windows at this time.
 
-#### How to test offline
+### How to test offline
 1. Download vectors on network accessible device:
 `./app/acvp_app --<algs of choice or all_algs> --vector_req <filename1>`
  - where <filename1> is the file you are saving the tests to.
