@@ -782,6 +782,8 @@ UNIT_TEST_SUPPORTED_FALSE
 UNIT_TEST_SUPPORTED_TRUE
 CRITERION_LDFLAGS
 CRITERION_CFLAGS
+APP_NOT_SUPPORTED_FALSE
+APP_NOT_SUPPORTED_TRUE
 CLEANFILES
 USE_FOM_FALSE
 USE_FOM_TRUE
@@ -926,6 +928,7 @@ enable_kdf
 enable_offline
 enable_cflags
 enable_gcov
+enable_app
 with_criterion_dir
 '
       ac_precious_vars='build_alias
@@ -1575,6 +1578,7 @@ Optional Features:
   --enable-offline        Flag to indicate use of offline mode
   --enable-cflags         Flag to indicate use of enhanced CFLAGS
   --enable-gcov           Flag to indicate use of gcov tool
+  --disable-app           To build library only and not app code
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -4830,13 +4834,13 @@ if ${lt_cv_nm_interface+:} false; then :
 else
   lt_cv_nm_interface="BSD nm"
   echo "int some_variable = 0;" > conftest.$ac_ext
-  (eval echo "\"\$as_me:4833: $ac_compile\"" >&5)
+  (eval echo "\"\$as_me:4837: $ac_compile\"" >&5)
   (eval "$ac_compile" 2>conftest.err)
   cat conftest.err >&5
-  (eval echo "\"\$as_me:4836: $NM \\\"conftest.$ac_objext\\\"\"" >&5)
+  (eval echo "\"\$as_me:4840: $NM \\\"conftest.$ac_objext\\\"\"" >&5)
   (eval "$NM \"conftest.$ac_objext\"" 2>conftest.err > conftest.out)
   cat conftest.err >&5
-  (eval echo "\"\$as_me:4839: output\"" >&5)
+  (eval echo "\"\$as_me:4843: output\"" >&5)
   cat conftest.out >&5
   if $GREP 'External.*some_variable' conftest.out > /dev/null; then
     lt_cv_nm_interface="MS dumpbin"
@@ -6041,7 +6045,7 @@ ia64-*-hpux*)
   ;;
 *-*-irix6*)
   # Find out which ABI we are using.
-  echo '#line 6044 "configure"' > conftest.$ac_ext
+  echo '#line 6048 "configure"' > conftest.$ac_ext
   if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_compile\""; } >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -7570,11 +7574,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:7573: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:7577: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:7577: \$? = $ac_status" >&5
+   echo "$as_me:7581: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -7909,11 +7913,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:7912: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:7916: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:7916: \$? = $ac_status" >&5
+   echo "$as_me:7920: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -8014,11 +8018,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:8017: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:8021: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:8021: \$? = $ac_status" >&5
+   echo "$as_me:8025: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -8069,11 +8073,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:8072: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:8076: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:8076: \$? = $ac_status" >&5
+   echo "$as_me:8080: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -10439,7 +10443,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10442 "configure"
+#line 10446 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -10535,7 +10539,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10538 "configure"
+#line 10542 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11266,6 +11270,25 @@ if test "x$enable_gcov" != "xfalse" ; then
 
 fi
 
+##
+# Disable app builds
+##
+# Check whether --enable-app was given.
+if test "${enable_app+set}" = set; then :
+  enableval=$enable_app; disable_app="yes"
+else
+  disable_app="no"
+fi
+
+ if test "x$disable_app" == "xyes"; then
+  APP_NOT_SUPPORTED_TRUE=
+  APP_NOT_SUPPORTED_FALSE='#'
+else
+  APP_NOT_SUPPORTED_TRUE='#'
+  APP_NOT_SUPPORTED_FALSE=
+fi
+
+
 
 
 # Check whether --with-criterion-dir was given.
@@ -11490,6 +11513,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${USE_FOM_TRUE}" && test -z "${USE_FOM_FALSE}"; then
   as_fn_error $? "conditional \"USE_FOM\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${APP_NOT_SUPPORTED_TRUE}" && test -z "${APP_NOT_SUPPORTED_FALSE}"; then
+  as_fn_error $? "conditional \"APP_NOT_SUPPORTED\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${UNIT_TEST_SUPPORTED_TRUE}" && test -z "${UNIT_TEST_SUPPORTED_FALSE}"; then

@@ -8,5 +8,13 @@ if UNIT_TEST_SUPPORTED
 TEST_DIR=test
 endif
 
-SUBDIRS = safe_c_stub src app $(TEST_DIR)
+
+if APP_NOT_SUPPORTED
+APP_DIR=
+else
+APP_DIR=app
+endif
+
+SUBDIRS = safe_c_stub src $(APP_DIR) $(TEST_DIR)
+DIST_SUBDIRS = safe_c_stub src $(APP_DIR) $(TEST_DIR)
 

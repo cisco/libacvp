@@ -206,6 +206,15 @@ if test "x$enable_gcov" != "xfalse" ; then
   AC_SUBST(CLEANFILES)
 fi
 
+##
+# Disable app builds
+##
+AC_ARG_ENABLE([app],
+[AS_HELP_STRING([--disable-app], [To build library only and not app code])],
+[disable_app="yes"],
+[disable_app="no"])
+AM_CONDITIONAL([APP_NOT_SUPPORTED], [test "x$disable_app" == "xyes"])
+
 
 AC_ARG_WITH([criterion-dir],
 	    [AS_HELP_STRING([--with-criterion-dir],
