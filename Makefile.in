@@ -187,6 +187,7 @@ am__define_uniq_tagged_files = \
 ETAGS = etags
 CTAGS = ctags
 CSCOPE = cscope
+DIST_SUBDIRS = safe_c_stub src app test
 am__DIST_COMMON = $(srcdir)/Makefile.in $(top_srcdir)/config/ar-lib \
 	$(top_srcdir)/config/compile $(top_srcdir)/config/config.guess \
 	$(top_srcdir)/config/config.sub \
@@ -372,7 +373,6 @@ EXTRA_DIST = ms docker certs scripts docs metadata murl
 @APP_NOT_SUPPORTED_FALSE@APP_DIR = app
 @APP_NOT_SUPPORTED_TRUE@APP_DIR = 
 SUBDIRS = safe_c_stub src $(APP_DIR) $(TEST_DIR)
-DIST_SUBDIRS = safe_c_stub src $(APP_DIR) $(TEST_DIR)
 all: all-recursive
 
 .SUFFIXES:
