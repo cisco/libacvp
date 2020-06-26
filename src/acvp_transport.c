@@ -248,11 +248,11 @@ static void acvp_http_user_agent_check_compiler_ver(ACVP_CTX *ctx, char *comp_st
 static void acvp_http_user_agent_string_clean(char *str) {
     int i = 0;
     if (!str) {
-        return ACVP_INVALID_ARG;
+        return;
     }
     int len = strnlen_s(str, ACVP_USER_AGENT_STR_MAX);
     if (len <= 0) {
-        return ACVP_INVALID_ARG;
+        return;
     }
     //remove any leading or trailing whitespace
     strremovews_s(str, len);
@@ -263,8 +263,6 @@ static void acvp_http_user_agent_string_clean(char *str) {
             str[i] = ACVP_USER_AGENT_CHAR_REPLACEMENT;
         }
     }
-    
-    return ACVP_SUCCESS;
 }
 
 static void acvp_http_user_agent_handler(ACVP_CTX *ctx, char *agent_string) {
