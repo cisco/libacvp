@@ -782,18 +782,18 @@ UNIT_TEST_SUPPORTED_FALSE
 UNIT_TEST_SUPPORTED_TRUE
 CRITERION_LDFLAGS
 CRITERION_CFLAGS
-APP_NOT_SUPPORTED_FALSE
-APP_NOT_SUPPORTED_TRUE
 CLEANFILES
+LIBCURL_LDFLAGS
+LIBCURL_CFLAGS
 USE_FOM_FALSE
 USE_FOM_TRUE
 FOM_LDFLAGS
 FOM_CFLAGS
 FOM_OBJ_DIR
-LIBCURL_LDFLAGS
-LIBCURL_CFLAGS
 SSL_LDFLAGS
 SSL_CFLAGS
+APP_NOT_SUPPORTED_FALSE
+APP_NOT_SUPPORTED_TRUE
 CPP
 OTOOL64
 OTOOL
@@ -920,15 +920,15 @@ with_pic
 enable_fast_install
 with_gnu_ld
 enable_libtool_lock
+enable_app
 with_ssl_dir
-with_libcurl_dir
-with_libmurl_dir
 with_fom_dir
 enable_kdf
 enable_offline
+with_libcurl_dir
+with_libmurl_dir
 enable_cflags
 enable_gcov
-enable_app
 with_criterion_dir
 '
       ac_precious_vars='build_alias
@@ -1573,12 +1573,12 @@ Optional Features:
   --enable-fast-install[=PKGS]
                           optimize for fast installation [default=yes]
   --disable-libtool-lock  avoid locking (might break parallel builds)
+  --disable-app           To build library only and not app code
   --disable-kdf           For use if using a FOM with no KDF support, such as
                           OpenSSL 1.0.2 FOM
   --enable-offline        Flag to indicate use of offline mode
   --enable-cflags         Flag to indicate use of enhanced CFLAGS
   --enable-gcov           Flag to indicate use of gcov tool
-  --disable-app           To build library only and not app code
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -1588,9 +1588,9 @@ Optional Packages:
   --with-gnu-ld           assume the C compiler uses GNU ld [default=no]
   --with-ssl-dir          location of OpenSSL install folder, defaults to
                           /usr/local/ssl
+  --with-fom-dir          Path to FOM install directory
   --with-libcurl-dir      enable support for client proxy using libcurl
   --with-libmurl-dir      enable support for client proxy using libmurl
-  --with-fom-dir          Path to FOM install directory
   --with-criterion-dir    location of Criterion install folder
 
 Some influential environment variables:
@@ -10790,6 +10790,27 @@ if test "$gcc_z_support" = "yes"; then :
 fi
 
 ##
+# Option to disable app builds
+##
+# Check whether --enable-app was given.
+if test "${enable_app+set}" = set; then :
+  enableval=$enable_app; disable_app="yes"
+else
+  disable_app="no"
+fi
+
+ if test "x$disable_app" == "xyes"; then
+  APP_NOT_SUPPORTED_TRUE=
+  APP_NOT_SUPPORTED_FALSE='#'
+else
+  APP_NOT_SUPPORTED_TRUE='#'
+  APP_NOT_SUPPORTED_FALSE=
+fi
+
+
+
+if test "x$disable_app" = "xno" ; then
+##
 # OpenSSL variables
 ##
 
@@ -10799,6 +10820,7 @@ if test "${with_ssl_dir+set}" = set; then :
 else
   ssldir="/usr/local/ssl"
 fi
+
 
 SSL_CFLAGS="-I$ssldir/include"
 
@@ -11059,9 +11081,84 @@ See \`config.log' for more details" "$LINENO" 5; }
 fi
 
 
+##
+# FOM installation directory path
+##
+
+
+
+# Check whether --with-fom-dir was given.
+if test "${with_fom_dir+set}" = set; then :
+  withval=$with_fom_dir; fomdir="$withval"
+else
+  with_fomdir=no
+fi
+
+
+fi
+
+# Check whether --enable-kdf was given.
+if test "${enable_kdf+set}" = set; then :
+  enableval=$enable_kdf; no-kdf="$enableval"
+else
+  disable_kdf=false
+fi
+
+
+
+if test "x$with_fomdir" != xno; then :
+  if test "x$disable_kdf" != "xfalse"; then :
+  FOM_CFLAGS="-DACVP_NO_RUNTIME -DOPENSSL_FIPS -I$fomdir/include"
+
+else
+  FOM_CFLAGS="-DACVP_NO_RUNTIME -DOPENSSL_FIPS -DOPENSSL_KDF_SUPPORT -I$fomdir/include"
+
+fi
+       FOM_LDFLAGS="-L$fomdir/lib"
+
+       FOM_OBJ_DIR="$fomdir/lib"
+
+
+
+fi
+ if test "x$with_fomdir" != xno; then
+  USE_FOM_TRUE=
+  USE_FOM_FALSE='#'
+else
+  USE_FOM_TRUE='#'
+  USE_FOM_FALSE=
+fi
+
 
 ##
-# Libcurl installation directory path
+# Offline mode
+##
+# Check whether --enable-offline was given.
+if test "${enable_offline+set}" = set; then :
+  enableval=$enable_offline; offline="$enableval"
+else
+  enable_offline=false
+fi
+
+
+if test "x$disable_app" = "xno" ; then
+  SSL_LDFLAGS="-L$ssldir/lib -lcrypto"
+
+fi
+
+if test "x$enable_offline" != "xfalse"; then :
+  CFLAGS="$CFLAGS -DACVP_OFFLINE"
+  LDFLAGS="-static $LDFLAGS"
+  if test "x$disable_app" = "xno"; then :
+  CC="$fomdir/bin/fipsld"
+fi
+
+
+fi
+
+
+##
+# Libcurl installation directory path - not needed for offline mode
 ##
 
 # Check whether --with-libcurl-dir was given.
@@ -11078,7 +11175,12 @@ if test "x$with_libcurldir" != xno; then :
        LIBCURL_LDFLAGS="-L$libcurldir/lib -lcurl"
 
        LDFLAGS="$LDFLAGS -L$libcurldir/lib"
-       { $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing curl_easy_init" >&5
+
+
+fi
+
+if test "x$enable_offline" = "xfalse" ; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing curl_easy_init" >&5
 $as_echo_n "checking for library containing curl_easy_init... " >&6; }
 if ${ac_cv_search_curl_easy_init+:} false; then :
   $as_echo_n "(cached) " >&6
@@ -11135,15 +11237,12 @@ if test "$ac_res" != no; then :
 else
   { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
 $as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
-as_fn_error $? "--with-libcurl-dir was given, but test for libcurl failed
+as_fn_error $? "test for libcurl failed - please define --with-libcurl-dir and ensure it is valid
 See \`config.log' for more details" "$LINENO" 5; }
 
 fi
 
-
-
 fi
-
 
 ##
 # Libmurl installation directory path
@@ -11160,76 +11259,6 @@ fi
 if test "x$with_libmurldir" != xno; then :
   CFLAGS="$CFLAGS -I$libmurldir -DUSE_MURL"
       LDFLAGS="$LDFLAGS -L$libmurldir -lmurl"
-
-fi
-
-
-##
-# FOM installation directory path
-##
-
-
-
-# Check whether --with-fom-dir was given.
-if test "${with_fom_dir+set}" = set; then :
-  withval=$with_fom_dir; fomdir="$withval"
-else
-  with_fomdir=no
-fi
-
-
-# Check whether --enable-kdf was given.
-if test "${enable_kdf+set}" = set; then :
-  enableval=$enable_kdf; no-kdf="$enableval"
-else
-  disable_kdf=false
-fi
-
-
-
-if test "x$with_fomdir" != xno; then :
-  if test "x$disable_kdf" != "xfalse"; then :
-  FOM_CFLAGS="-DACVP_NO_RUNTIME -DOPENSSL_FIPS -I$fomdir/include"
-
-else
-  FOM_CFLAGS="-DACVP_NO_RUNTIME -DOPENSSL_FIPS -DOPENSSL_KDF_SUPPORT -I$fomdir/include"
-
-fi
-       FOM_LDFLAGS="-L$fomdir/lib"
-
-       FOM_OBJ_DIR="$fomdir/lib"
-
-
-
-fi
- if test "x$with_fomdir" != xno; then
-  USE_FOM_TRUE=
-  USE_FOM_FALSE='#'
-else
-  USE_FOM_TRUE='#'
-  USE_FOM_FALSE=
-fi
-
-
-
-##
-# Offline mode
-##
-# Check whether --enable-offline was given.
-if test "${enable_offline+set}" = set; then :
-  enableval=$enable_offline; offline="$enableval"
-else
-  enable_offline=false
-fi
-
-SSL_LDFLAGS="-L$ssldir/lib -lcrypto"
-
-
-if test "x$enable_offline" != "xfalse"; then :
-  CFLAGS="$CFLAGS -DACVP_OFFLINE"
-  LDFLAGS="-static $LDFLAGS"
-  CC="$fomdir/bin/fipsld"
-
 
 fi
 
@@ -11269,26 +11298,6 @@ if test "x$enable_gcov" != "xfalse" ; then
   CLEANFILES="app/*.gcda app/*.gcno src/*.gcda src/*.gcno test/*.gcda test/*.gcno safe_c_stub/src/*.gcno"
 
 fi
-
-##
-# Disable app builds
-##
-# Check whether --enable-app was given.
-if test "${enable_app+set}" = set; then :
-  enableval=$enable_app; disable_app="yes"
-else
-  disable_app="no"
-fi
-
- if test "x$disable_app" == "xyes"; then
-  APP_NOT_SUPPORTED_TRUE=
-  APP_NOT_SUPPORTED_FALSE='#'
-else
-  APP_NOT_SUPPORTED_TRUE='#'
-  APP_NOT_SUPPORTED_FALSE=
-fi
-
-
 
 
 # Check whether --with-criterion-dir was given.
@@ -11511,12 +11520,12 @@ if test -z "${am__fastdepCC_TRUE}" && test -z "${am__fastdepCC_FALSE}"; then
   as_fn_error $? "conditional \"am__fastdepCC\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
-if test -z "${USE_FOM_TRUE}" && test -z "${USE_FOM_FALSE}"; then
-  as_fn_error $? "conditional \"USE_FOM\" was never defined.
-Usually this means the macro was only invoked conditionally." "$LINENO" 5
-fi
 if test -z "${APP_NOT_SUPPORTED_TRUE}" && test -z "${APP_NOT_SUPPORTED_FALSE}"; then
   as_fn_error $? "conditional \"APP_NOT_SUPPORTED\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${USE_FOM_TRUE}" && test -z "${USE_FOM_FALSE}"; then
+  as_fn_error $? "conditional \"USE_FOM\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${UNIT_TEST_SUPPORTED_TRUE}" && test -z "${UNIT_TEST_SUPPORTED_FALSE}"; then
