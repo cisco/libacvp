@@ -746,6 +746,11 @@ static ACVP_RESULT match_dependencies_page(ACVP_CTX *ctx,
         rv = ACVP_JSON_ERR;
         goto end;
     }
+    if (*next_endpoint) {
+        free(*next_endpoint);
+        *next_endpoint = NULL;
+    }
+    
     next = json_object_get_string(links_obj, "next");
     if (next) {
         // Copy the next page endpoint
@@ -773,20 +778,14 @@ end:
  * This will query the server DB to check if the data exists, and it will retrieve
  * the Dependency URL.
  *
- * This function parameter \p allowed_pages is needed because the function may
- * recursively call itself, and the allocated memory in the 1st, 2nd .. Nth invocation
- * is not freed until the recursion stops. 
- *
  * @param ctx ACVP_CTX
  * @param dep Pointer to the Dependency data which will be queried
- * @param allowed_pages The maximum number of "pages" which we will ask the server for
  * @param endpoint The URL endpoint string
  *
  * @return ACVP_RESULT
  */
 static ACVP_RESULT query_dependency(ACVP_CTX *ctx,
                                     ACVP_DEPENDENCY *dep,
-                                    int allowed_pages,
                                     const char *endpoint) {
     ACVP_RESULT rv = 0;
     ACVP_KV_LIST *parameters = NULL;
@@ -845,26 +844,33 @@ static ACVP_RESULT query_dependency(ACVP_CTX *ctx,
         }
     }
 
-    /*
-     * Query the server DB.
-     */
-    rv = acvp_transport_get(ctx, endpoint, parameters);
-    if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("Unable to query Dependency");
-        goto end;
-    }
 
-    /*
-     * Try to match the dependency against the page returned by server.
-     */
-    rv = match_dependencies_page(ctx, dep, &match, &next_endpoint);
-    if (ACVP_SUCCESS != rv) goto end;
+    do {
+        /* Query the server DB. */
+        if (parameters) {
+            /* Use parameters and free them, as we get the next pages'
+             * URLs from the server */
+            rv = acvp_transport_get(ctx, endpoint, parameters);
+            acvp_kv_list_free(parameters);
+            parameters = NULL;
+        } else {
+            rv = acvp_transport_get(ctx, endpoint, NULL);
+        }
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Unable to query Dependency");
+            goto end;
+        }
 
-    /* Only query the next page if we are within the limit */
-    if (!match && next_endpoint && allowed_pages > 0) {
-        /* Recurse */
-        query_dependency(ctx, dep, allowed_pages - 1, next_endpoint);
-    }
+        /* Try to match the dependency against the page returned by server. */
+        rv = match_dependencies_page(ctx, dep, &match, &next_endpoint);
+
+        /* Only query the next page if we are within the limit */
+        if (rv != ACVP_SUCCESS || match) {
+            break;
+        }
+
+        endpoint = next_endpoint;
+    } while (endpoint);
 
 end:
     if (first_endpoint) free(first_endpoint);
@@ -904,7 +910,7 @@ static ACVP_RESULT verify_fips_oe_dependencies(ACVP_CTX *ctx,
     for (i = 0; i < dependencies->count; i++) {
         ACVP_DEPENDENCY *cur_dep = dependencies->deps[i];
 
-        rv = query_dependency(ctx, cur_dep, 100, NULL);
+        rv = query_dependency(ctx, cur_dep, NULL);
         if (ACVP_SUCCESS != rv) {
             ACVP_LOG_ERR("Unable to query this Dependency[%d]", i);
             return rv;
@@ -1048,6 +1054,12 @@ static ACVP_RESULT match_oes_page(ACVP_CTX *ctx,
         rv = ACVP_JSON_ERR;
         goto end;
     }
+    
+    if (*next_endpoint) {
+        free(*next_endpoint);
+        *next_endpoint = NULL;
+    }
+    
     next = json_object_get_string(links_obj, "next");
     if (next) {
         // Copy the next page endpoint
@@ -1072,20 +1084,14 @@ end:
  * This will query the server DB to check if the data exists, and it will retrieve
  * the Operating Environment URL.
  *
- * This function parameter \p allowed_pages is needed because the function may
- * recursively call itself, and the allocated memory in the 1st, 2nd .. Nth invocation
- * is not freed until the recursion stops. 
- *
  * @param ctx ACVP_CTX
  * @param oe Pointer to the Operating Environment data which will be queried
- * @param allowed_pages The maximum number of "pages" which we will ask the server for
  * @param endpoint The URL endpoint string
  *
  * @return ACVP_RESULT
  */
 static ACVP_RESULT query_oe(ACVP_CTX *ctx,
                             ACVP_OE *oe,
-                            int allowed_pages,
                             const char *endpoint) {
     ACVP_RESULT rv = 0;
     ACVP_KV_LIST *parameters = NULL;
@@ -1128,26 +1134,32 @@ static ACVP_RESULT query_oe(ACVP_CTX *ctx,
         }
     }
 
-    /*
-     * Query the server DB.
-     */
-    rv = acvp_transport_get(ctx, endpoint, parameters);
-    if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("Unable to query Operating Environment");
-        goto end;
-    }
+    do {
+        /* Query the server DB. */
+        if (parameters) {
+            /* Use parameters and free them, as we get the next pages'
+             * URLs from the server */
+            rv = acvp_transport_get(ctx, endpoint, parameters);
+            acvp_kv_list_free(parameters);
+            parameters = NULL;
+        } else {
+            rv = acvp_transport_get(ctx, endpoint, NULL);
+        }
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Unable to query Operating Environment");
+            goto end;
+        }
 
-    /*
-     * Try to match against the page returned by server.
-     */
-    rv = match_oes_page(ctx, oe, &match, &next_endpoint);
-    if (ACVP_SUCCESS != rv) goto end;
+        /* Try to match against the page returned by server. */
+        rv = match_oes_page(ctx, oe, &match, &next_endpoint);
 
-    /* Only query the next page if we are within the limit */
-    if (!match && next_endpoint && allowed_pages > 0) {
-        /* Recurse */
-        query_oe(ctx, oe, allowed_pages - 1, next_endpoint);
-    }
+        /* Only query the next page if we are within the limit */
+        if (rv != ACVP_SUCCESS || match) {
+            break;
+        }
+        
+        endpoint = next_endpoint;
+    } while (endpoint);
 
 end:
     if (first_endpoint) free(first_endpoint);
@@ -1197,7 +1209,7 @@ static ACVP_RESULT verify_fips_oe(ACVP_CTX *ctx) {
         }
     }
 
-    rv = query_oe(ctx, ctx->fips.oe, 100, NULL);
+    rv = query_oe(ctx, ctx->fips.oe, NULL);
     if (ACVP_SUCCESS != rv) {
         ACVP_LOG_ERR("Unable to query the OE(%u)", ctx->fips.oe->id);
         return rv;
@@ -1812,7 +1824,12 @@ static ACVP_RESULT match_vendors_page(ACVP_CTX *ctx,
         rv = ACVP_JSON_ERR;
         goto end;
     }
-    next = json_object_get_string(links_obj, "next");
+    
+    if (*next_endpoint) {
+        free(*next_endpoint);
+        *next_endpoint = NULL;
+    }
+    next = json_object_get_string(links_obj, "nextPage");
     if (next) {
         // Copy the next page endpoint
         *next_endpoint = calloc(ACVP_ATTR_URL_MAX + 1, sizeof(char));
@@ -1836,20 +1853,14 @@ end:
  * This will query the server DB to ensure that the data exists, and it will retrieve
  * the Vendor URL along with all of its sub-object URLs.
  *
- * This function parameter \p allowed_pages is needed because the function may
- * recursively call itself, and the allocated memory in the 1st, 2nd .. Nth invocation
- * is not freed until the recursion stops. 
- *
  * @param ctx ACVP_CTX
  * @param vendor Pointer to the vendor data which will be queried
- * @param allowed_pages The maximum number of "pages" which we will ask the server for
  * @param endpoint The URL endpoint string
  *
  * @return ACVP_RESULT
  */
 static ACVP_RESULT query_vendor(ACVP_CTX *ctx,
                                 ACVP_VENDOR *vendor,
-                                int allowed_pages,
                                 const char *endpoint) {
     ACVP_RESULT rv = 0;
     ACVP_KV_LIST *parameters = NULL;
@@ -1884,7 +1895,7 @@ static ACVP_RESULT query_vendor(ACVP_CTX *ctx,
                  ctx->path_segment, "vendors?");
 
         if (vendor->name) {
-            rv = acvp_kv_list_append(&parameters, "name[0]=eq:", vendor->name);
+            rv = acvp_kv_list_append(&parameters, "name[0]=contains:", vendor->name);
             if (ACVP_SUCCESS != rv) {
                 ACVP_LOG_ERR("Failed acvp_kv_list_append()");
                 goto end;
@@ -1900,26 +1911,32 @@ static ACVP_RESULT query_vendor(ACVP_CTX *ctx,
         }
     }
 
-    /*
-     * Query the server DB.
-     */
-    rv = acvp_transport_get(ctx, endpoint, parameters);
-    if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("Unable to query Operating Environment");
-        goto end;
-    }
 
-    /*
-     * Try to match against the page returned by server.
-     */
-    rv = match_vendors_page(ctx, vendor, &match, &next_endpoint);
-    if (ACVP_SUCCESS != rv) goto end;
+    do {
+        /* Query the server DB. */
+        if (parameters) {
+            /* Use parameters and free them, as we get the next pages'
+             * URLs from the server */
+            rv = acvp_transport_get(ctx, endpoint, parameters);
+            acvp_kv_list_free(parameters);
+            parameters = NULL;
+        } else {
+            rv = acvp_transport_get(ctx, endpoint, NULL);
+        }
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Unable to query Operating Environment");
+            goto end;
+        }
 
-    /* Only query the next page if we are within the limit */
-    if (!match && next_endpoint && allowed_pages > 0) {
-        /* Recurse */
-        query_vendor(ctx, vendor, allowed_pages - 1, next_endpoint);
-    }
+        /* Try to match against the page returned by server. */
+        rv = match_vendors_page(ctx, vendor, &match, &next_endpoint);
+
+        /* Only query the next page if there is one */
+        if (rv != ACVP_SUCCESS || match) {
+            break;
+        }
+        endpoint = next_endpoint;
+    } while (endpoint);
 
 end:
     if (first_endpoint) free(first_endpoint);
@@ -2157,7 +2174,12 @@ static ACVP_RESULT match_modules_page(ACVP_CTX *ctx,
         rv = ACVP_JSON_ERR;
         goto end;
     }
-    next = json_object_get_string(links_obj, "next");
+    if (*next_endpoint) {
+        free (*next_endpoint);
+        *next_endpoint = NULL;
+    }
+    
+    next = json_object_get_string(links_obj, "nextPage");
     if (next) {
         // Copy the next page endpoint
         *next_endpoint = calloc(ACVP_ATTR_URL_MAX + 1, sizeof(char));
@@ -2194,20 +2216,14 @@ end:
  * This will query the server DB to ensure that the data exists, and it will retrieve
  * the Module URL.
  *
- * This function parameter \p allowed_pages is needed because the function may
- * recursively call itself, and the allocated memory in the 1st, 2nd .. Nth invocation
- * is not freed until the recursion stops. 
- *
  * @param ctx ACVP_CTX
  * @param module Pointer to the module data which will be queried
- * @param allowed_pages The maximum number of "pages" which we will ask the server for
  * @param endpoint The URL endpoint string
  *
  * @return ACVP_RESULT
  */
 static ACVP_RESULT query_module(ACVP_CTX *ctx,
                                 ACVP_MODULE *module,
-                                int allowed_pages,
                                 const char *endpoint) {
     ACVP_RESULT rv = 0;
     ACVP_KV_LIST *parameters = NULL;
@@ -2219,11 +2235,8 @@ static ACVP_RESULT query_module(ACVP_CTX *ctx,
         ACVP_LOG_ERR("Parameter 'module' must be non-NULL");
         return ACVP_INVALID_ARG;
     }
-
     if (module->url) {
-        /*
-         * This resource has already been verified as existing.
-         */
+        /* This resource has already been verified as existing. */
         return ACVP_SUCCESS;
     }
 
@@ -2238,9 +2251,7 @@ static ACVP_RESULT query_module(ACVP_CTX *ctx,
         }
         endpoint = first_endpoint;
 
-        /*
-         * Prepare the first query.
-         */
+        /* Prepare the first query. */
         snprintf(first_endpoint, ACVP_ATTR_URL_MAX, "%s%s",
                  ctx->path_segment, "modules?");
 
@@ -2299,27 +2310,33 @@ static ACVP_RESULT query_module(ACVP_CTX *ctx,
         }
     }
 
-    /*
-     * Query the server DB.
-     */
-    rv = acvp_transport_get(ctx, endpoint, parameters);
-    if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("Unable to query Operating Environment");
-        goto end;
-    }
+    do {
+        /* Query the server DB. */
+        if (parameters) {
+            /* Use parameters and free them, as we get the next pages'
+             * URLs from the server */
+            rv = acvp_transport_get(ctx, endpoint, parameters);
+            acvp_kv_list_free(parameters);
+            parameters = NULL;
+        } else {
+            rv = acvp_transport_get(ctx, endpoint, NULL);
+        }
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Unable to query Operating Environment");
+            goto end;
+        }
 
-    /*
-     * Try to match against the page returned by server.
-     */
-    rv = match_modules_page(ctx, module, &match, &next_endpoint);
-    if (ACVP_SUCCESS != rv) goto end;
+        /* Try to match against the page returned by server, iterate endpoint */
+        rv = match_modules_page(ctx, module, &match, &next_endpoint);
 
-    /* Only query the next page if we are within the limit */
-    if (!match && next_endpoint && allowed_pages > 0) {
-        /* Recurse */
-        query_module(ctx, module, allowed_pages - 1, next_endpoint);
-    }
-
+        /* Only query the next page if we are within the limit */
+        if (rv != ACVP_SUCCESS || match) {
+           break;
+        }
+        
+        endpoint = next_endpoint;
+    } while (endpoint);
+    
 end:
     if (first_endpoint) free(first_endpoint);
     if (next_endpoint) free(next_endpoint);
@@ -2348,7 +2365,7 @@ static ACVP_RESULT verify_fips_module(ACVP_CTX *ctx) {
     /*
      * Query the Vendor first.
      */
-    rv = query_vendor(ctx, ctx->fips.module->vendor, 100, NULL);
+    rv = query_vendor(ctx, ctx->fips.module->vendor, NULL);
     if (ACVP_SUCCESS != rv) {
         ACVP_LOG_ERR("Failed to query the Vendor(%u)", ctx->fips.module->vendor->id);
         return rv;
@@ -2368,7 +2385,7 @@ static ACVP_RESULT verify_fips_module(ACVP_CTX *ctx) {
     /*
      * Query the module to verify sanity
      */
-    rv = query_module(ctx, ctx->fips.module, 100, NULL);
+    rv = query_module(ctx, ctx->fips.module, NULL);
     if (ACVP_SUCCESS != rv) {
         ACVP_LOG_ERR("Unable to query the Module(%u)", ctx->fips.module->id);
         return rv;
