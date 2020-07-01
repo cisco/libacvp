@@ -61,6 +61,17 @@ AS_IF(
     [[CFLAGS="$CFLAGS -Wl,-z,noexecstack"]])
 
 ##
+# Option to disable app builds
+##
+AC_ARG_ENABLE([app],
+[AS_HELP_STRING([--disable-app], [To build library only and not app code])],
+[disable_app="yes"],
+[disable_app="no"])
+AM_CONDITIONAL([APP_NOT_SUPPORTED], [test "x$disable_app" == "xyes"])
+
+
+if test "x$disable_app" = "xno" ; then
+##
 # OpenSSL variables
 ##
 AC_ARG_WITH([ssl-dir],
@@ -68,6 +79,7 @@ AC_ARG_WITH([ssl-dir],
 		[location of OpenSSL install folder, defaults to /usr/local/ssl])],
 	    [ssldir="$withval"],
 	    [ssldir="/usr/local/ssl"])
+
 AC_SUBST([SSL_CFLAGS], "-I$ssldir/include")
 AC_SUBST([SSL_LDFLAGS], "-L$ssldir/lib -lssl -lcrypto")
 LDFLAGS="$LDFLAGS -L$ssldir/lib"
@@ -89,43 +101,6 @@ fi
 AC_SEARCH_LIBS([SSL_CTX_new], [ssl], [],
                [AC_MSG_FAILURE([can't find openssl ssl lib])], [])
 
-
-##
-# Libcurl installation directory path
-##
-AC_ARG_WITH([libcurl-dir],
-    [AS_HELP_STRING([--with-libcurl-dir],
-    [enable support for client proxy using libcurl])],
-    [libcurldir="$withval"],
-    [with_libcurldir=no])
-
-AS_IF([test "x$with_libcurldir" != xno],
-      [AC_SUBST([LIBCURL_CFLAGS], "-I$libcurldir/include")
-       AC_SUBST([LIBCURL_LDFLAGS], "-L$libcurldir/lib -lcurl")
-       LDFLAGS="$LDFLAGS -L$libcurldir/lib"
-       AC_SEARCH_LIBS([curl_easy_init], [curl], [],
-                      [AC_MSG_FAILURE([--with-libcurl-dir was given, but test for libcurl failed])]
-       )
-      ]
-     )
-
-
-##
-# Libmurl installation directory path
-##
-AC_ARG_WITH([libmurl-dir],
-    [AS_HELP_STRING([--with-libmurl-dir],
-    [enable support for client proxy using libmurl])],
-    [libmurldir="$withval"],
-    [with_libmurldir=no])
-
-AS_IF(
-     [test "x$with_libmurldir" != xno],
-     [[CFLAGS="$CFLAGS -I$libmurldir -DUSE_MURL"]
-      [LDFLAGS="$LDFLAGS -L$libmurldir -lmurl"]]
-      )
-
-
 ##
 # FOM installation directory path
 ##
@@ -136,6 +111,8 @@ AC_ARG_WITH([fom-dir],
     [Path to FOM install directory])],
     [fomdir="$withval"],
     [with_fomdir=no])
+
+fi
 
 AC_ARG_ENABLE([kdf],
 [AS_HELP_STRING([--disable-kdf],
@@ -154,7 +131,6 @@ AS_IF([test "x$with_fomdir" != xno],
      )
 AM_CONDITIONAL([USE_FOM], [test "x$with_fomdir" != xno])
 
-
 ##
 # Offline mode
 ##
@@ -163,15 +139,57 @@ AC_ARG_ENABLE([offline],
 [Flag to indicate use of offline mode])],
 [offline="$enableval"],
 [enable_offline=false])
-AC_SUBST([SSL_LDFLAGS], "-L$ssldir/lib -lcrypto")
+
+if test "x$disable_app" = "xno" ; then
+  AC_SUBST([SSL_LDFLAGS], "-L$ssldir/lib -lcrypto")
+fi
 
 AS_IF(
  [test "x$enable_offline" != "xfalse"],
  [[CFLAGS="$CFLAGS -DACVP_OFFLINE"]
   [LDFLAGS="-static $LDFLAGS"]
-  [CC="$fomdir/bin/fipsld"]
+  AS_IF([test "x$disable_app" = "xno"],
+    [CC="$fomdir/bin/fipsld"])
  ]
 )
+
+
+##
+# Libcurl installation directory path - not needed for offline mode
+##
+AC_ARG_WITH([libcurl-dir],
+    [AS_HELP_STRING([--with-libcurl-dir],
+    [enable support for client proxy using libcurl])],
+    [libcurldir="$withval"],
+    [with_libcurldir=no])
+
+AS_IF([test "x$with_libcurldir" != xno],
+      [AC_SUBST([LIBCURL_CFLAGS], "-I$libcurldir/include")
+       AC_SUBST([LIBCURL_LDFLAGS], "-L$libcurldir/lib -lcurl")
+       LDFLAGS="$LDFLAGS -L$libcurldir/lib"
+      ]
+     )
+
+if test "x$enable_offline" = "xfalse" ; then
+    AC_SEARCH_LIBS([curl_easy_init], [curl], [],
+                   [AC_MSG_FAILURE([test for libcurl failed - please define --with-libcurl-dir and ensure it is valid])]
+    )
+fi
+
+##
+# Libmurl installation directory path
+##
+AC_ARG_WITH([libmurl-dir],
+    [AS_HELP_STRING([--with-libmurl-dir],
+    [enable support for client proxy using libmurl])],
+    [libmurldir="$withval"],
+    [with_libmurldir=no])
+
+AS_IF(
+     [test "x$with_libmurldir" != xno],
+     [[CFLAGS="$CFLAGS -I$libmurldir -DUSE_MURL"]
+      [LDFLAGS="$LDFLAGS -L$libmurldir -lmurl"]]
+      )
 
 AC_ARG_ENABLE([cflags],
 [AS_HELP_STRING([--enable-cflags],
@@ -205,16 +223,6 @@ if test "x$enable_gcov" != "xfalse" ; then
   CLEANFILES="app/*.gcda app/*.gcno src/*.gcda src/*.gcno test/*.gcda test/*.gcno safe_c_stub/src/*.gcno"
   AC_SUBST(CLEANFILES)
 fi
-
-##
-# Disable app builds
-##
-AC_ARG_ENABLE([app],
-[AS_HELP_STRING([--disable-app], [To build library only and not app code])],
-[disable_app="yes"],
-[disable_app="no"])
-AM_CONDITIONAL([APP_NOT_SUPPORTED], [test "x$disable_app" == "xyes"])
-
 
 AC_ARG_WITH([criterion-dir],
 	    [AS_HELP_STRING([--with-criterion-dir],
