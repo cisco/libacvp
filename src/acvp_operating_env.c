@@ -1913,6 +1913,10 @@ static ACVP_RESULT query_vendor(ACVP_CTX *ctx,
         /* Query using the first email in the list */
         if (vendor->emails) {
             rv = acvp_kv_list_append(&parameters, "email[0]=eq:", vendor->emails->string);
+            if (ACVP_SUCCESS != rv) {
+                ACVP_LOG_ERR("Failed acvp_kv_list_append()");
+                goto end;
+            }
         }
     }
 
