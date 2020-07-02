@@ -1895,7 +1895,7 @@ static ACVP_RESULT query_vendor(ACVP_CTX *ctx,
                  ctx->path_segment, "vendors?");
 
         if (vendor->name) {
-            rv = acvp_kv_list_append(&parameters, "name[0]=contains:", vendor->name);
+            rv = acvp_kv_list_append(&parameters, "name[0]=eq:", vendor->name);
             if (ACVP_SUCCESS != rv) {
                 ACVP_LOG_ERR("Failed acvp_kv_list_append()");
                 goto end;
