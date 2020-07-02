@@ -1246,13 +1246,14 @@ static ACVP_RESULT inspect_http_code(ACVP_CTX *ctx, int code) {
             goto end;
         }
 
-        tmp_err_str = calloc(sizeof(char), strnlen_s(err_str, ACVP_CURL_BUF_MAX) + 1);
+        int err_str_len = strnlen_s(err_str, ACVP_CURL_BUF_MAX);
+        tmp_err_str = calloc(sizeof(char), err_str_len + 1);
         if (!tmp_err_str) {
         ACVP_LOG_WARN("Issue while allocating memory to check message from server, trying to continue...");
             goto end;
         }
 
-        if (strncpy_s(tmp_err_str, ACVP_CURL_BUF_MAX, err_str, ACVP_CURL_BUF_MAX)) {
+        if (strncpy_s(tmp_err_str, err_str_len + 1, err_str, err_str_len)) {
         ACVP_LOG_WARN("Issue while checking message from server, trying to continue...");
             goto end;
         }
