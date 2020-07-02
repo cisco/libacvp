@@ -1909,6 +1909,11 @@ static ACVP_RESULT query_vendor(ACVP_CTX *ctx,
                 goto end;
             }
         }
+        
+        /* Query using the first email in the list */
+        if (vendor->emails) {
+            rv = acvp_kv_list_append(&parameters, "email[0]=eq:", vendor->emails->string);
+        }
     }
 
 
