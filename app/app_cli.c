@@ -111,9 +111,20 @@ static void print_usage(int err) {
     printf("    ACV_TOTP_SEED (when not set, client will not use Two-factor authentication)\n");
     printf("    ACV_CA_FILE\n");
     printf("    ACV_CERT_FILE\n");
-    printf("    ACV_KEY_FILE\n\n");
+    printf("    ACV_KEY_FILE\n");
     printf("The CA certificates, cert and key should be PEM encoded. There should be no\n");
-    printf("password on the key file.\n");
+    printf("password on the key file.\n\n");
+    printf("Some options can be passed to the library itself with environment variables:\n\n");
+    printf("    ACV_SESSION_SAVE_PATH (Location where test session info files are saved)\n");
+    printf("    ACV_SESSION_SAVE_PREFIX (Determines file name of info file, followed by ID number\n");
+    printf("    The following are used by the library for an HTTP user-agent string, only when\n");
+    printf("    the information cannot be automatically collected:\n");
+    printf("        ACV_OE_OSNAME\n");
+    printf("        ACV_OE_OSVERSION\n");
+    printf("        ACV_OE_ARCHITECTURE\n");
+    printf("        ACV_OE_PROCESSOR\n");
+    printf("        ACV_OE_COMPILER\n\n");
+
 }
 
 static void default_config(APP_CONFIG *cfg) {

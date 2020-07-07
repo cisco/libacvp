@@ -704,6 +704,12 @@
 #define ACVP_PATH_SEGMENT_DEFAULT ""
 #define ACVP_JSON_FILENAME_MAX 128
 
+/* 
+ * This should NOT be made longer than ACVP_JSON_FILENAME_MAX - 15
+ * (accounting for _ character, ".json", and 9 digits for testSession ID)
+ */
+#define ACVP_SAVE_DEFAULT_PREFIX "testSession"
+
 #define ACVP_CFB1_BIT_MASK      0x80
 
 

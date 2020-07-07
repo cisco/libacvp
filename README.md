@@ -155,11 +155,17 @@ CROSS_COMPILE=arm-linux-gnueabihf-
 HOSTCC=gcc
 
 ## Running
-1. `export LD_LIBRARY_PATH=<path to ssl lib>`
+1. `export LD_LIBRARY_PATH=<path to ssl lib;path to curl lib>`
 2. Modify and run `scripts/nist_setup.sh`
 3. `./app/acvp_app --<options>`
 
 Use `./app/acvp_app --help` for more information on available options.
+
+libacvp generates a file containing information that can be used to resume or check the results
+of a session. By default, this is usually placed in the folder of the executable utilizing
+libacvp, though this can be different on some OS. The name, by default, is
+testSession_(ID number).json. The path and prefix can be controlled using ACV_SESSION_SAVE_PATH
+and ACV_SESSION_SAVE_PREFIX in your environment, respectively. 
 
 ## Windows
 The Visual Studio projects for acvp_app and libacvp are set to use 2017 tools and are designed to
