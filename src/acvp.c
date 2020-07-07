@@ -2919,13 +2919,13 @@ end:
 
 #define TEST_SESSION "testSessions/"
 
-static
-ACVP_RESULT acvp_write_session_info(ACVP_CTX *ctx) {
+static ACVP_RESULT acvp_write_session_info(ACVP_CTX *ctx) {
     ACVP_RESULT rv = ACVP_SUCCESS;
     JSON_Value *ts_val = NULL;
     JSON_Object *ts_obj = NULL;
-    char *filename = NULL, *ptr = NULL;
+    char *filename = NULL, *ptr = NULL, *path = NULL, *prefix = NULL;
     int diff;
+    int pathLen = 0, allocedPrefix = 0;
 
     filename = calloc(ACVP_JSON_FILENAME_MAX + 1, sizeof(char));
     if (!filename) {
@@ -2947,19 +2947,65 @@ ACVP_RESULT acvp_write_session_info(ACVP_CTX *ctx) {
         }
         ptr++;
     }
-    ptr+= strlen(TEST_SESSION);
-    snprintf(filename, ACVP_JSON_FILENAME_MAX, "%s%s.json", "testSession_", ptr);
+
+    ptr+= strnlen_s(TEST_SESSION, ACVP_ATTR_URL_MAX);
+    
+    path = getenv("ACV_SESSION_SAVE_PATH");
+    prefix = getenv("ACV_SESSION_SAVE_PREFIX");
+
+    /*
+     * Check the total length of our path, prefix, and total concatenated filename. 
+     * Add 6 to checks for .json and the _ beteween prefix and session ID
+     * If any lengths are too long, just use default prefix and location
+     */
+    if (path) {
+        pathLen += strnlen_s(path, ACVP_JSON_FILENAME_MAX + 1);
+    }
+    if (prefix) {
+        pathLen += strnlen_s(prefix, ACVP_JSON_FILENAME_MAX + 1);
+    }
+    pathLen += strnlen_s(ptr, ACVP_JSON_FILENAME_MAX + 1);
+    
+    if (pathLen > ACVP_JSON_FILENAME_MAX - 6) {
+        ACVP_LOG_WARN("Provided ACV_SESSION_SAVE information too long (current max path len: %d). Using defaults", \
+                      ACVP_JSON_FILENAME_MAX);
+        path = NULL;
+        prefix = NULL;
+    }
+    if (!prefix) {
+        int len = strnlen_s(ACVP_SAVE_DEFAULT_PREFIX, ACVP_JSON_FILENAME_MAX);
+        prefix = calloc(sizeof(char), len + 1);
+        if (!prefix) {
+            rv = ACVP_MALLOC_FAIL;
+            goto end;
+        }
+        strncpy_s(prefix, len + 1, ACVP_SAVE_DEFAULT_PREFIX, len);
+        allocedPrefix = 1;
+    }
+
+    //if we have a path, use it, otherwise use default (usually directory of parent application)
+    if (path) {
+        diff = snprintf(filename, ACVP_JSON_FILENAME_MAX, "%s/%s_%s.json", path, prefix, ptr);
+    } else {
+        diff = snprintf(filename, ACVP_JSON_FILENAME_MAX, "%s_%s.json", prefix, ptr);
+    }
+    if (diff < 0) {
+        rv = ACVP_UNSUPPORTED_OP;
+        goto end;
+    }
     rv = acvp_json_serialize_to_file_pretty_w(ts_val, filename);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("File write error");
+        ACVP_LOG_ERR("File write error. Check that directory exists and allows writes.");
         goto end;
     }
 
     rv = acvp_json_serialize_to_file_pretty_a(NULL, filename);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("File write error");
+        ACVP_LOG_ERR("File write error. Check that directory exists and allows writes.");
+        goto end;
     }
 end:
+    if (allocedPrefix) free(prefix);
     if (ts_val) json_value_free(ts_val);
     free(filename);
     return rv;
@@ -3018,7 +3064,9 @@ ACVP_RESULT acvp_run(ACVP_CTX *ctx, int fips_validation) {
     
     //write session info so if we time out or lose connection waiting for results, we can recheck later on
     if (!ctx->put) {
-        acvp_write_session_info(ctx);
+        if (acvp_write_session_info(ctx) != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Error writing the session info file. Continuing, but session will not be able to be resumed or checked later on");
+        }
     }
 
     ACVP_LOG_STATUS("Beginning to download and process vector sets...");
