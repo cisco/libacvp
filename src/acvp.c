@@ -3005,7 +3005,7 @@ static ACVP_RESULT acvp_write_session_info(ACVP_CTX *ctx) {
         goto end;
     }
 end:
-    if (allocedPrefix) free(prefix);
+    if (allocedPrefix && prefix) free(prefix);
     if (ts_val) json_value_free(ts_val);
     free(filename);
     return rv;
