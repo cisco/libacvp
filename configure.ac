@@ -69,6 +69,15 @@ AC_ARG_ENABLE([app],
 [disable_app="no"])
 AM_CONDITIONAL([APP_NOT_SUPPORTED], [test "x$disable_app" == "xyes"])
 
+##
+# Option to disable library builds (app only)
+##
+AC_ARG_ENABLE([lib],
+[AS_HELP_STRING([--disable-lib], [To build acvp_app only without library])],
+[disable_lib="yes"],
+[disable_lib="no"])
+AM_CONDITIONAL([LIB_NOT_SUPPORTED], [test "x$disable_lib" == "xyes"])
+
 
 if test "x$disable_app" = "xno" ; then
 ##
@@ -114,6 +123,37 @@ AC_ARG_WITH([fom-dir],
 
 fi
 
+##
+# libacvp library installation dir - only used when building just the app
+##
+if test "x$disable_lib" = "xyes" ; then
+    AC_ARG_WITH([libacvp-dir],
+        [AS_HELP_STRING([--with-libacvp-dir],
+        [Path to libacvp install directory, for use when building the app only])],
+        [libacvpdir="$withval"],
+        [with_libacvpdir=no])
+    if test "x$libacvpdir" ; then
+        LDFLAGS="$LDFLAGS -L$libacvpdir/lib"
+        AC_SEARCH_LIBS([acvp_create_test_session], [acvp], [],
+                       [AC_MSG_FAILURE([can't find libacvp library])], [-ldl])
+    else
+	#Cannot test for lib here as relative paths will confused ld later on, and absolute paths make Makefile immoveable
+        LDFLAGS="$LDFLAGS -L../src/.libs"
+    fi
+fi
+
+# If given a libacvp_dir, use that when building things dependent on library, otherwise, use defaults
+if test "x$libacvpdir" ; then
+    AC_SUBST([LIBACVP_LDFLAGS], ["-L$libacvpdir/lib"])
+    AC_SUBST([LIBACVP_CFLAGS], ["-I$libacvpdir/include"])
+else
+    AC_SUBST([LIBACVP_LDFLAGS], ["-L../src/.libs"])
+    AC_SUBST([LIBACVP_CFLAGS], ["-I../include"])
+fi
+
+##
+# Option to disable KDF functionality (useful for FOM without KDF support)
+##
 AC_ARG_ENABLE([kdf],
 [AS_HELP_STRING([--disable-kdf],
 [For use if using a FOM with no KDF support, such as OpenSSL 1.0.2 FOM])],
@@ -155,41 +195,49 @@ AS_IF(
 
 
 ##
-# Libcurl installation directory path - not needed for offline mode
+# Libcurl/murl installation path. Check for Curl first, use murl if no curl
 ##
-AC_ARG_WITH([libcurl-dir],
-    [AS_HELP_STRING([--with-libcurl-dir],
-    [enable support for client proxy using libcurl])],
-    [libcurldir="$withval"],
-    [with_libcurldir=no])
+if test "x$enable_offline" = "xfalse" && test "x$disable_lib" = "xno" ; then
+    AC_ARG_WITH([libcurl-dir],
+        [AS_HELP_STRING([--with-libcurl-dir],
+        [enable support for client proxy using libcurl])],
+        [libcurldir="$withval"],
+        [with_libcurldir=no])
 
-AS_IF([test "x$with_libcurldir" != xno],
-      [AC_SUBST([LIBCURL_CFLAGS], "-I$libcurldir/include")
-       AC_SUBST([LIBCURL_LDFLAGS], "-L$libcurldir/lib -lcurl")
-       LDFLAGS="$LDFLAGS -L$libcurldir/lib"
-      ]
-     )
+    if test "x$with_libcurldir" != xno && test "x$with_libcurldir" != ""; then
+        AC_SUBST([LIBCURL_CFLAGS], "-I$libcurldir/include")
+        AC_SUBST([LIBCURL_LDFLAGS], "-L$libcurldir/lib -lcurl")
+        LDFLAGS="$LDFLAGS -L$libcurldir/lib"
 
-if test "x$enable_offline" = "xfalse" ; then
-    AC_SEARCH_LIBS([curl_easy_init], [curl], [],
-                   [AC_MSG_FAILURE([test for libcurl failed - please define --with-libcurl-dir and ensure it is valid])]
-    )
+        #only run this test if we are building app; otherwise configure tries to link an example executable and fails because missing dependencies
+        if test "x$disable_app" = xno ; then
+            AC_SEARCH_LIBS([curl_easy_init], [curl], [],
+                [AC_MSG_FAILURE([test for libcurl failed - please define --with-libcurl-dir and ensure it is valid])]
+            )
+        fi
+    else
+        AC_ARG_WITH([libmurl-dir],
+            [AS_HELP_STRING([--with-libmurl-dir],
+            [enable support for client proxy using libmurl])],
+            [libmurldir="$withval"],
+            [with_libmurldir=no])
+
+        if test "x$with_libmurldir" != xno && test "x$with_libmurldir" != "" ; then
+            CFLAGS="$CFLAGS -I$libmurldir -DUSE_MURL"
+            LDFLAGS="$LDFLAGS -L$libmurldir -lmurl"
+            #only run this test if we are building app; otherwise configure tries to link an example executable and fails because missing dependencies
+            if test "x$disable_app" = xno ; then
+                AC_SEARCH_LIBS([curl_easy_init], [murl], [],
+                    [AC_MSG_FAILURE([test for murl failed - please define ensure murl dir given is valid])]
+                )
+            fi
+        else
+            AC_MSG_FAILURE([either --with-libcurl-dir or --with-libmurl-dir must be defined and valid!])
+        fi
+    fi 
 fi
 
-##
-# Libmurl installation directory path
-##
-AC_ARG_WITH([libmurl-dir],
-    [AS_HELP_STRING([--with-libmurl-dir],
-    [enable support for client proxy using libmurl])],
-    [libmurldir="$withval"],
-    [with_libmurldir=no])
 
-AS_IF(
-     [test "x$with_libmurldir" != xno],
-     [[CFLAGS="$CFLAGS -I$libmurldir -DUSE_MURL"]
-      [LDFLAGS="$LDFLAGS -L$libmurldir -lmurl"]]
-      )
 
 AC_ARG_ENABLE([cflags],
 [AS_HELP_STRING([--enable-cflags],
@@ -225,10 +273,10 @@ if test "x$enable_gcov" != "xfalse" ; then
 fi
 
 AC_ARG_WITH([criterion-dir],
-	    [AS_HELP_STRING([--with-criterion-dir],
-		[location of Criterion install folder])],
-	    [criteriondir="$withval"],
-	    [with_criteriondir="no"])
+        [AS_HELP_STRING([--with-criterion-dir],
+        [location of Criterion install folder])],
+        [criteriondir="$withval"],
+        [with_criteriondir="no"])
 
 AS_IF([test "x$with_criterion" != xno],
       [AC_SUBST([CRITERION_CFLAGS], "-I$criteriondir/include")

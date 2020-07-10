@@ -15,5 +15,11 @@ else
 APP_DIR=app
 endif
 
-SUBDIRS = safe_c_stub src $(APP_DIR) $(TEST_DIR)
+if LIB_NOT_SUPPORTED
+LIB_DIR=
+else
+LIB_DIR=src
+endif
+
+SUBDIRS = safe_c_stub $(LIB_DIR) $(APP_DIR) $(TEST_DIR)
 
