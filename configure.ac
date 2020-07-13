@@ -132,7 +132,7 @@ if test "x$disable_lib" = "xyes" ; then
         [Path to libacvp install directory, for use when building the app only])],
         [libacvpdir="$withval"],
         [with_libacvpdir=no])
-    if test "x$libacvpdir" ; then
+    if test "x$libacvpdir" != "x" ; then
         LDFLAGS="$LDFLAGS -L$libacvpdir/lib"
         AC_SEARCH_LIBS([acvp_create_test_session], [acvp], [],
                        [AC_MSG_FAILURE([can't find libacvp library])], [-ldl])
@@ -143,7 +143,7 @@ if test "x$disable_lib" = "xyes" ; then
 fi
 
 # If given a libacvp_dir, use that when building things dependent on library, otherwise, use defaults
-if test "x$libacvpdir" ; then
+if test "x$libacvpdir" != "x" ; then
     AC_SUBST([LIBACVP_LDFLAGS], ["-L$libacvpdir/lib"])
     AC_SUBST([LIBACVP_CFLAGS], ["-I$libacvpdir/include"])
 else
@@ -204,7 +204,7 @@ if test "x$enable_offline" = "xfalse" && test "x$disable_lib" = "xno" ; then
         [libcurldir="$withval"],
         [with_libcurldir=no])
 
-    if test "x$with_libcurldir" != xno && test "x$with_libcurldir" != ""; then
+    if test "x$libcurldir" != "x"; then
         AC_SUBST([LIBCURL_CFLAGS], "-I$libcurldir/include")
         AC_SUBST([LIBCURL_LDFLAGS], "-L$libcurldir/lib -lcurl")
         LDFLAGS="$LDFLAGS -L$libcurldir/lib"
@@ -222,7 +222,7 @@ if test "x$enable_offline" = "xfalse" && test "x$disable_lib" = "xno" ; then
             [libmurldir="$withval"],
             [with_libmurldir=no])
 
-        if test "x$with_libmurldir" != xno && test "x$with_libmurldir" != "" ; then
+    if test "x$libmurldir" != "x"; then
             CFLAGS="$CFLAGS -I$libmurldir -DUSE_MURL"
             LDFLAGS="$LDFLAGS -L$libmurldir -lmurl"
             #only run this test if we are building app; otherwise configure tries to link an example executable and fails because missing dependencies
