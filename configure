@@ -11137,7 +11137,7 @@ else
   with_libacvpdir=no
 fi
 
-    if test "x$libacvpdir" ; then
+    if test "x$libacvpdir" != "x" ; then
         LDFLAGS="$LDFLAGS -L$libacvpdir/lib"
         { $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing acvp_create_test_session" >&5
 $as_echo_n "checking for library containing acvp_create_test_session... " >&6; }
@@ -11207,7 +11207,7 @@ fi
 fi
 
 # If given a libacvp_dir, use that when building things dependent on library, otherwise, use defaults
-if test "x$libacvpdir" ; then
+if test "x$libacvpdir" != "x" ; then
     LIBACVP_LDFLAGS="-L$libacvpdir/lib"
 
     LIBACVP_CFLAGS="-I$libacvpdir/include"
@@ -11295,7 +11295,7 @@ else
 fi
 
 
-    if test "x$with_libcurldir" != xno && test "x$with_libcurldir" != ""; then
+    if test "x$libcurldir" != "x"; then
         LIBCURL_CFLAGS="-I$libcurldir/include"
 
         LIBCURL_LDFLAGS="-L$libcurldir/lib -lcurl"
@@ -11377,7 +11377,7 @@ else
 fi
 
 
-        if test "x$with_libmurldir" != xno && test "x$with_libmurldir" != "" ; then
+    if test "x$libmurldir" != "x"; then
             CFLAGS="$CFLAGS -I$libmurldir -DUSE_MURL"
             LDFLAGS="$LDFLAGS -L$libmurldir -lmurl"
             #only run this test if we are building app; otherwise configure tries to link an example executable and fails because missing dependencies
