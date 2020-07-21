@@ -2974,7 +2974,7 @@ static ACVP_RESULT acvp_write_session_info(ACVP_CTX *ctx) {
     }
     if (!prefix) {
         int len = strnlen_s(ACVP_SAVE_DEFAULT_PREFIX, ACVP_JSON_FILENAME_MAX);
-        prefix = calloc(sizeof(char), len + 1);
+        prefix = calloc(len + 1, sizeof(char));
         if (!prefix) {
             rv = ACVP_MALLOC_FAIL;
             goto end;

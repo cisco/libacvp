@@ -85,6 +85,15 @@
 } while (0)
 #endif
 #endif
+#define ACVP_LOG_NEWLINE do { \
+        acvp_log_newline(ctx); \
+} while (0)
+
+
+#define ACVP_LOG_TRUNCATED_STR "...[truncated]\n"
+//This MUST be the length of the above screen (want to avoid calculating at runtime frequently)
+#define ACVP_LOG_TRUNCATED_STR_LEN 15
+#define ACVP_LOG_MAX_MSG_LEN 2048
 
 #define ACVP_BIT2BYTE(x) ((x + 7) >> 3) /**< Convert bit length (x, of type integer) into byte length */
 
@@ -1411,7 +1420,7 @@ void acvp_log_msg(ACVP_CTX *ctx, ACVP_LOG_LVL level, const char *format, ...);
 #else
 void acvp_log_msg(ACVP_CTX *ctx, ACVP_LOG_LVL level, const char *format, ...) __attribute__ ((format (gnu_printf, 3, 4)));
 #endif
-
+void acvp_log_newline(ACVP_CTX *ctx);
 /*
  * These are the handler routines for each KAT operation
  */
