@@ -529,6 +529,12 @@ typedef enum acvp_hash_testtype {
     ACVP_HASH_TEST_TYPE_VOT
 } ACVP_HASH_TESTTYPE;
 
+/*! @struct ACVP_CMAC_TESTTYPE */
+typedef enum acvp_cmac_testtype {
+    ACVP_CMAC_TEST_TYPE_NONE = 0,
+    ACVP_CMAC_TEST_TYPE_AFT
+} ACVP_CMAC_TESTTYPE;
+
 /*! @struct ACVP_HMAC_PARM */
 typedef enum acvp_hmac_parameter {
     ACVP_HMAC_KEYLEN = 1,
@@ -897,6 +903,7 @@ typedef struct acvp_hmac_tc_t {
  */
 typedef struct acvp_cmac_tc_t {
     ACVP_CIPHER cipher;
+    ACVP_CMAC_TESTTYPE test_type;
     int verify;                            /**< 1 indicates verify. 0 indicates generate. */
     ACVP_TEST_DISPOSITION ver_disposition; /**< Indicates pass/fail (only in "verify" direction)*/
     unsigned int tc_id;                    /* Test case id */

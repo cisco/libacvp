@@ -31,20 +31,38 @@ static int acvp_char_to_int(char ch);
  */
 void acvp_log_msg(ACVP_CTX *ctx, ACVP_LOG_LVL level, const char *format, ...) {
     va_list arguments;
-    char tmp[1024 * 2];
-
+    //One extra char for null terminator, one to check if output is truncated
+    char tmp[ACVP_LOG_MAX_MSG_LEN + 2];
+    tmp[ACVP_LOG_MAX_MSG_LEN] = '\0';
     if (ctx && ctx->test_progress_cb && (ctx->debug >= level)) {
         /*
          * Pull the arguments from the stack and invoke
          * the logger function
          */
         va_start(arguments, format);
-        vsnprintf(tmp, 1023 * 2, format, arguments);
+        vsnprintf(tmp, ACVP_LOG_MAX_MSG_LEN + 2, format, arguments);
+        //Check the last actual char - if its not \0, then we should indicate truncated output
+        if (tmp[ACVP_LOG_MAX_MSG_LEN] != '\0') {
+            memcpy_s(tmp + ACVP_LOG_MAX_MSG_LEN - ACVP_LOG_TRUNCATED_STR_LEN, 
+                     ACVP_LOG_TRUNCATED_STR_LEN,
+                     ACVP_LOG_TRUNCATED_STR, ACVP_LOG_TRUNCATED_STR_LEN);
+            tmp[ACVP_LOG_MAX_MSG_LEN] = '\0';
+
+        }
         ctx->test_progress_cb(tmp);
         va_end(arguments);
         fflush(stdout);
     }
 }
+
+/*
+ * Sometimes there is a need for line separation in the logs, but we still prefer for
+ * the app handler to deal with it instead of making assumptions about output
+ */
+void acvp_log_newline(ACVP_CTX *ctx) {
+     char tmp[] = "\n";
+     ctx->test_progress_cb(tmp);
+ }
 
 /*!
  *

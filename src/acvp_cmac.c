@@ -20,6 +20,7 @@
 static ACVP_RESULT acvp_cmac_init_tc(ACVP_CTX *ctx,
                                      ACVP_CMAC_TC *stc,
                                      unsigned int tc_id,
+                                     ACVP_CMAC_TESTTYPE testtype,
                                      const char *msg,
                                      unsigned int msg_len,
                                      const char *key,
@@ -37,7 +38,7 @@ static ACVP_RESULT acvp_cmac_init_tc(ACVP_CTX *ctx,
     if (alg_id != ACVP_CMAC_TDES && alg_id != ACVP_CMAC_AES) {
         return ACVP_INVALID_ARG;
     }
-    if (!msg || !stc || !tc_id || !key) {
+    if (!msg || !stc || !tc_id || !testtype || !key) {
         return ACVP_INVALID_ARG;
     }
     if (alg_id == ACVP_CMAC_TDES && (!key2 || !key3)) {
@@ -51,10 +52,11 @@ static ACVP_RESULT acvp_cmac_init_tc(ACVP_CTX *ctx,
 
     memzero_s(stc, sizeof(ACVP_CMAC_TC));
 
-    stc->msg = calloc(1, ACVP_CMAC_MSGLEN_MAX_STR);
+    stc->test_type = testtype;
+    stc->msg = calloc(ACVP_CMAC_MSGLEN_MAX_STR, sizeof(unsigned char));
     if (!stc->msg) { return ACVP_MALLOC_FAIL; }
 
-    stc->mac = calloc(ACVP_CMAC_MACLEN_MAX, sizeof(char));
+    stc->mac = calloc(ACVP_CMAC_MACLEN_MAX, sizeof(unsigned char));
     if (!stc->mac) { return ACVP_MALLOC_FAIL; }
     stc->key = calloc(1, ACVP_CMAC_KEY_MAX);
     if (!stc->key) { return ACVP_MALLOC_FAIL; }
@@ -191,7 +193,8 @@ ACVP_RESULT acvp_cmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     const char *alg_str = json_object_get_string(obj, "algorithm");
     ACVP_CIPHER alg_id;
     char *json_result;
-    const char *direction = NULL;
+    ACVP_CMAC_TESTTYPE testtype;
+    const char *direction = NULL, *test_type_str = NULL;
     int key1_len, key2_len, key3_len, json_msglen;
 
     if (!ctx) {
@@ -263,7 +266,7 @@ ACVP_RESULT acvp_cmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         r_gobj = json_value_get_object(r_gval);
         tgId = json_object_get_number(groupobj, "tgId");
         if (!tgId) {
-            ACVP_LOG_ERR("Missing tgid from server JSON groub obj");
+            ACVP_LOG_ERR("Missing tgid from server JSON group obj");
             rv = ACVP_MALFORMED_JSON;
             goto err;
         }
@@ -286,6 +289,21 @@ ACVP_RESULT acvp_cmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 rv = ACVP_INVALID_ARG;
                 goto err;
             }
+        }
+
+        test_type_str = json_object_get_string(groupobj, "testType");
+        if (!test_type_str) {
+            ACVP_LOG_ERR("Server JSON missing 'testType'");
+            rv = ACVP_MISSING_ARG;
+            goto err;
+        }
+        strcmp_s("AFT", 3, test_type_str, &diff);
+        if (!diff) {
+            testtype = ACVP_CMAC_TEST_TYPE_AFT;
+        } else {
+            ACVP_LOG_ERR("invalid 'testType' in server JSON.");
+            rv = ACVP_UNSUPPORTED_OP;
+            goto err;
         }
 
         direction = json_object_get_string(groupobj, "direction");
@@ -315,12 +333,21 @@ ACVP_RESULT acvp_cmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             rv = ACVP_MISSING_ARG;
             goto err;
         }
+        if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
+            ACVP_LOG_NEWLINE;
+            ACVP_LOG_VERBOSE("    Test group: %d", i);
+            ACVP_LOG_VERBOSE("      testtype: %s", test_type_str);
+            ACVP_LOG_VERBOSE("           dir: %s", direction);
+            ACVP_LOG_VERBOSE("        keylen: %d", keyLen);
+            ACVP_LOG_VERBOSE("        msglen: %d", msglen);
+            ACVP_LOG_VERBOSE("        maclen: %d", maclen);
+        }
 
-        ACVP_LOG_VERBOSE("\n\n    Test group: %d", i);
 
         tests = json_object_get_array(groupobj, "tests");
         t_cnt = json_array_get_count(tests);
         for (j = 0; j < t_cnt; j++) {
+             if (ctx->debug == ACVP_LOG_LVL_VERBOSE) ACVP_LOG_NEWLINE;
             ACVP_LOG_VERBOSE("Found new cmac test vector...");
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
@@ -390,14 +417,10 @@ ACVP_RESULT acvp_cmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 }
             }
 
-            ACVP_LOG_VERBOSE("\n        Test case: %d", j);
+            ACVP_LOG_VERBOSE("        Test case: %d", j);
             ACVP_LOG_VERBOSE("             tcId: %d", tc_id);
-            ACVP_LOG_VERBOSE("        direction: %s", direction);
-
-            ACVP_LOG_VERBOSE("           msgLen: %d", msglen);
             ACVP_LOG_VERBOSE("              msg: %s", msg);
             if (alg_id == ACVP_CMAC_AES) {
-                ACVP_LOG_VERBOSE("           keyLen: %d", keyLen);
                 ACVP_LOG_VERBOSE("              key: %s", key1);
             } else if (alg_id == ACVP_CMAC_TDES) {
                 ACVP_LOG_VERBOSE("     keyingOption: %d", keyingOption);
@@ -422,7 +445,7 @@ ACVP_RESULT acvp_cmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
              * Setup the test case data that will be passed down to
              * the crypto module.
              */
-            rv = acvp_cmac_init_tc(ctx, &stc, tc_id, msg, msglen, key1, key2, key3,
+            rv = acvp_cmac_init_tc(ctx, &stc, tc_id, testtype, msg, msglen, key1, key2, key3,
                                    verify, mac, maclen, alg_id);
             if (rv != ACVP_SUCCESS) {
                 acvp_cmac_release_tc(&stc);
