@@ -2743,6 +2743,8 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
                 goto end;
             }
             strcmp_s("fail", 4, status, &diff);
+            if (diff)
+                strcmp_s("error", 5, status, &diff);
             if (!diff) {
                 const char *vs_url = json_object_get_string(current, "vectorSetUrl");
                 if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
