@@ -1308,10 +1308,14 @@ typedef struct acvp_drbg_tc_t {
     ACVP_DRBG_MODE mode;
     unsigned int tc_id;    /* Test case id */
 
-    unsigned char *additional_input;
-    unsigned char *entropy_input_pr;
+    unsigned char *additional_input_0;
+    unsigned char *entropy_input_pr_0;
     unsigned char *additional_input_1;
     unsigned char *entropy_input_pr_1;
+    unsigned char *additional_input_2;
+    unsigned char *entropy_input_pr_2;
+    unsigned int pr1_len;
+    unsigned int pr2_len;
     unsigned char *perso_string;
     unsigned char *entropy;
     unsigned char *nonce;
@@ -1319,6 +1323,7 @@ typedef struct acvp_drbg_tc_t {
 
     unsigned int der_func_enabled;
     unsigned int pred_resist_enabled;
+    unsigned int reseed;
     unsigned int additional_input_len; /**< Additional Input length (in bytes) */
     unsigned int perso_string_len;     /**< Personalization String length (in bytes) */
     unsigned int entropy_len;          /**< Entropy length (in bytes) */
