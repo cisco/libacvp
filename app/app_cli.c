@@ -83,12 +83,12 @@ static void print_usage(int err) {
     printf("Note: --resume_session and --get_results use the test session info file created automatically by the library as input\n");
     printf("\n");
     printf("To resume a previous test session that was interupted:\n");
-    printf("      --resume_session <file>\n");
+    printf("      --resume_session <session_file>\n");
     printf("            Note: this does not save your arguments from your initial run and you MUST include them\n");
     printf("            again (e.x. --aes,  --vector_req and --fips_validation)\n");
     printf("\n");
     printf("To get the results of a previous test session:\n");
-    printf("      --get_results <file>\n");
+    printf("      --get_results <session_file>\n");
     printf("\n");
     printf("To GET status of request, such as validation or metadata:\n");
     printf("      --get <request string URL including ID>\n");
@@ -102,6 +102,12 @@ static void print_usage(int err) {
     printf("If you are running a sample registration (querying for correct answers\n");
     printf("in addition to the normal registration flow) use:\n");
     printf("      --sample\n");
+    printf("\n");
+    printf("To get the expected results of a sample test session:\n");
+    printf("      --get_expected_results <session_file>n");
+    printf("\n");
+    printf("Some other options may support outputting to log OR saving to a file. To save to a file: :\n");
+    printf("      --save_to <file>");
     printf("\n");
     printf("In addition some options are passed to acvp_app using\n");
     printf("environment variables.  The following variables can be set:\n\n");
@@ -196,6 +202,8 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
         { "get_results", ko_required_argument, 409},
         { "certnum", ko_required_argument, 410 },
         { "resume_session", ko_required_argument, 411 },
+        { "get_expected_results", ko_required_argument, 412 },
+        { "save_to", ko_required_argument, 413},
         { NULL, 0, 0 }
     };
 
@@ -490,7 +498,7 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
                 return 1;
             }
 
-            strcpy_s(cfg->get_results_file, JSON_FILENAME_LENGTH + 1, opt.arg);
+            strcpy_s(cfg->session_file, JSON_FILENAME_LENGTH + 1, opt.arg);
             continue;
         }
 
@@ -517,12 +525,45 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
                 printf(ANSI_COLOR_RED "Command error... [%s]"ANSI_COLOR_RESET
                     "\nThe <file> \"%s\", has a name that is too long."
                     "\nMax allowed <file> name length is (%d).\n",
-                    "--get_results", opt.arg, JSON_FILENAME_LENGTH);
+                    "--resume_session", opt.arg, JSON_FILENAME_LENGTH);
                 print_usage(1);
                 return 1;
             }
 
-            strcpy_s(cfg->resume_session_file, JSON_FILENAME_LENGTH + 1, opt.arg);
+            strcpy_s(cfg->session_file, JSON_FILENAME_LENGTH + 1, opt.arg);
+            continue;
+        }
+        if (c == 412) {
+            int session_filename_len = 0;
+            cfg->get_expected = 1;
+
+            session_filename_len = strnlen_s(opt.arg, JSON_FILENAME_LENGTH + 1);
+            if (session_filename_len > JSON_REQUEST_LENGTH) {
+                printf(ANSI_COLOR_RED "Command error... [%s]"ANSI_COLOR_RESET
+                    "\nThe <file> \"%s\", has a name that is too long."
+                    "\nMax allowed <file> name length is (%d).\n",
+                    "--get_expected_results", opt.arg, JSON_FILENAME_LENGTH);
+                print_usage(1);
+                return 1;
+            }
+
+            strcpy_s(cfg->session_file, JSON_FILENAME_LENGTH + 1, opt.arg);
+            continue;
+        }
+        if (c == 413) {
+            int save_filename_len = 0;
+            cfg->save_to = 1;
+
+            save_filename_len = strnlen_s(opt.arg, JSON_FILENAME_LENGTH + 1);
+            if (save_filename_len > JSON_REQUEST_LENGTH) {
+                printf(ANSI_COLOR_RED "Command error... [%s]"ANSI_COLOR_RESET
+                    "\nThe <file> \"%s\", has a name that is too long."
+                    "\nMax allowed <file> name length is (%d).\n",
+                    "--save_to", opt.arg, JSON_FILENAME_LENGTH);
+                print_usage(1);
+                return 1;
+            }
+            strcpy_s(cfg->save_file, JSON_FILENAME_LENGTH + 1, opt.arg);
             continue;
         }
         
@@ -538,9 +579,13 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
         }
     }
 
+    if (cfg->save_to && !cfg->get_expected) {
+        printf("Warning: --save-to only works with --get_expected. Option will be ignored.\n");
+    }
+
     /* allopw put, post and get without algs defined */
     if (cfg->empty_alg && !cfg->post && !cfg->get && !cfg->put && !cfg->get_results
-                                        && !cfg->manual_reg && !cfg->vector_upload) {
+                   && !cfg->get_expected && !cfg->manual_reg && !cfg->vector_upload) {
         /* The user needs to select at least 1 algorithm */
         printf(ANSI_COLOR_RED "Requires at least 1 Algorithm Test Suite\n"ANSI_COLOR_RESET);
         print_usage(1);

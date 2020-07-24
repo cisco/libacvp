@@ -45,17 +45,19 @@ typedef struct app_config {
     int kat;
     int empty_alg;
     int fips_validation;
+    int get_expected;
+    int save_to;
     char reg_file[JSON_FILENAME_LENGTH + 1];
     char vector_req_file[JSON_FILENAME_LENGTH + 1];
     char vector_rsp_file[JSON_FILENAME_LENGTH + 1];
     char vector_upload_file[JSON_FILENAME_LENGTH + 1];
     char get_string[JSON_REQUEST_LENGTH + 1];
-    char get_results_file[JSON_FILENAME_LENGTH + 1];
-    char resume_session_file[JSON_FILENAME_LENGTH + 1];
+    char session_file[JSON_FILENAME_LENGTH + 1];
     char post_filename[JSON_FILENAME_LENGTH + 1];
     char put_filename[JSON_FILENAME_LENGTH + 1];
     char kat_file[JSON_FILENAME_LENGTH + 1];
     char validation_metadata_file[JSON_FILENAME_LENGTH + 1];
+    char save_file[JSON_FILENAME_LENGTH + 1];
 
     /*
      * Algorithm Flags

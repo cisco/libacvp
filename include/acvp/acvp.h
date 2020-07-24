@@ -2667,6 +2667,17 @@ ACVP_RESULT acvp_put_data_from_file(ACVP_CTX *ctx, const char *put_filename);
  */
 ACVP_RESULT acvp_get_results_from_server(ACVP_CTX *ctx, const char *request_filename);
 
+/*! @brief Gets the expected test results for test sessions marked as samples
+ * 
+ * @param ctx Pointer to ACVP_CTX that was previously created by
+        calling acvp_create_test_session.
+ * @param request_filename File containing the session info created by libacvp
+ * @param save_filename path/name for file to save the expected results too. OPTIONAL.
+          If null, will print expected results to log.
+   @return ACVP_RESULT
+ */
+ACVP_RESULT acvp_get_expected_results(ACVP_CTX *ctx, const char *request_filename, const char *save_filename);
+
 /*! @brief Queries the server for any vector sets that have not received a response
  * (e.x. in case of lose of connectivity during testing), downloads those vector sets,
  * and continues to process them
