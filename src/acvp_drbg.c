@@ -353,8 +353,12 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
                 /* Get 1st element from the array */
                 pr_input_val = json_array_get_value(pred_resist_input, index);
+                if (pr_input_val == NULL) {
+                   ACVP_LOG_ERR("Server JSON, invalid pr_input_val array");
+                   rv = ACVP_INVALID_ARG;
+                   goto err;
+                }
                 pr_input_obj = json_value_get_object(pr_input_val);
-
             
                 if (pr_input_count != 3) {
                    ACVP_LOG_ERR("Server JSON, invalid number of entries, %d", pr_input_count);
@@ -408,6 +412,11 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
             /* Get 1st or 2nd element from the array */
             pr_input_val = json_array_get_value(pred_resist_input, index);
+            if (pr_input_val == NULL) {
+               ACVP_LOG_ERR("Server JSON, invalid pr_input_val array");
+               rv = ACVP_INVALID_ARG;
+               goto err;
+            }
             pr_input_obj = json_value_get_object(pr_input_val);
 
             int_use = json_object_get_string(pr_input_obj, "intendedUse");
@@ -451,6 +460,11 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
              * Get 2nd or 3rd element from the array
              */
             pr_input_val = json_array_get_value(pred_resist_input, index);
+            if (pr_input_val == NULL) {
+                ACVP_LOG_ERR("Server JSON, invalid pr_input_val array");
+                rv = ACVP_INVALID_ARG;
+                goto err;
+            }
             pr_input_obj = json_value_get_object(pr_input_val);
 
             int_use = json_object_get_string(pr_input_obj, "intendedUse");
