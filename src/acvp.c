@@ -38,6 +38,8 @@ static ACVP_RESULT acvp_parse_login(ACVP_CTX *ctx);
 
 static ACVP_RESULT acvp_parse_test_session_register(ACVP_CTX *ctx);
 
+static ACVP_RESULT acvp_parse_session_info_file(ACVP_CTX *ctx, const char *filename);
+
 static ACVP_RESULT acvp_process_vsid(ACVP_CTX *ctx, char *vsid_url, int count);
 
 static ACVP_RESULT acvp_process_vector_set(ACVP_CTX *ctx, JSON_Object *obj);
@@ -857,7 +859,7 @@ ACVP_RESULT acvp_run_vectors_from_file(ACVP_CTX *ctx, const char *req_filename, 
     ACVP_STRING_LIST *vs_entry;
     JSON_Array *vect_sets = NULL;
     const char *test_session_url = NULL;
-    int vs_cnt = 0;
+    int vs_cnt = 0, isSample = 0;
     const char *jwt = NULL;
     char *json_result = NULL;
 
@@ -906,6 +908,13 @@ ACVP_RESULT acvp_run_vectors_from_file(ACVP_CTX *ctx, const char *req_filename, 
     } else {
         ACVP_LOG_WARN("Missing JWT, results will not be POSTed to server");
         goto end;
+    }
+
+    isSample = json_object_get_boolean(obj, "isSample");
+    if (json_object_has_value(obj, "isSample")) {
+        ctx->is_sample = isSample;
+    } else {
+        ACVP_LOG_WARN("Missing indication of whether tests are sample in file, continuing");
     }
 
     vect_sets = json_object_get_array(obj, "vectorSetUrls");
@@ -1008,7 +1017,7 @@ ACVP_RESULT acvp_upload_vectors_from_file(ACVP_CTX *ctx, const char *rsp_filenam
     ACVP_STRING_LIST *vs_entry;
     JSON_Array *vect_sets = NULL;
     const char *test_session_url = NULL;
-    int vs_cnt = 0;
+    int vs_cnt = 0, isSample = 0;
     const char *jwt = NULL;
     char *json_result = NULL;
     JSON_Array *vec_array = NULL;
@@ -1070,6 +1079,14 @@ ACVP_RESULT acvp_upload_vectors_from_file(ACVP_CTX *ctx, const char *rsp_filenam
         rv = ACVP_MALLOC_FAIL;
         goto end;
     }
+    
+    isSample = json_object_get_boolean(obj, "isSample");
+    if (json_object_has_value(obj, "isSample")) {
+        ctx->is_sample = isSample;
+    } else {
+        ACVP_LOG_WARN("Missing indication of whether tests are sample in file, continuing");
+    }
+
     strcpy_s(ctx->jwt_token, ACVP_JWT_TOKEN_MAX + 1, jwt);
 
     vect_sets = json_object_get_array(obj, "vectorSetUrls");
@@ -1181,64 +1198,17 @@ end:
  * of previous test session.
  */
 ACVP_RESULT acvp_get_results_from_server(ACVP_CTX *ctx, const char *request_filename) {
-    JSON_Value *val = NULL;
-    JSON_Array *reg_array;
-    JSON_Object *obj = NULL;
-    const char *test_session_url = NULL;
-    const char *jwt = NULL;
     ACVP_RESULT rv = ACVP_SUCCESS;
 
     if (!ctx) {
         return ACVP_NO_CTX;
     }
-    if (!request_filename) {
-        ACVP_LOG_ERR("Must provide value for JSON filename");
-        return ACVP_MISSING_ARG;
-    }
-    
-    if (strnlen_s(request_filename, ACVP_JSON_FILENAME_MAX + 1) > ACVP_JSON_FILENAME_MAX) {
-        ACVP_LOG_ERR("Provided request_filename length > max(%d)", ACVP_JSON_FILENAME_MAX);
-        return ACVP_INVALID_ARG;
-    }
-    
-    val = json_parse_file(request_filename);
-    if (!val) {
-        ACVP_LOG_ERR("JSON val parse error");
-        return ACVP_MALFORMED_JSON;
-    }
-    reg_array = json_value_get_array(val);
-    obj = json_array_get_object(reg_array, 0);
-    if (!obj) {
-        ACVP_LOG_ERR("JSON obj parse error");
-        rv = ACVP_MALFORMED_JSON;
+  
+    rv = acvp_parse_session_info_file(ctx, request_filename);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Error reading session info file, unable to get results");
         goto end;
     }
-
-    test_session_url = json_object_get_string(obj, "url");
-    if (!test_session_url) {
-        ACVP_LOG_ERR("Missing session URL");
-        rv = ACVP_MALFORMED_JSON;
-        goto end;
-    }
-
-    ctx->session_url = calloc(ACVP_ATTR_URL_MAX + 1, sizeof(char));
-    if (!ctx->session_url) {
-        rv = ACVP_MALLOC_FAIL;
-        goto end;
-    }
-    strcpy_s(ctx->session_url, ACVP_ATTR_URL_MAX + 1, test_session_url);
-
-    jwt = json_object_get_string(obj, "jwt");
-    if (!jwt) {
-        rv = ACVP_MALFORMED_JSON;
-        goto end;
-    }
-    ctx->jwt_token = calloc(ACVP_JWT_TOKEN_MAX + 1, sizeof(char));
-    if (!ctx->jwt_token) {
-        rv = ACVP_MALLOC_FAIL;
-        goto end;
-    }
-    strcpy_s(ctx->jwt_token, ACVP_JWT_TOKEN_MAX + 1, jwt);
 
     rv = acvp_refresh(ctx);
     if (rv != ACVP_SUCCESS) {
@@ -1250,11 +1220,156 @@ ACVP_RESULT acvp_get_results_from_server(ACVP_CTX *ctx, const char *request_file
     
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Unable to retrieve test results");
+        goto end;
     }
     
 end:
-    json_value_free(val);
     return rv;
+}
+
+ACVP_RESULT acvp_get_expected_results(ACVP_CTX *ctx, const char *request_filename, const char *save_filename) {
+    JSON_Value *val = NULL, *fw_val = NULL;
+    JSON_Object *obj = NULL, *fw_obj = NULL;
+    ACVP_RESULT rv = ACVP_SUCCESS;
+
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+
+    rv = acvp_parse_session_info_file(ctx, request_filename);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Failed to parse session info file while trying to get expected results");
+        goto end;
+    }
+    if (save_filename && strnlen_s(save_filename, ACVP_JSON_FILENAME_MAX + 1) > ACVP_JSON_FILENAME_MAX) {
+        ACVP_LOG_ERR("Provided filename length > max(%d)", ACVP_JSON_FILENAME_MAX);
+        return ACVP_INVALID_ARG;
+    }
+
+    if (!ctx->is_sample) {
+        ACVP_LOG_ERR("Session not marked as sample");
+        rv = ACVP_UNSUPPORTED_OP;
+        goto end;
+    }
+
+    acvp_refresh(ctx);
+
+    rv = acvp_retrieve_vector_set_result(ctx, ctx->session_url);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Error retrieving vector set results!");
+        goto end;
+    }
+
+    val = json_parse_string(ctx->curl_buf);
+    if (!val) {
+        ACVP_LOG_ERR("Error while parsing json from server!");
+        rv = ACVP_JSON_ERR;
+        goto end;
+    }
+    obj = acvp_get_obj_from_rsp(ctx, val);
+    if (!obj) {
+        ACVP_LOG_ERR("Error while parsing json from server!");
+        rv = ACVP_JSON_ERR;
+        goto end;
+    }
+
+    JSON_Array *results = NULL;
+    int count = 0, i = 0;
+    JSON_Object *current = NULL;
+    const char *vsid_url = NULL;
+
+    results = json_object_get_array(obj, "results");
+    if (!results) {
+        ACVP_LOG_ERR("Error parsing status from server");
+        rv = ACVP_JSON_ERR;
+        goto end;
+    }
+
+    ACVP_LOG_STATUS("Beginning output of expected results...");
+    ACVP_LOG_NEWLINE;
+
+    if (save_filename) {
+        //write the session URL and JWT to the file first
+        fw_val = json_value_init_object();
+        if (!fw_val) {
+            ACVP_LOG_ERR("Error initializing JSON object");
+            rv = ACVP_MALLOC_FAIL;
+            goto end;
+        }
+        fw_obj = json_value_get_object(fw_val);
+        if (!fw_obj) {
+            ACVP_LOG_ERR("Error initializing JSON object");
+            rv = ACVP_MALFORMED_JSON;
+            goto end;
+        }
+        json_object_set_string(fw_obj, "jwt", ctx->jwt_token);
+        json_object_set_string(fw_obj, "url", ctx->session_url);
+        rv = acvp_json_serialize_to_file_pretty_w(fw_val, save_filename);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Error writing to provided file.");
+            json_value_free(fw_val);
+            goto end;
+        }
+        json_value_free(fw_val);
+        fw_val = NULL;
+        fw_obj = NULL;
+    }
+
+    count = (int)json_array_get_count(results);
+    for (i = 0; i < count; i++) {
+        current = json_array_get_object(results, i);
+        if (!current) {
+            ACVP_LOG_ERR("Error parsing status from server");
+            rv = ACVP_JSON_ERR;
+            goto end;
+        }
+        
+        vsid_url = json_object_get_string(current, "vectorSetUrl");
+        if (!vsid_url) {
+            ACVP_LOG_ERR("Error parsing vector set URL from server");
+            rv = ACVP_JSON_ERR;
+            goto end;
+        }
+        if (strnlen_s(vsid_url, ACVP_ATTR_URL_MAX + 1) > ACVP_ATTR_URL_MAX) {
+            ACVP_LOG_ERR("URL is too long. Cannot proceed.");
+            rv = ACVP_TRANSPORT_FAIL;
+            goto end;
+        }
+
+        rv = acvp_retrieve_expected_result(ctx, vsid_url);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Error retrieving expected results from server");
+            goto end;
+        }
+
+        //If save_filename != null, we are saving to file, otherwise log it all
+        if (save_filename) {
+            fw_val = json_parse_string(ctx->curl_buf);
+            if (!fw_val) {
+                ACVP_LOG_ERR("Error parsing JSON from server response");
+                rv = ACVP_TRANSPORT_FAIL;
+                goto end;
+            }
+            /* append data */
+            rv = acvp_json_serialize_to_file_pretty_a(fw_val, save_filename);
+            if (rv != ACVP_SUCCESS) {
+                ACVP_LOG_ERR("Error writing to file");
+                goto end;
+            }
+            json_value_free(fw_val);
+            fw_val = NULL;
+        } else {
+            printf("%s,\n", ctx->curl_buf);
+        }
+        vsid_url = NULL;
+    }
+    //append the final ']'
+    rv = acvp_json_serialize_to_file_pretty_a(NULL, save_filename);
+    ACVP_LOG_STATUS("Completed output of expected results.");
+end:
+   if (fw_val) json_value_free(fw_val);
+   if (val) json_value_free(val);
+   return rv;
 }
 
 /**
@@ -1262,10 +1377,7 @@ end:
  */
 ACVP_RESULT acvp_resume_test_session(ACVP_CTX *ctx, const char *request_filename, int fips_validation) {
     JSON_Value *val = NULL;
-    JSON_Array *reg_array;
     JSON_Object *obj = NULL;
-    const char *test_session_url = NULL;
-    const char *jwt = NULL;
     ACVP_RESULT rv = ACVP_SUCCESS;
     
     if (!ctx) {
@@ -1277,60 +1389,12 @@ ACVP_RESULT acvp_resume_test_session(ACVP_CTX *ctx, const char *request_filename
         ACVP_LOG_STATUS("Restarting download of vector sets to file...");
     }
 
-
-    if (!request_filename) {
-        ACVP_LOG_ERR("Must provide value for JSON filename");
-        return ACVP_MISSING_ARG;
-    }
-    
-    if (strnlen_s(request_filename, ACVP_JSON_FILENAME_MAX + 1) > ACVP_JSON_FILENAME_MAX) {
-        ACVP_LOG_ERR("Provided request_filename length > max(%d)", ACVP_JSON_FILENAME_MAX);
-        return ACVP_INVALID_ARG;
-    }
-    
-    val = json_parse_file(request_filename);
-    if (!val) {
-        ACVP_LOG_ERR("Error while trying to parse json from file - ensure it exists and is intact");
-        return ACVP_MALFORMED_JSON;
-    }
-    reg_array = json_value_get_array(val);
-    obj = json_array_get_object(reg_array, 0);
-    if (!obj) {
-        ACVP_LOG_ERR("JSON obj parse error");
-        rv = ACVP_MALFORMED_JSON;
+    rv = acvp_parse_session_info_file(ctx, request_filename);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Unable to parse session info file to resume session");
         goto end;
     }
 
-    test_session_url = json_object_get_string(obj, "url");
-    if (!test_session_url) {
-        ACVP_LOG_ERR("Missing session URL");
-        rv = ACVP_MALFORMED_JSON;
-        goto end;
-    }
-
-    ctx->session_url = calloc(ACVP_ATTR_URL_MAX + 1, sizeof(char));
-    if (!ctx->session_url) {
-        rv = ACVP_MALLOC_FAIL;
-        goto end;
-    }
-    strcpy_s(ctx->session_url, ACVP_ATTR_URL_MAX + 1, test_session_url);
-
-    jwt = json_object_get_string(obj, "jwt");
-    if (!jwt) {
-        rv = ACVP_MALFORMED_JSON;
-        goto end;
-    }
-    ctx->jwt_token = calloc(ACVP_JWT_TOKEN_MAX + 1, sizeof(char));
-    if (!ctx->jwt_token) {
-        rv = ACVP_MALLOC_FAIL;
-        goto end;
-    }
-    strcpy_s(ctx->jwt_token, ACVP_JWT_TOKEN_MAX + 1, jwt);
-    
-    json_value_free(val);
-    val = NULL;
-    obj = NULL;
-    
     rv = acvp_refresh(ctx);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Failed to refresh login with ACVP server");
@@ -1417,7 +1481,7 @@ ACVP_RESULT acvp_resume_test_session(ACVP_CTX *ctx, const char *request_filename
         } else {
             strcmp_s("expired", 7, status, &diff);
             if (!diff) {
-                ACVP_LOG_ERR("One more more vector sets has expired! Start a new session.");
+                ACVP_LOG_ERR("One or more vector sets has expired! Start a new session.");
                 rv = ACVP_INVALID_ARG;
                 goto end;
             }
@@ -1476,7 +1540,7 @@ ACVP_RESULT acvp_resume_test_session(ACVP_CTX *ctx, const char *request_filename
         }
     }
 end:
-    json_value_free(val);
+    if (val) json_value_free(val);
     return rv;
 }
 
@@ -1824,7 +1888,7 @@ static ACVP_RESULT acvp_build_login(ACVP_CTX *ctx, char **login, int *login_len,
 err:
     *login = json_serialize_to_string(reg_arry_val, login_len);
     if (token) free(token);
-    json_value_free(reg_arry_val);
+    if (reg_arry_val) json_value_free(reg_arry_val);
     return rv;
 }
 
@@ -2216,6 +2280,83 @@ end:
     return rv;
 }
 
+/**
+ * Loads all of the data we need to process or view test session information
+ * from the given file. used for non-continuous sessions.
+ */
+static ACVP_RESULT acvp_parse_session_info_file(ACVP_CTX *ctx, const char *filename) {
+    JSON_Value *val = NULL;
+    JSON_Array *reg_array;
+    JSON_Object *obj = NULL;
+    const char *test_session_url = NULL;
+    const char *jwt = NULL;
+    int isSample = 0;
+    ACVP_RESULT rv = ACVP_SUCCESS;
+
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+    if (!filename) {
+        ACVP_LOG_ERR("Must provide value for JSON filename");
+        return ACVP_MISSING_ARG;
+    }
+    
+    if (strnlen_s(filename, ACVP_JSON_FILENAME_MAX + 1) > ACVP_JSON_FILENAME_MAX) {
+        ACVP_LOG_ERR("Provided filename length > max(%d)", ACVP_JSON_FILENAME_MAX);
+        return ACVP_INVALID_ARG;
+    }
+    
+    val = json_parse_file(filename);
+    if (!val) {
+        ACVP_LOG_ERR("JSON val parse error");
+        return ACVP_MALFORMED_JSON;
+    }
+    reg_array = json_value_get_array(val);
+    obj = json_array_get_object(reg_array, 0);
+    if (!obj) {
+        ACVP_LOG_ERR("JSON obj parse error");
+        rv = ACVP_MALFORMED_JSON;
+        goto end;
+    }
+
+    test_session_url = json_object_get_string(obj, "url");
+    if (!test_session_url) {
+        ACVP_LOG_ERR("Missing session URL");
+        rv = ACVP_MALFORMED_JSON;
+        goto end;
+    }
+
+    ctx->session_url = calloc(ACVP_ATTR_URL_MAX + 1, sizeof(char));
+    if (!ctx->session_url) {
+        rv = ACVP_MALLOC_FAIL;
+        goto end;
+    }
+    strcpy_s(ctx->session_url, ACVP_ATTR_URL_MAX + 1, test_session_url);
+
+    jwt = json_object_get_string(obj, "jwt");
+    if (!jwt) {
+        rv = ACVP_MALFORMED_JSON;
+        goto end;
+    }
+    ctx->jwt_token = calloc(ACVP_JWT_TOKEN_MAX + 1, sizeof(char));
+    if (!ctx->jwt_token) {
+        rv = ACVP_MALLOC_FAIL;
+        goto end;
+    }
+    strcpy_s(ctx->jwt_token, ACVP_JWT_TOKEN_MAX + 1, jwt);
+
+    isSample = json_object_get_boolean(obj, "isSample");
+    if (json_object_has_value(obj, "isSample")) {
+        ctx->is_sample = isSample;
+    } else {
+        ACVP_LOG_WARN("Missing indication of whether tests are sample in file, continuing");
+    }
+
+end:
+    if (val) json_value_free(val);
+    return rv;
+}
+
 /*
  * This function is used by the application after registration
  * to commence the testing.  All the testing will be handled
@@ -2440,6 +2581,7 @@ static ACVP_RESULT acvp_process_vsid(ACVP_CTX *ctx, char *vsid_url, int count) {
 
                     json_object_set_string(ts_obj, "jwt", ctx->jwt_token);
                     json_object_set_string(ts_obj, "url", ctx->session_url);
+                    json_object_set_boolean(ts_obj, "isSample", ctx->is_sample);
 
                     json_object_set_value(ts_obj, "vectorSetUrls", json_value_init_array());
                     url_arr = json_object_get_array(ts_obj, "vectorSetUrls");
@@ -2939,7 +3081,7 @@ static ACVP_RESULT acvp_write_session_info(ACVP_CTX *ctx) {
 
     json_object_set_string(ts_obj, "url", ctx->session_url);
     json_object_set_string(ts_obj, "jwt", ctx->jwt_token);
-
+    json_object_set_boolean(ts_obj, "isSample", ctx->is_sample);
     /* pull test session ID out of URL */
     ptr = ctx->session_url;
     while(*ptr != 0) {

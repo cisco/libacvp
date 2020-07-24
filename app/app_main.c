@@ -366,12 +366,21 @@ int main(int argc, char **argv) {
     }
     
     if (cfg.get_results) {
-        rv = acvp_get_results_from_server(ctx, cfg.get_results_file);
+        rv = acvp_get_results_from_server(ctx, cfg.session_file);
         goto end;
     }
     
     if (cfg.resume_session) {
-        rv = acvp_resume_test_session(ctx, cfg.resume_session_file, cfg.fips_validation);
+        rv = acvp_resume_test_session(ctx, cfg.session_file, cfg.fips_validation);
+        goto end;
+    }
+
+    if(cfg.get_expected) {
+        if (cfg.save_to) {
+            rv = acvp_get_expected_results(ctx, cfg.session_file, cfg.save_file);
+        } else {
+            rv = acvp_get_expected_results(ctx, cfg.session_file, NULL);
+        }
         goto end;
     }
     

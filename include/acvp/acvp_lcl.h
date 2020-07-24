@@ -1247,7 +1247,7 @@ typedef struct acvp_module_t {
     char *version;
     char *description;
     char *url; /**< ID URL returned from the server */
-    ACVP_VENDOR *vendor; /**< Poinetr to the Vendor to use */
+    ACVP_VENDOR *vendor; /**< Pointer to the Vendor to use */
 } ACVP_MODULE;
 
 #define LIBACVP_MODULES_MAX 32
