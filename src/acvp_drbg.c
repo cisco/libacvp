@@ -25,13 +25,18 @@ static ACVP_RESULT acvp_drbg_output_tc(ACVP_CTX *ctx, ACVP_DRBG_TC *stc, JSON_Ob
 static ACVP_RESULT acvp_drbg_init_tc(ACVP_CTX *ctx,
                                      ACVP_DRBG_TC *stc,
                                      unsigned int tc_id,
-                                     const char *additional_input,
-                                     const char *entropy_input_pr,
+                                     const char *additional_input_0,
+                                     const char *entropy_input_pr_0,
                                      const char *additional_input_1,
                                      const char *entropy_input_pr_1,
+                                     const char *additional_input_2,
+                                     const char *entropy_input_pr_2,
+                                     int pr1_len,
+                                     int pr2_len,
                                      const char *perso_string,
                                      const char *entropy,
                                      const char *nonce,
+                                     int reseed,
                                      int der_func_enabled,
                                      int pred_resist_enabled,
                                      unsigned int additional_input_len,
@@ -69,9 +74,11 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     ACVP_DRBG_TC stc;
     ACVP_TEST_CASE tc;
     ACVP_RESULT rv;
-    const char *alg_str = NULL;
+    const char *alg_str = NULL, *int_use = NULL;
     ACVP_CIPHER alg_id;
     ACVP_DRBG_MODE mode_id;
+    int index = 0;
+    int pr1_len = 0, pr2_len = 0, diff = 0;
 
     if (!ctx) {
         ACVP_LOG_ERR("No ctx for handler operation");
@@ -130,7 +137,7 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     for (i = 0; i < g_cnt; i++) {
         int tgId = 0;
         const char *mode_str = NULL;
-        int der_func_enabled = 0, pred_resist_enabled = 0;
+        int der_func_enabled = 0, pred_resist_enabled = 0, reseed = 0;
         unsigned int perso_string_len = 0, entropy_len = 0, nonce_len = 0,
                      drb_len = 0, additional_input_len = 0;
         groupval = json_array_get_value(groups, i);
@@ -177,6 +184,13 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             rv = ACVP_MISSING_ARG;
             goto err;
         }
+        reseed = json_object_get_boolean(groupobj, "reSeed");
+        if (reseed == -1) {
+            ACVP_LOG_ERR("Server JSON missing reseedImplemented'");
+            rv = ACVP_MISSING_ARG;
+            goto err;
+        }
+
 
         if (alg_id == ACVP_CTRDRBG) {
             der_func_enabled = json_object_get_boolean(groupobj, "derFunc");
@@ -224,24 +238,21 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             goto err;
         }
 
-        if (pred_resist_enabled) {
-            additional_input_len = json_object_get_number(groupobj, "additionalInputLen");
-            if (additional_input_len > ACVP_DRBG_ADDI_IN_BIT_MAX) {
-                ACVP_LOG_ERR("Server JSON invalid 'additionalInputLen'(%u)",
-                             additional_input_len);
-                rv = ACVP_INVALID_ARG;
-                goto err;
-            }
+        additional_input_len = json_object_get_number(groupobj, "additionalInputLen");
+        if (additional_input_len > ACVP_DRBG_ADDI_IN_BIT_MAX) {
+            ACVP_LOG_ERR("Server JSON invalid 'additionalInputLen'(%u)",
+                         additional_input_len);
+            rv = ACVP_INVALID_ARG;
+            goto err;
         }
 
         ACVP_LOG_VERBOSE("    Test group:");
         ACVP_LOG_VERBOSE("    DRBG mode: %s", mode_str);
         ACVP_LOG_VERBOSE("    derFunc: %s", der_func_enabled ? "true" : "false");
         ACVP_LOG_VERBOSE("    predResistance: %s", pred_resist_enabled ? "true" : "false");
+        ACVP_LOG_VERBOSE("    reseed: %s", reseed ? "true" : "false");
         ACVP_LOG_VERBOSE("    entropyInputLen: %d", entropy_len);
-        if (pred_resist_enabled) {
-            ACVP_LOG_VERBOSE("    additionalInputLen: %d", additional_input_len);
-        }
+        ACVP_LOG_VERBOSE("    additionalInputLen: %d", additional_input_len);
         ACVP_LOG_VERBOSE("    persoStringLen: %d", perso_string_len);
         ACVP_LOG_VERBOSE("    nonceLen: %d", nonce_len);
         ACVP_LOG_VERBOSE("    returnedBitsLen: %d", drb_len);
@@ -256,8 +267,9 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             JSON_Value *pr_input_val = NULL;
             JSON_Object *pr_input_obj = NULL;
             unsigned int tc_id = 0, pr_input_count = 0;
-            const char *additional_input = NULL, *entropy_input_pr = NULL,
+            const char *additional_input_0 = NULL, *entropy_input_pr_0 = NULL,
                        *additional_input_1 = NULL, *entropy_input_pr_1 = NULL,
+                       *additional_input_2 = NULL, *entropy_input_pr_2 = NULL,
                        *perso_string = NULL, *entropy = NULL, *nonce = NULL;
 
             ACVP_LOG_VERBOSE("Found new DRBG test vector...");
@@ -335,19 +347,93 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            ACVP_LOG_VERBOSE("Found new DRBG Prediction Input...");
+            index = 0;
+            if (!pred_resist_enabled && reseed) {
+                ACVP_LOG_VERBOSE("Found new DRBG Prediction Input...");
 
-            /* Get 1st element from the array */
-            pr_input_val = json_array_get_value(pred_resist_input, 0);
+                /* Get 1st element from the array */
+                pr_input_val = json_array_get_value(pred_resist_input, index);
+                if (pr_input_val == NULL) {
+                   ACVP_LOG_ERR("Server JSON, invalid pr_input_val array");
+                   rv = ACVP_INVALID_ARG;
+                   goto err;
+                }
+                pr_input_obj = json_value_get_object(pr_input_val);
+            
+                if (pr_input_count != 3) {
+                   ACVP_LOG_ERR("Server JSON, invalid number of entries, %d", pr_input_count);
+                   rv = ACVP_INVALID_ARG;
+                   goto err;
+                }
+
+                int_use = json_object_get_string(pr_input_obj, "intendedUse");
+                strncmp_s(int_use, 6, "reSeed", 6, &diff);
+                if (diff) {
+                   ACVP_LOG_ERR("Server JSON, intended use should be reSeed");
+                   rv = ACVP_INVALID_ARG;
+                   goto err;
+                }
+
+                additional_input_0 = json_object_get_string(pr_input_obj, "additionalInput");
+                if (!additional_input_0) {
+                   ACVP_LOG_ERR("Server JSON in otherInput[%d], missing 'additionalInput'", 0);
+                   rv = ACVP_MISSING_ARG;
+                   goto err;
+                }
+                if (strnlen_s(additional_input_0, ACVP_DRBG_ADDI_IN_STR_MAX + 1)
+                    > ACVP_DRBG_ADDI_IN_STR_MAX) {
+                    ACVP_LOG_ERR("In otherInput[%d], additionalInput too long. Max allowed=(%d)",
+                                 0, ACVP_DRBG_ADDI_IN_STR_MAX);
+                    rv = ACVP_INVALID_ARG;
+                    goto err;
+                }
+
+                entropy_input_pr_0 = json_object_get_string(pr_input_obj, "entropyInput");
+                if (!entropy_input_pr_0) {
+                   ACVP_LOG_ERR("Server JSON in otherInput[%d], missing 'entropyInput'", 0);
+                   rv = ACVP_MISSING_ARG;
+                   goto err;
+                }
+                if (strnlen_s(entropy_input_pr_0, ACVP_DRBG_ENTPY_IN_STR_MAX + 1)
+                    > ACVP_DRBG_ENTPY_IN_STR_MAX) {
+                    ACVP_LOG_ERR("In otherInput[%d], entropyInput too long. Max allowed=(%d)",
+                                 0, ACVP_DRBG_ENTPY_IN_STR_MAX);
+                    rv = ACVP_INVALID_ARG;
+                    goto err;
+                }
+                index++;
+            }
+
+            if ((index == 0) && (pr_input_count != 2)) {
+               ACVP_LOG_ERR("Server JSON, invalid number of entries, %d", pr_input_count);
+               rv = ACVP_INVALID_ARG;
+               goto err;
+            }
+
+            /* Get 1st or 2nd element from the array */
+            pr_input_val = json_array_get_value(pred_resist_input, index);
+            if (pr_input_val == NULL) {
+               ACVP_LOG_ERR("Server JSON, invalid pr_input_val array");
+               rv = ACVP_INVALID_ARG;
+               goto err;
+            }
             pr_input_obj = json_value_get_object(pr_input_val);
 
-            additional_input = json_object_get_string(pr_input_obj, "additionalInput");
-            if (!additional_input) {
-                ACVP_LOG_ERR("Server JSON in otherInput[%d], missing 'additionalInput'", 0);
-                rv = ACVP_MISSING_ARG;
-                goto err;
+            int_use = json_object_get_string(pr_input_obj, "intendedUse");
+            strncmp_s(int_use, 8, "generate", 8, &diff);
+            if (diff) {
+               ACVP_LOG_ERR("Server JSON, intended use should be generate");
+               rv = ACVP_INVALID_ARG;
+               goto err;
             }
-            if (strnlen_s(additional_input, ACVP_DRBG_ADDI_IN_STR_MAX + 1)
+
+            additional_input_1 = json_object_get_string(pr_input_obj, "additionalInput");
+            if (!additional_input_1) {
+               ACVP_LOG_ERR("Server JSON in otherInput[%d], missing 'additionalInput'", 0);
+               rv = ACVP_MISSING_ARG;
+               goto err;
+            }
+            if (strnlen_s(additional_input_1, ACVP_DRBG_ADDI_IN_STR_MAX + 1)
                 > ACVP_DRBG_ADDI_IN_STR_MAX) {
                 ACVP_LOG_ERR("In otherInput[%d], additionalInput too long. Max allowed=(%d)",
                              0, ACVP_DRBG_ADDI_IN_STR_MAX);
@@ -355,56 +441,68 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
 
-            entropy_input_pr = json_object_get_string(pr_input_obj, "entropyInput");
-            if (!entropy_input_pr) {
+            entropy_input_pr_1 = json_object_get_string(pr_input_obj, "entropyInput");
+            if (!entropy_input_pr_1) {
                 ACVP_LOG_ERR("Server JSON in otherInput[%d], missing 'entropyInput'", 0);
                 rv = ACVP_MISSING_ARG;
                 goto err;
             }
-            if (strnlen_s(entropy_input_pr, ACVP_DRBG_ENTPY_IN_STR_MAX + 1)
-                > ACVP_DRBG_ENTPY_IN_STR_MAX) {
+            pr1_len = strnlen_s(entropy_input_pr_1, ACVP_DRBG_ENTPY_IN_STR_MAX + 1);
+            if (pr1_len > ACVP_DRBG_ENTPY_IN_STR_MAX) {
                 ACVP_LOG_ERR("In otherInput[%d], entropyInput too long. Max allowed=(%d)",
                              0, ACVP_DRBG_ENTPY_IN_STR_MAX);
                 rv = ACVP_INVALID_ARG;
                 goto err;
             }
+            pr1_len = pr1_len/2; 
+            index++;
+            /*
+             * Get 2nd or 3rd element from the array
+             */
+            pr_input_val = json_array_get_value(pred_resist_input, index);
+            if (pr_input_val == NULL) {
+                ACVP_LOG_ERR("Server JSON, invalid pr_input_val array");
+                rv = ACVP_INVALID_ARG;
+                goto err;
+            }
+            pr_input_obj = json_value_get_object(pr_input_val);
 
-            if (pr_input_count == 2) {
-                /*
-                 * Get 2nd element from the array
-                 */
-                pr_input_val = json_array_get_value(pred_resist_input, 1);
-                pr_input_obj = json_value_get_object(pr_input_val);
-
-                additional_input_1 = json_object_get_string(pr_input_obj, "additionalInput");
-                if (!additional_input_1) {
-                    ACVP_LOG_ERR("Server JSON in otherInput[%d], missing 'additionalInput'", 1);
-                    rv = ACVP_MISSING_ARG;
-                    goto err;
-                }
-                if (strnlen_s(additional_input_1, ACVP_DRBG_ADDI_IN_STR_MAX + 1)
-                    > ACVP_DRBG_ADDI_IN_STR_MAX) {
-                    ACVP_LOG_ERR("In otherInput[%d], additionalInput too long. Max allowed=(%d)",
-                                 1, ACVP_DRBG_ADDI_IN_STR_MAX);
-                    rv = ACVP_INVALID_ARG;
-                    goto err;
-                }
-
-                entropy_input_pr_1 = json_object_get_string(pr_input_obj, "entropyInput");
-                if (!entropy_input_pr_1) {
-                    ACVP_LOG_ERR("Server JSON in otherInput[%d], missing 'entropyInput'", 1);
-                    rv = ACVP_MISSING_ARG;
-                    goto err;
-                }
-                if (strnlen_s(entropy_input_pr_1, ACVP_DRBG_ENTPY_IN_STR_MAX + 1)
-                    > ACVP_DRBG_ENTPY_IN_STR_MAX) {
-                    ACVP_LOG_ERR("In otherInput[%d], entropyInput too long. Max allowed=(%d)",
-                                 1, ACVP_DRBG_ENTPY_IN_STR_MAX);
-                    rv = ACVP_INVALID_ARG;
-                    goto err;
-                }
+            int_use = json_object_get_string(pr_input_obj, "intendedUse");
+            strncmp_s(int_use, 8, "generate",8 , &diff);
+            if (diff) {
+                ACVP_LOG_ERR("Server JSON, intended use should be generate");
+                rv = ACVP_INVALID_ARG;
+                goto err;
             }
 
+            additional_input_2 = json_object_get_string(pr_input_obj, "additionalInput");
+            if (!additional_input_2) {
+               ACVP_LOG_ERR("Server JSON in otherInput[%d], missing 'additionalInput'", 1);
+               rv = ACVP_MISSING_ARG;
+               goto err;
+            }
+            if (strnlen_s(additional_input_2, ACVP_DRBG_ADDI_IN_STR_MAX + 1)
+                > ACVP_DRBG_ADDI_IN_STR_MAX) {
+                ACVP_LOG_ERR("In otherInput[%d], additionalInput too long. Max allowed=(%d)",
+                             1, ACVP_DRBG_ADDI_IN_STR_MAX);
+                rv = ACVP_INVALID_ARG;
+                goto err;
+            }
+
+            entropy_input_pr_2 = json_object_get_string(pr_input_obj, "entropyInput");
+            if (!entropy_input_pr_2) {
+                ACVP_LOG_ERR("Server JSON in otherInput[%d], missing 'entropyInput'", 1);
+                rv = ACVP_MISSING_ARG;
+                goto err;
+            }
+            pr2_len = strnlen_s(entropy_input_pr_2, ACVP_DRBG_ENTPY_IN_STR_MAX + 1);
+            if (pr2_len > ACVP_DRBG_ENTPY_IN_STR_MAX) {
+                ACVP_LOG_ERR("In otherInput[%d], entropyInput too long. Max allowed=(%d)",
+                             1, ACVP_DRBG_ENTPY_IN_STR_MAX);
+                rv = ACVP_INVALID_ARG;
+                goto err;
+            }
+            pr2_len = pr2_len/2; 
             /*
              * Create a new test case in the response
              */
@@ -417,10 +515,12 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
              * Setup the test case data that will be passed down to
              * the crypto module.
              */
-            rv = acvp_drbg_init_tc(ctx, &stc, tc_id, additional_input,
-                                   entropy_input_pr, additional_input_1,
-                                   entropy_input_pr_1, perso_string,
-                                   entropy, nonce,
+            rv = acvp_drbg_init_tc(ctx, &stc, tc_id, additional_input_0,
+                                   entropy_input_pr_0, additional_input_1,
+                                   entropy_input_pr_1, additional_input_2,
+                                   entropy_input_pr_2, pr1_len, pr2_len,
+                                   perso_string,
+                                   entropy, nonce, reseed,
                                    der_func_enabled, pred_resist_enabled,
                                    additional_input_len, perso_string_len,
                                    entropy_len, nonce_len,
@@ -508,13 +608,18 @@ end:
 static ACVP_RESULT acvp_drbg_init_tc(ACVP_CTX *ctx,
                                      ACVP_DRBG_TC *stc,
                                      unsigned int tc_id,
-                                     const char *additional_input,
-                                     const char *entropy_input_pr,
+                                     const char *additional_input_0,
+                                     const char *entropy_input_pr_0,
                                      const char *additional_input_1,
                                      const char *entropy_input_pr_1,
+                                     const char *additional_input_2,
+                                     const char *entropy_input_pr_2,
+                                     int pr1_len,
+                                     int pr2_len,
                                      const char *perso_string,
                                      const char *entropy,
                                      const char *nonce,
+                                     int reseed,
                                      int der_func_enabled,
                                      int pred_resist_enabled,
                                      unsigned int additional_input_len,
@@ -530,35 +635,39 @@ static ACVP_RESULT acvp_drbg_init_tc(ACVP_CTX *ctx,
 
     stc->drb = calloc(ACVP_DRB_BYTE_MAX, sizeof(unsigned char));
     if (!stc->drb) { return ACVP_MALLOC_FAIL; }
-    stc->additional_input = calloc(ACVP_DRBG_ADDI_IN_BYTE_MAX, sizeof(unsigned char));
-    if (!stc->additional_input) { return ACVP_MALLOC_FAIL; }
+    stc->additional_input_0 = calloc(ACVP_DRBG_ADDI_IN_BYTE_MAX, sizeof(unsigned char));
+    if (!stc->additional_input_0) { return ACVP_MALLOC_FAIL; }
     stc->additional_input_1 = calloc(ACVP_DRBG_ADDI_IN_BYTE_MAX, sizeof(unsigned char));
     if (!stc->additional_input_1) { return ACVP_MALLOC_FAIL; }
+    stc->additional_input_2 = calloc(ACVP_DRBG_ADDI_IN_BYTE_MAX, sizeof(unsigned char));
+    if (!stc->additional_input_2) { return ACVP_MALLOC_FAIL; }
     stc->entropy = calloc(ACVP_DRBG_ENTPY_IN_BYTE_MAX, sizeof(unsigned char));
     if (!stc->entropy) { return ACVP_MALLOC_FAIL; }
-    stc->entropy_input_pr = calloc(ACVP_DRBG_ENTPY_IN_BYTE_MAX, sizeof(unsigned char));
-    if (!stc->entropy_input_pr) { return ACVP_MALLOC_FAIL; }
+    stc->entropy_input_pr_0 = calloc(ACVP_DRBG_ENTPY_IN_BYTE_MAX, sizeof(unsigned char));
+    if (!stc->entropy_input_pr_0) { return ACVP_MALLOC_FAIL; }
     stc->entropy_input_pr_1 = calloc(ACVP_DRBG_ENTPY_IN_BYTE_MAX, sizeof(unsigned char));
     if (!stc->entropy_input_pr_1) { return ACVP_MALLOC_FAIL; }
+    stc->entropy_input_pr_2 = calloc(ACVP_DRBG_ENTPY_IN_BYTE_MAX, sizeof(unsigned char));
+    if (!stc->entropy_input_pr_2) { return ACVP_MALLOC_FAIL; }
     stc->nonce = calloc(ACVP_DRBG_NONCE_BYTE_MAX, sizeof(unsigned char));
     if (!stc->nonce) { return ACVP_MALLOC_FAIL; }
     stc->perso_string = calloc(ACVP_DRBG_PER_SO_BYTE_MAX, sizeof(unsigned char));
     if (!stc->perso_string) { return ACVP_MALLOC_FAIL; }
 
-    if (additional_input) {
-        rv = acvp_hexstr_to_bin(additional_input, stc->additional_input,
+    if (additional_input_0) {
+        rv = acvp_hexstr_to_bin(additional_input_0, stc->additional_input_0,
                                 ACVP_DRBG_ADDI_IN_BYTE_MAX, NULL);
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("Hex conversion failure (additional_input)");
+            ACVP_LOG_ERR("Hex conversion failure (additional_input_0)");
             return rv;
         }
     }
 
-    if (entropy_input_pr) {
-        rv = acvp_hexstr_to_bin(entropy_input_pr, stc->entropy_input_pr,
+    if (entropy_input_pr_0) {
+        rv = acvp_hexstr_to_bin(entropy_input_pr_0, stc->entropy_input_pr_0,
                                 ACVP_DRBG_ENTPY_IN_BYTE_MAX, NULL);
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("Hex conversion failure (entropy_input_pr)");
+            ACVP_LOG_ERR("Hex conversion failure (entropy_input_pr_0)");
             return rv;
         }
     }
@@ -567,7 +676,7 @@ static ACVP_RESULT acvp_drbg_init_tc(ACVP_CTX *ctx,
         rv = acvp_hexstr_to_bin(additional_input_1, stc->additional_input_1,
                                 ACVP_DRBG_ADDI_IN_BYTE_MAX, NULL);
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("Hex conversion failure (2nd additional_input)");
+            ACVP_LOG_ERR("Hex conversion failure (additional_input_1)");
             return rv;
         }
     }
@@ -576,7 +685,25 @@ static ACVP_RESULT acvp_drbg_init_tc(ACVP_CTX *ctx,
         rv = acvp_hexstr_to_bin(entropy_input_pr_1, stc->entropy_input_pr_1,
                                 ACVP_DRBG_ENTPY_IN_BYTE_MAX, NULL);
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("Hex conversion failure (2nd entropy_input_pr)");
+            ACVP_LOG_ERR("Hex conversion failure (entropy_input_pr_1)");
+            return rv;
+        }
+    }
+
+    if (additional_input_2) {
+        rv = acvp_hexstr_to_bin(additional_input_2, stc->additional_input_2,
+                                ACVP_DRBG_ADDI_IN_BYTE_MAX, NULL);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Hex conversion failure (2nd additional_input_2)");
+            return rv;
+        }
+    }
+
+    if (entropy_input_pr_2) {
+        rv = acvp_hexstr_to_bin(entropy_input_pr_2, stc->entropy_input_pr_2,
+                                ACVP_DRBG_ENTPY_IN_BYTE_MAX, NULL);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Hex conversion failure (2nd entropy_input_pr_2)");
             return rv;
         }
     }
@@ -610,6 +737,9 @@ static ACVP_RESULT acvp_drbg_init_tc(ACVP_CTX *ctx,
 
     stc->der_func_enabled = der_func_enabled;
     stc->pred_resist_enabled = pred_resist_enabled;
+    stc->reseed = reseed;
+    stc->pr1_len = pr1_len;
+    stc->pr2_len = pr2_len;
     stc->additional_input_len = ACVP_BIT2BYTE(additional_input_len);
     stc->perso_string_len = ACVP_BIT2BYTE(perso_string_len);
     stc->entropy_len = ACVP_BIT2BYTE(entropy_len);
@@ -629,11 +759,13 @@ static ACVP_RESULT acvp_drbg_init_tc(ACVP_CTX *ctx,
  */
 static ACVP_RESULT acvp_drbg_release_tc(ACVP_DRBG_TC *stc) {
     if (stc->drb) free(stc->drb);
-    if (stc->additional_input) free(stc->additional_input);
+    if (stc->additional_input_0) free(stc->additional_input_0);
     if (stc->additional_input_1) free(stc->additional_input_1);
+    if (stc->additional_input_2) free(stc->additional_input_2);
     if (stc->entropy) free(stc->entropy);
-    if (stc->entropy_input_pr) free(stc->entropy_input_pr);
+    if (stc->entropy_input_pr_0) free(stc->entropy_input_pr_0);
     if (stc->entropy_input_pr_1) free(stc->entropy_input_pr_1);
+    if (stc->entropy_input_pr_2) free(stc->entropy_input_pr_2);
     if (stc->nonce) free(stc->nonce);
     if (stc->perso_string) free(stc->perso_string);
 

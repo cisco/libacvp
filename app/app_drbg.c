@@ -346,48 +346,15 @@ int app_drbg_handler(ACVP_TEST_CASE *test_case) {
     /*
      * Process predictive resistance flag
      */
-    if (tc->pred_resist_enabled) {
-        entropy_nonce.ent = tc->entropy_input_pr;
+    if (!tc->pred_resist_enabled && tc->reseed) {
+
+        entropy_nonce.ent = tc->entropy_input_pr_0;
         entropy_nonce.entlen = drbg_entropy_len;
 
-        fips_rc =  FIPS_drbg_generate(drbg_ctx, (unsigned char *)tc->drb,
-                                      (size_t)(tc->drb_len),
-                                      (int)1,
-                                      (const unsigned char *)tc->additional_input,
+        fips_rc =  FIPS_drbg_reseed(drbg_ctx, (const unsigned char *)tc->additional_input_0,
                                       (size_t)(tc->additional_input_len));
         if (!fips_rc) {
-            printf("ERROR: failed to generate drb\n");
-            long l;
-            while ((l = ERR_get_error())) {
-                printf("ERROR:%s\n", ERR_error_string(l, NULL));
-            }
-            goto end;
-        }
-
-        entropy_nonce.ent = tc->entropy_input_pr_1;
-        entropy_nonce.entlen = drbg_entropy_len;
-
-        fips_rc =  FIPS_drbg_generate(drbg_ctx, (unsigned char *)tc->drb,
-                                      (size_t)(tc->drb_len),
-                                      (int)1,
-                                      (const unsigned char *)tc->additional_input_1,
-                                      (size_t)(tc->additional_input_len));
-        if (!fips_rc) {
-            printf("ERROR: failed to generate drb\n");
-            long l;
-            while ((l = ERR_get_error())) {
-                printf("ERROR:%s\n", ERR_error_string(l, NULL));
-            }
-            goto end;
-        }
-    } else {
-        fips_rc = FIPS_drbg_generate(drbg_ctx, (unsigned char *)tc->drb,
-                                     (size_t)(tc->drb_len),
-                                     (int)0,
-                                     (const unsigned char *)tc->additional_input,
-                                     (size_t)(tc->additional_input_len));
-        if (!fips_rc) {
-            printf("ERROR: failed to generate drb\n");
+            printf("ERROR: failed to generate drbg reseed\n");
             long l;
             while ((l = ERR_get_error())) {
                 printf("ERROR:%s\n", ERR_error_string(l, NULL));
@@ -395,6 +362,41 @@ int app_drbg_handler(ACVP_TEST_CASE *test_case) {
             goto end;
         }
     }
+
+    entropy_nonce.ent = tc->entropy_input_pr_1;
+    entropy_nonce.entlen = tc->pr1_len;
+
+    fips_rc =  FIPS_drbg_generate(drbg_ctx, (unsigned char *)tc->drb,
+                                  (size_t)(tc->drb_len),
+                                  (int)tc->pred_resist_enabled,
+                                  (const unsigned char *)tc->additional_input_1,
+                                  (size_t)(tc->additional_input_len));
+    if (!fips_rc) {
+        printf("ERROR: failed to generate drbg gen1\n");
+        long l;
+        while ((l = ERR_get_error())) {
+            printf("ERROR:%s\n", ERR_error_string(l, NULL));
+        }
+        goto end;
+    }
+
+    entropy_nonce.ent = tc->entropy_input_pr_2;
+    entropy_nonce.entlen = tc->pr2_len;
+
+    fips_rc =  FIPS_drbg_generate(drbg_ctx, (unsigned char *)tc->drb,
+                                  (size_t)(tc->drb_len),
+                                  (int)tc->pred_resist_enabled,
+                                  (const unsigned char *)tc->additional_input_2,
+                                  (size_t)(tc->additional_input_len));
+    if (!fips_rc) {
+        printf("ERROR: failed to generate drbg gen2\n");
+        long l;
+        while ((l = ERR_get_error())) {
+            printf("ERROR:%s\n", ERR_error_string(l, NULL));
+        }
+        goto end;
+    }
+
     result = 0;
 
 end:
