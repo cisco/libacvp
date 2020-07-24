@@ -805,3 +805,38 @@ Test(PROCESS_TESTS, acvp_resume_test_session, .init = setup_full_ctx, .fini = te
     rv = acvp_resume_test_session(ctx, "json/getResults.json", 1);
     cr_assert(rv = ACVP_MALFORMED_JSON);
 }
+
+/*
+ * Test acvp_resume_test_session
+ */
+Test(PROCESS_TESTS, acvp_get_expected_results, .init = setup_full_ctx, .fini = teardown) {
+   
+    rv = acvp_get_expected_results(NULL, "json/testSession_0.json", NULL);
+    cr_assert(rv == ACVP_NO_CTX);
+    rv = acvp_get_expected_results(NULL, "json/testSession_0.json", "test");
+    cr_assert(rv == ACVP_NO_CTX);
+    rv = acvp_get_expected_results(NULL, NULL, "test");
+    cr_assert(rv == ACVP_NO_CTX);
+    rv = acvp_get_expected_results(NULL, NULL, NULL);
+    cr_assert(rv == ACVP_NO_CTX);
+
+    rv = acvp_get_expected_results(ctx, NULL, "test");
+    cr_assert(rv == ACVP_MISSING_ARG);
+    rv = acvp_get_expected_results(ctx, NULL, NULL);
+    cr_assert(rv == ACVP_MISSING_ARG);
+
+    rv = acvp_get_expected_results(ctx, "testFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLong", NULL);
+    cr_assert(rv == ACVP_INVALID_ARG);
+    rv = acvp_get_expected_results(ctx, "json/testSession_0.json", \
+                                        "testFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLong");
+    cr_assert(rv == ACVP_INVALID_ARG);
+
+    rv = acvp_get_expected_results(ctx, "json/getResults.json", NULL);
+    cr_assert(rv = ACVP_MALFORMED_JSON);
+    rv = acvp_get_expected_results(ctx, "json/getResults.json", "");
+    cr_assert(rv = ACVP_MALFORMED_JSON);
+    rv = acvp_get_expected_results(ctx, "json/getResults_0.json", "");
+    cr_assert(rv = ACVP_MALFORMED_JSON);
+    rv = acvp_get_expected_results(ctx, "", NULL);
+    cr_assert(rv == ACVP_MALFORMED_JSON);
+}

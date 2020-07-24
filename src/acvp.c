@@ -1241,7 +1241,11 @@ ACVP_RESULT acvp_get_expected_results(ACVP_CTX *ctx, const char *request_filenam
         ACVP_LOG_ERR("Failed to parse session info file while trying to get expected results");
         goto end;
     }
-    
+    if (save_filename && strnlen_s(save_filename, ACVP_JSON_FILENAME_MAX + 1) > ACVP_JSON_FILENAME_MAX) {
+        ACVP_LOG_ERR("Provided filename length > max(%d)", ACVP_JSON_FILENAME_MAX);
+        return ACVP_INVALID_ARG;
+    }
+
     if (!ctx->is_sample) {
         ACVP_LOG_ERR("Session not marked as sample");
         rv = ACVP_UNSUPPORTED_OP;
@@ -1293,6 +1297,11 @@ ACVP_RESULT acvp_get_expected_results(ACVP_CTX *ctx, const char *request_filenam
             goto end;
         }
         fw_obj = json_value_get_object(fw_val);
+        if (!fw_obj) {
+            ACVP_LOG_ERR("Error initializing JSON object");
+            rv = ACVP_MALFORMED_JSON;
+            goto end;
+        }
         json_object_set_string(fw_obj, "jwt", ctx->jwt_token);
         json_object_set_string(fw_obj, "url", ctx->session_url);
         rv = acvp_json_serialize_to_file_pretty_w(fw_val, save_filename);
@@ -1347,17 +1356,18 @@ ACVP_RESULT acvp_get_expected_results(ACVP_CTX *ctx, const char *request_filenam
                 ACVP_LOG_ERR("Error writing to file");
                 goto end;
             }
+            json_value_free(fw_val);
+            fw_val = NULL;
         } else {
             printf("%s,\n", ctx->curl_buf);
         }
         vsid_url = NULL;
     }
     //append the final ']'
-    rv = acvp_json_serialize_to_file_pretty_a(NULL, ctx->vector_req_file);
+    rv = acvp_json_serialize_to_file_pretty_a(NULL, save_filename);
     ACVP_LOG_STATUS("Completed output of expected results.");
-
-
 end:
+   if (fw_val) json_value_free(fw_val);
    if (val) json_value_free(val);
    return rv;
 }
@@ -2343,6 +2353,7 @@ static ACVP_RESULT acvp_parse_session_info_file(ACVP_CTX *ctx, const char *filen
     }
 
 end:
+    if (val) json_value_free(val);
     return rv;
 }
 
