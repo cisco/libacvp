@@ -22,6 +22,13 @@ extern "C"
 #define ACVP_TOTP_LENGTH 8
 #define ACVP_TOTP_TOKEN_MAX 128
 
+#define ACVP_HASH_MCT_INNER     1000
+#define ACVP_HASH_MCT_OUTER     100
+#define ACVP_AES_MCT_INNER      1000
+#define ACVP_AES_MCT_OUTER      100
+#define ACVP_DES_MCT_INNER      10000
+#define ACVP_DES_MCT_OUTER      400
+
 /*! @enum ACVP_LOG_LVL
  * @brief This enum defines the different log levels for
  * the ACVP client library
