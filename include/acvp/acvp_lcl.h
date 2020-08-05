@@ -470,13 +470,6 @@
 #define ACVP_HASH_XOF_MD_STR_MAX (ACVP_HASH_XOF_MD_BIT_MAX >> 2) /**< 16,384 characters */
 #define ACVP_HASH_XOF_MD_BYTE_MAX (ACVP_HASH_XOF_MD_BIT_MAX >> 3) /**< 8,192 bytes */
 
-#define ACVP_HASH_MCT_INNER     1000
-#define ACVP_HASH_MCT_OUTER     100
-#define ACVP_AES_MCT_INNER      1000
-#define ACVP_AES_MCT_OUTER      100
-#define ACVP_DES_MCT_INNER      10000
-#define ACVP_DES_MCT_OUTER      400
-
 #define ACVP_TDES_KEY_BIT_LEN 192                           /**< 192 bits */
 #define ACVP_TDES_KEY_STR_LEN (ACVP_TDES_KEY_BIT_LEN >> 2)  /**< 48 characters */
 #define ACVP_TDES_KEY_BYTE_LEN (ACVP_TDES_KEY_BIT_LEN >> 3) /**< 24 bytes */
@@ -1247,7 +1240,7 @@ typedef struct acvp_module_t {
     char *version;
     char *description;
     char *url; /**< ID URL returned from the server */
-    ACVP_VENDOR *vendor; /**< Poinetr to the Vendor to use */
+    ACVP_VENDOR *vendor; /**< Pointer to the Vendor to use */
 } ACVP_MODULE;
 
 #define LIBACVP_MODULES_MAX 32

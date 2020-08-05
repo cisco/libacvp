@@ -1070,7 +1070,7 @@ ACVP_RESULT acvp_retrieve_expected_result(ACVP_CTX *ctx, const char *api_url) {
     return ACVP_TRANSPORT_FAIL;
 #else
     ACVP_RESULT rv = 0;
-    char url[ACVP_ATTR_URL_MAX] = {0};
+    char url[ACVP_ATTR_URL_MAX + 1] = {0};
 
     rv = sanity_check_ctx(ctx);
     if (ACVP_SUCCESS != rv) return rv;
@@ -1080,7 +1080,7 @@ ACVP_RESULT acvp_retrieve_expected_result(ACVP_CTX *ctx, const char *api_url) {
         return ACVP_MISSING_ARG;
     }
 
-    snprintf(url, ACVP_ATTR_URL_MAX - 1,
+    snprintf(url, ACVP_ATTR_URL_MAX,
             "https://%s:%d%s/expected",
             ctx->server_name, ctx->server_port, api_url);
 

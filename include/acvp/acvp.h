@@ -22,6 +22,13 @@ extern "C"
 #define ACVP_TOTP_LENGTH 8
 #define ACVP_TOTP_TOKEN_MAX 128
 
+#define ACVP_HASH_MCT_INNER     1000
+#define ACVP_HASH_MCT_OUTER     100
+#define ACVP_AES_MCT_INNER      1000
+#define ACVP_AES_MCT_OUTER      100
+#define ACVP_DES_MCT_INNER      10000
+#define ACVP_DES_MCT_OUTER      400
+
 /*! @enum ACVP_LOG_LVL
  * @brief This enum defines the different log levels for
  * the ACVP client library
@@ -2671,6 +2678,17 @@ ACVP_RESULT acvp_put_data_from_file(ACVP_CTX *ctx, const char *put_filename);
  * @return ACVP_RESULT
  */
 ACVP_RESULT acvp_get_results_from_server(ACVP_CTX *ctx, const char *request_filename);
+
+/*! @brief Gets the expected test results for test sessions marked as samples
+ * 
+ * @param ctx Pointer to ACVP_CTX that was previously created by
+        calling acvp_create_test_session.
+ * @param request_filename File containing the session info created by libacvp
+ * @param save_filename path/name for file to save the expected results too. OPTIONAL.
+          If null, will print expected results to log.
+   @return ACVP_RESULT
+ */
+ACVP_RESULT acvp_get_expected_results(ACVP_CTX *ctx, const char *request_filename, const char *save_filename);
 
 /*! @brief Queries the server for any vector sets that have not received a response
  * (e.x. in case of lose of connectivity during testing), downloads those vector sets,

@@ -226,7 +226,7 @@ int app_des_handler(ACVP_TEST_CASE *test_case) {
             printf("Unsupported direction\n");
             goto err;
         }
-        if (tc->mct_index == 9999) {
+        if (tc->mct_index == ACVP_DES_MCT_INNER - 1) {
             EVP_CIPHER_CTX_free(cipher_ctx);
             glb_cipher_ctx = NULL;
         }

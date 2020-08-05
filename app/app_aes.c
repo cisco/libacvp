@@ -313,7 +313,7 @@ int app_aes_handler(ACVP_TEST_CASE *test_case) {
             rv = 1;
             goto err;
         }
-        if (tc->mct_index == 999) {
+        if (tc->mct_index == ACVP_AES_MCT_INNER - 1) {
             EVP_CIPHER_CTX_free(cipher_ctx);
             glb_cipher_ctx = NULL;
         }
