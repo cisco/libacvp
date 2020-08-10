@@ -104,9 +104,9 @@ static int ketopt(ketopt_t *s, int argc, char *argv[], int permute, const char *
 			if (o) {
 				s->opt = opt = o->val, s->longidx = o - longopts;
 				if (argv[s->i][j] == '=') s->arg = &argv[s->i][j + 1];
-				if (o->has_arg == 1 && argv[s->i][j] == '\0') {
+				if (o->has_arg && argv[s->i][j] == '\0') {
 					if (s->i < argc - 1) s->arg = argv[++s->i];
-					else opt = ':'; /* missing option argument */
+					else if (o->has_arg == 1) opt = ':'; /* missing option argument */
 				}
 			}
 		}
