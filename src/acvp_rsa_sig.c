@@ -312,7 +312,7 @@ static ACVP_RESULT acvp_rsa_sig_kat_handler_internal(ACVP_CTX *ctx, JSON_Object 
             rv = ACVP_MISSING_ARG;
             goto err;
         }
-        if (mod != 2048 && mod != 3072 && mod != 4096) {
+        if (mod != 1024 && mod != 1536 && mod != 2048 && mod != 3072 && mod != 4096) {
             ACVP_LOG_ERR("Server JSON invalid 'modulo', (%d)", mod);
             rv = ACVP_INVALID_ARG;
             goto err;
