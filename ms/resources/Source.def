@@ -87,6 +87,7 @@ EXPORTS
   acvp_put_data_from_file
   acvp_get_results_from_server
   acvp_resume_test_session
+  acvp_get_expected_results
   acvp_set_2fa_callback
   acvp_bin_to_hexstr
   acvp_hexstr_to_bin
