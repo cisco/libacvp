@@ -1106,6 +1106,11 @@ end:
 static int enable_cmac(ACVP_CTX *ctx) {
     ACVP_RESULT rv = ACVP_SUCCESS;
 
+    /****************************************************************************
+     * Note: Setting extremely high keylen or msglen (6 digits) domains may     *
+     * require a resize of ACVP_CURL_BUF_MAX in acvp_lcl.h in the library code. *
+     ****************************************************************************/
+
     /*
      * Enable CMAC
      */
@@ -1150,6 +1155,11 @@ end:
 
 static int enable_hmac(ACVP_CTX *ctx) {
     ACVP_RESULT rv = ACVP_SUCCESS;
+
+    /****************************************************************************
+     * Note: Setting extremely high keylen or msglen (6 digits) domains may     *
+     * require a resize of ACVP_CURL_BUF_MAX in acvp_lcl.h in the library code. *
+     ****************************************************************************/
 
     rv = acvp_cap_hmac_enable(ctx, ACVP_HMAC_SHA1, &app_hmac_handler);
     CHECK_ENABLE_CAP_RV(rv);

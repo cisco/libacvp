@@ -691,7 +691,7 @@
  * END RSA
  */
 
-#define ACVP_CURL_BUF_MAX       (1024 * 1024 * 16) /**< 16 MB */
+#define ACVP_CURL_BUF_MAX       (1024 * 1024 * 32) /**< 32 MB */
 #define ACVP_RETRY_TIME_MIN     5 /* seconds */
 #define ACVP_RETRY_TIME_MAX     300 
 #define ACVP_MAX_WAIT_TIME      7200
