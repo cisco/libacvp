@@ -616,8 +616,8 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
         }
     }
 
-    if (cfg->save_to && !cfg->get_expected) {
-        printf("Warning: --save-to only works with --get_expected. Option will be ignored.\n");
+    if (cfg->save_to && !cfg->get_expected && !cfg->get) {
+        printf("Warning: --save-to only works with --get and --get_expected. Option will be ignored.\n");
     }
 
     /* allopw put, post and get without algs defined */

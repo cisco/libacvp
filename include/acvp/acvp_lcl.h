@@ -1349,6 +1349,7 @@ struct acvp_ctx_t {
     int vector_rsp;         /* flag to indicate we are storing vector responses JSON in a file */
     int get;                /* flag to indicate we are only getting status or metadata */
     char *get_string;       /* string used for get request */
+    char *get_filename;     /* string used for file to save GET requests to */
     int post;               /* flag to indicate we are only posting metadata */
     char *post_filename;    /* string used for post */
     int put;                /* flag to indicate we are only putting metadata  for post test validation*/
