@@ -104,6 +104,12 @@ Test(KDF108_CAPABILITY, good) {
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_kdf108_set_parm(ctx, ACVP_KDF108_MODE_COUNTER, ACVP_KDF108_SUPPORTS_EMPTY_IV, 0);
     cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_kdf108_set_parm(ctx, ACVP_KDF108_MODE_COUNTER, ACVP_KDF108_REQUIRES_EMPTY_IV, 0);
+    cr_assert(rv == ACVP_INVALID_ARG);
+    rv = acvp_cap_kdf108_set_parm(ctx, ACVP_KDF108_MODE_COUNTER, ACVP_KDF108_SUPPORTS_EMPTY_IV, 1);
+    cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_kdf108_set_parm(ctx, ACVP_KDF108_MODE_COUNTER, ACVP_KDF108_REQUIRES_EMPTY_IV, 0);
+    cr_assert(rv == ACVP_SUCCESS);
 
     teardown_ctx(&ctx);
 }

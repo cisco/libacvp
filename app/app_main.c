@@ -1431,6 +1431,9 @@ static int enable_kdf(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_kdf108_set_parm(ctx, ACVP_KDF108_MODE_COUNTER, ACVP_KDF108_SUPPORTS_EMPTY_IV, 0);
     CHECK_ENABLE_CAP_RV(rv);
+    //REQUIRES_EMPTY_IV can only be set if SUPPORTS_EMPTY_IV is set to true
+    //rv = acvp_cap_kdf108_set_parm(ctx, ACVP_KDF108_MODE_COUNTER, ACVP_KDF108_REQUIRES_EMPTY_IV, 0);
+    //CHECK_ENABLE_CAP_RV(rv);
 
 end:
 

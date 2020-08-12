@@ -912,6 +912,7 @@ typedef struct acvp_kdf108_mode_params {
     ACVP_NAME_LIST *data_order;
     ACVP_SL_LIST *counter_lens;
     int empty_iv_support;
+    int requires_empty_iv;
 } ACVP_KDF108_MODE_PARAMS;
 
 typedef struct acvp_kdf108_capability {
