@@ -976,7 +976,12 @@ ACVP_RESULT acvp_run_vectors_from_file(ACVP_CTX *ctx, const char *req_filename, 
 
             rsp_val = json_array_get_value(reg_array, 0);
             /* start the file with the '[' and identifiers array */
-            acvp_json_serialize_to_file_pretty_w(rsp_val, rsp_filename);
+            rv = acvp_json_serialize_to_file_pretty_w(rsp_val, rsp_filename);
+            if (rv != ACVP_SUCCESS) {
+                ACVP_LOG_ERR("File write error");
+                json_value_free(file_val);
+                goto end;
+            }
         } 
         /* append vector sets */
         rv = acvp_json_serialize_to_file_pretty_a(file_val, rsp_filename);
@@ -3211,6 +3216,8 @@ ACVP_RESULT acvp_run(ACVP_CTX *ctx, int fips_validation) {
                     ACVP_LOG_ERR("Failed to write file, printing instead...");
                 } else {
                     rv = acvp_json_serialize_to_file_pretty_a(NULL, ctx->get_filename);
+                    if (rv != ACVP_SUCCESS)
+                        ACVP_LOG_WARN("Unable to append ending ] to write file");
                     goto end;
                 }
             }
