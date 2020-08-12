@@ -1282,6 +1282,13 @@ static void add_kdf_details_good(void) {
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_kdf108_set_parm(ctx, ACVP_KDF108_MODE_COUNTER, ACVP_KDF108_SUPPORTS_EMPTY_IV, 0);
     cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_kdf108_set_parm(ctx, ACVP_KDF108_MODE_COUNTER, ACVP_KDF108_REQUIRES_EMPTY_IV, 0);
+    cr_assert(rv == ACVP_INVALID_ARG);
+    rv = acvp_cap_kdf108_set_parm(ctx, ACVP_KDF108_MODE_COUNTER, ACVP_KDF108_SUPPORTS_EMPTY_IV, 1);
+    cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_kdf108_set_parm(ctx, ACVP_KDF108_MODE_COUNTER, ACVP_KDF108_REQUIRES_EMPTY_IV, 1);
+    cr_assert(rv == ACVP_SUCCESS);
+
 }
 
 static void add_kas_ecc_details_good(void) {

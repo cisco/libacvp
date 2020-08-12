@@ -1285,6 +1285,9 @@ static ACVP_RESULT acvp_build_kdf108_mode_register(JSON_Object **mode_obj, ACVP_
     }
 
     json_object_set_boolean(*mode_obj, "supportsEmptyIv", mode_params->empty_iv_support);
+    if (mode_params->empty_iv_support) {
+        json_object_set_boolean(*mode_obj, "requiresEmptyIv", mode_params->requires_empty_iv);
+    }
 
     return ACVP_SUCCESS;
 }
