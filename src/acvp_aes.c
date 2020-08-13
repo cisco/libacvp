@@ -92,7 +92,7 @@ static ACVP_RESULT acvp_aes_mct_iterate_tc(ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *st
         if (stc->direction == ACVP_SYM_CIPH_DIR_ENCRYPT) {
             memcpy_s(stc->pt, ACVP_SYM_PT_BYTE_MAX, ctext[j], stc->ct_len);
         } else {
-            memcpy_s(stc->ct, ACVP_SYM_CT_BYTE_MAX, ptext[j], stc->ct_len);
+            memcpy_s(stc->ct, ACVP_SYM_CT_BYTE_MAX, ptext[j], stc->pt_len);
         }
         break;
 
@@ -101,17 +101,17 @@ static ACVP_RESULT acvp_aes_mct_iterate_tc(ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *st
     case ACVP_AES_CFB128:
         if (j == 0) {
             if (stc->direction == ACVP_SYM_CIPH_DIR_ENCRYPT) {
-                memcpy_s(stc->pt, ACVP_SYM_PT_BYTE_MAX, stc->iv, stc->ct_len);
+                memcpy_s(stc->pt, ACVP_SYM_PT_BYTE_MAX, stc->iv, stc->iv_len);
             } else {
-                memcpy_s(stc->ct, ACVP_SYM_CT_BYTE_MAX, stc->iv, stc->ct_len);
+                memcpy_s(stc->ct, ACVP_SYM_CT_BYTE_MAX, stc->iv, stc->iv_len);
             }
         } else {
             if (stc->direction == ACVP_SYM_CIPH_DIR_ENCRYPT) {
                 memcpy_s(stc->pt, ACVP_SYM_PT_BYTE_MAX, ctext[j - 1], stc->ct_len);
                 memcpy_s(stc->iv, ACVP_SYM_IV_BYTE_MAX, ctext[j], stc->ct_len);
             } else {
-                memcpy_s(stc->ct, ACVP_SYM_CT_BYTE_MAX, ptext[j - 1], stc->ct_len);
-                memcpy_s(stc->iv, ACVP_SYM_IV_BYTE_MAX, ptext[j], stc->ct_len);
+                memcpy_s(stc->ct, ACVP_SYM_CT_BYTE_MAX, ptext[j - 1], stc->pt_len);
+                memcpy_s(stc->iv, ACVP_SYM_IV_BYTE_MAX, ptext[j], stc->pt_len);
             }
         }
         break;
@@ -119,15 +119,15 @@ static ACVP_RESULT acvp_aes_mct_iterate_tc(ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *st
     case ACVP_AES_CFB8:
         if (stc->direction == ACVP_SYM_CIPH_DIR_ENCRYPT) {
             if (j < 16) {
-                memcpy_s(stc->pt, ACVP_SYM_PT_BYTE_MAX, &stc->iv[j], stc->pt_len);
+                memcpy_s(stc->pt, ACVP_SYM_PT_BYTE_MAX, &stc->iv[j], stc->iv_len);
             } else {
-                memcpy_s(stc->pt, ACVP_SYM_PT_BYTE_MAX, ctext[j - 16], stc->pt_len);
+                memcpy_s(stc->pt, ACVP_SYM_PT_BYTE_MAX, ctext[j - 16], stc->ct_len);
             }
         } else {
             if (j < 16) {
-                memcpy_s(stc->ct, ACVP_SYM_CT_BYTE_MAX, &stc->iv[j], stc->ct_len);
+                memcpy_s(stc->ct, ACVP_SYM_CT_BYTE_MAX, &stc->iv[j], stc->iv_len);
             } else {
-                memcpy_s(stc->ct, ACVP_SYM_CT_BYTE_MAX, ptext[j - 16], stc->ct_len);
+                memcpy_s(stc->ct, ACVP_SYM_CT_BYTE_MAX, ptext[j - 16], stc->pt_len);
             }
         }
         break;
