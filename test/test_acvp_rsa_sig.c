@@ -10,7 +10,7 @@
 
 
 #include "ut_common.h"
-#include "acvp_lcl.h"
+#include "acvp/acvp_lcl.h"
 
 static ACVP_CTX *ctx = NULL;
 static ACVP_RESULT rv = 0;

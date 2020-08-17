@@ -10,7 +10,7 @@
 
 
 #include "ut_common.h"
-#include "acvp_lcl.h"
+#include "acvp/acvp_lcl.h"
 
 char *vsid_url = "/acvp/v1/testSessions/0/vectorSets/0";
 ACVP_CTX *ctx = NULL;
@@ -90,7 +90,7 @@ static void test_setup_session_parameters(void)
     acvp_set_certkey(ctx, cert_file, key_file);
     acvp_set_path_segment(ctx, path_segment);
     rv = acvp_set_api_context(ctx, api_context);
-    acvp_set_2fa_callback(ctx, &totp);
+    acvp_set_2fa_callback(ctx, &dummy_totp);
 }
 
 #ifdef TEST_TRANSPORT

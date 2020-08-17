@@ -10,7 +10,7 @@
 
 
 #include "ut_common.h"
-#include "acvp_lcl.h"
+#include "acvp/acvp_lcl.h"
 
 ACVP_CTX *ctx;
 

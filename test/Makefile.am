@@ -1,6 +1,9 @@
 noinst_PROGRAMS = runtest
-runtest_SOURCES = ut_common.c \
-      create_session.c \
+runtest_SOURCES = ut_common.c
+tmp_cflags = -g -O0 -Wall -DNO_SSL_DL -p $(SAFEC_CFLAGS) $(CRITERION_CFLAGS) $(LIBACVP_CFLAGS) -I../include
+tmp_ldflags= -ldl $(CRITERION_LDFLAGS) $(SAFEC_LDFLAGS) $(LIBACVP_LDFLAGS) -lacvp
+if ! LIB_NOT_SUPPORTED
+runtest_SOURCES += create_session.c \
       test_acvp_utils.c \
       test_acvp_drbg.c \
       test_acvp_dsa.c \
@@ -26,7 +29,14 @@ runtest_SOURCES = ut_common.c \
       test_acvp_operating_env.c \
       test_acvp_ecdsa.c \
       test_acvp_kas_ecc.c \
-      test_acvp_kas_ffc.c \
+      test_acvp_kas_ffc.c
+
+tmp_cflags += $(LIBCURL_CFLAGS)
+tmp_ldflags += $(LIBCURL_LDFLAGS)
+endif
+
+if ! APP_NOT_SUPPORTED
+runtest_SOURCES += app_common.c \
       test_app_aes.c \
       test_app_cmac.c \
       test_app_des.c \
@@ -50,13 +60,23 @@ APP_LINK = ../app/acvp_app-app_sha.o \
            ../app/acvp_app-app_ecdsa.o \
            ../app/acvp_app-app_drbg.o
 
-runtest_CFLAGS = -g -O0 -Wall -DNO_SSL_DL -I$(top_srcdir)/include -I$(top_srcdir)/include/acvp -I$(top_srcdir)/app \
-                 $(SSL_CFLAGS) $(FOM_CFLAGS) $(SAFEC_CFLAGS) $(LIBCURL_CFLAGS) $(CRITERION_CFLAGS)
-runtest_LDFLAGS = -L../src/.libs -ldl -lacvp \
-                  $(SSL_LDFLAGS) $(LIBCURL_LDFLAGS) $(CRITERION_LDFLAGS) $(FOM_LDFLAGS)
+tmp_cflags += $(SSL_CFLAGS) $(FOM_CFLAGS) -I../app
+tmp_ldflags += $(SSL_LDFLAGS) $(FOM_LDFLAGS)
+endif
+
+runtest_CFLAGS = ${tmp_cflags}
+runtest_LDFLAGS = ${tmp_ldflags}
+
+if ! APP_NOT_SUPPORTED
 runtest_LDADD = $(APP_LINK)
 if USE_FOM
 runtest_LDADD += $(FOM_OBJ_DIR)/fipscanister.o
 endif
+endif
+
 runtestdir=
 runtest_HEADERS = ut_common.h
+if ! APP_NOT_SUPPORTED
+runtest_HEADERS += app_common.h
+endif
+
