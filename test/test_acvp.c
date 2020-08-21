@@ -10,7 +10,7 @@
 
 
 #include "ut_common.h"
-#include "acvp_lcl.h"
+#include "acvp/acvp_lcl.h"
 
 ACVP_CTX *ctx;
 static char filename[] = "filename";
@@ -473,11 +473,15 @@ Test(RUN, missing_path, .init = setup_full_ctx, .fini = teardown) {
     rv = acvp_set_server(ctx, test_server, port);
     cr_assert(rv == ACVP_SUCCESS);
     
-    rv = acvp_set_2fa_callback(ctx, &totp);
+    rv = acvp_set_2fa_callback(ctx, &dummy_totp);
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_run(ctx, 0);
+#ifdef ACVP_OFFLINE
+    cr_assert(rv == ACVP_TRANSPORT_FAIL);
+#else
     cr_assert(rv == ACVP_MISSING_ARG);
+#endif
 }
 
 /**
@@ -493,7 +497,7 @@ Test(RUN, marked_as_get, .init = setup_full_ctx, .fini = teardown) {
     rv = acvp_set_path_segment(ctx, path_segment);
     cr_assert(rv == ACVP_SUCCESS);
     
-    rv = acvp_set_2fa_callback(ctx, &totp);
+    rv = acvp_set_2fa_callback(ctx, &dummy_totp);
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_mark_as_get_only(ctx, "/acvp/v1/test");
@@ -527,7 +531,7 @@ Test(RUN, good, .init = setup_full_ctx, .fini = teardown) {
     rv = acvp_set_server(ctx, test_server, port);
     cr_assert(rv == ACVP_SUCCESS);
     
-    rv = acvp_set_2fa_callback(ctx, &totp);
+    rv = acvp_set_2fa_callback(ctx, &dummy_totp);
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_run(ctx, 0);
@@ -553,7 +557,11 @@ Test(RUN, bad_totp_cb, .init = setup_full_ctx, .fini = teardown) {
  */
 Test(RUN, good_without_totp, .init = setup_full_ctx, .fini = teardown) {
     rv = acvp_run(ctx, 0);
+#ifdef ACVP_OFFLINE
+    cr_assert(rv == ACVP_TRANSPORT_FAIL);
+#else
     cr_assert(rv == ACVP_MISSING_ARG);
+#endif
 }
 
 /*
@@ -569,7 +577,11 @@ Test(RUN, null_ctx, .fini = teardown) {
  */
 Test(CHECK_RESULTS, no_vs_list, .init = setup, .fini = teardown) {
     rv = acvp_check_test_results(ctx);
+#ifdef ACVP_OFFLINE
+    cr_assert(rv == ACVP_TRANSPORT_FAIL);
+#else
     cr_assert(rv == ACVP_MISSING_ARG);
+#endif
 }
 
 /*
@@ -642,7 +654,7 @@ Test(REFRESH, good_with_totp, .init = setup_full_ctx, .fini = teardown) {
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_set_path_segment(ctx, path_segment);
     cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_set_2fa_callback(ctx, &totp);
+    rv = acvp_set_2fa_callback(ctx, &dummy_totp);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_refresh(ctx);
     cr_assert(rv == ACVP_TRANSPORT_FAIL);
@@ -706,7 +718,11 @@ Test(PROCESS_TESTS, upload_vectors_from_file, .init = setup_full_ctx, .fini = te
     cr_assert(rv == ACVP_MISSING_ARG);
 
     rv = acvp_upload_vectors_from_file(ctx, "json/rsp.json", 0);
+#ifdef ACVP_OFFLINE
+    cr_assert(rv == ACVP_TRANSPORT_FAIL);
+#else
     cr_assert(rv == ACVP_MISSING_ARG);
+#endif
 }
 
 /*
@@ -721,7 +737,11 @@ Test(PROCESS_TESTS, put_data_from_file, .init = setup_full_ctx, .fini = teardown
     cr_assert(rv == ACVP_MISSING_ARG);
 
     rv = acvp_put_data_from_file(ctx, "json/put.json");
+#ifdef ACVP_OFFLINE
+    cr_assert(rv == ACVP_TRANSPORT_FAIL);
+#else
     cr_assert(rv == ACVP_MISSING_ARG);
+#endif
 }
 
 /*

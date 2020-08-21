@@ -19,7 +19,7 @@ acvp_app_SOURCES = app_main.c \
 				   app_lcl.h \
 				   ketopt.h
 acvp_app_CFLAGS = -g -fPIE $(LIBACVP_CFLAGS) $(SSL_CFLAGS) $(FOM_CFLAGS) $(SAFEC_CFLAGS)
-acvp_app_LDFLAGS = $(LIBACVP_LDFLAGS) -ldl -lacvp  $(SSL_LDFLAGS) $(FOM_LDFLAGS)
+acvp_app_LDFLAGS = $(LIBACVP_LDFLAGS) $(SSL_LDFLAGS) $(FOM_LDFLAGS) -ldl
 if USE_FOM
 acvp_app_LDADD = $(FOM_OBJ_DIR)/fipscanister.o
 endif

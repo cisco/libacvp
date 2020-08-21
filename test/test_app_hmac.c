@@ -13,7 +13,8 @@
 //
 
 #include "ut_common.h"
-#include "acvp_lcl.h"
+#include "app_common.h"
+#include "acvp/acvp_lcl.h"
 
 ACVP_CTX *ctx;
 ACVP_TEST_CASE *test_case;

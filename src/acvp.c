@@ -1909,7 +1909,6 @@ static ACVP_RESULT acvp_build_login(ACVP_CTX *ctx, char **login, int *login_len,
             rv = ACVP_INVALID_ARG;
             goto err;
         }
-
         json_object_set_string(pw_obj, "password", token);
     }
 

@@ -15,7 +15,8 @@
 #ifdef ACVP_NO_RUNTIME
 
 #include "ut_common.h"
-#include "acvp_lcl.h"
+#include "app_common.h"
+#include "acvp/acvp_lcl.h"
 #ifndef OPENSSL_NO_DSA
 
 ACVP_CTX *ctx;

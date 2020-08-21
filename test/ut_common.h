@@ -13,11 +13,9 @@
 #include <stdio.h>
 #include <criterion/criterion.h>
 #include <criterion/logging.h>
-#include "parson.h"
+#include "acvp/parson.h"
 #include "safe_lib.h"
-#include "acvp.h"
-#include "app_lcl.h"
-#include "app_fips_lcl.h"
+#include "acvp/acvp.h"
 
 int counter_set;
 int counter_fail;
@@ -28,5 +26,5 @@ void setup_empty_ctx(ACVP_CTX **ctx);
 int dummy_handler_success(ACVP_TEST_CASE *test_case);
 int dummy_handler_failure(ACVP_TEST_CASE *test_case);
 JSON_Object *ut_get_obj_from_rsp (JSON_Value *arry_val);
-ACVP_RESULT totp(char **token, int token_max);
-void dummy_call(void);
+unsigned int base64_decode(const char *in, unsigned int inlen, unsigned char *out);
+unsigned int dummy_totp(char **token, int token_max);
