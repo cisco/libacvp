@@ -152,7 +152,7 @@ Test(APP_RSA_KEYGEN_HANDLER, invalid_key_format) {
     char *seed = "aa";
     
     rsa_tc = calloc(1, sizeof(ACVP_RSA_KEYGEN_TC));
-    
+    printf("\n\n\n\\n\njoisafousfoshoiufhdf\n\n\n\n\n");
     if (!initialize_rsa_tc(rsa_tc, info_gen_by_server, ACVP_SHA384, key_format,
     pub_exp_mode, modulo, prime_test, rand_pq, e, seed, seed_len,
     bitlen1, bitlen2, bitlen3, bitlen4, corrupt)) {

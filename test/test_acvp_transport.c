@@ -8,7 +8,7 @@
  * https://github.com/cisco/libacvp/LICENSE
  */
 
-
+#ifndef ACVP_OFFLINE
 #include "ut_common.h"
 #include "acvp/acvp_lcl.h"
 
@@ -647,4 +647,4 @@ Test(TRANSPORT_SEND_OE_REG, good, .init = setup, .fini = teardown) {
 }
 #endif
 
-
+#endif //ACVP_OFFLINE

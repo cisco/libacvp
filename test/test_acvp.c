@@ -477,7 +477,11 @@ Test(RUN, missing_path, .init = setup_full_ctx, .fini = teardown) {
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_run(ctx, 0);
+#ifdef ACVP_OFFLINE
+    cr_assert(rv == ACVP_TRANSPORT_FAIL);
+#else
     cr_assert(rv == ACVP_MISSING_ARG);
+#endif
 }
 
 /**
@@ -553,7 +557,11 @@ Test(RUN, bad_totp_cb, .init = setup_full_ctx, .fini = teardown) {
  */
 Test(RUN, good_without_totp, .init = setup_full_ctx, .fini = teardown) {
     rv = acvp_run(ctx, 0);
+#ifdef ACVP_OFFLINE
+    cr_assert(rv == ACVP_TRANSPORT_FAIL);
+#else
     cr_assert(rv == ACVP_MISSING_ARG);
+#endif
 }
 
 /*
@@ -569,7 +577,11 @@ Test(RUN, null_ctx, .fini = teardown) {
  */
 Test(CHECK_RESULTS, no_vs_list, .init = setup, .fini = teardown) {
     rv = acvp_check_test_results(ctx);
+#ifdef ACVP_OFFLINE
+    cr_assert(rv == ACVP_TRANSPORT_FAIL);
+#else
     cr_assert(rv == ACVP_MISSING_ARG);
+#endif
 }
 
 /*
@@ -706,7 +718,11 @@ Test(PROCESS_TESTS, upload_vectors_from_file, .init = setup_full_ctx, .fini = te
     cr_assert(rv == ACVP_MISSING_ARG);
 
     rv = acvp_upload_vectors_from_file(ctx, "json/rsp.json", 0);
+#ifdef ACVP_OFFLINE
+    cr_assert(rv == ACVP_TRANSPORT_FAIL);
+#else
     cr_assert(rv == ACVP_MISSING_ARG);
+#endif
 }
 
 /*
@@ -721,7 +737,11 @@ Test(PROCESS_TESTS, put_data_from_file, .init = setup_full_ctx, .fini = teardown
     cr_assert(rv == ACVP_MISSING_ARG);
 
     rv = acvp_put_data_from_file(ctx, "json/put.json");
+#ifdef ACVP_OFFLINE
+    cr_assert(rv == ACVP_TRANSPORT_FAIL);
+#else
     cr_assert(rv == ACVP_MISSING_ARG);
+#endif
 }
 
 /*

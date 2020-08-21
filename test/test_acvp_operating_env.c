@@ -98,7 +98,11 @@ Test(VERIFY_FIPS_OPERATING_ENV, verify_fips_operating_env, .init = setup, .fini 
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_oe_verify_fips_operating_env(ctx);
+#ifdef ACVP_OFFLINE
+    cr_assert(rv == ACVP_TRANSPORT_FAIL);
+#else
     cr_assert(rv == ACVP_MISSING_ARG);
+#endif
 }
 
 /*
