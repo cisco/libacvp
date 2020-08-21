@@ -168,16 +168,21 @@ AC_ARG_WITH([criterion-dir],
 
 # Hold onto the LIBS variable before AC_SEARCH_LIBS modifies it
 pre_libs="$LIBS"
+# script modifies LDFLAGS to correctly search for libs. we unset these changes so
+# makefile.am have complete control over linker flags
 pre_ldflags="$LDFLAGS"
+if test "$is_freebsd" != "1" ; then
+    LIBS="-ldl $LIBS"
+fi
 if test "x$enable_offline" != "xfalse" ; then
     LDFLAGS="-static $LDFLAGS"
 fi
 # Search for SSL and Crypto libs, and if it doesn't fail set the make vars accordingly
 if test "x$disable_app" = "xno" ; then
     LDFLAGS="$LDFLAGS -L$ssldir/lib"
-    AC_SEARCH_LIBS([EVP_EncryptInit], [eay32 crypto], [],
-                [AC_MSG_FAILURE([can't find openssl crypto lib])], [])
-    AC_SEARCH_LIBS([SSL_CTX_new], [ssl32 ssl], [],
+    AC_SEARCH_LIBS([EVP_EncryptInit], [crypto], [],
+               [AC_MSG_FAILURE([can't find openssl crypto lib])], [])
+    AC_SEARCH_LIBS([SSL_CTX_new], [ssl], [],
                 [AC_MSG_FAILURE([can't find openssl ssl lib])], [])
 
     AC_SUBST([SSL_CFLAGS], "-I$ssldir/include")
@@ -185,14 +190,19 @@ if test "x$disable_app" = "xno" ; then
     AC_ARG_VAR(FOM_OBJ_DIR, "directory with fipscanister.o")
 fi
 
-if test "xdisable_lib" = "xyes" ; then
+if test "x$disable_lib" = "xyes" ; then
     if test "x$libacvpdir" != "x" ; then
         LDFLAGS="$LDFLAGS -L$libacvpdir/lib -lacvp"
     else
         LDFLAGS="$LDFLAGS -Lsrc/.libs -lacvp"
     fi
-    AC_CHECK_LIB([acvp], [acvp_create_test_session], [],
+    if test "$is_freebsd" = "1" ; then
+        AC_CHECK_LIB([acvp], [acvp_create_test_session], [],
+             [AC_MSG_FAILURE([can't find libacvp library])], [])
+    else
+        AC_CHECK_LIB([acvp], [acvp_create_test_session], [],
              [AC_MSG_FAILURE([can't find libacvp library])], [-ldl])
+    fi
 fi
 
 # Check for curl - if that fails, check for murl
@@ -214,7 +224,9 @@ fi
 # Done checking for existance of libs. Set other appropriate make vars. #
 #########################################################################
 LDFLAGS="$pre_ldflags"
-AS_IF([test "x$with_fomdir" != xno],
+LIBS="$pre_libs"
+
+AS_IF([test "x$with_fomdir" != "xno"],
       [AS_IF([test "x$disable_kdf" != "xfalse"],
           [AC_SUBST([FOM_CFLAGS], "-DACVP_NO_RUNTIME -DOPENSSL_FIPS -I$fomdir/include")],
           [AC_SUBST([FOM_CFLAGS], "-DACVP_NO_RUNTIME -DOPENSSL_FIPS -DOPENSSL_KDF_SUPPORT -I$fomdir/include")])
@@ -279,9 +291,6 @@ AC_SUBST(SAFEC_STUB_DIR)
 safecdir="$SAFEC_STUB_DIR"
 AC_SUBST([SAFEC_CFLAGS], "-I$safecdir/include")
 AC_SUBST([SAFEC_LDFLAGS], "$safecdir/lib/libsafe_lib.la")
-
-# Reset LIBS to original
-LIBS="$pre_libs"
 
 # Default installation directory
 AC_PREFIX_DEFAULT([/usr/local/acvp])

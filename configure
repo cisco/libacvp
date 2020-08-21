@@ -10959,7 +10959,12 @@ fi
 
 # Hold onto the LIBS variable before AC_SEARCH_LIBS modifies it
 pre_libs="$LIBS"
+# script modifies LDFLAGS to correctly search for libs. we unset these changes so
+# makefile.am have complete control over linker flags
 pre_ldflags="$LDFLAGS"
+if test "$is_freebsd" != "1" ; then
+    LIBS="-ldl $LIBS"
+fi
 if test "x$enable_offline" != "xfalse" ; then
     LDFLAGS="-static $LDFLAGS"
 fi
@@ -10990,7 +10995,7 @@ return EVP_EncryptInit ();
   return 0;
 }
 _ACEOF
-for ac_lib in '' eay32 crypto; do
+for ac_lib in '' crypto; do
   if test -z "$ac_lib"; then
     ac_res="none required"
   else
@@ -11051,7 +11056,7 @@ return SSL_CTX_new ();
   return 0;
 }
 _ACEOF
-for ac_lib in '' ssl32 ssl; do
+for ac_lib in '' ssl; do
   if test -z "$ac_lib"; then
     ac_res="none required"
   else
@@ -11096,13 +11101,65 @@ fi
 
 fi
 
-if test "xdisable_lib" = "xyes" ; then
+if test "x$disable_lib" = "xyes" ; then
     if test "x$libacvpdir" != "x" ; then
         LDFLAGS="$LDFLAGS -L$libacvpdir/lib -lacvp"
     else
         LDFLAGS="$LDFLAGS -Lsrc/.libs -lacvp"
     fi
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for acvp_create_test_session in -lacvp" >&5
+    if test "$is_freebsd" = "1" ; then
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for acvp_create_test_session in -lacvp" >&5
+$as_echo_n "checking for acvp_create_test_session in -lacvp... " >&6; }
+if ${ac_cv_lib_acvp_acvp_create_test_session+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lacvp  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char acvp_create_test_session ();
+int
+main ()
+{
+return acvp_create_test_session ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_acvp_acvp_create_test_session=yes
+else
+  ac_cv_lib_acvp_acvp_create_test_session=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_acvp_acvp_create_test_session" >&5
+$as_echo "$ac_cv_lib_acvp_acvp_create_test_session" >&6; }
+if test "x$ac_cv_lib_acvp_acvp_create_test_session" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_LIBACVP 1
+_ACEOF
+
+  LIBS="-lacvp $LIBS"
+
+else
+  { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
+$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
+as_fn_error $? "can't find libacvp library
+See \`config.log' for more details" "$LINENO" 5; }
+fi
+
+    else
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for acvp_create_test_session in -lacvp" >&5
 $as_echo_n "checking for acvp_create_test_session in -lacvp... " >&6; }
 if ${ac_cv_lib_acvp_acvp_create_test_session+:} false; then :
   $as_echo_n "(cached) " >&6
@@ -11152,6 +11209,7 @@ as_fn_error $? "can't find libacvp library
 See \`config.log' for more details" "$LINENO" 5; }
 fi
 
+    fi
 fi
 
 # Check for curl - if that fails, check for murl
@@ -11271,7 +11329,9 @@ fi
 # Done checking for existance of libs. Set other appropriate make vars. #
 #########################################################################
 LDFLAGS="$pre_ldflags"
-if test "x$with_fomdir" != xno; then :
+LIBS="$pre_libs"
+
+if test "x$with_fomdir" != "xno"; then :
   if test "x$disable_kdf" != "xfalse"; then :
   FOM_CFLAGS="-DACVP_NO_RUNTIME -DOPENSSL_FIPS -I$fomdir/include"
 
@@ -11366,9 +11426,6 @@ SAFEC_CFLAGS="-I$safecdir/include"
 
 SAFEC_LDFLAGS="$safecdir/lib/libsafe_lib.la"
 
-
-# Reset LIBS to original
-LIBS="$pre_libs"
 
 # Default installation directory
 
