@@ -171,11 +171,12 @@ pre_libs="$LIBS"
 # script modifies LDFLAGS to correctly search for libs. we unset these changes so
 # makefile.am have complete control over linker flags
 pre_ldflags="$LDFLAGS"
-if test "$is_freebsd" != "1" ; then
+if test "$is_freebsd" != "1" && test "x$enable_offline" = "xfalse" ; then
     LIBS="-ldl $LIBS"
 fi
 if test "x$enable_offline" != "xfalse" ; then
-    LDFLAGS="-static $LDFLAGS"
+    #Some platforms have multiple definitions. Allow them for JUST the library test stage.
+    LDFLAGS="-static -Wl,--allow-multiple-definition $LDFLAGS"
 fi
 # Search for SSL and Crypto libs, and if it doesn't fail set the make vars accordingly
 if test "x$disable_app" = "xno" ; then
