@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include "ketopt.h"
 #include "app_lcl.h"
+#include "acvp/acvp.h"
 #include "safe_lib.h"
 
 #ifdef ACVP_NO_RUNTIME
@@ -21,24 +22,44 @@
 #define ANSI_COLOR_YELLOW "\x1b[33m"
 #define ANSI_COLOR_RESET "\x1b[0m"
 
-static void print_usage(int err) {
-    if (err) {
+static void print_usage(int code) {
+    if (code == -1) {
         printf("\nInvalid usage...\n");
     } else {
         printf("\n===========================");
         printf("\n===== ACVP_APP USAGE ======");
         printf("\n===========================\n");
     }
-    printf("This program does not require any argument, however logging level can be\n");
-    printf("controlled using:\n");
+    printf("To output version of library and of ACVP spec:\n");
+    printf("      --version\n");
+    printf("Logging level decides the amount of information output by the library. Logging level\n");
+    printf("can be controlled using:\n");
     printf("      --none\n");
     printf("      --error\n");
     printf("      --warn\n");
     printf("      --status(default)\n");
     printf("      --info\n");
     printf("      --verbose\n");
-    printf("      --version\n");
     printf("\n");
+    if (code >= ACVP_LOG_LVL_VERBOSE) {
+        printf("-The warn logging level logs events that should be acted upon but do not halt\n");
+        printf("the progress of the application running.\n");
+        printf("-The default logging level provides basic information about the progress of the test\n");
+        printf("session or the task being performed. This includes the possibility of logging large\n");
+        printf("amounts of data IF the data is specifically requested.\n");
+        printf("-The info logging level provides more information about the information being\n");
+        printf("exchanged, including HTTP actions (get, put, etc). Data in/from these actions is\n");
+        printf("logged but usually truncated.\n");
+        printf("-The verbose logging level is substantially more detailed than even info level, and\n");
+        printf("includes information about each vector set, test group,and even test case being\n");
+        printf("processed. it also will automatically fetch the results of all test cases of a\n");
+        printf("vector set in the event of it failing.\n");
+        printf("\n");
+        printf("For any activity requiring the creation of a test session and/or the processing\n");
+        printf("of test cases, acvp_app requires the specification of at least one algorithm\n");
+        printf("suite. Algorithm suites are enabled or disabled at build time depending on the\n");
+        printf("capabilities of the provided cryptographic library.\n");
+    }
     printf("Algorithm Test Suites:\n");
     printf("      --all_algs (Enable all of the suites below)\n");
     printf("      --aes\n");
@@ -58,6 +79,16 @@ static void print_usage(int err) {
     printf("      --drbg\n");
     printf("      --kas_ecc\n");
     printf("\n");
+
+    if (code >= ACVP_LOG_LVL_VERBOSE) {
+        printf("libacvp generates a file containing information that can be used for various tasks regarding\n");
+        printf("a test session. By default, this is usually placed in the folder of the executable utilizing\n");
+        printf("libacvp, though this can be different on some OS. The name, by default, is\n");
+        printf("testSession_(ID number).json. The path and prefix can be controlled using ACV_SESSION_SAVE_PATH\n");
+        printf("and ACV_SESSION_SAVE_PREFIX in your environment, respectively. Any tasks listed below that use\n");
+        printf("<session_file> are in reference to this file.\n");
+        printf("\n");
+    }
     printf("Perform a FIPS Validation for this testSession:\n");
     printf("      --fips_validation <full metadata file>\n");
     printf("\n");
@@ -104,10 +135,10 @@ static void print_usage(int err) {
     printf("      --sample\n");
     printf("\n");
     printf("To get the expected results of a sample test session:\n");
-    printf("      --get_expected_results <session_file>n");
+    printf("      --get_expected_results <session_file>\n");
     printf("\n");
-    printf("Some other options may support outputting to log OR saving to a file. To save to a file: :\n");
-    printf("      --save_to <file>");
+    printf("Some other options may support outputting to log OR saving to a file. To save to a file:\n");
+    printf("      --save_to <file>\n");
     printf("\n");
     printf("In addition some options are passed to acvp_app using\n");
     printf("environment variables.  The following variables can be set:\n\n");
@@ -165,7 +196,7 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
 
     static ko_longopt_t longopts[] = {
         { "version", ko_no_argument, 301 },
-        { "help", ko_no_argument, 302 },
+        { "help", ko_optional_argument, 302 },
         { "info", ko_no_argument, 303 },
         { "status", ko_no_argument, 304 },
         { "warn", ko_no_argument, 305 },
@@ -224,7 +255,13 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
             return 1;
         }
         if (c == 302) {
-            print_usage(0);
+            int diff = -1;
+            strncmp_s(opt.arg, JSON_FILENAME_LENGTH + 1, "verbose", 7, &diff);
+            if (!diff) {
+                print_usage(ACVP_LOG_LVL_VERBOSE);
+            } else { 
+                print_usage(0);
+            }
             return 1;
         }
         if (c == 303) {
@@ -330,11 +367,11 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
 
             filename_len = strnlen_s(opt.arg, JSON_FILENAME_LENGTH + 1);
             if (filename_len > JSON_FILENAME_LENGTH) {
+                print_usage(-1);
                 printf(ANSI_COLOR_RED "Command error... [%s]"ANSI_COLOR_RESET
                        "\nThe <file> \"%s\", has a name that is too long."
                        "\nMax allowed <file> name length is (%d).\n",
                        "--manual_registration", opt.arg, JSON_FILENAME_LENGTH);
-                print_usage(1);
                 return 1;
             }
 
@@ -347,11 +384,11 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
 
             filename_len = strnlen_s(opt.arg, JSON_FILENAME_LENGTH + 1);
             if (filename_len > JSON_FILENAME_LENGTH) {
+                print_usage(-1);
                 printf(ANSI_COLOR_RED "Command error... [%s]"ANSI_COLOR_RESET
                        "\nThe <file> \"%s\", has a name that is too long."
                        "\nMax allowed <file> name length is (%d).\n",
                        "--kat", opt.arg, JSON_FILENAME_LENGTH);
-                print_usage(1);
                 return 1;
             }
 
@@ -364,11 +401,11 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
 
             filename_len = strnlen_s(opt.arg, JSON_FILENAME_LENGTH + 1);
             if (filename_len > JSON_FILENAME_LENGTH) {
+                print_usage(-1);
                 printf(ANSI_COLOR_RED "Command error... [%s]"ANSI_COLOR_RESET
                        "\nThe <file> \"%s\", has a name that is too long."
                        "\nMax allowed <file> name length is (%d).\n",
                        "--fips_validation", opt.arg, JSON_FILENAME_LENGTH);
-                print_usage(1);
                 return 1;
             }
 
@@ -382,11 +419,11 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
 
             filename_len = strnlen_s(opt.arg, JSON_FILENAME_LENGTH + 1);
             if (filename_len > JSON_FILENAME_LENGTH) {
+                print_usage(-1);
                 printf(ANSI_COLOR_RED "Command error... [%s]"ANSI_COLOR_RESET
                        "\nThe <file> \"%s\", has a name that is too long."
                        "\nMax allowed <file> name length is (%d).\n",
                        "--vector_req", opt.arg, JSON_FILENAME_LENGTH);
-                print_usage(1);
                 return 1;
             }
 
@@ -400,11 +437,11 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
 
             rsp_filename_len = strnlen_s(opt.arg, JSON_FILENAME_LENGTH + 1);
             if (rsp_filename_len > JSON_FILENAME_LENGTH) {
+                print_usage(-1);
                 printf(ANSI_COLOR_RED "Command error... [%s]"ANSI_COLOR_RESET
                        "\nThe <file> \"%s\", has a name that is too long."
                        "\nMax allowed <file> name length is (%d).\n",
                        "--vector_rsp", opt.arg, JSON_FILENAME_LENGTH);
-                print_usage(1);
                 return 1;
             }
 
@@ -418,11 +455,11 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
 
             upload_filename_len = strnlen_s(opt.arg, JSON_FILENAME_LENGTH + 1);
             if (upload_filename_len > JSON_FILENAME_LENGTH) {
+                print_usage(-1);
                 printf(ANSI_COLOR_RED "Command error... [%s]"ANSI_COLOR_RESET
                        "\nThe <file> \"%s\", has a name that is too long."
                        "\nMax allowed <file> name length is (%d).\n",
                        "--vector_upload", opt.arg, JSON_FILENAME_LENGTH);
-                print_usage(1);
                 return 1;
             }
 
@@ -436,11 +473,11 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
 
             get_string_len = strnlen_s(opt.arg, JSON_REQUEST_LENGTH + 1);
             if (get_string_len > JSON_REQUEST_LENGTH) {
+                print_usage(-1);
                 printf(ANSI_COLOR_RED "Command error... [%s]"ANSI_COLOR_RESET
                        "\nThe <string> \"%s\", is too long."
                        "\nMax allowed <string> length is (%d).\n",
                        "--get", opt.arg, JSON_REQUEST_LENGTH);
-                print_usage(1);
                 return 1;
             }
 
@@ -454,11 +491,11 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
 
             post_filename_len = strnlen_s(opt.arg, JSON_FILENAME_LENGTH + 1);
             if (post_filename_len > JSON_REQUEST_LENGTH) {
+                print_usage(-1);
                 printf(ANSI_COLOR_RED "Command error... [%s]"ANSI_COLOR_RESET
                        "\nThe <file> \"%s\", has a name that is too long."
                        "\nMax allowed <file> name length is (%d).\n",
                        "--post", opt.arg, JSON_FILENAME_LENGTH);
-                print_usage(1);
                 return 1;
             }
 
@@ -472,11 +509,11 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
 
             put_filename_len = strnlen_s(opt.arg, JSON_FILENAME_LENGTH + 1);
             if (put_filename_len > JSON_REQUEST_LENGTH) {
+                print_usage(-1);
                 printf(ANSI_COLOR_RED "Command error... [%s]"ANSI_COLOR_RESET
                        "\nThe <file> \"%s\", has a name that is too long."
                        "\nMax allowed <file> name length is (%d).\n",
                        "--put", opt.arg, JSON_FILENAME_LENGTH);
-                print_usage(1);
                 return 1;
             }
 
@@ -490,11 +527,11 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
 
             result_filename_len = strnlen_s(opt.arg, JSON_FILENAME_LENGTH + 1);
             if (result_filename_len > JSON_REQUEST_LENGTH) {
+                print_usage(-1);
                 printf(ANSI_COLOR_RED "Command error... [%s]"ANSI_COLOR_RESET
                     "\nThe <file> \"%s\", has a name that is too long."
                     "\nMax allowed <file> name length is (%d).\n",
                     "--get_results", opt.arg, JSON_FILENAME_LENGTH);
-                print_usage(1);
                 return 1;
             }
 
@@ -506,11 +543,11 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
             int certnum_len = 0;
             certnum_len = strnlen_s(opt.arg, JSON_STRING_LENGTH + 1);
             if (certnum_len > JSON_STRING_LENGTH) {
+                print_usage(-1);
                 printf(ANSI_COLOR_RED "Command error... [%s]"ANSI_COLOR_RESET
                        "\nThe string used is too long."
                        "\nMax allowed string length is %d.\n",
                        "--certnum", JSON_STRING_LENGTH);
-                print_usage(1);
                 return 1;
             }
             strcpy_s(value, JSON_STRING_LENGTH, opt.arg);
@@ -522,11 +559,11 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
 
             resume_filename_len = strnlen_s(opt.arg, JSON_FILENAME_LENGTH + 1);
             if (resume_filename_len > JSON_REQUEST_LENGTH) {
+                print_usage(-1);
                 printf(ANSI_COLOR_RED "Command error... [%s]"ANSI_COLOR_RESET
                     "\nThe <file> \"%s\", has a name that is too long."
                     "\nMax allowed <file> name length is (%d).\n",
                     "--resume_session", opt.arg, JSON_FILENAME_LENGTH);
-                print_usage(1);
                 return 1;
             }
 
@@ -539,11 +576,11 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
 
             session_filename_len = strnlen_s(opt.arg, JSON_FILENAME_LENGTH + 1);
             if (session_filename_len > JSON_REQUEST_LENGTH) {
+                print_usage(-1);
                 printf(ANSI_COLOR_RED "Command error... [%s]"ANSI_COLOR_RESET
                     "\nThe <file> \"%s\", has a name that is too long."
                     "\nMax allowed <file> name length is (%d).\n",
                     "--get_expected_results", opt.arg, JSON_FILENAME_LENGTH);
-                print_usage(1);
                 return 1;
             }
 
@@ -556,11 +593,11 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
 
             save_filename_len = strnlen_s(opt.arg, JSON_FILENAME_LENGTH + 1);
             if (save_filename_len > JSON_REQUEST_LENGTH) {
+                print_usage(-1);
                 printf(ANSI_COLOR_RED "Command error... [%s]"ANSI_COLOR_RESET
                     "\nThe <file> \"%s\", has a name that is too long."
                     "\nMax allowed <file> name length is (%d).\n",
                     "--save_to", opt.arg, JSON_FILENAME_LENGTH);
-                print_usage(1);
                 return 1;
             }
             strcpy_s(cfg->save_file, JSON_FILENAME_LENGTH + 1, opt.arg);
@@ -568,27 +605,27 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
         }
         
         if (c == '?') {
+            print_usage(-1);
             printf(ANSI_COLOR_RED "unknown option: %s\n"ANSI_COLOR_RESET, *(argv + opt.ind - 1));
-            print_usage(1);
             return 1;
         }
         if (c == ':') {
+            print_usage(-1);
             printf(ANSI_COLOR_RED "option missing arg: %s\n"ANSI_COLOR_RESET, *(argv + opt.ind - 1));
-            print_usage(1);
             return 1;
         }
     }
 
-    if (cfg->save_to && !cfg->get_expected) {
-        printf("Warning: --save-to only works with --get_expected. Option will be ignored.\n");
+    if (cfg->save_to && !cfg->get_expected && !cfg->get) {
+        printf("Warning: --save-to only works with --get and --get_expected. Option will be ignored.\n");
     }
 
     /* allopw put, post and get without algs defined */
     if (cfg->empty_alg && !cfg->post && !cfg->get && !cfg->put && !cfg->get_results
                    && !cfg->get_expected && !cfg->manual_reg && !cfg->vector_upload) {
         /* The user needs to select at least 1 algorithm */
+        print_usage(-1);
         printf(ANSI_COLOR_RED "Requires at least 1 Algorithm Test Suite\n"ANSI_COLOR_RESET);
-        print_usage(1);
         return 1;
     }
 

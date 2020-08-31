@@ -604,6 +604,7 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx) {
     if (ctx->session_url) { free(ctx->session_url); }
     if (ctx->vector_req_file) { free(ctx->vector_req_file); }
     if (ctx->get_string) { free(ctx->get_string); }
+    if (ctx->get_filename) { free(ctx->get_filename); }
     if (ctx->post_filename) { free(ctx->post_filename); }
     if (ctx->put_filename) { free(ctx->put_filename); }
     if (ctx->jwt_token) { free(ctx->jwt_token); }
@@ -975,7 +976,12 @@ ACVP_RESULT acvp_run_vectors_from_file(ACVP_CTX *ctx, const char *req_filename, 
 
             rsp_val = json_array_get_value(reg_array, 0);
             /* start the file with the '[' and identifiers array */
-            acvp_json_serialize_to_file_pretty_w(rsp_val, rsp_filename);
+            rv = acvp_json_serialize_to_file_pretty_w(rsp_val, rsp_filename);
+            if (rv != ACVP_SUCCESS) {
+                ACVP_LOG_ERR("File write error");
+                json_value_free(file_val);
+                goto end;
+            }
         } 
         /* append vector sets */
         rv = acvp_json_serialize_to_file_pretty_a(file_val, rsp_filename);
@@ -1761,7 +1767,6 @@ ACVP_RESULT acvp_mark_as_request_only(ACVP_CTX *ctx, char *filename) {
 }
 
 ACVP_RESULT acvp_mark_as_get_only(ACVP_CTX *ctx, char *string) {
-
     if (!ctx) {
         return ACVP_NO_CTX;
     } 
@@ -1781,6 +1786,34 @@ ACVP_RESULT acvp_mark_as_get_only(ACVP_CTX *ctx, char *string) {
 
     strcpy_s(ctx->get_string, ACVP_REQUEST_STR_LEN_MAX + 1, string);
     ctx->get = 1;
+    return ACVP_SUCCESS;
+}
+
+ACVP_RESULT acvp_set_get_save_file(ACVP_CTX *ctx, char *filename) {
+    if (!ctx) {
+        ACVP_LOG_ERR("No CTX given");
+        return ACVP_NO_CTX;
+    } 
+    if (!filename) {
+        ACVP_LOG_ERR("No filename given");
+        return ACVP_MISSING_ARG;
+    }
+    if (!ctx->get) {
+        ACVP_LOG_ERR("Session must be marked as get only to set a get save file");
+        return ACVP_UNSUPPORTED_OP;
+    }
+    int filenameLen = 0;
+    filenameLen = strnlen_s(filename, ACVP_JSON_FILENAME_MAX + 1);
+    if (filenameLen > ACVP_JSON_FILENAME_MAX || filenameLen <= 0) {
+        ACVP_LOG_ERR("Provided filename invalid");
+        return ACVP_INVALID_ARG;
+    }
+    if (ctx->get_filename) { free(ctx->get_filename); }
+    ctx->get_filename = calloc(filenameLen + 1, sizeof(char));
+    if (!ctx->get_filename) {
+        return ACVP_MALLOC_FAIL;
+    }
+    strncpy_s(ctx->get_filename, filenameLen + 1, filename, filenameLen);
     return ACVP_SUCCESS;
 }
 
@@ -1876,7 +1909,6 @@ static ACVP_RESULT acvp_build_login(ACVP_CTX *ctx, char **login, int *login_len,
             rv = ACVP_INVALID_ARG;
             goto err;
         }
-
         json_object_set_string(pw_obj, "password", token);
     }
 
@@ -3171,6 +3203,24 @@ ACVP_RESULT acvp_run(ACVP_CTX *ctx, int fips_validation) {
 
     if (ctx->get) { 
         rv = acvp_transport_get(ctx, ctx->get_string, NULL);
+        if (ctx->get_filename) {
+            ACVP_LOG_STATUS("Saving GET result to specified file...");
+            JSON_Value *val = NULL;
+            val = json_parse_string(ctx->curl_buf);
+            if (!val) {
+                ACVP_LOG_ERR("Unable to parse JSON. printing output instead...");
+            } else {
+                rv = acvp_json_serialize_to_file_pretty_w(val, ctx->get_filename);
+                if (rv != ACVP_SUCCESS) {
+                    ACVP_LOG_ERR("Failed to write file, printing instead...");
+                } else {
+                    rv = acvp_json_serialize_to_file_pretty_a(NULL, ctx->get_filename);
+                    if (rv != ACVP_SUCCESS)
+                        ACVP_LOG_WARN("Unable to append ending ] to write file");
+                    goto end;
+                }
+            }
+        }
         if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
             printf("\n\n%s\n\n", ctx->curl_buf);
         } else {

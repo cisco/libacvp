@@ -567,6 +567,7 @@ static ACVP_RESULT acvp_validate_kdf108_param_value(ACVP_KDF108_PARM param, int 
         }
         break;
     case ACVP_KDF108_SUPPORTS_EMPTY_IV:
+    case ACVP_KDF108_REQUIRES_EMPTY_IV:
         retval = is_valid_tf_param(value);
         break;
     case ACVP_KDF108_PARAM_MIN:
@@ -5308,6 +5309,14 @@ ACVP_RESULT acvp_cap_kdf108_set_parm(ACVP_CTX *ctx,
     case ACVP_KDF108_SUPPORTS_EMPTY_IV:
         mode_obj->empty_iv_support = value;
         break;
+    case ACVP_KDF108_REQUIRES_EMPTY_IV:
+       if (mode_obj->empty_iv_support == 0) {
+           ACVP_LOG_ERR("REQUIRES_EMPTY_IV for KDF108 can only be set if SUPPORTS_EMPTY_IV is true");
+           return ACVP_INVALID_ARG;
+       } else {
+            mode_obj->requires_empty_iv = value;
+       }
+       break;
     case ACVP_KDF108_SUPPORTED_LEN:
     case ACVP_KDF108_PARAM_MIN:
     case ACVP_KDF108_PARAM_MAX:
@@ -5898,6 +5907,7 @@ ACVP_RESULT acvp_cap_kdf108_set_domain(ACVP_CTX *ctx,
     case ACVP_KDF108_FIXED_DATA_ORDER:
     case ACVP_KDF108_COUNTER_LEN:
     case ACVP_KDF108_SUPPORTS_EMPTY_IV:
+    case ACVP_KDF108_REQUIRES_EMPTY_IV:
     case ACVP_KDF108_PARAM_MIN:
     case ACVP_KDF108_PARAM_MAX:
     default:

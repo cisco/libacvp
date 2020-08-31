@@ -70,6 +70,7 @@ EXPORTS
   acvp_mark_as_sample
   acvp_mark_as_request_only
   acvp_mark_as_get_only
+  acvp_set_get_save_file
   acvp_mark_as_post_only
   acvp_mark_as_put_after_test
   acvp_run
@@ -87,6 +88,7 @@ EXPORTS
   acvp_put_data_from_file
   acvp_get_results_from_server
   acvp_resume_test_session
+  acvp_get_expected_results
   acvp_set_2fa_callback
   acvp_bin_to_hexstr
   acvp_hexstr_to_bin

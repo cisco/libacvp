@@ -44,13 +44,15 @@ extern "C"
  * otherwise we get "undefined reference".
  */
 #if OPENSSL_VERSION_NUMBER >= 0x10100000L
+#ifndef ACVP_OFFLINE
 void FINGERPRINT_premain(void);
+void FINGERPRINT_premain(void) {}
+#endif
 
 int FIPS_get_selftest_completed(int version)
 {
     return version;
 }
-void FINGERPRINT_premain(void) {}
 #endif
 
 static int no_err;

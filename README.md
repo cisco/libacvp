@@ -15,7 +15,7 @@ you are free to get and use it for commercial and non-commercial
 purposes as long as you fulfill its conditions. See the LICENSE
 file for details.
 
-### Recent Changes!
+### Recent Changes
 The client library is compatible with the ACVP spec version 1.0, see https://github.com/usnistgov/ACVP however not all algorithms and options are supported. See the support list in the Supported Algorithms section below.
 
 Metadata processing has been simplified and no longer requires id fields. Please review the new metadata directory sample json files to see the new format. Older formats should continue to work, but will have some unused keywords and fields.
@@ -129,10 +129,18 @@ make install
 
 #### Building libacvp without the application code.
 Use the following ./configure comand line option and only the library will be built and installed.
-Note that this option is not useful when building for offline testing since the application is needed.
- 
+
 --disable-app
 
+Note that this option is not useful when building for offline testing since the application is needed.
+Using this option, only a libcurl installation dir needs to be provided.
+ 
+#### Building acvp_app only without the library code
+Use the following ./configure comand line option and only the app will be built. Note that it depends
+on libacvp having already been built. The libacvp directory can be provided using --with-libacvp-dir=
+Otherwise, it will look in the default build directory in the root folder for libacvp.
+
+--disable-lib
 
 #### Cross Compiling
 Requires options --build and --host.
@@ -153,19 +161,6 @@ If using murl for cross compliles use the same CROSS_COMPILE and HOSTCC used wit
 
 CROSS_COMPILE=arm-linux-gnueabihf-
 HOSTCC=gcc
-
-## Running
-1. `export LD_LIBRARY_PATH=<path to ssl lib;path to curl lib>`
-2. Modify and run `scripts/nist_setup.sh`
-3. `./app/acvp_app --<options>`
-
-Use `./app/acvp_app --help` for more information on available options.
-
-libacvp generates a file containing information that can be used to resume or check the results
-of a session. By default, this is usually placed in the folder of the executable utilizing
-libacvp, though this can be different on some OS. The name, by default, is
-testSession_(ID number).json. The path and prefix can be controlled using ACV_SESSION_SAVE_PATH
-and ACV_SESSION_SAVE_PREFIX in your environment, respectively. 
 
 ## Windows
 The Visual Studio projects for acvp_app and libacvp are set to use 2017 tools and are designed to
@@ -207,6 +202,19 @@ to which crypto and SSL libraries Curl uses, but any applications using libacvp 
 need to link to those libraries.
 
 Murl is not supported in windows at this time.
+
+## Running
+1. `export LD_LIBRARY_PATH=<path to ssl lib;path to curl lib>`
+2. Modify and run `scripts/nist_setup.sh`
+3. `./app/acvp_app --<options>`
+
+Use `./app/acvp_app --help` for more information on available options.
+
+libacvp generates a file containing information that can be used to resume or check the results
+of a session. By default, this is usually placed in the folder of the executable utilizing
+libacvp, though this can be different on some OS. The name, by default, is
+testSession_(ID number).json. The path and prefix can be controlled using ACV_SESSION_SAVE_PATH
+and ACV_SESSION_SAVE_PREFIX in your environment, respectively. 
 
 ### How to test offline
 1. Download vectors on network accessible device:

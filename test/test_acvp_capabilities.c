@@ -190,6 +190,12 @@ Test(EnableCapKDF108, invalid_params, .fini = teardown) {
     cr_assert(rv == ACVP_INVALID_ARG);
     rv = acvp_cap_kdf108_set_parm(ctx, ACVP_KDF108_MODE_COUNTER, ACVP_KDF108_SUPPORTS_EMPTY_IV, 3);
     cr_assert(rv == ACVP_INVALID_ARG);
+    rv = acvp_cap_kdf108_set_parm(ctx, ACVP_KDF108_MODE_COUNTER, ACVP_KDF108_SUPPORTS_EMPTY_IV, 3);
+    cr_assert(rv == ACVP_INVALID_ARG);
+    rv = acvp_cap_kdf108_set_parm(ctx, ACVP_KDF108_MODE_COUNTER, ACVP_KDF108_SUPPORTS_EMPTY_IV, 1);
+    cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_kdf108_set_parm(ctx, ACVP_KDF108_MODE_COUNTER, ACVP_KDF108_SUPPORTS_EMPTY_IV, 2);
+    cr_assert(rv == ACVP_INVALID_ARG);
 }
 
 Test(EnableCapKDFTLS, properly, .fini = teardown) {

@@ -13,7 +13,7 @@
 #include "parson.h"
 
 #define ACVP_VERSION    "1.0"
-#define ACVP_LIBRARY_VERSION    "libacvp_oss-1.0.4"
+#define ACVP_LIBRARY_VERSION    "libacvp_oss-1.1.0"
 
 
 #ifndef ACVP_LOG_ERR
@@ -691,7 +691,7 @@
  * END RSA
  */
 
-#define ACVP_CURL_BUF_MAX       (1024 * 1024 * 16) /**< 16 MB */
+#define ACVP_CURL_BUF_MAX       (1024 * 1024 * 32) /**< 32 MB */
 #define ACVP_RETRY_TIME_MIN     5 /* seconds */
 #define ACVP_RETRY_TIME_MAX     300 
 #define ACVP_MAX_WAIT_TIME      7200
@@ -912,6 +912,7 @@ typedef struct acvp_kdf108_mode_params {
     ACVP_NAME_LIST *data_order;
     ACVP_SL_LIST *counter_lens;
     int empty_iv_support;
+    int requires_empty_iv;
 } ACVP_KDF108_MODE_PARAMS;
 
 typedef struct acvp_kdf108_capability {
@@ -1349,6 +1350,7 @@ struct acvp_ctx_t {
     int vector_rsp;         /* flag to indicate we are storing vector responses JSON in a file */
     int get;                /* flag to indicate we are only getting status or metadata */
     char *get_string;       /* string used for get request */
+    char *get_filename;     /* string used for file to save GET requests to */
     int post;               /* flag to indicate we are only posting metadata */
     char *post_filename;    /* string used for post */
     int put;                /* flag to indicate we are only putting metadata  for post test validation*/

@@ -226,7 +226,16 @@ int main(int argc, char **argv) {
     }
 
     if (cfg.get) {
-        acvp_mark_as_get_only(ctx, cfg.get_string);
+        rv = acvp_mark_as_get_only(ctx, cfg.get_string);
+        if (rv != ACVP_SUCCESS) {
+            printf("Failed to mark as get only.\n");
+            goto end;
+        } else if (cfg.save_to) {
+            rv = acvp_set_get_save_file(ctx, cfg.save_file);
+            if (rv != ACVP_SUCCESS) {
+                printf("Failed to set save file for get request, continuing anyway...\n");
+            }
+        }
     }
 
     if (cfg.post) {
@@ -1097,6 +1106,11 @@ end:
 static int enable_cmac(ACVP_CTX *ctx) {
     ACVP_RESULT rv = ACVP_SUCCESS;
 
+    /****************************************************************************
+     * Note: Setting extremely high keylen or msglen (6 digits) domains may     *
+     * require a resize of ACVP_CURL_BUF_MAX in acvp_lcl.h in the library code. *
+     ****************************************************************************/
+
     /*
      * Enable CMAC
      */
@@ -1141,6 +1155,11 @@ end:
 
 static int enable_hmac(ACVP_CTX *ctx) {
     ACVP_RESULT rv = ACVP_SUCCESS;
+
+    /****************************************************************************
+     * Note: Setting extremely high keylen or msglen (6 digits) domains may     *
+     * require a resize of ACVP_CURL_BUF_MAX in acvp_lcl.h in the library code. *
+     ****************************************************************************/
 
     rv = acvp_cap_hmac_enable(ctx, ACVP_HMAC_SHA1, &app_hmac_handler);
     CHECK_ENABLE_CAP_RV(rv);
@@ -1412,6 +1431,9 @@ static int enable_kdf(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_kdf108_set_parm(ctx, ACVP_KDF108_MODE_COUNTER, ACVP_KDF108_SUPPORTS_EMPTY_IV, 0);
     CHECK_ENABLE_CAP_RV(rv);
+    //REQUIRES_EMPTY_IV can only be set if SUPPORTS_EMPTY_IV is set to true
+    //rv = acvp_cap_kdf108_set_parm(ctx, ACVP_KDF108_MODE_COUNTER, ACVP_KDF108_REQUIRES_EMPTY_IV, 0);
+    //CHECK_ENABLE_CAP_RV(rv);
 
 end:
 
