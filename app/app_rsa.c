@@ -15,6 +15,7 @@
 #include "app_lcl.h"
 #ifdef ACVP_NO_RUNTIME
 #include "app_fips_lcl.h" /* All regular OpenSSL headers must come before here */
+#include <openssl/ossl_typ.h>
 
 BIGNUM *group_n = NULL;
 RSA *group_rsa = NULL;
