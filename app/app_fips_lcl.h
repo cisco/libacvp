@@ -192,7 +192,7 @@ DSA_SIG * FIPS_dsa_sign(DSA *dsa, const unsigned char *msg, size_t msglen,
 void fips_DSA_get0_key(const DSA *d,
                        const BIGNUM **pub_key, const BIGNUM **priv_key);
 void FIPS_dsa_sig_get0(const DSA_SIG *sig, const BIGNUM **pr, const BIGNUM **ps);
-void FIPS_dsa_sig_set0(const DSA_SIG *sig, BIGNUM *pr, BIGNUM *ps);
+int FIPS_dsa_sig_set0(DSA_SIG *sig, BIGNUM *pr, BIGNUM *ps);
 DSA_SIG *FIPS_dsa_sig_new(void);
 void FIPS_dsa_sig_free(DSA_SIG *sig);
 #endif
@@ -246,18 +246,20 @@ const EVP_MD *FIPS_evp_shake256(void);
 
 ECDSA_SIG *FIPS_ecdsa_sig_new(void);
 void FIPS_ecdsa_sig_free(ECDSA_SIG *sig);
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
 ECDSA_SIG * FIPS_ecdsa_sign(EC_KEY *key,
                             const unsigned char *msg, size_t msglen,
                             const EVP_MD *mhash);
 int FIPS_ecdsa_verify(EC_KEY *key, const unsigned char *msg, size_t msglen,
                       const EVP_MD *mhash, ECDSA_SIG *s);
+#endif
 ECDSA_SIG * FIPS_ecdsa_sign_md(EC_KEY *key,
                                const unsigned char *msg, size_t msglen,
                                const EVP_MD *mhash);
 int FIPS_ecdsa_verify_md(EC_KEY *key, const unsigned char *msg, size_t msglen,
              const EVP_MD *mhash, ECDSA_SIG *s);
 int FIPS_ecdh_compute_key(void *out, size_t outlen, const EC_POINT *pub_key,
-                          EC_KEY *ecdh, void *(*KDF) (const void *in, size_t inlen,
+                          const EC_KEY *ecdh, void *(*KDF) (const void *in, size_t inlen,
                                                       void *out, size_t *outlen));
 DH *FIPS_dh_new(void );
 void FIPS_dh_free(DH *dh);
