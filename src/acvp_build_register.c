@@ -541,8 +541,10 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
      * Set the supported lengths (could be pt, ct, data, etc.
      * see alg spec for more details)
      */
-    json_object_set_value(cap_obj, "payloadLen", json_value_init_array());
-    opts_arr = json_object_get_array(cap_obj, "payloadLen");
+    if (cap_entry->cipher != ACVP_AES_GMAC) {
+        json_object_set_value(cap_obj, "payloadLen", json_value_init_array());
+        opts_arr = json_object_get_array(cap_obj, "payloadLen");
+    }
 
     sl_list = sym_cap->ptlen;
     while (sl_list) {
