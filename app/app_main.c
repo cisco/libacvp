@@ -1859,7 +1859,7 @@ static int enable_rsa(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_X931, 3072, ACVP_SHA512, 0);
     CHECK_ENABLE_CAP_RV(rv);
-#if 0 // mod 4096 isn't supported by the server just yet
+#if OPENSSL_VERSION_NUMBER >= 0x10101010L /* OpenSSL 1.1.1 or greater */
     rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_X931, 4096, ACVP_SHA256, 0);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_X931, 4096, ACVP_SHA384, 0);
@@ -1902,7 +1902,7 @@ static int enable_rsa(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15, 3072, ACVP_SHA512, 0);
     CHECK_ENABLE_CAP_RV(rv);
-#if 0 // mod 4096 isn't supported by the server just yet
+#if OPENSSL_VERSION_NUMBER >= 0x10101010L /* OpenSSL 1.1.1 or greater */
     rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15, 4096, ACVP_SHA224, 0);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15, 4096, ACVP_SHA256, 0);
@@ -1947,6 +1947,16 @@ static int enable_rsa(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS, 3072, ACVP_SHA512, 0);
     CHECK_ENABLE_CAP_RV(rv);
+#if OPENSSL_VERSION_NUMBER >= 0x10101010L /* OpenSSL 1.1.1 or greater */
+    rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS, 4096, ACVP_SHA224, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS, 4096, ACVP_SHA256, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS, 4096, ACVP_SHA384, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS, 4096, ACVP_SHA512, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+#endif
 
     #if 0
     rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS, 2048, ACVP_SHA512_224, 0);
@@ -1993,6 +2003,16 @@ static int enable_rsa(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_X931, 3072, ACVP_SHA512, 0);
     CHECK_ENABLE_CAP_RV(rv);
+#if OPENSSL_VERSION_NUMBER >= 0x10101010L /* OpenSSL 1.1.1 or greater */
+    rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_X931, 4096, ACVP_SHA1, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_X931, 4096, ACVP_SHA256, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_X931, 4096, ACVP_SHA384, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_X931, 4096, ACVP_SHA512, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+#endif
 
     #if 0
     rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_X931, 2048, ACVP_SHA512_224, 0);
@@ -2028,6 +2048,18 @@ static int enable_rsa(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15, 3072, ACVP_SHA512, 0);
     CHECK_ENABLE_CAP_RV(rv);
+#if OPENSSL_VERSION_NUMBER >= 0x10101010L /* OpenSSL 1.1.1 or greater */
+    rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15, 4096, ACVP_SHA1, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15, 4096, ACVP_SHA224, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15, 4096, ACVP_SHA256, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15, 4096, ACVP_SHA384, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15, 4096, ACVP_SHA512, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+#endif
 
     #if 0
     rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15, 2048, ACVP_SHA512_224, 0);
@@ -2063,6 +2095,18 @@ static int enable_rsa(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS, 3072, ACVP_SHA512, 0);
     CHECK_ENABLE_CAP_RV(rv);
+#if OPENSSL_VERSION_NUMBER >= 0x10101010L /* OpenSSL 1.1.1 or greater */
+    rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS, 4096, ACVP_SHA1, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS, 4096, ACVP_SHA224, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS, 4096, ACVP_SHA256, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS, 4096, ACVP_SHA384, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS, 4096, ACVP_SHA512, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+#endif
 
     #if 0
     rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS, 2048, ACVP_SHA512_224, 0);
