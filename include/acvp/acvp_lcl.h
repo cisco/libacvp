@@ -13,7 +13,7 @@
 #include "parson.h"
 
 #define ACVP_VERSION    "1.0"
-#define ACVP_LIBRARY_VERSION    "libacvp_oss-1.1.0"
+#define ACVP_LIBRARY_VERSION    "libacvp_oss-1.1.1"
 
 
 #ifndef ACVP_LOG_ERR
@@ -106,6 +106,7 @@
  ********************************************************
  */
 #define ACVP_REVISION_LATEST "1.0"
+#define ACVP_REVISION_FIPS186_4 "FIPS186-4"
 
 /* AES */
 #define ACVP_REV_AES_ECB             ACVP_REVISION_LATEST
@@ -179,7 +180,7 @@
 #define ACVP_REV_DSA                 ACVP_REVISION_LATEST
 
 /* RSA */
-#define ACVP_REV_RSA                 ACVP_REVISION_LATEST
+#define ACVP_REV_RSA                 ACVP_REVISION_FIPS186_4
 
 /* RSA */
 #define ACVP_REV_ECDSA               ACVP_REVISION_LATEST

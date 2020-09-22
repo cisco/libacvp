@@ -541,8 +541,10 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
      * Set the supported lengths (could be pt, ct, data, etc.
      * see alg spec for more details)
      */
-    json_object_set_value(cap_obj, "payloadLen", json_value_init_array());
-    opts_arr = json_object_get_array(cap_obj, "payloadLen");
+    if (cap_entry->cipher != ACVP_AES_GMAC) {
+        json_object_set_value(cap_obj, "payloadLen", json_value_init_array());
+        opts_arr = json_object_get_array(cap_obj, "payloadLen");
+    }
 
     sl_list = sym_cap->ptlen;
     while (sl_list) {
@@ -726,6 +728,9 @@ static ACVP_RESULT acvp_build_drbg_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
             } else if (drbg_cap_mode->perso_len_max) {
                 json_array_append_number(array, drbg_cap_mode->perso_len_max);
             }
+            if (!drbg_cap_mode->perso_len_min && !drbg_cap_mode->perso_len_max) {
+                json_array_append_number(array, 0);
+            }
         } else {
             len_val = json_value_init_object();
             len_obj = json_value_get_object(len_val);
@@ -742,6 +747,9 @@ static ACVP_RESULT acvp_build_drbg_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
                 json_array_append_number(array, drbg_cap_mode->additional_in_len_min);
             } else if (drbg_cap_mode->additional_in_len_max) {
                 json_array_append_number(array, drbg_cap_mode->additional_in_len_max);
+            }
+            if (!drbg_cap_mode->additional_in_len_min && !drbg_cap_mode->additional_in_len_max) {
+                json_array_append_number(array, 0);
             }
         } else {
             len_val = json_value_init_object();
