@@ -94,6 +94,7 @@ typedef enum acvp_cipher {
     ACVP_AES_KW,
     ACVP_AES_KWP,
     ACVP_AES_GMAC,
+    ACVP_AES_XPN,
     ACVP_TDES_ECB,
     ACVP_TDES_CBC,
     ACVP_TDES_CBCI,
@@ -285,6 +286,19 @@ typedef enum acvp_sym_cipher_ivgen_source {
     ACVP_SYM_CIPH_IVGEN_SRC_NA,
     ACVP_SYM_CIPH_IVGEN_SRC_MAX
 } ACVP_SYM_CIPH_IVGEN_SRC;
+
+
+/*!
+ * @struct ACVP_SYM_CIPH_SALT_SRC
+ * @brief The IV generation source for AES_XPN
+ * This can be internal, external, or not applicable.
+ */
+typedef enum acvp_sym_cipher_salt_source {
+    ACVP_SYM_CIPH_SALT_SRC_INT = 1,
+    ACVP_SYM_CIPH_SALT_SRC_EXT,
+    ACVP_SYM_CIPH_SALT_SRC_NA,
+    ACVP_SYM_CIPH_SALT_SRC_MAX
+} ACVP_SYM_CIPH_SALT_SRC;
 
 /*!
  * @struct ACVP_SYM_CIPH_IVGEN_MODE
@@ -503,7 +517,8 @@ typedef enum acvp_sym_cipher_parameter {
     ACVP_SYM_CIPH_PARM_CTR_INCR,
     ACVP_SYM_CIPH_PARM_CTR_OVRFLW,
     ACVP_SYM_CIPH_PARM_IVGEN_MODE,
-    ACVP_SYM_CIPH_PARM_IVGEN_SRC
+    ACVP_SYM_CIPH_PARM_IVGEN_SRC,
+    ACVP_SYM_CIPH_PARM_SALT_SRC
 } ACVP_SYM_CIPH_PARM;
 
 /*! @struct ACVP_SYM_CIPH_TWEAK_MODE */
@@ -605,6 +620,7 @@ typedef struct acvp_sym_cipher_tc_t {
     ACVP_SYM_CIPH_DIR direction;      /* encrypt or decrypt */
     ACVP_SYM_CIPH_IVGEN_SRC ivgen_source;
     ACVP_SYM_CIPH_IVGEN_MODE ivgen_mode;
+    ACVP_SYM_CIPH_SALT_SRC salt_source; /* for AES-XPN */
     unsigned int tc_id;          /* Test case id */
     unsigned char *key;          /* Aes symmetric key */
     unsigned char *pt;           /* Plaintext */
@@ -614,6 +630,7 @@ typedef struct acvp_sym_cipher_tc_t {
     unsigned char *tag;          /* Aead tag */
     unsigned char *iv_ret;       /* updated IV used for TDES MCT */
     unsigned char *iv_ret_after; /* updated IV used for TDES MCT */
+    unsigned char *salt;
     ACVP_SYM_KW_MODE kwcipher;
     ACVP_SYM_CIPH_TWEAK_MODE tw_mode;
     unsigned int seq_num;     
@@ -624,6 +641,7 @@ typedef struct acvp_sym_cipher_tc_t {
     unsigned int iv_len;
     unsigned int ct_len;
     unsigned int tag_len;
+    unsigned int salt_len;
     unsigned int mct_index;  /* used to identify init vs. update */
     unsigned int incr_ctr;
     unsigned int ovrflw_ctr;

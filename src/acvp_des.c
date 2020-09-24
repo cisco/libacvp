@@ -196,6 +196,7 @@ static ACVP_RESULT acvp_des_mct_iterate_tc(ACVP_CTX *ctx,
     case ACVP_AES_KW:
     case ACVP_AES_KWP:
     case ACVP_AES_GMAC:
+    case ACVP_AES_XPN:
     case ACVP_TDES_CBCI:
     case ACVP_TDES_OFBI:
     case ACVP_TDES_CFBP1:
@@ -493,6 +494,7 @@ static ACVP_RESULT acvp_des_mct_tc(ACVP_CTX *ctx,
     case ACVP_AES_KW:
     case ACVP_AES_KWP:
     case ACVP_AES_GMAC:
+    case ACVP_AES_XPN:
     case ACVP_TDES_CBCI:
     case ACVP_TDES_OFBI:
     case ACVP_TDES_CFBP1:

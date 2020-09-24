@@ -381,6 +381,7 @@ points_err:
     case ACVP_AES_KW:
     case ACVP_AES_KWP:
     case ACVP_AES_GMAC:
+    case ACVP_AES_XPN:
     case ACVP_TDES_ECB:
     case ACVP_TDES_CBC:
     case ACVP_TDES_CBCI:
