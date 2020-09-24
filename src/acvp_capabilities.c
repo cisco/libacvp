@@ -756,6 +756,7 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
         case ACVP_AES_OFB:
         case ACVP_AES_CTR:
         case ACVP_AES_GMAC:
+        case ACVP_AES_XPN:
             if (value >= 4 && value <= 128) {
                 retval = ACVP_SUCCESS;
             }
@@ -840,6 +841,7 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
     case ACVP_SYM_CIPH_IVLEN:
         switch (cipher) {
         case ACVP_AES_GCM_SIV:
+        case ACVP_AES_XPN:
             break;
         case ACVP_CIPHER_START:
         case ACVP_AES_GCM:
@@ -949,6 +951,7 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
         case ACVP_AES_OFB:
         case ACVP_AES_CTR:
         case ACVP_AES_GMAC:
+        case ACVP_AES_XPN:
             if (value >= 0 && value <= 65536) {
                 retval = ACVP_SUCCESS;
             }
@@ -1047,6 +1050,7 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
         case ACVP_AES_XTS:
         case ACVP_AES_KW:
         case ACVP_AES_KWP:
+        case ACVP_AES_XPN:
         case ACVP_TDES_ECB:
         case ACVP_TDES_CBC:
         case ACVP_TDES_CBCI:
@@ -1129,6 +1133,7 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
     case ACVP_SYM_CIPH_PARM_CTR_OVRFLW:
     case ACVP_SYM_CIPH_PARM_IVGEN_MODE:
     case ACVP_SYM_CIPH_PARM_IVGEN_SRC:
+    case ACVP_SYM_CIPH_PARM_SALT_SRC:
     default:
         break;
     }
@@ -1152,6 +1157,7 @@ static ACVP_RESULT acvp_validate_prereq_val(ACVP_CIPHER cipher, ACVP_PREREQ_ALG 
     case ACVP_AES_KWP:
     case ACVP_AES_XTS:
     case ACVP_AES_GMAC:
+    case ACVP_AES_XPN:
         if (pre_req == ACVP_PREREQ_AES ||
             pre_req == ACVP_PREREQ_DRBG) {
             return ACVP_SUCCESS;
@@ -1419,6 +1425,7 @@ ACVP_RESULT acvp_cap_sym_cipher_set_parm(ACVP_CTX *ctx,
     case ACVP_AES_KW:
     case ACVP_AES_KWP:
     case ACVP_AES_GMAC:
+    case ACVP_AES_XPN:
     case ACVP_TDES_ECB:
     case ACVP_TDES_CBC:
     case ACVP_TDES_CBCI:
@@ -1516,7 +1523,7 @@ ACVP_RESULT acvp_cap_sym_cipher_set_parm(ACVP_CTX *ctx,
         }
 
     case ACVP_SYM_CIPH_PARM_DIR:
-        if (value != 0 && value < ACVP_SYM_CIPH_DIR_MAX) {
+        if (value > 0 && value < ACVP_SYM_CIPH_DIR_MAX) {
             cap->cap.sym_cap->direction = value;
             return ACVP_SUCCESS;
         } else {
@@ -1525,7 +1532,7 @@ ACVP_RESULT acvp_cap_sym_cipher_set_parm(ACVP_CTX *ctx,
         }
 
     case ACVP_SYM_CIPH_PARM_KO:
-        if (value != 0 && value < ACVP_SYM_CIPH_KO_MAX) {
+        if (value > 0 && value < ACVP_SYM_CIPH_KO_MAX) {
             cap->cap.sym_cap->keying_option = value;
             return ACVP_SUCCESS;
         } else {
@@ -1552,7 +1559,7 @@ ACVP_RESULT acvp_cap_sym_cipher_set_parm(ACVP_CTX *ctx,
         }
 
     case ACVP_SYM_CIPH_PARM_IVGEN_SRC:
-        if (value != 0 && value < ACVP_SYM_CIPH_IVGEN_SRC_MAX) {
+        if (value > 0 && value < ACVP_SYM_CIPH_IVGEN_SRC_MAX) {
             cap->cap.sym_cap->ivgen_source = value;
             return ACVP_SUCCESS;
         } else {
@@ -1561,13 +1568,22 @@ ACVP_RESULT acvp_cap_sym_cipher_set_parm(ACVP_CTX *ctx,
         }
 
     case ACVP_SYM_CIPH_PARM_IVGEN_MODE:
-        if (value != 0 && value < ACVP_SYM_CIPH_IVGEN_MODE_MAX) {
+        if (value > 0 && value < ACVP_SYM_CIPH_IVGEN_MODE_MAX) {
             cap->cap.sym_cap->ivgen_mode = value;
             return ACVP_SUCCESS;
         } else {
             ACVP_LOG_ERR("Invalid parameter 'value' for param ACVP_SYM_CIPH_PARM_IVGEN_MODE");
             return ACVP_INVALID_ARG;
         }
+    case ACVP_SYM_CIPH_PARM_SALT_SRC:
+        if  (cipher == ACVP_AES_XPN && value > 0 && value < ACVP_SYM_CIPH_SALT_SRC_MAX) {
+            cap->cap.sym_cap->salt_source = value;
+            return ACVP_SUCCESS;
+        } else {
+            ACVP_LOG_ERR("Invalid parameter 'value' for parm ACVP_SYM_CIPH_PARM_SALT_SRC");
+            return ACVP_INVALID_ARG;
+        }
+
 
     case ACVP_SYM_CIPH_KEYLEN:
     case ACVP_SYM_CIPH_TAGLEN:
@@ -1580,6 +1596,7 @@ ACVP_RESULT acvp_cap_sym_cipher_set_parm(ACVP_CTX *ctx,
     }
 
     if (acvp_validate_sym_cipher_parm_value(cipher, parm, value) != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Unable to validate given parameter (cipher=%d, value=%d)", cipher, value);
         return ACVP_INVALID_ARG;
     }
 
@@ -1656,6 +1673,7 @@ ACVP_RESULT acvp_cap_sym_cipher_enable(ACVP_CTX *ctx,
     case ACVP_AES_KW:
     case ACVP_AES_KWP:
     case ACVP_AES_GMAC:
+    case ACVP_AES_XPN:
     case ACVP_TDES_ECB:
     case ACVP_TDES_CBC:
     case ACVP_TDES_CBCI:
@@ -1784,6 +1802,7 @@ ACVP_RESULT acvp_cap_hash_enable(ACVP_CTX *ctx,
     case ACVP_AES_KW:
     case ACVP_AES_KWP:
     case ACVP_AES_GMAC:
+    case ACVP_AES_XPN:
     case ACVP_TDES_ECB:
     case ACVP_TDES_CBC:
     case ACVP_TDES_CBCI:
@@ -1907,6 +1926,7 @@ ACVP_RESULT acvp_cap_hash_set_parm(ACVP_CTX *ctx,
     case ACVP_AES_KW:
     case ACVP_AES_KWP:
     case ACVP_AES_GMAC:
+    case ACVP_AES_XPN:
     case ACVP_TDES_ECB:
     case ACVP_TDES_CBC:
     case ACVP_TDES_CBCI:
@@ -2014,6 +2034,7 @@ ACVP_RESULT acvp_cap_hash_set_parm(ACVP_CTX *ctx,
         case ACVP_AES_KW:
         case ACVP_AES_KWP:
         case ACVP_AES_GMAC:
+        case ACVP_AES_XPN:
         case ACVP_TDES_ECB:
         case ACVP_TDES_CBC:
         case ACVP_TDES_CBCI:
@@ -2139,6 +2160,7 @@ ACVP_RESULT acvp_cap_hash_set_domain(ACVP_CTX *ctx,
     case ACVP_AES_KW:
     case ACVP_AES_KWP:
     case ACVP_AES_GMAC:
+    case ACVP_AES_XPN:
     case ACVP_TDES_ECB:
     case ACVP_TDES_CBC:
     case ACVP_TDES_CBCI:
@@ -2321,6 +2343,7 @@ static ACVP_RESULT acvp_validate_hmac_parm_value(ACVP_CIPHER cipher,
         case ACVP_AES_KW:
         case ACVP_AES_KWP:
         case ACVP_AES_GMAC:
+        case ACVP_AES_XPN:
         case ACVP_TDES_ECB:
         case ACVP_TDES_CBC:
         case ACVP_TDES_CBCI:
@@ -2437,6 +2460,7 @@ ACVP_RESULT acvp_cap_hmac_enable(ACVP_CTX *ctx,
     case ACVP_AES_KW:
     case ACVP_AES_KWP:
     case ACVP_AES_GMAC:
+    case ACVP_AES_XPN:
     case ACVP_TDES_ECB:
     case ACVP_TDES_CBC:
     case ACVP_TDES_CBCI:
@@ -2675,6 +2699,7 @@ ACVP_RESULT acvp_cap_cmac_enable(ACVP_CTX *ctx,
     case ACVP_AES_KW:
     case ACVP_AES_KWP:
     case ACVP_AES_GMAC:
+    case ACVP_AES_XPN:
     case ACVP_TDES_ECB:
     case ACVP_TDES_CBC:
     case ACVP_TDES_CBCI:
@@ -3317,6 +3342,7 @@ ACVP_RESULT acvp_cap_drbg_set_parm(ACVP_CTX *ctx,
     case ACVP_AES_KW:
     case ACVP_AES_KWP:
     case ACVP_AES_GMAC:
+    case ACVP_AES_XPN:
     case ACVP_TDES_ECB:
     case ACVP_TDES_CBC:
     case ACVP_TDES_CBCI:
@@ -4187,6 +4213,7 @@ static ACVP_RESULT internal_cap_rsa_sig_enable(ACVP_CTX *ctx,
     case ACVP_AES_KW:
     case ACVP_AES_KWP:
     case ACVP_AES_GMAC:
+    case ACVP_AES_XPN:
     case ACVP_TDES_ECB:
     case ACVP_TDES_CBC:
     case ACVP_TDES_CBCI:
@@ -4299,6 +4326,7 @@ ACVP_RESULT acvp_cap_rsa_sig_enable(ACVP_CTX *ctx,
     case ACVP_AES_KW:
     case ACVP_AES_KWP:
     case ACVP_AES_GMAC:
+    case ACVP_AES_XPN:
     case ACVP_TDES_ECB:
     case ACVP_TDES_CBC:
     case ACVP_TDES_CBCI:
@@ -4429,6 +4457,7 @@ ACVP_RESULT acvp_cap_ecdsa_set_parm(ACVP_CTX *ctx,
     case ACVP_AES_KW:
     case ACVP_AES_KWP:
     case ACVP_AES_GMAC:
+    case ACVP_AES_XPN:
     case ACVP_TDES_ECB:
     case ACVP_TDES_CBC:
     case ACVP_TDES_CBCI:
@@ -4625,6 +4654,7 @@ ACVP_RESULT acvp_cap_ecdsa_enable(ACVP_CTX *ctx,
     case ACVP_AES_KW:
     case ACVP_AES_KWP:
     case ACVP_AES_GMAC:
+    case ACVP_AES_XPN:
     case ACVP_TDES_ECB:
     case ACVP_TDES_CBC:
     case ACVP_TDES_CBCI:
@@ -6045,6 +6075,7 @@ ACVP_RESULT acvp_cap_kas_ecc_enable(ACVP_CTX *ctx,
     case ACVP_AES_KW:
     case ACVP_AES_KWP:
     case ACVP_AES_GMAC:
+    case ACVP_AES_XPN:
     case ACVP_TDES_ECB:
     case ACVP_TDES_CBC:
     case ACVP_TDES_CBCI:
@@ -6161,6 +6192,7 @@ ACVP_RESULT acvp_cap_kas_ecc_set_parm(ACVP_CTX *ctx,
     case ACVP_AES_KW:
     case ACVP_AES_KWP:
     case ACVP_AES_GMAC:
+    case ACVP_AES_XPN:
     case ACVP_TDES_ECB:
     case ACVP_TDES_CBC:
     case ACVP_TDES_CBCI:
@@ -6375,6 +6407,7 @@ ACVP_RESULT acvp_cap_kas_ecc_set_scheme(ACVP_CTX *ctx,
     case ACVP_AES_KW:
     case ACVP_AES_KWP:
     case ACVP_AES_GMAC:
+    case ACVP_AES_XPN:
     case ACVP_TDES_ECB:
     case ACVP_TDES_CBC:
     case ACVP_TDES_CBCI:
@@ -6679,6 +6712,7 @@ ACVP_RESULT acvp_cap_kas_ffc_enable(ACVP_CTX *ctx,
     case ACVP_AES_KW:
     case ACVP_AES_KWP:
     case ACVP_AES_GMAC:
+    case ACVP_AES_XPN:
     case ACVP_TDES_ECB:
     case ACVP_TDES_CBC:
     case ACVP_TDES_CBCI:

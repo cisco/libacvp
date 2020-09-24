@@ -378,6 +378,23 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
         break;
     }
 
+        /*
+     * Set the salt generation source if applicable (XPN)
+     */
+    switch (sym_cap->salt_source) {
+    case ACVP_SYM_CIPH_SALT_SRC_INT:
+        json_object_set_string(cap_obj, "saltGen", "internal");
+        break;
+    case ACVP_SYM_CIPH_SALT_SRC_EXT:
+        json_object_set_string(cap_obj, "saltGen", "external");
+        break;
+    case ACVP_SYM_CIPH_SALT_SRC_NA:
+    case ACVP_SYM_CIPH_SALT_SRC_MAX:
+    default:
+        /* do nothing, this is an optional capability */
+        break;
+    }
+
     /*
      * Set the IV generation mode if applicable
      */
@@ -429,7 +446,7 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
      * Set the supported tag lengths (for AEAD ciphers)
      */
     if ((cap_entry->cipher == ACVP_AES_GCM) || (cap_entry->cipher == ACVP_AES_CCM)
-                                            || (cap_entry->cipher == ACVP_AES_GMAC)) {
+          || (cap_entry->cipher == ACVP_AES_GMAC) || (cap_entry->cipher == ACVP_AES_XPN)) {
         json_object_set_value(cap_obj, "tagLen", json_value_init_array());
         opts_arr = json_object_get_array(cap_obj, "tagLen");
         sl_list = sym_cap->taglen;
@@ -443,6 +460,7 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
      * Set the supported IV lengths
      */
     switch (cap_entry->cipher) {
+    case ACVP_CIPHER_START:
     case ACVP_TDES_ECB:
     case ACVP_TDES_CBC:
     case ACVP_TDES_CBCI:
@@ -466,12 +484,7 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
     case ACVP_AES_KW:
     case ACVP_AES_KWP:
     case ACVP_AES_XTS:
-        break;
-    case ACVP_CIPHER_START:
-    case ACVP_AES_GCM:
-    case ACVP_AES_GCM_SIV:
-    case ACVP_AES_CCM:
-    case ACVP_AES_GMAC:
+    case ACVP_AES_XPN:
     case ACVP_HASH_SHA1:
     case ACVP_HASH_SHA224:
     case ACVP_HASH_SHA256:
@@ -527,6 +540,11 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
     case ACVP_KAS_FFC_COMP:
     case ACVP_KAS_FFC_NOCOMP:
     case ACVP_CIPHER_END:
+        break;
+    case ACVP_AES_GCM:
+    case ACVP_AES_GCM_SIV:
+    case ACVP_AES_CCM:
+    case ACVP_AES_GMAC:
     default:
         json_object_set_value(cap_obj, "ivLen", json_value_init_array());
         opts_arr = json_object_get_array(cap_obj, "ivLen");
@@ -575,7 +593,8 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
      * Set the supported AAD lengths (for AEAD ciphers)
      */
     if ((cap_entry->cipher == ACVP_AES_GCM) || (cap_entry->cipher == ACVP_AES_CCM)
-            || (cap_entry->cipher == ACVP_AES_GMAC || (cap_entry->cipher == ACVP_AES_GCM_SIV))) {
+            || (cap_entry->cipher == ACVP_AES_GMAC) || (cap_entry->cipher == ACVP_AES_GCM_SIV)
+            || (cap_entry->cipher == ACVP_AES_XPN)) {
         json_object_set_value(cap_obj, "aadLen", json_value_init_array());
         opts_arr = json_object_get_array(cap_obj, "aadLen");
         sl_list = sym_cap->aadlen;
@@ -1032,6 +1051,7 @@ static ACVP_RESULT acvp_build_ecdsa_register_cap(ACVP_CIPHER cipher, JSON_Object
     case ACVP_AES_KW:
     case ACVP_AES_KWP:
     case ACVP_AES_GMAC:
+    case ACVP_AES_XPN:
     case ACVP_TDES_ECB:
     case ACVP_TDES_CBC:
     case ACVP_TDES_CBCI:
@@ -2722,6 +2742,7 @@ ACVP_RESULT acvp_build_test_session(ACVP_CTX *ctx, char **reg, int *out_len) {
             case ACVP_AES_KWP:
             case ACVP_AES_XTS:
             case ACVP_AES_GMAC:
+            case ACVP_AES_XPN:
             case ACVP_TDES_ECB:
             case ACVP_TDES_CBC:
             case ACVP_TDES_CTR:

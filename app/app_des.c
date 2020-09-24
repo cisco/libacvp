@@ -109,6 +109,7 @@ int app_des_handler(ACVP_TEST_CASE *test_case) {
     case ACVP_AES_KW:
     case ACVP_AES_KWP:
     case ACVP_AES_GMAC:
+    case ACVP_AES_XPN:
     case ACVP_TDES_CBCI:
     case ACVP_TDES_OFBI:
     case ACVP_TDES_CFBP1:
