@@ -24,7 +24,6 @@ static ACVP_RESULT acvp_aes_output_tc(ACVP_CTX *ctx,
                                       ACVP_SYM_CIPHER_TC *stc,
                                       JSON_Object *tc_rsp,
                                       int opt_rv);
-
 static ACVP_RESULT acvp_aes_init_tc(ACVP_CTX *ctx,
                                     ACVP_SYM_CIPHER_TC *stc,
                                     unsigned int tc_id,
@@ -35,21 +34,24 @@ static ACVP_RESULT acvp_aes_init_tc(ACVP_CTX *ctx,
                                     const char *j_iv,
                                     const char *j_tag,
                                     const char *j_aad,
+                                    const char *j_salt,
                                     ACVP_SYM_KW_MODE kwcipher,
                                     unsigned int key_len,
                                     unsigned int iv_len,
                                     unsigned int data_len,
                                     int pt_len,
                                     unsigned int tag_len,
+                                    unsigned int aad_len,
+                                    unsigned int salt_len,
                                     ACVP_CIPHER alg_id,
                                     ACVP_SYM_CIPH_DIR dir,
                                     ACVP_SYM_CIPH_IVGEN_SRC iv_gen,
                                     ACVP_SYM_CIPH_IVGEN_MODE iv_gen_mode,
-                                    unsigned int aad_len,
                                     unsigned int incr_ctr,
                                     unsigned int ovrflw_ctr,
                                     ACVP_SYM_CIPH_TWEAK_MODE tweak_mode,
-                                    int seq_num);
+                                    int seq_num,
+                                    ACVP_SYM_CIPH_SALT_SRC salt_src);
 
 static ACVP_RESULT acvp_aes_release_tc(ACVP_SYM_CIPHER_TC *stc);
 
@@ -158,6 +160,7 @@ static ACVP_RESULT acvp_aes_mct_iterate_tc(ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *st
     case ACVP_AES_KW:
     case ACVP_AES_KWP:
     case ACVP_AES_GMAC:
+    case ACVP_AES_XPN:
     case ACVP_TDES_ECB:
     case ACVP_TDES_CBC:
     case ACVP_TDES_CBCI:
@@ -576,6 +579,30 @@ static ACVP_SYM_CIPH_IVGEN_SRC read_ivgen_source(const char *str) {
 }
 
 /**
+ * @brief Read the \p str reprenting the salt source and
+ *        convert to enum.
+ *
+ * @param[in] str The char* string representing the salt source.
+ *
+ * @return ACVP_SYM_CIPH_SALT_SRC
+ * @return 0 for fail
+ */
+static ACVP_SYM_CIPH_SALT_SRC read_salt_source(const char *str) {
+    int diff = 0;
+
+    strcmp_s("internal", 8, str, &diff);
+    if (!diff) {
+        return ACVP_SYM_CIPH_SALT_SRC_INT;
+    }
+    strcmp_s("external", 8, str, &diff);
+    if (!diff) {
+        return ACVP_SYM_CIPH_SALT_SRC_EXT;
+    }
+
+    return 0;
+}
+
+/**
  * @brief Read the \p str reprenting the keywrap mode and
  *        convert to enum.
  *
@@ -737,14 +764,15 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     g_cnt = json_array_get_count(groups);
     for (i = 0; i < g_cnt; i++) {
         const char *test_type_str = NULL, *dir_str = NULL, *kwcipher_str = NULL,
-                   *iv_gen_str = NULL, *iv_gen_mode_str = NULL;
-        unsigned int keylen = 0, ivlen = 0, paylen = 0, datalen = 0, aadlen = 0, taglen = 0;
+                   *iv_gen_str = NULL, *iv_gen_mode_str = NULL, *salt_src_str = NULL;
+        unsigned int keylen = 0, ivlen = 0, paylen = 0, datalen = 0, aadlen = 0, taglen = 0, saltLen = 0;
         int ovrflw_ctr = -1, incr_ctr = -1, tgId = 0;
         ACVP_SYM_CIPH_DIR dir = 0;
         ACVP_SYM_CIPH_TESTTYPE test_type = 0;
         ACVP_SYM_KW_MODE kwcipher = 0;
         ACVP_SYM_CIPH_IVGEN_SRC iv_gen = ACVP_SYM_CIPH_IVGEN_SRC_NA;
         ACVP_SYM_CIPH_IVGEN_MODE iv_gen_mode = ACVP_SYM_CIPH_IVGEN_MODE_NA;
+        ACVP_SYM_CIPH_SALT_SRC salt_src = ACVP_SYM_CIPH_SALT_SRC_NA;
 
         groupval = json_array_get_value(groups, i);
         groupobj = json_value_get_object(groupval);
@@ -835,17 +863,13 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             ivlen = 128;
         }
 
-        if (alg_id == ACVP_AES_GCM || alg_id == ACVP_AES_CCM || alg_id == ACVP_AES_GMAC || alg_id == ACVP_AES_GCM_SIV) {
+        if (alg_id == ACVP_AES_GCM || alg_id == ACVP_AES_CCM || alg_id == ACVP_AES_GMAC ||
+                alg_id == ACVP_AES_GCM_SIV || alg_id == ACVP_AES_XPN) {
             ivlen = json_object_get_number(groupobj, "ivLen");
             if (!ivlen) {
-                if (alg_id == ACVP_AES_GCM_SIV) {
-                    //GCM-SIV has a static ivlen of 96, not required to be sent by server
-                    ivlen = ACVP_AES_GCM_SIV_IVLEN;
-                } else {
-                    ACVP_LOG_ERR("Server JSON missing 'ivLen'");
-                    rv = ACVP_MISSING_ARG;
-                    goto err;
-                }
+                ACVP_LOG_ERR("Server JSON missing 'ivLen'");
+                rv = ACVP_MISSING_ARG;
+                goto err;
             }
 
             if (alg_id == ACVP_AES_GCM || alg_id == ACVP_AES_GMAC) {
@@ -897,7 +921,8 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                     rv = ACVP_INVALID_ARG;
                     goto err;
                 }
-            } else if (alg_id == ACVP_AES_GCM_SIV && ivlen != ACVP_AES_GCM_SIV_IVLEN) {
+            } else if ((alg_id == ACVP_AES_GCM_SIV && ivlen != ACVP_AES_GCM_SIV_IVLEN)
+                       || (alg_id == ACVP_AES_XPN && ivlen != ACVP_AES_XPN_IVLEN)) {
                 ACVP_LOG_ERR("Server JSON invalid 'ivLen', (%u)", ivlen);
                 rv = ACVP_INVALID_ARG;
                 goto err;
@@ -912,15 +937,10 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             }
 
             taglen = json_object_get_number(groupobj, "tagLen");
-            if (alg_id == ACVP_AES_GCM_SIV) {
-                if (!taglen) {
-                    //GCM-SIV has a static taglen of 128, not required to be sent by server
-                    taglen = ACVP_AES_GCM_SIV_TAGLEN;
-                } else if (taglen != ACVP_AES_GCM_SIV_TAGLEN) {
-                    ACVP_LOG_ERR("Server JSON invalid 'tagLen', (%u)", taglen);
-                    rv = ACVP_INVALID_ARG;
-                    goto err;
-                }
+            if (alg_id == ACVP_AES_GCM_SIV && taglen != ACVP_AES_GCM_SIV_TAGLEN) {
+                ACVP_LOG_ERR("Server JSON invalid 'tagLen', (%u)", taglen);
+                rv = ACVP_INVALID_ARG;
+                goto err;
             } else if (!(taglen >= ACVP_SYM_TAG_BIT_MIN && taglen <= ACVP_SYM_TAG_BIT_MAX)) {
                 ACVP_LOG_ERR("Server JSON invalid 'tagLen', (%u)", taglen);
                 rv = ACVP_INVALID_ARG;
@@ -945,6 +965,22 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             tw_mode = json_object_get_string(groupobj, "tweakMode");
             if (!tw_mode) {
                 ACVP_LOG_ERR("Missing 'tweakMode' in server JSON data");
+                rv = ACVP_INVALID_ARG;
+                goto err;
+            }
+        }
+
+        if (alg_id == ACVP_AES_XPN) {
+            salt_src_str = json_object_get_string(groupobj, "saltGen");
+            salt_src = read_salt_source(salt_src_str);
+            if (!salt_src) {
+                ACVP_LOG_ERR("Missing 'saltGen' in server JSON data");
+                rv = ACVP_INVALID_ARG;
+                goto err;
+            }
+            saltLen = json_object_get_number(groupobj, "saltLen");
+            if (saltLen != ACVP_AES_XPN_SALTLEN) {
+                ACVP_LOG_ERR("Invalid 'saltLen' in server JSON data; expected %d, got %d", ACVP_AES_XPN_SALTLEN, saltLen);
                 rv = ACVP_INVALID_ARG;
                 goto err;
             }
@@ -986,7 +1022,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
         for (j = 0; j < t_cnt; j++) {
             const char *pt = NULL, *ct = NULL, *iv = NULL,
-                       *key = NULL, *tag = NULL, *aad = NULL;
+                       *key = NULL, *tag = NULL, *aad = NULL, *salt = NULL;
             unsigned int tc_id = 0;
 
             if (ctx->debug == ACVP_LOG_LVL_VERBOSE) ACVP_LOG_NEWLINE;
@@ -1090,7 +1126,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
              * If GCM/GMAC, direction is encrypt, and the generation is internal
              * then iv is not provided.
              */
-            if (ivlen && !((alg_id == ACVP_AES_GCM || alg_id == ACVP_AES_GMAC)
+            if (ivlen && !((alg_id == ACVP_AES_GCM || alg_id == ACVP_AES_GMAC || alg_id == ACVP_AES_XPN)
                                         && dir == ACVP_SYM_CIPH_DIR_ENCRYPT &&
                                         iv_gen == ACVP_SYM_CIPH_IVGEN_SRC_INT)) {
                 if (alg_id == ACVP_AES_XTS) {
@@ -1149,7 +1185,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             }
 
             if (alg_id == ACVP_AES_GCM || alg_id == ACVP_AES_GCM_SIV || alg_id == ACVP_AES_CCM || 
-                                                                        alg_id == ACVP_AES_GMAC) {
+                                          alg_id == ACVP_AES_GMAC || alg_id == ACVP_AES_XPN) {
                 aad = json_object_get_string(testobj, "aad");
                 if (!aad) {
                     ACVP_LOG_ERR("Server JSON missing 'aad'");
@@ -1162,6 +1198,10 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                     rv = ACVP_INVALID_ARG;
                     goto err;
                 }
+            }
+
+            if (alg_id == ACVP_AES_XPN && salt_src == ACVP_SYM_CIPH_SALT_SRC_EXT) {
+                salt = json_object_get_string(testobj, "salt");
             }
 
             ACVP_LOG_VERBOSE("        Test case: %d", j);
@@ -1193,9 +1233,9 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
              * the crypto module.
              */
             rv = acvp_aes_init_tc(ctx, &stc, tc_id, test_type, key, pt, ct, iv, tag, 
-                                  aad, kwcipher, keylen, ivlen, datalen, paylen,
-                                  taglen, alg_id, dir, iv_gen, iv_gen_mode, aadlen,
-                                  incr_ctr, ovrflw_ctr, tweak_mode, seq_num);
+                                  aad, salt, kwcipher, keylen, ivlen, datalen, paylen,
+                                  taglen, aadlen, saltLen, alg_id, dir, iv_gen, iv_gen_mode, 
+                                  incr_ctr, ovrflw_ctr, tweak_mode, seq_num, salt_src);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("Init for stc (test case) failed");
                 acvp_aes_release_tc(&stc);
@@ -1286,13 +1326,22 @@ static ACVP_RESULT acvp_aes_output_tc(ACVP_CTX *ctx,
     /*
      * Only return IV on AES-GCM ciphers
      */
-    if (stc->cipher == ACVP_AES_GCM || stc->cipher == ACVP_AES_GMAC) {
+    if (stc->cipher == ACVP_AES_GCM || stc->cipher == ACVP_AES_GMAC || stc->cipher == ACVP_AES_XPN) {
         rv = acvp_bin_to_hexstr(stc->iv, stc->iv_len, tmp, ACVP_SYM_CT_MAX);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("hex conversion failure (iv)");
             goto err;
         }
         json_object_set_string(tc_rsp, "iv", tmp);
+    }
+
+    if (stc->cipher == ACVP_AES_XPN && stc->salt_source == ACVP_SYM_CIPH_SALT_SRC_INT) {
+        rv = acvp_bin_to_hexstr(stc->salt, stc->salt_len, tmp, ACVP_AES_XPN_SALTLEN);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("hex conversion failure (salt)");
+            goto err;
+        }
+        json_object_set_string(tc_rsp, "salt", tmp);
     }
 
     if (stc->direction == ACVP_SYM_CIPH_DIR_ENCRYPT) {
@@ -1315,7 +1364,7 @@ static ACVP_RESULT acvp_aes_output_tc(ACVP_CTX *ctx,
         /*
          * AES-GCM ciphers need to include the tag
          */
-        if (stc->cipher == ACVP_AES_GCM || stc->cipher == ACVP_AES_GMAC) {
+        if (stc->cipher == ACVP_AES_GCM || stc->cipher == ACVP_AES_GMAC || stc->cipher == ACVP_AES_XPN) {
             memzero_s(tmp, ACVP_SYM_CT_MAX);
             rv = acvp_bin_to_hexstr(stc->tag, stc->tag_len, tmp, ACVP_SYM_CT_MAX);
             if (rv != ACVP_SUCCESS) {
@@ -1327,7 +1376,8 @@ static ACVP_RESULT acvp_aes_output_tc(ACVP_CTX *ctx,
     } else {
         if (stc->cipher == ACVP_AES_GCM || stc->cipher == ACVP_AES_CCM ||
                 stc->cipher == ACVP_AES_KW || stc->cipher == ACVP_AES_KWP ||
-                stc->cipher == ACVP_AES_GCM_SIV || stc->cipher == ACVP_AES_GMAC) {
+                stc->cipher == ACVP_AES_GCM_SIV || stc->cipher == ACVP_AES_GMAC ||
+                stc->cipher == ACVP_AES_XPN) {
             if (opt_rv != 0) {
                 json_object_set_boolean(tc_rsp, "testPassed", 0);
                 free(tmp);
@@ -1380,21 +1430,24 @@ static ACVP_RESULT acvp_aes_init_tc(ACVP_CTX *ctx,
                                     const char *j_iv,
                                     const char *j_tag,
                                     const char *j_aad,
+                                    const char *j_salt,
                                     ACVP_SYM_KW_MODE kwcipher,
                                     unsigned int key_len,
                                     unsigned int iv_len,
                                     unsigned int data_len,
                                     int pt_len,
                                     unsigned int tag_len,
+                                    unsigned int aad_len,
+                                    unsigned int salt_len,
                                     ACVP_CIPHER alg_id,
                                     ACVP_SYM_CIPH_DIR dir,
                                     ACVP_SYM_CIPH_IVGEN_SRC iv_gen,
                                     ACVP_SYM_CIPH_IVGEN_MODE iv_gen_mode,
-                                    unsigned int aad_len,
                                     unsigned int incr_ctr,
                                     unsigned int ovrflw_ctr,
                                     ACVP_SYM_CIPH_TWEAK_MODE tweak_mode,
-                                    int seq_num) {
+                                    int seq_num,
+                                    ACVP_SYM_CIPH_SALT_SRC salt_src) {
 
     ACVP_RESULT rv;
 
@@ -1412,6 +1465,8 @@ static ACVP_RESULT acvp_aes_init_tc(ACVP_CTX *ctx,
     if (!stc->iv) { return ACVP_MALLOC_FAIL; }
     stc->aad = calloc(ACVP_SYM_AAD_BYTE_MAX, 1);
     if (!stc->aad) { return ACVP_MALLOC_FAIL; }
+    stc->salt = calloc(ACVP_AES_XPN_SALTLEN, 1);
+    if (!stc->salt) { return ACVP_MALLOC_FAIL; }
 
     rv = acvp_hexstr_to_bin(j_key, stc->key, ACVP_SYM_KEY_MAX_BYTES, NULL);
     if (rv != ACVP_SUCCESS) {
@@ -1488,6 +1543,14 @@ static ACVP_RESULT acvp_aes_init_tc(ACVP_CTX *ctx,
         }
     }
 
+    if (j_salt) {
+        rv = acvp_hexstr_to_bin(j_salt, stc->salt, ACVP_AES_XPN_SALTLEN, NULL);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Hex conversion failure (salt)");
+            return rv;
+        }
+    }
+
     /*
      * These lengths come in as bit lengths from the ACVP server.
      * We convert to bytes.
@@ -1502,6 +1565,7 @@ static ACVP_RESULT acvp_aes_init_tc(ACVP_CTX *ctx,
     stc->aad_len = aad_len / 8;
     if (!stc->pt_len) stc->pt_len = pt_len / 8;
     if (!stc->ct_len) stc->ct_len = pt_len / 8;
+    stc->salt_len = salt_len / 8;
 
     stc->cipher = alg_id;
     stc->direction = dir;
@@ -1511,6 +1575,7 @@ static ACVP_RESULT acvp_aes_init_tc(ACVP_CTX *ctx,
     stc->ovrflw_ctr = ovrflw_ctr;
     stc->tw_mode = tweak_mode;
     stc->seq_num = seq_num;
+    stc->salt_source = salt_src;
     return ACVP_SUCCESS;
 }
 
@@ -1525,6 +1590,7 @@ static ACVP_RESULT acvp_aes_release_tc(ACVP_SYM_CIPHER_TC *stc) {
     if (stc->tag) free(stc->tag);
     if (stc->iv) free(stc->iv);
     if (stc->aad) free(stc->aad);
+    if (stc->salt) free(stc->salt);
     memzero_s(stc, sizeof(ACVP_SYM_CIPHER_TC));
 
     return ACVP_SUCCESS;
