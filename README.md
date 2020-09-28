@@ -104,11 +104,10 @@ libacvp uses compile time macro logic to address differences in the APIs of diff
 versions.
 
 Libacvp is designed to work with curl version 7.61.0 or newer. Some operating systems may ship with
-older versions of Curl which are missing certain features that libacvp depends on. While it is
-possible some older versions may work, they are not tested or supported. In this case you should
-either acquire a newer version through your OS package manager if possible or build a newer version
-from source.
-
+older versions of Curl which are missing certain features that libacvp depends on. In this case you
+should either acquire a newer version through your OS package manager if possible or build a newer
+version from source. While it is possible some older versions may work, they are not tested or
+supported.
 
 ## Building
 
