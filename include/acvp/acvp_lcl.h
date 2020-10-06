@@ -881,6 +881,7 @@ typedef struct acvp_sym_cipher_capability {
     ACVP_SYM_CIPH_IVGEN_SRC ivgen_source;
     ACVP_SYM_CIPH_IVGEN_MODE ivgen_mode;
     ACVP_SYM_CIPH_SALT_SRC salt_source;
+    int perform_ctr_tests;
     unsigned int ctr_incr;
     unsigned int ctr_ovrflw;
     ACVP_SL_LIST *keylen;
