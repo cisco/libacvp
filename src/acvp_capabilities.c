@@ -449,6 +449,7 @@ static ACVP_RESULT acvp_cap_list_append(ACVP_CTX *ctx,
             rv = ACVP_MALLOC_FAIL;
             goto err;
         }
+        cap_entry->cap.sym_cap->perform_ctr_tests = 1; //true by default
         break;
 
     case ACVP_KDF135_TPM_TYPE:
@@ -1129,6 +1130,7 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
     case ACVP_SYM_CIPH_KW_MODE:
     case ACVP_SYM_CIPH_PARM_DIR:
     case ACVP_SYM_CIPH_PARM_KO:
+    case ACVP_SYM_CIPH_PARM_PERFORM_CTR:
     case ACVP_SYM_CIPH_PARM_CTR_INCR:
     case ACVP_SYM_CIPH_PARM_CTR_OVRFLW:
     case ACVP_SYM_CIPH_PARM_IVGEN_MODE:
@@ -1540,7 +1542,22 @@ ACVP_RESULT acvp_cap_sym_cipher_set_parm(ACVP_CTX *ctx,
             return ACVP_INVALID_ARG;
         }
 
+    case ACVP_SYM_CIPH_PARM_PERFORM_CTR:
+        if(value == 0 || value == 1) {
+            if (value == 0 && (cap->cap.sym_cap->ctr_incr || cap->cap.sym_cap->ctr_ovrflw)) {
+                ACVP_LOG_WARN("Perform counter test set to false, but value for ctr increment or ctr overflow already set. Server will ignore other values. Continuing...");
+            }
+            cap->cap.sym_cap->perform_ctr_tests = value;
+            return ACVP_SUCCESS;
+        } else {
+            ACVP_LOG_ERR("Invalid parameter 'value' for param ACVP_SYM_CIPH_PARM_PERFORM_CTR");
+            return ACVP_INVALID_ARG;
+        }
+
     case ACVP_SYM_CIPH_PARM_CTR_INCR:
+        if (cap->cap.sym_cap->perform_ctr_tests == 0) {
+            ACVP_LOG_WARN("Perform counter test set to false, but value for ctr increment being set; server will ignore this. Continuing...");
+        }
         if (value == 0 || value == 1) {
             cap->cap.sym_cap->ctr_incr = value;
             return ACVP_SUCCESS;
@@ -1550,6 +1567,9 @@ ACVP_RESULT acvp_cap_sym_cipher_set_parm(ACVP_CTX *ctx,
         }
 
     case ACVP_SYM_CIPH_PARM_CTR_OVRFLW:
+        if (cap->cap.sym_cap->perform_ctr_tests == 0) {
+            ACVP_LOG_WARN("Perform counter test set to false, but value for ctr overflow being set; server will ignore this. Continuing...");
+        }
         if (value == 0 || value == 1) {
             cap->cap.sym_cap->ctr_ovrflw = value;
             return ACVP_SUCCESS;
@@ -1622,6 +1642,7 @@ ACVP_RESULT acvp_cap_sym_cipher_set_parm(ACVP_CTX *ctx,
     case ACVP_SYM_CIPH_KW_MODE:
     case ACVP_SYM_CIPH_PARM_DIR:
     case ACVP_SYM_CIPH_PARM_KO:
+    case ACVP_SYM_CIPH_PARM_PERFORM_CTR:
     case ACVP_SYM_CIPH_PARM_CTR_INCR:
     case ACVP_SYM_CIPH_PARM_CTR_OVRFLW:
     case ACVP_SYM_CIPH_PARM_IVGEN_MODE:
