@@ -190,6 +190,7 @@ typedef enum acvp_prereq_mode_t {
  *        Can be used as bit flags.
  */
 typedef enum acvp_hash_alg {
+    ACVP_NO_SHA = 0,
     ACVP_SHA1 = 1,
     ACVP_SHA224 = 2,
     ACVP_SHA256 = 4,

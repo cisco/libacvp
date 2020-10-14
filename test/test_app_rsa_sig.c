@@ -12,8 +12,6 @@
 // Created by edaw on 2019-01-07.
 //
 
-#ifdef ACVP_NO_RUNTIME
-
 #include "ut_common.h"
 #include "app_common.h"
 #include "acvp/acvp_lcl.h"
@@ -158,5 +156,4 @@ Test(APP_RSA_SIG_HANDLER, invalid_hash_alg) {
     free(test_case);
 }
 
-#endif // ACVP_NO_RUNTIME
 
