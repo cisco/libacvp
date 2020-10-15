@@ -183,7 +183,7 @@
 /* RSA */
 #define ACVP_REV_RSA                 ACVP_REVISION_FIPS186_4
 
-/* RSA */
+/* ECDSA */
 #define ACVP_REV_ECDSA               ACVP_REVISION_LATEST
 
 /* KAS_ECC */
