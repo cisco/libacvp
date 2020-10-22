@@ -144,6 +144,7 @@ ACVP_ALG_HANDLER alg_tbl[ACVP_ALG_MAX] = {
     { ACVP_KDF135_IKEV1,      &acvp_kdf135_ikev1_kat_handler, ACVP_KDF135_ALG_STR,        ACVP_ALG_KDF135_IKEV1, ACVP_REV_KDF135_IKEV1},
     { ACVP_KDF135_X963,       &acvp_kdf135_x963_kat_handler,  ACVP_KDF135_ALG_STR,        ACVP_ALG_KDF135_X963, ACVP_REV_KDF135_X963},
     { ACVP_KDF108,            &acvp_kdf108_kat_handler,       ACVP_ALG_KDF108,            NULL, ACVP_REV_KDF108},
+    { ACVP_PBKDF,             &acvp_pbkdf_kat_handler,        ACVP_ALG_PBKDF,             NULL, ACVP_REV_PBKDF},
     { ACVP_KAS_ECC_CDH,       &acvp_kas_ecc_kat_handler,      ACVP_ALG_KAS_ECC,           ACVP_ALG_KAS_ECC_CDH, ACVP_REV_KAS_ECC},
     { ACVP_KAS_ECC_COMP,      &acvp_kas_ecc_kat_handler,      ACVP_ALG_KAS_ECC,           ACVP_ALG_KAS_ECC_COMP, ACVP_REV_KAS_ECC},
     { ACVP_KAS_ECC_NOCOMP,    &acvp_kas_ecc_kat_handler,      ACVP_ALG_KAS_ECC,           ACVP_ALG_KAS_ECC_NOCOMP, ACVP_REV_KAS_ECC},
@@ -726,6 +727,9 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx) {
                 acvp_cap_free_sl(cap_entry->cap.kdf135_x963_cap->field_sizes);
                 acvp_cap_free_sl(cap_entry->cap.kdf135_x963_cap->key_data_lengths);
                 free(cap_entry->cap.kdf135_x963_cap);
+                break;
+            case ACVP_PBKDF_TYPE:
+                free(cap_entry->cap.pbkdf_cap);
                 break;
             case ACVP_KDF135_TPM_TYPE:
             default:

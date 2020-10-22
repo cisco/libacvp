@@ -1318,7 +1318,7 @@ end:
 static int enable_kdf(ACVP_CTX *ctx) {
     ACVP_RESULT rv = ACVP_SUCCESS;
     int i, flags = 0;
-
+#if 0
     /*
      * Enable KDF-135
      */
@@ -1482,6 +1482,33 @@ static int enable_kdf(ACVP_CTX *ctx) {
     //REQUIRES_EMPTY_IV can only be set if SUPPORTS_EMPTY_IV is set to true
     //rv = acvp_cap_kdf108_set_parm(ctx, ACVP_KDF108_MODE_COUNTER, ACVP_KDF108_REQUIRES_EMPTY_IV, 0);
     //CHECK_ENABLE_CAP_RV(rv);
+#endif
+    /*
+     * PBKDF
+     */
+
+    //Bit flags for pbkdf hmac capabilities
+    flags = ACVP_SHA1 | ACVP_SHA224 | ACVP_SHA256
+            | ACVP_SHA384 | ACVP_SHA512 | ACVP_SHA3_224
+            | ACVP_SHA3_256 | ACVP_SHA3_384 | ACVP_SHA3_512;
+
+    rv = acvp_cap_pbkdf_enable(ctx, &app_kdf108_handler);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_set_prereq(ctx, ACVP_PBKDF, ACVP_PREREQ_SHA, value);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_pbkdf_set_parm(ctx, ACVP_PBKDF_HMAC_ALG, flags);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_pbkdf_set_domain(ctx, ACVP_PBKDF_ITERATION_COUNT, 10, 1000, 1);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_pbkdf_set_domain(ctx, ACVP_PBKDF_KEY_LEN, 112, 4096, 8);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_pbkdf_set_domain(ctx, ACVP_PBKDF_PASSWORD_LEN, 8, 128, 1);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_pbkdf_set_domain(ctx, ACVP_PBKDF_SALT_LEN, 128, 4096, 8);
+    CHECK_ENABLE_CAP_RV(rv);
+
+
+
 
 end:
 

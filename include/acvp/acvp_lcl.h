@@ -202,6 +202,7 @@
 #define ACVP_REV_KDF135_TPM          ACVP_REVISION_LATEST
 #define ACVP_REV_KDF135_X963         ACVP_REVISION_LATEST
 #define ACVP_REV_KDF108              ACVP_REVISION_LATEST
+#define ACVP_REV_PBKDF               ACVP_REVISION_LATEST
 
 
 /********************************************************
@@ -364,6 +365,7 @@
 #define ACVP_ALG_KDF135_TPM      "KDF-TPM"
 #define ACVP_ALG_KDF108          "KDF"
 #define ACVP_ALG_KDF135_X963     "ansix9.63"
+#define ACVP_ALG_PBKDF           "PBKDF"
 
 #define ACVP_CAPABILITY_STR_MAX 512 /**< Arbitrary string length limit */
 
@@ -632,6 +634,32 @@
  * END KDF108
  */
 
+/**
+ * Accepted length ranges for PBKDF.
+ */
+#define ACVP_PBKDF_ITERATION_MIN 1
+#define ACVP_PBKDF_ITERATION_MAX 10000000
+
+#define ACVP_PBKDF_KEY_BIT_MIN 112
+#define ACVP_PBKDF_KEY_BIT_MAX 4096
+#define ACVP_PBKDF_KEY_BYTE_MIN (ACVP_PBKDF_KEY_BIT_MIN >> 3)
+#define ACVP_PBKDF_KEY_STR_MIN (ACVP_PBKDF_KEY_BIT_MIN >> 2)
+#define ACVP_KBPDF_KEY_BYTE_MAX (ACVP_PBKDF_KEY_BIT_MAX >> 3)
+#define ACVP_PBKDF_KEY_STR_MAX (ACVP_PBKDF_KEY_BIT_MAX >> 2)
+
+#define ACVP_PBKDF_PASS_LEN_MIN 8 //in chars
+#define ACVP_PBKDF_PASS_LEN_MAX 128 //in chars
+
+#define ACVP_PBKDF_SALT_LEN_BIT_MIN 128
+#define ACVP_PBKDF_SALT_LEN_BIT_MAX 4096
+#define ACVP_PBKDF_SALT_LEN_BYTE_MIN (ACVP_PBKDF_SALT_LEN_BIT_MIN >> 3)
+#define ACVP_PBKDF_SALT_LEN_STR_MIN (ACVP_PBKDF_SALT_LEN_BIT_MIN >> 2)
+#define ACVP_PBKDF_SALT_LEN_BYTE_MAX (ACVP_PBKDF_SALT_LEN_BIT_MAX >> 3)
+#define ACVP_PBKDF_SALT_LEN_STR_MAX (ACVP_PBKDF_SALT_LEN_BIT_MAX >> 2)
+/*
+ * END PBKDF
+ */
+
 #define ACVP_HMAC_MSG_MAX       1024
 
 #define ACVP_HMAC_MAC_BIT_MIN 32  /**< 32 bits */
@@ -806,6 +834,7 @@ typedef enum acvp_capability_type {
     ACVP_KDF135_X963_TYPE,
     ACVP_KDF135_TPM_TYPE,
     ACVP_KDF108_TYPE,
+    ACVP_PBKDF_TYPE,
     ACVP_KAS_ECC_CDH_TYPE,
     ACVP_KAS_ECC_COMP_TYPE,
     ACVP_KAS_ECC_NOCOMP_TYPE,
@@ -963,6 +992,14 @@ typedef struct acvp_kdf135_x963_capability {
     ACVP_SL_LIST *field_sizes;
     ACVP_SL_LIST *key_data_lengths;
 } ACVP_KDF135_X963_CAP;
+
+typedef struct acvp_pbkdf_capability {
+    int hmac_alg_flags; //because the spec calls for hash alg names, use bit flags from ACVP_HASH_ALG
+    ACVP_JSON_DOMAIN_OBJ iteration_count_domain;
+    ACVP_JSON_DOMAIN_OBJ key_len_domain;
+    ACVP_JSON_DOMAIN_OBJ password_len_domain;
+    ACVP_JSON_DOMAIN_OBJ salt_len_domain;
+} ACVP_PBKDF_CAP;
 
 typedef struct acvp_hmac_capability {
     ACVP_JSON_DOMAIN_OBJ key_len; // 8-524288
@@ -1186,6 +1223,7 @@ typedef struct acvp_caps_list_t {
         ACVP_KDF135_IKEV1_CAP *kdf135_ikev1_cap;
         ACVP_KDF135_X963_CAP *kdf135_x963_cap;
         ACVP_KDF108_CAP *kdf108_cap;
+        ACVP_PBKDF_CAP *pbkdf_cap;
         ACVP_KAS_ECC_CAP *kas_ecc_cap;
         ACVP_KAS_FFC_CAP *kas_ffc_cap;
     } cap;
@@ -1470,6 +1508,8 @@ ACVP_RESULT acvp_kdf135_ikev1_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 ACVP_RESULT acvp_kdf135_x963_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
 ACVP_RESULT acvp_kdf108_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
+
+ACVP_RESULT acvp_pbkdf_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
 ACVP_RESULT acvp_dsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 

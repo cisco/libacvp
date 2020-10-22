@@ -141,8 +141,8 @@ am_libacvp_la_OBJECTS = acvp.lo acvp_build_register.lo \
 	acvp_rsa_keygen.lo acvp_rsa_sig.lo acvp_dsa.lo \
 	acvp_kdf135_tls.lo acvp_kdf135_snmp.lo acvp_kdf135_ssh.lo \
 	acvp_kdf135_srtp.lo acvp_kdf135_ikev2.lo acvp_kdf135_ikev1.lo \
-	acvp_kdf135_x963.lo acvp_kdf108.lo acvp_kas_ecc.lo \
-	acvp_kas_ffc.lo acvp_ecdsa.lo
+	acvp_kdf135_x963.lo acvp_kdf108.lo acvp_pbkdf.lo \
+	acvp_kas_ecc.lo acvp_kas_ffc.lo acvp_ecdsa.lo
 libacvp_la_OBJECTS = $(am_libacvp_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -177,7 +177,7 @@ am__depfiles_remade = ./$(DEPDIR)/acvp.Plo ./$(DEPDIR)/acvp_aes.Plo \
 	./$(DEPDIR)/acvp_kdf135_ssh.Plo \
 	./$(DEPDIR)/acvp_kdf135_tls.Plo \
 	./$(DEPDIR)/acvp_kdf135_x963.Plo \
-	./$(DEPDIR)/acvp_operating_env.Plo \
+	./$(DEPDIR)/acvp_operating_env.Plo ./$(DEPDIR)/acvp_pbkdf.Plo \
 	./$(DEPDIR)/acvp_rsa_keygen.Plo ./$(DEPDIR)/acvp_rsa_sig.Plo \
 	./$(DEPDIR)/acvp_transport.Plo ./$(DEPDIR)/acvp_util.Plo \
 	./$(DEPDIR)/parson.Plo
@@ -384,6 +384,7 @@ libacvp_la_SOURCES = acvp.c \
                     acvp_kdf135_ikev1.c \
                     acvp_kdf135_x963.c \
                     acvp_kdf108.c \
+                    acvp_pbkdf.c \
                     acvp_kas_ecc.c \
                     acvp_kas_ffc.c \
                     acvp_ecdsa.c
@@ -494,6 +495,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/acvp_kdf135_tls.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/acvp_kdf135_x963.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/acvp_operating_env.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/acvp_pbkdf.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/acvp_rsa_keygen.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/acvp_rsa_sig.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/acvp_transport.Plo@am__quote@ # am--include-marker
@@ -708,6 +710,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/acvp_kdf135_tls.Plo
 	-rm -f ./$(DEPDIR)/acvp_kdf135_x963.Plo
 	-rm -f ./$(DEPDIR)/acvp_operating_env.Plo
+	-rm -f ./$(DEPDIR)/acvp_pbkdf.Plo
 	-rm -f ./$(DEPDIR)/acvp_rsa_keygen.Plo
 	-rm -f ./$(DEPDIR)/acvp_rsa_sig.Plo
 	-rm -f ./$(DEPDIR)/acvp_transport.Plo
@@ -780,6 +783,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/acvp_kdf135_tls.Plo
 	-rm -f ./$(DEPDIR)/acvp_kdf135_x963.Plo
 	-rm -f ./$(DEPDIR)/acvp_operating_env.Plo
+	-rm -f ./$(DEPDIR)/acvp_pbkdf.Plo
 	-rm -f ./$(DEPDIR)/acvp_rsa_keygen.Plo
 	-rm -f ./$(DEPDIR)/acvp_rsa_sig.Plo
 	-rm -f ./$(DEPDIR)/acvp_transport.Plo
