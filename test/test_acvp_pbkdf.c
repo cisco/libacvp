@@ -23,7 +23,7 @@ static void setup(void) {
 
     rv = acvp_cap_pbkdf_enable(ctx, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_set_prereq(ctx, ACVP_PBKDF, ACVP_PREREQ_SHA, cvalue);
+    rv = acvp_cap_set_prereq(ctx, ACVP_PBKDF, ACVP_PREREQ_HMAC, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_pbkdf_set_parm(ctx, ACVP_PBKDF_HMAC_ALG, ACVP_PBKDF_HMAC_ALG_SHA1);
     cr_assert(rv == ACVP_SUCCESS);

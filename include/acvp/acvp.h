@@ -2488,8 +2488,8 @@ ACVP_RESULT acvp_cap_pbkdf_set_domain(ACVP_CTX *ctx,
         specify the parameters for the corresponding KDF.
 
    @param ctx Address of pointer to a previously allocated ACVP_CTX.
-   @param cap ACVP_KDF108_MODE enum value identifying the kdf108 mode
-   @param param ACVP_KDF108_PARM enum value specifying parameter
+   @param cap ACVP_PBKDF_MODE enum value identifying the kdf108 mode
+   @param param ACVP_PBKDF_PARM enum value specifying parameter
    @param value integer value for parameter
 
    @return ACVP_RESULT
