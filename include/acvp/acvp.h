@@ -145,6 +145,8 @@ typedef enum acvp_cipher {
     ACVP_RSA_KEYGEN,
     ACVP_RSA_SIGGEN,
     ACVP_RSA_SIGVER,
+    ACVP_RSA_DECPRIM,
+    ACVP_RSA_SIGPRIM,
     ACVP_ECDSA_KEYGEN,
     ACVP_ECDSA_KEYVER,
     ACVP_ECDSA_SIGGEN,
@@ -536,6 +538,37 @@ typedef enum acvp_rsa_sig_type {
     ACVP_RSA_SIG_TYPE_PKCS1V15,
     ACVP_RSA_SIG_TYPE_PKCS1PSS
 } ACVP_RSA_SIG_TYPE;
+
+typedef enum acvp_rsa_prim_keyformat {
+    ACVP_RSA_PRIM_KEYFORMAT_STANDARD = 1,
+    ACVP_RSA_PRIM_KEYFORMAT_CRT
+} ACVP_RSA_PRIM_KEYFORMAT;
+
+typedef struct acvp_rsa_prim_tc_t {
+    unsigned int tc_id;    /* Test case id */
+    unsigned char *cipher;
+    int cipher_len;
+    unsigned char *msg;
+    int msg_len;
+    unsigned char *signature;
+    int sig_len;
+    char *plaintext;
+    int deferred;
+    int modulo;
+    int fail;
+    int pass;
+    int key_format;
+    unsigned char *n;
+    int n_len;
+    unsigned char *e;
+    int e_len;
+    unsigned char *d;
+    int d_len;
+    unsigned char *pt;
+    int pt_len;
+    int disposition;
+} ACVP_RSA_PRIM_TC;
+
 
 /*! @struct ACVP_SYM_CIPHER_PARM */
 typedef enum acvp_sym_cipher_parameter {
@@ -1439,6 +1472,7 @@ typedef struct acvp_test_case_t {
         ACVP_CMAC_TC *cmac;
         ACVP_RSA_KEYGEN_TC *rsa_keygen;
         ACVP_RSA_SIG_TC *rsa_sig;
+        ACVP_RSA_PRIM_TC *rsa_prim;
         ACVP_ECDSA_TC *ecdsa;
         ACVP_KDF135_TLS_TC *kdf135_tls;
         ACVP_KDF135_SNMP_TC *kdf135_snmp;
@@ -1931,6 +1965,10 @@ ACVP_RESULT acvp_cap_rsa_sig_enable(ACVP_CTX *ctx,
                                     ACVP_CIPHER cipher,
                                     int (*crypto_handler)(ACVP_TEST_CASE *test_case));
 
+ACVP_RESULT acvp_cap_rsa_prim_enable(ACVP_CTX *ctx,
+                                     ACVP_CIPHER cipher,
+                                     int (*crypto_handler)(ACVP_TEST_CASE *test_case));
+
 ACVP_RESULT acvp_cap_ecdsa_enable(ACVP_CTX *ctx,
                                   ACVP_CIPHER cipher,
                                   int (*crypto_handler)(ACVP_TEST_CASE *test_case));
@@ -1963,6 +2001,14 @@ ACVP_RESULT acvp_cap_rsa_sigver_set_parm(ACVP_CTX *ctx,
 
 ACVP_RESULT acvp_cap_rsa_keygen_set_mode(ACVP_CTX *ctx,
                                          ACVP_RSA_KEYGEN_MODE value);
+
+ACVP_RESULT acvp_cap_rsa_prim_set_parm(ACVP_CTX *ctx,
+                                       ACVP_RSA_PARM prim_type,
+                                       int value);
+
+ACVP_RESULT acvp_cap_rsa_prim_set_exponent(ACVP_CTX *ctx,
+                                           ACVP_RSA_PARM param,
+                                           char *value);
 
 ACVP_RESULT acvp_cap_rsa_siggen_set_type(ACVP_CTX *ctx,
                                          ACVP_RSA_SIG_TYPE type);
