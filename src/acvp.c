@@ -729,6 +729,7 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx) {
                 free(cap_entry->cap.kdf135_x963_cap);
                 break;
             case ACVP_PBKDF_TYPE:
+                acvp_cap_free_nl(cap_entry->cap.pbkdf_cap->hmac_algs);
                 free(cap_entry->cap.pbkdf_cap);
                 break;
             case ACVP_KDF135_TPM_TYPE:

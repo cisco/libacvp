@@ -500,7 +500,9 @@ static ACVP_RESULT acvp_validate_kdf135_tls_param_value(ACVP_KDF135_TLS_METHOD m
 
     switch (method) {
     case ACVP_KDF135_TLS12:
-        if (param > 0  && param < ACVP_HASH_ALG_MAX) {
+        if ((param & ACVP_SHA256) ||
+            (param & ACVP_SHA384) ||
+            (param & ACVP_SHA512)) {
             retval = ACVP_SUCCESS;
         }
         break;
@@ -5223,7 +5225,7 @@ ACVP_RESULT acvp_cap_pbkdf_set_domain(ACVP_CTX *ctx,
 
     switch (param) {
     case ACVP_PBKDF_ITERATION_COUNT:
-        if (min < ACVP_PBKDF_ITERATION_MIN||
+        if (min < ACVP_PBKDF_ITERATION_MIN ||
             max > ACVP_PBKDF_ITERATION_MAX) {
             ACVP_LOG_ERR("min or max outside of acceptable range");
             return ACVP_INVALID_ARG;
@@ -5271,28 +5273,13 @@ ACVP_RESULT acvp_cap_pbkdf_set_domain(ACVP_CTX *ctx,
 
 }
 
-static ACVP_RESULT acvp_validate_pbkdf_param_value(ACVP_HASH_ALG param) {
-    ACVP_RESULT retval = ACVP_INVALID_ARG;
-
-    if ((param & ACVP_SHA1) ||
-            (param & ACVP_SHA224) ||
-            (param & ACVP_SHA256) ||
-            (param & ACVP_SHA384) ||
-            (param & ACVP_SHA512) ||
-            (param & ACVP_SHA3_224) ||
-            (param & ACVP_SHA3_256) ||
-            (param & ACVP_SHA3_384) ||
-            (param & ACVP_SHA3_512)) {
-        retval = ACVP_SUCCESS;
-    }
-    return retval;
-}
-
 ACVP_RESULT acvp_cap_pbkdf_set_parm(ACVP_CTX *ctx,
                                     ACVP_PBKDF_PARM param,
                                     int value) {
     ACVP_CAPS_LIST *cap_list = NULL;
     ACVP_PBKDF_CAP *cap = NULL;
+    ACVP_NAME_LIST *hmac_alg_list = NULL;
+    char *alg_str = NULL;
 
     cap_list = acvp_locate_cap_entry(ctx, ACVP_PBKDF);
     if (!cap_list) {
@@ -5306,11 +5293,65 @@ ACVP_RESULT acvp_cap_pbkdf_set_parm(ACVP_CTX *ctx,
         return ACVP_INVALID_ARG;
     }
 
-    if (acvp_validate_pbkdf_param_value(value) != ACVP_SUCCESS) {
-        return ACVP_INVALID_ARG;
+    switch(value) {
+        case ACVP_PBKDF_HMAC_ALG_SHA1:
+            alg_str = ACVP_STR_SHA_1;
+            break;
+        case ACVP_PBKDF_HMAC_ALG_SHA224:
+            alg_str = ACVP_STR_SHA2_224;
+            break;
+        case ACVP_PBKDF_HMAC_ALG_SHA256:
+            alg_str = ACVP_STR_SHA2_256;
+            break;
+        case ACVP_PBKDF_HMAC_ALG_SHA384:
+            alg_str = ACVP_STR_SHA2_384;
+            break;
+        case ACVP_PBKDF_HMAC_ALG_SHA512:
+            alg_str = ACVP_STR_SHA2_512;
+            break;
+        case ACVP_PBKDF_HMAC_ALG_SHA3_224:
+            alg_str = ACVP_STR_SHA3_224;
+            break;
+        case ACVP_PBKDF_HMAC_ALG_SHA3_256:
+            alg_str = ACVP_STR_SHA3_256;
+            break;
+        case ACVP_PBKDF_HMAC_ALG_SHA3_384:
+            alg_str = ACVP_STR_SHA3_384;
+            break;
+        case ACVP_PBKDF_HMAC_ALG_SHA3_512:
+            alg_str = ACVP_STR_SHA3_512;
+            break;
+        default:
+            ACVP_LOG_ERR("Invalid value for ACVP_PBKDF_HMAC_ALG");
+            return ACVP_INVALID_ARG;
     }
 
-    cap->hmac_alg_flags = cap->hmac_alg_flags | value;
+    if (cap->hmac_algs) {
+        hmac_alg_list = cap->hmac_algs;
+        if (hmac_alg_list->name == alg_str) {
+            ACVP_LOG_WARN("Attempting to register an hmac alg with PBKDF that has already been registered, skipping.");
+            return ACVP_SUCCESS;
+        }
+        while (hmac_alg_list->next) {
+            hmac_alg_list = hmac_alg_list->next;
+            if (hmac_alg_list->name == alg_str) {
+                ACVP_LOG_WARN("Attempting to register an hmac alg with PBKDF that has already been registered, skipping.");
+                return ACVP_SUCCESS;
+            }
+        }
+        hmac_alg_list->next = calloc(1, sizeof(ACVP_NAME_LIST));
+        if (!hmac_alg_list->next) {
+            return ACVP_MALLOC_FAIL;
+        }
+        hmac_alg_list = hmac_alg_list->next;
+    } else {
+        cap->hmac_algs = calloc(1, sizeof(ACVP_NAME_LIST));
+        if (!cap->hmac_algs) {
+            return ACVP_MALLOC_FAIL;
+        }
+        hmac_alg_list = cap->hmac_algs;
+    }
+    hmac_alg_list->name = alg_str;
 
     return ACVP_SUCCESS;
 

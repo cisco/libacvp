@@ -1167,19 +1167,19 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                             goto err;
                             break;
                     }
-                }
-            } else {
-                iv = json_object_get_string(testobj, "iv");
-                if (!iv) {
-                    ACVP_LOG_ERR("Server JSON missing 'iv'");
-                    rv = ACVP_MISSING_ARG;
-                    goto err;
-                }
-                if (strnlen_s(iv, ACVP_SYM_IV_MAX + 1) > ACVP_SYM_IV_MAX) {
-                    ACVP_LOG_ERR("'iv' too long, max allowed=(%d)",
-                                    ACVP_SYM_IV_MAX);
-                    rv = ACVP_INVALID_ARG;
-                    goto err;
+                } else {
+                    iv = json_object_get_string(testobj, "iv");
+                    if (!iv) {
+                        ACVP_LOG_ERR("Server JSON missing 'iv'");
+                        rv = ACVP_MISSING_ARG;
+                        goto err;
+                    }
+                    if (strnlen_s(iv, ACVP_SYM_IV_MAX + 1) > ACVP_SYM_IV_MAX) {
+                        ACVP_LOG_ERR("'iv' too long, max allowed=(%d)",
+                                        ACVP_SYM_IV_MAX);
+                        rv = ACVP_INVALID_ARG;
+                        goto err;
+                    }
                 }
             }
 

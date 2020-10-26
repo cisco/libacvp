@@ -644,7 +644,7 @@
 #define ACVP_PBKDF_KEY_BIT_MAX 4096
 #define ACVP_PBKDF_KEY_BYTE_MIN (ACVP_PBKDF_KEY_BIT_MIN >> 3)
 #define ACVP_PBKDF_KEY_STR_MIN (ACVP_PBKDF_KEY_BIT_MIN >> 2)
-#define ACVP_KBPDF_KEY_BYTE_MAX (ACVP_PBKDF_KEY_BIT_MAX >> 3)
+#define ACVP_PBKDF_KEY_BYTE_MAX (ACVP_PBKDF_KEY_BIT_MAX >> 3)
 #define ACVP_PBKDF_KEY_STR_MAX (ACVP_PBKDF_KEY_BIT_MAX >> 2)
 
 #define ACVP_PBKDF_PASS_LEN_MIN 8 //in chars
@@ -994,7 +994,7 @@ typedef struct acvp_kdf135_x963_capability {
 } ACVP_KDF135_X963_CAP;
 
 typedef struct acvp_pbkdf_capability {
-    int hmac_alg_flags; //because the spec calls for hash alg names, use bit flags from ACVP_HASH_ALG
+    ACVP_NAME_LIST *hmac_algs;
     ACVP_JSON_DOMAIN_OBJ iteration_count_domain;
     ACVP_JSON_DOMAIN_OBJ key_len_domain;
     ACVP_JSON_DOMAIN_OBJ password_len_domain;

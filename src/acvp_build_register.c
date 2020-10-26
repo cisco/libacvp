@@ -1695,6 +1695,7 @@ static ACVP_RESULT acvp_build_pbkdf_register_cap(JSON_Object *cap_obj, ACVP_CAPS
     JSON_Array *temp_arr = NULL;
     JSON_Value *tmp_val = NULL, *cap_val = NULL;
     JSON_Object *tmp_obj = NULL, *cap_sub_obj = NULL;
+    ACVP_NAME_LIST *hmac_alg_list = NULL;
     ACVP_RESULT result;
     const char *revision = NULL;
 
@@ -1755,33 +1756,12 @@ static ACVP_RESULT acvp_build_pbkdf_register_cap(JSON_Object *cap_obj, ACVP_CAPS
     //create the "hmacAlg" array within the "capabilities" array and populate it
     json_object_set_value(cap_sub_obj, "hmacAlg", json_value_init_array());
     temp_arr = json_object_get_array(cap_sub_obj, "hmacAlg");
-    if (cap_entry->cap.pbkdf_cap->hmac_alg_flags & ACVP_SHA1) {
-        json_array_append_string(temp_arr, ACVP_STR_SHA_1);
+    hmac_alg_list = cap_entry->cap.pbkdf_cap->hmac_algs;
+    while (hmac_alg_list) {
+        json_array_append_string(temp_arr, hmac_alg_list->name);
+        hmac_alg_list = hmac_alg_list->next;
     }
-    if (cap_entry->cap.pbkdf_cap->hmac_alg_flags & ACVP_SHA224) {
-        json_array_append_string(temp_arr, ACVP_STR_SHA2_224);
-    }
-    if (cap_entry->cap.pbkdf_cap->hmac_alg_flags & ACVP_SHA256) {
-        json_array_append_string(temp_arr, ACVP_STR_SHA2_256);
-    }
-    if (cap_entry->cap.pbkdf_cap->hmac_alg_flags & ACVP_SHA384) {
-        json_array_append_string(temp_arr, ACVP_STR_SHA2_384);
-    }
-    if (cap_entry->cap.pbkdf_cap->hmac_alg_flags & ACVP_SHA512) {
-        json_array_append_string(temp_arr, ACVP_STR_SHA2_512);
-    }
-    if (cap_entry->cap.pbkdf_cap->hmac_alg_flags & ACVP_SHA3_224) {
-        json_array_append_string(temp_arr, ACVP_STR_SHA3_224);
-    }
-    if (cap_entry->cap.pbkdf_cap->hmac_alg_flags & ACVP_SHA3_256) {
-        json_array_append_string(temp_arr, ACVP_STR_SHA3_256);
-    }
-    if (cap_entry->cap.pbkdf_cap->hmac_alg_flags & ACVP_SHA3_384) {
-        json_array_append_string(temp_arr, ACVP_STR_SHA3_384);
-    }
-    if (cap_entry->cap.pbkdf_cap->hmac_alg_flags & ACVP_SHA3_384) {
-        json_array_append_string(temp_arr, ACVP_STR_SHA3_512);
-    }
+
     json_array_append_value(temp_cap_arr, cap_val);
     return ACVP_SUCCESS;
 }

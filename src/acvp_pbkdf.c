@@ -29,9 +29,12 @@ static ACVP_RESULT acvp_pbkdf_output_tc(ACVP_CTX *ctx,
     ACVP_RESULT rv = ACVP_SUCCESS;
     char *tmp = NULL;
 
-    if ((stc->key_len * 2) > ACVP_PBKDF_KEY_STR_MAX) {
+    if ((stc->key_len) > ACVP_PBKDF_KEY_BYTE_MAX) {
         ACVP_LOG_ERR("key len too long. Ensure user is not modifying.");
         return ACVP_DATA_TOO_LARGE;
+    } else if (stc->key_len < ACVP_PBKDF_KEY_BYTE_MIN) {
+        ACVP_LOG_ERR("key len too short. Ensure user is not modifying.");
+        return ACVP_INVALID_ARG;
     }
 
     tmp = calloc(ACVP_PBKDF_KEY_STR_MAX + 1, sizeof(char));
@@ -47,8 +50,6 @@ static ACVP_RESULT acvp_pbkdf_output_tc(ACVP_CTX *ctx,
         goto end;
     }
     json_object_set_string(tc_rsp, "derivedKey", tmp);
-
-    free(tmp);
 
 end:
     if (tmp) free(tmp);
@@ -74,6 +75,7 @@ static ACVP_RESULT acvp_pbkdf_init_tc(ACVP_PBKDF_TC *stc,
     stc->tc_id = tc_id;
     stc->hmac_type = hmacAlg;
     stc->test_type = testType;
+    stc->key_len = key_len;
 
     // Allocate space for the salt (binary)
     stc->salt = calloc(salt_len, sizeof(unsigned char));
@@ -95,7 +97,7 @@ static ACVP_RESULT acvp_pbkdf_init_tc(ACVP_PBKDF_TC *stc,
     stc->iterationCount = iterationCount;
 
     //Allocate space for output (key)
-    stc->key = calloc((key_len + 8) / 8, sizeof(unsigned char));
+    stc->key = calloc(ACVP_PBKDF_KEY_BYTE_MAX + 1, sizeof(unsigned char));
     if (!stc->key) { return ACVP_MALLOC_FAIL; }
 
     return ACVP_SUCCESS;
@@ -222,7 +224,7 @@ ACVP_RESULT acvp_pbkdf_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         return ACVP_MALFORMED_JSON;
     }
     alg_id = acvp_lookup_cipher_index(alg_str);
-    if (alg_id != ACVP_KDF108) {
+    if (alg_id != ACVP_PBKDF) {
         ACVP_LOG_ERR("Invalid algorithm %s", alg_str);
         return ACVP_INVALID_ARG;
     }
@@ -323,13 +325,24 @@ ACVP_RESULT acvp_pbkdf_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             testobj = json_value_get_object(testval);
 
             tc_id = json_object_get_number(testobj, "tcId");
+            if (!tc_id) {
+                ACVP_LOG_ERR("Server JSON missing 'tcId'");
+                rv = ACVP_MISSING_ARG;
+                goto err;
+            }
 
             key_len = json_object_get_number(testobj, "keyLen");
             if (key_len < ACVP_PBKDF_KEY_BIT_MIN) {
                 ACVP_LOG_ERR("keyLen too low, given = %d, min = %d", key_len, ACVP_PBKDF_KEY_BIT_MIN);
+                rv = ACVP_INVALID_ARG;
+                goto err;
             } else if (key_len > ACVP_PBKDF_KEY_BIT_MAX) {
                 ACVP_LOG_ERR("keyLen too high, given = %d, max = %d", key_len, ACVP_PBKDF_KEY_BIT_MAX);
+                rv = ACVP_INVALID_ARG;
+                goto err;
             }
+            //convert to byte length
+            key_len /= 8;
 
             salt_str = json_object_get_string(testobj, "salt");
             if (!salt_str) {
