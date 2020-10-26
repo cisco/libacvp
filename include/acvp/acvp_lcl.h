@@ -182,6 +182,7 @@
 
 /* RSA */
 #define ACVP_REV_RSA                 ACVP_REVISION_FIPS186_4
+#define ACVP_REV_RSA_PRIM            ACVP_REVISION_LATEST
 
 /* ECDSA */
 #define ACVP_REV_ECDSA               ACVP_REVISION_LATEST
@@ -287,6 +288,8 @@
 #define ACVP_ALG_DSA_KEYGEN          "keyGen"
 #define ACVP_ALG_DSA_SIGGEN          "sigGen"
 #define ACVP_ALG_DSA_SIGVER          "sigVer"
+#define ACVP_MODE_DECPRIM            "decryptionPrimitive"
+#define ACVP_MODE_SIGPRIM            "signaturePrimitive"
 
 #define ACVP_ALG_KAS_ECC_CDH         "CDH-Component"
 #define ACVP_ALG_KAS_ECC_COMP        "Component"
@@ -820,6 +823,7 @@ typedef enum acvp_capability_type {
     ACVP_RSA_KEYGEN_TYPE,
     ACVP_RSA_SIGGEN_TYPE,
     ACVP_RSA_SIGVER_TYPE,
+    ACVP_RSA_PRIM_TYPE,
     ACVP_ECDSA_KEYGEN_TYPE,
     ACVP_ECDSA_KEYVER_TYPE,
     ACVP_ECDSA_SIGGEN_TYPE,
@@ -1081,6 +1085,14 @@ typedef struct acvp_rsa_keygen_capability_t {
     struct acvp_rsa_keygen_capability_t *next; // to support multiple randPQ values
 } ACVP_RSA_KEYGEN_CAP;
 
+typedef struct acvp_rsa_prim_capability_t {
+    unsigned int prim_type;
+    int key_format_crt;                     // if false, key format is assumed to be standard
+    ACVP_RSA_PUB_EXP_MODE pub_exp_mode;
+    char *fixed_pub_exp;               // hex value of e
+    struct acvp_rsa_prim_capability_t *next; // to support multiple randPQ values
+} ACVP_RSA_PRIM_CAP;
+
 
 typedef struct acvp_ecdsa_capability_t {
     ACVP_NAME_LIST *curves;
@@ -1211,6 +1223,7 @@ typedef struct acvp_caps_list_t {
         ACVP_RSA_KEYGEN_CAP *rsa_keygen_cap;
         ACVP_RSA_SIG_CAP *rsa_siggen_cap;
         ACVP_RSA_SIG_CAP *rsa_sigver_cap;
+        ACVP_RSA_PRIM_CAP *rsa_prim_cap;
         ACVP_ECDSA_CAP *ecdsa_keygen_cap;
         ACVP_ECDSA_CAP *ecdsa_keyver_cap;
         ACVP_ECDSA_CAP *ecdsa_siggen_cap;
@@ -1484,6 +1497,10 @@ ACVP_RESULT acvp_rsa_keygen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 ACVP_RESULT acvp_rsa_siggen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
 ACVP_RESULT acvp_rsa_sigver_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
+
+ACVP_RESULT acvp_rsa_decprim_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
+
+ACVP_RESULT acvp_rsa_sigprim_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
 ACVP_RESULT acvp_ecdsa_keygen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 

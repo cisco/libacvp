@@ -455,6 +455,17 @@ static ACVP_RESULT acvp_cap_list_append(ACVP_CTX *ctx,
             goto err;
         }
         break;
+    case ACVP_RSA_PRIM_TYPE:
+        if ((cipher != ACVP_RSA_SIGPRIM) && (cipher != ACVP_RSA_DECPRIM)) {
+            rv = ACVP_INVALID_ARG;
+            goto err;
+        }
+        cap_entry->cap.rsa_prim_cap = calloc(1, sizeof(ACVP_RSA_PRIM_CAP));
+        if (!cap_entry->cap.rsa_prim_cap) {
+            rv = ACVP_MALLOC_FAIL;
+            goto err;
+        }
+        break;
     case ACVP_SYM_TYPE:
         cap_entry->cap.sym_cap = calloc(1, sizeof(ACVP_SYM_CIPHER_CAP));
         if (!cap_entry->cap.sym_cap) {
@@ -837,6 +848,8 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
         case ACVP_RSA_KEYGEN:
         case ACVP_RSA_SIGGEN:
         case ACVP_RSA_SIGVER:
+        case ACVP_RSA_SIGPRIM:
+        case ACVP_RSA_DECPRIM:
         case ACVP_ECDSA_KEYGEN:
         case ACVP_ECDSA_KEYVER:
         case ACVP_ECDSA_SIGGEN:
@@ -929,6 +942,8 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
         case ACVP_RSA_KEYGEN:
         case ACVP_RSA_SIGGEN:
         case ACVP_RSA_SIGVER:
+        case ACVP_RSA_SIGPRIM:
+        case ACVP_RSA_DECPRIM:
         case ACVP_ECDSA_KEYGEN:
         case ACVP_ECDSA_KEYVER:
         case ACVP_ECDSA_SIGGEN:
@@ -1033,6 +1048,8 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
         case ACVP_RSA_KEYGEN:
         case ACVP_RSA_SIGGEN:
         case ACVP_RSA_SIGVER:
+        case ACVP_RSA_SIGPRIM:
+        case ACVP_RSA_DECPRIM:
         case ACVP_ECDSA_KEYGEN:
         case ACVP_ECDSA_KEYVER:
         case ACVP_ECDSA_SIGGEN:
@@ -1125,6 +1142,8 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
         case ACVP_RSA_KEYGEN:
         case ACVP_RSA_SIGGEN:
         case ACVP_RSA_SIGVER:
+        case ACVP_RSA_SIGPRIM:
+        case ACVP_RSA_DECPRIM:
         case ACVP_ECDSA_KEYGEN:
         case ACVP_ECDSA_KEYVER:
         case ACVP_ECDSA_SIGGEN:
@@ -1269,6 +1288,8 @@ static ACVP_RESULT acvp_validate_prereq_val(ACVP_CIPHER cipher, ACVP_PREREQ_ALG 
     case ACVP_RSA_KEYGEN:
     case ACVP_RSA_SIGGEN:
     case ACVP_RSA_SIGVER:
+    case ACVP_RSA_SIGPRIM:
+    case ACVP_RSA_DECPRIM:
     case ACVP_ECDSA_KEYGEN:
     case ACVP_ECDSA_KEYVER:
     case ACVP_ECDSA_SIGGEN:
@@ -1510,6 +1531,8 @@ ACVP_RESULT acvp_cap_sym_cipher_set_parm(ACVP_CTX *ctx,
     case ACVP_RSA_KEYGEN:
     case ACVP_RSA_SIGGEN:
     case ACVP_RSA_SIGVER:
+    case ACVP_RSA_SIGPRIM:
+    case ACVP_RSA_DECPRIM:
     case ACVP_ECDSA_KEYGEN:
     case ACVP_ECDSA_KEYVER:
     case ACVP_ECDSA_SIGGEN:
@@ -1778,6 +1801,8 @@ ACVP_RESULT acvp_cap_sym_cipher_enable(ACVP_CTX *ctx,
     case ACVP_RSA_KEYGEN:
     case ACVP_RSA_SIGGEN:
     case ACVP_RSA_SIGVER:
+    case ACVP_RSA_SIGPRIM:
+    case ACVP_RSA_DECPRIM:
     case ACVP_ECDSA_KEYGEN:
     case ACVP_ECDSA_KEYVER:
     case ACVP_ECDSA_SIGGEN:
@@ -1893,6 +1918,8 @@ ACVP_RESULT acvp_cap_hash_enable(ACVP_CTX *ctx,
     case ACVP_RSA_KEYGEN:
     case ACVP_RSA_SIGGEN:
     case ACVP_RSA_SIGVER:
+    case ACVP_RSA_SIGPRIM:
+    case ACVP_RSA_DECPRIM:
     case ACVP_ECDSA_KEYGEN:
     case ACVP_ECDSA_KEYVER:
     case ACVP_ECDSA_SIGGEN:
@@ -2025,6 +2052,8 @@ ACVP_RESULT acvp_cap_hash_set_parm(ACVP_CTX *ctx,
     case ACVP_RSA_KEYGEN:
     case ACVP_RSA_SIGGEN:
     case ACVP_RSA_SIGVER:
+    case ACVP_RSA_SIGPRIM:
+    case ACVP_RSA_DECPRIM:
     case ACVP_ECDSA_KEYGEN:
     case ACVP_ECDSA_KEYVER:
     case ACVP_ECDSA_SIGGEN:
@@ -2138,6 +2167,8 @@ ACVP_RESULT acvp_cap_hash_set_parm(ACVP_CTX *ctx,
         case ACVP_RSA_KEYGEN:
         case ACVP_RSA_SIGGEN:
         case ACVP_RSA_SIGVER:
+        case ACVP_RSA_SIGPRIM:
+        case ACVP_RSA_DECPRIM:
         case ACVP_ECDSA_KEYGEN:
         case ACVP_ECDSA_KEYVER:
         case ACVP_ECDSA_SIGGEN:
@@ -2258,6 +2289,8 @@ ACVP_RESULT acvp_cap_hash_set_domain(ACVP_CTX *ctx,
     case ACVP_RSA_KEYGEN:
     case ACVP_RSA_SIGGEN:
     case ACVP_RSA_SIGVER:
+    case ACVP_RSA_SIGPRIM:
+    case ACVP_RSA_DECPRIM:
     case ACVP_ECDSA_KEYGEN:
     case ACVP_ECDSA_KEYVER:
     case ACVP_ECDSA_SIGGEN:
@@ -2440,6 +2473,8 @@ static ACVP_RESULT acvp_validate_hmac_parm_value(ACVP_CIPHER cipher,
         case ACVP_RSA_KEYGEN:
         case ACVP_RSA_SIGGEN:
         case ACVP_RSA_SIGVER:
+        case ACVP_RSA_SIGPRIM:
+        case ACVP_RSA_DECPRIM:
         case ACVP_ECDSA_KEYGEN:
         case ACVP_ECDSA_KEYVER:
         case ACVP_ECDSA_SIGGEN:
@@ -2558,6 +2593,8 @@ ACVP_RESULT acvp_cap_hmac_enable(ACVP_CTX *ctx,
     case ACVP_RSA_KEYGEN:
     case ACVP_RSA_SIGGEN:
     case ACVP_RSA_SIGVER:
+    case ACVP_RSA_SIGPRIM:
+    case ACVP_RSA_DECPRIM:
     case ACVP_ECDSA_KEYGEN:
     case ACVP_ECDSA_KEYVER:
     case ACVP_ECDSA_SIGGEN:
@@ -2807,6 +2844,8 @@ ACVP_RESULT acvp_cap_cmac_enable(ACVP_CTX *ctx,
     case ACVP_RSA_KEYGEN:
     case ACVP_RSA_SIGGEN:
     case ACVP_RSA_SIGVER:
+    case ACVP_RSA_SIGPRIM:
+    case ACVP_RSA_DECPRIM:
     case ACVP_ECDSA_KEYGEN:
     case ACVP_ECDSA_KEYVER:
     case ACVP_ECDSA_SIGGEN:
@@ -3450,6 +3489,8 @@ ACVP_RESULT acvp_cap_drbg_set_parm(ACVP_CTX *ctx,
     case ACVP_RSA_KEYGEN:
     case ACVP_RSA_SIGGEN:
     case ACVP_RSA_SIGVER:
+    case ACVP_RSA_SIGPRIM:
+    case ACVP_RSA_DECPRIM:
     case ACVP_ECDSA_KEYGEN:
     case ACVP_ECDSA_KEYVER:
     case ACVP_ECDSA_SIGGEN:
@@ -4259,6 +4300,10 @@ static ACVP_RESULT internal_cap_rsa_sig_enable(ACVP_CTX *ctx,
     case ACVP_RSA_SIGVER:
         type = ACVP_RSA_SIGVER_TYPE;
         break;
+    case ACVP_RSA_SIGPRIM:
+    case ACVP_RSA_DECPRIM:
+        type = ACVP_RSA_PRIM_TYPE;
+        break;
     case ACVP_CIPHER_START:
     case ACVP_AES_GCM:
     case ACVP_AES_GCM_SIV:
@@ -4473,6 +4518,123 @@ ACVP_RESULT acvp_cap_rsa_sig_enable(ACVP_CTX *ctx,
 
     return result;
 }
+ACVP_RESULT acvp_cap_rsa_prim_enable(ACVP_CTX *ctx,
+                                     ACVP_CIPHER cipher,
+                                     int (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
+    ACVP_RESULT result;
+
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+
+    if (!crypto_handler) {
+        ACVP_LOG_ERR("NULL parameter 'crypto_handler'");
+        return ACVP_INVALID_ARG;
+    }
+
+    if ((cipher != ACVP_RSA_SIGPRIM) && (cipher != ACVP_RSA_DECPRIM)) {
+        ACVP_LOG_ERR("Invalid parameter 'cipher'");
+        return ACVP_INVALID_ARG;
+    }
+
+    result = acvp_cap_list_append(ctx, ACVP_RSA_PRIM_TYPE, cipher, crypto_handler);
+
+    if (result == ACVP_DUP_CIPHER) {
+        ACVP_LOG_ERR("Capability previously enabled. Duplicate not allowed.");
+    } else if (result == ACVP_MALLOC_FAIL) {
+        ACVP_LOG_ERR("Failed to allocate capability object");
+    }
+
+    return result;
+}
+
+/*
+ * The user should call this after invoking acvp_enable_rsa_prim_cap().
+ */
+ACVP_RESULT acvp_cap_rsa_prim_set_parm(ACVP_CTX *ctx,
+                                       ACVP_RSA_PARM param,
+                                       int value) {
+    ACVP_CAPS_LIST *cap_list;
+    ACVP_RESULT rv = ACVP_SUCCESS;
+
+    cap_list = acvp_locate_cap_entry(ctx, ACVP_RSA_SIGPRIM);
+    if (!cap_list) {
+        ACVP_LOG_ERR("Cap entry not found.");
+        return ACVP_NO_CAP;
+    }
+
+    switch (param) {
+    case ACVP_RSA_PARM_PUB_EXP_MODE:
+        cap_list->cap.rsa_prim_cap->pub_exp_mode = value;
+        break;
+    case ACVP_RSA_PARM_KEY_FORMAT_CRT:
+        rv = is_valid_tf_param(value);
+        if (rv != ACVP_SUCCESS) {
+            break;
+        }
+        cap_list->cap.rsa_prim_cap->key_format_crt = value;
+        break;
+    default:
+        rv = ACVP_INVALID_ARG;
+        break;
+    }
+    return rv;
+}
+
+/*
+ * The user should call this after invoking acvp_enable_rsa_prim_cap_parm().
+ */
+ACVP_RESULT acvp_cap_rsa_prim_set_exponent(ACVP_CTX *ctx,
+                                             ACVP_RSA_PARM param,
+                                             char *value) {
+    ACVP_CAPS_LIST *cap_list = NULL;
+    ACVP_RSA_PRIM_CAP *cap = NULL;
+
+    cap_list = acvp_locate_cap_entry(ctx, ACVP_RSA_SIGPRIM);
+    if (!cap_list) {
+        ACVP_LOG_ERR("Cap entry not found.");
+        return ACVP_NO_CAP;
+    }
+
+    /* Get pointer to rsa prim cap */
+    cap = cap_list->cap.rsa_prim_cap;
+
+    /*
+     * Add the value to the cap
+     */
+    switch (param) {
+    case ACVP_RSA_PARM_FIXED_PUB_EXP_VAL:
+        if (cap->pub_exp_mode == ACVP_RSA_PUB_EXP_MODE_FIXED) {
+            if (cap->fixed_pub_exp == NULL) {
+                unsigned int len = strnlen_s(value, ACVP_CAPABILITY_STR_MAX + 1);
+
+                if (len > ACVP_CAPABILITY_STR_MAX) {
+                    ACVP_LOG_ERR("Parameter 'value' string is too long. "
+                                 "max allowed is (%d) characters.",
+                                 ACVP_CAPABILITY_STR_MAX);
+                    return ACVP_INVALID_ARG;
+                }
+
+                /* Make sure this is deallocated */
+                cap->fixed_pub_exp = calloc(len + 1, sizeof(char));
+                strcpy_s(cap->fixed_pub_exp, len + 1, value);
+            } else {
+                ACVP_LOG_ERR("ACVP_FIXED_PUB_EXP_VAL has already been set.");
+                return ACVP_UNSUPPORTED_OP;
+            }
+        }
+        break;
+    case ACVP_RSA_PARM_PUB_EXP_MODE:
+    case ACVP_RSA_PARM_KEY_FORMAT_CRT:
+    case ACVP_RSA_PARM_RAND_PQ:
+    case ACVP_RSA_PARM_INFO_GEN_BY_SERVER:
+    default:
+        return ACVP_INVALID_ARG;
+    }
+
+    return ACVP_SUCCESS;
+}
+
 
 /*
  * The user should call this after invoking acvp_enable_ecdsa_cap().
@@ -6197,7 +6359,7 @@ static ACVP_RESULT acvp_add_kas_ecc_prereq_val(ACVP_CTX *ctx, ACVP_KAS_ECC_CAP_M
                                                char *value) {
     ACVP_PREREQ_LIST *prereq_entry, *prereq_entry_2;
 
-    ACVP_LOG_INFO("\nKAS-ECC mode %d", mode);
+    ACVP_LOG_INFO("KAS-ECC mode %d", mode);
     prereq_entry = calloc(1, sizeof(ACVP_PREREQ_LIST));
     if (!prereq_entry) {
         return ACVP_MALLOC_FAIL;
@@ -6840,7 +7002,7 @@ static ACVP_RESULT acvp_add_kas_ffc_prereq_val(ACVP_CTX *ctx, ACVP_KAS_FFC_CAP_M
                                                char *value) {
     ACVP_PREREQ_LIST *prereq_entry, *prereq_entry_2;
 
-    ACVP_LOG_INFO("\nKAS-FFC mode %d", mode);
+    ACVP_LOG_INFO("KAS-FFC mode %d", mode);
     prereq_entry = calloc(1, sizeof(ACVP_PREREQ_LIST));
     if (!prereq_entry) {
         return ACVP_MALLOC_FAIL;

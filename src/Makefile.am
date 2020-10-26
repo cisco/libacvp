@@ -15,6 +15,7 @@ libacvp_la_SOURCES =  acvp.c \
                     acvp_cmac.c \
                     acvp_rsa_keygen.c \
                     acvp_rsa_sig.c \
+                    acvp_rsa_prim.c \
                     acvp_dsa.c \
                     acvp_kdf135_tls.c \
                     acvp_kdf135_snmp.c \

@@ -153,3 +153,68 @@ The key:"hashAlg" is missing in last tg
 
 #### rsa\_sigver\_9.json
 The key:"message" is missing in last tc
+
+### signature primitive 
+
+#### rsa\_sigprim.json
+This is a clean file. All of the json should be correct
+
+#### rsa\_sigprim\_1.json
+The value for key:"algorithm" is missing.
+
+#### rsa\_sigprim\_2.json
+The value for key:"mode" is missing.
+
+#### rsa\_sigprim\_3.json
+The value for key:"modulo" is missing.
+
+#### rsa\_sigprim\_4.json
+The value for key:"keyFormat" is missing.
+
+#### rsa\_sigprim\_5.json
+The value for key:"message" is missing.
+
+#### rsa\_sigprim\_6.json
+The value for key:"n" is missing.
+
+#### rsa\_sigprim\_7.json
+The value for key:"e" is missing.
+
+#### rsa\_sigprim\_8.json
+The value for key:"d" is missing.
+
+#### rsa\_sigprim\_9.json
+The value for key:"tgId" is missing.
+
+### decrypt primitive
+
+#### rsa\_decprim.json
+This is a clean file. All of the json should be correct
+
+#### rsa\_decprim\_1.json
+The value for key:"algorithm" is missing.
+
+#### rsa\_decprim\_2.json
+The value for key:"mode" is missing.
+
+#### rsa\_decprim\_3.json
+The value for key:"mode" keyword is corrupted.
+
+#### rsa\_decprim\_4.json
+The value for key:"tgId" is missing.
+
+#### rsa\_decprim\_5.json
+The value for key:"modulo" is missing.
+
+#### rsa\_decprim\_6.json
+The value for key:"totalTestCases" is missing.
+
+#### rsa\_decprim\_7.json
+The value for key:"totalFailingCases" is missing.
+
+#### rsa\_decprim\_8.json
+The value for key:"deferred" is missing.
+
+#### rsa\_decprim\_.json
+The value for key:"cipherText" keyword is corrupted.
+

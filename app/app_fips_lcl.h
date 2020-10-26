@@ -168,6 +168,7 @@ void fips_bn_ctx_free(BN_CTX *a);
 void FIPS_bn_free(BIGNUM *a);
 int fips_BN_hex2bn(BIGNUM **bn, const char *a);
 char *fips_BN_bn2hex(const BIGNUM *a);
+int fips_bn_sub_word(BIGNUM *b, int i);
 BIGNUM *FIPS_bn_bin2bn(const unsigned char *s,int len,BIGNUM *ret);
 int FIPS_bn_bn2bin(const BIGNUM *a, unsigned char *to);
 int fips_bn_set_word(BIGNUM *a, BN_ULONG w);
@@ -197,6 +198,10 @@ DSA_SIG *FIPS_dsa_sig_new(void);
 void FIPS_dsa_sig_free(DSA_SIG *sig);
 #endif
 
+int FIPS_rsa_private_decrypt(int flen, const unsigned char *from, 
+		             unsigned char *to, RSA *rsa,int padding);
+int FIPS_rsa_private_encrypt(int flen, const unsigned char *from,
+		             unsigned char *to, RSA *rsa,int padding);
 BIGNUM *fips_bn_ctx_get(BN_CTX *ctx);
 void FIPS_bn_clear_free(BIGNUM *a);
 int fips_bn_cmp(const BIGNUM *a, const BIGNUM *b);

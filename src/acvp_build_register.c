@@ -998,6 +998,48 @@ static ACVP_RESULT acvp_build_rsa_sig_register_cap(JSON_Object *cap_obj, ACVP_CA
     return result;
 }
 
+static ACVP_RESULT acvp_build_rsa_prim_register_cap(JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry) {
+    ACVP_RESULT result;
+    const char *revision = NULL;
+
+    json_object_set_string(cap_obj, "algorithm", "RSA");
+
+    revision = acvp_lookup_cipher_revision(cap_entry->cipher);
+    if (revision == NULL) return ACVP_INVALID_ARG;
+    json_object_set_string(cap_obj, "revision", revision);
+
+    if (cap_entry->cipher == ACVP_RSA_DECPRIM) {
+        json_object_set_string(cap_obj, "mode", "decryptionPrimitive");
+    } else if (cap_entry->cipher == ACVP_RSA_SIGPRIM) {
+        json_object_set_string(cap_obj, "mode", "signaturePrimitive");
+    } else {
+        return ACVP_INVALID_ARG;
+    }
+    result = acvp_lookup_prereqVals(cap_obj, cap_entry);
+    if (result != ACVP_SUCCESS) { return result; }
+
+    /*
+     * Iterate through list of RSA modes and create registration object
+     * for each one, appending to the array as we go
+     */
+    ACVP_RSA_PRIM_CAP *prim_cap = cap_entry->cap.rsa_prim_cap;
+    if (!prim_cap) {
+        return ACVP_NO_CAP;
+    }
+
+    if (cap_entry->cipher == ACVP_RSA_SIGPRIM) {
+        json_object_set_string(cap_obj, "pubExpMode",
+                               prim_cap->pub_exp_mode == ACVP_RSA_PUB_EXP_MODE_FIXED ?
+                               ACVP_RSA_PUB_EXP_MODE_FIXED_STR : ACVP_RSA_PUB_EXP_MODE_RANDOM_STR);
+        if (prim_cap->pub_exp_mode == ACVP_RSA_PUB_EXP_MODE_FIXED) {
+            json_object_set_string(cap_obj, "fixedPubExp", (const char *)prim_cap->fixed_pub_exp);
+        }
+        json_object_set_string(cap_obj, "keyFormat", prim_cap->key_format_crt ? "crt" : "standard");
+    }
+
+    return ACVP_SUCCESS;
+}
+
 static ACVP_RESULT acvp_build_ecdsa_register_cap(ACVP_CIPHER cipher, JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry) {
     ACVP_RESULT result;
     JSON_Array *caps_arr = NULL, *curves_arr = NULL, *secret_modes_arr = NULL, *hash_arr = NULL;
@@ -2896,6 +2938,10 @@ ACVP_RESULT acvp_build_test_session(ACVP_CTX *ctx, char **reg, int *out_len) {
             case ACVP_RSA_SIGGEN:
             case ACVP_RSA_SIGVER:
                 rv = acvp_build_rsa_sig_register_cap(cap_obj, cap_entry);
+                break;
+            case ACVP_RSA_SIGPRIM:
+            case ACVP_RSA_DECPRIM:
+                rv = acvp_build_rsa_prim_register_cap(cap_obj, cap_entry);
                 break;
             case ACVP_ECDSA_KEYGEN:
             case ACVP_ECDSA_KEYVER:
