@@ -1318,7 +1318,7 @@ end:
 static int enable_kdf(ACVP_CTX *ctx) {
     ACVP_RESULT rv = ACVP_SUCCESS;
     int i, flags = 0;
-#if 0
+
     /*
      * Enable KDF-135
      */
@@ -1482,8 +1482,8 @@ static int enable_kdf(ACVP_CTX *ctx) {
     //REQUIRES_EMPTY_IV can only be set if SUPPORTS_EMPTY_IV is set to true
     //rv = acvp_cap_kdf108_set_parm(ctx, ACVP_KDF108_MODE_COUNTER, ACVP_KDF108_REQUIRES_EMPTY_IV, 0);
     //CHECK_ENABLE_CAP_RV(rv);
-#endif
 
+#if 0 //Not supported by openSSL currently
     /*
      * PBKDF
      */
@@ -1517,9 +1517,7 @@ static int enable_kdf(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_pbkdf_set_domain(ctx, ACVP_PBKDF_SALT_LEN, 128, 4096, 8);
     CHECK_ENABLE_CAP_RV(rv);
-
-
-
+#endif
 
 end:
 

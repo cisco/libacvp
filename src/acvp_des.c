@@ -253,6 +253,7 @@ static ACVP_RESULT acvp_des_mct_iterate_tc(ACVP_CTX *ctx,
     case ACVP_KDF135_IKEV1:
     case ACVP_KDF135_X963:
     case ACVP_KDF108:
+    case ACVP_PBKDF:
     case ACVP_KAS_ECC_CDH:
     case ACVP_KAS_ECC_COMP:
     case ACVP_KAS_ECC_NOCOMP:
@@ -551,6 +552,7 @@ static ACVP_RESULT acvp_des_mct_tc(ACVP_CTX *ctx,
     case ACVP_KDF135_IKEV1:
     case ACVP_KDF135_X963:
     case ACVP_KDF108:
+    case ACVP_PBKDF:
     case ACVP_KAS_ECC_CDH:
     case ACVP_KAS_ECC_COMP:
     case ACVP_KAS_ECC_NOCOMP:

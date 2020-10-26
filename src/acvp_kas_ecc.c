@@ -903,6 +903,7 @@ ACVP_RESULT acvp_kas_ecc_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     case ACVP_KDF135_IKEV1:
     case ACVP_KDF135_X963:
     case ACVP_KDF108:
+    case ACVP_PBKDF:
     case ACVP_KAS_FFC_COMP:
     case ACVP_KAS_FFC_NOCOMP:
     case ACVP_CIPHER_END:

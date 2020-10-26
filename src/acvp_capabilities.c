@@ -849,6 +849,7 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
         case ACVP_KDF135_IKEV1:
         case ACVP_KDF135_X963:
         case ACVP_KDF108:
+        case ACVP_PBKDF:
         case ACVP_KAS_ECC_CDH:
         case ACVP_KAS_ECC_COMP:
         case ACVP_KAS_ECC_NOCOMP:
@@ -940,6 +941,7 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
         case ACVP_KDF135_IKEV1:
         case ACVP_KDF135_X963:
         case ACVP_KDF108:
+        case ACVP_PBKDF:
         case ACVP_KAS_ECC_CDH:
         case ACVP_KAS_ECC_COMP:
         case ACVP_KAS_ECC_NOCOMP:
@@ -1043,6 +1045,7 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
         case ACVP_KDF135_IKEV1:
         case ACVP_KDF135_X963:
         case ACVP_KDF108:
+        case ACVP_PBKDF:
         case ACVP_KAS_ECC_CDH:
         case ACVP_KAS_ECC_COMP:
         case ACVP_KAS_ECC_NOCOMP:
@@ -1134,6 +1137,7 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
         case ACVP_KDF135_IKEV1:
         case ACVP_KDF135_X963:
         case ACVP_KDF108:
+        case ACVP_PBKDF:
         case ACVP_KAS_ECC_CDH:
         case ACVP_KAS_ECC_COMP:
         case ACVP_KAS_ECC_NOCOMP:
@@ -1306,7 +1310,6 @@ static ACVP_RESULT acvp_validate_prereq_val(ACVP_CIPHER cipher, ACVP_PREREQ_ALG 
         break;
     case ACVP_PBKDF:
         if (pre_req == ACVP_PREREQ_DRBG ||
-            pre_req == ACVP_PREREQ_SHA ||
             pre_req == ACVP_PREREQ_HMAC) {
             return ACVP_SUCCESS;
         }
@@ -1519,6 +1522,7 @@ ACVP_RESULT acvp_cap_sym_cipher_set_parm(ACVP_CTX *ctx,
     case ACVP_KDF135_IKEV1:
     case ACVP_KDF135_X963:
     case ACVP_KDF108:
+    case ACVP_PBKDF:
     case ACVP_KAS_ECC_CDH:
     case ACVP_KAS_ECC_COMP:
     case ACVP_KAS_ECC_NOCOMP:
@@ -1786,6 +1790,7 @@ ACVP_RESULT acvp_cap_sym_cipher_enable(ACVP_CTX *ctx,
     case ACVP_KDF135_IKEV1:
     case ACVP_KDF135_X963:
     case ACVP_KDF108:
+    case ACVP_PBKDF:
     case ACVP_KAS_ECC_CDH:
     case ACVP_KAS_ECC_COMP:
     case ACVP_KAS_ECC_NOCOMP:
@@ -1900,6 +1905,7 @@ ACVP_RESULT acvp_cap_hash_enable(ACVP_CTX *ctx,
     case ACVP_KDF135_IKEV1:
     case ACVP_KDF135_X963:
     case ACVP_KDF108:
+    case ACVP_PBKDF:
     case ACVP_KAS_ECC_CDH:
     case ACVP_KAS_ECC_COMP:
     case ACVP_KAS_ECC_NOCOMP:
@@ -2031,6 +2037,7 @@ ACVP_RESULT acvp_cap_hash_set_parm(ACVP_CTX *ctx,
     case ACVP_KDF135_IKEV1:
     case ACVP_KDF135_X963:
     case ACVP_KDF108:
+    case ACVP_PBKDF:
     case ACVP_KAS_ECC_CDH:
     case ACVP_KAS_ECC_COMP:
     case ACVP_KAS_ECC_NOCOMP:
@@ -2143,6 +2150,7 @@ ACVP_RESULT acvp_cap_hash_set_parm(ACVP_CTX *ctx,
         case ACVP_KDF135_IKEV1:
         case ACVP_KDF135_X963:
         case ACVP_KDF108:
+        case ACVP_PBKDF:
         case ACVP_KAS_ECC_CDH:
         case ACVP_KAS_ECC_COMP:
         case ACVP_KAS_ECC_NOCOMP:
@@ -2262,6 +2270,7 @@ ACVP_RESULT acvp_cap_hash_set_domain(ACVP_CTX *ctx,
     case ACVP_KDF135_IKEV1:
     case ACVP_KDF135_X963:
     case ACVP_KDF108:
+    case ACVP_PBKDF:
     case ACVP_KAS_ECC_CDH:
     case ACVP_KAS_ECC_COMP:
     case ACVP_KAS_ECC_NOCOMP:
@@ -2443,6 +2452,7 @@ static ACVP_RESULT acvp_validate_hmac_parm_value(ACVP_CIPHER cipher,
         case ACVP_KDF135_IKEV1:
         case ACVP_KDF135_X963:
         case ACVP_KDF108:
+        case ACVP_PBKDF:
         case ACVP_KAS_ECC_CDH:
         case ACVP_KAS_ECC_COMP:
         case ACVP_KAS_ECC_NOCOMP:
@@ -2560,6 +2570,7 @@ ACVP_RESULT acvp_cap_hmac_enable(ACVP_CTX *ctx,
     case ACVP_KDF135_IKEV1:
     case ACVP_KDF135_X963:
     case ACVP_KDF108:
+    case ACVP_PBKDF:
     case ACVP_KAS_ECC_CDH:
     case ACVP_KAS_ECC_COMP:
     case ACVP_KAS_ECC_NOCOMP:
@@ -2808,6 +2819,7 @@ ACVP_RESULT acvp_cap_cmac_enable(ACVP_CTX *ctx,
     case ACVP_KDF135_IKEV1:
     case ACVP_KDF135_X963:
     case ACVP_KDF108:
+    case ACVP_PBKDF:
     case ACVP_KAS_ECC_CDH:
     case ACVP_KAS_ECC_COMP:
     case ACVP_KAS_ECC_NOCOMP:
@@ -3450,6 +3462,7 @@ ACVP_RESULT acvp_cap_drbg_set_parm(ACVP_CTX *ctx,
     case ACVP_KDF135_IKEV1:
     case ACVP_KDF135_X963:
     case ACVP_KDF108:
+    case ACVP_PBKDF:
     case ACVP_KAS_ECC_CDH:
     case ACVP_KAS_ECC_COMP:
     case ACVP_KAS_ECC_NOCOMP:
@@ -4322,6 +4335,7 @@ static ACVP_RESULT internal_cap_rsa_sig_enable(ACVP_CTX *ctx,
     case ACVP_KDF135_IKEV1:
     case ACVP_KDF135_X963:
     case ACVP_KDF108:
+    case ACVP_PBKDF:
     case ACVP_KAS_ECC_CDH:
     case ACVP_KAS_ECC_COMP:
     case ACVP_KAS_ECC_NOCOMP:
@@ -4435,6 +4449,7 @@ ACVP_RESULT acvp_cap_rsa_sig_enable(ACVP_CTX *ctx,
     case ACVP_KDF135_IKEV1:
     case ACVP_KDF135_X963:
     case ACVP_KDF108:
+    case ACVP_PBKDF:
     case ACVP_KAS_ECC_CDH:
     case ACVP_KAS_ECC_COMP:
     case ACVP_KAS_ECC_NOCOMP:
@@ -4564,6 +4579,7 @@ ACVP_RESULT acvp_cap_ecdsa_set_parm(ACVP_CTX *ctx,
     case ACVP_KDF135_IKEV1:
     case ACVP_KDF135_X963:
     case ACVP_KDF108:
+    case ACVP_PBKDF:
     case ACVP_KAS_ECC_CDH:
     case ACVP_KAS_ECC_COMP:
     case ACVP_KAS_ECC_NOCOMP:
@@ -4761,6 +4777,7 @@ ACVP_RESULT acvp_cap_ecdsa_enable(ACVP_CTX *ctx,
     case ACVP_KDF135_IKEV1:
     case ACVP_KDF135_X963:
     case ACVP_KDF108:
+    case ACVP_PBKDF:
     case ACVP_KAS_ECC_CDH:
     case ACVP_KAS_ECC_COMP:
     case ACVP_KAS_ECC_NOCOMP:
@@ -6359,6 +6376,7 @@ ACVP_RESULT acvp_cap_kas_ecc_enable(ACVP_CTX *ctx,
     case ACVP_KDF135_IKEV1:
     case ACVP_KDF135_X963:
     case ACVP_KDF108:
+    case ACVP_PBKDF:
     case ACVP_KAS_FFC_COMP:
     case ACVP_KAS_FFC_NOCOMP:
     case ACVP_CIPHER_END:
@@ -6476,6 +6494,7 @@ ACVP_RESULT acvp_cap_kas_ecc_set_parm(ACVP_CTX *ctx,
     case ACVP_KDF135_IKEV1:
     case ACVP_KDF135_X963:
     case ACVP_KDF108:
+    case ACVP_PBKDF:
     case ACVP_KAS_FFC_COMP:
     case ACVP_KAS_FFC_NOCOMP:
     case ACVP_CIPHER_END:
@@ -6691,6 +6710,7 @@ ACVP_RESULT acvp_cap_kas_ecc_set_scheme(ACVP_CTX *ctx,
     case ACVP_KDF135_IKEV1:
     case ACVP_KDF135_X963:
     case ACVP_KDF108:
+    case ACVP_PBKDF:
     case ACVP_KAS_FFC_COMP:
     case ACVP_KAS_FFC_NOCOMP:
     case ACVP_CIPHER_END:
@@ -6996,6 +7016,7 @@ ACVP_RESULT acvp_cap_kas_ffc_enable(ACVP_CTX *ctx,
     case ACVP_KDF135_IKEV1:
     case ACVP_KDF135_X963:
     case ACVP_KDF108:
+    case ACVP_PBKDF:
     case ACVP_KAS_ECC_CDH:
     case ACVP_KAS_ECC_COMP:
     case ACVP_KAS_ECC_NOCOMP:
@@ -7111,6 +7132,7 @@ ACVP_RESULT acvp_cap_kas_ffc_set_parm(ACVP_CTX *ctx,
     case ACVP_KDF135_IKEV1:
     case ACVP_KDF135_X963:
     case ACVP_KDF108:
+    case ACVP_PBKDF:
     case ACVP_KAS_ECC_CDH:
     case ACVP_KAS_ECC_COMP:
     case ACVP_KAS_ECC_NOCOMP:

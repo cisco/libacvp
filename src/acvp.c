@@ -2870,10 +2870,14 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
                     if (!acvp_lookup_str_list(&failedAlgList, alg)) {
                         rv = acvp_append_str_list(&failedAlgList, alg);
                         if (val2) json_value_free(val2);
+                        val2 = NULL;
                         if (rv != ACVP_SUCCESS) {
                             ACVP_LOG_ERR("Error appending failed algorithm name to list, skipping...");
                             continue;
                         }
+                    } else {
+                        if (val2) json_value_free(val2);
+                        val2 = NULL;
                     }
                 }
             }

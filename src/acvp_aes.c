@@ -223,6 +223,7 @@ static ACVP_RESULT acvp_aes_mct_iterate_tc(ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *st
     case ACVP_KDF135_IKEV1:
     case ACVP_KDF135_X963:
     case ACVP_KDF108:
+    case ACVP_PBKDF:
     case ACVP_KAS_ECC_CDH:
     case ACVP_KAS_ECC_COMP:
     case ACVP_KAS_ECC_NOCOMP:
