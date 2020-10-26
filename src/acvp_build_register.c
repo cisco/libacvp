@@ -535,6 +535,7 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
     case ACVP_KDF135_IKEV1:
     case ACVP_KDF135_X963:
     case ACVP_KDF108:
+    case ACVP_PBKDF:
     case ACVP_KAS_ECC_CDH:
     case ACVP_KAS_ECC_COMP:
     case ACVP_KAS_ECC_NOCOMP:
@@ -1117,6 +1118,7 @@ static ACVP_RESULT acvp_build_ecdsa_register_cap(ACVP_CIPHER cipher, JSON_Object
     case ACVP_KDF135_IKEV1:
     case ACVP_KDF135_X963:
     case ACVP_KDF108:
+    case ACVP_PBKDF:
     case ACVP_KAS_ECC_CDH:
     case ACVP_KAS_ECC_COMP:
     case ACVP_KAS_ECC_NOCOMP:
@@ -1687,6 +1689,82 @@ static ACVP_RESULT acvp_build_kdf135_ssh_register_cap(JSON_Object *cap_obj, ACVP
     result = acvp_lookup_prereqVals(cap_obj, cap_entry);
     if (result != ACVP_SUCCESS) { return result; }
 
+    return ACVP_SUCCESS;
+}
+
+static ACVP_RESULT acvp_build_pbkdf_register_cap(JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry) {
+    JSON_Array *temp_cap_arr = NULL;
+    JSON_Array *temp_arr = NULL;
+    JSON_Value *tmp_val = NULL, *cap_val = NULL;
+    JSON_Object *tmp_obj = NULL, *cap_sub_obj = NULL;
+    ACVP_NAME_LIST *hmac_alg_list = NULL;
+    ACVP_RESULT result;
+    const char *revision = NULL;
+
+    json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
+
+    revision = acvp_lookup_cipher_revision(cap_entry->cipher);
+    if (revision == NULL) return ACVP_INVALID_ARG;
+    json_object_set_string(cap_obj, "revision", revision);
+
+    result = acvp_lookup_prereqVals(cap_obj, cap_entry);
+    if (result != ACVP_SUCCESS) { return result; }
+
+    json_object_set_value(cap_obj, "capabilities", json_value_init_array());
+    temp_cap_arr = json_object_get_array(cap_obj, "capabilities");
+    cap_val = json_value_init_object();
+    cap_sub_obj = json_value_get_object(cap_val);
+
+    //create the "iterationCount" array within the "capabilities" array and populate it
+    json_object_set_value(cap_sub_obj, "iterationCount", json_value_init_array());
+    temp_arr = json_object_get_array(cap_sub_obj, "iterationCount");
+    tmp_val = json_value_init_object();
+    tmp_obj = json_value_get_object(tmp_val);
+    json_object_set_number(tmp_obj, "min", cap_entry->cap.pbkdf_cap->iteration_count_domain.min);
+    json_object_set_number(tmp_obj, "max", cap_entry->cap.pbkdf_cap->iteration_count_domain.max);
+    json_object_set_number(tmp_obj, "increment", cap_entry->cap.pbkdf_cap->iteration_count_domain.increment);
+    json_array_append_value(temp_arr, tmp_val);
+
+    //create the "keyLen" array within the "capabilities" array and populate it
+    json_object_set_value(cap_sub_obj, "keyLen", json_value_init_array());
+    temp_arr = json_object_get_array(cap_sub_obj, "keyLen");
+    tmp_val = json_value_init_object();
+    tmp_obj = json_value_get_object(tmp_val);
+    json_object_set_number(tmp_obj, "min", cap_entry->cap.pbkdf_cap->key_len_domain.min);
+    json_object_set_number(tmp_obj, "max", cap_entry->cap.pbkdf_cap->key_len_domain.max);
+    json_object_set_number(tmp_obj, "increment", cap_entry->cap.pbkdf_cap->key_len_domain.increment);
+    json_array_append_value(temp_arr, tmp_val);
+
+    //create the "passwordLen" array within the "capabilities" array and populate it
+    json_object_set_value(cap_sub_obj, "passwordLen", json_value_init_array());
+    temp_arr = json_object_get_array(cap_sub_obj, "passwordLen");
+    tmp_val = json_value_init_object();
+    tmp_obj = json_value_get_object(tmp_val);
+    json_object_set_number(tmp_obj, "min", cap_entry->cap.pbkdf_cap->password_len_domain.min);
+    json_object_set_number(tmp_obj, "max", cap_entry->cap.pbkdf_cap->password_len_domain.max);
+    json_object_set_number(tmp_obj, "increment", cap_entry->cap.pbkdf_cap->password_len_domain.increment);
+    json_array_append_value(temp_arr, tmp_val);
+
+    //create the "saltLen" array within the "capabilities" array and populate it
+    json_object_set_value(cap_sub_obj, "saltLen", json_value_init_array());
+    temp_arr = json_object_get_array(cap_sub_obj, "saltLen");
+    tmp_val = json_value_init_object();
+    tmp_obj = json_value_get_object(tmp_val);
+    json_object_set_number(tmp_obj, "min", cap_entry->cap.pbkdf_cap->salt_len_domain.min);
+    json_object_set_number(tmp_obj, "max", cap_entry->cap.pbkdf_cap->salt_len_domain.max);
+    json_object_set_number(tmp_obj, "increment", cap_entry->cap.pbkdf_cap->salt_len_domain.increment);
+    json_array_append_value(temp_arr, tmp_val);
+
+    //create the "hmacAlg" array within the "capabilities" array and populate it
+    json_object_set_value(cap_sub_obj, "hmacAlg", json_value_init_array());
+    temp_arr = json_object_get_array(cap_sub_obj, "hmacAlg");
+    hmac_alg_list = cap_entry->cap.pbkdf_cap->hmac_algs;
+    while (hmac_alg_list) {
+        json_array_append_string(temp_arr, hmac_alg_list->name);
+        hmac_alg_list = hmac_alg_list->next;
+    }
+
+    json_array_append_value(temp_cap_arr, cap_val);
     return ACVP_SUCCESS;
 }
 
@@ -2848,6 +2926,9 @@ ACVP_RESULT acvp_build_test_session(ACVP_CTX *ctx, char **reg, int *out_len) {
                 break;
             case ACVP_KDF108:
                 rv = acvp_build_kdf108_register_cap(cap_obj, cap_entry);
+                break;
+            case ACVP_PBKDF:
+                rv = acvp_build_pbkdf_register_cap(cap_obj, cap_entry);
                 break;
             case ACVP_KAS_ECC_CDH:
                 rv = acvp_build_kas_ecc_register_cap(ctx, cap_obj, cap_entry, ACVP_KAS_ECC_MODE_CDH);

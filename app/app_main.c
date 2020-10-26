@@ -1483,6 +1483,42 @@ static int enable_kdf(ACVP_CTX *ctx) {
     //rv = acvp_cap_kdf108_set_parm(ctx, ACVP_KDF108_MODE_COUNTER, ACVP_KDF108_REQUIRES_EMPTY_IV, 0);
     //CHECK_ENABLE_CAP_RV(rv);
 
+#if 0 //Not supported by openSSL currently
+    /*
+     * PBKDF
+     */
+    rv = acvp_cap_pbkdf_enable(ctx, &app_pbkdf_handler);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_set_prereq(ctx, ACVP_PBKDF, ACVP_PREREQ_SHA, value);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_pbkdf_set_parm(ctx, ACVP_PBKDF_HMAC_ALG, ACVP_PBKDF_HMAC_ALG_SHA1);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_pbkdf_set_parm(ctx, ACVP_PBKDF_HMAC_ALG, ACVP_PBKDF_HMAC_ALG_SHA224);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_pbkdf_set_parm(ctx, ACVP_PBKDF_HMAC_ALG, ACVP_PBKDF_HMAC_ALG_SHA256);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_pbkdf_set_parm(ctx, ACVP_PBKDF_HMAC_ALG, ACVP_PBKDF_HMAC_ALG_SHA384);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_pbkdf_set_parm(ctx, ACVP_PBKDF_HMAC_ALG, ACVP_PBKDF_HMAC_ALG_SHA512);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_pbkdf_set_parm(ctx, ACVP_PBKDF_HMAC_ALG, ACVP_PBKDF_HMAC_ALG_SHA3_224);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_pbkdf_set_parm(ctx, ACVP_PBKDF_HMAC_ALG, ACVP_PBKDF_HMAC_ALG_SHA3_256);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_pbkdf_set_parm(ctx, ACVP_PBKDF_HMAC_ALG, ACVP_PBKDF_HMAC_ALG_SHA3_384);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_pbkdf_set_parm(ctx, ACVP_PBKDF_HMAC_ALG, ACVP_PBKDF_HMAC_ALG_SHA3_512);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_pbkdf_set_domain(ctx, ACVP_PBKDF_ITERATION_COUNT, 10, 1000, 1);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_pbkdf_set_domain(ctx, ACVP_PBKDF_KEY_LEN, 112, 4096, 8);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_pbkdf_set_domain(ctx, ACVP_PBKDF_PASSWORD_LEN, 8, 128, 1);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_pbkdf_set_domain(ctx, ACVP_PBKDF_SALT_LEN, 128, 4096, 8);
+    CHECK_ENABLE_CAP_RV(rv);
+#endif
+
 end:
 
     return rv;

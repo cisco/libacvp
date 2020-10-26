@@ -231,7 +231,7 @@ Test(EnableCapKDFTLS, invalid_params, .fini = teardown) {
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_kdf135_tls_set_parm(ctx, ACVP_KDF135_TLS, ACVP_KDF135_TLS12, 0);
     cr_assert(rv == ACVP_INVALID_ARG);
-    rv = acvp_cap_kdf135_tls_set_parm(ctx, ACVP_KDF135_TLS, ACVP_KDF135_TLS12, 999);
+    rv = acvp_cap_kdf135_tls_set_parm(ctx, ACVP_KDF135_TLS, ACVP_KDF135_TLS12, 256);
     cr_assert(rv == ACVP_INVALID_ARG);
 }
 
