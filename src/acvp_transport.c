@@ -46,6 +46,7 @@
  */
 #define HTTP_OK    200
 #define HTTP_UNAUTH    401
+#define HTTP_BAD_REQ 400
 
 //Used for knowing which environment variable is being looked for in case of HTTP user-agent.
 typedef enum acvp_user_agent_env_type {
@@ -1225,6 +1226,10 @@ static ACVP_RESULT inspect_http_code(ACVP_CTX *ctx, int code) {
         return ACVP_SUCCESS;
     }
 
+    if (code == HTTP_BAD_REQ) {
+        return ACVP_UNSUPPORTED_OP;
+    }
+
     if (code == HTTP_UNAUTH) {
         char *diff = NULL;
 
@@ -1337,6 +1342,11 @@ static ACVP_RESULT execute_network_action(ACVP_CTX *ctx,
         } else {
 #endif
             rc = acvp_curl_http_post(ctx, url, resp, resp_len);
+            //Check for code 400, which means we are reuploading a resp and must use PUT instead
+            result = inspect_http_code(ctx, rc);
+            if (result == ACVP_UNSUPPORTED_OP) {
+                rc = acvp_curl_http_put(ctx, url, resp, resp_len);
+            }
 #ifdef ACVP_DEPRECATED
         }
 #endif
@@ -1395,6 +1405,11 @@ static ACVP_RESULT execute_network_action(ACVP_CTX *ctx,
                 } else {
 #endif
                     rc = acvp_curl_http_post(ctx, url, resp, resp_len);
+                    //Check for code 400, which means we are reuploading a resp and must use PUT instead
+                    result = inspect_http_code(ctx, rc);
+                    if (result == ACVP_UNSUPPORTED_OP) {
+                        rc = acvp_curl_http_put(ctx, url, resp, resp_len);
+                    }
 #ifdef ACVP_DEPRECATED
                 }
 #endif
