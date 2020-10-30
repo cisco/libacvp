@@ -539,6 +539,7 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
     case ACVP_KAS_ECC_CDH:
     case ACVP_KAS_ECC_COMP:
     case ACVP_KAS_ECC_NOCOMP:
+    case ACVP_KAS_ECC_SSC:
     case ACVP_KAS_FFC_COMP:
     case ACVP_KAS_FFC_NOCOMP:
     case ACVP_CIPHER_END:
@@ -1164,6 +1165,7 @@ static ACVP_RESULT acvp_build_ecdsa_register_cap(ACVP_CIPHER cipher, JSON_Object
     case ACVP_KAS_ECC_CDH:
     case ACVP_KAS_ECC_COMP:
     case ACVP_KAS_ECC_NOCOMP:
+    case ACVP_KAS_ECC_SSC:
     case ACVP_KAS_FFC_COMP:
     case ACVP_KAS_FFC_NOCOMP:
     case ACVP_CIPHER_END:
@@ -2286,10 +2288,12 @@ static ACVP_RESULT acvp_build_kas_ecc_register_cap(ACVP_CTX *ctx,
         case ACVP_KAS_ECC_MODE_COMPONENT:
             json_object_set_string(cap_obj, "mode", "Component");
             break;
+        case ACVP_KAS_ECC_MODE_NONE:
+            break;
         case ACVP_KAS_ECC_MODE_NOCOMP:
         case ACVP_KAS_ECC_MAX_MODES:
         default:
-            ACVP_LOG_ERR("\nUnsupported KAS-ECC mode %d", kas_ecc_mode->cap_mode);
+            ACVP_LOG_ERR("Unsupported KAS-ECC mode %d", kas_ecc_mode->cap_mode);
             return ACVP_INVALID_ARG;
 
             break;
@@ -2323,7 +2327,7 @@ static ACVP_RESULT acvp_build_kas_ecc_register_cap(ACVP_CTX *ctx,
                     json_array_append_string(temp_arr, "fullVal");
                     break;
                 default:
-                    ACVP_LOG_ERR("\nUnsupported KAS-ECC function %d", current_func->param);
+                    ACVP_LOG_ERR("Unsupported KAS-ECC function %d", current_func->param);
                     return ACVP_INVALID_ARG;
 
                     break;
@@ -2339,7 +2343,7 @@ static ACVP_RESULT acvp_build_kas_ecc_register_cap(ACVP_CTX *ctx,
                 curve_str = acvp_lookup_ec_curve_name(kas_ecc_cap->cipher,
                                                       current_curve->param);
                 if (!curve_str) {
-                    ACVP_LOG_ERR("\nUnsupported curve %d",
+                    ACVP_LOG_ERR("Unsupported curve %d",
                                  current_curve->param);
                     return ACVP_INVALID_ARG;
                 }
@@ -2347,6 +2351,95 @@ static ACVP_RESULT acvp_build_kas_ecc_register_cap(ACVP_CTX *ctx,
                 json_array_append_string(temp_arr, curve_str);
 
                 current_curve = current_curve->next;
+            }
+            break;
+       /* SP800-56Ar3 does not use a mode, so it is identified with NONE */
+        case ACVP_KAS_ECC_MODE_NONE:
+            sch_val = json_value_init_object();
+            sch_obj = json_value_get_object(sch_val);
+
+            func_val = json_value_init_object();
+            func_obj = json_value_get_object(func_val);
+
+            current_scheme = kas_ecc_mode->scheme;
+            while (current_scheme) {
+                scheme = current_scheme->scheme;
+
+                json_object_set_value(func_obj, "kasRole", json_value_init_array());
+                temp_arr = json_object_get_array(func_obj, "kasRole");
+                role = current_scheme->role;
+                while (role) {
+                    switch (role->param) {
+                    case ACVP_KAS_ECC_ROLE_INITIATOR:
+                        json_array_append_string(temp_arr, "initiator");
+                        break;
+                    case ACVP_KAS_ECC_ROLE_RESPONDER:
+                        json_array_append_string(temp_arr, "responder");
+                        break;
+                    default:
+                        ACVP_LOG_ERR("Unsupported KAS-ECC role %d", role->param);
+                        return ACVP_INVALID_ARG;
+
+                        break;
+                    }
+                    role = role->next;
+                }
+                switch (scheme) {
+                case ACVP_KAS_ECC_EPHEMERAL_UNIFIED:
+                    json_object_set_value(sch_obj, "ephemeralUnified", func_val);
+                    break;
+                case ACVP_KAS_ECC_FULL_MQV:
+                case ACVP_KAS_ECC_FULL_UNIFIED:
+                case ACVP_KAS_ECC_ONEPASS_DH:
+                case ACVP_KAS_ECC_ONEPASS_MQV:
+                case ACVP_KAS_ECC_ONEPASS_UNIFIED:
+                case ACVP_KAS_ECC_STATIC_UNIFIED:
+                case ACVP_KAS_ECC_SCHEMES_MAX:
+                default:
+                    ACVP_LOG_ERR("Unsupported KAS-ECC scheme %d", scheme);
+                    return ACVP_INVALID_ARG;
+
+                    break;
+                }
+                json_object_set_value(cap_obj, "scheme", sch_val);
+                current_scheme = current_scheme->next;
+            }
+
+            json_object_set_value(cap_obj, "domainParameterGenerationMethods", json_value_init_array());
+            temp_arr = json_object_get_array(cap_obj, "domainParameterGenerationMethods");
+            current_curve = kas_ecc_mode->curve;
+            while (current_curve) {
+                const char *curve_str = NULL;
+
+                curve_str = acvp_lookup_ec_curve_name(kas_ecc_cap->cipher,
+                                                      current_curve->param);
+                if (!curve_str) {
+                    ACVP_LOG_ERR("Unsupported curve %d",
+                                 current_curve->param);
+                    return ACVP_INVALID_ARG;
+                }
+
+                json_array_append_string(temp_arr, curve_str);
+
+                current_curve = current_curve->next;
+            }
+            switch (kas_ecc_mode->hash) {
+                case ACVP_SHA224:
+                     json_object_set_string(cap_obj, "hashFunctionZ", "SHA2-224");
+                     break;
+                case ACVP_SHA256:
+                     json_object_set_string(cap_obj, "hashFunctionZ", "SHA2-256");
+                     break;
+                case ACVP_SHA384:
+                     json_object_set_string(cap_obj, "hashFunctionZ", "SHA2-384");
+                     break;
+                case ACVP_SHA512:
+                     json_object_set_string(cap_obj, "hashFunctionZ", "SHA2-512");
+                     break;
+                default:
+                    ACVP_LOG_ERR("Unsupported KAS-ECC sha param %d", kas_ecc_mode->hash);
+                    return ACVP_INVALID_ARG;
+                    break;
             }
             break;
         case ACVP_KAS_ECC_MODE_COMPONENT:
@@ -2364,7 +2457,7 @@ static ACVP_RESULT acvp_build_kas_ecc_register_cap(ACVP_CTX *ctx,
                 case ACVP_KAS_ECC_FUNC_KEYREGEN:
                 case ACVP_KAS_ECC_FUNC_FULL:
                 default:
-                    ACVP_LOG_ERR("\nUnsupported KAS-ECC function %d", current_func->param);
+                    ACVP_LOG_ERR("Unsupported KAS-ECC function %d", current_func->param);
                     return ACVP_INVALID_ARG;
 
                     break;
@@ -2399,7 +2492,7 @@ static ACVP_RESULT acvp_build_kas_ecc_register_cap(ACVP_CTX *ctx,
                     curve_str = acvp_lookup_ec_curve_name(kas_ecc_cap->cipher,
                                                           current_pset->curve);
                     if (!curve_str) {
-                        ACVP_LOG_ERR("\nUnsupported curve %d",
+                        ACVP_LOG_ERR("Unsupported curve %d",
                                      current_pset->curve);
                         return ACVP_INVALID_ARG;
                     }
@@ -2423,7 +2516,7 @@ static ACVP_RESULT acvp_build_kas_ecc_register_cap(ACVP_CTX *ctx,
                             json_array_append_string(temp_arr, "SHA2-512");
                             break;
                         default:
-                            ACVP_LOG_ERR("\nUnsupported KAS-ECC sha param %d", sha->param);
+                            ACVP_LOG_ERR("Unsupported KAS-ECC sha param %d", sha->param);
                             return ACVP_INVALID_ARG;
 
                             break;
@@ -2444,7 +2537,7 @@ static ACVP_RESULT acvp_build_kas_ecc_register_cap(ACVP_CTX *ctx,
                         json_object_set_value(pset_obj, "ee", set_val);
                         break;
                     default:
-                        ACVP_LOG_ERR("\nUnsupported KAS-ECC set %d", set);
+                        ACVP_LOG_ERR("Unsupported KAS-ECC set %d", set);
                         return ACVP_INVALID_ARG;
 
                         break;
@@ -2465,7 +2558,7 @@ static ACVP_RESULT acvp_build_kas_ecc_register_cap(ACVP_CTX *ctx,
                         json_array_append_string(temp_arr, "responder");
                         break;
                     default:
-                        ACVP_LOG_ERR("\nUnsupported KAS-ECC role %d", role->param);
+                        ACVP_LOG_ERR("Unsupported KAS-ECC role %d", role->param);
                         return ACVP_INVALID_ARG;
 
                         break;
@@ -2484,9 +2577,10 @@ static ACVP_RESULT acvp_build_kas_ecc_register_cap(ACVP_CTX *ctx,
                     break;
                 case ACVP_KAS_ECC_PARMSET:
                 default:
-                    ACVP_LOG_ERR("\nUnsupported KAS-ECC kdf %d", kdf);
-                    return ACVP_INVALID_ARG;
-
+                    if (i != ACVP_KAS_ECC_MODE_NONE) {
+                        ACVP_LOG_ERR("Unsupported KAS-ECC kdf %d", kdf);
+                        return ACVP_INVALID_ARG;
+                    }
                     break;
                 }
                 switch (scheme) {
@@ -2501,7 +2595,7 @@ static ACVP_RESULT acvp_build_kas_ecc_register_cap(ACVP_CTX *ctx,
                 case ACVP_KAS_ECC_STATIC_UNIFIED:
                 case ACVP_KAS_ECC_SCHEMES_MAX:
                 default:
-                    ACVP_LOG_ERR("\nUnsupported KAS-ECC scheme %d", scheme);
+                    ACVP_LOG_ERR("Unsupported KAS-ECC scheme %d", scheme);
                     return ACVP_INVALID_ARG;
 
                     break;
@@ -2511,7 +2605,7 @@ static ACVP_RESULT acvp_build_kas_ecc_register_cap(ACVP_CTX *ctx,
             }
             break;
         default:
-            ACVP_LOG_ERR("\nUnsupported KAS-ECC mode %d", i);
+            ACVP_LOG_ERR("Unsupported KAS-ECC mode %d", i);
             return ACVP_INVALID_ARG;
 
             break;
@@ -2616,7 +2710,7 @@ static ACVP_RESULT acvp_build_kas_ffc_register_cap(ACVP_CTX *ctx,
         case ACVP_KAS_FFC_MODE_NOCOMP:
         case ACVP_KAS_FFC_MAX_MODES:
         default:
-            ACVP_LOG_ERR("\nUnsupported KAS-FFC mode %d", kas_ffc_mode->cap_mode);
+            ACVP_LOG_ERR("Unsupported KAS-FFC mode %d", kas_ffc_mode->cap_mode);
             return ACVP_INVALID_ARG;
 
             break;
@@ -2646,7 +2740,7 @@ static ACVP_RESULT acvp_build_kas_ffc_register_cap(ACVP_CTX *ctx,
                     json_array_append_string(temp_arr, "fullVal");
                     break;
                 default:
-                    ACVP_LOG_ERR("\nUnsupported KAS-FFC function %d", current_func->param);
+                    ACVP_LOG_ERR("Unsupported KAS-FFC function %d", current_func->param);
                     return ACVP_INVALID_ARG;
 
                     break;
@@ -2695,7 +2789,7 @@ static ACVP_RESULT acvp_build_kas_ffc_register_cap(ACVP_CTX *ctx,
                             json_array_append_string(temp_arr, "SHA2-512");
                             break;
                         default:
-                            ACVP_LOG_ERR("\nUnsupported KAS-FFC sha param %d", sha->param);
+                            ACVP_LOG_ERR("Unsupported KAS-FFC sha param %d", sha->param);
                             return ACVP_INVALID_ARG;
 
                             break;
@@ -2710,7 +2804,7 @@ static ACVP_RESULT acvp_build_kas_ffc_register_cap(ACVP_CTX *ctx,
                         json_object_set_value(pset_obj, "fc", set_val);
                         break;
                     default:
-                        ACVP_LOG_ERR("\nUnsupported KAS-FFC set %d", set);
+                        ACVP_LOG_ERR("Unsupported KAS-FFC set %d", set);
                         return ACVP_INVALID_ARG;
 
                         break;
@@ -2731,7 +2825,7 @@ static ACVP_RESULT acvp_build_kas_ffc_register_cap(ACVP_CTX *ctx,
                         json_array_append_string(temp_arr, "responder");
                         break;
                     default:
-                        ACVP_LOG_ERR("\nUnsupported KAS-FFC role %d", role->param);
+                        ACVP_LOG_ERR("Unsupported KAS-FFC role %d", role->param);
                         return ACVP_INVALID_ARG;
 
                         break;
@@ -2750,7 +2844,7 @@ static ACVP_RESULT acvp_build_kas_ffc_register_cap(ACVP_CTX *ctx,
                     break;
                 case ACVP_KAS_FFC_PARMSET:
                 default:
-                    ACVP_LOG_ERR("\nUnsupported KAS-FFC kdf %d", kdf);
+                    ACVP_LOG_ERR("Unsupported KAS-FFC kdf %d", kdf);
                     return ACVP_INVALID_ARG;
 
                     break;
@@ -2767,7 +2861,7 @@ static ACVP_RESULT acvp_build_kas_ffc_register_cap(ACVP_CTX *ctx,
                 case ACVP_KAS_FFC_DH_STATIC:
                 case ACVP_KAS_FFC_MAX_SCHEMES:
                 default:
-                    ACVP_LOG_ERR("\nUnsupported KAS-FFC scheme %d", scheme);
+                    ACVP_LOG_ERR("Unsupported KAS-FFC scheme %d", scheme);
                     return ACVP_INVALID_ARG;
 
                     break;
@@ -2777,7 +2871,7 @@ static ACVP_RESULT acvp_build_kas_ffc_register_cap(ACVP_CTX *ctx,
             }
             break;
         default:
-            ACVP_LOG_ERR("\nUnsupported KAS-FFC mode %d", i);
+            ACVP_LOG_ERR("Unsupported KAS-FFC mode %d", i);
             return ACVP_INVALID_ARG;
 
             break;
@@ -2981,6 +3075,9 @@ ACVP_RESULT acvp_build_test_session(ACVP_CTX *ctx, char **reg, int *out_len) {
                 break;
             case ACVP_KAS_ECC_COMP:
                 rv = acvp_build_kas_ecc_register_cap(ctx, cap_obj, cap_entry, ACVP_KAS_ECC_MODE_COMPONENT);
+                break;
+            case ACVP_KAS_ECC_SSC:
+                rv = acvp_build_kas_ecc_register_cap(ctx, cap_obj, cap_entry, ACVP_KAS_ECC_MODE_NONE);
                 break;
             case ACVP_KAS_ECC_NOCOMP:
                 rv = acvp_build_kas_ecc_register_cap(ctx, cap_obj, cap_entry, ACVP_KAS_ECC_MODE_NOCOMP);

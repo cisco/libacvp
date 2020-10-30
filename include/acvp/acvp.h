@@ -163,6 +163,7 @@ typedef enum acvp_cipher {
     ACVP_KAS_ECC_CDH,
     ACVP_KAS_ECC_COMP,
     ACVP_KAS_ECC_NOCOMP,
+    ACVP_KAS_ECC_SSC,
     ACVP_KAS_FFC_COMP,
     ACVP_KAS_FFC_NOCOMP,
     ACVP_CIPHER_END
@@ -1237,6 +1238,7 @@ typedef enum acvp_kas_ecc_mode {
     ACVP_KAS_ECC_MODE_COMPONENT = 1,
     ACVP_KAS_ECC_MODE_CDH,
     ACVP_KAS_ECC_MODE_NOCOMP,
+    ACVP_KAS_ECC_MODE_NONE,
     ACVP_KAS_ECC_MAX_MODES
 } ACVP_KAS_ECC_MODE;
 
@@ -1260,7 +1262,9 @@ typedef enum acvp_kas_ecc_param {
     ACVP_KAS_ECC_EB,
     ACVP_KAS_ECC_EC,
     ACVP_KAS_ECC_ED,
-    ACVP_KAS_ECC_EE
+    ACVP_KAS_ECC_EE,
+    ACVP_KAS_ECC_HASH,
+    ACVP_KAS_ECC_NONE
 } ACVP_KAS_ECC_PARAM;
 
 /*! @struct ACVP_KAS_ECC_ROLE */
