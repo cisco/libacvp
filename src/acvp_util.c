@@ -944,9 +944,14 @@ int acvp_lookup_str_list(ACVP_STRING_LIST **list, const char *string) {
     }
     tmp = *list;
     int diff = 1;
+    int len1 = 0;
+    int len2 = 0;
+    int minlen = 0;
     while(tmp && tmp->string) {
-        strncmp_s(tmp->string, strnlen_s(tmp->string, ACVP_STRING_LIST_MAX_LEN),
-                  string, strnlen_s(string, ACVP_STRING_LIST_MAX_LEN), &diff);
+        len1 = strnlen_s(tmp->string, ACVP_STRING_LIST_MAX_LEN);
+        len2 = strnlen_s(string, ACVP_STRING_LIST_MAX_LEN);
+        minlen = len1 < len2 ? len1 : len2;
+        strncmp_s(tmp->string, len1, string, minlen, &diff);
         if (!diff) {
             return 1;
         }
