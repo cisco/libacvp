@@ -32,6 +32,9 @@ EXPORTS
   acvp_cap_rsa_keygen_set_exponent
   acvp_cap_rsa_sigver_set_exponent
   acvp_cap_rsa_keygen_set_primes
+  acvp_cap_rsa_prim_enable
+  acvp_cap_rsa_prim_set_parm
+  acvp_cap_rsa_prim_set_exponent
   acvp_cap_hmac_enable
   acvp_cap_hmac_set_parm
   acvp_cap_hmac_set_domain
@@ -59,6 +62,9 @@ EXPORTS
   acvp_cap_kdf135_ikev2_set_domain
   acvp_cap_kdf135_ikev1_set_domain
   acvp_cap_kdf108_set_domain
+  acvp_cap_pbkdf_enable
+  acvp_cap_pbkdf_set_domain
+  acvp_cap_pbkdf_set_parm
   acvp_cap_set_prereq
   acvp_create_test_session
   acvp_free_test_session
