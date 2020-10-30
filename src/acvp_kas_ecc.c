@@ -361,7 +361,7 @@ static ACVP_RESULT acvp_kas_ecc_cdh(ACVP_CTX *ctx,
             goto err;
         }
 
-        ACVP_LOG_VERBOSE("    Test group: %d", i);
+        ACVP_LOG_VERBOSE("    Test group: %d", i+1);
         ACVP_LOG_VERBOSE("          curve: %s", curve_str);
 
         tests = json_object_get_array(groupobj, "tests");
@@ -555,7 +555,7 @@ static ACVP_RESULT acvp_kas_ecc_comp(ACVP_CTX *ctx,
             goto err;
         }
 
-        ACVP_LOG_VERBOSE("    Test group: %d", i);
+        ACVP_LOG_VERBOSE("    Test group: %d", i+1);
         ACVP_LOG_VERBOSE("      test type: %s", test_type_str);
         ACVP_LOG_VERBOSE("          curve: %s", curve_str);
         ACVP_LOG_VERBOSE("           hash: %s", hash_str);
@@ -912,6 +912,424 @@ ACVP_RESULT acvp_kas_ecc_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         rv = ACVP_UNSUPPORTED_OP;
         goto err;
         break;
+    }
+    json_array_append_value(reg_arry, r_vs_val);
+
+    json_result = json_serialize_to_string_pretty(ctx->kat_resp, NULL);
+    ACVP_LOG_VERBOSE("\n\n%s\n\n", json_result);
+    json_free_serialized_string(json_result);
+    rv = ACVP_SUCCESS;
+
+err:
+    if (rv != ACVP_SUCCESS) {
+        acvp_kas_ecc_release_tc(&stc);
+        json_value_free(r_vs_val);
+    }
+    return rv;
+}
+
+
+/*
+ * After the test case has been processed by the DUT, the results
+ * need to be JSON formated to be included in the vector set results
+ * file that will be uploaded to the server.  This routine handles
+ * the JSON processing for a single test case.
+ */
+static ACVP_RESULT acvp_kas_ecc_output_ssc_tc(ACVP_CTX *ctx,
+                                              ACVP_KAS_ECC_TC *stc,
+                                              JSON_Object *tc_rsp) {
+    ACVP_RESULT rv = ACVP_SUCCESS;
+    char *tmp = NULL;
+
+    tmp = calloc(1, ACVP_KAS_ECC_STR_MAX + 1);
+    if (!tmp) {
+        ACVP_LOG_ERR("Unable to malloc in acvp_aes_output_mct_tc");
+        return ACVP_MALLOC_FAIL;
+    }
+
+    if (stc->test_type == ACVP_KAS_ECC_TT_VAL) {
+        int diff = 1;
+
+        memzero_s(tmp, ACVP_KAS_ECC_STR_MAX);
+        rv = acvp_bin_to_hexstr(stc->chash, stc->chashlen, tmp, ACVP_KAS_ECC_STR_MAX);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("hex conversion failure (Z)");
+            goto end;
+        }
+        memcmp_s(stc->chash, ACVP_KAS_ECC_BYTE_MAX, stc->z, stc->zlen, &diff);
+        if (!diff) {
+            json_object_set_boolean(tc_rsp, "testPassed", 1);
+        } else {
+            json_object_set_boolean(tc_rsp, "testPassed", 0);
+        }
+        goto end;
+    }
+
+    memzero_s(tmp, ACVP_KAS_ECC_STR_MAX);
+    rv = acvp_bin_to_hexstr(stc->pix, stc->pixlen, tmp, ACVP_KAS_ECC_STR_MAX);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("hex conversion failure (pix)");
+        goto end;
+    }
+    json_object_set_string(tc_rsp, "ephemeralPublicIutX", tmp);
+
+    memzero_s(tmp, ACVP_KAS_ECC_STR_MAX);
+    rv = acvp_bin_to_hexstr(stc->piy, stc->piylen, tmp, ACVP_KAS_ECC_STR_MAX);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("hex conversion failure (piy)");
+        goto end;
+    }
+    json_object_set_string(tc_rsp, "ephemeralPublicIutY", tmp);
+
+    memzero_s(tmp, ACVP_KAS_ECC_STR_MAX);
+    rv = acvp_bin_to_hexstr(stc->d, stc->dlen, tmp, ACVP_KAS_ECC_STR_MAX);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("hex conversion failure (d)");
+        goto end;
+    }
+    json_object_set_string(tc_rsp, "ephemeralPrivateIut", tmp);
+
+    memzero_s(tmp, ACVP_KAS_ECC_STR_MAX);
+    rv = acvp_bin_to_hexstr(stc->chash, stc->chashlen, tmp, ACVP_KAS_ECC_STR_MAX);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("hex conversion failure (Z)");
+        goto end;
+    }
+    json_object_set_string(tc_rsp, "hashZ", tmp);
+
+end:
+    if (tmp) free(tmp);
+
+    return rv;
+}
+
+static ACVP_RESULT acvp_kas_ecc_ssc(ACVP_CTX *ctx,
+                                    ACVP_CAPS_LIST *cap,
+                                    ACVP_TEST_CASE *tc,
+                                    ACVP_KAS_ECC_TC *stc,
+                                    JSON_Object *obj,
+                                    JSON_Array *r_garr) {
+    JSON_Value *groupval;
+    JSON_Object *groupobj = NULL;
+    JSON_Array *groups;
+    JSON_Value *testval;
+    JSON_Object *testobj = NULL;
+    JSON_Array *tests, *r_tarr = NULL;
+    JSON_Value *r_tval = NULL, *r_gval = NULL;  /* Response testval, groupval */
+    JSON_Object *r_tobj = NULL, *r_gobj = NULL; /* Response testobj, groupobj */
+    unsigned int i, g_cnt;
+    int j, t_cnt, tc_id;
+    ACVP_RESULT rv;
+
+    groups = json_object_get_array(obj, "testGroups");
+    g_cnt = json_array_get_count(groups);
+
+    for (i = 0; i < g_cnt; i++) {
+        int tgId = 0;
+        ACVP_KAS_ECC_TEST_TYPE test_type = 0;
+        ACVP_HASH_ALG hash = 0;
+        ACVP_EC_CURVE curve = 0;
+        const char *test_type_str = NULL, *curve_str = NULL, *hash_str = NULL;
+
+        groupval = json_array_get_value(groups, i);
+        groupobj = json_value_get_object(groupval);
+
+        /*
+         * Create a new group in the response with the tgid
+         * and an array of tests
+         */
+        r_gval = json_value_init_object();
+        r_gobj = json_value_get_object(r_gval);
+        tgId = json_object_get_number(groupobj, "tgId");
+        if (!tgId) {
+            ACVP_LOG_ERR("Missing tgid from server JSON groub obj");
+            rv = ACVP_MALFORMED_JSON;
+            goto err;
+        }
+        json_object_set_number(r_gobj, "tgId", tgId);
+        json_object_set_value(r_gobj, "tests", json_value_init_array());
+        r_tarr = json_object_get_array(r_gobj, "tests");
+
+        curve_str = json_object_get_string(groupobj, "domainParameterGenerationMode");
+        if (!curve_str) {
+            ACVP_LOG_ERR("Server JSON missing 'domainParameterGenerationMode'");
+            rv = ACVP_MISSING_ARG;
+            goto err;
+        }
+
+        curve = acvp_lookup_ec_curve(stc->cipher, curve_str);
+        if (!curve) {
+            ACVP_LOG_ERR("Server JSON invalid 'curve'");
+            rv = ACVP_INVALID_ARG;
+            goto err;
+        }
+
+        hash_str = json_object_get_string(groupobj, "hashFunctionZ");
+        if (!hash_str) {
+            ACVP_LOG_ERR("Server JSON missing 'hashFunctionZ'");
+            rv = ACVP_MISSING_ARG;
+            goto err;
+        }
+        hash = acvp_lookup_hash_alg(hash_str);
+        if (!(hash == ACVP_SHA224 || hash == ACVP_SHA256 ||
+              hash == ACVP_SHA384 || hash == ACVP_SHA512)) {
+            ACVP_LOG_ERR("Server JSON invalid 'hashAlg'");
+            rv = ACVP_INVALID_ARG;
+            goto err;
+        }
+
+        test_type_str = json_object_get_string(groupobj, "testType");
+        if (!test_type_str) {
+            ACVP_LOG_ERR("Server JSON missing 'testType'");
+            rv = ACVP_MISSING_ARG;
+            goto err;
+        }
+        test_type = read_test_type(test_type_str);
+        if (!test_type) {
+            ACVP_LOG_ERR("Server JSON invalid 'testType'");
+            rv = ACVP_INVALID_ARG;
+            goto err;
+        }
+
+        ACVP_LOG_VERBOSE("    Test group: %d", i+1);
+        ACVP_LOG_VERBOSE("      test type: %s", test_type_str);
+        ACVP_LOG_VERBOSE("          curve: %s", curve_str);
+        ACVP_LOG_VERBOSE("           hash: %s", hash_str);
+
+        tests = json_object_get_array(groupobj, "tests");
+        t_cnt = json_array_get_count(tests);
+
+        for (j = 0; j < t_cnt; j++) {
+            const char *psx = NULL, *psy = NULL, *pix = NULL,
+                       *piy = NULL, *d = NULL, *z = NULL;
+
+            ACVP_LOG_VERBOSE("Found new KAS-ECC-SSC Component test vector...");
+            testval = json_array_get_value(tests, j);
+            testobj = json_value_get_object(testval);
+            tc_id = json_object_get_number(testobj, "tcId");
+
+            /*
+             * Create a new test case in the response
+             */
+            r_tval = json_value_init_object();
+            r_tobj = json_value_get_object(r_tval);
+
+            json_object_set_number(r_tobj, "tcId", tc_id);
+
+            psx = json_object_get_string(testobj, "ephemeralPublicServerX");
+            if (!psx) {
+                ACVP_LOG_ERR("Server JSON missing 'ephemeralPublicServerX'");
+                rv = ACVP_MISSING_ARG;
+                json_value_free(r_tval);
+                goto err;
+            }
+            if (strnlen_s(psx, ACVP_KAS_ECC_STR_MAX + 1) > ACVP_KAS_ECC_STR_MAX) {
+                ACVP_LOG_ERR("ephemeralPublicServerX too long, max allowed=(%d)",
+                             ACVP_KAS_ECC_STR_MAX);
+                rv = ACVP_INVALID_ARG;
+                json_value_free(r_tval);
+                goto err;
+            }
+
+            psy = json_object_get_string(testobj, "ephemeralPublicServerY");
+            if (!psy) {
+                ACVP_LOG_ERR("Server JSON missing 'ephemeralPublicServerY'");
+                rv = ACVP_MISSING_ARG;
+                json_value_free(r_tval);
+                goto err;
+            }
+            if (strnlen_s(psy, ACVP_KAS_ECC_STR_MAX + 1) > ACVP_KAS_ECC_STR_MAX) {
+                ACVP_LOG_ERR("ephemeralPublicServerY too long, max allowed=(%d)",
+                             ACVP_KAS_ECC_STR_MAX);
+                rv = ACVP_INVALID_ARG;
+                json_value_free(r_tval);
+                goto err;
+            }
+
+            ACVP_LOG_VERBOSE("            psx: %s", psx);
+            ACVP_LOG_VERBOSE("            psy: %s", psy);
+
+            if (test_type == ACVP_KAS_ECC_TT_VAL) {
+                pix = json_object_get_string(testobj, "ephemeralPublicIutX");
+                if (!pix) {
+                    ACVP_LOG_ERR("Server JSON missing 'ephemeralPublicIutX'");
+                    rv = ACVP_MISSING_ARG;
+                    json_value_free(r_tval);
+                    goto err;
+                }
+                if (strnlen_s(pix, ACVP_KAS_ECC_STR_MAX + 1) > ACVP_KAS_ECC_STR_MAX) {
+                    ACVP_LOG_ERR("ephemeralPublicIutX too long, max allowed=(%d)",
+                                 ACVP_KAS_ECC_STR_MAX);
+                    rv = ACVP_INVALID_ARG;
+                    json_value_free(r_tval);
+                    goto err;
+                }
+
+                piy = json_object_get_string(testobj, "ephemeralPublicIutY");
+                if (!piy) {
+                    ACVP_LOG_ERR("Server JSON missing 'ephemeralPublicIutY'");
+                    rv = ACVP_MISSING_ARG;
+                    json_value_free(r_tval);
+                    goto err;
+                }
+                if (strnlen_s(piy, ACVP_KAS_ECC_STR_MAX + 1) > ACVP_KAS_ECC_STR_MAX) {
+                    ACVP_LOG_ERR("ephemeralPublicIutY too long, max allowed=(%d)",
+                                 ACVP_KAS_ECC_STR_MAX);
+                    rv = ACVP_INVALID_ARG;
+                    json_value_free(r_tval);
+                    goto err;
+                }
+
+                d = json_object_get_string(testobj, "ephemeralPrivateIut");
+                if (!d) {
+                    ACVP_LOG_ERR("Server JSON missing 'ephemeralPrivateIut'");
+                    rv = ACVP_MISSING_ARG;
+                    json_value_free(r_tval);
+                    goto err;
+                }
+                if (strnlen_s(d, ACVP_KAS_ECC_STR_MAX + 1) > ACVP_KAS_ECC_STR_MAX) {
+                    ACVP_LOG_ERR("ephemeralPrivateIut too long, max allowed=(%d)",
+                                 ACVP_KAS_ECC_STR_MAX);
+                    rv = ACVP_INVALID_ARG;
+                    json_value_free(r_tval);
+                    goto err;
+                }
+
+                z = json_object_get_string(testobj, "hashZ");
+                if (!z) {
+                    ACVP_LOG_ERR("Server JSON missing 'hashZ'");
+                    rv = ACVP_MISSING_ARG;
+                    json_value_free(r_tval);
+                    goto err;
+                }
+                if (strnlen_s(z, ACVP_KAS_ECC_STR_MAX + 1) > ACVP_KAS_ECC_STR_MAX) {
+                    ACVP_LOG_ERR("hashZIut too long, max allowed=(%d)",
+                                 ACVP_KAS_ECC_STR_MAX);
+                    rv = ACVP_INVALID_ARG;
+                    json_value_free(r_tval);
+                    goto err;
+                }
+
+                ACVP_LOG_VERBOSE("              d: %s", d);
+                ACVP_LOG_VERBOSE("            pix: %s", pix);
+                ACVP_LOG_VERBOSE("            piy: %s", piy);
+                ACVP_LOG_VERBOSE("              z: %s", z);
+            }
+
+            /*
+             * Setup the test case data that will be passed down to
+             * the crypto module.
+             */
+            /* 
+             * we can use the comp init since the only difference between
+             * ECC_SSC and comp is the keywords used - why NIST did that ???
+             */
+            rv = acvp_kas_ecc_init_comp_tc(ctx, stc, test_type,
+                                           curve, hash, psx, psy,
+                                           d, pix, piy, z);
+            if (rv != ACVP_SUCCESS) {
+                acvp_kas_ecc_release_tc(stc);
+                json_value_free(r_tval);
+                goto err;
+            }
+
+            /* Process the current KAT test vector... */
+            if ((cap->crypto_handler)(tc)) {
+                acvp_kas_ecc_release_tc(stc);
+                ACVP_LOG_ERR("crypto module failed the operation");
+                rv = ACVP_CRYPTO_MODULE_FAIL;
+                json_value_free(r_tval);
+                goto err;
+            }
+
+            /*
+             * Output the test case results using JSON
+             */
+            rv = acvp_kas_ecc_output_ssc_tc(ctx, stc, r_tobj);
+            if (rv != ACVP_SUCCESS) {
+                ACVP_LOG_ERR("JSON output failure in KAS-ECC module");
+                acvp_kas_ecc_release_tc(stc);
+                json_value_free(r_tval);
+                goto err;
+            }
+
+            /*
+             * Release all the memory associated with the test case
+             */
+            acvp_kas_ecc_release_tc(stc);
+
+            /* Append the test response value to array */
+            json_array_append_value(r_tarr, r_tval);
+        }
+        json_array_append_value(r_garr, r_gval);
+    }
+    rv = ACVP_SUCCESS;
+
+err:
+    if (rv != ACVP_SUCCESS) {
+        json_value_free(r_gval);
+    }
+    return rv;
+}
+
+ACVP_RESULT acvp_kas_ecc_ssc_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
+    JSON_Value *r_vs_val = NULL;
+    JSON_Object *r_vs = NULL;
+    JSON_Array *r_garr = NULL; /* Response testarray, grouparray */
+    JSON_Value *reg_arry_val = NULL;
+    JSON_Array *reg_arry = NULL;
+    JSON_Object *reg_obj = NULL;
+    ACVP_CAPS_LIST *cap;
+    ACVP_TEST_CASE tc;
+    ACVP_KAS_ECC_TC stc;
+    ACVP_RESULT rv = ACVP_SUCCESS;
+    const char *alg_str = NULL;
+    char *json_result = NULL;
+
+    if (!ctx) {
+        ACVP_LOG_ERR("No ctx for handler operation");
+        return ACVP_NO_CTX;
+    }
+
+    alg_str = json_object_get_string(obj, "algorithm");
+    if (!alg_str) {
+        ACVP_LOG_ERR("unable to parse 'algorithm' from JSON");
+        return ACVP_MALFORMED_JSON;
+    }
+
+    /*
+     * Get a reference to the abstracted test case
+     */
+    tc.tc.kas_ecc = &stc;
+    memzero_s(&stc, sizeof(ACVP_KAS_ECC_TC));
+
+    /*
+     * Create ACVP array for response
+     */
+    rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Failed to create JSON response struct. ");
+        return rv;
+    }
+
+    /*
+     * Start to build the JSON response
+     */
+    rv = acvp_setup_json_rsp_group(&ctx, &reg_arry_val, &r_vs_val, &r_vs, alg_str, &r_garr);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Failed to setup json response");
+        return rv;
+    }
+
+    cap = acvp_locate_cap_entry(ctx, ACVP_KAS_ECC_SSC);
+    if (!cap) {
+        ACVP_LOG_ERR("ACVP server requesting unsupported capability");
+        rv = ACVP_UNSUPPORTED_OP;
+        goto err;
+    }
+    rv = acvp_kas_ecc_ssc(ctx, cap, &tc, &stc, obj, r_garr);
+    if (rv != ACVP_SUCCESS) {
+        goto err;
     }
     json_array_append_value(reg_arry, r_vs_val);
 

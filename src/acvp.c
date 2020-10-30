@@ -149,6 +149,7 @@ ACVP_ALG_HANDLER alg_tbl[ACVP_ALG_MAX] = {
     { ACVP_PBKDF,             &acvp_pbkdf_kat_handler,        ACVP_ALG_PBKDF,             NULL, ACVP_REV_PBKDF},
     { ACVP_KAS_ECC_CDH,       &acvp_kas_ecc_kat_handler,      ACVP_ALG_KAS_ECC,           ACVP_ALG_KAS_ECC_CDH, ACVP_REV_KAS_ECC},
     { ACVP_KAS_ECC_COMP,      &acvp_kas_ecc_kat_handler,      ACVP_ALG_KAS_ECC,           ACVP_ALG_KAS_ECC_COMP, ACVP_REV_KAS_ECC},
+    { ACVP_KAS_ECC_SSC,       &acvp_kas_ecc_ssc_kat_handler,  ACVP_ALG_KAS_ECC_SSC,           ACVP_ALG_KAS_ECC_COMP, ACVP_REV_KAS_ECC_SSC},
     { ACVP_KAS_ECC_NOCOMP,    &acvp_kas_ecc_kat_handler,      ACVP_ALG_KAS_ECC,           ACVP_ALG_KAS_ECC_NOCOMP, ACVP_REV_KAS_ECC},
     { ACVP_KAS_FFC_COMP,      &acvp_kas_ffc_kat_handler,      ACVP_ALG_KAS_FFC,           ACVP_ALG_KAS_FFC_COMP, ACVP_REV_KAS_FFC},
     { ACVP_KAS_FFC_NOCOMP,    &acvp_kas_ffc_kat_handler,      ACVP_ALG_KAS_FFC,           ACVP_ALG_KAS_FFC_NOCOMP, ACVP_REV_KAS_FFC}
@@ -662,6 +663,7 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx) {
             case ACVP_KAS_ECC_CDH_TYPE:
             case ACVP_KAS_ECC_COMP_TYPE:
             case ACVP_KAS_ECC_NOCOMP_TYPE:
+            case ACVP_KAS_ECC_SSC_TYPE:
                 acvp_cap_free_kas_ecc_mode(cap_entry);
                 break;
             case ACVP_KAS_FFC_COMP_TYPE:

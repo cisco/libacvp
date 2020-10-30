@@ -107,6 +107,7 @@
  */
 #define ACVP_REVISION_LATEST "1.0"
 #define ACVP_REVISION_FIPS186_4 "FIPS186-4"
+#define ACVP_REVISION_SP800_56AR3 "Sp800-56Ar3"
 
 /* AES */
 #define ACVP_REV_AES_ECB             ACVP_REVISION_LATEST
@@ -189,6 +190,7 @@
 
 /* KAS_ECC */
 #define ACVP_REV_KAS_ECC             ACVP_REVISION_LATEST
+#define ACVP_REV_KAS_ECC_SSC         ACVP_REVISION_SP800_56AR3
 
 /* KAS_FFC */
 #define ACVP_REV_KAS_FFC             ACVP_REVISION_LATEST
@@ -295,6 +297,8 @@
 #define ACVP_ALG_KAS_ECC_COMP        "Component"
 #define ACVP_ALG_KAS_ECC_NOCOMP      ""
 
+
+#define ACVP_ALG_KAS_ECC_SSC         "KAS-ECC-SSC"
 #define ACVP_ALG_KAS_ECC             "KAS-ECC"
 #define ACVP_ALG_KAS_ECC_DPGEN       "dpGen"
 #define ACVP_ALG_KAS_ECC_DPVAL       "dpVal"
@@ -842,6 +846,7 @@ typedef enum acvp_capability_type {
     ACVP_KAS_ECC_CDH_TYPE,
     ACVP_KAS_ECC_COMP_TYPE,
     ACVP_KAS_ECC_NOCOMP_TYPE,
+    ACVP_KAS_ECC_SSC_TYPE,
     ACVP_KAS_FFC_COMP_TYPE,
     ACVP_KAS_FFC_NOCOMP_TYPE
 } ACVP_CAP_TYPE;
@@ -1164,6 +1169,7 @@ typedef struct acvp_kas_ecc_cap_mode_t {
     ACVP_PARAM_LIST *curve;    /* CDH mode only */
     ACVP_PARAM_LIST *function;
     ACVP_KAS_ECC_SCHEME *scheme; /* other modes use schemes */
+    int hash;     /* only a single sha for KAS-ECC-SSC */
 } ACVP_KAS_ECC_CAP_MODE;
 
 typedef struct acvp_kas_ecc_capability_t {
@@ -1531,6 +1537,8 @@ ACVP_RESULT acvp_pbkdf_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 ACVP_RESULT acvp_dsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
 ACVP_RESULT acvp_kas_ecc_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
+
+ACVP_RESULT acvp_kas_ecc_ssc_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
 ACVP_RESULT acvp_kas_ffc_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
