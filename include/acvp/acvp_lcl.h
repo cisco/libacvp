@@ -194,6 +194,7 @@
 
 /* KAS_FFC */
 #define ACVP_REV_KAS_FFC             ACVP_REVISION_LATEST
+#define ACVP_REV_KAS_FFC_SSC         ACVP_REVISION_SP800_56AR3
 
 /* KDF */
 #define ACVP_REV_KDF135_TLS          ACVP_REVISION_LATEST
@@ -310,6 +311,7 @@
 #define ACVP_ALG_KAS_FFC_COMP        "Component"
 #define ACVP_ALG_KAS_FFC_NOCOMP      ""
 
+#define ACVP_ALG_KAS_FFC_SSC         "KAS-FFC-SSC"
 #define ACVP_ALG_KAS_FFC             "KAS-FFC"
 #define ACVP_ALG_KAS_FFC_DPGEN       "dpGen"
 #define ACVP_ALG_KAS_FFC_MQV2        "MQV2"
@@ -848,6 +850,7 @@ typedef enum acvp_capability_type {
     ACVP_KAS_ECC_NOCOMP_TYPE,
     ACVP_KAS_ECC_SSC_TYPE,
     ACVP_KAS_FFC_COMP_TYPE,
+    ACVP_KAS_FFC_SSC_TYPE,
     ACVP_KAS_FFC_NOCOMP_TYPE
 } ACVP_CAP_TYPE;
 
@@ -1206,6 +1209,8 @@ typedef struct acvp_kas_ffc_cap_mode_t {
     ACVP_KAS_FFC_MODE cap_mode;
     ACVP_PREREQ_LIST *prereq_vals;
     ACVP_PARAM_LIST *function;
+    ACVP_PARAM_LIST *genmeth;
+    int hash;
     ACVP_KAS_FFC_SCHEME *scheme; /* other modes use schemes */
 } ACVP_KAS_FFC_CAP_MODE;
 
@@ -1542,6 +1547,7 @@ ACVP_RESULT acvp_kas_ecc_ssc_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
 ACVP_RESULT acvp_kas_ffc_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
+ACVP_RESULT acvp_kas_ffc_ssc_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 /*
  * ACVP build registration functions used internally
  */
