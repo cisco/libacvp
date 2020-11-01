@@ -301,6 +301,17 @@ static ACVP_RESULT acvp_cap_list_append(ACVP_CTX *ctx,
         }
         break;
 
+    case ACVP_KAS_FFC_SSC_TYPE:
+        if (cipher != ACVP_KAS_FFC_SSC) {
+            rv = ACVP_INVALID_ARG;
+            goto err;
+        }
+        cap_entry->cap.kas_ffc_cap = allocate_kas_ffc_cap();
+        if (!cap_entry->cap.kas_ffc_cap) {
+            rv = ACVP_MALLOC_FAIL;
+            goto err;
+        }
+        break;
     case ACVP_KAS_FFC_COMP_TYPE:
         if (cipher != ACVP_KAS_FFC_COMP) {
             rv = ACVP_INVALID_ARG;
@@ -6919,6 +6930,7 @@ ACVP_RESULT acvp_cap_kas_ecc_set_scheme(ACVP_CTX *ctx,
     case ACVP_PBKDF:
     case ACVP_KAS_FFC_COMP:
     case ACVP_KAS_FFC_NOCOMP:
+    case ACVP_KAS_FFC_SSC:
     case ACVP_CIPHER_END:
     default:
         ACVP_LOG_ERR("Invalid cipher");
@@ -7141,6 +7153,9 @@ ACVP_RESULT acvp_cap_kas_ffc_enable(ACVP_CTX *ctx,
     }
 
     switch (cipher) {
+    case ACVP_KAS_FFC_SSC:
+        type = ACVP_KAS_FFC_SSC_TYPE;
+        break;
     case ACVP_KAS_FFC_COMP:
         type = ACVP_KAS_FFC_COMP_TYPE;
         break;
@@ -7256,6 +7271,7 @@ ACVP_RESULT acvp_cap_kas_ffc_set_parm(ACVP_CTX *ctx,
     ACVP_KAS_FFC_CAP *kas_ffc_cap;
     ACVP_KAS_FFC_CAP_MODE *kas_ffc_cap_mode;
     ACVP_PARAM_LIST *current_func;
+    ACVP_PARAM_LIST *current_genmeth;
 
     if (!ctx) {
         return ACVP_NO_CTX;
@@ -7264,6 +7280,7 @@ ACVP_RESULT acvp_cap_kas_ffc_set_parm(ACVP_CTX *ctx,
     switch (cipher) {
     case ACVP_KAS_FFC_COMP:
     case ACVP_KAS_FFC_NOCOMP:
+    case ACVP_KAS_FFC_SSC:
         break;
     case ACVP_CIPHER_START:
     case ACVP_AES_GCM:
@@ -7395,6 +7412,37 @@ ACVP_RESULT acvp_cap_kas_ffc_set_parm(ACVP_CTX *ctx,
             break;
         }
         break;
+    case ACVP_KAS_FFC_MODE_NONE:
+        switch (param) {
+        case ACVP_KAS_FFC_GEN_METH:
+            current_genmeth = kas_ffc_cap_mode->genmeth;
+            if (current_genmeth) {
+                while (current_genmeth->next) {
+                    current_genmeth = current_genmeth->next;
+                }
+                current_genmeth->next = calloc(1, sizeof(ACVP_PARAM_LIST));
+                current_genmeth->next->param = value;
+            } else {
+                kas_ffc_cap_mode->genmeth = calloc(1, sizeof(ACVP_PARAM_LIST));
+                kas_ffc_cap_mode->genmeth->param = value;
+            }
+            break;
+        case ACVP_KAS_FFC_HASH:
+            kas_ffc_cap_mode->hash = value;
+            break;
+        case ACVP_KAS_FFC_FUNCTION:
+        case ACVP_KAS_FFC_CURVE:
+        case ACVP_KAS_FFC_ROLE:
+        case ACVP_KAS_FFC_KDF:
+        case ACVP_KAS_FFC_FB:
+        case ACVP_KAS_FFC_FC:
+        default:
+            ACVP_LOG_ERR("\nUnsupported KAS-FFC param %d", param);
+            return ACVP_INVALID_ARG;
+
+            break;
+        }
+        break;
     case ACVP_KAS_FFC_MODE_NOCOMP:
     case ACVP_KAS_FFC_MAX_MODES:
     default:
@@ -7438,6 +7486,7 @@ ACVP_RESULT acvp_cap_kas_ffc_set_scheme(ACVP_CTX *ctx,
     switch (mode) {
     case ACVP_KAS_FFC_MODE_COMPONENT:
     case ACVP_KAS_FFC_MODE_NOCOMP:
+    case ACVP_KAS_FFC_MODE_NONE:
         if (!scheme || scheme >= ACVP_KAS_FFC_MAX_SCHEMES) {
             ACVP_LOG_ERR("Invalid kas ffc scheme");
             return ACVP_INVALID_ARG;

@@ -149,10 +149,11 @@ ACVP_ALG_HANDLER alg_tbl[ACVP_ALG_MAX] = {
     { ACVP_PBKDF,             &acvp_pbkdf_kat_handler,        ACVP_ALG_PBKDF,             NULL, ACVP_REV_PBKDF},
     { ACVP_KAS_ECC_CDH,       &acvp_kas_ecc_kat_handler,      ACVP_ALG_KAS_ECC,           ACVP_ALG_KAS_ECC_CDH, ACVP_REV_KAS_ECC},
     { ACVP_KAS_ECC_COMP,      &acvp_kas_ecc_kat_handler,      ACVP_ALG_KAS_ECC,           ACVP_ALG_KAS_ECC_COMP, ACVP_REV_KAS_ECC},
-    { ACVP_KAS_ECC_SSC,       &acvp_kas_ecc_ssc_kat_handler,  ACVP_ALG_KAS_ECC_SSC,           ACVP_ALG_KAS_ECC_COMP, ACVP_REV_KAS_ECC_SSC},
+    { ACVP_KAS_ECC_SSC,       &acvp_kas_ecc_ssc_kat_handler,  ACVP_ALG_KAS_ECC_SSC,       ACVP_ALG_KAS_ECC_COMP, ACVP_REV_KAS_ECC_SSC},
     { ACVP_KAS_ECC_NOCOMP,    &acvp_kas_ecc_kat_handler,      ACVP_ALG_KAS_ECC,           ACVP_ALG_KAS_ECC_NOCOMP, ACVP_REV_KAS_ECC},
     { ACVP_KAS_FFC_COMP,      &acvp_kas_ffc_kat_handler,      ACVP_ALG_KAS_FFC,           ACVP_ALG_KAS_FFC_COMP, ACVP_REV_KAS_FFC},
-    { ACVP_KAS_FFC_NOCOMP,    &acvp_kas_ffc_kat_handler,      ACVP_ALG_KAS_FFC,           ACVP_ALG_KAS_FFC_NOCOMP, ACVP_REV_KAS_FFC}
+    { ACVP_KAS_FFC_NOCOMP,    &acvp_kas_ffc_kat_handler,      ACVP_ALG_KAS_FFC,           ACVP_ALG_KAS_FFC_NOCOMP, ACVP_REV_KAS_FFC},
+    { ACVP_KAS_FFC_SSC,       &acvp_kas_ffc_ssc_kat_handler,  ACVP_ALG_KAS_FFC_SSC,       ACVP_ALG_KAS_FFC_COMP, ACVP_REV_KAS_FFC_SSC}
 };
 
 /*
@@ -421,6 +422,8 @@ static void acvp_cap_free_kas_ffc_mode(ACVP_CAPS_LIST *cap_list) {
         ACVP_PARAM_LIST *next_hash;
         ACVP_PARAM_LIST *current_role;
         ACVP_PARAM_LIST *next_role;
+        ACVP_PARAM_LIST *current_genmeth;
+        ACVP_PARAM_LIST *next_genmeth;
         ACVP_KAS_FFC_PSET *current_pset;
         ACVP_KAS_FFC_PSET *next_pset;
         ACVP_KAS_FFC_SCHEME *current_scheme;
@@ -439,6 +442,17 @@ static void acvp_cap_free_kas_ffc_mode(ACVP_CAPS_LIST *cap_list) {
                         free(current_pre_req_vals);
                         current_pre_req_vals = next_pre_req_vals;
                     } while (current_pre_req_vals);
+                }
+                /*
+                 * Delete all generation methods
+                 */
+                current_genmeth = mode->genmeth;
+                if (current_genmeth) {
+                    do {
+                        next_genmeth = current_genmeth->next;
+                        free(current_genmeth);
+                        current_genmeth = next_genmeth;
+                    } while (current_genmeth);
                 }
                 /*
                  * Delete all function name lists
@@ -666,6 +680,7 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx) {
             case ACVP_KAS_ECC_SSC_TYPE:
                 acvp_cap_free_kas_ecc_mode(cap_entry);
                 break;
+            case ACVP_KAS_FFC_SSC_TYPE:
             case ACVP_KAS_FFC_COMP_TYPE:
             case ACVP_KAS_FFC_NOCOMP_TYPE:
                 acvp_cap_free_kas_ffc_mode(cap_entry);
