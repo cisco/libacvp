@@ -140,6 +140,7 @@ end:
     if (ctx) teardown();
 }
 
+#if 0 /* Cannot test a successful decrypt prim because it can take a long time */
 /*
  * Test the KAT handler API.
  * The ctx is empty (no capabilities), expecting failure.
@@ -163,6 +164,7 @@ Test(RSA_DECPRIM_API, pass) {
 end:
     if (ctx) teardown();
 }
+#endif
 
 /*
  * Test the KAT handler API.
