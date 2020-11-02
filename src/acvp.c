@@ -132,6 +132,8 @@ ACVP_ALG_HANDLER alg_tbl[ACVP_ALG_MAX] = {
     { ACVP_RSA_KEYGEN,        &acvp_rsa_keygen_kat_handler,   ACVP_ALG_RSA,               ACVP_MODE_KEYGEN, ACVP_REV_RSA},
     { ACVP_RSA_SIGGEN,        &acvp_rsa_siggen_kat_handler,   ACVP_ALG_RSA,               ACVP_MODE_SIGGEN, ACVP_REV_RSA},
     { ACVP_RSA_SIGVER,        &acvp_rsa_sigver_kat_handler,   ACVP_ALG_RSA,               ACVP_MODE_SIGVER, ACVP_REV_RSA},
+    { ACVP_RSA_DECPRIM,       &acvp_rsa_decprim_kat_handler,  ACVP_ALG_RSA,               ACVP_MODE_DECPRIM, ACVP_REV_RSA_PRIM},
+    { ACVP_RSA_SIGPRIM,       &acvp_rsa_sigprim_kat_handler,  ACVP_ALG_RSA,               ACVP_MODE_SIGPRIM, ACVP_REV_RSA_PRIM},
     { ACVP_ECDSA_KEYGEN,      &acvp_ecdsa_keygen_kat_handler, ACVP_ALG_ECDSA,             ACVP_MODE_KEYGEN, ACVP_REV_ECDSA},
     { ACVP_ECDSA_KEYVER,      &acvp_ecdsa_keyver_kat_handler, ACVP_ALG_ECDSA,             ACVP_MODE_KEYVER, ACVP_REV_ECDSA},
     { ACVP_ECDSA_SIGGEN,      &acvp_ecdsa_siggen_kat_handler, ACVP_ALG_ECDSA,             ACVP_MODE_SIGGEN, ACVP_REV_ECDSA},
@@ -144,11 +146,14 @@ ACVP_ALG_HANDLER alg_tbl[ACVP_ALG_MAX] = {
     { ACVP_KDF135_IKEV1,      &acvp_kdf135_ikev1_kat_handler, ACVP_KDF135_ALG_STR,        ACVP_ALG_KDF135_IKEV1, ACVP_REV_KDF135_IKEV1},
     { ACVP_KDF135_X963,       &acvp_kdf135_x963_kat_handler,  ACVP_KDF135_ALG_STR,        ACVP_ALG_KDF135_X963, ACVP_REV_KDF135_X963},
     { ACVP_KDF108,            &acvp_kdf108_kat_handler,       ACVP_ALG_KDF108,            NULL, ACVP_REV_KDF108},
+    { ACVP_PBKDF,             &acvp_pbkdf_kat_handler,        ACVP_ALG_PBKDF,             NULL, ACVP_REV_PBKDF},
     { ACVP_KAS_ECC_CDH,       &acvp_kas_ecc_kat_handler,      ACVP_ALG_KAS_ECC,           ACVP_ALG_KAS_ECC_CDH, ACVP_REV_KAS_ECC},
     { ACVP_KAS_ECC_COMP,      &acvp_kas_ecc_kat_handler,      ACVP_ALG_KAS_ECC,           ACVP_ALG_KAS_ECC_COMP, ACVP_REV_KAS_ECC},
+    { ACVP_KAS_ECC_SSC,       &acvp_kas_ecc_ssc_kat_handler,  ACVP_ALG_KAS_ECC_SSC,       ACVP_ALG_KAS_ECC_COMP, ACVP_REV_KAS_ECC_SSC},
     { ACVP_KAS_ECC_NOCOMP,    &acvp_kas_ecc_kat_handler,      ACVP_ALG_KAS_ECC,           ACVP_ALG_KAS_ECC_NOCOMP, ACVP_REV_KAS_ECC},
     { ACVP_KAS_FFC_COMP,      &acvp_kas_ffc_kat_handler,      ACVP_ALG_KAS_FFC,           ACVP_ALG_KAS_FFC_COMP, ACVP_REV_KAS_FFC},
-    { ACVP_KAS_FFC_NOCOMP,    &acvp_kas_ffc_kat_handler,      ACVP_ALG_KAS_FFC,           ACVP_ALG_KAS_FFC_NOCOMP, ACVP_REV_KAS_FFC}
+    { ACVP_KAS_FFC_NOCOMP,    &acvp_kas_ffc_kat_handler,      ACVP_ALG_KAS_FFC,           ACVP_ALG_KAS_FFC_NOCOMP, ACVP_REV_KAS_FFC},
+    { ACVP_KAS_FFC_SSC,       &acvp_kas_ffc_ssc_kat_handler,  ACVP_ALG_KAS_FFC_SSC,       ACVP_ALG_KAS_FFC_COMP, ACVP_REV_KAS_FFC_SSC}
 };
 
 /*
@@ -417,6 +422,8 @@ static void acvp_cap_free_kas_ffc_mode(ACVP_CAPS_LIST *cap_list) {
         ACVP_PARAM_LIST *next_hash;
         ACVP_PARAM_LIST *current_role;
         ACVP_PARAM_LIST *next_role;
+        ACVP_PARAM_LIST *current_genmeth;
+        ACVP_PARAM_LIST *next_genmeth;
         ACVP_KAS_FFC_PSET *current_pset;
         ACVP_KAS_FFC_PSET *next_pset;
         ACVP_KAS_FFC_SCHEME *current_scheme;
@@ -435,6 +442,17 @@ static void acvp_cap_free_kas_ffc_mode(ACVP_CAPS_LIST *cap_list) {
                         free(current_pre_req_vals);
                         current_pre_req_vals = next_pre_req_vals;
                     } while (current_pre_req_vals);
+                }
+                /*
+                 * Delete all generation methods
+                 */
+                current_genmeth = mode->genmeth;
+                if (current_genmeth) {
+                    do {
+                        next_genmeth = current_genmeth->next;
+                        free(current_genmeth);
+                        current_genmeth = next_genmeth;
+                    } while (current_genmeth);
                 }
                 /*
                  * Delete all function name lists
@@ -659,8 +677,10 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx) {
             case ACVP_KAS_ECC_CDH_TYPE:
             case ACVP_KAS_ECC_COMP_TYPE:
             case ACVP_KAS_ECC_NOCOMP_TYPE:
+            case ACVP_KAS_ECC_SSC_TYPE:
                 acvp_cap_free_kas_ecc_mode(cap_entry);
                 break;
+            case ACVP_KAS_FFC_SSC_TYPE:
             case ACVP_KAS_FFC_COMP_TYPE:
             case ACVP_KAS_FFC_NOCOMP_TYPE:
                 acvp_cap_free_kas_ffc_mode(cap_entry);
@@ -673,6 +693,12 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx) {
                 break;
             case ACVP_RSA_SIGVER_TYPE:
                 acvp_cap_free_rsa_sig_list(cap_entry);
+                break;
+            case ACVP_RSA_PRIM_TYPE:
+                if (cap_entry->cap.rsa_prim_cap->fixed_pub_exp) {
+                    free(cap_entry->cap.rsa_prim_cap->fixed_pub_exp);
+                }
+                free(cap_entry->cap.rsa_prim_cap);
                 break;
             case ACVP_ECDSA_KEYGEN_TYPE:
                 acvp_cap_free_nl(cap_entry->cap.ecdsa_keygen_cap->curves);
@@ -726,6 +752,10 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx) {
                 acvp_cap_free_sl(cap_entry->cap.kdf135_x963_cap->field_sizes);
                 acvp_cap_free_sl(cap_entry->cap.kdf135_x963_cap->key_data_lengths);
                 free(cap_entry->cap.kdf135_x963_cap);
+                break;
+            case ACVP_PBKDF_TYPE:
+                acvp_cap_free_nl(cap_entry->cap.pbkdf_cap->hmac_algs);
+                free(cap_entry->cap.pbkdf_cap);
                 break;
             case ACVP_KDF135_TPM_TYPE:
             default:
@@ -2865,10 +2895,14 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
                     if (!acvp_lookup_str_list(&failedAlgList, alg)) {
                         rv = acvp_append_str_list(&failedAlgList, alg);
                         if (val2) json_value_free(val2);
+                        val2 = NULL;
                         if (rv != ACVP_SUCCESS) {
                             ACVP_LOG_ERR("Error appending failed algorithm name to list, skipping...");
                             continue;
                         }
+                    } else {
+                        if (val2) json_value_free(val2);
+                        val2 = NULL;
                     }
                 }
             }

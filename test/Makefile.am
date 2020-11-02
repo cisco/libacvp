@@ -16,10 +16,12 @@ runtest_SOURCES += create_session.c \
       test_acvp_kdf135_ikev2.c \
       test_acvp_kdf135_ikev1.c \
       test_acvp_kdf108.c \
+      test_acvp_pbkdf.c \
       test_acvp_rsa_keygen.c \
+      test_acvp_rsa_sig.c \
+      test_acvp_rsa_prim.c \
       test_acvp_cmac.c \
       test_acvp_des.c \
-      test_acvp_rsa_sig.c \
       test_acvp_capabilities.c \
       test_acvp_hash.c \
       test_acvp_build_register.c \

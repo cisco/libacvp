@@ -652,4 +652,142 @@ err:
 }
 #endif // ACVP_NO_RUNTIME
 
+int app_rsa_decprim_handler(ACVP_TEST_CASE *test_case) {
+    BIGNUM *e = NULL, *n1 = NULL, *ct = NULL;
+    const BIGNUM *n = NULL;
+    ACVP_RSA_PRIM_TC    *tc;
+    RSA *rsa = NULL;
+    int rv = 1, i;
+
+    tc = test_case->tc.rsa_prim;
+
+    rsa = RSA_new();
+    e = BN_new();
+    if (!e) {
+        printf("Failed to allocate BN for e\n");
+        goto err;
+    }
+
+    if (tc->modulo != 2048) {
+        printf("Error, modulo not 2048\n");
+        goto err;
+    }
+
+    if (!tc->cipher || !tc->cipher_len) {
+        printf("Error, invlalid cipher information\n");
+        goto err;
+    }
+
+    /* only support 0x10001 */
+    if (!BN_set_word(e, RSA_F4)) {
+        printf("Error converting e to BN\n");
+        goto err;
+    }
+
+    tc->e_len = BN_bn2bin(e, tc->e);
+
+    /* generate key pair, this can take a while to get one ct < pk-1 */
+    if (!RSA_generate_key_ex(rsa, tc->modulo, e, NULL)) {
+        printf("Error generating key\n");
+        goto err;
+    }
+#if OPENSSL_VERSION_NUMBER <= 0x10100000L
+    n = BN_dup(rsa->n);
+#else
+    RSA_get0_key(rsa, &n, NULL, NULL);
+#endif
+    tc->n_len = BN_bn2bin(n, tc->n);
+    ct = BN_bin2bn(tc->cipher, tc->cipher_len, NULL);
+
+/* get key and compare to cipherText, if 1 < ct < pk-1 is not true then fail. */
+
+    n1 = BN_dup(n);
+    BN_sub_word(n1, 1);
+    i = BN_cmp(ct, n1);
+    tc->disposition = 1;
+    if (i < 0) {
+        tc->pt_len = RSA_private_decrypt(tc->cipher_len, tc->cipher, tc->pt, rsa, RSA_NO_PADDING);
+        if (tc->pt_len == -1) {
+            printf("Error decrypting\n");
+            goto err;
+        }
+        if (tc->pass) tc->pass--;
+    } else {
+        tc->disposition = 0;
+        if (tc->fail) tc->fail--;
+    }
+
+    rv = 0;
+err:
+    if (e) BN_free(e);
+    if (ct) BN_free(ct);
+    if (n1) BN_free(n1);
+    if (rsa) RSA_free(rsa);
+    return rv;
+}
+
+int app_rsa_sigprim_handler(ACVP_TEST_CASE *test_case) {
+    BIGNUM *e = NULL, *n = NULL, *d = NULL;
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+    BIGNUM  *tmp_e = NULL, *tmp_n = NULL, *tmp_d = NULL;
+#endif
+    ACVP_RSA_PRIM_TC    *tc;
+    RSA *rsa = NULL;
+    int rv = 1;
+
+    tc = test_case->tc.rsa_prim;
+
+    if (tc->key_format != ACVP_RSA_PRIM_KEYFORMAT_STANDARD) {
+        printf("Key Format must be standard\n");
+        goto err;
+    }
+
+    if (!tc->e || !tc->d || !tc->n) {
+        printf("Missing arguments e|d|n\n");
+        goto err;
+    }
+
+    rsa = RSA_new();
+    e = BN_bin2bn(tc->e, tc->e_len, NULL);
+    if (!e) {
+        printf("Failed to allocate BN for e\n");
+        goto err;
+    }
+
+    n = BN_bin2bn(tc->n, tc->n_len, NULL);
+    if (!n) {
+        printf("Failed to allocate BN for n\n");
+        goto err;
+    }
+    d = BN_bin2bn(tc->d, tc->d_len, NULL);
+    if (!d) {
+        printf("Failed to allocate BN for d\n");
+        goto err;
+    }
+
+#if OPENSSL_VERSION_NUMBER <= 0x10100000L
+    rsa->d = BN_dup(d);
+    rsa->n = BN_dup(n);
+    rsa->e = BN_dup(e);
+#else
+    tmp_d = BN_dup(d);
+    tmp_n = BN_dup(n);
+    tmp_e = BN_dup(e);
+    RSA_set0_key(rsa, tmp_n, tmp_e, tmp_d);
+#endif
+    tc->disposition = 1;
+    tc->sig_len = RSA_private_encrypt(tc->msg_len, tc->msg, tc->signature, rsa, RSA_NO_PADDING);
+    if (tc->sig_len == -1) {
+        tc->disposition = 0;
+    }
+    rv = 0;
+err:
+    if (e) BN_free(e);
+    if (n) BN_free(n);
+    if (d) BN_free(d);
+    if (rsa) RSA_free(rsa);
+    return rv;
+}
+
+
 

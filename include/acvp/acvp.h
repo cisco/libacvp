@@ -145,6 +145,8 @@ typedef enum acvp_cipher {
     ACVP_RSA_KEYGEN,
     ACVP_RSA_SIGGEN,
     ACVP_RSA_SIGVER,
+    ACVP_RSA_DECPRIM,
+    ACVP_RSA_SIGPRIM,
     ACVP_ECDSA_KEYGEN,
     ACVP_ECDSA_KEYVER,
     ACVP_ECDSA_SIGGEN,
@@ -157,11 +159,14 @@ typedef enum acvp_cipher {
     ACVP_KDF135_IKEV1,
     ACVP_KDF135_X963,
     ACVP_KDF108,
+    ACVP_PBKDF,
     ACVP_KAS_ECC_CDH,
     ACVP_KAS_ECC_COMP,
     ACVP_KAS_ECC_NOCOMP,
+    ACVP_KAS_ECC_SSC,
     ACVP_KAS_FFC_COMP,
     ACVP_KAS_FFC_NOCOMP,
+    ACVP_KAS_FFC_SSC,
     ACVP_CIPHER_END
 } ACVP_CIPHER;
 
@@ -198,7 +203,11 @@ typedef enum acvp_hash_alg {
     ACVP_SHA512 = 16,
     ACVP_SHA512_224 = 32,
     ACVP_SHA512_256 = 64,
-    ACVP_HASH_ALG_MAX = 128
+    ACVP_SHA3_224 = 128,
+    ACVP_SHA3_256 = 256,
+    ACVP_SHA3_384 = 512,
+    ACVP_SHA3_512 = 1024,
+    ACVP_HASH_ALG_MAX = 2048
 } ACVP_HASH_ALG;
 
 /*! @enum ACVP_TEST_DISPOSITION */
@@ -266,6 +275,21 @@ typedef enum acvp_kdf108_fixed_data_order_val {
     ACVP_KDF108_FIXED_DATA_ORDER_BEFORE_ITERATOR,
     ACVP_KDF108_FIXED_DATA_ORDER_MAX
 } ACVP_KDF108_FIXED_DATA_ORDER_VAL;
+
+/* @struct ACVP_PBKDF_HMAC_ALG_VAL */
+typedef enum acvp_pbkdf_hmac_alg_val {
+    ACVP_PBKDF_HMAC_ALG_MIN,
+    ACVP_PBKDF_HMAC_ALG_SHA1,
+    ACVP_PBKDF_HMAC_ALG_SHA224,
+    ACVP_PBKDF_HMAC_ALG_SHA256,
+    ACVP_PBKDF_HMAC_ALG_SHA384,
+    ACVP_PBKDF_HMAC_ALG_SHA512,
+    ACVP_PBKDF_HMAC_ALG_SHA3_224,
+    ACVP_PBKDF_HMAC_ALG_SHA3_256,
+    ACVP_PBKDF_HMAC_ALG_SHA3_384,
+    ACVP_PBKDF_HMAC_ALG_SHA3_512,
+    ACVP_PBKDF_HMAC_ALG_MAX
+} ACVP_PBKDF_HMAC_ALG_VAL;
 
 /*! @struct ACVP_SYM_CIPH_KO */
 typedef enum acvp_sym_cipher_keying_option {
@@ -346,6 +370,10 @@ typedef enum acvp_kdf135_snmp_param {
 #define ACVP_STR_SHA2_512       "SHA2-512"
 #define ACVP_STR_SHA2_512_224   "SHA2-512/224"
 #define ACVP_STR_SHA2_512_256   "SHA2-512/256"
+#define ACVP_STR_SHA3_224       "SHA3-224"
+#define ACVP_STR_SHA3_256       "SHA3-256"
+#define ACVP_STR_SHA3_384       "SHA3-384"
+#define ACVP_STR_SHA3_512       "SHA3-512"
 #define ACVP_STR_SHA_MAX        12
 typedef enum acvp_hash_param {
     ACVP_HASH_IN_BIT = 1,
@@ -470,6 +498,15 @@ typedef enum acvp_kdf108_param {
     ACVP_KDF108_PARAM_MAX
 } ACVP_KDF108_PARM;
 
+typedef enum acvp_pbkdf_param {
+    ACVP_PBKDF_PARAM_MIN,
+    ACVP_PBKDF_ITERATION_COUNT,
+    ACVP_PBKDF_KEY_LEN,
+    ACVP_PBKDF_PASSWORD_LEN,
+    ACVP_PBKDF_SALT_LEN,
+    ACVP_PBKDF_HMAC_ALG
+} ACVP_PBKDF_PARM;
+
 /*! @struct ACVP_RSA_KEY_FORMAT */
 typedef enum acvp_rsa_key_format {
     ACVP_RSA_KEY_FORMAT_STANDARD = 1, /**< Standard */
@@ -503,6 +540,37 @@ typedef enum acvp_rsa_sig_type {
     ACVP_RSA_SIG_TYPE_PKCS1V15,
     ACVP_RSA_SIG_TYPE_PKCS1PSS
 } ACVP_RSA_SIG_TYPE;
+
+typedef enum acvp_rsa_prim_keyformat {
+    ACVP_RSA_PRIM_KEYFORMAT_STANDARD = 1,
+    ACVP_RSA_PRIM_KEYFORMAT_CRT
+} ACVP_RSA_PRIM_KEYFORMAT;
+
+typedef struct acvp_rsa_prim_tc_t {
+    unsigned int tc_id;    /* Test case id */
+    unsigned char *cipher;
+    int cipher_len;
+    unsigned char *msg;
+    int msg_len;
+    unsigned char *signature;
+    int sig_len;
+    char *plaintext;
+    int deferred;
+    int modulo;
+    int fail;
+    int pass;
+    int key_format;
+    unsigned char *n;
+    int n_len;
+    unsigned char *e;
+    int e_len;
+    unsigned char *d;
+    int d_len;
+    unsigned char *pt;
+    int pt_len;
+    int disposition;
+} ACVP_RSA_PRIM_TC;
+
 
 /*! @struct ACVP_SYM_CIPHER_PARM */
 typedef enum acvp_sym_cipher_parameter {
@@ -559,6 +627,12 @@ typedef enum acvp_cmac_testtype {
     ACVP_CMAC_TEST_TYPE_NONE = 0,
     ACVP_CMAC_TEST_TYPE_AFT
 } ACVP_CMAC_TESTTYPE;
+
+/*! @struct ACVP_PBKDF_TESTTYPE */
+typedef enum acvp_pbkdf_testtype {
+    ACVP_PBKDF_TEST_TYPE_NONE = 0,
+    ACVP_PBKDF_TEST_TYPE_AFT
+} ACVP_PBKDF_TESTTYPE;
 
 /*! @struct ACVP_HMAC_PARM */
 typedef enum acvp_hmac_parameter {
@@ -907,6 +981,27 @@ typedef struct acvp_kdf135_ssh_tc_t {
 } ACVP_KDF135_SSH_TC;
 
 /*!
+ * @struct ACVP_PBKDF_TC
+ * @brief This struct holds data that represents a single test
+ * case for pbkdf testing.  This data is
+ * passed between libacvp and the crypto module.
+ */
+typedef struct acvp_pbkdf_tc_t {
+    ACVP_CIPHER cipher;
+    unsigned int tc_id;              /**< Test case id */
+    ACVP_PBKDF_HMAC_ALG_VAL hmac_type;         /**< HMAC algorithm type */
+    ACVP_PBKDF_TESTTYPE test_type;   /**< Test type */
+    unsigned int key_len;            /**< Length of key to be generated (in bytes) */
+    unsigned char *salt;
+    unsigned int salt_len;           /**< the length of the given salt (in bytes) */
+    char *password;
+    unsigned int pw_len;            /**< The length of the given password (in chars) */
+    unsigned int iterationCount;
+    unsigned char *key;       /**< The output derived key
+                                           ---User supplied--- */
+} ACVP_PBKDF_TC;
+
+/*!
  * @struct ACVP_HMAC_TC
  * @brief This struct holds data that represents a single
  * test case for HMAC testing.  This data is
@@ -1144,6 +1239,7 @@ typedef enum acvp_kas_ecc_mode {
     ACVP_KAS_ECC_MODE_COMPONENT = 1,
     ACVP_KAS_ECC_MODE_CDH,
     ACVP_KAS_ECC_MODE_NOCOMP,
+    ACVP_KAS_ECC_MODE_NONE,
     ACVP_KAS_ECC_MAX_MODES
 } ACVP_KAS_ECC_MODE;
 
@@ -1167,7 +1263,9 @@ typedef enum acvp_kas_ecc_param {
     ACVP_KAS_ECC_EB,
     ACVP_KAS_ECC_EC,
     ACVP_KAS_ECC_ED,
-    ACVP_KAS_ECC_EE
+    ACVP_KAS_ECC_EE,
+    ACVP_KAS_ECC_HASH,
+    ACVP_KAS_ECC_NONE
 } ACVP_KAS_ECC_PARAM;
 
 /*! @struct ACVP_KAS_ECC_ROLE */
@@ -1236,6 +1334,7 @@ typedef struct acvp_kas_ecc_tc_t {
 typedef enum acvp_kas_ffc_mode {
     ACVP_KAS_FFC_MODE_COMPONENT = 1,
     ACVP_KAS_FFC_MODE_NOCOMP,
+    ACVP_KAS_FFC_MODE_NONE,
     ACVP_KAS_FFC_MAX_MODES
 } ACVP_KAS_FFC_MODE;
 
@@ -1266,6 +1365,8 @@ typedef enum acvp_kas_ffc_param {
     ACVP_KAS_FFC_FUNCTION = 1,
     ACVP_KAS_FFC_CURVE,
     ACVP_KAS_FFC_ROLE,
+    ACVP_KAS_FFC_HASH,
+    ACVP_KAS_FFC_GEN_METH,
     ACVP_KAS_FFC_KDF,
     ACVP_KAS_FFC_FB,
     ACVP_KAS_FFC_FC
@@ -1379,6 +1480,7 @@ typedef struct acvp_test_case_t {
         ACVP_CMAC_TC *cmac;
         ACVP_RSA_KEYGEN_TC *rsa_keygen;
         ACVP_RSA_SIG_TC *rsa_sig;
+        ACVP_RSA_PRIM_TC *rsa_prim;
         ACVP_ECDSA_TC *ecdsa;
         ACVP_KDF135_TLS_TC *kdf135_tls;
         ACVP_KDF135_SNMP_TC *kdf135_snmp;
@@ -1388,6 +1490,7 @@ typedef struct acvp_test_case_t {
         ACVP_KDF135_IKEV1_TC *kdf135_ikev1;
         ACVP_KDF135_X963_TC *kdf135_x963;
         ACVP_KDF108_TC *kdf108;
+        ACVP_PBKDF_TC *pbkdf;
         ACVP_KAS_ECC_TC *kas_ecc;
         ACVP_KAS_FFC_TC *kas_ffc;
     } tc;
@@ -1870,6 +1973,10 @@ ACVP_RESULT acvp_cap_rsa_sig_enable(ACVP_CTX *ctx,
                                     ACVP_CIPHER cipher,
                                     int (*crypto_handler)(ACVP_TEST_CASE *test_case));
 
+ACVP_RESULT acvp_cap_rsa_prim_enable(ACVP_CTX *ctx,
+                                     ACVP_CIPHER cipher,
+                                     int (*crypto_handler)(ACVP_TEST_CASE *test_case));
+
 ACVP_RESULT acvp_cap_ecdsa_enable(ACVP_CTX *ctx,
                                   ACVP_CIPHER cipher,
                                   int (*crypto_handler)(ACVP_TEST_CASE *test_case));
@@ -1902,6 +2009,14 @@ ACVP_RESULT acvp_cap_rsa_sigver_set_parm(ACVP_CTX *ctx,
 
 ACVP_RESULT acvp_cap_rsa_keygen_set_mode(ACVP_CTX *ctx,
                                          ACVP_RSA_KEYGEN_MODE value);
+
+ACVP_RESULT acvp_cap_rsa_prim_set_parm(ACVP_CTX *ctx,
+                                       ACVP_RSA_PARM prim_type,
+                                       int value);
+
+ACVP_RESULT acvp_cap_rsa_prim_set_exponent(ACVP_CTX *ctx,
+                                           ACVP_RSA_PARM param,
+                                           char *value);
 
 ACVP_RESULT acvp_cap_rsa_siggen_set_type(ACVP_CTX *ctx,
                                          ACVP_RSA_SIG_TYPE type);
@@ -2151,6 +2266,9 @@ ACVP_RESULT acvp_cap_kdf135_x963_enable(ACVP_CTX *ctx,
 ACVP_RESULT acvp_cap_kdf108_enable(ACVP_CTX *ctx,
                                    int (*crypto_handler)(ACVP_TEST_CASE *test_case));
 
+ACVP_RESULT acvp_cap_pbkdf_enable(ACVP_CTX *ctx,
+                                  int (*crypto_handler)(ACVP_TEST_CASE *test_case));
+
 /*! @brief acvp_enable_kdf135_tls_cap_parm() allows an application to specify
         operational parameters to be used during a test session with the ACVP
         server.
@@ -2352,11 +2470,11 @@ ACVP_RESULT acvp_cap_kdf135_ikev2_set_domain(ACVP_CTX *ctx,
                                              int max,
                                              int increment);
 
-/*! @brief acvp_enable_kdf135_ikev1_domain_param() allows an application to specify
+/*! @brief acvp_enable_kdf135_ikev1_set_domain() allows an application to specify
         operational parameters to be used during a test session with the ACVP
         server.
 
-        This function should be called after acvp_enable_kdf135_ikev1_cap() to
+        This function should be called after acvp_cap_kdf135_ikev1_enable() to
         specify the parameters for the corresponding KDF.
 
    @param ctx Address of pointer to a previously allocated ACVP_CTX.
@@ -2374,11 +2492,11 @@ ACVP_RESULT acvp_cap_kdf135_ikev1_set_domain(ACVP_CTX *ctx,
                                              int max,
                                              int increment);
 
-/*! @brief acvp_enable_kdf108_domain_param() allows an application to specify
+/*! @brief acvp_enable_kdf108_set_domain() allows an application to specify
         operational parameters to be used during a test session with the ACVP
         server.
 
-        This function should be called after acvp_enable_kdf108_cap() to
+        This function should be called after acvp_cap_kdf108_enable() to
         specify the parameters for the corresponding KDF.
 
    @param ctx Address of pointer to a previously allocated ACVP_CTX.
@@ -2396,6 +2514,44 @@ ACVP_RESULT acvp_cap_kdf108_set_domain(ACVP_CTX *ctx,
                                        int min,
                                        int max,
                                        int increment);
+
+/*! @brief acvp_enable_pbkdf_set_domain() allows an application to specify
+        operational parameters to be used during a test session with the ACVP
+        server.
+
+        This function should be called after acvp_cap_pbkdf_enable() to
+        specify the parameters for the corresponding KDF.
+
+   @param ctx Address of pointer to a previously allocated ACVP_CTX.
+   @param param ACVP_PBKDF_PARM enum value identifying the PBKDF parameter
+   @param min integer minimum for domain parameter
+   @param max integer maximum for domain parameter
+   @param increment integer increment for domain parameter
+
+   @return ACVP_RESULT
+ */
+ACVP_RESULT acvp_cap_pbkdf_set_domain(ACVP_CTX *ctx,
+                                      ACVP_PBKDF_PARM param,
+                                      int min, int max, 
+                                      int increment);
+
+/*! @brief acvp_cap_pbkdf_set_parm() allows an application to specify
+        operational parameters to be used during a test session with the ACVP
+        server.
+
+        This function should be called after acvp_cap_pbkdf_enable() to
+        specify the parameters for the corresponding KDF.
+
+   @param ctx Address of pointer to a previously allocated ACVP_CTX.
+   @param cap ACVP_PBKDF_MODE enum value identifying the kdf108 mode
+   @param param ACVP_PBKDF_PARM enum value specifying parameter
+   @param value integer value for parameter
+
+   @return ACVP_RESULT
+ */
+ACVP_RESULT acvp_cap_pbkdf_set_parm(ACVP_CTX *ctx,
+                                    ACVP_PBKDF_PARM param,
+                                    int value);
 
 /*! @brief acvp_enable_prereq_cap() allows an application to specify a
        prerequisite for a cipher capability that was previously registered.

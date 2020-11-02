@@ -82,6 +82,32 @@ static void setup(void) {
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_kas_ecc_set_scheme(ctx, ACVP_KAS_ECC_COMP, ACVP_KAS_ECC_MODE_COMPONENT, ACVP_KAS_ECC_EPHEMERAL_UNIFIED, ACVP_KAS_ECC_EE, ACVP_EC_CURVE_P521, ACVP_SHA512);
     cr_assert(rv == ACVP_SUCCESS);
+
+    rv = acvp_cap_kas_ecc_enable(ctx, ACVP_KAS_ECC_SSC, &dummy_handler_success);
+    cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_kas_ecc_set_prereq(ctx, ACVP_KAS_ECC_SSC, ACVP_KAS_ECC_MODE_NONE, ACVP_PREREQ_ECDSA, cvalue);
+    cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_kas_ecc_set_prereq(ctx, ACVP_KAS_ECC_SSC, ACVP_KAS_ECC_MODE_NONE, ACVP_PREREQ_SHA, cvalue);
+    cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_kas_ecc_set_prereq(ctx, ACVP_KAS_ECC_SSC, ACVP_KAS_ECC_MODE_NONE, ACVP_PREREQ_DRBG, cvalue);
+    cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_kas_ecc_set_prereq(ctx, ACVP_KAS_ECC_SSC, ACVP_KAS_ECC_MODE_NONE, ACVP_PREREQ_HMAC, cvalue);
+    cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_kas_ecc_set_scheme(ctx, ACVP_KAS_ECC_SSC, ACVP_KAS_ECC_MODE_NONE, ACVP_KAS_ECC_EPHEMERAL_UNIFIED, ACVP_KAS_ECC_ROLE, 0, ACVP_KAS_ECC_ROLE_INITIATOR);
+    cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_kas_ecc_set_scheme(ctx, ACVP_KAS_ECC_SSC, ACVP_KAS_ECC_MODE_NONE, ACVP_KAS_ECC_EPHEMERAL_UNIFIED, ACVP_KAS_ECC_ROLE, 0, ACVP_KAS_ECC_ROLE_RESPONDER);
+    cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_kas_ecc_set_parm(ctx, ACVP_KAS_ECC_SSC, ACVP_KAS_ECC_MODE_NONE, ACVP_KAS_ECC_CURVE, ACVP_EC_CURVE_P224);
+    cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_kas_ecc_set_parm(ctx, ACVP_KAS_ECC_SSC, ACVP_KAS_ECC_MODE_NONE, ACVP_KAS_ECC_CURVE, ACVP_EC_CURVE_P256);
+    cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_kas_ecc_set_parm(ctx, ACVP_KAS_ECC_SSC, ACVP_KAS_ECC_MODE_NONE, ACVP_KAS_ECC_CURVE, ACVP_EC_CURVE_P384);
+    cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_kas_ecc_set_parm(ctx, ACVP_KAS_ECC_SSC, ACVP_KAS_ECC_MODE_NONE, ACVP_KAS_ECC_CURVE, ACVP_EC_CURVE_P521);
+    cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_kas_ecc_set_parm(ctx, ACVP_KAS_ECC_SSC, ACVP_KAS_ECC_MODE_NONE, ACVP_KAS_ECC_HASH, ACVP_SHA512);
+    cr_assert(rv == ACVP_SUCCESS);
+
 }
 
 static void setup_fail(void) {
@@ -993,4 +1019,255 @@ Test(KAS_ECC_COMP_HANDLER, tcFail1, .init = setup, .fini = teardown) {
     cr_assert(rv == ACVP_MISSING_ARG);
     json_value_free(val);
 }
+
+
+/* //////////////////////
+ * SSC  mode
+ * /////////////////////
+ */
+
+/*
+ * This is a good JSON.
+ * Expecting success.
+ */
+Test(KAS_ECC_SSC_HANDLER, good, .init = setup, .fini = teardown) {
+    val = json_parse_file("json/kas_ecc/kas_ecc_ssc.json");
+
+    obj = ut_get_obj_from_rsp(val);
+    if (!obj) {
+        ACVP_LOG_ERR("JSON obj parse error");
+        return;
+    }
+    rv = acvp_kas_ecc_ssc_kat_handler(ctx, obj);
+    cr_assert(rv == ACVP_SUCCESS);
+    json_value_free(val);
+}
+
+/*
+ * The key:"algorithm" is missing.
+ */
+Test(KAS_ECC_SSC_HANDLER, missing_algorithm, .init = setup, .fini = teardown) {
+    val = json_parse_file("json/kas_ecc/kas_ecc_ssc_1.json");
+
+    obj = ut_get_obj_from_rsp(val);
+    if (!obj) {
+        ACVP_LOG_ERR("JSON obj parse error");
+        return;
+    }
+    rv = acvp_kas_ecc_ssc_kat_handler(ctx, obj);
+    cr_assert(rv == ACVP_MALFORMED_JSON);
+    json_value_free(val);
+}
+
+
+/*
+ * The key:"testType" is missing.
+ */
+Test(KAS_ECC_SSC_HANDLER, missing_testType, .init = setup, .fini = teardown) {
+    val = json_parse_file("json/kas_ecc/kas_ecc_ssc_2.json");
+
+    obj = ut_get_obj_from_rsp(val);
+    if (!obj) {
+        ACVP_LOG_ERR("JSON obj parse error");
+        return;
+    }
+    rv = acvp_kas_ecc_ssc_kat_handler(ctx, obj);
+    cr_assert(rv == ACVP_MISSING_ARG);
+    json_value_free(val);
+}
+
+/*
+ * The value for key:"testType" is wrong.
+ */
+Test(KAS_ECC_SSC_HANDLER, wrong_testType, .init = setup, .fini = teardown) {
+    val = json_parse_file("json/kas_ecc/kas_ecc_ssc_3.json");
+
+    obj = ut_get_obj_from_rsp(val);
+    if (!obj) {
+        ACVP_LOG_ERR("JSON obj parse error");
+        return;
+    }
+    rv = acvp_kas_ecc_ssc_kat_handler(ctx, obj);
+    cr_assert(rv == ACVP_INVALID_ARG);
+    json_value_free(val);
+}
+
+/*
+ * The key:"domainParameterGenerationMode" is missing.
+ */
+Test(KAS_ECC_SSC_HANDLER, missing_curve, .init = setup, .fini = teardown) {
+    val = json_parse_file("json/kas_ecc/kas_ecc_ssc_4.json");
+
+    obj = ut_get_obj_from_rsp(val);
+    if (!obj) {
+        ACVP_LOG_ERR("JSON obj parse error");
+        return;
+    }
+    rv = acvp_kas_ecc_ssc_kat_handler(ctx, obj);
+    cr_assert(rv == ACVP_MISSING_ARG);
+    json_value_free(val);
+}
+
+/*
+ * The value for key:"domainParameterGenerationMode" is wrong.
+ */
+Test(KAS_ECC_SSC_HANDLER, wrong_curve, .init = setup, .fini = teardown) {
+    val = json_parse_file("json/kas_ecc/kas_ecc_ssc_5.json");
+
+    obj = ut_get_obj_from_rsp(val);
+    if (!obj) {
+        ACVP_LOG_ERR("JSON obj parse error");
+        return;
+    }
+    rv = acvp_kas_ecc_ssc_kat_handler(ctx, obj);
+    cr_assert(rv == ACVP_INVALID_ARG);
+    json_value_free(val);
+}
+
+/*
+ * The key:"hashFunctionZ" is missing.
+ */
+Test(KAS_ECC_SSC_HANDLER, missing_hashFunctionZ, .init = setup, .fini = teardown) {
+    val = json_parse_file("json/kas_ecc/kas_ecc_ssc_6.json");
+
+    obj = ut_get_obj_from_rsp(val);
+    if (!obj) {
+        ACVP_LOG_ERR("JSON obj parse error");
+        return;
+    }
+    rv = acvp_kas_ecc_ssc_kat_handler(ctx, obj);
+    cr_assert(rv == ACVP_MISSING_ARG);
+    json_value_free(val);
+}
+
+/*
+ * The value for key:"hashFunctionZ" is wrong.
+ */
+Test(KAS_ECC_SSC_HANDLER, wrong_hashFunctionZ, .init = setup, .fini = teardown) {
+    val = json_parse_file("json/kas_ecc/kas_ecc_ssc_7.json");
+
+    obj = ut_get_obj_from_rsp(val);
+    if (!obj) {
+        ACVP_LOG_ERR("JSON obj parse error");
+        return;
+    }
+    rv = acvp_kas_ecc_ssc_kat_handler(ctx, obj);
+    cr_assert(rv == ACVP_INVALID_ARG);
+    json_value_free(val);
+}
+
+/*
+ * The key:"ephemeralPublicServerX" is missing.
+ */
+Test(KAS_ECC_SSC_HANDLER, missing_ephemeralPublicServerX, .init = setup, .fini = teardown) {
+    val = json_parse_file("json/kas_ecc/kas_ecc_ssc_8.json");
+
+    obj = ut_get_obj_from_rsp(val);
+    if (!obj) {
+        ACVP_LOG_ERR("JSON obj parse error");
+        return;
+    }
+    rv = acvp_kas_ecc_ssc_kat_handler(ctx, obj);
+    cr_assert(rv == ACVP_MISSING_ARG);
+    json_value_free(val);
+}
+
+/*
+ * The value for key:"ephemeralPublicServerX" string is too long.
+ */
+Test(KAS_ECC_SSC_HANDLER, wrong_ephemeralPublicServerX, .init = setup, .fini = teardown) {
+    val = json_parse_file("json/kas_ecc/kas_ecc_ssc_9.json");
+
+    obj = ut_get_obj_from_rsp(val);
+    if (!obj) {
+        ACVP_LOG_ERR("JSON obj parse error");
+        return;
+    }
+    rv = acvp_kas_ecc_ssc_kat_handler(ctx, obj);
+    cr_assert(rv == ACVP_INVALID_ARG);
+    json_value_free(val);
+}
+
+/*
+ * The key:"ephemeralPublicServerY" is missing.
+ */
+Test(KAS_ECC_SSC_HANDLER, missing_ephemeralPublicServerY, .init = setup, .fini = teardown) {
+    val = json_parse_file("json/kas_ecc/kas_ecc_ssc_10.json");
+
+    obj = ut_get_obj_from_rsp(val);
+    if (!obj) {
+        ACVP_LOG_ERR("JSON obj parse error");
+        return;
+    }
+    rv = acvp_kas_ecc_ssc_kat_handler(ctx, obj);
+    cr_assert(rv == ACVP_MISSING_ARG);
+    json_value_free(val);
+}
+
+/*
+ * The value for key:"ephemeralPublicServerY" is too long
+ */
+Test(KAS_ECC_SSC_HANDLER, wrong_ephemeralPublicServerY, .init = setup, .fini = teardown) {
+    val = json_parse_file("json/kas_ecc/kas_ecc_ssc_11.json");
+
+    obj = ut_get_obj_from_rsp(val);
+    if (!obj) {
+        ACVP_LOG_ERR("JSON obj parse error");
+        return;
+    }
+    rv = acvp_kas_ecc_ssc_kat_handler(ctx, obj);
+    cr_assert(rv == ACVP_INVALID_ARG);
+    json_value_free(val);
+}
+
+/*
+ * The key:"ephemeralPrivateIut" is missing.
+ */
+Test(KAS_ECC_SSC_HANDLER, missing_ephemeralPrivateIut, .init = setup, .fini = teardown) {
+    val = json_parse_file("json/kas_ecc/kas_ecc_ssc_12.json");
+
+    obj = ut_get_obj_from_rsp(val);
+    if (!obj) {
+        ACVP_LOG_ERR("JSON obj parse error");
+        return;
+    }
+    rv = acvp_kas_ecc_ssc_kat_handler(ctx, obj);
+    cr_assert(rv == ACVP_MISSING_ARG);
+    json_value_free(val);
+}
+
+
+/*
+ * The key:"ephemeralPublicIutX" is missing.
+ */
+Test(KAS_ECC_SSC_HANDLER, missing_ephemeralPublicIutX, .init = setup, .fini = teardown) {
+    val = json_parse_file("json/kas_ecc/kas_ecc_ssc_13.json");
+
+    obj = ut_get_obj_from_rsp(val);
+    if (!obj) {
+        ACVP_LOG_ERR("JSON obj parse error");
+        return;
+    }
+    rv = acvp_kas_ecc_ssc_kat_handler(ctx, obj);
+    cr_assert(rv == ACVP_MISSING_ARG);
+    json_value_free(val);
+}
+
+
+/*
+ * The key:"ephemeralPublicIutY" is missing.
+ */
+Test(KAS_ECC_SSC_HANDLER, missing_ephemeralPublicIutY, .init = setup, .fini = teardown) {
+    val = json_parse_file("json/kas_ecc/kas_ecc_ssc_14.json");
+
+    obj = ut_get_obj_from_rsp(val);
+    if (!obj) {
+        ACVP_LOG_ERR("JSON obj parse error");
+        return;
+    }
+    rv = acvp_kas_ecc_ssc_kat_handler(ctx, obj);
+    cr_assert(rv == ACVP_MISSING_ARG);
+    json_value_free(val);
+}
+
 

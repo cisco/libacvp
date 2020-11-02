@@ -99,6 +99,7 @@ int app_kdf135_ikev2_handler(ACVP_TEST_CASE *test_case);
 int app_kdf108_handler(ACVP_TEST_CASE *test_case);
 int app_kdf135_ikev1_handler(ACVP_TEST_CASE *test_case);
 int app_kdf135_x963_handler(ACVP_TEST_CASE *test_case);
+int app_pbkdf_handler(ACVP_TEST_CASE *test_case);
 
 void app_dsa_cleanup(void);
 void app_rsa_cleanup(void);
@@ -109,6 +110,8 @@ int app_kas_ecc_handler(ACVP_TEST_CASE *test_case);
 int app_kas_ffc_handler(ACVP_TEST_CASE *test_case);
 int app_rsa_keygen_handler(ACVP_TEST_CASE *test_case);
 int app_rsa_sig_handler(ACVP_TEST_CASE *test_case);
+int app_rsa_decprim_handler(ACVP_TEST_CASE *test_case);
+int app_rsa_sigprim_handler(ACVP_TEST_CASE *test_case);
 int app_ecdsa_handler(ACVP_TEST_CASE *test_case);
 int app_drbg_handler(ACVP_TEST_CASE *test_case);
 

@@ -13,7 +13,7 @@
 #include "parson.h"
 
 #define ACVP_VERSION    "1.0"
-#define ACVP_LIBRARY_VERSION    "libacvp_oss-1.1.1"
+#define ACVP_LIBRARY_VERSION    "libacvp_oss-1.1.2"
 
 
 #ifndef ACVP_LOG_ERR
@@ -107,6 +107,7 @@
  */
 #define ACVP_REVISION_LATEST "1.0"
 #define ACVP_REVISION_FIPS186_4 "FIPS186-4"
+#define ACVP_REVISION_SP800_56AR3 "Sp800-56Ar3"
 
 /* AES */
 #define ACVP_REV_AES_ECB             ACVP_REVISION_LATEST
@@ -182,15 +183,18 @@
 
 /* RSA */
 #define ACVP_REV_RSA                 ACVP_REVISION_FIPS186_4
+#define ACVP_REV_RSA_PRIM            ACVP_REVISION_LATEST
 
 /* ECDSA */
 #define ACVP_REV_ECDSA               ACVP_REVISION_LATEST
 
 /* KAS_ECC */
 #define ACVP_REV_KAS_ECC             ACVP_REVISION_LATEST
+#define ACVP_REV_KAS_ECC_SSC         ACVP_REVISION_SP800_56AR3
 
 /* KAS_FFC */
 #define ACVP_REV_KAS_FFC             ACVP_REVISION_LATEST
+#define ACVP_REV_KAS_FFC_SSC         ACVP_REVISION_SP800_56AR3
 
 /* KDF */
 #define ACVP_REV_KDF135_TLS          ACVP_REVISION_LATEST
@@ -202,6 +206,7 @@
 #define ACVP_REV_KDF135_TPM          ACVP_REVISION_LATEST
 #define ACVP_REV_KDF135_X963         ACVP_REVISION_LATEST
 #define ACVP_REV_KDF108              ACVP_REVISION_LATEST
+#define ACVP_REV_PBKDF               ACVP_REVISION_LATEST
 
 
 /********************************************************
@@ -286,11 +291,15 @@
 #define ACVP_ALG_DSA_KEYGEN          "keyGen"
 #define ACVP_ALG_DSA_SIGGEN          "sigGen"
 #define ACVP_ALG_DSA_SIGVER          "sigVer"
+#define ACVP_MODE_DECPRIM            "decryptionPrimitive"
+#define ACVP_MODE_SIGPRIM            "signaturePrimitive"
 
 #define ACVP_ALG_KAS_ECC_CDH         "CDH-Component"
 #define ACVP_ALG_KAS_ECC_COMP        "Component"
 #define ACVP_ALG_KAS_ECC_NOCOMP      ""
 
+
+#define ACVP_ALG_KAS_ECC_SSC         "KAS-ECC-SSC"
 #define ACVP_ALG_KAS_ECC             "KAS-ECC"
 #define ACVP_ALG_KAS_ECC_DPGEN       "dpGen"
 #define ACVP_ALG_KAS_ECC_DPVAL       "dpVal"
@@ -302,6 +311,7 @@
 #define ACVP_ALG_KAS_FFC_COMP        "Component"
 #define ACVP_ALG_KAS_FFC_NOCOMP      ""
 
+#define ACVP_ALG_KAS_FFC_SSC         "KAS-FFC-SSC"
 #define ACVP_ALG_KAS_FFC             "KAS-FFC"
 #define ACVP_ALG_KAS_FFC_DPGEN       "dpGen"
 #define ACVP_ALG_KAS_FFC_MQV2        "MQV2"
@@ -364,6 +374,7 @@
 #define ACVP_ALG_KDF135_TPM      "KDF-TPM"
 #define ACVP_ALG_KDF108          "KDF"
 #define ACVP_ALG_KDF135_X963     "ansix9.63"
+#define ACVP_ALG_PBKDF           "PBKDF"
 
 #define ACVP_CAPABILITY_STR_MAX 512 /**< Arbitrary string length limit */
 
@@ -632,6 +643,32 @@
  * END KDF108
  */
 
+/**
+ * Accepted length ranges for PBKDF.
+ */
+#define ACVP_PBKDF_ITERATION_MIN 1
+#define ACVP_PBKDF_ITERATION_MAX 10000000
+
+#define ACVP_PBKDF_KEY_BIT_MIN 112
+#define ACVP_PBKDF_KEY_BIT_MAX 4096
+#define ACVP_PBKDF_KEY_BYTE_MIN (ACVP_PBKDF_KEY_BIT_MIN >> 3)
+#define ACVP_PBKDF_KEY_STR_MIN (ACVP_PBKDF_KEY_BIT_MIN >> 2)
+#define ACVP_PBKDF_KEY_BYTE_MAX (ACVP_PBKDF_KEY_BIT_MAX >> 3)
+#define ACVP_PBKDF_KEY_STR_MAX (ACVP_PBKDF_KEY_BIT_MAX >> 2)
+
+#define ACVP_PBKDF_PASS_LEN_MIN 8 //in chars
+#define ACVP_PBKDF_PASS_LEN_MAX 128 //in chars
+
+#define ACVP_PBKDF_SALT_LEN_BIT_MIN 128
+#define ACVP_PBKDF_SALT_LEN_BIT_MAX 4096
+#define ACVP_PBKDF_SALT_LEN_BYTE_MIN (ACVP_PBKDF_SALT_LEN_BIT_MIN >> 3)
+#define ACVP_PBKDF_SALT_LEN_STR_MIN (ACVP_PBKDF_SALT_LEN_BIT_MIN >> 2)
+#define ACVP_PBKDF_SALT_LEN_BYTE_MAX (ACVP_PBKDF_SALT_LEN_BIT_MAX >> 3)
+#define ACVP_PBKDF_SALT_LEN_STR_MAX (ACVP_PBKDF_SALT_LEN_BIT_MAX >> 2)
+/*
+ * END PBKDF
+ */
+
 #define ACVP_HMAC_MSG_MAX       1024
 
 #define ACVP_HMAC_MAC_BIT_MIN 32  /**< 32 bits */
@@ -792,6 +829,7 @@ typedef enum acvp_capability_type {
     ACVP_RSA_KEYGEN_TYPE,
     ACVP_RSA_SIGGEN_TYPE,
     ACVP_RSA_SIGVER_TYPE,
+    ACVP_RSA_PRIM_TYPE,
     ACVP_ECDSA_KEYGEN_TYPE,
     ACVP_ECDSA_KEYVER_TYPE,
     ACVP_ECDSA_SIGGEN_TYPE,
@@ -806,10 +844,13 @@ typedef enum acvp_capability_type {
     ACVP_KDF135_X963_TYPE,
     ACVP_KDF135_TPM_TYPE,
     ACVP_KDF108_TYPE,
+    ACVP_PBKDF_TYPE,
     ACVP_KAS_ECC_CDH_TYPE,
     ACVP_KAS_ECC_COMP_TYPE,
     ACVP_KAS_ECC_NOCOMP_TYPE,
+    ACVP_KAS_ECC_SSC_TYPE,
     ACVP_KAS_FFC_COMP_TYPE,
+    ACVP_KAS_FFC_SSC_TYPE,
     ACVP_KAS_FFC_NOCOMP_TYPE
 } ACVP_CAP_TYPE;
 
@@ -964,6 +1005,14 @@ typedef struct acvp_kdf135_x963_capability {
     ACVP_SL_LIST *key_data_lengths;
 } ACVP_KDF135_X963_CAP;
 
+typedef struct acvp_pbkdf_capability {
+    ACVP_NAME_LIST *hmac_algs;
+    ACVP_JSON_DOMAIN_OBJ iteration_count_domain;
+    ACVP_JSON_DOMAIN_OBJ key_len_domain;
+    ACVP_JSON_DOMAIN_OBJ password_len_domain;
+    ACVP_JSON_DOMAIN_OBJ salt_len_domain;
+} ACVP_PBKDF_CAP;
+
 typedef struct acvp_hmac_capability {
     ACVP_JSON_DOMAIN_OBJ key_len; // 8-524288
     ACVP_JSON_DOMAIN_OBJ mac_len; // 32-512
@@ -1044,6 +1093,14 @@ typedef struct acvp_rsa_keygen_capability_t {
     struct acvp_rsa_keygen_capability_t *next; // to support multiple randPQ values
 } ACVP_RSA_KEYGEN_CAP;
 
+typedef struct acvp_rsa_prim_capability_t {
+    unsigned int prim_type;
+    int key_format_crt;                     // if false, key format is assumed to be standard
+    ACVP_RSA_PUB_EXP_MODE pub_exp_mode;
+    char *fixed_pub_exp;               // hex value of e
+    struct acvp_rsa_prim_capability_t *next; // to support multiple randPQ values
+} ACVP_RSA_PRIM_CAP;
+
 
 typedef struct acvp_ecdsa_capability_t {
     ACVP_NAME_LIST *curves;
@@ -1115,6 +1172,7 @@ typedef struct acvp_kas_ecc_cap_mode_t {
     ACVP_PARAM_LIST *curve;    /* CDH mode only */
     ACVP_PARAM_LIST *function;
     ACVP_KAS_ECC_SCHEME *scheme; /* other modes use schemes */
+    int hash;     /* only a single sha for KAS-ECC-SSC */
 } ACVP_KAS_ECC_CAP_MODE;
 
 typedef struct acvp_kas_ecc_capability_t {
@@ -1151,6 +1209,8 @@ typedef struct acvp_kas_ffc_cap_mode_t {
     ACVP_KAS_FFC_MODE cap_mode;
     ACVP_PREREQ_LIST *prereq_vals;
     ACVP_PARAM_LIST *function;
+    ACVP_PARAM_LIST *genmeth;
+    int hash;
     ACVP_KAS_FFC_SCHEME *scheme; /* other modes use schemes */
 } ACVP_KAS_FFC_CAP_MODE;
 
@@ -1174,6 +1234,7 @@ typedef struct acvp_caps_list_t {
         ACVP_RSA_KEYGEN_CAP *rsa_keygen_cap;
         ACVP_RSA_SIG_CAP *rsa_siggen_cap;
         ACVP_RSA_SIG_CAP *rsa_sigver_cap;
+        ACVP_RSA_PRIM_CAP *rsa_prim_cap;
         ACVP_ECDSA_CAP *ecdsa_keygen_cap;
         ACVP_ECDSA_CAP *ecdsa_keyver_cap;
         ACVP_ECDSA_CAP *ecdsa_siggen_cap;
@@ -1186,6 +1247,7 @@ typedef struct acvp_caps_list_t {
         ACVP_KDF135_IKEV1_CAP *kdf135_ikev1_cap;
         ACVP_KDF135_X963_CAP *kdf135_x963_cap;
         ACVP_KDF108_CAP *kdf108_cap;
+        ACVP_PBKDF_CAP *pbkdf_cap;
         ACVP_KAS_ECC_CAP *kas_ecc_cap;
         ACVP_KAS_FFC_CAP *kas_ffc_cap;
     } cap;
@@ -1447,6 +1509,10 @@ ACVP_RESULT acvp_rsa_siggen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
 ACVP_RESULT acvp_rsa_sigver_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
+ACVP_RESULT acvp_rsa_decprim_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
+
+ACVP_RESULT acvp_rsa_sigprim_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
+
 ACVP_RESULT acvp_ecdsa_keygen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
 ACVP_RESULT acvp_ecdsa_keyver_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
@@ -1471,12 +1537,17 @@ ACVP_RESULT acvp_kdf135_x963_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
 ACVP_RESULT acvp_kdf108_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
+ACVP_RESULT acvp_pbkdf_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
+
 ACVP_RESULT acvp_dsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
 ACVP_RESULT acvp_kas_ecc_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
+ACVP_RESULT acvp_kas_ecc_ssc_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
+
 ACVP_RESULT acvp_kas_ffc_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
+ACVP_RESULT acvp_kas_ffc_ssc_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 /*
  * ACVP build registration functions used internally
  */
