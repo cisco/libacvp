@@ -2577,10 +2577,6 @@ static ACVP_RESULT acvp_build_kas_ecc_register_cap(ACVP_CTX *ctx,
                     break;
                 case ACVP_KAS_ECC_PARMSET:
                 default:
-                    if (i != ACVP_KAS_ECC_MODE_NONE) {
-                        ACVP_LOG_ERR("Unsupported KAS-ECC kdf %d", kdf);
-                        return ACVP_INVALID_ARG;
-                    }
                     break;
                 }
                 switch (scheme) {
