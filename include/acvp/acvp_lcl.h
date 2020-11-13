@@ -1606,6 +1606,8 @@ const char *acvp_lookup_ec_curve_name(ACVP_CIPHER cipher, ACVP_EC_CURVE id);
 
 ACVP_RESULT acvp_refresh(ACVP_CTX *ctx);
 
+void acvp_http_user_agent_handler(ACVP_CTX *ctx);
+
 ACVP_RESULT acvp_setup_json_rsp_group(ACVP_CTX **ctx,
                                       JSON_Value **outer_arr_val,
                                       JSON_Value **r_vs_val,

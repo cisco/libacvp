@@ -266,13 +266,16 @@ static void acvp_http_user_agent_string_clean(char *str) {
     }
 }
 
-static void acvp_http_user_agent_handler(ACVP_CTX *ctx, char *agent_string) {
-    if (!agent_string || !ctx) {
-        ACVP_LOG_WARN("Error generating HTTP user-agent - invalid CTX or string\n");
+void acvp_http_user_agent_handler(ACVP_CTX *ctx) {
+    if (!ctx || ctx->http_user_agent) {
+        ACVP_LOG_WARN("Error generating HTTP user-agent - no CTX or string already exists\n");
         return;
-    } else if (strnlen_s(agent_string, 1) > 0) {
-        ACVP_LOG_WARN("HTTP user-agent string already contains data, skipping...\n");
-        return;
+    } else {
+        ctx->http_user_agent = calloc(ACVP_USER_AGENT_STR_MAX + 1, sizeof(char));
+        if (!ctx->http_user_agent) {
+            ACVP_LOG_ERR("Unable to allocate memory for user agent, skipping...");
+            return;
+        }
     }
 
     char *libver = calloc(ACVP_USER_AGENT_ACVP_STR_MAX + 1, sizeof(char));
@@ -480,8 +483,8 @@ static void acvp_http_user_agent_handler(ACVP_CTX *ctx, char *agent_string) {
     acvp_http_user_agent_string_clean(proc);
     acvp_http_user_agent_string_clean(comp);
 
-    snprintf(agent_string, ACVP_USER_AGENT_STR_MAX, "%s;%s;%s;%s;%s;%s", libver, osname, osver, arch, proc, comp);
-    ACVP_LOG_INFO("HTTP User-Agent: %s\n", agent_string);
+    snprintf(ctx->http_user_agent, ACVP_USER_AGENT_STR_MAX, "%s;%s;%s;%s;%s;%s", libver, osname, osver, arch, proc, comp);
+    ACVP_LOG_INFO("HTTP User-Agent: %s\n", ctx->http_user_agent);
 
 end:
     free(libver);
@@ -517,21 +520,7 @@ static long acvp_curl_http_get(ACVP_CTX *ctx, const char *url) {
 
     ctx->curl_read_ctr = 0;
 
-    /*
-     * Create the HTTP User Agent value, if it has not been done already
-     */
-    if (!ctx->http_user_agent) {
-        ctx->http_user_agent = calloc(ACVP_USER_AGENT_STR_MAX + 1, sizeof(char));
-        if (!ctx->http_user_agent) {
-            ACVP_LOG_ERR("Unable to allocate memory for HTTP user-agent, skipping...\n");
-        } else {
-            acvp_http_user_agent_handler(ctx, ctx->http_user_agent);
-        }
-    }
-
-    /*
-     * Setup Curl
-     */
+    //Setup Curl
     hnd = curl_easy_init();
     if (!hnd) { ACVP_LOG_ERR("Error initializing Curl structure, stopping"); goto end; }
     crv = curl_easy_setopt(hnd, CURLOPT_URL, url);
@@ -548,10 +537,7 @@ static long acvp_curl_http_get(ACVP_CTX *ctx, const char *url) {
         crv = curl_easy_setopt(hnd, CURLOPT_HTTPHEADER, slist);
         if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_HTTPHEADER, stopping"); goto end; }
     }
-
-    /*
-     * Always verify the server
-     */
+    //Always verify the server
     crv = curl_easy_setopt(hnd, CURLOPT_SSL_VERIFYPEER, 1L);
     if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_SSL_VERIFYPEER, stopping"); goto end; }
     if (ctx->cacerts_file) {
@@ -560,10 +546,7 @@ static long acvp_curl_http_get(ACVP_CTX *ctx, const char *url) {
         crv = curl_easy_setopt(hnd, CURLOPT_CERTINFO, 1L);
         if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_CERTINFO, stopping"); goto end; }
     }
-
-    /*
-     * Mutual-auth
-     */
+    //Mutual-auth
     if (ctx->tls_cert && ctx->tls_key) {
         crv = curl_easy_setopt(hnd, CURLOPT_SSLCERTTYPE, "PEM");
         if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_SSLCERTTYPE, stopping"); goto end; }
@@ -575,10 +558,7 @@ static long acvp_curl_http_get(ACVP_CTX *ctx, const char *url) {
         if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_SSLKEY, stopping"); goto end; }
     }
 
-    /*
-     * To record the HTTP data recieved from the server,
-     * set the callback function.
-     */
+    //To record the HTTP data recieved from the server, set the callback function.
     crv = curl_easy_setopt(hnd, CURLOPT_WRITEDATA, ctx);
     if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_WRITEDATA, stopping"); goto end; }
     crv = curl_easy_setopt(hnd, CURLOPT_WRITEFUNCTION, acvp_curl_write_callback);
@@ -641,21 +621,7 @@ static long acvp_curl_http_post(ACVP_CTX *ctx, const char *url, const char *data
 
     ctx->curl_read_ctr = 0;
 
-    /*
-     * Create the HTTP User Agent value, if it has not been done already
-     */
-    if (!ctx->http_user_agent) {
-        ctx->http_user_agent = calloc(ACVP_USER_AGENT_STR_MAX + 1, sizeof(char));
-        if (!ctx->http_user_agent) {
-            ACVP_LOG_ERR("Unable to allocate memory for HTTP user-agent, skipping...\n");
-        } else {
-            acvp_http_user_agent_handler(ctx, ctx->http_user_agent);
-        }
-    }
-
-    /*
-     * Setup Curl
-     */
+   //Setup Curl
     hnd = curl_easy_init();
     if (!hnd) { ACVP_LOG_ERR("Error initializing Curl structure, stopping"); goto end; }
     crv = curl_easy_setopt(hnd, CURLOPT_URL, url);
@@ -678,10 +644,7 @@ static long acvp_curl_http_post(ACVP_CTX *ctx, const char *url, const char *data
     if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_TCP_KEEPALIVE, stopping"); goto end; }
     crv = curl_easy_setopt(hnd, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_2);
     if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_SSL_VERSION, stopping"); goto end; }
-
-    /*
-     * Always verify the server
-     */
+    //Always verify the server
     crv = curl_easy_setopt(hnd, CURLOPT_SSL_VERIFYPEER, 1L);
     if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_SSL_VERIFYPEER, stopping"); goto end; }
     if (ctx->cacerts_file) {
@@ -690,10 +653,7 @@ static long acvp_curl_http_post(ACVP_CTX *ctx, const char *url, const char *data
         crv = curl_easy_setopt(hnd, CURLOPT_CERTINFO, 1L);
         if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_CERTINFO, stopping"); goto end; }
     }
-
-    /*
-     * Mutual-auth
-     */
+    //Mutual-auth
     if (ctx->tls_cert && ctx->tls_key) {
         crv = curl_easy_setopt(hnd, CURLOPT_SSLCERTTYPE, "PEM");
         if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_SSLCERTTYPE, stopping"); goto end; }
@@ -704,11 +664,7 @@ static long acvp_curl_http_post(ACVP_CTX *ctx, const char *url, const char *data
         crv = curl_easy_setopt(hnd, CURLOPT_SSLKEY, ctx->tls_key);
         if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_SSLKEY, stopping"); goto end; }
     }
-
-    /*
-     * To record the HTTP data recieved from the server,
-     * set the callback function.
-     */
+    // To record the HTTP data recieved from the server, set the callback function.
     crv = curl_easy_setopt(hnd, CURLOPT_WRITEDATA, ctx);
     if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_WRITEDATA, stopping"); goto end; }
     crv = curl_easy_setopt(hnd, CURLOPT_WRITEFUNCTION, acvp_curl_write_callback);
@@ -762,19 +718,6 @@ static long acvp_curl_http_put(ACVP_CTX *ctx, const char *url, const char *data,
 
 
     ctx->curl_read_ctr = 0;
-
-    /*
-     * Create the HTTP User Agent value, if it has not been done already
-     */
-    if (!ctx->http_user_agent) {
-        ctx->http_user_agent = calloc(ACVP_USER_AGENT_STR_MAX + 1, sizeof(char));
-        if (!ctx->http_user_agent) {
-            ACVP_LOG_ERR("Unable to allocate memory for HTTP user-agent, skipping...\n");
-        } else {
-            acvp_http_user_agent_handler(ctx, ctx->http_user_agent);
-        }
-    }
-
     /*
      * Set the Content-Type header in the HTTP request
      */
@@ -785,9 +728,7 @@ static long acvp_curl_http_put(ACVP_CTX *ctx, const char *url, const char *data,
      */
     slist = acvp_add_auth_hdr(ctx, slist);
 
-    /*
-     * Setup Curl
-     */
+    //Setup Curl
     hnd = curl_easy_init();
     if (!hnd) { ACVP_LOG_ERR("Error initializing Curl structure, stopping"); goto end; }
     crv = curl_easy_setopt(hnd, CURLOPT_URL, url);
@@ -808,10 +749,7 @@ static long acvp_curl_http_put(ACVP_CTX *ctx, const char *url, const char *data,
     if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_TCP_KEEPALIVE, stopping"); goto end; }
     crv = curl_easy_setopt(hnd, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_2);
     if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_SSLVERSION, stopping"); goto end; }
-    
-    /*
-     * Always verify the server
-     */
+    //Always verify the server
     crv = curl_easy_setopt(hnd, CURLOPT_SSL_VERIFYPEER, 1L);
     if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_SSL_VERIFYPEER, stopping"); goto end; }
     if (ctx->cacerts_file) {
@@ -820,10 +758,7 @@ static long acvp_curl_http_put(ACVP_CTX *ctx, const char *url, const char *data,
         crv = curl_easy_setopt(hnd, CURLOPT_CERTINFO, 1L);
         if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_CERTINFO, stopping"); goto end; }
     }
-
-    /*
-     * Mutual-auth
-     */
+    //Mutual-auth
     if (ctx->tls_cert && ctx->tls_key) {
         crv = curl_easy_setopt(hnd, CURLOPT_SSLCERTTYPE, "PEM");
         if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_SSLCERTTYPE, stopping"); goto end; }
@@ -834,11 +769,7 @@ static long acvp_curl_http_put(ACVP_CTX *ctx, const char *url, const char *data,
         crv = curl_easy_setopt(hnd, CURLOPT_SSLKEY, ctx->tls_key);
         if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_SSLKEY, stopping"); goto end; }
     }
-
-    /*
-     * To record the HTTP data recieved from the server,
-     * set the callback function.
-     */
+    //To record the HTTP data recieved from the server, set the callback function.
     crv = curl_easy_setopt(hnd, CURLOPT_WRITEDATA, ctx);
     if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_WRITEDATA, stopping"); goto end; }
     crv = curl_easy_setopt(hnd, CURLOPT_WRITEFUNCTION, acvp_curl_write_callback);
