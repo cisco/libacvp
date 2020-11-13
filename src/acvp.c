@@ -3229,6 +3229,9 @@ ACVP_RESULT acvp_run(ACVP_CTX *ctx, int fips_validation) {
 
     if (ctx == NULL) return ACVP_NO_CTX;
 
+    //generate user-agent string to send with HTTP requests
+    acvp_http_user_agent_handler(ctx);
+
     rv = acvp_login(ctx, 0);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Failed to login with ACVP server");

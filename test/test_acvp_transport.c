@@ -67,24 +67,14 @@ static void test_setup_session_parameters(void)
 {
     setup_empty_ctx(&ctx);
     
-    char *tmp;
-    server = getenv("ACV_SERVER");
-    tmp = getenv("ACV_PORT");
-    if (tmp) port = atoi(tmp);
-    path_segment = getenv("ACV_URI_PREFIX");
-    api_context = getenv("ACV_API_CONTEXT");
-    ca_chain_file = getenv("ACV_CA_FILE");
-    cert_file = getenv("ACV_CERT_FILE");
-    key_file = getenv("ACV_KEY_FILE");
-    
-    printf("Using the following parameters:\n\n");
-    printf("    ACV_SERVER:     %s\n", server);
-    printf("    ACV_PORT:       %d\n", port);
-    printf("    ACV_URI_PREFIX: %s\n", path_segment);
-    printf("    ACV_CA_FILE:    %s\n", ca_chain_file);
-    printf("    ACV_CERT_FILE:  %s\n", cert_file);
-    printf("    ACV_KEY_FILE:   %s\n\n", key_file);
-    
+    server = "noserver";
+    port = 443;
+    path_segment = "/acvp/v1/";
+    api_context = "acvp/";
+    ca_chain_file = NULL;
+    cert_file = NULL;
+    key_file = NULL;
+
     acvp_set_server(ctx, server, port);
     acvp_set_cacerts(ctx, ca_chain_file);
     acvp_set_certkey(ctx, cert_file, key_file);
@@ -127,7 +117,7 @@ Test(TRANSPORT_RETRIEVE_SAMPLE_ANSWERS, incomplete_ctx, .init = setup, .fini = t
  * missing vector set id url
  */
 Test(TRANSPORT_RETRIEVE_SAMPLE_ANSWERS, missing_vsid_url, .init = setup, .fini = teardown) {
-    rv = acvp_set_server(ctx, "demo.acvts.nist.gov", 443);
+    rv = acvp_set_server(ctx, "noserver", 443);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_retrieve_expected_result(ctx, NULL);
     cr_assert(rv == ACVP_MISSING_ARG);
@@ -147,7 +137,7 @@ Test(TRANSPORT_RETRIEVE_SAMPLE_ANSWERS, missing_ctx) {
  * answers
  */
 Test(TRANSPORT_RETRIEVE_SAMPLE_ANSWERS, good, .init = setup, .fini = teardown) {
-    rv = acvp_set_server(ctx, "demo.acvts.nist.gov", 443);
+    rv = acvp_set_server(ctx, "noserver", 443);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_retrieve_expected_result(ctx, vsid_url);
     cr_assert(rv == ACVP_TRANSPORT_FAIL);
@@ -166,7 +156,7 @@ Test(TRANSPORT_RETRIEVE_VECTOR_SET, incomplete_ctx, .init = setup, .fini = teard
  * missing vector set id url
  */
 Test(TRANSPORT_RETRIEVE_VECTOR_SET, missing_vsid_url, .init = setup, .fini = teardown) {
-    rv = acvp_set_server(ctx, "demo.acvts.nist.gov", 443);
+    rv = acvp_set_server(ctx, "noserver", 443);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_retrieve_vector_set(ctx, NULL);
     cr_assert(rv == ACVP_MISSING_ARG);
@@ -186,7 +176,7 @@ Test(TRANSPORT_RETRIEVE_VECTOR_SET, missing_ctx) {
  * answers
  */
 Test(TRANSPORT_RETRIEVE_VECTOR_SET, good, .init = setup, .fini = teardown) {
-    rv = acvp_set_server(ctx, "demo.acvts.nist.gov", 443);
+    rv = acvp_set_server(ctx, "noserver", 443);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_retrieve_vector_set(ctx, vsid_url);
     cr_assert(rv == ACVP_TRANSPORT_FAIL);
@@ -213,7 +203,7 @@ Test(TRANSPORT_SUBMIT_VECTOR_SET, missing_ctx) {
  * missing vsid_url
  */
 Test(TRANSPORT_SUBMIT_VECTOR_SET, missing_vsid, .init = setup, .fini = teardown) {
-    rv = acvp_set_server(ctx, "demo.acvts.nist.gov", 443);
+    rv = acvp_set_server(ctx, "noserver", 443);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_submit_vector_responses(ctx, NULL);
     cr_assert(rv == ACVP_MISSING_ARG);
@@ -231,7 +221,7 @@ Test(TRANSPORT_RETRIEVE_RESULT, incomplete_ctx, .init = setup, .fini = teardown)
  * missing vector set id url
  */
 Test(TRANSPORT_RETRIEVE_RESULT, missing_vsid_url, .init = setup, .fini = teardown) {
-    rv = acvp_set_server(ctx, "demo.acvts.nist.gov", 443);
+    rv = acvp_set_server(ctx, "noserver", 443);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_retrieve_vector_set_result(ctx, NULL);
     cr_assert(rv == ACVP_MISSING_ARG);
@@ -251,7 +241,7 @@ Test(TRANSPORT_RETRIEVE_RESULT, missing_ctx) {
  * answers
  */
 Test(TRANSPORT_RETRIEVE_RESULT, good, .init = setup, .fini = teardown) {
-    rv = acvp_set_server(ctx, "demo.acvts.nist.gov", 443);
+    rv = acvp_set_server(ctx, "noserver", 443);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_send_test_session_registration(ctx, little_reg, strlen(little_reg));
     cr_assert(rv == ACVP_MISSING_ARG);
@@ -265,7 +255,7 @@ Test(TRANSPORT_RETRIEVE_RESULT, good, .init = setup, .fini = teardown) {
  * missing vector set id url
  */
 Test(TRANSPORT_SEND_TEST_SESSION_REG, missing_reg, .init = setup, .fini = teardown) {
-    rv = acvp_set_server(ctx, "demo.acvts.nist.gov", 443);
+    rv = acvp_set_server(ctx, "noserver", 443);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_send_test_session_registration(ctx, NULL, 0);
     cr_assert(rv == ACVP_MISSING_ARG);
@@ -303,7 +293,7 @@ Test(TRANSPORT_SEND_TEST_SESSION_REG, good, .init = test_setup_session_parameter
  * missing vector set id url
  */
 Test(TRANSPORT_SEND_LOGIN, missing_reg, .init = setup, .fini = teardown) {
-    rv = acvp_set_server(ctx, "demo.acvts.nist.gov", 443);
+    rv = acvp_set_server(ctx, "noserver", 443);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_send_login(ctx, NULL, 0);
     cr_assert(rv == ACVP_MISSING_ARG);
@@ -502,7 +492,7 @@ Test(TRANSPORT_GET, good, .init = test_setup_session_parameters, .fini = teardow
  * missing vector set id url
  */
 Test(TRANSPORT_SEND_VENDOR_REG, missing_reg, .init = setup, .fini = teardown) {
-    rv = acvp_set_server(ctx, "demo.acvts.nist.gov", 443);
+    rv = acvp_set_server(ctx, "noserver", 443);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_send_vendor_registration(ctx, NULL);
     cr_assert(rv == ACVP_NO_DATA);
@@ -529,7 +519,7 @@ Test(TRANSPORT_SEND_VENDOR_REG, incomplete_ctx, .init = setup, .fini = teardown)
  * we expect success because the API did what it was supposed to - POST
  */
 Test(TRANSPORT_SEND_VENDOR_REG, good, .init = setup, .fini = teardown) {
-    rv = acvp_set_server(ctx, "demo.acvts.nist.gov", 443);
+    rv = acvp_set_server(ctx, "noserver", 443);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_send_vendor_registration(ctx, reg);
     cr_assert(rv == ACVP_SUCCESS);
@@ -539,7 +529,7 @@ Test(TRANSPORT_SEND_VENDOR_REG, good, .init = setup, .fini = teardown) {
  * missing vector set id url
  */
 Test(TRANSPORT_SEND_MODULE_REG, missing_reg, .init = setup, .fini = teardown) {
-    rv = acvp_set_server(ctx, "demo.acvts.nist.gov", 443);
+    rv = acvp_set_server(ctx, "noserver", 443);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_send_module_registration(ctx, NULL);
     cr_assert(rv == ACVP_NO_DATA);
@@ -566,7 +556,7 @@ Test(TRANSPORT_SEND_MODULE_REG, incomplete_ctx, .init = setup, .fini = teardown)
  * we expect success because the API did what it was supposed to - POST
  */
 Test(TRANSPORT_SEND_MODULE_REG, good, .init = setup, .fini = teardown) {
-    rv = acvp_set_server(ctx, "demo.acvts.nist.gov", 443);
+    rv = acvp_set_server(ctx, "noserver", 443);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_send_module_registration(ctx, reg);
     cr_assert(rv == ACVP_SUCCESS);
@@ -576,7 +566,7 @@ Test(TRANSPORT_SEND_MODULE_REG, good, .init = setup, .fini = teardown) {
  * missing vector set id url
  */
 Test(TRANSPORT_SEND_DEP_REG, missing_reg, .init = setup, .fini = teardown) {
-    rv = acvp_set_server(ctx, "demo.acvts.nist.gov", 443);
+    rv = acvp_set_server(ctx, "noserver", 443);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_send_dep_registration(ctx, NULL);
     cr_assert(rv == ACVP_NO_DATA);
@@ -603,7 +593,7 @@ Test(TRANSPORT_SEND_DEP_REG, incomplete_ctx, .init = setup, .fini = teardown) {
  * we expect success because the API did what it was supposed to - POST
  */
 Test(TRANSPORT_SEND_DEP_REG, good, .init = setup, .fini = teardown) {
-    rv = acvp_set_server(ctx, "demo.acvts.nist.gov", 443);
+    rv = acvp_set_server(ctx, "noserver", 443);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_send_dep_registration(ctx, reg);
     cr_assert(rv == ACVP_SUCCESS);
@@ -613,7 +603,7 @@ Test(TRANSPORT_SEND_DEP_REG, good, .init = setup, .fini = teardown) {
  * missing vector set id url
  */
 Test(TRANSPORT_SEND_OE_REG, missing_reg, .init = setup, .fini = teardown) {
-    rv = acvp_set_server(ctx, "demo.acvts.nist.gov", 443);
+    rv = acvp_set_server(ctx, "noserver", 443);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_send_oe_registration(ctx, NULL);
     cr_assert(rv == ACVP_NO_DATA);
@@ -640,7 +630,7 @@ Test(TRANSPORT_SEND_OE_REG, incomplete_ctx, .init = setup, .fini = teardown) {
  * we expect success because the API did what it was supposed to - POST
  */
 Test(TRANSPORT_SEND_OE_REG, good, .init = setup, .fini = teardown) {
-    rv = acvp_set_server(ctx, "demo.acvts.nist.gov", 443);
+    rv = acvp_set_server(ctx, "noserver", 443);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_send_oe_registration(ctx, reg);
     cr_assert(rv == ACVP_SUCCESS);
