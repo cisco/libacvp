@@ -1923,7 +1923,7 @@ ACVP_RESULT acvp_cap_kas_ecc_set_scheme(ACVP_CTX *ctx,
                                         int value);
 
 
-/*! @brief acvp_enable_kas_ifc_cap()
+/*! @brief acvp_cap_kas_ifc_enable()
 
    This function should be used to enable KAS-IFC capabilities. Specific modes
    and parameters can use acvp_enable_kas_ifc_cap_parm.
@@ -1945,25 +1945,6 @@ ACVP_RESULT acvp_cap_kas_ifc_enable(ACVP_CTX *ctx,
                                     ACVP_CIPHER cipher,
                                     int (*crypto_handler)(ACVP_TEST_CASE *test_case));
 
-/*! @brief acvp_enable_kas_ifc_prereq_cap() allows an application to specify
-        a prerequisite algorithm for a given KAS-IFC mode during a test session
-        with the ACVP server.
-
-        This function should be called to enable a prerequisite for
-        an KAS-IFC mode capability that will be tested by the server.
-
-   @param ctx Address of pointer to a previously allocated ACVP_CTX.
-   @param cipher ACVP_CIPHER enum value identifying the crypto capability.
-   @param pre_req ACVP_PREREQ_ALG enum that the specified cipher/mode
-        depends on
-   @param value "same" or number
-
-   @return ACVP_RESULT
- */
-ACVP_RESULT acvp_cap_kas_ifc_set_prereq(ACVP_CTX *ctx,
-                                        ACVP_CIPHER cipher,
-                                        ACVP_PREREQ_ALG pre_req,
-                                        char *value);
 
 /*! @brief acvp_cap_kas_ifc_set_parm() allows an application to specify
        operational parameters to be used for a given alg during a

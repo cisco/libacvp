@@ -934,7 +934,6 @@ ACVP_RESULT acvp_kas_ffc_ssc_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     ACVP_RESULT rv = ACVP_SUCCESS;
     const char *alg_str = NULL;
     char *json_result = NULL;
-    const char *mode_str = NULL;
 
     if (!ctx) {
         ACVP_LOG_ERR("No ctx for handler operation");
