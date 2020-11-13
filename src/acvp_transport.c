@@ -165,336 +165,6 @@ static size_t acvp_curl_write_callback(void *ptr, size_t size, size_t nmemb, voi
     return nmemb;
 }
 
-/**
- * This function is called to look for operating enivronment info in the environment
- * for the HTTP user-agent string when the library cannot automatically find it
- */
-static void acvp_http_user_agent_check_env_for_var(ACVP_CTX *ctx, char *var_string, ACVP_OE_ENV_VAR var_to_check) {
-    unsigned int maxLength = 0;
-    const char *var;
-
-    switch(var_to_check) {
-    case ACVP_USER_AGENT_OSNAME:
-        var = ACVP_USER_AGENT_OSNAME_ENV;
-        maxLength = ACVP_USER_AGENT_OSNAME_STR_MAX;
-        break;
-    case ACVP_USER_AGENT_OSVER:
-        var = ACVP_USER_AGENT_OSVER_ENV;
-        maxLength = ACVP_USER_AGENT_OSVER_STR_MAX;
-        break;
-    case ACVP_USER_AGENT_ARCH:
-        var = ACVP_USER_AGENT_ARCH_ENV;
-        maxLength = ACVP_USER_AGENT_ARCH_STR_MAX;
-        break;
-    case ACVP_USER_AGENT_PROC:
-        var = ACVP_USER_AGENT_PROC_ENV;
-        maxLength = ACVP_USER_AGENT_PROC_STR_MAX;
-        break;
-    case ACVP_USER_AGENT_COMP:
-        var = ACVP_USER_AGENT_COMP_ENV;
-        maxLength = ACVP_USER_AGENT_COMP_STR_MAX;
-        break;
-    case ACVP_USER_AGENT_NONE:
-    default:
-        return;
-    }
-
-    //Check presence and length of variable's value, concatenate if valid, warn and ignore if not
-    char *envVal = getenv(var);
-    if (envVal) {
-        if (strnlen_s(envVal, maxLength + 1) > maxLength) {
-            ACVP_LOG_WARN("Environment-provided %s string too long! (%d char max.) Omitting...\n", var, maxLength);
-        } else {
-            strncpy_s(var_string, maxLength + 1, envVal, maxLength);
-        }
-    } else {
-        ACVP_LOG_WARN("Unable to collect info for HTTP user-agent - please define %s (%d char max.)", var, maxLength);
-    }
-}
-
-static void acvp_http_user_agent_check_compiler_ver(ACVP_CTX *ctx, char *comp_string) {
-    char versionBuffer[16];
-
-#ifdef __GNUC__
-    strncpy_s(comp_string, ACVP_USER_AGENT_COMP_STR_MAX + 1, "GCC/", ACVP_USER_AGENT_COMP_STR_MAX);
-
-    snprintf(versionBuffer, sizeof(versionBuffer), "%d", __GNUC__);
-    strncat_s(comp_string, ACVP_USER_AGENT_COMP_STR_MAX + 1, versionBuffer, ACVP_USER_AGENT_COMP_STR_MAX);
-
-#ifdef __GNUC_MINOR__
-    snprintf(versionBuffer, sizeof(versionBuffer), "%d", __GNUC_MINOR__);
-    strncat_s(comp_string, ACVP_USER_AGENT_COMP_STR_MAX + 1, ".", ACVP_USER_AGENT_COMP_STR_MAX);
-    strncat_s(comp_string, ACVP_USER_AGENT_COMP_STR_MAX + 1, versionBuffer, ACVP_USER_AGENT_COMP_STR_MAX);
-#endif
-
-#ifdef __GNUC_PATCHLEVEL__
-    snprintf(versionBuffer, sizeof(versionBuffer), "%d", __GNUC_PATCHLEVEL__);
-    strncat_s(comp_string, ACVP_USER_AGENT_COMP_STR_MAX + 1, ".", ACVP_USER_AGENT_COMP_STR_MAX);
-    strncat_s(comp_string, ACVP_USER_AGENT_COMP_STR_MAX + 1, versionBuffer, ACVP_USER_AGENT_COMP_STR_MAX);
-#endif
-
-#elif defined _MSC_FULL_VER
-    strncpy_s(comp_string, ACVP_USER_AGENT_COMP_STR_MAX + 1, "MSVC/", ACVP_USER_AGENT_COMP_STR_MAX);
-
-    snprintf(versionBuffer, sizeof(versionBuffer), "%d", _MSC_FULL_VER);
-    strncat_s(comp_string, ACVP_USER_AGENT_COMP_STR_MAX + 1, versionBuffer, ACVP_USER_AGENT_COMP_STR_MAX);
-#else
-    acvp_http_user_agent_check_env_for_var(ctx, comp_string, ACVP_USER_AGENT_COMP);
-#endif
-}
-
-/*
- * remove delimiter characters, check for leading and trailing whitespace
- */
-static void acvp_http_user_agent_string_clean(char *str) {
-    int i = 0;
-    if (!str) {
-        return;
-    }
-    int len = strnlen_s(str, ACVP_USER_AGENT_STR_MAX);
-    if (len <= 0) {
-        return;
-    }
-    //remove any leading or trailing whitespace
-    strremovews_s(str, len);
-    len = strnlen_s(str, ACVP_USER_AGENT_STR_MAX);
-
-    for (i = 0; i < len; i++) {
-        if (str[i] == ACVP_USER_AGENT_DELIMITER) {
-            str[i] = ACVP_USER_AGENT_CHAR_REPLACEMENT;
-        }
-    }
-}
-
-void acvp_http_user_agent_handler(ACVP_CTX *ctx) {
-    if (!ctx || ctx->http_user_agent) {
-        ACVP_LOG_WARN("Error generating HTTP user-agent - no CTX or string already exists\n");
-        return;
-    } else {
-        ctx->http_user_agent = calloc(ACVP_USER_AGENT_STR_MAX + 1, sizeof(char));
-        if (!ctx->http_user_agent) {
-            ACVP_LOG_ERR("Unable to allocate memory for user agent, skipping...");
-            return;
-        }
-    }
-
-    char *libver = calloc(ACVP_USER_AGENT_ACVP_STR_MAX + 1, sizeof(char));
-    char *osname = calloc(ACVP_USER_AGENT_OSNAME_STR_MAX + 1, sizeof(char));
-    char *osver = calloc(ACVP_USER_AGENT_OSVER_STR_MAX + 1, sizeof(char));
-    char *arch = calloc(ACVP_USER_AGENT_ARCH_STR_MAX + 1, sizeof(char));
-    char *proc = calloc(ACVP_USER_AGENT_PROC_STR_MAX + 1, sizeof(char));
-    char *comp = calloc(ACVP_USER_AGENT_COMP_STR_MAX + 1, sizeof(char));
-
-    if (!libver || !osname || !osver || !arch || !proc || !comp) {
-        ACVP_LOG_ERR("Unable to allocate memory for HTTP user-agent, skipping...\n");
-        goto end;
-    }
-
-    snprintf(libver, ACVP_USER_AGENT_ACVP_STR_MAX, "libacvp/%s", ACVP_VERSION);
-
-
-#if defined __linux__ || defined __APPLE__
-
-    //collects basic OS/hardware info
-    struct utsname info;
-    if (uname(&info) != 0) {
-        acvp_http_user_agent_check_env_for_var(ctx, osname, ACVP_USER_AGENT_OSNAME);
-        acvp_http_user_agent_check_env_for_var(ctx, osver, ACVP_USER_AGENT_OSVER);
-        acvp_http_user_agent_check_env_for_var(ctx, arch, ACVP_USER_AGENT_ARCH);
-    } else {
-        //usually Linux/Darwin
-        strncpy_s(osname, ACVP_USER_AGENT_OSNAME_STR_MAX + 1, info.sysname, ACVP_USER_AGENT_OSNAME_STR_MAX);
-
-        //usually linux kernel version/darwin version
-        strncpy_s(osver, ACVP_USER_AGENT_OSVER_STR_MAX + 1, info.release, ACVP_USER_AGENT_OSVER_STR_MAX);
-
-        //hardware architecture
-        strncpy_s(arch, ACVP_USER_AGENT_ARCH_STR_MAX + 1, info.machine, ACVP_USER_AGENT_ARCH_STR_MAX);
-    }
-
-#if defined __x86_64__ || defined __i386__
-    /* 48 byte CPU brand string, obtained via CPUID opcode in x86/amd64 processors.
-    The 0x8000000X values are specifically for that opcode.
-    Each __get_cpuid call gets 16 bytes, or 1/3 of the brand string */
-    unsigned int registers[4];
-    char brandString[48];
-
-    if (!__get_cpuid(0x80000002, &registers[0], &registers[1], &registers[2], &registers[3])) {
-        acvp_http_user_agent_check_env_for_var(ctx, proc, ACVP_USER_AGENT_PROC);
-    } else {
-        memcpy_s(brandString, 16, &registers, 16);
-    }
-    if (!__get_cpuid(0x80000003, &registers[0], &registers[1], &registers[2], &registers[3])) {
-        acvp_http_user_agent_check_env_for_var(ctx, proc, ACVP_USER_AGENT_PROC);
-    } else {
-        memcpy_s(brandString + 16, 16, &registers, 16);
-    }
-    if (!__get_cpuid(0x80000004, &registers[0], &registers[1], &registers[2], &registers[3])) {
-        acvp_http_user_agent_check_env_for_var(ctx, proc, ACVP_USER_AGENT_PROC);
-    } else {
-        memcpy_s(brandString + 32, 16, &registers, 16);
-        strncpy_s(proc, ACVP_USER_AGENT_PROC_STR_MAX + 1, brandString, ACVP_USER_AGENT_PROC_STR_MAX);
-    }
-#else
-    acvp_http_user_agent_check_env_for_var(ctx, proc, ACVP_USER_AGENT_PROC);
-#endif
-
-    //gets compiler version, or checks environment for it
-    acvp_http_user_agent_check_compiler_ver(ctx, comp);
-
-#elif defined WIN32
-
-    HKEY key;
-    long status = RegOpenKeyExW(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion", 0,
-                  KEY_QUERY_VALUE | KEY_WOW64_64KEY, &key);
-    if (status != ERROR_SUCCESS) {
-        acvp_http_user_agent_check_env_for_var(ctx, osname, ACVP_USER_AGENT_OSNAME);
-        acvp_http_user_agent_check_env_for_var(ctx, osver, ACVP_USER_AGENT_OSVER);
-    } else {
-        //product name string, containing general version of windows
-        DWORD bufferLength;
-        if (RegQueryValueExW(key, L"ProductName", NULL, NULL, NULL, &bufferLength) != ERROR_SUCCESS) {
-            ACVP_LOG_WARN("Unable to access Windows OS name, checking environment or omitting from HTTP user-agent...\n");
-            acvp_http_user_agent_check_env_for_var(ctx, osname, ACVP_USER_AGENT_OSNAME);
-        } else {
-            //get string - registry strings not garuanteed to be null terminated
-            wchar_t *productNameBuffer = calloc(bufferLength + 1, sizeof(wchar_t));
-            if (!productNameBuffer) {
-                ACVP_LOG_ERR("Unable to allocate memory while generating windows OS name, skipping...\n");
-            } else if (RegQueryValueExW(key, L"ProductName", NULL, NULL, productNameBuffer, &bufferLength) != ERROR_SUCCESS) {
-                ACVP_LOG_WARN("Unable to access Windows OS name, checking environment or omitting from HTTP user-agent...\n");
-                free(productNameBuffer);
-                acvp_http_user_agent_check_env_for_var(ctx, osname, ACVP_USER_AGENT_OSNAME);
-            } else {
-                //Windows uses UTF16, and everyone else uses UTF8
-                char *utf8String = calloc(bufferLength + 1, sizeof(char));
-                if (!utf8String || !WideCharToMultiByte(CP_UTF8, 0, productNameBuffer, -1, utf8String, bufferLength + 1, NULL, NULL)) {
-                    ACVP_LOG_ERR("Error converting Windows version to UTF8, checking environment or omitting from HTTP user-agent...\n");
-                    acvp_http_user_agent_check_env_for_var(ctx, osver, ACVP_USER_AGENT_OSVER);
-                } else {
-                    strncpy_s(osname, ACVP_USER_AGENT_OSNAME_STR_MAX + 1, utf8String, ACVP_USER_AGENT_OSNAME_STR_MAX);
-                }
-                free(utf8String);
-                free(productNameBuffer);
-            }
-
-        }
-
-        //get the "BuildLab" string, which contains more specific windows build information
-        if (RegQueryValueExW(key, L"BuildLab", NULL, NULL, NULL, &bufferLength) != ERROR_SUCCESS) {
-            ACVP_LOG_WARN("Unable to access Windows version, checking environment or omitting from HTTP user-agent...\n");
-            acvp_http_user_agent_check_env_for_var(ctx, osver, ACVP_USER_AGENT_OSVER);
-        } else {
-            //get string - registry strings not garuanteed to be null terminated
-            wchar_t *buildLabBuffer = calloc(bufferLength + 1, sizeof(wchar_t));
-            if (!buildLabBuffer) {
-                ACVP_LOG_ERR("Unable to allocate memory while generating windows OS version, skipping...\n");
-            } else if (RegQueryValueExW(key, L"BuildLab", NULL, NULL, buildLabBuffer, &bufferLength) != ERROR_SUCCESS) {
-                ACVP_LOG_WARN("Unable to access Windows version, checking environment or omitting from HTTP user-agent...\n");
-                acvp_http_user_agent_check_env_for_var(ctx, osver, ACVP_USER_AGENT_OSVER);
-                free(buildLabBuffer);
-            } else {
-                //Windows uses UTF16, and everyone else uses UTF8
-                char *utf8String = calloc(bufferLength + 1, sizeof(char));
-                if (!utf8String || !WideCharToMultiByte(CP_UTF8, 0, buildLabBuffer, -1, utf8String, bufferLength + 1, NULL, NULL)) {
-                    ACVP_LOG_ERR("Error converting Windows build info to UTF8, checking environment or omitting from HTTP user-agent...\n");
-                    acvp_http_user_agent_check_env_for_var(ctx, osver, ACVP_USER_AGENT_OSVER);
-                } else {
-                    strncpy_s(osver, ACVP_USER_AGENT_OSVER_STR_MAX + 1, utf8String, ACVP_USER_AGENT_OSVER_STR_MAX);
-                }
-                free(utf8String);
-                free(buildLabBuffer);
-            }
-        }
-    } 
-    
-    SYSTEM_INFO sysInfo;
-    GetNativeSystemInfo(&sysInfo);
-    if (!sysInfo.dwOemId) {
-        acvp_http_user_agent_check_env_for_var(ctx, arch, ACVP_USER_AGENT_ARCH);
-        acvp_http_user_agent_check_env_for_var(ctx, proc, ACVP_USER_AGENT_PROC);
-    } else {
-        char brandString[48];
-        int brandString_resp[4];
-        switch(sysInfo.wProcessorArchitecture) {
-        case PROCESSOR_ARCHITECTURE_AMD64:
-            strncpy_s(arch, ACVP_USER_AGENT_ARCH_STR_MAX + 1, "x86_64", ACVP_USER_AGENT_ARCH_STR_MAX);
-             //get CPU model string 
-            __cpuid(brandString_resp, 0x80000002);
-            memcpy_s(brandString, 16, &brandString_resp, 16);
-            __cpuid(brandString_resp, 0x80000003);
-            memcpy_s(brandString + 16, 16, &brandString_resp, 16);
-            __cpuid(brandString_resp, 0x80000004);
-            memcpy_s(brandString + 32, 16, &brandString_resp, 16);
-            strncpy_s(proc, ACVP_USER_AGENT_PROC_STR_MAX + 1, brandString, ACVP_USER_AGENT_PROC_STR_MAX);
-            break;
-        case PROCESSOR_ARCHITECTURE_INTEL:
-            strncpy_s(arch, ACVP_USER_AGENT_ARCH_STR_MAX + 1, "x86", ACVP_USER_AGENT_ARCH_STR_MAX);
-            //get CPU model string 
-            __cpuid(brandString_resp, 0x80000002);
-            memcpy_s(brandString, 16, &brandString_resp, 16);
-            __cpuid(brandString_resp, 0x80000003);
-            memcpy_s(brandString + 16, 16, &brandString_resp, 16);
-            __cpuid(brandString_resp, 0x80000004);
-            memcpy_s(brandString + 32, 16, &brandString_resp, 16);
-            strncpy_s(proc, ACVP_USER_AGENT_PROC_STR_MAX + 1, brandString, ACVP_USER_AGENT_PROC_STR_MAX);
-            break;
-        case PROCESSOR_ARCHITECTURE_ARM64:
-            strncpy_s(arch, ACVP_USER_AGENT_ARCH_STR_MAX + 1, "aarch64", ACVP_USER_AGENT_ARCH_STR_MAX);
-            acvp_http_user_agent_check_env_for_var(ctx, proc, ACVP_USER_AGENT_PROC);
-            break;
-        case PROCESSOR_ARCHITECTURE_ARM:
-            strncpy_s(arch, ACVP_USER_AGENT_ARCH_STR_MAX + 1, "arm", ACVP_USER_AGENT_ARCH_STR_MAX);
-            acvp_http_user_agent_check_env_for_var(ctx, proc, ACVP_USER_AGENT_PROC);
-            break;
-        case PROCESSOR_ARCHITECTURE_PPC:
-            strncpy_s(arch, ACVP_USER_AGENT_ARCH_STR_MAX + 1, "ppc", ACVP_USER_AGENT_ARCH_STR_MAX);
-            acvp_http_user_agent_check_env_for_var(ctx, proc, ACVP_USER_AGENT_PROC);
-            break;
-        case PROCESSOR_ARCHITECTURE_MIPS:
-            strncpy_s(arch, ACVP_USER_AGENT_ARCH_STR_MAX + 1, "mips", ACVP_USER_AGENT_ARCH_STR_MAX);
-            acvp_http_user_agent_check_env_for_var(ctx, proc, ACVP_USER_AGENT_PROC);
-            break;
-        default:
-            acvp_http_user_agent_check_env_for_var(ctx, arch, ACVP_USER_AGENT_ARCH);
-            acvp_http_user_agent_check_env_for_var(ctx, proc, ACVP_USER_AGENT_PROC);
-            break;
-        }     
-    }
-
-    //gets compiler version
-    acvp_http_user_agent_check_compiler_ver(ctx, comp);
-
-#else
-    /*******************************************************
-     * Code for getting OE information on platforms that   *
-     * are not Windows, Linux, or Mac OS can be added here *
-     *******************************************************/
-    acvp_http_user_agent_check_env_for_var(ctx, osname, ACVP_USER_AGENT_OSNAME);
-    acvp_http_user_agent_check_env_for_var(ctx, osver, ACVP_USER_AGENT_OSVER);
-    acvp_http_user_agent_check_env_for_var(ctx, arch, ACVP_USER_AGENT_ARCH);
-    acvp_http_user_agent_check_env_for_var(ctx, proc, ACVP_USER_AGENT_PROC);
-    acvp_http_user_agent_check_compiler_ver(ctx, comp);
-#endif
-
-    acvp_http_user_agent_string_clean(osname);
-    acvp_http_user_agent_string_clean(osver);
-    acvp_http_user_agent_string_clean(arch);
-    acvp_http_user_agent_string_clean(proc);
-    acvp_http_user_agent_string_clean(comp);
-
-    snprintf(ctx->http_user_agent, ACVP_USER_AGENT_STR_MAX, "%s;%s;%s;%s;%s;%s", libver, osname, osver, arch, proc, comp);
-    ACVP_LOG_INFO("HTTP User-Agent: %s\n", ctx->http_user_agent);
-
-end:
-    free(libver);
-    free(osname);
-    free(osver);
-    free(arch);
-    free(proc);
-    free(comp);
-}
-
 /*
  * This function uses libcurl to send a simple HTTP GET
  * request with no Content-Type header.
@@ -1516,3 +1186,340 @@ static ACVP_RESULT acvp_network_action(ACVP_CTX *ctx,
 }
 
 #endif
+
+#ifndef ACVP_OFFLINE
+/**
+ * This function is called to look for operating enivronment info in the environment
+ * for the HTTP user-agent string when the library cannot automatically find it
+ */
+static void acvp_http_user_agent_check_env_for_var(ACVP_CTX *ctx, char *var_string, ACVP_OE_ENV_VAR var_to_check) {
+    unsigned int maxLength = 0;
+    const char *var;
+
+    switch(var_to_check) {
+    case ACVP_USER_AGENT_OSNAME:
+        var = ACVP_USER_AGENT_OSNAME_ENV;
+        maxLength = ACVP_USER_AGENT_OSNAME_STR_MAX;
+        break;
+    case ACVP_USER_AGENT_OSVER:
+        var = ACVP_USER_AGENT_OSVER_ENV;
+        maxLength = ACVP_USER_AGENT_OSVER_STR_MAX;
+        break;
+    case ACVP_USER_AGENT_ARCH:
+        var = ACVP_USER_AGENT_ARCH_ENV;
+        maxLength = ACVP_USER_AGENT_ARCH_STR_MAX;
+        break;
+    case ACVP_USER_AGENT_PROC:
+        var = ACVP_USER_AGENT_PROC_ENV;
+        maxLength = ACVP_USER_AGENT_PROC_STR_MAX;
+        break;
+    case ACVP_USER_AGENT_COMP:
+        var = ACVP_USER_AGENT_COMP_ENV;
+        maxLength = ACVP_USER_AGENT_COMP_STR_MAX;
+        break;
+    case ACVP_USER_AGENT_NONE:
+    default:
+        return;
+    }
+
+    //Check presence and length of variable's value, concatenate if valid, warn and ignore if not
+    char *envVal = getenv(var);
+    if (envVal) {
+        if (strnlen_s(envVal, maxLength + 1) > maxLength) {
+            ACVP_LOG_WARN("Environment-provided %s string too long! (%d char max.) Omitting...\n", var, maxLength);
+        } else {
+            strncpy_s(var_string, maxLength + 1, envVal, maxLength);
+        }
+    } else {
+        ACVP_LOG_WARN("Unable to collect info for HTTP user-agent - please define %s (%d char max.)", var, maxLength);
+    }
+}
+
+static void acvp_http_user_agent_check_compiler_ver(ACVP_CTX *ctx, char *comp_string) {
+    char versionBuffer[16];
+
+#ifdef __GNUC__
+    strncpy_s(comp_string, ACVP_USER_AGENT_COMP_STR_MAX + 1, "GCC/", ACVP_USER_AGENT_COMP_STR_MAX);
+
+    snprintf(versionBuffer, sizeof(versionBuffer), "%d", __GNUC__);
+    strncat_s(comp_string, ACVP_USER_AGENT_COMP_STR_MAX + 1, versionBuffer, ACVP_USER_AGENT_COMP_STR_MAX);
+
+#ifdef __GNUC_MINOR__
+    snprintf(versionBuffer, sizeof(versionBuffer), "%d", __GNUC_MINOR__);
+    strncat_s(comp_string, ACVP_USER_AGENT_COMP_STR_MAX + 1, ".", ACVP_USER_AGENT_COMP_STR_MAX);
+    strncat_s(comp_string, ACVP_USER_AGENT_COMP_STR_MAX + 1, versionBuffer, ACVP_USER_AGENT_COMP_STR_MAX);
+#endif
+
+#ifdef __GNUC_PATCHLEVEL__
+    snprintf(versionBuffer, sizeof(versionBuffer), "%d", __GNUC_PATCHLEVEL__);
+    strncat_s(comp_string, ACVP_USER_AGENT_COMP_STR_MAX + 1, ".", ACVP_USER_AGENT_COMP_STR_MAX);
+    strncat_s(comp_string, ACVP_USER_AGENT_COMP_STR_MAX + 1, versionBuffer, ACVP_USER_AGENT_COMP_STR_MAX);
+#endif
+
+#elif defined _MSC_FULL_VER
+    strncpy_s(comp_string, ACVP_USER_AGENT_COMP_STR_MAX + 1, "MSVC/", ACVP_USER_AGENT_COMP_STR_MAX);
+
+    snprintf(versionBuffer, sizeof(versionBuffer), "%d", _MSC_FULL_VER);
+    strncat_s(comp_string, ACVP_USER_AGENT_COMP_STR_MAX + 1, versionBuffer, ACVP_USER_AGENT_COMP_STR_MAX);
+#else
+    acvp_http_user_agent_check_env_for_var(ctx, comp_string, ACVP_USER_AGENT_COMP);
+#endif
+}
+
+/*
+ * remove delimiter characters, check for leading and trailing whitespace
+ */
+static void acvp_http_user_agent_string_clean(char *str) {
+    int i = 0;
+    if (!str) {
+        return;
+    }
+    int len = strnlen_s(str, ACVP_USER_AGENT_STR_MAX);
+    if (len <= 0) {
+        return;
+    }
+    //remove any leading or trailing whitespace
+    strremovews_s(str, len);
+    len = strnlen_s(str, ACVP_USER_AGENT_STR_MAX);
+
+    for (i = 0; i < len; i++) {
+        if (str[i] == ACVP_USER_AGENT_DELIMITER) {
+            str[i] = ACVP_USER_AGENT_CHAR_REPLACEMENT;
+        }
+    }
+}
+#endif //for ifndef ACVP_OFFLINE
+
+void acvp_http_user_agent_handler(ACVP_CTX *ctx) {
+#ifdef ACVP_OFFLINE
+    ACVP_LOG_INFO("Offline mode, skipping user agent...");
+    return;
+#else
+    if (!ctx || ctx->http_user_agent) {
+        ACVP_LOG_WARN("Error generating HTTP user-agent - no CTX or string already exists\n");
+        return;
+    } else {
+        ctx->http_user_agent = calloc(ACVP_USER_AGENT_STR_MAX + 1, sizeof(char));
+        if (!ctx->http_user_agent) {
+            ACVP_LOG_ERR("Unable to allocate memory for user agent, skipping...");
+            return;
+        }
+    }
+
+    char *libver = calloc(ACVP_USER_AGENT_ACVP_STR_MAX + 1, sizeof(char));
+    char *osname = calloc(ACVP_USER_AGENT_OSNAME_STR_MAX + 1, sizeof(char));
+    char *osver = calloc(ACVP_USER_AGENT_OSVER_STR_MAX + 1, sizeof(char));
+    char *arch = calloc(ACVP_USER_AGENT_ARCH_STR_MAX + 1, sizeof(char));
+    char *proc = calloc(ACVP_USER_AGENT_PROC_STR_MAX + 1, sizeof(char));
+    char *comp = calloc(ACVP_USER_AGENT_COMP_STR_MAX + 1, sizeof(char));
+
+    if (!libver || !osname || !osver || !arch || !proc || !comp) {
+        ACVP_LOG_ERR("Unable to allocate memory for HTTP user-agent, skipping...\n");
+        goto end;
+    }
+
+    snprintf(libver, ACVP_USER_AGENT_ACVP_STR_MAX, "libacvp/%s", ACVP_VERSION);
+
+
+#if defined __linux__ || defined __APPLE__
+
+    //collects basic OS/hardware info
+    struct utsname info;
+    if (uname(&info) != 0) {
+        acvp_http_user_agent_check_env_for_var(ctx, osname, ACVP_USER_AGENT_OSNAME);
+        acvp_http_user_agent_check_env_for_var(ctx, osver, ACVP_USER_AGENT_OSVER);
+        acvp_http_user_agent_check_env_for_var(ctx, arch, ACVP_USER_AGENT_ARCH);
+    } else {
+        //usually Linux/Darwin
+        strncpy_s(osname, ACVP_USER_AGENT_OSNAME_STR_MAX + 1, info.sysname, ACVP_USER_AGENT_OSNAME_STR_MAX);
+
+        //usually linux kernel version/darwin version
+        strncpy_s(osver, ACVP_USER_AGENT_OSVER_STR_MAX + 1, info.release, ACVP_USER_AGENT_OSVER_STR_MAX);
+
+        //hardware architecture
+        strncpy_s(arch, ACVP_USER_AGENT_ARCH_STR_MAX + 1, info.machine, ACVP_USER_AGENT_ARCH_STR_MAX);
+    }
+
+#if defined __x86_64__ || defined __i386__
+    /* 48 byte CPU brand string, obtained via CPUID opcode in x86/amd64 processors.
+    The 0x8000000X values are specifically for that opcode.
+    Each __get_cpuid call gets 16 bytes, or 1/3 of the brand string */
+    unsigned int registers[4];
+    char brandString[48];
+
+    if (!__get_cpuid(0x80000002, &registers[0], &registers[1], &registers[2], &registers[3])) {
+        acvp_http_user_agent_check_env_for_var(ctx, proc, ACVP_USER_AGENT_PROC);
+    } else {
+        memcpy_s(brandString, 16, &registers, 16);
+    }
+    if (!__get_cpuid(0x80000003, &registers[0], &registers[1], &registers[2], &registers[3])) {
+        acvp_http_user_agent_check_env_for_var(ctx, proc, ACVP_USER_AGENT_PROC);
+    } else {
+        memcpy_s(brandString + 16, 16, &registers, 16);
+    }
+    if (!__get_cpuid(0x80000004, &registers[0], &registers[1], &registers[2], &registers[3])) {
+        acvp_http_user_agent_check_env_for_var(ctx, proc, ACVP_USER_AGENT_PROC);
+    } else {
+        memcpy_s(brandString + 32, 16, &registers, 16);
+        strncpy_s(proc, ACVP_USER_AGENT_PROC_STR_MAX + 1, brandString, ACVP_USER_AGENT_PROC_STR_MAX);
+    }
+#else
+    acvp_http_user_agent_check_env_for_var(ctx, proc, ACVP_USER_AGENT_PROC);
+#endif
+
+    //gets compiler version, or checks environment for it
+    acvp_http_user_agent_check_compiler_ver(ctx, comp);
+
+#elif defined WIN32
+
+    HKEY key;
+    long status = RegOpenKeyExW(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion", 0,
+                  KEY_QUERY_VALUE | KEY_WOW64_64KEY, &key);
+    if (status != ERROR_SUCCESS) {
+        acvp_http_user_agent_check_env_for_var(ctx, osname, ACVP_USER_AGENT_OSNAME);
+        acvp_http_user_agent_check_env_for_var(ctx, osver, ACVP_USER_AGENT_OSVER);
+    } else {
+        //product name string, containing general version of windows
+        DWORD bufferLength;
+        if (RegQueryValueExW(key, L"ProductName", NULL, NULL, NULL, &bufferLength) != ERROR_SUCCESS) {
+            ACVP_LOG_WARN("Unable to access Windows OS name, checking environment or omitting from HTTP user-agent...\n");
+            acvp_http_user_agent_check_env_for_var(ctx, osname, ACVP_USER_AGENT_OSNAME);
+        } else {
+            //get string - registry strings not garuanteed to be null terminated
+            wchar_t *productNameBuffer = calloc(bufferLength + 1, sizeof(wchar_t));
+            if (!productNameBuffer) {
+                ACVP_LOG_ERR("Unable to allocate memory while generating windows OS name, skipping...\n");
+            } else if (RegQueryValueExW(key, L"ProductName", NULL, NULL, productNameBuffer, &bufferLength) != ERROR_SUCCESS) {
+                ACVP_LOG_WARN("Unable to access Windows OS name, checking environment or omitting from HTTP user-agent...\n");
+                free(productNameBuffer);
+                acvp_http_user_agent_check_env_for_var(ctx, osname, ACVP_USER_AGENT_OSNAME);
+            } else {
+                //Windows uses UTF16, and everyone else uses UTF8
+                char *utf8String = calloc(bufferLength + 1, sizeof(char));
+                if (!utf8String || !WideCharToMultiByte(CP_UTF8, 0, productNameBuffer, -1, utf8String, bufferLength + 1, NULL, NULL)) {
+                    ACVP_LOG_ERR("Error converting Windows version to UTF8, checking environment or omitting from HTTP user-agent...\n");
+                    acvp_http_user_agent_check_env_for_var(ctx, osver, ACVP_USER_AGENT_OSVER);
+                } else {
+                    strncpy_s(osname, ACVP_USER_AGENT_OSNAME_STR_MAX + 1, utf8String, ACVP_USER_AGENT_OSNAME_STR_MAX);
+                }
+                free(utf8String);
+                free(productNameBuffer);
+            }
+
+        }
+
+        //get the "BuildLab" string, which contains more specific windows build information
+        if (RegQueryValueExW(key, L"BuildLab", NULL, NULL, NULL, &bufferLength) != ERROR_SUCCESS) {
+            ACVP_LOG_WARN("Unable to access Windows version, checking environment or omitting from HTTP user-agent...\n");
+            acvp_http_user_agent_check_env_for_var(ctx, osver, ACVP_USER_AGENT_OSVER);
+        } else {
+            //get string - registry strings not garuanteed to be null terminated
+            wchar_t *buildLabBuffer = calloc(bufferLength + 1, sizeof(wchar_t));
+            if (!buildLabBuffer) {
+                ACVP_LOG_ERR("Unable to allocate memory while generating windows OS version, skipping...\n");
+            } else if (RegQueryValueExW(key, L"BuildLab", NULL, NULL, buildLabBuffer, &bufferLength) != ERROR_SUCCESS) {
+                ACVP_LOG_WARN("Unable to access Windows version, checking environment or omitting from HTTP user-agent...\n");
+                acvp_http_user_agent_check_env_for_var(ctx, osver, ACVP_USER_AGENT_OSVER);
+                free(buildLabBuffer);
+            } else {
+                //Windows uses UTF16, and everyone else uses UTF8
+                char *utf8String = calloc(bufferLength + 1, sizeof(char));
+                if (!utf8String || !WideCharToMultiByte(CP_UTF8, 0, buildLabBuffer, -1, utf8String, bufferLength + 1, NULL, NULL)) {
+                    ACVP_LOG_ERR("Error converting Windows build info to UTF8, checking environment or omitting from HTTP user-agent...\n");
+                    acvp_http_user_agent_check_env_for_var(ctx, osver, ACVP_USER_AGENT_OSVER);
+                } else {
+                    strncpy_s(osver, ACVP_USER_AGENT_OSVER_STR_MAX + 1, utf8String, ACVP_USER_AGENT_OSVER_STR_MAX);
+                }
+                free(utf8String);
+                free(buildLabBuffer);
+            }
+        }
+    } 
+    
+    SYSTEM_INFO sysInfo;
+    GetNativeSystemInfo(&sysInfo);
+    if (!sysInfo.dwOemId) {
+        acvp_http_user_agent_check_env_for_var(ctx, arch, ACVP_USER_AGENT_ARCH);
+        acvp_http_user_agent_check_env_for_var(ctx, proc, ACVP_USER_AGENT_PROC);
+    } else {
+        char brandString[48];
+        int brandString_resp[4];
+        switch(sysInfo.wProcessorArchitecture) {
+        case PROCESSOR_ARCHITECTURE_AMD64:
+            strncpy_s(arch, ACVP_USER_AGENT_ARCH_STR_MAX + 1, "x86_64", ACVP_USER_AGENT_ARCH_STR_MAX);
+             //get CPU model string 
+            __cpuid(brandString_resp, 0x80000002);
+            memcpy_s(brandString, 16, &brandString_resp, 16);
+            __cpuid(brandString_resp, 0x80000003);
+            memcpy_s(brandString + 16, 16, &brandString_resp, 16);
+            __cpuid(brandString_resp, 0x80000004);
+            memcpy_s(brandString + 32, 16, &brandString_resp, 16);
+            strncpy_s(proc, ACVP_USER_AGENT_PROC_STR_MAX + 1, brandString, ACVP_USER_AGENT_PROC_STR_MAX);
+            break;
+        case PROCESSOR_ARCHITECTURE_INTEL:
+            strncpy_s(arch, ACVP_USER_AGENT_ARCH_STR_MAX + 1, "x86", ACVP_USER_AGENT_ARCH_STR_MAX);
+            //get CPU model string 
+            __cpuid(brandString_resp, 0x80000002);
+            memcpy_s(brandString, 16, &brandString_resp, 16);
+            __cpuid(brandString_resp, 0x80000003);
+            memcpy_s(brandString + 16, 16, &brandString_resp, 16);
+            __cpuid(brandString_resp, 0x80000004);
+            memcpy_s(brandString + 32, 16, &brandString_resp, 16);
+            strncpy_s(proc, ACVP_USER_AGENT_PROC_STR_MAX + 1, brandString, ACVP_USER_AGENT_PROC_STR_MAX);
+            break;
+        case PROCESSOR_ARCHITECTURE_ARM64:
+            strncpy_s(arch, ACVP_USER_AGENT_ARCH_STR_MAX + 1, "aarch64", ACVP_USER_AGENT_ARCH_STR_MAX);
+            acvp_http_user_agent_check_env_for_var(ctx, proc, ACVP_USER_AGENT_PROC);
+            break;
+        case PROCESSOR_ARCHITECTURE_ARM:
+            strncpy_s(arch, ACVP_USER_AGENT_ARCH_STR_MAX + 1, "arm", ACVP_USER_AGENT_ARCH_STR_MAX);
+            acvp_http_user_agent_check_env_for_var(ctx, proc, ACVP_USER_AGENT_PROC);
+            break;
+        case PROCESSOR_ARCHITECTURE_PPC:
+            strncpy_s(arch, ACVP_USER_AGENT_ARCH_STR_MAX + 1, "ppc", ACVP_USER_AGENT_ARCH_STR_MAX);
+            acvp_http_user_agent_check_env_for_var(ctx, proc, ACVP_USER_AGENT_PROC);
+            break;
+        case PROCESSOR_ARCHITECTURE_MIPS:
+            strncpy_s(arch, ACVP_USER_AGENT_ARCH_STR_MAX + 1, "mips", ACVP_USER_AGENT_ARCH_STR_MAX);
+            acvp_http_user_agent_check_env_for_var(ctx, proc, ACVP_USER_AGENT_PROC);
+            break;
+        default:
+            acvp_http_user_agent_check_env_for_var(ctx, arch, ACVP_USER_AGENT_ARCH);
+            acvp_http_user_agent_check_env_for_var(ctx, proc, ACVP_USER_AGENT_PROC);
+            break;
+        }     
+    }
+
+    //gets compiler version
+    acvp_http_user_agent_check_compiler_ver(ctx, comp);
+
+#else
+    /*******************************************************
+     * Code for getting OE information on platforms that   *
+     * are not Windows, Linux, or Mac OS can be added here *
+     *******************************************************/
+    acvp_http_user_agent_check_env_for_var(ctx, osname, ACVP_USER_AGENT_OSNAME);
+    acvp_http_user_agent_check_env_for_var(ctx, osver, ACVP_USER_AGENT_OSVER);
+    acvp_http_user_agent_check_env_for_var(ctx, arch, ACVP_USER_AGENT_ARCH);
+    acvp_http_user_agent_check_env_for_var(ctx, proc, ACVP_USER_AGENT_PROC);
+    acvp_http_user_agent_check_compiler_ver(ctx, comp);
+#endif
+
+    acvp_http_user_agent_string_clean(osname);
+    acvp_http_user_agent_string_clean(osver);
+    acvp_http_user_agent_string_clean(arch);
+    acvp_http_user_agent_string_clean(proc);
+    acvp_http_user_agent_string_clean(comp);
+
+    snprintf(ctx->http_user_agent, ACVP_USER_AGENT_STR_MAX, "%s;%s;%s;%s;%s;%s", libver, osname, osver, arch, proc, comp);
+    ACVP_LOG_INFO("HTTP User-Agent: %s\n", ctx->http_user_agent);
+
+end:
+    free(libver);
+    free(osname);
+    free(osver);
+    free(arch);
+    free(proc);
+    free(comp);
+#endif
+}
