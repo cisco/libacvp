@@ -202,6 +202,8 @@ int FIPS_rsa_private_decrypt(int flen, const unsigned char *from,
 		             unsigned char *to, RSA *rsa,int padding);
 int FIPS_rsa_private_encrypt(int flen, const unsigned char *from,
 		             unsigned char *to, RSA *rsa,int padding);
+int FIPS_rsa_public_encrypt(int flen, const unsigned char *from,
+		             unsigned char *to, RSA *rsa,int padding);
 BIGNUM *fips_bn_ctx_get(BN_CTX *ctx);
 void FIPS_bn_clear_free(BIGNUM *a);
 int fips_bn_cmp(const BIGNUM *a, const BIGNUM *b);

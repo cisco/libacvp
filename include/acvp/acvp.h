@@ -167,6 +167,7 @@ typedef enum acvp_cipher {
     ACVP_KAS_FFC_COMP,
     ACVP_KAS_FFC_NOCOMP,
     ACVP_KAS_FFC_SSC,
+    ACVP_KAS_IFC_SSC,
     ACVP_CIPHER_END
 } ACVP_CIPHER;
 
@@ -182,6 +183,8 @@ typedef enum acvp_prereq_mode_t {
     ACVP_PREREQ_CMAC,
     ACVP_PREREQ_DRBG,
     ACVP_PREREQ_DSA,
+    ACVP_PREREQ_RSA,
+    ACVP_PREREQ_RSADP,
     ACVP_PREREQ_ECDSA,
     ACVP_PREREQ_HMAC,
     ACVP_PREREQ_KAS,
@@ -1426,6 +1429,75 @@ typedef struct acvp_kas_ffc_tc_t {
     int piutlen;
 } ACVP_KAS_FFC_TC;
 
+typedef enum acvp_kas_ifc_param {
+    ACVP_KAS_IFC_KEYGEN_METHOD = 1,
+    ACVP_KAS_IFC_MODULO,
+    ACVP_KAS_IFC_HASH,
+    ACVP_KAS_IFC_KAS1,
+    ACVP_KAS_IFC_KAS2,
+    ACVP_KAS_IFC_FIXEDPUBEXP
+} ACVP_KAS_IFC_PARAM;
+
+typedef enum acvp_kas_ifc_keygen {
+    ACVP_KAS_IFC_RSAKPG1_BASIC = 1,
+    ACVP_KAS_IFC_RSAKPG1_PRIME_FACTOR,
+    ACVP_KAS_IFC_RSAKPG1_CRT,
+    ACVP_KAS_IFC_RSAKPG2_BASIC,
+    ACVP_KAS_IFC_RSAKPG2_PRIME_FACTOR,
+    ACVP_KAS_IFC_RSAKPG2_CRT
+} ACVP_KAS_IFC_KEYGEN;
+
+/*! @struct ACVP_KAS_IFC_ROLE */
+typedef enum acvp_kas_ifc_roles {
+    ACVP_KAS_IFC_INITIATOR = 1,
+    ACVP_KAS_IFC_RESPONDER
+} ACVP_KAS_IFC_ROLES;
+
+/*! @struct ACVP_KAS_IFC_TEST_TYPE */
+typedef enum acvp_kas_ifc_test_type {
+    ACVP_KAS_IFC_TT_AFT = 1,
+    ACVP_KAS_IFC_TT_VAL
+} ACVP_KAS_IFC_TEST_TYPE;
+
+
+
+/*!
+ * @struct ACVP_KAS_IFC_TC
+ * @brief This struct holds data that represents a single test
+ * case for KAS-IFC testing.  This data is
+ * passed between libacvp and the crypto module.
+ */
+/*! @struct ACVP_KAS_IFC_TC */
+typedef struct acvp_kas_ifc_tc_t {
+    ACVP_CIPHER cipher;
+    ACVP_KAS_IFC_TEST_TYPE test_type;
+    ACVP_KAS_IFC_KEYGEN key_gen;
+    ACVP_HASH_ALG md;
+    ACVP_KAS_IFC_ROLES kas_role;
+    unsigned char *p;
+    unsigned char *q;
+    unsigned char *d;
+    unsigned char *n;
+    unsigned char *e;
+    unsigned char *z;
+    unsigned char *c;
+    unsigned char *hashz;
+    unsigned char *ct;
+    unsigned char *pt;
+    unsigned char *chash;
+    int plen;
+    int qlen;
+    int nlen;
+    int dlen;
+    int elen;
+    int clen;
+    int ct_len;
+    int pt_len;
+    int zlen;
+    int hashzlen;
+    int chashlen;
+} ACVP_KAS_IFC_TC;
+
 /*!
  * @struct ACVP_DRBG_TC
  * @brief This struct holds data that represents a single test case
@@ -1493,6 +1565,7 @@ typedef struct acvp_test_case_t {
         ACVP_PBKDF_TC *pbkdf;
         ACVP_KAS_ECC_TC *kas_ecc;
         ACVP_KAS_FFC_TC *kas_ffc;
+        ACVP_KAS_IFC_TC *kas_ifc;
     } tc;
 } ACVP_TEST_CASE;
 
@@ -1848,6 +1921,72 @@ ACVP_RESULT acvp_cap_kas_ecc_set_scheme(ACVP_CTX *ctx,
                                         ACVP_KAS_ECC_PARAM param,
                                         int option,
                                         int value);
+
+
+/*! @brief acvp_cap_kas_ifc_enable()
+
+   This function should be used to enable KAS-IFC capabilities. Specific modes
+   and parameters can use acvp_enable_kas_ifc_cap_parm.
+
+   When the application enables a crypto capability, such as KAS-IFC, it
+   also needs to specify a callback function that will be used by libacvp
+   when that crypto capability is needed during a test session.
+
+   @param ctx Address of pointer to a previously allocated ACVP_CTX.
+   @param cipher ACVP_CIPHER enum value identifying the crypto capability.
+   @param crypto_handler Address of function implemented by application that
+       is invoked by libacvp when the crypto capability is needed during
+       a test session. This crypto_handler function is expected to return
+       0 on success and 1 for failure.
+
+   @return ACVP_RESULT
+ */
+ACVP_RESULT acvp_cap_kas_ifc_enable(ACVP_CTX *ctx,
+                                    ACVP_CIPHER cipher,
+                                    int (*crypto_handler)(ACVP_TEST_CASE *test_case));
+
+
+/*! @brief acvp_cap_kas_ifc_set_parm() allows an application to specify
+       operational parameters to be used for a given alg during a
+       test session with the ACVP server.
+
+    This function should be called to enable crypto capabilities for
+    KAS-IFC modes and functions. It may be called  multiple times to specify
+    more than one crypto capability.
+
+    @param ctx Address of pointer to a previously allocated ACVP_CTX.
+    @param cipher ACVP_CIPHER enum value identifying the crypto capability.
+    @param param ACVP_KAS_IFC_PARAM enum value identifying the algorithm parameter
+       that is being specified.  An example would be ACVP_KAS_IFC_????
+    @param value the value corresponding to the parameter being set
+
+    @return ACVP_RESULT
+ */
+ACVP_RESULT acvp_cap_kas_ifc_set_parm(ACVP_CTX *ctx,
+                                      ACVP_CIPHER cipher,
+                                      ACVP_KAS_IFC_PARAM param,
+                                      int value);
+
+/*! @brief acvp_cap_kas_ifc_set_exponent() allows an application to specify
+       public exponent to be used for a given alg during a
+       test session with the ACVP server.
+
+    This function should be called to enable crypto capabilities for
+    KAS-IFC modes and functions. It may be called  multiple times to specify
+    more than one crypto capability.
+
+    @param ctx Address of pointer to a previously allocated ACVP_CTX.
+    @param cipher ACVP_CIPHER enum value identifying the crypto capability.
+    @param param ACVP_KAS_IFC_PARAM enum value identifying the algorithm parameter
+       that is being specified.  An example would be ACVP_KAS_IFC_????
+    @param value the string value corresponding to the public exponent being set
+
+    @return ACVP_RESULT
+ */
+ACVP_RESULT acvp_cap_kas_ifc_set_exponent(ACVP_CTX *ctx,
+                                          ACVP_CIPHER cipher,
+                                          ACVP_KAS_IFC_PARAM param,
+                                          char *value);
 
 /*! @brief acvp_enable_kas_ffc_cap()
 

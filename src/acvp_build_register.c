@@ -2970,6 +2970,154 @@ static ACVP_RESULT acvp_build_kas_ffc_register_cap(ACVP_CTX *ctx,
     return ACVP_SUCCESS;
 }
 
+static ACVP_RESULT acvp_build_kas_ifc_register_cap(ACVP_CTX *ctx,
+                                                   JSON_Object *cap_obj,
+                                                   ACVP_CAPS_LIST *cap_entry) {
+    JSON_Array *temp_arr = NULL;
+    ACVP_RESULT result;
+    const char *revision = NULL;
+    ACVP_KAS_IFC_CAP *kas_ifc_cap = NULL;
+    ACVP_PARAM_LIST *current_param;
+    ACVP_SL_LIST *current_len;
+    JSON_Value *sch_val = NULL;
+    JSON_Object *sch_obj = NULL;
+    JSON_Value *role_val = NULL;
+    JSON_Object *role_obj = NULL;
+
+    kas_ifc_cap = cap_entry->cap.kas_ifc_cap;
+    if (!kas_ifc_cap) {
+        return ACVP_NO_CAP;
+    }
+
+    if (cap_entry->prereq_vals) {
+        json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
+
+        revision = acvp_lookup_cipher_revision(cap_entry->cipher);
+        if (revision == NULL) return ACVP_INVALID_ARG;
+        json_object_set_string(cap_obj, "revision", revision);
+        result = acvp_lookup_prereqVals(cap_obj, cap_entry);
+        if (result != ACVP_SUCCESS) { return result; }
+    }
+    switch (kas_ifc_cap->hash) {
+        case ACVP_SHA224:
+             json_object_set_string(cap_obj, "hashFunctionZ", "SHA2-224");
+             break;
+        case ACVP_SHA256:
+             json_object_set_string(cap_obj, "hashFunctionZ", "SHA2-256");
+             break;
+        case ACVP_SHA384:
+             json_object_set_string(cap_obj, "hashFunctionZ", "SHA2-384");
+             break;
+        case ACVP_SHA512:
+             json_object_set_string(cap_obj, "hashFunctionZ", "SHA2-512");
+             break;
+        default:
+             ACVP_LOG_ERR("Unsupported KAS-IFC sha param %d", kas_ifc_cap->hash);
+             return ACVP_INVALID_ARG;
+             break;
+    }
+    json_object_set_string(cap_obj, "fixedPubExp", (const char *)kas_ifc_cap->fixed_pub_exp);
+
+    json_object_set_value(cap_obj, "modulo", json_value_init_array());
+    temp_arr = json_object_get_array(cap_obj, "modulo");
+    current_len = kas_ifc_cap->modulo;
+    while (current_len) {
+        json_array_append_number(temp_arr, current_len->length);
+        current_len = current_len->next;
+    }
+
+    json_object_set_value(cap_obj, "keyGenerationMethods", json_value_init_array());
+    temp_arr = json_object_get_array(cap_obj, "keyGenerationMethods");
+    current_param = kas_ifc_cap->keygen_method;
+    while (current_param) {
+        switch (current_param->param)
+        {
+            case ACVP_KAS_IFC_RSAKPG1_BASIC:
+                json_array_append_string(temp_arr, "rsakpg1-basic");
+                break;
+            case ACVP_KAS_IFC_RSAKPG1_PRIME_FACTOR:
+                json_array_append_string(temp_arr, "rsakpg1-prime-factor");
+                break;
+            case ACVP_KAS_IFC_RSAKPG1_CRT:
+                json_array_append_string(temp_arr, "rsakpg1-crt");
+                break;
+            case ACVP_KAS_IFC_RSAKPG2_BASIC:
+                json_array_append_string(temp_arr, "rsakpg2-basic");
+                break;
+            case ACVP_KAS_IFC_RSAKPG2_PRIME_FACTOR:
+                json_array_append_string(temp_arr, "rsakpg2-prime-factor");
+                break;
+            case ACVP_KAS_IFC_RSAKPG2_CRT:
+                json_array_append_string(temp_arr, "rsakpg2-crt");
+                break;
+            default:
+                ACVP_LOG_ERR("Unsupported KAS-IFC keygen param %d", current_param->param);
+                return ACVP_INVALID_ARG;
+                break;
+        }
+        current_param = current_param->next;
+    }
+
+    sch_val = json_value_init_object();
+    sch_obj = json_value_get_object(sch_val);
+
+    current_param = kas_ifc_cap->kas1_roles;
+    if (current_param) {
+        role_val = json_value_init_object();
+        role_obj = json_value_get_object(role_val);
+        json_object_set_value(role_obj, "kasRole", json_value_init_array());
+        temp_arr = json_object_get_array(role_obj, "kasRole");
+        while (current_param) {
+            switch (current_param->param)
+            {
+                case ACVP_KAS_IFC_INITIATOR:
+                    json_array_append_string(temp_arr, "initiator");
+                    break;
+                case ACVP_KAS_IFC_RESPONDER:
+                    json_array_append_string(temp_arr, "responder");
+                    break;
+                default:
+                    ACVP_LOG_ERR("Unsupported KAS-IFC KAS1 role param %d", current_param->param);
+                    return ACVP_INVALID_ARG;
+                    break;
+            }
+            current_param = current_param->next;
+        }
+    }
+    if (kas_ifc_cap->kas1_roles) {
+        json_object_set_value(sch_obj, "KAS1", role_val);
+    }
+    current_param = kas_ifc_cap->kas2_roles;
+    if (current_param) {
+        role_val = json_value_init_object();
+        role_obj = json_value_get_object(sch_val);
+        json_object_set_value(role_obj, "kasRole", json_value_init_array());
+        temp_arr = json_object_get_array(role_obj, "kasRole");
+        while (current_param) {
+            switch (current_param->param)
+            {
+                case ACVP_KAS_IFC_INITIATOR:
+                    json_array_append_string(temp_arr, "initiator");
+                    break;
+                case ACVP_KAS_IFC_RESPONDER:
+                    json_array_append_string(temp_arr, "responder");
+                    break;
+                default:
+                    ACVP_LOG_ERR("Unsupported KAS-IFC KAS2 role param %d", current_param->param);
+                    return ACVP_INVALID_ARG;
+                    break;
+            }
+            current_param = current_param->next;
+        }
+    }    
+    if (kas_ifc_cap->kas2_roles) {
+        json_object_set_value(sch_obj, "KAS2", role_val);
+    }
+    json_object_set_value(cap_obj, "scheme", sch_val);
+
+    return ACVP_SUCCESS;
+}
+
 /*
  * This function builds the JSON register message that
  * will be sent to the ACVP server to advertised the crypto
@@ -3178,6 +3326,9 @@ ACVP_RESULT acvp_build_test_session(ACVP_CTX *ctx, char **reg, int *out_len) {
                 break;
             case ACVP_KAS_FFC_SSC:
                 rv = acvp_build_kas_ffc_register_cap(ctx, cap_obj, cap_entry, ACVP_KAS_FFC_MODE_NONE);
+                break;
+            case ACVP_KAS_IFC_SSC:
+                rv = acvp_build_kas_ifc_register_cap(ctx, cap_obj, cap_entry);
                 break;
            case ACVP_CIPHER_START:
            case ACVP_TDES_CBCI:

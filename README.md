@@ -361,8 +361,8 @@ This package was initially written by John Foley of Cisco Systems.
 | **RSA mode: keyGen** |  Y  |  N  |
 | **RSA mode: sigGen** |  Y  |  Y  |
 | **RSA mode: sigVer** |  Y  |  Y  |
-| **RSA mode: signatureComponent** |  N  |  N  |
-| **RSA mode: decryptionComponent** |  N  |  N  |
+| **RSA mode: signatureComponent** |  Y  |  Y  |
+| **RSA mode: decryptionComponent** |  Y  |  Y  |
 | **RSA mode: legacySigVer** |  N  |  N  |
 | **ECDSA mode: sigGenComponent** |  N  |  N  |
 | **ECDSA mode: keyGen** |  Y  |  Y  |
@@ -380,6 +380,7 @@ This package was initially written by John Foley of Cisco Systems.
 | **EDDSA mode: sigVer** |  N  |  N  |
 | **Key Agreement** | |
 | **KAS ECC ephemeralUnified** |  Y  |  Y  |
+| **KAS ECC SSC ephemeralUnified** |  Y  |  Y  |
 | **KAS ECC fullMqv** |  N  |  N  |
 | **KAS ECC fullUnified** |  N  |  N  |
 | **KAS ECC onePassDh** |  N  |  N  |
@@ -390,10 +391,13 @@ This package was initially written by John Foley of Cisco Systems.
 | **KAS FFC dhHybrid1** |  N  |  N  |
 | **KAS FFC mqv2** |  N  |  N  |
 | **KAS FFC dhEphem** |  Y  |  Y  |
+| **KAS FFC SSC dhEphem** |  Y  |  Y  |
 | **KAS FFC dhHybridOneFlow** |  N  |  N  |
 | **KAS FFC mqv1** |  N  |  N  |
 | **KAS FFC dhOneFlow** |  N  |  N  |
 | **KAS FFC dhStatic** |  N  |  N  |
+| **KAS IFC SSC KAS1** |  Y  |  Y  |
+| **KAS IFC SSC KAS2** |  Y  |  N  |
 | **KAS IFC KAS1-basic** |  N  |  N  |
 | **KAS IFC KAS1-Party_V-confirmation** |  N  |  N  |
 | **KAS IFC KAS2-basic** |  N  |  N  |

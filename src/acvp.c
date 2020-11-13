@@ -50,6 +50,8 @@ static void acvp_cap_free_sl(ACVP_SL_LIST *list);
 
 static void acvp_cap_free_nl(ACVP_NAME_LIST *list);
 
+static void acvp_cap_free_pl(ACVP_PARAM_LIST *list);
+
 static void acvp_cap_free_hash_pairs(ACVP_RSA_HASH_PAIR_LIST *list);
 
 static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url);
@@ -153,7 +155,8 @@ ACVP_ALG_HANDLER alg_tbl[ACVP_ALG_MAX] = {
     { ACVP_KAS_ECC_NOCOMP,    &acvp_kas_ecc_kat_handler,      ACVP_ALG_KAS_ECC,           ACVP_ALG_KAS_ECC_NOCOMP, ACVP_REV_KAS_ECC},
     { ACVP_KAS_FFC_COMP,      &acvp_kas_ffc_kat_handler,      ACVP_ALG_KAS_FFC,           ACVP_ALG_KAS_FFC_COMP, ACVP_REV_KAS_FFC},
     { ACVP_KAS_FFC_NOCOMP,    &acvp_kas_ffc_kat_handler,      ACVP_ALG_KAS_FFC,           ACVP_ALG_KAS_FFC_NOCOMP, ACVP_REV_KAS_FFC},
-    { ACVP_KAS_FFC_SSC,       &acvp_kas_ffc_ssc_kat_handler,  ACVP_ALG_KAS_FFC_SSC,       ACVP_ALG_KAS_FFC_COMP, ACVP_REV_KAS_FFC_SSC}
+    { ACVP_KAS_FFC_SSC,       &acvp_kas_ffc_ssc_kat_handler,  ACVP_ALG_KAS_FFC_SSC,       ACVP_ALG_KAS_FFC_COMP, ACVP_REV_KAS_FFC_SSC},
+    { ACVP_KAS_IFC_SSC,       &acvp_kas_ifc_ssc_kat_handler,  ACVP_ALG_KAS_IFC_SSC,       ACVP_ALG_KAS_IFC_COMP, ACVP_REV_KAS_IFC_SSC}
 };
 
 /*
@@ -314,14 +317,6 @@ static void acvp_cap_free_kas_ecc_mode(ACVP_CAPS_LIST *cap_list) {
     if (kas_ecc_cap) {
         ACVP_PREREQ_LIST *current_pre_req_vals;
         ACVP_PREREQ_LIST *next_pre_req_vals;
-        ACVP_PARAM_LIST *current_func;
-        ACVP_PARAM_LIST *next_func;
-        ACVP_PARAM_LIST *current_curve;
-        ACVP_PARAM_LIST *next_curve;
-        ACVP_PARAM_LIST *current_hash;
-        ACVP_PARAM_LIST *next_hash;
-        ACVP_PARAM_LIST *current_role;
-        ACVP_PARAM_LIST *next_role;
         ACVP_KAS_ECC_PSET *current_pset;
         ACVP_KAS_ECC_PSET *next_pset;
         ACVP_KAS_ECC_SCHEME *current_scheme;
@@ -344,50 +339,24 @@ static void acvp_cap_free_kas_ecc_mode(ACVP_CAPS_LIST *cap_list) {
                 /*
                  * Delete all function name lists
                  */
-                current_func = mode->function;
-                if (current_func) {
-                    do {
-                        next_func = current_func->next;
-                        free(current_func);
-                        current_func = next_func;
-                    } while (current_func);
-                }
+                acvp_cap_free_pl(mode->function);
+
                 /*
                  * Delete all curve name lists
                  */
-                current_curve = mode->curve;
-                if (current_curve) {
-                    do {
-                        next_curve = current_curve->next;
-                        free(current_curve);
-                        current_curve = next_curve;
-                    } while (current_curve);
-                }
+                acvp_cap_free_pl(mode->curve);
+
                 /*
                  * Delete all schemes, psets and their param lists
                  */
                 current_scheme = mode->scheme;
                 if (current_scheme) {
                     do {
-                        current_role = current_scheme->role;
-                        if (current_role) {
-                            do {
-                                next_role = current_role->next;
-                                free(current_role);
-                                current_role = next_role;
-                            } while (current_role);
-                        }
+                        acvp_cap_free_pl(current_scheme->role);
                         current_pset = current_scheme->pset;
                         if (current_pset) {
                             do {
-                                current_hash = current_pset->sha;
-                                if (current_hash) {
-                                    do {
-                                        next_hash = current_hash->next;
-                                        free(current_hash);
-                                        current_hash = next_hash;
-                                    } while (current_hash);
-                                }
+                                acvp_cap_free_pl(current_pset->sha);
                                 next_pset = current_pset->next;
                                 free(current_pset);
                                 current_pset = next_pset;
@@ -416,14 +385,6 @@ static void acvp_cap_free_kas_ffc_mode(ACVP_CAPS_LIST *cap_list) {
     if (kas_ffc_cap) {
         ACVP_PREREQ_LIST *current_pre_req_vals;
         ACVP_PREREQ_LIST *next_pre_req_vals;
-        ACVP_PARAM_LIST *current_func;
-        ACVP_PARAM_LIST *next_func;
-        ACVP_PARAM_LIST *current_hash;
-        ACVP_PARAM_LIST *next_hash;
-        ACVP_PARAM_LIST *current_role;
-        ACVP_PARAM_LIST *next_role;
-        ACVP_PARAM_LIST *current_genmeth;
-        ACVP_PARAM_LIST *next_genmeth;
         ACVP_KAS_FFC_PSET *current_pset;
         ACVP_KAS_FFC_PSET *next_pset;
         ACVP_KAS_FFC_SCHEME *current_scheme;
@@ -446,50 +407,24 @@ static void acvp_cap_free_kas_ffc_mode(ACVP_CAPS_LIST *cap_list) {
                 /*
                  * Delete all generation methods
                  */
-                current_genmeth = mode->genmeth;
-                if (current_genmeth) {
-                    do {
-                        next_genmeth = current_genmeth->next;
-                        free(current_genmeth);
-                        current_genmeth = next_genmeth;
-                    } while (current_genmeth);
-                }
+                acvp_cap_free_pl(mode->genmeth);
+
                 /*
                  * Delete all function name lists
                  */
-                current_func = mode->function;
-                if (current_func) {
-                    do {
-                        next_func = current_func->next;
-                        free(current_func);
-                        current_func = next_func;
-                    } while (current_func);
-                }
+                acvp_cap_free_pl(mode->function);
+
                 /*
                  * Delete all schemes, psets and their param lists
                  */
                 current_scheme = mode->scheme;
                 if (current_scheme) {
                     do {
-                        current_role = current_scheme->role;
-                        if (current_role) {
-                            do {
-                                next_role = current_role->next;
-                                free(current_role);
-                                current_role = next_role;
-                            } while (current_role);
-                        }
+                        acvp_cap_free_pl(current_scheme->role);
                         current_pset = current_scheme->pset;
                         if (current_pset) {
                             do {
-                                current_hash = current_pset->sha;
-                                if (current_hash) {
-                                    do {
-                                        next_hash = current_hash->next;
-                                        free(current_hash);
-                                        current_hash = next_hash;
-                                    } while (current_hash);
-                                }
+                                acvp_cap_free_pl(current_pset->sha);
                                 next_pset = current_pset->next;
                                 free(current_pset);
                                 current_pset = next_pset;
@@ -685,6 +620,14 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx) {
             case ACVP_KAS_FFC_NOCOMP_TYPE:
                 acvp_cap_free_kas_ffc_mode(cap_entry);
                 break;
+            case ACVP_KAS_IFC_TYPE:
+                acvp_cap_free_pl(cap_entry->cap.kas_ifc_cap->kas1_roles);
+                acvp_cap_free_pl(cap_entry->cap.kas_ifc_cap->kas2_roles);
+                acvp_cap_free_pl(cap_entry->cap.kas_ifc_cap->keygen_method);
+                acvp_cap_free_sl(cap_entry->cap.kas_ifc_cap->modulo);
+                free(cap_entry->cap.kas_ifc_cap->fixed_pub_exp);
+                free(cap_entry->cap.kas_ifc_cap);
+                break;
             case ACVP_RSA_KEYGEN_TYPE:
                 acvp_cap_free_rsa_keygen_list(cap_entry);
                 break;
@@ -784,6 +727,21 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx) {
 static void acvp_cap_free_sl(ACVP_SL_LIST *list) {
     ACVP_SL_LIST *top = list;
     ACVP_SL_LIST *tmp;
+
+    while (top) {
+        tmp = top;
+        top = top->next;
+        free(tmp);
+    }
+}
+
+/*
+ * Simple utility function to free a supported param
+ * list from the capabilities structure.
+ */
+static void acvp_cap_free_pl(ACVP_PARAM_LIST *list) {
+    ACVP_PARAM_LIST *top = list;
+    ACVP_PARAM_LIST *tmp;
 
     while (top) {
         tmp = top;
