@@ -78,6 +78,7 @@ static void print_usage(int code) {
     printf("      --ecdsa\n");
     printf("      --drbg\n");
     printf("      --kas_ecc\n");
+    printf("      --kas_ifc\n");
     printf("\n");
 
     if (code >= ACVP_LOG_LVL_VERBOSE) {
@@ -183,6 +184,7 @@ static void enable_all_algorithms(APP_CONFIG *cfg) {
     cfg->drbg = 1;
     cfg->ecdsa = 1;
     cfg->kas_ecc = 1;
+    cfg->kas_ifc = 1;
 #ifdef OPENSSL_KDF_SUPPORT
     cfg->kdf = 1;
 #endif
@@ -220,6 +222,7 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
         { "drbg", ko_no_argument, 318 },
         { "ecdsa", ko_no_argument, 319 },
         { "kas_ecc", ko_no_argument, 320 },
+        { "kas_ifc", ko_no_argument, 323 },
         { "all_algs", ko_no_argument, 322 },
         { "manual_registration", ko_required_argument, 400 },
         { "kat", ko_required_argument, 401 },
@@ -358,6 +361,11 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
         }
         if (c == 322) {
             enable_all_algorithms(cfg);
+            cfg->empty_alg = 0;
+            continue;
+        }
+        if (c == 323) {
+            cfg->kas_ifc = 1;
             cfg->empty_alg = 0;
             continue;
         }

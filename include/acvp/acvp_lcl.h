@@ -93,7 +93,7 @@
 #define ACVP_LOG_TRUNCATED_STR "...[truncated]\n"
 //This MUST be the length of the above screen (want to avoid calculating at runtime frequently)
 #define ACVP_LOG_TRUNCATED_STR_LEN 15
-#define ACVP_LOG_MAX_MSG_LEN 2048
+#define ACVP_LOG_MAX_MSG_LEN 1024000
 
 #define ACVP_BIT2BYTE(x) ((x + 7) >> 3) /**< Convert bit length (x, of type integer) into byte length */
 
@@ -108,6 +108,7 @@
 #define ACVP_REVISION_LATEST "1.0"
 #define ACVP_REVISION_FIPS186_4 "FIPS186-4"
 #define ACVP_REVISION_SP800_56AR3 "Sp800-56Ar3"
+#define ACVP_REVISION_SP800_56BR2 "Sp800-56Br2"
 
 /* AES */
 #define ACVP_REV_AES_ECB             ACVP_REVISION_LATEST
@@ -195,6 +196,9 @@
 /* KAS_FFC */
 #define ACVP_REV_KAS_FFC             ACVP_REVISION_LATEST
 #define ACVP_REV_KAS_FFC_SSC         ACVP_REVISION_SP800_56AR3
+
+/* KAS_IFC */
+#define ACVP_REV_KAS_IFC_SSC         ACVP_REVISION_SP800_56BR2
 
 /* KDF */
 #define ACVP_REV_KDF135_TLS          ACVP_REVISION_LATEST
@@ -318,6 +322,9 @@
 #define ACVP_ALG_KAS_FFC_KEYPAIRGEN  "keyPairGen"
 #define ACVP_ALG_KAS_FFC_FULLVAL     "fullVal"
 #define ACVP_ALG_KAS_FFC_KEYREGEN    "keyRegen"
+
+#define ACVP_ALG_KAS_IFC_SSC         "KAS-IFC-SSC"
+#define ACVP_ALG_KAS_IFC_COMP        ""
 
 #define ACVP_ECDSA_EXTRA_BITS_STR "extra bits"
 #define ACVP_ECDSA_EXTRA_BITS_STR_LEN 10
@@ -697,6 +704,10 @@
 #define ACVP_ECDSA_EXP_LEN_MAX       512
 #define ACVP_ECDSA_MSGLEN_MAX 8192
 
+#define ACVP_KAS_IFC_BIT_MAX 4096
+#define ACVP_KAS_IFC_BYTE_MAX (ACVP_KAS_IFC_BIT_MAX >> 3)
+#define ACVP_KAS_IFC_STR_MAX (ACVP_KAS_IFC_BIT_MAX >> 2)
+
 #define ACVP_KAS_FFC_BIT_MAX 4096
 #define ACVP_KAS_FFC_BYTE_MAX (ACVP_KAS_FFC_BIT_MAX >> 3)
 #define ACVP_KAS_FFC_STR_MAX (ACVP_KAS_FFC_BIT_MAX >> 2)
@@ -851,7 +862,8 @@ typedef enum acvp_capability_type {
     ACVP_KAS_ECC_SSC_TYPE,
     ACVP_KAS_FFC_COMP_TYPE,
     ACVP_KAS_FFC_SSC_TYPE,
-    ACVP_KAS_FFC_NOCOMP_TYPE
+    ACVP_KAS_FFC_NOCOMP_TYPE,
+    ACVP_KAS_IFC_TYPE
 } ACVP_CAP_TYPE;
 
 /*
@@ -1219,6 +1231,17 @@ typedef struct acvp_kas_ffc_capability_t {
     ACVP_KAS_FFC_CAP_MODE *kas_ffc_mode;
 } ACVP_KAS_FFC_CAP;
 
+
+typedef struct acvp_kas_ifc_capability_t {
+    ACVP_CIPHER cipher;
+    int hash;
+    char *fixed_pub_exp;
+    ACVP_PARAM_LIST *kas1_roles;
+    ACVP_PARAM_LIST *kas2_roles;
+    ACVP_PARAM_LIST *keygen_method;
+    ACVP_SL_LIST *modulo;
+} ACVP_KAS_IFC_CAP;
+
 typedef struct acvp_caps_list_t {
     ACVP_CIPHER cipher;
     ACVP_CAP_TYPE cap_type;
@@ -1250,6 +1273,7 @@ typedef struct acvp_caps_list_t {
         ACVP_PBKDF_CAP *pbkdf_cap;
         ACVP_KAS_ECC_CAP *kas_ecc_cap;
         ACVP_KAS_FFC_CAP *kas_ffc_cap;
+        ACVP_KAS_IFC_CAP *kas_ifc_cap;
     } cap;
 
     int (*crypto_handler)(ACVP_TEST_CASE *test_case);
@@ -1548,6 +1572,8 @@ ACVP_RESULT acvp_kas_ecc_ssc_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 ACVP_RESULT acvp_kas_ffc_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
 ACVP_RESULT acvp_kas_ffc_ssc_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
+
+ACVP_RESULT acvp_kas_ifc_ssc_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 /*
  * ACVP build registration functions used internally
  */

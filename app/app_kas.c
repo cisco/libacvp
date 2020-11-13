@@ -440,6 +440,137 @@ error:
     if (g) BN_free(g);
     return rv;
 }
+
+int app_kas_ifc_handler(ACVP_TEST_CASE *test_case) {
+    ACVP_KAS_IFC_TC *tc;
+    int rv = 1;
+    BIGNUM *e = NULL, *n = NULL, *p = NULL, *q = NULL, *d = NULL;
+    RSA *rsa = NULL;
+    const EVP_MD *md = NULL;
+
+    tc = test_case->tc.kas_ifc;
+
+    switch (tc->md) {
+    case ACVP_SHA224:
+        md = EVP_sha224();
+        break;
+    case ACVP_SHA256:
+        md = EVP_sha256();
+        break;
+    case ACVP_SHA384:
+        md = EVP_sha384();
+        break;
+    case ACVP_SHA512:
+        md = EVP_sha512();
+        break;
+    case ACVP_SHA1:
+    case ACVP_SHA512_224:
+    case ACVP_SHA512_256:
+    case ACVP_HASH_ALG_MAX:
+    default:
+        printf("No valid hash name %d\n", tc->md);
+        return rv;
+
+        break;
+    }
+
+    rsa = RSA_new();
+    e = BN_new();
+    n = BN_new();
+    if (!e || !n) {
+        printf("Failed to allocate BN for e or n\n");
+        goto err;
+    }
+    /* we only support e = 0x10001 */
+    BN_bin2bn(tc->e, tc->elen, e);
+    BN_bin2bn(tc->n, tc->nlen, n);
+
+#if OPENSSL_VERSION_NUMBER <= 0x10100000L
+    if (tc->kas_role == ACVP_KAS_IFC_INITIATOR) {
+        rsa->n = BN_dup(n);
+        rsa->e = BN_dup(e);
+    } else {
+        p = BN_new();
+        q = BN_new();
+        d = BN_new();
+        if (!p || !q || !d) {
+            printf("Failed to allocate BN for p or q or d\n");
+            goto err;
+        }
+        BN_bin2bn(tc->p, tc->plen, p);
+        BN_bin2bn(tc->q, tc->qlen, q);
+        BN_bin2bn(tc->d, tc->dlen, d);
+
+        rsa->n = BN_dup(n);
+        rsa->e = BN_dup(e);
+        rsa->d = BN_dup(d);
+        rsa->p = BN_dup(p);
+        rsa->q = BN_dup(q);
+    }
+    BN_free(e);
+    BN_free(n);
+    if (d) BN_free(d);
+
+#else
+    if (tc->kas_role == ACVP_KAS_IFC_INITIATOR) {
+        RSA_set0_key(rsa, n, e, NULL);
+    } else {
+        p = BN_new();
+        q = BN_new();
+        d = BN_new();
+        if (!p || !q || !d) {
+            printf("Failed to allocate BN for p or q or d\n");
+            goto err;
+        }
+        BN_bin2bn(tc->p, tc->plen, p);
+        BN_bin2bn(tc->q, tc->qlen, q);
+        BN_bin2bn(tc->d, tc->dlen, d);
+        RSA_set0_key(rsa, n, e, d);
+        RSA_set0_factors(rsa, p, q);
+    }
+#endif
+
+    if (tc->test_type == ACVP_KAS_IFC_TT_AFT) {
+        if (tc->kas_role == ACVP_KAS_IFC_INITIATOR) {
+            /* 
+             * Kludgy way to meet requirement for Z, could use RAND_bytes(), but that may
+             * take several iterations to get a len == nlen and value < n.
+             */
+            tc->n[0] -= 8;
+            tc->pt_len = RSA_public_encrypt(tc->nlen, tc->n, tc->pt, rsa, RSA_NO_PADDING);
+            FIPS_digest(tc->n, tc->nlen, (unsigned char *)tc->chash, NULL, md);
+            tc->chashlen = EVP_MD_size(md);
+        } else {
+            tc->pt_len = RSA_private_decrypt(tc->ct_len, tc->ct, tc->pt, rsa, RSA_NO_PADDING);
+            if (tc->pt_len == -1) {
+                printf("Error decrypting\n");
+                goto err;
+            }
+            FIPS_digest(tc->pt, tc->pt_len, (unsigned char *)tc->chash, NULL, md);
+            tc->chashlen = EVP_MD_size(md);
+        }
+    } else {
+        if (tc->kas_role == ACVP_KAS_IFC_INITIATOR) {
+            tc->pt_len = RSA_public_encrypt(tc->zlen, tc->z, tc->pt, rsa, RSA_NO_PADDING);
+            FIPS_digest(tc->z, tc->zlen, (unsigned char *)tc->chash, NULL, md);
+            tc->chashlen = EVP_MD_size(md);
+        } else {
+            tc->pt_len = RSA_private_decrypt(tc->ct_len, tc->ct, tc->pt, rsa, RSA_NO_PADDING);
+            if (tc->pt_len == -1) {
+                printf("Error decrypting\n");
+                goto err;
+            }
+            FIPS_digest(tc->pt, tc->pt_len, (unsigned char *)tc->chash, NULL, md);
+            tc->chashlen = EVP_MD_size(md);
+        }
+    }
+    rv = 0;
+err:
+    if (p) BN_free(p);
+    if (q) BN_free(q);
+    if (rsa) RSA_free(rsa);
+    return rv;
+}
 #endif // OPENSSL_NO_DSA
 #else
 int app_kas_ecc_handler(ACVP_TEST_CASE *test_case) {
@@ -449,6 +580,12 @@ int app_kas_ecc_handler(ACVP_TEST_CASE *test_case) {
     return 1;
 }
 int app_kas_ffc_handler(ACVP_TEST_CASE *test_case) {
+    if (!test_case) {
+        return -1;
+    }
+    return 1;
+}
+int app_kas_ifc_handler(ACVP_TEST_CASE *test_case) {
     if (!test_case) {
         return -1;
     }
