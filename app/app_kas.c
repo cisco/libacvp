@@ -566,8 +566,10 @@ int app_kas_ifc_handler(ACVP_TEST_CASE *test_case) {
     }
     rv = 0;
 err:
+#if OPENSSL_VERSION_NUMBER <= 0x10100000L
     if (p) BN_free(p);
     if (q) BN_free(q);
+#endif
     if (rsa) RSA_free(rsa);
     return rv;
 }
