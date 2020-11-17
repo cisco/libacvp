@@ -481,6 +481,10 @@ int app_kas_ifc_handler(ACVP_TEST_CASE *test_case) {
         printf("Failed to allocate BN for e or n\n");
         goto err;
     }
+    if (!tc->e || !tc->n) {
+        printf("Missing e or n from library\n");
+        goto err;
+    }
     /* we only support e = 0x10001 */
     BN_bin2bn(tc->e, tc->elen, e);
     BN_bin2bn(tc->n, tc->nlen, n);
@@ -490,6 +494,10 @@ int app_kas_ifc_handler(ACVP_TEST_CASE *test_case) {
         rsa->n = BN_dup(n);
         rsa->e = BN_dup(e);
     } else {
+        if (!tc->p || !tc->q || !tc->d) {
+            printf("Failed p or q or d from library\n");
+            goto err;
+        }
         p = BN_new();
         q = BN_new();
         d = BN_new();
@@ -515,6 +523,10 @@ int app_kas_ifc_handler(ACVP_TEST_CASE *test_case) {
     if (tc->kas_role == ACVP_KAS_IFC_INITIATOR) {
         RSA_set0_key(rsa, n, e, NULL);
     } else {
+        if (!tc->p || !tc->q || !tc->d) {
+            printf("Failed p or q or d from library\n");
+            goto err;
+        }
         p = BN_new();
         q = BN_new();
         d = BN_new();
@@ -532,6 +544,10 @@ int app_kas_ifc_handler(ACVP_TEST_CASE *test_case) {
 
     if (tc->test_type == ACVP_KAS_IFC_TT_AFT) {
         if (tc->kas_role == ACVP_KAS_IFC_INITIATOR) {
+            if (!tc->chash) {
+                printf("Missing chash from library\n");
+                goto err;
+            }
             /* 
              * Kludgy way to meet requirement for Z, could use RAND_bytes(), but that may
              * take several iterations to get a len == nlen and value < n.
@@ -541,6 +557,11 @@ int app_kas_ifc_handler(ACVP_TEST_CASE *test_case) {
             FIPS_digest(tc->n, tc->nlen, (unsigned char *)tc->chash, NULL, md);
             tc->chashlen = EVP_MD_size(md);
         } else {
+            if (!tc->ct || !tc->pt || !tc->chash) {
+                printf("Missing pt/ct/chash from library\n");
+                goto err;
+            }
+
             tc->pt_len = RSA_private_decrypt(tc->ct_len, tc->ct, tc->pt, rsa, RSA_NO_PADDING);
             if (tc->pt_len == -1) {
                 printf("Error decrypting\n");
@@ -551,10 +572,18 @@ int app_kas_ifc_handler(ACVP_TEST_CASE *test_case) {
         }
     } else {
         if (tc->kas_role == ACVP_KAS_IFC_INITIATOR) {
+            if (!tc->chash || !tc->z) {
+                printf("Missing chash or z from library\n");
+                goto err;
+            }
             tc->pt_len = RSA_public_encrypt(tc->zlen, tc->z, tc->pt, rsa, RSA_NO_PADDING);
             FIPS_digest(tc->z, tc->zlen, (unsigned char *)tc->chash, NULL, md);
             tc->chashlen = EVP_MD_size(md);
         } else {
+            if (!tc->ct || !tc->pt || !tc->chash) {
+                printf("Missing pt/ct/chash from library\n");
+                goto err;
+            }
             tc->pt_len = RSA_private_decrypt(tc->ct_len, tc->ct, tc->pt, rsa, RSA_NO_PADDING);
             if (tc->pt_len == -1) {
                 printf("Error decrypting\n");
