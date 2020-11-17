@@ -199,7 +199,7 @@ ACVP_RESULT acvp_kdf135_snmp_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 goto err;
             }
             unsigned int actual_len = strnlen_s(password, ACVP_KDF135_SNMP_PASS_LEN_MAX);
-            if (actual_len != p_len) {
+            if (actual_len != p_len / 8) {
                 ACVP_LOG_ERR("pLen(%d) or password length(%d) incorrect", p_len, actual_len);
                 rv = ACVP_INVALID_ARG;
                 goto err;
@@ -321,7 +321,7 @@ static ACVP_RESULT acvp_kdf135_snmp_init_tc(ACVP_CTX *ctx,
 
     stc->tc_id = tc_id;
     stc->cipher = alg_id;
-    stc->p_len = p_len;
+    stc->p_len = p_len / 8;
     stc->skey_len = 160 / 8;
     stc->password = password;
 
