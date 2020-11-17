@@ -7,7 +7,7 @@
   "testGroups" : [ {
     "tgId": 999,
     "engineId" : "800002B805123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456",
-    "passwordLength" : 64,
+    "passwordLength" : 8,
     "tests" : [ {
       "tcId" : 1,
       "password" : "HVExHjfY1"
