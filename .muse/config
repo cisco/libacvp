@@ -1,3 +1,2 @@
 setup = ".muse/setup.sh"
 build = "make"
-verifiers = [ "infer" ]
