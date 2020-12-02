@@ -440,6 +440,7 @@ error:
     if (g) BN_free(g);
     return rv;
 }
+#endif // OPENSSL_NO_DSA
 
 int app_kas_ifc_handler(ACVP_TEST_CASE *test_case) {
     ACVP_KAS_IFC_TC *tc;
@@ -602,7 +603,194 @@ err:
     if (rsa) RSA_free(rsa);
     return rv;
 }
-#endif // OPENSSL_NO_DSA
+
+int app_kts_ifc_handler(ACVP_TEST_CASE *test_case) {
+#ifdef FIPS_MODULE_VERSION_NUMBER
+    ACVP_KTS_IFC_TC *tc;
+    int rv = 1;
+    BIGNUM *e = NULL, *n = NULL, *p = NULL, *q = NULL, *d = NULL;
+    RSA *rsa = NULL;
+    const EVP_MD *md = NULL;
+    int i = 0;
+    unsigned char *tbuf = NULL;
+
+    if (!test_case) {
+        printf("\nError: test case not found in RSA SigGen handler\n");
+        goto err;
+    }
+
+    tc = test_case->tc.kts_ifc;
+    if (!tc) {
+        printf("\nError: test case not found in RSA SigGen handler\n");
+        goto err;
+    }
+
+    switch (tc->md) {
+    case ACVP_SHA224:
+        md = EVP_sha224();
+        break;
+    case ACVP_SHA256:
+        md = EVP_sha256();
+        break;
+    case ACVP_SHA384:
+        md = EVP_sha384();
+        break;
+    case ACVP_SHA512:
+        md = EVP_sha512();
+        break;
+    case ACVP_SHA1:
+    case ACVP_SHA512_224:
+    case ACVP_SHA512_256:
+    case ACVP_HASH_ALG_MAX:
+    default:
+        printf("No valid hash name %d\n", tc->md);
+        return rv;
+
+        break;
+    }
+
+    rsa = RSA_new();
+    if (!rsa) {
+        printf("Failed to allocate RSA\n");
+        goto err;
+    }
+    e = BN_new();
+    n = BN_new();
+    if (!e || !n) {
+        printf("Failed to allocate BN for e or n\n");
+        goto err;
+    }
+    if (!tc->e || !tc->n) {
+        printf("Missing e or n from library\n");
+        goto err;
+    }
+
+    BN_bin2bn(tc->e, tc->elen, e);
+    BN_bin2bn(tc->n, tc->nlen, n);
+
+#if OPENSSL_VERSION_NUMBER <= 0x10100000L
+    if (tc->kts_role == ACVP_KTS_IFC_INITIATOR) {
+        rsa->n = BN_dup(n);
+        rsa->e = BN_dup(e);
+    } else {
+        if (!tc->p || !tc->q || !tc->d) {
+            printf("Failed p or q or d from library\n");
+            goto err;
+        }
+        p = BN_new();
+        q = BN_new();
+        d = BN_new();
+        if (!p || !q || !d) {
+            printf("Failed to allocate BN for p or q or d\n");
+            goto err;
+        }
+        BN_bin2bn(tc->p, tc->plen, p);
+        BN_bin2bn(tc->q, tc->qlen, q);
+        BN_bin2bn(tc->d, tc->dlen, d);
+
+        rsa->n = BN_dup(n);
+        rsa->e = BN_dup(e);
+        rsa->d = BN_dup(d);
+        rsa->p = BN_dup(p);
+        rsa->q = BN_dup(q);
+    }
+    BN_free(e);
+    BN_free(n);
+    if (d) BN_free(d);
+
+#else
+    if (tc->kts_role == ACVP_KTS_IFC_INITIATOR) {
+        RSA_set0_key(rsa, n, e, NULL);
+    } else {
+        if (!tc->p || !tc->q || !tc->d) {
+            printf("Failed p or q or d from library\n");
+            goto err;
+        }
+        p = BN_new();
+        q = BN_new();
+        d = BN_new();
+        if (!p || !q || !d) {
+            printf("Failed to allocate BN for p or q or d\n");
+            goto err;
+        }
+        BN_bin2bn(tc->p, tc->plen, p);
+        BN_bin2bn(tc->q, tc->qlen, q);
+        BN_bin2bn(tc->d, tc->dlen, d);
+        RSA_set0_key(rsa, n, e, d);
+        RSA_set0_factors(rsa, p, q);
+    }
+#endif
+
+
+    if (tc->test_type == ACVP_KTS_IFC_TT_AFT) {
+        if (tc->kts_role == ACVP_KTS_IFC_INITIATOR) {
+
+            tc->ct_len = RSA_size(rsa);    /* expected return size */
+            tc->n[0] -= 8;                 /* manufacture a dkm */
+
+            tbuf = malloc(OPENSSL_RSA_MAX_MODULUS_BITS);
+            if (!fips_RSA_padding_add_PKCS1_OAEP_mgf1(tbuf, tc->ct_len,
+                                                      tc->n, tc->llen,
+                                                      NULL,
+                                                      0,
+                                                      md, NULL)) {
+                printf("\nFailed to add padding");
+                goto err;
+            }
+            
+            i = FIPS_rsa_public_encrypt(tc->ct_len, tbuf, tc->ct,
+                                        rsa, RSA_NO_PADDING);
+            if (i <= 0) {
+                printf("\nEncrypt Error %d", i);
+                goto err;
+            }
+            tc->ct_len = i;
+
+        } else {
+
+            if (!tc->ct || !tc->pt ) {
+                printf("Missing pt/ct from library\n");
+                goto err;
+            }
+
+            tbuf = malloc(OPENSSL_RSA_MAX_MODULUS_BITS);
+
+            tc->pt_len = RSA_size(rsa);
+            i = FIPS_rsa_private_decrypt(tc->ct_len, tc->ct, tbuf,
+                                         rsa, RSA_NO_PADDING);
+            if (i <= 0) {
+                printf("\nDecrypt Failed %d", i);
+                goto err;
+            }
+            i = fips_RSA_padding_check_PKCS1_OAEP_mgf1(tc->pt, i, tbuf,
+                                                       i, i,
+                                                       NULL,
+                                                       0,
+                                                       md, NULL);
+            if (i <= 0) {
+                printf("\nDecrypt Error %d", i);
+                goto err;
+            }
+            tc->pt_len = i;
+
+        }
+    }
+
+    rv = 0;
+err:
+#if OPENSSL_VERSION_NUMBER <= 0x10100000L
+    if (p) BN_free(p);
+    if (q) BN_free(q);
+#endif
+
+    if (rsa) RSA_free(rsa);
+    if (tbuf) free(tbuf);
+    return rv;
+#else
+    return 1;
+#endif
+}
+
 #else
 int app_kas_ecc_handler(ACVP_TEST_CASE *test_case) {
     if (!test_case) {
@@ -622,5 +810,13 @@ int app_kas_ifc_handler(ACVP_TEST_CASE *test_case) {
     }
     return 1;
 }
+
+int app_kts_ifc_handler(ACVP_TEST_CASE *test_case) {
+    if (!test_case) {
+        return -1;
+    }
+    return 1;
+}
+
 #endif // ACVP_NO_RUNTIME
 

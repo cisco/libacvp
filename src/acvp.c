@@ -156,7 +156,8 @@ ACVP_ALG_HANDLER alg_tbl[ACVP_ALG_MAX] = {
     { ACVP_KAS_FFC_COMP,      &acvp_kas_ffc_kat_handler,      ACVP_ALG_KAS_FFC,           ACVP_ALG_KAS_FFC_COMP, ACVP_REV_KAS_FFC},
     { ACVP_KAS_FFC_NOCOMP,    &acvp_kas_ffc_kat_handler,      ACVP_ALG_KAS_FFC,           ACVP_ALG_KAS_FFC_NOCOMP, ACVP_REV_KAS_FFC},
     { ACVP_KAS_FFC_SSC,       &acvp_kas_ffc_ssc_kat_handler,  ACVP_ALG_KAS_FFC_SSC,       ACVP_ALG_KAS_FFC_COMP, ACVP_REV_KAS_FFC_SSC},
-    { ACVP_KAS_IFC_SSC,       &acvp_kas_ifc_ssc_kat_handler,  ACVP_ALG_KAS_IFC_SSC,       ACVP_ALG_KAS_IFC_COMP, ACVP_REV_KAS_IFC_SSC}
+    { ACVP_KAS_IFC_SSC,       &acvp_kas_ifc_ssc_kat_handler,  ACVP_ALG_KAS_IFC_SSC,       ACVP_ALG_KAS_IFC_COMP, ACVP_REV_KAS_IFC_SSC},
+    { ACVP_KTS_IFC,           &acvp_kts_ifc_kat_handler,      ACVP_ALG_KTS_IFC,           ACVP_ALG_KTS_IFC_COMP, ACVP_REV_KTS_IFC}
 };
 
 /*
@@ -532,6 +533,20 @@ static void acvp_cap_free_kdf108(ACVP_CAPS_LIST *cap_list) {
     }
 }
 
+static void acvp_cap_free_kts_ifc_schemes(ACVP_CAPS_LIST *cap_entry) {
+    ACVP_KTS_IFC_SCHEMES *current_scheme;
+
+
+    current_scheme = cap_entry->cap.kts_ifc_cap->schemes;
+    while (current_scheme) {
+        acvp_cap_free_pl(current_scheme->roles);
+        acvp_cap_free_pl(current_scheme->hash);
+        free(current_scheme->assoc_data_pattern);
+        free(current_scheme->encodings);
+        current_scheme = current_scheme->next;
+    }
+    free(cap_entry->cap.kts_ifc_cap->schemes);
+}
 /*
  * The application will invoke this to free the ACVP context
  * when the test session is finished.
@@ -627,6 +642,15 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx) {
                 acvp_cap_free_sl(cap_entry->cap.kas_ifc_cap->modulo);
                 free(cap_entry->cap.kas_ifc_cap->fixed_pub_exp);
                 free(cap_entry->cap.kas_ifc_cap);
+                break;
+            case ACVP_KTS_IFC_TYPE:
+                acvp_cap_free_pl(cap_entry->cap.kts_ifc_cap->keygen_method);
+                acvp_cap_free_pl(cap_entry->cap.kts_ifc_cap->functions);
+                acvp_cap_free_sl(cap_entry->cap.kts_ifc_cap->modulo);
+                free(cap_entry->cap.kts_ifc_cap->fixed_pub_exp);
+                free(cap_entry->cap.kts_ifc_cap->iut_id);
+                acvp_cap_free_kts_ifc_schemes(cap_entry);
+                free(cap_entry->cap.kts_ifc_cap);
                 break;
             case ACVP_RSA_KEYGEN_TYPE:
                 acvp_cap_free_rsa_keygen_list(cap_entry);
