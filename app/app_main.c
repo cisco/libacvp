@@ -52,9 +52,7 @@ static int enable_ecdsa(ACVP_CTX *ctx);
 static int enable_drbg(ACVP_CTX *ctx);
 static int enable_kas_ecc(ACVP_CTX *ctx);
 static int enable_kas_ifc(ACVP_CTX *ctx);
-#ifdef FIPS_MODULE_VERSION_NUMBER
 static int enable_kts_ifc(ACVP_CTX *ctx);
-#endif
 #ifdef OPENSSL_KDF_SUPPORT
 static int enable_kdf(ACVP_CTX *ctx);
 #endif
@@ -320,11 +318,9 @@ int main(int argc, char **argv) {
         if (cfg.kas_ifc) {
             if (enable_kas_ifc(ctx)) goto end;
         }
-#ifdef FIPS_MODULE_VERSION_NUMBER
         if (cfg.kts_ifc) {
             if (enable_kts_ifc(ctx)) goto end;
         }
-#endif
 #ifndef OPENSSL_NO_DSA
         if (cfg.kas_ffc) {
             if (enable_kas_ffc(ctx)) goto end;
@@ -1679,7 +1675,7 @@ end:
     if (expo_str) free(expo_str);
     return rv;
 }
-#ifdef FIPS_MODULE_VERSION_NUMBER
+
 static int enable_kts_ifc(ACVP_CTX *ctx) {
     ACVP_RESULT rv = ACVP_SUCCESS;
     BIGNUM *expo = NULL;
@@ -1738,7 +1734,7 @@ end:
     if (expo_str) free(expo_str);
     return rv;
 }
-#endif
+
 #ifndef OPENSSL_NO_DSA
 static int enable_kas_ffc(ACVP_CTX *ctx) {
     ACVP_RESULT rv = ACVP_SUCCESS;
