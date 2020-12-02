@@ -52,6 +52,7 @@ static int enable_ecdsa(ACVP_CTX *ctx);
 static int enable_drbg(ACVP_CTX *ctx);
 static int enable_kas_ecc(ACVP_CTX *ctx);
 static int enable_kas_ifc(ACVP_CTX *ctx);
+static int enable_kts_ifc(ACVP_CTX *ctx);
 #ifdef OPENSSL_KDF_SUPPORT
 static int enable_kdf(ACVP_CTX *ctx);
 #endif
@@ -316,6 +317,9 @@ int main(int argc, char **argv) {
         }
         if (cfg.kas_ifc) {
             if (enable_kas_ifc(ctx)) goto end;
+        }
+        if (cfg.kts_ifc) {
+            if (enable_kts_ifc(ctx)) goto end;
         }
 #ifndef OPENSSL_NO_DSA
         if (cfg.kas_ffc) {
@@ -1666,6 +1670,65 @@ static int enable_kas_ifc(ACVP_CTX *ctx) {
     rv = acvp_cap_kas_ifc_set_parm(ctx, ACVP_KAS_IFC_SSC, ACVP_KAS_IFC_HASH, ACVP_SHA512);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_kas_ifc_set_exponent(ctx, ACVP_KAS_IFC_SSC, ACVP_KAS_IFC_FIXEDPUBEXP, expo_str);
+    CHECK_ENABLE_CAP_RV(rv);
+end:
+    if (expo_str) free(expo_str);
+    return rv;
+}
+
+static int enable_kts_ifc(ACVP_CTX *ctx) {
+    ACVP_RESULT rv = ACVP_SUCCESS;
+    BIGNUM *expo = NULL;
+    char *expo_str = NULL;
+
+    expo = BN_new();
+    if (!expo || !BN_set_word(expo, RSA_F4)) {
+        printf("oh no\n");
+        return 1;
+    }
+    expo_str = BN_bn2hex(expo);
+    BN_free(expo);
+
+    rv = acvp_cap_kts_ifc_enable(ctx, ACVP_KTS_IFC, &app_kts_ifc_handler);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_set_prereq(ctx, ACVP_KTS_IFC, ACVP_PREREQ_RSA, value);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_set_prereq(ctx, ACVP_KTS_IFC, ACVP_PREREQ_RSADP, value);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_set_prereq(ctx, ACVP_KTS_IFC, ACVP_PREREQ_SHA, value);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_set_prereq(ctx, ACVP_KTS_IFC, ACVP_PREREQ_DRBG, value);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kts_ifc_set_param_string(ctx, ACVP_KTS_IFC, ACVP_KTS_IFC_FIXEDPUBEXP, expo_str);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kts_ifc_set_param_string(ctx, ACVP_KTS_IFC, ACVP_KTS_IFC_IUT_ID, "CAFEBABE");
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kts_ifc_set_parm(ctx, ACVP_KTS_IFC, ACVP_KTS_IFC_FUNCTION, ACVP_KTS_IFC_KEYPAIR_GEN);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kts_ifc_set_parm(ctx, ACVP_KTS_IFC, ACVP_KTS_IFC_FUNCTION, ACVP_KTS_IFC_PARTIAL_VAL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kts_ifc_set_parm(ctx, ACVP_KTS_IFC, ACVP_KTS_IFC_MODULO, 2048);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kts_ifc_set_parm(ctx, ACVP_KTS_IFC, ACVP_KTS_IFC_MODULO, 3072);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kts_ifc_set_parm(ctx, ACVP_KTS_IFC, ACVP_KTS_IFC_MODULO, 4096);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kts_ifc_set_parm(ctx, ACVP_KTS_IFC, ACVP_KTS_IFC_KEYGEN_METHOD, ACVP_KTS_IFC_RSAKPG1_BASIC);
+    CHECK_ENABLE_CAP_RV(rv);
+
+
+    rv = acvp_cap_kts_ifc_set_parm(ctx, ACVP_KTS_IFC, ACVP_KTS_IFC_SCHEME, ACVP_KTS_IFC_KAS1_BASIC);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kts_ifc_set_scheme_parm(ctx, ACVP_KTS_IFC, ACVP_KTS_IFC_KAS1_BASIC, ACVP_KTS_IFC_ROLE, ACVP_KTS_IFC_RESPONDER);
+    rv = acvp_cap_kts_ifc_set_scheme_parm(ctx, ACVP_KTS_IFC, ACVP_KTS_IFC_KAS1_BASIC, ACVP_KTS_IFC_ROLE, ACVP_KTS_IFC_INITIATOR);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kts_ifc_set_scheme_parm(ctx, ACVP_KTS_IFC, ACVP_KTS_IFC_KAS1_BASIC, ACVP_KTS_IFC_HASH, ACVP_SHA256);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kts_ifc_set_scheme_parm(ctx, ACVP_KTS_IFC, ACVP_KTS_IFC_KAS1_BASIC, ACVP_KTS_IFC_NULL_ASSOC_DATA, 1);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kts_ifc_set_scheme_string(ctx, ACVP_KTS_IFC, ACVP_KTS_IFC_KAS1_BASIC, ACVP_KTS_IFC_ENCODING, "concatenation");
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kts_ifc_set_scheme_parm(ctx, ACVP_KTS_IFC, ACVP_KTS_IFC_KAS1_BASIC, ACVP_KTS_IFC_L, 512);
     CHECK_ENABLE_CAP_RV(rv);
 end:
     if (expo_str) free(expo_str);

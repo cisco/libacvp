@@ -440,6 +440,7 @@ error:
     if (g) BN_free(g);
     return rv;
 }
+#endif // OPENSSL_NO_DSA
 
 int app_kas_ifc_handler(ACVP_TEST_CASE *test_case) {
     ACVP_KAS_IFC_TC *tc;
@@ -602,7 +603,15 @@ err:
     if (rsa) RSA_free(rsa);
     return rv;
 }
-#endif // OPENSSL_NO_DSA
+
+int app_kts_ifc_handler(ACVP_TEST_CASE *test_case) {
+    if (!test_case) {
+        return -1;
+    }
+    printf("No application support\n");
+    return 1;
+}
+
 #else
 int app_kas_ecc_handler(ACVP_TEST_CASE *test_case) {
     if (!test_case) {
@@ -622,5 +631,13 @@ int app_kas_ifc_handler(ACVP_TEST_CASE *test_case) {
     }
     return 1;
 }
+
+int app_kts_ifc_handler(ACVP_TEST_CASE *test_case) {
+    if (!test_case) {
+        return -1;
+    }
+    return 1;
+}
+
 #endif // ACVP_NO_RUNTIME
 

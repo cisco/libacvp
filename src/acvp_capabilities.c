@@ -142,6 +142,17 @@ static ACVP_KAS_IFC_CAP *allocate_kas_ifc_cap(void) {
     return cap;
 }
 
+static ACVP_KTS_IFC_CAP *allocate_kts_ifc_cap(void) {
+    ACVP_KTS_IFC_CAP *cap = NULL;
+
+    cap = calloc(1, sizeof(ACVP_KTS_IFC_CAP));
+    if (!cap) {
+        return NULL;
+    }
+
+    return cap;
+}
+
 /*!
  * @brief Create and append an ACVP_CAPS_LIST object
  *        to the current list.
@@ -354,6 +365,18 @@ static ACVP_RESULT acvp_cap_list_append(ACVP_CTX *ctx,
         }
         cap_entry->cap.kas_ifc_cap = allocate_kas_ifc_cap();
         if (!cap_entry->cap.kas_ifc_cap) {
+            rv = ACVP_MALLOC_FAIL;
+            goto err;
+        }
+        break;
+
+    case ACVP_KTS_IFC_TYPE:
+        if (cipher != ACVP_KTS_IFC) {
+            rv = ACVP_INVALID_ARG;
+            goto err;
+        }
+        cap_entry->cap.kts_ifc_cap = allocate_kts_ifc_cap();
+        if (!cap_entry->cap.kts_ifc_cap) {
             rv = ACVP_MALLOC_FAIL;
             goto err;
         }
@@ -1410,6 +1433,15 @@ static ACVP_RESULT acvp_validate_prereq_val(ACVP_CIPHER cipher, ACVP_PREREQ_ALG 
             pre_req == ACVP_PREREQ_SHA ||
             pre_req == ACVP_PREREQ_CCM ||
             pre_req == ACVP_PREREQ_DSA) {
+            return ACVP_SUCCESS;
+        }
+        break;
+    case ACVP_KTS_IFC:
+        if (pre_req == ACVP_PREREQ_DRBG || /* will need to add macs if/when supported */
+            pre_req == ACVP_PREREQ_HMAC ||
+            pre_req == ACVP_PREREQ_SHA ||
+            pre_req == ACVP_PREREQ_RSA ||
+            pre_req == ACVP_PREREQ_RSADP) {
             return ACVP_SUCCESS;
         }
         break;
@@ -3919,7 +3951,6 @@ ACVP_RESULT acvp_cap_rsa_keygen_set_exponent(ACVP_CTX *ctx,
                     return ACVP_INVALID_ARG;
                 }
 
-                /* Make sure this is deallocated */
                 cap->fixed_pub_exp = calloc(len + 1, sizeof(char));
                 strcpy_s(cap->fixed_pub_exp, len + 1, value);
             } else {
@@ -3973,7 +4004,6 @@ ACVP_RESULT acvp_cap_rsa_sigver_set_exponent(ACVP_CTX *ctx,
                     return ACVP_INVALID_ARG;
                 }
 
-                /* Make sure this is deallocated */
                 cap->fixed_pub_exp = calloc(len + 1, sizeof(char));
                 strcpy_s(cap->fixed_pub_exp, len + 1, value);
             } else {
@@ -4687,7 +4717,6 @@ ACVP_RESULT acvp_cap_rsa_prim_set_exponent(ACVP_CTX *ctx,
                     return ACVP_INVALID_ARG;
                 }
 
-                /* Make sure this is deallocated */
                 cap->fixed_pub_exp = calloc(len + 1, sizeof(char));
                 strcpy_s(cap->fixed_pub_exp, len + 1, value);
             } else {
@@ -7759,8 +7788,320 @@ ACVP_RESULT acvp_cap_kas_ifc_set_exponent(ACVP_CTX *ctx,
         return ACVP_INVALID_ARG;
     }
 
-    /* Make sure this is deallocated */
     kas_ifc_cap->fixed_pub_exp = calloc(len + 1, sizeof(char));
     strcpy_s(kas_ifc_cap->fixed_pub_exp, len + 1, value);
+    return ACVP_SUCCESS;
+}
+
+ACVP_RESULT acvp_cap_kts_ifc_enable(ACVP_CTX *ctx,
+                                    ACVP_CIPHER cipher,
+                                    int (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
+    ACVP_CAP_TYPE type = 0;
+    ACVP_RESULT result = ACVP_SUCCESS;
+
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+    if (!crypto_handler) {
+        ACVP_LOG_ERR("NULL parameter 'crypto_handler'");
+        return ACVP_INVALID_ARG;
+    }
+
+    type = ACVP_KTS_IFC_TYPE;
+    result = acvp_cap_list_append(ctx, type, cipher, crypto_handler);
+
+    if (result == ACVP_DUP_CIPHER) {
+        ACVP_LOG_ERR("Capability previously enabled. Duplicate not allowed.");
+    } else if (result == ACVP_MALLOC_FAIL) {
+        ACVP_LOG_ERR("Failed to allocate capability object");
+    }
+
+    return result;
+}
+
+ACVP_RESULT acvp_cap_kts_ifc_set_parm(ACVP_CTX *ctx,
+                                      ACVP_CIPHER cipher,
+                                      ACVP_KTS_IFC_PARAM param,
+                                      int value) {
+
+    ACVP_KTS_IFC_CAP *kts_ifc_cap = NULL;
+    ACVP_CAPS_LIST *cap;
+    ACVP_SL_LIST *current_modulo;
+    ACVP_KTS_IFC_SCHEMES *current_scheme;
+    ACVP_PARAM_LIST *current_keygen_method;
+    ACVP_PARAM_LIST *current_function;
+
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+
+    cap = acvp_locate_cap_entry(ctx, cipher);
+    if (!cap) {
+        return ACVP_NO_CAP;
+    }
+
+    kts_ifc_cap = cap->cap.kts_ifc_cap;
+    if (!kts_ifc_cap) {
+        return ACVP_NO_CAP;
+    }
+
+    switch (param)
+    {
+    case ACVP_KTS_IFC_KEYGEN_METHOD:
+        current_keygen_method = kts_ifc_cap->keygen_method;
+        if (current_keygen_method) {
+            while (current_keygen_method->next) {
+                current_keygen_method = current_keygen_method->next;
+            }
+            current_keygen_method->next = calloc(1, sizeof(ACVP_PARAM_LIST));
+            current_keygen_method->next->param = value;
+        } else {
+            kts_ifc_cap->keygen_method = calloc(1, sizeof(ACVP_PARAM_LIST));
+            kts_ifc_cap->keygen_method->param = value;
+        }
+        break;
+    case ACVP_KTS_IFC_FUNCTION:
+        current_function = kts_ifc_cap->functions;
+        if (current_function) {
+            while (current_function->next) {
+                current_function = current_function->next;
+            }
+            current_function->next = calloc(1, sizeof(ACVP_PARAM_LIST));
+            current_function->next->param = value;
+        } else {
+            kts_ifc_cap->functions = calloc(1, sizeof(ACVP_PARAM_LIST));
+            kts_ifc_cap->functions->param = value;
+        }
+        break;
+    case ACVP_KTS_IFC_MODULO:
+        current_modulo = kts_ifc_cap->modulo;
+        if (current_modulo) {
+            while (current_modulo->next) {
+                current_modulo = current_modulo->next;
+            }
+            current_modulo->next = calloc(1, sizeof(ACVP_SL_LIST));
+            current_modulo->next->length = value;
+        } else {
+            kts_ifc_cap->modulo = calloc(1, sizeof(ACVP_SL_LIST));
+            kts_ifc_cap->modulo->length = value;
+        }
+        break;
+    case ACVP_KTS_IFC_SCHEME:
+        current_scheme = kts_ifc_cap->schemes;
+        if (current_scheme) {
+            while (current_scheme->next) {
+                current_scheme = current_scheme->next;
+            }
+            current_scheme->next = calloc(1, sizeof(ACVP_KTS_IFC_SCHEMES));
+            current_scheme->next->scheme = value;
+        } else {
+            kts_ifc_cap->schemes = calloc(1, sizeof(ACVP_KTS_IFC_SCHEMES));
+            kts_ifc_cap->schemes->scheme = value;
+        }
+        break;
+    case ACVP_KTS_IFC_IUT_ID:
+    case ACVP_KTS_IFC_FIXEDPUBEXP:
+    default:
+        ACVP_LOG_ERR("Invalid param");
+        return ACVP_INVALID_ARG;
+        break;
+    }
+    return ACVP_SUCCESS;
+}
+
+ACVP_RESULT acvp_cap_kts_ifc_set_scheme_parm(ACVP_CTX *ctx,
+                                             ACVP_CIPHER cipher,
+                                             ACVP_KTS_IFC_SCHEME_TYPE scheme,
+                                             ACVP_KTS_IFC_SCHEME_PARAM param,
+                                             int value) {
+
+    ACVP_KTS_IFC_CAP *kts_ifc_cap = NULL;
+    ACVP_CAPS_LIST *cap;
+    ACVP_KTS_IFC_SCHEMES *current_scheme;
+    ACVP_PARAM_LIST *current_role;
+    ACVP_PARAM_LIST *current_hash;
+
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+
+    cap = acvp_locate_cap_entry(ctx, cipher);
+    if (!cap) {
+        return ACVP_NO_CAP;
+    }
+
+    kts_ifc_cap = cap->cap.kts_ifc_cap;
+    if (!kts_ifc_cap) {
+        return ACVP_NO_CAP;
+    }
+
+    current_scheme = kts_ifc_cap->schemes;
+    if (!current_scheme) {
+        return ACVP_NO_CAP;
+    }
+
+    while (current_scheme) {
+        if(current_scheme->scheme != scheme) {
+            current_scheme = current_scheme->next;
+        }
+        break;
+    }
+    if (!current_scheme) {
+        return ACVP_NO_CAP;
+    }
+
+    switch (param)
+    {
+    case ACVP_KTS_IFC_NULL_ASSOC_DATA:
+        current_scheme->null_assoc_data = value;
+        break;
+    case ACVP_KTS_IFC_L:
+        current_scheme->l = value;
+        break;
+    case ACVP_KTS_IFC_ROLE:
+        current_role = current_scheme->roles;
+        if (current_role) {
+            while (current_role->next) {
+                current_role = current_role->next;
+            }
+            current_role->next = calloc(1, sizeof(ACVP_PARAM_LIST));
+            current_role->next->param = value;
+        } else {
+            current_scheme->roles = calloc(1, sizeof(ACVP_PARAM_LIST));
+            current_scheme->roles->param = value;
+        }
+        break;
+    case ACVP_KTS_IFC_HASH:
+        current_hash = current_scheme->hash;
+        if (current_hash) {
+            while (current_hash->next) {
+                current_hash = current_hash->next;
+            }
+            current_hash->next = calloc(1, sizeof(ACVP_PARAM_LIST));
+            current_hash->next->param = value;
+        } else {
+            current_scheme->hash = calloc(1, sizeof(ACVP_PARAM_LIST));
+            current_scheme->hash->param = value;
+        }
+        break;
+    default:
+        ACVP_LOG_ERR("Invalid param");
+        return ACVP_INVALID_ARG;
+        break;
+    }
+    return ACVP_SUCCESS;
+}
+
+ACVP_RESULT acvp_cap_kts_ifc_set_param_string(ACVP_CTX *ctx,
+                                              ACVP_CIPHER cipher,
+                                              ACVP_KTS_IFC_PARAM param,
+                                              char *value) {
+    unsigned int len = strnlen_s(value, ACVP_CAPABILITY_STR_MAX + 1);
+    ACVP_KTS_IFC_CAP *kts_ifc_cap = NULL;
+    ACVP_CAPS_LIST *cap;
+
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+
+    cap = acvp_locate_cap_entry(ctx, cipher);
+    if (!cap) {
+        return ACVP_NO_CAP;
+    }
+
+    kts_ifc_cap = cap->cap.kts_ifc_cap;
+    if (!kts_ifc_cap) {
+        return ACVP_NO_CAP;
+    }
+
+    if (len > ACVP_CAPABILITY_STR_MAX) {
+        ACVP_LOG_ERR("Parameter 'value' string is too long. "
+                     "max allowed is (%d) characters.",
+                      ACVP_CAPABILITY_STR_MAX);
+        return ACVP_INVALID_ARG;
+    }
+    switch (param)
+    {
+    case ACVP_KTS_IFC_FIXEDPUBEXP:
+        kts_ifc_cap->fixed_pub_exp = calloc(len + 1, sizeof(char));
+        strcpy_s(kts_ifc_cap->fixed_pub_exp, len + 1, value);
+        break;
+    case ACVP_KTS_IFC_IUT_ID:
+        kts_ifc_cap->iut_id = calloc(len + 1, sizeof(char));
+        strcpy_s(kts_ifc_cap->iut_id, len + 1, value);
+        break;
+    default:
+        ACVP_LOG_ERR("Invalid param");
+        return ACVP_INVALID_ARG;
+        break;
+    }
+
+    return ACVP_SUCCESS;
+}
+
+ACVP_RESULT acvp_cap_kts_ifc_set_scheme_string(ACVP_CTX *ctx,
+                                               ACVP_CIPHER cipher,
+                                               ACVP_KTS_IFC_SCHEME_TYPE scheme,
+                                               ACVP_KTS_IFC_PARAM param,
+                                               char *value) {
+    unsigned int len = strnlen_s(value, ACVP_CAPABILITY_STR_MAX + 1);
+    ACVP_KTS_IFC_CAP *kts_ifc_cap = NULL;
+    ACVP_CAPS_LIST *cap;
+    ACVP_KTS_IFC_SCHEMES *current_scheme;
+
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+
+    cap = acvp_locate_cap_entry(ctx, cipher);
+    if (!cap) {
+        return ACVP_NO_CAP;
+    }
+
+    kts_ifc_cap = cap->cap.kts_ifc_cap;
+    if (!kts_ifc_cap) {
+        return ACVP_NO_CAP;
+    }
+
+    if (len > ACVP_CAPABILITY_STR_MAX) {
+        ACVP_LOG_ERR("Parameter 'value' string is too long. "
+                     "max allowed is (%d) characters.",
+                      ACVP_CAPABILITY_STR_MAX);
+        return ACVP_INVALID_ARG;
+    }
+
+
+    current_scheme = kts_ifc_cap->schemes;
+    if (!current_scheme) {
+        return ACVP_NO_CAP;
+    }
+
+    while (current_scheme) {
+        if(current_scheme->scheme != scheme) {
+            current_scheme = current_scheme->next;
+        }
+        break;
+    }
+    if (!current_scheme) {
+        return ACVP_NO_CAP;
+    }
+
+
+    switch (param)
+    {
+    case ACVP_KTS_IFC_AD_PATTERN:
+        current_scheme->assoc_data_pattern = calloc(len + 1, sizeof(char));
+        strcpy_s(current_scheme->assoc_data_pattern, len + 1, value);
+        break;
+    case ACVP_KTS_IFC_ENCODING:
+        current_scheme->encodings = calloc(len + 1, sizeof(char));
+        strcpy_s(current_scheme->encodings, len + 1, value);
+        break;
+    default:
+        ACVP_LOG_ERR("Invalid param");
+        return ACVP_INVALID_ARG;
+        break;
+    }
+
     return ACVP_SUCCESS;
 }
