@@ -143,16 +143,6 @@ int fips_dsa_builtin_paramgen2(DSA *ret, size_t L, size_t N,
 
 #define EVP_CIPHER_CTX_set_padding(ctx, pad) {}
 
-int fips_RSA_padding_add_PKCS1_OAEP_mgf1(unsigned char *to, int tlen,
-                                         const unsigned char *from, int flen,
-                                         const unsigned char *param, int plen,
-                                         const EVP_MD *md, const EVP_MD *mgf1md);
-int fips_RSA_padding_check_PKCS1_OAEP_mgf1(unsigned char *to, int tlen,
-                                           const unsigned char *from, int flen,
-                                           int num, const unsigned char *param,
-                                           int plen, const EVP_MD *md,
-                                           const EVP_MD *mgf1md);
-
 int fips_evp_MD_size(const EVP_MD *md);
 const unsigned char *fips_EVP_CIPHER_CTX_iv(const EVP_CIPHER_CTX *ctx);
 void fips_evp_CIPHER_CTX_set_flags(EVP_CIPHER_CTX *ctx, int flags);
