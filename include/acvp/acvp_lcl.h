@@ -200,6 +200,9 @@
 /* KAS_IFC */
 #define ACVP_REV_KAS_IFC_SSC         ACVP_REVISION_SP800_56BR2
 
+/* KTS_IFC */
+#define ACVP_REV_KTS_IFC             ACVP_REVISION_SP800_56BR2
+
 /* KDF */
 #define ACVP_REV_KDF135_TLS          ACVP_REVISION_LATEST
 #define ACVP_REV_KDF135_SNMP         ACVP_REVISION_LATEST
@@ -325,6 +328,9 @@
 
 #define ACVP_ALG_KAS_IFC_SSC         "KAS-IFC-SSC"
 #define ACVP_ALG_KAS_IFC_COMP        ""
+
+#define ACVP_ALG_KTS_IFC             "KTS-IFC"
+#define ACVP_ALG_KTS_IFC_COMP        ""
 
 #define ACVP_ECDSA_EXTRA_BITS_STR "extra bits"
 #define ACVP_ECDSA_EXTRA_BITS_STR_LEN 10
@@ -708,6 +714,10 @@
 #define ACVP_KAS_IFC_BYTE_MAX (ACVP_KAS_IFC_BIT_MAX >> 3)
 #define ACVP_KAS_IFC_STR_MAX (ACVP_KAS_IFC_BIT_MAX >> 2)
 
+#define ACVP_KTS_IFC_BIT_MAX 4096
+#define ACVP_KTS_IFC_BYTE_MAX (ACVP_KTS_IFC_BIT_MAX >> 3)
+#define ACVP_KTS_IFC_STR_MAX (ACVP_KTS_IFC_BIT_MAX >> 2)
+
 #define ACVP_KAS_FFC_BIT_MAX 4096
 #define ACVP_KAS_FFC_BYTE_MAX (ACVP_KAS_FFC_BIT_MAX >> 3)
 #define ACVP_KAS_FFC_STR_MAX (ACVP_KAS_FFC_BIT_MAX >> 2)
@@ -863,7 +873,8 @@ typedef enum acvp_capability_type {
     ACVP_KAS_FFC_COMP_TYPE,
     ACVP_KAS_FFC_SSC_TYPE,
     ACVP_KAS_FFC_NOCOMP_TYPE,
-    ACVP_KAS_IFC_TYPE
+    ACVP_KAS_IFC_TYPE,
+    ACVP_KTS_IFC_TYPE
 } ACVP_CAP_TYPE;
 
 /*
@@ -1242,6 +1253,37 @@ typedef struct acvp_kas_ifc_capability_t {
     ACVP_SL_LIST *modulo;
 } ACVP_KAS_IFC_CAP;
 
+
+typedef struct acvp_kts_ifc_macs_t {
+    ACVP_CIPHER cipher;
+    int key_length;
+    int mac_length;
+    struct acvp_kts_ifc_macs_t *next;
+} ACVP_KTS_IFC_MACS;
+
+typedef struct acvp_kts_ifc_schemes_t {
+    ACVP_KTS_IFC_SCHEME_TYPE scheme;
+    int l;
+    ACVP_PARAM_LIST *roles;
+    ACVP_KTS_IFC_MACS *macs;  /* not yet supported */
+    ACVP_PARAM_LIST *hash;
+    int null_assoc_data;
+    char *assoc_data_pattern;
+    char *encodings;      /* may need to change to SL_LIST */
+    struct acvp_kts_ifc_schemes_t *next;
+} ACVP_KTS_IFC_SCHEMES;
+
+
+typedef struct acvp_kts_ifc_capability_t {
+    ACVP_CIPHER cipher;
+    char *fixed_pub_exp;
+    char *iut_id;
+    ACVP_PARAM_LIST *functions;
+    ACVP_KTS_IFC_SCHEMES *schemes;
+    ACVP_PARAM_LIST *keygen_method;
+    ACVP_SL_LIST *modulo;
+} ACVP_KTS_IFC_CAP;
+
 typedef struct acvp_caps_list_t {
     ACVP_CIPHER cipher;
     ACVP_CAP_TYPE cap_type;
@@ -1274,6 +1316,7 @@ typedef struct acvp_caps_list_t {
         ACVP_KAS_ECC_CAP *kas_ecc_cap;
         ACVP_KAS_FFC_CAP *kas_ffc_cap;
         ACVP_KAS_IFC_CAP *kas_ifc_cap;
+        ACVP_KTS_IFC_CAP *kts_ifc_cap;
     } cap;
 
     int (*crypto_handler)(ACVP_TEST_CASE *test_case);
@@ -1574,6 +1617,9 @@ ACVP_RESULT acvp_kas_ffc_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 ACVP_RESULT acvp_kas_ffc_ssc_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
 ACVP_RESULT acvp_kas_ifc_ssc_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
+
+ACVP_RESULT acvp_kts_ifc_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
+
 /*
  * ACVP build registration functions used internally
  */
