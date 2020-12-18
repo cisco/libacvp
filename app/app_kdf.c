@@ -11,7 +11,6 @@
 #ifdef OPENSSL_KDF_SUPPORT
 #include <openssl/evp.h>
 #include <openssl/bn.h>
-#include <openssl/kdf.h>
 #include "app_lcl.h"
 # include "app_fips_lcl.h"
 
