@@ -13,7 +13,7 @@
 #include "parson.h"
 
 #define ACVP_VERSION    "1.0"
-#define ACVP_LIBRARY_VERSION    "libacvp_oss-1.1.2"
+#define ACVP_LIBRARY_VERSION    "libacvp_oss-1.1.3"
 
 
 #ifndef ACVP_LOG_ERR
@@ -93,7 +93,7 @@
 #define ACVP_LOG_TRUNCATED_STR "...[truncated]\n"
 //This MUST be the length of the above screen (want to avoid calculating at runtime frequently)
 #define ACVP_LOG_TRUNCATED_STR_LEN 15
-#define ACVP_LOG_MAX_MSG_LEN 2048
+#define ACVP_LOG_MAX_MSG_LEN 20000
 
 #define ACVP_BIT2BYTE(x) ((x + 7) >> 3) /**< Convert bit length (x, of type integer) into byte length */
 
@@ -204,6 +204,9 @@
 /* KAS_KDF */
 #define ACVP_REV_KAS_KDF_ONESTEP     ACVP_REVISION_SP800_56CR1
 #define ACVP_REV_KAS_HKDF            ACVP_REVISION_SP800_56CR1
+
+/* KTS_IFC */
+#define ACVP_REV_KTS_IFC             ACVP_REVISION_SP800_56BR2
 
 /* KDF */
 #define ACVP_REV_KDF135_TLS          ACVP_REVISION_LATEST
@@ -334,6 +337,9 @@
 #define ACVP_ALG_KAS_KDF_ALG_STR     "KAS-KDF"
 #define ACVP_ALG_KAS_KDF_ONESTEP     "OneStep"
 #define ACVP_ALG_KAS_HKDF            "HKDF"
+
+#define ACVP_ALG_KTS_IFC             "KTS-IFC"
+#define ACVP_ALG_KTS_IFC_COMP        ""
 
 #define ACVP_ECDSA_EXTRA_BITS_STR "extra bits"
 #define ACVP_ECDSA_EXTRA_BITS_STR_LEN 10
@@ -717,6 +723,10 @@
 #define ACVP_KAS_IFC_BYTE_MAX (ACVP_KAS_IFC_BIT_MAX >> 3)
 #define ACVP_KAS_IFC_STR_MAX (ACVP_KAS_IFC_BIT_MAX >> 2)
 
+#define ACVP_KTS_IFC_BIT_MAX 4096
+#define ACVP_KTS_IFC_BYTE_MAX (ACVP_KTS_IFC_BIT_MAX >> 3)
+#define ACVP_KTS_IFC_STR_MAX (ACVP_KTS_IFC_BIT_MAX >> 2)
+
 #define ACVP_KAS_FFC_BIT_MAX 4096
 #define ACVP_KAS_FFC_BYTE_MAX (ACVP_KAS_FFC_BIT_MAX >> 3)
 #define ACVP_KAS_FFC_STR_MAX (ACVP_KAS_FFC_BIT_MAX >> 2)
@@ -911,7 +921,8 @@ typedef enum acvp_capability_type {
     ACVP_KAS_FFC_NOCOMP_TYPE,
     ACVP_KAS_IFC_TYPE,
     ACVP_KAS_KDF_ONESTEP_TYPE,
-    ACVP_KAS_HKDF_TYPE
+    ACVP_KAS_HKDF_TYPE,
+    ACVP_KTS_IFC_TYPE
 } ACVP_CAP_TYPE;
 
 /*
@@ -1311,6 +1322,36 @@ typedef struct acvp_kas_hkdf_t {
     int l;
 } ACVP_KAS_HKDF_CAP;
 
+typedef struct acvp_kts_ifc_macs_t {
+    ACVP_CIPHER cipher;
+    int key_length;
+    int mac_length;
+    struct acvp_kts_ifc_macs_t *next;
+} ACVP_KTS_IFC_MACS;
+
+typedef struct acvp_kts_ifc_schemes_t {
+    ACVP_KTS_IFC_SCHEME_TYPE scheme;
+    int l;
+    ACVP_PARAM_LIST *roles;
+    ACVP_KTS_IFC_MACS *macs;  /* not yet supported */
+    ACVP_PARAM_LIST *hash;
+    int null_assoc_data;
+    char *assoc_data_pattern;
+    char *encodings;      /* may need to change to SL_LIST */
+    struct acvp_kts_ifc_schemes_t *next;
+} ACVP_KTS_IFC_SCHEMES;
+
+
+typedef struct acvp_kts_ifc_capability_t {
+    ACVP_CIPHER cipher;
+    char *fixed_pub_exp;
+    char *iut_id;
+    ACVP_PARAM_LIST *functions;
+    ACVP_KTS_IFC_SCHEMES *schemes;
+    ACVP_PARAM_LIST *keygen_method;
+    ACVP_SL_LIST *modulo;
+} ACVP_KTS_IFC_CAP;
+
 typedef struct acvp_caps_list_t {
     ACVP_CIPHER cipher;
     ACVP_CAP_TYPE cap_type;
@@ -1345,6 +1386,7 @@ typedef struct acvp_caps_list_t {
         ACVP_KAS_IFC_CAP *kas_ifc_cap;
         ACVP_KAS_KDF_ONESTEP_CAP *kas_kdf_onestep_cap;
         ACVP_KAS_HKDF_CAP *kas_hkdf_cap;
+        ACVP_KTS_IFC_CAP *kts_ifc_cap;
     } cap;
 
     int (*crypto_handler)(ACVP_TEST_CASE *test_case);
@@ -1649,6 +1691,8 @@ ACVP_RESULT acvp_kas_ifc_ssc_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 ACVP_RESULT acvp_kas_kdf_onestep_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
 ACVP_RESULT acvp_kas_hkdf_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
+
+ACVP_RESULT acvp_kts_ifc_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
 /*
  * ACVP build registration functions used internally

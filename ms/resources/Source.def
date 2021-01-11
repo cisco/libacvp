@@ -105,3 +105,8 @@ EXPORTS
   acvp_cap_kas_ifc_enable
   acvp_cap_kas_ifc_set_parm
   acvp_cap_kas_ifc_set_exponent
+  acvp_cap_kts_ifc_enable
+  acvp_cap_kts_ifc_set_parm
+  acvp_cap_kts_ifc_set_scheme_parm
+  acvp_cap_kts_ifc_set_param_string
+  acvp_cap_kts_ifc_set_scheme_string

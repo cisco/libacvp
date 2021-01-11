@@ -32,6 +32,7 @@ runtest_SOURCES += create_session.c \
       test_acvp_ecdsa.c \
       test_acvp_kas_ecc.c \
       test_acvp_kas_ifc.c \
+      test_acvp_kts_ifc.c \
       test_acvp_kas_ffc.c
 
 tmp_cflags += $(LIBCURL_CFLAGS)

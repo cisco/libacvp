@@ -170,6 +170,7 @@ typedef enum acvp_cipher {
     ACVP_KAS_IFC_SSC,
     ACVP_KAS_KDF_ONESTEP,
     ACVP_KAS_HKDF,
+    ACVP_KTS_IFC,
     ACVP_CIPHER_END
 } ACVP_CIPHER;
 
@@ -185,11 +186,11 @@ typedef enum acvp_prereq_mode_t {
     ACVP_PREREQ_CMAC,
     ACVP_PREREQ_DRBG,
     ACVP_PREREQ_DSA,
-    ACVP_PREREQ_RSA,
-    ACVP_PREREQ_RSADP,
     ACVP_PREREQ_ECDSA,
     ACVP_PREREQ_HMAC,
     ACVP_PREREQ_KAS,
+    ACVP_PREREQ_RSA,
+    ACVP_PREREQ_RSADP,
     ACVP_PREREQ_SHA,
     ACVP_PREREQ_TDES
 } ACVP_PREREQ_ALG;
@@ -1608,6 +1609,92 @@ typedef struct acvp_kas_hkdf_tc_t {
     unsigned char *outputDkm;
 } ACVP_KAS_HKDF_TC;
 
+typedef enum acvp_kts_ifc_param {
+    ACVP_KTS_IFC_KEYGEN_METHOD = 1,
+    ACVP_KTS_IFC_SCHEME,
+    ACVP_KTS_IFC_FUNCTION,
+    ACVP_KTS_IFC_MODULO,
+    ACVP_KTS_IFC_IUT_ID,
+    ACVP_KTS_IFC_KEYPAIR_GEN,
+    ACVP_KTS_IFC_PARTIAL_VAL,
+    ACVP_KTS_IFC_FIXEDPUBEXP
+} ACVP_KTS_IFC_PARAM;
+
+typedef enum acvp_kts_ifc_keygen {
+    ACVP_KTS_IFC_RSAKPG1_BASIC = 1,
+    ACVP_KTS_IFC_RSAKPG1_PRIME_FACTOR,
+    ACVP_KTS_IFC_RSAKPG1_CRT,
+    ACVP_KTS_IFC_RSAKPG2_BASIC,
+    ACVP_KTS_IFC_RSAKPG2_PRIME_FACTOR,
+    ACVP_KTS_IFC_RSAKPG2_CRT
+} ACVP_KTS_IFC_KEYGEN;
+
+/*! @struct ACVP_KTS_IFC_ROLE */
+typedef enum acvp_kts_ifc_roles {
+    ACVP_KTS_IFC_INITIATOR = 1,
+    ACVP_KTS_IFC_RESPONDER
+} ACVP_KTS_IFC_ROLES;
+
+typedef enum acvp_kts_ifc_scheme_param {
+    ACVP_KTS_IFC_NULL_ASSOC_DATA = 1,
+    ACVP_KTS_IFC_AD_PATTERN,
+    ACVP_KTS_IFC_ENCODING,
+    ACVP_KTS_IFC_HASH,
+    ACVP_KTS_IFC_ROLE,
+    ACVP_KTS_IFC_L,
+    ACVP_KTS_IFC_MAC_METHODS
+} ACVP_KTS_IFC_SCHEME_PARAM;
+
+/*! @struct ACVP_KTS_IFC_SCHEMES */
+typedef enum acvp_kts_ifc_scheme_type {
+    ACVP_KTS_IFC_KAS1_BASIC = 1,
+    ACVP_KTS_IFC_KAS1_PARTYV,
+    ACVP_KTS_IFC_KAS2_BASIC,
+    ACVP_KTS_IFC_KAS2_BILATERAL,
+    ACVP_KTS_IFC_KAS2_PARTYU,
+    ACVP_KTS_IFC_KAS2_PARTYV
+} ACVP_KTS_IFC_SCHEME_TYPE;
+
+#define ACVP_KAS_IFC_CONCAT 2
+/*! @struct ACVP_KTS_IFC_TEST_TYPE */
+typedef enum acvp_kts_ifc_test_type {
+    ACVP_KTS_IFC_TT_AFT = 1,
+    ACVP_KTS_IFC_TT_VAL
+} ACVP_KTS_IFC_TEST_TYPE;
+
+
+
+/*!
+ * @struct ACVP_KTS_IFC_TC
+ * @brief This struct holds data that represents a single test
+ * case for KAS-IFC testing.  This data is
+ * passed between libacvp and the crypto module.
+ */
+/*! @struct ACVP_KTS_IFC_TC */
+typedef struct acvp_kts_ifc_tc_t {
+    ACVP_CIPHER cipher;
+    ACVP_KTS_IFC_TEST_TYPE test_type;
+    ACVP_KTS_IFC_KEYGEN key_gen;
+    ACVP_HASH_ALG md;
+    ACVP_KTS_IFC_ROLES kts_role;
+    ACVP_KTS_IFC_SCHEME_TYPE scheme;
+    unsigned char *p;
+    unsigned char *q;
+    unsigned char *d;
+    unsigned char *n;
+    unsigned char *e;
+    unsigned char *ct;
+    unsigned char *pt;
+    int llen;
+    int plen;
+    int qlen;
+    int nlen;
+    int dlen;
+    int elen;
+    int ct_len;
+    int pt_len;
+    int modulo;
+} ACVP_KTS_IFC_TC;
 
 /*!
  * @struct ACVP_DRBG_TC
@@ -1679,6 +1766,7 @@ typedef struct acvp_test_case_t {
         ACVP_KAS_IFC_TC *kas_ifc;
         ACVP_KAS_KDF_ONESTEP_TC *kas_kdf_onestep;
         ACVP_KAS_HKDF_TC *kas_hkdf;
+        ACVP_KTS_IFC_TC *kts_ifc;
     } tc;
 } ACVP_TEST_CASE;
 
@@ -2101,6 +2189,121 @@ ACVP_RESULT acvp_cap_kas_ifc_set_exponent(ACVP_CTX *ctx,
                                           ACVP_KAS_IFC_PARAM param,
                                           char *value);
 
+
+/*! @brief acvp_cap_kts_ifc_enable()
+
+   This function should be used to enable KTS-IFC capabilities. Specific modes
+   and parameters can use acvp_enable_kts_ifc_set_parm, acvp_cap_kts_ifc_set_param_string
+   and acvp_cap_kts_ifc_set_scheme_string.
+
+   When the application enables a crypto capability, such as KTS-IFC, it
+   also needs to specify a callback function that will be used by libacvp
+   when that crypto capability is needed during a test session.
+
+   @param ctx Address of pointer to a previously allocated ACVP_CTX.
+   @param cipher ACVP_CIPHER enum value identifying the crypto capability.
+   @param crypto_handler Address of function implemented by application that
+       is invoked by libacvp when the crypto capability is needed during
+       a test session. This crypto_handler function is expected to return
+       0 on success and 1 for failure.
+
+   @return ACVP_RESULT
+ */
+ACVP_RESULT acvp_cap_kts_ifc_enable(ACVP_CTX *ctx,
+                                    ACVP_CIPHER cipher,
+                                    int (*crypto_handler)(ACVP_TEST_CASE *test_case));
+
+
+/*! @brief acvp_cap_kts_ifc_set_parm() allows an application to specify
+       operational parameters to be used for a given alg during a
+       test session with the ACVP server.
+
+    This function should be called to enable crypto capabilities for
+    KTS-IFC modes and functions. It may be called  multiple times to specify
+    more than one crypto capability.
+
+    @param ctx Address of pointer to a previously allocated ACVP_CTX.
+    @param cipher ACVP_CIPHER enum value identifying the crypto capability.
+    @param param ACVP_KTS_IFC_PARAM enum value identifying the algorithm parameter
+       that is being specified.  An example would be ACVP_KTS_IFC_????
+    @param value the value corresponding to the parameter being set
+
+    @return ACVP_RESULT
+ */
+ACVP_RESULT acvp_cap_kts_ifc_set_parm(ACVP_CTX *ctx,
+                                      ACVP_CIPHER cipher,
+                                      ACVP_KTS_IFC_PARAM param,
+                                      int value);
+
+/*! @brief acvp_cap_kts_ifc_set_scheme_parm() allows an application to specify
+       operational parameters to be used for KTS-IFC scheme parameters  during a
+       test session with the ACVP server.
+
+    This function should be called to enable crypto capabilities for
+    KTS-IFC modes and functions. It may be called  multiple times to specify
+    more than one crypto capability.
+
+    @param ctx Address of pointer to a previously allocated ACVP_CTX.
+    @param cipher ACVP_CIPHER enum value identifying the crypto capability.
+    @param param ACVP_KTS_IFC_SCHEME enum value identifying the scheme type
+       that is being specified.  An example would be ACVP_KTS_IFC_KAS1_BASIC
+    @param param ACVP_KTS_IFC_SCHEME_PARAM enum value identifying the scheme option
+       that is being specified.  An example would be ACVP_KTS_IFC_ROLE
+    @param value the value corresponding to the parameter being set
+
+    @return ACVP_RESULT
+ */
+ACVP_RESULT acvp_cap_kts_ifc_set_scheme_parm(ACVP_CTX *ctx,
+                                             ACVP_CIPHER cipher,
+                                             ACVP_KTS_IFC_SCHEME_TYPE scheme,
+                                             ACVP_KTS_IFC_SCHEME_PARAM param,
+                                             int value);
+
+/*! @brief acvp_cap_kts_ifc_set_param_string() allows an application to specify
+       string based params to be used for a given alg during a
+       test session with the ACVP server.
+
+    This function should be called to enable crypto capabilities for
+    KTS-IFC modes and functions. It may be called  multiple times to specify
+    more than one crypto capability.
+
+    @param ctx Address of pointer to a previously allocated ACVP_CTX.
+    @param cipher ACVP_CIPHER enum value identifying the crypto capability.
+    @param param ACVP_KTS_IFC_PARAM enum value identifying the algorithm parameter
+       that is being specified.  An example would be ACVP_KTS_IFC_FIXEDPUBEXP
+    @param value the string value corresponding to the public exponent being set
+
+    @return ACVP_RESULT
+ */
+ACVP_RESULT acvp_cap_kts_ifc_set_param_string(ACVP_CTX *ctx,
+                                             ACVP_CIPHER cipher,
+                                             ACVP_KTS_IFC_PARAM param,
+                                             char *value);
+
+/*! @brief acvp_cap_kts_ifc_set_scheme_string() allows an application to specify
+       string based params to be used for a given alg during a
+       test session with the ACVP server.
+
+    This function should be called to enable crypto capabilities for
+    KTS-IFC modes and functions. It may be called  multiple times to specify
+    more than one crypto capability.
+
+    @param ctx Address of pointer to a previously allocated ACVP_CTX.
+    @param cipher ACVP_CIPHER enum value identifying the crypto capability.
+    @param param ACVP_KTS_IFC_SCHEME enum value identifying the scheme type
+       that is being specified.  An example would be ACVP_KTS_IFC_KAS1_BASIC
+    @param param ACVP_KTS_IFC_PARAM enum value identifying the algorithm parameter
+       that is being specified.  An example would be ACVP_KTS_IFC_ENCODING
+    @param value the string value corresponding to the public exponent being set
+
+    @return ACVP_RESULT
+ */
+ACVP_RESULT acvp_cap_kts_ifc_set_scheme_string(ACVP_CTX *ctx,
+                                               ACVP_CIPHER cipher,
+                                               ACVP_KTS_IFC_SCHEME_TYPE scheme,
+                                               ACVP_KTS_IFC_PARAM param,
+                                               char *value);
+
 /*! @brief acvp_enable_kas_ffc_cap()
 
    This function should be used to enable KAS-FFC capabilities. Specific modes
@@ -2119,6 +2322,7 @@ ACVP_RESULT acvp_cap_kas_ifc_set_exponent(ACVP_CTX *ctx,
 
    @return ACVP_RESULT
  */
+
 ACVP_RESULT acvp_cap_kas_ffc_enable(ACVP_CTX *ctx,
                                     ACVP_CIPHER cipher,
                                     int (*crypto_handler)(ACVP_TEST_CASE *test_case));

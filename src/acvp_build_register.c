@@ -26,7 +26,7 @@ typedef struct acvp_prereqs_mode_name_t {
     const char *name;
 } ACVP_PREREQ_MODE_NAME;
 
-#define ACVP_NUM_PREREQS 10
+#define ACVP_NUM_PREREQS 12
 struct acvp_prereqs_mode_name_t acvp_prereqs_tbl[ACVP_NUM_PREREQS] = {
     { ACVP_PREREQ_AES,   "AES"   },
     { ACVP_PREREQ_CCM,   "CCM"   },
@@ -36,6 +36,8 @@ struct acvp_prereqs_mode_name_t acvp_prereqs_tbl[ACVP_NUM_PREREQS] = {
     { ACVP_PREREQ_ECDSA, "ECDSA" },
     { ACVP_PREREQ_HMAC,  "HMAC"  },
     { ACVP_PREREQ_KAS,   "KAS"   },
+    { ACVP_PREREQ_RSA,   "RSA"   },
+    { ACVP_PREREQ_RSADP, "RSADP" },
     { ACVP_PREREQ_SHA,   "SHA"   },
     { ACVP_PREREQ_TDES,  "TDES"  }
 };
@@ -3432,6 +3434,184 @@ err:
     return rv;
 }
 
+static ACVP_RESULT acvp_build_kts_ifc_register_cap(ACVP_CTX *ctx,
+                                                   JSON_Object *cap_obj,
+                                                   ACVP_CAPS_LIST *cap_entry) {
+    JSON_Array *temp_arr = NULL;
+    ACVP_RESULT result;
+    const char *revision = NULL;
+    ACVP_KTS_IFC_CAP *kts_ifc_cap = NULL;
+    ACVP_PARAM_LIST *current_param;
+    ACVP_KTS_IFC_SCHEMES *current_scheme;
+    ACVP_SL_LIST *current_len;
+    JSON_Value *sch_val = NULL;
+    JSON_Object *sch_obj = NULL;
+    JSON_Value *meth_val = NULL;
+    JSON_Object *meth_obj = NULL;
+    JSON_Value *guts_val = NULL;
+    JSON_Object *guts_obj = NULL;
+
+    kts_ifc_cap = cap_entry->cap.kts_ifc_cap;
+    if (!kts_ifc_cap) {
+        return ACVP_NO_CAP;
+    }
+
+    if (cap_entry->prereq_vals) {
+        json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
+
+        revision = acvp_lookup_cipher_revision(cap_entry->cipher);
+        if (revision == NULL) return ACVP_INVALID_ARG;
+        json_object_set_string(cap_obj, "revision", revision);
+        result = acvp_lookup_prereqVals(cap_obj, cap_entry);
+        if (result != ACVP_SUCCESS) { return result; }
+    }
+    json_object_set_string(cap_obj, "fixedPubExp", (const char *)kts_ifc_cap->fixed_pub_exp);
+    json_object_set_string(cap_obj, "iutId", (const char *)kts_ifc_cap->iut_id);
+
+    json_object_set_value(cap_obj, "modulo", json_value_init_array());
+    temp_arr = json_object_get_array(cap_obj, "modulo");
+    current_len = kts_ifc_cap->modulo;
+    while (current_len) {
+        json_array_append_number(temp_arr, current_len->length);
+        current_len = current_len->next;
+    }
+
+    json_object_set_value(cap_obj, "keyGenerationMethods", json_value_init_array());
+    temp_arr = json_object_get_array(cap_obj, "keyGenerationMethods");
+    current_param = kts_ifc_cap->keygen_method;
+    while (current_param) {
+        switch (current_param->param)
+        {
+            case ACVP_KTS_IFC_RSAKPG1_BASIC:
+                json_array_append_string(temp_arr, "rsakpg1-basic");
+                break;
+            case ACVP_KTS_IFC_RSAKPG1_PRIME_FACTOR:
+                json_array_append_string(temp_arr, "rsakpg1-prime-factor");
+                break;
+            case ACVP_KTS_IFC_RSAKPG1_CRT:
+                json_array_append_string(temp_arr, "rsakpg1-crt");
+                break;
+            case ACVP_KTS_IFC_RSAKPG2_BASIC:
+                json_array_append_string(temp_arr, "rsakpg2-basic");
+                break;
+            case ACVP_KTS_IFC_RSAKPG2_PRIME_FACTOR:
+                json_array_append_string(temp_arr, "rsakpg2-prime-factor");
+                break;
+            case ACVP_KTS_IFC_RSAKPG2_CRT:
+                json_array_append_string(temp_arr, "rsakpg2-crt");
+                break;
+            default:
+                ACVP_LOG_ERR("Unsupported KTS-IFC keygen param %d", current_param->param);
+                return ACVP_INVALID_ARG;
+                break;
+        }
+        current_param = current_param->next;
+    }
+
+    json_object_set_value(cap_obj, "function", json_value_init_array());
+    temp_arr = json_object_get_array(cap_obj, "function");
+    current_param = kts_ifc_cap->functions;
+    while (current_param) {
+        switch (current_param->param)
+        {
+            case ACVP_KTS_IFC_KEYPAIR_GEN:
+                json_array_append_string(temp_arr, "keyPairGen");
+                break;
+            case ACVP_KTS_IFC_PARTIAL_VAL:
+                json_array_append_string(temp_arr, "partialVal");
+                break;
+            default:
+                ACVP_LOG_ERR("Unsupported KTS-IFC function param %d", current_param->param);
+                return ACVP_INVALID_ARG;
+                break;
+        }
+        current_param = current_param->next;
+    }
+
+    current_scheme = kts_ifc_cap->schemes;
+    if (!current_scheme) {
+        return ACVP_NO_CAP;
+    }
+    sch_val = json_value_init_object();
+    sch_obj = json_value_get_object(sch_val);
+
+    while (current_scheme) {
+
+        guts_val = json_value_init_object();
+        guts_obj = json_value_get_object(guts_val);
+
+        json_object_set_number(guts_obj, "l", current_scheme->l);
+
+        current_param = current_scheme->roles;
+        if (current_param) {
+            json_object_set_value(guts_obj, "kasRole", json_value_init_array());
+            temp_arr = json_object_get_array(guts_obj, "kasRole");
+            while (current_param) {
+                switch (current_param->param)
+                {
+                    case ACVP_KTS_IFC_INITIATOR:
+                        json_array_append_string(temp_arr, "initiator");
+                        break;
+                    case ACVP_KTS_IFC_RESPONDER:
+                        json_array_append_string(temp_arr, "responder");
+                        break;
+                    default:
+                        ACVP_LOG_ERR("Unsupported KTS-IFC role param %d", current_param->param);
+                        return ACVP_INVALID_ARG;
+                        break;
+                }
+                current_param = current_param->next;
+            }
+        }
+
+        meth_val = json_value_init_object();
+        meth_obj = json_value_get_object(meth_val);
+
+        current_param = current_scheme->hash;
+        if (current_param) {
+            json_object_set_value(meth_obj, "hashAlgs", json_value_init_array());
+            temp_arr = json_object_get_array(meth_obj, "hashAlgs");
+            while (current_param) {
+                switch (current_param->param)
+                {
+                case ACVP_SHA224:
+                    json_array_append_string(temp_arr, "SHA2-224");
+                    break;
+                case ACVP_SHA256:
+                    json_array_append_string(temp_arr, "SHA2-256");
+                    break;
+                case ACVP_SHA384:
+                    json_array_append_string(temp_arr, "SHA2-384");
+                    break;
+                case ACVP_SHA512:
+                    json_array_append_string(temp_arr, "SHA2-512");
+                    break;
+                default:
+                    ACVP_LOG_ERR("Unsupported KTS-IFC sha param %d", current_param->param);
+                    return ACVP_INVALID_ARG;
+                    break;
+                }
+                current_param = current_param->next;
+            }
+        }
+        json_object_set_boolean(meth_obj, "supportsNullAssociatedData", current_scheme->null_assoc_data);
+        if (current_scheme->assoc_data_pattern) {
+            json_object_set_string(meth_obj, "associatedDataPattern", current_scheme->assoc_data_pattern);
+        }
+        json_object_set_value(meth_obj, "encoding", json_value_init_array());
+        temp_arr = json_object_get_array(meth_obj, "encoding");
+        json_array_append_string(temp_arr, current_scheme->encodings);
+        json_object_set_value(guts_obj, "ktsMethod", meth_val);
+        json_object_set_value(sch_obj, "KTS-OAEP-basic", guts_val);
+        
+        current_scheme = current_scheme->next;
+    }
+
+    json_object_set_value(cap_obj, "scheme", sch_val);
+
+    return ACVP_SUCCESS;
+}
+
 /*
  * This function builds the JSON register message that
  * will be sent to the ACVP server to advertised the crypto
@@ -3649,6 +3829,9 @@ ACVP_RESULT acvp_build_test_session(ACVP_CTX *ctx, char **reg, int *out_len) {
                 break;
             case ACVP_KAS_HKDF:
                 rv = acvp_build_kas_hkdf_register_cap(ctx, cap_obj, cap_entry);
+                break;
+            case ACVP_KTS_IFC:
+                rv = acvp_build_kts_ifc_register_cap(ctx, cap_obj, cap_entry);
                 break;
            case ACVP_CIPHER_START:
            case ACVP_TDES_CBCI:

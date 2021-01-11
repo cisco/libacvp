@@ -198,6 +198,7 @@ DSA_SIG *FIPS_dsa_sig_new(void);
 void FIPS_dsa_sig_free(DSA_SIG *sig);
 #endif
 
+void fips_rsa_get0_factors(const RSA *r, const BIGNUM **p, const BIGNUM **q);
 int FIPS_rsa_private_decrypt(int flen, const unsigned char *from, 
 		             unsigned char *to, RSA *rsa,int padding);
 int FIPS_rsa_private_encrypt(int flen, const unsigned char *from,

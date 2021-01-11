@@ -69,7 +69,7 @@ typedef struct app_config {
     /* These require the fom */
     int dsa; int rsa;
     int drbg; int ecdsa;
-    int kas_ecc; int kas_ffc; int kas_ifc; int kas_kdf;
+    int kas_ecc; int kas_ffc; int kas_ifc; int kas_kdf; int kts_ifc;
     int kdf;
 } APP_CONFIG;
 
@@ -111,6 +111,7 @@ int app_kas_ffc_handler(ACVP_TEST_CASE *test_case);
 int app_kas_ifc_handler(ACVP_TEST_CASE *test_case);
 int app_kas_hkdf_handler(ACVP_TEST_CASE *test_case);
 int app_kas_kdf_onestep_handler(ACVP_TEST_CASE *test_case);
+int app_kts_ifc_handler(ACVP_TEST_CASE *test_case);
 int app_rsa_keygen_handler(ACVP_TEST_CASE *test_case);
 int app_rsa_sig_handler(ACVP_TEST_CASE *test_case);
 int app_rsa_decprim_handler(ACVP_TEST_CASE *test_case);
