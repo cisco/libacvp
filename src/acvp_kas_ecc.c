@@ -906,6 +906,8 @@ ACVP_RESULT acvp_kas_ecc_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     case ACVP_PBKDF:
     case ACVP_KAS_FFC_COMP:
     case ACVP_KAS_FFC_NOCOMP:
+    case ACVP_KAS_KDF_ONESTEP:
+    case ACVP_KAS_HKDF:
     case ACVP_CIPHER_END:
     default:
         ACVP_LOG_ERR("ACVP server requesting unsupported KAS-ECC mode");

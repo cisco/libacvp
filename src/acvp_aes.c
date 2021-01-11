@@ -229,6 +229,8 @@ static ACVP_RESULT acvp_aes_mct_iterate_tc(ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *st
     case ACVP_KAS_ECC_NOCOMP:
     case ACVP_KAS_FFC_COMP:
     case ACVP_KAS_FFC_NOCOMP:
+    case ACVP_KAS_KDF_ONESTEP:
+    case ACVP_KAS_HKDF:
     case ACVP_CIPHER_END:
     default:
         break;
