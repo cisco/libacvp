@@ -93,7 +93,7 @@
 #define ACVP_LOG_TRUNCATED_STR "...[truncated]\n"
 //This MUST be the length of the above screen (want to avoid calculating at runtime frequently)
 #define ACVP_LOG_TRUNCATED_STR_LEN 15
-#define ACVP_LOG_MAX_MSG_LEN 20000
+#define ACVP_LOG_MAX_MSG_LEN 2048
 
 #define ACVP_BIT2BYTE(x) ((x + 7) >> 3) /**< Convert bit length (x, of type integer) into byte length */
 
