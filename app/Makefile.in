@@ -109,8 +109,8 @@ am_acvp_app_OBJECTS = acvp_app-app_main.$(OBJEXT) \
 	acvp_app-app_drbg.$(OBJEXT) acvp_app-app_dsa.$(OBJEXT) \
 	acvp_app-app_ecdsa.$(OBJEXT) acvp_app-app_hmac.$(OBJEXT) \
 	acvp_app-app_kas.$(OBJEXT) acvp_app-app_kdf.$(OBJEXT) \
-	acvp_app-app_rsa.$(OBJEXT) acvp_app-app_sha.$(OBJEXT) \
-	acvp_app-app_utils.$(OBJEXT)
+	acvp_app-app_kas_kdf.$(OBJEXT) acvp_app-app_rsa.$(OBJEXT) \
+	acvp_app-app_sha.$(OBJEXT) acvp_app-app_utils.$(OBJEXT)
 acvp_app_OBJECTS = $(am_acvp_app_OBJECTS)
 @USE_FOM_TRUE@acvp_app_DEPENDENCIES = $(FOM_OBJ_DIR)/fipscanister.o
 AM_V_lt = $(am__v_lt_@AM_V@)
@@ -144,6 +144,7 @@ am__depfiles_remade = ./$(DEPDIR)/acvp_app-app_aes.Po \
 	./$(DEPDIR)/acvp_app-app_ecdsa.Po \
 	./$(DEPDIR)/acvp_app-app_hmac.Po \
 	./$(DEPDIR)/acvp_app-app_kas.Po \
+	./$(DEPDIR)/acvp_app-app_kas_kdf.Po \
 	./$(DEPDIR)/acvp_app-app_kdf.Po \
 	./$(DEPDIR)/acvp_app-app_main.Po \
 	./$(DEPDIR)/acvp_app-app_rsa.Po \
@@ -338,6 +339,7 @@ acvp_app_SOURCES = app_main.c \
 				   app_hmac.c \
 				   app_kas.c \
 				   app_kdf.c \
+                                   app_kas_kdf.c \
 				   app_rsa.c \
 				   app_sha.c \
 				   app_utils.c \
@@ -451,6 +453,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/acvp_app-app_ecdsa.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/acvp_app-app_hmac.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/acvp_app-app_kas.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/acvp_app-app_kas_kdf.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/acvp_app-app_kdf.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/acvp_app-app_main.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/acvp_app-app_rsa.Po@am__quote@ # am--include-marker
@@ -641,6 +644,20 @@ acvp_app-app_kdf.obj: app_kdf.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -c -o acvp_app-app_kdf.obj `if test -f 'app_kdf.c'; then $(CYGPATH_W) 'app_kdf.c'; else $(CYGPATH_W) '$(srcdir)/app_kdf.c'; fi`
 
+acvp_app-app_kas_kdf.o: app_kas_kdf.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -MT acvp_app-app_kas_kdf.o -MD -MP -MF $(DEPDIR)/acvp_app-app_kas_kdf.Tpo -c -o acvp_app-app_kas_kdf.o `test -f 'app_kas_kdf.c' || echo '$(srcdir)/'`app_kas_kdf.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/acvp_app-app_kas_kdf.Tpo $(DEPDIR)/acvp_app-app_kas_kdf.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='app_kas_kdf.c' object='acvp_app-app_kas_kdf.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -c -o acvp_app-app_kas_kdf.o `test -f 'app_kas_kdf.c' || echo '$(srcdir)/'`app_kas_kdf.c
+
+acvp_app-app_kas_kdf.obj: app_kas_kdf.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -MT acvp_app-app_kas_kdf.obj -MD -MP -MF $(DEPDIR)/acvp_app-app_kas_kdf.Tpo -c -o acvp_app-app_kas_kdf.obj `if test -f 'app_kas_kdf.c'; then $(CYGPATH_W) 'app_kas_kdf.c'; else $(CYGPATH_W) '$(srcdir)/app_kas_kdf.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/acvp_app-app_kas_kdf.Tpo $(DEPDIR)/acvp_app-app_kas_kdf.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='app_kas_kdf.c' object='acvp_app-app_kas_kdf.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -c -o acvp_app-app_kas_kdf.obj `if test -f 'app_kas_kdf.c'; then $(CYGPATH_W) 'app_kas_kdf.c'; else $(CYGPATH_W) '$(srcdir)/app_kas_kdf.c'; fi`
+
 acvp_app-app_rsa.o: app_rsa.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -MT acvp_app-app_rsa.o -MD -MP -MF $(DEPDIR)/acvp_app-app_rsa.Tpo -c -o acvp_app-app_rsa.o `test -f 'app_rsa.c' || echo '$(srcdir)/'`app_rsa.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/acvp_app-app_rsa.Tpo $(DEPDIR)/acvp_app-app_rsa.Po
@@ -826,6 +843,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/acvp_app-app_ecdsa.Po
 	-rm -f ./$(DEPDIR)/acvp_app-app_hmac.Po
 	-rm -f ./$(DEPDIR)/acvp_app-app_kas.Po
+	-rm -f ./$(DEPDIR)/acvp_app-app_kas_kdf.Po
 	-rm -f ./$(DEPDIR)/acvp_app-app_kdf.Po
 	-rm -f ./$(DEPDIR)/acvp_app-app_main.Po
 	-rm -f ./$(DEPDIR)/acvp_app-app_rsa.Po
@@ -885,6 +903,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/acvp_app-app_ecdsa.Po
 	-rm -f ./$(DEPDIR)/acvp_app-app_hmac.Po
 	-rm -f ./$(DEPDIR)/acvp_app-app_kas.Po
+	-rm -f ./$(DEPDIR)/acvp_app-app_kas_kdf.Po
 	-rm -f ./$(DEPDIR)/acvp_app-app_kdf.Po
 	-rm -f ./$(DEPDIR)/acvp_app-app_main.Po
 	-rm -f ./$(DEPDIR)/acvp_app-app_rsa.Po

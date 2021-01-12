@@ -109,6 +109,7 @@
 #define ACVP_REVISION_FIPS186_4 "FIPS186-4"
 #define ACVP_REVISION_SP800_56AR3 "Sp800-56Ar3"
 #define ACVP_REVISION_SP800_56BR2 "Sp800-56Br2"
+#define ACVP_REVISION_SP800_56CR1 "Sp800-56Cr1"
 
 /* AES */
 #define ACVP_REV_AES_ECB             ACVP_REVISION_LATEST
@@ -199,6 +200,10 @@
 
 /* KAS_IFC */
 #define ACVP_REV_KAS_IFC_SSC         ACVP_REVISION_SP800_56BR2
+
+/* KAS_KDF */
+#define ACVP_REV_KAS_KDF_ONESTEP     ACVP_REVISION_SP800_56CR1
+#define ACVP_REV_KAS_HKDF            ACVP_REVISION_SP800_56CR1
 
 /* KTS_IFC */
 #define ACVP_REV_KTS_IFC             ACVP_REVISION_SP800_56BR2
@@ -328,6 +333,10 @@
 
 #define ACVP_ALG_KAS_IFC_SSC         "KAS-IFC-SSC"
 #define ACVP_ALG_KAS_IFC_COMP        ""
+
+#define ACVP_ALG_KAS_KDF_ALG_STR     "KAS-KDF"
+#define ACVP_ALG_KAS_KDF_ONESTEP     "OneStep"
+#define ACVP_ALG_KAS_HKDF            "HKDF"
 
 #define ACVP_ALG_KTS_IFC             "KTS-IFC"
 #define ACVP_ALG_KTS_IFC_COMP        ""
@@ -755,6 +764,38 @@
  * END RSA
  */
 
+#define ACVP_KAS_KDF_ENCODING_CONCATENATION_STR "concatenation"
+#define ACVP_KAS_KDF_MAC_SALT_METHOD_DEFAULT_STR "default"
+#define ACVP_KAS_KDF_MAC_SALT_METHOD_RANDOM_STR "random"
+#define ACVP_KAS_KDF_PATTERN_LITERAL_STR "literal"
+#define ACVP_KAS_KDF_PATTERN_UPARTYINFO_STR "uPartyInfo"
+#define ACVP_KAS_KDF_PATTERN_VPARTYINFO_STR "vPartyInfo"
+#define ACVP_KAS_KDF_PATTERN_CONTEXT_STR "context"
+#define ACVP_KAS_KDF_PATTERN_ALGID_STR "algorithmId"
+#define ACVP_KAS_KDF_PATTERN_LABEL_STR "label"
+#define ACVP_KAS_KDF_PATTERN_LENGTH_STR "l"
+#define ACVP_KAS_KDF_PATTERN_LITERAL_STR_LEN_MAX 64 //arbitrary
+#define ACVP_KAS_KDF_PATTERN_LITERAL_BYTE_MAX (ACVP_KAS_KDF_PATTERN_LITERAL_STR_LEN_MAX >> 3)
+//arbitrary - leaving extra space in case spec adds more values later
+#define ACVP_KAS_KDF_PATTERN_REG_STR_MAX 256
+
+#define ACVP_KAS_KDF_DKM_BIT_MAX 4096 //arbitrary
+#define ACVP_KAS_KDF_DKM_STR_MAX (ACVP_KAS_KDF_DKM_BIT_MAX >> 2)
+#define ACVP_KAS_KDF_DKM_BYTE_MAX (ACVP_KAS_KDF_DKM_BIT_MAX >> 3)
+
+#define ACVP_KAS_KDF_FIXED_BIT_MAX 1024 //arbitrary
+#define ACVP_KAS_KDF_FIXED_STR_MAX (ACVP_KAS_KDF_FIXED_BIT_MAX >> 2)
+#define ACVP_KAS_KDF_FIXED_BYTE_MAX (ACVP_KAS_KDF_FIXED_BIT_MAX >> 3)
+
+#define ACVP_KAS_KDF_SALT_BIT_MAX 512 //seems tied to hmac length, unclear
+#define ACVP_KAS_KDF_SALT_STR_MAX (ACVP_KAS_KDF_SALT_BIT_MAX >> 2)
+#define ACVP_KAS_KDF_SALT_BYTE_MAX (ACVP_KAS_KDF_SALT_BIT_MAX >> 3)
+
+#define ACVP_KAS_KDF_Z_BIT_MAX 65336 //arbitrary, used spec example
+#define ACVP_KAS_KDF_Z_STR_MAX (ACVP_KAS_KDF_Z_BIT_MAX >> 2)
+#define ACVP_KAS_KDF_Z_BYTE_MAX (ACVP_KAS_KDF_Z_BIT_MAX >> 3)
+
+
 #define ACVP_CURL_BUF_MAX       (1024 * 1024 * 32) /**< 32 MB */
 #define ACVP_RETRY_TIME_MIN     5 /* seconds */
 #define ACVP_RETRY_TIME_MAX     300 
@@ -838,6 +879,11 @@ struct acvp_ec_curve_info {
     const char *name;
 };
 
+struct acvp_aux_function_info {
+    ACVP_CIPHER cipher;
+    const char *name;
+};
+
 /*
  * Used to help manage capability structures
  */
@@ -874,6 +920,8 @@ typedef enum acvp_capability_type {
     ACVP_KAS_FFC_SSC_TYPE,
     ACVP_KAS_FFC_NOCOMP_TYPE,
     ACVP_KAS_IFC_TYPE,
+    ACVP_KAS_KDF_ONESTEP_TYPE,
+    ACVP_KAS_HKDF_TYPE,
     ACVP_KTS_IFC_TYPE
 } ACVP_CAP_TYPE;
 
@@ -1242,7 +1290,6 @@ typedef struct acvp_kas_ffc_capability_t {
     ACVP_KAS_FFC_CAP_MODE *kas_ffc_mode;
 } ACVP_KAS_FFC_CAP;
 
-
 typedef struct acvp_kas_ifc_capability_t {
     ACVP_CIPHER cipher;
     int hash;
@@ -1253,6 +1300,27 @@ typedef struct acvp_kas_ifc_capability_t {
     ACVP_SL_LIST *modulo;
 } ACVP_KAS_IFC_CAP;
 
+typedef struct acvp_kas_kdf_onestep_capability_t {
+    ACVP_CIPHER cipher;
+    ACVP_NAME_LIST *aux_functions;
+    ACVP_NAME_LIST *mac_salt_methods;
+    ACVP_PARAM_LIST *patterns;
+    char *literal_pattern_candidate; //optional - only filled if "literal" pattern is used - hex only
+    ACVP_PARAM_LIST *encodings;
+    ACVP_JSON_DOMAIN_OBJ z;
+    int l;
+} ACVP_KAS_KDF_ONESTEP_CAP;
+
+typedef struct acvp_kas_hkdf_t {
+    ACVP_CIPHER cipher;
+    ACVP_PARAM_LIST *patterns;
+    char *literal_pattern_candidate; //optional - only filled if "literal" pattern is used - hex only
+    ACVP_PARAM_LIST *encodings;
+    ACVP_NAME_LIST *hmac_algs;
+    ACVP_NAME_LIST *mac_salt_methods;
+    ACVP_JSON_DOMAIN_OBJ z;
+    int l;
+} ACVP_KAS_HKDF_CAP;
 
 typedef struct acvp_kts_ifc_macs_t {
     ACVP_CIPHER cipher;
@@ -1316,6 +1384,8 @@ typedef struct acvp_caps_list_t {
         ACVP_KAS_ECC_CAP *kas_ecc_cap;
         ACVP_KAS_FFC_CAP *kas_ffc_cap;
         ACVP_KAS_IFC_CAP *kas_ifc_cap;
+        ACVP_KAS_KDF_ONESTEP_CAP *kas_kdf_onestep_cap;
+        ACVP_KAS_HKDF_CAP *kas_hkdf_cap;
         ACVP_KTS_IFC_CAP *kts_ifc_cap;
     } cap;
 
@@ -1618,6 +1688,10 @@ ACVP_RESULT acvp_kas_ffc_ssc_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
 ACVP_RESULT acvp_kas_ifc_ssc_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
+ACVP_RESULT acvp_kas_kdf_onestep_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
+
+ACVP_RESULT acvp_kas_hkdf_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
+
 ACVP_RESULT acvp_kts_ifc_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
 /*
@@ -1650,6 +1724,8 @@ ACVP_CIPHER acvp_lookup_cipher_index(const char *algorithm);
 
 ACVP_CIPHER acvp_lookup_cipher_w_mode_index(const char *algorithm,
                                             const char *mode);
+
+const char *acvp_lookup_cipher_mode_str(ACVP_CIPHER cipher);
 
 const char *acvp_lookup_cipher_revision(ACVP_CIPHER alg);
 
@@ -1703,6 +1779,11 @@ void acvp_kv_list_free(ACVP_KV_LIST *kv_list);
 void acvp_free_str_list(ACVP_STRING_LIST **list);
 ACVP_RESULT acvp_append_str_list(ACVP_STRING_LIST **list, const char *string);
 int acvp_lookup_str_list(ACVP_STRING_LIST **list, const char *string);
+int acvp_lookup_param_list(ACVP_PARAM_LIST *list, int value);
+const char* acvp_lookup_hmac_alg_str(ACVP_HMAC_ALG_VAL alg);
+const char* acvp_lookup_aux_function_alg_str(ACVP_CIPHER alg);
+ACVP_CIPHER acvp_lookup_aux_function_alg_tbl(const char *str);
+
 
 ACVP_RESULT acvp_json_serialize_to_file_pretty_a(const JSON_Value *value, const char *filename);
 ACVP_RESULT acvp_json_serialize_to_file_pretty_w(const JSON_Value *value, const char *filename);

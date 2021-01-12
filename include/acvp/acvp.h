@@ -168,6 +168,8 @@ typedef enum acvp_cipher {
     ACVP_KAS_FFC_NOCOMP,
     ACVP_KAS_FFC_SSC,
     ACVP_KAS_IFC_SSC,
+    ACVP_KAS_KDF_ONESTEP,
+    ACVP_KAS_HKDF,
     ACVP_KTS_IFC,
     ACVP_CIPHER_END
 } ACVP_CIPHER;
@@ -280,20 +282,20 @@ typedef enum acvp_kdf108_fixed_data_order_val {
     ACVP_KDF108_FIXED_DATA_ORDER_MAX
 } ACVP_KDF108_FIXED_DATA_ORDER_VAL;
 
-/* @struct ACVP_PBKDF_HMAC_ALG_VAL */
-typedef enum acvp_pbkdf_hmac_alg_val {
-    ACVP_PBKDF_HMAC_ALG_MIN,
-    ACVP_PBKDF_HMAC_ALG_SHA1,
-    ACVP_PBKDF_HMAC_ALG_SHA224,
-    ACVP_PBKDF_HMAC_ALG_SHA256,
-    ACVP_PBKDF_HMAC_ALG_SHA384,
-    ACVP_PBKDF_HMAC_ALG_SHA512,
-    ACVP_PBKDF_HMAC_ALG_SHA3_224,
-    ACVP_PBKDF_HMAC_ALG_SHA3_256,
-    ACVP_PBKDF_HMAC_ALG_SHA3_384,
-    ACVP_PBKDF_HMAC_ALG_SHA3_512,
-    ACVP_PBKDF_HMAC_ALG_MAX
-} ACVP_PBKDF_HMAC_ALG_VAL;
+/* @struct ACVP_HMAC_ALG_VAL */
+typedef enum acvp_hmac_alg_val {
+    ACVP_HMAC_ALG_MIN,
+    ACVP_HMAC_ALG_SHA1,
+    ACVP_HMAC_ALG_SHA224,
+    ACVP_HMAC_ALG_SHA256,
+    ACVP_HMAC_ALG_SHA384,
+    ACVP_HMAC_ALG_SHA512,
+    ACVP_HMAC_ALG_SHA3_224,
+    ACVP_HMAC_ALG_SHA3_256,
+    ACVP_HMAC_ALG_SHA3_384,
+    ACVP_HMAC_ALG_SHA3_512,
+    ACVP_HMAC_ALG_MAX
+} ACVP_HMAC_ALG_VAL;
 
 /*! @struct ACVP_SYM_CIPH_KO */
 typedef enum acvp_sym_cipher_keying_option {
@@ -993,7 +995,7 @@ typedef struct acvp_kdf135_ssh_tc_t {
 typedef struct acvp_pbkdf_tc_t {
     ACVP_CIPHER cipher;
     unsigned int tc_id;              /**< Test case id */
-    ACVP_PBKDF_HMAC_ALG_VAL hmac_type;         /**< HMAC algorithm type */
+    ACVP_HMAC_ALG_VAL hmac_type;         /**< HMAC algorithm type */
     ACVP_PBKDF_TESTTYPE test_type;   /**< Test type */
     unsigned int key_len;            /**< Length of key to be generated (in bytes) */
     unsigned char *salt;
@@ -1460,8 +1462,6 @@ typedef enum acvp_kas_ifc_test_type {
     ACVP_KAS_IFC_TT_VAL
 } ACVP_KAS_IFC_TEST_TYPE;
 
-
-
 /*!
  * @struct ACVP_KAS_IFC_TC
  * @brief This struct holds data that represents a single test
@@ -1499,6 +1499,115 @@ typedef struct acvp_kas_ifc_tc_t {
     int chashlen;
 } ACVP_KAS_IFC_TC;
 
+typedef enum acvp_kas_kdf_encoding {
+    ACVP_KAS_KDF_ENCODING_NONE = 0,
+    ACVP_KAS_KDF_ENCODING_CONCAT,
+    ACVP_KAS_KDF_ENCODING_MAX
+} ACVP_KAS_KDF_ENCODING;
+
+typedef enum acvp_kas_kdf_pattern_candidate {
+    ACVP_KAS_KDF_PATTERN_NONE = 0,
+    ACVP_KAS_KDF_PATTERN_LITERAL,
+    ACVP_KAS_KDF_PATTERN_UPARTYINFO,
+    ACVP_KAS_KDF_PATTERN_VPARTYINFO,
+    ACVP_KAS_KDF_PATTERN_CONTEXT,
+    ACVP_KAS_KDF_PATTERN_ALGID,
+    ACVP_KAS_KDF_PATTERN_LABEL,
+    ACVP_KAS_KDF_PATTERN_L,
+    ACVP_KAS_KDF_PATTERN_MAX
+} ACVP_KAS_KDF_PATTERN_CANDIDATE;
+
+typedef enum acvp_kas_kdf_mac_salt_method {
+    ACVP_KAS_KDF_MAC_SALT_METHOD_NONE = 0,
+    ACVP_KAS_KDF_MAC_SALT_METHOD_DEFAULT,
+    ACVP_KAS_KDF_MAC_SALT_METHOD_RANDOM,
+    ACVP_KAS_KDF_MAC_SALT_METHOD_MAX
+} ACVP_KAS_KDF_MAC_SALT_METHOD;
+
+typedef enum acvp_kas_kdf_test_type {
+    ACVP_KAS_KDF_TT_NONE = 0,
+    ACVP_KAS_KDF_TT_AFT,
+    ACVP_KAS_KDF_TT_VAL,
+    ACVP_KAS_KDF_TT_MAX
+} ACVP_KAS_KDF_TEST_TYPE;
+
+typedef enum acvp_kas_kdf_param {
+    ACVP_KAS_KDF_PATTERN = 1,
+    ACVP_KAS_KDF_ENCODING_TYPE,
+    ACVP_KAS_KDF_Z,
+    ACVP_KAS_KDF_L,
+    ACVP_KAS_KDF_MAC_SALT,
+    ACVP_KAS_HKDF_HMAC_ALG,
+    ACVP_KAS_KDF_ONESTEP_AUX_FUNCTION
+} ACVP_KAS_KDF_PARM;
+
+typedef struct acvp_kas_kdf_onestep_tc_t {
+    ACVP_CIPHER cipher;
+    ACVP_KAS_KDF_TEST_TYPE type;
+    //Incrementing through the array, each element represents a pattern candidate until we reach a 0
+    ACVP_KAS_KDF_PATTERN_CANDIDATE fixedInfoPattern[ACVP_KAS_KDF_PATTERN_MAX];
+    ACVP_KAS_KDF_ENCODING encoding;
+    ACVP_CIPHER aux_function;
+    ACVP_KAS_KDF_MAC_SALT_METHOD saltMethod;
+    unsigned int tc_id;
+    unsigned char *salt;
+    unsigned char *z;
+    int l;
+    int saltLen;
+    int zLen;
+    int uPartyIdLen;
+    int uEphemeralLen;
+    int vPartyIdLen;
+    int vEphemeralLen;
+    int algIdLen;
+    int labelLen;
+    int contextLen;
+    int literalLen;
+    unsigned char *literalCandidate;
+    unsigned char *algorithmId;
+    unsigned char *label;
+    unsigned char *context;
+    unsigned char *uPartyId;
+    unsigned char *uEphemeralData;
+    unsigned char *vPartyId;
+    unsigned char *vEphemeralData;
+    unsigned char *providedDkm;
+    unsigned char *outputDkm;
+} ACVP_KAS_KDF_ONESTEP_TC;
+
+typedef struct acvp_kas_hkdf_tc_t {
+    ACVP_CIPHER cipher;
+    ACVP_KAS_KDF_TEST_TYPE type;
+    //Incrementing through the array, each element represents a pattern candidate until we reach a 0
+    ACVP_KAS_KDF_PATTERN_CANDIDATE fixedInfoPattern[ACVP_KAS_KDF_PATTERN_MAX];
+    ACVP_KAS_KDF_ENCODING encoding;
+    ACVP_HMAC_ALG_VAL hmacAlg;
+    ACVP_KAS_KDF_MAC_SALT_METHOD saltMethod;
+    unsigned int tc_id;
+    unsigned char *salt;
+    unsigned char *z;
+    int l;
+    int saltLen;
+    int zLen;
+    int uPartyIdLen;
+    int uEphemeralLen;
+    int vPartyIdLen;
+    int vEphemeralLen;
+    int algIdLen;
+    int labelLen;
+    int contextLen;
+    int literalLen;
+    unsigned char *literalCandidate;
+    unsigned char *algorithmId;
+    unsigned char *label;
+    unsigned char *context;
+    unsigned char *uPartyId;
+    unsigned char *uEphemeralData;
+    unsigned char *vPartyId;
+    unsigned char *vEphemeralData;
+    unsigned char *providedDkm;
+    unsigned char *outputDkm;
+} ACVP_KAS_HKDF_TC;
 
 typedef enum acvp_kts_ifc_param {
     ACVP_KTS_IFC_KEYGEN_METHOD = 1,
@@ -1655,6 +1764,8 @@ typedef struct acvp_test_case_t {
         ACVP_KAS_ECC_TC *kas_ecc;
         ACVP_KAS_FFC_TC *kas_ffc;
         ACVP_KAS_IFC_TC *kas_ifc;
+        ACVP_KAS_KDF_ONESTEP_TC *kas_kdf_onestep;
+        ACVP_KAS_HKDF_TC *kas_hkdf;
         ACVP_KTS_IFC_TC *kts_ifc;
     } tc;
 } ACVP_TEST_CASE;
@@ -2290,6 +2401,80 @@ ACVP_RESULT acvp_cap_kas_ffc_set_scheme(ACVP_CTX *ctx,
                                         ACVP_KAS_FFC_SCHEMES scheme,
                                         ACVP_KAS_FFC_PARAM param,
                                         int value);
+
+/*! @brief acvp_enable_kas_kdf_set_domain() allows an application to specify
+    operational parameters to be used for a given alg during a
+    test session with the ACVP server.
+
+    This function should be called to enable crypto capabilities for
+    KAS-KDF modes and functions. It may be called multiple times to specify
+    more than one crypto capability.
+
+    @param ctx Address of pointer to a previously allocated ACVP_CTX.
+    @param cipher ACVP_CIPHER enum value identifying the crypto capability.
+    @param param ACVP_KAS_KDF_PARM enum value identifying the algorithm parameter
+       that is being specified.  An example would be ACVP_KAS_HKDF_???
+    @param min Minumum supported value for the corresponding parameter
+    @param max Maximum supported value for the corresponding parameter
+    @param increment Increment value supported
+
+    @return ACVP_RESULT
+ */
+ACVP_RESULT acvp_cap_kas_kdf_set_domain(ACVP_CTX *ctx,
+                                       ACVP_CIPHER cipher,
+                                       ACVP_KAS_KDF_PARM param,
+                                       int min,
+                                       int max,
+                                       int increment);
+
+
+     /*! @brief acvp_enable_kas_kdf_set_parm() allows an application to specify
+    operational parameters to be used for a given alg during a
+    test session with the ACVP server.
+
+    This function should be called to enable crypto capabilities for
+    KAS-KDF modes and functions. It may be called multiple times to specify
+    more than one crypto capability.
+
+    @param ctx Address of pointer to a previously allocated ACVP_CTX.
+    @param cipher ACVP_CIPHER enum value identifying the crypto capability.
+    @param param ACVP_KAS_KDF_PARM enum value identifying the algorithm parameter
+       that is being specified.  An example would be ACVP_KAS_HKDF_???
+    @param value the value corresponding to the parameter being set
+    @param string a constant string value required by some parameters, will return
+       an error if incorrectly used with wrong parameters
+
+    @return ACVP_RESULT
+ */
+ACVP_RESULT acvp_cap_kas_kdf_set_parm(ACVP_CTX *ctx,
+                                      ACVP_CIPHER cipher,
+                                      ACVP_KAS_KDF_PARM param,
+                                      int value,
+                                      const char* string);
+
+
+
+/*! @brief acvp_enable_kas_kdf_enable()
+
+   This function should be used to enable KAS-KDF functions. Parameters are set using
+   acvp_cap_kas_kdf_set_parm().
+
+   When the application enables a crypto capability, such as KAS-HKDF, it
+   also needs to specify a callback function that will be used by libacvp
+   when that crypto capability is needed during a test session.
+
+   @param ctx Address of pointer to a previously allocated ACVP_CTX.
+   @param cipher ACVP_CIPHER enum value identifying the crypto capability.
+   @param crypto_handler Address of function implemented by application that
+       is invoked by libacvp when the crypto capability is needed during
+       a test session. This crypto_handler function is expected to return
+       0 on success and 1 for failure.
+
+   @return ACVP_RESULT
+ */
+ACVP_RESULT acvp_cap_kas_kdf_enable(ACVP_CTX *ctx,
+                                    ACVP_CIPHER cipher,
+                                    int (*crypto_handler)(ACVP_TEST_CASE *test_case));
 
 /*! @brief acvp_enable_rsa_*_cap()
 

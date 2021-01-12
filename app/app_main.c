@@ -52,6 +52,7 @@ static int enable_ecdsa(ACVP_CTX *ctx);
 static int enable_drbg(ACVP_CTX *ctx);
 static int enable_kas_ecc(ACVP_CTX *ctx);
 static int enable_kas_ifc(ACVP_CTX *ctx);
+static int enable_kas_kdf(ACVP_CTX *ctx);
 static int enable_kts_ifc(ACVP_CTX *ctx);
 #ifdef OPENSSL_KDF_SUPPORT
 static int enable_kdf(ACVP_CTX *ctx);
@@ -326,6 +327,9 @@ int main(int argc, char **argv) {
             if (enable_kas_ffc(ctx)) goto end;
         }
 #endif
+        if(cfg.kas_kdf) {
+            if (enable_kas_kdf(ctx)) goto end;
+        }
     }
 
     if (cfg.kat) {
@@ -1499,23 +1503,23 @@ static int enable_kdf(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_PBKDF, ACVP_PREREQ_SHA, value);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_pbkdf_set_parm(ctx, ACVP_PBKDF_HMAC_ALG, ACVP_PBKDF_HMAC_ALG_SHA1);
+    rv = acvp_cap_pbkdf_set_parm(ctx, ACVP_PBKDF_HMAC_ALG, ACVP_HMAC_ALG_SHA1);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_pbkdf_set_parm(ctx, ACVP_PBKDF_HMAC_ALG, ACVP_PBKDF_HMAC_ALG_SHA224);
+    rv = acvp_cap_pbkdf_set_parm(ctx, ACVP_PBKDF_HMAC_ALG, ACVP_HMAC_ALG_SHA224);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_pbkdf_set_parm(ctx, ACVP_PBKDF_HMAC_ALG, ACVP_PBKDF_HMAC_ALG_SHA256);
+    rv = acvp_cap_pbkdf_set_parm(ctx, ACVP_PBKDF_HMAC_ALG, ACVP_HMAC_ALG_SHA256);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_pbkdf_set_parm(ctx, ACVP_PBKDF_HMAC_ALG, ACVP_PBKDF_HMAC_ALG_SHA384);
+    rv = acvp_cap_pbkdf_set_parm(ctx, ACVP_PBKDF_HMAC_ALG, ACVP_HMAC_ALG_SHA384);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_pbkdf_set_parm(ctx, ACVP_PBKDF_HMAC_ALG, ACVP_PBKDF_HMAC_ALG_SHA512);
+    rv = acvp_cap_pbkdf_set_parm(ctx, ACVP_PBKDF_HMAC_ALG, ACVP_HMAC_ALG_SHA512);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_pbkdf_set_parm(ctx, ACVP_PBKDF_HMAC_ALG, ACVP_PBKDF_HMAC_ALG_SHA3_224);
+    rv = acvp_cap_pbkdf_set_parm(ctx, ACVP_PBKDF_HMAC_ALG, ACVP_HMAC_ALG_SHA3_224);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_pbkdf_set_parm(ctx, ACVP_PBKDF_HMAC_ALG, ACVP_PBKDF_HMAC_ALG_SHA3_256);
+    rv = acvp_cap_pbkdf_set_parm(ctx, ACVP_PBKDF_HMAC_ALG, ACVP_HMAC_ALG_SHA3_256);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_pbkdf_set_parm(ctx, ACVP_PBKDF_HMAC_ALG, ACVP_PBKDF_HMAC_ALG_SHA3_384);
+    rv = acvp_cap_pbkdf_set_parm(ctx, ACVP_PBKDF_HMAC_ALG, ACVP_HMAC_ALG_SHA3_384);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_pbkdf_set_parm(ctx, ACVP_PBKDF_HMAC_ALG, ACVP_PBKDF_HMAC_ALG_SHA3_512);
+    rv = acvp_cap_pbkdf_set_parm(ctx, ACVP_PBKDF_HMAC_ALG, ACVP_HMAC_ALG_SHA3_512);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_pbkdf_set_domain(ctx, ACVP_PBKDF_ITERATION_COUNT, 10, 1000, 1);
     CHECK_ENABLE_CAP_RV(rv);
@@ -1797,6 +1801,128 @@ static int enable_kas_ffc(ACVP_CTX *ctx) {
 end:
 
     return rv;
+}
+
+static int enable_kas_kdf(ACVP_CTX *ctx) {
+    ACVP_RESULT rv = ACVP_SUCCESS;
+    rv = acvp_cap_kas_kdf_enable(ctx, ACVP_KAS_HKDF, &app_kas_hkdf_handler);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_set_prereq(ctx, ACVP_KAS_HKDF, ACVP_PREREQ_HMAC, value);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kas_kdf_set_parm(ctx, ACVP_KAS_HKDF, ACVP_KAS_KDF_PATTERN, ACVP_KAS_KDF_PATTERN_LITERAL, "0123456789ABCDEF");
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kas_kdf_set_parm(ctx, ACVP_KAS_HKDF, ACVP_KAS_KDF_PATTERN, ACVP_KAS_KDF_PATTERN_UPARTYINFO, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kas_kdf_set_parm(ctx, ACVP_KAS_HKDF, ACVP_KAS_KDF_PATTERN, ACVP_KAS_KDF_PATTERN_VPARTYINFO, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kas_kdf_set_parm(ctx, ACVP_KAS_HKDF, ACVP_KAS_KDF_PATTERN, ACVP_KAS_KDF_PATTERN_CONTEXT, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kas_kdf_set_parm(ctx, ACVP_KAS_HKDF, ACVP_KAS_KDF_PATTERN, ACVP_KAS_KDF_PATTERN_ALGID, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kas_kdf_set_parm(ctx, ACVP_KAS_HKDF, ACVP_KAS_KDF_PATTERN, ACVP_KAS_KDF_PATTERN_LABEL, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kas_kdf_set_parm(ctx, ACVP_KAS_HKDF, ACVP_KAS_KDF_PATTERN, ACVP_KAS_KDF_PATTERN_L, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kas_kdf_set_parm(ctx, ACVP_KAS_HKDF, ACVP_KAS_KDF_ENCODING_TYPE, ACVP_KAS_KDF_ENCODING_CONCAT, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kas_kdf_set_parm(ctx, ACVP_KAS_HKDF, ACVP_KAS_HKDF_HMAC_ALG, ACVP_HMAC_ALG_SHA224, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kas_kdf_set_parm(ctx, ACVP_KAS_HKDF, ACVP_KAS_HKDF_HMAC_ALG, ACVP_HMAC_ALG_SHA256, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kas_kdf_set_parm(ctx, ACVP_KAS_HKDF, ACVP_KAS_HKDF_HMAC_ALG, ACVP_HMAC_ALG_SHA384, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kas_kdf_set_parm(ctx, ACVP_KAS_HKDF, ACVP_KAS_HKDF_HMAC_ALG, ACVP_HMAC_ALG_SHA512, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kas_kdf_set_parm(ctx, ACVP_KAS_HKDF, ACVP_KAS_HKDF_HMAC_ALG, ACVP_HMAC_ALG_SHA3_224, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kas_kdf_set_parm(ctx, ACVP_KAS_HKDF, ACVP_KAS_HKDF_HMAC_ALG, ACVP_HMAC_ALG_SHA3_256, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kas_kdf_set_parm(ctx, ACVP_KAS_HKDF, ACVP_KAS_HKDF_HMAC_ALG, ACVP_HMAC_ALG_SHA3_384, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kas_kdf_set_parm(ctx, ACVP_KAS_HKDF, ACVP_KAS_HKDF_HMAC_ALG, ACVP_HMAC_ALG_SHA3_512, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kas_kdf_set_parm(ctx, ACVP_KAS_HKDF, ACVP_KAS_KDF_MAC_SALT, ACVP_KAS_KDF_MAC_SALT_METHOD_DEFAULT, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kas_kdf_set_parm(ctx, ACVP_KAS_HKDF, ACVP_KAS_KDF_MAC_SALT, ACVP_KAS_KDF_MAC_SALT_METHOD_RANDOM, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kas_kdf_set_parm(ctx, ACVP_KAS_HKDF, ACVP_KAS_KDF_L, 2048, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kas_kdf_set_domain(ctx, ACVP_KAS_HKDF, ACVP_KAS_KDF_Z, 224, 1024, 8);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    //kdf onestep
+    rv = acvp_cap_kas_kdf_enable(ctx, ACVP_KAS_KDF_ONESTEP, &app_kas_kdf_onestep_handler);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_set_prereq(ctx, ACVP_KAS_KDF_ONESTEP, ACVP_PREREQ_HMAC, value);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kas_kdf_set_parm(ctx, ACVP_KAS_KDF_ONESTEP, ACVP_KAS_KDF_PATTERN, ACVP_KAS_KDF_PATTERN_LITERAL, "0123456789ABCDEF");
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kas_kdf_set_parm(ctx, ACVP_KAS_KDF_ONESTEP, ACVP_KAS_KDF_PATTERN, ACVP_KAS_KDF_PATTERN_UPARTYINFO, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kas_kdf_set_parm(ctx, ACVP_KAS_KDF_ONESTEP, ACVP_KAS_KDF_PATTERN, ACVP_KAS_KDF_PATTERN_VPARTYINFO, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kas_kdf_set_parm(ctx, ACVP_KAS_KDF_ONESTEP, ACVP_KAS_KDF_PATTERN, ACVP_KAS_KDF_PATTERN_CONTEXT, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kas_kdf_set_parm(ctx, ACVP_KAS_KDF_ONESTEP, ACVP_KAS_KDF_PATTERN, ACVP_KAS_KDF_PATTERN_ALGID, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kas_kdf_set_parm(ctx, ACVP_KAS_KDF_ONESTEP, ACVP_KAS_KDF_PATTERN, ACVP_KAS_KDF_PATTERN_LABEL, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kas_kdf_set_parm(ctx, ACVP_KAS_KDF_ONESTEP, ACVP_KAS_KDF_PATTERN, ACVP_KAS_KDF_PATTERN_L, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kas_kdf_set_parm(ctx, ACVP_KAS_KDF_ONESTEP, ACVP_KAS_KDF_ENCODING_TYPE, ACVP_KAS_KDF_ENCODING_CONCAT, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kas_kdf_set_parm(ctx, ACVP_KAS_KDF_ONESTEP, ACVP_KAS_KDF_ONESTEP_AUX_FUNCTION, ACVP_HASH_SHA224, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kas_kdf_set_parm(ctx, ACVP_KAS_KDF_ONESTEP, ACVP_KAS_KDF_ONESTEP_AUX_FUNCTION, ACVP_HASH_SHA256, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kas_kdf_set_parm(ctx, ACVP_KAS_KDF_ONESTEP, ACVP_KAS_KDF_ONESTEP_AUX_FUNCTION, ACVP_HASH_SHA384, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kas_kdf_set_parm(ctx, ACVP_KAS_KDF_ONESTEP, ACVP_KAS_KDF_ONESTEP_AUX_FUNCTION, ACVP_HASH_SHA512, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kas_kdf_set_parm(ctx, ACVP_KAS_KDF_ONESTEP, ACVP_KAS_KDF_ONESTEP_AUX_FUNCTION, ACVP_HASH_SHA512_224, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kas_kdf_set_parm(ctx, ACVP_KAS_KDF_ONESTEP, ACVP_KAS_KDF_ONESTEP_AUX_FUNCTION, ACVP_HASH_SHA512_256, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kas_kdf_set_parm(ctx, ACVP_KAS_KDF_ONESTEP, ACVP_KAS_KDF_ONESTEP_AUX_FUNCTION, ACVP_HASH_SHA3_224, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kas_kdf_set_parm(ctx, ACVP_KAS_KDF_ONESTEP, ACVP_KAS_KDF_ONESTEP_AUX_FUNCTION, ACVP_HASH_SHA3_256, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kas_kdf_set_parm(ctx, ACVP_KAS_KDF_ONESTEP, ACVP_KAS_KDF_ONESTEP_AUX_FUNCTION, ACVP_HASH_SHA3_384, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kas_kdf_set_parm(ctx, ACVP_KAS_KDF_ONESTEP, ACVP_KAS_KDF_ONESTEP_AUX_FUNCTION, ACVP_HASH_SHA3_512, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kas_kdf_set_parm(ctx, ACVP_KAS_KDF_ONESTEP, ACVP_KAS_KDF_ONESTEP_AUX_FUNCTION, ACVP_HMAC_SHA2_224, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kas_kdf_set_parm(ctx, ACVP_KAS_KDF_ONESTEP, ACVP_KAS_KDF_ONESTEP_AUX_FUNCTION, ACVP_HMAC_SHA2_256, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kas_kdf_set_parm(ctx, ACVP_KAS_KDF_ONESTEP, ACVP_KAS_KDF_ONESTEP_AUX_FUNCTION, ACVP_HMAC_SHA2_384, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kas_kdf_set_parm(ctx, ACVP_KAS_KDF_ONESTEP, ACVP_KAS_KDF_ONESTEP_AUX_FUNCTION, ACVP_HMAC_SHA2_512, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kas_kdf_set_parm(ctx, ACVP_KAS_KDF_ONESTEP, ACVP_KAS_KDF_ONESTEP_AUX_FUNCTION, ACVP_HMAC_SHA2_512_224, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kas_kdf_set_parm(ctx, ACVP_KAS_KDF_ONESTEP, ACVP_KAS_KDF_ONESTEP_AUX_FUNCTION, ACVP_HMAC_SHA2_512_256, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kas_kdf_set_parm(ctx, ACVP_KAS_KDF_ONESTEP, ACVP_KAS_KDF_ONESTEP_AUX_FUNCTION, ACVP_HMAC_SHA3_224, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kas_kdf_set_parm(ctx, ACVP_KAS_KDF_ONESTEP, ACVP_KAS_KDF_ONESTEP_AUX_FUNCTION, ACVP_HMAC_SHA3_256, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kas_kdf_set_parm(ctx, ACVP_KAS_KDF_ONESTEP, ACVP_KAS_KDF_ONESTEP_AUX_FUNCTION, ACVP_HMAC_SHA3_384, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kas_kdf_set_parm(ctx, ACVP_KAS_KDF_ONESTEP, ACVP_KAS_KDF_ONESTEP_AUX_FUNCTION, ACVP_HMAC_SHA3_512, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kas_kdf_set_parm(ctx, ACVP_KAS_KDF_ONESTEP, ACVP_KAS_KDF_MAC_SALT, ACVP_KAS_KDF_MAC_SALT_METHOD_DEFAULT, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kas_kdf_set_parm(ctx, ACVP_KAS_KDF_ONESTEP, ACVP_KAS_KDF_MAC_SALT, ACVP_KAS_KDF_MAC_SALT_METHOD_RANDOM, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kas_kdf_set_parm(ctx, ACVP_KAS_KDF_ONESTEP, ACVP_KAS_KDF_L, 2048, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kas_kdf_set_domain(ctx, ACVP_KAS_KDF_ONESTEP, ACVP_KAS_KDF_Z, 224, 1024, 8);
+    CHECK_ENABLE_CAP_RV(rv);
+
+
+end:
+   return rv;
 }
 
 static int enable_dsa(ACVP_CTX *ctx) {

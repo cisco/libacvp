@@ -79,6 +79,7 @@ static void print_usage(int code) {
     printf("      --drbg\n");
     printf("      --kas_ecc\n");
     printf("      --kas_ifc\n");
+    printf("      --kas_kdf\n");
     printf("      --kts_ifc\n");
     printf("\n");
 
@@ -186,6 +187,7 @@ static void enable_all_algorithms(APP_CONFIG *cfg) {
     cfg->ecdsa = 1;
     cfg->kas_ecc = 1;
     cfg->kas_ifc = 1;
+    cfg->kas_kdf = 1;
     cfg->kts_ifc = 1;
 #ifdef OPENSSL_KDF_SUPPORT
     cfg->kdf = 1;
@@ -218,15 +220,18 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
 #endif
 #ifndef OPENSSL_NO_DSA
         { "dsa", ko_no_argument, 316 },
-        { "kas_ffc", ko_no_argument, 321 },
 #endif
         { "rsa", ko_no_argument, 317 },
         { "drbg", ko_no_argument, 318 },
         { "ecdsa", ko_no_argument, 319 },
         { "kas_ecc", ko_no_argument, 320 },
-        { "kas_ifc", ko_no_argument, 323 },
-        { "kts_ifc", ko_no_argument, 324 },
-        { "all_algs", ko_no_argument, 322 },
+#ifndef OPENSSL_NO_DSA
+        { "kas_ffc", ko_no_argument, 321 },
+#endif
+        { "kas_ifc", ko_no_argument, 322 },
+        { "kts_ifc", ko_no_argument, 323 },
+        { "kas_kdf", ko_no_argument, 324 },
+        { "all_algs", ko_no_argument, 350 },
         { "manual_registration", ko_required_argument, 400 },
         { "kat", ko_required_argument, 401 },
         { "fips_validation", ko_required_argument, 402 },
@@ -336,11 +341,6 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
             cfg->empty_alg = 0;
             continue;
         }
-        if (c == 321) {
-            cfg->kas_ffc = 1;
-            cfg->empty_alg = 0;
-            continue;
-        }
 #endif
         if (c == 317) {
             cfg->rsa = 1;
@@ -362,18 +362,30 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
             cfg->empty_alg = 0;
             continue;
         }
-        if (c == 322) {
-            enable_all_algorithms(cfg);
+#ifndef OPENSSL_NO_DSA
+        if (c == 321) {
+            cfg->kas_ffc = 1;
             cfg->empty_alg = 0;
             continue;
         }
-        if (c == 323) {
+#endif
+        if (c == 322) {
             cfg->kas_ifc = 1;
             cfg->empty_alg = 0;
             continue;
         }
-        if (c == 324) {
+        if (c == 323) {
             cfg->kts_ifc = 1;
+            cfg->empty_alg = 0;
+            continue;
+        }
+        if (c == 324) {
+            cfg->kas_kdf = 1;
+            cfg->empty_alg = 0;
+            continue;
+        }
+        if (c == 350) {
+            enable_all_algorithms(cfg);
             cfg->empty_alg = 0;
             continue;
         }

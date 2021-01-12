@@ -259,6 +259,8 @@ static ACVP_RESULT acvp_des_mct_iterate_tc(ACVP_CTX *ctx,
     case ACVP_KAS_ECC_NOCOMP:
     case ACVP_KAS_FFC_COMP:
     case ACVP_KAS_FFC_NOCOMP:
+    case ACVP_KAS_KDF_ONESTEP:
+    case ACVP_KAS_HKDF:
     case ACVP_CIPHER_END:
     default:
         break;
@@ -558,6 +560,8 @@ static ACVP_RESULT acvp_des_mct_tc(ACVP_CTX *ctx,
     case ACVP_KAS_ECC_NOCOMP:
     case ACVP_KAS_FFC_COMP:
     case ACVP_KAS_FFC_NOCOMP:
+    case ACVP_KAS_KDF_ONESTEP:
+    case ACVP_KAS_HKDF:
     case ACVP_CIPHER_END:
     default:
         ACVP_LOG_ERR("unsupported algorithm (%d)", stc->cipher);

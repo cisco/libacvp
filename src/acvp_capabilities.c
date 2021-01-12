@@ -358,6 +358,30 @@ static ACVP_RESULT acvp_cap_list_append(ACVP_CTX *ctx,
         }
         break;
 
+    case ACVP_KAS_HKDF_TYPE:
+        if (cipher != ACVP_KAS_HKDF) {
+            rv = ACVP_INVALID_ARG;
+            goto err;
+        }
+        cap_entry->cap.kas_hkdf_cap = calloc(1, sizeof(ACVP_KAS_HKDF_CAP));
+        if (!cap_entry->cap.kas_hkdf_cap) {
+            rv = ACVP_MALLOC_FAIL;
+            goto err;
+        }
+        break;
+
+    case ACVP_KAS_KDF_ONESTEP_TYPE:
+        if (cipher != ACVP_KAS_KDF_ONESTEP) {
+            rv = ACVP_INVALID_ARG;
+            goto err;
+        }
+        cap_entry->cap.kas_kdf_onestep_cap = calloc(1, sizeof(ACVP_KAS_KDF_ONESTEP_CAP));
+        if (!cap_entry->cap.kas_kdf_onestep_cap) {
+            rv = ACVP_MALLOC_FAIL;
+            goto err;
+        }
+        break;
+
     case ACVP_KAS_IFC_TYPE:
         if (cipher != ACVP_KAS_IFC_SSC) {
             rv = ACVP_INVALID_ARG;
@@ -938,6 +962,8 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
         case ACVP_KAS_ECC_SSC:
         case ACVP_KAS_FFC_COMP:
         case ACVP_KAS_FFC_NOCOMP:
+        case ACVP_KAS_KDF_ONESTEP:
+        case ACVP_KAS_HKDF:
         case ACVP_CIPHER_END:
         default:
             break;
@@ -1033,6 +1059,8 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
         case ACVP_KAS_ECC_SSC:
         case ACVP_KAS_FFC_COMP:
         case ACVP_KAS_FFC_NOCOMP:
+        case ACVP_KAS_KDF_ONESTEP:
+        case ACVP_KAS_HKDF:
         case ACVP_CIPHER_END:
         default:
             if (value >= 8 && value <= 1024) {
@@ -1140,6 +1168,8 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
         case ACVP_KAS_ECC_SSC:
         case ACVP_KAS_FFC_COMP:
         case ACVP_KAS_FFC_NOCOMP:
+        case ACVP_KAS_KDF_ONESTEP:
+        case ACVP_KAS_HKDF:
         case ACVP_CIPHER_END:
         default:
             break;
@@ -1235,6 +1265,8 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
         case ACVP_KAS_ECC_SSC:
         case ACVP_KAS_FFC_COMP:
         case ACVP_KAS_FFC_NOCOMP:
+        case ACVP_KAS_KDF_ONESTEP:
+        case ACVP_KAS_HKDF:
         case ACVP_CIPHER_END:
         default:
             if (value >= 0 && value <= 65536) {
@@ -1454,6 +1486,20 @@ static ACVP_RESULT acvp_validate_prereq_val(ACVP_CIPHER cipher, ACVP_PREREQ_ALG 
             return ACVP_SUCCESS;
         }
         break;
+    case ACVP_KAS_KDF_ONESTEP:
+        if (pre_req == ACVP_PREREQ_DRBG ||
+            pre_req == ACVP_PREREQ_HMAC ||
+            pre_req == ACVP_PREREQ_SHA) {
+            return ACVP_SUCCESS;
+        }
+        break;
+    case ACVP_KAS_HKDF:
+        if (pre_req == ACVP_PREREQ_DRBG ||
+            pre_req == ACVP_PREREQ_HMAC ||
+            pre_req == ACVP_PREREQ_SHA) {
+            return ACVP_SUCCESS;
+        }
+        break;
     case ACVP_KDF135_X963:
         if (pre_req == ACVP_PREREQ_SHA) {
             return ACVP_SUCCESS;
@@ -1644,6 +1690,8 @@ ACVP_RESULT acvp_cap_sym_cipher_set_parm(ACVP_CTX *ctx,
     case ACVP_KAS_ECC_SSC:
     case ACVP_KAS_FFC_COMP:
     case ACVP_KAS_FFC_NOCOMP:
+    case ACVP_KAS_KDF_ONESTEP:
+    case ACVP_KAS_HKDF:
     case ACVP_CIPHER_END:
     default:
         return ACVP_INVALID_ARG;
@@ -1915,6 +1963,8 @@ ACVP_RESULT acvp_cap_sym_cipher_enable(ACVP_CTX *ctx,
     case ACVP_KAS_ECC_SSC:
     case ACVP_KAS_FFC_COMP:
     case ACVP_KAS_FFC_NOCOMP:
+    case ACVP_KAS_KDF_ONESTEP:
+    case ACVP_KAS_HKDF:
     case ACVP_CIPHER_END:
     default:
         return ACVP_INVALID_ARG;
@@ -2033,6 +2083,8 @@ ACVP_RESULT acvp_cap_hash_enable(ACVP_CTX *ctx,
     case ACVP_KAS_ECC_SSC:
     case ACVP_KAS_FFC_COMP:
     case ACVP_KAS_FFC_NOCOMP:
+    case ACVP_KAS_KDF_ONESTEP:
+    case ACVP_KAS_HKDF:
     case ACVP_CIPHER_END:
     default:
         ACVP_LOG_ERR("Invalid parameter 'cipher'");
@@ -2168,6 +2220,8 @@ ACVP_RESULT acvp_cap_hash_set_parm(ACVP_CTX *ctx,
     case ACVP_KAS_ECC_SSC:
     case ACVP_KAS_FFC_COMP:
     case ACVP_KAS_FFC_NOCOMP:
+    case ACVP_KAS_KDF_ONESTEP:
+    case ACVP_KAS_HKDF:
     case ACVP_CIPHER_END:
     default:
         return ACVP_INVALID_ARG;
@@ -2284,6 +2338,8 @@ ACVP_RESULT acvp_cap_hash_set_parm(ACVP_CTX *ctx,
         case ACVP_KAS_ECC_SSC:
         case ACVP_KAS_FFC_COMP:
         case ACVP_KAS_FFC_NOCOMP:
+        case ACVP_KAS_KDF_ONESTEP:
+        case ACVP_KAS_HKDF:
         case ACVP_CIPHER_END:
         default:
             ACVP_LOG_ERR("parm 'ACVP_HASH_OUT_BIT' only allowed for ACVP_HASH_SHAKE_* ");
@@ -2407,6 +2463,8 @@ ACVP_RESULT acvp_cap_hash_set_domain(ACVP_CTX *ctx,
     case ACVP_KAS_ECC_SSC:
     case ACVP_KAS_FFC_COMP:
     case ACVP_KAS_FFC_NOCOMP:
+    case ACVP_KAS_KDF_ONESTEP:
+    case ACVP_KAS_HKDF:
     case ACVP_CIPHER_END:
     default:
         return ACVP_INVALID_ARG;
@@ -2592,6 +2650,8 @@ static ACVP_RESULT acvp_validate_hmac_parm_value(ACVP_CIPHER cipher,
         case ACVP_KAS_ECC_SSC:
         case ACVP_KAS_FFC_COMP:
         case ACVP_KAS_FFC_NOCOMP:
+        case ACVP_KAS_KDF_ONESTEP:
+        case ACVP_KAS_HKDF:
         case ACVP_CIPHER_END:
         default:
             break;
@@ -2713,6 +2773,8 @@ ACVP_RESULT acvp_cap_hmac_enable(ACVP_CTX *ctx,
     case ACVP_KAS_ECC_SSC:
     case ACVP_KAS_FFC_COMP:
     case ACVP_KAS_FFC_NOCOMP:
+    case ACVP_KAS_KDF_ONESTEP:
+    case ACVP_KAS_HKDF:
     case ACVP_CIPHER_END:
     default:
         return ACVP_INVALID_ARG;
@@ -2965,6 +3027,8 @@ ACVP_RESULT acvp_cap_cmac_enable(ACVP_CTX *ctx,
     case ACVP_KAS_ECC_SSC:
     case ACVP_KAS_FFC_COMP:
     case ACVP_KAS_FFC_NOCOMP:
+    case ACVP_KAS_KDF_ONESTEP:
+    case ACVP_KAS_HKDF:
     case ACVP_CIPHER_END:
     default:
         return ACVP_INVALID_ARG;
@@ -3611,6 +3675,8 @@ ACVP_RESULT acvp_cap_drbg_set_parm(ACVP_CTX *ctx,
     case ACVP_KAS_ECC_SSC:
     case ACVP_KAS_FFC_COMP:
     case ACVP_KAS_FFC_NOCOMP:
+    case ACVP_KAS_KDF_ONESTEP:
+    case ACVP_KAS_HKDF:
     case ACVP_CIPHER_END:
     default:
         return ACVP_INVALID_ARG;
@@ -4487,6 +4553,8 @@ static ACVP_RESULT internal_cap_rsa_sig_enable(ACVP_CTX *ctx,
     case ACVP_KAS_ECC_SSC:
     case ACVP_KAS_FFC_COMP:
     case ACVP_KAS_FFC_NOCOMP:
+    case ACVP_KAS_KDF_ONESTEP:
+    case ACVP_KAS_HKDF:
     case ACVP_CIPHER_END:
     default:
         return ACVP_INVALID_ARG;
@@ -4602,6 +4670,8 @@ ACVP_RESULT acvp_cap_rsa_sig_enable(ACVP_CTX *ctx,
     case ACVP_KAS_ECC_SSC:
     case ACVP_KAS_FFC_COMP:
     case ACVP_KAS_FFC_NOCOMP:
+    case ACVP_KAS_KDF_ONESTEP:
+    case ACVP_KAS_HKDF:
     case ACVP_CIPHER_END:
     default:
         ACVP_LOG_ERR("Invalid parameter 'cipher'");
@@ -4849,6 +4919,8 @@ ACVP_RESULT acvp_cap_ecdsa_set_parm(ACVP_CTX *ctx,
     case ACVP_KAS_ECC_SSC:
     case ACVP_KAS_FFC_COMP:
     case ACVP_KAS_FFC_NOCOMP:
+    case ACVP_KAS_KDF_ONESTEP:
+    case ACVP_KAS_HKDF:
     case ACVP_CIPHER_END:
     default:
         return ACVP_INVALID_ARG;
@@ -5048,6 +5120,8 @@ ACVP_RESULT acvp_cap_ecdsa_enable(ACVP_CTX *ctx,
     case ACVP_KAS_ECC_SSC:
     case ACVP_KAS_FFC_COMP:
     case ACVP_KAS_FFC_NOCOMP:
+    case ACVP_KAS_KDF_ONESTEP:
+    case ACVP_KAS_HKDF:
     case ACVP_CIPHER_END:
     default:
         ACVP_LOG_ERR("Invalid parameter 'cipher'");
@@ -5561,7 +5635,7 @@ ACVP_RESULT acvp_cap_pbkdf_set_parm(ACVP_CTX *ctx,
     ACVP_CAPS_LIST *cap_list = NULL;
     ACVP_PBKDF_CAP *cap = NULL;
     ACVP_NAME_LIST *hmac_alg_list = NULL;
-    char *alg_str = NULL;
+    const char *alg_str = NULL;
 
     cap_list = acvp_locate_cap_entry(ctx, ACVP_PBKDF);
     if (!cap_list) {
@@ -5575,37 +5649,10 @@ ACVP_RESULT acvp_cap_pbkdf_set_parm(ACVP_CTX *ctx,
         return ACVP_INVALID_ARG;
     }
 
-    switch(value) {
-        case ACVP_PBKDF_HMAC_ALG_SHA1:
-            alg_str = ACVP_STR_SHA_1;
-            break;
-        case ACVP_PBKDF_HMAC_ALG_SHA224:
-            alg_str = ACVP_STR_SHA2_224;
-            break;
-        case ACVP_PBKDF_HMAC_ALG_SHA256:
-            alg_str = ACVP_STR_SHA2_256;
-            break;
-        case ACVP_PBKDF_HMAC_ALG_SHA384:
-            alg_str = ACVP_STR_SHA2_384;
-            break;
-        case ACVP_PBKDF_HMAC_ALG_SHA512:
-            alg_str = ACVP_STR_SHA2_512;
-            break;
-        case ACVP_PBKDF_HMAC_ALG_SHA3_224:
-            alg_str = ACVP_STR_SHA3_224;
-            break;
-        case ACVP_PBKDF_HMAC_ALG_SHA3_256:
-            alg_str = ACVP_STR_SHA3_256;
-            break;
-        case ACVP_PBKDF_HMAC_ALG_SHA3_384:
-            alg_str = ACVP_STR_SHA3_384;
-            break;
-        case ACVP_PBKDF_HMAC_ALG_SHA3_512:
-            alg_str = ACVP_STR_SHA3_512;
-            break;
-        default:
-            ACVP_LOG_ERR("Invalid value for ACVP_PBKDF_HMAC_ALG");
-            return ACVP_INVALID_ARG;
+    alg_str = acvp_lookup_hmac_alg_str(value);
+    if (!alg_str) {
+        ACVP_LOG_ERR("Invalid value specified for PBKDF hmac alg.");
+        return ACVP_INVALID_ARG;
     }
 
     if (cap->hmac_algs) {
@@ -6647,6 +6694,8 @@ ACVP_RESULT acvp_cap_kas_ecc_enable(ACVP_CTX *ctx,
     case ACVP_PBKDF:
     case ACVP_KAS_FFC_COMP:
     case ACVP_KAS_FFC_NOCOMP:
+    case ACVP_KAS_KDF_ONESTEP:
+    case ACVP_KAS_HKDF:
     case ACVP_CIPHER_END:
     default:
         ACVP_LOG_ERR("Invalid parameter 'cipher'");
@@ -6766,6 +6815,8 @@ ACVP_RESULT acvp_cap_kas_ecc_set_parm(ACVP_CTX *ctx,
     case ACVP_PBKDF:
     case ACVP_KAS_FFC_COMP:
     case ACVP_KAS_FFC_NOCOMP:
+    case ACVP_KAS_KDF_ONESTEP:
+    case ACVP_KAS_HKDF:
     case ACVP_CIPHER_END:
     default:
         ACVP_LOG_ERR("Invalid cipher");
@@ -6992,6 +7043,8 @@ ACVP_RESULT acvp_cap_kas_ecc_set_scheme(ACVP_CTX *ctx,
     case ACVP_KAS_FFC_COMP:
     case ACVP_KAS_FFC_NOCOMP:
     case ACVP_KAS_FFC_SSC:
+    case ACVP_KAS_KDF_ONESTEP:
+    case ACVP_KAS_HKDF:
     case ACVP_CIPHER_END:
     default:
         ACVP_LOG_ERR("Invalid cipher");
@@ -7306,6 +7359,8 @@ ACVP_RESULT acvp_cap_kas_ffc_enable(ACVP_CTX *ctx,
     case ACVP_KAS_ECC_COMP:
     case ACVP_KAS_ECC_NOCOMP:
     case ACVP_KAS_ECC_SSC:
+    case ACVP_KAS_KDF_ONESTEP:
+    case ACVP_KAS_HKDF:
     case ACVP_CIPHER_END:
     default:
         ACVP_LOG_ERR("Invalid parameter 'cipher'");
@@ -7425,6 +7480,8 @@ ACVP_RESULT acvp_cap_kas_ffc_set_parm(ACVP_CTX *ctx,
     case ACVP_KAS_ECC_COMP:
     case ACVP_KAS_ECC_NOCOMP:
     case ACVP_KAS_ECC_SSC:
+    case ACVP_KAS_KDF_ONESTEP:
+    case ACVP_KAS_HKDF:
     case ACVP_CIPHER_END:
     default:
         ACVP_LOG_ERR("Invalid cipher");
@@ -7656,7 +7713,6 @@ ACVP_RESULT acvp_cap_kas_ifc_enable(ACVP_CTX *ctx,
         ACVP_LOG_ERR("NULL parameter 'crypto_handler'");
         return ACVP_INVALID_ARG;
     }
-
     type = ACVP_KAS_IFC_TYPE;
     result = acvp_cap_list_append(ctx, type, cipher, crypto_handler);
 
@@ -7668,6 +7724,7 @@ ACVP_RESULT acvp_cap_kas_ifc_enable(ACVP_CTX *ctx,
 
     return result;
 }
+
 ACVP_RESULT acvp_cap_kas_ifc_set_parm(ACVP_CTX *ctx,
                                       ACVP_CIPHER cipher,
                                       ACVP_KAS_IFC_PARAM param,
@@ -7793,6 +7850,486 @@ ACVP_RESULT acvp_cap_kas_ifc_set_exponent(ACVP_CTX *ctx,
     return ACVP_SUCCESS;
 }
 
+ACVP_RESULT acvp_cap_kas_kdf_enable(ACVP_CTX *ctx,
+                                    ACVP_CIPHER cipher,
+                                    int (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
+    ACVP_CAP_TYPE type = 0;
+    ACVP_RESULT result = ACVP_SUCCESS;
+
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+    if (!crypto_handler) {
+        ACVP_LOG_ERR("NULL parameter 'crypto_handler'");
+        return ACVP_INVALID_ARG;
+    }
+
+    switch (cipher) {
+    case ACVP_KAS_KDF_ONESTEP:
+        type = ACVP_KAS_KDF_ONESTEP_TYPE;
+        break;
+    case ACVP_KAS_HKDF:
+        type = ACVP_KAS_HKDF_TYPE;
+        break;
+    case ACVP_CIPHER_START:
+    case ACVP_AES_GCM:
+    case ACVP_AES_GCM_SIV:
+    case ACVP_AES_CCM:
+    case ACVP_AES_ECB:
+    case ACVP_AES_CBC:
+    case ACVP_AES_CFB1:
+    case ACVP_AES_CFB8:
+    case ACVP_AES_CFB128:
+    case ACVP_AES_OFB:
+    case ACVP_AES_CTR:
+    case ACVP_AES_XTS:
+    case ACVP_AES_KW:
+    case ACVP_AES_KWP:
+    case ACVP_AES_GMAC:
+    case ACVP_AES_XPN:
+    case ACVP_TDES_ECB:
+    case ACVP_TDES_CBC:
+    case ACVP_TDES_CBCI:
+    case ACVP_TDES_OFB:
+    case ACVP_TDES_OFBI:
+    case ACVP_TDES_CFB1:
+    case ACVP_TDES_CFB8:
+    case ACVP_TDES_CFB64:
+    case ACVP_TDES_CFBP1:
+    case ACVP_TDES_CFBP8:
+    case ACVP_TDES_CFBP64:
+    case ACVP_TDES_CTR:
+    case ACVP_TDES_KW:
+    case ACVP_HASH_SHA1:
+    case ACVP_HASH_SHA224:
+    case ACVP_HASH_SHA256:
+    case ACVP_HASH_SHA384:
+    case ACVP_HASH_SHA512:
+    case ACVP_HASH_SHA512_224:
+    case ACVP_HASH_SHA512_256:
+    case ACVP_HASH_SHA3_224:
+    case ACVP_HASH_SHA3_256:
+    case ACVP_HASH_SHA3_384:
+    case ACVP_HASH_SHA3_512:
+    case ACVP_HASH_SHAKE_128:
+    case ACVP_HASH_SHAKE_256:
+    case ACVP_HASHDRBG:
+    case ACVP_HMACDRBG:
+    case ACVP_CTRDRBG:
+    case ACVP_HMAC_SHA1:
+    case ACVP_HMAC_SHA2_224:
+    case ACVP_HMAC_SHA2_256:
+    case ACVP_HMAC_SHA2_384:
+    case ACVP_HMAC_SHA2_512:
+    case ACVP_HMAC_SHA2_512_224:
+    case ACVP_HMAC_SHA2_512_256:
+    case ACVP_HMAC_SHA3_224:
+    case ACVP_HMAC_SHA3_256:
+    case ACVP_HMAC_SHA3_384:
+    case ACVP_HMAC_SHA3_512:
+    case ACVP_CMAC_AES:
+    case ACVP_CMAC_TDES:
+    case ACVP_DSA_KEYGEN:
+    case ACVP_DSA_PQGGEN:
+    case ACVP_DSA_PQGVER:
+    case ACVP_DSA_SIGGEN:
+    case ACVP_DSA_SIGVER:
+    case ACVP_RSA_KEYGEN:
+    case ACVP_RSA_SIGGEN:
+    case ACVP_RSA_SIGVER:
+    case ACVP_ECDSA_KEYGEN:
+    case ACVP_ECDSA_KEYVER:
+    case ACVP_ECDSA_SIGGEN:
+    case ACVP_ECDSA_SIGVER:
+    case ACVP_KDF135_TLS:
+    case ACVP_KDF135_SNMP:
+    case ACVP_KDF135_SSH:
+    case ACVP_KDF135_SRTP:
+    case ACVP_KDF135_IKEV2:
+    case ACVP_KDF135_IKEV1:
+    case ACVP_KDF135_X963:
+    case ACVP_KDF108:
+    case ACVP_PBKDF:
+    case ACVP_KAS_ECC_CDH:
+    case ACVP_KAS_ECC_COMP:
+    case ACVP_KAS_ECC_NOCOMP:
+    case ACVP_KAS_ECC_SSC:
+    case ACVP_KAS_FFC_SSC:
+    case ACVP_KAS_FFC_COMP:
+    case ACVP_KAS_FFC_NOCOMP:
+    case ACVP_KTS_IFC:
+    case ACVP_CIPHER_END:
+    default:
+        ACVP_LOG_ERR("Invalid parameter 'cipher'");
+        return ACVP_INVALID_ARG;
+    }
+
+    result = acvp_cap_list_append(ctx, type, cipher, crypto_handler);
+
+    if (result == ACVP_DUP_CIPHER) {
+        ACVP_LOG_ERR("Capability previously enabled. Duplicate not allowed.");
+    } else if (result == ACVP_MALLOC_FAIL) {
+        ACVP_LOG_ERR("Failed to allocate capability object");
+    }
+
+    return result;
+}
+
+ACVP_RESULT acvp_cap_kas_kdf_set_parm(ACVP_CTX *ctx, ACVP_CIPHER cipher, ACVP_KAS_KDF_PARM param,
+                                      int value, const char* string) {
+    ACVP_CAPS_LIST *cap_list = NULL;
+    ACVP_RESULT result = ACVP_SUCCESS;
+    ACVP_PARAM_LIST *plist = NULL;
+    ACVP_NAME_LIST *nlist = NULL;
+    const char* tmp = NULL;
+
+    /*
+     * Validate input
+     */
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+
+    if (param == ACVP_KAS_KDF_PATTERN && value == ACVP_KAS_KDF_PATTERN_LITERAL && !string) {
+        ACVP_LOG_ERR("string must not be null when setting literal pattern for KAS-KDF algorithms.");
+        return ACVP_INVALID_ARG;
+    } 
+    if (string && (param != ACVP_KAS_KDF_PATTERN || value != ACVP_KAS_KDF_PATTERN_LITERAL)) {
+        ACVP_LOG_WARN("String parameter should only be used when setting literal pattern. Ignoring value...");
+    }
+
+    /*
+     * Locate this cipher in the caps array
+     */
+    cap_list = acvp_locate_cap_entry(ctx, cipher);
+    if (!cap_list) {
+        ACVP_LOG_ERR("Cap entry not found.");
+        return ACVP_NO_CAP;
+    }
+
+    switch (cipher) {
+    case ACVP_KAS_KDF_ONESTEP:
+        if (!cap_list->cap.kas_kdf_onestep_cap) {
+            ACVP_LOG_ERR("KAS-KDF onestep cap entry not found.");
+            return ACVP_NO_CAP;
+        }
+        switch (param) {
+        case ACVP_KAS_KDF_PATTERN:
+            if (value == ACVP_KAS_KDF_PATTERN_LITERAL && cap_list->cap.kas_kdf_onestep_cap->literal_pattern_candidate) {
+                ACVP_LOG_WARN("Literal pattern candidate was already previously set. Replacing...");
+                free(cap_list->cap.kas_kdf_onestep_cap->literal_pattern_candidate);
+                cap_list->cap.kas_kdf_onestep_cap->literal_pattern_candidate = NULL;
+            }
+            if(value == ACVP_KAS_KDF_PATTERN_LITERAL) {
+                int len = strnlen_s(string, ACVP_KAS_KDF_PATTERN_LITERAL_STR_LEN_MAX + 1);
+                if (len > ACVP_KAS_KDF_PATTERN_LITERAL_STR_LEN_MAX) {
+                    ACVP_LOG_ERR("Provided literal string too long");
+                    return ACVP_INVALID_ARG;
+                } else if (len < 1) {
+                    ACVP_LOG_ERR("Provided literal string empty");
+                    return ACVP_INVALID_ARG;
+                }
+                cap_list->cap.kas_kdf_onestep_cap->literal_pattern_candidate = calloc(ACVP_KAS_KDF_PATTERN_LITERAL_STR_LEN_MAX + 1, sizeof(char));
+                if (!cap_list->cap.kas_kdf_onestep_cap->literal_pattern_candidate) {
+                    ACVP_LOG_ERR("Unable to allocate memory for literal pattern candidate");
+                    return ACVP_MALLOC_FAIL;
+                }
+                strncpy_s(cap_list->cap.kas_kdf_onestep_cap->literal_pattern_candidate, 
+                          ACVP_KAS_KDF_PATTERN_LITERAL_STR_LEN_MAX, string, len);
+            }
+            if (value > ACVP_KAS_KDF_PATTERN_NONE && value < ACVP_KAS_KDF_PATTERN_MAX) {
+                plist = cap_list->cap.kas_kdf_onestep_cap->patterns;
+                if (plist) {
+                    while (plist->next) {
+                        plist = plist->next;
+                    }
+                    plist->next = calloc(1, sizeof(ACVP_PARAM_LIST));
+                    plist->next->param = value;
+                } else {
+                    cap_list->cap.kas_kdf_onestep_cap->patterns = calloc(1, sizeof(ACVP_PARAM_LIST));
+                    cap_list->cap.kas_kdf_onestep_cap->patterns->param = value;
+                }
+            } else {
+                ACVP_LOG_ERR("Invalid pattern type specified when setting param for KAS-HKDF.");
+                return ACVP_INVALID_ARG;
+            }
+            break;
+        case ACVP_KAS_KDF_ENCODING_TYPE:
+            if (value > ACVP_KAS_KDF_ENCODING_NONE && value < ACVP_KAS_KDF_ENCODING_MAX) {
+                plist = cap_list->cap.kas_kdf_onestep_cap->encodings;
+                if (plist) {
+                    while (plist->next) {
+                        plist = plist->next;
+                    }
+                    plist->next = calloc(1, sizeof(ACVP_PARAM_LIST));
+                    plist->next->param = value;
+                } else {
+                    cap_list->cap.kas_kdf_onestep_cap->encodings = calloc(1, sizeof(ACVP_PARAM_LIST));
+                    cap_list->cap.kas_kdf_onestep_cap->encodings->param = value;
+                }
+            } else {
+                ACVP_LOG_ERR("Invalid encoding type specified when setting param for KAS-HKDF.");
+                return ACVP_INVALID_ARG;
+            }
+            break;
+        case ACVP_KAS_KDF_L:
+            if (value <= 0) {
+                ACVP_LOG_ERR("Valid for l must be > 0");
+                return ACVP_INVALID_ARG;
+            } else  if (value % 8 != 0) {
+                ACVP_LOG_ERR("Value for l for KAS-HKDF must be convertable to exact bytes (mod 8)");
+                return ACVP_INVALID_ARG;
+            } else {
+                cap_list->cap.kas_kdf_onestep_cap->l = value;
+            }
+            break;
+        case ACVP_KAS_KDF_MAC_SALT:
+            if (value == ACVP_KAS_KDF_MAC_SALT_METHOD_DEFAULT) {
+                nlist = cap_list->cap.kas_kdf_onestep_cap->mac_salt_methods;
+                if (!nlist) {
+                    cap_list->cap.kas_kdf_onestep_cap->mac_salt_methods = calloc(1, sizeof(ACVP_NAME_LIST));
+                    cap_list->cap.kas_kdf_onestep_cap->mac_salt_methods->name = ACVP_KAS_KDF_MAC_SALT_METHOD_DEFAULT_STR;
+                } else {
+                    while (nlist->next) {
+                        nlist = nlist->next;
+                    }
+                    nlist->next = calloc(1, sizeof(ACVP_NAME_LIST));
+                    nlist->next->name = ACVP_KAS_KDF_MAC_SALT_METHOD_DEFAULT_STR;
+                }
+            } else if (value == ACVP_KAS_KDF_MAC_SALT_METHOD_RANDOM) {
+                nlist = cap_list->cap.kas_kdf_onestep_cap->mac_salt_methods;
+                if (!nlist) {
+                    cap_list->cap.kas_kdf_onestep_cap->mac_salt_methods = calloc(1, sizeof(ACVP_NAME_LIST));
+                    cap_list->cap.kas_kdf_onestep_cap->mac_salt_methods->name = ACVP_KAS_KDF_MAC_SALT_METHOD_RANDOM_STR;
+                } else {
+                    while (nlist->next) {
+                        nlist = nlist->next;
+                    }
+                    nlist->next = calloc(1, sizeof(ACVP_NAME_LIST));
+                    nlist->next->name = ACVP_KAS_KDF_MAC_SALT_METHOD_RANDOM_STR;
+                }   
+            }
+            break;
+        case ACVP_KAS_HKDF_HMAC_ALG:
+            ACVP_LOG_ERR("cannot set HMAC_ALG for onestep. Use Aux Function instead.");
+            return ACVP_INVALID_ARG;
+        case ACVP_KAS_KDF_ONESTEP_AUX_FUNCTION:
+            tmp = acvp_lookup_aux_function_alg_str(value);
+            if (!tmp) {
+                ACVP_LOG_ERR("Invalid aux function cipher provided");
+                return ACVP_INVALID_ARG;
+            }
+            nlist = cap_list->cap.kas_kdf_onestep_cap->aux_functions;
+            if (!nlist) {
+                cap_list->cap.kas_kdf_onestep_cap->aux_functions = calloc(1, sizeof(ACVP_NAME_LIST));
+                cap_list->cap.kas_kdf_onestep_cap->aux_functions->name = tmp;
+            } else {
+                while (nlist->next) {
+                    nlist = nlist->next;
+                }
+                nlist->next = calloc(1, sizeof(ACVP_NAME_LIST));
+                nlist->next->name = tmp;
+            }
+            break;
+        default:
+            ACVP_LOG_ERR("Invalid parameter specified");
+            return ACVP_INVALID_ARG;
+        }
+        break;
+    case ACVP_KAS_HKDF:
+        if (!cap_list->cap.kas_hkdf_cap) {
+            ACVP_LOG_ERR("KAS-HKDF entry not found.");
+            return ACVP_NO_CAP;
+        }
+        switch (param) {
+        case ACVP_KAS_KDF_PATTERN:
+            if (value == ACVP_KAS_KDF_PATTERN_LITERAL && cap_list->cap.kas_hkdf_cap->literal_pattern_candidate) {
+                ACVP_LOG_WARN("Literal pattern candidate was already previously set. Replacing...");
+                free(cap_list->cap.kas_hkdf_cap->literal_pattern_candidate);
+                cap_list->cap.kas_hkdf_cap->literal_pattern_candidate = NULL;
+            }
+            if(value == ACVP_KAS_KDF_PATTERN_LITERAL) {
+                int len = strnlen_s(string, ACVP_KAS_KDF_PATTERN_LITERAL_STR_LEN_MAX + 1);
+                if (len > ACVP_KAS_KDF_PATTERN_LITERAL_STR_LEN_MAX) {
+                    ACVP_LOG_ERR("Provided literal string too long");
+                    return ACVP_INVALID_ARG;
+                } else if (len < 1) {
+                    ACVP_LOG_ERR("Provided literal string empty");
+                    return ACVP_INVALID_ARG;
+                }
+                cap_list->cap.kas_hkdf_cap->literal_pattern_candidate = calloc(ACVP_KAS_KDF_PATTERN_LITERAL_STR_LEN_MAX + 1, sizeof(char));
+                if (!cap_list->cap.kas_hkdf_cap->literal_pattern_candidate) {
+                    ACVP_LOG_ERR("Unable to allocate memory for literal pattern candidate");
+                    return ACVP_MALLOC_FAIL;
+                }
+                strncpy_s(cap_list->cap.kas_hkdf_cap->literal_pattern_candidate, 
+                          ACVP_KAS_KDF_PATTERN_LITERAL_STR_LEN_MAX, string, len);
+            }
+            if (value > ACVP_KAS_KDF_PATTERN_NONE && value < ACVP_KAS_KDF_PATTERN_MAX) {
+                plist = cap_list->cap.kas_hkdf_cap->patterns;
+                if (plist) {
+                    while (plist->next) {
+                        plist = plist->next;
+                    }
+                    plist->next = calloc(1, sizeof(ACVP_PARAM_LIST));
+                    plist->next->param = value;
+                } else {
+                    cap_list->cap.kas_hkdf_cap->patterns = calloc(1, sizeof(ACVP_PARAM_LIST));
+                    cap_list->cap.kas_hkdf_cap->patterns->param = value;
+                }
+            } else {
+                ACVP_LOG_ERR("Invalid pattern type specified when setting param for KAS-HKDF.");
+                return ACVP_INVALID_ARG;
+            }
+            break;
+        case ACVP_KAS_KDF_ENCODING_TYPE:
+            if (value > ACVP_KAS_KDF_ENCODING_NONE && value < ACVP_KAS_KDF_ENCODING_MAX) {
+                plist = cap_list->cap.kas_hkdf_cap->encodings;
+                if (plist) {
+                    while (plist->next) {
+                        plist = plist->next;
+                    }
+                    plist->next = calloc(1, sizeof(ACVP_PARAM_LIST));
+                    plist->next->param = value;
+                } else {
+                    cap_list->cap.kas_hkdf_cap->encodings = calloc(1, sizeof(ACVP_PARAM_LIST));
+                    cap_list->cap.kas_hkdf_cap->encodings->param = value;
+                }
+            } else {
+                ACVP_LOG_ERR("Invalid encoding type specified when setting param for KAS-HKDF.");
+                return ACVP_INVALID_ARG;
+            }
+            break;
+        case ACVP_KAS_KDF_L:
+            if (value <= 0) {
+                ACVP_LOG_ERR("Valid for l must be > 0");
+                return ACVP_INVALID_ARG;
+            } else  if (value % 8 != 0) {
+                ACVP_LOG_ERR("Value for l for KAS-HKDF must be convertable to exact bytes (mod 8)");
+                return ACVP_INVALID_ARG;
+            } else {
+                cap_list->cap.kas_hkdf_cap->l = value;
+            }
+            break;
+        case ACVP_KAS_KDF_MAC_SALT:
+            if (value == ACVP_KAS_KDF_MAC_SALT_METHOD_DEFAULT) {
+                nlist = cap_list->cap.kas_hkdf_cap->mac_salt_methods;
+                if (!nlist) {
+                    cap_list->cap.kas_hkdf_cap->mac_salt_methods = calloc(1, sizeof(ACVP_NAME_LIST));
+                    cap_list->cap.kas_hkdf_cap->mac_salt_methods->name = ACVP_KAS_KDF_MAC_SALT_METHOD_DEFAULT_STR;
+                } else {
+                    while (nlist->next) {
+                        nlist = nlist->next;
+                    }
+                    nlist->next = calloc(1, sizeof(ACVP_NAME_LIST));
+                    nlist->next->name = ACVP_KAS_KDF_MAC_SALT_METHOD_DEFAULT_STR;
+                }
+            } else if (value == ACVP_KAS_KDF_MAC_SALT_METHOD_RANDOM) {
+                nlist = cap_list->cap.kas_hkdf_cap->mac_salt_methods;
+                if (!nlist) {
+                    cap_list->cap.kas_hkdf_cap->mac_salt_methods = calloc(1, sizeof(ACVP_NAME_LIST));
+                    cap_list->cap.kas_hkdf_cap->mac_salt_methods->name = ACVP_KAS_KDF_MAC_SALT_METHOD_RANDOM_STR;
+                } else {
+                    while (nlist->next) {
+                        nlist = nlist->next;
+                    }
+                    nlist->next = calloc(1, sizeof(ACVP_NAME_LIST));
+                    nlist->next->name = ACVP_KAS_KDF_MAC_SALT_METHOD_RANDOM_STR;
+                }   
+            }
+            break;
+        case ACVP_KAS_HKDF_HMAC_ALG:
+            if (value == ACVP_HMAC_ALG_SHA1) {
+                ACVP_LOG_ERR("SHA1 not supported in KAS HKDF");
+                return ACVP_INVALID_ARG;
+            }
+            tmp = acvp_lookup_hmac_alg_str(value);
+            if (!tmp) {
+                ACVP_LOG_ERR("Invalid value for hmac alg for KAS_HKDF");
+                return ACVP_INVALID_ARG;
+            }
+            nlist = cap_list->cap.kas_hkdf_cap->hmac_algs;
+            if (!nlist) {
+                cap_list->cap.kas_hkdf_cap->hmac_algs = calloc(1, sizeof(ACVP_NAME_LIST));
+                cap_list->cap.kas_hkdf_cap->hmac_algs->name = tmp;
+            } else {
+                while (nlist->next) {
+                    nlist = nlist->next;
+                }
+                nlist->next = calloc(1, sizeof(ACVP_NAME_LIST));
+                nlist->next->name = tmp;
+            }
+            break;
+        case ACVP_KAS_KDF_ONESTEP_AUX_FUNCTION:
+            ACVP_LOG_ERR("Cannot set aux functions for HKDF. use HMAC_ALG instead.");
+            return ACVP_INVALID_ARG;
+        default:
+            ACVP_LOG_ERR("Invalid parameter specified");
+            return ACVP_INVALID_ARG;
+        }
+        break;
+    default:
+        ACVP_LOG_ERR("Invalid cipher specified");
+        return ACVP_INVALID_ARG;
+    }
+    return result;
+}
+
+ACVP_RESULT acvp_cap_kas_kdf_set_domain(ACVP_CTX *ctx, ACVP_CIPHER cipher, ACVP_KAS_KDF_PARM param,
+                                        int min, int max, int increment) {
+    ACVP_CAPS_LIST *cap_list = NULL;
+    ACVP_RESULT result = ACVP_SUCCESS;
+
+    /*
+     * Validate input
+     */  
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+
+    /*
+     * Locate this cipher in the caps array
+     */
+    cap_list = acvp_locate_cap_entry(ctx, cipher);
+    if (!cap_list) {
+        ACVP_LOG_ERR("Cap entry not found.");
+        return ACVP_NO_CAP;
+    }
+    if (param != ACVP_KAS_KDF_Z) {
+        ACVP_LOG_ERR("Invalid parameter provided");
+        return ACVP_INVALID_ARG;
+    }
+
+    if (min < 0 || increment % 8 != 0 || max < min || max - min < 8) {
+        ACVP_LOG_ERR("Invalid domain given");
+    }
+
+    switch (cipher) {
+    case ACVP_KAS_KDF_ONESTEP:
+        if (!cap_list->cap.kas_kdf_onestep_cap) {
+            ACVP_LOG_ERR("KAS-KDF onestep cap entry not found.");
+            return ACVP_NO_CAP;
+        }
+        cap_list->cap.kas_kdf_onestep_cap->z.min = min;
+        cap_list->cap.kas_kdf_onestep_cap->z.max = max;
+        cap_list->cap.kas_kdf_onestep_cap->z.increment = increment;
+        break;
+    case ACVP_KAS_HKDF:
+        if (!cap_list->cap.kas_hkdf_cap) {
+            ACVP_LOG_ERR("KAS-HKDF entry not found.");
+            return ACVP_NO_CAP;
+        }
+        cap_list->cap.kas_hkdf_cap->z.min = min;
+        cap_list->cap.kas_hkdf_cap->z.max = max;
+        cap_list->cap.kas_hkdf_cap->z.increment = increment;
+        break;
+    default:
+        ACVP_LOG_ERR("Invalid cipher specified");
+        return ACVP_INVALID_ARG;
+    }
+    return result;
+}
+
 ACVP_RESULT acvp_cap_kts_ifc_enable(ACVP_CTX *ctx,
                                     ACVP_CIPHER cipher,
                                     int (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
@@ -7808,6 +8345,7 @@ ACVP_RESULT acvp_cap_kts_ifc_enable(ACVP_CTX *ctx,
     }
 
     type = ACVP_KTS_IFC_TYPE;
+
     result = acvp_cap_list_append(ctx, type, cipher, crypto_handler);
 
     if (result == ACVP_DUP_CIPHER) {
@@ -7835,7 +8373,7 @@ ACVP_RESULT acvp_cap_kts_ifc_set_parm(ACVP_CTX *ctx,
         return ACVP_NO_CTX;
     }
 
-    cap = acvp_locate_cap_entry(ctx, cipher);
+      cap = acvp_locate_cap_entry(ctx, cipher);
     if (!cap) {
         return ACVP_NO_CAP;
     }
@@ -8069,7 +8607,6 @@ ACVP_RESULT acvp_cap_kts_ifc_set_scheme_string(ACVP_CTX *ctx,
                       ACVP_CAPABILITY_STR_MAX);
         return ACVP_INVALID_ARG;
     }
-
 
     current_scheme = kts_ifc_cap->schemes;
     if (!current_scheme) {

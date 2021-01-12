@@ -11,6 +11,7 @@ acvp_app_SOURCES = app_main.c \
 				   app_hmac.c \
 				   app_kas.c \
 				   app_kdf.c \
+                                   app_kas_kdf.c \
 				   app_rsa.c \
 				   app_sha.c \
 				   app_utils.c \
