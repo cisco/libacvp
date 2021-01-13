@@ -1920,7 +1920,6 @@ static int enable_kas_kdf(ACVP_CTX *ctx) {
     rv = acvp_cap_kas_kdf_set_domain(ctx, ACVP_KAS_KDF_ONESTEP, ACVP_KAS_KDF_Z, 224, 1024, 8);
     CHECK_ENABLE_CAP_RV(rv);
 
-
 end:
    return rv;
 }
