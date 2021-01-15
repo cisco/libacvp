@@ -16,13 +16,11 @@
 int app_kas_hkdf_handler(ACVP_TEST_CASE *test_case) {
     ACVP_KAS_HKDF_TC *stc = NULL;
     const EVP_MD *md = NULL;
-    int rc = 1, i = 0, fixedInfoLen = 0, tmp = 0, reps = 0,
-        resultLen = 0, lBits = 0, resultIterator = 0;
-    unsigned int h_output_len = 0, count = 0;
+    int rc = 1, i = 0, fixedInfoLen = 0, tmp = 0, reps = 0, resultLen = 0, resultIterator = 0;
+    unsigned int h_output_len = 0, lBits = 0;
     unsigned char *fixedInfo = NULL;
-    unsigned char *h_output = NULL;
+    unsigned char *extract_output = NULL, *expand_output = NULL;
     unsigned char *result = NULL;
-    unsigned char counter[4] = {0};
     HMAC_CTX *hmac_ctx = NULL;
 
     if (!test_case) {
@@ -121,7 +119,8 @@ int app_kas_hkdf_handler(ACVP_TEST_CASE *test_case) {
                 break;
             case ACVP_KAS_KDF_PATTERN_L:
                 lBits = stc->l * 8;
-                memcpy_s(fixedInfo + tmp, fixedInfoLen - tmp, &lBits, 4);
+                if (check_is_little_endian()) { lBits = convert_uint_to_big_endian(lBits); }
+                memcpy_s(fixedInfo + tmp, fixedInfoLen - tmp, (char *)&lBits, 4);
                 tmp += 4;
                 break;
             default:
@@ -194,15 +193,39 @@ int app_kas_hkdf_handler(ACVP_TEST_CASE *test_case) {
     //convert h_output_len to bytes for use with functions
     h_output_len /= 8;
 
-    //the number of repetitions as defined by SP800-56Cr1 (always round up)
-    reps = (stc->l * 8) / (h_output_len * 8);
-    if ((stc->l * 8) % (h_output_len * 8) != 0) {
+    //buffer for first step, extract, output
+    extract_output = calloc(h_output_len, sizeof(unsigned char));
+    if (!extract_output) {
+        printf("Failed to allocate memory for test case\n");
+        goto end;
+    }
+
+    //extract the pseudorandom key to be used in the creation of keying material in the second step
+    if (!HMAC_Init_ex(hmac_ctx, stc->salt, stc->saltLen, md, NULL)) {
+        printf("\nCrypto module error, HMAC_Init_ex failed\n");
+        goto end;
+    }
+
+    if (!HMAC_Update(hmac_ctx, stc->z, stc->zLen)) {
+        printf("\nCrypto module error, HMAC_Update failed\n");
+        goto end;
+    }
+    
+    if (!HMAC_Final(hmac_ctx, extract_output, &h_output_len)) {
+        printf("\nCrypto module error, HMAC_Final failed\n");
+        goto end;
+    }
+
+    //the number of repetitions in step 2 (always round up)
+    //technically, this operation is defined to be done with bits, but using common denominators
+    reps = stc->l / h_output_len;
+    if (stc->l % h_output_len) {
         reps++;
     }
 
-    //buffer for H function output
-    h_output = calloc(h_output_len, sizeof(unsigned char));
-    if (!h_output) {
+    //buffer for second step, expand, output
+    expand_output = calloc(h_output_len, sizeof(unsigned char));
+    if (!expand_output) {
         printf("Failed to allocate memory for test case\n");
         goto end;
     }
@@ -216,49 +239,52 @@ int app_kas_hkdf_handler(ACVP_TEST_CASE *test_case) {
         goto end;
     }
 
-    //onestep/hkdf as per NIST calls to concatenate counter || Z || FixedInfo every iteration
+    //hkdf as per RFC5869 calls to concatenate extract_output || fixedInfo || counter every iteration
     for (i = 1; i <= reps; i++) {
-        count++;
-        memcpy_s(&counter, sizeof(int), &count, sizeof(int)); //dodge some compiler warnings
-        if (!HMAC_Init_ex(hmac_ctx, stc->salt, stc->saltLen, md, NULL)) {
+        unsigned int counter = i;
+        if (!HMAC_Init_ex(hmac_ctx, extract_output, h_output_len, md, NULL)) {
             printf("\nCrypto module error, HMAC_Init_ex failed\n");
             goto end;
         }
 
-        if (!HMAC_Update(hmac_ctx, &counter[0], sizeof(int))) {
-            printf("\nCrypto module error, HMAC_Update failed\n");
-            goto end;
-        }
+        if (i > 1) {
+            if (!HMAC_Init_ex(hmac_ctx, NULL, 0, NULL, NULL)) {
+                printf("\nCrypto module error, HMAC_Init_ex failed\n");
+                goto end;
+            }
 
-        if (!HMAC_Update(hmac_ctx, stc->z, stc->zLen)) {
-            printf("\nCrypto module error, HMAC_Update failed\n");
-            goto end;
+            if (!HMAC_Update(hmac_ctx, expand_output, h_output_len)) {
+                printf("\nCrypto module error, HMAC_Update failed\n");
+                goto end;
+            }
         }
         if (!HMAC_Update(hmac_ctx, fixedInfo, fixedInfoLen)) {
             printf("\nCrypto module error, HMAC_Update failed\n");
             goto end;
         }
+        if (!HMAC_Update(hmac_ctx, (unsigned char *)&counter, 1)) { //1 byte for hkdf, not 4
+            printf("\nCrypto module error, HMAC_Update failed\n");
+            goto end;
+        }
 
-        if (!HMAC_Final(hmac_ctx, h_output, &h_output_len)) {
+        if (!HMAC_Final(hmac_ctx, expand_output, &h_output_len)) {
             printf("\nCrypto module error, HMAC_Final failed\n");
             goto end;
         }
         //concatenate to previous result
-        memcpy_s(result + resultIterator, resultLen - resultIterator, h_output, h_output_len);
+        memcpy_s(result + resultIterator, resultLen - resultIterator, expand_output, h_output_len);
         resultIterator += h_output_len;
-
-        //zero out our buffers for re-use just in case
-        memzero_s(h_output, h_output_len);
     }
     
     memcpy_s(stc->outputDkm, stc->l, result, stc->l);
     rc = 0;
 end:
     if (fixedInfo) free(fixedInfo);
-    if (h_output) free(h_output);
+    if (extract_output) free(extract_output);
+    if (expand_output) free(expand_output);
     if (result) free(result);
 #if OPENSSL_VERSION_NUMBER <= 0x10100000L
-    HMAC_CTX_cleanup(hmac_ctx);
+    if(hmac_ctx) HMAC_CTX_cleanup(hmac_ctx);
 #else
     if (hmac_ctx) HMAC_CTX_free(hmac_ctx);
 #endif
@@ -269,13 +295,11 @@ end:
 int app_kas_kdf_onestep_handler(ACVP_TEST_CASE *test_case) {
     ACVP_KAS_KDF_ONESTEP_TC *stc = NULL;
     const EVP_MD *md = NULL;
-    int rc = 1, i = 0, fixedInfoLen = 0, tmp = 0, reps = 0,
-        resultLen = 0, lBits = 0, resultIterator = 0, isSha = 0;
-    unsigned int h_output_len = 0, count = 0;
+    int rc = 1, i = 0, fixedInfoLen = 0, tmp = 0, reps = 0, resultLen = 0, resultIterator = 0, isSha = 0;
+    unsigned int h_output_len = 0, lBits = 0;
     unsigned char *fixedInfo = NULL;
     unsigned char *h_output = NULL;
     unsigned char *result = NULL;
-    unsigned char counter[4] = {0};
     HMAC_CTX *hmac_ctx = NULL;
     EVP_MD_CTX *sha_ctx = NULL;
 
@@ -381,7 +405,8 @@ int app_kas_kdf_onestep_handler(ACVP_TEST_CASE *test_case) {
                 break;
             case ACVP_KAS_KDF_PATTERN_L:
                 lBits = stc->l * 8;
-                memcpy_s(fixedInfo + tmp, fixedInfoLen - tmp, &lBits, 4);
+                if (check_is_little_endian()) { lBits = convert_uint_to_big_endian(lBits); }
+                memcpy_s(fixedInfo + tmp, fixedInfoLen - tmp, (char *)&lBits, 4);
                 tmp += 4;
                 break;
             default:
@@ -471,8 +496,9 @@ int app_kas_kdf_onestep_handler(ACVP_TEST_CASE *test_case) {
     h_output_len /= 8;
 
     //the number of repetitions as defined by SP800-56Cr1 (always round up)
-    reps = (stc->l * 8) / (h_output_len * 8);
-    if ((stc->l * 8) % (h_output_len * 8) != 0) {
+    //technically, this operation is defined to be done with bits, but using common denominators
+    reps = stc->l * h_output_len;
+    if (stc->l % h_output_len) {
         reps++;
     }
 
@@ -491,18 +517,17 @@ int app_kas_kdf_onestep_handler(ACVP_TEST_CASE *test_case) {
         printf("Failed to allocate memory for test case\n");
         goto end;
     }
-    //onestep/hkdf as per NIST calls to concatenate counter || Z || FixedInfo every iteration
+    //onestep as per NIST calls to concatenate counter || Z || FixedInfo every iteration
     for (i = 1; i <= reps; i++) {
-        count++;
-        memcpy_s(&counter, sizeof(int), &count, sizeof(int)); //dodge some compiler warnings
-
+        unsigned int counter = i;
+        if (check_is_little_endian()) { counter = convert_uint_to_big_endian(counter); }//nist doc specifically wants big endian byte string
         if (isSha) {
             if (!EVP_DigestInit_ex(sha_ctx, md, NULL)) {
                 printf("\nCrypto module error, EVP_DigestInit_ex failed\n");
                 goto end;
             }
 
-            if (!EVP_DigestUpdate(sha_ctx, &counter[0], sizeof(int))) {
+            if (!EVP_DigestUpdate(sha_ctx, (unsigned char *)&counter, sizeof(int))) {
                 printf("\nCrypto module error, EVP_DigestUpdate failed\n");
                 goto end;
             }
@@ -527,7 +552,7 @@ int app_kas_kdf_onestep_handler(ACVP_TEST_CASE *test_case) {
                 goto end;
             }
 
-            if (!HMAC_Update(hmac_ctx, &counter[0], sizeof(int))) {
+            if (!HMAC_Update(hmac_ctx, (unsigned char *)&counter, sizeof(int))) {
                 printf("\nCrypto module error, HMAC_Update failed\n");
                 goto end;
             }
@@ -550,7 +575,6 @@ int app_kas_kdf_onestep_handler(ACVP_TEST_CASE *test_case) {
         memcpy_s(result + resultIterator, resultLen - resultIterator, h_output, h_output_len);
         resultIterator += h_output_len;
 
-        //zero out our buffers for re-use just in case
         memzero_s(h_output, h_output_len);
     }
     
@@ -561,7 +585,7 @@ end:
     if (h_output) free(h_output);
     if (result) free(result);
 #if OPENSSL_VERSION_NUMBER <= 0x10100000L
-    HMAC_CTX_cleanup(hmac_ctx);
+    if (hmac_ctx) HMAC_CTX_cleanup(hmac_ctx);
 #else
     if (hmac_ctx) HMAC_CTX_free(hmac_ctx);
 #endif
