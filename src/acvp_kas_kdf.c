@@ -812,7 +812,7 @@ static ACVP_RESULT acvp_kas_kdf_process(ACVP_CTX *ctx,
             paramobj = json_object_get_object(testobj, "kdfParameter");
             tc_id = json_object_get_number(testobj, "tcId");
             salt = json_object_get_string(paramobj, "salt");
-
+          
             arr = read_info_pattern(ctx, cipher, pattern_str, tc);
             if (!arr || arr[0] <= ACVP_KAS_KDF_PATTERN_NONE || arr[0] > ACVP_KAS_KDF_PATTERN_MAX) {
                 ACVP_LOG_ERR("Invalid fixedInfoPattern provided by server");
