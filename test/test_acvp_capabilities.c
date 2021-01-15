@@ -739,7 +739,7 @@ Test(EnableCapRSAkeyGen, invalid_modes_params, .fini = teardown) {
      * so we can test with that one... */
     rv = acvp_cap_rsa_keygen_set_mode(ctx, ACVP_RSA_KEYGEN_B35);
     cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_rsa_keygen_set_primes(ctx, ACVP_RSA_KEYGEN_B35, 2048, ACVP_RSA_PRIME_HASH_ALG, 256);
+    rv = acvp_cap_rsa_keygen_set_primes(ctx, ACVP_RSA_KEYGEN_B35, 2048, ACVP_RSA_PRIME_HASH_ALG, 257);
     cr_assert(rv == ACVP_INVALID_ARG);
     rv = acvp_cap_rsa_keygen_set_primes(ctx, ACVP_RSA_KEYGEN_B35, 2048, ACVP_RSA_PRIME_TEST, 256);
     cr_assert(rv == ACVP_INVALID_ARG);
@@ -1317,7 +1317,7 @@ Test(EnableCapECDSA, invalid_args_sg, .fini = teardown) {
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_ECDSA_CURVE, 256);
     cr_assert(rv == ACVP_INVALID_ARG);
-    rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_ECDSA_HASH_ALG, 256);
+    rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_ECDSA_HASH_ALG, 257);
     cr_assert(rv == ACVP_INVALID_ARG);
 }
 
@@ -1377,7 +1377,7 @@ Test(EnableCapECDSA, invalid_args_sv, .fini = teardown) {
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_ECDSA_CURVE, 256);
     cr_assert(rv == ACVP_INVALID_ARG);
-    rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_ECDSA_HASH_ALG, 256);
+    rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_ECDSA_HASH_ALG, 257);
     cr_assert(rv == ACVP_INVALID_ARG);
 }
 
