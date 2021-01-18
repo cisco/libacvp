@@ -49,7 +49,7 @@ static ACVP_RESULT acvp_kas_hkdf_output_tc(ACVP_CTX *ctx,
     }
 
     memzero_s(tmp, ACVP_KAS_KDF_DKM_STR_MAX);
-    rv = acvp_bin_to_hexstr(stc->outputDkm, ACVP_KAS_KDF_DKM_BYTE_MAX, tmp, ACVP_KAS_KDF_DKM_STR_MAX);
+    rv = acvp_bin_to_hexstr(stc->outputDkm, stc->l, tmp, ACVP_KAS_KDF_DKM_STR_MAX);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("hex conversion failure (dkm)");
         goto end;
@@ -89,7 +89,7 @@ static ACVP_RESULT acvp_kas_kdf_onestep_output_tc(ACVP_CTX *ctx,
     }
 
     memzero_s(tmp, ACVP_KAS_KDF_DKM_STR_MAX);
-    rv = acvp_bin_to_hexstr(stc->outputDkm, ACVP_KAS_KDF_DKM_BYTE_MAX, tmp, ACVP_KAS_KDF_DKM_STR_MAX);
+    rv = acvp_bin_to_hexstr(stc->outputDkm, stc->l, tmp, ACVP_KAS_KDF_DKM_STR_MAX);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("hex conversion failure (dkm)");
         goto end;
@@ -128,7 +128,7 @@ static ACVP_RESULT acvp_kas_kdf_onestep_init_tc(ACVP_CTX *ctx,
     stc->tc_id = tc_id;
     stc->type = test_type;
     stc->aux_function = aux_function;
-    stc->l = l;
+    stc->l = l / 8;
     stc->encoding = encoding;
     stc->saltMethod = saltMethod;
 
@@ -264,7 +264,7 @@ static ACVP_RESULT acvp_kas_hkdf_init_tc(ACVP_CTX *ctx,
     stc->tc_id = tc_id;
     stc->type = test_type;
     stc->hmacAlg = hmac_alg;
-    stc->l = l;
+    stc->l = l / 8;
     stc->encoding = encoding;
     stc->saltMethod = saltMethod;
 
@@ -429,92 +429,89 @@ static ACVP_KAS_KDF_TEST_TYPE read_test_type(const char *str) {
 ACVP_KAS_KDF_PATTERN_CANDIDATE cmp_pattern_str(ACVP_CTX *ctx, ACVP_CIPHER cipher, const char *str, ACVP_TEST_CASE *tc) {
     //size of (preprocessor string) includes null terminator
     ACVP_RESULT rv =  ACVP_SUCCESS;
+    char *tmp = NULL, *lit = NULL, *token = NULL;
     rsize_t len = strnlen_s(str, ACVP_KAS_KDF_PATTERN_REG_STR_MAX + 1);
     int diff = 1;
     if (len > ACVP_KAS_KDF_PATTERN_REG_STR_MAX) { 
         ACVP_LOG_ERR("pattern candidate too long");
         return 0;
     }
-
     strncmp_s(str, len, ACVP_KAS_KDF_PATTERN_UPARTYINFO_STR, sizeof(ACVP_KAS_KDF_PATTERN_UPARTYINFO_STR) - 1, &diff);
-    if (!diff) {
+    if (!diff && len == sizeof(ACVP_KAS_KDF_PATTERN_UPARTYINFO_STR) - 1) {
         return ACVP_KAS_KDF_PATTERN_UPARTYINFO;
     }
     strncmp_s(str, len, ACVP_KAS_KDF_PATTERN_VPARTYINFO_STR, sizeof(ACVP_KAS_KDF_PATTERN_VPARTYINFO_STR) - 1, &diff);
-    if (!diff) {
+    if (!diff && len == sizeof(ACVP_KAS_KDF_PATTERN_VPARTYINFO_STR) - 1) {
         return ACVP_KAS_KDF_PATTERN_VPARTYINFO;
     }
-    strncmp_s(str, len, ACVP_KAS_KDF_PATTERN_UPARTYINFO_STR, sizeof(ACVP_KAS_KDF_PATTERN_UPARTYINFO_STR) - 1, &diff);
-    if (!diff) {
-        return ACVP_KAS_KDF_PATTERN_UPARTYINFO;
+    strncmp_s(str, len, ACVP_KAS_KDF_PATTERN_CONTEXT_STR, sizeof(ACVP_KAS_KDF_PATTERN_CONTEXT_STR) - 1, &diff);
+    if (!diff && len == sizeof(ACVP_KAS_KDF_PATTERN_CONTEXT_STR) - 1) {
+        return ACVP_KAS_KDF_PATTERN_CONTEXT;
     }
     strncmp_s(str, len, ACVP_KAS_KDF_PATTERN_ALGID_STR, sizeof(ACVP_KAS_KDF_PATTERN_ALGID_STR) - 1, &diff);
-    if (!diff) {
+    if (!diff && len == sizeof(ACVP_KAS_KDF_PATTERN_ALGID_STR) - 1) {
         return ACVP_KAS_KDF_PATTERN_ALGID;
     }
     strncmp_s(str, len, ACVP_KAS_KDF_PATTERN_LABEL_STR, sizeof(ACVP_KAS_KDF_PATTERN_LABEL_STR) - 1, &diff);
-    if (!diff) {
+    if (!diff && len == sizeof(ACVP_KAS_KDF_PATTERN_LABEL_STR) - 1) {
         return ACVP_KAS_KDF_PATTERN_LABEL;
     }
-    strncmp_s(str, len, ACVP_KAS_KDF_PATTERN_CONTEXT_STR, sizeof(ACVP_KAS_KDF_PATTERN_CONTEXT_STR) - 1, &diff);
-    if (!diff) {
-        return ACVP_KAS_KDF_PATTERN_CONTEXT;
-    }
     strncmp_s(str, len, ACVP_KAS_KDF_PATTERN_LENGTH_STR, sizeof(ACVP_KAS_KDF_PATTERN_LENGTH_STR) - 1, &diff);
-    if (!diff) {
+    if (!diff && len == sizeof(ACVP_KAS_KDF_PATTERN_LENGTH_STR) - 1) {
         return ACVP_KAS_KDF_PATTERN_L;
     }
-
-    //because the "literal" string is not constant like the others, check the substring
-    char *tmp = NULL; //just used to check if "literal" string exists
-    char *cpy = calloc(len + 1, sizeof(char));
-    strncpy_s(cpy, len + 1, str, len);
-    strstr_s(cpy, len + 1,ACVP_KAS_KDF_PATTERN_LITERAL_STR, sizeof(ACVP_KAS_KDF_PATTERN_LITERAL_STR) - 1, &tmp);
-    free(cpy);
-    if (tmp) {
-        char *tmp2 = calloc(len + 1, sizeof(char));
-        if (!tmp2) {
+    //only compares first X number of characters, so should match, even though string is literal[0000000]
+    strncmp_s(ACVP_KAS_KDF_PATTERN_LITERAL_STR, sizeof(ACVP_KAS_KDF_PATTERN_LITERAL_STR) - 1, str, len, &diff);
+    if (!diff) {
+        //copy string so it can be tokenized
+        char *tmp = calloc(len + 1, sizeof(char));
+        if (!tmp) {
             ACVP_LOG_ERR("Failed to allocate memory when checking literal pattern");
-            return 0;
+            goto err;
         }
-        char *lit = NULL;
-        char *token = NULL;
-        //copy string so it can be modified, skip to first [ char
-        //Would be less messy if literal data was a JSON field instead of part of a string
-        //sscanf + regex is also an option, but unsafe due to no limit setting
-        strncpy_s(tmp2, len + 1, str, len);
-        lit = tmp2 + sizeof(ACVP_KAS_KDF_PATTERN_LITERAL_STR);
-        token = strtok_s(lit, &len, "]", &tmp); //the actual hex string
+        strncpy_s(tmp, len + 1, str, len);
+
+        //tokenize around the [] characters
+        token = strtok_s(tmp, &len, "[", &lit);
         if (!token) { 
-            ACVP_LOG_ERR("Invalid literal pattern candidate2");
-            free(tmp2);
-            return 0;
+            ACVP_LOG_ERR("Invalid literal pattern candidate");
+            goto err;
+        }
+        token = strtok_s(NULL, &len, "]", &lit); //the actual hex string
+        if (!token) { 
+            ACVP_LOG_ERR("Invalid literal pattern candidate");
+            goto err;
+        }
+        if (strnlen_s(token, ACVP_KAS_KDF_PATTERN_LITERAL_STR_LEN_MAX + 1) > ACVP_KAS_KDF_PATTERN_LITERAL_STR_LEN_MAX) {
+            ACVP_LOG_ERR("Patttern literal too long");
+            goto err;
         }
         if (cipher == ACVP_KAS_HKDF) {
             tc->tc.kas_hkdf->literalCandidate = calloc(ACVP_KAS_KDF_PATTERN_LITERAL_BYTE_MAX, 1);
             if (!tc->tc.kas_hkdf->literalCandidate) {
                 ACVP_LOG_ERR("Failed to allocate memory when setting literal pattern");
-                free(tmp2);
-                return 0;
+                goto err;
             }
             rv = acvp_hexstr_to_bin(token, tc->tc.kas_hkdf->literalCandidate, ACVP_KAS_KDF_PATTERN_LITERAL_BYTE_MAX, &(tc->tc.kas_hkdf->literalLen));
         } else {
             tc->tc.kas_kdf_onestep->literalCandidate = calloc(ACVP_KAS_KDF_PATTERN_LITERAL_BYTE_MAX, 1);
             if (!tc->tc.kas_kdf_onestep->literalCandidate) {
                 ACVP_LOG_ERR("Failed to allocate memory when setting literal pattern");
-                free(tmp2);
-                return 0;
+                goto err;
             }
-            rv = acvp_hexstr_to_bin(token, tc->tc.kas_kdf_onestep->literalCandidate, ACVP_KAS_KDF_PATTERN_LITERAL_BYTE_MAX, &(tc->tc.kas_hkdf->literalLen));
+            rv = acvp_hexstr_to_bin(token, tc->tc.kas_kdf_onestep->literalCandidate, ACVP_KAS_KDF_PATTERN_LITERAL_BYTE_MAX, &(tc->tc.kas_kdf_onestep->literalLen));
         }
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Hex conversion failure (literal candidate)");
-            free(tmp2);
-            return 0;
+            goto err;
         }
-        free(tmp2);
+        if (tmp) free(tmp);
         return ACVP_KAS_KDF_PATTERN_LITERAL;
     }
+
+    ACVP_LOG_ERR("Candidate string provided does not match any valid candidate");
+err:
+    if (tmp) free(tmp);
     return 0;
 }
 
@@ -734,16 +731,7 @@ static ACVP_RESULT acvp_kas_kdf_process(ACVP_CTX *ctx,
             rv = ACVP_MISSING_ARG;
             goto err;
         }
-        if (cipher == ACVP_KAS_HKDF) {
-            arr = read_info_pattern(ctx, cipher, pattern_str, tc);
-        } else {
-            arr = read_info_pattern(ctx, cipher, pattern_str, tc);
-        }
-        if (!arr || arr[0] <= ACVP_KAS_KDF_PATTERN_NONE || arr[0] > ACVP_KAS_KDF_PATTERN_MAX) {
-            ACVP_LOG_ERR("Invalid fixedInfoPattern provided by server");
-            rv = ACVP_INVALID_ARG;
-            goto err;
-        }
+
         encoding_str = json_object_get_string(configobj, "fixedInfoEncoding");
         encoding = read_encoding_type(encoding_str);
         if (!encoding) {
@@ -766,16 +754,30 @@ static ACVP_RESULT acvp_kas_kdf_process(ACVP_CTX *ctx,
             goto err;
         }
         l = json_object_get_number(configobj, "l");
-        kdfcap = acvp_locate_cap_entry(ctx, ACVP_KAS_HKDF);
-        if(!kdfcap || !kdfcap->cap.kas_hkdf_cap) {
-            ACVP_LOG_ERR("Missing KAS_HKDF capability data");
-            rv = ACVP_UNSUPPORTED_OP;
-            goto err;
-        }
-        if (l != kdfcap->cap.kas_hkdf_cap->l) {
-            ACVP_LOG_ERR("Server provided l does not match registered value");
-            rv = ACVP_INVALID_ARG;
-            goto err;
+        if (cipher == ACVP_KAS_HKDF) {
+            kdfcap = acvp_locate_cap_entry(ctx, ACVP_KAS_HKDF);
+            if(!kdfcap || !kdfcap->cap.kas_hkdf_cap) {
+                ACVP_LOG_ERR("Missing KAS_HKDF capability data");
+                rv = ACVP_UNSUPPORTED_OP;
+                goto err;
+            }
+            if (l != kdfcap->cap.kas_hkdf_cap->l || l < 0 || l > ACVP_KAS_KDF_DKM_BIT_MAX) {
+                ACVP_LOG_ERR("Server provided l does not match registered value");
+                rv = ACVP_INVALID_ARG;
+                goto err;
+            }
+        } else {
+            kdfcap = acvp_locate_cap_entry(ctx, ACVP_KAS_KDF_ONESTEP);
+            if(!kdfcap || !kdfcap->cap.kas_kdf_onestep_cap) {
+                ACVP_LOG_ERR("Missing KAS_KDF_ONESTEP capability data");
+                rv = ACVP_UNSUPPORTED_OP;
+                goto err;
+            }
+            if (l != kdfcap->cap.kas_kdf_onestep_cap->l || l < 0 || l > ACVP_KAS_KDF_DKM_BIT_MAX) {
+                ACVP_LOG_ERR("Server provided l does not match registered value");
+                rv = ACVP_INVALID_ARG;
+                goto err;
+            }
         }
 
         json_object_set_value(r_gobj, "tests", json_value_init_array());
@@ -801,15 +803,22 @@ static ACVP_RESULT acvp_kas_kdf_process(ACVP_CTX *ctx,
         for (j = 0; j < t_cnt; j++) {
             JSON_Object *upartyobj = NULL, *vpartyobj = NULL;
             const char *salt = NULL, *z = NULL, *uparty = NULL,
-                     *uephemeral = NULL, *vparty = NULL, 
-                     *vephemeral = NULL, *dkm = NULL, *context = NULL,
-                     *algid = NULL, *label = NULL;
-            ACVP_LOG_VERBOSE("Found new KAS-HKDF test vector...");
+                       *uephemeral = NULL, *vparty = NULL, 
+                       *vephemeral = NULL, *dkm = NULL, *context = NULL,
+                       *algid = NULL, *label = NULL;
+            ACVP_LOG_VERBOSE("Found new KAS-KDF test vector...");
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
             paramobj = json_object_get_object(testobj, "kdfParameter");
             tc_id = json_object_get_number(testobj, "tcId");
             salt = json_object_get_string(paramobj, "salt");
+          
+            arr = read_info_pattern(ctx, cipher, pattern_str, tc);
+            if (!arr || arr[0] <= ACVP_KAS_KDF_PATTERN_NONE || arr[0] > ACVP_KAS_KDF_PATTERN_MAX) {
+                ACVP_LOG_ERR("Invalid fixedInfoPattern provided by server");
+                rv = ACVP_INVALID_ARG;
+                goto err;
+            }
 
             //for onestep, salt only exists for HMAC aux functions
             if (cipher != ACVP_KAS_KDF_ONESTEP) {
@@ -834,16 +843,30 @@ static ACVP_RESULT acvp_kas_kdf_process(ACVP_CTX *ctx,
                 goto err;
             }
             //Since z len is not included, check our capabilities to ensure its within the domain we set
-            ACVP_CAPS_LIST *cap = acvp_locate_cap_entry(ctx, ACVP_KAS_HKDF);
-            if (!cap) {
-                ACVP_LOG_ERR("Could not locate capabilities object ofr KAS-HKDF to determine z length validity");
-                rv = ACVP_MISSING_ARG;
-                goto err;
-            }
-            tmp = strnlen_s(z, ACVP_KAS_KDF_Z_STR_MAX + 1) << 2;
-            if (tmp > cap->cap.kas_hkdf_cap->z.max || tmp < cap->cap.kas_hkdf_cap->z.min ||
-                    tmp % cap->cap.kas_hkdf_cap->z.increment != 0) {
-                ACVP_LOG_ERR("Invalid length of data for 'z'");
+            if (cipher == ACVP_KAS_HKDF) {
+                ACVP_CAPS_LIST *cap = acvp_locate_cap_entry(ctx, ACVP_KAS_HKDF);
+                if (!cap) {
+                    ACVP_LOG_ERR("Could not locate capabilities object for KAS-HKDF to determine z length validity");
+                    rv = ACVP_MISSING_ARG;
+                    goto err;
+                }
+                tmp = strnlen_s(z, ACVP_KAS_KDF_Z_STR_MAX + 1) << 2;
+                if (tmp > cap->cap.kas_hkdf_cap->z.max || tmp < cap->cap.kas_hkdf_cap->z.min ||
+                        tmp % cap->cap.kas_hkdf_cap->z.increment != 0) {
+                    ACVP_LOG_ERR("Invalid length of data for 'z'");
+                }
+            } else {
+                ACVP_CAPS_LIST *cap = acvp_locate_cap_entry(ctx, ACVP_KAS_KDF_ONESTEP);
+                if (!cap) {
+                    ACVP_LOG_ERR("Could not locate capabilities object for KAS-KDF-ONESTEP to determine z length validity");
+                    rv = ACVP_MISSING_ARG;
+                    goto err;
+                }
+                tmp = strnlen_s(z, ACVP_KAS_KDF_Z_STR_MAX + 1) << 2;
+                if (tmp > cap->cap.kas_kdf_onestep_cap->z.max || tmp < cap->cap.kas_kdf_onestep_cap->z.min ||
+                        tmp % cap->cap.kas_kdf_onestep_cap->z.increment != 0) {
+                    ACVP_LOG_ERR("Invalid length of data for 'z'");
+                }
             }
 
             //Read the array of pattern candidates, read specific JSON objects based on whats there
@@ -895,8 +918,8 @@ static ACVP_RESULT acvp_kas_kdf_process(ACVP_CTX *ctx,
                     }
                     break;
                 case ACVP_KAS_KDF_PATTERN_LABEL:
-                    algid = json_object_get_string(paramobj, "label");
-                    if (!algid) {
+                    label = json_object_get_string(paramobj, "label");
+                    if (!label) {
                         ACVP_LOG_ERR("Server JSON missing 'label'");
                         goto err;
                     }
@@ -967,6 +990,9 @@ static ACVP_RESULT acvp_kas_kdf_process(ACVP_CTX *ctx,
                                                   salt_method, encoding, arr, test_type);
             }
 
+            if (arr) free(arr);
+            arr = NULL;
+
             if (rv != ACVP_SUCCESS) {
                 if (cipher == ACVP_KAS_HKDF) {
                     acvp_kas_kdf_release_tc(ACVP_KAS_HKDF, tc);
@@ -1023,12 +1049,13 @@ static ACVP_RESULT acvp_kas_kdf_process(ACVP_CTX *ctx,
             json_array_append_value(r_tarr, r_tval);
         }
         json_array_append_value(r_garr, r_gval);
-        if (arr) { free(arr); }
+        if (arr) { free(arr); arr = NULL; }
     }
     rv = ACVP_SUCCESS;
 
 err:
     if (rv != ACVP_SUCCESS) {
+        if (arr) free(arr);
         json_value_free(r_gval);
     }
     return rv;

@@ -290,6 +290,8 @@ typedef enum acvp_hmac_alg_val {
     ACVP_HMAC_ALG_SHA256,
     ACVP_HMAC_ALG_SHA384,
     ACVP_HMAC_ALG_SHA512,
+    ACVP_HMAC_ALG_SHA512_224,
+    ACVP_HMAC_ALG_SHA512_256,
     ACVP_HMAC_ALG_SHA3_224,
     ACVP_HMAC_ALG_SHA3_256,
     ACVP_HMAC_ALG_SHA3_384,
@@ -1581,7 +1583,7 @@ typedef struct acvp_kas_hkdf_tc_t {
     //Incrementing through the array, each element represents a pattern candidate until we reach a 0
     ACVP_KAS_KDF_PATTERN_CANDIDATE fixedInfoPattern[ACVP_KAS_KDF_PATTERN_MAX];
     ACVP_KAS_KDF_ENCODING encoding;
-    ACVP_HMAC_ALG_VAL hmacAlg;
+    ACVP_HASH_ALG hmacAlg;
     ACVP_KAS_KDF_MAC_SALT_METHOD saltMethod;
     unsigned int tc_id;
     unsigned char *salt;

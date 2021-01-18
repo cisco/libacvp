@@ -76,6 +76,8 @@ typedef struct app_config {
 
 int ingest_cli(APP_CONFIG *cfg, int argc, char **argv);
 int app_setup_two_factor_auth(ACVP_CTX *ctx);
+unsigned int convert_uint_to_big_endian(unsigned int i);
+int check_is_little_endian();
 
 void app_aes_cleanup(void);
 void app_des_cleanup(void);

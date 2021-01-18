@@ -3166,7 +3166,8 @@ static ACVP_RESULT acvp_build_kas_kdf_onestep_register_cap(ACVP_CTX *ctx,
     tmp_param_list = cap_entry->cap.kas_kdf_onestep_cap->patterns;
     if (!tmp_param_list) {
         ACVP_LOG_ERR("Missing patterns list when building registration");
-        return ACVP_MISSING_ARG;
+        rv = ACVP_UNSUPPORTED_OP;
+        goto err;
     }
     while (tmp_param_list) {
         switch (tmp_param_list->param) {
@@ -3320,7 +3321,8 @@ static ACVP_RESULT acvp_build_kas_hkdf_register_cap(ACVP_CTX *ctx,
     tmp_param_list = cap_entry->cap.kas_hkdf_cap->patterns;
     if (!tmp_param_list) {
         ACVP_LOG_ERR("Missing patterns list when building registration");
-        return ACVP_MISSING_ARG;
+        rv = ACVP_UNSUPPORTED_OP;
+        goto err;
     }
     while (tmp_param_list) {
         switch (tmp_param_list->param) {

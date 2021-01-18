@@ -607,6 +607,10 @@ const char* acvp_lookup_hmac_alg_str(ACVP_HMAC_ALG_VAL alg) {
             return ACVP_STR_SHA2_384;
         case ACVP_HMAC_ALG_SHA512:
             return ACVP_STR_SHA2_512;
+        case ACVP_HMAC_ALG_SHA512_224:
+            return ACVP_STR_SHA2_512_224;
+        case ACVP_HMAC_ALG_SHA512_256:
+            return ACVP_STR_SHA2_512_256;
         case ACVP_HMAC_ALG_SHA3_224:
             return ACVP_STR_SHA3_224;
         case ACVP_HMAC_ALG_SHA3_256:
