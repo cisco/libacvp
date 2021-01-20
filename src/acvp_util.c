@@ -703,19 +703,6 @@ ACVP_RESULT acvp_hexstr_to_bin(const char *src, unsigned char *dest, int dest_ma
     return ACVP_SUCCESS;
 }
 
-ACVP_RESULT acvp_check_if_hex_string(ACVP_CTX *ctx, char* string) {
-    int i;
-    int len = strnlen_s(string, ACVP_HEXSTR_MAX + 1);
-    if (len > ACVP_HEXSTR_MAX) {
-        ACVP_LOG_ERR("String too long to determine if hex");
-        return ACVP_INVALID_ARG;
-    }
-    for (i = 0; i < len; i++) {
-        
-    }
-    return ACVP_SUCCESS;
-}
-
 /*
  * Local - helper function for acvp_hexstring_to_bytes
  * Used to convert a hexadecimal character to it's byte

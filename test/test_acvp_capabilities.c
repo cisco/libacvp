@@ -1698,3 +1698,85 @@ Test(EnableCapKASFFC, invalid_params, .fini = teardown) {
     rv = acvp_cap_kas_ffc_set_scheme(ctx, ACVP_KAS_FFC_COMP, ACVP_KAS_FFC_MODE_COMPONENT, 0, ACVP_KAS_FFC_ROLE, ACVP_KAS_FFC_ROLE_RESPONDER);
     cr_assert(rv == ACVP_INVALID_ARG);
 }
+
+/*
+ * enable kas hkdf with invalid params
+ */
+Test(EnableCapKASHKDF, invalid_params, .fini = teardown) {
+    setup_empty_ctx(&ctx);
+
+    rv = acvp_cap_kas_kdf_enable(ctx, ACVP_KAS_HKDF, &dummy_handler_success);
+    cr_assert(rv == ACVP_SUCCESS);
+    // invalid cipher
+    rv = acvp_cap_kas_kdf_set_parm(ctx, ACVP_HASH_SHA256, ACVP_KAS_KDF_PATTERN, ACVP_KAS_KDF_PATTERN_UPARTYINFO, NULL);
+    cr_assert(rv = ACVP_INVALID_ARG);
+    //invalid pattern
+    rv = acvp_cap_kas_kdf_set_parm(ctx, ACVP_KAS_HKDF, ACVP_KAS_KDF_PATTERN, ACVP_KAS_KDF_PATTERN_MAX, NULL);
+    cr_assert(rv = ACVP_INVALID_ARG);
+    //invalid hmac alg
+    rv = acvp_cap_kas_kdf_set_parm(ctx, ACVP_KAS_HKDF, ACVP_KAS_HKDF_HMAC_ALG, ACVP_HASH_ALG_MAX, NULL);
+    cr_assert(rv = ACVP_INVALID_ARG);
+    //invalid l
+    rv = acvp_cap_kas_kdf_set_parm(ctx, ACVP_KAS_HKDF, ACVP_KAS_KDF_L, 0, NULL);
+    cr_assert(rv = ACVP_INVALID_ARG);
+    //invalid salt method
+    rv = acvp_cap_kas_kdf_set_parm(ctx, ACVP_KAS_HKDF, ACVP_KAS_KDF_MAC_SALT, ACVP_KAS_KDF_MAC_SALT_METHOD_MAX, NULL);
+    cr_assert(rv = ACVP_INVALID_ARG);
+    //invalid encoding
+    rv = acvp_cap_kas_kdf_set_parm(ctx, ACVP_KAS_HKDF, ACVP_KAS_KDF_ENCODING_TYPE, ACVP_KAS_KDF_ENCODING_MAX, NULL);
+    cr_assert(rv = ACVP_INVALID_ARG);
+    //invalid call to set Z on set parm
+    rv = acvp_cap_kas_kdf_set_parm(ctx, ACVP_KAS_HKDF, ACVP_KAS_KDF_Z, 1024, NULL);
+    cr_assert(rv = ACVP_INVALID_ARG);
+    //invalid call to set AUX_FUNCTION on hkdf
+    rv = acvp_cap_kas_kdf_set_parm(ctx, ACVP_KAS_HKDF, ACVP_KAS_KDF_ONESTEP_AUX_FUNCTION, ACVP_HASH_SHA256, NULL);
+    cr_assert(rv = ACVP_INVALID_ARG);
+    //invalid alg calls to set_domain
+    rv = acvp_cap_kas_kdf_set_domain(ctx, ACVP_HASH_SHA256, ACVP_KAS_KDF_Z, 0, 4096, 8);
+    cr_assert(rv = ACVP_INVALID_ARG);
+    //invalid param call to set_domain
+    rv = acvp_cap_kas_kdf_set_domain(ctx, ACVP_KAS_HKDF, ACVP_KAS_KDF_L, 0, 4096, 8);
+    cr_assert(rv = ACVP_INVALID_ARG);
+
+}
+
+/*
+ * enable kas kdf onestep with invalid params
+ */
+Test(EnableCapKASKDFONESTEP, invalid_params, .fini = teardown) {
+    setup_empty_ctx(&ctx);
+
+    rv = acvp_cap_kas_kdf_enable(ctx, ACVP_KAS_KDF_ONESTEP, &dummy_handler_success);
+    cr_assert(rv == ACVP_SUCCESS);
+    // invalid cipher
+    rv = acvp_cap_kas_kdf_set_parm(ctx, ACVP_HASH_SHA256, ACVP_KAS_KDF_PATTERN, ACVP_KAS_KDF_PATTERN_UPARTYINFO, NULL);
+    cr_assert(rv = ACVP_INVALID_ARG);
+    //invalid pattern
+    rv = acvp_cap_kas_kdf_set_parm(ctx, ACVP_KAS_KDF_ONESTEP, ACVP_KAS_KDF_PATTERN, ACVP_KAS_KDF_PATTERN_MAX, NULL);
+    cr_assert(rv = ACVP_INVALID_ARG);
+    //invalid aux function
+    rv = acvp_cap_kas_kdf_set_parm(ctx, ACVP_KAS_KDF_ONESTEP, ACVP_AES_GCM, ACVP_HASH_ALG_MAX, NULL);
+    cr_assert(rv = ACVP_INVALID_ARG);
+    //invalid l
+    rv = acvp_cap_kas_kdf_set_parm(ctx, ACVP_KAS_KDF_ONESTEP, ACVP_KAS_KDF_L, 0, NULL);
+    cr_assert(rv = ACVP_INVALID_ARG);
+    //invalid salt method
+    rv = acvp_cap_kas_kdf_set_parm(ctx, ACVP_KAS_KDF_ONESTEP, ACVP_KAS_KDF_MAC_SALT, ACVP_KAS_KDF_MAC_SALT_METHOD_MAX, NULL);
+    cr_assert(rv = ACVP_INVALID_ARG);
+    //invalid encoding
+    rv = acvp_cap_kas_kdf_set_parm(ctx, ACVP_KAS_KDF_ONESTEP, ACVP_KAS_KDF_ENCODING_TYPE, ACVP_KAS_KDF_ENCODING_MAX, NULL);
+    cr_assert(rv = ACVP_INVALID_ARG);
+    //invalid call to set Z on set parm
+    rv = acvp_cap_kas_kdf_set_parm(ctx, ACVP_KAS_KDF_ONESTEP, ACVP_KAS_KDF_Z, 1024, NULL);
+    cr_assert(rv = ACVP_INVALID_ARG);
+    //invalid call to set HMAC_ALG on hkdf
+    rv = acvp_cap_kas_kdf_set_parm(ctx, ACVP_KAS_KDF_ONESTEP, ACVP_KAS_HKDF_HMAC_ALG, ACVP_HASH_SHA256, NULL);
+    cr_assert(rv = ACVP_INVALID_ARG);
+    //invalid alg calls to set_domain
+    rv = acvp_cap_kas_kdf_set_domain(ctx, ACVP_HASH_SHA256, ACVP_KAS_KDF_Z, 0, 4096, 8);
+    cr_assert(rv = ACVP_INVALID_ARG);
+    //invalid param call to set_domain
+    rv = acvp_cap_kas_kdf_set_domain(ctx, ACVP_KAS_KDF_ONESTEP, ACVP_KAS_KDF_L, 0, 4096, 8);
+    cr_assert(rv = ACVP_INVALID_ARG);
+
+}

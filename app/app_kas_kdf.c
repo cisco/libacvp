@@ -124,13 +124,13 @@ int app_kas_hkdf_handler(ACVP_TEST_CASE *test_case) {
                 tmp += 4;
                 break;
             default:
-                printf("Invalid fixedInfoPattern candidate value");
+                printf("Invalid fixedInfoPattern candidate value\n");
                 goto end;
             }
         }
         break;
     default:
-        printf("Invalid encoding for fixed info provided in test case");
+        printf("Invalid encoding for fixed info provided in test case\n");
         goto end;
     }
 
@@ -410,13 +410,13 @@ int app_kas_kdf_onestep_handler(ACVP_TEST_CASE *test_case) {
                 tmp += 4;
                 break;
             default:
-                printf("Invalid fixedInfoPattern candidate value");
+                printf("Invalid fixedInfoPattern candidate value\n");
                 goto end;
             }
         }
         break;
     default:
-        printf("Invalid encoding for fixed info provided in test case");
+        printf("Invalid encoding for fixed info provided in test case\n");
         goto end;
     }
 

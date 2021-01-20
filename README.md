@@ -406,6 +406,8 @@ This package was initially written by John Foley of Cisco Systems.
 | **KAS IFC KAS2-Party_V-confirmation** |  N  |  N  |
 | **KTS IFC KTS-OAEP-basic** |  Y  |  Y  |
 | **KTS IFC KTS-OAEP-Party_V-confirmation** |  N  |  N  |
+| **KAS KDF HKDF** |  Y  |  Y  |
+| **KAS KDF ONESTEP** |  Y  |  Y  |
 | **KDFs** | |
 | **Counter KDF** |  Y  |  N  |
 | **Feedback KDF** |  N  |  N  |

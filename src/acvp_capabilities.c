@@ -8050,7 +8050,7 @@ ACVP_RESULT acvp_cap_kas_kdf_set_parm(ACVP_CTX *ctx, ACVP_CIPHER cipher, ACVP_KA
                     cap_list->cap.kas_kdf_onestep_cap->patterns->param = value;
                 }
             } else {
-                ACVP_LOG_ERR("Invalid pattern type specified when setting param for KAS-HKDF.");
+                ACVP_LOG_ERR("Invalid pattern type specified when setting param for KAS KDF onestep.");
                 return ACVP_INVALID_ARG;
             }
             break;
@@ -8068,7 +8068,7 @@ ACVP_RESULT acvp_cap_kas_kdf_set_parm(ACVP_CTX *ctx, ACVP_CIPHER cipher, ACVP_KA
                     cap_list->cap.kas_kdf_onestep_cap->encodings->param = value;
                 }
             } else {
-                ACVP_LOG_ERR("Invalid encoding type specified when setting param for KAS-HKDF.");
+                ACVP_LOG_ERR("Invalid encoding type specified when setting param for KAS KDF onestep.");
                 return ACVP_INVALID_ARG;
             }
             break;
@@ -8077,7 +8077,7 @@ ACVP_RESULT acvp_cap_kas_kdf_set_parm(ACVP_CTX *ctx, ACVP_CIPHER cipher, ACVP_KA
                 ACVP_LOG_ERR("Valid for l must be > 0");
                 return ACVP_INVALID_ARG;
             } else  if (value % 8 != 0) {
-                ACVP_LOG_ERR("Value for l for KAS-HKDF must be convertable to exact bytes (mod 8)");
+                ACVP_LOG_ERR("Value for l for KAS KDF onestep must be convertable to exact bytes (mod 8)");
                 return ACVP_INVALID_ARG;
             } else {
                 cap_list->cap.kas_kdf_onestep_cap->l = value;
