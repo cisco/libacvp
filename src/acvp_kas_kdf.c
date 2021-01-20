@@ -519,6 +519,7 @@ static ACVP_KAS_KDF_PATTERN_CANDIDATE* read_info_pattern(ACVP_CTX *ctx, ACVP_CIP
     ACVP_KAS_KDF_PATTERN_CANDIDATE currentCand = -1;
     char *cpy = NULL;
     ACVP_KAS_KDF_PATTERN_CANDIDATE *rv = NULL;
+    int hasUParty = 0, hasVParty = 0; //Currently, these are required
     if (!str) {
         return NULL;
     }
@@ -563,12 +564,22 @@ static ACVP_KAS_KDF_PATTERN_CANDIDATE* read_info_pattern(ACVP_CTX *ctx, ACVP_CIP
             free(arr);
             goto err;
         } else {
+            if (currentCand == ACVP_KAS_KDF_PATTERN_UPARTYINFO) {
+                hasUParty = 1;
+            }
+            if (currentCand == ACVP_KAS_KDF_PATTERN_VPARTYINFO) {
+                hasVParty = 1;
+            }
             arr[count] = currentCand;
         }
         count++;
         token = strtok_s(NULL, &len, "||", &tmp);
     } while(token);
 
+    if (!hasUParty || !hasVParty) {
+        free(arr);
+        goto err;
+    }
     rv = arr;
 err:
     if (cpy) free(cpy);
@@ -577,6 +588,9 @@ err:
 
 static ACVP_KAS_KDF_ENCODING read_encoding_type(const char* str) {
     int diff = 1;
+    if (!str) {
+        return 0;
+    }
     strncmp_s(ACVP_KAS_KDF_ENCODING_CONCATENATION_STR,
               sizeof(ACVP_KAS_KDF_ENCODING_CONCATENATION_STR) - 1,
               str, strnlen_s(str, 16), &diff);
@@ -590,6 +604,9 @@ static ACVP_KAS_KDF_ENCODING read_encoding_type(const char* str) {
 
 static ACVP_KAS_KDF_MAC_SALT_METHOD read_salt_method(const char* str) {
     int diff = 1;
+    if (!str) {
+        return 0;
+    }
     strncmp_s(ACVP_KAS_KDF_MAC_SALT_METHOD_DEFAULT_STR, 
               sizeof(ACVP_KAS_KDF_MAC_SALT_METHOD_DEFAULT_STR) - 1,
               str, strnlen_s(str, 16), &diff);
@@ -664,11 +681,13 @@ static ACVP_RESULT acvp_kas_kdf_process(ACVP_CTX *ctx,
         test_type_str = json_object_get_string(groupobj, "testType");
         if (!test_type_str) {
             ACVP_LOG_ERR("Server JSON missing 'testType'");
+            rv = ACVP_MALFORMED_JSON;
             goto err;
         }
         test_type = read_test_type(test_type_str);
         if (!test_type) {
             ACVP_LOG_ERR("Server provided invalid testType");
+            rv = ACVP_MALFORMED_JSON;
             goto err;
         }
         json_object_set_number(r_gobj, "tgId", tgId);
@@ -676,13 +695,14 @@ static ACVP_RESULT acvp_kas_kdf_process(ACVP_CTX *ctx,
         configobj = json_object_get_object(groupobj, "kdfConfiguration");
         if (!configobj) {
             ACVP_LOG_ERR("Missing kdfConfiguration object in server JSON");
+            rv = ACVP_MALFORMED_JSON;
             goto err;
         }
         if (cipher == ACVP_KAS_HKDF) {
             alg_str = json_object_get_string(configobj, "hmacAlg");
             if (!alg_str) {
                 ACVP_LOG_ERR("Server JSON missing 'hashAlg'");
-                rv = ACVP_MISSING_ARG;
+                rv = ACVP_MALFORMED_JSON;
                 goto err;
             }
 
@@ -704,31 +724,31 @@ static ACVP_RESULT acvp_kas_kdf_process(ACVP_CTX *ctx,
             case ACVP_HASH_ALG_MAX:
             default:
                 ACVP_LOG_ERR("Server JSON invalid 'hashAlg'");
-                rv = ACVP_INVALID_ARG;
+                rv = ACVP_MALFORMED_JSON;
                 goto err;
             }
         } else if (cipher == ACVP_KAS_KDF_ONESTEP) {
             alg_str = json_object_get_string(configobj, "auxFunction");
             if (!alg_str) {
                 ACVP_LOG_ERR("Server JSON missing 'auxFunction'");
-                rv = ACVP_MISSING_ARG;
+                rv = ACVP_MALFORMED_JSON;
                 goto err;
             }
             aux_function = acvp_lookup_aux_function_alg_tbl(alg_str);
             if (!aux_function) {
                 ACVP_LOG_ERR("Invalid auxFunction provided by server JSON");
-                rv = ACVP_INVALID_ARG;
+                rv = ACVP_MALFORMED_JSON;
                 goto err;
             }
         } else {
-            ACVP_LOG_ERR("Error, incorrect cipher in KAS-KDF handler!");
+            ACVP_LOG_ERR("Error, incorrect cipher in KAS-KDF handler");
             rv = ACVP_UNSUPPORTED_OP;
             goto err;
         }
         pattern_str = json_object_get_string(configobj, "fixedInfoPattern");
         if (!pattern_str) {
             ACVP_LOG_ERR("Server JSON missing 'fixedInfoPattern'");
-            rv = ACVP_MISSING_ARG;
+            rv = ACVP_MALFORMED_JSON;
             goto err;
         }
 
@@ -736,21 +756,21 @@ static ACVP_RESULT acvp_kas_kdf_process(ACVP_CTX *ctx,
         encoding = read_encoding_type(encoding_str);
         if (!encoding) {
             ACVP_LOG_ERR("Invalid fixedInfoEncoding provided by server");
-            rv = ACVP_INVALID_ARG;
+            rv = ACVP_MALFORMED_JSON;
             goto err;
         }
         salt_method_str = json_object_get_string(configobj, "saltMethod");
         salt_method = read_salt_method(salt_method_str);
         if (!salt_method) {
             ACVP_LOG_ERR("Invalid saltMethod provided by server");
-            rv = ACVP_INVALID_ARG;
+            rv = ACVP_MALFORMED_JSON;
             goto err;
         }
         saltLen = json_object_get_number(configobj, "saltLen");
         //saltLen seems tied to hashAlg bit length. Spec unclear as of writing.
         if (saltLen % 8 != 0 || saltLen < 0 || saltLen > 512) {
             ACVP_LOG_ERR("Invalid saltLen provided by server");
-            rv = ACVP_INVALID_ARG;
+            rv = ACVP_MALFORMED_JSON;
             goto err;
         }
         l = json_object_get_number(configobj, "l");
@@ -761,9 +781,9 @@ static ACVP_RESULT acvp_kas_kdf_process(ACVP_CTX *ctx,
                 rv = ACVP_UNSUPPORTED_OP;
                 goto err;
             }
-            if (l != kdfcap->cap.kas_hkdf_cap->l || l < 0 || l > ACVP_KAS_KDF_DKM_BIT_MAX) {
-                ACVP_LOG_ERR("Server provided l does not match registered value");
-                rv = ACVP_INVALID_ARG;
+            if (l != kdfcap->cap.kas_hkdf_cap->l || l <= 0 || l > ACVP_KAS_KDF_DKM_BIT_MAX) {
+                ACVP_LOG_ERR("Server provided l is invalid");
+                rv = ACVP_MALFORMED_JSON;
                 goto err;
             }
         } else {
@@ -775,7 +795,7 @@ static ACVP_RESULT acvp_kas_kdf_process(ACVP_CTX *ctx,
             }
             if (l != kdfcap->cap.kas_kdf_onestep_cap->l || l < 0 || l > ACVP_KAS_KDF_DKM_BIT_MAX) {
                 ACVP_LOG_ERR("Server provided l does not match registered value");
-                rv = ACVP_INVALID_ARG;
+                rv = ACVP_MALFORMED_JSON;
                 goto err;
             }
         }
@@ -816,7 +836,7 @@ static ACVP_RESULT acvp_kas_kdf_process(ACVP_CTX *ctx,
             arr = read_info_pattern(ctx, cipher, pattern_str, tc);
             if (!arr || arr[0] <= ACVP_KAS_KDF_PATTERN_NONE || arr[0] > ACVP_KAS_KDF_PATTERN_MAX) {
                 ACVP_LOG_ERR("Invalid fixedInfoPattern provided by server");
-                rv = ACVP_INVALID_ARG;
+                rv = ACVP_MALFORMED_JSON;
                 goto err;
             }
 
@@ -824,14 +844,14 @@ static ACVP_RESULT acvp_kas_kdf_process(ACVP_CTX *ctx,
             if (cipher != ACVP_KAS_KDF_ONESTEP) {
                 if (!salt) {
                     ACVP_LOG_ERR("Server JSON missing 'salt'");
-                    rv = ACVP_MISSING_ARG;
+                    rv = ACVP_MALFORMED_JSON;
                     goto err;
                 }
                 //assume max salt len is mac alg max length, currently 512
                 if (strnlen_s(salt, 128) != saltLen / 4) {
                     ACVP_LOG_ERR("salt wrong length, should match provided saltLen %d",
                                 saltLen);
-                    rv = ACVP_INVALID_ARG;
+                    rv = ACVP_MALFORMED_JSON;
                     goto err;
                 }
             }
@@ -839,7 +859,7 @@ static ACVP_RESULT acvp_kas_kdf_process(ACVP_CTX *ctx,
             z = json_object_get_string(paramobj, "z");
             if (!z) {
                 ACVP_LOG_ERR("Server JSON missing 'z'");
-                rv = ACVP_MISSING_ARG;
+                rv = ACVP_MALFORMED_JSON;
                 goto err;
             }
             //Since z len is not included, check our capabilities to ensure its within the domain we set
@@ -879,11 +899,13 @@ static ACVP_RESULT acvp_kas_kdf_process(ACVP_CTX *ctx,
                     upartyobj = json_object_get_object(testobj, "fixedInfoPartyU");
                     if (!upartyobj) {
                         ACVP_LOG_ERR("Server JSON missing 'fixedInfoPartyU'");
+                        rv = ACVP_MALFORMED_JSON;
                         goto err;
                     }
                     uparty = json_object_get_string(upartyobj, "partyId");
                     if (!uparty) {
                         ACVP_LOG_ERR("Server JSON missing 'partyId' in 'fixedInfoPatyU");
+                        rv = ACVP_MALFORMED_JSON;
                         goto err;
                     }
                     //ephemeral data is randomly included and optional
@@ -893,11 +915,13 @@ static ACVP_RESULT acvp_kas_kdf_process(ACVP_CTX *ctx,
                     vpartyobj = json_object_get_object(testobj, "fixedInfoPartyV");
                     if (!vpartyobj) {
                         ACVP_LOG_ERR("Server JSON missing 'fixedInfoPartyV'");
+                        rv = ACVP_MALFORMED_JSON;
                         goto err;
                     }
                     vparty = json_object_get_string(vpartyobj, "partyId");
                     if (!vparty) {
                         ACVP_LOG_ERR("Server JSON missing 'partyId' in 'fixedInfoPatyU");
+                        rv = ACVP_MALFORMED_JSON;
                         goto err;
                     }
                     //ephemeral data is randomly included and optional
@@ -907,6 +931,7 @@ static ACVP_RESULT acvp_kas_kdf_process(ACVP_CTX *ctx,
                     context = json_object_get_string(paramobj, "context");
                     if (!context) {
                         ACVP_LOG_ERR("Server JSON missing 'context'");
+                        rv = ACVP_MALFORMED_JSON;
                         goto err;
                     }
                     break;
@@ -914,6 +939,7 @@ static ACVP_RESULT acvp_kas_kdf_process(ACVP_CTX *ctx,
                     algid = json_object_get_string(paramobj, "algorithmId");
                     if (!algid) {
                         ACVP_LOG_ERR("Server JSON missing 'algorithmId'");
+                        rv = ACVP_MALFORMED_JSON;
                         goto err;
                     }
                     break;
@@ -921,6 +947,7 @@ static ACVP_RESULT acvp_kas_kdf_process(ACVP_CTX *ctx,
                     label = json_object_get_string(paramobj, "label");
                     if (!label) {
                         ACVP_LOG_ERR("Server JSON missing 'label'");
+                        rv = ACVP_MALFORMED_JSON;
                         goto err;
                     }
                     break;
@@ -936,12 +963,12 @@ static ACVP_RESULT acvp_kas_kdf_process(ACVP_CTX *ctx,
                 dkm = json_object_get_string(testobj, "dkm");
                 if (!dkm) {
                     ACVP_LOG_ERR("Server json missing 'dkm'");
-                    rv = ACVP_INVALID_ARG;
+                    rv = ACVP_MALFORMED_JSON;
                     goto err;
                 }
                 if (strnlen_s(dkm, ACVP_KAS_KDF_DKM_STR_MAX) != l / 4) {
                     ACVP_LOG_ERR("Given dkm wrong length, should match provided l %d",  l);
-                    rv = ACVP_INVALID_ARG;
+                    rv = ACVP_MALFORMED_JSON;
                     goto err;
                 }
             }
@@ -1117,14 +1144,17 @@ ACVP_RESULT acvp_kas_hkdf_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         stc.cipher = acvp_lookup_cipher_w_mode_index(alg_str, mode_str);
         if (stc.cipher != ACVP_KAS_HKDF) {
             ACVP_LOG_ERR("Server JSON invalid 'algorithm' or 'mode'");
-            rv = ACVP_INVALID_ARG;
+            rv = ACVP_MALFORMED_JSON;
             goto err;
         }
     } else {
         ACVP_LOG_ERR("Missing 'mode' in server JSON");
+        rv = ACVP_MALFORMED_JSON;
+        goto err;
     }
     if (stc.cipher != ACVP_KAS_HKDF) {
         ACVP_LOG_ERR("Invalid cipher for KAS-HKDF handler");
+        rv = ACVP_INVALID_ARG;
         goto err;
     }
 
@@ -1212,14 +1242,17 @@ ACVP_RESULT acvp_kas_kdf_onestep_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         stc.cipher = acvp_lookup_cipher_w_mode_index(alg_str, mode_str);
         if (stc.cipher != ACVP_KAS_KDF_ONESTEP) {
             ACVP_LOG_ERR("Server JSON invalid 'algorithm' or 'mode'");
-            rv = ACVP_INVALID_ARG;
+            rv = ACVP_MALFORMED_JSON;
             goto err;
         }
     } else {
         ACVP_LOG_ERR("Missing 'mode' in server JSON");
+        rv = ACVP_MALFORMED_JSON;
+        goto err;
     }
     if (stc.cipher != ACVP_KAS_KDF_ONESTEP) {
         ACVP_LOG_ERR("Invalid cipher for KAS-KDF-ONESTEP handler");
+        rv = ACVP_MALFORMED_JSON;
         goto err;
     }
 
