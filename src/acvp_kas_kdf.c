@@ -464,7 +464,7 @@ ACVP_KAS_KDF_PATTERN_CANDIDATE cmp_pattern_str(ACVP_CTX *ctx, ACVP_CIPHER cipher
     strncmp_s(ACVP_KAS_KDF_PATTERN_LITERAL_STR, sizeof(ACVP_KAS_KDF_PATTERN_LITERAL_STR) - 1, str, len, &diff);
     if (!diff) {
         //copy string so it can be tokenized
-        char *tmp = calloc(len + 1, sizeof(char));
+        tmp = calloc(len + 1, sizeof(char));
         if (!tmp) {
             ACVP_LOG_ERR("Failed to allocate memory when checking literal pattern");
             goto err;
