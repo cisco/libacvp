@@ -53,40 +53,6 @@ static void setup(void) {
 
 }
 
-static void setup_fail(void) {
-    char *expo_str = calloc(7, sizeof(char));
-    strncpy(expo_str, "010001", 7); // RSA_F4
-
-    setup_empty_ctx(&ctx);
-    /* Support is for IFC-SSC for hashZ only */
-    rv = acvp_cap_kas_ifc_enable(ctx, ACVP_KAS_IFC_SSC, &dummy_handler_failure);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_set_prereq(ctx, ACVP_KAS_IFC_SSC, ACVP_PREREQ_RSA, cvalue);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_set_prereq(ctx, ACVP_KAS_IFC_SSC, ACVP_PREREQ_RSADP, cvalue);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_set_prereq(ctx, ACVP_KAS_IFC_SSC, ACVP_PREREQ_SHA, cvalue);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_set_prereq(ctx, ACVP_KAS_IFC_SSC, ACVP_PREREQ_DRBG, cvalue);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_kas_ifc_set_parm(ctx, ACVP_KAS_IFC_SSC, ACVP_KAS_IFC_KAS1, ACVP_KAS_IFC_INITIATOR);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_kas_ifc_set_parm(ctx, ACVP_KAS_IFC_SSC, ACVP_KAS_IFC_KAS1, ACVP_KAS_IFC_RESPONDER);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_kas_ifc_set_parm(ctx, ACVP_KAS_IFC_SSC, ACVP_KAS_IFC_MODULO, 2048);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_kas_ifc_set_parm(ctx, ACVP_KAS_IFC_SSC, ACVP_KAS_IFC_MODULO, 3072);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_kas_ifc_set_parm(ctx, ACVP_KAS_IFC_SSC, ACVP_KAS_IFC_MODULO, 4096);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_kas_ifc_set_parm(ctx, ACVP_KAS_IFC_SSC, ACVP_KAS_IFC_KEYGEN_METHOD, ACVP_KAS_IFC_RSAKPG1_BASIC);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_kas_ifc_set_parm(ctx, ACVP_KAS_IFC_SSC, ACVP_KAS_IFC_HASH, ACVP_SHA512);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_kas_ifc_set_exponent(ctx, ACVP_KAS_IFC_SSC, ACVP_KAS_IFC_FIXEDPUBEXP, expo_str);
-    cr_assert(rv == ACVP_SUCCESS);
-}
-
 static void teardown(void) {
     if (ctx) teardown_ctx(&ctx);
 }
