@@ -12,7 +12,7 @@
 #define ko_required_argument 1
 #define ko_optional_argument 2
 
-#define OPTION_NAME_MAX 16
+#define OPTION_NAME_MAX 128
 #define OSTR_MAX 2 /* Change according to the ostr parameter in app_cli.c */
 
 typedef struct {

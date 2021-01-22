@@ -587,7 +587,7 @@ const char* acvp_lookup_aux_function_alg_str(ACVP_CIPHER alg) {
 ACVP_CIPHER acvp_lookup_aux_function_alg_tbl(const char *str) {
     int diff = 1, i = 0;
     for (i = 0; i < acvp_aux_function_tbl_len; i++) {
-        strncmp_s(acvp_aux_function_tbl[i].name, ACVP_ALG_NAME_MAX, str, ACVP_ALG_NAME_MAX, &diff);
+    strcmp_s(acvp_aux_function_tbl[i].name, strnlen_s(acvp_aux_function_tbl[i].name, ACVP_ALG_NAME_MAX), str, &diff);
         if (!diff) {
             return acvp_aux_function_tbl[i].cipher;
         }

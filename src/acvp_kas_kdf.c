@@ -436,77 +436,79 @@ ACVP_KAS_KDF_PATTERN_CANDIDATE cmp_pattern_str(ACVP_CTX *ctx, ACVP_CIPHER cipher
         ACVP_LOG_ERR("pattern candidate too long");
         return 0;
     }
-    strncmp_s(str, len, ACVP_KAS_KDF_PATTERN_UPARTYINFO_STR, sizeof(ACVP_KAS_KDF_PATTERN_UPARTYINFO_STR) - 1, &diff);
+    strcmp_s(str, len, ACVP_KAS_KDF_PATTERN_UPARTYINFO_STR, &diff);
     if (!diff && len == sizeof(ACVP_KAS_KDF_PATTERN_UPARTYINFO_STR) - 1) {
         return ACVP_KAS_KDF_PATTERN_UPARTYINFO;
     }
-    strncmp_s(str, len, ACVP_KAS_KDF_PATTERN_VPARTYINFO_STR, sizeof(ACVP_KAS_KDF_PATTERN_VPARTYINFO_STR) - 1, &diff);
+    strcmp_s(str, len, ACVP_KAS_KDF_PATTERN_VPARTYINFO_STR, &diff);
     if (!diff && len == sizeof(ACVP_KAS_KDF_PATTERN_VPARTYINFO_STR) - 1) {
         return ACVP_KAS_KDF_PATTERN_VPARTYINFO;
     }
-    strncmp_s(str, len, ACVP_KAS_KDF_PATTERN_CONTEXT_STR, sizeof(ACVP_KAS_KDF_PATTERN_CONTEXT_STR) - 1, &diff);
+    strcmp_s(str, len, ACVP_KAS_KDF_PATTERN_CONTEXT_STR, &diff);
     if (!diff && len == sizeof(ACVP_KAS_KDF_PATTERN_CONTEXT_STR) - 1) {
         return ACVP_KAS_KDF_PATTERN_CONTEXT;
     }
-    strncmp_s(str, len, ACVP_KAS_KDF_PATTERN_ALGID_STR, sizeof(ACVP_KAS_KDF_PATTERN_ALGID_STR) - 1, &diff);
+    strcmp_s(str, len, ACVP_KAS_KDF_PATTERN_ALGID_STR, &diff);
     if (!diff && len == sizeof(ACVP_KAS_KDF_PATTERN_ALGID_STR) - 1) {
         return ACVP_KAS_KDF_PATTERN_ALGID;
     }
-    strncmp_s(str, len, ACVP_KAS_KDF_PATTERN_LABEL_STR, sizeof(ACVP_KAS_KDF_PATTERN_LABEL_STR) - 1, &diff);
+    strcmp_s(str, len, ACVP_KAS_KDF_PATTERN_LABEL_STR, &diff);
     if (!diff && len == sizeof(ACVP_KAS_KDF_PATTERN_LABEL_STR) - 1) {
         return ACVP_KAS_KDF_PATTERN_LABEL;
     }
-    strncmp_s(str, len, ACVP_KAS_KDF_PATTERN_LENGTH_STR, sizeof(ACVP_KAS_KDF_PATTERN_LENGTH_STR) - 1, &diff);
+    strcmp_s(str, len, ACVP_KAS_KDF_PATTERN_LENGTH_STR, &diff);
     if (!diff && len == sizeof(ACVP_KAS_KDF_PATTERN_LENGTH_STR) - 1) {
         return ACVP_KAS_KDF_PATTERN_L;
     }
     //only compares first X number of characters, so should match, even though string is literal[0000000]
-    strncmp_s(ACVP_KAS_KDF_PATTERN_LITERAL_STR, sizeof(ACVP_KAS_KDF_PATTERN_LITERAL_STR) - 1, str, len, &diff);
-    if (!diff) {
-        //copy string so it can be tokenized
-        tmp = calloc(len + 1, sizeof(char));
-        if (!tmp) {
-            ACVP_LOG_ERR("Failed to allocate memory when checking literal pattern");
-            goto err;
-        }
-        strncpy_s(tmp, len + 1, str, len);
+    if (sizeof(ACVP_KAS_KDF_PATTERN_LITERAL_STR) - 1 < len) {
+        strncmp_s(str, len, ACVP_KAS_KDF_PATTERN_LITERAL_STR, sizeof(ACVP_KAS_KDF_PATTERN_LITERAL_STR) - 1, &diff);
+        if (!diff) {
+            //copy string so it can be tokenized
+            tmp = calloc(len + 1, sizeof(char));
+            if (!tmp) {
+                ACVP_LOG_ERR("Failed to allocate memory when checking literal pattern");
+                goto err;
+            }
+            strncpy_s(tmp, len + 1, str, len);
 
-        //tokenize around the [] characters
-        token = strtok_s(tmp, &len, "[", &lit);
-        if (!token) { 
-            ACVP_LOG_ERR("Invalid literal pattern candidate");
-            goto err;
-        }
-        token = strtok_s(NULL, &len, "]", &lit); //the actual hex string
-        if (!token) { 
-            ACVP_LOG_ERR("Invalid literal pattern candidate");
-            goto err;
-        }
-        if (strnlen_s(token, ACVP_KAS_KDF_PATTERN_LITERAL_STR_LEN_MAX + 1) > ACVP_KAS_KDF_PATTERN_LITERAL_STR_LEN_MAX) {
-            ACVP_LOG_ERR("Patttern literal too long");
-            goto err;
-        }
-        if (cipher == ACVP_KAS_HKDF) {
-            tc->tc.kas_hkdf->literalCandidate = calloc(ACVP_KAS_KDF_PATTERN_LITERAL_BYTE_MAX, 1);
-            if (!tc->tc.kas_hkdf->literalCandidate) {
-                ACVP_LOG_ERR("Failed to allocate memory when setting literal pattern");
+            //tokenize around the [] characters
+            token = strtok_s(tmp, &len, "[", &lit);
+            if (!token) { 
+                ACVP_LOG_ERR("Invalid literal pattern candidate");
                 goto err;
             }
-            rv = acvp_hexstr_to_bin(token, tc->tc.kas_hkdf->literalCandidate, ACVP_KAS_KDF_PATTERN_LITERAL_BYTE_MAX, &(tc->tc.kas_hkdf->literalLen));
-        } else {
-            tc->tc.kas_kdf_onestep->literalCandidate = calloc(ACVP_KAS_KDF_PATTERN_LITERAL_BYTE_MAX, 1);
-            if (!tc->tc.kas_kdf_onestep->literalCandidate) {
-                ACVP_LOG_ERR("Failed to allocate memory when setting literal pattern");
+            token = strtok_s(NULL, &len, "]", &lit); //the actual hex string
+            if (!token) { 
+                ACVP_LOG_ERR("Invalid literal pattern candidate");
                 goto err;
             }
-            rv = acvp_hexstr_to_bin(token, tc->tc.kas_kdf_onestep->literalCandidate, ACVP_KAS_KDF_PATTERN_LITERAL_BYTE_MAX, &(tc->tc.kas_kdf_onestep->literalLen));
+            if (strnlen_s(token, ACVP_KAS_KDF_PATTERN_LITERAL_STR_LEN_MAX + 1) > ACVP_KAS_KDF_PATTERN_LITERAL_STR_LEN_MAX) {
+                ACVP_LOG_ERR("Patttern literal too long");
+                goto err;
+            }
+            if (cipher == ACVP_KAS_HKDF) {
+                tc->tc.kas_hkdf->literalCandidate = calloc(ACVP_KAS_KDF_PATTERN_LITERAL_BYTE_MAX, 1);
+                if (!tc->tc.kas_hkdf->literalCandidate) {
+                    ACVP_LOG_ERR("Failed to allocate memory when setting literal pattern");
+                    goto err;
+                }
+                rv = acvp_hexstr_to_bin(token, tc->tc.kas_hkdf->literalCandidate, ACVP_KAS_KDF_PATTERN_LITERAL_BYTE_MAX, &(tc->tc.kas_hkdf->literalLen));
+            } else {
+                tc->tc.kas_kdf_onestep->literalCandidate = calloc(ACVP_KAS_KDF_PATTERN_LITERAL_BYTE_MAX, 1);
+                if (!tc->tc.kas_kdf_onestep->literalCandidate) {
+                    ACVP_LOG_ERR("Failed to allocate memory when setting literal pattern");
+                    goto err;
+                }
+                rv = acvp_hexstr_to_bin(token, tc->tc.kas_kdf_onestep->literalCandidate, ACVP_KAS_KDF_PATTERN_LITERAL_BYTE_MAX, &(tc->tc.kas_kdf_onestep->literalLen));
+            }
+            if (rv != ACVP_SUCCESS) {
+                ACVP_LOG_ERR("Hex conversion failure (literal candidate)");
+                goto err;
+            }
+            if (tmp) free(tmp);
+            return ACVP_KAS_KDF_PATTERN_LITERAL;
         }
-        if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("Hex conversion failure (literal candidate)");
-            goto err;
-        }
-        if (tmp) free(tmp);
-        return ACVP_KAS_KDF_PATTERN_LITERAL;
     }
 
     ACVP_LOG_ERR("Candidate string provided does not match any valid candidate");
@@ -516,7 +518,7 @@ err:
 }
 
 static ACVP_KAS_KDF_PATTERN_CANDIDATE* read_info_pattern(ACVP_CTX *ctx, ACVP_CIPHER cipher, const char *str, ACVP_TEST_CASE *tc) {
-    ACVP_KAS_KDF_PATTERN_CANDIDATE currentCand = -1;
+    ACVP_KAS_KDF_PATTERN_CANDIDATE currentCand;
     char *cpy = NULL;
     ACVP_KAS_KDF_PATTERN_CANDIDATE *rv = NULL;
     int hasUParty = 0, hasVParty = 0; //Currently, these are required

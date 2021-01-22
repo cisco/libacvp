@@ -300,6 +300,9 @@ int app_kas_kdf_onestep_handler(ACVP_TEST_CASE *test_case) {
     unsigned char *fixedInfo = NULL;
     unsigned char *h_output = NULL;
     unsigned char *result = NULL;
+#if OPENSSL_VERSION_NUMBER <= 0x10100000L
+    HMAC_CTX static_ctx;
+#endif
     HMAC_CTX *hmac_ctx = NULL;
     EVP_MD_CTX *sha_ctx = NULL;
 
@@ -316,7 +319,6 @@ int app_kas_kdf_onestep_handler(ACVP_TEST_CASE *test_case) {
     //if the test case has a salt, we are using HMAC, otherwise, SHA
     if (stc->salt) {
 #if OPENSSL_VERSION_NUMBER <= 0x10100000L
-        HMAC_CTX static_ctx;
         hmac_ctx = &static_ctx;
         HMAC_CTX_init(hmac_ctx);
 #else

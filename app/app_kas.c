@@ -446,6 +446,9 @@ int app_kas_ifc_handler(ACVP_TEST_CASE *test_case) {
     ACVP_KAS_IFC_TC *tc;
     int rv = 1;
     BIGNUM *e = NULL, *n = NULL, *p = NULL, *q = NULL, *d = NULL;
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+    BIGNUM *tmp_e = NULL, *tmp_n = NULL;
+#endif
     RSA *rsa = NULL;
     const EVP_MD *md = NULL;
 
@@ -516,13 +519,17 @@ int app_kas_ifc_handler(ACVP_TEST_CASE *test_case) {
         rsa->p = BN_dup(p);
         rsa->q = BN_dup(q);
     }
-    BN_free(e);
-    BN_free(n);
     if (d) BN_free(d);
 
 #else
     if (tc->kas_role == ACVP_KAS_IFC_INITIATOR) {
-        RSA_set0_key(rsa, n, e, NULL);
+        tmp_e = BN_dup(e);
+        tmp_n = BN_dup(n);
+        if (!tmp_n || !tmp_e) {
+            printf("Error: Failed to dup tmp_n or tmp_e\n");
+            goto err;
+        }
+        RSA_set0_key(rsa, tmp_n, tmp_e, d);
     } else {
         if (!tc->p || !tc->q || !tc->d) {
             printf("Failed p or q or d from library\n");
@@ -538,7 +545,13 @@ int app_kas_ifc_handler(ACVP_TEST_CASE *test_case) {
         BN_bin2bn(tc->p, tc->plen, p);
         BN_bin2bn(tc->q, tc->qlen, q);
         BN_bin2bn(tc->d, tc->dlen, d);
-        RSA_set0_key(rsa, n, e, d);
+        tmp_e = BN_dup(e);
+        tmp_n = BN_dup(n);
+        if (!tmp_n || !tmp_e) {
+            printf("Error: Failed to dup tmp_n or tmp_e\n");
+            goto err;
+        }
+        RSA_set0_key(rsa, tmp_n, tmp_e, d);
         RSA_set0_factors(rsa, p, q);
     }
 #endif
@@ -600,9 +613,12 @@ err:
     if (p) BN_free(p);
     if (q) BN_free(q);
 #endif
+    if (e) BN_free(e);
+    if (n) BN_free(n);
     if (rsa) RSA_free(rsa);
     return rv;
 }
+
 
 int app_kts_ifc_handler(ACVP_TEST_CASE *test_case) {
     if (!test_case) {
