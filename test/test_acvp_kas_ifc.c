@@ -51,6 +51,7 @@ static void setup(void) {
     rv = acvp_cap_kas_ifc_set_exponent(ctx, ACVP_KAS_IFC_SSC, ACVP_KAS_IFC_FIXEDPUBEXP, expo_str);
     cr_assert(rv == ACVP_SUCCESS);
 
+    free(expo_str);
 }
 
 static void teardown(void) {
@@ -94,6 +95,7 @@ Test(KAS_IFC_CAPABILITY, good) {
     cr_assert(rv == ACVP_SUCCESS);
 
     teardown_ctx(&ctx);
+    free(expo_str);
 }
 
 /*

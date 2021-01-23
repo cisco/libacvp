@@ -214,6 +214,7 @@ Test(RSA_DECPRIM_API, error_paths) {
     }
     rv  = acvp_rsa_decprim_kat_handler(ctx, obj);
     cr_assert(rv == ACVP_MALFORMED_JSON);
+    json_value_free(val);
 
     val = json_parse_file("json/rsa/rsa_decprim2.json");
     obj = ut_get_obj_from_rsp(val);
@@ -223,6 +224,7 @@ Test(RSA_DECPRIM_API, error_paths) {
     }
     rv  = acvp_rsa_decprim_kat_handler(ctx, obj);
     cr_assert(rv == ACVP_MALFORMED_JSON);
+    json_value_free(val);
 
     val = json_parse_file("json/rsa/rsa_decprim3.json");
     obj = ut_get_obj_from_rsp(val);
@@ -232,6 +234,7 @@ Test(RSA_DECPRIM_API, error_paths) {
     }
     rv  = acvp_rsa_decprim_kat_handler(ctx, obj);
     cr_assert(rv == ACVP_INVALID_ARG);
+    json_value_free(val);
 
     val = json_parse_file("json/rsa/rsa_decprim4.json");
     obj = ut_get_obj_from_rsp(val);
@@ -241,6 +244,7 @@ Test(RSA_DECPRIM_API, error_paths) {
     }
     rv  = acvp_rsa_decprim_kat_handler(ctx, obj);
     cr_assert(rv == ACVP_MALFORMED_JSON);
+    json_value_free(val);
 
     val = json_parse_file("json/rsa/rsa_decprim5.json");
     obj = ut_get_obj_from_rsp(val);
@@ -250,6 +254,7 @@ Test(RSA_DECPRIM_API, error_paths) {
     }
     rv  = acvp_rsa_decprim_kat_handler(ctx, obj);
     cr_assert(rv == ACVP_INVALID_ARG);
+    json_value_free(val);
 
     val = json_parse_file("json/rsa/rsa_decprim6.json");
     obj = ut_get_obj_from_rsp(val);
@@ -259,9 +264,9 @@ Test(RSA_DECPRIM_API, error_paths) {
     }
     rv  = acvp_rsa_decprim_kat_handler(ctx, obj);
     cr_assert(rv == ACVP_INVALID_ARG);
+    json_value_free(val);
 
     val = json_parse_file("json/rsa/rsa_decprim7.json");
-
     obj = ut_get_obj_from_rsp(val);
     if (!obj) {
         ACVP_LOG_ERR("JSON obj parse error");
@@ -269,6 +274,7 @@ Test(RSA_DECPRIM_API, error_paths) {
     }
     rv  = acvp_rsa_decprim_kat_handler(ctx, obj);
     cr_assert(rv == ACVP_INVALID_ARG);
+    json_value_free(val);
 
     val = json_parse_file("json/rsa/rsa_decprim8.json");
     obj = ut_get_obj_from_rsp(val);
@@ -278,6 +284,7 @@ Test(RSA_DECPRIM_API, error_paths) {
     }
     rv  = acvp_rsa_decprim_kat_handler(ctx, obj);
     cr_assert(rv == ACVP_MISSING_ARG);
+    json_value_free(val);
 
     val = json_parse_file("json/rsa/rsa_decprim9.json");
     obj = ut_get_obj_from_rsp(val);
@@ -287,7 +294,6 @@ Test(RSA_DECPRIM_API, error_paths) {
     }
     rv  = acvp_rsa_decprim_kat_handler(ctx, obj);
     cr_assert(rv == ACVP_MISSING_ARG);
-
 
     json_value_free(val);
 
@@ -328,6 +334,7 @@ Test(RSA_SIGPRIM_API, error_paths) {
     }
     rv  = acvp_rsa_sigprim_kat_handler(ctx, obj);
     cr_assert(rv == ACVP_MALFORMED_JSON);
+    json_value_free(val);
 
     val = json_parse_file("json/rsa/rsa_sigprim2.json");
     obj = ut_get_obj_from_rsp(val);
@@ -337,6 +344,7 @@ Test(RSA_SIGPRIM_API, error_paths) {
     }
     rv  = acvp_rsa_sigprim_kat_handler(ctx, obj);
     cr_assert(rv == ACVP_MISSING_ARG);
+    json_value_free(val);
 
     val = json_parse_file("json/rsa/rsa_sigprim3.json");
     obj = ut_get_obj_from_rsp(val);
@@ -346,6 +354,7 @@ Test(RSA_SIGPRIM_API, error_paths) {
     }
     rv  = acvp_rsa_sigprim_kat_handler(ctx, obj);
     cr_assert(rv == ACVP_INVALID_ARG);
+    json_value_free(val);
 
     val = json_parse_file("json/rsa/rsa_sigprim4.json");
     obj = ut_get_obj_from_rsp(val);
@@ -355,6 +364,7 @@ Test(RSA_SIGPRIM_API, error_paths) {
     }
     rv  = acvp_rsa_sigprim_kat_handler(ctx, obj);
     cr_assert(rv == ACVP_MISSING_ARG);
+    json_value_free(val);
 
     val = json_parse_file("json/rsa/rsa_sigprim5.json");
     obj = ut_get_obj_from_rsp(val);
@@ -364,6 +374,7 @@ Test(RSA_SIGPRIM_API, error_paths) {
     }
     rv  = acvp_rsa_sigprim_kat_handler(ctx, obj);
     cr_assert(rv == ACVP_MISSING_ARG);
+    json_value_free(val);
 
     val = json_parse_file("json/rsa/rsa_sigprim6.json");
     obj = ut_get_obj_from_rsp(val);
@@ -373,6 +384,7 @@ Test(RSA_SIGPRIM_API, error_paths) {
     }
     rv  = acvp_rsa_sigprim_kat_handler(ctx, obj);
     cr_assert(rv == ACVP_MISSING_ARG);
+    json_value_free(val);
 
     val = json_parse_file("json/rsa/rsa_sigprim7.json");
 
@@ -383,6 +395,7 @@ Test(RSA_SIGPRIM_API, error_paths) {
     }
     rv  = acvp_rsa_sigprim_kat_handler(ctx, obj);
     cr_assert(rv == ACVP_MISSING_ARG);
+    json_value_free(val);
 
     val = json_parse_file("json/rsa/rsa_sigprim8.json");
     obj = ut_get_obj_from_rsp(val);
@@ -392,6 +405,7 @@ Test(RSA_SIGPRIM_API, error_paths) {
     }
     rv  = acvp_rsa_sigprim_kat_handler(ctx, obj);
     cr_assert(rv == ACVP_MISSING_ARG);
+    json_value_free(val);
 
     val = json_parse_file("json/rsa/rsa_sigprim9.json");
     obj = ut_get_obj_from_rsp(val);
@@ -401,7 +415,6 @@ Test(RSA_SIGPRIM_API, error_paths) {
     }
     rv  = acvp_rsa_sigprim_kat_handler(ctx, obj);
     cr_assert(rv == ACVP_MALFORMED_JSON);
-
     json_value_free(val);
 
 end:

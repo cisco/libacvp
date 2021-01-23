@@ -619,6 +619,7 @@ err:
     return rv;
 }
 
+
 int app_kts_ifc_handler(ACVP_TEST_CASE *test_case) {
     if (!test_case) {
         return -1;
