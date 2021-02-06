@@ -7523,6 +7523,16 @@ ACVP_RESULT acvp_cap_kas_ffc_set_parm(ACVP_CTX *ctx,
         case ACVP_KAS_FFC_KDF:
         case ACVP_KAS_FFC_FB:
         case ACVP_KAS_FFC_FC:
+        case ACVP_KAS_FFC_MODP2048:
+        case ACVP_KAS_FFC_MODP3072:
+        case ACVP_KAS_FFC_MODP4096:
+        case ACVP_KAS_FFC_MODP6144:
+        case ACVP_KAS_FFC_MODP8192:
+        case ACVP_KAS_FFC_FFDHE2048:
+        case ACVP_KAS_FFC_FFDHE3072:
+        case ACVP_KAS_FFC_FFDHE4096:
+        case ACVP_KAS_FFC_FFDHE6144:
+        case ACVP_KAS_FFC_FFDHE8192:
         default:
             ACVP_LOG_ERR("\nUnsupported KAS-FFC param %d", param);
             return ACVP_INVALID_ARG;
@@ -7554,6 +7564,16 @@ ACVP_RESULT acvp_cap_kas_ffc_set_parm(ACVP_CTX *ctx,
         case ACVP_KAS_FFC_KDF:
         case ACVP_KAS_FFC_FB:
         case ACVP_KAS_FFC_FC:
+        case ACVP_KAS_FFC_MODP2048:
+        case ACVP_KAS_FFC_MODP3072:
+        case ACVP_KAS_FFC_MODP4096:
+        case ACVP_KAS_FFC_MODP6144:
+        case ACVP_KAS_FFC_MODP8192:
+        case ACVP_KAS_FFC_FFDHE2048:
+        case ACVP_KAS_FFC_FFDHE3072:
+        case ACVP_KAS_FFC_FFDHE4096:
+        case ACVP_KAS_FFC_FFDHE6144:
+        case ACVP_KAS_FFC_FFDHE8192:
         default:
             ACVP_LOG_ERR("\nUnsupported KAS-FFC param %d", param);
             return ACVP_INVALID_ARG;
@@ -7650,6 +7670,16 @@ ACVP_RESULT acvp_cap_kas_ffc_set_scheme(ACVP_CTX *ctx,
             break;
         case ACVP_KAS_FFC_FB:
         case ACVP_KAS_FFC_FC:
+        case ACVP_KAS_FFC_MODP2048:
+        case ACVP_KAS_FFC_MODP3072:
+        case ACVP_KAS_FFC_MODP4096:
+        case ACVP_KAS_FFC_MODP6144:
+        case ACVP_KAS_FFC_MODP8192:
+        case ACVP_KAS_FFC_FFDHE2048:
+        case ACVP_KAS_FFC_FFDHE3072:
+        case ACVP_KAS_FFC_FFDHE4096:
+        case ACVP_KAS_FFC_FFDHE6144:
+        case ACVP_KAS_FFC_FFDHE8192:
             current_pset = current_scheme->pset;
             while (current_pset) {
                 if (current_pset->set == param) {
