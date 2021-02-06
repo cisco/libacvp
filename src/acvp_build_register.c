@@ -2957,6 +2957,37 @@ static ACVP_RESULT acvp_build_kas_ffc_register_cap(ACVP_CTX *ctx,
                     case ACVP_KAS_FFC_FC:
                         json_array_append_string(temp_arr, "FC");
                         break;
+                    case ACVP_KAS_FFC_MODP2048:
+                        json_array_append_string(temp_arr, "modp-2048");
+                        break;
+                    case ACVP_KAS_FFC_MODP3072:
+                        json_array_append_string(temp_arr, "modp-3072");
+                        break;
+                    case ACVP_KAS_FFC_MODP4096:
+                        json_array_append_string(temp_arr, "modp-4096");
+                        break;
+                    case ACVP_KAS_FFC_MODP6144:
+                        json_array_append_string(temp_arr, "modp-6144");
+                        break;
+                    case ACVP_KAS_FFC_MODP8192:
+                        json_array_append_string(temp_arr, "modp-8192");
+                        break;
+                    case ACVP_KAS_FFC_FFDHE2048:
+                        json_array_append_string(temp_arr, "ffdhe2048");
+                        break;
+                    case ACVP_KAS_FFC_FFDHE3072:
+                        json_array_append_string(temp_arr, "ffdhe3072");
+                        break;
+                    case ACVP_KAS_FFC_FFDHE4096:
+                        json_array_append_string(temp_arr, "ffdhe4096");
+                        break;
+                    case ACVP_KAS_FFC_FFDHE6144:
+                        json_array_append_string(temp_arr, "ffdhe6144");
+                        break;
+                    case ACVP_KAS_FFC_FFDHE8192:
+                        json_array_append_string(temp_arr, "ffdhe8192");
+                        break;
+
                     default:
                         ACVP_LOG_ERR("Unsupported KAS-FFC sha param %d", genmeth->param);
                         return ACVP_INVALID_ARG;

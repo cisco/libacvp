@@ -139,7 +139,8 @@ int initialize_kas_ffc_tc(ACVP_KAS_FFC_TC *stc,
         stc->epui = calloc(1, ACVP_KAS_FFC_BYTE_MAX);
         if (!stc->epui) { goto err; }
     }
-    
+
+    stc->dgm = ACVP_KAS_FFC_FB;    
     return 1;
 err:
     free_kas_ffc_tc(stc);

@@ -142,7 +142,9 @@ int fips_dsa_builtin_paramgen2(DSA *ret, size_t L, size_t N,
 #define M_EVP_CIPHER_CTX_set_flags(ctx,flgs) ((ctx)->flags|=(flgs))
 
 #define EVP_CIPHER_CTX_set_padding(ctx, pad) {}
-
+int fips_DH_set0_pqg(DH *dh, BIGNUM *p, BIGNUM *q, BIGNUM *g);
+int fips_DH_set0_key(DH *dh, BIGNUM *pub_key, BIGNUM *priv_key);
+BN_ULONG fips_bn_div_word(BIGNUM *a, BN_ULONG w);
 int fips_evp_MD_size(const EVP_MD *md);
 const unsigned char *fips_EVP_CIPHER_CTX_iv(const EVP_CIPHER_CTX *ctx);
 void fips_evp_CIPHER_CTX_set_flags(EVP_CIPHER_CTX *ctx, int flags);

@@ -17,6 +17,42 @@
 #include "parson.h"
 #include "safe_lib.h"
 
+
+static ACVP_KAS_FFC_PARAM acvp_convert_dgm_string(const char *dgm_str)
+{
+    int diff = 0;
+
+    strcmp_s("fb", DGM_STR_MAX, dgm_str, &diff);
+    if (!diff) return ACVP_KAS_FFC_FB;
+    strcmp_s("fc", DGM_STR_MAX, dgm_str, &diff);
+    if (!diff) return ACVP_KAS_FFC_FC;
+    strcmp_s("FB", DGM_STR_MAX, dgm_str, &diff);
+    if (!diff) return ACVP_KAS_FFC_FB;
+    strcmp_s("FC", DGM_STR_MAX, dgm_str, &diff);
+    if (!diff) return ACVP_KAS_FFC_FC;
+    strcmp_s("MODP-2048", DGM_STR_MAX, dgm_str, &diff);
+    if (!diff) return ACVP_KAS_FFC_MODP2048;
+    strcmp_s("MODP-3072", DGM_STR_MAX, dgm_str, &diff);
+    if (!diff) return ACVP_KAS_FFC_MODP3072;
+    strcmp_s("MODP-4096", DGM_STR_MAX, dgm_str, &diff);
+    if (!diff) return ACVP_KAS_FFC_MODP4096;
+    strcmp_s("MODP-6144", DGM_STR_MAX, dgm_str, &diff);
+    if (!diff) return ACVP_KAS_FFC_MODP6144;
+    strcmp_s("MODP-8192", DGM_STR_MAX, dgm_str, &diff);
+    if (!diff) return ACVP_KAS_FFC_MODP8192;
+    strcmp_s("ffdhe2048", DGM_STR_MAX, dgm_str, &diff);
+    if (!diff) return ACVP_KAS_FFC_FFDHE2048;
+    strcmp_s("ffdhe3072", DGM_STR_MAX, dgm_str, &diff);
+    if (!diff) return ACVP_KAS_FFC_FFDHE3072;
+    strcmp_s("ffdhe4096", DGM_STR_MAX, dgm_str, &diff);
+    if (!diff) return ACVP_KAS_FFC_FFDHE4096;
+    strcmp_s("ffdhe6144", DGM_STR_MAX, dgm_str, &diff);
+    if (!diff) return ACVP_KAS_FFC_FFDHE6144;
+    strcmp_s("ffdhe8192", DGM_STR_MAX, dgm_str, &diff);
+    if (!diff) return ACVP_KAS_FFC_FFDHE8192;
+
+    return 0;
+}
 /*
  * After the test case has been processed by the DUT, the results
  * need to be JSON formated to be included in the vector set results
@@ -120,6 +156,7 @@ end:
 static ACVP_RESULT acvp_kas_ffc_init_comp_tc(ACVP_CTX *ctx,
                                              ACVP_KAS_FFC_TC *stc,
                                              ACVP_HASH_ALG hash_alg,
+                                             ACVP_KAS_FFC_PARAM dgm,
                                              const char *p,
                                              const char *q,
                                              const char *g,
@@ -134,30 +171,31 @@ static ACVP_RESULT acvp_kas_ffc_init_comp_tc(ACVP_CTX *ctx,
     stc->md = hash_alg;
     stc->test_type = test_type;
 
-    stc->p = calloc(1, ACVP_KAS_FFC_BYTE_MAX);
-    if (!stc->p) { return ACVP_MALLOC_FAIL; }
-    rv = acvp_hexstr_to_bin(p, stc->p, ACVP_KAS_FFC_BYTE_MAX, &(stc->plen));
-    if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("Hex conversion failure (p)");
-        return rv;
-    }
+    if ((dgm == ACVP_KAS_FFC_FB) || (dgm == ACVP_KAS_FFC_FC)) {
+        stc->p = calloc(1, ACVP_KAS_FFC_BYTE_MAX);
+        if (!stc->p) { return ACVP_MALLOC_FAIL; }
+        rv = acvp_hexstr_to_bin(p, stc->p, ACVP_KAS_FFC_BYTE_MAX, &(stc->plen));
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Hex conversion failure (p)");
+            return rv;
+        }
 
-    stc->q = calloc(1, ACVP_KAS_FFC_BYTE_MAX);
-    if (!stc->q) { return ACVP_MALLOC_FAIL; }
-    rv = acvp_hexstr_to_bin(q, stc->q, ACVP_KAS_FFC_BYTE_MAX, &(stc->qlen));
-    if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("Hex conversion failure (q)");
-        return rv;
-    }
+        stc->q = calloc(1, ACVP_KAS_FFC_BYTE_MAX);
+        if (!stc->q) { return ACVP_MALLOC_FAIL; }
+        rv = acvp_hexstr_to_bin(q, stc->q, ACVP_KAS_FFC_BYTE_MAX, &(stc->qlen));
+        if (rv != ACVP_SUCCESS) {
+           ACVP_LOG_ERR("Hex conversion failure (q)");
+           return rv;
+        }
 
-    stc->g = calloc(1, ACVP_KAS_FFC_BYTE_MAX);
-    if (!stc->g) { return ACVP_MALLOC_FAIL; }
-    rv = acvp_hexstr_to_bin(g, stc->g, ACVP_KAS_FFC_BYTE_MAX, &(stc->glen));
-    if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("Hex conversion failure (g)");
-        return rv;
+        stc->g = calloc(1, ACVP_KAS_FFC_BYTE_MAX);
+        if (!stc->g) { return ACVP_MALLOC_FAIL; }
+        rv = acvp_hexstr_to_bin(g, stc->g, ACVP_KAS_FFC_BYTE_MAX, &(stc->glen));
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Hex conversion failure (g)");
+            return rv;
+        }
     }
-
     stc->eps = calloc(1, ACVP_KAS_FFC_BYTE_MAX);
     if (!stc->eps) { return ACVP_MALLOC_FAIL; }
     rv = acvp_hexstr_to_bin(eps, stc->eps, ACVP_KAS_FFC_BYTE_MAX, &(stc->epslen));
@@ -195,6 +233,8 @@ static ACVP_RESULT acvp_kas_ffc_init_comp_tc(ACVP_CTX *ctx,
             return rv;
         }
     }
+
+    stc->dgm = dgm;
     return ACVP_SUCCESS;
 }
 
@@ -244,12 +284,13 @@ static ACVP_RESULT acvp_kas_ffc_comp(ACVP_CTX *ctx,
     JSON_Object *r_tobj = NULL, *r_gobj = NULL; /* Response testobj, groupobj */
     const char *hash_str = NULL;
     ACVP_HASH_ALG hash_alg = 0;
-    const char *p = NULL, *q = NULL, *g = NULL;
+    const char *p = NULL, *q = NULL, *g = NULL, *pms_str = NULL;
     unsigned int i, g_cnt;
     int j, t_cnt, tc_id;
     ACVP_RESULT rv;
     const char *test_type_str;
     ACVP_KAS_FFC_TEST_TYPE test_type;
+    ACVP_KAS_FFC_PARAM pms;
 
     groups = json_object_get_array(obj, "testGroups");
     g_cnt = json_array_get_count(groups);
@@ -286,6 +327,20 @@ static ACVP_RESULT acvp_kas_ffc_comp(ACVP_CTX *ctx,
             hash_alg != ACVP_SHA384 && hash_alg != ACVP_SHA512) {
             ACVP_LOG_ERR("Server JSON invalid 'hashAlg'");
             rv = ACVP_INVALID_ARG;
+            goto err;
+        }
+
+        pms_str = json_object_get_string(groupobj, "parmSet");
+        if (!pms_str) {
+            ACVP_LOG_ERR("Missing parmSet from server JSON groub obj");
+            rv = ACVP_MALFORMED_JSON;
+            goto err;
+        }
+
+        pms = acvp_convert_dgm_string(pms_str);
+        if (!pms) {
+            ACVP_LOG_ERR("Missing parmSet from server JSON groub obj");
+            rv = ACVP_MALFORMED_JSON;
             goto err;
         }
 
@@ -437,7 +492,7 @@ static ACVP_RESULT acvp_kas_ffc_comp(ACVP_CTX *ctx,
              * Setup the test case data that will be passed down to
              * the crypto module.
              */
-            rv = acvp_kas_ffc_init_comp_tc(ctx, stc, hash_alg,
+            rv = acvp_kas_ffc_init_comp_tc(ctx, stc, hash_alg, pms, 
                                            p, q, g, eps, epri, epui, z, test_type);
             if (rv != ACVP_SUCCESS) {
                 acvp_kas_ffc_release_tc(stc);
@@ -679,7 +734,7 @@ static ACVP_RESULT acvp_kas_ffc_ssc(ACVP_CTX *ctx,
     JSON_Array *tests, *r_tarr = NULL;
     JSON_Value *r_tval = NULL, *r_gval = NULL;  /* Response testval, groupval */
     JSON_Object *r_tobj = NULL, *r_gobj = NULL; /* Response testobj, groupobj */
-    const char *hash_str = NULL;
+    const char *hash_str = NULL, *dgm_str = NULL;
     ACVP_HASH_ALG hash_alg = 0;
     const char *p = NULL, *q = NULL, *g = NULL;
     unsigned int i, g_cnt;
@@ -687,7 +742,7 @@ static ACVP_RESULT acvp_kas_ffc_ssc(ACVP_CTX *ctx,
     ACVP_RESULT rv;
     const char *test_type_str;
     ACVP_KAS_FFC_TEST_TYPE test_type;
-
+    ACVP_KAS_FFC_PARAM dgm;
     groups = json_object_get_array(obj, "testGroups");
     g_cnt = json_array_get_count(groups);
 
@@ -708,6 +763,20 @@ static ACVP_RESULT acvp_kas_ffc_ssc(ACVP_CTX *ctx,
             rv = ACVP_MALFORMED_JSON;
             goto err;
         }
+        dgm_str = json_object_get_string(groupobj, "domainParameterGenerationMode");
+        if (!dgm_str) {
+            ACVP_LOG_ERR("Missing domain generation method from server JSON groub obj");
+            rv = ACVP_MALFORMED_JSON;
+            goto err;
+        }
+
+        dgm = acvp_convert_dgm_string(dgm_str);
+        if (!dgm) {
+            ACVP_LOG_ERR("Missing domain generation method from server JSON groub obj");
+            rv = ACVP_MALFORMED_JSON;
+            goto err;
+        }
+
         json_object_set_number(r_gobj, "tgId", tgId);
         json_object_set_value(r_gobj, "tests", json_value_init_array());
         r_tarr = json_object_get_array(r_gobj, "tests");
@@ -739,46 +808,46 @@ static ACVP_RESULT acvp_kas_ffc_ssc(ACVP_CTX *ctx,
             rv = ACVP_INVALID_ARG;
             goto err;
         }
+        if ((dgm == ACVP_KAS_FFC_FB) || (dgm == ACVP_KAS_FFC_FC)) {
+            p = json_object_get_string(groupobj, "p");
+            if (!p) {
+                ACVP_LOG_ERR("Server JSON missing 'p'");
+                rv = ACVP_MISSING_ARG;
+                goto err;
+            }
+            if (strnlen_s(p, ACVP_KAS_FFC_STR_MAX + 1) > ACVP_KAS_FFC_STR_MAX) {
+                ACVP_LOG_ERR("p too long, max allowed=(%d)",
+                              ACVP_KAS_FFC_STR_MAX);
+                rv = ACVP_INVALID_ARG;
+                goto err;
+            }
 
-        p = json_object_get_string(groupobj, "p");
-        if (!p) {
-            ACVP_LOG_ERR("Server JSON missing 'p'");
-            rv = ACVP_MISSING_ARG;
-            goto err;
-        }
-        if (strnlen_s(p, ACVP_KAS_FFC_STR_MAX + 1) > ACVP_KAS_FFC_STR_MAX) {
-            ACVP_LOG_ERR("p too long, max allowed=(%d)",
-                         ACVP_KAS_FFC_STR_MAX);
-            rv = ACVP_INVALID_ARG;
-            goto err;
-        }
+            q = json_object_get_string(groupobj, "q");
+            if (!q) {
+                ACVP_LOG_ERR("Server JSON missing 'q'");
+                rv = ACVP_MISSING_ARG;
+                goto err;
+            }
+            if (strnlen_s(q, ACVP_KAS_FFC_STR_MAX + 1) > ACVP_KAS_FFC_STR_MAX) {
+                ACVP_LOG_ERR("q too long, max allowed=(%d)",
+                             ACVP_KAS_FFC_STR_MAX);
+                rv = ACVP_INVALID_ARG;
+                goto err;
+            }
 
-        q = json_object_get_string(groupobj, "q");
-        if (!q) {
-            ACVP_LOG_ERR("Server JSON missing 'q'");
-            rv = ACVP_MISSING_ARG;
-            goto err;
+            g = json_object_get_string(groupobj, "g");
+            if (!g) {
+                ACVP_LOG_ERR("Server JSON missing 'g'");
+                rv = ACVP_MISSING_ARG;
+                goto err;
+            }
+            if (strnlen_s(g, ACVP_KAS_FFC_STR_MAX + 1) > ACVP_KAS_FFC_STR_MAX) {
+                ACVP_LOG_ERR("g too long, max allowed=(%d)",
+                             ACVP_KAS_FFC_STR_MAX);
+                rv = ACVP_INVALID_ARG;
+                goto err;
+            }
         }
-        if (strnlen_s(q, ACVP_KAS_FFC_STR_MAX + 1) > ACVP_KAS_FFC_STR_MAX) {
-            ACVP_LOG_ERR("q too long, max allowed=(%d)",
-                         ACVP_KAS_FFC_STR_MAX);
-            rv = ACVP_INVALID_ARG;
-            goto err;
-        }
-
-        g = json_object_get_string(groupobj, "g");
-        if (!g) {
-            ACVP_LOG_ERR("Server JSON missing 'g'");
-            rv = ACVP_MISSING_ARG;
-            goto err;
-        }
-        if (strnlen_s(g, ACVP_KAS_FFC_STR_MAX + 1) > ACVP_KAS_FFC_STR_MAX) {
-            ACVP_LOG_ERR("g too long, max allowed=(%d)",
-                         ACVP_KAS_FFC_STR_MAX);
-            rv = ACVP_INVALID_ARG;
-            goto err;
-        }
-
         ACVP_LOG_VERBOSE("    Test group: %d", i);
         ACVP_LOG_VERBOSE("      test type: %s", test_type_str);
         ACVP_LOG_VERBOSE("           hash: %s", hash_str);
@@ -874,7 +943,7 @@ static ACVP_RESULT acvp_kas_ffc_ssc(ACVP_CTX *ctx,
              * Setup the test case data that will be passed down to
              * the crypto module.
              */
-            rv = acvp_kas_ffc_init_comp_tc(ctx, stc, hash_alg,
+            rv = acvp_kas_ffc_init_comp_tc(ctx, stc, hash_alg, dgm,
                                            p, q, g, eps, epri, epui, z, test_type);
             if (rv != ACVP_SUCCESS) {
                 acvp_kas_ffc_release_tc(stc);

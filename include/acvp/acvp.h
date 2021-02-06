@@ -1377,7 +1377,17 @@ typedef enum acvp_kas_ffc_param {
     ACVP_KAS_FFC_GEN_METH,
     ACVP_KAS_FFC_KDF,
     ACVP_KAS_FFC_FB,
-    ACVP_KAS_FFC_FC
+    ACVP_KAS_FFC_FC,
+    ACVP_KAS_FFC_MODP2048,
+    ACVP_KAS_FFC_MODP3072,
+    ACVP_KAS_FFC_MODP4096,
+    ACVP_KAS_FFC_MODP6144,
+    ACVP_KAS_FFC_MODP8192,
+    ACVP_KAS_FFC_FFDHE2048,
+    ACVP_KAS_FFC_FFDHE3072,
+    ACVP_KAS_FFC_FFDHE4096,
+    ACVP_KAS_FFC_FFDHE6144,
+    ACVP_KAS_FFC_FFDHE8192,
 } ACVP_KAS_FFC_PARAM;
 
 /*! @struct ACVP_KAS_FFC_ROLE */
@@ -1407,11 +1417,14 @@ typedef enum acvp_kas_ffc_test_type {
  * passed between libacvp and the crypto module.
  */
 /*! @struct ACVP_KAS_FFC_TC */
+#define DGM_STR_MAX 9
+
 typedef struct acvp_kas_ffc_tc_t {
     ACVP_CIPHER cipher;
     ACVP_KAS_FFC_TEST_TYPE test_type;
     ACVP_HASH_ALG md;
     ACVP_KAS_FFC_MODE mode;
+    ACVP_KAS_FFC_PARAM dgm;
     unsigned char *p;
     unsigned char *q;
     unsigned char *g;
