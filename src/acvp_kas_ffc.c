@@ -333,7 +333,7 @@ static ACVP_RESULT acvp_kas_ffc_comp(ACVP_CTX *ctx,
         pms_str = json_object_get_string(groupobj, "parmSet");
         if (!pms_str) {
             ACVP_LOG_ERR("Missing parmSet from server JSON groub obj");
-            rv = ACVP_MALFORMED_JSON;
+            rv = ACVP_MISSING_ARG;
             goto err;
         }
 
@@ -769,7 +769,7 @@ static ACVP_RESULT acvp_kas_ffc_ssc(ACVP_CTX *ctx,
         dgm_str = json_object_get_string(groupobj, "domainParameterGenerationMode");
         if (!dgm_str) {
             ACVP_LOG_ERR("Missing domain generation method from server JSON groub obj");
-            rv = ACVP_MALFORMED_JSON;
+            rv = ACVP_MISSING_ARG;
             goto err;
         }
 
