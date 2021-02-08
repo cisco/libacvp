@@ -2311,7 +2311,7 @@ ACVP_RESULT acvp_cap_sym_cipher_set_parm(ACVP_CTX *ctx,
      */
     cap = acvp_locate_cap_entry(ctx, cipher);
     if (!cap) {
-        ACVP_LOG_ERR("Cap entry not found, use acvp_enable_sym_cipher_() first.");
+        ACVP_LOG_ERR("Cap entry not found, use acvp_cap_sym_cipher_enable() first.");
         return ACVP_NO_CAP;
     }
 

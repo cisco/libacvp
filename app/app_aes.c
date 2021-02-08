@@ -12,7 +12,6 @@
 #include "acvp/acvp.h"
 #include "app_lcl.h"
 #include "safe_lib.h"
-#include <openssl/modes.h>
 #ifdef ACVP_NO_RUNTIME
 # include "app_fips_lcl.h"
 #endif

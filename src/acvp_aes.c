@@ -1471,7 +1471,7 @@ static ACVP_RESULT acvp_aes_init_tc(ACVP_CTX *ctx,
     stc->salt = calloc(ACVP_AES_XPN_SALTLEN, 1);
     if (!stc->salt) { return ACVP_MALLOC_FAIL; }
 
-        /*
+    /*
      * These lengths come in as bit lengths from the ACVP server.
      * We convert to bytes.
      * TODO: do we need to support bit lengths not a multiple of 8?
