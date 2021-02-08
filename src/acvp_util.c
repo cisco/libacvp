@@ -1079,6 +1079,16 @@ int acvp_lookup_param_list(ACVP_PARAM_LIST *list, int value) {
     return 0;
 }
 
+/**
+ * Checks if a domain value in a capability object has already been set
+ * if all values are 0, then domain is considered empty
+ * helps keep code cleaner in places where we woud need to reference
+ * through several unions/pointers
+ */
+int acvp_is_domain_already_set(ACVP_JSON_DOMAIN_OBJ *domain) {
+    return domain->min + domain->max + domain->increment;
+}
+
 ACVP_RESULT acvp_json_serialize_to_file_pretty_a(const JSON_Value *value, const char *filename) {
     ACVP_RESULT return_code = ACVP_SUCCESS;
     FILE *fp = NULL;

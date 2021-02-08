@@ -177,6 +177,12 @@ int app_aes_handler(ACVP_TEST_CASE *test_case) {
             goto err;
         }
         break;
+    case ACVP_AES_CBC_CS1:
+    case ACVP_AES_CBC_CS2:
+    case ACVP_AES_CBC_CS3:
+        printf("AES-CBC-CSX algorithms are unsupported currently\n");
+        rv = 1;
+        goto err;
     case ACVP_AES_XTS:
         switch (tc->key_len) {
         case 128:

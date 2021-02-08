@@ -893,6 +893,61 @@ Test(EnableCapAES, invalid_param_lens, .fini = teardown) {
     cr_assert(rv == ACVP_INVALID_ARG);
 }
 
+/*
+ * Enable an AES cipher mode, then attempt to register
+ * a domain for a non-domain value 
+ */
+Test(EnableCapAES, cipher_invalid_parm_domain, .fini = teardown) {
+    setup_empty_ctx(&ctx);
+    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_CBC_CS2, &dummy_handler_success);
+    cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_sym_cipher_set_domain(ctx, ACVP_AES_CBC_CS2, ACVP_SYM_CIPH_KEYLEN, 0, 128, 8);
+    cr_assert(rv == ACVP_INVALID_ARG);
+}
+
+/*
+ * null CTX set domain
+ */
+Test(EnableCapAES, cipher_domain_no_ctx, .fini = teardown) {
+    setup_empty_ctx(&ctx);
+    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_XPN, &dummy_handler_success);
+    cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_sym_cipher_set_domain(NULL, ACVP_AES_XPN, ACVP_SYM_CIPH_PTLEN, 0, 128, 8);
+    cr_assert(rv == ACVP_NO_CTX);
+}
+
+/*
+ * bad domain values
+ */
+Test(EnableCapAES, cipher_domain_bad_values, .fini = teardown) {
+    setup_empty_ctx(&ctx);
+    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_CBC_CS3, &dummy_handler_success);
+    cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_sym_cipher_set_domain(ctx, ACVP_AES_CBC_CS3, ACVP_SYM_CIPH_PTLEN, -64, 128, 8);
+    cr_assert(rv == ACVP_INVALID_ARG);
+    rv = acvp_cap_sym_cipher_set_domain(ctx, ACVP_AES_CBC_CS3, ACVP_SYM_CIPH_PTLEN, 128, 64, 8);
+    cr_assert(rv == ACVP_INVALID_ARG);
+    rv = acvp_cap_sym_cipher_set_domain(ctx, ACVP_AES_CBC_CS3, ACVP_SYM_CIPH_PTLEN, 0, 128, 0);
+    cr_assert(rv == ACVP_INVALID_ARG);
+    rv = acvp_cap_sym_cipher_set_domain(ctx, ACVP_AES_CBC_CS3, ACVP_SYM_CIPH_KEYLEN, 0, 0, 8);
+    cr_assert(rv == ACVP_INVALID_ARG);
+}
+
+/* 
+ * Enable an AES cipher, register a payloadLen, then register a payloadLen domain
+ */
+Test(EnableCapAES, dup_payload_registration, .fini = teardown) {
+    setup_empty_ctx(&ctx);
+    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_CBC_CS1, &dummy_handler_success);
+    cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_CBC_CS1, ACVP_SYM_CIPH_PTLEN, 33333);
+    cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_sym_cipher_set_domain(ctx, ACVP_AES_CBC_CS1, ACVP_SYM_CIPH_PTLEN, 0, 1024, 8);
+    cr_assert(rv == ACVP_INVALID_ARG);
+
+}
+
+
 Test(EnableCapTDES, properly, .fini = teardown) {
     setup_empty_ctx(&ctx);
     rv = acvp_cap_sym_cipher_enable(ctx, ACVP_TDES_CBC, &dummy_handler_success);
@@ -907,7 +962,7 @@ Test(EnableCapTDES, properly, .fini = teardown) {
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CBC, ACVP_SYM_CIPH_PARM_IVGEN_MODE, ACVP_SYM_CIPH_IVGEN_MODE_NA);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CBC, ACVP_SYM_CIPH_KEYLEN, 256);
+    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CBC, ACVP_SYM_CIPH_KEYLEN, 192);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CBC, ACVP_SYM_CIPH_IVLEN, 64);
     cr_assert(rv == ACVP_SUCCESS);

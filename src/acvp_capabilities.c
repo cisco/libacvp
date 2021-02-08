@@ -865,29 +865,136 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
 
     switch (parm) {
     case ACVP_SYM_CIPH_KEYLEN:
-        if (value == 128 || value == 168 || value == 192 || value == 256) {
-            retval = ACVP_SUCCESS;
-        }
-        break;
-    case ACVP_SYM_CIPH_TAGLEN:
         switch (cipher) {
         case ACVP_AES_GCM:
+        case ACVP_AES_GCM_SIV:
         case ACVP_AES_CCM:
         case ACVP_AES_ECB:
         case ACVP_AES_CBC:
+        case ACVP_AES_CBC_CS1:
+        case ACVP_AES_CBC_CS2:
+        case ACVP_AES_CBC_CS3:
         case ACVP_AES_CFB1:
         case ACVP_AES_CFB8:
         case ACVP_AES_CFB128:
         case ACVP_AES_OFB:
         case ACVP_AES_CTR:
+        case ACVP_AES_XTS:
+        case ACVP_AES_KW:
+        case ACVP_AES_KWP:
         case ACVP_AES_GMAC:
         case ACVP_AES_XPN:
-            if (value >= 4 && value <= 128) {
+            if (value == 128 || value == 192 || value == 256) {
+                retval = ACVP_SUCCESS;
+            }
+            break;
+        case ACVP_TDES_ECB:
+        case ACVP_TDES_CBC:
+        case ACVP_TDES_CBCI:
+        case ACVP_TDES_OFB:
+        case ACVP_TDES_OFBI:
+        case ACVP_TDES_CFB1:
+        case ACVP_TDES_CFB8:
+        case ACVP_TDES_CFB64:
+        case ACVP_TDES_CFBP1:
+        case ACVP_TDES_CFBP8:
+        case ACVP_TDES_CFBP64:
+        case ACVP_TDES_CTR:
+        case ACVP_TDES_KW:
+            if (value == 192) {
+                retval = ACVP_SUCCESS;
+            }
+            break;
+        case ACVP_CIPHER_START:
+        case ACVP_HASH_SHA1:
+        case ACVP_HASH_SHA224:
+        case ACVP_HASH_SHA256:
+        case ACVP_HASH_SHA384:
+        case ACVP_HASH_SHA512:
+        case ACVP_HASH_SHA512_224:
+        case ACVP_HASH_SHA512_256:
+        case ACVP_HASH_SHA3_224:
+        case ACVP_HASH_SHA3_256:
+        case ACVP_HASH_SHA3_384:
+        case ACVP_HASH_SHA3_512:
+        case ACVP_HASH_SHAKE_128:
+        case ACVP_HASH_SHAKE_256:
+        case ACVP_HASHDRBG:
+        case ACVP_HMACDRBG:
+        case ACVP_CTRDRBG:
+        case ACVP_HMAC_SHA1:
+        case ACVP_HMAC_SHA2_224:
+        case ACVP_HMAC_SHA2_256:
+        case ACVP_HMAC_SHA2_384:
+        case ACVP_HMAC_SHA2_512:
+        case ACVP_HMAC_SHA2_512_224:
+        case ACVP_HMAC_SHA2_512_256:
+        case ACVP_HMAC_SHA3_224:
+        case ACVP_HMAC_SHA3_256:
+        case ACVP_HMAC_SHA3_384:
+        case ACVP_HMAC_SHA3_512:
+        case ACVP_CMAC_AES:
+        case ACVP_CMAC_TDES:
+        case ACVP_DSA_KEYGEN:
+        case ACVP_DSA_PQGGEN:
+        case ACVP_DSA_PQGVER:
+        case ACVP_DSA_SIGGEN:
+        case ACVP_DSA_SIGVER:
+        case ACVP_RSA_KEYGEN:
+        case ACVP_RSA_SIGGEN:
+        case ACVP_RSA_SIGVER:
+        case ACVP_RSA_SIGPRIM:
+        case ACVP_RSA_DECPRIM:
+        case ACVP_ECDSA_KEYGEN:
+        case ACVP_ECDSA_KEYVER:
+        case ACVP_ECDSA_SIGGEN:
+        case ACVP_ECDSA_SIGVER:
+        case ACVP_KDF135_TLS:
+        case ACVP_KDF135_SNMP:
+        case ACVP_KDF135_SSH:
+        case ACVP_KDF135_SRTP:
+        case ACVP_KDF135_IKEV2:
+        case ACVP_KDF135_IKEV1:
+        case ACVP_KDF135_X963:
+        case ACVP_KDF108:
+        case ACVP_PBKDF:
+        case ACVP_KAS_ECC_CDH:
+        case ACVP_KAS_ECC_COMP:
+        case ACVP_KAS_ECC_NOCOMP:
+        case ACVP_KAS_ECC_SSC:
+        case ACVP_KAS_FFC_COMP:
+        case ACVP_KAS_FFC_NOCOMP:
+        case ACVP_KAS_KDF_ONESTEP:
+        case ACVP_KAS_HKDF:
+        case ACVP_CIPHER_END:
+        default:
+            break;
+        }
+        break;
+    case ACVP_SYM_CIPH_TAGLEN:
+        switch (cipher) {
+        case ACVP_AES_GCM:
+        case ACVP_AES_GMAC:
+        case ACVP_AES_CCM:
+        case ACVP_AES_XPN:
+            if (value == 32 || value == 64 || value == 96 ||
+                    value == 104 || value == 112 || value == 120 ||
+                    value == 128) {
                 retval = ACVP_SUCCESS;
             }
             break;
         case ACVP_CIPHER_START:
         case ACVP_AES_GCM_SIV:
+        case ACVP_AES_ECB:
+        case ACVP_AES_CBC:
+        case ACVP_AES_CBC_CS1:
+        case ACVP_AES_CBC_CS2:
+        case ACVP_AES_CBC_CS3:
+        case ACVP_AES_CFB1:
+        case ACVP_AES_CFB8:
+        case ACVP_AES_CFB128:
+        case ACVP_AES_OFB:
+        case ACVP_AES_CTR:
         case ACVP_AES_XTS:
         case ACVP_AES_KW:
         case ACVP_AES_KWP:
@@ -971,31 +1078,37 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
         break;
     case ACVP_SYM_CIPH_IVLEN:
         switch (cipher) {
+        case ACVP_AES_GCM:
         case ACVP_AES_GCM_SIV:
-        case ACVP_AES_XPN:
+        case ACVP_AES_CCM:
+        case ACVP_AES_GMAC:
+        case ACVP_TDES_CBC:
+        case ACVP_AES_OFB:
+        case ACVP_TDES_CFB1:
+        case ACVP_TDES_OFB:
+        case ACVP_TDES_CFB8:
+        case ACVP_TDES_CFB64:
+            if (value >= 8 && value <= 1024) {
+                retval = ACVP_SUCCESS;
+            }
             break;
         case ACVP_CIPHER_START:
-        case ACVP_AES_GCM:
-        case ACVP_AES_CCM:
         case ACVP_AES_ECB:
         case ACVP_AES_CBC:
+        case ACVP_AES_CBC_CS1:
+        case ACVP_AES_CBC_CS2:
+        case ACVP_AES_CBC_CS3:
         case ACVP_AES_CFB1:
         case ACVP_AES_CFB8:
         case ACVP_AES_CFB128:
-        case ACVP_AES_OFB:
         case ACVP_AES_CTR:
         case ACVP_AES_XTS:
         case ACVP_AES_KW:
         case ACVP_AES_KWP:
-        case ACVP_AES_GMAC:
+        case ACVP_AES_XPN:
         case ACVP_TDES_ECB:
-        case ACVP_TDES_CBC:
         case ACVP_TDES_CBCI:
-        case ACVP_TDES_OFB:
         case ACVP_TDES_OFBI:
-        case ACVP_TDES_CFB1:
-        case ACVP_TDES_CFB8:
-        case ACVP_TDES_CFB64:
         case ACVP_TDES_CFBP1:
         case ACVP_TDES_CFBP8:
         case ACVP_TDES_CFBP64:
@@ -1063,14 +1176,11 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
         case ACVP_KAS_HKDF:
         case ACVP_CIPHER_END:
         default:
-            if (value >= 8 && value <= 1024) {
-                retval = ACVP_SUCCESS;
-            }
             break;
         }
         break;
     case ACVP_SYM_CIPH_TWEAK:
-        if (value >= ACVP_SYM_CIPH_TWEAK_HEX &&
+        if (cipher == ACVP_AES_XTS && value >= ACVP_SYM_CIPH_TWEAK_HEX &&
             value < ACVP_SYM_CIPH_TWEAK_NONE) {
             retval = ACVP_SUCCESS;
         }
@@ -1094,6 +1204,9 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
             }
             break;
         case ACVP_CIPHER_START:
+        case ACVP_AES_CBC_CS1:
+        case ACVP_AES_CBC_CS2:
+        case ACVP_AES_CBC_CS3:
         case ACVP_AES_XTS:
         case ACVP_AES_KW:
         case ACVP_AES_KWP:
@@ -1185,6 +1298,9 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
         case ACVP_AES_CCM:
         case ACVP_AES_ECB:
         case ACVP_AES_CBC:
+        case ACVP_AES_CBC_CS1:
+        case ACVP_AES_CBC_CS2:
+        case ACVP_AES_CBC_CS3:
         case ACVP_AES_CFB1:
         case ACVP_AES_CFB8:
         case ACVP_AES_CFB128:
@@ -1291,6 +1407,285 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
     return retval;
 }
 
+static ACVP_RESULT acvp_validate_sym_cipher_domain_value(ACVP_CIPHER cipher, ACVP_SYM_CIPH_PARM parm,
+                                                       int min, int max, int increment) {
+
+    ACVP_RESULT retval = ACVP_INVALID_ARG;
+    int diff = 0;
+
+    if (min > max || min < 0 || increment <= 0) {
+        return retval;
+    }
+
+    diff = max - min;
+    if (diff % increment != 0) {
+        return retval;
+    }
+
+    switch (cipher) {
+    case ACVP_AES_GCM:
+        switch (parm) {
+        case ACVP_SYM_CIPH_IVLEN:
+            if (min >= 8 && max <= 1024) {
+                retval = ACVP_SUCCESS;
+            }
+            break;
+        case ACVP_SYM_CIPH_PTLEN:
+            if (min >= 0 && max <= 65536) {
+                retval = ACVP_SUCCESS;
+            }
+            break;
+        case ACVP_SYM_CIPH_AADLEN:
+            if (min >= 0 && max <= 65536) {
+                retval = ACVP_SUCCESS;
+            }
+            break;
+        default:
+            break;
+        }
+        break;
+    case ACVP_AES_GCM_SIV:
+        switch (parm) {
+        case ACVP_SYM_CIPH_PTLEN:
+            if (min >= 0 && max <= 65536 && increment == 8) {
+                retval = ACVP_SUCCESS;
+            }
+            break;
+        case ACVP_SYM_CIPH_AADLEN:
+            if (min >= 0 && max <= 65536 && increment == 8) {
+                retval = ACVP_SUCCESS;
+            }
+            break;
+        case ACVP_SYM_CIPH_IVLEN:
+        default:
+            break;
+        }
+        break;
+    case ACVP_AES_CCM:
+        switch (parm) {
+        case ACVP_SYM_CIPH_IVLEN:
+            if (min >= 56 && max <= 104 && increment == 8) {
+                retval = ACVP_SUCCESS;
+            }
+            break;
+        case ACVP_SYM_CIPH_PTLEN:
+            if (min >= 0 && max <= 256 && increment == 8) {
+                retval = ACVP_SUCCESS;
+            }
+            break;
+        case ACVP_SYM_CIPH_AADLEN:
+            if (min >= 0 && max <= 524288) {
+                retval = ACVP_SUCCESS;
+            }
+            break;
+        default:
+            break;
+        }
+        break;
+    case ACVP_AES_CBC_CS1:
+    case ACVP_AES_CBC_CS2:
+    case ACVP_AES_CBC_CS3:
+        switch (parm) {
+        case ACVP_SYM_CIPH_PTLEN:
+            if (min >= 128 && max <= 65536) {
+                retval = ACVP_SUCCESS;
+            }
+            break;
+        case ACVP_SYM_CIPH_IVLEN:
+        case ACVP_SYM_CIPH_AADLEN:
+        default:
+            break;
+        }
+        break;
+    case ACVP_AES_CTR:
+        switch (parm) {
+        case ACVP_SYM_CIPH_PTLEN:
+            if (min >= 1 && max <= 128) {
+                retval = ACVP_SUCCESS;
+            }
+            break;
+        case ACVP_SYM_CIPH_IVLEN:
+        case ACVP_SYM_CIPH_AADLEN:
+        default:
+            break;
+        }
+    case ACVP_AES_XTS:
+        switch (parm) {
+        case ACVP_SYM_CIPH_PTLEN:
+            if (min >= 128 && max <= 65536) {
+                retval = ACVP_SUCCESS;
+            }
+            break;
+        case ACVP_SYM_CIPH_IVLEN:
+        case ACVP_SYM_CIPH_AADLEN:
+        default:
+            break;
+        }
+        break;
+    case ACVP_AES_KW:
+        switch (parm) {
+        case ACVP_SYM_CIPH_PTLEN:
+            if (min >= 128 && max <= 65536 && increment % 64 == 0) {
+                retval = ACVP_SUCCESS;
+            }
+            break;
+        case ACVP_SYM_CIPH_IVLEN:
+        case ACVP_SYM_CIPH_AADLEN:
+        default:
+            break;
+        }
+        break;
+    case ACVP_AES_KWP:
+        switch (parm) {
+        case ACVP_SYM_CIPH_PTLEN:
+            if (min >= 0 && max <= 65536) {
+                retval = ACVP_SUCCESS;
+            }
+            break;
+        case ACVP_SYM_CIPH_IVLEN:
+        case ACVP_SYM_CIPH_AADLEN:
+        default:
+            break;
+        }
+        break;
+    case ACVP_AES_GMAC:
+        switch (parm) {
+        case ACVP_SYM_CIPH_IVLEN:
+            if (min >= 8 && max <= 1024 && increment % 8 == 0) {
+                retval = ACVP_SUCCESS;
+            }
+            break;
+        case ACVP_SYM_CIPH_AADLEN:
+            if (min >= 1 && max <= 65536 && increment % 8 == 0) {
+                retval = ACVP_SUCCESS;
+            }
+            break;
+        case ACVP_SYM_CIPH_PTLEN:
+        default:
+            break;
+        }
+        break;
+    case ACVP_AES_XPN:
+        switch (parm) {
+        case ACVP_SYM_CIPH_IVLEN:
+            if (min >= 8 && max <= 1024) {
+                retval = ACVP_SUCCESS;
+            }
+            break;
+        case ACVP_SYM_CIPH_PTLEN:
+            if (min >= 0 && max <= 65536) {
+                retval = ACVP_SUCCESS;
+            }
+            break;
+        case ACVP_SYM_CIPH_AADLEN:
+            if (min >= 0 && max <= 65536) {
+                retval = ACVP_SUCCESS;
+            }
+            break;
+        default:
+            break;
+        }
+        break;
+    case ACVP_TDES_CTR:
+    case ACVP_TDES_KW:
+        switch (parm) {
+        case ACVP_SYM_CIPH_PTLEN:
+            if (min >= 0 && max <= 65536) {
+                retval = ACVP_SUCCESS;
+            }
+            break;
+        case ACVP_SYM_CIPH_IVLEN:
+        case ACVP_SYM_CIPH_AADLEN:
+        default:
+            break;
+        }
+        break;
+    case ACVP_CIPHER_START:
+    case ACVP_AES_ECB:
+    case ACVP_AES_CBC:
+    case ACVP_AES_CFB1:
+    case ACVP_AES_CFB8:
+    case ACVP_AES_CFB128:
+    case ACVP_AES_OFB:
+    case ACVP_TDES_ECB:
+    case ACVP_TDES_CBC:
+    case ACVP_TDES_CBCI:
+    case ACVP_TDES_OFB:
+    case ACVP_TDES_OFBI:
+    case ACVP_TDES_CFB1:
+    case ACVP_TDES_CFB8:
+    case ACVP_TDES_CFB64:
+    case ACVP_TDES_CFBP1:
+    case ACVP_TDES_CFBP8:
+    case ACVP_TDES_CFBP64:
+    case ACVP_HASH_SHA1:
+    case ACVP_HASH_SHA224:
+    case ACVP_HASH_SHA256:
+    case ACVP_HASH_SHA384:
+    case ACVP_HASH_SHA512:
+    case ACVP_HASH_SHA512_224:
+    case ACVP_HASH_SHA512_256:
+    case ACVP_HASH_SHA3_224:
+    case ACVP_HASH_SHA3_256:
+    case ACVP_HASH_SHA3_384:
+    case ACVP_HASH_SHA3_512:
+    case ACVP_HASH_SHAKE_128:
+    case ACVP_HASH_SHAKE_256:
+    case ACVP_HASHDRBG:
+    case ACVP_HMACDRBG:
+    case ACVP_CTRDRBG:
+    case ACVP_HMAC_SHA1:
+    case ACVP_HMAC_SHA2_224:
+    case ACVP_HMAC_SHA2_256:
+    case ACVP_HMAC_SHA2_384:
+    case ACVP_HMAC_SHA2_512:
+    case ACVP_HMAC_SHA2_512_224:
+    case ACVP_HMAC_SHA2_512_256:
+    case ACVP_HMAC_SHA3_224:
+    case ACVP_HMAC_SHA3_256:
+    case ACVP_HMAC_SHA3_384:
+    case ACVP_HMAC_SHA3_512:
+    case ACVP_CMAC_AES:
+    case ACVP_CMAC_TDES:
+    case ACVP_DSA_KEYGEN:
+    case ACVP_DSA_PQGGEN:
+    case ACVP_DSA_PQGVER:
+    case ACVP_DSA_SIGGEN:
+    case ACVP_DSA_SIGVER:
+    case ACVP_RSA_KEYGEN:
+    case ACVP_RSA_SIGGEN:
+    case ACVP_RSA_SIGVER:
+    case ACVP_RSA_SIGPRIM:
+    case ACVP_RSA_DECPRIM:
+    case ACVP_ECDSA_KEYGEN:
+    case ACVP_ECDSA_KEYVER:
+    case ACVP_ECDSA_SIGGEN:
+    case ACVP_ECDSA_SIGVER:
+    case ACVP_KDF135_TLS:
+    case ACVP_KDF135_SNMP:
+    case ACVP_KDF135_SSH:
+    case ACVP_KDF135_SRTP:
+    case ACVP_KDF135_IKEV2:
+    case ACVP_KDF135_IKEV1:
+    case ACVP_KDF135_X963:
+    case ACVP_KDF108:
+    case ACVP_PBKDF:
+    case ACVP_KAS_ECC_CDH:
+    case ACVP_KAS_ECC_COMP:
+    case ACVP_KAS_ECC_NOCOMP:
+    case ACVP_KAS_ECC_SSC:
+    case ACVP_KAS_FFC_COMP:
+    case ACVP_KAS_FFC_NOCOMP:
+    case ACVP_KAS_KDF_ONESTEP:
+    case ACVP_KAS_HKDF:
+    case ACVP_CIPHER_END:
+    default:
+        break;
+    }
+
+    return retval;
+}
+
 static ACVP_RESULT acvp_validate_prereq_val(ACVP_CIPHER cipher, ACVP_PREREQ_ALG pre_req) {
     switch (cipher) {
     case ACVP_AES_GCM:
@@ -1303,6 +1698,9 @@ static ACVP_RESULT acvp_validate_prereq_val(ACVP_CIPHER cipher, ACVP_PREREQ_ALG 
     case ACVP_AES_CTR:
     case ACVP_AES_OFB:
     case ACVP_AES_CBC:
+    case ACVP_AES_CBC_CS1:
+    case ACVP_AES_CBC_CS2:
+    case ACVP_AES_CBC_CS3:
     case ACVP_AES_KW:
     case ACVP_AES_KWP:
     case ACVP_AES_XTS:
@@ -1592,14 +1990,25 @@ ACVP_RESULT acvp_cap_set_prereq(ACVP_CTX *ctx,
 /*
  * The user should call this after invoking acvp_enable_sym_cipher_cap()
  * to specify the supported key lengths, PT lengths, AAD lengths, IV
- * lengths, and tag lengths.  This is called by the user multiple times,
- * once for each length supported.
+ * lengths, and tag lengths. This is called multiple times, for different parms
+ * 
+ * NOTE: Sym ciphers originally used range values instead of domain. Range values
+ * will be phsed out slowly where applicable. For now, allow either set domain OR 
+ * set parm to be called for a param, but not both.
  */
-ACVP_RESULT acvp_cap_sym_cipher_set_parm(ACVP_CTX *ctx,
-                                         ACVP_CIPHER cipher,
-                                         ACVP_SYM_CIPH_PARM parm,
-                                         int value) {
+ACVP_RESULT acvp_cap_sym_cipher_set_domain(ACVP_CTX *ctx,
+                                           ACVP_CIPHER cipher,
+                                           ACVP_SYM_CIPH_PARM parm,
+                                           int min,
+                                           int max,
+                                           int increment) {
     ACVP_CAPS_LIST *cap = NULL;
+    ACVP_SYM_CIPHER_CAP *symcap = NULL;
+    ACVP_RESULT rv = ACVP_SUCCESS;
+
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
 
     switch (cipher) {
     case ACVP_AES_GCM:
@@ -1607,6 +2016,9 @@ ACVP_RESULT acvp_cap_sym_cipher_set_parm(ACVP_CTX *ctx,
     case ACVP_AES_CCM:
     case ACVP_AES_ECB:
     case ACVP_AES_CBC:
+    case ACVP_AES_CBC_CS1:
+    case ACVP_AES_CBC_CS2:
+    case ACVP_AES_CBC_CS3:
     case ACVP_AES_CFB1:
     case ACVP_AES_CFB8:
     case ACVP_AES_CFB128:
@@ -1705,6 +2117,203 @@ ACVP_RESULT acvp_cap_sym_cipher_set_parm(ACVP_CTX *ctx,
         ACVP_LOG_ERR("Cap entry not found, use acvp_enable_sym_cipher_cap() first.");
         return ACVP_NO_CAP;
     }
+    symcap = cap->cap.sym_cap;
+    if (!symcap) {
+        ACVP_LOG_ERR("Error retrieving sym cipher capabilities object");
+        return ACVP_NO_CAP;
+    }
+
+    //throw errors for non-domain paramaters
+    switch (parm) {
+    case ACVP_SYM_CIPH_KW_MODE:
+    case ACVP_SYM_CIPH_PARM_DIR:
+    case ACVP_SYM_CIPH_PARM_KO:
+    case ACVP_SYM_CIPH_PARM_PERFORM_CTR:
+    case ACVP_SYM_CIPH_PARM_CTR_INCR:
+    case ACVP_SYM_CIPH_PARM_CTR_OVRFLW:
+    case ACVP_SYM_CIPH_PARM_IVGEN_SRC:
+    case ACVP_SYM_CIPH_PARM_IVGEN_MODE:
+    case ACVP_SYM_CIPH_PARM_SALT_SRC:
+    case ACVP_SYM_CIPH_KEYLEN:
+    case ACVP_SYM_CIPH_TAGLEN:
+    case ACVP_SYM_CIPH_TWEAK:
+        ACVP_LOG_ERR("Invalid parameter %d for acvp_cap_sym_cipher_set_domain. Use acvp_cap_sym_cipher_set_parm.", parm);
+        return ACVP_INVALID_ARG;
+    case ACVP_SYM_CIPH_IVLEN:
+        if (symcap->ivlen) {
+            ACVP_LOG_ERR("ivLen already defined using acvp_sym_cipher_set_parm. Please set ivLen using only one function \
+                          (Using set_parm for ivLen will eventually be depreciated).");
+            return ACVP_INVALID_ARG;
+        }
+        rv = acvp_validate_sym_cipher_domain_value(cipher, parm, min, max, increment);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Unable to validate given domain value (cipher=%d, param=%d)", cipher, parm);
+            return ACVP_INVALID_ARG;
+        }
+        symcap->iv_len.min = min;
+        symcap->iv_len.max = max;
+        symcap->iv_len.increment = increment;
+        break;
+    case ACVP_SYM_CIPH_PTLEN:
+        if (symcap->ptlen) {
+            ACVP_LOG_ERR("ptLen already defined using acvp_sym_cipher_set_parm. Please set ptLen using only one function \
+                          (Using set_parm for ptLen will eventually be depreciated).");
+            return ACVP_INVALID_ARG;
+        }
+        rv = acvp_validate_sym_cipher_domain_value(cipher, parm, min, max, increment);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Unable to validate given domain value (cipher=%d, param=%d)", cipher, parm);
+            return ACVP_INVALID_ARG;
+        }
+        symcap->payload_len.min = min;
+        symcap->payload_len.max = max;
+        symcap->payload_len.increment = increment;
+        break;
+    case ACVP_SYM_CIPH_AADLEN:
+        if (symcap->aadlen) {
+            ACVP_LOG_ERR("aadLen already defined using acvp_sym_cipher_set_parm. Please set aadLen using only one function \
+                          (Using set_parm for aadLen will eventually be depreciated).");
+            return ACVP_INVALID_ARG;
+        }
+        rv = acvp_validate_sym_cipher_domain_value(cipher, parm, min, max, increment);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Unable to validate given domain value (cipher=%d, param=%d)", cipher, parm);
+            return ACVP_INVALID_ARG;
+        }
+        symcap->aad_len.min = min;
+        symcap->aad_len.max = max;
+        symcap->aad_len.increment = increment;
+        break;
+    default:
+        ACVP_LOG_ERR("Invalid parameter for symmetric cipher");
+        return ACVP_INVALID_ARG;
+    }
+
+    return ACVP_SUCCESS;
+}
+
+/*
+ * The user should call this after invoking acvp_enable_sym_cipher_cap()
+ * to specify the supported key lengths, direction, etc. This is called by the 
+ * user multiple times, for different parms.
+ */
+ACVP_RESULT acvp_cap_sym_cipher_set_parm(ACVP_CTX *ctx,
+                                         ACVP_CIPHER cipher,
+                                         ACVP_SYM_CIPH_PARM parm,
+                                         int value) {
+    ACVP_CAPS_LIST *cap = NULL;
+
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+
+    switch (cipher) {
+    case ACVP_AES_GCM:
+    case ACVP_AES_GCM_SIV:
+    case ACVP_AES_CCM:
+    case ACVP_AES_ECB:
+    case ACVP_AES_CBC:
+    case ACVP_AES_CBC_CS1:
+    case ACVP_AES_CBC_CS2:
+    case ACVP_AES_CBC_CS3:
+    case ACVP_AES_CFB1:
+    case ACVP_AES_CFB8:
+    case ACVP_AES_CFB128:
+    case ACVP_AES_OFB:
+    case ACVP_AES_CTR:
+    case ACVP_AES_XTS:
+    case ACVP_AES_KW:
+    case ACVP_AES_KWP:
+    case ACVP_AES_GMAC:
+    case ACVP_AES_XPN:
+    case ACVP_TDES_ECB:
+    case ACVP_TDES_CBC:
+    case ACVP_TDES_CBCI:
+    case ACVP_TDES_OFB:
+    case ACVP_TDES_OFBI:
+    case ACVP_TDES_CFB1:
+    case ACVP_TDES_CFB8:
+    case ACVP_TDES_CFB64:
+    case ACVP_TDES_CFBP1:
+    case ACVP_TDES_CFBP8:
+    case ACVP_TDES_CFBP64:
+    case ACVP_TDES_CTR:
+    case ACVP_TDES_KW:
+        break;
+    case ACVP_CIPHER_START:
+    case ACVP_HASH_SHA1:
+    case ACVP_HASH_SHA224:
+    case ACVP_HASH_SHA256:
+    case ACVP_HASH_SHA384:
+    case ACVP_HASH_SHA512:
+    case ACVP_HASH_SHA512_224:
+    case ACVP_HASH_SHA512_256:
+    case ACVP_HASH_SHA3_224:
+    case ACVP_HASH_SHA3_256:
+    case ACVP_HASH_SHA3_384:
+    case ACVP_HASH_SHA3_512:
+    case ACVP_HASH_SHAKE_128:
+    case ACVP_HASH_SHAKE_256:
+    case ACVP_HASHDRBG:
+    case ACVP_HMACDRBG:
+    case ACVP_CTRDRBG:
+    case ACVP_HMAC_SHA1:
+    case ACVP_HMAC_SHA2_224:
+    case ACVP_HMAC_SHA2_256:
+    case ACVP_HMAC_SHA2_384:
+    case ACVP_HMAC_SHA2_512:
+    case ACVP_HMAC_SHA2_512_224:
+    case ACVP_HMAC_SHA2_512_256:
+    case ACVP_HMAC_SHA3_224:
+    case ACVP_HMAC_SHA3_256:
+    case ACVP_HMAC_SHA3_384:
+    case ACVP_HMAC_SHA3_512:
+    case ACVP_CMAC_AES:
+    case ACVP_CMAC_TDES:
+    case ACVP_DSA_KEYGEN:
+    case ACVP_DSA_PQGGEN:
+    case ACVP_DSA_PQGVER:
+    case ACVP_DSA_SIGGEN:
+    case ACVP_DSA_SIGVER:
+    case ACVP_RSA_KEYGEN:
+    case ACVP_RSA_SIGGEN:
+    case ACVP_RSA_SIGVER:
+    case ACVP_RSA_SIGPRIM:
+    case ACVP_RSA_DECPRIM:
+    case ACVP_ECDSA_KEYGEN:
+    case ACVP_ECDSA_KEYVER:
+    case ACVP_ECDSA_SIGGEN:
+    case ACVP_ECDSA_SIGVER:
+    case ACVP_KDF135_TLS:
+    case ACVP_KDF135_SNMP:
+    case ACVP_KDF135_SSH:
+    case ACVP_KDF135_SRTP:
+    case ACVP_KDF135_IKEV2:
+    case ACVP_KDF135_IKEV1:
+    case ACVP_KDF135_X963:
+    case ACVP_KDF108:
+    case ACVP_PBKDF:
+    case ACVP_KAS_ECC_CDH:
+    case ACVP_KAS_ECC_COMP:
+    case ACVP_KAS_ECC_NOCOMP:
+    case ACVP_KAS_ECC_SSC:
+    case ACVP_KAS_FFC_COMP:
+    case ACVP_KAS_FFC_NOCOMP:
+    case ACVP_KAS_KDF_ONESTEP:
+    case ACVP_KAS_HKDF:
+    case ACVP_CIPHER_END:
+    default:
+        return ACVP_INVALID_ARG;
+    }
+
+    /*
+     * Locate this cipher in the caps array
+     */
+    cap = acvp_locate_cap_entry(ctx, cipher);
+    if (!cap) {
+        ACVP_LOG_ERR("Cap entry not found, use acvp_cap_sym_cipher_enable() first.");
+        return ACVP_NO_CAP;
+    }
 
     /*
      * Check is this is a non-length related value.
@@ -1799,7 +2408,6 @@ ACVP_RESULT acvp_cap_sym_cipher_set_parm(ACVP_CTX *ctx,
             return ACVP_INVALID_ARG;
         }
 
-
     case ACVP_SYM_CIPH_KEYLEN:
     case ACVP_SYM_CIPH_TAGLEN:
     case ACVP_SYM_CIPH_IVLEN:
@@ -1823,15 +2431,30 @@ ACVP_RESULT acvp_cap_sym_cipher_set_parm(ACVP_CTX *ctx,
         acvp_cap_add_length(&cap->cap.sym_cap->taglen, value);
         break;
     case ACVP_SYM_CIPH_IVLEN:
+        if (acvp_is_domain_already_set(&cap->cap.sym_cap->iv_len)) {
+            ACVP_LOG_ERR("ivLen already defined using acvp_sym_cipher_set_domain. Please set ivLen using only one function \
+                          (Using set_parm for ivLen will eventually be depreciated).");
+            return ACVP_INVALID_ARG;
+        }
         acvp_cap_add_length(&cap->cap.sym_cap->ivlen, value);
         break;
     case ACVP_SYM_CIPH_PTLEN:
+        if (acvp_is_domain_already_set(&cap->cap.sym_cap->payload_len)) {
+            ACVP_LOG_ERR("payloadLen already defined using acvp_sym_cipher_set_domain. Please set payloadLen using only one function \
+                          (Using set_parm for payloadLen will eventually be depreciated).");
+            return ACVP_INVALID_ARG;
+        }
         acvp_cap_add_length(&cap->cap.sym_cap->ptlen, value);
         break;
     case ACVP_SYM_CIPH_TWEAK:
         acvp_cap_add_length(&cap->cap.sym_cap->tweak, value);
         break;
     case ACVP_SYM_CIPH_AADLEN:
+        if (acvp_is_domain_already_set(&cap->cap.sym_cap->aad_len)) {
+            ACVP_LOG_ERR("aadLen already defined using acvp_sym_cipher_set_domain. Please set aadLen using only one function \
+                          (Using set_parm for aadLen will eventually be depreciated).");
+            return ACVP_INVALID_ARG;
+        }
         acvp_cap_add_length(&cap->cap.sym_cap->aadlen, value);
         break;
     case ACVP_SYM_CIPH_KW_MODE:
@@ -1880,6 +2503,9 @@ ACVP_RESULT acvp_cap_sym_cipher_enable(ACVP_CTX *ctx,
     case ACVP_AES_CCM:
     case ACVP_AES_ECB:
     case ACVP_AES_CBC:
+    case ACVP_AES_CBC_CS1:
+    case ACVP_AES_CBC_CS2:
+    case ACVP_AES_CBC_CS3:
     case ACVP_AES_CFB1:
     case ACVP_AES_CFB8:
     case ACVP_AES_CFB128:
@@ -2015,6 +2641,9 @@ ACVP_RESULT acvp_cap_hash_enable(ACVP_CTX *ctx,
     case ACVP_AES_CCM:
     case ACVP_AES_ECB:
     case ACVP_AES_CBC:
+    case ACVP_AES_CBC_CS1:
+    case ACVP_AES_CBC_CS2:
+    case ACVP_AES_CBC_CS3:
     case ACVP_AES_CFB1:
     case ACVP_AES_CFB8:
     case ACVP_AES_CFB128:
@@ -2145,6 +2774,9 @@ ACVP_RESULT acvp_cap_hash_set_parm(ACVP_CTX *ctx,
     case ACVP_AES_CCM:
     case ACVP_AES_ECB:
     case ACVP_AES_CBC:
+    case ACVP_AES_CBC_CS1:
+    case ACVP_AES_CBC_CS2:
+    case ACVP_AES_CBC_CS3:
     case ACVP_AES_CFB1:
     case ACVP_AES_CFB8:
     case ACVP_AES_CFB128:
@@ -2259,6 +2891,9 @@ ACVP_RESULT acvp_cap_hash_set_parm(ACVP_CTX *ctx,
         case ACVP_AES_CCM:
         case ACVP_AES_ECB:
         case ACVP_AES_CBC:
+        case ACVP_AES_CBC_CS1:
+        case ACVP_AES_CBC_CS2:
+        case ACVP_AES_CBC_CS3:
         case ACVP_AES_CFB1:
         case ACVP_AES_CFB8:
         case ACVP_AES_CFB128:
@@ -2391,6 +3026,9 @@ ACVP_RESULT acvp_cap_hash_set_domain(ACVP_CTX *ctx,
     case ACVP_AES_CCM:
     case ACVP_AES_ECB:
     case ACVP_AES_CBC:
+    case ACVP_AES_CBC_CS1:
+    case ACVP_AES_CBC_CS2:
+    case ACVP_AES_CBC_CS3:
     case ACVP_AES_CFB1:
     case ACVP_AES_CFB8:
     case ACVP_AES_CFB128:
@@ -2580,6 +3218,9 @@ static ACVP_RESULT acvp_validate_hmac_parm_value(ACVP_CIPHER cipher,
         case ACVP_AES_CCM:
         case ACVP_AES_ECB:
         case ACVP_AES_CBC:
+        case ACVP_AES_CBC_CS1:
+        case ACVP_AES_CBC_CS2:
+        case ACVP_AES_CBC_CS3:
         case ACVP_AES_CFB1:
         case ACVP_AES_CFB8:
         case ACVP_AES_CFB128:
@@ -2703,6 +3344,9 @@ ACVP_RESULT acvp_cap_hmac_enable(ACVP_CTX *ctx,
     case ACVP_AES_CCM:
     case ACVP_AES_ECB:
     case ACVP_AES_CBC:
+    case ACVP_AES_CBC_CS1:
+    case ACVP_AES_CBC_CS2:
+    case ACVP_AES_CBC_CS3:
     case ACVP_AES_CFB1:
     case ACVP_AES_CFB8:
     case ACVP_AES_CFB128:
@@ -2948,6 +3592,9 @@ ACVP_RESULT acvp_cap_cmac_enable(ACVP_CTX *ctx,
     case ACVP_AES_CCM:
     case ACVP_AES_ECB:
     case ACVP_AES_CBC:
+    case ACVP_AES_CBC_CS1:
+    case ACVP_AES_CBC_CS2:
+    case ACVP_AES_CBC_CS3:
     case ACVP_AES_CFB1:
     case ACVP_AES_CFB8:
     case ACVP_AES_CFB128:
@@ -3597,6 +4244,9 @@ ACVP_RESULT acvp_cap_drbg_set_parm(ACVP_CTX *ctx,
     case ACVP_AES_CCM:
     case ACVP_AES_ECB:
     case ACVP_AES_CBC:
+    case ACVP_AES_CBC_CS1:
+    case ACVP_AES_CBC_CS2:
+    case ACVP_AES_CBC_CS3:
     case ACVP_AES_CFB1:
     case ACVP_AES_CFB8:
     case ACVP_AES_CFB128:
@@ -4476,6 +5126,9 @@ static ACVP_RESULT internal_cap_rsa_sig_enable(ACVP_CTX *ctx,
     case ACVP_AES_CCM:
     case ACVP_AES_ECB:
     case ACVP_AES_CBC:
+    case ACVP_AES_CBC_CS1:
+    case ACVP_AES_CBC_CS2:
+    case ACVP_AES_CBC_CS3:
     case ACVP_AES_CFB1:
     case ACVP_AES_CFB8:
     case ACVP_AES_CFB128:
@@ -4593,6 +5246,9 @@ ACVP_RESULT acvp_cap_rsa_sig_enable(ACVP_CTX *ctx,
     case ACVP_AES_CCM:
     case ACVP_AES_ECB:
     case ACVP_AES_CBC:
+    case ACVP_AES_CBC_CS1:
+    case ACVP_AES_CBC_CS2:
+    case ACVP_AES_CBC_CS3:
     case ACVP_AES_CFB1:
     case ACVP_AES_CFB8:
     case ACVP_AES_CFB128:
@@ -4844,6 +5500,9 @@ ACVP_RESULT acvp_cap_ecdsa_set_parm(ACVP_CTX *ctx,
     case ACVP_AES_CCM:
     case ACVP_AES_ECB:
     case ACVP_AES_CBC:
+    case ACVP_AES_CBC_CS1:
+    case ACVP_AES_CBC_CS2:
+    case ACVP_AES_CBC_CS3:
     case ACVP_AES_CFB1:
     case ACVP_AES_CFB8:
     case ACVP_AES_CFB128:
@@ -5045,6 +5704,9 @@ ACVP_RESULT acvp_cap_ecdsa_enable(ACVP_CTX *ctx,
     case ACVP_AES_CCM:
     case ACVP_AES_ECB:
     case ACVP_AES_CBC:
+    case ACVP_AES_CBC_CS1:
+    case ACVP_AES_CBC_CS2:
+    case ACVP_AES_CBC_CS3:
     case ACVP_AES_CFB1:
     case ACVP_AES_CFB8:
     case ACVP_AES_CFB128:
@@ -6619,6 +7281,9 @@ ACVP_RESULT acvp_cap_kas_ecc_enable(ACVP_CTX *ctx,
     case ACVP_AES_CCM:
     case ACVP_AES_ECB:
     case ACVP_AES_CBC:
+    case ACVP_AES_CBC_CS1:
+    case ACVP_AES_CBC_CS2:
+    case ACVP_AES_CBC_CS3:
     case ACVP_AES_CFB1:
     case ACVP_AES_CFB8:
     case ACVP_AES_CFB128:
@@ -6740,6 +7405,9 @@ ACVP_RESULT acvp_cap_kas_ecc_set_parm(ACVP_CTX *ctx,
     case ACVP_AES_CCM:
     case ACVP_AES_ECB:
     case ACVP_AES_CBC:
+    case ACVP_AES_CBC_CS1:
+    case ACVP_AES_CBC_CS2:
+    case ACVP_AES_CBC_CS3:
     case ACVP_AES_CFB1:
     case ACVP_AES_CFB8:
     case ACVP_AES_CFB128:
@@ -6967,6 +7635,9 @@ ACVP_RESULT acvp_cap_kas_ecc_set_scheme(ACVP_CTX *ctx,
     case ACVP_AES_CCM:
     case ACVP_AES_ECB:
     case ACVP_AES_CBC:
+    case ACVP_AES_CBC_CS1:
+    case ACVP_AES_CBC_CS2:
+    case ACVP_AES_CBC_CS3:
     case ACVP_AES_CFB1:
     case ACVP_AES_CFB8:
     case ACVP_AES_CFB128:
@@ -7282,6 +7953,9 @@ ACVP_RESULT acvp_cap_kas_ffc_enable(ACVP_CTX *ctx,
     case ACVP_AES_CCM:
     case ACVP_AES_ECB:
     case ACVP_AES_CBC:
+    case ACVP_AES_CBC_CS1:
+    case ACVP_AES_CBC_CS2:
+    case ACVP_AES_CBC_CS3:
     case ACVP_AES_CFB1:
     case ACVP_AES_CFB8:
     case ACVP_AES_CFB128:
@@ -7404,6 +8078,9 @@ ACVP_RESULT acvp_cap_kas_ffc_set_parm(ACVP_CTX *ctx,
     case ACVP_AES_CCM:
     case ACVP_AES_ECB:
     case ACVP_AES_CBC:
+    case ACVP_AES_CBC_CS1:
+    case ACVP_AES_CBC_CS2:
+    case ACVP_AES_CBC_CS3:
     case ACVP_AES_CFB1:
     case ACVP_AES_CFB8:
     case ACVP_AES_CFB128:
@@ -7907,6 +8584,9 @@ ACVP_RESULT acvp_cap_kas_kdf_enable(ACVP_CTX *ctx,
     case ACVP_AES_CCM:
     case ACVP_AES_ECB:
     case ACVP_AES_CBC:
+    case ACVP_AES_CBC_CS1:
+    case ACVP_AES_CBC_CS2:
+    case ACVP_AES_CBC_CS3:
     case ACVP_AES_CFB1:
     case ACVP_AES_CFB8:
     case ACVP_AES_CFB128:
