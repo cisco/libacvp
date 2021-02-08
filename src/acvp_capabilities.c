@@ -1551,12 +1551,12 @@ static ACVP_RESULT acvp_validate_sym_cipher_domain_value(ACVP_CIPHER cipher, ACV
     case ACVP_AES_GMAC:
         switch (parm) {
         case ACVP_SYM_CIPH_IVLEN:
-            if (min >= 8 && max <= 1024 && increment == 8) {
+            if (min >= 8 && max <= 1024 && increment % 8 == 0) {
                 retval = ACVP_SUCCESS;
             }
             break;
         case ACVP_SYM_CIPH_AADLEN:
-            if (min >= 1 && max <= 65536 && increment == 8) {
+            if (min >= 1 && max <= 65536 && increment % 8 == 0) {
                 retval = ACVP_SUCCESS;
             }
             break;

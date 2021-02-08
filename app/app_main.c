@@ -453,9 +453,9 @@ static int enable_aes(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_GCM, ACVP_SYM_CIPH_IVLEN, 96);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_sym_cipher_set_domain(ctx, ACVP_AES_GCM, ACVP_SYM_CIPH_PTLEN, 0, 65536, 8);
+    rv = acvp_cap_sym_cipher_set_domain(ctx, ACVP_AES_GCM, ACVP_SYM_CIPH_PTLEN, 0, 65536, 256);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_sym_cipher_set_domain(ctx, ACVP_AES_GCM, ACVP_SYM_CIPH_AADLEN, 0, 65536, 8);
+    rv = acvp_cap_sym_cipher_set_domain(ctx, ACVP_AES_GCM, ACVP_SYM_CIPH_AADLEN, 0, 65536, 256);
     CHECK_ENABLE_CAP_RV(rv);
 
     /*
@@ -516,7 +516,7 @@ static int enable_aes(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_CBC_CS1, ACVP_SYM_CIPH_KEYLEN, 256);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_sym_cipher_set_domain(ctx, ACVP_AES_CBC_CS1, ACVP_SYM_CIPH_PTLEN, 128, 65536, 8);
+    rv = acvp_cap_sym_cipher_set_domain(ctx, ACVP_AES_CBC_CS1, ACVP_SYM_CIPH_PTLEN, 128, 65536, 256);
     CHECK_ENABLE_CAP_RV(rv);
     
     rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_CBC_CS2, &app_aes_handler);
@@ -529,7 +529,7 @@ static int enable_aes(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_CBC_CS2, ACVP_SYM_CIPH_KEYLEN, 256);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_sym_cipher_set_domain(ctx, ACVP_AES_CBC_CS2, ACVP_SYM_CIPH_PTLEN, 128, 65536, 8);
+    rv = acvp_cap_sym_cipher_set_domain(ctx, ACVP_AES_CBC_CS2, ACVP_SYM_CIPH_PTLEN, 128, 65536, 256);
     CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_CBC_CS3, &app_aes_handler);
@@ -542,7 +542,7 @@ static int enable_aes(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_CBC_CS3, ACVP_SYM_CIPH_KEYLEN, 256);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_sym_cipher_set_domain(ctx, ACVP_AES_CBC_CS3, ACVP_SYM_CIPH_PTLEN, 128, 65536, 8);
+    rv = acvp_cap_sym_cipher_set_domain(ctx, ACVP_AES_CBC_CS3, ACVP_SYM_CIPH_PTLEN, 128, 65536, 256);
     CHECK_ENABLE_CAP_RV(rv);
 #endif
 
@@ -716,7 +716,7 @@ static int enable_aes(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_KWP, ACVP_SYM_CIPH_KEYLEN, 256);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_sym_cipher_set_domain(ctx, ACVP_AES_KWP, ACVP_SYM_CIPH_PTLEN, 0, 65536, 8);
+    rv = acvp_cap_sym_cipher_set_domain(ctx, ACVP_AES_KWP, ACVP_SYM_CIPH_PTLEN, 0, 65536, 256);
     CHECK_ENABLE_CAP_RV(rv);
 #endif
     /*
@@ -738,7 +738,7 @@ static int enable_aes(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_XTS, ACVP_SYM_CIPH_KEYLEN, 256);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_sym_cipher_set_domain(ctx, ACVP_AES_XTS, ACVP_SYM_CIPH_PTLEN, 128, 65536, 8);
+    rv = acvp_cap_sym_cipher_set_domain(ctx, ACVP_AES_XTS, ACVP_SYM_CIPH_PTLEN, 256, 65536, 256);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_XTS, ACVP_SYM_CIPH_TWEAK, ACVP_SYM_CIPH_TWEAK_HEX);
     CHECK_ENABLE_CAP_RV(rv);
@@ -802,7 +802,7 @@ static int enable_aes(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_GMAC, ACVP_SYM_CIPH_IVLEN, 96);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_sym_cipher_set_domain(ctx, ACVP_AES_GMAC, ACVP_SYM_CIPH_AADLEN, 8, 65536, 8);
+    rv = acvp_cap_sym_cipher_set_domain(ctx, ACVP_AES_GMAC, ACVP_SYM_CIPH_AADLEN, 256, 65536, 256);
     CHECK_ENABLE_CAP_RV(rv);
 
 #if 0 //not currently supported by openSSL
@@ -822,9 +822,9 @@ static int enable_aes(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_GCM_SIV, ACVP_SYM_CIPH_KEYLEN, 256);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_sym_cipher_set_domain(ctx, ACVP_AES_GCM_SIV, ACVP_SYM_CIPH_PTLEN, 0, 65536, 8);
+    rv = acvp_cap_sym_cipher_set_domain(ctx, ACVP_AES_GCM_SIV, ACVP_SYM_CIPH_PTLEN, 0, 65536, 256);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_sym_cipher_set_domain(ctx, ACVP_AES_GCM_SIV, ACVP_SYM_CIPH_AADLEN, 0, 65536, 8);
+    rv = acvp_cap_sym_cipher_set_domain(ctx, ACVP_AES_GCM_SIV, ACVP_SYM_CIPH_AADLEN, 0, 65536, 256);
     CHECK_ENABLE_CAP_RV(rv);
 #endif
 
@@ -852,9 +852,9 @@ static int enable_aes(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_XPN, ACVP_SYM_CIPH_TAGLEN, 128);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_sym_cipher_set_domain(ctx, ACVP_AES_XPN, ACVP_SYM_CIPH_PTLEN, 0, 65536, 8);
+    rv = acvp_cap_sym_cipher_set_domain(ctx, ACVP_AES_XPN, ACVP_SYM_CIPH_PTLEN, 0, 65536, 256);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_sym_cipher_set_domain(ctx, ACVP_AES_XPN, ACVP_SYM_CIPH_AADLEN, 0, 65536, 8);
+    rv = acvp_cap_sym_cipher_set_domain(ctx, ACVP_AES_XPN, ACVP_SYM_CIPH_AADLEN, 0, 65536, 256);
     CHECK_ENABLE_CAP_RV(rv);
 #endif
 
