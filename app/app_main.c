@@ -1763,8 +1763,6 @@ static int enable_kas_ffc(ACVP_CTX *ctx) {
 #if OPENSSL_VERSION_NUMBER >= 0x10100000L
     rv = acvp_cap_kas_ffc_set_parm(ctx, ACVP_KAS_FFC_SSC, ACVP_KAS_FFC_MODE_NONE, ACVP_KAS_FFC_GEN_METH, ACVP_KAS_FFC_MODP2048);
     CHECK_ENABLE_CAP_RV(rv);
-
-#if 0  /* Need to add predefined values to app_kas.c */
     rv = acvp_cap_kas_ffc_set_parm(ctx, ACVP_KAS_FFC_SSC, ACVP_KAS_FFC_MODE_NONE, ACVP_KAS_FFC_GEN_METH, ACVP_KAS_FFC_MODP3072);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_kas_ffc_set_parm(ctx, ACVP_KAS_FFC_SSC, ACVP_KAS_FFC_MODE_NONE, ACVP_KAS_FFC_GEN_METH, ACVP_KAS_FFC_MODP4096);
@@ -1773,8 +1771,6 @@ static int enable_kas_ffc(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_kas_ffc_set_parm(ctx, ACVP_KAS_FFC_SSC, ACVP_KAS_FFC_MODE_NONE, ACVP_KAS_FFC_GEN_METH, ACVP_KAS_FFC_MODP8192);
     CHECK_ENABLE_CAP_RV(rv);
-#endif
-
     rv = acvp_cap_kas_ffc_set_parm(ctx, ACVP_KAS_FFC_SSC, ACVP_KAS_FFC_MODE_NONE, ACVP_KAS_FFC_GEN_METH, ACVP_KAS_FFC_FFDHE2048);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_kas_ffc_set_parm(ctx, ACVP_KAS_FFC_SSC, ACVP_KAS_FFC_MODE_NONE, ACVP_KAS_FFC_GEN_METH, ACVP_KAS_FFC_FFDHE3072);

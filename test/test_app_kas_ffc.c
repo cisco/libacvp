@@ -389,6 +389,38 @@ Test(APP_KAS_FFC_HANDLER, missing_z) {
 }
 
 /*
+ * missing dgm kas ffc handler
+ */
+Test(APP_KAS_FFC_HANDLER, missing_dgm) {
+    int corrupt = 0;
+    int hash_alg = ACVP_SHA384;
+    char *p = "aa";
+    char *q = "aa";
+    char *g = "aa";
+    char *ps = "aa";
+    char *epri = "aa";
+    char *epui = "aa";
+    char *z = NULL;
+    
+    kas_ffc_tc = calloc(1, sizeof(ACVP_KAS_FFC_TC));
+    
+    if (!initialize_kas_ffc_tc(kas_ffc_tc, hash_alg, ACVP_KAS_ECC_TT_AFT, p, q, g,
+            ps, epri, epui, z, corrupt)) {
+        cr_assert_fail("kas ffc init tc failure");
+    }
+    kas_ffc_tc->dgm = 0;    
+
+    test_case = calloc(1, sizeof(ACVP_TEST_CASE));
+    test_case->tc.kas_ffc = kas_ffc_tc;
+    
+    rv = app_kas_ffc_handler(test_case);
+    cr_assert_neq(rv, 0);
+    
+    free_kas_ffc_tc(kas_ffc_tc);
+    free(test_case);
+}
+
+/*
  * unallocated answer buffers kas ffc handler
  */
 Test(APP_KAS_FFC_HANDLER, unallocated_ans_bufs) {
