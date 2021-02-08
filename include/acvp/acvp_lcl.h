@@ -114,6 +114,9 @@
 /* AES */
 #define ACVP_REV_AES_ECB             ACVP_REVISION_LATEST
 #define ACVP_REV_AES_CBC             ACVP_REVISION_LATEST
+#define ACVP_REV_AES_CBC_CS1         ACVP_REVISION_LATEST
+#define ACVP_REV_AES_CBC_CS2         ACVP_REVISION_LATEST
+#define ACVP_REV_AES_CBC_CS3         ACVP_REVISION_LATEST
 #define ACVP_REV_AES_CFB1            ACVP_REVISION_LATEST
 #define ACVP_REV_AES_CFB8            ACVP_REVISION_LATEST
 #define ACVP_REV_AES_CFB128          ACVP_REVISION_LATEST
@@ -232,6 +235,9 @@
 
 #define ACVP_ALG_AES_ECB             "ACVP-AES-ECB"
 #define ACVP_ALG_AES_CBC             "ACVP-AES-CBC"
+#define ACVP_ALG_AES_CBC_CS1         "ACVP-AES-CBC-CS1"
+#define ACVP_ALG_AES_CBC_CS2         "ACVP-AES-CBC-CS2"
+#define ACVP_ALG_AES_CBC_CS3         "ACVP-AES-CBC-CS3"
 #define ACVP_ALG_AES_CFB1            "ACVP-AES-CFB1"
 #define ACVP_ALG_AES_CFB8            "ACVP-AES-CFB8"
 #define ACVP_ALG_AES_CFB128          "ACVP-AES-CFB128"
@@ -459,6 +465,7 @@
 #define ACVP_SYM_TAG_MAX (ACVP_SYM_TAG_BIT_MAX >> 2)      /**< 32 characters */
 #define ACVP_SYM_TAG_BYTE_MAX (ACVP_SYM_TAG_BIT_MAX >> 3) /**< 16 bytes */
 #define ACVP_AES_GCM_SIV_TAGLEN 128
+#define ACVP_AES_XPN_TAGLEN 96
 
 #define ACVP_SYM_AAD_BIT_MAX 65536                        /**< 65536 bits */
 #define ACVP_SYM_AAD_MAX (ACVP_SYM_AAD_BIT_MAX >> 2)      /**< 16384 characters */
@@ -1002,6 +1009,14 @@ typedef struct acvp_sym_cipher_capability {
     ACVP_SL_LIST *ivlen;
     ACVP_SL_LIST *aadlen;
     ACVP_SL_LIST *taglen;
+
+    //Support domains for most lengths - APIs should check
+    //and allow either/or SL_LIST or domain for not but not both
+    ACVP_JSON_DOMAIN_OBJ payload_len;
+    ACVP_JSON_DOMAIN_OBJ iv_len;
+    ACVP_JSON_DOMAIN_OBJ aad_len;
+    ACVP_JSON_DOMAIN_OBJ tweak_len;
+
     int kw_mode;
 } ACVP_SYM_CIPHER_CAP;
 
@@ -1783,6 +1798,7 @@ int acvp_lookup_param_list(ACVP_PARAM_LIST *list, int value);
 const char* acvp_lookup_hmac_alg_str(ACVP_HMAC_ALG_VAL alg);
 const char* acvp_lookup_aux_function_alg_str(ACVP_CIPHER alg);
 ACVP_CIPHER acvp_lookup_aux_function_alg_tbl(const char *str);
+int acvp_is_domain_already_set(ACVP_JSON_DOMAIN_OBJ *domain);
 
 
 ACVP_RESULT acvp_json_serialize_to_file_pretty_a(const JSON_Value *value, const char *filename);

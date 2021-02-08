@@ -312,6 +312,8 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
     ACVP_SL_LIST *sl_list;
     ACVP_RESULT result;
     ACVP_SYM_CIPHER_CAP *sym_cap;
+    JSON_Object *tmp_obj = NULL;
+    JSON_Value *tmp_val = NULL;
     const char *revision = NULL;
 
     json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
@@ -485,6 +487,9 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
     case ACVP_AES_CTR:
     case ACVP_AES_OFB:
     case ACVP_AES_CBC:
+    case ACVP_AES_CBC_CS1:
+    case ACVP_AES_CBC_CS2:
+    case ACVP_AES_CBC_CS3:
     case ACVP_AES_KW:
     case ACVP_AES_KWP:
     case ACVP_AES_XTS:
@@ -556,10 +561,19 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
     default:
         json_object_set_value(cap_obj, "ivLen", json_value_init_array());
         opts_arr = json_object_get_array(cap_obj, "ivLen");
-        sl_list = sym_cap->ivlen;
-        while (sl_list) {
-            json_array_append_number(opts_arr, sl_list->length);
-            sl_list = sl_list->next;
+        if (sym_cap->ivlen) {
+            sl_list = sym_cap->ivlen;
+            while (sl_list) {
+                json_array_append_number(opts_arr, sl_list->length);
+                sl_list = sl_list->next;
+            }
+        } else {
+            tmp_val = json_value_init_object();
+            tmp_obj = json_value_get_object(tmp_val);
+            json_object_set_number(tmp_obj, "max", sym_cap->iv_len.max);
+            json_object_set_number(tmp_obj, "min", sym_cap->iv_len.min);
+            json_object_set_number(tmp_obj, "increment", sym_cap->iv_len.increment);
+            json_array_append_value(opts_arr, tmp_val);
         }
     }
 
@@ -570,12 +584,20 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
     if (cap_entry->cipher != ACVP_AES_GMAC) {
         json_object_set_value(cap_obj, "payloadLen", json_value_init_array());
         opts_arr = json_object_get_array(cap_obj, "payloadLen");
-    }
-
-    sl_list = sym_cap->ptlen;
-    while (sl_list) {
-        json_array_append_number(opts_arr, sl_list->length);
-        sl_list = sl_list->next;
+        if (sym_cap->ptlen) {
+        sl_list = sym_cap->ptlen;
+            while (sl_list) {
+                json_array_append_number(opts_arr, sl_list->length);
+                sl_list = sl_list->next;
+            }
+        } else {
+            tmp_val = json_value_init_object();
+            tmp_obj = json_value_get_object(tmp_val);
+            json_object_set_number(tmp_obj, "max", sym_cap->payload_len.max);
+            json_object_set_number(tmp_obj, "min", sym_cap->payload_len.min);
+            json_object_set_number(tmp_obj, "increment", sym_cap->payload_len.increment);
+            json_array_append_value(opts_arr, tmp_val);
+        }
     }
 
     if (cap_entry->cipher == ACVP_AES_XTS) {
@@ -605,10 +627,19 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
             || (cap_entry->cipher == ACVP_AES_XPN)) {
         json_object_set_value(cap_obj, "aadLen", json_value_init_array());
         opts_arr = json_object_get_array(cap_obj, "aadLen");
-        sl_list = sym_cap->aadlen;
-        while (sl_list) {
-            json_array_append_number(opts_arr, sl_list->length);
-            sl_list = sl_list->next;
+        if(sym_cap->aadlen) {
+            sl_list = sym_cap->aadlen;
+            while (sl_list) {
+                json_array_append_number(opts_arr, sl_list->length);
+                sl_list = sl_list->next;
+            }
+        } else {
+            tmp_val = json_value_init_object();
+            tmp_obj = json_value_get_object(tmp_val);
+            json_object_set_number(tmp_obj, "max", sym_cap->aad_len.max);
+            json_object_set_number(tmp_obj, "min", sym_cap->aad_len.min);
+            json_object_set_number(tmp_obj, "increment", sym_cap->aad_len.increment);
+            json_array_append_value(opts_arr, tmp_val);
         }
     }
     return ACVP_SUCCESS;
@@ -1100,6 +1131,9 @@ static ACVP_RESULT acvp_build_ecdsa_register_cap(ACVP_CIPHER cipher, JSON_Object
     case ACVP_AES_CCM:
     case ACVP_AES_ECB:
     case ACVP_AES_CBC:
+    case ACVP_AES_CBC_CS1:
+    case ACVP_AES_CBC_CS2:
+    case ACVP_AES_CBC_CS3:
     case ACVP_AES_CFB1:
     case ACVP_AES_CFB8:
     case ACVP_AES_CFB128:
@@ -3691,6 +3725,9 @@ ACVP_RESULT acvp_build_test_session(ACVP_CTX *ctx, char **reg, int *out_len) {
             case ACVP_AES_CTR:
             case ACVP_AES_OFB:
             case ACVP_AES_CBC:
+            case ACVP_AES_CBC_CS1:
+            case ACVP_AES_CBC_CS2:
+            case ACVP_AES_CBC_CS3:
             case ACVP_AES_KW:
             case ACVP_AES_KWP:
             case ACVP_AES_XTS:

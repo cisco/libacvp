@@ -1127,11 +1127,12 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
             /*
              * If GCM/GMAC, direction is encrypt, and the generation is internal
-             * then iv is not provided.
+             * then iv is not provided. Some algs have an IV but not ivLen.
              */
-            if (ivlen && !((alg_id == ACVP_AES_GCM || alg_id == ACVP_AES_GMAC || alg_id == ACVP_AES_XPN)
+            if ((alg_id == ACVP_AES_CBC_CS1 || alg_id == ACVP_AES_CBC_CS2 || alg_id == ACVP_AES_CBC_CS3) ||
+                (ivlen && !((alg_id == ACVP_AES_GCM || alg_id == ACVP_AES_GMAC || alg_id == ACVP_AES_XPN)
                                         && dir == ACVP_SYM_CIPH_DIR_ENCRYPT &&
-                                        iv_gen == ACVP_SYM_CIPH_IVGEN_SRC_INT)) {
+                                        iv_gen == ACVP_SYM_CIPH_IVGEN_SRC_INT))) {
                 if (alg_id == ACVP_AES_XTS) {
                     tweak_mode = read_tw_mode(tw_mode);
                     if (!tweak_mode) {
@@ -1470,6 +1471,32 @@ static ACVP_RESULT acvp_aes_init_tc(ACVP_CTX *ctx,
     stc->salt = calloc(ACVP_AES_XPN_SALTLEN, 1);
     if (!stc->salt) { return ACVP_MALLOC_FAIL; }
 
+        /*
+     * These lengths come in as bit lengths from the ACVP server.
+     * We convert to bytes.
+     * TODO: do we need to support bit lengths not a multiple of 8?
+     */
+    stc->tc_id = tc_id;
+    stc->kwcipher = kwcipher;
+    stc->test_type = test_type;
+    stc->key_len = key_len;
+    stc->iv_len = iv_len / 8;
+    stc->tag_len = tag_len / 8;
+    stc->aad_len = aad_len / 8;
+    if (!stc->pt_len) stc->pt_len = pt_len / 8;
+    if (!stc->ct_len) stc->ct_len = pt_len / 8;
+    stc->salt_len = salt_len / 8;
+
+    stc->cipher = alg_id;
+    stc->direction = dir;
+    stc->ivgen_source = iv_gen;
+    stc->ivgen_mode = iv_gen_mode;
+    stc->incr_ctr = incr_ctr;
+    stc->ovrflw_ctr = ovrflw_ctr;
+    stc->tw_mode = tweak_mode;
+    stc->seq_num = seq_num;
+    stc->salt_source = salt_src;
+
     rv = acvp_hexstr_to_bin(j_key, stc->key, ACVP_SYM_KEY_MAX_BYTES, NULL);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Hex conversion failure (key)");
@@ -1522,7 +1549,13 @@ static ACVP_RESULT acvp_aes_init_tc(ACVP_CTX *ctx,
         }
     }
     if (j_iv) {
-        rv = acvp_hexstr_to_bin(j_iv, stc->iv, ACVP_SYM_IV_BYTE_MAX, NULL);
+        if (alg_id == ACVP_AES_CBC_CS1 || alg_id == ACVP_AES_CBC_CS2 || alg_id == ACVP_AES_CBC_CS3) {
+            int tmp = 0; //avoid warning
+            rv = acvp_hexstr_to_bin(j_iv, stc->iv, ACVP_SYM_IV_BYTE_MAX, &tmp);
+            stc->iv_len = (unsigned int)tmp;
+        } else {
+            rv = acvp_hexstr_to_bin(j_iv, stc->iv, ACVP_SYM_IV_BYTE_MAX, NULL);
+        }
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Hex conversion failure (iv)");
             return rv;
@@ -1553,31 +1586,6 @@ static ACVP_RESULT acvp_aes_init_tc(ACVP_CTX *ctx,
         }
     }
 
-    /*
-     * These lengths come in as bit lengths from the ACVP server.
-     * We convert to bytes.
-     * TODO: do we need to support bit lengths not a multiple of 8?
-     */
-    stc->tc_id = tc_id;
-    stc->kwcipher = kwcipher;
-    stc->test_type = test_type;
-    stc->key_len = key_len;
-    stc->iv_len = iv_len / 8;
-    stc->tag_len = tag_len / 8;
-    stc->aad_len = aad_len / 8;
-    if (!stc->pt_len) stc->pt_len = pt_len / 8;
-    if (!stc->ct_len) stc->ct_len = pt_len / 8;
-    stc->salt_len = salt_len / 8;
-
-    stc->cipher = alg_id;
-    stc->direction = dir;
-    stc->ivgen_source = iv_gen;
-    stc->ivgen_mode = iv_gen_mode;
-    stc->incr_ctr = incr_ctr;
-    stc->ovrflw_ctr = ovrflw_ctr;
-    stc->tw_mode = tweak_mode;
-    stc->seq_num = seq_num;
-    stc->salt_source = salt_src;
     return ACVP_SUCCESS;
 }
 

@@ -85,6 +85,9 @@ typedef enum acvp_cipher {
     ACVP_AES_CCM,
     ACVP_AES_ECB,
     ACVP_AES_CBC,
+    ACVP_AES_CBC_CS1,
+    ACVP_AES_CBC_CS2,
+    ACVP_AES_CBC_CS3,
     ACVP_AES_CFB1,
     ACVP_AES_CFB8,
     ACVP_AES_CFB128,
@@ -1846,9 +1849,9 @@ ACVP_RESULT acvp_cap_sym_cipher_enable(ACVP_CTX *ctx,
 
     This function may be called multiple times to specify more than one
     crypto parameter value for the cipher.  For instance, if cipher supports
-    plaintext lengths of 0, 128, and 136 bits, then this function would
-    be called three times.  Once for 0, once for 128, and once again
-    for 136. The ACVP_CIPHER value passed to this function should
+    key lengths of 128, 192, and 256 bits, then this function would
+    be called three times.  Once for 128, once for 192, and once again
+    for 256. The ACVP_CIPHER value passed to this function should
     already have been setup by invoking acvp_enable_sym_cipher_cap() for
     that cipher earlier.
 
@@ -1857,7 +1860,7 @@ ACVP_RESULT acvp_cap_sym_cipher_enable(ACVP_CTX *ctx,
     @param parm ACVP_SYM_CIPH_PARM enum value identifying the algorithm parameter
        that is being specified.  An example would be the supported plaintext
        length of the algorithm.
-   @param length The length value for the symmetric cipher parameter being set
+    @param length The length value for the symmetric cipher parameter being set
 
     @return ACVP_RESULT
  */
@@ -1865,6 +1868,35 @@ ACVP_RESULT acvp_cap_sym_cipher_set_parm(ACVP_CTX *ctx,
                                          ACVP_CIPHER cipher,
                                          ACVP_SYM_CIPH_PARM parm,
                                          int length);
+
+ /*! @brief acvp_cap_sym_cipher_set_domain allow an application to specify length-based
+        operational parameters to be used for a given cipher during a test session with
+        the ACVP server.
+ 
+    The user should call this to specify the supported key PT lengths, AAD lengths,
+    and IV lengths This is called multiple times, for different parms.
+
+    The ACVP_CIPHER value passed to this function should already have been setup by 
+    invoking acvp_enable_sym_cipher_cap() for that cipher earlier.
+
+    @param ctx Address of pointer to a previously allocated ACVP_CTX.
+    @param cipher ACVP_CIPHER enum value identifying the crypto capability.
+    @param parm ACVP_SYM_CIPH_PARM enum value identifying the algorithm parameter
+       that is being specified.  An example would be the supported key
+       length of the algorithm.
+    @param min the minimum value of the domain (range of possible values) being set
+    @param max the maximum value of the domain being set
+    @param increment the increment of the domain being set. Should evenly divide into
+       the other values.
+
+    @return ACVP_RESULT
+ */
+ACVP_RESULT acvp_cap_sym_cipher_set_domain(ACVP_CTX *ctx,
+                                           ACVP_CIPHER cipher,
+                                           ACVP_SYM_CIPH_PARM parm,
+                                           int min,
+                                           int max,
+                                           int increment);
 
 /*! @brief acvp_enable_hash_cap() allows an application to specify a
        hash capability to be tested by the ACVP server.

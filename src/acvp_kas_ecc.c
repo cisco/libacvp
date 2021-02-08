@@ -831,6 +831,9 @@ ACVP_RESULT acvp_kas_ecc_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     case ACVP_AES_CCM:
     case ACVP_AES_ECB:
     case ACVP_AES_CBC:
+    case ACVP_AES_CBC_CS1:
+    case ACVP_AES_CBC_CS2:
+    case ACVP_AES_CBC_CS3:
     case ACVP_AES_CFB1:
     case ACVP_AES_CFB8:
     case ACVP_AES_CFB128:
