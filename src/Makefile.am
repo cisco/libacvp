@@ -31,6 +31,7 @@ libacvp_la_SOURCES =  acvp.c \
                     acvp_kas_ifc.c \
                     acvp_kas_kdf.c \
                     acvp_kts_ifc.c \
+                    acvp_safe_primes.c \
                     acvp_ecdsa.c
 
 libacvp_la_LIBADD = $(SAFEC_LDFLAGS) $(LIBCURL_LDFLAGS)

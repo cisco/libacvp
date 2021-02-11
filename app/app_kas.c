@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Cisco Systems, Inc.
+ * Copyright (c) 2021, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -497,6 +497,7 @@ int app_kas_ffc_handler(ACVP_TEST_CASE *test_case) {
     BIGNUM *tmp_p = NULL, *tmp_q = NULL, *tmp_g = NULL;
     BIGNUM *tmp_pub_key = NULL, *tmp_priv_key = NULL;
     const BIGNUM *tmp_key = NULL;
+    int is_modp = 0;
 #endif
 
     tc = test_case->tc.kas_ffc;
@@ -563,80 +564,30 @@ int app_kas_ffc_handler(ACVP_TEST_CASE *test_case) {
 #endif
         break;
 #if OPENSSL_VERSION_NUMBER >= 0x10100000L
-    case ACVP_KAS_FFC_MODP2048:
-        dh = DH_new();
-        if (!dh) {
-            return rv;
-        }
+   case ACVP_KAS_FFC_MODP2048:
+        is_modp = 1;
         BN_bin2bn(modp2048, 256, p);
         BN_bin2bn(modp2048, 256, q);
-        BN_sub_word(q, 1);
-        BN_div_word(q, 2);
-        BN_set_word(g, 2);
-        tmp_p = BN_dup(p);
-        tmp_q = BN_dup(q);
-        tmp_g = BN_dup(g);
-        DH_set0_pqg(dh, tmp_p, tmp_q, tmp_g);
         break;
     case ACVP_KAS_FFC_MODP3072:
-        dh = DH_new();
-        if (!dh) {
-            return rv;
-        }
+        is_modp = 1;
         BN_bin2bn(modp3072, 384, p);
         BN_bin2bn(modp3072, 384, q);
-        BN_sub_word(q, 1);
-        BN_div_word(q, 2);
-        BN_set_word(g, 2);
-        tmp_p = BN_dup(p);
-        tmp_q = BN_dup(q);
-        tmp_g = BN_dup(g);
-        DH_set0_pqg(dh, tmp_p, tmp_q, tmp_g);
         break;
     case ACVP_KAS_FFC_MODP4096:
-        dh = DH_new();
-        if (!dh) {
-            return rv;
-        }
+        is_modp = 1;
         BN_bin2bn(modp4096, 512, p);
         BN_bin2bn(modp4096, 512, q);
-        BN_sub_word(q, 1);
-        BN_div_word(q, 2);
-        BN_set_word(g, 2);
-        tmp_p = BN_dup(p);
-        tmp_q = BN_dup(q);
-        tmp_g = BN_dup(g);
-        DH_set0_pqg(dh, tmp_p, tmp_q, tmp_g);
         break;
     case ACVP_KAS_FFC_MODP6144:
-        dh = DH_new();
-        if (!dh) {
-            return rv;
-        }
+        is_modp = 1;
         BN_bin2bn(modp6144, 768, p);
         BN_bin2bn(modp6144, 768, q);
-        BN_sub_word(q, 1);
-        BN_div_word(q, 2);
-        BN_set_word(g, 2);
-        tmp_p = BN_dup(p);
-        tmp_q = BN_dup(q);
-        tmp_g = BN_dup(g);
-        DH_set0_pqg(dh, tmp_p, tmp_q, tmp_g);
         break;
     case ACVP_KAS_FFC_MODP8192:
-        dh = DH_new();
-        if (!dh) {
-            return rv;
-        }
+        is_modp = 1;
         BN_bin2bn(modp8192, 1024, p);
         BN_bin2bn(modp8192, 1024, q);
-        BN_sub_word(q, 1);
-        BN_div_word(q, 2);
-        BN_set_word(g, 2);
-        tmp_p = BN_dup(p);
-        tmp_q = BN_dup(q);
-        tmp_g = BN_dup(g);
-        DH_set0_pqg(dh, tmp_p, tmp_q, tmp_g);
         break;
     case ACVP_KAS_FFC_FFDHE2048:
         dh = DH_new_by_nid(NID_ffdhe2048);
@@ -660,9 +611,23 @@ int app_kas_ffc_handler(ACVP_TEST_CASE *test_case) {
         break;
     }
 
+   if (is_modp) {
+        dh = DH_new();
+        if (!dh) {
+            goto error;
+        }
+        BN_sub_word(q, 1);
+        BN_div_word(q, 2);
+        BN_set_word(g, 2);
+        tmp_p = BN_dup(p);
+        tmp_q = BN_dup(q);
+        tmp_g = BN_dup(g);
+        DH_set0_pqg(dh, tmp_p, tmp_q, tmp_g);
+    }
+
     peerkey = BN_new();
     if (!peerkey) {
-        printf("BN_new failed p q g\n");
+        printf("BN_new failed peerkey\n");
         goto error;
     }
     BN_bin2bn(tc->eps, tc->epslen, peerkey);
@@ -938,6 +903,167 @@ int app_kts_ifc_handler(ACVP_TEST_CASE *test_case) {
     return 1;
 }
 
+
+
+
+int app_safe_primes_handler(ACVP_TEST_CASE *test_case)
+{
+    ACVP_SAFE_PRIMES_TC         *tc;
+    int rv = 1;
+    DH *dh = NULL;
+    const BIGNUM *pub_key = NULL, *priv_key = NULL;
+    BIGNUM *pub_key_ver = NULL, *priv_key_ver = NULL;
+    const BIGNUM *qver = NULL, *pver = NULL, *gver = NULL;
+    BIGNUM *q = NULL, *p = NULL, *g = NULL, *q1 = NULL;
+    BIGNUM *tmp_p = NULL, *tmp_q = NULL, *tmp_g = NULL;
+    BIGNUM *tmp_pub_key = NULL;
+    BN_CTX *c = NULL;
+    int is_modp = 0;
+
+    tc = test_case->tc.safe_primes;
+
+    p = BN_new();
+    q = BN_new();
+    g = BN_new();
+    if (!p || !q || !g) {
+        printf("Failed to allocate BN for p or q or g\n");
+        goto err;
+    }
+    switch (tc->dgm)
+    { 
+   case ACVP_SAFE_PRIMES_MODP2048:
+        is_modp = 1;
+        BN_bin2bn(modp2048, 256, p);
+        BN_bin2bn(modp2048, 256, q);
+        break;
+    case ACVP_SAFE_PRIMES_MODP3072:
+        is_modp = 1;
+        BN_bin2bn(modp3072, 384, p);
+        BN_bin2bn(modp3072, 384, q);
+        break;
+    case ACVP_SAFE_PRIMES_MODP4096:
+        is_modp = 1;
+        BN_bin2bn(modp4096, 512, p);
+        BN_bin2bn(modp4096, 512, q);
+        break;
+    case ACVP_SAFE_PRIMES_MODP6144:
+        is_modp = 1;
+        BN_bin2bn(modp6144, 768, p);
+        BN_bin2bn(modp6144, 768, q);
+        break;
+    case ACVP_SAFE_PRIMES_MODP8192:
+        is_modp = 1;
+        BN_bin2bn(modp8192, 1024, p);
+        BN_bin2bn(modp8192, 1024, q);
+        break;
+    case ACVP_SAFE_PRIMES_FFDHE2048:
+        dh = DH_new_by_nid(NID_ffdhe2048);
+        break;
+    case ACVP_SAFE_PRIMES_FFDHE3072:
+        dh = DH_new_by_nid(NID_ffdhe3072);
+        break;
+    case ACVP_SAFE_PRIMES_FFDHE4096:
+        dh = DH_new_by_nid(NID_ffdhe4096);
+        break;
+    case ACVP_SAFE_PRIMES_FFDHE6144:
+        dh = DH_new_by_nid(NID_ffdhe6144);
+        break;
+    case ACVP_SAFE_PRIMES_FFDHE8192:
+        dh = DH_new_by_nid(NID_ffdhe8192);
+        break;
+    default:
+        printf("\nInvalid dgm");
+        goto err;
+        break;
+    }
+
+
+   if (is_modp) {
+        dh = DH_new();
+        if (!dh) {
+            goto err;
+        }
+        BN_sub_word(q, 1);
+        BN_div_word(q, 2);
+        BN_set_word(g, 2);
+        tmp_p = BN_dup(p);
+        tmp_q = BN_dup(q);
+        tmp_g = BN_dup(g);
+        DH_set0_pqg(dh, tmp_p, tmp_q, tmp_g);
+    }
+
+    if (tc->cipher == ACVP_SAFE_PRIMES_KEYGEN) {
+        if (!FIPS_dh_generate_key(dh)) {
+            printf("DH_generate_key failed for dgm = %d\n", tc->dgm);
+            goto err;
+        }
+        DH_get0_key(dh, &pub_key, &priv_key);
+        tc->xlen = BN_bn2bin(priv_key, tc->x);
+        tc->ylen = BN_bn2bin(pub_key, tc->y);
+    }
+
+    /* Validate 0 < x < q and y = g^x mod p */
+    if (tc->cipher == ACVP_SAFE_PRIMES_KEYVER) {
+
+        DH_get0_pqg(dh, &pver, &qver, &gver);
+        q1 = BN_dup(pver);
+        BN_sub_word(q1, 1);
+        BN_div_word(q1, 2);
+
+//Do the math 
+
+        priv_key_ver = BN_new();
+        pub_key_ver = BN_new();
+        BN_bin2bn(tc->x, tc->xlen, priv_key_ver);
+        BN_bin2bn(tc->y, tc->ylen, pub_key_ver);
+        if (BN_is_zero(priv_key_ver)) {
+            printf("Zero failed\n"); 
+            tc->result = 0;
+            goto end;
+        }
+        if (BN_is_negative(priv_key_ver)) {
+            printf("Negative failed\n"); 
+            tc->result = 0;
+            goto end;
+        }
+        if (BN_cmp(q1, priv_key_ver) != 1) {
+            printf("Compare failed\n"); 
+            tc->result = 0;
+            goto end;
+        }
+
+        tmp_pub_key = BN_new();
+        c = BN_CTX_new();
+        if (!c) {
+            printf("BN_CTX_new failed\n");
+            goto end;
+        }
+        BN_mod_exp(tmp_pub_key, gver, priv_key_ver, pver, c); 
+        if (BN_cmp(tmp_pub_key, pub_key_ver) != 0) {
+            printf("Pub key compare failed\n"); 
+            tc->result = 0;
+            goto end;
+        }
+        tc->result = 1;
+    }
+end:
+    rv = 0;
+
+err:
+    if (p) BN_free(p);
+    if (q) BN_free(q);
+    if (q1) BN_free(q1);
+    if (g) BN_free(g);
+    if (pub_key_ver) BN_free(pub_key_ver);
+    if (priv_key_ver) BN_free(priv_key_ver);
+    if (tmp_pub_key) BN_free(tmp_pub_key);
+    if (c) BN_CTX_free(c);
+    if (dh) DH_free(dh);
+    return rv;
+}
+
+
+
 #else
 int app_kas_ecc_handler(ACVP_TEST_CASE *test_case) {
     if (!test_case) {
@@ -959,6 +1085,14 @@ int app_kas_ifc_handler(ACVP_TEST_CASE *test_case) {
 }
 
 int app_kts_ifc_handler(ACVP_TEST_CASE *test_case) {
+    if (!test_case) {
+        return -1;
+    }
+    return 1;
+}
+
+int app_safe_primes_handler(ACVP_TEST_CASE *test_case)
+{
     if (!test_case) {
         return -1;
     }

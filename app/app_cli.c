@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Cisco Systems, Inc.
+ * Copyright (c) 2021, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -73,6 +73,7 @@ static void print_usage(int code) {
 #ifndef OPENSSL_NO_DSA
     printf("      --dsa\n");
     printf("      --kas_ffc\n");
+    printf("      --safe_primes\n");
 #endif
     printf("      --rsa\n");
     printf("      --ecdsa\n");
@@ -181,6 +182,7 @@ static void enable_all_algorithms(APP_CONFIG *cfg) {
 #ifndef OPENSSL_NO_DSA
     cfg->dsa = 1;
     cfg->kas_ffc = 1;
+    cfg->safe_primes = 1;
 #endif
     cfg->rsa = 1;
     cfg->drbg = 1;
@@ -227,10 +229,11 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
         { "kas_ecc", ko_no_argument, 320 },
 #ifndef OPENSSL_NO_DSA
         { "kas_ffc", ko_no_argument, 321 },
+        { "safe_primes", ko_no_argument, 322 },
 #endif
-        { "kas_ifc", ko_no_argument, 322 },
-        { "kts_ifc", ko_no_argument, 323 },
-        { "kas_kdf", ko_no_argument, 324 },
+        { "kas_ifc", ko_no_argument, 323 },
+        { "kts_ifc", ko_no_argument, 324 },
+        { "kas_kdf", ko_no_argument, 325 },
         { "all_algs", ko_no_argument, 350 },
         { "manual_registration", ko_required_argument, 400 },
         { "kat", ko_required_argument, 401 },
@@ -368,18 +371,23 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
             cfg->empty_alg = 0;
             continue;
         }
-#endif
         if (c == 322) {
+            cfg->safe_primes = 1;
+            cfg->empty_alg = 0;
+            continue;
+        }
+#endif
+        if (c == 323) {
             cfg->kas_ifc = 1;
             cfg->empty_alg = 0;
             continue;
         }
-        if (c == 323) {
+        if (c == 324) {
             cfg->kts_ifc = 1;
             cfg->empty_alg = 0;
             continue;
         }
-        if (c == 324) {
+        if (c == 325) {
             cfg->kas_kdf = 1;
             cfg->empty_alg = 0;
             continue;

@@ -3,7 +3,7 @@
  *  using libacvp.
  */
 /*
- * Copyright (c) 2019, Cisco Systems, Inc.
+ * Copyright (c) 2021, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -174,6 +174,8 @@ typedef enum acvp_cipher {
     ACVP_KAS_KDF_ONESTEP,
     ACVP_KAS_HKDF,
     ACVP_KTS_IFC,
+    ACVP_SAFE_PRIMES_KEYGEN,
+    ACVP_SAFE_PRIMES_KEYVER,
     ACVP_CIPHER_END
 } ACVP_CIPHER;
 
@@ -194,6 +196,7 @@ typedef enum acvp_prereq_mode_t {
     ACVP_PREREQ_KAS,
     ACVP_PREREQ_RSA,
     ACVP_PREREQ_RSADP,
+    ACVP_PREREQ_SAFE_PRIMES,
     ACVP_PREREQ_SHA,
     ACVP_PREREQ_TDES
 } ACVP_PREREQ_ALG;
@@ -1450,6 +1453,52 @@ typedef struct acvp_kas_ffc_tc_t {
     int piutlen;
 } ACVP_KAS_FFC_TC;
 
+/*! @struct ACVP_SAFE_PRIMES_PARAM */
+typedef enum acvp_safe_primes_param {
+    ACVP_SAFE_PRIMES_GENMETH = 1,
+} ACVP_SAFE_PRIMES_PARAM;
+
+/*! @struct ACVP_SAFE_PRIMES_MODE */
+typedef enum acvp_safe_primes_mode {
+    ACVP_SAFE_PRIMES_MODP2048 = 1,
+    ACVP_SAFE_PRIMES_MODP3072,
+    ACVP_SAFE_PRIMES_MODP4096,
+    ACVP_SAFE_PRIMES_MODP6144,
+    ACVP_SAFE_PRIMES_MODP8192,
+    ACVP_SAFE_PRIMES_FFDHE2048,
+    ACVP_SAFE_PRIMES_FFDHE3072,
+    ACVP_SAFE_PRIMES_FFDHE4096,
+    ACVP_SAFE_PRIMES_FFDHE6144,
+    ACVP_SAFE_PRIMES_FFDHE8192
+} ACVP_SAFE_PRIMES_MODE;
+
+/*! @struct ACVP_SAFE_PRIMES_TEST_TYPE */
+typedef enum acvp_safe_primes_test_type {
+    ACVP_SAFE_PRIMES_TT_AFT = 1,
+    ACVP_SAFE_PRIMES_TT_VAL
+} ACVP_SAFE_PRIMES_TEST_TYPE;
+
+/*!
+ * @struct ACVP_SAFE_PRIMES_TC
+ * @brief This struct holds data that represents a single test
+ * case for SAFE PRIMES testing.  This data is
+ * passed between libacvp and the crypto module.
+ */
+/*! @struct ACVP_SAFE_PRIMES_TC */
+typedef struct acvp_safe_primes_tc_t {
+    int tg_id;
+    int tc_id;
+    unsigned char *x;
+    unsigned char *y;
+    int xlen;
+    int ylen;
+    int result;
+    ACVP_SAFE_PRIMES_TEST_TYPE test_type;
+    ACVP_CIPHER cipher;
+    ACVP_SAFE_PRIMES_MODE dgm;
+} ACVP_SAFE_PRIMES_TC;
+
+
 typedef enum acvp_kas_ifc_param {
     ACVP_KAS_IFC_KEYGEN_METHOD = 1,
     ACVP_KAS_IFC_MODULO,
@@ -1785,6 +1834,7 @@ typedef struct acvp_test_case_t {
         ACVP_KAS_KDF_ONESTEP_TC *kas_kdf_onestep;
         ACVP_KAS_HKDF_TC *kas_hkdf;
         ACVP_KTS_IFC_TC *kts_ifc;
+        ACVP_SAFE_PRIMES_TC *safe_primes;
     } tc;
 } ACVP_TEST_CASE;
 
@@ -3129,6 +3179,40 @@ ACVP_RESULT acvp_cap_pbkdf_set_domain(ACVP_CTX *ctx,
 ACVP_RESULT acvp_cap_pbkdf_set_parm(ACVP_CTX *ctx,
                                     ACVP_PBKDF_PARM param,
                                     int value);
+
+
+ACVP_RESULT acvp_cap_safe_primes_enable(ACVP_CTX *ctx,
+                                        ACVP_CIPHER cipher,
+                                        int (*crypto_handler)(ACVP_TEST_CASE *test_case));
+
+/*! @brief acvp_enable_safe_primes_cap_parm() allows an application to specify
+       operational parameters to be used for a given safe_primes alg during a
+       test session with the ACVP server.
+
+    This function should be called to enable crypto capabilities for
+    safe_primes capabilities that will be tested by the ACVP server.  This
+    includes KEYGEN and KEYVER.
+
+    This function may be called multiple times to specify more than one
+    crypto parameter value for the safe_primes algorithm. The ACVP_CIPHER value
+    passed to this function should already have been setup by invoking
+    acvp_cap_safe_primes_enable().
+
+    @param ctx Address of pointer to a previously allocated ACVP_CTX.
+    @param cipher ACVP_CIPHER enum value identifying the crypto capability.
+    @param param ACVP_SAFE_PRIMES_PARAM enum value identifying the algorithm parameter
+       that is being specified.  
+    @param value the value corresponding to the parameter being set, at present only
+       generation mode is supported.
+
+    @return ACVP_RESULT
+ */
+ACVP_RESULT acvp_cap_safe_primes_set_parm(ACVP_CTX *ctx,
+                                          ACVP_CIPHER cipher,
+                                          ACVP_SAFE_PRIMES_PARAM param,
+                                          ACVP_SAFE_PRIMES_MODE mode);
+
+
 
 /*! @brief acvp_enable_prereq_cap() allows an application to specify a
        prerequisite for a cipher capability that was previously registered.

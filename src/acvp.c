@@ -1,6 +1,6 @@
 /** @file */
 /*
- * Copyright (c) 2020, Cisco Systems, Inc.
+ * Copyright (c) 2021, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -162,7 +162,9 @@ ACVP_ALG_HANDLER alg_tbl[ACVP_ALG_MAX] = {
     { ACVP_KAS_IFC_SSC,       &acvp_kas_ifc_ssc_kat_handler,     ACVP_ALG_KAS_IFC_SSC,       ACVP_ALG_KAS_IFC_COMP, ACVP_REV_KAS_IFC_SSC},
     { ACVP_KAS_KDF_ONESTEP,   &acvp_kas_kdf_onestep_kat_handler, ACVP_ALG_KAS_KDF_ALG_STR,   ACVP_ALG_KAS_KDF_ONESTEP, ACVP_REV_KAS_KDF_ONESTEP},
     { ACVP_KAS_HKDF,          &acvp_kas_hkdf_kat_handler,        ACVP_ALG_KAS_KDF_ALG_STR,   ACVP_ALG_KAS_HKDF, ACVP_REV_KAS_HKDF},
-    { ACVP_KTS_IFC,           &acvp_kts_ifc_kat_handler,         ACVP_ALG_KTS_IFC,           ACVP_ALG_KTS_IFC_COMP, ACVP_REV_KTS_IFC}
+    { ACVP_KTS_IFC,           &acvp_kts_ifc_kat_handler,         ACVP_ALG_KTS_IFC,           ACVP_ALG_KTS_IFC_COMP, ACVP_REV_KTS_IFC},
+    { ACVP_SAFE_PRIMES_KEYGEN, &acvp_safe_primes_kat_handler,    ACVP_ALG_SAFE_PRIMES_STR,   ACVP_ALG_SAFE_PRIMES_KEYGEN, ACVP_REV_SAFE_PRIMES},
+    { ACVP_SAFE_PRIMES_KEYVER, &acvp_safe_primes_kat_handler,    ACVP_ALG_SAFE_PRIMES_STR,   ACVP_ALG_SAFE_PRIMES_KEYVER, ACVP_REV_SAFE_PRIMES}
 };
 
 /*
@@ -748,6 +750,20 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx) {
             case ACVP_PBKDF_TYPE:
                 acvp_cap_free_nl(cap_entry->cap.pbkdf_cap->hmac_algs);
                 free(cap_entry->cap.pbkdf_cap);
+                break;
+            case ACVP_SAFE_PRIMES_KEYGEN_TYPE:
+                if (cap_entry->cap.safe_primes_keygen_cap->mode->genmeth) {
+                    acvp_cap_free_pl(cap_entry->cap.safe_primes_keygen_cap->mode->genmeth);
+                }
+                free(cap_entry->cap.safe_primes_keygen_cap->mode);
+                free(cap_entry->cap.safe_primes_keygen_cap);
+                break;
+            case ACVP_SAFE_PRIMES_KEYVER_TYPE:
+                if (cap_entry->cap.safe_primes_keyver_cap->mode->genmeth) {
+                    acvp_cap_free_pl(cap_entry->cap.safe_primes_keyver_cap->mode->genmeth);
+                }
+                free(cap_entry->cap.safe_primes_keyver_cap->mode);
+                free(cap_entry->cap.safe_primes_keyver_cap);
                 break;
             case ACVP_KDF135_TPM_TYPE:
             default:
