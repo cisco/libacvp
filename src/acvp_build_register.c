@@ -330,6 +330,19 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
     if (result != ACVP_SUCCESS) { return result; }
 
     /*
+     * If we have a non-default conformance, set the array
+     */
+    switch (sym_cap->conformance) {
+    case ACVP_CONFORMANCE_RFC3686:
+        json_object_set_value(cap_obj, "conformances", json_value_init_array());
+        mode_arr = json_object_get_array(cap_obj, "conformances");
+        json_array_append_string(mode_arr, ACVP_RFC3686_STR);
+    case ACVP_CONFORMANCE_DEFAULT:
+    case ACVP_CONFORMANCE_MAX:
+        break;
+    }
+
+    /*
      * Set the direction capability
      */
     if (!sym_cap->direction) {
@@ -370,17 +383,30 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
     /*
      * Set the IV generation source if applicable
      */
+
+    //For some reason, RFC3686 uses "ivGenMode" instead of "ivGen" here- may be corrected
+    //spec-side later on
+    const char *ivGenLabel;
+    if (cap_entry->cipher == ACVP_AES_CTR&& sym_cap->conformance == ACVP_CONFORMANCE_RFC3686) {
+        ivGenLabel = ACVP_AES_RFC3686_IVGEN_STR;
+    } else {
+        ivGenLabel = ACVP_AES_IVGEN_STR;
+    }
     switch (sym_cap->ivgen_source) {
     case ACVP_SYM_CIPH_IVGEN_SRC_INT:
-        json_object_set_string(cap_obj, "ivGen", "internal");
+        json_object_set_string(cap_obj, ivGenLabel, "internal");
         break;
     case ACVP_SYM_CIPH_IVGEN_SRC_EXT:
-        json_object_set_string(cap_obj, "ivGen", "external");
+        json_object_set_string(cap_obj, ivGenLabel, "external");
         break;
     case ACVP_SYM_CIPH_IVGEN_SRC_NA:
     case ACVP_SYM_CIPH_IVGEN_SRC_MAX:
     default:
-        /* do nothing, this is an optional capability */
+        if (cap_entry->cipher == ACVP_AES_GCM || cap_entry->cipher == ACVP_AES_GMAC ||
+                cap_entry->cipher == ACVP_AES_XPN ||
+                (cap_entry->cipher == ACVP_AES_CTR && sym_cap->conformance == ACVP_CONFORMANCE_RFC3686)) {
+            return ACVP_MISSING_ARG;
+        }
         break;
     }
 

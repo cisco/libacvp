@@ -809,6 +809,19 @@ Test(EnableCapAES, alg_mismatch, .fini = teardown) {
     cr_assert(rv == ACVP_NO_CAP);
 }
 
+Test(EnableCapAES, bad_conformance, .fini = teardown) {
+    setup_empty_ctx(&ctx);
+    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_CTR, &dummy_handler_success);
+    cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_CTR, ACVP_SYM_CIPH_PARM_CONFORMANCE, ACVP_CONFORMANCE_DEFAULT);
+    cr_assert(rv == ACVP_INVALID_ARG);
+    
+    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_GCM, &dummy_handler_success);
+    cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_GCM, ACVP_SYM_CIPH_PARM_CONFORMANCE, ACVP_CONFORMANCE_RFC3686);
+    cr_assert(rv == ACVP_INVALID_ARG);
+}
+
 /*
  * Most of these params are members of enums, so the app
  * won't even build if it has an invalid value

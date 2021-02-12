@@ -472,6 +472,16 @@
 
 #define ACVP_AES_XPN_SALTLEN 96
 
+#define ACVP_AES_CCM_IV_BIT_MIN 56   /**< 56 bits */
+#define ACVP_AES_CCM_IV_BIT_MAX 104  /**< 104 bits */
+#define ACVP_AES_GCM_IV_BIT_MIN 8    /**< 8 bits */
+#define ACVP_AES_GCM_IV_BIT_MAX 1024 /**< 1024 bits */
+
+#define ACVP_AES_IVGEN_STR "ivGen"
+#define ACVP_AES_RFC3686_IVGEN_STR "ivGenMode"
+#define ACVP_RFC3686_STR "RFC3686"
+
+
 /**
  * Accepted length ranges for DRBG.
  * https://github.com/usnistgov/ACVP/blob/master/artifacts/acvp_sub_drbg.txt
@@ -519,10 +529,6 @@
 #define ACVP_TDES_KEY_STR_LEN (ACVP_TDES_KEY_BIT_LEN >> 2)  /**< 48 characters */
 #define ACVP_TDES_KEY_BYTE_LEN (ACVP_TDES_KEY_BIT_LEN >> 3) /**< 24 bytes */
 
-#define ACVP_AES_CCM_IV_BIT_MIN 56   /**< 56 bits */
-#define ACVP_AES_CCM_IV_BIT_MAX 104  /**< 104 bits */
-#define ACVP_AES_GCM_IV_BIT_MIN 8    /**< 8 bits */
-#define ACVP_AES_GCM_IV_BIT_MAX 1024 /**< 1024 bits */
 
 #define ACVP_KDF135_TLS_MSG_MAX 1024 * 4
 #define ACVP_KDF135_SSH_EKEY_MAX (ACVP_SHA512_BYTE_LEN)            /**< Encryption Key max.
@@ -994,6 +1000,7 @@ typedef struct acvp_prereq_list {
 } ACVP_PREREQ_LIST;
 
 typedef struct acvp_sym_cipher_capability {
+    ACVP_CONFORMANCE conformance;
     ACVP_SYM_CIPH_DIR direction;
     ACVP_SYM_CIPH_KO keying_option;
     ACVP_SYM_CIPH_IVGEN_SRC ivgen_source;

@@ -43,6 +43,7 @@ static ACVP_RESULT acvp_aes_init_tc(ACVP_CTX *ctx,
                                     unsigned int tag_len,
                                     unsigned int aad_len,
                                     unsigned int salt_len,
+                                    ACVP_CONFORMANCE conformance,
                                     ACVP_CIPHER alg_id,
                                     ACVP_SYM_CIPH_DIR dir,
                                     ACVP_SYM_CIPH_IVGEN_SRC iv_gen,
@@ -701,6 +702,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
     int i, g_cnt;
     int j, t_cnt;
+    int readIv = 0;
     JSON_Value *r_vs_val = NULL;
     JSON_Object *r_vs = NULL;
     JSON_Array *r_tarr = NULL, *r_garr = NULL;  /* Response testarray, grouparray */
@@ -716,6 +718,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     const char *tw_mode = NULL;
     ACVP_CIPHER alg_id = 0;
     ACVP_SYM_CIPH_TWEAK_MODE tweak_mode = 0;
+    ACVP_CONFORMANCE conformance = 0;
     int seq_num = 0;
 
     if (!ctx) {
@@ -744,6 +747,11 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         ACVP_LOG_ERR("ACVP server requesting unsupported capability");
         return ACVP_UNSUPPORTED_OP;
     }
+
+    /*
+     * Determine if a specific conformance is being tested so we can make the test case aware
+     */
+    conformance = cap->cap.sym_cap->conformance;
 
     /*
      * Create ACVP array for response
@@ -864,6 +872,11 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         if ((alg_id != ACVP_AES_ECB) && (alg_id != ACVP_AES_KW) &&
             (alg_id != ACVP_AES_KWP)) {
             ivlen = 128;
+        }
+
+        //RFC3686 does not mention ivgen src in vector set. Read our registered cap instead.
+        if (alg_id == ACVP_AES_CTR && conformance == ACVP_CONFORMANCE_RFC3686) {
+            iv_gen =  cap->cap.sym_cap->ivgen_source;
         }
 
         if (alg_id == ACVP_AES_GCM || alg_id == ACVP_AES_CCM || alg_id == ACVP_AES_GMAC ||
@@ -1125,65 +1138,75 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 }
             }
 
-            /*
-             * If GCM/GMAC, direction is encrypt, and the generation is internal
-             * then iv is not provided. Some algs have an IV but not ivLen.
-             */
-            if ((alg_id == ACVP_AES_CBC_CS1 || alg_id == ACVP_AES_CBC_CS2 || alg_id == ACVP_AES_CBC_CS3) ||
-                (ivlen && !((alg_id == ACVP_AES_GCM || alg_id == ACVP_AES_GMAC || alg_id == ACVP_AES_XPN)
-                                        && dir == ACVP_SYM_CIPH_DIR_ENCRYPT &&
-                                        iv_gen == ACVP_SYM_CIPH_IVGEN_SRC_INT))) {
-                if (alg_id == ACVP_AES_XTS) {
-                    tweak_mode = read_tw_mode(tw_mode);
-                    if (!tweak_mode) {
-                        ACVP_LOG_ERR("Server JSON wrong 'tweakMode'");
-                        rv = ACVP_MISSING_ARG;
-                        goto err;
-                    }
-                    switch (tweak_mode) {
-                        case ACVP_SYM_CIPH_TWEAK_HEX:
-                            /* XTS may call it tweak value, but we treat it as an IV */
-                            iv = json_object_get_string(testobj, "tweakValue");
-                            if (!iv) {
-                                ACVP_LOG_ERR("Server JSON missing hex 'tweakValue'");
-                                rv = ACVP_MISSING_ARG;
-                                goto err;
-                            }
-                            if (strnlen_s(iv, ACVP_SYM_IV_MAX + 1) > ACVP_SYM_IV_MAX) {
-                                ACVP_LOG_ERR("'i' too long, max allowed=(%d)",
-                                             ACVP_SYM_IV_MAX);
-                                rv = ACVP_INVALID_ARG;
-                                goto err;
-                            }
-                            break;
-                        case ACVP_SYM_CIPH_TWEAK_NUM:
-                            seq_num = json_object_get_number(testobj, "sequenceNumber");
-                            if ((seq_num < 0) || (seq_num > 255)) {
-                                ACVP_LOG_ERR("Server JSON invalid number 'tweakValue'");
-                                rv = ACVP_MISSING_ARG;
-                                goto err;
-                            }
-                            break;
-                        case ACVP_SYM_CIPH_TWEAK_NONE:
-                        default:
-                            ACVP_LOG_ERR("Server JSON invalid 'tweakMode'");
-                            rv = ACVP_MISSING_ARG;
-                            goto err;
-                            break;
-                    }
-                } else {
-                    iv = json_object_get_string(testobj, "iv");
+            if (alg_id == ACVP_AES_CBC ||
+                    alg_id == ACVP_AES_CBC_CS1 ||
+                    alg_id == ACVP_AES_CBC_CS2 ||
+                    alg_id == ACVP_AES_CBC_CS3 ||
+                    alg_id == ACVP_AES_CFB1 ||
+                    alg_id == ACVP_AES_CFB8 ||
+                    alg_id == ACVP_AES_CFB128 ||
+                    alg_id == ACVP_AES_OFB ||
+                    alg_id == ACVP_AES_CCM) {
+                readIv = 1;
+            } else if (alg_id == ACVP_AES_CTR && iv_gen != ACVP_SYM_CIPH_IVGEN_SRC_INT) {
+                readIv = 1;
+            } else if ((alg_id == ACVP_AES_GCM || alg_id == ACVP_AES_GMAC || alg_id == ACVP_AES_XPN)
+                    && !(iv_gen == ACVP_SYM_CIPH_IVGEN_SRC_INT && dir == ACVP_SYM_CIPH_DIR_ENCRYPT)) {
+                readIv = 1;
+            }
+
+            if (readIv) {
+                iv = json_object_get_string(testobj, "iv");
+                if (!iv) {
+                    ACVP_LOG_ERR("Server JSON missing 'iv'");
+                    rv = ACVP_MISSING_ARG;
+                    goto err;
+                }
+                if (strnlen_s(iv, ACVP_SYM_IV_MAX + 1) > ACVP_SYM_IV_MAX) {
+                    ACVP_LOG_ERR("'iv' too long, max allowed=(%d)",
+                                    ACVP_SYM_IV_MAX);
+                    rv = ACVP_INVALID_ARG;
+                    goto err;
+                }
+            }
+
+            if (alg_id == ACVP_AES_XTS) {
+                tweak_mode = read_tw_mode(tw_mode);
+                if (!tweak_mode) {
+                    ACVP_LOG_ERR("Server JSON wrong 'tweakMode'");
+                    rv = ACVP_MISSING_ARG;
+                    goto err;
+                }
+                switch (tweak_mode) {
+                case ACVP_SYM_CIPH_TWEAK_HEX:
+                    /* XTS may call it tweak value, but we treat it as an IV */
+                    iv = json_object_get_string(testobj, "tweakValue");
                     if (!iv) {
-                        ACVP_LOG_ERR("Server JSON missing 'iv'");
+                        ACVP_LOG_ERR("Server JSON missing hex 'tweakValue'");
                         rv = ACVP_MISSING_ARG;
                         goto err;
                     }
                     if (strnlen_s(iv, ACVP_SYM_IV_MAX + 1) > ACVP_SYM_IV_MAX) {
-                        ACVP_LOG_ERR("'iv' too long, max allowed=(%d)",
+                        ACVP_LOG_ERR("'i' too long, max allowed=(%d)",
                                         ACVP_SYM_IV_MAX);
                         rv = ACVP_INVALID_ARG;
                         goto err;
                     }
+                    break;
+                case ACVP_SYM_CIPH_TWEAK_NUM:
+                    seq_num = json_object_get_number(testobj, "sequenceNumber");
+                    if ((seq_num < 0) || (seq_num > 255)) {
+                        ACVP_LOG_ERR("Server JSON invalid number 'tweakValue'");
+                        rv = ACVP_MISSING_ARG;
+                        goto err;
+                    }
+                    break;
+                case ACVP_SYM_CIPH_TWEAK_NONE:
+                default:
+                    ACVP_LOG_ERR("Server JSON invalid 'tweakMode'");
+                    rv = ACVP_MISSING_ARG;
+                    goto err;
+                    break;
                 }
             }
 
@@ -1237,7 +1260,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
              */
             rv = acvp_aes_init_tc(ctx, &stc, tc_id, test_type, key, pt, ct, iv, tag, 
                                   aad, salt, kwcipher, keylen, ivlen, datalen, paylen,
-                                  taglen, aadlen, saltLen, alg_id, dir, iv_gen, iv_gen_mode, 
+                                  taglen, aadlen, saltLen, conformance, alg_id, dir, iv_gen, iv_gen_mode, 
                                   incr_ctr, ovrflw_ctr, tweak_mode, seq_num, salt_src);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("Init for stc (test case) failed");
@@ -1327,9 +1350,11 @@ static ACVP_RESULT acvp_aes_output_tc(ACVP_CTX *ctx,
     }
 
     /*
-     * Only return IV on AES-GCM ciphers
+     * Only return IV on AES ciphers with internal IV generation
      */
-    if (stc->cipher == ACVP_AES_GCM || stc->cipher == ACVP_AES_GMAC || stc->cipher == ACVP_AES_XPN) {
+    if(stc->ivgen_source == ACVP_SYM_CIPH_IVGEN_SRC_INT &&
+          (stc->cipher == ACVP_AES_GCM || stc->cipher == ACVP_AES_GMAC || stc->cipher == ACVP_AES_XPN ||
+          (stc->cipher == ACVP_AES_CTR && stc->conformance == ACVP_CONFORMANCE_RFC3686))) {
         rv = acvp_bin_to_hexstr(stc->iv, stc->iv_len, tmp, ACVP_SYM_CT_MAX);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("hex conversion failure (iv)");
@@ -1442,6 +1467,7 @@ static ACVP_RESULT acvp_aes_init_tc(ACVP_CTX *ctx,
                                     unsigned int tag_len,
                                     unsigned int aad_len,
                                     unsigned int salt_len,
+                                    ACVP_CONFORMANCE conformance,
                                     ACVP_CIPHER alg_id,
                                     ACVP_SYM_CIPH_DIR dir,
                                     ACVP_SYM_CIPH_IVGEN_SRC iv_gen,
@@ -1488,6 +1514,7 @@ static ACVP_RESULT acvp_aes_init_tc(ACVP_CTX *ctx,
     stc->salt_len = salt_len / 8;
 
     stc->cipher = alg_id;
+    stc->conformance = conformance;
     stc->direction = dir;
     stc->ivgen_source = iv_gen;
     stc->ivgen_mode = iv_gen_mode;
