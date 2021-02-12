@@ -244,7 +244,6 @@ ACVP_RESULT acvp_safe_primes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     g_cnt = json_array_get_count(groups);
 
     for (i = 0; i < g_cnt; i++) {
-        int tgId = 0;
         groupval = json_array_get_value(groups, i);
         groupobj = json_value_get_object(groupval);
 
@@ -254,13 +253,13 @@ ACVP_RESULT acvp_safe_primes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
          */
         r_gval = json_value_init_object();
         r_gobj = json_value_get_object(r_gval);
-        tgId = json_object_get_number(groupobj, "tgId");
-        if (!tgId) {
+        tg_id = json_object_get_number(groupobj, "tg_id");
+        if (!tg_id) {
             ACVP_LOG_ERR("Missing tgid from server JSON groub obj");
             rv = ACVP_MALFORMED_JSON;
             goto err;
         }
-        json_object_set_number(r_gobj, "tgId", tgId);
+        json_object_set_number(r_gobj, "tg_id", tg_id);
         json_object_set_value(r_gobj, "tests", json_value_init_array());
         r_tarr = json_object_get_array(r_gobj, "tests");
 
