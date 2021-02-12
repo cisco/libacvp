@@ -2931,7 +2931,7 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
             }
             testsCompleted++;
         }
-        if(testsCompleted >= count) {
+        if (testsCompleted >= count) {
             passed = json_object_get_boolean(obj, "passed");
             if (passed == 1) {
                 /*
@@ -3010,7 +3010,7 @@ end:
     if (failedAlgList) {
         acvp_free_str_list(&failedAlgList);
     }
-    if(failedVsList) {
+    if (failedVsList) {
         acvp_free_str_list(&failedVsList);
     }
     return rv;

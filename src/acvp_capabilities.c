@@ -2385,7 +2385,7 @@ ACVP_RESULT acvp_cap_sym_cipher_set_parm(ACVP_CTX *ctx,
         }
 
     case ACVP_SYM_CIPH_PARM_PERFORM_CTR:
-        if(value == 0 || value == 1) {
+        if (value == 0 || value == 1) {
             if (value == 0 && (cap->cap.sym_cap->ctr_incr || cap->cap.sym_cap->ctr_ovrflw)) {
                 ACVP_LOG_WARN("Perform counter test set to false, but value for ctr increment or ctr overflow already set. Server will ignore other values. Continuing...");
             }
@@ -8779,7 +8779,7 @@ ACVP_RESULT acvp_cap_kas_kdf_set_parm(ACVP_CTX *ctx, ACVP_CIPHER cipher, ACVP_KA
                 free(cap_list->cap.kas_kdf_onestep_cap->literal_pattern_candidate);
                 cap_list->cap.kas_kdf_onestep_cap->literal_pattern_candidate = NULL;
             }
-            if(value == ACVP_KAS_KDF_PATTERN_LITERAL) {
+            if (value == ACVP_KAS_KDF_PATTERN_LITERAL) {
                 int len = strnlen_s(string, ACVP_KAS_KDF_PATTERN_LITERAL_STR_LEN_MAX + 1);
                 if (len > ACVP_KAS_KDF_PATTERN_LITERAL_STR_LEN_MAX) {
                     ACVP_LOG_ERR("Provided literal string too long");
@@ -8907,7 +8907,7 @@ ACVP_RESULT acvp_cap_kas_kdf_set_parm(ACVP_CTX *ctx, ACVP_CIPHER cipher, ACVP_KA
                 free(cap_list->cap.kas_hkdf_cap->literal_pattern_candidate);
                 cap_list->cap.kas_hkdf_cap->literal_pattern_candidate = NULL;
             }
-            if(value == ACVP_KAS_KDF_PATTERN_LITERAL) {
+            if (value == ACVP_KAS_KDF_PATTERN_LITERAL) {
                 int len = strnlen_s(string, ACVP_KAS_KDF_PATTERN_LITERAL_STR_LEN_MAX + 1);
                 if (len > ACVP_KAS_KDF_PATTERN_LITERAL_STR_LEN_MAX) {
                     ACVP_LOG_ERR("Provided literal string too long");
@@ -9238,7 +9238,7 @@ ACVP_RESULT acvp_cap_kts_ifc_set_scheme_parm(ACVP_CTX *ctx,
     }
 
     while (current_scheme) {
-        if(current_scheme->scheme != scheme) {
+        if (current_scheme->scheme != scheme) {
             current_scheme = current_scheme->next;
         }
         break;
@@ -9373,7 +9373,7 @@ ACVP_RESULT acvp_cap_kts_ifc_set_scheme_string(ACVP_CTX *ctx,
     }
 
     while (current_scheme) {
-        if(current_scheme->scheme != scheme) {
+        if (current_scheme->scheme != scheme) {
             current_scheme = current_scheme->next;
         }
         break;

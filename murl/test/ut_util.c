@@ -43,7 +43,7 @@ int test_murl_locate_ipv6_address (char *address, int max_addr)
     for (ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next) {
         if (ifa->ifa_addr == NULL) continue;  
 
-        if((ifa->ifa_addr->sa_family==AF_INET6)) {
+        if ((ifa->ifa_addr->sa_family==AF_INET6)) {
 	    if (!strcmp(ifa->ifa_name, "lo")) {
 		have_v6_loopback = 1;
 		continue;

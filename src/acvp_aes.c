@@ -1352,7 +1352,7 @@ static ACVP_RESULT acvp_aes_output_tc(ACVP_CTX *ctx,
     /*
      * Only return IV on AES ciphers with internal IV generation
      */
-    if(stc->ivgen_source == ACVP_SYM_CIPH_IVGEN_SRC_INT &&
+    if (stc->ivgen_source == ACVP_SYM_CIPH_IVGEN_SRC_INT &&
           (stc->cipher == ACVP_AES_GCM || stc->cipher == ACVP_AES_GMAC || stc->cipher == ACVP_AES_XPN ||
           (stc->cipher == ACVP_AES_CTR && stc->conformance == ACVP_CONFORMANCE_RFC3686))) {
         rv = acvp_bin_to_hexstr(stc->iv, stc->iv_len, tmp, ACVP_SYM_CT_MAX);
