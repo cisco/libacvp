@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Cisco Systems, Inc.
+ * Copyright (c) 2021, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -74,6 +74,7 @@ typedef struct app_config {
     int drbg; int ecdsa;
     int kas_ecc; int kas_ffc; int kas_ifc; int kas_kdf; int kts_ifc;
     int kdf;
+    int safe_primes;
 } APP_CONFIG;
 
 
@@ -123,6 +124,7 @@ int app_rsa_decprim_handler(ACVP_TEST_CASE *test_case);
 int app_rsa_sigprim_handler(ACVP_TEST_CASE *test_case);
 int app_ecdsa_handler(ACVP_TEST_CASE *test_case);
 int app_drbg_handler(ACVP_TEST_CASE *test_case);
+int app_safe_primes_handler(ACVP_TEST_CASE *test_case);
 
 #ifdef __cplusplus
 }

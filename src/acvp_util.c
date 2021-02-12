@@ -1070,7 +1070,7 @@ int acvp_lookup_param_list(ACVP_PARAM_LIST *list, int value) {
         return 0;
     }
     while(list) {
-        if(value == list->param) {
+        if (value == list->param) {
             return 1;
         } else {
             list = list->next;

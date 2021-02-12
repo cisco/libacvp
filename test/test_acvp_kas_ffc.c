@@ -133,6 +133,62 @@ static void setup_fail(void) {
     cr_assert(rv == ACVP_SUCCESS);
 }
 
+
+
+static void sp_setup(void) {
+    setup_empty_ctx(&ctx);
+
+    /* Support is for FFC-SSC for hashZ only */
+    rv = acvp_cap_kas_ffc_enable(ctx, ACVP_KAS_FFC_SSC, &dummy_handler_success);
+    cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_kas_ffc_set_prereq(ctx, ACVP_KAS_FFC_SSC, ACVP_KAS_FFC_MODE_NONE, ACVP_PREREQ_DSA, cvalue);
+    cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_kas_ffc_set_prereq(ctx, ACVP_KAS_FFC_SSC, ACVP_KAS_FFC_MODE_NONE, ACVP_PREREQ_SHA, cvalue);
+    cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_kas_ffc_set_prereq(ctx, ACVP_KAS_FFC_SSC, ACVP_KAS_FFC_MODE_NONE, ACVP_PREREQ_DRBG, cvalue);
+    cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_kas_ffc_set_prereq(ctx, ACVP_KAS_FFC_SSC, ACVP_KAS_FFC_MODE_NONE, ACVP_PREREQ_HMAC, cvalue);
+    cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_kas_ffc_set_scheme(ctx, ACVP_KAS_FFC_SSC, ACVP_KAS_FFC_MODE_NONE, ACVP_KAS_FFC_DH_EPHEMERAL, ACVP_KAS_FFC_ROLE, ACVP_KAS_FFC_ROLE_INITIATOR);
+    cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_kas_ffc_set_scheme(ctx, ACVP_KAS_FFC_SSC, ACVP_KAS_FFC_MODE_NONE, ACVP_KAS_FFC_DH_EPHEMERAL, ACVP_KAS_FFC_ROLE, ACVP_KAS_FFC_ROLE_RESPONDER);
+    cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_kas_ffc_set_parm(ctx, ACVP_KAS_FFC_SSC, ACVP_KAS_FFC_MODE_NONE, ACVP_KAS_FFC_GEN_METH, ACVP_KAS_FFC_FC);
+    cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_kas_ffc_set_parm(ctx, ACVP_KAS_FFC_SSC, ACVP_KAS_FFC_MODE_NONE, ACVP_KAS_FFC_GEN_METH, ACVP_KAS_FFC_FB);
+    cr_assert(rv == ACVP_SUCCESS);
+
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+    rv = acvp_cap_kas_ffc_set_parm(ctx, ACVP_KAS_FFC_SSC, ACVP_KAS_FFC_MODE_NONE, ACVP_KAS_FFC_GEN_METH, ACVP_KAS_FFC_MODP2048);
+    cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_kas_ffc_set_parm(ctx, ACVP_KAS_FFC_SSC, ACVP_KAS_FFC_MODE_NONE, ACVP_KAS_FFC_GEN_METH, ACVP_KAS_FFC_MODP3072);
+    cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_kas_ffc_set_parm(ctx, ACVP_KAS_FFC_SSC, ACVP_KAS_FFC_MODE_NONE, ACVP_KAS_FFC_GEN_METH, ACVP_KAS_FFC_MODP4096);
+    cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_kas_ffc_set_parm(ctx, ACVP_KAS_FFC_SSC, ACVP_KAS_FFC_MODE_NONE, ACVP_KAS_FFC_GEN_METH, ACVP_KAS_FFC_MODP6144);
+    cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_kas_ffc_set_parm(ctx, ACVP_KAS_FFC_SSC, ACVP_KAS_FFC_MODE_NONE, ACVP_KAS_FFC_GEN_METH, ACVP_KAS_FFC_MODP8192);
+    cr_assert(rv == ACVP_SUCCESS);
+
+    rv = acvp_cap_kas_ffc_set_parm(ctx, ACVP_KAS_FFC_SSC, ACVP_KAS_FFC_MODE_NONE, ACVP_KAS_FFC_GEN_METH, ACVP_KAS_FFC_FFDHE2048);
+    cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_kas_ffc_set_parm(ctx, ACVP_KAS_FFC_SSC, ACVP_KAS_FFC_MODE_NONE, ACVP_KAS_FFC_GEN_METH, ACVP_KAS_FFC_FFDHE3072);
+    cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_kas_ffc_set_parm(ctx, ACVP_KAS_FFC_SSC, ACVP_KAS_FFC_MODE_NONE, ACVP_KAS_FFC_GEN_METH, ACVP_KAS_FFC_FFDHE4096);
+    cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_kas_ffc_set_parm(ctx, ACVP_KAS_FFC_SSC, ACVP_KAS_FFC_MODE_NONE, ACVP_KAS_FFC_GEN_METH, ACVP_KAS_FFC_FFDHE6144);
+    cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_kas_ffc_set_parm(ctx, ACVP_KAS_FFC_SSC, ACVP_KAS_FFC_MODE_NONE, ACVP_KAS_FFC_GEN_METH, ACVP_KAS_FFC_FFDHE8192);
+    cr_assert(rv == ACVP_SUCCESS);
+#endif
+
+    rv = acvp_cap_kas_ffc_set_parm(ctx, ACVP_KAS_FFC_SSC, ACVP_KAS_FFC_MODE_NONE, ACVP_KAS_FFC_HASH, ACVP_SHA512);
+    cr_assert(rv == ACVP_SUCCESS);
+
+
+}
+
+
 static void teardown(void) {
     if (ctx) teardown_ctx(&ctx);
 }
@@ -655,6 +711,46 @@ Test(KAS_FFC_COMP_HANDLER, tcFail1, .init = setup, .fini = teardown) {
     json_value_free(val);
 }
 
+/*
+ * The key:"parmSet" is missing 
+ */
+Test(KAS_FFC_COMP_HANDLER, ps_missing, .init = setup, .fini = teardown) {
+    ACVP_RESULT rv;
+    JSON_Object *obj;
+    JSON_Value *val;
+
+    val = json_parse_file("json/kas_ffc/kas_ffc_comp_23.json");
+    
+    obj = ut_get_obj_from_rsp(val);
+    if (!obj) {
+        ACVP_LOG_ERR("JSON obj parse error");
+        return;
+    }
+    rv  = acvp_kas_ffc_kat_handler(ctx, obj);
+    cr_assert(rv == ACVP_MISSING_ARG);
+    json_value_free(val);
+}
+
+/*
+ * The key:"parmSet" is wrong
+ */
+Test(KAS_FFC_COMP_HANDLER, ps_wrong, .init = setup, .fini = teardown) {
+    ACVP_RESULT rv;
+    JSON_Object *obj;
+    JSON_Value *val;
+
+    val = json_parse_file("json/kas_ffc/kas_ffc_comp_24.json");
+    
+    obj = ut_get_obj_from_rsp(val);
+    if (!obj) {
+        ACVP_LOG_ERR("JSON obj parse error");
+        return;
+    }
+    rv  = acvp_kas_ffc_kat_handler(ctx, obj);
+    cr_assert(rv == ACVP_MALFORMED_JSON);
+    json_value_free(val);
+}
+
 /* //////////////////////
  * SSC mode
  * /////////////////////
@@ -1065,3 +1161,59 @@ Test(KAS_FFC_SSC_HANDLER, tcFail1, .init = setup, .fini = teardown) {
     json_value_free(val);
 }
 
+/*
+ * The key:"domainParameterGenerationMode" is missing in last tc
+ */
+Test(KAS_FFC_SSC_HANDLER, dpgm_missing, .init = setup, .fini = teardown) {
+    ACVP_RESULT rv;
+    JSON_Object *obj;
+    JSON_Value *val;
+
+    val = json_parse_file("json/kas_ffc/kas_ffc_ssc_22.json");
+    
+    obj = ut_get_obj_from_rsp(val);
+    if (!obj) {
+        ACVP_LOG_ERR("JSON obj parse error");
+        return;
+    }
+    rv  = acvp_kas_ffc_ssc_kat_handler(ctx, obj);
+    cr_assert(rv == ACVP_MISSING_ARG);
+    json_value_free(val);
+}
+
+/*
+ * The key:"domainParameterGenerationMode" is wrong in last tc
+ */
+Test(KAS_FFC_SSC_HANDLER, dpgm_wrong, .init = setup, .fini = teardown) {
+    ACVP_RESULT rv;
+    JSON_Object *obj;
+    JSON_Value *val;
+
+    val = json_parse_file("json/kas_ffc/kas_ffc_ssc_23.json");
+    
+    obj = ut_get_obj_from_rsp(val);
+    if (!obj) {
+        ACVP_LOG_ERR("JSON obj parse error");
+        return;
+    }
+    rv  = acvp_kas_ffc_ssc_kat_handler(ctx, obj);
+    cr_assert(rv == ACVP_MALFORMED_JSON);
+    json_value_free(val);
+}
+
+/*
+ * This is a good JSON.
+ * Expecting success.
+ */
+Test(KAS_FFC_SP_HANDLER, good, .init = sp_setup, .fini = teardown) {
+    val = json_parse_file("json/kas_ffc/kas_ffc_sp_1.json");
+
+    obj = ut_get_obj_from_rsp(val);
+    if (!obj) {
+        ACVP_LOG_ERR("JSON obj parse error");
+        return;
+    }
+    rv = acvp_kas_ffc_ssc_kat_handler(ctx, obj);
+    cr_assert(rv == ACVP_SUCCESS);
+    json_value_free(val);
+}

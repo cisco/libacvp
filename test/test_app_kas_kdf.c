@@ -244,7 +244,7 @@ int initialize_kas_kdf_onestep_tc(ACVP_KAS_KDF_ONESTEP_TC *stc,
         }
     }
 
-    if(uparty) {
+    if (uparty) {
         stc->uPartyId = calloc(1, ACVP_KAS_KDF_FIXED_BYTE_MAX);
         if (!stc->uPartyId) { goto err; }
         rv = acvp_hexstr_to_bin(uparty, stc->uPartyId, ACVP_KAS_KDF_FIXED_BYTE_MAX, &(stc->uPartyIdLen));

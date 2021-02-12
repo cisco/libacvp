@@ -778,7 +778,7 @@ static ACVP_RESULT acvp_kas_kdf_process(ACVP_CTX *ctx,
         l = json_object_get_number(configobj, "l");
         if (cipher == ACVP_KAS_HKDF) {
             kdfcap = acvp_locate_cap_entry(ctx, ACVP_KAS_HKDF);
-            if(!kdfcap || !kdfcap->cap.kas_hkdf_cap) {
+            if (!kdfcap || !kdfcap->cap.kas_hkdf_cap) {
                 ACVP_LOG_ERR("Missing KAS_HKDF capability data");
                 rv = ACVP_UNSUPPORTED_OP;
                 goto err;
@@ -790,7 +790,7 @@ static ACVP_RESULT acvp_kas_kdf_process(ACVP_CTX *ctx,
             }
         } else {
             kdfcap = acvp_locate_cap_entry(ctx, ACVP_KAS_KDF_ONESTEP);
-            if(!kdfcap || !kdfcap->cap.kas_kdf_onestep_cap) {
+            if (!kdfcap || !kdfcap->cap.kas_kdf_onestep_cap) {
                 ACVP_LOG_ERR("Missing KAS_KDF_ONESTEP capability data");
                 rv = ACVP_UNSUPPORTED_OP;
                 goto err;
@@ -808,7 +808,7 @@ static ACVP_RESULT acvp_kas_kdf_process(ACVP_CTX *ctx,
 
         ACVP_LOG_VERBOSE("     Test group: %d", i);
         ACVP_LOG_VERBOSE("      test type: %s", test_type_str);
-        if(cipher == ACVP_KAS_HKDF) {
+        if (cipher == ACVP_KAS_HKDF) {
         ACVP_LOG_VERBOSE("           hmac: %s", alg_str);
         } else if (cipher == ACVP_KAS_KDF_ONESTEP) {
         ACVP_LOG_VERBOSE("    auxFunction: %s", alg_str);
