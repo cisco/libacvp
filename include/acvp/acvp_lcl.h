@@ -1603,11 +1603,13 @@ struct acvp_ctx_t {
     int vector_rsp;         /* flag to indicate we are storing vector responses JSON in a file */
     int get;                /* flag to indicate we are only getting status or metadata */
     char *get_string;       /* string used for get request */
-    char *get_filename;     /* string used for file to save GET requests to */
     int post;               /* flag to indicate we are only posting metadata */
     char *post_filename;    /* string used for post */
     int put;                /* flag to indicate we are only putting metadata  for post test validation*/
     char *put_filename;     /* string used for put */
+    int delete;             /* flag to indicate we are only requesting deleting a resource */
+    char *delete_string;    /* string used for delete request */
+    char *save_filename;    /* string used for file to save certain HTTP requests to */
 
     ACVP_FIPS fips; /* Information related to a FIPS validation */
 
@@ -1654,6 +1656,8 @@ ACVP_RESULT acvp_transport_get(ACVP_CTX *ctx, const char *url, const ACVP_KV_LIS
 ACVP_RESULT acvp_transport_post(ACVP_CTX *ctx, const char *uri, char *data, int data_len);
 
 ACVP_RESULT acvp_transport_put(ACVP_CTX *ctx, const char *endpoint, const char *data, int data_len);
+
+ACVP_RESULT acvp_transport_delete(ACVP_CTX *ctx, const char *endpoint);
 
 ACVP_RESULT acvp_retrieve_vector_set(ACVP_CTX *ctx, char *vsid_url);
 

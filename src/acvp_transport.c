@@ -70,7 +70,8 @@ typedef enum acvp_net_action {
     ACVP_NET_POST_REG, /**< Registration (post) */
     ACVP_NET_POST_VS_RESP, /**< Vector set response (post) */
     ACVP_NET_PUT, /**< Generic (put) */
-    ACVP_NET_PUT_VALIDATION /**< Submit testSession for validation (put) */
+    ACVP_NET_PUT_VALIDATION, /**< Submit testSession for validation (put) */
+    ACVP_NET_DELETE /**< delete vector set results, data */
 } ACVP_NET_ACTION;
 
 #ifndef ACVP_OFFLINE
@@ -476,6 +477,112 @@ end:
     return http_code;
 }
 
+/**
+ * @brief Uses libcurl to send a simple HTTP PUT.
+ *
+ * TLS peer verification is enabled, but not mutual authentication.
+ *
+ * @param ctx Ptr to ACVP_CTX, which contains the server name
+ * @param url URL to use for the PUT operation
+ * @param data: data to PUT to the server
+ * @param data_len: Length of \p data (in bytes)
+ *
+ * @return HTTP status value from the server
+ * (e.g. 200 for HTTP OK)
+ */
+static long acvp_curl_http_delete(ACVP_CTX *ctx, const char *url) {
+    long http_code = 0;
+    CURL *hnd = NULL;
+    CURLcode crv = CURLE_OK;
+    struct curl_slist *slist = NULL;
+
+
+    ctx->curl_read_ctr = 0;
+    /*
+     * Set the Content-Type header in the HTTP request
+     */
+    slist = curl_slist_append(slist, "Content-Type:application/json");
+
+    /*
+     * Create the Authorzation header if needed
+     */
+    slist = acvp_add_auth_hdr(ctx, slist);
+
+    //Setup Curl
+    hnd = curl_easy_init();
+    if (!hnd) { ACVP_LOG_ERR("Error initializing Curl structure, stopping"); goto end; }
+    crv = curl_easy_setopt(hnd, CURLOPT_URL, url);
+    if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_URL, stopping"); goto end; }
+    crv = curl_easy_setopt(hnd, CURLOPT_NOPROGRESS, 1L);
+    if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_NOPROGRESS, stopping"); goto end; }
+    crv = curl_easy_setopt(hnd, CURLOPT_USERAGENT, ctx->http_user_agent);
+    if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_USERAGENT, stopping"); goto end; }
+    crv = curl_easy_setopt(hnd, CURLOPT_HTTPHEADER, slist);
+    if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_HTTPHEADER, stopping"); goto end; }
+    crv = curl_easy_setopt(hnd, CURLOPT_CUSTOMREQUEST, "DELETE");
+    if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_CUSTOMREQUEST, stopping"); goto end; }
+    crv = curl_easy_setopt(hnd, CURLOPT_TCP_KEEPALIVE, 1L);
+    if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_TCP_KEEPALIVE, stopping"); goto end; }
+    crv = curl_easy_setopt(hnd, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_2);
+    if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_SSLVERSION, stopping"); goto end; }
+    //Always verify the server
+    crv = curl_easy_setopt(hnd, CURLOPT_SSL_VERIFYPEER, 1L);
+    if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_SSL_VERIFYPEER, stopping"); goto end; }
+    if (ctx->cacerts_file) {
+        crv = curl_easy_setopt(hnd, CURLOPT_CAINFO, ctx->cacerts_file);
+        if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_CAINFO, stopping"); goto end; }
+        crv = curl_easy_setopt(hnd, CURLOPT_CERTINFO, 1L);
+        if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_CERTINFO, stopping"); goto end; }
+    }
+    //Mutual-auth
+    if (ctx->tls_cert && ctx->tls_key) {
+        crv = curl_easy_setopt(hnd, CURLOPT_SSLCERTTYPE, "PEM");
+        if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_SSLCERTTYPE, stopping"); goto end; }
+        crv = curl_easy_setopt(hnd, CURLOPT_SSLCERT, ctx->tls_cert);
+        if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_SSLCERT, stopping"); goto end; }
+        crv = curl_easy_setopt(hnd, CURLOPT_SSLKEYTYPE, "PEM");
+        if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_SSLKEYTYPE, stopping"); goto end; }
+        crv = curl_easy_setopt(hnd, CURLOPT_SSLKEY, ctx->tls_key);
+        if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_SSLKEY, stopping"); goto end; }
+    }
+    //To record the HTTP data recieved from the server, set the callback function.
+    crv = curl_easy_setopt(hnd, CURLOPT_WRITEDATA, ctx);
+    if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_WRITEDATA, stopping"); goto end; }
+    crv = curl_easy_setopt(hnd, CURLOPT_WRITEFUNCTION, acvp_curl_write_callback);
+    if (crv) { ACVP_LOG_ERR("Error setting curl option CURLOPT_WRITEFUNCTION, stopping"); goto end; }
+
+    if (ctx->curl_buf) {
+        /* Clear the HTTP buffer for next server response */
+        memzero_s(ctx->curl_buf, ACVP_CURL_BUF_MAX);
+    }
+
+    if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
+        printf("\nHTTP DELETE: %s\n", url);
+    }
+
+    /*
+     * Send the HTTP PUT request
+     */
+    crv = curl_easy_perform(hnd);
+    if (crv != CURLE_OK) {
+        ACVP_LOG_ERR("Curl failed with code %d (%s)\n", crv, curl_easy_strerror(crv));
+    }
+
+    /*
+     * Get the HTTP reponse status code from the server
+     */
+    curl_easy_getinfo(hnd, CURLINFO_RESPONSE_CODE, &http_code);
+
+end:
+    if (hnd) curl_easy_cleanup(hnd);
+    hnd = NULL;
+    if (slist) curl_slist_free_all(slist);
+    slist = NULL;
+
+    return http_code;
+}
+
+
 static ACVP_RESULT sanity_check_ctx(ACVP_CTX *ctx) {
     if (!ctx) {
         ACVP_LOG_ERR("Missing ctx");
@@ -717,6 +824,31 @@ ACVP_RESULT acvp_transport_put(ACVP_CTX *ctx,
 #endif
 }
 
+ACVP_RESULT acvp_transport_delete(ACVP_CTX *ctx,
+                               const char *endpoint) {
+#ifdef ACVP_OFFLINE
+    ACVP_LOG_ERR("Curl not linked, exiting function");
+    return ACVP_TRANSPORT_FAIL;
+#else
+    ACVP_RESULT rv = 0;
+    char url[ACVP_ATTR_URL_MAX] = {0};
+
+    rv = sanity_check_ctx(ctx);
+    if (ACVP_SUCCESS != rv) return rv;
+
+    if (!endpoint) {
+        ACVP_LOG_ERR("Missing endpoint");
+        return ACVP_MISSING_ARG;
+    }
+
+    snprintf(url, ACVP_ATTR_URL_MAX - 1,
+            "https://%s:%d%s",
+            ctx->server_name, ctx->server_port, endpoint);
+
+    return acvp_network_action(ctx, ACVP_NET_DELETE, url, NULL, 0);
+#endif
+}
+
 ACVP_RESULT acvp_transport_put_validation(ACVP_CTX *ctx,
                                           const char *validation,
                                           int validation_len) {
@@ -952,7 +1084,9 @@ static ACVP_RESULT execute_network_action(ACVP_CTX *ctx,
         }
 #endif
         break;
-
+    case ACVP_NET_DELETE:
+        rc = acvp_curl_http_delete(ctx, url);
+        break;
     default:
         ACVP_LOG_ERR("Unknown ACVP_NET_ACTION");
         return ACVP_INVALID_ARG;
@@ -1015,7 +1149,9 @@ static ACVP_RESULT execute_network_action(ACVP_CTX *ctx,
                 }
 #endif
                 break;
-
+            case ACVP_NET_DELETE:
+                acvp_curl_http_delete(ctx, url);
+                break;
             case ACVP_NET_POST_LOGIN:
             default:
                 ACVP_LOG_ERR("We should never be here!");
@@ -1095,6 +1231,10 @@ static void log_network_status(ACVP_CTX *ctx,
         ACVP_LOG_INFO("PUT testSession Validation...\n\tStatus: %d\n\tUrl: %s\n\tResp: %s\n",
                         curl_code, url, ctx->curl_buf);
         break;
+    case ACVP_NET_DELETE:
+        ACVP_LOG_INFO("DELETE...\n\tStatus: %d\n\tUrl: %s\n\tResp:\n%s\n",
+                       curl_code, url, ctx->curl_buf);
+        break;
     default:
         ACVP_LOG_ERR("We should never be here!");
         break;
@@ -1165,6 +1305,9 @@ static ACVP_RESULT acvp_network_action(ACVP_CTX *ctx,
     case ACVP_NET_PUT_VALIDATION:
         check_data = 1;
         generic_action = ACVP_NET_PUT;
+        break;
+    case ACVP_NET_DELETE:
+        generic_action = ACVP_NET_DELETE;
         break;
     default:
         ACVP_LOG_ERR("We should never be here!");

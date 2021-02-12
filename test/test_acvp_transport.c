@@ -486,6 +486,40 @@ Test(TRANSPORT_GET, good, .init = test_setup_session_parameters, .fini = teardow
     
 }
 
+/*
+ * Exercise acvp_transport_delete logic
+ *
+ */
+Test(TRANSPORT_DELETE, good, .init = test_setup_session_parameters, .fini = teardown) {
+    char *save_ptr = NULL;
+    int save_int = 0;
+
+    rv = acvp_transport_delete(NULL, "uri");
+    cr_assert(rv == ACVP_NO_CTX);
+
+    save_int = ctx->server_port;
+    ctx->server_port = 0;
+    rv = acvp_transport_delete(ctx, "uri");
+    cr_assert(rv == ACVP_MISSING_ARG);
+
+    ctx->server_port = save_int;
+
+    save_ptr = ctx->server_name;
+    ctx->server_name = NULL;
+    rv = acvp_transport_delete(ctx, "uri");
+    cr_assert(rv == ACVP_MISSING_ARG);
+
+    ctx->server_name = save_ptr;
+
+    rv = acvp_transport_delete(ctx, NULL);
+    cr_assert(rv == ACVP_MISSING_ARG);
+
+#ifdef TEST_TRANSPORT
+    rv = acvp_transport_delete(ctx, "uri");
+    cr_assert(rv == ACVP_TRANSPORT_FAIL);
+#endif
+
+}
 
 #if 0 // TODO NIST does not have these enabled via API, we don't have Cisco server yet
 /*

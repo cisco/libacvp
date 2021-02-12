@@ -3427,10 +3427,23 @@ ACVP_RESULT acvp_set_get_save_file(ACVP_CTX *ctx, char *filename);
 
     @param ctx Pointer to ACVP_CTX that was previously created by
         calling acvp_create_test_session.
-    @param filename
+    @param filename file containing URL and content to POST
 
  */
 ACVP_RESULT acvp_mark_as_post_only(ACVP_CTX *ctx, char *filename);
+
+/*! @brief acvp_mark_as_delete only() marks the operation as a DELETE only.
+
+    This function will perform an HTTP DELETE call on the resource at the
+    givenURL.
+
+    @param ctx Pointer to ACVP_CTX that was previously created by
+        calling acvp_create_test_session.
+    @param request_url url of resource to delete
+
+ */
+ACVP_RESULT acvp_mark_as_delete_only(ACVP_CTX *ctx, char *request_url);
+
 ACVP_RESULT acvp_mark_as_put_after_test(ACVP_CTX *ctx, char *filename);
 
 
@@ -3566,6 +3579,19 @@ ACVP_RESULT acvp_get_expected_results(ACVP_CTX *ctx, const char *request_filenam
  * @return ACVP_RESULT
  */
 ACVP_RESULT acvp_resume_test_session(ACVP_CTX *ctx, const char *request_filename, int fips_validation);
+
+
+/*! @brief Requests the server to cancel a test session and delete associated data
+ *
+ * @param ctx Pointer to ACVP_CTX that was previously created by
+        calling acvp_create_test_session.
+ * @param request_filename File containing the session info created by libacvp
+ * @param save_filename OPTIONAL arugment indicated a file the server response can be saved to.
+ *      leave NULL if not applicable
+ *
+ * @return ACVP_RESULT
+ */
+ACVP_RESULT acvp_cancel_test_session(ACVP_CTX *ctx, const char *request_filename, const char *save_filename);
 
 /*! @brief acvp_set_2fa_callback() sets a callback function which
     will create or obtain a TOTP password for the second part of

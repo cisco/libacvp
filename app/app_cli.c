@@ -122,6 +122,10 @@ static void print_usage(int code) {
     printf("            Note: this does not save your arguments from your initial run and you MUST include them\n");
     printf("            again (e.x. --aes,  --vector_req and --fips_validation)\n");
     printf("\n");
+    printf("To cancel a test session that was previously initiated:\n");
+    printf("      --cancel_session <session_file>\n");
+    printf("            Note: This will request the server to halt all processing and delete all info related to the\n");
+    printf("            test session - It is not recoverable\n");
     printf("To get the results of a previous test session:\n");
     printf("      --get_results <session_file>\n");
     printf("\n");
@@ -134,6 +138,8 @@ static void print_usage(int code) {
     printf("To PUT(modify)  metadata for vendor, person, etc. or PUT for validation:\n");
     printf("      --put <metadata file>\n");
     printf("\n");
+    printf("To request to DELETE a resource you have created on the server:\n");
+    printf("      --delete <url>\n");
     printf("If you are running a sample registration (querying for correct answers\n");
     printf("in addition to the normal registration flow) use:\n");
     printf("      --sample\n");
@@ -248,7 +254,9 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
         { "certnum", ko_required_argument, 410 },
         { "resume_session", ko_required_argument, 411 },
         { "get_expected_results", ko_required_argument, 412 },
-        { "save_to", ko_required_argument, 413},
+        { "save_to", ko_required_argument, 413 },
+        { "delete", ko_required_argument, 414 },
+        { "cancel_session", ko_required_argument, 415 },
         { NULL, 0, 0 }
     };
 
@@ -639,6 +647,39 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
             strcpy_s(cfg->save_file, JSON_FILENAME_LENGTH + 1, opt.arg);
             continue;
         }
+        if (c == 414) {
+            int delete_request_url_len = 0;
+            cfg->delete = 1;
+
+            delete_request_url_len = strnlen_s(opt.arg, JSON_REQUEST_LENGTH + 1);
+            if (delete_request_url_len > JSON_REQUEST_LENGTH) {
+                print_usage(-1);
+                printf(ANSI_COLOR_RED "Command error... [%s]"ANSI_COLOR_RESET
+                    "\nThe <file> \"%s\", has a name that is too long."
+                    "\nMax allowed <file> name length is (%d).\n",
+                    "--save_to", opt.arg, JSON_REQUEST_LENGTH);
+                return 1;
+            }
+            strcpy_s(cfg->delete_url, JSON_REQUEST_LENGTH + 1, opt.arg);
+            continue;
+        }
+        if (c == 415) {
+            int session_filename_len = 0;
+            cfg->cancel_session = 1;
+
+            session_filename_len = strnlen_s(opt.arg, JSON_FILENAME_LENGTH + 1);
+            if (session_filename_len > JSON_REQUEST_LENGTH) {
+                print_usage(-1);
+                printf(ANSI_COLOR_RED "Command error... [%s]"ANSI_COLOR_RESET
+                    "\nThe <file> \"%s\", has a name that is too long."
+                    "\nMax allowed <file> name length is (%d).\n",
+                    "--get_expected_results", opt.arg, JSON_FILENAME_LENGTH);
+                return 1;
+            }
+
+            strcpy_s(cfg->session_file, JSON_FILENAME_LENGTH + 1, opt.arg);
+            continue;
+        }
         
         if (c == '?') {
             print_usage(-1);
@@ -656,9 +697,10 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
         printf("Warning: --save-to only works with --get and --get_expected. Option will be ignored.\n");
     }
 
-    /* allopw put, post and get without algs defined */
+    //Many args do not need an alg specified. Todo: make cleaner
     if (cfg->empty_alg && !cfg->post && !cfg->get && !cfg->put && !cfg->get_results
-                   && !cfg->get_expected && !cfg->manual_reg && !cfg->vector_upload) {
+            && !cfg->get_expected && !cfg->manual_reg && !cfg->vector_upload
+            && !cfg->delete && !cfg->cancel_session)  {
         /* The user needs to select at least 1 algorithm */
         print_usage(-1);
         printf(ANSI_COLOR_RED "Requires at least 1 Algorithm Test Suite\n"ANSI_COLOR_RESET);
