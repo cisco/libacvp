@@ -654,7 +654,7 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
             || (cap_entry->cipher == ACVP_AES_XPN)) {
         json_object_set_value(cap_obj, "aadLen", json_value_init_array());
         opts_arr = json_object_get_array(cap_obj, "aadLen");
-        if(sym_cap->aadlen) {
+        if (sym_cap->aadlen) {
             sl_list = sym_cap->aadlen;
             while (sl_list) {
                 json_array_append_number(opts_arr, sl_list->length);

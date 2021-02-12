@@ -108,6 +108,9 @@
     <ClCompile Include="..\..\src\acvp_util.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\acvp_safe_primes.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\parson.c">
       <Filter>Source Files</Filter>
     </ClCompile>

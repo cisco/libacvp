@@ -413,6 +413,7 @@
     <ClCompile Include="..\..\src\acvp_operating_env.c" />
     <ClCompile Include="..\..\src\acvp_rsa_keygen.c" />
     <ClCompile Include="..\..\src\acvp_rsa_sig.c" />
+    <ClCompile Include="..\..\src\acvp_safe_primes.c" />
     <ClCompile Include="..\..\src\acvp_transport.c" />
     <ClCompile Include="..\..\src\acvp_util.c" />
     <ClCompile Include="..\..\src\parson.c" />

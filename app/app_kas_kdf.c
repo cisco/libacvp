@@ -48,7 +48,7 @@ int app_kas_hkdf_handler(ACVP_TEST_CASE *test_case) {
         fixedInfoLen = stc->literalLen + stc->uPartyIdLen + stc->uEphemeralLen + stc->vPartyIdLen
                      + stc->vEphemeralLen + stc->algIdLen + stc->labelLen + stc->contextLen;
         //add 4 bytes for the int of lengths is used
-        for(i = 0; i < ACVP_KAS_KDF_PATTERN_MAX; i++) {
+        for (i = 0; i < ACVP_KAS_KDF_PATTERN_MAX; i++) {
             if (stc->fixedInfoPattern[i] == ACVP_KAS_KDF_PATTERN_L) {
                 fixedInfoLen += 4;
                 break;
@@ -284,7 +284,7 @@ end:
     if (expand_output) free(expand_output);
     if (result) free(result);
 #if OPENSSL_VERSION_NUMBER <= 0x10100000L
-    if(hmac_ctx) HMAC_CTX_cleanup(hmac_ctx);
+    if (hmac_ctx) HMAC_CTX_cleanup(hmac_ctx);
 #else
     if (hmac_ctx) HMAC_CTX_free(hmac_ctx);
 #endif
@@ -336,7 +336,7 @@ int app_kas_kdf_onestep_handler(ACVP_TEST_CASE *test_case) {
         fixedInfoLen = stc->literalLen + stc->uPartyIdLen + stc->uEphemeralLen + stc->vPartyIdLen
                      + stc->vEphemeralLen + stc->algIdLen + stc->labelLen + stc->contextLen;
         //add 4 bytes for the int of lengths is used
-        for(i = 0; i < ACVP_KAS_KDF_PATTERN_MAX; i++) {
+        for (i = 0; i < ACVP_KAS_KDF_PATTERN_MAX; i++) {
             if (stc->fixedInfoPattern[i] == ACVP_KAS_KDF_PATTERN_L) {
                 fixedInfoLen += 4;
                 break;
