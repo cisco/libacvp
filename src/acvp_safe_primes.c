@@ -253,7 +253,7 @@ ACVP_RESULT acvp_safe_primes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
          */
         r_gval = json_value_init_object();
         r_gobj = json_value_get_object(r_gval);
-        tg_id = json_object_get_number(groupobj, "tg_id");
+        tg_id = json_object_get_number(groupobj, "tgId");
         if (!tg_id) {
             ACVP_LOG_ERR("Missing tgid from server JSON groub obj");
             rv = ACVP_MALFORMED_JSON;

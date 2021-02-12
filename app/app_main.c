@@ -41,9 +41,7 @@ int fips_mode;
 #ifndef OPENSSL_NO_DSA
 static int enable_dsa(ACVP_CTX *ctx);
 static int enable_kas_ffc(ACVP_CTX *ctx);
-#if OPENSSL_VERSION_NUMBER >= 0x10100000L
 static int enable_safe_primes(ACVP_CTX *ctx);
-#endif
 #endif
 static int enable_aes(ACVP_CTX *ctx);
 static int enable_tdes(ACVP_CTX *ctx);
@@ -336,12 +334,10 @@ int main(int argc, char **argv) {
     }
 
 
-#if OPENSSL_VERSION_NUMBER >= 0x10100000L
 #ifndef OPENSSL_NO_DSA
         if (cfg.safe_primes) {
             if (enable_safe_primes(ctx)) goto end;
         }
-#endif
 #endif
     if (cfg.kat) {
        rv = acvp_load_kat_filename(ctx, cfg.kat_file);
@@ -3271,7 +3267,6 @@ end:
     return rv;
 }
 
-#if OPENSSL_VERSION_NUMBER >= 0x10100000L
 #ifndef OPENSSL_NO_DSA
 static int enable_safe_primes(ACVP_CTX *ctx) {
     ACVP_RESULT rv = ACVP_SUCCESS;
@@ -3346,5 +3341,4 @@ end:
 
     return rv;
 }
-#endif
 #endif

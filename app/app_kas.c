@@ -610,7 +610,7 @@ int app_kas_ffc_handler(ACVP_TEST_CASE *test_case) {
         goto error;
         break;
     }
-
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
    if (is_modp) {
         dh = DH_new();
         if (!dh) {
@@ -624,7 +624,7 @@ int app_kas_ffc_handler(ACVP_TEST_CASE *test_case) {
         tmp_g = BN_dup(g);
         DH_set0_pqg(dh, tmp_p, tmp_q, tmp_g);
     }
-
+#endif
     peerkey = BN_new();
     if (!peerkey) {
         printf("BN_new failed peerkey\n");
@@ -908,6 +908,7 @@ int app_kts_ifc_handler(ACVP_TEST_CASE *test_case) {
 
 int app_safe_primes_handler(ACVP_TEST_CASE *test_case)
 {
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
     ACVP_SAFE_PRIMES_TC         *tc;
     int rv = 1;
     DH *dh = NULL;
@@ -1060,6 +1061,10 @@ err:
     if (c) BN_CTX_free(c);
     if (dh) DH_free(dh);
     return rv;
+#else 
+    printf("Safe Primes not supported prior to 1.1.1/n");
+    return 1;
+#endif
 }
 
 
