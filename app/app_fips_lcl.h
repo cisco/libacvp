@@ -140,8 +140,13 @@ int fips_dsa_builtin_paramgen2(DSA *ret, size_t L, size_t N,
  * the FOM specific API's being used
  */
 #define M_EVP_CIPHER_CTX_set_flags(ctx,flgs) ((ctx)->flags|=(flgs))
-
 #define EVP_CIPHER_CTX_set_padding(ctx, pad) {}
+
+
+int fips_bn_is_negative(const BIGNUM *b);
+int fips_bn_mod_exp(BIGNUM *r, const BIGNUM *a, const BIGNUM *p,
+               const BIGNUM *m, BN_CTX *ctx);
+int fips_bn_is_zero(const BIGNUM *a);
 int fips_DH_set0_pqg(DH *dh, BIGNUM *p, BIGNUM *q, BIGNUM *g);
 int fips_DH_set0_key(DH *dh, BIGNUM *pub_key, BIGNUM *priv_key);
 BN_ULONG fips_bn_div_word(BIGNUM *a, BN_ULONG w);

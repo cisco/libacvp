@@ -1,6 +1,6 @@
 /** @file */
 /*
- * Copyright (c) 2019, Cisco Systems, Inc.
+ * Copyright (c) 2021, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -26,7 +26,7 @@ typedef struct acvp_prereqs_mode_name_t {
     const char *name;
 } ACVP_PREREQ_MODE_NAME;
 
-#define ACVP_NUM_PREREQS 12
+#define ACVP_NUM_PREREQS 13
 struct acvp_prereqs_mode_name_t acvp_prereqs_tbl[ACVP_NUM_PREREQS] = {
     { ACVP_PREREQ_AES,   "AES"   },
     { ACVP_PREREQ_CCM,   "CCM"   },
@@ -38,6 +38,7 @@ struct acvp_prereqs_mode_name_t acvp_prereqs_tbl[ACVP_NUM_PREREQS] = {
     { ACVP_PREREQ_KAS,   "KAS"   },
     { ACVP_PREREQ_RSA,   "RSA"   },
     { ACVP_PREREQ_RSADP, "RSADP" },
+    { ACVP_PREREQ_SAFE_PRIMES,   "safePrimes"   },
     { ACVP_PREREQ_SHA,   "SHA"   },
     { ACVP_PREREQ_TDES,  "TDES"  }
 };
@@ -3679,6 +3680,91 @@ static ACVP_RESULT acvp_build_kts_ifc_register_cap(ACVP_CTX *ctx,
     return ACVP_SUCCESS;
 }
 
+static ACVP_RESULT acvp_build_safe_primes_register_cap(ACVP_CTX *ctx,
+                                                       JSON_Object *cap_obj,
+                                                       ACVP_CAPS_LIST *cap_entry) {
+    JSON_Array *temp_arr = NULL;
+    ACVP_RESULT result;
+    const char *revision = NULL;
+    ACVP_SAFE_PRIMES_CAP *safe_primes_cap = NULL;
+    ACVP_SAFE_PRIMES_CAP_MODE *safe_primes_cap_mode = NULL;
+    ACVP_PARAM_LIST *current_genmeth;
+
+
+    if (cap_entry->prereq_vals) {
+        json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
+
+        revision = acvp_lookup_cipher_revision(cap_entry->cipher);
+        if (revision == NULL) return ACVP_INVALID_ARG;
+        json_object_set_string(cap_obj, "revision", revision);
+        result = acvp_lookup_prereqVals(cap_obj, cap_entry);
+        if (result != ACVP_SUCCESS) { return result; }
+    }
+
+    if (cap_entry->cipher == ACVP_SAFE_PRIMES_KEYGEN) {
+        json_object_set_string(cap_obj, "mode", "keyGen");
+        safe_primes_cap = cap_entry->cap.safe_primes_keygen_cap;
+    }
+    if (cap_entry->cipher == ACVP_SAFE_PRIMES_KEYVER) {
+        json_object_set_string(cap_obj, "mode", "keyVer");
+        safe_primes_cap = cap_entry->cap.safe_primes_keyver_cap;
+    }
+
+    if (!safe_primes_cap) {
+        return ACVP_NO_CAP;
+    }
+
+    safe_primes_cap_mode = safe_primes_cap->mode;
+    if (!safe_primes_cap_mode) {
+        return ACVP_NO_CAP;
+    }
+    json_object_set_value(cap_obj, "safePrimeGroups", json_value_init_array());
+    temp_arr = json_object_get_array(cap_obj, "safePrimeGroups");
+
+    current_genmeth = safe_primes_cap_mode->genmeth;
+    if (current_genmeth) {
+        while (current_genmeth) {
+            switch (current_genmeth->param) {
+                case ACVP_SAFE_PRIMES_MODP2048:
+                    json_array_append_string(temp_arr, "modp-2048");
+                    break;
+                case ACVP_SAFE_PRIMES_MODP3072:
+                    json_array_append_string(temp_arr, "modp-3072");
+                    break;
+                case ACVP_SAFE_PRIMES_MODP4096:
+                    json_array_append_string(temp_arr, "modp-4096");
+                    break;
+                case ACVP_SAFE_PRIMES_MODP6144:
+                    json_array_append_string(temp_arr, "modp-6144");
+                    break;
+                case ACVP_SAFE_PRIMES_MODP8192:
+                    json_array_append_string(temp_arr, "modp-8192");
+                    break;
+                case ACVP_SAFE_PRIMES_FFDHE2048:
+                    json_array_append_string(temp_arr, "ffdhe2048");
+                    break;
+                case ACVP_SAFE_PRIMES_FFDHE3072:
+                    json_array_append_string(temp_arr, "ffdhe3072");
+                    break;
+                case ACVP_SAFE_PRIMES_FFDHE4096:
+                    json_array_append_string(temp_arr, "ffdhe4096");
+                    break;
+                case ACVP_SAFE_PRIMES_FFDHE6144:
+                    json_array_append_string(temp_arr, "ffdhe6144");
+                    break;
+                case ACVP_SAFE_PRIMES_FFDHE8192:
+                    json_array_append_string(temp_arr, "ffdhe8192");
+                    break;
+                default:
+                    ACVP_LOG_ERR("Unsupported SAFE-PRIMES param %d", current_genmeth->param);
+                    return ACVP_INVALID_ARG;
+            }
+            current_genmeth = current_genmeth->next;
+        }
+    }
+    return ACVP_SUCCESS;
+}
+
 /*
  * This function builds the JSON register message that
  * will be sent to the ACVP server to advertised the crypto
@@ -3902,6 +3988,10 @@ ACVP_RESULT acvp_build_test_session(ACVP_CTX *ctx, char **reg, int *out_len) {
                 break;
             case ACVP_KTS_IFC:
                 rv = acvp_build_kts_ifc_register_cap(ctx, cap_obj, cap_entry);
+                break;
+            case ACVP_SAFE_PRIMES_KEYGEN:
+            case ACVP_SAFE_PRIMES_KEYVER:
+                rv = acvp_build_safe_primes_register_cap(ctx, cap_obj, cap_entry);
                 break;
            case ACVP_CIPHER_START:
            case ACVP_TDES_CBCI:

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Cisco Systems, Inc.
+ * Copyright (c) 2021, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -222,6 +222,7 @@
 #define ACVP_REV_KDF135_X963         ACVP_REVISION_LATEST
 #define ACVP_REV_KDF108              ACVP_REVISION_LATEST
 #define ACVP_REV_PBKDF               ACVP_REVISION_LATEST
+#define ACVP_REV_SAFE_PRIMES         ACVP_REVISION_LATEST
 
 
 /********************************************************
@@ -346,6 +347,10 @@
 
 #define ACVP_ALG_KTS_IFC             "KTS-IFC"
 #define ACVP_ALG_KTS_IFC_COMP        ""
+
+#define ACVP_ALG_SAFE_PRIMES_STR    "safePrimes"
+#define ACVP_ALG_SAFE_PRIMES_KEYGEN "keyGen"
+#define ACVP_ALG_SAFE_PRIMES_KEYVER "keyVer"
 
 #define ACVP_ECDSA_EXTRA_BITS_STR "extra bits"
 #define ACVP_ECDSA_EXTRA_BITS_STR_LEN 10
@@ -737,6 +742,11 @@
 #define ACVP_KAS_FFC_BYTE_MAX (ACVP_KAS_FFC_BIT_MAX >> 3)
 #define ACVP_KAS_FFC_STR_MAX (ACVP_KAS_FFC_BIT_MAX >> 2)
 
+
+#define ACVP_SAFE_PRIMES_BIT_MAX 4096*4
+#define ACVP_SAFE_PRIMES_BYTE_MAX (ACVP_SAFE_PRIMES_BIT_MAX >> 3)
+#define ACVP_SAFE_PRIMES_STR_MAX (ACVP_SAFE_PRIMES_BIT_MAX >> 2)
+
 #define ACVP_KAS_ECC_BIT_MAX 4096
 #define ACVP_KAS_ECC_BYTE_MAX (ACVP_KAS_ECC_BIT_MAX >> 3)
 #define ACVP_KAS_ECC_STR_MAX (ACVP_KAS_ECC_BIT_MAX >> 2)
@@ -928,7 +938,9 @@ typedef enum acvp_capability_type {
     ACVP_KAS_IFC_TYPE,
     ACVP_KAS_KDF_ONESTEP_TYPE,
     ACVP_KAS_HKDF_TYPE,
-    ACVP_KTS_IFC_TYPE
+    ACVP_KTS_IFC_TYPE,
+    ACVP_SAFE_PRIMES_KEYGEN_TYPE,
+    ACVP_SAFE_PRIMES_KEYVER_TYPE
 } ACVP_CAP_TYPE;
 
 /*
@@ -1314,6 +1326,17 @@ typedef struct acvp_kas_ifc_capability_t {
     ACVP_SL_LIST *modulo;
 } ACVP_KAS_IFC_CAP;
 
+
+
+typedef struct acvp_safe_primes_cap_mode_t {
+    ACVP_PARAM_LIST *genmeth;
+} ACVP_SAFE_PRIMES_CAP_MODE;
+
+typedef struct acvp_safe_primes_capability_t {
+    ACVP_CIPHER cipher;
+    ACVP_SAFE_PRIMES_CAP_MODE *mode;
+} ACVP_SAFE_PRIMES_CAP;
+
 typedef struct acvp_kas_kdf_onestep_capability_t {
     ACVP_CIPHER cipher;
     ACVP_NAME_LIST *aux_functions;
@@ -1401,6 +1424,8 @@ typedef struct acvp_caps_list_t {
         ACVP_KAS_KDF_ONESTEP_CAP *kas_kdf_onestep_cap;
         ACVP_KAS_HKDF_CAP *kas_hkdf_cap;
         ACVP_KTS_IFC_CAP *kts_ifc_cap;
+        ACVP_SAFE_PRIMES_CAP *safe_primes_keygen_cap;
+        ACVP_SAFE_PRIMES_CAP *safe_primes_keyver_cap;
     } cap;
 
     int (*crypto_handler)(ACVP_TEST_CASE *test_case);
@@ -1707,6 +1732,8 @@ ACVP_RESULT acvp_kas_kdf_onestep_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 ACVP_RESULT acvp_kas_hkdf_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
 ACVP_RESULT acvp_kts_ifc_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
+
+ACVP_RESULT acvp_safe_primes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
 /*
  * ACVP build registration functions used internally

@@ -1,6 +1,6 @@
 /** @file */
 /*
- * Copyright (c) 2019, Cisco Systems, Inc.
+ * Copyright (c) 2021, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -146,6 +146,17 @@ static ACVP_KTS_IFC_CAP *allocate_kts_ifc_cap(void) {
     ACVP_KTS_IFC_CAP *cap = NULL;
 
     cap = calloc(1, sizeof(ACVP_KTS_IFC_CAP));
+    if (!cap) {
+        return NULL;
+    }
+
+    return cap;
+}
+
+static ACVP_SAFE_PRIMES_CAP *allocate_safe_primes_cap(void) {
+    ACVP_SAFE_PRIMES_CAP *cap = NULL;
+
+    cap = calloc(1, sizeof(ACVP_SAFE_PRIMES_CAP));
     if (!cap) {
         return NULL;
     }
@@ -566,6 +577,22 @@ static ACVP_RESULT acvp_cap_list_append(ACVP_CTX *ctx,
             goto err;
         }
         cap_entry->cap.sym_cap->perform_ctr_tests = 1; //true by default
+        break;
+
+    case ACVP_SAFE_PRIMES_KEYGEN_TYPE:
+        cap_entry->cap.safe_primes_keygen_cap = allocate_safe_primes_cap();
+        if (!cap_entry->cap.safe_primes_keygen_cap) {
+            rv = ACVP_MALLOC_FAIL;
+            goto err;
+        }
+        break;
+
+    case ACVP_SAFE_PRIMES_KEYVER_TYPE:
+        cap_entry->cap.safe_primes_keyver_cap = allocate_safe_primes_cap();
+        if (!cap_entry->cap.safe_primes_keyver_cap) {
+            rv = ACVP_MALLOC_FAIL;
+            goto err;
+        }
         break;
 
     case ACVP_KDF135_TPM_TYPE:
@@ -1861,6 +1888,7 @@ static ACVP_RESULT acvp_validate_prereq_val(ACVP_CIPHER cipher, ACVP_PREREQ_ALG 
             pre_req == ACVP_PREREQ_HMAC ||
             pre_req == ACVP_PREREQ_CMAC ||
             pre_req == ACVP_PREREQ_SHA ||
+            pre_req == ACVP_PREREQ_SAFE_PRIMES ||
             pre_req == ACVP_PREREQ_CCM ||
             pre_req == ACVP_PREREQ_DSA) {
             return ACVP_SUCCESS;
@@ -1900,6 +1928,13 @@ static ACVP_RESULT acvp_validate_prereq_val(ACVP_CIPHER cipher, ACVP_PREREQ_ALG 
         break;
     case ACVP_KDF135_X963:
         if (pre_req == ACVP_PREREQ_SHA) {
+            return ACVP_SUCCESS;
+        }
+        break;
+    case ACVP_SAFE_PRIMES_KEYGEN:
+    case ACVP_SAFE_PRIMES_KEYVER:
+        if (pre_req == ACVP_PREREQ_DRBG ||
+            pre_req == ACVP_PREREQ_SHA) {
             return ACVP_SUCCESS;
         }
         break;
@@ -7221,6 +7256,7 @@ ACVP_RESULT acvp_cap_kas_ecc_set_prereq(ACVP_CTX *ctx,
     case ACVP_PREREQ_AES:
     case ACVP_PREREQ_DSA:
     case ACVP_PREREQ_KAS:
+    case ACVP_PREREQ_SAFE_PRIMES:
     case ACVP_PREREQ_TDES:
     default:
         ACVP_LOG_ERR("\nUnsupported KAS-ECC prereq %d", pre_req);
@@ -7892,6 +7928,7 @@ ACVP_RESULT acvp_cap_kas_ffc_set_prereq(ACVP_CTX *ctx,
     case ACVP_PREREQ_DSA:
     case ACVP_PREREQ_HMAC:
     case ACVP_PREREQ_SHA:
+    case ACVP_PREREQ_SAFE_PRIMES:
         break;
     case ACVP_PREREQ_AES:
     case ACVP_PREREQ_ECDSA:
@@ -9350,5 +9387,118 @@ ACVP_RESULT acvp_cap_kts_ifc_set_scheme_string(ACVP_CTX *ctx,
         break;
     }
 
+    return ACVP_SUCCESS;
+}
+
+ACVP_RESULT acvp_cap_safe_primes_enable(ACVP_CTX *ctx,
+                                        ACVP_CIPHER cipher,
+                                        int (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
+    ACVP_RESULT result = ACVP_NO_CAP;
+
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+    if (!crypto_handler) {
+        ACVP_LOG_ERR("NULL parameter 'crypto_handler'");
+        return ACVP_INVALID_ARG;
+    }
+
+    if (cipher == ACVP_SAFE_PRIMES_KEYGEN) {
+        result = acvp_cap_list_append(ctx, ACVP_SAFE_PRIMES_KEYGEN_TYPE, cipher, crypto_handler);
+    } else if (cipher == ACVP_SAFE_PRIMES_KEYVER) {
+        result = acvp_cap_list_append(ctx, ACVP_SAFE_PRIMES_KEYVER_TYPE, cipher, crypto_handler);
+    } 
+    if (result == ACVP_DUP_CIPHER) {
+        ACVP_LOG_ERR("Capability previously enabled. Duplicate not allowed.");
+    } else if (result == ACVP_MALLOC_FAIL) {
+        ACVP_LOG_ERR("Failed to allocate capability object");
+    } else if (result == ACVP_NO_CAP) {
+        ACVP_LOG_ERR("Invalid capability");
+        return ACVP_NO_CAP;
+    }
+
+    return result;
+}
+
+ACVP_RESULT acvp_cap_safe_primes_set_parm(ACVP_CTX *ctx,
+                                          ACVP_CIPHER cipher,
+                                          ACVP_SAFE_PRIMES_PARAM param,
+                                          ACVP_SAFE_PRIMES_MODE mode) {
+    ACVP_CAPS_LIST *cap;
+    ACVP_SAFE_PRIMES_CAP *safe_primes_cap;
+    ACVP_SAFE_PRIMES_CAP_MODE *safe_primes_cap_mode;
+    ACVP_PARAM_LIST *current_genmeth;
+
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+
+    cap = acvp_locate_cap_entry(ctx, cipher);
+    if (!cap) {
+        return ACVP_NO_CAP;
+    }
+
+    if (cipher == ACVP_SAFE_PRIMES_KEYGEN) {
+        safe_primes_cap = cap->cap.safe_primes_keygen_cap;
+    } else if (cipher == ACVP_SAFE_PRIMES_KEYVER) {
+        safe_primes_cap = cap->cap.safe_primes_keyver_cap;
+    } else {
+        ACVP_LOG_ERR("Invalid capability");
+        return ACVP_NO_CAP;
+    }
+
+    if (!safe_primes_cap) {
+        return ACVP_NO_CAP;
+    }
+    if (!safe_primes_cap->mode) {
+        safe_primes_cap->mode = calloc(1, sizeof(ACVP_SAFE_PRIMES_CAP_MODE));
+    }
+
+    safe_primes_cap_mode = safe_primes_cap->mode;
+    if (!safe_primes_cap_mode) {
+        return ACVP_NO_CAP;
+    }
+    switch (cipher) {
+    case ACVP_SAFE_PRIMES_KEYVER:
+        switch (param) {
+        case ACVP_SAFE_PRIMES_GENMETH:
+            current_genmeth = safe_primes_cap_mode->genmeth;
+            if (current_genmeth) {
+                while (current_genmeth->next) {
+                    current_genmeth = current_genmeth->next;
+                }
+                current_genmeth->next = calloc(1, sizeof(ACVP_PARAM_LIST));
+                current_genmeth->next->param = mode;
+            } else {
+                safe_primes_cap_mode->genmeth = calloc(1, sizeof(ACVP_PARAM_LIST));
+                safe_primes_cap_mode->genmeth->param = mode;
+            }
+            break;
+        default:
+            break;
+        }
+        break;
+    case ACVP_SAFE_PRIMES_KEYGEN:
+        switch (param) {
+        case ACVP_SAFE_PRIMES_GENMETH:
+            current_genmeth = safe_primes_cap_mode->genmeth;
+            if (current_genmeth) {
+                while (current_genmeth->next) {
+                    current_genmeth = current_genmeth->next;
+                }
+                current_genmeth->next = calloc(1, sizeof(ACVP_PARAM_LIST));
+                current_genmeth->next->param = mode;
+            } else {
+                safe_primes_cap_mode->genmeth = calloc(1, sizeof(ACVP_PARAM_LIST));
+                safe_primes_cap_mode->genmeth->param = mode;
+            }
+            break;
+        default:
+            break;
+        }
+        break;
+    default:
+        break;
+    }
     return ACVP_SUCCESS;
 }
