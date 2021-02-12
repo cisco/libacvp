@@ -126,7 +126,7 @@ static ACVP_RESULT acvp_safe_primes_init_tc(ACVP_CTX *ctx,
 
     stc->tg_id = tg_id;
     stc->tc_id = tc_id;
-    stc->dgm = dgm;;
+    stc->dgm = dgm;
     stc->test_type = test_type;
     stc-> cipher = alg_id;
 
