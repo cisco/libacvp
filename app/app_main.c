@@ -245,6 +245,10 @@ int main(int argc, char **argv) {
         acvp_mark_as_post_only(ctx, cfg.post_filename);
     }
 
+    if (cfg.delete) {
+        acvp_mark_as_delete_only(ctx, cfg.delete_url);
+    }
+
     if (cfg.vector_req && !cfg.vector_rsp) {
         acvp_mark_as_request_only(ctx, cfg.vector_req_file);
     }
@@ -393,6 +397,15 @@ int main(int argc, char **argv) {
     
     if (cfg.resume_session) {
         rv = acvp_resume_test_session(ctx, cfg.session_file, cfg.fips_validation);
+        goto end;
+    }
+
+    if (cfg.cancel_session) {
+        if (cfg.save_to) {
+            rv = acvp_cancel_test_session(ctx, cfg.session_file, cfg.save_file);
+        } else {
+            rv = acvp_cancel_test_session(ctx, cfg.session_file, NULL);
+        }
         goto end;
     }
 

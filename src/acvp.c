@@ -578,7 +578,8 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx) {
     if (ctx->session_url) { free(ctx->session_url); }
     if (ctx->vector_req_file) { free(ctx->vector_req_file); }
     if (ctx->get_string) { free(ctx->get_string); }
-    if (ctx->get_filename) { free(ctx->get_filename); }
+    if (ctx->delete_string) { free(ctx->delete_string); }
+    if (ctx->save_filename) { free(ctx->save_filename); }
     if (ctx->post_filename) { free(ctx->post_filename); }
     if (ctx->put_filename) { free(ctx->put_filename); }
     if (ctx->jwt_token) { free(ctx->jwt_token); }
@@ -1588,6 +1589,70 @@ end:
     return rv;
 }
 
+/**
+ * Allows application (with proper authentication) to connect to server and request
+ * it cancel the session, halting processing and deleting related data
+ */
+ACVP_RESULT acvp_cancel_test_session(ACVP_CTX *ctx, const char *request_filename, const char *save_filename) {
+    ACVP_RESULT rv = ACVP_SUCCESS;
+    JSON_Value *val = NULL;
+    int len = 0;
+
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+
+    if (save_filename) {
+        len = strnlen_s(save_filename, ACVP_JSON_FILENAME_MAX + 1);
+        if (len > ACVP_JSON_FILENAME_MAX || len <= 0) {
+            ACVP_LOG_ERR("Provided save filename too long or too short");
+            rv = ACVP_INVALID_ARG;
+            goto end;
+        }
+    }
+
+    rv = acvp_parse_session_info_file(ctx, request_filename);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Error reading session info file, unable to cancel session");
+        goto end;
+    }
+
+    rv = acvp_refresh(ctx);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Failed to refresh login with ACVP server");
+        goto end;
+    }
+
+    rv = acvp_transport_delete(ctx, ctx->session_url);
+
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Unable to cancel test session");
+        goto end;
+    }
+    if (save_filename) {
+        ACVP_LOG_STATUS("Saving cancel request response to specified file...");
+        val = json_parse_string(ctx->curl_buf);
+        if (!val) {
+            ACVP_LOG_ERR("Unable to parse JSON. printing output instead...");
+        } else {
+            rv = acvp_json_serialize_to_file_pretty_w(val, save_filename);
+            if (rv != ACVP_SUCCESS) {
+                ACVP_LOG_ERR("Failed to write file, printing instead...");
+            } else {
+                rv = acvp_json_serialize_to_file_pretty_a(NULL, save_filename);
+                if (rv != ACVP_SUCCESS)
+                    ACVP_LOG_WARN("Unable to append ending ] to write file");
+                goto end;
+            }
+        }
+    }
+    ACVP_LOG_STATUS("DELETE Response:\n\n%s\n", ctx->curl_buf);
+
+end:
+    if (val) json_value_free(val);
+    return rv;
+}
+
 /*
  * Allows application to set JSON filename within context
  * to be read in during registration
@@ -1846,12 +1911,12 @@ ACVP_RESULT acvp_set_get_save_file(ACVP_CTX *ctx, char *filename) {
         ACVP_LOG_ERR("Provided filename invalid");
         return ACVP_INVALID_ARG;
     }
-    if (ctx->get_filename) { free(ctx->get_filename); }
-    ctx->get_filename = calloc(filenameLen + 1, sizeof(char));
-    if (!ctx->get_filename) {
+    if (ctx->save_filename) { free(ctx->save_filename); }
+    ctx->save_filename = calloc(filenameLen + 1, sizeof(char));
+    if (!ctx->save_filename) {
         return ACVP_MALLOC_FAIL;
     }
-    strncpy_s(ctx->get_filename, filenameLen + 1, filename, filenameLen);
+    strncpy_s(ctx->save_filename, filenameLen + 1, filename, filenameLen);
     return ACVP_SUCCESS;
 }
 
@@ -1885,7 +1950,7 @@ ACVP_RESULT acvp_mark_as_post_only(ACVP_CTX *ctx, char *filename) {
     if (!filename) {
         return ACVP_MISSING_ARG;
     }
-    if (strnlen_s(filename, ACVP_REQUEST_STR_LEN_MAX + 1) > ACVP_SESSION_PARAMS_STR_LEN_MAX) {
+    if (strnlen_s(filename, ACVP_SESSION_PARAMS_STR_LEN_MAX + 1) > ACVP_SESSION_PARAMS_STR_LEN_MAX) {
          ACVP_LOG_ERR("Request filename is suspiciously long...");
         return ACVP_INVALID_ARG;
     }
@@ -1898,6 +1963,29 @@ ACVP_RESULT acvp_mark_as_post_only(ACVP_CTX *ctx, char *filename) {
 
     strcpy_s(ctx->post_filename, ACVP_SESSION_PARAMS_STR_LEN_MAX + 1, filename);
     ctx->post = 1;
+    return ACVP_SUCCESS;
+}
+
+ACVP_RESULT acvp_mark_as_delete_only(ACVP_CTX *ctx, char *request_url) {
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+    if (!request_url) {
+        return ACVP_MISSING_ARG;
+    }
+    int requestLen = strnlen_s(request_url, ACVP_REQUEST_STR_LEN_MAX + 1);
+    if (requestLen > ACVP_REQUEST_STR_LEN_MAX || requestLen <= 0) {
+        ACVP_LOG_ERR("Request URL is too long or too short");
+        return ACVP_INVALID_ARG;
+    }
+
+    ctx->delete_string = calloc(ACVP_REQUEST_STR_LEN_MAX + 1, sizeof(char));
+    if (!ctx->delete_string) {
+        return ACVP_MALLOC_FAIL;
+    }
+
+    strcpy_s(ctx->delete_string, ACVP_REQUEST_STR_LEN_MAX + 1, request_url);
+    ctx->delete = 1;
     return ACVP_SUCCESS;
 }
 
@@ -3233,6 +3321,7 @@ end:
 
 ACVP_RESULT acvp_run(ACVP_CTX *ctx, int fips_validation) {
     ACVP_RESULT rv = ACVP_SUCCESS;
+    JSON_Value *val = NULL;
 
     if (ctx == NULL) return ACVP_NO_CTX;
 
@@ -3248,18 +3337,17 @@ ACVP_RESULT acvp_run(ACVP_CTX *ctx, int fips_validation) {
 
     if (ctx->get) { 
         rv = acvp_transport_get(ctx, ctx->get_string, NULL);
-        if (ctx->get_filename) {
+        if (ctx->save_filename) {
             ACVP_LOG_STATUS("Saving GET result to specified file...");
-            JSON_Value *val = NULL;
             val = json_parse_string(ctx->curl_buf);
             if (!val) {
                 ACVP_LOG_ERR("Unable to parse JSON. printing output instead...");
             } else {
-                rv = acvp_json_serialize_to_file_pretty_w(val, ctx->get_filename);
+                rv = acvp_json_serialize_to_file_pretty_w(val, ctx->save_filename);
                 if (rv != ACVP_SUCCESS) {
                     ACVP_LOG_ERR("Failed to write file, printing instead...");
                 } else {
-                    rv = acvp_json_serialize_to_file_pretty_a(NULL, ctx->get_filename);
+                    rv = acvp_json_serialize_to_file_pretty_a(NULL, ctx->save_filename);
                     if (rv != ACVP_SUCCESS)
                         ACVP_LOG_WARN("Unable to append ending ] to write file");
                     goto end;
@@ -3276,6 +3364,34 @@ ACVP_RESULT acvp_run(ACVP_CTX *ctx, int fips_validation) {
 
     if (ctx->post) { 
         rv = acvp_post_data(ctx, ctx->post_filename);
+        goto end;
+    }
+
+    if (ctx->delete) {
+        rv = acvp_transport_delete(ctx, ctx->delete_string);
+        if (ctx->save_filename) {
+            ACVP_LOG_STATUS("Saving DELETE response to specified file...");
+            JSON_Value *val = NULL;
+            val = json_parse_string(ctx->curl_buf);
+            if (!val) {
+                ACVP_LOG_ERR("Unable to parse JSON. printing output instead...");
+            } else {
+                rv = acvp_json_serialize_to_file_pretty_w(val, ctx->save_filename);
+                if (rv != ACVP_SUCCESS) {
+                    ACVP_LOG_ERR("Failed to write file, printing instead...");
+                } else {
+                    rv = acvp_json_serialize_to_file_pretty_a(NULL, ctx->save_filename);
+                    if (rv != ACVP_SUCCESS)
+                        ACVP_LOG_WARN("Unable to append ending ] to write file");
+                    goto end;
+                }
+            }
+        }
+        if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
+            printf("\n\n%s\n\n", ctx->curl_buf);
+        } else {
+            ACVP_LOG_STATUS("DELETE Response:\n\n%s\n", ctx->curl_buf);
+        }
         goto end;
     }
 
@@ -3349,6 +3465,7 @@ ACVP_RESULT acvp_run(ACVP_CTX *ctx, int fips_validation) {
        rv = acvp_put_data_from_ctx(ctx);
    }
 end:
+    if (val) json_value_free(val);
     return rv;
 }
 
