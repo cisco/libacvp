@@ -201,6 +201,16 @@ typedef enum acvp_prereq_mode_t {
     ACVP_PREREQ_TDES
 } ACVP_PREREQ_ALG;
 
+/*! @struct ACVP_CONFORMANCE
+ *  @brief this enum lists different conformances that can be claimed
+ *  in libacvp. These are largely algorithm specific
+ */
+typedef enum acvp_conformance_t {
+    ACVP_CONFORMANCE_DEFAULT = 0,
+    ACVP_CONFORMANCE_RFC3686,
+    ACVP_CONFORMANCE_MAX
+} ACVP_CONFORMANCE;
+
 /*!
  * @enum ACVP_HASH_ALG
  * @brief Represents the general hash algorithms.
@@ -602,7 +612,8 @@ typedef enum acvp_sym_cipher_parameter {
     ACVP_SYM_CIPH_PARM_CTR_OVRFLW,
     ACVP_SYM_CIPH_PARM_IVGEN_MODE,
     ACVP_SYM_CIPH_PARM_IVGEN_SRC,
-    ACVP_SYM_CIPH_PARM_SALT_SRC
+    ACVP_SYM_CIPH_PARM_SALT_SRC,
+    ACVP_SYM_CIPH_PARM_CONFORMANCE
 } ACVP_SYM_CIPH_PARM;
 
 /*! @struct ACVP_SYM_CIPH_TWEAK_MODE */
@@ -706,6 +717,7 @@ typedef enum acvp_cmac_msg_len_index {
  */
 typedef struct acvp_sym_cipher_tc_t {
     ACVP_CIPHER cipher;
+    ACVP_CONFORMANCE conformance;
     ACVP_SYM_CIPH_TESTTYPE test_type; /* KAT or MCT */
     ACVP_SYM_CIPH_DIR direction;      /* encrypt or decrypt */
     ACVP_SYM_CIPH_IVGEN_SRC ivgen_source;

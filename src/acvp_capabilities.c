@@ -1427,6 +1427,7 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
     case ACVP_SYM_CIPH_PARM_IVGEN_MODE:
     case ACVP_SYM_CIPH_PARM_IVGEN_SRC:
     case ACVP_SYM_CIPH_PARM_SALT_SRC:
+    case ACVP_SYM_CIPH_PARM_CONFORMANCE:
     default:
         break;
     }
@@ -1536,6 +1537,7 @@ static ACVP_RESULT acvp_validate_sym_cipher_domain_value(ACVP_CIPHER cipher, ACV
         default:
             break;
         }
+        break;
     case ACVP_AES_XTS:
         switch (parm) {
         case ACVP_SYM_CIPH_PTLEN:
@@ -2172,6 +2174,7 @@ ACVP_RESULT acvp_cap_sym_cipher_set_domain(ACVP_CTX *ctx,
     case ACVP_SYM_CIPH_KEYLEN:
     case ACVP_SYM_CIPH_TAGLEN:
     case ACVP_SYM_CIPH_TWEAK:
+    case ACVP_SYM_CIPH_PARM_CONFORMANCE:
         ACVP_LOG_ERR("Invalid parameter %d for acvp_cap_sym_cipher_set_domain. Use acvp_cap_sym_cipher_set_parm.", parm);
         return ACVP_INVALID_ARG;
     case ACVP_SYM_CIPH_IVLEN:
@@ -2442,6 +2445,14 @@ ACVP_RESULT acvp_cap_sym_cipher_set_parm(ACVP_CTX *ctx,
             ACVP_LOG_ERR("Invalid parameter 'value' for parm ACVP_SYM_CIPH_PARM_SALT_SRC");
             return ACVP_INVALID_ARG;
         }
+    case ACVP_SYM_CIPH_PARM_CONFORMANCE:
+        if (cipher == ACVP_AES_CTR && value == ACVP_CONFORMANCE_RFC3686) {
+            cap->cap.sym_cap->conformance = ACVP_CONFORMANCE_RFC3686;
+            return ACVP_SUCCESS;
+        } else {
+            ACVP_LOG_ERR("Invalid parameter 'value' for parm ACVP_SYM_CIPH_PARM_CONFORMANCE");
+            return ACVP_INVALID_ARG;
+        }
 
     case ACVP_SYM_CIPH_KEYLEN:
     case ACVP_SYM_CIPH_TAGLEN:
@@ -2500,6 +2511,7 @@ ACVP_RESULT acvp_cap_sym_cipher_set_parm(ACVP_CTX *ctx,
     case ACVP_SYM_CIPH_PARM_CTR_OVRFLW:
     case ACVP_SYM_CIPH_PARM_IVGEN_MODE:
     case ACVP_SYM_CIPH_PARM_IVGEN_SRC:
+    case ACVP_SYM_CIPH_PARM_CONFORMANCE:
     default:
         return ACVP_INVALID_ARG;
     }
