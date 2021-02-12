@@ -139,7 +139,7 @@ static void print_usage(int code) {
     printf("      --put <metadata file>\n");
     printf("\n");
     printf("To request to DELETE a resource you have created on the server:\n");
-    printf("      --delete <url>");
+    printf("      --delete <url>\n");
     printf("If you are running a sample registration (querying for correct answers\n");
     printf("in addition to the normal registration flow) use:\n");
     printf("      --sample\n");
