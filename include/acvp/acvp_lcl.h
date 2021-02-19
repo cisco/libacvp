@@ -13,7 +13,7 @@
 #include "parson.h"
 
 #define ACVP_VERSION    "1.0"
-#define ACVP_LIBRARY_VERSION    "libacvp_oss-1.2.0"
+#define ACVP_LIBRARY_VERSION    "libacvp_oss-1.3.0"
 
 
 #ifndef ACVP_LOG_ERR
@@ -1206,10 +1206,18 @@ typedef struct acvp_rsa_prim_capability_t {
 } ACVP_RSA_PRIM_CAP;
 
 
+typedef struct acvp_curve_hash_compatibility_list_t {
+    ACVP_EC_CURVE curve;
+    ACVP_HASH_ALG algs[ACVP_HASH_ALG_MAX]; //flags for all supported hash algs for curve, use arr so we can memcmp
+    struct acvp_curve_hash_compatibility_list_t *next;
+} ACVP_CURVE_ALG_COMPAT_LIST;
+
 typedef struct acvp_ecdsa_capability_t {
-    ACVP_NAME_LIST *curves;
+    //Contains registered curves and hash algs to be used specifically for each curve
+    ACVP_CURVE_ALG_COMPAT_LIST *curves;
     ACVP_NAME_LIST *secret_gen_modes;
-    ACVP_NAME_LIST *hash_algs;
+    //For backwards compatibility, this contains hash algs that will be used with ALL registered curves (HASH_ALG = array index)
+    int hash_algs[ACVP_HASH_ALG_MAX + 1];
 } ACVP_ECDSA_CAP;
 
 typedef struct acvp_rsa_sig_capability_t {

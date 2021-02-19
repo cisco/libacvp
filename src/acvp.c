@@ -216,6 +216,24 @@ static void acvp_free_prereqs(ACVP_CAPS_LIST *cap_list) {
 }
 
 /*
+ * Free internal memory for EC curve/hash alg list
+ */
+static void acvp_cap_free_ec_alg_list(ACVP_CURVE_ALG_COMPAT_LIST *list) {
+    ACVP_CURVE_ALG_COMPAT_LIST *tmp = NULL, *tmp2 = NULL;
+
+    if (!list) {
+        return;
+    }
+
+    tmp = list;
+    while (tmp) {
+        tmp2 = tmp;
+        tmp = tmp->next;
+        free(tmp2);
+    }
+}
+
+/*
  * Free Internal memory for DSA operations. Since it supports
  * multiple modes, we have to free the whole list
  */
@@ -696,23 +714,21 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx) {
                 free(cap_entry->cap.rsa_prim_cap);
                 break;
             case ACVP_ECDSA_KEYGEN_TYPE:
-                acvp_cap_free_nl(cap_entry->cap.ecdsa_keygen_cap->curves);
+                acvp_cap_free_ec_alg_list(cap_entry->cap.ecdsa_keygen_cap->curves);
                 acvp_cap_free_nl(cap_entry->cap.ecdsa_keygen_cap->secret_gen_modes);
                 free(cap_entry->cap.ecdsa_keygen_cap);
                 break;
             case ACVP_ECDSA_KEYVER_TYPE:
-                acvp_cap_free_nl(cap_entry->cap.ecdsa_keyver_cap->curves);
+                acvp_cap_free_ec_alg_list(cap_entry->cap.ecdsa_keyver_cap->curves);
                 acvp_cap_free_nl(cap_entry->cap.ecdsa_keyver_cap->secret_gen_modes);
                 free(cap_entry->cap.ecdsa_keyver_cap);
                 break;
             case ACVP_ECDSA_SIGGEN_TYPE:
-                acvp_cap_free_nl(cap_entry->cap.ecdsa_siggen_cap->curves);
-                acvp_cap_free_nl(cap_entry->cap.ecdsa_siggen_cap->hash_algs);
+                acvp_cap_free_ec_alg_list(cap_entry->cap.ecdsa_siggen_cap->curves);
                 free(cap_entry->cap.ecdsa_siggen_cap);
                 break;
             case ACVP_ECDSA_SIGVER_TYPE:
-                acvp_cap_free_nl(cap_entry->cap.ecdsa_sigver_cap->curves);
-                acvp_cap_free_nl(cap_entry->cap.ecdsa_sigver_cap->hash_algs);
+                acvp_cap_free_ec_alg_list(cap_entry->cap.ecdsa_sigver_cap->curves);
                 free(cap_entry->cap.ecdsa_sigver_cap);
                 break;
             case ACVP_KDF135_SRTP_TYPE:
@@ -1313,7 +1329,11 @@ ACVP_RESULT acvp_get_expected_results(ACVP_CTX *ctx, const char *request_filenam
         goto end;
     }
 
-    acvp_refresh(ctx);
+    rv = acvp_refresh(ctx);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Failed to refresh login with ACVP server");
+        goto end;
+    }
 
     rv = acvp_retrieve_vector_set_result(ctx, ctx->session_url);
     if (rv != ACVP_SUCCESS) {
