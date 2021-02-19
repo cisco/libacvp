@@ -20,6 +20,7 @@
 #include "acvp_lcl.h"
 #include "parson.h"
 #include "safe_str_lib.h"
+#include "safe_mem_lib.h"
 
 typedef struct acvp_prereqs_mode_name_t {
     ACVP_PREREQ_ALG alg;
@@ -1109,10 +1110,13 @@ static ACVP_RESULT acvp_build_rsa_prim_register_cap(JSON_Object *cap_obj, ACVP_C
 static ACVP_RESULT acvp_build_ecdsa_register_cap(ACVP_CIPHER cipher, JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry) {
     ACVP_RESULT result;
     JSON_Array *caps_arr = NULL, *curves_arr = NULL, *secret_modes_arr = NULL, *hash_arr = NULL;
-    ACVP_NAME_LIST *current_curve = NULL, *current_secret_mode = NULL, *current_hash = NULL;
+    ACVP_CURVE_ALG_COMPAT_LIST *current_curve = NULL, *iter = NULL;
+    ACVP_NAME_LIST *current_secret_mode = NULL;
     JSON_Value *alg_caps_val = NULL;
     JSON_Object *alg_caps_obj = NULL;
-    const char *revision = NULL;
+    const char *revision = NULL, *tmp = NULL;
+    int i = 0, diff = 0;
+    ACVP_EC_CURVE track[ACVP_EC_CURVE_END + 1] = { 0 };
 
     json_object_set_string(cap_obj, "algorithm", "ECDSA");
 
@@ -1142,7 +1146,16 @@ static ACVP_RESULT acvp_build_ecdsa_register_cap(ACVP_CIPHER cipher, JSON_Object
             return ACVP_NO_CAP;
         }
         current_curve = cap_entry->cap.ecdsa_siggen_cap->curves;
-        current_hash = cap_entry->cap.ecdsa_siggen_cap->hash_algs;
+        //add "universally" set hash algs here instead of later to be resliant to different combos of API calls
+        while (current_curve) {
+            for (i = 0; i < ACVP_HASH_ALG_MAX; i++) {
+                if (cap_entry->cap.ecdsa_siggen_cap->hash_algs[i]) {
+                    current_curve->algs[i] = 1;
+                }
+            }
+            current_curve = current_curve->next;
+        }
+        current_curve = cap_entry->cap.ecdsa_siggen_cap->curves;
         break;
     case ACVP_ECDSA_SIGVER:
         json_object_set_string(cap_obj, "mode", "sigVer");
@@ -1150,7 +1163,16 @@ static ACVP_RESULT acvp_build_ecdsa_register_cap(ACVP_CIPHER cipher, JSON_Object
             return ACVP_NO_CAP;
         }
         current_curve = cap_entry->cap.ecdsa_sigver_cap->curves;
-        current_hash = cap_entry->cap.ecdsa_sigver_cap->hash_algs;
+        //add "universally" set hash algs here instead of later to be resliant to different combos of API calls
+        while (current_curve) {
+            for (i = 0; i < ACVP_HASH_ALG_MAX; i++) {
+                if (cap_entry->cap.ecdsa_sigver_cap->hash_algs[i]) {
+                    current_curve->algs[i] = 1;
+                }
+            }
+            current_curve = current_curve->next;
+        }
+        current_curve = cap_entry->cap.ecdsa_sigver_cap->curves;
         break;
     case ACVP_CIPHER_START:
     case ACVP_AES_GCM:
@@ -1248,35 +1270,27 @@ static ACVP_RESULT acvp_build_ecdsa_register_cap(ACVP_CIPHER cipher, JSON_Object
     result = acvp_lookup_prereqVals(cap_obj, cap_entry);
     if (result != ACVP_SUCCESS) { return result; }
 
-    if (cipher == ACVP_ECDSA_SIGVER || cipher == ACVP_ECDSA_SIGGEN) {
-        json_object_set_value(cap_obj, "capabilities", json_value_init_array());
-        caps_arr = json_object_get_array(cap_obj, "capabilities");
+    if (!current_curve) {
+        if (alg_caps_val) json_value_free(alg_caps_val);
+        return ACVP_MISSING_ARG;
     }
 
     /*
      * Iterate through list of ECDSA modes and create registration object
      * for each one, appending to the array as we go
      */
-    if (cipher == ACVP_ECDSA_SIGVER || cipher == ACVP_ECDSA_SIGGEN) {
-        alg_caps_val = json_value_init_object();
-        alg_caps_obj = json_value_get_object(alg_caps_val);
-        json_object_set_value(alg_caps_obj, "curve", json_value_init_array());
-        curves_arr = json_object_get_array(alg_caps_obj, "curve");
-    } else {
+    if (cipher == ACVP_ECDSA_KEYVER || cipher == ACVP_ECDSA_KEYGEN) {
         json_object_set_value(cap_obj, "curve", json_value_init_array());
         curves_arr = json_object_get_array(cap_obj, "curve");
-    }
-    if (!current_curve) {
-        if (alg_caps_val)  json_value_free(alg_caps_val);
-        return ACVP_MISSING_ARG;
-    }
-    while (current_curve) {
-        if (!current_curve->name) {
-            if (alg_caps_val)  json_value_free(alg_caps_val);
-            return ACVP_MISSING_ARG;
+        while (current_curve) {
+            tmp = acvp_lookup_ec_curve_name(cipher, current_curve->curve);
+            if (!tmp) {
+                if (alg_caps_val) json_value_free(alg_caps_val);
+                return ACVP_MISSING_ARG;
+            }
+            json_array_append_string(curves_arr, tmp);
+            current_curve = current_curve->next;
         }
-        json_array_append_string(curves_arr, current_curve->name);
-        current_curve = current_curve->next;
     }
 
     if (cipher == ACVP_ECDSA_KEYGEN) {
@@ -1291,19 +1305,86 @@ static ACVP_RESULT acvp_build_ecdsa_register_cap(ACVP_CIPHER cipher, JSON_Object
         }
     }
 
+    /**
+     * hashAlgs is relatively complicated. We want to compare every curve that is registered and the hash
+     * algs registered to them. If they have the same hash algs, we put them in the same object within
+     * the capabilities array. If they have different hash algs, a new object is created.
+     */
     if (cipher == ACVP_ECDSA_SIGGEN || cipher == ACVP_ECDSA_SIGVER) {
-        json_object_set_value(alg_caps_obj, "hashAlg", json_value_init_array());
-        hash_arr = json_object_get_array(alg_caps_obj, "hashAlg");
-        while (current_hash) {
-            if (!current_hash->name) {
-                if (alg_caps_val)  json_value_free(alg_caps_val);
+        json_object_set_value(cap_obj, "capabilities", json_value_init_array());
+        caps_arr = json_object_get_array(cap_obj, "capabilities");
+
+        while (current_curve) {
+            if (!current_curve->curve) {
+                if (alg_caps_val) json_value_free(alg_caps_val);
                 return ACVP_MISSING_ARG;
             }
-            json_array_append_string(hash_arr, current_hash->name);
-            current_hash = current_hash->next;
+
+            if (track[current_curve->curve]) {
+                current_curve = current_curve->next;
+                continue;
+            }
+
+            //One of these vals for every object in the array - every object being list of curves
+            //that share the same hashAlgs
+            alg_caps_val = json_value_init_object();
+            alg_caps_obj = json_value_get_object(alg_caps_val);
+
+            json_object_set_value(alg_caps_obj, "curve", json_value_init_array());
+            curves_arr = json_object_get_array(alg_caps_obj, "curve");
+            json_object_set_value(alg_caps_obj, "hashAlg", json_value_init_array());
+            hash_arr = json_object_get_array(alg_caps_obj, "hashAlg");
+
+            tmp = acvp_lookup_ec_curve_name(cipher, current_curve->curve);
+            if (!tmp) {
+                if (alg_caps_val) json_value_free(alg_caps_val);
+                return ACVP_INVALID_ARG;
+            }
+
+            //Add current curve and its hash algs to current obj
+            json_array_append_string(curves_arr, tmp);
+            for (i = 0; i < ACVP_HASH_ALG_MAX; i++) {
+                if (current_curve->algs[i]) {
+                    tmp = acvp_lookup_hash_alg_name(i);
+                    if (!tmp) {
+                        if (alg_caps_val) json_value_free(alg_caps_val);
+                        return ACVP_INVALID_ARG;
+                    }
+                    json_array_append_string(hash_arr, tmp);
+                }
+            }
+            //Track that we have already dealt with this curve
+            track[current_curve->curve] = 1;
+
+            //Now, check every curve on the list aftetwards, and memcmp to see if it has the same hashAlgs,
+            //appending it to the same obj when applicable
+            iter = current_curve->next;
+            while (iter) {
+                //If the curve is already accounted for by a previous current_curve, skip
+                if (current_curve->curve == iter->curve || track[iter->curve]) {
+                    iter = iter->next;
+                    continue;
+                }
+                memcmp_s(current_curve->algs, sizeof(current_curve->algs), iter->algs, sizeof(iter->algs), &diff);
+                if (!diff) {
+                    //if they have the same algs arrays, they go in the same obj in the capabilities array
+                    tmp = acvp_lookup_ec_curve_name(cipher, iter->curve);
+                    if (!tmp) {
+                        if (alg_caps_val) json_value_free(alg_caps_val);
+                        return ACVP_INVALID_ARG;
+                    }
+                    json_array_append_string(curves_arr, tmp);
+                    track[iter->curve] = 1;
+                }
+                iter = iter->next;
+            }
+
+            //Now, append the obj to the array before moving on
+            json_array_append_value(caps_arr, alg_caps_val);
+            current_curve = current_curve->next;
         }
-        json_array_append_value(caps_arr, alg_caps_val);
     }
+
     return ACVP_SUCCESS;
 }
 

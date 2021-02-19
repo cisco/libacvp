@@ -1368,7 +1368,8 @@ Test(EnableCapECDSA, good_siggen, .fini = teardown) {
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_ECDSA_HASH_ALG, ACVP_SHA256);
     cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_ECDSA_HASH_ALG, ACVP_SHA384);
+    //rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_ECDSA_HASH_ALG, ACVP_SHA384);
+    rv = acvp_cap_ecdsa_set_curve_hash_alg(ctx, ACVP_ECDSA_SIGGEN, ACVP_EC_CURVE_B409, ACVP_SHA384);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_ECDSA_HASH_ALG, ACVP_SHA512);
     cr_assert(rv == ACVP_SUCCESS);
@@ -1386,6 +1387,12 @@ Test(EnableCapECDSA, invalid_args_sg, .fini = teardown) {
     rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_ECDSA_CURVE, 256);
     cr_assert(rv == ACVP_INVALID_ARG);
     rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_ECDSA_HASH_ALG, 257);
+    cr_assert(rv == ACVP_INVALID_ARG);
+    rv = acvp_cap_ecdsa_set_curve_hash_alg(ctx, ACVP_ECDSA_SIGGEN, ACVP_EC_CURVE_K233, ACVP_SHA224);
+    cr_assert(rv == ACVP_UNSUPPORTED_OP);
+    rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_ECDSA_CURVE, ACVP_EC_CURVE_P192);
+    cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_ecdsa_set_curve_hash_alg(ctx, ACVP_ECDSA_SIGGEN, ACVP_EC_CURVE_P192, 3);
     cr_assert(rv == ACVP_INVALID_ARG);
 }
 
@@ -1429,7 +1436,8 @@ Test(EnableCapECDSA, good_sigver, .fini = teardown) {
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_ECDSA_HASH_ALG, ACVP_SHA256);
     cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_ECDSA_HASH_ALG, ACVP_SHA384);
+    //rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_ECDSA_HASH_ALG, ACVP_SHA384);
+    rv = acvp_cap_ecdsa_set_curve_hash_alg(ctx, ACVP_ECDSA_SIGVER, ACVP_EC_CURVE_B409, ACVP_SHA384);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_ECDSA_HASH_ALG, ACVP_SHA512);
     cr_assert(rv == ACVP_SUCCESS);
@@ -1446,6 +1454,12 @@ Test(EnableCapECDSA, invalid_args_sv, .fini = teardown) {
     rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_ECDSA_CURVE, 256);
     cr_assert(rv == ACVP_INVALID_ARG);
     rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_ECDSA_HASH_ALG, 257);
+    cr_assert(rv == ACVP_INVALID_ARG);
+    rv = acvp_cap_ecdsa_set_curve_hash_alg(ctx, ACVP_ECDSA_SIGVER, ACVP_EC_CURVE_K233, ACVP_SHA224);
+    cr_assert(rv == ACVP_UNSUPPORTED_OP);
+    rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_ECDSA_CURVE, ACVP_EC_CURVE_P192);
+    cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_ecdsa_set_curve_hash_alg(ctx, ACVP_ECDSA_SIGVER, ACVP_EC_CURVE_P192, 3);
     cr_assert(rv == ACVP_INVALID_ARG);
 }
 

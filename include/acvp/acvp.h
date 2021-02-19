@@ -2680,6 +2680,12 @@ ACVP_RESULT acvp_cap_ecdsa_set_parm(ACVP_CTX *ctx,
                                     ACVP_ECDSA_PARM param,
                                     int value);
 
+ACVP_RESULT acvp_cap_ecdsa_set_curve_hash_alg(ACVP_CTX *ctx,
+                                              ACVP_CIPHER cipher,
+                                              ACVP_EC_CURVE curve,
+                                              ACVP_HASH_ALG alg);
+
+
 /*! @brief acvp_enable_rsa_bignum_parm() allows an application to specify
        BIGNUM operational parameters to be used for a given RSA alg during a
        test session with the ACVP server.

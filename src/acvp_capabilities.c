@@ -5518,7 +5518,8 @@ ACVP_RESULT acvp_cap_ecdsa_set_parm(ACVP_CTX *ctx,
                                     ACVP_ECDSA_PARM param,
                                     int value) {
     ACVP_CAPS_LIST *cap_list;
-    ACVP_NAME_LIST *current_curve, *current_secret_mode, *current_hash;
+    ACVP_CURVE_ALG_COMPAT_LIST *current_curve;
+    ACVP_NAME_LIST *current_secret_mode;
     ACVP_ECDSA_CAP *cap;
     const char *string = NULL;
 
@@ -5638,8 +5639,7 @@ ACVP_RESULT acvp_cap_ecdsa_set_parm(ACVP_CTX *ctx,
 
     switch (param) {
     case ACVP_ECDSA_CURVE:
-        string = acvp_lookup_ec_curve_name(cipher, value);
-        if (!string) {
+        if (value <= ACVP_EC_CURVE_START || value >= ACVP_EC_CURVE_END) {
             ACVP_LOG_ERR("Invalid 'value' for ACVP_ECDSA_CURVE");
             return ACVP_INVALID_ARG;
         }
@@ -5649,11 +5649,11 @@ ACVP_RESULT acvp_cap_ecdsa_set_parm(ACVP_CTX *ctx,
             while (current_curve->next) {
                 current_curve = current_curve->next;
             }
-            current_curve->next = calloc(1, sizeof(ACVP_NAME_LIST));
-            current_curve->next->name = string;
+            current_curve->next = calloc(1, sizeof(ACVP_CURVE_ALG_COMPAT_LIST));
+            current_curve->next->curve = value;
         } else {
-            cap->curves = calloc(1, sizeof(ACVP_NAME_LIST));
-            cap->curves->name = string;
+            cap->curves = calloc(1, sizeof(ACVP_CURVE_ALG_COMPAT_LIST));
+            cap->curves->curve = value;
         }
         break;
     case ACVP_ECDSA_SECRET_GEN:
@@ -5690,31 +5690,66 @@ ACVP_RESULT acvp_cap_ecdsa_set_parm(ACVP_CTX *ctx,
             return ACVP_INVALID_ARG;
         }
 
-        string = acvp_lookup_hash_alg_name(value);
-        if (!string) {
+        if (value <= ACVP_NO_SHA || value >= ACVP_HASH_ALG_MAX || (value & (value - 1)) != 0) {
             ACVP_LOG_ERR("Invalid 'value' for ACVP_ECDSA_HASH_ALG");
             return ACVP_INVALID_ARG;
         }
 
-        current_hash = cap->hash_algs;
-        if (current_hash) {
-            while (current_hash->next) {
-                current_hash = current_hash->next;
-            }
-            current_hash->next = calloc(1, sizeof(ACVP_NAME_LIST));
-            current_hash->next->name = string;
-        } else {
-            cap->hash_algs = calloc(1, sizeof(ACVP_NAME_LIST));
-            cap->hash_algs->name = string;
-        }
+        cap->hash_algs[value] = 1;
         break;
     default:
         return ACVP_INVALID_ARG;
-
         break;
     }
 
     return ACVP_SUCCESS;
+}
+
+ACVP_RESULT acvp_cap_ecdsa_set_curve_hash_alg(ACVP_CTX *ctx, ACVP_CIPHER cipher, ACVP_EC_CURVE curve, ACVP_HASH_ALG alg) {
+    ACVP_CAPS_LIST *cap;
+    ACVP_ECDSA_CAP *ecdsa_cap;
+    ACVP_CURVE_ALG_COMPAT_LIST *list;
+
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+
+    if (curve <= ACVP_EC_CURVE_START || curve >= ACVP_EC_CURVE_END) {
+        ACVP_LOG_ERR("Invalid 'curve' argument for acvp_cap_ecdsa_set_curve_hash_alg");
+        return ACVP_INVALID_ARG;
+    }
+
+    if (alg <= ACVP_NO_SHA || alg >= ACVP_HASH_ALG_MAX || (alg & (alg - 1)) != 0) {
+        ACVP_LOG_ERR("Invalid 'alg' argument for acvp_cap_ecdsa_set_curve_hash_alg");
+        return ACVP_INVALID_ARG;
+    }
+
+    cap = acvp_locate_cap_entry(ctx, cipher);
+    if (!cap) {
+        return ACVP_NO_CAP;
+    }
+
+    if (cipher == ACVP_ECDSA_SIGGEN) {
+        ecdsa_cap = cap->cap.ecdsa_siggen_cap;
+    } else if (cipher == ACVP_ECDSA_SIGVER) {
+        ecdsa_cap = cap->cap.ecdsa_sigver_cap;
+    } else {
+        ACVP_LOG_ERR("Invalid 'cipher' argument for acvp_cap_ecdsa_set_curve_hash_alg");
+        return ACVP_INVALID_ARG;
+    }
+
+    list = ecdsa_cap->curves;
+
+    while (list) {
+        if (curve == list->curve) {
+            list->algs[alg] = 1;
+            return ACVP_SUCCESS;
+        }
+        list = list->next;
+    }
+
+    ACVP_LOG_ERR("Curve not yet enabled. Please enable the given curve before setting its hash algs");
+    return ACVP_UNSUPPORTED_OP;
 }
 
 ACVP_RESULT acvp_cap_ecdsa_enable(ACVP_CTX *ctx,
