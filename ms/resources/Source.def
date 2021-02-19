@@ -32,6 +32,7 @@ EXPORTS
   acvp_cap_rsa_siggen_set_mod_parm
   acvp_cap_rsa_sigver_set_mod_parm
   acvp_cap_ecdsa_set_parm
+  acvp_cap_ecdsa_set_curve_hash_alg
   acvp_cap_rsa_keygen_set_exponent
   acvp_cap_rsa_sigver_set_exponent
   acvp_cap_rsa_keygen_set_primes
@@ -105,6 +106,8 @@ EXPORTS
   acvp_cleanup
   acvp_version
   acvp_protocol_version
+  acvp_mark_as_delete_only
+  acvp_cancel_test_session
   acvp_cap_kas_kdf_enable
   acvp_cap_kas_kdf_set_parm
   acvp_cap_kas_kdf_set_domain
