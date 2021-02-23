@@ -629,7 +629,6 @@ int app_kas_ffc_handler(ACVP_TEST_CASE *test_case) {
         goto error;
         break;
 #endif
-    case ACVP_KAS_FFC_FFDHE8192:
     case ACVP_KAS_FFC_FUNCTION:
     case ACVP_KAS_FFC_CURVE:
     case ACVP_KAS_FFC_ROLE:
