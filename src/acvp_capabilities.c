@@ -2828,7 +2828,6 @@ ACVP_RESULT acvp_cap_hash_set_parm(ACVP_CTX *ctx,
         case ACVP_SUB_HASH_SHA2_512:
         case ACVP_SUB_HASH_SHA2_512_224:
         case ACVP_SUB_HASH_SHA2_512_256:
-            break;
         default:
             ACVP_LOG_ERR("parm 'ACVP_HASH_OUT_BIT' only allowed for ACVP_HASH_SHAKE_* ");
             return ACVP_INVALID_ARG;
