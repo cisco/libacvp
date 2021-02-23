@@ -183,6 +183,7 @@ ACVP_RESULT acvp_safe_primes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     const char *mode_str = NULL, *x = NULL, *y = NULL;
     unsigned int i, g_cnt;
     int j, t_cnt, tc_id, tg_id;
+    ACVP_SUB_KAS alg;
 
     if (!ctx) {
         ACVP_LOG_ERR("No ctx for handler operation");
@@ -281,9 +282,15 @@ ACVP_RESULT acvp_safe_primes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         ACVP_LOG_VERBOSE("         group: %s", dgm_str);
 
 
-        switch (alg_id)
-        {
-        case ACVP_SAFE_PRIMES_KEYGEN:
+        alg = acvp_get_kas_alg(alg_id);
+        if (alg == 0) {
+            ACVP_LOG_ERR("Invalid cipher value");
+            rv = ACVP_INVALID_ARG;
+            goto err;
+        }
+    
+        switch (alg) {
+        case ACVP_SUB_SAFE_PRIMES_KEYGEN:
 
             tests = json_object_get_array(groupobj, "tests");
             t_cnt = json_array_get_count(tests);
@@ -357,7 +364,7 @@ ACVP_RESULT acvp_safe_primes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             }
             break;
         
-        case ACVP_SAFE_PRIMES_KEYVER:
+        case ACVP_SUB_SAFE_PRIMES_KEYVER:
             tests = json_object_get_array(groupobj, "tests");
             t_cnt = json_array_get_count(tests);
 
@@ -445,6 +452,17 @@ ACVP_RESULT acvp_safe_primes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 json_array_append_value(r_tarr, r_tval);
             }
             break;
+        case ACVP_SUB_KAS_ECC_CDH:
+        case ACVP_SUB_KAS_ECC_COMP:
+        case ACVP_SUB_KAS_ECC_NOCOMP:
+        case ACVP_SUB_KAS_ECC_SSC:
+        case ACVP_SUB_KAS_FFC_COMP:
+        case ACVP_SUB_KAS_FFC_NOCOMP:
+        case ACVP_SUB_KAS_FFC_SSC:
+        case ACVP_SUB_KAS_IFC_SSC:
+        case ACVP_SUB_KTS_IFC:
+        case ACVP_SUB_KAS_HKDF:
+        case ACVP_SUB_KAS_KDF_ONESTEP:
         default:
             break;
         }

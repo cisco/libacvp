@@ -866,27 +866,27 @@ static ACVP_RESULT acvp_kas_kdf_process(ACVP_CTX *ctx,
             }
             //Since z len is not included, check our capabilities to ensure its within the domain we set
             if (cipher == ACVP_KAS_HKDF) {
-                ACVP_CAPS_LIST *cap = acvp_locate_cap_entry(ctx, ACVP_KAS_HKDF);
-                if (!cap) {
+                ACVP_CAPS_LIST *hcap = acvp_locate_cap_entry(ctx, ACVP_KAS_HKDF);
+                if (!hcap) {
                     ACVP_LOG_ERR("Could not locate capabilities object for KAS-HKDF to determine z length validity");
                     rv = ACVP_MISSING_ARG;
                     goto err;
                 }
                 tmp = strnlen_s(z, ACVP_KAS_KDF_Z_STR_MAX + 1) << 2;
-                if (tmp > cap->cap.kas_hkdf_cap->z.max || tmp < cap->cap.kas_hkdf_cap->z.min ||
-                        tmp % cap->cap.kas_hkdf_cap->z.increment != 0) {
+                if (tmp > hcap->cap.kas_hkdf_cap->z.max || tmp < hcap->cap.kas_hkdf_cap->z.min ||
+                        tmp % hcap->cap.kas_hkdf_cap->z.increment != 0) {
                     ACVP_LOG_ERR("Invalid length of data for 'z'");
                 }
             } else {
-                ACVP_CAPS_LIST *cap = acvp_locate_cap_entry(ctx, ACVP_KAS_KDF_ONESTEP);
-                if (!cap) {
+                ACVP_CAPS_LIST *ocap = acvp_locate_cap_entry(ctx, ACVP_KAS_KDF_ONESTEP);
+                if (!ocap) {
                     ACVP_LOG_ERR("Could not locate capabilities object for KAS-KDF-ONESTEP to determine z length validity");
                     rv = ACVP_MISSING_ARG;
                     goto err;
                 }
                 tmp = strnlen_s(z, ACVP_KAS_KDF_Z_STR_MAX + 1) << 2;
-                if (tmp > cap->cap.kas_kdf_onestep_cap->z.max || tmp < cap->cap.kas_kdf_onestep_cap->z.min ||
-                        tmp % cap->cap.kas_kdf_onestep_cap->z.increment != 0) {
+                if (tmp > ocap->cap.kas_kdf_onestep_cap->z.max || tmp < ocap->cap.kas_kdf_onestep_cap->z.min ||
+                        tmp % ocap->cap.kas_kdf_onestep_cap->z.increment != 0) {
                     ACVP_LOG_ERR("Invalid length of data for 'z'");
                 }
             }
@@ -953,6 +953,10 @@ static ACVP_RESULT acvp_kas_kdf_process(ACVP_CTX *ctx,
                         goto err;
                     }
                     break;
+                case ACVP_KAS_KDF_PATTERN_MAX:
+                case ACVP_KAS_KDF_PATTERN_L:
+                case ACVP_KAS_KDF_PATTERN_LITERAL:
+                case ACVP_KAS_KDF_PATTERN_NONE:
                 default:
                     break;
                 }

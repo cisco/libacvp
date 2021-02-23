@@ -175,6 +175,11 @@ int app_kas_ecc_handler(ACVP_TEST_CASE *test_case) {
         case ACVP_SHA512_224:
         case ACVP_SHA512_256:
         case ACVP_HASH_ALG_MAX:
+        case ACVP_SHA3_224:
+        case ACVP_SHA3_256:
+        case ACVP_SHA3_384:
+        case ACVP_SHA3_512:
+        case ACVP_NO_SHA:
         default:
             printf("No valid hash name %d\n", tc->md);
             return rv;
@@ -519,6 +524,11 @@ int app_kas_ffc_handler(ACVP_TEST_CASE *test_case) {
     case ACVP_SHA512_224:
     case ACVP_SHA512_256:
     case ACVP_HASH_ALG_MAX:
+    case ACVP_SHA3_224:
+    case ACVP_SHA3_256:
+    case ACVP_SHA3_384:
+    case ACVP_SHA3_512:
+    case ACVP_NO_SHA:
     default:
         printf("No valid hash name %d\n", tc->md);
         return rv;
@@ -604,7 +614,28 @@ int app_kas_ffc_handler(ACVP_TEST_CASE *test_case) {
     case ACVP_KAS_FFC_FFDHE8192:
         dh = DH_new_by_nid(NID_ffdhe8192);
         break;
+#else
+
+    case ACVP_KAS_FFC_MODP2048:
+    case ACVP_KAS_FFC_MODP3072:
+    case ACVP_KAS_FFC_MODP4096:
+    case ACVP_KAS_FFC_MODP6144:
+    case ACVP_KAS_FFC_MODP8192:
+    case ACVP_KAS_FFC_FFDHE2048:
+    case ACVP_KAS_FFC_FFDHE3072:
+    case ACVP_KAS_FFC_FFDHE4096:
+    case ACVP_KAS_FFC_FFDHE6144:
+        printf("\nInvalid dgm for this version");
+        goto error;
+        break;
 #endif
+    case ACVP_KAS_FFC_FFDHE8192:
+    case ACVP_KAS_FFC_FUNCTION:
+    case ACVP_KAS_FFC_CURVE:
+    case ACVP_KAS_FFC_ROLE:
+    case ACVP_KAS_FFC_HASH:
+    case ACVP_KAS_FFC_GEN_METH:
+    case ACVP_KAS_FFC_KDF:
     default:
         printf("\nInvalid dgm");
         goto error;
@@ -746,6 +777,11 @@ int app_kas_ifc_handler(ACVP_TEST_CASE *test_case) {
     case ACVP_SHA512_224:
     case ACVP_SHA512_256:
     case ACVP_HASH_ALG_MAX:
+    case ACVP_SHA3_224:
+    case ACVP_SHA3_256:
+    case ACVP_SHA3_384:
+    case ACVP_SHA3_512:
+    case ACVP_NO_SHA:
     default:
         printf("No valid hash name %d\n", tc->md);
         return rv;
@@ -1018,17 +1054,14 @@ int app_safe_primes_handler(ACVP_TEST_CASE *test_case)
         BN_bin2bn(tc->x, tc->xlen, priv_key_ver);
         BN_bin2bn(tc->y, tc->ylen, pub_key_ver);
         if (BN_is_zero(priv_key_ver)) {
-            printf("Zero failed\n"); 
             tc->result = 0;
             goto end;
         }
         if (BN_is_negative(priv_key_ver)) {
-            printf("Negative failed\n"); 
             tc->result = 0;
             goto end;
         }
         if (BN_cmp(q1, priv_key_ver) != 1) {
-            printf("Compare failed\n"); 
             tc->result = 0;
             goto end;
         }
@@ -1041,7 +1074,6 @@ int app_safe_primes_handler(ACVP_TEST_CASE *test_case)
         }
         BN_mod_exp(tmp_pub_key, gver, priv_key_ver, pver, c); 
         if (BN_cmp(tmp_pub_key, pub_key_ver) != 0) {
-            printf("Pub key compare failed\n"); 
             tc->result = 0;
             goto end;
         }
@@ -1062,6 +1094,9 @@ err:
     if (dh) DH_free(dh);
     return rv;
 #else 
+    if (!test_case) {
+        return -1;
+    }
     printf("Safe Primes not supported prior to 1.1.1/n");
     return 1;
 #endif

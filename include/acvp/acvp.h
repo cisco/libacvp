@@ -179,6 +179,150 @@ typedef enum acvp_cipher {
     ACVP_CIPHER_END
 } ACVP_CIPHER;
 
+
+/*
+ * The following are sub-type algorithms which can be used within
+ * algorithm specific code to avoid having to include all the
+ * above enums in the case statements. 
+ *
+ * To get the sub-type enum call the algorithm specific functions
+ * in acvp.c such as acvp_get_aes_alg(CIPHER).
+ *
+ * These enums MUST maintain the same values as the CIPHER enum
+ * above thus ordering is of the utmost importance.
+ */
+typedef enum acvp_alg_type_aes {
+    ACVP_SUB_AES_GCM = ACVP_AES_GCM,
+    ACVP_SUB_AES_GCM_SIV,
+    ACVP_SUB_AES_CCM,
+    ACVP_SUB_AES_ECB,
+    ACVP_SUB_AES_CBC,
+    ACVP_SUB_AES_CBC_CS1,
+    ACVP_SUB_AES_CBC_CS2,
+    ACVP_SUB_AES_CBC_CS3,
+    ACVP_SUB_AES_CFB1,
+    ACVP_SUB_AES_CFB8,
+    ACVP_SUB_AES_CFB128,
+    ACVP_SUB_AES_OFB,
+    ACVP_SUB_AES_CTR,
+    ACVP_SUB_AES_XTS,
+    ACVP_SUB_AES_XPN,
+    ACVP_SUB_AES_KW,
+    ACVP_SUB_AES_KWP,
+    ACVP_SUB_AES_GMAC
+} ACVP_SUB_AES;
+
+typedef enum acvp_alg_type_tdes {
+    ACVP_SUB_TDES_ECB = ACVP_TDES_ECB,
+    ACVP_SUB_TDES_CBC,
+    ACVP_SUB_TDES_CBCI,
+    ACVP_SUB_TDES_OFB,
+    ACVP_SUB_TDES_OFBI,
+    ACVP_SUB_TDES_CFB1,
+    ACVP_SUB_TDES_CFB8,
+    ACVP_SUB_TDES_CFB64,
+    ACVP_SUB_TDES_CFBP1,
+    ACVP_SUB_TDES_CFBP8,
+    ACVP_SUB_TDES_CFBP64,
+    ACVP_SUB_TDES_CTR,
+    ACVP_SUB_TDES_KW
+} ACVP_SUB_TDES;
+
+typedef enum acvp_alg_type_cmac {
+    ACVP_SUB_CMAC_AES = ACVP_CMAC_AES,
+    ACVP_SUB_CMAC_TDES
+} ACVP_SUB_CMAC;
+
+typedef enum acvp_alg_type_hmac {
+    ACVP_SUB_HMAC_SHA1 = ACVP_HMAC_SHA1,
+    ACVP_SUB_HMAC_SHA2_224,
+    ACVP_SUB_HMAC_SHA2_256,
+    ACVP_SUB_HMAC_SHA2_384,
+    ACVP_SUB_HMAC_SHA2_512,
+    ACVP_SUB_HMAC_SHA2_512_224,
+    ACVP_SUB_HMAC_SHA2_512_256,
+    ACVP_SUB_HMAC_SHA3_224,
+    ACVP_SUB_HMAC_SHA3_256,
+    ACVP_SUB_HMAC_SHA3_384,
+    ACVP_SUB_HMAC_SHA3_512
+} ACVP_SUB_HMAC;
+
+typedef enum acvp_alg_type_hash {
+    ACVP_SUB_HASH_SHA1 = ACVP_HASH_SHA1,
+    ACVP_SUB_HASH_SHA2_224,
+    ACVP_SUB_HASH_SHA2_256,
+    ACVP_SUB_HASH_SHA2_384,
+    ACVP_SUB_HASH_SHA2_512,
+    ACVP_SUB_HASH_SHA2_512_224,
+    ACVP_SUB_HASH_SHA2_512_256,
+    ACVP_SUB_HASH_SHA3_224,
+    ACVP_SUB_HASH_SHA3_256,
+    ACVP_SUB_HASH_SHA3_384,
+    ACVP_SUB_HASH_SHA3_512,
+    ACVP_SUB_HASH_SHAKE_128,
+    ACVP_SUB_HASH_SHAKE_256
+} ACVP_SUB_HASH;
+
+typedef enum acvp_alg_type_dsa {
+    ACVP_SUB_DSA_KEYGEN = ACVP_DSA_KEYGEN,
+    ACVP_SUB_DSA_PQGGEN,
+    ACVP_SUB_DSA_PQGVER,
+    ACVP_SUB_DSA_SIGGEN,
+    ACVP_SUB_DSA_SIGVER,
+} ACVP_SUB_DSA;
+
+typedef enum acvp_alg_type_rsa {
+    ACVP_SUB_RSA_KEYGEN = ACVP_RSA_KEYGEN,
+    ACVP_SUB_RSA_SIGGEN,
+    ACVP_SUB_RSA_SIGVER,
+    ACVP_SUB_RSA_DECPRIM,
+    ACVP_SUB_RSA_SIGPRIM
+} ACVP_SUB_RSA;
+
+typedef enum acvp_alg_type_ecdsa {
+    ACVP_SUB_ECDSA_KEYGEN = ACVP_ECDSA_KEYGEN,
+    ACVP_SUB_ECDSA_KEYVER,
+    ACVP_SUB_ECDSA_SIGGEN,
+    ACVP_SUB_ECDSA_SIGVER
+} ACVP_SUB_ECDSA;
+
+typedef enum acvp_alg_type_drbg {
+    ACVP_SUB_DRBG_HASH = ACVP_HASHDRBG,
+    ACVP_SUB_DRBG_HMAC,
+    ACVP_SUB_DRBG_CTR
+} ACVP_SUB_DRBG;
+
+typedef enum acvp_alg_type_kas {
+    ACVP_SUB_KAS_ECC_CDH = ACVP_KAS_ECC_CDH,
+    ACVP_SUB_KAS_ECC_COMP,
+    ACVP_SUB_KAS_ECC_NOCOMP,
+    ACVP_SUB_KAS_ECC_SSC,
+    ACVP_SUB_KAS_FFC_COMP,
+    ACVP_SUB_KAS_FFC_SSC,
+    ACVP_SUB_KAS_FFC_NOCOMP,
+    ACVP_SUB_KAS_IFC_SSC,
+    ACVP_SUB_KTS_IFC,
+    ACVP_SUB_KAS_KDF_ONESTEP,
+    ACVP_SUB_KAS_HKDF,
+    ACVP_SUB_SAFE_PRIMES_KEYGEN,
+    ACVP_SUB_SAFE_PRIMES_KEYVER
+} ACVP_SUB_KAS;
+
+typedef enum acvp_alg_type_kdf {
+    ACVP_SUB_KDF_TLS = ACVP_KDF135_TLS,
+    ACVP_SUB_KDF_SNMP,
+    ACVP_SUB_KDF_SSH,
+    ACVP_SUB_KDF_SRTP,
+    ACVP_SUB_KDF_IKEV2,
+    ACVP_SUB_KDF_IKEV1,
+    ACVP_SUB_KDF_X963,
+    ACVP_SUB_KDF_108,
+    ACVP_SUB_KDF_PBKDF
+} ACVP_SUB_KDF;
+
+
+#define CIPHER_TO_ALG(alg2) (alg_tbl[cipher].alg.alg2)
+
 /*! @struct ACVP_PREREQ_ALG
  *  @brief This enum lists the prerequisities that are available
  *  to the library during registration. Whereas an ACVP_CIPHER may
@@ -581,8 +725,8 @@ typedef struct acvp_rsa_prim_tc_t {
     char *plaintext;
     int deferred;
     int modulo;
-    int fail;
-    int pass;
+    unsigned int fail;
+    unsigned int pass;
     int key_format;
     unsigned char *n;
     int n_len;
@@ -615,6 +759,14 @@ typedef enum acvp_sym_cipher_parameter {
     ACVP_SYM_CIPH_PARM_SALT_SRC,
     ACVP_SYM_CIPH_PARM_CONFORMANCE
 } ACVP_SYM_CIPH_PARM;
+
+
+/*! @struct ACVP_SYM_CIPHER_DOMAIN_PARM */
+typedef enum acvp_sym_cipher_domain_parameter {
+    ACVP_SYM_CIPH_DOMAIN_IVLEN = 1,
+    ACVP_SYM_CIPH_DOMAIN_PTLEN,
+    ACVP_SYM_CIPH_DOMAIN_AADLEN
+} ACVP_SYM_CIPH_DOMAIN_PARM;
 
 /*! @struct ACVP_SYM_CIPH_TWEAK_MODE */
 typedef enum acvp_sym_xts_tweak_mode {
@@ -1968,7 +2120,7 @@ ACVP_RESULT acvp_cap_sym_cipher_set_parm(ACVP_CTX *ctx,
  */
 ACVP_RESULT acvp_cap_sym_cipher_set_domain(ACVP_CTX *ctx,
                                            ACVP_CIPHER cipher,
-                                           ACVP_SYM_CIPH_PARM parm,
+                                           ACVP_SYM_CIPH_DOMAIN_PARM parm,
                                            int min,
                                            int max,
                                            int increment);
@@ -3662,6 +3814,18 @@ const char *acvp_version(void);
  * @return (char *) protocol version, formated like: 0.5
  */
 const char *acvp_protocol_version(void);
+
+ACVP_SUB_CMAC acvp_get_cmac_alg(ACVP_CIPHER cipher);
+ACVP_SUB_HASH acvp_get_hash_alg(ACVP_CIPHER cipher);
+ACVP_SUB_AES acvp_get_aes_alg(ACVP_CIPHER cipher);
+ACVP_SUB_TDES acvp_get_tdes_alg(ACVP_CIPHER cipher);
+ACVP_SUB_HMAC acvp_get_hmac_alg(ACVP_CIPHER cipher);
+ACVP_SUB_ECDSA acvp_get_ecdsa_alg(ACVP_CIPHER cipher);
+ACVP_SUB_RSA acvp_get_rsa_alg(ACVP_CIPHER cipher);
+ACVP_SUB_DSA acvp_get_dsa_alg(ACVP_CIPHER cipher);
+ACVP_SUB_KDF acvp_get_kdf_alg(ACVP_CIPHER cipher);
+ACVP_SUB_DRBG acvp_get_drbg_alg(ACVP_CIPHER cipher);
+ACVP_SUB_KAS acvp_get_kas_alg(ACVP_CIPHER cipher);
 
 #ifdef __cplusplus
 }

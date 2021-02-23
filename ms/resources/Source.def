@@ -119,3 +119,14 @@ EXPORTS
   acvp_cap_kts_ifc_set_scheme_parm
   acvp_cap_kts_ifc_set_param_string
   acvp_cap_kts_ifc_set_scheme_string
+  acvp_get_cmac_alg
+  acvp_get_hash_alg
+  acvp_get_aes_alg
+  acvp_get_tdes_alg
+  acvp_get_hmac_alg
+  acvp_get_ecdsa_alg
+  acvp_get_rsa_alg
+  acvp_get_dsa_alg
+  acvp_get_kdf_alg
+  acvp_get_drbg_alg
+  acvp_get_kas_alg

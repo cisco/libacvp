@@ -619,6 +619,8 @@ const char* acvp_lookup_hmac_alg_str(ACVP_HMAC_ALG_VAL alg) {
             return ACVP_STR_SHA3_384;
         case ACVP_HMAC_ALG_SHA3_512:
             return ACVP_STR_SHA3_512;
+        case ACVP_HMAC_ALG_MIN:
+        case ACVP_HMAC_ALG_MAX:
         default:
             return NULL;
     }

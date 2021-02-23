@@ -30,6 +30,7 @@ int app_aes_handler(ACVP_TEST_CASE *test_case) {
     unsigned char *iv = 0;
     /* assume fail at first */
     int rv = 0;
+    ACVP_SUB_AES alg;
 
     if (!test_case) {
         return rv;
@@ -51,8 +52,13 @@ int app_aes_handler(ACVP_TEST_CASE *test_case) {
         EVP_CIPHER_CTX_init(cipher_ctx);
     }
 
-    switch (tc->cipher) {
-    case ACVP_AES_ECB:
+    alg = acvp_get_aes_alg(tc->cipher);
+    if (alg == 0) {
+        printf("Invalid cipher value");
+        return 1;
+    }
+    switch (alg) {
+    case ACVP_SUB_AES_ECB:
         switch (tc->key_len) {
         case 128:
             cipher = EVP_aes_128_ecb();
@@ -69,7 +75,7 @@ int app_aes_handler(ACVP_TEST_CASE *test_case) {
             goto err;
         }
         break;
-    case ACVP_AES_CTR:
+    case ACVP_SUB_AES_CTR:
         iv = tc->iv;
         switch (tc->key_len) {
         case 128:
@@ -87,7 +93,7 @@ int app_aes_handler(ACVP_TEST_CASE *test_case) {
             goto err;
         }
         break;
-    case ACVP_AES_CFB1:
+    case ACVP_SUB_AES_CFB1:
         iv = tc->iv;
         switch (tc->key_len) {
         case 128:
@@ -105,7 +111,7 @@ int app_aes_handler(ACVP_TEST_CASE *test_case) {
             goto err;
         }
         break;
-    case ACVP_AES_CFB8:
+    case ACVP_SUB_AES_CFB8:
         iv = tc->iv;
         switch (tc->key_len) {
         case 128:
@@ -123,7 +129,7 @@ int app_aes_handler(ACVP_TEST_CASE *test_case) {
             goto err;
         }
         break;
-    case ACVP_AES_CFB128:
+    case ACVP_SUB_AES_CFB128:
         iv = tc->iv;
         switch (tc->key_len) {
         case 128:
@@ -141,7 +147,7 @@ int app_aes_handler(ACVP_TEST_CASE *test_case) {
             goto err;
         }
         break;
-    case ACVP_AES_OFB:
+    case ACVP_SUB_AES_OFB:
         iv = tc->iv;
         switch (tc->key_len) {
         case 128:
@@ -159,7 +165,7 @@ int app_aes_handler(ACVP_TEST_CASE *test_case) {
             goto err;
         }
         break;
-    case ACVP_AES_CBC:
+    case ACVP_SUB_AES_CBC:
         iv = tc->iv;
         switch (tc->key_len) {
         case 128:
@@ -177,13 +183,13 @@ int app_aes_handler(ACVP_TEST_CASE *test_case) {
             goto err;
         }
         break;
-    case ACVP_AES_CBC_CS1:
-    case ACVP_AES_CBC_CS2:
-    case ACVP_AES_CBC_CS3:
+    case ACVP_SUB_AES_CBC_CS1:
+    case ACVP_SUB_AES_CBC_CS2:
+    case ACVP_SUB_AES_CBC_CS3:
         printf("AES-CBC-CSX algorithms are unsupported currently\n");
         rv = 1;
         goto err;
-    case ACVP_AES_XTS:
+    case ACVP_SUB_AES_XTS:
         switch (tc->key_len) {
         case 128:
             cipher = EVP_aes_128_xts();
@@ -209,81 +215,13 @@ int app_aes_handler(ACVP_TEST_CASE *test_case) {
             break;
         }
         break;
-    case ACVP_CIPHER_START:
-    case ACVP_AES_GCM:
-    case ACVP_AES_GCM_SIV:
-    case ACVP_AES_CCM:
-    case ACVP_AES_KW:
-    case ACVP_AES_KWP:
-    case ACVP_AES_GMAC:
-    case ACVP_TDES_ECB:
-    case ACVP_TDES_CBC:
-    case ACVP_TDES_CBCI:
-    case ACVP_TDES_OFB:
-    case ACVP_TDES_OFBI:
-    case ACVP_TDES_CFB1:
-    case ACVP_TDES_CFB8:
-    case ACVP_TDES_CFB64:
-    case ACVP_TDES_CFBP1:
-    case ACVP_TDES_CFBP8:
-    case ACVP_TDES_CFBP64:
-    case ACVP_TDES_CTR:
-    case ACVP_TDES_KW:
-    case ACVP_HASH_SHA1:
-    case ACVP_HASH_SHA224:
-    case ACVP_HASH_SHA256:
-    case ACVP_HASH_SHA384:
-    case ACVP_HASH_SHA512:
-    case ACVP_HASH_SHA512_224:
-    case ACVP_HASH_SHA512_256:
-    case ACVP_HASH_SHA3_224:
-    case ACVP_HASH_SHA3_256:
-    case ACVP_HASH_SHA3_384:
-    case ACVP_HASH_SHA3_512:
-    case ACVP_HASH_SHAKE_128:
-    case ACVP_HASH_SHAKE_256:
-    case ACVP_HASHDRBG:
-    case ACVP_HMACDRBG:
-    case ACVP_CTRDRBG:
-    case ACVP_HMAC_SHA1:
-    case ACVP_HMAC_SHA2_224:
-    case ACVP_HMAC_SHA2_256:
-    case ACVP_HMAC_SHA2_384:
-    case ACVP_HMAC_SHA2_512:
-    case ACVP_HMAC_SHA2_512_224:
-    case ACVP_HMAC_SHA2_512_256:
-    case ACVP_HMAC_SHA3_224:
-    case ACVP_HMAC_SHA3_256:
-    case ACVP_HMAC_SHA3_384:
-    case ACVP_HMAC_SHA3_512:
-    case ACVP_CMAC_AES:
-    case ACVP_CMAC_TDES:
-    case ACVP_DSA_KEYGEN:
-    case ACVP_DSA_PQGGEN:
-    case ACVP_DSA_PQGVER:
-    case ACVP_DSA_SIGGEN:
-    case ACVP_DSA_SIGVER:
-    case ACVP_RSA_KEYGEN:
-    case ACVP_RSA_SIGGEN:
-    case ACVP_RSA_SIGVER:
-    case ACVP_ECDSA_KEYGEN:
-    case ACVP_ECDSA_KEYVER:
-    case ACVP_ECDSA_SIGGEN:
-    case ACVP_ECDSA_SIGVER:
-    case ACVP_KDF135_TLS:
-    case ACVP_KDF135_SNMP:
-    case ACVP_KDF135_SSH:
-    case ACVP_KDF135_SRTP:
-    case ACVP_KDF135_IKEV2:
-    case ACVP_KDF135_IKEV1:
-    case ACVP_KDF135_X963:
-    case ACVP_KDF108:
-    case ACVP_KAS_ECC_CDH:
-    case ACVP_KAS_ECC_COMP:
-    case ACVP_KAS_ECC_NOCOMP:
-    case ACVP_KAS_FFC_COMP:
-    case ACVP_KAS_FFC_NOCOMP:
-    case ACVP_CIPHER_END:
+    case ACVP_SUB_AES_GCM:
+    case ACVP_SUB_AES_GCM_SIV:
+    case ACVP_SUB_AES_CCM:
+    case ACVP_SUB_AES_XPN:
+    case ACVP_SUB_AES_KW:
+    case ACVP_SUB_AES_KWP:
+    case ACVP_SUB_AES_GMAC:
     default:
         printf("Error: Unsupported AES mode requested by ACVP server\n");
         rv = 1;
@@ -362,6 +300,7 @@ int app_aes_keywrap_handler(ACVP_TEST_CASE *test_case) {
     const EVP_CIPHER        *cipher;
     int c_len;
     int rc = 1;
+    ACVP_SUB_AES alg;
 
     if (!test_case) {
         return rc;
@@ -378,9 +317,15 @@ int app_aes_keywrap_handler(ACVP_TEST_CASE *test_case) {
     cipher_ctx = EVP_CIPHER_CTX_new();
     EVP_CIPHER_CTX_init(cipher_ctx);
 
-    switch (tc->cipher) {
-    case ACVP_AES_KW:
-    case ACVP_AES_KWP:
+    alg = acvp_get_aes_alg(tc->cipher);
+    if (alg == 0) {
+        printf("Invalid cipher value");
+        return 1;
+    }
+
+    switch (alg) {
+    case ACVP_SUB_AES_KW:
+    case ACVP_SUB_AES_KWP:
         switch (tc->key_len) {
         case 128:
             cipher = EVP_aes_128_wrap();
@@ -396,87 +341,22 @@ int app_aes_keywrap_handler(ACVP_TEST_CASE *test_case) {
             goto end;
         }
         break;
-    case ACVP_CIPHER_START:
-    case ACVP_AES_GCM:
-    case ACVP_AES_GCM_SIV:
-    case ACVP_AES_CCM:
-    case ACVP_AES_ECB:
-    case ACVP_AES_CBC:
-    case ACVP_AES_CFB1:
-    case ACVP_AES_CFB8:
-    case ACVP_AES_CFB128:
-    case ACVP_AES_OFB:
-    case ACVP_AES_CTR:
-    case ACVP_AES_XTS:
-    case ACVP_AES_GMAC:
-    case ACVP_TDES_ECB:
-    case ACVP_TDES_CBC:
-    case ACVP_TDES_CBCI:
-    case ACVP_TDES_OFB:
-    case ACVP_TDES_OFBI:
-    case ACVP_TDES_CFB1:
-    case ACVP_TDES_CFB8:
-    case ACVP_TDES_CFB64:
-    case ACVP_TDES_CFBP1:
-    case ACVP_TDES_CFBP8:
-    case ACVP_TDES_CFBP64:
-    case ACVP_TDES_CTR:
-    case ACVP_TDES_KW:
-    case ACVP_HASH_SHA1:
-    case ACVP_HASH_SHA224:
-    case ACVP_HASH_SHA256:
-    case ACVP_HASH_SHA384:
-    case ACVP_HASH_SHA512:
-    case ACVP_HASH_SHA512_224:
-    case ACVP_HASH_SHA512_256:
-    case ACVP_HASH_SHA3_224:
-    case ACVP_HASH_SHA3_256:
-    case ACVP_HASH_SHA3_384:
-    case ACVP_HASH_SHA3_512:
-    case ACVP_HASH_SHAKE_128:
-    case ACVP_HASH_SHAKE_256:
-    case ACVP_HASHDRBG:
-    case ACVP_HMACDRBG:
-    case ACVP_CTRDRBG:
-    case ACVP_HMAC_SHA1:
-    case ACVP_HMAC_SHA2_224:
-    case ACVP_HMAC_SHA2_256:
-    case ACVP_HMAC_SHA2_384:
-    case ACVP_HMAC_SHA2_512:
-    case ACVP_HMAC_SHA2_512_224:
-    case ACVP_HMAC_SHA2_512_256:
-    case ACVP_HMAC_SHA3_224:
-    case ACVP_HMAC_SHA3_256:
-    case ACVP_HMAC_SHA3_384:
-    case ACVP_HMAC_SHA3_512:
-    case ACVP_CMAC_AES:
-    case ACVP_CMAC_TDES:
-    case ACVP_DSA_KEYGEN:
-    case ACVP_DSA_PQGGEN:
-    case ACVP_DSA_PQGVER:
-    case ACVP_DSA_SIGGEN:
-    case ACVP_DSA_SIGVER:
-    case ACVP_RSA_KEYGEN:
-    case ACVP_RSA_SIGGEN:
-    case ACVP_RSA_SIGVER:
-    case ACVP_ECDSA_KEYGEN:
-    case ACVP_ECDSA_KEYVER:
-    case ACVP_ECDSA_SIGGEN:
-    case ACVP_ECDSA_SIGVER:
-    case ACVP_KDF135_TLS:
-    case ACVP_KDF135_SNMP:
-    case ACVP_KDF135_SSH:
-    case ACVP_KDF135_SRTP:
-    case ACVP_KDF135_IKEV2:
-    case ACVP_KDF135_IKEV1:
-    case ACVP_KDF135_X963:
-    case ACVP_KDF108:
-    case ACVP_KAS_ECC_CDH:
-    case ACVP_KAS_ECC_COMP:
-    case ACVP_KAS_ECC_NOCOMP:
-    case ACVP_KAS_FFC_COMP:
-    case ACVP_KAS_FFC_NOCOMP:
-    case ACVP_CIPHER_END:
+    case ACVP_SUB_AES_GCM:
+    case ACVP_SUB_AES_GCM_SIV:
+    case ACVP_SUB_AES_CCM:
+    case ACVP_SUB_AES_ECB:
+    case ACVP_SUB_AES_CBC:
+    case ACVP_SUB_AES_CBC_CS1:
+    case ACVP_SUB_AES_CBC_CS2:
+    case ACVP_SUB_AES_CBC_CS3:
+    case ACVP_SUB_AES_CFB1:
+    case ACVP_SUB_AES_CFB8:
+    case ACVP_SUB_AES_CFB128:
+    case ACVP_SUB_AES_OFB:
+    case ACVP_SUB_AES_CTR:
+    case ACVP_SUB_AES_XTS:
+    case ACVP_SUB_AES_XPN:
+    case ACVP_SUB_AES_GMAC:
     default:
         printf("Error: Unsupported AES keywrap mode requested by ACVP server\n");
         goto end;
@@ -535,6 +415,7 @@ int app_aes_handler_aead(ACVP_TEST_CASE *test_case) {
     unsigned char iv_fixed[4] = { 1, 2, 3, 4 };
     int rc = 0;
     int ret = 0;
+    ACVP_SUB_AES alg;
 
     if (!test_case) {
         return 1;
@@ -557,9 +438,15 @@ int app_aes_handler_aead(ACVP_TEST_CASE *test_case) {
     EVP_CIPHER_CTX_init(cipher_ctx);
 
     /* Validate key length and assign OpenSSL EVP cipher */
-    switch (tc->cipher) {
-    case ACVP_AES_GMAC:
-    case ACVP_AES_GCM:
+    alg = acvp_get_aes_alg(tc->cipher);
+    if (alg == 0) {
+        printf("Invalid cipher value");
+        return 1;
+    }
+
+    switch (alg) {
+    case ACVP_SUB_AES_GMAC:
+    case ACVP_SUB_AES_GCM:
         if (tc->cipher == ACVP_AES_GMAC && (tc->pt_len || tc->ct_len ||
                 strnlen_s((const char *)tc->ct, 1) || strnlen_s((const char *)tc->pt, 1))) {
             printf("Invalid AES-GMAC ct/pt data\n");
@@ -640,7 +527,7 @@ int app_aes_handler_aead(ACVP_TEST_CASE *test_case) {
             }
         }
         break;
-    case ACVP_AES_CCM:
+    case ACVP_SUB_AES_CCM:
         switch (tc->key_len) {
         case 128:
             cipher = EVP_aes_128_ccm();
@@ -688,87 +575,21 @@ int app_aes_handler_aead(ACVP_TEST_CASE *test_case) {
             }
         }
         break;
-    case ACVP_CIPHER_START:
-    case ACVP_AES_GCM_SIV:
-    case ACVP_AES_ECB:
-    case ACVP_AES_CBC:
-    case ACVP_AES_CFB1:
-    case ACVP_AES_CFB8:
-    case ACVP_AES_CFB128:
-    case ACVP_AES_OFB:
-    case ACVP_AES_CTR:
-    case ACVP_AES_XTS:
-    case ACVP_AES_KW:
-    case ACVP_AES_KWP:
-    case ACVP_AES_XPN:
-    case ACVP_TDES_ECB:
-    case ACVP_TDES_CBC:
-    case ACVP_TDES_CBCI:
-    case ACVP_TDES_OFB:
-    case ACVP_TDES_OFBI:
-    case ACVP_TDES_CFB1:
-    case ACVP_TDES_CFB8:
-    case ACVP_TDES_CFB64:
-    case ACVP_TDES_CFBP1:
-    case ACVP_TDES_CFBP8:
-    case ACVP_TDES_CFBP64:
-    case ACVP_TDES_CTR:
-    case ACVP_TDES_KW:
-    case ACVP_HASH_SHA1:
-    case ACVP_HASH_SHA224:
-    case ACVP_HASH_SHA256:
-    case ACVP_HASH_SHA384:
-    case ACVP_HASH_SHA512:
-    case ACVP_HASH_SHA512_224:
-    case ACVP_HASH_SHA512_256:
-    case ACVP_HASH_SHA3_224:
-    case ACVP_HASH_SHA3_256:
-    case ACVP_HASH_SHA3_384:
-    case ACVP_HASH_SHA3_512:
-    case ACVP_HASH_SHAKE_128:
-    case ACVP_HASH_SHAKE_256:
-    case ACVP_HASHDRBG:
-    case ACVP_HMACDRBG:
-    case ACVP_CTRDRBG:
-    case ACVP_HMAC_SHA1:
-    case ACVP_HMAC_SHA2_224:
-    case ACVP_HMAC_SHA2_256:
-    case ACVP_HMAC_SHA2_384:
-    case ACVP_HMAC_SHA2_512:
-    case ACVP_HMAC_SHA2_512_224:
-    case ACVP_HMAC_SHA2_512_256:
-    case ACVP_HMAC_SHA3_224:
-    case ACVP_HMAC_SHA3_256:
-    case ACVP_HMAC_SHA3_384:
-    case ACVP_HMAC_SHA3_512:
-    case ACVP_CMAC_AES:
-    case ACVP_CMAC_TDES:
-    case ACVP_DSA_KEYGEN:
-    case ACVP_DSA_PQGGEN:
-    case ACVP_DSA_PQGVER:
-    case ACVP_DSA_SIGGEN:
-    case ACVP_DSA_SIGVER:
-    case ACVP_RSA_KEYGEN:
-    case ACVP_RSA_SIGGEN:
-    case ACVP_RSA_SIGVER:
-    case ACVP_ECDSA_KEYGEN:
-    case ACVP_ECDSA_KEYVER:
-    case ACVP_ECDSA_SIGGEN:
-    case ACVP_ECDSA_SIGVER:
-    case ACVP_KDF135_TLS:
-    case ACVP_KDF135_SNMP:
-    case ACVP_KDF135_SSH:
-    case ACVP_KDF135_SRTP:
-    case ACVP_KDF135_IKEV2:
-    case ACVP_KDF135_IKEV1:
-    case ACVP_KDF135_X963:
-    case ACVP_KDF108:
-    case ACVP_KAS_ECC_CDH:
-    case ACVP_KAS_ECC_COMP:
-    case ACVP_KAS_ECC_NOCOMP:
-    case ACVP_KAS_FFC_COMP:
-    case ACVP_KAS_FFC_NOCOMP:
-    case ACVP_CIPHER_END:
+    case ACVP_SUB_AES_GCM_SIV:
+    case ACVP_SUB_AES_ECB:
+    case ACVP_SUB_AES_CBC:
+    case ACVP_SUB_AES_CFB1:
+    case ACVP_SUB_AES_CFB8:
+    case ACVP_SUB_AES_CFB128:
+    case ACVP_SUB_AES_OFB:
+    case ACVP_SUB_AES_CTR:
+    case ACVP_SUB_AES_XTS:
+    case ACVP_SUB_AES_KW:
+    case ACVP_SUB_AES_KWP:
+    case ACVP_SUB_AES_XPN:
+    case ACVP_SUB_AES_CBC_CS1:
+    case ACVP_SUB_AES_CBC_CS2:
+    case ACVP_SUB_AES_CBC_CS3:
     default:
         printf("Error: Unsupported AES AEAD mode requested by ACVP server\n");
         rc = 1;

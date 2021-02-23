@@ -879,6 +879,19 @@ struct acvp_alg_handler_t {
     const char *name;
     const char *mode; /** < Should be NULL unless using an asymmetric alg */
     const char *revision;
+    union {
+        ACVP_SUB_AES      aes;
+        ACVP_SUB_TDES     tdes;
+        ACVP_SUB_CMAC     cmac;
+        ACVP_SUB_KDF      kdf;
+        ACVP_SUB_DSA      dsa;
+        ACVP_SUB_RSA      rsa;
+        ACVP_SUB_ECDSA    ecdsa;
+        ACVP_SUB_DRBG     drbg;
+        ACVP_SUB_HMAC     hmac;
+        ACVP_SUB_HASH     hash;
+        ACVP_SUB_KAS      kas;
+    } alg;
 };
 
 typedef struct acvp_vs_list_t {

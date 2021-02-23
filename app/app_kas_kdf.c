@@ -123,12 +123,16 @@ int app_kas_hkdf_handler(ACVP_TEST_CASE *test_case) {
                 memcpy_s(fixedInfo + tmp, fixedInfoLen - tmp, (char *)&lBits, 4);
                 tmp += 4;
                 break;
+            case ACVP_KAS_KDF_PATTERN_NONE:
+            case ACVP_KAS_KDF_PATTERN_MAX:
             default:
                 printf("Invalid fixedInfoPattern candidate value\n");
                 goto end;
             }
         }
         break;
+    case ACVP_KAS_KDF_ENCODING_NONE:
+    case ACVP_KAS_KDF_ENCODING_MAX:
     default:
         printf("Invalid encoding for fixed info provided in test case\n");
         goto end;
@@ -184,6 +188,9 @@ int app_kas_hkdf_handler(ACVP_TEST_CASE *test_case) {
     case ACVP_SHA3_384:
     case ACVP_SHA3_512:
 #endif
+    case ACVP_SHA1:
+    case ACVP_NO_SHA:
+    case ACVP_HASH_ALG_MAX:
     default:
         printf("Invalid hmac algorithm provided in test case\n");
         goto end;
@@ -305,6 +312,8 @@ int app_kas_kdf_onestep_handler(ACVP_TEST_CASE *test_case) {
 #endif
     HMAC_CTX *hmac_ctx = NULL;
     EVP_MD_CTX *sha_ctx = NULL;
+    ACVP_SUB_HASH hashalg;
+    ACVP_SUB_HMAC hmacalg;
 
     if (!test_case) {
         printf("Missing KDF onestep test case\n");
@@ -411,89 +420,151 @@ int app_kas_kdf_onestep_handler(ACVP_TEST_CASE *test_case) {
                 memcpy_s(fixedInfo + tmp, fixedInfoLen - tmp, (char *)&lBits, 4);
                 tmp += 4;
                 break;
+            case ACVP_KAS_KDF_PATTERN_NONE:
+            case ACVP_KAS_KDF_PATTERN_MAX:
             default:
                 printf("Invalid fixedInfoPattern candidate value\n");
                 goto end;
             }
         }
         break;
+    case ACVP_KAS_KDF_ENCODING_NONE:
+    case ACVP_KAS_KDF_ENCODING_MAX:
     default:
         printf("Invalid encoding for fixed info provided in test case\n");
         goto end;
     }
 
-    switch (stc->aux_function) {
-    case ACVP_HASH_SHA224:
-    case ACVP_HMAC_SHA2_224:
+  if (isSha) {
+    hashalg = acvp_get_hash_alg(stc->aux_function);
+    if (hashalg == 0) {
+        printf("Invalid cipher value");
+        return 1;
+    }
+
+    switch (hashalg) {
+    case ACVP_SUB_HASH_SHA2_224:
         md = EVP_sha224();
         h_output_len = 224;
         break;
-    case ACVP_HASH_SHA256:
-    case ACVP_HMAC_SHA2_256:
+    case ACVP_SUB_HASH_SHA2_256:
         md = EVP_sha256();
         h_output_len = 256;
         break;
-    case ACVP_HASH_SHA384:
-    case ACVP_HMAC_SHA2_384:
+    case ACVP_SUB_HASH_SHA2_384:
         md = EVP_sha384();
         h_output_len = 384;
         break;
-    case ACVP_HASH_SHA512:
-    case ACVP_HMAC_SHA2_512:
+    case ACVP_SUB_HASH_SHA2_512:
         md = EVP_sha512();
         h_output_len = 512;
         break;
 #if OPENSSL_VERSION_NUMBER >= 0x10101010L /* OpenSSL 1.1.1 or greater */
-    case ACVP_HASH_SHA512_224:
-    case ACVP_HMAC_SHA2_512_224:
+    case ACVP_SUB_HASH_SHA2_512_224:
         md = EVP_sha512_224();
         h_output_len = 224;
         break;
-    case ACVP_HASH_SHA512_256:
-    case ACVP_HMAC_SHA2_512_256:
+    case ACVP_SUB_HASH_SHA2_512_256:
         md = EVP_sha512_256();
         h_output_len = 256;
         break;
-    case ACVP_HASH_SHA3_224:
-    case ACVP_HMAC_SHA3_224:
+    case ACVP_SUB_HASH_SHA3_224:
         md = EVP_sha3_224();
         h_output_len = 224;
         break;
-    case ACVP_HASH_SHA3_256:
-    case ACVP_HMAC_SHA3_256:
+    case ACVP_SUB_HASH_SHA3_256:
         md = EVP_sha3_256();
         h_output_len = 256;
         break;
-    case ACVP_HASH_SHA3_384:
-    case ACVP_HMAC_SHA3_384:
+    case ACVP_SUB_HASH_SHA3_384:
         md = EVP_sha3_384();
         h_output_len = 384;
         break;
-    case ACVP_HASH_SHA3_512:
-    case ACVP_HMAC_SHA3_512:
+    case ACVP_SUB_HASH_SHA3_512:
         md = EVP_sha3_512();
         h_output_len = 512;
         break;
 #else
-    case ACVP_HASH_SHA512_224:
-    case ACVP_HMAC_SHA2_512_224:
-    case ACVP_HASH_SHA512_256:
-    case ACVP_HMAC_SHA2_512_256:
-    case ACVP_HASH_SHA3_224:
-    case ACVP_HMAC_SHA3_224:
-    case ACVP_HASH_SHA3_256:
-    case ACVP_HMAC_SHA3_256:
-    case ACVP_HASH_SHA3_384:
-    case ACVP_HMAC_SHA3_384:
-    case ACVP_HASH_SHA3_512:
-    case ACVP_HMAC_SHA3_512:
+    case ACVP_SUB_HASH_SHA2_512_224:
+    case ACVP_SUB_HASH_SHA2_512_256:
+    case ACVP_SUB_HASH_SHA3_224:
+    case ACVP_SUB_HASH_SHA3_256:
+    case ACVP_SUB_HASH_SHA3_384:
+    case ACVP_SUB_HASH_SHA3_512:
 #endif
+    case ACVP_SUB_HASH_SHA1:
+    case ACVP_SUB_HASH_SHAKE_128:
+    case ACVP_SUB_HASH_SHAKE_256:
     default:
         printf("Invalid aux function provided in test case\n");
         goto end;
         break;
     }
 
+  } else {
+    hmacalg = acvp_get_hmac_alg(stc->aux_function);
+    if (hmacalg == 0) {
+        printf("Invalid cipher value");
+        return 1;
+    }
+
+    switch (hmacalg) {
+    case ACVP_SUB_HMAC_SHA2_224:
+        md = EVP_sha224();
+        h_output_len = 224;
+        break;
+    case ACVP_SUB_HMAC_SHA2_256:
+        md = EVP_sha256();
+        h_output_len = 256;
+        break;
+    case ACVP_SUB_HMAC_SHA2_384:
+        md = EVP_sha384();
+        h_output_len = 384;
+        break;
+    case ACVP_SUB_HMAC_SHA2_512:
+        md = EVP_sha512();
+        h_output_len = 512;
+        break;
+#if OPENSSL_VERSION_NUMBER >= 0x10101010L /* OpenSSL 1.1.1 or greater */
+    case ACVP_SUB_HMAC_SHA2_512_224:
+        md = EVP_sha512_224();
+        h_output_len = 224;
+        break;
+    case ACVP_SUB_HMAC_SHA2_512_256:
+        md = EVP_sha512_256();
+        h_output_len = 256;
+        break;
+    case ACVP_SUB_HMAC_SHA3_224:
+        md = EVP_sha3_224();
+        h_output_len = 224;
+        break;
+    case ACVP_SUB_HMAC_SHA3_256:
+        md = EVP_sha3_256();
+        h_output_len = 256;
+        break;
+    case ACVP_SUB_HMAC_SHA3_384:
+        md = EVP_sha3_384();
+        h_output_len = 384;
+        break;
+    case ACVP_SUB_HMAC_SHA3_512:
+        md = EVP_sha3_512();
+        h_output_len = 512;
+        break;
+#else
+    case ACVP_SUB_HMAC_SHA2_512_224:
+    case ACVP_SUB_HMAC_SHA2_512_256:
+    case ACVP_SUB_HMAC_SHA3_224:
+    case ACVP_SUB_HMAC_SHA3_256:
+    case ACVP_SUB_HMAC_SHA3_384:
+    case ACVP_SUB_HMAC_SHA3_512:
+#endif
+    case ACVP_SUB_HMAC_SHA1:
+    default:
+        printf("Invalid aux function provided in test case\n");
+        goto end;
+        break;
+    }
+  }
     //convert h_output_len to bytes for use with functions
     h_output_len /= 8;
 
