@@ -74,8 +74,7 @@ end:
     return rv;
 }
 
-static ACVP_RESULT acvp_kas_ifc_ssc_val_output_tc(ACVP_CTX *ctx,
-                                                  ACVP_KAS_IFC_TC *stc,
+static ACVP_RESULT acvp_kas_ifc_ssc_val_output_tc(ACVP_KAS_IFC_TC *stc,
                                                   JSON_Object *tc_rsp) {
     ACVP_RESULT rv = ACVP_SUCCESS;
     int diff1 = 1, diff2 = 1;
@@ -252,7 +251,12 @@ static ACVP_KAS_IFC_TEST_TYPE read_test_type(const char *str) {
 }
 
 static ACVP_RSA_KEY_FORMAT read_key_gen(const char *str){
-    return ACVP_KAS_IFC_RSAKPG1_BASIC;
+    int diff;
+
+    strcmp_s("rsakpg1-basic", 13, str, &diff);
+    if (!diff) return ACVP_KAS_IFC_RSAKPG1_BASIC;
+
+    return 0;
 }
 
 static ACVP_RESULT acvp_kas_ifc_ssc(ACVP_CTX *ctx,
@@ -595,7 +599,7 @@ static ACVP_RESULT acvp_kas_ifc_ssc(ACVP_CTX *ctx,
              * Output the test case results using JSON
              */
             if (stc->test_type == ACVP_KAS_IFC_TT_VAL) {
-                rv = acvp_kas_ifc_ssc_val_output_tc(ctx, stc, r_tobj);
+                rv = acvp_kas_ifc_ssc_val_output_tc(stc, r_tobj);
             } else {
                 rv = acvp_kas_ifc_ssc_output_tc(ctx, stc, r_tobj);
             }

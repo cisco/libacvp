@@ -663,7 +663,7 @@ static ACVP_RESULT match_dependencies_page(ACVP_CTX *ctx,
     JSON_Array *data_array = NULL;
     const char *next = NULL, *name = NULL, *type = NULL, *description = NULL;
     int i = 0, data_count = 0;
-    ACVP_DEPENDENCY tmp_dep = {0, 0, 0, 0, 0};
+    ACVP_DEPENDENCY tmp_dep = {0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
 
     if (!ctx) return ACVP_NO_CTX;
     if (dep == NULL) {

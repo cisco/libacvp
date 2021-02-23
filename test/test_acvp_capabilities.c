@@ -925,7 +925,7 @@ Test(EnableCapAES, cipher_domain_no_ctx, .fini = teardown) {
     setup_empty_ctx(&ctx);
     rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_XPN, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_domain(NULL, ACVP_AES_XPN, ACVP_SYM_CIPH_PTLEN, 0, 128, 8);
+    rv = acvp_cap_sym_cipher_set_domain(NULL, ACVP_AES_XPN, ACVP_SYM_CIPH_DOMAIN_PTLEN, 0, 128, 8);
     cr_assert(rv == ACVP_NO_CTX);
 }
 
@@ -936,11 +936,11 @@ Test(EnableCapAES, cipher_domain_bad_values, .fini = teardown) {
     setup_empty_ctx(&ctx);
     rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_CBC_CS3, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_domain(ctx, ACVP_AES_CBC_CS3, ACVP_SYM_CIPH_PTLEN, -64, 128, 8);
+    rv = acvp_cap_sym_cipher_set_domain(ctx, ACVP_AES_CBC_CS3, ACVP_SYM_CIPH_DOMAIN_PTLEN, -64, 128, 8);
     cr_assert(rv == ACVP_INVALID_ARG);
-    rv = acvp_cap_sym_cipher_set_domain(ctx, ACVP_AES_CBC_CS3, ACVP_SYM_CIPH_PTLEN, 128, 64, 8);
+    rv = acvp_cap_sym_cipher_set_domain(ctx, ACVP_AES_CBC_CS3, ACVP_SYM_CIPH_DOMAIN_PTLEN, 128, 64, 8);
     cr_assert(rv == ACVP_INVALID_ARG);
-    rv = acvp_cap_sym_cipher_set_domain(ctx, ACVP_AES_CBC_CS3, ACVP_SYM_CIPH_PTLEN, 0, 128, 0);
+    rv = acvp_cap_sym_cipher_set_domain(ctx, ACVP_AES_CBC_CS3, ACVP_SYM_CIPH_DOMAIN_PTLEN, 0, 128, 0);
     cr_assert(rv == ACVP_INVALID_ARG);
     rv = acvp_cap_sym_cipher_set_domain(ctx, ACVP_AES_CBC_CS3, ACVP_SYM_CIPH_KEYLEN, 0, 0, 8);
     cr_assert(rv == ACVP_INVALID_ARG);
@@ -955,7 +955,7 @@ Test(EnableCapAES, dup_payload_registration, .fini = teardown) {
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_CBC_CS1, ACVP_SYM_CIPH_PTLEN, 33333);
     cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_domain(ctx, ACVP_AES_CBC_CS1, ACVP_SYM_CIPH_PTLEN, 0, 1024, 8);
+    rv = acvp_cap_sym_cipher_set_domain(ctx, ACVP_AES_CBC_CS1, ACVP_SYM_CIPH_DOMAIN_PTLEN, 0, 1024, 8);
     cr_assert(rv == ACVP_INVALID_ARG);
 
 }

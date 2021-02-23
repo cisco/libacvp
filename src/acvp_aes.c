@@ -77,6 +77,7 @@ static unsigned char ctext[TEXT_COL_LEN][TEXT_ROW_LEN];
  */
 static ACVP_RESULT acvp_aes_mct_iterate_tc(ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *stc, int i) {
     int j = stc->mct_index;
+    ACVP_SUB_AES alg;
 
     if (stc->cipher != ACVP_AES_CFB1) {
         memcpy_s(ctext[j], TEXT_ROW_LEN, stc->ct, stc->ct_len);
@@ -89,8 +90,14 @@ static ACVP_RESULT acvp_aes_mct_iterate_tc(ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *st
         memcpy_s(mkey[j], KEY_ROW_LEN, stc->key, stc->key_len / 8);
     }
 
-    switch (stc->cipher) {
-    case ACVP_AES_ECB:
+    alg = acvp_get_aes_alg(stc->cipher);
+    if (alg == 0) {
+        ACVP_LOG_ERR("Invalid cipher value");
+        return ACVP_INVALID_ARG;
+    }
+
+    switch (alg) {
+    case ACVP_SUB_AES_ECB:
 
         if (stc->direction == ACVP_SYM_CIPH_DIR_ENCRYPT) {
             memcpy_s(stc->pt, ACVP_SYM_PT_BYTE_MAX, ctext[j], stc->ct_len);
@@ -99,9 +106,9 @@ static ACVP_RESULT acvp_aes_mct_iterate_tc(ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *st
         }
         break;
 
-    case ACVP_AES_CBC:
-    case ACVP_AES_OFB:
-    case ACVP_AES_CFB128:
+    case ACVP_SUB_AES_CBC:
+    case ACVP_SUB_AES_OFB:
+    case ACVP_SUB_AES_CFB128:
         if (j == 0) {
             if (stc->direction == ACVP_SYM_CIPH_DIR_ENCRYPT) {
                 memcpy_s(stc->pt, ACVP_SYM_PT_BYTE_MAX, stc->iv, stc->iv_len);
@@ -119,7 +126,7 @@ static ACVP_RESULT acvp_aes_mct_iterate_tc(ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *st
         }
         break;
 
-    case ACVP_AES_CFB8:
+    case ACVP_SUB_AES_CFB8:
         if (stc->direction == ACVP_SYM_CIPH_DIR_ENCRYPT) {
             if (j < 16) {
                 memcpy_s(stc->pt, ACVP_SYM_PT_BYTE_MAX, &stc->iv[j], stc->iv_len);
@@ -135,7 +142,7 @@ static ACVP_RESULT acvp_aes_mct_iterate_tc(ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *st
         }
         break;
 
-    case ACVP_AES_CFB1:
+    case ACVP_SUB_AES_CFB1:
         if (stc->direction == ACVP_SYM_CIPH_DIR_ENCRYPT) {
             if (j < 128) {
                 sb(ptext[j + 1], 0, gb(miv[i], j));
@@ -152,87 +159,18 @@ static ACVP_RESULT acvp_aes_mct_iterate_tc(ACVP_CTX *ctx, ACVP_SYM_CIPHER_TC *st
             stc->ct[0] = ctext[j + 1][0];
         }
         break;
-    case ACVP_CIPHER_START:
-    case ACVP_AES_GCM:
-    case ACVP_AES_GCM_SIV:
-    case ACVP_AES_CCM:
-    case ACVP_AES_CTR:
-    case ACVP_AES_XTS:
-    case ACVP_AES_KW:
-    case ACVP_AES_KWP:
-    case ACVP_AES_GMAC:
-    case ACVP_AES_XPN:
-    case ACVP_TDES_ECB:
-    case ACVP_TDES_CBC:
-    case ACVP_TDES_CBCI:
-    case ACVP_TDES_OFB:
-    case ACVP_TDES_OFBI:
-    case ACVP_TDES_CFB1:
-    case ACVP_TDES_CFB8:
-    case ACVP_TDES_CFB64:
-    case ACVP_TDES_CFBP1:
-    case ACVP_TDES_CFBP8:
-    case ACVP_TDES_CFBP64:
-    case ACVP_TDES_CTR:
-    case ACVP_TDES_KW:
-    case ACVP_HASH_SHA1:
-    case ACVP_HASH_SHA224:
-    case ACVP_HASH_SHA256:
-    case ACVP_HASH_SHA384:
-    case ACVP_HASH_SHA512:
-    case ACVP_HASH_SHA512_224:
-    case ACVP_HASH_SHA512_256:
-    case ACVP_HASH_SHA3_224:
-    case ACVP_HASH_SHA3_256:
-    case ACVP_HASH_SHA3_384:
-    case ACVP_HASH_SHA3_512:
-    case ACVP_HASH_SHAKE_128:
-    case ACVP_HASH_SHAKE_256:
-    case ACVP_HASHDRBG:
-    case ACVP_HMACDRBG:
-    case ACVP_CTRDRBG:
-    case ACVP_HMAC_SHA1:
-    case ACVP_HMAC_SHA2_224:
-    case ACVP_HMAC_SHA2_256:
-    case ACVP_HMAC_SHA2_384:
-    case ACVP_HMAC_SHA2_512:
-    case ACVP_HMAC_SHA2_512_224:
-    case ACVP_HMAC_SHA2_512_256:
-    case ACVP_HMAC_SHA3_224:
-    case ACVP_HMAC_SHA3_256:
-    case ACVP_HMAC_SHA3_384:
-    case ACVP_HMAC_SHA3_512:
-    case ACVP_CMAC_AES:
-    case ACVP_CMAC_TDES:
-    case ACVP_DSA_KEYGEN:
-    case ACVP_DSA_PQGGEN:
-    case ACVP_DSA_PQGVER:
-    case ACVP_DSA_SIGGEN:
-    case ACVP_DSA_SIGVER:
-    case ACVP_RSA_KEYGEN:
-    case ACVP_RSA_SIGGEN:
-    case ACVP_RSA_SIGVER:
-    case ACVP_ECDSA_KEYGEN:
-    case ACVP_ECDSA_KEYVER:
-    case ACVP_ECDSA_SIGGEN:
-    case ACVP_ECDSA_SIGVER:
-    case ACVP_KDF135_TLS:
-    case ACVP_KDF135_SNMP:
-    case ACVP_KDF135_SSH:
-    case ACVP_KDF135_SRTP:
-    case ACVP_KDF135_IKEV2:
-    case ACVP_KDF135_IKEV1:
-    case ACVP_KDF135_X963:
-    case ACVP_KDF108:
-    case ACVP_PBKDF:
-    case ACVP_KAS_ECC_CDH:
-    case ACVP_KAS_ECC_COMP:
-    case ACVP_KAS_ECC_NOCOMP:
-    case ACVP_KAS_FFC_COMP:
-    case ACVP_KAS_FFC_NOCOMP:
-    case ACVP_KAS_KDF_ONESTEP:
-    case ACVP_KAS_HKDF:
-    case ACVP_CIPHER_END:
+    case ACVP_SUB_AES_CBC_CS1:
+    case ACVP_SUB_AES_CBC_CS2:
+    case ACVP_SUB_AES_CBC_CS3:
+    case ACVP_SUB_AES_CCM:
+    case ACVP_SUB_AES_GCM:
+    case ACVP_SUB_AES_GCM_SIV:
+    case ACVP_SUB_AES_CTR:
+    case ACVP_SUB_AES_XTS:
+    case ACVP_SUB_AES_XPN:
+    case ACVP_SUB_AES_KW:
+    case ACVP_SUB_AES_KWP:
+    case ACVP_SUB_AES_GMAC:
     default:
         break;
     }

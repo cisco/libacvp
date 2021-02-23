@@ -43,9 +43,7 @@ static ACVP_RESULT acvp_hash_release_tc(ACVP_HASH_TC *stc);
  * performs the iteration depdedent upon the hash type
  * and direction.
  */
-static ACVP_RESULT acvp_hash_mct_iterate_tc(ACVP_CTX *ctx,
-                                            ACVP_HASH_TC *stc,
-                                            int i) {
+static ACVP_RESULT acvp_hash_mct_iterate_tc(ACVP_HASH_TC *stc) {
 
     /* feed hash into the next message for MCT */
     memcpy_s(stc->m1, ACVP_HASH_MD_BYTE_MAX, stc->m2, stc->md_len);
@@ -163,7 +161,7 @@ static ACVP_RESULT acvp_hash_mct_tc(ACVP_CTX *ctx,
             /*
              * Adjust the parameters for next iteration if needed.
              */
-            rv = acvp_hash_mct_iterate_tc(ctx, stc, i);
+            rv = acvp_hash_mct_iterate_tc(stc);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("Failed the MCT iteration changes");
                 free(msg);

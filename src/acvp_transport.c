@@ -1378,7 +1378,7 @@ static void acvp_http_user_agent_check_env_for_var(ACVP_CTX *ctx, char *var_stri
     }
 }
 
-static void acvp_http_user_agent_check_compiler_ver(ACVP_CTX *ctx, char *comp_string) {
+static void acvp_http_user_agent_check_compiler_ver(char *comp_string) {
     char versionBuffer[16];
 
 #ifdef __GNUC__
@@ -1511,7 +1511,7 @@ void acvp_http_user_agent_handler(ACVP_CTX *ctx) {
 #endif
 
     //gets compiler version, or checks environment for it
-    acvp_http_user_agent_check_compiler_ver(ctx, comp);
+    acvp_http_user_agent_check_compiler_ver(comp);
 
 #elif defined WIN32
 
@@ -1634,7 +1634,7 @@ void acvp_http_user_agent_handler(ACVP_CTX *ctx) {
     }
 
     //gets compiler version
-    acvp_http_user_agent_check_compiler_ver(ctx, comp);
+    acvp_http_user_agent_check_compiler_ver(comp);
 
 #else
     /*******************************************************
@@ -1645,7 +1645,7 @@ void acvp_http_user_agent_handler(ACVP_CTX *ctx) {
     acvp_http_user_agent_check_env_for_var(ctx, osver, ACVP_USER_AGENT_OSVER);
     acvp_http_user_agent_check_env_for_var(ctx, arch, ACVP_USER_AGENT_ARCH);
     acvp_http_user_agent_check_env_for_var(ctx, proc, ACVP_USER_AGENT_PROC);
-    acvp_http_user_agent_check_compiler_ver(ctx, comp);
+    acvp_http_user_agent_check_compiler_ver(comp);
 #endif
 
     acvp_http_user_agent_string_clean(osname);

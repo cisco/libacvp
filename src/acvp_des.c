@@ -81,16 +81,22 @@ static void shiftin(unsigned char *dst, int dst_max, unsigned char *src, int nbi
  * performs the iteration depdedent upon the cipher type and direction.
  */
 static ACVP_RESULT acvp_des_mct_iterate_tc(ACVP_CTX *ctx,
-                                           ACVP_SYM_CIPHER_TC *stc,
-                                           int i) {
+                                           ACVP_SYM_CIPHER_TC *stc) {
     int j = stc->mct_index;
     int n;
+    ACVP_SUB_TDES alg;
 
     memcpy_s(ctext[j], TEXT_ROW_LEN,  stc->ct, stc->ct_len);
     memcpy_s(ptext[j], TEXT_ROW_LEN, stc->pt, stc->pt_len);
 
-    switch (stc->cipher) {
-    case ACVP_TDES_CBC:
+    alg = acvp_get_tdes_alg(stc->cipher);
+    if (alg == 0) {
+        ACVP_LOG_ERR("Invalid cipher value");
+        return ACVP_INVALID_ARG;
+    }
+    
+    switch (alg) {
+    case ACVP_SUB_TDES_CBC:
         if (stc->direction == ACVP_SYM_CIPH_DIR_ENCRYPT) {
             if (j == 0) {
                 memcpy_s(stc->pt, ACVP_SYM_PT_BYTE_MAX, old_iv, 8);
@@ -113,7 +119,7 @@ static ACVP_RESULT acvp_des_mct_iterate_tc(ACVP_CTX *ctx,
             }
         }
         break;
-    case ACVP_TDES_CFB64:
+    case ACVP_SUB_TDES_CFB64:
         if (stc->direction == ACVP_SYM_CIPH_DIR_ENCRYPT) {
             if (j == 0) {
                 memcpy_s(stc->pt, ACVP_SYM_PT_BYTE_MAX, old_iv, 8);
@@ -135,7 +141,7 @@ static ACVP_RESULT acvp_des_mct_iterate_tc(ACVP_CTX *ctx,
         }
         break;
 
-    case ACVP_TDES_OFB:
+    case ACVP_SUB_TDES_OFB:
         if (stc->direction == ACVP_SYM_CIPH_DIR_ENCRYPT) {
             if (j == 0) {
                 memcpy_s(stc->pt, ACVP_SYM_PT_BYTE_MAX, old_iv, 8);
@@ -154,8 +160,8 @@ static ACVP_RESULT acvp_des_mct_iterate_tc(ACVP_CTX *ctx,
             }
         }
         break;
-    case ACVP_TDES_CFB1:
-    case ACVP_TDES_CFB8:
+    case ACVP_SUB_TDES_CFB1:
+    case ACVP_SUB_TDES_CFB8:
         if (stc->direction == ACVP_SYM_CIPH_DIR_ENCRYPT) {
             if (j == 0) {
                 memcpy_s(stc->pt, ACVP_SYM_PT_BYTE_MAX, old_iv, 8);
@@ -174,94 +180,20 @@ static ACVP_RESULT acvp_des_mct_iterate_tc(ACVP_CTX *ctx,
         }
         break;
 
-    case ACVP_TDES_ECB:
+    case ACVP_SUB_TDES_ECB:
         if (stc->direction == ACVP_SYM_CIPH_DIR_ENCRYPT) {
             memcpy_s(stc->pt, ACVP_SYM_PT_BYTE_MAX, stc->ct, stc->ct_len);
         } else {
             memcpy_s(stc->ct, ACVP_SYM_CT_BYTE_MAX, stc->pt, stc->pt_len);
         }
         break;
-    case ACVP_CIPHER_START:
-    case ACVP_AES_GCM:
-    case ACVP_AES_GCM_SIV:
-    case ACVP_AES_CCM:
-    case ACVP_AES_ECB:
-    case ACVP_AES_CBC:
-    case ACVP_AES_CFB1:
-    case ACVP_AES_CFB8:
-    case ACVP_AES_CFB128:
-    case ACVP_AES_OFB:
-    case ACVP_AES_CTR:
-    case ACVP_AES_XTS:
-    case ACVP_AES_KW:
-    case ACVP_AES_KWP:
-    case ACVP_AES_GMAC:
-    case ACVP_AES_XPN:
-    case ACVP_TDES_CBCI:
-    case ACVP_TDES_OFBI:
-    case ACVP_TDES_CFBP1:
-    case ACVP_TDES_CFBP8:
-    case ACVP_TDES_CFBP64:
-    case ACVP_TDES_CTR:
-    case ACVP_TDES_KW:
-    case ACVP_HASH_SHA1:
-    case ACVP_HASH_SHA224:
-    case ACVP_HASH_SHA256:
-    case ACVP_HASH_SHA384:
-    case ACVP_HASH_SHA512:
-    case ACVP_HASH_SHA512_224:
-    case ACVP_HASH_SHA512_256:
-    case ACVP_HASH_SHA3_224:
-    case ACVP_HASH_SHA3_256:
-    case ACVP_HASH_SHA3_384:
-    case ACVP_HASH_SHA3_512:
-    case ACVP_HASH_SHAKE_128:
-    case ACVP_HASH_SHAKE_256:
-    case ACVP_HASHDRBG:
-    case ACVP_HMACDRBG:
-    case ACVP_CTRDRBG:
-    case ACVP_HMAC_SHA1:
-    case ACVP_HMAC_SHA2_224:
-    case ACVP_HMAC_SHA2_256:
-    case ACVP_HMAC_SHA2_384:
-    case ACVP_HMAC_SHA2_512:
-    case ACVP_HMAC_SHA2_512_224:
-    case ACVP_HMAC_SHA2_512_256:
-    case ACVP_HMAC_SHA3_224:
-    case ACVP_HMAC_SHA3_256:
-    case ACVP_HMAC_SHA3_384:
-    case ACVP_HMAC_SHA3_512:
-    case ACVP_CMAC_AES:
-    case ACVP_CMAC_TDES:
-    case ACVP_DSA_KEYGEN:
-    case ACVP_DSA_PQGGEN:
-    case ACVP_DSA_PQGVER:
-    case ACVP_DSA_SIGGEN:
-    case ACVP_DSA_SIGVER:
-    case ACVP_RSA_KEYGEN:
-    case ACVP_RSA_SIGGEN:
-    case ACVP_RSA_SIGVER:
-    case ACVP_ECDSA_KEYGEN:
-    case ACVP_ECDSA_KEYVER:
-    case ACVP_ECDSA_SIGGEN:
-    case ACVP_ECDSA_SIGVER:
-    case ACVP_KDF135_TLS:
-    case ACVP_KDF135_SNMP:
-    case ACVP_KDF135_SSH:
-    case ACVP_KDF135_SRTP:
-    case ACVP_KDF135_IKEV2:
-    case ACVP_KDF135_IKEV1:
-    case ACVP_KDF135_X963:
-    case ACVP_KDF108:
-    case ACVP_PBKDF:
-    case ACVP_KAS_ECC_CDH:
-    case ACVP_KAS_ECC_COMP:
-    case ACVP_KAS_ECC_NOCOMP:
-    case ACVP_KAS_FFC_COMP:
-    case ACVP_KAS_FFC_NOCOMP:
-    case ACVP_KAS_KDF_ONESTEP:
-    case ACVP_KAS_HKDF:
-    case ACVP_CIPHER_END:
+    case ACVP_SUB_TDES_CBCI:
+    case ACVP_SUB_TDES_OFBI:
+    case ACVP_SUB_TDES_CFBP1:
+    case ACVP_SUB_TDES_CFBP8:
+    case ACVP_SUB_TDES_CFBP64:
+    case ACVP_SUB_TDES_CTR:
+    case ACVP_SUB_TDES_KW:
     default:
         break;
     }
@@ -462,6 +394,7 @@ static ACVP_RESULT acvp_des_mct_tc(ACVP_CTX *ctx,
     char *tmp = NULL;
 #define NK_LEN 32 /* Longest key + 8 */
     unsigned char nk[NK_LEN];
+    ACVP_SUB_TDES alg;
 
     tmp = calloc(1, ACVP_SYM_CT_MAX + 1);
     if (!tmp) {
@@ -469,100 +402,33 @@ static ACVP_RESULT acvp_des_mct_tc(ACVP_CTX *ctx,
         return ACVP_MALLOC_FAIL;
     }
 
-    switch (stc->cipher) {
-    case ACVP_TDES_CBC:
-    case ACVP_TDES_OFB:
-    case ACVP_TDES_CFB64:
-    case ACVP_TDES_ECB:
+    alg = acvp_get_tdes_alg(stc->cipher);
+    if (alg == 0) {
+        ACVP_LOG_ERR("Invalid cipher value");
+        free(tmp);
+        return ACVP_INVALID_ARG;
+    }
+    
+    switch (alg) {
+    case ACVP_SUB_TDES_CBC:
+    case ACVP_SUB_TDES_OFB:
+    case ACVP_SUB_TDES_CFB64:
+    case ACVP_SUB_TDES_ECB:
         bit_len = 64;
         break;
-    case ACVP_TDES_CFB8:
+    case ACVP_SUB_TDES_CFB8:
         bit_len = 8;
         break;
-    case ACVP_TDES_CFB1:
+    case ACVP_SUB_TDES_CFB1:
         bit_len = 1;
         break;
-    case ACVP_CIPHER_START:
-    case ACVP_AES_GCM:
-    case ACVP_AES_GCM_SIV:
-    case ACVP_AES_CCM:
-    case ACVP_AES_ECB:
-    case ACVP_AES_CBC:
-    case ACVP_AES_CFB1:
-    case ACVP_AES_CFB8:
-    case ACVP_AES_CFB128:
-    case ACVP_AES_OFB:
-    case ACVP_AES_CTR:
-    case ACVP_AES_XTS:
-    case ACVP_AES_KW:
-    case ACVP_AES_KWP:
-    case ACVP_AES_GMAC:
-    case ACVP_AES_XPN:
-    case ACVP_TDES_CBCI:
-    case ACVP_TDES_OFBI:
-    case ACVP_TDES_CFBP1:
-    case ACVP_TDES_CFBP8:
-    case ACVP_TDES_CFBP64:
-    case ACVP_TDES_CTR:
-    case ACVP_TDES_KW:
-    case ACVP_HASH_SHA1:
-    case ACVP_HASH_SHA224:
-    case ACVP_HASH_SHA256:
-    case ACVP_HASH_SHA384:
-    case ACVP_HASH_SHA512:
-    case ACVP_HASH_SHA512_224:
-    case ACVP_HASH_SHA512_256:
-    case ACVP_HASH_SHA3_224:
-    case ACVP_HASH_SHA3_256:
-    case ACVP_HASH_SHA3_384:
-    case ACVP_HASH_SHA3_512:
-    case ACVP_HASH_SHAKE_128:
-    case ACVP_HASH_SHAKE_256:
-    case ACVP_HASHDRBG:
-    case ACVP_HMACDRBG:
-    case ACVP_CTRDRBG:
-    case ACVP_HMAC_SHA1:
-    case ACVP_HMAC_SHA2_224:
-    case ACVP_HMAC_SHA2_256:
-    case ACVP_HMAC_SHA2_384:
-    case ACVP_HMAC_SHA2_512:
-    case ACVP_HMAC_SHA2_512_224:
-    case ACVP_HMAC_SHA2_512_256:
-    case ACVP_HMAC_SHA3_224:
-    case ACVP_HMAC_SHA3_256:
-    case ACVP_HMAC_SHA3_384:
-    case ACVP_HMAC_SHA3_512:
-    case ACVP_CMAC_AES:
-    case ACVP_CMAC_TDES:
-    case ACVP_DSA_KEYGEN:
-    case ACVP_DSA_PQGGEN:
-    case ACVP_DSA_PQGVER:
-    case ACVP_DSA_SIGGEN:
-    case ACVP_DSA_SIGVER:
-    case ACVP_RSA_KEYGEN:
-    case ACVP_RSA_SIGGEN:
-    case ACVP_RSA_SIGVER:
-    case ACVP_ECDSA_KEYGEN:
-    case ACVP_ECDSA_KEYVER:
-    case ACVP_ECDSA_SIGGEN:
-    case ACVP_ECDSA_SIGVER:
-    case ACVP_KDF135_TLS:
-    case ACVP_KDF135_SNMP:
-    case ACVP_KDF135_SSH:
-    case ACVP_KDF135_SRTP:
-    case ACVP_KDF135_IKEV2:
-    case ACVP_KDF135_IKEV1:
-    case ACVP_KDF135_X963:
-    case ACVP_KDF108:
-    case ACVP_PBKDF:
-    case ACVP_KAS_ECC_CDH:
-    case ACVP_KAS_ECC_COMP:
-    case ACVP_KAS_ECC_NOCOMP:
-    case ACVP_KAS_FFC_COMP:
-    case ACVP_KAS_FFC_NOCOMP:
-    case ACVP_KAS_KDF_ONESTEP:
-    case ACVP_KAS_HKDF:
-    case ACVP_CIPHER_END:
+    case ACVP_SUB_TDES_CBCI:
+    case ACVP_SUB_TDES_OFBI:
+    case ACVP_SUB_TDES_CFBP1:
+    case ACVP_SUB_TDES_CFBP8:
+    case ACVP_SUB_TDES_CFBP64:
+    case ACVP_SUB_TDES_CTR:
+    case ACVP_SUB_TDES_KW:
     default:
         ACVP_LOG_ERR("unsupported algorithm (%d)", stc->cipher);
         free(tmp);
@@ -608,7 +474,7 @@ static ACVP_RESULT acvp_des_mct_tc(ACVP_CTX *ctx,
             } else {
                 shiftin(nk, NK_LEN, stc->pt, bit_len);
             }
-            rv = acvp_des_mct_iterate_tc(ctx, stc, i);
+            rv = acvp_des_mct_iterate_tc(ctx, stc);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("Failed the MCT iteration changes");
                 free(tmp);

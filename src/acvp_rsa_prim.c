@@ -118,7 +118,6 @@ static ACVP_RESULT acvp_rsa_sigprim_release_tc(ACVP_RSA_PRIM_TC *stc) {
 
 static ACVP_RESULT acvp_rsa_decprim_init_tc(ACVP_CTX *ctx,
                                             ACVP_RSA_PRIM_TC *stc,
-                                            unsigned int tc_id,
                                             int modulo,
                                             int deferred,
                                             int pass,
@@ -155,7 +154,6 @@ static ACVP_RESULT acvp_rsa_decprim_init_tc(ACVP_CTX *ctx,
 
 static ACVP_RESULT acvp_rsa_sigprim_init_tc(ACVP_CTX *ctx,
                                             ACVP_RSA_PRIM_TC *stc,
-                                            unsigned int tc_id,
                                             unsigned int modulo,
                                             unsigned int keyformat,
                                             const char *d_str,
@@ -403,7 +401,7 @@ ACVP_RESULT acvp_rsa_decprim_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                     goto err;
                 }
 
-                rv = acvp_rsa_decprim_init_tc(ctx, &stc, tc_id, mod, deferred, pass, 
+                rv = acvp_rsa_decprim_init_tc(ctx, &stc, mod, deferred, pass, 
                                               fail, cipher, cipher_len);
 
                 /* Process the current test vector... */
@@ -666,7 +664,7 @@ ACVP_RESULT acvp_rsa_sigprim_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
 
 
-            rv = acvp_rsa_sigprim_init_tc(ctx, &stc, tc_id,
+            rv = acvp_rsa_sigprim_init_tc(ctx, &stc, 
                                           mod, keyformat,
                                           d_str, e_str,
                                           n_str, msg);
