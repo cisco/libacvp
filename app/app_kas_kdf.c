@@ -505,7 +505,7 @@ int app_kas_kdf_onestep_handler(ACVP_TEST_CASE *test_case) {
     hmacalg = acvp_get_hmac_alg(stc->aux_function);
     if (hmacalg == 0) {
         printf("Invalid cipher value");
-        return 1;
+        goto end;
     }
 
     switch (hmacalg) {
