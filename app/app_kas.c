@@ -913,8 +913,7 @@ int app_kas_ifc_handler(ACVP_TEST_CASE *test_case) {
                 printf("Error decrypting\n");
                 goto err;
             }
-            FIPS_digest(tc->pt, tc->pt_len, (unsigned char *)tc->chash, NULL, md);
-            tc->chashlen = EVP_MD_size(md);
+            FIPS_digest(tc->pt, tc->pt_len, (unsigned char *)tc->chash, &tc->chashlen, md);
         }
     }
     rv = 0;
