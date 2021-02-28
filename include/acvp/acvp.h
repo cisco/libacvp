@@ -1728,6 +1728,7 @@ typedef struct acvp_kas_ifc_tc_t {
     int zlen;
     int hashzlen;
     int chashlen;
+    unsigned int modulo;
 } ACVP_KAS_IFC_TC;
 
 typedef enum acvp_kas_kdf_encoding {
