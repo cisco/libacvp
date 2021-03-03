@@ -197,7 +197,7 @@ ACVP_RESULT acvp_safe_primes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     }
 
     mode_str = json_object_get_string(obj, "mode");
-    if (!alg_str) {
+    if (!mode_str) {
         ACVP_LOG_ERR("unable to parse mode' from JSON");
         return ACVP_MALFORMED_JSON;
     }
@@ -215,6 +215,12 @@ ACVP_RESULT acvp_safe_primes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     tc.tc.safe_primes = &stc;
     memzero_s(&stc, sizeof(ACVP_SAFE_PRIMES_TC));
 
+    cap = acvp_locate_cap_entry(ctx, alg_id);
+    if (!cap) {
+        ACVP_LOG_ERR("ACVP server requesting unsupported capability");
+        return ACVP_UNSUPPORTED_OP;
+    }
+
     /*
      * Create ACVP array for response
      */
@@ -222,13 +228,6 @@ ACVP_RESULT acvp_safe_primes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Failed to create JSON response struct. ");
         return rv;
-    }
-
-    cap = acvp_locate_cap_entry(ctx, alg_id);
-    if (!cap) {
-        ACVP_LOG_ERR("ACVP server requesting unsupported capability");
-        rv = ACVP_UNSUPPORTED_OP;
-        goto err;
     }
 
     /*
@@ -257,7 +256,7 @@ ACVP_RESULT acvp_safe_primes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         tg_id = json_object_get_number(groupobj, "tgId");
         if (!tg_id) {
             ACVP_LOG_ERR("Missing tgid from server JSON groub obj");
-            rv = ACVP_MALFORMED_JSON;
+            rv = ACVP_MISSING_ARG;
             goto err;
         }
         json_object_set_number(r_gobj, "tg_id", tg_id);
@@ -301,6 +300,11 @@ ACVP_RESULT acvp_safe_primes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 testval = json_array_get_value(tests, j);
                 testobj = json_value_get_object(testval);
                 tc_id = json_object_get_number(testobj, "tcId");
+                if (!tc_id) {
+                    ACVP_LOG_ERR("Server JSON missing 'tcId'");
+                    rv = ACVP_MISSING_ARG;
+                    goto err;
+                }
 
                 test_type_str = json_object_get_string(groupobj, "testType");
                 if (!test_type_str) {
@@ -374,6 +378,12 @@ ACVP_RESULT acvp_safe_primes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 testval = json_array_get_value(tests, j);
                 testobj = json_value_get_object(testval);
                 tc_id = json_object_get_number(testobj, "tcId");
+                if (!tc_id) {
+                    ACVP_LOG_ERR("Server JSON missing 'tcId'");
+                    rv = ACVP_MISSING_ARG;
+                    goto err;
+                }
+
 
                 test_type_str = json_object_get_string(groupobj, "testType");
                 if (!test_type_str) {
@@ -401,6 +411,7 @@ ACVP_RESULT acvp_safe_primes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 if (!x) {
                     ACVP_LOG_ERR("Server JSON missing 'x'");
                     rv = ACVP_MISSING_ARG;
+                    json_value_free(r_tval);
                     goto err;
                 }
 
@@ -408,6 +419,7 @@ ACVP_RESULT acvp_safe_primes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 if (!y) {
                     ACVP_LOG_ERR("Server JSON missing 'y'");
                     rv = ACVP_MISSING_ARG;
+                    json_value_free(r_tval);
                     goto err;
                 }
 

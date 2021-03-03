@@ -1007,7 +1007,7 @@ int app_safe_primes_handler(ACVP_TEST_CASE *test_case)
         dh = DH_new_by_nid(NID_ffdhe8192);
         break;
     default:
-        printf("\nInvalid dgm");
+        printf("Invalid dgm\n");
         goto err;
         break;
     }
@@ -1027,6 +1027,11 @@ int app_safe_primes_handler(ACVP_TEST_CASE *test_case)
         DH_set0_pqg(dh, tmp_p, tmp_q, tmp_g);
     }
 
+    if (!tc->x || !tc->y) {
+        printf("X or Y not allocated\n");
+        goto err;
+    }
+
     if (tc->cipher == ACVP_SAFE_PRIMES_KEYGEN) {
         if (!FIPS_dh_generate_key(dh)) {
             printf("DH_generate_key failed for dgm = %d\n", tc->dgm);
@@ -1038,7 +1043,7 @@ int app_safe_primes_handler(ACVP_TEST_CASE *test_case)
     }
 
     /* Validate 0 < x < q and y = g^x mod p */
-    if (tc->cipher == ACVP_SAFE_PRIMES_KEYVER) {
+    else if (tc->cipher == ACVP_SAFE_PRIMES_KEYVER) {
 
         DH_get0_pqg(dh, &pver, &qver, &gver);
         q1 = BN_dup(pver);
@@ -1076,6 +1081,9 @@ int app_safe_primes_handler(ACVP_TEST_CASE *test_case)
             goto end;
         }
         tc->result = 1;
+    } else {
+        printf("Invalid safe prime algorithm id\n");
+        goto err;
     }
 end:
     rv = 0;
@@ -1095,7 +1103,7 @@ err:
     if (!test_case) {
         return -1;
     }
-    printf("Safe Primes not supported prior to 1.1.1/n");
+    printf("Safe Primes not supported prior to 1.1.1\n");
     return 1;
 #endif
 }
