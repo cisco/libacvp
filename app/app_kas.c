@@ -1103,7 +1103,7 @@ err:
     if (!test_case) {
         return -1;
     }
-    printf("Safe Primes not supported prior to 1.1.1 /n");
+    printf("Safe Primes not supported prior to 1.1.1\n");
     return 1;
 #endif
 }
