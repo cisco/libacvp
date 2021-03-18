@@ -1860,5 +1860,46 @@ Test(EnableCapKASKDFONESTEP, invalid_params, .fini = teardown) {
     //invalid param call to set_domain
     rv = acvp_cap_kas_kdf_set_domain(ctx, ACVP_KAS_KDF_ONESTEP, ACVP_KAS_KDF_L, 0, 4096, 8);
     cr_assert(rv = ACVP_INVALID_ARG);
+}
 
+ /*
+  * enable kdf tls 1.3 with valid parms
+  */
+Test(EnableCapKDFTLS13, valid_params, .fini = teardown) {
+    setup_empty_ctx(&ctx);
+
+    rv = acvp_cap_kdf_tls13_enable(ctx, &dummy_handler_success);
+    cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_set_prereq(ctx, ACVP_KDF_TLS13, ACVP_PREREQ_HMAC, cvalue);
+    cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_kdf_tls13_set_parm(ctx, ACVP_KDF_TLS13_HMAC_ALG, ACVP_HMAC_ALG_SHA256);
+    cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_kdf_tls13_set_parm(ctx, ACVP_KDF_TLS13_HMAC_ALG, ACVP_HMAC_ALG_SHA384);
+    cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_kdf_tls13_set_parm(ctx, ACVP_KDF_TLS13_RUNNING_MODE, ACVP_KDF_TLS13_RUN_MODE_PSK);
+    cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_kdf_tls13_set_parm(ctx, ACVP_KDF_TLS13_RUNNING_MODE, ACVP_KDF_TLS13_RUN_MODE_DHE);
+    cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_kdf_tls13_set_parm(ctx, ACVP_KDF_TLS13_RUNNING_MODE, ACVP_KDF_TLS13_RUN_MODE_PSK_DHE);
+    cr_assert(rv == ACVP_SUCCESS);
+}
+
+ /*
+  * enable kdf tls 1.3 with invalid parms
+  */
+Test(EnableCapKDFTLS13, invalid_params, .fini = teardown) {
+    setup_empty_ctx(&ctx);
+    
+    rv = acvp_cap_kdf_tls13_enable(NULL, &dummy_handler_success);
+    cr_assert(rv == ACVP_NO_CTX);
+    rv = acvp_cap_kdf_tls13_enable(ctx, &dummy_handler_success);
+    cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_set_prereq(ctx, ACVP_KDF_TLS13, ACVP_PREREQ_AES, cvalue);
+    cr_assert(rv == ACVP_INVALID_ARG);
+    rv = acvp_cap_kdf_tls13_set_parm(ctx, ACVP_KDF_TLS13_HMAC_ALG, ACVP_HMAC_ALG_SHA224);
+    cr_assert(rv == ACVP_INVALID_ARG);
+    rv = acvp_cap_kdf_tls13_set_parm(ctx, ACVP_KDF_TLS13_RUNNING_MODE, 0);
+    cr_assert(rv == ACVP_INVALID_ARG);
+    rv = acvp_cap_kdf_tls13_set_parm(ctx, 0, ACVP_SHA256);
+    cr_assert(rv == ACVP_INVALID_ARG);
 }
