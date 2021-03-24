@@ -185,8 +185,10 @@ int app_drbg_handler(ACVP_TEST_CASE *test_case) {
              * the default value for this input.  Longer entropy inputs are
              * permitted, with the following exception: for ctrDRBG with no df, the
              * bit length must equal the seed length.
+             *
+             * This will be enforced at registration time by the server. Also, with
+             * this mode, no nonce is used.
              **/
-            drbg_entropy_len = 0;
         }
 
         switch (tc->mode) {
