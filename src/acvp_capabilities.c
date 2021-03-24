@@ -525,6 +525,18 @@ static ACVP_RESULT acvp_cap_list_append(ACVP_CTX *ctx,
         }
         break;
 
+    case ACVP_KDF_TLS13_TYPE:
+        if (cipher != ACVP_KDF_TLS13) {
+            rv = ACVP_INVALID_ARG;
+            goto err;
+        }
+        cap_entry->cap.kdf_tls13_cap = calloc(1, sizeof(ACVP_KDF_TLS13_CAP));
+        if (!cap_entry->cap.kdf_tls13_cap) {
+            rv = ACVP_MALLOC_FAIL;
+            goto err;
+        }
+        break;
+
     case ACVP_RSA_KEYGEN_TYPE:
         if (cipher != ACVP_RSA_KEYGEN) {
             rv = ACVP_INVALID_ARG;
@@ -985,6 +997,7 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
         case ACVP_KDF135_X963:
         case ACVP_KDF108:
         case ACVP_PBKDF:
+        case ACVP_KDF_TLS13:
         case ACVP_KAS_ECC_CDH:
         case ACVP_KAS_ECC_COMP:
         case ACVP_KAS_ECC_NOCOMP:
@@ -1095,6 +1108,7 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
         case ACVP_KDF135_X963:
         case ACVP_KDF108:
         case ACVP_PBKDF:
+        case ACVP_KDF_TLS13:
         case ACVP_KAS_ECC_CDH:
         case ACVP_KAS_ECC_COMP:
         case ACVP_KAS_ECC_NOCOMP:
@@ -1203,6 +1217,7 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
         case ACVP_KDF135_X963:
         case ACVP_KDF108:
         case ACVP_PBKDF:
+        case ACVP_KDF_TLS13:
         case ACVP_KAS_ECC_CDH:
         case ACVP_KAS_ECC_COMP:
         case ACVP_KAS_ECC_NOCOMP:
@@ -1317,6 +1332,7 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
         case ACVP_KDF135_X963:
         case ACVP_KDF108:
         case ACVP_PBKDF:
+        case ACVP_KDF_TLS13:
         case ACVP_KAS_ECC_CDH:
         case ACVP_KAS_ECC_COMP:
         case ACVP_KAS_ECC_NOCOMP:
@@ -1422,6 +1438,7 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
         case ACVP_KDF135_X963:
         case ACVP_KDF108:
         case ACVP_PBKDF:
+        case ACVP_KDF_TLS13:
         case ACVP_KAS_ECC_CDH:
         case ACVP_KAS_ECC_COMP:
         case ACVP_KAS_ECC_NOCOMP:
@@ -1724,6 +1741,7 @@ static ACVP_RESULT acvp_validate_sym_cipher_domain_value(ACVP_CIPHER cipher, ACV
     case ACVP_KDF135_X963:
     case ACVP_KDF108:
     case ACVP_PBKDF:
+    case ACVP_KDF_TLS13:
     case ACVP_KAS_ECC_CDH:
     case ACVP_KAS_ECC_COMP:
     case ACVP_KAS_ECC_NOCOMP:
@@ -1894,6 +1912,11 @@ static ACVP_RESULT acvp_validate_prereq_val(ACVP_CIPHER cipher, ACVP_PREREQ_ALG 
     case ACVP_PBKDF:
         if (pre_req == ACVP_PREREQ_DRBG ||
             pre_req == ACVP_PREREQ_HMAC) {
+            return ACVP_SUCCESS;
+        }
+        break;
+    case ACVP_KDF_TLS13:
+        if (pre_req == ACVP_PREREQ_HMAC) {
             return ACVP_SUCCESS;
         }
         break;
@@ -2164,6 +2187,7 @@ ACVP_RESULT acvp_cap_sym_cipher_set_domain(ACVP_CTX *ctx,
     case ACVP_KDF135_X963:
     case ACVP_KDF108:
     case ACVP_PBKDF:
+    case ACVP_KDF_TLS13:
     case ACVP_KAS_ECC_CDH:
     case ACVP_KAS_ECC_COMP:
     case ACVP_KAS_ECC_NOCOMP:
@@ -2351,6 +2375,7 @@ ACVP_RESULT acvp_cap_sym_cipher_set_parm(ACVP_CTX *ctx,
     case ACVP_KDF135_X963:
     case ACVP_KDF108:
     case ACVP_PBKDF:
+    case ACVP_KDF_TLS13:
     case ACVP_KAS_ECC_CDH:
     case ACVP_KAS_ECC_COMP:
     case ACVP_KAS_ECC_NOCOMP:
@@ -2656,6 +2681,7 @@ ACVP_RESULT acvp_cap_sym_cipher_enable(ACVP_CTX *ctx,
     case ACVP_KDF135_X963:
     case ACVP_KDF108:
     case ACVP_PBKDF:
+    case ACVP_KDF_TLS13:
     case ACVP_KAS_ECC_CDH:
     case ACVP_KAS_ECC_COMP:
     case ACVP_KAS_ECC_NOCOMP:
@@ -3335,6 +3361,7 @@ ACVP_RESULT acvp_cap_cmac_set_parm(ACVP_CTX *ctx,
             acvp_cap_add_length(&cap->cap.cmac_cap->keying_option, value);
             break;
         }
+        return ACVP_INVALID_ARG;
     default:
         return ACVP_INVALID_ARG;
     }
@@ -5519,6 +5546,7 @@ ACVP_RESULT acvp_cap_pbkdf_set_parm(ACVP_CTX *ctx,
     return ACVP_SUCCESS;
 
 }
+
 /*
  * The user should call this after invoking acvp_enable_kdf135_ssh_cap()
  * to specify the kdf parameters.
@@ -6334,6 +6362,113 @@ ACVP_RESULT acvp_cap_kdf108_set_domain(ACVP_CTX *ctx,
     return ACVP_SUCCESS;
 }
 
+ACVP_RESULT acvp_cap_kdf_tls13_enable(ACVP_CTX *ctx,
+                                      int (*crypto_handler) (ACVP_TEST_CASE *test_case)) {
+    ACVP_RESULT result = ACVP_SUCCESS;
+
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+
+    if (!crypto_handler) {
+        ACVP_LOG_ERR("NULL parameter 'crypto_handler'");
+        return ACVP_INVALID_ARG;
+    }
+
+    result = acvp_cap_list_append(ctx, ACVP_KDF_TLS13_TYPE, ACVP_KDF_TLS13, crypto_handler);
+
+    if (result == ACVP_DUP_CIPHER) {
+        ACVP_LOG_ERR("Capability previously enabled. Duplicate not allowed.");
+    } else if (result == ACVP_MALLOC_FAIL) {
+        ACVP_LOG_ERR("Failed to allocate capability object");
+    }
+
+    return result;
+}
+
+ACVP_RESULT acvp_cap_kdf_tls13_set_parm(ACVP_CTX *ctx,
+                                        ACVP_KDF_TLS13_PARM param,
+                                        int value) {
+    ACVP_CAPS_LIST *cap_list = NULL;
+    ACVP_KDF_TLS13_CAP *cap = NULL;
+    ACVP_NAME_LIST *hmac_alg_list = NULL;
+    ACVP_PARAM_LIST *run_mode_list = NULL;
+    const char *alg_str = NULL;
+
+    cap_list = acvp_locate_cap_entry(ctx, ACVP_KDF_TLS13);
+    if (!cap_list) {
+        ACVP_LOG_ERR("Cap entry not found. You must enable algorithm before setting parameters.");
+        return ACVP_NO_CAP;
+    }
+    cap = cap_list->cap.kdf_tls13_cap;
+
+    switch(param) {
+    case ACVP_KDF_TLS13_HMAC_ALG:
+        alg_str = acvp_lookup_hmac_alg_str(value);
+        if ((value != ACVP_HMAC_ALG_SHA256 && value != ACVP_HMAC_ALG_SHA384) || !alg_str) {
+            ACVP_LOG_ERR("Invalid value specified for TLS 1.3 hmac alg.");
+            return ACVP_INVALID_ARG;
+        }
+        if (cap->hmac_algs) {
+            hmac_alg_list = cap->hmac_algs;
+            if (hmac_alg_list->name == alg_str) {
+                ACVP_LOG_WARN("Attempting to register an hmac alg with TLS 1.3 KDF that has already been registered, skipping.");
+                return ACVP_SUCCESS;
+            }
+            while (hmac_alg_list->next) {
+                hmac_alg_list = hmac_alg_list->next;
+                if (hmac_alg_list->name == alg_str) {
+                    ACVP_LOG_WARN("Attempting to register an hmac alg with TLS 1.3 KDF that has already been registered, skipping.");
+                    return ACVP_SUCCESS;
+                }
+            }
+            hmac_alg_list->next = calloc(1, sizeof(ACVP_NAME_LIST));
+            if (!hmac_alg_list->next) {
+                return ACVP_MALLOC_FAIL;
+            }
+            hmac_alg_list = hmac_alg_list->next;
+        } else {
+            cap->hmac_algs = calloc(1, sizeof(ACVP_NAME_LIST));
+            if (!cap->hmac_algs) {
+                return ACVP_MALLOC_FAIL;
+            }
+            hmac_alg_list = cap->hmac_algs;
+        }
+        hmac_alg_list->name = alg_str;
+        break;
+    case ACVP_KDF_TLS13_RUNNING_MODE:
+        if (value <= ACVP_KDF_TLS13_RUN_MODE_MIN || value >= ACVP_KDF_TLS13_RUN_MODE_MAX) {
+            ACVP_LOG_ERR("Invalid TLS 1.3 KDF running mode provided");
+            return ACVP_INVALID_ARG;
+        }
+        run_mode_list = cap->running_mode;
+        if (run_mode_list) {
+            while (run_mode_list->next) {
+                run_mode_list = run_mode_list->next;
+            }
+            run_mode_list->next = calloc(1, sizeof(ACVP_PARAM_LIST));
+            if (!run_mode_list->next) {
+                ACVP_LOG_ERR("Error allocating memory for TLS 1.3 KDF running mode param");
+                return ACVP_MALLOC_FAIL;
+            }
+            run_mode_list->next->param = value;
+        } else {
+            cap->running_mode = calloc(1, sizeof(ACVP_PARAM_LIST));
+            if (!cap->running_mode) {
+                ACVP_LOG_ERR("Error allocating memory for TLS 1.3 KDF running mode param");
+                return ACVP_MALLOC_FAIL;
+            }
+            cap->running_mode->param = value;
+        }
+        break;
+    case ACVP_KDF_TLS13_PARAM_MIN:
+    default:
+        return ACVP_INVALID_ARG;
+    }
+
+    return ACVP_SUCCESS;
+
+}
 /*
  * Append a KAS-ECC pre req val to the capabilities
  */
@@ -6574,8 +6709,12 @@ ACVP_RESULT acvp_cap_kas_ecc_set_parm(ACVP_CTX *ctx,
             }
             break;
         case ACVP_KAS_ECC_NONE:
-            if (cipher == ACVP_KAS_ECC_SSC)
+            if (cipher == ACVP_KAS_ECC_SSC) {
                 break;
+            } else {
+                ACVP_LOG_ERR("\nUnsupported KAS-ECC param %d", param);
+                return ACVP_INVALID_ARG;
+            }
         case ACVP_KAS_ECC_ROLE:
         case ACVP_KAS_ECC_KDF:
         case ACVP_KAS_ECC_EB:

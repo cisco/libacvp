@@ -573,6 +573,7 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
     case ACVP_KDF135_X963:
     case ACVP_KDF108:
     case ACVP_PBKDF:
+    case ACVP_KDF_TLS13:
     case ACVP_KAS_ECC_CDH:
     case ACVP_KAS_ECC_COMP:
     case ACVP_KAS_ECC_NOCOMP:
@@ -1887,6 +1888,55 @@ static ACVP_RESULT acvp_build_pbkdf_register_cap(JSON_Object *cap_obj, ACVP_CAPS
     }
 
     json_array_append_value(temp_cap_arr, cap_val);
+    return ACVP_SUCCESS;
+}
+
+static ACVP_RESULT acvp_build_kdf_tls13_register_cap(JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry) {
+    JSON_Array *temp_arr = NULL;
+    ACVP_NAME_LIST *hmac_alg_list = NULL;
+    ACVP_PARAM_LIST *run_mode_list = NULL;
+    ACVP_RESULT result;
+    const char *revision = NULL, *mode = NULL;
+
+    json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
+
+    revision = acvp_lookup_cipher_revision(cap_entry->cipher);
+    if (revision == NULL) return ACVP_INVALID_ARG;
+    json_object_set_string(cap_obj, "revision", revision);
+
+    mode = acvp_lookup_cipher_mode_str(ACVP_KDF_TLS13);
+    if (mode == NULL) return ACVP_INVALID_ARG;
+    json_object_set_string(cap_obj, "mode", mode);
+
+    result = acvp_lookup_prereqVals(cap_obj, cap_entry);
+    if (result != ACVP_SUCCESS) { return result; }
+
+    //create the "hmacAlg" array and populate it
+    json_object_set_value(cap_obj, "hmacAlg", json_value_init_array());
+    temp_arr = json_object_get_array(cap_obj, "hmacAlg");
+    hmac_alg_list = cap_entry->cap.kdf_tls13_cap->hmac_algs;
+    while (hmac_alg_list) {
+        json_array_append_string(temp_arr, hmac_alg_list->name);
+        hmac_alg_list = hmac_alg_list->next;
+    }
+
+    //create the "runningMode" array and populate it
+    json_object_set_value(cap_obj, "runningMode", json_value_init_array());
+    temp_arr = json_object_get_array(cap_obj, "runningMode");
+    run_mode_list = cap_entry->cap.kdf_tls13_cap->running_mode;
+    while (run_mode_list) {
+        if (run_mode_list->param == ACVP_KDF_TLS13_RUN_MODE_PSK) {
+            json_array_append_string(temp_arr, ACVP_STR_KDF_TLS13_PSK);
+        } else if (run_mode_list->param == ACVP_KDF_TLS13_RUN_MODE_DHE) {
+            json_array_append_string(temp_arr, ACVP_STR_KDF_TLS13_DHE);
+        } else if (run_mode_list->param == ACVP_KDF_TLS13_RUN_MODE_PSK_DHE) {
+            json_array_append_string(temp_arr, ACVP_STR_KDF_TLS13_PSK_DHE);
+        } else {
+            return ACVP_INVALID_ARG;
+        }
+        run_mode_list = run_mode_list->next;
+    }
+
     return ACVP_SUCCESS;
 }
 
@@ -3989,6 +4039,9 @@ ACVP_RESULT acvp_build_test_session(ACVP_CTX *ctx, char **reg, int *out_len) {
                 break;
             case ACVP_PBKDF:
                 rv = acvp_build_pbkdf_register_cap(cap_obj, cap_entry);
+                break;
+            case ACVP_KDF_TLS13:
+                rv = acvp_build_kdf_tls13_register_cap(cap_obj, cap_entry);
                 break;
             case ACVP_KAS_ECC_CDH:
                 rv = acvp_build_kas_ecc_register_cap(ctx, cap_obj, cap_entry, ACVP_KAS_ECC_MODE_CDH);

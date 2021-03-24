@@ -850,7 +850,7 @@ static ACVP_RESULT acvp_kas_kdf_process(ACVP_CTX *ctx,
                     goto err;
                 }
                 //assume max salt len is mac alg max length, currently 512
-                if (strnlen_s(salt, 128) != saltLen / 4) {
+                if ((int)strnlen_s(salt, 128) != saltLen / 4) {
                     ACVP_LOG_ERR("salt wrong length, should match provided saltLen %d",
                                 saltLen);
                     rv = ACVP_MALFORMED_JSON;
@@ -972,7 +972,7 @@ static ACVP_RESULT acvp_kas_kdf_process(ACVP_CTX *ctx,
                     rv = ACVP_MALFORMED_JSON;
                     goto err;
                 }
-                if (strnlen_s(dkm, ACVP_KAS_KDF_DKM_STR_MAX) != l / 4) {
+                if ((int)strnlen_s(dkm, ACVP_KAS_KDF_DKM_STR_MAX) != l / 4) {
                     ACVP_LOG_ERR("Given dkm wrong length, should match provided l %d",  l);
                     rv = ACVP_MALFORMED_JSON;
                     goto err;

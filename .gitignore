@@ -31,3 +31,17 @@
 # Debug files
 *.dSYM/
 *.su
+
+# Build system files
+**/Makefile
+**/libtool
+**/config.*
+**/autom4te.cache/
+*config.h
+
+# Intermediate files
+**/.deps/
+**/.dirstamp
+
+# IDE files
+**/.vscode/

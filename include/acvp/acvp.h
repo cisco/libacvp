@@ -163,6 +163,7 @@ typedef enum acvp_cipher {
     ACVP_KDF135_X963,
     ACVP_KDF108,
     ACVP_PBKDF,
+    ACVP_KDF_TLS13,
     ACVP_KAS_ECC_CDH,
     ACVP_KAS_ECC_COMP,
     ACVP_KAS_ECC_NOCOMP,
@@ -317,7 +318,8 @@ typedef enum acvp_alg_type_kdf {
     ACVP_SUB_KDF_IKEV1,
     ACVP_SUB_KDF_X963,
     ACVP_SUB_KDF_108,
-    ACVP_SUB_KDF_PBKDF
+    ACVP_SUB_KDF_PBKDF,
+    ACVP_SUB_KDF_TLS13
 } ACVP_SUB_KDF;
 
 
@@ -675,6 +677,20 @@ typedef enum acvp_pbkdf_param {
     ACVP_PBKDF_HMAC_ALG
 } ACVP_PBKDF_PARM;
 
+typedef enum acvp_kdf_tls13_running_mode {
+    ACVP_KDF_TLS13_RUN_MODE_MIN,
+    ACVP_KDF_TLS13_RUN_MODE_PSK,
+    ACVP_KDF_TLS13_RUN_MODE_DHE,
+    ACVP_KDF_TLS13_RUN_MODE_PSK_DHE,
+    ACVP_KDF_TLS13_RUN_MODE_MAX
+} ACVP_KDF_TLS13_RUN_MODE;
+
+typedef enum acvp_kdf_tls13_param {
+    ACVP_KDF_TLS13_PARAM_MIN,
+    ACVP_KDF_TLS13_HMAC_ALG,
+    ACVP_KDF_TLS13_RUNNING_MODE
+} ACVP_KDF_TLS13_PARM;
+
 /*! @struct ACVP_RSA_KEY_FORMAT */
 typedef enum acvp_rsa_key_format {
     ACVP_RSA_KEY_FORMAT_STANDARD = 1, /**< Standard */
@@ -810,6 +826,12 @@ typedef enum acvp_pbkdf_testtype {
     ACVP_PBKDF_TEST_TYPE_NONE = 0,
     ACVP_PBKDF_TEST_TYPE_AFT
 } ACVP_PBKDF_TESTTYPE;
+
+/*! @struct ACVP_KDF_TLS13_TESTTYPE */
+typedef enum acvp_kdf_tls13_testtype {
+    ACVP_KDF_TLS13_TEST_TYPE_NONE = 0,
+    ACVP_KDF_TLS13_TEST_TYPE_AFT
+} ACVP_KDF_TLS13_TESTTYPE;
 
 /*! @struct ACVP_HMAC_PARM */
 typedef enum acvp_hmac_parameter {
@@ -1178,6 +1200,55 @@ typedef struct acvp_pbkdf_tc_t {
     unsigned char *key;       /**< The output derived key
                                            ---User supplied--- */
 } ACVP_PBKDF_TC;
+
+/*!
+ * @struct ACVP_KDF_TLS13_TC
+ * @brief This struct holds data that represents a single test
+ * case for TLS 1.3 KDF testing.  This data is
+ * passed between libacvp and the crypto module.
+ */
+typedef struct acvp_kdf_tls13_tc_t {
+    ACVP_CIPHER cipher;
+    unsigned int tc_id;              /**< Test case id */
+
+    //test params:
+    ACVP_KDF_TLS13_TESTTYPE test_type;   /**< Test type */
+    ACVP_HASH_ALG hmac_alg;         /**< HMAC algorithm type */
+    ACVP_KDF_TLS13_RUN_MODE running_mode; /**< DHE, PSK, or PSK-DHE */
+    unsigned char *psk; /**< pre shared key, populated for PSK or PSK-DHE */
+    unsigned char *dhe; /**< diffie hellman secret, populated for DHE or PSK-DHE */
+    unsigned char *s_hello_rand; /**< server hello random value */
+    unsigned char *c_hello_rand; /**< client hello random value */
+    unsigned char *fin_s_hello_rand; /**< finished server hello random value */
+    unsigned char *fin_c_hello_rand; /**< finished client hello random value */
+    //test param lengths:
+    int psk_len;
+    int dhe_len;
+    int s_hello_rand_len;
+    int c_hello_rand_len;
+    int fin_s_hello_rand_len;
+    int fin_c_hello_rand_len;
+
+    //user supplied (vars are self descriptive):
+    unsigned char *c_early_traffic_secret;
+    unsigned char *early_expt_master_secret;
+    unsigned char *c_hs_traffic_secret;
+    unsigned char *s_hs_traffic_secret;
+    unsigned char *c_app_traffic_secret;
+    unsigned char *s_app_traffic_secret;
+    unsigned char *expt_master_secret;
+    unsigned char *resume_master_secret;
+    //user supplied lengths of above values in bytes:
+    int cets_len;
+    int eems_len;
+    int chts_len;
+    int shts_len;
+    int cats_len;
+    int sats_len;
+    int ems_len;
+    int rms_len;
+
+} ACVP_KDF_TLS13_TC;
 
 /*!
  * @struct ACVP_HMAC_TC
@@ -1993,6 +2064,7 @@ typedef struct acvp_test_case_t {
         ACVP_KDF135_X963_TC *kdf135_x963;
         ACVP_KDF108_TC *kdf108;
         ACVP_PBKDF_TC *pbkdf;
+        ACVP_KDF_TLS13_TC *kdf_tls13;
         ACVP_KAS_ECC_TC *kas_ecc;
         ACVP_KAS_FFC_TC *kas_ffc;
         ACVP_KAS_IFC_TC *kas_ifc;
@@ -3067,6 +3139,9 @@ ACVP_RESULT acvp_cap_kdf108_enable(ACVP_CTX *ctx,
 ACVP_RESULT acvp_cap_pbkdf_enable(ACVP_CTX *ctx,
                                   int (*crypto_handler)(ACVP_TEST_CASE *test_case));
 
+ACVP_RESULT acvp_cap_kdf_tls13_enable(ACVP_CTX *ctx,
+                                  int (*crypto_handler)(ACVP_TEST_CASE *test_case));
+
 /*! @brief acvp_enable_kdf135_tls_cap_parm() allows an application to specify
         operational parameters to be used during a test session with the ACVP
         server.
@@ -3341,7 +3416,6 @@ ACVP_RESULT acvp_cap_pbkdf_set_domain(ACVP_CTX *ctx,
         specify the parameters for the corresponding KDF.
 
    @param ctx Address of pointer to a previously allocated ACVP_CTX.
-   @param cap ACVP_PBKDF_MODE enum value identifying the kdf108 mode
    @param param ACVP_PBKDF_PARM enum value specifying parameter
    @param value integer value for parameter
 
@@ -3351,6 +3425,22 @@ ACVP_RESULT acvp_cap_pbkdf_set_parm(ACVP_CTX *ctx,
                                     ACVP_PBKDF_PARM param,
                                     int value);
 
+/*! @brief acvp_cap_kdf_tls13_set_parm() allows an application to specify
+        operational parameters to be used during a test session with the ACVP
+        server.
+
+        This function should be called after acvp_cap_kdf_tls13_enable() to
+        specify the parameters for the corresponding KDF.
+
+   @param ctx Address of pointer to a previously allocated ACVP_CTX.
+   @param param ACVP_KDF_TLS13_PARM enum value specifying parameter
+   @param value integer value for parameter
+
+   @return ACVP_RESULT
+ */
+ACVP_RESULT acvp_cap_kdf_tls13_set_parm(ACVP_CTX *ctx,
+                                        ACVP_KDF_TLS13_PARM param,
+                                        int value);
 
 ACVP_RESULT acvp_cap_safe_primes_enable(ACVP_CTX *ctx,
                                         ACVP_CIPHER cipher,

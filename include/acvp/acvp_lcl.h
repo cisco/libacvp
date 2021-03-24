@@ -110,6 +110,7 @@
 #define ACVP_REVISION_SP800_56AR3 "Sp800-56Ar3"
 #define ACVP_REVISION_SP800_56BR2 "Sp800-56Br2"
 #define ACVP_REVISION_SP800_56CR1 "Sp800-56Cr1"
+#define ACVP_REVISION_RFC8446 "RFC8446"
 
 /* AES */
 #define ACVP_REV_AES_ECB             ACVP_REVISION_LATEST
@@ -223,6 +224,7 @@
 #define ACVP_REV_KDF108              ACVP_REVISION_LATEST
 #define ACVP_REV_PBKDF               ACVP_REVISION_LATEST
 #define ACVP_REV_SAFE_PRIMES         ACVP_REVISION_LATEST
+#define ACVP_REV_KDF_TLS13           ACVP_REVISION_RFC8446
 
 
 /********************************************************
@@ -408,6 +410,12 @@
 #define ACVP_ALG_KDF108          "KDF"
 #define ACVP_ALG_KDF135_X963     "ansix9.63"
 #define ACVP_ALG_PBKDF           "PBKDF"
+
+#define ACVP_ALG_TLS13           "TLS-v1.3"
+#define ACVP_ALG_KDF_TLS13         "KDF"
+#define ACVP_STR_KDF_TLS13_PSK     "PSK"
+#define ACVP_STR_KDF_TLS13_DHE     "DHE"
+#define ACVP_STR_KDF_TLS13_PSK_DHE "PSK-DHE"
 
 #define ACVP_CAPABILITY_STR_MAX 512 /**< Arbitrary string length limit */
 
@@ -708,6 +716,16 @@
  * END PBKDF
  */
 
+/**
+ * Accepted length ranges for TLS 1.3 KDF
+ */
+#define ACVP_KDF_TLS13_DATA_LEN_BIT_MAX 4096 //Arbitrarily selected for sanity checking
+#define ACVP_KDF_TLS13_DATA_LEN_STR_MAX (ACVP_KDF_TLS13_DATA_LEN_BIT_MAX >> 2)
+#define ACVP_KDF_TLS13_DATA_LEN_BYTE_MAX (ACVP_KDF_TLS13_DATA_LEN_BIT_MAX >> 3)
+/*
+ * END TLS 1.3 KDF
+ */
+
 #define ACVP_HMAC_MSG_MAX       1024
 
 #define ACVP_HMAC_MAC_BIT_MIN 32  /**< 32 bits */
@@ -947,6 +965,7 @@ typedef enum acvp_capability_type {
     ACVP_KDF135_TPM_TYPE,
     ACVP_KDF108_TYPE,
     ACVP_PBKDF_TYPE,
+    ACVP_KDF_TLS13_TYPE,
     ACVP_KAS_ECC_CDH_TYPE,
     ACVP_KAS_ECC_COMP_TYPE,
     ACVP_KAS_ECC_NOCOMP_TYPE,
@@ -1129,6 +1148,11 @@ typedef struct acvp_pbkdf_capability {
     ACVP_JSON_DOMAIN_OBJ password_len_domain;
     ACVP_JSON_DOMAIN_OBJ salt_len_domain;
 } ACVP_PBKDF_CAP;
+
+typedef struct acvp_kdf_tls13_capability {
+    ACVP_NAME_LIST *hmac_algs;
+    ACVP_PARAM_LIST *running_mode;
+} ACVP_KDF_TLS13_CAP;
 
 typedef struct acvp_hmac_capability {
     ACVP_JSON_DOMAIN_OBJ key_len; // 8-524288
@@ -1446,6 +1470,7 @@ typedef struct acvp_caps_list_t {
         ACVP_KDF135_X963_CAP *kdf135_x963_cap;
         ACVP_KDF108_CAP *kdf108_cap;
         ACVP_PBKDF_CAP *pbkdf_cap;
+        ACVP_KDF_TLS13_CAP *kdf_tls13_cap;
         ACVP_KAS_ECC_CAP *kas_ecc_cap;
         ACVP_KAS_FFC_CAP *kas_ffc_cap;
         ACVP_KAS_IFC_CAP *kas_ifc_cap;
@@ -1746,6 +1771,8 @@ ACVP_RESULT acvp_kdf135_x963_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 ACVP_RESULT acvp_kdf108_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
 ACVP_RESULT acvp_pbkdf_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
+
+ACVP_RESULT acvp_kdf_tls13_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
 ACVP_RESULT acvp_dsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
