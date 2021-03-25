@@ -44,9 +44,9 @@ static ACVP_KDF_TLS13_RUN_MODE read_run_mode(const char *str) {
 
     strcmp_s(ACVP_STR_KDF_TLS13_PSK, sizeof(ACVP_STR_KDF_TLS13_PSK) -1, str, &diff);
     if (!diff) return ACVP_KDF_TLS13_RUN_MODE_PSK;
-    strcmp_s(ACVP_STR_KDF_TLS13_DHE, sizeof(ACVP_STR_KDF_TLS13_PSK) -1, str, &diff);
+    strcmp_s(ACVP_STR_KDF_TLS13_DHE, sizeof(ACVP_STR_KDF_TLS13_DHE) -1, str, &diff);
     if (!diff) return ACVP_KDF_TLS13_RUN_MODE_DHE;
-    strcmp_s(ACVP_STR_KDF_TLS13_PSK_DHE, sizeof(ACVP_STR_KDF_TLS13_PSK) -1, str, &diff);
+    strcmp_s(ACVP_STR_KDF_TLS13_PSK_DHE, sizeof(ACVP_STR_KDF_TLS13_PSK_DHE) -1, str, &diff);
     if (!diff) return ACVP_KDF_TLS13_RUN_MODE_PSK_DHE;
 
     return 0;
