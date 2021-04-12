@@ -1831,6 +1831,7 @@ end:
 
     return rv;
 }
+#endif
 
 static int enable_kas_kdf(ACVP_CTX *ctx) {
     ACVP_RESULT rv = ACVP_SUCCESS;
@@ -1962,6 +1963,7 @@ end:
    return rv;
 }
 
+#ifndef OPENSSL_NO_DSA
 static int enable_dsa(ACVP_CTX *ctx) {
     ACVP_RESULT rv = ACVP_SUCCESS;
 

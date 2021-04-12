@@ -84,11 +84,11 @@ Test(FIPS_VALIDATION_METADATA, set_fips_validation_metadata, .init = setup, .fin
 }
 
 /*
- * Test  acvp_oe_verify_fips_operating_env
+ * Test  acvp_verify_fips_validation_metadata
  */
 Test(VERIFY_FIPS_OPERATING_ENV, verify_fips_operating_env, .init = setup, .fini = teardown) {
 
-    rv = acvp_oe_verify_fips_operating_env(NULL);
+    rv = acvp_verify_fips_validation_metadata(NULL);
     cr_assert(rv == ACVP_NO_CTX);
 
     rv = acvp_oe_ingest_metadata(ctx, "json/meta.json");
@@ -97,7 +97,7 @@ Test(VERIFY_FIPS_OPERATING_ENV, verify_fips_operating_env, .init = setup, .fini 
     rv = acvp_oe_set_fips_validation_metadata(ctx, 1, 1);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_oe_verify_fips_operating_env(ctx);
+    rv = acvp_verify_fips_validation_metadata(ctx);
 #ifdef ACVP_OFFLINE
     cr_assert(rv == ACVP_TRANSPORT_FAIL);
 #else

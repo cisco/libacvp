@@ -9,9 +9,9 @@
  */
 
 #ifdef USE_MURL
-# include "../murl/murl.h"
+#include "../murl/murl.h"
 #elif !defined ACVP_OFFLINE
-# include <curl/curl.h>
+#include <curl/curl.h>
 #endif
 
 #include <stdio.h>
@@ -1192,47 +1192,47 @@ static void log_network_status(ACVP_CTX *ctx,
 
     switch(action) {
     case ACVP_NET_GET:
-        ACVP_LOG_INFO("GET...\n\tStatus: %d\n\tUrl: %s\n\tResp:\n%s\n",
+        ACVP_LOG_VERBOSE("GET...\n\tStatus: %d\n\tUrl: %s\n\tResp:\n%s\n",
                       curl_code, url, ctx->curl_buf);
         break;
     case ACVP_NET_GET_VS:
-        ACVP_LOG_INFO("GET Vector Set...\n\tStatus: %d\n\tUrl: %s\n\tResp:\n%s\n",
+        ACVP_LOG_VERBOSE("GET Vector Set...\n\tStatus: %d\n\tUrl: %s\n\tResp:\n%s\n",
                          curl_code, url, ctx->curl_buf);
         break;
     case ACVP_NET_GET_VS_RESULT:
-        ACVP_LOG_INFO("GET Vector Set Result...\n\tStatus: %d\n\tUrl: %s\n\tResp:\n%s\n",
+        ACVP_LOG_VERBOSE("GET Vector Set Result...\n\tStatus: %d\n\tUrl: %s\n\tResp:\n%s\n",
                         curl_code, url, ctx->curl_buf);
         break;
     case ACVP_NET_GET_VS_SAMPLE:
-        ACVP_LOG_INFO("GET Vector Set Sample...\n\tStatus: %d\n\tUrl: %s\n\tResp:\n%s\n",
+        ACVP_LOG_VERBOSE("GET Vector Set Sample...\n\tStatus: %d\n\tUrl: %s\n\tResp:\n%s\n",
                         curl_code, url, ctx->curl_buf);
         break;
     case ACVP_NET_POST:
-        ACVP_LOG_INFO("POST...\n\tStatus: %d\n\tUrl: %s\n\tResp: %s\n",
+        ACVP_LOG_VERBOSE("POST...\n\tStatus: %d\n\tUrl: %s\n\tResp: %s\n",
                         curl_code, url, ctx->curl_buf);
         break;
     case ACVP_NET_POST_LOGIN:
-        ACVP_LOG_INFO("POST Login...\n\tStatus: %d\n\tUrl: %s\n\tResp: Recieved\n",
+        ACVP_LOG_VERBOSE("POST Login...\n\tStatus: %d\n\tUrl: %s\n\tResp: Recieved\n",
                       curl_code, url);
         break;
     case ACVP_NET_POST_REG:
-        ACVP_LOG_INFO("POST Registration...\n\tStatus: %d\n\tUrl: %s\n\tResp: Recieved\n",
+        ACVP_LOG_VERBOSE("POST Registration...\n\tStatus: %d\n\tUrl: %s\n\tResp: Recieved\n",
                         curl_code, url);
         break;
     case ACVP_NET_POST_VS_RESP:
-        ACVP_LOG_INFO("POST Response Submission...\n\tStatus: %d\n\tUrl: %s\n\tResp:\n%s\n",
+        ACVP_LOG_VERBOSE("POST Response Submission...\n\tStatus: %d\n\tUrl: %s\n\tResp:\n%s\n",
                       curl_code, url, ctx->curl_buf);
         break;
     case ACVP_NET_PUT:
-        ACVP_LOG_INFO("PUT...\n\tStatus: %d\n\tUrl: %s\n\tResp: %s\n",
+        ACVP_LOG_VERBOSE("PUT...\n\tStatus: %d\n\tUrl: %s\n\tResp: %s\n",
                         curl_code, url, ctx->curl_buf);
         break;
     case ACVP_NET_PUT_VALIDATION:
-        ACVP_LOG_INFO("PUT testSession Validation...\n\tStatus: %d\n\tUrl: %s\n\tResp: %s\n",
+        ACVP_LOG_VERBOSE("PUT testSession Validation...\n\tStatus: %d\n\tUrl: %s\n\tResp: %s\n",
                         curl_code, url, ctx->curl_buf);
         break;
     case ACVP_NET_DELETE:
-        ACVP_LOG_INFO("DELETE...\n\tStatus: %d\n\tUrl: %s\n\tResp:\n%s\n",
+        ACVP_LOG_VERBOSE("DELETE...\n\tStatus: %d\n\tUrl: %s\n\tResp:\n%s\n",
                        curl_code, url, ctx->curl_buf);
         break;
     default:
@@ -1374,7 +1374,7 @@ static void acvp_http_user_agent_check_env_for_var(ACVP_CTX *ctx, char *var_stri
             strncpy_s(var_string, maxLength + 1, envVal, maxLength);
         }
     } else {
-        ACVP_LOG_WARN("Unable to collect info for HTTP user-agent - please define %s (%d char max.)", var, maxLength);
+        ACVP_LOG_INFO("Unable to collect info for HTTP user-agent - consider defining %s (%d char max.) This is optional and will not affect testing.", var, maxLength);
     }
 }
 
