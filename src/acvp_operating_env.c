@@ -2330,12 +2330,12 @@ static ACVP_RESULT query_module(ACVP_CTX *ctx,
             }
         }
 
-      //  if (module->version) {
-        //    rv = acvp_kv_list_append(&parameters, "version[0]=eq:", module->version);
-          //  if (ACVP_SUCCESS != rv) {
-            //    ACVP_LOG_ERR("Failed acvp_kv_list_append()");
-              //  goto end;
-           // }
+        if (module->version) {
+            rv = acvp_kv_list_append(&parameters, "version[0]=eq:", module->version);
+            if (ACVP_SUCCESS != rv) {
+                ACVP_LOG_ERR("Failed acvp_kv_list_append()");
+                goto end;
+            }
         }
 
         if (module->description) {
