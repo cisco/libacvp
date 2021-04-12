@@ -349,7 +349,7 @@ typedef enum acvp_prereq_mode_t {
 
 /*! @struct ACVP_CONFORMANCE
  *  @brief this enum lists different conformances that can be claimed
- *  in libacvp. These are largely algorithm specific
+ *  in libacvp. These are largely algorithm specific.
  */
 typedef enum acvp_conformance_t {
     ACVP_CONFORMANCE_DEFAULT = 0,
@@ -906,7 +906,7 @@ typedef struct acvp_sym_cipher_tc_t {
     unsigned char *tag;          /* Aead tag */
     unsigned char *iv_ret;       /* updated IV used for TDES MCT */
     unsigned char *iv_ret_after; /* updated IV used for TDES MCT */
-    unsigned char *salt;
+    unsigned char *salt;         /* For use with AES-XPN */
     ACVP_SYM_KW_MODE kwcipher;
     ACVP_SYM_CIPH_TWEAK_MODE tw_mode;
     unsigned int seq_num;     
