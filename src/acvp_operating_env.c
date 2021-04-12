@@ -623,7 +623,7 @@ static int compare_dependencies(const ACVP_DEPENDENCY *a, const ACVP_DEPENDENCY 
     if (a->type && b->type) {
         strcmp_s(a->type, ACVP_OE_STR_MAX, b->type, &diff);
         if (diff != 0) return 0;
-    } else if ((!a->type && b->type) || (a->type && b->type)) {
+    } else if ((!a->type && b->type) || (a->type && !b->type)) {
         //if one has a value but the other does not, they are not equal.
         return 0;
     }
@@ -631,7 +631,7 @@ static int compare_dependencies(const ACVP_DEPENDENCY *a, const ACVP_DEPENDENCY 
     if (a->description && b->description) {
         strcmp_s(a->description, ACVP_OE_STR_MAX, b->description, &diff);
         if (diff != 0) return 0;
-    } else if ((!a->description && b->description) || (a->description && b->description)) {
+    } else if ((!a->description && b->description) || (a->description && !b->description)) {
         //if one has a value but the other does not, they are not equal.
         return 0;
     }
@@ -639,7 +639,7 @@ static int compare_dependencies(const ACVP_DEPENDENCY *a, const ACVP_DEPENDENCY 
     if (a->series && b->series) {
         strcmp_s(a->series, ACVP_OE_STR_MAX, b->series, &diff);
         if (diff != 0) return 0;
-    } else if ((!a->series && b->series) || (a->series && b->series)) {
+    } else if ((!a->series && b->series) || (a->series && !b->series)) {
         //if one has a value but the other does not, they are not equal.
         return 0;
     }
@@ -647,7 +647,7 @@ static int compare_dependencies(const ACVP_DEPENDENCY *a, const ACVP_DEPENDENCY 
     if (a->family && b->family) {
         strcmp_s(a->family, ACVP_OE_STR_MAX, b->family, &diff);
         if (diff != 0) return 0;
-    } else if ((!a->family && b->family) || (a->family && b->family)) {
+    } else if ((!a->family && b->family) || (a->family && !b->family)) {
         //if one has a value but the other does not, they are not equal.
         return 0;
     }
@@ -655,7 +655,7 @@ static int compare_dependencies(const ACVP_DEPENDENCY *a, const ACVP_DEPENDENCY 
     if (a->version && b->version) {
         strcmp_s(a->version, ACVP_OE_STR_MAX, b->version, &diff);
         if (diff != 0) return 0;
-    } else if ((!a->version && b->version) || (a->version && b->version)) {
+    } else if ((!a->version && b->version) || (a->version && !b->version)) {
         //if one has a value but the other does not, they are not equal.
         return 0;
     }
@@ -663,7 +663,7 @@ static int compare_dependencies(const ACVP_DEPENDENCY *a, const ACVP_DEPENDENCY 
     if (a->manufacturer && b->manufacturer) {
         strcmp_s(a->manufacturer, ACVP_OE_STR_MAX, b->manufacturer, &diff);
         if (diff != 0) return 0;
-    } else if ((!a->manufacturer && b->manufacturer) || (a->manufacturer && b->manufacturer)) {
+    } else if ((!a->manufacturer && b->manufacturer) || (a->manufacturer && !b->manufacturer)) {
         //if one has a value but the other does not, they are not equal.
         return 0;
     }
