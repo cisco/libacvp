@@ -171,7 +171,7 @@ pre_libs="$LIBS"
 # script modifies LDFLAGS to correctly search for libs. we unset these changes so
 # makefile.am have complete control over linker flags
 pre_ldflags="$LDFLAGS"
-if test "$is_freebsd" != "1" && test "x$enable_offline" = "xfalse" ; then
+if test "$is_freebsd" != "1" && test "x$ANDROID_NDK_ROOT" = "x" ; then
     LIBS="-ldl $LIBS"
 fi
 if test "x$enable_offline" != "xfalse" ; then
