@@ -514,8 +514,8 @@ runtest_SOURCES = ut_common.c $(am__append_1) $(am__append_4)
 tmp_cflags = -g -O0 -Wall -DNO_SSL_DL $(SAFEC_CFLAGS) \
 	$(CRITERION_CFLAGS) $(LIBACVP_CFLAGS) -I../include \
 	$(am__append_2) $(am__append_5)
-tmp_ldflags = -ldl $(CRITERION_LDFLAGS) $(SAFEC_LDFLAGS) \
-	$(LIBACVP_LDFLAGS) $(am__append_3) $(am__append_6)
+tmp_ldflags = $(CRITERION_LDFLAGS) $(SAFEC_LDFLAGS) $(LIBACVP_LDFLAGS) \
+	$(am__append_3) $(am__append_6) -ldl
 @APP_NOT_SUPPORTED_FALSE@APP_LINK = ../app/acvp_app-app_utils.o \
 @APP_NOT_SUPPORTED_FALSE@           ../app/acvp_app-app_sha.o \
 @APP_NOT_SUPPORTED_FALSE@           ../app/acvp_app-app_hmac.o \
