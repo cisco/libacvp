@@ -1483,7 +1483,7 @@ static int enable_kdf(ACVP_CTX *ctx) {
      */
     rv = acvp_cap_pbkdf_enable(ctx, &app_pbkdf_handler);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_set_prereq(ctx, ACVP_PBKDF, ACVP_PREREQ_SHA, value);
+    rv = acvp_cap_set_prereq(ctx, ACVP_PBKDF, ACVP_PREREQ_HMAC, value);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_pbkdf_set_parm(ctx, ACVP_PBKDF_HMAC_ALG, ACVP_HMAC_ALG_SHA1);
     CHECK_ENABLE_CAP_RV(rv);
