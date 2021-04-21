@@ -37,12 +37,7 @@ int app_hmac_handler(ACVP_TEST_CASE *test_case) {
 
     alg = acvp_get_hmac_alg(tc->cipher);
     if (alg == 0) {
-        printf("Invalid cipher value\n");
-        return 1;
-    }
-
-    if (!tc->key || !tc->msg) {
-        printf("Test case missing key\n");
+        printf("Invalid cipher value");
         return 1;
     }
 

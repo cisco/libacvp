@@ -1,7 +1,7 @@
 noinst_PROGRAMS = runtest
 runtest_SOURCES = ut_common.c
 tmp_cflags = -g -O0 -Wall -DNO_SSL_DL $(SAFEC_CFLAGS) $(CRITERION_CFLAGS) $(LIBACVP_CFLAGS) -I../include
-tmp_ldflags= $(CRITERION_LDFLAGS) $(SAFEC_LDFLAGS) $(LIBACVP_LDFLAGS)
+tmp_ldflags= -ldl $(CRITERION_LDFLAGS) $(SAFEC_LDFLAGS) $(LIBACVP_LDFLAGS)
 if ! LIB_NOT_SUPPORTED
 runtest_SOURCES += create_session.c \
       test_acvp_utils.c \
@@ -76,7 +76,6 @@ tmp_cflags += $(SSL_CFLAGS) $(FOM_CFLAGS) -I../app
 tmp_ldflags += $(SSL_LDFLAGS) $(FOM_LDFLAGS)
 endif
 
-tmp_ldflags += -ldl
 runtest_CFLAGS = ${tmp_cflags}
 runtest_LDFLAGS = ${tmp_ldflags}
 
