@@ -765,7 +765,7 @@ int app_safe_primes_handler(ACVP_TEST_CASE *test_case)
     int rv = 1;
     DH *dh = NULL;
     BIGNUM *pub_key_ver = NULL, *priv_key_ver = NULL;
-    const BIGNUM *pver = NULL, *gver = NULL;
+    const BIGNUM *pver = NULL;
     BIGNUM *q = NULL, *p = NULL, *g = NULL, *q1 = NULL;
 #if OPENSSL_VERSION_NUMBER >= 0x10100000L
     BIGNUM *tmp_p = NULL, *tmp_q = NULL, *tmp_g = NULL;
@@ -774,6 +774,7 @@ int app_safe_primes_handler(ACVP_TEST_CASE *test_case)
     BIGNUM *tmp_pub_key = NULL;
     BN_CTX *c = NULL;
     int is_modp = 0;
+    int ret = 0;
 
     tc = test_case->tc.safe_primes;
 
@@ -884,33 +885,23 @@ int app_safe_primes_handler(ACVP_TEST_CASE *test_case)
     else if (tc->cipher == ACVP_SAFE_PRIMES_KEYVER) {
 
 #if OPENSSL_VERSION_NUMBER <= 0x10100000L
-        pver = dh->p;
-        gver = dh->g;
+        printf("OpenSSL version does not suppor safe prime key verify\n");
+        goto err;
 #else
-        DH_get0_pqg(dh, &pver, NULL, &gver);
+        DH_get0_pqg(dh, &pver, NULL, NULL);
 #endif
         q1 = BN_dup(pver);
         BN_sub_word(q1, 1);
         BN_div_word(q1, 2);
 
-//Do the math 
-
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+        DH_set0_pqg(dh, NULL, q1, NULL);
+#endif
+        /* Build  the DH and perform the key verify */
         priv_key_ver = BN_new();
         pub_key_ver = BN_new();
         BN_bin2bn(tc->x, tc->xlen, priv_key_ver);
         BN_bin2bn(tc->y, tc->ylen, pub_key_ver);
-        if (BN_is_zero(priv_key_ver)) {
-            tc->result = 0;
-            goto end;
-        }
-        if (BN_is_negative(priv_key_ver)) {
-            tc->result = 0;
-            goto end;
-        }
-        if (BN_cmp(q1, priv_key_ver) != 1) {
-            tc->result = 0;
-            goto end;
-        }
 
         tmp_pub_key = BN_new();
         c = BN_CTX_new();
@@ -918,12 +909,15 @@ int app_safe_primes_handler(ACVP_TEST_CASE *test_case)
             printf("BN_CTX_new failed\n");
             goto end;
         }
-        BN_mod_exp(tmp_pub_key, gver, priv_key_ver, pver, c); 
-        if (BN_cmp(tmp_pub_key, pub_key_ver) != 0) {
-            tc->result = 0;
-            goto end;
-        }
         tc->result = 1;
+
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+        DH_set0_key(dh, pub_key_ver, priv_key_ver);
+#endif
+        rv = DH_check_pub_key(dh, pub_key_ver, &ret);
+        if (!rv || ret) {
+            tc->result = 0;
+        }
     } else {
         printf("Invalid safe prime algorithm id\n");
         goto err;
@@ -934,10 +928,7 @@ end:
 err:
     if (p) BN_free(p);
     if (q) BN_free(q);
-    if (q1) BN_free(q1);
     if (g) BN_free(g);
-    if (pub_key_ver) BN_free(pub_key_ver);
-    if (priv_key_ver) BN_free(priv_key_ver);
     if (tmp_pub_key) BN_free(tmp_pub_key);
     if (c) BN_CTX_free(c);
     if (dh) DH_free(dh);
