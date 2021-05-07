@@ -163,8 +163,8 @@ AC_ARG_WITH([criterion-dir],
     [with_criteriondir="no"])
 
 # Enable -ldl link check offline builds (for SSL builds without no-dso)
-AC_ARG_ENABLE([static-ldl-check],
-[AS_HELP_STRING([--enable-static-ldl-check],
+AC_ARG_ENABLE([offline-ldl-check],
+[AS_HELP_STRING([--enable-offline-ldl-check],
 [For use with openSSL builds depending on -ldl (not using no-dso])],
 [checkldl="$enableval"],
 [check_ldl=false])

@@ -938,7 +938,7 @@ enable_cflags
 enable_kdf
 enable_gcov
 with_criterion_dir
-enable_static_ldl_check
+enable_offline_ldl_check
 enable_lib_check
 '
       ac_precious_vars='build_alias
@@ -1590,7 +1590,7 @@ Optional Features:
   --disable-kdf           For use if using a FOM with no KDF support, such as
                           OpenSSL 1.0.2 FOM
   --enable-gcov           Flag to indicate use of gcov tool
-  --enable-static-ldl-check
+  --enable-offline-ldl-check
                           For use with openSSL builds depending on -ldl (not
                           using no-dso
   --disable-lib-check     Disables checking for presence of libraries during
@@ -10965,9 +10965,9 @@ fi
 
 
 # Enable -ldl link check offline builds (for SSL builds without no-dso)
-# Check whether --enable-static-ldl-check was given.
-if test "${enable_static_ldl_check+set}" = set; then :
-  enableval=$enable_static_ldl_check; checkldl="$enableval"
+# Check whether --enable-offline-ldl-check was given.
+if test "${enable_offline_ldl_check+set}" = set; then :
+  enableval=$enable_offline_ldl_check; checkldl="$enableval"
 else
   check_ldl=false
 fi
