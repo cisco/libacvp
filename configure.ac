@@ -12,8 +12,8 @@
 # Shared objects are named library.so.Major.age.Minor by autotools
 #
 m4_define([libacvp_major_version], [1])
-m4_define([libacvp_minor_version], [3])
-m4_define([libacvp_micro_version], [1])
+m4_define([libacvp_minor_version], [4])
+m4_define([libacvp_micro_version], [0])
 AC_INIT([libacvp], [libacvp_major_version.libacvp_minor_version.libacvp_micro_version], [https://github.com/cisco/libacvp/issues])
 
 # Safety checks in case user overwritten --srcdir
@@ -162,6 +162,26 @@ AC_ARG_WITH([criterion-dir],
     [criteriondir="$withval"],
     [with_criteriondir="no"])
 
+# Enable -ldl link check offline builds (for SSL builds without no-dso)
+AC_ARG_ENABLE([offline-ldl-check],
+[AS_HELP_STRING([--enable-offline-ldl-check],
+[For use with openSSL builds depending on -ldl (not using no-dso])],
+[checkldl="$enableval"],
+[check_ldl=false])
+
+# Disable check for library presence during configure stage
+AC_MSG_CHECKING([disable lib check])
+AC_ARG_ENABLE(lib-check,
+    [AS_HELP_STRING([--disable-lib-check],[Disables checking for presence of libraries during configure. This is ONLY recommended if you have issues with detection and you know the library exists])],
+    [disable_lib_detection="yes"],
+    [disable_lib_detection="no"])
+if test "x$disable_lib_detection" = "xyes"; then
+    AC_MSG_RESULT(yes)
+else
+    AC_MSG_RESULT(no)
+fi
+
+
 ########################################################################################
 # End reading arguments. Begin testing presence of libs and setting certain make vars. #
 ########################################################################################
@@ -171,52 +191,62 @@ pre_libs="$LIBS"
 # script modifies LDFLAGS to correctly search for libs. we unset these changes so
 # makefile.am have complete control over linker flags
 pre_ldflags="$LDFLAGS"
-if test "$is_freebsd" != "1" && test "x$enable_offline" = "xfalse" ; then
-    LIBS="-ldl $LIBS"
-fi
-if test "x$enable_offline" != "xfalse" ; then
-    #Some platforms have multiple definitions. Allow them for JUST the library test stage.
-    LDFLAGS="-static -Wl,--allow-multiple-definition $LDFLAGS"
-fi
-# Search for SSL and Crypto libs, and if it doesn't fail set the make vars accordingly
-if test "x$disable_app" = "xno" ; then
-    LDFLAGS="$LDFLAGS -L$ssldir/lib"
-    AC_SEARCH_LIBS([EVP_EncryptInit], [crypto], [],
-               [AC_MSG_FAILURE([can't find openssl crypto lib])], [])
-    AC_SEARCH_LIBS([SSL_CTX_new], [ssl], [],
-                [AC_MSG_FAILURE([can't find openssl ssl lib])], [])
 
+if test "x$disable_lib_detection" = "xno"; then
+    if test "$is_freebsd" != "1" && test "x$enable_offline" != "xfalse" && test "x$check_ldl" != "xfalse" ; then
+        LIBS="-ldl $LIBS"
+    fi
+    if test "x$enable_offline" != "xfalse" ; then
+        #Some platforms have multiple definitions. Allow them for JUST the library test stage.
+        LDFLAGS="-static -Wl,--allow-multiple-definition $LDFLAGS"
+    fi
+    # Search for SSL and Crypto libs, and if it doesn't fail set the make vars accordingly
+    if test "x$disable_app" = "xno" ; then
+        LDFLAGS="$LDFLAGS -L$ssldir/lib"
+        AC_SEARCH_LIBS([EVP_EncryptInit], [crypto], [],
+               [AC_MSG_FAILURE([can't find openssl crypto lib])], [])
+        AC_SEARCH_LIBS([SSL_CTX_new], [ssl], [],
+                    [AC_MSG_FAILURE([can't find openssl ssl lib])], [])
+    fi
+
+    if test "x$disable_lib" = "xyes" ; then
+        if test "x$libacvpdir" != "x" ; then
+            LDFLAGS="$LDFLAGS -L$libacvpdir/lib -lacvp"
+        else
+            LDFLAGS="$LDFLAGS -Lsrc/.libs -lacvp"
+        fi
+        if test "$is_freebsd" = "1" ; then
+            AC_CHECK_LIB([acvp], [acvp_create_test_session], [],
+                 [AC_MSG_FAILURE([can't find libacvp library])], [])
+        else
+            AC_CHECK_LIB([acvp], [acvp_create_test_session], [],
+                 [AC_MSG_FAILURE([can't find libacvp library])], [-ldl])
+        fi
+    fi
+
+    # Check for curl - if that fails, check for murl
+    if test "x$libcurldir" != "x" ; then
+        LDFLAGS="$LDFLAGS -L$libcurldir/lib -lcurl"
+        AC_CHECK_LIB([curl], [curl_easy_init], [],
+            [AC_MSG_FAILURE(Curl not found in provided curl dir)])
+
+    elif test "x$usemurl" != "x" ; then
+        LDFLAGS="$LDFLAGS -L$libmurldir/lib -lmurl"
+        AC_CHECK_LIB([curl], [curl_easy_init], [],
+            [AC_MSG_NOTICE([Murl not found in provided murl dir])])
+
+    fi
+fi
+
+if test "x$disable_app" = "xno" ; then
     AC_SUBST([SSL_CFLAGS], "-I$ssldir/include")
     AC_SUBST([SSL_LDFLAGS], "-L$ssldir/lib -lcrypto")
     AC_ARG_VAR(FOM_OBJ_DIR, "directory with fipscanister.o")
 fi
-
-if test "x$disable_lib" = "xyes" ; then
-    if test "x$libacvpdir" != "x" ; then
-        LDFLAGS="$LDFLAGS -L$libacvpdir/lib -lacvp"
-    else
-        LDFLAGS="$LDFLAGS -Lsrc/.libs -lacvp"
-    fi
-    if test "$is_freebsd" = "1" ; then
-        AC_CHECK_LIB([acvp], [acvp_create_test_session], [],
-             [AC_MSG_FAILURE([can't find libacvp library])], [])
-    else
-        AC_CHECK_LIB([acvp], [acvp_create_test_session], [],
-             [AC_MSG_FAILURE([can't find libacvp library])], [-ldl])
-    fi
-fi
-
-# Check for curl - if that fails, check for murl
 if test "x$libcurldir" != "x" ; then
-    LDFLAGS="$LDFLAGS -L$libcurldir/lib -lcurl"
-    AC_CHECK_LIB([curl], [curl_easy_init], [],
-        [AC_MSG_FAILURE(Curl not found in provided curl dir)])
     AC_SUBST([LIBCURL_CFLAGS], "-I$libcurldir/include")
     AC_SUBST([LIBCURL_LDFLAGS], "-L$libcurldir/lib -lcurl")
 elif test "x$usemurl" != "x" ; then
-    LDFLAGS="$LDFLAGS -L$libmurldir/lib -lmurl"
-    AC_CHECK_LIB([curl], [curl_easy_init], [],
-        [AC_MSG_NOTICE([Murl not found in provided murl dir])])
     AC_SUBST([LIBCURL_CFLAGS], "-I$libmurldir/include")
     AC_SUBST([LIBCURL_LDFLAGS], "-L$libmurldir/lib -lcurl")
 fi
@@ -283,6 +313,7 @@ AS_IF([test "x$with_criterion" != xno],
      )
 AM_CONDITIONAL([UNIT_TEST_SUPPORTED], [test "x$with_criteriondir" != "xno"])
 
+AM_CONDITIONAL([USE_LDL_CHECK], [test "x$check_ldl" != "xfalse" && test "x$enable_offline" != "xfalse"])
 
 ##
 # SafeC Stub
