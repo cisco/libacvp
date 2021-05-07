@@ -249,12 +249,13 @@ int app_kas_hkdf_handler(ACVP_TEST_CASE *test_case) {
     //hkdf as per RFC5869 calls to concatenate extract_output || fixedInfo || counter every iteration
     for (i = 1; i <= reps; i++) {
         unsigned int counter = i;
-        if (!HMAC_Init_ex(hmac_ctx, extract_output, h_output_len, md, NULL)) {
-            printf("\nCrypto module error, HMAC_Init_ex failed\n");
-            goto end;
-        }
 
-        if (i > 1) {
+        if (i == 1) {
+            if (!HMAC_Init_ex(hmac_ctx, extract_output, h_output_len, md, NULL)) {
+                printf("\nCrypto module error, HMAC_Init_ex failed\n");
+                goto end;
+            }
+        } else {
             if (!HMAC_Init_ex(hmac_ctx, NULL, 0, NULL, NULL)) {
                 printf("\nCrypto module error, HMAC_Init_ex failed\n");
                 goto end;

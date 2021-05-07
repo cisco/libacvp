@@ -90,7 +90,8 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 noinst_PROGRAMS = runtest$(EXEEXT)
-@LIB_NOT_SUPPORTED_FALSE@am__append_1 = create_session.c \
+@USE_LDL_CHECK_TRUE@am__append_1 = -ldl
+@LIB_NOT_SUPPORTED_FALSE@am__append_2 = create_session.c \
 @LIB_NOT_SUPPORTED_FALSE@      test_acvp_utils.c \
 @LIB_NOT_SUPPORTED_FALSE@      test_acvp_drbg.c \
 @LIB_NOT_SUPPORTED_FALSE@      test_acvp_dsa.c \
@@ -125,9 +126,9 @@ noinst_PROGRAMS = runtest$(EXEEXT)
 @LIB_NOT_SUPPORTED_FALSE@      test_acvp_safe_primes.c \
 @LIB_NOT_SUPPORTED_FALSE@      test_acvp_kas_kdf.c 
 
-@LIB_NOT_SUPPORTED_FALSE@am__append_2 = $(LIBCURL_CFLAGS)
-@LIB_NOT_SUPPORTED_FALSE@am__append_3 = $(LIBCURL_LDFLAGS)
-@APP_NOT_SUPPORTED_FALSE@am__append_4 = app_common.c \
+@LIB_NOT_SUPPORTED_FALSE@am__append_3 = $(LIBCURL_CFLAGS)
+@LIB_NOT_SUPPORTED_FALSE@am__append_4 = $(LIBCURL_LDFLAGS)
+@APP_NOT_SUPPORTED_FALSE@am__append_5 = app_common.c \
 @APP_NOT_SUPPORTED_FALSE@      test_app_aes.c \
 @APP_NOT_SUPPORTED_FALSE@      test_app_cmac.c \
 @APP_NOT_SUPPORTED_FALSE@      test_app_des.c \
@@ -142,10 +143,10 @@ noinst_PROGRAMS = runtest$(EXEEXT)
 @APP_NOT_SUPPORTED_FALSE@      test_app_safe_primes.c \
 @APP_NOT_SUPPORTED_FALSE@      test_app_kas_kdf.c
 
-@APP_NOT_SUPPORTED_FALSE@am__append_5 = $(SSL_CFLAGS) $(FOM_CFLAGS) -I../app
-@APP_NOT_SUPPORTED_FALSE@am__append_6 = $(SSL_LDFLAGS) $(FOM_LDFLAGS)
-@APP_NOT_SUPPORTED_FALSE@@USE_FOM_TRUE@am__append_7 = $(FOM_OBJ_DIR)/fipscanister.o
-@APP_NOT_SUPPORTED_FALSE@am__append_8 = app_common.h
+@APP_NOT_SUPPORTED_FALSE@am__append_6 = $(SSL_CFLAGS) $(FOM_CFLAGS) -I../app
+@APP_NOT_SUPPORTED_FALSE@am__append_7 = $(SSL_LDFLAGS) $(FOM_LDFLAGS)
+@APP_NOT_SUPPORTED_FALSE@@USE_FOM_TRUE@am__append_8 = $(FOM_OBJ_DIR)/fipscanister.o
+@APP_NOT_SUPPORTED_FALSE@am__append_9 = app_common.h
 subdir = test
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/libtool.m4 \
@@ -232,7 +233,7 @@ am_runtest_OBJECTS = runtest-ut_common.$(OBJEXT) $(am__objects_1) \
 	$(am__objects_2)
 runtest_OBJECTS = $(am_runtest_OBJECTS)
 @APP_NOT_SUPPORTED_FALSE@runtest_DEPENDENCIES = $(APP_LINK) \
-@APP_NOT_SUPPORTED_FALSE@	$(am__append_7)
+@APP_NOT_SUPPORTED_FALSE@	$(am__append_8)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
@@ -510,12 +511,12 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-runtest_SOURCES = ut_common.c $(am__append_1) $(am__append_4)
+runtest_SOURCES = ut_common.c $(am__append_2) $(am__append_5)
 tmp_cflags = -g -O0 -Wall -DNO_SSL_DL $(SAFEC_CFLAGS) \
 	$(CRITERION_CFLAGS) $(LIBACVP_CFLAGS) -I../include \
-	$(am__append_2) $(am__append_5)
-tmp_ldflags = -ldl $(CRITERION_LDFLAGS) $(SAFEC_LDFLAGS) \
-	$(LIBACVP_LDFLAGS) $(am__append_3) $(am__append_6)
+	$(am__append_3) $(am__append_6)
+tmp_ldflags = $(CRITERION_LDFLAGS) $(SAFEC_LDFLAGS) $(LIBACVP_LDFLAGS) \
+	$(am__append_1) $(am__append_4) $(am__append_7)
 @APP_NOT_SUPPORTED_FALSE@APP_LINK = ../app/acvp_app-app_utils.o \
 @APP_NOT_SUPPORTED_FALSE@           ../app/acvp_app-app_sha.o \
 @APP_NOT_SUPPORTED_FALSE@           ../app/acvp_app-app_hmac.o \
@@ -532,9 +533,9 @@ tmp_ldflags = -ldl $(CRITERION_LDFLAGS) $(SAFEC_LDFLAGS) \
 
 runtest_CFLAGS = ${tmp_cflags}
 runtest_LDFLAGS = ${tmp_ldflags}
-@APP_NOT_SUPPORTED_FALSE@runtest_LDADD = $(APP_LINK) $(am__append_7)
+@APP_NOT_SUPPORTED_FALSE@runtest_LDADD = $(APP_LINK) $(am__append_8)
 runtestdir = 
-runtest_HEADERS = ut_common.h $(am__append_8)
+runtest_HEADERS = ut_common.h $(am__append_9)
 all: all-am
 
 .SUFFIXES:
