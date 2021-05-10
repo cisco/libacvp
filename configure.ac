@@ -181,6 +181,12 @@ else
     AC_MSG_RESULT(no)
 fi
 
+# Enable a wrapper to turn acvp_app into a small library (Only for static offline builds)
+AC_ARG_ENABLE([wrapper-library],
+[AS_HELP_STRING([--enable-wrapper-library],
+[Designed for use with offline builds, turns acvp_app into a single API library for processing offline tests])],
+[wraplib="$enableval"],
+[wrap_lib=false])
 
 ########################################################################################
 # End reading arguments. Begin testing presence of libs and setting certain make vars. #
@@ -314,6 +320,7 @@ AS_IF([test "x$with_criterion" != xno],
 AM_CONDITIONAL([UNIT_TEST_SUPPORTED], [test "x$with_criteriondir" != "xno"])
 
 AM_CONDITIONAL([USE_LDL_CHECK], [test "x$check_ldl" != "xfalse" && test "x$enable_offline" != "xfalse"])
+AM_CONDITIONAL([BUILD_APP_AS_LIB], [test "x$wrap_lib" != "xfalse"])
 
 ##
 # SafeC Stub
