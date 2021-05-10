@@ -137,6 +137,7 @@ static void app_cleanup(ACVP_CTX *ctx) {
 #endif
 }
 
+#ifndef ACVP_APP_LIB_WRAPPER
 int main(int argc, char **argv) {
     ACVP_RESULT rv = ACVP_SUCCESS;
     ACVP_CTX *ctx = NULL;
@@ -440,6 +441,7 @@ end:
 
     return rv;
 }
+#endif
 
 static int enable_aes(ACVP_CTX *ctx) {
     ACVP_RESULT rv = ACVP_SUCCESS;
@@ -3377,4 +3379,67 @@ end:
 
     return rv;
 }
+#endif
+
+#ifdef ACVP_APP_LIB_WRAPPER
+ACVP_RESULT acvp_app_run_vector_test_file(const char *path, const char *output, ACVP_LOG_LVL lvl, ACVP_RESULT (*logger)(char *)) {
+    ACVP_RESULT rv = ACVP_SUCCESS;
+    ACVP_CTX *ctx = NULL;
+
+#ifdef ACVP_NO_RUNTIME
+    fips_selftest_fail = 0;
+    fips_mode = 0;
+    fips_algtest_init_nofips();
+#endif
+
+    /*
+     * We begin the libacvp usage flow here.
+     * First, we create a test session context.
+     */
+    rv = acvp_create_test_session(&ctx, logger, lvl);
+    if (rv != ACVP_SUCCESS) {
+        printf("Failed to create ACVP context: %s\n", acvp_lookup_error_string(rv));
+        goto end;
+    }
+
+    /*
+    * We need to register all the crypto module capabilities that will be
+    * validated. Each has their own method for readability.
+    */
+    if (enable_aes(ctx)) goto end;
+    if (enable_tdes(ctx)) goto end;
+    if (enable_hash(ctx)) goto end;
+    if (enable_cmac(ctx)) goto end;
+    if (enable_hmac(ctx)) goto end;
+#ifdef OPENSSL_KDF_SUPPORT
+    if (enable_kdf(ctx)) goto end;
+#endif
+#ifndef OPENSSL_NO_DSA
+    if (enable_dsa(ctx)) goto end;
+#endif
+    if (enable_rsa(ctx)) goto end;
+    if (enable_ecdsa(ctx)) goto end;
+    if (enable_drbg(ctx)) goto end;
+    if (enable_kas_ecc(ctx)) goto end;
+    if (enable_kas_ifc(ctx)) goto end;
+    if (enable_kts_ifc(ctx)) goto end;
+#ifndef OPENSSL_NO_DSA
+    if (enable_kas_ffc(ctx)) goto end;
+#endif
+    if (enable_kas_kdf(ctx)) goto end;
+#ifndef OPENSSL_NO_DSA
+    if (enable_safe_primes(ctx)) goto end;
+#endif
+
+    rv = acvp_run_vectors_from_file(ctx, path, output);
+
+end:
+    /*
+     * Free all memory associated with
+     * both the application and libacvp.
+     */
+    app_cleanup(ctx);
+
+    return rv;
+   }
 #endif
