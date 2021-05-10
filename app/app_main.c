@@ -3432,7 +3432,7 @@ ACVP_RESULT acvp_app_run_vector_test_file(const char *path, const char *output, 
 #endif
 
     rv = acvp_run_vectors_from_file(ctx, path, output);
-    goto end;
+
 end:
     /*
      * Free all memory associated with
