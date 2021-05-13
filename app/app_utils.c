@@ -231,7 +231,7 @@ int app_setup_two_factor_auth(ACVP_CTX *ctx) {
     return 0;
 }
 
-unsigned int convert_uint_to_big_endian(unsigned int i) {
+unsigned int swap_uint_endian(unsigned int i) {
     int a = 0, b = 0, c = 0, d = 0;
     a = (i >> 24) & 0x000000ff;
     b = (i >> 8) & 0x0000ff00;

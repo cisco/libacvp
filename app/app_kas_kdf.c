@@ -119,7 +119,7 @@ int app_kas_hkdf_handler(ACVP_TEST_CASE *test_case) {
                 break;
             case ACVP_KAS_KDF_PATTERN_L:
                 lBits = stc->l * 8;
-                if (check_is_little_endian()) { lBits = convert_uint_to_big_endian(lBits); }
+                if (check_is_little_endian()) { lBits = swap_uint_endian(lBits); }
                 memcpy_s(fixedInfo + tmp, fixedInfoLen - tmp, (char *)&lBits, 4);
                 tmp += 4;
                 break;
@@ -249,7 +249,7 @@ int app_kas_hkdf_handler(ACVP_TEST_CASE *test_case) {
     //hkdf as per RFC5869 calls to concatenate extract_output || fixedInfo || counter every iteration
     for (i = 1; i <= reps; i++) {
         unsigned int counter = i;
-
+        if (!check_is_little_endian()) { counter = swap_uint_endian(counter); }
         if (i == 1) {
             if (!HMAC_Init_ex(hmac_ctx, extract_output, h_output_len, md, NULL)) {
                 printf("\nCrypto module error, HMAC_Init_ex failed\n");
@@ -282,6 +282,9 @@ int app_kas_hkdf_handler(ACVP_TEST_CASE *test_case) {
         //concatenate to previous result
         memcpy_s(result + resultIterator, resultLen - resultIterator, expand_output, h_output_len);
         resultIterator += h_output_len;
+        if (resultIterator >= stc->l) {
+            break;
+        }
     }
     
     memcpy_s(stc->outputDkm, stc->l, result, stc->l);
@@ -417,7 +420,7 @@ int app_kas_kdf_onestep_handler(ACVP_TEST_CASE *test_case) {
                 break;
             case ACVP_KAS_KDF_PATTERN_L:
                 lBits = stc->l * 8;
-                if (check_is_little_endian()) { lBits = convert_uint_to_big_endian(lBits); }
+                if (check_is_little_endian()) { lBits = swap_uint_endian(lBits); }
                 memcpy_s(fixedInfo + tmp, fixedInfoLen - tmp, (char *)&lBits, 4);
                 tmp += 4;
                 break;
@@ -594,7 +597,7 @@ int app_kas_kdf_onestep_handler(ACVP_TEST_CASE *test_case) {
     //onestep as per NIST calls to concatenate counter || Z || FixedInfo every iteration
     for (i = 1; i <= reps; i++) {
         unsigned int counter = i;
-        if (check_is_little_endian()) { counter = convert_uint_to_big_endian(counter); }//nist doc specifically wants big endian byte string
+        if (check_is_little_endian()) { counter = swap_uint_endian(counter); } //nist doc specifically wants big endian byte string
         if (isSha) {
             if (!EVP_DigestInit_ex(sha_ctx, md, NULL)) {
                 printf("\nCrypto module error, EVP_DigestInit_ex failed\n");
@@ -650,6 +653,9 @@ int app_kas_kdf_onestep_handler(ACVP_TEST_CASE *test_case) {
         resultIterator += h_output_len;
 
         memzero_s(h_output, h_output_len);
+        if (resultIterator >= stc->l) {
+            break;
+        }
     }
     
     memcpy_s(stc->outputDkm, stc->l, result, stc->l);
