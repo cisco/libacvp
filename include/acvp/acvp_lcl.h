@@ -1527,8 +1527,8 @@ typedef struct acvp_modules_t {
 typedef struct acvp_dependency_t {
     unsigned int id; /**< For library tracking purposes */
     char *url; /**< Returned from the server */
-    char *type;
     char *name;
+    char *type;
     char *description;
     char *series;
     char *family;
@@ -1779,7 +1779,7 @@ ACVP_RESULT acvp_build_validation(ACVP_CTX *ctx, char **out, int *out_len);
  */
 void acvp_oe_free_operating_env(ACVP_CTX *ctx);
 
-ACVP_RESULT acvp_oe_verify_fips_operating_env(ACVP_CTX *ctx);
+ACVP_RESULT acvp_verify_fips_validation_metadata(ACVP_CTX *ctx);
 
 ACVP_RESULT acvp_notify_large(ACVP_CTX *ctx,
                               const char *url,
