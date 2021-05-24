@@ -614,22 +614,59 @@ ACVP_RESULT acvp_oe_module_set_type_version_desc(ACVP_CTX *ctx,
 static int compare_dependencies(const ACVP_DEPENDENCY *a, const ACVP_DEPENDENCY *b) {
     int diff = 0;
 
-    if (!a->type || !a->name || !a->description) {
+    //Name is the only required field as per the spec
+    if (!a->name || !b->name) {
         return 0;
     }
 
-    if (!b->type || !b->name || !b->description) {
+    //for each other value libacvp supports, check to see if its in both, if so, compare
+    if (a->type && b->type) {
+        strcmp_s(a->type, ACVP_OE_STR_MAX, b->type, &diff);
+        if (diff != 0) return 0;
+    } else if ((!a->type && b->type) || (a->type && !b->type)) {
+        //if one has a value but the other does not, they are not equal.
         return 0;
     }
 
-    strcmp_s(a->type, ACVP_OE_STR_MAX, b->type, &diff);
-    if (diff != 0) return 0;
+    if (a->description && b->description) {
+        strcmp_s(a->description, ACVP_OE_STR_MAX, b->description, &diff);
+        if (diff != 0) return 0;
+    } else if ((!a->description && b->description) || (a->description && !b->description)) {
+        //if one has a value but the other does not, they are not equal.
+        return 0;
+    }
 
-    strcmp_s(a->name, ACVP_OE_STR_MAX, b->name, &diff);
-    if (diff != 0) return 0;
+    if (a->series && b->series) {
+        strcmp_s(a->series, ACVP_OE_STR_MAX, b->series, &diff);
+        if (diff != 0) return 0;
+    } else if ((!a->series && b->series) || (a->series && !b->series)) {
+        //if one has a value but the other does not, they are not equal.
+        return 0;
+    }
 
-    strcmp_s(a->description, ACVP_OE_STR_MAX, b->description, &diff);
-    if (diff != 0) return 0;
+    if (a->family && b->family) {
+        strcmp_s(a->family, ACVP_OE_STR_MAX, b->family, &diff);
+        if (diff != 0) return 0;
+    } else if ((!a->family && b->family) || (a->family && !b->family)) {
+        //if one has a value but the other does not, they are not equal.
+        return 0;
+    }
+
+    if (a->version && b->version) {
+        strcmp_s(a->version, ACVP_OE_STR_MAX, b->version, &diff);
+        if (diff != 0) return 0;
+    } else if ((!a->version && b->version) || (a->version && !b->version)) {
+        //if one has a value but the other does not, they are not equal.
+        return 0;
+    }
+
+    if (a->manufacturer && b->manufacturer) {
+        strcmp_s(a->manufacturer, ACVP_OE_STR_MAX, b->manufacturer, &diff);
+        if (diff != 0) return 0;
+    } else if ((!a->manufacturer && b->manufacturer) || (a->manufacturer && !b->manufacturer)) {
+        //if one has a value but the other does not, they are not equal.
+        return 0;
+    }
 
     /* Reached the end, we have a full match */
     return 1;
@@ -661,7 +698,8 @@ static ACVP_RESULT match_dependencies_page(ACVP_CTX *ctx,
     JSON_Value *val = NULL;
     JSON_Object *obj = NULL, *links_obj = NULL;
     JSON_Array *data_array = NULL;
-    const char *next = NULL, *name = NULL, *type = NULL, *description = NULL;
+    const char *next = NULL, *name = NULL, *type = NULL, *description = NULL, *series = NULL,
+               *family = NULL, *version = NULL, *manufacturer = NULL;
     int i = 0, data_count = 0;
     ACVP_DEPENDENCY tmp_dep = {0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
 
@@ -699,14 +737,22 @@ static ACVP_RESULT match_dependencies_page(ACVP_CTX *ctx,
             goto end;
         }
 
-        // Soft copy so don't need to free
+        // Soft copy so don't need to free (also removes const)
         type = json_object_get_string(dep_obj, "type");
         name = json_object_get_string(dep_obj, "name");
         description = json_object_get_string(dep_obj, "description");
+        series = json_object_get_string(dep_obj, "series");
+        family = json_object_get_string(dep_obj, "family");
+        version = json_object_get_string(dep_obj, "version");
+        manufacturer = json_object_get_string(dep_obj, "manufacturer");
 
         if (type) tmp_dep.type = strdup(type);
         if (name) tmp_dep.name = strdup(name);
         if (description) tmp_dep.description = strdup(description);
+        if (series) tmp_dep.series = strdup(series);
+        if (family) tmp_dep.family = strdup(family);
+        if (version) tmp_dep.version = strdup(version);
+        if (manufacturer) tmp_dep.manufacturer = strdup(manufacturer);
 
         this_match = compare_dependencies(dep, &tmp_dep);
         if (this_match) {
@@ -727,17 +773,25 @@ static ACVP_RESULT match_dependencies_page(ACVP_CTX *ctx,
                 rv = ACVP_MALLOC_FAIL;
                 goto end;
             }
-            ACVP_LOG_INFO("Dependencies Match");
+            ACVP_LOG_INFO("Found a matching dependency! Url: %s", url);
             strcpy_s(dep->url, ACVP_ATTR_URL_MAX + 1, url);
             *match = 1; 
             goto end;
         }
-        free(tmp_dep.type);
-        free(tmp_dep.name);
-        free(tmp_dep.description);
+        if (tmp_dep.type) free(tmp_dep.type);
+        if (tmp_dep.name) free(tmp_dep.name);
+        if (tmp_dep.description) free(tmp_dep.description);
+        if (tmp_dep.series) free(tmp_dep.series);
+        if (tmp_dep.family) free(tmp_dep.family);
+        if (tmp_dep.version) free(tmp_dep.version);
+        if (tmp_dep.manufacturer) free(tmp_dep.manufacturer);
         tmp_dep.type = NULL;
         tmp_dep.name = NULL;
         tmp_dep.description = NULL;
+        tmp_dep.series = NULL;
+        tmp_dep.family = NULL;
+        tmp_dep.version = NULL;
+        tmp_dep.manufacturer = NULL;
     }
 
     links_obj = json_object_get_object(obj, "links");
@@ -764,9 +818,13 @@ static ACVP_RESULT match_dependencies_page(ACVP_CTX *ctx,
     }
 
 end:
-    free(tmp_dep.type);
-    free(tmp_dep.name);
-    free(tmp_dep.description);
+    if (tmp_dep.type) free(tmp_dep.type);
+    if (tmp_dep.name) free(tmp_dep.name);
+    if (tmp_dep.description) free(tmp_dep.description);
+    if (tmp_dep.series) free(tmp_dep.series);
+    if (tmp_dep.family) free(tmp_dep.family);
+    if (tmp_dep.version) free(tmp_dep.version);
+    if (tmp_dep.manufacturer) free(tmp_dep.manufacturer);
     if (val) json_value_free(val);
 
     return rv;
@@ -844,7 +902,7 @@ static ACVP_RESULT query_dependency(ACVP_CTX *ctx,
         }
     }
 
-
+    ACVP_LOG_INFO("Querying the server for a matching dependency entry...");
     do {
         /* Query the server DB. */
         if (parameters) {
@@ -870,6 +928,7 @@ static ACVP_RESULT query_dependency(ACVP_CTX *ctx,
         }
 
         endpoint = next_endpoint;
+        ACVP_LOG_INFO("No matching dependency on this page, moving to next page...");
     } while (endpoint);
 
 end:
@@ -1043,7 +1102,7 @@ static ACVP_RESULT match_oes_page(ACVP_CTX *ctx,
 
             strcpy_s(oe->url, ACVP_ATTR_URL_MAX + 1, url);
             *match = 1;
-            ACVP_LOG_INFO("OE Match");
+            ACVP_LOG_INFO("Found a matching OE! Url: %s", url);
             goto end;
         }
     }
@@ -1134,6 +1193,7 @@ static ACVP_RESULT query_oe(ACVP_CTX *ctx,
         }
     }
 
+    ACVP_LOG_INFO("Querying the server for a matching OE entry...");
     do {
         /* Query the server DB. */
         if (parameters) {
@@ -1159,6 +1219,7 @@ static ACVP_RESULT query_oe(ACVP_CTX *ctx,
         }
         
         endpoint = next_endpoint;
+        ACVP_LOG_INFO("No matching OE on this page, moving to next page...");
     } while (endpoint);
 
 end:
@@ -1812,7 +1873,7 @@ static ACVP_RESULT match_vendors_page(ACVP_CTX *ctx,
         }
 
         strcpy_s(vendor->url, ACVP_ATTR_URL_MAX + 1, url);
-        ACVP_LOG_INFO("Vendors Match");
+        ACVP_LOG_INFO("Found a matching vendor! Url: %s", url);
         *match = 1;
         goto end;
     }
@@ -1920,7 +1981,7 @@ static ACVP_RESULT query_vendor(ACVP_CTX *ctx,
         }
     }
 
-
+    ACVP_LOG_INFO("Querying the server for a matching vendor entry...");
     do {
         /* Query the server DB. */
         if (parameters) {
@@ -1945,6 +2006,7 @@ static ACVP_RESULT query_vendor(ACVP_CTX *ctx,
             break;
         }
         endpoint = next_endpoint;
+        ACVP_LOG_INFO("No matching vendor on this page, moving to next page...");
     } while (endpoint);
 
 end:
@@ -2171,7 +2233,7 @@ static ACVP_RESULT match_modules_page(ACVP_CTX *ctx,
             }
 
             strcpy_s(module->url, ACVP_ATTR_URL_MAX + 1, url);
-            ACVP_LOG_INFO("Modules Match");
+            ACVP_LOG_INFO("Found a matching module! Url: %s", url);
             *match = 1; 
             goto end;
         }
@@ -2184,7 +2246,7 @@ static ACVP_RESULT match_modules_page(ACVP_CTX *ctx,
         goto end;
     }
     if (*next_endpoint) {
-        free (*next_endpoint);
+        free(*next_endpoint);
         *next_endpoint = NULL;
     }
     
@@ -2319,6 +2381,7 @@ static ACVP_RESULT query_module(ACVP_CTX *ctx,
         }
     }
 
+    ACVP_LOG_INFO("Querying the server for a matching module entry...");
     do {
         /* Query the server DB. */
         if (parameters) {
@@ -2344,6 +2407,7 @@ static ACVP_RESULT query_module(ACVP_CTX *ctx,
         }
         
         endpoint = next_endpoint;
+        ACVP_LOG_INFO("No matching module on this page, moving to next page...");
     } while (endpoint);
     
 end:
@@ -2421,29 +2485,53 @@ static ACVP_RESULT verify_fips_module(ACVP_CTX *ctx) {
  *
  * @return ACVP_RESULT
  */
-ACVP_RESULT acvp_oe_verify_fips_operating_env(ACVP_CTX *ctx) {
+ACVP_RESULT acvp_verify_fips_validation_metadata(ACVP_CTX *ctx) {
     ACVP_RESULT rv = 0;
 
     if (!ctx) return ACVP_NO_CTX;
+
+    if (ctx->fips.module == NULL) {
+        ACVP_LOG_ERR("Need to specify 'Module' via acvp_oe_set_fips_validation_metadata()");
+        return ACVP_UNSUPPORTED_OP;
+    }
+
+    if (ctx->fips.oe == NULL) {
+        ACVP_LOG_ERR("Need to specify 'Operating Environment' via acvp_oe_set_fips_validation_metadata()");
+        return ACVP_UNSUPPORTED_OP;
+    }
+
+    ACVP_LOG_STATUS("Checking validation metadata for correctness and pre-existing server entries...");
 
     /*
      * Verify the Module.
      * This includes the linked Vendor.
      */
+    ACVP_LOG_INFO("Verifying module (includes vendor)...");
     rv = verify_fips_module(ctx);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Unable to verify Vendor");
         return rv;
+    }
+    if (!ctx->fips.module->url) {
+        ACVP_LOG_STATUS("Module was not found on server; a new one will be created when the validation request is "
+                        "submitted. If you believe this to be in error, please cancel the session or request and "
+                        "try to locate the module on the server");
     }
 
     /*
      * Verify the OE.
      * This includes the linked Dependencies.
      */
+    ACVP_LOG_INFO("Verifying OE (includes dependencies)...");
     rv = verify_fips_oe(ctx);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Unable to verify Module");
         return rv;
+    }
+    if (!ctx->fips.oe->url) {
+        ACVP_LOG_STATUS("OE was not found on server; a new one will be created when the validation request is "
+                        "submitted. If you believe this to be in error, please cancel the session or request and "
+                        "try to locate the OE on the server");
     }
 
     return ACVP_SUCCESS;
@@ -2483,6 +2571,10 @@ static void free_dependencies(ACVP_DEPENDENCIES *dependencies) {
         if (dep->type) free(dep->type);
         if (dep->name) free(dep->name);
         if (dep->description) free(dep->description);
+        if (dep->series) free(dep->series);
+        if (dep->family) free(dep->family);
+        if (dep->version) free(dep->version);
+        if (dep->manufacturer) free(dep->manufacturer);
     }
 }
 
@@ -3409,7 +3501,7 @@ ACVP_RESULT acvp_oe_set_fips_validation_metadata(ACVP_CTX *ctx,
     ACVP_MODULE *module = NULL;
     ACVP_OE *oe = NULL;
 
-    if (ctx == NULL) return ACVP_NO_CTX;
+    if (!ctx) return ACVP_NO_CTX;
 
     /*
      * Check that everything needed for the FIPS validation is sane.

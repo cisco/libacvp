@@ -30,8 +30,6 @@ static ACVP_RESULT acvp_login(ACVP_CTX *ctx, int refresh);
 
 static ACVP_RESULT acvp_validate_test_session(ACVP_CTX *ctx);
 
-static ACVP_RESULT fips_metadata_ready(ACVP_CTX *ctx);
-
 static ACVP_RESULT acvp_append_vsid_url(ACVP_CTX *ctx, const char *vsid_url);
 
 static ACVP_RESULT acvp_parse_login(ACVP_CTX *ctx);
@@ -1188,7 +1186,7 @@ ACVP_RESULT acvp_upload_vectors_from_file(ACVP_CTX *ctx, const char *rsp_filenam
     }
 
     if (fips_validation) {
-        rv = fips_metadata_ready(ctx);
+        rv = acvp_verify_fips_validation_metadata(ctx);
         if (ACVP_SUCCESS != rv) {
             ACVP_LOG_ERR("Validation metadata not ready");
             goto end;
@@ -1502,7 +1500,7 @@ ACVP_RESULT acvp_resume_test_session(ACVP_CTX *ctx, const char *request_filename
     }
 
     if (fips_validation) {
-        rv = fips_metadata_ready(ctx);
+        rv = acvp_verify_fips_validation_metadata(ctx);
         if (ACVP_SUCCESS != rv) {
             ACVP_LOG_ERR("Validation metadata not ready");
             return ACVP_UNSUPPORTED_OP;
@@ -3124,34 +3122,6 @@ end:
     return rv;
 }
 
-static ACVP_RESULT fips_metadata_ready(ACVP_CTX *ctx) {
-    ACVP_RESULT rv = 0;
-
-    if (ctx == NULL) return ACVP_NO_CTX;
-
-    if (ctx->fips.module == NULL) {
-        ACVP_LOG_ERR("Need to specify 'Module' via acvp_oe_set_fips_validation_metadata()");
-        return ACVP_UNSUPPORTED_OP;
-    }
-
-    if (ctx->fips.oe == NULL) {
-        ACVP_LOG_ERR("Need to specify 'Operating Environment' via acvp_oe_set_fips_validation_metadata()");
-        return ACVP_UNSUPPORTED_OP;
-    }
-
-    /*
-     * Verify that the selected FIPS metadata is sane.
-     * A.k.a. check that the resources exist on the server DB, if required.
-     */
-    rv = acvp_oe_verify_fips_operating_env(ctx);
-    if (ACVP_SUCCESS != rv) {
-        ACVP_LOG_ERR("Failed to verify the FIPS metadata with server");
-        return rv;
-    }
-
-    return ACVP_SUCCESS;
-}
-
 static ACVP_RESULT acvp_validate_test_session(ACVP_CTX *ctx) {
     ACVP_RESULT rv = ACVP_SUCCESS;
     char *validation = NULL;
@@ -3431,9 +3401,9 @@ ACVP_RESULT acvp_run(ACVP_CTX *ctx, int fips_validation) {
     }
 
     if (fips_validation) {
-        rv = fips_metadata_ready(ctx);
+        rv = acvp_verify_fips_validation_metadata(ctx);
         if (ACVP_SUCCESS != rv) {
-            ACVP_LOG_ERR("Validation metadata not ready");
+            ACVP_LOG_ERR("Issue(s) with validation metadata, not continuing with session.");
             return ACVP_UNSUPPORTED_OP;
         }
 
