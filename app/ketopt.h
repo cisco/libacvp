@@ -13,7 +13,7 @@
 #define ko_optional_argument 2
 
 #define OPTION_NAME_MAX 128
-#define OSTR_MAX 2 /* Change according to the ostr parameter in app_cli.c */
+#define OSTR_MAX 9 /* Change according to the ostr parameter in app_cli.c */
 
 typedef struct {
 	int ind;   /* equivalent to optind */
@@ -63,14 +63,14 @@ static void ketopt_permute(char *argv[], int j, int n) /* move argv[j] over n el
  */
 static int ketopt(ketopt_t *s, int argc, char *argv[], int permute, const char *ostr, const ko_longopt_t *longopts)
 {
-        char ostr2[OSTR_MAX+1] = "vh";
+    char ostr2[OSTR_MAX+1] = "vhs:u:r:p:";
 	int opt = -1, i0, j;
-        int odiff = 0;
+    int odiff = 0;
 
-        strncmp_s(ostr, OSTR_MAX, ostr2, OSTR_MAX, &odiff);
-        if (odiff) {
-            return -1;
-        }
+    strncmp_s(ostr, OSTR_MAX, ostr2, OSTR_MAX, &odiff);
+    if (odiff) {
+        return -1;
+    }
 	if (permute) {
 		while (s->i < argc && (argv[s->i][0] != '-' || argv[s->i][1] == '\0'))
 			++s->i, ++s->n_args;
@@ -110,22 +110,20 @@ static int ketopt(ketopt_t *s, int argc, char *argv[], int permute, const char *
 				}
 			}
 		}
-	} else { /* a short option */
+	} else if (argv[s->i][0] == '-' && strnlen_s(argv[s->i], 3) == 2) { /* a short option */
 		char *p = NULL;
         char short_opt[2];
 		if (s->pos == 0) s->pos = 1;
 		opt = s->opt = argv[s->i][s->pos++];
         short_opt[0] = opt;
         short_opt[1] = '\0';
-        
+
         strstr_s(ostr2, OSTR_MAX, short_opt, 1, &p);
 		if (p == 0) {
 			opt = '?'; /* unknown option */
 		} else if (p[1] == ':') {
-			if (argv[s->i][s->pos] == 0) {
-				if (s->i < argc - 1) s->arg = argv[++s->i];
-				else opt = ':'; /* missing option argument */
-			} else s->arg = &argv[s->i][s->pos];
+			if (s->i < argc - 1) s->arg = argv[++s->i];
+			else opt = ':'; /* missing option argument */
 			s->pos = -1;
 		}
 	}
