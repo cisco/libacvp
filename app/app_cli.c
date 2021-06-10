@@ -21,6 +21,7 @@
 #define ANSI_COLOR_RED "\x1b[31m"
 #define ANSI_COLOR_YELLOW "\x1b[33m"
 #define ANSI_COLOR_RESET "\x1b[0m"
+#define ACVP_APP_HELP_MSG "Use acvp_app --help for more information."
 
 static void print_usage(int code) {
     if (code == -1) {
@@ -32,6 +33,7 @@ static void print_usage(int code) {
     }
     printf("To output version of library and of ACVP spec:\n");
     printf("      --version\n");
+    printf("      -v\n");
     printf("Logging level decides the amount of information output by the library. Logging level\n");
     printf("can be controlled using:\n");
     printf("      --none\n");
@@ -104,13 +106,18 @@ static void print_usage(int code) {
     printf("\n");
     printf("To register and save the vectors to file:\n");
     printf("      --vector_req <file>\n");
+    printf("      -r <file>\n");
     printf("\n");
     printf("To process saved vectors and write results/responses to file:\n");
     printf("      --vector_req <file>\n");
     printf("      --vector_rsp <file>\n");
+    printf("      OR\n");
+    printf("      -r <file>\n");
+    printf("      -p <file>\n");
     printf("\n");
     printf("To upload vector responses from file:\n");
     printf("      --vector_upload <file>\n");
+    printf("      -u <file>\n");
     printf("\n");
     printf("To process kat vectors from a JSON file use:\n");
     printf("      --kat <file>\n");
@@ -149,6 +156,7 @@ static void print_usage(int code) {
     printf("\n");
     printf("Some other options may support outputting to log OR saving to a file. To save to a file:\n");
     printf("      --save_to <file>\n");
+    printf("      -s <file>\n");
     printf("\n");
     printf("In addition some options are passed to acvp_app using\n");
     printf("environment variables.  The following variables can be set:\n\n");
@@ -171,8 +179,60 @@ static void print_usage(int code) {
     printf("        ACV_OE_ARCHITECTURE\n");
     printf("        ACV_OE_PROCESSOR\n");
     printf("        ACV_OE_COMPILER\n\n");
-
 }
+
+static ko_longopt_t longopts[] = {
+    { "version", ko_no_argument, 301 },
+    { "help", ko_optional_argument, 302 },
+    { "info", ko_no_argument, 303 },
+    { "status", ko_no_argument, 304 },
+    { "warn", ko_no_argument, 305 },
+    { "error", ko_no_argument, 306 },
+    { "verbose", ko_no_argument, 307 },
+    { "none", ko_no_argument, 308 },
+    { "sample", ko_no_argument, 309 },
+    { "aes", ko_no_argument, 310 },
+    { "tdes", ko_no_argument, 311 },
+    { "hash", ko_no_argument, 312 },
+    { "cmac", ko_no_argument, 313 },
+    { "hmac", ko_no_argument, 314 },
+#ifdef OPENSSL_KDF_SUPPORT
+    { "kdf", ko_no_argument, 315 },
+#endif
+#ifndef OPENSSL_NO_DSA
+    { "dsa", ko_no_argument, 316 },
+#endif
+    { "rsa", ko_no_argument, 317 },
+    { "drbg", ko_no_argument, 318 },
+    { "ecdsa", ko_no_argument, 319 },
+    { "kas_ecc", ko_no_argument, 320 },
+#ifndef OPENSSL_NO_DSA
+    { "kas_ffc", ko_no_argument, 321 },
+    { "safe_primes", ko_no_argument, 322 },
+#endif
+    { "kas_ifc", ko_no_argument, 323 },
+    { "kts_ifc", ko_no_argument, 324 },
+    { "kas_kdf", ko_no_argument, 325 },
+    { "all_algs", ko_no_argument, 350 },
+    { "manual_registration", ko_required_argument, 400 },
+    { "kat", ko_required_argument, 401 },
+    { "fips_validation", ko_required_argument, 402 },
+    { "vector_req", ko_required_argument, 403 },
+    { "vector_rsp", ko_required_argument, 404 },
+    { "vector_upload", ko_required_argument, 405 },
+    { "get", ko_required_argument, 406 },
+    { "post", ko_required_argument, 407 },
+    { "put", ko_required_argument, 408 },
+    { "get_results", ko_required_argument, 409},
+    { "certnum", ko_required_argument, 410 },
+    { "resume_session", ko_required_argument, 411 },
+    { "get_expected_results", ko_required_argument, 412 },
+    { "save_to", ko_required_argument, 413 },
+    { "delete", ko_required_argument, 414 },
+    { "cancel_session", ko_required_argument, 415 },
+    { NULL, 0, 0 }
+};
+
 
 static void default_config(APP_CONFIG *cfg) {
     cfg->level = ACVP_LOG_LVL_STATUS;
@@ -202,82 +262,52 @@ static void enable_all_algorithms(APP_CONFIG *cfg) {
 #endif
 }
 
+static const char* lookup_arg_name(int c) {
+    int arrlen = sizeof(longopts) / sizeof(ko_longopt_t);
+    for (int i = 0; i < arrlen; i++) {
+        if (longopts[i].val == c) {
+            return longopts[i].name;
+        }
+    }
+    return NULL;
+}
+
+//return 0 if fails check, 1 if passes
+static int check_option_length(const char *opt, int c, int maxAllowed) {
+    if ((int)strnlen_s(opt, maxAllowed + 1) > maxAllowed) {
+        const char *argName = lookup_arg_name(c);
+        printf(ANSI_COLOR_RED "Command error... "ANSI_COLOR_RESET
+                "\nThe argument given for option %s is too long."
+                "\nMax length allowed: %d"
+                "\n%s\n", argName, maxAllowed, ACVP_APP_HELP_MSG);
+        return 0;
+    }
+    return 1;
+}
+
 int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
     ketopt_t opt = KETOPT_INIT;
-    int c = 0;
+    int c = 0, diff = 0;
 
     cfg->empty_alg = 1;
-
-    static ko_longopt_t longopts[] = {
-        { "version", ko_no_argument, 301 },
-        { "help", ko_optional_argument, 302 },
-        { "info", ko_no_argument, 303 },
-        { "status", ko_no_argument, 304 },
-        { "warn", ko_no_argument, 305 },
-        { "error", ko_no_argument, 306 },
-        { "verbose", ko_no_argument, 307 },
-        { "none", ko_no_argument, 308 },
-        { "sample", ko_no_argument, 309 },
-        { "aes", ko_no_argument, 310 },
-        { "tdes", ko_no_argument, 311 },
-        { "hash", ko_no_argument, 312 },
-        { "cmac", ko_no_argument, 313 },
-        { "hmac", ko_no_argument, 314 },
-#ifdef OPENSSL_KDF_SUPPORT
-        { "kdf", ko_no_argument, 315 },
-#endif
-#ifndef OPENSSL_NO_DSA
-        { "dsa", ko_no_argument, 316 },
-#endif
-        { "rsa", ko_no_argument, 317 },
-        { "drbg", ko_no_argument, 318 },
-        { "ecdsa", ko_no_argument, 319 },
-        { "kas_ecc", ko_no_argument, 320 },
-#ifndef OPENSSL_NO_DSA
-        { "kas_ffc", ko_no_argument, 321 },
-        { "safe_primes", ko_no_argument, 322 },
-#endif
-        { "kas_ifc", ko_no_argument, 323 },
-        { "kts_ifc", ko_no_argument, 324 },
-        { "kas_kdf", ko_no_argument, 325 },
-        { "all_algs", ko_no_argument, 350 },
-        { "manual_registration", ko_required_argument, 400 },
-        { "kat", ko_required_argument, 401 },
-        { "fips_validation", ko_required_argument, 402 },
-        { "vector_req", ko_required_argument, 403 },
-        { "vector_rsp", ko_required_argument, 404 },
-        { "vector_upload", ko_required_argument, 405 },
-        { "get", ko_required_argument, 406 },
-        { "post", ko_required_argument, 407 },
-        { "put", ko_required_argument, 408 },
-        { "get_results", ko_required_argument, 409},
-        { "certnum", ko_required_argument, 410 },
-        { "resume_session", ko_required_argument, 411 },
-        { "get_expected_results", ko_required_argument, 412 },
-        { "save_to", ko_required_argument, 413 },
-        { "delete", ko_required_argument, 414 },
-        { "cancel_session", ko_required_argument, 415 },
-        { NULL, 0, 0 }
-    };
 
     /* Set the default configuration values */
     default_config(cfg);
 
-    while ((c = ketopt(&opt, argc, argv, 1, "vh", longopts)) >= 0) {
-        if (c == 'v') {
+    while ((c = ketopt(&opt, argc, argv, 1, "vhs:u:r:p:", longopts)) >= 0) {
+        diff = 0;
+
+        switch (c) {
+        case 'v':
             printf("\nACVP library version(protocol version): %s(%s)\n", acvp_version(), acvp_protocol_version());
             return 1;
-        }
-        if (c == 'h') {
+        case 'h':
             print_usage(0);
             return 1;
-        }
-        if (c == 301) {
+        case 301:
             printf("\nACVP library version(protocol version): %s(%s)\n", acvp_version(), acvp_protocol_version());
             return 1;
-        }
-        if (c == 302) {
-            int diff = -1;
+        case 302:
             strncmp_s(opt.arg, JSON_FILENAME_LENGTH + 1, "verbose", 7, &diff);
             if (!diff) {
                 print_usage(ACVP_LOG_LVL_VERBOSE);
@@ -285,425 +315,267 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
                 print_usage(0);
             }
             return 1;
-        }
-        if (c == 303) {
+        case 303:
             cfg->level = ACVP_LOG_LVL_INFO;
-            continue;
-        }
-        if (c == 304) {
+            break;
+        case 304:
             cfg->level = ACVP_LOG_LVL_STATUS;
-            continue;
-        }
-        if (c == 305) {
+            break;
+        case 305:
             cfg->level = ACVP_LOG_LVL_WARN;
-            continue;
-        }
-        if (c == 306) {
+            break;
+        case 306:
             cfg->level = ACVP_LOG_LVL_ERR;
-            continue;
-        }
-        if (c == 307) {
+            break;
+        case 307:
             cfg->level = ACVP_LOG_LVL_VERBOSE;
-            continue;
-        }
-        if (c == 308) {
+            break;
+        case 308:
             cfg->level = ACVP_LOG_LVL_NONE;
-            continue;
-        }
-        if (c == 309) {
+            break;
+        case 309:
             cfg->sample = 1;
-            continue;
-        }
-        if (c == 310) {
+            break;
+        case 310:
             cfg->aes = 1;
             cfg->empty_alg = 0;
-            continue;
-        }
-        if (c == 311) {
+            break;
+        case 311:
             cfg->tdes = 1;
             cfg->empty_alg = 0;
-            continue;
-        }
-        if (c == 312) {
+            break;
+        case 312:
             cfg->hash = 1;
             cfg->empty_alg = 0;
-            continue;
-        }
-        if (c == 313) {
+            break;
+        case 313:
             cfg->cmac = 1;
             cfg->empty_alg = 0;
-            continue;
-        }
-        if (c == 314) {
+            break;
+        case 314:
             cfg->hmac = 1;
             cfg->empty_alg = 0;
-            continue;
-        }
+            break;
 #ifdef OPENSSL_KDF_SUPPORT
-        if (c == 315) {
+        case 315:
             cfg->kdf = 1;
             cfg->empty_alg = 0;
-            continue;
-        }
+            break;
 #endif
 #ifndef OPENSSL_NO_DSA
-        if (c == 316) {
+        case 316:
             cfg->dsa = 1;
             cfg->empty_alg = 0;
-            continue;
-        }
+            break;
 #endif
-        if (c == 317) {
+        case 317:
             cfg->rsa = 1;
             cfg->empty_alg = 0;
-            continue;
-        }
-        if (c == 318) {
+            break;
+        case 318:
             cfg->drbg = 1;
             cfg->empty_alg = 0;
-            continue;
-        }
-        if (c == 319) {
+            break;
+        case 319:
             cfg->ecdsa = 1;
             cfg->empty_alg = 0;
-            continue;
-        }
-        if (c == 320) {
+            break;
+        case 320:
             cfg->kas_ecc = 1;
             cfg->empty_alg = 0;
-            continue;
-        }
+            break;
 #ifndef OPENSSL_NO_DSA
-        if (c == 321) {
+        case 321:
             cfg->kas_ffc = 1;
             cfg->empty_alg = 0;
-            continue;
-        }
-        if (c == 322) {
+            break;
+        case 322:
             cfg->safe_primes = 1;
             cfg->empty_alg = 0;
-            continue;
-        }
+            break;
 #endif
-        if (c == 323) {
+        case 323:
             cfg->kas_ifc = 1;
             cfg->empty_alg = 0;
-            continue;
-        }
-        if (c == 324) {
+            break;
+        case 324:
             cfg->kts_ifc = 1;
             cfg->empty_alg = 0;
-            continue;
-        }
-        if (c == 325) {
+            break;
+        case 325:
             cfg->kas_kdf = 1;
             cfg->empty_alg = 0;
-            continue;
-        }
-        if (c == 350) {
+            break;
+        case 350:
             enable_all_algorithms(cfg);
             cfg->empty_alg = 0;
-            continue;
-        }
-        if (c == 400) {
-            int filename_len = 0;
+            break;
+
+        case 400:
             cfg->manual_reg = 1;
-
-            filename_len = strnlen_s(opt.arg, JSON_FILENAME_LENGTH + 1);
-            if (filename_len > JSON_FILENAME_LENGTH) {
-                print_usage(-1);
-                printf(ANSI_COLOR_RED "Command error... [%s]"ANSI_COLOR_RESET
-                       "\nThe <file> \"%s\", has a name that is too long."
-                       "\nMax allowed <file> name length is (%d).\n",
-                       "--manual_registration", opt.arg, JSON_FILENAME_LENGTH);
+            if (!check_option_length(opt.arg, c, JSON_FILENAME_LENGTH)) {
                 return 1;
             }
-
             strcpy_s(cfg->reg_file, JSON_FILENAME_LENGTH + 1, opt.arg);
-            continue;
-        }
-        if (c == 401) {
-            int filename_len = 0;
+            break;
+
+        case 401:
             cfg->kat = 1;
-
-            filename_len = strnlen_s(opt.arg, JSON_FILENAME_LENGTH + 1);
-            if (filename_len > JSON_FILENAME_LENGTH) {
-                print_usage(-1);
-                printf(ANSI_COLOR_RED "Command error... [%s]"ANSI_COLOR_RESET
-                       "\nThe <file> \"%s\", has a name that is too long."
-                       "\nMax allowed <file> name length is (%d).\n",
-                       "--kat", opt.arg, JSON_FILENAME_LENGTH);
+            if (!check_option_length(opt.arg, c, JSON_FILENAME_LENGTH)) {
                 return 1;
             }
-
             strcpy_s(cfg->kat_file, JSON_FILENAME_LENGTH + 1, opt.arg);
-            continue;
-        }
-        if (c == 402) {
-            int filename_len = 0;
+            break;
+
+        case 402:
             cfg->fips_validation = 1;
-
-            filename_len = strnlen_s(opt.arg, JSON_FILENAME_LENGTH + 1);
-            if (filename_len > JSON_FILENAME_LENGTH) {
-                print_usage(-1);
-                printf(ANSI_COLOR_RED "Command error... [%s]"ANSI_COLOR_RESET
-                       "\nThe <file> \"%s\", has a name that is too long."
-                       "\nMax allowed <file> name length is (%d).\n",
-                       "--fips_validation", opt.arg, JSON_FILENAME_LENGTH);
+            if (!check_option_length(opt.arg, c, JSON_FILENAME_LENGTH)) {
                 return 1;
             }
-
             strcpy_s(cfg->validation_metadata_file, JSON_FILENAME_LENGTH + 1, opt.arg);
-            continue;
-        }
+            break;
 
-        if (c == 403) {
-            int filename_len = 0;
+        case 'r':
+        case 403:
             cfg->vector_req = 1;
-
-            filename_len = strnlen_s(opt.arg, JSON_FILENAME_LENGTH + 1);
-            if (filename_len > JSON_FILENAME_LENGTH) {
-                print_usage(-1);
-                printf(ANSI_COLOR_RED "Command error... [%s]"ANSI_COLOR_RESET
-                       "\nThe <file> \"%s\", has a name that is too long."
-                       "\nMax allowed <file> name length is (%d).\n",
-                       "--vector_req", opt.arg, JSON_FILENAME_LENGTH);
+            if (!check_option_length(opt.arg, c, JSON_FILENAME_LENGTH)) {
                 return 1;
             }
-
             strcpy_s(cfg->vector_req_file, JSON_FILENAME_LENGTH + 1, opt.arg);
-            continue;
-        }
+            break;
 
-        if (c == 404) {
-            int rsp_filename_len = 0;
+        case 'p':
+        case 404:
             cfg->vector_rsp = 1;
-
-            rsp_filename_len = strnlen_s(opt.arg, JSON_FILENAME_LENGTH + 1);
-            if (rsp_filename_len > JSON_FILENAME_LENGTH) {
-                print_usage(-1);
-                printf(ANSI_COLOR_RED "Command error... [%s]"ANSI_COLOR_RESET
-                       "\nThe <file> \"%s\", has a name that is too long."
-                       "\nMax allowed <file> name length is (%d).\n",
-                       "--vector_rsp", opt.arg, JSON_FILENAME_LENGTH);
+            if (!check_option_length(opt.arg, c, JSON_FILENAME_LENGTH)) {
                 return 1;
             }
 
             strcpy_s(cfg->vector_rsp_file, JSON_FILENAME_LENGTH + 1, opt.arg);
-            continue;
-        }
+            break;
 
-        if (c == 405) {
-            int upload_filename_len = 0;
+        case 'u':
+        case 405:
             cfg->vector_upload = 1;
-
-            upload_filename_len = strnlen_s(opt.arg, JSON_FILENAME_LENGTH + 1);
-            if (upload_filename_len > JSON_FILENAME_LENGTH) {
-                print_usage(-1);
-                printf(ANSI_COLOR_RED "Command error... [%s]"ANSI_COLOR_RESET
-                       "\nThe <file> \"%s\", has a name that is too long."
-                       "\nMax allowed <file> name length is (%d).\n",
-                       "--vector_upload", opt.arg, JSON_FILENAME_LENGTH);
+            if (!check_option_length(opt.arg, c, JSON_FILENAME_LENGTH)) {
                 return 1;
             }
-
             strcpy_s(cfg->vector_upload_file, JSON_FILENAME_LENGTH + 1, opt.arg);
-            continue;
-        }
+            break;
 
-        if (c == 406) {
-            int get_string_len = 0;
+        case 406:
             cfg->get = 1;
-
-            get_string_len = strnlen_s(opt.arg, JSON_REQUEST_LENGTH + 1);
-            if (get_string_len > JSON_REQUEST_LENGTH) {
-                print_usage(-1);
-                printf(ANSI_COLOR_RED "Command error... [%s]"ANSI_COLOR_RESET
-                       "\nThe <string> \"%s\", is too long."
-                       "\nMax allowed <string> length is (%d).\n",
-                       "--get", opt.arg, JSON_REQUEST_LENGTH);
+            if (!check_option_length(opt.arg, c, JSON_REQUEST_LENGTH)) {
                 return 1;
             }
-
             strcpy_s(cfg->get_string, JSON_REQUEST_LENGTH + 1, opt.arg);
-            continue;
-        }
+            break;
 
-        if (c == 407) {
-            int post_filename_len = 0;
+        case 407:
             cfg->post = 1;
-
-            post_filename_len = strnlen_s(opt.arg, JSON_FILENAME_LENGTH + 1);
-            if (post_filename_len > JSON_REQUEST_LENGTH) {
-                print_usage(-1);
-                printf(ANSI_COLOR_RED "Command error... [%s]"ANSI_COLOR_RESET
-                       "\nThe <file> \"%s\", has a name that is too long."
-                       "\nMax allowed <file> name length is (%d).\n",
-                       "--post", opt.arg, JSON_FILENAME_LENGTH);
+            if (!check_option_length(opt.arg, c, JSON_FILENAME_LENGTH)) {
                 return 1;
             }
-
             strcpy_s(cfg->post_filename, JSON_FILENAME_LENGTH + 1, opt.arg);
-            continue;
-        }
+            break;
 
-        if (c == 408) {
-            int put_filename_len = 0;
+        case 408:
             cfg->put = 1;
-
-            put_filename_len = strnlen_s(opt.arg, JSON_FILENAME_LENGTH + 1);
-            if (put_filename_len > JSON_REQUEST_LENGTH) {
-                print_usage(-1);
-                printf(ANSI_COLOR_RED "Command error... [%s]"ANSI_COLOR_RESET
-                       "\nThe <file> \"%s\", has a name that is too long."
-                       "\nMax allowed <file> name length is (%d).\n",
-                       "--put", opt.arg, JSON_FILENAME_LENGTH);
+            if (!check_option_length(opt.arg, c, JSON_FILENAME_LENGTH)) {
                 return 1;
             }
-
             strcpy_s(cfg->put_filename, JSON_FILENAME_LENGTH + 1, opt.arg);
-            continue;
-        }
+            break;
 
-        if (c == 409) {
-            int result_filename_len = 0;
+        case 409:
             cfg->get_results = 1;
-
-            result_filename_len = strnlen_s(opt.arg, JSON_FILENAME_LENGTH + 1);
-            if (result_filename_len > JSON_REQUEST_LENGTH) {
-                print_usage(-1);
-                printf(ANSI_COLOR_RED "Command error... [%s]"ANSI_COLOR_RESET
-                    "\nThe <file> \"%s\", has a name that is too long."
-                    "\nMax allowed <file> name length is (%d).\n",
-                    "--get_results", opt.arg, JSON_FILENAME_LENGTH);
+            if (!check_option_length(opt.arg, c, JSON_FILENAME_LENGTH)) {
                 return 1;
             }
-
             strcpy_s(cfg->session_file, JSON_FILENAME_LENGTH + 1, opt.arg);
-            continue;
-        }
+            break;
 
-        if (c == 410) {
-            int certnum_len = 0;
-            certnum_len = strnlen_s(opt.arg, JSON_STRING_LENGTH + 1);
-            if (certnum_len > JSON_STRING_LENGTH) {
-                print_usage(-1);
-                printf(ANSI_COLOR_RED "Command error... [%s]"ANSI_COLOR_RESET
-                       "\nThe string used is too long."
-                       "\nMax allowed string length is %d.\n",
-                       "--certnum", JSON_STRING_LENGTH);
+        case 410:
+            if (!check_option_length(opt.arg, c, JSON_STRING_LENGTH)) {
                 return 1;
             }
             strcpy_s(value, JSON_STRING_LENGTH, opt.arg);
-            continue;
-        }
-        if (c == 411) {
-            int resume_filename_len = 0;
+            break;
+
+        case 411:
             cfg->resume_session = 1;
-
-            resume_filename_len = strnlen_s(opt.arg, JSON_FILENAME_LENGTH + 1);
-            if (resume_filename_len > JSON_REQUEST_LENGTH) {
-                print_usage(-1);
-                printf(ANSI_COLOR_RED "Command error... [%s]"ANSI_COLOR_RESET
-                    "\nThe <file> \"%s\", has a name that is too long."
-                    "\nMax allowed <file> name length is (%d).\n",
-                    "--resume_session", opt.arg, JSON_FILENAME_LENGTH);
+            if (!check_option_length(opt.arg, c, JSON_FILENAME_LENGTH)) {
                 return 1;
             }
-
             strcpy_s(cfg->session_file, JSON_FILENAME_LENGTH + 1, opt.arg);
-            continue;
-        }
-        if (c == 412) {
-            int session_filename_len = 0;
+            break;
+
+        case 412:
             cfg->get_expected = 1;
-
-            session_filename_len = strnlen_s(opt.arg, JSON_FILENAME_LENGTH + 1);
-            if (session_filename_len > JSON_REQUEST_LENGTH) {
-                print_usage(-1);
-                printf(ANSI_COLOR_RED "Command error... [%s]"ANSI_COLOR_RESET
-                    "\nThe <file> \"%s\", has a name that is too long."
-                    "\nMax allowed <file> name length is (%d).\n",
-                    "--get_expected_results", opt.arg, JSON_FILENAME_LENGTH);
+            if (!check_option_length(opt.arg, c, JSON_FILENAME_LENGTH)) {
                 return 1;
             }
-
             strcpy_s(cfg->session_file, JSON_FILENAME_LENGTH + 1, opt.arg);
-            continue;
-        }
-        if (c == 413) {
-            int save_filename_len = 0;
-            cfg->save_to = 1;
+            break;
 
-            save_filename_len = strnlen_s(opt.arg, JSON_FILENAME_LENGTH + 1);
-            if (save_filename_len > JSON_REQUEST_LENGTH) {
-                print_usage(-1);
-                printf(ANSI_COLOR_RED "Command error... [%s]"ANSI_COLOR_RESET
-                    "\nThe <file> \"%s\", has a name that is too long."
-                    "\nMax allowed <file> name length is (%d).\n",
-                    "--save_to", opt.arg, JSON_FILENAME_LENGTH);
+        case 's':
+        case 413:
+            cfg->save_to = 1;
+            if (!check_option_length(opt.arg, c, JSON_FILENAME_LENGTH)) {
                 return 1;
             }
             strcpy_s(cfg->save_file, JSON_FILENAME_LENGTH + 1, opt.arg);
-            continue;
-        }
-        if (c == 414) {
-            int delete_request_url_len = 0;
-            cfg->delete = 1;
+            break;
 
-            delete_request_url_len = strnlen_s(opt.arg, JSON_REQUEST_LENGTH + 1);
-            if (delete_request_url_len > JSON_REQUEST_LENGTH) {
-                print_usage(-1);
-                printf(ANSI_COLOR_RED "Command error... [%s]"ANSI_COLOR_RESET
-                    "\nThe <file> \"%s\", has a name that is too long."
-                    "\nMax allowed <file> name length is (%d).\n",
-                    "--save_to", opt.arg, JSON_REQUEST_LENGTH);
+        case 414:
+            cfg->delete = 1;
+            if (!check_option_length(opt.arg, c, JSON_REQUEST_LENGTH)) {
                 return 1;
             }
             strcpy_s(cfg->delete_url, JSON_REQUEST_LENGTH + 1, opt.arg);
-            continue;
-        }
-        if (c == 415) {
-            int session_filename_len = 0;
-            cfg->cancel_session = 1;
+            break;
 
-            session_filename_len = strnlen_s(opt.arg, JSON_FILENAME_LENGTH + 1);
-            if (session_filename_len > JSON_REQUEST_LENGTH) {
-                print_usage(-1);
-                printf(ANSI_COLOR_RED "Command error... [%s]"ANSI_COLOR_RESET
-                    "\nThe <file> \"%s\", has a name that is too long."
-                    "\nMax allowed <file> name length is (%d).\n",
-                    "--get_expected_results", opt.arg, JSON_FILENAME_LENGTH);
+        case 415:
+            cfg->cancel_session = 1;
+            if (!check_option_length(opt.arg, c, JSON_FILENAME_LENGTH)) {
                 return 1;
             }
-
             strcpy_s(cfg->session_file, JSON_FILENAME_LENGTH + 1, opt.arg);
-            continue;
-        }
-        
-        if (c == '?') {
-            print_usage(-1);
-            printf(ANSI_COLOR_RED "unknown option: %s\n"ANSI_COLOR_RESET, *(argv + opt.ind - 1));
+            break;
+
+        case '?':
+            printf(ANSI_COLOR_RED "unknown option: %s\n"ANSI_COLOR_RESET, *(argv + opt.ind - !(opt.pos > 0)));
+            printf("%s\n", ACVP_APP_HELP_MSG);
             return 1;
-        }
-        if (c == ':') {
-            print_usage(-1);
+
+        case ':':
             printf(ANSI_COLOR_RED "option missing arg: %s\n"ANSI_COLOR_RESET, *(argv + opt.ind - 1));
+            printf("%s\n", ACVP_APP_HELP_MSG);
             return 1;
+
+        default:
+            printf("An unknown error occurred while parsing arguments.\n");
+            break;
         }
     }
 
-    if (cfg->save_to && !cfg->get_expected && !cfg->get) {
-        printf("Warning: --save-to only works with --get and --get_expected. Option will be ignored.\n");
+    //If there are still arguments that were not permuted, they are invalid
+    if (opt.ind < argc) {
+        for (c = opt.ind; c < argc; c++) {
+            printf(ANSI_COLOR_RED "unknown option: %s\n" ANSI_COLOR_RESET, argv[c]);
+        }
+        printf("%s\n", ACVP_APP_HELP_MSG);
+        return 1;
     }
 
     //Many args do not need an alg specified. Todo: make cleaner
     if (cfg->empty_alg && !cfg->post && !cfg->get && !cfg->put && !cfg->get_results
             && !cfg->get_expected && !cfg->manual_reg && !cfg->vector_upload
-            && !cfg->delete && !cfg->cancel_session)  {
+            && !cfg->delete && !cfg->cancel_session && !(cfg->resume_session && 
+            cfg->vector_req)) {
         /* The user needs to select at least 1 algorithm */
-        print_usage(-1);
         printf(ANSI_COLOR_RED "Requires at least 1 Algorithm Test Suite\n"ANSI_COLOR_RESET);
+        printf("%s\n", ACVP_APP_HELP_MSG);
         return 1;
     }
 
