@@ -63,7 +63,7 @@ static void print_usage(int code) {
         printf("capabilities of the provided cryptographic library.\n");
     }
     printf("Algorithm Test Suites:\n");
-    printf("      --all_algs (Enable all of the suites below)\n");
+    printf("      --all_algs (or -a, Enable all of the suites below)\n");
     printf("      --aes\n");
     printf("      --tdes\n");
     printf("      --hash\n");
@@ -294,7 +294,7 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
     /* Set the default configuration values */
     default_config(cfg);
 
-    while ((c = ketopt(&opt, argc, argv, 1, "vhs:u:r:p:", longopts)) >= 0) {
+    while ((c = ketopt(&opt, argc, argv, 1, "vhas:u:r:p:", longopts)) >= 0) {
         diff = 0;
 
         switch (c) {
@@ -406,6 +406,7 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
             cfg->kas_kdf = 1;
             cfg->empty_alg = 0;
             break;
+        case 'a':
         case 350:
             enable_all_algorithms(cfg);
             cfg->empty_alg = 0;

@@ -4124,6 +4124,7 @@ ACVP_RESULT acvp_build_test_session(ACVP_CTX *ctx, char **reg, int *out_len) {
      */
     json_array_append_value(reg_arry, val);
     *reg = json_serialize_to_string(reg_arry_val, out_len);
+    ctx->registration = json_value_deep_copy(val);
     json_value_free(reg_arry_val);
 
     return ACVP_SUCCESS;
