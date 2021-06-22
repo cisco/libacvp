@@ -792,7 +792,7 @@ static JSON_Value * parse_object_value(const char **string, size_t nesting) {
         size_t key_len = 0;
         new_key = get_quoted_string(string, &key_len);
         /* We do not support key names with embedded \0 chars */
-        if (new_key == NULL || key_len != strlen(new_key)) {
+        if (new_key == NULL || key_len != strnlen_s(new_key, STRING_NAME_MAX)) {
             if (new_key) {
                 parson_free(new_key);
             }
@@ -1011,7 +1011,7 @@ static int json_serialize_to_buffer_r(const JSON_Value *value, char *buf, int le
                     APPEND_INDENT(level+1);
                 }
                 /* We do not support key names with embedded \0 chars */
-                written = json_serialize_string(key, strlen(key), buf);
+                written = json_serialize_string(key, strnlen_s(key, STRING_NAME_MAX), buf);
                 if (written < 0) {
                     return -1;
                 }
