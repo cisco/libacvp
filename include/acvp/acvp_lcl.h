@@ -1664,6 +1664,7 @@ struct acvp_ctx_t {
     char *jwt_token; /* access_token provided by server for authenticating REST calls */
     char *tmp_jwt; /* access_token provided by server for authenticating a single REST call */
     int use_tmp_jwt; /* 1 if the tmp_jwt should be used */
+    JSON_Value *registration; /* The capability registration string sent when creating a test session */
 
     /* crypto module capabilities list */
     ACVP_CAPS_LIST *caps_list;

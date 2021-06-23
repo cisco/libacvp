@@ -614,6 +614,9 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx) {
     if (ctx->vsid_url_list) {
         acvp_free_str_list(&ctx->vsid_url_list);
     }
+    if (ctx->registration) {
+            json_value_free(ctx->registration);
+    }
     if (ctx->caps_list) {
         cap_entry = ctx->caps_list;
         while (cap_entry) {
@@ -3256,6 +3259,7 @@ static ACVP_RESULT acvp_write_session_info(ACVP_CTX *ctx) {
     json_object_set_string(ts_obj, "url", ctx->session_url);
     json_object_set_string(ts_obj, "jwt", ctx->jwt_token);
     json_object_set_boolean(ts_obj, "isSample", ctx->is_sample);
+    json_object_set_value(ts_obj, "registration", json_value_deep_copy(ctx->registration));
     /* pull test session ID out of URL */
     ptr = ctx->session_url;
     while(*ptr != 0) {

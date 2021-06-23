@@ -13,7 +13,7 @@
 #define ko_optional_argument 2
 
 #define OPTION_NAME_MAX 128
-#define OSTR_MAX 9 /* Change according to the ostr parameter in app_cli.c */
+#define OSTR_MAX 10 /* Change according to the ostr parameter in app_cli.c */
 
 typedef struct {
 	int ind;   /* equivalent to optind */
@@ -63,7 +63,7 @@ static void ketopt_permute(char *argv[], int j, int n) /* move argv[j] over n el
  */
 static int ketopt(ketopt_t *s, int argc, char *argv[], int permute, const char *ostr, const ko_longopt_t *longopts)
 {
-    char ostr2[OSTR_MAX+1] = "vhs:u:r:p:";
+    char ostr2[OSTR_MAX+1] = "vhas:u:r:p:";
 	int opt = -1, i0, j;
     int odiff = 0;
 
