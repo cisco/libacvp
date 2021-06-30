@@ -374,14 +374,27 @@ typedef enum acvp_prereq_mode_t {
 
 /**
  * @enum ACVP_CONFORMANCE
- * @brief this enum lists different conformances that can be claimed
- *        in libacvp. These are largely algorithm specific.
+ * @brief this enum lists different conformances that can be claimed in libacvp. These are largely
+ *        algorithm specific.
  */
 typedef enum acvp_conformance_t {
     ACVP_CONFORMANCE_DEFAULT = 0,
     ACVP_CONFORMANCE_RFC3686,
     ACVP_CONFORMANCE_MAX
 } ACVP_CONFORMANCE;
+
+/**
+ * @enum ACVP_REVISION
+ * @brief this enum lists revisions that may be claimed for ciphers alternative to the default ones
+ *        used by libacvp. This may grow over time. Because one revision may apply to multiple
+ *        algorithms, this list is universal and the library determines which ones revisions are
+ *        allowed for which algorihms.
+ */
+typedef enum acvp_revision_t {
+    ACVP_REVISION_DEFAULT = 0,
+    ACVP_REVISION_SP800_56AR3,
+    ACVP_REVISION_MAX
+} ACVP_REVISION;
 
 /**
  * @enum ACVP_HASH_ALG
@@ -1524,6 +1537,7 @@ typedef enum acvp_kas_ecc_func {
 /** @enum ACVP_KAS_ECC_PARAM */
 typedef enum acvp_kas_ecc_param {
     ACVP_KAS_ECC_FUNCTION = 1,
+    ACVP_KAS_ECC_REVISION,
     ACVP_KAS_ECC_CURVE,
     ACVP_KAS_ECC_ROLE,
     ACVP_KAS_ECC_KDF,

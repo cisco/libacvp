@@ -6687,6 +6687,19 @@ ACVP_RESULT acvp_cap_kas_ecc_set_parm(ACVP_CTX *ctx,
                 kas_ecc_cap_mode->function->param = value;
             }
             break;
+        case ACVP_KAS_ECC_REVISION:
+            if (cipher == ACVP_KAS_ECC_CDH) {
+                if (value == ACVP_REVISION_SP800_56AR3) {
+                    kas_ecc_cap_mode->revision = value;
+                } else {
+                    ACVP_LOG_ERR("Invalid revision value for KAS-ECC-CDH");
+                    return ACVP_INVALID_ARG;
+                }
+            } else {
+                ACVP_LOG_ERR("Unsupported KAS-ECC param %d", param);
+                return ACVP_INVALID_ARG;
+            }
+            break;
         case ACVP_KAS_ECC_HASH:
             kas_ecc_cap_mode->hash = value;
             break;
@@ -6746,6 +6759,7 @@ ACVP_RESULT acvp_cap_kas_ecc_set_parm(ACVP_CTX *ctx,
                 kas_ecc_cap_mode->function->param = value;
             }
             break;
+        case ACVP_KAS_ECC_REVISION:
         case ACVP_KAS_ECC_CURVE:
         case ACVP_KAS_ECC_ROLE:
         case ACVP_KAS_ECC_KDF:
@@ -6914,6 +6928,7 @@ ACVP_RESULT acvp_cap_kas_ecc_set_scheme(ACVP_CTX *ctx,
             break;
         case ACVP_KAS_ECC_NONE:
             break;
+        case ACVP_KAS_ECC_REVISION:
         case ACVP_KAS_ECC_CURVE:
         case ACVP_KAS_ECC_FUNCTION:
         case ACVP_KAS_ECC_HASH:

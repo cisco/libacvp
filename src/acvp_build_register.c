@@ -2405,7 +2405,11 @@ static ACVP_RESULT acvp_build_kas_ecc_register_cap(ACVP_CTX *ctx,
     if (kas_ecc_mode->prereq_vals) {
         json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
 
-        revision = acvp_lookup_cipher_revision(cap_entry->cipher);
+        if (kas_ecc_mode->revision) {
+            revision = acvp_lookup_alt_revision_string(kas_ecc_mode->revision);
+        } else {
+            revision = acvp_lookup_cipher_revision(cap_entry->cipher);
+        }
         if (revision == NULL) return ACVP_INVALID_ARG;
         json_object_set_string(cap_obj, "revision", revision);
 

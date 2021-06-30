@@ -138,13 +138,15 @@ const char *acvp_lookup_cipher_name(ACVP_CIPHER alg) {
     return NULL;
 }
 
-/*
- * @brief This function returns the revision of an algorithm given
- *        a ACVP_CIPHER value.
+/**
+ * @brief This function returns the default revision of an algorithm given a ACVP_CIPHER value.
  *
- * If the mode is given, then it will also use that to
- * narrow down the search to entries that only match
- * both the \p alg and \p mode.
+ *        If the mode is given, then it will also use that to
+ *        narrow down the search to entries that only match
+ *        both the \p alg and \p mode.
+ * 
+ *        Note that this should not be used when the user registers an alternative revision for a
+ *        cipher.
  *
  * @return String representing the Revision
  * @return NULL no match
@@ -159,6 +161,29 @@ const char *acvp_lookup_cipher_revision(ACVP_CIPHER alg) {
         }
     }
 
+    return NULL;
+}
+
+/**
+ * This table maintains a list of strings for revisions that can be registered as capabilities.
+ */
+static struct acvp_alt_revision_info alt_revision_tbl[] = {
+    { ACVP_REVISION_SP800_56AR3, ACVP_REV_STR_SP800_56AR3 }
+};
+static int alt_revision_tbl_length =
+    sizeof(alt_revision_tbl) / sizeof(struct acvp_alt_revision_info);
+
+/**
+ * this function returns the string used in registration for an alternative revision registered by
+ * a user.
+ */
+const char *acvp_lookup_alt_revision_string(ACVP_REVISION rev) {
+    int i = 0;
+    for (i = 0; i < alt_revision_tbl_length; i++) {
+        if (alt_revision_tbl[i].revision == rev) {
+            return alt_revision_tbl[i].name;
+        }
+    }
     return NULL;
 }
 
@@ -241,7 +266,7 @@ ACVP_CIPHER acvp_lookup_cipher_w_mode_index(const char *algorithm,
 /**
  * @brief Look through all of the entries in alg_tbl for the given cipher
  * and return the mode string if applicable or NULL if not
- * 
+ *
  * @return const string representing the "mode" to be used for the given cipher
  * @return NULL if the given alg does not have a mode string (most do not)
  */
