@@ -24,3 +24,6 @@ dist_data_DATA = README.md
 EXTRA_DIST = ms docker certs scripts docs metadata murl test
 SUBDIRS = safe_c_stub $(LIB_DIR) $(APP_DIR) $(TEST_DIR)
 
+
+doc:
+	doxygen Doxyfile

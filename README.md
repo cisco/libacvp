@@ -1,21 +1,23 @@
-        __       __  .______        ___       ______ ____    ____ .______
+```
+         __       __   ______        ___       ______ ____    ____  ______
         |  |     |  | |   _  \      /   \     /      |\   \  /   / |   _  \
         |  |     |  | |  |_)  |    /  ^  \   |  ,----' \   \/   /  |  |_)  |
         |  |     |  | |   _  <    /  /_\  \  |  |       \      /   |   ___/
         |  `----.|  | |  |_)  |  /  _____  \ |  `----.   \    /    |  |
         |_______||__| |______/  /__/     \__\ \______|    \__/     | _|   
 
-        A library that implements the client-side of the ACVP protocol.
-        The ACVP specification is a work-in-progress and can be found at
-        https://github.com/usnistgov/ACVP
+           A library that implements the client-side of the ACVP protocol.
+      The ACVP specification can be found at https://github.com/usnistgov/ACVP
+```
 
-### License
+## License
 Libacvp is licensed under the Apache License 2.0, which means that
 you are free to get and use it for commercial and non-commercial
 purposes as long as you fulfill its conditions. See the LICENSE
 file for details.
 
-### Recent Changes
+
+## Recent Changes
 The client library is compatible with the ACVP spec version 1.0, see https://github.com/usnistgov/ACVP
 however not all algorithms and options are supported. See the support list in the Supported Algorithms
 section below.
@@ -25,7 +27,7 @@ ability to cancel test sessions and more configure options to help various diffe
 and platforms.
 
 
-## Overview
+# Overview
 
 Libacvp is a client-side ACVP library implementation, and also includes
 an example application (acvp_app) which utilizes the library.
@@ -88,7 +90,7 @@ libcurl, libssl and libcrypto are not included, and must
 be installed separately on your build/target host,
 including the header files.
 
-###### Dealing with system-default dependencies
+##### Dealing with system-default dependencies
 This codebase uses features in OpenSSL >= 1.0.2.
 If the system-default install does not meet this requirement,
 you will need to download, compile and install at least OpenSSL 1.0.2 on your system.
@@ -205,10 +207,10 @@ Steps:
 	-Change any needed settings
 2.) Open libacvp.sln and acvp_app.sln in Visual Studio and allow the dialog to update the projects'
     versions of MSVC and windows SDK to the latest installed (May be unnecessary if versions match)
-3.) run ms\make_lib.bat
-4.) run ms\make_app.bat
+3.) run ms/make_lib.bat
+4.) run ms/make_app.bat
 
-The library files and app files will be placed in the ms\build\ directory.
+The library files and app files will be placed in the ms/build/ directory.
 
 Notes:
 Windows will only search specific paths for shared libraries, and will not check the
@@ -240,16 +242,16 @@ and ACV_SESSION_SAVE_PREFIX in your environment, respectively.
 ### How to test offline
 1. Download vectors on network accessible device:
 `./app/acvp_app --<algs of choice or all_algs> --vector_req <filename1>`
- - where <filename1> is the file you are saving the tests to.
+ - where `<filename1>` is the file you are saving the tests to.
 
 2. Copy vectors and acvp_app to target:
 `./app/acvp_app --all_algs --vector_req <filename1> --vector_rsp <filename2>`
- - where <filename1> is the file the tests are saved in, and <filename2> is the file
+ - where `<filename1>` is the file the tests are saved in, and `<filename2>` is the file
 you want to save your results to.
 
-3. Copy respones(filename2) to network accessible device:
+3. Copy responses(filename2) to network accessible device:
 `./app/acvp_app --all_algs --vector_upload <filename2>`
- - where <filename2> is the file containing the results of the tests.
+ - where `<filename2>` is the file containing the results of the tests.
 
 *Note:* If the target in Step 2 does not have the standard libraries used by
 libacvp you may configure and build a special app used only for Step 2. This
@@ -359,7 +361,7 @@ This package was initially written by John Foley of Cisco Systems.
 | **TDES-KW** |  Y  |  N  |
 | **TDES-OFB** |  Y  |  Y  |
 | **TDES-OFBI** |  N  |  N  |
-| **Secure Hash** | |
+| **Secure Hash** | | |
 | **SHA-1** |  Y  |  Y  |
 | **SHA-224** |  Y  |  Y  |
 | **SHA-256** |  Y  |  Y  |
@@ -382,7 +384,7 @@ This package was initially written by John Foley of Cisco Systems.
 | **ParallelHash-256** |  N  |  N  |
 | **TupleHash-128** |  N  |  N  |
 | **TupleHash-256** |  N  |  N  |
-| **Message Authentication** | |
+| **Message Authentication** | | |
 | **AES-GMAC** |  Y  |  Y  |
 | **AES-CCM** |  Y  |  Y  |
 | **CMAC-AES** |  Y  |  Y  |
@@ -398,14 +400,14 @@ This package was initially written by John Foley of Cisco Systems.
 | **HMAC-SHA3-256** |  Y  |  Y  |
 | **HMAC-SHA3-384** |  Y  |  Y  |
 | **HMAC-SHA3-512** |  Y  |  Y  |
-| **DRBG** | |
+| **DRBG** | | |
 | **ctrDRBG-AES-128** |  Y  |  Y  |
 | **ctrDRBG-AES-192** |  Y  |  Y  |
 | **ctrDRBG-AES-256** |  Y  |  Y  |
 | **ctrDRBG-TDES** |  N  |  N  |
 | **HASH DRBG** |  Y  |  Y  |
 | **HMAC DRBG** |  Y  |  Y  |
-| **Digital Signature** | |
+| **Digital Signature** | | |
 | **RSA mode: keyGen** |  Y  |  N  |
 | **RSA mode: sigGen** |  Y  |  Y  |
 | **RSA mode: sigVer** |  Y  |  Y  |
@@ -426,7 +428,7 @@ This package was initially written by John Foley of Cisco Systems.
 | **EDDSA mode: keyVer** |  N  |  N  |
 | **EDDSA mode: sigGen** |  N  |  N  |
 | **EDDSA mode: sigVer** |  N  |  N  |
-| **Key Agreement** | |
+| **Key Agreement** | | |
 | **KAS ECC ephemeralUnified** |  Y  |  Y  |
 | **KAS ECC SSC ephemeralUnified** |  Y  |  Y  |
 | **KAS ECC fullMqv** |  N  |  N  |
@@ -456,7 +458,7 @@ This package was initially written by John Foley of Cisco Systems.
 | **KTS IFC KTS-OAEP-Party_V-confirmation** |  N  |  N  |
 | **KAS KDF HKDF** |  Y  |  Y  |
 | **KAS KDF ONESTEP** |  Y  |  Y  |
-| **KDFs** | |
+| **KDFs** | | |
 | **Counter KDF** |  Y  |  N  |
 | **Feedback KDF** |  N  |  N  |
 | **Double Pipeline Iterator KDF** |  N  |  N  |
