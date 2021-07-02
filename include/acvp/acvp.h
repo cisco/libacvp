@@ -2163,11 +2163,6 @@ typedef struct acvp_test_case_t {
  *
  * @param ctx Pointer to ACVP_CTX that was previously created by calling acvp_create_test_session.
  * @param cipher ACVP_CIPHER enum value identifying the crypto capability.
- * @param dir ACVP_SYM_CIPH_DIR enum value identifying the crypto operation (e.g. encrypt or
- *        decrypt).
- * @param keying_option ACVP_SYM_CIPH_KO enum value identifying the TDES keying options
- * @param ivgen_source The source of the IV used by the crypto module (e.g. internal or external)
- * @param ivgen_mode The IV generation mode
  * @param crypto_handler Address of function implemented by application that is invoked by libacvp
  *        when the crypto capability is needed during a test session. This crypto_handler function
  *        is expected to return 0 on success and 1 for failure.
@@ -2225,7 +2220,6 @@ ACVP_RESULT acvp_cap_sym_cipher_set_parm(ACVP_CTX *ctx,
  *        values.
  *
  * @return ACVP_RESULT
- *
 */
 ACVP_RESULT acvp_cap_sym_cipher_set_domain(ACVP_CTX *ctx,
                                            ACVP_CIPHER cipher,
@@ -2235,7 +2229,7 @@ ACVP_RESULT acvp_cap_sym_cipher_set_domain(ACVP_CTX *ctx,
                                            int increment);
 
 /**
- * @brief acvp_enable_hash_cap() allows an application to specify a hash capability to be tested
+ * @brief acvp_cap_hash_enable() allows an application to specify a hash capability to be tested
  *        by the ACVP server.
  *
  *        This function should be called to enable crypto capabilities for hash algorithms that
@@ -2307,7 +2301,7 @@ ACVP_RESULT acvp_cap_hash_set_domain(ACVP_CTX *ctx,
  * @brief acvp_enable_drbg_cap() allows an application to specify a hash capability to be tested by
  *        the ACVP server.
  *
- *        This function should be called to enable crypto capabilities for hash algorithms that
+ *        This function should be called to enable crypto capabilities for drbg algorithms that
  *        will be tested by the ACVP server. This includes HASHDRBG, HMACDRBG, CTRDRBG. This
  *        function may be called multiple times to specify more than one crypto capability.
  *
@@ -2400,7 +2394,7 @@ ACVP_RESULT acvp_cap_dsa_enable(ACVP_CTX *ctx,
 
 /**
  * @brief acvp_cap_dsa_set_parm() allows an application to specify operational parameters to be
- *        used for a given hash alg during a test session with the ACVP server. This function
+ *        used for a given dsa alg during a test session with the ACVP server. This function
  *        should be called to enable crypto capabilities for DSA modes and functions. It may be
  *        called multiple times to specify more than one crypto capability.
  *
@@ -2463,7 +2457,7 @@ ACVP_RESULT acvp_cap_kas_ecc_set_prereq(ACVP_CTX *ctx,
 
 /**
  * @brief acvp_cap_kas_ecc_set_parm() allows an application to specify operational parameters to
- *        be used for a given hash alg during a test session with the ACVP server  This function
+ *        be used for a given kas-ecc alg during a test session with the ACVP server. This function
  *        should be called to enable crypto capabilities for KAS-ECC modes and functions. It may be
  *        called multiple times to specify more than one crypto capability.
  *
@@ -2483,6 +2477,24 @@ ACVP_RESULT acvp_cap_kas_ecc_set_parm(ACVP_CTX *ctx,
                                       ACVP_KAS_ECC_PARAM param,
                                       int value);
 
+/**
+ * @brief acvp_cap_kas_ecc_set_scheme() allows an application to specify operational parameters to
+ *        be used for a given kas-ecc alg during a test session with the ACVP server  This function
+ *        should be called to enable crypto capabilities for KAS-ECC modes and functions. It may be
+ *        called multiple times to specify more than one crypto capability.
+ *
+ * @param ctx Pointer to ACVP_CTX that was previously created by calling acvp_create_test_session.
+ * @param cipher ACVP_CIPHER enum value identifying the crypto capability.
+ * @param mode ACVP_KAS_ECC_MODE enum value specifying mode. An example would be
+ *        ACVP_KAS_ECC_MODE_CDH
+ * @param scheme The ACVP_KAS_ECC_SCHEMES value specifying the desired scheme
+ * @param param ACVP_KAS_ECC_PARAM enum value identifying the algorithm parameter that is being
+ *        specified. An example would be ACVP_KAS_ECC_????
+ * @param option the value for some schemes which require an additional option to be set
+ * @param value the value corresponding to the parameter being set
+ *
+ * @return ACVP_RESULT
+ */
 ACVP_RESULT acvp_cap_kas_ecc_set_scheme(ACVP_CTX *ctx,
                                         ACVP_CIPHER cipher,
                                         ACVP_KAS_ECC_MODE mode,
@@ -2923,8 +2935,6 @@ ACVP_RESULT acvp_cap_ecdsa_set_curve_hash_alg(ACVP_CTX *ctx,
  *        application to specify a BIGNUM parameter
  *
  * @param ctx Pointer to ACVP_CTX that was previously created by calling acvp_create_test_session.
- * @param cipher ACVP_CIPHER enum value identifying the crypto capability.
- * @param mode ACVP_RSA_MODE enum value specifying mode. An example would be ACVP_RSA_MODE_KEYGEN
  * @param param ACVP_RSA_PARM enum value identifying the algorithm parameter that is being
  *        specified. An example would be public exponent
  * @param value BIGNUM value corresponding to the parameter being set
@@ -3084,13 +3094,12 @@ ACVP_RESULT acvp_cap_cmac_set_domain(ACVP_CTX *ctx,
                                      int increment);
 
 /**
- * @brief acvp_enable_kdf135_*_cap() allows an application to specify a kdf cipher capability to be
+ * @brief acvp_cap_kdf135_*_enable() allows an application to specify a kdf cipher capability to be
  *        tested by the ACVP server. When the application enables a crypto capability, such as
  *        KDF135_TLS, it also needs to specify a callback function that will be used by libacvp
  *        when that crypto capability is needed during a test session.
  *
  * @param ctx Pointer to ACVP_CTX that was previously created by calling acvp_create_test_session.
- * @param cipher ACVP_CIPHER enum value identifying the crypto capability.
  * @param crypto_handler Address of function implemented by application that is invoked by libacvp
  *        when the crypto capability is needed during a test session. This crypto_handler function
  *        is expected to return 0 on success and 1 for failure.
@@ -3100,30 +3109,129 @@ ACVP_RESULT acvp_cap_cmac_set_domain(ACVP_CTX *ctx,
 ACVP_RESULT acvp_cap_kdf135_tls_enable(ACVP_CTX *ctx,
                                        int (*crypto_handler)(ACVP_TEST_CASE *test_case));
 
+/**
+ * @brief see @ref acvp_cap_kdf135_tls_enable()
+ *
+ * @param ctx Pointer to ACVP_CTX that was previously created by calling acvp_create_test_session.
+ * @param crypto_handler Address of function implemented by application that is invoked by libacvp
+ *        when the crypto capability is needed during a test session. This crypto_handler function
+ *        is expected to return 0 on success and 1 for failure.
+ *
+ * @return ACVP_RESULT
+ */
 ACVP_RESULT acvp_cap_kdf135_snmp_enable(ACVP_CTX *ctx,
                                         int (*crypto_handler)(ACVP_TEST_CASE *test_case));
 
+/**
+ * @brief see @ref acvp_cap_kdf135_tls_enable()
+ *
+ * @param ctx Pointer to ACVP_CTX that was previously created by calling acvp_create_test_session.
+ * @param crypto_handler Address of function implemented by application that is invoked by libacvp
+ *        when the crypto capability is needed during a test session. This crypto_handler function
+ *        is expected to return 0 on success and 1 for failure.
+ *
+ * @return ACVP_RESULT
+ */
 ACVP_RESULT acvp_cap_kdf135_ssh_enable(ACVP_CTX *ctx,
                                        int (*crypto_handler)(ACVP_TEST_CASE *test_case));
 
+/**
+ * @brief see @ref acvp_cap_kdf135_tls_enable()
+ *
+ * @param ctx Pointer to ACVP_CTX that was previously created by calling acvp_create_test_session.
+ * @param crypto_handler Address of function implemented by application that is invoked by libacvp
+ *        when the crypto capability is needed during a test session. This crypto_handler function
+ *        is expected to return 0 on success and 1 for failure.
+ *
+ * @return ACVP_RESULT
+ */
 ACVP_RESULT acvp_cap_kdf135_srtp_enable(ACVP_CTX *ctx,
                                         int (*crypto_handler)(ACVP_TEST_CASE *test_case));
 
+/**
+ * @brief see @ref acvp_cap_kdf135_tls_enable()
+ *
+ * @param ctx Pointer to ACVP_CTX that was previously created by calling acvp_create_test_session.
+ * @param crypto_handler Address of function implemented by application that is invoked by libacvp
+ *        when the crypto capability is needed during a test session. This crypto_handler function
+ *        is expected to return 0 on success and 1 for failure.
+ *
+ * @return ACVP_RESULT
+ */
 ACVP_RESULT acvp_cap_kdf135_ikev2_enable(ACVP_CTX *ctx,
                                          int (*crypto_handler)(ACVP_TEST_CASE *test_case));
 
+/**
+ * @brief see @ref acvp_cap_kdf135_tls_enable()
+ *
+ * @param ctx Pointer to ACVP_CTX that was previously created by calling acvp_create_test_session.
+ * @param crypto_handler Address of function implemented by application that is invoked by libacvp
+ *        when the crypto capability is needed during a test session. This crypto_handler function
+ *        is expected to return 0 on success and 1 for failure.
+ *
+ * @return ACVP_RESULT
+ */
 ACVP_RESULT acvp_cap_kdf135_ikev1_enable(ACVP_CTX *ctx,
                                          int (*crypto_handler)(ACVP_TEST_CASE *test_case));
 
+/**
+ * @brief see @ref acvp_cap_kdf135_tls_enable()
+ *
+ * @param ctx Pointer to ACVP_CTX that was previously created by calling acvp_create_test_session.
+ * @param crypto_handler Address of function implemented by application that is invoked by libacvp
+ *        when the crypto capability is needed during a test session. This crypto_handler function
+ *        is expected to return 0 on success and 1 for failure.
+ *
+ * @return ACVP_RESULT
+ */
 ACVP_RESULT acvp_cap_kdf135_x963_enable(ACVP_CTX *ctx,
                                         int (*crypto_handler)(ACVP_TEST_CASE *test_case));
 
+/**
+ * @brief acvp_cap_kdf108_enable() allows an application to specify a kdf cipher capability to be
+ *        tested by the ACVP server. When the application enables a crypto capability, it also
+ *        needs to specify a callback function that will be used by libacvp  when that crypto
+ *        capability is needed during a test session.
+ *
+ * @param ctx Pointer to ACVP_CTX that was previously created by calling acvp_create_test_session.
+ * @param crypto_handler Address of function implemented by application that is invoked by libacvp
+ *        when the crypto capability is needed during a test session. This crypto_handler function
+ *        is expected to return 0 on success and 1 for failure.
+ *
+ * @return ACVP_RESULT
+ */
 ACVP_RESULT acvp_cap_kdf108_enable(ACVP_CTX *ctx,
                                    int (*crypto_handler)(ACVP_TEST_CASE *test_case));
 
+/**
+ * @brief acvp_cap_pbkdf_enable() allows an application to specify a kdf cipher capability to be
+ *        tested by the ACVP server. When the application enables a crypto capability, it also
+ *        needs to specify a callback function that will be used by libacvp  when that crypto
+ *        capability is needed during a test session.
+ *
+ * @param ctx Pointer to ACVP_CTX that was previously created by calling acvp_create_test_session.
+ * @param crypto_handler Address of function implemented by application that is invoked by libacvp
+ *        when the crypto capability is needed during a test session. This crypto_handler function
+ *        is expected to return 0 on success and 1 for failure.
+ *
+ * @return ACVP_RESULT
+ */
 ACVP_RESULT acvp_cap_pbkdf_enable(ACVP_CTX *ctx,
                                   int (*crypto_handler)(ACVP_TEST_CASE *test_case));
 
+/**
+ * @brief acvp_cap_kdf_tls13_enable() allows an application to specify a kdf cipher capability to
+ *        be tested by the ACVP server. When the application enables a crypto capability, it also
+ *        needs to specify a callback function that will be used by libacvp  when that crypto
+ *        capability is needed during a test session.
+ *
+ * @param ctx Pointer to ACVP_CTX that was previously created by calling acvp_create_test_session.
+ * @param crypto_handler Address of function implemented by application that is invoked by libacvp
+ *        when the crypto capability is needed during a test session. This crypto_handler function
+ *        is expected to return 0 on success and 1 for failure.
+ *
+ * @return ACVP_RESULT
+ */
 ACVP_RESULT acvp_cap_kdf_tls13_enable(ACVP_CTX *ctx,
                                   int (*crypto_handler)(ACVP_TEST_CASE *test_case));
 
@@ -3464,7 +3572,7 @@ ACVP_RESULT acvp_cap_set_prereq(ACVP_CTX *ctx,
  *
  * @param ctx Pointer to ACVP_CTX that was previously created by calling acvp_create_test_session.
  * @param progress_cb Address of function to receive log messages from libacvp.
- * @param level The level of detail to use in logging. see @ref ACVP_LOG_LVL.
+ * @param level The level of detail to use in logging, as defined by ACVP_LOG_LVL.
  *
  * @return ACVP_RESULT
  */
@@ -3629,6 +3737,15 @@ ACVP_RESULT acvp_mark_as_post_only(ACVP_CTX *ctx, char *filename);
  */
 ACVP_RESULT acvp_mark_as_delete_only(ACVP_CTX *ctx, char *request_url);
 
+/**
+ * @brief acvp_mark_as_put_after_test() will attempt to PUT the given file (with the URL inside)
+ *        at the conclusion of a test session run with the given CTX.
+ *
+ * @param ctx Pointer to ACVP_CTX that was previously created by calling acvp_create_test_session.
+ * @param filename the path to the file to PUT after the test session
+ *
+ * @return ACVP_RESULT
+ */
 ACVP_RESULT acvp_mark_as_put_after_test(ACVP_CTX *ctx, char *filename);
 
 
@@ -3826,8 +3943,6 @@ ACVP_RESULT acvp_hexstr_to_bin(const char *src, unsigned char *dest, int dest_ma
  * @return (char *) error string
  */
 const char *acvp_lookup_error_string(ACVP_RESULT rv);
-
-char *lower_string(const char *s);
 
 /**
  * @brief acvp_cleanup() extends the curl_global_cleanup function to applications using libacvp to

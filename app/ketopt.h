@@ -13,7 +13,7 @@
 #define ko_optional_argument 2
 
 #define OPTION_NAME_MAX 128
-#define OSTR_MAX 10 /* Change according to the ostr parameter in app_cli.c */
+#define OSTR_MAX 11 /* Change according to the ostr parameter in app_cli.c */
 
 typedef struct {
 	int ind;   /* equivalent to optind */
