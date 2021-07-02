@@ -263,8 +263,9 @@ static void enable_all_algorithms(APP_CONFIG *cfg) {
 }
 
 static const char* lookup_arg_name(int c) {
+    int i = 0;
     int arrlen = sizeof(longopts) / sizeof(ko_longopt_t);
-    for (int i = 0; i < arrlen; i++) {
+    for (i = 0; i < arrlen; i++) {
         if (longopts[i].val == c) {
             return longopts[i].name;
         }
@@ -287,7 +288,7 @@ static int check_option_length(const char *opt, int c, int maxAllowed) {
 
 int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
     ketopt_t opt = KETOPT_INIT;
-    int c = 0, diff = 0;
+    int c = 0, diff = 0, len = 0;
 
     cfg->empty_alg = 1;
 
@@ -308,7 +309,12 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
             printf("\nACVP library version(protocol version): %s(%s)\n", acvp_version(), acvp_protocol_version());
             return 1;
         case 302:
-            strncmp_s(opt.arg, JSON_FILENAME_LENGTH + 1, "verbose", 7, &diff);
+            len = strnlen_s(opt.arg, JSON_FILENAME_LENGTH + 1);
+            if (len > JSON_FILENAME_LENGTH) {
+                printf("help option name too long\n");
+                return 1;
+            }
+            strncmp_s(opt.arg, len, "verbose", 7, &diff);
             if (!diff) {
                 print_usage(ACVP_LOG_LVL_VERBOSE);
             } else { 
