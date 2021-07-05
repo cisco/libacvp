@@ -63,6 +63,9 @@
     <ClCompile Include="..\..\src\acvp_pbkdf.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\acvp_kdf_tls13.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\acvp_kas_kdf.c">
       <Filter>Source Files</Filter>
     </ClCompile>
