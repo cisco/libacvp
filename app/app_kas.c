@@ -513,7 +513,7 @@ int app_kas_ffc_handler(ACVP_TEST_CASE *test_case) {
             goto error;
         }
     }
-#define KAS_FFC_Z_MAX 4096
+#define KAS_FFC_Z_MAX 2048
     Z = OPENSSL_malloc(KAS_FFC_Z_MAX);
     if (!Z) {
         printf("Malloc failed for Z\n");
