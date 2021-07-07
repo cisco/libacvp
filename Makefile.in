@@ -375,7 +375,7 @@ AUTOMAKE_OPTIONS = foreign
 @LIB_NOT_SUPPORTED_FALSE@LIB_DIR = src
 @LIB_NOT_SUPPORTED_TRUE@LIB_DIR = 
 dist_data_DATA = README.md
-EXTRA_DIST = ms docker certs scripts docs metadata murl test
+EXTRA_DIST = ms docker certs scripts metadata murl test Doxyfile
 SUBDIRS = safe_c_stub $(LIB_DIR) $(APP_DIR) $(TEST_DIR)
 all: all-recursive
 
@@ -871,6 +871,9 @@ uninstall-am: uninstall-dist_dataDATA
 
 .PRECIOUS: Makefile
 
+
+doc:
+	doxygen Doxyfile
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

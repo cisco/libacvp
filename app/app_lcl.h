@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Cisco Systems, Inc.
+ * Copyright (c) 2021, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -40,8 +40,10 @@ typedef struct app_config {
     int get;
     int get_results;
     int resume_session;
+    int cancel_session;
     int post;
     int put;
+    int delete;
     int kat;
     int empty_alg;
     int fips_validation;
@@ -55,6 +57,7 @@ typedef struct app_config {
     char session_file[JSON_FILENAME_LENGTH + 1];
     char post_filename[JSON_FILENAME_LENGTH + 1];
     char put_filename[JSON_FILENAME_LENGTH + 1];
+    char delete_url[JSON_REQUEST_LENGTH + 1];
     char kat_file[JSON_FILENAME_LENGTH + 1];
     char validation_metadata_file[JSON_FILENAME_LENGTH + 1];
     char save_file[JSON_FILENAME_LENGTH + 1];
@@ -69,13 +72,16 @@ typedef struct app_config {
     /* These require the fom */
     int dsa; int rsa;
     int drbg; int ecdsa;
-    int kas_ecc; int kas_ffc; int kas_ifc; int kts_ifc;
+    int kas_ecc; int kas_ffc; int kas_ifc; int kas_kdf; int kts_ifc;
     int kdf;
+    int safe_primes;
 } APP_CONFIG;
 
 
 int ingest_cli(APP_CONFIG *cfg, int argc, char **argv);
 int app_setup_two_factor_auth(ACVP_CTX *ctx);
+unsigned int swap_uint_endian(unsigned int i);
+int check_is_little_endian(void);
 
 void app_aes_cleanup(void);
 void app_des_cleanup(void);
@@ -100,6 +106,7 @@ int app_kdf108_handler(ACVP_TEST_CASE *test_case);
 int app_kdf135_ikev1_handler(ACVP_TEST_CASE *test_case);
 int app_kdf135_x963_handler(ACVP_TEST_CASE *test_case);
 int app_pbkdf_handler(ACVP_TEST_CASE *test_case);
+int app_kdf_tls13_handler(ACVP_TEST_CASE *test_case);
 
 void app_dsa_cleanup(void);
 void app_rsa_cleanup(void);
@@ -109,6 +116,8 @@ int app_dsa_handler(ACVP_TEST_CASE *test_case);
 int app_kas_ecc_handler(ACVP_TEST_CASE *test_case);
 int app_kas_ffc_handler(ACVP_TEST_CASE *test_case);
 int app_kas_ifc_handler(ACVP_TEST_CASE *test_case);
+int app_kas_hkdf_handler(ACVP_TEST_CASE *test_case);
+int app_kas_kdf_onestep_handler(ACVP_TEST_CASE *test_case);
 int app_kts_ifc_handler(ACVP_TEST_CASE *test_case);
 int app_rsa_keygen_handler(ACVP_TEST_CASE *test_case);
 int app_rsa_sig_handler(ACVP_TEST_CASE *test_case);
@@ -116,6 +125,7 @@ int app_rsa_decprim_handler(ACVP_TEST_CASE *test_case);
 int app_rsa_sigprim_handler(ACVP_TEST_CASE *test_case);
 int app_ecdsa_handler(ACVP_TEST_CASE *test_case);
 int app_drbg_handler(ACVP_TEST_CASE *test_case);
+int app_safe_primes_handler(ACVP_TEST_CASE *test_case);
 
 #ifdef __cplusplus
 }

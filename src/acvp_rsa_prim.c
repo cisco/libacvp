@@ -118,7 +118,6 @@ static ACVP_RESULT acvp_rsa_sigprim_release_tc(ACVP_RSA_PRIM_TC *stc) {
 
 static ACVP_RESULT acvp_rsa_decprim_init_tc(ACVP_CTX *ctx,
                                             ACVP_RSA_PRIM_TC *stc,
-                                            unsigned int tc_id,
                                             int modulo,
                                             int deferred,
                                             int pass,
@@ -155,7 +154,6 @@ static ACVP_RESULT acvp_rsa_decprim_init_tc(ACVP_CTX *ctx,
 
 static ACVP_RESULT acvp_rsa_sigprim_init_tc(ACVP_CTX *ctx,
                                             ACVP_RSA_PRIM_TC *stc,
-                                            unsigned int tc_id,
                                             unsigned int modulo,
                                             unsigned int keyformat,
                                             const char *d_str,
@@ -390,6 +388,7 @@ ACVP_RESULT acvp_rsa_decprim_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                     ACVP_LOG_ERR("Server JSON missing 'cipher'");
                     rv = ACVP_MISSING_ARG;
                     json_value_free(r_tval);
+                    json_value_free(r_cval);
                     goto err;
                 }
                 cipher_len = strnlen_s(cipher, ACVP_RSA_EXP_BYTE_MAX + 1);
@@ -398,10 +397,11 @@ ACVP_RESULT acvp_rsa_decprim_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                                  ACVP_RSA_SEEDLEN_MAX);
                     rv = ACVP_INVALID_ARG;
                     json_value_free(r_tval);
+                    json_value_free(r_cval);
                     goto err;
                 }
 
-                rv = acvp_rsa_decprim_init_tc(ctx, &stc, tc_id, mod, deferred, pass, 
+                rv = acvp_rsa_decprim_init_tc(ctx, &stc, mod, deferred, pass, 
                                               fail, cipher, cipher_len);
 
                 /* Process the current test vector... */
@@ -413,6 +413,7 @@ ACVP_RESULT acvp_rsa_decprim_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                            ACVP_LOG_ERR("ERROR: crypto module failed the operation");
                            rv = ACVP_CRYPTO_MODULE_FAIL;
                            json_value_free(r_tval);
+                           json_value_free(r_cval);
                            goto err;
                        }
                     ACVP_LOG_INFO("Looping on fail/pass %d/%d %d/%d", fail, stc.fail, pass, stc.pass);
@@ -428,6 +429,7 @@ ACVP_RESULT acvp_rsa_decprim_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 if (rv != ACVP_SUCCESS) {
                     ACVP_LOG_ERR("ERROR: JSON output failure in primitive module");
                     json_value_free(r_tval);
+                    json_value_free(r_cval);
                     goto err;
                 }
                 /*
@@ -632,6 +634,7 @@ ACVP_RESULT acvp_rsa_sigprim_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             if (!e_str || !n_str || !d_str) {
                 ACVP_LOG_ERR("Missing e|n|d from server json");
                 rv = ACVP_MISSING_ARG;
+                json_value_free(r_tval);
                 goto err;
             }
             if ((strnlen_s(e_str, ACVP_RSA_EXP_LEN_MAX + 1) > ACVP_RSA_EXP_LEN_MAX) ||
@@ -639,6 +642,7 @@ ACVP_RESULT acvp_rsa_sigprim_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 (strnlen_s(d_str, ACVP_RSA_EXP_LEN_MAX + 1) > ACVP_RSA_EXP_LEN_MAX)) {
                 ACVP_LOG_ERR("server provided d or e or n of invalid length");
                 rv = ACVP_INVALID_ARG;
+                json_value_free(r_tval);
                 goto err;
             }
 
@@ -660,7 +664,7 @@ ACVP_RESULT acvp_rsa_sigprim_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
 
 
-            rv = acvp_rsa_sigprim_init_tc(ctx, &stc, tc_id,
+            rv = acvp_rsa_sigprim_init_tc(ctx, &stc, 
                                           mod, keyformat,
                                           d_str, e_str,
                                           n_str, msg);

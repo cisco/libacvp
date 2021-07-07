@@ -27,6 +27,7 @@ int app_cmac_handler(ACVP_TEST_CASE *test_case) {
     unsigned char mac_compare[16] = { 0 };
     char full_key[33] = { 0 };
     size_t mac_cmp_len;
+    ACVP_SUB_CMAC alg;
 
     if (!test_case) {
         return rv;
@@ -36,8 +37,14 @@ int app_cmac_handler(ACVP_TEST_CASE *test_case) {
     if (!tc) return rv;
     if (!tc->key) return rv;
 
-    switch (tc->cipher) {
-    case ACVP_CMAC_AES:
+    alg = acvp_get_cmac_alg(tc->cipher);
+    if (alg == 0) {
+        printf("Invalid cipher value");
+        return 1;
+    }
+
+    switch (alg) {
+    case ACVP_SUB_CMAC_AES:
         switch (tc->key_len * 8) {
         case 128:
             c = EVP_aes_128_cbc();
@@ -56,7 +63,7 @@ int app_cmac_handler(ACVP_TEST_CASE *test_case) {
             full_key[i] = tc->key[i];
         }
         break;
-    case ACVP_CMAC_TDES:
+    case ACVP_SUB_CMAC_TDES:
         c = EVP_des_ede3_cbc();
         for (i = 0; i < 8; i++) {
             full_key[i] = tc->key[i];
@@ -69,88 +76,6 @@ int app_cmac_handler(ACVP_TEST_CASE *test_case) {
         }
         key_len = 24;
         break;
-    case ACVP_CIPHER_START:
-    case ACVP_AES_GCM:
-    case ACVP_AES_GCM_SIV:
-    case ACVP_AES_CCM:
-    case ACVP_AES_ECB:
-    case ACVP_AES_CBC:
-    case ACVP_AES_CFB1:
-    case ACVP_AES_CFB8:
-    case ACVP_AES_CFB128:
-    case ACVP_AES_OFB:
-    case ACVP_AES_CTR:
-    case ACVP_AES_XTS:
-    case ACVP_AES_KW:
-    case ACVP_AES_KWP:
-    case ACVP_AES_GMAC:
-    case ACVP_AES_XPN:
-    case ACVP_TDES_ECB:
-    case ACVP_TDES_CBC:
-    case ACVP_TDES_CBCI:
-    case ACVP_TDES_OFB:
-    case ACVP_TDES_OFBI:
-    case ACVP_TDES_CFB1:
-    case ACVP_TDES_CFB8:
-    case ACVP_TDES_CFB64:
-    case ACVP_TDES_CFBP1:
-    case ACVP_TDES_CFBP8:
-    case ACVP_TDES_CFBP64:
-    case ACVP_TDES_CTR:
-    case ACVP_TDES_KW:
-    case ACVP_HASH_SHA1:
-    case ACVP_HASH_SHA224:
-    case ACVP_HASH_SHA256:
-    case ACVP_HASH_SHA384:
-    case ACVP_HASH_SHA512:
-    case ACVP_HASH_SHA512_224:
-    case ACVP_HASH_SHA512_256:
-    case ACVP_HASH_SHA3_224:
-    case ACVP_HASH_SHA3_256:
-    case ACVP_HASH_SHA3_384:
-    case ACVP_HASH_SHA3_512:
-    case ACVP_HASH_SHAKE_128:
-    case ACVP_HASH_SHAKE_256:
-    case ACVP_HASHDRBG:
-    case ACVP_HMACDRBG:
-    case ACVP_CTRDRBG:
-    case ACVP_HMAC_SHA1:
-    case ACVP_HMAC_SHA2_224:
-    case ACVP_HMAC_SHA2_256:
-    case ACVP_HMAC_SHA2_384:
-    case ACVP_HMAC_SHA2_512:
-    case ACVP_HMAC_SHA2_512_224:
-    case ACVP_HMAC_SHA2_512_256:
-    case ACVP_HMAC_SHA3_224:
-    case ACVP_HMAC_SHA3_256:
-    case ACVP_HMAC_SHA3_384:
-    case ACVP_HMAC_SHA3_512:
-    case ACVP_DSA_KEYGEN:
-    case ACVP_DSA_PQGGEN:
-    case ACVP_DSA_PQGVER:
-    case ACVP_DSA_SIGGEN:
-    case ACVP_DSA_SIGVER:
-    case ACVP_RSA_KEYGEN:
-    case ACVP_RSA_SIGGEN:
-    case ACVP_RSA_SIGVER:
-    case ACVP_ECDSA_KEYGEN:
-    case ACVP_ECDSA_KEYVER:
-    case ACVP_ECDSA_SIGGEN:
-    case ACVP_ECDSA_SIGVER:
-    case ACVP_KDF135_TLS:
-    case ACVP_KDF135_SNMP:
-    case ACVP_KDF135_SSH:
-    case ACVP_KDF135_SRTP:
-    case ACVP_KDF135_IKEV2:
-    case ACVP_KDF135_IKEV1:
-    case ACVP_KDF135_X963:
-    case ACVP_KDF108:
-    case ACVP_KAS_ECC_CDH:
-    case ACVP_KAS_ECC_COMP:
-    case ACVP_KAS_ECC_NOCOMP:
-    case ACVP_KAS_FFC_COMP:
-    case ACVP_KAS_FFC_NOCOMP:
-    case ACVP_CIPHER_END:
     default:
         printf("Error: Unsupported CMAC algorithm requested by ACVP server\n");
         return rv;

@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
+#include <ctype.h>
 #include "acvp.h"
 #include "acvp_lcl.h"
 #include "safe_lib.h"
@@ -137,13 +138,15 @@ const char *acvp_lookup_cipher_name(ACVP_CIPHER alg) {
     return NULL;
 }
 
-/*
- * @brief This function returns the revision of an algorithm given
- *        a ACVP_CIPHER value.
+/**
+ * @brief This function returns the default revision of an algorithm given a ACVP_CIPHER value.
  *
- * If the mode is given, then it will also use that to
- * narrow down the search to entries that only match
- * both the \p alg and \p mode.
+ *        If the mode is given, then it will also use that to
+ *        narrow down the search to entries that only match
+ *        both the \p alg and \p mode.
+ * 
+ *        Note that this should not be used when the user registers an alternative revision for a
+ *        cipher.
  *
  * @return String representing the Revision
  * @return NULL no match
@@ -158,6 +161,29 @@ const char *acvp_lookup_cipher_revision(ACVP_CIPHER alg) {
         }
     }
 
+    return NULL;
+}
+
+/**
+ * This table maintains a list of strings for revisions that can be registered as capabilities.
+ */
+static struct acvp_alt_revision_info alt_revision_tbl[] = {
+    { ACVP_REVISION_SP800_56AR3, ACVP_REV_STR_SP800_56AR3 }
+};
+static int alt_revision_tbl_length =
+    sizeof(alt_revision_tbl) / sizeof(struct acvp_alt_revision_info);
+
+/**
+ * this function returns the string used in registration for an alternative revision registered by
+ * a user.
+ */
+const char *acvp_lookup_alt_revision_string(ACVP_REVISION rev) {
+    int i = 0;
+    for (i = 0; i < alt_revision_tbl_length; i++) {
+        if (alt_revision_tbl[i].revision == rev) {
+            return alt_revision_tbl[i].name;
+        }
+    }
     return NULL;
 }
 
@@ -235,6 +261,28 @@ ACVP_CIPHER acvp_lookup_cipher_w_mode_index(const char *algorithm,
     }
 
     return 0;
+}
+
+/**
+ * @brief Look through all of the entries in alg_tbl for the given cipher
+ * and return the mode string if applicable or NULL if not
+ *
+ * @return const string representing the "mode" to be used for the given cipher
+ * @return NULL if the given alg does not have a mode string (most do not)
+ */
+const char* acvp_lookup_cipher_mode_str(ACVP_CIPHER cipher) {
+    int i;
+    for (i = 0; i < ACVP_ALG_MAX; i++) {
+        if (alg_tbl[i].cipher == cipher) {
+            const char* mode_str = alg_tbl[i].mode;
+            if (!mode_str || strnlen_s(mode_str, ACVP_ALG_MODE_MAX) < 1) {
+                return NULL;
+            } else {
+                return mode_str;
+            }
+        }
+    }
+    return NULL;
 }
 
 /*
@@ -344,7 +392,11 @@ static struct acvp_hash_alg_info hash_alg_tbl[] = {
     { ACVP_SHA384,     ACVP_STR_SHA2_384     },
     { ACVP_SHA512,     ACVP_STR_SHA2_512     },
     { ACVP_SHA512_224, ACVP_STR_SHA2_512_224 },
-    { ACVP_SHA512_256, ACVP_STR_SHA2_512_256 }
+    { ACVP_SHA512_256, ACVP_STR_SHA2_512_256 },
+    { ACVP_SHA3_224,   ACVP_STR_SHA3_224     },
+    { ACVP_SHA3_256,   ACVP_STR_SHA3_256     },
+    { ACVP_SHA3_384,   ACVP_STR_SHA3_384     },
+    { ACVP_SHA3_512,   ACVP_STR_SHA3_512     }
 };
 static int hash_alg_tbl_length =
     sizeof(hash_alg_tbl) / sizeof(struct acvp_hash_alg_info);
@@ -521,6 +573,82 @@ ACVP_EC_CURVE acvp_lookup_ec_curve(ACVP_CIPHER cipher, const char *name) {
     }
 
     return 0;
+}
+
+static struct acvp_aux_function_info acvp_aux_function_tbl[] = {
+    { ACVP_HASH_SHA224, ACVP_ALG_SHA224 },
+    { ACVP_HASH_SHA256, ACVP_ALG_SHA256 },
+    { ACVP_HASH_SHA384, ACVP_ALG_SHA384 },
+    { ACVP_HASH_SHA512, ACVP_ALG_SHA512 },
+    { ACVP_HASH_SHA512_224, ACVP_ALG_SHA512_224 },
+    { ACVP_HASH_SHA512_256, ACVP_ALG_SHA512_256 },
+    { ACVP_HASH_SHA3_224, ACVP_ALG_SHA3_224 },
+    { ACVP_HASH_SHA3_256, ACVP_ALG_SHA3_256 },
+    { ACVP_HASH_SHA3_384, ACVP_ALG_SHA3_384 },
+    { ACVP_HASH_SHA3_512, ACVP_ALG_SHA3_512 },
+    { ACVP_HMAC_SHA2_224, ACVP_ALG_HMAC_SHA2_224 },
+    { ACVP_HMAC_SHA2_256, ACVP_ALG_HMAC_SHA2_256 },
+    { ACVP_HMAC_SHA2_384, ACVP_ALG_HMAC_SHA2_384 },
+    { ACVP_HMAC_SHA2_512, ACVP_ALG_HMAC_SHA2_512 },
+    { ACVP_HMAC_SHA2_512_224, ACVP_ALG_HMAC_SHA2_512_224 },
+    { ACVP_HMAC_SHA2_512_256, ACVP_ALG_HMAC_SHA2_512_256 },
+    { ACVP_HMAC_SHA3_224, ACVP_ALG_HMAC_SHA3_224 },
+    { ACVP_HMAC_SHA3_256, ACVP_ALG_HMAC_SHA3_256 },
+    { ACVP_HMAC_SHA3_384, ACVP_ALG_HMAC_SHA3_384 },
+    { ACVP_HMAC_SHA3_512, ACVP_ALG_HMAC_SHA3_512 }
+};
+static int acvp_aux_function_tbl_len = sizeof(acvp_aux_function_tbl) / sizeof(struct acvp_aux_function_info);
+
+const char* acvp_lookup_aux_function_alg_str(ACVP_CIPHER alg) {
+    int i = 0;
+    for (i = 0; i < acvp_aux_function_tbl_len; i++) {
+        if (alg == acvp_aux_function_tbl[i].cipher) {
+            return acvp_aux_function_tbl[i].name;
+        }
+    }
+    return NULL;
+}
+
+ACVP_CIPHER acvp_lookup_aux_function_alg_tbl(const char *str) {
+    int diff = 1, i = 0;
+    for (i = 0; i < acvp_aux_function_tbl_len; i++) {
+    strcmp_s(acvp_aux_function_tbl[i].name, strnlen_s(acvp_aux_function_tbl[i].name, ACVP_ALG_NAME_MAX), str, &diff);
+        if (!diff) {
+            return acvp_aux_function_tbl[i].cipher;
+        }
+    }
+    return 0;
+}
+
+const char* acvp_lookup_hmac_alg_str(ACVP_HMAC_ALG_VAL alg) {
+    switch(alg) {
+        case ACVP_HMAC_ALG_SHA1:
+            return ACVP_STR_SHA_1;
+        case ACVP_HMAC_ALG_SHA224:
+            return ACVP_STR_SHA2_224;
+        case ACVP_HMAC_ALG_SHA256:
+            return ACVP_STR_SHA2_256;
+        case ACVP_HMAC_ALG_SHA384:
+            return ACVP_STR_SHA2_384;
+        case ACVP_HMAC_ALG_SHA512:
+            return ACVP_STR_SHA2_512;
+        case ACVP_HMAC_ALG_SHA512_224:
+            return ACVP_STR_SHA2_512_224;
+        case ACVP_HMAC_ALG_SHA512_256:
+            return ACVP_STR_SHA2_512_256;
+        case ACVP_HMAC_ALG_SHA3_224:
+            return ACVP_STR_SHA3_224;
+        case ACVP_HMAC_ALG_SHA3_256:
+            return ACVP_STR_SHA3_256;
+        case ACVP_HMAC_ALG_SHA3_384:
+            return ACVP_STR_SHA3_384;
+        case ACVP_HMAC_ALG_SHA3_512:
+            return ACVP_STR_SHA3_512;
+        case ACVP_HMAC_ALG_MIN:
+        case ACVP_HMAC_ALG_MAX:
+        default:
+            return NULL;
+    }
 }
 
 /*
@@ -958,6 +1086,34 @@ int acvp_lookup_str_list(ACVP_STRING_LIST **list, const char *string) {
         tmp = tmp->next;
     }
     return 0;
+}
+
+/**
+ * Simple utility for searching if a value already exists in a
+ * param list.
+ */
+int acvp_lookup_param_list(ACVP_PARAM_LIST *list, int value) {
+    if (!list) {
+        return 0;
+    }
+    while(list) {
+        if (value == list->param) {
+            return 1;
+        } else {
+            list = list->next;
+        }
+    }
+    return 0;
+}
+
+/**
+ * Checks if a domain value in a capability object has already been set
+ * if all values are 0, then domain is considered empty
+ * helps keep code cleaner in places where we woud need to reference
+ * through several unions/pointers
+ */
+int acvp_is_domain_already_set(ACVP_JSON_DOMAIN_OBJ *domain) {
+    return domain->min + domain->max + domain->increment;
 }
 
 ACVP_RESULT acvp_json_serialize_to_file_pretty_a(const JSON_Value *value, const char *filename) {

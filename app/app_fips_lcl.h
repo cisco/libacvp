@@ -140,9 +140,16 @@ int fips_dsa_builtin_paramgen2(DSA *ret, size_t L, size_t N,
  * the FOM specific API's being used
  */
 #define M_EVP_CIPHER_CTX_set_flags(ctx,flgs) ((ctx)->flags|=(flgs))
-
 #define EVP_CIPHER_CTX_set_padding(ctx, pad) {}
 
+
+int fips_bn_is_negative(const BIGNUM *b);
+int fips_bn_mod_exp(BIGNUM *r, const BIGNUM *a, const BIGNUM *p,
+               const BIGNUM *m, BN_CTX *ctx);
+int fips_bn_is_zero(const BIGNUM *a);
+int fips_DH_set0_pqg(DH *dh, BIGNUM *p, BIGNUM *q, BIGNUM *g);
+int fips_DH_set0_key(DH *dh, BIGNUM *pub_key, BIGNUM *priv_key);
+BN_ULONG fips_bn_div_word(BIGNUM *a, BN_ULONG w);
 int fips_evp_MD_size(const EVP_MD *md);
 const unsigned char *fips_EVP_CIPHER_CTX_iv(const EVP_CIPHER_CTX *ctx);
 void fips_evp_CIPHER_CTX_set_flags(EVP_CIPHER_CTX *ctx, int flags);
@@ -192,6 +199,8 @@ DSA_SIG * FIPS_dsa_sign(DSA *dsa, const unsigned char *msg, size_t msglen,
             const EVP_MD *mhash);
 void fips_DSA_get0_key(const DSA *d,
                        const BIGNUM **pub_key, const BIGNUM **priv_key);
+void fips_DH_get0_pqg(const DH *dh,
+                      const BIGNUM **p, const BIGNUM **q, const BIGNUM **g);
 void FIPS_dsa_sig_get0(const DSA_SIG *sig, const BIGNUM **pr, const BIGNUM **ps);
 int FIPS_dsa_sig_set0(DSA_SIG *sig, BIGNUM *pr, BIGNUM *ps);
 DSA_SIG *FIPS_dsa_sig_new(void);
@@ -210,6 +219,12 @@ void FIPS_bn_clear_free(BIGNUM *a);
 int fips_bn_cmp(const BIGNUM *a, const BIGNUM *b);
 BIGNUM *fips_bn_dup(const BIGNUM *a);
 int FIPS_bn_num_bits(const BIGNUM *a);
+BIGNUM *FIPS_bn_get_rfc3526_prime_2048(BIGNUM *bn);
+BIGNUM *FIPS_bn_get_rfc3526_prime_3072(BIGNUM *bn);
+BIGNUM *FIPS_bn_get_rfc3526_prime_4096(BIGNUM *bn);
+BIGNUM *FIPS_bn_get_rfc3526_prime_6144(BIGNUM *bn);
+BIGNUM *FIPS_bn_get_rfc3526_prime_8192(BIGNUM *bn);
+
 EC_POINT *FIPS_ec_point_new(const EC_GROUP *group);
 int fips_EC_POINT_set_affine_coordinates(const EC_GROUP *group, EC_POINT *p,
                                         const BIGNUM *x, const BIGNUM *y,
@@ -254,6 +269,7 @@ const EVP_MD *FIPS_evp_shake256(void);
 
 ECDSA_SIG *FIPS_ecdsa_sig_new(void);
 void FIPS_ecdsa_sig_free(ECDSA_SIG *sig);
+void FIPS_ecdsa_sig_get0(const ECDSA_SIG *sig, const BIGNUM **pr, const BIGNUM **ps);
 #if OPENSSL_VERSION_NUMBER < 0x10100000L
 ECDSA_SIG * FIPS_ecdsa_sign(EC_KEY *key,
                             const unsigned char *msg, size_t msglen,
@@ -270,8 +286,10 @@ int FIPS_ecdh_compute_key(void *out, size_t outlen, const EC_POINT *pub_key,
                           const EC_KEY *ecdh, void *(*KDF) (const void *in, size_t inlen,
                                                       void *out, size_t *outlen));
 DH *FIPS_dh_new(void );
+DH *FIPS_dh_new_by_nid(int nid);
 void FIPS_dh_free(DH *dh);
 int FIPS_dh_generate_key(DH *dh);
+int FIPS_dh_check_pub_key(const DH *dh, const BIGNUM *pub_key, int *codes);
 int FIPS_dh_compute_key_padded(unsigned char *key,const BIGNUM *pub_key,DH *dh);
 void *FIPS_malloc(int num, const char *file, int line);
 void FIPS_free(void *ptr);

@@ -825,6 +825,27 @@ Test(PROCESS_TESTS, mark_as_get_only, .init = setup_full_ctx, .fini = teardown) 
  }
 
 /*
+ * Test acvp_mark_as_delete_only
+ */
+Test(PROCESS_TESTS, mark_as_delete_only, .init = setup_full_ctx, .fini = teardown) {
+
+    rv = acvp_mark_as_delete_only(NULL, "test");
+    cr_assert(rv == ACVP_NO_CTX);
+
+    rv = acvp_mark_as_delete_only(ctx, NULL);
+    cr_assert(rv == ACVP_MISSING_ARG);
+
+    rv = acvp_mark_as_delete_only(ctx, "test");
+    cr_assert(rv == ACVP_SUCCESS);
+
+    rv = acvp_mark_as_delete_only(ctx, "testFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLong");
+    cr_assert(rv == ACVP_INVALID_ARG);
+
+    rv = acvp_mark_as_delete_only(ctx, "");
+    cr_assert(rv == ACVP_INVALID_ARG);
+}
+
+/*
  * Test acvp_mark_as_put_after_test
  */
 Test(PROCESS_TESTS, mark_as_put_after_test, .init = setup_full_ctx, .fini = teardown) {
@@ -876,7 +897,31 @@ Test(PROCESS_TESTS, acvp_resume_test_session, .init = setup_full_ctx, .fini = te
 }
 
 /*
- * Test acvp_resume_test_session
+ * Test acvp_cancel_test_session
+ */
+Test(PROCESS_TESTS, acvp_cancel_test_session, .init = setup_full_ctx, .fini = teardown) {
+
+    rv = acvp_cancel_test_session(NULL, "test", "test");
+    cr_assert(rv == ACVP_NO_CTX);
+
+    rv = acvp_cancel_test_session(ctx, NULL, "test");
+    cr_assert(rv == ACVP_MISSING_ARG);
+
+    rv = acvp_cancel_test_session(ctx, "testRequestUrlTooLongtestRequestUrlTooLongtestRequestUrlTooLongtestRequestUrlTooLongtestRequestUrlTooLongtestRequestUrlTooLongtestRequestUrlTooLongtestRequestUrlTooLongtestRequestUrlTooLong", NULL);
+    cr_assert(rv == ACVP_INVALID_ARG);
+
+    rv = acvp_cancel_test_session(ctx, "test", "testFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLong");
+    cr_assert(rv == ACVP_INVALID_ARG);
+
+    rv = acvp_cancel_test_session(ctx, "", "test");
+    cr_assert(rv = ACVP_INVALID_ARG);
+
+    rv = acvp_cancel_test_session(ctx, "test", "");
+    cr_assert(rv = ACVP_INVALID_ARG);
+}
+
+/*
+ * Test acvp_get_expected_results
  */
 Test(PROCESS_TESTS, acvp_get_expected_results, .init = setup_full_ctx, .fini = teardown) {
    

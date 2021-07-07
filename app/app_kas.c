@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Cisco Systems, Inc.
+ * Copyright (c) 2021, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -16,6 +16,18 @@
 #include "app_lcl.h"
 #include "safe_mem_lib.h"
 #ifdef ACVP_NO_RUNTIME
+
+# if OPENSSL_VERSION_NUMBER >= 0x10100000L
+#  define get_rfc2409_prime_768 BN_get_rfc2409_prime_768
+#  define get_rfc2409_prime_1024 BN_get_rfc2409_prime_1024
+#  define get_rfc3526_prime_1536 BN_get_rfc3526_prime_1536
+#  define get_rfc3526_prime_2048 BN_get_rfc3526_prime_2048
+#  define get_rfc3526_prime_3072 BN_get_rfc3526_prime_3072
+#  define get_rfc3526_prime_4096 BN_get_rfc3526_prime_4096
+#  define get_rfc3526_prime_6144 BN_get_rfc3526_prime_6144
+#  define get_rfc3526_prime_8192 BN_get_rfc3526_prime_8192
+# endif
+
 
 static EC_POINT *make_peer(EC_GROUP *group, BIGNUM *x, BIGNUM *y) {
     EC_POINT *peer = NULL;
@@ -175,6 +187,11 @@ int app_kas_ecc_handler(ACVP_TEST_CASE *test_case) {
         case ACVP_SHA512_224:
         case ACVP_SHA512_256:
         case ACVP_HASH_ALG_MAX:
+        case ACVP_SHA3_224:
+        case ACVP_SHA3_256:
+        case ACVP_SHA3_384:
+        case ACVP_SHA3_512:
+        case ACVP_NO_SHA:
         default:
             printf("No valid hash name %d\n", tc->md);
             return rv;
@@ -287,6 +304,7 @@ error:
 }
 
 #ifndef OPENSSL_NO_DSA
+
 int app_kas_ffc_handler(ACVP_TEST_CASE *test_case) {
     ACVP_KAS_FFC_TC         *tc;
     const EVP_MD *md = NULL;
@@ -302,6 +320,7 @@ int app_kas_ffc_handler(ACVP_TEST_CASE *test_case) {
     BIGNUM *tmp_pub_key = NULL, *tmp_priv_key = NULL;
     const BIGNUM *tmp_key = NULL;
 #endif
+    int is_modp = 0;
 
     tc = test_case->tc.kas_ffc;
 
@@ -322,6 +341,11 @@ int app_kas_ffc_handler(ACVP_TEST_CASE *test_case) {
     case ACVP_SHA512_224:
     case ACVP_SHA512_256:
     case ACVP_HASH_ALG_MAX:
+    case ACVP_SHA3_224:
+    case ACVP_SHA3_256:
+    case ACVP_SHA3_384:
+    case ACVP_SHA3_512:
+    case ACVP_NO_SHA:
     default:
         printf("No valid hash name %d\n", tc->md);
         return rv;
@@ -329,49 +353,142 @@ int app_kas_ffc_handler(ACVP_TEST_CASE *test_case) {
         break;
     }
 
-    dh = FIPS_dh_new();
-    if (!dh) {
-        return rv;
-    }
-
-    if (!tc->p || !tc->q || !tc->g || !tc->eps ||
-        !tc->plen || !tc->qlen || !tc->glen || !tc->epslen) {
-        printf("Missing required p,q,g, or eps\n");
+    p = BN_new();
+    q = BN_new();
+    g = BN_new();
+    if (!p || !q || !g) {
+        printf("BN_new failed p q g\n");
         goto error;
     }
 
-    p = FIPS_bn_new();
-    q = FIPS_bn_new();
-    g = FIPS_bn_new();
-    peerkey = FIPS_bn_new();
-    if (!peerkey || !p || !q || !g) {
-        printf("BN_new failed p q g eps\n");
+    switch (tc->dgm)
+    {
+    case ACVP_KAS_FFC_FB:
+    case ACVP_KAS_FFC_FC:
+        dh = DH_new();
+        if (!dh) {
+            return rv;
+        }
+
+        if (!tc->p || !tc->q || !tc->g || !tc->eps ||
+            !tc->plen || !tc->qlen || !tc->glen || !tc->epslen) {
+            printf("Missing required p,q,g, or eps\n");
+            goto error;
+        }
+
+        BN_bin2bn(tc->p, tc->plen, p);
+        BN_bin2bn(tc->q, tc->qlen, q);
+        BN_bin2bn(tc->g, tc->glen, g);
+#if OPENSSL_VERSION_NUMBER <= 0x10100000L
+        dh->p = BN_dup(p);
+        dh->q = BN_dup(q);
+        dh->g = BN_dup(g);
+#else
+        tmp_p = BN_dup(p);
+        tmp_q = BN_dup(q);
+        tmp_g = BN_dup(g);
+        DH_set0_pqg(dh, tmp_p, tmp_q, tmp_g);
+#endif
+        break;
+   case ACVP_KAS_FFC_MODP2048:
+        is_modp = 1;
+        get_rfc3526_prime_2048(p);
+        get_rfc3526_prime_2048(q);
+        break;
+    case ACVP_KAS_FFC_MODP3072:
+        is_modp = 1;
+        get_rfc3526_prime_3072(p);
+        get_rfc3526_prime_3072(q);
+        break;
+    case ACVP_KAS_FFC_MODP4096:
+        is_modp = 1;
+        get_rfc3526_prime_4096(p);
+        get_rfc3526_prime_4096(q);
+        break;
+    case ACVP_KAS_FFC_MODP6144:
+        is_modp = 1;
+        get_rfc3526_prime_6144(p);
+        get_rfc3526_prime_6144(q);
+        break;
+    case ACVP_KAS_FFC_MODP8192:
+        is_modp = 1;
+        get_rfc3526_prime_8192(p);
+        get_rfc3526_prime_8192(q);
+        break;
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+    case ACVP_KAS_FFC_FFDHE2048:
+        dh = DH_new_by_nid(NID_ffdhe2048);
+        break;
+    case ACVP_KAS_FFC_FFDHE3072:
+        dh = DH_new_by_nid(NID_ffdhe3072);
+        break;
+    case ACVP_KAS_FFC_FFDHE4096:
+        dh = DH_new_by_nid(NID_ffdhe4096);
+        break;
+    case ACVP_KAS_FFC_FFDHE6144:
+        dh = DH_new_by_nid(NID_ffdhe6144);
+        break;
+    case ACVP_KAS_FFC_FFDHE8192:
+        dh = DH_new_by_nid(NID_ffdhe8192);
+        break;
+#else
+
+    case ACVP_KAS_FFC_FFDHE2048:
+    case ACVP_KAS_FFC_FFDHE3072:
+    case ACVP_KAS_FFC_FFDHE4096:
+    case ACVP_KAS_FFC_FFDHE6144:
+        printf("\nInvalid dgm for this version");
         goto error;
+        break;
+#endif
+    case ACVP_KAS_FFC_FUNCTION:
+    case ACVP_KAS_FFC_CURVE:
+    case ACVP_KAS_FFC_ROLE:
+    case ACVP_KAS_FFC_HASH:
+    case ACVP_KAS_FFC_GEN_METH:
+    case ACVP_KAS_FFC_KDF:
+    default:
+        printf("\nInvalid dgm");
+        goto error;
+        break;
     }
 
-    BN_bin2bn(tc->p, tc->plen, p);
-    BN_bin2bn(tc->q, tc->qlen, q);
-    BN_bin2bn(tc->g, tc->glen, g);
-    BN_bin2bn(tc->eps, tc->epslen, peerkey);
+   if (is_modp) {
+        dh = DH_new();
+        if (!dh) {
+            goto error;
+        }
+        BN_sub_word(q, 1);
+        BN_div_word(q, 2);
+        BN_set_word(g, 2);
 
 #if OPENSSL_VERSION_NUMBER <= 0x10100000L
-    dh->p = BN_dup(p);
-    dh->q = BN_dup(q);
-    dh->g = BN_dup(g);
+        dh->p = BN_dup(p);
+        dh->q = BN_dup(q);
+        dh->g = BN_dup(g);
 #else
-    tmp_p = BN_dup(p);
-    tmp_q = BN_dup(q);
-    tmp_g = BN_dup(g);
-    DH_set0_pqg(dh, tmp_p, tmp_q, tmp_g);
+        tmp_p = BN_dup(p);
+        tmp_q = BN_dup(q);
+        tmp_g = BN_dup(g);
+        DH_set0_pqg(dh, tmp_p, tmp_q, tmp_g);
 #endif
+    }
+
+    peerkey = BN_new();
+    if (!peerkey) {
+        printf("BN_new failed peerkey\n");
+        goto error;
+    }
+    BN_bin2bn(tc->eps, tc->epslen, peerkey);
+
 
     if (tc->test_type == ACVP_KAS_FFC_TT_VAL) {
         if (!tc->epri || !tc->epui || !tc->eprilen || !tc->epuilen) {
             printf("missing epri or epui\n");
             goto error;
         }
-        pub_key = FIPS_bn_new();
-        priv_key = FIPS_bn_new();
+        pub_key = BN_new();
+        priv_key = BN_new();
         if (!pub_key || !priv_key) {
             printf("BN_new failed epri epui\n");
             goto error;
@@ -396,7 +513,8 @@ int app_kas_ffc_handler(ACVP_TEST_CASE *test_case) {
             goto error;
         }
     }
-    Z = OPENSSL_malloc(BN_num_bytes(p));
+#define KAS_FFC_Z_MAX 2048
+    Z = OPENSSL_malloc(KAS_FFC_Z_MAX);
     if (!Z) {
         printf("Malloc failed for Z\n");
         goto error;
@@ -408,10 +526,16 @@ int app_kas_ffc_handler(ACVP_TEST_CASE *test_case) {
     }
 
     Zlen = DH_compute_key_padded(Z, peerkey, dh);
+    if (Zlen <= 0) {
+        FIPS_free(Z);
+        Z = NULL;
+        printf("DH_compute_key_padded failed\n");
+        goto error;
+    }
+
     FIPS_digest(Z, Zlen, (unsigned char *)tc->chash, NULL, md);
     tc->chashlen = EVP_MD_size(md);
 
-#define KAS_FFC_Z_MAX 512
     if (tc->test_type == ACVP_KAS_FFC_TT_AFT) {
         memcpy_s(tc->z, KAS_FFC_Z_MAX, Z, Zlen);
         tc->zlen = Zlen;
@@ -432,7 +556,7 @@ error:
         FIPS_free(Z);
     }
     if (peerkey) BN_clear_free(peerkey);
-    if (dh) FIPS_dh_free(dh);
+    if (dh) DH_free(dh);
     if (pub_key) BN_free(pub_key);
     if (priv_key) BN_free(priv_key);
     if (p) BN_free(p);
@@ -446,6 +570,9 @@ int app_kas_ifc_handler(ACVP_TEST_CASE *test_case) {
     ACVP_KAS_IFC_TC *tc;
     int rv = 1;
     BIGNUM *e = NULL, *n = NULL, *p = NULL, *q = NULL, *d = NULL;
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+    BIGNUM *tmp_e = NULL, *tmp_n = NULL;
+#endif
     RSA *rsa = NULL;
     const EVP_MD *md = NULL;
 
@@ -468,6 +595,11 @@ int app_kas_ifc_handler(ACVP_TEST_CASE *test_case) {
     case ACVP_SHA512_224:
     case ACVP_SHA512_256:
     case ACVP_HASH_ALG_MAX:
+    case ACVP_SHA3_224:
+    case ACVP_SHA3_256:
+    case ACVP_SHA3_384:
+    case ACVP_SHA3_512:
+    case ACVP_NO_SHA:
     default:
         printf("No valid hash name %d\n", tc->md);
         return rv;
@@ -516,13 +648,17 @@ int app_kas_ifc_handler(ACVP_TEST_CASE *test_case) {
         rsa->p = BN_dup(p);
         rsa->q = BN_dup(q);
     }
-    BN_free(e);
-    BN_free(n);
     if (d) BN_free(d);
 
 #else
     if (tc->kas_role == ACVP_KAS_IFC_INITIATOR) {
-        RSA_set0_key(rsa, n, e, NULL);
+        tmp_e = BN_dup(e);
+        tmp_n = BN_dup(n);
+        if (!tmp_n || !tmp_e) {
+            printf("Error: Failed to dup tmp_n or tmp_e\n");
+            goto err;
+        }
+        RSA_set0_key(rsa, tmp_n, tmp_e, d);
     } else {
         if (!tc->p || !tc->q || !tc->d) {
             printf("Failed p or q or d from library\n");
@@ -538,7 +674,13 @@ int app_kas_ifc_handler(ACVP_TEST_CASE *test_case) {
         BN_bin2bn(tc->p, tc->plen, p);
         BN_bin2bn(tc->q, tc->qlen, q);
         BN_bin2bn(tc->d, tc->dlen, d);
-        RSA_set0_key(rsa, n, e, d);
+        tmp_e = BN_dup(e);
+        tmp_n = BN_dup(n);
+        if (!tmp_n || !tmp_e) {
+            printf("Error: Failed to dup tmp_n or tmp_e\n");
+            goto err;
+        }
+        RSA_set0_key(rsa, tmp_n, tmp_e, d);
         RSA_set0_factors(rsa, p, q);
     }
 #endif
@@ -590,8 +732,7 @@ int app_kas_ifc_handler(ACVP_TEST_CASE *test_case) {
                 printf("Error decrypting\n");
                 goto err;
             }
-            FIPS_digest(tc->pt, tc->pt_len, (unsigned char *)tc->chash, NULL, md);
-            tc->chashlen = EVP_MD_size(md);
+            FIPS_digest(tc->pt, tc->pt_len, (unsigned char *)tc->chash, (unsigned int *)&tc->chashlen, md);
         }
     }
     rv = 0;
@@ -600,9 +741,12 @@ err:
     if (p) BN_free(p);
     if (q) BN_free(q);
 #endif
+    if (e) BN_free(e);
+    if (n) BN_free(n);
     if (rsa) RSA_free(rsa);
     return rv;
 }
+
 
 int app_kts_ifc_handler(ACVP_TEST_CASE *test_case) {
     if (!test_case) {
@@ -611,6 +755,187 @@ int app_kts_ifc_handler(ACVP_TEST_CASE *test_case) {
     printf("No application support\n");
     return 1;
 }
+
+
+
+
+int app_safe_primes_handler(ACVP_TEST_CASE *test_case)
+{
+    ACVP_SAFE_PRIMES_TC         *tc;
+    int rv = 1;
+    DH *dh = NULL;
+    BIGNUM *pub_key_ver = NULL, *priv_key_ver = NULL;
+    const BIGNUM *pver = NULL;
+    BIGNUM *q = NULL, *p = NULL, *g = NULL, *q1 = NULL;
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+    BIGNUM *tmp_p = NULL, *tmp_q = NULL, *tmp_g = NULL;
+    const BIGNUM *pub_key = NULL, *priv_key = NULL;
+#endif
+    BIGNUM *tmp_pub_key = NULL;
+    BN_CTX *c = NULL;
+    int is_modp = 0;
+    int ret = 0;
+
+    tc = test_case->tc.safe_primes;
+
+    p = BN_new();
+    q = BN_new();
+    g = BN_new();
+    if (!p || !q || !g) {
+        printf("Failed to allocate BN for p or q or g\n");
+        goto err;
+    }
+    switch (tc->dgm)
+    { 
+   case ACVP_SAFE_PRIMES_MODP2048:
+        is_modp = 1;
+        get_rfc3526_prime_2048(p);
+        get_rfc3526_prime_2048(q);
+        break;
+    case ACVP_SAFE_PRIMES_MODP3072:
+        is_modp = 1;
+        get_rfc3526_prime_3072(p);
+        get_rfc3526_prime_3072(q);
+        break;
+    case ACVP_SAFE_PRIMES_MODP4096:
+        is_modp = 1;
+        get_rfc3526_prime_4096(p);
+        get_rfc3526_prime_4096(q);
+        break;
+    case ACVP_SAFE_PRIMES_MODP6144:
+        is_modp = 1;
+        get_rfc3526_prime_6144(p);
+        get_rfc3526_prime_6144(q);
+        break;
+    case ACVP_SAFE_PRIMES_MODP8192:
+        is_modp = 1;
+        get_rfc3526_prime_8192(p);
+        get_rfc3526_prime_8192(q);
+        break;
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+    case ACVP_SAFE_PRIMES_FFDHE2048:
+        dh = DH_new_by_nid(NID_ffdhe2048);
+        break;
+    case ACVP_SAFE_PRIMES_FFDHE3072:
+        dh = DH_new_by_nid(NID_ffdhe3072);
+        break;
+    case ACVP_SAFE_PRIMES_FFDHE4096:
+        dh = DH_new_by_nid(NID_ffdhe4096);
+        break;
+    case ACVP_SAFE_PRIMES_FFDHE6144:
+        dh = DH_new_by_nid(NID_ffdhe6144);
+        break;
+    case ACVP_SAFE_PRIMES_FFDHE8192:
+        dh = DH_new_by_nid(NID_ffdhe8192);
+        break;
+#else
+    case ACVP_SAFE_PRIMES_FFDHE2048:
+    case ACVP_SAFE_PRIMES_FFDHE3072:
+    case ACVP_SAFE_PRIMES_FFDHE4096:
+    case ACVP_SAFE_PRIMES_FFDHE6144:
+    case ACVP_SAFE_PRIMES_FFDHE8192:
+#endif
+    default:
+        printf("Invalid dgm\n");
+        goto err;
+        break;
+    }
+
+   if (is_modp) {
+        dh = DH_new();
+        if (!dh) {
+            goto err;
+        }
+        BN_sub_word(q, 1);
+        BN_div_word(q, 2);
+        BN_set_word(g, 2);
+#if OPENSSL_VERSION_NUMBER <= 0x10100000L
+        dh->p = BN_dup(p);
+        dh->q = BN_dup(q);
+        dh->g = BN_dup(g);
+#else
+        tmp_p = BN_dup(p);
+        tmp_q = BN_dup(q);
+        tmp_g = BN_dup(g);
+        DH_set0_pqg(dh, tmp_p, tmp_q, tmp_g);
+#endif
+    }
+
+    if (!tc->x || !tc->y) {
+        printf("X or Y not allocated\n");
+        goto err;
+    }
+
+    if (tc->cipher == ACVP_SAFE_PRIMES_KEYGEN) {
+        if (!FIPS_dh_generate_key(dh)) {
+            printf("DH_generate_key failed for dgm = %d\n", tc->dgm);
+            goto err;
+        }
+#if OPENSSL_VERSION_NUMBER <= 0x10100000L
+        tc->ylen = BN_bn2bin(dh->pub_key, tc->y);
+        tc->xlen = BN_bn2bin(dh->priv_key, tc->x);
+#else
+        DH_get0_key(dh, &pub_key, &priv_key);
+        tc->xlen = BN_bn2bin(priv_key, tc->x);
+        tc->ylen = BN_bn2bin(pub_key, tc->y);
+#endif
+    }
+
+    /* Validate 0 < x < q and y = g^x mod p */
+    else if (tc->cipher == ACVP_SAFE_PRIMES_KEYVER) {
+
+#if OPENSSL_VERSION_NUMBER <= 0x10100000L
+        printf("OpenSSL version does not suppor safe prime key verify\n");
+        goto err;
+#else
+        DH_get0_pqg(dh, &pver, NULL, NULL);
+#endif
+        q1 = BN_dup(pver);
+        BN_sub_word(q1, 1);
+        BN_div_word(q1, 2);
+
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+        DH_set0_pqg(dh, NULL, q1, NULL);
+#endif
+        /* Build  the DH and perform the key verify */
+        priv_key_ver = BN_new();
+        pub_key_ver = BN_new();
+        BN_bin2bn(tc->x, tc->xlen, priv_key_ver);
+        BN_bin2bn(tc->y, tc->ylen, pub_key_ver);
+
+        tmp_pub_key = BN_new();
+        c = BN_CTX_new();
+        if (!c) {
+            printf("BN_CTX_new failed\n");
+            goto end;
+        }
+        tc->result = 1;
+
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+        DH_set0_key(dh, pub_key_ver, priv_key_ver);
+#endif
+        rv = DH_check_pub_key(dh, pub_key_ver, &ret);
+        if (!rv || ret) {
+            tc->result = 0;
+        }
+    } else {
+        printf("Invalid safe prime algorithm id\n");
+        goto err;
+    }
+end:
+    rv = 0;
+
+err:
+    if (p) BN_free(p);
+    if (q) BN_free(q);
+    if (g) BN_free(g);
+    if (tmp_pub_key) BN_free(tmp_pub_key);
+    if (c) BN_CTX_free(c);
+    if (dh) DH_free(dh);
+    return rv;
+}
+
+
 
 #else
 int app_kas_ecc_handler(ACVP_TEST_CASE *test_case) {
@@ -633,6 +958,14 @@ int app_kas_ifc_handler(ACVP_TEST_CASE *test_case) {
 }
 
 int app_kts_ifc_handler(ACVP_TEST_CASE *test_case) {
+    if (!test_case) {
+        return -1;
+    }
+    return 1;
+}
+
+int app_safe_primes_handler(ACVP_TEST_CASE *test_case)
+{
     if (!test_case) {
         return -1;
     }

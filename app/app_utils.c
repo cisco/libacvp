@@ -231,3 +231,20 @@ int app_setup_two_factor_auth(ACVP_CTX *ctx) {
     return 0;
 }
 
+unsigned int swap_uint_endian(unsigned int i) {
+    int a = 0, b = 0, c = 0, d = 0;
+    a = (i >> 24) & 0x000000ff;
+    b = (i >> 8) & 0x0000ff00;
+    c = (i << 8) & 0x00ff0000;
+    d = (i << 24) & 0xff000000;
+	return (a | b | c | d);
+}
+
+int check_is_little_endian() {
+    short int n = 1;
+    char *ptr = (char *)&n;
+    if (ptr[0] == 1) {
+        return 1;
+    }
+    return 0;
+}

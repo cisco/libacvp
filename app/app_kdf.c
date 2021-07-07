@@ -11,9 +11,8 @@
 #ifdef OPENSSL_KDF_SUPPORT
 #include <openssl/evp.h>
 #include <openssl/bn.h>
-#include <openssl/kdf.h>
 #include "app_lcl.h"
-# include "app_fips_lcl.h"
+#include "app_fips_lcl.h"
 
 #define TLS_MD_MASTER_SECRET_CONST              "master secret"
 #define TLS_MD_MASTER_SECRET_CONST_SIZE         13
@@ -77,6 +76,13 @@ int app_kdf135_ssh_handler(ACVP_TEST_CASE *test_case) {
 }
 
 int app_pbkdf_handler(ACVP_TEST_CASE *test_case) {
+    if (!test_case) {
+        return -1;
+    }
+    return 1;
+}
+
+int app_kdf_tls13_handler(ACVP_TEST_CASE *test_case) {
     if (!test_case) {
         return -1;
     }

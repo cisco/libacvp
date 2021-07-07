@@ -62,6 +62,7 @@ int app_drbg_handler(ACVP_TEST_CASE *test_case) {
     int der_func = 0;
     unsigned int drbg_entropy_len;
     int fips_rc;
+    ACVP_SUB_DRBG alg;
 
     unsigned char   *nonce = NULL;
 
@@ -75,8 +76,14 @@ int app_drbg_handler(ACVP_TEST_CASE *test_case) {
      */
     drbg_entropy_len = tc->entropy_len;
 
-    switch (tc->cipher) {
-    case ACVP_HASHDRBG:
+    alg = acvp_get_drbg_alg(tc->cipher);
+    if (alg == 0) {
+        printf("Invalid cipher value");
+        return 1;
+    }
+
+    switch (alg) {
+    case ACVP_SUB_DRBG_HASH:
         nonce = tc->nonce;
         switch (tc->mode) {
         case ACVP_DRBG_SHA_1:
@@ -119,7 +126,7 @@ int app_drbg_handler(ACVP_TEST_CASE *test_case) {
         }
         break;
 
-    case ACVP_HMACDRBG:
+    case ACVP_SUB_DRBG_HMAC:
         nonce = tc->nonce;
         switch (tc->mode) {
         case ACVP_DRBG_SHA_1:
@@ -162,7 +169,7 @@ int app_drbg_handler(ACVP_TEST_CASE *test_case) {
         }
         break;
 
-    case ACVP_CTRDRBG:
+    case ACVP_SUB_DRBG_CTR:
         /*
          * DR function Only valid in CTR mode
          * if not set nonce is ignored
@@ -178,8 +185,10 @@ int app_drbg_handler(ACVP_TEST_CASE *test_case) {
              * the default value for this input.  Longer entropy inputs are
              * permitted, with the following exception: for ctrDRBG with no df, the
              * bit length must equal the seed length.
+             *
+             * This will be enforced at registration time by the server. Also, with
+             * this mode, no nonce is used.
              **/
-            drbg_entropy_len = 0;
         }
 
         switch (tc->mode) {
@@ -208,87 +217,6 @@ int app_drbg_handler(ACVP_TEST_CASE *test_case) {
             break;
         }
         break;
-    case ACVP_CIPHER_START:
-    case ACVP_AES_GCM:
-    case ACVP_AES_GCM_SIV:
-    case ACVP_AES_CCM:
-    case ACVP_AES_ECB:
-    case ACVP_AES_CBC:
-    case ACVP_AES_CFB1:
-    case ACVP_AES_CFB8:
-    case ACVP_AES_CFB128:
-    case ACVP_AES_OFB:
-    case ACVP_AES_CTR:
-    case ACVP_AES_XTS:
-    case ACVP_AES_KW:
-    case ACVP_AES_KWP:
-    case ACVP_AES_GMAC:
-    case ACVP_AES_XPN:
-    case ACVP_TDES_ECB:
-    case ACVP_TDES_CBC:
-    case ACVP_TDES_CBCI:
-    case ACVP_TDES_OFB:
-    case ACVP_TDES_OFBI:
-    case ACVP_TDES_CFB1:
-    case ACVP_TDES_CFB8:
-    case ACVP_TDES_CFB64:
-    case ACVP_TDES_CFBP1:
-    case ACVP_TDES_CFBP8:
-    case ACVP_TDES_CFBP64:
-    case ACVP_TDES_CTR:
-    case ACVP_TDES_KW:
-    case ACVP_HASH_SHA1:
-    case ACVP_HASH_SHA224:
-    case ACVP_HASH_SHA256:
-    case ACVP_HASH_SHA384:
-    case ACVP_HASH_SHA512:
-    case ACVP_HASH_SHA512_224:
-    case ACVP_HASH_SHA512_256:
-    case ACVP_HASH_SHA3_224:
-    case ACVP_HASH_SHA3_256:
-    case ACVP_HASH_SHA3_384:
-    case ACVP_HASH_SHA3_512:
-    case ACVP_HASH_SHAKE_128:
-    case ACVP_HASH_SHAKE_256:
-    case ACVP_HMAC_SHA1:
-    case ACVP_HMAC_SHA2_224:
-    case ACVP_HMAC_SHA2_256:
-    case ACVP_HMAC_SHA2_384:
-    case ACVP_HMAC_SHA2_512:
-    case ACVP_HMAC_SHA2_512_224:
-    case ACVP_HMAC_SHA2_512_256:
-    case ACVP_HMAC_SHA3_224:
-    case ACVP_HMAC_SHA3_256:
-    case ACVP_HMAC_SHA3_384:
-    case ACVP_HMAC_SHA3_512:
-    case ACVP_CMAC_AES:
-    case ACVP_CMAC_TDES:
-    case ACVP_DSA_KEYGEN:
-    case ACVP_DSA_PQGGEN:
-    case ACVP_DSA_PQGVER:
-    case ACVP_DSA_SIGGEN:
-    case ACVP_DSA_SIGVER:
-    case ACVP_RSA_KEYGEN:
-    case ACVP_RSA_SIGGEN:
-    case ACVP_RSA_SIGVER:
-    case ACVP_ECDSA_KEYGEN:
-    case ACVP_ECDSA_KEYVER:
-    case ACVP_ECDSA_SIGGEN:
-    case ACVP_ECDSA_SIGVER:
-    case ACVP_KDF135_TLS:
-    case ACVP_KDF135_SNMP:
-    case ACVP_KDF135_SSH:
-    case ACVP_KDF135_SRTP:
-    case ACVP_KDF135_IKEV2:
-    case ACVP_KDF135_IKEV1:
-    case ACVP_KDF135_X963:
-    case ACVP_KDF108:
-    case ACVP_KAS_ECC_CDH:
-    case ACVP_KAS_ECC_COMP:
-    case ACVP_KAS_ECC_NOCOMP:
-    case ACVP_KAS_FFC_COMP:
-    case ACVP_KAS_FFC_NOCOMP:
-    case ACVP_CIPHER_END:
     default:
         printf("%s: Unsupported algorithm %d (tc_id=%d)\n", __FUNCTION__, tc->tc_id,
                tc->cipher);

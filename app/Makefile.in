@@ -14,6 +14,8 @@
 
 @SET_MAKE@
 
+
+
 VPATH = @srcdir@
 am__is_gnu_make = { \
   if test -z '$(MAKELEVEL)'; then \
@@ -88,7 +90,10 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-bin_PROGRAMS = acvp_app$(EXEEXT)
+@BUILD_APP_AS_LIB_FALSE@bin_PROGRAMS = acvp_app$(EXEEXT)
+@BUILD_APP_AS_LIB_FALSE@@USE_LDL_CHECK_TRUE@am__append_1 = -ldl
+@BUILD_APP_AS_LIB_TRUE@@USE_LDL_CHECK_TRUE@am__append_2 = -ldl
+@BUILD_APP_AS_LIB_TRUE@@USE_FOM_TRUE@am__append_3 = $(FOM_OBJ_DIR)/fipscanister.o
 subdir = app
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/libtool.m4 \
@@ -97,26 +102,80 @@ am__aclocal_m4_deps = $(top_srcdir)/m4/libtool.m4 \
 	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
-DIST_COMMON = $(srcdir)/Makefile.am $(am__DIST_COMMON)
+DIST_COMMON = $(srcdir)/Makefile.am \
+	$(am__libacvp_app_include_HEADERS_DIST) $(am__DIST_COMMON)
 mkinstalldirs = $(install_sh) -d
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
-am__installdirs = "$(DESTDIR)$(bindir)"
+am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(libdir)" \
+	"$(DESTDIR)$(libacvp_app_includedir)"
 PROGRAMS = $(bin_PROGRAMS)
-am_acvp_app_OBJECTS = acvp_app-app_main.$(OBJEXT) \
-	acvp_app-app_aes.$(OBJEXT) acvp_app-app_cli.$(OBJEXT) \
-	acvp_app-app_cmac.$(OBJEXT) acvp_app-app_des.$(OBJEXT) \
-	acvp_app-app_drbg.$(OBJEXT) acvp_app-app_dsa.$(OBJEXT) \
-	acvp_app-app_ecdsa.$(OBJEXT) acvp_app-app_hmac.$(OBJEXT) \
-	acvp_app-app_kas.$(OBJEXT) acvp_app-app_kdf.$(OBJEXT) \
-	acvp_app-app_rsa.$(OBJEXT) acvp_app-app_sha.$(OBJEXT) \
-	acvp_app-app_utils.$(OBJEXT)
-acvp_app_OBJECTS = $(am_acvp_app_OBJECTS)
-@USE_FOM_TRUE@acvp_app_DEPENDENCIES = $(FOM_OBJ_DIR)/fipscanister.o
+am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
+am__vpath_adj = case $$p in \
+    $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
+    *) f=$$p;; \
+  esac;
+am__strip_dir = f=`echo $$p | sed -e 's|^.*/||'`;
+am__install_max = 40
+am__nobase_strip_setup = \
+  srcdirstrip=`echo "$(srcdir)" | sed 's/[].[^$$\\*|]/\\\\&/g'`
+am__nobase_strip = \
+  for p in $$list; do echo "$$p"; done | sed -e "s|$$srcdirstrip/||"
+am__nobase_list = $(am__nobase_strip_setup); \
+  for p in $$list; do echo "$$p $$p"; done | \
+  sed "s| $$srcdirstrip/| |;"' / .*\//!s/ .*/ ./; s,\( .*\)/[^/]*$$,\1,' | \
+  $(AWK) 'BEGIN { files["."] = "" } { files[$$2] = files[$$2] " " $$1; \
+    if (++n[$$2] == $(am__install_max)) \
+      { print $$2, files[$$2]; n[$$2] = 0; files[$$2] = "" } } \
+    END { for (dir in files) print dir, files[dir] }'
+am__base_list = \
+  sed '$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;s/\n/ /g' | \
+  sed '$$!N;$$!N;$$!N;$$!N;s/\n/ /g'
+am__uninstall_files_from_dir = { \
+  test -z "$$files" \
+    || { test ! -d "$$dir" && test ! -f "$$dir" && test ! -r "$$dir"; } \
+    || { echo " ( cd '$$dir' && rm -f" $$files ")"; \
+         $(am__cd) "$$dir" && rm -f $$files; }; \
+  }
+LTLIBRARIES = $(lib_LTLIBRARIES)
+am__DEPENDENCIES_1 =
+@BUILD_APP_AS_LIB_TRUE@libacvp_app_la_DEPENDENCIES =  \
+@BUILD_APP_AS_LIB_TRUE@	$(am__DEPENDENCIES_1) \
+@BUILD_APP_AS_LIB_TRUE@	$(am__DEPENDENCIES_1) \
+@BUILD_APP_AS_LIB_TRUE@	$(am__DEPENDENCIES_1) \
+@BUILD_APP_AS_LIB_TRUE@	$(am__DEPENDENCIES_1) $(am__append_3)
+am__libacvp_app_la_SOURCES_DIST = app_main.c app_aes.c app_cli.c \
+	app_cmac.c app_des.c app_drbg.c app_dsa.c app_ecdsa.c \
+	app_hmac.c app_kas.c app_kdf.c app_kas_kdf.c app_rsa.c \
+	app_sha.c app_utils.c app_fips_lcl.h app_fips_init_lcl.h \
+	app_lcl.h ketopt.h
+am__objects_1 = app_main.lo app_aes.lo app_cli.lo app_cmac.lo \
+	app_des.lo app_drbg.lo app_dsa.lo app_ecdsa.lo app_hmac.lo \
+	app_kas.lo app_kdf.lo app_kas_kdf.lo app_rsa.lo app_sha.lo \
+	app_utils.lo
+@BUILD_APP_AS_LIB_TRUE@am_libacvp_app_la_OBJECTS = $(am__objects_1)
+libacvp_app_la_OBJECTS = $(am_libacvp_app_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
 am__v_lt_1 = 
+@BUILD_APP_AS_LIB_TRUE@am_libacvp_app_la_rpath = -rpath $(libdir)
+am__acvp_app_SOURCES_DIST = app_main.c app_aes.c app_cli.c app_cmac.c \
+	app_des.c app_drbg.c app_dsa.c app_ecdsa.c app_hmac.c \
+	app_kas.c app_kdf.c app_kas_kdf.c app_rsa.c app_sha.c \
+	app_utils.c app_fips_lcl.h app_fips_init_lcl.h app_lcl.h \
+	ketopt.h
+am__objects_2 = acvp_app-app_main.$(OBJEXT) acvp_app-app_aes.$(OBJEXT) \
+	acvp_app-app_cli.$(OBJEXT) acvp_app-app_cmac.$(OBJEXT) \
+	acvp_app-app_des.$(OBJEXT) acvp_app-app_drbg.$(OBJEXT) \
+	acvp_app-app_dsa.$(OBJEXT) acvp_app-app_ecdsa.$(OBJEXT) \
+	acvp_app-app_hmac.$(OBJEXT) acvp_app-app_kas.$(OBJEXT) \
+	acvp_app-app_kdf.$(OBJEXT) acvp_app-app_kas_kdf.$(OBJEXT) \
+	acvp_app-app_rsa.$(OBJEXT) acvp_app-app_sha.$(OBJEXT) \
+	acvp_app-app_utils.$(OBJEXT)
+@BUILD_APP_AS_LIB_FALSE@am_acvp_app_OBJECTS = $(am__objects_2)
+acvp_app_OBJECTS = $(am_acvp_app_OBJECTS)
+@BUILD_APP_AS_LIB_FALSE@@USE_FOM_TRUE@acvp_app_DEPENDENCIES = $(FOM_OBJ_DIR)/fipscanister.o
 acvp_app_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(acvp_app_CFLAGS) \
 	$(CFLAGS) $(acvp_app_LDFLAGS) $(LDFLAGS) -o $@
@@ -144,11 +203,19 @@ am__depfiles_remade = ./$(DEPDIR)/acvp_app-app_aes.Po \
 	./$(DEPDIR)/acvp_app-app_ecdsa.Po \
 	./$(DEPDIR)/acvp_app-app_hmac.Po \
 	./$(DEPDIR)/acvp_app-app_kas.Po \
+	./$(DEPDIR)/acvp_app-app_kas_kdf.Po \
 	./$(DEPDIR)/acvp_app-app_kdf.Po \
 	./$(DEPDIR)/acvp_app-app_main.Po \
 	./$(DEPDIR)/acvp_app-app_rsa.Po \
 	./$(DEPDIR)/acvp_app-app_sha.Po \
-	./$(DEPDIR)/acvp_app-app_utils.Po
+	./$(DEPDIR)/acvp_app-app_utils.Po ./$(DEPDIR)/app_aes.Plo \
+	./$(DEPDIR)/app_cli.Plo ./$(DEPDIR)/app_cmac.Plo \
+	./$(DEPDIR)/app_des.Plo ./$(DEPDIR)/app_drbg.Plo \
+	./$(DEPDIR)/app_dsa.Plo ./$(DEPDIR)/app_ecdsa.Plo \
+	./$(DEPDIR)/app_hmac.Plo ./$(DEPDIR)/app_kas.Plo \
+	./$(DEPDIR)/app_kas_kdf.Plo ./$(DEPDIR)/app_kdf.Plo \
+	./$(DEPDIR)/app_main.Plo ./$(DEPDIR)/app_rsa.Plo \
+	./$(DEPDIR)/app_sha.Plo ./$(DEPDIR)/app_utils.Plo
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -168,13 +235,17 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = $(acvp_app_SOURCES)
-DIST_SOURCES = $(acvp_app_SOURCES)
+SOURCES = $(libacvp_app_la_SOURCES) $(acvp_app_SOURCES)
+DIST_SOURCES = $(am__libacvp_app_la_SOURCES_DIST) \
+	$(am__acvp_app_SOURCES_DIST)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
     *) (install-info --version) >/dev/null 2>&1;; \
   esac
+am__libacvp_app_include_HEADERS_DIST =  \
+	$(top_srcdir)/app/libacvp_app.h
+HEADERS = $(libacvp_app_include_HEADERS)
 am__tagged_files = $(HEADERS) $(SOURCES) $(TAGS_FILES) $(LISP)
 # Read a list of newline-separated strings from the standard input,
 # and print each of them once, without duplicates.  Input order is
@@ -326,29 +397,41 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-acvp_app_includedir = $(includedir)/acvp
-acvp_app_SOURCES = app_main.c \
-				   app_aes.c \
-				   app_cli.c \
-				   app_cmac.c \
-				   app_des.c \
-				   app_drbg.c \
-				   app_dsa.c \
-				   app_ecdsa.c \
-				   app_hmac.c \
-				   app_kas.c \
-				   app_kdf.c \
-				   app_rsa.c \
-				   app_sha.c \
-				   app_utils.c \
-				   app_fips_lcl.h \
-				   app_fips_init_lcl.h \
-				   app_lcl.h \
-				   ketopt.h
+tmp_sources = app_main.c \
+              app_aes.c \
+              app_cli.c \
+              app_cmac.c \
+              app_des.c \
+              app_drbg.c \
+              app_dsa.c \
+              app_ecdsa.c \
+              app_hmac.c \
+              app_kas.c \
+              app_kdf.c \
+              app_kas_kdf.c \
+              app_rsa.c \
+              app_sha.c \
+              app_utils.c \
+              app_fips_lcl.h \
+              app_fips_init_lcl.h \
+              app_lcl.h \
+              ketopt.h
 
-acvp_app_CFLAGS = -g -fPIE $(LIBACVP_CFLAGS) $(SSL_CFLAGS) $(FOM_CFLAGS) $(SAFEC_CFLAGS)
-acvp_app_LDFLAGS = $(LIBACVP_LDFLAGS) $(SSL_LDFLAGS) $(FOM_LDFLAGS) -ldl
-@USE_FOM_TRUE@acvp_app_LDADD = $(FOM_OBJ_DIR)/fipscanister.o
+@BUILD_APP_AS_LIB_FALSE@acvp_app_includedir = $(includedir)/acvp
+@BUILD_APP_AS_LIB_FALSE@acvp_app_SOURCES = ${tmp_sources}
+@BUILD_APP_AS_LIB_FALSE@acvp_app_CFLAGS = -g -fPIE $(LIBACVP_CFLAGS) $(SSL_CFLAGS) $(FOM_CFLAGS) $(SAFEC_CFLAGS)
+@BUILD_APP_AS_LIB_FALSE@acvp_app_LDFLAGS = $(LIBACVP_LDFLAGS) \
+@BUILD_APP_AS_LIB_FALSE@	$(SSL_LDFLAGS) $(FOM_LDFLAGS) \
+@BUILD_APP_AS_LIB_FALSE@	$(am__append_1)
+@BUILD_APP_AS_LIB_FALSE@@USE_FOM_TRUE@acvp_app_LDADD = $(FOM_OBJ_DIR)/fipscanister.o
+@BUILD_APP_AS_LIB_TRUE@lib_LTLIBRARIES = libacvp_app.la
+@BUILD_APP_AS_LIB_TRUE@libacvp_app_includedir = ${includedir}/acvp
+@BUILD_APP_AS_LIB_TRUE@libacvp_app_la_SOURCES = ${tmp_sources}
+@BUILD_APP_AS_LIB_TRUE@AM_CFLAGS = -g -fPIE $(LIBACVP_CFLAGS) $(SSL_CFLAGS) $(FOM_CFLAGS) $(SAFEC_CFLAGS) -DACVP_APP_LIB_WRAPPER
+@BUILD_APP_AS_LIB_TRUE@libacvp_app_la_LIBADD = $(LIBACVP_LDFLAGS) \
+@BUILD_APP_AS_LIB_TRUE@	$(SSL_LDFLAGS) $(FOM_LDFLAGS) \
+@BUILD_APP_AS_LIB_TRUE@	$(am__append_2) $(am__append_3)
+@BUILD_APP_AS_LIB_TRUE@libacvp_app_include_HEADERS = $(top_srcdir)/app/libacvp_app.h
 all: all-am
 
 .SUFFIXES:
@@ -432,6 +515,44 @@ clean-binPROGRAMS:
 	echo " rm -f" $$list; \
 	rm -f $$list
 
+install-libLTLIBRARIES: $(lib_LTLIBRARIES)
+	@$(NORMAL_INSTALL)
+	@list='$(lib_LTLIBRARIES)'; test -n "$(libdir)" || list=; \
+	list2=; for p in $$list; do \
+	  if test -f $$p; then \
+	    list2="$$list2 $$p"; \
+	  else :; fi; \
+	done; \
+	test -z "$$list2" || { \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(libdir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(libdir)" || exit 1; \
+	  echo " $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL) $(INSTALL_STRIP_FLAG) $$list2 '$(DESTDIR)$(libdir)'"; \
+	  $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL) $(INSTALL_STRIP_FLAG) $$list2 "$(DESTDIR)$(libdir)"; \
+	}
+
+uninstall-libLTLIBRARIES:
+	@$(NORMAL_UNINSTALL)
+	@list='$(lib_LTLIBRARIES)'; test -n "$(libdir)" || list=; \
+	for p in $$list; do \
+	  $(am__strip_dir) \
+	  echo " $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=uninstall rm -f '$(DESTDIR)$(libdir)/$$f'"; \
+	  $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=uninstall rm -f "$(DESTDIR)$(libdir)/$$f"; \
+	done
+
+clean-libLTLIBRARIES:
+	-test -z "$(lib_LTLIBRARIES)" || rm -f $(lib_LTLIBRARIES)
+	@list='$(lib_LTLIBRARIES)'; \
+	locs=`for p in $$list; do echo $$p; done | \
+	      sed 's|^[^/]*$$|.|; s|/[^/]*$$||; s|$$|/so_locations|' | \
+	      sort -u`; \
+	test -z "$$locs" || { \
+	  echo rm -f $${locs}; \
+	  rm -f $${locs}; \
+	}
+
+libacvp_app.la: $(libacvp_app_la_OBJECTS) $(libacvp_app_la_DEPENDENCIES) $(EXTRA_libacvp_app_la_DEPENDENCIES) 
+	$(AM_V_CCLD)$(LINK) $(am_libacvp_app_la_rpath) $(libacvp_app_la_OBJECTS) $(libacvp_app_la_LIBADD) $(LIBS)
+
 acvp_app$(EXEEXT): $(acvp_app_OBJECTS) $(acvp_app_DEPENDENCIES) $(EXTRA_acvp_app_DEPENDENCIES) 
 	@rm -f acvp_app$(EXEEXT)
 	$(AM_V_CCLD)$(acvp_app_LINK) $(acvp_app_OBJECTS) $(acvp_app_LDADD) $(LIBS)
@@ -451,11 +572,27 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/acvp_app-app_ecdsa.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/acvp_app-app_hmac.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/acvp_app-app_kas.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/acvp_app-app_kas_kdf.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/acvp_app-app_kdf.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/acvp_app-app_main.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/acvp_app-app_rsa.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/acvp_app-app_sha.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/acvp_app-app_utils.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/app_aes.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/app_cli.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/app_cmac.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/app_des.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/app_drbg.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/app_dsa.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/app_ecdsa.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/app_hmac.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/app_kas.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/app_kas_kdf.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/app_kdf.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/app_main.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/app_rsa.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/app_sha.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/app_utils.Plo@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
 	@$(MKDIR_P) $(@D)
@@ -641,6 +778,20 @@ acvp_app-app_kdf.obj: app_kdf.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -c -o acvp_app-app_kdf.obj `if test -f 'app_kdf.c'; then $(CYGPATH_W) 'app_kdf.c'; else $(CYGPATH_W) '$(srcdir)/app_kdf.c'; fi`
 
+acvp_app-app_kas_kdf.o: app_kas_kdf.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -MT acvp_app-app_kas_kdf.o -MD -MP -MF $(DEPDIR)/acvp_app-app_kas_kdf.Tpo -c -o acvp_app-app_kas_kdf.o `test -f 'app_kas_kdf.c' || echo '$(srcdir)/'`app_kas_kdf.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/acvp_app-app_kas_kdf.Tpo $(DEPDIR)/acvp_app-app_kas_kdf.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='app_kas_kdf.c' object='acvp_app-app_kas_kdf.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -c -o acvp_app-app_kas_kdf.o `test -f 'app_kas_kdf.c' || echo '$(srcdir)/'`app_kas_kdf.c
+
+acvp_app-app_kas_kdf.obj: app_kas_kdf.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -MT acvp_app-app_kas_kdf.obj -MD -MP -MF $(DEPDIR)/acvp_app-app_kas_kdf.Tpo -c -o acvp_app-app_kas_kdf.obj `if test -f 'app_kas_kdf.c'; then $(CYGPATH_W) 'app_kas_kdf.c'; else $(CYGPATH_W) '$(srcdir)/app_kas_kdf.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/acvp_app-app_kas_kdf.Tpo $(DEPDIR)/acvp_app-app_kas_kdf.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='app_kas_kdf.c' object='acvp_app-app_kas_kdf.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -c -o acvp_app-app_kas_kdf.obj `if test -f 'app_kas_kdf.c'; then $(CYGPATH_W) 'app_kas_kdf.c'; else $(CYGPATH_W) '$(srcdir)/app_kas_kdf.c'; fi`
+
 acvp_app-app_rsa.o: app_rsa.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -MT acvp_app-app_rsa.o -MD -MP -MF $(DEPDIR)/acvp_app-app_rsa.Tpo -c -o acvp_app-app_rsa.o `test -f 'app_rsa.c' || echo '$(srcdir)/'`app_rsa.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/acvp_app-app_rsa.Tpo $(DEPDIR)/acvp_app-app_rsa.Po
@@ -688,6 +839,27 @@ mostlyclean-libtool:
 
 clean-libtool:
 	-rm -rf .libs _libs
+install-libacvp_app_includeHEADERS: $(libacvp_app_include_HEADERS)
+	@$(NORMAL_INSTALL)
+	@list='$(libacvp_app_include_HEADERS)'; test -n "$(libacvp_app_includedir)" || list=; \
+	if test -n "$$list"; then \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(libacvp_app_includedir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(libacvp_app_includedir)" || exit 1; \
+	fi; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_HEADER) $$files '$(DESTDIR)$(libacvp_app_includedir)'"; \
+	  $(INSTALL_HEADER) $$files "$(DESTDIR)$(libacvp_app_includedir)" || exit $$?; \
+	done
+
+uninstall-libacvp_app_includeHEADERS:
+	@$(NORMAL_UNINSTALL)
+	@list='$(libacvp_app_include_HEADERS)'; test -n "$(libacvp_app_includedir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	dir='$(DESTDIR)$(libacvp_app_includedir)'; $(am__uninstall_files_from_dir)
 
 ID: $(am__tagged_files)
 	$(am__define_uniq_tagged_files); mkid -fID $$unique
@@ -776,9 +948,11 @@ distdir-am: $(DISTFILES)
 	done
 check-am: all-am
 check: check-am
-all-am: Makefile $(PROGRAMS)
+all-am: Makefile $(PROGRAMS) $(LTLIBRARIES) $(HEADERS)
+install-binPROGRAMS: install-libLTLIBRARIES
+
 installdirs:
-	for dir in "$(DESTDIR)$(bindir)"; do \
+	for dir in "$(DESTDIR)$(bindir)" "$(DESTDIR)$(libdir)" "$(DESTDIR)$(libacvp_app_includedir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-am
@@ -814,7 +988,8 @@ maintainer-clean-generic:
 	@echo "it deletes files that may require special tools to rebuild."
 clean: clean-am
 
-clean-am: clean-binPROGRAMS clean-generic clean-libtool mostlyclean-am
+clean-am: clean-binPROGRAMS clean-generic clean-libLTLIBRARIES \
+	clean-libtool mostlyclean-am
 
 distclean: distclean-am
 		-rm -f ./$(DEPDIR)/acvp_app-app_aes.Po
@@ -826,11 +1001,27 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/acvp_app-app_ecdsa.Po
 	-rm -f ./$(DEPDIR)/acvp_app-app_hmac.Po
 	-rm -f ./$(DEPDIR)/acvp_app-app_kas.Po
+	-rm -f ./$(DEPDIR)/acvp_app-app_kas_kdf.Po
 	-rm -f ./$(DEPDIR)/acvp_app-app_kdf.Po
 	-rm -f ./$(DEPDIR)/acvp_app-app_main.Po
 	-rm -f ./$(DEPDIR)/acvp_app-app_rsa.Po
 	-rm -f ./$(DEPDIR)/acvp_app-app_sha.Po
 	-rm -f ./$(DEPDIR)/acvp_app-app_utils.Po
+	-rm -f ./$(DEPDIR)/app_aes.Plo
+	-rm -f ./$(DEPDIR)/app_cli.Plo
+	-rm -f ./$(DEPDIR)/app_cmac.Plo
+	-rm -f ./$(DEPDIR)/app_des.Plo
+	-rm -f ./$(DEPDIR)/app_drbg.Plo
+	-rm -f ./$(DEPDIR)/app_dsa.Plo
+	-rm -f ./$(DEPDIR)/app_ecdsa.Plo
+	-rm -f ./$(DEPDIR)/app_hmac.Plo
+	-rm -f ./$(DEPDIR)/app_kas.Plo
+	-rm -f ./$(DEPDIR)/app_kas_kdf.Plo
+	-rm -f ./$(DEPDIR)/app_kdf.Plo
+	-rm -f ./$(DEPDIR)/app_main.Plo
+	-rm -f ./$(DEPDIR)/app_rsa.Plo
+	-rm -f ./$(DEPDIR)/app_sha.Plo
+	-rm -f ./$(DEPDIR)/app_utils.Plo
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-tags
@@ -847,13 +1038,13 @@ info: info-am
 
 info-am:
 
-install-data-am:
+install-data-am: install-libacvp_app_includeHEADERS
 
 install-dvi: install-dvi-am
 
 install-dvi-am:
 
-install-exec-am: install-binPROGRAMS
+install-exec-am: install-binPROGRAMS install-libLTLIBRARIES
 
 install-html: install-html-am
 
@@ -885,11 +1076,27 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/acvp_app-app_ecdsa.Po
 	-rm -f ./$(DEPDIR)/acvp_app-app_hmac.Po
 	-rm -f ./$(DEPDIR)/acvp_app-app_kas.Po
+	-rm -f ./$(DEPDIR)/acvp_app-app_kas_kdf.Po
 	-rm -f ./$(DEPDIR)/acvp_app-app_kdf.Po
 	-rm -f ./$(DEPDIR)/acvp_app-app_main.Po
 	-rm -f ./$(DEPDIR)/acvp_app-app_rsa.Po
 	-rm -f ./$(DEPDIR)/acvp_app-app_sha.Po
 	-rm -f ./$(DEPDIR)/acvp_app-app_utils.Po
+	-rm -f ./$(DEPDIR)/app_aes.Plo
+	-rm -f ./$(DEPDIR)/app_cli.Plo
+	-rm -f ./$(DEPDIR)/app_cmac.Plo
+	-rm -f ./$(DEPDIR)/app_des.Plo
+	-rm -f ./$(DEPDIR)/app_drbg.Plo
+	-rm -f ./$(DEPDIR)/app_dsa.Plo
+	-rm -f ./$(DEPDIR)/app_ecdsa.Plo
+	-rm -f ./$(DEPDIR)/app_hmac.Plo
+	-rm -f ./$(DEPDIR)/app_kas.Plo
+	-rm -f ./$(DEPDIR)/app_kas_kdf.Plo
+	-rm -f ./$(DEPDIR)/app_kdf.Plo
+	-rm -f ./$(DEPDIR)/app_main.Plo
+	-rm -f ./$(DEPDIR)/app_rsa.Plo
+	-rm -f ./$(DEPDIR)/app_sha.Plo
+	-rm -f ./$(DEPDIR)/app_utils.Plo
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 
@@ -906,23 +1113,27 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-binPROGRAMS
+uninstall-am: uninstall-binPROGRAMS uninstall-libLTLIBRARIES \
+	uninstall-libacvp_app_includeHEADERS
 
 .MAKE: install-am install-strip
 
 .PHONY: CTAGS GTAGS TAGS all all-am am--depfiles check check-am clean \
-	clean-binPROGRAMS clean-generic clean-libtool cscopelist-am \
-	ctags ctags-am distclean distclean-compile distclean-generic \
-	distclean-libtool distclean-tags distdir dvi dvi-am html \
-	html-am info info-am install install-am install-binPROGRAMS \
-	install-data install-data-am install-dvi install-dvi-am \
-	install-exec install-exec-am install-html install-html-am \
-	install-info install-info-am install-man install-pdf \
+	clean-binPROGRAMS clean-generic clean-libLTLIBRARIES \
+	clean-libtool cscopelist-am ctags ctags-am distclean \
+	distclean-compile distclean-generic distclean-libtool \
+	distclean-tags distdir dvi dvi-am html html-am info info-am \
+	install install-am install-binPROGRAMS install-data \
+	install-data-am install-dvi install-dvi-am install-exec \
+	install-exec-am install-html install-html-am install-info \
+	install-info-am install-libLTLIBRARIES \
+	install-libacvp_app_includeHEADERS install-man install-pdf \
 	install-pdf-am install-ps install-ps-am install-strip \
 	installcheck installcheck-am installdirs maintainer-clean \
 	maintainer-clean-generic mostlyclean mostlyclean-compile \
 	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
-	tags tags-am uninstall uninstall-am uninstall-binPROGRAMS
+	tags tags-am uninstall uninstall-am uninstall-binPROGRAMS \
+	uninstall-libLTLIBRARIES uninstall-libacvp_app_includeHEADERS
 
 .PRECIOUS: Makefile
 

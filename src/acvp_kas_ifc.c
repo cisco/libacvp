@@ -35,19 +35,6 @@ static ACVP_RESULT acvp_kas_ifc_ssc_output_tc(ACVP_CTX *ctx,
         return ACVP_MALLOC_FAIL;
     }
 
-    if (stc->test_type == ACVP_KAS_IFC_TT_VAL) {
-        int diff = 1;
-
-        memcmp_s(stc->chash, ACVP_KAS_IFC_BYTE_MAX,
-                 stc->hashz, stc->hashzlen, &diff);
-        if (!diff) {
-            json_object_set_boolean(tc_rsp, "testPassed", 1);
-        } else {
-            json_object_set_boolean(tc_rsp, "testPassed", 0);
-        }
-        goto end;
-    }
-
     memzero_s(tmp, ACVP_KAS_IFC_STR_MAX);
     rv = acvp_bin_to_hexstr(stc->pt, stc->pt_len, tmp, ACVP_KAS_IFC_STR_MAX);
     if (rv != ACVP_SUCCESS) {
@@ -74,13 +61,25 @@ end:
     return rv;
 }
 
-static ACVP_RESULT acvp_kas_ifc_ssc_val_output_tc(ACVP_CTX *ctx,
-                                                  ACVP_KAS_IFC_TC *stc,
+static ACVP_RESULT acvp_kas_ifc_ssc_val_output_tc(ACVP_KAS_IFC_TC *stc,
                                                   JSON_Object *tc_rsp) {
     ACVP_RESULT rv = ACVP_SUCCESS;
     int diff1 = 1, diff2 = 1;
 
     if (stc->kas_role == ACVP_KAS_IFC_RESPONDER) {
+
+        /* check z value and then hashz value */
+        if (stc->zlen != stc->pt_len) {
+            json_object_set_boolean(tc_rsp, "testPassed", 0);
+            goto end;
+        }
+        memcmp_s(stc->z, ACVP_KAS_IFC_BYTE_MAX,
+                 stc->pt, stc->zlen, &diff1);
+        if (diff1) {
+            json_object_set_boolean(tc_rsp, "testPassed", 0);
+            goto end;
+        }
+
         memcmp_s(stc->chash, ACVP_KAS_IFC_BYTE_MAX,
                  stc->hashz, stc->hashzlen, &diff1);
 
@@ -102,6 +101,7 @@ static ACVP_RESULT acvp_kas_ifc_ssc_val_output_tc(ACVP_CTX *ctx,
             json_object_set_boolean(tc_rsp, "testPassed", 0);
         }
     }
+end:
     return rv;
 }
 
@@ -119,6 +119,7 @@ static ACVP_RESULT acvp_kas_ifc_ssc_init_tc(ACVP_CTX *ctx,
                                             const char *n,
                                             const char *e,
                                             const char *c,
+                                            unsigned int modulo,
                                             ACVP_KAS_IFC_TEST_TYPE test_type) {
     ACVP_RESULT rv;
 
@@ -126,6 +127,7 @@ static ACVP_RESULT acvp_kas_ifc_ssc_init_tc(ACVP_CTX *ctx,
     stc->md = hash_alg;
     stc->kas_role = role;
     stc->key_gen = key_gen;
+    stc->modulo = modulo;
 
     /* Both test types responder needs these */
     if (stc->kas_role == ACVP_KAS_IFC_RESPONDER) {
@@ -252,7 +254,12 @@ static ACVP_KAS_IFC_TEST_TYPE read_test_type(const char *str) {
 }
 
 static ACVP_RSA_KEY_FORMAT read_key_gen(const char *str){
-    return ACVP_KAS_IFC_RSAKPG1_BASIC;
+    int diff;
+
+    strcmp_s("rsakpg1-basic", 13, str, &diff);
+    if (!diff) return ACVP_KAS_IFC_RSAKPG1_BASIC;
+
+    return 0;
 }
 
 static ACVP_RESULT acvp_kas_ifc_ssc(ACVP_CTX *ctx,
@@ -575,7 +582,7 @@ static ACVP_RESULT acvp_kas_ifc_ssc(ACVP_CTX *ctx,
              * the crypto module.
              */
             rv = acvp_kas_ifc_ssc_init_tc(ctx, stc, key_gen, hash_alg, role, z, hashz, ct,
-                                          p, q, d, n, e, c, test_type);
+                                          p, q, d, n, e, c, modulo, test_type);
             if (rv != ACVP_SUCCESS) {
                 acvp_kas_ifc_release_tc(stc);
                 json_value_free(r_tval);
@@ -595,7 +602,7 @@ static ACVP_RESULT acvp_kas_ifc_ssc(ACVP_CTX *ctx,
              * Output the test case results using JSON
              */
             if (stc->test_type == ACVP_KAS_IFC_TT_VAL) {
-                rv = acvp_kas_ifc_ssc_val_output_tc(ctx, stc, r_tobj);
+                rv = acvp_kas_ifc_ssc_val_output_tc(stc, r_tobj);
             } else {
                 rv = acvp_kas_ifc_ssc_output_tc(ctx, stc, r_tobj);
             }

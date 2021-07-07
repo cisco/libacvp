@@ -1,33 +1,38 @@
-        __       __  .______        ___       ______ ____    ____ .______
+```
+         __       __   ______        ___       ______ ____    ____  ______
         |  |     |  | |   _  \      /   \     /      |\   \  /   / |   _  \
         |  |     |  | |  |_)  |    /  ^  \   |  ,----' \   \/   /  |  |_)  |
         |  |     |  | |   _  <    /  /_\  \  |  |       \      /   |   ___/
         |  `----.|  | |  |_)  |  /  _____  \ |  `----.   \    /    |  |
         |_______||__| |______/  /__/     \__\ \______|    \__/     | _|   
 
-        A library that implements the client-side of the ACVP protocol.
-        The ACVP specification is a work-in-progress and can be found at
-        https://github.com/usnistgov/ACVP
+           A library that implements the client-side of the ACVP protocol.
+      The ACVP specification can be found at https://github.com/usnistgov/ACVP
+```
 
-### License
+## License
 Libacvp is licensed under the Apache License 2.0, which means that
 you are free to get and use it for commercial and non-commercial
 purposes as long as you fulfill its conditions. See the LICENSE
 file for details.
 
-### Recent Changes
-The client library is compatible with the ACVP spec version 1.0, see https://github.com/usnistgov/ACVP however not all algorithms and options are supported. See the support list in the Supported Algorithms section below.
 
-Metadata processing has been simplified and no longer requires id fields. Please review the new metadata directory sample json files to see the new format. Older formats should continue to work, but will have some unused keywords and fields.
+## Recent Changes
+The client library is compatible with the ACVP spec version 1.0, see https://github.com/usnistgov/ACVP
+however not all algorithms and options are supported. See the support list in the Supported Algorithms
+section below.
 
-To track any and all changes please review recent commits for more detail.
+Support for new algorithms and features is being added fairly regularly. Recent features also include the
+ability to cancel test sessions and more configure options to help various different build configurations
+and platforms.
 
-## Overview
+
+# Overview
 
 Libacvp is a client-side ACVP library implementation, and also includes
-an example application which utilizes the library. 
+an example application (acvp_app) which utilizes the library.
 
-libacvp will login and then register with the ACVP server (advertising capabilities)
+libacvp will login and then register with the ACVP server (advertising capabilities).
 The server will respond with a list of vector set identifiers that need to be processed.
 libacvp will download each vector set, process the vectors, and send the results back to the server.
 This is performed in real-time by default. The user can also use "offline" mode for non-realtime
@@ -85,7 +90,7 @@ libcurl, libssl and libcrypto are not included, and must
 be installed separately on your build/target host,
 including the header files.
 
-###### Dealing with system-default dependencies
+##### Dealing with system-default dependencies
 This codebase uses features in OpenSSL >= 1.0.2.
 If the system-default install does not meet this requirement,
 you will need to download, compile and install at least OpenSSL 1.0.2 on your system.
@@ -95,13 +100,14 @@ overwriting the default OpenSSL that comes with your distro.
 It is highly recommended to use versions of OpenSSL 1.1.1 or greater when possible, 
 as all previous versions have reached end of life status. 
 
-The next problem is the default libcurl on the Linux distro may be linked against
+A potential source of issues is the default libcurl on the Linux distro, which may be linked against
 the previously mentioned default OpenSSL. This could result in linker failures when trying to use
 the system default libcurl with the new OpenSSL install (due to missing symbols).
 Therefore, you SHOULD download the Curl source, compile it against the "new" OpenSSL
 header files, and link libcurl against the "new" OpenSSL. 
 libacvp uses compile time macro logic to address differences in the APIs of different OpenSSL
-versions.
+versions; therefore, it is important that you ensure libacvp is linking to the correct openSSL versions
+at run time as well.
 
 Libacvp is designed to work with curl version 7.61.0 or newer. Some operating systems may ship with
 older versions of Curl which are missing certain features that libacvp depends on. In this case you
@@ -126,7 +132,7 @@ make install
 #### To build for non-runtime testing
 
 ```
-./configure --with-ssl-dir=<path to ssl dir> --with-libcurl-dir=<path to curl dir> --with-fom_dir=<path to where FOM is installed>
+./configure --with-ssl-dir=<path to ssl dir> --with-fom_dir=<path to where FOM is installed> --with-libcurl-dir=<path to curl dir>
 make clean
 make
 make install
@@ -146,6 +152,18 @@ on libacvp having already been built. The libacvp directory can be provided usin
 Otherwise, it will look in the default build directory in the root folder for libacvp.
 
 --disable-lib
+
+#### Other build options
+More info about all available configure options can be found by using ./configure --help. Some important
+ones include:
+--enable-offline : Will link to all dependencies statically and remove the libcurl dependency. See "How
+ to test offline" for more details.
+--disable-kdf : Will disable kdf registration and processing in the application, in cases where the given
+ crypto implementation does not support it (E.g. OpenSSL FOM 2.X.X)
+--disable-lib-check : This will disable autoconf's attempts to automatically detect prerequisite libraries
+ before building libacvp. This may be useful in some edge cases where the libraries exist but autoconf
+ cannot detect them; however, it will give more cryptic error messages in the make stage if there are issues
+
 
 #### Cross Compiling
 Requires options --build and --host.
@@ -189,10 +207,10 @@ Steps:
 	-Change any needed settings
 2.) Open libacvp.sln and acvp_app.sln in Visual Studio and allow the dialog to update the projects'
     versions of MSVC and windows SDK to the latest installed (May be unnecessary if versions match)
-3.) run ms\make_lib.bat
-4.) run ms\make_app.bat
+3.) run ms/make_lib.bat
+4.) run ms/make_app.bat
 
-The library files and app files will be placed in the ms\build\ directory.
+The library files and app files will be placed in the ms/build/ directory.
 
 Notes:
 Windows will only search specific paths for shared libraries, and will not check the
@@ -224,23 +242,25 @@ and ACV_SESSION_SAVE_PREFIX in your environment, respectively.
 ### How to test offline
 1. Download vectors on network accessible device:
 `./app/acvp_app --<algs of choice or all_algs> --vector_req <filename1>`
- - where <filename1> is the file you are saving the tests to.
+ - where `<filename1>` is the file you are saving the tests to.
 
 2. Copy vectors and acvp_app to target:
 `./app/acvp_app --all_algs --vector_req <filename1> --vector_rsp <filename2>`
- - where <filename1> is the file the tests are saved in, and <filename2> is the file
+ - where `<filename1>` is the file the tests are saved in, and `<filename2>` is the file
 you want to save your results to.
 
-3. Copy respones(filename2) to network accessible device:
+3. Copy responses(filename2) to network accessible device:
 `./app/acvp_app --all_algs --vector_upload <filename2>`
- - where <filename2> is the file containing the results of the tests.
+ - where `<filename2>` is the file containing the results of the tests.
 
 *Note:* If the target in Step 2 does not have the standard libraries used by
 libacvp you may configure and build a special app used only for Step 2. This
 can be done by using --enable-offline and --enable-static when running 
 ./configure and do not use --with-libcurl-dir or --with-libmurl-dir which
 will  minimize the library dependencies. Note that openssl with FOM must also
-be built as static.
+be built as static. For this case, OpenSSL MUST be built with the "no-dso" option,
+OR the configure option `--enable-offline-ldl-check` must be used to resolve the libdl
+dependency. Some specific versions of SSL may not be able to remove the libdl dependency.
 
 For example:
 ```
@@ -277,6 +297,36 @@ it was configured and built with. libacvp/acvp_app depend on library versions in
 or disabling certain features at build time, so please make sure libacvp and acvp_app are 
 built and run with the same versions of each library.
 
+`Can I redownload vector sets from a previously created session?`
+Yes. running acvp_app with the --resume_session AND --vector_req options will redownload
+those vector sets to the given file without processing or uploading anything. See the app
+help section for more details about these commands.
+
+`I have been getting retry messages for X amount of time. Is this normal?`
+Yes; the server actively sends retry messages when it is still in the process of generating
+tests or waiting to generate tests. This period of time can vary wildly if the server is under
+intense load, anywhere from a few seconds to a few days. If there is an issue and the connection
+is lost or the server experiences an error, the library output will indicate it.
+
+`I recieved a vector set from somewhere other than libacvp, such as a lab. How can I process it?`
+Libacvp expects vector set json files to have a specific formatting. It is possible to manually
+modify the JSON file to make it work though we do not officially support or endorse this process.
+Moving your vector set into a json array, and putting this as the json object before the vector set
+should allow libacvp to process it using the offline testing process described above; you would
+also need to remove these entries from the output file.
+```
+{
+    "jwt": "NA",
+    "url": "NA",
+    "isSample": false,
+    "vectorSetUrls": [
+        "NA"
+    ]
+}
+```
+Note that this file will not be able to be submitted using libacvp unless you manually input all
+of the correct information in the above object; we do not recommend this and you should instead
+try to submit via wherever you originally got the vector set from.
 
 ## Credits
 This package was initially written by John Foley of Cisco Systems.
@@ -285,7 +335,7 @@ This package was initially written by John Foley of Cisco Systems.
 
 |   Algorithm Type   |    Library Support    |   Client App Support    |
 | :---------------:  | :-------------------: | :---------------------: |
-| **Block Cipher Modes** |                       |                         |   
+| **Block Cipher Modes** |                   |                         |
 | **AES-CBC** |   Y  |  Y |
 | **AES-CFB1** |  Y  |  Y  |
 | **AES-CFB8** |  Y  |  Y  |
@@ -311,7 +361,7 @@ This package was initially written by John Foley of Cisco Systems.
 | **TDES-KW** |  Y  |  N  |
 | **TDES-OFB** |  Y  |  Y  |
 | **TDES-OFBI** |  N  |  N  |
-| **Secure Hash** | |
+| **Secure Hash** | | |
 | **SHA-1** |  Y  |  Y  |
 | **SHA-224** |  Y  |  Y  |
 | **SHA-256** |  Y  |  Y  |
@@ -334,7 +384,7 @@ This package was initially written by John Foley of Cisco Systems.
 | **ParallelHash-256** |  N  |  N  |
 | **TupleHash-128** |  N  |  N  |
 | **TupleHash-256** |  N  |  N  |
-| **Message Authentication** | |
+| **Message Authentication** | | |
 | **AES-GMAC** |  Y  |  Y  |
 | **AES-CCM** |  Y  |  Y  |
 | **CMAC-AES** |  Y  |  Y  |
@@ -350,14 +400,14 @@ This package was initially written by John Foley of Cisco Systems.
 | **HMAC-SHA3-256** |  Y  |  Y  |
 | **HMAC-SHA3-384** |  Y  |  Y  |
 | **HMAC-SHA3-512** |  Y  |  Y  |
-| **DRBG** | |
+| **DRBG** | | |
 | **ctrDRBG-AES-128** |  Y  |  Y  |
 | **ctrDRBG-AES-192** |  Y  |  Y  |
 | **ctrDRBG-AES-256** |  Y  |  Y  |
 | **ctrDRBG-TDES** |  N  |  N  |
 | **HASH DRBG** |  Y  |  Y  |
 | **HMAC DRBG** |  Y  |  Y  |
-| **Digital Signature** | |
+| **Digital Signature** | | |
 | **RSA mode: keyGen** |  Y  |  N  |
 | **RSA mode: sigGen** |  Y  |  Y  |
 | **RSA mode: sigVer** |  Y  |  Y  |
@@ -378,7 +428,7 @@ This package was initially written by John Foley of Cisco Systems.
 | **EDDSA mode: keyVer** |  N  |  N  |
 | **EDDSA mode: sigGen** |  N  |  N  |
 | **EDDSA mode: sigVer** |  N  |  N  |
-| **Key Agreement** | |
+| **Key Agreement** | | |
 | **KAS ECC ephemeralUnified** |  Y  |  Y  |
 | **KAS ECC SSC ephemeralUnified** |  Y  |  Y  |
 | **KAS ECC fullMqv** |  N  |  N  |
@@ -406,7 +456,9 @@ This package was initially written by John Foley of Cisco Systems.
 | **KAS IFC KAS2-Party_V-confirmation** |  N  |  N  |
 | **KTS IFC KTS-OAEP-basic** |  Y  |  Y  |
 | **KTS IFC KTS-OAEP-Party_V-confirmation** |  N  |  N  |
-| **KDFs** | |
+| **KAS KDF HKDF** |  Y  |  Y  |
+| **KAS KDF ONESTEP** |  Y  |  Y  |
+| **KDFs** | | |
 | **Counter KDF** |  Y  |  N  |
 | **Feedback KDF** |  N  |  N  |
 | **Double Pipeline Iterator KDF** |  N  |  N  |
@@ -419,8 +471,8 @@ This package was initially written by John Foley of Cisco Systems.
 | **TPM** |  N  |  N  |
 | **ANSX9.63** |  Y  |  N  |
 | **ANSX9.42** |  N  |  N  |
-| **PBKDF** |  N  |  N  |
-| **Safe Primes** | |
-| **SafePrimes KeyGen** |  N  |  N  |
-| **SafePrimes KeyVer** |  N  |  N  |
+| **PBKDF** |  Y  |  N  |
+| **Safe Primes** | | |
+| **SafePrimes KeyGen** |  Y  |  Y  |
+| **SafePrimes KeyVer** |  Y  |  Y  |
 

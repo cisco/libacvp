@@ -36,7 +36,6 @@
 #include <stdint.h>
 #include <string.h>
 #include <ctype.h>
-
 #include "safe_lib.h"
 
 #define SAFEC_STUB_UNUSED(x) (void)(x)
@@ -49,8 +48,8 @@
  */
 errno_t strcmp_s (const char *dest, rsize_t dmax, const char *src, int *indicator) {
     if (!src || !dest) return (ESNULLP);
-    if (dmax == 0) return (ESZEROL);
-    *indicator = strncmp(dest, src, dmax);
+    if (dmax == 0 || dmax > RSIZE_MAX_STR) return (ESZEROL);
+    *indicator = strcmp(dest, src);
     return (EOK);
 }
 
@@ -62,8 +61,9 @@ errno_t strcmp_s (const char *dest, rsize_t dmax, const char *src, int *indicato
 errno_t strncmp_s (const char *dest, rsize_t dmax, const char *src, rsize_t smax, int *indicator) {
     if (!src || !dest) return (ESNULLP);
     if (dmax == 0) return (ESZEROL);
-    if (smax > RSIZE_MAX_STR) return (EINVAL);
-    *indicator = strncmp(dest, src, dmax);
+    size_t dlen = strnlen(dest, dmax);
+    if (smax > RSIZE_MAX_STR || smax > dlen) return (EINVAL);
+    *indicator = strncmp(dest, src, smax);
     return (EOK);
 }
 

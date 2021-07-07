@@ -739,7 +739,7 @@ Test(EnableCapRSAkeyGen, invalid_modes_params, .fini = teardown) {
      * so we can test with that one... */
     rv = acvp_cap_rsa_keygen_set_mode(ctx, ACVP_RSA_KEYGEN_B35);
     cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_rsa_keygen_set_primes(ctx, ACVP_RSA_KEYGEN_B35, 2048, ACVP_RSA_PRIME_HASH_ALG, 256);
+    rv = acvp_cap_rsa_keygen_set_primes(ctx, ACVP_RSA_KEYGEN_B35, 2048, ACVP_RSA_PRIME_HASH_ALG, 257);
     cr_assert(rv == ACVP_INVALID_ARG);
     rv = acvp_cap_rsa_keygen_set_primes(ctx, ACVP_RSA_KEYGEN_B35, 2048, ACVP_RSA_PRIME_TEST, 256);
     cr_assert(rv == ACVP_INVALID_ARG);
@@ -807,6 +807,19 @@ Test(EnableCapAES, alg_mismatch, .fini = teardown) {
     cr_assert(rv == ACVP_INVALID_ARG);
     rv = acvp_cap_set_prereq(ctx, ACVP_AES_GCM, ACVP_PREREQ_AES, cvalue);
     cr_assert(rv == ACVP_NO_CAP);
+}
+
+Test(EnableCapAES, bad_conformance, .fini = teardown) {
+    setup_empty_ctx(&ctx);
+    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_CTR, &dummy_handler_success);
+    cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_CTR, ACVP_SYM_CIPH_PARM_CONFORMANCE, ACVP_CONFORMANCE_DEFAULT);
+    cr_assert(rv == ACVP_INVALID_ARG);
+    
+    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_GCM, &dummy_handler_success);
+    cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_GCM, ACVP_SYM_CIPH_PARM_CONFORMANCE, ACVP_CONFORMANCE_RFC3686);
+    cr_assert(rv == ACVP_INVALID_ARG);
 }
 
 /*
@@ -893,6 +906,61 @@ Test(EnableCapAES, invalid_param_lens, .fini = teardown) {
     cr_assert(rv == ACVP_INVALID_ARG);
 }
 
+/*
+ * Enable an AES cipher mode, then attempt to register
+ * a domain for a non-domain value 
+ */
+Test(EnableCapAES, cipher_invalid_parm_domain, .fini = teardown) {
+    setup_empty_ctx(&ctx);
+    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_CBC_CS2, &dummy_handler_success);
+    cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_sym_cipher_set_domain(ctx, ACVP_AES_CBC_CS2, ACVP_SYM_CIPH_KEYLEN, 0, 128, 8);
+    cr_assert(rv == ACVP_INVALID_ARG);
+}
+
+/*
+ * null CTX set domain
+ */
+Test(EnableCapAES, cipher_domain_no_ctx, .fini = teardown) {
+    setup_empty_ctx(&ctx);
+    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_XPN, &dummy_handler_success);
+    cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_sym_cipher_set_domain(NULL, ACVP_AES_XPN, ACVP_SYM_CIPH_DOMAIN_PTLEN, 0, 128, 8);
+    cr_assert(rv == ACVP_NO_CTX);
+}
+
+/*
+ * bad domain values
+ */
+Test(EnableCapAES, cipher_domain_bad_values, .fini = teardown) {
+    setup_empty_ctx(&ctx);
+    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_CBC_CS3, &dummy_handler_success);
+    cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_sym_cipher_set_domain(ctx, ACVP_AES_CBC_CS3, ACVP_SYM_CIPH_DOMAIN_PTLEN, -64, 128, 8);
+    cr_assert(rv == ACVP_INVALID_ARG);
+    rv = acvp_cap_sym_cipher_set_domain(ctx, ACVP_AES_CBC_CS3, ACVP_SYM_CIPH_DOMAIN_PTLEN, 128, 64, 8);
+    cr_assert(rv == ACVP_INVALID_ARG);
+    rv = acvp_cap_sym_cipher_set_domain(ctx, ACVP_AES_CBC_CS3, ACVP_SYM_CIPH_DOMAIN_PTLEN, 0, 128, 0);
+    cr_assert(rv == ACVP_INVALID_ARG);
+    rv = acvp_cap_sym_cipher_set_domain(ctx, ACVP_AES_CBC_CS3, ACVP_SYM_CIPH_KEYLEN, 0, 0, 8);
+    cr_assert(rv == ACVP_INVALID_ARG);
+}
+
+/* 
+ * Enable an AES cipher, register a payloadLen, then register a payloadLen domain
+ */
+Test(EnableCapAES, dup_payload_registration, .fini = teardown) {
+    setup_empty_ctx(&ctx);
+    rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_CBC_CS1, &dummy_handler_success);
+    cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_CBC_CS1, ACVP_SYM_CIPH_PTLEN, 33333);
+    cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_sym_cipher_set_domain(ctx, ACVP_AES_CBC_CS1, ACVP_SYM_CIPH_DOMAIN_PTLEN, 0, 1024, 8);
+    cr_assert(rv == ACVP_INVALID_ARG);
+
+}
+
+
 Test(EnableCapTDES, properly, .fini = teardown) {
     setup_empty_ctx(&ctx);
     rv = acvp_cap_sym_cipher_enable(ctx, ACVP_TDES_CBC, &dummy_handler_success);
@@ -907,7 +975,7 @@ Test(EnableCapTDES, properly, .fini = teardown) {
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CBC, ACVP_SYM_CIPH_PARM_IVGEN_MODE, ACVP_SYM_CIPH_IVGEN_MODE_NA);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CBC, ACVP_SYM_CIPH_KEYLEN, 256);
+    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CBC, ACVP_SYM_CIPH_KEYLEN, 192);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CBC, ACVP_SYM_CIPH_IVLEN, 64);
     cr_assert(rv == ACVP_SUCCESS);
@@ -1300,7 +1368,8 @@ Test(EnableCapECDSA, good_siggen, .fini = teardown) {
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_ECDSA_HASH_ALG, ACVP_SHA256);
     cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_ECDSA_HASH_ALG, ACVP_SHA384);
+    //rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_ECDSA_HASH_ALG, ACVP_SHA384);
+    rv = acvp_cap_ecdsa_set_curve_hash_alg(ctx, ACVP_ECDSA_SIGGEN, ACVP_EC_CURVE_B409, ACVP_SHA384);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_ECDSA_HASH_ALG, ACVP_SHA512);
     cr_assert(rv == ACVP_SUCCESS);
@@ -1317,7 +1386,13 @@ Test(EnableCapECDSA, invalid_args_sg, .fini = teardown) {
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_ECDSA_CURVE, 256);
     cr_assert(rv == ACVP_INVALID_ARG);
-    rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_ECDSA_HASH_ALG, 256);
+    rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_ECDSA_HASH_ALG, 257);
+    cr_assert(rv == ACVP_INVALID_ARG);
+    rv = acvp_cap_ecdsa_set_curve_hash_alg(ctx, ACVP_ECDSA_SIGGEN, ACVP_EC_CURVE_K233, ACVP_SHA224);
+    cr_assert(rv == ACVP_UNSUPPORTED_OP);
+    rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_ECDSA_CURVE, ACVP_EC_CURVE_P192);
+    cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_ecdsa_set_curve_hash_alg(ctx, ACVP_ECDSA_SIGGEN, ACVP_EC_CURVE_P192, 3);
     cr_assert(rv == ACVP_INVALID_ARG);
 }
 
@@ -1361,7 +1436,8 @@ Test(EnableCapECDSA, good_sigver, .fini = teardown) {
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_ECDSA_HASH_ALG, ACVP_SHA256);
     cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_ECDSA_HASH_ALG, ACVP_SHA384);
+    //rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_ECDSA_HASH_ALG, ACVP_SHA384);
+    rv = acvp_cap_ecdsa_set_curve_hash_alg(ctx, ACVP_ECDSA_SIGVER, ACVP_EC_CURVE_B409, ACVP_SHA384);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_ECDSA_HASH_ALG, ACVP_SHA512);
     cr_assert(rv == ACVP_SUCCESS);
@@ -1377,7 +1453,13 @@ Test(EnableCapECDSA, invalid_args_sv, .fini = teardown) {
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_ECDSA_CURVE, 256);
     cr_assert(rv == ACVP_INVALID_ARG);
-    rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_ECDSA_HASH_ALG, 256);
+    rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_ECDSA_HASH_ALG, 257);
+    cr_assert(rv == ACVP_INVALID_ARG);
+    rv = acvp_cap_ecdsa_set_curve_hash_alg(ctx, ACVP_ECDSA_SIGVER, ACVP_EC_CURVE_K233, ACVP_SHA224);
+    cr_assert(rv == ACVP_UNSUPPORTED_OP);
+    rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_ECDSA_CURVE, ACVP_EC_CURVE_P192);
+    cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_ecdsa_set_curve_hash_alg(ctx, ACVP_ECDSA_SIGVER, ACVP_EC_CURVE_P192, 3);
     cr_assert(rv == ACVP_INVALID_ARG);
 }
 
@@ -1696,5 +1778,128 @@ Test(EnableCapKASFFC, invalid_params, .fini = teardown) {
     cr_assert(rv == ACVP_INVALID_ARG);
     // invalid scheme
     rv = acvp_cap_kas_ffc_set_scheme(ctx, ACVP_KAS_FFC_COMP, ACVP_KAS_FFC_MODE_COMPONENT, 0, ACVP_KAS_FFC_ROLE, ACVP_KAS_FFC_ROLE_RESPONDER);
+    cr_assert(rv == ACVP_INVALID_ARG);
+}
+
+/*
+ * enable kas hkdf with invalid params
+ */
+Test(EnableCapKASHKDF, invalid_params, .fini = teardown) {
+    setup_empty_ctx(&ctx);
+
+    rv = acvp_cap_kas_kdf_enable(ctx, ACVP_KAS_HKDF, &dummy_handler_success);
+    cr_assert(rv == ACVP_SUCCESS);
+    // invalid cipher
+    rv = acvp_cap_kas_kdf_set_parm(ctx, ACVP_HASH_SHA256, ACVP_KAS_KDF_PATTERN, ACVP_KAS_KDF_PATTERN_UPARTYINFO, NULL);
+    cr_assert(rv = ACVP_INVALID_ARG);
+    //invalid pattern
+    rv = acvp_cap_kas_kdf_set_parm(ctx, ACVP_KAS_HKDF, ACVP_KAS_KDF_PATTERN, ACVP_KAS_KDF_PATTERN_MAX, NULL);
+    cr_assert(rv = ACVP_INVALID_ARG);
+    //invalid hmac alg
+    rv = acvp_cap_kas_kdf_set_parm(ctx, ACVP_KAS_HKDF, ACVP_KAS_HKDF_HMAC_ALG, ACVP_HASH_ALG_MAX, NULL);
+    cr_assert(rv = ACVP_INVALID_ARG);
+    //invalid l
+    rv = acvp_cap_kas_kdf_set_parm(ctx, ACVP_KAS_HKDF, ACVP_KAS_KDF_L, 0, NULL);
+    cr_assert(rv = ACVP_INVALID_ARG);
+    //invalid salt method
+    rv = acvp_cap_kas_kdf_set_parm(ctx, ACVP_KAS_HKDF, ACVP_KAS_KDF_MAC_SALT, ACVP_KAS_KDF_MAC_SALT_METHOD_MAX, NULL);
+    cr_assert(rv = ACVP_INVALID_ARG);
+    //invalid encoding
+    rv = acvp_cap_kas_kdf_set_parm(ctx, ACVP_KAS_HKDF, ACVP_KAS_KDF_ENCODING_TYPE, ACVP_KAS_KDF_ENCODING_MAX, NULL);
+    cr_assert(rv = ACVP_INVALID_ARG);
+    //invalid call to set Z on set parm
+    rv = acvp_cap_kas_kdf_set_parm(ctx, ACVP_KAS_HKDF, ACVP_KAS_KDF_Z, 1024, NULL);
+    cr_assert(rv = ACVP_INVALID_ARG);
+    //invalid call to set AUX_FUNCTION on hkdf
+    rv = acvp_cap_kas_kdf_set_parm(ctx, ACVP_KAS_HKDF, ACVP_KAS_KDF_ONESTEP_AUX_FUNCTION, ACVP_HASH_SHA256, NULL);
+    cr_assert(rv = ACVP_INVALID_ARG);
+    //invalid alg calls to set_domain
+    rv = acvp_cap_kas_kdf_set_domain(ctx, ACVP_HASH_SHA256, ACVP_KAS_KDF_Z, 0, 4096, 8);
+    cr_assert(rv = ACVP_INVALID_ARG);
+    //invalid param call to set_domain
+    rv = acvp_cap_kas_kdf_set_domain(ctx, ACVP_KAS_HKDF, ACVP_KAS_KDF_L, 0, 4096, 8);
+    cr_assert(rv = ACVP_INVALID_ARG);
+
+}
+
+/*
+ * enable kas kdf onestep with invalid params
+ */
+Test(EnableCapKASKDFONESTEP, invalid_params, .fini = teardown) {
+    setup_empty_ctx(&ctx);
+
+    rv = acvp_cap_kas_kdf_enable(ctx, ACVP_KAS_KDF_ONESTEP, &dummy_handler_success);
+    cr_assert(rv == ACVP_SUCCESS);
+    // invalid cipher
+    rv = acvp_cap_kas_kdf_set_parm(ctx, ACVP_HASH_SHA256, ACVP_KAS_KDF_PATTERN, ACVP_KAS_KDF_PATTERN_UPARTYINFO, NULL);
+    cr_assert(rv = ACVP_INVALID_ARG);
+    //invalid pattern
+    rv = acvp_cap_kas_kdf_set_parm(ctx, ACVP_KAS_KDF_ONESTEP, ACVP_KAS_KDF_PATTERN, ACVP_KAS_KDF_PATTERN_MAX, NULL);
+    cr_assert(rv = ACVP_INVALID_ARG);
+    //invalid aux function
+    rv = acvp_cap_kas_kdf_set_parm(ctx, ACVP_KAS_KDF_ONESTEP, ACVP_AES_GCM, ACVP_HASH_ALG_MAX, NULL);
+    cr_assert(rv = ACVP_INVALID_ARG);
+    //invalid l
+    rv = acvp_cap_kas_kdf_set_parm(ctx, ACVP_KAS_KDF_ONESTEP, ACVP_KAS_KDF_L, 0, NULL);
+    cr_assert(rv = ACVP_INVALID_ARG);
+    //invalid salt method
+    rv = acvp_cap_kas_kdf_set_parm(ctx, ACVP_KAS_KDF_ONESTEP, ACVP_KAS_KDF_MAC_SALT, ACVP_KAS_KDF_MAC_SALT_METHOD_MAX, NULL);
+    cr_assert(rv = ACVP_INVALID_ARG);
+    //invalid encoding
+    rv = acvp_cap_kas_kdf_set_parm(ctx, ACVP_KAS_KDF_ONESTEP, ACVP_KAS_KDF_ENCODING_TYPE, ACVP_KAS_KDF_ENCODING_MAX, NULL);
+    cr_assert(rv = ACVP_INVALID_ARG);
+    //invalid call to set Z on set parm
+    rv = acvp_cap_kas_kdf_set_parm(ctx, ACVP_KAS_KDF_ONESTEP, ACVP_KAS_KDF_Z, 1024, NULL);
+    cr_assert(rv = ACVP_INVALID_ARG);
+    //invalid call to set HMAC_ALG on hkdf
+    rv = acvp_cap_kas_kdf_set_parm(ctx, ACVP_KAS_KDF_ONESTEP, ACVP_KAS_HKDF_HMAC_ALG, ACVP_HASH_SHA256, NULL);
+    cr_assert(rv = ACVP_INVALID_ARG);
+    //invalid alg calls to set_domain
+    rv = acvp_cap_kas_kdf_set_domain(ctx, ACVP_HASH_SHA256, ACVP_KAS_KDF_Z, 0, 4096, 8);
+    cr_assert(rv = ACVP_INVALID_ARG);
+    //invalid param call to set_domain
+    rv = acvp_cap_kas_kdf_set_domain(ctx, ACVP_KAS_KDF_ONESTEP, ACVP_KAS_KDF_L, 0, 4096, 8);
+    cr_assert(rv = ACVP_INVALID_ARG);
+}
+
+ /*
+  * enable kdf tls 1.3 with valid parms
+  */
+Test(EnableCapKDFTLS13, valid_params, .fini = teardown) {
+    setup_empty_ctx(&ctx);
+
+    rv = acvp_cap_kdf_tls13_enable(ctx, &dummy_handler_success);
+    cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_set_prereq(ctx, ACVP_KDF_TLS13, ACVP_PREREQ_HMAC, cvalue);
+    cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_kdf_tls13_set_parm(ctx, ACVP_KDF_TLS13_HMAC_ALG, ACVP_HMAC_ALG_SHA256);
+    cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_kdf_tls13_set_parm(ctx, ACVP_KDF_TLS13_HMAC_ALG, ACVP_HMAC_ALG_SHA384);
+    cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_kdf_tls13_set_parm(ctx, ACVP_KDF_TLS13_RUNNING_MODE, ACVP_KDF_TLS13_RUN_MODE_PSK);
+    cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_kdf_tls13_set_parm(ctx, ACVP_KDF_TLS13_RUNNING_MODE, ACVP_KDF_TLS13_RUN_MODE_DHE);
+    cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_kdf_tls13_set_parm(ctx, ACVP_KDF_TLS13_RUNNING_MODE, ACVP_KDF_TLS13_RUN_MODE_PSK_DHE);
+    cr_assert(rv == ACVP_SUCCESS);
+}
+
+ /*
+  * enable kdf tls 1.3 with invalid parms
+  */
+Test(EnableCapKDFTLS13, invalid_params, .fini = teardown) {
+    setup_empty_ctx(&ctx);
+    
+    rv = acvp_cap_kdf_tls13_enable(NULL, &dummy_handler_success);
+    cr_assert(rv == ACVP_NO_CTX);
+    rv = acvp_cap_kdf_tls13_enable(ctx, &dummy_handler_success);
+    cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_set_prereq(ctx, ACVP_KDF_TLS13, ACVP_PREREQ_AES, cvalue);
+    cr_assert(rv == ACVP_INVALID_ARG);
+    rv = acvp_cap_kdf_tls13_set_parm(ctx, ACVP_KDF_TLS13_HMAC_ALG, ACVP_HMAC_ALG_SHA224);
+    cr_assert(rv == ACVP_INVALID_ARG);
+    rv = acvp_cap_kdf_tls13_set_parm(ctx, ACVP_KDF_TLS13_RUNNING_MODE, 0);
+    cr_assert(rv == ACVP_INVALID_ARG);
+    rv = acvp_cap_kdf_tls13_set_parm(ctx, 0, ACVP_SHA256);
     cr_assert(rv == ACVP_INVALID_ARG);
 }

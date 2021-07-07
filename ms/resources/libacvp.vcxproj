@@ -397,6 +397,12 @@
     <ClCompile Include="..\..\src\acvp_hmac.c" />
     <ClCompile Include="..\..\src\acvp_kas_ecc.c" />
     <ClCompile Include="..\..\src\acvp_kas_ffc.c" />
+    <ClCompile Include="..\..\src\acvp_kas_ifc.c" />
+    <ClCompile Include="..\..\src\acvp_kts_ifc.c" />
+    <ClCompile Include="..\..\src\acvp_pbkdf.c" />
+    <ClCompile Include="..\..\src\acvp_kdf_tls13.c" />
+    <ClCompile Include="..\..\src\acvp_kas_kdf.c" />
+    <ClCompile Include="..\..\src\acvp_rsa_prim.c" />
     <ClCompile Include="..\..\src\acvp_kdf108.c" />
     <ClCompile Include="..\..\src\acvp_kdf135_ikev1.c" />
     <ClCompile Include="..\..\src\acvp_kdf135_ikev2.c" />
@@ -408,6 +414,7 @@
     <ClCompile Include="..\..\src\acvp_operating_env.c" />
     <ClCompile Include="..\..\src\acvp_rsa_keygen.c" />
     <ClCompile Include="..\..\src\acvp_rsa_sig.c" />
+    <ClCompile Include="..\..\src\acvp_safe_primes.c" />
     <ClCompile Include="..\..\src\acvp_transport.c" />
     <ClCompile Include="..\..\src\acvp_util.c" />
     <ClCompile Include="..\..\src\parson.c" />

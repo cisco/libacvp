@@ -1,7 +1,12 @@
 noinst_PROGRAMS = runtest
 runtest_SOURCES = ut_common.c
-tmp_cflags = -g -O0 -Wall -DNO_SSL_DL -p $(SAFEC_CFLAGS) $(CRITERION_CFLAGS) $(LIBACVP_CFLAGS) -I../include
-tmp_ldflags= -ldl $(CRITERION_LDFLAGS) $(SAFEC_LDFLAGS) $(LIBACVP_LDFLAGS)
+tmp_cflags = -g -O0 -Wall -DNO_SSL_DL $(SAFEC_CFLAGS) $(CRITERION_CFLAGS) $(LIBACVP_CFLAGS) -I../include
+tmp_ldflags= $(CRITERION_LDFLAGS) $(SAFEC_LDFLAGS) $(LIBACVP_LDFLAGS)
+
+if USE_LDL_CHECK
+tmp_ldflags += -ldl
+endif
+
 if ! LIB_NOT_SUPPORTED
 runtest_SOURCES += create_session.c \
       test_acvp_utils.c \
@@ -17,6 +22,7 @@ runtest_SOURCES += create_session.c \
       test_acvp_kdf135_ikev1.c \
       test_acvp_kdf108.c \
       test_acvp_pbkdf.c \
+      test_acvp_kdf_tls13.c \
       test_acvp_rsa_keygen.c \
       test_acvp_rsa_sig.c \
       test_acvp_rsa_prim.c \
@@ -32,7 +38,10 @@ runtest_SOURCES += create_session.c \
       test_acvp_ecdsa.c \
       test_acvp_kas_ecc.c \
       test_acvp_kas_ifc.c \
-      test_acvp_kas_ffc.c
+      test_acvp_kts_ifc.c \
+      test_acvp_kas_ffc.c \
+      test_acvp_safe_primes.c \
+      test_acvp_kas_kdf.c 
 
 tmp_cflags += $(LIBCURL_CFLAGS)
 tmp_ldflags += $(LIBCURL_LDFLAGS)
@@ -50,9 +59,12 @@ runtest_SOURCES += app_common.c \
       test_app_kas_ifc.c \
       test_app_rsa_keygen.c \
       test_app_rsa_sig.c \
-      test_app_sha.c
+      test_app_sha.c \
+      test_app_safe_primes.c \
+      test_app_kas_kdf.c
 
-APP_LINK = ../app/acvp_app-app_sha.o \
+APP_LINK = ../app/acvp_app-app_utils.o \
+           ../app/acvp_app-app_sha.o \
            ../app/acvp_app-app_hmac.o \
            ../app/acvp_app-app_aes.o \
            ../app/acvp_app-app_des.o \
@@ -62,7 +74,8 @@ APP_LINK = ../app/acvp_app-app_sha.o \
            ../app/acvp_app-app_kas.o \
            ../app/acvp_app-app_rsa.o \
            ../app/acvp_app-app_ecdsa.o \
-           ../app/acvp_app-app_drbg.o
+           ../app/acvp_app-app_drbg.o \
+           ../app/acvp_app-app_kas_kdf.o
 
 tmp_cflags += $(SSL_CFLAGS) $(FOM_CFLAGS) -I../app
 tmp_ldflags += $(SSL_LDFLAGS) $(FOM_LDFLAGS)

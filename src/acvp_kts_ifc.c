@@ -184,7 +184,12 @@ static ACVP_KTS_IFC_TEST_TYPE read_test_type(const char *str) {
 }
 
 static ACVP_RSA_KEY_FORMAT read_key_gen(const char *str){
-    return ACVP_KTS_IFC_RSAKPG1_BASIC;
+    int diff;
+
+    strcmp_s("rsakpg1-basic", 13, str, &diff);
+    if (!diff) return ACVP_KAS_IFC_RSAKPG1_BASIC;
+
+    return 0;
 }
 
 static ACVP_RESULT acvp_kts_ifc(ACVP_CTX *ctx,
