@@ -454,6 +454,7 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
         json_object_set_value(cap_obj, "keyingOption", json_value_init_array());
         opts_arr = json_object_get_array(cap_obj, "keyingOption");
         if (sym_cap->keying_option == ACVP_SYM_CIPH_KO_THREE ||
+            sym_cap->keying_option == ACVP_SYM_CIPH_KO_ONE ||
             sym_cap->keying_option == ACVP_SYM_CIPH_KO_BOTH) {
             json_array_append_number(opts_arr, 1);
         }
@@ -466,15 +467,40 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
     /*
      * Set the supported key lengths
      */
-    json_object_set_value(cap_obj, "keyLen", json_value_init_array());
-    opts_arr = json_object_get_array(cap_obj, "keyLen");
     sl_list = sym_cap->keylen;
-    if (!sl_list) {
-        return ACVP_MISSING_ARG;
-    }
-    while (sl_list) {
-        json_array_append_number(opts_arr, sl_list->length);
-        sl_list = sl_list->next;
+    if (sl_list) {
+        json_object_set_value(cap_obj, "keyLen", json_value_init_array());
+        opts_arr = json_object_get_array(cap_obj, "keyLen");
+        while (sl_list) {
+            json_array_append_number(opts_arr, sl_list->length);
+            sl_list = sl_list->next;
+        }
+    } else {
+        //If cipher is AES, we need keylengths. If TDES, we do not. 
+        ACVP_SUB_AES checkAes = acvp_get_aes_alg(cap_entry->cipher);
+        switch (checkAes) {
+        case ACVP_SUB_AES_ECB:
+        case ACVP_SUB_AES_CBC:
+        case ACVP_SUB_AES_OFB:
+        case ACVP_SUB_AES_CFB128:
+        case ACVP_SUB_AES_CFB8:
+        case ACVP_SUB_AES_CFB1:
+        case ACVP_SUB_AES_CBC_CS1:
+        case ACVP_SUB_AES_CBC_CS2:
+        case ACVP_SUB_AES_CBC_CS3:
+        case ACVP_SUB_AES_CCM:
+        case ACVP_SUB_AES_GCM:
+        case ACVP_SUB_AES_GCM_SIV:
+        case ACVP_SUB_AES_CTR:
+        case ACVP_SUB_AES_XTS:
+        case ACVP_SUB_AES_XPN:
+        case ACVP_SUB_AES_KW:
+        case ACVP_SUB_AES_KWP:
+        case ACVP_SUB_AES_GMAC:
+            return ACVP_MISSING_ARG;
+        default:
+            break;
+        }
     }
 
     /*
@@ -618,22 +644,49 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
      * Set the supported lengths (could be pt, ct, data, etc.
      * see alg spec for more details)
      */
-    if (cap_entry->cipher != ACVP_AES_GMAC) {
+    if (sym_cap->ptlen) {
         json_object_set_value(cap_obj, "payloadLen", json_value_init_array());
         opts_arr = json_object_get_array(cap_obj, "payloadLen");
-        if (sym_cap->ptlen) {
         sl_list = sym_cap->ptlen;
-            while (sl_list) {
-                json_array_append_number(opts_arr, sl_list->length);
-                sl_list = sl_list->next;
-            }
-        } else {
-            tmp_val = json_value_init_object();
-            tmp_obj = json_value_get_object(tmp_val);
-            json_object_set_number(tmp_obj, "max", sym_cap->payload_len.max);
-            json_object_set_number(tmp_obj, "min", sym_cap->payload_len.min);
-            json_object_set_number(tmp_obj, "increment", sym_cap->payload_len.increment);
-            json_array_append_value(opts_arr, tmp_val);
+        while (sl_list) {
+            json_array_append_number(opts_arr, sl_list->length);
+            sl_list = sl_list->next;
+        }
+    } else if (sym_cap->payload_len.min || sym_cap->payload_len.max ||
+                sym_cap->payload_len.increment) {
+        json_object_set_value(cap_obj, "payloadLen", json_value_init_array());
+        opts_arr = json_object_get_array(cap_obj, "payloadLen");
+        tmp_val = json_value_init_object();
+        tmp_obj = json_value_get_object(tmp_val);
+        json_object_set_number(tmp_obj, "max", sym_cap->payload_len.max);
+        json_object_set_number(tmp_obj, "min", sym_cap->payload_len.min);
+        json_object_set_number(tmp_obj, "increment", sym_cap->payload_len.increment);
+        json_array_append_value(opts_arr, tmp_val);
+    } else {
+        //For most AES ciphers, we need payload lengths. If TDES, we do not. 
+        ACVP_SUB_AES checkAes = acvp_get_aes_alg(cap_entry->cipher);
+        switch (checkAes) {
+        case ACVP_SUB_AES_CBC_CS1:
+        case ACVP_SUB_AES_CBC_CS2:
+        case ACVP_SUB_AES_CBC_CS3:
+        case ACVP_SUB_AES_CCM:
+        case ACVP_SUB_AES_GCM:
+        case ACVP_SUB_AES_GCM_SIV:
+        case ACVP_SUB_AES_CTR:
+        case ACVP_SUB_AES_XTS:
+        case ACVP_SUB_AES_XPN:
+        case ACVP_SUB_AES_KW:
+        case ACVP_SUB_AES_KWP:
+            return ACVP_MISSING_ARG;
+        case ACVP_SUB_AES_CBC:
+        case ACVP_SUB_AES_ECB:
+        case ACVP_SUB_AES_OFB:
+        case ACVP_SUB_AES_CFB128:
+        case ACVP_SUB_AES_CFB8:
+        case ACVP_SUB_AES_CFB1:
+        case ACVP_SUB_AES_GMAC:
+        default:
+            break;
         }
     }
 
@@ -3945,6 +3998,11 @@ ACVP_RESULT acvp_build_test_session(ACVP_CTX *ctx, char **reg, int *out_len) {
             case ACVP_TDES_CFB64:
             case ACVP_TDES_CFB8:
             case ACVP_TDES_CFB1:
+            case ACVP_TDES_CBCI:
+            case ACVP_TDES_OFBI:
+            case ACVP_TDES_CFBP1:
+            case ACVP_TDES_CFBP8:
+            case ACVP_TDES_CFBP64:
             case ACVP_TDES_KW:
                 rv = acvp_build_sym_cipher_register_cap(cap_obj, cap_entry);
                 break;
@@ -4084,13 +4142,8 @@ ACVP_RESULT acvp_build_test_session(ACVP_CTX *ctx, char **reg, int *out_len) {
             case ACVP_SAFE_PRIMES_KEYVER:
                 rv = acvp_build_safe_primes_register_cap(ctx, cap_obj, cap_entry);
                 break;
-           case ACVP_CIPHER_START:
-           case ACVP_TDES_CBCI:
-           case ACVP_TDES_OFBI:
-           case ACVP_TDES_CFBP1:
-           case ACVP_TDES_CFBP8:
-           case ACVP_TDES_CFBP64:
-           case ACVP_CIPHER_END:
+            case ACVP_CIPHER_START:
+            case ACVP_CIPHER_END:
             default:
                 ACVP_LOG_ERR("Cap entry not found, %d.", cap_entry->cipher);
                 json_value_free(cap_val);

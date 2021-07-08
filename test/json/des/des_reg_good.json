@@ -13,12 +13,6 @@
           ],
           "keyingOption": [
             1
-          ],
-          "keyLen": [
-            192
-          ],
-          "ptLen": [
-            512
           ]
         },
         {
@@ -29,15 +23,6 @@
           ],
           "keyingOption": [
             1
-          ],
-          "keyLen": [
-            192
-          ],
-          "ptLen": [
-            64,
-            128,
-            192,
-            768
           ]
         },
         {
@@ -48,12 +33,6 @@
           ],
           "keyingOption": [
             1
-          ],
-          "keyLen": [
-            192
-          ],
-          "ptLen": [
-            64
           ]
         },
         {
@@ -64,12 +43,6 @@
           ],
           "keyingOption": [
             1
-          ],
-          "keyLen": [
-            192
-          ],
-          "ptLen": [
-            320
           ]
         },
         {
@@ -80,13 +53,6 @@
           ],
           "keyingOption": [
             1
-          ],
-          "keyLen": [
-            192
-          ],
-          "ptLen": [
-            64,
-            256
           ]
         },
         {
@@ -97,12 +63,6 @@
           ],
           "keyingOption": [
             1
-          ],
-          "keyLen": [
-            192
-          ],
-          "ptLen": [
-            64
           ]
         },
         {
@@ -115,12 +75,6 @@
           "overflowCounter": true,
           "keyingOption": [
               1
-          ],
-          "keyLen": [
-              192
-          ],
-          "payloadLen": [
-              64
           ]
         }
       ]

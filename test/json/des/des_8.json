@@ -7,7 +7,7 @@
       {
         "testType": "AFT",
         "tgId": 999,
-        "keyingOption": 3,
+        "keyingOption": 1,
         "tests": [
           {
             "pt": "0000000000000000",
@@ -22,7 +22,7 @@
       {
         "testType": "AFT",
         "tgId": 999,
-        "keyingOption": 3,
+        "keyingOption": 1,
         "tests": [
           {
             "key2": "1046913489980131",

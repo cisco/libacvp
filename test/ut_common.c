@@ -29,7 +29,7 @@ void teardown_ctx(ACVP_CTX **ctx) {
     acvp_cleanup(*ctx);
 }
 
-void setup_empty_ctx (ACVP_CTX **ctx) {
+void setup_empty_ctx(ACVP_CTX **ctx) {
     ACVP_RESULT rv = ACVP_SUCCESS;
     ACVP_LOG_LVL level = ACVP_LOG_LVL_STATUS;
     
