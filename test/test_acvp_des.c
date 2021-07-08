@@ -28,24 +28,7 @@ static void setup(void) {
 
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CBC, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
     cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CBC, ACVP_SYM_CIPH_PARM_KO, ACVP_SYM_CIPH_KO_THREE);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CBC, ACVP_SYM_CIPH_PARM_IVGEN_SRC, ACVP_SYM_CIPH_IVGEN_SRC_NA);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CBC, ACVP_SYM_CIPH_PARM_IVGEN_MODE, ACVP_SYM_CIPH_IVGEN_MODE_NA);
-    cr_assert(rv == ACVP_SUCCESS);
-
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CBC, ACVP_SYM_CIPH_KEYLEN, 192);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CBC, ACVP_SYM_CIPH_IVLEN, 192 / 3);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CBC, ACVP_SYM_CIPH_PTLEN, 64);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CBC, ACVP_SYM_CIPH_PTLEN, 64 * 2);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CBC, ACVP_SYM_CIPH_PTLEN, 64 * 3);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CBC, ACVP_SYM_CIPH_PTLEN, 64 * 12);
+    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CBC, ACVP_SYM_CIPH_PARM_KO, ACVP_SYM_CIPH_KO_ONE);
     cr_assert(rv == ACVP_SUCCESS);
 
     /*
@@ -56,20 +39,11 @@ static void setup(void) {
 
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CTR, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
     cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CTR, ACVP_SYM_CIPH_PARM_KO, ACVP_SYM_CIPH_KO_THREE);
+    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CTR, ACVP_SYM_CIPH_PARM_KO, ACVP_SYM_CIPH_KO_ONE);
     cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CTR, ACVP_SYM_CIPH_PARM_IVGEN_SRC, ACVP_SYM_CIPH_IVGEN_SRC_NA);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CTR, ACVP_SYM_CIPH_PARM_IVGEN_MODE, ACVP_SYM_CIPH_IVGEN_MODE_NA);
-    cr_assert(rv == ACVP_SUCCESS);
-
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CTR, ACVP_SYM_CIPH_PARM_CTR_INCR, 1);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CTR, ACVP_SYM_CIPH_PARM_CTR_OVRFLW, 1);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CTR, ACVP_SYM_CIPH_KEYLEN, 192);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CTR, ACVP_SYM_CIPH_PTLEN, 64);
     cr_assert(rv == ACVP_SUCCESS);
 }
 
@@ -84,25 +58,9 @@ static void setup_fail(void) {
 
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CBC, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
     cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CBC, ACVP_SYM_CIPH_PARM_KO, ACVP_SYM_CIPH_KO_THREE);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CBC, ACVP_SYM_CIPH_PARM_IVGEN_SRC, ACVP_SYM_CIPH_IVGEN_SRC_NA);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CBC, ACVP_SYM_CIPH_PARM_IVGEN_MODE, ACVP_SYM_CIPH_IVGEN_MODE_NA);
+    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CBC, ACVP_SYM_CIPH_PARM_KO, ACVP_SYM_CIPH_KO_ONE);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CBC, ACVP_SYM_CIPH_KEYLEN, 192);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CBC, ACVP_SYM_CIPH_IVLEN, 192 / 3);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CBC, ACVP_SYM_CIPH_PTLEN, 64);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CBC, ACVP_SYM_CIPH_PTLEN, 64 * 2);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CBC, ACVP_SYM_CIPH_PTLEN, 64 * 3);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CBC, ACVP_SYM_CIPH_PTLEN, 64 * 12);
-    cr_assert(rv == ACVP_SUCCESS);
 
     /*
      * Enable TDES-CTR
@@ -112,20 +70,11 @@ static void setup_fail(void) {
 
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CTR, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
     cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CTR, ACVP_SYM_CIPH_PARM_KO, ACVP_SYM_CIPH_KO_THREE);
+    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CTR, ACVP_SYM_CIPH_PARM_KO, ACVP_SYM_CIPH_KO_ONE);
     cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CTR, ACVP_SYM_CIPH_PARM_IVGEN_SRC, ACVP_SYM_CIPH_IVGEN_SRC_NA);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CTR, ACVP_SYM_CIPH_PARM_IVGEN_MODE, ACVP_SYM_CIPH_IVGEN_MODE_NA);
-    cr_assert(rv == ACVP_SUCCESS);
-
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CTR, ACVP_SYM_CIPH_PARM_CTR_INCR, 1);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CTR, ACVP_SYM_CIPH_PARM_CTR_OVRFLW, 1);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CTR, ACVP_SYM_CIPH_KEYLEN, 192);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CTR, ACVP_SYM_CIPH_PTLEN, 64);
     cr_assert(rv == ACVP_SUCCESS);
 }
 
@@ -147,16 +96,7 @@ Test(DES_CAPABILITY, good) {
 
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_ECB, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
     cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_ECB, ACVP_SYM_CIPH_PARM_KO, ACVP_SYM_CIPH_KO_THREE);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_ECB, ACVP_SYM_CIPH_PARM_IVGEN_SRC, ACVP_SYM_CIPH_IVGEN_SRC_NA);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_ECB, ACVP_SYM_CIPH_PARM_IVGEN_MODE, ACVP_SYM_CIPH_IVGEN_MODE_NA);
-    cr_assert(rv == ACVP_SUCCESS);
-
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_ECB, ACVP_SYM_CIPH_KEYLEN, 192);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_ECB, ACVP_SYM_CIPH_PTLEN, 512);
+    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_ECB, ACVP_SYM_CIPH_PARM_KO, ACVP_SYM_CIPH_KO_ONE);
     cr_assert(rv == ACVP_SUCCESS);
 
     /*
@@ -167,24 +107,7 @@ Test(DES_CAPABILITY, good) {
 
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CBC, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
     cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CBC, ACVP_SYM_CIPH_PARM_KO, ACVP_SYM_CIPH_KO_THREE);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CBC, ACVP_SYM_CIPH_PARM_IVGEN_SRC, ACVP_SYM_CIPH_IVGEN_SRC_NA);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CBC, ACVP_SYM_CIPH_PARM_IVGEN_MODE, ACVP_SYM_CIPH_IVGEN_MODE_NA);
-    cr_assert(rv == ACVP_SUCCESS);
-
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CBC, ACVP_SYM_CIPH_KEYLEN, 192);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CBC, ACVP_SYM_CIPH_IVLEN, 192 / 3);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CBC, ACVP_SYM_CIPH_PTLEN, 64);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CBC, ACVP_SYM_CIPH_PTLEN, 64 * 2);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CBC, ACVP_SYM_CIPH_PTLEN, 64 * 3);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CBC, ACVP_SYM_CIPH_PTLEN, 64 * 12);
+    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CBC, ACVP_SYM_CIPH_PARM_KO, ACVP_SYM_CIPH_KO_ONE);
     cr_assert(rv == ACVP_SUCCESS);
 
     /*
@@ -192,21 +115,9 @@ Test(DES_CAPABILITY, good) {
      */
     rv = acvp_cap_sym_cipher_enable(ctx, ACVP_TDES_OFB, &dummy_handler_failure);
     cr_assert(rv == ACVP_SUCCESS);
-
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_OFB, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
     cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_OFB, ACVP_SYM_CIPH_PARM_KO, ACVP_SYM_CIPH_KO_THREE);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_OFB, ACVP_SYM_CIPH_PARM_IVGEN_SRC, ACVP_SYM_CIPH_IVGEN_SRC_NA);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_OFB, ACVP_SYM_CIPH_PARM_IVGEN_MODE, ACVP_SYM_CIPH_IVGEN_MODE_NA);
-    cr_assert(rv == ACVP_SUCCESS);
-
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_OFB, ACVP_SYM_CIPH_KEYLEN, 192);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_OFB, ACVP_SYM_CIPH_IVLEN, 192 / 3);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_OFB, ACVP_SYM_CIPH_PTLEN, 64);
+    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_OFB, ACVP_SYM_CIPH_PARM_KO, ACVP_SYM_CIPH_KO_ONE);
     cr_assert(rv == ACVP_SUCCESS);
 
     /*
@@ -214,21 +125,9 @@ Test(DES_CAPABILITY, good) {
      */
     rv = acvp_cap_sym_cipher_enable(ctx, ACVP_TDES_CFB64, &dummy_handler_failure);
     cr_assert(rv == ACVP_SUCCESS);
-
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CFB64, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
     cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CFB64, ACVP_SYM_CIPH_PARM_KO, ACVP_SYM_CIPH_KO_THREE);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CFB64, ACVP_SYM_CIPH_PARM_IVGEN_SRC, ACVP_SYM_CIPH_IVGEN_SRC_NA);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CFB64, ACVP_SYM_CIPH_PARM_IVGEN_MODE, ACVP_SYM_CIPH_IVGEN_MODE_NA);
-    cr_assert(rv == ACVP_SUCCESS);
-
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CFB64, ACVP_SYM_CIPH_KEYLEN, 192);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CFB64, ACVP_SYM_CIPH_IVLEN, 192/3);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CFB64, ACVP_SYM_CIPH_PTLEN, 64 * 5);
+    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CFB64, ACVP_SYM_CIPH_PARM_KO, ACVP_SYM_CIPH_KO_ONE);
     cr_assert(rv == ACVP_SUCCESS);
 
     /*
@@ -239,20 +138,7 @@ Test(DES_CAPABILITY, good) {
 
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CFB8, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
     cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CFB8, ACVP_SYM_CIPH_PARM_KO, ACVP_SYM_CIPH_KO_THREE);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CFB8, ACVP_SYM_CIPH_PARM_IVGEN_SRC, ACVP_SYM_CIPH_IVGEN_SRC_NA);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CFB8, ACVP_SYM_CIPH_PARM_IVGEN_MODE, ACVP_SYM_CIPH_IVGEN_MODE_NA);
-    cr_assert(rv == ACVP_SUCCESS);
-
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CFB8, ACVP_SYM_CIPH_KEYLEN, 192);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CFB8, ACVP_SYM_CIPH_IVLEN, 192/3);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CFB8, ACVP_SYM_CIPH_PTLEN, 64);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CFB8, ACVP_SYM_CIPH_PTLEN, 64 * 4);
+    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CFB8, ACVP_SYM_CIPH_PARM_KO, ACVP_SYM_CIPH_KO_ONE);
     cr_assert(rv == ACVP_SUCCESS);
 
     /*
@@ -260,21 +146,9 @@ Test(DES_CAPABILITY, good) {
      */
     rv = acvp_cap_sym_cipher_enable(ctx, ACVP_TDES_CFB1, &dummy_handler_failure);
     cr_assert(rv == ACVP_SUCCESS);
-
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CFB1, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
     cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CFB1, ACVP_SYM_CIPH_PARM_KO, ACVP_SYM_CIPH_KO_THREE);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CFB1, ACVP_SYM_CIPH_PARM_IVGEN_SRC, ACVP_SYM_CIPH_IVGEN_SRC_NA);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CFB1, ACVP_SYM_CIPH_PARM_IVGEN_MODE, ACVP_SYM_CIPH_IVGEN_MODE_NA);
-    cr_assert(rv == ACVP_SUCCESS);
-
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CFB1, ACVP_SYM_CIPH_KEYLEN, 192);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CFB1, ACVP_SYM_CIPH_IVLEN, 192/3);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CFB1, ACVP_SYM_CIPH_PTLEN, 64);
+    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CFB1, ACVP_SYM_CIPH_PARM_KO, ACVP_SYM_CIPH_KO_ONE);
     cr_assert(rv == ACVP_SUCCESS);
 
 
@@ -286,20 +160,11 @@ Test(DES_CAPABILITY, good) {
 
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CTR, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
     cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CTR, ACVP_SYM_CIPH_PARM_KO, ACVP_SYM_CIPH_KO_THREE);
+    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CTR, ACVP_SYM_CIPH_PARM_KO, ACVP_SYM_CIPH_KO_ONE);
     cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CTR, ACVP_SYM_CIPH_PARM_IVGEN_SRC, ACVP_SYM_CIPH_IVGEN_SRC_NA);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CTR, ACVP_SYM_CIPH_PARM_IVGEN_MODE, ACVP_SYM_CIPH_IVGEN_MODE_NA);
-    cr_assert(rv == ACVP_SUCCESS);
-
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CTR, ACVP_SYM_CIPH_PARM_CTR_INCR, 1);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CTR, ACVP_SYM_CIPH_PARM_CTR_OVRFLW, 1);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CTR, ACVP_SYM_CIPH_KEYLEN, 192);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CTR, ACVP_SYM_CIPH_PTLEN, 64);
     cr_assert(rv == ACVP_SUCCESS);
 
     teardown_ctx(&ctx);

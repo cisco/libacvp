@@ -96,7 +96,9 @@ typedef enum acvp_result {
     ACVP_CRYPTO_WRAP_FAIL,
     ACVP_NO_TOKEN,
     ACVP_NO_CAP,
-    ACVP_MALFORMED_JSON,
+    ACVP_MALFORMED_JSON, /**< For use if the json is unable to be parsed properly */
+    ACVP_TC_DATA_INVALID, /**< Test case JSON is formatted properly, but the data is bad or does
+                           * not match the spec */
     ACVP_DATA_TOO_LARGE,
     ACVP_DUP_CIPHER,
     ACVP_TOTP_DECODE_FAIL,
@@ -539,7 +541,8 @@ typedef enum acvp_hmac_alg_val {
 /** @enum ACVP_SYM_CIPH_KO */
 typedef enum acvp_sym_cipher_keying_option {
     ACVP_SYM_CIPH_KO_NA = 1,
-    ACVP_SYM_CIPH_KO_THREE,
+    ACVP_SYM_CIPH_KO_ONE,
+    ACVP_SYM_CIPH_KO_THREE, /**< This is outdated and will eventually be removed */
     ACVP_SYM_CIPH_KO_TWO,
     ACVP_SYM_CIPH_KO_BOTH,
     ACVP_SYM_CIPH_KO_MAX
@@ -1013,6 +1016,9 @@ typedef struct acvp_sym_cipher_tc_t {
     unsigned int mct_index;  /**< used to identify init vs. update */
     unsigned int incr_ctr;
     unsigned int ovrflw_ctr;
+    unsigned int keyingOption; /**< For some TDES, indicates keyingOption. 
+                                 * 1 is 3 key TDES. 2 is 2-key TDES, supported
+                                 * for decrypt only. 0 indicates is not applicable */
 } ACVP_SYM_CIPHER_TC;
 
 /**

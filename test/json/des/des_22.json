@@ -7,7 +7,7 @@
       {
         "testType": "AFT",
         "tgId": 999,
-        "keyingOption": 3,
+        "keyingOption": 1,
         "tests": [
           {
             "key2": "1046913489980131",
@@ -271,7 +271,7 @@
       {
         "testType": "AFT",
         "tgId": 999,
-        "keyingOption": 3,
+        "keyingOption": 1,
         "tests": [
           {
             "key2": "0101010101010101",
@@ -791,7 +791,7 @@
       {
         "testType": "AFT",
         "tgId": 999,
-        "keyingOption": 3,
+        "keyingOption": 1,
         "tests": [
           {
             "key2": "7CA110454A1A6E57",
@@ -951,7 +951,7 @@
       {
         "testType": "AFT",
         "tgId": 999,
-        "keyingOption": 3,
+        "keyingOption": 1,
         "tests": [
           {
             "key2": "8001010101010101",
@@ -1407,7 +1407,7 @@
       {
         "testType": "AFT",
         "tgId": 999,
-        "keyingOption": 3,
+        "keyingOption": 1,
         "tests": [
           {
             "key2": "0101010101010101",
@@ -1927,7 +1927,7 @@
       {
         "testType": "AFT",
         "tgId": 999,
-        "keyingOption": 3,
+        "keyingOption": 1,
         "tests": [
           {
             "key2": "1046913489980131",
@@ -2191,7 +2191,7 @@
       {
         "testType": "AFT",
         "tgId": 999,
-        "keyingOption": 3,
+        "keyingOption": 1,
         "tests": [
           {
             "key2": "0101010101010101",
@@ -2711,7 +2711,7 @@
       {
         "testType": "AFT",
         "tgId": 999,
-        "keyingOption": 3,
+        "keyingOption": 1,
         "tests": [
           {
             "key2": "7CA110454A1A6E57",
@@ -2871,7 +2871,7 @@
       {
         "testType": "AFT",
         "tgId": 999,
-        "keyingOption": 3,
+        "keyingOption": 1,
         "tests": [
           {
             "key2": "8001010101010101",
@@ -3327,7 +3327,7 @@
       {
         "testType": "AFT",
         "tgId": 999,
-        "keyingOption": 3,
+        "keyingOption": 1,
         "tests": [
           {
             "key2": "0101010101010101",

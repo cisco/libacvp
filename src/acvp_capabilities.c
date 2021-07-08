@@ -708,12 +708,12 @@ static ACVP_RESULT acvp_validate_kdf135_srtp_param_value(ACVP_KDF135_SRTP_PARAM 
     return retval;
 }
 
-static ACVP_RESULT acvp_validate_kdf108_param_value(ACVP_KDF108_PARM param, int value) {
+static ACVP_RESULT acvp_validate_kdf108_param_value(ACVP_CTX *ctx, ACVP_KDF108_PARM param, int value) {
     ACVP_RESULT retval = ACVP_INVALID_ARG;
 
     switch (param) {
     case ACVP_KDF108_KDF_MODE:
-        printf("No need to explicity enable mode string. It is set implicity as params are added to a mode.");
+        ACVP_LOG_ERR("No need to explicity enable mode string. It is set implicity as params are added to a mode.");
         break;
     case ACVP_KDF108_MAC_MODE:
         if (value > ACVP_KDF108_MAC_MODE_MIN && value < ACVP_KDF108_MAC_MODE_MAX) {
@@ -2726,7 +2726,7 @@ ACVP_RESULT acvp_cap_hash_enable(ACVP_CTX *ctx,
 
     alg = acvp_get_hash_alg(cipher);
     if (alg == 0) {
-        printf("Invalid cipher value");
+        ACVP_LOG_ERR("Invalid cipher value");
         return ACVP_INVALID_ARG;
     }
 
@@ -2793,7 +2793,7 @@ ACVP_RESULT acvp_cap_hash_set_parm(ACVP_CTX *ctx,
 
     alg = acvp_get_hash_alg(cipher);
     if (alg == 0) {
-        printf("Invalid cipher value");
+        ACVP_LOG_ERR("Invalid cipher value");
         return ACVP_INVALID_ARG;
     }
 
@@ -2889,7 +2889,7 @@ ACVP_RESULT acvp_cap_hash_set_domain(ACVP_CTX *ctx,
 
     alg = acvp_get_hash_alg(cipher);
     if (alg == 0) {
-        printf("Invalid cipher value");
+        ACVP_LOG_ERR("Invalid cipher value");
         return ACVP_INVALID_ARG;
     }
 
@@ -5628,7 +5628,7 @@ ACVP_RESULT acvp_cap_kdf108_set_parm(ACVP_CTX *ctx,
         return ACVP_NO_CAP;
     }
 
-    if (acvp_validate_kdf108_param_value(param, value) != ACVP_SUCCESS) {
+    if (acvp_validate_kdf108_param_value(ctx, param, value) != ACVP_SUCCESS) {
         return ACVP_INVALID_ARG;
     }
 
@@ -7624,7 +7624,7 @@ ACVP_RESULT acvp_cap_kas_kdf_set_parm(ACVP_CTX *ctx, ACVP_CIPHER cipher, ACVP_KA
 
     alg = acvp_get_kas_alg(cipher);
     if (alg == 0) {
-        printf("Invalid cipher value");
+        ACVP_LOG_ERR("Invalid cipher value");
         return 1;
     }
 
@@ -7941,7 +7941,7 @@ ACVP_RESULT acvp_cap_kas_kdf_set_domain(ACVP_CTX *ctx, ACVP_CIPHER cipher, ACVP_
 
     alg = acvp_get_kas_alg(cipher);
     if (alg == 0) {
-        printf("Invalid cipher value");
+        ACVP_LOG_ERR("Invalid cipher value");
         return 1;
     }
 
