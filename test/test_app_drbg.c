@@ -393,5 +393,4 @@ Test(APP_DRBG_HANDLER, no_perso) {
     free(test_case);
 }
 
-
 #endif
