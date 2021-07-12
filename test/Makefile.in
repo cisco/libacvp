@@ -132,6 +132,7 @@ noinst_PROGRAMS = runtest$(EXEEXT)
 @APP_NOT_SUPPORTED_FALSE@      test_app_aes.c \
 @APP_NOT_SUPPORTED_FALSE@      test_app_cmac.c \
 @APP_NOT_SUPPORTED_FALSE@      test_app_des.c \
+@APP_NOT_SUPPORTED_FALSE@      test_app_drbg.c \
 @APP_NOT_SUPPORTED_FALSE@      test_app_ecdsa.c \
 @APP_NOT_SUPPORTED_FALSE@      test_app_hmac.c \
 @APP_NOT_SUPPORTED_FALSE@      test_app_kas_ecc.c \
@@ -176,10 +177,11 @@ am__runtest_SOURCES_DIST = ut_common.c create_session.c \
 	test_acvp_ecdsa.c test_acvp_kas_ecc.c test_acvp_kas_ifc.c \
 	test_acvp_kts_ifc.c test_acvp_kas_ffc.c \
 	test_acvp_safe_primes.c test_acvp_kas_kdf.c app_common.c \
-	test_app_aes.c test_app_cmac.c test_app_des.c test_app_ecdsa.c \
-	test_app_hmac.c test_app_kas_ecc.c test_app_kas_ffc.c \
-	test_app_kas_ifc.c test_app_rsa_keygen.c test_app_rsa_sig.c \
-	test_app_sha.c test_app_safe_primes.c test_app_kas_kdf.c
+	test_app_aes.c test_app_cmac.c test_app_des.c test_app_drbg.c \
+	test_app_ecdsa.c test_app_hmac.c test_app_kas_ecc.c \
+	test_app_kas_ffc.c test_app_kas_ifc.c test_app_rsa_keygen.c \
+	test_app_rsa_sig.c test_app_sha.c test_app_safe_primes.c \
+	test_app_kas_kdf.c
 @LIB_NOT_SUPPORTED_FALSE@am__objects_1 =  \
 @LIB_NOT_SUPPORTED_FALSE@	runtest-create_session.$(OBJEXT) \
 @LIB_NOT_SUPPORTED_FALSE@	runtest-test_acvp_utils.$(OBJEXT) \
@@ -219,6 +221,7 @@ am__runtest_SOURCES_DIST = ut_common.c create_session.c \
 @APP_NOT_SUPPORTED_FALSE@	runtest-test_app_aes.$(OBJEXT) \
 @APP_NOT_SUPPORTED_FALSE@	runtest-test_app_cmac.$(OBJEXT) \
 @APP_NOT_SUPPORTED_FALSE@	runtest-test_app_des.$(OBJEXT) \
+@APP_NOT_SUPPORTED_FALSE@	runtest-test_app_drbg.$(OBJEXT) \
 @APP_NOT_SUPPORTED_FALSE@	runtest-test_app_ecdsa.$(OBJEXT) \
 @APP_NOT_SUPPORTED_FALSE@	runtest-test_app_hmac.$(OBJEXT) \
 @APP_NOT_SUPPORTED_FALSE@	runtest-test_app_kas_ecc.$(OBJEXT) \
@@ -294,6 +297,7 @@ am__depfiles_remade = ./$(DEPDIR)/runtest-app_common.Po \
 	./$(DEPDIR)/runtest-test_app_aes.Po \
 	./$(DEPDIR)/runtest-test_app_cmac.Po \
 	./$(DEPDIR)/runtest-test_app_des.Po \
+	./$(DEPDIR)/runtest-test_app_drbg.Po \
 	./$(DEPDIR)/runtest-test_app_ecdsa.Po \
 	./$(DEPDIR)/runtest-test_app_hmac.Po \
 	./$(DEPDIR)/runtest-test_app_kas_ecc.Po \
@@ -627,6 +631,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtest-test_app_aes.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtest-test_app_cmac.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtest-test_app_des.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtest-test_app_drbg.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtest-test_app_ecdsa.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtest-test_app_hmac.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtest-test_app_kas_ecc.Po@am__quote@ # am--include-marker
@@ -1215,6 +1220,20 @@ runtest-test_app_des.obj: test_app_des.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o runtest-test_app_des.obj `if test -f 'test_app_des.c'; then $(CYGPATH_W) 'test_app_des.c'; else $(CYGPATH_W) '$(srcdir)/test_app_des.c'; fi`
 
+runtest-test_app_drbg.o: test_app_drbg.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT runtest-test_app_drbg.o -MD -MP -MF $(DEPDIR)/runtest-test_app_drbg.Tpo -c -o runtest-test_app_drbg.o `test -f 'test_app_drbg.c' || echo '$(srcdir)/'`test_app_drbg.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/runtest-test_app_drbg.Tpo $(DEPDIR)/runtest-test_app_drbg.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_app_drbg.c' object='runtest-test_app_drbg.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o runtest-test_app_drbg.o `test -f 'test_app_drbg.c' || echo '$(srcdir)/'`test_app_drbg.c
+
+runtest-test_app_drbg.obj: test_app_drbg.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT runtest-test_app_drbg.obj -MD -MP -MF $(DEPDIR)/runtest-test_app_drbg.Tpo -c -o runtest-test_app_drbg.obj `if test -f 'test_app_drbg.c'; then $(CYGPATH_W) 'test_app_drbg.c'; else $(CYGPATH_W) '$(srcdir)/test_app_drbg.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/runtest-test_app_drbg.Tpo $(DEPDIR)/runtest-test_app_drbg.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_app_drbg.c' object='runtest-test_app_drbg.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o runtest-test_app_drbg.obj `if test -f 'test_app_drbg.c'; then $(CYGPATH_W) 'test_app_drbg.c'; else $(CYGPATH_W) '$(srcdir)/test_app_drbg.c'; fi`
+
 runtest-test_app_ecdsa.o: test_app_ecdsa.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT runtest-test_app_ecdsa.o -MD -MP -MF $(DEPDIR)/runtest-test_app_ecdsa.Tpo -c -o runtest-test_app_ecdsa.o `test -f 'test_app_ecdsa.c' || echo '$(srcdir)/'`test_app_ecdsa.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/runtest-test_app_ecdsa.Tpo $(DEPDIR)/runtest-test_app_ecdsa.Po
@@ -1549,6 +1568,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/runtest-test_app_aes.Po
 	-rm -f ./$(DEPDIR)/runtest-test_app_cmac.Po
 	-rm -f ./$(DEPDIR)/runtest-test_app_des.Po
+	-rm -f ./$(DEPDIR)/runtest-test_app_drbg.Po
 	-rm -f ./$(DEPDIR)/runtest-test_app_ecdsa.Po
 	-rm -f ./$(DEPDIR)/runtest-test_app_hmac.Po
 	-rm -f ./$(DEPDIR)/runtest-test_app_kas_ecc.Po
@@ -1643,6 +1663,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/runtest-test_app_aes.Po
 	-rm -f ./$(DEPDIR)/runtest-test_app_cmac.Po
 	-rm -f ./$(DEPDIR)/runtest-test_app_des.Po
+	-rm -f ./$(DEPDIR)/runtest-test_app_drbg.Po
 	-rm -f ./$(DEPDIR)/runtest-test_app_ecdsa.Po
 	-rm -f ./$(DEPDIR)/runtest-test_app_hmac.Po
 	-rm -f ./$(DEPDIR)/runtest-test_app_kas_ecc.Po

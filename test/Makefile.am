@@ -52,6 +52,7 @@ runtest_SOURCES += app_common.c \
       test_app_aes.c \
       test_app_cmac.c \
       test_app_des.c \
+      test_app_drbg.c \
       test_app_ecdsa.c \
       test_app_hmac.c \
       test_app_kas_ecc.c \
