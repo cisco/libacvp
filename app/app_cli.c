@@ -60,7 +60,7 @@ static void print_usage(int code) {
         printf("For any activity requiring the creation of a test session and/or the processing\n");
         printf("of test cases, acvp_app requires the specification of at least one algorithm\n");
         printf("suite. Algorithm suites are enabled or disabled at build time depending on the\n");
-        printf("capabilities of the provided cryptographic library.\n");
+        printf("capabilities of the provided cryptographic library.\n\n");
     }
     printf("Algorithm Test Suites:\n");
     printf("      --all_algs (or -a, Enable all of the suites below)\n");
@@ -296,27 +296,29 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
     default_config(cfg);
 
     while ((c = ketopt(&opt, argc, argv, 1, "vhas:u:r:p:", longopts)) >= 0) {
-        diff = 0;
+        diff = 1;
 
         switch (c) {
         case 'v':
             printf("\nACVP library version(protocol version): %s(%s)\n", acvp_version(), acvp_protocol_version());
             return 1;
-        case 'h':
-            print_usage(0);
-            return 1;
         case 301:
             printf("\nACVP library version(protocol version): %s(%s)\n", acvp_version(), acvp_protocol_version());
             return 1;
+        case 'h':
         case 302:
-            len = strnlen_s(opt.arg, JSON_FILENAME_LENGTH + 1);
-            if (len > JSON_FILENAME_LENGTH) {
-                printf("help option name too long\n");
-                return 1;
-            }
-            strncmp_s(opt.arg, len, "verbose", 7, &diff);
-            if (!diff) {
-                print_usage(ACVP_LOG_LVL_VERBOSE);
+            if (opt.arg) {
+                len = strnlen_s(opt.arg, JSON_FILENAME_LENGTH + 1);
+                if (len > JSON_FILENAME_LENGTH || len <= 0) {
+                    printf("invalid help option length\n");
+                    return 1;
+                }
+                strncmp_s(opt.arg, len, "--verbose", 9, &diff);
+                if (!diff) {
+                    print_usage(ACVP_LOG_LVL_VERBOSE);
+                } else {
+                    print_usage(0);
+                }
             } else { 
                 print_usage(0);
             }

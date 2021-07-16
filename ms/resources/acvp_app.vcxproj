@@ -229,7 +229,7 @@
       <AdditionalLibraryDirectories>$(ACV_LIB_PATHS)</AdditionalLibraryDirectories>
     </Link>
     <ClCompile>
-      <PreprocessorDefinitions>ACVP_NO_RUNTIME;__STDC_WANT_SECURE_LIB__=0;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>ACVP_NO_RUNTIME;__STDC_WANT_SECURE_LIB__=0;_UNICODE;UNICODE;$(ACV_KDF_SUPPORT);%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ACV_INC_PATHS)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
@@ -259,7 +259,7 @@
       <AdditionalLibraryDirectories>$(ACV_LIB_PATHS)</AdditionalLibraryDirectories>
     </Link>
     <ClCompile>
-      <PreprocessorDefinitions>ACVP_NO_RUNTIME;__STDC_WANT_SECURE_LIB__=0;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>ACVP_NO_RUNTIME;__STDC_WANT_SECURE_LIB__=0;_UNICODE;UNICODE;$(ACV_KDF_SUPPORT);%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ACV_INC_PATHS)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
@@ -269,7 +269,7 @@
       <AdditionalLibraryDirectories>$(ACV_LIB_PATHS)</AdditionalLibraryDirectories>
     </Link>
     <ClCompile>
-      <PreprocessorDefinitions>ACVP_NO_RUNTIME;__STDC_WANT_SECURE_LIB__=0;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>ACVP_NO_RUNTIME;__STDC_WANT_SECURE_LIB__=0;_UNICODE;UNICODE;$(ACV_KDF_SUPPORT);%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ACV_INC_PATHS)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
@@ -299,7 +299,7 @@
       <AdditionalLibraryDirectories>$(ACV_LIB_PATHS)</AdditionalLibraryDirectories>
     </Link>
     <ClCompile>
-      <PreprocessorDefinitions>ACVP_NO_RUNTIME;__STDC_WANT_SECURE_LIB__=0;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>ACVP_NO_RUNTIME;__STDC_WANT_SECURE_LIB__=0;_UNICODE;UNICODE;$(ACV_KDF_SUPPORT);%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ACV_INC_PATHS)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
@@ -309,7 +309,7 @@
       <AdditionalLibraryDirectories>$(ACV_LIB_PATHS)</AdditionalLibraryDirectories>
     </Link>
     <ClCompile>
-      <PreprocessorDefinitions>__STDC_WANT_SECURE_LIB__=0;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>__STDC_WANT_SECURE_LIB__=0;_UNICODE;UNICODE;$(ACV_KDF_SUPPORT);%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ACV_INC_PATHS)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
@@ -319,7 +319,7 @@
       <AdditionalLibraryDirectories>$(ACV_LIB_PATHS)</AdditionalLibraryDirectories>
     </Link>
     <ClCompile>
-      <PreprocessorDefinitions>__STDC_WANT_SECURE_LIB__=0;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>__STDC_WANT_SECURE_LIB__=0;_UNICODE;UNICODE;$(ACV_KDF_SUPPORT);%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ACV_INC_PATHS)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
@@ -329,7 +329,7 @@
       <AdditionalLibraryDirectories>$(ACV_LIB_PATHS)</AdditionalLibraryDirectories>
     </Link>
     <ClCompile>
-      <PreprocessorDefinitions>__STDC_WANT_SECURE_LIB__=0;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>__STDC_WANT_SECURE_LIB__=0;_UNICODE;UNICODE;$(ACV_KDF_SUPPORT);%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ACV_INC_PATHS)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
@@ -339,7 +339,7 @@
       <AdditionalLibraryDirectories>$(ACV_LIB_PATHS)</AdditionalLibraryDirectories>
     </Link>
     <ClCompile>
-      <PreprocessorDefinitions>__STDC_WANT_SECURE_LIB__=0;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>__STDC_WANT_SECURE_LIB__=0;_UNICODE;UNICODE;$(ACV_KDF_SUPPORT);%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ACV_INC_PATHS)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
@@ -349,7 +349,7 @@
       <AdditionalLibraryDirectories>$(ACV_LIB_PATHS)</AdditionalLibraryDirectories>
     </Link>
     <ClCompile>
-      <PreprocessorDefinitions>__STDC_WANT_SECURE_LIB__=0;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>__STDC_WANT_SECURE_LIB__=0;_UNICODE;UNICODE;$(ACV_KDF_SUPPORT);%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ACV_INC_PATHS)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
@@ -359,7 +359,7 @@
       <AdditionalLibraryDirectories>$(ACV_LIB_PATHS)</AdditionalLibraryDirectories>
     </Link>
     <ClCompile>
-      <PreprocessorDefinitions>__STDC_WANT_SECURE_LIB__=0;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>__STDC_WANT_SECURE_LIB__=0;_UNICODE;UNICODE;$(ACV_KDF_SUPPORT);%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ACV_INC_PATHS)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
@@ -369,7 +369,7 @@
       <AdditionalLibraryDirectories>$(ACV_LIB_PATHS)</AdditionalLibraryDirectories>
     </Link>
     <ClCompile>
-      <PreprocessorDefinitions>__STDC_WANT_SECURE_LIB__=0;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>__STDC_WANT_SECURE_LIB__=0;_UNICODE;UNICODE;$(ACV_KDF_SUPPORT);%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ACV_INC_PATHS)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
@@ -379,7 +379,7 @@
       <AdditionalLibraryDirectories>$(ACV_LIB_PATHS)</AdditionalLibraryDirectories>
     </Link>
     <ClCompile>
-      <PreprocessorDefinitions>__STDC_WANT_SECURE_LIB__=0;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>__STDC_WANT_SECURE_LIB__=0;_UNICODE;UNICODE;$(ACV_KDF_SUPPORT);%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ACV_INC_PATHS)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
