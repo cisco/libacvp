@@ -62,7 +62,7 @@ errno_t strncmp_s (const char *dest, rsize_t dmax, const char *src, rsize_t smax
     if (!src || !dest) return (ESNULLP);
     if (dmax == 0) return (ESZEROL);
     size_t dlen = strnlen(dest, dmax);
-    if (smax > RSIZE_MAX_STR || smax > dlen) return (EINVAL);
+    if (smax > RSIZE_MAX_STR || smax > dlen || smax == 0) return (EINVAL);
     *indicator = strncmp(dest, src, smax);
     return (EOK);
 }
@@ -433,8 +433,12 @@ errno_t strncpy_s (char *dest, rsize_t dmax, const char *src, rsize_t slen)
  * strnlen_s()
  *
  * Emulate subset of the functionality of strnlen_s() with strnlen_s()
+ * because error codes are int values and sizet is unsigned, return 0 in errors
  */
 rsize_t strnlen_s (const char *s, rsize_t smax) {
+    if (!s || smax == 0) {
+        return 0;
+    }
     return (strnlen(s, smax));
 }
 
