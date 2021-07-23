@@ -593,6 +593,7 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx) {
     if (ctx->tls_cert) { free(ctx->tls_cert); }
     if (ctx->tls_key) { free(ctx->tls_key); }
     if (ctx->http_user_agent) { free(ctx->http_user_agent); }
+    if (ctx->session_file_path) { free(ctx->session_file_path); }
     if (ctx->json_filename) { free(ctx->json_filename); }
     if (ctx->session_url) { free(ctx->session_url); }
     if (ctx->vector_req_file) { free(ctx->vector_req_file); }
@@ -2250,8 +2251,9 @@ end:
 }
 
 static ACVP_RESULT acvp_parse_validation(ACVP_CTX *ctx) {
-    JSON_Value *val = NULL;
-    JSON_Object *obj = NULL;
+    JSON_Value *val = NULL, *ts_val = NULL, *new_ts = NULL;
+    JSON_Object *obj = NULL, *ts_obj = NULL;
+    JSON_Array *ts_arr = NULL;
     const char *url = NULL, *status = NULL;
     ACVP_RESULT rv = ACVP_SUCCESS;
 
@@ -2285,9 +2287,47 @@ static ACVP_RESULT acvp_parse_validation(ACVP_CTX *ctx) {
 
     /* Print the request info to screen */
     ACVP_LOG_STATUS("Validation requested -- status %s -- url: %s", status, url);
+    /* save the request URL to the test session info file, if it is saved in the CTX. */
+    if (ctx->session_file_path) {
+        ts_val = json_parse_file(ctx->session_file_path);
+        if (!ts_val) {
+            ACVP_LOG_WARN("Failed to save request URL to test session file. Make sure you save it from output!");
+            goto end;
+        }
+        ts_arr = json_value_get_array(ts_val);
+        if (!ts_arr) {
+            ACVP_LOG_WARN("Failed to save request URL to test session file. Make sure you save it from output!");
+            goto end;
+        }
+        ts_obj = json_array_get_object(ts_arr, 0);
+        if (!ts_obj) {
+            ACVP_LOG_WARN("Failed to save request URL to test session file. Make sure you save it from output!");
+            goto end;
+        }
+        //Sanity check the object to make sure its valid
+        if (!json_object_get_string(ts_obj, "url")) {
+            ACVP_LOG_WARN("Saved testSession file seems invalid. Make sure you save request URL from output!");
+            goto end;
+        }
+        json_object_set_string(ts_obj, "validationRequestUrl", url);
+        new_ts = json_object_get_wrapping_value(ts_obj);
+        if (!new_ts) {
+            ACVP_LOG_WARN("Failed to save request URL to test session file. Make sure you save it from output!");
+            goto end;  
+        }
+        rv = acvp_json_serialize_to_file_pretty_w(new_ts, ctx->session_file_path);
+        if (rv) {
+            ACVP_LOG_WARN("Failed to save request URL to test session file. Make sure you save it from output!");
+            goto end;
+        } else {
+            acvp_json_serialize_to_file_pretty_a(NULL, ctx->session_file_path);
+        }
+    }
+
 
 end:
     if (val) json_value_free(val);
+    if (ts_val) json_value_free(ts_val);
     return rv;
 }
 
@@ -3326,6 +3366,18 @@ static ACVP_RESULT acvp_write_session_info(ACVP_CTX *ctx) {
         ACVP_LOG_ERR("File write error. Check that directory exists and allows writes.");
         goto end;
     }
+
+    if (ctx->session_file_path) {
+        free(ctx->session_file_path);
+    }
+    ctx->session_file_path = calloc(ACVP_JSON_FILENAME_MAX + 1, sizeof(char));
+    if (strncpy_s(ctx->session_file_path, ACVP_JSON_FILENAME_MAX + 1, filename, 
+                  ACVP_JSON_FILENAME_MAX + 1)) {
+        ACVP_LOG_ERR("Buffer write error while trying to save session file path to CTX");
+        rv = ACVP_UNSUPPORTED_OP;
+        goto end;
+    }
+
 end:
     if (allocedPrefix && prefix) free(prefix);
     if (ts_val) json_value_free(ts_val);

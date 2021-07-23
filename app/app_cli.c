@@ -15,8 +15,10 @@
 #include "safe_lib.h"
 
 #ifdef ACVP_NO_RUNTIME
-# include "app_fips_lcl.h"
+#include "app_fips_lcl.h"
 #endif
+
+#include <openssl/crypto.h>
 
 #define ANSI_COLOR_RED "\x1b[31m"
 #define ANSI_COLOR_YELLOW "\x1b[33m"
@@ -181,6 +183,34 @@ static void print_usage(int code) {
     printf("        ACV_OE_COMPILER\n\n");
 }
 
+static void print_version_info() {
+    printf("\nACVP library version(protocol version): %s(%s)\n\n", acvp_version(), acvp_protocol_version());
+
+#ifdef ACVP_NO_RUNTIME
+    printf("        Runtime mode: no\n");
+    printf(" FIPS module version: %s\n", FIPS_module_version_text());
+#else
+    printf("        Runtime mode: yes\n");
+    if (FIPS_mode()) {
+        printf("           FIPS mode: yes\n");
+    } else {
+        printf("           FIPS mode: no\n");
+    }
+#endif
+
+#ifdef OPENSSL_VERSION_TEXT
+    printf("Compiled SSL version: %s\n", OPENSSL_VERSION_TEXT);
+#else
+    printf("Compiled SSL version: not detected\n");
+#endif
+
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
+    printf("  Linked SSL version: %s\n", SSLeay_version(SSLEAY_VERSION));
+#else
+    printf("  Linked SSL version: %s\n", OpenSSL_version(OPENSSL_VERSION));
+#endif
+}
+
 static ko_longopt_t longopts[] = {
     { "version", ko_no_argument, 301 },
     { "help", ko_optional_argument, 302 },
@@ -300,10 +330,8 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
 
         switch (c) {
         case 'v':
-            printf("\nACVP library version(protocol version): %s(%s)\n", acvp_version(), acvp_protocol_version());
-            return 1;
         case 301:
-            printf("\nACVP library version(protocol version): %s(%s)\n", acvp_version(), acvp_protocol_version());
+            print_version_info();
             return 1;
         case 'h':
         case 302:
