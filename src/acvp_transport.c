@@ -34,7 +34,7 @@
 #elif defined __APPLE__
 #include <TargetConditionals.h>
 //TARGET_OS_MAC is set to 1 on both iOS and Mac OS
-#if TARGET_OS_MAC == 1 && TARGET_OS_IPHONE == 0
+#if TARGET_OS_MAC == 1 && TARGET_OS_IPHONE == 0 && !defined(__aarch64__)
 #include <cpuid.h>
 #endif
 #include <sys/utsname.h>
@@ -1461,7 +1461,7 @@ void acvp_http_user_agent_handler(ACVP_CTX *ctx) {
         goto end;
     }
 
-    snprintf(libver, ACVP_USER_AGENT_ACVP_STR_MAX, "libacvp/%s", ACVP_VERSION);
+    snprintf(libver, ACVP_USER_AGENT_ACVP_STR_MAX, "libacvp/%s", ACVP_LIBRARY_VERSION_NUMBER);
 
 
 #if defined __linux__ || defined __APPLE__
