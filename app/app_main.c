@@ -27,12 +27,12 @@
 #ifdef fips_selftest_fail
 extern int fips_selftest_fail;
 #else
-int fips_selftest_fail;
+static int fips_selftest_fail;
 #endif
 #ifdef fips_mode
 extern int fips_mode;
 #else
-int fips_mode;
+static int fips_mode;
 #endif
 #endif
 #include "safe_mem_lib.h"
