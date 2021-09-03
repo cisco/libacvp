@@ -3604,9 +3604,7 @@ ACVP_RESULT acvp_put_data_from_file(ACVP_CTX *ctx, const char *put_filename) {
             rv = ACVP_MALLOC_FAIL;
             goto end;
         }
-    
         strcpy_s(ctx->jwt_token, ACVP_JWT_TOKEN_MAX + 1, jwt);
-        validation = 1;
     } else {
         rv = acvp_login(ctx, 0);
         if (rv != ACVP_SUCCESS) {
@@ -3616,12 +3614,17 @@ ACVP_RESULT acvp_put_data_from_file(ACVP_CTX *ctx, const char *put_filename) {
     }
 
     meta_val = json_array_get_value(reg_array, 1);
+    obj = json_value_get_object(meta_val);
     if (!obj) {
         ACVP_LOG_ERR("JSON obj parse error");
         rv = ACVP_MALFORMED_JSON;
         goto end;
     }
     json_result = json_serialize_to_string(meta_val, &len);
+    if (jwt && (json_object_has_value(obj, "oe") || json_object_has_value(obj, "oeUrl")) &&
+        (json_object_has_value(obj, "module") || json_object_has_value(obj, "moduleUrl"))) {
+        validation = 1;
+    }
 
     put_val = json_parse_string(json_result);
     json_free_serialized_string(json_result);
@@ -3645,11 +3648,13 @@ ACVP_RESULT acvp_put_data_from_file(ACVP_CTX *ctx, const char *put_filename) {
      * Check the test results.
      */
     if (validation) {
-        ACVP_LOG_STATUS("Tests complete, checking results...");
+        ACVP_LOG_STATUS("Checking validation response...");
         rv = acvp_parse_validation(ctx);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_STATUS("Failed to parse Validation response");
         }
+    } else {
+        ACVP_LOG_STATUS("PUT response: \n%s", ctx->curl_buf);
     }
 end:
     if (json_result) {json_free_serialized_string(json_result);}
