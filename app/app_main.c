@@ -1062,6 +1062,7 @@ static int enable_hash(ACVP_CTX *ctx) {
     rv = acvp_cap_hash_set_parm(ctx, ACVP_HASH_SHA3_224, ACVP_HASH_IN_EMPTY, 1);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_hash_set_domain(ctx, ACVP_HASH_SHA3_224, ACVP_HASH_MESSAGE_LEN, 0, 65536, 8);
+    CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_cap_hash_enable(ctx, ACVP_HASH_SHA3_256, &app_sha_handler);
     CHECK_ENABLE_CAP_RV(rv);
@@ -1070,6 +1071,7 @@ static int enable_hash(ACVP_CTX *ctx) {
     rv = acvp_cap_hash_set_parm(ctx, ACVP_HASH_SHA3_256, ACVP_HASH_IN_EMPTY, 1);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_hash_set_domain(ctx, ACVP_HASH_SHA3_256, ACVP_HASH_MESSAGE_LEN, 0, 65536, 8);
+    CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_cap_hash_enable(ctx, ACVP_HASH_SHA3_384, &app_sha_handler);
     CHECK_ENABLE_CAP_RV(rv);
@@ -1078,6 +1080,7 @@ static int enable_hash(ACVP_CTX *ctx) {
     rv = acvp_cap_hash_set_parm(ctx, ACVP_HASH_SHA3_384, ACVP_HASH_IN_EMPTY, 1);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_hash_set_domain(ctx, ACVP_HASH_SHA3_384, ACVP_HASH_MESSAGE_LEN, 0, 65536, 8);
+    CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_cap_hash_enable(ctx, ACVP_HASH_SHA3_512, &app_sha_handler);
     CHECK_ENABLE_CAP_RV(rv);
@@ -1086,6 +1089,7 @@ static int enable_hash(ACVP_CTX *ctx) {
     rv = acvp_cap_hash_set_parm(ctx, ACVP_HASH_SHA3_512, ACVP_HASH_IN_EMPTY, 1);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_hash_set_domain(ctx, ACVP_HASH_SHA3_512, ACVP_HASH_MESSAGE_LEN, 0, 65536, 8);
+    CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_cap_hash_enable(ctx, ACVP_HASH_SHAKE_128, &app_sha_handler);
     CHECK_ENABLE_CAP_RV(rv);
