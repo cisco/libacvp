@@ -870,7 +870,8 @@ typedef enum acvp_sym_cipher_parameter {
     ACVP_SYM_CIPH_PARM_IVGEN_MODE,
     ACVP_SYM_CIPH_PARM_IVGEN_SRC,
     ACVP_SYM_CIPH_PARM_SALT_SRC,
-    ACVP_SYM_CIPH_PARM_CONFORMANCE
+    ACVP_SYM_CIPH_PARM_CONFORMANCE,
+    ACVP_SYM_CIPH_PARM_DULEN_MATCHES_PAYLOADLEN
 } ACVP_SYM_CIPH_PARM;
 
 
@@ -878,7 +879,8 @@ typedef enum acvp_sym_cipher_parameter {
 typedef enum acvp_sym_cipher_domain_parameter {
     ACVP_SYM_CIPH_DOMAIN_IVLEN = 1,
     ACVP_SYM_CIPH_DOMAIN_PTLEN,
-    ACVP_SYM_CIPH_DOMAIN_AADLEN
+    ACVP_SYM_CIPH_DOMAIN_AADLEN,
+    ACVP_SYM_CIPH_DOMAIN_DULEN
 } ACVP_SYM_CIPH_DOMAIN_PARM;
 
 /** @enum ACVP_SYM_CIPH_TWEAK_MODE */
@@ -1019,6 +1021,9 @@ typedef struct acvp_sym_cipher_tc_t {
     unsigned int keyingOption; /**< For some TDES, indicates keyingOption. 
                                  * 1 is 3 key TDES. 2 is 2-key TDES, supported
                                  * for decrypt only. 0 indicates is not applicable */
+    unsigned int data_unit_len; /**< for AES-XTS rev 2.0, the amount of data that can be
+                                 * processed at once may be lower than the total payload
+                                 * size. By default it will = payloadLen. */
 } ACVP_SYM_CIPHER_TC;
 
 /**

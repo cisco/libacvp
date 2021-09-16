@@ -589,6 +589,7 @@ static ACVP_RESULT acvp_cap_list_append(ACVP_CTX *ctx,
             goto err;
         }
         cap_entry->cap.sym_cap->perform_ctr_tests = 1; //true by default
+        cap_entry->cap.sym_cap->dulen_matches_paylen = 1; //true by default
         break;
 
     case ACVP_SAFE_PRIMES_KEYGEN_TYPE:
@@ -1470,6 +1471,7 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
     case ACVP_SYM_CIPH_PARM_IVGEN_SRC:
     case ACVP_SYM_CIPH_PARM_SALT_SRC:
     case ACVP_SYM_CIPH_PARM_CONFORMANCE:
+    case ACVP_SYM_CIPH_PARM_DULEN_MATCHES_PAYLOADLEN:
     default:
         break;
     }
@@ -1510,6 +1512,7 @@ static ACVP_RESULT acvp_validate_sym_cipher_domain_value(ACVP_CIPHER cipher, ACV
                 retval = ACVP_SUCCESS;
             }
             break;
+        case ACVP_SYM_CIPH_DOMAIN_DULEN:
         default:
             break;
         }
@@ -1527,6 +1530,7 @@ static ACVP_RESULT acvp_validate_sym_cipher_domain_value(ACVP_CIPHER cipher, ACV
             }
             break;
         case ACVP_SYM_CIPH_DOMAIN_IVLEN:
+        case ACVP_SYM_CIPH_DOMAIN_DULEN:
         default:
             break;
         }
@@ -1548,6 +1552,7 @@ static ACVP_RESULT acvp_validate_sym_cipher_domain_value(ACVP_CIPHER cipher, ACV
                 retval = ACVP_SUCCESS;
             }
             break;
+        case ACVP_SYM_CIPH_DOMAIN_DULEN:
         default:
             break;
         }
@@ -1563,6 +1568,7 @@ static ACVP_RESULT acvp_validate_sym_cipher_domain_value(ACVP_CIPHER cipher, ACV
             break;
         case ACVP_SYM_CIPH_DOMAIN_IVLEN:
         case ACVP_SYM_CIPH_DOMAIN_AADLEN:
+        case ACVP_SYM_CIPH_DOMAIN_DULEN:
         default:
             break;
         }
@@ -1576,6 +1582,7 @@ static ACVP_RESULT acvp_validate_sym_cipher_domain_value(ACVP_CIPHER cipher, ACV
             break;
         case ACVP_SYM_CIPH_DOMAIN_IVLEN:
         case ACVP_SYM_CIPH_DOMAIN_AADLEN:
+        case ACVP_SYM_CIPH_DOMAIN_DULEN:
         default:
             break;
         }
@@ -1584,6 +1591,11 @@ static ACVP_RESULT acvp_validate_sym_cipher_domain_value(ACVP_CIPHER cipher, ACV
         switch (parm) {
         case ACVP_SYM_CIPH_DOMAIN_PTLEN:
             if (min >= 128 && max <= 65536) {
+                retval = ACVP_SUCCESS;
+            }
+            break;
+        case ACVP_SYM_CIPH_DOMAIN_DULEN:
+            if (min >= 128 && max <= 65536 && increment % 8 == 0) {
                 retval = ACVP_SUCCESS;
             }
             break;
@@ -1602,6 +1614,7 @@ static ACVP_RESULT acvp_validate_sym_cipher_domain_value(ACVP_CIPHER cipher, ACV
             break;
         case ACVP_SYM_CIPH_DOMAIN_IVLEN:
         case ACVP_SYM_CIPH_DOMAIN_AADLEN:
+        case ACVP_SYM_CIPH_DOMAIN_DULEN:
         default:
             break;
         }
@@ -1615,6 +1628,7 @@ static ACVP_RESULT acvp_validate_sym_cipher_domain_value(ACVP_CIPHER cipher, ACV
             break;
         case ACVP_SYM_CIPH_DOMAIN_IVLEN:
         case ACVP_SYM_CIPH_DOMAIN_AADLEN:
+        case ACVP_SYM_CIPH_DOMAIN_DULEN:
         default:
             break;
         }
@@ -1632,6 +1646,7 @@ static ACVP_RESULT acvp_validate_sym_cipher_domain_value(ACVP_CIPHER cipher, ACV
             }
             break;
         case ACVP_SYM_CIPH_DOMAIN_PTLEN:
+        case ACVP_SYM_CIPH_DOMAIN_DULEN:
         default:
             break;
         }
@@ -1653,6 +1668,7 @@ static ACVP_RESULT acvp_validate_sym_cipher_domain_value(ACVP_CIPHER cipher, ACV
                 retval = ACVP_SUCCESS;
             }
             break;
+        case ACVP_SYM_CIPH_DOMAIN_DULEN:
         default:
             break;
         }
@@ -1667,6 +1683,7 @@ static ACVP_RESULT acvp_validate_sym_cipher_domain_value(ACVP_CIPHER cipher, ACV
             break;
         case ACVP_SYM_CIPH_DOMAIN_IVLEN:
         case ACVP_SYM_CIPH_DOMAIN_AADLEN:
+        case ACVP_SYM_CIPH_DOMAIN_DULEN:
         default:
             break;
         }
@@ -2222,8 +2239,8 @@ ACVP_RESULT acvp_cap_sym_cipher_set_domain(ACVP_CTX *ctx,
     switch (parm) {
     case ACVP_SYM_CIPH_DOMAIN_IVLEN:
         if (symcap->ivlen) {
-            ACVP_LOG_ERR("ivLen already defined using acvp_sym_cipher_set_parm. Please set ivLen using only one function \
-                          (Using set_parm for ivLen will eventually be depreciated).");
+            ACVP_LOG_ERR("ivLen already defined using acvp_sym_cipher_set_parm. Please set ivLen using only one function "
+                         "(Using set_parm for ivLen will eventually be depreciated).");
             return ACVP_INVALID_ARG;
         }
         rv = acvp_validate_sym_cipher_domain_value(cipher, parm, min, max, increment);
@@ -2237,8 +2254,8 @@ ACVP_RESULT acvp_cap_sym_cipher_set_domain(ACVP_CTX *ctx,
         break;
     case ACVP_SYM_CIPH_DOMAIN_PTLEN:
         if (symcap->ptlen) {
-            ACVP_LOG_ERR("ptLen already defined using acvp_sym_cipher_set_parm. Please set ptLen using only one function \
-                          (Using set_parm for ptLen will eventually be depreciated).");
+            ACVP_LOG_ERR("ptLen already defined using acvp_sym_cipher_set_parm. Please set ptLen using only one function "
+                         "(Using set_parm for ptLen will eventually be depreciated).");
             return ACVP_INVALID_ARG;
         }
         rv = acvp_validate_sym_cipher_domain_value(cipher, parm, min, max, increment);
@@ -2252,8 +2269,8 @@ ACVP_RESULT acvp_cap_sym_cipher_set_domain(ACVP_CTX *ctx,
         break;
     case ACVP_SYM_CIPH_DOMAIN_AADLEN:
         if (symcap->aadlen) {
-            ACVP_LOG_ERR("aadLen already defined using acvp_sym_cipher_set_parm. Please set aadLen using only one function \
-                          (Using set_parm for aadLen will eventually be depreciated).");
+            ACVP_LOG_ERR("aadLen already defined using acvp_sym_cipher_set_parm. Please set aadLen using only one function "
+                         "(Using set_parm for aadLen will eventually be depreciated).");
             return ACVP_INVALID_ARG;
         }
         rv = acvp_validate_sym_cipher_domain_value(cipher, parm, min, max, increment);
@@ -2264,6 +2281,25 @@ ACVP_RESULT acvp_cap_sym_cipher_set_domain(ACVP_CTX *ctx,
         symcap->aad_len.min = min;
         symcap->aad_len.max = max;
         symcap->aad_len.increment = increment;
+        break;
+    case ACVP_SYM_CIPH_DOMAIN_DULEN:
+        if (symcap->dulen_matches_paylen) {
+            ACVP_LOG_ERR("ACVP_SYM_CIPH_DOMAIN_DULEN can only be set if "
+                         "ACVP_SYM_CIPH_PARM_DULEN_MATCHES_PAYLOADLEN is already set to 0 (false)");
+            return ACVP_INVALID_ARG;
+        }
+        if (cipher != ACVP_AES_XTS) {
+            ACVP_LOG_ERR("Data Unit Length may only be set for AES-XTS.");
+            return ACVP_INVALID_ARG;
+        }
+        rv = acvp_validate_sym_cipher_domain_value(cipher, parm, min, max, increment);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Unable to validate given domain value (cipher=%d, param=%d)", cipher, parm);
+            return ACVP_INVALID_ARG;
+        }
+        symcap->du_len.min = min;
+        symcap->du_len.max = max;
+        symcap->du_len.increment = increment;
         break;
     default:
         ACVP_LOG_ERR("Invalid parameter for symmetric cipher");
@@ -2502,7 +2538,22 @@ ACVP_RESULT acvp_cap_sym_cipher_set_parm(ACVP_CTX *ctx,
             ACVP_LOG_ERR("Invalid parameter 'value' for parm ACVP_SYM_CIPH_PARM_CONFORMANCE");
             return ACVP_INVALID_ARG;
         }
-
+    case ACVP_SYM_CIPH_PARM_DULEN_MATCHES_PAYLOADLEN:
+        if (cipher != ACVP_AES_XTS) {
+            ACVP_LOG_ERR("ACVP_SYM_CIPH_PARM_DULEN_MATCHES_PAYLOADLEN can only be set for AES-XTS");
+            return ACVP_INVALID_ARG;
+        }
+        if ((cap->cap.sym_cap->du_len.max != 0 || cap->cap.sym_cap->du_len.increment != 0)) {
+            ACVP_LOG_ERR("ACVP_SYM_CIPH_DULEN_MATCHES_PAYLOADLEN cannot be changed after setting "
+                         "ACVP_SYM_CIPH_DOMAIN_DULEN");
+            return ACVP_INVALID_ARG;
+        } else if (value == 0 || value == 1) {
+            cap->cap.sym_cap->dulen_matches_paylen = value;
+            return ACVP_SUCCESS;
+        } else {
+            ACVP_LOG_ERR("Invalid parameter 'value' for parm ACVP_SYM_CIPH_PARM_DULEN_MATCHES_PAYLOADLEN");
+            return ACVP_INVALID_ARG;
+        }
     case ACVP_SYM_CIPH_KEYLEN:
     case ACVP_SYM_CIPH_TAGLEN:
     case ACVP_SYM_CIPH_IVLEN:
@@ -2527,16 +2578,16 @@ ACVP_RESULT acvp_cap_sym_cipher_set_parm(ACVP_CTX *ctx,
         break;
     case ACVP_SYM_CIPH_IVLEN:
         if (acvp_is_domain_already_set(&cap->cap.sym_cap->iv_len)) {
-            ACVP_LOG_ERR("ivLen already defined using acvp_sym_cipher_set_domain. Please set ivLen using only one function \
-                          (Using set_parm for ivLen will eventually be depreciated).");
+            ACVP_LOG_ERR("ivLen already defined using acvp_sym_cipher_set_domain. Please set ivLen using only one function "
+                        "(Using set_parm for ivLen will eventually be depreciated).");
             return ACVP_INVALID_ARG;
         }
         acvp_cap_add_length(&cap->cap.sym_cap->ivlen, value);
         break;
     case ACVP_SYM_CIPH_PTLEN:
         if (acvp_is_domain_already_set(&cap->cap.sym_cap->payload_len)) {
-            ACVP_LOG_ERR("payloadLen already defined using acvp_sym_cipher_set_domain. Please set payloadLen using only one function \
-                          (Using set_parm for payloadLen will eventually be depreciated).");
+            ACVP_LOG_ERR("payloadLen already defined using acvp_sym_cipher_set_domain. Please set payloadLen using only one function "
+                         "(Using set_parm for payloadLen will eventually be depreciated).");
             return ACVP_INVALID_ARG;
         }
         acvp_cap_add_length(&cap->cap.sym_cap->ptlen, value);
@@ -2546,8 +2597,8 @@ ACVP_RESULT acvp_cap_sym_cipher_set_parm(ACVP_CTX *ctx,
         break;
     case ACVP_SYM_CIPH_AADLEN:
         if (acvp_is_domain_already_set(&cap->cap.sym_cap->aad_len)) {
-            ACVP_LOG_ERR("aadLen already defined using acvp_sym_cipher_set_domain. Please set aadLen using only one function \
-                          (Using set_parm for aadLen will eventually be depreciated).");
+            ACVP_LOG_ERR("aadLen already defined using acvp_sym_cipher_set_domain. Please set aadLen using only one function "
+                         "(Using set_parm for aadLen will eventually be depreciated).");
             return ACVP_INVALID_ARG;
         }
         acvp_cap_add_length(&cap->cap.sym_cap->aadlen, value);
@@ -2562,6 +2613,7 @@ ACVP_RESULT acvp_cap_sym_cipher_set_parm(ACVP_CTX *ctx,
     case ACVP_SYM_CIPH_PARM_IVGEN_SRC:
     case ACVP_SYM_CIPH_PARM_CONFORMANCE:
     case ACVP_SYM_CIPH_PARM_SALT_SRC:
+    case ACVP_SYM_CIPH_PARM_DULEN_MATCHES_PAYLOADLEN:
     default:
         return ACVP_INVALID_ARG;
     }
@@ -2925,21 +2977,22 @@ ACVP_RESULT acvp_cap_hash_set_domain(ACVP_CTX *ctx,
 
     switch (parm) {
     case ACVP_HASH_MESSAGE_LEN:
-        if (min < ACVP_HASH_MSG_BIT_MIN ||
-            max > ACVP_HASH_SHA1_SHA2_MSG_BIT_MAX) {
+        if (cipher == ACVP_HASH_SHAKE_128 || cipher == ACVP_HASH_SHAKE_256) {
+            ACVP_LOG_ERR("ACVP_HASH_MSG_LEN cannot be set for SHAKE ciphers");
+            return ACVP_INVALID_ARG;
+        }
+        if (min < ACVP_HASH_MSG_BIT_MIN ||  max > ACVP_HASH_MSG_BIT_MAX) {
             ACVP_LOG_ERR("min or max outside of acceptable range");
             return ACVP_INVALID_ARG;
         }
         domain = &hash_cap->msg_length;
         break;
     case ACVP_HASH_OUT_LENGTH:
-        if (cipher != ACVP_HASH_SHAKE_128 &&
-            cipher != ACVP_HASH_SHAKE_256) {
+        if (cipher != ACVP_HASH_SHAKE_128 && cipher != ACVP_HASH_SHAKE_256) {
             ACVP_LOG_ERR("Only SHAKE_128 or SHAKE_256 allowed for ACVP_HASH_OUT_LENGTH");
             return ACVP_INVALID_ARG;
         }
-        if (min < ACVP_HASH_XOF_MD_BIT_MIN ||
-            max > ACVP_HASH_XOF_MD_BIT_MAX) {
+        if (min < ACVP_HASH_XOF_MD_BIT_MIN ||  max > ACVP_HASH_XOF_MD_BIT_MAX) {
             ACVP_LOG_ERR("'ACVP_HASH_OUT_LENGTH' min or max outside of acceptable range");
             return ACVP_INVALID_ARG;
         }
