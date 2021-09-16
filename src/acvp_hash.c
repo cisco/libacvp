@@ -346,12 +346,12 @@ static ACVP_RESULT acvp_hash_shake_mct(ACVP_CTX *ctx,
                  * Use the MD[i-1] as the new Msg
                  * Zeroize the msg buffer, and copy in the md.
                  */
-                memzero_s(stc->msg, ACVP_HASH_MSG_BYTE_MAX);
+                memzero_s(stc->msg, ACVP_SHAKE_MSG_BYTE_MAX);
                 if (stc->md_len <= leftmost_bytes) {
-                    memcpy_s(stc->msg, ACVP_HASH_MSG_BYTE_MAX, stc->md, stc->md_len);
+                    memcpy_s(stc->msg, ACVP_SHAKE_MSG_BYTE_MAX, stc->md, stc->md_len);
                 } else {
                     /* Only copy the leftmost 128 bits */
-                    memcpy_s(stc->msg, ACVP_HASH_MSG_BYTE_MAX, stc->md, leftmost_bytes);
+                    memcpy_s(stc->msg, ACVP_SHAKE_MSG_BYTE_MAX, stc->md, leftmost_bytes);
                 }
 
                 if (i == ACVP_HASH_MCT_INNER) {
@@ -578,6 +578,7 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         for (j = 0; j < t_cnt; j++) {
             unsigned int tmp_msg_len = 0;
             unsigned int xof_len = 0;
+            unsigned int max_len = 0;
 
             ACVP_LOG_VERBOSE("Found new hash test vector...");
             testval = json_array_get_value(tests, j);
@@ -591,10 +592,14 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 rv = ACVP_MISSING_ARG;
                 goto err;
             }
-            tmp_msg_len = strnlen_s(msg, ACVP_HASH_MSG_STR_MAX + 1);
-            if (tmp_msg_len > ACVP_HASH_MSG_STR_MAX) {
-                ACVP_LOG_ERR("'msg' too long, max allowed=(%d)",
-                             ACVP_HASH_MSG_STR_MAX);
+            if (alg_id != ACVP_HASH_SHAKE_128 && alg_id != ACVP_HASH_SHAKE_256) {
+                max_len = ACVP_HASH_MSG_STR_MAX;
+            } else {
+                max_len = ACVP_SHAKE_MSG_STR_MAX;
+            }
+            tmp_msg_len = strnlen_s(msg, max_len + 1);
+            if (tmp_msg_len > max_len) {
+                ACVP_LOG_ERR("'msg' too long, max allowed=(%d)", max_len);
                 rv = ACVP_INVALID_ARG;
                 goto err;
             }
@@ -755,8 +760,11 @@ static ACVP_RESULT acvp_hash_init_tc(ACVP_CTX *ctx,
     ACVP_RESULT rv;
 
     memzero_s(stc, sizeof(ACVP_HASH_TC));
-
-    stc->msg = calloc(1, ACVP_HASH_MSG_BYTE_MAX);
+    if (alg_id != ACVP_HASH_SHAKE_128 && alg_id != ACVP_HASH_SHAKE_256) {
+        stc->msg = calloc(1, ACVP_HASH_MSG_BYTE_MAX);
+    } else {
+        stc->msg = calloc(1, ACVP_SHAKE_MSG_BYTE_MAX);
+    }
     if (!stc->msg) { return ACVP_MALLOC_FAIL; }
 
     if (test_type == ACVP_HASH_TEST_TYPE_AFT) {
@@ -794,8 +802,11 @@ static ACVP_RESULT acvp_hash_init_tc(ACVP_CTX *ctx,
             if (!stc->m3) { return ACVP_MALLOC_FAIL; }
         }
     }
-
-    rv = acvp_hexstr_to_bin(msg, stc->msg, ACVP_HASH_MSG_BYTE_MAX, NULL);
+    if (alg_id != ACVP_HASH_SHAKE_128 && alg_id != ACVP_HASH_SHAKE_256) {
+        rv = acvp_hexstr_to_bin(msg, stc->msg, ACVP_HASH_MSG_BYTE_MAX, NULL);
+    } else {
+        rv = acvp_hexstr_to_bin(msg, stc->msg, ACVP_SHAKE_MSG_BYTE_MAX, NULL);
+    }
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Hex converstion failure (msg)");
         return rv;

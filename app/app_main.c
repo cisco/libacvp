@@ -538,7 +538,7 @@ static int enable_aes(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_CBC_CS1, ACVP_SYM_CIPH_KEYLEN, 256);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_sym_cipher_set_domain(ctx, ACVP_AES_CBC_CS1, ACVP_SYM_CIPH_DOMAIN_PTLEN, 128, 65536, 256);
+    rv = acvp_cap_sym_cipher_set_domain(ctx, ACVP_AES_CBC_CS1, ACVP_SYM_CIPH_DOMAIN_PTLEN, 128, 65536, 64);
     CHECK_ENABLE_CAP_RV(rv);
     
     rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_CBC_CS2, &app_aes_handler);
@@ -551,7 +551,7 @@ static int enable_aes(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_CBC_CS2, ACVP_SYM_CIPH_KEYLEN, 256);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_sym_cipher_set_domain(ctx, ACVP_AES_CBC_CS2, ACVP_SYM_CIPH_DOMAIN_PTLEN, 128, 65536, 256);
+    rv = acvp_cap_sym_cipher_set_domain(ctx, ACVP_AES_CBC_CS2, ACVP_SYM_CIPH_DOMAIN_PTLEN, 128, 65536, 64);
     CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_CBC_CS3, &app_aes_handler);
@@ -564,7 +564,7 @@ static int enable_aes(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_CBC_CS3, ACVP_SYM_CIPH_KEYLEN, 256);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_sym_cipher_set_domain(ctx, ACVP_AES_CBC_CS3, ACVP_SYM_CIPH_DOMAIN_PTLEN, 128, 65536, 256);
+    rv = acvp_cap_sym_cipher_set_domain(ctx, ACVP_AES_CBC_CS3, ACVP_SYM_CIPH_DOMAIN_PTLEN, 128, 65536, 64);
     CHECK_ENABLE_CAP_RV(rv);
 #endif
 
@@ -764,6 +764,16 @@ static int enable_aes(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_XTS, ACVP_SYM_CIPH_TWEAK, ACVP_SYM_CIPH_TWEAK_HEX);
     CHECK_ENABLE_CAP_RV(rv);
+#if 0
+    /**
+     * DataUnitLen is new to revision 2.0 for AES-XTS. Some implementations of AES-XTS may support streaming smaller sections
+     * of a payload at a time; changing DULEN anad DULEN_MATCHES_PAYLOADLEN can accomodate this. OpenSSL does not support it currently.
+     */
+    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_XTS, ACVP_SYM_CIPH_PARM_DULEN_MATCHES_PAYLOADLEN, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_sym_cipher_set_domain(ctx, ACVP_AES_XTS, ACVP_SYM_CIPH_DOMAIN_DULEN, 256, 65536, 256);
+    CHECK_ENABLE_CAP_RV(rv);
+#endif
 
     /*
      * Enable AES-CTR 128, 192, 256 bit key
@@ -1002,31 +1012,31 @@ static int enable_hash(ACVP_CTX *ctx) {
     rv = acvp_cap_hash_enable(ctx, ACVP_HASH_SHA1, &app_sha_handler);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_hash_set_domain(ctx, ACVP_HASH_SHA1, ACVP_HASH_MESSAGE_LEN,
-                                  0, 65528, 8);
+                                  0, 65536, 8);
     CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_cap_hash_enable(ctx, ACVP_HASH_SHA224, &app_sha_handler);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_hash_set_domain(ctx, ACVP_HASH_SHA224, ACVP_HASH_MESSAGE_LEN,
-                                  0, 65528, 8);
+                                  0, 65536, 8);
     CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_cap_hash_enable(ctx, ACVP_HASH_SHA256, &app_sha_handler);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_hash_set_domain(ctx, ACVP_HASH_SHA256, ACVP_HASH_MESSAGE_LEN,
-                                  0, 65528, 8);
+                                  0, 65536, 8);
     CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_cap_hash_enable(ctx, ACVP_HASH_SHA384, &app_sha_handler);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_hash_set_domain(ctx, ACVP_HASH_SHA384, ACVP_HASH_MESSAGE_LEN,
-                                  0, 65528, 8);
+                                  0, 65536, 8);
     CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_cap_hash_enable(ctx, ACVP_HASH_SHA512, &app_sha_handler);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_hash_set_domain(ctx, ACVP_HASH_SHA512, ACVP_HASH_MESSAGE_LEN,
-                                  0, 65528, 8);
+                                  0, 65536, 8);
     CHECK_ENABLE_CAP_RV(rv);
 
 #if OPENSSL_VERSION_NUMBER >= 0x10101010L /* OpenSSL 1.1.1 or greater */
@@ -1035,13 +1045,13 @@ static int enable_hash(ACVP_CTX *ctx) {
     rv = acvp_cap_hash_enable(ctx, ACVP_HASH_SHA512_224, &app_sha_handler);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_hash_set_domain(ctx, ACVP_HASH_SHA512_224, ACVP_HASH_MESSAGE_LEN,
-                                  0, 65528, 8);
+                                  0, 65536, 8);
     CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_cap_hash_enable(ctx, ACVP_HASH_SHA512_256, &app_sha_handler);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_hash_set_domain(ctx, ACVP_HASH_SHA512_256, ACVP_HASH_MESSAGE_LEN,
-                                  0, 65528, 8);
+                                  0, 65536, 8);
     CHECK_ENABLE_CAP_RV(rv);
 
     /* SHA3 and SHAKE */
@@ -1051,12 +1061,16 @@ static int enable_hash(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_hash_set_parm(ctx, ACVP_HASH_SHA3_224, ACVP_HASH_IN_EMPTY, 1);
     CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_hash_set_domain(ctx, ACVP_HASH_SHA3_224, ACVP_HASH_MESSAGE_LEN, 0, 65536, 8);
+    CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_cap_hash_enable(ctx, ACVP_HASH_SHA3_256, &app_sha_handler);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_hash_set_parm(ctx, ACVP_HASH_SHA3_256, ACVP_HASH_IN_BIT, 0);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_hash_set_parm(ctx, ACVP_HASH_SHA3_256, ACVP_HASH_IN_EMPTY, 1);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_hash_set_domain(ctx, ACVP_HASH_SHA3_256, ACVP_HASH_MESSAGE_LEN, 0, 65536, 8);
     CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_cap_hash_enable(ctx, ACVP_HASH_SHA3_384, &app_sha_handler);
@@ -1065,12 +1079,16 @@ static int enable_hash(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_hash_set_parm(ctx, ACVP_HASH_SHA3_384, ACVP_HASH_IN_EMPTY, 1);
     CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_hash_set_domain(ctx, ACVP_HASH_SHA3_384, ACVP_HASH_MESSAGE_LEN, 0, 65536, 8);
+    CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_cap_hash_enable(ctx, ACVP_HASH_SHA3_512, &app_sha_handler);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_hash_set_parm(ctx, ACVP_HASH_SHA3_512, ACVP_HASH_IN_BIT, 0);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_hash_set_parm(ctx, ACVP_HASH_SHA3_512, ACVP_HASH_IN_EMPTY, 1);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_hash_set_domain(ctx, ACVP_HASH_SHA3_512, ACVP_HASH_MESSAGE_LEN, 0, 65536, 8);
     CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_cap_hash_enable(ctx, ACVP_HASH_SHAKE_128, &app_sha_handler);

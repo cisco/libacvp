@@ -107,34 +107,34 @@ static ACVP_RESULT acvp_build_hash_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
     json_object_set_string(cap_obj, "revision", revision);
 
     if (cap_entry->cipher == ACVP_HASH_SHA3_224 ||
-        cap_entry->cipher == ACVP_HASH_SHA3_256 ||
-        cap_entry->cipher == ACVP_HASH_SHA3_384 ||
-        cap_entry->cipher == ACVP_HASH_SHA3_512 ||
-        cap_entry->cipher == ACVP_HASH_SHAKE_128 ||
-        cap_entry->cipher == ACVP_HASH_SHAKE_256) {
+            cap_entry->cipher == ACVP_HASH_SHA3_256 ||
+            cap_entry->cipher == ACVP_HASH_SHA3_384 ||
+            cap_entry->cipher == ACVP_HASH_SHA3_512 ||
+            cap_entry->cipher == ACVP_HASH_SHAKE_128 ||
+            cap_entry->cipher == ACVP_HASH_SHAKE_256) {
         json_object_set_boolean(cap_obj, "inBit", cap_entry->cap.hash_cap->in_bit);
         json_object_set_boolean(cap_obj, "inEmpty", cap_entry->cap.hash_cap->in_empty);
+    }
 
-        if (cap_entry->cipher == ACVP_HASH_SHAKE_128 ||
-            cap_entry->cipher == ACVP_HASH_SHAKE_256) {
-            /* SHAKE specific capabilities */
-            JSON_Array *tmp_arr = NULL;
-            JSON_Value *tmp_val = NULL;
-            JSON_Object *tmp_obj = NULL;
+    if (cap_entry->cipher == ACVP_HASH_SHAKE_128 ||
+        cap_entry->cipher == ACVP_HASH_SHAKE_256) {
+        /* SHAKE specific capabilities */
+        JSON_Array *tmp_arr = NULL;
+        JSON_Value *tmp_val = NULL;
+        JSON_Object *tmp_obj = NULL;
 
-            json_object_set_boolean(cap_obj, "outBit", cap_entry->cap.hash_cap->out_bit);
+        json_object_set_boolean(cap_obj, "outBit", cap_entry->cap.hash_cap->out_bit);
 
-            json_object_set_value(cap_obj, "outputLen", json_value_init_array());
-            tmp_arr = json_object_get_array(cap_obj, "outputLen");
-            tmp_val = json_value_init_object();
-            tmp_obj = json_value_get_object(tmp_val);
+        json_object_set_value(cap_obj, "outputLen", json_value_init_array());
+        tmp_arr = json_object_get_array(cap_obj, "outputLen");
+        tmp_val = json_value_init_object();
+        tmp_obj = json_value_get_object(tmp_val);
 
-            json_object_set_number(tmp_obj, "min", cap_entry->cap.hash_cap->out_len.min);
-            json_object_set_number(tmp_obj, "max", cap_entry->cap.hash_cap->out_len.max);
-            json_object_set_number(tmp_obj, "increment", cap_entry->cap.hash_cap->out_len.increment);
+        json_object_set_number(tmp_obj, "min", cap_entry->cap.hash_cap->out_len.min);
+        json_object_set_number(tmp_obj, "max", cap_entry->cap.hash_cap->out_len.max);
+        json_object_set_number(tmp_obj, "increment", cap_entry->cap.hash_cap->out_len.increment);
 
-            json_array_append_value(tmp_arr, tmp_val);
-        }
+        json_array_append_value(tmp_arr, tmp_val);
     } else {
         json_object_set_value(cap_obj, "messageLength", json_value_init_array());
         msg_array = json_object_get_array(cap_obj, "messageLength");
@@ -706,6 +706,18 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
                 break;
             }
             sl_list = sl_list->next;
+        }
+
+        json_object_set_boolean(cap_obj, "dataUnitLenMatchesPayload", sym_cap->dulen_matches_paylen);
+        if (!sym_cap->dulen_matches_paylen) {
+            json_object_set_value(cap_obj, "dataUnitLen", json_value_init_array());
+            opts_arr = json_object_get_array(cap_obj, "dataUnitLen");
+            tmp_val = json_value_init_object();
+            tmp_obj = json_value_get_object(tmp_val);
+            json_object_set_number(tmp_obj, "max", sym_cap->du_len.max);
+            json_object_set_number(tmp_obj, "min", sym_cap->du_len.min);
+            json_object_set_number(tmp_obj, "increment", sym_cap->du_len.increment);
+            json_array_append_value(opts_arr, tmp_val);
         }
     }
 
