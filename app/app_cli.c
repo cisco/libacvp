@@ -183,7 +183,7 @@ static void print_usage(int code) {
     printf("        ACV_OE_COMPILER\n\n");
 }
 
-static void print_version_info() {
+static void print_version_info(void) {
     printf("\nACVP library version(protocol version): %s(%s)\n\n", acvp_version(), acvp_protocol_version());
 
 #ifdef ACVP_NO_RUNTIME

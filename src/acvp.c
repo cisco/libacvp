@@ -3372,7 +3372,7 @@ static ACVP_RESULT acvp_write_session_info(ACVP_CTX *ctx) {
     }
     ctx->session_file_path = calloc(ACVP_JSON_FILENAME_MAX + 1, sizeof(char));
     if (strncpy_s(ctx->session_file_path, ACVP_JSON_FILENAME_MAX + 1, filename, 
-                  ACVP_JSON_FILENAME_MAX + 1)) {
+                  ACVP_JSON_FILENAME_MAX)) {
         ACVP_LOG_ERR("Buffer write error while trying to save session file path to CTX");
         rv = ACVP_UNSUPPORTED_OP;
         goto end;
