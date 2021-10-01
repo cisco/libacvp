@@ -113,6 +113,7 @@
 #define ACVP_REV_STR_SP800_56BR2 "Sp800-56Br2"
 #define ACVP_REV_STR_SP800_56CR1 "Sp800-56Cr1"
 #define ACVP_REV_STR_RFC8446 "RFC8446"
+#define ACVP_REV_STR_RFC7627 "RFC7627"
 
 /* AES */
 #define ACVP_REV_AES_ECB             ACVP_REV_STR_DEFAULT
@@ -227,6 +228,7 @@
 #define ACVP_REV_KDF108              ACVP_REV_STR_DEFAULT
 #define ACVP_REV_PBKDF               ACVP_REV_STR_DEFAULT
 #define ACVP_REV_SAFE_PRIMES         ACVP_REV_STR_DEFAULT
+#define ACVP_REV_KDF_TLS12           ACVP_REV_STR_RFC7627
 #define ACVP_REV_KDF_TLS13           ACVP_REV_STR_RFC8446
 
 
@@ -419,6 +421,9 @@
 #define ACVP_STR_KDF_TLS13_PSK     "PSK"
 #define ACVP_STR_KDF_TLS13_DHE     "DHE"
 #define ACVP_STR_KDF_TLS13_PSK_DHE "PSK-DHE"
+
+#define ACVP_ALG_TLS12           "TLS-v1.2"
+#define ACVP_ALG_KDF_TLS12       "KDF"
 
 #define ACVP_CAPABILITY_STR_MAX 512 /**< Arbitrary string length limit */
 
@@ -722,6 +727,15 @@
 /*
  * END PBKDF
  */
+ 
+ /**
+ * Accepted length ranges for TLS 1.2 KDF
+ */
+#define ACVP_KDF_TLS12_MSG_MAX 1024 * 4
+
+#define ACVP_KDF_TLS12_PMSECRET_BIT_MAX 384
+#define ACVP_KDF_TLS12_PMSECRET_BYTE_MAX (ACVP_KDF135_TLS_PMSECRET_BIT_MAX >> 3)
+#define ACVP_KDF_TLS12_PMSECRET_STR_MAX (ACVP_KDF135_TLS_PMSECRET_BIT_MAX >> 2)
 
 /**
  * Accepted length ranges for TLS 1.3 KDF
@@ -977,6 +991,7 @@ typedef enum acvp_capability_type {
     ACVP_KDF135_TPM_TYPE,
     ACVP_KDF108_TYPE,
     ACVP_PBKDF_TYPE,
+    ACVP_KDF_TLS12_TYPE,
     ACVP_KDF_TLS13_TYPE,
     ACVP_KAS_ECC_CDH_TYPE,
     ACVP_KAS_ECC_COMP_TYPE,
@@ -1162,6 +1177,10 @@ typedef struct acvp_pbkdf_capability {
     ACVP_JSON_DOMAIN_OBJ password_len_domain;
     ACVP_JSON_DOMAIN_OBJ salt_len_domain;
 } ACVP_PBKDF_CAP;
+
+typedef struct acvp_kdf_tls12_capability {
+    ACVP_NAME_LIST *hash_algs;
+} ACVP_KDF_TLS12_CAP;
 
 typedef struct acvp_kdf_tls13_capability {
     ACVP_NAME_LIST *hmac_algs;
@@ -1485,6 +1504,7 @@ typedef struct acvp_caps_list_t {
         ACVP_KDF135_X963_CAP *kdf135_x963_cap;
         ACVP_KDF108_CAP *kdf108_cap;
         ACVP_PBKDF_CAP *pbkdf_cap;
+        ACVP_KDF_TLS12_CAP *kdf_tls12_cap;
         ACVP_KDF_TLS13_CAP *kdf_tls13_cap;
         ACVP_KAS_ECC_CAP *kas_ecc_cap;
         ACVP_KAS_FFC_CAP *kas_ffc_cap;
@@ -1788,6 +1808,8 @@ ACVP_RESULT acvp_kdf135_x963_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 ACVP_RESULT acvp_kdf108_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
 ACVP_RESULT acvp_pbkdf_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
+
+ACVP_RESULT acvp_kdf_tls12_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
 ACVP_RESULT acvp_kdf_tls13_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 

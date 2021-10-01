@@ -1294,9 +1294,21 @@ static int enable_kdf(ACVP_CTX *ctx) {
     ACVP_RESULT rv = ACVP_SUCCESS;
     int i, flags = 0;
 
-    /*
-     * Enable KDF-135
-     */
+
+    rv = acvp_cap_kdf_tls12_enable(ctx, &app_kdf_tls12_handler);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_set_prereq(ctx, ACVP_KDF_TLS12, ACVP_PREREQ_SHA, value);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_set_prereq(ctx, ACVP_KDF_TLS12, ACVP_PREREQ_HMAC, value);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kdf_tls12_set_parm(ctx, ACVP_KDF_TLS12_HASH_ALG, ACVP_SHA256);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kdf_tls12_set_parm(ctx, ACVP_KDF_TLS12_HASH_ALG, ACVP_SHA384);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kdf_tls12_set_parm(ctx, ACVP_KDF_TLS12_HASH_ALG, ACVP_SHA512);
+    CHECK_ENABLE_CAP_RV(rv);
+
+#if 0 //replaced by KDF TLS12. Testing support will be removed from NIST server at the beginning of 2022.
     rv = acvp_cap_kdf135_tls_enable(ctx, &app_kdf135_tls_handler);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_TLS, ACVP_PREREQ_SHA, value);
@@ -1306,6 +1318,7 @@ static int enable_kdf(ACVP_CTX *ctx) {
     rv = acvp_cap_kdf135_tls_set_parm(ctx, ACVP_KDF135_TLS, ACVP_KDF135_TLS12,
                                       ACVP_SHA256 | ACVP_SHA384 | ACVP_SHA512);
     CHECK_ENABLE_CAP_RV(rv);
+#endif
 
     rv = acvp_cap_kdf135_snmp_enable(ctx, &app_kdf135_snmp_handler);
     CHECK_ENABLE_CAP_RV(rv);
