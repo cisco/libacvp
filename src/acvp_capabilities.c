@@ -6441,7 +6441,6 @@ ACVP_RESULT acvp_cap_kdf_tls12_enable(ACVP_CTX *ctx,
 
     if (!crypto_handler) {
         return ACVP_INVALID_ARG;
-
         ACVP_LOG_ERR("NULL parameter 'crypto_handler'");
     }
 

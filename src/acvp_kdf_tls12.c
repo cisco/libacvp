@@ -66,8 +66,6 @@ ACVP_RESULT acvp_kdf_tls12_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     ACVP_CIPHER alg_id;
     ACVP_HASH_ALG md = 0;
     const char *pm_secret = NULL;
-    const char *sh_rnd = NULL;
-    const char *ch_rnd = NULL;
     const char *session_hash = NULL;
     const char *s_rnd = NULL;
     const char *c_rnd = NULL;
@@ -228,8 +226,7 @@ ACVP_RESULT acvp_kdf_tls12_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             ACVP_LOG_VERBOSE("        Test case: %d", j);
             ACVP_LOG_VERBOSE("             tcId: %d", tc_id);
             ACVP_LOG_VERBOSE("         pmSecret: %s", pm_secret);
-            ACVP_LOG_VERBOSE("            shRND: %s", sh_rnd);
-            ACVP_LOG_VERBOSE("            chRND: %s", ch_rnd);
+            ACVP_LOG_VERBOSE("      sessionHash: %s", session_hash);
             ACVP_LOG_VERBOSE("             sRND: %s", s_rnd);
             ACVP_LOG_VERBOSE("             cRND: %s", c_rnd);
 
@@ -362,7 +359,7 @@ static ACVP_RESULT acvp_kdf_tls12_init_tc(ACVP_CTX *ctx,
     if (!stc->session_hash) { return ACVP_MALLOC_FAIL; }
     rv = acvp_hexstr_to_bin(session_hash, stc->session_hash, ACVP_KDF_TLS12_MSG_MAX, &(stc->session_hash_len));
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("Hex conversion failure (sh_rnd)");
+        ACVP_LOG_ERR("Hex conversion failure (session_hash)");
         return rv;
     }
 
