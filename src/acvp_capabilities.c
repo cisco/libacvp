@@ -998,6 +998,7 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
         case ACVP_KDF135_X963:
         case ACVP_KDF108:
         case ACVP_PBKDF:
+        case ACVP_KDF_TLS12:
         case ACVP_KDF_TLS13:
         case ACVP_KAS_ECC_CDH:
         case ACVP_KAS_ECC_COMP:
@@ -1109,6 +1110,7 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
         case ACVP_KDF135_X963:
         case ACVP_KDF108:
         case ACVP_PBKDF:
+        case ACVP_KDF_TLS12:
         case ACVP_KDF_TLS13:
         case ACVP_KAS_ECC_CDH:
         case ACVP_KAS_ECC_COMP:
@@ -1218,6 +1220,7 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
         case ACVP_KDF135_X963:
         case ACVP_KDF108:
         case ACVP_PBKDF:
+        case ACVP_KDF_TLS12:
         case ACVP_KDF_TLS13:
         case ACVP_KAS_ECC_CDH:
         case ACVP_KAS_ECC_COMP:
@@ -1333,6 +1336,7 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
         case ACVP_KDF135_X963:
         case ACVP_KDF108:
         case ACVP_PBKDF:
+        case ACVP_KDF_TLS12:
         case ACVP_KDF_TLS13:
         case ACVP_KAS_ECC_CDH:
         case ACVP_KAS_ECC_COMP:
@@ -1439,6 +1443,7 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
         case ACVP_KDF135_X963:
         case ACVP_KDF108:
         case ACVP_PBKDF:
+        case ACVP_KDF_TLS12:
         case ACVP_KDF_TLS13:
         case ACVP_KAS_ECC_CDH:
         case ACVP_KAS_ECC_COMP:
@@ -1758,6 +1763,7 @@ static ACVP_RESULT acvp_validate_sym_cipher_domain_value(ACVP_CIPHER cipher, ACV
     case ACVP_KDF135_X963:
     case ACVP_KDF108:
     case ACVP_PBKDF:
+    case ACVP_KDF_TLS12:
     case ACVP_KDF_TLS13:
     case ACVP_KAS_ECC_CDH:
     case ACVP_KAS_ECC_COMP:
@@ -1930,6 +1936,12 @@ static ACVP_RESULT acvp_validate_prereq_val(ACVP_CIPHER cipher, ACVP_PREREQ_ALG 
         if (pre_req == ACVP_PREREQ_HMAC) {
             return ACVP_SUCCESS;
         }
+        break;
+    case ACVP_KDF_TLS12:
+        if (pre_req == ACVP_PREREQ_HMAC ||
+            pre_req == ACVP_PREREQ_SHA) {
+                return ACVP_SUCCESS;
+            }
         break;
     case ACVP_KDF_TLS13:
         if (pre_req == ACVP_PREREQ_HMAC) {
@@ -2203,6 +2215,7 @@ ACVP_RESULT acvp_cap_sym_cipher_set_domain(ACVP_CTX *ctx,
     case ACVP_KDF135_X963:
     case ACVP_KDF108:
     case ACVP_PBKDF:
+    case ACVP_KDF_TLS12:
     case ACVP_KDF_TLS13:
     case ACVP_KAS_ECC_CDH:
     case ACVP_KAS_ECC_COMP:
@@ -2410,6 +2423,7 @@ ACVP_RESULT acvp_cap_sym_cipher_set_parm(ACVP_CTX *ctx,
     case ACVP_KDF135_X963:
     case ACVP_KDF108:
     case ACVP_PBKDF:
+    case ACVP_KDF_TLS12:
     case ACVP_KDF_TLS13:
     case ACVP_KAS_ECC_CDH:
     case ACVP_KAS_ECC_COMP:
@@ -2732,6 +2746,7 @@ ACVP_RESULT acvp_cap_sym_cipher_enable(ACVP_CTX *ctx,
     case ACVP_KDF135_X963:
     case ACVP_KDF108:
     case ACVP_PBKDF:
+    case ACVP_KDF_TLS12:
     case ACVP_KDF_TLS13:
     case ACVP_KAS_ECC_CDH:
     case ACVP_KAS_ECC_COMP:
@@ -5138,6 +5153,8 @@ ACVP_RESULT acvp_cap_kdf135_tls_enable(ACVP_CTX *ctx,
         ACVP_LOG_ERR("Failed to allocate capability object");
     }
 
+    ACVP_LOG_WARN("Warning: kdf135_tls testing support is being removed from the NIST server "
+                  "starting in 2022. Please transition to KDF TLS 1.2 testing.");
     return result;
 }
 
@@ -6413,6 +6430,102 @@ ACVP_RESULT acvp_cap_kdf108_set_domain(ACVP_CTX *ctx,
 
     return ACVP_SUCCESS;
 }
+
+ACVP_RESULT acvp_cap_kdf_tls12_enable(ACVP_CTX *ctx,
+                                       int (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
+    ACVP_RESULT result = ACVP_SUCCESS;
+
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+
+    if (!crypto_handler) {
+        return ACVP_INVALID_ARG;
+
+        ACVP_LOG_ERR("NULL parameter 'crypto_handler'");
+    }
+
+    result = acvp_cap_list_append(ctx, ACVP_KDF_TLS12_TYPE, ACVP_KDF_TLS12, crypto_handler);
+
+    if (result == ACVP_DUP_CIPHER) {
+        ACVP_LOG_ERR("Capability previously enabled. Duplicate not allowed.");
+    } else if (result == ACVP_MALLOC_FAIL) {
+        ACVP_LOG_ERR("Failed to allocate capability object");
+    }
+
+    return result;
+}
+
+/*
+ * The user should call this after invoking acvp_cap_kdf_tls12_enable()
+ * to specify the kdf parameters.
+ */
+ACVP_RESULT acvp_cap_kdf_tls12_set_parm(ACVP_CTX *ctx,
+                                         ACVP_KDF_TLS12_PARM param,
+                                         int value) {
+    ACVP_CAPS_LIST *cap_list;
+    ACVP_KDF_TLS12_CAP *cap;
+    ACVP_NAME_LIST *hash_alg_list = NULL;
+    const char *alg_str = NULL;
+
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+
+    cap_list = acvp_locate_cap_entry(ctx, ACVP_KDF_TLS12);
+    if (!cap_list) {
+        ACVP_LOG_ERR("Cap entry not found. You must enable algorithm before setting parameters.");
+        return ACVP_NO_CAP;
+    }
+
+    cap = cap_list->cap.kdf_tls12_cap;
+    if (!cap) {
+        return ACVP_NO_CAP;
+    }    
+
+    switch(param) {
+    case ACVP_KDF_TLS12_HASH_ALG:
+        alg_str = acvp_lookup_hash_alg_name(value);
+        if ((value != ACVP_SHA256 && value != ACVP_SHA384 && value != ACVP_SHA512) || !alg_str) {
+            ACVP_LOG_ERR("Invalid value specified for TLS 1.2 alg.");
+            return ACVP_INVALID_ARG;
+        }
+        if (cap->hash_algs) {
+            hash_alg_list = cap->hash_algs;
+            if (hash_alg_list->name == alg_str) {
+                ACVP_LOG_WARN("Attempting to register a hash alg with TLS 1.2 KDF that has already been registered, skipping.");
+                return ACVP_SUCCESS;
+            }
+            while (hash_alg_list->next) {
+                hash_alg_list = hash_alg_list->next;
+                if (hash_alg_list->name == alg_str) {
+                    ACVP_LOG_WARN("Attempting to register a hash alg with TLS 1.2 KDF that has already been registered, skipping.");
+                    return ACVP_SUCCESS;
+                }
+            }
+            hash_alg_list->next = calloc(1, sizeof(ACVP_NAME_LIST));
+            if (!hash_alg_list->next) {
+                return ACVP_MALLOC_FAIL;
+            }
+            hash_alg_list = hash_alg_list->next;
+        } else {
+            cap->hash_algs = calloc(1, sizeof(ACVP_NAME_LIST));
+            if (!cap->hash_algs) {
+                return ACVP_MALLOC_FAIL;
+            }
+            hash_alg_list = cap->hash_algs;
+        }
+        hash_alg_list->name = alg_str;
+        break;
+    case ACVP_KDF_TLS12_PARAM_MIN:
+    default:
+        return ACVP_INVALID_ARG;
+    }
+
+    return ACVP_SUCCESS;
+}
+
+
 
 ACVP_RESULT acvp_cap_kdf_tls13_enable(ACVP_CTX *ctx,
                                       int (*crypto_handler) (ACVP_TEST_CASE *test_case)) {

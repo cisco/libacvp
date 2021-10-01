@@ -16,6 +16,8 @@
 
 #define TLS_MD_MASTER_SECRET_CONST              "master secret"
 #define TLS_MD_MASTER_SECRET_CONST_SIZE         13
+#define TLS_MD_EXTENDED_MASTER_SECRET_CONST     "extended master secret"
+#define TLS_MD_EXTENDED_MASTER_SECRET_CONST_SIZE 22
 #define TLS_MD_KEY_EXPANSION_CONST              "key expansion"
 #define TLS_MD_KEY_EXPANSION_CONST_SIZE         13
 
@@ -76,6 +78,13 @@ int app_kdf135_ssh_handler(ACVP_TEST_CASE *test_case) {
 }
 
 int app_pbkdf_handler(ACVP_TEST_CASE *test_case) {
+    if (!test_case) {
+        return -1;
+    }
+    return 1;
+}
+
+int app_kdf_tls12_handler(ACVP_TEST_CASE *test_case) {
     if (!test_case) {
         return -1;
     }

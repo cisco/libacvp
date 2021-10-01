@@ -599,6 +599,7 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
     case ACVP_KDF135_X963:
     case ACVP_KDF108:
     case ACVP_PBKDF:
+    case ACVP_KDF_TLS12:
     case ACVP_KDF_TLS13:
     case ACVP_KAS_ECC_CDH:
     case ACVP_KAS_ECC_COMP:
@@ -1953,6 +1954,37 @@ static ACVP_RESULT acvp_build_pbkdf_register_cap(JSON_Object *cap_obj, ACVP_CAPS
     }
 
     json_array_append_value(temp_cap_arr, cap_val);
+    return ACVP_SUCCESS;
+}
+
+static ACVP_RESULT acvp_build_kdf_tls12_register_cap(JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry) {
+    JSON_Array *temp_arr = NULL;
+    ACVP_RESULT result;
+    const char *revision = NULL, *mode = NULL;
+    ACVP_NAME_LIST *hash_alg_list = NULL;
+
+    json_object_set_string(cap_obj, "algorithm", ACVP_ALG_TLS12);
+
+    revision = acvp_lookup_cipher_revision(cap_entry->cipher);
+    if (!revision) return ACVP_INVALID_ARG;
+    json_object_set_string(cap_obj, "revision", revision);
+
+    mode = acvp_lookup_cipher_mode_str(ACVP_KDF_TLS12);
+    if (mode == NULL) return ACVP_INVALID_ARG;
+    json_object_set_string(cap_obj, "mode", mode);
+
+    //create the "hashAlg" array and populate it
+    json_object_set_value(cap_obj, "hashAlg", json_value_init_array());
+    temp_arr = json_object_get_array(cap_obj, "hashAlg");
+    hash_alg_list = cap_entry->cap.kdf_tls12_cap->hash_algs;
+    while (hash_alg_list) {
+        json_array_append_string(temp_arr, hash_alg_list->name);
+        hash_alg_list = hash_alg_list->next;
+    }
+
+    result = acvp_lookup_prereqVals(cap_obj, cap_entry);
+    if (result != ACVP_SUCCESS) { return result; }
+
     return ACVP_SUCCESS;
 }
 
@@ -4113,6 +4145,9 @@ ACVP_RESULT acvp_build_test_session(ACVP_CTX *ctx, char **reg, int *out_len) {
                 break;
             case ACVP_PBKDF:
                 rv = acvp_build_pbkdf_register_cap(cap_obj, cap_entry);
+                break;
+            case ACVP_KDF_TLS12:
+                rv = acvp_build_kdf_tls12_register_cap(cap_obj, cap_entry);
                 break;
             case ACVP_KDF_TLS13:
                 rv = acvp_build_kdf_tls13_register_cap(cap_obj, cap_entry);
