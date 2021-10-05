@@ -105,6 +105,7 @@ noinst_PROGRAMS = runtest$(EXEEXT)
 @LIB_NOT_SUPPORTED_FALSE@      test_acvp_kdf135_ikev1.c \
 @LIB_NOT_SUPPORTED_FALSE@      test_acvp_kdf108.c \
 @LIB_NOT_SUPPORTED_FALSE@      test_acvp_pbkdf.c \
+@LIB_NOT_SUPPORTED_FALSE@      test_acvp_kdf_tls12.c \
 @LIB_NOT_SUPPORTED_FALSE@      test_acvp_kdf_tls13.c \
 @LIB_NOT_SUPPORTED_FALSE@      test_acvp_rsa_keygen.c \
 @LIB_NOT_SUPPORTED_FALSE@      test_acvp_rsa_sig.c \
@@ -168,10 +169,10 @@ am__runtest_SOURCES_DIST = ut_common.c create_session.c \
 	test_acvp_kdf135_snmp.c test_acvp_kdf135_x963.c \
 	test_acvp_kdf135_tls.c test_acvp_kdf135_srtp.c \
 	test_acvp_kdf135_ikev2.c test_acvp_kdf135_ikev1.c \
-	test_acvp_kdf108.c test_acvp_pbkdf.c test_acvp_kdf_tls13.c \
-	test_acvp_rsa_keygen.c test_acvp_rsa_sig.c \
-	test_acvp_rsa_prim.c test_acvp_cmac.c test_acvp_des.c \
-	test_acvp_capabilities.c test_acvp_hash.c \
+	test_acvp_kdf108.c test_acvp_pbkdf.c test_acvp_kdf_tls12.c \
+	test_acvp_kdf_tls13.c test_acvp_rsa_keygen.c \
+	test_acvp_rsa_sig.c test_acvp_rsa_prim.c test_acvp_cmac.c \
+	test_acvp_des.c test_acvp_capabilities.c test_acvp_hash.c \
 	test_acvp_build_register.c test_acvp_aes.c test_acvp.c \
 	test_acvp_transport.c test_acvp_operating_env.c \
 	test_acvp_ecdsa.c test_acvp_kas_ecc.c test_acvp_kas_ifc.c \
@@ -197,6 +198,7 @@ am__runtest_SOURCES_DIST = ut_common.c create_session.c \
 @LIB_NOT_SUPPORTED_FALSE@	runtest-test_acvp_kdf135_ikev1.$(OBJEXT) \
 @LIB_NOT_SUPPORTED_FALSE@	runtest-test_acvp_kdf108.$(OBJEXT) \
 @LIB_NOT_SUPPORTED_FALSE@	runtest-test_acvp_pbkdf.$(OBJEXT) \
+@LIB_NOT_SUPPORTED_FALSE@	runtest-test_acvp_kdf_tls12.$(OBJEXT) \
 @LIB_NOT_SUPPORTED_FALSE@	runtest-test_acvp_kdf_tls13.$(OBJEXT) \
 @LIB_NOT_SUPPORTED_FALSE@	runtest-test_acvp_rsa_keygen.$(OBJEXT) \
 @LIB_NOT_SUPPORTED_FALSE@	runtest-test_acvp_rsa_sig.$(OBJEXT) \
@@ -284,6 +286,7 @@ am__depfiles_remade = ./$(DEPDIR)/runtest-app_common.Po \
 	./$(DEPDIR)/runtest-test_acvp_kdf135_ssh.Po \
 	./$(DEPDIR)/runtest-test_acvp_kdf135_tls.Po \
 	./$(DEPDIR)/runtest-test_acvp_kdf135_x963.Po \
+	./$(DEPDIR)/runtest-test_acvp_kdf_tls12.Po \
 	./$(DEPDIR)/runtest-test_acvp_kdf_tls13.Po \
 	./$(DEPDIR)/runtest-test_acvp_kts_ifc.Po \
 	./$(DEPDIR)/runtest-test_acvp_operating_env.Po \
@@ -618,6 +621,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtest-test_acvp_kdf135_ssh.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtest-test_acvp_kdf135_tls.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtest-test_acvp_kdf135_x963.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtest-test_acvp_kdf_tls12.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtest-test_acvp_kdf_tls13.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtest-test_acvp_kts_ifc.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtest-test_acvp_operating_env.Po@am__quote@ # am--include-marker
@@ -883,6 +887,20 @@ runtest-test_acvp_pbkdf.obj: test_acvp_pbkdf.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_acvp_pbkdf.c' object='runtest-test_acvp_pbkdf.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o runtest-test_acvp_pbkdf.obj `if test -f 'test_acvp_pbkdf.c'; then $(CYGPATH_W) 'test_acvp_pbkdf.c'; else $(CYGPATH_W) '$(srcdir)/test_acvp_pbkdf.c'; fi`
+
+runtest-test_acvp_kdf_tls12.o: test_acvp_kdf_tls12.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT runtest-test_acvp_kdf_tls12.o -MD -MP -MF $(DEPDIR)/runtest-test_acvp_kdf_tls12.Tpo -c -o runtest-test_acvp_kdf_tls12.o `test -f 'test_acvp_kdf_tls12.c' || echo '$(srcdir)/'`test_acvp_kdf_tls12.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/runtest-test_acvp_kdf_tls12.Tpo $(DEPDIR)/runtest-test_acvp_kdf_tls12.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_acvp_kdf_tls12.c' object='runtest-test_acvp_kdf_tls12.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o runtest-test_acvp_kdf_tls12.o `test -f 'test_acvp_kdf_tls12.c' || echo '$(srcdir)/'`test_acvp_kdf_tls12.c
+
+runtest-test_acvp_kdf_tls12.obj: test_acvp_kdf_tls12.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT runtest-test_acvp_kdf_tls12.obj -MD -MP -MF $(DEPDIR)/runtest-test_acvp_kdf_tls12.Tpo -c -o runtest-test_acvp_kdf_tls12.obj `if test -f 'test_acvp_kdf_tls12.c'; then $(CYGPATH_W) 'test_acvp_kdf_tls12.c'; else $(CYGPATH_W) '$(srcdir)/test_acvp_kdf_tls12.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/runtest-test_acvp_kdf_tls12.Tpo $(DEPDIR)/runtest-test_acvp_kdf_tls12.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_acvp_kdf_tls12.c' object='runtest-test_acvp_kdf_tls12.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o runtest-test_acvp_kdf_tls12.obj `if test -f 'test_acvp_kdf_tls12.c'; then $(CYGPATH_W) 'test_acvp_kdf_tls12.c'; else $(CYGPATH_W) '$(srcdir)/test_acvp_kdf_tls12.c'; fi`
 
 runtest-test_acvp_kdf_tls13.o: test_acvp_kdf_tls13.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT runtest-test_acvp_kdf_tls13.o -MD -MP -MF $(DEPDIR)/runtest-test_acvp_kdf_tls13.Tpo -c -o runtest-test_acvp_kdf_tls13.o `test -f 'test_acvp_kdf_tls13.c' || echo '$(srcdir)/'`test_acvp_kdf_tls13.c
@@ -1555,6 +1573,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/runtest-test_acvp_kdf135_ssh.Po
 	-rm -f ./$(DEPDIR)/runtest-test_acvp_kdf135_tls.Po
 	-rm -f ./$(DEPDIR)/runtest-test_acvp_kdf135_x963.Po
+	-rm -f ./$(DEPDIR)/runtest-test_acvp_kdf_tls12.Po
 	-rm -f ./$(DEPDIR)/runtest-test_acvp_kdf_tls13.Po
 	-rm -f ./$(DEPDIR)/runtest-test_acvp_kts_ifc.Po
 	-rm -f ./$(DEPDIR)/runtest-test_acvp_operating_env.Po
@@ -1650,6 +1669,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/runtest-test_acvp_kdf135_ssh.Po
 	-rm -f ./$(DEPDIR)/runtest-test_acvp_kdf135_tls.Po
 	-rm -f ./$(DEPDIR)/runtest-test_acvp_kdf135_x963.Po
+	-rm -f ./$(DEPDIR)/runtest-test_acvp_kdf_tls12.Po
 	-rm -f ./$(DEPDIR)/runtest-test_acvp_kdf_tls13.Po
 	-rm -f ./$(DEPDIR)/runtest-test_acvp_kts_ifc.Po
 	-rm -f ./$(DEPDIR)/runtest-test_acvp_operating_env.Po

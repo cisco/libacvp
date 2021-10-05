@@ -525,6 +525,18 @@ static ACVP_RESULT acvp_cap_list_append(ACVP_CTX *ctx,
         }
         break;
 
+        case ACVP_KDF_TLS12_TYPE:
+        if (cipher != ACVP_KDF_TLS12) {
+            rv = ACVP_INVALID_ARG;
+            goto err;
+        }
+        cap_entry->cap.kdf_tls12_cap = calloc(1, sizeof(ACVP_KDF_TLS12_CAP));
+        if (!cap_entry->cap.kdf_tls12_cap) {
+            rv = ACVP_MALLOC_FAIL;
+            goto err;
+        }
+        break;
+
     case ACVP_KDF_TLS13_TYPE:
         if (cipher != ACVP_KDF_TLS13) {
             rv = ACVP_INVALID_ARG;
