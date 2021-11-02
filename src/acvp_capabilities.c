@@ -890,16 +890,9 @@ static ACVP_RESULT acvp_add_dsa_keygen_parm(ACVP_CTX *ctx,
                                             int value) {
     switch (param) {
     case ACVP_DSA_LN2048_224:
-        return acvp_add_dsa_mode_parm(ctx, dsa_cap_mode, param, value);
-
-        break;
     case ACVP_DSA_LN2048_256:
-        return acvp_add_dsa_mode_parm(ctx, dsa_cap_mode, param, value);
-
-        break;
     case ACVP_DSA_LN3072_256:
         return acvp_add_dsa_mode_parm(ctx, dsa_cap_mode, param, value);
-
         break;
     case ACVP_DSA_GENPQ:
     case ACVP_DSA_GENG:
