@@ -646,8 +646,8 @@ static ACVP_RESULT acvp_kas_kdf_process(ACVP_CTX *ctx,
     const char *alg_str = NULL,  *pattern_str = NULL, *encoding_str = NULL, 
                *salt_method_str = NULL;
     ACVP_HASH_ALG hmac_alg = 0;
-    unsigned int i, g_cnt;
-    int j, k, t_cnt, tc_id, saltLen, l, tmp;
+    unsigned int i = 0, g_cnt = 0;
+    int j = 0, k = 0, t_cnt = 0, tc_id = 0, saltLen = 0, l = 0, tmp = 0;
     ACVP_RESULT rv;
     const char *test_type_str = NULL;
     ACVP_KAS_KDF_TEST_TYPE test_type;
