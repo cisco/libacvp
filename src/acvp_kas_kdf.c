@@ -768,6 +768,7 @@ static ACVP_RESULT acvp_kas_kdf_process(ACVP_CTX *ctx,
             rv = ACVP_MALFORMED_JSON;
             goto err;
         }
+        /** temporarily disabling this check due to issue with NIST server
         saltLen = json_object_get_number(configobj, "saltLen");
         //saltLen seems tied to hashAlg bit length. Spec unclear as of writing.
         if (saltLen % 8 != 0 || saltLen < 0 || saltLen > 512) {
@@ -775,6 +776,7 @@ static ACVP_RESULT acvp_kas_kdf_process(ACVP_CTX *ctx,
             rv = ACVP_MALFORMED_JSON;
             goto err;
         }
+        */
         l = json_object_get_number(configobj, "l");
         if (cipher == ACVP_KAS_HKDF) {
             kdfcap = acvp_locate_cap_entry(ctx, ACVP_KAS_HKDF);
@@ -850,12 +852,23 @@ static ACVP_RESULT acvp_kas_kdf_process(ACVP_CTX *ctx,
                     goto err;
                 }
                 //assume max salt len is mac alg max length, currently 512
+                /** temporarily disabling this check due to issue with NIST server
                 if ((int)strnlen_s(salt, 128) != saltLen / 4) {
                     ACVP_LOG_ERR("salt wrong length, should match provided saltLen %d",
                                 saltLen);
                     rv = ACVP_MALFORMED_JSON;
                     goto err;
                 }
+                */
+            }
+            //temporary saltLen measurement
+            saltLen = strnlen_s(salt, 129);
+            if (saltLen > 128) {
+                ACVP_LOG_ERR("saltLen too long");
+                rv = ACVP_MALFORMED_JSON;
+                goto err;
+            } else {
+                saltLen *= 4;
             }
 
             z = json_object_get_string(paramobj, "z");

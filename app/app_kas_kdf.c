@@ -13,6 +13,10 @@
 #include "app_lcl.h"
 #include "safe_lib.h"
 
+#ifdef ACVP_NO_RUNTIME
+#include "app_fips_lcl.h" /* All regular OpenSSL headers must come before here */
+#endif
+
 int app_kas_hkdf_handler(ACVP_TEST_CASE *test_case) {
     ACVP_KAS_HKDF_TC *stc = NULL;
     const EVP_MD *md = NULL;
