@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Cisco Systems, Inc.
+ * Copyright (c) 2021, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -78,7 +78,7 @@ int app_drbg_handler(ACVP_TEST_CASE *test_case) {
 
     alg = acvp_get_drbg_alg(tc->cipher);
     if (alg == 0) {
-        printf("Invalid cipher value");
+        printf("Invalid cipher value\n");
         return 1;
     }
 
@@ -223,6 +223,24 @@ int app_drbg_handler(ACVP_TEST_CASE *test_case) {
         return result;
 
         break;
+    }
+
+    if (!tc->pred_resist_enabled && tc->reseed && !tc->entropy_input_pr_0) {
+        printf("Missing entropy input needed for reseed\n");
+        return 1;
+    }
+    if (!drbg_entropy_len || !tc->pr1_len || !tc->pr2_len ||
+        !tc->entropy || !tc->entropy_input_pr_1 || !tc->entropy_input_pr_2) {
+        printf("Insufficient entropy for testing DRBG\n");
+        return 1;
+    }
+    if (!tc->drb) {
+        printf("Invalid output buffer for DRBG test\n");
+        return 1;
+    }
+    if (!tc->perso_string) {
+        printf("Missing persoString for DRBG test\n");
+        return 1;
     }
 
     DRBG_CTX *drbg_ctx = NULL;

@@ -1,6 +1,6 @@
 /** @file */
 /*
- * Copyright (c) 2019, Cisco Systems, Inc.
+ * Copyright (c) 2021, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -43,6 +43,7 @@ static ACVP_RESULT acvp_aes_init_tc(ACVP_CTX *ctx,
                                     unsigned int tag_len,
                                     unsigned int aad_len,
                                     unsigned int salt_len,
+                                    unsigned int data_unit_len,
                                     ACVP_CONFORMANCE conformance,
                                     ACVP_CIPHER alg_id,
                                     ACVP_SYM_CIPH_DIR dir,
@@ -714,7 +715,8 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     for (i = 0; i < g_cnt; i++) {
         const char *test_type_str = NULL, *dir_str = NULL, *kwcipher_str = NULL,
                    *iv_gen_str = NULL, *iv_gen_mode_str = NULL, *salt_src_str = NULL;
-        unsigned int keylen = 0, ivlen = 0, paylen = 0, datalen = 0, aadlen = 0, taglen = 0, saltLen = 0;
+        unsigned int keylen = 0, ivlen = 0, paylen = 0, datalen = 0, aadlen = 0, taglen = 0,
+                     saltLen = 0, dataUnitLen = 0;
         int ovrflw_ctr = -1, incr_ctr = -1, tgId = 0;
         ACVP_SYM_CIPH_DIR dir = 0;
         ACVP_SYM_CIPH_TESTTYPE test_type = 0;
@@ -1012,6 +1014,16 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 }
             }
 
+            if (alg_id == ACVP_AES_XTS) {
+                dataUnitLen = json_object_get_number(testobj, "dataUnitLen");
+                if (dataUnitLen > ACVP_SYM_PT_BIT_MAX) {
+                    ACVP_LOG_ERR("'dataUnitLen' too large (%u), max allowed=(%d)",
+                                   dataUnitLen, ACVP_SYM_PT_BIT_MAX);
+                    rv = ACVP_INVALID_ARG;
+                    goto err;
+                }
+            }
+
             if (dir == ACVP_SYM_CIPH_DIR_ENCRYPT) {
                 unsigned int tmp_pt_len = 0;
                 pt = json_object_get_string(testobj, "pt");
@@ -1198,8 +1210,8 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
              */
             rv = acvp_aes_init_tc(ctx, &stc, tc_id, test_type, key, pt, ct, iv, tag, 
                                   aad, salt, kwcipher, keylen, ivlen, datalen, paylen,
-                                  taglen, aadlen, saltLen, conformance, alg_id, dir, iv_gen, iv_gen_mode, 
-                                  incr_ctr, ovrflw_ctr, tweak_mode, seq_num, salt_src);
+                                  taglen, aadlen, saltLen, dataUnitLen, conformance, alg_id, dir, iv_gen,
+                                  iv_gen_mode, incr_ctr, ovrflw_ctr, tweak_mode, seq_num, salt_src);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("Init for stc (test case) failed");
                 acvp_aes_release_tc(&stc);
@@ -1405,6 +1417,7 @@ static ACVP_RESULT acvp_aes_init_tc(ACVP_CTX *ctx,
                                     unsigned int tag_len,
                                     unsigned int aad_len,
                                     unsigned int salt_len,
+                                    unsigned int data_unit_len,
                                     ACVP_CONFORMANCE conformance,
                                     ACVP_CIPHER alg_id,
                                     ACVP_SYM_CIPH_DIR dir,
@@ -1450,7 +1463,7 @@ static ACVP_RESULT acvp_aes_init_tc(ACVP_CTX *ctx,
     if (!stc->pt_len) stc->pt_len = pt_len / 8;
     if (!stc->ct_len) stc->ct_len = pt_len / 8;
     stc->salt_len = salt_len / 8;
-
+    stc->data_unit_len = data_unit_len / 8;
     stc->cipher = alg_id;
     stc->conformance = conformance;
     stc->direction = dir;

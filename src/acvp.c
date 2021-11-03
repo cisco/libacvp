@@ -150,6 +150,7 @@ ACVP_ALG_HANDLER alg_tbl[ACVP_ALG_MAX] = {
     { ACVP_KDF135_X963,       &acvp_kdf135_x963_kat_handler,     ACVP_KDF135_ALG_STR,        ACVP_ALG_KDF135_X963, ACVP_REV_KDF135_X963, {ACVP_SUB_KDF_X963}},
     { ACVP_KDF108,            &acvp_kdf108_kat_handler,          ACVP_ALG_KDF108,            NULL, ACVP_REV_KDF108, {ACVP_SUB_KDF_108}},
     { ACVP_PBKDF,             &acvp_pbkdf_kat_handler,           ACVP_ALG_PBKDF,             NULL, ACVP_REV_PBKDF, {ACVP_SUB_KDF_PBKDF}},
+    { ACVP_KDF_TLS12,         &acvp_kdf_tls12_kat_handler,       ACVP_ALG_TLS12,             ACVP_ALG_KDF_TLS12, ACVP_REV_KDF_TLS12, {ACVP_SUB_KDF_TLS12}},
     { ACVP_KDF_TLS13,         &acvp_kdf_tls13_kat_handler,       ACVP_ALG_TLS13,             ACVP_ALG_KDF_TLS13, ACVP_REV_KDF_TLS13, {ACVP_SUB_KDF_TLS13}},
     { ACVP_KAS_ECC_CDH,       &acvp_kas_ecc_kat_handler,         ACVP_ALG_KAS_ECC,           ACVP_ALG_KAS_ECC_CDH, ACVP_REV_KAS_ECC, {ACVP_SUB_KAS_ECC_CDH}},
     { ACVP_KAS_ECC_COMP,      &acvp_kas_ecc_kat_handler,         ACVP_ALG_KAS_ECC,           ACVP_ALG_KAS_ECC_COMP, ACVP_REV_KAS_ECC, {ACVP_SUB_KAS_ECC_COMP}},
@@ -593,6 +594,7 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx) {
     if (ctx->tls_cert) { free(ctx->tls_cert); }
     if (ctx->tls_key) { free(ctx->tls_key); }
     if (ctx->http_user_agent) { free(ctx->http_user_agent); }
+    if (ctx->session_file_path) { free(ctx->session_file_path); }
     if (ctx->json_filename) { free(ctx->json_filename); }
     if (ctx->session_url) { free(ctx->session_url); }
     if (ctx->vector_req_file) { free(ctx->vector_req_file); }
@@ -774,6 +776,10 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx) {
                 acvp_cap_free_nl(cap_entry->cap.kdf_tls13_cap->hmac_algs);
                 acvp_cap_free_pl(cap_entry->cap.kdf_tls13_cap->running_mode);
                 free(cap_entry->cap.kdf_tls13_cap);
+                break;
+            case ACVP_KDF_TLS12_TYPE:
+                acvp_cap_free_nl(cap_entry->cap.kdf_tls12_cap->hash_algs);
+                free(cap_entry->cap.kdf_tls12_cap);
                 break;
             case ACVP_SAFE_PRIMES_KEYGEN_TYPE:
                 if (cap_entry->cap.safe_primes_keygen_cap->mode->genmeth) {
@@ -2250,8 +2256,9 @@ end:
 }
 
 static ACVP_RESULT acvp_parse_validation(ACVP_CTX *ctx) {
-    JSON_Value *val = NULL;
-    JSON_Object *obj = NULL;
+    JSON_Value *val = NULL, *ts_val = NULL, *new_ts = NULL;
+    JSON_Object *obj = NULL, *ts_obj = NULL;
+    JSON_Array *ts_arr = NULL;
     const char *url = NULL, *status = NULL;
     ACVP_RESULT rv = ACVP_SUCCESS;
 
@@ -2285,9 +2292,47 @@ static ACVP_RESULT acvp_parse_validation(ACVP_CTX *ctx) {
 
     /* Print the request info to screen */
     ACVP_LOG_STATUS("Validation requested -- status %s -- url: %s", status, url);
+    /* save the request URL to the test session info file, if it is saved in the CTX. */
+    if (ctx->session_file_path) {
+        ts_val = json_parse_file(ctx->session_file_path);
+        if (!ts_val) {
+            ACVP_LOG_WARN("Failed to save request URL to test session file. Make sure you save it from output!");
+            goto end;
+        }
+        ts_arr = json_value_get_array(ts_val);
+        if (!ts_arr) {
+            ACVP_LOG_WARN("Failed to save request URL to test session file. Make sure you save it from output!");
+            goto end;
+        }
+        ts_obj = json_array_get_object(ts_arr, 0);
+        if (!ts_obj) {
+            ACVP_LOG_WARN("Failed to save request URL to test session file. Make sure you save it from output!");
+            goto end;
+        }
+        //Sanity check the object to make sure its valid
+        if (!json_object_get_string(ts_obj, "url")) {
+            ACVP_LOG_WARN("Saved testSession file seems invalid. Make sure you save request URL from output!");
+            goto end;
+        }
+        json_object_set_string(ts_obj, "validationRequestUrl", url);
+        new_ts = json_object_get_wrapping_value(ts_obj);
+        if (!new_ts) {
+            ACVP_LOG_WARN("Failed to save request URL to test session file. Make sure you save it from output!");
+            goto end;  
+        }
+        rv = acvp_json_serialize_to_file_pretty_w(new_ts, ctx->session_file_path);
+        if (rv) {
+            ACVP_LOG_WARN("Failed to save request URL to test session file. Make sure you save it from output!");
+            goto end;
+        } else {
+            acvp_json_serialize_to_file_pretty_a(NULL, ctx->session_file_path);
+        }
+    }
+
 
 end:
     if (val) json_value_free(val);
+    if (ts_val) json_value_free(ts_val);
     return rv;
 }
 
@@ -3326,6 +3371,18 @@ static ACVP_RESULT acvp_write_session_info(ACVP_CTX *ctx) {
         ACVP_LOG_ERR("File write error. Check that directory exists and allows writes.");
         goto end;
     }
+
+    if (ctx->session_file_path) {
+        free(ctx->session_file_path);
+    }
+    ctx->session_file_path = calloc(ACVP_JSON_FILENAME_MAX + 1, sizeof(char));
+    if (strncpy_s(ctx->session_file_path, ACVP_JSON_FILENAME_MAX + 1, filename, 
+                  ACVP_JSON_FILENAME_MAX)) {
+        ACVP_LOG_ERR("Buffer write error while trying to save session file path to CTX");
+        rv = ACVP_UNSUPPORTED_OP;
+        goto end;
+    }
+
 end:
     if (allocedPrefix && prefix) free(prefix);
     if (ts_val) json_value_free(ts_val);
@@ -3552,9 +3609,7 @@ ACVP_RESULT acvp_put_data_from_file(ACVP_CTX *ctx, const char *put_filename) {
             rv = ACVP_MALLOC_FAIL;
             goto end;
         }
-    
         strcpy_s(ctx->jwt_token, ACVP_JWT_TOKEN_MAX + 1, jwt);
-        validation = 1;
     } else {
         rv = acvp_login(ctx, 0);
         if (rv != ACVP_SUCCESS) {
@@ -3564,12 +3619,17 @@ ACVP_RESULT acvp_put_data_from_file(ACVP_CTX *ctx, const char *put_filename) {
     }
 
     meta_val = json_array_get_value(reg_array, 1);
+    obj = json_value_get_object(meta_val);
     if (!obj) {
         ACVP_LOG_ERR("JSON obj parse error");
         rv = ACVP_MALFORMED_JSON;
         goto end;
     }
     json_result = json_serialize_to_string(meta_val, &len);
+    if (jwt && (json_object_has_value(obj, "oe") || json_object_has_value(obj, "oeUrl")) &&
+        (json_object_has_value(obj, "module") || json_object_has_value(obj, "moduleUrl"))) {
+        validation = 1;
+    }
 
     put_val = json_parse_string(json_result);
     json_free_serialized_string(json_result);
@@ -3593,11 +3653,13 @@ ACVP_RESULT acvp_put_data_from_file(ACVP_CTX *ctx, const char *put_filename) {
      * Check the test results.
      */
     if (validation) {
-        ACVP_LOG_STATUS("Tests complete, checking results...");
+        ACVP_LOG_STATUS("Checking validation response...");
         rv = acvp_parse_validation(ctx);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_STATUS("Failed to parse Validation response");
         }
+    } else {
+        ACVP_LOG_STATUS("PUT response: \n%s", ctx->curl_buf);
     }
 end:
     if (json_result) {json_free_serialized_string(json_result);}

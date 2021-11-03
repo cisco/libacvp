@@ -1,6 +1,6 @@
 /** @file */
 /*
- * Copyright (c) 2019, Cisco Systems, Inc.
+ * Copyright (c) 2021, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -646,8 +646,8 @@ static ACVP_RESULT acvp_kas_kdf_process(ACVP_CTX *ctx,
     const char *alg_str = NULL,  *pattern_str = NULL, *encoding_str = NULL, 
                *salt_method_str = NULL;
     ACVP_HASH_ALG hmac_alg = 0;
-    unsigned int i, g_cnt;
-    int j, k, t_cnt, tc_id, saltLen, l, tmp;
+    unsigned int i = 0, g_cnt = 0;
+    int j = 0, k = 0, t_cnt = 0, tc_id = 0, saltLen = 0, l = 0, tmp = 0;
     ACVP_RESULT rv;
     const char *test_type_str = NULL;
     ACVP_KAS_KDF_TEST_TYPE test_type;
@@ -768,6 +768,7 @@ static ACVP_RESULT acvp_kas_kdf_process(ACVP_CTX *ctx,
             rv = ACVP_MALFORMED_JSON;
             goto err;
         }
+        /** temporarily disabling this check due to issue with NIST server
         saltLen = json_object_get_number(configobj, "saltLen");
         //saltLen seems tied to hashAlg bit length. Spec unclear as of writing.
         if (saltLen % 8 != 0 || saltLen < 0 || saltLen > 512) {
@@ -775,6 +776,7 @@ static ACVP_RESULT acvp_kas_kdf_process(ACVP_CTX *ctx,
             rv = ACVP_MALFORMED_JSON;
             goto err;
         }
+        */
         l = json_object_get_number(configobj, "l");
         if (cipher == ACVP_KAS_HKDF) {
             kdfcap = acvp_locate_cap_entry(ctx, ACVP_KAS_HKDF);
@@ -850,12 +852,23 @@ static ACVP_RESULT acvp_kas_kdf_process(ACVP_CTX *ctx,
                     goto err;
                 }
                 //assume max salt len is mac alg max length, currently 512
+                /** temporarily disabling this check due to issue with NIST server
                 if ((int)strnlen_s(salt, 128) != saltLen / 4) {
                     ACVP_LOG_ERR("salt wrong length, should match provided saltLen %d",
                                 saltLen);
                     rv = ACVP_MALFORMED_JSON;
                     goto err;
                 }
+                */
+            }
+            //temporary saltLen measurement
+            saltLen = strnlen_s(salt, 129);
+            if (saltLen > 128) {
+                ACVP_LOG_ERR("saltLen too long");
+                rv = ACVP_MALFORMED_JSON;
+                goto err;
+            } else {
+                saltLen *= 4;
             }
 
             z = json_object_get_string(paramobj, "z");

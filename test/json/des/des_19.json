@@ -19,13 +19,13 @@
         ],
         "overflowCounter": true,
         "tgId": 999,
-        "keyingOption": 3,
+        "keyingOption": 1,
         "direction": "encrypt"
       },
       {
         "testType": "AFT",
         "tgId": 999,
-        "keyingOption": 3,
+        "keyingOption": 1,
         "tests": [
           {
             "key2": "1046913489980131",

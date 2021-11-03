@@ -15,8 +15,10 @@
 #include "safe_lib.h"
 
 #ifdef ACVP_NO_RUNTIME
-# include "app_fips_lcl.h"
+#include "app_fips_lcl.h"
 #endif
+
+#include <openssl/crypto.h>
 
 #define ANSI_COLOR_RED "\x1b[31m"
 #define ANSI_COLOR_YELLOW "\x1b[33m"
@@ -60,7 +62,7 @@ static void print_usage(int code) {
         printf("For any activity requiring the creation of a test session and/or the processing\n");
         printf("of test cases, acvp_app requires the specification of at least one algorithm\n");
         printf("suite. Algorithm suites are enabled or disabled at build time depending on the\n");
-        printf("capabilities of the provided cryptographic library.\n");
+        printf("capabilities of the provided cryptographic library.\n\n");
     }
     printf("Algorithm Test Suites:\n");
     printf("      --all_algs (or -a, Enable all of the suites below)\n");
@@ -181,6 +183,34 @@ static void print_usage(int code) {
     printf("        ACV_OE_COMPILER\n\n");
 }
 
+static void print_version_info(void) {
+    printf("\nACVP library version(protocol version): %s(%s)\n\n", acvp_version(), acvp_protocol_version());
+
+#ifdef ACVP_NO_RUNTIME
+    printf("        Runtime mode: no\n");
+    printf(" FIPS module version: %s\n", FIPS_module_version_text());
+#else
+    printf("        Runtime mode: yes\n");
+    if (FIPS_mode()) {
+        printf("           FIPS mode: yes\n");
+    } else {
+        printf("           FIPS mode: no\n");
+    }
+#endif
+
+#ifdef OPENSSL_VERSION_TEXT
+    printf("Compiled SSL version: %s\n", OPENSSL_VERSION_TEXT);
+#else
+    printf("Compiled SSL version: not detected\n");
+#endif
+
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
+    printf("  Linked SSL version: %s\n", SSLeay_version(SSLEAY_VERSION));
+#else
+    printf("  Linked SSL version: %s\n", OpenSSL_version(OPENSSL_VERSION));
+#endif
+}
+
 static ko_longopt_t longopts[] = {
     { "version", ko_no_argument, 301 },
     { "help", ko_optional_argument, 302 },
@@ -296,27 +326,27 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
     default_config(cfg);
 
     while ((c = ketopt(&opt, argc, argv, 1, "vhas:u:r:p:", longopts)) >= 0) {
-        diff = 0;
+        diff = 1;
 
         switch (c) {
         case 'v':
-            printf("\nACVP library version(protocol version): %s(%s)\n", acvp_version(), acvp_protocol_version());
+        case 301:
+            print_version_info();
             return 1;
         case 'h':
-            print_usage(0);
-            return 1;
-        case 301:
-            printf("\nACVP library version(protocol version): %s(%s)\n", acvp_version(), acvp_protocol_version());
-            return 1;
         case 302:
-            len = strnlen_s(opt.arg, JSON_FILENAME_LENGTH + 1);
-            if (len > JSON_FILENAME_LENGTH) {
-                printf("help option name too long\n");
-                return 1;
-            }
-            strncmp_s(opt.arg, len, "verbose", 7, &diff);
-            if (!diff) {
-                print_usage(ACVP_LOG_LVL_VERBOSE);
+            if (opt.arg) {
+                len = strnlen_s(opt.arg, JSON_FILENAME_LENGTH + 1);
+                if (len > JSON_FILENAME_LENGTH || len <= 0) {
+                    printf("invalid help option length\n");
+                    return 1;
+                }
+                strncmp_s(opt.arg, len, "--verbose", 9, &diff);
+                if (!diff) {
+                    print_usage(ACVP_LOG_LVL_VERBOSE);
+                } else {
+                    print_usage(0);
+                }
             } else { 
                 print_usage(0);
             }

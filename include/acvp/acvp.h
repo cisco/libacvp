@@ -96,7 +96,9 @@ typedef enum acvp_result {
     ACVP_CRYPTO_WRAP_FAIL,
     ACVP_NO_TOKEN,
     ACVP_NO_CAP,
-    ACVP_MALFORMED_JSON,
+    ACVP_MALFORMED_JSON, /**< For use if the json is unable to be parsed properly */
+    ACVP_TC_DATA_INVALID, /**< Test case JSON is formatted properly, but the data is bad or does
+                           * not match the spec */
     ACVP_DATA_TOO_LARGE,
     ACVP_DUP_CIPHER,
     ACVP_TOTP_DECODE_FAIL,
@@ -206,6 +208,7 @@ typedef enum acvp_cipher {
     ACVP_KDF135_X963,
     ACVP_KDF108,
     ACVP_PBKDF,
+    ACVP_KDF_TLS12,
     ACVP_KDF_TLS13,
     ACVP_KAS_ECC_CDH,
     ACVP_KAS_ECC_COMP,
@@ -372,6 +375,7 @@ typedef enum acvp_alg_type_kdf {
     ACVP_SUB_KDF_X963,
     ACVP_SUB_KDF_108,
     ACVP_SUB_KDF_PBKDF,
+    ACVP_SUB_KDF_TLS12,
     ACVP_SUB_KDF_TLS13
 } ACVP_SUB_KDF;
 
@@ -539,7 +543,8 @@ typedef enum acvp_hmac_alg_val {
 /** @enum ACVP_SYM_CIPH_KO */
 typedef enum acvp_sym_cipher_keying_option {
     ACVP_SYM_CIPH_KO_NA = 1,
-    ACVP_SYM_CIPH_KO_THREE,
+    ACVP_SYM_CIPH_KO_ONE,
+    ACVP_SYM_CIPH_KO_THREE, /**< This is outdated and will eventually be removed */
     ACVP_SYM_CIPH_KO_TWO,
     ACVP_SYM_CIPH_KO_BOTH,
     ACVP_SYM_CIPH_KO_MAX
@@ -757,6 +762,12 @@ typedef enum acvp_pbkdf_param {
     ACVP_PBKDF_HMAC_ALG
 } ACVP_PBKDF_PARM;
 
+/** @enum ACVP_KDF_TLS12_PARM */
+typedef enum acvp_kdf_tls12_param {
+    ACVP_KDF_TLS12_PARAM_MIN,
+    ACVP_KDF_TLS12_HASH_ALG /**< HMAC algorithms supported by TLS 1.2 imeplementation */
+} ACVP_KDF_TLS12_PARM;
+
 /** @enum ACVP_KDF_TLS13_RUN_MODE */
 typedef enum acvp_kdf_tls13_running_mode {
     ACVP_KDF_TLS13_RUN_MODE_MIN,
@@ -867,7 +878,8 @@ typedef enum acvp_sym_cipher_parameter {
     ACVP_SYM_CIPH_PARM_IVGEN_MODE,
     ACVP_SYM_CIPH_PARM_IVGEN_SRC,
     ACVP_SYM_CIPH_PARM_SALT_SRC,
-    ACVP_SYM_CIPH_PARM_CONFORMANCE
+    ACVP_SYM_CIPH_PARM_CONFORMANCE,
+    ACVP_SYM_CIPH_PARM_DULEN_MATCHES_PAYLOADLEN
 } ACVP_SYM_CIPH_PARM;
 
 
@@ -875,7 +887,8 @@ typedef enum acvp_sym_cipher_parameter {
 typedef enum acvp_sym_cipher_domain_parameter {
     ACVP_SYM_CIPH_DOMAIN_IVLEN = 1,
     ACVP_SYM_CIPH_DOMAIN_PTLEN,
-    ACVP_SYM_CIPH_DOMAIN_AADLEN
+    ACVP_SYM_CIPH_DOMAIN_AADLEN,
+    ACVP_SYM_CIPH_DOMAIN_DULEN
 } ACVP_SYM_CIPH_DOMAIN_PARM;
 
 /** @enum ACVP_SYM_CIPH_TWEAK_MODE */
@@ -1013,6 +1026,12 @@ typedef struct acvp_sym_cipher_tc_t {
     unsigned int mct_index;  /**< used to identify init vs. update */
     unsigned int incr_ctr;
     unsigned int ovrflw_ctr;
+    unsigned int keyingOption; /**< For some TDES, indicates keyingOption. 
+                                 * 1 is 3 key TDES. 2 is 2-key TDES, supported
+                                 * for decrypt only. 0 indicates is not applicable */
+    unsigned int data_unit_len; /**< for AES-XTS rev 2.0, the amount of data that can be
+                                 * processed at once may be lower than the total payload
+                                 * size. By default it will = payloadLen. */
 } ACVP_SYM_CIPHER_TC;
 
 /**
@@ -1269,6 +1288,30 @@ typedef struct acvp_pbkdf_tc_t {
     unsigned char *key;       /**< The output derived key
                                            ---User supplied--- */
 } ACVP_PBKDF_TC;
+
+/**
+ * @struct ACVP_KDF_TLS12_TC
+ * @brief This struct holds data that represents a single test case for TLS 1.2 KDF testing. This
+ *        data is passed between libacvp and the crypto module.
+ */
+typedef struct acvp_kdf_tls12_tc_t {
+    ACVP_CIPHER cipher;
+    unsigned int tc_id;    /**< Test case id */
+    ACVP_HASH_ALG md;
+    unsigned int pm_len;
+    unsigned int kb_len;
+    unsigned char *pm_secret;
+    unsigned char *session_hash;
+    unsigned char *s_rnd;
+    unsigned char *c_rnd;
+    unsigned char *msecret1; /**< The resulting data calculated for the test case */
+    unsigned char *msecret2;
+    unsigned char *kblock1;  /**< The resulting data calculated for the test case */
+    unsigned char *kblock2;
+    int session_hash_len;
+    int s_rnd_len;
+    int c_rnd_len;
+} ACVP_KDF_TLS12_TC;
 
 /**
  * @struct ACVP_KDF_TLS13_TC
@@ -2129,6 +2172,7 @@ typedef struct acvp_test_case_t {
         ACVP_KDF135_X963_TC *kdf135_x963;
         ACVP_KDF108_TC *kdf108;
         ACVP_PBKDF_TC *pbkdf;
+        ACVP_KDF_TLS12_TC *kdf_tls12;
         ACVP_KDF_TLS13_TC *kdf_tls13;
         ACVP_KAS_ECC_TC *kas_ecc;
         ACVP_KAS_FFC_TC *kas_ffc;
@@ -3220,6 +3264,22 @@ ACVP_RESULT acvp_cap_pbkdf_enable(ACVP_CTX *ctx,
                                   int (*crypto_handler)(ACVP_TEST_CASE *test_case));
 
 /**
+ * @brief acvp_cap_kdf_tls12_enable() allows an application to specify a kdf cipher capability to
+ *        be tested by the ACVP server. When the application enables a crypto capability, it also
+ *        needs to specify a callback function that will be used by libacvp  when that crypto
+ *        capability is needed during a test session.
+ *
+ * @param ctx Pointer to ACVP_CTX that was previously created by calling acvp_create_test_session.
+ * @param crypto_handler Address of function implemented by application that is invoked by libacvp
+ *        when the crypto capability is needed during a test session. This crypto_handler function
+ *        is expected to return 0 on success and 1 for failure.
+ *
+ * @return ACVP_RESULT
+ */
+ACVP_RESULT acvp_cap_kdf_tls12_enable(ACVP_CTX *ctx,
+                                  int (*crypto_handler)(ACVP_TEST_CASE *test_case));
+
+/**
  * @brief acvp_cap_kdf_tls13_enable() allows an application to specify a kdf cipher capability to
  *        be tested by the ACVP server. When the application enables a crypto capability, it also
  *        needs to specify a callback function that will be used by libacvp  when that crypto
@@ -3498,6 +3558,21 @@ ACVP_RESULT acvp_cap_pbkdf_set_domain(ACVP_CTX *ctx,
 ACVP_RESULT acvp_cap_pbkdf_set_parm(ACVP_CTX *ctx,
                                     ACVP_PBKDF_PARM param,
                                     int value);
+
+/**
+ * @brief acvp_cap_kdf_tls12_set_parm() allows an application to specify operational parameters to
+ *        be used during a test session with the ACVP server. This function should be called after
+ *        acvp_cap_kdf_tls12_enable() to specify the parameters for the corresponding KDF.
+ *
+ * @param ctx Pointer to ACVP_CTX that was previously created by calling acvp_create_test_session.
+ * @param param ACVP_KDF_TLS12_PARM enum value specifying parameter
+ * @param value integer value for parameter
+ *
+ * @return ACVP_RESULT
+ */
+ACVP_RESULT acvp_cap_kdf_tls12_set_parm(ACVP_CTX *ctx,
+                                        ACVP_KDF_TLS12_PARM param,
+                                        int value);
 
 /**
  * @brief acvp_cap_kdf_tls13_set_parm() allows an application to specify operational parameters to

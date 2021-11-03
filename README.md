@@ -227,8 +227,8 @@ need to link to those libraries.
 Murl is not supported in windows at this time.
 
 ## Running
-1. `export LD_LIBRARY_PATH=<path to ssl lib;path to curl lib>`
-2. Modify and run `scripts/nist_setup.sh`
+1. `export LD_LIBRARY_PATH="<path to ssl lib;path to curl lib>"`
+2. Modify scripts/nist_setup.sh and run `source scripts/nist_setup.sh`
 3. `./app/acvp_app --<options>`
 
 Use `./app/acvp_app --help` for more information on available options.

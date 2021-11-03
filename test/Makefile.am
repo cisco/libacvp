@@ -22,6 +22,7 @@ runtest_SOURCES += create_session.c \
       test_acvp_kdf135_ikev1.c \
       test_acvp_kdf108.c \
       test_acvp_pbkdf.c \
+      test_acvp_kdf_tls12.c \
       test_acvp_kdf_tls13.c \
       test_acvp_rsa_keygen.c \
       test_acvp_rsa_sig.c \
@@ -52,6 +53,7 @@ runtest_SOURCES += app_common.c \
       test_app_aes.c \
       test_app_cmac.c \
       test_app_des.c \
+      test_app_drbg.c \
       test_app_ecdsa.c \
       test_app_hmac.c \
       test_app_kas_ecc.c \

@@ -28,7 +28,7 @@ extern "C"
 #define JSON_STRING_LENGTH 32
 #define JSON_REQUEST_LENGTH 128
 
-char value[JSON_STRING_LENGTH];
+extern char value[JSON_STRING_LENGTH];
 
 typedef struct app_config {
     ACVP_LOG_LVL level;
@@ -106,6 +106,7 @@ int app_kdf108_handler(ACVP_TEST_CASE *test_case);
 int app_kdf135_ikev1_handler(ACVP_TEST_CASE *test_case);
 int app_kdf135_x963_handler(ACVP_TEST_CASE *test_case);
 int app_pbkdf_handler(ACVP_TEST_CASE *test_case);
+int app_kdf_tls12_handler(ACVP_TEST_CASE *test_case);
 int app_kdf_tls13_handler(ACVP_TEST_CASE *test_case);
 
 void app_dsa_cleanup(void);

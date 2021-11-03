@@ -1,6 +1,6 @@
 /** @file */
 /*
- * Copyright (c) 2019, Cisco Systems, Inc.
+ * Copyright (c) 2021, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -40,7 +40,8 @@ static ACVP_RESULT acvp_des_init_tc(ACVP_CTX *ctx,
                                     ACVP_CIPHER alg_id,
                                     ACVP_SYM_CIPH_DIR dir,
                                     unsigned int incr_ctr,
-                                    unsigned int ovrflw_ctr);
+                                    unsigned int ovrflw_ctr,
+                                    unsigned int keyingOption);
 
 static ACVP_RESULT acvp_des_release_tc(ACVP_SYM_CIPHER_TC *stc);
 
@@ -489,16 +490,15 @@ static ACVP_RESULT acvp_des_mct_tc(ACVP_CTX *ctx,
         for (n = 0; n < 8; ++n) {
             stc->key[8 + n] ^= nk[8 + n];
         }
-        for (n = 0; n < 8; ++n) {
-            stc->key[16 + n] ^= nk[n];
-        }
-
-#if 0   /* TODO: Do we really need to special case 2-key ? */
-        if (numkeys == 2)
+        if (stc->keyingOption == 1) {
             for (n = 0; n < 8; ++n) {
-                stc->key[n + 16] = stc->key[n];
+                stc->key[16 + n] ^= nk[n];
             }
-#endif
+        } else {
+            for (n = 0; n < 8; ++n) {
+                stc->key[16 + n] = stc->key[n];
+            }
+        }
 
         acvp_des_set_odd_parity(stc->key);
         memcpy_s(stc->iv, ACVP_SYM_IV_BYTE_MAX, stc->iv_ret_after, 8); /* only on encrypt */
@@ -656,7 +656,7 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     ACVP_CIPHER alg_id = 0;
     char *json_result = NULL;
     const char *test_type_str = NULL, *dir_str = NULL;
-    unsigned int tc_id = 0, keylen = 0;
+    unsigned int tc_id = 0, keylen = 0, keyingOption = 0;
     unsigned int ovrflw_ctr = 0, incr_ctr = 0;  /* assume false */
 
     if (!ctx) {
@@ -774,12 +774,23 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         // keyLen will always be the same for TDES
         keylen = ACVP_TDES_KEY_BIT_LEN;
 
+        //get keyingOption if it exists. Otherwise it remains set to 0, which means not applicable.
+        if (json_object_get_value(groupobj, "keyingOption")) {
+            keyingOption = json_object_get_number(groupobj, "keyingOption");
+            if (keyingOption > 2 || keyingOption < 1) {
+                ACVP_LOG_ERR("Server JSON invalid 'keyingOption', %d", keyingOption);
+                rv = ACVP_TC_DATA_INVALID;
+                goto err;
+            }
+        }
+
         ACVP_LOG_VERBOSE("    Test group: %d", i);
         ACVP_LOG_VERBOSE("        keylen: %d", keylen);
-        ACVP_LOG_VERBOSE("         dir:   %s", dir_str);
+        ACVP_LOG_VERBOSE("           dir: %s", dir_str);
         ACVP_LOG_VERBOSE("      testtype: %s", test_type_str);
         ACVP_LOG_VERBOSE("      incr_ctr: %d", incr_ctr);
         ACVP_LOG_VERBOSE("    ovrflw_ctr: %d", ovrflw_ctr);
+        ACVP_LOG_VERBOSE("  keyingOption: %d", keyingOption);
 
         tests = json_object_get_array(groupobj, "tests");
         t_cnt = json_array_get_count(tests);
@@ -954,7 +965,7 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
              */
             rv = acvp_des_init_tc(ctx, &stc, tc_id, test_type, key, pt, ct, iv,
                                   keylen, ivlen, ptlen, ctlen, alg_id, dir,
-                                  incr_ctr, ovrflw_ctr);
+                                  incr_ctr, ovrflw_ctr, keyingOption);
             if (rv != ACVP_SUCCESS) {
                 acvp_des_release_tc(&stc);
                 free(key);
@@ -1118,7 +1129,8 @@ static ACVP_RESULT acvp_des_init_tc(ACVP_CTX *ctx,
                                     ACVP_CIPHER alg_id,
                                     ACVP_SYM_CIPH_DIR dir,
                                     unsigned int incr_ctr,
-                                    unsigned int ovrflw_ctr) {
+                                    unsigned int ovrflw_ctr,
+                                    unsigned int keyingOption) {
     ACVP_RESULT rv;
 
     memzero_s(stc, sizeof(ACVP_SYM_CIPHER_TC));
@@ -1202,6 +1214,7 @@ static ACVP_RESULT acvp_des_init_tc(ACVP_CTX *ctx,
     stc->test_type = test_type;
     stc->incr_ctr = incr_ctr;
     stc->ovrflw_ctr = ovrflw_ctr;
+    stc->keyingOption = keyingOption;
 
     return ACVP_SUCCESS;
 }

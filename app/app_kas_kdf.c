@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020, Cisco Systems, Inc.
+ * Copyright (c) 2021, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -12,6 +12,10 @@
 #include "acvp/acvp.h"
 #include "app_lcl.h"
 #include "safe_lib.h"
+
+#ifdef ACVP_NO_RUNTIME
+#include "app_fips_lcl.h" /* All regular OpenSSL headers must come before here */
+#endif
 
 int app_kas_hkdf_handler(ACVP_TEST_CASE *test_case) {
     ACVP_KAS_HKDF_TC *stc = NULL;

@@ -1475,8 +1475,11 @@ JSON_Value * json_value_init_array(void) {
 }
 
 JSON_Value * json_value_init_string(const char *string) {
+    if (string == NULL) {
+        return NULL;
+    }
     int len = strnlen_s(string, STRING_VALUE_MAX + 1);
-    if (string == NULL || len > STRING_VALUE_MAX) {
+    if (len > STRING_VALUE_MAX) {
         return NULL;
     }
     return json_value_init_string_with_len(string, len);

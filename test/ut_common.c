@@ -1,6 +1,6 @@
 /** @file */
 /*
- * Copyright (c) 2019, Cisco Systems, Inc.
+ * Copyright (c) 2021, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -29,7 +29,7 @@ void teardown_ctx(ACVP_CTX **ctx) {
     acvp_cleanup(*ctx);
 }
 
-void setup_empty_ctx (ACVP_CTX **ctx) {
+void setup_empty_ctx(ACVP_CTX **ctx) {
     ACVP_RESULT rv = ACVP_SUCCESS;
     ACVP_LOG_LVL level = ACVP_LOG_LVL_STATUS;
     

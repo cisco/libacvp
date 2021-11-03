@@ -1,6 +1,6 @@
 /** @file */
 /*
- * Copyright (c) 2019, Cisco Systems, Inc.
+ * Copyright (c) 2021, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -418,9 +418,10 @@ Test(KAS_HKDF_HANDLER, missing_l, .init = setup, .fini = teardown) {
     json_value_free(val);
 }
 
-/*
+/** temporarily disabling due to NIST issue workaround
+ *
  * HKDF: The key:"saltLen" is wrong.
- */
+ *
 Test(KAS_HKDF_HANDLER, bad_saltlen, .init = setup, .fini = teardown) {
     val = json_parse_file("json/kas_kdf/kas_hkdf_9.json");
     obj = ut_get_obj_from_rsp(val);
@@ -432,6 +433,7 @@ Test(KAS_HKDF_HANDLER, bad_saltlen, .init = setup, .fini = teardown) {
     cr_assert(rv == ACVP_MALFORMED_JSON);
     json_value_free(val);
 }
+*/
 
 /*
  * HKDF: The key:"saltMethod" is missing.
