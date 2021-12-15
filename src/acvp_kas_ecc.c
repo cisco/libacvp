@@ -839,8 +839,8 @@ ACVP_RESULT acvp_kas_ecc_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     case ACVP_SUB_KAS_FFC_SSC:
     case ACVP_SUB_KAS_IFC_SSC:
     case ACVP_SUB_KTS_IFC:
-    case ACVP_SUB_KAS_KDF_ONESTEP:
-    case ACVP_SUB_KAS_HKDF:
+    case ACVP_SUB_KDA_ONESTEP:
+    case ACVP_SUB_KDA_HKDF:
     case ACVP_SUB_SAFE_PRIMES_KEYGEN:
     case ACVP_SUB_SAFE_PRIMES_KEYVER:
     default:
