@@ -31,7 +31,7 @@ libacvp_la_SOURCES =  acvp.c \
                     acvp_kas_ecc.c \
                     acvp_kas_ffc.c \
                     acvp_kas_ifc.c \
-                    acvp_kas_kdf.c \
+                    acvp_kda.c \
                     acvp_kts_ifc.c \
                     acvp_safe_primes.c \
                     acvp_ecdsa.c

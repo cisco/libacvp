@@ -45,7 +45,7 @@
     <ClCompile Include="..\..\app\app_kdf.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\app\app_kas_kdf.c">
+    <ClCompile Include="..\..\app\app_kda.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\app\app_main.c">
