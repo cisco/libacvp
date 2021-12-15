@@ -489,18 +489,6 @@ static ACVP_RESULT acvp_cap_list_append(ACVP_CTX *ctx,
         }
         break;
 
-    case ACVP_KDF135_TLS_TYPE:
-        if (cipher != ACVP_KDF135_TLS) {
-            rv = ACVP_INVALID_ARG;
-            goto err;
-        }
-        cap_entry->cap.kdf135_tls_cap = calloc(1, sizeof(ACVP_KDF135_TLS_CAP));
-        if (!cap_entry->cap.kdf135_tls_cap) {
-            rv = ACVP_MALLOC_FAIL;
-            goto err;
-        }
-        break;
-
     case ACVP_KDF135_X963_TYPE:
         if (cipher != ACVP_KDF135_X963) {
             rv = ACVP_INVALID_ARG;
@@ -649,29 +637,6 @@ err:
     if (cap_entry) free(cap_entry);
 
     return rv;
-}
-
-static ACVP_RESULT acvp_validate_kdf135_tls_param_value(ACVP_KDF135_TLS_METHOD method, ACVP_HASH_ALG param) {
-    ACVP_RESULT retval = ACVP_INVALID_ARG;
-
-    switch (method) {
-    case ACVP_KDF135_TLS12:
-        if ((param & ACVP_SHA256) ||
-            (param & ACVP_SHA384) ||
-            (param & ACVP_SHA512)) {
-            retval = ACVP_SUCCESS;
-        }
-        break;
-    case ACVP_KDF135_TLS10_TLS11:
-        if (param == 0) {
-            retval = ACVP_SUCCESS;
-        }
-        break;
-    default:
-        break;
-    }
-
-    return retval;
 }
 
 static ACVP_RESULT acvp_validate_kdf135_ssh_param_value(ACVP_KDF135_SSH_METHOD method, ACVP_HASH_ALG param) {
@@ -994,7 +959,6 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
         case ACVP_ECDSA_KEYVER:
         case ACVP_ECDSA_SIGGEN:
         case ACVP_ECDSA_SIGVER:
-        case ACVP_KDF135_TLS:
         case ACVP_KDF135_SNMP:
         case ACVP_KDF135_SSH:
         case ACVP_KDF135_SRTP:
@@ -1106,7 +1070,6 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
         case ACVP_ECDSA_KEYVER:
         case ACVP_ECDSA_SIGGEN:
         case ACVP_ECDSA_SIGVER:
-        case ACVP_KDF135_TLS:
         case ACVP_KDF135_SNMP:
         case ACVP_KDF135_SSH:
         case ACVP_KDF135_SRTP:
@@ -1216,7 +1179,6 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
         case ACVP_ECDSA_KEYVER:
         case ACVP_ECDSA_SIGGEN:
         case ACVP_ECDSA_SIGVER:
-        case ACVP_KDF135_TLS:
         case ACVP_KDF135_SNMP:
         case ACVP_KDF135_SSH:
         case ACVP_KDF135_SRTP:
@@ -1332,7 +1294,6 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
         case ACVP_ECDSA_KEYVER:
         case ACVP_ECDSA_SIGGEN:
         case ACVP_ECDSA_SIGVER:
-        case ACVP_KDF135_TLS:
         case ACVP_KDF135_SNMP:
         case ACVP_KDF135_SSH:
         case ACVP_KDF135_SRTP:
@@ -1439,7 +1400,6 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
         case ACVP_ECDSA_KEYVER:
         case ACVP_ECDSA_SIGGEN:
         case ACVP_ECDSA_SIGVER:
-        case ACVP_KDF135_TLS:
         case ACVP_KDF135_SNMP:
         case ACVP_KDF135_SSH:
         case ACVP_KDF135_SRTP:
@@ -1759,7 +1719,6 @@ static ACVP_RESULT acvp_validate_sym_cipher_domain_value(ACVP_CIPHER cipher, ACV
     case ACVP_ECDSA_KEYVER:
     case ACVP_ECDSA_SIGGEN:
     case ACVP_ECDSA_SIGVER:
-    case ACVP_KDF135_TLS:
     case ACVP_KDF135_SNMP:
     case ACVP_KDF135_SSH:
     case ACVP_KDF135_SRTP:
@@ -1907,7 +1866,6 @@ static ACVP_RESULT acvp_validate_prereq_val(ACVP_CIPHER cipher, ACVP_PREREQ_ALG 
             return ACVP_SUCCESS;
         }
         break;
-    case ACVP_KDF135_TLS:
     case ACVP_KDF135_SNMP:
     case ACVP_KDF135_SSH:
         if (pre_req == ACVP_PREREQ_SHA ||
@@ -2211,7 +2169,6 @@ ACVP_RESULT acvp_cap_sym_cipher_set_domain(ACVP_CTX *ctx,
     case ACVP_ECDSA_KEYVER:
     case ACVP_ECDSA_SIGGEN:
     case ACVP_ECDSA_SIGVER:
-    case ACVP_KDF135_TLS:
     case ACVP_KDF135_SNMP:
     case ACVP_KDF135_SSH:
     case ACVP_KDF135_SRTP:
@@ -2419,7 +2376,6 @@ ACVP_RESULT acvp_cap_sym_cipher_set_parm(ACVP_CTX *ctx,
     case ACVP_ECDSA_KEYVER:
     case ACVP_ECDSA_SIGGEN:
     case ACVP_ECDSA_SIGVER:
-    case ACVP_KDF135_TLS:
     case ACVP_KDF135_SNMP:
     case ACVP_KDF135_SSH:
     case ACVP_KDF135_SRTP:
@@ -2742,7 +2698,6 @@ ACVP_RESULT acvp_cap_sym_cipher_enable(ACVP_CTX *ctx,
     case ACVP_ECDSA_KEYVER:
     case ACVP_ECDSA_SIGGEN:
     case ACVP_ECDSA_SIGVER:
-    case ACVP_KDF135_TLS:
     case ACVP_KDF135_SNMP:
     case ACVP_KDF135_SSH:
     case ACVP_KDF135_SRTP:
@@ -5136,33 +5091,6 @@ ACVP_RESULT acvp_cap_dsa_set_parm(ACVP_CTX *ctx,
     return result;
 }
 
-ACVP_RESULT acvp_cap_kdf135_tls_enable(ACVP_CTX *ctx,
-                                       int (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
-    ACVP_RESULT result = ACVP_SUCCESS;
-
-    if (!ctx) {
-        return ACVP_NO_CTX;
-    }
-
-    if (!crypto_handler) {
-        return ACVP_INVALID_ARG;
-
-        ACVP_LOG_ERR("NULL parameter 'crypto_handler'");
-    }
-
-    result = acvp_cap_list_append(ctx, ACVP_KDF135_TLS_TYPE, ACVP_KDF135_TLS, crypto_handler);
-
-    if (result == ACVP_DUP_CIPHER) {
-        ACVP_LOG_ERR("Capability previously enabled. Duplicate not allowed.");
-    } else if (result == ACVP_MALLOC_FAIL) {
-        ACVP_LOG_ERR("Failed to allocate capability object");
-    }
-
-    ACVP_LOG_WARN("Warning: kdf135_tls testing support is being removed from the NIST server "
-                  "starting in 2022. Please transition to KDF TLS 1.2 testing.");
-    return result;
-}
-
 /*
  * The user should call this after invoking acvp_enable_kdf135_snmp_cap()
  * to specify kdf parameters
@@ -5261,52 +5189,6 @@ ACVP_RESULT acvp_cap_kdf135_snmp_set_engid(ACVP_CTX *ctx,
         engids = kdf135_snmp_cap->eng_ids;
     }
     engids->name = engid;
-
-    return ACVP_SUCCESS;
-}
-
-/*
- * The user should call this after invoking acvp_enable_kdf135_tls_cap()
- * to specify the kdf parameters.
- */
-ACVP_RESULT acvp_cap_kdf135_tls_set_parm(ACVP_CTX *ctx,
-                                         ACVP_CIPHER kcap,
-                                         ACVP_KDF135_TLS_METHOD method,
-                                         ACVP_HASH_ALG param) {
-    ACVP_CAPS_LIST *cap;
-    ACVP_KDF135_TLS_CAP *kdf135_tls_cap;
-
-    if (!ctx) {
-        return ACVP_NO_CTX;
-    }
-
-    cap = acvp_locate_cap_entry(ctx, kcap);
-    if (!cap) {
-        return ACVP_NO_CAP;
-    }
-
-    kdf135_tls_cap = cap->cap.kdf135_tls_cap;
-    if (!kdf135_tls_cap) {
-        return ACVP_NO_CAP;
-    }
-
-    if (acvp_validate_kdf135_tls_param_value(method, param) != ACVP_SUCCESS) {
-        return ACVP_INVALID_ARG;
-    }
-
-    /* only support two method types so just use whichever is available */
-    switch (method) {
-    case ACVP_KDF135_TLS10_TLS11:
-        kdf135_tls_cap->method[0] = ACVP_KDF135_TLS10_TLS11;
-        break;
-    case ACVP_KDF135_TLS12:
-        kdf135_tls_cap->method[1] = ACVP_KDF135_TLS12;
-        break;
-    default:
-        return ACVP_INVALID_ARG;
-    }
-
-    kdf135_tls_cap->sha |= param;
 
     return ACVP_SUCCESS;
 }

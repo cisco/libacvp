@@ -56,13 +56,6 @@ int app_kdf108_handler(ACVP_TEST_CASE *test_case) {
     return 1;
 }
 
-int app_kdf135_tls_handler(ACVP_TEST_CASE *test_case) {
-    if (!test_case) {
-        return -1;
-    }
-    return 1; 
-}
-
 int app_kdf135_snmp_handler(ACVP_TEST_CASE *test_case) {
     if (!test_case) {
         return -1;

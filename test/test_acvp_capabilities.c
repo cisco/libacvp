@@ -198,59 +198,6 @@ Test(EnableCapKDF108, invalid_params, .fini = teardown) {
     cr_assert(rv == ACVP_INVALID_ARG);
 }
 
-Test(EnableCapKDFTLS, properly, .fini = teardown) {
-    setup_empty_ctx(&ctx);
-    
-    rv = acvp_cap_kdf135_tls_enable(ctx, &dummy_handler_success);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_TLS, ACVP_PREREQ_SHA, cvalue);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_TLS, ACVP_PREREQ_HMAC, cvalue);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_kdf135_tls_set_parm(ctx, ACVP_KDF135_TLS, ACVP_KDF135_TLS12, ACVP_SHA256 | ACVP_SHA384 | ACVP_SHA512);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_kdf135_tls_set_parm(ctx, ACVP_KDF135_TLS, ACVP_KDF135_TLS10_TLS11, 0);
-    cr_assert(rv == ACVP_SUCCESS);
-}
-
-/*
- * try to enable kdf_tls with null ctx
- */
-Test(EnableCapKDFTLS, null_ctx, .fini = teardown) {
-    rv = acvp_cap_kdf135_tls_enable(NULL, &dummy_handler_success);
-    cr_assert(rv == ACVP_NO_CTX);
-}
-
-/*
- * try to enable kdf_tls with invalid params
- */
-Test(EnableCapKDFTLS, invalid_params, .fini = teardown) {
-    setup_empty_ctx(&ctx);
-    
-    rv = acvp_cap_kdf135_tls_enable(ctx, &dummy_handler_success);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_kdf135_tls_set_parm(ctx, ACVP_KDF135_TLS, ACVP_KDF135_TLS12, 0);
-    cr_assert(rv == ACVP_INVALID_ARG);
-    rv = acvp_cap_kdf135_tls_set_parm(ctx, ACVP_KDF135_TLS, ACVP_KDF135_TLS12, 256);
-    cr_assert(rv == ACVP_INVALID_ARG);
-}
-
-/*
- * This test should return ACVP_NO_CAP because we are trying
- * to register a parameter for an alg that we haven't added
- * to the list yet.
- */
-Test(EnableCapKDFTLS, param_alg_mismatch, .fini = teardown) {
-    setup_empty_ctx(&ctx);
-    
-    rv = acvp_cap_kdf135_tls_enable(ctx, &dummy_handler_success);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_SNMP, ACVP_PREREQ_SHA, cvalue);
-    cr_assert(rv == ACVP_NO_CAP);
-    rv = acvp_cap_kdf135_tls_set_parm(ctx, ACVP_KDF135_SNMP, ACVP_KDF135_TLS12, ACVP_SHA256 | ACVP_SHA384 | ACVP_SHA512);
-    cr_assert(rv == ACVP_NO_CAP);
-}
-
 Test(EnableCapKDFx963, properly, .fini = teardown) {
     setup_empty_ctx(&ctx);
     
@@ -345,7 +292,7 @@ Test(EnableCapKDFSNMP, param_alg_mismatch, .fini = teardown) {
     
     rv = acvp_cap_kdf135_snmp_enable(ctx, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_TLS, ACVP_PREREQ_SHA, cvalue);
+    rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_SSH, ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_NO_CAP);
 }
 
@@ -471,7 +418,7 @@ Test(EnableCapKDFSSH, param_alg_mismatch, .fini = teardown) {
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_kdf135_ssh_set_parm(ctx, ACVP_KDF135_SNMP, ACVP_SSH_METH_TDES_CBC, ACVP_SHA256 | ACVP_SHA384 | ACVP_SHA512);
     cr_assert(rv == ACVP_NO_CAP);
-    rv = acvp_cap_kdf135_ssh_set_parm(ctx, ACVP_KDF135_TLS, ACVP_SSH_METH_TDES_CBC, ACVP_SHA256 | ACVP_SHA384 | ACVP_SHA512);
+    rv = acvp_cap_kdf135_ssh_set_parm(ctx, ACVP_KDF135_SRTP, ACVP_SSH_METH_TDES_CBC, ACVP_SHA256 | ACVP_SHA384 | ACVP_SHA512);
     cr_assert(rv == ACVP_NO_CAP);
 }
 

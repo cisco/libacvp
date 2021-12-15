@@ -217,7 +217,6 @@
 #define ACVP_REV_KTS_IFC             ACVP_REV_STR_SP800_56BR2
 
 /* KDF */
-#define ACVP_REV_KDF135_TLS          ACVP_REV_STR_DEFAULT
 #define ACVP_REV_KDF135_SNMP         ACVP_REV_STR_DEFAULT
 #define ACVP_REV_KDF135_SSH          ACVP_REV_STR_DEFAULT
 #define ACVP_REV_KDF135_SRTP         ACVP_REV_STR_DEFAULT
@@ -405,7 +404,6 @@
 #define ACVP_DRBG_MODE_AES_192       "AES-192"
 #define ACVP_DRBG_MODE_AES_256       "AES-256"
 
-#define ACVP_ALG_KDF135_TLS          "tls"
 #define ACVP_ALG_KDF135_SNMP     "snmp"
 #define ACVP_ALG_KDF135_SSH      "ssh"
 #define ACVP_ALG_KDF135_SRTP     "srtp"
@@ -554,8 +552,6 @@
 #define ACVP_TDES_KEY_STR_LEN (ACVP_TDES_KEY_BIT_LEN >> 2)  /**< 48 characters */
 #define ACVP_TDES_KEY_BYTE_LEN (ACVP_TDES_KEY_BIT_LEN >> 3) /**< 24 bytes */
 
-
-#define ACVP_KDF135_TLS_MSG_MAX 1024 * 4
 #define ACVP_KDF135_SSH_EKEY_MAX (ACVP_SHA512_BYTE_LEN)            /**< Encryption Key max.
                                                                         Be able to hold largest sha size, although
                                                                         actual key is a subset (up to 32 bytes).
@@ -578,10 +574,6 @@
 #define ACVP_KDF135_SRTP_MASTER_MAX 65
 #define ACVP_KDF135_SRTP_INDEX_MAX 32
 #define ACVP_KDF135_SRTP_OUTPUT_MAX 64
-
-#define ACVP_KDF135_TLS_PMSECRET_BIT_MAX (384)
-#define ACVP_KDF135_TLS_PMSECRET_BYTE_MAX (ACVP_KDF135_TLS_PMSECRET_BIT_MAX >> 3)
-#define ACVP_KDF135_TLS_PMSECRET_STR_MAX (ACVP_KDF135_TLS_PMSECRET_BIT_MAX >> 2)
 
 /**
  * Accepted length ranges for KDF135_X963.
@@ -734,8 +726,8 @@
 #define ACVP_KDF_TLS12_MSG_MAX 1024 * 4
 
 #define ACVP_KDF_TLS12_PMSECRET_BIT_MAX 384
-#define ACVP_KDF_TLS12_PMSECRET_BYTE_MAX (ACVP_KDF135_TLS_PMSECRET_BIT_MAX >> 3)
-#define ACVP_KDF_TLS12_PMSECRET_STR_MAX (ACVP_KDF135_TLS_PMSECRET_BIT_MAX >> 2)
+#define ACVP_KDF_TLS12_PMSECRET_BYTE_MAX (ACVP_KDF_TLS12_PMSECRET_BIT_MAX >> 3)
+#define ACVP_KDF_TLS12_PMSECRET_STR_MAX (ACVP_KDF_TLS12_PMSECRET_BIT_MAX >> 2)
 
 /**
  * Accepted length ranges for TLS 1.3 KDF
@@ -981,7 +973,6 @@ typedef enum acvp_capability_type {
     ACVP_ECDSA_SIGGEN_TYPE,
     ACVP_ECDSA_SIGVER_TYPE,
     ACVP_DSA_TYPE,
-    ACVP_KDF135_TLS_TYPE,
     ACVP_KDF135_SNMP_TYPE,
     ACVP_KDF135_SSH_TYPE,
     ACVP_KDF135_SRTP_TYPE,
@@ -1108,11 +1099,6 @@ typedef struct acvp_hash_capability {
     ACVP_JSON_DOMAIN_OBJ out_len; /**< Required for ACVP_HASH_SHAKE_* */
     ACVP_JSON_DOMAIN_OBJ msg_length;
 } ACVP_HASH_CAP;
-
-typedef struct acvp_kdf135_tls_capability {
-    int method[2];
-    int sha;
-} ACVP_KDF135_TLS_CAP;
 
 typedef struct acvp_kdf135_snmp_capability {
     ACVP_SL_LIST *pass_lens;
@@ -1495,7 +1481,6 @@ typedef struct acvp_caps_list_t {
         ACVP_ECDSA_CAP *ecdsa_keyver_cap;
         ACVP_ECDSA_CAP *ecdsa_siggen_cap;
         ACVP_ECDSA_CAP *ecdsa_sigver_cap;
-        ACVP_KDF135_TLS_CAP *kdf135_tls_cap;
         ACVP_KDF135_SNMP_CAP *kdf135_snmp_cap;
         ACVP_KDF135_SSH_CAP *kdf135_ssh_cap;
         ACVP_KDF135_SRTP_CAP *kdf135_srtp_cap;
@@ -1790,8 +1775,6 @@ ACVP_RESULT acvp_ecdsa_keyver_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 ACVP_RESULT acvp_ecdsa_siggen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
 ACVP_RESULT acvp_ecdsa_sigver_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
-
-ACVP_RESULT acvp_kdf135_tls_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
 ACVP_RESULT acvp_kdf135_snmp_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 

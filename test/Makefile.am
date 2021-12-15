@@ -16,7 +16,6 @@ runtest_SOURCES += create_session.c \
       test_acvp_kdf135_ssh.c \
       test_acvp_kdf135_snmp.c \
       test_acvp_kdf135_x963.c \
-      test_acvp_kdf135_tls.c \
       test_acvp_kdf135_srtp.c \
       test_acvp_kdf135_ikev2.c \
       test_acvp_kdf135_ikev1.c \
