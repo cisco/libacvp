@@ -590,7 +590,6 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
     case ACVP_ECDSA_KEYVER:
     case ACVP_ECDSA_SIGGEN:
     case ACVP_ECDSA_SIGVER:
-    case ACVP_KDF135_TLS:
     case ACVP_KDF135_SNMP:
     case ACVP_KDF135_SSH:
     case ACVP_KDF135_SRTP:
@@ -1378,45 +1377,6 @@ static ACVP_RESULT acvp_build_ecdsa_register_cap(ACVP_CIPHER cipher, JSON_Object
             current_curve = current_curve->next;
         }
     }
-
-    return ACVP_SUCCESS;
-}
-
-static ACVP_RESULT acvp_build_kdf135_tls_register_cap(JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry) {
-    JSON_Array *temp_arr = NULL;
-    ACVP_RESULT result;
-    const char *revision = NULL;
-
-    json_object_set_string(cap_obj, "algorithm", ACVP_KDF135_ALG_STR);
-
-    revision = acvp_lookup_cipher_revision(cap_entry->cipher);
-    if (revision == NULL) return ACVP_INVALID_ARG;
-    json_object_set_string(cap_obj, "revision", revision);
-
-    json_object_set_string(cap_obj, "mode", ACVP_ALG_KDF135_TLS);
-    json_object_set_value(cap_obj, "tlsVersion", json_value_init_array());
-    temp_arr = json_object_get_array(cap_obj, "tlsVersion");
-    if (cap_entry->cap.kdf135_tls_cap->method[0] == ACVP_KDF135_TLS10_TLS11) {
-        json_array_append_string(temp_arr, "v1.0/1.1");
-    }
-    if (cap_entry->cap.kdf135_tls_cap->method[1] == ACVP_KDF135_TLS12) {
-        json_array_append_string(temp_arr, "v1.2");
-    }
-
-    json_object_set_value(cap_obj, "hashAlg", json_value_init_array());
-    temp_arr = json_object_get_array(cap_obj, "hashAlg");
-    if (cap_entry->cap.kdf135_tls_cap->sha & ACVP_SHA256) {
-        json_array_append_string(temp_arr, "SHA2-256");
-    }
-    if (cap_entry->cap.kdf135_tls_cap->sha & ACVP_SHA384) {
-        json_array_append_string(temp_arr, "SHA2-384");
-    }
-    if (cap_entry->cap.kdf135_tls_cap->sha & ACVP_SHA512) {
-        json_array_append_string(temp_arr, "SHA2-512");
-    }
-
-    result = acvp_lookup_prereqVals(cap_obj, cap_entry);
-    if (result != ACVP_SUCCESS) { return result; }
 
     return ACVP_SUCCESS;
 }
@@ -4118,9 +4078,6 @@ ACVP_RESULT acvp_build_test_session(ACVP_CTX *ctx, char **reg, int *out_len) {
             case ACVP_ECDSA_SIGGEN:
             case ACVP_ECDSA_SIGVER:
                 rv = acvp_build_ecdsa_register_cap(cap_entry->cipher, cap_obj, cap_entry);
-                break;
-            case ACVP_KDF135_TLS:
-                rv = acvp_build_kdf135_tls_register_cap(cap_obj, cap_entry);
                 break;
             case ACVP_KDF135_SNMP:
                 rv = acvp_build_kdf135_snmp_register_cap(cap_obj, cap_entry);

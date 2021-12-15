@@ -97,7 +97,6 @@ int app_cmac_handler(ACVP_TEST_CASE *test_case);
 #define ENGID1 "800002B805123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456"
 #define ENGID2 "000002b87766554433221100"
 
-int app_kdf135_tls_handler(ACVP_TEST_CASE *test_case);
 int app_kdf135_snmp_handler(ACVP_TEST_CASE *test_case);
 int app_kdf135_ssh_handler(ACVP_TEST_CASE *test_case);
 int app_kdf135_srtp_handler(ACVP_TEST_CASE *test_case);

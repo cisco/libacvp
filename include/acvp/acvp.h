@@ -199,7 +199,6 @@ typedef enum acvp_cipher {
     ACVP_ECDSA_KEYVER,
     ACVP_ECDSA_SIGGEN,
     ACVP_ECDSA_SIGVER,
-    ACVP_KDF135_TLS,
     ACVP_KDF135_SNMP,
     ACVP_KDF135_SSH,
     ACVP_KDF135_SRTP,
@@ -366,8 +365,7 @@ typedef enum acvp_alg_type_kas {
 
 /** @enum ACVP_SUB_KDF */
 typedef enum acvp_alg_type_kdf {
-    ACVP_SUB_KDF_TLS = ACVP_KDF135_TLS,
-    ACVP_SUB_KDF_SNMP,
+    ACVP_SUB_KDF_SNMP = ACVP_KDF135_SNMP,
     ACVP_SUB_KDF_SSH,
     ACVP_SUB_KDF_SRTP,
     ACVP_SUB_KDF_IKEV2,
@@ -596,12 +594,6 @@ typedef enum acvp_sym_cipher_direction {
     ACVP_SYM_CIPH_DIR_BOTH,
     ACVP_SYM_CIPH_DIR_MAX
 } ACVP_SYM_CIPH_DIR;
-
-/** @enum ACVP_KDF135_TLS_METHOD */
-typedef enum acvp_kdf135_tls_method {
-    ACVP_KDF135_TLS10_TLS11 = 1,
-    ACVP_KDF135_TLS12
-} ACVP_KDF135_TLS_METHOD;
 
 /** @enum ACVP_KDF135_SNMP_PARAM */
 typedef enum acvp_kdf135_snmp_param {
@@ -1064,33 +1056,6 @@ typedef struct acvp_hash_tc_t {
     unsigned int md_len; /**< The length (in bytes) of \ref ACVP_HASH_TC.md
                               SUPPLIED BY USER */
 } ACVP_HASH_TC;
-
-/**
- * @struct ACVP_KDF135_TLS_TC
- * @brief This struct holds data that represents a single test case for kdf135 TLS testing. This
- *        data is passed between libacvp and the crypto module.
- */
-typedef struct acvp_kdf135_tls_tc_t {
-    ACVP_CIPHER cipher;
-    unsigned int tc_id;    /**< Test case id */
-    ACVP_KDF135_TLS_METHOD method;
-    ACVP_HASH_ALG md;
-    unsigned int pm_len;
-    unsigned int kb_len;
-    unsigned char *pm_secret;
-    unsigned char *sh_rnd;
-    unsigned char *ch_rnd;
-    unsigned char *s_rnd;
-    unsigned char *c_rnd;
-    unsigned char *msecret1; /**< The resulting data calculated for the test case */
-    unsigned char *msecret2;
-    unsigned char *kblock1;  /**< The resulting data calculated for the test case */
-    unsigned char *kblock2;
-    int sh_rnd_len;
-    int ch_rnd_len;
-    int s_rnd_len;
-    int c_rnd_len;
-} ACVP_KDF135_TLS_TC;
 
 /**
  * @struct ACVP_KDF135_IKEV2_TC
@@ -2163,7 +2128,6 @@ typedef struct acvp_test_case_t {
         ACVP_RSA_SIG_TC *rsa_sig;
         ACVP_RSA_PRIM_TC *rsa_prim;
         ACVP_ECDSA_TC *ecdsa;
-        ACVP_KDF135_TLS_TC *kdf135_tls;
         ACVP_KDF135_SNMP_TC *kdf135_snmp;
         ACVP_KDF135_SSH_TC *kdf135_ssh;
         ACVP_KDF135_SRTP_TC *kdf135_srtp;
@@ -3140,21 +3104,8 @@ ACVP_RESULT acvp_cap_cmac_set_domain(ACVP_CTX *ctx,
 /**
  * @brief acvp_cap_kdf135_*_enable() allows an application to specify a kdf cipher capability to be
  *        tested by the ACVP server. When the application enables a crypto capability, such as
- *        KDF135_TLS, it also needs to specify a callback function that will be used by libacvp
+ *        KDF135_SNMP, it also needs to specify a callback function that will be used by libacvp
  *        when that crypto capability is needed during a test session.
- *
- * @param ctx Pointer to ACVP_CTX that was previously created by calling acvp_create_test_session.
- * @param crypto_handler Address of function implemented by application that is invoked by libacvp
- *        when the crypto capability is needed during a test session. This crypto_handler function
- *        is expected to return 0 on success and 1 for failure.
- *
- * @return ACVP_RESULT
- */
-ACVP_RESULT acvp_cap_kdf135_tls_enable(ACVP_CTX *ctx,
-                                       int (*crypto_handler)(ACVP_TEST_CASE *test_case));
-
-/**
- * @brief see @ref acvp_cap_kdf135_tls_enable()
  *
  * @param ctx Pointer to ACVP_CTX that was previously created by calling acvp_create_test_session.
  * @param crypto_handler Address of function implemented by application that is invoked by libacvp
@@ -3167,7 +3118,7 @@ ACVP_RESULT acvp_cap_kdf135_snmp_enable(ACVP_CTX *ctx,
                                         int (*crypto_handler)(ACVP_TEST_CASE *test_case));
 
 /**
- * @brief see @ref acvp_cap_kdf135_tls_enable()
+ * @brief see @ref acvp_cap_kdf135_snmp_enable()
  *
  * @param ctx Pointer to ACVP_CTX that was previously created by calling acvp_create_test_session.
  * @param crypto_handler Address of function implemented by application that is invoked by libacvp
@@ -3180,7 +3131,7 @@ ACVP_RESULT acvp_cap_kdf135_ssh_enable(ACVP_CTX *ctx,
                                        int (*crypto_handler)(ACVP_TEST_CASE *test_case));
 
 /**
- * @brief see @ref acvp_cap_kdf135_tls_enable()
+ * @brief see @ref acvp_cap_kdf135_snmp_enable()
  *
  * @param ctx Pointer to ACVP_CTX that was previously created by calling acvp_create_test_session.
  * @param crypto_handler Address of function implemented by application that is invoked by libacvp
@@ -3193,7 +3144,7 @@ ACVP_RESULT acvp_cap_kdf135_srtp_enable(ACVP_CTX *ctx,
                                         int (*crypto_handler)(ACVP_TEST_CASE *test_case));
 
 /**
- * @brief see @ref acvp_cap_kdf135_tls_enable()
+ * @brief see @ref acvp_cap_kdf135_snmp_enable()
  *
  * @param ctx Pointer to ACVP_CTX that was previously created by calling acvp_create_test_session.
  * @param crypto_handler Address of function implemented by application that is invoked by libacvp
@@ -3206,7 +3157,7 @@ ACVP_RESULT acvp_cap_kdf135_ikev2_enable(ACVP_CTX *ctx,
                                          int (*crypto_handler)(ACVP_TEST_CASE *test_case));
 
 /**
- * @brief see @ref acvp_cap_kdf135_tls_enable()
+ * @brief see @ref acvp_cap_kdf135_snmp_enable()
  *
  * @param ctx Pointer to ACVP_CTX that was previously created by calling acvp_create_test_session.
  * @param crypto_handler Address of function implemented by application that is invoked by libacvp
@@ -3219,7 +3170,7 @@ ACVP_RESULT acvp_cap_kdf135_ikev1_enable(ACVP_CTX *ctx,
                                          int (*crypto_handler)(ACVP_TEST_CASE *test_case));
 
 /**
- * @brief see @ref acvp_cap_kdf135_tls_enable()
+ * @brief see @ref acvp_cap_kdf135_snmp_enable()
  *
  * @param ctx Pointer to ACVP_CTX that was previously created by calling acvp_create_test_session.
  * @param crypto_handler Address of function implemented by application that is invoked by libacvp
@@ -3296,27 +3247,9 @@ ACVP_RESULT acvp_cap_kdf_tls13_enable(ACVP_CTX *ctx,
                                   int (*crypto_handler)(ACVP_TEST_CASE *test_case));
 
 /**
- * @brief acvp_cap_kdf135_tls_set_parm() allows an application to specify operational parameters
- *        to be used during a test session with the ACVP server. This function should be called
- *        after acvp_enable_kdf135_tls_cap() to specify the parameters for the corresponding KDF.
- *
- * @param ctx Pointer to ACVP_CTX that was previously created by calling acvp_create_test_session.
- * @param cap ACVP_CIPHER enum value identifying the crypto capability, here it will always be
- *        ACVP_KDF135_TLS
- * @param method ACVP_KDF135_TLS_METHOD enum value specifying method type
- * @param param ACVP_HASH_ALG enum value
- *
- * @return ACVP_RESULT
- */
-ACVP_RESULT acvp_cap_kdf135_tls_set_parm(ACVP_CTX *ctx,
-                                         ACVP_CIPHER cap,
-                                         ACVP_KDF135_TLS_METHOD method,
-                                         ACVP_HASH_ALG param);
-
-/**
  * @brief acvp_cap_kdf135_ssh_set_parm() allows an application to specify operational parameters
  *        to be used during a test session with the ACVP server. This function should be called
- *        after acvp_enable_kdf135_tls_cap() to specify the parameters for the corresponding KDF.
+ *        after acvp_enable_kdf135_ssh_cap() to specify the parameters for the corresponding KDF.
  *
  * @param ctx Pointer to ACVP_CTX that was previously created by calling acvp_create_test_session.
  * @param cap ACVP_CIPHER enum value identifying the crypto capability, here it will always be
