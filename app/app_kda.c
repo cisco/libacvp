@@ -447,7 +447,7 @@ int app_kda_onestep_handler(ACVP_TEST_CASE *test_case) {
     hashalg = acvp_get_hash_alg(stc->aux_function);
     if (hashalg == 0) {
         printf("Invalid cipher value");
-        return 1;
+        goto end;
     }
 
     switch (hashalg) {
