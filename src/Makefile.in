@@ -139,13 +139,12 @@ am_libacvp_la_OBJECTS = acvp.lo acvp_build_register.lo \
 	acvp_des.lo acvp_hash.lo acvp_drbg.lo acvp_transport.lo \
 	acvp_util.lo parson.lo acvp_hmac.lo acvp_cmac.lo \
 	acvp_rsa_keygen.lo acvp_rsa_sig.lo acvp_rsa_prim.lo \
-	acvp_dsa.lo acvp_kdf135_tls.lo acvp_kdf135_snmp.lo \
-	acvp_kdf135_ssh.lo acvp_kdf135_srtp.lo acvp_kdf135_ikev2.lo \
-	acvp_kdf135_ikev1.lo acvp_kdf135_x963.lo acvp_kdf108.lo \
-	acvp_pbkdf.lo acvp_kdf_tls12.lo acvp_kdf_tls13.lo \
-	acvp_kas_ecc.lo acvp_kas_ffc.lo acvp_kas_ifc.lo \
-	acvp_kas_kdf.lo acvp_kts_ifc.lo acvp_safe_primes.lo \
-	acvp_ecdsa.lo
+	acvp_dsa.lo acvp_kdf135_snmp.lo acvp_kdf135_ssh.lo \
+	acvp_kdf135_srtp.lo acvp_kdf135_ikev2.lo acvp_kdf135_ikev1.lo \
+	acvp_kdf135_x963.lo acvp_kdf108.lo acvp_pbkdf.lo \
+	acvp_kdf_tls12.lo acvp_kdf_tls13.lo acvp_kas_ecc.lo \
+	acvp_kas_ffc.lo acvp_kas_ifc.lo acvp_kda.lo acvp_kts_ifc.lo \
+	acvp_safe_primes.lo acvp_ecdsa.lo
 libacvp_la_OBJECTS = $(am_libacvp_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -173,13 +172,12 @@ am__depfiles_remade = ./$(DEPDIR)/acvp.Plo ./$(DEPDIR)/acvp_aes.Plo \
 	./$(DEPDIR)/acvp_dsa.Plo ./$(DEPDIR)/acvp_ecdsa.Plo \
 	./$(DEPDIR)/acvp_hash.Plo ./$(DEPDIR)/acvp_hmac.Plo \
 	./$(DEPDIR)/acvp_kas_ecc.Plo ./$(DEPDIR)/acvp_kas_ffc.Plo \
-	./$(DEPDIR)/acvp_kas_ifc.Plo ./$(DEPDIR)/acvp_kas_kdf.Plo \
+	./$(DEPDIR)/acvp_kas_ifc.Plo ./$(DEPDIR)/acvp_kda.Plo \
 	./$(DEPDIR)/acvp_kdf108.Plo ./$(DEPDIR)/acvp_kdf135_ikev1.Plo \
 	./$(DEPDIR)/acvp_kdf135_ikev2.Plo \
 	./$(DEPDIR)/acvp_kdf135_snmp.Plo \
 	./$(DEPDIR)/acvp_kdf135_srtp.Plo \
 	./$(DEPDIR)/acvp_kdf135_ssh.Plo \
-	./$(DEPDIR)/acvp_kdf135_tls.Plo \
 	./$(DEPDIR)/acvp_kdf135_x963.Plo \
 	./$(DEPDIR)/acvp_kdf_tls12.Plo ./$(DEPDIR)/acvp_kdf_tls13.Plo \
 	./$(DEPDIR)/acvp_kts_ifc.Plo \
@@ -384,7 +382,6 @@ libacvp_la_SOURCES = acvp.c \
                     acvp_rsa_sig.c \
                     acvp_rsa_prim.c \
                     acvp_dsa.c \
-                    acvp_kdf135_tls.c \
                     acvp_kdf135_snmp.c \
                     acvp_kdf135_ssh.c \
                     acvp_kdf135_srtp.c \
@@ -398,7 +395,7 @@ libacvp_la_SOURCES = acvp.c \
                     acvp_kas_ecc.c \
                     acvp_kas_ffc.c \
                     acvp_kas_ifc.c \
-                    acvp_kas_kdf.c \
+                    acvp_kda.c \
                     acvp_kts_ifc.c \
                     acvp_safe_primes.c \
                     acvp_ecdsa.c
@@ -501,14 +498,13 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/acvp_kas_ecc.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/acvp_kas_ffc.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/acvp_kas_ifc.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/acvp_kas_kdf.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/acvp_kda.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/acvp_kdf108.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/acvp_kdf135_ikev1.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/acvp_kdf135_ikev2.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/acvp_kdf135_snmp.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/acvp_kdf135_srtp.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/acvp_kdf135_ssh.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/acvp_kdf135_tls.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/acvp_kdf135_x963.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/acvp_kdf_tls12.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/acvp_kdf_tls13.Plo@am__quote@ # am--include-marker
@@ -723,14 +719,13 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/acvp_kas_ecc.Plo
 	-rm -f ./$(DEPDIR)/acvp_kas_ffc.Plo
 	-rm -f ./$(DEPDIR)/acvp_kas_ifc.Plo
-	-rm -f ./$(DEPDIR)/acvp_kas_kdf.Plo
+	-rm -f ./$(DEPDIR)/acvp_kda.Plo
 	-rm -f ./$(DEPDIR)/acvp_kdf108.Plo
 	-rm -f ./$(DEPDIR)/acvp_kdf135_ikev1.Plo
 	-rm -f ./$(DEPDIR)/acvp_kdf135_ikev2.Plo
 	-rm -f ./$(DEPDIR)/acvp_kdf135_snmp.Plo
 	-rm -f ./$(DEPDIR)/acvp_kdf135_srtp.Plo
 	-rm -f ./$(DEPDIR)/acvp_kdf135_ssh.Plo
-	-rm -f ./$(DEPDIR)/acvp_kdf135_tls.Plo
 	-rm -f ./$(DEPDIR)/acvp_kdf135_x963.Plo
 	-rm -f ./$(DEPDIR)/acvp_kdf_tls12.Plo
 	-rm -f ./$(DEPDIR)/acvp_kdf_tls13.Plo
@@ -803,14 +798,13 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/acvp_kas_ecc.Plo
 	-rm -f ./$(DEPDIR)/acvp_kas_ffc.Plo
 	-rm -f ./$(DEPDIR)/acvp_kas_ifc.Plo
-	-rm -f ./$(DEPDIR)/acvp_kas_kdf.Plo
+	-rm -f ./$(DEPDIR)/acvp_kda.Plo
 	-rm -f ./$(DEPDIR)/acvp_kdf108.Plo
 	-rm -f ./$(DEPDIR)/acvp_kdf135_ikev1.Plo
 	-rm -f ./$(DEPDIR)/acvp_kdf135_ikev2.Plo
 	-rm -f ./$(DEPDIR)/acvp_kdf135_snmp.Plo
 	-rm -f ./$(DEPDIR)/acvp_kdf135_srtp.Plo
 	-rm -f ./$(DEPDIR)/acvp_kdf135_ssh.Plo
-	-rm -f ./$(DEPDIR)/acvp_kdf135_tls.Plo
 	-rm -f ./$(DEPDIR)/acvp_kdf135_x963.Plo
 	-rm -f ./$(DEPDIR)/acvp_kdf_tls12.Plo
 	-rm -f ./$(DEPDIR)/acvp_kdf_tls13.Plo

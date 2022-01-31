@@ -1,0 +1,1071 @@
+[ {
+  "acvVersion": "1.0"
+}, {
+    "vsId": 432888,
+    "algorithm": "KDA",
+    "mode": "HKDF",
+    "revision": "Sp800-56Cr1",
+    "isSample": false,
+    "testGroups": [
+        {
+            "tgId": 1,
+            "testType": "AFT",
+            "tests": [
+                {
+                    "tcId": 1,
+                    "kdfParameter": {
+                        "kdfType": "hkdf",
+                        "requiresAdditionalNoncePair": false,
+                        "salt": "0000000000000000000000000000000000000000000000000000000000000000",
+                        "z": "54DC75E579EF543ED2BD53CF6E037AB190506B352DF1EDC3F9CB250842ED1D",
+                        "l": 2048,
+                        "fixedInfoPattern": "literal[0123456789ABCDEF]||uPartyInfo||vPartyInfo||context||algorithmId||label||l",
+                        "fixedInputEncoding": "concatenation",
+                        "algorithmId": "7BCFD1455C82483743104E555519D34D",
+                        "label": "5A26E8EE34D86FDB2A7E0EF94311EFFB",
+                        "context": "CC0165BE697F4982D6ADED7D6535FE11",
+                        "hmacAlg": "SHA2-256"
+                    },
+                    "fixedInfoPartyU": {
+                        "partyId": "BF49E007554DF52F56C78E583F27214E",
+                        "ephemeralData": "5DCA6705DA3EADB32237104313DE9D114D135136B3031A5F065779EABA27DE"
+                    },
+                    "fixedInfoPartyV": {
+                        "partyId": "DE1F138B3EE021CAD56A214D07EE2F0B",
+                        "ephemeralData": "9F96F92F22490932F0000C6306A8A54FF7007C3B3D0705A67A7C35016A44FF"
+                    }
+                },
+                {
+                    "tcId": 2,
+                    "kdfParameter": {
+                        "kdfType": "hkdf",
+                        "requiresAdditionalNoncePair": false,
+                        "salt": "0000000000000000000000000000000000000000000000000000000000000000",
+                        "z": "86A3C3ABDD199A16F6D19C348EE5C2D43159DE5C68C149A5F33DFE7BC844AF",
+                        "l": 2048,
+                        "fixedInfoPattern": "literal[0123456789ABCDEF]||uPartyInfo||vPartyInfo||context||algorithmId||label||l",
+                        "fixedInputEncoding": "concatenation",
+                        "algorithmId": "935F8FDB8E51BE4D241705F5DA0DCB36",
+                        "label": "4C60A09E744149FCF430205978261330",
+                        "context": "4F4AC248BE7821630CE82F1BB6E561AA",
+                        "hmacAlg": "SHA2-256"
+                    },
+                    "fixedInfoPartyU": {
+                        "partyId": "16D3B8982F8020F294E3C796DE045EAD"
+                    },
+                    "fixedInfoPartyV": {
+                        "partyId": "A6E2485FE4E1B24EDEB02B11B8B16D18"
+                    }
+                },
+                {
+                    "tcId": 3,
+                    "kdfParameter": {
+                        "kdfType": "hkdf",
+                        "requiresAdditionalNoncePair": false,
+                        "salt": "0000000000000000000000000000000000000000000000000000000000000000",
+                        "z": "86C6DF067318B9D1DA2C3D4FEDADF952CF04D14ADF02D568779DC620EB32AA",
+                        "l": 2048,
+                        "fixedInfoPattern": "literal[0123456789ABCDEF]||uPartyInfo||vPartyInfo||context||algorithmId||label||l",
+                        "fixedInputEncoding": "concatenation",
+                        "algorithmId": "3B825E5F520A72CBE61133D9B2436FE0",
+                        "label": "F49734604A53D23F2BB60E155F3A6550",
+                        "context": "F08B78B43EE97BB02F56DCBCAAE8E69C",
+                        "hmacAlg": "SHA2-256"
+                    },
+                    "fixedInfoPartyU": {
+                        "partyId": "5A6B2F1389D1EEB37561732DA816DA97",
+                        "ephemeralData": "A1C6A36C60393797DEA25BBA70477B0F89702AAD6719587DB64846B2510102"
+                    },
+                    "fixedInfoPartyV": {
+                        "partyId": "88C7FA59D52A5F9150D375DE0437BE4D",
+                        "ephemeralData": "9C84CD305BDEF7A899AA6CF2EF197791DA4AE70C7BB92260E09FFBE7987A48"
+                    }
+                },
+                {
+                    "tcId": 4,
+                    "kdfParameter": {
+                        "kdfType": "hkdf",
+                        "requiresAdditionalNoncePair": false,
+                        "salt": "0000000000000000000000000000000000000000000000000000000000000000",
+                        "z": "C6862CDDA8E49A9738598C0664133311826E12BE2A38571DCE6228C8B3B0F2",
+                        "l": 2048,
+                        "fixedInfoPattern": "literal[0123456789ABCDEF]||uPartyInfo||vPartyInfo||context||algorithmId||label||l",
+                        "fixedInputEncoding": "concatenation",
+                        "algorithmId": "BEE399B9F402AFE9803C6AE29917F7E1",
+                        "label": "E61FC1B9B63E04F1335C4ADC860F9AA8",
+                        "context": "15E09BA00CD217AA3B63156D13B99488",
+                        "hmacAlg": "SHA2-256"
+                    },
+                    "fixedInfoPartyU": {
+                        "partyId": "209D20A32EF1CC45951AE608011B8F27"
+                    },
+                    "fixedInfoPartyV": {
+                        "partyId": "D1F0F0BA442D1C78995A185DA6822C81",
+                        "ephemeralData": "DB8A51ECCA9068C177CA2004005B25C3FD76942A9A391E7E192B7A6DF62E03"
+                    }
+                },
+                {
+                    "tcId": 5,
+                    "kdfParameter": {
+                        "kdfType": "hkdf",
+                        "requiresAdditionalNoncePair": false,
+                        "salt": "0000000000000000000000000000000000000000000000000000000000000000",
+                        "z": "4EB535A82A107318586D0686E4D042FE0AA7A770CDC17AF722953C2FF06507",
+                        "l": 2048,
+                        "fixedInfoPattern": "literal[0123456789ABCDEF]||uPartyInfo||vPartyInfo||context||algorithmId||label||l",
+                        "fixedInputEncoding": "concatenation",
+                        "algorithmId": "CD23D6A09C271D819FD061D9A753F489",
+                        "label": "5B6763501B2C307C438070D918A368FA",
+                        "context": "3286A9EEDE9E65D4AA43CF8E4E604A58",
+                        "hmacAlg": "SHA2-256"
+                    },
+                    "fixedInfoPartyU": {
+                        "partyId": "9C0FA3179EAB456491F4E53A94CCB51E",
+                        "ephemeralData": "7441CF5A40803E4E18CF12DBBBAE73C4C17A6B2CBBD80C9955E17E80D92E26"
+                    },
+                    "fixedInfoPartyV": {
+                        "partyId": "F965380D2EFB76D4A0CDDB0782547464",
+                        "ephemeralData": "150BA01764E60EA5E9BAF816B85763CBCAFBA0FE418B1557C2C054F5A4D9E9"
+                    }
+                },
+                {
+                    "tcId": 6,
+                    "kdfParameter": {
+                        "kdfType": "hkdf",
+                        "requiresAdditionalNoncePair": false,
+                        "salt": "0000000000000000000000000000000000000000000000000000000000000000",
+                        "z": "CBAE0AA795578016DE32F4720C49C32BA7CCF968DE4E5A3C5F8D7061012B6C",
+                        "l": 2048,
+                        "fixedInfoPattern": "literal[0123456789ABCDEF]||uPartyInfo||vPartyInfo||context||algorithmId||label||l",
+                        "fixedInputEncoding": "concatenation",
+                        "algorithmId": "4A4014043B1DBE82B893858BA9B245AA",
+                        "label": "9B29816E2E848F55AD2AA59C5EDE94AA",
+                        "context": "B35DDA20A46BCA382A4458DE5E23C8AF",
+                        "hmacAlg": "SHA2-256"
+                    },
+                    "fixedInfoPartyU": {
+                        "partyId": "1C49B4DE15F672BBE104539BF6B77BBC"
+                    },
+                    "fixedInfoPartyV": {
+                        "partyId": "AC32B7F718E0EB4C39DE38AD495E32ED",
+                        "ephemeralData": "BAC3C823684EBCD9430F824FD8B9263B3762FF1CFE005168BFD80CD541ED21"
+                    }
+                },
+                {
+                    "tcId": 7,
+                    "kdfParameter": {
+                        "kdfType": "hkdf",
+                        "requiresAdditionalNoncePair": false,
+                        "salt": "0000000000000000000000000000000000000000000000000000000000000000",
+                        "z": "D3548F7E91B2F926AF218726EA9A6E38E8B308CD722328E6C1ABDBFE7D5327",
+                        "l": 2048,
+                        "fixedInfoPattern": "literal[0123456789ABCDEF]||uPartyInfo||vPartyInfo||context||algorithmId||label||l",
+                        "fixedInputEncoding": "concatenation",
+                        "algorithmId": "9E67DA0B76EDF1A063D976B6D7DBA6C4",
+                        "label": "9BE9159084E7384628AC9E9735AA40A3",
+                        "context": "465731668D38D513F42AF5BE1386025C",
+                        "hmacAlg": "SHA2-256"
+                    },
+                    "fixedInfoPartyU": {
+                        "partyId": "1FDF2B740CC47EF8C3685CB74F51088B"
+                    },
+                    "fixedInfoPartyV": {
+                        "partyId": "D3574319280557A40614C22BF516AE4F"
+                    }
+                },
+                {
+                    "tcId": 8,
+                    "kdfParameter": {
+                        "kdfType": "hkdf",
+                        "requiresAdditionalNoncePair": false,
+                        "salt": "0000000000000000000000000000000000000000000000000000000000000000",
+                        "z": "B58439ACD6CE6AEAFFE810CCB09F324F17C9C6723A7EA381175C4FAE556F0A",
+                        "l": 2048,
+                        "fixedInfoPattern": "literal[0123456789ABCDEF]||uPartyInfo||vPartyInfo||context||algorithmId||label||l",
+                        "fixedInputEncoding": "concatenation",
+                        "algorithmId": "3C4D8F178D28A885BEDB7EF96F238517",
+                        "label": "206C130856444D98551A2C2D49B19B28",
+                        "context": "2D32C168D8DC7FDE2E56EE1BBF3C7E00",
+                        "hmacAlg": "SHA2-256"
+                    },
+                    "fixedInfoPartyU": {
+                        "partyId": "8FA8F2AEA52F83CBEC9E39A882073C72",
+                        "ephemeralData": "F75142E048E4B293156E46BE36C7C91E476B8681446B6F22109F636924F536"
+                    },
+                    "fixedInfoPartyV": {
+                        "partyId": "456B59CE3960F69D0E4C604476063FC2"
+                    }
+                },
+                {
+                    "tcId": 9,
+                    "kdfParameter": {
+                        "kdfType": "hkdf",
+                        "requiresAdditionalNoncePair": false,
+                        "salt": "0000000000000000000000000000000000000000000000000000000000000000",
+                        "z": "397B459D5DFCDF2CE3598DD5EBC4E49A32533FAC8C6B5627E3F4ED053980EA",
+                        "l": 2048,
+                        "fixedInfoPattern": "literal[0123456789ABCDEF]||uPartyInfo||vPartyInfo||context||algorithmId||label||l",
+                        "fixedInputEncoding": "concatenation",
+                        "algorithmId": "7E73D5FBF48B12A2BE46AA603F885C31",
+                        "label": "140B4B85CA64C3E28B7D058A105F68B6",
+                        "context": "6E6AED3DA14257702D47CBBE2F2A9DD2",
+                        "hmacAlg": "SHA2-256"
+                    },
+                    "fixedInfoPartyU": {
+                        "partyId": "4CD0781FBA3884C1916D9C7A09770657",
+                        "ephemeralData": "B3C49F5550293376FEB749C8A63431DBE14697F0260C9C9087365FC0E6C990"
+                    },
+                    "fixedInfoPartyV": {
+                        "partyId": "2AA04790DD79F0D0F778957B0CCEB00E"
+                    }
+                },
+                {
+                    "tcId": 10,
+                    "kdfParameter": {
+                        "kdfType": "hkdf",
+                        "requiresAdditionalNoncePair": false,
+                        "salt": "0000000000000000000000000000000000000000000000000000000000000000",
+                        "z": "EB2C26BE2D0F10D12900B716DB556D143CA2D61D1B797E88729575131A96EA",
+                        "l": 2048,
+                        "fixedInfoPattern": "literal[0123456789ABCDEF]||uPartyInfo||vPartyInfo||context||algorithmId||label||l",
+                        "fixedInputEncoding": "concatenation",
+                        "algorithmId": "6D3ADE9A630513493D465FDD3EE12FFF",
+                        "label": "5C69F15119391F10D21E2D691A432439",
+                        "context": "921AFA3A14C2A8F2D606DC3064B6C4E7",
+                        "hmacAlg": "SHA2-256"
+                    },
+                    "fixedInfoPartyU": {
+                        "partyId": "FB0112EF9CBBB1A4F727C30478A9A957",
+                        "ephemeralData": "BF3A63FB64375E4650382A2C73C38E5162B4676603496CEAA55315FCAB25E2"
+                    },
+                    "fixedInfoPartyV": {
+                        "partyId": "3C90237A978E045641EF8000DBC0130E"
+                    }
+                },
+                {
+                    "tcId": 11,
+                    "kdfParameter": {
+                        "kdfType": "hkdf",
+                        "requiresAdditionalNoncePair": false,
+                        "salt": "0000000000000000000000000000000000000000000000000000000000000000",
+                        "z": "A2D262BA9E8D336301812A8BF7DA0F79FD30F21275B1EAF59214184DFA566C",
+                        "l": 2048,
+                        "fixedInfoPattern": "literal[0123456789ABCDEF]||uPartyInfo||vPartyInfo||context||algorithmId||label||l",
+                        "fixedInputEncoding": "concatenation",
+                        "algorithmId": "EB44B39305CA9A093D63536441D24F6B",
+                        "label": "DE5F31DBA83D29A93FF82FAF6EBCBCF5",
+                        "context": "D43B6726D1ABF19F6BDFA4643BD3E398",
+                        "hmacAlg": "SHA2-256"
+                    },
+                    "fixedInfoPartyU": {
+                        "partyId": "232821E16C46A6B0EB02BD860AFE47EA",
+                        "ephemeralData": "411F14E4E546EE0DBB7725F4CB8A0E1793D7768B199654EB214351102C5E65"
+                    },
+                    "fixedInfoPartyV": {
+                        "partyId": "3960E826311FDC039991A60355136A0A"
+                    }
+                },
+                {
+                    "tcId": 12,
+                    "kdfParameter": {
+                        "kdfType": "hkdf",
+                        "requiresAdditionalNoncePair": false,
+                        "salt": "0000000000000000000000000000000000000000000000000000000000000000",
+                        "z": "22EE60C140ABFB33EBB1D0BAD9BB2B99DCCAC69EDCD3EAA081D571CEB6AB7E",
+                        "l": 2048,
+                        "fixedInfoPattern": "literal[0123456789ABCDEF]||uPartyInfo||vPartyInfo||context||algorithmId||label||l",
+                        "fixedInputEncoding": "concatenation",
+                        "algorithmId": "F0953A1A356A92161E6E42686A08B5A8",
+                        "label": "5D88C2FB80E2A6295DB9741E8F9F2504",
+                        "context": "0A4070E0DEABC1D4F7003030F3F159E3",
+                        "hmacAlg": "SHA2-256"
+                    },
+                    "fixedInfoPartyU": {
+                        "partyId": "961B974BA4FEA32E7FC7846EB60C0954"
+                    },
+                    "fixedInfoPartyV": {
+                        "partyId": "FC40C095C5D282BFCD8CCDE9405448CA"
+                    }
+                },
+                {
+                    "tcId": 13,
+                    "kdfParameter": {
+                        "kdfType": "hkdf",
+                        "requiresAdditionalNoncePair": false,
+                        "salt": "0000000000000000000000000000000000000000000000000000000000000000",
+                        "z": "A61D04480456800716A1F4E53EAAF3EED6160DD8F730F3ABFB363255A88512",
+                        "l": 2048,
+                        "fixedInfoPattern": "literal[0123456789ABCDEF]||uPartyInfo||vPartyInfo||context||algorithmId||label||l",
+                        "fixedInputEncoding": "concatenation",
+                        "algorithmId": "7935580B30BC587F88EBF19D19EE200A",
+                        "label": "CD4028180E5AD95ACB92C562946425F2",
+                        "context": "30DF51B46E438764CD06AF1D0A117C93",
+                        "hmacAlg": "SHA2-256"
+                    },
+                    "fixedInfoPartyU": {
+                        "partyId": "BEBACE32A0B92ABCDF0FE92CC11784FA",
+                        "ephemeralData": "A08AA696C92FEDD0CF5E673A342842F6C8A8BBED04B629ED51D30F6C71440F"
+                    },
+                    "fixedInfoPartyV": {
+                        "partyId": "AC6BEA113DE457F7020B18BF2AE032DE",
+                        "ephemeralData": "E6BD2183E33D2637DE087DDABB25169F46BA09E07EA174B000503C755C72DA"
+                    }
+                },
+                {
+                    "tcId": 14,
+                    "kdfParameter": {
+                        "kdfType": "hkdf",
+                        "requiresAdditionalNoncePair": false,
+                        "salt": "0000000000000000000000000000000000000000000000000000000000000000",
+                        "z": "FFBB5B200FF20DAB573A3EED3456123A89602841818319580F4E5E5E5D37C6",
+                        "l": 2048,
+                        "fixedInfoPattern": "literal[0123456789ABCDEF]||uPartyInfo||vPartyInfo||context||algorithmId||label||l",
+                        "fixedInputEncoding": "concatenation",
+                        "algorithmId": "2D397787085DCD47E3D2DAD8C4FAD711",
+                        "label": "D76828E3177FB8B407C966898EDDDAB2",
+                        "context": "E1C81BC8E7834BB11169850FC967EB33",
+                        "hmacAlg": "SHA2-256"
+                    },
+                    "fixedInfoPartyU": {
+                        "partyId": "DF88E4067584CA63CEDB19504285651F",
+                        "ephemeralData": "C651C5B922D0873621391DA2DB61845DFCEF3F6B50B2DF8B997AF38D05442E"
+                    },
+                    "fixedInfoPartyV": {
+                        "partyId": "24638B6670B6ECEB2C71B616F1BB1385",
+                        "ephemeralData": "ABBAC967B5F03512A7E5FE8358CAEB8DC6DF572206CE23F4363DAC83811788"
+                    }
+                },
+                {
+                    "tcId": 15,
+                    "kdfParameter": {
+                        "kdfType": "hkdf",
+                        "requiresAdditionalNoncePair": false,
+                        "salt": "0000000000000000000000000000000000000000000000000000000000000000",
+                        "z": "FFD0B35DC84DD8E15C0C22472CAF42C618027EAB1CD8486998741ABFB7350B",
+                        "l": 2048,
+                        "fixedInfoPattern": "literal[0123456789ABCDEF]||uPartyInfo||vPartyInfo||context||algorithmId||label||l",
+                        "fixedInputEncoding": "concatenation",
+                        "algorithmId": "C23513B7A2E714DA933D6C6ED79EC5E2",
+                        "label": "53310A936CB8100E51ED015E179D2BB4",
+                        "context": "BA24BF72E07178DACFA565BFF66B86D5",
+                        "hmacAlg": "SHA2-256"
+                    },
+                    "fixedInfoPartyU": {
+                        "partyId": "D341E486CE33923FA8755C819793E2D0"
+                    },
+                    "fixedInfoPartyV": {
+                        "partyId": "77B53AACCDE7D5D9FF31E9DDE42AF1F8"
+                    }
+                },
+                {
+                    "tcId": 16,
+                    "kdfParameter": {
+                        "kdfType": "hkdf",
+                        "requiresAdditionalNoncePair": false,
+                        "salt": "0000000000000000000000000000000000000000000000000000000000000000",
+                        "z": "BF1B25651FF51513C7F16000197D3C08A0DCF8527B85CB1F6CB48CB524E01A",
+                        "l": 2048,
+                        "fixedInfoPattern": "literal[0123456789ABCDEF]||uPartyInfo||vPartyInfo||context||algorithmId||label||l",
+                        "fixedInputEncoding": "concatenation",
+                        "algorithmId": "9ED893B0021448FF54329BCDF256933A",
+                        "label": "54F03C94167667D2607D273CD5FD5D88",
+                        "context": "03C65E5EA21B149B50DF0D9A7BD9FEBA",
+                        "hmacAlg": "SHA2-256"
+                    },
+                    "fixedInfoPartyU": {
+                        "partyId": "682BABB709DDF0D411236FCFE7C058C3",
+                        "ephemeralData": "680FE8830F446B1999D0F437FAB7C5AFFA0694969F101928F3EF2217DA6DC7"
+                    },
+                    "fixedInfoPartyV": {
+                        "partyId": "407A835EB5BFCD68A0A741B79E2A8DEA"
+                    }
+                },
+                {
+                    "tcId": 17,
+                    "kdfParameter": {
+                        "kdfType": "hkdf",
+                        "requiresAdditionalNoncePair": false,
+                        "salt": "0000000000000000000000000000000000000000000000000000000000000000",
+                        "z": "7C9E5FF5FE677E688281CBBE8F4A6C43181B50DC52D869067290871D293312",
+                        "l": 2048,
+                        "fixedInfoPattern": "literal[0123456789ABCDEF]||uPartyInfo||vPartyInfo||context||algorithmId||label||l",
+                        "fixedInputEncoding": "concatenation",
+                        "algorithmId": "892CB54BCC71126ADDD042DB578E7EDE",
+                        "label": "6BE1196031E2E659270075C6F462FD19",
+                        "context": "48762EBBA9D398F963E7C2EFBDB53948",
+                        "hmacAlg": "SHA2-256"
+                    },
+                    "fixedInfoPartyU": {
+                        "partyId": "D62323EE8B5C8A89010E8B17B9063051",
+                        "ephemeralData": "4593F56F3306485DB800624AAC015BCAA67D92209EC1B1919F238916C59ECE"
+                    },
+                    "fixedInfoPartyV": {
+                        "partyId": "F7E16FCA6627660CC766D9C127C0905A",
+                        "ephemeralData": "EEED993AE3A03AF4F0E455D18F447B1D9B2FEF83CE67E6CDDB8C762193C1B6"
+                    }
+                },
+                {
+                    "tcId": 18,
+                    "kdfParameter": {
+                        "kdfType": "hkdf",
+                        "requiresAdditionalNoncePair": false,
+                        "salt": "0000000000000000000000000000000000000000000000000000000000000000",
+                        "z": "BE92B194E5F84BD2351B7195F45DB77735267941C804AE9E3D7EDB58ACD326",
+                        "l": 2048,
+                        "fixedInfoPattern": "literal[0123456789ABCDEF]||uPartyInfo||vPartyInfo||context||algorithmId||label||l",
+                        "fixedInputEncoding": "concatenation",
+                        "algorithmId": "7AC3E2BF588D1216D3EC3322D4DC858B",
+                        "label": "ADBC35155A828DEEE339B8B88CE83771",
+                        "context": "EEA759CC65D77A5AF47E0753DED89AD2",
+                        "hmacAlg": "SHA2-256"
+                    },
+                    "fixedInfoPartyU": {
+                        "partyId": "69F8EFB3DD49FAF39F6A36EB31E055E0"
+                    },
+                    "fixedInfoPartyV": {
+                        "partyId": "1BEDA898E20DD99D0B3C2741B7A20A58"
+                    }
+                },
+                {
+                    "tcId": 19,
+                    "kdfParameter": {
+                        "kdfType": "hkdf",
+                        "requiresAdditionalNoncePair": false,
+                        "salt": "0000000000000000000000000000000000000000000000000000000000000000",
+                        "z": "DAF50B95AA5E767BBE97F2F8538CFAA5C5FDD2384DE235FBE47D58A7145DC0",
+                        "l": 2048,
+                        "fixedInfoPattern": "literal[0123456789ABCDEF]||uPartyInfo||vPartyInfo||context||algorithmId||label||l",
+                        "fixedInputEncoding": "concatenation",
+                        "algorithmId": "973FF4C76F6F9514E9C58E5D4DD1D8CA",
+                        "label": "F7890E0ECF83C8A272614E23BEF67656",
+                        "context": "E155E86FAA23399A8C6D42CE61CBFB8A",
+                        "hmacAlg": "SHA2-256"
+                    },
+                    "fixedInfoPartyU": {
+                        "partyId": "A029014088FA92D83E98DF69AE780B05"
+                    },
+                    "fixedInfoPartyV": {
+                        "partyId": "3FF04FD2FA30999E290590BA82D5DD02",
+                        "ephemeralData": "4206446846CB85737B4B57202D9205BD4D7A7D0EF7667A4D61C55B4E5A2C47"
+                    }
+                },
+                {
+                    "tcId": 20,
+                    "kdfParameter": {
+                        "kdfType": "hkdf",
+                        "requiresAdditionalNoncePair": false,
+                        "salt": "0000000000000000000000000000000000000000000000000000000000000000",
+                        "z": "D5FE679D690B9FCA65E004C0973788601E0670EB18D92C55DB16E1FD605D37",
+                        "l": 2048,
+                        "fixedInfoPattern": "literal[0123456789ABCDEF]||uPartyInfo||vPartyInfo||context||algorithmId||label||l",
+                        "fixedInputEncoding": "concatenation",
+                        "algorithmId": "2C2C60E90435B73851CCF094958030A5",
+                        "label": "02978BF89BFE54109A8D5962CC995E94",
+                        "context": "E36FBFDF3E2768010715296F1D315D01",
+                        "hmacAlg": "SHA2-256"
+                    },
+                    "fixedInfoPartyU": {
+                        "partyId": "2E70586110B65709CB5AD09409853FCC",
+                        "ephemeralData": "7103CF4D698E6B2E8F89FCEBAB4C032DEE3EACD55E96F856FBE53E3EF9DB6A"
+                    },
+                    "fixedInfoPartyV": {
+                        "partyId": "5CF6FB3A9CB2895A8D97058B3258DD2E",
+                        "ephemeralData": "B1BB2AAACF0A806E93AFCB5FF5AD6864DCF433D360E8EE8BD2BE833E4DD85D"
+                    }
+                },
+                {
+                    "tcId": 21,
+                    "kdfParameter": {
+                        "kdfType": "hkdf",
+                        "requiresAdditionalNoncePair": false,
+                        "salt": "0000000000000000000000000000000000000000000000000000000000000000",
+                        "z": "E3003ABB81CBE304AA54F553FC89D5A7B231DBD5A06E71D95AEA6D1B6C0243",
+                        "l": 2048,
+                        "fixedInfoPattern": "literal[0123456789ABCDEF]||uPartyInfo||vPartyInfo||context||algorithmId||label||l",
+                        "fixedInputEncoding": "concatenation",
+                        "algorithmId": "1D94536874FE48254C59D467DA6146BD",
+                        "label": "116591B1D4E4C522BE2C5F225E2112CC",
+                        "context": "943983A5DF43ABCAEAC74FB821268637",
+                        "hmacAlg": "SHA2-256"
+                    },
+                    "fixedInfoPartyU": {
+                        "partyId": "033A48BD503E290F38029745C097C539"
+                    },
+                    "fixedInfoPartyV": {
+                        "partyId": "719E9F69A2386758EFC866D1A8CB1278",
+                        "ephemeralData": "7C6DFF4F2594D111D1B0C5FB9D9D9CED228C774A79E0E1A22B2D34BC398382"
+                    }
+                },
+                {
+                    "tcId": 22,
+                    "kdfParameter": {
+                        "kdfType": "hkdf",
+                        "requiresAdditionalNoncePair": false,
+                        "salt": "0000000000000000000000000000000000000000000000000000000000000000",
+                        "z": "5535E8BEA1A732302010EA45890116F96A8FC5E1C08358146DC3DB2111AC6D",
+                        "l": 2048,
+                        "fixedInfoPattern": "literal[0123456789ABCDEF]||uPartyInfo||vPartyInfo||context||algorithmId||label||l",
+                        "fixedInputEncoding": "concatenation",
+                        "algorithmId": "1577315F79D28DF01429DD27A9440EF9",
+                        "label": "1ED44FBEF3F469089CDCC8632B1EB9F9",
+                        "context": "843B09FE82178D2BCA08986EB19882F1",
+                        "hmacAlg": "SHA2-256"
+                    },
+                    "fixedInfoPartyU": {
+                        "partyId": "D7FA08E0D20A4B363A551FB20BB4B8A1",
+                        "ephemeralData": "27403DDFF952C7C0DAB78311281E2D222CAF2133EEE18B5C338FC6BDDDFAFE"
+                    },
+                    "fixedInfoPartyV": {
+                        "partyId": "1407673D27AF8029DB9858EDBF28D037",
+                        "ephemeralData": "589C90D490FE4394CA3EEFF962B6B94B1E549573F61D2046F5C6D2E9B3AFDE"
+                    }
+                },
+                {
+                    "tcId": 23,
+                    "kdfParameter": {
+                        "kdfType": "hkdf",
+                        "requiresAdditionalNoncePair": false,
+                        "salt": "0000000000000000000000000000000000000000000000000000000000000000",
+                        "z": "F37A1C4975EE5E18DFE0615883F6FECAD53C8AA7A5C043C276B7E3A950788D",
+                        "l": 2048,
+                        "fixedInfoPattern": "literal[0123456789ABCDEF]||uPartyInfo||vPartyInfo||context||algorithmId||label||l",
+                        "fixedInputEncoding": "concatenation",
+                        "algorithmId": "A6D0A0CC8F7CCD77200BFF3F7835C7A8",
+                        "label": "02E24D8109C9867CF6D753C7EF3E730C",
+                        "context": "16CCFCB6E7BAB54EAE686B2C1846B072",
+                        "hmacAlg": "SHA2-256"
+                    },
+                    "fixedInfoPartyU": {
+                        "partyId": "6B2FAD06AB7CFC55A2255BD34072B585",
+                        "ephemeralData": "6AD835E45B2E53D86E01FB18F220CDC9A52C41F44A3899ACA189CA8B0BFEB1"
+                    },
+                    "fixedInfoPartyV": {
+                        "partyId": "13AEDA233A94D02BBA686F1E9835832F"
+                    }
+                },
+                {
+                    "tcId": 24,
+                    "kdfParameter": {
+                        "kdfType": "hkdf",
+                        "requiresAdditionalNoncePair": false,
+                        "salt": "0000000000000000000000000000000000000000000000000000000000000000",
+                        "z": "196A28EF6992EC9028965495FC9D77AB5831F744699D63D668521AB6DCBBCD",
+                        "l": 2048,
+                        "fixedInfoPattern": "literal[0123456789ABCDEF]||uPartyInfo||vPartyInfo||context||algorithmId||label||l",
+                        "fixedInputEncoding": "concatenation",
+                        "algorithmId": "67673CBBBEDC7432F7EA2199619D7813",
+                        "label": "0E3C25DE80F9A9F70B8C827E85329219",
+                        "context": "A61B87271505DEE714EFD4B99C954EF8",
+                        "hmacAlg": "SHA2-256"
+                    },
+                    "fixedInfoPartyU": {
+                        "partyId": "134719E0215B29C64CB06000F1CE370C",
+                        "ephemeralData": "774875F96B3550C64B5840290C5C84F9AE78E987CA4B9236B9A72941094D50"
+                    },
+                    "fixedInfoPartyV": {
+                        "partyId": "DDC5E5146DBA1490E3D761DA9EA37FA4",
+                        "ephemeralData": "E136EB86157C79AC97D4DA450826D34AC1C03BF3F04202F885E93ABC5B28AC"
+                    }
+                },
+                {
+                    "tcId": 25,
+                    "kdfParameter": {
+                        "kdfType": "hkdf",
+                        "requiresAdditionalNoncePair": false,
+                        "salt": "0000000000000000000000000000000000000000000000000000000000000000",
+                        "z": "6A3661DAF5FDAE932F482E25FD1183F35C5ADFCB7C0E644DE2080D6D53305C",
+                        "l": 2048,
+                        "fixedInfoPattern": "literal[0123456789ABCDEF]||uPartyInfo||vPartyInfo||context||algorithmId||label||l",
+                        "fixedInputEncoding": "concatenation",
+                        "algorithmId": "6E3F38292A6695A5E6286DBF91A5F506",
+                        "label": "361CE77BF10CE59BA8477344238A3B2D",
+                        "context": "736BB9602A80C22C8685466122F48DBB",
+                        "hmacAlg": "SHA2-256"
+                    },
+                    "fixedInfoPartyU": {
+                        "partyId": "C97BF636BE3D582560D2E5F9CE2F79BD",
+                        "ephemeralData": "9CF989F1CDD8B0B00E638CAF52BFA32EEC071210BEC0001408F6EA696E1888"
+                    },
+                    "fixedInfoPartyV": {
+                        "partyId": "12501324F8B92783D300C84852B43333"
+                    }
+                }
+            ],
+            "kdfConfiguration": {
+                "kdfType": "hkdf",
+                "l": 2048,
+                "saltLen": 256,
+                "saltMethod": "default",
+                "fixedInfoPattern": "literal[0123456789ABCDEF]||uPartyInfo||vPartyInfo||context||algorithmId||label||l",
+                "fixedInfoEncoding": "concatenation",
+                "hmacAlg": "SHA2-256"
+            }
+        }
+    ]
+}, {
+    "vsId": 432889,
+    "algorithm": "KDA",
+    "mode": "OneStep",
+    "revision": "Sp800-56Cr1",
+    "isSample": false,
+    "testGroups": [
+        {
+            "tgId": 1,
+            "testType": "AFT",
+            "tests": [
+                {
+                    "tcId": 1,
+                    "kdfParameter": {
+                        "kdfType": "oneStep",
+                        "z": "F2181C572C1725B4CE464889D789B4221BC54001928C3A1CA6B76C988E5208",
+                        "l": 2048,
+                        "algorithmId": "7A9003C5FBC0798569FFC7E96AB79F02",
+                        "label": "7B2FB976E7AB913DA0794E91E3F2FD8F",
+                        "context": "5F293B8767034425E0C0007B18F53AE4"
+                    },
+                    "fixedInfoPartyU": {
+                        "partyId": "6078BC04A8D556D70EF87473F24549CC"
+                    },
+                    "fixedInfoPartyV": {
+                        "partyId": "22004F8B5572DA83C232A5E1ED338876",
+                        "ephemeralData": "074CB8859AF03013A4EB05E493E0B4B7ADF7C99D7232007BBBAEA7D3FAB8C5"
+                    }
+                },
+                {
+                    "tcId": 2,
+                    "kdfParameter": {
+                        "kdfType": "oneStep",
+                        "z": "355DA5544A2ACBFA89FC90DDB5385960A15A55832174D46391568F81F935DD",
+                        "l": 2048,
+                        "algorithmId": "C558199CF26E989617FBD9CE882B993B",
+                        "label": "69E756E29E34793D00CD41ACD66AD588",
+                        "context": "35D2FBB33EFEB17A3E4DC31BB78CD03C"
+                    },
+                    "fixedInfoPartyU": {
+                        "partyId": "AB491F370107433136D620661404B03F"
+                    },
+                    "fixedInfoPartyV": {
+                        "partyId": "77BE3D0C64B6FEACE1D90AA1A944D3D7",
+                        "ephemeralData": "0625D11F22BA332AA69E8C18D17C677E81DA51FB8999830283403A4551D2E1"
+                    }
+                },
+                {
+                    "tcId": 3,
+                    "kdfParameter": {
+                        "kdfType": "oneStep",
+                        "z": "FF419FFF189E57E074195B933ACE7FA919FC3C658F913B80A03D4364C6DDA7",
+                        "l": 2048,
+                        "algorithmId": "14485D1328250136A9F77F73CD10C746",
+                        "label": "C8FE28CBA4AB47D98C549D118293C776",
+                        "context": "0794F0FF3CA80FD4AA90751DF7CE7006"
+                    },
+                    "fixedInfoPartyU": {
+                        "partyId": "70B00AB6CF743B620ABDD09AD842561D",
+                        "ephemeralData": "D6BD4AE758D7C3C2D87F24FA0F7292FAE0A124A50DE5688DF3F8D284991973"
+                    },
+                    "fixedInfoPartyV": {
+                        "partyId": "3D65AFEA314A4E5D4A7AA8868C342DA6"
+                    }
+                },
+                {
+                    "tcId": 4,
+                    "kdfParameter": {
+                        "kdfType": "oneStep",
+                        "z": "5C69599469E646111518A30CBA58EE77ABBED9667DEC8B7DCBFA9878C7CC39",
+                        "l": 2048,
+                        "algorithmId": "0FA63EFCDF006424275572348E46CA65",
+                        "label": "1D388BCBEC19A025608353793C1C938F",
+                        "context": "8F55BFA0496894B6A79DDACAA113E1EF"
+                    },
+                    "fixedInfoPartyU": {
+                        "partyId": "861DD68DB19FC794772D7630A6E32B98"
+                    },
+                    "fixedInfoPartyV": {
+                        "partyId": "22243791B132B6B6207A2CD172FEA1F5"
+                    }
+                },
+                {
+                    "tcId": 5,
+                    "kdfParameter": {
+                        "kdfType": "oneStep",
+                        "z": "3C0D9710173149068A9AF42CB43582CAB76A1B5FF238F4763C1DE68A22889D",
+                        "l": 2048,
+                        "algorithmId": "7695BA06D41AB21D080D55D55B5A7F4D",
+                        "label": "0868CECCFFBEC543283647CF5BC502CC",
+                        "context": "115D911545B69F2AE967DC4A6C812498"
+                    },
+                    "fixedInfoPartyU": {
+                        "partyId": "0DD65497674EC5AF8F0A987E37114A4E"
+                    },
+                    "fixedInfoPartyV": {
+                        "partyId": "E6DF2C05B5411CFD02143B1A977CF30D"
+                    }
+                },
+                {
+                    "tcId": 6,
+                    "kdfParameter": {
+                        "kdfType": "oneStep",
+                        "z": "607578FD7B5A38DCBFC36B1B592B10B8DFCDDBB6665AC2FF838F4ABA102D3D",
+                        "l": 2048,
+                        "algorithmId": "F4587A056615873A0BABFA2239CC3C26",
+                        "label": "0D04FFAB358225BE71044AE0DFC46981",
+                        "context": "9FA32F85DA1F6933E534F13DA1666DFA"
+                    },
+                    "fixedInfoPartyU": {
+                        "partyId": "964EE3861DC4E6F2AA9D69D82907833B"
+                    },
+                    "fixedInfoPartyV": {
+                        "partyId": "4C878613EF82346E79A2E8A57F24C945",
+                        "ephemeralData": "5FDEBA1A356AB0659A95E150AEB78BC4E9F838A6A7356780734E07A3D3322B"
+                    }
+                },
+                {
+                    "tcId": 7,
+                    "kdfParameter": {
+                        "kdfType": "oneStep",
+                        "z": "7D6E64ADD839C5E6EFCEBF3032F9F99D1F567977F01CABBC4BF9DC25BB95F7",
+                        "l": 2048,
+                        "algorithmId": "AAA2C1E1ABC607ECC43D97FEC53C6A2F",
+                        "label": "1E78FA46CF3350ED02A449536B907C30",
+                        "context": "433A4FAC63A49B5E0101407FDCE0E953"
+                    },
+                    "fixedInfoPartyU": {
+                        "partyId": "892C5937BFD33036CD7C054CB4A88FF1",
+                        "ephemeralData": "8DB80EECFFFC2B7C97D3A1D1E8FE9E3D589E21A360D4A5285E48C74DD69631"
+                    },
+                    "fixedInfoPartyV": {
+                        "partyId": "142A1C30A78B49472A3097CD7C40B098"
+                    }
+                },
+                {
+                    "tcId": 8,
+                    "kdfParameter": {
+                        "kdfType": "oneStep",
+                        "z": "97674F1BC12579871FD04D1FE3623090E994E0F856A828647F6C7B3F52EEB9",
+                        "l": 2048,
+                        "algorithmId": "9D6449B0598257732F877DEDA6EB0632",
+                        "label": "939E5EE72A6AC480E9D088072A53B8DA",
+                        "context": "FFA9C786EB64AB50444982931B3F5B28"
+                    },
+                    "fixedInfoPartyU": {
+                        "partyId": "1564AB55C5CBCFE8C72879B0F89518A2",
+                        "ephemeralData": "2D368ED14199CC9FFCE66FBA021E5C7A5E542BA1D709D6DCF3D8114C30DF11"
+                    },
+                    "fixedInfoPartyV": {
+                        "partyId": "BC25506FDA1BA140917CCE48B9E396E3",
+                        "ephemeralData": "4F8C0C5318C28DE0AC159A480BF4DB9F4D2196777F91E32A525A628DF94B6C"
+                    }
+                },
+                {
+                    "tcId": 9,
+                    "kdfParameter": {
+                        "kdfType": "oneStep",
+                        "z": "5679647C81E13B92C281CB0A59F5C48E1C89FE1AC482996372D97CFD006914",
+                        "l": 2048,
+                        "algorithmId": "C7EE993F2622F651B52232E9D2DAD96E",
+                        "label": "6D8D5D5FA8CE6D51F99EDB00CB78407B",
+                        "context": "C24D444AD5BDB2285CAF20111637BB96"
+                    },
+                    "fixedInfoPartyU": {
+                        "partyId": "FB83177E3114CDA24BF099D611B469F4",
+                        "ephemeralData": "7B444FB63DB7AAD4F5457749B1D02B1FFFF6589BC26DA792A2830469E43F51"
+                    },
+                    "fixedInfoPartyV": {
+                        "partyId": "49B02D2C2F7F12E5F0ED95252BB9E5B7",
+                        "ephemeralData": "A6C816F737CCE03D8ADACB9EB50BF26242EB464CBE104A0B50B2D147531215"
+                    }
+                },
+                {
+                    "tcId": 10,
+                    "kdfParameter": {
+                        "kdfType": "oneStep",
+                        "z": "C4C091DCA7EDF20494EF06147512153CC9F78DF1FE4408BBDCF6AC3D96FAAD",
+                        "l": 2048,
+                        "algorithmId": "E5E51234ACB5D6B279B70C37D7486DA0",
+                        "label": "16C1CDB5F77A5B2F5A7A9CC91D06B430",
+                        "context": "5D0C0DC9A5F7FB4EFEA443C7B0BDC0C8"
+                    },
+                    "fixedInfoPartyU": {
+                        "partyId": "2A004FBE4A9266BE10AC58A3E13E9238"
+                    },
+                    "fixedInfoPartyV": {
+                        "partyId": "69660FDABB3D3BD96DC18FF9EFDD1980"
+                    }
+                },
+                {
+                    "tcId": 11,
+                    "kdfParameter": {
+                        "kdfType": "oneStep",
+                        "z": "E596AFD2D2D7CA087BAB959C356FF6DC136B368B188A5D6A9EECC3BCCCC857",
+                        "l": 2048,
+                        "algorithmId": "622FDE3E471FCD35AF8D85E25F362514",
+                        "label": "B82CF0CAF6D50F8D5E5A0BC88FCE87AA",
+                        "context": "443A6324DFD126BA51B255594D3AEAEF"
+                    },
+                    "fixedInfoPartyU": {
+                        "partyId": "28CEF33D3163E9BD9E721275EF66A145"
+                    },
+                    "fixedInfoPartyV": {
+                        "partyId": "C7BACB1AEBF2C34CAC2390BA5BFFF9FC",
+                        "ephemeralData": "1EA2B3804E294342118A8A96B6D6AFAFFB153D7931B278D084C99D7BCFEAD2"
+                    }
+                },
+                {
+                    "tcId": 12,
+                    "kdfParameter": {
+                        "kdfType": "oneStep",
+                        "z": "D82A6066BD266AAA92F552CE6CAC9614ADA9031CAF3A5659F0536E2BF44C99",
+                        "l": 2048,
+                        "algorithmId": "9B9D084A0116247AB6CACBBD4E13673F",
+                        "label": "91D8AEDEA06B5791EDFC946458F8655B",
+                        "context": "F64E4A33C848341DF8AA19402AF02124"
+                    },
+                    "fixedInfoPartyU": {
+                        "partyId": "E9E0E42A019F74082D7213FE67854CCB"
+                    },
+                    "fixedInfoPartyV": {
+                        "partyId": "2CF88A9647C04ABAA33E0942320956A9"
+                    }
+                },
+                {
+                    "tcId": 13,
+                    "kdfParameter": {
+                        "kdfType": "oneStep",
+                        "z": "60DC0BA0B6D0AF9CDC35E193C5C20CA353C9A71990CCF2056DB6F80B86D32C",
+                        "l": 2048,
+                        "algorithmId": "9C6F01B3B8908418E05AAF0ACF1DC8E6",
+                        "label": "72EC13807EA36A184C1949971F8D64E8",
+                        "context": "74556FF7AD5E7CA50682389EA9AC4DB4"
+                    },
+                    "fixedInfoPartyU": {
+                        "partyId": "A5FFB9CB2C88F731A3637BE08C1D9805",
+                        "ephemeralData": "E31108599C941EA928733C89818B6B16F9CC00275CE9F6F691584DBE710016"
+                    },
+                    "fixedInfoPartyV": {
+                        "partyId": "317B0691E9968C3FB7A26B0B89662BAF"
+                    }
+                },
+                {
+                    "tcId": 14,
+                    "kdfParameter": {
+                        "kdfType": "oneStep",
+                        "z": "1334B66E34980FF1EA9C149B0C35C65CAC56ED7BF615287422E51EE466CFCD",
+                        "l": 2048,
+                        "algorithmId": "F4111FBFCA153BB4BB9D99820924DFD6",
+                        "label": "65D5D7A768E214D58BCFE59E0F87565B",
+                        "context": "88AC9BF26729D87B6C2102B6ABD0C50E"
+                    },
+                    "fixedInfoPartyU": {
+                        "partyId": "9E54EE89E6123375D52CB8F0FDAF65DD"
+                    },
+                    "fixedInfoPartyV": {
+                        "partyId": "F3BEB4B185D575E430513ACB71A18667",
+                        "ephemeralData": "7FC34F57430BCC5E2B12A1932F06B5F9BA0260B60267975F99A3BB593D1519"
+                    }
+                },
+                {
+                    "tcId": 15,
+                    "kdfParameter": {
+                        "kdfType": "oneStep",
+                        "z": "1056FAF305086ACCD1735E2BB7FCCFAEF0B21E42EDDF265EA494AE3FB24FE1",
+                        "l": 2048,
+                        "algorithmId": "4280FD547CF5AAB4250EF24E073F3056",
+                        "label": "411A3114B7F85B0236C68AC6807855D2",
+                        "context": "97F4D6818A3E4FAC452E14ECA1053551"
+                    },
+                    "fixedInfoPartyU": {
+                        "partyId": "17839DE65A1AB13D93414B049AB48F83"
+                    },
+                    "fixedInfoPartyV": {
+                        "partyId": "D063B08FA5D4E67E6DE2EF7A18E8496A"
+                    }
+                },
+                {
+                    "tcId": 16,
+                    "kdfParameter": {
+                        "kdfType": "oneStep",
+                        "z": "4275FBA27B1F4F7DBF8E38A71886E2888EB826131087986CADE83625F56472",
+                        "l": 2048,
+                        "algorithmId": "A6A35BBB609832FB89DCCB55FFE2A5DF",
+                        "label": "E97C7E4666CFB383C3566128AEB8C70F",
+                        "context": "E83CF16E272D86E44A19BE460C117437"
+                    },
+                    "fixedInfoPartyU": {
+                        "partyId": "9C4250A0164C1926707E6557EEAEB57D"
+                    },
+                    "fixedInfoPartyV": {
+                        "partyId": "22700B6C16D578A4E3B1D565BF834724"
+                    }
+                },
+                {
+                    "tcId": 17,
+                    "kdfParameter": {
+                        "kdfType": "oneStep",
+                        "z": "73BD2A392CE1B6906D20C1B3A286A441D8C396E83E558E871CD9BEBF2E003C",
+                        "l": 2048,
+                        "algorithmId": "350A9DA95E956625090B43FE0E58DFEE",
+                        "label": "DDF876964E18C5E277295E8EE512F1BC",
+                        "context": "FC06D4A45EBCAFDE81212B4F635F9ACA"
+                    },
+                    "fixedInfoPartyU": {
+                        "partyId": "E1402038578BD4E2764B6FA821B76EAF"
+                    },
+                    "fixedInfoPartyV": {
+                        "partyId": "D15CE3ADDD099E921B1C44D310AAD7ED"
+                    }
+                },
+                {
+                    "tcId": 18,
+                    "kdfParameter": {
+                        "kdfType": "oneStep",
+                        "z": "A6D7DE886039D425E4A8374776F22E31EAFD02E8545446396ADEB926AE6091",
+                        "l": 2048,
+                        "algorithmId": "2D791F1C599A6EFE6496F7C60625A630",
+                        "label": "041A40E3DFACD56B0F9A18C656DEBF4C",
+                        "context": "807DF9EE0B0FBC19762ECC4DF6EB0EB9"
+                    },
+                    "fixedInfoPartyU": {
+                        "partyId": "471FC79A1DD9BD9381E3A61D461A9B14",
+                        "ephemeralData": "25E821A6F0EFA5FE608337ACA3E2C2A24AB61207F4B14E84A34268B1CE217A"
+                    },
+                    "fixedInfoPartyV": {
+                        "partyId": "C957F013D3A0AF6F1107D878E44D1DA5"
+                    }
+                },
+                {
+                    "tcId": 19,
+                    "kdfParameter": {
+                        "kdfType": "oneStep",
+                        "z": "9D9D9E998F89726FE0F7611453086DB77C9490F628662ADC737E82526A426F",
+                        "l": 2048,
+                        "algorithmId": "B06C4FD91789B4385C605BDF5DECB634",
+                        "label": "FDAD0EBEC3BC45CD6343C436541B9455",
+                        "context": "174C7DA9A8B8D90655AC19AA60C28B37"
+                    },
+                    "fixedInfoPartyU": {
+                        "partyId": "D24D9BD0293F21D62D1AE597A88C0629",
+                        "ephemeralData": "D310CE22F37DDA53D2E5EC04EFFFC88D3DD9EEF9E0FB61779B98BBB65505C9"
+                    },
+                    "fixedInfoPartyV": {
+                        "partyId": "E7333AE93530F06E6DE74798D056B624"
+                    }
+                },
+                {
+                    "tcId": 20,
+                    "kdfParameter": {
+                        "kdfType": "oneStep",
+                        "z": "3B120ABE1135A50E2DA842A552EE9B2E29BC77633BA10A38F4CA345608F631",
+                        "l": 2048,
+                        "algorithmId": "35B71C2CD9AE51B6A799280CF420215A",
+                        "label": "8D34486B861D4EE3EA7C4C789CA7BE5C",
+                        "context": "A645EA63AF23524B559526B5F248A460"
+                    },
+                    "fixedInfoPartyU": {
+                        "partyId": "721811D6916FCA9200601435A7211C6E",
+                        "ephemeralData": "FC5616D3DABFED3A19F3155646CC65F82E36B8FFB1FAC8894A8FF57DEBEF25"
+                    },
+                    "fixedInfoPartyV": {
+                        "partyId": "D900AF1A6D1ED68C78BE261A98EAC28C"
+                    }
+                },
+                {
+                    "tcId": 21,
+                    "kdfParameter": {
+                        "kdfType": "oneStep",
+                        "z": "7BD768A458102CD090DAD74DF587801CB650968857CDB4D7ACF76AE94AE691",
+                        "l": 2048,
+                        "algorithmId": "9CBD4DF28122E7D99ED20249CEA0957A",
+                        "label": "4EEAB923FA99A4758F68AAB4E6F721E6",
+                        "context": "45C0CF6FDC243D6AA8D2B870306C87DA"
+                    },
+                    "fixedInfoPartyU": {
+                        "partyId": "F9E053E7311F74EE32D4030BEFD3FD1F"
+                    },
+                    "fixedInfoPartyV": {
+                        "partyId": "DC6F089E59BC7A56B7769CC39B7A7CEE"
+                    }
+                },
+                {
+                    "tcId": 22,
+                    "kdfParameter": {
+                        "kdfType": "oneStep",
+                        "z": "379931F323BAB90B273BB49EACF68144D91577E7F766CB1CF125A20E606E74",
+                        "l": 2048,
+                        "algorithmId": "AD12E20D84768924C1CC316023B78C68",
+                        "label": "2CA43188EB2A6C37152BE77F4322888C",
+                        "context": "37FD72B7DD9FDCD731007C42BFCF7CFC"
+                    },
+                    "fixedInfoPartyU": {
+                        "partyId": "350C1764505C2C3D73225C5F31DD3071",
+                        "ephemeralData": "4E0D4CAF96FD34D0BBC9D1D2C4E94F8C6563FC51790CD0C0F634EE239A7FA7"
+                    },
+                    "fixedInfoPartyV": {
+                        "partyId": "B21E98FA08B8ED182E818B697A53D925",
+                        "ephemeralData": "38C0C018E5ACBBCE00FCE8A87853BDC273469EF1EFC9C4DD8144046DA1876E"
+                    }
+                },
+                {
+                    "tcId": 23,
+                    "kdfParameter": {
+                        "kdfType": "oneStep",
+                        "z": "409EA09AD7DE94E2135A864F8640CF58782AF550F8F5005FC19B8A932911BF",
+                        "l": 2048,
+                        "algorithmId": "74A82C433BE5633CA7A6945E03B0C612",
+                        "label": "4F3ABB6608F3C42CD13230F8129CE194",
+                        "context": "0C6D23311AB47885BB65DBB4349CA7F4"
+                    },
+                    "fixedInfoPartyU": {
+                        "partyId": "DCE13803123C20F8EA1502327B952980"
+                    },
+                    "fixedInfoPartyV": {
+                        "partyId": "62BF26C4ABFE47FD65C9EA3526399B4C"
+                    }
+                },
+                {
+                    "tcId": 24,
+                    "kdfParameter": {
+                        "kdfType": "oneStep",
+                        "z": "61E0C850C5B3011B495FA6217C3C7B52781C2F42675EA947A3621844676CBD",
+                        "l": 2048,
+                        "algorithmId": "965289DBCB447F618A512F1B0A15A830",
+                        "label": "885A9C297066CB4561A7156DE6FEFAE7",
+                        "context": "B745A51B63D3CEDB53E874C2C8E9FA77"
+                    },
+                    "fixedInfoPartyU": {
+                        "partyId": "3164AD0F3CB656847D0D216F0DBC24C5"
+                    },
+                    "fixedInfoPartyV": {
+                        "partyId": "C87F539C64424C225EE1391FECF41452",
+                        "ephemeralData": "03E818CAD54CAEDBEBA674ECB4FD9D829D6D3A22F0CAF7BF6E30080F731DA1"
+                    }
+                },
+                {
+                    "tcId": 25,
+                    "kdfParameter": {
+                        "kdfType": "oneStep",
+                        "z": "A0F9B128C9712919CAE01883FB8DF37DBC1AA905370E6F488A31D5E25E962D",
+                        "l": 2048,
+                        "algorithmId": "02C6BD00B6FB7BE31C6EC6D9AC881049",
+                        "label": "E057517B7415B1E217E630C821028057",
+                        "context": "92021B04538FB93BBDD0A4801A2ADD0E"
+                    },
+                    "fixedInfoPartyU": {
+                        "partyId": "6EE1F9BAB2B9F6252CE35F6A891A2391"
+                    },
+                    "fixedInfoPartyV": {
+                        "partyId": "7597616764B945CC4CC7D455EE8197F4",
+                        "ephemeralData": "94BEC72A199D3C534F3BB2781934010247200F2E5F8DD5610F1E52908EE1A6"
+                    }
+                }
+            ],
+            "kdfConfiguration": {
+                "kdfType": "oneStep",
+                "l": 2048,
+                "saltMethod": "default",
+                "fixedInfoPattern": "literal[0123456789ABCDEF]||uPartyInfo||vPartyInfo||context||algorithmId||label||l",
+                "fixedInfoEncoding": "concatenation",
+                "auxFunction": "SHA2-256"
+            }
+        }
+    ]
+} ]

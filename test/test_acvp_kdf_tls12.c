@@ -19,8 +19,6 @@ static JSON_Value *val = NULL;
 static char cvalue[] = "same";
 
 static void setup(void) {
-    int flags = 0;
-
     setup_empty_ctx(&ctx);
 
     rv = acvp_cap_kdf_tls12_enable(ctx, &dummy_handler_success);
@@ -38,8 +36,6 @@ static void setup(void) {
 }
 
 static void setup_fail(void) {
-    int flags = 0;
-
     setup_empty_ctx(&ctx);
 
     rv = acvp_cap_kdf_tls12_enable(ctx, &dummy_handler_failure);
@@ -64,8 +60,6 @@ static void teardown(void) {
  * Test kdf_tls12 capabilites API.
  */
 Test(KDF_TLS12_CAPABILITY, good) {
-    int flags = 0;
-
     setup_empty_ctx(&ctx);
 
     rv = acvp_cap_kdf_tls12_enable(ctx, &dummy_handler_success);

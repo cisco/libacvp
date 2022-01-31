@@ -72,7 +72,7 @@ typedef struct app_config {
     /* These require the fom */
     int dsa; int rsa;
     int drbg; int ecdsa;
-    int kas_ecc; int kas_ffc; int kas_ifc; int kas_kdf; int kts_ifc;
+    int kas_ecc; int kas_ffc; int kas_ifc; int kda; int kts_ifc;
     int kdf;
     int safe_primes;
 } APP_CONFIG;
@@ -97,7 +97,6 @@ int app_cmac_handler(ACVP_TEST_CASE *test_case);
 #define ENGID1 "800002B805123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456"
 #define ENGID2 "000002b87766554433221100"
 
-int app_kdf135_tls_handler(ACVP_TEST_CASE *test_case);
 int app_kdf135_snmp_handler(ACVP_TEST_CASE *test_case);
 int app_kdf135_ssh_handler(ACVP_TEST_CASE *test_case);
 int app_kdf135_srtp_handler(ACVP_TEST_CASE *test_case);
@@ -117,8 +116,8 @@ int app_dsa_handler(ACVP_TEST_CASE *test_case);
 int app_kas_ecc_handler(ACVP_TEST_CASE *test_case);
 int app_kas_ffc_handler(ACVP_TEST_CASE *test_case);
 int app_kas_ifc_handler(ACVP_TEST_CASE *test_case);
-int app_kas_hkdf_handler(ACVP_TEST_CASE *test_case);
-int app_kas_kdf_onestep_handler(ACVP_TEST_CASE *test_case);
+int app_kda_hkdf_handler(ACVP_TEST_CASE *test_case);
+int app_kda_onestep_handler(ACVP_TEST_CASE *test_case);
 int app_kts_ifc_handler(ACVP_TEST_CASE *test_case);
 int app_rsa_keygen_handler(ACVP_TEST_CASE *test_case);
 int app_rsa_sig_handler(ACVP_TEST_CASE *test_case);

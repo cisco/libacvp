@@ -613,8 +613,8 @@ static ACVP_RESULT acvp_kdf_tls13_init_tc(ACVP_CTX *ctx,
 static ACVP_RESULT acvp_kdf_tls13_release_tc(ACVP_KDF_TLS13_TC *stc) {
     if (stc->psk) free(stc->psk);
     if (stc->dhe) free(stc->dhe);
-    if (stc->c_hello_rand) free(stc->s_hello_rand);
-    if (stc->s_hello_rand) free(stc->c_hello_rand);
+    if (stc->c_hello_rand) free(stc->c_hello_rand);
+    if (stc->s_hello_rand) free(stc->s_hello_rand);
     if (stc->fin_c_hello_rand) free(stc->fin_c_hello_rand);
     if (stc->fin_s_hello_rand) free(stc->fin_s_hello_rand);
     if (stc->c_early_traffic_secret) free(stc->c_early_traffic_secret);
