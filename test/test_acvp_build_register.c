@@ -1144,15 +1144,6 @@ static void add_kdf_details_good(void) {
     /*
      * Enable KDF-135
      */
-    rv = acvp_cap_kdf135_tls_enable(ctx, &dummy_handler_success);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_TLS, ACVP_PREREQ_SHA, cvalue);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_TLS, ACVP_PREREQ_HMAC, cvalue);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_kdf135_tls_set_parm(ctx, ACVP_KDF135_TLS, ACVP_KDF135_TLS12, ACVP_SHA256 | ACVP_SHA384 | ACVP_SHA512);
-    cr_assert(rv == ACVP_SUCCESS);
-    
     rv = acvp_cap_kdf135_snmp_enable(ctx, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_SNMP, ACVP_PREREQ_SHA, cvalue);

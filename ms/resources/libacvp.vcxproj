@@ -400,8 +400,9 @@
     <ClCompile Include="..\..\src\acvp_kas_ifc.c" />
     <ClCompile Include="..\..\src\acvp_kts_ifc.c" />
     <ClCompile Include="..\..\src\acvp_pbkdf.c" />
+    <ClCompile Include="..\..\src\acvp_kdf_tls12.c" />
     <ClCompile Include="..\..\src\acvp_kdf_tls13.c" />
-    <ClCompile Include="..\..\src\acvp_kas_kdf.c" />
+    <ClCompile Include="..\..\src\acvp_kda.c" />
     <ClCompile Include="..\..\src\acvp_rsa_prim.c" />
     <ClCompile Include="..\..\src\acvp_kdf108.c" />
     <ClCompile Include="..\..\src\acvp_kdf135_ikev1.c" />
@@ -409,7 +410,6 @@
     <ClCompile Include="..\..\src\acvp_kdf135_snmp.c" />
     <ClCompile Include="..\..\src\acvp_kdf135_srtp.c" />
     <ClCompile Include="..\..\src\acvp_kdf135_ssh.c" />
-    <ClCompile Include="..\..\src\acvp_kdf135_tls.c" />
     <ClCompile Include="..\..\src\acvp_kdf135_x963.c" />
     <ClCompile Include="..\..\src\acvp_operating_env.c" />
     <ClCompile Include="..\..\src\acvp_rsa_keygen.c" />

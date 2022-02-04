@@ -84,7 +84,7 @@ static void print_usage(int code) {
     printf("      --drbg\n");
     printf("      --kas_ecc\n");
     printf("      --kas_ifc\n");
-    printf("      --kas_kdf\n");
+    printf("      --kda\n");
     printf("      --kts_ifc\n");
     printf("\n");
 
@@ -242,7 +242,7 @@ static ko_longopt_t longopts[] = {
 #endif
     { "kas_ifc", ko_no_argument, 323 },
     { "kts_ifc", ko_no_argument, 324 },
-    { "kas_kdf", ko_no_argument, 325 },
+    { "kda", ko_no_argument, 325 },
     { "all_algs", ko_no_argument, 350 },
     { "manual_registration", ko_required_argument, 400 },
     { "kat", ko_required_argument, 401 },
@@ -285,7 +285,7 @@ static void enable_all_algorithms(APP_CONFIG *cfg) {
     cfg->ecdsa = 1;
     cfg->kas_ecc = 1;
     cfg->kas_ifc = 1;
-    cfg->kas_kdf = 1;
+    cfg->kda = 1;
     cfg->kts_ifc = 1;
 #ifdef OPENSSL_KDF_SUPPORT
     cfg->kdf = 1;
@@ -439,7 +439,7 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
             cfg->empty_alg = 0;
             break;
         case 325:
-            cfg->kas_kdf = 1;
+            cfg->kda = 1;
             cfg->empty_alg = 0;
             break;
         case 'a':

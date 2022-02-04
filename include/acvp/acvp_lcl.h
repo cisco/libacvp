@@ -13,8 +13,8 @@
 #include "parson.h"
 
 #define ACVP_VERSION    "1.0"
-#define ACVP_LIBRARY_VERSION_NUMBER "1.4.1"
-#define ACVP_LIBRARY_VERSION    "libacvp_oss-1.4.1"
+#define ACVP_LIBRARY_VERSION_NUMBER "1.4.3"
+#define ACVP_LIBRARY_VERSION    "libacvp_oss-1.4.3"
 
 
 #ifndef ACVP_LOG_ERR
@@ -209,15 +209,14 @@
 /* KAS_IFC */
 #define ACVP_REV_KAS_IFC_SSC         ACVP_REV_STR_SP800_56BR2
 
-/* KAS_KDF */
-#define ACVP_REV_KAS_KDF_ONESTEP     ACVP_REV_STR_SP800_56CR1
-#define ACVP_REV_KAS_HKDF            ACVP_REV_STR_SP800_56CR1
+/* KDA */
+#define ACVP_REV_KDA_ONESTEP         ACVP_REV_STR_SP800_56CR1
+#define ACVP_REV_KDA_HKDF            ACVP_REV_STR_SP800_56CR1
 
 /* KTS_IFC */
 #define ACVP_REV_KTS_IFC             ACVP_REV_STR_SP800_56BR2
 
 /* KDF */
-#define ACVP_REV_KDF135_TLS          ACVP_REV_STR_DEFAULT
 #define ACVP_REV_KDF135_SNMP         ACVP_REV_STR_DEFAULT
 #define ACVP_REV_KDF135_SSH          ACVP_REV_STR_DEFAULT
 #define ACVP_REV_KDF135_SRTP         ACVP_REV_STR_DEFAULT
@@ -348,9 +347,9 @@
 #define ACVP_ALG_KAS_IFC_SSC         "KAS-IFC-SSC"
 #define ACVP_ALG_KAS_IFC_COMP        ""
 
-#define ACVP_ALG_KAS_KDF_ALG_STR     "KAS-KDF"
-#define ACVP_ALG_KAS_KDF_ONESTEP     "OneStep"
-#define ACVP_ALG_KAS_HKDF            "HKDF"
+#define ACVP_ALG_KDA_ALG_STR     "KDA"
+#define ACVP_ALG_KDA_ONESTEP     "OneStep"
+#define ACVP_ALG_KDA_HKDF            "HKDF"
 
 #define ACVP_ALG_KTS_IFC             "KTS-IFC"
 #define ACVP_ALG_KTS_IFC_COMP        ""
@@ -405,7 +404,6 @@
 #define ACVP_DRBG_MODE_AES_192       "AES-192"
 #define ACVP_DRBG_MODE_AES_256       "AES-256"
 
-#define ACVP_ALG_KDF135_TLS          "tls"
 #define ACVP_ALG_KDF135_SNMP     "snmp"
 #define ACVP_ALG_KDF135_SSH      "ssh"
 #define ACVP_ALG_KDF135_SRTP     "srtp"
@@ -554,8 +552,6 @@
 #define ACVP_TDES_KEY_STR_LEN (ACVP_TDES_KEY_BIT_LEN >> 2)  /**< 48 characters */
 #define ACVP_TDES_KEY_BYTE_LEN (ACVP_TDES_KEY_BIT_LEN >> 3) /**< 24 bytes */
 
-
-#define ACVP_KDF135_TLS_MSG_MAX 1024 * 4
 #define ACVP_KDF135_SSH_EKEY_MAX (ACVP_SHA512_BYTE_LEN)            /**< Encryption Key max.
                                                                         Be able to hold largest sha size, although
                                                                         actual key is a subset (up to 32 bytes).
@@ -578,10 +574,6 @@
 #define ACVP_KDF135_SRTP_MASTER_MAX 65
 #define ACVP_KDF135_SRTP_INDEX_MAX 32
 #define ACVP_KDF135_SRTP_OUTPUT_MAX 64
-
-#define ACVP_KDF135_TLS_PMSECRET_BIT_MAX (384)
-#define ACVP_KDF135_TLS_PMSECRET_BYTE_MAX (ACVP_KDF135_TLS_PMSECRET_BIT_MAX >> 3)
-#define ACVP_KDF135_TLS_PMSECRET_STR_MAX (ACVP_KDF135_TLS_PMSECRET_BIT_MAX >> 2)
 
 /**
  * Accepted length ranges for KDF135_X963.
@@ -734,8 +726,8 @@
 #define ACVP_KDF_TLS12_MSG_MAX 1024 * 4
 
 #define ACVP_KDF_TLS12_PMSECRET_BIT_MAX 384
-#define ACVP_KDF_TLS12_PMSECRET_BYTE_MAX (ACVP_KDF135_TLS_PMSECRET_BIT_MAX >> 3)
-#define ACVP_KDF_TLS12_PMSECRET_STR_MAX (ACVP_KDF135_TLS_PMSECRET_BIT_MAX >> 2)
+#define ACVP_KDF_TLS12_PMSECRET_BYTE_MAX (ACVP_KDF_TLS12_PMSECRET_BIT_MAX >> 3)
+#define ACVP_KDF_TLS12_PMSECRET_STR_MAX (ACVP_KDF_TLS12_PMSECRET_BIT_MAX >> 2)
 
 /**
  * Accepted length ranges for TLS 1.3 KDF
@@ -825,36 +817,36 @@
  * END RSA
  */
 
-#define ACVP_KAS_KDF_ENCODING_CONCATENATION_STR "concatenation"
-#define ACVP_KAS_KDF_MAC_SALT_METHOD_DEFAULT_STR "default"
-#define ACVP_KAS_KDF_MAC_SALT_METHOD_RANDOM_STR "random"
-#define ACVP_KAS_KDF_PATTERN_LITERAL_STR "literal"
-#define ACVP_KAS_KDF_PATTERN_UPARTYINFO_STR "uPartyInfo"
-#define ACVP_KAS_KDF_PATTERN_VPARTYINFO_STR "vPartyInfo"
-#define ACVP_KAS_KDF_PATTERN_CONTEXT_STR "context"
-#define ACVP_KAS_KDF_PATTERN_ALGID_STR "algorithmId"
-#define ACVP_KAS_KDF_PATTERN_LABEL_STR "label"
-#define ACVP_KAS_KDF_PATTERN_LENGTH_STR "l"
-#define ACVP_KAS_KDF_PATTERN_LITERAL_STR_LEN_MAX 64 //arbitrary
-#define ACVP_KAS_KDF_PATTERN_LITERAL_BYTE_MAX (ACVP_KAS_KDF_PATTERN_LITERAL_STR_LEN_MAX >> 3)
+#define ACVP_KDA_ENCODING_CONCATENATION_STR "concatenation"
+#define ACVP_KDA_MAC_SALT_METHOD_DEFAULT_STR "default"
+#define ACVP_KDA_MAC_SALT_METHOD_RANDOM_STR "random"
+#define ACVP_KDA_PATTERN_LITERAL_STR "literal"
+#define ACVP_KDA_PATTERN_UPARTYINFO_STR "uPartyInfo"
+#define ACVP_KDA_PATTERN_VPARTYINFO_STR "vPartyInfo"
+#define ACVP_KDA_PATTERN_CONTEXT_STR "context"
+#define ACVP_KDA_PATTERN_ALGID_STR "algorithmId"
+#define ACVP_KDA_PATTERN_LABEL_STR "label"
+#define ACVP_KDA_PATTERN_LENGTH_STR "l"
+#define ACVP_KDA_PATTERN_LITERAL_STR_LEN_MAX 64 //arbitrary
+#define ACVP_KDA_PATTERN_LITERAL_BYTE_MAX (ACVP_KDA_PATTERN_LITERAL_STR_LEN_MAX >> 3)
 //arbitrary - leaving extra space in case spec adds more values later
-#define ACVP_KAS_KDF_PATTERN_REG_STR_MAX 256
+#define ACVP_KDA_PATTERN_REG_STR_MAX 256
 
-#define ACVP_KAS_KDF_DKM_BIT_MAX 4096 //arbitrary
-#define ACVP_KAS_KDF_DKM_STR_MAX (ACVP_KAS_KDF_DKM_BIT_MAX >> 2)
-#define ACVP_KAS_KDF_DKM_BYTE_MAX (ACVP_KAS_KDF_DKM_BIT_MAX >> 3)
+#define ACVP_KDA_DKM_BIT_MAX 4096 //arbitrary
+#define ACVP_KDA_DKM_STR_MAX (ACVP_KDA_DKM_BIT_MAX >> 2)
+#define ACVP_KDA_DKM_BYTE_MAX (ACVP_KDA_DKM_BIT_MAX >> 3)
 
-#define ACVP_KAS_KDF_FIXED_BIT_MAX 1024 //arbitrary
-#define ACVP_KAS_KDF_FIXED_STR_MAX (ACVP_KAS_KDF_FIXED_BIT_MAX >> 2)
-#define ACVP_KAS_KDF_FIXED_BYTE_MAX (ACVP_KAS_KDF_FIXED_BIT_MAX >> 3)
+#define ACVP_KDA_FIXED_BIT_MAX 1024 //arbitrary
+#define ACVP_KDA_FIXED_STR_MAX (ACVP_KDA_FIXED_BIT_MAX >> 2)
+#define ACVP_KDA_FIXED_BYTE_MAX (ACVP_KDA_FIXED_BIT_MAX >> 3)
 
-#define ACVP_KAS_KDF_SALT_BIT_MAX 512 //seems tied to hmac length, unclear
-#define ACVP_KAS_KDF_SALT_STR_MAX (ACVP_KAS_KDF_SALT_BIT_MAX >> 2)
-#define ACVP_KAS_KDF_SALT_BYTE_MAX (ACVP_KAS_KDF_SALT_BIT_MAX >> 3)
+#define ACVP_KDA_SALT_BIT_MAX 512 //seems tied to hmac length, unclear
+#define ACVP_KDA_SALT_STR_MAX (ACVP_KDA_SALT_BIT_MAX >> 2)
+#define ACVP_KDA_SALT_BYTE_MAX (ACVP_KDA_SALT_BIT_MAX >> 3)
 
-#define ACVP_KAS_KDF_Z_BIT_MAX 65336 //arbitrary, used spec example
-#define ACVP_KAS_KDF_Z_STR_MAX (ACVP_KAS_KDF_Z_BIT_MAX >> 2)
-#define ACVP_KAS_KDF_Z_BYTE_MAX (ACVP_KAS_KDF_Z_BIT_MAX >> 3)
+#define ACVP_KDA_Z_BIT_MAX 65336 //arbitrary, used spec example
+#define ACVP_KDA_Z_STR_MAX (ACVP_KDA_Z_BIT_MAX >> 2)
+#define ACVP_KDA_Z_BYTE_MAX (ACVP_KDA_Z_BIT_MAX >> 3)
 
 
 #define ACVP_CURL_BUF_MAX       (1024 * 1024 * 32) /**< 32 MB */
@@ -981,7 +973,6 @@ typedef enum acvp_capability_type {
     ACVP_ECDSA_SIGGEN_TYPE,
     ACVP_ECDSA_SIGVER_TYPE,
     ACVP_DSA_TYPE,
-    ACVP_KDF135_TLS_TYPE,
     ACVP_KDF135_SNMP_TYPE,
     ACVP_KDF135_SSH_TYPE,
     ACVP_KDF135_SRTP_TYPE,
@@ -1001,8 +992,8 @@ typedef enum acvp_capability_type {
     ACVP_KAS_FFC_SSC_TYPE,
     ACVP_KAS_FFC_NOCOMP_TYPE,
     ACVP_KAS_IFC_TYPE,
-    ACVP_KAS_KDF_ONESTEP_TYPE,
-    ACVP_KAS_HKDF_TYPE,
+    ACVP_KDA_ONESTEP_TYPE,
+    ACVP_KDA_HKDF_TYPE,
     ACVP_KTS_IFC_TYPE,
     ACVP_SAFE_PRIMES_KEYGEN_TYPE,
     ACVP_SAFE_PRIMES_KEYVER_TYPE
@@ -1108,11 +1099,6 @@ typedef struct acvp_hash_capability {
     ACVP_JSON_DOMAIN_OBJ out_len; /**< Required for ACVP_HASH_SHAKE_* */
     ACVP_JSON_DOMAIN_OBJ msg_length;
 } ACVP_HASH_CAP;
-
-typedef struct acvp_kdf135_tls_capability {
-    int method[2];
-    int sha;
-} ACVP_KDF135_TLS_CAP;
 
 typedef struct acvp_kdf135_snmp_capability {
     ACVP_SL_LIST *pass_lens;
@@ -1423,7 +1409,7 @@ typedef struct acvp_safe_primes_capability_t {
     ACVP_SAFE_PRIMES_CAP_MODE *mode;
 } ACVP_SAFE_PRIMES_CAP;
 
-typedef struct acvp_kas_kdf_onestep_capability_t {
+typedef struct acvp_kda_onestep_capability_t {
     ACVP_CIPHER cipher;
     ACVP_NAME_LIST *aux_functions;
     ACVP_NAME_LIST *mac_salt_methods;
@@ -1432,9 +1418,9 @@ typedef struct acvp_kas_kdf_onestep_capability_t {
     ACVP_PARAM_LIST *encodings;
     ACVP_JSON_DOMAIN_OBJ z;
     int l;
-} ACVP_KAS_KDF_ONESTEP_CAP;
+} ACVP_KDA_ONESTEP_CAP;
 
-typedef struct acvp_kas_hkdf_t {
+typedef struct acvp_kda_hkdf_t {
     ACVP_CIPHER cipher;
     ACVP_PARAM_LIST *patterns;
     char *literal_pattern_candidate; //optional - only filled if "literal" pattern is used - hex only
@@ -1443,7 +1429,7 @@ typedef struct acvp_kas_hkdf_t {
     ACVP_NAME_LIST *mac_salt_methods;
     ACVP_JSON_DOMAIN_OBJ z;
     int l;
-} ACVP_KAS_HKDF_CAP;
+} ACVP_KDA_HKDF_CAP;
 
 typedef struct acvp_kts_ifc_macs_t {
     ACVP_CIPHER cipher;
@@ -1495,7 +1481,6 @@ typedef struct acvp_caps_list_t {
         ACVP_ECDSA_CAP *ecdsa_keyver_cap;
         ACVP_ECDSA_CAP *ecdsa_siggen_cap;
         ACVP_ECDSA_CAP *ecdsa_sigver_cap;
-        ACVP_KDF135_TLS_CAP *kdf135_tls_cap;
         ACVP_KDF135_SNMP_CAP *kdf135_snmp_cap;
         ACVP_KDF135_SSH_CAP *kdf135_ssh_cap;
         ACVP_KDF135_SRTP_CAP *kdf135_srtp_cap;
@@ -1509,8 +1494,8 @@ typedef struct acvp_caps_list_t {
         ACVP_KAS_ECC_CAP *kas_ecc_cap;
         ACVP_KAS_FFC_CAP *kas_ffc_cap;
         ACVP_KAS_IFC_CAP *kas_ifc_cap;
-        ACVP_KAS_KDF_ONESTEP_CAP *kas_kdf_onestep_cap;
-        ACVP_KAS_HKDF_CAP *kas_hkdf_cap;
+        ACVP_KDA_ONESTEP_CAP *kda_onestep_cap;
+        ACVP_KDA_HKDF_CAP *kda_hkdf_cap;
         ACVP_KTS_IFC_CAP *kts_ifc_cap;
         ACVP_SAFE_PRIMES_CAP *safe_primes_keygen_cap;
         ACVP_SAFE_PRIMES_CAP *safe_primes_keyver_cap;
@@ -1791,8 +1776,6 @@ ACVP_RESULT acvp_ecdsa_siggen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
 ACVP_RESULT acvp_ecdsa_sigver_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
-ACVP_RESULT acvp_kdf135_tls_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
-
 ACVP_RESULT acvp_kdf135_snmp_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
 ACVP_RESULT acvp_kdf135_ssh_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
@@ -1825,9 +1808,9 @@ ACVP_RESULT acvp_kas_ffc_ssc_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
 ACVP_RESULT acvp_kas_ifc_ssc_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
-ACVP_RESULT acvp_kas_kdf_onestep_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
+ACVP_RESULT acvp_kda_onestep_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
-ACVP_RESULT acvp_kas_hkdf_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
+ACVP_RESULT acvp_kda_hkdf_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
 ACVP_RESULT acvp_kts_ifc_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
