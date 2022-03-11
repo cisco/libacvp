@@ -6753,6 +6753,10 @@ ACVP_RESULT acvp_cap_kas_ecc_set_parm(ACVP_CTX *ctx,
             }
             break;
         case ACVP_KAS_ECC_HASH:
+            if ((value < ACVP_NO_SHA || value >= ACVP_HASH_ALG_MAX) && !(value & (value - 1))) {
+                ACVP_LOG_ERR("Invalid hash alg value for KAS-ECC hash Z function");
+                return ACVP_INVALID_ARG;
+            }
             kas_ecc_cap_mode->hash = value;
             break;
         case ACVP_KAS_ECC_CURVE:
@@ -7258,6 +7262,10 @@ ACVP_RESULT acvp_cap_kas_ffc_set_parm(ACVP_CTX *ctx,
             }
             break;
         case ACVP_KAS_FFC_HASH:
+            if ((value < ACVP_NO_SHA || value >= ACVP_HASH_ALG_MAX) && !(value & (value - 1))) {
+                ACVP_LOG_ERR("Invalid hash alg value for KAS-FFC hash Z function");
+                return ACVP_INVALID_ARG;
+            }
             kas_ffc_cap_mode->hash = value;
             break;
         case ACVP_KAS_FFC_FUNCTION:
@@ -7539,6 +7547,10 @@ ACVP_RESULT acvp_cap_kas_ifc_set_parm(ACVP_CTX *ctx,
         }
         break;
     case ACVP_KAS_IFC_HASH:
+        if ((value < ACVP_NO_SHA || value >= ACVP_HASH_ALG_MAX) && !(value & (value - 1))) {
+            ACVP_LOG_ERR("Invalid hash alg value for KAS-IFC hash Z function");
+            return ACVP_INVALID_ARG;
+        }
         kas_ifc_cap->hash = value;        
         break;
     case ACVP_KAS_IFC_FIXEDPUBEXP:

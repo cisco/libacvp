@@ -2625,6 +2625,24 @@ static ACVP_RESULT acvp_build_kas_ecc_register_cap(ACVP_CTX *ctx,
                 case ACVP_SHA512:
                     json_object_set_string(cap_obj, "hashFunctionZ", "SHA2-512");
                     break;
+                case ACVP_SHA512_224:
+                    json_object_set_string(cap_obj, "hashFunctionZ", "SHA2-512/224");
+                    break;
+                case ACVP_SHA512_256:
+                    json_object_set_string(cap_obj, "hashFunctionZ", "SHA2-512/256");
+                    break;
+                case ACVP_SHA3_224:
+                    json_object_set_string(cap_obj, "hashFunctionZ", "SHA3-224");
+                    break;
+                case ACVP_SHA3_256:
+                    json_object_set_string(cap_obj, "hashFunctionZ", "SHA3-256");
+                    break;
+                case ACVP_SHA3_384:
+                    json_object_set_string(cap_obj, "hashFunctionZ", "SHA3-384");
+                    break;
+                case ACVP_SHA3_512:
+                    json_object_set_string(cap_obj, "hashFunctionZ", "SHA3-512");
+                    break;
                 case ACVP_NO_SHA:
                     break;
                 default:
@@ -3123,6 +3141,24 @@ static ACVP_RESULT acvp_build_kas_ffc_register_cap(ACVP_CTX *ctx,
                 case ACVP_SHA512:
                     json_object_set_string(cap_obj, "hashFunctionZ", "SHA2-512");
                     break;
+                case ACVP_SHA512_224:
+                    json_object_set_string(cap_obj, "hashFunctionZ", "SHA2-512/224");
+                    break;
+                case ACVP_SHA512_256:
+                    json_object_set_string(cap_obj, "hashFunctionZ", "SHA2-512/256");
+                    break;
+                case ACVP_SHA3_224:
+                    json_object_set_string(cap_obj, "hashFunctionZ", "SHA3-224");
+                    break;
+                case ACVP_SHA3_256:
+                    json_object_set_string(cap_obj, "hashFunctionZ", "SHA3-256");
+                    break;
+                case ACVP_SHA3_384:
+                    json_object_set_string(cap_obj, "hashFunctionZ", "SHA3-384");
+                    break;
+                case ACVP_SHA3_512:
+                    json_object_set_string(cap_obj, "hashFunctionZ", "SHA3-512");
+                    break;
                 case ACVP_NO_SHA:
                     break;
                 default:
@@ -3234,6 +3270,24 @@ static ACVP_RESULT acvp_build_kas_ifc_register_cap(ACVP_CTX *ctx,
             break;
         case ACVP_SHA512:
             json_object_set_string(cap_obj, "hashFunctionZ", "SHA2-512");
+            break;
+        case ACVP_SHA512_224:
+            json_object_set_string(cap_obj, "hashFunctionZ", "SHA2-512/224");
+            break;
+        case ACVP_SHA512_256:
+            json_object_set_string(cap_obj, "hashFunctionZ", "SHA2-512/256");
+            break;
+        case ACVP_SHA3_224:
+            json_object_set_string(cap_obj, "hashFunctionZ", "SHA3-224");
+            break;
+        case ACVP_SHA3_256:
+            json_object_set_string(cap_obj, "hashFunctionZ", "SHA3-256");
+            break;
+        case ACVP_SHA3_384:
+            json_object_set_string(cap_obj, "hashFunctionZ", "SHA3-384");
+            break;
+        case ACVP_SHA3_512:
+            json_object_set_string(cap_obj, "hashFunctionZ", "SHA3-512");
             break;
         case ACVP_NO_SHA:
             break;
