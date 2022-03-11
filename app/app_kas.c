@@ -171,6 +171,8 @@ int app_kas_ecc_handler(ACVP_TEST_CASE *test_case) {
 
     if (tc->mode == ACVP_KAS_ECC_MODE_COMPONENT) {
         switch (tc->md) {
+        case ACVP_NO_SHA:
+            break;
         case ACVP_SHA224:
             md = EVP_sha224();
             break;
@@ -191,7 +193,6 @@ int app_kas_ecc_handler(ACVP_TEST_CASE *test_case) {
         case ACVP_SHA3_256:
         case ACVP_SHA3_384:
         case ACVP_SHA3_512:
-        case ACVP_NO_SHA:
         default:
             printf("No valid hash name %d\n", tc->md);
             return rv;
@@ -282,8 +283,13 @@ int app_kas_ecc_handler(ACVP_TEST_CASE *test_case) {
         tc->zlen = Zlen;
     }
     if (tc->mode == ACVP_KAS_ECC_MODE_COMPONENT) {
-        FIPS_digest(Z, Zlen, (unsigned char *)tc->chash, NULL, md);
-        tc->chashlen = EVP_MD_size(md);
+        if (tc->md == ACVP_NO_SHA) {
+            tc->chashlen = Zlen;
+            memcpy_s(tc->chash, KAS_ECC_Z_MAX, Z, Zlen);
+        } else {
+            FIPS_digest(Z, Zlen, (unsigned char *)tc->chash, NULL, md);
+            tc->chashlen = EVP_MD_size(md);
+        }
     }
     rv = 0;
 
@@ -325,6 +331,8 @@ int app_kas_ffc_handler(ACVP_TEST_CASE *test_case) {
     tc = test_case->tc.kas_ffc;
 
     switch (tc->md) {
+    case ACVP_NO_SHA:
+        break;
     case ACVP_SHA224:
         md = EVP_sha224();
         break;
@@ -345,7 +353,6 @@ int app_kas_ffc_handler(ACVP_TEST_CASE *test_case) {
     case ACVP_SHA3_256:
     case ACVP_SHA3_384:
     case ACVP_SHA3_512:
-    case ACVP_NO_SHA:
     default:
         printf("No valid hash name %d\n", tc->md);
         return rv;
@@ -532,9 +539,13 @@ int app_kas_ffc_handler(ACVP_TEST_CASE *test_case) {
         printf("DH_compute_key_padded failed\n");
         goto error;
     }
-
-    FIPS_digest(Z, Zlen, (unsigned char *)tc->chash, NULL, md);
-    tc->chashlen = EVP_MD_size(md);
+    if (tc->md == ACVP_NO_SHA) {
+        tc->chashlen = Zlen;
+        memcpy_s(tc->chash, KAS_FFC_Z_MAX, Z, Zlen);
+    } else {
+        FIPS_digest(Z, Zlen, (unsigned char *)tc->chash, NULL, md);
+        tc->chashlen = EVP_MD_size(md);
+    }
 
     if (tc->test_type == ACVP_KAS_FFC_TT_AFT) {
         memcpy_s(tc->z, KAS_FFC_Z_MAX, Z, Zlen);
@@ -579,6 +590,8 @@ int app_kas_ifc_handler(ACVP_TEST_CASE *test_case) {
     tc = test_case->tc.kas_ifc;
 
     switch (tc->md) {
+    case ACVP_NO_SHA:
+        break;
     case ACVP_SHA224:
         md = EVP_sha224();
         break;
@@ -599,7 +612,6 @@ int app_kas_ifc_handler(ACVP_TEST_CASE *test_case) {
     case ACVP_SHA3_256:
     case ACVP_SHA3_384:
     case ACVP_SHA3_512:
-    case ACVP_NO_SHA:
     default:
         printf("No valid hash name %d\n", tc->md);
         return rv;
@@ -685,6 +697,7 @@ int app_kas_ifc_handler(ACVP_TEST_CASE *test_case) {
     }
 #endif
 
+#define KAS_IFC_MAX 1024
     if (tc->test_type == ACVP_KAS_IFC_TT_AFT) {
         if (tc->kas_role == ACVP_KAS_IFC_INITIATOR) {
             if (!tc->chash) {
@@ -697,8 +710,15 @@ int app_kas_ifc_handler(ACVP_TEST_CASE *test_case) {
              */
             tc->n[0] -= 8;
             tc->pt_len = RSA_public_encrypt(tc->nlen, tc->n, tc->pt, rsa, RSA_NO_PADDING);
+
+        if (tc->md == ACVP_NO_SHA) {
+            tc->chashlen = tc->nlen;
+            memcpy_s(tc->chash, KAS_IFC_MAX, tc->n, tc->nlen);
+        } else {
             FIPS_digest(tc->n, tc->nlen, (unsigned char *)tc->chash, NULL, md);
             tc->chashlen = EVP_MD_size(md);
+        }
+
         } else {
             if (!tc->ct || !tc->pt || !tc->chash) {
                 printf("Missing pt/ct/chash from library\n");
@@ -710,8 +730,13 @@ int app_kas_ifc_handler(ACVP_TEST_CASE *test_case) {
                 printf("Error decrypting\n");
                 goto err;
             }
-            FIPS_digest(tc->pt, tc->pt_len, (unsigned char *)tc->chash, NULL, md);
-            tc->chashlen = EVP_MD_size(md);
+            if (tc->md == ACVP_NO_SHA) {
+                tc->chashlen = tc->pt_len;
+                memcpy_s(tc->chash, KAS_IFC_MAX, tc->pt, tc->pt_len);
+            } else {
+                FIPS_digest(tc->pt, tc->pt_len, (unsigned char *)tc->chash, NULL, md);
+                tc->chashlen = EVP_MD_size(md);
+            }
         }
     } else {
         if (tc->kas_role == ACVP_KAS_IFC_INITIATOR) {
@@ -720,8 +745,13 @@ int app_kas_ifc_handler(ACVP_TEST_CASE *test_case) {
                 goto err;
             }
             tc->pt_len = RSA_public_encrypt(tc->zlen, tc->z, tc->pt, rsa, RSA_NO_PADDING);
-            FIPS_digest(tc->z, tc->zlen, (unsigned char *)tc->chash, NULL, md);
-            tc->chashlen = EVP_MD_size(md);
+            if (tc->md == ACVP_NO_SHA) {
+                tc->chashlen = tc->zlen;
+                memcpy_s(tc->chash, KAS_IFC_MAX, tc->z, tc->zlen);
+            } else {
+                FIPS_digest(tc->z, tc->zlen, (unsigned char *)tc->chash, NULL, md);
+                tc->chashlen = EVP_MD_size(md);
+            }
         } else {
             if (!tc->ct || !tc->pt || !tc->chash) {
                 printf("Missing pt/ct/chash from library\n");
@@ -732,7 +762,12 @@ int app_kas_ifc_handler(ACVP_TEST_CASE *test_case) {
                 printf("Error decrypting\n");
                 goto err;
             }
-            FIPS_digest(tc->pt, tc->pt_len, (unsigned char *)tc->chash, (unsigned int *)&tc->chashlen, md);
+            if (tc->md == ACVP_NO_SHA) {
+                tc->chashlen = tc->pt_len;
+                memcpy_s(tc->chash, KAS_IFC_MAX, tc->pt, tc->pt_len);
+            } else {
+                FIPS_digest(tc->pt, tc->pt_len, (unsigned char *)tc->chash, (unsigned int *)&tc->chashlen, md);
+            }
         }
     }
     rv = 0;
