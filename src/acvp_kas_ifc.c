@@ -79,21 +79,26 @@ static ACVP_RESULT acvp_kas_ifc_ssc_val_output_tc(ACVP_KAS_IFC_TC *stc,
             json_object_set_boolean(tc_rsp, "testPassed", 0);
             goto end;
         }
+        if (stc->md != ACVP_NO_SHA) {
+            memcmp_s(stc->chash, ACVP_KAS_IFC_BYTE_MAX,
+                    stc->hashz, stc->hashzlen, &diff1);
 
-        memcmp_s(stc->chash, ACVP_KAS_IFC_BYTE_MAX,
-                 stc->hashz, stc->hashzlen, &diff1);
-
-        if (!diff1) {
-            json_object_set_boolean(tc_rsp, "testPassed", 1);
+            if (!diff1) {
+                json_object_set_boolean(tc_rsp, "testPassed", 1);
+            } else {
+                json_object_set_boolean(tc_rsp, "testPassed", 0);
+            }
         } else {
-            json_object_set_boolean(tc_rsp, "testPassed", 0);
+            json_object_set_boolean(tc_rsp, "testPassed", 1);
         }
     } else {
-        memcmp_s(stc->chash, ACVP_KAS_IFC_BYTE_MAX,
-                 stc->hashz, stc->hashzlen, &diff1);
+        if (stc->md != ACVP_NO_SHA) {
+            memcmp_s(stc->chash, ACVP_KAS_IFC_BYTE_MAX, stc->hashz, stc->hashzlen, &diff1);
+        } else {
+            diff1 = 0;
+        }
 
-        memcmp_s(stc->pt, ACVP_KAS_IFC_BYTE_MAX,
-                 stc->c, stc->clen, &diff2);
+        memcmp_s(stc->pt, ACVP_KAS_IFC_BYTE_MAX, stc->c, stc->clen, &diff2);
 
         if (!diff1 && !diff2) {
             json_object_set_boolean(tc_rsp, "testPassed", 1);
@@ -194,10 +199,12 @@ static ACVP_RESULT acvp_kas_ifc_ssc_init_tc(ACVP_CTX *ctx,
 
         stc->hashz = calloc(1, ACVP_KAS_IFC_BYTE_MAX);
         if (!stc->hashz) { return ACVP_MALLOC_FAIL; }
-        rv = acvp_hexstr_to_bin(hashz, stc->hashz, ACVP_KAS_IFC_BYTE_MAX, &(stc->hashzlen));
-        if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("Hex conversion failure (hashz)");
-            return rv;
+        if (hashz) {
+            rv = acvp_hexstr_to_bin(hashz, stc->hashz, ACVP_KAS_IFC_BYTE_MAX, &(stc->hashzlen));
+            if (rv != ACVP_SUCCESS) {
+                ACVP_LOG_ERR("Hex conversion failure (hashz)");
+                return rv;
+            }
         }
 
         /* VAL test type initiator role needs this one */
@@ -279,7 +286,7 @@ static ACVP_RESULT acvp_kas_ifc_ssc(ACVP_CTX *ctx,
     const char *p = NULL, *q = NULL, *n = NULL, *d = NULL, *e = NULL;
     const char *pub_exp = NULL, *kas_role = NULL, *scheme = NULL, *hash = NULL;
     const char *ct = NULL, *hashz = NULL, *z = NULL, *c = NULL;
-    ACVP_HASH_ALG hash_alg;
+    ACVP_HASH_ALG hash_alg = 0;
     unsigned int modulo;
     unsigned int i, g_cnt;
     int j, t_cnt, tc_id, diff;
@@ -348,19 +355,23 @@ static ACVP_RESULT acvp_kas_ifc_ssc(ACVP_CTX *ctx,
             rv = ACVP_MISSING_ARG;
             goto err;
         }
-        hash = json_object_get_string(groupobj, "hashFunctionZ");
-        if (!hash) {
-            ACVP_LOG_ERR("Server JSON missing 'hashFunctionZ'");
-            rv = ACVP_MISSING_ARG;
-            goto err;
-        }
 
-        hash_alg = acvp_lookup_hash_alg(hash);
-        if (hash_alg != ACVP_SHA224 && hash_alg != ACVP_SHA256 &&
-            hash_alg != ACVP_SHA384 && hash_alg != ACVP_SHA512) {
-            ACVP_LOG_ERR("Server JSON invalid 'hashFunctionZ'");
-            rv = ACVP_INVALID_ARG;
-            goto err;
+        //If the user doesn't specify a hash function, neither does the server
+        if (cap && cap->cap.kas_ifc_cap && cap->cap.kas_ifc_cap->hash != ACVP_NO_SHA) {
+            hash = json_object_get_string(groupobj, "hashFunctionZ");
+            if (!hash) {
+                ACVP_LOG_ERR("Server JSON missing 'hashFunctionZ'");
+                rv = ACVP_MISSING_ARG;
+                goto err;
+            }
+
+            hash_alg = acvp_lookup_hash_alg(hash);
+            if (hash_alg != ACVP_SHA224 && hash_alg != ACVP_SHA256 &&
+                hash_alg != ACVP_SHA384 && hash_alg != ACVP_SHA512) {
+                ACVP_LOG_ERR("Server JSON invalid 'hashFunctionZ'");
+                rv = ACVP_INVALID_ARG;
+                goto err;
+            }
         }
 
         kas_role = json_object_get_string(groupobj, "kasRole");
@@ -516,32 +527,33 @@ static ACVP_RESULT acvp_kas_ifc_ssc(ACVP_CTX *ctx,
 
             }
             if (test_type == ACVP_KAS_IFC_TT_VAL) {
-
                 z = json_object_get_string(testobj, "z");
-                 if (!z) {
-                     ACVP_LOG_ERR("Server JSON missing 'z'");
-                     rv = ACVP_MISSING_ARG;
-                     goto err;
-                 }
-                 if (strnlen_s(z, ACVP_KAS_IFC_STR_MAX + 1) > ACVP_KAS_IFC_STR_MAX) {
-                     ACVP_LOG_ERR("z too long, max allowed=(%d)",
-                                   ACVP_KAS_IFC_STR_MAX);
-                     rv = ACVP_INVALID_ARG;
-                     goto err;
-                 }
+                if (!z) {
+                    ACVP_LOG_ERR("Server JSON missing 'z'");
+                    rv = ACVP_MISSING_ARG;
+                    goto err;
+                }
+                if (strnlen_s(z, ACVP_KAS_IFC_STR_MAX + 1) > ACVP_KAS_IFC_STR_MAX) {
+                    ACVP_LOG_ERR("z too long, max allowed=(%d)",
+                                ACVP_KAS_IFC_STR_MAX);
+                    rv = ACVP_INVALID_ARG;
+                    goto err;
+                }
 
-                 hashz = json_object_get_string(testobj, "hashZ");
-                 if (!hashz) {
-                     ACVP_LOG_ERR("Server JSON missing hashZ'");
-                     rv = ACVP_MISSING_ARG;
-                     goto err;
-                 }
-                 if (strnlen_s(hashz, ACVP_KAS_IFC_STR_MAX + 1) > ACVP_KAS_IFC_STR_MAX) {
-                     ACVP_LOG_ERR("hashz too long, max allowed=(%d)",
-                                   ACVP_KAS_IFC_STR_MAX);
-                     rv = ACVP_INVALID_ARG;
-                     goto err;
-                 }
+                if (cap && cap->cap.kas_ifc_cap && cap->cap.kas_ifc_cap->hash != ACVP_NO_SHA) {
+                    hashz = json_object_get_string(testobj, "hashZ");
+                    if (!hashz) {
+                        ACVP_LOG_ERR("Server JSON missing hashZ'");
+                        rv = ACVP_MISSING_ARG;
+                        goto err;
+                    }
+                    if (strnlen_s(hashz, ACVP_KAS_IFC_STR_MAX + 1) > ACVP_KAS_IFC_STR_MAX) {
+                        ACVP_LOG_ERR("hashz too long, max allowed=(%d)",
+                                    ACVP_KAS_IFC_STR_MAX);
+                        rv = ACVP_INVALID_ARG;
+                        goto err;
+                    }
+                }
 
                 if (role == ACVP_KAS_IFC_INITIATOR) {
                     c = json_object_get_string(testobj, "iutC");

@@ -1613,8 +1613,8 @@ static int enable_kas_ecc(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_kas_ecc_set_parm(ctx, ACVP_KAS_ECC_SSC, ACVP_KAS_ECC_MODE_NONE, ACVP_KAS_ECC_CURVE, ACVP_EC_CURVE_P521);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_kas_ecc_set_parm(ctx, ACVP_KAS_ECC_SSC, ACVP_KAS_ECC_MODE_NONE, ACVP_KAS_ECC_HASH, ACVP_SHA512);
-    CHECK_ENABLE_CAP_RV(rv);
+  //  rv = acvp_cap_kas_ecc_set_parm(ctx, ACVP_KAS_ECC_SSC, ACVP_KAS_ECC_MODE_NONE, ACVP_KAS_ECC_HASH, ACVP_SHA512);
+   // CHECK_ENABLE_CAP_RV(rv);
 end:
 
     return rv;
@@ -1658,8 +1658,8 @@ static int enable_kas_ifc(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_kas_ifc_set_parm(ctx, ACVP_KAS_IFC_SSC, ACVP_KAS_IFC_KEYGEN_METHOD, ACVP_KAS_IFC_RSAKPG1_BASIC);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_kas_ifc_set_parm(ctx, ACVP_KAS_IFC_SSC, ACVP_KAS_IFC_HASH, ACVP_SHA512);
-    CHECK_ENABLE_CAP_RV(rv);
+   // rv = acvp_cap_kas_ifc_set_parm(ctx, ACVP_KAS_IFC_SSC, ACVP_KAS_IFC_HASH, ACVP_SHA512);
+  //  CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_kas_ifc_set_exponent(ctx, ACVP_KAS_IFC_SSC, ACVP_KAS_IFC_FIXEDPUBEXP, expo_str);
     CHECK_ENABLE_CAP_RV(rv);
 end:
@@ -1817,8 +1817,8 @@ static int enable_kas_ffc(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
 #endif
 
-    rv = acvp_cap_kas_ffc_set_parm(ctx, ACVP_KAS_FFC_SSC, ACVP_KAS_FFC_MODE_NONE, ACVP_KAS_FFC_HASH, ACVP_SHA512);
-    CHECK_ENABLE_CAP_RV(rv);
+  //  rv = acvp_cap_kas_ffc_set_parm(ctx, ACVP_KAS_FFC_SSC, ACVP_KAS_FFC_MODE_NONE, ACVP_KAS_FFC_HASH, ACVP_SHA512);
+   //CHECK_ENABLE_CAP_RV(rv);
 end:
 
     return rv;
