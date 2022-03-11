@@ -53,7 +53,11 @@ static ACVP_RESULT acvp_kas_ifc_ssc_output_tc(ACVP_CTX *ctx,
         ACVP_LOG_ERR("hex conversion failure (Z)");
         goto end;
     }
-    json_object_set_string(tc_rsp, "hashZ", tmp);
+    if (stc->md == ACVP_NO_SHA) {
+        json_object_set_string(tc_rsp, "Z", tmp);
+    } else {
+        json_object_set_string(tc_rsp, "hashZ", tmp);
+    }
 
 end:
     if (tmp) free(tmp);
