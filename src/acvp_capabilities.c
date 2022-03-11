@@ -6753,7 +6753,7 @@ ACVP_RESULT acvp_cap_kas_ecc_set_parm(ACVP_CTX *ctx,
             }
             break;
         case ACVP_KAS_ECC_HASH:
-            if ((value < ACVP_NO_SHA || value > ACVP_HASH_ALG_MAX) && !(value & (value - 1))) {
+            if ((value < ACVP_NO_SHA || value >= ACVP_HASH_ALG_MAX) && !(value & (value - 1))) {
                 ACVP_LOG_ERR("Invalid hash alg value for KAS-ECC hash Z function");
                 return ACVP_INVALID_ARG;
             }
@@ -7547,7 +7547,7 @@ ACVP_RESULT acvp_cap_kas_ifc_set_parm(ACVP_CTX *ctx,
         }
         break;
     case ACVP_KAS_IFC_HASH:
-        if ((value < ACVP_NO_SHA || value > ACVP_HASH_ALG_MAX) && !(value & (value - 1))) {
+        if ((value < ACVP_NO_SHA || value >= ACVP_HASH_ALG_MAX) && !(value & (value - 1))) {
             ACVP_LOG_ERR("Invalid hash alg value for KAS-IFC hash Z function");
             return ACVP_INVALID_ARG;
         }
