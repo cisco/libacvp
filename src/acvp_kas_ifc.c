@@ -370,11 +370,25 @@ static ACVP_RESULT acvp_kas_ifc_ssc(ACVP_CTX *ctx,
             }
 
             hash_alg = acvp_lookup_hash_alg(hash);
-            if (hash_alg != ACVP_SHA224 && hash_alg != ACVP_SHA256 &&
-                hash_alg != ACVP_SHA384 && hash_alg != ACVP_SHA512) {
-                ACVP_LOG_ERR("Server JSON invalid 'hashFunctionZ'");
-                rv = ACVP_INVALID_ARG;
-                goto err;
+                switch (hash_alg) {
+                case ACVP_SHA224:
+                case ACVP_SHA256:
+                case ACVP_SHA384:
+                case ACVP_SHA512:
+                case ACVP_SHA512_224:
+                case ACVP_SHA512_256:
+                case ACVP_SHA3_224:
+                case ACVP_SHA3_256:
+                case ACVP_SHA3_384:
+                case ACVP_SHA3_512:
+                    break;
+                case ACVP_SHA1:
+                case ACVP_NO_SHA:
+                case ACVP_HASH_ALG_MAX:
+                default:
+                    ACVP_LOG_ERR("Server JSON invalid 'hashFunctionZ'");
+                    rv = ACVP_INVALID_ARG;
+                    goto err;
             }
         }
 

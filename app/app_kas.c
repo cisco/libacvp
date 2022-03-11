@@ -185,14 +185,35 @@ int app_kas_ecc_handler(ACVP_TEST_CASE *test_case) {
         case ACVP_SHA512:
             md = EVP_sha512();
             break;
-        case ACVP_SHA1:
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+        case ACVP_SHA512_224:
+            md = EVP_sha512_224();
+            break;
+        case ACVP_SHA512_256:
+            md = EVP_sha512_256();
+            break;
+        case ACVP_SHA3_224:
+            md = EVP_sha3_224();
+            break;
+        case ACVP_SHA3_256:
+            md = EVP_sha3_256();
+            break;
+        case ACVP_SHA3_384:
+            md = EVP_sha3_384();
+            break;
+        case ACVP_SHA3_512:
+            md = EVP_sha3_512();
+            break;
+#else
         case ACVP_SHA512_224:
         case ACVP_SHA512_256:
-        case ACVP_HASH_ALG_MAX:
         case ACVP_SHA3_224:
         case ACVP_SHA3_256:
         case ACVP_SHA3_384:
         case ACVP_SHA3_512:
+#endif
+        case ACVP_SHA1:
+        case ACVP_HASH_ALG_MAX:
         default:
             printf("No valid hash name %d\n", tc->md);
             return rv;
@@ -345,14 +366,35 @@ int app_kas_ffc_handler(ACVP_TEST_CASE *test_case) {
     case ACVP_SHA512:
         md = EVP_sha512();
         break;
-    case ACVP_SHA1:
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+    case ACVP_SHA512_224:
+        md = EVP_sha512_224();
+        break;
+    case ACVP_SHA512_256:
+        md = EVP_sha512_256();
+        break;
+    case ACVP_SHA3_224:
+        md = EVP_sha3_224();
+        break;
+    case ACVP_SHA3_256:
+        md = EVP_sha3_256();
+        break;
+    case ACVP_SHA3_384:
+        md = EVP_sha3_384();
+        break;
+    case ACVP_SHA3_512:
+        md = EVP_sha3_512();
+        break;
+#else
     case ACVP_SHA512_224:
     case ACVP_SHA512_256:
-    case ACVP_HASH_ALG_MAX:
     case ACVP_SHA3_224:
     case ACVP_SHA3_256:
     case ACVP_SHA3_384:
     case ACVP_SHA3_512:
+#endif
+    case ACVP_SHA1:
+    case ACVP_HASH_ALG_MAX:
     default:
         printf("No valid hash name %d\n", tc->md);
         return rv;
@@ -604,14 +646,35 @@ int app_kas_ifc_handler(ACVP_TEST_CASE *test_case) {
     case ACVP_SHA512:
         md = EVP_sha512();
         break;
-    case ACVP_SHA1:
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+    case ACVP_SHA512_224:
+        md = EVP_sha512_224();
+        break;
+    case ACVP_SHA512_256:
+        md = EVP_sha512_256();
+        break;
+    case ACVP_SHA3_224:
+        md = EVP_sha3_224();
+        break;
+    case ACVP_SHA3_256:
+        md = EVP_sha3_256();
+        break;
+    case ACVP_SHA3_384:
+        md = EVP_sha3_384();
+        break;
+    case ACVP_SHA3_512:
+        md = EVP_sha3_512();
+        break;
+#else
     case ACVP_SHA512_224:
     case ACVP_SHA512_256:
-    case ACVP_HASH_ALG_MAX:
     case ACVP_SHA3_224:
     case ACVP_SHA3_256:
     case ACVP_SHA3_384:
     case ACVP_SHA3_512:
+#endif
+    case ACVP_SHA1:
+    case ACVP_HASH_ALG_MAX:
     default:
         printf("No valid hash name %d\n", tc->md);
         return rv;
