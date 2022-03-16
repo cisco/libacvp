@@ -1759,6 +1759,11 @@ ACVP_RESULT acvp_set_server(ACVP_CTX *ctx, const char *server_name, int port) {
 
     ctx->server_port = port;
 
+    if (!ctx->http_user_agent) {
+        //generate user-agent string to send with HTTP requests
+        acvp_http_user_agent_handler(ctx);
+    }
+
     return ACVP_SUCCESS;
 }
 
@@ -3393,9 +3398,6 @@ ACVP_RESULT acvp_run(ACVP_CTX *ctx, int fips_validation) {
     JSON_Value *val = NULL;
 
     if (ctx == NULL) return ACVP_NO_CTX;
-
-    //generate user-agent string to send with HTTP requests
-    acvp_http_user_agent_handler(ctx);
 
     rv = acvp_login(ctx, 0);
     if (rv != ACVP_SUCCESS) {
