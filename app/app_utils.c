@@ -111,6 +111,7 @@ const int DIGITS_POWER[]
 #define T_LEN 8
 #define MAX_LEN 512
 
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
 static int hmac_totp(const char *key,
                      const unsigned char *msg,
                      char *hash,
@@ -121,15 +122,7 @@ static int hmac_totp(const char *key,
     unsigned char buff[MAX_LEN];
     HMAC_CTX *ctx;
 
-#if OPENSSL_VERSION_NUMBER <= 0x10100000L
-    HMAC_CTX static_ctx;
-
-    ctx = &static_ctx;
-    HMAC_CTX_init(ctx);
-#else
     ctx = HMAC_CTX_new();
-#endif
-
     HMAC_CTX_set_flags(ctx, EVP_MD_CTX_FLAG_NON_FIPS_ALLOW);
     if (!HMAC_Init_ex(ctx, key, key_len, md, NULL)) goto end;
     if (!HMAC_Update(ctx, msg, T_LEN)) goto end;
@@ -137,14 +130,27 @@ static int hmac_totp(const char *key,
     memcpy_s(hash, hash_max, buff, len);
 
 end:
-#if OPENSSL_VERSION_NUMBER <= 0x10100000L
-    HMAC_CTX_cleanup(ctx);
-#else
     if (ctx) HMAC_CTX_free(ctx);
-#endif
-
     return len;
 }
+#else
+static int hmac_totp(const char *key,
+                     const unsigned char *msg,
+                     char *hash,
+                     int hash_max,
+                     const char *md_name,
+                     unsigned int key_len) {
+    int len = 0;
+    unsigned char buff[MAX_LEN];
+
+    EVP_Q_mac(NULL, "HMAC", NULL, md_name, NULL, key, key_len, msg, T_LEN, buff, MAX_LEN, (long unsigned int *)&len);
+
+    memcpy_s(hash, hash_max, buff, len);
+
+end:
+    return len;
+}
+#endif
 
 static ACVP_RESULT totp(char **token, int token_max) {
     char hash[MAX_LEN] = {0};
@@ -191,7 +197,11 @@ static ACVP_RESULT totp(char **token, int token_max) {
 
 
     // use passed hash function
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
     md_len = hmac_totp(new_seed, token_buff, hash, sizeof(hash), EVP_sha256(), seed_len);
+#else
+    md_len = hmac_totp(new_seed, token_buff, hash, sizeof(hash), "SHA2-256", seed_len);
+#endif
     if (md_len == 0) {
         printf("Failed to create TOTP\n");
         free(new_seed);
