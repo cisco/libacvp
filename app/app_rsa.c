@@ -40,11 +40,7 @@ int app_rsa_keygen_handler(ACVP_TEST_CASE *test_case) {
     ACVP_RSA_KEYGEN_TC *tc = NULL;
     int rv = 1;
     RSA *rsa = NULL;
-#if OPENSSL_VERSION_NUMBER <= 0x10100000L
-    BIGNUM *p = NULL, *q = NULL, *n = NULL, *d = NULL;
-#else
     const BIGNUM *p1 = NULL, *q1 = NULL, *n1 = NULL, *d1 = NULL;
-#endif
     BIGNUM *e = NULL;
 
     if (!test_case) {
@@ -82,16 +78,6 @@ int app_rsa_keygen_handler(ACVP_TEST_CASE *test_case) {
         goto err;
     }
 
-#if OPENSSL_VERSION_NUMBER <= 0x10100000L
-    p = rsa->p;
-    q = rsa->q;
-    n = rsa->n;
-    d = rsa->d;
-    tc->p_len = BN_bn2bin(p, tc->p);
-    tc->q_len = BN_bn2bin(q, tc->q);
-    tc->n_len = BN_bn2bin(n, tc->n);
-    tc->d_len = BN_bn2bin(d, tc->d);
-#else
     RSA_get0_key(rsa, &n1, NULL, &d1);
     RSA_get0_factors(rsa, &p1, &q1);
 
@@ -99,7 +85,6 @@ int app_rsa_keygen_handler(ACVP_TEST_CASE *test_case) {
     tc->q_len = BN_bn2bin(q1, tc->q);
     tc->n_len = BN_bn2bin(n1, tc->n);
     tc->d_len = BN_bn2bin(d1, tc->d);
-#endif
 
     rv = 0;
 err:
@@ -113,10 +98,8 @@ int app_rsa_sig_handler(ACVP_TEST_CASE *test_case) {
     const EVP_MD *tc_md = NULL;
     int siglen, pad_mode;
     BIGNUM *bn_e = NULL, *e = NULL, *n = NULL;
-#if OPENSSL_VERSION_NUMBER >= 0x10100000L
     BIGNUM  *tmp_e = NULL, *tmp_n = NULL;
     const BIGNUM  *tmp_e1 = NULL, *tmp_n1 = NULL;
-#endif
     ACVP_RSA_SIG_TC    *tc;
     RSA *rsa = NULL;
     int salt_len = -1;
@@ -196,17 +179,12 @@ int app_rsa_sig_handler(ACVP_TEST_CASE *test_case) {
     case ACVP_SHA512:
         tc_md = EVP_sha512();
         break;
- #if OPENSSL_VERSION_NUMBER >= 0x10101010L /* OpenSSL 1.1.1 or greater */
     case ACVP_SHA512_224:
         tc_md = EVP_sha512_224();
         break;
     case ACVP_SHA512_256:
         tc_md = EVP_sha512_256();
         break;
-#else
-    case ACVP_SHA512_224:
-    case ACVP_SHA512_256:
-#endif
     case ACVP_NO_SHA:
     case ACVP_SHA3_224:
     case ACVP_SHA3_256:
@@ -237,14 +215,9 @@ int app_rsa_sig_handler(ACVP_TEST_CASE *test_case) {
         }
         BN_bin2bn(tc->n, tc->n_len, n);
 
-#if OPENSSL_VERSION_NUMBER <= 0x10100000L
-        rsa->e = BN_dup(e);
-        rsa->n = BN_dup(n);
-#else
         tmp_e = BN_dup(e);
         tmp_n = BN_dup(n);
         RSA_set0_key(rsa, tmp_n, tmp_e, NULL);
-#endif
 
         tc->ver_disposition = FIPS_rsa_verify(rsa, tc->msg, tc->msg_len, tc_md, 
                                               pad_mode, salt_len, NULL, tc->signature, 
@@ -265,14 +238,9 @@ int app_rsa_sig_handler(ACVP_TEST_CASE *test_case) {
                 printf("\nError: Issue with keygen during siggen handling\n");
                 goto err;
             }
-#if OPENSSL_VERSION_NUMBER <= 0x10100000L
-            e = BN_dup(group_rsa->e);
-            n = BN_dup(group_rsa->n);
-#else
             RSA_get0_key(group_rsa, &tmp_n1, &tmp_e1, NULL);
             e = BN_dup(tmp_e1);
             n = BN_dup(tmp_n1);
-#endif
             group_n = BN_dup(n);
         } else {
             e = BN_dup(bn_e);
@@ -431,9 +399,7 @@ int app_rsa_sig_handler(ACVP_TEST_CASE *test_case) {
     const EVP_MD *tc_md = NULL;
     int pad_mode;
     BIGNUM *bn_e = NULL, *e = NULL, *n = NULL;
-#if OPENSSL_VERSION_NUMBER >= 0x10100000L
     BIGNUM  *tmp_e = NULL, *tmp_n = NULL;
-#endif
     ACVP_RSA_SIG_TC    *tc;
     RSA *rsa = NULL;
     unsigned int salt_len = -1, md_len = 0;
@@ -517,17 +483,12 @@ int app_rsa_sig_handler(ACVP_TEST_CASE *test_case) {
     case ACVP_SHA512:
         tc_md = EVP_sha512();
         break;
- #if OPENSSL_VERSION_NUMBER >= 0x10101010L /* OpenSSL 1.1.1 or greater */
     case ACVP_SHA512_224:
         tc_md = EVP_sha512_224();
         break;
     case ACVP_SHA512_256:
         tc_md = EVP_sha512_256();
         break;
-#else
-    case ACVP_SHA512_224:
-    case ACVP_SHA512_256:
-#endif
     case ACVP_HASH_ALG_MAX:
     default:
         printf("\nError: hashAlg not supported for RSA SigGen\n");
@@ -553,14 +514,9 @@ int app_rsa_sig_handler(ACVP_TEST_CASE *test_case) {
         }
         BN_bin2bn(tc->n, tc->n_len, n);
 
-#if OPENSSL_VERSION_NUMBER <= 0x10100000L
-        rsa->e = BN_dup(e);
-        rsa->n = BN_dup(n);
-#else
         tmp_e = BN_dup(e);
         tmp_n = BN_dup(n);
         RSA_set0_key(rsa, tmp_n, tmp_e, NULL);
-#endif
 
         pk = EVP_PKEY_new();
         if (pk == NULL)
@@ -696,11 +652,7 @@ int app_rsa_decprim_handler(ACVP_TEST_CASE *test_case) {
         printf("Error generating key\n");
         goto err;
     }
-#if OPENSSL_VERSION_NUMBER <= 0x10100000L
-    n = BN_dup(rsa->n);
-#else
     RSA_get0_key(rsa, &n, NULL, NULL);
-#endif
     tc->n_len = BN_bn2bin(n, tc->n);
     ct = BN_bin2bn(tc->cipher, tc->cipher_len, NULL);
 
@@ -733,9 +685,7 @@ err:
 
 int app_rsa_sigprim_handler(ACVP_TEST_CASE *test_case) {
     BIGNUM *e = NULL, *n = NULL, *d = NULL;
-#if OPENSSL_VERSION_NUMBER >= 0x10100000L
     BIGNUM  *tmp_e = NULL, *tmp_n = NULL, *tmp_d = NULL;
-#endif
     ACVP_RSA_PRIM_TC    *tc;
     RSA *rsa = NULL;
     int rv = 1;
@@ -770,16 +720,10 @@ int app_rsa_sigprim_handler(ACVP_TEST_CASE *test_case) {
         goto err;
     }
 
-#if OPENSSL_VERSION_NUMBER <= 0x10100000L
-    rsa->d = BN_dup(d);
-    rsa->n = BN_dup(n);
-    rsa->e = BN_dup(e);
-#else
     tmp_d = BN_dup(d);
     tmp_n = BN_dup(n);
     tmp_e = BN_dup(e);
     RSA_set0_key(rsa, tmp_n, tmp_e, tmp_d);
-#endif
     tc->disposition = 1;
     tc->sig_len = RSA_private_encrypt(tc->msg_len, tc->msg, tc->signature, rsa, RSA_NO_PADDING);
     if (tc->sig_len == -1) {

@@ -54,7 +54,6 @@ int app_sha_handler(ACVP_TEST_CASE *test_case) {
     case ACVP_SUB_HASH_SHA2_512:
         md = EVP_sha512();
         break;
-#if OPENSSL_VERSION_NUMBER >= 0x10101010L /* OpenSSL 1.1.1 or greater */
     case ACVP_SUB_HASH_SHA2_512_224:
         md = EVP_sha512_224();
         break;
@@ -85,16 +84,6 @@ int app_sha_handler(ACVP_TEST_CASE *test_case) {
         md = EVP_shake256();
         shake = 1;
         break;
-#else
-    case ACVP_SUB_HASH_SHA2_512_224:
-    case ACVP_SUB_HASH_SHA2_512_256:
-    case ACVP_SUB_HASH_SHA3_224:
-    case ACVP_SUB_HASH_SHA3_256:
-    case ACVP_SUB_HASH_SHA3_384:
-    case ACVP_SUB_HASH_SHA3_512:
-    case ACVP_SUB_HASH_SHAKE_128:
-    case ACVP_SUB_HASH_SHAKE_256:
-#endif
     default:
         printf("Error: Unsupported hash algorithm requested by ACVP server\n");
         return ACVP_NO_CAP;
@@ -150,7 +139,6 @@ int app_sha_handler(ACVP_TEST_CASE *test_case) {
             goto end;
         }
 
-#if OPENSSL_VERSION_NUMBER >= 0x10101010L /* OpenSSL 1.1.1 or greater */
         if (tc->test_type == ACVP_HASH_TEST_TYPE_VOT ||
             (tc->test_type == ACVP_HASH_TEST_TYPE_MCT && shake)) {
             /*
@@ -165,7 +153,6 @@ int app_sha_handler(ACVP_TEST_CASE *test_case) {
             rc = 0;
             goto end;
         }
-#endif
 
         if (!EVP_DigestFinal(md_ctx, tc->md, &tc->md_len)) {
             printf("\nCrypto module error, EVP_DigestFinal failed\n");

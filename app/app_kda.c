@@ -37,13 +37,7 @@ int app_kda_hkdf_handler(ACVP_TEST_CASE *test_case) {
         return -1;
     }
 
-    #if OPENSSL_VERSION_NUMBER <= 0x10100000L
-    HMAC_CTX static_ctx;
-    hmac_ctx = &static_ctx;
-    HMAC_CTX_init(hmac_ctx);
-#else
     hmac_ctx = HMAC_CTX_new();
-#endif
 
 
     switch (stc->encoding) {
@@ -159,7 +153,6 @@ int app_kda_hkdf_handler(ACVP_TEST_CASE *test_case) {
         md = EVP_sha512();
         h_output_len = 512;
         break;
-#if OPENSSL_VERSION_NUMBER >= 0x10101010L /* OpenSSL 1.1.1 or greater */
     case ACVP_SHA512_224:
         md = EVP_sha512_224();
         h_output_len = 224;
@@ -184,14 +177,6 @@ int app_kda_hkdf_handler(ACVP_TEST_CASE *test_case) {
         md = EVP_sha3_512();
         h_output_len = 512;
         break;
-#else
-    case ACVP_SHA512_224:
-    case ACVP_SHA512_256:
-    case ACVP_SHA3_224:
-    case ACVP_SHA3_256:
-    case ACVP_SHA3_384:
-    case ACVP_SHA3_512:
-#endif
     case ACVP_SHA1:
     case ACVP_NO_SHA:
     case ACVP_HASH_ALG_MAX:
@@ -298,11 +283,7 @@ end:
     if (extract_output) free(extract_output);
     if (expand_output) free(expand_output);
     if (result) free(result);
-#if OPENSSL_VERSION_NUMBER <= 0x10100000L
-    if (hmac_ctx) HMAC_CTX_cleanup(hmac_ctx);
-#else
     if (hmac_ctx) HMAC_CTX_free(hmac_ctx);
-#endif
     return rc;
 }
 
@@ -315,9 +296,6 @@ int app_kda_onestep_handler(ACVP_TEST_CASE *test_case) {
     unsigned char *fixedInfo = NULL;
     unsigned char *h_output = NULL;
     unsigned char *result = NULL;
-#if OPENSSL_VERSION_NUMBER <= 0x10100000L
-    HMAC_CTX static_ctx;
-#endif
     HMAC_CTX *hmac_ctx = NULL;
     EVP_MD_CTX *sha_ctx = NULL;
     ACVP_SUB_HASH hashalg;
@@ -335,12 +313,7 @@ int app_kda_onestep_handler(ACVP_TEST_CASE *test_case) {
 
     //if the test case has a salt, we are using HMAC, otherwise, SHA
     if (stc->salt) {
-#if OPENSSL_VERSION_NUMBER <= 0x10100000L
-        hmac_ctx = &static_ctx;
-        HMAC_CTX_init(hmac_ctx);
-#else
         hmac_ctx = HMAC_CTX_new();
-#endif
     } else {
         sha_ctx = EVP_MD_CTX_create();
         isSha = 1;
@@ -467,7 +440,6 @@ int app_kda_onestep_handler(ACVP_TEST_CASE *test_case) {
         md = EVP_sha512();
         h_output_len = 512;
         break;
-#if OPENSSL_VERSION_NUMBER >= 0x10101010L /* OpenSSL 1.1.1 or greater */
     case ACVP_SUB_HASH_SHA2_512_224:
         md = EVP_sha512_224();
         h_output_len = 224;
@@ -492,14 +464,6 @@ int app_kda_onestep_handler(ACVP_TEST_CASE *test_case) {
         md = EVP_sha3_512();
         h_output_len = 512;
         break;
-#else
-    case ACVP_SUB_HASH_SHA2_512_224:
-    case ACVP_SUB_HASH_SHA2_512_256:
-    case ACVP_SUB_HASH_SHA3_224:
-    case ACVP_SUB_HASH_SHA3_256:
-    case ACVP_SUB_HASH_SHA3_384:
-    case ACVP_SUB_HASH_SHA3_512:
-#endif
     case ACVP_SUB_HASH_SHA1:
     case ACVP_SUB_HASH_SHAKE_128:
     case ACVP_SUB_HASH_SHAKE_256:
@@ -533,7 +497,6 @@ int app_kda_onestep_handler(ACVP_TEST_CASE *test_case) {
         md = EVP_sha512();
         h_output_len = 512;
         break;
-#if OPENSSL_VERSION_NUMBER >= 0x10101010L /* OpenSSL 1.1.1 or greater */
     case ACVP_SUB_HMAC_SHA2_512_224:
         md = EVP_sha512_224();
         h_output_len = 224;
@@ -558,14 +521,6 @@ int app_kda_onestep_handler(ACVP_TEST_CASE *test_case) {
         md = EVP_sha3_512();
         h_output_len = 512;
         break;
-#else
-    case ACVP_SUB_HMAC_SHA2_512_224:
-    case ACVP_SUB_HMAC_SHA2_512_256:
-    case ACVP_SUB_HMAC_SHA3_224:
-    case ACVP_SUB_HMAC_SHA3_256:
-    case ACVP_SUB_HMAC_SHA3_384:
-    case ACVP_SUB_HMAC_SHA3_512:
-#endif
     case ACVP_SUB_HMAC_SHA1:
     default:
         printf("Invalid aux function provided in test case\n");
@@ -668,11 +623,7 @@ end:
     if (fixedInfo) free(fixedInfo);
     if (h_output) free(h_output);
     if (result) free(result);
-#if OPENSSL_VERSION_NUMBER <= 0x10100000L
-    if (hmac_ctx) HMAC_CTX_cleanup(hmac_ctx);
-#else
     if (hmac_ctx) HMAC_CTX_free(hmac_ctx);
-#endif
     if (sha_ctx) EVP_MD_CTX_destroy(sha_ctx);
     return rc;
 }

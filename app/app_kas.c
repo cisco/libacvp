@@ -17,7 +17,6 @@
 #include "safe_mem_lib.h"
 #ifdef ACVP_NO_RUNTIME
 
-# if OPENSSL_VERSION_NUMBER >= 0x10100000L
 #  define get_rfc2409_prime_768 BN_get_rfc2409_prime_768
 #  define get_rfc2409_prime_1024 BN_get_rfc2409_prime_1024
 #  define get_rfc3526_prime_1536 BN_get_rfc3526_prime_1536
@@ -26,8 +25,6 @@
 #  define get_rfc3526_prime_4096 BN_get_rfc3526_prime_4096
 #  define get_rfc3526_prime_6144 BN_get_rfc3526_prime_6144
 #  define get_rfc3526_prime_8192 BN_get_rfc3526_prime_8192
-# endif
-
 
 static EC_POINT *make_peer(EC_GROUP *group, BIGNUM *x, BIGNUM *y) {
     EC_POINT *peer = NULL;
@@ -185,7 +182,6 @@ int app_kas_ecc_handler(ACVP_TEST_CASE *test_case) {
         case ACVP_SHA512:
             md = EVP_sha512();
             break;
-#if OPENSSL_VERSION_NUMBER >= 0x10100000L
         case ACVP_SHA512_224:
             md = EVP_sha512_224();
             break;
@@ -204,14 +200,6 @@ int app_kas_ecc_handler(ACVP_TEST_CASE *test_case) {
         case ACVP_SHA3_512:
             md = EVP_sha3_512();
             break;
-#else
-        case ACVP_SHA512_224:
-        case ACVP_SHA512_256:
-        case ACVP_SHA3_224:
-        case ACVP_SHA3_256:
-        case ACVP_SHA3_384:
-        case ACVP_SHA3_512:
-#endif
         case ACVP_SHA1:
         case ACVP_HASH_ALG_MAX:
         default:
@@ -342,11 +330,9 @@ int app_kas_ffc_handler(ACVP_TEST_CASE *test_case) {
     BIGNUM *p = NULL, *q = NULL, *g = NULL;
     BIGNUM *pub_key = NULL, *priv_key = NULL;
     BIGNUM *peerkey = NULL;
-#if OPENSSL_VERSION_NUMBER >= 0x10100000L
     BIGNUM *tmp_p = NULL, *tmp_q = NULL, *tmp_g = NULL;
     BIGNUM *tmp_pub_key = NULL, *tmp_priv_key = NULL;
     const BIGNUM *tmp_key = NULL;
-#endif
     int is_modp = 0;
 
     tc = test_case->tc.kas_ffc;
@@ -366,7 +352,6 @@ int app_kas_ffc_handler(ACVP_TEST_CASE *test_case) {
     case ACVP_SHA512:
         md = EVP_sha512();
         break;
-#if OPENSSL_VERSION_NUMBER >= 0x10100000L
     case ACVP_SHA512_224:
         md = EVP_sha512_224();
         break;
@@ -385,14 +370,6 @@ int app_kas_ffc_handler(ACVP_TEST_CASE *test_case) {
     case ACVP_SHA3_512:
         md = EVP_sha3_512();
         break;
-#else
-    case ACVP_SHA512_224:
-    case ACVP_SHA512_256:
-    case ACVP_SHA3_224:
-    case ACVP_SHA3_256:
-    case ACVP_SHA3_384:
-    case ACVP_SHA3_512:
-#endif
     case ACVP_SHA1:
     case ACVP_HASH_ALG_MAX:
     default:
@@ -428,16 +405,10 @@ int app_kas_ffc_handler(ACVP_TEST_CASE *test_case) {
         BN_bin2bn(tc->p, tc->plen, p);
         BN_bin2bn(tc->q, tc->qlen, q);
         BN_bin2bn(tc->g, tc->glen, g);
-#if OPENSSL_VERSION_NUMBER <= 0x10100000L
-        dh->p = BN_dup(p);
-        dh->q = BN_dup(q);
-        dh->g = BN_dup(g);
-#else
         tmp_p = BN_dup(p);
         tmp_q = BN_dup(q);
         tmp_g = BN_dup(g);
         DH_set0_pqg(dh, tmp_p, tmp_q, tmp_g);
-#endif
         break;
    case ACVP_KAS_FFC_MODP2048:
         is_modp = 1;
@@ -464,7 +435,6 @@ int app_kas_ffc_handler(ACVP_TEST_CASE *test_case) {
         get_rfc3526_prime_8192(p);
         get_rfc3526_prime_8192(q);
         break;
-#if OPENSSL_VERSION_NUMBER >= 0x10100000L
     case ACVP_KAS_FFC_FFDHE2048:
         dh = DH_new_by_nid(NID_ffdhe2048);
         break;
@@ -480,16 +450,6 @@ int app_kas_ffc_handler(ACVP_TEST_CASE *test_case) {
     case ACVP_KAS_FFC_FFDHE8192:
         dh = DH_new_by_nid(NID_ffdhe8192);
         break;
-#else
-
-    case ACVP_KAS_FFC_FFDHE2048:
-    case ACVP_KAS_FFC_FFDHE3072:
-    case ACVP_KAS_FFC_FFDHE4096:
-    case ACVP_KAS_FFC_FFDHE6144:
-        printf("\nInvalid dgm for this version");
-        goto error;
-        break;
-#endif
     case ACVP_KAS_FFC_FUNCTION:
     case ACVP_KAS_FFC_CURVE:
     case ACVP_KAS_FFC_ROLE:
@@ -511,16 +471,10 @@ int app_kas_ffc_handler(ACVP_TEST_CASE *test_case) {
         BN_div_word(q, 2);
         BN_set_word(g, 2);
 
-#if OPENSSL_VERSION_NUMBER <= 0x10100000L
-        dh->p = BN_dup(p);
-        dh->q = BN_dup(q);
-        dh->g = BN_dup(g);
-#else
         tmp_p = BN_dup(p);
         tmp_q = BN_dup(q);
         tmp_g = BN_dup(g);
         DH_set0_pqg(dh, tmp_p, tmp_q, tmp_g);
-#endif
     }
 
     peerkey = BN_new();
@@ -546,14 +500,9 @@ int app_kas_ffc_handler(ACVP_TEST_CASE *test_case) {
         BN_bin2bn(tc->epri, tc->eprilen, priv_key);
         BN_bin2bn(tc->epui, tc->epuilen, pub_key);
 
-#if OPENSSL_VERSION_NUMBER <= 0x10100000L
-        dh->pub_key = BN_dup(pub_key);
-        dh->priv_key = BN_dup(priv_key);
-#else
         tmp_pub_key = BN_dup(pub_key);
         tmp_priv_key = BN_dup(priv_key);
         DH_set0_key(dh, tmp_pub_key, tmp_priv_key);
-#endif
     }
 
     if (tc->test_type == ACVP_KAS_FFC_TT_AFT) {
@@ -594,12 +543,8 @@ int app_kas_ffc_handler(ACVP_TEST_CASE *test_case) {
         tc->zlen = Zlen;
     }
 
-#if OPENSSL_VERSION_NUMBER <= 0x10100000L
-    tc->piutlen = BN_bn2bin(dh->pub_key, tc->piut);
-#else
     DH_get0_key(dh, &tmp_key, NULL);
     tc->piutlen = BN_bn2bin(tmp_key, tc->piut);
-#endif
 
     rv = 0;
 
@@ -623,9 +568,7 @@ int app_kas_ifc_handler(ACVP_TEST_CASE *test_case) {
     ACVP_KAS_IFC_TC *tc;
     int rv = 1;
     BIGNUM *e = NULL, *n = NULL, *p = NULL, *q = NULL, *d = NULL;
-#if OPENSSL_VERSION_NUMBER >= 0x10100000L
     BIGNUM *tmp_e = NULL, *tmp_n = NULL;
-#endif
     RSA *rsa = NULL;
     const EVP_MD *md = NULL;
 
@@ -646,7 +589,6 @@ int app_kas_ifc_handler(ACVP_TEST_CASE *test_case) {
     case ACVP_SHA512:
         md = EVP_sha512();
         break;
-#if OPENSSL_VERSION_NUMBER >= 0x10100000L
     case ACVP_SHA512_224:
         md = EVP_sha512_224();
         break;
@@ -665,14 +607,6 @@ int app_kas_ifc_handler(ACVP_TEST_CASE *test_case) {
     case ACVP_SHA3_512:
         md = EVP_sha3_512();
         break;
-#else
-    case ACVP_SHA512_224:
-    case ACVP_SHA512_256:
-    case ACVP_SHA3_224:
-    case ACVP_SHA3_256:
-    case ACVP_SHA3_384:
-    case ACVP_SHA3_512:
-#endif
     case ACVP_SHA1:
     case ACVP_HASH_ALG_MAX:
     default:
@@ -697,35 +631,6 @@ int app_kas_ifc_handler(ACVP_TEST_CASE *test_case) {
     BN_bin2bn(tc->e, tc->elen, e);
     BN_bin2bn(tc->n, tc->nlen, n);
 
-#if OPENSSL_VERSION_NUMBER <= 0x10100000L
-    if (tc->kas_role == ACVP_KAS_IFC_INITIATOR) {
-        rsa->n = BN_dup(n);
-        rsa->e = BN_dup(e);
-    } else {
-        if (!tc->p || !tc->q || !tc->d) {
-            printf("Failed p or q or d from library\n");
-            goto err;
-        }
-        p = BN_new();
-        q = BN_new();
-        d = BN_new();
-        if (!p || !q || !d) {
-            printf("Failed to allocate BN for p or q or d\n");
-            goto err;
-        }
-        BN_bin2bn(tc->p, tc->plen, p);
-        BN_bin2bn(tc->q, tc->qlen, q);
-        BN_bin2bn(tc->d, tc->dlen, d);
-
-        rsa->n = BN_dup(n);
-        rsa->e = BN_dup(e);
-        rsa->d = BN_dup(d);
-        rsa->p = BN_dup(p);
-        rsa->q = BN_dup(q);
-    }
-    if (d) BN_free(d);
-
-#else
     if (tc->kas_role == ACVP_KAS_IFC_INITIATOR) {
         tmp_e = BN_dup(e);
         tmp_n = BN_dup(n);
@@ -758,7 +663,6 @@ int app_kas_ifc_handler(ACVP_TEST_CASE *test_case) {
         RSA_set0_key(rsa, tmp_n, tmp_e, d);
         RSA_set0_factors(rsa, p, q);
     }
-#endif
 
 #define KAS_IFC_MAX 1024
     if (tc->test_type == ACVP_KAS_IFC_TT_AFT) {
@@ -835,10 +739,6 @@ int app_kas_ifc_handler(ACVP_TEST_CASE *test_case) {
     }
     rv = 0;
 err:
-#if OPENSSL_VERSION_NUMBER <= 0x10100000L
-    if (p) BN_free(p);
-    if (q) BN_free(q);
-#endif
     if (e) BN_free(e);
     if (n) BN_free(n);
     if (rsa) RSA_free(rsa);
@@ -865,10 +765,8 @@ int app_safe_primes_handler(ACVP_TEST_CASE *test_case)
     BIGNUM *pub_key_ver = NULL, *priv_key_ver = NULL;
     const BIGNUM *pver = NULL;
     BIGNUM *q = NULL, *p = NULL, *g = NULL, *q1 = NULL;
-#if OPENSSL_VERSION_NUMBER >= 0x10100000L
     BIGNUM *tmp_p = NULL, *tmp_q = NULL, *tmp_g = NULL;
     const BIGNUM *pub_key = NULL, *priv_key = NULL;
-#endif
     BIGNUM *tmp_pub_key = NULL;
     BN_CTX *c = NULL;
     int is_modp = 0;
@@ -910,7 +808,6 @@ int app_safe_primes_handler(ACVP_TEST_CASE *test_case)
         get_rfc3526_prime_8192(p);
         get_rfc3526_prime_8192(q);
         break;
-#if OPENSSL_VERSION_NUMBER >= 0x10100000L
     case ACVP_SAFE_PRIMES_FFDHE2048:
         dh = DH_new_by_nid(NID_ffdhe2048);
         break;
@@ -926,13 +823,6 @@ int app_safe_primes_handler(ACVP_TEST_CASE *test_case)
     case ACVP_SAFE_PRIMES_FFDHE8192:
         dh = DH_new_by_nid(NID_ffdhe8192);
         break;
-#else
-    case ACVP_SAFE_PRIMES_FFDHE2048:
-    case ACVP_SAFE_PRIMES_FFDHE3072:
-    case ACVP_SAFE_PRIMES_FFDHE4096:
-    case ACVP_SAFE_PRIMES_FFDHE6144:
-    case ACVP_SAFE_PRIMES_FFDHE8192:
-#endif
     default:
         printf("Invalid dgm\n");
         goto err;
@@ -947,16 +837,10 @@ int app_safe_primes_handler(ACVP_TEST_CASE *test_case)
         BN_sub_word(q, 1);
         BN_div_word(q, 2);
         BN_set_word(g, 2);
-#if OPENSSL_VERSION_NUMBER <= 0x10100000L
-        dh->p = BN_dup(p);
-        dh->q = BN_dup(q);
-        dh->g = BN_dup(g);
-#else
         tmp_p = BN_dup(p);
         tmp_q = BN_dup(q);
         tmp_g = BN_dup(g);
         DH_set0_pqg(dh, tmp_p, tmp_q, tmp_g);
-#endif
     }
 
     if (!tc->x || !tc->y) {
@@ -969,32 +853,21 @@ int app_safe_primes_handler(ACVP_TEST_CASE *test_case)
             printf("DH_generate_key failed for dgm = %d\n", tc->dgm);
             goto err;
         }
-#if OPENSSL_VERSION_NUMBER <= 0x10100000L
-        tc->ylen = BN_bn2bin(dh->pub_key, tc->y);
-        tc->xlen = BN_bn2bin(dh->priv_key, tc->x);
-#else
         DH_get0_key(dh, &pub_key, &priv_key);
         tc->xlen = BN_bn2bin(priv_key, tc->x);
         tc->ylen = BN_bn2bin(pub_key, tc->y);
-#endif
     }
 
     /* Validate 0 < x < q and y = g^x mod p */
     else if (tc->cipher == ACVP_SAFE_PRIMES_KEYVER) {
 
-#if OPENSSL_VERSION_NUMBER <= 0x10100000L
-        printf("OpenSSL version does not suppor safe prime key verify\n");
-        goto err;
-#else
         DH_get0_pqg(dh, &pver, NULL, NULL);
-#endif
         q1 = BN_dup(pver);
         BN_sub_word(q1, 1);
         BN_div_word(q1, 2);
 
-#if OPENSSL_VERSION_NUMBER >= 0x10100000L
         DH_set0_pqg(dh, NULL, q1, NULL);
-#endif
+
         /* Build  the DH and perform the key verify */
         priv_key_ver = BN_new();
         pub_key_ver = BN_new();
@@ -1009,9 +882,7 @@ int app_safe_primes_handler(ACVP_TEST_CASE *test_case)
         }
         tc->result = 1;
 
-#if OPENSSL_VERSION_NUMBER >= 0x10100000L
         DH_set0_key(dh, pub_key_ver, priv_key_ver);
-#endif
         rv = DH_check_pub_key(dh, pub_key_ver, &ret);
         if (!rv || ret) {
             tc->result = 0;
