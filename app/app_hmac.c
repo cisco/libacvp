@@ -12,7 +12,7 @@
 #include <openssl/hmac.h>
 #include "acvp/acvp.h"
 #include "app_lcl.h"
-#ifdef ACVP_NO_RUNTIME && OPENSSL_VERSION_NUMBER < 0x30000000L
+#if defined ACVP_NO_RUNTIME && OPENSSL_VERSION_NUMBER < 0x30000000L
 #include "app_fips_lcl.h"
 #endif
 
@@ -181,6 +181,7 @@ int app_hmac_handler(ACVP_TEST_CASE *test_case) {
     }
 
     rc = 0;
+#endif
 
 end:
 #if OPENSSL_VERSION_NUMBER >= 0x30000000L && !defined ACV_LEGACY_HMAC
@@ -189,5 +190,6 @@ end:
 #else
     if (hmac_ctx) HMAC_CTX_free(hmac_ctx);
 #endif
+    return rc;
 }
 

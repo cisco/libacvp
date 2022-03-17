@@ -130,7 +130,7 @@ static int hmac_totp(const char *key,
     memcpy_s(hash, hash_max, buff, len);
 
 end:
-    HMAC_CTX_cleanup(ctx);
+    if (ctx) HMAC_CTX_free(ctx);
     return len;
 }
 #else
