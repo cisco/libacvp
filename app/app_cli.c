@@ -203,12 +203,7 @@ static void print_version_info(void) {
 #else
     printf("Compiled SSL version: not detected\n");
 #endif
-
-#if OPENSSL_VERSION_NUMBER < 0x10100000L
-    printf("  Linked SSL version: %s\n", SSLeay_version(SSLEAY_VERSION));
-#else
     printf("  Linked SSL version: %s\n", OpenSSL_version(OPENSSL_VERSION));
-#endif
 }
 
 static ko_longopt_t longopts[] = {

@@ -56,7 +56,6 @@ extern "C"
  * OpenSSL >= 1.1.0 has it's own macro defines for these symbols.
  * Undefine before loading the fipssyms.h file to avoid "redefine" warnings.
  */
-#if OPENSSL_VERSION_NUMBER >= 0x10100000L
 # ifdef EVP_CIPHER_CTX_init
 #  undef EVP_CIPHER_CTX_init
 # endif
@@ -102,37 +101,10 @@ extern "C"
 # ifdef OPENSSL_clear_free
 #  undef OPENSSL_clear_free
 # endif
-#endif /* OPENSSL_VERSION_NUMBER */
 
-#if OPENSSL_VERSION_NUMBER <= 0x10100000L
-#define fips_dsa_builtin_paramgen2 fips_h_bad_dsa_builtin_paramgen2 
 #include <openssl/fips.h>
-#undef fips_dsa_builtin_paramgen2
-int fips_dsa_builtin_paramgen2(DSA *ret, size_t L, size_t N,
-     const EVP_MD *evpmd, const unsigned char *seed_in, size_t seed_len,
-     int idx, unsigned char *seed_out,
-     int *counter_ret, unsigned long *h_ret, BN_GENCB *cb);
-#else
-#include <openssl/fips.h>
-#endif
-
 #include <openssl/fipssyms.h>
 #include <openssl/fips_rand.h>
-
-#if OPENSSL_VERSION_NUMBER <= 0x10100000L
-#define fips_dsa_builtin_paramgen2 fips_h_bad_dsa_builtin_paramgen2 
-#include <openssl/fips.h>
-#undef fips_dsa_builtin_paramgen2
-#ifndef OPENSSL_NO_DSA
-int fips_dsa_builtin_paramgen2(DSA *ret, size_t L, size_t N,
-     const EVP_MD *evpmd, const unsigned char *seed_in, size_t seed_len,
-     int idx, unsigned char *seed_out,
-     int *counter_ret, unsigned long *h_ret, BN_GENCB *cb);
-#endif
-#else
-#include <openssl/fips.h>
-#endif
-
 
 /*
  * TODO: These need to be put in fips.h
@@ -270,13 +242,6 @@ const EVP_MD *FIPS_evp_shake256(void);
 ECDSA_SIG *FIPS_ecdsa_sig_new(void);
 void FIPS_ecdsa_sig_free(ECDSA_SIG *sig);
 void FIPS_ecdsa_sig_get0(const ECDSA_SIG *sig, const BIGNUM **pr, const BIGNUM **ps);
-#if OPENSSL_VERSION_NUMBER < 0x10100000L
-ECDSA_SIG * FIPS_ecdsa_sign(EC_KEY *key,
-                            const unsigned char *msg, size_t msglen,
-                            const EVP_MD *mhash);
-int FIPS_ecdsa_verify(EC_KEY *key, const unsigned char *msg, size_t msglen,
-                      const EVP_MD *mhash, ECDSA_SIG *s);
-#endif
 ECDSA_SIG * FIPS_ecdsa_sign_md(EC_KEY *key,
                                const unsigned char *msg, size_t msglen,
                                const EVP_MD *mhash);

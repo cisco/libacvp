@@ -43,7 +43,6 @@ extern "C"
  * These stubs are needed when linking with FOM7.0,
  * otherwise we get "undefined reference".
  */
-#if OPENSSL_VERSION_NUMBER >= 0x10100000L
 #ifndef ACVP_OFFLINE
 void FINGERPRINT_premain(void);
 void FINGERPRINT_premain(void) {}
@@ -53,24 +52,16 @@ int FIPS_get_selftest_completed(int version)
 {
     return version;
 }
-#endif
 
 static int no_err;
 static void put_err_cb(int lib, int func,int reason,const char *file,int line)
     {
     if (no_err)
         return;
-#if OPENSSL_VERSION_NUMBER < 0x10100000L
-    fprintf(stderr, "ERROR:%08lX:lib=%d,func=%d,reason=%d"
-                ":file=%s:line=%d\n",
-            ERR_PACK(lib, func, reason),
-            lib, func, reason, file, line);
-#else
     fprintf(stderr, "ERROR:%08X:lib=%d,func=%d,reason=%d"
                 ":file=%s:line=%d\n",
             ERR_PACK(lib, func, reason),
             lib, func, reason, file, line);
-#endif
     }
 
 static void add_err_cb(int num, va_list args)
@@ -103,7 +94,6 @@ static size_t dummy_cb(DRBG_CTX *ctx, unsigned char **pout,
 
 static int entropy_stick = 0;
 
-#if OPENSSL_VERSION_NUMBER >= 0x10100000L
 void FIPS_set_locking_callbacks(CRYPTO_RWLOCK *(*FIPS_thread_lock_new)(void),
                    int (*FIPS_thread_read_lock)(CRYPTO_RWLOCK *lock),
                    int (*FIPS_thread_write_lock)(CRYPTO_RWLOCK *lock),
@@ -122,7 +112,6 @@ static void fips_test_suite_dummy_free_lock(CRYPTO_RWLOCK* lock){
     // do nothing
     (void)lock;
 }
-#endif
 #ifdef ACVP_NO_RUNTIME
 static void fips_algtest_init_nofips(void)
     {
@@ -142,7 +131,6 @@ static void fips_algtest_init_nofips(void)
     FIPS_drbg_set_callbacks(ctx, dummy_cb, 0, 16, dummy_cb, 0);
     FIPS_drbg_instantiate(ctx, dummy_entropy, 10);
     FIPS_rand_set_method(FIPS_drbg_method());
-#if OPENSSL_VERSION_NUMBER >= 0x10100000L
     FIPS_set_locking_callbacks(&fips_test_suite_dummy_new_lock,
                                NULL,
                                NULL,
@@ -151,7 +139,6 @@ static void fips_algtest_init_nofips(void)
                                NULL,
                                NULL,
                                NULL);
-#endif
 
     }
 #endif

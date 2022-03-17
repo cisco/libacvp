@@ -119,13 +119,7 @@ int app_des_handler(ACVP_TEST_CASE *test_case) {
      */
     if (tc->test_type == ACVP_SYM_TEST_TYPE_MCT) {
         const unsigned char *ctx_iv = NULL;
-
-
-#if OPENSSL_VERSION_NUMBER <= 0x10100000L
-        ctx_iv = cipher_ctx->iv;
-#else
         ctx_iv = EVP_CIPHER_CTX_iv(cipher_ctx);
-#endif
 
 #define SYM_IV_BYTE_MAX 128
         if (tc->direction == ACVP_SYM_CIPH_DIR_ENCRYPT) {

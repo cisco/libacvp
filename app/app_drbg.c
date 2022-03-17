@@ -101,22 +101,16 @@ int app_drbg_handler(ACVP_TEST_CASE *test_case) {
         case ACVP_DRBG_SHA_512:
             nid = NID_sha512;
             break;
-#if OPENSSL_VERSION_NUMBER >= 0x10101010L /* OpenSSL 1.1.1 or greater */
         case ACVP_DRBG_SHA_512_224:
             nid = NID_sha512_224;
             break;
         case ACVP_DRBG_SHA_512_256:
             nid = NID_sha512_256;
             break;
-#endif
         case ACVP_DRBG_TDES:
         case ACVP_DRBG_AES_128:
         case ACVP_DRBG_AES_192:
         case ACVP_DRBG_AES_256:
-#if OPENSSL_VERSION_NUMBER < 0x10101010L /* Not OpenSSL */
-        case ACVP_DRBG_SHA_512_224:
-        case ACVP_DRBG_SHA_512_256:
-#endif
         default:
             printf("%s: Unsupported algorithm/mode %d/%d (tc_id=%d)\n", __FUNCTION__, tc->tc_id,
                    tc->cipher, tc->mode);
@@ -144,22 +138,16 @@ int app_drbg_handler(ACVP_TEST_CASE *test_case) {
         case ACVP_DRBG_SHA_512:
             nid =   NID_hmacWithSHA512;
             break;
-#if OPENSSL_VERSION_NUMBER >= 0x10101010L /* OpenSSL 1.1.1 or greater */
         case ACVP_DRBG_SHA_512_224:
             nid =   NID_hmacWithSHA512_224;
             break;
         case ACVP_DRBG_SHA_512_256:
             nid =   NID_hmacWithSHA512_256;
             break;
-#endif
         case ACVP_DRBG_TDES:
         case ACVP_DRBG_AES_128:
         case ACVP_DRBG_AES_192:
         case ACVP_DRBG_AES_256:
-#if OPENSSL_VERSION_NUMBER < 0x10101010L /* Not OpenSSL */
-        case ACVP_DRBG_SHA_512_224:
-        case ACVP_DRBG_SHA_512_256:
-#endif
         default:
             printf("%s: Unsupported algorithm/mode %d/%d (tc_id=%d)\n", __FUNCTION__, tc->tc_id,
                    tc->cipher, tc->mode);

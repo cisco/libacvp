@@ -69,9 +69,7 @@ int app_ecdsa_handler(ACVP_TEST_CASE *test_case) {
     int nid = NID_undef, rc = 0, msg_len = 0;
     BIGNUM *Qx = NULL, *Qy = NULL;
     BIGNUM *r = NULL, *s = NULL;
-#if OPENSSL_VERSION_NUMBER >= 0x10101010L /* OpenSSL 1.1.1 or greater */
     const BIGNUM *a = NULL, *b = NULL;
-#endif
     const BIGNUM *d = NULL;
     EC_KEY *key = NULL;
     ACVP_SUB_ECDSA alg;
@@ -104,17 +102,12 @@ int app_ecdsa_handler(ACVP_TEST_CASE *test_case) {
         case ACVP_SHA512:
             md = EVP_sha512();
             break;
-#if OPENSSL_VERSION_NUMBER >= 0x10101010L /* OpenSSL 1.1.1 or greater */
         case ACVP_SHA512_224:
             md = EVP_sha512_224();
             break;
         case ACVP_SHA512_256:
             md = EVP_sha512_256();
             break;
-#else
-        case ACVP_SHA512_224:
-        case ACVP_SHA512_256:
-#endif
         case ACVP_SHA3_224:
         case ACVP_SHA3_256:
         case ACVP_SHA3_384:
@@ -277,34 +270,23 @@ int app_ecdsa_handler(ACVP_TEST_CASE *test_case) {
             printf("ecdsa siggen missing msg\n");
             goto err;
         }
-#if OPENSSL_VERSION_NUMBER <= 0x10100000L
-        sig = FIPS_ecdsa_sign(ecdsa_group_key, tc->message, msg_len, md);
-#else
         sig = FIPS_ecdsa_sign_md(ecdsa_group_key, tc->message, msg_len, md);
-#endif
 
         if (!sig) {
             printf("Error signing message\n");
             goto err;
         }
 
-#if OPENSSL_VERSION_NUMBER <= 0x10100000L
-        r = sig->r;
-        s = sig->s;
-#else
         ECDSA_SIG_get0(sig, &a, &b);
         r = BN_dup(a);
         s = BN_dup(b);
-#endif
 
         tc->qx_len = BN_bn2bin(ecdsa_group_Qx, tc->qx);
         tc->qy_len = BN_bn2bin(ecdsa_group_Qy, tc->qy);
         tc->r_len = BN_bn2bin(r, tc->r);
         tc->s_len = BN_bn2bin(s, tc->s);
-#if OPENSSL_VERSION_NUMBER > 0x10100000L
         BN_free(s);
         BN_free(r);
-# endif
         break;
     case ACVP_SUB_ECDSA_SIGVER:
         if (!tc->message) {
@@ -325,14 +307,9 @@ int app_ecdsa_handler(ACVP_TEST_CASE *test_case) {
             goto err;
         }
 
-#if OPENSSL_VERSION_NUMBER <= 0x10100000L
-        r = sig->r;
-        s = sig->s;
-#else
         r = FIPS_bn_new();
         s = FIPS_bn_new();
         ECDSA_SIG_set0(sig, r, s);
-#endif
 
         Qx = FIPS_bn_new();
         Qy = FIPS_bn_new();
@@ -367,11 +344,7 @@ int app_ecdsa_handler(ACVP_TEST_CASE *test_case) {
             printf("ecdsa siggen missing msg\n");
             goto err;
         }
-#if OPENSSL_VERSION_NUMBER <= 0x10100000L
-        if (FIPS_ecdsa_verify(key, tc->message, tc->msg_len, md, sig) == 1) {
-#else
         if (FIPS_ecdsa_verify_md(key, tc->message, tc->msg_len, md, sig) == 1) {
-#endif
             tc->ver_disposition = ACVP_TEST_DISPOSITION_PASS;
         } else {
             tc->ver_disposition = ACVP_TEST_DISPOSITION_FAIL;
