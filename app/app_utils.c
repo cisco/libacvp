@@ -144,10 +144,7 @@ static int hmac_totp(const char *key,
     unsigned char buff[MAX_LEN];
 
     EVP_Q_mac(NULL, "HMAC", NULL, md_name, NULL, key, key_len, msg, T_LEN, buff, MAX_LEN, (long unsigned int *)&len);
-
     memcpy_s(hash, hash_max, buff, len);
-
-end:
     return len;
 }
 #endif

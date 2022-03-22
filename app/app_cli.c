@@ -13,12 +13,12 @@
 #include "app_lcl.h"
 #include "acvp/acvp.h"
 #include "safe_lib.h"
-
 #ifdef ACVP_NO_RUNTIME
 #include "app_fips_lcl.h"
 #endif
 
 #include <openssl/crypto.h>
+#include <openssl/evp.h>
 
 #define ANSI_COLOR_RED "\x1b[31m"
 #define ANSI_COLOR_YELLOW "\x1b[33m"
@@ -188,15 +188,25 @@ static void print_version_info(void) {
 
 #ifdef ACVP_NO_RUNTIME
     printf("        Runtime mode: no\n");
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
     printf(" FIPS module version: %s\n", FIPS_module_version_text());
-#else
+#endif
+#else //ACVP_NO_RUNTIME
     printf("        Runtime mode: yes\n");
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
     if (FIPS_mode()) {
         printf("           FIPS mode: yes\n");
     } else {
         printf("           FIPS mode: no\n");
     }
-#endif
+#else //OPENSSL_VERSION_NUMBER
+    if (EVP_default_properties_is_fips_enabled(NULL)) {
+        printf("           FIPS mode: yes\n");
+    } else {
+        printf("           FIPS mode: no\n");
+    }
+#endif //OPENSSL_VERSION_NUMBER
+#endif //ACVP_NO_RUNTIME
 
 #ifdef OPENSSL_VERSION_TEXT
     printf("Compiled SSL version: %s\n", OPENSSL_VERSION_TEXT);

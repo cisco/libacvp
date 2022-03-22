@@ -101,9 +101,16 @@ if test "x$disable_app" = "xno" ; then
         [Path to FOM install directory])],
         [fomdir="$withval"],
         [with_fomdir=no])
-    if test "x$ssldir" = "x" ; then
-        AC_MSG_FAILURE([ssl directory must be set if building the application])
-    fi
+    # If using SSL >= 3.0.0, just enable fips, no path needed
+    AC_ARG_ENABLE([fips],
+    [AS_HELP_STRING([--enable-fips], [Use FIPS mode with a build of SSL that supports testing all algorithms])],
+    [use_dev_fips="yes"],
+    [use_dev_fips="no"])
+    #Only supports subset of algorithms due to needed intermediate values
+    AC_ARG_ENABLE([runtime-fips],
+    [AS_HELP_STRING([--enable-runtime-fips], [Use FIPS mode with a regular FIPS build of SSL, only supports some algorithms])],
+    [use_runtime_fips="yes"],
+    [use_runtime_fips="no"])
 fi
 
 # Offline mode
@@ -197,6 +204,9 @@ pre_libs="$LIBS"
 # script modifies LDFLAGS to correctly search for libs. we unset these changes so
 # makefile.am have complete control over linker flags
 pre_ldflags="$LDFLAGS"
+found_crypto="false"
+found_ssl="false"
+ssl_lib64="false"
 
 if test "x$disable_lib_detection" = "xno"; then
     if test "$is_freebsd" != "1" && test "x$enable_offline" != "xfalse" && test "x$check_ldl" != "xfalse" ; then
@@ -208,11 +218,16 @@ if test "x$disable_lib_detection" = "xno"; then
     fi
     # Search for SSL and Crypto libs, and if it doesn't fail set the make vars accordingly
     if test "x$disable_app" = "xno" ; then
-        LDFLAGS="$LDFLAGS -L$ssldir/lib"
-        AC_SEARCH_LIBS([EVP_EncryptInit], [crypto], [],
-               [AC_MSG_FAILURE([can't find openssl crypto lib])], [])
+        LDFLAGS="-L$ssldir/lib"
+        AC_SEARCH_LIBS([EVP_EncryptInit], [crypto], [found_crypto="true"], [
+            LDFLAGS="-L$ssldir/lib64"
+            unset ac_cv_search_EVP_EncryptInit # This value gets referenced as a cache so needs unsetting
+            AC_SEARCH_LIBS([EVP_EncryptInit], [crypto], [found_crypto="true" && ssl_lib64="true"], 
+                           [AC_MSG_FAILURE([Can't locate libcrypto])], [])],
+        [])
+
         AC_SEARCH_LIBS([SSL_CTX_new], [ssl], [],
-                    [AC_MSG_FAILURE([can't find openssl ssl lib])], [])
+                    [AC_MSG_FAILURE([can't locate libssl])], [])
     fi
 
     if test "x$disable_lib" = "xyes" ; then
@@ -244,9 +259,42 @@ if test "x$disable_lib_detection" = "xno"; then
     fi
 fi
 
+#Check what version of SSL is being linked. Determines how any FIPS stuff is handled, and what APIs are used in some places
+proj_temp_cppflags="$CPPFLAGS"
+CPPFLAGS="-I$ssldir/include"
+AC_CHECK_HEADER([openssl/opensslv.h], [], [AC_MSG_FAILURE([Unable to read opensslslv.h to determine SSL library version])])
+AC_COMPILE_IFELSE(
+    [AC_LANG_PROGRAM([[
+        #include <openssl/opensslv.h>
+        #if OPENSSL_VERSION_NUMBER >= 0x30000000L
+        #error "Detected OpenSSL version 3.0.0 or greater"
+        #endif
+    ]])],
+    [use_ssl_3="false"],
+    [use_ssl_3="true"])
+CPPFLAGS="$proj_temp_cppflags"
+
+#SSL versions < 3 use --with-fom-dir for FIPS. Versions >= 3 use --enable-fips or --enable-runtime-fips
+if test "x$use_ssl_3" = "xtrue" && test "x$with_fomdir" != "xno" ; then
+    AC_MSG_FAILURE([--with-fom-dir should not be provided with versions of SSL greater than 1.1.1;
+                    use --enable-fips or --enable-runtime-fips instead])
+fi
+if test "x$use_ssl_3" = "xtrue" && test "x$use_dev_fips" != "xno" && test "x$use_runtime_fips" != "xno" ; then
+    AC_MSG_FAILURE([Either --enable-fips or --enable-runtime-fips can be used, but not both. See the README
+                    for more information.])
+fi
+if test "x$use_ssl_3" != "xtrue" && (test "x$use_dev_fips" != "xno"|| test "x$use_runtime_fips" != "xno") ; then
+    AC_MSG_FAILURE([For versions of SSL under 3.0.0, use --with-fom-dir=<path> to use FIPS, not --enable-fips or
+                    --enable-runtime-fips])
+fi
+
 if test "x$disable_app" = "xno" ; then
     AC_SUBST([SSL_CFLAGS], "-I$ssldir/include")
-    AC_SUBST([SSL_LDFLAGS], "-L$ssldir/lib -lcrypto")
+    if test "x$ssl_lib64" = "xtrue" ; then
+        AC_SUBST([SSL_LDFLAGS], "-L$ssldir/lib64 -lcrypto")
+    else
+        AC_SUBST([SSL_LDFLAGS], "-L$ssldir/lib -lcrypto")
+    fi
     AC_ARG_VAR(FOM_OBJ_DIR, "directory with fipscanister.o")
 fi
 if test "x$libcurldir" != "x" ; then
@@ -263,25 +311,35 @@ fi
 LDFLAGS="$pre_ldflags"
 LIBS="$pre_libs"
 
-AS_IF([test "x$with_fomdir" != "xno"],
-      [AS_IF([test "x$disable_kdf" != "xfalse"],
-          [AC_SUBST([FOM_CFLAGS], "-DACVP_NO_RUNTIME -DOPENSSL_FIPS -I$fomdir/include")],
-          [AC_SUBST([FOM_CFLAGS], "-DACVP_NO_RUNTIME -DOPENSSL_FIPS -DOPENSSL_KDF_SUPPORT -I$fomdir/include")])
-       AC_SUBST([FOM_LDFLAGS], "-L$fomdir/lib")
-       AC_SUBST([FOM_OBJ_DIR], "$fomdir/lib")
-      ]
-     )
-AM_CONDITIONAL([USE_FOM], [test "x$with_fomdir" != xno])
+#Set any applicable FIPS flags
+if test "x$with_fomdir" != "xno" ; then
+    AC_SUBST([FOM_CFLAGS], "-DACVP_NO_RUNTIME -DOPENSSL_FIPS -I$fomdir/include")
+    AC_SUBST([FOM_LDFLAGS], "-L$fomdir/lib")
+    AC_SUBST([FOM_OBJ_DIR], "$fomdir/lib")
+elif test "x$use_dev_fips" != "xno" ; then
+    AC_SUBST([FOM_CFLAGS], "-DACVP_NO_RUNTIME")
+elif test "x$use_runtime_fips" != "xno" ; then
+    AC_SUBST([FOM_CFLAGS], "-DACVP_FIPS_RUNTIME")
+fi
+AM_CONDITIONAL([USE_FOM_OBJ], [test "x$with_fomdir" != "xno"])
+AM_CONDITIONAL([USE_FIPS_PROVIDER], [test "x$use_dev_fips" != "xno" || test "x$use_runtime_fips" != "xno"])
 
-# build libacvp statically (Has no impact on whether it is built dynamically too) and
-# make the app link to dependencies statically where possible
+#Conditionally included algorithms should be added to cond_alg_cflags here
+if test "x$disable_kdf" != "xfalse" ; then
+    cond_alg_cflags="$cond_alg_cflags -DOPENSSL_KDF_SUPPORT"
+fi
+
+#offline builds are linked statically for versions < 3.0.0. 3.0.0 does not support FIPS static linking.
+#3.0.0 offline build just means Curl is not needed.
 if test "x$enable_offline" != "xfalse" ; then
-    LDFLAGS="-static $LDFLAGS"
-    CFLAGS="$CFLAGS -DACVP_OFFLINE"
-    if test "x$disable_app" = "xno" ; then
-        #Note: User needs FIPSLD_CC defined in environment after configuring
-        CC="$fomdir/bin/fipsld"
+    if test "x#use_ssl_3" != "xyes" ; then
+        LDFLAGS="-static $LDFLAGS"
+        if test "x$disable_app" = "xno" ; then
+            #Note: User needs FIPSLD_CC defined in environment after configuring
+            CC="$fomdir/bin/fipsld"
+        fi
     fi
+    CFLAGS="$CFLAGS -DACVP_OFFLINE"
 fi
 
 
@@ -330,6 +388,9 @@ AC_SUBST(SAFEC_STUB_DIR)
 safecdir="$SAFEC_STUB_DIR"
 AC_SUBST([SAFEC_CFLAGS], "-I$safecdir/include")
 AC_SUBST([SAFEC_LDFLAGS], "$safecdir/lib/libsafe_lib.la")
+
+#At the end, SUBST any conditional algorithm cflags we have acquired
+AC_SUBST([COND_ALG_CFLAGS], "$cond_alg_cflags")
 
 # Default installation directory
 AC_PREFIX_DEFAULT([/usr/local/acvp])

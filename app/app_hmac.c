@@ -102,9 +102,10 @@ int app_hmac_handler(ACVP_TEST_CASE *test_case) {
     params[0] = OSSL_PARAM_construct_utf8_string("digest", (char*)md_name, 0);
     params[1] = OSSL_PARAM_construct_end();
 
+#define HMAC_BUF_MAX 512
+
     if (!EVP_MAC_init(hmac_ctx, tc->key, tc->key_len, params)) {
         printf("\nCrypto module error, EVP_MAC_init failed\n");
-        ERR_print_errors_cb(&serror_cb, NULL);
         goto end;
     }
 

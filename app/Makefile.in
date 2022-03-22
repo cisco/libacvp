@@ -93,7 +93,7 @@ host_triplet = @host@
 @BUILD_APP_AS_LIB_FALSE@bin_PROGRAMS = acvp_app$(EXEEXT)
 @BUILD_APP_AS_LIB_FALSE@@USE_LDL_CHECK_TRUE@am__append_1 = -ldl
 @BUILD_APP_AS_LIB_TRUE@@USE_LDL_CHECK_TRUE@am__append_2 = -ldl
-@BUILD_APP_AS_LIB_TRUE@@USE_FOM_TRUE@am__append_3 = $(FOM_OBJ_DIR)/fipscanister.o
+@BUILD_APP_AS_LIB_TRUE@@USE_FOM_OBJ_TRUE@am__append_3 = $(FOM_OBJ_DIR)/fipscanister.o
 subdir = app
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/libtool.m4 \
@@ -174,7 +174,7 @@ am__objects_2 = acvp_app-app_main.$(OBJEXT) acvp_app-app_aes.$(OBJEXT) \
 	acvp_app-app_utils.$(OBJEXT)
 @BUILD_APP_AS_LIB_FALSE@am_acvp_app_OBJECTS = $(am__objects_2)
 acvp_app_OBJECTS = $(am_acvp_app_OBJECTS)
-@BUILD_APP_AS_LIB_FALSE@@USE_FOM_TRUE@acvp_app_DEPENDENCIES = $(FOM_OBJ_DIR)/fipscanister.o
+@BUILD_APP_AS_LIB_FALSE@@USE_FOM_OBJ_TRUE@acvp_app_DEPENDENCIES = $(FOM_OBJ_DIR)/fipscanister.o
 acvp_app_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(acvp_app_CFLAGS) \
 	$(CFLAGS) $(acvp_app_LDFLAGS) $(LDFLAGS) -o $@
@@ -279,6 +279,7 @@ CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
 CLEANFILES = @CLEANFILES@
+COND_ALG_CFLAGS = @COND_ALG_CFLAGS@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
 CRITERION_CFLAGS = @CRITERION_CFLAGS@
@@ -418,15 +419,15 @@ tmp_sources = app_main.c \
 
 @BUILD_APP_AS_LIB_FALSE@acvp_app_includedir = $(includedir)/acvp
 @BUILD_APP_AS_LIB_FALSE@acvp_app_SOURCES = ${tmp_sources}
-@BUILD_APP_AS_LIB_FALSE@acvp_app_CFLAGS = -g -fPIE $(LIBACVP_CFLAGS) $(SSL_CFLAGS) $(FOM_CFLAGS) $(SAFEC_CFLAGS)
+@BUILD_APP_AS_LIB_FALSE@acvp_app_CFLAGS = -g -fPIE $(LIBACVP_CFLAGS) $(SSL_CFLAGS) $(FOM_CFLAGS) $(SAFEC_CFLAGS) $(COND_ALG_CFLAGS)
 @BUILD_APP_AS_LIB_FALSE@acvp_app_LDFLAGS = $(LIBACVP_LDFLAGS) \
 @BUILD_APP_AS_LIB_FALSE@	$(SSL_LDFLAGS) $(FOM_LDFLAGS) \
 @BUILD_APP_AS_LIB_FALSE@	$(am__append_1)
-@BUILD_APP_AS_LIB_FALSE@@USE_FOM_TRUE@acvp_app_LDADD = $(FOM_OBJ_DIR)/fipscanister.o
+@BUILD_APP_AS_LIB_FALSE@@USE_FOM_OBJ_TRUE@acvp_app_LDADD = $(FOM_OBJ_DIR)/fipscanister.o
 @BUILD_APP_AS_LIB_TRUE@lib_LTLIBRARIES = libacvp_app.la
 @BUILD_APP_AS_LIB_TRUE@libacvp_app_includedir = ${includedir}/acvp
 @BUILD_APP_AS_LIB_TRUE@libacvp_app_la_SOURCES = ${tmp_sources}
-@BUILD_APP_AS_LIB_TRUE@AM_CFLAGS = -g -fPIE $(LIBACVP_CFLAGS) $(SSL_CFLAGS) $(FOM_CFLAGS) $(SAFEC_CFLAGS) -DACVP_APP_LIB_WRAPPER
+@BUILD_APP_AS_LIB_TRUE@AM_CFLAGS = -g -fPIE $(LIBACVP_CFLAGS) $(SSL_CFLAGS) $(FOM_CFLAGS) $(SAFEC_CFLAGS) $(COND_ALG_CFLAGS) -DACVP_APP_LIB_WRAPPER
 @BUILD_APP_AS_LIB_TRUE@libacvp_app_la_LIBADD = $(LIBACVP_LDFLAGS) \
 @BUILD_APP_AS_LIB_TRUE@	$(SSL_LDFLAGS) $(FOM_LDFLAGS) \
 @BUILD_APP_AS_LIB_TRUE@	$(am__append_2) $(am__append_3)
