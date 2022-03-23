@@ -23,14 +23,14 @@ bin_PROGRAMS = acvp_app
 
 acvp_app_includedir=$(includedir)/acvp
 acvp_app_SOURCES = ${tmp_sources}
-acvp_app_CFLAGS = -g -fPIE $(LIBACVP_CFLAGS) $(SSL_CFLAGS) $(FOM_CFLAGS) $(SAFEC_CFLAGS)
+acvp_app_CFLAGS = -g -fPIE $(LIBACVP_CFLAGS) $(SSL_CFLAGS) $(FOM_CFLAGS) $(SAFEC_CFLAGS) $(COND_ALG_CFLAGS)
 acvp_app_LDFLAGS = $(LIBACVP_LDFLAGS) $(SSL_LDFLAGS) $(FOM_LDFLAGS)
 
 if USE_LDL_CHECK
 acvp_app_LDFLAGS += -ldl
 endif
 
-if USE_FOM
+if USE_FOM_OBJ
 acvp_app_LDADD = $(FOM_OBJ_DIR)/fipscanister.o
 endif
 
@@ -39,7 +39,7 @@ lib_LTLIBRARIES = libacvp_app.la
 libacvp_app_includedir=${includedir}/acvp
 libacvp_app_la_SOURCES = ${tmp_sources}
 
-AM_CFLAGS = -g -fPIE $(LIBACVP_CFLAGS) $(SSL_CFLAGS) $(FOM_CFLAGS) $(SAFEC_CFLAGS) -DACVP_APP_LIB_WRAPPER
+AM_CFLAGS = -g -fPIE $(LIBACVP_CFLAGS) $(SSL_CFLAGS) $(FOM_CFLAGS) $(SAFEC_CFLAGS) $(COND_ALG_CFLAGS) -DACVP_APP_LIB_WRAPPER
 libacvp_app_la_LIBADD = $(LIBACVP_LDFLAGS) $(SSL_LDFLAGS) $(FOM_LDFLAGS)
 
 libacvp_app_include_HEADERS = $(top_srcdir)/app/libacvp_app.h
@@ -48,7 +48,7 @@ if USE_LDL_CHECK
 libacvp_app_la_LIBADD += -ldl
 endif
 
-if USE_FOM
+if USE_FOM_OBJ
 libacvp_app_la_LIBADD += $(FOM_OBJ_DIR)/fipscanister.o
 endif
 endif

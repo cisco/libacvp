@@ -97,8 +97,7 @@ typedef enum acvp_result {
     ACVP_NO_TOKEN,
     ACVP_NO_CAP,
     ACVP_MALFORMED_JSON, /**< For use if the json is unable to be parsed properly */
-    ACVP_TC_DATA_INVALID, /**< Test case JSON is formatted properly, but the data is bad or does
-                           * not match the spec */
+    ACVP_TC_DATA_INVALID, /**< Test case JSON is formatted properly, but the data is bad or does not match the spec */
     ACVP_DATA_TOO_LARGE,
     ACVP_DUP_CIPHER,
     ACVP_TOTP_DECODE_FAIL,

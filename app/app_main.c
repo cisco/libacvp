@@ -20,10 +20,12 @@
 
 #include "app_lcl.h"
 
-#ifdef ACVP_NO_RUNTIME
-# include "app_fips_lcl.h"
-# include "app_fips_init_lcl.h"
-
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+#include <openssl/provider.h>
+#include <openssl/evp.h>
+#elif defined ACVP_NO_RUNTIME
+#include "app_fips_lcl.h"
+#include "app_fips_init_lcl.h"
 #ifdef fips_selftest_fail
 extern int fips_selftest_fail;
 #else
@@ -35,6 +37,7 @@ extern int fips_mode;
 int fips_mode;
 #endif
 #endif
+
 #include "safe_mem_lib.h"
 #include "safe_str_lib.h"
 
@@ -149,11 +152,20 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-#ifdef ACVP_NO_RUNTIME
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L && (defined ACVP_NO_RUNTIME || defined ACVP_FIPS_RUNTIME)
+    //sets the property "fips=yes" to be included implicitly in cipher fetches
+    EVP_default_properties_enable_fips(NULL, 1);
+    if (!EVP_default_properties_is_fips_enabled(NULL)) {
+        return 1;
+    }
+#endif
+
+#if OPENSSL_VERSION_NUMBER < 0x30000000L && defined ACVP_NO_RUNTIME
     fips_selftest_fail = 0;
     fips_mode = 0;
     fips_algtest_init_nofips();
 #endif
+
 
      setup_session_parameters();
 

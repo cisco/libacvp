@@ -775,6 +775,7 @@ ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
 LIBOBJS
+COND_ALG_CFLAGS
 SAFEC_LDFLAGS
 SAFEC_CFLAGS
 SAFEC_STUB_DIR
@@ -789,8 +790,10 @@ CRITERION_CFLAGS
 CLEANFILES
 LIBACVP_CFLAGS
 LIBACVP_LDFLAGS
-USE_FOM_FALSE
-USE_FOM_TRUE
+USE_FIPS_PROVIDER_FALSE
+USE_FIPS_PROVIDER_TRUE
+USE_FOM_OBJ_FALSE
+USE_FOM_OBJ_TRUE
 FOM_LDFLAGS
 FOM_CFLAGS
 LIBCURL_LDFLAGS
@@ -933,6 +936,8 @@ enable_lib
 with_libacvp_dir
 with_ssl_dir
 with_fom_dir
+enable_fips
+enable_runtime_fips
 enable_offline
 with_libcurl_dir
 with_libmurl_dir
@@ -1588,6 +1593,10 @@ Optional Features:
   --disable-libtool-lock  avoid locking (might break parallel builds)
   --disable-app           To build library only and not app code
   --disable-lib           To build acvp_app only without library
+  --enable-fips           Use FIPS mode with a build of SSL that supports
+                          testing all algorithms
+  --enable-runtime-fips   Use FIPS mode with a regular FIPS build of SSL, only
+                          supports some algorithms
   --enable-offline        Flag to indicate use of offline mode
   --enable-cflags         Flag to indicate use of enhanced CFLAGS
   --disable-kdf           For use if using a FOM with no KDF support, such as
@@ -1971,6 +1980,97 @@ $as_echo "$ac_res" >&6; }
   eval $as_lineno_stack; ${as_lineno_stack:+:} unset as_lineno
 
 } # ac_fn_c_check_func
+
+# ac_fn_c_check_header_mongrel LINENO HEADER VAR INCLUDES
+# -------------------------------------------------------
+# Tests whether HEADER exists, giving a warning if it cannot be compiled using
+# the include files in INCLUDES and setting the cache variable VAR
+# accordingly.
+ac_fn_c_check_header_mongrel ()
+{
+  as_lineno=${as_lineno-"$1"} as_lineno_stack=as_lineno_stack=$as_lineno_stack
+  if eval \${$3+:} false; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $2" >&5
+$as_echo_n "checking for $2... " >&6; }
+if eval \${$3+:} false; then :
+  $as_echo_n "(cached) " >&6
+fi
+eval ac_res=\$$3
+	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
+$as_echo "$ac_res" >&6; }
+else
+  # Is the header compilable?
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking $2 usability" >&5
+$as_echo_n "checking $2 usability... " >&6; }
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+$4
+#include <$2>
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  ac_header_compiler=yes
+else
+  ac_header_compiler=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_header_compiler" >&5
+$as_echo "$ac_header_compiler" >&6; }
+
+# Is the header present?
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking $2 presence" >&5
+$as_echo_n "checking $2 presence... " >&6; }
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <$2>
+_ACEOF
+if ac_fn_c_try_cpp "$LINENO"; then :
+  ac_header_preproc=yes
+else
+  ac_header_preproc=no
+fi
+rm -f conftest.err conftest.i conftest.$ac_ext
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_header_preproc" >&5
+$as_echo "$ac_header_preproc" >&6; }
+
+# So?  What about this header?
+case $ac_header_compiler:$ac_header_preproc:$ac_c_preproc_warn_flag in #((
+  yes:no: )
+    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: $2: accepted by the compiler, rejected by the preprocessor!" >&5
+$as_echo "$as_me: WARNING: $2: accepted by the compiler, rejected by the preprocessor!" >&2;}
+    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: $2: proceeding with the compiler's result" >&5
+$as_echo "$as_me: WARNING: $2: proceeding with the compiler's result" >&2;}
+    ;;
+  no:yes:* )
+    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: $2: present but cannot be compiled" >&5
+$as_echo "$as_me: WARNING: $2: present but cannot be compiled" >&2;}
+    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: $2:     check for missing prerequisite headers?" >&5
+$as_echo "$as_me: WARNING: $2:     check for missing prerequisite headers?" >&2;}
+    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: $2: see the Autoconf documentation" >&5
+$as_echo "$as_me: WARNING: $2: see the Autoconf documentation" >&2;}
+    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: $2:     section \"Present But Cannot Be Compiled\"" >&5
+$as_echo "$as_me: WARNING: $2:     section \"Present But Cannot Be Compiled\"" >&2;}
+    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: $2: proceeding with the compiler's result" >&5
+$as_echo "$as_me: WARNING: $2: proceeding with the compiler's result" >&2;}
+( $as_echo "## ------------------------------------------------------ ##
+## Report this to https://github.com/cisco/libacvp/issues ##
+## ------------------------------------------------------ ##"
+     ) | sed "s/^/$as_me: WARNING:     /" >&2
+    ;;
+esac
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $2" >&5
+$as_echo_n "checking for $2... " >&6; }
+if eval \${$3+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  eval "$3=\$ac_header_compiler"
+fi
+eval ac_res=\$$3
+	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
+$as_echo "$ac_res" >&6; }
+fi
+  eval $as_lineno_stack; ${as_lineno_stack:+:} unset as_lineno
+
+} # ac_fn_c_check_header_mongrel
 cat >config.log <<_ACEOF
 This file contains any messages produced by compilers while
 running configure, to aid debugging if configure makes a mistake.
@@ -4861,13 +4961,13 @@ if ${lt_cv_nm_interface+:} false; then :
 else
   lt_cv_nm_interface="BSD nm"
   echo "int some_variable = 0;" > conftest.$ac_ext
-  (eval echo "\"\$as_me:4864: $ac_compile\"" >&5)
+  (eval echo "\"\$as_me:4964: $ac_compile\"" >&5)
   (eval "$ac_compile" 2>conftest.err)
   cat conftest.err >&5
-  (eval echo "\"\$as_me:4867: $NM \\\"conftest.$ac_objext\\\"\"" >&5)
+  (eval echo "\"\$as_me:4967: $NM \\\"conftest.$ac_objext\\\"\"" >&5)
   (eval "$NM \"conftest.$ac_objext\"" 2>conftest.err > conftest.out)
   cat conftest.err >&5
-  (eval echo "\"\$as_me:4870: output\"" >&5)
+  (eval echo "\"\$as_me:4970: output\"" >&5)
   cat conftest.out >&5
   if $GREP 'External.*some_variable' conftest.out > /dev/null; then
     lt_cv_nm_interface="MS dumpbin"
@@ -6072,7 +6172,7 @@ ia64-*-hpux*)
   ;;
 *-*-irix6*)
   # Find out which ABI we are using.
-  echo '#line 6075 "configure"' > conftest.$ac_ext
+  echo '#line 6175 "configure"' > conftest.$ac_ext
   if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_compile\""; } >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -7601,11 +7701,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:7604: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:7704: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:7608: \$? = $ac_status" >&5
+   echo "$as_me:7708: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -7940,11 +8040,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:7943: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:8043: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:7947: \$? = $ac_status" >&5
+   echo "$as_me:8047: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -8045,11 +8145,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:8048: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:8148: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:8052: \$? = $ac_status" >&5
+   echo "$as_me:8152: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -8100,11 +8200,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:8103: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:8203: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:8107: \$? = $ac_status" >&5
+   echo "$as_me:8207: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -10470,7 +10570,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10473 "configure"
+#line 10573 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -10566,7 +10666,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10569 "configure"
+#line 10669 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -10886,12 +10986,22 @@ else
   with_fomdir=no
 fi
 
-    if test "x$ssldir" = "x" ; then
-        { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
-$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
-as_fn_error $? "ssl directory must be set if building the application
-See \`config.log' for more details" "$LINENO" 5; }
-    fi
+    # If using SSL >= 3.0.0, just enable fips, no path needed
+    # Check whether --enable-fips was given.
+if test "${enable_fips+set}" = set; then :
+  enableval=$enable_fips; use_dev_fips="yes"
+else
+  use_dev_fips="no"
+fi
+
+    #Only supports subset of algorithms due to needed intermediate values
+    # Check whether --enable-runtime-fips was given.
+if test "${enable_runtime_fips+set}" = set; then :
+  enableval=$enable_runtime_fips; use_runtime_fips="yes"
+else
+  use_runtime_fips="no"
+fi
+
 fi
 
 # Offline mode
@@ -11016,6 +11126,9 @@ pre_libs="$LIBS"
 # script modifies LDFLAGS to correctly search for libs. we unset these changes so
 # makefile.am have complete control over linker flags
 pre_ldflags="$LDFLAGS"
+found_crypto="false"
+found_ssl="false"
+ssl_lib64="false"
 
 if test "x$disable_lib_detection" = "xno"; then
     if test "$is_freebsd" != "1" && test "x$enable_offline" != "xfalse" && test "x$check_ldl" != "xfalse" ; then
@@ -11027,7 +11140,7 @@ if test "x$disable_lib_detection" = "xno"; then
     fi
     # Search for SSL and Crypto libs, and if it doesn't fail set the make vars accordingly
     if test "x$disable_app" = "xno" ; then
-        LDFLAGS="$LDFLAGS -L$ssldir/lib"
+        LDFLAGS="-L$ssldir/lib"
         { $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing EVP_EncryptInit" >&5
 $as_echo_n "checking for library containing EVP_EncryptInit... " >&6; }
 if ${ac_cv_search_EVP_EncryptInit+:} false; then :
@@ -11081,13 +11194,74 @@ $as_echo "$ac_cv_search_EVP_EncryptInit" >&6; }
 ac_res=$ac_cv_search_EVP_EncryptInit
 if test "$ac_res" != no; then :
   test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
+  found_crypto="true"
+else
 
+            LDFLAGS="-L$ssldir/lib64"
+            unset ac_cv_search_EVP_EncryptInit # This value gets referenced as a cache so needs unsetting
+            { $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing EVP_EncryptInit" >&5
+$as_echo_n "checking for library containing EVP_EncryptInit... " >&6; }
+if ${ac_cv_search_EVP_EncryptInit+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_func_search_save_LIBS=$LIBS
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char EVP_EncryptInit ();
+int
+main ()
+{
+return EVP_EncryptInit ();
+  ;
+  return 0;
+}
+_ACEOF
+for ac_lib in '' crypto; do
+  if test -z "$ac_lib"; then
+    ac_res="none required"
+  else
+    ac_res=-l$ac_lib
+    LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
+  fi
+  if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_search_EVP_EncryptInit=$ac_res
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext
+  if ${ac_cv_search_EVP_EncryptInit+:} false; then :
+  break
+fi
+done
+if ${ac_cv_search_EVP_EncryptInit+:} false; then :
+
+else
+  ac_cv_search_EVP_EncryptInit=no
+fi
+rm conftest.$ac_ext
+LIBS=$ac_func_search_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_search_EVP_EncryptInit" >&5
+$as_echo "$ac_cv_search_EVP_EncryptInit" >&6; }
+ac_res=$ac_cv_search_EVP_EncryptInit
+if test "$ac_res" != no; then :
+  test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
+  found_crypto="true" && ssl_lib64="true"
 else
   { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
 $as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
-as_fn_error $? "can't find openssl crypto lib
+as_fn_error $? "Can't locate libcrypto
 See \`config.log' for more details" "$LINENO" 5; }
 fi
+
+fi
+
 
         { $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing SSL_CTX_new" >&5
 $as_echo_n "checking for library containing SSL_CTX_new... " >&6; }
@@ -11146,7 +11320,7 @@ if test "$ac_res" != no; then :
 else
   { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
 $as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
-as_fn_error $? "can't find openssl ssl lib
+as_fn_error $? "can't locate libssl
 See \`config.log' for more details" "$LINENO" 5; }
 fi
 
@@ -11371,11 +11545,77 @@ fi
     fi
 fi
 
+#Check what version of SSL is being linked. Determines how any FIPS stuff is handled, and what APIs are used in some places
+proj_temp_cppflags="$CPPFLAGS"
+CPPFLAGS="-I$ssldir/include"
+ac_fn_c_check_header_mongrel "$LINENO" "openssl/opensslv.h" "ac_cv_header_openssl_opensslv_h" "$ac_includes_default"
+if test "x$ac_cv_header_openssl_opensslv_h" = xyes; then :
+
+else
+  { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
+$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
+as_fn_error $? "Unable to read opensslslv.h to determine SSL library version
+See \`config.log' for more details" "$LINENO" 5; }
+fi
+
+
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+        #include <openssl/opensslv.h>
+        #if OPENSSL_VERSION_NUMBER >= 0x30000000L
+        #error "Detected OpenSSL version 3.0.0 or greater"
+        #endif
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  use_ssl_3="false"
+else
+  use_ssl_3="true"
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+CPPFLAGS="$proj_temp_cppflags"
+
+#SSL versions < 3 use --with-fom-dir for FIPS. Versions >= 3 use --enable-fips or --enable-runtime-fips
+if test "x$use_ssl_3" = "xtrue" && test "x$with_fomdir" != "xno" ; then
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
+$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
+as_fn_error $? "--with-fom-dir should not be provided with versions of SSL greater than 1.1.1;
+                    use --enable-fips or --enable-runtime-fips instead
+See \`config.log' for more details" "$LINENO" 5; }
+fi
+if test "x$use_ssl_3" = "xtrue" && test "x$use_dev_fips" != "xno" && test "x$use_runtime_fips" != "xno" ; then
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
+$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
+as_fn_error $? "Either --enable-fips or --enable-runtime-fips can be used, but not both. See the README
+                    for more information.
+See \`config.log' for more details" "$LINENO" 5; }
+fi
+if test "x$use_ssl_3" != "xtrue" && (test "x$use_dev_fips" != "xno"|| test "x$use_runtime_fips" != "xno") ; then
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
+$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
+as_fn_error $? "For versions of SSL under 3.0.0, use --with-fom-dir=<path> to use FIPS, not --enable-fips or
+                    --enable-runtime-fips
+See \`config.log' for more details" "$LINENO" 5; }
+fi
+
 if test "x$disable_app" = "xno" ; then
     SSL_CFLAGS="-I$ssldir/include"
 
-    SSL_LDFLAGS="-L$ssldir/lib -lcrypto"
+    if test "x$ssl_lib64" = "xtrue" ; then
+        SSL_LDFLAGS="-L$ssldir/lib64 -lcrypto"
 
+    else
+        SSL_LDFLAGS="-L$ssldir/lib -lcrypto"
+
+    fi
 
 fi
 if test "x$libcurldir" != "x" ; then
@@ -11396,39 +11636,54 @@ fi
 LDFLAGS="$pre_ldflags"
 LIBS="$pre_libs"
 
-if test "x$with_fomdir" != "xno"; then :
-  if test "x$disable_kdf" != "xfalse"; then :
-  FOM_CFLAGS="-DACVP_NO_RUNTIME -DOPENSSL_FIPS -I$fomdir/include"
+#Set any applicable FIPS flags
+if test "x$with_fomdir" != "xno" ; then
+    FOM_CFLAGS="-DACVP_NO_RUNTIME -DOPENSSL_FIPS -I$fomdir/include"
 
+    FOM_LDFLAGS="-L$fomdir/lib"
+
+    FOM_OBJ_DIR="$fomdir/lib"
+
+elif test "x$use_dev_fips" != "xno" ; then
+    FOM_CFLAGS="-DACVP_NO_RUNTIME"
+
+elif test "x$use_runtime_fips" != "xno" ; then
+    FOM_CFLAGS="-DACVP_FIPS_RUNTIME"
+
+fi
+ if test "x$with_fomdir" != "xno"; then
+  USE_FOM_OBJ_TRUE=
+  USE_FOM_OBJ_FALSE='#'
 else
-  FOM_CFLAGS="-DACVP_NO_RUNTIME -DOPENSSL_FIPS -DOPENSSL_KDF_SUPPORT -I$fomdir/include"
-
+  USE_FOM_OBJ_TRUE='#'
+  USE_FOM_OBJ_FALSE=
 fi
-       FOM_LDFLAGS="-L$fomdir/lib"
 
-       FOM_OBJ_DIR="$fomdir/lib"
-
-
-
-fi
- if test "x$with_fomdir" != xno; then
-  USE_FOM_TRUE=
-  USE_FOM_FALSE='#'
+ if test "x$use_dev_fips" != "xno" || test "x$use_runtime_fips" != "xno"; then
+  USE_FIPS_PROVIDER_TRUE=
+  USE_FIPS_PROVIDER_FALSE='#'
 else
-  USE_FOM_TRUE='#'
-  USE_FOM_FALSE=
+  USE_FIPS_PROVIDER_TRUE='#'
+  USE_FIPS_PROVIDER_FALSE=
 fi
 
 
-# build libacvp statically (Has no impact on whether it is built dynamically too) and
-# make the app link to dependencies statically where possible
+#Conditionally included algorithms should be added to cond_alg_cflags here
+if test "x$disable_kdf" != "xfalse" ; then
+    cond_alg_cflags="$cond_alg_cflags -DOPENSSL_KDF_SUPPORT"
+fi
+
+#offline builds are linked statically for versions < 3.0.0. 3.0.0 does not support FIPS static linking.
+#3.0.0 offline build just means Curl is not needed.
 if test "x$enable_offline" != "xfalse" ; then
-    LDFLAGS="-static $LDFLAGS"
-    CFLAGS="$CFLAGS -DACVP_OFFLINE"
-    if test "x$disable_app" = "xno" ; then
-        #Note: User needs FIPSLD_CC defined in environment after configuring
-        CC="$fomdir/bin/fipsld"
+    if test "x#use_ssl_3" != "xyes" ; then
+        LDFLAGS="-static $LDFLAGS"
+        if test "x$disable_app" = "xno" ; then
+            #Note: User needs FIPSLD_CC defined in environment after configuring
+            CC="$fomdir/bin/fipsld"
+        fi
     fi
+    CFLAGS="$CFLAGS -DACVP_OFFLINE"
 fi
 
 
@@ -11506,6 +11761,10 @@ safecdir="$SAFEC_STUB_DIR"
 SAFEC_CFLAGS="-I$safecdir/include"
 
 SAFEC_LDFLAGS="$safecdir/lib/libsafe_lib.la"
+
+
+#At the end, SUBST any conditional algorithm cflags we have acquired
+COND_ALG_CFLAGS="$cond_alg_cflags"
 
 
 # Default installation directory
@@ -11696,8 +11955,12 @@ if test -z "${LIB_NOT_SUPPORTED_TRUE}" && test -z "${LIB_NOT_SUPPORTED_FALSE}"; 
   as_fn_error $? "conditional \"LIB_NOT_SUPPORTED\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
-if test -z "${USE_FOM_TRUE}" && test -z "${USE_FOM_FALSE}"; then
-  as_fn_error $? "conditional \"USE_FOM\" was never defined.
+if test -z "${USE_FOM_OBJ_TRUE}" && test -z "${USE_FOM_OBJ_FALSE}"; then
+  as_fn_error $? "conditional \"USE_FOM_OBJ\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${USE_FIPS_PROVIDER_TRUE}" && test -z "${USE_FIPS_PROVIDER_FALSE}"; then
+  as_fn_error $? "conditional \"USE_FIPS_PROVIDER\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${UNIT_TEST_SUPPORTED_TRUE}" && test -z "${UNIT_TEST_SUPPORTED_FALSE}"; then
