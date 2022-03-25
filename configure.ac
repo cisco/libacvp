@@ -218,9 +218,9 @@ if test "x$disable_lib_detection" = "xno"; then
     fi
     # Search for SSL and Crypto libs, and if it doesn't fail set the make vars accordingly
     if test "x$disable_app" = "xno" ; then
-        LDFLAGS="-L$ssldir/lib"
+        LDFLAGS="-L$ssldir/lib $LDFLAGS"
         AC_SEARCH_LIBS([EVP_EncryptInit], [crypto], [found_crypto="true"], [
-            LDFLAGS="-L$ssldir/lib64"
+            LDFLAGS="-L$ssldir/lib64 $LDFLAGS"
             unset ac_cv_search_EVP_EncryptInit # This value gets referenced as a cache so needs unsetting
             AC_SEARCH_LIBS([EVP_EncryptInit], [crypto], [found_crypto="true" && ssl_lib64="true"], 
                            [AC_MSG_FAILURE([Can't locate libcrypto])], [])],
