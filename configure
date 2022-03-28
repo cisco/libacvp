@@ -11543,7 +11543,6 @@ fi
 
 
     fi
-fi
 
 #Check what version of SSL is being linked. Determines how any FIPS stuff is handled, and what APIs are used in some places
 proj_temp_cppflags="$CPPFLAGS"
@@ -11583,6 +11582,10 @@ fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 CPPFLAGS="$proj_temp_cppflags"
 
+else
+    #assume we are using openssl < 3 if lib check is disabled
+    use_ssl_3="false"
+fi
 #SSL versions < 3 use --with-fom-dir for FIPS. Versions >= 3 use --enable-fips or --enable-runtime-fips
 if test "x$use_ssl_3" = "xtrue" && test "x$with_fomdir" != "xno" ; then
     { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
