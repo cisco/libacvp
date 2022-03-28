@@ -257,7 +257,6 @@ if test "x$disable_lib_detection" = "xno"; then
             [AC_MSG_NOTICE([Murl not found in provided murl dir])])
 
     fi
-fi
 
 #Check what version of SSL is being linked. Determines how any FIPS stuff is handled, and what APIs are used in some places
 proj_temp_cppflags="$CPPFLAGS"
@@ -274,6 +273,10 @@ AC_COMPILE_IFELSE(
     [use_ssl_3="true"])
 CPPFLAGS="$proj_temp_cppflags"
 
+else
+    #assume we are using openssl < 3 if lib check is disabled
+    use_ssl_3="false"
+fi
 #SSL versions < 3 use --with-fom-dir for FIPS. Versions >= 3 use --enable-fips or --enable-runtime-fips
 if test "x$use_ssl_3" = "xtrue" && test "x$with_fomdir" != "xno" ; then
     AC_MSG_FAILURE([--with-fom-dir should not be provided with versions of SSL greater than 1.1.1;
