@@ -11679,7 +11679,7 @@ fi
 #offline builds are linked statically for versions < 3.0.0. 3.0.0 does not support FIPS static linking.
 #3.0.0 offline build just means Curl is not needed.
 if test "x$enable_offline" != "xfalse" ; then
-    if test "x$use_ssl_3" != "xyes" ; then
+    if test "x$use_ssl_3" != "xtrue" ; then
         LDFLAGS="-static $LDFLAGS"
         if test "x$disable_app" = "xno" ; then
             #Note: User needs FIPSLD_CC defined in environment after configuring
