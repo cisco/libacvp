@@ -2078,7 +2078,11 @@ static ACVP_RESULT acvp_build_login(ACVP_CTX *ctx, char **login, int *login_len,
         token = calloc(ACVP_TOTP_TOKEN_MAX + 1, sizeof(char));
         if (!token) return ACVP_MALLOC_FAIL;
 
-        ctx->totp_cb(&token, ACVP_TOTP_TOKEN_MAX);
+        rv = ctx->totp_cb(&token, ACVP_TOTP_TOKEN_MAX);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Error occured in application callback while generating TOTP");
+            goto err;
+        }
         if (strnlen_s(token, ACVP_TOTP_TOKEN_MAX + 1) > ACVP_TOTP_TOKEN_MAX) {
             ACVP_LOG_ERR("totp cb generated a token that is too long");
             json_value_free(pw_val);

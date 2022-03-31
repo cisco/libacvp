@@ -25,6 +25,7 @@ int app_cmac_handler(ACVP_TEST_CASE *test_case) {
     EVP_MAC_CTX *cmac_ctx = NULL;
     OSSL_PARAM params[2];
     const char *alg_name = NULL;
+    char *aname = NULL;
 #else
     CMAC_CTX *cmac_ctx = NULL;
     const EVP_CIPHER *c = NULL;
@@ -101,8 +102,9 @@ int app_cmac_handler(ACVP_TEST_CASE *test_case) {
         printf("Error: unable to create CMAC CTX");
         goto end;
     }
-
-    params[0] = OSSL_PARAM_construct_utf8_string("cipher", (char*)alg_name, 0);
+    aname = calloc(256, sizeof(char)); //avoid const removal warnings
+    strcpy_s(aname, 256, alg_name);
+    params[0] = OSSL_PARAM_construct_utf8_string("cipher", aname, 0);
     params[1] = OSSL_PARAM_construct_end();
 
 #define CMAC_BUF_MAX 128
@@ -222,6 +224,7 @@ end:
 #if OPENSSL_VERSION_NUMBER >= 0x30000000L && !defined ACVP_DEPRECATED_MAC
     if (cmac_ctx) EVP_MAC_CTX_free(cmac_ctx);
     if (mac) EVP_MAC_free(mac);
+    if (aname) free(aname);
 #else
     if (cmac_ctx) CMAC_CTX_free(cmac_ctx);
 #endif

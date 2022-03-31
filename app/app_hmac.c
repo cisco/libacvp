@@ -15,6 +15,7 @@
 #if defined ACVP_NO_RUNTIME && OPENSSL_VERSION_NUMBER < 0x30000000L
 #include "app_fips_lcl.h"
 #endif
+#include "safe_lib.h"
 
 int app_hmac_handler(ACVP_TEST_CASE *test_case) {
     ACVP_HMAC_TC    *tc;
@@ -22,7 +23,8 @@ int app_hmac_handler(ACVP_TEST_CASE *test_case) {
     EVP_MAC *mac = NULL;
     EVP_MAC_CTX *hmac_ctx = NULL;
     OSSL_PARAM params[2];
-    const char *md_name;
+    const char *md_name = NULL;
+    char *mdname = NULL;
 #else
     const EVP_MD *md = NULL;
     HMAC_CTX *hmac_ctx = NULL;
@@ -99,7 +101,9 @@ int app_hmac_handler(ACVP_TEST_CASE *test_case) {
         goto end;
     }
 
-    params[0] = OSSL_PARAM_construct_utf8_string("digest", (char*)md_name, 0);
+    mdname = calloc(256, sizeof(char)); //avoid const removal warnings
+    strcpy_s(mdname, 256, md_name);
+    params[0] = OSSL_PARAM_construct_utf8_string("digest", mdname, 0);
     params[1] = OSSL_PARAM_construct_end();
 
 #define HMAC_BUF_MAX 128
@@ -188,6 +192,7 @@ end:
 #if OPENSSL_VERSION_NUMBER >= 0x30000000L && !defined ACVP_DEPRECATED_MAC
     if (hmac_ctx) EVP_MAC_CTX_free(hmac_ctx);
     if (mac) EVP_MAC_free(mac);
+    if (mdname) free(mdname);
 #else
     if (hmac_ctx) HMAC_CTX_free(hmac_ctx);
 #endif
