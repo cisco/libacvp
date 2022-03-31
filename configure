@@ -11131,10 +11131,49 @@ found_ssl="false"
 ssl_lib64="false"
 
 if test "x$disable_lib_detection" = "xno"; then
+    #Check what version of SSL is being linked. Determines how any FIPS stuff is handled, and what APIs are used in some places
+    proj_temp_cppflags="$CPPFLAGS"
+    CPPFLAGS="-I$ssldir/include"
+    ac_fn_c_check_header_mongrel "$LINENO" "openssl/opensslv.h" "ac_cv_header_openssl_opensslv_h" "$ac_includes_default"
+if test "x$ac_cv_header_openssl_opensslv_h" = xyes; then :
+
+else
+  { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
+$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
+as_fn_error $? "Unable to read opensslslv.h to determine SSL library version
+See \`config.log' for more details" "$LINENO" 5; }
+fi
+
+
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+            #include <openssl/opensslv.h>
+            #if OPENSSL_VERSION_NUMBER >= 0x30000000L
+            #error "Detected OpenSSL version 3.0.0 or greater"
+            #endif
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  use_ssl_3="false"
+else
+  use_ssl_3="true"
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+    CPPFLAGS="$proj_temp_cppflags"
+
+    #set LDFLAGS for libdetection
     if test "$is_freebsd" != "1" && test "x$enable_offline" != "xfalse" && test "x$check_ldl" != "xfalse" ; then
         LIBS="-ldl $LIBS"
     fi
-    if test "x$enable_offline" != "xfalse" ; then
+    if test "x$enable_offline" != "xfalse" && test "x$use_ssl_3" != "xtrue" ; then
         #Some platforms have multiple definitions. Allow them for JUST the library test stage.
         LDFLAGS="-static -Wl,--allow-multiple-definition $LDFLAGS"
     fi
@@ -11543,45 +11582,6 @@ fi
 
 
     fi
-
-#Check what version of SSL is being linked. Determines how any FIPS stuff is handled, and what APIs are used in some places
-proj_temp_cppflags="$CPPFLAGS"
-CPPFLAGS="-I$ssldir/include"
-ac_fn_c_check_header_mongrel "$LINENO" "openssl/opensslv.h" "ac_cv_header_openssl_opensslv_h" "$ac_includes_default"
-if test "x$ac_cv_header_openssl_opensslv_h" = xyes; then :
-
-else
-  { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
-$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
-as_fn_error $? "Unable to read opensslslv.h to determine SSL library version
-See \`config.log' for more details" "$LINENO" 5; }
-fi
-
-
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-        #include <openssl/opensslv.h>
-        #if OPENSSL_VERSION_NUMBER >= 0x30000000L
-        #error "Detected OpenSSL version 3.0.0 or greater"
-        #endif
-
-int
-main ()
-{
-
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"; then :
-  use_ssl_3="false"
-else
-  use_ssl_3="true"
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-CPPFLAGS="$proj_temp_cppflags"
-
 else
     #assume we are using openssl < 3 if lib check is disabled
     use_ssl_3="false"

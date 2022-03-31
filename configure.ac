@@ -209,10 +209,26 @@ found_ssl="false"
 ssl_lib64="false"
 
 if test "x$disable_lib_detection" = "xno"; then
+    #Check what version of SSL is being linked. Determines how any FIPS stuff is handled, and what APIs are used in some places
+    proj_temp_cppflags="$CPPFLAGS"
+    CPPFLAGS="-I$ssldir/include"
+    AC_CHECK_HEADER([openssl/opensslv.h], [], [AC_MSG_FAILURE([Unable to read opensslslv.h to determine SSL library version])])
+    AC_COMPILE_IFELSE(
+        [AC_LANG_PROGRAM([[
+            #include <openssl/opensslv.h>
+            #if OPENSSL_VERSION_NUMBER >= 0x30000000L
+            #error "Detected OpenSSL version 3.0.0 or greater"
+            #endif
+        ]])],
+        [use_ssl_3="false"],
+        [use_ssl_3="true"])
+    CPPFLAGS="$proj_temp_cppflags"
+
+    #set LDFLAGS for libdetection
     if test "$is_freebsd" != "1" && test "x$enable_offline" != "xfalse" && test "x$check_ldl" != "xfalse" ; then
         LIBS="-ldl $LIBS"
     fi
-    if test "x$enable_offline" != "xfalse" ; then
+    if test "x$enable_offline" != "xfalse" && test "x$use_ssl_3" != "xtrue" ; then
         #Some platforms have multiple definitions. Allow them for JUST the library test stage.
         LDFLAGS="-static -Wl,--allow-multiple-definition $LDFLAGS"
     fi
@@ -257,22 +273,6 @@ if test "x$disable_lib_detection" = "xno"; then
             [AC_MSG_NOTICE([Murl not found in provided murl dir])])
 
     fi
-
-#Check what version of SSL is being linked. Determines how any FIPS stuff is handled, and what APIs are used in some places
-proj_temp_cppflags="$CPPFLAGS"
-CPPFLAGS="-I$ssldir/include"
-AC_CHECK_HEADER([openssl/opensslv.h], [], [AC_MSG_FAILURE([Unable to read opensslslv.h to determine SSL library version])])
-AC_COMPILE_IFELSE(
-    [AC_LANG_PROGRAM([[
-        #include <openssl/opensslv.h>
-        #if OPENSSL_VERSION_NUMBER >= 0x30000000L
-        #error "Detected OpenSSL version 3.0.0 or greater"
-        #endif
-    ]])],
-    [use_ssl_3="false"],
-    [use_ssl_3="true"])
-CPPFLAGS="$proj_temp_cppflags"
-
 else
     #assume we are using openssl < 3 if lib check is disabled
     use_ssl_3="false"
