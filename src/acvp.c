@@ -868,18 +868,24 @@ static void acvp_cap_free_hash_pairs(ACVP_RSA_HASH_PAIR_LIST *list) {
     }
 }
 
-static void acvp_list_failing_algorithms(ACVP_CTX *ctx, ACVP_STRING_LIST **list) {
+static void acvp_list_failing_algorithms(ACVP_CTX *ctx, ACVP_STRING_LIST **list, ACVP_STRING_LIST **modes) {
     if (!list || *list == NULL) {
         return;
     }
     ACVP_STRING_LIST *iterator = *list;
-    if (!iterator || !iterator->string) {
+    ACVP_STRING_LIST *mode_iterator = *modes;
+    if (!iterator || !iterator->string || !mode_iterator || !mode_iterator->string) {
         return;
     }
     ACVP_LOG_STATUS("Failing algorithms:");
-    while (iterator && iterator->string) {
-        ACVP_LOG_STATUS("    %s", iterator->string);
+    while (iterator && iterator->string && mode_iterator && mode_iterator->string) {
+        if (strnlen_s(mode_iterator->string, ACVP_ALG_MODE_MAX) < 1) {
+            ACVP_LOG_STATUS("    %s", iterator->string);
+        } else {
+            ACVP_LOG_STATUS("    %s, Mode: %s", iterator->string, mode_iterator->string);
+        }
         iterator = iterator->next;
+        mode_iterator = mode_iterator->next;
     }
 }
 
@@ -2902,7 +2908,9 @@ static ACVP_RESULT acvp_dispatch_vector_set(ACVP_CTX *ctx, JSON_Object *obj) {
 
     ACVP_LOG_STATUS("Processing vector set: %d", vs_id);
     ACVP_LOG_STATUS("Algorithm: %s", alg);
-
+    if (mode) {
+        ACVP_LOG_STATUS("Mode: %s", mode);
+    }
     for (i = 0; i < ACVP_ALG_MAX; i++) {
         strcmp_s(alg_tbl[i].name,
                  ACVP_ALG_NAME_MAX,
@@ -2965,12 +2973,12 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
     int count = 0, i = 0, passed = 0;
     JSON_Array *results = NULL;
     JSON_Object *current = NULL;
-    const char *status = NULL;
-
+    const char *status = NULL, *alg = NULL, *mode = NULL;
     unsigned int time_waited_so_far = 0;
     int retry_interval = ACVP_RETRY_TIME;
     //Maintains a list of names of algorithms that have failed
     ACVP_STRING_LIST *failedAlgList = NULL;
+    ACVP_STRING_LIST *failedModeList = NULL;
     /*
      * Maintains a list of the vector set URLs we have already looked up,
      * so we don't redownload failed vector sets every time a retry is done
@@ -3075,19 +3083,33 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
                         ACVP_LOG_ERR("JSON parse error while reporting failed algorithms, skipping...");
                         continue;
                     }
-                    const char *alg = json_object_get_string(obj2, "algorithm");
+                    alg = json_object_get_string(obj2, "algorithm");
                     if (!alg) {
                         ACVP_LOG_ERR("JSON parse error while reporting failed algorithms, skipping...");
                         continue;
                     }
-                    if (!acvp_lookup_str_list(&failedAlgList, alg)) {
+                    //Some algorithms have the same names, but different modes. Need to differentiate.
+                    if (json_object_get_string(obj2, "mode")) {
+                        mode = json_object_get_string(obj2, "mode");
+                    }
+                    if (!acvp_lookup_str_list(&failedAlgList, alg) || !acvp_lookup_str_list(&failedModeList, mode)) {
                         rv = acvp_append_str_list(&failedAlgList, alg);
-                        if (val2) json_value_free(val2);
-                        val2 = NULL;
                         if (rv != ACVP_SUCCESS) {
                             ACVP_LOG_ERR("Error appending failed algorithm name to list, skipping...");
                             continue;
                         }
+                        if (mode) {
+                            rv = acvp_append_str_list(&failedModeList, mode);
+                        } else {
+                            //use empty node to keep mode and algorithm indexes aligned in lists
+                            rv = acvp_append_str_list(&failedModeList, "");
+                        }
+                        if (rv != ACVP_SUCCESS) {
+                            ACVP_LOG_ERR("Error appending failed mode name to list, skipping...");
+                            continue;
+                        }
+                        if (val2) json_value_free(val2);
+                        val2 = NULL;
                     } else {
                         if (val2) json_value_free(val2);
                         val2 = NULL;
@@ -3112,13 +3134,13 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
                   */
                  ACVP_LOG_STATUS("Test session complete: some vectors failed, reporting results...");
                  ACVP_LOG_STATUS("Note: Use verbose-level logging to see results of each test case");
-                 acvp_list_failing_algorithms(ctx, &failedAlgList);
+                 acvp_list_failing_algorithms(ctx, &failedAlgList, &failedModeList);
              }
         } else {
               /*
              * If any tests are incomplete, retry, even if some have failed
              */
-            acvp_list_failing_algorithms(ctx, &failedAlgList);
+            acvp_list_failing_algorithms(ctx, &failedAlgList, &failedModeList);
             ACVP_LOG_STATUS("TestSession results incomplete...");
             if (acvp_retry_handler(ctx, &retry_interval, &time_waited_so_far, 1, ACVP_WAITING_FOR_RESULTS) != ACVP_KAT_DOWNLOAD_RETRY) {
                 ACVP_LOG_STATUS("Maximum wait time with server reached! (Max: %d seconds)", ACVP_MAX_WAIT_TIME);
@@ -3174,6 +3196,9 @@ end:
     if (val) json_value_free(val);
     if (failedAlgList) {
         acvp_free_str_list(&failedAlgList);
+    }
+    if (failedModeList) {
+        acvp_free_str_list(&failedModeList);
     }
     if (failedVsList) {
         acvp_free_str_list(&failedVsList);

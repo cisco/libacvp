@@ -102,6 +102,10 @@ int app_hmac_handler(ACVP_TEST_CASE *test_case) {
     }
 
     mdname = calloc(256, sizeof(char)); //avoid const removal warnings
+    if (!mdname) {
+        printf("Error allocating memory for HMAC test\n");
+        goto end;
+    }
     strcpy_s(mdname, 256, md_name);
     params[0] = OSSL_PARAM_construct_utf8_string("digest", mdname, 0);
     params[1] = OSSL_PARAM_construct_end();

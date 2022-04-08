@@ -103,6 +103,10 @@ int app_cmac_handler(ACVP_TEST_CASE *test_case) {
         goto end;
     }
     aname = calloc(256, sizeof(char)); //avoid const removal warnings
+    if (!aname) {
+        printf("Error allocating memory for CMAC test\n");
+        goto end;
+    }
     strcpy_s(aname, 256, alg_name);
     params[0] = OSSL_PARAM_construct_utf8_string("cipher", aname, 0);
     params[1] = OSSL_PARAM_construct_end();
