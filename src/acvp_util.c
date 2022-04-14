@@ -1067,7 +1067,7 @@ ACVP_RESULT acvp_append_str_list(ACVP_STRING_LIST **list, const char *string) {
  */
 int acvp_lookup_str_list(ACVP_STRING_LIST **list, const char *string) {
     ACVP_STRING_LIST *tmp = NULL;
-    if (!list || *list == NULL) {
+    if (!list || *list == NULL || !string) {
         return 0;
     }
     tmp = *list;

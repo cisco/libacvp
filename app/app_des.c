@@ -125,6 +125,10 @@ int app_des_handler(ACVP_TEST_CASE *test_case) {
     if (tc->test_type == ACVP_SYM_TEST_TYPE_MCT) {
 #if OPENSSL_VERSION_NUMBER >= 0x30000000L
         ctx_iv = calloc(8, sizeof(unsigned char));
+        if (!ctx_iv) {
+            printf("Error allocating memory for TDES test\n");
+            goto err;
+        }
 #else
         ctx_iv = EVP_CIPHER_CTX_iv(cipher_ctx);
 #endif
