@@ -775,6 +775,13 @@ typedef enum acvp_kdf_tls13_param {
     ACVP_KDF_TLS13_RUNNING_MODE
 } ACVP_KDF_TLS13_PARM;
 
+/** @enum ACVP_RSA_TESTTYPE */
+typedef enum acvp_rsa_test_type {
+    ACVP_RSA_TESTTYPE_KAT = 1, /**< Known Answer Test */
+    ACVP_RSA_TESTTYPE_AFT,     /**< Algorithm Functional Test */
+    ACVP_RSA_TESTTYPE_GDT      /**< Generated Data Test */
+} ACVP_RSA_TESTTYPE;
+
 /** @enum ACVP_RSA_KEY_FORMAT */
 typedef enum acvp_rsa_key_format {
     ACVP_RSA_KEY_FORMAT_STANDARD = 1, /**< Standard */
@@ -1371,6 +1378,7 @@ typedef struct acvp_cmac_tc_t {
 typedef struct acvp_rsa_keygen_tc_t {
     unsigned int tc_id;    /**< Test case id */
     ACVP_HASH_ALG hash_alg;
+    ACVP_RSA_TESTTYPE test_type;
     ACVP_RSA_PRIME_TEST_TYPE prime_test;
     char *prime_result;
     char *pub_exp;
@@ -1379,8 +1387,8 @@ typedef struct acvp_rsa_keygen_tc_t {
     ACVP_RSA_PUB_EXP_MODE pub_exp_mode;
     ACVP_RSA_KEY_FORMAT key_format;
     int info_gen_by_server;
+    int test_disposition;
     unsigned int modulo;
-    int e_len;
 
     unsigned char *e;
     unsigned char *p_rand;
@@ -1410,6 +1418,7 @@ typedef struct acvp_rsa_keygen_tc_t {
     int bitlen3;
     int bitlen4;
 
+    int e_len;
     int n_len;
     int d_len;
     int p_len;

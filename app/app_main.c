@@ -2176,32 +2176,47 @@ static int enable_rsa(ACVP_CTX *ctx) {
     /*
      * Enable RSA keygen...
      */
-#ifdef NOT_SUPPORTED_BY_OPENSSL
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L || defined NOT_SUPPORTED_BY_OPENSSL
     rv = acvp_cap_rsa_keygen_enable(ctx, ACVP_RSA_KEYGEN, &app_rsa_keygen_handler);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_RSA_KEYGEN, ACVP_PREREQ_SHA, value);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_RSA_KEYGEN, ACVP_PREREQ_DRBG, value);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_rsa_keygen_set_parm(ctx, ACVP_RSA_PARM_PUB_EXP_MODE, ACVP_RSA_PUB_EXP_MODE_FIXED);
-    CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_rsa_keygen_set_parm(ctx, ACVP_RSA_PARM_INFO_GEN_BY_SERVER, 1);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_rsa_keygen_set_parm(ctx, ACVP_RSA_PARM_KEY_FORMAT_CRT, 0);
     CHECK_ENABLE_CAP_RV(rv);
-
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+    rv = acvp_cap_rsa_keygen_set_parm(ctx, ACVP_RSA_PARM_PUB_EXP_MODE, ACVP_RSA_PUB_EXP_MODE_RANDOM);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_rsa_keygen_set_mode(ctx, ACVP_RSA_KEYGEN_B36);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_rsa_keygen_set_primes(ctx, ACVP_RSA_KEYGEN_B36, 2048,
+                                        ACVP_RSA_PRIME_TEST, ACVP_RSA_PRIME_TEST_TBLC2);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_rsa_keygen_set_primes(ctx, ACVP_RSA_KEYGEN_B36, 3072,
+                                        ACVP_RSA_PRIME_TEST, ACVP_RSA_PRIME_TEST_TBLC2);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_rsa_keygen_set_primes(ctx, ACVP_RSA_KEYGEN_B36, 4096,
+                                        ACVP_RSA_PRIME_TEST, ACVP_RSA_PRIME_TEST_TBLC2);
+    CHECK_ENABLE_CAP_RV(rv);
+#else
+    rv = acvp_cap_rsa_keygen_set_parm(ctx, ACVP_RSA_PARM_PUB_EXP_MODE, ACVP_RSA_PUB_EXP_MODE_FIXED);
+    CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_rsa_keygen_set_exponent(ctx, ACVP_RSA_PARM_FIXED_PUB_EXP_VAL, expo_str);
     CHECK_ENABLE_CAP_RV(rv);
-
     rv = acvp_cap_rsa_keygen_set_mode(ctx, ACVP_RSA_KEYGEN_B34);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_rsa_keygen_set_primes(ctx, ACVP_RSA_KEYGEN_B34, 2048,
-                                        ACVP_RSA_PRIME_HASH_ALG, ACVP_SHA256);
+                                      ACVP_RSA_PRIME_HASH_ALG, ACVP_SHA256);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_rsa_keygen_set_primes(ctx, ACVP_RSA_KEYGEN_B34, 3072,
                                         ACVP_RSA_PRIME_HASH_ALG, ACVP_SHA256);
     CHECK_ENABLE_CAP_RV(rv);
 #endif
+#endif
+
     /*
      * Enable siggen
      */
