@@ -399,6 +399,11 @@
 #define ACVP_PREREQ_VAL_STR "valValue"
 #define ACVP_PREREQ_OBJ_STR "prereqVals"
 
+#define ACVP_TESTTYPE_STR_KAT "KAT"
+#define ACVP_TESTTYPE_STR_AFT "AFT"
+#define ACVP_TESTTYPE_STR_VOL "VOL"
+#define ACVP_TESTTYPE_STR_GDT "GDT"
+
 #define ACVP_DRBG_MODE_TDES          "TDES"
 #define ACVP_DRBG_MODE_AES_128       "AES-128"
 #define ACVP_DRBG_MODE_AES_192       "AES-192"

@@ -101,10 +101,117 @@ err:
 }
 #else
 int app_rsa_keygen_handler(ACVP_TEST_CASE *test_case) {
+    ACVP_RSA_KEYGEN_TC *tc = NULL;
+    int rv = 1;
+    /** storage for BN inputs */
+    BIGNUM *xp1 = NULL, *xp2 = NULL, *xp = NULL, *xq1 = NULL, *xq2 = NULL, *xq = NULL;
+    /** storage for output values before converting to binary */
+    BIGNUM *p = NULL, *q = NULL, *n = NULL, *d = NULL, *e = NULL;
+    EVP_PKEY *pkey = NULL;
+    EVP_PKEY_CTX *pkey_ctx = NULL;
+    OSSL_PARAM *params = NULL;
+    OSSL_PARAM_BLD *pkey_pbld = NULL;
+
     if (!test_case) {
-        return -1;
+        printf("Missing test_case\n");
+        return 1;
     }
-    return 1;
+
+    tc = test_case->tc.rsa_keygen;
+    e = BN_bin2bn(tc->e, tc->e_len, NULL);
+    xp = BN_bin2bn(tc->xp, tc->xp_len, NULL);
+    xp1 = BN_bin2bn(tc->xp1, tc->xp1_len, NULL);
+    xp2 = BN_bin2bn(tc->xp2, tc->xp2_len, NULL);
+    xq = BN_bin2bn(tc->xq, tc->xq_len, NULL);
+    xq1 = BN_bin2bn(tc->xq1, tc->xq1_len, NULL);
+    xq2 = BN_bin2bn(tc->xq2, tc->xq2_len, NULL);
+    if (!e || !xp || !xp1 || !xp2 || !xq || !xq1 || !xq2) {
+        printf("Error generating BN params from test case in RSA keygen\n");
+        goto err;
+    }
+
+    pkey_pbld = OSSL_PARAM_BLD_new();
+    OSSL_PARAM_BLD_push_BN(pkey_pbld, "e", e);
+    OSSL_PARAM_BLD_push_uint(pkey_pbld, "bits", tc->modulo);
+    OSSL_PARAM_BLD_push_BN(pkey_pbld, "xp", xp);
+    OSSL_PARAM_BLD_push_BN(pkey_pbld, "xp1", xp1);
+    OSSL_PARAM_BLD_push_BN(pkey_pbld, "xp2", xp2);
+    OSSL_PARAM_BLD_push_BN(pkey_pbld, "xq", xq);
+    OSSL_PARAM_BLD_push_BN(pkey_pbld, "xq1", xq1); 
+    OSSL_PARAM_BLD_push_BN(pkey_pbld, "xq2", xq2);
+    params = OSSL_PARAM_BLD_to_param(pkey_pbld);
+    if (!params) {
+        printf("Error generating parameters for pkey generation in RSA keygen\n");
+    }
+
+    pkey_ctx = EVP_PKEY_CTX_new_from_name(NULL, "RSA", NULL);
+    if (!pkey_ctx) {
+        printf("Error initializing pkey ctx for RSA keygen\n");
+        goto err;
+    }
+    if (EVP_PKEY_keygen_init(pkey_ctx) != 1) {
+        printf("Error initializing pkey in RSA ctx\n");
+        goto err;
+    }
+    if (EVP_PKEY_CTX_set_params(pkey_ctx, params) != 1) {
+        printf("Error setting params for pkey generation in RSA keygen\n");
+        goto err;
+    }
+    EVP_PKEY_keygen(pkey_ctx, &pkey);
+    if (!pkey) {
+        printf("Error generating pkey in RSA keygen\n");
+        goto err;
+    }
+
+    if (EVP_PKEY_get_bn_param(pkey, "rsa-factor1", &p) == 1) {
+        tc->p_len = BN_bn2bin(p, tc->p);
+    } else {
+        printf("Error retreiving p from pkey in RSA keygen\n");
+        goto err;
+    }
+    if (EVP_PKEY_get_bn_param(pkey, "rsa-factor2", &q) == 1) {
+        tc->q_len = BN_bn2bin(q, tc->q);
+    } else {
+        printf("Error retreiving q from pkey in RSA keygen\n");
+        goto err;
+    }
+    if (EVP_PKEY_get_bn_param(pkey, "n", &n) == 1) {
+        tc->n_len = BN_bn2bin(n, tc->n);
+    } else {
+        printf("Error retreiving n from pkey in RSA keygen\n");
+        goto err;
+    }
+    if (EVP_PKEY_get_bn_param(pkey, "d", &d) == 1) {
+        tc->d_len = BN_bn2bin(d, tc->d);
+    } else {
+        printf("Error retreiving d from pkey in RSA keygen\n");
+        goto err;
+    }
+    if (EVP_PKEY_get_bn_param(pkey, "e", &e) == 1) {
+        tc->e_len = BN_bn2bin(e, tc->e);
+    } else {
+        printf("Error retreiving e from pkey in RSA keygen\n");
+        goto err;
+    }
+
+    rv = 0;
+err:
+    if (p) BN_free(p);
+    if (q) BN_free(q);
+    if (n) BN_free(n);
+    if (d) BN_free(d);
+    if (e) BN_free(e);
+    if (xp) BN_free(xp);
+    if (xp1) BN_free(xp1);
+    if (xp2) BN_free(xp2);
+    if (xq) BN_free(xq);
+    if (xq1) BN_free(xq1);
+    if (xq2) BN_free(xq2);
+    if (pkey) EVP_PKEY_free(pkey);
+    if (pkey_ctx) EVP_PKEY_CTX_free(pkey_ctx);
+    if (params) OSSL_PARAM_free(params);
+    if (pkey_pbld) OSSL_PARAM_BLD_free(pkey_pbld);
+    return rv;
 }
 #endif
 
