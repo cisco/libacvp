@@ -135,6 +135,8 @@ static void app_cleanup(ACVP_CTX *ctx) {
 #ifndef OPENSSL_NO_DSA
     app_dsa_cleanup();
 #endif
+#endif
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L || defined ACVP_NO_RUNTIME
     app_rsa_cleanup();
     app_ecdsa_cleanup();
 #endif
@@ -2573,6 +2575,14 @@ static int enable_ecdsa(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_KEYVER, ACVP_ECDSA_CURVE, ACVP_EC_CURVE_B571);
     CHECK_ENABLE_CAP_RV(rv);
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+    rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_KEYVER, ACVP_ECDSA_CURVE, ACVP_EC_CURVE_B163);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_KEYVER, ACVP_ECDSA_CURVE, ACVP_EC_CURVE_K163);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_KEYVER, ACVP_ECDSA_CURVE, ACVP_EC_CURVE_P192);
+    CHECK_ENABLE_CAP_RV(rv);
+#endif
 
     /*
      * Enable ECDSA sigGen...
@@ -2615,13 +2625,12 @@ static int enable_ecdsa(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_ECDSA_HASH_ALG, ACVP_SHA512);
     CHECK_ENABLE_CAP_RV(rv);
-
-    #if 0
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
     rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_ECDSA_HASH_ALG, ACVP_SHA512_224);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_ECDSA_HASH_ALG, ACVP_SHA512_256);
     CHECK_ENABLE_CAP_RV(rv);
-    #endif
+#endif
 
     /*
      * Enable ECDSA sigVer...
@@ -2664,13 +2673,19 @@ static int enable_ecdsa(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_ECDSA_HASH_ALG, ACVP_SHA512);
     CHECK_ENABLE_CAP_RV(rv);
-
-    #if 0
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+    rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_ECDSA_CURVE, ACVP_EC_CURVE_B163);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_ECDSA_CURVE, ACVP_EC_CURVE_K163);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_ECDSA_CURVE, ACVP_EC_CURVE_P192);
+    CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_ECDSA_HASH_ALG, ACVP_SHA512_224);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_ECDSA_HASH_ALG, ACVP_SHA512_256);
     CHECK_ENABLE_CAP_RV(rv);
-    #endif
+#endif
+
 end:
 
     return rv;

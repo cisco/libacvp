@@ -255,3 +255,111 @@ int check_is_little_endian() {
     }
     return 0;
 }
+
+int get_nid_for_curve(ACVP_EC_CURVE curve) {
+    switch (curve) {
+    case ACVP_EC_CURVE_B233:
+        return NID_sect233r1;
+    case ACVP_EC_CURVE_B283:
+        return NID_sect283r1;
+    case ACVP_EC_CURVE_B409:
+        return NID_sect409r1;
+    case ACVP_EC_CURVE_B571:
+        return NID_sect571r1;
+    case ACVP_EC_CURVE_K233:
+        return NID_sect233k1;
+    case ACVP_EC_CURVE_K283:
+        return NID_sect283k1;
+    case ACVP_EC_CURVE_K409:
+        return NID_sect409k1;
+    case ACVP_EC_CURVE_K571:
+        return NID_sect571k1;
+    case ACVP_EC_CURVE_P224:
+        return NID_secp224r1;
+    case ACVP_EC_CURVE_P256:
+        return NID_X9_62_prime256v1;
+    case ACVP_EC_CURVE_P384:
+        return NID_secp384r1;
+    case ACVP_EC_CURVE_P521:
+        return NID_secp521r1;
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+    case ACVP_EC_CURVE_B163:
+        return NID_sect163r2;
+    case ACVP_EC_CURVE_K163:
+        return NID_sect163k1;
+    case ACVP_EC_CURVE_P192:
+        return NID_X9_62_prime192v1;
+#else
+    case ACVP_EC_CURVE_B163:
+    case ACVP_EC_CURVE_K163:
+    case ACVP_EC_CURVE_P192:
+#endif
+    case ACVP_EC_CURVE_START:
+    case ACVP_EC_CURVE_END:
+    default:
+        return NID_undef;
+    }
+}
+
+const EVP_MD *get_md_for_hash_alg(ACVP_HASH_ALG alg) {
+    switch (alg) {
+    case ACVP_SHA1:
+        return EVP_sha1();
+    case ACVP_SHA224:
+        return EVP_sha224();
+    case ACVP_SHA256:
+        return EVP_sha256();
+    case ACVP_SHA384:
+        return EVP_sha384();
+    case ACVP_SHA512:
+        return EVP_sha512();
+    case ACVP_SHA512_224:
+        return EVP_sha512_224();
+    case ACVP_SHA512_256:
+        return EVP_sha512_256();
+    case ACVP_SHA3_224:
+        return EVP_sha3_224();
+    case ACVP_SHA3_256:
+        return EVP_sha3_256();
+    case ACVP_SHA3_384:
+        return EVP_sha3_384();
+    case ACVP_SHA3_512:
+        return EVP_sha3_512();
+    case ACVP_NO_SHA:
+    case ACVP_HASH_ALG_MAX:
+    default:
+       return NULL;
+    }
+}
+
+const char *get_md_string_for_hash_alg(ACVP_HASH_ALG alg) {
+    switch (alg) {
+    case ACVP_SHA1:
+        return "SHA-1";
+    case ACVP_SHA224:
+        return "SHA2-224";
+    case ACVP_SHA256:
+        return "SHA2-256";
+    case ACVP_SHA384:
+        return "SHA2-384";
+    case ACVP_SHA512:
+        return "SHA2-512";
+    case ACVP_SHA512_224:
+        return "SHA2-512/224";
+    case ACVP_SHA512_256:
+        return "SHA2-512/256";
+    case ACVP_SHA3_224:
+        return "SHA3-224";
+    case ACVP_SHA3_256:
+        return "SHA3-256";
+    case ACVP_SHA3_384:
+        return "SHA3-384";
+    case ACVP_SHA3_512:
+        return "SHA3-512";
+    case ACVP_NO_SHA:
+    case ACVP_HASH_ALG_MAX:
+    default:
+        return NULL;
+    }
+    return NULL;
+}
