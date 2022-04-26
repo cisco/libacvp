@@ -14,7 +14,7 @@
 extern "C"
 {
 #endif
-
+#include <openssl/evp.h>
 #include "acvp/acvp.h"
 
 /*
@@ -82,6 +82,9 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv);
 int app_setup_two_factor_auth(ACVP_CTX *ctx);
 unsigned int swap_uint_endian(unsigned int i);
 int check_is_little_endian(void);
+int get_nid_for_curve(ACVP_EC_CURVE curve);
+const EVP_MD *get_md_for_hash_alg(ACVP_HASH_ALG alg);
+const char *get_md_string_for_hash_alg(ACVP_HASH_ALG alg);
 
 void app_aes_cleanup(void);
 void app_des_cleanup(void);
