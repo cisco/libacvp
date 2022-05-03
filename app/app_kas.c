@@ -12,11 +12,195 @@
 #include <openssl/evp.h>
 #include <openssl/bn.h>
 #include <openssl/ec.h>
+#include <openssl/param_build.h>
+#if OPENSSL_VERSION_NUMBER < 0x30000000L && defined ACVP_NO_RUNTIME
 #include "app_fips_lcl.h" /* All regular OpenSSL headers must come before here */
+#endif
 #include "app_lcl.h"
 #include "safe_mem_lib.h"
-#ifdef ACVP_NO_RUNTIME
 
+#define KAS_ECC_Z_MAX 512
+
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+int app_kas_ecc_handler(ACVP_TEST_CASE *test_case) {
+    ACVP_KAS_ECC_TC *tc = NULL;
+    int nid = NID_undef, s_key_size = 0, i_key_size = 0, rv = 1;
+    size_t z_len = 0;
+    OSSL_PARAM_BLD *serv_pbld = NULL, *iut_pbld = NULL;
+    OSSL_PARAM *serv_params = NULL, *iut_params = NULL;
+    EVP_PKEY_CTX *pkey_ctx = NULL, *der_ctx = NULL;
+    EVP_PKEY *serv_pkey = NULL, *iut_pkey = NULL;
+    char *s_pub_key = NULL, *i_pub_key = NULL;
+    unsigned char *z = NULL;
+    BIGNUM *ix = NULL, *iy = NULL, *ik = NULL;
+    const char *curve = NULL;
+    tc = test_case->tc.kas_ecc;
+    nid = get_nid_for_curve(tc->curve);
+    if (nid == NID_undef) {
+        printf("Unable to get curve NID in KAS-ECC\n");
+        goto err;
+    }
+    curve = OSSL_EC_curve_nid2name(nid);
+    if (!curve) {
+        printf("Unable to lookup curve name for ECDSA\n");
+        goto err;
+    }
+
+    s_pub_key = ec_point_to_pub_key(tc->psx, tc->psxlen, tc->psy, tc->psylen, &s_key_size);
+    if (!s_pub_key) {
+        printf("Error generating server pub key in KAS-ECC\n");
+        goto err;
+    }
+
+    /* Generate server pkey info */
+    serv_pbld = OSSL_PARAM_BLD_new();
+    OSSL_PARAM_BLD_push_utf8_string(serv_pbld, "group", curve, 0);
+    OSSL_PARAM_BLD_push_octet_string(serv_pbld, "pub", s_pub_key, s_key_size);
+    OSSL_PARAM_BLD_push_int(serv_pbld, "use-cofactor-flag", 1);
+    serv_params = OSSL_PARAM_BLD_to_param(serv_pbld);
+    if (!serv_params) {
+        printf("Error generating params in KAS-ECC\n");
+        goto err;
+    }
+    pkey_ctx = EVP_PKEY_CTX_new_from_name(NULL, "EC", NULL);
+    if (!pkey_ctx) {
+        printf("Error creating pkey ctx in KAS-ECC\n");
+        goto err;
+    }
+    if (EVP_PKEY_fromdata_init(pkey_ctx) != 1) {
+        printf("Error initializing fromdata in KAS-ECC\n");
+        goto err;
+    }
+    if (EVP_PKEY_fromdata(pkey_ctx, &serv_pkey, EVP_PKEY_PUBLIC_KEY, serv_params) != 1) {
+        printf("Error performing fromdata in KAS-ECC\n");
+        goto err;
+    }
+
+    /* generate our pkey info */
+    iut_pbld = OSSL_PARAM_BLD_new();
+    OSSL_PARAM_BLD_push_utf8_string(iut_pbld, "group", curve, 0);
+    OSSL_PARAM_BLD_push_int(iut_pbld, "use-cofactor-flag", 1);
+    if (tc->test_type == ACVP_KAS_ECC_TT_VAL) {
+        i_pub_key = ec_point_to_pub_key(tc->pix, tc->pixlen, tc->piy, tc->piylen, &i_key_size);
+        if (!i_pub_key) {
+            printf("Error generating IUT pub key in KAS-ECC\n");
+            goto err;
+        }
+        OSSL_PARAM_BLD_push_octet_string(iut_pbld, "pub", i_pub_key, i_key_size);
+        ik = BN_bin2bn(tc->d, tc->dlen, NULL);
+        OSSL_PARAM_BLD_push_BN(iut_pbld, "priv", ik);
+    }
+    iut_params = OSSL_PARAM_BLD_to_param(iut_pbld);
+    if (!iut_params) {
+        printf("Error generating params in KAS-ECC\n");
+        goto err;
+    }
+
+    if (tc->test_type == ACVP_KAS_ECC_TT_VAL) {
+        if (EVP_PKEY_fromdata_init(pkey_ctx) != 1) {
+            printf("Error initializing fromdata in KAS-ECC\n");
+            goto err;
+        }
+        if (EVP_PKEY_fromdata(pkey_ctx, &iut_pkey, EVP_PKEY_KEYPAIR, iut_params) != 1) {
+            printf("Error performing fromdata in KAS-ECC\n");
+            goto err;
+        }
+    } else {
+        if (EVP_PKEY_keygen_init(pkey_ctx) != 1) {
+            printf("Error initializing keygen in KAS-ECC\n");
+            goto err;
+        }
+        if (EVP_PKEY_CTX_set_params(pkey_ctx, iut_params) != 1) {
+            printf("Error setting params in KAS-ECC\n");
+            goto err;
+        }
+        if (EVP_PKEY_keygen(pkey_ctx, &iut_pkey) != 1) {
+            printf("Error performing keygen in KAS-ECC\n");
+            goto err;
+        }
+    }
+
+    if (tc->test_type == ACVP_KAS_ECC_TT_AFT) {
+        /* get peer X and Y for test response */
+        EVP_PKEY_get_bn_param(iut_pkey, "qx", &ix);
+        EVP_PKEY_get_bn_param(iut_pkey, "qy", &iy);
+        EVP_PKEY_get_bn_param(iut_pkey, "priv", &ik);
+        if (!ix || !iy || !ik) {
+            printf("Error getting key values from IUT pkey in KAS-ECC\n");
+            goto err;
+        }
+        tc->pixlen = BN_bn2bin(ix, tc->pix);
+        tc->piylen = BN_bn2bin(iy, tc->piy);
+        tc->dlen = BN_bn2bin(ik, tc->d);
+    }
+
+    /* Finally, derive secret Z and add to test response */
+    der_ctx = EVP_PKEY_CTX_new_from_pkey(NULL, iut_pkey, NULL);
+    if (!der_ctx) {
+        printf("Error creating derive ctx in KAS-ECC\n");
+        goto err;
+    }
+    if (EVP_PKEY_derive_init(der_ctx) != 1) {
+        printf("Error initializing derive in KAS-ECC\n");
+        goto err;
+    }
+    if (EVP_PKEY_derive_set_peer(der_ctx, serv_pkey) != 1) {
+        printf("Error setting peer key in KAS-ECC\n");
+        goto err;
+    }
+    EVP_PKEY_derive(der_ctx, NULL, &z_len);
+    z = calloc(z_len, 1);
+    if (!z) {
+        printf("Error allocating memory for shared secret in KAS-ECC\\n");
+        goto err;
+    }
+    if (EVP_PKEY_derive(der_ctx, z, &z_len) != 1) {
+        printf("Error deriving secret in KAS-ECC\n");
+        goto err;
+    }
+    if (tc->mode == ACVP_KAS_ECC_MODE_CDH) {
+        tc->zlen = (int)z_len;
+        memcpy_s(tc->z, KAS_ECC_Z_MAX, z, z_len);
+    } else {
+        tc->chashlen = (int)z_len;
+        memcpy_s(tc->chash, KAS_ECC_Z_MAX, z, z_len);
+    }
+    rv = 0;
+err:
+    if (s_pub_key) free(s_pub_key);
+    if (i_pub_key) free(i_pub_key);
+    if (z) free (z);
+    if (serv_pbld) OSSL_PARAM_BLD_free(serv_pbld);
+    if (iut_pbld) OSSL_PARAM_BLD_free(iut_pbld);
+    if (serv_params) OSSL_PARAM_free(serv_params);
+    if (iut_params) OSSL_PARAM_free(iut_params);
+    if (pkey_ctx) EVP_PKEY_CTX_free(pkey_ctx);
+    if (der_ctx) EVP_PKEY_CTX_free(der_ctx);
+    if (serv_pkey) EVP_PKEY_free(serv_pkey);
+    if (iut_pkey) EVP_PKEY_free(iut_pkey);
+    if (ix) BN_free(ix);
+    if (iy) BN_free(iy);
+    if (ik) BN_free(ik);
+    return rv;
+}
+
+int app_kas_ffc_handler(ACVP_TEST_CASE *test_case) {
+    return 0;
+}
+
+int app_kas_ifc_handler(ACVP_TEST_CASE *test_case) {
+    return 0;
+}
+
+int app_kts_ifc_handler(ACVP_TEST_CASE *test_case) {
+    return 0;
+}
+
+int app_safe_primes_handler(ACVP_TEST_CASE *test_case) {
+    return 0;
+}
+
+#elif defined ACVP_NO_RUNTIME
 #  define get_rfc2409_prime_768 BN_get_rfc2409_prime_768
 #  define get_rfc2409_prime_1024 BN_get_rfc2409_prime_1024
 #  define get_rfc3526_prime_1536 BN_get_rfc3526_prime_1536
@@ -117,96 +301,17 @@ int app_kas_ecc_handler(ACVP_TEST_CASE *test_case) {
 
     tc = test_case->tc.kas_ecc;
 
-    switch (tc->curve) {
-    case ACVP_EC_CURVE_P224:
-        nid = NID_secp224r1;
-        break;
-    case ACVP_EC_CURVE_P256:
-        nid = NID_X9_62_prime256v1;
-        break;
-    case ACVP_EC_CURVE_P384:
-        nid = NID_secp384r1;
-        break;
-    case ACVP_EC_CURVE_P521:
-        nid = NID_secp521r1;
-        break;
-    case ACVP_EC_CURVE_B233:
-        nid = NID_sect233r1;
-        break;
-    case ACVP_EC_CURVE_B283:
-        nid = NID_sect283r1;
-        break;
-    case ACVP_EC_CURVE_B409:
-        nid = NID_sect409r1;
-        break;
-    case ACVP_EC_CURVE_B571:
-        nid = NID_sect571r1;
-        break;
-    case ACVP_EC_CURVE_K233:
-        nid = NID_sect233k1;
-        break;
-    case ACVP_EC_CURVE_K283:
-        nid = NID_sect283k1;
-        break;
-    case ACVP_EC_CURVE_K409:
-        nid = NID_sect409k1;
-        break;
-    case ACVP_EC_CURVE_K571:
-        nid = NID_sect571k1;
-        break;
-    case ACVP_EC_CURVE_P192:
-    case ACVP_EC_CURVE_B163:
-    case ACVP_EC_CURVE_K163:
-    case ACVP_EC_CURVE_START:
-    case ACVP_EC_CURVE_END:
-    default:
-        printf("Invalid curve %d\n", tc->curve);
-        return rv;
-
-        break;
+    nid = get_nid_for_curve(tc->curve);
+    if (nid == NID_undef) {
+        printf("Unable to get curve NID in KAS-ECC\n");
+        goto error;
     }
 
     if (tc->mode == ACVP_KAS_ECC_MODE_COMPONENT) {
-        switch (tc->md) {
-        case ACVP_NO_SHA:
-            break;
-        case ACVP_SHA224:
-            md = EVP_sha224();
-            break;
-        case ACVP_SHA256:
-            md = EVP_sha256();
-            break;
-        case ACVP_SHA384:
-            md = EVP_sha384();
-            break;
-        case ACVP_SHA512:
-            md = EVP_sha512();
-            break;
-        case ACVP_SHA512_224:
-            md = EVP_sha512_224();
-            break;
-        case ACVP_SHA512_256:
-            md = EVP_sha512_256();
-            break;
-        case ACVP_SHA3_224:
-            md = EVP_sha3_224();
-            break;
-        case ACVP_SHA3_256:
-            md = EVP_sha3_256();
-            break;
-        case ACVP_SHA3_384:
-            md = EVP_sha3_384();
-            break;
-        case ACVP_SHA3_512:
-            md = EVP_sha3_512();
-            break;
-        case ACVP_SHA1:
-        case ACVP_HASH_ALG_MAX:
-        default:
-            printf("No valid hash name %d\n", tc->md);
-            return rv;
-
-            break;
+        md = get_md_for_hash_alg(tc->md);
+        if (!md) {
+            printf("Unable to get MD in KAS-ECC\n");
+            goto error;
         }
     }
     group = EC_GROUP_new_by_curve_name(nid);
@@ -286,7 +391,6 @@ int app_kas_ecc_handler(ACVP_TEST_CASE *test_case) {
         goto error;
     }
 
-#define KAS_ECC_Z_MAX 512
     if (tc->test_type == ACVP_KAS_ECC_TT_AFT) {
         memcpy_s(tc->z, KAS_ECC_Z_MAX, Z, Zlen);
         tc->zlen = Zlen;
@@ -337,46 +441,10 @@ int app_kas_ffc_handler(ACVP_TEST_CASE *test_case) {
 
     tc = test_case->tc.kas_ffc;
 
-    switch (tc->md) {
-    case ACVP_NO_SHA:
-        break;
-    case ACVP_SHA224:
-        md = EVP_sha224();
-        break;
-    case ACVP_SHA256:
-        md = EVP_sha256();
-        break;
-    case ACVP_SHA384:
-        md = EVP_sha384();
-        break;
-    case ACVP_SHA512:
-        md = EVP_sha512();
-        break;
-    case ACVP_SHA512_224:
-        md = EVP_sha512_224();
-        break;
-    case ACVP_SHA512_256:
-        md = EVP_sha512_256();
-        break;
-    case ACVP_SHA3_224:
-        md = EVP_sha3_224();
-        break;
-    case ACVP_SHA3_256:
-        md = EVP_sha3_256();
-        break;
-    case ACVP_SHA3_384:
-        md = EVP_sha3_384();
-        break;
-    case ACVP_SHA3_512:
-        md = EVP_sha3_512();
-        break;
-    case ACVP_SHA1:
-    case ACVP_HASH_ALG_MAX:
-    default:
-        printf("No valid hash name %d\n", tc->md);
-        return rv;
-
-        break;
+    md = get_md_for_hash_alg(tc->md);
+    if (!md) {
+        printf("Unable to get MD in KAS-ECC\n");
+        goto error;
     }
 
     p = BN_new();
@@ -574,46 +642,10 @@ int app_kas_ifc_handler(ACVP_TEST_CASE *test_case) {
 
     tc = test_case->tc.kas_ifc;
 
-    switch (tc->md) {
-    case ACVP_NO_SHA:
-        break;
-    case ACVP_SHA224:
-        md = EVP_sha224();
-        break;
-    case ACVP_SHA256:
-        md = EVP_sha256();
-        break;
-    case ACVP_SHA384:
-        md = EVP_sha384();
-        break;
-    case ACVP_SHA512:
-        md = EVP_sha512();
-        break;
-    case ACVP_SHA512_224:
-        md = EVP_sha512_224();
-        break;
-    case ACVP_SHA512_256:
-        md = EVP_sha512_256();
-        break;
-    case ACVP_SHA3_224:
-        md = EVP_sha3_224();
-        break;
-    case ACVP_SHA3_256:
-        md = EVP_sha3_256();
-        break;
-    case ACVP_SHA3_384:
-        md = EVP_sha3_384();
-        break;
-    case ACVP_SHA3_512:
-        md = EVP_sha3_512();
-        break;
-    case ACVP_SHA1:
-    case ACVP_HASH_ALG_MAX:
-    default:
-        printf("No valid hash name %d\n", tc->md);
-        return rv;
-
-        break;
+    md = get_md_for_hash_alg(tc->md);
+    if (!md) {
+        printf("Unable to get MD in KAS-ECC\n");
+        goto error;
     }
 
     rsa = RSA_new();

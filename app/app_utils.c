@@ -363,3 +363,23 @@ const char *get_md_string_for_hash_alg(ACVP_HASH_ALG alg) {
     }
     return NULL;
 }
+
+/** Convert the X and Y coordinates into the expected key format, since OpenSSL does not
+ * allow setting X and Y directly */
+char *ec_point_to_pub_key(unsigned char *x, int x_len, unsigned char *y, int y_len, int *key_len) {
+    int key_size = 0;
+    char *key = NULL;
+
+    key_size = x_len + y_len + 1;
+    key = calloc(key_size, sizeof(char));
+    if (!key) {
+        printf("Error allocating memory while creating EC public key\n");
+        return NULL;
+    }
+    key[0] = 0x04;
+    memcpy_s(&key[1], key_size - 1, x, x_len);
+    memcpy_s(&key[x_len + 1], key_size - x_len - 1, y, y_len);
+
+    *key_len = key_size;
+    return key;
+}

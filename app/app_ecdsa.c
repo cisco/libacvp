@@ -142,17 +142,11 @@ int app_ecdsa_handler(ACVP_TEST_CASE *test_case) {
     case ACVP_SUB_ECDSA_KEYVER:
         tc->ver_disposition = 0;
 
-        /** Convert the X and Y coordinates into the expected key format, since OpenSSL does not
-         * allow setting X and Y directly */
-        key_size = tc->qx_len + tc->qy_len + 1;
-        pub_key = calloc(key_size, sizeof(char));
+        pub_key = ec_point_to_pub_key(tc->qx, tc->qx_len, tc->qy, tc->qy_len, &key_size);
         if (!pub_key) {
-            printf("Error allocating memory in ECDSA keyver\n");
+            printf("Error generating pub key in ECDSA keyver\n");
             goto err;
         }
-        pub_key[0] = 0x04;
-        memcpy_s(&pub_key[1], key_size - 1, tc->qx, tc->qx_len);
-        memcpy_s(&pub_key[tc->qx_len + 1], key_size - tc->qx_len - 1, tc->qy, tc->qy_len);
 
         pkey_pbld = OSSL_PARAM_BLD_new();
         OSSL_PARAM_BLD_push_utf8_string(pkey_pbld, "group", curve, 0);
@@ -246,15 +240,11 @@ int app_ecdsa_handler(ACVP_TEST_CASE *test_case) {
     case ACVP_SUB_ECDSA_SIGVER:
         tc->ver_disposition = 0;
 
-        key_size = tc->qx_len + tc->qy_len + 1;
-        pub_key = calloc(key_size, sizeof(char));
+        pub_key = ec_point_to_pub_key(tc->qx, tc->qx_len, tc->qy, tc->qy_len, &key_size);
         if (!pub_key) {
-            printf("Error allocating memory in ECDSA sigver\n");
+            printf("Error generating pub key in ECDSA sigver\n");
             goto err;
         }
-        pub_key[0] = 0x04;
-        memcpy_s(&pub_key[1], key_size - 1, tc->qx, tc->qx_len);
-        memcpy_s(&pub_key[tc->qx_len + 1], key_size - tc->qx_len - 1, tc->qy, tc->qy_len);
 
         pkey_pbld = OSSL_PARAM_BLD_new();
         OSSL_PARAM_BLD_push_utf8_string(pkey_pbld, "group", curve, 0);
