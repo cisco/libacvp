@@ -85,6 +85,7 @@ int check_is_little_endian(void);
 int get_nid_for_curve(ACVP_EC_CURVE curve);
 const EVP_MD *get_md_for_hash_alg(ACVP_HASH_ALG alg);
 const char *get_md_string_for_hash_alg(ACVP_HASH_ALG alg);
+char *ec_point_to_pub_key(unsigned char *x, int x_len, unsigned char *y, int y_len, int *key_len);
 
 void app_aes_cleanup(void);
 void app_des_cleanup(void);
