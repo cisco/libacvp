@@ -350,7 +350,6 @@ int app_kas_ffc_handler(ACVP_TEST_CASE *test_case) {
     }
 
     if (tc->test_type == ACVP_KAS_FFC_TT_AFT) {
-        /* get peer X and Y for test response */
         EVP_PKEY_get_bn_param(iut_pkey, "pub", &ipub);
         if (!ipub) {
             printf("Error getting key values from IUT pkey in KAS-FFC\n");
