@@ -8,11 +8,13 @@
  */
 
 
-
 #include <openssl/evp.h>
 #include <openssl/bn.h>
 #include <openssl/ec.h>
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
 #include <openssl/param_build.h>
+#endif
+
 #if OPENSSL_VERSION_NUMBER < 0x30000000L && defined ACVP_NO_RUNTIME
 #include "app_fips_lcl.h" /* All regular OpenSSL headers must come before here */
 #endif
@@ -20,6 +22,8 @@
 #include "safe_mem_lib.h"
 
 #define KAS_ECC_Z_MAX 512
+#define KAS_FFC_Z_MAX 2048
+#define KAS_IFC_MAX 1024
 
 #if OPENSSL_VERSION_NUMBER >= 0x30000000L
 int app_kas_ecc_handler(ACVP_TEST_CASE *test_case) {
@@ -185,7 +189,235 @@ err:
 }
 
 int app_kas_ffc_handler(ACVP_TEST_CASE *test_case) {
-    return 0;
+    ACVP_KAS_FFC_TC *tc = NULL;
+    int rv = 1, use_pqg = 0;
+    size_t z_len = 0;
+    OSSL_PARAM_BLD *serv_pbld = NULL, *iut_pbld = NULL, *der_pbld = NULL;
+    OSSL_PARAM *serv_params = NULL, *iut_params = NULL, *der_params = NULL;
+    EVP_PKEY_CTX *pkey_ctx = NULL, *der_ctx = NULL;
+    EVP_PKEY *serv_pkey = NULL, *iut_pkey = NULL;
+    char *s_pub_key = NULL, *i_pub_key = NULL;
+    unsigned char *z = NULL;
+    BIGNUM *p = NULL, *q = NULL, *g = NULL, *spub = NULL, *ipub = NULL, *ipriv = NULL;
+    const char *group = NULL;
+    tc = test_case->tc.kas_ffc;
+
+    switch (tc->dgm) {
+    case ACVP_KAS_FFC_MODP2048:
+        group = "modp_2048";
+        break;
+    case ACVP_KAS_FFC_MODP3072:
+        group = "modp_3072";
+        break;
+    case ACVP_KAS_FFC_MODP4096:
+        group = "modp_4096";
+        break;
+    case ACVP_KAS_FFC_MODP6144:
+        group = "modp_6144";
+        break;
+    case ACVP_KAS_FFC_MODP8192:
+        group = "modp_8192";
+        break;
+    case ACVP_KAS_FFC_FFDHE2048:
+        group = "ffdhe2048";
+        break;
+    case ACVP_KAS_FFC_FFDHE3072:
+        group = "ffdhe3072";
+        break;
+    case ACVP_KAS_FFC_FFDHE4096:
+        group = "ffdhe4096";
+        break;
+    case ACVP_KAS_FFC_FFDHE6144:
+        group = "ffdhe6144";
+        break;
+    case ACVP_KAS_FFC_FFDHE8192:
+        group = "ffdhe8192";
+        break;
+    case ACVP_KAS_FFC_FB:
+    case ACVP_KAS_FFC_FC:
+        use_pqg = 1;
+        break;
+    case ACVP_KAS_FFC_FUNCTION:
+    case ACVP_KAS_FFC_CURVE:
+    case ACVP_KAS_FFC_ROLE:
+    case ACVP_KAS_FFC_HASH:
+    case ACVP_KAS_FFC_GEN_METH:
+    case ACVP_KAS_FFC_KDF:
+    default:
+        printf("Invalid dgm for KAS-FFC\n");
+        goto err;
+    }
+    /* convert values to bignum, DH/FFC requires this for some reason and ECC didn't */
+    spub = BN_bin2bn(tc->eps, tc->epslen, NULL);
+    if (!spub) {
+        printf("Error generating bignum from server public key in KAS-FFC\n");
+        goto err;
+    }
+    if (tc->test_type == ACVP_KAS_FFC_TT_VAL) {
+        ipub = BN_bin2bn(tc->epui, tc->epuilen, NULL);
+        ipriv = BN_bin2bn(tc->epri, tc->eprilen, NULL);
+        if (!ipub || !ipriv) {
+            printf("Error generating bignum from IUT keys in KAS-FFC\n");
+            goto err;
+        }
+    }
+    if (use_pqg) {
+        p = BN_bin2bn(tc->p, tc->plen, NULL);
+        q = BN_bin2bn(tc->q, tc->qlen, NULL);
+        g = BN_bin2bn(tc->g, tc->glen, NULL);
+        if (!p || !q || !g) {
+            printf("Error generating bignum from P/Q/G in KAS-FFC\n");
+            goto err;
+        }
+    }
+
+    /* Generate server pkey info */
+    serv_pbld = OSSL_PARAM_BLD_new();
+    if (!use_pqg) {
+        OSSL_PARAM_BLD_push_utf8_string(serv_pbld, "group", group, 0);
+    } else {
+        OSSL_PARAM_BLD_push_BN(serv_pbld, "p", p);
+        OSSL_PARAM_BLD_push_BN(serv_pbld, "q", q);
+        OSSL_PARAM_BLD_push_BN(serv_pbld, "g", g);
+    }
+    OSSL_PARAM_BLD_push_BN(serv_pbld, "pub", spub);
+    serv_params = OSSL_PARAM_BLD_to_param(serv_pbld);
+    if (!serv_params) {
+        printf("Error generating params in KAS-FFC\n");
+        goto err;
+    }
+    pkey_ctx = EVP_PKEY_CTX_new_from_name(NULL, "DHX", NULL);
+    if (!pkey_ctx) {
+        printf("Error creating pkey ctx in KAS-FFC\n");
+        goto err;
+    }
+    if (EVP_PKEY_fromdata_init(pkey_ctx) != 1) {
+        printf("Error initializing fromdata (1) in KAS-FFC\n");
+        goto err;
+    }
+    if (EVP_PKEY_fromdata(pkey_ctx, &serv_pkey, EVP_PKEY_PUBLIC_KEY, serv_params) != 1) {
+        printf("Error performing fromdata (1) in KAS-FFC\n");
+        goto err;
+    }
+
+    /* generate our pkey info */
+    iut_pbld = OSSL_PARAM_BLD_new();
+    if (!use_pqg) {
+        OSSL_PARAM_BLD_push_utf8_string(iut_pbld, "group", group, 0);
+    } else {
+        OSSL_PARAM_BLD_push_BN(iut_pbld, "p", p);
+        OSSL_PARAM_BLD_push_BN(iut_pbld, "q", q);
+        OSSL_PARAM_BLD_push_BN(iut_pbld, "g", g);
+    }
+    if (tc->test_type == ACVP_KAS_FFC_TT_VAL) {
+        OSSL_PARAM_BLD_push_BN(iut_pbld, "pub", ipub);
+        OSSL_PARAM_BLD_push_BN(iut_pbld, "priv", ipriv);
+    }
+    iut_params = OSSL_PARAM_BLD_to_param(iut_pbld);
+    if (!iut_params) {
+        printf("Error generating params in KAS-FFC\n");
+        goto err;
+    }
+    if (tc->test_type == ACVP_KAS_FFC_TT_VAL || use_pqg) {
+        if (EVP_PKEY_fromdata_init(pkey_ctx) != 1) {
+            printf("Error initializing fromdata (2) in KAS-FFC\n");
+            goto err;
+        }
+        if (EVP_PKEY_fromdata(pkey_ctx, &iut_pkey, EVP_PKEY_KEYPAIR, iut_params) != 1) {
+            printf("Error performing fromdata (2) in KAS-FFC\n");
+            goto err;
+        }
+    }
+    if (tc->test_type == ACVP_KAS_FFC_TT_AFT) {
+        if (use_pqg) {
+            if (pkey_ctx) EVP_PKEY_CTX_free(pkey_ctx);
+            pkey_ctx = NULL;
+            pkey_ctx = EVP_PKEY_CTX_new_from_pkey(NULL, iut_pkey, NULL);
+            if (!pkey_ctx) {
+                printf("Error initializing keygen in KAS-FFC\n");
+                goto err;
+            }
+        }
+        if (EVP_PKEY_keygen_init(pkey_ctx) != 1) {
+            printf("Error initializing keygen in KAS-FFC\n");
+            goto err;
+        }
+        if (EVP_PKEY_CTX_set_params(pkey_ctx, iut_params) != 1) {
+            printf("Error setting params in KAS-FFC\n");
+            goto err;
+        }
+        if (EVP_PKEY_keygen(pkey_ctx, &iut_pkey) != 1) {
+            printf("Error performing keygen in KAS-FFC\n");
+            goto err;
+        }
+    }
+
+    if (tc->test_type == ACVP_KAS_FFC_TT_AFT) {
+        EVP_PKEY_get_bn_param(iut_pkey, "pub", &ipub);
+        if (!ipub) {
+            printf("Error getting key values from IUT pkey in KAS-FFC\n");
+            goto err;
+        }
+        tc->piutlen = BN_bn2bin(ipub, tc->piut);
+    }
+
+    /* Finally, derive secret Z and add to test response */
+    /* Note: Padding is seemingly guaranteed on newer 3.X versions, but not older */
+    der_pbld = OSSL_PARAM_BLD_new();
+    OSSL_PARAM_BLD_push_uint(der_pbld, "pad", 1);
+    der_params = OSSL_PARAM_BLD_to_param(der_pbld);
+    if (!der_params) {
+        printf("Error generating params in KAS-FFC\n");
+        goto err;
+    }
+
+    der_ctx = EVP_PKEY_CTX_new_from_pkey(NULL, iut_pkey, NULL);
+    if (!der_ctx) {
+        printf("Error creating derive ctx in KAS-FFC\n");
+        goto err;
+    }
+    if (EVP_PKEY_derive_init_ex(der_ctx, der_params) != 1) {
+        printf("Error initializing derive in KAS-FFC\n");
+        goto err;
+    }
+    if (EVP_PKEY_derive_set_peer(der_ctx, serv_pkey) != 1) {
+        printf("Error setting peer key in KAS-FFC\n");
+        goto err;
+    }
+    EVP_PKEY_derive(der_ctx, NULL, &z_len);
+    z = calloc(z_len, 1);
+    if (!z) {
+        printf("Error allocating memory for shared secret in KAS-FFC\\n");
+        goto err;
+    }
+    if (EVP_PKEY_derive(der_ctx, z, &z_len) != 1) {
+        printf("Error deriving secret in KAS-FFC\n");
+        goto err;
+    }
+    tc->chashlen = (int)z_len;
+    memcpy_s(tc->chash, KAS_FFC_Z_MAX, z, z_len);
+    rv = 0;
+err:
+    if (s_pub_key) free(s_pub_key);
+    if (i_pub_key) free(i_pub_key);
+    if (z) free (z);
+    if (serv_pbld) OSSL_PARAM_BLD_free(serv_pbld);
+    if (iut_pbld) OSSL_PARAM_BLD_free(iut_pbld);
+    if (der_pbld) OSSL_PARAM_BLD_free(der_pbld);
+    if (serv_params) OSSL_PARAM_free(serv_params);
+    if (iut_params) OSSL_PARAM_free(iut_params);
+    if (der_params) OSSL_PARAM_free(der_params);
+    if (pkey_ctx) EVP_PKEY_CTX_free(pkey_ctx);
+    if (der_ctx) EVP_PKEY_CTX_free(der_ctx);
+    if (serv_pkey) EVP_PKEY_free(serv_pkey);
+    if (iut_pkey) EVP_PKEY_free(iut_pkey);
+    if (p) BN_free(p);
+    if (q) BN_free(q);
+    if (g) BN_free(g);
+    if (spub) BN_free(spub);
+    if (ipub) BN_free(ipub);
+    if (ipriv) BN_free(ipriv);
+    return rv;
 }
 
 int app_kas_ifc_handler(ACVP_TEST_CASE *test_case) {
@@ -579,7 +811,7 @@ int app_kas_ffc_handler(ACVP_TEST_CASE *test_case) {
             goto error;
         }
     }
-#define KAS_FFC_Z_MAX 2048
+
     Z = OPENSSL_malloc(KAS_FFC_Z_MAX);
     if (!Z) {
         printf("Malloc failed for Z\n");
@@ -645,7 +877,7 @@ int app_kas_ifc_handler(ACVP_TEST_CASE *test_case) {
     md = get_md_for_hash_alg(tc->md);
     if (!md) {
         printf("Unable to get MD in KAS-ECC\n");
-        goto error;
+        goto err;
     }
 
     rsa = RSA_new();
@@ -696,7 +928,6 @@ int app_kas_ifc_handler(ACVP_TEST_CASE *test_case) {
         RSA_set0_factors(rsa, p, q);
     }
 
-#define KAS_IFC_MAX 1024
     if (tc->test_type == ACVP_KAS_IFC_TT_AFT) {
         if (tc->kas_role == ACVP_KAS_IFC_INITIATOR) {
             if (!tc->chash) {
@@ -710,13 +941,13 @@ int app_kas_ifc_handler(ACVP_TEST_CASE *test_case) {
             tc->n[0] -= 8;
             tc->pt_len = RSA_public_encrypt(tc->nlen, tc->n, tc->pt, rsa, RSA_NO_PADDING);
 
-        if (tc->md == ACVP_NO_SHA) {
-            tc->chashlen = tc->nlen;
-            memcpy_s(tc->chash, KAS_IFC_MAX, tc->n, tc->nlen);
-        } else {
-            FIPS_digest(tc->n, tc->nlen, (unsigned char *)tc->chash, NULL, md);
-            tc->chashlen = EVP_MD_size(md);
-        }
+            if (tc->md == ACVP_NO_SHA) {
+                tc->chashlen = tc->nlen;
+                memcpy_s(tc->chash, KAS_IFC_MAX, tc->n, tc->nlen);
+            } else {
+                FIPS_digest(tc->n, tc->nlen, (unsigned char *)tc->chash, NULL, md);
+                tc->chashlen = EVP_MD_size(md);
+            }
 
         } else {
             if (!tc->ct || !tc->pt || !tc->chash) {
