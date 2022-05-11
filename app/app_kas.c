@@ -11,7 +11,10 @@
 #include <openssl/evp.h>
 #include <openssl/bn.h>
 #include <openssl/ec.h>
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
 #include <openssl/param_build.h>
+#endif
+
 #if OPENSSL_VERSION_NUMBER < 0x30000000L && defined ACVP_NO_RUNTIME
 #include "app_fips_lcl.h" /* All regular OpenSSL headers must come before here */
 #endif
@@ -874,7 +877,7 @@ int app_kas_ifc_handler(ACVP_TEST_CASE *test_case) {
     md = get_md_for_hash_alg(tc->md);
     if (!md) {
         printf("Unable to get MD in KAS-ECC\n");
-        goto error;
+        goto err;
     }
 
     rsa = RSA_new();

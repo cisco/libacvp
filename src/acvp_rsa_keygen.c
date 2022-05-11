@@ -318,11 +318,11 @@ static ACVP_RESULT acvp_rsa_keygen_init_tc(ACVP_CTX *ctx,
 
 static ACVP_RSA_TESTTYPE read_test_type(const char *str) {
     int diff = 1;
-    strcmp_s(ACVP_TESTTYPE_STR_KAT, sizeof(ACVP_TESTTYPE_STR_KAT - 1), str, &diff);
+    strcmp_s(ACVP_TESTTYPE_STR_KAT, sizeof(ACVP_TESTTYPE_STR_KAT) - 1, str, &diff);
     if (!diff) return ACVP_RSA_TESTTYPE_KAT;
-    strcmp_s(ACVP_TESTTYPE_STR_AFT, sizeof(ACVP_TESTTYPE_STR_AFT - 1), str, &diff);
+    strcmp_s(ACVP_TESTTYPE_STR_AFT, sizeof(ACVP_TESTTYPE_STR_AFT) - 1, str, &diff);
     if (!diff) return ACVP_RSA_TESTTYPE_AFT;
-    strcmp_s(ACVP_TESTTYPE_STR_GDT, sizeof(ACVP_TESTTYPE_STR_GDT - 1), str, &diff);
+    strcmp_s(ACVP_TESTTYPE_STR_GDT, sizeof(ACVP_TESTTYPE_STR_GDT) - 1, str, &diff);
     if (!diff) return ACVP_RSA_TESTTYPE_GDT;
 
     return 0;
