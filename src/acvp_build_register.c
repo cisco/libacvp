@@ -3370,7 +3370,7 @@ static ACVP_RESULT acvp_build_kas_ifc_register_cap(ACVP_CTX *ctx,
     current_param = kas_ifc_cap->kas2_roles;
     if (current_param) {
         role_val = json_value_init_object();
-        role_obj = json_value_get_object(sch_val);
+        role_obj = json_value_get_object(role_val);
         json_object_set_value(role_obj, "kasRole", json_value_init_array());
         temp_arr = json_object_get_array(role_obj, "kasRole");
         while (current_param) {
