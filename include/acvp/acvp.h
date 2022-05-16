@@ -423,6 +423,7 @@ typedef enum acvp_conformance_t {
  */
 typedef enum acvp_revision_t {
     ACVP_REVISION_DEFAULT = 0,
+    ACVP_REVISION_SP800_56CR1,
     ACVP_REVISION_SP800_56AR3,
     ACVP_REVISION_MAX
 } ACVP_REVISION;
@@ -1880,6 +1881,7 @@ typedef enum acvp_kda_pattern_candidate {
     ACVP_KDA_PATTERN_ALGID,
     ACVP_KDA_PATTERN_LABEL,
     ACVP_KDA_PATTERN_L,
+    ACVP_KDA_PATTERN_T,
     ACVP_KDA_PATTERN_MAX
 } ACVP_KDA_PATTERN_CANDIDATE;
 
@@ -1902,6 +1904,7 @@ typedef enum acvp_kda_test_type {
 /** @enum ACVP_KDA_PARM */
 typedef enum acvp_kda_param {
     ACVP_KDA_PATTERN = 1,
+    ACVP_KDA_REVISION,
     ACVP_KDA_ENCODING_TYPE,
     ACVP_KDA_Z,
     ACVP_KDA_L,
@@ -1926,9 +1929,11 @@ typedef struct acvp_kda_onestep_tc_t {
     unsigned int tc_id;
     unsigned char *salt;
     unsigned char *z;
+    unsigned char *t;
     int l;
     int saltLen;
     int zLen;
+    int tLen;
     int uPartyIdLen;
     int uEphemeralLen;
     int vPartyIdLen;
@@ -1965,9 +1970,11 @@ typedef struct acvp_kda_hkdf_tc_t {
     unsigned int tc_id;
     unsigned char *salt;
     unsigned char *z;
+    unsigned char *t;
     int l;
     int saltLen;
     int zLen;
+    int tLen;
     int uPartyIdLen;
     int uEphemeralLen;
     int vPartyIdLen;

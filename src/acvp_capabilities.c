@@ -7739,6 +7739,13 @@ ACVP_RESULT acvp_cap_kda_set_parm(ACVP_CTX *ctx, ACVP_CIPHER cipher, ACVP_KDA_PA
                 return ACVP_INVALID_ARG;
             }
             break;
+        case ACVP_KDA_REVISION:
+            if (value != ACVP_REVISION_SP800_56CR1) {
+                ACVP_LOG_ERR("Invalid revision for KDA specified.");
+                return ACVP_INVALID_ARG;
+            }
+            cap_list->cap.kda_onestep_cap->revision = value;
+            break;
         case ACVP_KDA_ENCODING_TYPE:
             if (value > ACVP_KDA_ENCODING_NONE && value < ACVP_KDA_ENCODING_MAX) {
                 plist = cap_list->cap.kda_onestep_cap->encodings;
@@ -7868,6 +7875,13 @@ ACVP_RESULT acvp_cap_kda_set_parm(ACVP_CTX *ctx, ACVP_CIPHER cipher, ACVP_KDA_PA
                 return ACVP_INVALID_ARG;
             }
             break;
+        case ACVP_KDA_REVISION:
+            if (value != ACVP_REVISION_SP800_56CR1) {
+                ACVP_LOG_ERR("Invalid revision for KDA specified.");
+                return ACVP_INVALID_ARG;
+            }
+            cap_list->cap.kda_hkdf_cap->revision = value;
+            break;
         case ACVP_KDA_ENCODING_TYPE:
             if (value > ACVP_KDA_ENCODING_NONE && value < ACVP_KDA_ENCODING_MAX) {
                 plist = cap_list->cap.kda_hkdf_cap->encodings;
@@ -7925,10 +7939,6 @@ ACVP_RESULT acvp_cap_kda_set_parm(ACVP_CTX *ctx, ACVP_CIPHER cipher, ACVP_KDA_PA
             }
             break;
         case ACVP_KDA_HKDF_HMAC_ALG:
-            if (value == ACVP_HMAC_ALG_SHA1) {
-                ACVP_LOG_ERR("SHA1 not supported in KDA HKDF");
-                return ACVP_INVALID_ARG;
-            }
             tmp = acvp_lookup_hmac_alg_str(value);
             if (!tmp) {
                 ACVP_LOG_ERR("Invalid value for hmac alg for KDA_HKDF");

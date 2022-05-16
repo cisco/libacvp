@@ -2898,7 +2898,9 @@ static ACVP_RESULT acvp_dispatch_vector_set(ACVP_CTX *ctx, JSON_Object *obj) {
 
     ACVP_LOG_STATUS("Processing vector set: %d", vs_id);
     ACVP_LOG_STATUS("Algorithm: %s", alg);
-
+    if (mode) {
+        ACVP_LOG_STATUS("Mode: %s", mode);
+    }
     for (i = 0; i < ACVP_ALG_MAX; i++) {
         strcmp_s(alg_tbl[i].name,
                  ACVP_ALG_NAME_MAX,
