@@ -109,6 +109,7 @@ static ACVP_RESULT acvp_kda_onestep_init_tc(ACVP_CTX *ctx,
                                              ACVP_CIPHER aux_function,
                                              const char *salt,
                                              const char *z,
+                                             const char *t,
                                              const char *uparty,
                                              const char *uephemeral,
                                              const char *vparty,
@@ -153,6 +154,16 @@ static ACVP_RESULT acvp_kda_onestep_init_tc(ACVP_CTX *ctx,
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Hex conversion failure (z)");
         return rv;
+    }
+
+    if (t) {
+        stc->t = calloc(1, ACVP_KDA_Z_BYTE_MAX);
+        if (!stc->t) { return ACVP_MALLOC_FAIL; }
+        rv = acvp_hexstr_to_bin(t, stc->t, ACVP_KDA_Z_BYTE_MAX, &(stc->tLen));
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Hex conversion failure (t)");
+            return rv;
+        }
     }
 
     stc->uPartyId = calloc(1, ACVP_KDA_FIXED_BYTE_MAX);
@@ -245,6 +256,7 @@ static ACVP_RESULT acvp_kda_hkdf_init_tc(ACVP_CTX *ctx,
                                              ACVP_HASH_ALG hmac_alg,
                                              const char *salt,
                                              const char *z,
+                                             const char *t,
                                              const char *uparty,
                                              const char *uephemeral,
                                              const char *vparty,
@@ -288,6 +300,16 @@ static ACVP_RESULT acvp_kda_hkdf_init_tc(ACVP_CTX *ctx,
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Hex conversion failure (z)");
         return rv;
+    }
+
+    if (t) {
+        stc->t = calloc(1, ACVP_KDA_Z_BYTE_MAX);
+        if (!stc->t) { return ACVP_MALLOC_FAIL; }
+        rv = acvp_hexstr_to_bin(t, stc->t, ACVP_KDA_Z_BYTE_MAX, &(stc->tLen));
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Hex conversion failure (t)");
+            return rv;
+        }
     }
 
     stc->uPartyId = calloc(1, ACVP_KDA_FIXED_BYTE_MAX);
@@ -382,6 +404,7 @@ static ACVP_RESULT acvp_kda_release_tc(ACVP_CIPHER cipher, ACVP_TEST_CASE *tc) {
         ACVP_KDA_HKDF_TC *stc = tc->tc.kda_hkdf;
         if (stc->salt) free(stc->salt);
         if (stc->z) free(stc->z);
+        if (stc->t) free(stc->t);
         if (stc->literalCandidate) free(stc->literalCandidate);
         if (stc->algorithmId) free(stc->algorithmId);
         if (stc->label) free(stc->label);
@@ -397,6 +420,7 @@ static ACVP_RESULT acvp_kda_release_tc(ACVP_CIPHER cipher, ACVP_TEST_CASE *tc) {
         ACVP_KDA_ONESTEP_TC *stc = tc->tc.kda_onestep;
         if (stc->salt) free(stc->salt);
         if (stc->z) free(stc->z);
+        if (stc->t) free(stc->t);
         if (stc->literalCandidate) free(stc->literalCandidate);
         if (stc->algorithmId) free(stc->algorithmId);
         if (stc->label) free(stc->label);
@@ -459,6 +483,10 @@ ACVP_KDA_PATTERN_CANDIDATE cmp_pattern_str(ACVP_CTX *ctx, ACVP_CIPHER cipher, co
     strcmp_s(str, len, ACVP_KDA_PATTERN_LENGTH_STR, &diff);
     if (!diff && len == sizeof(ACVP_KDA_PATTERN_LENGTH_STR) - 1) {
         return ACVP_KDA_PATTERN_L;
+    }
+    strcmp_s(str, len, ACVP_KDA_PATTERN_T_STR, &diff);
+    if (!diff && len == sizeof(ACVP_KDA_PATTERN_T_STR) - 1) {
+        return ACVP_KDA_PATTERN_T;
     }
     //only compares first X number of characters, so should match, even though string is literal[0000000]
     if (sizeof(ACVP_KDA_PATTERN_LITERAL_STR) - 1 < len) {
@@ -710,6 +738,7 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
 
             hmac_alg = acvp_lookup_hash_alg(alg_str);
             switch (hmac_alg) {
+            case ACVP_SHA1:
             case ACVP_SHA224:
             case ACVP_SHA256:
             case ACVP_SHA384:
@@ -722,7 +751,6 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
             case ACVP_SHA3_512:
                 break;
             case ACVP_NO_SHA:
-            case ACVP_SHA1:
             case ACVP_HASH_ALG_MAX:
             default:
                 ACVP_LOG_ERR("Server JSON invalid 'hashAlg'");
@@ -829,7 +857,7 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
             const char *salt = NULL, *z = NULL, *uparty = NULL,
                        *uephemeral = NULL, *vparty = NULL, 
                        *vephemeral = NULL, *dkm = NULL, *context = NULL,
-                       *algid = NULL, *label = NULL;
+                       *algid = NULL, *label = NULL, *t = NULL;
             ACVP_LOG_VERBOSE("Found new KDA test vector...");
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
@@ -966,6 +994,14 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
                         goto err;
                     }
                     break;
+                case ACVP_KDA_PATTERN_T:
+                    t = json_object_get_string(paramobj, "t");
+                    if (!t) {
+                        ACVP_LOG_ERR("Server JSON missing 't'");
+                        rv = ACVP_MALFORMED_JSON;
+                        goto err;
+                    }
+                    break;
                 case ACVP_KDA_PATTERN_MAX:
                 case ACVP_KDA_PATTERN_L:
                 case ACVP_KDA_PATTERN_LITERAL:
@@ -994,6 +1030,9 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
             ACVP_LOG_VERBOSE("           tcId: %d", tc_id);
             ACVP_LOG_VERBOSE("           salt: %s", salt);
             ACVP_LOG_VERBOSE("              z: %s", z);
+            if (t) {
+            ACVP_LOG_VERBOSE("              t: %s", t);
+            }
             ACVP_LOG_VERBOSE("       uPartyId: %s", uparty);
             if (uephemeral) {
             ACVP_LOG_VERBOSE("     uEphemeral: %s", uephemeral);
@@ -1027,11 +1066,11 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
              * the crypto module.
              */
             if (cipher == ACVP_KDA_HKDF) {
-                rv = acvp_kda_hkdf_init_tc(ctx, tc->tc.kda_hkdf, tc_id, hmac_alg, salt, z, uparty, uephemeral,
+                rv = acvp_kda_hkdf_init_tc(ctx, tc->tc.kda_hkdf, tc_id, hmac_alg, salt, z, t, uparty, uephemeral,
                                             vparty, vephemeral, algid, context, label, dkm, l, saltLen,
                                             salt_method, encoding, arr, test_type);
             } else {
-                rv = acvp_kda_onestep_init_tc(ctx, tc->tc.kda_onestep, tc_id, aux_function, salt, z, uparty, uephemeral,
+                rv = acvp_kda_onestep_init_tc(ctx, tc->tc.kda_onestep, tc_id, aux_function, salt, z, t, uparty, uephemeral,
                                                   vparty, vephemeral, algid, context, label, dkm, l, saltLen,
                                                   salt_method, encoding, arr, test_type);
             }

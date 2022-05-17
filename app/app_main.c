@@ -1882,6 +1882,8 @@ static int enable_kda(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDA_HKDF, ACVP_PREREQ_HMAC, value);
     CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kda_set_parm(ctx, ACVP_KDA_HKDF, ACVP_KDA_REVISION, ACVP_REVISION_SP800_56CR1, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_kda_set_parm(ctx, ACVP_KDA_HKDF, ACVP_KDA_PATTERN, ACVP_KDA_PATTERN_LITERAL, "0123456789ABCDEF");
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_kda_set_parm(ctx, ACVP_KDA_HKDF, ACVP_KDA_PATTERN, ACVP_KDA_PATTERN_UPARTYINFO, NULL);
@@ -1931,6 +1933,8 @@ static int enable_kda(ACVP_CTX *ctx) {
     rv = acvp_cap_kda_enable(ctx, ACVP_KDA_ONESTEP, &app_kda_onestep_handler);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDA_ONESTEP, ACVP_PREREQ_HMAC, value);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kda_set_parm(ctx, ACVP_KDA_ONESTEP, ACVP_KDA_REVISION, ACVP_REVISION_SP800_56CR1, NULL);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_kda_set_parm(ctx, ACVP_KDA_ONESTEP, ACVP_KDA_PATTERN, ACVP_KDA_PATTERN_LITERAL, "0123456789ABCDEF");
     CHECK_ENABLE_CAP_RV(rv);

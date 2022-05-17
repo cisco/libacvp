@@ -168,7 +168,8 @@ const char *acvp_lookup_cipher_revision(ACVP_CIPHER alg) {
  * This table maintains a list of strings for revisions that can be registered as capabilities.
  */
 static struct acvp_alt_revision_info alt_revision_tbl[] = {
-    { ACVP_REVISION_SP800_56AR3, ACVP_REV_STR_SP800_56AR3 }
+    { ACVP_REVISION_SP800_56AR3, ACVP_REV_STR_SP800_56AR3 },
+    { ACVP_REVISION_SP800_56CR1, ACVP_REV_STR_SP800_56CR1 }
 };
 static int alt_revision_tbl_length =
     sizeof(alt_revision_tbl) / sizeof(struct acvp_alt_revision_info);

@@ -112,6 +112,7 @@
 #define ACVP_REV_STR_SP800_56AR3 "Sp800-56Ar3"
 #define ACVP_REV_STR_SP800_56BR2 "Sp800-56Br2"
 #define ACVP_REV_STR_SP800_56CR1 "Sp800-56Cr1"
+#define ACVP_REV_STR_SP800_56CR2 "Sp800-56Cr2"
 #define ACVP_REV_STR_RFC8446 "RFC8446"
 #define ACVP_REV_STR_RFC7627 "RFC7627"
 
@@ -210,8 +211,8 @@
 #define ACVP_REV_KAS_IFC_SSC         ACVP_REV_STR_SP800_56BR2
 
 /* KDA */
-#define ACVP_REV_KDA_ONESTEP         ACVP_REV_STR_SP800_56CR1
-#define ACVP_REV_KDA_HKDF            ACVP_REV_STR_SP800_56CR1
+#define ACVP_REV_KDA_ONESTEP         ACVP_REV_STR_SP800_56CR2
+#define ACVP_REV_KDA_HKDF            ACVP_REV_STR_SP800_56CR2
 
 /* KTS_IFC */
 #define ACVP_REV_KTS_IFC             ACVP_REV_STR_SP800_56BR2
@@ -832,12 +833,13 @@
 #define ACVP_KDA_PATTERN_ALGID_STR "algorithmId"
 #define ACVP_KDA_PATTERN_LABEL_STR "label"
 #define ACVP_KDA_PATTERN_LENGTH_STR "l"
+#define ACVP_KDA_PATTERN_T_STR "t"
 #define ACVP_KDA_PATTERN_LITERAL_STR_LEN_MAX 64 //arbitrary
 #define ACVP_KDA_PATTERN_LITERAL_BYTE_MAX (ACVP_KDA_PATTERN_LITERAL_STR_LEN_MAX >> 3)
 //arbitrary - leaving extra space in case spec adds more values later
 #define ACVP_KDA_PATTERN_REG_STR_MAX 256
 
-#define ACVP_KDA_DKM_BIT_MAX 4096 //arbitrary
+#define ACVP_KDA_DKM_BIT_MAX 8192 //arbitrary
 #define ACVP_KDA_DKM_STR_MAX (ACVP_KDA_DKM_BIT_MAX >> 2)
 #define ACVP_KDA_DKM_BYTE_MAX (ACVP_KDA_DKM_BIT_MAX >> 3)
 
@@ -1416,6 +1418,7 @@ typedef struct acvp_safe_primes_capability_t {
 
 typedef struct acvp_kda_onestep_capability_t {
     ACVP_CIPHER cipher;
+    ACVP_REVISION revision;
     ACVP_NAME_LIST *aux_functions;
     ACVP_NAME_LIST *mac_salt_methods;
     ACVP_PARAM_LIST *patterns;
@@ -1428,6 +1431,7 @@ typedef struct acvp_kda_onestep_capability_t {
 typedef struct acvp_kda_hkdf_t {
     ACVP_CIPHER cipher;
     ACVP_PARAM_LIST *patterns;
+    ACVP_REVISION revision;
     char *literal_pattern_candidate; //optional - only filled if "literal" pattern is used - hex only
     ACVP_PARAM_LIST *encodings;
     ACVP_NAME_LIST *hmac_algs;

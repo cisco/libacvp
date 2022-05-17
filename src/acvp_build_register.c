@@ -3425,7 +3425,11 @@ static ACVP_RESULT acvp_build_kda_onestep_register_cap(ACVP_CTX *ctx,
         goto err;
     }
     json_object_set_string(cap_obj, "mode", mode);
-    revision = acvp_lookup_cipher_revision(cap_entry->cipher);
+    if (cap_entry->cap.kda_onestep_cap->revision) {
+        revision = acvp_lookup_alt_revision_string(cap_entry->cap.kda_onestep_cap->revision);
+    } else {
+        revision = acvp_lookup_cipher_revision(cap_entry->cipher);
+    }
     if (!revision) {
         ACVP_LOG_ERR("Unable to find revision string for KDA-ONESTEP when building registration");
         rv = ACVP_INVALID_ARG;
@@ -3450,7 +3454,7 @@ static ACVP_RESULT acvp_build_kda_onestep_register_cap(ACVP_CTX *ctx,
             }
             strncat_s(pattern_str, ACVP_KDA_PATTERN_REG_STR_MAX + 1,
                       ACVP_KDA_PATTERN_LITERAL_STR,
-                      strnlen_s(ACVP_KDA_PATTERN_LITERAL_STR, 32));
+                      sizeof(ACVP_KDA_PATTERN_LITERAL_STR) - 1);
             strncat_s(pattern_str, ACVP_KDA_PATTERN_REG_STR_MAX + 1, "[", 1);
             strncat_s(pattern_str, ACVP_KDA_PATTERN_REG_STR_MAX + 1,
                       cap_entry->cap.kda_onestep_cap->literal_pattern_candidate,
@@ -3460,32 +3464,37 @@ static ACVP_RESULT acvp_build_kda_onestep_register_cap(ACVP_CTX *ctx,
         case ACVP_KDA_PATTERN_UPARTYINFO:
             strncat_s(pattern_str, ACVP_KDA_PATTERN_REG_STR_MAX + 1,
                       ACVP_KDA_PATTERN_UPARTYINFO_STR,
-                      strnlen_s(ACVP_KDA_PATTERN_UPARTYINFO_STR, 32));
+                      sizeof(ACVP_KDA_PATTERN_UPARTYINFO_STR) - 1);
             break;
         case ACVP_KDA_PATTERN_VPARTYINFO:
             strncat_s(pattern_str, ACVP_KDA_PATTERN_REG_STR_MAX + 1,
                       ACVP_KDA_PATTERN_VPARTYINFO_STR,
-                      strnlen_s(ACVP_KDA_PATTERN_VPARTYINFO_STR, 32));
+                      sizeof(ACVP_KDA_PATTERN_VPARTYINFO_STR) - 1);
             break;
         case ACVP_KDA_PATTERN_CONTEXT:
             strncat_s(pattern_str, ACVP_KDA_PATTERN_REG_STR_MAX + 1,
                       ACVP_KDA_PATTERN_CONTEXT_STR,
-                      strnlen_s(ACVP_KDA_PATTERN_CONTEXT_STR, 32));
+                      sizeof(ACVP_KDA_PATTERN_CONTEXT_STR) - 1);
             break;
         case ACVP_KDA_PATTERN_ALGID:
             strncat_s(pattern_str, ACVP_KDA_PATTERN_REG_STR_MAX + 1,
                       ACVP_KDA_PATTERN_ALGID_STR,
-                      strnlen_s(ACVP_KDA_PATTERN_ALGID_STR, 32));
+                      sizeof(ACVP_KDA_PATTERN_ALGID_STR) - 1);
             break;
         case ACVP_KDA_PATTERN_LABEL:
             strncat_s(pattern_str, ACVP_KDA_PATTERN_REG_STR_MAX + 1,
                       ACVP_KDA_PATTERN_LABEL_STR,
-                      strnlen_s(ACVP_KDA_PATTERN_LABEL_STR, 32));
+                      sizeof(ACVP_KDA_PATTERN_LABEL_STR) - 1);
             break;
         case ACVP_KDA_PATTERN_L:
             strncat_s(pattern_str, ACVP_KDA_PATTERN_REG_STR_MAX + 1,
                       ACVP_KDA_PATTERN_LENGTH_STR,
-                      strnlen_s(ACVP_KDA_PATTERN_LENGTH_STR, 32));
+                      sizeof(ACVP_KDA_PATTERN_LENGTH_STR) - 1);
+            break;
+        case ACVP_KDA_PATTERN_T:
+            strncat_s(pattern_str, ACVP_KDA_PATTERN_REG_STR_MAX + 1,
+                      ACVP_KDA_PATTERN_T_STR,
+                      sizeof(ACVP_KDA_PATTERN_T_STR) - 1);
             break;
         default:
             ACVP_LOG_ERR("Invalid pattern value in pattern list");
@@ -3580,7 +3589,11 @@ static ACVP_RESULT acvp_build_kda_hkdf_register_cap(ACVP_CTX *ctx,
         goto err;
     }
     json_object_set_string(cap_obj, "mode", mode);
-    revision = acvp_lookup_cipher_revision(cap_entry->cipher);
+    if (cap_entry->cap.kda_hkdf_cap->revision) {
+        revision = acvp_lookup_alt_revision_string(cap_entry->cap.kda_hkdf_cap->revision);
+    } else {
+        revision = acvp_lookup_cipher_revision(cap_entry->cipher);
+    }
     if (!revision) {
         ACVP_LOG_ERR("Unable to find revision string for KDA-HKDF when building registration");
         rv = ACVP_INVALID_ARG;
@@ -3605,7 +3618,7 @@ static ACVP_RESULT acvp_build_kda_hkdf_register_cap(ACVP_CTX *ctx,
             }
             strncat_s(pattern_str, ACVP_KDA_PATTERN_REG_STR_MAX + 1,
                       ACVP_KDA_PATTERN_LITERAL_STR,
-                      strnlen_s(ACVP_KDA_PATTERN_LITERAL_STR, 32));
+                      sizeof(ACVP_KDA_PATTERN_LITERAL_STR) - 1);
             strncat_s(pattern_str, ACVP_KDA_PATTERN_REG_STR_MAX + 1, "[", 1);
             strncat_s(pattern_str, ACVP_KDA_PATTERN_REG_STR_MAX + 1,
                       cap_entry->cap.kda_hkdf_cap->literal_pattern_candidate,
@@ -3615,32 +3628,37 @@ static ACVP_RESULT acvp_build_kda_hkdf_register_cap(ACVP_CTX *ctx,
         case ACVP_KDA_PATTERN_UPARTYINFO:
             strncat_s(pattern_str, ACVP_KDA_PATTERN_REG_STR_MAX + 1,
                       ACVP_KDA_PATTERN_UPARTYINFO_STR,
-                      strnlen_s(ACVP_KDA_PATTERN_UPARTYINFO_STR, 32));
+                      sizeof(ACVP_KDA_PATTERN_UPARTYINFO_STR) - 1);
             break;
         case ACVP_KDA_PATTERN_VPARTYINFO:
             strncat_s(pattern_str, ACVP_KDA_PATTERN_REG_STR_MAX + 1,
                       ACVP_KDA_PATTERN_VPARTYINFO_STR,
-                      strnlen_s(ACVP_KDA_PATTERN_VPARTYINFO_STR, 32));
+                      sizeof(ACVP_KDA_PATTERN_VPARTYINFO_STR) - 1);
             break;
         case ACVP_KDA_PATTERN_CONTEXT:
             strncat_s(pattern_str, ACVP_KDA_PATTERN_REG_STR_MAX + 1,
                       ACVP_KDA_PATTERN_CONTEXT_STR,
-                      strnlen_s(ACVP_KDA_PATTERN_CONTEXT_STR, 32));
+                      sizeof(ACVP_KDA_PATTERN_CONTEXT_STR) - 1);
             break;
         case ACVP_KDA_PATTERN_ALGID:
             strncat_s(pattern_str, ACVP_KDA_PATTERN_REG_STR_MAX + 1,
                       ACVP_KDA_PATTERN_ALGID_STR,
-                      strnlen_s(ACVP_KDA_PATTERN_ALGID_STR, 32));
+                      sizeof(ACVP_KDA_PATTERN_ALGID_STR) - 1);
             break;
         case ACVP_KDA_PATTERN_LABEL:
             strncat_s(pattern_str, ACVP_KDA_PATTERN_REG_STR_MAX + 1,
                       ACVP_KDA_PATTERN_LABEL_STR,
-                      strnlen_s(ACVP_KDA_PATTERN_LABEL_STR, 32));
+                      sizeof(ACVP_KDA_PATTERN_LABEL_STR) - 1);
             break;
         case ACVP_KDA_PATTERN_L:
             strncat_s(pattern_str, ACVP_KDA_PATTERN_REG_STR_MAX + 1,
                       ACVP_KDA_PATTERN_LENGTH_STR,
-                      strnlen_s(ACVP_KDA_PATTERN_LENGTH_STR, 32));
+                      sizeof(ACVP_KDA_PATTERN_LENGTH_STR) - 1);
+            break;
+        case ACVP_KDA_PATTERN_T:
+            strncat_s(pattern_str, ACVP_KDA_PATTERN_REG_STR_MAX + 1,
+                      ACVP_KDA_PATTERN_T_STR,
+                      sizeof(ACVP_KDA_PATTERN_T_STR) - 1);
             break;
         default:
             ACVP_LOG_ERR("Invalid pattern value in pattern list");
