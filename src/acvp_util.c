@@ -1018,6 +1018,96 @@ void acvp_free_str_list(ACVP_STRING_LIST **list) {
 }
 
 /**
+ * Simple utility function to add an entry to a param list. if the list is NULL, it is created
+ * with the given entry being the first one.
+ */
+ACVP_RESULT acvp_append_param_list(ACVP_PARAM_LIST **list, int param) {
+    ACVP_PARAM_LIST *current = NULL;
+    if (!list) {
+        return ACVP_NO_DATA;
+    }
+    
+    if (*list == NULL) {
+        *list = calloc(1, sizeof(ACVP_PARAM_LIST));
+        if (!*list) {
+            return ACVP_MALLOC_FAIL;
+        }
+        (*list)->param = param;
+        return ACVP_SUCCESS;
+    }
+    current = *list;
+    while (current) {
+        if (!current->next) {
+            current->next = calloc(1, sizeof(ACVP_PARAM_LIST));
+            if (!current->next) {
+                return ACVP_MALLOC_FAIL;
+            }
+            current->next->param = param;
+            return ACVP_SUCCESS;
+        }
+        current = current->next;
+    }
+
+    /* Code should never reach here */
+    return ACVP_UNSUPPORTED_OP;
+}
+
+/**
+ * Simple utility function to add a entry to a name list. If the list is NULL, it is created
+ * with the given entry being the first one. Note the string is REFERENCED, not copied.
+ * This function should be able to accomdate the removal of names from the list if needed in the
+ * future; if a name is removed from the list but its node remains (with a NULL value) then
+ * the given string will be added to the "dummy" node
+ */
+ACVP_RESULT acvp_append_name_list(ACVP_NAME_LIST **list, const char *string) {
+    ACVP_NAME_LIST *current = NULL;
+    if (!list) {
+        return ACVP_NO_DATA;
+    }
+
+    if (!*list) {
+        *list = calloc(1, sizeof(ACVP_NAME_LIST));
+        if (!*list) {
+            return ACVP_MALLOC_FAIL;
+        }
+    }
+    current = *list;
+    while (current) {
+        if (!current->name) {
+            current->name = string;
+            return ACVP_SUCCESS;
+        }
+        if (!current->next) {
+            current->next = calloc(1, sizeof(ACVP_NAME_LIST));
+            if (!current->next) {
+                return ACVP_MALLOC_FAIL;
+            }
+        }
+        current = current->next;
+    }
+    /* Code should never reach here */
+    return ACVP_UNSUPPORTED_OP;
+}
+
+/**
+ * Check if a REFERENCE to a certain string already exists in a name list
+ */
+int acvp_is_in_name_list(ACVP_NAME_LIST *list, const char *string) {
+    ACVP_NAME_LIST *current = NULL;
+    if (!list) {
+        return 0;
+    }
+    current = list;
+    while (current) {
+        if (current->name && current->name == string) {
+            return 1;
+        }
+        current = current->next;
+    }
+    return 0;
+}
+
+/**
  * Simple utility function to add a string to a string list.
  * Note that the string is COPIED and not referenced.
  */
@@ -1068,7 +1158,7 @@ ACVP_RESULT acvp_append_str_list(ACVP_STRING_LIST **list, const char *string) {
  */
 int acvp_lookup_str_list(ACVP_STRING_LIST **list, const char *string) {
     ACVP_STRING_LIST *tmp = NULL;
-    if (!list || *list == NULL) {
+    if (!list || *list == NULL || !string) {
         return 0;
     }
     tmp = *list;
