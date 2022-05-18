@@ -2186,12 +2186,12 @@ ACVP_RESULT acvp_cap_sym_cipher_set_domain(ACVP_CTX *ctx,
     case ACVP_KAS_FFC_COMP:
     case ACVP_KAS_FFC_NOCOMP:
     case ACVP_KDA_ONESTEP:
+    case ACVP_KDA_HKDF:
     case ACVP_KAS_FFC_SSC:
     case ACVP_KAS_IFC_SSC:
     case ACVP_KTS_IFC:
     case ACVP_SAFE_PRIMES_KEYGEN:
     case ACVP_SAFE_PRIMES_KEYVER:
-    case ACVP_KDA_HKDF:
     case ACVP_CIPHER_END:
     default:
         return ACVP_INVALID_ARG;
@@ -4263,6 +4263,7 @@ ACVP_RESULT acvp_cap_rsa_keygen_set_primes(ACVP_CTX *ctx,
     ACVP_RSA_KEYGEN_CAP *keygen_cap;
     ACVP_CAPS_LIST *cap_list;
     ACVP_RSA_MODE_CAPS_LIST *current_prime = NULL;
+    ACVP_RESULT result = ACVP_SUCCESS;
     int found = 0;
     const char *string = NULL;
 
@@ -4324,67 +4325,25 @@ ACVP_RESULT acvp_cap_rsa_keygen_set_primes(ACVP_CTX *ctx,
     }
 
     if (param == ACVP_RSA_PRIME_HASH_ALG) {
-        ACVP_NAME_LIST *current_hash = NULL;
-
         string = acvp_lookup_hash_alg_name(value);
         if (!string) {
             ACVP_LOG_ERR("Invalid 'value' for ACVP_RSA_HASH_ALG");
             return ACVP_INVALID_ARG;
         }
-
-        if (!current_prime->hash_algs) {
-            current_prime->hash_algs = calloc(1, sizeof(ACVP_NAME_LIST));
-            if (!current_prime->hash_algs) {
-                ACVP_LOG_ERR("Malloc Failed -- enable rsa cap parm");
-                return ACVP_MALLOC_FAIL;
-            }
-            current_prime->hash_algs->name = string;
-        } else {
-            current_hash = current_prime->hash_algs;
-            while (current_hash->next != NULL) {
-                current_hash = current_hash->next;
-            }
-            current_hash->next = calloc(1, sizeof(ACVP_NAME_LIST));
-            if (!current_hash->next) {
-                ACVP_LOG_ERR("Malloc Failed -- enable rsa cap parm");
-                return ACVP_MALLOC_FAIL;
-            }
-            current_hash->next->name = string;
-        }
+        result = acvp_append_name_list(&current_prime->hash_algs, string);
     } else if (param == ACVP_RSA_PRIME_TEST) {
-        ACVP_NAME_LIST *current_prime_test = NULL;
-
         string = acvp_lookup_rsa_prime_test_name(value);
         if (!string) {
             ACVP_LOG_ERR("Invalid 'value' for ACVP_RSA_PRIME_TEST");
             return ACVP_INVALID_ARG;
         }
-
-        if (!current_prime->prime_tests) {
-            current_prime->prime_tests = calloc(1, sizeof(ACVP_NAME_LIST));
-            if (!current_prime->prime_tests) {
-                ACVP_LOG_ERR("Malloc Failed -- enable rsa cap parm");
-                return ACVP_MALLOC_FAIL;
-            }
-            current_prime->prime_tests->name = string;
-        } else {
-            current_prime_test = current_prime->prime_tests;
-            while (current_prime_test->next != NULL) {
-                current_prime_test = current_prime_test->next;
-            }
-            current_prime_test->next = calloc(1, sizeof(ACVP_NAME_LIST));
-            if (!current_prime_test->next) {
-                ACVP_LOG_ERR("Malloc Failed -- enable rsa cap parm");
-                return ACVP_MALLOC_FAIL;
-            }
-            current_prime_test->next->name = string;
-        }
+        result = acvp_append_name_list(&current_prime->prime_tests, string);
     } else {
         ACVP_LOG_ERR("Invalid parameter 'param'");
         return ACVP_INVALID_ARG;
     }
 
-    return ACVP_SUCCESS;
+    return result;
 }
 
 /*
@@ -4825,10 +4784,10 @@ ACVP_RESULT acvp_cap_ecdsa_set_parm(ACVP_CTX *ctx,
                                     int value) {
     ACVP_CAPS_LIST *cap_list;
     ACVP_CURVE_ALG_COMPAT_LIST *current_curve;
-    ACVP_NAME_LIST *current_secret_mode;
     ACVP_ECDSA_CAP *cap;
     const char *string = NULL;
     ACVP_SUB_ECDSA alg;
+    ACVP_RESULT result = ACVP_SUCCESS;
 
     cap_list = acvp_locate_cap_entry(ctx, cipher);
     if (!cap_list) {
@@ -4898,17 +4857,7 @@ ACVP_RESULT acvp_cap_ecdsa_set_parm(ACVP_CTX *ctx,
             return ACVP_INVALID_ARG;
         }
 
-        current_secret_mode = cap->secret_gen_modes;
-        if (current_secret_mode) {
-            while (current_secret_mode->next) {
-                current_secret_mode = current_secret_mode->next;
-            }
-            current_secret_mode->next = calloc(1, sizeof(ACVP_NAME_LIST));
-            current_secret_mode->next->name = string;
-        } else {
-            cap->secret_gen_modes = calloc(1, sizeof(ACVP_NAME_LIST));
-            cap->secret_gen_modes->name = string;
-        }
+        result = acvp_append_name_list(&cap->secret_gen_modes, string);
         break;
     case ACVP_ECDSA_HASH_ALG:
         if (cipher != ACVP_ECDSA_SIGGEN && cipher != ACVP_ECDSA_SIGVER) {
@@ -4927,7 +4876,7 @@ ACVP_RESULT acvp_cap_ecdsa_set_parm(ACVP_CTX *ctx,
         break;
     }
 
-    return ACVP_SUCCESS;
+    return result;
 }
 
 ACVP_RESULT acvp_cap_ecdsa_set_curve_hash_alg(ACVP_CTX *ctx, ACVP_CIPHER cipher, ACVP_EC_CURVE curve, ACVP_HASH_ALG alg) {
@@ -5153,7 +5102,7 @@ ACVP_RESULT acvp_cap_kdf135_snmp_set_engid(ACVP_CTX *ctx,
                                            const char *engid) {
     ACVP_CAPS_LIST *cap;
     ACVP_KDF135_SNMP_CAP *kdf135_snmp_cap;
-    ACVP_NAME_LIST *engids;
+    ACVP_RESULT result = ACVP_SUCCESS;
 
     if (!ctx) {
         return ACVP_NO_CTX;
@@ -5177,20 +5126,9 @@ ACVP_RESULT acvp_cap_kdf135_snmp_set_engid(ACVP_CTX *ctx,
         return ACVP_NO_CAP;
     }
 
-    if (kdf135_snmp_cap->eng_ids) {
-        engids = kdf135_snmp_cap->eng_ids;
-        while (engids->next) {
-            engids = engids->next;
-        }
-        engids->next = calloc(1, sizeof(ACVP_NAME_LIST));
-        engids = engids->next;
-    } else {
-        kdf135_snmp_cap->eng_ids = calloc(1, sizeof(ACVP_NAME_LIST));
-        engids = kdf135_snmp_cap->eng_ids;
-    }
-    engids->name = engid;
+    result = acvp_append_name_list(&kdf135_snmp_cap->eng_ids, engid);
 
-    return ACVP_SUCCESS;
+    return result;
 }
 
 ACVP_RESULT acvp_cap_kdf135_srtp_enable(ACVP_CTX *ctx,
@@ -5451,8 +5389,8 @@ ACVP_RESULT acvp_cap_pbkdf_set_parm(ACVP_CTX *ctx,
                                     int value) {
     ACVP_CAPS_LIST *cap_list = NULL;
     ACVP_PBKDF_CAP *cap = NULL;
-    ACVP_NAME_LIST *hmac_alg_list = NULL;
     const char *alg_str = NULL;
+    ACVP_RESULT result = ACVP_SUCCESS;
 
     cap_list = acvp_locate_cap_entry(ctx, ACVP_PBKDF);
     if (!cap_list) {
@@ -5471,36 +5409,12 @@ ACVP_RESULT acvp_cap_pbkdf_set_parm(ACVP_CTX *ctx,
         ACVP_LOG_ERR("Invalid value specified for PBKDF hmac alg.");
         return ACVP_INVALID_ARG;
     }
-
-    if (cap->hmac_algs) {
-        hmac_alg_list = cap->hmac_algs;
-        if (hmac_alg_list->name == alg_str) {
-            ACVP_LOG_WARN("Attempting to register an hmac alg with PBKDF that has already been registered, skipping.");
-            return ACVP_SUCCESS;
-        }
-        while (hmac_alg_list->next) {
-            hmac_alg_list = hmac_alg_list->next;
-            if (hmac_alg_list->name == alg_str) {
-                ACVP_LOG_WARN("Attempting to register an hmac alg with PBKDF that has already been registered, skipping.");
-                return ACVP_SUCCESS;
-            }
-        }
-        hmac_alg_list->next = calloc(1, sizeof(ACVP_NAME_LIST));
-        if (!hmac_alg_list->next) {
-            return ACVP_MALLOC_FAIL;
-        }
-        hmac_alg_list = hmac_alg_list->next;
+    if (acvp_is_in_name_list(cap->hmac_algs, alg_str)) {
+        ACVP_LOG_WARN("Attempting to register an hmac alg with PBKDF that has already been registered, skipping.");
     } else {
-        cap->hmac_algs = calloc(1, sizeof(ACVP_NAME_LIST));
-        if (!cap->hmac_algs) {
-            return ACVP_MALLOC_FAIL;
-        }
-        hmac_alg_list = cap->hmac_algs;
+        result = acvp_append_name_list(&cap->hmac_algs, alg_str);
     }
-    hmac_alg_list->name = alg_str;
-
-    return ACVP_SUCCESS;
-
+    return result;
 }
 
 /*
@@ -5567,8 +5481,8 @@ ACVP_RESULT acvp_cap_kdf108_set_parm(ACVP_CTX *ctx,
     ACVP_CAPS_LIST *cap;
     ACVP_KDF108_CAP *kdf108_cap;
     ACVP_KDF108_MODE_PARAMS *mode_obj;
-    ACVP_NAME_LIST *nl_obj;
     ACVP_SL_LIST *sl_obj;
+    ACVP_RESULT result = ACVP_SUCCESS;
 
     if (!ctx) {
         return ACVP_NO_CTX;
@@ -5615,44 +5529,33 @@ ACVP_RESULT acvp_cap_kdf108_set_parm(ACVP_CTX *ctx,
     /* only support two method types so just use whichever is available */
     switch (param) {
     case ACVP_KDF108_MAC_MODE:
-        if (mode_obj->mac_mode) {
-            nl_obj = mode_obj->mac_mode;
-            while (nl_obj->next) {
-                nl_obj = nl_obj->next;
-            }
-            nl_obj->next = calloc(1, sizeof(ACVP_NAME_LIST));
-            nl_obj = nl_obj->next;
-        } else {
-            mode_obj->mac_mode = calloc(1, sizeof(ACVP_NAME_LIST));
-            nl_obj = mode_obj->mac_mode;
-        }
         switch (value) {
         case ACVP_KDF108_MAC_MODE_CMAC_AES128:
-            nl_obj->name = ACVP_ALG_CMAC_AES_128;
+            result = acvp_append_name_list(&mode_obj->mac_mode, ACVP_ALG_CMAC_AES_128);
             break;
         case ACVP_KDF108_MAC_MODE_CMAC_AES192:
-            nl_obj->name = ACVP_ALG_CMAC_AES_192;
+            result = acvp_append_name_list(&mode_obj->mac_mode, ACVP_ALG_CMAC_AES_192);
             break;
         case ACVP_KDF108_MAC_MODE_CMAC_AES256:
-            nl_obj->name = ACVP_ALG_CMAC_AES_256;
+            result = acvp_append_name_list(&mode_obj->mac_mode, ACVP_ALG_CMAC_AES_256);
             break;
         case ACVP_KDF108_MAC_MODE_CMAC_TDES:
-            nl_obj->name = ACVP_ALG_CMAC_TDES;
+            result = acvp_append_name_list(&mode_obj->mac_mode, ACVP_ALG_CMAC_TDES);
             break;
         case ACVP_KDF108_MAC_MODE_HMAC_SHA1:
-            nl_obj->name = ACVP_ALG_HMAC_SHA1;
+            result = acvp_append_name_list(&mode_obj->mac_mode, ACVP_ALG_HMAC_SHA1);
             break;
         case ACVP_KDF108_MAC_MODE_HMAC_SHA224:
-            nl_obj->name = ACVP_ALG_HMAC_SHA2_224;
+            result = acvp_append_name_list(&mode_obj->mac_mode, ACVP_ALG_HMAC_SHA2_224);
             break;
         case ACVP_KDF108_MAC_MODE_HMAC_SHA256:
-            nl_obj->name = ACVP_ALG_HMAC_SHA2_256;
+            result = acvp_append_name_list(&mode_obj->mac_mode, ACVP_ALG_HMAC_SHA2_256);
             break;
         case ACVP_KDF108_MAC_MODE_HMAC_SHA384:
-            nl_obj->name = ACVP_ALG_HMAC_SHA2_384;
+            result = acvp_append_name_list(&mode_obj->mac_mode, ACVP_ALG_HMAC_SHA2_384);
             break;
         case ACVP_KDF108_MAC_MODE_HMAC_SHA512:
-            nl_obj->name = ACVP_ALG_HMAC_SHA2_512;
+            result = acvp_append_name_list(&mode_obj->mac_mode, ACVP_ALG_HMAC_SHA2_512);
             break;
         default:
             return ACVP_INVALID_ARG;
@@ -5673,32 +5576,21 @@ ACVP_RESULT acvp_cap_kdf108_set_parm(ACVP_CTX *ctx,
         sl_obj->length = value;
         break;
     case ACVP_KDF108_FIXED_DATA_ORDER:
-        if (mode_obj->data_order) {
-            nl_obj = mode_obj->data_order;
-            while (nl_obj->next) {
-                nl_obj = nl_obj->next;
-            }
-            nl_obj->next = calloc(1, sizeof(ACVP_NAME_LIST));
-            nl_obj = nl_obj->next;
-        } else {
-            mode_obj->data_order = calloc(1, sizeof(ACVP_NAME_LIST));
-            nl_obj = mode_obj->data_order;
-        }
         switch (value) {
         case ACVP_KDF108_FIXED_DATA_ORDER_AFTER:
-            nl_obj->name = ACVP_FIXED_DATA_ORDER_AFTER_STR;
+            result = acvp_append_name_list(&mode_obj->data_order, ACVP_FIXED_DATA_ORDER_AFTER_STR);
             break;
         case ACVP_KDF108_FIXED_DATA_ORDER_BEFORE:
-            nl_obj->name = ACVP_FIXED_DATA_ORDER_BEFORE_STR;
+            result = acvp_append_name_list(&mode_obj->data_order, ACVP_FIXED_DATA_ORDER_BEFORE_STR);
             break;
         case ACVP_KDF108_FIXED_DATA_ORDER_MIDDLE:
-            nl_obj->name = ACVP_FIXED_DATA_ORDER_MIDDLE_STR;
+            result = acvp_append_name_list(&mode_obj->data_order, ACVP_FIXED_DATA_ORDER_MIDDLE_STR);
             break;
         case ACVP_KDF108_FIXED_DATA_ORDER_NONE:
-            nl_obj->name = ACVP_FIXED_DATA_ORDER_NONE_STR;
+            result = acvp_append_name_list(&mode_obj->data_order, ACVP_FIXED_DATA_ORDER_NONE_STR);
             break;
         case ACVP_KDF108_FIXED_DATA_ORDER_BEFORE_ITERATOR:
-            nl_obj->name = ACVP_FIXED_DATA_ORDER_BEFORE_ITERATOR_STR;
+            result = acvp_append_name_list(&mode_obj->data_order, ACVP_FIXED_DATA_ORDER_BEFORE_ITERATOR_STR);
             break;
         default:
             return ACVP_INVALID_ARG;
@@ -5723,7 +5615,7 @@ ACVP_RESULT acvp_cap_kdf108_set_parm(ACVP_CTX *ctx,
         return ACVP_INVALID_ARG;
     }
 
-    return ACVP_SUCCESS;
+    return result;
 }
 
 /*
@@ -5828,8 +5720,8 @@ ACVP_RESULT acvp_cap_kdf135_ikev2_set_parm(ACVP_CTX *ctx,
                                            ACVP_KDF135_IKEV2_PARM param,
                                            int value) {
     ACVP_CAPS_LIST *cap_list = NULL;
-    ACVP_NAME_LIST *hash = NULL;
     ACVP_KDF135_IKEV2_CAP *cap = NULL;
+    ACVP_RESULT result = ACVP_SUCCESS;
 
     cap_list = acvp_locate_cap_entry(ctx, ACVP_KDF135_IKEV2);
     if (!cap_list) {
@@ -5843,40 +5735,28 @@ ACVP_RESULT acvp_cap_kdf135_ikev2_set_parm(ACVP_CTX *ctx,
         return ACVP_INVALID_ARG;
     }
 
-    if (cap->hash_algs) {
-        ACVP_NAME_LIST *current_hash = cap->hash_algs;
-        while (current_hash->next) {
-            current_hash = current_hash->next;
-        }
-        current_hash->next = calloc(1, sizeof(ACVP_NAME_LIST));
-        hash = current_hash->next;
-    } else {
-        cap->hash_algs = calloc(1, sizeof(ACVP_NAME_LIST));
-        hash = cap->hash_algs;
-    }
-
     switch (value) {
     case ACVP_SHA1:
-        hash->name = ACVP_STR_SHA_1;
+        result = acvp_append_name_list(&cap->hash_algs, ACVP_STR_SHA_1);
         break;
     case ACVP_SHA224:
-        hash->name = ACVP_STR_SHA2_224;
+        result = acvp_append_name_list(&cap->hash_algs, ACVP_STR_SHA2_224);
         break;
     case ACVP_SHA256:
-        hash->name = ACVP_STR_SHA2_256;
+        result = acvp_append_name_list(&cap->hash_algs, ACVP_STR_SHA2_256);
         break;
     case ACVP_SHA384:
-        hash->name = ACVP_STR_SHA2_384;
+        result = acvp_append_name_list(&cap->hash_algs, ACVP_STR_SHA2_384);
         break;
     case ACVP_SHA512:
-        hash->name = ACVP_STR_SHA2_512;
+        result = acvp_append_name_list(&cap->hash_algs, ACVP_STR_SHA2_512);
         break;
     default:
         ACVP_LOG_ERR("Invalid hash algorithm.");
         return ACVP_INVALID_ARG;
     }
 
-    return ACVP_SUCCESS;
+    return result;
 }
 
 ACVP_RESULT acvp_cap_kdf135_ikev2_set_length(ACVP_CTX *ctx,
@@ -5942,7 +5822,7 @@ ACVP_RESULT acvp_cap_kdf135_ikev1_set_parm(ACVP_CTX *ctx,
                                            ACVP_KDF135_IKEV1_PARM param,
                                            int value) {
     ACVP_CAPS_LIST *cap_list;
-    ACVP_NAME_LIST *hash = NULL;
+    ACVP_RESULT result = ACVP_SUCCESS;
     ACVP_KDF135_IKEV1_CAP *cap;
 
     cap_list = acvp_locate_cap_entry(ctx, ACVP_KDF135_IKEV1);
@@ -5953,33 +5833,21 @@ ACVP_RESULT acvp_cap_kdf135_ikev1_set_parm(ACVP_CTX *ctx,
     cap = cap_list->cap.kdf135_ikev1_cap;
 
     if (param == ACVP_KDF_IKEv1_HASH_ALG) {
-        if (cap->hash_algs) {
-            ACVP_NAME_LIST *current_hash = cap->hash_algs;
-            while (current_hash->next) {
-                current_hash = current_hash->next;
-            }
-            current_hash->next = calloc(1, sizeof(ACVP_NAME_LIST));
-            hash = current_hash->next;
-        } else {
-            cap->hash_algs = calloc(1, sizeof(ACVP_NAME_LIST));
-            hash = cap->hash_algs;
-        }
-
         switch (value) {
         case ACVP_SHA1:
-            hash->name = ACVP_STR_SHA_1;
+            result = acvp_append_name_list(&cap->hash_algs, ACVP_STR_SHA_1);
             break;
         case ACVP_SHA224:
-            hash->name = ACVP_STR_SHA2_224;
+            result = acvp_append_name_list(&cap->hash_algs, ACVP_STR_SHA2_224);
             break;
         case ACVP_SHA256:
-            hash->name = ACVP_STR_SHA2_256;
+            result = acvp_append_name_list(&cap->hash_algs, ACVP_STR_SHA2_256);
             break;
         case ACVP_SHA384:
-            hash->name = ACVP_STR_SHA2_384;
+            result = acvp_append_name_list(&cap->hash_algs, ACVP_STR_SHA2_384);
             break;
         case ACVP_SHA512:
-            hash->name = ACVP_STR_SHA2_512;
+            result = acvp_append_name_list(&cap->hash_algs, ACVP_STR_SHA2_512);
             break;
         default:
             ACVP_LOG_ERR("Invalid hash algorithm.");
@@ -6008,16 +5876,16 @@ ACVP_RESULT acvp_cap_kdf135_ikev1_set_parm(ACVP_CTX *ctx,
         return ACVP_INVALID_ARG;
     }
 
-    return ACVP_SUCCESS;
+    return result;
 }
 
 ACVP_RESULT acvp_cap_kdf135_x963_set_parm(ACVP_CTX *ctx,
                                           ACVP_KDF135_X963_PARM param,
                                           int value) {
     ACVP_CAPS_LIST *cap_list;
-    ACVP_NAME_LIST *current_hash;
     ACVP_SL_LIST *current_sl;
     ACVP_KDF135_X963_CAP *cap;
+    ACVP_RESULT result = ACVP_SUCCESS;
 
     cap_list = acvp_locate_cap_entry(ctx, ACVP_KDF135_X963);
     if (!cap_list) {
@@ -6027,48 +5895,22 @@ ACVP_RESULT acvp_cap_kdf135_x963_set_parm(ACVP_CTX *ctx,
     cap = cap_list->cap.kdf135_x963_cap;
 
     if (param == ACVP_KDF_X963_HASH_ALG) {
-        current_hash = cap->hash_algs;
-        if (current_hash) {
-            while (current_hash->next) {
-                current_hash = current_hash->next;
-            }
-            current_hash->next = calloc(1, sizeof(ACVP_NAME_LIST));
-            switch (value) {
-            case ACVP_SHA224:
-                current_hash->next->name = ACVP_STR_SHA2_224;
-                break;
-            case ACVP_SHA256:
-                current_hash->next->name = ACVP_STR_SHA2_256;
-                break;
-            case ACVP_SHA384:
-                current_hash->next->name = ACVP_STR_SHA2_384;
-                break;
-            case ACVP_SHA512:
-                current_hash->next->name = ACVP_STR_SHA2_512;
-                break;
-            default:
-                ACVP_LOG_ERR("Invalid hash alg");
-                return ACVP_INVALID_ARG;
-            }
-        } else {
-            cap->hash_algs = calloc(1, sizeof(ACVP_NAME_LIST));
-            switch (value) {
-            case ACVP_SHA224:
-                cap->hash_algs->name = ACVP_STR_SHA2_224;
-                break;
-            case ACVP_SHA256:
-                cap->hash_algs->name = ACVP_STR_SHA2_256;
-                break;
-            case ACVP_SHA384:
-                cap->hash_algs->name = ACVP_STR_SHA2_384;
-                break;
-            case ACVP_SHA512:
-                cap->hash_algs->name = ACVP_STR_SHA2_512;
-                break;
-            default:
-                ACVP_LOG_ERR("Invalid hash alg");
-                return ACVP_INVALID_ARG;
-            }
+        switch (value) {
+        case ACVP_SHA224:
+            result = acvp_append_name_list(&cap->hash_algs, ACVP_STR_SHA2_224);
+            break;
+        case ACVP_SHA256:
+            result = acvp_append_name_list(&cap->hash_algs, ACVP_STR_SHA2_256);
+            break;
+        case ACVP_SHA384:
+            result = acvp_append_name_list(&cap->hash_algs, ACVP_STR_SHA2_384);
+            break;
+        case ACVP_SHA512:
+            result = acvp_append_name_list(&cap->hash_algs, ACVP_STR_SHA2_512);
+            break;
+        default:
+            ACVP_LOG_ERR("Invalid hash alg");
+            return ACVP_INVALID_ARG;
         }
     } else {
         switch (param) {
@@ -6138,7 +5980,7 @@ ACVP_RESULT acvp_cap_kdf135_x963_set_parm(ACVP_CTX *ctx,
         }
     }
 
-    return ACVP_SUCCESS;
+    return result;
 }
 
 ACVP_RESULT acvp_cap_kdf135_ikev2_set_domain(ACVP_CTX *ctx,
@@ -6351,7 +6193,7 @@ ACVP_RESULT acvp_cap_kdf_tls12_set_parm(ACVP_CTX *ctx,
                                          int value) {
     ACVP_CAPS_LIST *cap_list;
     ACVP_KDF_TLS12_CAP *cap;
-    ACVP_NAME_LIST *hash_alg_list = NULL;
+    ACVP_RESULT result = ACVP_SUCCESS;
     const char *alg_str = NULL;
 
     if (!ctx) {
@@ -6376,39 +6218,19 @@ ACVP_RESULT acvp_cap_kdf_tls12_set_parm(ACVP_CTX *ctx,
             ACVP_LOG_ERR("Invalid value specified for TLS 1.2 alg.");
             return ACVP_INVALID_ARG;
         }
-        if (cap->hash_algs) {
-            hash_alg_list = cap->hash_algs;
-            if (hash_alg_list->name == alg_str) {
-                ACVP_LOG_WARN("Attempting to register a hash alg with TLS 1.2 KDF that has already been registered, skipping.");
-                return ACVP_SUCCESS;
-            }
-            while (hash_alg_list->next) {
-                hash_alg_list = hash_alg_list->next;
-                if (hash_alg_list->name == alg_str) {
-                    ACVP_LOG_WARN("Attempting to register a hash alg with TLS 1.2 KDF that has already been registered, skipping.");
-                    return ACVP_SUCCESS;
-                }
-            }
-            hash_alg_list->next = calloc(1, sizeof(ACVP_NAME_LIST));
-            if (!hash_alg_list->next) {
-                return ACVP_MALLOC_FAIL;
-            }
-            hash_alg_list = hash_alg_list->next;
+        if (acvp_is_in_name_list(cap->hash_algs, alg_str)) {
+            ACVP_LOG_WARN("Attempting to register a hash alg with TLS 1.2 KDF that has already been registered, skipping.");
+            return ACVP_SUCCESS;
         } else {
-            cap->hash_algs = calloc(1, sizeof(ACVP_NAME_LIST));
-            if (!cap->hash_algs) {
-                return ACVP_MALLOC_FAIL;
-            }
-            hash_alg_list = cap->hash_algs;
+            result = acvp_append_name_list(&cap->hash_algs, alg_str);
         }
-        hash_alg_list->name = alg_str;
         break;
     case ACVP_KDF_TLS12_PARAM_MIN:
     default:
         return ACVP_INVALID_ARG;
     }
 
-    return ACVP_SUCCESS;
+    return result;
 }
 
 
@@ -6442,8 +6264,7 @@ ACVP_RESULT acvp_cap_kdf_tls13_set_parm(ACVP_CTX *ctx,
                                         int value) {
     ACVP_CAPS_LIST *cap_list = NULL;
     ACVP_KDF_TLS13_CAP *cap = NULL;
-    ACVP_NAME_LIST *hmac_alg_list = NULL;
-    ACVP_PARAM_LIST *run_mode_list = NULL;
+    ACVP_RESULT result = ACVP_SUCCESS;
     const char *alg_str = NULL;
 
     cap_list = acvp_locate_cap_entry(ctx, ACVP_KDF_TLS13);
@@ -6460,64 +6281,26 @@ ACVP_RESULT acvp_cap_kdf_tls13_set_parm(ACVP_CTX *ctx,
             ACVP_LOG_ERR("Invalid value specified for TLS 1.3 hmac alg.");
             return ACVP_INVALID_ARG;
         }
-        if (cap->hmac_algs) {
-            hmac_alg_list = cap->hmac_algs;
-            if (hmac_alg_list->name == alg_str) {
-                ACVP_LOG_WARN("Attempting to register an hmac alg with TLS 1.3 KDF that has already been registered, skipping.");
-                return ACVP_SUCCESS;
-            }
-            while (hmac_alg_list->next) {
-                hmac_alg_list = hmac_alg_list->next;
-                if (hmac_alg_list->name == alg_str) {
-                    ACVP_LOG_WARN("Attempting to register an hmac alg with TLS 1.3 KDF that has already been registered, skipping.");
-                    return ACVP_SUCCESS;
-                }
-            }
-            hmac_alg_list->next = calloc(1, sizeof(ACVP_NAME_LIST));
-            if (!hmac_alg_list->next) {
-                return ACVP_MALLOC_FAIL;
-            }
-            hmac_alg_list = hmac_alg_list->next;
+        if (acvp_is_in_name_list(cap->hmac_algs, alg_str)) {
+            ACVP_LOG_WARN("Attempting to register an hmac alg with TLS 1.3 KDF that has already been registered, skipping.");
+            return ACVP_SUCCESS;
         } else {
-            cap->hmac_algs = calloc(1, sizeof(ACVP_NAME_LIST));
-            if (!cap->hmac_algs) {
-                return ACVP_MALLOC_FAIL;
-            }
-            hmac_alg_list = cap->hmac_algs;
+            result = acvp_append_name_list(&cap->hmac_algs, alg_str);
         }
-        hmac_alg_list->name = alg_str;
         break;
     case ACVP_KDF_TLS13_RUNNING_MODE:
         if (value <= ACVP_KDF_TLS13_RUN_MODE_MIN || value >= ACVP_KDF_TLS13_RUN_MODE_MAX) {
             ACVP_LOG_ERR("Invalid TLS 1.3 KDF running mode provided");
             return ACVP_INVALID_ARG;
         }
-        run_mode_list = cap->running_mode;
-        if (run_mode_list) {
-            while (run_mode_list->next) {
-                run_mode_list = run_mode_list->next;
-            }
-            run_mode_list->next = calloc(1, sizeof(ACVP_PARAM_LIST));
-            if (!run_mode_list->next) {
-                ACVP_LOG_ERR("Error allocating memory for TLS 1.3 KDF running mode param");
-                return ACVP_MALLOC_FAIL;
-            }
-            run_mode_list->next->param = value;
-        } else {
-            cap->running_mode = calloc(1, sizeof(ACVP_PARAM_LIST));
-            if (!cap->running_mode) {
-                ACVP_LOG_ERR("Error allocating memory for TLS 1.3 KDF running mode param");
-                return ACVP_MALLOC_FAIL;
-            }
-            cap->running_mode->param = value;
-        }
+        result = acvp_append_param_list(&cap->running_mode, value);
         break;
     case ACVP_KDF_TLS13_PARAM_MIN:
     default:
         return ACVP_INVALID_ARG;
     }
 
-    return ACVP_SUCCESS;
+    return result;
 
 }
 /*
@@ -6675,9 +6458,8 @@ ACVP_RESULT acvp_cap_kas_ecc_set_parm(ACVP_CTX *ctx,
     ACVP_CAPS_LIST *cap;
     ACVP_KAS_ECC_CAP *kas_ecc_cap;
     ACVP_KAS_ECC_CAP_MODE *kas_ecc_cap_mode;
-    ACVP_PARAM_LIST *current_func;
-    ACVP_PARAM_LIST *current_curve;
     ACVP_SUB_KAS alg;
+    ACVP_RESULT result = ACVP_SUCCESS;
 
     if (!ctx) {
         return ACVP_NO_CTX;
@@ -6727,17 +6509,7 @@ ACVP_RESULT acvp_cap_kas_ecc_set_parm(ACVP_CTX *ctx,
                 ACVP_LOG_ERR("invalid kas ecc function");
                 return ACVP_INVALID_ARG;
             }
-            current_func = kas_ecc_cap_mode->function;
-            if (current_func) {
-                while (current_func->next) {
-                    current_func = current_func->next;
-                }
-                current_func->next = calloc(1, sizeof(ACVP_PARAM_LIST));
-                current_func->next->param = value;
-            } else {
-                kas_ecc_cap_mode->function = calloc(1, sizeof(ACVP_PARAM_LIST));
-                kas_ecc_cap_mode->function->param = value;
-            }
+            result = acvp_append_param_list(&kas_ecc_cap_mode->function, value);
             break;
         case ACVP_KAS_ECC_REVISION:
             if (cipher == ACVP_KAS_ECC_CDH) {
@@ -6764,17 +6536,7 @@ ACVP_RESULT acvp_cap_kas_ecc_set_parm(ACVP_CTX *ctx,
                 ACVP_LOG_ERR("invalid kas ecc curve attr");
                 return ACVP_INVALID_ARG;
             }
-            current_curve = kas_ecc_cap_mode->curve;
-            if (current_curve) {
-                while (current_curve->next) {
-                    current_curve = current_curve->next;
-                }
-                current_curve->next = calloc(1, sizeof(ACVP_PARAM_LIST));
-                current_curve->next->param = value;
-            } else {
-                kas_ecc_cap_mode->curve = calloc(1, sizeof(ACVP_PARAM_LIST));
-                kas_ecc_cap_mode->curve->param = value;
-            }
+            result = acvp_append_param_list(&kas_ecc_cap_mode->curve, value);
             break;
         case ACVP_KAS_ECC_NONE:
             if (cipher == ACVP_KAS_ECC_SSC) {
@@ -6803,17 +6565,7 @@ ACVP_RESULT acvp_cap_kas_ecc_set_parm(ACVP_CTX *ctx,
                 ACVP_LOG_ERR("invalid kas ecc function");
                 return ACVP_INVALID_ARG;
             }
-            current_func = kas_ecc_cap_mode->function;
-            if (current_func) {
-                while (current_func->next) {
-                    current_func = current_func->next;
-                }
-                current_func->next = calloc(1, sizeof(ACVP_PARAM_LIST));
-                current_func->next->param = value;
-            } else {
-                kas_ecc_cap_mode->function = calloc(1, sizeof(ACVP_PARAM_LIST));
-                kas_ecc_cap_mode->function->param = value;
-            }
+            result = acvp_append_param_list(&kas_ecc_cap_mode->function, value);
             break;
         case ACVP_KAS_ECC_REVISION:
         case ACVP_KAS_ECC_CURVE:
@@ -6840,7 +6592,7 @@ ACVP_RESULT acvp_cap_kas_ecc_set_parm(ACVP_CTX *ctx,
 
         break;
     }
-    return ACVP_SUCCESS;
+    return result;
 }
 
 ACVP_RESULT acvp_cap_kas_ecc_set_scheme(ACVP_CTX *ctx,
@@ -6856,9 +6608,8 @@ ACVP_RESULT acvp_cap_kas_ecc_set_scheme(ACVP_CTX *ctx,
     ACVP_KAS_ECC_SCHEME *current_scheme;
     ACVP_KAS_ECC_PSET *current_pset;
     ACVP_KAS_ECC_PSET *last_pset = NULL;
-    ACVP_PARAM_LIST *current_role;
-    ACVP_PARAM_LIST *current_hash;
     ACVP_SUB_KAS alg;
+    ACVP_RESULT result = ACVP_SUCCESS;
 
     if (!ctx) {
         return ACVP_NO_CTX;
@@ -6933,18 +6684,7 @@ ACVP_RESULT acvp_cap_kas_ecc_set_scheme(ACVP_CTX *ctx,
                 value != ACVP_KAS_ECC_ROLE_RESPONDER) {
                 return ACVP_INVALID_ARG;
             }
-            current_role = current_scheme->role;
-            if (current_role) {
-                while (current_role->next) {
-                    current_role = current_role->next;
-                }
-                current_role->next = calloc(1, sizeof(ACVP_PARAM_LIST));
-                current_role->next->param = value;
-            } else {
-                current_role = calloc(1, sizeof(ACVP_PARAM_LIST));
-                current_role->param = value;
-                current_scheme->role = current_role;
-            }
+            result = acvp_append_param_list(&current_scheme->role, value);
             break;
         case ACVP_KAS_ECC_EB:
         case ACVP_KAS_ECC_EC:
@@ -6970,17 +6710,7 @@ ACVP_RESULT acvp_cap_kas_ecc_set_scheme(ACVP_CTX *ctx,
                 current_pset->curve = option;
             }
             //then set sha in a param list
-            current_hash = current_pset->sha;
-            if (current_hash) {
-                while (current_hash->next) {
-                    current_hash = current_hash->next;
-                }
-                current_hash->next = calloc(1, sizeof(ACVP_PARAM_LIST));
-                current_hash->next->param = value;
-            } else {
-                current_pset->sha = calloc(1, sizeof(ACVP_PARAM_LIST));
-                current_pset->sha->param = value;
-            }
+            result = acvp_append_param_list(&current_pset->sha, value);
             break;
         case ACVP_KAS_ECC_NONE:
             break;
@@ -7003,7 +6733,7 @@ ACVP_RESULT acvp_cap_kas_ecc_set_scheme(ACVP_CTX *ctx,
 
         break;
     }
-    return ACVP_SUCCESS;
+    return result;
 }
 
 /*
@@ -7159,9 +6889,8 @@ ACVP_RESULT acvp_cap_kas_ffc_set_parm(ACVP_CTX *ctx,
     ACVP_CAPS_LIST *cap;
     ACVP_KAS_FFC_CAP *kas_ffc_cap;
     ACVP_KAS_FFC_CAP_MODE *kas_ffc_cap_mode;
-    ACVP_PARAM_LIST *current_func;
-    ACVP_PARAM_LIST *current_genmeth;
     ACVP_SUB_KAS alg;
+    ACVP_RESULT result = ACVP_SUCCESS;
 
     if (!ctx) {
         return ACVP_NO_CTX;
@@ -7210,17 +6939,7 @@ ACVP_RESULT acvp_cap_kas_ffc_set_parm(ACVP_CTX *ctx,
                 ACVP_LOG_ERR("invalid kas ffc function");
                 return ACVP_INVALID_ARG;
             }
-            current_func = kas_ffc_cap_mode->function;
-            if (current_func) {
-                while (current_func->next) {
-                    current_func = current_func->next;
-                }
-                current_func->next = calloc(1, sizeof(ACVP_PARAM_LIST));
-                current_func->next->param = value;
-            } else {
-                kas_ffc_cap_mode->function = calloc(1, sizeof(ACVP_PARAM_LIST));
-                kas_ffc_cap_mode->function->param = value;
-            }
+            result = acvp_append_param_list(&kas_ffc_cap_mode->function, value);
             break;
         case ACVP_KAS_FFC_CURVE:
         case ACVP_KAS_FFC_ROLE:
@@ -7249,17 +6968,7 @@ ACVP_RESULT acvp_cap_kas_ffc_set_parm(ACVP_CTX *ctx,
     case ACVP_KAS_FFC_MODE_NONE:
         switch (param) {
         case ACVP_KAS_FFC_GEN_METH:
-            current_genmeth = kas_ffc_cap_mode->genmeth;
-            if (current_genmeth) {
-                while (current_genmeth->next) {
-                    current_genmeth = current_genmeth->next;
-                }
-                current_genmeth->next = calloc(1, sizeof(ACVP_PARAM_LIST));
-                current_genmeth->next->param = value;
-            } else {
-                kas_ffc_cap_mode->genmeth = calloc(1, sizeof(ACVP_PARAM_LIST));
-                kas_ffc_cap_mode->genmeth->param = value;
-            }
+            result = acvp_append_param_list(&kas_ffc_cap_mode->genmeth, value);
             break;
         case ACVP_KAS_FFC_HASH:
             if ((value < ACVP_NO_SHA || value >= ACVP_HASH_ALG_MAX) && !(value & (value - 1))) {
@@ -7299,7 +7008,7 @@ ACVP_RESULT acvp_cap_kas_ffc_set_parm(ACVP_CTX *ctx,
 
         break;
     }
-    return ACVP_SUCCESS;
+    return result;
 }
 
 ACVP_RESULT acvp_cap_kas_ffc_set_scheme(ACVP_CTX *ctx,
@@ -7314,8 +7023,7 @@ ACVP_RESULT acvp_cap_kas_ffc_set_scheme(ACVP_CTX *ctx,
     ACVP_KAS_FFC_SCHEME *current_scheme;
     ACVP_KAS_FFC_PSET *current_pset;
     ACVP_KAS_FFC_PSET *last_pset = NULL;
-    ACVP_PARAM_LIST *current_role;
-    ACVP_PARAM_LIST *current_hash;
+    ACVP_RESULT result = ACVP_SUCCESS;
 
     if (!ctx) {
         return ACVP_NO_CTX;
@@ -7365,18 +7073,7 @@ ACVP_RESULT acvp_cap_kas_ffc_set_scheme(ACVP_CTX *ctx,
                 value != ACVP_KAS_FFC_ROLE_RESPONDER) {
                 return ACVP_INVALID_ARG;
             }
-            current_role = current_scheme->role;
-            if (current_role) {
-                while (current_role->next) {
-                    current_role = current_role->next;
-                }
-                current_role->next = calloc(1, sizeof(ACVP_PARAM_LIST));
-                current_role->next->param = value;
-            } else {
-                current_role = calloc(1, sizeof(ACVP_PARAM_LIST));
-                current_role->param = value;
-                current_scheme->role = current_role;
-            }
+            result = acvp_append_param_list(&current_scheme->role, value);
             break;
         case ACVP_KAS_FFC_FB:
         case ACVP_KAS_FFC_FC:
@@ -7409,17 +7106,7 @@ ACVP_RESULT acvp_cap_kas_ffc_set_scheme(ACVP_CTX *ctx,
                 current_pset->set = param;
             }
             //then set sha in a param list
-            current_hash = current_pset->sha;
-            if (current_hash) {
-                while (current_hash->next) {
-                    current_hash = current_hash->next;
-                }
-                current_hash->next = calloc(1, sizeof(ACVP_PARAM_LIST));
-                current_hash->next->param = value;
-            } else {
-                current_pset->sha = calloc(1, sizeof(ACVP_PARAM_LIST));
-                current_pset->sha->param = value;
-            }
+            result = acvp_append_param_list(&current_pset->sha, value);
             break;
         case ACVP_KAS_FFC_FUNCTION:
         case ACVP_KAS_FFC_CURVE:
@@ -7439,7 +7126,7 @@ ACVP_RESULT acvp_cap_kas_ffc_set_scheme(ACVP_CTX *ctx,
 
         break;
     }
-    return ACVP_SUCCESS;
+    return result;
 }
 
 ACVP_RESULT acvp_cap_kas_ifc_enable(ACVP_CTX *ctx,
@@ -7475,8 +7162,7 @@ ACVP_RESULT acvp_cap_kas_ifc_set_parm(ACVP_CTX *ctx,
     ACVP_KAS_IFC_CAP *kas_ifc_cap = NULL;
     ACVP_CAPS_LIST *cap;
     ACVP_SL_LIST *current_modulo;
-    ACVP_PARAM_LIST *current_roles;
-    ACVP_PARAM_LIST *current_keygen_method;
+    ACVP_RESULT result = ACVP_SUCCESS;
 
     if (!ctx) {
         return ACVP_NO_CTX;
@@ -7495,43 +7181,13 @@ ACVP_RESULT acvp_cap_kas_ifc_set_parm(ACVP_CTX *ctx,
     switch (param)
     {
     case ACVP_KAS_IFC_KAS1:
-        current_roles = kas_ifc_cap->kas1_roles;
-        if (current_roles) {
-            while (current_roles->next) {
-                current_roles = current_roles->next;
-            }
-            current_roles->next = calloc(1, sizeof(ACVP_PARAM_LIST));
-            current_roles->next->param = value;
-        } else {
-            kas_ifc_cap->kas1_roles = calloc(1, sizeof(ACVP_PARAM_LIST));
-            kas_ifc_cap->kas1_roles->param = value;
-        }
+        result = acvp_append_param_list(&kas_ifc_cap->kas1_roles, value);
         break;
     case ACVP_KAS_IFC_KAS2:
-        current_roles = kas_ifc_cap->kas2_roles;
-        if (current_roles) {
-            while (current_roles->next) {
-                current_roles = current_roles->next;
-            }
-            current_roles->next = calloc(1, sizeof(ACVP_PARAM_LIST));
-            current_roles->next->param = value;
-        } else {
-            kas_ifc_cap->kas2_roles = calloc(1, sizeof(ACVP_PARAM_LIST));
-            kas_ifc_cap->kas2_roles->param = value;
-        }
+        result = acvp_append_param_list(&kas_ifc_cap->kas2_roles, value);
         break;
     case ACVP_KAS_IFC_KEYGEN_METHOD:
-        current_keygen_method = kas_ifc_cap->keygen_method;
-        if (current_keygen_method) {
-            while (current_keygen_method->next) {
-                current_keygen_method = current_keygen_method->next;
-            }
-            current_keygen_method->next = calloc(1, sizeof(ACVP_PARAM_LIST));
-            current_keygen_method->next->param = value;
-        } else {
-            kas_ifc_cap->keygen_method = calloc(1, sizeof(ACVP_PARAM_LIST));
-            kas_ifc_cap->keygen_method->param = value;
-        }
+        result = acvp_append_param_list(&kas_ifc_cap->keygen_method, value);
         break;
     case ACVP_KAS_IFC_MODULO:
         current_modulo = kas_ifc_cap->modulo;
@@ -7539,10 +7195,10 @@ ACVP_RESULT acvp_cap_kas_ifc_set_parm(ACVP_CTX *ctx,
             while (current_modulo->next) {
                 current_modulo = current_modulo->next;
             }
-            current_modulo->next = calloc(1, sizeof(ACVP_PARAM_LIST));
+            current_modulo->next = calloc(1, sizeof(ACVP_SL_LIST));
             current_modulo->next->length = value;
         } else {
-            kas_ifc_cap->modulo = calloc(1, sizeof(ACVP_PARAM_LIST));
+            kas_ifc_cap->modulo = calloc(1, sizeof(ACVP_SL_LIST));
             kas_ifc_cap->modulo->length = value;
         }
         break;
@@ -7559,7 +7215,7 @@ ACVP_RESULT acvp_cap_kas_ifc_set_parm(ACVP_CTX *ctx,
         return ACVP_INVALID_ARG;
         break;
     }
-    return ACVP_SUCCESS;
+    return result;
 }
 
 ACVP_RESULT acvp_cap_kas_ifc_set_exponent(ACVP_CTX *ctx,
@@ -7657,8 +7313,6 @@ ACVP_RESULT acvp_cap_kda_set_parm(ACVP_CTX *ctx, ACVP_CIPHER cipher, ACVP_KDA_PA
                                       int value, const char* string) {
     ACVP_CAPS_LIST *cap_list = NULL;
     ACVP_RESULT result = ACVP_SUCCESS;
-    ACVP_PARAM_LIST *plist = NULL;
-    ACVP_NAME_LIST *nlist = NULL;
     const char* tmp = NULL;
     ACVP_SUB_KAS alg;
 
@@ -7723,17 +7377,7 @@ ACVP_RESULT acvp_cap_kda_set_parm(ACVP_CTX *ctx, ACVP_CIPHER cipher, ACVP_KDA_PA
                           ACVP_KDA_PATTERN_LITERAL_STR_LEN_MAX, string, len);
             }
             if (value > ACVP_KDA_PATTERN_NONE && value < ACVP_KDA_PATTERN_MAX) {
-                plist = cap_list->cap.kda_onestep_cap->patterns;
-                if (plist) {
-                    while (plist->next) {
-                        plist = plist->next;
-                    }
-                    plist->next = calloc(1, sizeof(ACVP_PARAM_LIST));
-                    plist->next->param = value;
-                } else {
-                    cap_list->cap.kda_onestep_cap->patterns = calloc(1, sizeof(ACVP_PARAM_LIST));
-                    cap_list->cap.kda_onestep_cap->patterns->param = value;
-                }
+                result = acvp_append_param_list(&cap_list->cap.kda_onestep_cap->patterns, value);
             } else {
                 ACVP_LOG_ERR("Invalid pattern type specified when setting param for KDA onestep.");
                 return ACVP_INVALID_ARG;
@@ -7748,17 +7392,7 @@ ACVP_RESULT acvp_cap_kda_set_parm(ACVP_CTX *ctx, ACVP_CIPHER cipher, ACVP_KDA_PA
             break;
         case ACVP_KDA_ENCODING_TYPE:
             if (value > ACVP_KDA_ENCODING_NONE && value < ACVP_KDA_ENCODING_MAX) {
-                plist = cap_list->cap.kda_onestep_cap->encodings;
-                if (plist) {
-                    while (plist->next) {
-                        plist = plist->next;
-                    }
-                    plist->next = calloc(1, sizeof(ACVP_PARAM_LIST));
-                    plist->next->param = value;
-                } else {
-                    cap_list->cap.kda_onestep_cap->encodings = calloc(1, sizeof(ACVP_PARAM_LIST));
-                    cap_list->cap.kda_onestep_cap->encodings->param = value;
-                }
+                result = acvp_append_param_list(&cap_list->cap.kda_onestep_cap->encodings, value);
             } else {
                 ACVP_LOG_ERR("Invalid encoding type specified when setting param for KDA onestep.");
                 return ACVP_INVALID_ARG;
@@ -7777,51 +7411,23 @@ ACVP_RESULT acvp_cap_kda_set_parm(ACVP_CTX *ctx, ACVP_CIPHER cipher, ACVP_KDA_PA
             break;
         case ACVP_KDA_MAC_SALT:
             if (value == ACVP_KDA_MAC_SALT_METHOD_DEFAULT) {
-                nlist = cap_list->cap.kda_onestep_cap->mac_salt_methods;
-                if (!nlist) {
-                    cap_list->cap.kda_onestep_cap->mac_salt_methods = calloc(1, sizeof(ACVP_NAME_LIST));
-                    cap_list->cap.kda_onestep_cap->mac_salt_methods->name = ACVP_KDA_MAC_SALT_METHOD_DEFAULT_STR;
-                } else {
-                    while (nlist->next) {
-                        nlist = nlist->next;
-                    }
-                    nlist->next = calloc(1, sizeof(ACVP_NAME_LIST));
-                    nlist->next->name = ACVP_KDA_MAC_SALT_METHOD_DEFAULT_STR;
-                }
+                result = acvp_append_name_list(&cap_list->cap.kda_onestep_cap->mac_salt_methods,
+                                               ACVP_KDA_MAC_SALT_METHOD_DEFAULT_STR);
             } else if (value == ACVP_KDA_MAC_SALT_METHOD_RANDOM) {
-                nlist = cap_list->cap.kda_onestep_cap->mac_salt_methods;
-                if (!nlist) {
-                    cap_list->cap.kda_onestep_cap->mac_salt_methods = calloc(1, sizeof(ACVP_NAME_LIST));
-                    cap_list->cap.kda_onestep_cap->mac_salt_methods->name = ACVP_KDA_MAC_SALT_METHOD_RANDOM_STR;
-                } else {
-                    while (nlist->next) {
-                        nlist = nlist->next;
-                    }
-                    nlist->next = calloc(1, sizeof(ACVP_NAME_LIST));
-                    nlist->next->name = ACVP_KDA_MAC_SALT_METHOD_RANDOM_STR;
-                }   
+                result = acvp_append_name_list(&cap_list->cap.kda_onestep_cap->mac_salt_methods,
+                                               ACVP_KDA_MAC_SALT_METHOD_RANDOM_STR);
+            } else {
+                ACVP_LOG_ERR("Invalid value for ACVK_KDA_MAC_SALT");
+                return ACVP_INVALID_ARG;
             }
             break;
-        case ACVP_KDA_HKDF_HMAC_ALG:
-            ACVP_LOG_ERR("cannot set HMAC_ALG for onestep. Use Aux Function instead.");
-            return ACVP_INVALID_ARG;
         case ACVP_KDA_ONESTEP_AUX_FUNCTION:
             tmp = acvp_lookup_aux_function_alg_str(value);
             if (!tmp) {
                 ACVP_LOG_ERR("Invalid aux function cipher provided");
                 return ACVP_INVALID_ARG;
             }
-            nlist = cap_list->cap.kda_onestep_cap->aux_functions;
-            if (!nlist) {
-                cap_list->cap.kda_onestep_cap->aux_functions = calloc(1, sizeof(ACVP_NAME_LIST));
-                cap_list->cap.kda_onestep_cap->aux_functions->name = tmp;
-            } else {
-                while (nlist->next) {
-                    nlist = nlist->next;
-                }
-                nlist->next = calloc(1, sizeof(ACVP_NAME_LIST));
-                nlist->next->name = tmp;
-            }
+            result = acvp_append_name_list(&cap_list->cap.kda_onestep_cap->aux_functions, tmp);
             break;
         case ACVP_KDA_Z:
         default:
@@ -7859,17 +7465,7 @@ ACVP_RESULT acvp_cap_kda_set_parm(ACVP_CTX *ctx, ACVP_CIPHER cipher, ACVP_KDA_PA
                           ACVP_KDA_PATTERN_LITERAL_STR_LEN_MAX, string, len);
             }
             if (value > ACVP_KDA_PATTERN_NONE && value < ACVP_KDA_PATTERN_MAX) {
-                plist = cap_list->cap.kda_hkdf_cap->patterns;
-                if (plist) {
-                    while (plist->next) {
-                        plist = plist->next;
-                    }
-                    plist->next = calloc(1, sizeof(ACVP_PARAM_LIST));
-                    plist->next->param = value;
-                } else {
-                    cap_list->cap.kda_hkdf_cap->patterns = calloc(1, sizeof(ACVP_PARAM_LIST));
-                    cap_list->cap.kda_hkdf_cap->patterns->param = value;
-                }
+                result = acvp_append_param_list(&cap_list->cap.kda_hkdf_cap->patterns, value);
             } else {
                 ACVP_LOG_ERR("Invalid pattern type specified when setting param for KDA-HKDF.");
                 return ACVP_INVALID_ARG;
@@ -7884,17 +7480,7 @@ ACVP_RESULT acvp_cap_kda_set_parm(ACVP_CTX *ctx, ACVP_CIPHER cipher, ACVP_KDA_PA
             break;
         case ACVP_KDA_ENCODING_TYPE:
             if (value > ACVP_KDA_ENCODING_NONE && value < ACVP_KDA_ENCODING_MAX) {
-                plist = cap_list->cap.kda_hkdf_cap->encodings;
-                if (plist) {
-                    while (plist->next) {
-                        plist = plist->next;
-                    }
-                    plist->next = calloc(1, sizeof(ACVP_PARAM_LIST));
-                    plist->next->param = value;
-                } else {
-                    cap_list->cap.kda_hkdf_cap->encodings = calloc(1, sizeof(ACVP_PARAM_LIST));
-                    cap_list->cap.kda_hkdf_cap->encodings->param = value;
-                }
+                result = acvp_append_param_list(&cap_list->cap.kda_hkdf_cap->encodings, value);
             } else {
                 ACVP_LOG_ERR("Invalid encoding type specified when setting param for KDA-HKDF.");
                 return ACVP_INVALID_ARG;
@@ -7913,29 +7499,14 @@ ACVP_RESULT acvp_cap_kda_set_parm(ACVP_CTX *ctx, ACVP_CIPHER cipher, ACVP_KDA_PA
             break;
         case ACVP_KDA_MAC_SALT:
             if (value == ACVP_KDA_MAC_SALT_METHOD_DEFAULT) {
-                nlist = cap_list->cap.kda_hkdf_cap->mac_salt_methods;
-                if (!nlist) {
-                    cap_list->cap.kda_hkdf_cap->mac_salt_methods = calloc(1, sizeof(ACVP_NAME_LIST));
-                    cap_list->cap.kda_hkdf_cap->mac_salt_methods->name = ACVP_KDA_MAC_SALT_METHOD_DEFAULT_STR;
-                } else {
-                    while (nlist->next) {
-                        nlist = nlist->next;
-                    }
-                    nlist->next = calloc(1, sizeof(ACVP_NAME_LIST));
-                    nlist->next->name = ACVP_KDA_MAC_SALT_METHOD_DEFAULT_STR;
-                }
+                result = acvp_append_name_list(&cap_list->cap.kda_hkdf_cap->mac_salt_methods,
+                                               ACVP_KDA_MAC_SALT_METHOD_DEFAULT_STR);
             } else if (value == ACVP_KDA_MAC_SALT_METHOD_RANDOM) {
-                nlist = cap_list->cap.kda_hkdf_cap->mac_salt_methods;
-                if (!nlist) {
-                    cap_list->cap.kda_hkdf_cap->mac_salt_methods = calloc(1, sizeof(ACVP_NAME_LIST));
-                    cap_list->cap.kda_hkdf_cap->mac_salt_methods->name = ACVP_KDA_MAC_SALT_METHOD_RANDOM_STR;
-                } else {
-                    while (nlist->next) {
-                        nlist = nlist->next;
-                    }
-                    nlist->next = calloc(1, sizeof(ACVP_NAME_LIST));
-                    nlist->next->name = ACVP_KDA_MAC_SALT_METHOD_RANDOM_STR;
-                }   
+                result = acvp_append_name_list(&cap_list->cap.kda_hkdf_cap->mac_salt_methods,
+                                               ACVP_KDA_MAC_SALT_METHOD_RANDOM_STR);
+            } else {
+                ACVP_LOG_ERR("Invalid value for ACVK_KDA_MAC_SALT");
+                return ACVP_INVALID_ARG;
             }
             break;
         case ACVP_KDA_HKDF_HMAC_ALG:
@@ -7944,22 +7515,10 @@ ACVP_RESULT acvp_cap_kda_set_parm(ACVP_CTX *ctx, ACVP_CIPHER cipher, ACVP_KDA_PA
                 ACVP_LOG_ERR("Invalid value for hmac alg for KDA_HKDF");
                 return ACVP_INVALID_ARG;
             }
-            nlist = cap_list->cap.kda_hkdf_cap->hmac_algs;
-            if (!nlist) {
-                cap_list->cap.kda_hkdf_cap->hmac_algs = calloc(1, sizeof(ACVP_NAME_LIST));
-                cap_list->cap.kda_hkdf_cap->hmac_algs->name = tmp;
-            } else {
-                while (nlist->next) {
-                    nlist = nlist->next;
-                }
-                nlist->next = calloc(1, sizeof(ACVP_NAME_LIST));
-                nlist->next->name = tmp;
-            }
+            result = acvp_append_name_list(&cap_list->cap.kda_hkdf_cap->hmac_algs, tmp);
             break;
-        case ACVP_KDA_ONESTEP_AUX_FUNCTION:
-            ACVP_LOG_ERR("Cannot set aux functions for HKDF. use HMAC_ALG instead.");
-            return ACVP_INVALID_ARG;
         case ACVP_KDA_Z:
+        case ACVP_KDA_ONESTEP_AUX_FUNCTION:
         default:
             ACVP_LOG_ERR("Invalid parameter specified");
             return ACVP_INVALID_ARG;
@@ -8092,9 +7651,7 @@ ACVP_RESULT acvp_cap_kts_ifc_set_parm(ACVP_CTX *ctx,
     ACVP_CAPS_LIST *cap;
     ACVP_SL_LIST *current_modulo;
     ACVP_KTS_IFC_SCHEMES *current_scheme;
-    ACVP_PARAM_LIST *current_keygen_method;
-    ACVP_PARAM_LIST *current_function;
-
+    ACVP_RESULT result = ACVP_SUCCESS;
     if (!ctx) {
         return ACVP_NO_CTX;
     }
@@ -8112,30 +7669,10 @@ ACVP_RESULT acvp_cap_kts_ifc_set_parm(ACVP_CTX *ctx,
     switch (param)
     {
     case ACVP_KTS_IFC_KEYGEN_METHOD:
-        current_keygen_method = kts_ifc_cap->keygen_method;
-        if (current_keygen_method) {
-            while (current_keygen_method->next) {
-                current_keygen_method = current_keygen_method->next;
-            }
-            current_keygen_method->next = calloc(1, sizeof(ACVP_PARAM_LIST));
-            current_keygen_method->next->param = value;
-        } else {
-            kts_ifc_cap->keygen_method = calloc(1, sizeof(ACVP_PARAM_LIST));
-            kts_ifc_cap->keygen_method->param = value;
-        }
+        result = acvp_append_param_list(&kts_ifc_cap->keygen_method, value);
         break;
     case ACVP_KTS_IFC_FUNCTION:
-        current_function = kts_ifc_cap->functions;
-        if (current_function) {
-            while (current_function->next) {
-                current_function = current_function->next;
-            }
-            current_function->next = calloc(1, sizeof(ACVP_PARAM_LIST));
-            current_function->next->param = value;
-        } else {
-            kts_ifc_cap->functions = calloc(1, sizeof(ACVP_PARAM_LIST));
-            kts_ifc_cap->functions->param = value;
-        }
+        result = acvp_append_param_list(&kts_ifc_cap->functions, value);
         break;
     case ACVP_KTS_IFC_MODULO:
         current_modulo = kts_ifc_cap->modulo;
@@ -8172,7 +7709,7 @@ ACVP_RESULT acvp_cap_kts_ifc_set_parm(ACVP_CTX *ctx,
         return ACVP_INVALID_ARG;
         break;
     }
-    return ACVP_SUCCESS;
+    return result;
 }
 
 ACVP_RESULT acvp_cap_kts_ifc_set_scheme_parm(ACVP_CTX *ctx,
@@ -8184,9 +7721,7 @@ ACVP_RESULT acvp_cap_kts_ifc_set_scheme_parm(ACVP_CTX *ctx,
     ACVP_KTS_IFC_CAP *kts_ifc_cap = NULL;
     ACVP_CAPS_LIST *cap;
     ACVP_KTS_IFC_SCHEMES *current_scheme;
-    ACVP_PARAM_LIST *current_role;
-    ACVP_PARAM_LIST *current_hash;
-
+    ACVP_RESULT result = ACVP_SUCCESS;
     if (!ctx) {
         return ACVP_NO_CTX;
     }
@@ -8225,30 +7760,10 @@ ACVP_RESULT acvp_cap_kts_ifc_set_scheme_parm(ACVP_CTX *ctx,
         current_scheme->l = value;
         break;
     case ACVP_KTS_IFC_ROLE:
-        current_role = current_scheme->roles;
-        if (current_role) {
-            while (current_role->next) {
-                current_role = current_role->next;
-            }
-            current_role->next = calloc(1, sizeof(ACVP_PARAM_LIST));
-            current_role->next->param = value;
-        } else {
-            current_scheme->roles = calloc(1, sizeof(ACVP_PARAM_LIST));
-            current_scheme->roles->param = value;
-        }
+        result = acvp_append_param_list(&current_scheme->roles, value);
         break;
     case ACVP_KTS_IFC_HASH:
-        current_hash = current_scheme->hash;
-        if (current_hash) {
-            while (current_hash->next) {
-                current_hash = current_hash->next;
-            }
-            current_hash->next = calloc(1, sizeof(ACVP_PARAM_LIST));
-            current_hash->next->param = value;
-        } else {
-            current_scheme->hash = calloc(1, sizeof(ACVP_PARAM_LIST));
-            current_scheme->hash->param = value;
-        }
+        result = acvp_append_param_list(&current_scheme->hash, value);
         break;
     case ACVP_KTS_IFC_AD_PATTERN:
     case ACVP_KTS_IFC_ENCODING:
@@ -8258,7 +7773,7 @@ ACVP_RESULT acvp_cap_kts_ifc_set_scheme_parm(ACVP_CTX *ctx,
         return ACVP_INVALID_ARG;
         break;
     }
-    return ACVP_SUCCESS;
+    return result;
 }
 
 ACVP_RESULT acvp_cap_kts_ifc_set_param_string(ACVP_CTX *ctx,
@@ -8423,8 +7938,8 @@ ACVP_RESULT acvp_cap_safe_primes_set_parm(ACVP_CTX *ctx,
     ACVP_CAPS_LIST *cap;
     ACVP_SAFE_PRIMES_CAP *safe_primes_cap;
     ACVP_SAFE_PRIMES_CAP_MODE *safe_primes_cap_mode;
-    ACVP_PARAM_LIST *current_genmeth;
     ACVP_SUB_KAS alg;
+    ACVP_RESULT result = ACVP_SUCCESS;
 
     if (!ctx) {
         return ACVP_NO_CTX;
@@ -8465,17 +7980,7 @@ ACVP_RESULT acvp_cap_safe_primes_set_parm(ACVP_CTX *ctx,
     case ACVP_SUB_SAFE_PRIMES_KEYVER:
         switch (param) {
         case ACVP_SAFE_PRIMES_GENMETH:
-            current_genmeth = safe_primes_cap_mode->genmeth;
-            if (current_genmeth) {
-                while (current_genmeth->next) {
-                    current_genmeth = current_genmeth->next;
-                }
-                current_genmeth->next = calloc(1, sizeof(ACVP_PARAM_LIST));
-                current_genmeth->next->param = mode;
-            } else {
-                safe_primes_cap_mode->genmeth = calloc(1, sizeof(ACVP_PARAM_LIST));
-                safe_primes_cap_mode->genmeth->param = mode;
-            }
+            result = acvp_append_param_list(&safe_primes_cap_mode->genmeth, mode);
             break;
         default:
             break;
@@ -8484,17 +7989,7 @@ ACVP_RESULT acvp_cap_safe_primes_set_parm(ACVP_CTX *ctx,
     case ACVP_SUB_SAFE_PRIMES_KEYGEN:
         switch (param) {
         case ACVP_SAFE_PRIMES_GENMETH:
-            current_genmeth = safe_primes_cap_mode->genmeth;
-            if (current_genmeth) {
-                while (current_genmeth->next) {
-                    current_genmeth = current_genmeth->next;
-                }
-                current_genmeth->next = calloc(1, sizeof(ACVP_PARAM_LIST));
-                current_genmeth->next->param = mode;
-            } else {
-                safe_primes_cap_mode->genmeth = calloc(1, sizeof(ACVP_PARAM_LIST));
-                safe_primes_cap_mode->genmeth->param = mode;
-            }
+            result = acvp_append_param_list(&safe_primes_cap_mode->genmeth, mode);
             break;
         default:
             break;
@@ -8514,5 +8009,5 @@ ACVP_RESULT acvp_cap_safe_primes_set_parm(ACVP_CTX *ctx,
     default:
         break;
     }
-    return ACVP_SUCCESS;
+    return result;
 }

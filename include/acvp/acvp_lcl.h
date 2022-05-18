@@ -1909,6 +1909,9 @@ ACVP_RESULT acvp_kv_list_append(ACVP_KV_LIST **kv_list,
 void acvp_kv_list_free(ACVP_KV_LIST *kv_list);
 
 void acvp_free_str_list(ACVP_STRING_LIST **list);
+ACVP_RESULT acvp_append_param_list(ACVP_PARAM_LIST **list, int param);
+ACVP_RESULT acvp_append_name_list(ACVP_NAME_LIST **list, const char *string);
+int acvp_is_in_name_list(ACVP_NAME_LIST *list, const char *string);
 ACVP_RESULT acvp_append_str_list(ACVP_STRING_LIST **list, const char *string);
 int acvp_lookup_str_list(ACVP_STRING_LIST **list, const char *string);
 int acvp_lookup_param_list(ACVP_PARAM_LIST *list, int value);
