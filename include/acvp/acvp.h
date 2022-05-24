@@ -1845,29 +1845,34 @@ typedef struct acvp_kas_ifc_tc_t {
     ACVP_KAS_IFC_TEST_TYPE test_type;
     ACVP_KAS_IFC_KEYGEN key_gen;
     ACVP_HASH_ALG md;
+    ACVP_KAS_IFC_PARAM scheme;
     ACVP_KAS_IFC_ROLES kas_role;
     unsigned char *p;
     unsigned char *q;
     unsigned char *d;
     unsigned char *n;
     unsigned char *e;
-    unsigned char *z;
-    unsigned char *c;
-    unsigned char *hashz;
-    unsigned char *ct;
-    unsigned char *pt;
-    unsigned char *chash;
+    /* CRT parameters */
+    unsigned char *dmp1;
+    unsigned char *dmq1;
+    unsigned char *iqmp;
+
+    unsigned char *pt_z;
+    unsigned char *ct_z;
+    unsigned char *provided_pt_z; /**< For VAL tests. Could either be plain Z or hashZ */
+    unsigned char *provided_ct_z; /**< for VAL tests */
     int plen;
     int qlen;
     int nlen;
     int dlen;
     int elen;
-    int clen;
-    int ct_len;
-    int pt_len;
-    int zlen;
-    int hashzlen;
-    int chashlen;
+    int dmp1_len;
+    int dmq1_len;
+    int iqmp_len;
+    int pt_z_len;
+    int ct_z_len;
+    int provided_pt_z_len;
+    int provided_ct_z_len;
     unsigned int modulo;
 } ACVP_KAS_IFC_TC;
 
