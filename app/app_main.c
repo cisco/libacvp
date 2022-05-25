@@ -1686,32 +1686,34 @@ static int enable_kas_ifc(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_kas_ifc_set_parm(ctx, ACVP_KAS_IFC_SSC, ACVP_KAS_IFC_MODULO, 4096);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_kas_ifc_set_parm(ctx, ACVP_KAS_IFC_SSC, ACVP_KAS_IFC_KEYGEN_METHOD, ACVP_KAS_IFC_RSAKPG1_BASIC);
-    CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_kas_ifc_set_exponent(ctx, ACVP_KAS_IFC_SSC, ACVP_KAS_IFC_FIXEDPUBEXP, expo_str);
     CHECK_ENABLE_CAP_RV(rv);
 #if OPENSSL_VERSION_NUMBER >= 0x30000000L
-    rv = acvp_cap_kas_ifc_set_parm(ctx, ACVP_KAS_IFC_SSC, ACVP_KAS_IFC_KAS2, ACVP_KAS_IFC_INITIATOR);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_kas_ifc_set_parm(ctx, ACVP_KAS_IFC_SSC, ACVP_KAS_IFC_KAS2, ACVP_KAS_IFC_RESPONDER);
-    CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_kas_ifc_set_parm(ctx, ACVP_KAS_IFC_SSC, ACVP_KAS_IFC_MODULO, 6144);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_kas_ifc_set_parm(ctx, ACVP_KAS_IFC_SSC, ACVP_KAS_IFC_MODULO, 8192);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_kas_ifc_set_parm(ctx, ACVP_KAS_IFC_SSC, ACVP_KAS_IFC_KEYGEN_METHOD, ACVP_KAS_IFC_RSAKPG1_PRIME_FACTOR);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_kas_ifc_set_parm(ctx, ACVP_KAS_IFC_SSC, ACVP_KAS_IFC_KEYGEN_METHOD, ACVP_KAS_IFC_RSAKPG2_BASIC);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_kas_ifc_set_parm(ctx, ACVP_KAS_IFC_SSC, ACVP_KAS_IFC_KEYGEN_METHOD, ACVP_KAS_IFC_RSAKPG2_PRIME_FACTOR);
-    CHECK_ENABLE_CAP_RV(rv);
-#if 0 /* Todo: CRT support */
     rv = acvp_cap_kas_ifc_set_parm(ctx, ACVP_KAS_IFC_SSC, ACVP_KAS_IFC_KEYGEN_METHOD, ACVP_KAS_IFC_RSAKPG1_CRT);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_kas_ifc_set_parm(ctx, ACVP_KAS_IFC_SSC, ACVP_KAS_IFC_KEYGEN_METHOD, ACVP_KAS_IFC_RSAKPG2_CRT);
     CHECK_ENABLE_CAP_RV(rv);
+#if 0
+    rv = acvp_cap_kas_ifc_set_parm(ctx, ACVP_KAS_IFC_SSC, ACVP_KAS_IFC_KAS2, ACVP_KAS_IFC_INITIATOR);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kas_ifc_set_parm(ctx, ACVP_KAS_IFC_SSC, ACVP_KAS_IFC_KAS2, ACVP_KAS_IFC_RESPONDER);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kas_ifc_set_parm(ctx, ACVP_KAS_IFC_SSC, ACVP_KAS_IFC_KEYGEN_METHOD, ACVP_KAS_IFC_RSAKPG1_BASIC);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kas_ifc_set_parm(ctx, ACVP_KAS_IFC_SSC, ACVP_KAS_IFC_KEYGEN_METHOD, ACVP_KAS_IFC_RSAKPG2_BASIC);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kas_ifc_set_parm(ctx, ACVP_KAS_IFC_SSC, ACVP_KAS_IFC_KEYGEN_METHOD, ACVP_KAS_IFC_RSAKPG1_PRIME_FACTOR);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kas_ifc_set_parm(ctx, ACVP_KAS_IFC_SSC, ACVP_KAS_IFC_KEYGEN_METHOD, ACVP_KAS_IFC_RSAKPG2_PRIME_FACTOR);
+    CHECK_ENABLE_CAP_RV(rv);
 #endif
 #else
+    rv = acvp_cap_kas_ifc_set_parm(ctx, ACVP_KAS_IFC_SSC, ACVP_KAS_IFC_KEYGEN_METHOD, ACVP_KAS_IFC_RSAKPG1_BASIC);
+    CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_kas_ifc_set_parm(ctx, ACVP_KAS_IFC_SSC, ACVP_KAS_IFC_HASH, ACVP_SHA512);
     CHECK_ENABLE_CAP_RV(rv);
 #endif
