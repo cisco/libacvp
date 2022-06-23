@@ -141,7 +141,7 @@ int app_kdf108_handler(ACVP_TEST_CASE *test_case) {
     case ACVP_KDF108_MAC_MODE_CMAC_TDES:
     case ACVP_KDF108_MAC_MODE_MAX:
     default:
-        printf("app_kda_twostep_handler error: Unsupported mac algorithm\n");
+        printf("app_kda_kdf108_handler error: Unsupported mac algorithm\n");
         return 1;
     }
 
@@ -164,7 +164,7 @@ int app_kdf108_handler(ACVP_TEST_CASE *test_case) {
     kdf = EVP_KDF_fetch(NULL, "KBKDF", NULL);
     kctx = EVP_KDF_CTX_new(kdf);
     if (!kctx) {
-        printf("Error creating KDF CTX in KDA Twostep\n");
+        printf("Error creating KDF CTX in kdf108\n");
         goto end;
     }
     pbld = OSSL_PARAM_BLD_new();
@@ -178,8 +178,7 @@ int app_kdf108_handler(ACVP_TEST_CASE *test_case) {
     if (isHmac) {
         OSSL_PARAM_BLD_push_utf8_string(pbld, "digest", aname, 0);
     } else {
-        /* For this step, any CMAC length uses 128, as per SP800-56C */
-        OSSL_PARAM_BLD_push_utf8_string(pbld, "cipher", alg, 0);
+        OSSL_PARAM_BLD_push_utf8_string(pbld, "cipher", aname, 0);
     }
 
     if (stc->mode == ACVP_KDF108_MODE_COUNTER) {
@@ -187,18 +186,18 @@ int app_kdf108_handler(ACVP_TEST_CASE *test_case) {
     } else if (stc->mode == ACVP_KDF108_MODE_FEEDBACK) {
         OSSL_PARAM_BLD_push_utf8_string(pbld, "mode", "FEEDBACK", 0);
     } else {
-        printf("Unsupported KDF108 mode given for KDA Twostep\n");
+        printf("Unsupported KDF108 mode given for kdf108\n");
         goto end;
     }
 
     params = OSSL_PARAM_BLD_to_param(pbld);
     if (!params) {
-        printf("Error generating params in KDA Twostep\n");
+        printf("Error generating params in kdf108\n");
         goto end;
     }
 
     if (EVP_KDF_derive(kctx, stc->key_out, stc->key_out_len, params) != 1) {
-        printf("Failure deriving key material in KDA-TwoStep\n");
+        printf("Failure deriving key material in kdf108");
     }
     rc = 0;
 end:
