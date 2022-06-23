@@ -201,7 +201,6 @@ int app_kdf108_handler(ACVP_TEST_CASE *test_case) {
     }
     rc = 0;
 end:
-    ERR_print_errors_fp(stdout);
     if (pbld) OSSL_PARAM_BLD_free(pbld);
     if (params) OSSL_PARAM_free(params);
     if (kdf) EVP_KDF_free(kdf);

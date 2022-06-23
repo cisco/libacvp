@@ -1907,7 +1907,7 @@ end:
 
 static int enable_kda(ACVP_CTX *ctx) {
     ACVP_RESULT rv = ACVP_SUCCESS;
-#if 0
+
     rv = acvp_cap_kda_enable(ctx, ACVP_KDA_HKDF, &app_kda_hkdf_handler);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDA_HKDF, ACVP_PREREQ_HMAC, value);
@@ -2070,7 +2070,6 @@ static int enable_kda(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_kda_set_parm(ctx, ACVP_KDA_ONESTEP, ACVP_KDA_L, 2048, NULL);
     CHECK_ENABLE_CAP_RV(rv);
-#endif
 
 #if OPENSSL_VERSION_NUMBER >= 0x30000000L
     rv = acvp_cap_kda_enable(ctx, ACVP_KDA_TWOSTEP, &app_kda_twostep_handler);

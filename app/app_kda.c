@@ -501,9 +501,9 @@ int app_kda_twostep_handler(ACVP_TEST_CASE *test_case) {
     strcpy_s(aname, 256, alg);
     pbld = OSSL_PARAM_BLD_new();
     if (isHmac) {
-        OSSL_PARAM_BLD_push_utf8_string(pbld, "digest", alg, 0);
+        OSSL_PARAM_BLD_push_utf8_string(pbld, "digest", aname, 0);
     } else {
-        OSSL_PARAM_BLD_push_utf8_string(pbld, "cipher", alg, 0);
+        OSSL_PARAM_BLD_push_utf8_string(pbld, "cipher", aname, 0);
     }
     params = OSSL_PARAM_BLD_to_param(pbld);
 

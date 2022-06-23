@@ -7747,6 +7747,7 @@ ACVP_RESULT acvp_cap_kda_twostep_set_parm(ACVP_CTX *ctx, ACVP_KDA_PARM param,
         }
         break;
     case ACVP_KDA_Z:
+    case ACVP_KDA_TWOSTEP_SUPPORTED_LEN:
     case ACVP_KDA_ONESTEP_AUX_FUNCTION:
     default:
         ACVP_LOG_ERR("Invalid parameter specified %d", param);
