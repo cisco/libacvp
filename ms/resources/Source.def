@@ -100,7 +100,7 @@ EXPORTS
   acvp_put_data_from_file
   acvp_get_results_from_server
   acvp_resume_test_session
-  acvp_get_expected_resultsf
+  acvp_get_expected_results
   acvp_set_2fa_callback
   acvp_bin_to_hexstr
   acvp_hexstr_to_bin
@@ -113,6 +113,7 @@ EXPORTS
   acvp_cap_kda_enable
   acvp_cap_kda_set_parm
   acvp_cap_kda_twostep_set_parm
+  acvp_cap_kda_twostep_set_domain
   acvp_cap_kda_set_domain
   acvp_cap_kas_ifc_enable
   acvp_cap_kas_ifc_set_parm

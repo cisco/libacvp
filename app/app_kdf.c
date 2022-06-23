@@ -15,7 +15,6 @@
 #include <openssl/rand.h>
 #include <openssl/param_build.h>
 #include <openssl/kdf.h>
-#include <openssl/err.h>
 #include "safe_lib.h"
 #endif
 #include "app_lcl.h"
@@ -57,6 +56,7 @@ int app_kdf135_x963_handler(ACVP_TEST_CASE *test_case) {
 }
 
 int app_kdf108_handler(ACVP_TEST_CASE *test_case) {
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
     ACVP_KDF108_TC *stc = NULL;
     int rc = 1, isHmac = 1, fixed_len = 64;
     char *aname = NULL;
@@ -208,6 +208,12 @@ end:
     if (kdf) EVP_KDF_free(kdf);
     if (kctx) EVP_KDF_CTX_free(kctx);
     return rc;
+#else
+    if (!test_case) {
+        return -1;
+    }
+    return 1;
+#endif
 }
 
 int app_kdf135_snmp_handler(ACVP_TEST_CASE *test_case) {
