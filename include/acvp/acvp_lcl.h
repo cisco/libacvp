@@ -212,6 +212,7 @@
 
 /* KDA */
 #define ACVP_REV_KDA_ONESTEP         ACVP_REV_STR_SP800_56CR2
+#define ACVP_REV_KDA_TWOSTEP         ACVP_REV_STR_SP800_56CR2
 #define ACVP_REV_KDA_HKDF            ACVP_REV_STR_SP800_56CR2
 
 /* KTS_IFC */
@@ -350,6 +351,7 @@
 
 #define ACVP_ALG_KDA_ALG_STR     "KDA"
 #define ACVP_ALG_KDA_ONESTEP     "OneStep"
+#define ACVP_ALG_KDA_TWOSTEP     "TwoStep"
 #define ACVP_ALG_KDA_HKDF            "HKDF"
 
 #define ACVP_ALG_KTS_IFC             "KTS-IFC"
@@ -681,7 +683,7 @@
  * https://github.com/usnistgov/ACVP/blob/master/artifacts/acvp_sub_kdf108.txt
  */
 #define ACVP_KDF108_KEYOUT_BIT_MIN 160 /**< SHA-1 */
-#define ACVP_KDF108_KEYOUT_BIT_MAX 512 /**< SHA2-512 */
+#define ACVP_KDF108_KEYOUT_BIT_MAX 4096 /**< SHA2-512 */
 #define ACVP_KDF108_KEYOUT_BYTE_MAX (ACVP_KDF108_KEYOUT_BIT_MAX >> 3)
 #define ACVP_KDF108_KEYOUT_STR_MAX (ACVP_KDF108_KEYOUT_BIT_MAX >> 2)
 
@@ -952,7 +954,8 @@ struct acvp_ec_curve_info {
     const char *name;
 };
 
-struct acvp_aux_function_info {
+/* This is used when we need a table of acceptable ciphers for specific situations */
+struct acvp_function_info {
     ACVP_CIPHER cipher;
     const char *name;
 };
@@ -1000,6 +1003,7 @@ typedef enum acvp_capability_type {
     ACVP_KAS_FFC_NOCOMP_TYPE,
     ACVP_KAS_IFC_TYPE,
     ACVP_KDA_ONESTEP_TYPE,
+    ACVP_KDA_TWOSTEP_TYPE,
     ACVP_KDA_HKDF_TYPE,
     ACVP_KTS_IFC_TYPE,
     ACVP_SAFE_PRIMES_KEYGEN_TYPE,
@@ -1428,6 +1432,19 @@ typedef struct acvp_kda_onestep_capability_t {
     int l;
 } ACVP_KDA_ONESTEP_CAP;
 
+typedef struct acvp_kda_twostep_capability_t {
+    ACVP_CIPHER cipher;
+    ACVP_REVISION revision;
+    ACVP_NAME_LIST *mac_salt_methods;
+    ACVP_PARAM_LIST *patterns;
+    char *literal_pattern_candidate; //optional - only filled if "literal" pattern is used - hex only
+    ACVP_PARAM_LIST *encodings;
+    ACVP_JSON_DOMAIN_OBJ z;
+    int l;
+    int perform_multi_expansion_tests;
+    ACVP_KDF108_CAP kdf_params; /* All of the KDF108 params get stored in here to avoid duplicate code */
+} ACVP_KDA_TWOSTEP_CAP;
+
 typedef struct acvp_kda_hkdf_t {
     ACVP_CIPHER cipher;
     ACVP_PARAM_LIST *patterns;
@@ -1438,6 +1455,7 @@ typedef struct acvp_kda_hkdf_t {
     ACVP_NAME_LIST *mac_salt_methods;
     ACVP_JSON_DOMAIN_OBJ z;
     int l;
+    int perform_multi_expansion_tests;
 } ACVP_KDA_HKDF_CAP;
 
 typedef struct acvp_kts_ifc_macs_t {
@@ -1504,6 +1522,7 @@ typedef struct acvp_caps_list_t {
         ACVP_KAS_FFC_CAP *kas_ffc_cap;
         ACVP_KAS_IFC_CAP *kas_ifc_cap;
         ACVP_KDA_ONESTEP_CAP *kda_onestep_cap;
+        ACVP_KDA_TWOSTEP_CAP *kda_twostep_cap;
         ACVP_KDA_HKDF_CAP *kda_hkdf_cap;
         ACVP_KTS_IFC_CAP *kts_ifc_cap;
         ACVP_SAFE_PRIMES_CAP *safe_primes_keygen_cap;
@@ -1819,6 +1838,8 @@ ACVP_RESULT acvp_kas_ifc_ssc_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
 ACVP_RESULT acvp_kda_onestep_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
+ACVP_RESULT acvp_kda_twostep_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
+
 ACVP_RESULT acvp_kda_hkdf_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
 ACVP_RESULT acvp_kts_ifc_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
@@ -1909,6 +1930,7 @@ ACVP_RESULT acvp_kv_list_append(ACVP_KV_LIST **kv_list,
 void acvp_kv_list_free(ACVP_KV_LIST *kv_list);
 
 void acvp_free_str_list(ACVP_STRING_LIST **list);
+ACVP_RESULT acvp_append_sl_list(ACVP_SL_LIST **list, int length);
 ACVP_RESULT acvp_append_param_list(ACVP_PARAM_LIST **list, int param);
 ACVP_RESULT acvp_append_name_list(ACVP_NAME_LIST **list, const char *string);
 int acvp_is_in_name_list(ACVP_NAME_LIST *list, const char *string);
@@ -1920,6 +1942,10 @@ const char* acvp_lookup_aux_function_alg_str(ACVP_CIPHER alg);
 ACVP_CIPHER acvp_lookup_aux_function_alg_tbl(const char *str);
 int acvp_is_domain_already_set(ACVP_JSON_DOMAIN_OBJ *domain);
 
+/* These functions are used for KDF108, but twostep uses KDF108 so we share them */
+ACVP_KDF108_MAC_MODE_VAL read_mac_mode(const char *str);
+ACVP_KDF108_FIXED_DATA_ORDER_VAL read_ctr_location(const char *str);
+ACVP_KDF108_MODE read_mode(const char *str);
 
 ACVP_RESULT acvp_json_serialize_to_file_pretty_a(const JSON_Value *value, const char *filename);
 ACVP_RESULT acvp_json_serialize_to_file_pretty_w(const JSON_Value *value, const char *filename);

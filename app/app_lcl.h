@@ -122,6 +122,7 @@ int app_kas_ffc_handler(ACVP_TEST_CASE *test_case);
 int app_kas_ifc_handler(ACVP_TEST_CASE *test_case);
 int app_kda_hkdf_handler(ACVP_TEST_CASE *test_case);
 int app_kda_onestep_handler(ACVP_TEST_CASE *test_case);
+int app_kda_twostep_handler(ACVP_TEST_CASE *test_case);
 int app_kts_ifc_handler(ACVP_TEST_CASE *test_case);
 int app_rsa_keygen_handler(ACVP_TEST_CASE *test_case);
 int app_rsa_sig_handler(ACVP_TEST_CASE *test_case);

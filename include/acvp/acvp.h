@@ -217,6 +217,7 @@ typedef enum acvp_cipher {
     ACVP_KAS_FFC_SSC,
     ACVP_KAS_IFC_SSC,
     ACVP_KDA_ONESTEP,
+    ACVP_KDA_TWOSTEP,
     ACVP_KDA_HKDF,
     ACVP_KTS_IFC,
     ACVP_SAFE_PRIMES_KEYGEN,
@@ -357,6 +358,7 @@ typedef enum acvp_alg_type_kas {
     ACVP_SUB_KAS_IFC_SSC,
     ACVP_SUB_KTS_IFC,
     ACVP_SUB_KDA_ONESTEP,
+    ACVP_SUB_KDA_TWOSTEP,
     ACVP_SUB_KDA_HKDF,
     ACVP_SUB_SAFE_PRIMES_KEYGEN,
     ACVP_SUB_SAFE_PRIMES_KEYVER
@@ -507,6 +509,12 @@ typedef enum acvp_kdf108_mac_mode_val {
     ACVP_KDF108_MAC_MODE_HMAC_SHA256,
     ACVP_KDF108_MAC_MODE_HMAC_SHA384,
     ACVP_KDF108_MAC_MODE_HMAC_SHA512,
+    ACVP_KDF108_MAC_MODE_HMAC_SHA512_224,
+    ACVP_KDF108_MAC_MODE_HMAC_SHA512_256,
+    ACVP_KDF108_MAC_MODE_HMAC_SHA3_224,
+    ACVP_KDF108_MAC_MODE_HMAC_SHA3_256,
+    ACVP_KDF108_MAC_MODE_HMAC_SHA3_384,
+    ACVP_KDF108_MAC_MODE_HMAC_SHA3_512,
     ACVP_KDF108_MAC_MODE_MAX
 } ACVP_KDF108_MAC_MODE_VAL;
 
@@ -1917,8 +1925,14 @@ typedef enum acvp_kda_param {
     ACVP_KDA_Z,
     ACVP_KDA_L,
     ACVP_KDA_MAC_SALT,
-    ACVP_KDA_HKDF_HMAC_ALG,
-    ACVP_KDA_ONESTEP_AUX_FUNCTION
+    ACVP_KDA_PERFORM_MULTIEXPANSION_TESTS,
+    ACVP_KDA_MAC_ALG,
+    ACVP_KDA_ONESTEP_AUX_FUNCTION,
+    ACVP_KDA_TWOSTEP_SUPPORTED_LEN,
+    ACVP_KDA_TWOSTEP_FIXED_DATA_ORDER,
+    ACVP_KDA_TWOSTEP_COUNTER_LEN,
+    ACVP_KDA_TWOSTEP_SUPPORTS_EMPTY_IV,
+    ACVP_KDA_TWOSTEP_REQUIRES_EMPTY_IV
 } ACVP_KDA_PARM;
 
 /**
@@ -1961,6 +1975,52 @@ typedef struct acvp_kda_onestep_tc_t {
     unsigned char *providedDkm;
     unsigned char *outputDkm;
 } ACVP_KDA_ONESTEP_TC;
+
+/**
+ * @struct ACVP_KDA_TWOSTEP_TC
+ * @brief This struct holds data that represents a single test case for KDA twostep testing.
+ *        This data is passed between libacvp and the crypto module.
+ */
+typedef struct acvp_kda_twostep_tc_t {
+    ACVP_CIPHER cipher;
+    ACVP_KDA_TEST_TYPE type;
+    //Incrementing through the array, each element represents a pattern candidate until we reach a 0
+    ACVP_KDA_PATTERN_CANDIDATE fixedInfoPattern[ACVP_KDA_PATTERN_MAX];
+    ACVP_KDA_ENCODING encoding;
+    ACVP_KDF108_MODE kdfMode;
+    ACVP_KDF108_MAC_MODE_VAL macFunction; /**< we re-use the SP800-108 KDF MAC list here, since its part of twostep. */
+    ACVP_KDF108_FIXED_DATA_ORDER_VAL counterLocation;
+    ACVP_KDA_MAC_SALT_METHOD saltMethod;
+    unsigned int tc_id;
+    unsigned char *salt;
+    unsigned char *iv;
+    unsigned char *z;
+    unsigned char *t;
+    int l;
+    int saltLen;
+    int ivLen;
+    int zLen;
+    int tLen;
+    int uPartyIdLen;
+    int uEphemeralLen;
+    int vPartyIdLen;
+    int vEphemeralLen;
+    int algIdLen;
+    int labelLen;
+    int contextLen;
+    int literalLen;
+    int counterLen;
+    unsigned char *literalCandidate;
+    unsigned char *algorithmId;
+    unsigned char *label;
+    unsigned char *context;
+    unsigned char *uPartyId;
+    unsigned char *uEphemeralData;
+    unsigned char *vPartyId;
+    unsigned char *vEphemeralData;
+    unsigned char *providedDkm;
+    unsigned char *outputDkm;
+} ACVP_KDA_TWOSTEP_TC;
 
 /**
  * @struct ACVP_KDA_HKDF_TC
@@ -2157,6 +2217,7 @@ typedef struct acvp_test_case_t {
         ACVP_KAS_FFC_TC *kas_ffc;
         ACVP_KAS_IFC_TC *kas_ifc;
         ACVP_KDA_ONESTEP_TC *kda_onestep;
+        ACVP_KDA_TWOSTEP_TC *kda_twostep;
         ACVP_KDA_HKDF_TC *kda_hkdf;
         ACVP_KTS_IFC_TC *kts_ifc;
         ACVP_SAFE_PRIMES_TC *safe_primes;
@@ -2811,6 +2872,30 @@ ACVP_RESULT acvp_cap_kda_set_domain(ACVP_CTX *ctx,
                                        int increment);
 
 /**
+ * @brief acvp_enable_kda_twostep_set_domain() allows an application to specify operational parameters
+ *        to be used for a given alg during a test session with the ACVP server. This function
+ *        should be called to enable crypto capabilities for KDA modes and functions. It may be
+ *        called multiple times to specify more than one crypto capability.
+ *
+ * @param ctx Pointer to ACVP_CTX that was previously created by calling acvp_create_test_session.
+ * @param param ACVP_KDA_PARM enum value identifying the algorithm parameter that is being
+ *        specified. An example would be ACVP_KDA_HKDF_???
+ * @param min Minumum supported value for the corresponding parameter
+ * @param max Maximum supported value for the corresponding parameter
+ * @param increment Increment value supported
+ * @param kdf_mode The kdf mode being set - counter, feedback, or double pipeline iteration
+ *
+ * @return ACVP_RESULT
+ */
+ACVP_RESULT acvp_cap_kda_twostep_set_domain(ACVP_CTX *ctx,
+                                       ACVP_KDA_PARM param,
+                                       int min,
+                                       int max,
+                                       int increment,
+                                       int kdf_mode);
+
+
+/**
  * @brief acvp_enable_kda_set_parm() allows an application to specify operational parameters
  *        to be used for a given alg during a test session with the ACVP server. This function
  *        should be called to enable crypto capabilities for KDA modes and functions. It may be
@@ -2832,7 +2917,27 @@ ACVP_RESULT acvp_cap_kda_set_parm(ACVP_CTX *ctx,
                                       int value,
                                       const char* string);
 
-
+/**
+ * @brief acvp_cap_kda_twostep_set_parm() allows an application to specify operational parameters
+ *        to be used for a given alg during a test session with the ACVP server. This function
+ *        should be called to enable crypto capabilities for KDA modes and functions. It may be
+ *        called multiple times to specify more than one crypto capability.
+ *
+ * @param ctx Pointer to ACVP_CTX that was previously created by calling acvp_create_test_session.
+ * @param param ACVP_KDA_PARM enum value identifying the algorithm parameter that is being
+ *        specified. An example would be ACVP_KDA_TWOSTEP_??
+ * @param value the value corresponding to the parameter being set
+ * @param kdf_mode The kdf mode being set - counter, feedback, or double pipeline iteration
+ * @param string a constant string value required by some parameters, will return an error if
+ *        incorrectly used with wrong parameters
+ *
+ * @return ACVP_RESULT
+ */
+ACVP_RESULT acvp_cap_kda_twostep_set_parm(ACVP_CTX *ctx, 
+                                          ACVP_KDA_PARM param,
+                                          int value, 
+                                          int kdf_mode, 
+                                          const char* string);
 
 /**
  * @brief acvp_enable_kda_enable()

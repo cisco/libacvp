@@ -164,7 +164,7 @@ static ACVP_RESULT acvp_kdf108_release_tc(ACVP_KDF108_TC *stc) {
     return ACVP_SUCCESS;
 }
 
-static ACVP_KDF108_MODE read_mode(const char *str) {
+ACVP_KDF108_MODE read_mode(const char *str) {
     int diff = 1;
 
     strcmp_s(ACVP_MODE_COUNTER, 7, str, &diff);
@@ -179,7 +179,7 @@ static ACVP_KDF108_MODE read_mode(const char *str) {
     return 0;
 }
 
-static ACVP_KDF108_MAC_MODE_VAL read_mac_mode(const char *str) {
+ACVP_KDF108_MAC_MODE_VAL read_mac_mode(const char *str) {
     int diff = 1;
 
     strcmp_s(ACVP_ALG_HMAC_SHA1,
@@ -207,6 +207,37 @@ static ACVP_KDF108_MAC_MODE_VAL read_mac_mode(const char *str) {
              str, &diff);
     if (!diff) return ACVP_KDF108_MAC_MODE_HMAC_SHA512;
 
+    strcmp_s(ACVP_ALG_HMAC_SHA2_512_224,
+             ACVP_ALG_NAME_MAX,
+             str, &diff);
+    if (!diff) return ACVP_KDF108_MAC_MODE_HMAC_SHA512_224;
+
+    strcmp_s(ACVP_ALG_HMAC_SHA2_512_256,
+             ACVP_ALG_NAME_MAX,
+             str, &diff);
+    if (!diff) return ACVP_KDF108_MAC_MODE_HMAC_SHA512_256;
+
+    strcmp_s(ACVP_ALG_HMAC_SHA3_224,
+             ACVP_ALG_NAME_MAX,
+             str, &diff);
+    if (!diff) return ACVP_KDF108_MAC_MODE_HMAC_SHA3_224;
+
+    strcmp_s(ACVP_ALG_HMAC_SHA3_256,
+             ACVP_ALG_NAME_MAX,
+             str, &diff);
+    if (!diff) return ACVP_KDF108_MAC_MODE_HMAC_SHA3_256;
+
+    strcmp_s(ACVP_ALG_HMAC_SHA3_384,
+             ACVP_ALG_NAME_MAX,
+             str, &diff);
+    if (!diff) return ACVP_KDF108_MAC_MODE_HMAC_SHA3_384;
+
+    strcmp_s(ACVP_ALG_HMAC_SHA3_512,
+             ACVP_ALG_NAME_MAX,
+             str, &diff);
+    if (!diff) return ACVP_KDF108_MAC_MODE_HMAC_SHA3_512;
+
+
     strcmp_s(ACVP_ALG_CMAC_AES_128,
              ACVP_ALG_NAME_MAX,
              str, &diff);
@@ -230,7 +261,7 @@ static ACVP_KDF108_MAC_MODE_VAL read_mac_mode(const char *str) {
     return 0;
 }
 
-static ACVP_KDF108_FIXED_DATA_ORDER_VAL read_ctr_location(const char *str) {
+ACVP_KDF108_FIXED_DATA_ORDER_VAL read_ctr_location(const char *str) {
     int diff = 1;
 
     strcmp_s(ACVP_FIXED_DATA_ORDER_AFTER_STR, 16, str, &diff);
