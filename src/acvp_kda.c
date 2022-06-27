@@ -249,6 +249,210 @@ static ACVP_RESULT acvp_kda_onestep_init_tc(ACVP_CTX *ctx,
     return ACVP_SUCCESS;
 }
 
+static ACVP_RESULT acvp_kda_twostep_output_tc(ACVP_CTX *ctx,
+                                               ACVP_KDA_TWOSTEP_TC *stc,
+                                               JSON_Object *tc_rsp) {
+    ACVP_RESULT rv = ACVP_SUCCESS;
+    char *tmp = NULL;
+
+    tmp = calloc(ACVP_KDA_DKM_STR_MAX + 1, sizeof(char));
+    if (!tmp) {
+        ACVP_LOG_ERR("Unable to malloc in acvp_kda_twostep_output_tc");
+        return ACVP_MALLOC_FAIL;
+    }
+
+    if (stc->type == ACVP_KDA_TT_VAL) {
+        int diff = 1;
+
+        memcmp_s(stc->outputDkm, ACVP_KDA_DKM_BYTE_MAX,
+                 stc->providedDkm, ACVP_KDA_DKM_BYTE_MAX, &diff);
+
+        if (!diff) {
+            json_object_set_boolean(tc_rsp, "testPassed", 1);
+        } else {
+            json_object_set_boolean(tc_rsp, "testPassed", 0);
+        }
+        goto end;
+    }
+
+    memzero_s(tmp, ACVP_KDA_DKM_STR_MAX);
+    rv = acvp_bin_to_hexstr(stc->outputDkm, stc->l, tmp, ACVP_KDA_DKM_STR_MAX);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("hex conversion failure (dkm)");
+        goto end;
+    }
+    json_object_set_string(tc_rsp, "dkm", tmp);
+
+
+end:
+    if (tmp) free(tmp);
+
+    return rv;
+}
+
+static ACVP_RESULT acvp_kda_twostep_init_tc(ACVP_CTX *ctx,
+                                             ACVP_KDA_TWOSTEP_TC *stc,
+                                             const int tc_id,
+                                             ACVP_KDF108_MAC_MODE_VAL mac_mode,
+                                             const char *salt,
+                                             const char *z,
+                                             const char *iv,
+                                             const char *t,
+                                             const char *uparty,
+                                             const char *uephemeral,
+                                             const char *vparty,
+                                             const char *vephemeral,
+                                             const char *algid,
+                                             const char *context,
+                                             const char *label,
+                                             const char *providedDkm,
+                                             const int l,
+                                             const int saltLen,
+                                             const int ivLen,
+                                             const int counterLen,
+                                             ACVP_KDA_MAC_SALT_METHOD saltMethod,
+                                             ACVP_KDF108_MODE kdfMode,
+                                             ACVP_KDF108_FIXED_DATA_ORDER_VAL counterLocation,
+                                             ACVP_KDA_ENCODING encoding,
+                                             ACVP_KDA_PATTERN_CANDIDATE *fixedArr,
+                                             ACVP_KDA_TEST_TYPE test_type) {
+    ACVP_RESULT rv;
+
+    stc->tc_id = tc_id;
+    stc->type = test_type;
+    stc->macFunction = mac_mode;
+    stc->l = l / 8;
+    stc->encoding = encoding;
+    stc->saltMethod = saltMethod;
+    stc->kdfMode = kdfMode;
+    stc->counterLocation = counterLocation;
+    stc->counterLen = counterLen;
+
+    if (memcpy_s(stc->fixedInfoPattern, ACVP_KDA_PATTERN_MAX * sizeof(int), fixedArr, ACVP_KDA_PATTERN_MAX * sizeof(int))) {
+        ACVP_LOG_ERR("Error copying array of fixedInfoPattern candidates into test case structure");
+        rv = ACVP_MALLOC_FAIL;
+        return rv;
+    } 
+
+    stc->salt = calloc(1, ACVP_KDA_SALT_BYTE_MAX);
+    if (!stc->salt) { return ACVP_MALLOC_FAIL; }
+    rv = acvp_hexstr_to_bin(salt, stc->salt, ACVP_KDA_SALT_BYTE_MAX, &(stc->saltLen));
+    if (rv != ACVP_SUCCESS || (saltLen != 0 && stc->saltLen != saltLen / 8)) {
+        ACVP_LOG_ERR("Hex conversion failure (salt)");
+        return rv;
+    }
+
+
+    stc->z = calloc(1, ACVP_KDA_Z_BYTE_MAX);
+    if (!stc->z) { return ACVP_MALLOC_FAIL; }
+    rv = acvp_hexstr_to_bin(z, stc->z, ACVP_KDA_Z_BYTE_MAX, &(stc->zLen));
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Hex conversion failure (z)");
+        return rv;
+    }
+
+    if (iv) {
+        stc->iv = calloc(1, ACVP_KDA_Z_BYTE_MAX);
+        if (!stc->iv) { return ACVP_MALLOC_FAIL; }
+        rv = acvp_hexstr_to_bin(iv, stc->iv, ACVP_KDA_Z_BYTE_MAX, &(stc->ivLen));
+        if (rv != ACVP_SUCCESS || (ivLen != 0 && stc->ivLen != ivLen / 8)) {
+            ACVP_LOG_ERR("Hex conversion failure (iv)");
+            return rv;
+        }
+    }
+
+    if (t) {
+        stc->t = calloc(1, ACVP_KDA_Z_BYTE_MAX);
+        if (!stc->t) { return ACVP_MALLOC_FAIL; }
+        rv = acvp_hexstr_to_bin(t, stc->t, ACVP_KDA_Z_BYTE_MAX, &(stc->tLen));
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Hex conversion failure (t)");
+            return rv;
+        }
+    }
+
+    stc->uPartyId = calloc(1, ACVP_KDA_FIXED_BYTE_MAX);
+    if (!stc->uPartyId) { return ACVP_MALLOC_FAIL; }
+    rv = acvp_hexstr_to_bin(uparty, stc->uPartyId, ACVP_KDA_FIXED_BYTE_MAX, &(stc->uPartyIdLen));
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Hex conversion failure (uPartyId)");
+        return rv;
+    }
+    if (uephemeral) {
+        stc->uEphemeralData = calloc(1, ACVP_KDA_FIXED_BYTE_MAX);
+        if (!stc->uEphemeralData) { return ACVP_MALLOC_FAIL; }
+        rv = acvp_hexstr_to_bin(uephemeral, stc->uEphemeralData, ACVP_KDA_FIXED_BYTE_MAX, &(stc->uEphemeralLen));
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Hex conversion failure (uEphemeral)");
+            return rv;
+        }
+    }
+
+    stc->vPartyId = calloc(1, ACVP_KDA_FIXED_BYTE_MAX);
+    if (!stc->vPartyId) { return ACVP_MALLOC_FAIL; }
+    rv = acvp_hexstr_to_bin(vparty, stc->vPartyId, ACVP_KDA_FIXED_BYTE_MAX, &(stc->vPartyIdLen));
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Hex conversion failure (vPartyid)");
+        return rv;
+    }
+    if (vephemeral) {
+        stc->vEphemeralData = calloc(1, ACVP_KDA_FIXED_BYTE_MAX);
+        if (!stc->vEphemeralData) { return ACVP_MALLOC_FAIL; }
+        rv = acvp_hexstr_to_bin(vephemeral, stc->vEphemeralData, ACVP_KDA_FIXED_BYTE_MAX, &(stc->vEphemeralLen));
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Hex conversion failure (vEphemeral)");
+            return rv;
+        }
+    }
+
+    if (algid) {
+        stc->algorithmId = calloc(1, ACVP_KDA_FIXED_BYTE_MAX);
+        if (!stc->algorithmId) { return ACVP_MALLOC_FAIL; }
+        rv = acvp_hexstr_to_bin(algid, stc->algorithmId, ACVP_KDA_FIXED_BYTE_MAX, &(stc->algIdLen));
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Hex conversion failure (algorithmId)");
+            return rv;
+        }
+    }
+
+    if (label) {
+        stc->label = calloc(1, ACVP_KDA_FIXED_BYTE_MAX);
+        if (!stc->label) { return ACVP_MALLOC_FAIL; }
+        rv = acvp_hexstr_to_bin(label, stc->label, ACVP_KDA_FIXED_BYTE_MAX, &(stc->labelLen));
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Hex conversion failure (label)");
+            return rv;
+        }
+    }
+
+    if (context) {
+        stc->context = calloc(1, ACVP_KDA_FIXED_BYTE_MAX);
+        if (!stc->context) { return ACVP_MALLOC_FAIL; }
+        rv = acvp_hexstr_to_bin(context, stc->context, ACVP_KDA_FIXED_BYTE_MAX, &(stc->contextLen));
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Hex conversion failure (algorithmId)");
+            return rv;
+        }
+    }
+
+    stc->outputDkm = calloc(ACVP_KDA_DKM_BYTE_MAX, 1);
+    if (!stc->outputDkm) { 
+        ACVP_LOG_ERR("Failed to allocate outputDkm initializing test case");
+        return ACVP_MALLOC_FAIL; 
+    }
+
+    if (stc->type == ACVP_KDA_TT_VAL) {
+        stc->providedDkm = calloc(ACVP_KDA_DKM_BYTE_MAX, 1);
+        if (!stc->providedDkm) { return ACVP_MALLOC_FAIL; }
+        rv = acvp_hexstr_to_bin(providedDkm, stc->providedDkm, ACVP_KDA_DKM_BYTE_MAX, NULL);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Hex conversion failure (dkm)");
+            return rv;
+        }
+    }
+
+    return ACVP_SUCCESS;
+}
 
 static ACVP_RESULT acvp_kda_hkdf_init_tc(ACVP_CTX *ctx,
                                              ACVP_KDA_HKDF_TC *stc,
@@ -432,6 +636,23 @@ static ACVP_RESULT acvp_kda_release_tc(ACVP_CIPHER cipher, ACVP_TEST_CASE *tc) {
         if (stc->providedDkm) free(stc->providedDkm);
         if (stc->outputDkm) free(stc->outputDkm);
         memzero_s(stc, sizeof(ACVP_KDA_ONESTEP_TC));
+    } else if (cipher == ACVP_KDA_TWOSTEP) {
+        ACVP_KDA_TWOSTEP_TC *stc = tc->tc.kda_twostep;
+        if (stc->salt) free(stc->salt);
+        if (stc->iv) free (stc->iv);
+        if (stc->z) free(stc->z);
+        if (stc->t) free(stc->t);
+        if (stc->literalCandidate) free(stc->literalCandidate);
+        if (stc->algorithmId) free(stc->algorithmId);
+        if (stc->label) free(stc->label);
+        if (stc->context) free(stc->context);
+        if (stc->uPartyId) free(stc->uPartyId);
+        if (stc->uEphemeralData) free(stc->uEphemeralData);
+        if (stc->vPartyId) free(stc->vPartyId);
+        if (stc->vEphemeralData) free(stc->vEphemeralData);
+        if (stc->providedDkm) free(stc->providedDkm);
+        if (stc->outputDkm) free(stc->outputDkm);
+        memzero_s(stc, sizeof(ACVP_KDA_TWOSTEP_TC));
     } else {
         return ACVP_UNSUPPORTED_OP;
     }
@@ -675,7 +896,7 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
                *salt_method_str = NULL;
     ACVP_HASH_ALG hmac_alg = 0;
     unsigned int i = 0, g_cnt = 0;
-    int j = 0, k = 0, t_cnt = 0, tc_id = 0, saltLen = 0, l = 0, tmp = 0;
+    int j = 0, k = 0, t_cnt = 0, tc_id = 0, saltLen = 0, l = 0;
     ACVP_RESULT rv;
     const char *test_type_str = NULL;
     ACVP_KDA_TEST_TYPE test_type;
@@ -683,7 +904,14 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
     ACVP_KDA_ENCODING encoding;
     ACVP_KDA_MAC_SALT_METHOD salt_method;
     ACVP_CAPS_LIST *kdfcap = NULL;
+    /*These vars are specific to onestep */
     ACVP_CIPHER aux_function = 0;
+    /* These vars are specific to twostep */
+    int ctr_len = 0, iv_len = 0;
+    const char *ctr_loc_str = NULL, *kdf_mode_str = NULL, *iv_str = NULL;
+    ACVP_KDF108_MODE kdf_mode = 0;
+    ACVP_KDF108_MAC_MODE_VAL mac_mode = 0;
+    ACVP_KDF108_FIXED_DATA_ORDER_VAL ctr_loc = 0;
 
     groups = json_object_get_array(obj, "testGroups");
     g_cnt = json_array_get_count(groups);
@@ -770,11 +998,25 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
                 rv = ACVP_MALFORMED_JSON;
                 goto err;
             }
+        } else if (cipher == ACVP_KDA_TWOSTEP) {
+            alg_str = json_object_get_string(configobj, "macMode");
+            if (!alg_str) {
+                ACVP_LOG_ERR("Server JSON missing 'macMode'");
+                rv = ACVP_TC_DATA_INVALID;
+                goto err;
+            }
+            mac_mode = read_mac_mode(alg_str);
+            if (!mac_mode) {
+                ACVP_LOG_ERR("Sever JSON invalid 'macMode'");
+                rv = ACVP_TC_DATA_INVALID;
+                goto err;
+            }
         } else {
             ACVP_LOG_ERR("Error, incorrect cipher in KDA handler");
             rv = ACVP_UNSUPPORTED_OP;
             goto err;
         }
+
         pattern_str = json_object_get_string(configobj, "fixedInfoPattern");
         if (!pattern_str) {
             ACVP_LOG_ERR("Server JSON missing 'fixedInfoPattern'");
@@ -796,7 +1038,7 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
             rv = ACVP_MALFORMED_JSON;
             goto err;
         }
-        /** temporarily disabling this check due to issue with NIST server
+
         saltLen = json_object_get_number(configobj, "saltLen");
         //saltLen seems tied to hashAlg bit length. Spec unclear as of writing.
         if (saltLen % 8 != 0 || saltLen < 0 || saltLen > 512) {
@@ -804,7 +1046,7 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
             rv = ACVP_MALFORMED_JSON;
             goto err;
         }
-        */
+
         l = json_object_get_number(configobj, "l");
         if (cipher == ACVP_KDA_HKDF) {
             kdfcap = acvp_locate_cap_entry(ctx, ACVP_KDA_HKDF);
@@ -818,7 +1060,7 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
                 rv = ACVP_MALFORMED_JSON;
                 goto err;
             }
-        } else {
+        } else if (cipher == ACVP_KDA_ONESTEP) {
             kdfcap = acvp_locate_cap_entry(ctx, ACVP_KDA_ONESTEP);
             if (!kdfcap || !kdfcap->cap.kda_onestep_cap) {
                 ACVP_LOG_ERR("Missing KDA_ONESTEP capability data");
@@ -830,6 +1072,69 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
                 rv = ACVP_MALFORMED_JSON;
                 goto err;
             }
+        } else {
+            kdfcap = acvp_locate_cap_entry(ctx, ACVP_KDA_TWOSTEP);
+            if (!kdfcap || !kdfcap->cap.kda_twostep_cap) {
+                ACVP_LOG_ERR("Missing KDA_TWOSTEP capability data");
+                rv = ACVP_UNSUPPORTED_OP;
+                goto err;
+            }
+            if (l != kdfcap->cap.kda_twostep_cap->l || l < 0 || l > ACVP_KDA_DKM_BIT_MAX) {
+                ACVP_LOG_ERR("Server provided l does not match registered value");
+                rv = ACVP_MALFORMED_JSON;
+                goto err;
+            }
+        }
+
+        /* there are some kdfConfiguration values specific to twostep */
+        if (cipher == ACVP_KDA_TWOSTEP) {
+            kdf_mode_str = json_object_get_string(configobj, "kdfMode");
+            if (!kdf_mode_str) {
+                ACVP_LOG_ERR("Server JSON missing kdfMode");
+                rv = ACVP_TC_DATA_INVALID;
+                goto err;
+            }
+            kdf_mode = read_mode(kdf_mode_str);
+            if (!kdf_mode) {
+                ACVP_LOG_ERR("Server JSON invalid kdfMode");
+                rv = ACVP_TC_DATA_INVALID;
+                goto err;
+            }
+
+            ctr_loc_str = json_object_get_string(configobj, "counterLocation");
+            if (!ctr_loc_str) {
+                ACVP_LOG_ERR("Server JSON missing counterLocation");
+                rv = ACVP_TC_DATA_INVALID;
+                goto err;
+            }
+            ctr_loc = read_ctr_location(ctr_loc_str);
+            if (!ctr_loc) {
+                ACVP_LOG_ERR("Server JSON invalid counterLocation.");
+                rv = ACVP_TC_DATA_INVALID;
+                goto err;
+            }
+
+            ctr_len = json_object_get_number(configobj, "counterLen");
+            if (ctr_len <= 0) {
+                ACVP_LOG_ERR("Server JSON missing or invalid counterLen.");
+                rv = ACVP_TC_DATA_INVALID;
+                goto err;
+            }
+
+            iv_len = json_object_get_number(configobj, "ivLen");
+            if ((kdf_mode == ACVP_KDF108_MODE_COUNTER && !kdfcap->cap.kda_twostep_cap->kdf_params.counter_mode.requires_empty_iv)
+            || (kdf_mode == ACVP_KDF108_MODE_DPI && !kdfcap->cap.kda_twostep_cap->kdf_params.dpi_mode.requires_empty_iv)
+            || (kdf_mode == ACVP_KDF108_MODE_FEEDBACK && !kdfcap->cap.kda_twostep_cap->kdf_params.feedback_mode.requires_empty_iv)) {
+                if (iv_len < 0) {
+                    ACVP_LOG_ERR("Server JSON missing or invalid ivLen.");
+                    rv = ACVP_TC_DATA_INVALID;
+                    goto err;
+                }
+            } else if (iv_len > 0) {
+                ACVP_LOG_ERR("Client registered requiring empty IV, but server sent non-zero ivLen");
+                rv = ACVP_TC_DATA_INVALID;
+                goto err;
+            }
         }
 
         json_object_set_value(r_gobj, "tests", json_value_init_array());
@@ -838,8 +1143,8 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
 
         ACVP_LOG_VERBOSE("     Test group: %d", i);
         ACVP_LOG_VERBOSE("      test type: %s", test_type_str);
-        if (cipher == ACVP_KDA_HKDF) {
-        ACVP_LOG_VERBOSE("           hmac: %s", alg_str);
+        if (cipher == ACVP_KDA_HKDF || cipher == ACVP_KDA_TWOSTEP) {
+        ACVP_LOG_VERBOSE("            mac: %s", alg_str);
         } else if (cipher == ACVP_KDA_ONESTEP) {
         ACVP_LOG_VERBOSE("    auxFunction: %s", alg_str);
         }
@@ -848,6 +1153,12 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
         ACVP_LOG_VERBOSE("    salt method: %s", salt_method_str);
         ACVP_LOG_VERBOSE("       salt len: %d", saltLen);
         ACVP_LOG_VERBOSE("              l: %d", l);
+        if (cipher == ACVP_KDA_TWOSTEP) {
+        ACVP_LOG_VERBOSE("        kdfMode: %s", kdf_mode_str);
+        ACVP_LOG_VERBOSE("counterLocation: %s", ctr_loc_str);
+        ACVP_LOG_VERBOSE("     counterLen: %d", ctr_len);
+        ACVP_LOG_VERBOSE("          ivLen: %d", iv_len);
+        }
 
         tests = json_object_get_array(groupobj, "tests");
         t_cnt = json_array_get_count(tests);
@@ -880,23 +1191,12 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
                     goto err;
                 }
                 //assume max salt len is mac alg max length, currently 512
-                /** temporarily disabling this check due to issue with NIST server
                 if ((int)strnlen_s(salt, 128) != saltLen / 4) {
                     ACVP_LOG_ERR("salt wrong length, should match provided saltLen %d",
                                 saltLen);
                     rv = ACVP_MALFORMED_JSON;
                     goto err;
                 }
-                */
-            }
-            //temporary saltLen measurement
-            saltLen = strnlen_s(salt, 129);
-            if (saltLen > 128) {
-                ACVP_LOG_ERR("saltLen too long");
-                rv = ACVP_MALFORMED_JSON;
-                goto err;
-            } else {
-                saltLen *= 4;
             }
 
             z = json_object_get_string(paramobj, "z");
@@ -905,30 +1205,18 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
                 rv = ACVP_MALFORMED_JSON;
                 goto err;
             }
-            //Since z len is not included, check our capabilities to ensure its within the domain we set
-            if (cipher == ACVP_KDA_HKDF) {
-                ACVP_CAPS_LIST *hcap = acvp_locate_cap_entry(ctx, ACVP_KDA_HKDF);
-                if (!hcap) {
-                    ACVP_LOG_ERR("Could not locate capabilities object for KDA-HKDF to determine z length validity");
-                    rv = ACVP_MISSING_ARG;
+            if (strnlen_s(z, ACVP_KDA_Z_STR_MAX + 1) > ACVP_KDA_Z_STR_MAX) {
+                ACVP_LOG_ERR("Server JSON 'z' too long");
+                rv = ACVP_TC_DATA_INVALID;
+                goto err;
+            }
+
+            if (cipher == ACVP_KDA_TWOSTEP && iv_len > 0) {
+                iv_str = json_object_get_string(paramobj, "iv");
+                if (!iv_str) {
+                    ACVP_LOG_ERR("Server JSON missing 'iv'");
+                    rv = ACVP_TC_DATA_INVALID;
                     goto err;
-                }
-                tmp = strnlen_s(z, ACVP_KDA_Z_STR_MAX + 1) << 2;
-                if (tmp > hcap->cap.kda_hkdf_cap->z.max || tmp < hcap->cap.kda_hkdf_cap->z.min ||
-                        tmp % hcap->cap.kda_hkdf_cap->z.increment != 0) {
-                    ACVP_LOG_ERR("Invalid length of data for 'z'");
-                }
-            } else {
-                ACVP_CAPS_LIST *ocap = acvp_locate_cap_entry(ctx, ACVP_KDA_ONESTEP);
-                if (!ocap) {
-                    ACVP_LOG_ERR("Could not locate capabilities object for KDA-ONESTEP to determine z length validity");
-                    rv = ACVP_MISSING_ARG;
-                    goto err;
-                }
-                tmp = strnlen_s(z, ACVP_KDA_Z_STR_MAX + 1) << 2;
-                if (tmp > ocap->cap.kda_onestep_cap->z.max || tmp < ocap->cap.kda_onestep_cap->z.min ||
-                        tmp % ocap->cap.kda_onestep_cap->z.increment != 0) {
-                    ACVP_LOG_ERR("Invalid length of data for 'z'");
                 }
             }
 
@@ -1069,10 +1357,14 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
                 rv = acvp_kda_hkdf_init_tc(ctx, tc->tc.kda_hkdf, tc_id, hmac_alg, salt, z, t, uparty, uephemeral,
                                             vparty, vephemeral, algid, context, label, dkm, l, saltLen,
                                             salt_method, encoding, arr, test_type);
-            } else {
+            } else if (cipher == ACVP_KDA_ONESTEP) {
                 rv = acvp_kda_onestep_init_tc(ctx, tc->tc.kda_onestep, tc_id, aux_function, salt, z, t, uparty, uephemeral,
-                                                  vparty, vephemeral, algid, context, label, dkm, l, saltLen,
-                                                  salt_method, encoding, arr, test_type);
+                                                vparty, vephemeral, algid, context, label, dkm, l, saltLen,
+                                                salt_method, encoding, arr, test_type);
+            } else {
+                rv = acvp_kda_twostep_init_tc(ctx, tc->tc.kda_twostep, tc_id, mac_mode, salt, z, iv_str, t, uparty, 
+                                                uephemeral, vparty, vephemeral, algid, context, label, dkm, l, saltLen, iv_len,
+                                                ctr_len, salt_method, kdf_mode, ctr_loc, encoding, arr, test_type);
             }
 
             if (arr) free(arr);
@@ -1081,8 +1373,10 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
             if (rv != ACVP_SUCCESS) {
                 if (cipher == ACVP_KDA_HKDF) {
                     acvp_kda_release_tc(ACVP_KDA_HKDF, tc);
-                } else {
+                } else if (cipher == ACVP_KDA_ONESTEP) {
                     acvp_kda_release_tc(ACVP_KDA_ONESTEP, tc);
+                } else {
+                    acvp_kda_release_tc(ACVP_KDA_TWOSTEP, tc);
                 }
                 json_value_free(r_tval);
                 goto err;
@@ -1091,8 +1385,10 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
             if ((cap->crypto_handler)(tc)) {
                 if (cipher == ACVP_KDA_HKDF) {
                     acvp_kda_release_tc(ACVP_KDA_HKDF, tc);
-                } else {
+                } else if (cipher == ACVP_KDA_ONESTEP) {
                     acvp_kda_release_tc(ACVP_KDA_ONESTEP, tc);
+                } else {
+                    acvp_kda_release_tc(ACVP_KDA_TWOSTEP, tc);
                 }
                 ACVP_LOG_ERR("crypto module failed the operation");
                 rv = ACVP_CRYPTO_MODULE_FAIL;
@@ -1111,11 +1407,19 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
                     json_value_free(r_tval);
                     goto err;
                 }
-            } else {
+            } else if (cipher == ACVP_KDA_ONESTEP) {
                 rv = acvp_kda_onestep_output_tc(ctx, tc->tc.kda_onestep, r_tobj);
                 if (rv != ACVP_SUCCESS) {
                     ACVP_LOG_ERR("JSON output failure in KDA module");
                     acvp_kda_release_tc(ACVP_KDA_ONESTEP, tc);
+                    json_value_free(r_tval);
+                    goto err;
+                }
+            } else {
+                rv = acvp_kda_twostep_output_tc(ctx, tc->tc.kda_twostep, r_tobj);
+                if (rv != ACVP_SUCCESS) {
+                    ACVP_LOG_ERR("JSON output failure in KDA module");
+                    acvp_kda_release_tc(ACVP_KDA_TWOSTEP, tc);
                     json_value_free(r_tval);
                     goto err;
                 }
@@ -1126,8 +1430,10 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
              */
             if (cipher == ACVP_KDA_HKDF) {
                 acvp_kda_release_tc(ACVP_KDA_HKDF, tc);
-            } else {
+            } else if (cipher == ACVP_KDA_ONESTEP) {
                 acvp_kda_release_tc(ACVP_KDA_ONESTEP, tc);
+            } else {
+                acvp_kda_release_tc(ACVP_KDA_TWOSTEP, tc);
             }
 
             /* Append the test response value to array */
@@ -1242,8 +1548,6 @@ err:
     return rv;
 }
 
-
-
 ACVP_RESULT acvp_kda_onestep_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     JSON_Value *r_vs_val = NULL;
     JSON_Object *r_vs = NULL;
@@ -1335,6 +1639,102 @@ ACVP_RESULT acvp_kda_onestep_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 err:
     if (rv != ACVP_SUCCESS) {
         acvp_kda_release_tc(ACVP_KDA_ONESTEP, &tc);
+        json_value_free(r_vs_val);
+    }
+    return rv;
+}
+
+ACVP_RESULT acvp_kda_twostep_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
+    JSON_Value *r_vs_val = NULL;
+    JSON_Object *r_vs = NULL;
+    JSON_Array *r_garr = NULL; /* Response testarray */
+    JSON_Value *reg_arry_val = NULL;
+    JSON_Array *reg_arry = NULL;
+    JSON_Object *reg_obj = NULL;
+    ACVP_CAPS_LIST *cap;
+    ACVP_TEST_CASE tc;
+    ACVP_KDA_TWOSTEP_TC stc;
+    ACVP_RESULT rv = ACVP_SUCCESS;
+    const char *alg_str = NULL;
+    char *json_result = NULL;
+    const char *mode_str = NULL;
+
+    if (!ctx) {
+        ACVP_LOG_ERR("No ctx for handler operation");
+        return ACVP_NO_CTX;
+    }
+
+    alg_str = json_object_get_string(obj, "algorithm");
+    if (!alg_str) {
+        ACVP_LOG_ERR("unable to parse 'algorithm' from JSON");
+        return ACVP_MALFORMED_JSON;
+    }
+
+    /*
+    * Get a reference to the abstracted test case
+    */
+    tc.tc.kda_twostep = &stc;
+    memzero_s(&stc, sizeof(ACVP_KDA_TWOSTEP_TC));
+
+    /*
+    * Create ACVP array for response
+    */
+    rv = acvp_create_array(&reg_obj, &reg_arry_val, &reg_arry);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Failed to create JSON response struct. ");
+        return rv;
+    }
+
+    /*
+     * Start to build the JSON response
+     */
+    rv = acvp_setup_json_rsp_group(&ctx, &reg_arry_val, &r_vs_val, &r_vs, alg_str, &r_garr);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Failed to setup json response");
+        return rv;
+    }
+    mode_str = json_object_get_string(obj, "mode");
+    json_object_set_string(r_vs, "mode", mode_str);
+
+    if (mode_str) {
+        stc.cipher = acvp_lookup_cipher_w_mode_index(alg_str, mode_str);
+        if (stc.cipher != ACVP_KDA_TWOSTEP) {
+            ACVP_LOG_ERR("Server JSON invalid 'algorithm' or 'mode'");
+            rv = ACVP_MALFORMED_JSON;
+            goto err;
+        }
+    } else {
+        ACVP_LOG_ERR("Missing 'mode' in server JSON");
+        rv = ACVP_MALFORMED_JSON;
+        goto err;
+    }
+    if (stc.cipher != ACVP_KDA_TWOSTEP) {
+        ACVP_LOG_ERR("Invalid cipher for KDA-TWOSTEP handler");
+        rv = ACVP_MALFORMED_JSON;
+        goto err;
+    }
+
+    cap = acvp_locate_cap_entry(ctx, ACVP_KDA_TWOSTEP);
+    if (!cap) {
+        ACVP_LOG_ERR("ACVP server requesting unsupported capability");
+        rv = ACVP_UNSUPPORTED_OP;
+        goto err;
+    }
+    rv = acvp_kda_process(ctx, ACVP_KDA_TWOSTEP, cap, &tc, obj, r_garr);
+    if (rv != ACVP_SUCCESS) {
+        goto err;
+    }
+
+    json_array_append_value(reg_arry, r_vs_val);
+
+    json_result = json_serialize_to_string_pretty(ctx->kat_resp, NULL);
+    ACVP_LOG_VERBOSE("\n\n%s\n\n", json_result);
+    json_free_serialized_string(json_result);
+    rv = ACVP_SUCCESS;
+
+err:
+    if (rv != ACVP_SUCCESS) {
+        acvp_kda_release_tc(ACVP_KDA_TWOSTEP, &tc);
         json_value_free(r_vs_val);
     }
     return rv;

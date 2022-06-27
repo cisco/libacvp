@@ -576,7 +576,7 @@ ACVP_EC_CURVE acvp_lookup_ec_curve(ACVP_CIPHER cipher, const char *name) {
     return 0;
 }
 
-static struct acvp_aux_function_info acvp_aux_function_tbl[] = {
+static struct acvp_function_info acvp_aux_function_tbl[] = {
     { ACVP_HASH_SHA224, ACVP_ALG_SHA224 },
     { ACVP_HASH_SHA256, ACVP_ALG_SHA256 },
     { ACVP_HASH_SHA384, ACVP_ALG_SHA384 },
@@ -598,7 +598,7 @@ static struct acvp_aux_function_info acvp_aux_function_tbl[] = {
     { ACVP_HMAC_SHA3_384, ACVP_ALG_HMAC_SHA3_384 },
     { ACVP_HMAC_SHA3_512, ACVP_ALG_HMAC_SHA3_512 }
 };
-static int acvp_aux_function_tbl_len = sizeof(acvp_aux_function_tbl) / sizeof(struct acvp_aux_function_info);
+static int acvp_aux_function_tbl_len = sizeof(acvp_aux_function_tbl) / sizeof(struct acvp_function_info);
 
 const char* acvp_lookup_aux_function_alg_str(ACVP_CIPHER alg) {
     int i = 0;
@@ -1015,6 +1015,41 @@ void acvp_free_str_list(ACVP_STRING_LIST **list) {
     }
 
     *list = NULL;
+}
+
+/**
+ * Simple utility function to add an entry to a SL list. if the list is NULL, it is created
+ * with the given entry being the first one.
+ */
+ACVP_RESULT acvp_append_sl_list(ACVP_SL_LIST **list, int length) {
+    ACVP_SL_LIST *current = NULL;
+    if (!list) {
+        return ACVP_NO_DATA;
+    }
+    
+    if (*list == NULL) {
+        *list = calloc(1, sizeof(ACVP_SL_LIST));
+        if (!*list) {
+            return ACVP_MALLOC_FAIL;
+        }
+        (*list)->length = length;
+        return ACVP_SUCCESS;
+    }
+    current = *list;
+    while (current) {
+        if (!current->next) {
+            current->next = calloc(1, sizeof(ACVP_SL_LIST));
+            if (!current->next) {
+                return ACVP_MALLOC_FAIL;
+            }
+            current->next->length = length;
+            return ACVP_SUCCESS;
+        }
+        current = current->next;
+    }
+
+    /* Code should never reach here */
+    return ACVP_UNSUPPORTED_OP;
 }
 
 /**

@@ -607,6 +607,7 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
     case ACVP_KAS_FFC_COMP:
     case ACVP_KAS_FFC_NOCOMP:
     case ACVP_KDA_ONESTEP:
+    case ACVP_KDA_TWOSTEP:
     case ACVP_KDA_HKDF:
     case ACVP_RSA_DECPRIM:
     case ACVP_RSA_SIGPRIM:
@@ -1439,12 +1440,17 @@ static ACVP_RESULT acvp_build_kdf108_mode_register(JSON_Object **mode_obj, ACVP_
     /* supported lens domain obj */
     json_object_set_value(*mode_obj, "supportedLengths", json_value_init_array());
     tmp_arr = json_object_get_array(*mode_obj, "supportedLengths");
-    tmp_val = json_value_init_object();
-    tmp_obj = json_value_get_object(tmp_val);
-    json_object_set_number(tmp_obj, "min", mode_params->supported_lens.min);
-    json_object_set_number(tmp_obj, "max", mode_params->supported_lens.max);
-    json_object_set_number(tmp_obj, "increment", mode_params->supported_lens.increment);
-    json_array_append_value(tmp_arr, tmp_val);
+    if (mode_params->supported_lens.increment != 0) {
+        tmp_val = json_value_init_object();
+        tmp_obj = json_value_get_object(tmp_val);
+        json_object_set_number(tmp_obj, "min", mode_params->supported_lens.min);
+        json_object_set_number(tmp_obj, "max", mode_params->supported_lens.max);
+        json_object_set_number(tmp_obj, "increment", mode_params->supported_lens.increment);
+        json_array_append_value(tmp_arr, tmp_val);
+    } else {
+        /* if increment is 0, assume the min is our single supported value */
+        json_array_append_number(tmp_arr, mode_params->supported_lens.min);
+    }
 
     /* fixed data order list */
     json_object_set_value(*mode_obj, "fixedDataOrder", json_value_init_array());
@@ -3562,6 +3568,208 @@ err:
     return rv;
 }
 
+static ACVP_RESULT acvp_build_kda_twostep_register_cap(ACVP_CTX *ctx,
+                                                   JSON_Object *cap_obj,
+                                                   ACVP_CAPS_LIST *cap_entry) {
+    ACVP_RESULT rv = ACVP_SUCCESS;
+    JSON_Value *common_val = NULL;
+    JSON_Object *common_obj = NULL;
+    JSON_Array *alg_specs_array = NULL, *tmp_arr = NULL;
+    JSON_Value *tmp_val = NULL;
+    JSON_Object *tmp_obj = NULL;
+    JSON_Value *alg_specs_counter_val = NULL, *alg_specs_feedback_val = NULL, *alg_specs_dpi_val = NULL;
+    JSON_Object *alg_specs_counter_obj = NULL, *alg_specs_feedback_obj = NULL, *alg_specs_dpi_obj = NULL;
+    ACVP_NAME_LIST *tmp_name_list = NULL;
+    ACVP_PARAM_LIST *tmp_param_list;
+    const char *revision = NULL;
+    const char *mode = NULL;
+    char *pattern_str = NULL;
+    ACVP_KDA_TWOSTEP_CAP *cap = cap_entry->cap.kda_twostep_cap;
+
+    pattern_str = calloc(ACVP_KDA_PATTERN_REG_STR_MAX + 1, sizeof(char));
+    if (!pattern_str) {
+        ACVP_LOG_ERR("Error allocating memory for kda_twostep pattern string");
+        return ACVP_MALLOC_FAIL;
+    }
+
+    if (!cap_entry->cap.kdf108_cap->counter_mode.kdf_mode && !cap_entry->cap.kdf108_cap->dpi_mode.kdf_mode
+            && !cap_entry->cap.kdf108_cap->feedback_mode.kdf_mode) {
+        ACVP_LOG_ERR("Must enable at least one KDF108 mode in KDA-Twostep");
+        goto err;
+    }
+
+    json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
+    mode = acvp_lookup_cipher_mode_str(cap_entry->cipher);
+    if (!mode) {
+        ACVP_LOG_ERR("Unable to find mode string for KDA-TWOSTEP when building registration");
+        rv = ACVP_INVALID_ARG;
+        goto err;
+    }
+    json_object_set_string(cap_obj, "mode", mode);
+    if (cap->revision) {
+        revision = acvp_lookup_alt_revision_string(cap->revision);
+    } else {
+        revision = acvp_lookup_cipher_revision(cap_entry->cipher);
+    }
+    if (!revision) {
+        ACVP_LOG_ERR("Unable to find revision string for KDA-TWOSTEP when building registration");
+        rv = ACVP_INVALID_ARG;
+        goto err;
+    }
+    json_object_set_string(cap_obj, "revision", revision);
+
+    //append the "l" value
+    json_object_set_number(cap_obj, "l", cap->l);
+
+    //append the "z" domain
+    json_object_set_value(cap_obj, "z", json_value_init_array());
+    tmp_arr = json_object_get_array(cap_obj, "z");
+    tmp_val = json_value_init_object();
+    tmp_obj = json_value_get_object(tmp_val);
+    json_object_set_number(tmp_obj, "min", cap->z.min);
+    json_object_set_number(tmp_obj, "max", cap->z.max);
+    json_object_set_number(tmp_obj, "increment", cap->z.increment);
+    json_array_append_value(tmp_arr, tmp_val);
+
+    //append performMultiExpansionTests boolean, only for Cr2
+    if (cap->revision != ACVP_REVISION_SP800_56CR1) {
+        json_object_set_boolean(cap_obj, "performMultiExpansionTests", cap->perform_multi_expansion_tests);
+    }
+
+    /* Make an object with all of the common parameters in it. Then, copy it for each mode and add
+    mode-specific stuff */
+    common_val = json_value_init_object();
+    common_obj = json_value_get_object(common_val);
+
+    //pattern string is list of pattern values separated by '||'
+    tmp_param_list = cap->patterns;
+    if (!tmp_param_list) {
+        ACVP_LOG_ERR("Missing patterns list when building registration");
+        rv = ACVP_UNSUPPORTED_OP;
+        goto err;
+    }
+    while (tmp_param_list) {
+        switch (tmp_param_list->param) {
+        case ACVP_KDA_PATTERN_LITERAL:
+            if (!cap->literal_pattern_candidate) {
+                ACVP_LOG_ERR("Missing literal pattern candidate for registration");
+                rv = ACVP_MISSING_ARG;
+                goto err;
+            }
+            strncat_s(pattern_str, ACVP_KDA_PATTERN_REG_STR_MAX + 1,
+                      ACVP_KDA_PATTERN_LITERAL_STR,
+                      sizeof(ACVP_KDA_PATTERN_LITERAL_STR) - 1);
+            strncat_s(pattern_str, ACVP_KDA_PATTERN_REG_STR_MAX + 1, "[", 1);
+            strncat_s(pattern_str, ACVP_KDA_PATTERN_REG_STR_MAX + 1,
+                      cap->literal_pattern_candidate,
+                      ACVP_KDA_PATTERN_LITERAL_STR_LEN_MAX);
+            strncat_s(pattern_str, ACVP_KDA_PATTERN_REG_STR_MAX + 1, "]", 1);
+            break;
+        case ACVP_KDA_PATTERN_UPARTYINFO:
+            strncat_s(pattern_str, ACVP_KDA_PATTERN_REG_STR_MAX + 1,
+                      ACVP_KDA_PATTERN_UPARTYINFO_STR,
+                      sizeof(ACVP_KDA_PATTERN_UPARTYINFO_STR) - 1);
+            break;
+        case ACVP_KDA_PATTERN_VPARTYINFO:
+            strncat_s(pattern_str, ACVP_KDA_PATTERN_REG_STR_MAX + 1,
+                      ACVP_KDA_PATTERN_VPARTYINFO_STR,
+                      sizeof(ACVP_KDA_PATTERN_VPARTYINFO_STR) - 1);
+            break;
+        case ACVP_KDA_PATTERN_CONTEXT:
+            strncat_s(pattern_str, ACVP_KDA_PATTERN_REG_STR_MAX + 1,
+                      ACVP_KDA_PATTERN_CONTEXT_STR,
+                      sizeof(ACVP_KDA_PATTERN_CONTEXT_STR) - 1);
+            break;
+        case ACVP_KDA_PATTERN_ALGID:
+            strncat_s(pattern_str, ACVP_KDA_PATTERN_REG_STR_MAX + 1,
+                      ACVP_KDA_PATTERN_ALGID_STR,
+                      sizeof(ACVP_KDA_PATTERN_ALGID_STR) - 1);
+            break;
+        case ACVP_KDA_PATTERN_LABEL:
+            strncat_s(pattern_str, ACVP_KDA_PATTERN_REG_STR_MAX + 1,
+                      ACVP_KDA_PATTERN_LABEL_STR,
+                      sizeof(ACVP_KDA_PATTERN_LABEL_STR) - 1);
+            break;
+        case ACVP_KDA_PATTERN_L:
+            strncat_s(pattern_str, ACVP_KDA_PATTERN_REG_STR_MAX + 1,
+                      ACVP_KDA_PATTERN_LENGTH_STR,
+                      sizeof(ACVP_KDA_PATTERN_LENGTH_STR) - 1);
+            break;
+        case ACVP_KDA_PATTERN_T:
+            strncat_s(pattern_str, ACVP_KDA_PATTERN_REG_STR_MAX + 1,
+                      ACVP_KDA_PATTERN_T_STR,
+                      sizeof(ACVP_KDA_PATTERN_T_STR) - 1);
+            break;
+        default:
+            ACVP_LOG_ERR("Invalid pattern value in pattern list");
+            rv = ACVP_INVALID_ARG;
+            goto err;
+        }
+
+        if (tmp_param_list->next) {
+            strncat_s(pattern_str, ACVP_KDA_PATTERN_REG_STR_MAX + 1, "||", 2); 
+        }
+        tmp_param_list = tmp_param_list->next;
+    }
+    json_object_set_string(common_obj, "fixedInfoPattern", pattern_str);
+
+    //create the "encodings" array and populate it
+    json_object_set_value(common_obj, "encoding", json_value_init_array());
+    tmp_arr = json_object_get_array(common_obj, "encoding");
+    tmp_param_list = cap->encodings;
+    while (tmp_param_list) {
+        switch (tmp_param_list->param) {
+        case ACVP_KDA_ENCODING_CONCAT:
+            json_array_append_string(tmp_arr, ACVP_KDA_ENCODING_CONCATENATION_STR);
+            break;
+        default:
+            ACVP_LOG_ERR("Invalid encoding value in encoding list");
+            rv = ACVP_INVALID_ARG;
+            goto err;
+        }
+        tmp_param_list = tmp_param_list->next;
+    }
+
+    //create the "macSaltMethods" array and populate it
+    json_object_set_value(common_obj, "macSaltMethods", json_value_init_array());
+    tmp_arr = json_object_get_array(common_obj, "macSaltMethods");
+    tmp_name_list = cap->mac_salt_methods;
+    while (tmp_name_list) {
+        json_array_append_string(tmp_arr, tmp_name_list->name);
+        tmp_name_list = tmp_name_list->next;
+    }
+
+    json_object_set_value(cap_obj, "capabilities", json_value_init_array());
+    alg_specs_array = json_object_get_array(cap_obj, "capabilities");
+
+    if (cap->kdf_params.counter_mode.kdf_mode) {
+        alg_specs_counter_val = json_value_deep_copy(common_val);
+        alg_specs_counter_obj = json_value_get_object(alg_specs_counter_val);
+        json_object_set_string(alg_specs_counter_obj, "kdfMode", "counter");
+        acvp_build_kdf108_mode_register(&alg_specs_counter_obj, &cap->kdf_params.counter_mode);
+        json_array_append_value(alg_specs_array, alg_specs_counter_val);
+    }
+    if (cap->kdf_params.feedback_mode.kdf_mode) {
+        alg_specs_feedback_val = json_value_deep_copy(common_val);
+        alg_specs_feedback_obj = json_value_get_object(alg_specs_feedback_val);
+        json_object_set_string(alg_specs_feedback_obj, "kdfMode", "feedback");
+        acvp_build_kdf108_mode_register(&alg_specs_feedback_obj, &cap->kdf_params.feedback_mode);
+        json_array_append_value(alg_specs_array, alg_specs_feedback_val);
+    }
+    if (cap->kdf_params.dpi_mode.kdf_mode) {
+        alg_specs_dpi_val = json_value_deep_copy(common_val);
+        alg_specs_dpi_obj = json_value_get_object(alg_specs_dpi_val);
+        json_object_set_string(alg_specs_dpi_obj, "kdfMode", "dpi");
+        acvp_build_kdf108_mode_register(&alg_specs_dpi_obj, &cap->kdf_params.dpi_mode);
+        json_array_append_value(alg_specs_array, alg_specs_dpi_val);
+    }
+
+err:
+    if (pattern_str) free(pattern_str);
+    if (common_val) json_value_free(common_val);
+    return rv;
+}
+
 static ACVP_RESULT acvp_build_kda_hkdf_register_cap(ACVP_CTX *ctx,
                                                    JSON_Object *cap_obj,
                                                    ACVP_CAPS_LIST *cap_entry) {
@@ -3574,6 +3782,7 @@ static ACVP_RESULT acvp_build_kda_hkdf_register_cap(ACVP_CTX *ctx,
     const char *revision = NULL;
     const char *mode = NULL;
     char *pattern_str = NULL;
+    ACVP_KDA_HKDF_CAP *cap = cap_entry->cap.kda_hkdf_cap;
 
     pattern_str = calloc(ACVP_KDA_PATTERN_REG_STR_MAX + 1, sizeof(char));
     if (!pattern_str) {
@@ -3589,8 +3798,8 @@ static ACVP_RESULT acvp_build_kda_hkdf_register_cap(ACVP_CTX *ctx,
         goto err;
     }
     json_object_set_string(cap_obj, "mode", mode);
-    if (cap_entry->cap.kda_hkdf_cap->revision) {
-        revision = acvp_lookup_alt_revision_string(cap_entry->cap.kda_hkdf_cap->revision);
+    if (cap->revision) {
+        revision = acvp_lookup_alt_revision_string(cap->revision);
     } else {
         revision = acvp_lookup_cipher_revision(cap_entry->cipher);
     }
@@ -3602,7 +3811,7 @@ static ACVP_RESULT acvp_build_kda_hkdf_register_cap(ACVP_CTX *ctx,
     json_object_set_string(cap_obj, "revision", revision);
 
     //pattern string is list of pattern values separated by '||'
-    tmp_param_list = cap_entry->cap.kda_hkdf_cap->patterns;
+    tmp_param_list = cap->patterns;
     if (!tmp_param_list) {
         ACVP_LOG_ERR("Missing patterns list when building registration");
         rv = ACVP_UNSUPPORTED_OP;
@@ -3611,7 +3820,7 @@ static ACVP_RESULT acvp_build_kda_hkdf_register_cap(ACVP_CTX *ctx,
     while (tmp_param_list) {
         switch (tmp_param_list->param) {
         case ACVP_KDA_PATTERN_LITERAL:
-            if (!cap_entry->cap.kda_hkdf_cap->literal_pattern_candidate) {
+            if (!cap->literal_pattern_candidate) {
                 ACVP_LOG_ERR("Missing literal pattern candidate for registration");
                 rv = ACVP_MISSING_ARG;
                 goto err;
@@ -3621,7 +3830,7 @@ static ACVP_RESULT acvp_build_kda_hkdf_register_cap(ACVP_CTX *ctx,
                       sizeof(ACVP_KDA_PATTERN_LITERAL_STR) - 1);
             strncat_s(pattern_str, ACVP_KDA_PATTERN_REG_STR_MAX + 1, "[", 1);
             strncat_s(pattern_str, ACVP_KDA_PATTERN_REG_STR_MAX + 1,
-                      cap_entry->cap.kda_hkdf_cap->literal_pattern_candidate,
+                      cap->literal_pattern_candidate,
                       ACVP_KDA_PATTERN_LITERAL_STR_LEN_MAX);
             strncat_s(pattern_str, ACVP_KDA_PATTERN_REG_STR_MAX + 1, "]", 1);
             break;
@@ -3676,7 +3885,7 @@ static ACVP_RESULT acvp_build_kda_hkdf_register_cap(ACVP_CTX *ctx,
     //create the "encodings" array and populate it
     json_object_set_value(cap_obj, "encoding", json_value_init_array());
     temp_arr = json_object_get_array(cap_obj, "encoding");
-    tmp_param_list = cap_entry->cap.kda_hkdf_cap->encodings;
+    tmp_param_list = cap->encodings;
     while (tmp_param_list) {
         switch (tmp_param_list->param) {
         case ACVP_KDA_ENCODING_CONCAT:
@@ -3693,7 +3902,7 @@ static ACVP_RESULT acvp_build_kda_hkdf_register_cap(ACVP_CTX *ctx,
     //create the "hmacAlg" array and populate it
     json_object_set_value(cap_obj, "hmacAlg", json_value_init_array());
     temp_arr = json_object_get_array(cap_obj, "hmacAlg");
-    tmp_name_list = cap_entry->cap.kda_hkdf_cap->hmac_algs;
+    tmp_name_list = cap->hmac_algs;
     while (tmp_name_list) {
         json_array_append_string(temp_arr, tmp_name_list->name);
         tmp_name_list = tmp_name_list->next;
@@ -3702,24 +3911,29 @@ static ACVP_RESULT acvp_build_kda_hkdf_register_cap(ACVP_CTX *ctx,
     //create the "macSaltMethods" array and populate it
     json_object_set_value(cap_obj, "macSaltMethods", json_value_init_array());
     temp_arr = json_object_get_array(cap_obj, "macSaltMethods");
-    tmp_name_list = cap_entry->cap.kda_hkdf_cap->mac_salt_methods;
+    tmp_name_list = cap->mac_salt_methods;
     while (tmp_name_list) {
         json_array_append_string(temp_arr, tmp_name_list->name);
         tmp_name_list = tmp_name_list->next;
     }
 
     //append the "l" value
-    json_object_set_number(cap_obj, "l", cap_entry->cap.kda_hkdf_cap->l);
+    json_object_set_number(cap_obj, "l", cap->l);
 
     //append the "z" domain
     json_object_set_value(cap_obj, "z", json_value_init_array());
     temp_arr = json_object_get_array(cap_obj, "z");
     tmp_val = json_value_init_object();
     tmp_obj = json_value_get_object(tmp_val);
-    json_object_set_number(tmp_obj, "min", cap_entry->cap.kda_hkdf_cap->z.min);
-    json_object_set_number(tmp_obj, "max", cap_entry->cap.kda_hkdf_cap->z.max);
-    json_object_set_number(tmp_obj, "increment", cap_entry->cap.kda_hkdf_cap->z.increment);
+    json_object_set_number(tmp_obj, "min", cap->z.min);
+    json_object_set_number(tmp_obj, "max", cap->z.max);
+    json_object_set_number(tmp_obj, "increment", cap->z.increment);
     json_array_append_value(temp_arr, tmp_val);
+
+    //append performMultiExpansionTests boolean, only for Cr2
+    if (cap->revision != ACVP_REVISION_SP800_56CR1) {
+        json_object_set_boolean(cap_obj, "performMultiExpansionTests", cap->perform_multi_expansion_tests);
+    }
 err:
     if (pattern_str) free(pattern_str);
     return rv;
@@ -4213,6 +4427,9 @@ ACVP_RESULT acvp_build_test_session(ACVP_CTX *ctx, char **reg, int *out_len) {
                 break;
             case ACVP_KDA_ONESTEP:
                 rv = acvp_build_kda_onestep_register_cap(ctx, cap_obj, cap_entry);
+                break;
+            case ACVP_KDA_TWOSTEP:
+                rv = acvp_build_kda_twostep_register_cap(ctx, cap_obj, cap_entry);
                 break;
             case ACVP_KDA_HKDF:
                 rv = acvp_build_kda_hkdf_register_cap(ctx, cap_obj, cap_entry);

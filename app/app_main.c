@@ -1305,7 +1305,7 @@ static int enable_kdf(ACVP_CTX *ctx) {
     ACVP_RESULT rv = ACVP_SUCCESS;
     int i, flags = 0;
 
-
+#if 0
     rv = acvp_cap_kdf_tls12_enable(ctx, &app_kdf_tls12_handler);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDF_TLS12, ACVP_PREREQ_SHA, value);
@@ -1394,7 +1394,7 @@ static int enable_kdf(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_kdf135_ikev2_set_parm(ctx, ACVP_KDF_HASH_ALG, ACVP_SHA1);
     CHECK_ENABLE_CAP_RV(rv);
-
+#endif
 #if 0 // Disabled for now
     rv = acvp_cap_kdf135_ikev1_enable(ctx, &app_kdf135_ikev1_handler);
     CHECK_ENABLE_CAP_RV(rv);
@@ -1441,6 +1441,7 @@ static int enable_kdf(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
 #endif
 
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
     /*
      * KDF108 Counter Mode
      */
@@ -1448,7 +1449,13 @@ static int enable_kdf(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDF108, ACVP_PREREQ_HMAC, value);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_kdf108_set_domain(ctx, ACVP_KDF108_MODE_COUNTER, ACVP_KDF108_SUPPORTED_LEN, 8, 384, 8);
+    rv = acvp_cap_kdf108_set_domain(ctx, ACVP_KDF108_MODE_COUNTER, ACVP_KDF108_SUPPORTED_LEN, 8, 4096, 8);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kdf108_set_parm(ctx, ACVP_KDF108_MODE_COUNTER, ACVP_KDF108_MAC_MODE, ACVP_KDF108_MAC_MODE_CMAC_AES128);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kdf108_set_parm(ctx, ACVP_KDF108_MODE_COUNTER, ACVP_KDF108_MAC_MODE, ACVP_KDF108_MAC_MODE_CMAC_AES192);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kdf108_set_parm(ctx, ACVP_KDF108_MODE_COUNTER, ACVP_KDF108_MAC_MODE, ACVP_KDF108_MAC_MODE_CMAC_AES256);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_kdf108_set_parm(ctx, ACVP_KDF108_MODE_COUNTER, ACVP_KDF108_MAC_MODE, ACVP_KDF108_MAC_MODE_HMAC_SHA1);
     CHECK_ENABLE_CAP_RV(rv);
@@ -1460,15 +1467,37 @@ static int enable_kdf(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_kdf108_set_parm(ctx, ACVP_KDF108_MODE_COUNTER, ACVP_KDF108_MAC_MODE, ACVP_KDF108_MAC_MODE_HMAC_SHA512);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_kdf108_set_parm(ctx, ACVP_KDF108_MODE_COUNTER, ACVP_KDF108_COUNTER_LEN, 8);
+    rv = acvp_cap_kdf108_set_parm(ctx, ACVP_KDF108_MODE_COUNTER, ACVP_KDF108_COUNTER_LEN, 32);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_kdf108_set_parm(ctx, ACVP_KDF108_MODE_COUNTER, ACVP_KDF108_FIXED_DATA_ORDER, ACVP_KDF108_FIXED_DATA_ORDER_AFTER);
+    rv = acvp_cap_kdf108_set_parm(ctx, ACVP_KDF108_MODE_COUNTER, ACVP_KDF108_FIXED_DATA_ORDER, ACVP_KDF108_FIXED_DATA_ORDER_BEFORE);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_kdf108_set_parm(ctx, ACVP_KDF108_MODE_COUNTER, ACVP_KDF108_SUPPORTS_EMPTY_IV, 0);
+    rv = acvp_cap_kdf108_set_domain(ctx, ACVP_KDF108_MODE_FEEDBACK, ACVP_KDF108_SUPPORTED_LEN, 8, 4096, 8);
     CHECK_ENABLE_CAP_RV(rv);
-    //REQUIRES_EMPTY_IV can only be set if SUPPORTS_EMPTY_IV is set to true
-    //rv = acvp_cap_kdf108_set_parm(ctx, ACVP_KDF108_MODE_COUNTER, ACVP_KDF108_REQUIRES_EMPTY_IV, 0);
-    //CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kdf108_set_parm(ctx, ACVP_KDF108_MODE_FEEDBACK, ACVP_KDF108_MAC_MODE, ACVP_KDF108_MAC_MODE_CMAC_AES128);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kdf108_set_parm(ctx, ACVP_KDF108_MODE_FEEDBACK, ACVP_KDF108_MAC_MODE, ACVP_KDF108_MAC_MODE_CMAC_AES192);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kdf108_set_parm(ctx, ACVP_KDF108_MODE_FEEDBACK, ACVP_KDF108_MAC_MODE, ACVP_KDF108_MAC_MODE_CMAC_AES256);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kdf108_set_parm(ctx, ACVP_KDF108_MODE_FEEDBACK, ACVP_KDF108_MAC_MODE, ACVP_KDF108_MAC_MODE_HMAC_SHA1);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kdf108_set_parm(ctx, ACVP_KDF108_MODE_FEEDBACK, ACVP_KDF108_MAC_MODE, ACVP_KDF108_MAC_MODE_HMAC_SHA224);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kdf108_set_parm(ctx, ACVP_KDF108_MODE_FEEDBACK, ACVP_KDF108_MAC_MODE, ACVP_KDF108_MAC_MODE_HMAC_SHA256);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kdf108_set_parm(ctx, ACVP_KDF108_MODE_FEEDBACK, ACVP_KDF108_MAC_MODE, ACVP_KDF108_MAC_MODE_HMAC_SHA384);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kdf108_set_parm(ctx, ACVP_KDF108_MODE_FEEDBACK, ACVP_KDF108_MAC_MODE, ACVP_KDF108_MAC_MODE_HMAC_SHA512);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kdf108_set_parm(ctx, ACVP_KDF108_MODE_FEEDBACK, ACVP_KDF108_SUPPORTS_EMPTY_IV, 1);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kdf108_set_parm(ctx, ACVP_KDF108_MODE_FEEDBACK, ACVP_KDF108_REQUIRES_EMPTY_IV, 1);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kdf108_set_parm(ctx, ACVP_KDF108_MODE_FEEDBACK, ACVP_KDF108_COUNTER_LEN, 32);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kdf108_set_parm(ctx, ACVP_KDF108_MODE_FEEDBACK, ACVP_KDF108_FIXED_DATA_ORDER, ACVP_KDF108_FIXED_DATA_ORDER_BEFORE);
+    CHECK_ENABLE_CAP_RV(rv);
+#endif
 
 #if 0 //Not supported by openSSL currently
     /*
@@ -1880,6 +1909,7 @@ end:
 
 static int enable_kda(ACVP_CTX *ctx) {
     ACVP_RESULT rv = ACVP_SUCCESS;
+
     rv = acvp_cap_kda_enable(ctx, ACVP_KDA_HKDF, &app_kda_hkdf_handler);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDA_HKDF, ACVP_PREREQ_HMAC, value);
@@ -1895,7 +1925,7 @@ static int enable_kda(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_kda_set_parm(ctx, ACVP_KDA_HKDF, ACVP_KDA_PATTERN, ACVP_KDA_PATTERN_VPARTYINFO, NULL);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_kda_set_parm(ctx, ACVP_KDA_HKDF, ACVP_KDA_HKDF_HMAC_ALG, ACVP_HMAC_ALG_SHA1, NULL);
+    rv = acvp_cap_kda_set_parm(ctx, ACVP_KDA_HKDF, ACVP_KDA_MAC_ALG, ACVP_HMAC_ALG_SHA1, NULL);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_kda_set_domain(ctx, ACVP_KDA_HKDF, ACVP_KDA_Z, 224, 8192, 8);
     CHECK_ENABLE_CAP_RV(rv);
@@ -1921,25 +1951,25 @@ static int enable_kda(ACVP_CTX *ctx) {
 #endif
     rv = acvp_cap_kda_set_parm(ctx, ACVP_KDA_HKDF, ACVP_KDA_ENCODING_TYPE, ACVP_KDA_ENCODING_CONCAT, NULL);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_kda_set_parm(ctx, ACVP_KDA_HKDF, ACVP_KDA_HKDF_HMAC_ALG, ACVP_HMAC_ALG_SHA224, NULL);
+    rv = acvp_cap_kda_set_parm(ctx, ACVP_KDA_HKDF, ACVP_KDA_MAC_ALG, ACVP_HMAC_ALG_SHA224, NULL);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_kda_set_parm(ctx, ACVP_KDA_HKDF, ACVP_KDA_HKDF_HMAC_ALG, ACVP_HMAC_ALG_SHA256, NULL);
+    rv = acvp_cap_kda_set_parm(ctx, ACVP_KDA_HKDF, ACVP_KDA_MAC_ALG, ACVP_HMAC_ALG_SHA256, NULL);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_kda_set_parm(ctx, ACVP_KDA_HKDF, ACVP_KDA_HKDF_HMAC_ALG, ACVP_HMAC_ALG_SHA384, NULL);
+    rv = acvp_cap_kda_set_parm(ctx, ACVP_KDA_HKDF, ACVP_KDA_MAC_ALG, ACVP_HMAC_ALG_SHA384, NULL);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_kda_set_parm(ctx, ACVP_KDA_HKDF, ACVP_KDA_HKDF_HMAC_ALG, ACVP_HMAC_ALG_SHA512, NULL);
+    rv = acvp_cap_kda_set_parm(ctx, ACVP_KDA_HKDF, ACVP_KDA_MAC_ALG, ACVP_HMAC_ALG_SHA512, NULL);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_kda_set_parm(ctx, ACVP_KDA_HKDF, ACVP_KDA_HKDF_HMAC_ALG, ACVP_HMAC_ALG_SHA512_224, NULL);
+    rv = acvp_cap_kda_set_parm(ctx, ACVP_KDA_HKDF, ACVP_KDA_MAC_ALG, ACVP_HMAC_ALG_SHA512_224, NULL);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_kda_set_parm(ctx, ACVP_KDA_HKDF, ACVP_KDA_HKDF_HMAC_ALG, ACVP_HMAC_ALG_SHA512_256, NULL);
+    rv = acvp_cap_kda_set_parm(ctx, ACVP_KDA_HKDF, ACVP_KDA_MAC_ALG, ACVP_HMAC_ALG_SHA512_256, NULL);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_kda_set_parm(ctx, ACVP_KDA_HKDF, ACVP_KDA_HKDF_HMAC_ALG, ACVP_HMAC_ALG_SHA3_224, NULL);
+    rv = acvp_cap_kda_set_parm(ctx, ACVP_KDA_HKDF, ACVP_KDA_MAC_ALG, ACVP_HMAC_ALG_SHA3_224, NULL);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_kda_set_parm(ctx, ACVP_KDA_HKDF, ACVP_KDA_HKDF_HMAC_ALG, ACVP_HMAC_ALG_SHA3_256, NULL);
+    rv = acvp_cap_kda_set_parm(ctx, ACVP_KDA_HKDF, ACVP_KDA_MAC_ALG, ACVP_HMAC_ALG_SHA3_256, NULL);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_kda_set_parm(ctx, ACVP_KDA_HKDF, ACVP_KDA_HKDF_HMAC_ALG, ACVP_HMAC_ALG_SHA3_384, NULL);
+    rv = acvp_cap_kda_set_parm(ctx, ACVP_KDA_HKDF, ACVP_KDA_MAC_ALG, ACVP_HMAC_ALG_SHA3_384, NULL);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_kda_set_parm(ctx, ACVP_KDA_HKDF, ACVP_KDA_HKDF_HMAC_ALG, ACVP_HMAC_ALG_SHA3_512, NULL);
+    rv = acvp_cap_kda_set_parm(ctx, ACVP_KDA_HKDF, ACVP_KDA_MAC_ALG, ACVP_HMAC_ALG_SHA3_512, NULL);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_kda_set_parm(ctx, ACVP_KDA_HKDF, ACVP_KDA_MAC_SALT, ACVP_KDA_MAC_SALT_METHOD_DEFAULT, NULL);
     CHECK_ENABLE_CAP_RV(rv);
@@ -2042,6 +2072,110 @@ static int enable_kda(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_kda_set_parm(ctx, ACVP_KDA_ONESTEP, ACVP_KDA_L, 2048, NULL);
     CHECK_ENABLE_CAP_RV(rv);
+
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+    rv = acvp_cap_kda_enable(ctx, ACVP_KDA_TWOSTEP, &app_kda_twostep_handler);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_set_prereq(ctx, ACVP_KDA_TWOSTEP, ACVP_PREREQ_HMAC, value);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    rv = acvp_cap_kda_twostep_set_parm(ctx, ACVP_KDA_L, 2048, 0, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kda_twostep_set_domain(ctx, ACVP_KDA_Z, 224, 8192, 8, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kda_twostep_set_parm(ctx, ACVP_KDA_PATTERN, ACVP_KDA_PATTERN_ALGID, 0, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kda_twostep_set_parm(ctx, ACVP_KDA_PATTERN, ACVP_KDA_PATTERN_T, 0, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kda_twostep_set_parm(ctx, ACVP_KDA_PATTERN, ACVP_KDA_PATTERN_L, 0, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kda_twostep_set_parm(ctx, ACVP_KDA_PATTERN, ACVP_KDA_PATTERN_UPARTYINFO, 0, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kda_twostep_set_parm(ctx, ACVP_KDA_PATTERN, ACVP_KDA_PATTERN_VPARTYINFO, 0, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kda_twostep_set_parm(ctx, ACVP_KDA_ENCODING_TYPE, ACVP_KDA_ENCODING_CONCAT, ACVP_KDF108_MODE_FEEDBACK, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kda_twostep_set_parm(ctx, ACVP_KDA_MAC_SALT, ACVP_KDA_MAC_SALT_METHOD_DEFAULT, ACVP_KDF108_MODE_FEEDBACK, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kda_twostep_set_parm(ctx, ACVP_KDA_MAC_SALT, ACVP_KDA_MAC_SALT_METHOD_RANDOM, ACVP_KDF108_MODE_FEEDBACK, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    /* Most parameters are set in groups based on the KDF108 mode */
+    rv = acvp_cap_kda_twostep_set_parm(ctx, ACVP_KDA_MAC_ALG, ACVP_KDF108_MAC_MODE_CMAC_AES128, ACVP_KDF108_MODE_FEEDBACK, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kda_twostep_set_parm(ctx, ACVP_KDA_MAC_ALG, ACVP_KDF108_MAC_MODE_CMAC_AES192, ACVP_KDF108_MODE_FEEDBACK, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kda_twostep_set_parm(ctx, ACVP_KDA_MAC_ALG, ACVP_KDF108_MAC_MODE_CMAC_AES256, ACVP_KDF108_MODE_FEEDBACK, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kda_twostep_set_parm(ctx, ACVP_KDA_MAC_ALG, ACVP_KDF108_MAC_MODE_HMAC_SHA1, ACVP_KDF108_MODE_FEEDBACK, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kda_twostep_set_parm(ctx, ACVP_KDA_MAC_ALG, ACVP_KDF108_MAC_MODE_HMAC_SHA224, ACVP_KDF108_MODE_FEEDBACK, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kda_twostep_set_parm(ctx, ACVP_KDA_MAC_ALG, ACVP_KDF108_MAC_MODE_HMAC_SHA256, ACVP_KDF108_MODE_FEEDBACK, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kda_twostep_set_parm(ctx, ACVP_KDA_MAC_ALG, ACVP_KDF108_MAC_MODE_HMAC_SHA384, ACVP_KDF108_MODE_FEEDBACK, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kda_twostep_set_parm(ctx, ACVP_KDA_MAC_ALG, ACVP_KDF108_MAC_MODE_HMAC_SHA512, ACVP_KDF108_MODE_FEEDBACK, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kda_twostep_set_parm(ctx, ACVP_KDA_MAC_ALG, ACVP_KDF108_MAC_MODE_HMAC_SHA512_224, ACVP_KDF108_MODE_FEEDBACK, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kda_twostep_set_parm(ctx, ACVP_KDA_MAC_ALG, ACVP_KDF108_MAC_MODE_HMAC_SHA512_256, ACVP_KDF108_MODE_FEEDBACK, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kda_twostep_set_parm(ctx, ACVP_KDA_MAC_ALG, ACVP_KDF108_MAC_MODE_HMAC_SHA3_224, ACVP_KDF108_MODE_FEEDBACK, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kda_twostep_set_parm(ctx, ACVP_KDA_MAC_ALG, ACVP_KDF108_MAC_MODE_HMAC_SHA3_256, ACVP_KDF108_MODE_FEEDBACK, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kda_twostep_set_parm(ctx, ACVP_KDA_MAC_ALG, ACVP_KDF108_MAC_MODE_HMAC_SHA3_384, ACVP_KDF108_MODE_FEEDBACK, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kda_twostep_set_parm(ctx, ACVP_KDA_MAC_ALG, ACVP_KDF108_MAC_MODE_HMAC_SHA3_512, ACVP_KDF108_MODE_FEEDBACK, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kda_twostep_set_parm(ctx, ACVP_KDA_TWOSTEP_FIXED_DATA_ORDER, ACVP_KDF108_FIXED_DATA_ORDER_BEFORE, ACVP_KDF108_MODE_FEEDBACK, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kda_twostep_set_parm(ctx, ACVP_KDA_TWOSTEP_COUNTER_LEN, 32, ACVP_KDF108_MODE_FEEDBACK, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kda_twostep_set_parm(ctx, ACVP_KDA_TWOSTEP_SUPPORTS_EMPTY_IV, 1, ACVP_KDF108_MODE_FEEDBACK, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kda_twostep_set_parm(ctx, ACVP_KDA_TWOSTEP_REQUIRES_EMPTY_IV, 1, ACVP_KDF108_MODE_FEEDBACK, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kda_twostep_set_domain(ctx, ACVP_KDA_TWOSTEP_SUPPORTED_LEN, 2048, 2048, 0, ACVP_KDF108_MODE_FEEDBACK);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    rv = acvp_cap_kda_twostep_set_parm(ctx, ACVP_KDA_MAC_ALG, ACVP_KDF108_MAC_MODE_CMAC_AES128, ACVP_KDF108_MODE_COUNTER, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kda_twostep_set_parm(ctx, ACVP_KDA_MAC_ALG, ACVP_KDF108_MAC_MODE_CMAC_AES192, ACVP_KDF108_MODE_COUNTER, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kda_twostep_set_parm(ctx, ACVP_KDA_MAC_ALG, ACVP_KDF108_MAC_MODE_CMAC_AES256, ACVP_KDF108_MODE_COUNTER, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kda_twostep_set_parm(ctx, ACVP_KDA_MAC_ALG, ACVP_KDF108_MAC_MODE_HMAC_SHA1, ACVP_KDF108_MODE_COUNTER, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kda_twostep_set_parm(ctx, ACVP_KDA_MAC_ALG, ACVP_KDF108_MAC_MODE_HMAC_SHA224, ACVP_KDF108_MODE_COUNTER, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kda_twostep_set_parm(ctx, ACVP_KDA_MAC_ALG, ACVP_KDF108_MAC_MODE_HMAC_SHA256, ACVP_KDF108_MODE_COUNTER, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kda_twostep_set_parm(ctx, ACVP_KDA_MAC_ALG, ACVP_KDF108_MAC_MODE_HMAC_SHA384, ACVP_KDF108_MODE_COUNTER, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kda_twostep_set_parm(ctx, ACVP_KDA_MAC_ALG, ACVP_KDF108_MAC_MODE_HMAC_SHA512, ACVP_KDF108_MODE_COUNTER, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kda_twostep_set_parm(ctx, ACVP_KDA_MAC_ALG, ACVP_KDF108_MAC_MODE_HMAC_SHA512_224, ACVP_KDF108_MODE_COUNTER, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kda_twostep_set_parm(ctx, ACVP_KDA_MAC_ALG, ACVP_KDF108_MAC_MODE_HMAC_SHA512_256, ACVP_KDF108_MODE_COUNTER, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kda_twostep_set_parm(ctx, ACVP_KDA_MAC_ALG, ACVP_KDF108_MAC_MODE_HMAC_SHA3_224, ACVP_KDF108_MODE_COUNTER, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kda_twostep_set_parm(ctx, ACVP_KDA_MAC_ALG, ACVP_KDF108_MAC_MODE_HMAC_SHA3_256, ACVP_KDF108_MODE_COUNTER, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kda_twostep_set_parm(ctx, ACVP_KDA_MAC_ALG, ACVP_KDF108_MAC_MODE_HMAC_SHA3_384, ACVP_KDF108_MODE_COUNTER, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kda_twostep_set_parm(ctx, ACVP_KDA_MAC_ALG, ACVP_KDF108_MAC_MODE_HMAC_SHA3_512, ACVP_KDF108_MODE_COUNTER, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kda_twostep_set_parm(ctx, ACVP_KDA_TWOSTEP_FIXED_DATA_ORDER, ACVP_KDF108_FIXED_DATA_ORDER_BEFORE, ACVP_KDF108_MODE_COUNTER, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kda_twostep_set_parm(ctx, ACVP_KDA_TWOSTEP_COUNTER_LEN, 32, ACVP_KDF108_MODE_COUNTER, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kda_twostep_set_domain(ctx, ACVP_KDA_TWOSTEP_SUPPORTED_LEN, 2048, 2048, 0, ACVP_KDF108_MODE_COUNTER);
+    CHECK_ENABLE_CAP_RV(rv);
+#endif
+
 end:
    return rv;
 }

@@ -1731,7 +1731,7 @@ Test(EnableCapKASHKDF, invalid_params, .fini = teardown) {
     rv = acvp_cap_kda_set_parm(ctx, ACVP_KDA_HKDF, ACVP_KDA_PATTERN, ACVP_KDA_PATTERN_MAX, NULL);
     cr_assert(rv = ACVP_INVALID_ARG);
     //invalid hmac alg
-    rv = acvp_cap_kda_set_parm(ctx, ACVP_KDA_HKDF, ACVP_KDA_HKDF_HMAC_ALG, ACVP_HASH_ALG_MAX, NULL);
+    rv = acvp_cap_kda_set_parm(ctx, ACVP_KDA_HKDF, ACVP_KDA_MAC_ALG, ACVP_HASH_ALG_MAX, NULL);
     cr_assert(rv = ACVP_INVALID_ARG);
     //invalid l
     rv = acvp_cap_kda_set_parm(ctx, ACVP_KDA_HKDF, ACVP_KDA_L, 0, NULL);
@@ -1787,7 +1787,7 @@ Test(EnableCapKASKDFONESTEP, invalid_params, .fini = teardown) {
     rv = acvp_cap_kda_set_parm(ctx, ACVP_KDA_ONESTEP, ACVP_KDA_Z, 1024, NULL);
     cr_assert(rv = ACVP_INVALID_ARG);
     //invalid call to set HMAC_ALG on hkdf
-    rv = acvp_cap_kda_set_parm(ctx, ACVP_KDA_ONESTEP, ACVP_KDA_HKDF_HMAC_ALG, ACVP_HASH_SHA256, NULL);
+    rv = acvp_cap_kda_set_parm(ctx, ACVP_KDA_ONESTEP, ACVP_KDA_MAC_ALG, ACVP_HASH_SHA256, NULL);
     cr_assert(rv = ACVP_INVALID_ARG);
     //invalid alg calls to set_domain
     rv = acvp_cap_kda_set_domain(ctx, ACVP_HASH_SHA256, ACVP_KDA_Z, 0, 4096, 8);

@@ -160,6 +160,7 @@ ACVP_ALG_HANDLER alg_tbl[ACVP_ALG_MAX] = {
     { ACVP_KAS_FFC_SSC,       &acvp_kas_ffc_ssc_kat_handler,     ACVP_ALG_KAS_FFC_SSC,       ACVP_ALG_KAS_FFC_COMP, ACVP_REV_KAS_FFC_SSC, {ACVP_SUB_KAS_FFC_SSC}},
     { ACVP_KAS_IFC_SSC,       &acvp_kas_ifc_ssc_kat_handler,     ACVP_ALG_KAS_IFC_SSC,       ACVP_ALG_KAS_IFC_COMP, ACVP_REV_KAS_IFC_SSC, {ACVP_SUB_KAS_IFC_SSC}},
     { ACVP_KDA_ONESTEP,       &acvp_kda_onestep_kat_handler,     ACVP_ALG_KDA_ALG_STR,       ACVP_ALG_KDA_ONESTEP, ACVP_REV_KDA_ONESTEP, {ACVP_SUB_KDA_ONESTEP}},
+    { ACVP_KDA_TWOSTEP,       &acvp_kda_twostep_kat_handler,     ACVP_ALG_KDA_ALG_STR,       ACVP_ALG_KDA_TWOSTEP, ACVP_REV_KDA_TWOSTEP, {ACVP_SUB_KDA_TWOSTEP}},
     { ACVP_KDA_HKDF,          &acvp_kda_hkdf_kat_handler,        ACVP_ALG_KDA_ALG_STR,       ACVP_ALG_KDA_HKDF, ACVP_REV_KDA_HKDF, {ACVP_SUB_KDA_HKDF}},
     { ACVP_KTS_IFC,           &acvp_kts_ifc_kat_handler,         ACVP_ALG_KTS_IFC,           ACVP_ALG_KTS_IFC_COMP, ACVP_REV_KTS_IFC, {ACVP_SUB_KTS_IFC}},
     { ACVP_SAFE_PRIMES_KEYGEN, &acvp_safe_primes_kat_handler,    ACVP_ALG_SAFE_PRIMES_STR,   ACVP_ALG_SAFE_PRIMES_KEYGEN, ACVP_REV_SAFE_PRIMES, {ACVP_SUB_SAFE_PRIMES_KEYGEN}},
@@ -507,8 +508,7 @@ static void acvp_free_drbg_struct(ACVP_CAPS_LIST *cap_list) {
 /*
  * Free Internal memory for KDF108 Cap struct
  */
-static void acvp_cap_free_kdf108(ACVP_CAPS_LIST *cap_list) {
-    ACVP_KDF108_CAP *cap = cap_list->cap.kdf108_cap;
+static void acvp_cap_free_kdf108(ACVP_KDF108_CAP *cap) {
     ACVP_KDF108_MODE_PARAMS *mode_obj = NULL;
 
     if (cap) {
@@ -551,9 +551,7 @@ static void acvp_cap_free_kdf108(ACVP_CAPS_LIST *cap_list) {
             }
         }
 
-        free(cap);
         cap = NULL;
-        cap_list->cap.kdf108_cap = NULL;
     }
 }
 
@@ -682,6 +680,16 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx) {
                 acvp_cap_free_nl(cap_entry->cap.kda_onestep_cap->mac_salt_methods);
                 free(cap_entry->cap.kda_onestep_cap);
                 break;
+            case ACVP_KDA_TWOSTEP_TYPE:
+                if (cap_entry->cap.kda_twostep_cap->literal_pattern_candidate) {
+                    free(cap_entry->cap.kda_twostep_cap->literal_pattern_candidate);
+                }
+                acvp_cap_free_nl(cap_entry->cap.kda_twostep_cap->mac_salt_methods);
+                acvp_cap_free_pl(cap_entry->cap.kda_twostep_cap->patterns);
+                acvp_cap_free_pl(cap_entry->cap.kda_twostep_cap->encodings);
+                acvp_cap_free_kdf108(&cap_entry->cap.kda_twostep_cap->kdf_params);
+                free(cap_entry->cap.kda_twostep_cap);
+                break;
             case ACVP_KDA_HKDF_TYPE:
                 if (cap_entry->cap.kda_hkdf_cap->literal_pattern_candidate) {
                     free(cap_entry->cap.kda_hkdf_cap->literal_pattern_candidate);
@@ -739,7 +747,8 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx) {
                 free(cap_entry->cap.kdf135_srtp_cap);
                 break;
             case ACVP_KDF108_TYPE:
-                acvp_cap_free_kdf108(cap_entry);
+                acvp_cap_free_kdf108(cap_entry->cap.kdf108_cap);
+                free(cap_entry->cap.kdf108_cap);
                 break;
             case ACVP_KDF135_SNMP_TYPE:
                 acvp_cap_free_sl(cap_entry->cap.kdf135_snmp_cap->pass_lens);
