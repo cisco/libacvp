@@ -1331,7 +1331,7 @@ static int enable_kdf(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_kdf135_snmp_set_engid(ctx, ACVP_KDF135_SNMP, ENGID2);
     CHECK_ENABLE_CAP_RV(rv);
-
+#endif
     rv = acvp_cap_kdf135_ssh_enable(ctx, &app_kdf135_ssh_handler);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_SSH, ACVP_PREREQ_SHA, value);
@@ -1353,7 +1353,7 @@ static int enable_kdf(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_kdf135_ssh_set_parm(ctx, ACVP_KDF135_SSH, ACVP_SSH_METH_AES_256_CBC, flags);
     CHECK_ENABLE_CAP_RV(rv);
-
+#if 0
     rv = acvp_cap_kdf135_srtp_enable(ctx, &app_kdf135_srtp_handler);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_SRTP, ACVP_PREREQ_AES, value);
