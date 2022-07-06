@@ -54,6 +54,10 @@ static unsigned char *fixed_info_gen_concat(ACVP_KDA_PATTERN_CANDIDATE *fixedInf
     }
 
     fixedInfo = calloc(totalLen, sizeof(unsigned char));
+    if (!fixedInfo) {
+        printf("Error allocating memory for fixedInfo\n");
+        goto end;
+    }
     for (i = 0; i < ACVP_KDA_PATTERN_MAX; i++) {
         if (fixedInfoPattern[i] == 0) {
             break;
@@ -194,6 +198,10 @@ int app_kda_hkdf_handler(ACVP_TEST_CASE *test_case) {
         goto end;
     }
     pbld = OSSL_PARAM_BLD_new();
+    if (!pbld) {
+        printf("Error creating param_bld in HKDF\n");
+        goto end;
+    }
     OSSL_PARAM_BLD_push_utf8_string(pbld, "digest", md, 0);
     OSSL_PARAM_BLD_push_octet_string(pbld, "key", stc->z, (size_t)stc->zLen);
     OSSL_PARAM_BLD_push_octet_string(pbld, "info", fixedInfo, (size_t)fixedInfoLen);
@@ -209,8 +217,8 @@ int app_kda_hkdf_handler(ACVP_TEST_CASE *test_case) {
     }
     rc = 0;
 end:
-    OSSL_PARAM_BLD_free(pbld);
-    OSSL_PARAM_free(params);
+    if (pbld) OSSL_PARAM_BLD_free(pbld);
+    if (params) OSSL_PARAM_free(params);
     if (fixedInfo) free(fixedInfo);
     if (kdf) EVP_KDF_free(kdf);
     if (kctx) EVP_KDF_CTX_free(kctx);
@@ -356,6 +364,10 @@ int app_kda_onestep_handler(ACVP_TEST_CASE *test_case) {
         goto end;
     }
     pbld = OSSL_PARAM_BLD_new();
+    if (!pbld) {
+        printf("Error creating param_bld in KDA Onestep\n");
+        goto end;
+    }
     if (stc->salt) {
         OSSL_PARAM_BLD_push_utf8_string(pbld, "mac", mac, 0);
         OSSL_PARAM_BLD_push_octet_string(pbld, "salt", stc->salt, (size_t)stc->saltLen);
@@ -500,6 +512,10 @@ int app_kda_twostep_handler(ACVP_TEST_CASE *test_case) {
     }
     strcpy_s(aname, 256, alg);
     pbld = OSSL_PARAM_BLD_new();
+    if (!pbld) {
+         printf("Error creating param_bld in KDA Twostep\n");
+         goto end;
+    }
     if (isHmac) {
         OSSL_PARAM_BLD_push_utf8_string(pbld, "digest", aname, 0);
     } else {
@@ -541,6 +557,10 @@ int app_kda_twostep_handler(ACVP_TEST_CASE *test_case) {
         goto end;
     }
     pbld = OSSL_PARAM_BLD_new();
+    if (!pbld) {
+        printf("Error creating param_bld in KDA Twostep\n");
+        goto end;
+    }
     OSSL_PARAM_BLD_push_utf8_string(pbld, "mac", mac, 0);
     OSSL_PARAM_BLD_push_octet_string(pbld, "key", extraction, ext_len);
     OSSL_PARAM_BLD_push_octet_string(pbld, "seed", stc->iv, stc->ivLen);

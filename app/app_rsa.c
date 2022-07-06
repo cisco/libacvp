@@ -131,6 +131,10 @@ int app_rsa_keygen_handler(ACVP_TEST_CASE *test_case) {
     }
 
     pkey_pbld = OSSL_PARAM_BLD_new();
+    if (!pkey_pbld) {
+        printf("Error creating param_bld in RSA keygen\n");
+        goto err;
+    }
     OSSL_PARAM_BLD_push_BN(pkey_pbld, "e", e);
     OSSL_PARAM_BLD_push_uint(pkey_pbld, "bits", tc->modulo);
     OSSL_PARAM_BLD_push_BN(pkey_pbld, "xp", xp);
@@ -386,6 +390,10 @@ int app_rsa_sig_handler(ACVP_TEST_CASE *test_case) {
 
         #if OPENSSL_VERSION_NUMBER >= 0x30000000L
             pkey_pbld = OSSL_PARAM_BLD_new();
+            if (!pkey_pbld) {
+                printf("Error creating param_bld in RSA sigver\n");
+                goto err;
+            }
             OSSL_PARAM_BLD_push_BN(pkey_pbld, "n", n);
             OSSL_PARAM_BLD_push_BN(pkey_pbld, "e", e);
             pkey_params = OSSL_PARAM_BLD_to_param(pkey_pbld);
@@ -410,6 +418,10 @@ int app_rsa_sig_handler(ACVP_TEST_CASE *test_case) {
 
             //now we have the pkey, setup the digest ctx
             sig_pbld = OSSL_PARAM_BLD_new();
+            if (!sig_pbld) {
+                printf("Error creating param_bld in RSA sigver\n");
+                goto err;
+            }
             OSSL_PARAM_BLD_push_utf8_string(sig_pbld, "pad-mode", padding, 0);
             OSSL_PARAM_BLD_push_utf8_string(sig_pbld, "digest", md, 0);
             sig_params = OSSL_PARAM_BLD_to_param(sig_pbld);
@@ -483,6 +495,10 @@ int app_rsa_sig_handler(ACVP_TEST_CASE *test_case) {
             tc->n_len = BN_bn2bin(n, tc->n);
 
             sig_pbld = OSSL_PARAM_BLD_new();
+            if (!sig_pbld) {
+                printf("Error creating param_bld in RSA siggen\n");
+                goto err;
+            }
             OSSL_PARAM_BLD_push_utf8_string(sig_pbld, "pad-mode", padding, 0);
             OSSL_PARAM_BLD_push_utf8_string(sig_pbld, "digest", md, 0);
             if (tc->sig_type == ACVP_RSA_SIG_TYPE_PKCS1PSS) {
@@ -1025,6 +1041,10 @@ int app_rsa_sigprim_handler(ACVP_TEST_CASE *test_case) {
     tc->sig_len = tc->modulo;
 
     pbld = OSSL_PARAM_BLD_new();
+    if (!pbld) {
+        printf("Error creating param_bld in RSA sigprim\n");
+        goto err;
+    }
     OSSL_PARAM_BLD_push_BN(pbld, "d", d);
     OSSL_PARAM_BLD_push_BN(pbld, "n", n);
     OSSL_PARAM_BLD_push_BN(pbld, "e", e);
