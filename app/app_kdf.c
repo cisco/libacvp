@@ -201,6 +201,8 @@ int app_kdf108_handler(ACVP_TEST_CASE *test_case) {
     }
     rc = 0;
 end:
+    if (aname) free(aname);
+    if (fixed) free(fixed);
     if (pbld) OSSL_PARAM_BLD_free(pbld);
     if (params) OSSL_PARAM_free(params);
     if (kdf) EVP_KDF_free(kdf);
@@ -222,10 +224,100 @@ int app_kdf135_snmp_handler(ACVP_TEST_CASE *test_case) {
 }
 
 int app_kdf135_ssh_handler(ACVP_TEST_CASE *test_case) {
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+    ACVP_KDF135_SSH_TC *stc = NULL;
+    int rc = 1;
+    char *aname = NULL;
+    OSSL_PARAM params[6];
+    EVP_KDF *kdf = NULL;
+    EVP_KDF_CTX *kctx = NULL;
+    const char *alg = NULL;
+
+    if (!test_case) {
+        printf("Missing kdf135-ssh test case\n");
+        return -1;
+    }
+    stc = test_case->tc.kdf135_ssh;
+    if (!stc) {
+        printf("Missing kdf135-ssh test case\n");
+        return -1;
+    }
+
+    alg = get_md_string_for_hash_alg(stc->sha_type);
+    if (!alg) {
+        printf("Invalid hash type given for kdf135-ssh\n");
+        goto end;
+    }
+
+    aname = calloc(256, sizeof(char)); //avoid const removal warnings
+    if (!aname) {
+        printf("Error allocating memory for kdf135-ssh\n");
+        goto end;
+    }
+    strcpy_s(aname, 256, alg);
+
+    kdf = EVP_KDF_fetch(NULL, "SSHKDF", NULL);
+    kctx = EVP_KDF_CTX_new(kdf);
+    if (!kctx) {
+        printf("Error creating KDF CTX in kdf135-ssh\n");
+        goto end;
+    }
+
+    params[0] = OSSL_PARAM_construct_utf8_string("digest", aname, 0);
+    params[1] = OSSL_PARAM_construct_octet_string("key", stc->shared_secret_k, stc->shared_secret_len);
+    params[2] = OSSL_PARAM_construct_octet_string("session_id", stc->session_id, stc->session_id_len);
+    params[3] = OSSL_PARAM_construct_octet_string("xcghash", stc->hash_h, stc->hash_len);
+    //params(4) will be the "type" of operation, before each call
+    params[5] = OSSL_PARAM_construct_end();
+
+    params[4] = OSSL_PARAM_construct_utf8_string("type", "A", 1);
+    if (EVP_KDF_derive(kctx, stc->cs_init_iv, stc->iv_len, params) != 1) {
+        printf("Failure deriving key material in kdf108");
+        goto end;
+    }
+
+    params[4] = OSSL_PARAM_construct_utf8_string("type", "B", 1);
+    if (EVP_KDF_derive(kctx, stc->sc_init_iv, stc->iv_len, params) != 1) {
+        printf("Failure deriving key material in kdf108");
+        goto end;
+    }
+
+    params[4] = OSSL_PARAM_construct_utf8_string("type", "C", 1);
+    if (EVP_KDF_derive(kctx, stc->cs_encrypt_key, stc->e_key_len, params) != 1) {
+        printf("Failure deriving key material in kdf108");
+        goto end;
+    }
+
+    params[4] = OSSL_PARAM_construct_utf8_string("type", "D", 1);
+    if (EVP_KDF_derive(kctx, stc->sc_encrypt_key, stc->e_key_len, params) != 1) {
+        printf("Failure deriving key material in kdf108");
+        goto end;
+    }
+
+    params[4] = OSSL_PARAM_construct_utf8_string("type", "E", 1);
+    if (EVP_KDF_derive(kctx, stc->cs_integrity_key, stc->i_key_len, params) != 1) {
+        printf("Failure deriving key material in kdf108");
+        goto end;
+    }
+
+    params[4] = OSSL_PARAM_construct_utf8_string("type", "F", 1);
+    if (EVP_KDF_derive(kctx, stc->sc_integrity_key, stc->i_key_len, params) != 1) {
+        printf("Failure deriving key material in kdf108");
+        goto end;
+    }
+
+    rc = 0;
+end:
+    if (aname) free(aname);
+    if (kdf) EVP_KDF_free(kdf);
+    if (kctx) EVP_KDF_CTX_free(kctx);
+    return rc;
+#else
     if (!test_case) {
         return -1;
     }
     return 1;
+#endif
 }
 
 int app_pbkdf_handler(ACVP_TEST_CASE *test_case) {
