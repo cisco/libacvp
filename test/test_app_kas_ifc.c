@@ -173,7 +173,7 @@ err:
  */
 Test(APP_KAS_IFC_HANDLER, invalid_hash_alg) {
     int corrupt = 0;
-    int hash_alg = 0;
+    int hash_alg = 1;
     char *p = "aa";
     char *q = "aa";
     char *d = "aa";

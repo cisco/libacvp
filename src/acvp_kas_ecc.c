@@ -899,40 +899,43 @@ static ACVP_RESULT acvp_kas_ecc_output_ssc_tc(ACVP_CTX *ctx,
             json_object_set_boolean(tc_rsp, "testPassed", 0);
         }
         goto end;
-    }
+    } else {
+        memzero_s(tmp, ACVP_KAS_ECC_STR_MAX);
+        rv = acvp_bin_to_hexstr(stc->pix, stc->pixlen, tmp, ACVP_KAS_ECC_STR_MAX);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("hex conversion failure (pix)");
+            goto end;
+        }
+        json_object_set_string(tc_rsp, "ephemeralPublicIutX", tmp);
 
-    memzero_s(tmp, ACVP_KAS_ECC_STR_MAX);
-    rv = acvp_bin_to_hexstr(stc->pix, stc->pixlen, tmp, ACVP_KAS_ECC_STR_MAX);
-    if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("hex conversion failure (pix)");
-        goto end;
-    }
-    json_object_set_string(tc_rsp, "ephemeralPublicIutX", tmp);
+        memzero_s(tmp, ACVP_KAS_ECC_STR_MAX);
+        rv = acvp_bin_to_hexstr(stc->piy, stc->piylen, tmp, ACVP_KAS_ECC_STR_MAX);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("hex conversion failure (piy)");
+            goto end;
+        }
+        json_object_set_string(tc_rsp, "ephemeralPublicIutY", tmp);
 
-    memzero_s(tmp, ACVP_KAS_ECC_STR_MAX);
-    rv = acvp_bin_to_hexstr(stc->piy, stc->piylen, tmp, ACVP_KAS_ECC_STR_MAX);
-    if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("hex conversion failure (piy)");
-        goto end;
-    }
-    json_object_set_string(tc_rsp, "ephemeralPublicIutY", tmp);
+        memzero_s(tmp, ACVP_KAS_ECC_STR_MAX);
+        rv = acvp_bin_to_hexstr(stc->d, stc->dlen, tmp, ACVP_KAS_ECC_STR_MAX);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("hex conversion failure (d)");
+            goto end;
+        }
+        json_object_set_string(tc_rsp, "ephemeralPrivateIut", tmp);
 
-    memzero_s(tmp, ACVP_KAS_ECC_STR_MAX);
-    rv = acvp_bin_to_hexstr(stc->d, stc->dlen, tmp, ACVP_KAS_ECC_STR_MAX);
-    if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("hex conversion failure (d)");
-        goto end;
+        memzero_s(tmp, ACVP_KAS_ECC_STR_MAX);
+        rv = acvp_bin_to_hexstr(stc->chash, stc->chashlen, tmp, ACVP_KAS_ECC_STR_MAX);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("hex conversion failure (Z)");
+            goto end;
+        }
+        if (stc->md == ACVP_NO_SHA) {
+            json_object_set_string(tc_rsp, "Z", tmp);
+        } else {
+            json_object_set_string(tc_rsp, "hashZ", tmp);
+        }
     }
-    json_object_set_string(tc_rsp, "ephemeralPrivateIut", tmp);
-
-    memzero_s(tmp, ACVP_KAS_ECC_STR_MAX);
-    rv = acvp_bin_to_hexstr(stc->chash, stc->chashlen, tmp, ACVP_KAS_ECC_STR_MAX);
-    if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("hex conversion failure (Z)");
-        goto end;
-    }
-    json_object_set_string(tc_rsp, "hashZ", tmp);
-
 end:
     if (tmp) free(tmp);
 
@@ -950,6 +953,7 @@ static ACVP_RESULT acvp_kas_ecc_ssc(ACVP_CTX *ctx,
     JSON_Array *groups;
     JSON_Value *testval;
     JSON_Object *testobj = NULL;
+    ACVP_KAS_ECC_CAP_MODE *kas_ecc_mode = NULL;
     JSON_Array *tests, *r_tarr = NULL;
     JSON_Value *r_tval = NULL, *r_gval = NULL;  /* Response testval, groupval */
     JSON_Object *r_tobj = NULL, *r_gobj = NULL; /* Response testobj, groupobj */
@@ -1000,18 +1004,38 @@ static ACVP_RESULT acvp_kas_ecc_ssc(ACVP_CTX *ctx,
             goto err;
         }
 
-        hash_str = json_object_get_string(groupobj, "hashFunctionZ");
-        if (!hash_str) {
-            ACVP_LOG_ERR("Server JSON missing 'hashFunctionZ'");
-            rv = ACVP_MISSING_ARG;
-            goto err;
-        }
-        hash = acvp_lookup_hash_alg(hash_str);
-        if (!(hash == ACVP_SHA224 || hash == ACVP_SHA256 ||
-              hash == ACVP_SHA384 || hash == ACVP_SHA512)) {
-            ACVP_LOG_ERR("Server JSON invalid 'hashAlg'");
-            rv = ACVP_INVALID_ARG;
-            goto err;
+        //If the user doesn't specify a hash function, neither does the server
+        if (cap && cap->cap.kas_ecc_cap) {
+            kas_ecc_mode = &cap->cap.kas_ecc_cap->kas_ecc_mode[ACVP_KAS_ECC_MODE_NONE - 1];
+            if (kas_ecc_mode && kas_ecc_mode->hash != ACVP_NO_SHA) {
+                hash_str = json_object_get_string(groupobj, "hashFunctionZ");
+                if (!hash_str) {
+                    ACVP_LOG_ERR("Server JSON missing 'hashFunctionZ'");
+                    rv = ACVP_MISSING_ARG;
+                    goto err;
+                }
+                hash = acvp_lookup_hash_alg(hash_str);
+                switch (hash) {
+                case ACVP_SHA224:
+                case ACVP_SHA256:
+                case ACVP_SHA384:
+                case ACVP_SHA512:
+                case ACVP_SHA512_224:
+                case ACVP_SHA512_256:
+                case ACVP_SHA3_224:
+                case ACVP_SHA3_256:
+                case ACVP_SHA3_384:
+                case ACVP_SHA3_512:
+                    break;
+                case ACVP_SHA1:
+                case ACVP_NO_SHA:
+                case ACVP_HASH_ALG_MAX:
+                default:
+                    ACVP_LOG_ERR("Server JSON invalid 'hashAlg'");
+                    rv = ACVP_INVALID_ARG;
+                    goto err;
+                }
+            }
         }
 
         test_type_str = json_object_get_string(groupobj, "testType");
@@ -1133,13 +1157,25 @@ static ACVP_RESULT acvp_kas_ecc_ssc(ACVP_CTX *ctx,
 
                 z = json_object_get_string(testobj, "hashZ");
                 if (!z) {
-                    ACVP_LOG_ERR("Server JSON missing 'hashZ'");
-                    rv = ACVP_MISSING_ARG;
-                    json_value_free(r_tval);
-                    goto err;
+                    //Assume user did not specify hash function if we don't have capability info for some reason
+                    if (!kas_ecc_mode || kas_ecc_mode->hash == ACVP_NO_SHA) {
+                        z = json_object_get_string(testobj, "z");
+                        if (!z) {
+                            ACVP_LOG_ERR("Server JSON missing 'z'");
+                            rv = ACVP_MISSING_ARG;
+                            json_value_free(r_tval);
+                            goto err;
+                        }
+                    } else {
+                        ACVP_LOG_ERR("Server JSON missing 'hashZ'");
+                        rv = ACVP_MISSING_ARG;
+                        json_value_free(r_tval);
+                        goto err;
+                    }
                 }
+
                 if (strnlen_s(z, ACVP_KAS_ECC_STR_MAX + 1) > ACVP_KAS_ECC_STR_MAX) {
-                    ACVP_LOG_ERR("hashZIut too long, max allowed=(%d)",
+                    ACVP_LOG_ERR("hashZ or z too long, max allowed=(%d)",
                                  ACVP_KAS_ECC_STR_MAX);
                     rv = ACVP_INVALID_ARG;
                     json_value_free(r_tval);

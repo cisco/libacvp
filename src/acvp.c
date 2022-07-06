@@ -1759,6 +1759,11 @@ ACVP_RESULT acvp_set_server(ACVP_CTX *ctx, const char *server_name, int port) {
 
     ctx->server_port = port;
 
+    if (!ctx->http_user_agent) {
+        //generate user-agent string to send with HTTP requests
+        acvp_http_user_agent_handler(ctx);
+    }
+
     return ACVP_SUCCESS;
 }
 
@@ -2893,7 +2898,9 @@ static ACVP_RESULT acvp_dispatch_vector_set(ACVP_CTX *ctx, JSON_Object *obj) {
 
     ACVP_LOG_STATUS("Processing vector set: %d", vs_id);
     ACVP_LOG_STATUS("Algorithm: %s", alg);
-
+    if (mode) {
+        ACVP_LOG_STATUS("Mode: %s", mode);
+    }
     for (i = 0; i < ACVP_ALG_MAX; i++) {
         strcmp_s(alg_tbl[i].name,
                  ACVP_ALG_NAME_MAX,
@@ -3393,9 +3400,6 @@ ACVP_RESULT acvp_run(ACVP_CTX *ctx, int fips_validation) {
     JSON_Value *val = NULL;
 
     if (ctx == NULL) return ACVP_NO_CTX;
-
-    //generate user-agent string to send with HTTP requests
-    acvp_http_user_agent_handler(ctx);
 
     rv = acvp_login(ctx, 0);
     if (rv != ACVP_SUCCESS) {

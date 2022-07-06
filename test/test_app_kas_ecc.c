@@ -227,7 +227,7 @@ Test(APP_KAS_ECC_HANDLER, invalid_hash_ecc_comp) {
     char *pix = "aa";
     char *piy = "aa";
     char *z = "aa";
-    int hash_alg = 0;
+    int hash_alg = 1;
     
     kas_ecc_tc = calloc(1, sizeof(ACVP_KAS_ECC_TC));
     

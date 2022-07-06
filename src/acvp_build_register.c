@@ -1181,7 +1181,7 @@ static ACVP_RESULT acvp_build_rsa_prim_register_cap(JSON_Object *cap_obj, ACVP_C
     return ACVP_SUCCESS;
 }
 
-static ACVP_RESULT acvp_build_ecdsa_register_cap(ACVP_CIPHER cipher, JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry) {
+static ACVP_RESULT acvp_build_ecdsa_register_cap(ACVP_CTX *ctx, ACVP_CIPHER cipher, JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry) {
     ACVP_RESULT result;
     JSON_Array *caps_arr = NULL, *curves_arr = NULL, *secret_modes_arr = NULL, *hash_arr = NULL;
     ACVP_CURVE_ALG_COMPAT_LIST *current_curve = NULL, *iter = NULL;
@@ -1201,7 +1201,7 @@ static ACVP_RESULT acvp_build_ecdsa_register_cap(ACVP_CIPHER cipher, JSON_Object
 
     alg = acvp_get_ecdsa_alg(cap_entry->cipher);
     if (alg == 0) {
-        printf("Invalid cipher value");
+        ACVP_LOG_ERR("Invalid cipher value");
         return 1;
     }
 
@@ -2614,17 +2614,37 @@ static ACVP_RESULT acvp_build_kas_ecc_register_cap(ACVP_CTX *ctx,
             }
             switch (kas_ecc_mode->hash) {
                 case ACVP_SHA224:
-                     json_object_set_string(cap_obj, "hashFunctionZ", "SHA2-224");
-                     break;
+                    json_object_set_string(cap_obj, "hashFunctionZ", "SHA2-224");
+                    break;
                 case ACVP_SHA256:
-                     json_object_set_string(cap_obj, "hashFunctionZ", "SHA2-256");
-                     break;
+                    json_object_set_string(cap_obj, "hashFunctionZ", "SHA2-256");
+                    break;
                 case ACVP_SHA384:
-                     json_object_set_string(cap_obj, "hashFunctionZ", "SHA2-384");
-                     break;
+                    json_object_set_string(cap_obj, "hashFunctionZ", "SHA2-384");
+                    break;
                 case ACVP_SHA512:
-                     json_object_set_string(cap_obj, "hashFunctionZ", "SHA2-512");
-                     break;
+                    json_object_set_string(cap_obj, "hashFunctionZ", "SHA2-512");
+                    break;
+                case ACVP_SHA512_224:
+                    json_object_set_string(cap_obj, "hashFunctionZ", "SHA2-512/224");
+                    break;
+                case ACVP_SHA512_256:
+                    json_object_set_string(cap_obj, "hashFunctionZ", "SHA2-512/256");
+                    break;
+                case ACVP_SHA3_224:
+                    json_object_set_string(cap_obj, "hashFunctionZ", "SHA3-224");
+                    break;
+                case ACVP_SHA3_256:
+                    json_object_set_string(cap_obj, "hashFunctionZ", "SHA3-256");
+                    break;
+                case ACVP_SHA3_384:
+                    json_object_set_string(cap_obj, "hashFunctionZ", "SHA3-384");
+                    break;
+                case ACVP_SHA3_512:
+                    json_object_set_string(cap_obj, "hashFunctionZ", "SHA3-512");
+                    break;
+                case ACVP_NO_SHA:
+                    break;
                 default:
                     ACVP_LOG_ERR("Unsupported KAS-ECC sha param %d", kas_ecc_mode->hash);
                     return ACVP_INVALID_ARG;
@@ -3110,17 +3130,37 @@ static ACVP_RESULT acvp_build_kas_ffc_register_cap(ACVP_CTX *ctx,
 
             switch (kas_ffc_mode->hash) {
                 case ACVP_SHA224:
-                     json_object_set_string(cap_obj, "hashFunctionZ", "SHA2-224");
-                     break;
+                    json_object_set_string(cap_obj, "hashFunctionZ", "SHA2-224");
+                    break;
                 case ACVP_SHA256:
-                     json_object_set_string(cap_obj, "hashFunctionZ", "SHA2-256");
-                     break;
+                    json_object_set_string(cap_obj, "hashFunctionZ", "SHA2-256");
+                    break;
                 case ACVP_SHA384:
-                     json_object_set_string(cap_obj, "hashFunctionZ", "SHA2-384");
-                     break;
+                    json_object_set_string(cap_obj, "hashFunctionZ", "SHA2-384");
+                    break;
                 case ACVP_SHA512:
-                     json_object_set_string(cap_obj, "hashFunctionZ", "SHA2-512");
-                     break;
+                    json_object_set_string(cap_obj, "hashFunctionZ", "SHA2-512");
+                    break;
+                case ACVP_SHA512_224:
+                    json_object_set_string(cap_obj, "hashFunctionZ", "SHA2-512/224");
+                    break;
+                case ACVP_SHA512_256:
+                    json_object_set_string(cap_obj, "hashFunctionZ", "SHA2-512/256");
+                    break;
+                case ACVP_SHA3_224:
+                    json_object_set_string(cap_obj, "hashFunctionZ", "SHA3-224");
+                    break;
+                case ACVP_SHA3_256:
+                    json_object_set_string(cap_obj, "hashFunctionZ", "SHA3-256");
+                    break;
+                case ACVP_SHA3_384:
+                    json_object_set_string(cap_obj, "hashFunctionZ", "SHA3-384");
+                    break;
+                case ACVP_SHA3_512:
+                    json_object_set_string(cap_obj, "hashFunctionZ", "SHA3-512");
+                    break;
+                case ACVP_NO_SHA:
+                    break;
                 default:
                     ACVP_LOG_ERR("Unsupported KAS-FFC sha param %d", kas_ffc_mode->hash);
                     return ACVP_INVALID_ARG;
@@ -3220,21 +3260,41 @@ static ACVP_RESULT acvp_build_kas_ifc_register_cap(ACVP_CTX *ctx,
     }
     switch (kas_ifc_cap->hash) {
         case ACVP_SHA224:
-             json_object_set_string(cap_obj, "hashFunctionZ", "SHA2-224");
-             break;
+            json_object_set_string(cap_obj, "hashFunctionZ", "SHA2-224");
+            break;
         case ACVP_SHA256:
-             json_object_set_string(cap_obj, "hashFunctionZ", "SHA2-256");
-             break;
+            json_object_set_string(cap_obj, "hashFunctionZ", "SHA2-256");
+            break;
         case ACVP_SHA384:
-             json_object_set_string(cap_obj, "hashFunctionZ", "SHA2-384");
-             break;
+            json_object_set_string(cap_obj, "hashFunctionZ", "SHA2-384");
+            break;
         case ACVP_SHA512:
-             json_object_set_string(cap_obj, "hashFunctionZ", "SHA2-512");
-             break;
+            json_object_set_string(cap_obj, "hashFunctionZ", "SHA2-512");
+            break;
+        case ACVP_SHA512_224:
+            json_object_set_string(cap_obj, "hashFunctionZ", "SHA2-512/224");
+            break;
+        case ACVP_SHA512_256:
+            json_object_set_string(cap_obj, "hashFunctionZ", "SHA2-512/256");
+            break;
+        case ACVP_SHA3_224:
+            json_object_set_string(cap_obj, "hashFunctionZ", "SHA3-224");
+            break;
+        case ACVP_SHA3_256:
+            json_object_set_string(cap_obj, "hashFunctionZ", "SHA3-256");
+            break;
+        case ACVP_SHA3_384:
+            json_object_set_string(cap_obj, "hashFunctionZ", "SHA3-384");
+            break;
+        case ACVP_SHA3_512:
+            json_object_set_string(cap_obj, "hashFunctionZ", "SHA3-512");
+            break;
+        case ACVP_NO_SHA:
+            break;
         default:
-             ACVP_LOG_ERR("Unsupported KAS-IFC sha param %d", kas_ifc_cap->hash);
-             return ACVP_INVALID_ARG;
-             break;
+            ACVP_LOG_ERR("Unsupported KAS-IFC sha param %d", kas_ifc_cap->hash);
+            return ACVP_INVALID_ARG;
+            break;
     }
     json_object_set_string(cap_obj, "fixedPubExp", (const char *)kas_ifc_cap->fixed_pub_exp);
 
@@ -3310,7 +3370,7 @@ static ACVP_RESULT acvp_build_kas_ifc_register_cap(ACVP_CTX *ctx,
     current_param = kas_ifc_cap->kas2_roles;
     if (current_param) {
         role_val = json_value_init_object();
-        role_obj = json_value_get_object(sch_val);
+        role_obj = json_value_get_object(role_val);
         json_object_set_value(role_obj, "kasRole", json_value_init_array());
         temp_arr = json_object_get_array(role_obj, "kasRole");
         while (current_param) {
@@ -3365,7 +3425,11 @@ static ACVP_RESULT acvp_build_kda_onestep_register_cap(ACVP_CTX *ctx,
         goto err;
     }
     json_object_set_string(cap_obj, "mode", mode);
-    revision = acvp_lookup_cipher_revision(cap_entry->cipher);
+    if (cap_entry->cap.kda_onestep_cap->revision) {
+        revision = acvp_lookup_alt_revision_string(cap_entry->cap.kda_onestep_cap->revision);
+    } else {
+        revision = acvp_lookup_cipher_revision(cap_entry->cipher);
+    }
     if (!revision) {
         ACVP_LOG_ERR("Unable to find revision string for KDA-ONESTEP when building registration");
         rv = ACVP_INVALID_ARG;
@@ -3390,7 +3454,7 @@ static ACVP_RESULT acvp_build_kda_onestep_register_cap(ACVP_CTX *ctx,
             }
             strncat_s(pattern_str, ACVP_KDA_PATTERN_REG_STR_MAX + 1,
                       ACVP_KDA_PATTERN_LITERAL_STR,
-                      strnlen_s(ACVP_KDA_PATTERN_LITERAL_STR, 32));
+                      sizeof(ACVP_KDA_PATTERN_LITERAL_STR) - 1);
             strncat_s(pattern_str, ACVP_KDA_PATTERN_REG_STR_MAX + 1, "[", 1);
             strncat_s(pattern_str, ACVP_KDA_PATTERN_REG_STR_MAX + 1,
                       cap_entry->cap.kda_onestep_cap->literal_pattern_candidate,
@@ -3400,32 +3464,37 @@ static ACVP_RESULT acvp_build_kda_onestep_register_cap(ACVP_CTX *ctx,
         case ACVP_KDA_PATTERN_UPARTYINFO:
             strncat_s(pattern_str, ACVP_KDA_PATTERN_REG_STR_MAX + 1,
                       ACVP_KDA_PATTERN_UPARTYINFO_STR,
-                      strnlen_s(ACVP_KDA_PATTERN_UPARTYINFO_STR, 32));
+                      sizeof(ACVP_KDA_PATTERN_UPARTYINFO_STR) - 1);
             break;
         case ACVP_KDA_PATTERN_VPARTYINFO:
             strncat_s(pattern_str, ACVP_KDA_PATTERN_REG_STR_MAX + 1,
                       ACVP_KDA_PATTERN_VPARTYINFO_STR,
-                      strnlen_s(ACVP_KDA_PATTERN_VPARTYINFO_STR, 32));
+                      sizeof(ACVP_KDA_PATTERN_VPARTYINFO_STR) - 1);
             break;
         case ACVP_KDA_PATTERN_CONTEXT:
             strncat_s(pattern_str, ACVP_KDA_PATTERN_REG_STR_MAX + 1,
                       ACVP_KDA_PATTERN_CONTEXT_STR,
-                      strnlen_s(ACVP_KDA_PATTERN_CONTEXT_STR, 32));
+                      sizeof(ACVP_KDA_PATTERN_CONTEXT_STR) - 1);
             break;
         case ACVP_KDA_PATTERN_ALGID:
             strncat_s(pattern_str, ACVP_KDA_PATTERN_REG_STR_MAX + 1,
                       ACVP_KDA_PATTERN_ALGID_STR,
-                      strnlen_s(ACVP_KDA_PATTERN_ALGID_STR, 32));
+                      sizeof(ACVP_KDA_PATTERN_ALGID_STR) - 1);
             break;
         case ACVP_KDA_PATTERN_LABEL:
             strncat_s(pattern_str, ACVP_KDA_PATTERN_REG_STR_MAX + 1,
                       ACVP_KDA_PATTERN_LABEL_STR,
-                      strnlen_s(ACVP_KDA_PATTERN_LABEL_STR, 32));
+                      sizeof(ACVP_KDA_PATTERN_LABEL_STR) - 1);
             break;
         case ACVP_KDA_PATTERN_L:
             strncat_s(pattern_str, ACVP_KDA_PATTERN_REG_STR_MAX + 1,
                       ACVP_KDA_PATTERN_LENGTH_STR,
-                      strnlen_s(ACVP_KDA_PATTERN_LENGTH_STR, 32));
+                      sizeof(ACVP_KDA_PATTERN_LENGTH_STR) - 1);
+            break;
+        case ACVP_KDA_PATTERN_T:
+            strncat_s(pattern_str, ACVP_KDA_PATTERN_REG_STR_MAX + 1,
+                      ACVP_KDA_PATTERN_T_STR,
+                      sizeof(ACVP_KDA_PATTERN_T_STR) - 1);
             break;
         default:
             ACVP_LOG_ERR("Invalid pattern value in pattern list");
@@ -3520,7 +3589,11 @@ static ACVP_RESULT acvp_build_kda_hkdf_register_cap(ACVP_CTX *ctx,
         goto err;
     }
     json_object_set_string(cap_obj, "mode", mode);
-    revision = acvp_lookup_cipher_revision(cap_entry->cipher);
+    if (cap_entry->cap.kda_hkdf_cap->revision) {
+        revision = acvp_lookup_alt_revision_string(cap_entry->cap.kda_hkdf_cap->revision);
+    } else {
+        revision = acvp_lookup_cipher_revision(cap_entry->cipher);
+    }
     if (!revision) {
         ACVP_LOG_ERR("Unable to find revision string for KDA-HKDF when building registration");
         rv = ACVP_INVALID_ARG;
@@ -3545,7 +3618,7 @@ static ACVP_RESULT acvp_build_kda_hkdf_register_cap(ACVP_CTX *ctx,
             }
             strncat_s(pattern_str, ACVP_KDA_PATTERN_REG_STR_MAX + 1,
                       ACVP_KDA_PATTERN_LITERAL_STR,
-                      strnlen_s(ACVP_KDA_PATTERN_LITERAL_STR, 32));
+                      sizeof(ACVP_KDA_PATTERN_LITERAL_STR) - 1);
             strncat_s(pattern_str, ACVP_KDA_PATTERN_REG_STR_MAX + 1, "[", 1);
             strncat_s(pattern_str, ACVP_KDA_PATTERN_REG_STR_MAX + 1,
                       cap_entry->cap.kda_hkdf_cap->literal_pattern_candidate,
@@ -3555,32 +3628,37 @@ static ACVP_RESULT acvp_build_kda_hkdf_register_cap(ACVP_CTX *ctx,
         case ACVP_KDA_PATTERN_UPARTYINFO:
             strncat_s(pattern_str, ACVP_KDA_PATTERN_REG_STR_MAX + 1,
                       ACVP_KDA_PATTERN_UPARTYINFO_STR,
-                      strnlen_s(ACVP_KDA_PATTERN_UPARTYINFO_STR, 32));
+                      sizeof(ACVP_KDA_PATTERN_UPARTYINFO_STR) - 1);
             break;
         case ACVP_KDA_PATTERN_VPARTYINFO:
             strncat_s(pattern_str, ACVP_KDA_PATTERN_REG_STR_MAX + 1,
                       ACVP_KDA_PATTERN_VPARTYINFO_STR,
-                      strnlen_s(ACVP_KDA_PATTERN_VPARTYINFO_STR, 32));
+                      sizeof(ACVP_KDA_PATTERN_VPARTYINFO_STR) - 1);
             break;
         case ACVP_KDA_PATTERN_CONTEXT:
             strncat_s(pattern_str, ACVP_KDA_PATTERN_REG_STR_MAX + 1,
                       ACVP_KDA_PATTERN_CONTEXT_STR,
-                      strnlen_s(ACVP_KDA_PATTERN_CONTEXT_STR, 32));
+                      sizeof(ACVP_KDA_PATTERN_CONTEXT_STR) - 1);
             break;
         case ACVP_KDA_PATTERN_ALGID:
             strncat_s(pattern_str, ACVP_KDA_PATTERN_REG_STR_MAX + 1,
                       ACVP_KDA_PATTERN_ALGID_STR,
-                      strnlen_s(ACVP_KDA_PATTERN_ALGID_STR, 32));
+                      sizeof(ACVP_KDA_PATTERN_ALGID_STR) - 1);
             break;
         case ACVP_KDA_PATTERN_LABEL:
             strncat_s(pattern_str, ACVP_KDA_PATTERN_REG_STR_MAX + 1,
                       ACVP_KDA_PATTERN_LABEL_STR,
-                      strnlen_s(ACVP_KDA_PATTERN_LABEL_STR, 32));
+                      sizeof(ACVP_KDA_PATTERN_LABEL_STR) - 1);
             break;
         case ACVP_KDA_PATTERN_L:
             strncat_s(pattern_str, ACVP_KDA_PATTERN_REG_STR_MAX + 1,
                       ACVP_KDA_PATTERN_LENGTH_STR,
-                      strnlen_s(ACVP_KDA_PATTERN_LENGTH_STR, 32));
+                      sizeof(ACVP_KDA_PATTERN_LENGTH_STR) - 1);
+            break;
+        case ACVP_KDA_PATTERN_T:
+            strncat_s(pattern_str, ACVP_KDA_PATTERN_REG_STR_MAX + 1,
+                      ACVP_KDA_PATTERN_T_STR,
+                      sizeof(ACVP_KDA_PATTERN_T_STR) - 1);
             break;
         default:
             ACVP_LOG_ERR("Invalid pattern value in pattern list");
@@ -4077,7 +4155,7 @@ ACVP_RESULT acvp_build_test_session(ACVP_CTX *ctx, char **reg, int *out_len) {
             case ACVP_ECDSA_KEYVER:
             case ACVP_ECDSA_SIGGEN:
             case ACVP_ECDSA_SIGVER:
-                rv = acvp_build_ecdsa_register_cap(cap_entry->cipher, cap_obj, cap_entry);
+                rv = acvp_build_ecdsa_register_cap(ctx, cap_entry->cipher, cap_obj, cap_entry);
                 break;
             case ACVP_KDF135_SNMP:
                 rv = acvp_build_kdf135_snmp_register_cap(cap_obj, cap_entry);
