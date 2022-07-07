@@ -59,6 +59,10 @@ int app_kas_ecc_handler(ACVP_TEST_CASE *test_case) {
 
     /* Generate server pkey info */
     serv_pbld = OSSL_PARAM_BLD_new();
+    if (!serv_pbld) {
+        printf("Error creating param_bld in KAS-ECC\n");
+        goto err;
+    }
     OSSL_PARAM_BLD_push_utf8_string(serv_pbld, "group", curve, 0);
     OSSL_PARAM_BLD_push_octet_string(serv_pbld, "pub", s_pub_key, s_key_size);
     OSSL_PARAM_BLD_push_int(serv_pbld, "use-cofactor-flag", 1);
@@ -83,6 +87,10 @@ int app_kas_ecc_handler(ACVP_TEST_CASE *test_case) {
 
     /* generate our pkey info */
     iut_pbld = OSSL_PARAM_BLD_new();
+    if (!iut_pbld) {
+        printf("Error creating param_bld in KAS-ECC\n");
+        goto err;
+    }
     OSSL_PARAM_BLD_push_utf8_string(iut_pbld, "group", curve, 0);
     OSSL_PARAM_BLD_push_int(iut_pbld, "use-cofactor-flag", 1);
     if (tc->test_type == ACVP_KAS_ECC_TT_VAL) {
@@ -274,6 +282,10 @@ int app_kas_ffc_handler(ACVP_TEST_CASE *test_case) {
 
     /* Generate server pkey info */
     serv_pbld = OSSL_PARAM_BLD_new();
+    if (!serv_pbld) {
+        printf("Error creating param_bld in KAS-FFC\n");
+        goto err;
+    }
     if (!use_pqg) {
         OSSL_PARAM_BLD_push_utf8_string(serv_pbld, "group", group, 0);
     } else {
@@ -303,6 +315,10 @@ int app_kas_ffc_handler(ACVP_TEST_CASE *test_case) {
 
     /* generate our pkey info */
     iut_pbld = OSSL_PARAM_BLD_new();
+    if (!iut_pbld) {
+        printf("Error creating param_bld in KAS-FFC\n");
+        goto err;
+    }
     if (!use_pqg) {
         OSSL_PARAM_BLD_push_utf8_string(iut_pbld, "group", group, 0);
     } else {
@@ -365,6 +381,10 @@ int app_kas_ffc_handler(ACVP_TEST_CASE *test_case) {
     /* Finally, derive secret Z and add to test response */
     /* Note: Padding is seemingly guaranteed on newer 3.X versions, but not older */
     der_pbld = OSSL_PARAM_BLD_new();
+    if (!der_pbld) {
+        printf("Error creating param_bld in KAS-FFC\n");
+        goto err;
+    }
     OSSL_PARAM_BLD_push_uint(der_pbld, "pad", 1);
     der_params = OSSL_PARAM_BLD_to_param(der_pbld);
     if (!der_params) {
@@ -479,6 +499,10 @@ ACVP_KAS_IFC_TC *tc = NULL;
     }
 
     pkey_pbld = OSSL_PARAM_BLD_new();
+    if (!pkey_pbld) {
+        printf("Error creating param_bld in KAS-IFC\n");
+        goto err;
+    }
     OSSL_PARAM_BLD_push_BN(pkey_pbld, "n", n);
     OSSL_PARAM_BLD_push_BN(pkey_pbld, "e", e);
     if (tc->kas_role == ACVP_KAS_IFC_RESPONDER) {

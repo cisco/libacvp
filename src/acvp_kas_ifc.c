@@ -67,9 +67,13 @@ static ACVP_RESULT acvp_kas_ifc_ssc_val_output_tc(ACVP_KAS_IFC_TC *stc,
 
     /* For initiator tests, check the encapsulated Z. For responder tests, check the decapsulated Z. */
     if (stc->kas_role == ACVP_KAS_IFC_INITIATOR) {
-        memcmp_s(stc->ct_z, stc->ct_z_len, stc->provided_ct_z, stc->provided_ct_z_len, &diff);
+        if (stc->ct_z_len == stc->provided_ct_z_len) {
+            memcmp_s(stc->ct_z, stc->ct_z_len, stc->provided_ct_z, stc->provided_ct_z_len, &diff);
+        }
     } else {
-        memcmp_s(stc->pt_z, stc->pt_z_len, stc->provided_pt_z, stc->provided_pt_z_len, &diff);
+        if (stc->pt_z_len == stc->provided_pt_z_len) {
+            memcmp_s(stc->pt_z, stc->pt_z_len, stc->provided_pt_z, stc->provided_pt_z_len, &diff);
+        }
     }
 
     if (!diff) {
@@ -196,7 +200,7 @@ static ACVP_RESULT acvp_kas_ifc_ssc_init_tc(ACVP_CTX *ctx,
     if (role == ACVP_KAS_IFC_RESPONDER) {
         rv = acvp_hexstr_to_bin(ct_z, stc->ct_z, ACVP_KAS_IFC_BYTE_MAX, &(stc->ct_z_len));
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("Hex conversion failure (ct)");
+            ACVP_LOG_ERR("Hex conversion failure (ct_z)");
             return rv;
         }
     }
@@ -206,14 +210,14 @@ static ACVP_RESULT acvp_kas_ifc_ssc_init_tc(ACVP_CTX *ctx,
             if (!stc->provided_ct_z) { return ACVP_MALLOC_FAIL; }
             rv = acvp_hexstr_to_bin(ct_z, stc->provided_ct_z, ACVP_KAS_IFC_BYTE_MAX, &(stc->provided_ct_z_len));
             if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("Hex conversion failure (c)");
+                ACVP_LOG_ERR("Hex conversion failure (provided_ct_z)");
                 return rv;
             }
 
             if (!stc->pt_z) { return ACVP_MALLOC_FAIL; }
             rv = acvp_hexstr_to_bin(pt_z, stc->pt_z, ACVP_KAS_IFC_BYTE_MAX, &(stc->pt_z_len));
             if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("Hex conversion failure (pt_zc)");
+                ACVP_LOG_ERR("Hex conversion failure (pt_z)");
                 return rv;
             }
         } else {
@@ -221,7 +225,7 @@ static ACVP_RESULT acvp_kas_ifc_ssc_init_tc(ACVP_CTX *ctx,
             if (!stc->provided_pt_z) { return ACVP_MALLOC_FAIL; }
             rv = acvp_hexstr_to_bin(pt_z, stc->provided_pt_z, ACVP_KAS_IFC_BYTE_MAX, &(stc->provided_pt_z_len));
             if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("Hex conversion failure (z)");
+                ACVP_LOG_ERR("Hex conversion failure (provided_pt_z)");
                 return rv;
             }
         }

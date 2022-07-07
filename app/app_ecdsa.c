@@ -152,6 +152,10 @@ int app_ecdsa_handler(ACVP_TEST_CASE *test_case) {
         }
 
         pkey_pbld = OSSL_PARAM_BLD_new();
+        if (!pkey_pbld) {
+            printf("Error creating param_bld in ECDSA keyver\n");
+            goto err;
+        }
         OSSL_PARAM_BLD_push_utf8_string(pkey_pbld, "group", curve, 0);
         OSSL_PARAM_BLD_push_octet_string(pkey_pbld, "pub", pub_key, key_size);
         params = OSSL_PARAM_BLD_to_param(pkey_pbld);
@@ -250,6 +254,10 @@ int app_ecdsa_handler(ACVP_TEST_CASE *test_case) {
         }
 
         pkey_pbld = OSSL_PARAM_BLD_new();
+        if (!pkey_pbld) {
+            printf("Error creating param_bld in ECDSA sigver\n");
+            goto err;
+        }
         OSSL_PARAM_BLD_push_utf8_string(pkey_pbld, "group", curve, 0);
         OSSL_PARAM_BLD_push_octet_string(pkey_pbld, "pub", pub_key, key_size);
         params = OSSL_PARAM_BLD_to_param(pkey_pbld);

@@ -7454,7 +7454,7 @@ ACVP_RESULT acvp_cap_kda_set_parm(ACVP_CTX *ctx, ACVP_CIPHER cipher, ACVP_KDA_PA
         case ACVP_KDA_MAC_ALG:
             tmp = acvp_lookup_hmac_alg_str(value);
             if (!tmp) {
-                ACVP_LOG_ERR("Invalid value for hmac alg for KDA_HKDF");
+                ACVP_LOG_ERR("Invalid value for hmac alg for KDA-HKDF");
                 return ACVP_INVALID_ARG;
             }
             result = acvp_append_name_list(&hkdf_cap->hmac_algs, tmp);
@@ -7551,11 +7551,6 @@ ACVP_RESULT acvp_cap_kda_twostep_set_parm(ACVP_CTX *ctx, ACVP_KDA_PARM param,
             ACVP_LOG_ERR("Must use a valid KDF108 mode when setting certain parameters in KDA twostep");
             return ACVP_INVALID_ARG;
         }
-
-        if (!mode_obj) {
-            ACVP_LOG_ERR("Unable to retrieve KDF mode object for KDA Twostep");
-            return ACVP_INVALID_ARG;
-        }
         break;
     case ACVP_KDA_PATTERN:
     case ACVP_KDA_ENCODING_TYPE:
@@ -7647,9 +7642,6 @@ ACVP_RESULT acvp_cap_kda_twostep_set_parm(ACVP_CTX *ctx, ACVP_KDA_PARM param,
         }
         break;
     case ACVP_KDA_MAC_ALG:
-        if (!mode_obj) {
-            return ACVP_INVALID_ARG;
-        }
         switch (value) {
             case ACVP_KDF108_MAC_MODE_CMAC_AES128:
                 result = acvp_append_name_list(&mode_obj->mac_mode, ACVP_ALG_CMAC_AES_128);
@@ -7708,9 +7700,6 @@ ACVP_RESULT acvp_cap_kda_twostep_set_parm(ACVP_CTX *ctx, ACVP_KDA_PARM param,
         break;
     /* For these, a KDF108 mode must be provided */
     case ACVP_KDA_TWOSTEP_FIXED_DATA_ORDER:
-        if (!mode_obj) {
-            return ACVP_INVALID_ARG;
-        }
         switch (value) {
         case ACVP_KDF108_FIXED_DATA_ORDER_AFTER:
             result = acvp_append_name_list(&mode_obj->data_order, ACVP_FIXED_DATA_ORDER_AFTER_STR);

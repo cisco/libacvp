@@ -168,6 +168,10 @@ int app_kdf108_handler(ACVP_TEST_CASE *test_case) {
         goto end;
     }
     pbld = OSSL_PARAM_BLD_new();
+    if (!pbld) {
+        printf("Error creating param_bld in kdf108\n");
+        goto end;
+    }
     OSSL_PARAM_BLD_push_utf8_string(pbld, "mac", mac, 0);
     OSSL_PARAM_BLD_push_octet_string(pbld, "key", stc->key_in, stc->key_in_len);
     OSSL_PARAM_BLD_push_octet_string(pbld, "seed", stc->iv, stc->iv_len);
