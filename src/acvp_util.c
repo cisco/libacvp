@@ -621,37 +621,6 @@ ACVP_CIPHER acvp_lookup_aux_function_alg_tbl(const char *str) {
     return 0;
 }
 
-const char* acvp_lookup_hmac_alg_str(ACVP_HMAC_ALG_VAL alg) {
-    switch(alg) {
-        case ACVP_HMAC_ALG_SHA1:
-            return ACVP_STR_SHA_1;
-        case ACVP_HMAC_ALG_SHA224:
-            return ACVP_STR_SHA2_224;
-        case ACVP_HMAC_ALG_SHA256:
-            return ACVP_STR_SHA2_256;
-        case ACVP_HMAC_ALG_SHA384:
-            return ACVP_STR_SHA2_384;
-        case ACVP_HMAC_ALG_SHA512:
-            return ACVP_STR_SHA2_512;
-        case ACVP_HMAC_ALG_SHA512_224:
-            return ACVP_STR_SHA2_512_224;
-        case ACVP_HMAC_ALG_SHA512_256:
-            return ACVP_STR_SHA2_512_256;
-        case ACVP_HMAC_ALG_SHA3_224:
-            return ACVP_STR_SHA3_224;
-        case ACVP_HMAC_ALG_SHA3_256:
-            return ACVP_STR_SHA3_256;
-        case ACVP_HMAC_ALG_SHA3_384:
-            return ACVP_STR_SHA3_384;
-        case ACVP_HMAC_ALG_SHA3_512:
-            return ACVP_STR_SHA3_512;
-        case ACVP_HMAC_ALG_MIN:
-        case ACVP_HMAC_ALG_MAX:
-        default:
-            return NULL;
-    }
-}
-
 /*
  * Convert a byte array from source to a hexadecimal string which is
  * stored in the destination.

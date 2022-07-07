@@ -1937,7 +1937,6 @@ int acvp_is_in_name_list(ACVP_NAME_LIST *list, const char *string);
 ACVP_RESULT acvp_append_str_list(ACVP_STRING_LIST **list, const char *string);
 int acvp_lookup_str_list(ACVP_STRING_LIST **list, const char *string);
 int acvp_lookup_param_list(ACVP_PARAM_LIST *list, int value);
-const char* acvp_lookup_hmac_alg_str(ACVP_HMAC_ALG_VAL alg);
 const char* acvp_lookup_aux_function_alg_str(ACVP_CIPHER alg);
 ACVP_CIPHER acvp_lookup_aux_function_alg_tbl(const char *str);
 int acvp_is_domain_already_set(ACVP_JSON_DOMAIN_OBJ *domain);
