@@ -1145,6 +1145,7 @@ typedef struct acvp_kdf135_x963_tc_t {
     int field_size;
     int key_data_len;
     int shared_info_len;
+    int z_len;
     unsigned char *z;
     unsigned char *shared_info;
     unsigned char *key_data;

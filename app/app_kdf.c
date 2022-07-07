@@ -49,10 +49,78 @@ int app_kdf135_ikev1_handler(ACVP_TEST_CASE *test_case) {
 }
 
 int app_kdf135_x963_handler(ACVP_TEST_CASE *test_case) {
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+    ACVP_KDF135_X963_TC *stc = NULL;
+    int rc = 1;
+    char *aname = NULL;
+    OSSL_PARAM_BLD *pbld = NULL;
+    OSSL_PARAM *params = NULL;
+    EVP_KDF *kdf = NULL;
+    EVP_KDF_CTX *kctx = NULL;
+    const char *alg = NULL;
+
+    if (!test_case) {
+        printf("Missing KDF X963 test case\n");
+        return -1;
+    }
+    stc = test_case->tc.kdf135_x963;
+    if (!stc) {
+        printf("Missing KDF X963 test case\n");
+        return -1;
+    }
+
+    alg = get_md_string_for_hash_alg(stc->hash_alg);
+    if (!alg) {
+        printf("Invalid hmac type given for KDF x963\n");
+        goto end;
+    }
+
+    aname = calloc(256, sizeof(char)); //avoid const removal warnings
+    if (!aname) {
+        printf("Error allocating memory for KDF X963\n");
+        goto end;
+    }
+    strcpy_s(aname, 256, alg);
+
+    kdf = EVP_KDF_fetch(NULL, "X963KDF", NULL);
+    kctx = EVP_KDF_CTX_new(kdf);
+    if (!kctx) {
+        printf("Error creating KDF CTX in KDF X963\n");
+        goto end;
+    }
+
+    pbld = OSSL_PARAM_BLD_new();
+    if (!pbld) {
+        printf("Error creating param_bld in KDF X963\n");
+        goto end;
+    }
+    OSSL_PARAM_BLD_push_octet_string(pbld, "key", stc->z, stc->z_len);
+    OSSL_PARAM_BLD_push_octet_string(pbld, "info", stc->shared_info, stc->shared_info_len);
+    OSSL_PARAM_BLD_push_utf8_string(pbld, "digest", aname, 0);
+    params = OSSL_PARAM_BLD_to_param(pbld);
+    if (!params) {
+        printf("Error generating params in KDF X963\n");
+        goto end;
+    }
+
+    if (EVP_KDF_derive(kctx, stc->key_data, stc->key_data_len, params) != 1) {
+        printf("Failure deriving key material in KDF X963\n");
+        goto end;
+    }
+    rc = 0;
+end:
+    if (aname) free(aname);
+    if (pbld) OSSL_PARAM_BLD_free(pbld);
+    if (params) OSSL_PARAM_free(params);
+    if (kdf) EVP_KDF_free(kdf);
+    if (kctx) EVP_KDF_CTX_free(kctx);
+    return rc;
+#else
     if (!test_case) {
         return -1;
     }
     return 1;
+#endif
 }
 
 int app_kdf108_handler(ACVP_TEST_CASE *test_case) {
