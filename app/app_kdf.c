@@ -201,7 +201,7 @@ int app_kdf108_handler(ACVP_TEST_CASE *test_case) {
     }
 
     if (EVP_KDF_derive(kctx, stc->key_out, stc->key_out_len, params) != 1) {
-        printf("Failure deriving key material in kdf108");
+        printf("Failure deriving key material in kdf108\n");
     }
     rc = 0;
 end:
@@ -276,37 +276,37 @@ int app_kdf135_ssh_handler(ACVP_TEST_CASE *test_case) {
 
     params[4] = OSSL_PARAM_construct_utf8_string("type", "A", 1);
     if (EVP_KDF_derive(kctx, stc->cs_init_iv, stc->iv_len, params) != 1) {
-        printf("Failure deriving key material in kdf108");
+        printf("Failure deriving key material in kdf135-ssh (A)\n");
         goto end;
     }
 
     params[4] = OSSL_PARAM_construct_utf8_string("type", "B", 1);
     if (EVP_KDF_derive(kctx, stc->sc_init_iv, stc->iv_len, params) != 1) {
-        printf("Failure deriving key material in kdf108");
+        printf("Failure deriving key material in kdf135-ssh (B)\n");
         goto end;
     }
 
     params[4] = OSSL_PARAM_construct_utf8_string("type", "C", 1);
     if (EVP_KDF_derive(kctx, stc->cs_encrypt_key, stc->e_key_len, params) != 1) {
-        printf("Failure deriving key material in kdf108");
+        printf("Failure deriving key material in kdf135-ssh (C)\n");
         goto end;
     }
 
     params[4] = OSSL_PARAM_construct_utf8_string("type", "D", 1);
     if (EVP_KDF_derive(kctx, stc->sc_encrypt_key, stc->e_key_len, params) != 1) {
-        printf("Failure deriving key material in kdf108");
+        printf("Failure deriving key material in kdf135-ssh (D)\n");
         goto end;
     }
 
     params[4] = OSSL_PARAM_construct_utf8_string("type", "E", 1);
     if (EVP_KDF_derive(kctx, stc->cs_integrity_key, stc->i_key_len, params) != 1) {
-        printf("Failure deriving key material in kdf108");
+        printf("Failure deriving key material in kdf135-ssh (E)\n");
         goto end;
     }
 
     params[4] = OSSL_PARAM_construct_utf8_string("type", "F", 1);
     if (EVP_KDF_derive(kctx, stc->sc_integrity_key, stc->i_key_len, params) != 1) {
-        printf("Failure deriving key material in kdf108");
+        printf("Failure deriving key material in kdf135-ssh (F)\n");
         goto end;
     }
 
@@ -325,10 +325,79 @@ end:
 }
 
 int app_pbkdf_handler(ACVP_TEST_CASE *test_case) {
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+    ACVP_PBKDF_TC *stc = NULL;
+    int rc = 1;
+    char *aname = NULL;
+    OSSL_PARAM_BLD *pbld = NULL;
+    OSSL_PARAM *params = NULL;
+    EVP_KDF *kdf = NULL;
+    EVP_KDF_CTX *kctx = NULL;
+    const char *alg = NULL;
+
+    if (!test_case) {
+        printf("Missing PBKDF test case\n");
+        return -1;
+    }
+    stc = test_case->tc.pbkdf;
+    if (!stc) {
+        printf("Missing PBKDF test case\n");
+        return -1;
+    }
+
+    alg = get_md_string_for_hash_alg(stc->hmac_type);
+    if (!alg) {
+        printf("Invalid hmac type given for PBKDF\n");
+        goto end;
+    }
+
+    aname = calloc(256, sizeof(char)); //avoid const removal warnings
+    if (!aname) {
+        printf("Error allocating memory for PBKDF\n");
+        goto end;
+    }
+    strcpy_s(aname, 256, alg);
+
+    kdf = EVP_KDF_fetch(NULL, "PBKDF2", NULL);
+    kctx = EVP_KDF_CTX_new(kdf);
+    if (!kctx) {
+        printf("Error creating KDF CTX in PBKDF\n");
+        goto end;
+    }
+
+    pbld = OSSL_PARAM_BLD_new();
+    if (!pbld) {
+        printf("Error creating param_bld in PBKDF\n");
+        goto end;
+    }
+    OSSL_PARAM_BLD_push_octet_string(pbld, "pass", stc->password, stc->pw_len);
+    OSSL_PARAM_BLD_push_octet_string(pbld, "salt", stc->salt, stc->salt_len);
+    OSSL_PARAM_BLD_push_utf8_string(pbld, "digest", aname, 0);
+    OSSL_PARAM_BLD_push_uint(pbld, "iter", stc->iterationCount);
+    OSSL_PARAM_BLD_push_int(pbld, "pkcs5", 1); /* disables compliance checks, dont want limit checks for ACVP tests */
+    params = OSSL_PARAM_BLD_to_param(pbld);
+    if (!params) {
+        printf("Error generating params in PBKDF\n");
+        goto end;
+    }
+
+    if (EVP_KDF_derive(kctx, stc->key, stc->key_len, params) != 1) {
+        printf("Failure deriving key material in PBKDF\n");
+    }
+    rc = 0;
+end:
+    if (aname) free(aname);
+    if (pbld) OSSL_PARAM_BLD_free(pbld);
+    if (params) OSSL_PARAM_free(params);
+    if (kdf) EVP_KDF_free(kdf);
+    if (kctx) EVP_KDF_CTX_free(kctx);
+    return rc;
+#else
     if (!test_case) {
         return -1;
     }
     return 1;
+#endif
 }
 
 int app_kdf_tls12_handler(ACVP_TEST_CASE *test_case) {

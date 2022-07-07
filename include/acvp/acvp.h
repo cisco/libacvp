@@ -529,23 +529,6 @@ typedef enum acvp_kdf108_fixed_data_order_val {
     ACVP_KDF108_FIXED_DATA_ORDER_MAX
 } ACVP_KDF108_FIXED_DATA_ORDER_VAL;
 
-/** @enum ACVP_HMAC_ALG_VAL */
-typedef enum acvp_hmac_alg_val {
-    ACVP_HMAC_ALG_MIN,
-    ACVP_HMAC_ALG_SHA1,
-    ACVP_HMAC_ALG_SHA224,
-    ACVP_HMAC_ALG_SHA256,
-    ACVP_HMAC_ALG_SHA384,
-    ACVP_HMAC_ALG_SHA512,
-    ACVP_HMAC_ALG_SHA512_224,
-    ACVP_HMAC_ALG_SHA512_256,
-    ACVP_HMAC_ALG_SHA3_224,
-    ACVP_HMAC_ALG_SHA3_256,
-    ACVP_HMAC_ALG_SHA3_384,
-    ACVP_HMAC_ALG_SHA3_512,
-    ACVP_HMAC_ALG_MAX
-} ACVP_HMAC_ALG_VAL;
-
 /** @enum ACVP_SYM_CIPH_KO */
 typedef enum acvp_sym_cipher_keying_option {
     ACVP_SYM_CIPH_KO_NA = 1,
@@ -1257,7 +1240,7 @@ typedef struct acvp_kdf135_ssh_tc_t {
 typedef struct acvp_pbkdf_tc_t {
     ACVP_CIPHER cipher;
     unsigned int tc_id;              /**< Test case id */
-    ACVP_HMAC_ALG_VAL hmac_type;         /**< HMAC algorithm type */
+    ACVP_HASH_ALG hmac_type;         /**< HMAC algorithm type */
     ACVP_PBKDF_TESTTYPE test_type;   /**< Test type */
     unsigned int key_len;            /**< Length of key to be generated (in bytes) */
     unsigned char *salt;

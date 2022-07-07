@@ -5386,7 +5386,7 @@ ACVP_RESULT acvp_cap_pbkdf_set_parm(ACVP_CTX *ctx,
         return ACVP_INVALID_ARG;
     }
 
-    alg_str = acvp_lookup_hmac_alg_str(value);
+    alg_str = acvp_lookup_hash_alg_name(value);
     if (!alg_str) {
         ACVP_LOG_ERR("Invalid value specified for PBKDF hmac alg.");
         return ACVP_INVALID_ARG;
@@ -6210,8 +6210,8 @@ ACVP_RESULT acvp_cap_kdf_tls13_set_parm(ACVP_CTX *ctx,
 
     switch(param) {
     case ACVP_KDF_TLS13_HMAC_ALG:
-        alg_str = acvp_lookup_hmac_alg_str(value);
-        if ((value != ACVP_HMAC_ALG_SHA256 && value != ACVP_HMAC_ALG_SHA384) || !alg_str) {
+        alg_str = acvp_lookup_hash_alg_name(value);
+        if ((value != ACVP_SHA256 && value != ACVP_SHA384) || !alg_str) {
             ACVP_LOG_ERR("Invalid value specified for TLS 1.3 hmac alg.");
             return ACVP_INVALID_ARG;
         }
@@ -7452,7 +7452,7 @@ ACVP_RESULT acvp_cap_kda_set_parm(ACVP_CTX *ctx, ACVP_CIPHER cipher, ACVP_KDA_PA
             }
             break;
         case ACVP_KDA_MAC_ALG:
-            tmp = acvp_lookup_hmac_alg_str(value);
+            tmp = acvp_lookup_hash_alg_name(value);
             if (!tmp) {
                 ACVP_LOG_ERR("Invalid value for hmac alg for KDA-HKDF");
                 return ACVP_INVALID_ARG;

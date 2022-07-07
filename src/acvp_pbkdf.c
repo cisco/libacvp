@@ -125,53 +125,63 @@ static ACVP_PBKDF_TESTTYPE read_test_type(const char *str) {
     return 0;
 }
 
-static ACVP_HMAC_ALG_VAL read_hmac_alg(const char *str) {
+static ACVP_HASH_ALG read_hmac_alg(const char *str) {
     int diff = 1;
 
     strcmp_s(ACVP_STR_SHA_1,
              ACVP_STR_SHA_MAX,
              str, &diff);
-    if (!diff) return ACVP_HMAC_ALG_SHA1;
+    if (!diff) return ACVP_SHA1;
 
     strcmp_s(ACVP_STR_SHA2_224,
              ACVP_STR_SHA_MAX,
              str, &diff);
-    if (!diff) return ACVP_HMAC_ALG_SHA224;
+    if (!diff) return ACVP_SHA224;
 
     strcmp_s(ACVP_STR_SHA2_256,
              ACVP_STR_SHA_MAX,
              str, &diff);
-    if (!diff) return ACVP_HMAC_ALG_SHA256;
+    if (!diff) return ACVP_SHA256;
 
     strcmp_s(ACVP_STR_SHA2_384,
              ACVP_STR_SHA_MAX,
              str, &diff);
-    if (!diff) return ACVP_HMAC_ALG_SHA384;
+    if (!diff) return ACVP_SHA384;
 
     strcmp_s(ACVP_STR_SHA2_512,
              ACVP_STR_SHA_MAX,
              str, &diff);
-    if (!diff) return ACVP_HMAC_ALG_SHA512;
+    if (!diff) return ACVP_SHA512;
+
+    strcmp_s(ACVP_STR_SHA2_512_224,
+             ACVP_STR_SHA_MAX,
+             str, &diff);
+    if (!diff) return ACVP_SHA512_224;
+
+    strcmp_s(ACVP_STR_SHA2_512_256,
+             ACVP_STR_SHA_MAX,
+             str, &diff);
+    if (!diff) return ACVP_SHA512_256;
 
     strcmp_s(ACVP_STR_SHA3_224,
              ACVP_STR_SHA_MAX,
              str, &diff);
-    if (!diff) return ACVP_HMAC_ALG_SHA3_224;
+    if (!diff) return ACVP_SHA3_224;
 
     strcmp_s(ACVP_STR_SHA3_256,
              ACVP_STR_SHA_MAX,
              str, &diff);
-    if (!diff) return ACVP_HMAC_ALG_SHA3_256;
+    if (!diff) return ACVP_SHA3_256;
 
     strcmp_s(ACVP_STR_SHA3_384,
              ACVP_STR_SHA_MAX,
              str, &diff);
-    if (!diff) return ACVP_HMAC_ALG_SHA3_384;
+    if (!diff) return ACVP_SHA3_384;
 
     strcmp_s(ACVP_STR_SHA3_512,
              ACVP_STR_SHA_MAX,
              str, &diff);
-    if (!diff) return ACVP_HMAC_ALG_SHA3_512;
+    if (!diff) return ACVP_SHA3_512;
 
     return 0;
 }
@@ -207,7 +217,7 @@ ACVP_RESULT acvp_pbkdf_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     char *json_result;
 
     ACVP_PBKDF_TESTTYPE test_type = 0;
-    ACVP_HMAC_ALG_VAL hmac_alg = 0;
+    ACVP_HASH_ALG hmac_alg = 0;
     int key_len = 0, iteration_count = 0, salt_len = 0,
         password_len = 0;
     const char *hmac_alg_str = NULL, *test_type_str = NULL,
