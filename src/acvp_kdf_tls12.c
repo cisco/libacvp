@@ -311,7 +311,7 @@ static ACVP_RESULT acvp_kdf_tls12_output_tc(ACVP_CTX *ctx, ACVP_KDF_TLS12_TC *st
         return ACVP_MALLOC_FAIL;
     }
 
-    rv = acvp_bin_to_hexstr(stc->msecret1, stc->pm_len, tmp, ACVP_KDF_TLS12_MSG_MAX);
+    rv = acvp_bin_to_hexstr(stc->msecret, stc->pm_len, tmp, ACVP_KDF_TLS12_MSG_MAX);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("hex conversion failure (mac)");
         goto err;
@@ -319,7 +319,7 @@ static ACVP_RESULT acvp_kdf_tls12_output_tc(ACVP_CTX *ctx, ACVP_KDF_TLS12_TC *st
     json_object_set_string(tc_rsp, "masterSecret", tmp);
     memzero_s(tmp, ACVP_KDF_TLS12_MSG_MAX);
 
-    rv = acvp_bin_to_hexstr(stc->kblock1, stc->kb_len, tmp, ACVP_KDF_TLS12_MSG_MAX);
+    rv = acvp_bin_to_hexstr(stc->kblock, stc->kb_len, tmp, ACVP_KDF_TLS12_MSG_MAX);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("hex conversion failure (mac)");
         goto err;
@@ -381,14 +381,10 @@ static ACVP_RESULT acvp_kdf_tls12_init_tc(ACVP_CTX *ctx,
         return rv;
     }
 
-    stc->msecret1 = calloc(1, ACVP_KDF_TLS12_MSG_MAX);
-    if (!stc->msecret1) { return ACVP_MALLOC_FAIL; }
-    stc->msecret2 = calloc(1, ACVP_KDF_TLS12_MSG_MAX);
-    if (!stc->msecret2) { return ACVP_MALLOC_FAIL; }
-    stc->kblock1 = calloc(1, ACVP_KDF_TLS12_MSG_MAX);
-    if (!stc->kblock1) { return ACVP_MALLOC_FAIL; }
-    stc->kblock2 = calloc(1, ACVP_KDF_TLS12_MSG_MAX);
-    if (!stc->kblock2) { return ACVP_MALLOC_FAIL; }
+    stc->msecret = calloc(1, ACVP_KDF_TLS12_MSG_MAX);
+    if (!stc->msecret) { return ACVP_MALLOC_FAIL; }
+    stc->kblock = calloc(1, ACVP_KDF_TLS12_MSG_MAX);
+    if (!stc->kblock) { return ACVP_MALLOC_FAIL; }
 
     stc->tc_id = tc_id;
     stc->cipher = alg_id;
@@ -408,10 +404,8 @@ static ACVP_RESULT acvp_kdf_tls12_release_tc(ACVP_KDF_TLS12_TC *stc) {
     if (stc->session_hash) free(stc->session_hash);
     if (stc->c_rnd) free(stc->c_rnd);
     if (stc->s_rnd) free(stc->s_rnd);
-    if (stc->msecret1) free(stc->msecret1);
-    if (stc->msecret2) free(stc->msecret2);
-    if (stc->kblock1) free(stc->kblock1);
-    if (stc->kblock2) free(stc->kblock2);
+    if (stc->msecret) free(stc->msecret);
+    if (stc->kblock) free(stc->kblock);
 
     memzero_s(stc, sizeof(ACVP_KDF_TLS12_TC));
     return ACVP_SUCCESS;

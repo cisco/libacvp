@@ -27,17 +27,20 @@ static ACVP_RESULT acvp_kdf135_x963_output_tc(ACVP_CTX *ctx, ACVP_KDF135_X963_TC
     ACVP_RESULT rv;
     char *tmp = NULL;
 
-    tmp = calloc(ACVP_KDF135_X963_KEYDATA_MAX_BYTES + 1, sizeof(char));
-
-    rv = acvp_bin_to_hexstr(stc->key_data, stc->key_data_len, tmp, ACVP_KDF135_X963_KEYDATA_MAX_BYTES);
+    tmp = calloc(ACVP_KDF135_X963_KEYDATA_MAX_CHARS + 1, sizeof(char));
+    if (!tmp) {
+        ACVP_LOG_ERR("Error allocating memory in X963 KDF TC output");
+        return ACVP_MALLOC_FAIL;
+    }
+    rv = acvp_bin_to_hexstr(stc->key_data, stc->key_data_len, tmp, ACVP_KDF135_X963_KEYDATA_MAX_CHARS);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("hex conversion failure (key_data)");
         goto err;
     }
     json_object_set_string(tc_rsp, "keyData", (const char *)tmp);
-    memzero_s(tmp, ACVP_KDF135_X963_KEYDATA_MAX_BYTES);
+
 err:
-    free(tmp);
+    if (tmp) free(tmp);
     return ACVP_SUCCESS;
 }
 
@@ -73,13 +76,13 @@ static ACVP_RESULT acvp_kdf135_x963_init_tc(ACVP_CTX *ctx,
 
     stc->tc_id = tc_id;
     stc->hash_alg = hash_alg;
-    stc->field_size = ACVP_BIT2BYTE(field_size);
-    stc->key_data_len = ACVP_BIT2BYTE(key_data_length);
-    stc->shared_info_len = ACVP_BIT2BYTE(shared_info_length);
+    stc->field_size = field_size / 8;
+    stc->key_data_len = key_data_length / 8;
+    stc->shared_info_len = shared_info_length / 8;
 
     stc->z = calloc(ACVP_KDF135_X963_INPUT_MAX, sizeof(char));
     if (!stc->z) { return ACVP_MALLOC_FAIL; }
-    rv = acvp_hexstr_to_bin(z, stc->z, ACVP_KDF135_X963_INPUT_MAX, NULL);
+    rv = acvp_hexstr_to_bin(z, stc->z, ACVP_KDF135_X963_INPUT_MAX, &stc->z_len);
     if (rv != ACVP_SUCCESS) {
         ACVP_LOG_ERR("Hex conversion failure (z)");
         return rv;
@@ -112,8 +115,8 @@ ACVP_RESULT acvp_kdf135_x963_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     JSON_Object *reg_obj = NULL;
     JSON_Array *reg_arry = NULL;
 
-    int i, g_cnt;
-    int j, t_cnt;
+    int i = 0, g_cnt = 0;
+    int j = 0, t_cnt = 0;
 
     JSON_Value *r_vs_val = NULL;
     JSON_Object *r_vs = NULL;
@@ -129,7 +132,7 @@ ACVP_RESULT acvp_kdf135_x963_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     ACVP_CIPHER alg_id;
     char *json_result;
 
-    int field_size, key_data_length, shared_info_len;
+    int field_size = 0, key_data_length = 0, shared_info_len = 0;
     const char *z = NULL, *shared_info = NULL;
 
     if (!ctx) {
