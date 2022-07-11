@@ -20,12 +20,13 @@
 #include "app_lcl.h"
 #include "app_fips_lcl.h"
 
-#define TLS_MD_MASTER_SECRET_CONST              "master secret"
-#define TLS_MD_MASTER_SECRET_CONST_SIZE         13
-#define TLS_MD_EXTENDED_MASTER_SECRET_CONST     "extended master secret"
-#define TLS_MD_EXTENDED_MASTER_SECRET_CONST_SIZE 22
-#define TLS_MD_KEY_EXPANSION_CONST              "key expansion"
-#define TLS_MD_KEY_EXPANSION_CONST_SIZE         13
+#define TLS_EXT_MASTER_SECRET_CONST      "extended master secret"
+#define TLS_EXT_MASTER_SECRET_CONST_SIZE 22
+#define TLS_KEY_EXPAND_CONST             "key expansion"
+#define TLS_KEY_EXPAND_CONST_SIZE        13
+
+#define TLS12_BUF_MAX 4096 /* match library */
+#define TLS12_SEED_BUF_MAX (TLS12_BUF_MAX + TLS_EXT_MASTER_SECRET_CONST_SIZE)
 
 int app_kdf135_srtp_handler(ACVP_TEST_CASE *test_case) {
     if (!test_case) {
@@ -469,10 +470,123 @@ end:
 }
 
 int app_kdf_tls12_handler(ACVP_TEST_CASE *test_case) {
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+    ACVP_KDF_TLS12_TC *tc;
+    unsigned char *seed = NULL;
+    int rc = 1, ret = 0, seed_len = 0;
+    const char *alg = NULL;
+    EVP_KDF *kdf = NULL;
+    EVP_KDF_CTX *kctx = NULL;
+    OSSL_PARAM_BLD *pbld = NULL;
+    OSSL_PARAM *params = NULL;
+
+    if (!test_case) {
+        printf("Missing TLS1.2 KDF test case\n");
+        return -1;
+    }
+    tc = test_case->tc.kdf_tls12;
+    if (!tc) {
+        printf("Missing TLS1.2 KDF test case\n");
+        return -1;
+    }
+
+    /* We need to concatenate label + seed ourselves for PRF() */
+    seed = calloc(TLS12_SEED_BUF_MAX, sizeof(char));
+    if (!seed) {
+        printf("Error allocating memory for seed in TLS1.2 KDF\n");
+        return -1;
+    }
+
+    alg = get_md_string_for_hash_alg(tc->md);
+    if (!alg) {
+        printf("Invalid hash type given for TLS1.2 KDF\n");
+        goto end;
+    }
+
+    kdf = EVP_KDF_fetch(NULL, "TLS1-PRF", NULL);
+    kctx = EVP_KDF_CTX_new(kdf);
+    if (!kctx) {
+        printf("Error creating KDF CTX in TLS1.2 KDF\n");
+        goto end;
+    }
+
+    pbld = OSSL_PARAM_BLD_new();
+    if (!pbld) {
+        printf("Error creating param_bld in TLS1.2 KDF (1)\n");
+        goto end;
+    }
+
+    /* calculate msecret */
+    seed_len = TLS_EXT_MASTER_SECRET_CONST_SIZE + tc->session_hash_len;
+    /* copy label to buffer */
+    memcpy_s(seed, TLS12_SEED_BUF_MAX, TLS_EXT_MASTER_SECRET_CONST, TLS_EXT_MASTER_SECRET_CONST_SIZE);
+    /* concatenate session_hash to buffer */
+    memcpy_s(seed + TLS_EXT_MASTER_SECRET_CONST_SIZE, TLS12_SEED_BUF_MAX - TLS_EXT_MASTER_SECRET_CONST_SIZE,
+             tc->session_hash, tc->session_hash_len);
+
+    OSSL_PARAM_BLD_push_utf8_string(pbld, "digest", alg, 0);
+    OSSL_PARAM_BLD_push_octet_string(pbld, "secret", tc->pm_secret, tc->pm_len);
+    OSSL_PARAM_BLD_push_octet_string(pbld, "seed", seed, seed_len);
+    params = OSSL_PARAM_BLD_to_param(pbld);
+    if (!params) {
+        printf("Error generating params in TLS1.2 KDF (1)\n");
+        goto end;
+    }
+    ret = EVP_KDF_derive(kctx, tc->msecret, TLS12_BUF_MAX, params);
+    if (ret != 1) {
+        printf("Error deriving msecret in TLS1.2 KDF\n");
+        goto end;
+    }
+
+    /* calculate kblock */
+    if (pbld) OSSL_PARAM_BLD_free(pbld);
+    if (params) OSSL_PARAM_free(params);
+    pbld = OSSL_PARAM_BLD_new();
+    if (!pbld) {
+        printf("Error creating param_bld in TLS1.2 KDF (2)\n");
+        goto end;
+    }
+    EVP_KDF_CTX_reset(kctx);
+
+    seed_len = TLS_KEY_EXPAND_CONST_SIZE + tc->s_rnd_len + tc->c_rnd_len;
+    /* Copy label to buffer */
+    memcpy_s(seed, TLS12_SEED_BUF_MAX, TLS_KEY_EXPAND_CONST, TLS_KEY_EXPAND_CONST_SIZE);
+    /* Concatenate s_rnd to buffer */
+    memcpy_s(seed + TLS_KEY_EXPAND_CONST_SIZE, TLS12_SEED_BUF_MAX - TLS_KEY_EXPAND_CONST_SIZE,
+             tc->s_rnd, tc->s_rnd_len);
+    /* Concatenate c_rnd to buffer */
+    memcpy_s(seed + TLS_KEY_EXPAND_CONST_SIZE + tc->s_rnd_len,
+             TLS12_SEED_BUF_MAX - TLS_KEY_EXPAND_CONST_SIZE - tc->s_rnd_len,
+             tc->c_rnd, tc->c_rnd_len);
+
+    OSSL_PARAM_BLD_push_utf8_string(pbld, "digest", alg, 0);
+    OSSL_PARAM_BLD_push_octet_string(pbld, "secret", tc->msecret, tc->pm_len);
+    OSSL_PARAM_BLD_push_octet_string(pbld, "seed", seed, seed_len);
+    params = OSSL_PARAM_BLD_to_param(pbld);
+    if (!params) {
+        printf("Error generating params in TLS1.2 KDF (2)\n");
+        goto end;
+    }
+    ret = EVP_KDF_derive(kctx, tc->kblock, TLS12_BUF_MAX, params);
+    if (ret != 1) {
+        printf("Error deriving kblock in TLS1.2 KDF\n");
+        goto end;
+    }
+
+    rc = 0;
+end:
+    if (pbld) OSSL_PARAM_BLD_free(pbld);
+    if (params) OSSL_PARAM_free(params);
+    if (kctx) EVP_KDF_CTX_free(kctx);
+    if (kdf) EVP_KDF_free(kdf);
+    if (seed) free(seed);
+    return rc;
+#else
     if (!test_case) {
         return -1;
     }
     return 1;
+#endif
 }
 
 int app_kdf_tls13_handler(ACVP_TEST_CASE *test_case) {

@@ -1268,10 +1268,8 @@ typedef struct acvp_kdf_tls12_tc_t {
     unsigned char *session_hash;
     unsigned char *s_rnd;
     unsigned char *c_rnd;
-    unsigned char *msecret1; /**< The resulting data calculated for the test case */
-    unsigned char *msecret2;
-    unsigned char *kblock1;  /**< The resulting data calculated for the test case */
-    unsigned char *kblock2;
+    unsigned char *msecret; /**< The resulting data calculated for the test case */
+    unsigned char *kblock;  /**< The resulting data calculated for the test case */
     int session_hash_len;
     int s_rnd_len;
     int c_rnd_len;
