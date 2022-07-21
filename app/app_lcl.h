@@ -17,9 +17,7 @@ extern "C"
 #include <openssl/evp.h>
 #include "acvp/acvp.h"
 
-/*
- * MACROS
- */
+/* MACROS */
 #define DEFAULT_SERVER "127.0.0.1"
 #define DEFAULT_SERVER_LEN 9
 #define DEFAULT_PORT 443
@@ -27,7 +25,7 @@ extern "C"
 #define JSON_FILENAME_LENGTH 128
 #define JSON_STRING_LENGTH 32
 #define JSON_REQUEST_LENGTH 128
-
+#define ALG_STR_MAX_LEN 256 /* arbitrary */
 extern char value[JSON_STRING_LENGTH];
 
 typedef struct app_config {
@@ -82,9 +80,10 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv);
 int app_setup_two_factor_auth(ACVP_CTX *ctx);
 unsigned int swap_uint_endian(unsigned int i);
 int check_is_little_endian(void);
+char *remove_str_const(const char *str);
 int get_nid_for_curve(ACVP_EC_CURVE curve);
 const EVP_MD *get_md_for_hash_alg(ACVP_HASH_ALG alg);
-const char *get_md_string_for_hash_alg(ACVP_HASH_ALG alg);
+const char *get_md_string_for_hash_alg(ACVP_HASH_ALG alg, int *md_size);
 char *ec_point_to_pub_key(unsigned char *x, int x_len, unsigned char *y, int y_len, int *key_len);
 
 void app_aes_cleanup(void);

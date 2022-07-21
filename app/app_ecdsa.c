@@ -95,7 +95,7 @@ int app_ecdsa_handler(ACVP_TEST_CASE *test_case) {
     }
 
     if (mode == ACVP_ECDSA_SIGGEN || mode == ACVP_ECDSA_SIGVER) {
-        md = get_md_string_for_hash_alg(tc->hash_alg);
+        md = get_md_string_for_hash_alg(tc->hash_alg, NULL);
         if (!md) {
             printf("Error getting hash alg from test case for ECDSA\n");
             goto err;

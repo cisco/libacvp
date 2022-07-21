@@ -11672,7 +11672,7 @@ fi
 
 
 #Conditionally included algorithms should be added to cond_alg_cflags here
-if test "x$disable_kdf" != "xfalse" ; then
+if test "x$disable_kdf" != "xfalse" || test "x$use_ssl_3" = "xtrue"; then
     cond_alg_cflags="$cond_alg_cflags -DOPENSSL_KDF_SUPPORT"
 fi
 

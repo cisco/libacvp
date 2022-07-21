@@ -255,6 +255,29 @@ int check_is_little_endian() {
     }
     return 0;
 }
+char *remove_str_const(const char *str) {
+    int len = 0;
+    char *ret = NULL;
+    len = strnlen_s(str, ALG_STR_MAX_LEN + 1);
+    if (len > ALG_STR_MAX_LEN) {
+        printf("Alg string too long\n");
+        return NULL;
+    }
+
+    ret = calloc(len + 1, sizeof(char));
+    if (!ret) {
+        printf("Error allocating memory when removing const from str\n");
+        return NULL;
+    }
+
+    if (strncpy_s(ret, len + 1, str, len)) {
+        printf("Error copying string to non-const buffer\n");
+        free(ret);
+        return NULL;
+    }
+
+    return ret;
+}
 
 int get_nid_for_curve(ACVP_EC_CURVE curve) {
     switch (curve) {
@@ -332,36 +355,65 @@ const EVP_MD *get_md_for_hash_alg(ACVP_HASH_ALG alg) {
     }
 }
 
-const char *get_md_string_for_hash_alg(ACVP_HASH_ALG alg) {
+const char *get_md_string_for_hash_alg(ACVP_HASH_ALG alg, int *md_size) {
+    const char *str = NULL;
+    int size = 0;
+
     switch (alg) {
     case ACVP_SHA1:
-        return "SHA-1";
+        size = 160;
+        str = "SHA-1";
+        break;
     case ACVP_SHA224:
-        return "SHA2-224";
+        size = 224;
+        str = "SHA2-224";
+        break;
     case ACVP_SHA256:
-        return "SHA2-256";
+        size = 256;
+        str = "SHA2-256";
+        break;
     case ACVP_SHA384:
-        return "SHA2-384";
+        size = 384;
+        str = "SHA2-384";
+        break;
     case ACVP_SHA512:
-        return "SHA2-512";
+        size = 512;
+        str = "SHA2-512";
+        break;
     case ACVP_SHA512_224:
-        return "SHA2-512/224";
+        size = 224;
+        str = "SHA2-512/224";
+        break;
     case ACVP_SHA512_256:
-        return "SHA2-512/256";
+        size = 256;
+        str = "SHA2-512/256";
+        break;
     case ACVP_SHA3_224:
-        return "SHA3-224";
+        size = 224;
+        str = "SHA3-224";
+        break;
     case ACVP_SHA3_256:
-        return "SHA3-256";
+        size = 256;
+        str = "SHA3-256";
+        break;
     case ACVP_SHA3_384:
-        return "SHA3-384";
+        size = 384;
+        str = "SHA3-384";
+        break;
     case ACVP_SHA3_512:
-        return "SHA3-512";
+        size = 512;
+        str = "SHA3-512";
+        break;
     case ACVP_NO_SHA:
     case ACVP_HASH_ALG_MAX:
     default:
         return NULL;
     }
-    return NULL;
+
+    if (md_size) {
+        *md_size = size / 8;
+    }
+    return str;
 }
 
 /** Convert the X and Y coordinates into the expected key format, since OpenSSL does not
