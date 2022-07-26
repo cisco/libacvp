@@ -908,7 +908,7 @@ int app_kdf_tls13_handler(ACVP_TEST_CASE *test_case) {
     }
     tc->rms_len = md_size;
 
-rv = 0;
+    rv = 0;
 
 err:
     if (zero_input) free(zero_input);
