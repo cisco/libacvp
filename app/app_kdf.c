@@ -28,6 +28,29 @@
 #define TLS12_BUF_MAX 4096 /* match library */
 #define TLS12_SEED_BUF_MAX (TLS12_BUF_MAX + TLS_EXT_MASTER_SECRET_CONST_SIZE)
 
+
+/* For simplicty, define as non-const; the OSSL_PARAM functions don't use const */
+static char ssh_kdf_a[] = "A";
+static char ssh_kdf_b[] = "B";
+static char ssh_kdf_c[] = "C";
+static char ssh_kdf_d[] = "D";
+static char ssh_kdf_e[] = "E";
+static char ssh_kdf_f[] = "F";
+
+static unsigned char tls13_c_e_traffic[] = "c e traffic";
+static unsigned char tls13_e_exp_master[] = "e exp master";
+static unsigned char tls13_derived[] = "derived";
+static unsigned char tls13_c_hs_traffic[] = "c hs traffic";
+static unsigned char tls13_s_hs_traffic[] = "s hs traffic";
+static unsigned char tls13_c_ap_traffic[] = "c ap traffic";
+static unsigned char tls13_s_ap_traffic[] = "s ap traffic";
+static unsigned char tls13_exp_master[] = "exp master";
+static unsigned char tls13_res_master[] = "res master";
+static unsigned char tls13_prefix[] = "tls13 ";
+
+static char tls13_extract[] = "EXTRACT_ONLY";
+static char tls13_expand[] = "EXPAND_ONLY";
+
 int app_kdf135_srtp_handler(ACVP_TEST_CASE *test_case) {
     if (!test_case) {
         return -1;
@@ -70,7 +93,7 @@ int app_kdf135_x963_handler(ACVP_TEST_CASE *test_case) {
         return -1;
     }
 
-    alg = get_md_string_for_hash_alg(stc->hash_alg);
+    alg = get_md_string_for_hash_alg(stc->hash_alg, NULL);
     if (!alg) {
         printf("Invalid hmac type given for KDF x963\n");
         goto end;
@@ -316,7 +339,7 @@ int app_kdf135_ssh_handler(ACVP_TEST_CASE *test_case) {
         return -1;
     }
 
-    alg = get_md_string_for_hash_alg(stc->sha_type);
+    alg = get_md_string_for_hash_alg(stc->sha_type, NULL);
     if (!alg) {
         printf("Invalid hash type given for kdf135-ssh\n");
         goto end;
@@ -343,37 +366,37 @@ int app_kdf135_ssh_handler(ACVP_TEST_CASE *test_case) {
     //params(4) will be the "type" of operation, before each call
     params[5] = OSSL_PARAM_construct_end();
 
-    params[4] = OSSL_PARAM_construct_utf8_string("type", "A", 1);
+    params[4] = OSSL_PARAM_construct_utf8_string("type", ssh_kdf_a, 1);
     if (EVP_KDF_derive(kctx, stc->cs_init_iv, stc->iv_len, params) != 1) {
         printf("Failure deriving key material in kdf135-ssh (A)\n");
         goto end;
     }
 
-    params[4] = OSSL_PARAM_construct_utf8_string("type", "B", 1);
+    params[4] = OSSL_PARAM_construct_utf8_string("type", ssh_kdf_b, 1);
     if (EVP_KDF_derive(kctx, stc->sc_init_iv, stc->iv_len, params) != 1) {
         printf("Failure deriving key material in kdf135-ssh (B)\n");
         goto end;
     }
 
-    params[4] = OSSL_PARAM_construct_utf8_string("type", "C", 1);
+    params[4] = OSSL_PARAM_construct_utf8_string("type", ssh_kdf_c, 1);
     if (EVP_KDF_derive(kctx, stc->cs_encrypt_key, stc->e_key_len, params) != 1) {
         printf("Failure deriving key material in kdf135-ssh (C)\n");
         goto end;
     }
 
-    params[4] = OSSL_PARAM_construct_utf8_string("type", "D", 1);
+    params[4] = OSSL_PARAM_construct_utf8_string("type", ssh_kdf_d, 1);
     if (EVP_KDF_derive(kctx, stc->sc_encrypt_key, stc->e_key_len, params) != 1) {
         printf("Failure deriving key material in kdf135-ssh (D)\n");
         goto end;
     }
 
-    params[4] = OSSL_PARAM_construct_utf8_string("type", "E", 1);
+    params[4] = OSSL_PARAM_construct_utf8_string("type", ssh_kdf_e, 1);
     if (EVP_KDF_derive(kctx, stc->cs_integrity_key, stc->i_key_len, params) != 1) {
         printf("Failure deriving key material in kdf135-ssh (E)\n");
         goto end;
     }
 
-    params[4] = OSSL_PARAM_construct_utf8_string("type", "F", 1);
+    params[4] = OSSL_PARAM_construct_utf8_string("type", ssh_kdf_f, 1);
     if (EVP_KDF_derive(kctx, stc->sc_integrity_key, stc->i_key_len, params) != 1) {
         printf("Failure deriving key material in kdf135-ssh (F)\n");
         goto end;
@@ -414,7 +437,7 @@ int app_pbkdf_handler(ACVP_TEST_CASE *test_case) {
         return -1;
     }
 
-    alg = get_md_string_for_hash_alg(stc->hmac_type);
+    alg = get_md_string_for_hash_alg(stc->hmac_type, NULL);
     if (!alg) {
         printf("Invalid hmac type given for PBKDF\n");
         goto end;
@@ -497,7 +520,7 @@ int app_kdf_tls12_handler(ACVP_TEST_CASE *test_case) {
         return -1;
     }
 
-    alg = get_md_string_for_hash_alg(tc->md);
+    alg = get_md_string_for_hash_alg(tc->md, NULL);
     if (!alg) {
         printf("Invalid hash type given for TLS1.2 KDF\n");
         goto end;
@@ -590,10 +613,322 @@ end:
 }
 
 int app_kdf_tls13_handler(ACVP_TEST_CASE *test_case) {
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+    ACVP_KDF_TLS13_TC *tc = NULL;
+    char *md = NULL;
+    const EVP_MD    *md_obj;
+    EVP_MD_CTX *mctx = NULL;
+    unsigned char *hello_hash = NULL, *client_hello_hash = NULL, *handshake_secret = NULL,
+                  *client_hash = NULL, *finish_hash = NULL, *master_secret = NULL,
+                  *early_secret = NULL, *zero_input = NULL;
+    OSSL_PARAM ext_params[7] = { NULL }, exp_params[7] = { NULL };
+    EVP_KDF *kdf = NULL;
+    EVP_KDF_CTX *kctx = NULL;
+    int rv = 1, ret = 0, md_size = 0;
+
+    if (!test_case) {
+        printf("Error: No tc for TLS1.3 KDF\n");
+        return -1;
+    }
+
+    tc = test_case->tc.kdf_tls13;
+    if (!tc) {
+        printf("Error: No tc for TLS1.3 KDF\n");
+        return -1;
+    }
+
+
+    md = remove_str_const(get_md_string_for_hash_alg(tc->hmac_alg, &md_size));
+    if (!md) {
+        printf("Invalid mac alg given for TLS1.3 KDF (%d)\n", tc->hmac_alg);
+        return -1;
+    }
+
+    md_obj = get_md_for_hash_alg(tc->hmac_alg);
+    if (!md_obj) {
+        printf("Unable to retrieve md object for %s in TLS1.3 KDF\n", md);
+    }
+
+    zero_input = calloc(md_size, sizeof(unsigned char));
+    early_secret = calloc(md_size, sizeof(unsigned char));
+    handshake_secret = calloc(md_size, sizeof(unsigned char));
+    master_secret = calloc(md_size, sizeof(unsigned char));
+
+    /**
+     * We need hashes of some values for the expand steps since the library does not do hashes
+     * itself. Listed here in order of use:
+     */
+    client_hello_hash = calloc(md_size, sizeof(unsigned char));
+    hello_hash = calloc(md_size, sizeof(unsigned char));
+    finish_hash = calloc(md_size, sizeof(unsigned char));
+    client_hash = calloc(md_size, sizeof(unsigned char));
+    if (!zero_input || !early_secret || !handshake_secret || !master_secret ||
+        !client_hello_hash || !hello_hash || !finish_hash || !client_hash) {
+        printf("Calloc failure in TLS1.3 KDF\n");
+        goto err;
+    }
+
+    if (!tc->c_hello_rand || !tc->c_hello_rand_len || !tc->s_hello_rand || !tc->s_hello_rand_len ||
+        !tc->fin_s_hello_rand || !tc->fin_s_hello_rand_len ||
+        !tc->fin_c_hello_rand || !tc->fin_c_hello_rand_len || !tc->c_early_traffic_secret ||
+        !tc->early_expt_master_secret || !tc->c_hs_traffic_secret || !tc->s_hs_traffic_secret ||
+        !tc->c_app_traffic_secret || !tc->s_app_traffic_secret || !tc->expt_master_secret ||
+        !tc->resume_master_secret) {
+        printf("Library calloc failure in TLS1.3 KDF\n");
+        goto err;
+    }
+
+    if ((tc->running_mode == ACVP_KDF_TLS13_RUN_MODE_PSK_DHE) ||
+        (tc->running_mode == ACVP_KDF_TLS13_RUN_MODE_PSK)) {
+        if (!tc->psk || !tc->psk_len) {
+            printf("No PSK in PSK mode in TLS1.3 KDF\n");
+            goto err;
+        }
+    }
+
+    if ((tc->running_mode != ACVP_KDF_TLS13_RUN_MODE_PSK_DHE) &&
+        (tc->running_mode != ACVP_KDF_TLS13_RUN_MODE_PSK)) {
+        if (tc->psk_len) {
+            printf("PSK in non-PSK mode in TLS1.3 KDF\n");
+            goto err;
+        }
+    }
+
+    if ((tc->running_mode == ACVP_KDF_TLS13_RUN_MODE_PSK_DHE) ||
+        (tc->running_mode == ACVP_KDF_TLS13_RUN_MODE_DHE)) {
+        if (!tc->dhe || !tc->dhe_len) {
+            printf("No DHE in DHE mode in TLS1.3 KDF\n");
+            goto err;
+        }
+    }
+
+    if ((tc->running_mode != ACVP_KDF_TLS13_RUN_MODE_PSK_DHE) &&
+        (tc->running_mode != ACVP_KDF_TLS13_RUN_MODE_DHE)) {
+        if (tc->dhe_len) {
+            printf("DHE in non-DHE mode in TLS1.3 KDF\n");
+            goto err;
+        }
+    }
+    /* generate all the hashes first */
+    mctx = EVP_MD_CTX_new();
+    /* The client early secrets step uses a hash of client hello */
+    if (mctx == NULL
+            || EVP_DigestInit_ex(mctx, md_obj, NULL) <= 0
+            || EVP_DigestUpdate(mctx, tc->c_hello_rand, tc->c_hello_rand_len) <= 0
+            || EVP_DigestFinal_ex(mctx, client_hello_hash, NULL) <= 0) {
+            printf("Client hello hash failed in TLS1.3 KDF\n");
+        EVP_MD_CTX_free(mctx);
+        goto err;
+    }
+    EVP_MD_CTX_free(mctx);
+
+    mctx = EVP_MD_CTX_new();
+    /* The handshake secrets step uses a hash of client server hello */
+    if (mctx == NULL
+            || EVP_DigestInit_ex(mctx, md_obj, NULL) <= 0
+            || EVP_DigestUpdate(mctx, tc->c_hello_rand, tc->c_hello_rand_len) <= 0
+            || EVP_DigestUpdate(mctx, tc->s_hello_rand, tc->s_hello_rand_len) <= 0
+            || EVP_DigestFinal_ex(mctx, hello_hash, NULL) <= 0) {
+            printf("Combined hello hash failed in TLS1.3 KDF\n");
+        EVP_MD_CTX_free(mctx);
+        goto err;
+    }
+    EVP_MD_CTX_free(mctx);
+
+    mctx = EVP_MD_CTX_new();
+    /* The application secret steps uses a hash of client hello and server finish */
+    if (mctx == NULL
+            || EVP_DigestInit_ex(mctx, md_obj, NULL) <= 0
+            || EVP_DigestUpdate(mctx, tc->c_hello_rand, tc->c_hello_rand_len) <= 0
+            || EVP_DigestUpdate(mctx, tc->s_hello_rand, tc->s_hello_rand_len) <= 0
+            || EVP_DigestUpdate(mctx, tc->fin_s_hello_rand, tc->fin_s_hello_rand_len) <= 0
+            || EVP_DigestFinal_ex(mctx, finish_hash, NULL) <= 0) {
+            printf("Combined finish hash failed in TLS1.3 KDF\n");
+        EVP_MD_CTX_free(mctx);
+        goto err;
+    }
+    EVP_MD_CTX_free(mctx);
+
+    mctx = EVP_MD_CTX_new();
+    /* The resume secret step uses a hash of client hello and client finish */
+    if (mctx == NULL
+            || EVP_DigestInit_ex(mctx, md_obj, NULL) <= 0
+            || EVP_DigestUpdate(mctx, tc->c_hello_rand, tc->c_hello_rand_len) <= 0
+            || EVP_DigestUpdate(mctx, tc->s_hello_rand, tc->s_hello_rand_len) <= 0
+            || EVP_DigestUpdate(mctx, tc->fin_s_hello_rand, tc->fin_s_hello_rand_len) <= 0
+            || EVP_DigestUpdate(mctx, tc->fin_c_hello_rand, tc->fin_c_hello_rand_len) <= 0
+            || EVP_DigestFinal_ex(mctx, client_hash, NULL) <= 0) {
+            printf("Combined client hash failed in TLS1.3 KDF\n");
+        EVP_MD_CTX_free(mctx);
+        goto err;
+    }
+    EVP_MD_CTX_free(mctx);
+
+    kdf = EVP_KDF_fetch(NULL, "TLS13-KDF", NULL);
+    kctx = EVP_KDF_CTX_new(kdf);
+    if (!kctx) {
+        printf("Error creating CTX in TLS1.3 KDF\n");
+        goto err;
+    }
+
+    /* Create early secret */
+    ext_params[0] = OSSL_PARAM_construct_utf8_string("digest", md, 0);
+    ext_params[1] = OSSL_PARAM_construct_utf8_string("mode", tls13_extract, 0);
+    if (tc->psk_len) {
+        ext_params[2] = OSSL_PARAM_construct_octet_string("key", tc->psk, tc->psk_len);
+    } else {
+        ext_params[2] = OSSL_PARAM_construct_octet_string("key", zero_input, md_size);
+    }
+    /* Leave [3] so we can use a salt later on */
+    /* Leave [4] for label later on */
+    /* Leave [5] for prefix later on */
+    ext_params[6] = OSSL_PARAM_construct_end();
+
+    ret = EVP_KDF_derive(kctx, early_secret, md_size, ext_params);
+    if (ret != 1) {
+        printf("Error deriving early secret in TLS1.3 KDF\n");
+        goto err;
+    }
+
+    /* Create the early traffic secret */
+    EVP_KDF_CTX_reset(kctx);
+    exp_params[0] = OSSL_PARAM_construct_utf8_string("digest", md, 0);
+    exp_params[1] = OSSL_PARAM_construct_utf8_string("mode", tls13_expand, 0);
+    exp_params[2] = OSSL_PARAM_construct_octet_string("prefix", tls13_prefix, sizeof(tls13_prefix) - 1);
+    exp_params[3] = OSSL_PARAM_construct_octet_string("label", tls13_c_e_traffic, sizeof(tls13_c_e_traffic) - 1);
+    exp_params[4] = OSSL_PARAM_construct_octet_string("key", early_secret, md_size);
+    exp_params[5] = OSSL_PARAM_construct_octet_string("data", client_hello_hash, md_size);
+    exp_params[6] = OSSL_PARAM_construct_end();
+
+    ret = EVP_KDF_derive(kctx, tc->c_early_traffic_secret, md_size, exp_params);
+    if (ret != 1) {
+        printf("Error deriving client early traffic secret in TLS1.3 KDF\n");
+        goto err;
+    }
+    tc->cets_len = md_size;
+
+    /* Create the early exporter master secret */
+    EVP_KDF_CTX_reset(kctx);
+    exp_params[3] = OSSL_PARAM_construct_octet_string("label", tls13_e_exp_master, sizeof(tls13_e_exp_master) - 1);
+    ret = EVP_KDF_derive(kctx, tc->early_expt_master_secret, md_size, exp_params);
+    if (ret != 1) {
+        printf("Error deriving early exporter master secret in TLS1.3 KDF\n");
+        goto err;
+    }
+    tc->eems_len = md_size;
+
+    /* Create handshake secret, if registered for DHE use it */
+    EVP_KDF_CTX_reset(kctx);
+    if (tc->dhe_len) {
+        ext_params[2] = OSSL_PARAM_construct_octet_string("key", tc->dhe, tc->dhe_len);
+    } else {
+        ext_params[2] = OSSL_PARAM_construct_octet_string("key", zero_input, md_size);
+    }
+    ext_params[3] = OSSL_PARAM_construct_octet_string("salt", early_secret, md_size);
+    ext_params[4] = OSSL_PARAM_construct_octet_string("label", tls13_derived, sizeof(tls13_derived) - 1);
+    ext_params[5] = OSSL_PARAM_construct_octet_string("prefix", tls13_prefix, sizeof(tls13_prefix) - 1);
+    ret = EVP_KDF_derive(kctx, handshake_secret, md_size, ext_params);
+    if (ret != 1) {
+        printf("Error deriving handshake secret in TLS1.3 KDF\n");
+        goto err;
+    }
+
+    /* Create client handshake traffic secret */
+    EVP_KDF_CTX_reset(kctx);
+    exp_params[3] = OSSL_PARAM_construct_octet_string("label", tls13_c_hs_traffic, sizeof(tls13_c_hs_traffic) - 1);
+    exp_params[4] = OSSL_PARAM_construct_octet_string("key", handshake_secret, md_size);
+    exp_params[5] = OSSL_PARAM_construct_octet_string("data", hello_hash, md_size);
+    ret = EVP_KDF_derive(kctx, tc->c_hs_traffic_secret, md_size, exp_params);
+    if (ret != 1) {
+        printf("Error deriving client handshake traffic secret in TLS1.3 KDF\n");
+        goto err;
+    }
+    tc->chts_len = md_size;
+
+
+    /* Create server handshake traffic secret */
+    EVP_KDF_CTX_reset(kctx);
+    exp_params[3] = OSSL_PARAM_construct_octet_string("label", tls13_s_hs_traffic, sizeof(tls13_s_hs_traffic) - 1);
+    ret = EVP_KDF_derive(kctx, tc->s_hs_traffic_secret, md_size, exp_params);
+    if (ret != 1) {
+        printf("Error deriving server handshake traffic secret in TLS1.3 KDF\n");
+        goto err;
+    }
+    tc->shts_len = md_size;
+
+    /* Create master secret */
+    ext_params[2] = OSSL_PARAM_construct_octet_string("key", zero_input, md_size);
+    ext_params[3] = OSSL_PARAM_construct_octet_string("salt", handshake_secret, md_size);
+    ret = EVP_KDF_derive(kctx, master_secret, md_size, ext_params);
+    if (ret != 1) {
+        printf("Error deriving master secret in TLS1.3 KDF\n");
+        goto err;
+    }
+
+    /* Create client application traffic secret */
+    EVP_KDF_CTX_reset(kctx);
+    exp_params[3] = OSSL_PARAM_construct_octet_string("label", tls13_c_ap_traffic, sizeof(tls13_c_ap_traffic) - 1);
+    exp_params[4] = OSSL_PARAM_construct_octet_string("key", master_secret, md_size);
+    exp_params[5] = OSSL_PARAM_construct_octet_string("data", finish_hash, md_size);
+    ret = EVP_KDF_derive(kctx, tc->c_app_traffic_secret, md_size, exp_params);
+    if (ret != 1) {
+        printf("Error deriving client application traffic secret in TLS1.3 KDF\n");
+        goto err;
+    }
+    tc->cats_len = md_size;
+
+    /* Create server application traffic secret */
+    EVP_KDF_CTX_reset(kctx);
+    exp_params[3] = OSSL_PARAM_construct_octet_string("label", tls13_s_ap_traffic, sizeof(tls13_s_ap_traffic) - 1);
+    ret = EVP_KDF_derive(kctx, tc->s_app_traffic_secret, md_size, exp_params);
+    if (ret != 1) {
+        printf("Error deriving server application traffic secret in TLS1.3 KDF\n");
+        goto err;
+    }
+    tc->sats_len = md_size;
+
+    /* Create exporter master secret */
+    EVP_KDF_CTX_reset(kctx);
+    exp_params[3] = OSSL_PARAM_construct_octet_string("label", tls13_exp_master, sizeof(tls13_exp_master) - 1);
+    ret = EVP_KDF_derive(kctx, tc->expt_master_secret, md_size, exp_params);
+    if (ret != 1) {
+        printf("Error deriving exporter master secret in TLS1.3 KDF\n");
+        goto err;
+    }
+    tc->ems_len = md_size;
+
+    /* Create resumption master secret */
+    EVP_KDF_CTX_reset(kctx);
+    exp_params[3] = OSSL_PARAM_construct_octet_string("label", tls13_res_master, sizeof(tls13_res_master) - 1);
+    exp_params[5] = OSSL_PARAM_construct_octet_string("data", client_hash, md_size);
+    ret = EVP_KDF_derive(kctx, tc->resume_master_secret, md_size, exp_params);
+    if (ret != 1) {
+        printf("Error deriving resume master secret in TLS1.3 KDF\n");
+        goto err;
+    }
+    tc->rms_len = md_size;
+
+    rv = 0;
+
+err:
+    if (zero_input) free(zero_input);
+    if (handshake_secret) free(handshake_secret);
+    if (master_secret) free(master_secret);
+    if (early_secret) free(early_secret);
+    if (finish_hash) free(finish_hash);
+    if (hello_hash) free(hello_hash);
+    if (client_hello_hash) free(client_hello_hash);
+    if (client_hash) free(client_hash);
+    if (md) free(md);
+    if (kdf) EVP_KDF_free(kdf);
+    if (kctx) EVP_KDF_CTX_free(kctx);
+    return rv;
+#else
     if (!test_case) {
         return -1;
     }
     return 1;
+#endif
 }
 
 #endif // OPENSSL_KDF_SUPPORT

@@ -186,7 +186,7 @@ int app_kda_hkdf_handler(ACVP_TEST_CASE *test_case) {
         goto end;
     }
 
-    md = get_md_string_for_hash_alg(stc->hmacAlg);
+    md = get_md_string_for_hash_alg(stc->hmacAlg, NULL);
     if (!md) {
         printf("Invalid hmac alg in KDA-HKDF\n");
         goto end;

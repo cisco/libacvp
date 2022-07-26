@@ -328,7 +328,7 @@ AM_CONDITIONAL([USE_FOM_OBJ], [test "x$with_fomdir" != "xno"])
 AM_CONDITIONAL([USE_FIPS_PROVIDER], [test "x$use_dev_fips" != "xno" || test "x$use_runtime_fips" != "xno"])
 
 #Conditionally included algorithms should be added to cond_alg_cflags here
-if test "x$disable_kdf" != "xfalse" ; then
+if test "x$disable_kdf" != "xfalse" || test "x$use_ssl_3" = "xtrue"; then
     cond_alg_cflags="$cond_alg_cflags -DOPENSSL_KDF_SUPPORT"
 fi
 
