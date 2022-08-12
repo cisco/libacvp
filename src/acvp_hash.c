@@ -107,7 +107,6 @@ static ACVP_RESULT acvp_hash_mct_tc(ACVP_CTX *ctx,
     JSON_Value *r_tval = NULL;  /* Response testval */
     JSON_Object *r_tobj = NULL; /* Response testobj */
     char *tmp = NULL;
-    unsigned char *msg = NULL;
 
     tmp = calloc(ACVP_HASH_MSG_STR_MAX * 3, sizeof(char));
     if (!tmp) {
@@ -126,33 +125,11 @@ static ACVP_RESULT acvp_hash_mct_tc(ACVP_CTX *ctx,
         r_tval = json_value_init_object();
         r_tobj = json_value_get_object(r_tval);
 
-        msg = calloc(ACVP_HASH_MSG_BYTE_MAX * 3, sizeof(unsigned char));
-        if (!msg) {
-            ACVP_LOG_ERR("Unable to malloc");
-            free(tmp);
-            json_value_free(r_tval);
-            return ACVP_MALLOC_FAIL;
-        }
-
-        memcpy_s(msg, ACVP_HASH_MSG_BYTE_MAX, stc->m1, stc->msg_len);
-        memcpy_s(msg + stc->msg_len, (ACVP_HASH_MSG_BYTE_MAX - stc->msg_len), stc->m2, stc->msg_len);
-        memcpy_s(msg + (stc->msg_len * 2), (ACVP_HASH_MSG_BYTE_MAX - (stc->msg_len * 2)), stc->m3, stc->msg_len);
-
-        rv = acvp_bin_to_hexstr(msg, stc->msg_len * 3, tmp, ACVP_HASH_MSG_STR_MAX * 3);
-        if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("hex conversion failure (msg)");
-            free(msg);
-            free(tmp);
-            json_value_free(r_tval);
-            return rv;
-        }
-        json_object_set_string(r_tobj, "msg", tmp);
         for (j = 0; j < ACVP_HASH_MCT_INNER; ++j) {
             /* Process the current SHA test vector... */
             rv = (cap->crypto_handler)(tc);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("crypto module failed the operation");
-                free(msg);
                 free(tmp);
                 json_value_free(r_tval);
                 return ACVP_CRYPTO_MODULE_FAIL;
@@ -164,7 +141,6 @@ static ACVP_RESULT acvp_hash_mct_tc(ACVP_CTX *ctx,
             rv = acvp_hash_mct_iterate_tc(stc);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("Failed the MCT iteration changes");
-                free(msg);
                 free(tmp);
                 json_value_free(r_tval);
                 return rv;
@@ -176,7 +152,6 @@ static ACVP_RESULT acvp_hash_mct_tc(ACVP_CTX *ctx,
         rv = acvp_hash_output_mct_tc(ctx, stc, r_tobj);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("JSON output failure in HASH module");
-            free(msg);
             free(tmp);
             json_value_free(r_tval);
             return rv;
@@ -188,7 +163,6 @@ static ACVP_RESULT acvp_hash_mct_tc(ACVP_CTX *ctx,
         memcpy_s(stc->m1, ACVP_HASH_MD_BYTE_MAX, stc->m3, stc->msg_len);
         memcpy_s(stc->m2, ACVP_HASH_MD_BYTE_MAX, stc->m3, stc->msg_len);
 
-        free(msg);
     }
 
     free(tmp);
@@ -210,13 +184,6 @@ static ACVP_RESULT acvp_hash_sha3_mct(ACVP_CTX *ctx,
     ACVP_RESULT rv = 0;
     JSON_Value *r_tval = NULL;  /* Response testval */
     JSON_Object *r_tobj = NULL; /* Response testobj */
-    char *tmp = NULL;
-
-    tmp = calloc(ACVP_HASH_MSG_STR_MAX, sizeof(char));
-    if (!tmp) {
-        ACVP_LOG_ERR("Unable to malloc");
-        return ACVP_MALLOC_FAIL;
-    }
 
     /* ***********
      * OUTER LOOP
@@ -228,14 +195,6 @@ static ACVP_RESULT acvp_hash_sha3_mct(ACVP_CTX *ctx,
          */
         r_tval = json_value_init_object();
         r_tobj = json_value_get_object(r_tval);
-
-        rv = acvp_bin_to_hexstr(stc->msg, stc->msg_len, tmp, ACVP_HASH_MSG_STR_MAX);
-        if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("hex conversion failure (msg)");
-            goto end;
-        }
-
-        json_object_set_string(r_tobj, "msg", tmp);
 
         /* ***********
          * INNER LOOP
@@ -287,7 +246,6 @@ static ACVP_RESULT acvp_hash_sha3_mct(ACVP_CTX *ctx,
     }
 
 end:
-    if (tmp) free(tmp);
     if (rv != ACVP_SUCCESS && r_tval) json_value_free(r_tval);
 
     return rv;

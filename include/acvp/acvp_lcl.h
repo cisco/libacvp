@@ -13,8 +13,8 @@
 #include "parson.h"
 
 #define ACVP_VERSION    "1.0"
-#define ACVP_LIBRARY_VERSION_NUMBER "1.5.0"
-#define ACVP_LIBRARY_VERSION    "libacvp_oss-1.5.0"
+#define ACVP_LIBRARY_VERSION_NUMBER "1.5.2"
+#define ACVP_LIBRARY_VERSION    "libacvp_oss-1.5.2"
 
 
 #ifndef ACVP_LOG_ERR
@@ -842,7 +842,7 @@
 #define ACVP_KDA_FIXED_STR_MAX (ACVP_KDA_FIXED_BIT_MAX >> 2)
 #define ACVP_KDA_FIXED_BYTE_MAX (ACVP_KDA_FIXED_BIT_MAX >> 3)
 
-#define ACVP_KDA_SALT_BIT_MAX 512 //seems tied to hmac length, unclear
+#define ACVP_KDA_SALT_BIT_MAX 1152 //SHA maximum block size
 #define ACVP_KDA_SALT_STR_MAX (ACVP_KDA_SALT_BIT_MAX >> 2)
 #define ACVP_KDA_SALT_BYTE_MAX (ACVP_KDA_SALT_BIT_MAX >> 3)
 
