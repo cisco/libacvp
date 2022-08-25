@@ -21,6 +21,13 @@
 #include "parson.h"
 #include "safe_str_lib.h"
 
+static ACVP_RESULT validate_domain_range(int min, int max, int inc) {
+    if (min > max || min < 0 || max < 0 || inc < 0 || (max - min) % inc != 0) {
+        return ACVP_INVALID_ARG;
+    }
+    return ACVP_SUCCESS;
+}
+
 static ACVP_DSA_CAP *allocate_dsa_cap(void) {
     ACVP_DSA_CAP *cap = NULL;
     ACVP_DSA_CAP_MODE *modes = NULL;
@@ -167,6 +174,14 @@ static ACVP_RESULT acvp_cap_list_append(ACVP_CTX *ctx,
     case ACVP_CMAC_TYPE:
         cap_entry->cap.cmac_cap = calloc(1, sizeof(ACVP_CMAC_CAP));
         if (!cap_entry->cap.cmac_cap) {
+            rv = ACVP_MALLOC_FAIL;
+            goto err;
+        }
+        break;
+
+    case ACVP_KMAC_TYPE:
+        cap_entry->cap.kmac_cap = calloc(1, sizeof(ACVP_KMAC_CAP));
+        if (!cap_entry->cap.kmac_cap) {
             rv = ACVP_MALLOC_FAIL;
             goto err;
         }
@@ -923,6 +938,8 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
         case ACVP_HMAC_SHA3_512:
         case ACVP_CMAC_AES:
         case ACVP_CMAC_TDES:
+        case ACVP_KMAC_128:
+        case ACVP_KMAC_256:
         case ACVP_DSA_KEYGEN:
         case ACVP_DSA_PQGGEN:
         case ACVP_DSA_PQGVER:
@@ -1035,6 +1052,8 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
         case ACVP_HMAC_SHA3_512:
         case ACVP_CMAC_AES:
         case ACVP_CMAC_TDES:
+        case ACVP_KMAC_128:
+        case ACVP_KMAC_256:
         case ACVP_DSA_KEYGEN:
         case ACVP_DSA_PQGGEN:
         case ACVP_DSA_PQGVER:
@@ -1145,6 +1164,8 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
         case ACVP_HMAC_SHA3_512:
         case ACVP_CMAC_AES:
         case ACVP_CMAC_TDES:
+        case ACVP_KMAC_128:
+        case ACVP_KMAC_256:
         case ACVP_DSA_KEYGEN:
         case ACVP_DSA_PQGGEN:
         case ACVP_DSA_PQGVER:
@@ -1261,6 +1282,8 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
         case ACVP_HMAC_SHA3_512:
         case ACVP_CMAC_AES:
         case ACVP_CMAC_TDES:
+        case ACVP_KMAC_128:
+        case ACVP_KMAC_256:
         case ACVP_DSA_KEYGEN:
         case ACVP_DSA_PQGGEN:
         case ACVP_DSA_PQGVER:
@@ -1368,6 +1391,8 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
         case ACVP_HMAC_SHA3_512:
         case ACVP_CMAC_AES:
         case ACVP_CMAC_TDES:
+        case ACVP_KMAC_128:
+        case ACVP_KMAC_256:
         case ACVP_DSA_KEYGEN:
         case ACVP_DSA_PQGGEN:
         case ACVP_DSA_PQGVER:
@@ -1688,6 +1713,8 @@ static ACVP_RESULT acvp_validate_sym_cipher_domain_value(ACVP_CIPHER cipher, ACV
     case ACVP_HMAC_SHA3_512:
     case ACVP_CMAC_AES:
     case ACVP_CMAC_TDES:
+    case ACVP_KMAC_128:
+    case ACVP_KMAC_256:
     case ACVP_DSA_KEYGEN:
     case ACVP_DSA_PQGGEN:
     case ACVP_DSA_PQGVER:
@@ -1825,6 +1852,9 @@ static ACVP_RESULT acvp_validate_prereq_val(ACVP_CIPHER cipher, ACVP_PREREQ_ALG 
             pre_req == ACVP_PREREQ_TDES) {
             return ACVP_SUCCESS;
         }
+        break;
+    case ACVP_KMAC_128:
+    case ACVP_KMAC_256:
         break;
     case ACVP_DSA_KEYGEN:
     case ACVP_DSA_PQGGEN:
@@ -2146,6 +2176,8 @@ ACVP_RESULT acvp_cap_sym_cipher_set_domain(ACVP_CTX *ctx,
     case ACVP_HMAC_SHA3_512:
     case ACVP_CMAC_AES:
     case ACVP_CMAC_TDES:
+    case ACVP_KMAC_128:
+    case ACVP_KMAC_256:
     case ACVP_DSA_KEYGEN:
     case ACVP_DSA_PQGGEN:
     case ACVP_DSA_PQGVER:
@@ -2354,6 +2386,8 @@ ACVP_RESULT acvp_cap_sym_cipher_set_parm(ACVP_CTX *ctx,
     case ACVP_HMAC_SHA3_512:
     case ACVP_CMAC_AES:
     case ACVP_CMAC_TDES:
+    case ACVP_KMAC_128:
+    case ACVP_KMAC_256:
     case ACVP_DSA_KEYGEN:
     case ACVP_DSA_PQGGEN:
     case ACVP_DSA_PQGVER:
@@ -2677,6 +2711,8 @@ ACVP_RESULT acvp_cap_sym_cipher_enable(ACVP_CTX *ctx,
     case ACVP_HMAC_SHA3_512:
     case ACVP_CMAC_AES:
     case ACVP_CMAC_TDES:
+    case ACVP_KMAC_128:
+    case ACVP_KMAC_256:
     case ACVP_DSA_KEYGEN:
     case ACVP_DSA_PQGGEN:
     case ACVP_DSA_PQGVER:
@@ -3388,6 +3424,157 @@ ACVP_RESULT acvp_cap_cmac_set_parm(ACVP_CTX *ctx,
     }
 
     return ACVP_SUCCESS;
+}
+
+ACVP_RESULT acvp_cap_kmac_enable(ACVP_CTX *ctx,
+                                 ACVP_CIPHER cipher,
+                                 int (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
+    ACVP_RESULT result = ACVP_SUCCESS;
+    ACVP_SUB_KMAC alg;
+
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+    if (!crypto_handler) {
+        ACVP_LOG_ERR("NULL parameter 'crypto_handler'");
+        return ACVP_INVALID_ARG;
+    }
+
+    alg = acvp_get_kmac_alg(cipher);
+    if (alg == 0) {
+        ACVP_LOG_ERR("Invalid cipher value");
+        return ACVP_INVALID_ARG;
+    }
+    switch (alg) {
+    case ACVP_SUB_KMAC_128:
+    case ACVP_SUB_KMAC_256:
+        break;
+    default:
+        return ACVP_INVALID_ARG;
+    }
+
+    result = acvp_cap_list_append(ctx, ACVP_KMAC_TYPE, cipher, crypto_handler);
+
+    if (result == ACVP_DUP_CIPHER) {
+        ACVP_LOG_ERR("Capability previously enabled. Duplicate not allowed.");
+    } else if (result == ACVP_MALLOC_FAIL) {
+        ACVP_LOG_ERR("Failed to allocate capability object");
+    }
+
+    return result;
+}
+
+ACVP_RESULT acvp_cap_kmac_set_parm(ACVP_CTX *ctx,
+                                   ACVP_CIPHER cipher,
+                                   ACVP_KMAC_PARM parm,
+                                   int value) {
+    ACVP_CAPS_LIST *cap;
+    ACVP_KMAC_CAP *kmac_cap;
+
+    /*
+     * Locate this cipher in the caps array
+     */
+    cap = acvp_locate_cap_entry(ctx, cipher);
+    if (!cap) {
+        ACVP_LOG_ERR("Cap entry not found, use acvp_enable_kmac_cipher_cap() first.");
+        return ACVP_NO_CAP;
+    }
+    kmac_cap = cap->cap.kmac_cap;
+
+    switch (parm) {
+    case ACVP_KMAC_XOF_SUPPORT:
+        switch (value) {
+        case ACVP_XOF_SUPPORT_FALSE:
+        case ACVP_XOF_SUPPORT_TRUE:
+        case ACVP_XOF_SUPPORT_BOTH:
+            kmac_cap->xof = value;
+            break;
+        default:
+            ACVP_LOG_ERR("Invalid value for KMAC XOF support");
+            return ACVP_INVALID_ARG;
+        }
+        break;
+    case ACVP_KMAC_HEX_CUSTOM_SUPPORT:
+        if (is_valid_tf_param(value) == ACVP_SUCCESS) {
+            kmac_cap->hex_customization = value;
+        } else {
+            ACVP_LOG_ERR("Invalid boolean for KMAC hex customization support");
+            return ACVP_INVALID_ARG;
+        }
+        break;
+    case ACVP_KMAC_MACLEN:
+    case ACVP_KMAC_MSGLEN:
+    case ACVP_KMAC_KEYLEN:
+    default:
+        ACVP_LOG_ERR("Invalid KMAC parameter given");
+        return ACVP_INVALID_ARG;
+    }
+
+    return ACVP_SUCCESS;
+
+}
+
+ACVP_RESULT acvp_cap_kmac_set_domain(ACVP_CTX *ctx,
+                                     ACVP_CIPHER cipher,
+                                     ACVP_KMAC_PARM parm,
+                                     int min,
+                                     int max,
+                                     int increment) {
+    ACVP_CAPS_LIST *cap;
+    ACVP_KMAC_CAP *kmac_cap;
+
+    /*
+     * Locate this cipher in the caps array
+     */
+    cap = acvp_locate_cap_entry(ctx, cipher);
+    if (!cap) {
+        ACVP_LOG_ERR("Cap entry not found, use acvp_enable_kmac_cipher_cap() first.");
+        return ACVP_NO_CAP;
+    }
+    kmac_cap = cap->cap.kmac_cap;
+
+    if (validate_domain_range(min, max, increment) != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Invalid domain given for KMAC");
+        return ACVP_INVALID_ARG;
+    }
+
+    switch (parm) {
+    case ACVP_KMAC_MACLEN:
+        if (max > 65536 || min < 32 || increment != 8) {
+            ACVP_LOG_ERR("Out of bounds maclen given for KMAC");
+            return ACVP_INVALID_ARG;
+        }
+        kmac_cap->mac_len.min = min;
+        kmac_cap->mac_len.max = max;
+        kmac_cap->mac_len.increment = increment;
+        break;
+    case ACVP_KMAC_MSGLEN:
+        if (max > 65536) {
+            ACVP_LOG_ERR("Out of bounds msglen given for KMAC");
+            return ACVP_INVALID_ARG;
+        }
+        kmac_cap->msg_len.min = min;
+        kmac_cap->msg_len.max = max;
+        kmac_cap->msg_len.increment = increment;
+        break;
+    case ACVP_KMAC_KEYLEN:
+        if (max > 524288 || min < 128 || increment != 8) {
+            ACVP_LOG_ERR("Out of bounds keylen given for KMAC");
+            return ACVP_INVALID_ARG;
+        }
+        kmac_cap->key_len.min = min;
+        kmac_cap->key_len.max = max;
+        kmac_cap->key_len.increment = increment;
+        break;
+    case ACVP_KMAC_XOF_SUPPORT:
+    case ACVP_KMAC_HEX_CUSTOM_SUPPORT:
+    default:
+        ACVP_LOG_ERR("Invalid KMAC parameter given");
+        return ACVP_INVALID_ARG;
+    }
+
+    return ACVP_SUCCESS;
+
 }
 
 /*

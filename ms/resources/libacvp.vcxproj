@@ -398,6 +398,7 @@
     <ClCompile Include="..\..\src\acvp_kas_ecc.c" />
     <ClCompile Include="..\..\src\acvp_kas_ffc.c" />
     <ClCompile Include="..\..\src\acvp_kas_ifc.c" />
+    <ClCompile Include="..\..\src\acvp_kmac.c" />
     <ClCompile Include="..\..\src\acvp_kts_ifc.c" />
     <ClCompile Include="..\..\src\acvp_pbkdf.c" />
     <ClCompile Include="..\..\src\acvp_kdf_tls12.c" />

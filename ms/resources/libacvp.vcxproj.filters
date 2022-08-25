@@ -30,6 +30,9 @@
     <ClCompile Include="..\..\src\acvp_cmac.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\acvp_kmac.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\acvp_des.c">
       <Filter>Source Files</Filter>
     </ClCompile>

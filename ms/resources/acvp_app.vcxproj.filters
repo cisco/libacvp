@@ -48,6 +48,9 @@
     <ClCompile Include="..\..\app\app_kda.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\app\app_kmac.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\app\app_main.c">
       <Filter>Source Files</Filter>
     </ClCompile>

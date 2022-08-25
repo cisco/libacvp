@@ -184,6 +184,8 @@ typedef enum acvp_cipher {
     ACVP_HMAC_SHA3_512,
     ACVP_CMAC_AES,
     ACVP_CMAC_TDES,
+    ACVP_KMAC_128,
+    ACVP_KMAC_256,
     ACVP_DSA_KEYGEN,
     ACVP_DSA_PQGGEN,
     ACVP_DSA_PQGVER,
@@ -280,6 +282,12 @@ typedef enum acvp_alg_type_cmac {
     ACVP_SUB_CMAC_AES = ACVP_CMAC_AES,
     ACVP_SUB_CMAC_TDES
 } ACVP_SUB_CMAC;
+
+/** @enum ACVP_SUB_KMAC */
+typedef enum acvp_alg_type_kmac {
+    ACVP_SUB_KMAC_128 = ACVP_KMAC_128,
+    ACVP_SUB_KMAC_256
+} ACVP_SUB_KMAC;
 
 /** @enum ACVP_SUB_HMAC */
 typedef enum acvp_alg_type_hmac {
@@ -918,6 +926,13 @@ typedef enum acvp_cmac_testtype {
     ACVP_CMAC_TEST_TYPE_AFT
 } ACVP_CMAC_TESTTYPE;
 
+/** @enum ACVP_KMAC_TESTTYPE */
+typedef enum acvp_kmac_testtype {
+    ACVP_KMAC_TEST_TYPE_NONE = 0,
+    ACVP_KMAC_TEST_TYPE_AFT,
+    ACVP_KMAC_TEST_TYPE_MVT
+} ACVP_KMAC_TESTTYPE;
+
 /** @enum ACVP_PBKDF_TESTTYPE */
 typedef enum acvp_pbkdf_testtype {
     ACVP_PBKDF_TEST_TYPE_NONE = 0,
@@ -947,6 +962,15 @@ typedef enum acvp_cmac_parameter {
     ACVP_CMAC_DIRECTION_VER
 } ACVP_CMAC_PARM;
 
+/** @enum ACVP_KMAC_PARM */
+typedef enum acvp_kmac_parameter {
+    ACVP_KMAC_MACLEN,
+    ACVP_KMAC_MSGLEN,
+    ACVP_KMAC_KEYLEN,
+    ACVP_KMAC_XOF_SUPPORT,
+    ACVP_KMAC_HEX_CUSTOM_SUPPORT
+} ACVP_KMAC_PARM;
+
 /** @enum ACVP_CMAC_KEY_ATTR */
 typedef enum acvp_cmac_keylen {
     ACVP_CMAC_KEYING_OPTION_1 = 1,
@@ -973,6 +997,13 @@ typedef enum acvp_cmac_msg_len_index {
     CMAC_MSG_LEN_MAX,
     CMAC_MSG_LEN_NUM_ITEMS
 } ACVP_CMAC_MSG_LEN_INDEX;
+
+/** @enum ACVP_XOF_SUPPORT_OPTION */
+typedef enum acvp_xof_support_option {
+    ACVP_XOF_SUPPORT_FALSE = 0,
+    ACVP_XOF_SUPPORT_TRUE,
+    ACVP_XOF_SUPPORT_BOTH
+} ACVP_XOF_SUPPORT_OPTION;
 
 /**
  * @struct ACVP_SYM_CIPHER_TC
@@ -1359,6 +1390,31 @@ typedef struct acvp_cmac_tc_t {
     unsigned char *key2; /**< for CMAC-TDES */
     unsigned char *key3; /**< for CMAC-TDES */
 } ACVP_CMAC_TC;
+
+/**
+ * @struct ACVP_KMAC_TC
+ * @brief This struct holds data that represents a single test case for KMAC testing. This data is
+ *        passed between libacvp and the crypto module.
+ */
+typedef struct acvp_kmac_tc_t {
+    ACVP_CIPHER cipher;
+    ACVP_KMAC_TESTTYPE test_type;
+    ACVP_TEST_DISPOSITION disposition; /**< Indicates pass/fail when running verification */
+    int tc_id; /**< Test case id */
+    int xof;
+    int hex_customization;
+
+    unsigned char *msg;
+    unsigned char *mac; /**< The resulting digest calculated for the test case, or provided when verifying */
+    unsigned char *key;
+    unsigned char *custom_hex;
+    char *custom;
+
+    int msg_len;
+    int mac_len;
+    int key_len;
+    int custom_len;
+} ACVP_KMAC_TC;
 
 /**
  * @struct ACVP_RSA_KEYGEN_TC
@@ -2186,6 +2242,7 @@ typedef struct acvp_test_case_t {
         ACVP_DSA_TC *dsa;
         ACVP_HMAC_TC *hmac;
         ACVP_CMAC_TC *cmac;
+        ACVP_KMAC_TC *kmac;
         ACVP_RSA_KEYGEN_TC *rsa_keygen;
         ACVP_RSA_SIG_TC *rsa_sig;
         ACVP_RSA_PRIM_TC *rsa_prim;
@@ -3195,8 +3252,8 @@ ACVP_RESULT acvp_cap_cmac_set_parm(ACVP_CTX *ctx,
  * @param ctx Pointer to ACVP_CTX that was previously created by calling acvp_create_test_session.
  * @param cipher ACVP_CIPHER enum value identifying the crypto capability.
  * @param parm ACVP_CMAC_PARM enum value specifying parameter
- * @param min Minumum upported value for the corresponding parameter
- * @param max Maximum ssupported value for the corresponding parameter
+ * @param min Minumum supported value for the corresponding parameter
+ * @param max Maximum supported value for the corresponding parameter
  * @param increment Increment value supported
  *
  * @return ACVP_RESULT
@@ -3207,6 +3264,68 @@ ACVP_RESULT acvp_cap_cmac_set_domain(ACVP_CTX *ctx,
                                      int min,
                                      int max,
                                      int increment);
+
+/**
+ * @brief acvp_cap_kmac_enable() allows an application to specify an KMAC capability to be tested
+ *         by the ACVP server. This function should be called to enable crypto capabilities for
+ *         kmac algorithms that will be tested by the ACVP server. This includes KMAC-128 and
+ *         KMAC-256. This function may be called multiple times to specify
+ *         more than one crypto capability.
+ *
+ *         When the application enables a crypto capability, such as KMAC-128, it also needs to
+ *         specify a callback function that will be used by libacvp when that crypto capability is
+ *         needed during a test session.
+ *
+ * @param ctx Pointer to ACVP_CTX that was previously created by calling acvp_create_test_session.
+ * @param cipher ACVP_CIPHER enum value identifying the crypto capability.
+ * @param crypto_handler Address of function implemented by application that is invoked by libacvp
+ *        when the crypto capability is needed during a test session. This crypto_handler function
+ *        is expected to return 0 on success and 1 for failure.
+ *
+ * @return ACVP_RESULT
+ */
+ACVP_RESULT acvp_cap_kmac_enable(ACVP_CTX *ctx,
+                                 ACVP_CIPHER cipher,
+                                 int (*crypto_handler)(ACVP_TEST_CASE *test_case));
+
+/**
+ * @brief acvp_cap_kmac_set_parm() allows an application to specify operational parameters for
+ *        use during a test session with the ACVP server. This function allows the application to
+ *        specify parameters for use when registering KMAC capability with the server.
+ *
+ * @param ctx Pointer to ACVP_CTX that was previously created by calling acvp_create_test_session.
+ * @param cipher ACVP_CIPHER enum value identifying the crypto capability.
+ * @param parm ACVP_KMAC_PARM enum value specifying parameter
+ * @param value Supported value for the corresponding parameter
+ *
+ * @return ACVP_RESULT
+ */
+ACVP_RESULT acvp_cap_kmac_set_parm(ACVP_CTX *ctx,
+                                   ACVP_CIPHER cipher,
+                                   ACVP_KMAC_PARM parm,
+                                   int value);
+
+/**
+ * @brief acvp_cap_kmac_set_domain() allows an application to specify operational parameters for
+ *        use during a test session with the ACVP server. This function allows the application to
+ *        specify parameters for use when registering KMAC capability with the server.
+ *
+ * @param ctx Pointer to ACVP_CTX that was previously created by calling acvp_create_test_session.
+ * @param cipher ACVP_CIPHER enum value identifying the crypto capability.
+ * @param parm ACVP_KMAC_PARM enum value specifying parameter
+ * @param min Minumum supported value for the corresponding parameter
+ * @param max Maximum supported value for the corresponding parameter
+ * @param increment Increment value supported
+ *
+ * @return ACVP_RESULT
+ */
+ACVP_RESULT acvp_cap_kmac_set_domain(ACVP_CTX *ctx,
+                                     ACVP_CIPHER cipher,
+                                     ACVP_KMAC_PARM parm,
+                                     int min,
+                                     int max,
+                                     int increment);
+
 
 /**
  * @brief acvp_cap_kdf135_*_enable() allows an application to specify a kdf cipher capability to be
@@ -4085,6 +4204,7 @@ const char *acvp_version(void);
 const char *acvp_protocol_version(void);
 
 ACVP_SUB_CMAC acvp_get_cmac_alg(ACVP_CIPHER cipher);
+ACVP_SUB_KMAC acvp_get_kmac_alg(ACVP_CIPHER cipher);
 ACVP_SUB_HASH acvp_get_hash_alg(ACVP_CIPHER cipher);
 ACVP_SUB_AES acvp_get_aes_alg(ACVP_CIPHER cipher);
 ACVP_SUB_TDES acvp_get_tdes_alg(ACVP_CIPHER cipher);

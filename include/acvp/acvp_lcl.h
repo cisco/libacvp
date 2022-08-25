@@ -188,6 +188,10 @@
 #define ACVP_REV_CMAC_AES            ACVP_REV_STR_DEFAULT
 #define ACVP_REV_CMAC_TDES           ACVP_REV_STR_DEFAULT
 
+/* KMAC */
+#define ACVP_REV_KMAC_128            ACVP_REV_STR_DEFAULT
+#define ACVP_REV_KMAC_256            ACVP_REV_STR_DEFAULT
+
 /* DSA */
 #define ACVP_REV_DSA                 ACVP_REV_STR_DEFAULT
 
@@ -311,6 +315,9 @@
 #define ACVP_ALG_CMAC_AES_192        "CMAC-AES192"
 #define ACVP_ALG_CMAC_AES_256        "CMAC-AES256"
 #define ACVP_ALG_CMAC_TDES           "CMAC-TDES"
+
+#define ACVP_ALG_KMAC_128            "KMAC-128"
+#define ACVP_ALG_KMAC_256            "KMAC-256"
 
 #define ACVP_ALG_DSA                 "DSA"
 #define ACVP_ALG_DSA_PQGGEN          "pqgGen"
@@ -767,6 +774,23 @@
 #define ACVP_CMAC_MACLEN_MIN       32
 #define ACVP_CMAC_KEY_MAX       64        /**< 256 bits, 64 characters */
 
+#define ACVP_KMAC_MSG_BIT_MAX 65536
+#define ACVP_KMAC_MSG_BYTE_MAX (ACVP_KMAC_MSG_BIT_MAX >> 3)
+#define ACVP_KMAC_MSG_STR_MAX (ACVP_KMAC_MSG_BIT_MAX >> 2)
+
+#define ACVP_KMAC_MAC_BIT_MAX 65536
+#define ACVP_KMAC_MAC_BYTE_MAX (ACVP_KMAC_MAC_BIT_MAX >> 3)
+#define ACVP_KMAC_MAC_STR_MAX (ACVP_KMAC_MAC_BIT_MAX >> 2)
+
+#define ACVP_KMAC_KEY_BIT_MAX 524288
+#define ACVP_KMAC_KEY_BYTE_MAX (ACVP_KMAC_KEY_BIT_MAX >> 3)
+#define ACVP_KMAC_KEY_STR_MAX (ACVP_KMAC_KEY_BIT_MAX >> 2)
+
+#define ACVP_KMAC_CUSTOM_STR_MAX 161
+#define ACVP_KMAC_CUSTOM_HEX_BIT_MAX 1288
+#define ACVP_KMAC_CUSTOM_HEX_BYTE_MAX (ACVP_KMAC_CUSTOM_HEX_BIT_MAX >> 3)
+#define ACVP_KMAC_CUSTOM_HEX_STR_MAX (ACVP_KMAC_CUSTOM_HEX_BIT_MAX >> 2)
+
 #define ACVP_DSA_PQG_MAX        3072     /**< 3072 bits, 768 characters */
 #define ACVP_DSA_PQG_MAX_BYTES  (ACVP_DSA_PQG_MAX / 2)
 #define ACVP_DSA_SEED_MAX       1024
@@ -924,6 +948,7 @@ struct acvp_alg_handler_t {
         ACVP_SUB_AES      aes;
         ACVP_SUB_TDES     tdes;
         ACVP_SUB_CMAC     cmac;
+        ACVP_SUB_KMAC     kmac;
         ACVP_SUB_KDF      kdf;
         ACVP_SUB_DSA      dsa;
         ACVP_SUB_RSA      rsa;
@@ -975,6 +1000,7 @@ typedef enum acvp_capability_type {
     ACVP_DRBG_TYPE,
     ACVP_HMAC_TYPE,
     ACVP_CMAC_TYPE,
+    ACVP_KMAC_TYPE,
     ACVP_RSA_KEYGEN_TYPE,
     ACVP_RSA_SIGGEN_TYPE,
     ACVP_RSA_SIGVER_TYPE,
@@ -1198,6 +1224,14 @@ typedef struct acvp_cmac_capability {
     ACVP_SL_LIST *key_len;       // 128,192,256
     ACVP_SL_LIST *keying_option;
 } ACVP_CMAC_CAP;
+
+typedef struct acvp_kmac_capability {
+    ACVP_JSON_DOMAIN_OBJ mac_len;
+    ACVP_JSON_DOMAIN_OBJ msg_len;
+    ACVP_JSON_DOMAIN_OBJ key_len;
+    ACVP_XOF_SUPPORT_OPTION xof;
+    int hex_customization; // boolean
+} ACVP_KMAC_CAP;
 
 typedef struct acvp_drbg_cap_mode {
     ACVP_DRBG_MODE mode;        //"3KeyTDEA",
@@ -1501,6 +1535,7 @@ typedef struct acvp_caps_list_t {
         ACVP_DSA_CAP *dsa_cap;
         ACVP_HMAC_CAP *hmac_cap;
         ACVP_CMAC_CAP *cmac_cap;
+        ACVP_KMAC_CAP *kmac_cap;
         ACVP_RSA_KEYGEN_CAP *rsa_keygen_cap;
         ACVP_RSA_SIG_CAP *rsa_siggen_cap;
         ACVP_RSA_SIG_CAP *rsa_sigver_cap;
@@ -1786,6 +1821,8 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 ACVP_RESULT acvp_hmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
 ACVP_RESULT acvp_cmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
+
+ACVP_RESULT acvp_kmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
 ACVP_RESULT acvp_rsa_keygen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
