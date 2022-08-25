@@ -66,7 +66,7 @@ typedef struct app_config {
      */
     int aes; int tdes;
     int hash; int cmac;
-    int hmac;
+    int hmac; int kmac;
     /* These require the fom */
     int dsa; int rsa;
     int drbg; int ecdsa;
@@ -96,6 +96,7 @@ int app_des_handler(ACVP_TEST_CASE *test_case);
 int app_sha_handler(ACVP_TEST_CASE *test_case);
 int app_hmac_handler(ACVP_TEST_CASE *test_case);
 int app_cmac_handler(ACVP_TEST_CASE *test_case);
+int app_kmac_handler(ACVP_TEST_CASE *test_case);
 
 #define ENGID1 "800002B805123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456"
 #define ENGID2 "000002b87766554433221100"

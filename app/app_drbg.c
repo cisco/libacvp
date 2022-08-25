@@ -24,7 +24,7 @@ int app_drbg_handler(ACVP_TEST_CASE *test_case) {
     EVP_RAND *rand = NULL;
     EVP_RAND_CTX *rctx = NULL, *test = NULL;
     OSSL_PARAM params[10] = { 0 };
-    const char *alg_name = NULL, *alg_str = NULL, *param_str = NULL;
+    const char *alg_name = NULL, *alg_str = NULL, *param_str = NULL, *mac_name = NULL;
     char *tmp = NULL;
     unsigned int strength = 512;
 
@@ -126,9 +126,9 @@ int app_drbg_handler(ACVP_TEST_CASE *test_case) {
         goto err;
     }
     strength = EVP_RAND_get_strength(rctx);
-
+    mac_name = remove_str_const("HMAC");
     params[0] = OSSL_PARAM_construct_utf8_string(param_str, tmp, 0);
-    params[1] = OSSL_PARAM_construct_utf8_string("mac", "HMAC", 0); //ignored if irrelevant
+    params[1] = OSSL_PARAM_construct_utf8_string("mac", mac_name, 0); //ignored if irrelevant
     if (EVP_RAND_CTX_set_params(rctx, params) != 1) {
         printf("Error setting algorithm for DRBG\n");
         goto err;

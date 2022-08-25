@@ -248,6 +248,7 @@ static ko_longopt_t longopts[] = {
     { "kas_ifc", ko_no_argument, 323 },
     { "kts_ifc", ko_no_argument, 324 },
     { "kda", ko_no_argument, 325 },
+    { "kmac", ko_no_argument, 326 },
     { "all_algs", ko_no_argument, 350 },
     { "manual_registration", ko_required_argument, 400 },
     { "kat", ko_required_argument, 401 },
@@ -279,7 +280,7 @@ static void enable_all_algorithms(APP_CONFIG *cfg) {
     cfg->hash = 1;
     cfg->cmac = 1;
     cfg->hmac = 1;
-    /* These require the fom */
+    cfg->kmac = 1;
 #ifndef OPENSSL_NO_DSA
     cfg->dsa = 1;
     cfg->kas_ffc = 1;
@@ -445,6 +446,10 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
             break;
         case 325:
             cfg->kda = 1;
+            cfg->empty_alg = 0;
+            break;
+        case 326:
+            cfg->kmac = 1;
             cfg->empty_alg = 0;
             break;
         case 'a':

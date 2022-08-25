@@ -51,6 +51,7 @@ static int enable_tdes(ACVP_CTX *ctx);
 static int enable_hash(ACVP_CTX *ctx);
 static int enable_cmac(ACVP_CTX *ctx);
 static int enable_hmac(ACVP_CTX *ctx);
+static int enable_kmac(ACVP_CTX *ctx);
 static int enable_rsa(ACVP_CTX *ctx);
 static int enable_ecdsa(ACVP_CTX *ctx);
 static int enable_drbg(ACVP_CTX *ctx);
@@ -308,6 +309,9 @@ int main(int argc, char **argv) {
 
         if (cfg.hmac) {
             if (enable_hmac(ctx)) goto end;
+        }
+        if (cfg.kmac) {
+            if (enable_kmac(ctx)) goto end;
         }
 
 #ifdef OPENSSL_KDF_SUPPORT
@@ -1184,6 +1188,50 @@ static int enable_cmac(ACVP_CTX *ctx) {
     rv = acvp_cap_set_prereq(ctx, ACVP_CMAC_TDES, ACVP_PREREQ_TDES, value);
     CHECK_ENABLE_CAP_RV(rv);
 
+end:
+
+    return rv;
+}
+
+static int enable_kmac(ACVP_CTX *ctx) {
+    ACVP_RESULT rv = ACVP_SUCCESS;
+
+    /****************************************************************************
+     * Note: Setting extremely high keylen (6 digits) domains may     *
+     * require a resize of ACVP_CURL_BUF_MAX in acvp_lcl.h in the library code. *
+     ****************************************************************************/
+
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+
+    /* Enable KMAC */
+    rv = acvp_cap_kmac_enable(ctx, ACVP_KMAC_128, &app_kmac_handler);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kmac_set_domain(ctx, ACVP_KMAC_128, ACVP_KMAC_MSGLEN, 0, 65536, 8);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kmac_set_domain(ctx, ACVP_KMAC_128, ACVP_KMAC_MACLEN, 32, 65536, 8);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kmac_set_domain(ctx, ACVP_KMAC_128, ACVP_KMAC_KEYLEN, 128, 1024, 8);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kmac_set_parm(ctx, ACVP_KMAC_128, ACVP_KMAC_XOF_SUPPORT, ACVP_XOF_SUPPORT_BOTH);
+    CHECK_ENABLE_CAP_RV(rv);
+    /* OpenSSL 3.X supports hex customization strings, but they are not on the FIPS cert, so leaving disabled */
+    rv = acvp_cap_kmac_set_parm(ctx, ACVP_KMAC_128, ACVP_KMAC_HEX_CUSTOM_SUPPORT, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    rv = acvp_cap_kmac_enable(ctx, ACVP_KMAC_256, &app_kmac_handler);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kmac_set_domain(ctx, ACVP_KMAC_256, ACVP_KMAC_MSGLEN, 0, 65536, 8);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kmac_set_domain(ctx, ACVP_KMAC_256, ACVP_KMAC_MACLEN, 32, 65536, 8);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kmac_set_domain(ctx, ACVP_KMAC_256, ACVP_KMAC_KEYLEN, 128, 1024, 8);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kmac_set_parm(ctx, ACVP_KMAC_256, ACVP_KMAC_XOF_SUPPORT, ACVP_XOF_SUPPORT_BOTH);
+    CHECK_ENABLE_CAP_RV(rv);
+    /* OpenSSL 3.X supports hex customization strings, but they are not on the FIPS cert, so leaving disabled */
+    rv = acvp_cap_kmac_set_parm(ctx, ACVP_KMAC_256, ACVP_KMAC_HEX_CUSTOM_SUPPORT, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+#endif
 end:
 
     return rv;
@@ -3242,6 +3290,7 @@ ACVP_RESULT acvp_app_run_vector_test_file(const char *path, const char *output, 
     if (enable_hash(ctx)) goto end;
     if (enable_cmac(ctx)) goto end;
     if (enable_hmac(ctx)) goto end;
+    if (enable_kmac(ctx)) goto end;
 #ifdef OPENSSL_KDF_SUPPORT
     if (enable_kdf(ctx)) goto end;
 #endif

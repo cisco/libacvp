@@ -10,6 +10,7 @@ tmp_sources = app_main.c \
               app_kas.c \
               app_kdf.c \
               app_kda.c \
+              app_kmac.c \
               app_rsa.c \
               app_sha.c \
               app_utils.c \
