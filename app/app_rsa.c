@@ -18,8 +18,8 @@
 #include "safe_lib.h"
 #if OPENSSL_VERSION_NUMBER >= 0x30000000L || defined ACVP_NO_RUNTIME
 #ifdef ACVP_NO_RUNTIME
-#include "app_fips_lcl.h" /* All regular OpenSSL headers must come before here */
 #include <openssl/ossl_typ.h>
+#include "app_fips_lcl.h" /* All regular OpenSSL headers must come before here */
 #endif
 
 int rsa_current_tg = 0;

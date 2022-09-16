@@ -818,21 +818,20 @@ static ACVP_RESULT acvp_add_dsa_pqggen_parm(ACVP_CTX *ctx,
             break;
         }
         break;
+    case ACVP_DSA_LN1024_160:
+        /* allow for verify only */
+        if (dsa_cap_mode->cap_mode == ACVP_DSA_MODE_SIGVER || dsa_cap_mode->cap_mode == ACVP_DSA_MODE_PQGVER) {
+            return acvp_add_dsa_mode_parm(ctx, dsa_cap_mode, param, value);
+        } else {
+            return ACVP_INVALID_ARG;
+        }
     case ACVP_DSA_LN2048_224:
-        return acvp_add_dsa_mode_parm(ctx, dsa_cap_mode, param, value);
-
-        break;
     case ACVP_DSA_LN2048_256:
-        return acvp_add_dsa_mode_parm(ctx, dsa_cap_mode, param, value);
-
-        break;
     case ACVP_DSA_LN3072_256:
         return acvp_add_dsa_mode_parm(ctx, dsa_cap_mode, param, value);
-
         break;
     default:
         return ACVP_INVALID_ARG;
-
         break;
     }
 
@@ -852,6 +851,7 @@ static ACVP_RESULT acvp_add_dsa_keygen_parm(ACVP_CTX *ctx,
     case ACVP_DSA_LN3072_256:
         return acvp_add_dsa_mode_parm(ctx, dsa_cap_mode, param, value);
         break;
+    case ACVP_DSA_LN1024_160:
     case ACVP_DSA_GENPQ:
     case ACVP_DSA_GENG:
     default:

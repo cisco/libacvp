@@ -74,7 +74,6 @@ int app_kmac_handler(ACVP_TEST_CASE *test_case) {
         goto end;
     }
     OSSL_PARAM_BLD_push_utf8_string(pbld, "cipher", alg_name, 0);
-  // OSSL_PARAM_BLD_push_octet_string(pbld, "key", tc->key, tc->key_len);
     OSSL_PARAM_BLD_push_int(pbld, "xof", tc->xof);
     OSSL_PARAM_BLD_push_uint(pbld, "size", (unsigned int)tc->mac_len);
     if (tc->hex_customization) {
@@ -139,6 +138,10 @@ end:
     if (params) OSSL_PARAM_free(params);
     if (mac_compare) free(mac_compare);
     return rv;
-#else
-    return 1;
 }
+#else
+    if (!test_case) {
+        return -1;
+    }
+    return 1;
+#endif

@@ -11,7 +11,9 @@
 
 #include <stdlib.h>
 #include <openssl/rand.h>
+#ifdef ACVP_NO_RUNTIME
 #include "app_fips_lcl.h" /* All regular OpenSSL headers must come before here */
+#endif
 #include "app_lcl.h"
 #include "safe_mem_lib.h"
 

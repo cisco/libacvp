@@ -1549,7 +1549,8 @@ typedef enum acvp_dsa_mode {
 
 /** @enum ACVP_DSA_PARM */
 typedef enum acvp_dsa_parm {
-    ACVP_DSA_LN2048_224 = 1,
+    ACVP_DSA_LN1024_160 = 1,
+    ACVP_DSA_LN2048_224,
     ACVP_DSA_LN2048_256,
     ACVP_DSA_LN3072_256,
     ACVP_DSA_GENPQ,
