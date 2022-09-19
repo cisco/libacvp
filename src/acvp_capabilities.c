@@ -989,9 +989,7 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
         case ACVP_AES_GMAC:
         case ACVP_AES_CCM:
         case ACVP_AES_XPN:
-            if (value == 32 || value == 64 || value == 96 ||
-                    value == 104 || value == 112 || value == 120 ||
-                    value == 128) {
+            if (value % 8 == 0) {
                 retval = ACVP_SUCCESS;
             }
             break;
@@ -1586,7 +1584,7 @@ static ACVP_RESULT acvp_validate_sym_cipher_domain_value(ACVP_CIPHER cipher, ACV
     case ACVP_AES_KW:
         switch (parm) {
         case ACVP_SYM_CIPH_DOMAIN_PTLEN:
-            if (min >= 128 && max <= 65536 && increment % 64 == 0) {
+            if (min >= 128 && max <= 524288 && increment % 8 == 0) {
                 retval = ACVP_SUCCESS;
             }
             break;
@@ -1619,7 +1617,7 @@ static ACVP_RESULT acvp_validate_sym_cipher_domain_value(ACVP_CIPHER cipher, ACV
             }
             break;
         case ACVP_SYM_CIPH_DOMAIN_AADLEN:
-            if (min >= 1 && max <= 65536 && increment % 8 == 0) {
+            if (min >= 0 && max <= 65536 && increment % 8 == 0) {
                 retval = ACVP_SUCCESS;
             }
             break;
