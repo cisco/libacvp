@@ -554,6 +554,7 @@ typedef enum acvp_sym_cipher_keying_option {
 typedef enum acvp_sym_cipher_ivgen_source {
     ACVP_SYM_CIPH_IVGEN_SRC_INT = 1,
     ACVP_SYM_CIPH_IVGEN_SRC_EXT,
+    ACVP_SYM_CIPH_IVGEN_SRC_EITHER,
     ACVP_SYM_CIPH_IVGEN_SRC_NA,
     ACVP_SYM_CIPH_IVGEN_SRC_MAX
 } ACVP_SYM_CIPH_IVGEN_SRC;

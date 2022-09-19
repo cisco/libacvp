@@ -525,21 +525,21 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
         break;
     }
 
-    /*
-     * Set the IV generation mode if applicable
-     */
-    switch (sym_cap->ivgen_mode) {
-    case ACVP_SYM_CIPH_IVGEN_MODE_821:
-        json_object_set_string(cap_obj, "ivGenMode", "8.2.1");
-        break;
-    case ACVP_SYM_CIPH_IVGEN_MODE_822:
-        json_object_set_string(cap_obj, "ivGenMode", "8.2.2");
-        break;
-    case ACVP_SYM_CIPH_IVGEN_MODE_NA:
-    case ACVP_SYM_CIPH_IVGEN_MODE_MAX:
-    default:
-        /* do nothing, this is an optional capability */
-        break;
+    /* Set the IV generation mode if applicable */
+    if (sym_cap->ivgen_source == ACVP_SYM_CIPH_IVGEN_SRC_INT) {
+        switch (sym_cap->ivgen_mode) {
+        case ACVP_SYM_CIPH_IVGEN_MODE_821:
+            json_object_set_string(cap_obj, "ivGenMode", "8.2.1");
+            break;
+        case ACVP_SYM_CIPH_IVGEN_MODE_822:
+            json_object_set_string(cap_obj, "ivGenMode", "8.2.2");
+            break;
+        case ACVP_SYM_CIPH_IVGEN_MODE_NA:
+        case ACVP_SYM_CIPH_IVGEN_MODE_MAX:
+        default:
+            return ACVP_MISSING_ARG;
+            break;
+        }
     }
 
     /*
@@ -4378,13 +4378,36 @@ ACVP_RESULT acvp_build_test_session(ACVP_CTX *ctx, char **reg, int *out_len) {
              */
             switch (cap_entry->cipher) {
             case ACVP_AES_GCM:
+            case ACVP_AES_XPN:
+            case ACVP_AES_GMAC:
+            case ACVP_AES_CTR:
+                /**
+                 * If we need to test both internal and external IV gen, we need two different
+                 * algorithm registrations/vector sets currently.
+                 */
+                if (cap_entry->cap.sym_cap->ivgen_source == ACVP_SYM_CIPH_IVGEN_SRC_EITHER) {
+                    cap_entry->cap.sym_cap->ivgen_source = ACVP_SYM_CIPH_IVGEN_SRC_INT;
+                    rv = acvp_build_sym_cipher_register_cap(cap_obj, cap_entry);
+                    if (rv != ACVP_SUCCESS) {
+                        cap_entry->cap.sym_cap->ivgen_source = ACVP_SYM_CIPH_IVGEN_SRC_EITHER;
+                        break;
+                    }
+                    json_array_append_value(caps_arr, cap_val);
+                    cap_val = json_value_init_object();
+                    cap_obj = json_value_get_object(cap_val);
+                    cap_entry->cap.sym_cap->ivgen_source = ACVP_SYM_CIPH_IVGEN_SRC_EXT;
+                    rv = acvp_build_sym_cipher_register_cap(cap_obj, cap_entry);
+                    cap_entry->cap.sym_cap->ivgen_source = ACVP_SYM_CIPH_IVGEN_SRC_EITHER;
+                } else {
+                    rv = acvp_build_sym_cipher_register_cap(cap_obj, cap_entry);
+                }
+                break;
             case ACVP_AES_GCM_SIV:
             case ACVP_AES_CCM:
             case ACVP_AES_ECB:
             case ACVP_AES_CFB1:
             case ACVP_AES_CFB8:
             case ACVP_AES_CFB128:
-            case ACVP_AES_CTR:
             case ACVP_AES_OFB:
             case ACVP_AES_CBC:
             case ACVP_AES_CBC_CS1:
@@ -4393,8 +4416,6 @@ ACVP_RESULT acvp_build_test_session(ACVP_CTX *ctx, char **reg, int *out_len) {
             case ACVP_AES_KW:
             case ACVP_AES_KWP:
             case ACVP_AES_XTS:
-            case ACVP_AES_GMAC:
-            case ACVP_AES_XPN:
             case ACVP_TDES_ECB:
             case ACVP_TDES_CBC:
             case ACVP_TDES_CTR:
