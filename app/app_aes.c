@@ -64,7 +64,7 @@ int app_aes_handler(ACVP_TEST_CASE *test_case) {
     alg = acvp_get_aes_alg(tc->cipher);
     if (alg == 0) {
         printf("Invalid cipher value");
-        return 1;
+        goto err;
     }
 
     switch (tc->key_len) {
@@ -282,12 +282,16 @@ int app_aes_keywrap_handler(ACVP_TEST_CASE *test_case) {
 
     /* Begin encrypt code section */
     cipher_ctx = EVP_CIPHER_CTX_new();
+    if (!cipher_ctx) {
+        printf("Error creating CTX in AES keywrap\n");
+        goto err;
+    }
     EVP_CIPHER_CTX_init(cipher_ctx);
 
     alg = acvp_get_aes_alg(tc->cipher);
     if (alg == 0) {
         printf("Invalid cipher value");
-        return 1;
+        goto err;
     }
 
     switch (tc->key_len) {
@@ -408,7 +412,7 @@ int app_aes_handler_aead(ACVP_TEST_CASE *test_case) {
     alg = acvp_get_aes_alg(tc->cipher);
     if (alg == 0) {
         printf("Invalid cipher value");
-        return 1;
+        goto err;
     }
 
     switch (alg) {
@@ -695,7 +699,7 @@ int app_aes_handler(ACVP_TEST_CASE *test_case) {
     alg = acvp_get_aes_alg(tc->cipher);
     if (alg == 0) {
         printf("Invalid cipher value");
-        return 1;
+        goto err;
     }
     switch (alg) {
     case ACVP_SUB_AES_ECB:
@@ -955,12 +959,16 @@ int app_aes_keywrap_handler(ACVP_TEST_CASE *test_case) {
 
     /* Begin encrypt code section */
     cipher_ctx = EVP_CIPHER_CTX_new();
+    if (!cipher_ctx) {
+        printf("Error creating CTX in AES keywrap\n");
+        goto err;
+    }
     EVP_CIPHER_CTX_init(cipher_ctx);
 
     alg = acvp_get_aes_alg(tc->cipher);
     if (alg == 0) {
         printf("Invalid cipher value");
-        return 1;
+        goto err;
     }
 
     switch (alg) {
@@ -1081,7 +1089,7 @@ int app_aes_handler_aead(ACVP_TEST_CASE *test_case) {
     alg = acvp_get_aes_alg(tc->cipher);
     if (alg == 0) {
         printf("Invalid cipher value");
-        return 1;
+        goto err;
     }
 
     switch (alg) {
