@@ -1598,7 +1598,7 @@ static ACVP_RESULT acvp_validate_sym_cipher_domain_value(ACVP_CIPHER cipher, ACV
     case ACVP_AES_KWP:
         switch (parm) {
         case ACVP_SYM_CIPH_DOMAIN_PTLEN:
-            if (min >= 0 && max <= 65536) {
+            if (min >= 0 && max <= 524288) {
                 retval = ACVP_SUCCESS;
             }
             break;
