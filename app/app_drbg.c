@@ -11,6 +11,7 @@
 
 #include <stdlib.h>
 #include <openssl/rand.h>
+#include <openssl/core_names.h>
 #ifdef ACVP_NO_RUNTIME
 #include "app_fips_lcl.h" /* All regular OpenSSL headers must come before here */
 #endif
@@ -20,14 +21,14 @@
 #if OPENSSL_VERSION_NUMBER >= 0x30000000L
 
 int app_drbg_handler(ACVP_TEST_CASE *test_case) {
-    int rv = 1;
+    int rv = 1, der_func = 0;
     ACVP_DRBG_TC *tc;
     ACVP_SUB_DRBG alg;
     EVP_RAND *rand = NULL;
     EVP_RAND_CTX *rctx = NULL, *test = NULL;
     OSSL_PARAM params[10] = { 0 };
-    const char *alg_name = NULL, *alg_str = NULL, *param_str = NULL, *mac_name = NULL;
-    char *tmp = NULL;
+    const char *alg_name = NULL, *alg_str = NULL, *param_str = NULL;
+    char *tmp = NULL, *mac_name = NULL;
     unsigned int strength = 512;
 
     if (!test_case) {
@@ -98,6 +99,7 @@ int app_drbg_handler(ACVP_TEST_CASE *test_case) {
         printf ("Unexpected error copying string in DRBG\n");
         goto err;
     }
+    der_func = tc->der_func_enabled;
 
     /* NOTE ABOUT DRBG in 3.X:
     * TEST-RAND is an "unapproved" algorithm that exists inside the FIPS module. It cannot be used with
@@ -114,8 +116,10 @@ int app_drbg_handler(ACVP_TEST_CASE *test_case) {
     }
 
     params[0] = OSSL_PARAM_construct_uint("strength", &strength);
-    params[1] = OSSL_PARAM_construct_end();
-    params[2] = OSSL_PARAM_construct_end(); //for hmac
+    params[1] = OSSL_PARAM_construct_end(); /* HMAC */
+    params[2] = OSSL_PARAM_construct_end(); /* der func */
+    params[3] = OSSL_PARAM_construct_end();
+
     if (EVP_RAND_CTX_set_params(test, params) != 1) {
         printf("Error setting test ctx params in DRBG\n");
         goto err;
@@ -131,6 +135,7 @@ int app_drbg_handler(ACVP_TEST_CASE *test_case) {
     mac_name = remove_str_const("HMAC");
     params[0] = OSSL_PARAM_construct_utf8_string(param_str, tmp, 0);
     params[1] = OSSL_PARAM_construct_utf8_string("mac", mac_name, 0); //ignored if irrelevant
+    params[2] = OSSL_PARAM_construct_int(OSSL_DRBG_PARAM_USE_DF, &der_func);
     if (EVP_RAND_CTX_set_params(rctx, params) != 1) {
         printf("Error setting algorithm for DRBG\n");
         goto err;
@@ -179,7 +184,8 @@ err:
     if (test) EVP_RAND_CTX_free(test);
     if (rctx) EVP_RAND_CTX_free(rctx);
     if (rand) EVP_RAND_free(rand);
-    if (tmp) free (tmp);
+    if (mac_name) free(mac_name);
+    if (tmp) free(tmp);
     return rv;
 }
 #else

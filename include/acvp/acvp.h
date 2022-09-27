@@ -625,7 +625,7 @@ typedef enum acvp_hash_param {
 
 /**
  * ****************** ALERT *****************
- * This enum must stay aligned with drbg_mode_tbl[] in acvp.c
+ * This enum must stay aligned with drbg_mode_tbl[] in acvp_util.c
  */
 /** @enum ACVP_DRBG_MODE */
 typedef enum acvp_drbg_mode {
@@ -2462,6 +2462,10 @@ ACVP_RESULT acvp_cap_drbg_enable(ACVP_CTX *ctx,
  * @param ctx Pointer to ACVP_CTX that was previously created by calling acvp_create_test_session.
  * @param cipher ACVP_CIPHER enum value identifying the crypto capability.
  * @param mode ACVP_DRBG_MODE enum value specifying mode. An example would be ACVP_DRBG_SHA_1
+ * @param group The group of capabilities for the given ACVP DRBG modes. Different groups can be
+ *        defined for different capabilities; e.g. different lengths can be supported with and
+ *        without derivation function support. Groups must be used in a linear fashion (group 0
+ *        must be defined before you can define group 1, group 1 before group 2, etc)
  * @param param ACVP_DRBG_PARM enum value identifying the algorithm parameter that is being
  *        specified. An example would be prediction resistance.
  * @param value the value corresponding to the parameter being set
@@ -2471,6 +2475,7 @@ ACVP_RESULT acvp_cap_drbg_enable(ACVP_CTX *ctx,
 ACVP_RESULT acvp_cap_drbg_set_parm(ACVP_CTX *ctx,
                                    ACVP_CIPHER cipher,
                                    ACVP_DRBG_MODE mode,
+                                   int group,
                                    ACVP_DRBG_PARM param,
                                    int value);
 
@@ -2485,6 +2490,10 @@ ACVP_RESULT acvp_cap_drbg_set_parm(ACVP_CTX *ctx,
  * @param ctx Pointer to ACVP_CTX that was previously created by calling acvp_create_test_session.
  * @param cipher ACVP_CIPHER enum value identifying the crypto capability.
  * @param mode ACVP_DRBG_MODE enum value specifying mode. An example would be ACVP_DRBG_SHA_1
+ * @param group The group of capabilities for the given ACVP DRBG modes. Different groups can be
+ *        defined for different capabilities; e.g. different lengths can be supported with and
+ *        without derivation function support. Groups must be used in a linear fashion (group 0
+ *        must be defined before you can define group 1, group 1 before group 2, etc)
  * @param param ACVP_DRBG_PARM enum value specifying paramter. An example would be
  *        ACVP_DRBG_ENTROPY_LEN
  * @param min minimum value
@@ -2496,6 +2505,7 @@ ACVP_RESULT acvp_cap_drbg_set_parm(ACVP_CTX *ctx,
 ACVP_RESULT acvp_cap_drbg_set_length(ACVP_CTX *ctx,
                                      ACVP_CIPHER cipher,
                                      ACVP_DRBG_MODE mode,
+                                     int group,
                                      ACVP_DRBG_PARM param,
                                      int min,
                                      int step,
