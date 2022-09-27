@@ -721,38 +721,98 @@ static int acvp_char_to_int(char ch) {
     return ch_i;
 }
 
-/*
- * This function is used to locate the callback function that's needed
- * when a particular crypto operation is needed by libacvp.
- */
-ACVP_DRBG_CAP_MODE_LIST *acvp_locate_drbg_mode_entry(ACVP_CAPS_LIST *cap, ACVP_DRBG_MODE mode) {
-    ACVP_DRBG_CAP_MODE_LIST *cap_mode_list;
-    ACVP_DRBG_CAP_MODE *cap_mode;
-    ACVP_DRBG_CAP *drbg_cap;
+ACVP_DRBG_MODE_LIST *acvp_locate_drbg_mode_entry(ACVP_CAPS_LIST *cap, ACVP_DRBG_MODE mode) {
+    ACVP_DRBG_MODE_LIST *cap_mode = NULL;
+    ACVP_DRBG_CAP *drbg_cap = NULL;
 
     drbg_cap = cap->cap.drbg_cap;
 
-    /*
-     * No entires yet
-     */
-    cap_mode_list = drbg_cap->drbg_cap_mode_list;
-    if (!cap_mode_list) {
-        return NULL;
-    }
+    /* No entires yet */
+    cap_mode = drbg_cap->drbg_cap_mode;
 
-    cap_mode = &cap_mode_list->cap_mode;
-    if (!cap_mode) {
-        return NULL;
-    }
-
-    while (cap_mode_list) {
+    while (cap_mode) {
         if (cap_mode->mode == mode) {
-            return cap_mode_list;
+            return cap_mode;
         }
-        cap_mode_list = cap_mode_list->next;
-        cap_mode = &cap_mode_list->cap_mode;
+        cap_mode = cap_mode->next;
     }
     return NULL;
+}
+
+ACVP_DRBG_MODE_LIST *acvp_create_drbg_mode_entry(ACVP_CAPS_LIST *cap, ACVP_DRBG_MODE mode) {
+    ACVP_DRBG_MODE_LIST *entry = NULL, *list = NULL;
+
+    if (acvp_locate_drbg_mode_entry(cap, mode) != NULL) {
+        return NULL;
+    }
+
+    entry = calloc(1, sizeof(ACVP_DRBG_MODE_LIST));
+    if (!entry) {
+        return NULL;
+    }
+
+    entry->mode = mode;
+
+    list = cap->cap.drbg_cap->drbg_cap_mode;
+    if (!list) {
+        cap->cap.drbg_cap->drbg_cap_mode = entry;
+    } else {
+        while (list->next) {
+            list = list->next;
+        }
+        list->next = entry;
+    }
+
+    return entry;
+}
+
+ACVP_DRBG_CAP_GROUP *acvp_locate_drbg_group_entry(ACVP_DRBG_MODE_LIST *mode, int group) {
+    ACVP_DRBG_GROUP_LIST *list = NULL;
+
+    list = mode->groups;
+    while (list) {
+        if (group == list->id) {
+            return list->group;
+        }
+        list = list->next;
+    }
+
+    return NULL;
+}
+
+
+ACVP_DRBG_CAP_GROUP *acvp_create_drbg_group(ACVP_DRBG_MODE_LIST *mode, int group) {
+    ACVP_DRBG_GROUP_LIST *entry = NULL, *list = NULL;
+    ACVP_DRBG_CAP_GROUP *grp = NULL;
+
+    if (acvp_locate_drbg_group_entry(mode, group) != NULL) {
+        return NULL;
+    }
+
+    entry = calloc(1, sizeof(ACVP_DRBG_GROUP_LIST));
+    if (!entry) {
+        return NULL;
+    }
+    grp = calloc(1, sizeof(ACVP_DRBG_CAP_GROUP));
+    if (!grp) {
+        free(entry);
+        return NULL;
+    }
+
+    entry->id = group;
+    entry->group = grp;
+
+    list = mode->groups;
+    if (!list) {
+        mode->groups = entry;
+    } else {
+        while (list->next) {
+            list = list->next;
+        }
+        list->next = entry;
+    }
+
+    return grp;
 }
 
 /*

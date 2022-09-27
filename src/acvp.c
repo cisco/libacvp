@@ -477,29 +477,33 @@ static void acvp_free_drbg_struct(ACVP_CAPS_LIST *cap_list) {
     ACVP_DRBG_CAP *drbg_cap = cap_list->cap.drbg_cap;
 
     if (drbg_cap) {
-        ACVP_DRBG_CAP_MODE_LIST *mode_list = drbg_cap->drbg_cap_mode_list;
-        ACVP_DRBG_CAP_MODE_LIST *next_mode_list;
+        ACVP_DRBG_MODE_LIST *mode_list = drbg_cap->drbg_cap_mode;
+        ACVP_DRBG_MODE_LIST *next_mode_list;
+        ACVP_DRBG_GROUP_LIST *group_list;
+        ACVP_DRBG_GROUP_LIST *next_group_list;
         ACVP_PREREQ_LIST *current_pre_req_vals;
         ACVP_PREREQ_LIST *next_pre_req_vals;
 
-        if (mode_list) {
-            do {
-                //Top of list
-                current_pre_req_vals = mode_list->cap_mode.prereq_vals;
-                /*
-                 * Delete all pre_req
-                 */
-                if (current_pre_req_vals) {
-                    do {
-                        next_pre_req_vals = current_pre_req_vals->next;
-                        free(current_pre_req_vals);
-                        current_pre_req_vals = next_pre_req_vals;
-                    } while (current_pre_req_vals);
+        current_pre_req_vals = drbg_cap->prereq_vals;
+        while (current_pre_req_vals) {
+            next_pre_req_vals = current_pre_req_vals->next;
+            free(current_pre_req_vals);
+            current_pre_req_vals = next_pre_req_vals;
+        }
+
+        while (mode_list) {
+            group_list = mode_list->groups;
+            while (group_list) {
+                next_group_list = group_list->next;
+                if (group_list->group) {
+                    free(group_list->group);
                 }
-                next_mode_list = mode_list->next;
-                free(mode_list);
-                mode_list = next_mode_list;
-            } while (mode_list);
+                free(group_list);
+                group_list = next_group_list;
+            }
+            next_mode_list = mode_list->next;
+            free(mode_list);
+            mode_list = next_mode_list;
         }
         free(drbg_cap);
         drbg_cap = NULL;

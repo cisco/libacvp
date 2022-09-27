@@ -1234,11 +1234,7 @@ typedef struct acvp_kmac_capability {
 } ACVP_KMAC_CAP;
 
 typedef struct acvp_drbg_cap_mode {
-    ACVP_DRBG_MODE mode;        //"3KeyTDEA",
-    int der_func_enabled;       // boolean
-    ACVP_PREREQ_LIST *prereq_vals;
-    int pred_resist_enabled;    // boolean
-    int reseed_implemented;     // boolean
+    int der_func_enabled;
     int entropy_input_len;      //":"112",
     int entropy_len_max;
     int entropy_len_min;
@@ -1256,16 +1252,26 @@ typedef struct acvp_drbg_cap_mode {
     int additional_in_len_min;
     int additional_in_len_step;
     int returned_bits_len;      //":"256"
-} ACVP_DRBG_CAP_MODE;
+} ACVP_DRBG_CAP_GROUP;
 
-typedef struct acvp_cap_mode_list_t {
-    ACVP_DRBG_CAP_MODE cap_mode;
-    struct acvp_cap_mode_list_t *next;
-} ACVP_DRBG_CAP_MODE_LIST;
+typedef struct acvp_drbg_group_list_t {
+    int id;
+    ACVP_DRBG_CAP_GROUP *group;
+    struct acvp_drbg_group_list_t *next;
+} ACVP_DRBG_GROUP_LIST;
+
+typedef struct acvp_drbg_mode_list_t {
+    ACVP_DRBG_MODE mode;
+    ACVP_DRBG_GROUP_LIST *groups;
+    struct acvp_drbg_mode_list_t *next;
+} ACVP_DRBG_MODE_LIST;
 
 typedef struct acvp_drbg_capability {
     ACVP_CIPHER cipher;
-    ACVP_DRBG_CAP_MODE_LIST *drbg_cap_mode_list;
+    ACVP_PREREQ_LIST *prereq_vals;
+    int pred_resist_enabled;    // boolean
+    int reseed_implemented;     // boolean
+    ACVP_DRBG_MODE_LIST *drbg_cap_mode;
 } ACVP_DRBG_CAP;
 
 struct acvp_drbg_mode_name_t {
@@ -1922,7 +1928,10 @@ const char *acvp_lookup_alt_revision_string(ACVP_REVISION rev);
 
 ACVP_DRBG_MODE acvp_lookup_drbg_mode_index(const char *mode);
 
-ACVP_DRBG_CAP_MODE_LIST *acvp_locate_drbg_mode_entry(ACVP_CAPS_LIST *cap, ACVP_DRBG_MODE mode);
+ACVP_DRBG_MODE_LIST *acvp_locate_drbg_mode_entry(ACVP_CAPS_LIST *cap, ACVP_DRBG_MODE mode);
+ACVP_DRBG_MODE_LIST *acvp_create_drbg_mode_entry(ACVP_CAPS_LIST *cap, ACVP_DRBG_MODE mode);
+ACVP_DRBG_CAP_GROUP *acvp_locate_drbg_group_entry(ACVP_DRBG_MODE_LIST *mode, int group);
+ACVP_DRBG_CAP_GROUP *acvp_create_drbg_group(ACVP_DRBG_MODE_LIST *mode, int group);
 
 const char *acvp_lookup_rsa_randpq_name(int value);
 

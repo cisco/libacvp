@@ -3030,228 +3030,286 @@ end:
 static int enable_drbg(ACVP_CTX *ctx) {
     ACVP_RESULT rv = ACVP_SUCCESS;
 
-    /* Register DRBG */
 #if OPENSSL_VERSION_NUMBER >= 0x30000000L
-    //ACVP_HASHDRBG
+    /* Hash DRBG */
     rv = acvp_cap_drbg_enable(ctx, ACVP_HASHDRBG, &app_drbg_handler);
     CHECK_ENABLE_CAP_RV(rv);
 
     rv = acvp_cap_set_prereq(ctx, ACVP_HASHDRBG, ACVP_PREREQ_SHA, value);
     CHECK_ENABLE_CAP_RV(rv);
 
-    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1, ACVP_DRBG_PRED_RESIST_ENABLED, 1);
+    /* Group number for these should be 0 */
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1, 0, ACVP_DRBG_PRED_RESIST_ENABLED, 1);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1, ACVP_DRBG_RESEED_ENABLED, 1);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1, ACVP_DRBG_ENTROPY_LEN, 128, 64, 256);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1, ACVP_DRBG_NONCE_LEN, 96, 32, 128);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1, ACVP_DRBG_PERSO_LEN, 0, 128, 256);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1, ACVP_DRBG_ADD_IN_LEN, 0, 128, 256);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1, ACVP_DRBG_RET_BITS_LEN, 160);
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1, 0, ACVP_DRBG_RESEED_ENABLED, 1);
     CHECK_ENABLE_CAP_RV(rv);
 
-    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_224, ACVP_DRBG_PRED_RESIST_ENABLED, 1);
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1, 0, ACVP_DRBG_ENTROPY_LEN, 128, 64, 256);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_224, ACVP_DRBG_RESEED_ENABLED, 1);
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1, 0, ACVP_DRBG_NONCE_LEN, 96, 32, 128);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_224, ACVP_DRBG_ENTROPY_LEN, 192, 64, 256);
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1, 0, ACVP_DRBG_PERSO_LEN, 0, 128, 256);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_224, ACVP_DRBG_NONCE_LEN, 128, 32, 160);
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1, 0, ACVP_DRBG_ADD_IN_LEN, 0, 128, 256);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_224, ACVP_DRBG_PERSO_LEN, 0, 128, 256);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_224, ACVP_DRBG_ADD_IN_LEN, 0, 128, 256);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_224, ACVP_DRBG_RET_BITS_LEN, 224);
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1, 0, ACVP_DRBG_RET_BITS_LEN, 160);
     CHECK_ENABLE_CAP_RV(rv);
 
-    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_256, ACVP_DRBG_PRED_RESIST_ENABLED, 1);
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_224, 0, ACVP_DRBG_ENTROPY_LEN, 192, 64, 256);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_256, ACVP_DRBG_RESEED_ENABLED, 1);
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_224, 0, ACVP_DRBG_NONCE_LEN, 128, 32, 160);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_256, ACVP_DRBG_ENTROPY_LEN, 256, 64, 320);
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_224, 0, ACVP_DRBG_PERSO_LEN, 0, 128, 256);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_256, ACVP_DRBG_NONCE_LEN, 128, 32, 160);
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_224, 0, ACVP_DRBG_ADD_IN_LEN, 0, 128, 256);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_256, ACVP_DRBG_PERSO_LEN, 0, 128, 256);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_256, ACVP_DRBG_ADD_IN_LEN, 0, 128, 256);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_256, ACVP_DRBG_RET_BITS_LEN, 256);
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_224, 0, ACVP_DRBG_RET_BITS_LEN, 224);
     CHECK_ENABLE_CAP_RV(rv);
 
-    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_384, ACVP_DRBG_PRED_RESIST_ENABLED, 1);
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_256, 0, ACVP_DRBG_ENTROPY_LEN, 256, 64, 320);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_384, ACVP_DRBG_RESEED_ENABLED, 1);
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_256, 0, ACVP_DRBG_NONCE_LEN, 128, 32, 160);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_384, ACVP_DRBG_ENTROPY_LEN, 256, 64, 320);
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_256, 0, ACVP_DRBG_PERSO_LEN, 0, 128, 256);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_384, ACVP_DRBG_NONCE_LEN, 128, 32, 160);
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_256, 0, ACVP_DRBG_ADD_IN_LEN, 0, 128, 256);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_384, ACVP_DRBG_PERSO_LEN, 0, 128, 256);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_384, ACVP_DRBG_ADD_IN_LEN, 0, 128, 256);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_384, ACVP_DRBG_RET_BITS_LEN, 384);
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_256, 0, ACVP_DRBG_RET_BITS_LEN, 256);
     CHECK_ENABLE_CAP_RV(rv);
 
-    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_512, ACVP_DRBG_PRED_RESIST_ENABLED, 1);
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_384, 0, ACVP_DRBG_ENTROPY_LEN, 256, 64, 320);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_512, ACVP_DRBG_RESEED_ENABLED, 1);
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_384, 0, ACVP_DRBG_NONCE_LEN, 128, 32, 160);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_512, ACVP_DRBG_ENTROPY_LEN, 256, 64, 320);
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_384, 0, ACVP_DRBG_PERSO_LEN, 0, 128, 256);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_512, ACVP_DRBG_NONCE_LEN, 128, 32, 160);
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_384, 0, ACVP_DRBG_ADD_IN_LEN, 0, 128, 256);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_512, ACVP_DRBG_PERSO_LEN, 0, 128, 256);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_512, ACVP_DRBG_ADD_IN_LEN, 0, 128, 256);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_512, ACVP_DRBG_RET_BITS_LEN, 512);
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_384, 0, ACVP_DRBG_RET_BITS_LEN, 384);
     CHECK_ENABLE_CAP_RV(rv);
 
-    //ACVP_HMACDRBG
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_512, 0, ACVP_DRBG_ENTROPY_LEN, 256, 64, 320);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_512, 0, ACVP_DRBG_NONCE_LEN, 128, 32, 160);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_512, 0, ACVP_DRBG_PERSO_LEN, 0, 128, 256);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_512, 0, ACVP_DRBG_ADD_IN_LEN, 0, 128, 256);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_512, 0, ACVP_DRBG_RET_BITS_LEN, 512);
+    CHECK_ENABLE_CAP_RV(rv);
+
+
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_512_224, 0, ACVP_DRBG_ENTROPY_LEN, 256, 64, 320);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_512_224, 0, ACVP_DRBG_NONCE_LEN, 128, 32, 160);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_512_224, 0, ACVP_DRBG_PERSO_LEN, 0, 128, 256);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_512_224, 0, ACVP_DRBG_ADD_IN_LEN, 0, 128, 256);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_512_224, 0, ACVP_DRBG_RET_BITS_LEN, 224);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_512_256, 0, ACVP_DRBG_ENTROPY_LEN, 256, 64, 320);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_512_256, 0, ACVP_DRBG_NONCE_LEN, 128, 32, 160);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_512_256, 0, ACVP_DRBG_PERSO_LEN, 0, 128, 256);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_512_256, 0, ACVP_DRBG_ADD_IN_LEN, 0, 128, 256);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_512_256, 0, ACVP_DRBG_RET_BITS_LEN, 256);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    /* HMAC DRBG */
     rv = acvp_cap_drbg_enable(ctx, ACVP_HMACDRBG, &app_drbg_handler);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_HMACDRBG, ACVP_PREREQ_SHA, value);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_HMACDRBG,ACVP_PREREQ_HMAC, value);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_1, ACVP_DRBG_PRED_RESIST_ENABLED, 1);
+
+    /* Group number for these should be 0 */
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_1, 0, ACVP_DRBG_PRED_RESIST_ENABLED, 1);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_1, ACVP_DRBG_RESEED_ENABLED, 1);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_1, ACVP_DRBG_RET_BITS_LEN, 160);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_1, ACVP_DRBG_ENTROPY_LEN, 160, 32, 256);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_1, ACVP_DRBG_NONCE_LEN, 0, 0, 64);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_1, ACVP_DRBG_PERSO_LEN, 0, 128, 256);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_1, ACVP_DRBG_ADD_IN_LEN, 0, 128, 256);
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_1, 0, ACVP_DRBG_RESEED_ENABLED, 1);
     CHECK_ENABLE_CAP_RV(rv);
 
-    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224, ACVP_DRBG_PRED_RESIST_ENABLED, 1);
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_1, 0, ACVP_DRBG_RET_BITS_LEN, 160);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224, ACVP_DRBG_RESEED_ENABLED, 1);
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_1, 0, ACVP_DRBG_ENTROPY_LEN, 160, 32, 256);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224, ACVP_DRBG_RET_BITS_LEN, 224);
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_1, 0, ACVP_DRBG_NONCE_LEN, 0, 0, 64);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224, ACVP_DRBG_ENTROPY_LEN, 192, 64, 256);
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_1, 0, ACVP_DRBG_PERSO_LEN, 0, 128, 256);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224, ACVP_DRBG_NONCE_LEN, 0, 0, 96);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224, ACVP_DRBG_PERSO_LEN, 0, 64, 192);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224, ACVP_DRBG_ADD_IN_LEN, 0, 0, 192);
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_1, 0, ACVP_DRBG_ADD_IN_LEN, 0, 128, 256);
     CHECK_ENABLE_CAP_RV(rv);
 
-    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_256, ACVP_DRBG_PRED_RESIST_ENABLED, 1);
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224, 0, ACVP_DRBG_RET_BITS_LEN, 224);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_256, ACVP_DRBG_RESEED_ENABLED, 1);
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224, 0, ACVP_DRBG_ENTROPY_LEN, 192, 64, 256);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_256, ACVP_DRBG_RET_BITS_LEN, 256);
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224, 0, ACVP_DRBG_NONCE_LEN, 0, 0, 96);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_256, ACVP_DRBG_ENTROPY_LEN, 256, 64, 512);
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224, 0, ACVP_DRBG_PERSO_LEN, 0, 64, 192);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_256, ACVP_DRBG_NONCE_LEN, 0, 0, 128);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_256, ACVP_DRBG_PERSO_LEN, 0, 128, 256);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_256, ACVP_DRBG_ADD_IN_LEN, 0, 128, 256);
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224, 0, ACVP_DRBG_ADD_IN_LEN, 0, 0, 192);
     CHECK_ENABLE_CAP_RV(rv);
 
-    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_384, ACVP_DRBG_PRED_RESIST_ENABLED, 1);
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_256, 0, ACVP_DRBG_RET_BITS_LEN, 256);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_384, ACVP_DRBG_RESEED_ENABLED, 1);
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_256, 0, ACVP_DRBG_ENTROPY_LEN, 256, 64, 512);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_384, ACVP_DRBG_RET_BITS_LEN, 384);
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_256, 0, ACVP_DRBG_NONCE_LEN, 0, 0, 128);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_384, ACVP_DRBG_ENTROPY_LEN, 384, 64, 512);
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_256, 0, ACVP_DRBG_PERSO_LEN, 0, 128, 256);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_384, ACVP_DRBG_NONCE_LEN, 0, 0, 128);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_384, ACVP_DRBG_PERSO_LEN, 0, 128, 256);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_384, ACVP_DRBG_ADD_IN_LEN, 0, 128, 256);
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_256, 0, ACVP_DRBG_ADD_IN_LEN, 0, 128, 256);
     CHECK_ENABLE_CAP_RV(rv);
 
-    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_512, ACVP_DRBG_PRED_RESIST_ENABLED, 1);
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_384, 0, ACVP_DRBG_RET_BITS_LEN, 384);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_512, ACVP_DRBG_RESEED_ENABLED, 1);
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_384, 0, ACVP_DRBG_ENTROPY_LEN, 384, 64, 512);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_512, ACVP_DRBG_RET_BITS_LEN, 512);
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_384, 0, ACVP_DRBG_NONCE_LEN, 0, 0, 128);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_512, ACVP_DRBG_ENTROPY_LEN, 512, 64, 1024);
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_384, 0, ACVP_DRBG_PERSO_LEN, 0, 128, 256);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_512, ACVP_DRBG_NONCE_LEN, 0, 0, 128);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_512, ACVP_DRBG_PERSO_LEN, 0, 128, 256);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_512, ACVP_DRBG_ADD_IN_LEN, 0, 128, 256);
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_384, 0, ACVP_DRBG_ADD_IN_LEN, 0, 128, 256);
     CHECK_ENABLE_CAP_RV(rv);
 
-    // ACVP_CTRDRBG
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_512, 0, ACVP_DRBG_RET_BITS_LEN, 512);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_512, 0, ACVP_DRBG_ENTROPY_LEN, 512, 64, 1024);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_512, 0, ACVP_DRBG_NONCE_LEN, 0, 0, 128);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_512, 0, ACVP_DRBG_PERSO_LEN, 0, 128, 256);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_512, 0, ACVP_DRBG_ADD_IN_LEN, 0, 128, 256);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_512_224, 0, ACVP_DRBG_RET_BITS_LEN, 224);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_512_224, 0, ACVP_DRBG_ENTROPY_LEN, 512, 64, 1024);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_512_224, 0, ACVP_DRBG_NONCE_LEN, 0, 0, 128);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_512_224, 0, ACVP_DRBG_PERSO_LEN, 0, 128, 256);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_512_224, 0, ACVP_DRBG_ADD_IN_LEN, 0, 128, 256);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_512_256, 0, ACVP_DRBG_RET_BITS_LEN, 256);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_512_256, 0, ACVP_DRBG_ENTROPY_LEN, 512, 64, 1024);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_512_256, 0, ACVP_DRBG_NONCE_LEN, 0, 0, 128);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_512_256, 0, ACVP_DRBG_PERSO_LEN, 0, 128, 256);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_512_256, 0, ACVP_DRBG_ADD_IN_LEN, 0, 128, 256);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    /* CTR DRBG */
     rv = acvp_cap_drbg_enable(ctx, ACVP_CTRDRBG, &app_drbg_handler);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_CTRDRBG, ACVP_PREREQ_AES, value);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_drbg_set_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128, ACVP_DRBG_DER_FUNC_ENABLED, 1);
+
+    /* Group number for these should be 0 */
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128, 0, ACVP_DRBG_DER_FUNC_ENABLED, 1);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_drbg_set_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128, ACVP_DRBG_PRED_RESIST_ENABLED, 1);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_drbg_set_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128, ACVP_DRBG_RESEED_ENABLED, 1);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_drbg_set_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128, ACVP_DRBG_RET_BITS_LEN, 256);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128, ACVP_DRBG_ENTROPY_LEN, 128, 128, 256);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128, ACVP_DRBG_NONCE_LEN, 0, 0, 128);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128, ACVP_DRBG_PERSO_LEN, 0, 256, 256);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128, ACVP_DRBG_ADD_IN_LEN, 0, 256, 256);
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128, 0, ACVP_DRBG_PRED_RESIST_ENABLED, 1);
     CHECK_ENABLE_CAP_RV(rv);
 
-    rv = acvp_cap_drbg_set_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_192, ACVP_DRBG_DER_FUNC_ENABLED, 1);
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128, 0, ACVP_DRBG_RESEED_ENABLED, 1);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_drbg_set_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_192, ACVP_DRBG_PRED_RESIST_ENABLED, 1);
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128, 0, ACVP_DRBG_RET_BITS_LEN, 256);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_drbg_set_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_192, ACVP_DRBG_RESEED_ENABLED, 1);
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128, 0, ACVP_DRBG_ENTROPY_LEN, 128, 128, 256);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_drbg_set_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_192, ACVP_DRBG_RET_BITS_LEN, 256);
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128, 0, ACVP_DRBG_NONCE_LEN, 0, 0, 128);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_192, ACVP_DRBG_ENTROPY_LEN, 256, 128, 512);
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128, 0, ACVP_DRBG_PERSO_LEN, 0, 256, 256);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_192, ACVP_DRBG_NONCE_LEN, 0, 0, 128);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_192, ACVP_DRBG_PERSO_LEN, 0, 256, 256);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_192, ACVP_DRBG_ADD_IN_LEN, 0, 256, 256);
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128, 0, ACVP_DRBG_ADD_IN_LEN, 0, 256, 256);
     CHECK_ENABLE_CAP_RV(rv);
 
-    rv = acvp_cap_drbg_set_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_256, ACVP_DRBG_DER_FUNC_ENABLED, 1);
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128, 1, ACVP_DRBG_DER_FUNC_ENABLED, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_drbg_set_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_256, ACVP_DRBG_PRED_RESIST_ENABLED, 1);
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128, 1, ACVP_DRBG_RET_BITS_LEN, 256);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_drbg_set_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_256, ACVP_DRBG_RESEED_ENABLED, 1);
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128, 1, ACVP_DRBG_ENTROPY_LEN, 256, 0, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_drbg_set_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_256, ACVP_DRBG_RET_BITS_LEN, 256);
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128, 1, ACVP_DRBG_NONCE_LEN, 0, 0, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_256, ACVP_DRBG_ENTROPY_LEN, 256, 128, 512);
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128, 1, ACVP_DRBG_PERSO_LEN, 256, 0, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_256, ACVP_DRBG_NONCE_LEN, 0, 0, 128);
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128, 1, ACVP_DRBG_ADD_IN_LEN, 256, 0, 0);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_256, ACVP_DRBG_PERSO_LEN, 0, 256, 256);
+
+
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_192, 0, ACVP_DRBG_DER_FUNC_ENABLED, 1);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_256, ACVP_DRBG_ADD_IN_LEN, 0, 256, 256);
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_192, 0, ACVP_DRBG_RET_BITS_LEN, 256);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_192, 0, ACVP_DRBG_ENTROPY_LEN, 256, 128, 512);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_192, 0, ACVP_DRBG_NONCE_LEN, 0, 0, 128);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_192, 0, ACVP_DRBG_PERSO_LEN, 0, 256, 256);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_192, 0, ACVP_DRBG_ADD_IN_LEN, 0, 256, 256);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_192, 1, ACVP_DRBG_DER_FUNC_ENABLED, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_192, 1, ACVP_DRBG_RET_BITS_LEN, 256);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_192, 1, ACVP_DRBG_ENTROPY_LEN, 320, 0, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_192, 1, ACVP_DRBG_NONCE_LEN, 0, 0, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_192, 1, ACVP_DRBG_PERSO_LEN, 320, 0, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_192, 1, ACVP_DRBG_ADD_IN_LEN, 320, 0, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+
+
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_256, 0, ACVP_DRBG_DER_FUNC_ENABLED, 1);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_256, 0, ACVP_DRBG_PRED_RESIST_ENABLED, 1);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_256, 0, ACVP_DRBG_RESEED_ENABLED, 1);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_256, 0, ACVP_DRBG_RET_BITS_LEN, 256);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_256, 0, ACVP_DRBG_ENTROPY_LEN, 256, 128, 512);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_256, 0, ACVP_DRBG_NONCE_LEN, 0, 0, 128);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_256, 0, ACVP_DRBG_PERSO_LEN, 0, 256, 256);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_256, 0, ACVP_DRBG_ADD_IN_LEN, 0, 256, 256);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_256, 1, ACVP_DRBG_DER_FUNC_ENABLED, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_256, 1, ACVP_DRBG_RET_BITS_LEN, 256);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_256, 1, ACVP_DRBG_ENTROPY_LEN, 384, 0, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_256, 1, ACVP_DRBG_NONCE_LEN, 0, 0, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_256, 1, ACVP_DRBG_PERSO_LEN, 384, 0, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_256, 1, ACVP_DRBG_ADD_IN_LEN, 384, 0, 0);
     CHECK_ENABLE_CAP_RV(rv);
 #endif
+
 end:
 
     return rv;

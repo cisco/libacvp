@@ -3578,35 +3578,35 @@ ACVP_RESULT acvp_cap_kmac_set_domain(ACVP_CTX *ctx,
 /*
  * Add DRBG Length Range
  */
-static ACVP_RESULT acvp_add_drbg_length_range(ACVP_DRBG_CAP_MODE *drbg_cap_mode,
+static ACVP_RESULT acvp_add_drbg_length_range(ACVP_DRBG_CAP_GROUP *cap_group,
                                               ACVP_DRBG_PARM param,
                                               int min,
                                               int step,
                                               int max) {
-    if (!drbg_cap_mode) {
+    if (!cap_group) {
         return ACVP_INVALID_ARG;
     }
 
     switch (param) {
     case ACVP_DRBG_ENTROPY_LEN:
-        drbg_cap_mode->entropy_len_min = min;
-        drbg_cap_mode->entropy_len_step = step;
-        drbg_cap_mode->entropy_len_max = max;
+        cap_group->entropy_len_min = min;
+        cap_group->entropy_len_step = step;
+        cap_group->entropy_len_max = max;
         break;
     case ACVP_DRBG_NONCE_LEN:
-        drbg_cap_mode->nonce_len_min = min;
-        drbg_cap_mode->nonce_len_step = step;
-        drbg_cap_mode->nonce_len_max = max;
+        cap_group->nonce_len_min = min;
+        cap_group->nonce_len_step = step;
+        cap_group->nonce_len_max = max;
         break;
     case ACVP_DRBG_PERSO_LEN:
-        drbg_cap_mode->perso_len_min = min;
-        drbg_cap_mode->perso_len_step = step;
-        drbg_cap_mode->perso_len_max = max;
+        cap_group->perso_len_min = min;
+        cap_group->perso_len_step = step;
+        cap_group->perso_len_max = max;
         break;
     case ACVP_DRBG_ADD_IN_LEN:
-        drbg_cap_mode->additional_in_len_min = min;
-        drbg_cap_mode->additional_in_len_step = step;
-        drbg_cap_mode->additional_in_len_max = max;
+        cap_group->additional_in_len_min = min;
+        cap_group->additional_in_len_step = step;
+        cap_group->additional_in_len_max = max;
         break;
     case ACVP_DRBG_RET_BITS_LEN:
     case ACVP_DRBG_PRE_REQ_VALS:
@@ -3625,12 +3625,14 @@ static ACVP_RESULT acvp_add_drbg_length_range(ACVP_DRBG_CAP_MODE *drbg_cap_mode,
 ACVP_RESULT acvp_cap_drbg_set_length(ACVP_CTX *ctx,
                                      ACVP_CIPHER cipher,
                                      ACVP_DRBG_MODE mode,
+                                     int group,
                                      ACVP_DRBG_PARM param,
                                      int min,
                                      int step,
                                      int max) {
-    ACVP_DRBG_CAP_MODE_LIST *drbg_cap_mode_list;
-    ACVP_CAPS_LIST *cap_list;
+    ACVP_DRBG_MODE_LIST *drbg_cap_mode = NULL;
+    ACVP_DRBG_CAP_GROUP *grp = NULL;
+    ACVP_CAPS_LIST *cap_list = NULL;
 
     if (!ctx) {
         return ACVP_NO_CTX;
@@ -3649,15 +3651,22 @@ ACVP_RESULT acvp_cap_drbg_set_length(ACVP_CTX *ctx,
      * Locate cap mode from array
      * if the mode does not exist yet then create it.
      */
-    drbg_cap_mode_list = acvp_locate_drbg_mode_entry(cap_list, mode);
-    if (!drbg_cap_mode_list) {
-        drbg_cap_mode_list = calloc(1, sizeof(ACVP_DRBG_CAP_MODE_LIST));
-        if (!drbg_cap_mode_list) {
+    drbg_cap_mode  = acvp_locate_drbg_mode_entry(cap_list, mode);
+    if (!drbg_cap_mode) {
+        drbg_cap_mode = acvp_create_drbg_mode_entry(cap_list, mode);
+        if (!drbg_cap_mode) {
             ACVP_LOG_ERR("Malloc Failed.");
             return ACVP_MALLOC_FAIL;
         }
-        drbg_cap_mode_list->cap_mode.mode = mode;
-        cap_list->cap.drbg_cap->drbg_cap_mode_list = drbg_cap_mode_list;
+    }
+
+    grp = acvp_locate_drbg_group_entry(drbg_cap_mode, group);
+    if (!grp) {
+        grp = acvp_create_drbg_group(drbg_cap_mode, group);
+        if (!grp) {
+            ACVP_LOG_ERR("Error creating group for DRBG capabilities");
+            return ACVP_MALLOC_FAIL;
+        }
     }
 
     switch (param) {
@@ -3704,8 +3713,7 @@ ACVP_RESULT acvp_cap_drbg_set_length(ACVP_CTX *ctx,
     /*
      * Add the length range to the cap
      */
-    return acvp_add_drbg_length_range(&drbg_cap_mode_list->cap_mode,
-                                      param, min, step, max);
+    return acvp_add_drbg_length_range(grp, param, min, step, max);
 }
 
 static ACVP_RESULT acvp_validate_drbg_parm_value(ACVP_DRBG_PARM parm, int value) {
@@ -3754,206 +3762,16 @@ static ACVP_RESULT acvp_validate_drbg_parm_value(ACVP_DRBG_PARM parm, int value)
     return retval;
 }
 
-/*
- * Add CTR DRBG parameters
- */
-static ACVP_RESULT acvp_add_ctr_drbg_cap_parm(ACVP_DRBG_CAP_MODE *drbg_cap_mode,
-                                              ACVP_DRBG_MODE mode,
-                                              ACVP_DRBG_PARM param,
-                                              int value) {
-    if (!drbg_cap_mode) {
-        return ACVP_INVALID_ARG;
-    }
-
-    if (acvp_validate_drbg_parm_value(param, value) != ACVP_SUCCESS) {
-        return ACVP_INVALID_ARG;
-    }
-
-    switch (mode) {
-    case ACVP_DRBG_TDES:
-    case ACVP_DRBG_AES_128:
-    case ACVP_DRBG_AES_192:
-    case ACVP_DRBG_AES_256:
-        drbg_cap_mode->mode = mode;
-        switch (param) {
-        case ACVP_DRBG_DER_FUNC_ENABLED:
-            drbg_cap_mode->der_func_enabled = value;
-            break;
-        case ACVP_DRBG_PRED_RESIST_ENABLED:
-            drbg_cap_mode->pred_resist_enabled = value;
-            break;
-        case ACVP_DRBG_RESEED_ENABLED:
-            drbg_cap_mode->reseed_implemented = value;
-            break;
-        case ACVP_DRBG_ENTROPY_LEN:
-            drbg_cap_mode->entropy_input_len = value;
-            break;
-        case ACVP_DRBG_NONCE_LEN:
-            drbg_cap_mode->nonce_len = value;
-            break;
-        case ACVP_DRBG_PERSO_LEN:
-            drbg_cap_mode->perso_string_len = value;
-            break;
-        case ACVP_DRBG_ADD_IN_LEN:
-            drbg_cap_mode->additional_input_len = value;
-            break;
-        case ACVP_DRBG_RET_BITS_LEN:
-            drbg_cap_mode->returned_bits_len = value;
-            break;
-        case ACVP_DRBG_PRE_REQ_VALS:
-        default:
-            break;
-        }
-        break;
-
-
-    case ACVP_DRBG_SHA_1:
-    case ACVP_DRBG_SHA_224:
-    case ACVP_DRBG_SHA_256:
-    case ACVP_DRBG_SHA_384:
-    case ACVP_DRBG_SHA_512:
-    case ACVP_DRBG_SHA_512_224:
-    case ACVP_DRBG_SHA_512_256:
-    default:
-        return ACVP_INVALID_ARG;
-
-        break;
-    }
-
-    return ACVP_SUCCESS;
-}
-
-/*
- * Add HASH DRBG parameters
- */
-static ACVP_RESULT acvp_add_hash_drbg_cap_parm(ACVP_DRBG_CAP_MODE *drbg_cap_mode,
-                                               ACVP_DRBG_MODE mode,
-                                               ACVP_DRBG_PARM param,
-                                               int value) {
-    switch (mode) {
-    case ACVP_DRBG_SHA_1:
-    case ACVP_DRBG_SHA_224:
-    case ACVP_DRBG_SHA_256:
-    case ACVP_DRBG_SHA_384:
-    case ACVP_DRBG_SHA_512:
-    case ACVP_DRBG_SHA_512_224:
-    case ACVP_DRBG_SHA_512_256:
-        drbg_cap_mode->mode = mode;
-        switch (param) {
-        case ACVP_DRBG_DER_FUNC_ENABLED:
-            drbg_cap_mode->der_func_enabled = value;
-            break;
-        case ACVP_DRBG_PRED_RESIST_ENABLED:
-            drbg_cap_mode->pred_resist_enabled = value;
-            break;
-        case ACVP_DRBG_RESEED_ENABLED:
-            drbg_cap_mode->reseed_implemented = value;
-            break;
-        case ACVP_DRBG_ENTROPY_LEN:
-            drbg_cap_mode->entropy_input_len = value;
-            break;
-        case ACVP_DRBG_NONCE_LEN:
-            drbg_cap_mode->nonce_len = value;
-            break;
-        case ACVP_DRBG_PERSO_LEN:
-            drbg_cap_mode->perso_string_len = value;
-            break;
-        case ACVP_DRBG_ADD_IN_LEN:
-            drbg_cap_mode->additional_input_len = value;
-            break;
-        case ACVP_DRBG_RET_BITS_LEN:
-            drbg_cap_mode->returned_bits_len = value;
-            break;
-        case ACVP_DRBG_PRE_REQ_VALS:
-        default:
-            return ACVP_INVALID_ARG;
-
-            break;
-        }
-        break;
-    case ACVP_DRBG_TDES:
-    case ACVP_DRBG_AES_128:
-    case ACVP_DRBG_AES_192:
-    case ACVP_DRBG_AES_256:
-    default:
-        return ACVP_INVALID_ARG;
-
-        break;
-    }
-    return ACVP_SUCCESS;
-}
-
-/*
- * Add HMAC DRBG parameters
- */
-static ACVP_RESULT acvp_add_hmac_drbg_cap_parm(ACVP_DRBG_CAP_MODE *drbg_cap_mode,
-                                               ACVP_DRBG_MODE mode,
-                                               ACVP_DRBG_PARM param,
-                                               int value) {
-    switch (mode) {
-    case ACVP_DRBG_SHA_1:
-    case ACVP_DRBG_SHA_224:
-    case ACVP_DRBG_SHA_256:
-    case ACVP_DRBG_SHA_384:
-    case ACVP_DRBG_SHA_512:
-    case ACVP_DRBG_SHA_512_224:
-    case ACVP_DRBG_SHA_512_256:
-        drbg_cap_mode->mode = mode;
-        switch (param) {
-        case ACVP_DRBG_DER_FUNC_ENABLED:
-            drbg_cap_mode->der_func_enabled = value;
-            break;
-        case ACVP_DRBG_PRED_RESIST_ENABLED:
-            drbg_cap_mode->pred_resist_enabled = value;
-            break;
-        case ACVP_DRBG_RESEED_ENABLED:
-            drbg_cap_mode->reseed_implemented = value;
-            break;
-        case ACVP_DRBG_ENTROPY_LEN:
-            drbg_cap_mode->entropy_input_len = value;
-            break;
-        case ACVP_DRBG_NONCE_LEN:
-            drbg_cap_mode->nonce_len = value;
-            break;
-        case ACVP_DRBG_PERSO_LEN:
-            drbg_cap_mode->perso_string_len = value;
-            break;
-        case ACVP_DRBG_ADD_IN_LEN:
-            drbg_cap_mode->additional_input_len = value;
-            break;
-        case ACVP_DRBG_RET_BITS_LEN:
-            drbg_cap_mode->returned_bits_len = value;
-            break;
-        case ACVP_DRBG_PRE_REQ_VALS:
-        default:
-            return ACVP_INVALID_ARG;
-        }
-        break;
-    case ACVP_DRBG_TDES:
-    case ACVP_DRBG_AES_128:
-    case ACVP_DRBG_AES_192:
-    case ACVP_DRBG_AES_256:
-    default:
-        return ACVP_INVALID_ARG;
-
-        break;
-    }
-
-    return ACVP_SUCCESS;
-}
-
-/*
- * The user should call this after invoking acvp_enable_drbg_cap_parm().
- */
+/* The user should call this after invoking acvp_enable_drbg_cap_parm(). */
 ACVP_RESULT acvp_cap_drbg_set_parm(ACVP_CTX *ctx,
                                    ACVP_CIPHER cipher,
                                    ACVP_DRBG_MODE mode,
+                                   int group,
                                    ACVP_DRBG_PARM param,
                                    int value) {
-    ACVP_DRBG_CAP_MODE_LIST *drbg_cap_mode_list;
-    ACVP_DRBG_CAP_MODE_LIST *drbg_cap_mode_list_tmp;
-    ACVP_CAPS_LIST *cap_list;
-    ACVP_RESULT result;
+    ACVP_DRBG_MODE_LIST *cap_mode = NULL;
+    ACVP_DRBG_CAP_GROUP *grp = NULL;
+    ACVP_CAPS_LIST *cap_list = NULL;
     ACVP_SUB_DRBG alg;
 
     /*
@@ -3981,23 +3799,21 @@ ACVP_RESULT acvp_cap_drbg_set_parm(ACVP_CTX *ctx,
         return ACVP_NO_CAP;
     }
 
-    drbg_cap_mode_list = acvp_locate_drbg_mode_entry(cap_list, mode);
-    if (!drbg_cap_mode_list) {
-        drbg_cap_mode_list = calloc(1, sizeof(ACVP_DRBG_CAP_MODE_LIST));
-        if (!drbg_cap_mode_list) {
+    cap_mode = acvp_locate_drbg_mode_entry(cap_list, mode);
+    if (!cap_mode) {
+        cap_mode = acvp_create_drbg_mode_entry(cap_list, mode);
+        if (!cap_mode) {
             ACVP_LOG_ERR("Malloc Failed.");
             return ACVP_MALLOC_FAIL;
         }
+    }
 
-        drbg_cap_mode_list->cap_mode.mode = mode;
-        if (cap_list->cap.drbg_cap->drbg_cap_mode_list == NULL) {
-            cap_list->cap.drbg_cap->drbg_cap_mode_list = drbg_cap_mode_list;
-        } else {
-            drbg_cap_mode_list_tmp = cap_list->cap.drbg_cap->drbg_cap_mode_list;
-            while (drbg_cap_mode_list_tmp->next) {
-                drbg_cap_mode_list_tmp = drbg_cap_mode_list_tmp->next;
-            }
-            drbg_cap_mode_list_tmp->next = drbg_cap_mode_list;
+    grp = acvp_locate_drbg_group_entry(cap_mode, group);
+    if (!grp) {
+        grp = acvp_create_drbg_group(cap_mode, group);
+        if (!grp) {
+            ACVP_LOG_ERR("Error creating group for DRBG capabilities");
+            return ACVP_MALLOC_FAIL;
         }
     }
 
@@ -4009,21 +3825,46 @@ ACVP_RESULT acvp_cap_drbg_set_parm(ACVP_CTX *ctx,
         ACVP_LOG_ERR("Invalid cipher value");
         return ACVP_INVALID_ARG;
     }
-    switch (alg) {
-    case ACVP_SUB_DRBG_HASH:
-        result = acvp_add_hash_drbg_cap_parm(&drbg_cap_mode_list->cap_mode, mode, param, value);
-        break;
-    case ACVP_SUB_DRBG_HMAC:
-        result = acvp_add_hmac_drbg_cap_parm(&drbg_cap_mode_list->cap_mode, mode, param, value);
-        break;
-    case ACVP_SUB_DRBG_CTR:
-        result = acvp_add_ctr_drbg_cap_parm(&drbg_cap_mode_list->cap_mode, mode, param, value);
-        break;
-    default:
+
+    if (acvp_validate_drbg_parm_value(param, value) != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Error validating DRBG paramater value (param = %d, value = %d", param, value);
         return ACVP_INVALID_ARG;
     }
 
-    return result;
+    switch (param) {
+    case ACVP_DRBG_DER_FUNC_ENABLED:
+        grp->der_func_enabled = value;
+        break;
+    case ACVP_DRBG_PRED_RESIST_ENABLED:
+        cap_list->cap.drbg_cap->pred_resist_enabled = value;
+        break;
+    case ACVP_DRBG_RESEED_ENABLED:
+        cap_list->cap.drbg_cap->reseed_implemented = value;
+        break;
+    case ACVP_DRBG_ENTROPY_LEN:
+        grp->entropy_input_len = value;
+        break;
+    case ACVP_DRBG_NONCE_LEN:
+        grp->nonce_len = value;
+        break;
+    case ACVP_DRBG_PERSO_LEN:
+        grp->perso_string_len = value;
+        break;
+    case ACVP_DRBG_ADD_IN_LEN:
+        grp->additional_input_len = value;
+        break;
+    case ACVP_DRBG_RET_BITS_LEN:
+        grp->returned_bits_len = value;
+        break;
+    case ACVP_DRBG_PRE_REQ_VALS:
+    default:
+        ACVP_LOG_ERR("Invalid DRBG param supplied");
+        return ACVP_INVALID_ARG;
+        break;
+    }
+
+
+    return ACVP_SUCCESS;
 }
 
 ACVP_RESULT acvp_cap_drbg_enable(ACVP_CTX *ctx,
