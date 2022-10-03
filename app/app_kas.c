@@ -441,17 +441,19 @@ err:
     return rv;
 }
 
+
 int app_kas_ifc_handler(ACVP_TEST_CASE *test_case) {
-ACVP_KAS_IFC_TC *tc = NULL;
+    ACVP_KAS_IFC_TC *tc = NULL;
     int rv = 1;
     size_t encap_s_len = 0, z_len = 0;
     unsigned char *encap_s = NULL, *z = NULL;
     BIGNUM *p = NULL, *q = NULL, *n = NULL, *d = NULL, *e = NULL;
+    BIGNUM *server_n = NULL, *server_e = NULL;
     BIGNUM *dmp1 = NULL, *dmq1 = NULL, *iqmp = NULL;
-    EVP_PKEY *pkey = NULL;
-    EVP_PKEY_CTX *pkey_ctx = NULL, *encap_ctx = NULL;
-    OSSL_PARAM *params = NULL;
-    OSSL_PARAM_BLD *pkey_pbld = NULL;
+    EVP_PKEY *pkey = NULL, *serv_pkey = NULL;
+    EVP_PKEY_CTX *pkey_ctx = NULL, *encap_ctx = NULL, *decap_ctx = NULL, *serv_ctx = NULL;
+    OSSL_PARAM *params = NULL, *serv_params = NULL;
+    OSSL_PARAM_BLD *pbld = NULL, *serv_pbld = NULL;
     BN_CTX *bctx = NULL;
 
     if (!test_case) {
@@ -461,16 +463,22 @@ ACVP_KAS_IFC_TC *tc = NULL;
 
     tc = test_case->tc.kas_ifc;
 
-    e = BN_bin2bn(tc->e, tc->elen, NULL);
-    n = BN_bin2bn(tc->n, tc->nlen, NULL);
-    if (!e || !n) {
-        printf("Error generating BN params from test case in KAS-IFC\n");
-        goto err;
+    /** Step 1: Convert all existing values into bignum */
+    if (tc->kas_role == ACVP_KAS_IFC_INITIATOR || tc->scheme == ACVP_KAS_IFC_KAS2) {
+        server_n = BN_bin2bn(tc->server_n, tc->server_nlen, NULL);
+        server_e = BN_bin2bn(tc->server_e, tc->server_elen, NULL);
+        if (!server_e || !server_n) {
+            printf("Error generating BN params from server key in KAS-IFC\n");
+            goto err;
+        }
     }
-    if (tc->kas_role == ACVP_KAS_IFC_RESPONDER) {
+
+    if (tc->kas_role == ACVP_KAS_IFC_RESPONDER || tc->scheme == ACVP_KAS_IFC_KAS2) {
+        n = BN_bin2bn(tc->n, tc->nlen, NULL);
+        e = BN_bin2bn(tc->e, tc->elen, NULL);
         p = BN_bin2bn(tc->p, tc->plen, NULL);
         q = BN_bin2bn(tc->q, tc->qlen, NULL);
-        if (!p || !q) {
+        if (!n || !e || !p || !q) {
             printf("Error generating BN params from test case in KAS-IFC\n");
             goto err;
         }
@@ -498,50 +506,91 @@ ACVP_KAS_IFC_TC *tc = NULL;
         }
     }
 
-    pkey_pbld = OSSL_PARAM_BLD_new();
-    if (!pkey_pbld) {
+    /* Step 2a: build pkey structure for server public key */
+    serv_pbld = OSSL_PARAM_BLD_new();
+    if (!serv_pbld) {
         printf("Error creating param_bld in KAS-IFC\n");
         goto err;
     }
-    OSSL_PARAM_BLD_push_BN(pkey_pbld, "n", n);
-    OSSL_PARAM_BLD_push_BN(pkey_pbld, "e", e);
-    if (tc->kas_role == ACVP_KAS_IFC_RESPONDER) {
-        OSSL_PARAM_BLD_push_BN(pkey_pbld, "rsa-factor1", p);
-        OSSL_PARAM_BLD_push_BN(pkey_pbld, "rsa-factor2", q);
-        if (tc->key_gen == ACVP_KAS_IFC_RSAKPG1_CRT || tc->key_gen == ACVP_KAS_IFC_RSAKPG2_CRT) {
-            OSSL_PARAM_BLD_push_BN(pkey_pbld, "rsa-exponent1", dmp1);
-            OSSL_PARAM_BLD_push_BN(pkey_pbld, "rsa-exponent2", dmq1);
-            OSSL_PARAM_BLD_push_BN(pkey_pbld, "rsa-coefficient1", iqmp);
-        }
-        OSSL_PARAM_BLD_push_BN(pkey_pbld, "d", d);
-    }
-    OSSL_PARAM_BLD_push_uint(pkey_pbld, "bits", tc->modulo);
-    params = OSSL_PARAM_BLD_to_param(pkey_pbld);
-    if (!params) {
+    OSSL_PARAM_BLD_push_BN(serv_pbld, "n", server_n);
+    OSSL_PARAM_BLD_push_BN(serv_pbld, "e", server_e);
+    OSSL_PARAM_BLD_push_uint(serv_pbld, "bits", tc->modulo);
+    serv_params = OSSL_PARAM_BLD_to_param(serv_pbld);
+    if (!serv_params) {
         printf("Error generating parameters for pkey generation in KAS-IFC\n");
+        goto err;
     }
-
-    pkey_ctx = EVP_PKEY_CTX_new_from_name(NULL, "RSA", NULL);
-    if (!pkey_ctx) {
+    serv_ctx = EVP_PKEY_CTX_new_from_name(NULL, "RSA", NULL);
+    if (!serv_ctx) {
         printf("Error initializing pkey ctx for KAS-IFC\n");
         goto err;
     }
-    if (EVP_PKEY_fromdata_init(pkey_ctx) != 1) {
+    if (EVP_PKEY_fromdata_init(serv_ctx) != 1) {
         printf("Error initializing pkey in KAS-IFC\n");
         goto err;
     }
-    if (EVP_PKEY_fromdata(pkey_ctx, &pkey, EVP_PKEY_KEYPAIR, params) != 1) {
+    if (EVP_PKEY_fromdata(serv_ctx, &serv_pkey, EVP_PKEY_PUBLIC_KEY, serv_params) != 1) {
         printf("Error generating pkey in KAS-IFC\n");
         goto err;
     }
 
-    encap_ctx = EVP_PKEY_CTX_new_from_pkey(NULL, pkey, NULL);
+    encap_ctx = EVP_PKEY_CTX_new_from_pkey(NULL, serv_pkey, NULL);
     if (!encap_ctx) {
         printf("Error creating encapsulate ctx in KAS-IFC\n");
         goto err;
     }
 
+    /* Step 2b: build pkey structure for IUT keypair (for all except KAS1 initiator cases) */
+    if (!(tc->scheme == ACVP_KAS_IFC_KAS1 && tc->kas_role == ACVP_KAS_IFC_INITIATOR)) {
+        pbld = OSSL_PARAM_BLD_new();
+        if (!pbld) {
+            printf("Error creating param_bld in KAS-IFC\n");
+            goto err;
+        }
+
+        /* Note: rsakpg-prime-factor schemes should use P and Q as private key storage.
+         * OpenSSL claims support, but is unclear. Here we represent with our given (?) n value */
+        OSSL_PARAM_BLD_push_BN(pbld, "n", n);
+        OSSL_PARAM_BLD_push_BN(pbld, "e", e);
+        OSSL_PARAM_BLD_push_BN(pbld, "d", d);
+        OSSL_PARAM_BLD_push_uint(pbld, "bits", tc->modulo);
+        if (tc->key_gen == ACVP_KAS_IFC_RSAKPG1_CRT || tc->key_gen == ACVP_KAS_IFC_RSAKPG2_CRT) {
+            OSSL_PARAM_BLD_push_BN(pbld, "rsa-factor1", p);
+            OSSL_PARAM_BLD_push_BN(pbld, "rsa-factor2", q);
+            OSSL_PARAM_BLD_push_BN(pbld, "rsa-exponent1", dmp1);
+            OSSL_PARAM_BLD_push_BN(pbld, "rsa-exponent2", dmq1);
+            OSSL_PARAM_BLD_push_BN(pbld, "rsa-coefficient1", iqmp);
+        }
+
+        params = OSSL_PARAM_BLD_to_param(pbld);
+        if (!params) {
+            printf("Error generating parameters for pkey generation in KAS-IFC\n");
+            goto err;
+        }
+
+        pkey_ctx = EVP_PKEY_CTX_new_from_name(NULL, "RSA", NULL);
+        if (!pkey_ctx) {
+            printf("Error initializing pkey ctx for KAS-IFC\n");
+            goto err;
+        }
+        if (EVP_PKEY_fromdata_init(pkey_ctx) != 1) {
+            printf("Error initializing pkey in KAS-IFC\n");
+            goto err;
+        }
+        if (EVP_PKEY_fromdata(pkey_ctx, &pkey, EVP_PKEY_KEYPAIR, params) != 1) {
+            printf("Error generating pkey in KAS-IFC\n");
+            goto err;
+        }
+
+        decap_ctx = EVP_PKEY_CTX_new_from_pkey(NULL, pkey, NULL);
+        if (!decap_ctx) {
+            printf("Error creating decapsulate ctx in KAS-IFC\n");
+            goto err;
+        }
+    }
+
     /**
+     * KAS1:
      * The initiator "encapsulates" an RSA key into an RSASVE mode (see sp800-56Br2).
      * This generates ciphertext aka an encapsulated secret which is sent to the other party.
      * In the case of being a responder, the secret is decapsulated.
@@ -549,13 +598,16 @@ ACVP_KAS_IFC_TC *tc = NULL;
      * For VAL tests as responders, the decapsulated Z should match the provided Z.
      * For AFT tests as initiators, the plain AND encapsulated Z should be provided as output.
      * For AFT tests as responders, decapsulated Z should be provided as output.
-     * Encapsulated secrets should be placed in ct_z, and plain secrets in pt_z. For VAL tests,
+     * Encapsulated secrets should be placed in iut_ct_z, and plain secrets in iut_pt_z. For VAL tests,
      * the library handles the comparison against provided values.
+     * KAS2:
+     * performs these but extra tasks as well. It can get confusing. see details below.
      */
     if (tc->kas_role == ACVP_KAS_IFC_INITIATOR) {
         /*
          * For initiator VAL tests, the server provides the Z. The encapsulate() API does not allow
-         * the setting of the Z value to be encapsulated; instead, we perform an encrypt. 
+         * the setting of the Z value to be encapsulated; instead, we perform an encrypt (functionally identical).
+         * Note that we do not check the return values for VAL tests; some failures are expected.
          */
         if (tc->test_type == ACVP_KAS_IFC_TT_VAL) {
             if (EVP_PKEY_encrypt_init(encap_ctx) != 1) {
@@ -566,17 +618,21 @@ ACVP_KAS_IFC_TC *tc = NULL;
                 printf("Error setting RSA padding in KAS-IFC\n");
                 goto err;
             }
-            EVP_PKEY_encrypt(encap_ctx, NULL, &encap_s_len, tc->pt_z, tc->pt_z_len);
+            EVP_PKEY_encrypt(encap_ctx, NULL, &encap_s_len, tc->iut_pt_z, tc->iut_pt_z_len);
             encap_s = calloc(encap_s_len, sizeof(unsigned char));
             if (!encap_s) {
                 printf("Error allocating memory in KAS-IFC\n");
                 goto err;
             }
-            if (EVP_PKEY_encrypt(encap_ctx, encap_s, &encap_s_len, tc->pt_z, tc->pt_z_len) == 1) {
-                memcpy_s(tc->ct_z, KAS_IFC_MAX, encap_s, encap_s_len);
-                tc->ct_z_len = (int)encap_s_len;
-            }
+            EVP_PKEY_encrypt(encap_ctx, encap_s, &encap_s_len, tc->iut_pt_z, tc->iut_pt_z_len);
+            memcpy_s(tc->iut_ct_z, KAS_IFC_MAX, encap_s, encap_s_len);
+            tc->iut_ct_z_len = (int)encap_s_len;
         } else {
+            /*
+            * For initiator AFT tests, we generate a shared secret Z (SSL does it internally)
+            * and encapsulate it with the server's public key. both the Z and encapsulated Z are the
+            * outputs..
+            */
             if (EVP_PKEY_encapsulate_init(encap_ctx, NULL) != 1) {
                 printf("Error initializing encapsulate in KAS-IFC\n");
                 goto err;
@@ -596,37 +652,105 @@ ACVP_KAS_IFC_TC *tc = NULL;
                 printf("Error encapsulating in KAS-IFC\n");
                 goto err;
             }
-            memcpy_s(tc->ct_z, KAS_IFC_MAX, encap_s, encap_s_len);
-            memcpy_s(tc->pt_z, KAS_IFC_MAX, z, z_len);
-            tc->ct_z_len = (int)encap_s_len;
-            tc->pt_z_len = (int)z_len;
+            memcpy_s(tc->iut_ct_z, KAS_IFC_MAX, encap_s, encap_s_len);
+            memcpy_s(tc->iut_pt_z, KAS_IFC_MAX, z, z_len);
+            tc->iut_ct_z_len = (int)encap_s_len;
+            tc->iut_pt_z_len = (int)z_len;
+        }
+
+        /* For KAS2 initiator tests, regardless of role, we decapsulate the server Z */
+        if (tc->scheme == ACVP_KAS_IFC_KAS2) {
+            if (z) free(z);
+
+            if (EVP_PKEY_decapsulate_init(decap_ctx, NULL) != 1) {
+                printf("Error initializing decapsulate in KAS-IFC\n");
+                goto err;
+            }
+            if (EVP_PKEY_CTX_set_kem_op(decap_ctx, "RSASVE") != 1) {
+                printf("Error setting KEM op in KAS-IFC\n");
+                goto err;
+            }
+            EVP_PKEY_decapsulate(decap_ctx, NULL, &z_len, tc->server_ct_z, tc->server_ct_z_len);
+            z = calloc(z_len, sizeof(unsigned char));
+            if (!z) {
+                printf("Error allocating memory in KAS-IFC\n");
+                goto err;
+            }
+            if (EVP_PKEY_decapsulate(decap_ctx, z, &z_len, tc->server_ct_z, tc->server_ct_z_len) != 1) {
+                if (tc->test_type != ACVP_KAS_IFC_TT_VAL) {
+                    printf("Error performing decapsulate on serverC in KAS-IFC\n");
+                    goto err;
+                }
+            }
+            memcpy_s(tc->server_pt_z, KAS_IFC_MAX, z, z_len);
+            tc->server_pt_z_len = (int)z_len;
         }
     } else {
-        if (EVP_PKEY_decapsulate_init(encap_ctx, NULL) != 1) {
+        /*
+        * For responder tests, we simply decapsulate the given server secret. For AFT tests,
+        * the secret is the output. For VAL tests, the secret is compared to a provided one
+        * inside the library.
+        */
+        if (EVP_PKEY_decapsulate_init(decap_ctx, NULL) != 1) {
             printf("Error initializing decapsulate in KAS-IFC\n");
             goto err;
         }
-        if (EVP_PKEY_CTX_set_kem_op(encap_ctx, "RSASVE") != 1) {
+        if (EVP_PKEY_CTX_set_kem_op(decap_ctx, "RSASVE") != 1) {
             printf("Error setting KEM op in KAS-IFC\n");
             goto err;
         }
-        EVP_PKEY_decapsulate(encap_ctx, NULL, &z_len, tc->ct_z, tc->ct_z_len);
+
+        EVP_PKEY_decapsulate(decap_ctx, NULL, &z_len, tc->server_ct_z, tc->server_ct_z_len);
         z = calloc(z_len, sizeof(unsigned char));
         if (!z) {
             printf("Error allocating memory in KAS-IFC\n");
             goto err;
         }
-        if (EVP_PKEY_decapsulate(encap_ctx, z, &z_len, tc->ct_z, tc->ct_z_len) != 1) {
+        if (EVP_PKEY_decapsulate(decap_ctx, z, &z_len, tc->server_ct_z, tc->server_ct_z_len) != 1) {
             printf("Error performing decapsulate in KAS-IFC\n");
             goto err;
         }
-        memcpy_s(tc->pt_z, KAS_IFC_MAX, z, z_len);
-        tc->pt_z_len = (int)z_len;
+
+        memcpy_s(tc->server_pt_z, KAS_IFC_MAX, z, z_len);
+        tc->server_pt_z_len = (int)z_len;
+
+        /* For KAS2 responder AFT tests, we also generate and encapsulate our own shared secret */
+        if (tc->scheme == ACVP_KAS_IFC_KAS2 && tc->test_type == ACVP_KAS_IFC_TT_AFT) {
+            if (z) free(z);
+            if (encap_s) free(encap_s);
+            z = NULL;
+            encap_s = NULL;
+
+            if (EVP_PKEY_encapsulate_init(encap_ctx, NULL) != 1) {
+                printf("Error initializing encapsulate in KAS-IFC\n");
+                goto err;
+            }
+            if (EVP_PKEY_CTX_set_kem_op(encap_ctx, "RSASVE") != 1) {
+                printf("Error setting encapsulate mode in KAS-IFC\n");
+                goto err;
+            }
+
+            EVP_PKEY_encapsulate(encap_ctx, NULL, &encap_s_len, NULL, &z_len);
+            z = calloc(z_len, sizeof(unsigned char));
+            encap_s = calloc(encap_s_len, sizeof(unsigned char));
+            if (!z || !encap_s) {
+                printf("Error allocating memory in KAS-IFC\n");
+                goto err;
+            }
+            if (EVP_PKEY_encapsulate(encap_ctx, encap_s, &encap_s_len, z, &z_len) == 1) {
+                memcpy_s(tc->iut_ct_z, KAS_IFC_MAX, encap_s, encap_s_len);
+                memcpy_s(tc->iut_pt_z, KAS_IFC_MAX, z, z_len);
+                tc->iut_ct_z_len = (int)encap_s_len;
+                tc->iut_pt_z_len = (int)z_len;
+            }
+        }
     }
     rv = 0;
 err:
     if (z) free(z);
     if (encap_s) free(encap_s);
+    if (server_n) BN_free(server_n);
+    if (server_e) BN_free(server_e);
     if (p) BN_free(p);
     if (q) BN_free(q);
     if (n) BN_free(n);
@@ -636,10 +760,15 @@ err:
     if (dmq1) BN_free(dmq1);
     if (iqmp) BN_free(iqmp);
     if (pkey) EVP_PKEY_free(pkey);
+    if (serv_pkey) EVP_PKEY_free(serv_pkey);
     if (encap_ctx) EVP_PKEY_CTX_free(encap_ctx);
+    if (decap_ctx) EVP_PKEY_CTX_free(decap_ctx);
     if (pkey_ctx) EVP_PKEY_CTX_free(pkey_ctx);
+    if (serv_ctx) EVP_PKEY_CTX_free(serv_ctx);
     if (params) OSSL_PARAM_free(params);
-    if (pkey_pbld) OSSL_PARAM_BLD_free(pkey_pbld);
+    if (serv_params) OSSL_PARAM_free(serv_params);
+    if (pbld) OSSL_PARAM_BLD_free(pbld);
+    if (serv_pbld) OSSL_PARAM_BLD_free(serv_pbld);
     if (bctx) BN_CTX_free(bctx);
     return rv;
 }
