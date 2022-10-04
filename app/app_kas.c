@@ -661,6 +661,7 @@ int app_kas_ifc_handler(ACVP_TEST_CASE *test_case) {
         /* For KAS2 initiator tests, regardless of role, we decapsulate the server Z */
         if (tc->scheme == ACVP_KAS_IFC_KAS2) {
             if (z) free(z);
+            z = NULL;
 
             if (EVP_PKEY_decapsulate_init(decap_ctx, NULL) != 1) {
                 printf("Error initializing decapsulate in KAS-IFC\n");
