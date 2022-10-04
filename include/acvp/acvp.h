@@ -1896,6 +1896,10 @@ typedef struct acvp_kas_ifc_tc_t {
     ACVP_HASH_ALG md;
     ACVP_KAS_IFC_PARAM scheme;
     ACVP_KAS_IFC_ROLES kas_role;
+
+    /* Key parameters */
+    unsigned char *server_n;
+    unsigned char *server_e;
     unsigned char *p;
     unsigned char *q;
     unsigned char *d;
@@ -1906,10 +1910,15 @@ typedef struct acvp_kas_ifc_tc_t {
     unsigned char *dmq1;
     unsigned char *iqmp;
 
-    unsigned char *pt_z;
-    unsigned char *ct_z;
+    unsigned char *iut_pt_z;
+    unsigned char *iut_ct_z;
     unsigned char *provided_pt_z; /**< For VAL tests. Could either be plain Z or hashZ */
     unsigned char *provided_ct_z; /**< for VAL tests */
+    unsigned char *server_pt_z;
+    unsigned char *server_ct_z;
+    unsigned char *provided_kas2_z; /* The server-provided combined Z for KAS2 cases */
+    int server_nlen;
+    int server_elen;
     int plen;
     int qlen;
     int nlen;
@@ -1918,10 +1927,13 @@ typedef struct acvp_kas_ifc_tc_t {
     int dmp1_len;
     int dmq1_len;
     int iqmp_len;
-    int pt_z_len;
-    int ct_z_len;
+    int iut_pt_z_len;
+    int iut_ct_z_len;
     int provided_pt_z_len;
     int provided_ct_z_len;
+    int server_pt_z_len;
+    int server_ct_z_len;
+    int provided_kas2_z_len;
     unsigned int modulo;
 } ACVP_KAS_IFC_TC;
 

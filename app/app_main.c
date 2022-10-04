@@ -1812,18 +1812,13 @@ static int enable_kas_ifc(ACVP_CTX *ctx) {
     rv = acvp_cap_kas_ifc_set_exponent(ctx, ACVP_KAS_IFC_SSC, ACVP_KAS_IFC_FIXEDPUBEXP, expo_str);
     CHECK_ENABLE_CAP_RV(rv);
 #if OPENSSL_VERSION_NUMBER >= 0x30000000L
-    rv = acvp_cap_kas_ifc_set_parm(ctx, ACVP_KAS_IFC_SSC, ACVP_KAS_IFC_MODULO, 6144);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_kas_ifc_set_parm(ctx, ACVP_KAS_IFC_SSC, ACVP_KAS_IFC_MODULO, 8192);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_kas_ifc_set_parm(ctx, ACVP_KAS_IFC_SSC, ACVP_KAS_IFC_KEYGEN_METHOD, ACVP_KAS_IFC_RSAKPG1_CRT);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_kas_ifc_set_parm(ctx, ACVP_KAS_IFC_SSC, ACVP_KAS_IFC_KEYGEN_METHOD, ACVP_KAS_IFC_RSAKPG2_CRT);
-    CHECK_ENABLE_CAP_RV(rv);
-#if 0
     rv = acvp_cap_kas_ifc_set_parm(ctx, ACVP_KAS_IFC_SSC, ACVP_KAS_IFC_KAS2, ACVP_KAS_IFC_INITIATOR);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_kas_ifc_set_parm(ctx, ACVP_KAS_IFC_SSC, ACVP_KAS_IFC_KAS2, ACVP_KAS_IFC_RESPONDER);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kas_ifc_set_parm(ctx, ACVP_KAS_IFC_SSC, ACVP_KAS_IFC_MODULO, 6144);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kas_ifc_set_parm(ctx, ACVP_KAS_IFC_SSC, ACVP_KAS_IFC_MODULO, 8192);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_kas_ifc_set_parm(ctx, ACVP_KAS_IFC_SSC, ACVP_KAS_IFC_KEYGEN_METHOD, ACVP_KAS_IFC_RSAKPG1_BASIC);
     CHECK_ENABLE_CAP_RV(rv);
@@ -1833,12 +1828,17 @@ static int enable_kas_ifc(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_kas_ifc_set_parm(ctx, ACVP_KAS_IFC_SSC, ACVP_KAS_IFC_KEYGEN_METHOD, ACVP_KAS_IFC_RSAKPG2_PRIME_FACTOR);
     CHECK_ENABLE_CAP_RV(rv);
-#endif
+    rv = acvp_cap_kas_ifc_set_parm(ctx, ACVP_KAS_IFC_SSC, ACVP_KAS_IFC_KEYGEN_METHOD, ACVP_KAS_IFC_RSAKPG1_CRT);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kas_ifc_set_parm(ctx, ACVP_KAS_IFC_SSC, ACVP_KAS_IFC_KEYGEN_METHOD, ACVP_KAS_IFC_RSAKPG2_CRT);
+    CHECK_ENABLE_CAP_RV(rv);
 #else
     rv = acvp_cap_kas_ifc_set_parm(ctx, ACVP_KAS_IFC_SSC, ACVP_KAS_IFC_KEYGEN_METHOD, ACVP_KAS_IFC_RSAKPG1_BASIC);
     CHECK_ENABLE_CAP_RV(rv);
+#if 0
     rv = acvp_cap_kas_ifc_set_parm(ctx, ACVP_KAS_IFC_SSC, ACVP_KAS_IFC_HASH, ACVP_SHA512);
     CHECK_ENABLE_CAP_RV(rv);
+#endif
 #endif
 
 end:
@@ -1894,6 +1894,7 @@ static int enable_kts_ifc(ACVP_CTX *ctx) {
     rv = acvp_cap_kts_ifc_set_parm(ctx, ACVP_KTS_IFC, ACVP_KTS_IFC_SCHEME, ACVP_KTS_IFC_KAS1_BASIC);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_kts_ifc_set_scheme_parm(ctx, ACVP_KTS_IFC, ACVP_KTS_IFC_KAS1_BASIC, ACVP_KTS_IFC_ROLE, ACVP_KTS_IFC_RESPONDER);
+    CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_kts_ifc_set_scheme_parm(ctx, ACVP_KTS_IFC, ACVP_KTS_IFC_KAS1_BASIC, ACVP_KTS_IFC_ROLE, ACVP_KTS_IFC_INITIATOR);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_kts_ifc_set_scheme_parm(ctx, ACVP_KTS_IFC, ACVP_KTS_IFC_KAS1_BASIC, ACVP_KTS_IFC_HASH, ACVP_SHA256);

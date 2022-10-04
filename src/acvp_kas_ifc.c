@@ -26,63 +26,161 @@
 static ACVP_RESULT acvp_kas_ifc_ssc_output_tc(ACVP_CTX *ctx,
                                               ACVP_KAS_IFC_TC *stc,
                                               JSON_Object *tc_rsp) {
-    ACVP_RESULT rv = ACVP_SUCCESS;
+    ACVP_RESULT rv = ACVP_INVALID_ARG;
     char *tmp = NULL;
+    unsigned char *merge = NULL;
+    int z_len = 0;
 
     tmp = calloc(ACVP_KAS_IFC_STR_MAX + 1, sizeof(char));
     if (!tmp) {
         ACVP_LOG_ERR("Unable to malloc in acvp_aes_output_mct_tc");
         return ACVP_MALLOC_FAIL;
     }
-    memzero_s(tmp, ACVP_KAS_IFC_STR_MAX);
 
     if (stc->kas_role == ACVP_KAS_IFC_INITIATOR) {
-        rv = acvp_bin_to_hexstr(stc->ct_z, stc->ct_z_len, tmp, ACVP_KAS_IFC_STR_MAX);
+        rv = acvp_bin_to_hexstr(stc->iut_ct_z, stc->iut_ct_z_len, tmp, ACVP_KAS_IFC_STR_MAX);
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("hex conversion failure (ct_z)");
+            ACVP_LOG_ERR("hex conversion failure (iut_ct_z)");
             goto end;
         }
         json_object_set_string(tc_rsp, "iutC", tmp);
+
+        rv = acvp_bin_to_hexstr(stc->iut_pt_z, stc->iut_pt_z_len, tmp, ACVP_KAS_IFC_STR_MAX);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("hex conversion failure (iut_pt_z)");
+            goto end;
+        }
+        if (stc->md == ACVP_NO_SHA) {
+            json_object_set_string(tc_rsp, "iutZ", tmp);
+        } else {
+            json_object_set_string(tc_rsp, "iutHashZ", tmp);
+        }
+        /* for KAS1, z is just iutZ. For KAS2, its the combined z. */
+        if (stc->md == ACVP_NO_SHA) {
+            json_object_set_string(tc_rsp, "z", tmp);
+        } else {
+            json_object_set_string(tc_rsp, "hashZ", tmp);
+        }
+    } else { /* if role = responder */
+        if (stc->scheme == ACVP_KAS_IFC_KAS2) {
+            rv = acvp_bin_to_hexstr(stc->iut_ct_z, stc->iut_ct_z_len, tmp, ACVP_KAS_IFC_STR_MAX);
+            if (rv != ACVP_SUCCESS) {
+                ACVP_LOG_ERR("hex conversion failure (iut_ct_z)");
+                goto end;
+            }
+            json_object_set_string(tc_rsp, "iutC", tmp);
+
+            rv = acvp_bin_to_hexstr(stc->iut_pt_z, stc->iut_pt_z_len, tmp, ACVP_KAS_IFC_STR_MAX);
+            if (rv != ACVP_SUCCESS) {
+                ACVP_LOG_ERR("hex conversion failure (iut_pt_z)");
+                goto end;
+            }
+            if (stc->md == ACVP_NO_SHA) {
+                json_object_set_string(tc_rsp, "iutZ", tmp);
+            } else {
+                json_object_set_string(tc_rsp, "iutHashZ", tmp);
+            }
+        } else {
+            rv = acvp_bin_to_hexstr(stc->server_pt_z, stc->server_pt_z_len, tmp, ACVP_KAS_IFC_STR_MAX);
+            if (rv != ACVP_SUCCESS) {
+                ACVP_LOG_ERR("hex conversion failure (server_pt_z)");
+                goto end;
+            }
+            if (stc->md == ACVP_NO_SHA) {
+                json_object_set_string(tc_rsp, "z", tmp);
+            } else {
+                json_object_set_string(tc_rsp, "hashZ", tmp);
+            }
+        }
     }
-    rv = acvp_bin_to_hexstr(stc->pt_z, stc->pt_z_len, tmp, ACVP_KAS_IFC_STR_MAX);
-    if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("hex conversion failure (pt_z)");
-        goto end;
-    }
-    if (stc->md == ACVP_NO_SHA) {
+
+    if (stc->scheme == ACVP_KAS_IFC_KAS2) {
+        memzero_s(tmp, ACVP_KAS_IFC_STR_MAX);
+
+        z_len = stc->iut_pt_z_len + stc->server_pt_z_len;
+        merge = calloc(z_len, sizeof(unsigned char));
+        if (!merge) {
+            ACVP_LOG_ERR("Error allocating memory for z combination in KAS-IFC output");
+            goto end;
+        }
+        if (stc->kas_role == ACVP_KAS_IFC_INITIATOR) {
+            memcpy_s(merge, z_len, stc->iut_pt_z, stc->iut_pt_z_len);
+            memcpy_s(merge + stc->iut_pt_z_len, z_len - stc->iut_pt_z_len,
+                        stc->server_pt_z, stc->server_pt_z_len);
+        } else {
+            memcpy_s(merge, z_len, stc->server_pt_z, stc->server_pt_z_len);
+            memcpy_s(merge + stc->server_pt_z_len, z_len - stc->server_pt_z_len,
+                        stc->iut_pt_z, stc->iut_pt_z_len);
+        }
+        rv = acvp_bin_to_hexstr((const unsigned char *)merge, z_len, tmp, ACVP_KAS_IFC_STR_MAX);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("hex conversion failure (KAS2 combined Z)");
+            goto end;
+        }
         json_object_set_string(tc_rsp, "z", tmp);
-    } else {
-        json_object_set_string(tc_rsp, "hashZ", tmp);
+
     }
+
 end:
     if (tmp) free(tmp);
-
+    if (merge) free(merge);
     return rv;
 }
 
 static ACVP_RESULT acvp_kas_ifc_ssc_val_output_tc(ACVP_KAS_IFC_TC *stc,
                                                   JSON_Object *tc_rsp) {
     ACVP_RESULT rv = ACVP_SUCCESS;
-    int diff = 1;
+    rv = 0;
+    int diff = 1, len = 0;
+    unsigned char *merge = NULL;
 
     /* For initiator tests, check the encapsulated Z. For responder tests, check the decapsulated Z. */
     if (stc->kas_role == ACVP_KAS_IFC_INITIATOR) {
-        if (stc->ct_z_len == stc->provided_ct_z_len) {
-            memcmp_s(stc->ct_z, stc->ct_z_len, stc->provided_ct_z, stc->provided_ct_z_len, &diff);
+        if (stc->iut_ct_z_len == stc->provided_ct_z_len) {
+            memcmp_s(stc->iut_ct_z, stc->iut_ct_z_len, stc->provided_ct_z, stc->provided_ct_z_len, &diff);
+            rv += diff;
         }
-    } else {
-        if (stc->pt_z_len == stc->provided_pt_z_len) {
-            memcmp_s(stc->pt_z, stc->pt_z_len, stc->provided_pt_z, stc->provided_pt_z_len, &diff);
+    } else if (stc->scheme != ACVP_KAS_IFC_KAS2) {
+        if (stc->iut_pt_z_len == stc->provided_pt_z_len) {
+            memcmp_s(stc->server_pt_z, stc->server_pt_z_len, stc->provided_pt_z, stc->provided_pt_z_len, &diff);
+            rv += diff;
         }
     }
 
-    if (!diff) {
+    /* For KAS2 tests, also check the combined Z. We ideally could check serverZ, but sometimes NIST provides incorrect
+    combined Z in VAL tests. */
+    if (stc->scheme == ACVP_KAS_IFC_KAS2) {
+        len = stc->iut_pt_z_len + stc->server_pt_z_len;
+
+        if (len == stc->provided_kas2_z_len) {
+            merge = calloc(len, sizeof(unsigned char));
+            if (!merge) {
+                return ACVP_MALLOC_FAIL;
+            }
+            if (stc->kas_role == ACVP_KAS_IFC_INITIATOR) {
+                memcpy_s(merge, len, stc->iut_pt_z, stc->iut_pt_z_len);
+                memcpy_s(merge + stc->iut_pt_z_len, len - stc->iut_pt_z_len,
+                            stc->server_pt_z, stc->server_pt_z_len);
+            } else {
+                memcpy_s(merge, len, stc->server_pt_z, stc->server_pt_z_len);
+                memcpy_s(merge + stc->server_pt_z_len, len - stc->server_pt_z_len,
+                            stc->iut_pt_z, stc->iut_pt_z_len);
+            }
+            memcmp_s(merge, len, stc->provided_kas2_z, stc->provided_kas2_z_len, &diff);
+            rv += diff;
+        } else {
+            rv++;
+        }
+    }
+
+    if (!rv) {
         json_object_set_boolean(tc_rsp, "testPassed", 1);
     } else {
         json_object_set_boolean(tc_rsp, "testPassed", 0);
     }
 
-    return rv;
+    if (merge) free(merge);
+    return ACVP_SUCCESS;
 }
 
 static ACVP_RESULT acvp_kas_ifc_ssc_init_tc(ACVP_CTX *ctx,
@@ -93,6 +191,10 @@ static ACVP_RESULT acvp_kas_ifc_ssc_init_tc(ACVP_CTX *ctx,
                                             ACVP_KAS_IFC_ROLES role,
                                             const char *pt_z,
                                             const char *ct_z,
+                                            const char *server_ct_z,
+                                            const char *kas2_z,
+                                            const char *server_n,
+                                            const char *server_e,
                                             const char *p,
                                             const char *q,
                                             const char *d,
@@ -165,7 +267,7 @@ static ACVP_RESULT acvp_kas_ifc_ssc_init_tc(ACVP_CTX *ctx,
     if (dmp1) {
         stc->dmp1 = calloc(1, ACVP_KAS_IFC_BYTE_MAX);
         if (!stc->dmp1) { return ACVP_MALLOC_FAIL; }
-        rv = acvp_hexstr_to_bin(dmp1, stc->dmp1, ACVP_RSA_EXP_LEN_MAX, &(stc->dmp1_len));
+        rv = acvp_hexstr_to_bin(dmp1, stc->dmp1, ACVP_KAS_IFC_BYTE_MAX, &(stc->dmp1_len));
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Hex conversion failure (dmp1)");
             return rv;
@@ -175,7 +277,7 @@ static ACVP_RESULT acvp_kas_ifc_ssc_init_tc(ACVP_CTX *ctx,
     if (dmq1) {
         stc->dmq1 = calloc(1, ACVP_KAS_IFC_BYTE_MAX);
         if (!stc->dmq1) { return ACVP_MALLOC_FAIL; }
-        rv = acvp_hexstr_to_bin(dmq1, stc->dmq1, ACVP_RSA_EXP_LEN_MAX, &(stc->dmq1_len));
+        rv = acvp_hexstr_to_bin(dmq1, stc->dmq1, ACVP_KAS_IFC_BYTE_MAX, &(stc->dmq1_len));
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Hex conversion failure (dmq1)");
             return rv;
@@ -185,39 +287,81 @@ static ACVP_RESULT acvp_kas_ifc_ssc_init_tc(ACVP_CTX *ctx,
     if (iqmp) {
         stc->iqmp = calloc(1, ACVP_KAS_IFC_BYTE_MAX);
         if (!stc->iqmp) { return ACVP_MALLOC_FAIL; }
-        rv = acvp_hexstr_to_bin(iqmp, stc->iqmp, ACVP_RSA_EXP_LEN_MAX, &(stc->iqmp_len));
+        rv = acvp_hexstr_to_bin(iqmp, stc->iqmp, ACVP_KAS_IFC_BYTE_MAX, &(stc->iqmp_len));
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Hex conversion failure (iqmp)");
             return rv;
         }
     }
 
-    stc->ct_z = calloc(1, ACVP_KAS_IFC_BYTE_MAX);
-    if (!stc->ct_z) { return ACVP_MALLOC_FAIL; }
-    stc->pt_z = calloc(1, ACVP_KAS_IFC_BYTE_MAX);
-    if (!stc->pt_z) { return ACVP_MALLOC_FAIL; }
+    if (server_ct_z) {
+        stc->server_ct_z = calloc(1, ACVP_KAS_IFC_BYTE_MAX);
+        if (!stc->server_ct_z) { return ACVP_MALLOC_FAIL; }
+        rv = acvp_hexstr_to_bin(server_ct_z, stc->server_ct_z, ACVP_KAS_IFC_BYTE_MAX, &(stc->server_ct_z_len));
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Hex conversion failure (server_ct_z)");
+            return rv;
+        }
+    }
 
-    if (role == ACVP_KAS_IFC_RESPONDER) {
-        rv = acvp_hexstr_to_bin(ct_z, stc->ct_z, ACVP_KAS_IFC_BYTE_MAX, &(stc->ct_z_len));
+    if (kas2_z) {
+        stc->provided_kas2_z = calloc(1, ACVP_KAS_IFC_BYTE_MAX);
+        if (!stc->provided_kas2_z) { return ACVP_MALLOC_FAIL; }
+        rv = acvp_hexstr_to_bin(kas2_z, stc->provided_kas2_z, ACVP_KAS_IFC_BYTE_MAX, &(stc->provided_kas2_z_len));
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Hex conversion failure (kas2_z)");
+            return rv;
+        }
+    }
+
+    if (server_n) {
+        stc->server_n = calloc(1, ACVP_KAS_IFC_BYTE_MAX);
+        if (!stc->server_n) { return ACVP_MALLOC_FAIL; }
+        rv = acvp_hexstr_to_bin(server_n, stc->server_n, ACVP_KAS_IFC_BYTE_MAX, &(stc->server_nlen));
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Hex conversion failure (server_n)");
+            return rv;
+        }
+    }
+
+    if (server_e) {
+        stc->server_e = calloc(1, ACVP_KAS_IFC_BYTE_MAX);
+        if (!stc->server_e) { return ACVP_MALLOC_FAIL; }
+        rv = acvp_hexstr_to_bin(server_e, stc->server_e, ACVP_RSA_EXP_LEN_MAX, &(stc->server_elen));
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Hex conversion failure (server_e)");
+            return rv;
+        }
+    }
+
+    stc->iut_ct_z = calloc(1, ACVP_KAS_IFC_BYTE_MAX);
+    if (!stc->iut_ct_z) { return ACVP_MALLOC_FAIL; }
+    if (ct_z) {
+        rv = acvp_hexstr_to_bin(ct_z, stc->iut_ct_z, ACVP_KAS_IFC_BYTE_MAX, &(stc->iut_ct_z_len));
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Hex conversion failure (ct_z)");
             return rv;
         }
     }
+    stc->iut_pt_z = calloc(1, ACVP_KAS_IFC_BYTE_MAX);
+    if (!stc->iut_pt_z) { return ACVP_MALLOC_FAIL; }
+    if (pt_z) {
+        rv = acvp_hexstr_to_bin(pt_z, stc->iut_pt_z, ACVP_KAS_IFC_BYTE_MAX, &(stc->iut_pt_z_len));
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Hex conversion failure (pt_z)");
+            return rv;
+        }
+    }
+    stc->server_pt_z = calloc(1, ACVP_KAS_IFC_BYTE_MAX + 1);
+    if (!stc->server_pt_z) { return ACVP_MALLOC_FAIL; }
+
     if (stc->test_type == ACVP_KAS_IFC_TT_VAL) {
         if (stc->kas_role == ACVP_KAS_IFC_INITIATOR) {
             stc->provided_ct_z = calloc(1, ACVP_KAS_IFC_BYTE_MAX);
             if (!stc->provided_ct_z) { return ACVP_MALLOC_FAIL; }
             rv = acvp_hexstr_to_bin(ct_z, stc->provided_ct_z, ACVP_KAS_IFC_BYTE_MAX, &(stc->provided_ct_z_len));
             if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("Hex conversion failure (provided_ct_z)");
-                return rv;
-            }
-
-            if (!stc->pt_z) { return ACVP_MALLOC_FAIL; }
-            rv = acvp_hexstr_to_bin(pt_z, stc->pt_z, ACVP_KAS_IFC_BYTE_MAX, &(stc->pt_z_len));
-            if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("Hex conversion failure (pt_z)");
+                ACVP_LOG_ERR("Hex conversion failure (provided_iut_ct_z)");
                 return rv;
             }
         } else {
@@ -225,7 +369,7 @@ static ACVP_RESULT acvp_kas_ifc_ssc_init_tc(ACVP_CTX *ctx,
             if (!stc->provided_pt_z) { return ACVP_MALLOC_FAIL; }
             rv = acvp_hexstr_to_bin(pt_z, stc->provided_pt_z, ACVP_KAS_IFC_BYTE_MAX, &(stc->provided_pt_z_len));
             if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("Hex conversion failure (provided_pt_z)");
+                ACVP_LOG_ERR("Hex conversion failure (provided_iut_pt_z)");
                 return rv;
             }
         }
@@ -239,6 +383,8 @@ static ACVP_RESULT acvp_kas_ifc_ssc_init_tc(ACVP_CTX *ctx,
  * a test case.
  */
 static ACVP_RESULT acvp_kas_ifc_release_tc(ACVP_KAS_IFC_TC *stc) {
+    if (stc->server_n) free(stc->server_n);
+    if (stc->server_e) free(stc->server_e);
     if (stc->p) free(stc->p);
     if (stc->q) free(stc->q);
     if (stc->d) free(stc->d);
@@ -247,10 +393,13 @@ static ACVP_RESULT acvp_kas_ifc_release_tc(ACVP_KAS_IFC_TC *stc) {
     if (stc->dmp1) free(stc->dmp1);
     if (stc->dmq1) free(stc->dmq1);
     if (stc->iqmp) free(stc->iqmp);
-    if (stc->ct_z) free(stc->ct_z);
-    if (stc->pt_z) free(stc->pt_z);
+    if (stc->iut_ct_z) free(stc->iut_ct_z);
+    if (stc->iut_pt_z) free(stc->iut_pt_z);
     if (stc->provided_ct_z) free(stc->provided_ct_z);
     if (stc->provided_pt_z) free(stc->provided_pt_z);
+    if (stc->server_pt_z) free(stc->server_pt_z);
+    if (stc->server_ct_z) free(stc->server_ct_z);
+    if (stc->provided_kas2_z) free(stc->provided_kas2_z);
     memzero_s(stc, sizeof(ACVP_KAS_IFC_TC));
     return ACVP_SUCCESS;
 }
@@ -300,10 +449,12 @@ static ACVP_RESULT acvp_kas_ifc_ssc(ACVP_CTX *ctx,
     JSON_Array *tests, *r_tarr = NULL;
     JSON_Value *r_tval = NULL, *r_gval = NULL;  /* Response testval, groupval */
     JSON_Object *r_tobj = NULL, *r_gobj = NULL; /* Response testobj, groupobj */
-    const char *p = NULL, *q = NULL, *n = NULL, *d = NULL, *e = NULL;
-    const char *dmp1 = NULL, *dmq1 = NULL, *iqmp = NULL;
+    /* KAS key vals */
+    const char *p = NULL, *q = NULL, *n = NULL, *d = NULL, *e = NULL, *dmp1 = NULL, *dmq1 = NULL, *iqmp = NULL;
+    const char *server_n = NULL, *server_e = NULL;
     const char *pub_exp = NULL, *kas_role = NULL, *scheme_str = NULL, *hash = NULL;
-    const char *ct_z = NULL, *pt_z = NULL;
+    const char *ct_z = NULL, *pt_z = NULL, *kas2_z = NULL;
+    const char *server_ct_z = NULL;
     ACVP_HASH_ALG hash_alg = 0;
     unsigned int modulo;
     unsigned int i, g_cnt;
@@ -459,20 +610,7 @@ static ACVP_RESULT acvp_kas_ifc_ssc(ACVP_CTX *ctx,
             testobj = json_value_get_object(testval);
             tc_id = json_object_get_number(testobj, "tcId");
 
-            if (role == ACVP_KAS_IFC_RESPONDER) {
-                ct_z = json_object_get_string(testobj, "serverC");
-                if (!ct_z) {
-                    ACVP_LOG_ERR("Server JSON missing 'serverC'");
-                    rv = ACVP_MISSING_ARG;
-                    goto err;
-                }
-                if (strnlen_s(ct_z, ACVP_KAS_IFC_STR_MAX + 1) > ACVP_KAS_IFC_STR_MAX) {
-                    ACVP_LOG_ERR("ct too long, max allowed=(%d)",
-                                  ACVP_KAS_IFC_STR_MAX);
-                    rv = ACVP_INVALID_ARG;
-                    goto err;
-                }
-
+            if (role == ACVP_KAS_IFC_RESPONDER || scheme == ACVP_KAS_IFC_KAS2) {
                 p = json_object_get_string(testobj, "iutP");
                 if (!p) {
                     ACVP_LOG_ERR("Server JSON missing 'iutP'");
@@ -518,6 +656,7 @@ static ACVP_RESULT acvp_kas_ifc_ssc(ACVP_CTX *ctx,
                     rv = ACVP_INVALID_ARG;
                     goto err;
                 }
+
                 e = json_object_get_string(testobj, "iutE");
                 if (!e) {
                     ACVP_LOG_ERR("Server JSON missing 'iutE'");
@@ -530,6 +669,7 @@ static ACVP_RESULT acvp_kas_ifc_ssc(ACVP_CTX *ctx,
                     rv = ACVP_INVALID_ARG;
                     goto err;
                 }
+
                 if (key_gen == ACVP_KAS_IFC_RSAKPG1_CRT || key_gen == ACVP_KAS_IFC_RSAKPG2_CRT) {
                     dmp1 = json_object_get_string(testobj, "iutDmp1");
                     if (!dmp1) {
@@ -567,7 +707,9 @@ static ACVP_RESULT acvp_kas_ifc_ssc(ACVP_CTX *ctx,
                         rv = ACVP_INVALID_ARG;
                         goto err;
                     }
-                } else {
+                }
+
+                if (key_gen != ACVP_KAS_IFC_RSAKPG1_CRT && key_gen != ACVP_KAS_IFC_RSAKPG2_CRT) {
                     d = json_object_get_string(testobj, "iutD");
                     if (!d) {
                         ACVP_LOG_ERR("Server JSON missing 'iutD'");
@@ -575,53 +717,103 @@ static ACVP_RESULT acvp_kas_ifc_ssc(ACVP_CTX *ctx,
                         goto err;
                     }
                 }
-            } else {
-                n = json_object_get_string(testobj, "serverN");
-                if (!n) {
+            }
+
+            if (role == ACVP_KAS_IFC_INITIATOR || scheme == ACVP_KAS_IFC_KAS2) {
+                server_n = json_object_get_string(testobj, "serverN");
+                if (!server_n) {
                     ACVP_LOG_ERR("Server JSON missing 'serverN'");
                     rv = ACVP_MISSING_ARG;
                     goto err;
                 }
-                if (strnlen_s(n, ACVP_KAS_IFC_STR_MAX + 1) > ACVP_KAS_IFC_STR_MAX) {
-                    ACVP_LOG_ERR("n too long, max allowed=(%d)",
+                if (strnlen_s(server_n, ACVP_KAS_IFC_STR_MAX + 1) > ACVP_KAS_IFC_STR_MAX) {
+                    ACVP_LOG_ERR("serverN too long, max allowed=(%d)",
                                   ACVP_KAS_IFC_STR_MAX);
                     rv = ACVP_INVALID_ARG;
                     goto err;
                 }
 
-                e = json_object_get_string(testobj, "serverE");
-                if (!e) {
+                server_e = json_object_get_string(testobj, "serverE");
+                if (!server_e) {
                     ACVP_LOG_ERR("Server JSON missing 'serverE'");
                     rv = ACVP_MISSING_ARG;
                     goto err;
                 }
-                if (strnlen_s(e, ACVP_KAS_IFC_STR_MAX + 1) > ACVP_KAS_IFC_STR_MAX) {
-                    ACVP_LOG_ERR("e too long, max allowed=(%d)",
+                if (strnlen_s(server_e, ACVP_KAS_IFC_STR_MAX + 1) > ACVP_KAS_IFC_STR_MAX) {
+                    ACVP_LOG_ERR("serverE too long, max allowed=(%d)",
+                                  ACVP_KAS_IFC_STR_MAX);
+                    rv = ACVP_INVALID_ARG;
+                    goto err;
+                }
+            }
+
+            if (role == ACVP_KAS_IFC_RESPONDER || scheme == ACVP_KAS_IFC_KAS2) {
+                server_ct_z = json_object_get_string(testobj, "serverC");
+                if (!server_ct_z) {
+                    ACVP_LOG_ERR("Server JSON missing 'serverC'");
+                    rv = ACVP_MISSING_ARG;
+                    goto err;
+                }
+                if (strnlen_s(server_ct_z, ACVP_KAS_IFC_STR_MAX + 1) > ACVP_KAS_IFC_STR_MAX) {
+                    ACVP_LOG_ERR("serverC too long, max allowed=(%d)",
                                   ACVP_KAS_IFC_STR_MAX);
                     rv = ACVP_INVALID_ARG;
                     goto err;
                 }
 
-            }
-            if (test_type == ACVP_KAS_IFC_TT_VAL) {
-                if (hash) {
-                    pt_z = json_object_get_string(testobj, "hashZ");
-                } else {
-                    pt_z = json_object_get_string(testobj, "z");
-                }
-                if (!pt_z) {
-                    ACVP_LOG_ERR("Server JSON missing 'z'");
+                server_n = json_object_get_string(testobj, "serverN");
+                if (!server_n) {
+                    ACVP_LOG_ERR("Server JSON missing 'serverN'");
                     rv = ACVP_MISSING_ARG;
                     goto err;
                 }
-                if (strnlen_s(pt_z, ACVP_KAS_IFC_STR_MAX + 1) > ACVP_KAS_IFC_STR_MAX) {
-                    ACVP_LOG_ERR("z too long, max allowed=(%d)",
+                if (strnlen_s(server_n, ACVP_KAS_IFC_STR_MAX + 1) > ACVP_KAS_IFC_STR_MAX) {
+                    ACVP_LOG_ERR("n too long, max allowed=(%d)",
                                 ACVP_KAS_IFC_STR_MAX);
                     rv = ACVP_INVALID_ARG;
                     goto err;
                 }
+                server_e = json_object_get_string(testobj, "serverE");
+                if (!server_e) {
+                    ACVP_LOG_ERR("Server JSON missing 'serverE'");
+                    rv = ACVP_MISSING_ARG;
+                    goto err;
+                }
+                if (strnlen_s(server_e, ACVP_KAS_IFC_STR_MAX + 1) > ACVP_RSA_EXP_LEN_MAX) {
+                    ACVP_LOG_ERR("e too long, max allowed=(%d)",
+                                ACVP_KAS_IFC_STR_MAX);
+                    rv = ACVP_INVALID_ARG;
+                    goto err;
+                }
+            }
 
-                if (role == ACVP_KAS_IFC_INITIATOR) {
+            /**
+             * Z values can get messy. iutZ and z are the same for KAS1 cases, but for KAS2,
+             * z is serverZ || iutZ. Ideally, serverZ would be specified separately in these cases
+             * for SSC since SSC should not really cover how the z values are combined in KAS2; handle 
+             * concatenation ourselves in library for convenience. 
+             */
+            if (test_type == ACVP_KAS_IFC_TT_VAL) {
+                if (scheme == ACVP_KAS_IFC_KAS1) {
+                    if (hash) {
+                        pt_z = json_object_get_string(testobj, "hashZ");
+                    } else {
+                        pt_z = json_object_get_string(testobj, "z");
+                    }
+                } else {
+                    if (hash) {
+                        pt_z = json_object_get_string(testobj, "iutHashZ");
+                    } else {
+                        pt_z = json_object_get_string(testobj, "iutZ");
+                    }
+                }
+                if (!pt_z) {
+                    ACVP_LOG_ERR("Server JSON missing 'z or zashZ'");
+                    rv = ACVP_MISSING_ARG;
+                    goto err;
+                }
+
+                if (role == ACVP_KAS_IFC_INITIATOR  || scheme == ACVP_KAS_IFC_KAS2) {
                     ct_z = json_object_get_string(testobj, "iutC");
                     if (!ct_z) {
                         ACVP_LOG_ERR("Server JSON missing 'iutC'");
@@ -635,7 +827,19 @@ static ACVP_RESULT acvp_kas_ifc_ssc(ACVP_CTX *ctx,
                         goto err;
                     }
                 }
+            }
 
+            if (scheme == ACVP_KAS_IFC_KAS2 && test_type == ACVP_KAS_IFC_TT_VAL) {
+                if (hash) {
+                    kas2_z = json_object_get_string(testobj, "hashZ");
+                } else {
+                    kas2_z = json_object_get_string(testobj, "z");
+                }
+                if (!kas2_z) {
+                    ACVP_LOG_ERR("Server JSON missing 'z'");
+                    rv = ACVP_MISSING_ARG;
+                    goto err;
+                }
             }
 
             ACVP_LOG_VERBOSE("           tcId: %d", tc_id);
@@ -668,7 +872,8 @@ static ACVP_RESULT acvp_kas_ifc_ssc(ACVP_CTX *ctx,
              * the crypto module.
              */
             rv = acvp_kas_ifc_ssc_init_tc(ctx, stc, key_gen, hash_alg, scheme, role, pt_z, ct_z,
-                                          p, q, d, n, e, dmp1, dmq1, iqmp, modulo, test_type);
+                                          server_ct_z, kas2_z, server_n, server_e, p, q, d, n,
+                                          e, dmp1, dmq1, iqmp, modulo, test_type);
             if (rv != ACVP_SUCCESS) {
                 acvp_kas_ifc_release_tc(stc);
                 json_value_free(r_tval);
