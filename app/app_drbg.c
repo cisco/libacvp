@@ -11,8 +11,9 @@
 
 #include <stdlib.h>
 #include <openssl/rand.h>
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
 #include <openssl/core_names.h>
-#ifdef ACVP_NO_RUNTIME
+#elif defined ACVP_NO_RUNTIME
 #include "app_fips_lcl.h" /* All regular OpenSSL headers must come before here */
 #endif
 #include "app_lcl.h"

@@ -535,7 +535,7 @@ err:
     return 0;
 }
 
-#else /* if OPENSSL_VERSION_NUMBER < 3 */
+#elif defined ACVP_NO_RUNTIME /* if OPENSSL_VERSION_NUMBER < 3 */
 
 int app_dsa_handler(ACVP_TEST_CASE *test_case) {
     int L, N, n, r;
@@ -894,7 +894,14 @@ int app_dsa_handler(ACVP_TEST_CASE *test_case) {
     }
     return 0;
 }
-#endif //OPENSSL_VERSION_NUMBER
+#else //OPENSSL_VERSION_NUMBER
+int app_dsa_handler(ACVP_TEST_CASE *test_case) {
+    if (!test_case) {
+        return -1;
+    }
+    return 1;
+}
+#endif
 
 #else //OPENSSL_NO_DSA
 

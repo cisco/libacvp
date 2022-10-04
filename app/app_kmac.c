@@ -9,7 +9,9 @@
 
 
 #include <openssl/evp.h>
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
 #include <openssl/param_build.h>
+#endif
 #include "acvp/acvp.h"
 #include "app_lcl.h"
 #include "safe_lib.h"
@@ -144,4 +146,5 @@ end:
         return -1;
     }
     return 1;
+}
 #endif
