@@ -774,7 +774,7 @@ static ACVP_RESULT acvp_kas_ifc_ssc(ACVP_CTX *ctx,
                     goto err;
                 }
                 server_e = json_object_get_string(testobj, "serverE");
-                if (!e) {
+                if (!server_e) {
                     ACVP_LOG_ERR("Server JSON missing 'serverE'");
                     rv = ACVP_MISSING_ARG;
                     goto err;
