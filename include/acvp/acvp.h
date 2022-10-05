@@ -2195,6 +2195,9 @@ typedef struct acvp_kts_ifc_tc_t {
     unsigned char *d;
     unsigned char *n;
     unsigned char *e;
+    unsigned char *dmp1;
+    unsigned char *dmq1;
+    unsigned char *iqmp;
     unsigned char *ct;
     unsigned char *pt;
     int llen;
@@ -2203,6 +2206,9 @@ typedef struct acvp_kts_ifc_tc_t {
     int nlen;
     int dlen;
     int elen;
+    int dmp1_len;
+    int dmq1_len;
+    int iqmp_len;
     int ct_len;
     int pt_len;
     int modulo;
