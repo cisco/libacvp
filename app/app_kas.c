@@ -13,6 +13,8 @@
 #include <openssl/ec.h>
 #include <openssl/rsa.h>
 #if OPENSSL_VERSION_NUMBER >= 0x30000000L
+#include <openssl/rand.h>
+#include <openssl/core_names.h>
 #include <openssl/param_build.h>
 #endif
 
@@ -775,7 +777,198 @@ err:
 }
 
 int app_kts_ifc_handler(ACVP_TEST_CASE *test_case) {
-    return 0;
+    ACVP_KTS_IFC_TC *tc;
+    int rv = 1;
+    BIGNUM *e = NULL, *n = NULL, *p = NULL, *q = NULL, *d = NULL,
+           *dmp1 = NULL, *dmq1 = NULL, *iqmp = NULL;
+    const char *md = NULL;
+    size_t out_len = 0;
+    EVP_PKEY *pkey = NULL, *op_pkey = NULL;
+    EVP_PKEY_CTX *pkey_ctx = NULL, *op_ctx = NULL;
+    OSSL_PARAM *params = NULL, *op_params = NULL;
+    OSSL_PARAM_BLD *pbld = NULL, *op_pbld = NULL;
+    BN_CTX *bctx = NULL;
+
+    if (!test_case) {
+        printf("Error: test case not found in KTS-IFC handler\n");
+        goto err;
+    }
+
+    tc = test_case->tc.kts_ifc;
+    if (!tc) {
+        printf("Error: test case not found in KTS-IFC handler\n");
+        goto err;
+    }
+
+    md = get_md_string_for_hash_alg(tc->md, NULL);
+    if (!md) {
+        printf("Invalid hash alg for KTS-IFC\n");
+        goto err;
+    }
+
+     /* Convert all existing values into bignum */
+    n = BN_bin2bn(tc->n, tc->nlen, NULL);
+    e = BN_bin2bn(tc->e, tc->elen, NULL);
+    if (!n || !e) {
+        printf("Error converting n or e to bignum in KTS-IFC\n");
+        goto err;
+    }
+    if (tc->kts_role == ACVP_KTS_IFC_RESPONDER) {
+        p = BN_bin2bn(tc->p, tc->plen, NULL);
+        q = BN_bin2bn(tc->q, tc->qlen, NULL);
+        if (!p || !q) {
+            printf("Error converting p or q to bignum in KTS-IFC\n");
+            goto err;
+        }
+        if (tc->key_gen == ACVP_KTS_IFC_RSAKPG1_CRT || tc->key_gen == ACVP_KTS_IFC_RSAKPG2_CRT) {
+            dmp1 = BN_bin2bn(tc->dmp1, tc->dmp1_len, NULL);
+            dmq1 = BN_bin2bn(tc->dmq1, tc->dmq1_len, NULL);
+            iqmp = BN_bin2bn(tc->iqmp, tc->iqmp_len, NULL);
+            if (!dmp1 || !dmq1 || !iqmp) {
+                printf("Error converting dmp1/dmq1/iqmp to bignum in KTS-IFC\n");
+                goto err;
+            }
+            /* OpenSSL requires a D value for private keys, even for CRT. Fortunately, it is calculable. */
+            bctx = BN_CTX_new();
+            d = BN_dup(n);
+            BN_sub(d, d, p);
+            BN_sub(d, d, q);
+            BN_add_word(d, 1);
+            BN_mod_inverse(d, e, d, bctx);
+        } else {
+            d = BN_bin2bn(tc->d, tc->dlen, NULL);
+        }
+        if (!d) {
+            printf("Error converting d to bignum in KTS-IFC\n");
+            goto err;
+        }
+    }
+
+    pbld = OSSL_PARAM_BLD_new();
+    if (!pbld) {
+        printf("Error creating param_bld in KTS-IFC\n");
+        goto err;
+    }
+
+    /* Note: rsakpg-prime-factor schemes should use P and Q as private key storage.
+     * OpenSSL claims support, but is unclear. Here we represent with our given (?) n value */
+    OSSL_PARAM_BLD_push_BN(pbld, "n", n);
+    OSSL_PARAM_BLD_push_BN(pbld, "e", e);
+    OSSL_PARAM_BLD_push_uint(pbld, "bits", tc->modulo);
+    if (tc->kts_role == ACVP_KTS_IFC_RESPONDER) {
+        OSSL_PARAM_BLD_push_BN(pbld, "d", d);
+        if (tc->key_gen == ACVP_KTS_IFC_RSAKPG1_CRT || tc->key_gen == ACVP_KTS_IFC_RSAKPG2_CRT) {
+            OSSL_PARAM_BLD_push_BN(pbld, "rsa-factor1", p);
+            OSSL_PARAM_BLD_push_BN(pbld, "rsa-factor2", q);
+            OSSL_PARAM_BLD_push_BN(pbld, "rsa-exponent1", dmp1);
+            OSSL_PARAM_BLD_push_BN(pbld, "rsa-exponent2", dmq1);
+            OSSL_PARAM_BLD_push_BN(pbld, "rsa-coefficient1", iqmp);
+        }
+    }
+    params = OSSL_PARAM_BLD_to_param(pbld);
+    if (!params) {
+        printf("Error generating parameters for pkey generation in KTS-IFC\n");
+        goto err;
+    }
+
+    pkey_ctx = EVP_PKEY_CTX_new_from_name(NULL, "RSA", NULL);
+    if (!pkey_ctx) {
+        printf("Error initializing pkey ctx for KTS-IFC\n");
+        goto err;
+    }
+    if (EVP_PKEY_fromdata_init(pkey_ctx) != 1) {
+        printf("Error initializing pkey in KTS-IFC\n");
+        goto err;
+    }
+
+    if (tc->kts_role == ACVP_KTS_IFC_INITIATOR) {
+        if (EVP_PKEY_fromdata(pkey_ctx, &pkey, EVP_PKEY_PUBLIC_KEY, params) != 1) {
+            printf("Error generating pkey in KTS-IFC\n");
+            goto err;
+        }
+    } else {
+        if (EVP_PKEY_fromdata(pkey_ctx, &pkey, EVP_PKEY_KEYPAIR, params) != 1) {
+            printf("Error generating pkey in KTS-IFC\n");
+            goto err;
+        }
+    }
+
+    op_ctx = EVP_PKEY_CTX_new_from_pkey(NULL, pkey, NULL);
+    if (!op_ctx) {
+        printf("Error creating CTX for KTS-IFC operation\n");
+        goto err;
+    }
+
+    op_pbld = OSSL_PARAM_BLD_new();
+    if (!op_pbld) {
+        printf("Error creating param_bld in KTS-IFC\n");
+        goto err;
+    }
+    OSSL_PARAM_BLD_push_utf8_string(op_pbld, OSSL_ASYM_CIPHER_PARAM_OAEP_DIGEST, md, 0);
+    op_params = OSSL_PARAM_BLD_to_param(op_pbld);
+    if (!op_params) {
+        printf("Error generating params in KTS-IFC\n");
+        goto err;
+    }
+
+    /* As per SP800-56Br2, we simply perform RSA encrypt or decrypt (RSAEP or RSADP) after padding is applied */
+    if (tc->kts_role == ACVP_KTS_IFC_INITIATOR) {
+        if (RAND_bytes(tc->pt, tc->llen) != 1) {
+            printf("Error generating random DKM in KTS-IFC\n");
+            goto err;
+        }
+        tc->pt_len = tc->llen;
+
+        if (EVP_PKEY_encrypt_init_ex(op_ctx, op_params) != 1) {
+            printf("Error initializing encrypt in KTS-IFC\n");
+            goto err;
+        }
+        if (EVP_PKEY_CTX_set_rsa_padding(op_ctx, RSA_PKCS1_OAEP_PADDING) != 1) {
+            printf("Error setting RSA padding in KTS-IFC\n");
+            goto err;
+        }
+        EVP_PKEY_encrypt(op_ctx, NULL, &out_len, tc->pt, tc->pt_len);
+        if (EVP_PKEY_encrypt(op_ctx, tc->ct, &out_len, tc->pt, tc->pt_len) != 1) {
+            printf("Error performing encrypt in KTS-IFC\n");
+            goto err;
+        }
+        tc->ct_len = (int)out_len;
+    } else {
+        if (EVP_PKEY_decrypt_init_ex(op_ctx, op_params) != 1) {
+            printf("Error initializing decrypt in KTS-IFC\n");
+            goto err;
+        }
+        if (EVP_PKEY_CTX_set_rsa_padding(op_ctx, RSA_PKCS1_OAEP_PADDING) != 1) {
+            printf("Error setting RSA padding in KTS-IFC\n");
+            goto err;
+        }
+        EVP_PKEY_decrypt(op_ctx, NULL, &out_len, tc->ct, tc->ct_len);
+        if (EVP_PKEY_decrypt(op_ctx, tc->pt, &out_len, tc->ct, tc->ct_len) != 1) {
+            printf("Error performing decrypt in KTS-IFC\n");
+            goto err;
+        }
+        tc->pt_len = (int)out_len;
+    }
+    rv = 0;
+err:
+    if (e) BN_free(e);
+    if (n) BN_free(n);
+    if (p) BN_free(p);
+    if (q) BN_free(q);
+    if (d) BN_free(d);
+    if (dmp1) BN_free(dmp1);
+    if (dmq1) BN_free(dmq1);
+    if (iqmp) BN_free(iqmp);
+    if (pkey) EVP_PKEY_free(pkey);
+    if (op_pkey) EVP_PKEY_free(op_pkey);
+    if (pkey_ctx) EVP_PKEY_CTX_free(pkey_ctx);
+    if (op_ctx) EVP_PKEY_CTX_free(op_ctx);
+    if (params) OSSL_PARAM_free(params);
+    if (op_params) OSSL_PARAM_free(op_params);
+    if (pbld) OSSL_PARAM_BLD_free(pbld);
+    if (op_pbld) OSSL_PARAM_BLD_free(op_pbld);
+    if (bctx) BN_CTX_free(bctx);
+    return rv;
 }
 
 int app_safe_primes_handler(ACVP_TEST_CASE *test_case) {

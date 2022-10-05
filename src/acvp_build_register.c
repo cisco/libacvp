@@ -4061,7 +4061,7 @@ static ACVP_RESULT acvp_build_kts_ifc_register_cap(ACVP_CTX *ctx,
                                                    ACVP_CAPS_LIST *cap_entry) {
     JSON_Array *temp_arr = NULL;
     ACVP_RESULT result;
-    const char *revision = NULL;
+    const char *revision = NULL, *hash = NULL;
     ACVP_KTS_IFC_CAP *kts_ifc_cap = NULL;
     ACVP_PARAM_LIST *current_param;
     ACVP_KTS_IFC_SCHEMES *current_scheme;
@@ -4194,25 +4194,13 @@ static ACVP_RESULT acvp_build_kts_ifc_register_cap(ACVP_CTX *ctx,
             json_object_set_value(meth_obj, "hashAlgs", json_value_init_array());
             temp_arr = json_object_get_array(meth_obj, "hashAlgs");
             while (current_param) {
-                switch (current_param->param)
-                {
-                case ACVP_SHA224:
-                    json_array_append_string(temp_arr, "SHA2-224");
-                    break;
-                case ACVP_SHA256:
-                    json_array_append_string(temp_arr, "SHA2-256");
-                    break;
-                case ACVP_SHA384:
-                    json_array_append_string(temp_arr, "SHA2-384");
-                    break;
-                case ACVP_SHA512:
-                    json_array_append_string(temp_arr, "SHA2-512");
-                    break;
-                default:
+                hash = acvp_lookup_hash_alg_name(current_param->param);
+                if (!hash) {
                     ACVP_LOG_ERR("Unsupported KTS-IFC sha param %d", current_param->param);
                     return ACVP_INVALID_ARG;
                     break;
                 }
+                json_array_append_string(temp_arr, hash);
                 current_param = current_param->next;
             }
         }

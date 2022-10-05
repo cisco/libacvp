@@ -44,25 +44,16 @@ static ACVP_RESULT acvp_kts_ifc_output_tc(ACVP_CTX *ctx,
         }
 
         json_object_set_string(tc_rsp, "iutC", tmp);
-
-        memzero_s(tmp, ACVP_KTS_IFC_STR_MAX);
-        rv = acvp_bin_to_hexstr(stc->n, stc->llen, tmp, ACVP_KTS_IFC_STR_MAX);
-        if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("hex conversion failure (dkm)");
-            goto end;
-        }
-        json_object_set_string(tc_rsp, "dkm", tmp);
-
-    } else {
-        memzero_s(tmp, ACVP_KTS_IFC_STR_MAX);
-        rv = acvp_bin_to_hexstr(stc->pt, stc->pt_len, tmp, ACVP_KTS_IFC_STR_MAX);
-        if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("hex conversion failure (dkm)");
-            goto end;
-        }
-
-        json_object_set_string(tc_rsp, "dkm", tmp);
     }
+
+    memzero_s(tmp, ACVP_KTS_IFC_STR_MAX);
+    rv = acvp_bin_to_hexstr(stc->pt, stc->pt_len, tmp, ACVP_KTS_IFC_STR_MAX);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("hex conversion failure (dkm)");
+        goto end;
+    }
+
+    json_object_set_string(tc_rsp, "dkm", tmp);
 
 end:
     if (tmp) free(tmp);
@@ -81,23 +72,29 @@ static ACVP_RESULT acvp_kts_ifc_init_tc(ACVP_CTX *ctx,
                                             const char *d,
                                             const char *n,
                                             const char *e,
+                                            const char *dmp1,
+                                            const char *dmq1,
+                                            const char *iqmp,
                                             int modulo, 
                                             int llen, 
                                             ACVP_KTS_IFC_TEST_TYPE test_type) {
     ACVP_RESULT rv;
 
-    stc->llen = llen/8;
+    stc->llen = llen / 8;
     stc->modulo = modulo;
     stc->test_type = test_type;
     stc->md = hash_alg;
     stc->kts_role = role;
     stc->key_gen = key_gen;
 
+    stc->ct = calloc(1, ACVP_KTS_IFC_BYTE_MAX);
+    if (!stc->ct) { return ACVP_MALLOC_FAIL; }
+
+    stc->pt = calloc(1, ACVP_KTS_IFC_BYTE_MAX);
+    if (!stc->pt) { return ACVP_MALLOC_FAIL; }
+
     /* Both test types responder needs these */
     if (stc->kts_role == ACVP_KTS_IFC_RESPONDER) {
-
-        stc->ct = calloc(1, ACVP_KTS_IFC_BYTE_MAX);
-        if (!stc->ct) { return ACVP_MALLOC_FAIL; }
         rv = acvp_hexstr_to_bin(ct, stc->ct, ACVP_KTS_IFC_BYTE_MAX, &(stc->ct_len));
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Hex conversion failure (p)");
@@ -127,9 +124,32 @@ static ACVP_RESULT acvp_kts_ifc_init_tc(ACVP_CTX *ctx,
             ACVP_LOG_ERR("Hex conversion failure (d)");
             return rv;
         }
-    } else {
-        stc->ct = calloc(1, ACVP_KTS_IFC_BYTE_MAX);
-        if (!stc->ct) { return ACVP_MALLOC_FAIL; }
+
+        if (key_gen == ACVP_KTS_IFC_RSAKPG1_CRT || key_gen == ACVP_KTS_IFC_RSAKPG2_CRT) {
+            stc->dmp1 = calloc(1, ACVP_KTS_IFC_BYTE_MAX);
+            if (!stc->dmp1) { return ACVP_MALLOC_FAIL; }
+            rv = acvp_hexstr_to_bin(dmp1, stc->dmp1, ACVP_KTS_IFC_BYTE_MAX, &(stc->dmp1_len));
+            if (rv != ACVP_SUCCESS) {
+                ACVP_LOG_ERR("Hex conversion failure (dmp1)");
+                return rv;
+            }
+
+            stc->dmq1 = calloc(1, ACVP_KTS_IFC_BYTE_MAX);
+            if (!stc->dmq1) { return ACVP_MALLOC_FAIL; }
+            rv = acvp_hexstr_to_bin(dmq1, stc->dmq1, ACVP_KTS_IFC_BYTE_MAX, &(stc->dmq1_len));
+            if (rv != ACVP_SUCCESS) {
+                ACVP_LOG_ERR("Hex conversion failure (dmq1)");
+                return rv;
+            }
+
+            stc->iqmp = calloc(1, ACVP_KTS_IFC_BYTE_MAX);
+            if (!stc->iqmp) { return ACVP_MALLOC_FAIL; }
+            rv = acvp_hexstr_to_bin(iqmp, stc->iqmp, ACVP_KTS_IFC_BYTE_MAX, &(stc->iqmp_len));
+            if (rv != ACVP_SUCCESS) {
+                ACVP_LOG_ERR("Hex conversion failure (iqmp)");
+                return rv;
+            }
+        }
     }
 
     /* Both test types both roles needs these */
@@ -149,9 +169,6 @@ static ACVP_RESULT acvp_kts_ifc_init_tc(ACVP_CTX *ctx,
         return rv;
     }
 
-    stc->pt = calloc(1, ACVP_KTS_IFC_BYTE_MAX);
-    if (!stc->pt) { return ACVP_MALLOC_FAIL; }
-
     return ACVP_SUCCESS;
 }
 
@@ -165,6 +182,9 @@ static ACVP_RESULT acvp_kts_ifc_release_tc(ACVP_KTS_IFC_TC *stc) {
     if (stc->d) free(stc->d);
     if (stc->e) free(stc->e);
     if (stc->n) free(stc->n);
+    if (stc->dmp1) free(stc->dmp1);
+    if (stc->dmq1) free(stc->dmq1);
+    if (stc->iqmp) free(stc->iqmp);
     if (stc->ct) free(stc->ct);
     if (stc->pt) free(stc->pt);
     memzero_s(stc, sizeof(ACVP_KTS_IFC_TC));
@@ -188,6 +208,16 @@ static ACVP_RSA_KEY_FORMAT read_key_gen(const char *str){
 
     strcmp_s("rsakpg1-basic", 13, str, &diff);
     if (!diff) return ACVP_KAS_IFC_RSAKPG1_BASIC;
+    strcmp_s("rsakpg1-crt", 11, str, &diff);
+    if (!diff) return ACVP_KAS_IFC_RSAKPG1_CRT;
+    strcmp_s("rsakpg1-prime-factor", 20, str, &diff);
+    if (!diff) return ACVP_KAS_IFC_RSAKPG1_PRIME_FACTOR;
+    strcmp_s("rsakpg2-basic", 13, str, &diff);
+    if (!diff) return ACVP_KAS_IFC_RSAKPG2_BASIC;
+    strcmp_s("rsakpg2-crt", 11, str, &diff);
+    if (!diff) return ACVP_KAS_IFC_RSAKPG2_CRT;
+    strcmp_s("rsakpg2-prime-factor", 20, str, &diff);
+    if (!diff) return ACVP_KAS_IFC_RSAKPG2_PRIME_FACTOR;
 
     return 0;
 }
@@ -207,8 +237,8 @@ static ACVP_RESULT acvp_kts_ifc(ACVP_CTX *ctx,
     JSON_Array *tests, *r_tarr = NULL;
     JSON_Value *r_tval = NULL, *r_gval = NULL;  /* Response testval, groupval */
     JSON_Object *r_tobj = NULL, *r_gobj = NULL; /* Response testobj, groupobj */
-    const char *p = NULL, *q = NULL, *n = NULL, *d = NULL, *e = NULL;
-    const char *pub_exp = NULL, *kts_role = NULL, *scheme = NULL, *hash = NULL;
+    const char *p = NULL, *q = NULL, *n = NULL, *d = NULL, *e = NULL, *dmp1 = NULL, *dmq1 = NULL, *iqmp = NULL;
+    const char *kts_role = NULL, *scheme = NULL, *hash = NULL;
     const char *ct = NULL;
     ACVP_HASH_ALG hash_alg;
     unsigned int modulo;
@@ -258,6 +288,10 @@ static ACVP_RESULT acvp_kts_ifc(ACVP_CTX *ctx,
             ACVP_LOG_ERR("Server JSON invalid 'testType'");
             rv = ACVP_INVALID_ARG;
             goto err;
+        } else if (test_type != ACVP_KTS_IFC_TT_AFT) {
+            ACVP_LOG_ERR("Server JSON invalid testType - only AFT tests are supported for KTS-IFC");
+            rv = ACVP_INVALID_ARG;
+            goto err;
         }
 
         key_gen_str = json_object_get_string(groupobj, "keyGenerationMethod");
@@ -291,13 +325,6 @@ static ACVP_RESULT acvp_kts_ifc(ACVP_CTX *ctx,
         if (!diff) role = ACVP_KTS_IFC_INITIATOR;
         strcmp_s("responder", 9, kts_role, &diff);
         if (!diff) role = ACVP_KTS_IFC_RESPONDER;
-
-        pub_exp = json_object_get_string(groupobj, "fixedPubExp");
-        if (!pub_exp) {
-            ACVP_LOG_ERR("Server JSON missing 'fixedPubExp'");
-            rv = ACVP_MISSING_ARG;
-            goto err;
-        }
 
         iut_id = json_object_get_string(groupobj, "iutId");
         if (!iut_id) {
@@ -351,9 +378,8 @@ static ACVP_RESULT acvp_kts_ifc(ACVP_CTX *ctx,
         }
 
         hash_alg = acvp_lookup_hash_alg(hash);
-        if (hash_alg != ACVP_SHA224 && hash_alg != ACVP_SHA256 &&
-            hash_alg != ACVP_SHA384 && hash_alg != ACVP_SHA512) {
-            ACVP_LOG_ERR("Server JSON invalid 'hashFunctionZ'");
+        if (!hash_alg) {
+            ACVP_LOG_ERR("Server JSON invalid 'hashAlg'");
             rv = ACVP_INVALID_ARG;
             goto err;
         }
@@ -376,7 +402,7 @@ static ACVP_RESULT acvp_kts_ifc(ACVP_CTX *ctx,
         ACVP_LOG_VERBOSE("      test type: %s", test_type_str);
         ACVP_LOG_VERBOSE("         scheme: %s", scheme);
         ACVP_LOG_VERBOSE("       kts role: %s", kts_role);
-        ACVP_LOG_VERBOSE("        pub exp: %s", pub_exp);
+        ACVP_LOG_VERBOSE("        pub exp: %s", e);
         ACVP_LOG_VERBOSE("        key gen: %s", key_gen_str);
         ACVP_LOG_VERBOSE("           hash: %s", hash);
         ACVP_LOG_VERBOSE("         modulo: %d", modulo);
@@ -432,19 +458,6 @@ static ACVP_RESULT acvp_kts_ifc(ACVP_CTX *ctx,
                     goto err;
                 }
 
-                d = json_object_get_string(testobj, "iutD");
-                if (!d) {
-                    ACVP_LOG_ERR("Server JSON missing 'iutD'");
-                    rv = ACVP_MISSING_ARG;
-                    goto err;
-                }
-                if (strnlen_s(d, ACVP_KTS_IFC_STR_MAX + 1) > ACVP_KTS_IFC_STR_MAX) {
-                    ACVP_LOG_ERR("d too long, max allowed=(%d)",
-                                  ACVP_KTS_IFC_STR_MAX);
-                    rv = ACVP_INVALID_ARG;
-                    goto err;
-                }
-
                 n = json_object_get_string(testobj, "iutN");
                 if (!n) {
                     ACVP_LOG_ERR("Server JSON missing 'iutN'");
@@ -468,6 +481,59 @@ static ACVP_RESULT acvp_kts_ifc(ACVP_CTX *ctx,
                                   ACVP_KTS_IFC_STR_MAX);
                     rv = ACVP_INVALID_ARG;
                     goto err;
+                }
+                if (key_gen == ACVP_KTS_IFC_RSAKPG1_CRT || key_gen == ACVP_KTS_IFC_RSAKPG2_CRT) {
+                    dmp1 = json_object_get_string(testobj, "iutDmp1");
+                    if (!dmp1) {
+                        ACVP_LOG_ERR("Server JSON missing 'iutDmp1'");
+                        rv = ACVP_MISSING_ARG;
+                        goto err;
+                    }
+                    if (strnlen_s(dmp1, ACVP_KTS_IFC_STR_MAX + 1) > ACVP_RSA_EXP_LEN_MAX) {
+                        ACVP_LOG_ERR("dmp1 too long, max allowed=(%d)",
+                                    ACVP_KTS_IFC_STR_MAX);
+                        rv = ACVP_INVALID_ARG;
+                        goto err;
+                    }
+
+                    dmq1 = json_object_get_string(testobj, "iutDmq1");
+                    if (!dmq1) {
+                        ACVP_LOG_ERR("Server JSON missing 'iutDmq1'");
+                        rv = ACVP_MISSING_ARG;
+                        goto err;
+                    }
+                    if (strnlen_s(dmq1, ACVP_KTS_IFC_STR_MAX + 1) > ACVP_RSA_EXP_LEN_MAX) {
+                        ACVP_LOG_ERR("dmq1 too long, max allowed=(%d)",
+                                    ACVP_KTS_IFC_STR_MAX);
+                        rv = ACVP_INVALID_ARG;
+                        goto err;
+                    }
+
+                    iqmp = json_object_get_string(testobj, "iutIqmp");
+                    if (!iqmp) {
+                        ACVP_LOG_ERR("Server JSON missing 'iutIqmp'");
+                        rv = ACVP_MISSING_ARG;
+                        goto err;
+                    }
+                    if (strnlen_s(iqmp, ACVP_KTS_IFC_STR_MAX + 1) > ACVP_RSA_EXP_LEN_MAX) {
+                        ACVP_LOG_ERR("iqmp too long, max allowed=(%d)",
+                                    ACVP_KTS_IFC_STR_MAX);
+                        rv = ACVP_INVALID_ARG;
+                        goto err;
+                    }
+                } else {
+                    d = json_object_get_string(testobj, "iutD");
+                    if (!d) {
+                        ACVP_LOG_ERR("Server JSON missing 'iutD'");
+                        rv = ACVP_MISSING_ARG;
+                        goto err;
+                    }
+                    if (strnlen_s(d, ACVP_KTS_IFC_STR_MAX + 1) > ACVP_KTS_IFC_STR_MAX) {
+                        ACVP_LOG_ERR("d too long, max allowed=(%d)",
+                                    ACVP_KTS_IFC_STR_MAX);
+                        rv = ACVP_INVALID_ARG;
+                        goto err;
+                }
                 }
             } else {
                 n = json_object_get_string(testobj, "serverN");
@@ -518,7 +584,7 @@ static ACVP_RESULT acvp_kts_ifc(ACVP_CTX *ctx,
              * the crypto module.
              */
             rv = acvp_kts_ifc_init_tc(ctx, stc, key_gen, hash_alg, role, ct, 
-                                      p, q, d, n, e, modulo, llen, test_type);
+                                      p, q, d, n, e, dmp1, dmq1, iqmp, modulo, llen, test_type);
             if (rv != ACVP_SUCCESS) {
                 acvp_kts_ifc_release_tc(stc);
                 json_value_free(r_tval);
