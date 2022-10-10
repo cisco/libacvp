@@ -1515,6 +1515,49 @@ static int enable_kdf(ACVP_CTX *ctx) {
 #endif
 
 #if OPENSSL_VERSION_NUMBER >= 0x30000000L
+    rv = acvp_cap_kdf135_x942_enable(ctx, &app_kdf135_x942_handler);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_X942, ACVP_PREREQ_SHA, value);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kdf135_x942_set_parm(ctx, ACVP_KDF_X942_KDF_TYPE, ACVP_KDF_X942_KDF_TYPE_DER);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kdf135_x942_set_parm(ctx, ACVP_KDF_X942_HASH_ALG, ACVP_SHA1);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kdf135_x942_set_parm(ctx, ACVP_KDF_X942_HASH_ALG, ACVP_SHA224);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kdf135_x942_set_parm(ctx, ACVP_KDF_X942_HASH_ALG, ACVP_SHA256);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kdf135_x942_set_parm(ctx, ACVP_KDF_X942_HASH_ALG, ACVP_SHA384);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kdf135_x942_set_parm(ctx, ACVP_KDF_X942_HASH_ALG, ACVP_SHA512);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kdf135_x942_set_parm(ctx, ACVP_KDF_X942_HASH_ALG, ACVP_SHA512_224);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kdf135_x942_set_parm(ctx, ACVP_KDF_X942_HASH_ALG, ACVP_SHA512_256);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kdf135_x942_set_parm(ctx, ACVP_KDF_X942_HASH_ALG, ACVP_SHA3_224);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kdf135_x942_set_parm(ctx, ACVP_KDF_X942_HASH_ALG, ACVP_SHA3_256);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kdf135_x942_set_parm(ctx, ACVP_KDF_X942_HASH_ALG, ACVP_SHA3_384);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kdf135_x942_set_parm(ctx, ACVP_KDF_X942_HASH_ALG, ACVP_SHA3_512);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kdf135_x942_set_domain(ctx, ACVP_KDF_X942_KEY_LEN, 8, 4096, 8);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kdf135_x942_set_domain(ctx, ACVP_KDF_X942_OTHER_INFO_LEN, 0, 4096, 8);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kdf135_x942_set_domain(ctx, ACVP_KDF_X942_ZZ_LEN, 8, 4096, 8);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kdf135_x942_set_domain(ctx, ACVP_KDF_X942_SUPP_INFO_LEN, 0, 120, 8);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kdf135_x942_set_parm(ctx, ACVP_KDF_X942_OID, ACVP_KDF_X942_OID_AES128KW);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kdf135_x942_set_parm(ctx, ACVP_KDF_X942_OID, ACVP_KDF_X942_OID_AES192KW);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kdf135_x942_set_parm(ctx, ACVP_KDF_X942_OID, ACVP_KDF_X942_OID_AES256KW);
+    CHECK_ENABLE_CAP_RV(rv);
+
     rv = acvp_cap_kdf135_x963_enable(ctx, &app_kdf135_x963_handler);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_X963, ACVP_PREREQ_SHA, value);
@@ -1539,9 +1582,7 @@ static int enable_kdf(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_kdf135_x963_set_parm(ctx, ACVP_KDF_X963_SHARED_INFO_LEN, 1024);
     CHECK_ENABLE_CAP_RV(rv);
-#endif
 
-#if OPENSSL_VERSION_NUMBER >= 0x30000000L
     /*
      * KDF108 Counter Mode
      */
@@ -1597,10 +1638,8 @@ static int enable_kdf(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_kdf108_set_parm(ctx, ACVP_KDF108_MODE_FEEDBACK, ACVP_KDF108_FIXED_DATA_ORDER, ACVP_KDF108_FIXED_DATA_ORDER_BEFORE);
     CHECK_ENABLE_CAP_RV(rv);
-#endif
 
     /* PBKDF */
-#if OPENSSL_VERSION_NUMBER >= 0x30000000L
     rv = acvp_cap_pbkdf_enable(ctx, &app_pbkdf_handler);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_PBKDF, ACVP_PREREQ_HMAC, value);

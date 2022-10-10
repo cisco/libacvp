@@ -205,6 +205,7 @@ typedef enum acvp_cipher {
     ACVP_KDF135_SRTP,
     ACVP_KDF135_IKEV2,
     ACVP_KDF135_IKEV1,
+    ACVP_KDF135_X942,
     ACVP_KDF135_X963,
     ACVP_KDF108,
     ACVP_PBKDF,
@@ -379,6 +380,7 @@ typedef enum acvp_alg_type_kdf {
     ACVP_SUB_KDF_SRTP,
     ACVP_SUB_KDF_IKEV2,
     ACVP_SUB_KDF_IKEV1,
+    ACVP_SUB_KDF_X942,
     ACVP_SUB_KDF_X963,
     ACVP_SUB_KDF_108,
     ACVP_SUB_KDF_PBKDF,
@@ -722,6 +724,33 @@ typedef enum acvp_kdf135_ikev1_param {
     ACVP_KDF_IKEv1_DH_SECRET_LEN,
     ACVP_KDF_IKEv1_PSK_LEN
 } ACVP_KDF135_IKEV1_PARM;
+
+/** @enum ACVP_KDF135_X942_TYPE */
+typedef enum acvp_kdf_x942_type {
+    ACVP_KDF_X942_KDF_TYPE_DER,
+    ACVP_KDF_X942_KDF_TYPE_CONCAT,
+    ACVP_KDF_X942_KDF_TYPE_BOTH
+} ACVP_KDF_X942_TYPE;
+
+/** @enum ACVP_KDF135_X942_OID */
+typedef enum acvp_kdf135_x942_oid {
+    ACVP_KDF_X942_OID_TDES,
+    ACVP_KDF_X942_OID_AES128KW,
+    ACVP_KDF_X942_OID_AES192KW,
+    ACVP_KDF_X942_OID_AES256KW
+} ACVP_KDF135_X942_OID;
+
+/** @enum ACVP_KDF135_X942_PARM */
+typedef enum acvp_kdf135_x942_param {
+    ACVP_KDF_X942_KDF_TYPE,
+    ACVP_KDF_X942_KEY_LEN,
+    ACVP_KDF_X942_OTHER_INFO_LEN,
+    ACVP_KDF_X942_SUPP_INFO_LEN,
+    ACVP_KDF_X942_ZZ_LEN,
+    ACVP_KDF_X942_OID,
+    ACVP_KDF_X942_HASH_ALG
+} ACVP_KDF135_X942_PARM;
+
 
 /** @enum ACVP_KDF135_X963_PARM */
 typedef enum acvp_kdf135_x963_param {
@@ -1164,6 +1193,38 @@ typedef struct acvp_kdf135_snmp_tc_t {
     unsigned char *s_key;
     unsigned int skey_len;
 } ACVP_KDF135_SNMP_TC;
+
+
+/**
+ * @struct ACVP_KDF135_X942_TC
+ * @brief This struct holds data that represents a single test case for kdf135-x942 testing. This
+ *        data is passed between libacvp and the crypto module.
+ */
+typedef struct acvp_kdf135_x942_tc_t {
+    ACVP_CIPHER cipher;
+    unsigned int tc_id;    /**< Test case id */
+    ACVP_HASH_ALG hash_alg;
+    ACVP_KDF_X942_TYPE type;
+
+    unsigned char *oid; /**< OID is a unique identifier (bit string) of the cipher using the DKM.
+                         * These are fixed, specific values in ANSI X9.42 */
+    unsigned char *zz;
+    unsigned char *party_u_info;
+    unsigned char *party_v_info;
+    unsigned char *supp_pub_info;
+    unsigned char *supp_priv_info;
+    unsigned char *dkm; /**< Buffer for the output DKM */
+
+    int key_len;
+    int oid_len;
+    int zz_len;
+    int party_u_len;
+    int party_v_len;
+    int supp_pub_len;
+    int supp_priv_len;
+    int dkm_len;
+} ACVP_KDF135_X942_TC;
+
 
 /**
  * @struct ACVP_KDF135_X963_TC
@@ -2272,6 +2333,7 @@ typedef struct acvp_test_case_t {
         ACVP_KDF135_SRTP_TC *kdf135_srtp;
         ACVP_KDF135_IKEV2_TC *kdf135_ikev2;
         ACVP_KDF135_IKEV1_TC *kdf135_ikev1;
+        ACVP_KDF135_X942_TC *kdf135_x942;
         ACVP_KDF135_X963_TC *kdf135_x963;
         ACVP_KDF108_TC *kdf108;
         ACVP_PBKDF_TC *pbkdf;
@@ -3435,6 +3497,19 @@ ACVP_RESULT acvp_cap_kdf135_ikev1_enable(ACVP_CTX *ctx,
  *
  * @return ACVP_RESULT
  */
+ACVP_RESULT acvp_cap_kdf135_x942_enable(ACVP_CTX *ctx,
+                                        int (*crypto_handler)(ACVP_TEST_CASE *test_case));
+
+/**
+ * @brief see @ref acvp_cap_kdf135_snmp_enable()
+ *
+ * @param ctx Pointer to ACVP_CTX that was previously created by calling acvp_create_test_session.
+ * @param crypto_handler Address of function implemented by application that is invoked by libacvp
+ *        when the crypto capability is needed during a test session. This crypto_handler function
+ *        is expected to return 0 on success and 1 for failure.
+ *
+ * @return ACVP_RESULT
+ */
 ACVP_RESULT acvp_cap_kdf135_x963_enable(ACVP_CTX *ctx,
                                         int (*crypto_handler)(ACVP_TEST_CASE *test_case));
 
@@ -3556,6 +3631,42 @@ ACVP_RESULT acvp_cap_kdf108_set_parm(ACVP_CTX *ctx,
                                      ACVP_KDF108_MODE mode,
                                      ACVP_KDF108_PARM param,
                                      int value);
+
+/**
+ * @brief acvp_cap_kdf135_x942_set_parm() allows an application to specify operational
+ *        parameters to be used during a test session with the ACVP server. This function should be
+ *        called after acvp_cap_kdf135_x942_enable() to specify the parameters for the
+ *        corresponding KDF.
+ *
+ * @param ctx Pointer to ACVP_CTX that was previously created by calling acvp_create_test_session.
+ * @param param ACVP_KDF135_X942_PARM enum value specifying parameter
+ * @param value integer value for parameter
+ *
+ * @return ACVP_RESULT
+ */
+ACVP_RESULT acvp_cap_kdf135_x942_set_parm(ACVP_CTX *ctx,
+                                          ACVP_KDF135_X942_PARM param,
+                                          int value);
+
+/**
+ * @brief acvp_cap_kdf135_x942_set_domain() allows an application to specify operational
+ *        parameters to be used during a test session with the ACVP server. This function should be
+ *        called after acvp_cap_kdf135_x942_enable() to specify the parameters for the
+ *        corresponding KDF.
+ *
+ * @param ctx Pointer to ACVP_CTX that was previously created by calling acvp_create_test_session.
+ * @param param ACVP_KDF135_X942_PARM enum value identifying the X9.42 parameter
+ * @param min integer minimum for domain parameter
+ * @param max integer maximum for domain parameter
+ * @param increment integer increment for domain parameter
+ *
+ * @return ACVP_RESULT
+ */
+ACVP_RESULT acvp_cap_kdf135_x942_set_domain(ACVP_CTX *ctx,
+                                             ACVP_KDF135_X942_PARM param,
+                                             int min,
+                                             int max,
+                                             int increment);
 
 /**
  * @brief acvp_enable_kdf135_x963_cap_param() allows an application to specify operational

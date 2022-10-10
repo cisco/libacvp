@@ -1628,6 +1628,110 @@ static ACVP_RESULT acvp_build_kdf108_register_cap(JSON_Object *cap_obj, ACVP_CAP
     return ACVP_SUCCESS;
 }
 
+static ACVP_RESULT acvp_build_kdf135_x942_register_cap(JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry) {
+    ACVP_RESULT result;
+    JSON_Array *tmp_arr = NULL;
+    JSON_Value *tmp_val = NULL;
+    JSON_Object *tmp_obj = NULL;
+    ACVP_NAME_LIST *nl_obj = NULL;
+    ACVP_KDF135_X942_CAP *cap = NULL;
+    const char *revision = NULL;
+
+    json_object_set_string(cap_obj, "algorithm", ACVP_KDF135_ALG_STR);
+
+    revision = acvp_lookup_cipher_revision(cap_entry->cipher);
+    if (revision == NULL) return ACVP_INVALID_ARG;
+    json_object_set_string(cap_obj, "revision", revision);
+
+    json_object_set_string(cap_obj, "mode", ACVP_ALG_KDF135_X942);
+
+    result = acvp_lookup_prereqVals(cap_obj, cap_entry);
+    if (result != ACVP_SUCCESS) { return result; }
+
+    cap = cap_entry->cap.kdf135_x942_cap;
+
+    /* KDF type */
+    json_object_set_value(cap_obj, "kdfType", json_value_init_array());
+    tmp_arr = json_object_get_array(cap_obj, "kdfType");
+    tmp_val = json_value_init_object();
+    tmp_obj = json_value_get_object(tmp_val);
+    switch (cap->type) {
+    case ACVP_KDF_X942_KDF_TYPE_DER:
+        json_array_append_string(tmp_arr, "DER");
+        break;
+    case ACVP_KDF_X942_KDF_TYPE_CONCAT:
+        json_array_append_string(tmp_arr, "concatenation");
+        break;
+    case ACVP_KDF_X942_KDF_TYPE_BOTH:
+        json_array_append_string(tmp_arr, "DER");
+        json_array_append_string(tmp_arr, "concatenation");
+        break;
+    default:
+        return ACVP_INVALID_ARG;
+    }
+
+    /* key length list */
+    json_object_set_value(cap_obj, "keyLen", json_value_init_array());
+    tmp_arr = json_object_get_array(cap_obj, "keyLen");
+    tmp_val = json_value_init_object();
+    tmp_obj = json_value_get_object(tmp_val);
+    json_object_set_number(tmp_obj, "min", cap->key_len.min);
+    json_object_set_number(tmp_obj, "max", cap->key_len.max);
+    json_object_set_number(tmp_obj, "increment", cap->key_len.increment);
+    json_array_append_value(tmp_arr, tmp_val);
+
+    /* other info length list */
+    json_object_set_value(cap_obj, "otherInfoLen", json_value_init_array());
+    tmp_arr = json_object_get_array(cap_obj, "otherInfoLen");
+    tmp_val = json_value_init_object();
+    tmp_obj = json_value_get_object(tmp_val);
+    json_object_set_number(tmp_obj, "min", cap->other_len.min);
+    json_object_set_number(tmp_obj, "max", cap->other_len.max);
+    json_object_set_number(tmp_obj, "increment", cap->other_len.increment);
+    json_array_append_value(tmp_arr, tmp_val);
+
+    /* supp info length list */
+    json_object_set_value(cap_obj, "suppInfoLen", json_value_init_array());
+    tmp_arr = json_object_get_array(cap_obj, "suppInfoLen");
+    tmp_val = json_value_init_object();
+    tmp_obj = json_value_get_object(tmp_val);
+    json_object_set_number(tmp_obj, "min", cap->supp_len.min);
+    json_object_set_number(tmp_obj, "max", cap->supp_len.max);
+    json_object_set_number(tmp_obj, "increment", cap->supp_len.increment);
+    json_array_append_value(tmp_arr, tmp_val);
+
+    /* zz length list */
+    json_object_set_value(cap_obj, "zzLen", json_value_init_array());
+    tmp_arr = json_object_get_array(cap_obj, "zzLen");
+    tmp_val = json_value_init_object();
+    tmp_obj = json_value_get_object(tmp_val);
+    json_object_set_number(tmp_obj, "min", cap->zz_len.min);
+    json_object_set_number(tmp_obj, "max", cap->zz_len.max);
+    json_object_set_number(tmp_obj, "increment", cap->zz_len.increment);
+    json_array_append_value(tmp_arr, tmp_val);
+
+    /* Array of hash algs */
+    json_object_set_value(cap_obj, "hashAlg", json_value_init_array());
+    tmp_arr = json_object_get_array(cap_obj, "hashAlg");
+    nl_obj = cap->hash_algs;
+    while (nl_obj) {
+        json_array_append_string(tmp_arr, nl_obj->name);
+        nl_obj = nl_obj->next;
+    }
+
+    /* Array of OIDs */
+    if (cap->type == ACVP_KDF_X942_KDF_TYPE_DER || cap->type == ACVP_KDF_X942_KDF_TYPE_BOTH) {
+        json_object_set_value(cap_obj, "oid", json_value_init_array());
+        tmp_arr = json_object_get_array(cap_obj, "oid");
+        nl_obj = cap->oids;
+        while (nl_obj) {
+            json_array_append_string(tmp_arr, nl_obj->name);
+            nl_obj = nl_obj->next;
+        }
+    }
+    return ACVP_SUCCESS;
+}
+
 static ACVP_RESULT acvp_build_kdf135_x963_register_cap(JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry) {
     ACVP_RESULT result;
     JSON_Array *tmp_arr = NULL;
@@ -4515,6 +4619,9 @@ ACVP_RESULT acvp_build_test_session(ACVP_CTX *ctx, char **reg, int *out_len) {
                 break;
             case ACVP_KDF135_IKEV1:
                 rv = acvp_build_kdf135_ikev1_register_cap(cap_obj, cap_entry);
+                break;
+            case ACVP_KDF135_X942:
+                rv = acvp_build_kdf135_x942_register_cap(cap_obj, cap_entry);
                 break;
             case ACVP_KDF135_X963:
                 rv = acvp_build_kdf135_x963_register_cap(cap_obj, cap_entry);

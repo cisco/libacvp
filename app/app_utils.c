@@ -435,3 +435,26 @@ char *ec_point_to_pub_key(unsigned char *x, int x_len, unsigned char *y, int y_l
     *key_len = key_size;
     return key;
 }
+
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+
+static const unsigned char tdes_oid[] = { 0x06, 0x0B, 0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x09, 0x10, 0x03, 0x06 };
+static const unsigned char aes128_oid[] = { 0x06, 0x09, 0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x01, 0x05 };
+static const unsigned char aes192_oid[] = { 0x06, 0x09, 0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x01, 0x19 };
+static const unsigned char aes256_oid[] = { 0x06, 0x09, 0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x01, 0x2D };
+
+const char *get_string_from_oid(unsigned char *oid, int oid_len) {
+    int diff = 0;
+
+    memcmp_s(tdes_oid, sizeof(tdes_oid), oid, oid_len, &diff);
+    if (!diff) return "DES3-WRAP";
+    memcmp_s(aes128_oid, sizeof(aes128_oid), oid, oid_len, &diff);
+    if (!diff) return "AES-128-WRAP";
+    memcmp_s(aes192_oid, sizeof(aes192_oid), oid, oid_len, &diff);
+    if (!diff) return "AES-192-WRAP";
+    memcmp_s(aes256_oid, sizeof(aes256_oid), oid, oid_len, &diff);
+    if (!diff) return "AES-256-WRAP";
+
+    return NULL;
+}
+#endif

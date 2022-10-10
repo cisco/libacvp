@@ -12,6 +12,7 @@
 #include <openssl/evp.h>
 #include <openssl/bn.h>
 #if OPENSSL_VERSION_NUMBER >= 0x30000000L
+#include <openssl/core_names.h>
 #include <openssl/rand.h>
 #include <openssl/param_build.h>
 #include <openssl/kdf.h>
@@ -70,6 +71,126 @@ int app_kdf135_ikev1_handler(ACVP_TEST_CASE *test_case) {
         return -1;
     }
     return 1;
+}
+
+int app_kdf135_x942_handler(ACVP_TEST_CASE *test_case) {
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+    ACVP_KDF135_X942_TC *stc = NULL;
+    int rc = 1, info_len = 0, iter = 0;
+    OSSL_PARAM_BLD *pbld = NULL;
+    OSSL_PARAM *params = NULL;
+    EVP_KDF *kdf = NULL;
+    EVP_KDF_CTX *kctx = NULL;
+    const char *alg = NULL, *oid = NULL;
+    unsigned char *acvp_info = NULL;
+
+    if (!test_case) {
+        printf("Missing KDF X942 test case\n");
+        return -1;
+    }
+    stc = test_case->tc.kdf135_x942;
+    if (!stc) {
+        printf("Missing KDF X942 test case\n");
+        return -1;
+    }
+
+    alg = get_md_string_for_hash_alg(stc->hash_alg, NULL);
+    if (!alg) {
+        printf("Invalid hash alg given for KDF x942\n");
+        goto end;
+    }
+
+    oid = get_string_from_oid(stc->oid, stc->oid_len);
+    if (!oid) {
+        printf("Invalid OID string given for KDF x942\n");
+        goto end;
+    }
+
+    kdf = EVP_KDF_fetch(NULL, "X942KDF", NULL);
+    kctx = EVP_KDF_CTX_new(kdf);
+    if (!kctx) {
+        printf("Error creating KDF CTX in KDF X942\n");
+        goto end;
+    }
+
+    pbld = OSSL_PARAM_BLD_new();
+    if (!pbld) {
+        printf("Error creating param_bld in KDF X942\n");
+        goto end;
+    }
+
+    OSSL_PARAM_BLD_push_utf8_string(pbld, OSSL_KDF_PARAM_DIGEST, alg, 0);
+    OSSL_PARAM_BLD_push_utf8_string(pbld, OSSL_KDF_PARAM_CEK_ALG, oid, 0);
+    OSSL_PARAM_BLD_push_octet_string(pbld, OSSL_KDF_PARAM_SECRET, stc->zz, stc->zz_len);
+
+    /**
+     * For ACVP, we need to manually build the acvp-info string instead of using the regular param setters.
+     * Format:
+     * A0 | #partyUInfo | partyUInfo | A1 | #partyVInfo | partyVInfo | A2 | #suppPubInfo | suppPubInfo |
+     * A3 | #suppPrivInfo | suppPrivInfo
+     */
+    info_len = stc->party_u_len + stc->party_v_len + stc->supp_pub_len + stc->supp_priv_len + 8;
+    if (info_len > 8) {
+        acvp_info = calloc(info_len, sizeof(unsigned char));
+        if (!acvp_info) {
+            printf("Error allocating memory for acvp-info string in KDF x942\n");
+            goto end;
+        }
+        acvp_info[iter] = 0xA0;
+        iter++;
+        acvp_info[iter] = (unsigned char)stc->party_u_len;
+        iter++;
+        memcpy_s(&acvp_info[iter], info_len - iter, stc->party_u_info, stc->party_u_len);
+        iter += stc->party_u_len;
+        acvp_info[iter] = 0xA1;
+        iter++;
+        acvp_info[iter] = (unsigned char)stc->party_v_len;
+        iter++;
+        memcpy_s(&acvp_info[iter], info_len - iter, stc->party_v_info, stc->party_v_len);
+        iter += stc->party_v_len;
+        acvp_info[iter] = 0xA2;
+        iter++;
+        acvp_info[iter] = (unsigned char)stc->supp_pub_len;
+        iter++;
+        memcpy_s(&acvp_info[iter], info_len - iter, stc->supp_pub_info, stc->supp_pub_len);
+        iter += stc->supp_pub_len;
+        acvp_info[iter] = 0xA3;
+        iter++;
+        acvp_info[iter] = (unsigned char)stc->supp_priv_len;
+        iter++;
+        memcpy_s(&acvp_info[iter], info_len - iter, stc->supp_priv_info, stc->supp_priv_len);
+
+        OSSL_PARAM_BLD_push_octet_string(pbld, OSSL_KDF_PARAM_X942_ACVPINFO, acvp_info, info_len);
+    }
+    OSSL_PARAM_BLD_push_int(pbld, OSSL_KDF_PARAM_X942_USE_KEYBITS, 0);
+
+    params = OSSL_PARAM_BLD_to_param(pbld);
+    if (!params) {
+        printf("Error generating params in KDF X942\n");
+        goto end;
+    }
+
+    if (EVP_KDF_derive(kctx, stc->dkm, stc->key_len, params) != 1) {
+        printf("Failure deriving key material in KDF X942\n");
+        goto end;
+    }
+
+    stc->dkm_len = stc->key_len;
+    rc = 0;
+end:
+    if (acvp_info) free(acvp_info);
+    if (pbld) OSSL_PARAM_BLD_free(pbld);
+    if (params) OSSL_PARAM_free(params);
+    if (kdf) EVP_KDF_free(kdf);
+    if (kctx) EVP_KDF_CTX_free(kctx);
+    return rc;
+#else
+
+    if (!test_case) {
+        return -1;
+    }
+    return 1;
+#endif
 }
 
 int app_kdf135_x963_handler(ACVP_TEST_CASE *test_case) {

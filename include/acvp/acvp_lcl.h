@@ -229,6 +229,7 @@
 #define ACVP_REV_KDF135_IKEV2        ACVP_REV_STR_DEFAULT
 #define ACVP_REV_KDF135_IKEV1        ACVP_REV_STR_DEFAULT
 #define ACVP_REV_KDF135_TPM          ACVP_REV_STR_DEFAULT
+#define ACVP_REV_KDF135_X942         ACVP_REV_STR_DEFAULT
 #define ACVP_REV_KDF135_X963         ACVP_REV_STR_DEFAULT
 #define ACVP_REV_KDF108              ACVP_REV_STR_DEFAULT
 #define ACVP_REV_PBKDF               ACVP_REV_STR_DEFAULT
@@ -426,6 +427,7 @@
 #define ACVP_ALG_KDF135_IKEV1    "ikev1"
 #define ACVP_ALG_KDF135_TPM      "KDF-TPM"
 #define ACVP_ALG_KDF108          "KDF"
+#define ACVP_ALG_KDF135_X942     "ansix9.42"
 #define ACVP_ALG_KDF135_X963     "ansix9.63"
 #define ACVP_ALG_PBKDF           "PBKDF"
 
@@ -589,6 +591,14 @@
 #define ACVP_KDF135_SRTP_MASTER_MAX 65
 #define ACVP_KDF135_SRTP_INDEX_MAX 32
 #define ACVP_KDF135_SRTP_OUTPUT_MAX 64
+
+/**
+ * Accepted length ranges for KDF135_X942.
+ * https://github.com/usnistgov/ACVP/blob/master/artifacts/acvp_sub_kdf135_x942.txt
+ */
+#define ACVP_KDF135_X942_BIT_MAX 4096
+#define ACVP_KDF135_X942_STR_MAX (ACVP_KDF135_X942_BIT_MAX >> 2)
+#define ACVP_KDF135_X942_BYTE_MAX (ACVP_KDF135_X942_BIT_MAX >> 3)
 
 /**
  * Accepted length ranges for KDF135_X963.
@@ -1015,6 +1025,7 @@ typedef enum acvp_capability_type {
     ACVP_KDF135_SRTP_TYPE,
     ACVP_KDF135_IKEV2_TYPE,
     ACVP_KDF135_IKEV1_TYPE,
+    ACVP_KDF135_X942_TYPE,
     ACVP_KDF135_X963_TYPE,
     ACVP_KDF135_TPM_TYPE,
     ACVP_KDF108_TYPE,
@@ -1186,6 +1197,17 @@ typedef struct acvp_kdf135_ikev1_capability {
     ACVP_JSON_DOMAIN_OBJ dh_secret_len;
     ACVP_JSON_DOMAIN_OBJ psk_len;
 } ACVP_KDF135_IKEV1_CAP;
+
+
+typedef struct acvp_kdf135_x942_capability {
+    ACVP_KDF_X942_TYPE type;
+    ACVP_JSON_DOMAIN_OBJ key_len;
+    ACVP_JSON_DOMAIN_OBJ other_len;
+    ACVP_JSON_DOMAIN_OBJ supp_len;
+    ACVP_JSON_DOMAIN_OBJ zz_len;
+    ACVP_NAME_LIST *hash_algs;
+    ACVP_NAME_LIST *oids;
+} ACVP_KDF135_X942_CAP;
 
 typedef struct acvp_kdf135_x963_capability {
     ACVP_NAME_LIST *hash_algs;
@@ -1555,6 +1577,7 @@ typedef struct acvp_caps_list_t {
         ACVP_KDF135_SRTP_CAP *kdf135_srtp_cap;
         ACVP_KDF135_IKEV2_CAP *kdf135_ikev2_cap;
         ACVP_KDF135_IKEV1_CAP *kdf135_ikev1_cap;
+        ACVP_KDF135_X942_CAP *kdf135_x942_cap;
         ACVP_KDF135_X963_CAP *kdf135_x963_cap;
         ACVP_KDF108_CAP *kdf108_cap;
         ACVP_PBKDF_CAP *pbkdf_cap;
@@ -1857,6 +1880,8 @@ ACVP_RESULT acvp_kdf135_srtp_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 ACVP_RESULT acvp_kdf135_ikev2_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
 ACVP_RESULT acvp_kdf135_ikev1_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
+
+ACVP_RESULT acvp_kdf135_x942_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
 ACVP_RESULT acvp_kdf135_x963_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 

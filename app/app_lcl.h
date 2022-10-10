@@ -92,9 +92,6 @@ void app_des_cleanup(void);
 int app_aes_handler(ACVP_TEST_CASE *test_case);
 int app_aes_handler_aead(ACVP_TEST_CASE *test_case);
 int app_aes_keywrap_handler(ACVP_TEST_CASE *test_case);
-#if OPENSSL_VERSION_NUMBER >= 0x30000000L
-int app_aes_handler_gmac(ACVP_TEST_CASE *test_case);
-#endif
 int app_des_handler(ACVP_TEST_CASE *test_case);
 int app_sha_handler(ACVP_TEST_CASE *test_case);
 int app_hmac_handler(ACVP_TEST_CASE *test_case);
@@ -110,6 +107,7 @@ int app_kdf135_srtp_handler(ACVP_TEST_CASE *test_case);
 int app_kdf135_ikev2_handler(ACVP_TEST_CASE *test_case);
 int app_kdf108_handler(ACVP_TEST_CASE *test_case);
 int app_kdf135_ikev1_handler(ACVP_TEST_CASE *test_case);
+int app_kdf135_x942_handler(ACVP_TEST_CASE *test_case);
 int app_kdf135_x963_handler(ACVP_TEST_CASE *test_case);
 int app_pbkdf_handler(ACVP_TEST_CASE *test_case);
 int app_kdf_tls12_handler(ACVP_TEST_CASE *test_case);
@@ -134,6 +132,11 @@ int app_rsa_sigprim_handler(ACVP_TEST_CASE *test_case);
 int app_ecdsa_handler(ACVP_TEST_CASE *test_case);
 int app_drbg_handler(ACVP_TEST_CASE *test_case);
 int app_safe_primes_handler(ACVP_TEST_CASE *test_case);
+
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+int app_aes_handler_gmac(ACVP_TEST_CASE *test_case);
+const char *get_string_from_oid(unsigned char *oid, int oid_len);
+#endif
 
 #ifdef __cplusplus
 }
