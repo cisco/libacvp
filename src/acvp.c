@@ -148,6 +148,7 @@ ACVP_ALG_HANDLER alg_tbl[ACVP_ALG_MAX] = {
     { ACVP_KDF135_SRTP,       &acvp_kdf135_srtp_kat_handler,     ACVP_KDF135_ALG_STR,        ACVP_ALG_KDF135_SRTP, ACVP_REV_KDF135_SRTP, {ACVP_SUB_KDF_SRTP}},
     { ACVP_KDF135_IKEV2,      &acvp_kdf135_ikev2_kat_handler,    ACVP_KDF135_ALG_STR,        ACVP_ALG_KDF135_IKEV2, ACVP_REV_KDF135_IKEV2, {ACVP_SUB_KDF_IKEV2}},
     { ACVP_KDF135_IKEV1,      &acvp_kdf135_ikev1_kat_handler,    ACVP_KDF135_ALG_STR,        ACVP_ALG_KDF135_IKEV1, ACVP_REV_KDF135_IKEV1, {ACVP_SUB_KDF_IKEV1}},
+    { ACVP_KDF135_X942,       &acvp_kdf135_x942_kat_handler,     ACVP_KDF135_ALG_STR,        ACVP_ALG_KDF135_X942, ACVP_REV_KDF135_X942, {ACVP_SUB_KDF_X942}},
     { ACVP_KDF135_X963,       &acvp_kdf135_x963_kat_handler,     ACVP_KDF135_ALG_STR,        ACVP_ALG_KDF135_X963, ACVP_REV_KDF135_X963, {ACVP_SUB_KDF_X963}},
     { ACVP_KDF108,            &acvp_kdf108_kat_handler,          ACVP_ALG_KDF108,            NULL, ACVP_REV_KDF108, {ACVP_SUB_KDF_108}},
     { ACVP_PBKDF,             &acvp_pbkdf_kat_handler,           ACVP_ALG_PBKDF,             NULL, ACVP_REV_PBKDF, {ACVP_SUB_KDF_PBKDF}},
@@ -774,6 +775,11 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx) {
             case ACVP_KDF135_IKEV1_TYPE:
                 acvp_cap_free_nl(cap_entry->cap.kdf135_ikev1_cap->hash_algs);
                 free(cap_entry->cap.kdf135_ikev1_cap);
+                break;
+            case ACVP_KDF135_X942_TYPE:
+                acvp_cap_free_nl(cap_entry->cap.kdf135_x942_cap->hash_algs);
+                acvp_cap_free_nl(cap_entry->cap.kdf135_x942_cap->oids);
+                free(cap_entry->cap.kdf135_x942_cap);
                 break;
             case ACVP_KDF135_X963_TYPE:
                 acvp_cap_free_nl(cap_entry->cap.kdf135_x963_cap->hash_algs);
