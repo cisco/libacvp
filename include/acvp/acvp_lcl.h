@@ -884,7 +884,7 @@
 #define ACVP_KDA_FIXED_STR_MAX (ACVP_KDA_FIXED_BIT_MAX >> 2)
 #define ACVP_KDA_FIXED_BYTE_MAX (ACVP_KDA_FIXED_BIT_MAX >> 3)
 
-#define ACVP_KDA_SALT_BIT_MAX 512 //seems tied to hmac length, unclear
+#define ACVP_KDA_SALT_BIT_MAX 1344 //aux function maximum block size
 #define ACVP_KDA_SALT_STR_MAX (ACVP_KDA_SALT_BIT_MAX >> 2)
 #define ACVP_KDA_SALT_BYTE_MAX (ACVP_KDA_SALT_BIT_MAX >> 3)
 
@@ -893,7 +893,7 @@
 #define ACVP_KDA_Z_BYTE_MAX (ACVP_KDA_Z_BIT_MAX >> 3)
 
 
-#define ACVP_CURL_BUF_MAX       (1024 * 1024 * 32) /**< 32 MB */
+#define ACVP_CURL_BUF_MAX       (1024 * 1024 * 64) /**< 64 MB */
 #define ACVP_RETRY_TIME_MIN     5 /* seconds */
 #define ACVP_RETRY_TIME_MAX     300 
 #define ACVP_MAX_WAIT_TIME      7200

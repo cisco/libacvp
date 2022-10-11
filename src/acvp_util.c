@@ -596,7 +596,9 @@ static struct acvp_function_info acvp_aux_function_tbl[] = {
     { ACVP_HMAC_SHA3_224, ACVP_ALG_HMAC_SHA3_224 },
     { ACVP_HMAC_SHA3_256, ACVP_ALG_HMAC_SHA3_256 },
     { ACVP_HMAC_SHA3_384, ACVP_ALG_HMAC_SHA3_384 },
-    { ACVP_HMAC_SHA3_512, ACVP_ALG_HMAC_SHA3_512 }
+    { ACVP_HMAC_SHA3_512, ACVP_ALG_HMAC_SHA3_512 },
+    { ACVP_KMAC_128, ACVP_ALG_KMAC_128 },
+    { ACVP_KMAC_256, ACVP_ALG_KMAC_256 }
 };
 static int acvp_aux_function_tbl_len = sizeof(acvp_aux_function_tbl) / sizeof(struct acvp_function_info);
 
