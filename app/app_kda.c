@@ -260,7 +260,9 @@ int app_kda_onestep_handler(ACVP_TEST_CASE *test_case) {
         goto end;
     }
 
-    if (!stc->salt) {
+    if (stc->aux_function == ACVP_KMAC_128) {
+        mac = "KMAC128";
+    } else if (!stc->salt) {
         hashalg = acvp_get_hash_alg(stc->aux_function);
         if (hashalg == 0) {
             printf("Invalid cipher value");
@@ -352,10 +354,6 @@ int app_kda_onestep_handler(ACVP_TEST_CASE *test_case) {
             goto end;
         }
     }
-    if (!md) {
-        printf("Invalid hmac alg in KDA-OneStep\n");
-        goto end;
-    }
 
     kdf = EVP_KDF_fetch(NULL, "SSKDF", NULL);
     kctx = EVP_KDF_CTX_new(kdf);
@@ -372,7 +370,9 @@ int app_kda_onestep_handler(ACVP_TEST_CASE *test_case) {
         OSSL_PARAM_BLD_push_utf8_string(pbld, "mac", mac, 0);
         OSSL_PARAM_BLD_push_octet_string(pbld, "salt", stc->salt, (size_t)stc->saltLen);
     }
-    OSSL_PARAM_BLD_push_utf8_string(pbld, "digest", md, 0);
+    if (md) {
+        OSSL_PARAM_BLD_push_utf8_string(pbld, "digest", md, 0);
+    }
     OSSL_PARAM_BLD_push_octet_string(pbld, "key", stc->z, (size_t)stc->zLen);
     OSSL_PARAM_BLD_push_octet_string(pbld, "info", fixedInfo, (size_t)fixedInfoLen);
     params = OSSL_PARAM_BLD_to_param(pbld);

@@ -1040,8 +1040,7 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
         }
 
         saltLen = json_object_get_number(configobj, "saltLen");
-        //saltLen seems tied to hashAlg bit length. Spec unclear as of writing.
-        if (saltLen % 8 != 0 || saltLen < 0 || saltLen > 512) {
+        if (saltLen % 8 != 0 || saltLen < 0 || saltLen > ACVP_KDA_SALT_BIT_MAX) {
             ACVP_LOG_ERR("Invalid saltLen provided by server");
             rv = ACVP_MALFORMED_JSON;
             goto err;
@@ -1190,8 +1189,7 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
                     rv = ACVP_MALFORMED_JSON;
                     goto err;
                 }
-                //assume max salt len is mac alg max length, currently 512
-                if ((int)strnlen_s(salt, 128) != saltLen / 4) {
+                if ((int)strnlen_s(salt, ACVP_KDA_SALT_STR_MAX + 1) != saltLen / 4) {
                     ACVP_LOG_ERR("salt wrong length, should match provided saltLen %d",
                                 saltLen);
                     rv = ACVP_MALFORMED_JSON;
