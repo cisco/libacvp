@@ -4938,6 +4938,19 @@ ACVP_RESULT acvp_cap_ecdsa_set_parm(ACVP_CTX *ctx,
 
         cap->hash_algs[value] = 1;
         break;
+    case ACVP_ECDSA_COMPONENT_TEST:
+        if (cipher == ACVP_ECDSA_SIGGEN || cipher == ACVP_ECDSA_SIGVER) {
+            if (value >= ACVP_ECDSA_COMPONENT_MODE_NO && value <= ACVP_ECDSA_COMPONENT_MODE_BOTH) {
+                cap->component = value;
+            } else {
+                ACVP_LOG_ERR("Invalid value given for ECDSA component test mode");
+                return ACVP_INVALID_ARG;
+            }
+        } else {
+            ACVP_LOG_ERR("ECDSA Component Tests only apply to siggen and sigver");
+            return ACVP_INVALID_ARG;
+        }
+        break;
     default:
         return ACVP_INVALID_ARG;
         break;

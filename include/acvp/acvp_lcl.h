@@ -1348,6 +1348,7 @@ typedef struct acvp_ecdsa_capability_t {
     ACVP_NAME_LIST *secret_gen_modes;
     //For backwards compatibility, this contains hash algs that will be used with ALL registered curves (HASH_ALG = array index)
     int hash_algs[ACVP_HASH_ALG_MAX + 1];
+    ACVP_ECDSA_COMPONENT_MODE component;
 } ACVP_ECDSA_CAP;
 
 typedef struct acvp_rsa_sig_capability_t {

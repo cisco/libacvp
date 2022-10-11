@@ -102,6 +102,7 @@ static ACVP_RESULT acvp_ecdsa_release_tc(ACVP_ECDSA_TC *stc) {
 
 static ACVP_RESULT acvp_ecdsa_init_tc(ACVP_CTX *ctx,
                                       ACVP_CIPHER cipher,
+                                      int is_component,
                                       ACVP_ECDSA_TC *stc,
                                       int tg_id,
                                       unsigned int tc_id,
@@ -123,6 +124,7 @@ static ACVP_RESULT acvp_ecdsa_init_tc(ACVP_CTX *ctx,
     stc->hash_alg = hash_alg;
     stc->curve = curve;
     stc->secret_gen_mode = secret_gen_mode;
+    stc->is_component = is_component;
 
     stc->qx = calloc(ACVP_RSA_EXP_LEN_MAX, sizeof(char));
     if (!stc->qx) { goto err; }
@@ -312,7 +314,7 @@ static ACVP_RESULT acvp_ecdsa_kat_handler_internal(ACVP_CTX *ctx, JSON_Object *o
     g_cnt = json_array_get_count(groups);
 
     for (i = 0; i < g_cnt; i++) {
-        int tgId = 0;
+        int tgId = 0, is_component = 0;
         ACVP_HASH_ALG hash_alg = 0;
         ACVP_EC_CURVE curve = 0;
         ACVP_ECDSA_SECRET_GEN_MODE secret_gen_mode = 0;
@@ -383,6 +385,8 @@ static ACVP_RESULT acvp_ecdsa_kat_handler_internal(ACVP_CTX *ctx, JSON_Object *o
                 rv = ACVP_INVALID_ARG;
                 goto err;
             }
+
+            is_component = json_object_get_boolean(groupobj, "componentTest");
         }
 
         ACVP_LOG_VERBOSE("           Test group: %d", i);
@@ -459,7 +463,7 @@ static ACVP_RESULT acvp_ecdsa_kat_handler_internal(ACVP_CTX *ctx, JSON_Object *o
 
             json_object_set_number(r_tobj, "tcId", tc_id);
 
-            rv = acvp_ecdsa_init_tc(ctx, alg_id, &stc, tgId, tc_id, curve, secret_gen_mode, hash_alg, qx, qy, message, r, s);
+            rv = acvp_ecdsa_init_tc(ctx, alg_id, is_component, &stc, tgId, tc_id, curve, secret_gen_mode, hash_alg, qx, qy, message, r, s);
 
             /* Process the current test vector... */
             if (rv == ACVP_SUCCESS) {
