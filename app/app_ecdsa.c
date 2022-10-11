@@ -235,7 +235,7 @@ int app_ecdsa_handler(ACVP_TEST_CASE *test_case) {
             EVP_PKEY_sign(comp_ctx, NULL, &sig_len, tc->message, tc->msg_len);
             sig = calloc(sig_len, sizeof(char));
             if (!sig) {
-                printf("Error allocating memory in ECDSA siggen\n");
+                printf("Error allocating memory in ECDSA component siggen\n");
                 goto err;
             }
             sig_iter = sig; /* since d2i_ECDSA_SIG alters the pointer, we need to keep the original one for freeing */
@@ -332,11 +332,11 @@ int app_ecdsa_handler(ACVP_TEST_CASE *test_case) {
         } else {
             comp_ctx = EVP_PKEY_CTX_new_from_pkey(NULL, pkey, NULL);
             if (!comp_ctx) {
-                printf("Error initializing sign CTX for ECDSA component siggen\n");
+                printf("Error initializing sign CTX for ECDSA component sigver\n");
                 goto err;
             }
             if (EVP_PKEY_verify_init(comp_ctx) != 1) {
-                printf("Error initializing signing for ECDSA component siggen\n");
+                printf("Error initializing signing for ECDSA component sigver\n");
                 goto err;
             }
             if (EVP_PKEY_verify(comp_ctx, sig, sig_len, tc->message, tc->msg_len) == 1) {
