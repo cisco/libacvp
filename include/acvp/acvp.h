@@ -886,12 +886,23 @@ typedef struct acvp_rsa_prim_tc_t {
     unsigned int pass;
     int key_format;
     unsigned char *n;
-    int n_len;
     unsigned char *e;
-    int e_len;
     unsigned char *d;
-    int d_len;
+    unsigned char *p;
+    unsigned char *q;
+    unsigned char *dmp1;
+    unsigned char *dmq1;
+    unsigned char *iqmp;
     unsigned char *pt;
+
+    int n_len;
+    int e_len;
+    int d_len;
+    int p_len;
+    int q_len;
+    int dmp1_len;
+    int dmq1_len;
+    int iqmp_len;
     int pt_len;
     int disposition;
 } ACVP_RSA_PRIM_TC;

@@ -11,6 +11,7 @@
 #include <openssl/bn.h>
 #include <openssl/rsa.h>
 #if OPENSSL_VERSION_NUMBER >= 0x30000000L
+#include <openssl/core_names.h>
 #include <openssl/param_build.h>
 #endif
 
@@ -994,11 +995,13 @@ err:
 int app_rsa_sigprim_handler(ACVP_TEST_CASE *test_case) {
     BIGNUM *e = NULL, *n = NULL, *d = NULL;
 #if OPENSSL_VERSION_NUMBER >= 0x30000000L
+    BIGNUM *p = NULL, *q = NULL, *dmp1 = NULL, *dmq1 = NULL, *iqmp = NULL;
     EVP_PKEY *pkey = NULL;
     EVP_PKEY_CTX *pkey_ctx = NULL;
     EVP_PKEY_CTX *sign_ctx = NULL;
     OSSL_PARAM_BLD *pbld = NULL;
     OSSL_PARAM *params = NULL;
+    BN_CTX *bctx = NULL;
 #else
     BIGNUM  *tmp_e = NULL, *tmp_n = NULL, *tmp_d = NULL;
     RSA *rsa = NULL;
@@ -1007,36 +1010,44 @@ int app_rsa_sigprim_handler(ACVP_TEST_CASE *test_case) {
     int rv = 1;
 
     tc = test_case->tc.rsa_prim;
-
-    if (tc->key_format != ACVP_RSA_PRIM_KEYFORMAT_STANDARD) {
-        printf("Key Format must be standard\n");
-        goto err;
-    }
-
-    if (!tc->e || !tc->d || !tc->n) {
-        printf("Missing arguments e|d|n\n");
-        goto err;
-    }
-
     tc->disposition = 1;
 
-    e = BN_bin2bn(tc->e, tc->e_len, NULL);
-    if (!e) {
-        printf("Failed to allocate BN for e\n");
+    if (!tc->e || !tc->n) {
+        printf("Missing arguments e|n\n");
         goto err;
     }
 
+    e = BN_bin2bn(tc->e, tc->e_len, NULL);
     n = BN_bin2bn(tc->n, tc->n_len, NULL);
-    if (!n) {
-        printf("Failed to allocate BN for n\n");
+    if (!e || !n) {
+        printf("Failed to convert e/n to bignum in RSA sigprim\n");
         goto err;
     }
-    d = BN_bin2bn(tc->d, tc->d_len, NULL);
-    if (!d) {
-        printf("Failed to allocate BN for d\n");
-        goto err;
-    }
+
 #if OPENSSL_VERSION_NUMBER >= 0x30000000L
+    if (!tc->p || !tc->q || !tc->dmp1 || !tc->dmq1 || !tc->iqmp) {
+        printf("Missing TC CRT key components\n");
+        goto err;
+    }
+    p = BN_bin2bn(tc->p, tc->p_len, NULL);
+    q = BN_bin2bn(tc->q, tc->q_len, NULL);
+    dmp1 = BN_bin2bn(tc->dmp1, tc->dmp1_len, NULL);
+    dmq1 = BN_bin2bn(tc->dmq1, tc->dmq1_len, NULL);
+    iqmp = BN_bin2bn(tc->iqmp, tc->iqmp_len, NULL);
+    if (!p || !q || !dmp1 || !dmq1 || !iqmp) {
+        printf("Failed to CRT components to bignum in RSA sigprim\n");
+        goto err;
+    }
+    bctx = BN_CTX_new();
+    d = BN_dup(n);
+    if (!bctx || !d) {
+        printf("Error generating d in RSA sigprim\n");
+        goto err;
+    }
+    BN_sub(d, d, p);
+    BN_sub(d, d, q);
+    BN_add_word(d, 1);
+    BN_mod_inverse(d, e, d, bctx);
 
     tc->sig_len = tc->modulo;
 
@@ -1045,9 +1056,15 @@ int app_rsa_sigprim_handler(ACVP_TEST_CASE *test_case) {
         printf("Error creating param_bld in RSA sigprim\n");
         goto err;
     }
-    OSSL_PARAM_BLD_push_BN(pbld, "d", d);
-    OSSL_PARAM_BLD_push_BN(pbld, "n", n);
-    OSSL_PARAM_BLD_push_BN(pbld, "e", e);
+
+    OSSL_PARAM_BLD_push_BN(pbld, OSSL_PKEY_PARAM_RSA_N, n);
+    OSSL_PARAM_BLD_push_BN(pbld, OSSL_PKEY_PARAM_RSA_E, e);
+    OSSL_PARAM_BLD_push_BN(pbld, OSSL_PKEY_PARAM_RSA_D, d);
+    OSSL_PARAM_BLD_push_BN(pbld, OSSL_PKEY_PARAM_RSA_FACTOR1, p);
+    OSSL_PARAM_BLD_push_BN(pbld, OSSL_PKEY_PARAM_RSA_FACTOR2, q);
+    OSSL_PARAM_BLD_push_BN(pbld, OSSL_PKEY_PARAM_RSA_EXPONENT1, dmp1);
+    OSSL_PARAM_BLD_push_BN(pbld, OSSL_PKEY_PARAM_RSA_EXPONENT2, dmq1);
+    OSSL_PARAM_BLD_push_BN(pbld, OSSL_PKEY_PARAM_RSA_COEFFICIENT1, iqmp);
     params = OSSL_PARAM_BLD_to_param(pbld);
 
     pkey_ctx = EVP_PKEY_CTX_new_from_name(NULL, "RSA", NULL);
@@ -1082,6 +1099,15 @@ int app_rsa_sigprim_handler(ACVP_TEST_CASE *test_case) {
     }
 
 #else
+    if (!tc->d) {
+        printf("Missing argument d\n");
+        goto err;
+    }
+
+    d = BN_bin2bn(tc->d, tc->d_len, NULL);
+    if (!d) {
+        printf("Failed to convert d to bignum in RSA sigprim\n");
+    }
     rsa = RSA_new();
     tmp_d = BN_dup(d);
     tmp_n = BN_dup(n);
@@ -1101,11 +1127,17 @@ err:
     if (n) BN_free(n);
     if (d) BN_free(d);
 #if OPENSSL_VERSION_NUMBER >= 0x30000000L
+    if (p) BN_free(p);
+    if (q) BN_free(q);
+    if (dmp1) BN_free(dmp1);
+    if (dmq1) BN_free(dmq1);
+    if (iqmp) BN_free(iqmp);
     if (pbld) OSSL_PARAM_BLD_free(pbld);
     if (params) OSSL_PARAM_free(params);
     if (sign_ctx) EVP_PKEY_CTX_free(sign_ctx);
     if (pkey_ctx) EVP_PKEY_CTX_free(pkey_ctx);
     if (pkey) EVP_PKEY_free(pkey);
+    if (bctx) BN_CTX_free(bctx);
 #else
     if (rsa) RSA_free(rsa);
 #endif
