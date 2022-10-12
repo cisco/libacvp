@@ -1035,7 +1035,7 @@ int app_rsa_sigprim_handler(ACVP_TEST_CASE *test_case) {
     dmq1 = BN_bin2bn(tc->dmq1, tc->dmq1_len, NULL);
     iqmp = BN_bin2bn(tc->iqmp, tc->iqmp_len, NULL);
     if (!p || !q || !dmp1 || !dmq1 || !iqmp) {
-        printf("Failed to CRT components to bignum in RSA sigprim\n");
+        printf("Failed to convert CRT components to bignum in RSA sigprim\n");
         goto err;
     }
     bctx = BN_CTX_new();
