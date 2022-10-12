@@ -58,7 +58,7 @@ int app_ecdsa_handler(ACVP_TEST_CASE *test_case) {
     ACVP_SUB_ECDSA alg;
     ACVP_ECDSA_TC *tc = NULL;
     EVP_MD_CTX *sig_ctx = NULL;
-    EVP_PKEY_CTX *pkey_ctx = NULL;
+    EVP_PKEY_CTX *pkey_ctx = NULL, *comp_ctx = NULL;
     EVP_PKEY *pkey = NULL;
     OSSL_PARAM_BLD *pkey_pbld = NULL;
     OSSL_PARAM *params = NULL;
@@ -94,7 +94,7 @@ int app_ecdsa_handler(ACVP_TEST_CASE *test_case) {
         goto err;
     }
 
-    if (mode == ACVP_ECDSA_SIGGEN || mode == ACVP_ECDSA_SIGVER) {
+    if ((mode == ACVP_ECDSA_SIGGEN || mode == ACVP_ECDSA_SIGVER) && !tc->is_component) {
         md = get_md_string_for_hash_alg(tc->hash_alg, NULL);
         if (!md) {
             printf("Error getting hash alg from test case for ECDSA\n");
@@ -201,31 +201,49 @@ int app_ecdsa_handler(ACVP_TEST_CASE *test_case) {
             }
         }
         /* Then, for each test case, generate a signature */
-        sig_ctx = EVP_MD_CTX_new();
-        if (!sig_ctx) {
-            printf("Error initializing sign CTX for ECDSA siggen\n");
-            goto err;
+        if (!tc->is_component) {
+            sig_ctx = EVP_MD_CTX_new();
+            if (!sig_ctx) {
+                printf("Error initializing sign CTX for ECDSA siggen\n");
+                goto err;
+            }
+            if (EVP_DigestSignInit_ex(sig_ctx, NULL, md, NULL, NULL, group_pkey, NULL) != 1) {
+                printf("Error initializing signing for ECDSA siggen\n");
+                goto err;
+            }
+            EVP_DigestSign(sig_ctx, NULL, &sig_len, tc->message, tc->msg_len);
+            sig = calloc(sig_len, sizeof(char));
+            if (!sig) {
+                printf("Error allocating memory in ECDSA siggen\n");
+                goto err;
+            }
+            sig_iter = sig; /* since d2i_ECDSA_SIG alters the pointer, we need to keep the original one for freeing */
+            if (EVP_DigestSign(sig_ctx, sig, &sig_len, tc->message, tc->msg_len) != 1) {
+                printf("Error generating signature in ECDSA siggen\n");
+                goto err;
+            }
+        } else {
+            comp_ctx = EVP_PKEY_CTX_new_from_pkey(NULL, group_pkey, NULL);
+            if (!comp_ctx) {
+                printf("Error initializing sign CTX for ECDSA component siggen\n");
+                goto err;
+            }
+            if (EVP_PKEY_sign_init(comp_ctx) != 1) {
+                printf("Error initializing signing for ECDSA component siggen\n");
+                goto err;
+            }
+            EVP_PKEY_sign(comp_ctx, NULL, &sig_len, tc->message, tc->msg_len);
+            sig = calloc(sig_len, sizeof(char));
+            if (!sig) {
+                printf("Error allocating memory in ECDSA component siggen\n");
+                goto err;
+            }
+            sig_iter = sig; /* since d2i_ECDSA_SIG alters the pointer, we need to keep the original one for freeing */
+            if (EVP_PKEY_sign(comp_ctx, sig, &sig_len, tc->message, tc->msg_len) != 1) {
+                printf("Error generating signature in ECDSA component siggen\n");
+                goto err;
+            }
         }
-        if (EVP_DigestSignInit_ex(sig_ctx, NULL, md, NULL, NULL, group_pkey, NULL) != 1) {
-            printf("Error initializing signing for ECDSA siggen\n");
-            goto err;
-        }
-        EVP_DigestSign(sig_ctx, NULL, &sig_len, tc->message, tc->msg_len);
-        sig = calloc(sig_len, sizeof(char));
-        if (!sig) {
-            printf("Error allocating memory in ECDSA siggen\n");
-            goto err;
-        }
-        sig_iter = sig; /* since d2i_ECDSA_SIG alters the pointer, we need to keep the original one for freeing */
-        if (!sig) {
-            printf("Error allocating memory for signature in ECDSA siggen\n");
-            goto err;
-        }
-        if (EVP_DigestSign(sig_ctx, sig, &sig_len, tc->message, tc->msg_len) != 1) {
-            printf("Error generating signature in ECDSA siggen\n");
-            goto err;
-        }
-
         /* Finally, extract R and S from signature */
         sig_obj = d2i_ECDSA_SIG(NULL, (const unsigned char **)&sig_iter, (long)sig_len);
         if (!sig_obj) {
@@ -296,18 +314,34 @@ int app_ecdsa_handler(ACVP_TEST_CASE *test_case) {
         }
 
         sig_len = (size_t)i2d_ECDSA_SIG(sig_obj, &sig);
-        sig_ctx = EVP_MD_CTX_new();
-        if (!sig_ctx) {
-            printf("Error initializing sign CTX for ECDSA sigver\n");
-            goto err;
-        }            
 
-        if (EVP_DigestVerifyInit_ex(sig_ctx, NULL, md, NULL, NULL, pkey, NULL) != 1) {
-            printf("Error initializing signing for ECDSA sigver\n");
-            goto err;
-        }
-        if (EVP_DigestVerify(sig_ctx, sig, sig_len, tc->message, tc->msg_len) == 1) {
-            tc->ver_disposition = 1;
+        if (!tc->is_component) {
+            sig_ctx = EVP_MD_CTX_new();
+            if (!sig_ctx) {
+                printf("Error initializing sign CTX for ECDSA sigver\n");
+                goto err;
+            }
+
+            if (EVP_DigestVerifyInit_ex(sig_ctx, NULL, md, NULL, NULL, pkey, NULL) != 1) {
+                printf("Error initializing signing for ECDSA sigver\n");
+                goto err;
+            }
+            if (EVP_DigestVerify(sig_ctx, sig, sig_len, tc->message, tc->msg_len) == 1) {
+                tc->ver_disposition = 1;
+            }
+        } else {
+            comp_ctx = EVP_PKEY_CTX_new_from_pkey(NULL, pkey, NULL);
+            if (!comp_ctx) {
+                printf("Error initializing sign CTX for ECDSA component sigver\n");
+                goto err;
+            }
+            if (EVP_PKEY_verify_init(comp_ctx) != 1) {
+                printf("Error initializing signing for ECDSA component sigver\n");
+                goto err;
+            }
+            if (EVP_PKEY_verify(comp_ctx, sig, sig_len, tc->message, tc->msg_len) == 1) {
+                tc->ver_disposition = 1;
+            }
         }
         break;
     default:
@@ -327,6 +361,7 @@ err:
     if (pkey) EVP_PKEY_free(pkey);
     if (sig_ctx) EVP_MD_CTX_free(sig_ctx);
     if (pkey_ctx) EVP_PKEY_CTX_free(pkey_ctx);
+    if (comp_ctx) EVP_PKEY_CTX_free(comp_ctx);
     return rv;
 }
 

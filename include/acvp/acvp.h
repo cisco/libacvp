@@ -676,7 +676,8 @@ typedef enum acvp_rsa_prime_param {
 typedef enum acvp_ecdsa_param {
     ACVP_ECDSA_CURVE,
     ACVP_ECDSA_SECRET_GEN,
-    ACVP_ECDSA_HASH_ALG
+    ACVP_ECDSA_HASH_ALG,
+    ACVP_ECDSA_COMPONENT_TEST
 } ACVP_ECDSA_PARM;
 
 /** @enum ACVP_ECDSA_SECRET_GEN_MODE */
@@ -705,6 +706,13 @@ typedef enum acvp_ec_curve {
     ACVP_EC_CURVE_K571,
     ACVP_EC_CURVE_END
 } ACVP_EC_CURVE;
+
+/** @enum ACVP_ECDSA_COMPONENT_MODE */
+typedef enum acvp_ecdsa_component_mode {
+    ACVP_ECDSA_COMPONENT_MODE_NO,
+    ACVP_ECDSA_COMPONENT_MODE_YES,
+    ACVP_ECDSA_COMPONENT_MODE_BOTH
+} ACVP_ECDSA_COMPONENT_MODE;
 
 /** @enum ACVP_KDF135_IKEV2_PARM */
 typedef enum acvp_kdf135_ikev2_param {
@@ -1548,6 +1556,7 @@ typedef struct acvp_rsa_keygen_tc_t {
 typedef struct acvp_ecdsa_tc_t {
     unsigned int tc_id;    /**< Test case id */
     int tg_id;
+    int is_component;
     ACVP_HASH_ALG hash_alg;
 
     ACVP_CIPHER cipher;
