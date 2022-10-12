@@ -108,6 +108,11 @@ static ACVP_RESULT acvp_rsa_sigprim_release_tc(ACVP_RSA_PRIM_TC *stc) {
     if (stc->e) { free(stc->e); }
     if (stc->d) { free(stc->d); }
     if (stc->n) { free(stc->n); }
+    if (stc->p) { free(stc->p); }
+    if (stc->q) { free(stc->q); }
+    if (stc->dmp1) { free(stc->dmp1); }
+    if (stc->dmq1) { free(stc->dmq1); }
+    if (stc->iqmp) { free(stc->iqmp); }
     if (stc->pt) { free(stc->pt); }
     if (stc->msg) { free(stc->msg); }
     if (stc->signature) { free(stc->signature); }
@@ -159,6 +164,11 @@ static ACVP_RESULT acvp_rsa_sigprim_init_tc(ACVP_CTX *ctx,
                                             const char *d_str,
                                             const char *e_str,
                                             const char *n_str,
+                                            const char *p_str,
+                                            const char *q_str,
+                                            const char *dmp1_str,
+                                            const char *dmq1_str,
+                                            const char *iqmp_str,
                                             const char *msg) {
  
     ACVP_RESULT rv = ACVP_SUCCESS;
@@ -169,29 +179,83 @@ static ACVP_RESULT acvp_rsa_sigprim_init_tc(ACVP_CTX *ctx,
     if (!stc->e) { return ACVP_MALLOC_FAIL; }
     rv = acvp_hexstr_to_bin(e_str, stc->e, ACVP_RSA_EXP_BYTE_MAX, &(stc->e_len));
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("Hex conversion failure (cipher)");
+        ACVP_LOG_ERR("Hex conversion failure (e)");
         return rv;
     }
-    stc->d = calloc(ACVP_RSA_EXP_BYTE_MAX, sizeof(unsigned char));
-    if (!stc->d) { return ACVP_MALLOC_FAIL; }
-    rv = acvp_hexstr_to_bin(d_str, stc->d, ACVP_RSA_EXP_BYTE_MAX, &(stc->d_len));
-    if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("Hex conversion failure (cipher)");
-        return rv;
+
+    if (d_str) {
+        stc->d = calloc(ACVP_RSA_EXP_BYTE_MAX, sizeof(unsigned char));
+        if (!stc->d) { return ACVP_MALLOC_FAIL; }
+        rv = acvp_hexstr_to_bin(d_str, stc->d, ACVP_RSA_EXP_BYTE_MAX, &(stc->d_len));
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Hex conversion failure (d)");
+            return rv;
+        }
     }
+
     stc->n = calloc(ACVP_RSA_EXP_BYTE_MAX, sizeof(unsigned char));
     if (!stc->n) { return ACVP_MALLOC_FAIL; }
     rv = acvp_hexstr_to_bin(n_str, stc->n, ACVP_RSA_EXP_BYTE_MAX, &(stc->n_len));
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("Hex conversion failure (cipher)");
+        ACVP_LOG_ERR("Hex conversion failure (n)");
         return rv;
+    }
+
+    if (p_str) {
+        stc->p = calloc(ACVP_RSA_EXP_BYTE_MAX, sizeof(unsigned char));
+        if (!stc->p) { return ACVP_MALLOC_FAIL; }
+        rv = acvp_hexstr_to_bin(p_str, stc->p, ACVP_RSA_EXP_BYTE_MAX, &(stc->p_len));
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Hex conversion failure (p)");
+            return rv;
+        }
+    }
+
+    if (q_str) {
+        stc->q = calloc(ACVP_RSA_EXP_BYTE_MAX, sizeof(unsigned char));
+        if (!stc->q) { return ACVP_MALLOC_FAIL; }
+        rv = acvp_hexstr_to_bin(q_str, stc->q, ACVP_RSA_EXP_BYTE_MAX, &(stc->q_len));
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Hex conversion failure (q");
+            return rv;
+        }
+    }
+
+    if (dmp1_str) {
+        stc->dmp1 = calloc(ACVP_RSA_EXP_BYTE_MAX, sizeof(unsigned char));
+        if (!stc->dmp1) { return ACVP_MALLOC_FAIL; }
+        rv = acvp_hexstr_to_bin(dmp1_str, stc->dmp1, ACVP_RSA_EXP_BYTE_MAX, &(stc->dmp1_len));
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Hex conversion failure (dmp1)");
+            return rv;
+        }
+    }
+
+    if (dmq1_str) {
+        stc->dmq1 = calloc(ACVP_RSA_EXP_BYTE_MAX, sizeof(unsigned char));
+        if (!stc->dmq1) { return ACVP_MALLOC_FAIL; }
+        rv = acvp_hexstr_to_bin(dmq1_str, stc->dmq1, ACVP_RSA_EXP_BYTE_MAX, &(stc->dmq1_len));
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Hex conversion failure (dmq1)");
+            return rv;
+        }
+    }
+
+    if (iqmp_str) {
+        stc->iqmp = calloc(ACVP_RSA_EXP_BYTE_MAX, sizeof(unsigned char));
+        if (!stc->iqmp) { return ACVP_MALLOC_FAIL; }
+        rv = acvp_hexstr_to_bin(iqmp_str, stc->iqmp, ACVP_RSA_EXP_BYTE_MAX, &(stc->iqmp_len));
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Hex conversion failure (iqmp)");
+            return rv;
+        }
     }
 
     stc->msg = calloc(ACVP_RSA_EXP_BYTE_MAX, sizeof(unsigned char));
     if (!stc->msg) { return ACVP_MALLOC_FAIL; }
     rv = acvp_hexstr_to_bin(msg, stc->msg, ACVP_RSA_EXP_BYTE_MAX, &(stc->msg_len));
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("Hex conversion failure (cipher)");
+        ACVP_LOG_ERR("Hex conversion failure (msg)");
         return rv;
     }
 
@@ -492,7 +556,8 @@ ACVP_RESULT acvp_rsa_sigprim_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     char *json_result = NULL;
     const char *mode_str;
     const char *msg;
-    const char *e_str = NULL, *n_str = NULL, *d_str = NULL;
+    const char *e_str = NULL, *n_str = NULL, *d_str = NULL, *p_str = NULL, *q_str = NULL,
+               *dmp1_str = NULL, *dmq1_str = NULL, *iqmp_str = NULL;
     const char *alg_str;
     unsigned int json_msglen;
     ACVP_RESULT rv;
@@ -630,20 +695,52 @@ ACVP_RESULT acvp_rsa_sigprim_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
             e_str = json_object_get_string(testobj, "e");
             n_str = json_object_get_string(testobj, "n");
-            d_str = json_object_get_string(testobj, "d");
-            if (!e_str || !n_str || !d_str) {
-                ACVP_LOG_ERR("Missing e|n|d from server json");
+            if (!e_str || !n_str) {
+                ACVP_LOG_ERR("Missing e|n from server json");
                 rv = ACVP_MISSING_ARG;
                 json_value_free(r_tval);
                 goto err;
             }
             if ((strnlen_s(e_str, ACVP_RSA_EXP_LEN_MAX + 1) > ACVP_RSA_EXP_LEN_MAX) ||
-                (strnlen_s(n_str, ACVP_RSA_EXP_LEN_MAX + 1) > ACVP_RSA_EXP_LEN_MAX) ||
-                (strnlen_s(d_str, ACVP_RSA_EXP_LEN_MAX + 1) > ACVP_RSA_EXP_LEN_MAX)) {
-                ACVP_LOG_ERR("server provided d or e or n of invalid length");
+                (strnlen_s(n_str, ACVP_RSA_EXP_LEN_MAX + 1) > ACVP_RSA_EXP_LEN_MAX)) {
+                ACVP_LOG_ERR("server provided e/n of invalid length");
                 rv = ACVP_INVALID_ARG;
                 json_value_free(r_tval);
                 goto err;
+            }
+            if (keyformat == ACVP_RSA_PRIM_KEYFORMAT_CRT) {
+                p_str = json_object_get_string(testobj, "p");
+                q_str = json_object_get_string(testobj, "q");
+                dmp1_str = json_object_get_string(testobj, "dmp1");
+                dmq1_str = json_object_get_string(testobj, "dmq1");
+                iqmp_str = json_object_get_string(testobj, "iqmp");
+                if (!p_str || !q_str || !dmp1_str || !dmq1_str || !iqmp_str) {
+                    ACVP_LOG_ERR("Missing p|q|dmp1|dmq1|iqmp from server json");
+                    rv = ACVP_MISSING_ARG;
+                    json_value_free(r_tval);
+                    goto err;
+                }
+                if ((strnlen_s(p_str, ACVP_RSA_EXP_LEN_MAX + 1) > ACVP_RSA_EXP_LEN_MAX) ||
+                    (strnlen_s(q_str, ACVP_RSA_EXP_LEN_MAX + 1) > ACVP_RSA_EXP_LEN_MAX) ||
+                    (strnlen_s(dmp1_str, ACVP_RSA_EXP_LEN_MAX + 1) > ACVP_RSA_EXP_LEN_MAX) ||
+                    (strnlen_s(dmq1_str, ACVP_RSA_EXP_LEN_MAX + 1) > ACVP_RSA_EXP_LEN_MAX) ||
+                    (strnlen_s(iqmp_str, ACVP_RSA_EXP_LEN_MAX + 1) > ACVP_RSA_EXP_LEN_MAX)) {
+                    ACVP_LOG_ERR("server provided p/q/dmp1/dmq1/iqmp of invalid length");
+                    rv = ACVP_INVALID_ARG;
+                    json_value_free(r_tval);
+                    goto err;
+                }
+            } else {
+                d_str = json_object_get_string(testobj, "d");
+                if (!d_str) {
+                    ACVP_LOG_ERR("Missing d from server json");
+                    rv = ACVP_MISSING_ARG;
+                    json_value_free(r_tval);
+                    goto err;
+                }
+                if (strnlen_s(d_str, ACVP_RSA_EXP_LEN_MAX + 1) > ACVP_RSA_EXP_LEN_MAX) {
+                    ACVP_LOG_ERR("server provided d of invalid length");
+                }
             }
 
             msg = json_object_get_string(testobj, "message");
@@ -662,12 +759,8 @@ ACVP_RESULT acvp_rsa_sigprim_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             }
             ACVP_LOG_VERBOSE("              msg: %s", msg);
 
-
-
-            rv = acvp_rsa_sigprim_init_tc(ctx, &stc, 
-                                          mod, keyformat,
-                                          d_str, e_str,
-                                          n_str, msg);
+            rv = acvp_rsa_sigprim_init_tc(ctx, &stc, mod, keyformat, d_str, e_str, n_str, p_str,
+                                          q_str, dmp1_str, dmq1_str, iqmp_str, msg);
 
             /* Process the current test vector... */
             if (rv == ACVP_SUCCESS) {
