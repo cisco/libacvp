@@ -50,6 +50,8 @@ static void acvp_cap_free_nl(ACVP_NAME_LIST *list);
 
 static void acvp_cap_free_pl(ACVP_PARAM_LIST *list);
 
+static void acvp_cap_free_domain(ACVP_JSON_DOMAIN_OBJ *domain);
+
 static void acvp_cap_free_hash_pairs(ACVP_RSA_HASH_PAIR_LIST *list);
 
 static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url);
@@ -530,6 +532,7 @@ static void acvp_cap_free_kdf108(ACVP_KDF108_CAP *cap) {
             if (mode_obj->counter_lens) {
                 acvp_cap_free_sl(mode_obj->counter_lens);
             }
+            acvp_cap_free_domain(&mode_obj->supported_lens);
         }
 
         if (cap->feedback_mode.kdf_mode) {
@@ -543,6 +546,7 @@ static void acvp_cap_free_kdf108(ACVP_KDF108_CAP *cap) {
             if (mode_obj->counter_lens) {
                 acvp_cap_free_sl(mode_obj->counter_lens);
             }
+            acvp_cap_free_domain(&mode_obj->supported_lens);
         }
 
         if (cap->dpi_mode.kdf_mode) {
@@ -556,6 +560,7 @@ static void acvp_cap_free_kdf108(ACVP_KDF108_CAP *cap) {
             if (mode_obj->counter_lens) {
                 acvp_cap_free_sl(mode_obj->counter_lens);
             }
+            acvp_cap_free_domain(&mode_obj->supported_lens);
         }
 
         cap = NULL;
@@ -647,14 +652,21 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx) {
                 acvp_free_drbg_struct(cap_entry);
                 break;
             case ACVP_HMAC_TYPE:
+                acvp_cap_free_domain(&cap_entry->cap.hmac_cap->key_len);
+                acvp_cap_free_domain(&cap_entry->cap.hmac_cap->mac_len);
                 free(cap_entry->cap.hmac_cap);
                 break;
             case ACVP_CMAC_TYPE:
                 acvp_cap_free_sl(cap_entry->cap.cmac_cap->key_len);
                 acvp_cap_free_sl(cap_entry->cap.cmac_cap->keying_option);
+                acvp_cap_free_domain(&cap_entry->cap.cmac_cap->msg_len);
+                acvp_cap_free_domain(&cap_entry->cap.cmac_cap->mac_len);
                 free(cap_entry->cap.cmac_cap);
                 break;
             case ACVP_KMAC_TYPE:
+                acvp_cap_free_domain(&cap_entry->cap.kmac_cap->key_len);
+                acvp_cap_free_domain(&cap_entry->cap.kmac_cap->msg_len);
+                acvp_cap_free_domain(&cap_entry->cap.kmac_cap->mac_len);
                 free(cap_entry->cap.kmac_cap);
                 break;
             case ACVP_DSA_TYPE:
@@ -770,6 +782,10 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx) {
                 break;
             case ACVP_KDF135_IKEV2_TYPE:
                 acvp_cap_free_nl(cap_entry->cap.kdf135_ikev2_cap->hash_algs);
+                acvp_cap_free_domain(&cap_entry->cap.kdf135_ikev2_cap->init_nonce_len_domain);
+                acvp_cap_free_domain(&cap_entry->cap.kdf135_ikev2_cap->respond_nonce_len_domain);
+                acvp_cap_free_domain(&cap_entry->cap.kdf135_ikev2_cap->dh_secret_len);
+                acvp_cap_free_domain(&cap_entry->cap.kdf135_ikev2_cap->key_material_len);
                 free(cap_entry->cap.kdf135_ikev2_cap);
                 break;
             case ACVP_KDF135_IKEV1_TYPE:
@@ -878,6 +894,14 @@ static void acvp_cap_free_nl(ACVP_NAME_LIST *list) {
         top = top->next;
         free(tmp);
     }
+}
+
+static void acvp_cap_free_domain(ACVP_JSON_DOMAIN_OBJ *domain) {
+    if (!domain) {
+        return;
+    }
+    acvp_cap_free_sl(domain->values);
+    return;
 }
 
 static void acvp_cap_free_hash_pairs(ACVP_RSA_HASH_PAIR_LIST *list) {

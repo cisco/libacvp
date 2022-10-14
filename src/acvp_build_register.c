@@ -155,6 +155,7 @@ static ACVP_RESULT acvp_build_hmac_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
     JSON_Array *temp_arr = NULL;
     ACVP_RESULT result;
     ACVP_HMAC_CAP *hmac_cap = cap_entry->cap.hmac_cap;
+    ACVP_SL_LIST *list = NULL;
     const char *revision = NULL;
 
     if (!cap_entry->cap.hmac_cap) {
@@ -174,19 +175,22 @@ static ACVP_RESULT acvp_build_hmac_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
      */
     json_object_set_value(cap_obj, "keyLen", json_value_init_array());
     temp_arr = json_object_get_array(cap_obj, "keyLen");
-    if (hmac_cap->key_len.value) {
-        json_array_append_number(temp_arr, hmac_cap->key_len.value);
-    } else {
+
+    if (hmac_cap->key_len.increment != 0) {
         JSON_Value *key_len_val = NULL;
         JSON_Object *key_len_obj = NULL;
-
         key_len_val = json_value_init_object();
         key_len_obj = json_value_get_object(key_len_val);
-
         json_object_set_number(key_len_obj, "min", hmac_cap->key_len.min);
         json_object_set_number(key_len_obj, "max", hmac_cap->key_len.max);
         json_object_set_number(key_len_obj, "increment", hmac_cap->key_len.increment);
         json_array_append_value(temp_arr, key_len_val);
+    }
+
+    list = hmac_cap->key_len.values;
+    while (list) {
+        json_array_append_number(temp_arr, list->length);
+        list = list->next;
     }
 
     /*
@@ -194,19 +198,22 @@ static ACVP_RESULT acvp_build_hmac_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
      */
     json_object_set_value(cap_obj, "macLen", json_value_init_array());
     temp_arr = json_object_get_array(cap_obj, "macLen");
-    if (hmac_cap->mac_len.value) {
-        json_array_append_number(temp_arr, hmac_cap->mac_len.value);
-    } else {
+
+    if (hmac_cap->mac_len.increment != 0) {
         JSON_Value *mac_len_val = NULL;
         JSON_Object *mac_len_obj = NULL;
-
         mac_len_val = json_value_init_object();
         mac_len_obj = json_value_get_object(mac_len_val);
-
         json_object_set_number(mac_len_obj, "min", hmac_cap->mac_len.min);
         json_object_set_number(mac_len_obj, "max", hmac_cap->mac_len.max);
         json_object_set_number(mac_len_obj, "increment", hmac_cap->mac_len.increment);
         json_array_append_value(temp_arr, mac_len_val);
+    }
+
+    list = hmac_cap->mac_len.values;
+    while (list) {
+        json_array_append_number(temp_arr, list->length);
+        list = list->next;
     }
 
     return ACVP_SUCCESS;
@@ -247,9 +254,8 @@ static ACVP_RESULT acvp_build_cmac_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
 
     json_object_set_value(capabilities_obj, "msgLen", json_value_init_array());
     temp_arr = json_object_get_array(capabilities_obj, "msgLen");
-    if (cmac_cap->msg_len.value) {
-        json_array_append_number(temp_arr, cmac_cap->msg_len.value);
-    } else {
+
+    if (cap_entry->cap.cmac_cap->msg_len.increment != 0) {
         msg_len_val = json_value_init_object();
         msg_len_obj = json_value_get_object(msg_len_val);
         json_object_set_number(msg_len_obj, "min", cmac_cap->msg_len.min);
@@ -258,20 +264,31 @@ static ACVP_RESULT acvp_build_cmac_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
         json_array_append_value(temp_arr, msg_len_val);
     }
 
+    sl_list = cap_entry->cap.cmac_cap->msg_len.values;
+    while (sl_list) {
+        json_array_append_number(temp_arr, sl_list->length);
+        sl_list = sl_list->next;
+    }
+
     /*
      * Set the supported mac lengths
      */
     json_object_set_value(capabilities_obj, "macLen", json_value_init_array());
     temp_arr = json_object_get_array(capabilities_obj, "macLen");
-    if (cmac_cap->mac_len.value) {
-        json_array_append_number(temp_arr, cmac_cap->mac_len.value);
-    } else {
+
+    if (cap_entry->cap.cmac_cap->mac_len.increment != 0) {
         mac_len_val = json_value_init_object();
         mac_len_obj = json_value_get_object(mac_len_val);
         json_object_set_number(mac_len_obj, "min", cmac_cap->mac_len.min);
         json_object_set_number(mac_len_obj, "max", cmac_cap->mac_len.max);
         json_object_set_number(mac_len_obj, "increment", cmac_cap->mac_len.increment);
         json_array_append_value(temp_arr, mac_len_val);
+    }
+
+    sl_list = cap_entry->cap.cmac_cap->mac_len.values;
+    while (sl_list) {
+        json_array_append_number(temp_arr, sl_list->length);
+        sl_list = sl_list->next;
     }
 
     if (cap_entry->cipher == ACVP_CMAC_AES) {
@@ -313,6 +330,7 @@ static ACVP_RESULT acvp_build_kmac_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
     JSON_Object *msg_len_obj = NULL, *mac_len_obj = NULL, *key_len_obj = NULL;
     ACVP_RESULT result;
     ACVP_KMAC_CAP *kmac_cap = cap_entry->cap.kmac_cap;
+    ACVP_SL_LIST *list = NULL;
     const char *revision = NULL;
 
     json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
@@ -346,9 +364,8 @@ static ACVP_RESULT acvp_build_kmac_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
 
     json_object_set_value(cap_obj, "msgLen", json_value_init_array());
     temp_arr = json_object_get_array(cap_obj, "msgLen");
-    if (kmac_cap->msg_len.value) {
-        json_array_append_number(temp_arr, kmac_cap->msg_len.value);
-    } else {
+
+    if (kmac_cap->msg_len.increment != 0) {
         msg_len_val = json_value_init_object();
         msg_len_obj = json_value_get_object(msg_len_val);
         json_object_set_number(msg_len_obj, "min", kmac_cap->msg_len.min);
@@ -357,12 +374,17 @@ static ACVP_RESULT acvp_build_kmac_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
         json_array_append_value(temp_arr, msg_len_val);
     }
 
+    list = kmac_cap->msg_len.values;
+    while (list) {
+        json_array_append_number(temp_arr, list->length);
+        list = list->next;
+    }
+
     /* Set the supported mac lengths */
     json_object_set_value(cap_obj, "macLen", json_value_init_array());
     temp_arr = json_object_get_array(cap_obj, "macLen");
-    if (kmac_cap->mac_len.value) {
-        json_array_append_number(temp_arr, kmac_cap->mac_len.value);
-    } else {
+
+    if (kmac_cap->mac_len.increment != 0) {
         mac_len_val = json_value_init_object();
         mac_len_obj = json_value_get_object(mac_len_val);
         json_object_set_number(mac_len_obj, "min", kmac_cap->mac_len.min);
@@ -371,32 +393,29 @@ static ACVP_RESULT acvp_build_kmac_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
         json_array_append_value(temp_arr, mac_len_val);
     }
 
-    /* Set the supported msg lengths */
-    json_object_set_value(cap_obj, "msgLen", json_value_init_array());
-    temp_arr = json_object_get_array(cap_obj, "msgLen");
-    if (kmac_cap->msg_len.value) {
-        json_array_append_number(temp_arr, kmac_cap->msg_len.value);
-    } else {
-        msg_len_val = json_value_init_object();
-        msg_len_obj = json_value_get_object(msg_len_val);
-        json_object_set_number(msg_len_obj, "min", kmac_cap->msg_len.min);
-        json_object_set_number(msg_len_obj, "max", kmac_cap->msg_len.max);
-        json_object_set_number(msg_len_obj, "increment", kmac_cap->msg_len.increment);
-        json_array_append_value(temp_arr, msg_len_val);
+    list = kmac_cap->mac_len.values;
+    while (list) {
+        json_array_append_number(temp_arr, list->length);
+        list = list->next;
     }
 
     /* Set the supported key lengths */
     json_object_set_value(cap_obj, "keyLen", json_value_init_array());
     temp_arr = json_object_get_array(cap_obj, "keyLen");
-    if (kmac_cap->key_len.value) {
-        json_array_append_number(temp_arr, kmac_cap->key_len.value);
-    } else {
+
+    if (kmac_cap->key_len.increment != 0) {
         key_len_val = json_value_init_object();
         key_len_obj = json_value_get_object(key_len_val);
         json_object_set_number(key_len_obj, "min", kmac_cap->key_len.min);
         json_object_set_number(key_len_obj, "max", kmac_cap->key_len.max);
         json_object_set_number(key_len_obj, "increment", kmac_cap->key_len.increment);
         json_array_append_value(temp_arr, key_len_val);
+    }
+
+    list = kmac_cap->key_len.values;
+    while (list) {
+        json_array_append_number(temp_arr, list->length);
+        list = list->next;
     }
 
     return ACVP_SUCCESS;
@@ -1564,9 +1583,12 @@ static ACVP_RESULT acvp_build_kdf108_mode_register(JSON_Object **mode_obj, ACVP_
         json_object_set_number(tmp_obj, "max", mode_params->supported_lens.max);
         json_object_set_number(tmp_obj, "increment", mode_params->supported_lens.increment);
         json_array_append_value(tmp_arr, tmp_val);
-    } else {
-        /* if increment is 0, assume the min is our single supported value */
-        json_array_append_number(tmp_arr, mode_params->supported_lens.min);
+    }
+
+    sl_obj = mode_params->supported_lens.values;
+    while (sl_obj) {
+        json_array_append_number(tmp_arr, sl_obj->length);
+        sl_obj = sl_obj->next;
     }
 
     /* fixed data order list */
@@ -1806,6 +1828,7 @@ static ACVP_RESULT acvp_build_kdf135_ikev2_register_cap(JSON_Object *cap_obj, AC
     JSON_Value *tmp_val = NULL, *alg_specs_val = NULL;
     JSON_Object *tmp_obj = NULL, *alg_specs_obj = NULL;
     ACVP_NAME_LIST *current_hash;
+    ACVP_SL_LIST *list;
     ACVP_KDF135_IKEV2_CAP *cap = cap_entry->cap.kdf135_ikev2_cap;
     const char *revision = NULL;
 
@@ -1828,9 +1851,8 @@ static ACVP_RESULT acvp_build_kdf135_ikev2_register_cap(JSON_Object *cap_obj, AC
     /* initiator nonce len */
     json_object_set_value(alg_specs_obj, "initiatorNonceLength", json_value_init_array());
     tmp_arr = json_object_get_array(alg_specs_obj, "initiatorNonceLength");
-    if (cap->init_nonce_len_domain.value) {
-        json_array_append_number(tmp_arr, cap->init_nonce_len_domain.value);
-    } else {
+
+    if (cap->init_nonce_len_domain.increment != 0) {
         tmp_val = json_value_init_object();
         tmp_obj = json_value_get_object(tmp_val);
         json_object_set_number(tmp_obj, "min", cap->init_nonce_len_domain.min);
@@ -1839,12 +1861,17 @@ static ACVP_RESULT acvp_build_kdf135_ikev2_register_cap(JSON_Object *cap_obj, AC
         json_array_append_value(tmp_arr, tmp_val);
     }
 
+    list = cap->init_nonce_len_domain.values;
+    while (list) {
+        json_array_append_number(tmp_arr, list->length);
+        list = list->next;
+    }
+
     /* responder nonce len */
     json_object_set_value(alg_specs_obj, "responderNonceLength", json_value_init_array());
     tmp_arr = json_object_get_array(alg_specs_obj, "responderNonceLength");
-    if (cap->respond_nonce_len_domain.value) {
-        json_array_append_number(tmp_arr, cap->respond_nonce_len_domain.value);
-    } else {
+
+    if (cap->respond_nonce_len_domain.increment != 0) {
         tmp_val = json_value_init_object();
         tmp_obj = json_value_get_object(tmp_val);
         json_object_set_number(tmp_obj, "min", cap->respond_nonce_len_domain.min);
@@ -1853,12 +1880,17 @@ static ACVP_RESULT acvp_build_kdf135_ikev2_register_cap(JSON_Object *cap_obj, AC
         json_array_append_value(tmp_arr, tmp_val);
     }
 
+    list = cap->respond_nonce_len_domain.values;
+    while (list) {
+        json_array_append_number(tmp_arr, list->length);
+        list = list->next;
+    }
+
     /* Diffie Hellman shared secret len */
     json_object_set_value(alg_specs_obj, "diffieHellmanSharedSecretLength", json_value_init_array());
     tmp_arr = json_object_get_array(alg_specs_obj, "diffieHellmanSharedSecretLength");
-    if (cap->dh_secret_len.value) {
-        json_array_append_number(tmp_arr, cap->dh_secret_len.value);
-    } else {
+
+    if (cap->dh_secret_len.increment != 0) {
         tmp_val = json_value_init_object();
         tmp_obj = json_value_get_object(tmp_val);
         json_object_set_number(tmp_obj, "min", cap->dh_secret_len.min);
@@ -1867,18 +1899,28 @@ static ACVP_RESULT acvp_build_kdf135_ikev2_register_cap(JSON_Object *cap_obj, AC
         json_array_append_value(tmp_arr, tmp_val);
     }
 
+    list = cap->dh_secret_len.values;
+    while (list) {
+        json_array_append_number(tmp_arr, list->length);
+        list = list->next;
+    }
+
     /* Derived keying material len */
     json_object_set_value(alg_specs_obj, "derivedKeyingMaterialLength", json_value_init_array());
     tmp_arr = json_object_get_array(alg_specs_obj, "derivedKeyingMaterialLength");
-    if (cap->key_material_len.value) {
-        json_array_append_number(tmp_arr, cap->key_material_len.value);
-    } else {
+
+    if (cap->key_material_len.increment != 0) {
         tmp_val = json_value_init_object();
         tmp_obj = json_value_get_object(tmp_val);
         json_object_set_number(tmp_obj, "min", cap->key_material_len.min);
         json_object_set_number(tmp_obj, "max", cap->key_material_len.max);
         json_object_set_number(tmp_obj, "increment", cap->key_material_len.increment);
         json_array_append_value(tmp_arr, tmp_val);
+    }
+    list = cap->key_material_len.values;
+    while (list) {
+        json_array_append_number(tmp_arr, list->length);
+        list = list->next;
     }
 
     /* Array of hash algs */
