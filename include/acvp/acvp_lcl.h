@@ -1097,7 +1097,7 @@ typedef struct acvp_json_domain_obj_t {
     int min;
     int max;
     int increment;
-    int value; // for single values
+    struct acvp_sl_list_t *values;
 } ACVP_JSON_DOMAIN_OBJ;
 
 typedef struct acvp_prereq_alg_val {

@@ -741,6 +741,10 @@ static ACVP_RESULT acvp_validate_kdf108_param_value(ACVP_CTX *ctx, ACVP_KDF108_P
     case ACVP_KDF108_PARAM_MIN:
     case ACVP_KDF108_PARAM_MAX:
     case ACVP_KDF108_SUPPORTED_LEN:
+        if (value >= 1 && value <= ACVP_KDF108_KEYIN_BIT_MAX) {
+            retval = ACVP_SUCCESS;
+        }
+        break;
     default:
         break;
     }
@@ -3237,7 +3241,6 @@ ACVP_RESULT acvp_cap_hmac_set_domain(ACVP_CTX *ctx,
     domain->min = min;
     domain->max = max;
     domain->increment = increment;
-    domain->value = 0;
 
     return ACVP_SUCCESS;
 }
@@ -3270,10 +3273,16 @@ ACVP_RESULT acvp_cap_hmac_set_parm(ACVP_CTX *ctx,
 
     switch (parm) {
     case ACVP_HMAC_KEYLEN:
-        cap->cap.hmac_cap->key_len.value = value;
+        if (acvp_append_sl_list(&cap->cap.hmac_cap->key_len.values, value) != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Error adding HMAC key length to list");
+            return ACVP_MALLOC_FAIL;
+        }
         break;
     case ACVP_HMAC_MACLEN:
-        cap->cap.hmac_cap->mac_len.value = value;
+        if (acvp_append_sl_list(&cap->cap.hmac_cap->mac_len.values, value) != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Error adding HMAC mac length to list");
+            return ACVP_MALLOC_FAIL;
+        }
         break;
     case ACVP_HMAC_KEYBLOCK:
     default:
@@ -3411,7 +3420,6 @@ ACVP_RESULT acvp_cap_cmac_set_domain(ACVP_CTX *ctx,
     domain->min = min;
     domain->max = max;
     domain->increment = increment;
-    domain->value = 0;
 
     return ACVP_SUCCESS;
 }
@@ -3444,10 +3452,16 @@ ACVP_RESULT acvp_cap_cmac_set_parm(ACVP_CTX *ctx,
 
     switch (parm) {
     case ACVP_CMAC_MSGLEN:
-        current_cmac_cap->msg_len.value = value;
+        if (acvp_append_sl_list(&current_cmac_cap->msg_len.values, value) != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Error adding CMAC msg len to list");
+            return ACVP_MALLOC_FAIL;
+        }
         break;
     case ACVP_CMAC_MACLEN:
-        current_cmac_cap->mac_len.value = value;
+        if (acvp_append_sl_list(&current_cmac_cap->mac_len.values, value) != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Error adding CMAC mac len to list");
+            return ACVP_MALLOC_FAIL;
+        }
         break;
     case ACVP_CMAC_DIRECTION_GEN:
         cap->cap.cmac_cap->direction_gen = value;
@@ -5465,10 +5479,7 @@ ACVP_RESULT acvp_cap_pbkdf_set_domain(ACVP_CTX *ctx,
     default:
         return ACVP_INVALID_ARG;
     }
-    if (domain->value) {
-        ACVP_LOG_ERR("Already registered single value for this parameter");
-        return ACVP_INVALID_ARG;
-    }
+
     domain->min = min;
     domain->max = max;
     domain->increment = increment;
@@ -5695,6 +5706,11 @@ ACVP_RESULT acvp_cap_kdf108_set_parm(ACVP_CTX *ctx,
        }
        break;
     case ACVP_KDF108_SUPPORTED_LEN:
+        if (acvp_append_sl_list(&mode_obj->supported_lens.values, value) != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Error adding supported length for KDF108 to list");
+            return ACVP_MALLOC_FAIL;
+        }
+        break;
     case ACVP_KDF108_PARAM_MIN:
     case ACVP_KDF108_PARAM_MAX:
     case ACVP_KDF108_KDF_MODE:
@@ -5886,11 +5902,12 @@ ACVP_RESULT acvp_cap_kdf135_ikev2_set_length(ACVP_CTX *ctx,
     default:
         return ACVP_INVALID_ARG;
     }
-    if (domain->min || domain->max || domain->increment) {
-        ACVP_LOG_ERR("Already registered domain value for this parameter");
-        return ACVP_INVALID_ARG;
+
+    if (acvp_append_sl_list(&domain->values, value) != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Error adding provided length to list for IKEV2");
+        return ACVP_MALLOC_FAIL;
     }
-    domain->value = value;
+
     return ACVP_SUCCESS;
 }
 
@@ -6189,10 +6206,7 @@ ACVP_RESULT acvp_cap_kdf135_ikev2_set_domain(ACVP_CTX *ctx,
     default:
         return ACVP_INVALID_ARG;
     }
-    if (domain->value) {
-        ACVP_LOG_ERR("Already registered single value for this parameter");
-        return ACVP_INVALID_ARG;
-    }
+
     domain->min = min;
     domain->max = max;
     domain->increment = increment;
@@ -7943,6 +7957,10 @@ ACVP_RESULT acvp_cap_kda_twostep_set_parm(ACVP_CTX *ctx, ACVP_KDA_PARM param,
         }
         break;
     case ACVP_KDA_TWOSTEP_COUNTER_LEN:
+        if (value < 1 || value > ACVP_KDF108_KEYIN_BIT_MAX) {
+            printf("Invalid value provided for KDA twostep supported length");
+            return ACVP_INVALID_ARG;
+        }
         acvp_append_sl_list(&mode_obj->counter_lens, value);
         break;
     case ACVP_KDA_TWOSTEP_SUPPORTS_EMPTY_IV:
@@ -7956,8 +7974,10 @@ ACVP_RESULT acvp_cap_kda_twostep_set_parm(ACVP_CTX *ctx, ACVP_KDA_PARM param,
             mode_obj->requires_empty_iv = value;
         }
         break;
-    case ACVP_KDA_Z:
     case ACVP_KDA_TWOSTEP_SUPPORTED_LEN:
+        result = acvp_append_sl_list(&mode_obj->supported_lens.values, value);
+        break;
+    case ACVP_KDA_Z:
     case ACVP_KDA_ONESTEP_AUX_FUNCTION:
     default:
         ACVP_LOG_ERR("Invalid parameter specified %d", param);
@@ -8015,7 +8035,10 @@ ACVP_RESULT acvp_cap_kda_twostep_set_domain(ACVP_CTX *ctx, ACVP_KDA_PARM param,
             ACVP_LOG_ERR("Must use a valid KDF108 mode when setting certain parameters in KDA twostep");
             return ACVP_INVALID_ARG;
         }
-
+        if (!increment) {
+            ACVP_LOG_ERR("Invalid domain provided for KDA twostep supported len");
+            return ACVP_INVALID_ARG;
+        }
         mode_obj->supported_lens.min = min;
         mode_obj->supported_lens.max = max;
         mode_obj->supported_lens.increment = increment;
