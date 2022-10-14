@@ -136,14 +136,14 @@ int app_rsa_keygen_handler(ACVP_TEST_CASE *test_case) {
         printf("Error creating param_bld in RSA keygen\n");
         goto err;
     }
-    OSSL_PARAM_BLD_push_BN(pkey_pbld, "e", e);
-    OSSL_PARAM_BLD_push_uint(pkey_pbld, "bits", tc->modulo);
-    OSSL_PARAM_BLD_push_BN(pkey_pbld, "xp", xp);
-    OSSL_PARAM_BLD_push_BN(pkey_pbld, "xp1", xp1);
-    OSSL_PARAM_BLD_push_BN(pkey_pbld, "xp2", xp2);
-    OSSL_PARAM_BLD_push_BN(pkey_pbld, "xq", xq);
-    OSSL_PARAM_BLD_push_BN(pkey_pbld, "xq1", xq1); 
-    OSSL_PARAM_BLD_push_BN(pkey_pbld, "xq2", xq2);
+    OSSL_PARAM_BLD_push_BN(pkey_pbld, OSSL_PKEY_PARAM_RSA_E, e);
+    OSSL_PARAM_BLD_push_uint(pkey_pbld, OSSL_PKEY_PARAM_RSA_BITS, tc->modulo);
+    OSSL_PARAM_BLD_push_BN(pkey_pbld, OSSL_PKEY_PARAM_RSA_TEST_XP, xp);
+    OSSL_PARAM_BLD_push_BN(pkey_pbld, OSSL_PKEY_PARAM_RSA_TEST_XP1, xp1);
+    OSSL_PARAM_BLD_push_BN(pkey_pbld, OSSL_PKEY_PARAM_RSA_TEST_XP2, xp2);
+    OSSL_PARAM_BLD_push_BN(pkey_pbld, OSSL_PKEY_PARAM_RSA_TEST_XQ, xq);
+    OSSL_PARAM_BLD_push_BN(pkey_pbld, OSSL_PKEY_PARAM_RSA_TEST_XQ1, xq1); 
+    OSSL_PARAM_BLD_push_BN(pkey_pbld, OSSL_PKEY_PARAM_RSA_TEST_XQ2, xq2);
     params = OSSL_PARAM_BLD_to_param(pkey_pbld);
     if (!params) {
         printf("Error generating parameters for pkey generation in RSA keygen\n");
@@ -395,8 +395,8 @@ int app_rsa_sig_handler(ACVP_TEST_CASE *test_case) {
                 printf("Error creating param_bld in RSA sigver\n");
                 goto err;
             }
-            OSSL_PARAM_BLD_push_BN(pkey_pbld, "n", n);
-            OSSL_PARAM_BLD_push_BN(pkey_pbld, "e", e);
+            OSSL_PARAM_BLD_push_BN(pkey_pbld, OSSL_PKEY_PARAM_RSA_N, n);
+            OSSL_PARAM_BLD_push_BN(pkey_pbld, OSSL_PKEY_PARAM_RSA_E, e);
             pkey_params = OSSL_PARAM_BLD_to_param(pkey_pbld);
             if (!pkey_params) {
                 printf("Error building pkey params in RSA sigver\n");
@@ -423,8 +423,8 @@ int app_rsa_sig_handler(ACVP_TEST_CASE *test_case) {
                 printf("Error creating param_bld in RSA sigver\n");
                 goto err;
             }
-            OSSL_PARAM_BLD_push_utf8_string(sig_pbld, "pad-mode", padding, 0);
-            OSSL_PARAM_BLD_push_utf8_string(sig_pbld, "digest", md, 0);
+            OSSL_PARAM_BLD_push_utf8_string(sig_pbld, OSSL_SIGNATURE_PARAM_PAD_MODE, padding, 0);
+            OSSL_PARAM_BLD_push_utf8_string(sig_pbld, OSSL_SIGNATURE_PARAM_DIGEST, md, 0);
             sig_params = OSSL_PARAM_BLD_to_param(sig_pbld);
             if (!sig_params) {
                 printf("Error building sig params in RSA sigver\n");
@@ -500,10 +500,10 @@ int app_rsa_sig_handler(ACVP_TEST_CASE *test_case) {
                 printf("Error creating param_bld in RSA siggen\n");
                 goto err;
             }
-            OSSL_PARAM_BLD_push_utf8_string(sig_pbld, "pad-mode", padding, 0);
-            OSSL_PARAM_BLD_push_utf8_string(sig_pbld, "digest", md, 0);
+            OSSL_PARAM_BLD_push_utf8_string(sig_pbld, OSSL_SIGNATURE_PARAM_PAD_MODE, padding, 0);
+            OSSL_PARAM_BLD_push_utf8_string(sig_pbld, OSSL_SIGNATURE_PARAM_DIGEST, md, 0);
             if (tc->sig_type == ACVP_RSA_SIG_TYPE_PKCS1PSS) {
-                OSSL_PARAM_BLD_push_int(sig_pbld, "saltlen", salt_len);
+                OSSL_PARAM_BLD_push_int(sig_pbld, OSSL_SIGNATURE_PARAM_PSS_SALTLEN, salt_len);
             }
             sig_params = OSSL_PARAM_BLD_to_param(sig_pbld);
             if (!sig_params) {

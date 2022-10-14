@@ -10,9 +10,13 @@
 
 #include <openssl/evp.h>
 #include <openssl/hmac.h>
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+#include <openssl/core_names.h>
+#include <openssl/param_build.h>
+#endif
 #include "acvp/acvp.h"
 #include "app_lcl.h"
-#if defined ACVP_NO_RUNTIME && OPENSSL_VERSION_NUMBER < 0x30000000L
+#if defined ACVP_NO_RUNTIME
 #include "app_fips_lcl.h"
 #endif
 #include "safe_lib.h"
@@ -22,9 +26,9 @@ int app_hmac_handler(ACVP_TEST_CASE *test_case) {
 #if OPENSSL_VERSION_NUMBER >= 0x30000000L && !defined ACVP_DEPRECATED_MAC
     EVP_MAC *mac = NULL;
     EVP_MAC_CTX *hmac_ctx = NULL;
-    OSSL_PARAM params[2];
+    OSSL_PARAM_BLD *pbld = NULL;
+    OSSL_PARAM *params = NULL;
     const char *md_name = NULL;
-    char *mdname = NULL;
 #else
     const EVP_MD *md = NULL;
     HMAC_CTX *hmac_ctx = NULL;
@@ -101,14 +105,17 @@ int app_hmac_handler(ACVP_TEST_CASE *test_case) {
         goto end;
     }
 
-    mdname = calloc(256, sizeof(char)); //avoid const removal warnings
-    if (!mdname) {
-        printf("Error allocating memory for HMAC test\n");
+    pbld = OSSL_PARAM_BLD_new();
+    if (!pbld) {
+        printf("Error creating param_bld in HMAC\n");
         goto end;
     }
-    strcpy_s(mdname, 256, md_name);
-    params[0] = OSSL_PARAM_construct_utf8_string("digest", mdname, 0);
-    params[1] = OSSL_PARAM_construct_end();
+    OSSL_PARAM_BLD_push_utf8_string(pbld, OSSL_MAC_PARAM_DIGEST, md_name, 0);
+    params = OSSL_PARAM_BLD_to_param(pbld);
+    if (!params) {
+        printf("Error generating params in HMAC\n");
+        goto end;
+    }
 
 #define HMAC_BUF_MAX 128
 
@@ -196,7 +203,8 @@ end:
 #if OPENSSL_VERSION_NUMBER >= 0x30000000L && !defined ACVP_DEPRECATED_MAC
     if (hmac_ctx) EVP_MAC_CTX_free(hmac_ctx);
     if (mac) EVP_MAC_free(mac);
-    if (mdname) free(mdname);
+    if (pbld) OSSL_PARAM_BLD_free(pbld);
+    if (params) OSSL_PARAM_free(params);
 #else
     if (hmac_ctx) HMAC_CTX_free(hmac_ctx);
 #endif

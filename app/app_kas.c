@@ -65,9 +65,9 @@ int app_kas_ecc_handler(ACVP_TEST_CASE *test_case) {
         printf("Error creating param_bld in KAS-ECC\n");
         goto err;
     }
-    OSSL_PARAM_BLD_push_utf8_string(serv_pbld, "group", curve, 0);
-    OSSL_PARAM_BLD_push_octet_string(serv_pbld, "pub", s_pub_key, s_key_size);
-    OSSL_PARAM_BLD_push_int(serv_pbld, "use-cofactor-flag", 1);
+    OSSL_PARAM_BLD_push_utf8_string(serv_pbld, OSSL_PKEY_PARAM_GROUP_NAME, curve, 0);
+    OSSL_PARAM_BLD_push_octet_string(serv_pbld, OSSL_PKEY_PARAM_PUB_KEY, s_pub_key, s_key_size);
+    OSSL_PARAM_BLD_push_int(serv_pbld, OSSL_PKEY_PARAM_USE_COFACTOR_ECDH, 1);
     serv_params = OSSL_PARAM_BLD_to_param(serv_pbld);
     if (!serv_params) {
         printf("Error generating params in KAS-ECC\n");
@@ -93,17 +93,17 @@ int app_kas_ecc_handler(ACVP_TEST_CASE *test_case) {
         printf("Error creating param_bld in KAS-ECC\n");
         goto err;
     }
-    OSSL_PARAM_BLD_push_utf8_string(iut_pbld, "group", curve, 0);
-    OSSL_PARAM_BLD_push_int(iut_pbld, "use-cofactor-flag", 1);
+    OSSL_PARAM_BLD_push_utf8_string(iut_pbld, OSSL_PKEY_PARAM_GROUP_NAME, curve, 0);
+    OSSL_PARAM_BLD_push_int(iut_pbld, OSSL_PKEY_PARAM_USE_COFACTOR_ECDH, 1);
     if (tc->test_type == ACVP_KAS_ECC_TT_VAL) {
         i_pub_key = ec_point_to_pub_key(tc->pix, tc->pixlen, tc->piy, tc->piylen, &i_key_size);
         if (!i_pub_key) {
             printf("Error generating IUT pub key in KAS-ECC\n");
             goto err;
         }
-        OSSL_PARAM_BLD_push_octet_string(iut_pbld, "pub", i_pub_key, i_key_size);
+        OSSL_PARAM_BLD_push_octet_string(iut_pbld, OSSL_PKEY_PARAM_PUB_KEY, i_pub_key, i_key_size);
         ik = BN_bin2bn(tc->d, tc->dlen, NULL);
-        OSSL_PARAM_BLD_push_BN(iut_pbld, "priv", ik);
+        OSSL_PARAM_BLD_push_BN(iut_pbld, OSSL_PKEY_PARAM_PRIV_KEY, ik);
     }
     iut_params = OSSL_PARAM_BLD_to_param(iut_pbld);
     if (!iut_params) {
@@ -289,13 +289,13 @@ int app_kas_ffc_handler(ACVP_TEST_CASE *test_case) {
         goto err;
     }
     if (!use_pqg) {
-        OSSL_PARAM_BLD_push_utf8_string(serv_pbld, "group", group, 0);
+        OSSL_PARAM_BLD_push_utf8_string(serv_pbld, OSSL_PKEY_PARAM_GROUP_NAME, group, 0);
     } else {
-        OSSL_PARAM_BLD_push_BN(serv_pbld, "p", p);
-        OSSL_PARAM_BLD_push_BN(serv_pbld, "q", q);
-        OSSL_PARAM_BLD_push_BN(serv_pbld, "g", g);
+        OSSL_PARAM_BLD_push_BN(serv_pbld, OSSL_PKEY_PARAM_FFC_P, p);
+        OSSL_PARAM_BLD_push_BN(serv_pbld, OSSL_PKEY_PARAM_FFC_Q, q);
+        OSSL_PARAM_BLD_push_BN(serv_pbld, OSSL_PKEY_PARAM_FFC_G, g);
     }
-    OSSL_PARAM_BLD_push_BN(serv_pbld, "pub", spub);
+    OSSL_PARAM_BLD_push_BN(serv_pbld, OSSL_PKEY_PARAM_PUB_KEY, spub);
     serv_params = OSSL_PARAM_BLD_to_param(serv_pbld);
     if (!serv_params) {
         printf("Error generating params in KAS-FFC\n");
@@ -322,15 +322,15 @@ int app_kas_ffc_handler(ACVP_TEST_CASE *test_case) {
         goto err;
     }
     if (!use_pqg) {
-        OSSL_PARAM_BLD_push_utf8_string(iut_pbld, "group", group, 0);
+        OSSL_PARAM_BLD_push_utf8_string(iut_pbld, OSSL_PKEY_PARAM_GROUP_NAME, group, 0);
     } else {
-        OSSL_PARAM_BLD_push_BN(iut_pbld, "p", p);
-        OSSL_PARAM_BLD_push_BN(iut_pbld, "q", q);
-        OSSL_PARAM_BLD_push_BN(iut_pbld, "g", g);
+        OSSL_PARAM_BLD_push_BN(iut_pbld, OSSL_PKEY_PARAM_FFC_P, p);
+        OSSL_PARAM_BLD_push_BN(iut_pbld, OSSL_PKEY_PARAM_FFC_Q, q);
+        OSSL_PARAM_BLD_push_BN(iut_pbld, OSSL_PKEY_PARAM_FFC_G, g);
     }
     if (tc->test_type == ACVP_KAS_FFC_TT_VAL) {
-        OSSL_PARAM_BLD_push_BN(iut_pbld, "pub", ipub);
-        OSSL_PARAM_BLD_push_BN(iut_pbld, "priv", ipriv);
+        OSSL_PARAM_BLD_push_BN(iut_pbld, OSSL_PKEY_PARAM_PUB_KEY, ipub);
+        OSSL_PARAM_BLD_push_BN(iut_pbld, OSSL_PKEY_PARAM_PRIV_KEY, ipriv);
     }
     iut_params = OSSL_PARAM_BLD_to_param(iut_pbld);
     if (!iut_params) {
@@ -372,7 +372,7 @@ int app_kas_ffc_handler(ACVP_TEST_CASE *test_case) {
     }
 
     if (tc->test_type == ACVP_KAS_FFC_TT_AFT) {
-        EVP_PKEY_get_bn_param(iut_pkey, "pub", &ipub);
+        EVP_PKEY_get_bn_param(iut_pkey, OSSL_PKEY_PARAM_PUB_KEY, &ipub);
         if (!ipub) {
             printf("Error getting key values from IUT pkey in KAS-FFC\n");
             goto err;
@@ -387,7 +387,7 @@ int app_kas_ffc_handler(ACVP_TEST_CASE *test_case) {
         printf("Error creating param_bld in KAS-FFC\n");
         goto err;
     }
-    OSSL_PARAM_BLD_push_uint(der_pbld, "pad", 1);
+    OSSL_PARAM_BLD_push_uint(der_pbld, OSSL_EXCHANGE_PARAM_PAD, 1);
     der_params = OSSL_PARAM_BLD_to_param(der_pbld);
     if (!der_params) {
         printf("Error generating params in KAS-FFC\n");
@@ -514,9 +514,9 @@ int app_kas_ifc_handler(ACVP_TEST_CASE *test_case) {
         printf("Error creating param_bld in KAS-IFC\n");
         goto err;
     }
-    OSSL_PARAM_BLD_push_BN(serv_pbld, "n", server_n);
-    OSSL_PARAM_BLD_push_BN(serv_pbld, "e", server_e);
-    OSSL_PARAM_BLD_push_uint(serv_pbld, "bits", tc->modulo);
+    OSSL_PARAM_BLD_push_BN(serv_pbld, OSSL_PKEY_PARAM_RSA_N, server_n);
+    OSSL_PARAM_BLD_push_BN(serv_pbld, OSSL_PKEY_PARAM_RSA_E, server_e);
+    OSSL_PARAM_BLD_push_uint(serv_pbld, OSSL_PKEY_PARAM_RSA_BITS, tc->modulo);
     serv_params = OSSL_PARAM_BLD_to_param(serv_pbld);
     if (!serv_params) {
         printf("Error generating parameters for pkey generation in KAS-IFC\n");
@@ -552,16 +552,16 @@ int app_kas_ifc_handler(ACVP_TEST_CASE *test_case) {
 
         /* Note: rsakpg-prime-factor schemes should use P and Q as private key storage.
          * OpenSSL claims support, but is unclear. Here we represent with our given (?) n value */
-        OSSL_PARAM_BLD_push_BN(pbld, "n", n);
-        OSSL_PARAM_BLD_push_BN(pbld, "e", e);
-        OSSL_PARAM_BLD_push_BN(pbld, "d", d);
-        OSSL_PARAM_BLD_push_uint(pbld, "bits", tc->modulo);
+        OSSL_PARAM_BLD_push_BN(pbld, OSSL_PKEY_PARAM_RSA_N, n);
+        OSSL_PARAM_BLD_push_BN(pbld, OSSL_PKEY_PARAM_RSA_E, e);
+        OSSL_PARAM_BLD_push_BN(pbld, OSSL_PKEY_PARAM_RSA_D, d);
+        OSSL_PARAM_BLD_push_uint(pbld, OSSL_PKEY_PARAM_RSA_BITS, tc->modulo);
         if (tc->key_gen == ACVP_KAS_IFC_RSAKPG1_CRT || tc->key_gen == ACVP_KAS_IFC_RSAKPG2_CRT) {
-            OSSL_PARAM_BLD_push_BN(pbld, "rsa-factor1", p);
-            OSSL_PARAM_BLD_push_BN(pbld, "rsa-factor2", q);
-            OSSL_PARAM_BLD_push_BN(pbld, "rsa-exponent1", dmp1);
-            OSSL_PARAM_BLD_push_BN(pbld, "rsa-exponent2", dmq1);
-            OSSL_PARAM_BLD_push_BN(pbld, "rsa-coefficient1", iqmp);
+            OSSL_PARAM_BLD_push_BN(pbld, OSSL_PKEY_PARAM_RSA_FACTOR1, p);
+            OSSL_PARAM_BLD_push_BN(pbld, OSSL_PKEY_PARAM_RSA_FACTOR2, q);
+            OSSL_PARAM_BLD_push_BN(pbld, OSSL_PKEY_PARAM_RSA_EXPONENT1, dmp1);
+            OSSL_PARAM_BLD_push_BN(pbld, OSSL_PKEY_PARAM_RSA_EXPONENT2, dmq1);
+            OSSL_PARAM_BLD_push_BN(pbld, OSSL_PKEY_PARAM_RSA_COEFFICIENT1, iqmp);
         }
 
         params = OSSL_PARAM_BLD_to_param(pbld);
@@ -852,17 +852,16 @@ int app_kts_ifc_handler(ACVP_TEST_CASE *test_case) {
 
     /* Note: rsakpg-prime-factor schemes should use P and Q as private key storage.
      * OpenSSL claims support, but is unclear. Here we represent with our given (?) n value */
-    OSSL_PARAM_BLD_push_BN(pbld, "n", n);
-    OSSL_PARAM_BLD_push_BN(pbld, "e", e);
-    OSSL_PARAM_BLD_push_uint(pbld, "bits", tc->modulo);
+    OSSL_PARAM_BLD_push_BN(pbld, OSSL_PKEY_PARAM_RSA_N, n);
+    OSSL_PARAM_BLD_push_BN(pbld, OSSL_PKEY_PARAM_RSA_E, e);
+    OSSL_PARAM_BLD_push_uint(pbld, OSSL_PKEY_PARAM_RSA_BITS, tc->modulo);
     if (tc->kts_role == ACVP_KTS_IFC_RESPONDER) {
-        OSSL_PARAM_BLD_push_BN(pbld, "d", d);
+        OSSL_PARAM_BLD_push_BN(pbld, OSSL_PKEY_PARAM_RSA_D, d);
         if (tc->key_gen == ACVP_KTS_IFC_RSAKPG1_CRT || tc->key_gen == ACVP_KTS_IFC_RSAKPG2_CRT) {
-            OSSL_PARAM_BLD_push_BN(pbld, "rsa-factor1", p);
-            OSSL_PARAM_BLD_push_BN(pbld, "rsa-factor2", q);
-            OSSL_PARAM_BLD_push_BN(pbld, "rsa-exponent1", dmp1);
-            OSSL_PARAM_BLD_push_BN(pbld, "rsa-exponent2", dmq1);
-            OSSL_PARAM_BLD_push_BN(pbld, "rsa-coefficient1", iqmp);
+            OSSL_PARAM_BLD_push_BN(pbld, OSSL_PKEY_PARAM_RSA_FACTOR1, p);
+            OSSL_PARAM_BLD_push_BN(pbld, OSSL_PKEY_PARAM_RSA_FACTOR2, q);
+            OSSL_PARAM_BLD_push_BN(pbld, OSSL_PKEY_PARAM_RSA_EXPONENT1, dmp1);
+            OSSL_PARAM_BLD_push_BN(pbld, OSSL_PKEY_PARAM_RSA_COEFFICIENT1, iqmp);
         }
     }
     params = OSSL_PARAM_BLD_to_param(pbld);

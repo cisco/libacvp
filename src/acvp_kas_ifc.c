@@ -760,7 +760,9 @@ static ACVP_RESULT acvp_kas_ifc_ssc(ACVP_CTX *ctx,
                     rv = ACVP_INVALID_ARG;
                     goto err;
                 }
+            }
 
+            if (scheme == ACVP_KAS_IFC_KAS2) {
                 server_n = json_object_get_string(testobj, "serverN");
                 if (!server_n) {
                     ACVP_LOG_ERR("Server JSON missing 'serverN'");

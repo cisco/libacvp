@@ -10,6 +10,7 @@
 
 #include <openssl/evp.h>
 #if OPENSSL_VERSION_NUMBER >= 0x30000000L
+#include <openssl/core_names.h>
 #include <openssl/param_build.h>
 #endif
 #include "acvp/acvp.h"
@@ -75,13 +76,12 @@ int app_kmac_handler(ACVP_TEST_CASE *test_case) {
         printf("error creating param_bld in KMAC\n");
         goto end;
     }
-    OSSL_PARAM_BLD_push_utf8_string(pbld, "cipher", alg_name, 0);
-    OSSL_PARAM_BLD_push_int(pbld, "xof", tc->xof);
-    OSSL_PARAM_BLD_push_uint(pbld, "size", (unsigned int)tc->mac_len);
+    OSSL_PARAM_BLD_push_int(pbld, OSSL_MAC_PARAM_XOF, tc->xof);
+    OSSL_PARAM_BLD_push_uint(pbld, OSSL_MAC_PARAM_SIZE, (unsigned int)tc->mac_len);
     if (tc->hex_customization) {
-        OSSL_PARAM_BLD_push_octet_string(pbld, "custom", tc->custom_hex, tc->custom_len);
+        OSSL_PARAM_BLD_push_octet_string(pbld, OSSL_MAC_PARAM_CUSTOM, tc->custom_hex, tc->custom_len);
     } else {
-        OSSL_PARAM_BLD_push_octet_string(pbld, "custom", tc->custom, tc->custom_len);
+        OSSL_PARAM_BLD_push_octet_string(pbld, OSSL_MAC_PARAM_CUSTOM, tc->custom, tc->custom_len);
     }
     params = OSSL_PARAM_BLD_to_param(pbld);
 #define KMAC_BUF_MAX 8192
