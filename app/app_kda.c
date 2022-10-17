@@ -11,6 +11,7 @@
 #include <openssl/hmac.h>
 #if OPENSSL_VERSION_NUMBER >= 0x30000000L
 #include <openssl/kdf.h>
+#include <openssl/core_names.h>
 #include <openssl/param_build.h>
 #endif
 #include "acvp/acvp.h"
@@ -202,10 +203,10 @@ int app_kda_hkdf_handler(ACVP_TEST_CASE *test_case) {
         printf("Error creating param_bld in HKDF\n");
         goto end;
     }
-    OSSL_PARAM_BLD_push_utf8_string(pbld, "digest", md, 0);
-    OSSL_PARAM_BLD_push_octet_string(pbld, "key", stc->z, (size_t)stc->zLen);
-    OSSL_PARAM_BLD_push_octet_string(pbld, "info", fixedInfo, (size_t)fixedInfoLen);
-    OSSL_PARAM_BLD_push_octet_string(pbld, "salt", stc->salt, (size_t)stc->saltLen);
+    OSSL_PARAM_BLD_push_utf8_string(pbld, OSSL_KDF_PARAM_DIGEST, md, 0);
+    OSSL_PARAM_BLD_push_octet_string(pbld, OSSL_KDF_PARAM_KEY, stc->z, (size_t)stc->zLen);
+    OSSL_PARAM_BLD_push_octet_string(pbld, OSSL_KDF_PARAM_INFO, fixedInfo, (size_t)fixedInfoLen);
+    OSSL_PARAM_BLD_push_octet_string(pbld, OSSL_KDF_PARAM_SALT, stc->salt, (size_t)stc->saltLen);
     params = OSSL_PARAM_BLD_to_param(pbld);
     if (!params) {
         printf("Error generating params in HKDF\n");
@@ -367,14 +368,14 @@ int app_kda_onestep_handler(ACVP_TEST_CASE *test_case) {
         goto end;
     }
     if (stc->salt) {
-        OSSL_PARAM_BLD_push_utf8_string(pbld, "mac", mac, 0);
-        OSSL_PARAM_BLD_push_octet_string(pbld, "salt", stc->salt, (size_t)stc->saltLen);
+        OSSL_PARAM_BLD_push_utf8_string(pbld, OSSL_KDF_PARAM_MAC, mac, 0);
+        OSSL_PARAM_BLD_push_octet_string(pbld, OSSL_KDF_PARAM_SALT, stc->salt, (size_t)stc->saltLen);
     }
     if (md) {
-        OSSL_PARAM_BLD_push_utf8_string(pbld, "digest", md, 0);
+        OSSL_PARAM_BLD_push_utf8_string(pbld, OSSL_KDF_PARAM_DIGEST, md, 0);
     }
-    OSSL_PARAM_BLD_push_octet_string(pbld, "key", stc->z, (size_t)stc->zLen);
-    OSSL_PARAM_BLD_push_octet_string(pbld, "info", fixedInfo, (size_t)fixedInfoLen);
+    OSSL_PARAM_BLD_push_octet_string(pbld, OSSL_KDF_PARAM_KEY, stc->z, (size_t)stc->zLen);
+    OSSL_PARAM_BLD_push_octet_string(pbld, OSSL_KDF_PARAM_INFO, fixedInfo, (size_t)fixedInfoLen);
     params = OSSL_PARAM_BLD_to_param(pbld);
     if (!params) {
         printf("Error generating params in KDA Onestep\n");
@@ -517,9 +518,9 @@ int app_kda_twostep_handler(ACVP_TEST_CASE *test_case) {
          goto end;
     }
     if (isHmac) {
-        OSSL_PARAM_BLD_push_utf8_string(pbld, "digest", aname, 0);
+        OSSL_PARAM_BLD_push_utf8_string(pbld, OSSL_MAC_PARAM_DIGEST, aname, 0);
     } else {
-        OSSL_PARAM_BLD_push_utf8_string(pbld, "cipher", aname, 0);
+        OSSL_PARAM_BLD_push_utf8_string(pbld, OSSL_MAC_PARAM_CIPHER, aname, 0);
     }
     params = OSSL_PARAM_BLD_to_param(pbld);
 
@@ -561,24 +562,24 @@ int app_kda_twostep_handler(ACVP_TEST_CASE *test_case) {
         printf("Error creating param_bld in KDA Twostep\n");
         goto end;
     }
-    OSSL_PARAM_BLD_push_utf8_string(pbld, "mac", mac, 0);
-    OSSL_PARAM_BLD_push_octet_string(pbld, "key", extraction, ext_len);
-    OSSL_PARAM_BLD_push_octet_string(pbld, "seed", stc->iv, stc->ivLen);
-    OSSL_PARAM_BLD_push_octet_string(pbld, "info", fixedInfo, fixedInfoLen);
-    OSSL_PARAM_BLD_push_int(pbld, "use-separator", 0);
-    OSSL_PARAM_BLD_push_int(pbld, "use-l", 0);
+    OSSL_PARAM_BLD_push_utf8_string(pbld, OSSL_KDF_PARAM_MAC, mac, 0);
+    OSSL_PARAM_BLD_push_octet_string(pbld, OSSL_KDF_PARAM_KEY, extraction, ext_len);
+    OSSL_PARAM_BLD_push_octet_string(pbld, OSSL_KDF_PARAM_SEED, stc->iv, stc->ivLen);
+    OSSL_PARAM_BLD_push_octet_string(pbld, OSSL_KDF_PARAM_INFO, fixedInfo, fixedInfoLen);
+    OSSL_PARAM_BLD_push_int(pbld, OSSL_KDF_PARAM_KBKDF_USE_SEPARATOR, 0);
+    OSSL_PARAM_BLD_push_int(pbld, OSSL_KDF_PARAM_KBKDF_USE_L, 0);
 
     if (isHmac) {
-        OSSL_PARAM_BLD_push_utf8_string(pbld, "digest", alg, 0);
+        OSSL_PARAM_BLD_push_utf8_string(pbld, OSSL_KDF_PARAM_DIGEST, alg, 0);
     } else {
         /* For this step, any CMAC length uses 128, as per SP800-56C */
-        OSSL_PARAM_BLD_push_utf8_string(pbld, "cipher", "AES128", 0);
+        OSSL_PARAM_BLD_push_utf8_string(pbld, OSSL_KDF_PARAM_CIPHER, "AES128", 0);
     }
 
     if (stc->kdfMode == ACVP_KDF108_MODE_COUNTER) {
-        OSSL_PARAM_BLD_push_utf8_string(pbld, "mode", "COUNTER", 0);
+        OSSL_PARAM_BLD_push_utf8_string(pbld, OSSL_KDF_PARAM_MODE, "COUNTER", 0);
     } else if (stc->kdfMode == ACVP_KDF108_MODE_FEEDBACK) {
-        OSSL_PARAM_BLD_push_utf8_string(pbld, "mode", "FEEDBACK", 0);
+        OSSL_PARAM_BLD_push_utf8_string(pbld, OSSL_KDF_PARAM_MODE, "FEEDBACK", 0);
     } else {
         printf("Unsupported KDF108 mode given for KDA Twostep\n");
         goto end;

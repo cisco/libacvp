@@ -13,7 +13,10 @@
 #include "acvp/acvp.h"
 #include "app_lcl.h"
 #include "safe_lib.h"
-
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+#include <openssl/param_build.h>
+#include <openssl/core_names.h>
+#endif
 #ifdef ACVP_NO_RUNTIME
 # include "app_fips_lcl.h"
 #endif
@@ -23,9 +26,9 @@ int app_cmac_handler(ACVP_TEST_CASE *test_case) {
 #if OPENSSL_VERSION_NUMBER >= 0x30000000L && !defined ACVP_DEPRECATED_MAC
     EVP_MAC *mac = NULL;
     EVP_MAC_CTX *cmac_ctx = NULL;
-    OSSL_PARAM params[2];
+    OSSL_PARAM_BLD *pbld = NULL;
+    OSSL_PARAM *params = NULL;
     const char *alg_name = NULL;
-    char *aname = NULL;
 #else
     CMAC_CTX *cmac_ctx = NULL;
     const EVP_CIPHER *c = NULL;
@@ -102,14 +105,17 @@ int app_cmac_handler(ACVP_TEST_CASE *test_case) {
         printf("Error: unable to create CMAC CTX");
         goto end;
     }
-    aname = calloc(256, sizeof(char)); //avoid const removal warnings
-    if (!aname) {
-        printf("Error allocating memory for CMAC test\n");
+    pbld = OSSL_PARAM_BLD_new();
+    if (!pbld) {
+        printf("Error creating param_bld in CMAC\n");
         goto end;
     }
-    strcpy_s(aname, 256, alg_name);
-    params[0] = OSSL_PARAM_construct_utf8_string("cipher", aname, 0);
-    params[1] = OSSL_PARAM_construct_end();
+    OSSL_PARAM_BLD_push_utf8_string(pbld, OSSL_MAC_PARAM_CIPHER, alg_name, 0);
+    params = OSSL_PARAM_BLD_to_param(pbld);
+    if (!params){
+        printf("Error generating params in CMAC\n");
+        goto end;
+    }
 
 #define CMAC_BUF_MAX 128
 
@@ -228,7 +234,8 @@ end:
 #if OPENSSL_VERSION_NUMBER >= 0x30000000L && !defined ACVP_DEPRECATED_MAC
     if (cmac_ctx) EVP_MAC_CTX_free(cmac_ctx);
     if (mac) EVP_MAC_free(mac);
-    if (aname) free(aname);
+    if (pbld) OSSL_PARAM_BLD_free(pbld);
+    if (params) OSSL_PARAM_free(params);
 #else
     if (cmac_ctx) CMAC_CTX_free(cmac_ctx);
 #endif

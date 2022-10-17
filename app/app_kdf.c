@@ -239,9 +239,9 @@ int app_kdf135_x963_handler(ACVP_TEST_CASE *test_case) {
         printf("Error creating param_bld in KDF X963\n");
         goto end;
     }
-    OSSL_PARAM_BLD_push_octet_string(pbld, "key", stc->z, stc->z_len);
-    OSSL_PARAM_BLD_push_octet_string(pbld, "info", stc->shared_info, stc->shared_info_len);
-    OSSL_PARAM_BLD_push_utf8_string(pbld, "digest", aname, 0);
+    OSSL_PARAM_BLD_push_octet_string(pbld, OSSL_KDF_PARAM_KEY, stc->z, stc->z_len);
+    OSSL_PARAM_BLD_push_octet_string(pbld, OSSL_KDF_PARAM_INFO, stc->shared_info, stc->shared_info_len);
+    OSSL_PARAM_BLD_push_utf8_string(pbld, OSSL_KDF_PARAM_DIGEST, aname, 0);
     params = OSSL_PARAM_BLD_to_param(pbld);
     if (!params) {
         printf("Error generating params in KDF X963\n");
@@ -385,23 +385,23 @@ int app_kdf108_handler(ACVP_TEST_CASE *test_case) {
         printf("Error creating param_bld in kdf108\n");
         goto end;
     }
-    OSSL_PARAM_BLD_push_utf8_string(pbld, "mac", mac, 0);
-    OSSL_PARAM_BLD_push_octet_string(pbld, "key", stc->key_in, stc->key_in_len);
-    OSSL_PARAM_BLD_push_octet_string(pbld, "seed", stc->iv, stc->iv_len);
-    OSSL_PARAM_BLD_push_octet_string(pbld, "info", fixed, fixed_len);
-    OSSL_PARAM_BLD_push_int(pbld, "use-separator", 0);
-    OSSL_PARAM_BLD_push_int(pbld, "use-l", 0);
+    OSSL_PARAM_BLD_push_utf8_string(pbld, OSSL_KDF_PARAM_MAC, mac, 0);
+    OSSL_PARAM_BLD_push_octet_string(pbld, OSSL_KDF_PARAM_KEY, stc->key_in, stc->key_in_len);
+    OSSL_PARAM_BLD_push_octet_string(pbld, OSSL_KDF_PARAM_SEED, stc->iv, stc->iv_len);
+    OSSL_PARAM_BLD_push_octet_string(pbld, OSSL_KDF_PARAM_INFO, fixed, fixed_len);
+    OSSL_PARAM_BLD_push_int(pbld, OSSL_KDF_PARAM_KBKDF_USE_SEPARATOR, 0);
+    OSSL_PARAM_BLD_push_int(pbld, OSSL_KDF_PARAM_KBKDF_USE_L, 0);
 
     if (isHmac) {
-        OSSL_PARAM_BLD_push_utf8_string(pbld, "digest", aname, 0);
+        OSSL_PARAM_BLD_push_utf8_string(pbld, OSSL_KDF_PARAM_DIGEST, aname, 0);
     } else {
-        OSSL_PARAM_BLD_push_utf8_string(pbld, "cipher", aname, 0);
+        OSSL_PARAM_BLD_push_utf8_string(pbld, OSSL_KDF_PARAM_CIPHER, aname, 0);
     }
 
     if (stc->mode == ACVP_KDF108_MODE_COUNTER) {
-        OSSL_PARAM_BLD_push_utf8_string(pbld, "mode", "COUNTER", 0);
+        OSSL_PARAM_BLD_push_utf8_string(pbld, OSSL_KDF_PARAM_MODE, "COUNTER", 0);
     } else if (stc->mode == ACVP_KDF108_MODE_FEEDBACK) {
-        OSSL_PARAM_BLD_push_utf8_string(pbld, "mode", "FEEDBACK", 0);
+        OSSL_PARAM_BLD_push_utf8_string(pbld, OSSL_KDF_PARAM_MODE, "FEEDBACK", 0);
     } else {
         printf("Unsupported KDF108 mode given for kdf108\n");
         goto end;
@@ -583,11 +583,11 @@ int app_pbkdf_handler(ACVP_TEST_CASE *test_case) {
         printf("Error creating param_bld in PBKDF\n");
         goto end;
     }
-    OSSL_PARAM_BLD_push_octet_string(pbld, "pass", stc->password, stc->pw_len);
-    OSSL_PARAM_BLD_push_octet_string(pbld, "salt", stc->salt, stc->salt_len);
-    OSSL_PARAM_BLD_push_utf8_string(pbld, "digest", aname, 0);
-    OSSL_PARAM_BLD_push_uint(pbld, "iter", stc->iterationCount);
-    OSSL_PARAM_BLD_push_int(pbld, "pkcs5", 1); /* disables compliance checks, dont want limit checks for ACVP tests */
+    OSSL_PARAM_BLD_push_octet_string(pbld, OSSL_KDF_PARAM_PASSWORD, stc->password, stc->pw_len);
+    OSSL_PARAM_BLD_push_octet_string(pbld, OSSL_KDF_PARAM_SALT, stc->salt, stc->salt_len);
+    OSSL_PARAM_BLD_push_utf8_string(pbld, OSSL_KDF_PARAM_DIGEST, aname, 0);
+    OSSL_PARAM_BLD_push_uint(pbld, OSSL_KDF_PARAM_ITER, stc->iterationCount);
+    OSSL_PARAM_BLD_push_int(pbld, OSSL_KDF_PARAM_PKCS5, 1); /* disables compliance checks, dont want limit checks for ACVP tests */
     params = OSSL_PARAM_BLD_to_param(pbld);
     if (!params) {
         printf("Error generating params in PBKDF\n");
@@ -668,9 +668,9 @@ int app_kdf_tls12_handler(ACVP_TEST_CASE *test_case) {
     memcpy_s(seed + TLS_EXT_MASTER_SECRET_CONST_SIZE, TLS12_SEED_BUF_MAX - TLS_EXT_MASTER_SECRET_CONST_SIZE,
              tc->session_hash, tc->session_hash_len);
 
-    OSSL_PARAM_BLD_push_utf8_string(pbld, "digest", alg, 0);
-    OSSL_PARAM_BLD_push_octet_string(pbld, "secret", tc->pm_secret, tc->pm_len);
-    OSSL_PARAM_BLD_push_octet_string(pbld, "seed", seed, seed_len);
+    OSSL_PARAM_BLD_push_utf8_string(pbld, OSSL_KDF_PARAM_DIGEST, alg, 0);
+    OSSL_PARAM_BLD_push_octet_string(pbld, OSSL_KDF_PARAM_SECRET, tc->pm_secret, tc->pm_len);
+    OSSL_PARAM_BLD_push_octet_string(pbld, OSSL_KDF_PARAM_SEED, seed, seed_len);
     params = OSSL_PARAM_BLD_to_param(pbld);
     if (!params) {
         printf("Error generating params in TLS1.2 KDF (1)\n");
@@ -703,9 +703,9 @@ int app_kdf_tls12_handler(ACVP_TEST_CASE *test_case) {
              TLS12_SEED_BUF_MAX - TLS_KEY_EXPAND_CONST_SIZE - tc->s_rnd_len,
              tc->c_rnd, tc->c_rnd_len);
 
-    OSSL_PARAM_BLD_push_utf8_string(pbld, "digest", alg, 0);
-    OSSL_PARAM_BLD_push_octet_string(pbld, "secret", tc->msecret, tc->pm_len);
-    OSSL_PARAM_BLD_push_octet_string(pbld, "seed", seed, seed_len);
+    OSSL_PARAM_BLD_push_utf8_string(pbld, OSSL_KDF_PARAM_DIGEST, alg, 0);
+    OSSL_PARAM_BLD_push_octet_string(pbld, OSSL_KDF_PARAM_SECRET, tc->msecret, tc->pm_len);
+    OSSL_PARAM_BLD_push_octet_string(pbld, OSSL_KDF_PARAM_SEED, seed, seed_len);
     params = OSSL_PARAM_BLD_to_param(pbld);
     if (!params) {
         printf("Error generating params in TLS1.2 KDF (2)\n");

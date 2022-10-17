@@ -14,6 +14,7 @@
 #include <openssl/ecdsa.h>
 #include <openssl/ec.h>
 #if OPENSSL_VERSION_NUMBER >= 0x30000000L
+#include <openssl/core_names.h>
 #include <openssl/param_build.h>
 #endif
 
@@ -156,8 +157,8 @@ int app_ecdsa_handler(ACVP_TEST_CASE *test_case) {
             printf("Error creating param_bld in ECDSA keyver\n");
             goto err;
         }
-        OSSL_PARAM_BLD_push_utf8_string(pkey_pbld, "group", curve, 0);
-        OSSL_PARAM_BLD_push_octet_string(pkey_pbld, "pub", pub_key, key_size);
+        OSSL_PARAM_BLD_push_utf8_string(pkey_pbld, OSSL_PKEY_PARAM_GROUP_NAME, curve, 0);
+        OSSL_PARAM_BLD_push_octet_string(pkey_pbld, OSSL_PKEY_PARAM_PUB_KEY, pub_key, key_size);
         params = OSSL_PARAM_BLD_to_param(pkey_pbld);
         if (!params) {
             printf("Error generating parameters for pkey generation in RSA keygen\n");
@@ -276,8 +277,8 @@ int app_ecdsa_handler(ACVP_TEST_CASE *test_case) {
             printf("Error creating param_bld in ECDSA sigver\n");
             goto err;
         }
-        OSSL_PARAM_BLD_push_utf8_string(pkey_pbld, "group", curve, 0);
-        OSSL_PARAM_BLD_push_octet_string(pkey_pbld, "pub", pub_key, key_size);
+        OSSL_PARAM_BLD_push_utf8_string(pkey_pbld, OSSL_PKEY_PARAM_GROUP_NAME, curve, 0);
+        OSSL_PARAM_BLD_push_octet_string(pkey_pbld, OSSL_PKEY_PARAM_PUB_KEY, pub_key, key_size);
         params = OSSL_PARAM_BLD_to_param(pkey_pbld);
         if (!params) {
             printf("Error generating parameters for pkey generation in RSA sigver\n");
