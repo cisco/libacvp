@@ -2076,8 +2076,6 @@ static int enable_kas_ffc(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_kas_ffc_set_parm(ctx, ACVP_KAS_FFC_SSC, ACVP_KAS_FFC_MODE_NONE, ACVP_KAS_FFC_GEN_METH, ACVP_KAS_FFC_MODP8192);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_kas_ffc_set_parm(ctx, ACVP_KAS_FFC_SSC, ACVP_KAS_FFC_MODE_NONE, ACVP_KAS_FFC_HASH, ACVP_SHA512);
-    CHECK_ENABLE_CAP_RV(rv);
 #endif
     rv = acvp_cap_kas_ffc_set_parm(ctx, ACVP_KAS_FFC_SSC, ACVP_KAS_FFC_MODE_NONE, ACVP_KAS_FFC_GEN_METH, ACVP_KAS_FFC_FFDHE2048);
     CHECK_ENABLE_CAP_RV(rv);
