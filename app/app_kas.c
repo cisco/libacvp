@@ -971,7 +971,157 @@ err:
 }
 
 int app_safe_primes_handler(ACVP_TEST_CASE *test_case) {
-    return 0;
+    ACVP_SAFE_PRIMES_TC *tc;
+    int rv = 1;
+    BIGNUM *x = NULL, *y = NULL;
+    const char *group = NULL;
+    EVP_PKEY_CTX *pctx = NULL, *ver_ctx = NULL;
+    EVP_PKEY *pkey = NULL;
+    OSSL_PARAM_BLD *pbld = NULL;
+    OSSL_PARAM *params = NULL;
+
+    if (!test_case) {
+        printf("Null test case received from library for safe primes test\n");
+        goto err;
+    }
+
+    tc = test_case->tc.safe_primes;
+
+    if (!tc) {
+        printf("Empty test case received from library for safe primes test\n");
+        goto err;
+    }
+
+    switch (tc->dgm) {
+    case ACVP_SAFE_PRIMES_MODP2048:
+        group = "modp_2048";
+        break;
+    case ACVP_SAFE_PRIMES_MODP3072:
+        group = "modp_3072";
+        break;
+    case ACVP_SAFE_PRIMES_MODP4096:
+        group = "modp_4096";
+        break;
+    case ACVP_SAFE_PRIMES_MODP6144:
+        group = "modp_6144";
+        break;
+    case ACVP_SAFE_PRIMES_MODP8192:
+        group = "modp_8192";
+        break;
+    case ACVP_SAFE_PRIMES_FFDHE2048:
+        group = "ffdhe2048";
+        break;
+    case ACVP_SAFE_PRIMES_FFDHE3072:
+        group = "ffdhe3072";
+        break;
+    case ACVP_SAFE_PRIMES_FFDHE4096:
+        group = "ffdhe4096";
+        break;
+    case ACVP_SAFE_PRIMES_FFDHE6144:
+        group = "ffdhe6144";
+        break;
+    case ACVP_SAFE_PRIMES_FFDHE8192:
+        group = "ffdhe8192";
+        break;
+    default:
+        printf("Invalid dgm for safe primes test\n");
+        goto err;
+    }
+
+    pbld = OSSL_PARAM_BLD_new();
+    if (!pbld) {
+        printf("Error creating param_bld in safe primes test\n");
+        goto err;
+    }
+    OSSL_PARAM_BLD_push_utf8_string(pbld, OSSL_PKEY_PARAM_GROUP_NAME, group, 0);
+
+    if (tc->cipher == ACVP_SAFE_PRIMES_KEYGEN) {
+        params = OSSL_PARAM_BLD_to_param(pbld);
+        if (!params) {
+            printf("Error generating params in safe prime keygen test\n");
+            goto err;
+        }
+
+        pctx = EVP_PKEY_CTX_new_from_name(NULL, "DH", NULL);
+        if (!pctx) {
+            printf("Error creating CTX in safe prime keygen test\n");
+            goto err;
+        }
+        if (EVP_PKEY_keygen_init(pctx) != 1) {
+            printf("Error initializing keygen in safe prime keygen test\n");
+            goto err;
+        }
+        if (EVP_PKEY_CTX_set_params(pctx, params) != 1) {
+            printf("Error setting group param in safe prime keygen test\n");
+            goto err;
+        }
+        if (EVP_PKEY_keygen(pctx, &pkey) != 1) {
+            printf("Error performing keygen in safe prime keygen test\n");
+            goto err;
+        }
+
+        EVP_PKEY_get_bn_param(pkey, OSSL_PKEY_PARAM_PRIV_KEY, &x);
+        if (x) {
+            tc->xlen = BN_bn2bin(x, tc->x);
+        } else {
+            printf("Error getting private key component in safe prime keygen test\n");
+            goto err;
+        }
+        EVP_PKEY_get_bn_param(pkey, OSSL_PKEY_PARAM_PUB_KEY, &y);
+        if (y) {
+            tc->ylen = BN_bn2bin(y, tc->y);
+        } else {
+            printf("Error getting public key component in safe prime keygen test\n");
+            goto err;
+        }
+    } else {
+        x = BN_bin2bn(tc->x, tc->xlen, NULL);
+        y = BN_bin2bn(tc->y, tc->ylen, NULL);
+        if (!x || !y) {
+            printf("Error creating bignum from test data in safe primes keyver test\n");
+            goto err;
+        }
+        OSSL_PARAM_BLD_push_BN(pbld, OSSL_PKEY_PARAM_PRIV_KEY, x);
+        OSSL_PARAM_BLD_push_BN(pbld, OSSL_PKEY_PARAM_PUB_KEY, y);
+        params = OSSL_PARAM_BLD_to_param(pbld);
+        if (!params) {
+            printf("Error generating params in safe prime keyver test\n");
+            goto err;
+        }
+
+        pctx = EVP_PKEY_CTX_new_from_name(NULL, "DH", NULL);
+        if (!pctx) {
+            printf("Error creating CTX in safe prime keyver test\n");
+            goto err;
+        }
+        if (EVP_PKEY_fromdata_init(pctx) != 1) {
+            printf("Error initializing fromdata in safe prime keyver test\n");
+            goto err;
+        }
+        if (EVP_PKEY_fromdata(pctx, &pkey, EVP_PKEY_KEYPAIR, params) != 1) {
+            printf("Error performing keygen in safe prime keyver test\n");
+            goto err;
+        }
+
+        ver_ctx = EVP_PKEY_CTX_new_from_pkey(NULL, pkey, NULL);
+        if (!ver_ctx) {
+            printf("Error creating verify ctx in safe prime keyver test\n");
+            goto err;
+        }
+        if (EVP_PKEY_check(ver_ctx) == 1) {
+            tc->result = 1;
+        }
+    }
+    rv = 0;
+err:
+    if (x) BN_free(x);
+    if (y) BN_free(y);
+    if (pctx) EVP_PKEY_CTX_free(pctx);
+    if (ver_ctx) EVP_PKEY_CTX_free(ver_ctx);
+    if (pkey) EVP_PKEY_free(pkey);
+    if (pbld) OSSL_PARAM_BLD_free(pbld);
+    if (params) OSSL_PARAM_free(params);
+    return rv;
 }
 
 #elif defined ACVP_NO_RUNTIME
