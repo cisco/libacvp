@@ -438,6 +438,43 @@ char *ec_point_to_pub_key(unsigned char *x, int x_len, unsigned char *y, int y_l
 
 #if OPENSSL_VERSION_NUMBER >= 0x30000000L
 
+static const unsigned char sanity_msg[] = { 0xA5, 0x30, 0xD4, 0x60, 0x93, 0xA3, 0x5E, 0x50, 0x2C, 0xA1, 0x64, 0xB7,
+                                            0x50, 0x24, 0xE4 };
+
+static const unsigned char sanity_hash[] = { 0x13, 0x80, 0x22, 0xF7, 0xF3, 0xC6, 0xB9, 0x59, 0x36, 0x2D, 0xFE, 0xAE,
+                                             0x59, 0xE9, 0xA3, 0x72, 0x24, 0x04, 0x3C, 0x61, 0x1E, 0xE4, 0xAA, 0x01,
+                                             0xF0, 0xAA, 0x04, 0x2A };
+
+/*
+ * This performs a quick digest to make sure the FIPS provider is running properly. Othewise, we
+ * will get a vague error trying to perform some unrelated operation later on. The return code is
+ *  the biggest indicator, but we might as well check for correctness too.
+ */
+ACVP_RESULT fips_sanity_check() {
+    ACVP_RESULT rv = ACVP_CRYPTO_MODULE_FAIL;
+    size_t md_len;
+    int diff;
+
+    unsigned char *md = calloc(28, sizeof(unsigned char));
+    if (!md) {
+        printf("Failed to allocate memory for FIPS test.\n");
+        return ACVP_MALLOC_FAIL;
+    }
+    if (EVP_Q_digest(NULL, "SHA2-224", "fips=yes", &sanity_msg, 15, md, &md_len) != 1) {
+        printf("Crypto module returned failure code when running quick digest.\n");
+        goto end;
+    }
+    memcmp_s(sanity_hash, 28, md, md_len, &diff);
+    if (!diff) {
+        rv = ACVP_SUCCESS;
+    } else {
+        printf("Crypto module failed correctness check on quick digest.\n");
+    }
+end:
+    if (md) free(md);
+    return rv;
+}
+
 static const unsigned char tdes_oid[] = { 0x06, 0x0B, 0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x09, 0x10, 0x03, 0x06 };
 static const unsigned char aes128_oid[] = { 0x06, 0x09, 0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x01, 0x05 };
 static const unsigned char aes192_oid[] = { 0x06, 0x09, 0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x01, 0x19 };

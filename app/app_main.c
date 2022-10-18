@@ -23,6 +23,11 @@
 #if OPENSSL_VERSION_NUMBER >= 0x30000000L
 #include <openssl/provider.h>
 #include <openssl/evp.h>
+#ifdef _WIN32
+#include <Windows.h>
+#else
+#include <unistd.h>
+#endif
 #elif defined ACVP_NO_RUNTIME
 #include "app_fips_lcl.h"
 #include "app_fips_init_lcl.h"
@@ -155,11 +160,34 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-#if OPENSSL_VERSION_NUMBER >= 0x30000000L && (defined ACVP_NO_RUNTIME || defined ACVP_FIPS_RUNTIME)
-    //sets the property "fips=yes" to be included implicitly in cipher fetches
-    EVP_default_properties_enable_fips(NULL, 1);
-    if (!EVP_default_properties_is_fips_enabled(NULL)) {
-        return 1;
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+    if (!cfg.disable_fips) {
+        /* sets the property "fips=yes" to be included implicitly in cipher fetches */
+        EVP_default_properties_enable_fips(NULL, 1);
+        if (!EVP_default_properties_is_fips_enabled(NULL)) {
+            printf("Error setting FIPS property at startup\n\n");
+            return 1;
+        }
+        /* Run a quick sanity check to determine that the FIPS provider is functioning properly */
+        rv = fips_sanity_check();
+        if (rv != ACVP_SUCCESS) {
+            printf("Error occured when testing FIPS at startup (rv = %d). Please verify the FIPS provider is\n", rv);
+            printf("properly installed and configured. Exiting...\n\n");
+            return 1;
+        }
+    } else {
+        printf("***********************************************************************************\n");
+        printf("* WARNING: You have chosen to not fetch the FIPS provider for this run. Any tests *\n");
+        printf("* created or performed during this run MUST NOT have any validation requested     *\n");
+        printf("* on it unless the FIPS provider is exclusively loaded. Proceed at your own risk. *\n");
+        printf("* Continuing in 5 seconds...                                                      *\n");
+        printf("***********************************************************************************\n");
+        printf("\n");
+        #ifdef _WIN32
+            Sleep(5 * 1000);
+        #else
+            sleep(5);
+        #endif
     }
 #endif
 

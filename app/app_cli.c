@@ -160,6 +160,11 @@ static void print_usage(int code) {
     printf("      --save_to <file>\n");
     printf("      -s <file>\n");
     printf("\n");
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+    printf("To disable FIPS mode for this run (Note, a warning will be issued):\n");
+    printf("      -disable_fips\n");
+    printf("\n");
+#endif
     printf("In addition some options are passed to acvp_app using\n");
     printf("environment variables.  The following variables can be set:\n\n");
     printf("    ACV_SERVER (when not set, defaults to %s)\n", DEFAULT_SERVER);
@@ -266,6 +271,9 @@ static ko_longopt_t longopts[] = {
     { "save_to", ko_required_argument, 413 },
     { "delete", ko_required_argument, 414 },
     { "cancel_session", ko_required_argument, 415 },
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+    { "disable_fips", ko_no_argument, 500 },
+#endif
     { NULL, 0, 0 }
 };
 
@@ -590,6 +598,11 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
             strcpy_s(cfg->session_file, JSON_FILENAME_LENGTH + 1, opt.arg);
             break;
 
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+        case 500:
+            cfg->disable_fips = 1;
+            break;
+#endif
         case '?':
             printf(ANSI_COLOR_RED "unknown option: %s\n"ANSI_COLOR_RESET, *(argv + opt.ind - !(opt.pos > 0)));
             printf("%s\n", ACVP_APP_HELP_MSG);
