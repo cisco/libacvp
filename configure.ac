@@ -101,16 +101,7 @@ if test "x$disable_app" = "xno" ; then
         [Path to FOM install directory])],
         [fomdir="$withval"],
         [with_fomdir=no])
-    # If using SSL >= 3.0.0, just enable fips, no path needed
-    AC_ARG_ENABLE([fips],
-    [AS_HELP_STRING([--enable-fips], [Use FIPS mode with a build of SSL that supports testing all algorithms])],
-    [use_dev_fips="yes"],
-    [use_dev_fips="no"])
-    #Only supports subset of algorithms due to needed intermediate values
-    AC_ARG_ENABLE([runtime-fips],
-    [AS_HELP_STRING([--enable-runtime-fips], [Use FIPS mode with a regular FIPS build of SSL, only supports some algorithms])],
-    [use_runtime_fips="yes"],
-    [use_runtime_fips="no"])
+    # If using SSL >= 3.0.0, FIPS is mananged at runtime
 fi
 
 # Offline mode
@@ -282,14 +273,6 @@ if test "x$use_ssl_3" = "xtrue" && test "x$with_fomdir" != "xno" ; then
     AC_MSG_FAILURE([--with-fom-dir should not be provided with versions of SSL greater than 1.1.1;
                     use --enable-fips or --enable-runtime-fips instead])
 fi
-if test "x$use_ssl_3" = "xtrue" && test "x$use_dev_fips" != "xno" && test "x$use_runtime_fips" != "xno" ; then
-    AC_MSG_FAILURE([Either --enable-fips or --enable-runtime-fips can be used, but not both. See the README
-                    for more information.])
-fi
-if test "x$use_ssl_3" != "xtrue" && (test "x$use_dev_fips" != "xno"|| test "x$use_runtime_fips" != "xno") ; then
-    AC_MSG_FAILURE([For versions of SSL under 3.0.0, use --with-fom-dir=<path> to use FIPS, not --enable-fips or
-                    --enable-runtime-fips])
-fi
 
 if test "x$disable_app" = "xno" ; then
     AC_SUBST([SSL_CFLAGS], "-I$ssldir/include")
@@ -319,13 +302,8 @@ if test "x$with_fomdir" != "xno" ; then
     AC_SUBST([FOM_CFLAGS], "-DACVP_NO_RUNTIME -DOPENSSL_FIPS -I$fomdir/include")
     AC_SUBST([FOM_LDFLAGS], "-L$fomdir/lib")
     AC_SUBST([FOM_OBJ_DIR], "$fomdir/lib")
-elif test "x$use_dev_fips" != "xno" ; then
-    AC_SUBST([FOM_CFLAGS], "-DACVP_NO_RUNTIME")
-elif test "x$use_runtime_fips" != "xno" ; then
-    AC_SUBST([FOM_CFLAGS], "-DACVP_FIPS_RUNTIME")
 fi
 AM_CONDITIONAL([USE_FOM_OBJ], [test "x$with_fomdir" != "xno"])
-AM_CONDITIONAL([USE_FIPS_PROVIDER], [test "x$use_dev_fips" != "xno" || test "x$use_runtime_fips" != "xno"])
 
 #Conditionally included algorithms should be added to cond_alg_cflags here
 if test "x$disable_kdf" != "xfalse" || test "x$use_ssl_3" = "xtrue"; then

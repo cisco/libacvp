@@ -47,6 +47,9 @@ typedef struct app_config {
     int fips_validation;
     int get_expected;
     int save_to;
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+    int disable_fips;
+#endif
     char reg_file[JSON_FILENAME_LENGTH + 1];
     char vector_req_file[JSON_FILENAME_LENGTH + 1];
     char vector_rsp_file[JSON_FILENAME_LENGTH + 1];
@@ -135,6 +138,7 @@ int app_safe_primes_handler(ACVP_TEST_CASE *test_case);
 
 #if OPENSSL_VERSION_NUMBER >= 0x30000000L
 int app_aes_handler_gmac(ACVP_TEST_CASE *test_case);
+ACVP_RESULT fips_sanity_check(void);
 const char *get_string_from_oid(unsigned char *oid, int oid_len);
 #endif
 
