@@ -2329,9 +2329,9 @@ static int enable_kda(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_kda_twostep_set_parm(ctx, ACVP_KDA_MAC_ALG, ACVP_KDF108_MAC_MODE_HMAC_SHA3_512, ACVP_KDF108_MODE_FEEDBACK, NULL);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_kda_twostep_set_parm(ctx, ACVP_KDA_TWOSTEP_FIXED_DATA_ORDER, ACVP_KDF108_FIXED_DATA_ORDER_BEFORE, ACVP_KDF108_MODE_FEEDBACK, NULL);
+    rv = acvp_cap_kda_twostep_set_parm(ctx, ACVP_KDA_TWOSTEP_FIXED_DATA_ORDER, ACVP_KDF108_FIXED_DATA_ORDER_AFTER, ACVP_KDF108_MODE_FEEDBACK, NULL);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_kda_twostep_set_parm(ctx, ACVP_KDA_TWOSTEP_COUNTER_LEN, 32, ACVP_KDF108_MODE_FEEDBACK, NULL);
+    rv = acvp_cap_kda_twostep_set_parm(ctx, ACVP_KDA_TWOSTEP_COUNTER_LEN, 8, ACVP_KDF108_MODE_FEEDBACK, NULL);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_kda_twostep_set_parm(ctx, ACVP_KDA_TWOSTEP_SUPPORTS_EMPTY_IV, 1, ACVP_KDF108_MODE_FEEDBACK, NULL);
     CHECK_ENABLE_CAP_RV(rv);

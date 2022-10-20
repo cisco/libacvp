@@ -397,18 +397,13 @@ end:
 
 int app_kda_twostep_handler(ACVP_TEST_CASE *test_case) {
     ACVP_KDA_TWOSTEP_TC *stc = NULL;
-    int rc = 1, fixedInfoLen = 0, isHmac = 1;
-    size_t ext_len = 0;
-    unsigned char *fixedInfo = NULL, *extraction = NULL;
-    char *aname = NULL;
+    int rc = 1, fixedInfoLen = 0;
+    unsigned char *fixedInfo = NULL;
     OSSL_PARAM_BLD *pbld = NULL;
     OSSL_PARAM *params = NULL;
     EVP_KDF *kdf = NULL;
     EVP_KDF_CTX *kctx = NULL;
-    const char *alg = NULL, *mac = NULL;
-    EVP_MAC *mac_obj = NULL;
-    EVP_MAC_CTX *mac_ctx = NULL;
-
+    const char *alg = NULL;
     if (!test_case) {
         printf("Missing TwoStep test case\n");
         return -1;
@@ -434,63 +429,40 @@ int app_kda_twostep_handler(ACVP_TEST_CASE *test_case) {
     switch (stc->macFunction) {
     case ACVP_KDF108_MAC_MODE_HMAC_SHA1:
         alg = "SHA-1";
-        mac = "HMAC";
         break;
     case ACVP_KDF108_MAC_MODE_HMAC_SHA224:
         alg = "SHA2-224";
-        mac = "HMAC";
         break;
     case ACVP_KDF108_MAC_MODE_HMAC_SHA256:
         alg = "SHA2-256";
-        mac = "HMAC";
         break;
     case ACVP_KDF108_MAC_MODE_HMAC_SHA384:
         alg = "SHA2-384";
-        mac = "HMAC";
         break;
     case ACVP_KDF108_MAC_MODE_HMAC_SHA512:
         alg = "SHA2-512";
-        mac = "HMAC";
         break;
     case ACVP_KDF108_MAC_MODE_HMAC_SHA512_224:
         alg = "SHA2-512/224";
-        mac = "HMAC";
         break;
     case ACVP_KDF108_MAC_MODE_HMAC_SHA512_256:
         alg = "SHA2-512/256";
-        mac = "HMAC";
         break;
     case ACVP_KDF108_MAC_MODE_HMAC_SHA3_224:
         alg = "SHA3-224";
-        mac = "HMAC";
         break;
     case ACVP_KDF108_MAC_MODE_HMAC_SHA3_256:
         alg = "SHA3-256";
-        mac = "HMAC";
         break;
     case ACVP_KDF108_MAC_MODE_HMAC_SHA3_384:
         alg = "SHA3-384";
-        mac = "HMAC";
         break;
     case ACVP_KDF108_MAC_MODE_HMAC_SHA3_512:
         alg = "SHA3-512";
-        mac = "HMAC";
         break;
     case ACVP_KDF108_MAC_MODE_CMAC_AES128:
-        alg = "AES128";
-        mac = "CMAC";
-        isHmac = 0;
-        break;
     case ACVP_KDF108_MAC_MODE_CMAC_AES192:
-        alg = "AES192";
-        mac = "CMAC";
-        isHmac = 0;
-        break;
     case ACVP_KDF108_MAC_MODE_CMAC_AES256:
-        alg = "AES256";
-        mac = "CMAC";
-        isHmac = 0;
-        break;
     case ACVP_KDF108_MAC_MODE_MIN:
     case ACVP_KDF108_MAC_MODE_CMAC_TDES:
     case ACVP_KDF108_MAC_MODE_MAX:
@@ -499,100 +471,28 @@ int app_kda_twostep_handler(ACVP_TEST_CASE *test_case) {
         return 1;
     }
 
-    /* First, Z and salt are used to make K_dk. K_dk is then the secret for KBKDF (aka sp800-108 kdf) */
-    mac_obj = EVP_MAC_fetch(NULL, mac, NULL);
-    mac_ctx = EVP_MAC_CTX_new(mac_obj);
-    if (!mac_ctx) {
-        printf("Error: unable to create MAC CTX");
-        goto end;
-    }
-    aname = calloc(256, sizeof(char)); //avoid const removal warnings
-    if (!aname) {
-        printf("Error allocating memory for CMAC test\n");
-        goto end;
-    }
-    strcpy_s(aname, 256, alg);
-    pbld = OSSL_PARAM_BLD_new();
-    if (!pbld) {
-         printf("Error creating param_bld in KDA Twostep\n");
-         goto end;
-    }
-    if (isHmac) {
-        OSSL_PARAM_BLD_push_utf8_string(pbld, OSSL_MAC_PARAM_DIGEST, aname, 0);
-    } else {
-        OSSL_PARAM_BLD_push_utf8_string(pbld, OSSL_MAC_PARAM_CIPHER, aname, 0);
-    }
-    params = OSSL_PARAM_BLD_to_param(pbld);
-
-    /* For the context of twostep, "salt" is the mac key for the extract step */
-    if (!EVP_MAC_init(mac_ctx, stc->salt, stc->saltLen, params)) {
-        printf("\nCrypto module error, EVP_MAC_init failed\n");
-        goto end;
-    }
-    if (!EVP_MAC_update(mac_ctx, stc->z, stc->zLen)) {
-        printf("\nCrypto module error, EVP_MAC_update failed\n");
-        goto end;
-    }
-    if (!EVP_MAC_final(mac_ctx, NULL, &ext_len, 0)) {
-        printf("\nCrypto module error, EVP_MAC_final 1 failed\n");
-        goto end;
-    }
-    extraction = calloc(ext_len, sizeof(char));
-    if (!extraction) {
-        printf("Malloc error in KDA twostep\n");
-        goto end;
-    }
-    if (!EVP_MAC_final(mac_ctx, extraction, &ext_len, ext_len)) {
-        printf("\nCrypto module error, EVP_MAC_final 2 failed\n");
-        goto end;
-    }
-
-    /* Now for the expand step */
-    if (pbld) OSSL_PARAM_BLD_free(pbld);
-    if (params) OSSL_PARAM_free(params);
-
-    kdf = EVP_KDF_fetch(NULL, "KBKDF", NULL);
+    kdf = EVP_KDF_fetch(NULL, "HKDF", NULL);
     kctx = EVP_KDF_CTX_new(kdf);
     if (!kctx) {
-        printf("Error creating KDF CTX in KDA Twostep\n");
+        printf("Error creating KDF CTX in KDA twostep\n");
         goto end;
     }
     pbld = OSSL_PARAM_BLD_new();
     if (!pbld) {
-        printf("Error creating param_bld in KDA Twostep\n");
+        printf("Error creating param_bld in KDA twostep\n");
         goto end;
     }
-    OSSL_PARAM_BLD_push_utf8_string(pbld, OSSL_KDF_PARAM_MAC, mac, 0);
-    OSSL_PARAM_BLD_push_octet_string(pbld, OSSL_KDF_PARAM_KEY, extraction, ext_len);
-    OSSL_PARAM_BLD_push_octet_string(pbld, OSSL_KDF_PARAM_SEED, stc->iv, stc->ivLen);
-    OSSL_PARAM_BLD_push_octet_string(pbld, OSSL_KDF_PARAM_INFO, fixedInfo, fixedInfoLen);
-    OSSL_PARAM_BLD_push_int(pbld, OSSL_KDF_PARAM_KBKDF_USE_SEPARATOR, 0);
-    OSSL_PARAM_BLD_push_int(pbld, OSSL_KDF_PARAM_KBKDF_USE_L, 0);
-
-    if (isHmac) {
-        OSSL_PARAM_BLD_push_utf8_string(pbld, OSSL_KDF_PARAM_DIGEST, alg, 0);
-    } else {
-        /* For this step, any CMAC length uses 128, as per SP800-56C */
-        OSSL_PARAM_BLD_push_utf8_string(pbld, OSSL_KDF_PARAM_CIPHER, "AES128", 0);
-    }
-
-    if (stc->kdfMode == ACVP_KDF108_MODE_COUNTER) {
-        OSSL_PARAM_BLD_push_utf8_string(pbld, OSSL_KDF_PARAM_MODE, "COUNTER", 0);
-    } else if (stc->kdfMode == ACVP_KDF108_MODE_FEEDBACK) {
-        OSSL_PARAM_BLD_push_utf8_string(pbld, OSSL_KDF_PARAM_MODE, "FEEDBACK", 0);
-    } else {
-        printf("Unsupported KDF108 mode given for KDA Twostep\n");
-        goto end;
-    }
-
+    OSSL_PARAM_BLD_push_utf8_string(pbld, OSSL_KDF_PARAM_DIGEST, alg, 0);
+    OSSL_PARAM_BLD_push_octet_string(pbld, OSSL_KDF_PARAM_KEY, stc->z, (size_t)stc->zLen);
+    OSSL_PARAM_BLD_push_octet_string(pbld, OSSL_KDF_PARAM_INFO, fixedInfo, (size_t)fixedInfoLen);
+    OSSL_PARAM_BLD_push_octet_string(pbld, OSSL_KDF_PARAM_SALT, stc->salt, (size_t)stc->saltLen);
     params = OSSL_PARAM_BLD_to_param(pbld);
     if (!params) {
-        printf("Error generating params in KDA Twostep\n");
+        printf("Error generating params in KDA twostep\n");
         goto end;
     }
-
     if (EVP_KDF_derive(kctx, stc->outputDkm, stc->l, params) != 1) {
-        printf("Failure deriving key material in KDA-TwoStep\n");
+        printf("Failure deriving key material in KDA twostep\n");
         goto end;
     }
     rc = 0;
@@ -600,12 +500,8 @@ end:
     if (pbld) OSSL_PARAM_BLD_free(pbld);
     if (params) OSSL_PARAM_free(params);
     if (fixedInfo) free(fixedInfo);
-    if (extraction) free(extraction);
-    if (aname) free(aname);
     if (kdf) EVP_KDF_free(kdf);
     if (kctx) EVP_KDF_CTX_free(kctx);
-    if (mac_obj) EVP_MAC_free(mac_obj);
-    if (mac_ctx) EVP_MAC_CTX_free(mac_ctx);
     return rc;
 }
 
