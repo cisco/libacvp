@@ -47,6 +47,8 @@ int app_cmac_handler(ACVP_TEST_CASE *test_case) {
     tc = test_case->tc.cmac;
     if (!tc) return rv;
     if (!tc->key) return rv;
+    if (!tc->mac) return rv;
+    if (!tc->msg) return rv;
 
     alg = acvp_get_cmac_alg(tc->cipher);
     if (alg == 0) {

@@ -414,7 +414,6 @@ Test(APP_KDA_HKDF_HANDLER, invalid_alg) {
 }
 
 //onestep
-
 Test(APP_KDA_ONESTEP_HANDLER, invalid_encoding) {
     char *z = "aa";
     char *uPartyId = "aa";
