@@ -1057,7 +1057,7 @@ static int enable_tdes(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
 #endif
 
-#if !(OPENSSL_VERSION_NUMBER >= 0x30000000L && (defined ACVP_NO_RUNTIME || defined ACVP_FIPS_RUNTIME))
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
     /*
      * Enable 3DES-OFB
      */
