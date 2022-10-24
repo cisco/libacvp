@@ -117,12 +117,14 @@ static ACVP_RESULT acvp_kts_ifc_init_tc(ACVP_CTX *ctx,
             return rv;
         }
 
-        stc->d = calloc(1, ACVP_KTS_IFC_BYTE_MAX);
-        if (!stc->d) { return ACVP_MALLOC_FAIL; }
-        rv = acvp_hexstr_to_bin(d, stc->d, ACVP_KTS_IFC_BYTE_MAX, &(stc->dlen));
-        if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("Hex conversion failure (d)");
-            return rv;
+        if (d) {
+            stc->d = calloc(1, ACVP_KTS_IFC_BYTE_MAX);
+            if (!stc->d) { return ACVP_MALLOC_FAIL; }
+            rv = acvp_hexstr_to_bin(d, stc->d, ACVP_KTS_IFC_BYTE_MAX, &(stc->dlen));
+            if (rv != ACVP_SUCCESS) {
+                ACVP_LOG_ERR("Hex conversion failure (d)");
+                return rv;
+            }
         }
 
         if (key_gen == ACVP_KTS_IFC_RSAKPG1_CRT || key_gen == ACVP_KTS_IFC_RSAKPG2_CRT) {
