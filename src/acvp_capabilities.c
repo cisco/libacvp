@@ -698,11 +698,13 @@ static ACVP_RESULT acvp_validate_kdf135_x942_domain_value(ACVP_KDF135_X942_PARM 
         if (min >= 1 && max <= 4096 && inc % 8 == 0) {
             return ACVP_SUCCESS;
         }
+        break;
     case ACVP_KDF_X942_OTHER_INFO_LEN:
     case ACVP_KDF_X942_SUPP_INFO_LEN:
         if (min >= 0 && max <= 4096 && inc % 8 == 0) {
             return ACVP_SUCCESS;
         }
+        break;
     case ACVP_KDF_X942_KDF_TYPE:
     case ACVP_KDF_X942_OID:
     case ACVP_KDF_X942_HASH_ALG:
