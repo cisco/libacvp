@@ -374,8 +374,8 @@ Andrew Karcher (Cisco Systems)
 | **SHAKE-128** |  Y  |  Y  |  Y  |
 | **SHAKE-256** |  Y  |  Y  |  Y  |
 | **XOFs** | | |
-| **cSHAKE-128** |  N  |  N  |  Y  |
-| **cSHAKE-256** |  N  |  N  |  Y  |
+| **cSHAKE-128** |  N  |  N  |  N  |
+| **cSHAKE-256** |  N  |  N  |  N  |
 | **KMAC-128** |  Y  |  N  |  Y  |
 | **KMAC-256** |  Y  |  N  |  Y  |
 | **ParallelHash-128** |  N  |  N  |  N  |
