@@ -4655,6 +4655,7 @@ ACVP_RESULT acvp_build_test_session(ACVP_CTX *ctx, char **reg, int *out_len) {
             case ACVP_ECDSA_KEYGEN:
             case ACVP_ECDSA_KEYVER:
                 rv = acvp_build_ecdsa_register_cap(ctx, cap_entry->cipher, cap_obj, cap_entry);
+                break;
             case ACVP_ECDSA_SIGGEN:
                 /* If component_test = BOTH, we need two registrations */
                 if (cap_entry->cap.ecdsa_siggen_cap->component == ACVP_ECDSA_COMPONENT_MODE_BOTH) {

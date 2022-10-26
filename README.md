@@ -43,18 +43,16 @@ provides the glue between the crypto module DUT and the library itself.
 Depending upon the DUT, the crypto backend API, and other factors, the user
 may need to enhance the reference application, or create a new one from scratch.
 
-The application within `app/` is only provided here for unit testing and demonstrating how to use libacvp. 
-The application layer (app_main.c) is required to interface with the crypto module that will
-be tested. In this example it uses OpenSSL, which introduces libcrypto.so as
-the DUT.
+The application within `app/` demonstrates how to use libacvp to interface with a crypto module on
+top of providing a broad testing harness for OpenSSL.
 
-The library also provides an example on how a standalone module could be
-tested. In this case it uses the OpenSSL FOM canister. The FOM canister
-has a few algorithms that can only be tested when not running in a final
-product. These algorithms can be tested under this configuration.
-The FOM build also requires the path to the canister header files and object which
-is defined in the `./configure` CLI to enable non-runtime shown below which
-automatically adds the compile time flag -DACVP_NO_RUNTIME.
+This application includes support for FIPS testing OpenSSL 3.X. Historically, support was included
+for FIPS testing OpenSSL's FIPS module for 1.0.2; this is end of life and support has been removed. Some
+artifacts have been left behind in case users have need to test a similar FOM structure for OpenSSL
+1.1.1 (OpenSSL does not support this themselves). For OpenSSL 3.X, testing the FIPS provider
+or the default provider is managed at runtime. If you are testing a different provider, you will need
+to modify the application code to fetch those algorithms accordingly. For previous versions, a build
+time argument providing a path to the FIPS module being tested was required.
 
 The `certs/` directory contains the certificates used to establish a TLS
 session with well-known ACVP servers. If the ACVP server uses a self-signed certificate,
@@ -78,6 +76,8 @@ production environment.
 * make
 * curl (or substitution)
 * openssl (or substitution)
+* libcriterion (for unit tests only)
+* doxygen (for building documentation only)
 
 Curl is used for sending REST calls to the ACVP server.
 
@@ -91,14 +91,14 @@ be installed separately on your build/target host,
 including the header files.
 
 ##### Dealing with system-default dependencies
-This codebase uses features in OpenSSL >= 1.0.2.
+This codebase uses features in OpenSSL >= 1.1.1.
 If the system-default install does not meet this requirement,
-you will need to download, compile and install at least OpenSSL 1.0.2 on your system.
+you will need to download, compile and install at least OpenSSL 1.1.1 on your system.
 The new OpenSSL resources should typically be installed into /usr/local/ssl to avoid
 overwriting the default OpenSSL that comes with your distro.
 
-It is highly recommended to use versions of OpenSSL 1.1.1 or greater when possible, 
-as all previous versions have reached end of life status. 
+Version 1.1.1 of OpenSSL reaches end of life officially on September 11, 2023. Updating to OpenSSL
+3.X is highly recommended when possible. All previous versions have reached end of life status.
 
 A potential source of issues is the default libcurl on the Linux distro, which may be linked against
 the previously mentioned default OpenSSL. This could result in linker failures when trying to use
@@ -109,7 +109,7 @@ libacvp uses compile time macro logic to address differences in the APIs of diff
 versions; therefore, it is important that you ensure libacvp is linking to the correct openSSL versions
 at run time as well.
 
-Libacvp is designed to work with curl version 7.61.0 or newer. Some operating systems may ship with
+Libacvp is designed to work with curl version 7.80.0 or newer. Some operating systems may ship with
 older versions of Curl which are missing certain features that libacvp depends on. In this case you
 should either acquire a newer version through your OS package manager if possible or build a newer
 version from source. While it is possible some older versions may work, they are not tested or
@@ -117,22 +117,20 @@ supported.
 
 ## Building
 
+The instructions below indicate how to build libacvp for OpenSSL 3.X testing. The process is the same
+for building 1.1.1 without FIPS. If you have a FIPS module for 1.1.1, we are unable to officially
+support it as OpenSSL does not have a FIPS for 1.1.1 and there is no standard format to follow.
+However, some support for building with a FOM (such as that included with 1.0.2) remains; for more
+details, see the README included with versions prior to 2.0. It will be up to the user to maintain an
+application capable of testing your implementation.
+
 `--prefix<path to install dir>` can be used with any configure options to specify where you would
 like the library and application to install to. 
 
-#### To build for runtime testing
+#### To build app and library for supported algorithm testing
 
 ```
 ./configure --with-ssl-dir=<path to ssl dir> --with-libcurl-dir=<path to curl dir>
-make clean
-make
-make install
-```
-
-#### To build for non-runtime testing
-
-```
-./configure --with-ssl-dir=<path to ssl dir> --with-fom_dir=<path to where FOM is installed> --with-libcurl-dir=<path to curl dir>
 make clean
 make
 make install
@@ -157,9 +155,11 @@ Otherwise, it will look in the default build directory in the root folder for li
 More info about all available configure options can be found by using ./configure --help. Some important
 ones include:
 --enable-offline : Will link to all dependencies statically and remove the libcurl dependency. See "How
- to test offline" for more details.
+ to test offline" for more details. NOTE: Support for statically linking OpenSSL 3.X is not supported
+ at this time. OpenSSL does not support static linking of the FIPS provider. Support for statically
+ linking other dependencies will be added.
 --disable-kdf : Will disable kdf registration and processing in the application, in cases where the given
- crypto implementation does not support it (E.g. OpenSSL FOM 2.X.X)
+ crypto implementation does not support it (E.g. all OpenSSL prior to 3.0)
 --disable-lib-check : This will disable autoconf's attempts to automatically detect prerequisite libraries
  before building libacvp. This may be useful in some edge cases where the libraries exist but autoconf
  cannot detect them; however, it will give more cryptic error messages in the make stage if there are issues
@@ -253,6 +253,7 @@ you want to save your results to.
 `./app/acvp_app --all_algs --vector_upload <filename2>`
  - where `<filename2>` is the file containing the results of the tests.
 
+*Note:* The below does not yet apply to OpenSSL 3.X
 *Note:* If the target in Step 2 does not have the standard libraries used by
 libacvp you may configure and build a special app used only for Step 2. This
 can be done by using --enable-offline and --enable-static when running 
@@ -261,12 +262,6 @@ will  minimize the library dependencies. Note that openssl with FOM must also
 be built as static. For this case, OpenSSL MUST be built with the "no-dso" option,
 OR the configure option `--enable-offline-ldl-check` must be used to resolve the libdl
 dependency. Some specific versions of SSL may not be able to remove the libdl dependency.
-
-For example:
-```
-export FIPSLD_CC=gcc     (or whatever compiler is being used)
-./configure --with-ssl-dir=<ciscossl install> --with-fom-dir=<fom install> --prefix=<libacvp install> --enable-static --enable-offline
-```
 
 ## Testing
 Move to the test/ directory and see the README.md there. The tests depend upon
@@ -330,149 +325,153 @@ try to submit via wherever you originally got the vector set from.
 
 ## Credits
 This package was initially written by John Foley of Cisco Systems.
+Contributers include (non-exhaustive):
+Barry Fussell (Cisco Systems)
+Andrew Karcher (Cisco Systems)
 
 ## Supported Algorithms
 
-|   Algorithm Type   |    Library Support    |   Client App Support    |
-| :---------------:  | :-------------------: | :---------------------: |
-| **Block Cipher Modes** |                   |                         |
-| **AES-CBC** |   Y  |  Y |
-| **AES-CFB1** |  Y  |  Y  |
-| **AES-CFB8** |  Y  |  Y  |
-| **AES-CFB128** |  Y  |  Y  |
-| **AES-CTR** |  Y  |  Y  |
-| **AES-ECB** |  Y  |  Y  |
-| **AES-GCM** |  Y  |  Y  |
-| **AES-GCM-SIV** |  Y  |  Y  |
-| **AES-KW** |  Y  |  Y  |
-| **AES-KWP** |  Y  |  Y  |
-| **AES-OFB** |  Y  |  Y  |
-| **AES-XPN** |  N  |  N  |
-| **AES-XTS** |  Y  |  Y  |
-| **AES-FF1** |  N  |  N  |
-| **AES-FF3-1** |  N  |  N  |
-| **TDES-CBC** |  Y  |  Y  |
-| **TDES-CBCI** |  N  |  N  |
-| **TDES-CFBP1** |  N  |  N  |
-| **TDES-CFBP8** |  N  |  N  |
-| **TDES-CFBP64** |  N  |  N  |
-| **TDES-CTR** |  Y  |  Y  |
-| **TDES-ECB** |  Y  |  Y  |
-| **TDES-KW** |  Y  |  N  |
-| **TDES-OFB** |  Y  |  Y  |
-| **TDES-OFBI** |  N  |  N  |
+|   Algorithm Type   |    Library Support    |    App Support (Open SSL 1.1.1)    |    App Support (OpenSSL 3.X)    |
+| :---------------:  | :-------------------: | :--------------------------------: | :-----------------------------: |
+| **Block Cipher Modes** |                   |                                    |
+| **AES-CBC** |  Y  |  Y  |  Y  |
+| **AES-CFB1** |  Y  |  Y  |  Y  |
+| **AES-CFB8** |  Y  |  Y  |  Y  |
+| **AES-CFB128** |  Y  |  Y  |  Y  |
+| **AES-CTR** |  Y  |  Y  |  Y  |
+| **AES-ECB** |  Y  |  Y  |  Y  |
+| **AES-GCM** |  Y  |  Y  |  Y  |
+| **AES-GCM-SIV** |  Y  |  Y  |  Y  |
+| **AES-KW** |  Y  |  Y  |  Y  |
+| **AES-KWP** |  Y  |  Y  |  Y  |
+| **AES-OFB** |  Y  |  Y  |  Y  |
+| **AES-XPN** |  N  |  N  |  Y  |
+| **AES-XTS** |  Y  |  Y  |  Y  |
+| **AES-FF1** |  N  |  N  |  N  |
+| **AES-FF3-1** |  N  |  N  |  N  |
+| **TDES-CBC** |  Y  |  Y  |  Y  |
+| **TDES-CBCI** |  N  |  N  |  N  |
+| **TDES-CFBP1** |  N  |  N  |  N  |
+| **TDES-CFBP8** |  N  |  N  |  N  |
+| **TDES-CFBP64** |  N  |  N  |  N  |
+| **TDES-CTR** |  Y  |  Y  |  N  |
+| **TDES-ECB** |  Y  |  Y  |  Y  |
+| **TDES-KW** |  Y  |  N  |  N  |
+| **TDES-OFB** |  Y  |  Y  |  N  |
+| **TDES-OFBI** |  N  |  N  |  N  |
 | **Secure Hash** | | |
-| **SHA-1** |  Y  |  Y  |
-| **SHA-224** |  Y  |  Y  |
-| **SHA-256** |  Y  |  Y  |
-| **SHA-384** |  Y  |  Y  |
-| **SHA-512** |  Y  |  Y  |
-| **SHA-512/224** |  Y  |  Y  |
-| **SHA-512/256** |  Y  |  Y  |
-| **SHA3-224** |  Y  |  Y  |
-| **SHA3-256** |  Y  |  Y  |
-| **SHA3-384** |  Y  |  Y  |
-| **SHA3-512** |  Y  |  Y  |
-| **SHAKE-128** |  Y  |  Y  |
-| **SHAKE-256** |  Y  |  Y  |
+| **SHA-1** |  Y  |  Y  |  Y  |
+| **SHA-224** |  Y  |  Y  |  Y  |
+| **SHA-256** |  Y  |  Y  |  Y  |
+| **SHA-384** |  Y  |  Y  |  Y  |
+| **SHA-512** |  Y  |  Y  |  Y  |
+| **SHA-512/224** |  Y  |  Y  |  Y  |
+| **SHA-512/256** |  Y  |  Y  |  Y  |
+| **SHA3-224** |  Y  |  Y  |  Y  |
+| **SHA3-256** |  Y  |  Y  |  Y  |
+| **SHA3-384** |  Y  |  Y  |  Y  |
+| **SHA3-512** |  Y  |  Y  |  Y  |
+| **SHAKE-128** |  Y  |  Y  |  Y  |
+| **SHAKE-256** |  Y  |  Y  |  Y  |
 | **XOFs** | | |
-| **cSHAKE-128** |  N  |  N  |
-| **cSHAKE-256** |  N  |  N  |
-| **KMAC-128** |  N  |  N  |
-| **KMAC-256** |  N  |  N  |
-| **ParallelHash-128** |  N  |  N  |
-| **ParallelHash-256** |  N  |  N  |
-| **TupleHash-128** |  N  |  N  |
-| **TupleHash-256** |  N  |  N  |
+| **cSHAKE-128** |  N  |  N  |  N  |
+| **cSHAKE-256** |  N  |  N  |  N  |
+| **KMAC-128** |  Y  |  N  |  Y  |
+| **KMAC-256** |  Y  |  N  |  Y  |
+| **ParallelHash-128** |  N  |  N  |  N  |
+| **ParallelHash-256** |  N  |  N  |  N  |
+| **TupleHash-128** |  N  |  N  |  N  |
+| **TupleHash-256** |  N  |  N  |  N  |
 | **Message Authentication** | | |
-| **AES-GMAC** |  Y  |  Y  |
-| **AES-CCM** |  Y  |  Y  |
-| **CMAC-AES** |  Y  |  Y  |
-| **CMAC-TDES** |  Y  |  Y  |
-| **HMAC-SHA-1** |  Y  |  Y  |
-| **HMAC-SHA2-224** |  Y  |  Y  |
-| **HMAC-SHA2-256** |  Y  |  Y  |
-| **HMAC-SHA2-384** |  Y  |  Y  |
-| **HMAC-SHA2-512** |  Y  |  Y  |
-| **HMAC-SHA2-512/224** |  Y  |  Y  |
-| **HMAC-SHA2-512/256** |  Y  |  Y  |
-| **HMAC-SHA3-224** |  Y  |  Y  |
-| **HMAC-SHA3-256** |  Y  |  Y  |
-| **HMAC-SHA3-384** |  Y  |  Y  |
-| **HMAC-SHA3-512** |  Y  |  Y  |
+| **AES-GMAC** |  Y  |  Y  |  Y  |
+| **AES-CCM** |  Y  |  Y  |  Y  |
+| **CMAC-AES** |  Y  |  Y  |  Y  |
+| **CMAC-TDES** |  Y  |  Y  |  N  |
+| **HMAC-SHA-1** |  Y  |  Y  |  Y  |
+| **HMAC-SHA2-224** |  Y  |  Y  |  Y  |
+| **HMAC-SHA2-256** |  Y  |  Y  |  Y  |
+| **HMAC-SHA2-384** |  Y  |  Y  |  Y  |
+| **HMAC-SHA2-512** |  Y  |  Y  |  Y  |
+| **HMAC-SHA2-512/224** |  Y  |  Y  |  Y  |
+| **HMAC-SHA2-512/256** |  Y  |  Y  |  Y  |
+| **HMAC-SHA3-224** |  Y  |  Y  |  Y  |
+| **HMAC-SHA3-256** |  Y  |  Y  |  Y  |
+| **HMAC-SHA3-384** |  Y  |  Y  |  Y  |
+| **HMAC-SHA3-512** |  Y  |  Y  |  Y  |
 | **DRBG** | | |
-| **ctrDRBG-AES-128** |  Y  |  Y  |
-| **ctrDRBG-AES-192** |  Y  |  Y  |
-| **ctrDRBG-AES-256** |  Y  |  Y  |
-| **ctrDRBG-TDES** |  N  |  N  |
-| **HASH DRBG** |  Y  |  Y  |
-| **HMAC DRBG** |  Y  |  Y  |
+| **ctrDRBG-AES-128** |  Y  |  N  |  Y  |
+| **ctrDRBG-AES-192** |  Y  |  N  |  Y  |
+| **ctrDRBG-AES-256** |  Y  |  N  |  Y  |
+| **ctrDRBG-TDES** |  N  |  N  |  N  |
+| **HASH DRBG** |  Y  |  N  |  Y  |
+| **HMAC DRBG** |  Y  |  N  |  Y  |
 | **Digital Signature** | | |
-| **RSA mode: keyGen** |  Y  |  N  |
-| **RSA mode: sigGen** |  Y  |  Y  |
-| **RSA mode: sigVer** |  Y  |  Y  |
-| **RSA mode: signatureComponent** |  Y  |  Y  |
-| **RSA mode: decryptionComponent** |  Y  |  Y  |
-| **RSA mode: legacySigVer** |  N  |  N  |
-| **ECDSA mode: sigGenComponent** |  N  |  N  |
-| **ECDSA mode: keyGen** |  Y  |  Y  |
-| **ECDSA mode: keyVer** |  Y  |  Y  |
-| **ECDSA mode: sigGen** |  Y  |  Y  |
-| **ECDSA mode: sigVer** |  Y  |  Y  |
-| **DSA mode: keyGen** |  Y  |  Y  |
-| **DSA mode: sigVer** |  Y  |  Y  |
-| **DSA mode: sigGen** |  Y  |  Y  |
-| **DSA mode: pqgGen** |  Y  |  Y  |
-| **DSA mode: pqgVer** |  Y  |  Y  |
-| **EDDSA mode: keyGen** |  N  |  N  |
-| **EDDSA mode: keyVer** |  N  |  N  |
-| **EDDSA mode: sigGen** |  N  |  N  |
-| **EDDSA mode: sigVer** |  N  |  N  |
+| **RSA mode: keyGen** |  Y  |  N  |  Y  |
+| **RSA mode: sigGen** |  Y  |  N  |  Y  |
+| **RSA mode: sigVer** |  Y  |  N  |  Y  |
+| **RSA mode: signatureComponent** |  Y  |  N  |  Y  |
+| **RSA mode: decryptionComponent** |  Y  |  N  |  N  |
+| **RSA mode: legacySigVer** |  N  |  N  |  N  |
+| **ECDSA mode: sigGenComponent** |  Y  |  N  |  Y  |
+| **ECDSA mode: keyGen** |  Y  |  N  |  Y  |
+| **ECDSA mode: keyVer** |  Y  |  N  |  Y  |
+| **ECDSA mode: sigGen** |  Y  |  N  |  Y  |
+| **ECDSA mode: sigVer** |  Y  |  N  |  Y  |
+| **DSA mode: keyGen** |  Y  |  N  |  Y  |
+| **DSA mode: sigVer** |  Y  |  N  |  Y  |
+| **DSA mode: sigGen** |  Y  |  N  |  Y  |
+| **DSA mode: pqgGen** |  Y  |  N  |  Y  |
+| **DSA mode: pqgVer** |  Y  |  N  |  Y  |
+| **EDDSA mode: keyGen** |  N  |  N  |  N  |
+| **EDDSA mode: keyVer** |  N  |  N  |  N  |
+| **EDDSA mode: sigGen** |  N  |  N  |  N  |
+| **EDDSA mode: sigVer** |  N  |  N  |  N  |
 | **Key Agreement** | | |
-| **KAS ECC ephemeralUnified** |  Y  |  Y  |
-| **KAS ECC SSC ephemeralUnified** |  Y  |  Y  |
-| **KAS ECC fullMqv** |  N  |  N  |
-| **KAS ECC fullUnified** |  N  |  N  |
-| **KAS ECC onePassDh** |  N  |  N  |
-| **KAS ECC onePassMqv** |  N  |  N  |
-| **KAS ECC OnePassUnified** |  N  |  N  |
-| **KAS ECC staticUnified** |  N  |  N  |
-| **KAS ECC CDH-Component** |  Y  |  Y  |
-| **KAS FFC dhHybrid1** |  N  |  N  |
-| **KAS FFC mqv2** |  N  |  N  |
-| **KAS FFC dhEphem** |  Y  |  Y  |
-| **KAS FFC SSC dhEphem** |  Y  |  Y  |
-| **KAS FFC dhHybridOneFlow** |  N  |  N  |
-| **KAS FFC mqv1** |  N  |  N  |
-| **KAS FFC dhOneFlow** |  N  |  N  |
-| **KAS FFC dhStatic** |  N  |  N  |
-| **KAS IFC SSC KAS1** |  Y  |  Y  |
-| **KAS IFC SSC KAS2** |  Y  |  N  |
-| **KAS IFC KAS1-basic** |  N  |  N  |
-| **KAS IFC KAS1-Party_V-confirmation** |  N  |  N  |
-| **KAS IFC KAS2-basic** |  N  |  N  |
-| **KAS IFC KAS2-bilateral-confirmation** |  N  |  N  |
-| **KAS IFC KAS2-Party_U-confirmation** |  N  |  N  |
-| **KAS IFC KAS2-Party_V-confirmation** |  N  |  N  |
-| **KTS IFC KTS-OAEP-basic** |  Y  |  Y  |
-| **KTS IFC KTS-OAEP-Party_V-confirmation** |  N  |  N  |
-| **KDA HKDF** |  Y  |  Y  |
-| **KDA ONESTEP** |  Y  |  Y  |
+| **KAS ECC ephemeralUnified** |  Y  |  N  |  N  |
+| **KAS ECC SSC ephemeralUnified** |  Y  |  N  |  Y  |
+| **KAS ECC fullMqv** |  N  |  N  |  N  |
+| **KAS ECC fullUnified** |  N  |  N  |  N  |
+| **KAS ECC onePassDh** |  N  |  N  |  N  |
+| **KAS ECC onePassMqv** |  N  |  N  |  N  |
+| **KAS ECC OnePassUnified** |  N  |  N  |  N  |
+| **KAS ECC staticUnified** |  N  |  N  |  N  |
+| **KAS ECC CDH-Component** |  Y  |  N  |  Y  |
+| **KAS FFC dhHybrid1** |  N  |  N  |  N  |
+| **KAS FFC mqv2** |  N  |  N  |  N  |
+| **KAS FFC dhEphem** |  Y  |  N  |  N  |
+| **KAS FFC SSC dhEphem** |  Y  |  N  |  Y  |
+| **KAS FFC dhHybridOneFlow** |  N  |  N  |  N  |
+| **KAS FFC mqv1** |  N  |  N  |  N  |
+| **KAS FFC dhOneFlow** |  N  |  N  |  N  |
+| **KAS FFC dhStatic** |  N  |  N  |  N  |
+| **KAS IFC SSC KAS1** |  Y  |  N  |  Y  |
+| **KAS IFC SSC KAS2** |  Y  |  N  |  Y  |
+| **KAS IFC KAS1-basic** |  N  |  N  |  N  |
+| **KAS IFC KAS1-Party_V-confirmation** |  N  |  N  |  N  |
+| **KAS IFC KAS2-basic** |  N  |  N  |  N  |
+| **KAS IFC KAS2-bilateral-confirmation** |  N  |  N  |  N  |
+| **KAS IFC KAS2-Party_U-confirmation** |  N  |  N  |  N  |
+| **KAS IFC KAS2-Party_V-confirmation** |  N  |  N  |  N  |
+| **KTS IFC KTS-OAEP-basic** |  Y  |  N  |  Y  |
+| **KTS IFC KTS-OAEP-Party_V-confirmation** |  N  |  N  |  N  |
+| **KDA HKDF** |  Y  |  N  |  Y  |
+| **KDA ONESTEP** |  Y  |  N  |  Y  |
 | **KDFs** | | |
-| **Counter KDF** |  Y  |  N  |
-| **Feedback KDF** |  N  |  N  |
-| **Double Pipeline Iterator KDF** |  N  |  N  |
-| **IKEv1** |  Y  |  N  |
-| **IKEv2** |  Y  |  N  |
-| **SNMP** |  Y  |  N  |
-| **SRTP** |  Y  |  N  |
-| **SSH** |  Y  |  N  |
-| **TLS** |  Y  |  N  |
-| **TPM** |  N  |  N  |
-| **ANSX9.63** |  Y  |  N  |
-| **ANSX9.42** |  N  |  N  |
-| **PBKDF** |  Y  |  N  |
+| **Counter KDF** |  Y  |  N  |  Y  |
+| **Feedback KDF** |  N  |  N  |  Y  |
+| **Double Pipeline Iterator KDF** |  N  |  N  |  N  |
+| **IKEv1** |  Y  |  N  |  N  |
+| **IKEv2** |  Y  |  N  |  N  |
+| **SNMP** |  Y  |  N  |  N  |
+| **SRTP** |  Y  |  N  |  N  |
+| **SSH** |  Y  |  N  |  Y  |
+| **TLS 1.2** |  Y  |  N  |  Y  |
+| **TLS 1.3** |  Y  |  N  |  Y  |
+| **TPM** |  N  |  N  |  N  |
+| **ANSX9.63** |  Y  |  N  |  Y  |
+| **ANSX9.42** |  Y  |  N  |  Y  |
+| **PBKDF** |  Y  |  N  |  Y  |
 | **Safe Primes** | | |
-| **SafePrimes KeyGen** |  Y  |  Y  |
-| **SafePrimes KeyVer** |  Y  |  Y  |
+| **SafePrimes KeyGen** |  Y  |  N  |  Y  |
+| **SafePrimes KeyVer** |  Y  |  N  |  Y  |
 
