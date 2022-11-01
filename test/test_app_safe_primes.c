@@ -9,7 +9,7 @@
  */
 
 
-#ifdef OPENSSL_VERSION_NUMBER >= 0x30000000L && !defined OPENSSL_NO_DSA
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L && !defined OPENSSL_NO_DSA
 #include "ut_common.h"
 #include "app_common.h"
 #include "acvp/acvp_lcl.h"

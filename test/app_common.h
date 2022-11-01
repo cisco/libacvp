@@ -9,7 +9,6 @@
  */
 
 #include "app_lcl.h"
-#include "app_fips_lcl.h"
 
 ACVP_RESULT totp(char **token, int token_max);
 void dummy_call(void);
