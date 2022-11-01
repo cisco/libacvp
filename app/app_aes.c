@@ -16,9 +16,7 @@
 #include <openssl/core_names.h>
 #include <openssl/param_build.h>
 #endif
-#ifdef ACVP_NO_RUNTIME
-# include "app_fips_lcl.h"
-#endif
+
 
 static EVP_CIPHER_CTX *glb_cipher_ctx = NULL; /* need to maintain across calls for MCT */
 

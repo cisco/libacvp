@@ -139,13 +139,6 @@ AC_ARG_ENABLE([cflags],
 [cflags="$enableval"],
 [enable_cflags=false])
 
-# Option to disable KDF functionality (useful for FOM without KDF support)
-AC_ARG_ENABLE([kdf],
-[AS_HELP_STRING([--disable-kdf],
-[For use if using a FOM with no KDF support, such as OpenSSL 1.0.2 FOM])],
-[no-kdf="$enableval"],
-[disable_kdf=false])
-
 # Gcoverage
 AC_ARG_ENABLE([gcov],
 [AS_HELP_STRING([--enable-gcov],
@@ -304,11 +297,6 @@ if test "x$with_fomdir" != "xno" ; then
     AC_SUBST([FOM_OBJ_DIR], "$fomdir/lib")
 fi
 AM_CONDITIONAL([USE_FOM_OBJ], [test "x$with_fomdir" != "xno"])
-
-#Conditionally included algorithms should be added to cond_alg_cflags here
-if test "x$disable_kdf" != "xfalse" || test "x$use_ssl_3" = "xtrue"; then
-    cond_alg_cflags="$cond_alg_cflags -DOPENSSL_KDF_SUPPORT"
-fi
 
 #offline builds are linked statically for versions < 3.0.0. 3.0.0 does not support FIPS static linking.
 #3.0.0 offline build just means Curl is not needed.

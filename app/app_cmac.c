@@ -17,13 +17,11 @@
 #include <openssl/param_build.h>
 #include <openssl/core_names.h>
 #endif
-#ifdef ACVP_NO_RUNTIME
-# include "app_fips_lcl.h"
-#endif
+
 
 int app_cmac_handler(ACVP_TEST_CASE *test_case) {
     ACVP_CMAC_TC *tc;
-#if OPENSSL_VERSION_NUMBER >= 0x30000000L && !defined ACVP_DEPRECATED_MAC
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
     EVP_MAC *mac = NULL;
     EVP_MAC_CTX *cmac_ctx = NULL;
     OSSL_PARAM_BLD *pbld = NULL;
@@ -54,7 +52,7 @@ int app_cmac_handler(ACVP_TEST_CASE *test_case) {
         return 1;
     }
 
-#if OPENSSL_VERSION_NUMBER >= 0x30000000L && !defined ACVP_DEPRECATED_MAC
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
  switch (alg) {
     case ACVP_SUB_CMAC_AES:
         switch (tc->key_len * 8) {
@@ -151,7 +149,7 @@ int app_cmac_handler(ACVP_TEST_CASE *test_case) {
         tc->mac_len = (int)mac_cmp_len;
     }
 
-#else //OPENSSL_VERSION_NUMBER < 3 and not ACVP_DEPRECATED_MAC
+#else //OPENSSL_VERSION_NUMBER < 3
 
     switch (alg) {
     case ACVP_SUB_CMAC_AES:
@@ -231,7 +229,7 @@ int app_cmac_handler(ACVP_TEST_CASE *test_case) {
     rv = 0;
 
 end:
-#if OPENSSL_VERSION_NUMBER >= 0x30000000L && !defined ACVP_DEPRECATED_MAC
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
     if (cmac_ctx) EVP_MAC_CTX_free(cmac_ctx);
     if (mac) EVP_MAC_free(mac);
     if (pbld) OSSL_PARAM_BLD_free(pbld);

@@ -11,15 +11,10 @@
 
 #include <stdlib.h>
 #include <openssl/rand.h>
-#if OPENSSL_VERSION_NUMBER >= 0x30000000L
-#include <openssl/core_names.h>
-#elif defined ACVP_NO_RUNTIME
-#include "app_fips_lcl.h" /* All regular OpenSSL headers must come before here */
-#endif
 #include "app_lcl.h"
 #include "safe_mem_lib.h"
-
 #if OPENSSL_VERSION_NUMBER >= 0x30000000L
+#include <openssl/core_names.h>
 
 int app_drbg_handler(ACVP_TEST_CASE *test_case) {
     int rv = 1, der_func = 0;
@@ -189,7 +184,9 @@ err:
     if (tmp) free(tmp);
     return rv;
 }
+
 #else
+
 int app_drbg_handler(ACVP_TEST_CASE *test_case) {
     if (!test_case) {
         return -1;

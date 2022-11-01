@@ -7,19 +7,16 @@
  * https://github.com/cisco/libacvp/LICENSE
  */
 
+#include "app_lcl.h"
 
-#ifdef OPENSSL_KDF_SUPPORT
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
 #include <openssl/evp.h>
 #include <openssl/bn.h>
-#if OPENSSL_VERSION_NUMBER >= 0x30000000L
 #include <openssl/core_names.h>
 #include <openssl/rand.h>
 #include <openssl/param_build.h>
 #include <openssl/kdf.h>
 #include "safe_lib.h"
-#endif
-#include "app_lcl.h"
-#include "app_fips_lcl.h"
 
 #define TLS_EXT_MASTER_SECRET_CONST      "extended master secret"
 #define TLS_EXT_MASTER_SECRET_CONST_SIZE 22
@@ -74,7 +71,6 @@ int app_kdf135_ikev1_handler(ACVP_TEST_CASE *test_case) {
 }
 
 int app_kdf135_x942_handler(ACVP_TEST_CASE *test_case) {
-#if OPENSSL_VERSION_NUMBER >= 0x30000000L
     ACVP_KDF135_X942_TC *stc = NULL;
     int rc = 1, info_len = 0, iter = 0;
     OSSL_PARAM_BLD *pbld = NULL;
@@ -184,17 +180,9 @@ end:
     if (kdf) EVP_KDF_free(kdf);
     if (kctx) EVP_KDF_CTX_free(kctx);
     return rc;
-#else
-
-    if (!test_case) {
-        return -1;
-    }
-    return 1;
-#endif
 }
 
 int app_kdf135_x963_handler(ACVP_TEST_CASE *test_case) {
-#if OPENSSL_VERSION_NUMBER >= 0x30000000L
     ACVP_KDF135_X963_TC *stc = NULL;
     int rc = 1;
     char *aname = NULL;
@@ -260,16 +248,9 @@ end:
     if (kdf) EVP_KDF_free(kdf);
     if (kctx) EVP_KDF_CTX_free(kctx);
     return rc;
-#else
-    if (!test_case) {
-        return -1;
-    }
-    return 1;
-#endif
 }
 
 int app_kdf108_handler(ACVP_TEST_CASE *test_case) {
-#if OPENSSL_VERSION_NUMBER >= 0x30000000L
     ACVP_KDF108_TC *stc = NULL;
     int rc = 1, isHmac = 1, fixed_len = 64;
     char *aname = NULL;
@@ -425,12 +406,6 @@ end:
     if (kdf) EVP_KDF_free(kdf);
     if (kctx) EVP_KDF_CTX_free(kctx);
     return rc;
-#else
-    if (!test_case) {
-        return -1;
-    }
-    return 1;
-#endif
 }
 
 int app_kdf135_snmp_handler(ACVP_TEST_CASE *test_case) {
@@ -441,7 +416,6 @@ int app_kdf135_snmp_handler(ACVP_TEST_CASE *test_case) {
 }
 
 int app_kdf135_ssh_handler(ACVP_TEST_CASE *test_case) {
-#if OPENSSL_VERSION_NUMBER >= 0x30000000L
     ACVP_KDF135_SSH_TC *stc = NULL;
     int rc = 1;
     char *aname = NULL;
@@ -529,16 +503,9 @@ end:
     if (kdf) EVP_KDF_free(kdf);
     if (kctx) EVP_KDF_CTX_free(kctx);
     return rc;
-#else
-    if (!test_case) {
-        return -1;
-    }
-    return 1;
-#endif
 }
 
 int app_pbkdf_handler(ACVP_TEST_CASE *test_case) {
-#if OPENSSL_VERSION_NUMBER >= 0x30000000L
     ACVP_PBKDF_TC *stc = NULL;
     int rc = 1;
     char *aname = NULL;
@@ -605,16 +572,9 @@ end:
     if (kdf) EVP_KDF_free(kdf);
     if (kctx) EVP_KDF_CTX_free(kctx);
     return rc;
-#else
-    if (!test_case) {
-        return -1;
-    }
-    return 1;
-#endif
 }
 
 int app_kdf_tls12_handler(ACVP_TEST_CASE *test_case) {
-#if OPENSSL_VERSION_NUMBER >= 0x30000000L
     ACVP_KDF_TLS12_TC *tc;
     unsigned char *seed = NULL;
     int rc = 1, ret = 0, seed_len = 0;
@@ -725,16 +685,9 @@ end:
     if (kdf) EVP_KDF_free(kdf);
     if (seed) free(seed);
     return rc;
-#else
-    if (!test_case) {
-        return -1;
-    }
-    return 1;
-#endif
 }
 
 int app_kdf_tls13_handler(ACVP_TEST_CASE *test_case) {
-#if OPENSSL_VERSION_NUMBER >= 0x30000000L
     ACVP_KDF_TLS13_TC *tc = NULL;
     char *md = NULL;
     const EVP_MD    *md_obj;
@@ -1044,12 +997,95 @@ err:
     if (kdf) EVP_KDF_free(kdf);
     if (kctx) EVP_KDF_CTX_free(kctx);
     return rv;
+}
+
 #else
+
+int app_kdf135_snmp_handler(ACVP_TEST_CASE *test_case) {
     if (!test_case) {
         return -1;
     }
+    printf("No application support\n");
     return 1;
-#endif
 }
 
-#endif // OPENSSL_KDF_SUPPORT
+int app_kdf135_ssh_handler(ACVP_TEST_CASE *test_case) {
+    if (!test_case) {
+        return -1;
+    }
+    printf("No application support\n");
+    return 1;
+}
+
+int app_kdf135_srtp_handler(ACVP_TEST_CASE *test_case) {
+    if (!test_case) {
+        return -1;
+    }
+    printf("No application support\n");
+    return 1;
+}
+
+int app_kdf135_ikev2_handler(ACVP_TEST_CASE *test_case) {
+    if (!test_case) {
+        return -1;
+    }
+    printf("No application support\n");
+    return 1;
+}
+int app_kdf108_handler(ACVP_TEST_CASE *test_case) {
+    if (!test_case) {
+        return -1;
+    }
+    printf("No application support\n");
+    return 1;
+}
+
+int app_kdf135_ikev1_handler(ACVP_TEST_CASE *test_case) {
+    if (!test_case) {
+        return -1;
+    }
+    printf("No application support\n");
+    return 1;
+}
+
+int app_kdf135_x942_handler(ACVP_TEST_CASE *test_case) {
+    if (!test_case) {
+        return -1;
+    }
+    printf("No application support\n");
+    return 1;
+}
+
+int app_kdf135_x963_handler(ACVP_TEST_CASE *test_case) {
+    if (!test_case) {
+        return -1;
+    }
+    printf("No application support\n");
+    return 1;
+}
+
+int app_pbkdf_handler(ACVP_TEST_CASE *test_case) {
+    if (!test_case) {
+        return -1;
+    }
+    printf("No application support\n");
+    return 1;
+}
+
+int app_kdf_tls12_handler(ACVP_TEST_CASE *test_case) {
+    if (!test_case) {
+        return -1;
+    }
+    printf("No application support\n");
+    return 1;
+}
+
+int app_kdf_tls13_handler(ACVP_TEST_CASE *test_case) {
+    if (!test_case) {
+        return -1;
+    }
+    printf("No application support\n");
+    return 1;
+}
+
+#endif

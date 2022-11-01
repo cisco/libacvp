@@ -7,7 +7,6 @@
  * https://github.com/cisco/libacvp/LICENSE
  */
 
-
 #include <openssl/evp.h>
 #include <openssl/hmac.h>
 #if OPENSSL_VERSION_NUMBER >= 0x30000000L
@@ -16,14 +15,11 @@
 #endif
 #include "acvp/acvp.h"
 #include "app_lcl.h"
-#if defined ACVP_NO_RUNTIME
-#include "app_fips_lcl.h"
-#endif
 #include "safe_lib.h"
 
 int app_hmac_handler(ACVP_TEST_CASE *test_case) {
     ACVP_HMAC_TC    *tc;
-#if OPENSSL_VERSION_NUMBER >= 0x30000000L && !defined ACVP_DEPRECATED_MAC
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
     EVP_MAC *mac = NULL;
     EVP_MAC_CTX *hmac_ctx = NULL;
     OSSL_PARAM_BLD *pbld = NULL;
@@ -52,7 +48,7 @@ int app_hmac_handler(ACVP_TEST_CASE *test_case) {
 
     msg_len = tc->msg_len;
 
-#if OPENSSL_VERSION_NUMBER >= 0x30000000L && !defined ACVP_DEPRECATED_MAC
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
     switch (alg) {
     case ACVP_SUB_HMAC_SHA1:
         md_name = ACVP_STR_SHA_1;
@@ -200,7 +196,7 @@ int app_hmac_handler(ACVP_TEST_CASE *test_case) {
 #endif
 
 end:
-#if OPENSSL_VERSION_NUMBER >= 0x30000000L && !defined ACVP_DEPRECATED_MAC
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
     if (hmac_ctx) EVP_MAC_CTX_free(hmac_ctx);
     if (mac) EVP_MAC_free(mac);
     if (pbld) OSSL_PARAM_BLD_free(pbld);

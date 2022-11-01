@@ -222,9 +222,7 @@ Test(APP_AES_AEAD_HANDLER, missing_dir) {
 
 /*
  * Bad aadLen for encrypt AEAD - this behavior is undefined in SSL (?) - ensure it causes no issues with app
- * Crypto library does not return positive values in tests if built with FOM
  */
-#ifndef ACVP_NO_RUNTIME
  Test(APP_AES_AEAD_HANDLER, bad_aadlen) {
     char *payload = "7E0BDE80";
     char *key = "B5BF1BD15DA1DE75B37BEAE1B7ABBC90";
@@ -247,7 +245,6 @@ Test(APP_AES_AEAD_HANDLER, missing_dir) {
     free_aes_tc(aes_tc);
     free(test_case);
 }
-#endif
 
 /*
  * GMAC case that has plain or cipher text, make sure it fails

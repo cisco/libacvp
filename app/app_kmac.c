@@ -7,22 +7,15 @@
  * https://github.com/cisco/libacvp/LICENSE
  */
 
+#include "app_lcl.h"
 
-#include <openssl/evp.h>
 #if OPENSSL_VERSION_NUMBER >= 0x30000000L
+#include <openssl/evp.h>
 #include <openssl/core_names.h>
 #include <openssl/param_build.h>
-#endif
-#include "acvp/acvp.h"
-#include "app_lcl.h"
 #include "safe_lib.h"
 
-#ifdef ACVP_NO_RUNTIME
-# include "app_fips_lcl.h"
-#endif
-
 int app_kmac_handler(ACVP_TEST_CASE *test_case) {
-#if OPENSSL_VERSION_NUMBER >= 0x30000000L
     ACVP_KMAC_TC *tc;
     EVP_MAC *mac = NULL;
     EVP_MAC_CTX *kmac_ctx = NULL;
@@ -142,9 +135,12 @@ end:
     return rv;
 }
 #else
+
+int app_kmac_handler(ACVP_TEST_CASE *test_case) {
     if (!test_case) {
         return -1;
     }
     return 1;
 }
+
 #endif

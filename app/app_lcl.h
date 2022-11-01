@@ -68,14 +68,13 @@ typedef struct app_config {
      * 0 is off, 1 is on
      */
     int aes; int tdes;
-    int hash; int cmac;
-    int hmac; int kmac;
-    /* These require the fom */
+    int hash; int cmac; int hmac; int kmac;
     int dsa; int rsa;
     int drbg; int ecdsa;
     int kas_ecc; int kas_ffc; int kas_ifc; int kda; int kts_ifc;
     int kdf;
     int safe_primes;
+    int testall; /* So the app can check whether the user indicated to test all possible algorithms */
 } APP_CONFIG;
 
 

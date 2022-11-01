@@ -9,12 +9,10 @@
  */
 
 
-#ifdef ACVP_NO_RUNTIME
+#ifdef OPENSSL_VERSION_NUMBER >= 0x30000000L && !defined OPENSSL_NO_DSA
 #include "ut_common.h"
 #include "app_common.h"
 #include "acvp/acvp_lcl.h"
-#if OPENSSL_VERSION_NUMBER >= 0x10100000L
-#ifndef OPENSSL_NO_DSA
 
 ACVP_CTX *ctx;
 ACVP_TEST_CASE *test_case;
@@ -170,7 +168,6 @@ Test(APP_SAFE_PRIMES_HANDLER, result) {
     free_safe_primes_tc(safe_primes_tc);
     free(test_case);
 }
-#endif // OPENSSL_NO_DSA
-#endif // OPENSSL VERSION
-#endif // ACVP_NO_RUNTIME
+
+#endif
 
