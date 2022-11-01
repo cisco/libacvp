@@ -171,6 +171,10 @@ int app_kda_hkdf_handler(ACVP_TEST_CASE *test_case) {
         printf("Missing HKDF test case\n");
         return -1;
     }
+    if (stc->encoding != ACVP_KDA_ENCODING_CONCAT) {
+        printf("Unsupported encoding provided for KDA HKDF\n");
+        goto end;
+    }
 
     fixedInfo = fixed_info_gen_concat(stc->fixedInfoPattern, stc->literalCandidate, stc->uPartyId,
                                       stc->uEphemeralData, stc->vPartyId, stc->vEphemeralData,
@@ -244,6 +248,10 @@ int app_kda_onestep_handler(ACVP_TEST_CASE *test_case) {
     if (!stc) {
         printf("Missing OneStep test case\n");
         return -1;
+    }
+    if (stc->encoding != ACVP_KDA_ENCODING_CONCAT) {
+        printf("Unsupported encoding provided for KDA onestep\n");
+        goto end;
     }
 
     fixedInfo = fixed_info_gen_concat(stc->fixedInfoPattern, stc->literalCandidate, stc->uPartyId,
@@ -409,6 +417,10 @@ int app_kda_twostep_handler(ACVP_TEST_CASE *test_case) {
     if (!stc) {
         printf("Missing TwoStep test case\n");
         return -1;
+    }
+    if (stc->encoding != ACVP_KDA_ENCODING_CONCAT) {
+        printf("Unsupported encoding provided for KDA twostep\n");
+        goto end;
     }
 
     fixedInfo = fixed_info_gen_concat(stc->fixedInfoPattern, stc->literalCandidate, stc->uPartyId,

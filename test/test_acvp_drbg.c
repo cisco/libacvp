@@ -24,7 +24,7 @@ static void setup(void) {
     rv = acvp_cap_drbg_enable(ctx, ACVP_HASHDRBG, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1,
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1, 0,
                                     ACVP_DRBG_DER_FUNC_ENABLED, 0);
     cr_assert(rv == ACVP_SUCCESS);
 
@@ -32,31 +32,31 @@ static void setup(void) {
             ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1,
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1, 0,
             ACVP_DRBG_PRED_RESIST_ENABLED, 1);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1,
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1, 0,
             ACVP_DRBG_RESEED_ENABLED, 1);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1,
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1, 0,
             ACVP_DRBG_ENTROPY_LEN, (int)128, (int)64,(int) 256);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1,
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1, 0,
             ACVP_DRBG_NONCE_LEN, (int)96, (int)32,(int) 128);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1,
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1, 0,
             ACVP_DRBG_PERSO_LEN, (int)0, (int)128,(int) 256);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1,
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1, 0,
             ACVP_DRBG_ADD_IN_LEN, (int)0, (int)128,(int) 256);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1,
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1, 0,
             ACVP_DRBG_RET_BITS_LEN, 160);
     cr_assert(rv == ACVP_SUCCESS);
 
@@ -70,36 +70,36 @@ static void setup(void) {
             ACVP_PREREQ_HMAC, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224,
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224, 0,
                                     ACVP_DRBG_DER_FUNC_ENABLED, 1);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224,
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224, 0,
             ACVP_DRBG_PRED_RESIST_ENABLED, 1);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224,
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224, 0,
             ACVP_DRBG_RESEED_ENABLED, 1);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224,
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224, 0,
             ACVP_DRBG_RET_BITS_LEN, 224);
     cr_assert(rv == ACVP_SUCCESS);
 
     //Add length range
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224,
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224, 0,
             ACVP_DRBG_ENTROPY_LEN, (int)192, (int)64,(int) 256);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224,
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224, 0,
             ACVP_DRBG_NONCE_LEN, (int)192, (int)64,(int) 256);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224,
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224, 0,
             ACVP_DRBG_PERSO_LEN, (int)0, (int)128,(int) 256);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224,
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224, 0,
             ACVP_DRBG_ADD_IN_LEN, (int)0, (int)128,(int) 256);
     cr_assert(rv == ACVP_SUCCESS);
 
@@ -108,35 +108,35 @@ static void setup(void) {
     cr_assert(rv == ACVP_SUCCESS);
 
     //Add length range
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128,
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128, 0,
             ACVP_DRBG_ENTROPY_LEN, (int)128, (int)128, (int) 256);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128,
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128, 0,
             ACVP_DRBG_NONCE_LEN, (int)64, (int)64,(int) 128);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128,
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128, 0,
             ACVP_DRBG_PERSO_LEN, (int)0, (int)256,(int) 256);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128,
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128, 0,
             ACVP_DRBG_ADD_IN_LEN, (int)0, (int)256,(int) 256);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_drbg_set_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128,
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128, 0,
                                     ACVP_DRBG_DER_FUNC_ENABLED, 1);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_drbg_set_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128,
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128, 0,
             ACVP_DRBG_PRED_RESIST_ENABLED, 1);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_drbg_set_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128,
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128, 0,
             ACVP_DRBG_RESEED_ENABLED, 0);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_drbg_set_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128,
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128, 0,
             ACVP_DRBG_RET_BITS_LEN, 256);
     cr_assert(rv == ACVP_SUCCESS);
 }
@@ -147,7 +147,7 @@ static void setup_fail(void) {
     rv = acvp_cap_drbg_enable(ctx, ACVP_HASHDRBG, &dummy_handler_failure);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1,
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1, 0,
                                     ACVP_DRBG_DER_FUNC_ENABLED, 0);
     cr_assert(rv == ACVP_SUCCESS);
 
@@ -155,31 +155,31 @@ static void setup_fail(void) {
             ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1,
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1, 0,
             ACVP_DRBG_PRED_RESIST_ENABLED, 1);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1,
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1, 0,
             ACVP_DRBG_RESEED_ENABLED, 1);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1,
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1, 0,
             ACVP_DRBG_ENTROPY_LEN, (int)128, (int)64,(int) 256);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1,
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1, 0,
             ACVP_DRBG_NONCE_LEN, (int)96, (int)32,(int) 128);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1,
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1, 0,
             ACVP_DRBG_PERSO_LEN, (int)0, (int)128,(int) 256);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1,
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1, 0,
             ACVP_DRBG_ADD_IN_LEN, (int)0, (int)128,(int) 256);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1,
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1, 0,
             ACVP_DRBG_RET_BITS_LEN, 160);
     cr_assert(rv == ACVP_SUCCESS);
 
@@ -193,36 +193,36 @@ static void setup_fail(void) {
             ACVP_PREREQ_HMAC, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224,
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224, 0,
                                     ACVP_DRBG_DER_FUNC_ENABLED, 1);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224,
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224, 0,
             ACVP_DRBG_PRED_RESIST_ENABLED, 1);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224,
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224, 0,
             ACVP_DRBG_RESEED_ENABLED, 1);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224,
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224, 0,
             ACVP_DRBG_RET_BITS_LEN, 224);
     cr_assert(rv == ACVP_SUCCESS);
 
     //Add length range
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224,
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224, 0,
             ACVP_DRBG_ENTROPY_LEN, (int)192, (int)64,(int) 256);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224,
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224, 0,
             ACVP_DRBG_NONCE_LEN, (int)192, (int)64,(int) 256);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224,
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224, 0,
             ACVP_DRBG_PERSO_LEN, (int)0, (int)128,(int) 256);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224,
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224, 0,
             ACVP_DRBG_ADD_IN_LEN, (int)0, (int)128,(int) 256);
     cr_assert(rv == ACVP_SUCCESS);
 
@@ -231,35 +231,35 @@ static void setup_fail(void) {
     cr_assert(rv == ACVP_SUCCESS);
 
     //Add length range
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128,
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128, 0,
             ACVP_DRBG_ENTROPY_LEN, (int)128, (int)128, (int) 256);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128,
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128, 0,
             ACVP_DRBG_NONCE_LEN, (int)64, (int)64,(int) 128);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128,
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128, 0,
             ACVP_DRBG_PERSO_LEN, (int)0, (int)256,(int) 256);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128,
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128, 0,
             ACVP_DRBG_ADD_IN_LEN, (int)0, (int)256,(int) 256);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_drbg_set_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128,
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128, 0,
                                     ACVP_DRBG_DER_FUNC_ENABLED, 1);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_drbg_set_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128,
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128, 0,
             ACVP_DRBG_PRED_RESIST_ENABLED, 1);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_drbg_set_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128,
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128, 0,
             ACVP_DRBG_RESEED_ENABLED, 0);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_drbg_set_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128,
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128, 0,
             ACVP_DRBG_RET_BITS_LEN, 256);
     cr_assert(rv == ACVP_SUCCESS);
 }
@@ -277,7 +277,7 @@ Test(DRBG_CAPABILITY, good) {
     rv = acvp_cap_drbg_enable(ctx, ACVP_HASHDRBG, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1,
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1, 0,
                                     ACVP_DRBG_DER_FUNC_ENABLED, 0);
     cr_assert(rv == ACVP_SUCCESS);
 
@@ -285,31 +285,31 @@ Test(DRBG_CAPABILITY, good) {
             ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1,
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1, 0,
             ACVP_DRBG_PRED_RESIST_ENABLED, 1);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1,
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1, 0,
             ACVP_DRBG_RESEED_ENABLED, 1);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1,
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1, 0,
             ACVP_DRBG_ENTROPY_LEN, (int)128, (int)64,(int) 256);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1,
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1, 0,
             ACVP_DRBG_NONCE_LEN, (int)96, (int)32,(int) 128);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1,
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1, 0,
             ACVP_DRBG_PERSO_LEN, (int)0, (int)128,(int) 256);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1,
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1, 0,
             ACVP_DRBG_ADD_IN_LEN, (int)0, (int)128,(int) 256);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1,
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1, 0,
             ACVP_DRBG_RET_BITS_LEN, 160);
     cr_assert(rv == ACVP_SUCCESS);
 
@@ -323,36 +323,36 @@ Test(DRBG_CAPABILITY, good) {
             ACVP_PREREQ_HMAC, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224,
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224, 0,
                                     ACVP_DRBG_DER_FUNC_ENABLED, 1);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224,
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224, 0,
             ACVP_DRBG_PRED_RESIST_ENABLED, 1);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224,
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224, 0,
             ACVP_DRBG_RESEED_ENABLED, 1);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224,
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224, 0,
             ACVP_DRBG_RET_BITS_LEN, 224);
     cr_assert(rv == ACVP_SUCCESS);
 
     //Add length range
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224,
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224, 0,
             ACVP_DRBG_ENTROPY_LEN, (int)192, (int)64,(int) 256);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224,
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224, 0,
             ACVP_DRBG_NONCE_LEN, (int)192, (int)64,(int) 256);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224,
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224, 0,
             ACVP_DRBG_PERSO_LEN, (int)0, (int)128,(int) 256);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224,
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224, 0,
             ACVP_DRBG_ADD_IN_LEN, (int)0, (int)128,(int) 256);
     cr_assert(rv == ACVP_SUCCESS);
 
@@ -361,35 +361,35 @@ Test(DRBG_CAPABILITY, good) {
     cr_assert(rv == ACVP_SUCCESS);
 
     //Add length range
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128,
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128, 0,
             ACVP_DRBG_ENTROPY_LEN, (int)128, (int)128, (int) 256);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128,
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128, 0,
             ACVP_DRBG_NONCE_LEN, (int)64, (int)64,(int) 128);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128,
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128, 0,
             ACVP_DRBG_PERSO_LEN, (int)0, (int)256,(int) 256);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_drbg_set_length(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128,
+    rv = acvp_cap_drbg_set_length(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128, 0,
             ACVP_DRBG_ADD_IN_LEN, (int)0, (int)256,(int) 256);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_drbg_set_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128,
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128, 0,
                                     ACVP_DRBG_DER_FUNC_ENABLED, 1);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_drbg_set_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128,
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128, 0,
             ACVP_DRBG_PRED_RESIST_ENABLED, 1);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_drbg_set_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128,
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128, 0,
             ACVP_DRBG_RESEED_ENABLED, 0);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_cap_drbg_set_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128,
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128, 0,
             ACVP_DRBG_RET_BITS_LEN, 256);
     cr_assert(rv == ACVP_SUCCESS);
 
