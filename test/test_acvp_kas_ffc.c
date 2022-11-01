@@ -158,7 +158,6 @@ static void sp_setup(void) {
     rv = acvp_cap_kas_ffc_set_parm(ctx, ACVP_KAS_FFC_SSC, ACVP_KAS_FFC_MODE_NONE, ACVP_KAS_FFC_GEN_METH, ACVP_KAS_FFC_FB);
     cr_assert(rv == ACVP_SUCCESS);
 
-#if OPENSSL_VERSION_NUMBER >= 0x10100000L
     rv = acvp_cap_kas_ffc_set_parm(ctx, ACVP_KAS_FFC_SSC, ACVP_KAS_FFC_MODE_NONE, ACVP_KAS_FFC_GEN_METH, ACVP_KAS_FFC_MODP2048);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_kas_ffc_set_parm(ctx, ACVP_KAS_FFC_SSC, ACVP_KAS_FFC_MODE_NONE, ACVP_KAS_FFC_GEN_METH, ACVP_KAS_FFC_MODP3072);
@@ -180,7 +179,6 @@ static void sp_setup(void) {
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_kas_ffc_set_parm(ctx, ACVP_KAS_FFC_SSC, ACVP_KAS_FFC_MODE_NONE, ACVP_KAS_FFC_GEN_METH, ACVP_KAS_FFC_FFDHE8192);
     cr_assert(rv == ACVP_SUCCESS);
-#endif
 
     rv = acvp_cap_kas_ffc_set_parm(ctx, ACVP_KAS_FFC_SSC, ACVP_KAS_FFC_MODE_NONE, ACVP_KAS_FFC_HASH, ACVP_SHA512);
     cr_assert(rv == ACVP_SUCCESS);

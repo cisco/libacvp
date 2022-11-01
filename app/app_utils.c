@@ -12,9 +12,7 @@
 #include <openssl/hmac.h>
 #include "app_lcl.h"
 #include "safe_lib.h"
-#ifdef ACVP_NO_RUNTIME
-# include "app_fips_lcl.h"
-#endif
+
 
 /* This is a public domain base64 implementation written by WEI Zhicheng. */
 enum { BASE64_OK = 0, BASE64_INVALID };
@@ -300,7 +298,7 @@ int get_nid_for_curve(ACVP_EC_CURVE curve) {
     case ACVP_EC_CURVE_P224:
         return NID_secp224r1;
     case ACVP_EC_CURVE_P256:
-        return NID_X9_62_prime256v1;
+        return NID_X9_62_prime256v1; /* OpenSSL omits the secp names since these are the same thing */
     case ACVP_EC_CURVE_P384:
         return NID_secp384r1;
     case ACVP_EC_CURVE_P521:

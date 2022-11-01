@@ -8,7 +8,7 @@
  * https://github.com/cisco/libacvp/LICENSE
  */
 
-#ifdef ACVP_NO_RUNTIME
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
 
 #include "ut_common.h"
 #include "app_common.h"

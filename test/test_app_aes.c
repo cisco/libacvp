@@ -222,9 +222,7 @@ Test(APP_AES_AEAD_HANDLER, missing_dir) {
 
 /*
  * Bad aadLen for encrypt AEAD - this behavior is undefined in SSL (?) - ensure it causes no issues with app
- * Crypto library does not return positive values in tests if built with FOM
  */
-#ifndef ACVP_NO_RUNTIME
  Test(APP_AES_AEAD_HANDLER, bad_aadlen) {
     char *payload = "7E0BDE80";
     char *key = "B5BF1BD15DA1DE75B37BEAE1B7ABBC90";
@@ -247,7 +245,6 @@ Test(APP_AES_AEAD_HANDLER, missing_dir) {
     free_aes_tc(aes_tc);
     free(test_case);
 }
-#endif
 
 /*
  * GMAC case that has plain or cipher text, make sure it fails
@@ -451,13 +448,13 @@ Test(APP_AES_HANDLER, missing_dir) {
 }
 
 /*
- * null payload - keywrap 
+ * null payload - keywrap. Just ensure we handle gracefully.
  */
  Test(APP_AES_KW_HANDLER, bad_payload) {
     char *payload = NULL;
     char *key = "C7BFB2CDBFC38BB55B486329623962D8";
     aes_tc = calloc(1, sizeof(ACVP_SYM_CIPHER_TC));
-    
+
     if (!initialize_aes_tc(aes_tc, ACVP_AES_KW, NULL, 0, payload, 0,
         key, 128, NULL, 0, NULL, 0, ACVP_SYM_CIPH_IVGEN_SRC_INT, 
         ACVP_SYM_CIPH_IVGEN_MODE_821, NULL, 96, ACVP_SYM_CIPH_DIR_ENCRYPT,
@@ -467,10 +464,9 @@ Test(APP_AES_HANDLER, missing_dir) {
     aes_tc->kwcipher = ACVP_SYM_KW_CIPHER;
     test_case = calloc(1, sizeof(ACVP_TEST_CASE));
     test_case->tc.symmetric = aes_tc;
-    
+
     rv = app_aes_keywrap_handler(test_case);
-    cr_assert_neq(rv, 0);
-    
+
     free_aes_tc(aes_tc);
     free(test_case);
 }

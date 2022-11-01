@@ -12,9 +12,7 @@
 #include "app_common.h"
 #include "ut_common.h"
 #include <openssl/hmac.h>
-#ifdef ACVP_NO_RUNTIME
-#include "app_fips_init_lcl.h"
-#endif
+
 
 ACVP_RESULT totp(char **token, int token_max);
 
@@ -23,7 +21,5 @@ ACVP_RESULT totp(char **token, int token_max);
 
 void dummy_call(void)
 {
-#ifdef ACVP_NO_RUNTIME
-    fips_algtest_init_nofips();
-#endif
+
 }

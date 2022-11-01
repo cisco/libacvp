@@ -1029,7 +1029,7 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
         case ACVP_AES_GMAC:
         case ACVP_AES_CCM:
         case ACVP_AES_XPN:
-            if (value % 8 == 0) {
+            if (value > 0 && value % 8 == 0 && value <= 128) {
                 retval = ACVP_SUCCESS;
             }
             break;

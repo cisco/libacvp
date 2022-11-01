@@ -7,17 +7,16 @@
  * https://github.com/cisco/libacvp/LICENSE
  */
 
+#include "app_lcl.h"
+
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
 #include <openssl/evp.h>
 #include <openssl/hmac.h>
-#if OPENSSL_VERSION_NUMBER >= 0x30000000L
 #include <openssl/kdf.h>
 #include <openssl/core_names.h>
 #include <openssl/param_build.h>
-#endif
 #include "acvp/acvp.h"
-#include "app_lcl.h"
 #include "safe_lib.h"
-
 
 static unsigned char *fixed_info_gen_concat(ACVP_KDA_PATTERN_CANDIDATE *fixedInfoPattern,
                                             unsigned char *literalCandidate,
@@ -153,8 +152,6 @@ end:
     return fixedInfo;
 }
 
-
-#if OPENSSL_VERSION_NUMBER >= 0x30000000L
 int app_kda_hkdf_handler(ACVP_TEST_CASE *test_case) {
     ACVP_KDA_HKDF_TC *stc = NULL;
     int rc = 1, fixedInfoLen = 0;
@@ -173,6 +170,10 @@ int app_kda_hkdf_handler(ACVP_TEST_CASE *test_case) {
     if (!stc) {
         printf("Missing HKDF test case\n");
         return -1;
+    }
+    if (stc->encoding != ACVP_KDA_ENCODING_CONCAT) {
+        printf("Unsupported encoding provided for KDA HKDF\n");
+        goto end;
     }
 
     fixedInfo = fixed_info_gen_concat(stc->fixedInfoPattern, stc->literalCandidate, stc->uPartyId,
@@ -247,6 +248,10 @@ int app_kda_onestep_handler(ACVP_TEST_CASE *test_case) {
     if (!stc) {
         printf("Missing OneStep test case\n");
         return -1;
+    }
+    if (stc->encoding != ACVP_KDA_ENCODING_CONCAT) {
+        printf("Unsupported encoding provided for KDA onestep\n");
+        goto end;
     }
 
     fixedInfo = fixed_info_gen_concat(stc->fixedInfoPattern, stc->literalCandidate, stc->uPartyId,
@@ -412,6 +417,10 @@ int app_kda_twostep_handler(ACVP_TEST_CASE *test_case) {
     if (!stc) {
         printf("Missing TwoStep test case\n");
         return -1;
+    }
+    if (stc->encoding != ACVP_KDA_ENCODING_CONCAT) {
+        printf("Unsupported encoding provided for KDA twostep\n");
+        goto end;
     }
 
     fixedInfo = fixed_info_gen_concat(stc->fixedInfoPattern, stc->literalCandidate, stc->uPartyId,

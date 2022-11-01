@@ -13,9 +13,7 @@
 #include "acvp/acvp.h"
 #include "app_lcl.h"
 #include "safe_lib.h"
-#ifdef ACVP_NO_RUNTIME
-# include "app_fips_lcl.h"
-#endif
+
 
 static EVP_CIPHER_CTX *glb_cipher_ctx = NULL; /* need to maintain across calls for MCT */
 

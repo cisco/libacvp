@@ -13,9 +13,6 @@
 #include "app_lcl.h"
 #include "acvp/acvp.h"
 #include "safe_lib.h"
-#ifdef ACVP_NO_RUNTIME
-#include "app_fips_lcl.h"
-#endif
 
 #include <openssl/crypto.h>
 #include <openssl/evp.h>
@@ -65,20 +62,17 @@ static void print_usage(int code) {
         printf("capabilities of the provided cryptographic library.\n\n");
     }
     printf("Algorithm Test Suites:\n");
-    printf("      --all_algs (or -a, Enable all of the suites below)\n");
+    printf("Note: not all suites are supported by all supported modules\n");
+    printf("      --all_algs (or -a, Enable all of the suites supported by the crypto module)\n");
     printf("      --aes\n");
     printf("      --tdes\n");
     printf("      --hash\n");
     printf("      --cmac\n");
     printf("      --hmac\n");
-#ifdef OPENSSL_KDF_SUPPORT
     printf("      --kdf\n");
-#endif
-#ifndef OPENSSL_NO_DSA
     printf("      --dsa\n");
     printf("      --kas_ffc\n");
     printf("      --safe_primes\n");
-#endif
     printf("      --rsa\n");
     printf("      --ecdsa\n");
     printf("      --drbg\n");
@@ -190,13 +184,6 @@ static void print_usage(int code) {
 
 static void print_version_info(void) {
     printf("\nACVP library version(protocol version): %s(%s)\n\n", acvp_version(), acvp_protocol_version());
-
-#ifdef ACVP_NO_RUNTIME
-    printf("        Runtime mode: no\n");
-#if OPENSSL_VERSION_NUMBER < 0x30000000L
-    printf(" FIPS module version: %s\n", FIPS_module_version_text());
-#endif
-#else //ACVP_NO_RUNTIME
     printf("        Runtime mode: yes\n");
 #if OPENSSL_VERSION_NUMBER < 0x30000000L
     if (FIPS_mode()) {
@@ -204,14 +191,13 @@ static void print_version_info(void) {
     } else {
         printf("           FIPS mode: no\n");
     }
-#else //OPENSSL_VERSION_NUMBER
+#else
     if (EVP_default_properties_is_fips_enabled(NULL)) {
-        printf("           FIPS mode: yes\n");
+        printf("           FIPS by default: yes\n");
     } else {
-        printf("           FIPS mode: no\n");
+        printf("           FIPS by default: no\n");
     }
-#endif //OPENSSL_VERSION_NUMBER
-#endif //ACVP_NO_RUNTIME
+#endif
 
 #ifdef OPENSSL_VERSION_TEXT
     printf("Compiled SSL version: %s\n", OPENSSL_VERSION_TEXT);
@@ -236,20 +222,14 @@ static ko_longopt_t longopts[] = {
     { "hash", ko_no_argument, 312 },
     { "cmac", ko_no_argument, 313 },
     { "hmac", ko_no_argument, 314 },
-#ifdef OPENSSL_KDF_SUPPORT
     { "kdf", ko_no_argument, 315 },
-#endif
-#ifndef OPENSSL_NO_DSA
     { "dsa", ko_no_argument, 316 },
-#endif
     { "rsa", ko_no_argument, 317 },
     { "drbg", ko_no_argument, 318 },
     { "ecdsa", ko_no_argument, 319 },
     { "kas_ecc", ko_no_argument, 320 },
-#ifndef OPENSSL_NO_DSA
     { "kas_ffc", ko_no_argument, 321 },
     { "safe_primes", ko_no_argument, 322 },
-#endif
     { "kas_ifc", ko_no_argument, 323 },
     { "kts_ifc", ko_no_argument, 324 },
     { "kda", ko_no_argument, 325 },
@@ -289,11 +269,9 @@ static void enable_all_algorithms(APP_CONFIG *cfg) {
     cfg->cmac = 1;
     cfg->hmac = 1;
     cfg->kmac = 1;
-#ifndef OPENSSL_NO_DSA
     cfg->dsa = 1;
     cfg->kas_ffc = 1;
     cfg->safe_primes = 1;
-#endif
     cfg->rsa = 1;
     cfg->drbg = 1;
     cfg->ecdsa = 1;
@@ -301,9 +279,7 @@ static void enable_all_algorithms(APP_CONFIG *cfg) {
     cfg->kas_ifc = 1;
     cfg->kda = 1;
     cfg->kts_ifc = 1;
-#ifdef OPENSSL_KDF_SUPPORT
     cfg->kdf = 1;
-#endif
 }
 
 static const char* lookup_arg_name(int c) {
@@ -406,18 +382,14 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
             cfg->hmac = 1;
             cfg->empty_alg = 0;
             break;
-#ifdef OPENSSL_KDF_SUPPORT
         case 315:
             cfg->kdf = 1;
             cfg->empty_alg = 0;
             break;
-#endif
-#ifndef OPENSSL_NO_DSA
         case 316:
             cfg->dsa = 1;
             cfg->empty_alg = 0;
             break;
-#endif
         case 317:
             cfg->rsa = 1;
             cfg->empty_alg = 0;
@@ -434,7 +406,6 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
             cfg->kas_ecc = 1;
             cfg->empty_alg = 0;
             break;
-#ifndef OPENSSL_NO_DSA
         case 321:
             cfg->kas_ffc = 1;
             cfg->empty_alg = 0;
@@ -443,7 +414,6 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
             cfg->safe_primes = 1;
             cfg->empty_alg = 0;
             break;
-#endif
         case 323:
             cfg->kas_ifc = 1;
             cfg->empty_alg = 0;
@@ -464,6 +434,7 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
         case 350:
             enable_all_algorithms(cfg);
             cfg->empty_alg = 0;
+            cfg->testall = 1;
             break;
 
         case 400:

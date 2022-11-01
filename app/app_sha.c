@@ -7,14 +7,8 @@
  * https://github.com/cisco/libacvp/LICENSE
  */
 
-
-#include <openssl/evp.h>
-
-#include "acvp/acvp.h"
 #include "app_lcl.h"
-#ifdef ACVP_NO_RUNTIME
-# include "app_fips_lcl.h"
-#endif
+#include <openssl/evp.h>
 
 int app_sha_handler(ACVP_TEST_CASE *test_case) {
     ACVP_HASH_TC    *tc;
@@ -164,7 +158,6 @@ int app_sha_handler(ACVP_TEST_CASE *test_case) {
 
 end:
     if (md_ctx) EVP_MD_CTX_destroy(md_ctx);
-
     return rc;
 }
 

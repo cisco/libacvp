@@ -12,7 +12,7 @@
 // Created by edaw on 2019-01-07.
 //
 
-#ifdef ACVP_NO_RUNTIME
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
 
 #include "ut_common.h"
 #include "app_common.h"
@@ -382,5 +382,5 @@ Test(APP_ECDSA_HANDLER, missing_sigver_qx_qy) {
     free(ecdsa_tc);
 }
 
-#endif // ACVP_NO_RUNTIME
+#endif
 
