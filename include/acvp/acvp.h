@@ -411,7 +411,8 @@ typedef enum acvp_prereq_mode_t {
     ACVP_PREREQ_RSADP,
     ACVP_PREREQ_SAFE_PRIMES,
     ACVP_PREREQ_SHA,
-    ACVP_PREREQ_TDES
+    ACVP_PREREQ_TDES,
+    ACVP_PREREQ_KMAC
 } ACVP_PREREQ_ALG;
 
 /**

@@ -27,7 +27,7 @@ typedef struct acvp_prereqs_mode_name_t {
     const char *name;
 } ACVP_PREREQ_MODE_NAME;
 
-#define ACVP_NUM_PREREQS 13
+#define ACVP_NUM_PREREQS 14
 struct acvp_prereqs_mode_name_t acvp_prereqs_tbl[ACVP_NUM_PREREQS] = {
     { ACVP_PREREQ_AES,   "AES"   },
     { ACVP_PREREQ_CCM,   "CCM"   },
@@ -41,7 +41,8 @@ struct acvp_prereqs_mode_name_t acvp_prereqs_tbl[ACVP_NUM_PREREQS] = {
     { ACVP_PREREQ_RSADP, "RSADP" },
     { ACVP_PREREQ_SAFE_PRIMES,   "safePrimes"   },
     { ACVP_PREREQ_SHA,   "SHA"   },
-    { ACVP_PREREQ_TDES,  "TDES"  }
+    { ACVP_PREREQ_TDES,  "TDES"  },
+    { ACVP_PREREQ_KMAC,  "KMAC"  }
 };
 
 static ACVP_RESULT acvp_lookup_prereqVals(JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry) {
@@ -341,7 +342,6 @@ static ACVP_RESULT acvp_build_kmac_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
 
     result = acvp_lookup_prereqVals(cap_obj, cap_entry);
     if (result != ACVP_SUCCESS) { return result; }
-
 
     json_object_set_value(cap_obj, "xof", json_value_init_array());
     temp_arr = json_object_get_array(cap_obj, "xof");
@@ -3717,6 +3717,9 @@ static ACVP_RESULT acvp_build_kda_onestep_register_cap(ACVP_CTX *ctx,
     }
     json_object_set_string(cap_obj, "revision", revision);
 
+    rv = acvp_lookup_prereqVals(cap_obj, cap_entry);
+    if (rv != ACVP_SUCCESS) { goto err; }
+
     //pattern string is list of pattern values separated by '||'
     tmp_param_list = cap_entry->cap.kda_onestep_cap->patterns;
     if (!tmp_param_list) {
@@ -3891,6 +3894,9 @@ static ACVP_RESULT acvp_build_kda_twostep_register_cap(ACVP_CTX *ctx,
         goto err;
     }
     json_object_set_string(cap_obj, "revision", revision);
+
+    rv= acvp_lookup_prereqVals(cap_obj, cap_entry);
+    if (rv != ACVP_SUCCESS) { goto err; }
 
     //append the "l" value
     json_object_set_number(cap_obj, "l", cap->l);
@@ -4083,6 +4089,9 @@ static ACVP_RESULT acvp_build_kda_hkdf_register_cap(ACVP_CTX *ctx,
         goto err;
     }
     json_object_set_string(cap_obj, "revision", revision);
+
+    rv = acvp_lookup_prereqVals(cap_obj, cap_entry);
+    if (rv != ACVP_SUCCESS) { goto err; }
 
     //pattern string is list of pattern values separated by '||'
     tmp_param_list = cap->patterns;

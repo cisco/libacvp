@@ -2019,6 +2019,7 @@ static ACVP_RESULT acvp_validate_prereq_val(ACVP_CIPHER cipher, ACVP_PREREQ_ALG 
     case ACVP_KDA_ONESTEP:
         if (pre_req == ACVP_PREREQ_DRBG ||
             pre_req == ACVP_PREREQ_HMAC ||
+            pre_req == ACVP_PREREQ_KMAC ||
             pre_req == ACVP_PREREQ_SHA) {
             return ACVP_SUCCESS;
         }
@@ -6537,6 +6538,7 @@ ACVP_RESULT acvp_cap_kas_ecc_set_prereq(ACVP_CTX *ctx,
     case ACVP_PREREQ_TDES:
     case ACVP_PREREQ_RSADP:
     case ACVP_PREREQ_RSA:
+    case ACVP_PREREQ_KMAC:
     default:
         ACVP_LOG_ERR("\nUnsupported KAS-ECC prereq %d", pre_req);
         return ACVP_INVALID_ARG;
@@ -6973,6 +6975,7 @@ ACVP_RESULT acvp_cap_kas_ffc_set_prereq(ACVP_CTX *ctx,
     case ACVP_PREREQ_TDES:
     case ACVP_PREREQ_RSADP:
     case ACVP_PREREQ_RSA:
+    case ACVP_PREREQ_KMAC:
     default:
         ACVP_LOG_ERR("\nUnsupported KAS-FFC prereq %d", pre_req);
         return ACVP_INVALID_ARG;
