@@ -327,9 +327,8 @@ Test(KTS_IFC_HANDLER, missing_l, .init = setup, .fini = teardown) {
     json_value_free(val);
 }
 
-/*
- * The key:"fixedPubExp" is missing.
- */
+#if 0
+/* library no longer needs to check for fixedpubexp; since we are just using serverE or iutE from test cases */
 Test(KTS_IFC_HANDLER, missing_fpe, .init = setup, .fini = teardown) {
     val = json_parse_file("json/kts_ifc/kts_ifc_9.json");
 
@@ -342,6 +341,7 @@ Test(KTS_IFC_HANDLER, missing_fpe, .init = setup, .fini = teardown) {
     cr_assert(rv == ACVP_MISSING_ARG);
     json_value_free(val);
 }
+#endif
 
 /*
  * The key:"modulo" is missing.

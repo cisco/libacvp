@@ -380,7 +380,7 @@ Test(KAS_IFC_SSC_HANDLER, missing_c, .init = setup, .fini = teardown) {
     json_value_free(val);
 }
 /*
- * The key:"z" is missing.
+ * The key:"z" is missing. NOTE: This only applies to test groups where a hash function is NOT provided
  */
 Test(KAS_IFC_SSC_HANDLER, missing_z, .init = setup, .fini = teardown) {
     val = json_parse_file("json/kas_ifc/kas_ifc_ssc_14.json");
