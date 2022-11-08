@@ -582,7 +582,7 @@ Test(RSA_KEYGEN_HANDLER, missing_tgid, .init = setup, .fini = teardown) {
 /*
  * The key: crypto handler operation fails on last crypto call
  */
-Test(RSA_KEYGEN_HANDDLER, cryptoFail1, .init = setup_fail, .fini = teardown) {
+Test(RSA_KEYGEN_HANDLER, cryptoFail1, .init = setup_fail, .fini = teardown) {
     ACVP_RESULT rv;
     JSON_Object *obj;
     JSON_Value *val;
@@ -604,7 +604,7 @@ Test(RSA_KEYGEN_HANDDLER, cryptoFail1, .init = setup_fail, .fini = teardown) {
 /*
  * The key: crypto handler operation fails on last crypto call
  */
-Test(RSA_KEYGEN_HANDDLER, cryptoFail2, .init = setup_fail, .fini = teardown) {
+Test(RSA_KEYGEN_HANDLER, cryptoFail2, .init = setup_fail, .fini = teardown) {
     ACVP_RESULT rv;
     JSON_Object *obj;
     JSON_Value *val;
@@ -626,7 +626,7 @@ Test(RSA_KEYGEN_HANDDLER, cryptoFail2, .init = setup_fail, .fini = teardown) {
 /*
  * The key:"hashAlg" is missing in last tg
  */
-Test(RSA_KEYGEN_HANDDLER, tgFail1, .init = setup, .fini = teardown) {
+Test(RSA_KEYGEN_HANDLER, tgFail1, .init = setup, .fini = teardown) {
     ACVP_RESULT rv;
     JSON_Object *obj;
     JSON_Value *val;
@@ -646,7 +646,7 @@ Test(RSA_KEYGEN_HANDDLER, tgFail1, .init = setup, .fini = teardown) {
 /*
  * The key:"seed" is missing in last tc
  */
-Test(RSA_KEYGEN_HANDDLER, tcFail1, .init = setup, .fini = teardown) {
+Test(RSA_KEYGEN_HANDLER, tcFail1, .init = setup, .fini = teardown) {
     ACVP_RESULT rv;
     JSON_Object *obj;
     JSON_Value *val;

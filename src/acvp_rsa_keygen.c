@@ -624,20 +624,22 @@ ACVP_RESULT acvp_rsa_keygen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
             json_object_set_number(r_tobj, "tcId", tc_id);
 
-            e_str = json_object_get_string(testobj, "e");
-            if (!e_str) {
-                ACVP_LOG_ERR("Server JSON missing 'e'");
-                rv = ACVP_MISSING_ARG;
-                json_value_free(r_tval);
-                goto err;
-            }
-            if (strnlen_s(e_str, ACVP_RSA_EXP_LEN_MAX + 1)
-                > ACVP_RSA_EXP_LEN_MAX) {
-                ACVP_LOG_ERR("'e' too long, max allowed=(%d)",
-                                ACVP_RSA_EXP_LEN_MAX);
-                rv = ACVP_INVALID_ARG;
-                json_value_free(r_tval);
-                goto err;
+            if (pub_exp_mode == ACVP_RSA_PUB_EXP_MODE_RANDOM) {
+                e_str = json_object_get_string(testobj, "e");
+                if (!e_str) {
+                    ACVP_LOG_ERR("Server JSON missing 'e'");
+                    rv = ACVP_MISSING_ARG;
+                    json_value_free(r_tval);
+                    goto err;
+                }
+                if (strnlen_s(e_str, ACVP_RSA_EXP_LEN_MAX + 1)
+                    > ACVP_RSA_EXP_LEN_MAX) {
+                    ACVP_LOG_ERR("'e' too long, max allowed=(%d)",
+                                    ACVP_RSA_EXP_LEN_MAX);
+                    rv = ACVP_INVALID_ARG;
+                    json_value_free(r_tval);
+                    goto err;
+                }
             }
             /*
              * Retrieve values from JSON and initialize the tc
