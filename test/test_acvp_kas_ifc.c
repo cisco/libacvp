@@ -394,6 +394,8 @@ Test(KAS_IFC_SSC_HANDLER, missing_z, .init = setup, .fini = teardown) {
     cr_assert(rv == ACVP_MISSING_ARG);
     json_value_free(val);
 }
+
+#if 0 /* hashZ is not required for KAS1 test. Re-enable when KAS2 tests are added if needed */
 /*
  * The key:"hashZ" is missing.
  */
@@ -409,6 +411,7 @@ Test(KAS_IFC_SSC_HANDLER, missing_hashz, .init = setup, .fini = teardown) {
     cr_assert(rv == ACVP_MISSING_ARG);
     json_value_free(val);
 }
+#endif
 
 /*
  * The key:"scheme" is missing.
