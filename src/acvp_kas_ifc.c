@@ -133,17 +133,20 @@ static ACVP_RESULT acvp_kas_ifc_ssc_val_output_tc(ACVP_KAS_IFC_TC *stc,
     rv = 0;
     int diff = 1, len = 0;
     unsigned char *merge = NULL;
-
     /* For initiator tests, check the encapsulated Z. For responder tests, check the decapsulated Z. */
     if (stc->kas_role == ACVP_KAS_IFC_INITIATOR) {
         if (stc->iut_ct_z_len == stc->provided_ct_z_len) {
             memcmp_s(stc->iut_ct_z, stc->iut_ct_z_len, stc->provided_ct_z, stc->provided_ct_z_len, &diff);
             rv += diff;
+        } else {
+            rv++;
         }
     } else if (stc->scheme != ACVP_KAS_IFC_KAS2) {
-        if (stc->iut_pt_z_len == stc->provided_pt_z_len) {
+        if (stc->server_pt_z_len == stc->provided_pt_z_len) {
             memcmp_s(stc->server_pt_z, stc->server_pt_z_len, stc->provided_pt_z, stc->provided_pt_z_len, &diff);
             rv += diff;
+        } else {
+            rv++;
         }
     }
 
@@ -797,20 +800,16 @@ static ACVP_RESULT acvp_kas_ifc_ssc(ACVP_CTX *ctx,
              */
             if (test_type == ACVP_KAS_IFC_TT_VAL) {
                 if (scheme == ACVP_KAS_IFC_KAS1) {
-                    if (hash) {
-                        pt_z = json_object_get_string(testobj, "hashZ");
+                    if (role == ACVP_KAS_IFC_INITIATOR) {
+                        pt_z = json_object_get_string(testobj, "iutZ");
                     } else {
                         pt_z = json_object_get_string(testobj, "z");
                     }
                 } else {
-                    if (hash) {
-                        pt_z = json_object_get_string(testobj, "iutHashZ");
-                    } else {
-                        pt_z = json_object_get_string(testobj, "iutZ");
-                    }
+                    pt_z = json_object_get_string(testobj, "iutZ");
                 }
                 if (!pt_z) {
-                    ACVP_LOG_ERR("Server JSON missing 'z or zashZ'");
+                    ACVP_LOG_ERR("Server JSON missing 'z' or 'iutZ''");
                     rv = ACVP_MISSING_ARG;
                     goto err;
                 }
