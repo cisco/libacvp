@@ -434,7 +434,9 @@ int app_dsa_handler(ACVP_TEST_CASE *test_case) {
             goto err;
         }
         if (tc->pqg != ACVP_DSA_UNVERIFIABLE) {
-            EVP_PKEY_CTX_set_params(pctx, params);
+            if (EVP_PKEY_CTX_set_params(pctx, params) != 1) {
+                printf("Error setting params in DSA pqggen\n");
+            }
         }
 
         if (EVP_PKEY_paramgen(pctx, &pkey) != 1) {

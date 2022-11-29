@@ -477,7 +477,7 @@ int app_kda_twostep_handler(ACVP_TEST_CASE *test_case) {
     case ACVP_KDF108_MAC_MODE_MAX:
     default:
         printf("app_kda_twostep_handler error: Unsupported mac algorithm\n");
-        return 1;
+        goto end;
     }
 
     kdf = EVP_KDF_fetch(NULL, "HKDF", NULL);

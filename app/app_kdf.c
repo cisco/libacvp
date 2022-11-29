@@ -690,6 +690,7 @@ end:
 int app_kdf_tls13_handler(ACVP_TEST_CASE *test_case) {
     ACVP_KDF_TLS13_TC *tc = NULL;
     char *md = NULL;
+    const char *md_str = NULL;
     const EVP_MD    *md_obj;
     EVP_MD_CTX *mctx = NULL;
     unsigned char *hello_hash = NULL, *client_hello_hash = NULL, *handshake_secret = NULL,
@@ -711,8 +712,13 @@ int app_kdf_tls13_handler(ACVP_TEST_CASE *test_case) {
         return -1;
     }
 
+    md_str = get_md_string_for_hash_alg(tc->hmac_alg, &md_size);
+    if (!md_str) {
+        printf("Invalid mac alg given for TLS 1.3 KDF\n");
+        return -1;
+    }
 
-    md = remove_str_const(get_md_string_for_hash_alg(tc->hmac_alg, &md_size));
+    md = remove_str_const(md_str);
     if (!md) {
         printf("Invalid mac alg given for TLS1.3 KDF (%d)\n", tc->hmac_alg);
         return -1;
