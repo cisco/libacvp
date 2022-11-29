@@ -201,7 +201,6 @@ int app_kas_ffc_handler(ACVP_TEST_CASE *test_case) {
     OSSL_PARAM *serv_params = NULL, *iut_params = NULL, *der_params = NULL;
     EVP_PKEY_CTX *pkey_ctx = NULL, *der_ctx = NULL;
     EVP_PKEY *serv_pkey = NULL, *iut_pkey = NULL;
-    char *s_pub_key = NULL, *i_pub_key = NULL;
     unsigned char *z = NULL;
     BIGNUM *p = NULL, *q = NULL, *g = NULL, *spub = NULL, *ipub = NULL, *ipriv = NULL;
     const char *group = NULL;
@@ -415,8 +414,6 @@ int app_kas_ffc_handler(ACVP_TEST_CASE *test_case) {
     memcpy_s(tc->chash, KAS_FFC_Z_MAX, z, z_len);
     rv = 0;
 err:
-    if (s_pub_key) free(s_pub_key);
-    if (i_pub_key) free(i_pub_key);
     if (z) free (z);
     if (serv_pbld) OSSL_PARAM_BLD_free(serv_pbld);
     if (iut_pbld) OSSL_PARAM_BLD_free(iut_pbld);
@@ -714,9 +711,7 @@ int app_kas_ifc_handler(ACVP_TEST_CASE *test_case) {
         /* For KAS2 responder AFT tests, we also generate and encapsulate our own shared secret */
         if (tc->scheme == ACVP_KAS_IFC_KAS2 && tc->test_type == ACVP_KAS_IFC_TT_AFT) {
             if (z) free(z);
-            if (encap_s) free(encap_s);
             z = NULL;
-            encap_s = NULL;
 
             if (EVP_PKEY_encapsulate_init(encap_ctx, NULL) != 1) {
                 printf("Error initializing encapsulate in KAS-IFC\n");
@@ -777,7 +772,7 @@ int app_kts_ifc_handler(ACVP_TEST_CASE *test_case) {
            *dmp1 = NULL, *dmq1 = NULL, *iqmp = NULL;
     const char *md = NULL;
     size_t out_len = 0;
-    EVP_PKEY *pkey = NULL, *op_pkey = NULL;
+    EVP_PKEY *pkey = NULL;
     EVP_PKEY_CTX *pkey_ctx = NULL, *op_ctx = NULL;
     OSSL_PARAM *params = NULL, *op_params = NULL;
     OSSL_PARAM_BLD *pbld = NULL, *op_pbld = NULL;
@@ -954,7 +949,6 @@ err:
     if (dmq1) BN_free(dmq1);
     if (iqmp) BN_free(iqmp);
     if (pkey) EVP_PKEY_free(pkey);
-    if (op_pkey) EVP_PKEY_free(op_pkey);
     if (pkey_ctx) EVP_PKEY_CTX_free(pkey_ctx);
     if (op_ctx) EVP_PKEY_CTX_free(op_ctx);
     if (params) OSSL_PARAM_free(params);
