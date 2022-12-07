@@ -1909,6 +1909,7 @@ typedef enum acvp_kda_param {
     ACVP_KDA_Z,
     ACVP_KDA_L,
     ACVP_KDA_MAC_SALT,
+    ACVP_KDA_USE_HYBRID_SECRET,
     ACVP_KDA_HKDF_HMAC_ALG,
     ACVP_KDA_ONESTEP_AUX_FUNCTION
 } ACVP_KDA_PARM;
@@ -1971,6 +1972,7 @@ typedef struct acvp_kda_hkdf_tc_t {
     unsigned char *salt;
     unsigned char *z;
     unsigned char *t;
+    int uses_hybrid_secret;
     int l;
     int saltLen;
     int zLen;
