@@ -2044,6 +2044,14 @@ static int enable_kda(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDA_HKDF, ACVP_PREREQ_HMAC, value);
     CHECK_ENABLE_CAP_RV(rv);
+#if 0 /* example of how hybrid secret usage can be registered */
+    rv = acvp_cap_kda_set_parm(ctx, ACVP_KDA_HKDF, ACVP_KDA_USE_HYBRID_SECRET, 512, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kda_set_parm(ctx, ACVP_KDA_HKDF, ACVP_KDA_USE_HYBRID_SECRET, 520, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kda_set_domain(ctx, ACVP_KDA_HKDF, ACVP_KDA_USE_HYBRID_SECRET, 1024, 4096, 8);
+    CHECK_ENABLE_CAP_RV(rv);
+#endif
 #if OPENSSL_VERSION_NUMBER >= 0x30000000L
     rv = acvp_cap_kda_set_parm(ctx, ACVP_KDA_HKDF, ACVP_KDA_PATTERN, ACVP_KDA_PATTERN_ALGID, NULL);
     CHECK_ENABLE_CAP_RV(rv);
@@ -2206,7 +2214,14 @@ static int enable_kda(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDA_TWOSTEP, ACVP_PREREQ_HMAC, value);
     CHECK_ENABLE_CAP_RV(rv);
-
+#if 0 /* example of how hybrid secret usage can be registered */
+    rv = acvp_cap_kda_twostep_set_parm(ctx, ACVP_KDA_USE_HYBRID_SECRET, 512, 0, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kda_twostep_set_parm(ctx, ACVP_KDA_USE_HYBRID_SECRET, 520, 0, NULL);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kda_twostep_set_domain(ctx, ACVP_KDA_USE_HYBRID_SECRET, 1024, 4096, 8, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+#endif
     rv = acvp_cap_kda_twostep_set_parm(ctx, ACVP_KDA_L, 2048, 0, NULL);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_kda_twostep_set_domain(ctx, ACVP_KDA_Z, 224, 8192, 8, 0);

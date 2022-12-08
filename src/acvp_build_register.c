@@ -3858,6 +3858,7 @@ static ACVP_RESULT acvp_build_kda_twostep_register_cap(ACVP_CTX *ctx,
     JSON_Object *alg_specs_counter_obj = NULL, *alg_specs_feedback_obj = NULL, *alg_specs_dpi_obj = NULL;
     ACVP_NAME_LIST *tmp_name_list = NULL;
     ACVP_PARAM_LIST *tmp_param_list;
+    ACVP_SL_LIST *list = NULL;
     const char *revision = NULL;
     const char *mode = NULL;
     char *pattern_str = NULL;
@@ -3914,6 +3915,33 @@ static ACVP_RESULT acvp_build_kda_twostep_register_cap(ACVP_CTX *ctx,
     //append performMultiExpansionTests boolean, only for Cr2
     if (cap->revision != ACVP_REVISION_SP800_56CR1) {
         json_object_set_boolean(cap_obj, "performMultiExpansionTests", cap->perform_multi_expansion_tests);
+    }
+
+    /* Append the "usesHybridShareSecret" value and "auxSharedSecretLen" value if enabled */
+    if (cap_entry->cap.kda_twostep_cap->use_hybrid_shared_secret) {
+        json_object_set_boolean(cap_obj, "usesHybridSharedSecret", 1);
+        json_object_set_value(cap_obj, "auxSharedSecretLen", json_value_init_array());
+        tmp_arr = json_object_get_array(cap_obj, "auxSharedSecretLen");
+
+        if (cap_entry->cap.kda_twostep_cap->aux_secret_len.min != 0 ||
+                cap_entry->cap.kda_twostep_cap->aux_secret_len.max != 0 ||
+                cap_entry->cap.kda_twostep_cap->aux_secret_len.increment != 0) {
+            tmp_val = json_value_init_object();
+            tmp_obj = json_value_get_object(tmp_val);
+            json_object_set_number(tmp_obj, "min", cap_entry->cap.kda_twostep_cap->aux_secret_len.min);
+            json_object_set_number(tmp_obj, "max", cap_entry->cap.kda_twostep_cap->aux_secret_len.max);
+            json_object_set_number(tmp_obj, "increment", cap_entry->cap.kda_twostep_cap->aux_secret_len.increment);
+            json_array_append_value(tmp_arr, tmp_val);
+        }
+
+        list = cap_entry->cap.kda_twostep_cap->aux_secret_len.values;
+        while (list) {
+            json_array_append_number(tmp_arr, list->length);
+            list = list->next;
+        }
+    } else if (!cap_entry->cap.kda_twostep_cap->revision) {
+        /* Only applies if using default revision */
+        json_object_set_boolean(cap_obj, "usesHybridSharedSecret", 0);
     }
 
     /* Make an object with all of the common parameters in it. Then, copy it for each mode and add

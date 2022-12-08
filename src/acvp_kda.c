@@ -294,6 +294,7 @@ static ACVP_RESULT acvp_kda_twostep_init_tc(ACVP_CTX *ctx,
                                              ACVP_KDA_TWOSTEP_TC *stc,
                                              const int tc_id,
                                              ACVP_KDF108_MAC_MODE_VAL mac_mode,
+                                             int hybrid_secret,
                                              const char *salt,
                                              const char *z,
                                              const char *iv,
@@ -327,6 +328,7 @@ static ACVP_RESULT acvp_kda_twostep_init_tc(ACVP_CTX *ctx,
     stc->kdfMode = kdfMode;
     stc->counterLocation = counterLocation;
     stc->counterLen = counterLen;
+    stc->uses_hybrid_secret = hybrid_secret;
 
     if (memcpy_s(stc->fixedInfoPattern, ACVP_KDA_PATTERN_MAX * sizeof(int), fixedArr, ACVP_KDA_PATTERN_MAX * sizeof(int))) {
         ACVP_LOG_ERR("Error copying array of fixedInfoPattern candidates into test case structure");
@@ -1374,7 +1376,7 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
                                                 vparty, vephemeral, algid, context, label, dkm, l, saltLen,
                                                 salt_method, encoding, arr, test_type);
             } else {
-                rv = acvp_kda_twostep_init_tc(ctx, tc->tc.kda_twostep, tc_id, mac_mode, salt, z, iv_str, t, uparty, 
+                rv = acvp_kda_twostep_init_tc(ctx, tc->tc.kda_twostep, tc_id, mac_mode, hybrid_secret, salt, z, iv_str, t, uparty,
                                                 uephemeral, vparty, vephemeral, algid, context, label, dkm, l, saltLen, iv_len,
                                                 ctr_len, salt_method, kdf_mode, ctr_loc, encoding, arr, test_type);
             }

@@ -2132,6 +2132,7 @@ typedef struct acvp_kda_twostep_tc_t {
     ACVP_KDF108_FIXED_DATA_ORDER_VAL counterLocation;
     ACVP_KDA_MAC_SALT_METHOD saltMethod;
     unsigned int tc_id;
+    int uses_hybrid_secret;
     unsigned char *salt;
     unsigned char *iv;
     unsigned char *z;
