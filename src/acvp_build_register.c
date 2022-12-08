@@ -4059,6 +4059,7 @@ static ACVP_RESULT acvp_build_kda_hkdf_register_cap(ACVP_CTX *ctx,
     JSON_Object *tmp_obj = NULL;
     ACVP_NAME_LIST *tmp_name_list = NULL;
     ACVP_PARAM_LIST *tmp_param_list;
+    ACVP_SL_LIST *list = NULL;
     const char *revision = NULL;
     const char *mode = NULL;
     char *pattern_str = NULL;
@@ -4216,6 +4217,33 @@ static ACVP_RESULT acvp_build_kda_hkdf_register_cap(ACVP_CTX *ctx,
     //append performMultiExpansionTests boolean, only for Cr2
     if (cap->revision != ACVP_REVISION_SP800_56CR1) {
         json_object_set_boolean(cap_obj, "performMultiExpansionTests", cap->perform_multi_expansion_tests);
+    }
+
+    /* Append the "usesHybridShareSecret" value and "auxSharedSecretLen" value if enabled */
+    if (cap_entry->cap.kda_hkdf_cap->use_hybrid_shared_secret) {
+        json_object_set_boolean(cap_obj, "usesHybridSharedSecret", 1);
+        json_object_set_value(cap_obj, "auxSharedSecretLen", json_value_init_array());
+        temp_arr = json_object_get_array(cap_obj, "auxSharedSecretLen");
+
+        if (cap_entry->cap.kda_hkdf_cap->aux_secret_len.min != 0 ||
+                cap_entry->cap.kda_hkdf_cap->aux_secret_len.max != 0 ||
+                cap_entry->cap.kda_hkdf_cap->aux_secret_len.increment != 0) {
+            tmp_val = json_value_init_object();
+            tmp_obj = json_value_get_object(tmp_val);
+            json_object_set_number(tmp_obj, "min", cap_entry->cap.kda_hkdf_cap->aux_secret_len.min);
+            json_object_set_number(tmp_obj, "max", cap_entry->cap.kda_hkdf_cap->aux_secret_len.max);
+            json_object_set_number(tmp_obj, "increment", cap_entry->cap.kda_hkdf_cap->aux_secret_len.increment);
+            json_array_append_value(temp_arr, tmp_val);
+        }
+
+        list = cap_entry->cap.kda_hkdf_cap->aux_secret_len.values;
+        while (list) {
+            json_array_append_number(temp_arr, list->length);
+            list = list->next;
+        }
+    } else if (!cap_entry->cap.kda_hkdf_cap->revision) {
+        /* Only applies if using default revision */
+        json_object_set_boolean(cap_obj, "usesHybridSharedSecret", 0);
     }
 err:
     if (pattern_str) free(pattern_str);

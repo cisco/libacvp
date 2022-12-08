@@ -458,6 +458,7 @@ static ACVP_RESULT acvp_kda_hkdf_init_tc(ACVP_CTX *ctx,
                                              ACVP_KDA_HKDF_TC *stc,
                                              const int tc_id,
                                              ACVP_HASH_ALG hmac_alg,
+                                             int hybrid_secret,
                                              const char *salt,
                                              const char *z,
                                              const char *t,
@@ -483,6 +484,7 @@ static ACVP_RESULT acvp_kda_hkdf_init_tc(ACVP_CTX *ctx,
     stc->l = l / 8;
     stc->encoding = encoding;
     stc->saltMethod = saltMethod;
+    stc->uses_hybrid_secret = hybrid_secret;
 
     if (memcpy_s(stc->fixedInfoPattern, ACVP_KDA_PATTERN_MAX * sizeof(int), fixedArr, ACVP_KDA_PATTERN_MAX * sizeof(int))) {
         ACVP_LOG_ERR("Error copying array of fixedInfoPattern candidates into test case structure");
@@ -896,7 +898,7 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
                *salt_method_str = NULL;
     ACVP_HASH_ALG hmac_alg = 0;
     unsigned int i = 0, g_cnt = 0;
-    int j = 0, k = 0, t_cnt = 0, tc_id = 0, saltLen = 0, l = 0;
+    int j = 0, k = 0, t_cnt = 0, tc_id = 0, saltLen = 0, l = 0,hybrid_secret = 0;
     ACVP_RESULT rv;
     const char *test_type_str = NULL;
     ACVP_KDA_TEST_TYPE test_type;
@@ -1136,6 +1138,9 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
             }
         }
 
+        /* in case of value not existing or being false, we have the same outcome */
+        hybrid_secret = json_object_get_boolean(paramobj, "usesHybridSharedSecret");
+
         json_object_set_value(r_gobj, "tests", json_value_init_array());
         r_tarr = json_object_get_array(r_gobj, "tests");
 
@@ -1297,6 +1302,15 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
                 }
             }
 
+            if (!t && json_object_has_value(paramobj, "t") && hybrid_secret) {
+                t = json_object_get_string(paramobj, "t");
+                if (!t) {
+                    ACVP_LOG_ERR("Server JSON missing 't'");
+                    rv = ACVP_MALFORMED_JSON;
+                    goto err;
+                }
+            }
+
             if (test_type == ACVP_KDA_TT_VAL) {
                 /*
                  * Validate
@@ -1352,7 +1366,7 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
              * the crypto module.
              */
             if (cipher == ACVP_KDA_HKDF) {
-                rv = acvp_kda_hkdf_init_tc(ctx, tc->tc.kda_hkdf, tc_id, hmac_alg, salt, z, t, uparty, uephemeral,
+                rv = acvp_kda_hkdf_init_tc(ctx, tc->tc.kda_hkdf, tc_id, hmac_alg, hybrid_secret, salt, z, t, uparty, uephemeral,
                                             vparty, vephemeral, algid, context, label, dkm, l, saltLen,
                                             salt_method, encoding, arr, test_type);
             } else if (cipher == ACVP_KDA_ONESTEP) {
