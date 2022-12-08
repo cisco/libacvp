@@ -2066,6 +2066,7 @@ typedef enum acvp_kda_param {
     ACVP_KDA_MAC_SALT,
     ACVP_KDA_PERFORM_MULTIEXPANSION_TESTS,
     ACVP_KDA_MAC_ALG,
+    ACVP_KDA_USE_HYBRID_SECRET,
     ACVP_KDA_ONESTEP_AUX_FUNCTION,
     ACVP_KDA_TWOSTEP_SUPPORTED_LEN,
     ACVP_KDA_TWOSTEP_FIXED_DATA_ORDER,
@@ -2131,6 +2132,7 @@ typedef struct acvp_kda_twostep_tc_t {
     ACVP_KDF108_FIXED_DATA_ORDER_VAL counterLocation;
     ACVP_KDA_MAC_SALT_METHOD saltMethod;
     unsigned int tc_id;
+    int uses_hybrid_secret;
     unsigned char *salt;
     unsigned char *iv;
     unsigned char *z;
@@ -2178,6 +2180,7 @@ typedef struct acvp_kda_hkdf_tc_t {
     unsigned char *salt;
     unsigned char *z;
     unsigned char *t;
+    int uses_hybrid_secret;
     int l;
     int saltLen;
     int zLen;

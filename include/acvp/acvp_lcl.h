@@ -13,8 +13,8 @@
 #include "parson.h"
 
 #define ACVP_VERSION    "1.0"
-#define ACVP_LIBRARY_VERSION_NUMBER "1.4.3"
-#define ACVP_LIBRARY_VERSION    "libacvp_oss-1.4.3"
+#define ACVP_LIBRARY_VERSION_NUMBER "2.0.0"
+#define ACVP_LIBRARY_VERSION    "libacvp_oss-2.0.0"
 
 
 #ifndef ACVP_LOG_ERR
@@ -880,7 +880,7 @@
 #define ACVP_KDA_DKM_STR_MAX (ACVP_KDA_DKM_BIT_MAX >> 2)
 #define ACVP_KDA_DKM_BYTE_MAX (ACVP_KDA_DKM_BIT_MAX >> 3)
 
-#define ACVP_KDA_FIXED_BIT_MAX 1024 //arbitrary
+#define ACVP_KDA_FIXED_BIT_MAX 8192 //arbitrary
 #define ACVP_KDA_FIXED_STR_MAX (ACVP_KDA_FIXED_BIT_MAX >> 2)
 #define ACVP_KDA_FIXED_BYTE_MAX (ACVP_KDA_FIXED_BIT_MAX >> 3)
 
@@ -1505,7 +1505,9 @@ typedef struct acvp_kda_twostep_capability_t {
     ACVP_PARAM_LIST *encodings;
     ACVP_JSON_DOMAIN_OBJ z;
     int l;
-    int perform_multi_expansion_tests;
+    int perform_multi_expansion_tests; /* 56Cr2 only */
+    int use_hybrid_shared_secret; /* 56Cr2 only */
+    ACVP_JSON_DOMAIN_OBJ aux_secret_len; /* 56Cr2 only */
     ACVP_KDF108_CAP kdf_params; /* All of the KDF108 params get stored in here to avoid duplicate code */
 } ACVP_KDA_TWOSTEP_CAP;
 
@@ -1519,7 +1521,9 @@ typedef struct acvp_kda_hkdf_t {
     ACVP_NAME_LIST *mac_salt_methods;
     ACVP_JSON_DOMAIN_OBJ z;
     int l;
-    int perform_multi_expansion_tests;
+    int perform_multi_expansion_tests; /* 56Cr2 only */
+    int use_hybrid_shared_secret; /* 56Cr2 only */
+    ACVP_JSON_DOMAIN_OBJ aux_secret_len; /* 56Cr2 only */
 } ACVP_KDA_HKDF_CAP;
 
 typedef struct acvp_kts_ifc_macs_t {

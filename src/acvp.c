@@ -709,6 +709,7 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx) {
                 acvp_cap_free_nl(cap_entry->cap.kda_twostep_cap->mac_salt_methods);
                 acvp_cap_free_pl(cap_entry->cap.kda_twostep_cap->patterns);
                 acvp_cap_free_pl(cap_entry->cap.kda_twostep_cap->encodings);
+                acvp_cap_free_domain(&cap_entry->cap.kda_twostep_cap->aux_secret_len);
                 acvp_cap_free_kdf108(&cap_entry->cap.kda_twostep_cap->kdf_params);
                 free(cap_entry->cap.kda_twostep_cap);
                 break;
@@ -720,6 +721,7 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx) {
                 acvp_cap_free_pl(cap_entry->cap.kda_hkdf_cap->encodings);
                 acvp_cap_free_nl(cap_entry->cap.kda_hkdf_cap->hmac_algs);
                 acvp_cap_free_nl(cap_entry->cap.kda_hkdf_cap->mac_salt_methods);
+                acvp_cap_free_domain(&cap_entry->cap.kda_hkdf_cap->aux_secret_len);
                 free(cap_entry->cap.kda_hkdf_cap);
                 break;
             case ACVP_KTS_IFC_TYPE:
