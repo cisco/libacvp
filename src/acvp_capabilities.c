@@ -7429,6 +7429,7 @@ ACVP_RESULT acvp_cap_kda_set_parm(ACVP_CTX *ctx, ACVP_CIPHER cipher, ACVP_KDA_PA
             }
             result = acvp_append_name_list(&cap_list->cap.kda_onestep_cap->aux_functions, tmp);
             break;
+        case ACVP_KDA_HKDF_HMAC_ALG:
         case ACVP_KDA_Z:
         case ACVP_KDA_USE_HYBRID_SECRET:
         default:
