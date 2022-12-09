@@ -127,6 +127,7 @@ int app_kda_hkdf_handler(ACVP_TEST_CASE *test_case) {
                 memcpy_s(fixedInfo + tmp, fixedInfoLen - tmp, (char *)&lBits, 4);
                 tmp += 4;
                 break;
+            case ACVP_KDA_PATTERN_T:
             case ACVP_KDA_PATTERN_NONE:
             case ACVP_KDA_PATTERN_MAX:
             default:
