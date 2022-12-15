@@ -13,8 +13,8 @@
 #include "parson.h"
 
 #define ACVP_VERSION    "1.0"
-#define ACVP_LIBRARY_VERSION_NUMBER "1.5.2"
-#define ACVP_LIBRARY_VERSION    "libacvp_oss-1.5.2"
+#define ACVP_LIBRARY_VERSION_NUMBER "1.5.3"
+#define ACVP_LIBRARY_VERSION    "libacvp_oss-1.5.3"
 
 
 #ifndef ACVP_LOG_ERR
@@ -1433,6 +1433,8 @@ typedef struct acvp_kda_hkdf_t {
     ACVP_NAME_LIST *mac_salt_methods;
     ACVP_JSON_DOMAIN_OBJ z;
     int l;
+    int use_hybrid_shared_secret; /* 56Cr2 only */
+    ACVP_JSON_DOMAIN_OBJ aux_secret_len; /* 56Cr2 only */
 } ACVP_KDA_HKDF_CAP;
 
 typedef struct acvp_kts_ifc_macs_t {

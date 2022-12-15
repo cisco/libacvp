@@ -7429,7 +7429,9 @@ ACVP_RESULT acvp_cap_kda_set_parm(ACVP_CTX *ctx, ACVP_CIPHER cipher, ACVP_KDA_PA
             }
             result = acvp_append_name_list(&cap_list->cap.kda_onestep_cap->aux_functions, tmp);
             break;
+        case ACVP_KDA_HKDF_HMAC_ALG:
         case ACVP_KDA_Z:
+        case ACVP_KDA_USE_HYBRID_SECRET:
         default:
             ACVP_LOG_ERR("Invalid parameter specified");
             return ACVP_INVALID_ARG;
@@ -7463,6 +7465,10 @@ ACVP_RESULT acvp_cap_kda_set_parm(ACVP_CTX *ctx, ACVP_CIPHER cipher, ACVP_KDA_PA
                 }
                 strncpy_s(cap_list->cap.kda_hkdf_cap->literal_pattern_candidate, 
                           ACVP_KDA_PATTERN_LITERAL_STR_LEN_MAX, string, len);
+            }
+            if (value == ACVP_KDA_PATTERN_T) {
+                ACVP_LOG_ERR("T is only a valid pattern for KDA onestep");
+                return ACVP_INVALID_ARG;
             }
             if (value > ACVP_KDA_PATTERN_NONE && value < ACVP_KDA_PATTERN_MAX) {
                 result = acvp_append_param_list(&cap_list->cap.kda_hkdf_cap->patterns, value);
@@ -7508,6 +7514,15 @@ ACVP_RESULT acvp_cap_kda_set_parm(ACVP_CTX *ctx, ACVP_CIPHER cipher, ACVP_KDA_PA
                 ACVP_LOG_ERR("Invalid value for ACVK_KDA_MAC_SALT");
                 return ACVP_INVALID_ARG;
             }
+            break;
+        case ACVP_KDA_USE_HYBRID_SECRET:
+            /* revision is only set for non-default revisions */
+            if (cap_list->cap.kda_hkdf_cap->revision) {
+                ACVP_LOG_ERR("Hybrid secrets for HKDF can only be set for revision SP800-56Cr2");
+                return ACVP_INVALID_ARG;
+            }
+            cap_list->cap.kda_hkdf_cap->aux_secret_len.value = value;
+            cap_list->cap.kda_hkdf_cap->use_hybrid_shared_secret = 1;
             break;
         case ACVP_KDA_HKDF_HMAC_ALG:
             tmp = acvp_lookup_hmac_alg_str(value);
@@ -7563,12 +7578,8 @@ ACVP_RESULT acvp_cap_kda_set_domain(ACVP_CTX *ctx, ACVP_CIPHER cipher, ACVP_KDA_
         ACVP_LOG_ERR("Cap entry not found.");
         return ACVP_NO_CAP;
     }
-    if (param != ACVP_KDA_Z) {
-        ACVP_LOG_ERR("Invalid parameter provided");
-        return ACVP_INVALID_ARG;
-    }
 
-    if (min < 0 || increment % 8 != 0 || max < min || max - min < 8) {
+    if (min < 0 || max < min || max - min < 8) {
         ACVP_LOG_ERR("Invalid domain given");
     }
 
@@ -7584,18 +7595,73 @@ ACVP_RESULT acvp_cap_kda_set_domain(ACVP_CTX *ctx, ACVP_CIPHER cipher, ACVP_KDA_
             ACVP_LOG_ERR("KDA onestep cap entry not found.");
             return ACVP_NO_CAP;
         }
-        cap_list->cap.kda_onestep_cap->z.min = min;
-        cap_list->cap.kda_onestep_cap->z.max = max;
-        cap_list->cap.kda_onestep_cap->z.increment = increment;
+
+        switch(param) {
+        case ACVP_KDA_Z:
+            if (min < 224 || max > 65536 || increment % 8 != 0) {
+                ACVP_LOG_ERR("Invalid Z domain provided for KDA onestep");
+                return ACVP_INVALID_ARG;
+            }
+            cap_list->cap.kda_onestep_cap->z.min = min;
+            cap_list->cap.kda_onestep_cap->z.max = max;
+            cap_list->cap.kda_onestep_cap->z.increment = increment;
+            break;
+        case ACVP_KDA_USE_HYBRID_SECRET:
+            ACVP_LOG_ERR("Hybrid secret only applies to HKDF, not onestep");
+            return ACVP_INVALID_ARG;
+        case ACVP_KDA_PATTERN:
+        case ACVP_KDA_REVISION:
+        case ACVP_KDA_ENCODING_TYPE:
+        case ACVP_KDA_L:
+        case ACVP_KDA_MAC_SALT:
+        case ACVP_KDA_HKDF_HMAC_ALG:
+        case ACVP_KDA_ONESTEP_AUX_FUNCTION:
+        default:
+            ACVP_LOG_ERR("Invalid domain param provided for KDA");
+            return ACVP_INVALID_ARG;
+        }
         break;
     case ACVP_SUB_KDA_HKDF:
         if (!cap_list->cap.kda_hkdf_cap) {
             ACVP_LOG_ERR("KDA-HKDF entry not found.");
             return ACVP_NO_CAP;
         }
-        cap_list->cap.kda_hkdf_cap->z.min = min;
-        cap_list->cap.kda_hkdf_cap->z.max = max;
-        cap_list->cap.kda_hkdf_cap->z.increment = increment;
+
+        switch(param) {
+        case ACVP_KDA_Z:
+            if (min < 224 || max > 65536 || increment % 8 != 0) {
+                ACVP_LOG_ERR("Invalid Z domain provided for HKDF");
+                return ACVP_INVALID_ARG;
+            }
+            cap_list->cap.kda_hkdf_cap->z.min = min;
+            cap_list->cap.kda_hkdf_cap->z.max = max;
+            cap_list->cap.kda_hkdf_cap->z.increment = increment;
+            break;
+        case ACVP_KDA_USE_HYBRID_SECRET:
+            if (cap_list->cap.kda_hkdf_cap->revision) {
+                ACVP_LOG_ERR("Hybrid secrets for HKDF can only be set for revision SP800-56Cr2");
+                return ACVP_INVALID_ARG;
+            }
+            if (min < 112 || max > 65536 || increment % 8 != 0) {
+                ACVP_LOG_ERR("Invalid aux secret len domain provided for HKDF");
+                return ACVP_INVALID_ARG;
+            }
+            cap_list->cap.kda_hkdf_cap->aux_secret_len.min = min;
+            cap_list->cap.kda_hkdf_cap->aux_secret_len.max = max;
+            cap_list->cap.kda_hkdf_cap->aux_secret_len.increment = increment;
+            cap_list->cap.kda_hkdf_cap->use_hybrid_shared_secret = 1;
+            break;
+        case ACVP_KDA_PATTERN:
+        case ACVP_KDA_REVISION:
+        case ACVP_KDA_ENCODING_TYPE:
+        case ACVP_KDA_L:
+        case ACVP_KDA_MAC_SALT:
+        case ACVP_KDA_HKDF_HMAC_ALG:
+        case ACVP_KDA_ONESTEP_AUX_FUNCTION:
+        default:
+            ACVP_LOG_ERR("Invalid domain param provided for KDA");
+            return ACVP_INVALID_ARG;
+        }
         break;
     case ACVP_SUB_KAS_ECC_CDH:
     case ACVP_SUB_KAS_ECC_COMP:
