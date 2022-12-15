@@ -2095,6 +2095,13 @@ ACVP_RESULT acvp_mark_as_delete_only(ACVP_CTX *ctx, char *request_url) {
     return ACVP_SUCCESS;
 }
 
+int acvp_get_vector_set_count(ACVP_CTX *ctx) {
+    if (!ctx) {
+        return -1;
+    }
+    return ctx->vs_count;
+}
+
 /*
  * This function builds the JSON login message that
  * will be sent to the ACVP server. If enabled,

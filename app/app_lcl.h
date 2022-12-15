@@ -47,6 +47,7 @@ typedef struct app_config {
     int fips_validation;
     int get_expected;
     int save_to;
+    int get_cost;
 #if OPENSSL_VERSION_NUMBER >= 0x30000000L
     int disable_fips;
 #endif

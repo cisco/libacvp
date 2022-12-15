@@ -4147,6 +4147,16 @@ ACVP_RESULT acvp_mark_as_delete_only(ACVP_CTX *ctx, char *request_url);
  */
 ACVP_RESULT acvp_mark_as_put_after_test(ACVP_CTX *ctx, char *filename);
 
+/**
+ * @brief acvp_get_vector_set_count will return the number of vector sets that are expected based on the current
+ * registration. This should be seen as a close estimate not an exact number, as different ACVP servers could
+ * possibly have different behaviors.
+ *
+ * @param ctx Pointer to ACVP_CTX with registered algorithms
+ *
+ * @return Count of expected vector sets
+ */
+int acvp_get_vector_set_count(ACVP_CTX *ctx);
 
 /**
  * @brief Performs the ACVP testing procedures.

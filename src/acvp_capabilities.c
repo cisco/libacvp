@@ -636,6 +636,8 @@ static ACVP_RESULT acvp_cap_list_append(ACVP_CTX *ctx,
         cap_e2->next = cap_entry;
     }
 
+    /* Assume here one cap = one vector set; for special cases we will handle those as the parameter is set */
+    ctx->vs_count++;
     return ACVP_SUCCESS;
 
 err:
@@ -2560,6 +2562,10 @@ ACVP_RESULT acvp_cap_sym_cipher_set_parm(ACVP_CTX *ctx,
 
     case ACVP_SYM_CIPH_PARM_IVGEN_SRC:
         if (value > 0 && value < ACVP_SYM_CIPH_IVGEN_SRC_MAX) {
+            if (value == ACVP_SYM_CIPH_IVGEN_SRC_EITHER) {
+                /* This will generate two vector sets, one for internal ivgen and one for external */
+                ctx->vs_count++;
+            }
             cap->cap.sym_cap->ivgen_source = value;
             return ACVP_SUCCESS;
         } else {
@@ -4958,6 +4964,10 @@ ACVP_RESULT acvp_cap_ecdsa_set_parm(ACVP_CTX *ctx,
     case ACVP_ECDSA_COMPONENT_TEST:
         if (cipher == ACVP_ECDSA_SIGGEN || cipher == ACVP_ECDSA_SIGVER) {
             if (value >= ACVP_ECDSA_COMPONENT_MODE_NO && value <= ACVP_ECDSA_COMPONENT_MODE_BOTH) {
+                if (value == ACVP_ECDSA_COMPONENT_MODE_BOTH) {
+                    /* This will generate two vector sets, one for and one not for component mode */
+                    ctx->vs_count++;
+                }
                 cap->component = value;
             } else {
                 ACVP_LOG_ERR("Invalid value given for ECDSA component test mode");

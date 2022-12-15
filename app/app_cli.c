@@ -251,6 +251,7 @@ static ko_longopt_t longopts[] = {
     { "save_to", ko_required_argument, 413 },
     { "delete", ko_required_argument, 414 },
     { "cancel_session", ko_required_argument, 415 },
+    { "cost", ko_no_argument, 416 },
 #if OPENSSL_VERSION_NUMBER >= 0x30000000L
     { "disable_fips", ko_no_argument, 500 },
 #endif
@@ -567,6 +568,10 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
                 return 1;
             }
             strcpy_s(cfg->session_file, JSON_FILENAME_LENGTH + 1, opt.arg);
+            break;
+
+        case 416:
+            cfg->get_cost = 1;
             break;
 
 #if OPENSSL_VERSION_NUMBER >= 0x30000000L

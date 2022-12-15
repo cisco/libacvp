@@ -1787,6 +1787,8 @@ struct acvp_ctx_t {
 
     /* crypto module capabilities list */
     ACVP_CAPS_LIST *caps_list;
+    /* Maintain a count of the number of registered vector sets so we can evaluate cost. This can be >= caps_list size */
+    int vs_count;
 
     /* application callbacks */
     ACVP_RESULT (*test_progress_cb) (char *msg);
