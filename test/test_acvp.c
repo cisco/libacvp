@@ -837,6 +837,20 @@ Test(PROCESS_TESTS, mark_as_delete_only, .init = setup_full_ctx, .fini = teardow
 }
 
 /*
+ * Test acvp_get_vector_set_count
+ */
+Test(PROCESS_TESTS, get_vector_set_count, .init = setup_full_ctx, .fini = teardown) {
+    int count = 0;
+    count = acvp_get_vector_set_count(NULL);
+    cr_assert(count < 0);
+
+    count = acvp_get_vector_set_count(ctx);
+    cr_assert(count > 0);
+    cr_assert(count < 10000); /* An arbitrarily large number that should never be reached */
+
+}
+
+/*
  * Test acvp_mark_as_put_after_test
  */
 Test(PROCESS_TESTS, mark_as_put_after_test, .init = setup_full_ctx, .fini = teardown) {

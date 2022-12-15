@@ -354,6 +354,16 @@ int main(int argc, char **argv) {
 #endif
     }
 
+    if (cfg.get_cost) {
+        diff = acvp_get_vector_set_count(ctx);
+        if (diff < 0) {
+            printf("Unable to get expected vector set count with given test session context.\n\n");
+        } else {
+            printf("The given test session context is expected to generate %d vector sets.\n\n", diff);
+        }
+        goto end;
+    }
+
     if (cfg.kat) {
        rv = acvp_load_kat_filename(ctx, cfg.kat_file);
        goto end;

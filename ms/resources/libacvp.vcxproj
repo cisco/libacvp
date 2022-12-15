@@ -411,6 +411,7 @@
     <ClCompile Include="..\..\src\acvp_kdf135_snmp.c" />
     <ClCompile Include="..\..\src\acvp_kdf135_srtp.c" />
     <ClCompile Include="..\..\src\acvp_kdf135_ssh.c" />
+    <ClCompile Include="..\..\src\acvp_kdf135_x942.c" />
     <ClCompile Include="..\..\src\acvp_kdf135_x963.c" />
     <ClCompile Include="..\..\src\acvp_operating_env.c" />
     <ClCompile Include="..\..\src\acvp_rsa_keygen.c" />
