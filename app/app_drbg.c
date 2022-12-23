@@ -229,8 +229,8 @@ int app_drbg_handler(ACVP_TEST_CASE *test_case) {
         printf("Missing entropy input needed for reseed\n");
         return 1;
     }
-    if (!drbg_entropy_len || !tc->pr1_len || !tc->pr2_len ||
-        !tc->entropy || !tc->entropy_input_pr_1 || !tc->entropy_input_pr_2) {
+    if (!drbg_entropy_len || !tc->entropy || !tc->entropy_input_pr_1 ||
+	!tc->entropy_input_pr_2) {
         printf("Insufficient entropy for testing DRBG\n");
         return 1;
     }
