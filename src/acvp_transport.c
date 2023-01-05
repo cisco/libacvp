@@ -351,7 +351,7 @@ static long acvp_curl_http_post(ACVP_CTX *ctx, const char *url, const char *data
      */
     crv = curl_easy_perform(hnd);
     if (crv != CURLE_OK) {
-        ACVP_LOG_ERR("Curl failed with code %d (%s)\n", crv, curl_easy_strerror(crv));
+        ACVP_LOG_ERR("Curl failed with code %d (%s)", crv, curl_easy_strerror(crv));
     }
 
     /*
@@ -451,7 +451,7 @@ static long acvp_curl_http_put(ACVP_CTX *ctx, const char *url, const char *data,
         memzero_s(ctx->curl_buf, ACVP_CURL_BUF_MAX);
     }
 
-    if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
+    if (ctx->log_lvl == ACVP_LOG_LVL_VERBOSE) {
         printf("\nHTTP PUT:\n\n%s\n", data);
     }
 
@@ -460,7 +460,7 @@ static long acvp_curl_http_put(ACVP_CTX *ctx, const char *url, const char *data,
      */
     crv = curl_easy_perform(hnd);
     if (crv != CURLE_OK) {
-        ACVP_LOG_ERR("Curl failed with code %d (%s)\n", crv, curl_easy_strerror(crv));
+        ACVP_LOG_ERR("Curl failed with code %d (%s)", crv, curl_easy_strerror(crv));
     }
 
     /*
@@ -556,7 +556,7 @@ static long acvp_curl_http_delete(ACVP_CTX *ctx, const char *url) {
         memzero_s(ctx->curl_buf, ACVP_CURL_BUF_MAX);
     }
 
-    if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
+    if (ctx->log_lvl == ACVP_LOG_LVL_VERBOSE) {
         printf("\nHTTP DELETE: %s\n", url);
     }
 
@@ -565,7 +565,7 @@ static long acvp_curl_http_delete(ACVP_CTX *ctx, const char *url) {
      */
     crv = curl_easy_perform(hnd);
     if (crv != CURLE_OK) {
-        ACVP_LOG_ERR("Curl failed with code %d (%s)\n", crv, curl_easy_strerror(crv));
+        ACVP_LOG_ERR("Curl failed with code %d (%s) ", crv, curl_easy_strerror(crv));
     }
 
     /*

@@ -18,82 +18,44 @@
 
 
 #ifndef ACVP_LOG_ERR
-#ifdef _WIN32
-#define ACVP_LOG_ERR(format, ...) do { \
-        acvp_log_msg(ctx, ACVP_LOG_LVL_ERR, "***ACVP [ERR][%s:%d]--> " format "\n", \
-                     __func__, __LINE__, __VA_ARGS__); \
+#define ACVP_LOG_ERR(msg, ...) do { \
+        acvp_log_msg(ctx, ACVP_LOG_LVL_ERR, __func__, __LINE__, msg, ##__VA_ARGS__); \
 } while (0)
-#else
-#define ACVP_LOG_ERR(format, args ...) do { \
-        acvp_log_msg(ctx, ACVP_LOG_LVL_ERR, "***ACVP [ERR][%s:%d]--> " format "\n", \
-                     __func__, __LINE__, ##args); \
-} while (0)
-#endif
 #endif
 
 #ifndef ACVP_LOG_WARN
-#ifdef _WIN32
-#define ACVP_LOG_WARN(format, ...) do { \
-        acvp_log_msg(ctx, ACVP_LOG_LVL_WARN, "***ACVP [WARN][%s:%d]--> " format "\n", \
-                     __func__, __LINE__, __VA_ARGS__); \
+#define ACVP_LOG_WARN(msg, ...) do { \
+        acvp_log_msg(ctx, ACVP_LOG_LVL_WARN, __func__, __LINE__, msg, ##__VA_ARGS__); \
 } while (0)
-#else
-#define ACVP_LOG_WARN(format, args ...) do { \
-        acvp_log_msg(ctx, ACVP_LOG_LVL_WARN, "***ACVP [WARN][%s:%d]--> " format "\n", \
-                     __func__, __LINE__, ##args); \
-} while (0)
-#endif
 #endif
 
 #ifndef ACVP_LOG_STATUS
-#ifdef _WIN32
-#define ACVP_LOG_STATUS(format, ...) do { \
-        acvp_log_msg(ctx, ACVP_LOG_LVL_STATUS, "***ACVP [STATUS][%s:%d]--> " format "\n", \
-                     __func__, __LINE__, __VA_ARGS__); \
+#define ACVP_LOG_STATUS(msg, ...)  do { \
+        acvp_log_msg(ctx, ACVP_LOG_LVL_STATUS, __func__, __LINE__, msg, ##__VA_ARGS__); \
 } while (0)
-#else
-#define ACVP_LOG_STATUS(format, args ...) do { \
-        acvp_log_msg(ctx, ACVP_LOG_LVL_STATUS, "***ACVP [STATUS][%s:%d]--> " format "\n", \
-                     __func__, __LINE__, ##args); \
-} while (0)
-#endif
 #endif
 
 #ifndef ACVP_LOG_INFO
-#ifdef _WIN32
-#define ACVP_LOG_INFO(format, ...) do { \
-        acvp_log_msg(ctx, ACVP_LOG_LVL_INFO, "***ACVP [INFO][%s:%d]--> " format "\n", \
-                     __func__, __LINE__, __VA_ARGS__); \
+#define ACVP_LOG_INFO(msg, ...) do { \
+        acvp_log_msg(ctx, ACVP_LOG_LVL_INFO, __func__, __LINE__, msg, ##__VA_ARGS__); \
 } while (0)
-#else
-#define ACVP_LOG_INFO(format, args ...) do { \
-        acvp_log_msg(ctx, ACVP_LOG_LVL_INFO, "***ACVP [INFO][%s:%d]--> " format "\n", \
-                     __func__, __LINE__, ##args); \
-} while (0)
-#endif
 #endif
 
 #ifndef ACVP_LOG_VERBOSE
-#ifdef _WIN32
-#define ACVP_LOG_VERBOSE(format, ...) do { \
-        acvp_log_msg(ctx, ACVP_LOG_LVL_VERBOSE, "***ACVP [INFO][%s:%d]--> " format "\n", \
-                     __func__, __LINE__, __VA_ARGS__); \
-} while (0)
-#else
-#define ACVP_LOG_VERBOSE(format, args ...) do { \
-        acvp_log_msg(ctx, ACVP_LOG_LVL_VERBOSE, "***ACVP [INFO][%s:%d]--> " format "\n", \
-                     __func__, __LINE__, ##args); \
+#define ACVP_LOG_VERBOSE(msg, ...) do { \
+        acvp_log_msg(ctx, ACVP_LOG_LVL_VERBOSE, __func__, __LINE__, msg, ##__VA_ARGS__); \
 } while (0)
 #endif
-#endif
+
+#ifndef ACVP_LOG_NEWLINE
 #define ACVP_LOG_NEWLINE do { \
         acvp_log_newline(ctx); \
 } while (0)
+#endif
 
-
-#define ACVP_LOG_TRUNCATED_STR "...[truncated]\n"
-//This MUST be the length of the above screen (want to avoid calculating at runtime frequently)
-#define ACVP_LOG_TRUNCATED_STR_LEN 15
+#define ACVP_LOG_TRUNCATED_STR "...[truncated]"
+//This MUST be the length of the above string (want to avoid calculating at runtime frequently)
+#define ACVP_LOG_TRUNCATED_STR_LEN 14
 #define ACVP_LOG_MAX_MSG_LEN 2048
 
 #define ACVP_BIT2BYTE(x) ((x + 7) >> 3) /**< Convert bit length (x, of type integer) into byte length */
@@ -1742,7 +1704,8 @@ typedef struct acvp_fips_t {
  */
 struct acvp_ctx_t {
     /* Global config values for the session */
-    ACVP_LOG_LVL debug;
+    ACVP_LOG_LVL log_lvl;
+    int debug;              /* Indicates if the ctx is set to run in "debug" mode for extra output */
     char *server_name;
     char *path_segment;
     char *api_context;
@@ -1791,7 +1754,7 @@ struct acvp_ctx_t {
     int vs_count;
 
     /* application callbacks */
-    ACVP_RESULT (*test_progress_cb) (char *msg);
+    ACVP_RESULT (*test_progress_cb) (char *msg, ACVP_LOG_LVL level);
 
     /* Two-factor authentication callback */
     ACVP_RESULT (*totp_cb) (char **token, int token_max);
@@ -1835,12 +1798,9 @@ ACVP_RESULT acvp_retrieve_expected_result(ACVP_CTX *ctx, const char *api_url);
 
 ACVP_RESULT acvp_submit_vector_responses(ACVP_CTX *ctx, char *vsid_url);
 
-#ifdef _WIN32
-void acvp_log_msg(ACVP_CTX *ctx, ACVP_LOG_LVL level, const char *format, ...);
-#else
-void acvp_log_msg(ACVP_CTX *ctx, ACVP_LOG_LVL level, const char *format, ...) __attribute__ ((format (gnu_printf, 3, 4)));
-#endif
+void acvp_log_msg(ACVP_CTX *ctx, ACVP_LOG_LVL level, const char *func, int line, const char *format, ...);
 void acvp_log_newline(ACVP_CTX *ctx);
+
 /*
  * These are the handler routines for each KAT operation
  */

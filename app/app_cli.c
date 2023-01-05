@@ -17,9 +17,6 @@
 #include <openssl/crypto.h>
 #include <openssl/evp.h>
 
-#define ANSI_COLOR_RED "\x1b[31m"
-#define ANSI_COLOR_YELLOW "\x1b[33m"
-#define ANSI_COLOR_RESET "\x1b[0m"
 #define ACVP_APP_HELP_MSG "Use acvp_app --help for more information."
 
 static void print_usage(int code) {
@@ -252,6 +249,7 @@ static ko_longopt_t longopts[] = {
     { "delete", ko_required_argument, 414 },
     { "cancel_session", ko_required_argument, 415 },
     { "cost", ko_no_argument, 416 },
+    { "debug", ko_no_argument, 417 },
 #if OPENSSL_VERSION_NUMBER >= 0x30000000L
     { "disable_fips", ko_no_argument, 500 },
 #endif
@@ -572,6 +570,10 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
 
         case 416:
             cfg->get_cost = 1;
+            break;
+
+        case 417:
+            cfg->level = ACVP_LOG_LVL_DEBUG;
             break;
 
 #if OPENSSL_VERSION_NUMBER >= 0x30000000L

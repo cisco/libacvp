@@ -28,6 +28,10 @@ extern "C"
 #define ALG_STR_MAX_LEN 256 /* arbitrary */
 extern char value[JSON_STRING_LENGTH];
 
+#define ANSI_COLOR_RED "\x1b[31m"
+#define ANSI_COLOR_YELLOW "\x1b[33m"
+#define ANSI_COLOR_RESET "\x1b[0m"
+
 typedef struct app_config {
     ACVP_LOG_LVL level;
     int sample;

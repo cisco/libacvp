@@ -52,7 +52,8 @@ typedef enum acvp_log_lvl {
     ACVP_LOG_LVL_STATUS,
     ACVP_LOG_LVL_INFO,
     ACVP_LOG_LVL_VERBOSE,
-    ACVP_LOG_LVL_MAX = ACVP_LOG_LVL_VERBOSE,
+    ACVP_LOG_LVL_DEBUG,
+    ACVP_LOG_LVL_MAX
 } ACVP_LOG_LVL;
 
 /**
@@ -3976,7 +3977,7 @@ ACVP_RESULT acvp_cap_set_prereq(ACVP_CTX *ctx,
  * @return ACVP_RESULT
  */
 ACVP_RESULT acvp_create_test_session(ACVP_CTX **ctx,
-                                     ACVP_RESULT (*progress_cb)(char *msg),
+                                     ACVP_RESULT (*progress_cb)(char *msg, ACVP_LOG_LVL level),
                                      ACVP_LOG_LVL level);
 
 /**
