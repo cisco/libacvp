@@ -944,7 +944,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
         //Log the test group info as we receive it - if algs use default values instead of server
         //provided ones, don't log them, especially for alg-specific values
-        if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
+        if (ctx->log_lvl == ACVP_LOG_LVL_VERBOSE) {
             ACVP_LOG_NEWLINE;
             ACVP_LOG_VERBOSE("    Test group: %d", i);
             ACVP_LOG_VERBOSE("      testtype: %s", test_type_str);
@@ -981,7 +981,7 @@ ACVP_RESULT acvp_aes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                        *key = NULL, *tag = NULL, *aad = NULL, *salt = NULL;
             unsigned int tc_id = 0;
 
-            if (ctx->debug == ACVP_LOG_LVL_VERBOSE) ACVP_LOG_NEWLINE;
+            if (ctx->log_lvl == ACVP_LOG_LVL_VERBOSE) ACVP_LOG_NEWLINE;
             ACVP_LOG_VERBOSE("Found new AES test vector...");
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);

@@ -177,7 +177,7 @@ ACVP_ALG_HANDLER alg_tbl[ACVP_ALG_MAX] = {
  * a new context to be used for the test session.
  */
 ACVP_RESULT acvp_create_test_session(ACVP_CTX **ctx,
-                                     ACVP_RESULT (*progress_cb)(char *msg),
+                                     ACVP_RESULT (*progress_cb)(char *msg, ACVP_LOG_LVL level),
                                      ACVP_LOG_LVL level) {
     if (!ctx) {
         return ACVP_INVALID_ARG;
@@ -195,7 +195,10 @@ ACVP_RESULT acvp_create_test_session(ACVP_CTX **ctx,
         (*ctx)->test_progress_cb = progress_cb;
     }
 
-    (*ctx)->debug = level;
+    (*ctx)->log_lvl= level;
+    if (level >= ACVP_LOG_LVL_DEBUG) {
+        (*ctx)->debug = 1;
+    }
 
     return ACVP_SUCCESS;
 }
@@ -1292,7 +1295,7 @@ ACVP_RESULT acvp_upload_vectors_from_file(ACVP_CTX *ctx, const char *rsp_filenam
         ctx->kat_resp = vec_array_val;
 
         json_result = json_serialize_to_string_pretty(ctx->kat_resp, NULL);
-        if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
+        if (ctx->log_lvl == ACVP_LOG_LVL_VERBOSE) {
             printf("\n\n%s\n\n", json_result);
         } else {
             ACVP_LOG_INFO("\n\n%s\n\n", json_result);
@@ -1432,7 +1435,6 @@ ACVP_RESULT acvp_get_expected_results(ACVP_CTX *ctx, const char *request_filenam
     }
 
     ACVP_LOG_STATUS("Beginning output of expected results...");
-    ACVP_LOG_NEWLINE;
 
     if (save_filename) {
         //write the session URL and JWT to the file first
@@ -2799,7 +2801,7 @@ static ACVP_RESULT acvp_login(ACVP_CTX *ctx, int refresh) {
      */
     rv = acvp_send_login(ctx, login, login_len);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_STATUS("Login Send Failed");
+        ACVP_LOG_ERR("Login Send Failed");
         goto end;
     }
 
@@ -3223,7 +3225,7 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
                 strcmp_s("error", 5, status, &diff);
             if (!diff) {
                 const char *vs_url = json_object_get_string(current, "vectorSetUrl");
-                if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
+                if (ctx->log_lvl == ACVP_LOG_LVL_VERBOSE) {
                     ACVP_LOG_STATUS("Getting details for failed Vector Set...");
                     rv = acvp_retrieve_vector_set_result(ctx, vs_url);
                     printf("\n%s\n", ctx->curl_buf);
@@ -3498,7 +3500,7 @@ ACVP_RESULT acvp_run(ACVP_CTX *ctx, int fips_validation) {
                 }
             }
         }
-        if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
+        if (ctx->log_lvl == ACVP_LOG_LVL_VERBOSE) {
             printf("\n\n%s\n\n", ctx->curl_buf);
         } else {
             ACVP_LOG_STATUS("GET Response:\n\n%s\n", ctx->curl_buf);
@@ -3530,7 +3532,7 @@ ACVP_RESULT acvp_run(ACVP_CTX *ctx, int fips_validation) {
                 }
             }
         }
-        if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
+        if (ctx->log_lvl == ACVP_LOG_LVL_VERBOSE) {
             printf("\n\n%s\n\n", ctx->curl_buf);
         } else {
             ACVP_LOG_STATUS("DELETE Response:\n\n%s\n", ctx->curl_buf);

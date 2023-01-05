@@ -20,14 +20,14 @@ ACVP_CTX *ctx;
 Test(LogMsg, null_ctx) {
     ACVP_RESULT rv = ACVP_SUCCESS;
 
-    acvp_log_msg(NULL, ACVP_LOG_LVL_MAX, "test");
+    acvp_log_msg(NULL, ACVP_LOG_LVL_MAX, __func__, __LINE__, "test");
     cr_assert(rv == ACVP_SUCCESS);
 
     setup_empty_ctx(&ctx);
-    acvp_log_msg(ctx, ACVP_LOG_LVL_MAX+1, "test");
+    acvp_log_msg(ctx, ACVP_LOG_LVL_MAX+1, __func__, __LINE__, "test");
     cr_assert(rv == ACVP_SUCCESS);
 
-    acvp_log_msg(ctx, ACVP_LOG_LVL_MAX, NULL);
+    acvp_log_msg(ctx, ACVP_LOG_LVL_MAX, __func__, __LINE__, NULL);
     cr_assert(rv == ACVP_SUCCESS);
     
     acvp_cleanup(ctx);

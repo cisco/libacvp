@@ -141,13 +141,30 @@ static int verify_algorithms(APP_CONFIG *cfg) {
     return rv;
 }
 
-/*
- * This is a minimal and rudimentary logging handler.
- * libacvp calls this function to for debugs, warnings,
- * and errors.
- */
-static ACVP_RESULT progress(char *msg) {
-    printf("%s", msg);
+/* libacvp calls this function for status updates, debugs, warnings, and errors. */
+static ACVP_RESULT progress(char *msg, ACVP_LOG_LVL level) {
+
+    printf("[ACVP]");
+
+    switch (level) {
+    case ACVP_LOG_LVL_ERR:
+        printf(ANSI_COLOR_RED "[ERROR]" ANSI_COLOR_RESET);
+        break;
+    case ACVP_LOG_LVL_WARN:
+        printf(ANSI_COLOR_YELLOW "[WARNING]" ANSI_COLOR_RESET);
+        break;
+    case ACVP_LOG_LVL_STATUS:
+    case ACVP_LOG_LVL_INFO:
+    case ACVP_LOG_LVL_VERBOSE:
+    case ACVP_LOG_LVL_DEBUG:
+    case ACVP_LOG_LVL_NONE:
+    case ACVP_LOG_LVL_MAX:
+    default:
+        break;
+    }
+
+    printf(": %s\n", msg);
+
     return ACVP_SUCCESS;
 }
 

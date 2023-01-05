@@ -19,9 +19,8 @@ int counter_fail = 0;
  * libacvp calls this function to for debugs, warnings,
  * and errors.
  */
-ACVP_RESULT progress(char *msg)
-{
-    printf("%s", msg);
+ACVP_RESULT progress(char *msg, ACVP_LOG_LVL level) {
+    printf("[ACVP]: %s\n", msg);
     return ACVP_SUCCESS;
 }
 

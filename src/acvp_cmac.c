@@ -333,7 +333,7 @@ ACVP_RESULT acvp_cmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             rv = ACVP_MISSING_ARG;
             goto err;
         }
-        if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
+        if (ctx->log_lvl == ACVP_LOG_LVL_VERBOSE) {
             ACVP_LOG_NEWLINE;
             ACVP_LOG_VERBOSE("    Test group: %d", i);
             ACVP_LOG_VERBOSE("      testtype: %s", test_type_str);
@@ -347,7 +347,7 @@ ACVP_RESULT acvp_cmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         tests = json_object_get_array(groupobj, "tests");
         t_cnt = json_array_get_count(tests);
         for (j = 0; j < t_cnt; j++) {
-             if (ctx->debug == ACVP_LOG_LVL_VERBOSE) ACVP_LOG_NEWLINE;
+             if (ctx->log_lvl == ACVP_LOG_LVL_VERBOSE) ACVP_LOG_NEWLINE;
             ACVP_LOG_VERBOSE("Found new cmac test vector...");
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);

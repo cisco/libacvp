@@ -30,27 +30,35 @@ static int acvp_char_to_int(char ch);
 /*
  * Basic logging for libacvp
  */
-void acvp_log_msg(ACVP_CTX *ctx, ACVP_LOG_LVL level, const char *format, ...) {
+void acvp_log_msg(ACVP_CTX *ctx, ACVP_LOG_LVL level, const char *func, int line, const char *fmt, ...) {
     va_list arguments;
-    //One extra char for null terminator, one to check if output is truncated
-    char tmp[ACVP_LOG_MAX_MSG_LEN + 2];
+    int iter = 0, ret = 0;
+    //One extra char for null terminator
+    char tmp[ACVP_LOG_MAX_MSG_LEN + 1];
     tmp[ACVP_LOG_MAX_MSG_LEN] = '\0';
-    if (ctx && ctx->test_progress_cb && (ctx->debug >= level)) {
-        /*
-         * Pull the arguments from the stack and invoke
-         * the logger function
-         */
-        va_start(arguments, format);
-        vsnprintf(tmp, ACVP_LOG_MAX_MSG_LEN + 2, format, arguments);
-        //Check the last actual char - if its not \0, then we should indicate truncated output
-        if (tmp[ACVP_LOG_MAX_MSG_LEN] != '\0') {
-            memcpy_s(tmp + ACVP_LOG_MAX_MSG_LEN - ACVP_LOG_TRUNCATED_STR_LEN, 
+
+    if (!ctx) {
+        return;
+    }
+
+    if (ctx->debug) {
+        iter = snprintf(tmp, ACVP_LOG_MAX_MSG_LEN, "[%s:%d]: ", func, line);
+    }
+
+    if (ctx->test_progress_cb && (ctx->log_lvl >= level)) {
+        /*  Pull the arguments from the stack and invoke the logger function */
+        va_start(arguments, fmt);
+        ret = vsnprintf(tmp + iter, ACVP_LOG_MAX_MSG_LEN + 1 - iter, fmt, arguments);
+        if (ret < 0 || ret >= ACVP_LOG_MAX_MSG_LEN + 1 - iter) {
+            memcpy_s(tmp + ACVP_LOG_MAX_MSG_LEN - ACVP_LOG_TRUNCATED_STR_LEN,
                      ACVP_LOG_TRUNCATED_STR_LEN,
                      ACVP_LOG_TRUNCATED_STR, ACVP_LOG_TRUNCATED_STR_LEN);
             tmp[ACVP_LOG_MAX_MSG_LEN] = '\0';
-
+        } else {
+            iter += ret;
+            tmp[iter] = '\0';
         }
-        ctx->test_progress_cb(tmp);
+        ctx->test_progress_cb(tmp, level);
         va_end(arguments);
         fflush(stdout);
     }
@@ -62,7 +70,7 @@ void acvp_log_msg(ACVP_CTX *ctx, ACVP_LOG_LVL level, const char *format, ...) {
  */
 void acvp_log_newline(ACVP_CTX *ctx) {
      char tmp[] = "\n";
-     ctx->test_progress_cb(tmp);
+     ctx->test_progress_cb(tmp, ACVP_LOG_LVL_STATUS);
  }
 
 /*!
