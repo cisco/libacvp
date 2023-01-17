@@ -2272,6 +2272,9 @@ static ACVP_RESULT acvp_build_dsa_hashalgs(JSON_Object *cap_obj,
 
     json_object_set_value(cap_obj, "hashAlg", json_value_init_array());
     sha_arr = json_object_get_array(cap_obj, "hashAlg");
+    if (!sha_arr) {
+        return ACVP_JSON_ERR;
+    }
 
     if (attrs->sha & ACVP_SHA1) {
         json_array_append_string(sha_arr, "SHA-1");
@@ -3701,7 +3704,7 @@ static ACVP_RESULT acvp_build_kda_onestep_register_cap(ACVP_CTX *ctx,
     mode = acvp_lookup_cipher_mode_str(cap_entry->cipher);
     if (!mode) {
         ACVP_LOG_ERR("Unable to find mode string for KDA-ONESTEP when building registration");
-        rv = ACVP_INVALID_ARG;
+        rv = ACVP_INTERNAL_ERR;
         goto err;
     }
     json_object_set_string(cap_obj, "mode", mode);

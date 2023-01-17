@@ -81,31 +81,39 @@ typedef struct acvp_ctx_t ACVP_CTX;
  */
 typedef enum acvp_result {
     ACVP_SUCCESS = 0,
-    ACVP_MALLOC_FAIL,    /**< Error allocating memory */
-    ACVP_NO_CTX,         /**< No valid context */
-    ACVP_TRANSPORT_FAIL, /**< Error exchanging data with server */
-    ACVP_JSON_ERR,
-    ACVP_NO_DATA,
-    ACVP_UNSUPPORTED_OP,
-    ACVP_CLEANUP_FAIL,
-    ACVP_KAT_DOWNLOAD_RETRY,
-    ACVP_OE_RETRY,
-    ACVP_INVALID_ARG,
-    ACVP_MISSING_ARG,
-    ACVP_CRYPTO_MODULE_FAIL,
-    ACVP_CRYPTO_TAG_FAIL,
-    ACVP_CRYPTO_WRAP_FAIL,
-    ACVP_NO_TOKEN,
-    ACVP_NO_CAP,
-    ACVP_MALFORMED_JSON, /**< For use if the json is unable to be parsed properly */
-    ACVP_TC_DATA_INVALID, /**< Test case JSON is formatted properly, but the data is bad or does not match the spec */
-    ACVP_DATA_TOO_LARGE,
-    ACVP_DUP_CIPHER,
-    ACVP_TOTP_DECODE_FAIL,
-    ACVP_TOTP_MISSING_SEED,
-    ACVP_DUPLICATE_CTX,
-    ACVP_JWT_EXPIRED,
-    ACVP_JWT_INVALID,
+    ACVP_MALLOC_FAIL,        /**< Error allocating memory */
+    ACVP_NO_CTX,             /**< An initalized context was expected but not present */
+    ACVP_TRANSPORT_FAIL,     /**< Error exchanging data with server */
+    ACVP_NO_DATA,            /**< Required data for operation is missing */
+    ACVP_UNSUPPORTED_OP,     /**< An operation has been requested that is not supported. This can
+                                  either be because parameters are not valid or because the library
+                                  does not support something at the time */
+    ACVP_CLEANUP_FAIL,       /**< Failure when cleaning up (e.g. freeing memory) after operations */
+    ACVP_KAT_DOWNLOAD_RETRY, /**< Does not neccessarily indicate an error, but that data requested
+                                  from server is not yet ready to be accessed */
+    ACVP_INVALID_ARG,        /**< A provided argument or parameter is not valid for the given operation */
+    ACVP_MISSING_ARG,        /**< A required argument or parameter is not provided/null/0 */
+    ACVP_CRYPTO_MODULE_FAIL, /**< A non-zero return code was provided by the application callback 
+                                  for test case processin; this should indicate that the application
+                                  failed to process the test case*/
+    ACVP_NO_CAP,             /**< A registered capability object for the given algorithm does not exist. This
+                                  usually means an operation is being requested for an algorithm that is not yet
+                                  registered */
+    ACVP_MALFORMED_JSON,     /**< The given JSON is not properly formatted/readable JSON */
+    ACVP_JSON_ERR,           /**< Error occured attempting to parse JSON into data stuctures */
+    ACVP_TC_MISSING_DATA,    /**< Data is missing from test case JSON */
+    ACVP_TC_INVALID_DATA,    /**< Test case JSON is formatted properly, but the data is bad, does not
+                                  match the registration, or does not match the spec */
+    ACVP_DATA_TOO_LARGE,     /**< The given parameter larger than the library allows. This can apply to strings,
+                                  server responses, files, etc */
+    ACVP_CONVERT_DATA_ERR,   /**< Error converting data between hexidecimal and binary (either direction) */
+    ACVP_DUP_CIPHER,         /**< The client is attempting to register an algorithm that has already been registered */
+    ACVP_TOTP_FAIL,          /**< A failure occured attempting to generate a TOTP */
+    ACVP_CTX_NOT_EMPTY,      /**< Occurs specifically when an attempt is made to initialize a CTX that is already initialized */
+    ACVP_JWT_MISSING,        /**< A JSON web token is missing from a file or from memory but was expected */
+    ACVP_JWT_EXPIRED,        /**< The provided JWT was not accepted by the server because it is expired */
+    ACVP_JWT_INVALID,        /**< A provided JSON web token is invalid due to its size, encoding, or contents */
+    ACVP_INTERNAL_ERR,       /**< An unexpected error occuring internally to libacvp */
     ACVP_RESULT_MAX
 } ACVP_RESULT;
 

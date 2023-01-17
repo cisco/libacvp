@@ -1006,13 +1006,13 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
             alg_str = json_object_get_string(configobj, "macMode");
             if (!alg_str) {
                 ACVP_LOG_ERR("Server JSON missing 'macMode'");
-                rv = ACVP_TC_DATA_INVALID;
+                rv = ACVP_TC_INVALID_DATA;
                 goto err;
             }
             mac_mode = read_mac_mode(alg_str);
             if (!mac_mode) {
                 ACVP_LOG_ERR("Sever JSON invalid 'macMode'");
-                rv = ACVP_TC_DATA_INVALID;
+                rv = ACVP_TC_INVALID_DATA;
                 goto err;
             }
         } else {
@@ -1094,33 +1094,33 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
             kdf_mode_str = json_object_get_string(configobj, "kdfMode");
             if (!kdf_mode_str) {
                 ACVP_LOG_ERR("Server JSON missing kdfMode");
-                rv = ACVP_TC_DATA_INVALID;
+                rv = ACVP_TC_INVALID_DATA;
                 goto err;
             }
             kdf_mode = read_mode(kdf_mode_str);
             if (!kdf_mode) {
                 ACVP_LOG_ERR("Server JSON invalid kdfMode");
-                rv = ACVP_TC_DATA_INVALID;
+                rv = ACVP_TC_INVALID_DATA;
                 goto err;
             }
 
             ctr_loc_str = json_object_get_string(configobj, "counterLocation");
             if (!ctr_loc_str) {
                 ACVP_LOG_ERR("Server JSON missing counterLocation");
-                rv = ACVP_TC_DATA_INVALID;
+                rv = ACVP_TC_INVALID_DATA;
                 goto err;
             }
             ctr_loc = read_ctr_location(ctr_loc_str);
             if (!ctr_loc) {
                 ACVP_LOG_ERR("Server JSON invalid counterLocation.");
-                rv = ACVP_TC_DATA_INVALID;
+                rv = ACVP_TC_INVALID_DATA;
                 goto err;
             }
 
             ctr_len = json_object_get_number(configobj, "counterLen");
             if (ctr_len <= 0) {
                 ACVP_LOG_ERR("Server JSON missing or invalid counterLen.");
-                rv = ACVP_TC_DATA_INVALID;
+                rv = ACVP_TC_INVALID_DATA;
                 goto err;
             }
 
@@ -1130,12 +1130,12 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
             || (kdf_mode == ACVP_KDF108_MODE_FEEDBACK && !kdfcap->cap.kda_twostep_cap->kdf_params.feedback_mode.requires_empty_iv)) {
                 if (iv_len < 0) {
                     ACVP_LOG_ERR("Server JSON missing or invalid ivLen.");
-                    rv = ACVP_TC_DATA_INVALID;
+                    rv = ACVP_TC_INVALID_DATA;
                     goto err;
                 }
             } else if (iv_len > 0) {
                 ACVP_LOG_ERR("Client registered requiring empty IV, but server sent non-zero ivLen");
-                rv = ACVP_TC_DATA_INVALID;
+                rv = ACVP_TC_INVALID_DATA;
                 goto err;
             }
         }
@@ -1212,7 +1212,7 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
             }
             if (strnlen_s(z, ACVP_KDA_Z_STR_MAX + 1) > ACVP_KDA_Z_STR_MAX) {
                 ACVP_LOG_ERR("Server JSON 'z' too long");
-                rv = ACVP_TC_DATA_INVALID;
+                rv = ACVP_TC_INVALID_DATA;
                 goto err;
             }
 
@@ -1220,7 +1220,7 @@ static ACVP_RESULT acvp_kda_process(ACVP_CTX *ctx,
                 iv_str = json_object_get_string(paramobj, "iv");
                 if (!iv_str) {
                     ACVP_LOG_ERR("Server JSON missing 'iv'");
-                    rv = ACVP_TC_DATA_INVALID;
+                    rv = ACVP_TC_INVALID_DATA;
                     goto err;
                 }
             }

@@ -1252,7 +1252,7 @@ Test(AES_API, empty_ctx) {
     }
 
     rv  = acvp_aes_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_UNSUPPORTED_OP);
+    cr_assert(rv == ACVP_TC_INVALID_DATA);
     json_value_free(val);
 
 end:
@@ -1285,7 +1285,7 @@ Test(AES_API, null_ctx) {
  */
 Test(AES_API, null_json_obj, .init = setup, .fini = teardown) {
     rv  = acvp_aes_kat_handler(ctx, NULL);
-    cr_assert(rv == ACVP_MALFORMED_JSON);
+    cr_assert(rv == ACVP_JSON_ERR);
 }
 
 /*
@@ -1318,7 +1318,7 @@ Test(AES_HANDLER, wrong_algorithm, .init = setup, .fini = teardown) {
         return;
     }
     rv = acvp_aes_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_UNSUPPORTED_OP);
+    cr_assert(rv == ACVP_TC_INVALID_DATA);
     json_value_free(val);
 }
 
@@ -1335,7 +1335,7 @@ Test(AES_HANDLER, missing_direction, .init = setup, .fini = teardown) {
         return;
     }
     rv = acvp_aes_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    cr_assert(rv == ACVP_TC_MISSING_DATA);
     json_value_free(val);
 }
 
@@ -1352,7 +1352,7 @@ Test(AES_HANDLER, wrong_direction, .init = setup, .fini = teardown) {
         return;
     }
     rv = acvp_aes_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_INVALID_ARG);
+    cr_assert(rv == ACVP_TC_INVALID_DATA);
     json_value_free(val);
 }
 
@@ -1369,7 +1369,7 @@ Test(AES_HANDLER, missing_testType, .init = setup, .fini = teardown) {
         return;
     }
     rv = acvp_aes_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    cr_assert(rv == ACVP_TC_MISSING_DATA);
     json_value_free(val);
 }
 
@@ -1386,7 +1386,7 @@ Test(AES_HANDLER, wrong_testType, .init = setup, .fini = teardown) {
         return;
     }
     rv = acvp_aes_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_INVALID_ARG);
+    cr_assert(rv == ACVP_TC_INVALID_DATA);
     json_value_free(val);
 }
 
@@ -1403,7 +1403,7 @@ Test(AES_HANDLER, missing_keyLen, .init = setup, .fini = teardown) {
         return;
     }
     rv = acvp_aes_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_INVALID_ARG);
+    cr_assert(rv == ACVP_TC_INVALID_DATA);
     json_value_free(val);
 }
 
@@ -1420,7 +1420,7 @@ Test(AES_HANDLER, wrong_keyLen, .init = setup, .fini = teardown) {
         return;
     }
     rv = acvp_aes_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_INVALID_ARG);
+    cr_assert(rv == ACVP_TC_INVALID_DATA);
     json_value_free(val);
 }
 
@@ -1437,7 +1437,7 @@ Test(AES_HANDLER, big_ptLen, .init = setup, .fini = teardown) {
         return;
     }
     rv = acvp_aes_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_INVALID_ARG);
+    cr_assert(rv == ACVP_TC_INVALID_DATA);
     json_value_free(val);
 }
 
@@ -1454,7 +1454,7 @@ Test(AES_HANDLER, missing_ivLen, .init = setup, .fini = teardown) {
         return;
     }
     rv  = acvp_aes_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    cr_assert(rv == ACVP_TC_MISSING_DATA);
     json_value_free(val);
 }
 
@@ -1471,7 +1471,7 @@ Test(AES_HANDLER, small_ivLen_gcm, .init = setup, .fini = teardown) {
         return;
     }
     rv  = acvp_aes_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_INVALID_ARG);
+    cr_assert(rv == ACVP_TC_INVALID_DATA);
     json_value_free(val);
 }
 
@@ -1488,7 +1488,7 @@ Test(AES_HANDLER, big_ivLen_gcm, .init = setup, .fini = teardown) {
         return;
     }
     rv  = acvp_aes_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_INVALID_ARG);
+    cr_assert(rv == ACVP_TC_INVALID_DATA);
     json_value_free(val);
 }
 
@@ -1505,7 +1505,7 @@ Test(AES_HANDLER, small_ivLen_ccm, .init = setup, .fini = teardown) {
         return;
     }
     rv  = acvp_aes_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_INVALID_ARG);
+    cr_assert(rv == ACVP_TC_INVALID_DATA);
     json_value_free(val);
 }
 
@@ -1522,7 +1522,7 @@ Test(AES_HANDLER, big_ivLen_ccm, .init = setup, .fini = teardown) {
         return;
     }
     rv  = acvp_aes_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_INVALID_ARG);
+    cr_assert(rv == ACVP_TC_INVALID_DATA);
     json_value_free(val);
 }
 
@@ -1539,7 +1539,7 @@ Test(AES_HANDLER, wrong_ivLen_ccm, .init = setup, .fini = teardown) {
         return;
     }
     rv  = acvp_aes_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_INVALID_ARG);
+    cr_assert(rv == ACVP_TC_INVALID_DATA);
     json_value_free(val);
 }
 
@@ -1556,7 +1556,7 @@ Test(AES_HANDLER, small_tagLen, .init = setup, .fini = teardown) {
         return;
     }
     rv  = acvp_aes_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_INVALID_ARG);
+    cr_assert(rv == ACVP_TC_INVALID_DATA);
     json_value_free(val);
 }
 
@@ -1573,7 +1573,7 @@ Test(AES_HANDLER, big_tagLen, .init = setup, .fini = teardown) {
         return;
     }
     rv  = acvp_aes_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_INVALID_ARG);
+    cr_assert(rv == ACVP_TC_INVALID_DATA);
     json_value_free(val);
 }
 
@@ -1590,7 +1590,7 @@ Test(AES_HANDLER, big_aadLen, .init = setup, .fini = teardown) {
         return;
     }
     rv  = acvp_aes_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_INVALID_ARG);
+    cr_assert(rv == ACVP_TC_INVALID_DATA);
     json_value_free(val);
 }
 
@@ -1607,7 +1607,7 @@ Test(AES_HANDLER, missing_key, .init = setup, .fini = teardown) {
         return;
     }
     rv  = acvp_aes_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    cr_assert(rv == ACVP_TC_MISSING_DATA);
     json_value_free(val);
 }
 
@@ -1624,7 +1624,7 @@ Test(AES_HANDLER, long_key, .init = setup, .fini = teardown) {
         return;
     }
     rv  = acvp_aes_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_INVALID_ARG);
+    cr_assert(rv == ACVP_TC_INVALID_DATA);
     json_value_free(val);
 }
 
@@ -1641,7 +1641,7 @@ Test(AES_HANDLER, missing_pt, .init = setup, .fini = teardown) {
         return;
     }
     rv  = acvp_aes_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    cr_assert(rv == ACVP_TC_MISSING_DATA);
     json_value_free(val);
 }
 
@@ -1658,7 +1658,7 @@ Test(AES_HANDLER, long_pt, .init = setup, .fini = teardown) {
         return;
     }
     rv  = acvp_aes_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_INVALID_ARG);
+    cr_assert(rv == ACVP_TC_INVALID_DATA);
     json_value_free(val);
 }
 
@@ -1675,7 +1675,7 @@ Test(AES_HANDLER, missing_ct, .init = setup, .fini = teardown) {
         return;
     }
     rv  = acvp_aes_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    cr_assert(rv == ACVP_TC_MISSING_DATA);
     json_value_free(val);
 }
 
@@ -1692,7 +1692,7 @@ Test(AES_HANDLER, long_ct, .init = setup, .fini = teardown) {
         return;
     }
     rv  = acvp_aes_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_INVALID_ARG);
+    cr_assert(rv == ACVP_TC_INVALID_DATA);
     json_value_free(val);
 }
 
@@ -1709,7 +1709,7 @@ Test(AES_HANDLER, missing_tag, .init = setup, .fini = teardown) {
         return;
     }
     rv  = acvp_aes_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    cr_assert(rv == ACVP_TC_MISSING_DATA);
     json_value_free(val);
 }
 
@@ -1726,7 +1726,7 @@ Test(AES_HANDLER, long_tag, .init = setup, .fini = teardown) {
         return;
     }
     rv  = acvp_aes_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_INVALID_ARG);
+    cr_assert(rv == ACVP_TC_INVALID_DATA);
     json_value_free(val);
 }
 
@@ -1743,7 +1743,7 @@ Test(AES_HANDLER, missing_iv, .init = setup, .fini = teardown) {
         return;
     }
     rv  = acvp_aes_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    cr_assert(rv == ACVP_TC_MISSING_DATA);
     json_value_free(val);
 }
 
@@ -1760,7 +1760,7 @@ Test(AES_HANDLER, long_iv, .init = setup, .fini = teardown) {
         return;
     }
     rv  = acvp_aes_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_INVALID_ARG);
+    cr_assert(rv == ACVP_TC_INVALID_DATA);
     json_value_free(val);
 }
 
@@ -1777,7 +1777,7 @@ Test(AES_HANDLER, missing_aad, .init = setup, .fini = teardown) {
         return;
     }
     rv  = acvp_aes_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    cr_assert(rv == ACVP_TC_MISSING_DATA);
     json_value_free(val);
 }
 
@@ -1794,7 +1794,7 @@ Test(AES_HANDLER, long_aad, .init = setup, .fini = teardown) {
         return;
     }
     rv  = acvp_aes_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_INVALID_ARG);
+    cr_assert(rv == ACVP_TC_INVALID_DATA);
     json_value_free(val);
 }
 
@@ -1811,7 +1811,7 @@ Test(AES_HANDLER, missing_gid, .init = setup, .fini = teardown) {
         return;
     }
     rv  = acvp_aes_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MALFORMED_JSON);
+    cr_assert(rv == ACVP_TC_MISSING_DATA);
     json_value_free(val);
 }
 
@@ -1828,7 +1828,7 @@ Test(AES_HANDLER, bad_inc_ctr, .init = setup, .fini = teardown) {
         return;
     }
     rv  = acvp_aes_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MALFORMED_JSON);
+    cr_assert(rv == ACVP_TC_INVALID_DATA);
     json_value_free(val);
 }
 
@@ -1845,7 +1845,7 @@ Test(AES_HANDLER, bad_ovrflw_ctr, .init = setup, .fini = teardown) {
         return;
     }
     rv  = acvp_aes_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MALFORMED_JSON);
+    cr_assert(rv == ACVP_TC_INVALID_DATA);
     json_value_free(val);
 }
 
@@ -1862,7 +1862,7 @@ Test(AES_HANDLER, tgLast, .init = setup, .fini = teardown) {
         return;
     }
     rv  = acvp_aes_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    cr_assert(rv == ACVP_TC_MISSING_DATA);
     json_value_free(val);
 }
 
@@ -1879,7 +1879,7 @@ Test(AES_HANDLER, tcLast, .init = setup, .fini = teardown) {
         return;
     }
     rv  = acvp_aes_kat_handler(ctx, obj);
-    cr_assert(rv == ACVP_MISSING_ARG);
+    cr_assert(rv == ACVP_TC_MISSING_DATA);
     json_value_free(val);
 }
 

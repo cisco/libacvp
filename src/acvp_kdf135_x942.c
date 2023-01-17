@@ -41,7 +41,7 @@ static ACVP_RESULT acvp_kdf135_x942_output_tc(ACVP_CTX *ctx, ACVP_KDF135_X942_TC
         json_object_set_string(tc_rsp, "derivedKey", (const char *)tmp);
     } else {
         ACVP_LOG_ERR("Error outputting test case for X942 KDF. Dkm_len MUST equal key_len.");
-        rv = ACVP_TC_DATA_INVALID;
+        rv = ACVP_TC_INVALID_DATA;
         goto err;
     }
     rv = ACVP_SUCCESS;

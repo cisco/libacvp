@@ -159,7 +159,7 @@ Test(LookupErrorString, null_ctx) {
     char *dup = "ctx already initialized";
     char *ukn = "Unknown error";
 
-    str = acvp_lookup_error_string(ACVP_DUPLICATE_CTX);
+    str = acvp_lookup_error_string(ACVP_CTX_NOT_EMPTY);
     cr_assert(!strncmp(str, dup, strlen(dup)));
 
     str = acvp_lookup_error_string(ACVP_RESULT_MAX);
