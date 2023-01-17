@@ -641,11 +641,11 @@ ACVP_RESULT acvp_bin_to_hexstr(const unsigned char *src, int src_len, char *dest
     unsigned char hex_chars[] = "0123456789ABCDEF";
 
     if (!src || !dest) {
-        return ACVP_MISSING_ARG;
+        return ACVP_CONVERT_DATA_ERR;
     }
 
     if ((src_len * 2) > dest_max) {
-        return ACVP_DATA_TOO_LARGE;
+        return ACVP_CONVERT_DATA_ERR;
     }
 
     for (i = 0, j = 0; i < src_len; i++, j += 2) {
@@ -832,7 +832,6 @@ ACVP_DRBG_CAP_GROUP *acvp_create_drbg_group(ACVP_DRBG_MODE_LIST *mode, int group
  * returns ACVP_SUCCESS or ACVP_JSON_ERR
  */
 ACVP_RESULT acvp_create_array(JSON_Object **obj, JSON_Value **val, JSON_Array **arry) {
-    ACVP_RESULT result = ACVP_SUCCESS;
     JSON_Value *reg_arry_val = NULL;
     JSON_Object *reg_obj = NULL;
     JSON_Value *ver_val = NULL;
@@ -840,19 +839,31 @@ ACVP_RESULT acvp_create_array(JSON_Object **obj, JSON_Value **val, JSON_Array **
     JSON_Array *reg_arry = NULL;
 
     reg_arry_val = json_value_init_array();
+    if (!reg_arry_val) {
+        return ACVP_JSON_ERR;
+    }
+
     reg_obj = json_value_get_object(reg_arry_val);
     reg_arry = json_array((const JSON_Value *)reg_arry_val);
+    if (!reg_arry) {
+        return ACVP_JSON_ERR;
+    }
 
     ver_val = json_value_init_object();
     ver_obj = json_value_get_object(ver_val);
+    if (!ver_obj) {
+        return ACVP_JSON_ERR;
+    }
 
     json_object_set_string(ver_obj, "acvVersion", ACVP_VERSION);
-    json_array_append_value(reg_arry, ver_val);
+    if (json_array_append_value(reg_arry, ver_val) != JSONSuccess) {
+        return ACVP_JSON_ERR;
+    }
 
     *obj = reg_obj;
     *val = reg_arry_val;
     *arry = reg_arry;
-    return result;
+    return ACVP_SUCCESS;
 }
 
 /*
@@ -865,7 +876,6 @@ const char *acvp_lookup_error_string(ACVP_RESULT rv) {
         { ACVP_MALLOC_FAIL,        "Error allocating memory"                          },
         { ACVP_NO_CTX,             "No valid context found"                           },
         { ACVP_TRANSPORT_FAIL,     "Error using transport library"                    },
-        { ACVP_JSON_ERR,           "Error using JSON library"                         },
         { ACVP_NO_DATA,            "Trying to use data but none was found"            },
         { ACVP_UNSUPPORTED_OP,     "Unsupported operation"                            },
         { ACVP_CLEANUP_FAIL,       "Error cleaning up ACVP context"                   },
@@ -873,16 +883,20 @@ const char *acvp_lookup_error_string(ACVP_RESULT rv) {
         { ACVP_INVALID_ARG,        "Invalid argument"                                 },
         { ACVP_MISSING_ARG,        "Missing a required argument"                      },
         { ACVP_CRYPTO_MODULE_FAIL, "Error from crypto module processing a vector set" },
-        { ACVP_CRYPTO_TAG_FAIL,    "Error from crypto module processing a vector set" },
-        { ACVP_CRYPTO_WRAP_FAIL,   "Error from crypto module processing a vector set" },
-        { ACVP_NO_TOKEN,           "Error using JWT"                                  },
         { ACVP_NO_CAP,             "No matching capability found"                     },
         { ACVP_MALFORMED_JSON,     "Unable to process JSON"                           },
+        { ACVP_JSON_ERR,           "Error using JSON library"                         },
+        { ACVP_TC_MISSING_DATA,    "Provided test case is missing required data"      },
+        { ACVP_TC_INVALID_DATA,    "Provided test case has invalid data"              },
         { ACVP_DATA_TOO_LARGE,     "Data too large"                                   },
+        { ACVP_CONVERT_DATA_ERR,   "Failed converting data between hex/binary"        },
         { ACVP_DUP_CIPHER,         "Duplicate cipher, may have already registered"    },
-        { ACVP_TOTP_DECODE_FAIL,   "Failed to base64 decode TOTP seed"                },
-        { ACVP_TOTP_MISSING_SEED,  "Missing TOTP seed"                                },
-        { ACVP_DUPLICATE_CTX,      "ctx already initialized"                          }
+        { ACVP_TOTP_FAIL,          "Failed to base64 decode TOTP seed"                },
+        { ACVP_CTX_NOT_EMPTY,      "ctx already initialized"                          },
+        { ACVP_JWT_MISSING,        "Error using JWT"                                  },
+        { ACVP_JWT_EXPIRED,        "Provided JWT has expired"                         },
+        { ACVP_JWT_INVALID,        "Proivded JWT is not valid"                        },
+        { ACVP_INTERNAL_ERR,       "Unexpected error occured internally"              }
     };
 
     for (i = 0; i < ACVP_RESULT_MAX - 1; i++) {
@@ -959,16 +973,24 @@ ACVP_RESULT acvp_setup_json_rsp_group(ACVP_CTX **ctx,
         json_value_free((*ctx)->kat_resp);
     }
     (*ctx)->kat_resp = *outer_arr_val;
+
     *r_vs_val = json_value_init_object();
     *r_vs = json_value_get_object(*r_vs_val);
+    if (!*r_vs) {
+        return ACVP_JSON_ERR;
+    } 
 
-    json_object_set_number(*r_vs, "vsId", (*ctx)->vs_id);
-    json_object_set_string(*r_vs, "algorithm", alg_str);
-    /*
-     * create an array of response test groups
-     */
+    if (json_object_set_number(*r_vs, "vsId", (*ctx)->vs_id) != JSONSuccess ||
+            json_object_set_string(*r_vs, "algorithm", alg_str) != JSONSuccess) {
+        return ACVP_JSON_ERR;
+    }
+
+    /* create an array of response test groups */
     json_object_set_value(*r_vs, "testGroups", json_value_init_array());
     (*groups_arr) = json_object_get_array(*r_vs, "testGroups");
+    if (!*groups_arr) {
+        return ACVP_JSON_ERR;
+    }
 
     return ACVP_SUCCESS;
 }

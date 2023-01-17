@@ -187,7 +187,7 @@ static ACVP_RESULT totp(char **token, int token_max) {
     if (seed_len  == 0) {
         printf("Failed to decode TOTP seed\n");
         free(new_seed);
-        return ACVP_TOTP_DECODE_FAIL;
+        return ACVP_TOTP_FAIL;
     }
 
 
@@ -200,7 +200,7 @@ static ACVP_RESULT totp(char **token, int token_max) {
     if (md_len == 0) {
         printf("Failed to create TOTP\n");
         free(new_seed);
-        return ACVP_CRYPTO_MODULE_FAIL;
+        return ACVP_TOTP_FAIL;
     }
     os = hash[(int)md_len - 1] & 0xf;
 

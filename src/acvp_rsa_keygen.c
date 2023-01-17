@@ -491,7 +491,7 @@ ACVP_RESULT acvp_rsa_keygen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         test_type_str = json_object_get_string(groupobj, "testType");
         if (!test_type_str) {
             ACVP_LOG_ERR("Missing testType from server JSON for RSA keyGen");
-            rv = ACVP_TC_DATA_INVALID;
+            rv = ACVP_TC_INVALID_DATA;
             goto err;
         }
         test_type = read_test_type(test_type_str);

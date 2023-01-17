@@ -216,7 +216,7 @@ Test(CREATE_CTX, dup_ctx) {
     cr_assert(rv == ACVP_SUCCESS);
     
     rv = acvp_create_test_session(&ctx, &progress, ACVP_LOG_LVL_VERBOSE);
-    cr_assert(rv == ACVP_DUPLICATE_CTX);
+    cr_assert(rv == ACVP_CTX_NOT_EMPTY);
     
     teardown_ctx(&ctx);
 }
@@ -537,7 +537,7 @@ Test(RUN, bad_totp_cb, .init = setup_full_ctx, .fini = teardown) {
     rv = acvp_set_2fa_callback(ctx, &dummy_totp_overflow);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_run(ctx, 0);
-    cr_assert(rv == ACVP_INVALID_ARG);
+    cr_assert(rv == ACVP_TOTP_FAIL);
 }
 
 /*

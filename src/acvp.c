@@ -183,8 +183,7 @@ ACVP_RESULT acvp_create_test_session(ACVP_CTX **ctx,
         return ACVP_INVALID_ARG;
     }
     if (*ctx) {
-        printf("ERROR: Cannot initialize non-null ctx; clear ctx & set to NULL first\n");
-        return ACVP_DUPLICATE_CTX;
+        return ACVP_CTX_NOT_EMPTY;
     }
     *ctx = calloc(1, sizeof(ACVP_CTX));
     if (!*ctx) {
@@ -2146,12 +2145,13 @@ static ACVP_RESULT acvp_build_login(ACVP_CTX *ctx, char **login, int *login_len,
         rv = ctx->totp_cb(&token, ACVP_TOTP_TOKEN_MAX);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Error occured in application callback while generating TOTP");
+            rv = ACVP_TOTP_FAIL;
             goto err;
         }
         if (strnlen_s(token, ACVP_TOTP_TOKEN_MAX + 1) > ACVP_TOTP_TOKEN_MAX) {
             ACVP_LOG_ERR("totp cb generated a token that is too long");
             json_value_free(pw_val);
-            rv = ACVP_INVALID_ARG;
+            rv = ACVP_TOTP_FAIL;
             goto err;
         }
         json_object_set_string(pw_obj, "password", token);
@@ -2308,12 +2308,12 @@ static ACVP_RESULT acvp_parse_login(ACVP_CTX *ctx) {
     jwt = json_object_get_string(obj, "accessToken");
     if (!jwt) {
         ACVP_LOG_ERR("No access_token provided in registration response");
-        rv = ACVP_NO_TOKEN;
+        rv = ACVP_JWT_MISSING;
         goto end;
     } else {
         if (strnlen_s(jwt, ACVP_JWT_TOKEN_MAX + 1) > ACVP_JWT_TOKEN_MAX) {
             ACVP_LOG_ERR("access_token too large");
-            rv = ACVP_NO_TOKEN;
+            rv = ACVP_JWT_INVALID;
             goto end;
         }
 
@@ -2499,7 +2499,7 @@ ACVP_RESULT acvp_notify_large(ACVP_CTX *ctx,
          */
         if (strnlen_s(jwt, ACVP_JWT_TOKEN_MAX + 1) > ACVP_JWT_TOKEN_MAX) {
             ACVP_LOG_ERR("access_token too large");
-            rv = ACVP_NO_TOKEN;
+            rv = ACVP_JWT_INVALID;
             goto err;
         }
 
@@ -2567,7 +2567,7 @@ static ACVP_RESULT acvp_parse_test_session_register(ACVP_CTX *ctx) {
     }
     if (strnlen_s(access_token, ACVP_JWT_TOKEN_MAX + 1) > ACVP_JWT_TOKEN_MAX) {
         ACVP_LOG_ERR("access_token too large");
-        return ACVP_NO_TOKEN;
+        return ACVP_JWT_INVALID;
     }
     memzero_s(ctx->jwt_token, ACVP_JWT_TOKEN_MAX + 1);
     strcpy_s(ctx->jwt_token, ACVP_JWT_TOKEN_MAX + 1, access_token);
