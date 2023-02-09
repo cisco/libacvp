@@ -91,9 +91,11 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 @BUILD_APP_AS_LIB_FALSE@bin_PROGRAMS = acvp_app$(EXEEXT)
-@BUILD_APP_AS_LIB_FALSE@@USE_LDL_CHECK_TRUE@am__append_1 = -ldl
-@BUILD_APP_AS_LIB_TRUE@@USE_LDL_CHECK_TRUE@am__append_2 = -ldl
-@BUILD_APP_AS_LIB_TRUE@@USE_FOM_OBJ_TRUE@am__append_3 = $(FOM_OBJ_DIR)/fipscanister.o
+@BUILD_APP_AS_LIB_FALSE@@FORCE_STATIC_TRUE@am__append_1 = -all-static
+@BUILDING_OFFLINE_FALSE@@BUILD_APP_AS_LIB_FALSE@am__append_2 = $(LIBCURL_LDFLAGS)
+@BUILDING_OFFLINE_FALSE@@BUILD_APP_AS_LIB_FALSE@am__append_3 = $(LIBCURL_CFLAGS)
+@BUILD_APP_AS_LIB_FALSE@@USE_FOM_OBJ_TRUE@am__append_4 = $(FOM_OBJ_DIR)/fipscanister.o
+@BUILD_APP_AS_LIB_TRUE@@USE_FOM_OBJ_TRUE@am__append_5 = $(FOM_OBJ_DIR)/fipscanister.o
 subdir = app
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/libtool.m4 \
@@ -142,8 +144,7 @@ am__DEPENDENCIES_1 =
 @BUILD_APP_AS_LIB_TRUE@libacvp_app_la_DEPENDENCIES =  \
 @BUILD_APP_AS_LIB_TRUE@	$(am__DEPENDENCIES_1) \
 @BUILD_APP_AS_LIB_TRUE@	$(am__DEPENDENCIES_1) \
-@BUILD_APP_AS_LIB_TRUE@	$(am__DEPENDENCIES_1) \
-@BUILD_APP_AS_LIB_TRUE@	$(am__DEPENDENCIES_1) $(am__append_3)
+@BUILD_APP_AS_LIB_TRUE@	$(am__DEPENDENCIES_1) $(am__append_5)
 am__libacvp_app_la_SOURCES_DIST = app_main.c app_aes.c app_cli.c \
 	app_cmac.c app_des.c app_drbg.c app_dsa.c app_ecdsa.c \
 	app_hmac.c app_kas.c app_kdf.c app_kda.c app_kmac.c app_rsa.c \
@@ -175,7 +176,8 @@ am__objects_2 = acvp_app-app_main.$(OBJEXT) acvp_app-app_aes.$(OBJEXT) \
 	acvp_app-app_sha.$(OBJEXT) acvp_app-app_utils.$(OBJEXT)
 @BUILD_APP_AS_LIB_FALSE@am_acvp_app_OBJECTS = $(am__objects_2)
 acvp_app_OBJECTS = $(am_acvp_app_OBJECTS)
-@BUILD_APP_AS_LIB_FALSE@@USE_FOM_OBJ_TRUE@acvp_app_DEPENDENCIES = $(FOM_OBJ_DIR)/fipscanister.o
+@BUILD_APP_AS_LIB_FALSE@acvp_app_DEPENDENCIES = $(am__DEPENDENCIES_1) \
+@BUILD_APP_AS_LIB_FALSE@	$(am__append_4)
 acvp_app_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(acvp_app_CFLAGS) \
 	$(CFLAGS) $(acvp_app_LDFLAGS) $(LDFLAGS) -o $@
@@ -271,6 +273,7 @@ am__DIST_COMMON = $(srcdir)/Makefile.in $(top_srcdir)/config/depcomp \
 	README
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 ACLOCAL = @ACLOCAL@
+ADDL_LIB_DEPENDENCIES = @ADDL_LIB_DEPENDENCIES@
 AMTAR = @AMTAR@
 AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
 AR = @AR@
@@ -392,6 +395,7 @@ pdfdir = @pdfdir@
 prefix = @prefix@
 program_transform_name = @program_transform_name@
 psdir = @psdir@
+runstatedir = @runstatedir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 srcdir = @srcdir@
@@ -423,18 +427,22 @@ tmp_sources = app_main.c \
 
 @BUILD_APP_AS_LIB_FALSE@acvp_app_includedir = $(includedir)/acvp
 @BUILD_APP_AS_LIB_FALSE@acvp_app_SOURCES = ${tmp_sources}
-@BUILD_APP_AS_LIB_FALSE@acvp_app_CFLAGS = -g -fPIE $(LIBACVP_CFLAGS) $(SSL_CFLAGS) $(FOM_CFLAGS) $(SAFEC_CFLAGS) $(COND_ALG_CFLAGS)
+@BUILD_APP_AS_LIB_FALSE@acvp_app_CFLAGS = -g -fPIE $(LIBACVP_CFLAGS) \
+@BUILD_APP_AS_LIB_FALSE@	$(SSL_CFLAGS) $(FOM_CFLAGS) \
+@BUILD_APP_AS_LIB_FALSE@	$(SAFEC_CFLAGS) $(COND_ALG_CFLAGS) \
+@BUILD_APP_AS_LIB_FALSE@	$(am__append_3)
 @BUILD_APP_AS_LIB_FALSE@acvp_app_LDFLAGS = $(LIBACVP_LDFLAGS) \
 @BUILD_APP_AS_LIB_FALSE@	$(SSL_LDFLAGS) $(FOM_LDFLAGS) \
-@BUILD_APP_AS_LIB_FALSE@	$(am__append_1)
-@BUILD_APP_AS_LIB_FALSE@@USE_FOM_OBJ_TRUE@acvp_app_LDADD = $(FOM_OBJ_DIR)/fipscanister.o
+@BUILD_APP_AS_LIB_FALSE@	$(am__append_1) $(am__append_2)
+@BUILD_APP_AS_LIB_FALSE@acvp_app_LDADD = $(ADDL_LIB_DEPENDENCIES) \
+@BUILD_APP_AS_LIB_FALSE@	$(am__append_4)
 @BUILD_APP_AS_LIB_TRUE@lib_LTLIBRARIES = libacvp_app.la
 @BUILD_APP_AS_LIB_TRUE@libacvp_app_includedir = ${includedir}/acvp
 @BUILD_APP_AS_LIB_TRUE@libacvp_app_la_SOURCES = ${tmp_sources}
 @BUILD_APP_AS_LIB_TRUE@AM_CFLAGS = -g -fPIE $(LIBACVP_CFLAGS) $(SSL_CFLAGS) $(FOM_CFLAGS) $(SAFEC_CFLAGS) $(COND_ALG_CFLAGS) -DACVP_APP_LIB_WRAPPER
 @BUILD_APP_AS_LIB_TRUE@libacvp_app_la_LIBADD = $(LIBACVP_LDFLAGS) \
 @BUILD_APP_AS_LIB_TRUE@	$(SSL_LDFLAGS) $(FOM_LDFLAGS) \
-@BUILD_APP_AS_LIB_TRUE@	$(am__append_2) $(am__append_3)
+@BUILD_APP_AS_LIB_TRUE@	$(am__append_5)
 @BUILD_APP_AS_LIB_TRUE@libacvp_app_include_HEADERS = $(top_srcdir)/app/libacvp_app.h
 all: all-am
 

@@ -781,8 +781,6 @@ SAFEC_CFLAGS
 SAFEC_STUB_DIR
 BUILD_APP_AS_LIB_FALSE
 BUILD_APP_AS_LIB_TRUE
-USE_LDL_CHECK_FALSE
-USE_LDL_CHECK_TRUE
 UNIT_TEST_SUPPORTED_FALSE
 UNIT_TEST_SUPPORTED_TRUE
 CRITERION_LDFLAGS
@@ -799,6 +797,11 @@ LIBCURL_CFLAGS
 FOM_OBJ_DIR
 SSL_LDFLAGS
 SSL_CFLAGS
+ADDL_LIB_DEPENDENCIES
+FORCE_STATIC_FALSE
+FORCE_STATIC_TRUE
+BUILDING_OFFLINE_FALSE
+BUILDING_OFFLINE_TRUE
 LIB_NOT_SUPPORTED_FALSE
 LIB_NOT_SUPPORTED_TRUE
 APP_NOT_SUPPORTED_FALSE
@@ -897,6 +900,7 @@ infodir
 docdir
 oldincludedir
 includedir
+runstatedir
 localstatedir
 sharedstatedir
 sysconfdir
@@ -935,12 +939,11 @@ with_libacvp_dir
 with_ssl_dir
 with_fom_dir
 enable_offline
+enable_force_static_linking
 with_libcurl_dir
-with_libmurl_dir
 enable_cflags
 enable_gcov
 with_criterion_dir
-enable_offline_ldl_check
 enable_lib_check
 enable_wrapper_library
 '
@@ -992,6 +995,7 @@ datadir='${datarootdir}'
 sysconfdir='${prefix}/etc'
 sharedstatedir='${prefix}/com'
 localstatedir='${prefix}/var'
+runstatedir='${localstatedir}/run'
 includedir='${prefix}/include'
 oldincludedir='/usr/include'
 docdir='${datarootdir}/doc/${PACKAGE_TARNAME}'
@@ -1244,6 +1248,15 @@ do
   | -silent | --silent | --silen | --sile | --sil)
     silent=yes ;;
 
+  -runstatedir | --runstatedir | --runstatedi | --runstated \
+  | --runstate | --runstat | --runsta | --runst | --runs \
+  | --run | --ru | --r)
+    ac_prev=runstatedir ;;
+  -runstatedir=* | --runstatedir=* | --runstatedi=* | --runstated=* \
+  | --runstate=* | --runstat=* | --runsta=* | --runst=* | --runs=* \
+  | --run=* | --ru=* | --r=*)
+    runstatedir=$ac_optarg ;;
+
   -sbindir | --sbindir | --sbindi | --sbind | --sbin | --sbi | --sb)
     ac_prev=sbindir ;;
   -sbindir=* | --sbindir=* | --sbindi=* | --sbind=* | --sbin=* \
@@ -1381,7 +1394,7 @@ fi
 for ac_var in	exec_prefix prefix bindir sbindir libexecdir datarootdir \
 		datadir sysconfdir sharedstatedir localstatedir includedir \
 		oldincludedir docdir infodir htmldir dvidir pdfdir psdir \
-		libdir localedir mandir
+		libdir localedir mandir runstatedir
 do
   eval ac_val=\$$ac_var
   # Remove trailing slashes.
@@ -1534,6 +1547,7 @@ Fine tuning of the installation directories:
   --sysconfdir=DIR        read-only single-machine data [PREFIX/etc]
   --sharedstatedir=DIR    modifiable architecture-independent data [PREFIX/com]
   --localstatedir=DIR     modifiable single-machine data [PREFIX/var]
+  --runstatedir=DIR       modifiable per-process data [LOCALSTATEDIR/run]
   --libdir=DIR            object code libraries [EPREFIX/lib]
   --includedir=DIR        C header files [PREFIX/include]
   --oldincludedir=DIR     C header files for non-gcc [/usr/include]
@@ -1589,11 +1603,11 @@ Optional Features:
   --disable-app           To build library only and not app code
   --disable-lib           To build acvp_app only without library
   --enable-offline        Flag to indicate use of offline mode
+  --enable-force-static-linking
+                          Flag to try and force all needed libraries to link
+                          statically
   --enable-cflags         Flag to indicate use of enhanced CFLAGS
   --enable-gcov           Flag to indicate use of gcov tool
-  --enable-offline-ldl-check
-                          For use with openSSL builds depending on -ldl (not
-                          using no-dso
   --disable-lib-check     Disables checking for presence of libraries during
                           configure. This is ONLY recommended if you have
                           issues with detection and you know the library
@@ -1615,7 +1629,6 @@ Optional Packages:
                           /usr/local/ssl
   --with-fom-dir          Path to FOM install directory
   --with-libcurl-dir      enable support for client proxy using libcurl
-  --with-libmurl-dir      enable support for client proxy using libmurl
   --with-criterion-dir    location of Criterion install folder
 
 Some influential environment variables:
@@ -4950,13 +4963,13 @@ if ${lt_cv_nm_interface+:} false; then :
 else
   lt_cv_nm_interface="BSD nm"
   echo "int some_variable = 0;" > conftest.$ac_ext
-  (eval echo "\"\$as_me:4953: $ac_compile\"" >&5)
+  (eval echo "\"\$as_me:4966: $ac_compile\"" >&5)
   (eval "$ac_compile" 2>conftest.err)
   cat conftest.err >&5
-  (eval echo "\"\$as_me:4956: $NM \\\"conftest.$ac_objext\\\"\"" >&5)
+  (eval echo "\"\$as_me:4969: $NM \\\"conftest.$ac_objext\\\"\"" >&5)
   (eval "$NM \"conftest.$ac_objext\"" 2>conftest.err > conftest.out)
   cat conftest.err >&5
-  (eval echo "\"\$as_me:4959: output\"" >&5)
+  (eval echo "\"\$as_me:4972: output\"" >&5)
   cat conftest.out >&5
   if $GREP 'External.*some_variable' conftest.out > /dev/null; then
     lt_cv_nm_interface="MS dumpbin"
@@ -6161,7 +6174,7 @@ ia64-*-hpux*)
   ;;
 *-*-irix6*)
   # Find out which ABI we are using.
-  echo '#line 6164 "configure"' > conftest.$ac_ext
+  echo '#line 6177 "configure"' > conftest.$ac_ext
   if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_compile\""; } >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -7690,11 +7703,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:7693: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:7706: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:7697: \$? = $ac_status" >&5
+   echo "$as_me:7710: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -8029,11 +8042,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:8032: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:8045: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:8036: \$? = $ac_status" >&5
+   echo "$as_me:8049: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -8134,11 +8147,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:8137: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:8150: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:8141: \$? = $ac_status" >&5
+   echo "$as_me:8154: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -8189,11 +8202,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:8192: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:8205: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:8196: \$? = $ac_status" >&5
+   echo "$as_me:8209: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -10559,7 +10572,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10562 "configure"
+#line 10575 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -10655,7 +10668,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10658 "configure"
+#line 10671 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -10902,7 +10915,7 @@ case "${host_os}" in
 esac
 
 if test "$gcc_z_support" = "yes"; then :
-  CFLAGS="$CFLAGS -Wl,-z,noexecstack"
+  CFLAGS="$CFLAGS -Wl,-z,noexecstack -pthread"
 fi
 
 ###########################################
@@ -10986,6 +10999,31 @@ else
   enable_offline=false
 fi
 
+ if test "x$offline" != "x"; then
+  BUILDING_OFFLINE_TRUE=
+  BUILDING_OFFLINE_FALSE='#'
+else
+  BUILDING_OFFLINE_TRUE='#'
+  BUILDING_OFFLINE_FALSE=
+fi
+
+
+#Link dependencies statically where possible
+# Check whether --enable-force-static-linking was given.
+if test "${enable_force_static_linking+set}" = set; then :
+  enableval=$enable_force_static_linking; static="true"
+else
+  static="false"
+fi
+
+ if test "x$static" == "xtrue"; then
+  FORCE_STATIC_TRUE=
+  FORCE_STATIC_FALSE='#'
+else
+  FORCE_STATIC_TRUE='#'
+  FORCE_STATIC_FALSE=
+fi
+
 
 # Libcurl/murl installation path. Check for Curl first, use murl if no curl
 if test "x$enable_offline" = "xfalse" && test "x$disable_lib" != "xyes" ; then
@@ -10997,24 +11035,12 @@ else
   with_libcurldir=no
 fi
 
-    if test "x$libcurldir" = "x" ; then
 
-# Check whether --with-libmurl-dir was given.
-if test "${with_libmurl_dir+set}" = set; then :
-  withval=$with_libmurl_dir; libmurldir="$withval"
-else
-  with_libmurldir=no
-fi
-
-    fi
-    if test "x$libcurldir" = "x" && test "x$libmurldir" = "x" ; then
+    if test "x$libcurldir" = "x" && test "x$offline" = "xfalse" ; then
         { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
 $as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
 as_fn_error $? "libcurl or libmurl directory must be set if building library for online use
 See \`config.log' for more details" "$LINENO" 5; }
-    elif test "x$offline" != "x" ; then
-        { $as_echo "$as_me:${as_lineno-$LINENO}: note: curl/murl directory provided with offline build, these will be ignored" >&5
-$as_echo "$as_me: note: curl/murl directory provided with offline build, these will be ignored" >&6;}
     fi
 fi
 
@@ -11043,15 +11069,6 @@ if test "${with_criterion_dir+set}" = set; then :
   withval=$with_criterion_dir; criteriondir="$withval"
 else
   with_criteriondir="no"
-fi
-
-
-# Enable -ldl link check offline builds (for SSL builds without no-dso)
-# Check whether --enable-offline-ldl-check was given.
-if test "${enable_offline_ldl_check+set}" = set; then :
-  enableval=$enable_offline_ldl_check; checkldl="$enableval"
-else
-  check_ldl=false
 fi
 
 
@@ -11096,7 +11113,128 @@ found_ssl="false"
 ssl_lib64="false"
 
 if test "x$disable_lib_detection" = "xno"; then
-    #Check what version of SSL is being linked. Determines how any FIPS stuff is handled, and what APIs are used in some places
+    # Be more lenient in library detection stage
+    LDFLAGS=" -Wl,--allow-multiple-definition $LDFLAGS"
+
+    lib_dependencies=""
+    # OpenSSL can depend on libdl; Curl can depend on libz. Check if these are present
+    # and add them to LIBS if so.
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing dlopen" >&5
+$as_echo_n "checking for library containing dlopen... " >&6; }
+if ${ac_cv_search_dlopen+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_func_search_save_LIBS=$LIBS
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char dlopen ();
+int
+main ()
+{
+return dlopen ();
+  ;
+  return 0;
+}
+_ACEOF
+for ac_lib in '' dl; do
+  if test -z "$ac_lib"; then
+    ac_res="none required"
+  else
+    ac_res=-l$ac_lib
+    LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
+  fi
+  if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_search_dlopen=$ac_res
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext
+  if ${ac_cv_search_dlopen+:} false; then :
+  break
+fi
+done
+if ${ac_cv_search_dlopen+:} false; then :
+
+else
+  ac_cv_search_dlopen=no
+fi
+rm conftest.$ac_ext
+LIBS=$ac_func_search_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_search_dlopen" >&5
+$as_echo "$ac_cv_search_dlopen" >&6; }
+ac_res=$ac_cv_search_dlopen
+if test "$ac_res" != no; then :
+  test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
+  lib_dependencies+="-ldl "
+fi
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing gzdopen" >&5
+$as_echo_n "checking for library containing gzdopen... " >&6; }
+if ${ac_cv_search_gzdopen+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_func_search_save_LIBS=$LIBS
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char gzdopen ();
+int
+main ()
+{
+return gzdopen ();
+  ;
+  return 0;
+}
+_ACEOF
+for ac_lib in '' z; do
+  if test -z "$ac_lib"; then
+    ac_res="none required"
+  else
+    ac_res=-l$ac_lib
+    LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
+  fi
+  if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_search_gzdopen=$ac_res
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext
+  if ${ac_cv_search_gzdopen+:} false; then :
+  break
+fi
+done
+if ${ac_cv_search_gzdopen+:} false; then :
+
+else
+  ac_cv_search_gzdopen=no
+fi
+rm conftest.$ac_ext
+LIBS=$ac_func_search_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_search_gzdopen" >&5
+$as_echo "$ac_cv_search_gzdopen" >&6; }
+ac_res=$ac_cv_search_gzdopen
+if test "$ac_res" != no; then :
+  test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
+  lib_dependencies+="-lz "
+fi
+
+    ADDL_LIB_DEPENDENCIES="$lib_dependencies"
+
+
+    # Check what version of SSL is being linked. Determines how any FIPS stuff is handled, and what APIs are used in some places
     proj_temp_cppflags="$CPPFLAGS"
     CPPFLAGS="-I$ssldir/include"
     ac_fn_c_check_header_mongrel "$LINENO" "openssl/opensslv.h" "ac_cv_header_openssl_opensslv_h" "$ac_includes_default"
@@ -11134,17 +11272,9 @@ fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
     CPPFLAGS="$proj_temp_cppflags"
 
-    #set LDFLAGS for libdetection
-    if test "$is_freebsd" != "1" && test "x$enable_offline" != "xfalse" && test "x$check_ldl" != "xfalse" ; then
-        LIBS="-ldl $LIBS"
-    fi
-    if test "x$enable_offline" != "xfalse" && test "x$use_ssl_3" != "xtrue" ; then
-        #Some platforms have multiple definitions. Allow them for JUST the library test stage.
-        LDFLAGS="-static -Wl,--allow-multiple-definition $LDFLAGS"
-    fi
     # Search for SSL and Crypto libs, and if it doesn't fail set the make vars accordingly
     if test "x$disable_app" = "xno" ; then
-        LDFLAGS="-L$ssldir/lib $LDFLAGS"
+        LDFLAGS="$LDFLAGS -L$ssldir/lib"
         { $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing EVP_EncryptInit" >&5
 $as_echo_n "checking for library containing EVP_EncryptInit... " >&6; }
 if ${ac_cv_search_EVP_EncryptInit+:} false; then :
@@ -11201,7 +11331,7 @@ if test "$ac_res" != no; then :
   found_crypto="true"
 else
 
-            LDFLAGS="-L$ssldir/lib64 $LDFLAGS"
+            LDFLAGS="$LDFLAGS -L$ssldir/lib64"
             unset ac_cv_search_EVP_EncryptInit # This value gets referenced as a cache so needs unsetting
             { $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing EVP_EncryptInit" >&5
 $as_echo_n "checking for library containing EVP_EncryptInit... " >&6; }
@@ -11232,7 +11362,7 @@ for ac_lib in '' crypto; do
     ac_res="none required"
   else
     ac_res=-l$ac_lib
-    LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
+    LIBS="-l$ac_lib "$lib_dependencies" $ac_func_search_save_LIBS"
   fi
   if ac_fn_c_try_link "$LINENO"; then :
   ac_cv_search_EVP_EncryptInit=$ac_res
@@ -11260,7 +11390,7 @@ if test "$ac_res" != no; then :
 else
   { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
 $as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
-as_fn_error $? "Can't locate libcrypto
+as_fn_error $? "Cannot locate libcrypto
 See \`config.log' for more details" "$LINENO" 5; }
 fi
 
@@ -11296,7 +11426,7 @@ for ac_lib in '' ssl; do
     ac_res="none required"
   else
     ac_res=-l$ac_lib
-    LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
+    LIBS="-l$ac_lib "$lib_dependencies" $ac_func_search_save_LIBS"
   fi
   if ac_fn_c_try_link "$LINENO"; then :
   ac_cv_search_SSL_CTX_new=$ac_res
@@ -11324,7 +11454,7 @@ if test "$ac_res" != no; then :
 else
   { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
 $as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
-as_fn_error $? "can't locate libssl
+as_fn_error $? "Cannot locate libssl
 See \`config.log' for more details" "$LINENO" 5; }
 fi
 
@@ -11332,12 +11462,11 @@ fi
 
     if test "x$disable_lib" = "xyes" ; then
         if test "x$libacvpdir" != "x" ; then
-            LDFLAGS="$LDFLAGS -L$libacvpdir/lib -lacvp"
+            LDFLAGS="$LDFLAGS -L$libalibcvpdir/lib"
         else
-            LDFLAGS="$LDFLAGS -Lsrc/.libs -lacvp"
+            LDFLAGS="$LDFLAGS -Lsrc/.libs"
         fi
-        if test "$is_freebsd" = "1" ; then
-            { $as_echo "$as_me:${as_lineno-$LINENO}: checking for acvp_create_test_session in -lacvp" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for acvp_create_test_session in -lacvp" >&5
 $as_echo_n "checking for acvp_create_test_session in -lacvp... " >&6; }
 if ${ac_cv_lib_acvp_acvp_create_test_session+:} false; then :
   $as_echo_n "(cached) " >&6
@@ -11383,74 +11512,22 @@ _ACEOF
 else
   { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
 $as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
-as_fn_error $? "can't find libacvp library
+as_fn_error $? "Cannot find libacvp library
 See \`config.log' for more details" "$LINENO" 5; }
 fi
 
-        else
-            { $as_echo "$as_me:${as_lineno-$LINENO}: checking for acvp_create_test_session in -lacvp" >&5
-$as_echo_n "checking for acvp_create_test_session in -lacvp... " >&6; }
-if ${ac_cv_lib_acvp_acvp_create_test_session+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lacvp -ldl $LIBS"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char acvp_create_test_session ();
-int
-main ()
-{
-return acvp_create_test_session ();
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_acvp_acvp_create_test_session=yes
-else
-  ac_cv_lib_acvp_acvp_create_test_session=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_acvp_acvp_create_test_session" >&5
-$as_echo "$ac_cv_lib_acvp_acvp_create_test_session" >&6; }
-if test "x$ac_cv_lib_acvp_acvp_create_test_session" = xyes; then :
-  cat >>confdefs.h <<_ACEOF
-#define HAVE_LIBACVP 1
-_ACEOF
-
-  LIBS="-lacvp $LIBS"
-
-else
-  { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
-$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
-as_fn_error $? "can't find libacvp library
-See \`config.log' for more details" "$LINENO" 5; }
-fi
-
-        fi
     fi
 
-    # Check for curl - if that fails, check for murl
+    # Check for curl
     if test "x$libcurldir" != "x" ; then
-        LDFLAGS="$LDFLAGS -L$libcurldir/lib -lcurl"
+        LDFLAGS="$LDFLAGS -L$libcurldir/lib"
         { $as_echo "$as_me:${as_lineno-$LINENO}: checking for curl_easy_init in -lcurl" >&5
 $as_echo_n "checking for curl_easy_init in -lcurl... " >&6; }
 if ${ac_cv_lib_curl_curl_easy_init+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   ac_check_lib_save_LIBS=$LIBS
-LIBS="-lcurl  $LIBS"
+LIBS="-lcurl "$lib_dependencies" $LIBS"
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -11494,59 +11571,8 @@ as_fn_error $? "Curl not found in provided curl dir
 See \`config.log' for more details" "$LINENO" 5; }
 fi
 
-
-    elif test "x$usemurl" != "x" ; then
-        LDFLAGS="$LDFLAGS -L$libmurldir/lib -lmurl"
-        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for curl_easy_init in -lcurl" >&5
-$as_echo_n "checking for curl_easy_init in -lcurl... " >&6; }
-if ${ac_cv_lib_curl_curl_easy_init+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lcurl  $LIBS"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char curl_easy_init ();
-int
-main ()
-{
-return curl_easy_init ();
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_curl_curl_easy_init=yes
-else
-  ac_cv_lib_curl_curl_easy_init=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_curl_curl_easy_init" >&5
-$as_echo "$ac_cv_lib_curl_curl_easy_init" >&6; }
-if test "x$ac_cv_lib_curl_curl_easy_init" = xyes; then :
-  cat >>confdefs.h <<_ACEOF
-#define HAVE_LIBCURL 1
-_ACEOF
-
-  LIBS="-lcurl $LIBS"
-
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: Murl not found in provided murl dir" >&5
-$as_echo "$as_me: Murl not found in provided murl dir" >&6;}
-fi
-
-
     fi
+
 else
     #assume we are using openssl < 3 if lib check is disabled
     use_ssl_3="false"
@@ -11608,20 +11634,6 @@ else
 fi
 
 
-#offline builds are linked statically for versions < 3.0.0. 3.0.0 does not support FIPS static linking.
-#3.0.0 offline build just means Curl is not needed.
-if test "x$enable_offline" != "xfalse" ; then
-    if test "x$use_ssl_3" != "xtrue" ; then
-        LDFLAGS="-static $LDFLAGS"
-        if test "x$disable_app" = "xno" ; then
-            #Note: User needs FIPSLD_CC defined in environment after configuring
-            CC="$fomdir/bin/fipsld"
-        fi
-    fi
-    CFLAGS="$CFLAGS -DACVP_OFFLINE"
-fi
-
-
 # If given a libacvp_dir, use that when building things dependent on library, otherwise, use defaults
 if test "x$libacvpdir" != "x" ; then
     LIBACVP_LDFLAGS="-L$libacvpdir/lib -lacvp"
@@ -11669,14 +11681,6 @@ else
   UNIT_TEST_SUPPORTED_FALSE=
 fi
 
-
- if test "x$check_ldl" != "xfalse" && test "x$enable_offline" != "xfalse"; then
-  USE_LDL_CHECK_TRUE=
-  USE_LDL_CHECK_FALSE='#'
-else
-  USE_LDL_CHECK_TRUE='#'
-  USE_LDL_CHECK_FALSE=
-fi
 
  if test "x$wrap_lib" != "xfalse"; then
   BUILD_APP_AS_LIB_TRUE=
@@ -11890,16 +11894,20 @@ if test -z "${LIB_NOT_SUPPORTED_TRUE}" && test -z "${LIB_NOT_SUPPORTED_FALSE}"; 
   as_fn_error $? "conditional \"LIB_NOT_SUPPORTED\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
+if test -z "${BUILDING_OFFLINE_TRUE}" && test -z "${BUILDING_OFFLINE_FALSE}"; then
+  as_fn_error $? "conditional \"BUILDING_OFFLINE\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${FORCE_STATIC_TRUE}" && test -z "${FORCE_STATIC_FALSE}"; then
+  as_fn_error $? "conditional \"FORCE_STATIC\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
 if test -z "${USE_FOM_OBJ_TRUE}" && test -z "${USE_FOM_OBJ_FALSE}"; then
   as_fn_error $? "conditional \"USE_FOM_OBJ\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${UNIT_TEST_SUPPORTED_TRUE}" && test -z "${UNIT_TEST_SUPPORTED_FALSE}"; then
   as_fn_error $? "conditional \"UNIT_TEST_SUPPORTED\" was never defined.
-Usually this means the macro was only invoked conditionally." "$LINENO" 5
-fi
-if test -z "${USE_LDL_CHECK_TRUE}" && test -z "${USE_LDL_CHECK_FALSE}"; then
-  as_fn_error $? "conditional \"USE_LDL_CHECK\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${BUILD_APP_AS_LIB_TRUE}" && test -z "${BUILD_APP_AS_LIB_FALSE}"; then
