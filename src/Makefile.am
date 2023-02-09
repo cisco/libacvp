@@ -1,5 +1,10 @@
 lib_LTLIBRARIES = libacvp.la
 AM_CFLAGS = -I$(top_srcdir)/include/acvp $(SAFEC_CFLAGS) $(LIBCURL_CFLAGS)
+
+if BUILDING_OFFLINE
+AM_CFLAGS+= -DACVP_OFFLINE
+endif
+
 libacvp_la_SOURCES =  acvp.c \
                     acvp_build_register.c \
                     acvp_capabilities.c \

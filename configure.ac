@@ -58,7 +58,7 @@ esac
 
 AS_IF(
     [test "$gcc_z_support" = "yes"],
-    [[CFLAGS="$CFLAGS -Wl,-z,noexecstack"]])
+    [[CFLAGS="$CFLAGS -Wl,-z,noexecstack -pthread"]])
 
 ###########################################
 # Read in arguments and set internal vars #
@@ -110,6 +110,15 @@ AC_ARG_ENABLE([offline],
 [Flag to indicate use of offline mode])],
 [offline="$enableval"],
 [enable_offline=false])
+AM_CONDITIONAL([BUILDING_OFFLINE], [test "x$offline" != "x"])
+
+#Link dependencies statically where possible
+AC_ARG_ENABLE([force-static-linking],
+[AS_HELP_STRING([--enable-force-static-linking],
+[Flag to try and force all needed libraries to link statically])],
+[static="true"],
+[static="false"])
+AM_CONDITIONAL([FORCE_STATIC], [test "x$static" == "xtrue"])
 
 # Libcurl/murl installation path. Check for Curl first, use murl if no curl
 if test "x$enable_offline" = "xfalse" && test "x$disable_lib" != "xyes" ; then
@@ -118,17 +127,9 @@ if test "x$enable_offline" = "xfalse" && test "x$disable_lib" != "xyes" ; then
         [enable support for client proxy using libcurl])],
         [libcurldir="$withval"],
         [with_libcurldir=no])
-    if test "x$libcurldir" = "x" ; then
-        AC_ARG_WITH([libmurl-dir],
-            [AS_HELP_STRING([--with-libmurl-dir],
-            [enable support for client proxy using libmurl])],
-            [libmurldir="$withval"],
-            [with_libmurldir=no])
-    fi
-    if test "x$libcurldir" = "x" && test "x$libmurldir" = "x" ; then
+
+    if test "x$libcurldir" = "x" && test "x$offline" = "xfalse" ; then
         AC_MSG_FAILURE([libcurl or libmurl directory must be set if building library for online use])
-    elif test "x$offline" != "x" ; then
-        AC_MSG_NOTICE([note: curl/murl directory provided with offline build, these will be ignored])
     fi
 fi
 
@@ -152,13 +153,6 @@ AC_ARG_WITH([criterion-dir],
     [location of Criterion install folder])],
     [criteriondir="$withval"],
     [with_criteriondir="no"])
-
-# Enable -ldl link check offline builds (for SSL builds without no-dso)
-AC_ARG_ENABLE([offline-ldl-check],
-[AS_HELP_STRING([--enable-offline-ldl-check],
-[For use with openSSL builds depending on -ldl (not using no-dso])],
-[checkldl="$enableval"],
-[check_ldl=false])
 
 # Disable check for library presence during configure stage
 AC_MSG_CHECKING([disable lib check])
@@ -193,7 +187,17 @@ found_ssl="false"
 ssl_lib64="false"
 
 if test "x$disable_lib_detection" = "xno"; then
-    #Check what version of SSL is being linked. Determines how any FIPS stuff is handled, and what APIs are used in some places
+    # Be more lenient in library detection stage
+    LDFLAGS=" -Wl,--allow-multiple-definition $LDFLAGS"
+
+    lib_dependencies=""
+    # OpenSSL can depend on libdl; Curl can depend on libz. Check if these are present
+    # and add them to LIBS if so.
+    AC_SEARCH_LIBS([dlopen], [dl], [lib_dependencies+="-ldl "], [], [])
+    AC_SEARCH_LIBS([gzdopen], [z], [lib_dependencies+="-lz "], [], [])
+    AC_SUBST([ADDL_LIB_DEPENDENCIES], "$lib_dependencies")
+
+    # Check what version of SSL is being linked. Determines how any FIPS stuff is handled, and what APIs are used in some places
     proj_temp_cppflags="$CPPFLAGS"
     CPPFLAGS="-I$ssldir/include"
     AC_CHECK_HEADER([openssl/opensslv.h], [], [AC_MSG_FAILURE([Unable to read opensslslv.h to determine SSL library version])])
@@ -208,55 +212,37 @@ if test "x$disable_lib_detection" = "xno"; then
         [use_ssl_3="true"])
     CPPFLAGS="$proj_temp_cppflags"
 
-    #set LDFLAGS for libdetection
-    if test "$is_freebsd" != "1" && test "x$enable_offline" != "xfalse" && test "x$check_ldl" != "xfalse" ; then
-        LIBS="-ldl $LIBS"
-    fi
-    if test "x$enable_offline" != "xfalse" && test "x$use_ssl_3" != "xtrue" ; then
-        #Some platforms have multiple definitions. Allow them for JUST the library test stage.
-        LDFLAGS="-static -Wl,--allow-multiple-definition $LDFLAGS"
-    fi
     # Search for SSL and Crypto libs, and if it doesn't fail set the make vars accordingly
     if test "x$disable_app" = "xno" ; then
-        LDFLAGS="-L$ssldir/lib $LDFLAGS"
+        LDFLAGS="$LDFLAGS -L$ssldir/lib"
         AC_SEARCH_LIBS([EVP_EncryptInit], [crypto], [found_crypto="true"], [
-            LDFLAGS="-L$ssldir/lib64 $LDFLAGS"
+            LDFLAGS="$LDFLAGS -L$ssldir/lib64"
             unset ac_cv_search_EVP_EncryptInit # This value gets referenced as a cache so needs unsetting
             AC_SEARCH_LIBS([EVP_EncryptInit], [crypto], [found_crypto="true" && ssl_lib64="true"], 
-                           [AC_MSG_FAILURE([Can't locate libcrypto])], [])],
+                           [AC_MSG_FAILURE([Cannot locate libcrypto])], ["$lib_dependencies"])],
         [])
 
         AC_SEARCH_LIBS([SSL_CTX_new], [ssl], [],
-                    [AC_MSG_FAILURE([can't locate libssl])], [])
+                    [AC_MSG_FAILURE([Cannot locate libssl])], ["$lib_dependencies"])
     fi
 
     if test "x$disable_lib" = "xyes" ; then
         if test "x$libacvpdir" != "x" ; then
-            LDFLAGS="$LDFLAGS -L$libacvpdir/lib -lacvp"
+            LDFLAGS="$LDFLAGS -L$libalibcvpdir/lib"
         else
-            LDFLAGS="$LDFLAGS -Lsrc/.libs -lacvp"
+            LDFLAGS="$LDFLAGS -Lsrc/.libs"
         fi
-        if test "$is_freebsd" = "1" ; then
-            AC_CHECK_LIB([acvp], [acvp_create_test_session], [],
-                 [AC_MSG_FAILURE([can't find libacvp library])], [])
-        else
-            AC_CHECK_LIB([acvp], [acvp_create_test_session], [],
-                 [AC_MSG_FAILURE([can't find libacvp library])], [-ldl])
-        fi
+        AC_CHECK_LIB([acvp], [acvp_create_test_session], [],
+                [AC_MSG_FAILURE([Cannot find libacvp library])], [])
     fi
 
-    # Check for curl - if that fails, check for murl
+    # Check for curl
     if test "x$libcurldir" != "x" ; then
-        LDFLAGS="$LDFLAGS -L$libcurldir/lib -lcurl"
+        LDFLAGS="$LDFLAGS -L$libcurldir/lib"
         AC_CHECK_LIB([curl], [curl_easy_init], [],
-            [AC_MSG_FAILURE(Curl not found in provided curl dir)])
-
-    elif test "x$usemurl" != "x" ; then
-        LDFLAGS="$LDFLAGS -L$libmurldir/lib -lmurl"
-        AC_CHECK_LIB([curl], [curl_easy_init], [],
-            [AC_MSG_NOTICE([Murl not found in provided murl dir])])
-
+            [AC_MSG_FAILURE(Curl not found in provided curl dir)], ["$lib_dependencies"])
     fi
+
 else
     #assume we are using openssl < 3 if lib check is disabled
     use_ssl_3="false"
@@ -298,20 +284,6 @@ if test "x$with_fomdir" != "xno" ; then
 fi
 AM_CONDITIONAL([USE_FOM_OBJ], [test "x$with_fomdir" != "xno"])
 
-#offline builds are linked statically for versions < 3.0.0. 3.0.0 does not support FIPS static linking.
-#3.0.0 offline build just means Curl is not needed.
-if test "x$enable_offline" != "xfalse" ; then
-    if test "x$use_ssl_3" != "xtrue" ; then
-        LDFLAGS="-static $LDFLAGS"
-        if test "x$disable_app" = "xno" ; then
-            #Note: User needs FIPSLD_CC defined in environment after configuring
-            CC="$fomdir/bin/fipsld"
-        fi
-    fi
-    CFLAGS="$CFLAGS -DACVP_OFFLINE"
-fi
-
-
 # If given a libacvp_dir, use that when building things dependent on library, otherwise, use defaults
 if test "x$libacvpdir" != "x" ; then
     AC_SUBST([LIBACVP_LDFLAGS], ["-L$libacvpdir/lib -lacvp"])
@@ -346,7 +318,6 @@ AS_IF([test "x$with_criterion" != xno],
      )
 AM_CONDITIONAL([UNIT_TEST_SUPPORTED], [test "x$with_criteriondir" != "xno"])
 
-AM_CONDITIONAL([USE_LDL_CHECK], [test "x$check_ldl" != "xfalse" && test "x$enable_offline" != "xfalse"])
 AM_CONDITIONAL([BUILD_APP_AS_LIB], [test "x$wrap_lib" != "xfalse"])
 
 ##

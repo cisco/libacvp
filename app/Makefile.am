@@ -26,13 +26,19 @@ acvp_app_includedir=$(includedir)/acvp
 acvp_app_SOURCES = ${tmp_sources}
 acvp_app_CFLAGS = -g -fPIE $(LIBACVP_CFLAGS) $(SSL_CFLAGS) $(FOM_CFLAGS) $(SAFEC_CFLAGS) $(COND_ALG_CFLAGS)
 acvp_app_LDFLAGS = $(LIBACVP_LDFLAGS) $(SSL_LDFLAGS) $(FOM_LDFLAGS)
+acvp_app_LDADD = $(ADDL_LIB_DEPENDENCIES)
 
-if USE_LDL_CHECK
-acvp_app_LDFLAGS += -ldl
+if FORCE_STATIC
+acvp_app_LDFLAGS += -all-static
+endif
+
+if ! BUILDING_OFFLINE
+acvp_app_LDFLAGS += $(LIBCURL_LDFLAGS)
+acvp_app_CFLAGS += $(LIBCURL_CFLAGS)
 endif
 
 if USE_FOM_OBJ
-acvp_app_LDADD = $(FOM_OBJ_DIR)/fipscanister.o
+acvp_app_LDADD += $(FOM_OBJ_DIR)/fipscanister.o
 endif
 
 else
@@ -44,10 +50,6 @@ AM_CFLAGS = -g -fPIE $(LIBACVP_CFLAGS) $(SSL_CFLAGS) $(FOM_CFLAGS) $(SAFEC_CFLAG
 libacvp_app_la_LIBADD = $(LIBACVP_LDFLAGS) $(SSL_LDFLAGS) $(FOM_LDFLAGS)
 
 libacvp_app_include_HEADERS = $(top_srcdir)/app/libacvp_app.h
-
-if USE_LDL_CHECK
-libacvp_app_la_LIBADD += -ldl
-endif
 
 if USE_FOM_OBJ
 libacvp_app_la_LIBADD += $(FOM_OBJ_DIR)/fipscanister.o
