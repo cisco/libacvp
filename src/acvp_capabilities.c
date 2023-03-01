@@ -710,6 +710,7 @@ static ACVP_RESULT acvp_validate_kdf135_x942_domain_value(ACVP_KDF135_X942_PARM 
     case ACVP_KDF_X942_KDF_TYPE:
     case ACVP_KDF_X942_OID:
     case ACVP_KDF_X942_HASH_ALG:
+    default:
         break;
     }
 
@@ -6022,6 +6023,7 @@ ACVP_RESULT acvp_cap_kdf135_x942_set_domain(ACVP_CTX *ctx,
     case ACVP_KDF_X942_KDF_TYPE:
     case ACVP_KDF_X942_OID:
     case ACVP_KDF_X942_HASH_ALG:
+    default:
         ACVP_LOG_ERR("Invalid domain parameter provided for kdf135-x942");
         return ACVP_INVALID_ARG;
     }
@@ -6088,6 +6090,7 @@ ACVP_RESULT acvp_cap_kdf135_x942_set_parm(ACVP_CTX *ctx,
     case ACVP_KDF_X942_OTHER_INFO_LEN:
     case ACVP_KDF_X942_SUPP_INFO_LEN:
     case ACVP_KDF_X942_ZZ_LEN:
+    default:
         ACVP_LOG_ERR("Invalid parameter provided for kdf135-x942");
         return ACVP_INVALID_ARG;
     }
@@ -8184,6 +8187,12 @@ ACVP_RESULT acvp_cap_kda_set_domain(ACVP_CTX *ctx, ACVP_CIPHER cipher, ACVP_KDA_
         case ACVP_KDA_MAC_SALT:
         case ACVP_KDA_MAC_ALG:
         case ACVP_KDA_ONESTEP_AUX_FUNCTION:
+        case ACVP_KDA_PERFORM_MULTIEXPANSION_TESTS:
+        case ACVP_KDA_TWOSTEP_SUPPORTED_LEN:
+        case ACVP_KDA_TWOSTEP_FIXED_DATA_ORDER:
+        case ACVP_KDA_TWOSTEP_COUNTER_LEN:
+        case ACVP_KDA_TWOSTEP_SUPPORTS_EMPTY_IV:
+        case ACVP_KDA_TWOSTEP_REQUIRES_EMPTY_IV:
         default:
             ACVP_LOG_ERR("Invalid domain param provided for KDA");
             return ACVP_INVALID_ARG;
@@ -8226,6 +8235,12 @@ ACVP_RESULT acvp_cap_kda_set_domain(ACVP_CTX *ctx, ACVP_CIPHER cipher, ACVP_KDA_
         case ACVP_KDA_MAC_SALT:
         case ACVP_KDA_MAC_ALG:
         case ACVP_KDA_ONESTEP_AUX_FUNCTION:
+        case ACVP_KDA_PERFORM_MULTIEXPANSION_TESTS:
+        case ACVP_KDA_TWOSTEP_SUPPORTED_LEN:
+        case ACVP_KDA_TWOSTEP_FIXED_DATA_ORDER:
+        case ACVP_KDA_TWOSTEP_COUNTER_LEN:
+        case ACVP_KDA_TWOSTEP_SUPPORTS_EMPTY_IV:
+        case ACVP_KDA_TWOSTEP_REQUIRES_EMPTY_IV:
         default:
             ACVP_LOG_ERR("Invalid domain param provided for KDA");
             return ACVP_INVALID_ARG;

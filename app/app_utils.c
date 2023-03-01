@@ -277,6 +277,31 @@ char *remove_str_const(const char *str) {
     return ret;
 }
 
+int save_string_to_file(const char *str, const char *path) {
+    int rv = 1;
+
+    if (!str) {
+        return 1;
+    }
+
+    FILE *fp = NULL;
+    fp = fopen(path, "w");
+    if (!fp) {
+        return 1;
+    }
+
+    if (fputs(str, fp) == EOF) {
+        goto end;
+    }
+
+    rv = 0;
+ end:
+    if (fp && fclose(fp) == EOF) {
+        printf("Encountered an error attempting to close output file. Cannot guarantee file integrity.\n");
+    }
+    return rv;
+}
+
 int get_nid_for_curve(ACVP_EC_CURVE curve) {
     switch (curve) {
     case ACVP_EC_CURVE_B233:

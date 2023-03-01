@@ -114,6 +114,11 @@ static void setup_session_parameters(void) {
 
 static int verify_algorithms(APP_CONFIG *cfg) {
     int rv = 1;
+
+    if (!cfg) {
+        return 0;
+    }
+
     /* If we are testing "all" then we don't need to tell the user they can't test algs */
 #if OPENSSL_VERSION_NUMBER < 0x30000000L
     if (!cfg->testall) {
@@ -378,6 +383,27 @@ int main(int argc, char **argv) {
         } else {
             printf("The given test session context is expected to generate %d vector sets.\n\n", diff);
         }
+        goto end;
+    }
+
+    if (cfg.get_reg) {
+        char *reg = NULL;
+        reg = acvp_get_current_registration(ctx, NULL);
+        if (!reg) {
+            printf("Error occured while getting current registration.\n");
+            goto end;
+        }
+        if (cfg.save_to) {
+            if (save_string_to_file((const char *)reg, (const char *)&cfg.save_file)) {
+                printf("Error occured while saving registration to file. Exiting...\n");
+            } else {
+                printf("Succesfully saved registration to given file. Exiting...\n");
+            }
+        } else {
+            printf("%s\n", reg);
+            printf("Completed output of current registration. Exiting...\n");
+        }
+        if (reg) free(reg);
         goto end;
     }
 

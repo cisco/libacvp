@@ -4225,6 +4225,17 @@ ACVP_RESULT acvp_oe_oe_set_dependency(ACVP_CTX *ctx,
 ACVP_RESULT acvp_set_json_filename(ACVP_CTX *ctx, const char *json_filename);
 
 /**
+ * @brief acvp_get_current_registration returns a string form of the currently registered set of capabilities. If a test
+ * session has already begun it will use the session's submitted registration. If it has not yet begun, only the capabilities
+ * registered thus far will be returrned.
+ *
+ * @param ctx The ctx to retrieve registration from
+ * @param len An optional pointer to an integer for saving the length of the returned string
+ * @return The string (char*) form of the current registration. The string must be later freed by the user.
+ */
+char *acvp_get_current_registration(ACVP_CTX *ctx, int *len);
+
+/**
  * @brief acvp_load_kat_filename loads and processes JSON kat vector file This option will not
  *        communicate with the server at all.
  *
