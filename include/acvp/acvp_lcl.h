@@ -62,6 +62,8 @@
 
 #define ACVP_ALG_MAX ACVP_CIPHER_END - 1  /* Used by alg_tbl[] */
 
+#define ACVP_CAP_MAX ACVP_ALG_MAX * 2 /* Arbitrary limit to the number of capability objects that
+                                         can be registered via file */
 /********************************************************
  * ******************************************************
  * REVISIONS
@@ -1882,10 +1884,10 @@ ACVP_RESULT acvp_kts_ifc_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
 ACVP_RESULT acvp_safe_primes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
-/*
- * ACVP build registration functions used internally
- */
-ACVP_RESULT acvp_build_test_session(ACVP_CTX *ctx, char **reg, int *out_len);
+/* ACVP build registration functions used internally */
+ACVP_RESULT acvp_build_registration_json(ACVP_CTX *ctx, JSON_Value **reg);
+
+ACVP_RESULT acvp_build_full_registration(ACVP_CTX *ctx, char **out, int *out_len);
 
 ACVP_RESULT acvp_build_validation(ACVP_CTX *ctx, char **out, int *out_len);
 

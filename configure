@@ -11647,17 +11647,13 @@ else
 
 fi
 
-if test "x$enable_cflags" != "xfalse"; then :
-  CFLAGS="$CFLAGS -Wcast-align -Wchar-subscripts -Wcomment -Wdeprecated-declarations -Wdisabled-optimization -Wdiv-by-zero -Wendif-labels  -Wformat -Wformat-extra-args  -Wformat-security -Wformat-y2k -Wimplicit -Wimplicit-function-declaration -Wimplicit-int -Wimport -Winvalid-pch -Wmain -Wmissing-braces  -Wmissing-format-attribute -Wmissing-noreturn  -Wmultichar -Wnested-externs -Wnonnull -Wparentheses -Wpointer-arith -Wreturn-type -Wsequence-point -Wshadow -Wsign-compare -Wstrict-aliasing -Wstrict-prototypes -Wswitch -Wswitch-default -Wtrigraphs  -Wunknown-pragmas -Wunused -Wunused-function -Wunused-label -Wunused-parameter -Wunused-value -Wunused-variable -Wwrite-strings -Wno-pointer-sign  -Wcast-qual -Wfloat-equal  -Wuninitialized -Wno-error=unreachable-code -Winline -Wno-error=cast-align -Wbad-function-cast  -Wswitch-enum -Wsystem-headers -Wunused-but-set-variable -Wextra -Wno-error=unreachable-code"
-
-
+if test "x$enable_cflags" != "xfalse" ; then
+    CFLAGS="$CFLAGS -Wcast-align -Wchar-subscripts -Wcomment -Wdeprecated-declarations -Wdisabled-optimization -Wdiv-by-zero -Wendif-labels  -Wformat -Wformat-extra-args  -Wformat-security -Wformat-y2k -Wimplicit -Wimplicit-function-declaration -Wimplicit-int -Wimport -Winvalid-pch -Wmain -Wmissing-braces  -Wmissing-format-attribute -Wmissing-noreturn  -Wmultichar -Wnested-externs -Wnonnull -Wparentheses -Wpointer-arith -Wreturn-type -Wsequence-point -Wshadow -Wsign-compare -Wstrict-aliasing -Wstrict-prototypes -Wswitch -Wswitch-default -Wtrigraphs  -Wunknown-pragmas -Wunused -Wunused-function -Wunused-label -Wunused-parameter -Wunused-value -Wunused-variable -Wwrite-strings -Wno-pointer-sign  -Wcast-qual -Wfloat-equal  -Wuninitialized -Winline -Wno-error=cast-align -Wbad-function-cast  -Wswitch-enum -Wsystem-headers -Wunused-but-set-variable -Wextra"
 fi
 
-if test "x$enable_gcov" != "xfalse"; then :
-  CFLAGS="$CFLAGS --coverage"
-  LDFLAGS="$LDFLAGS -lgcov"
-
-
+if test "x$enable_gcov" != "xfalse" ; then
+    CFLAGS="$CFLAGS --coverage"
+    LDFLAGS="$LDFLAGS -lgcov"
 fi
 
 if test "x$enable_gcov" != "xfalse" ; then
@@ -11665,14 +11661,13 @@ if test "x$enable_gcov" != "xfalse" ; then
 
 fi
 
-if test "x$with_criterion" != xno; then :
-  CRITERION_CFLAGS="-I$criteriondir/include"
+if test "x$with_criterion" != "xno" ; then
+    CRITERION_CFLAGS="-I$criteriondir/include"
 
-       CRITERION_LDFLAGS="-L$criteriondir/lib -lcriterion"
-
-
+    CRITERION_LDFLAGS="-L$criteriondir/lib -lcriterion"
 
 fi
+
  if test "x$with_criteriondir" != "xno"; then
   UNIT_TEST_SUPPORTED_TRUE=
   UNIT_TEST_SUPPORTED_FALSE='#'

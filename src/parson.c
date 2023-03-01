@@ -488,6 +488,9 @@ static JSON_Status json_object_remove_internal(JSON_Object *object, const char *
             parson_free(object->names[i]);
             if (free_value) {
                 json_value_free(object->values[i]);
+            /* ACVP: If remove a value from an object without freeing, make sure its parent is NULL */
+            } else {
+                object->values[i]->parent = NULL;
             }
             if (i != last_item_index) { /* Replace key value pair with one from the end */
                 object->names[i] = object->names[last_item_index];
@@ -2112,6 +2115,10 @@ JSON_Status json_object_dotset_null(JSON_Object *object, const char *name) {
 
 JSON_Status json_object_remove(JSON_Object *object, const char *name) {
     return json_object_remove_internal(object, name, 1);
+}
+
+JSON_Status json_object_soft_remove(JSON_Object *object, const char *name) {
+    return json_object_remove_internal(object, name, 0);
 }
 
 JSON_Status json_object_dotremove(JSON_Object *object, const char *name) {

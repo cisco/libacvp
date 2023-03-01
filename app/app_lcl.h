@@ -52,6 +52,7 @@ typedef struct app_config {
     int get_expected;
     int save_to;
     int get_cost;
+    int get_reg;
 #if OPENSSL_VERSION_NUMBER >= 0x30000000L
     int disable_fips;
 #endif
@@ -88,6 +89,7 @@ int app_setup_two_factor_auth(ACVP_CTX *ctx);
 unsigned int swap_uint_endian(unsigned int i);
 int check_is_little_endian(void);
 char *remove_str_const(const char *str);
+int save_string_to_file(const char *str, const char *path);
 int get_nid_for_curve(ACVP_EC_CURVE curve);
 const EVP_MD *get_md_for_hash_alg(ACVP_HASH_ALG alg);
 const char *get_md_string_for_hash_alg(ACVP_HASH_ALG alg, int *md_size);

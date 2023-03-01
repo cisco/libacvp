@@ -518,6 +518,7 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
         break;
     case ACVP_SYM_CIPH_IVGEN_SRC_NA:
     case ACVP_SYM_CIPH_IVGEN_SRC_MAX:
+    case ACVP_SYM_CIPH_IVGEN_SRC_EITHER:
     default:
         if (cap_entry->cipher == ACVP_AES_GCM || cap_entry->cipher == ACVP_AES_GMAC ||
                 cap_entry->cipher == ACVP_AES_XPN ||
@@ -711,6 +712,7 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
     case ACVP_KDF135_SRTP:
     case ACVP_KDF135_IKEV2:
     case ACVP_KDF135_IKEV1:
+    case ACVP_KDF135_X942:
     case ACVP_KDF135_X963:
     case ACVP_KDF108:
     case ACVP_PBKDF:
@@ -4537,19 +4539,11 @@ static ACVP_RESULT acvp_build_safe_primes_register_cap(ACVP_CTX *ctx,
  * will be sent to the ACVP server to advertised the crypto
  * capabilities of the module under test.
  */
-ACVP_RESULT acvp_build_test_session(ACVP_CTX *ctx, char **reg, int *out_len) {
+ACVP_RESULT acvp_build_registration_json(ACVP_CTX *ctx, JSON_Value **reg) {
     ACVP_RESULT rv = ACVP_SUCCESS;
     ACVP_CAPS_LIST *cap_entry;
-
-    JSON_Value *reg_arry_val = NULL;
-    JSON_Value *ver_val = NULL;
-    JSON_Object *ver_obj = NULL;
-    JSON_Array *reg_arry = NULL;
-    JSON_Value *val = NULL;
-    JSON_Object *obj = NULL;
-
+    JSON_Value *val = NULL, *cap_val = NULL;
     JSON_Array *caps_arr = NULL;
-    JSON_Value *cap_val = NULL;
     JSON_Object *cap_obj = NULL;
 
     if (!ctx) {
@@ -4557,31 +4551,14 @@ ACVP_RESULT acvp_build_test_session(ACVP_CTX *ctx, char **reg, int *out_len) {
         return ACVP_NO_CTX;
     }
 
-    /*
-     * Start the registration array
-     */
-    reg_arry_val = json_value_init_array();
-    reg_arry = json_array((const JSON_Value *)reg_arry_val);
-
-    ver_val = json_value_init_object();
-    ver_obj = json_value_get_object(ver_val);
-
-    json_object_set_string(ver_obj, "acvVersion", ACVP_VERSION);
-    json_array_append_value(reg_arry, ver_val);
-
-    val = json_value_init_object();
+  /*  val = json_value_init_object();
     obj = json_value_get_object(val);
 
-    if (ctx->is_sample) {
-        json_object_set_boolean(obj, "isSample", 1);
-    }
 
-    /*
-     * Start the capabilities advertisement
-     */
     json_object_set_value(obj, "algorithms", json_value_init_array());
-    caps_arr = json_object_get_array(obj, "algorithms");
-
+    caps_arr = json_object_get_array(obj, "algorithms"); */
+    val = json_value_init_array();
+    caps_arr = json_value_get_array(val);
     /*
      * Iterate through all the capabilities the user has enabled
      */
@@ -4841,7 +4818,6 @@ ACVP_RESULT acvp_build_test_session(ACVP_CTX *ctx, char **reg, int *out_len) {
                 ACVP_LOG_ERR("Cap entry not found, %d.", cap_entry->cipher);
                 json_value_free(cap_val);
                 json_value_free(val);
-                json_value_free(reg_arry_val);
                 return ACVP_NO_CAP;
             }
 
@@ -4849,7 +4825,6 @@ ACVP_RESULT acvp_build_test_session(ACVP_CTX *ctx, char **reg, int *out_len) {
                 ACVP_LOG_ERR("failed to build registration for cipher %s (%d)", acvp_lookup_cipher_name(cap_entry->cipher), rv);
                 json_value_free(cap_val);
                 json_value_free(val);
-                json_value_free(reg_arry_val);
                 return rv;
             }
 
@@ -4865,17 +4840,10 @@ ACVP_RESULT acvp_build_test_session(ACVP_CTX *ctx, char **reg, int *out_len) {
     } else {
         ACVP_LOG_ERR("No capabilities added to ctx");
         json_value_free(val);
-        json_value_free(reg_arry_val);
         return ACVP_NO_CAP;
     }
 
-    /*
-     * Add the entire caps exchange section to the top object
-     */
-    json_array_append_value(reg_arry, val);
-    *reg = json_serialize_to_string(reg_arry_val, out_len);
-    ctx->registration = json_value_deep_copy(val);
-    json_value_free(reg_arry_val);
+    *reg = val;
 
     return ACVP_SUCCESS;
 }
@@ -4890,6 +4858,35 @@ static JSON_Value *acvp_version_json_value(void) {
     json_object_set_string(version_obj, "acvVersion", ACVP_VERSION);
 
     return version_val;
+}
+
+ACVP_RESULT acvp_build_full_registration(ACVP_CTX *ctx, char **out, int *out_len) {
+    JSON_Value *top_array_val = NULL, *val = NULL;
+    JSON_Array *top_array = NULL;
+    JSON_Object *obj = NULL;
+
+    /*
+     * Start top-level array
+     */
+    top_array_val = json_value_init_array();
+    if (!top_array_val) {
+        return ACVP_MALLOC_FAIL;
+    }
+    top_array = json_array((const JSON_Value *)top_array_val);
+    json_array_append_value(top_array, acvp_version_json_value());
+
+    val = json_value_init_object();
+    obj = json_value_get_object(val);
+
+    json_object_set_boolean(obj, "isSample", ctx->is_sample);
+    json_object_set_value(obj, "algorithms", ctx->registration);
+
+    json_array_append_value(top_array, val);
+    *out = json_serialize_to_string(top_array_val, out_len);
+
+    json_object_soft_remove(obj, "algorithms");
+    if (top_array_val) json_value_free(top_array_val);
+    return ACVP_SUCCESS;
 }
 
 /*

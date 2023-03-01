@@ -23,6 +23,7 @@ static ACVP_CTX *ctx = NULL;
 static ACVP_RESULT rv = 0;
 static char *cvalue = "same";
 static char *reg;
+static JSON_Value *reg_value;
 static JSON_Value *generated_value;
 static JSON_Value *known_good_value;
 static JSON_Object *generated_obj;
@@ -39,7 +40,7 @@ static void add_des_details_good(void) {
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_ECB, ACVP_SYM_CIPH_PARM_KO, ACVP_SYM_CIPH_KO_ONE);
     cr_assert(rv == ACVP_SUCCESS);
-    
+
     /*
      * Enable 3DES-CBC
      */
@@ -49,7 +50,7 @@ static void add_des_details_good(void) {
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CBC, ACVP_SYM_CIPH_PARM_KO, ACVP_SYM_CIPH_KO_ONE);
     cr_assert(rv == ACVP_SUCCESS);
-    
+
     /*
      * Enable 3DES-OFB
      */
@@ -59,7 +60,7 @@ static void add_des_details_good(void) {
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_OFB, ACVP_SYM_CIPH_PARM_KO, ACVP_SYM_CIPH_KO_ONE);
     cr_assert(rv == ACVP_SUCCESS);
-    
+
     /*
      * Enable 3DES-CFB64
      */
@@ -69,7 +70,7 @@ static void add_des_details_good(void) {
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CFB64, ACVP_SYM_CIPH_PARM_KO, ACVP_SYM_CIPH_KO_ONE);
     cr_assert(rv == ACVP_SUCCESS);
-    
+
     /*
      * Enable 3DES-CFB8
      */
@@ -79,7 +80,7 @@ static void add_des_details_good(void) {
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_TDES_CFB8, ACVP_SYM_CIPH_PARM_KO, ACVP_SYM_CIPH_KO_ONE);
     cr_assert(rv == ACVP_SUCCESS);
-    
+
     /*
      * Enable 3DES-CFB1
      */
@@ -138,7 +139,7 @@ static void add_aes_details_good(void) {
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_GCM, ACVP_SYM_CIPH_AADLEN, 256);
     cr_assert(rv == ACVP_SUCCESS);
-    
+
     /*
      * Enable AES-ECB 128,192,256 bit key
      */
@@ -162,7 +163,7 @@ static void add_aes_details_good(void) {
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_ECB, ACVP_SYM_CIPH_PTLEN, 1536);
     cr_assert(rv == ACVP_SUCCESS);
-    
+
     /*
      * Enable AES-CBC 128 bit key
      */
@@ -186,7 +187,7 @@ static void add_aes_details_good(void) {
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_CBC, ACVP_SYM_CIPH_PTLEN, 1536);
     cr_assert(rv == ACVP_SUCCESS);
-    
+
     /*
      * Enable AES-CFB1 128,192,256 bit key
      */
@@ -210,7 +211,7 @@ static void add_aes_details_good(void) {
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_CFB1, ACVP_SYM_CIPH_PTLEN, 128);
     cr_assert(rv == ACVP_SUCCESS);
-    
+
     /*
      * Enable AES-CFB8 128,192,256 bit key
      */
@@ -234,7 +235,7 @@ static void add_aes_details_good(void) {
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_CFB8, ACVP_SYM_CIPH_PTLEN, 256);
     cr_assert(rv == ACVP_SUCCESS);
-    
+
     /*
      * Enable AES-CFB128 128,192,256 bit key
      */
@@ -258,7 +259,7 @@ static void add_aes_details_good(void) {
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_CFB128, ACVP_SYM_CIPH_PTLEN, 1536);
     cr_assert(rv == ACVP_SUCCESS);
-    
+
     /*
      * Enable AES-OFB 128, 192, 256 bit key
      */
@@ -282,7 +283,7 @@ static void add_aes_details_good(void) {
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_OFB, ACVP_SYM_CIPH_PTLEN, 1536);
     cr_assert(rv == ACVP_SUCCESS);
-    
+
     /*
      * Register AES CCM capabilities
      */
@@ -322,7 +323,7 @@ static void add_aes_details_good(void) {
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_CCM, ACVP_SYM_CIPH_AADLEN, 128);
     cr_assert(rv == ACVP_SUCCESS);
-    
+
     /*
      * Enable AES keywrap for various key sizes and PT lengths
      * Note: this is with padding disabled, minimum PT length is 128 bits and must be
@@ -358,7 +359,7 @@ static void add_aes_details_good(void) {
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_KW, ACVP_SYM_CIPH_PTLEN, 1280);
     cr_assert(rv == ACVP_SUCCESS);
-    
+
     /*
      * Enable AES-XTS 128 and 256 bit key
      */
@@ -389,22 +390,22 @@ static void add_hash_details_good(void) {
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_hash_set_domain(ctx, ACVP_HASH_SHA1, ACVP_HASH_MESSAGE_LEN, 0, 65528, 8);
     cr_assert(rv == ACVP_SUCCESS);
-    
+
     rv = acvp_cap_hash_enable(ctx, ACVP_HASH_SHA224, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_hash_set_domain(ctx, ACVP_HASH_SHA224, ACVP_HASH_MESSAGE_LEN, 0, 65528, 8);
     cr_assert(rv == ACVP_SUCCESS);
-    
+
     rv = acvp_cap_hash_enable(ctx, ACVP_HASH_SHA256, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_hash_set_domain(ctx, ACVP_HASH_SHA256, ACVP_HASH_MESSAGE_LEN, 0, 65528, 8);
     cr_assert(rv == ACVP_SUCCESS);
-    
+
     rv = acvp_cap_hash_enable(ctx, ACVP_HASH_SHA384, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_hash_set_domain(ctx, ACVP_HASH_SHA384, ACVP_HASH_MESSAGE_LEN, 0, 65528, 8);
     cr_assert(rv == ACVP_SUCCESS);
-    
+
     rv = acvp_cap_hash_enable(ctx, ACVP_HASH_SHA512, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_hash_set_domain(ctx, ACVP_HASH_SHA512, ACVP_HASH_MESSAGE_LEN, 0, 65528, 8);
@@ -441,7 +442,7 @@ static void add_drbg_details_good(void) {
     rv = acvp_cap_drbg_set_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1, 0,
                                    ACVP_DRBG_RET_BITS_LEN, 160);
     cr_assert(rv == ACVP_SUCCESS);
-    
+
     //ACVP_HMACDRBG
     rv = acvp_cap_drbg_enable(ctx, ACVP_HMACDRBG, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
@@ -476,7 +477,7 @@ static void add_drbg_details_good(void) {
     rv = acvp_cap_drbg_set_length(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224, 0,
                                      ACVP_DRBG_ADD_IN_LEN, (int)0, (int)128,(int) 256);
     cr_assert(rv == ACVP_SUCCESS);
-    
+
     // ACVP_CTRDRBG
     rv = acvp_cap_drbg_enable(ctx, ACVP_CTRDRBG, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
@@ -528,7 +529,7 @@ static void add_cmac_details_good(void) {
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_CMAC_AES, ACVP_PREREQ_AES, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
-    
+
     rv = acvp_cap_cmac_enable(ctx, ACVP_CMAC_TDES, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_cmac_set_domain(ctx, ACVP_CMAC_TDES, ACVP_CMAC_MSGLEN, 0, 65536, 8);
@@ -581,7 +582,7 @@ static void add_hmac_details_good(void) {
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_HMAC_SHA2_384, ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
-    
+
     rv = acvp_cap_hmac_enable(ctx, ACVP_HMAC_SHA2_512, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_hmac_set_domain(ctx, ACVP_HMAC_SHA2_512, ACVP_HMAC_KEYLEN, 256, 448, 8);
@@ -623,7 +624,7 @@ static void add_dsa_details_good(void) {
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_PQGGEN, ACVP_DSA_MODE_PQGGEN, ACVP_DSA_LN3072_256, ACVP_SHA512);
     cr_assert(rv == ACVP_SUCCESS);
-    
+
     rv = acvp_cap_dsa_enable(ctx, ACVP_DSA_PQGVER, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_DSA_PQGVER, ACVP_PREREQ_SHA, cvalue);
@@ -654,7 +655,7 @@ static void add_dsa_details_good(void) {
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_PQGVER, ACVP_DSA_MODE_PQGVER, ACVP_DSA_LN3072_256, ACVP_SHA512);
     cr_assert(rv == ACVP_SUCCESS);
-    
+
     
     rv = acvp_cap_dsa_enable(ctx, ACVP_DSA_KEYGEN, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
@@ -686,7 +687,7 @@ static void add_dsa_details_good(void) {
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_KEYGEN, ACVP_DSA_MODE_KEYGEN, ACVP_DSA_LN3072_256, ACVP_SHA512);
     cr_assert(rv == ACVP_SUCCESS);
-    
+
     
     rv = acvp_cap_dsa_enable(ctx, ACVP_DSA_SIGGEN, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
@@ -718,7 +719,7 @@ static void add_dsa_details_good(void) {
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_SIGGEN, ACVP_DSA_MODE_SIGGEN, ACVP_DSA_LN3072_256, ACVP_SHA512);
     cr_assert(rv == ACVP_SUCCESS);
-    
+
     
     rv = acvp_cap_dsa_enable(ctx, ACVP_DSA_SIGVER, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
@@ -755,7 +756,7 @@ static void add_dsa_details_good(void) {
 static void add_rsa_details_good(void) {
     char *expo_str = calloc(7, sizeof(char));
     strncpy(expo_str, "010001", 7);
-    
+
     rv = acvp_cap_rsa_keygen_enable(ctx, ACVP_RSA_KEYGEN, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_RSA_KEYGEN, ACVP_PREREQ_SHA, cvalue);
@@ -768,10 +769,10 @@ static void add_rsa_details_good(void) {
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_rsa_keygen_set_parm(ctx, ACVP_RSA_PARM_KEY_FORMAT_CRT, 0);
     cr_assert(rv == ACVP_SUCCESS);
-    
+
     rv = acvp_cap_rsa_keygen_set_exponent(ctx, ACVP_RSA_PARM_FIXED_PUB_EXP_VAL, expo_str);
     cr_assert(rv == ACVP_SUCCESS);
-    
+
     rv = acvp_cap_rsa_keygen_set_mode(ctx, ACVP_RSA_KEYGEN_B34);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_rsa_keygen_set_primes(ctx, ACVP_RSA_KEYGEN_B34, 2048, ACVP_RSA_PRIME_HASH_ALG, ACVP_SHA256);
@@ -784,13 +785,13 @@ static void add_rsa_details_good(void) {
     // TODO: leaving this in here as a workaround until the server allows it as optional
     rv = acvp_cap_rsa_keygen_set_primes(ctx, ACVP_RSA_KEYGEN_B34, 3072, ACVP_RSA_PRIME_TEST, ACVP_RSA_PRIME_TEST_TBLC2);
     cr_assert(rv == ACVP_SUCCESS);
-    
+
     /*
      * Enable siggen
      */
     rv = acvp_cap_rsa_sig_enable(ctx, ACVP_RSA_SIGGEN, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
-    
+
     // RSA w/ sigType: X9.31
     rv = acvp_cap_rsa_siggen_set_type(ctx, ACVP_RSA_SIG_TYPE_X931);
     cr_assert(rv == ACVP_SUCCESS);
@@ -806,7 +807,7 @@ static void add_rsa_details_good(void) {
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_X931, 3072, ACVP_SHA512, 0);
     cr_assert(rv == ACVP_SUCCESS);
-    
+
     // RSA w/ sigType: PKCS1v1.5
     rv = acvp_cap_rsa_siggen_set_type(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15);
     cr_assert(rv == ACVP_SUCCESS);
@@ -830,7 +831,7 @@ static void add_rsa_details_good(void) {
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15, 3072, ACVP_SHA512, 0);
     cr_assert(rv == ACVP_SUCCESS);
-    
+
     // RSA w/ sigType: PKCS1PSS -- has salt
     rv = acvp_cap_rsa_siggen_set_type(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS);
     cr_assert(rv == ACVP_SUCCESS);
@@ -854,18 +855,18 @@ static void add_rsa_details_good(void) {
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS, 3072, ACVP_SHA512, 0);
     cr_assert(rv == ACVP_SUCCESS);
-    
+
     /*
      * Enable sigver
      */
     rv = acvp_cap_rsa_sig_enable(ctx, ACVP_RSA_SIGVER, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
-    
+
     rv = acvp_cap_rsa_sigver_set_parm(ctx, ACVP_RSA_PARM_PUB_EXP_MODE, ACVP_RSA_PUB_EXP_MODE_FIXED);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_rsa_sigver_set_exponent(ctx, ACVP_RSA_PARM_FIXED_PUB_EXP_VAL, expo_str);
     cr_assert(rv == ACVP_SUCCESS);
-    
+
     // RSA w/ sigType: X9.31
     rv = acvp_cap_rsa_sigver_set_type(ctx, ACVP_RSA_SIG_TYPE_X931);
     cr_assert(rv == ACVP_SUCCESS);
@@ -885,7 +886,7 @@ static void add_rsa_details_good(void) {
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_X931, 3072, ACVP_SHA512, 0);
     cr_assert(rv == ACVP_SUCCESS);
-    
+
     // RSA w/ sigType: PKCS1v1.5
     rv = acvp_cap_rsa_sigver_set_type(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15);
     cr_assert(rv == ACVP_SUCCESS);
@@ -909,7 +910,7 @@ static void add_rsa_details_good(void) {
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1V15, 3072, ACVP_SHA512, 0);
     cr_assert(rv == ACVP_SUCCESS);
-    
+
     // RSA w/ sigType: PKCS1PSS -- has salt
     rv = acvp_cap_rsa_sigver_set_type(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS);
     cr_assert(rv == ACVP_SUCCESS);
@@ -969,7 +970,7 @@ static void add_ecdsa_details_good(void) {
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_KEYGEN, ACVP_ECDSA_SECRET_GEN, ACVP_ECDSA_SECRET_GEN_TEST_CAND);
     cr_assert(rv == ACVP_SUCCESS);
-    
+
     /*
      * Enable ECDSA keyVer...
      */
@@ -1003,7 +1004,7 @@ static void add_ecdsa_details_good(void) {
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_KEYVER, ACVP_ECDSA_CURVE, ACVP_EC_CURVE_B571);
     cr_assert(rv == ACVP_SUCCESS);
-    
+
     
     /*
      * Enable ECDSA sigGen...
@@ -1070,7 +1071,7 @@ static void add_ecdsa_details_good(void) {
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_ECDSA_HASH_ALG, ACVP_SHA512);
     cr_assert(rv == ACVP_SUCCESS);
-    
+
     /*
      * Enable ECDSA sigVer...
      */
@@ -1140,7 +1141,7 @@ static void add_ecdsa_details_good(void) {
 
 static void add_kdf_details_good(void) {
     int i, flags = 0;
-    
+
     /*
      * Enable KDF-135
      */
@@ -1154,7 +1155,7 @@ static void add_kdf_details_good(void) {
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_kdf135_snmp_set_engid(ctx, ACVP_KDF135_SNMP, "testengidtestengid");
     cr_assert(rv == ACVP_SUCCESS);
-    
+
     rv = acvp_cap_kdf135_ssh_enable(ctx, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_SSH, ACVP_PREREQ_SHA, cvalue);
@@ -1163,11 +1164,11 @@ static void add_kdf_details_good(void) {
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_SSH, ACVP_PREREQ_AES, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
-    
+
     //Bit flags for kdf135_ssh sha capabilities
     flags = ACVP_SHA1 | ACVP_SHA224 |ACVP_SHA256
             | ACVP_SHA384 | ACVP_SHA512;
-    
+
     rv = acvp_cap_kdf135_ssh_set_parm(ctx, ACVP_KDF135_SSH, ACVP_SSH_METH_TDES_CBC, flags);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_kdf135_ssh_set_parm(ctx, ACVP_KDF135_SSH, ACVP_SSH_METH_AES_128_CBC, flags);
@@ -1176,7 +1177,7 @@ static void add_kdf_details_good(void) {
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_kdf135_ssh_set_parm(ctx, ACVP_KDF135_SSH, ACVP_SSH_METH_AES_256_CBC, flags);
     cr_assert(rv == ACVP_SUCCESS);
-    
+
     rv = acvp_cap_kdf135_srtp_enable(ctx, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_SRTP, ACVP_PREREQ_AES, cvalue);
@@ -1193,7 +1194,7 @@ static void add_kdf_details_good(void) {
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_kdf135_srtp_set_parm(ctx, ACVP_KDF135_SRTP, ACVP_SRTP_AES_KEYLEN, 256);
     cr_assert(rv == ACVP_SUCCESS);
-    
+
     rv = acvp_cap_kdf135_ikev2_enable(ctx, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_KDF135_IKEV2, ACVP_PREREQ_SHA, cvalue);
@@ -1217,7 +1218,7 @@ static void add_kdf_details_good(void) {
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_kdf135_ikev2_set_parm(ctx, ACVP_KDF_HASH_ALG, ACVP_SHA1);
     cr_assert(rv == ACVP_SUCCESS);
-    
+
     /*
      * KDF108 Counter Mode
      */
@@ -1283,7 +1284,7 @@ static void add_kas_ecc_details_good(void) {
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_kas_ecc_set_parm(ctx, ACVP_KAS_ECC_CDH, ACVP_KAS_ECC_MODE_CDH, ACVP_KAS_ECC_CURVE, ACVP_EC_CURVE_B571);
     cr_assert(rv == ACVP_SUCCESS);
-    
+
     rv = acvp_cap_kas_ecc_enable(ctx, ACVP_KAS_ECC_COMP, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_kas_ecc_set_prereq(ctx, ACVP_KAS_ECC_COMP, ACVP_KAS_ECC_MODE_COMPONENT, ACVP_PREREQ_ECDSA, cvalue);
@@ -1350,8 +1351,12 @@ static void add_kas_ffc_details_good(void) {
 }
 
 static void teardown(void) {
-    if (ctx) teardown_ctx(&ctx);
-    ctx = NULL;
+    if (ctx) {
+        ctx->registration = NULL; /* This will always point to one of the below values, free it below */
+        teardown_ctx(&ctx);
+        ctx = NULL;
+    }
+
     if (reg) {
         free(reg);
         reg = NULL;
@@ -1365,9 +1370,14 @@ static void teardown(void) {
         json_value_free(generated_value);
         generated_value = NULL;
     }
+    if (reg_value) {
+        json_value_free(reg_value);
+        reg_value = NULL;
+    }
+
     generated_obj = NULL;
     known_good_obj = NULL;
-    
+
 }
 
 
@@ -1376,7 +1386,7 @@ static void teardown(void) {
  * The ctx is null, expecting failure.
  */
 Test(BUILD_VENDORS, null_ctx) {
-    rv  = acvp_build_vendors(NULL, &reg);
+    rv = acvp_build_vendors(NULL, &reg);
     cr_assert(rv == ACVP_NO_CTX);
 }
 
@@ -1384,7 +1394,7 @@ Test(BUILD_VENDORS, null_ctx) {
  * The ctx is null, expecting failure.
  */
 Test(BUILD_MODULES, null_ctx) {
-    rv  = acvp_build_modules(NULL, &reg);
+    rv = acvp_build_modules(NULL, &reg);
     cr_assert(rv == ACVP_NO_CTX);
 }
 
@@ -1392,7 +1402,7 @@ Test(BUILD_MODULES, null_ctx) {
  * The ctx is null, expecting failure.
  */
 Test(BUILD_DEPS, null_dep) {
-    rv  = acvp_build_dependency(NULL, &reg);
+    rv = acvp_build_dependency(NULL, &reg);
     cr_assert(rv == ACVP_MISSING_ARG);
 }
 
@@ -1400,7 +1410,7 @@ Test(BUILD_DEPS, null_dep) {
  * The ctx is null, expecting failure.
  */
 Test(BUILD_OES, null_ctx) {
-    rv  = acvp_build_oes(NULL, &reg);
+    rv = acvp_build_oes(NULL, &reg);
     cr_assert(rv == ACVP_NO_CTX);
 }
 
@@ -1411,7 +1421,7 @@ Test(BUILD_OES, null_ctx) {
 Test(BUILD_VENDORS, good_vendors_output, .init = setup_empty_with_vendor_and_module_info, .fini = teardown) {
     rv = acvp_build_vendors(ctx, &reg);
     cr_assert(rv == ACVP_SUCCESS);
-    
+
     generated_value = json_parse_string(reg);
     generated_obj = ut_get_obj_from_rsp(generated_value);
     if (!generated_obj) {
@@ -1435,7 +1445,7 @@ Test(BUILD_VENDORS, good_vendors_output, .init = setup_empty_with_vendor_and_mod
 Test(BUILD_MODULES, good_modules_output, .init = setup_empty_with_vendor_and_module_info, .fini = teardown) {
     rv = acvp_build_modules(ctx, &reg);
     cr_assert(rv == ACVP_SUCCESS);
-    
+
     generated_value = json_parse_string(reg);
     generated_obj = ut_get_obj_from_rsp(generated_value);
     if (!generated_obj) {
@@ -1448,7 +1458,7 @@ Test(BUILD_MODULES, good_modules_output, .init = setup_empty_with_vendor_and_mod
         ACVP_LOG_ERR("JSON obj parse error (known)");
         return;
     }
-    
+
     cr_assert(json_value_equals((JSON_Value *)known_good_obj, (JSON_Value *)generated_obj) == JSONSuccess);
 }
 
@@ -1459,7 +1469,7 @@ Test(BUILD_MODULES, good_modules_output, .init = setup_empty_with_vendor_and_mod
 Test(BUILD_OES, good_oes_output, .init = setup_empty_with_vendor_and_module_info, .fini = teardown) {
     rv = acvp_build_oes(ctx, &reg);
     cr_assert(rv == ACVP_SUCCESS);
-    
+
     generated_value = json_parse_string(reg);
     generated_obj = ut_get_obj_from_rsp(generated_value);
     if (!generated_obj) {
@@ -1472,7 +1482,7 @@ Test(BUILD_OES, good_oes_output, .init = setup_empty_with_vendor_and_module_info
         ACVP_LOG_ERR("JSON obj parse error (known)");
         return;
     }
-    
+
     cr_assert(json_value_equals((JSON_Value *)known_good_obj, (JSON_Value *)generated_obj) == JSONSuccess);
 }
 
@@ -1483,7 +1493,7 @@ Test(BUILD_OES, good_oes_output, .init = setup_empty_with_vendor_and_module_info
 Test(BUILD_DEPS, good_deps_output, .init = setup_empty_with_vendor_and_module_info, .fini = teardown) {
     rv = acvp_build_dependency(ctx->dependency_list, &reg);
     cr_assert(rv == ACVP_SUCCESS);
-    
+
     generated_value = json_parse_string(reg);
     generated_obj = ut_get_obj_from_rsp(generated_value);
     if (!generated_obj) {
@@ -1496,7 +1506,7 @@ Test(BUILD_DEPS, good_deps_output, .init = setup_empty_with_vendor_and_module_in
         ACVP_LOG_ERR("JSON obj parse error (known)");
         return;
     }
-    
+
     cr_assert(json_value_equals((JSON_Value *) known_good_obj, (JSON_Value *) generated_obj) == JSONSuccess);
 }
 #endif
@@ -1505,7 +1515,7 @@ Test(BUILD_DEPS, good_deps_output, .init = setup_empty_with_vendor_and_module_in
  * The ctx is null, expecting failure.
  */
 Test(BUILD_TEST_SESSION, null_ctx) {
-    rv  = acvp_build_test_session(NULL, &reg, NULL);
+    rv = acvp_build_registration_json(NULL, &generated_value);
     cr_assert(rv == ACVP_NO_CTX);
 }
 
@@ -1514,7 +1524,7 @@ Test(BUILD_TEST_SESSION, null_ctx) {
  */
 Test(BUILD_TEST_SESSION, np_caps_ctx, .fini = teardown) {
     setup_empty_ctx(&ctx);
-    rv  = acvp_build_test_session(ctx, &reg, NULL);
+    rv = acvp_build_registration_json(ctx, &generated_value);
     cr_assert(rv == ACVP_NO_CAP);
 }
 
@@ -1525,10 +1535,14 @@ Test(BUILD_TEST_SESSION, np_caps_ctx, .fini = teardown) {
 Test(BUILD_TEST_SESSION, good_aes_output, .fini = teardown) {
     setup_empty_ctx(&ctx);
     add_aes_details_good();
-    
-    rv = acvp_build_test_session(ctx, &reg, NULL);
+
+    rv = acvp_build_registration_json(ctx, &reg_value);
     cr_assert(rv == ACVP_SUCCESS);
-    
+    ctx->registration = reg_value;
+
+    rv = acvp_build_full_registration(ctx, &reg, NULL);
+    cr_assert(rv == ACVP_SUCCESS);
+
     generated_value = json_parse_string(reg);
     generated_obj = ut_get_obj_from_rsp(generated_value);
     if (!generated_obj) {
@@ -1541,7 +1555,7 @@ Test(BUILD_TEST_SESSION, good_aes_output, .fini = teardown) {
         ACVP_LOG_ERR("JSON obj parse error (known)");
         return;
     }
-    
+
     cr_assert(json_value_equals((JSON_Value *)generated_obj, (JSON_Value *)known_good_obj) == JSONSuccess);
 }
 
@@ -1573,8 +1587,8 @@ Test(BUILD_TEST_SESSION, missing_required_keylen_aes, .fini = teardown) {
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_GCM, ACVP_SYM_CIPH_AADLEN, 128);
     cr_assert(rv == ACVP_SUCCESS);
-    
-    rv  = acvp_build_test_session(ctx, &reg, NULL);
+
+    rv = acvp_build_registration_json(ctx, &generated_value);
     cr_assert(rv == ACVP_MISSING_ARG);
 }
 
@@ -1599,8 +1613,8 @@ Test(BUILD_TEST_SESSION, missing_required_direction_aes, .fini = teardown) {
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_GCM, ACVP_SYM_CIPH_PARM_IVGEN_MODE, ACVP_SYM_CIPH_IVGEN_MODE_821);
     cr_assert(rv == ACVP_SUCCESS);
-    
-    rv  = acvp_build_test_session(ctx, &reg, NULL);
+
+    rv = acvp_build_registration_json(ctx, &generated_value);
     cr_assert(rv == ACVP_MISSING_ARG);
 }
 
@@ -1610,8 +1624,12 @@ Test(BUILD_TEST_SESSION, missing_required_direction_aes, .fini = teardown) {
 Test(BUILD_TEST_SESSION, good_hash, .fini = teardown) {
     setup_empty_ctx(&ctx);
     add_hash_details_good();
-    
-    rv  = acvp_build_test_session(ctx, &reg, NULL);
+
+    rv = acvp_build_registration_json(ctx, &reg_value);
+    cr_assert(rv == ACVP_SUCCESS);
+    ctx->registration = reg_value;
+
+    rv = acvp_build_full_registration(ctx, &reg, NULL);
     cr_assert(rv == ACVP_SUCCESS);
 
     generated_value = json_parse_string(reg);
@@ -1626,7 +1644,7 @@ Test(BUILD_TEST_SESSION, good_hash, .fini = teardown) {
         ACVP_LOG_ERR("JSON obj parse error (known)");
         return;
     }
-    
+
     cr_assert(json_value_equals((JSON_Value *)generated_obj, (JSON_Value *)known_good_obj) == JSONSuccess);
 }
 
@@ -1636,10 +1654,14 @@ Test(BUILD_TEST_SESSION, good_hash, .fini = teardown) {
 Test(BUILD_TEST_SESSION, good_drbg, .fini = teardown) {
     setup_empty_ctx(&ctx);
     add_drbg_details_good();
-    
-    rv  = acvp_build_test_session(ctx, &reg, NULL);
+
+    rv = acvp_build_registration_json(ctx, &reg_value);
     cr_assert(rv == ACVP_SUCCESS);
-    
+    ctx->registration = reg_value;
+
+    rv = acvp_build_full_registration(ctx, &reg, NULL);
+    cr_assert(rv == ACVP_SUCCESS);
+
     generated_value = json_parse_string(reg);
     generated_obj = ut_get_obj_from_rsp(generated_value);
     if (!generated_obj) {
@@ -1652,7 +1674,7 @@ Test(BUILD_TEST_SESSION, good_drbg, .fini = teardown) {
         ACVP_LOG_ERR("JSON obj parse error (known)");
         return;
     }
-    
+
     cr_assert(json_value_equals((JSON_Value *)generated_obj, (JSON_Value *)known_good_obj) == JSONSuccess);
 }
 
@@ -1664,7 +1686,7 @@ Test(BUILD_TEST_SESSION, drbg_missing_cap_parms, .fini = teardown) {
     rv = acvp_cap_drbg_enable(ctx, ACVP_HASHDRBG, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv  = acvp_build_test_session(ctx, &reg, NULL);
+    rv = acvp_build_registration_json(ctx, &generated_value);
     cr_assert(rv == ACVP_MISSING_ARG);
 }
 
@@ -1675,10 +1697,14 @@ Test(BUILD_TEST_SESSION, drbg_missing_cap_parms, .fini = teardown) {
 Test(BUILD_TEST_SESSION, good_cmac_output, .fini = teardown) {
     setup_empty_ctx(&ctx);
     add_cmac_details_good();
-    
-    rv = acvp_build_test_session(ctx, &reg, NULL);
+
+    rv = acvp_build_registration_json(ctx, &reg_value);
     cr_assert(rv == ACVP_SUCCESS);
-    
+    ctx->registration = reg_value;
+
+    rv = acvp_build_full_registration(ctx, &reg, NULL);
+    cr_assert(rv == ACVP_SUCCESS);
+
     generated_value = json_parse_string(reg);
     generated_obj = ut_get_obj_from_rsp(generated_value);
     if (!generated_obj) {
@@ -1691,7 +1717,7 @@ Test(BUILD_TEST_SESSION, good_cmac_output, .fini = teardown) {
         ACVP_LOG_ERR("JSON obj parse error (known)");
         return;
     }
-    
+
     cr_assert(json_value_equals((JSON_Value *)generated_obj, (JSON_Value *)known_good_obj) == JSONSuccess);
 }
 
@@ -1710,7 +1736,7 @@ Test(BUILD_TEST_SESSION, cmac_missing_direction, .fini = teardown) {
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_CMAC_AES, ACVP_PREREQ_AES, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
-    rv  = acvp_build_test_session(ctx, &reg, NULL);
+    rv = acvp_build_registration_json(ctx, &generated_value);
     cr_assert(rv == ACVP_MISSING_ARG);
 }
 
@@ -1731,7 +1757,7 @@ Test(BUILD_TEST_SESSION, cmac_missing_tdes_ko, .fini = teardown) {
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_CMAC_TDES, ACVP_PREREQ_TDES, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
-    rv  = acvp_build_test_session(ctx, &reg, NULL);
+    rv = acvp_build_registration_json(ctx, &generated_value);
     cr_assert(rv == ACVP_MISSING_ARG);
 }
 
@@ -1741,8 +1767,12 @@ Test(BUILD_TEST_SESSION, cmac_missing_tdes_ko, .fini = teardown) {
 Test(BUILD_TEST_SESSION, good_hmac, .fini = teardown) {
     setup_empty_ctx(&ctx);
     add_hmac_details_good();
-    
-    rv  = acvp_build_test_session(ctx, &reg, NULL);
+
+    rv = acvp_build_registration_json(ctx, &reg_value);
+    cr_assert(rv == ACVP_SUCCESS);
+    ctx->registration = reg_value;
+
+    rv = acvp_build_full_registration(ctx, &reg, NULL);
     cr_assert(rv == ACVP_SUCCESS);
 
     generated_value = json_parse_string(reg);
@@ -1757,7 +1787,7 @@ Test(BUILD_TEST_SESSION, good_hmac, .fini = teardown) {
         ACVP_LOG_ERR("JSON obj parse error (known)");
         return;
     }
-    
+
     cr_assert(json_value_equals((JSON_Value *)generated_obj, (JSON_Value *)known_good_obj) == JSONSuccess);
 }
 
@@ -1767,10 +1797,14 @@ Test(BUILD_TEST_SESSION, good_hmac, .fini = teardown) {
 Test(BUILD_TEST_SESSION, good_dsa, .fini = teardown) {
     setup_empty_ctx(&ctx);
     add_dsa_details_good();
-    
-    rv  = acvp_build_test_session(ctx, &reg, NULL);
+
+    rv = acvp_build_registration_json(ctx, &reg_value);
     cr_assert(rv == ACVP_SUCCESS);
-    
+    ctx->registration = reg_value;
+
+    rv = acvp_build_full_registration(ctx, &reg, NULL);
+    cr_assert(rv == ACVP_SUCCESS);
+
     generated_value = json_parse_string(reg);
     generated_obj = ut_get_obj_from_rsp(generated_value);
     if (!generated_obj) {
@@ -1783,7 +1817,7 @@ Test(BUILD_TEST_SESSION, good_dsa, .fini = teardown) {
         ACVP_LOG_ERR("JSON obj parse error (known)");
         return;
     }
-    
+
     cr_assert(json_value_equals((JSON_Value *)generated_obj, (JSON_Value *)known_good_obj) == JSONSuccess);
 }
 
@@ -1796,14 +1830,14 @@ Test(BUILD_TEST_SESSION, dsa_missing_pqgen, .fini = teardown) {
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_PQGGEN, ACVP_DSA_MODE_PQGGEN, ACVP_DSA_GENG, ACVP_DSA_CANONICAL);
     cr_assert(rv == ACVP_SUCCESS);
-    rv  = acvp_build_test_session(ctx, &reg, NULL);
+    rv = acvp_build_registration_json(ctx, &generated_value);
     cr_assert(rv == ACVP_MISSING_ARG);
-    
+
     rv = acvp_cap_dsa_enable(ctx, ACVP_DSA_PQGVER, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_PQGVER, ACVP_DSA_MODE_PQGVER, ACVP_DSA_GENG, ACVP_DSA_CANONICAL);
     cr_assert(rv == ACVP_SUCCESS);
-    rv  = acvp_build_test_session(ctx, &reg, NULL);
+    rv = acvp_build_registration_json(ctx, &generated_value);
     cr_assert(rv == ACVP_MISSING_ARG);
 }
 
@@ -1816,14 +1850,14 @@ Test(BUILD_TEST_SESSION, dsa_missing_ggen, .fini = teardown) {
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_PQGGEN, ACVP_DSA_MODE_PQGGEN, ACVP_DSA_GENPQ, ACVP_DSA_PROBABLE);
     cr_assert(rv == ACVP_SUCCESS);
-    rv  = acvp_build_test_session(ctx, &reg, NULL);
+    rv = acvp_build_registration_json(ctx, &generated_value);
     cr_assert(rv == ACVP_MISSING_ARG);
-    
+
     rv = acvp_cap_dsa_enable(ctx, ACVP_DSA_PQGVER, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_PQGVER, ACVP_DSA_MODE_PQGVER, ACVP_DSA_GENPQ, ACVP_DSA_PROBABLE);
     cr_assert(rv == ACVP_SUCCESS);
-    rv  = acvp_build_test_session(ctx, &reg, NULL);
+    rv = acvp_build_registration_json(ctx, &generated_value);
     cr_assert(rv == ACVP_MISSING_ARG);
 }
 
@@ -1838,31 +1872,31 @@ Test(BUILD_TEST_SESSION, dsa_missing_hashalgs, .fini = teardown) {
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_PQGGEN, ACVP_DSA_MODE_PQGGEN, ACVP_DSA_GENG, ACVP_DSA_CANONICAL);
     cr_assert(rv == ACVP_SUCCESS);
-    rv  = acvp_build_test_session(ctx, &reg, NULL);
+    rv = acvp_build_registration_json(ctx, &generated_value);
     cr_assert(rv == ACVP_MISSING_ARG);
-    
+
     rv = acvp_cap_dsa_enable(ctx, ACVP_DSA_PQGVER, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_PQGVER, ACVP_DSA_MODE_PQGVER, ACVP_DSA_GENPQ, ACVP_DSA_PROBABLE);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_dsa_set_parm(ctx, ACVP_DSA_PQGVER, ACVP_DSA_MODE_PQGVER, ACVP_DSA_GENG, ACVP_DSA_CANONICAL);
     cr_assert(rv == ACVP_SUCCESS);
-    rv  = acvp_build_test_session(ctx, &reg, NULL);
+    rv = acvp_build_registration_json(ctx, &generated_value);
     cr_assert(rv == ACVP_MISSING_ARG);
-    
+
     rv = acvp_cap_dsa_enable(ctx, ACVP_DSA_KEYGEN, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
-    rv  = acvp_build_test_session(ctx, &reg, NULL);
+    rv = acvp_build_registration_json(ctx, &generated_value);
     cr_assert(rv == ACVP_MISSING_ARG);
-    
+
     rv = acvp_cap_dsa_enable(ctx, ACVP_DSA_SIGGEN, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
-    rv  = acvp_build_test_session(ctx, &reg, NULL);
+    rv = acvp_build_registration_json(ctx, &generated_value);
     cr_assert(rv == ACVP_MISSING_ARG);
-    
+
     rv = acvp_cap_dsa_enable(ctx, ACVP_DSA_SIGVER, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
-    rv  = acvp_build_test_session(ctx, &reg, NULL);
+    rv = acvp_build_registration_json(ctx, &generated_value);
     cr_assert(rv == ACVP_MISSING_ARG);
 }
 
@@ -1873,10 +1907,14 @@ Test(BUILD_TEST_SESSION, dsa_missing_hashalgs, .fini = teardown) {
 Test(BUILD_TEST_SESSION, good_des_output, .fini = teardown) {
     setup_empty_ctx(&ctx);
     add_des_details_good();
-    
-    rv = acvp_build_test_session(ctx, &reg, NULL);
+
+    rv = acvp_build_registration_json(ctx, &reg_value);
     cr_assert(rv == ACVP_SUCCESS);
-    
+    ctx->registration = reg_value;
+
+    rv = acvp_build_full_registration(ctx, &reg, NULL);
+    cr_assert(rv == ACVP_SUCCESS);
+
     generated_value = json_parse_string(reg);
     generated_obj = ut_get_obj_from_rsp(generated_value);
     if (!generated_obj) {
@@ -1890,7 +1928,7 @@ Test(BUILD_TEST_SESSION, good_des_output, .fini = teardown) {
         ACVP_LOG_ERR("JSON obj parse error (known)");
         return;
     }
-    
+
     cr_assert(json_value_equals((JSON_Value *)generated_obj, (JSON_Value *)known_good_obj) == JSONSuccess);
 }
 
@@ -1900,10 +1938,14 @@ Test(BUILD_TEST_SESSION, good_des_output, .fini = teardown) {
 Test(BUILD_TEST_SESSION, good_rsa, .fini = teardown) {
     setup_empty_ctx(&ctx);
     add_rsa_details_good();
-    
-    rv  = acvp_build_test_session(ctx, &reg, NULL);
+
+    rv = acvp_build_registration_json(ctx, &reg_value);
     cr_assert(rv == ACVP_SUCCESS);
-    
+    ctx->registration = reg_value;
+
+    rv = acvp_build_full_registration(ctx, &reg, NULL);
+    cr_assert(rv == ACVP_SUCCESS);
+
     generated_value = json_parse_string(reg);
     generated_obj = ut_get_obj_from_rsp(generated_value);
     if (!generated_obj) {
@@ -1916,7 +1958,7 @@ Test(BUILD_TEST_SESSION, good_rsa, .fini = teardown) {
         ACVP_LOG_ERR("JSON obj parse error (known)");
         return;
     }
-    
+
     cr_assert(json_value_equals((JSON_Value *)generated_obj, (JSON_Value *)known_good_obj) == JSONSuccess);
 }
 
@@ -1925,11 +1967,11 @@ Test(BUILD_TEST_SESSION, good_rsa, .fini = teardown) {
  */
 Test(BUILD_TEST_SESSION, rsa_no_params, .fini = teardown) {
     setup_empty_ctx(&ctx);
-    
+
     rv = acvp_cap_rsa_keygen_enable(ctx, ACVP_RSA_KEYGEN, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
-    
-    rv  = acvp_build_test_session(ctx, &reg, NULL);
+
+    rv = acvp_build_registration_json(ctx, &generated_value);
     cr_assert(rv == ACVP_MISSING_ARG);
 }
 
@@ -1939,10 +1981,14 @@ Test(BUILD_TEST_SESSION, rsa_no_params, .fini = teardown) {
 Test(BUILD_TEST_SESSION, good_ecdsa, .fini = teardown) {
     setup_empty_ctx(&ctx);
     add_ecdsa_details_good();
-    
-    rv  = acvp_build_test_session(ctx, &reg, NULL);
+
+    rv = acvp_build_registration_json(ctx, &reg_value);
     cr_assert(rv == ACVP_SUCCESS);
-    
+    ctx->registration = reg_value;
+
+    rv = acvp_build_full_registration(ctx, &reg, NULL);
+    cr_assert(rv == ACVP_SUCCESS);
+
     generated_value = json_parse_string(reg);
     generated_obj = ut_get_obj_from_rsp(generated_value);
     if (!generated_obj) {
@@ -1955,7 +2001,7 @@ Test(BUILD_TEST_SESSION, good_ecdsa, .fini = teardown) {
         ACVP_LOG_ERR("JSON obj parse error (known)");
         return;
     }
-    
+
     cr_assert(json_value_equals((JSON_Value *)generated_obj, (JSON_Value *)known_good_obj) == JSONSuccess);
 }
 
@@ -1964,11 +2010,11 @@ Test(BUILD_TEST_SESSION, good_ecdsa, .fini = teardown) {
  */
 Test(BUILD_TEST_SESSION, ecdsa_no_params, .fini = teardown) {
     setup_empty_ctx(&ctx);
-    
+
     rv = acvp_cap_ecdsa_enable(ctx, ACVP_ECDSA_KEYVER, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
-    
-    rv  = acvp_build_test_session(ctx, &reg, NULL);
+
+    rv = acvp_build_registration_json(ctx, &generated_value);
     cr_assert(rv == ACVP_MISSING_ARG);
 }
 
@@ -1978,10 +2024,14 @@ Test(BUILD_TEST_SESSION, ecdsa_no_params, .fini = teardown) {
 Test(BUILD_TEST_SESSION, good_kdf, .fini = teardown) {
     setup_empty_ctx(&ctx);
     add_kdf_details_good();
-    
-    rv  = acvp_build_test_session(ctx, &reg, NULL);
+
+    rv = acvp_build_registration_json(ctx, &reg_value);
     cr_assert(rv == ACVP_SUCCESS);
-    
+    ctx->registration = reg_value;
+
+    rv = acvp_build_full_registration(ctx, &reg, NULL);
+    cr_assert(rv == ACVP_SUCCESS);
+
     generated_value = json_parse_string(reg);
     generated_obj = ut_get_obj_from_rsp(generated_value);
     if (!generated_obj) {
@@ -1994,7 +2044,7 @@ Test(BUILD_TEST_SESSION, good_kdf, .fini = teardown) {
         ACVP_LOG_ERR("JSON obj parse error (known)");
         return;
     }
-    
+
     cr_assert(json_value_equals((JSON_Value *)generated_obj, (JSON_Value *)known_good_obj) == JSONSuccess);
 }
 
@@ -2031,7 +2081,7 @@ Test(BUILD_TEST_SESSION, kdf_more_modes, .fini = teardown) {
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_kdf108_set_parm(ctx, ACVP_KDF108_MODE_DPI, ACVP_KDF108_SUPPORTS_EMPTY_IV, 0);
     cr_assert(rv == ACVP_SUCCESS);
-    
+
     rv = acvp_cap_kdf135_x963_enable(ctx, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_kdf135_x963_set_parm(ctx, ACVP_KDF_X963_HASH_ALG, ACVP_SHA224);
@@ -2080,7 +2130,7 @@ Test(BUILD_TEST_SESSION, kdf_more_modes, .fini = teardown) {
     rv = acvp_cap_kdf135_ikev1_set_parm(ctx, ACVP_KDF_IKEv1_AUTH_METHOD, ACVP_KDF135_IKEV1_AMETH_PKE);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv  = acvp_build_test_session(ctx, &reg, NULL);
+    rv = acvp_build_registration_json(ctx, &generated_value);
     cr_assert(rv == ACVP_SUCCESS);
 }
 
@@ -2090,10 +2140,14 @@ Test(BUILD_TEST_SESSION, kdf_more_modes, .fini = teardown) {
 Test(BUILD_TEST_SESSION, good_kas_ecc, .fini = teardown) {
     setup_empty_ctx(&ctx);
     add_kas_ecc_details_good();
-    
-    rv  = acvp_build_test_session(ctx, &reg, NULL);
+
+    rv = acvp_build_registration_json(ctx, &reg_value);
     cr_assert(rv == ACVP_SUCCESS);
-    
+    ctx->registration = reg_value;
+
+    rv = acvp_build_full_registration(ctx, &reg, NULL);
+    cr_assert(rv == ACVP_SUCCESS);
+
     generated_value = json_parse_string(reg);
     generated_obj = ut_get_obj_from_rsp(generated_value);
     if (!generated_obj) {
@@ -2106,7 +2160,7 @@ Test(BUILD_TEST_SESSION, good_kas_ecc, .fini = teardown) {
         ACVP_LOG_ERR("JSON obj parse error (known)");
         return;
     }
-    
+
     cr_assert(json_value_equals((JSON_Value *)generated_obj, (JSON_Value *)known_good_obj) == JSONSuccess);
 }
 
@@ -2115,11 +2169,11 @@ Test(BUILD_TEST_SESSION, good_kas_ecc, .fini = teardown) {
  */
 Test(BUILD_TEST_SESSION, kas_ecc_no_params, .fini = teardown) {
     setup_empty_ctx(&ctx);
-    
+
     rv = acvp_cap_kas_ecc_enable(ctx, ACVP_KAS_ECC_CDH, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
-    
-    rv  = acvp_build_test_session(ctx, &reg, NULL);
+
+    rv = acvp_build_registration_json(ctx, &generated_value);
     cr_assert(rv == ACVP_MISSING_ARG);
 }
 
@@ -2129,10 +2183,14 @@ Test(BUILD_TEST_SESSION, kas_ecc_no_params, .fini = teardown) {
 Test(BUILD_TEST_SESSION, good_kas_ffc, .fini = teardown) {
     setup_empty_ctx(&ctx);
     add_kas_ffc_details_good();
-    
-    rv  = acvp_build_test_session(ctx, &reg, NULL);
+
+    rv = acvp_build_registration_json(ctx, &reg_value);
     cr_assert(rv == ACVP_SUCCESS);
-    
+    ctx->registration = reg_value;
+
+    rv = acvp_build_full_registration(ctx, &reg, NULL);
+    cr_assert(rv == ACVP_SUCCESS);
+
     generated_value = json_parse_string(reg);
     generated_obj = ut_get_obj_from_rsp(generated_value);
     if (!generated_obj) {
@@ -2145,7 +2203,7 @@ Test(BUILD_TEST_SESSION, good_kas_ffc, .fini = teardown) {
         ACVP_LOG_ERR("JSON obj parse error (known)");
         return;
     }
-    
+
     cr_assert(json_value_equals((JSON_Value *)generated_obj, (JSON_Value *)known_good_obj) == JSONSuccess);
 }
 
@@ -2154,10 +2212,10 @@ Test(BUILD_TEST_SESSION, good_kas_ffc, .fini = teardown) {
  */
 Test(BUILD_TEST_SESSION, kas_ffc_no_params, .fini = teardown) {
     setup_empty_ctx(&ctx);
-    
+
     rv = acvp_cap_kas_ffc_enable(ctx, ACVP_KAS_FFC_COMP, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
-    
-    rv  = acvp_build_test_session(ctx, &reg, NULL);
+
+    rv = acvp_build_registration_json(ctx, &generated_value);
     cr_assert(rv == ACVP_MISSING_ARG);
 }

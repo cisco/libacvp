@@ -1791,6 +1791,36 @@ ACVP_RESULT acvp_set_json_filename(ACVP_CTX *ctx, const char *json_filename) {
 }
 
 /*
+ * This will return a string form of the current registration, regardless of whether the session
+ * has already been started
+ */
+char *acvp_get_current_registration(ACVP_CTX *ctx, int *len) {
+    char *registration = NULL;
+    int length = 0;
+    JSON_Value *reg = NULL;
+    if (!ctx) {
+        return NULL;
+    }
+
+    /* If we have a registration saved already, use that. Otherwise, build it and return it */
+    if (ctx->registration) {
+        reg = ctx->registration;
+    } else {
+        if (acvp_build_registration_json(ctx, &reg) != ACVP_SUCCESS) {
+            return NULL;
+        }
+    }
+    registration = json_serialize_to_string_pretty(reg, &length);
+    if (len) *len = length;
+
+    /* free the JSON_Value if built on the fly */
+    if (!ctx->registration) {
+        json_value_free(reg);
+    }
+    return registration;
+}
+
+/*
  * This function is used by the application to specify the
  * ACVP server address and TCP port#.
  */
@@ -2178,9 +2208,10 @@ err:
 static ACVP_RESULT acvp_register(ACVP_CTX *ctx) {
     ACVP_RESULT rv = ACVP_SUCCESS;
     char *reg = NULL;
-    int reg_len = 0;
-    JSON_Value *tmp_json_from_file = NULL;
+    int reg_len = 0, count = 0;
 
+    JSON_Value *tmp_json = NULL;
+    JSON_Array *tmp_arr = NULL;
     if (!ctx) {
         return ACVP_NO_CTX;
     }
@@ -2191,25 +2222,41 @@ static ACVP_RESULT acvp_register(ACVP_CTX *ctx) {
      */
     if (ctx->use_json) {
         ACVP_LOG_STATUS("Reading capabilities registration file...");
-        tmp_json_from_file = json_parse_file(ctx->json_filename);
-        if (!tmp_json_from_file) {
+        tmp_json = json_parse_file(ctx->json_filename);
+        if (!tmp_json) {
             ACVP_LOG_ERR("Error reading capabilities file");
             rv = ACVP_JSON_ERR;
             goto end;
         }
-        reg = json_serialize_to_string_pretty(tmp_json_from_file, &reg_len);
-        if (!reg) {
-            ACVP_LOG_ERR("Error loading capabilities file");
+        /* Quickly sanity check format */
+        tmp_arr = json_value_get_array(tmp_json);
+        if (!tmp_arr) {
+            ACVP_LOG_ERR("Provided capabilities file in invalid format");
             rv = ACVP_JSON_ERR;
             goto end;
         }
-    } else {
-        ACVP_LOG_STATUS("Building registration of capabilities...");
-        rv = acvp_build_test_session(ctx, &reg, &reg_len);
-        if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("Unable to build register message");
+        count = json_array_get_count(tmp_arr);
+        if (count < 1 || count > ACVP_CAP_MAX) {
+            ACVP_LOG_ERR("Invalid number of capability objects in provided file! Min: 1, Max: %d", ACVP_CAP_MAX);
+            rv = ACVP_JSON_ERR;
             goto end;
         }
+        ctx->registration = tmp_json;
+    } else {
+        ACVP_LOG_STATUS("Building registration of capabilities...");
+        rv = acvp_build_registration_json(ctx, &tmp_json);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Unable to build registration");
+            goto end;
+        } else {
+            ctx->registration = tmp_json;
+        }
+    }
+
+    rv = acvp_build_full_registration(ctx, &reg, &reg_len);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Error occurred building registration JSON: %d", rv);
+        goto end;
     }
 
     ACVP_LOG_STATUS("Sending registration of capabilities...");
@@ -2228,7 +2275,6 @@ static ACVP_RESULT acvp_register(ACVP_CTX *ctx) {
     }
 
 end:
-    if (tmp_json_from_file) json_value_free(tmp_json_from_file);
     if (reg) json_free_serialized_string(reg);
     return rv;
 }
@@ -3361,8 +3407,14 @@ end:
 
 #define TEST_SESSION "testSessions/"
 
+/**
+ * Creates a file with the test session info, which can be used to access the test session
+ * in the future.
+ *
+ * This function should not modify the ctx, only read it.
+ */
 static ACVP_RESULT acvp_write_session_info(ACVP_CTX *ctx) {
-    ACVP_RESULT rv = ACVP_SUCCESS;
+    ACVP_RESULT rv = ACVP_INTERNAL_ERR;
     JSON_Value *ts_val = NULL;
     JSON_Object *ts_obj = NULL;
     char *filename = NULL, *ptr = NULL, *path = NULL, *prefix = NULL;
@@ -3376,11 +3428,15 @@ static ACVP_RESULT acvp_write_session_info(ACVP_CTX *ctx) {
 
     ts_val = json_value_init_object();
     ts_obj = json_value_get_object(ts_val);
+    if (!ts_obj) {
+        goto end;
+    }
 
     json_object_set_string(ts_obj, "url", ctx->session_url);
     json_object_set_string(ts_obj, "jwt", ctx->jwt_token);
     json_object_set_boolean(ts_obj, "isSample", ctx->is_sample);
-    json_object_set_value(ts_obj, "registration", json_value_deep_copy(ctx->registration));
+    json_object_set_value(ts_obj, "registration", ctx->registration);
+
     /* pull test session ID out of URL */
     ptr = ctx->session_url;
     while(*ptr != 0) {
@@ -3392,7 +3448,7 @@ static ACVP_RESULT acvp_write_session_info(ACVP_CTX *ctx) {
     }
 
     ptr+= strnlen_s(TEST_SESSION, ACVP_ATTR_URL_MAX);
-    
+
     path = getenv("ACV_SESSION_SAVE_PATH");
     prefix = getenv("ACV_SESSION_SAVE_PREFIX");
 
@@ -3459,8 +3515,10 @@ static ACVP_RESULT acvp_write_session_info(ACVP_CTX *ctx) {
         goto end;
     }
 
+    rv = ACVP_SUCCESS;
 end:
     if (allocedPrefix && prefix) free(prefix);
+    if (ts_obj) json_object_soft_remove(ts_obj, "registration");
     if (ts_val) json_value_free(ts_val);
     free(filename);
     return rv;

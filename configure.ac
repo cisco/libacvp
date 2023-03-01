@@ -293,29 +293,25 @@ else
     AC_SUBST([LIBACVP_CFLAGS], ["-I../include"])
 fi
 
-AS_IF(
- [test "x$enable_cflags" != "xfalse"],
- [[CFLAGS="$CFLAGS -Wcast-align -Wchar-subscripts -Wcomment -Wdeprecated-declarations -Wdisabled-optimization -Wdiv-by-zero -Wendif-labels  -Wformat -Wformat-extra-args  -Wformat-security -Wformat-y2k -Wimplicit -Wimplicit-function-declaration -Wimplicit-int -Wimport -Winvalid-pch -Wmain -Wmissing-braces  -Wmissing-format-attribute -Wmissing-noreturn  -Wmultichar -Wnested-externs -Wnonnull -Wparentheses -Wpointer-arith -Wreturn-type -Wsequence-point -Wshadow -Wsign-compare -Wstrict-aliasing -Wstrict-prototypes -Wswitch -Wswitch-default -Wtrigraphs  -Wunknown-pragmas -Wunused -Wunused-function -Wunused-label -Wunused-parameter -Wunused-value -Wunused-variable -Wwrite-strings -Wno-pointer-sign  -Wcast-qual -Wfloat-equal  -Wuninitialized -Wno-error=unreachable-code -Winline -Wno-error=cast-align -Wbad-function-cast  -Wswitch-enum -Wsystem-headers -Wunused-but-set-variable -Wextra -Wno-error=unreachable-code"]
- ]
-)
+if test "x$enable_cflags" != "xfalse" ; then
+    CFLAGS="$CFLAGS -Wcast-align -Wchar-subscripts -Wcomment -Wdeprecated-declarations -Wdisabled-optimization -Wdiv-by-zero -Wendif-labels  -Wformat -Wformat-extra-args  -Wformat-security -Wformat-y2k -Wimplicit -Wimplicit-function-declaration -Wimplicit-int -Wimport -Winvalid-pch -Wmain -Wmissing-braces  -Wmissing-format-attribute -Wmissing-noreturn  -Wmultichar -Wnested-externs -Wnonnull -Wparentheses -Wpointer-arith -Wreturn-type -Wsequence-point -Wshadow -Wsign-compare -Wstrict-aliasing -Wstrict-prototypes -Wswitch -Wswitch-default -Wtrigraphs  -Wunknown-pragmas -Wunused -Wunused-function -Wunused-label -Wunused-parameter -Wunused-value -Wunused-variable -Wwrite-strings -Wno-pointer-sign  -Wcast-qual -Wfloat-equal  -Wuninitialized -Winline -Wno-error=cast-align -Wbad-function-cast  -Wswitch-enum -Wsystem-headers -Wunused-but-set-variable -Wextra"
+fi
 
-AS_IF(
- [test "x$enable_gcov" != "xfalse"],
- [[CFLAGS="$CFLAGS --coverage"]
-  [LDFLAGS="$LDFLAGS -lgcov"]
- ]
-)
+if test "x$enable_gcov" != "xfalse" ; then
+    CFLAGS="$CFLAGS --coverage"
+    LDFLAGS="$LDFLAGS -lgcov"
+fi
 
 if test "x$enable_gcov" != "xfalse" ; then
   CLEANFILES="app/*.gcda app/*.gcno src/*.gcda src/*.gcno test/*.gcda test/*.gcno safe_c_stub/src/*.gcno"
   AC_SUBST(CLEANFILES)
 fi
 
-AS_IF([test "x$with_criterion" != xno],
-      [AC_SUBST([CRITERION_CFLAGS], "-I$criteriondir/include")
-       AC_SUBST([CRITERION_LDFLAGS], "-L$criteriondir/lib -lcriterion")
-      ]
-     )
+if test "x$with_criterion" != "xno" ; then
+    AC_SUBST([CRITERION_CFLAGS], "-I$criteriondir/include")
+    AC_SUBST([CRITERION_LDFLAGS], "-L$criteriondir/lib -lcriterion")
+fi
+
 AM_CONDITIONAL([UNIT_TEST_SUPPORTED], [test "x$with_criteriondir" != "xno"])
 
 AM_CONDITIONAL([BUILD_APP_AS_LIB], [test "x$wrap_lib" != "xfalse"])

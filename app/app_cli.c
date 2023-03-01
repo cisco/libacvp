@@ -97,6 +97,9 @@ static void print_usage(int code) {
     printf("To register manually using a JSON file instead of application settings use:\n");
     printf("      --manual_registration <file>\n");
     printf("\n");
+    printf("To retreive and output the JSON form of the currently registered capabilities:\n");
+    printf("      --get_registration\n");
+    printf("\n");
     printf("To register and save the vectors to file:\n");
     printf("      --vector_req <file>\n");
     printf("      -r <file>\n");
@@ -250,6 +253,7 @@ static ko_longopt_t longopts[] = {
     { "cancel_session", ko_required_argument, 415 },
     { "cost", ko_no_argument, 416 },
     { "debug", ko_no_argument, 417 },
+    { "get_registration", ko_no_argument, 418 },
 #if OPENSSL_VERSION_NUMBER >= 0x30000000L
     { "disable_fips", ko_no_argument, 500 },
 #endif
@@ -574,6 +578,10 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
 
         case 417:
             cfg->level = ACVP_LOG_LVL_DEBUG;
+            break;
+
+        case 418:
+            cfg->get_reg = 1;
             break;
 
 #if OPENSSL_VERSION_NUMBER >= 0x30000000L
