@@ -2776,37 +2776,38 @@ static ACVP_RESULT acvp_build_kas_ecc_register_cap(ACVP_CTX *ctx,
         if (result != ACVP_SUCCESS) { return result; }
         switch (i) {
         case ACVP_KAS_ECC_MODE_CDH:
+            if (kas_ecc_mode->function) {
+                json_object_set_value(cap_obj, "function", json_value_init_array());
+                temp_arr = json_object_get_array(cap_obj, "function");
+                current_func = kas_ecc_mode->function;
+                while (current_func) {
+                    switch (current_func->param) {
+                    case ACVP_KAS_ECC_FUNC_PARTIAL:
+                        json_array_append_string(temp_arr, "partialVal");
+                        break;
+                    case ACVP_KAS_ECC_FUNC_DPGEN:
+                        json_array_append_string(temp_arr, "dpGen");
+                        break;
+                    case ACVP_KAS_ECC_FUNC_DPVAL:
+                        json_array_append_string(temp_arr, "dpVal");
+                        break;
+                    case ACVP_KAS_ECC_FUNC_KEYPAIR:
+                        json_array_append_string(temp_arr, "keyPairGen");
+                        break;
+                    case ACVP_KAS_ECC_FUNC_KEYREGEN:
+                        json_array_append_string(temp_arr, "keyRegen");
+                        break;
+                    case ACVP_KAS_ECC_FUNC_FULL:
+                        json_array_append_string(temp_arr, "fullVal");
+                        break;
+                    default:
+                        ACVP_LOG_ERR("Unsupported KAS-ECC function %d", current_func->param);
+                        return ACVP_INVALID_ARG;
 
-            json_object_set_value(cap_obj, "function", json_value_init_array());
-            temp_arr = json_object_get_array(cap_obj, "function");
-            current_func = kas_ecc_mode->function;
-            while (current_func) {
-                switch (current_func->param) {
-                case ACVP_KAS_ECC_FUNC_PARTIAL:
-                    json_array_append_string(temp_arr, "partialVal");
-                    break;
-                case ACVP_KAS_ECC_FUNC_DPGEN:
-                    json_array_append_string(temp_arr, "dpGen");
-                    break;
-                case ACVP_KAS_ECC_FUNC_DPVAL:
-                    json_array_append_string(temp_arr, "dpVal");
-                    break;
-                case ACVP_KAS_ECC_FUNC_KEYPAIR:
-                    json_array_append_string(temp_arr, "keyPairGen");
-                    break;
-                case ACVP_KAS_ECC_FUNC_KEYREGEN:
-                    json_array_append_string(temp_arr, "keyRegen");
-                    break;
-                case ACVP_KAS_ECC_FUNC_FULL:
-                    json_array_append_string(temp_arr, "fullVal");
-                    break;
-                default:
-                    ACVP_LOG_ERR("Unsupported KAS-ECC function %d", current_func->param);
-                    return ACVP_INVALID_ARG;
-
-                    break;
+                        break;
+                    }
+                    current_func = current_func->next;
                 }
-                current_func = current_func->next;
             }
             json_object_set_value(cap_obj, "curve", json_value_init_array());
             temp_arr = json_object_get_array(cap_obj, "curve");

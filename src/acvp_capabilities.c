@@ -2517,7 +2517,7 @@ ACVP_RESULT acvp_cap_sym_cipher_set_parm(ACVP_CTX *ctx,
         }
 
     case ACVP_SYM_CIPH_PARM_KO:
-        if (value > 0 && value < ACVP_SYM_CIPH_KO_MAX) {
+        if (value >= ACVP_SYM_CIPH_KO_NA && value < ACVP_SYM_CIPH_KO_MAX) {
             cap->cap.sym_cap->keying_option = value;
             return ACVP_SUCCESS;
         } else {
