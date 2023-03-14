@@ -551,7 +551,7 @@ typedef enum acvp_kdf108_fixed_data_order_val {
 
 /** @enum ACVP_SYM_CIPH_KO */
 typedef enum acvp_sym_cipher_keying_option {
-    ACVP_SYM_CIPH_KO_NA = 1,
+    ACVP_SYM_CIPH_KO_NA = 0,
     ACVP_SYM_CIPH_KO_ONE,
     ACVP_SYM_CIPH_KO_THREE, /**< This is outdated and will eventually be removed */
     ACVP_SYM_CIPH_KO_TWO,

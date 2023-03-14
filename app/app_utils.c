@@ -294,6 +294,10 @@ int save_string_to_file(const char *str, const char *path) {
         goto end;
     }
 
+    if (fputs("\n", fp) == EOF) {
+        goto end;
+    }
+
     rv = 0;
  end:
     if (fp && fclose(fp) == EOF) {
