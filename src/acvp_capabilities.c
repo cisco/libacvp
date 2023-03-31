@@ -1,6 +1,6 @@
 /** @file */
 /*
- * Copyright (c) 2021, Cisco Systems, Inc.
+ * Copyright (c) 2023, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -613,6 +613,30 @@ static ACVP_RESULT acvp_cap_list_append(ACVP_CTX *ctx,
         }
         break;
 
+    case ACVP_LMS_KEYGEN_TYPE:
+        cap_entry->cap.lms_keygen_cap = calloc(1, sizeof(ACVP_LMS_CAP));
+        if (!cap_entry->cap.lms_keygen_cap) {
+            rv = ACVP_MALLOC_FAIL;
+            goto err;
+        }
+        break;
+
+    case ACVP_LMS_SIGGEN_TYPE:
+        cap_entry->cap.lms_siggen_cap = calloc(1, sizeof(ACVP_LMS_CAP));
+        if (!cap_entry->cap.lms_siggen_cap) {
+            rv = ACVP_MALLOC_FAIL;
+            goto err;
+        }
+        break;
+
+    case ACVP_LMS_SIGVER_TYPE:
+        cap_entry->cap.lms_sigver_cap = calloc(1, sizeof(ACVP_LMS_CAP));
+        if (!cap_entry->cap.lms_sigver_cap) {
+            rv = ACVP_MALLOC_FAIL;
+            goto err;
+        }
+        break;
+
     case ACVP_KDF135_TPM_TYPE:
     default:
         ACVP_LOG_ERR("Invalid parameter 'type'");
@@ -1021,6 +1045,9 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
         case ACVP_KTS_IFC:
         case ACVP_SAFE_PRIMES_KEYGEN:
         case ACVP_SAFE_PRIMES_KEYVER:
+        case ACVP_LMS_SIGGEN:
+        case ACVP_LMS_SIGVER:
+        case ACVP_LMS_KEYGEN:
         case ACVP_CIPHER_END:
         default:
             break;
@@ -1134,6 +1161,9 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
         case ACVP_KTS_IFC:
         case ACVP_SAFE_PRIMES_KEYGEN:
         case ACVP_SAFE_PRIMES_KEYVER:
+        case ACVP_LMS_SIGGEN:
+        case ACVP_LMS_SIGVER:
+        case ACVP_LMS_KEYGEN:
         case ACVP_CIPHER_END:
         default:
             break;
@@ -1247,6 +1277,9 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
         case ACVP_KTS_IFC:
         case ACVP_SAFE_PRIMES_KEYGEN:
         case ACVP_SAFE_PRIMES_KEYVER:
+        case ACVP_LMS_SIGGEN:
+        case ACVP_LMS_SIGVER:
+        case ACVP_LMS_KEYGEN:
         case ACVP_CIPHER_END:
         default:
             break;
@@ -1366,6 +1399,9 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
         case ACVP_KTS_IFC:
         case ACVP_SAFE_PRIMES_KEYGEN:
         case ACVP_SAFE_PRIMES_KEYVER:
+        case ACVP_LMS_SIGGEN:
+        case ACVP_LMS_SIGVER:
+        case ACVP_LMS_KEYGEN:
         case ACVP_CIPHER_END:
         default:
             break;
@@ -1476,6 +1512,9 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
         case ACVP_KTS_IFC:
         case ACVP_SAFE_PRIMES_KEYGEN:
         case ACVP_SAFE_PRIMES_KEYVER:
+        case ACVP_LMS_SIGGEN:
+        case ACVP_LMS_SIGVER:
+        case ACVP_LMS_KEYGEN:
         case ACVP_CIPHER_END:
         default:
             if (value >= 0 && value <= 65536) {
@@ -1799,6 +1838,9 @@ static ACVP_RESULT acvp_validate_sym_cipher_domain_value(ACVP_CIPHER cipher, ACV
     case ACVP_KTS_IFC:
     case ACVP_SAFE_PRIMES_KEYGEN:
     case ACVP_SAFE_PRIMES_KEYVER:
+    case ACVP_LMS_SIGGEN:
+    case ACVP_LMS_SIGVER:
+    case ACVP_LMS_KEYGEN:
     case ACVP_CIPHER_END:
     default:
         break;
@@ -2058,6 +2100,13 @@ static ACVP_RESULT acvp_validate_prereq_val(ACVP_CIPHER cipher, ACVP_PREREQ_ALG 
             return ACVP_SUCCESS;
         }
         break;
+    case ACVP_LMS_SIGGEN:
+    case ACVP_LMS_SIGVER:
+    case ACVP_LMS_KEYGEN:
+        if (pre_req == ACVP_PREREQ_SHA) {
+            return ACVP_SUCCESS;
+        }
+        break;
     case ACVP_CIPHER_START:
     case ACVP_TDES_CBCI:
     case ACVP_TDES_OFBI:
@@ -2269,6 +2318,9 @@ ACVP_RESULT acvp_cap_sym_cipher_set_domain(ACVP_CTX *ctx,
     case ACVP_KTS_IFC:
     case ACVP_SAFE_PRIMES_KEYGEN:
     case ACVP_SAFE_PRIMES_KEYVER:
+    case ACVP_LMS_SIGGEN:
+    case ACVP_LMS_SIGVER:
+    case ACVP_LMS_KEYGEN:
     case ACVP_CIPHER_END:
     default:
         return ACVP_INVALID_ARG;
@@ -2480,6 +2532,9 @@ ACVP_RESULT acvp_cap_sym_cipher_set_parm(ACVP_CTX *ctx,
     case ACVP_KTS_IFC:
     case ACVP_SAFE_PRIMES_KEYGEN:
     case ACVP_SAFE_PRIMES_KEYVER:
+    case ACVP_LMS_SIGGEN:
+    case ACVP_LMS_SIGVER:
+    case ACVP_LMS_KEYGEN:
     case ACVP_CIPHER_END:
     default:
         return ACVP_INVALID_ARG;
@@ -2810,6 +2865,9 @@ ACVP_RESULT acvp_cap_sym_cipher_enable(ACVP_CTX *ctx,
     case ACVP_KTS_IFC:
     case ACVP_SAFE_PRIMES_KEYGEN:
     case ACVP_SAFE_PRIMES_KEYVER:
+    case ACVP_LMS_SIGGEN:
+    case ACVP_LMS_SIGVER:
+    case ACVP_LMS_KEYGEN:
     case ACVP_CIPHER_END:
     default:
         return ACVP_INVALID_ARG;
@@ -8650,4 +8708,163 @@ ACVP_RESULT acvp_cap_safe_primes_set_parm(ACVP_CTX *ctx,
         break;
     }
     return result;
+}
+
+ACVP_RESULT acvp_cap_lms_enable(ACVP_CTX *ctx,
+                                ACVP_CIPHER cipher,
+                                int (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
+    ACVP_RESULT result = ACVP_NO_CAP;
+    ACVP_SUB_LMS alg;
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+    if (!crypto_handler) {
+        ACVP_LOG_ERR("NULL parameter 'crypto_handler'");
+        return ACVP_INVALID_ARG;
+    }
+
+    alg = acvp_get_lms_alg(cipher);
+    if (alg == 0) {
+        ACVP_LOG_ERR("Invalid cipher value");
+        return ACVP_INVALID_ARG;
+    }
+    switch (alg) {
+    case ACVP_SUB_LMS_KEYGEN:
+        result = acvp_cap_list_append(ctx, ACVP_LMS_KEYGEN_TYPE, cipher, crypto_handler);
+        break;
+    case ACVP_SUB_LMS_SIGGEN:
+        result = acvp_cap_list_append(ctx, ACVP_LMS_SIGGEN_TYPE, cipher, crypto_handler);
+        break;
+    case ACVP_SUB_LMS_SIGVER:
+        result = acvp_cap_list_append(ctx, ACVP_LMS_SIGVER_TYPE, cipher, crypto_handler);
+        break;
+    default:
+        ACVP_LOG_ERR("Invalid cipher provided to acvp_cap_lms_enable()");
+        break;
+    }
+
+    if (result != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Error occured while enabling LMS algorithm. rv: %d", result);
+    }
+
+    return result;
+}
+
+ACVP_RESULT acvp_cap_lms_set_parm(ACVP_CTX *ctx,
+                                  ACVP_CIPHER cipher,
+                                  ACVP_LMS_PARAM param, int value) {
+    ACVP_CAPS_LIST *cap;
+    ACVP_LMS_CAP *lms_cap;
+    ACVP_SUB_LMS alg;
+
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+
+    cap = acvp_locate_cap_entry(ctx, cipher);
+    if (!cap) {
+        return ACVP_NO_CAP;
+    }
+    alg = acvp_get_lms_alg(cipher);
+    switch (alg) {
+    case ACVP_SUB_LMS_KEYGEN:
+        lms_cap = cap->cap.lms_keygen_cap;
+        break;
+    case ACVP_SUB_LMS_SIGGEN:
+        lms_cap = cap->cap.lms_siggen_cap;
+        break;
+    case ACVP_SUB_LMS_SIGVER:
+        lms_cap = cap->cap.lms_sigver_cap;
+        break;
+    default:
+        ACVP_LOG_ERR("Invalid cipher provided for setting LMS paramater");
+        return ACVP_INVALID_ARG;
+    }
+
+    switch (param) {
+    case ACVP_LMS_PARAM_LMS_MODE:
+        if (value <= ACVP_LMS_MODE_NONE || value >= ACVP_LMS_MODE_MAX) {
+            ACVP_LOG_ERR("Invalid LMS mode provided");
+            return ACVP_INVALID_ARG;
+        }
+        return acvp_append_param_list(&lms_cap->lms_modes, value);
+        break;
+    case ACVP_LMS_PARAM_LMOTS_MODE:
+        if (value <= ACVP_LMOTS_MODE_NONE || value >= ACVP_LMOTS_MODE_MAX) {
+            ACVP_LOG_ERR("Invalid LMOTS mode provided");
+            return ACVP_INVALID_ARG;
+        }
+        return acvp_append_param_list(&lms_cap->lmots_modes, value);
+        break;
+    default:
+        break;
+    }
+
+    return ACVP_SUCCESS;
+}
+
+ACVP_RESULT acvp_cap_lms_set_mode_compatability_pair(ACVP_CTX *ctx,
+                                                     ACVP_CIPHER cipher,
+                                                     ACVP_LMS_MODE lms_mode,
+                                                     ACVP_LMOTS_MODE lmots_mode) {
+    ACVP_CAPS_LIST *cap;
+    ACVP_LMS_CAP *lms_cap;
+    ACVP_SUB_LMS alg;
+    ACVP_LMS_SPECIFIC_LIST *list = NULL;
+
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+
+    cap = acvp_locate_cap_entry(ctx, cipher);
+    if (!cap) {
+        return ACVP_NO_CAP;
+    }
+    alg = acvp_get_lms_alg(cipher);
+    switch (alg) {
+    case ACVP_SUB_LMS_KEYGEN:
+        lms_cap = cap->cap.lms_keygen_cap;
+        break;
+    case ACVP_SUB_LMS_SIGGEN:
+        lms_cap = cap->cap.lms_siggen_cap;
+        break;
+    case ACVP_SUB_LMS_SIGVER:
+        lms_cap = cap->cap.lms_sigver_cap;
+        break;
+    default:
+        ACVP_LOG_ERR("Invalid cipher provided for setting LMS mode pair");
+        return ACVP_INVALID_ARG;
+    }
+
+    if (lms_mode <= ACVP_LMS_MODE_NONE || lms_mode >= ACVP_LMS_MODE_MAX) {
+        ACVP_LOG_ERR("Invalid LMS mode provided");
+        return ACVP_INVALID_ARG;
+    }
+
+    if (lmots_mode <= ACVP_LMOTS_MODE_NONE || lmots_mode >= ACVP_LMOTS_MODE_MAX) {
+        ACVP_LOG_ERR("Invalid LMOTS mode provided");
+        return ACVP_INVALID_ARG;
+    }
+
+    list = lms_cap->specific_list;
+    if (!list) {
+        lms_cap->specific_list = calloc(1, sizeof(ACVP_LMS_SPECIFIC_LIST));
+        if (!lms_cap->specific_list) {
+            return ACVP_MALLOC_FAIL;
+        }
+        lms_cap->specific_list->lms_mode = lms_mode;
+        lms_cap->specific_list->lmots_mode = lmots_mode;
+    } else {
+        while (list->next) {
+            list = list->next;
+        }
+        list->next = calloc(1, sizeof(ACVP_LMS_SPECIFIC_LIST));
+        if (!list->next) {
+            return ACVP_MALLOC_FAIL;
+        }
+        list->next->lms_mode = lms_mode;
+        list->next->lmots_mode = lmots_mode;
+    }
+
+    return ACVP_SUCCESS;
 }

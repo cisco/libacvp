@@ -1,6 +1,6 @@
 /** @file */
 /*
- * Copyright (c) 2021, Cisco Systems, Inc.
+ * Copyright (c) 2023, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -631,6 +631,94 @@ ACVP_CIPHER acvp_lookup_aux_function_alg_tbl(const char *str) {
     return 0;
 }
 
+static struct acvp_enum_string_pair lms_mode_tbl[] = {
+    { ACVP_LMS_MODE_SHA256_M24_H5, "LMS_SHA256_M24_H5"},
+    { ACVP_LMS_MODE_SHA256_M24_H10, "LMS_SHA256_M24_H10"},
+    { ACVP_LMS_MODE_SHA256_M24_H15, "LMS_SHA256_M24_H15"},
+    { ACVP_LMS_MODE_SHA256_M24_H20, "LMS_SHA256_M24_H20"},
+    { ACVP_LMS_MODE_SHA256_M24_H25, "LMS_SHA256_M24_H25"},
+    { ACVP_LMS_MODE_SHA256_M32_H5, "LMS_SHA256_M32_H5"},
+    { ACVP_LMS_MODE_SHA256_M32_H10, "LMS_SHA256_M32_H10"},
+    { ACVP_LMS_MODE_SHA256_M32_H15, "LMS_SHA256_M32_H15"},
+    { ACVP_LMS_MODE_SHA256_M32_H20, "LMS_SHA256_M32_H20"},
+    { ACVP_LMS_MODE_SHA256_M32_H25, "LMS_SHA256_M32_H25"},
+    { ACVP_LMS_MODE_SHAKE_M24_H5, "LMS_SHAKE_M24_H5"},
+    { ACVP_LMS_MODE_SHAKE_M24_H10, "LMS_SHAKE_M24_H10"},
+    { ACVP_LMS_MODE_SHAKE_M24_H15, "LMS_SHAKE_M24_H15"},
+    { ACVP_LMS_MODE_SHAKE_M24_H20, "LMS_SHAKE_M24_H20"},
+    { ACVP_LMS_MODE_SHAKE_M24_H25, "LMS_SHAKE_M24_H25"},
+    { ACVP_LMS_MODE_SHAKE_M32_H5, "LMS_SHAKE_M32_H5"},
+    { ACVP_LMS_MODE_SHAKE_M32_H10, "LMS_SHAKE_M32_H10"},
+    { ACVP_LMS_MODE_SHAKE_M32_H15, "LMS_SHAKE_M32_H15"},
+    { ACVP_LMS_MODE_SHAKE_M32_H20, "LMS_SHAKE_M32_H20"},
+    { ACVP_LMS_MODE_SHAKE_M32_H25, "LMS_SHAKE_M32_H25"}
+};
+
+static int lms_mode_tbl_len = sizeof(lms_mode_tbl) / sizeof(struct acvp_enum_string_pair);
+
+ACVP_LMS_MODE acvp_lookup_lms_mode(const char *str) {
+    int diff = 1, i = 0;
+    for (i = 0; i < lms_mode_tbl_len; i++) {
+    strcmp_s(lms_mode_tbl[i].string, strnlen_s(lms_mode_tbl[i].string, ACVP_ALG_NAME_MAX), str, &diff);
+        if (!diff) {
+            return lms_mode_tbl[i].enum_value;
+        }
+    }
+    return 0;
+}
+
+const char *acvp_lookup_lms_mode_str(ACVP_LMS_MODE mode) {
+    int i = 0;
+    for (i = 0; i < lms_mode_tbl_len; i++) {
+        if (mode == lms_mode_tbl[i].enum_value) {
+            return lms_mode_tbl[i].string;
+        }
+    }
+    return NULL;
+}
+
+static struct acvp_enum_string_pair lmots_mode_tbl[] = {
+    { ACVP_LMOTS_MODE_SHA256_N24_W1, "LMOTS_SHA256_N24_W1" },
+    { ACVP_LMOTS_MODE_SHA256_N24_W2, "LMOTS_SHA256_N24_W2" },
+    { ACVP_LMOTS_MODE_SHA256_N24_W4, "LMOTS_SHA256_N24_W4" },
+    { ACVP_LMOTS_MODE_SHA256_N24_W8, "LMOTS_SHA256_N24_W8" },
+    { ACVP_LMOTS_MODE_SHA256_N32_W1, "LMOTS_SHA256_N32_W1" },
+    { ACVP_LMOTS_MODE_SHA256_N32_W2, "LMOTS_SHA256_N32_W2" },
+    { ACVP_LMOTS_MODE_SHA256_N32_W4, "LMOTS_SHA256_N32_W4" },
+    { ACVP_LMOTS_MODE_SHA256_N32_W8, "LMOTS_SHA256_N32_W8" },
+    { ACVP_LMOTS_MODE_SHAKE_N24_W1, "LMOTS_SHAKE_N24_W1" },
+    { ACVP_LMOTS_MODE_SHAKE_N24_W2, "LMOTS_SHAKE_N24_W2" },
+    { ACVP_LMOTS_MODE_SHAKE_N24_W4, "LMOTS_SHAKE_N24_W4" },
+    { ACVP_LMOTS_MODE_SHAKE_N24_W8, "LMOTS_SHAKE_N24_W8" },
+    { ACVP_LMOTS_MODE_SHAKE_N32_W1, "LMOTS_SHAKE_N32_W1" },
+    { ACVP_LMOTS_MODE_SHAKE_N32_W2, "LMOTS_SHAKE_N32_W2" },
+    { ACVP_LMOTS_MODE_SHAKE_N32_W4, "LMOTS_SHAKE_N32_W4" },
+    { ACVP_LMOTS_MODE_SHAKE_N32_W8, "LMOTS_SHAKE_N32_W8" }
+};
+
+static int lmots_mode_tbl_len = sizeof(lmots_mode_tbl) / sizeof(struct acvp_enum_string_pair);
+
+ACVP_LMOTS_MODE acvp_lookup_lmots_mode(const char *str) {
+    int diff = 1, i = 0;
+    for (i = 0; i < lmots_mode_tbl_len; i++) {
+    strcmp_s(lmots_mode_tbl[i].string, strnlen_s(lmots_mode_tbl[i].string, ACVP_ALG_NAME_MAX), str, &diff);
+        if (!diff) {
+            return lmots_mode_tbl[i].enum_value;
+        }
+    }
+    return 0;
+}
+
+const char *acvp_lookup_lmots_mode_str(ACVP_LMOTS_MODE mode) {
+    int i = 0;
+    for (i = 0; i < lmots_mode_tbl_len; i++) {
+        if (mode == lmots_mode_tbl[i].enum_value) {
+            return lmots_mode_tbl[i].string;
+        }
+    }
+    return NULL;
+}
+
 /*
  * Convert a byte array from source to a hexadecimal string which is
  * stored in the destination.
@@ -1145,7 +1233,7 @@ ACVP_RESULT acvp_append_param_list(ACVP_PARAM_LIST **list, int param) {
     }
 
     /* Code should never reach here */
-    return ACVP_UNSUPPORTED_OP;
+    return ACVP_INTERNAL_ERR;
 }
 
 /**

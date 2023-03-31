@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Cisco Systems, Inc.
+ * Copyright (c) 2023, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -234,6 +234,7 @@ static ko_longopt_t longopts[] = {
     { "kts_ifc", ko_no_argument, 324 },
     { "kda", ko_no_argument, 325 },
     { "kmac", ko_no_argument, 326 },
+    { "lms", ko_no_argument, 327 },
     { "all_algs", ko_no_argument, 350 },
     { "manual_registration", ko_required_argument, 400 },
     { "kat", ko_required_argument, 401 },
@@ -283,6 +284,7 @@ static void enable_all_algorithms(APP_CONFIG *cfg) {
     cfg->kda = 1;
     cfg->kts_ifc = 1;
     cfg->kdf = 1;
+    cfg->lms = 1;
 }
 
 static const char* lookup_arg_name(int c) {
@@ -431,6 +433,10 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
             break;
         case 326:
             cfg->kmac = 1;
+            cfg->empty_alg = 0;
+            break;
+        case 327:
+            cfg->lms = 1;
             cfg->empty_alg = 0;
             break;
         case 'a':
