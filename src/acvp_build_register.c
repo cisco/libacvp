@@ -1,6 +1,6 @@
 /** @file */
 /*
- * Copyright (c) 2021, Cisco Systems, Inc.
+ * Copyright (c) 2023, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -734,6 +734,9 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
     case ACVP_KTS_IFC:
     case ACVP_SAFE_PRIMES_KEYGEN:
     case ACVP_SAFE_PRIMES_KEYVER:
+    case ACVP_LMS_SIGGEN:
+    case ACVP_LMS_SIGVER:
+    case ACVP_LMS_KEYGEN:
     case ACVP_CIPHER_END:
         break;
     case ACVP_AES_GCM:
@@ -4535,6 +4538,113 @@ static ACVP_RESULT acvp_build_safe_primes_register_cap(ACVP_CTX *ctx,
     return ACVP_SUCCESS;
 }
 
+static ACVP_RESULT acvp_build_lms_register_cap(ACVP_CTX *ctx,
+                                               JSON_Object *cap_obj,
+                                               ACVP_CAPS_LIST *cap_entry) {
+    JSON_Array *temp_arr = NULL;
+    JSON_Object *temp_obj = NULL;
+    JSON_Value *temp_val = NULL;
+    ACVP_RESULT result;
+    const char *revision = NULL, *mode = NULL, *lms_str = NULL, *lmots_str = NULL;
+    ACVP_LMS_CAP *lms_cap = NULL;
+    ACVP_SUB_LMS alg = 0;
+    ACVP_PARAM_LIST *list = NULL;
+    ACVP_LMS_SPECIFIC_LIST *spec_list = NULL;
+    if (!cap_entry) {
+        goto err;
+    }
+
+    json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
+
+    mode = acvp_lookup_cipher_mode_str(cap_entry->cipher);
+    if (!mode) {
+        goto err;
+    }
+    json_object_set_string(cap_obj, "mode", mode);
+
+    revision = acvp_lookup_cipher_revision(cap_entry->cipher);
+    if (revision == NULL) { return ACVP_INVALID_ARG; }
+    json_object_set_string(cap_obj, "revision", revision);
+
+    if (cap_entry->prereq_vals) {
+        result = acvp_lookup_prereqVals(cap_obj, cap_entry);
+        if (result != ACVP_SUCCESS) { return result; }
+    }
+
+    alg = acvp_get_lms_alg(cap_entry->cipher);
+
+    switch (alg) {
+    case ACVP_SUB_LMS_KEYGEN:
+        lms_cap = cap_entry->cap.lms_keygen_cap;
+        break;
+    case ACVP_SUB_LMS_SIGGEN:
+        lms_cap = cap_entry->cap.lms_siggen_cap;
+        break;
+    case ACVP_SUB_LMS_SIGVER:
+        lms_cap = cap_entry->cap.lms_siggen_cap;
+        break;
+    default:
+        goto err;
+    }
+
+    if (!lms_cap) {
+        return ACVP_NO_CAP;
+    }
+    if (lms_cap->lms_modes || lms_cap->lmots_modes) {
+        temp_val = json_value_init_object();
+        temp_obj = json_value_get_object(temp_val);
+        json_object_set_value(cap_obj, "capabilities", temp_val);
+    }
+
+    if (lms_cap->lms_modes) {
+        json_object_set_value(temp_obj, "lmsModes", json_value_init_array());
+        temp_arr = json_object_get_array(temp_obj, "lmsModes");
+        list = lms_cap->lms_modes;
+        while (list) {
+            lms_str = acvp_lookup_lms_mode_str(list->param);
+            if (!lms_str) { goto err; }
+            json_array_append_string(temp_arr, lms_str);
+            list = list->next;
+        }
+    }
+
+    if (lms_cap->lmots_modes) {
+        json_object_set_value(temp_obj, "lmOtsModes", json_value_init_array());
+        temp_arr = json_object_get_array(temp_obj, "lmOtsModes");
+        list = lms_cap->lmots_modes;
+        while (list) {
+            lms_str = acvp_lookup_lmots_mode_str(list->param);
+            if (!lms_str) { goto err; }
+            json_array_append_string(temp_arr, lms_str);
+            list = list->next;
+        }
+    }
+
+    if (lms_cap->specific_list) {
+        json_object_set_value(cap_obj, "specificCapabilities", json_value_init_array());
+        temp_arr = json_object_get_array(cap_obj, "specificCapabilities");
+        spec_list = lms_cap->specific_list;
+        while (spec_list) {
+            lms_str = acvp_lookup_lms_mode_str(spec_list->lms_mode);
+            lmots_str = acvp_lookup_lmots_mode_str(spec_list->lmots_mode);
+            if (!lms_str || !lmots_str) {
+                goto err;
+            }
+
+            temp_val = json_value_init_object();
+            temp_obj = json_value_get_object(temp_val);
+            json_object_set_string(temp_obj, "lmsMode", lms_str);
+            json_object_set_string(temp_obj, "lmotsMode", lmots_str);
+            spec_list = spec_list->next;
+        }
+    }
+
+    return ACVP_SUCCESS;
+err:
+    ACVP_LOG_ERR("Error occured when building LMS JSON");
+    return ACVP_INTERNAL_ERR;
+}
+
 /*
  * This function builds the JSON register message that
  * will be sent to the ACVP server to advertised the crypto
@@ -4812,6 +4922,11 @@ ACVP_RESULT acvp_build_registration_json(ACVP_CTX *ctx, JSON_Value **reg) {
             case ACVP_SAFE_PRIMES_KEYGEN:
             case ACVP_SAFE_PRIMES_KEYVER:
                 rv = acvp_build_safe_primes_register_cap(ctx, cap_obj, cap_entry);
+                break;
+            case ACVP_LMS_KEYGEN:
+            case ACVP_LMS_SIGGEN:
+            case ACVP_LMS_SIGVER:
+                rv = acvp_build_lms_register_cap(ctx, cap_obj, cap_entry);
                 break;
             case ACVP_CIPHER_START:
             case ACVP_CIPHER_END:

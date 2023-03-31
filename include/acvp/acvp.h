@@ -5,7 +5,7 @@
  */
 
 /*
- * Copyright (c) 2021, Cisco Systems, Inc.
+ * Copyright (c) 2023, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License"). You may not use
  * this file except in compliance with the License. You can obtain a copy
@@ -234,6 +234,9 @@ typedef enum acvp_cipher {
     ACVP_KTS_IFC,
     ACVP_SAFE_PRIMES_KEYGEN,
     ACVP_SAFE_PRIMES_KEYVER,
+    ACVP_LMS_KEYGEN,
+    ACVP_LMS_SIGGEN,
+    ACVP_LMS_SIGVER,
     ACVP_CIPHER_END
 } ACVP_CIPHER;
 
@@ -397,6 +400,12 @@ typedef enum acvp_alg_type_kdf {
     ACVP_SUB_KDF_TLS13
 } ACVP_SUB_KDF;
 
+/** @enum ACVP_SUB_LMS */
+typedef enum acvp_alg_type_lms {
+    ACVP_SUB_LMS_KEYGEN = ACVP_LMS_KEYGEN,
+    ACVP_SUB_LMS_SIGGEN,
+    ACVP_SUB_LMS_SIGVER
+} ACVP_SUB_LMS;
 
 #define CIPHER_TO_ALG(alg2) (alg_tbl[cipher].alg.alg2)
 
@@ -2341,6 +2350,98 @@ typedef struct acvp_drbg_tc_t {
     unsigned int drb_len;              /**< Expected drb length (in bytes) */
 } ACVP_DRBG_TC;
 
+/** @enum ACVP_LMS_PARAM */
+typedef enum acvp_lms_param {
+    ACVP_LMS_PARAM_LMS_MODE = 1,
+    ACVP_LMS_PARAM_LMOTS_MODE
+} ACVP_LMS_PARAM;
+
+/** @enum ACVP_LMS_MODE */
+typedef enum acvp_lms_mode {
+    ACVP_LMS_MODE_NONE = 0,
+    ACVP_LMS_MODE_SHA256_M24_H5,
+    ACVP_LMS_MODE_SHA256_M24_H10,
+    ACVP_LMS_MODE_SHA256_M24_H15,
+    ACVP_LMS_MODE_SHA256_M24_H20,
+    ACVP_LMS_MODE_SHA256_M24_H25,
+    ACVP_LMS_MODE_SHA256_M32_H5,
+    ACVP_LMS_MODE_SHA256_M32_H10,
+    ACVP_LMS_MODE_SHA256_M32_H15,
+    ACVP_LMS_MODE_SHA256_M32_H20,
+    ACVP_LMS_MODE_SHA256_M32_H25,
+    ACVP_LMS_MODE_SHAKE_M24_H5,
+    ACVP_LMS_MODE_SHAKE_M24_H10,
+    ACVP_LMS_MODE_SHAKE_M24_H15,
+    ACVP_LMS_MODE_SHAKE_M24_H20,
+    ACVP_LMS_MODE_SHAKE_M24_H25,
+    ACVP_LMS_MODE_SHAKE_M32_H5,
+    ACVP_LMS_MODE_SHAKE_M32_H10,
+    ACVP_LMS_MODE_SHAKE_M32_H15,
+    ACVP_LMS_MODE_SHAKE_M32_H20,
+    ACVP_LMS_MODE_SHAKE_M32_H25,
+    ACVP_LMS_MODE_MAX
+} ACVP_LMS_MODE;
+
+/** @enum ACVP_LMOTS_MODE */
+typedef enum acvp_lmots_mode {
+    ACVP_LMOTS_MODE_NONE = 0,
+    ACVP_LMOTS_MODE_SHA256_N24_W1,
+    ACVP_LMOTS_MODE_SHA256_N24_W2,
+    ACVP_LMOTS_MODE_SHA256_N24_W4,
+    ACVP_LMOTS_MODE_SHA256_N24_W8,
+    ACVP_LMOTS_MODE_SHA256_N32_W1,
+    ACVP_LMOTS_MODE_SHA256_N32_W2,
+    ACVP_LMOTS_MODE_SHA256_N32_W4,
+    ACVP_LMOTS_MODE_SHA256_N32_W8,
+    ACVP_LMOTS_MODE_SHAKE_N24_W1,
+    ACVP_LMOTS_MODE_SHAKE_N24_W2,
+    ACVP_LMOTS_MODE_SHAKE_N24_W4,
+    ACVP_LMOTS_MODE_SHAKE_N24_W8,
+    ACVP_LMOTS_MODE_SHAKE_N32_W1,
+    ACVP_LMOTS_MODE_SHAKE_N32_W2,
+    ACVP_LMOTS_MODE_SHAKE_N32_W4,
+    ACVP_LMOTS_MODE_SHAKE_N32_W8,
+    ACVP_LMOTS_MODE_MAX
+} ACVP_LMOTS_MODE;
+
+/** enum ACVP_LMS_TESTTYPE */
+typedef enum acvp_lms_testtype {
+    ACVP_LMS_TESTTYPE_NONE = 0,
+    ACVP_LMS_TESTTYPE_AFT
+} ACVP_LMS_TESTTYPE;
+/**
+ * @struct ACVP_LMS_TC
+ * @brief This struct holds data that represents a single test case for LMS testing. This data is
+ *        passed between libacvp and the crypto module.
+ */
+typedef struct acvp_lms_tc_t {
+    unsigned int tc_id;    /**< Test case id */
+    unsigned int tg_id; /**< Test group id; needed by sigver */
+
+    ACVP_CIPHER cipher;
+    ACVP_LMS_TESTTYPE type;
+
+    ACVP_LMS_MODE lms_mode;
+    ACVP_LMOTS_MODE lmots_mode;
+
+    unsigned char *pub_key;
+    int pub_key_len;
+
+    /* Keygen values */
+    unsigned char *i;
+    unsigned char *seed;
+    int i_len;
+    int seed_len;
+
+    /* Signature values */
+    unsigned char *msg;
+    unsigned char *sig;
+    int msg_len;
+    int sig_len;
+    ACVP_TEST_DISPOSITION ver_disposition;
+
+} ACVP_LMS_TC;
+
 /**
  * @struct ACVP_TEST_CASE
  * @brief This is the abstracted test case representation used for passing test case data to/from
@@ -2380,6 +2481,7 @@ typedef struct acvp_test_case_t {
         ACVP_KDA_HKDF_TC *kda_hkdf;
         ACVP_KTS_IFC_TC *kts_ifc;
         ACVP_SAFE_PRIMES_TC *safe_primes;
+        ACVP_LMS_TC *lms;
     } tc; /**< the union abstracting the test case for passing to the user application */
 } ACVP_TEST_CASE;
 
@@ -3951,7 +4053,64 @@ ACVP_RESULT acvp_cap_safe_primes_set_parm(ACVP_CTX *ctx,
                                           ACVP_SAFE_PRIMES_MODE mode);
 
 
+/**
+ * @brief acvp_cap_lms_enable() should be used to enable LMS capabilities. Specific modes and
+ *        parameters can use acvp_cap_lms_set_parm.
+ *
+ *        When the application enables a crypto capability, such as LMS, it also needs to
+ *        specify a callback function that will be used by libacvp when that crypto capability is
+ *        needed during a test session.
+ *
+ * @param ctx Pointer to ACVP_CTX that was previously created by calling acvp_create_test_session.
+ * @param cipher ACVP_CIPHER enum value identifying the crypto capability.
+ * @param crypto_handler Address of function implemented by application that
+ *        is invoked by libacvp when the crypto capability is needed during a test session. This
+ *        crypto_handler function is expected to return 0 on success and 1 for failure.
+ *
+ * @return ACVP_RESULT
+ */
+ACVP_RESULT acvp_cap_lms_enable(ACVP_CTX *ctx,
+                                ACVP_CIPHER cipher,
+                                int (*crypto_handler)(ACVP_TEST_CASE *test_case));
 
+/**
+ * @brief acvp_cap_lms_set_parm() allows an application to specify operational
+ *        parameters to be used for a given LMS alg during a test session with the ACVP
+ *        server. This function should be called to enable crypto capabilities for LMS
+ *        capabilities that will be tested by the ACVP server. This includes KEYGEN and KEYVER.
+ *
+ *        This function may be called multiple times to specify more than one crypto parameter
+ *        value for the LMS algorithm. The ACVP_CIPHER value passed to this function should
+ *        already have been setup by invoking acvp_cap_lms_enable().
+ *
+ * @param ctx Pointer to ACVP_CTX that was previously created by calling acvp_create_test_session.
+ * @param cipher ACVP_CIPHER enum value identifying the crypto capability.
+ * @param param ACVP_LMS_PARAM enum value identifying the algorithm parameter that is being
+ *        specified.
+ * @param value the value corresponding to the parameter being set, at present only generation mode
+ *        is supported.
+ *
+ * @return ACVP_RESULT
+ */
+ACVP_RESULT acvp_cap_lms_set_parm(ACVP_CTX *ctx,
+                                  ACVP_CIPHER cipher,
+                                  ACVP_LMS_PARAM param, int value);
+
+/**
+ * @brief acvp_cap_lms_set_mode_compatability pair allows an application to specify specific compatible pairs
+ * of LMS and LMOTS modes, in the case where a IuT does not support an LMS or LMOTS mode universally. 
+ *
+ * @param ctx Pointer to ACVP_CTX that was previously created by calling acvp_create_test_session.
+ * @param cipher ACVP_CIPHER enum value identifying the crypto capability.
+ * @param lms_mode ACVP_LMS_MODE for the LMS mode of the pair
+ * @param lmots_mode ACVP_LMOTS_MODE for the LMOTS mode of the pair
+ *
+ * @return ACVP_RESULT 
+ */
+ACVP_RESULT acvp_cap_lms_set_mode_compatability_pair(ACVP_CTX *ctx,
+                                                     ACVP_CIPHER cipher,
+                                                     ACVP_LMS_MODE lms_mode,
+                                                     ACVP_LMOTS_MODE lmots_mode);
 /**
  * @brief acvp_enable_prereq_cap() allows an application to specify a prerequisite for a cipher
  *        capability that was previously registered.
@@ -4410,6 +4569,7 @@ ACVP_SUB_DSA acvp_get_dsa_alg(ACVP_CIPHER cipher);
 ACVP_SUB_KDF acvp_get_kdf_alg(ACVP_CIPHER cipher);
 ACVP_SUB_DRBG acvp_get_drbg_alg(ACVP_CIPHER cipher);
 ACVP_SUB_KAS acvp_get_kas_alg(ACVP_CIPHER cipher);
+ACVP_SUB_LMS acvp_get_lms_alg(ACVP_CIPHER cipher);
 
 /** @} */
 /** @internal ALL APIS SHOULD BE ADDED ABOVE THESE BLOCKS */

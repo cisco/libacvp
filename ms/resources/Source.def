@@ -77,6 +77,9 @@ EXPORTS
   acvp_cap_kdf_tls12_set_parm
   acvp_cap_kdf_tls13_enable
   acvp_cap_kdf_tls13_set_parm
+  acvp_cap_lms_enable
+  acvp_cap_lms_set_parm
+  acvp_cap_lms_set_mode_compatability_pair
   acvp_cap_set_prereq
   acvp_create_test_session
   acvp_free_test_session

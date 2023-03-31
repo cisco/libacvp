@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Cisco Systems, Inc.
+ * Copyright (c) 2023, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -53,6 +53,9 @@ static int enable_kas_ifc(ACVP_CTX *ctx);
 static int enable_kda(ACVP_CTX *ctx);
 static int enable_kts_ifc(ACVP_CTX *ctx);
 static int enable_kdf(ACVP_CTX *ctx);
+#endif
+#ifdef ACVPAPP_LMS_SUPPORT
+static int enable_lms(ACVP_CTX *ctx);
 #endif
 
 const char *server;
@@ -373,6 +376,9 @@ int main(int argc, char **argv) {
         if (cfg.kas_ffc) { if (enable_kas_ffc(ctx)) goto end; }
         if (cfg.safe_primes) { if (enable_safe_primes(ctx)) goto end; }
 #endif
+#endif
+#ifdef ACVPAPP_LMS_SUPPORT
+        if (cfg.lms) { if (enable_lms(ctx)) goto end; }
 #endif
     }
 
@@ -3408,6 +3414,260 @@ end:
 }
 #endif
 
+#ifdef ACVPAPP_LMS_SUPPORT
+static int enable_lms(ACVP_CTX *ctx) {
+    ACVP_RESULT rv = ACVP_SUCCESS;
+
+#if 0 /* An example of how an LMS and LMOTS mode can be registered as a compatible pair exclusively */
+    rv = acvp_cap_lms_set_mode_compatability_pair(ctx, ACVP_LMS_SIGVER, ACVP_LMS_MODE_SHA256_M24_H5, ACVP_LMOTS_MODE_SHA256_N24_W1);
+    CHECK_ENABLE_CAP_RV(rv);
+#endif
+
+    rv = acvp_cap_lms_enable(ctx, ACVP_LMS_SIGVER, &app_lms_handler);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_SIGVER, ACVP_LMS_PARAM_LMS_MODE, ACVP_LMS_MODE_SHA256_M24_H5);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_SIGVER, ACVP_LMS_PARAM_LMS_MODE, ACVP_LMS_MODE_SHA256_M24_H10);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_SIGVER, ACVP_LMS_PARAM_LMS_MODE, ACVP_LMS_MODE_SHA256_M24_H15);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_SIGVER, ACVP_LMS_PARAM_LMS_MODE, ACVP_LMS_MODE_SHA256_M24_H20);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_SIGVER, ACVP_LMS_PARAM_LMS_MODE, ACVP_LMS_MODE_SHA256_M24_H25);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_SIGVER, ACVP_LMS_PARAM_LMS_MODE, ACVP_LMS_MODE_SHA256_M32_H5);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_SIGVER, ACVP_LMS_PARAM_LMS_MODE, ACVP_LMS_MODE_SHA256_M32_H10);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_SIGVER, ACVP_LMS_PARAM_LMS_MODE, ACVP_LMS_MODE_SHA256_M32_H15);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_SIGVER, ACVP_LMS_PARAM_LMS_MODE, ACVP_LMS_MODE_SHA256_M32_H20);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_SIGVER, ACVP_LMS_PARAM_LMS_MODE, ACVP_LMS_MODE_SHA256_M32_H25);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_SIGVER, ACVP_LMS_PARAM_LMOTS_MODE, ACVP_LMOTS_MODE_SHA256_N24_W1);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_SIGVER, ACVP_LMS_PARAM_LMOTS_MODE, ACVP_LMOTS_MODE_SHA256_N24_W2);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_SIGVER, ACVP_LMS_PARAM_LMOTS_MODE, ACVP_LMOTS_MODE_SHA256_N24_W4);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_SIGVER, ACVP_LMS_PARAM_LMOTS_MODE, ACVP_LMOTS_MODE_SHA256_N24_W8);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_SIGVER, ACVP_LMS_PARAM_LMOTS_MODE, ACVP_LMOTS_MODE_SHA256_N32_W1);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_SIGVER, ACVP_LMS_PARAM_LMOTS_MODE, ACVP_LMOTS_MODE_SHA256_N32_W2);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_SIGVER, ACVP_LMS_PARAM_LMOTS_MODE, ACVP_LMOTS_MODE_SHA256_N32_W4);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_SIGVER, ACVP_LMS_PARAM_LMOTS_MODE, ACVP_LMOTS_MODE_SHA256_N32_W8);
+    CHECK_ENABLE_CAP_RV(rv);
+
+#if 0
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_SIGVER, ACVP_LMS_PARAM_LMS_MODE, ACVP_LMS_MODE_SHAKE_M24_H5);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_SIGVER, ACVP_LMS_PARAM_LMS_MODE, ACVP_LMS_MODE_SHAKE_M24_H10);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_SIGVER, ACVP_LMS_PARAM_LMS_MODE, ACVP_LMS_MODE_SHAKE_M24_H15);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_SIGVER, ACVP_LMS_PARAM_LMS_MODE, ACVP_LMS_MODE_SHAKE_M24_H20);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_SIGVER, ACVP_LMS_PARAM_LMS_MODE, ACVP_LMS_MODE_SHAKE_M24_H25);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_SIGVER, ACVP_LMS_PARAM_LMS_MODE, ACVP_LMS_MODE_SHAKE_M32_H5);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_SIGVER, ACVP_LMS_PARAM_LMS_MODE, ACVP_LMS_MODE_SHAKE_M32_H10);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_SIGVER, ACVP_LMS_PARAM_LMS_MODE, ACVP_LMS_MODE_SHAKE_M32_H15);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_SIGVER, ACVP_LMS_PARAM_LMS_MODE, ACVP_LMS_MODE_SHAKE_M32_H20);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_SIGVER, ACVP_LMS_PARAM_LMS_MODE, ACVP_LMS_MODE_SHAKE_M32_H25);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_SIGVER, ACVP_LMS_PARAM_LMOTS_MODE, ACVP_LMOTS_MODE_SHAKE_N24_W1);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_SIGVER, ACVP_LMS_PARAM_LMOTS_MODE, ACVP_LMOTS_MODE_SHAKE_N24_W2);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_SIGVER, ACVP_LMS_PARAM_LMOTS_MODE, ACVP_LMOTS_MODE_SHAKE_N24_W4);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_SIGVER, ACVP_LMS_PARAM_LMOTS_MODE, ACVP_LMOTS_MODE_SHAKE_N24_W8);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_SIGVER, ACVP_LMS_PARAM_LMOTS_MODE, ACVP_LMOTS_MODE_SHAKE_N32_W1);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_SIGVER, ACVP_LMS_PARAM_LMOTS_MODE, ACVP_LMOTS_MODE_SHAKE_N32_W2);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_SIGVER, ACVP_LMS_PARAM_LMOTS_MODE, ACVP_LMOTS_MODE_SHAKE_N32_W4);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_SIGVER, ACVP_LMS_PARAM_LMOTS_MODE, ACVP_LMOTS_MODE_SHAKE_N32_W8);
+    CHECK_ENABLE_CAP_RV(rv);
+#endif
+
+    rv = acvp_cap_lms_enable(ctx, ACVP_LMS_KEYGEN, &app_lms_handler);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_KEYGEN, ACVP_LMS_PARAM_LMS_MODE, ACVP_LMS_MODE_SHA256_M24_H5);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_KEYGEN, ACVP_LMS_PARAM_LMS_MODE, ACVP_LMS_MODE_SHA256_M24_H10);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_KEYGEN, ACVP_LMS_PARAM_LMS_MODE, ACVP_LMS_MODE_SHA256_M24_H15);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_KEYGEN, ACVP_LMS_PARAM_LMS_MODE, ACVP_LMS_MODE_SHA256_M24_H20);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_KEYGEN, ACVP_LMS_PARAM_LMS_MODE, ACVP_LMS_MODE_SHA256_M24_H25);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_KEYGEN, ACVP_LMS_PARAM_LMS_MODE, ACVP_LMS_MODE_SHA256_M32_H5);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_KEYGEN, ACVP_LMS_PARAM_LMS_MODE, ACVP_LMS_MODE_SHA256_M32_H10);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_KEYGEN, ACVP_LMS_PARAM_LMS_MODE, ACVP_LMS_MODE_SHA256_M32_H15);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_KEYGEN, ACVP_LMS_PARAM_LMS_MODE, ACVP_LMS_MODE_SHA256_M32_H20);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_KEYGEN, ACVP_LMS_PARAM_LMS_MODE, ACVP_LMS_MODE_SHA256_M32_H25);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_KEYGEN, ACVP_LMS_PARAM_LMOTS_MODE, ACVP_LMOTS_MODE_SHA256_N24_W1);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_KEYGEN, ACVP_LMS_PARAM_LMOTS_MODE, ACVP_LMOTS_MODE_SHA256_N24_W2);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_KEYGEN, ACVP_LMS_PARAM_LMOTS_MODE, ACVP_LMOTS_MODE_SHA256_N24_W4);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_KEYGEN, ACVP_LMS_PARAM_LMOTS_MODE, ACVP_LMOTS_MODE_SHA256_N24_W8);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_KEYGEN, ACVP_LMS_PARAM_LMOTS_MODE, ACVP_LMOTS_MODE_SHA256_N32_W1);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_KEYGEN, ACVP_LMS_PARAM_LMOTS_MODE, ACVP_LMOTS_MODE_SHA256_N32_W2);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_KEYGEN, ACVP_LMS_PARAM_LMOTS_MODE, ACVP_LMOTS_MODE_SHA256_N32_W4);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_KEYGEN, ACVP_LMS_PARAM_LMOTS_MODE, ACVP_LMOTS_MODE_SHA256_N32_W8);
+    CHECK_ENABLE_CAP_RV(rv);
+
+#if 0
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_KEYGEN, ACVP_LMS_PARAM_LMS_MODE, ACVP_LMS_MODE_SHAKE_M24_H5);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_KEYGEN, ACVP_LMS_PARAM_LMS_MODE, ACVP_LMS_MODE_SHAKE_M24_H10);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_KEYGEN, ACVP_LMS_PARAM_LMS_MODE, ACVP_LMS_MODE_SHAKE_M24_H15);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_KEYGEN, ACVP_LMS_PARAM_LMS_MODE, ACVP_LMS_MODE_SHAKE_M24_H20);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_KEYGEN, ACVP_LMS_PARAM_LMS_MODE, ACVP_LMS_MODE_SHAKE_M24_H25);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_KEYGEN, ACVP_LMS_PARAM_LMS_MODE, ACVP_LMS_MODE_SHAKE_M32_H5);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_KEYGEN, ACVP_LMS_PARAM_LMS_MODE, ACVP_LMS_MODE_SHAKE_M32_H10);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_KEYGEN, ACVP_LMS_PARAM_LMS_MODE, ACVP_LMS_MODE_SHAKE_M32_H15);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_KEYGEN, ACVP_LMS_PARAM_LMS_MODE, ACVP_LMS_MODE_SHAKE_M32_H20);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_KEYGEN, ACVP_LMS_PARAM_LMS_MODE, ACVP_LMS_MODE_SHAKE_M32_H25);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_KEYGEN, ACVP_LMS_PARAM_LMOTS_MODE, ACVP_LMOTS_MODE_SHAKE_N24_W1);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_KEYGEN, ACVP_LMS_PARAM_LMOTS_MODE, ACVP_LMOTS_MODE_SHAKE_N24_W2);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_KEYGEN, ACVP_LMS_PARAM_LMOTS_MODE, ACVP_LMOTS_MODE_SHAKE_N24_W4);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_KEYGEN, ACVP_LMS_PARAM_LMOTS_MODE, ACVP_LMOTS_MODE_SHAKE_N24_W8);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_KEYGEN, ACVP_LMS_PARAM_LMOTS_MODE, ACVP_LMOTS_MODE_SHAKE_N32_W1);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_KEYGEN, ACVP_LMS_PARAM_LMOTS_MODE, ACVP_LMOTS_MODE_SHAKE_N32_W2);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_KEYGEN, ACVP_LMS_PARAM_LMOTS_MODE, ACVP_LMOTS_MODE_SHAKE_N32_W4);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_KEYGEN, ACVP_LMS_PARAM_LMOTS_MODE, ACVP_LMOTS_MODE_SHAKE_N32_W8);
+    CHECK_ENABLE_CAP_RV(rv);
+#endif
+
+    rv = acvp_cap_lms_enable(ctx, ACVP_LMS_SIGGEN, &app_lms_handler);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_SIGGEN, ACVP_LMS_PARAM_LMS_MODE, ACVP_LMS_MODE_SHA256_M24_H5);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_SIGGEN, ACVP_LMS_PARAM_LMS_MODE, ACVP_LMS_MODE_SHA256_M24_H10);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_SIGGEN, ACVP_LMS_PARAM_LMS_MODE, ACVP_LMS_MODE_SHA256_M24_H15);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_SIGGEN, ACVP_LMS_PARAM_LMS_MODE, ACVP_LMS_MODE_SHA256_M24_H20);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_SIGGEN, ACVP_LMS_PARAM_LMS_MODE, ACVP_LMS_MODE_SHA256_M24_H25);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_SIGGEN, ACVP_LMS_PARAM_LMS_MODE, ACVP_LMS_MODE_SHA256_M32_H5);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_SIGGEN, ACVP_LMS_PARAM_LMS_MODE, ACVP_LMS_MODE_SHA256_M32_H10);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_SIGGEN, ACVP_LMS_PARAM_LMS_MODE, ACVP_LMS_MODE_SHA256_M32_H15);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_SIGGEN, ACVP_LMS_PARAM_LMS_MODE, ACVP_LMS_MODE_SHA256_M32_H20);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_SIGGEN, ACVP_LMS_PARAM_LMS_MODE, ACVP_LMS_MODE_SHA256_M32_H25);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_SIGGEN, ACVP_LMS_PARAM_LMOTS_MODE, ACVP_LMOTS_MODE_SHA256_N24_W1);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_SIGGEN, ACVP_LMS_PARAM_LMOTS_MODE, ACVP_LMOTS_MODE_SHA256_N24_W2);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_SIGGEN, ACVP_LMS_PARAM_LMOTS_MODE, ACVP_LMOTS_MODE_SHA256_N24_W4);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_SIGGEN, ACVP_LMS_PARAM_LMOTS_MODE, ACVP_LMOTS_MODE_SHA256_N24_W8);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_SIGGEN, ACVP_LMS_PARAM_LMOTS_MODE, ACVP_LMOTS_MODE_SHA256_N32_W1);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_SIGGEN, ACVP_LMS_PARAM_LMOTS_MODE, ACVP_LMOTS_MODE_SHA256_N32_W2);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_SIGGEN, ACVP_LMS_PARAM_LMOTS_MODE, ACVP_LMOTS_MODE_SHA256_N32_W4);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_SIGGEN, ACVP_LMS_PARAM_LMOTS_MODE, ACVP_LMOTS_MODE_SHA256_N32_W8);
+    CHECK_ENABLE_CAP_RV(rv);
+
+#if 0
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_SIGGEN, ACVP_LMS_PARAM_LMS_MODE, ACVP_LMS_MODE_SHAKE_M24_H5);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_SIGGEN, ACVP_LMS_PARAM_LMS_MODE, ACVP_LMS_MODE_SHAKE_M24_H10);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_SIGGEN, ACVP_LMS_PARAM_LMS_MODE, ACVP_LMS_MODE_SHAKE_M24_H15);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_SIGGEN, ACVP_LMS_PARAM_LMS_MODE, ACVP_LMS_MODE_SHAKE_M24_H20);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_SIGGEN, ACVP_LMS_PARAM_LMS_MODE, ACVP_LMS_MODE_SHAKE_M24_H25);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_SIGGEN, ACVP_LMS_PARAM_LMS_MODE, ACVP_LMS_MODE_SHAKE_M32_H5);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_SIGGEN, ACVP_LMS_PARAM_LMS_MODE, ACVP_LMS_MODE_SHAKE_M32_H10);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_SIGGEN, ACVP_LMS_PARAM_LMS_MODE, ACVP_LMS_MODE_SHAKE_M32_H15);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_SIGGEN, ACVP_LMS_PARAM_LMS_MODE, ACVP_LMS_MODE_SHAKE_M32_H20);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_SIGGEN, ACVP_LMS_PARAM_LMS_MODE, ACVP_LMS_MODE_SHAKE_M32_H25);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_SIGGEN, ACVP_LMS_PARAM_LMOTS_MODE, ACVP_LMOTS_MODE_SHAKE_N24_W1);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_SIGGEN, ACVP_LMS_PARAM_LMOTS_MODE, ACVP_LMOTS_MODE_SHAKE_N24_W2);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_SIGGEN, ACVP_LMS_PARAM_LMOTS_MODE, ACVP_LMOTS_MODE_SHAKE_N24_W4);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_SIGGEN, ACVP_LMS_PARAM_LMOTS_MODE, ACVP_LMOTS_MODE_SHAKE_N24_W8);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_SIGGEN, ACVP_LMS_PARAM_LMOTS_MODE, ACVP_LMOTS_MODE_SHAKE_N32_W1);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_SIGGEN, ACVP_LMS_PARAM_LMOTS_MODE, ACVP_LMOTS_MODE_SHAKE_N32_W2);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_SIGGEN, ACVP_LMS_PARAM_LMOTS_MODE, ACVP_LMOTS_MODE_SHAKE_N32_W4);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_SIGGEN, ACVP_LMS_PARAM_LMOTS_MODE, ACVP_LMOTS_MODE_SHAKE_N32_W8);
+    CHECK_ENABLE_CAP_RV(rv);
+#endif
+
+end:
+    return rv;
+}
+#endif
+
 #ifdef ACVP_APP_LIB_WRAPPER
 ACVP_RESULT acvp_app_run_vector_test_file(const char *path, const char *output, ACVP_LOG_LVL lvl, ACVP_RESULT (*logger)(char *)) {
     ACVP_RESULT rv = ACVP_SUCCESS;
@@ -3444,6 +3704,7 @@ ACVP_RESULT acvp_app_run_vector_test_file(const char *path, const char *output, 
     if (enable_kas_ffc(ctx)) goto end;
     if (enable_kda(ctx)) goto end;
     if (enable_safe_primes(ctx)) goto end;
+    if (enable_lms(ctx)) goto end;
 
     rv = acvp_run_vectors_from_file(ctx, path, output);
 

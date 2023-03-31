@@ -1,6 +1,6 @@
 /** @file */
 /*
- * Copyright (c) 2021, Cisco Systems, Inc.
+ * Copyright (c) 2023, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -169,7 +169,10 @@ ACVP_ALG_HANDLER alg_tbl[ACVP_ALG_MAX] = {
     { ACVP_KDA_HKDF,          &acvp_kda_hkdf_kat_handler,        ACVP_ALG_KDA_ALG_STR,       ACVP_ALG_KDA_HKDF, ACVP_REV_KDA_HKDF, {ACVP_SUB_KDA_HKDF}},
     { ACVP_KTS_IFC,           &acvp_kts_ifc_kat_handler,         ACVP_ALG_KTS_IFC,           ACVP_ALG_KTS_IFC_COMP, ACVP_REV_KTS_IFC, {ACVP_SUB_KTS_IFC}},
     { ACVP_SAFE_PRIMES_KEYGEN, &acvp_safe_primes_kat_handler,    ACVP_ALG_SAFE_PRIMES_STR,   ACVP_ALG_SAFE_PRIMES_KEYGEN, ACVP_REV_SAFE_PRIMES, {ACVP_SUB_SAFE_PRIMES_KEYGEN}},
-    { ACVP_SAFE_PRIMES_KEYVER, &acvp_safe_primes_kat_handler,    ACVP_ALG_SAFE_PRIMES_STR,   ACVP_ALG_SAFE_PRIMES_KEYVER, ACVP_REV_SAFE_PRIMES, {ACVP_SUB_SAFE_PRIMES_KEYVER}}
+    { ACVP_SAFE_PRIMES_KEYVER, &acvp_safe_primes_kat_handler,    ACVP_ALG_SAFE_PRIMES_STR,   ACVP_ALG_SAFE_PRIMES_KEYVER, ACVP_REV_SAFE_PRIMES, {ACVP_SUB_SAFE_PRIMES_KEYVER}},
+    { ACVP_LMS_KEYGEN,        &acvp_lms_kat_handler,             ACVP_ALG_LMS,               ACVP_ALG_LMS_KEYGEN, ACVP_REV_LMS, {ACVP_SUB_LMS_KEYGEN}},
+    { ACVP_LMS_SIGGEN,        &acvp_lms_kat_handler,             ACVP_ALG_LMS,               ACVP_ALG_LMS_SIGGEN, ACVP_REV_LMS, {ACVP_SUB_LMS_SIGGEN}},
+    { ACVP_LMS_SIGVER,        &acvp_lms_kat_handler,             ACVP_ALG_LMS,               ACVP_ALG_LMS_SIGVER, ACVP_REV_LMS, {ACVP_SUB_LMS_SIGVER}}
 };
 
 /*
@@ -583,6 +586,19 @@ static void acvp_cap_free_kts_ifc_schemes(ACVP_CAPS_LIST *cap_entry) {
     }
     free(cap_entry->cap.kts_ifc_cap->schemes);
 }
+
+static void acvp_cap_free_lms(ACVP_LMS_CAP *cap) {
+    ACVP_LMS_SPECIFIC_LIST *prev = NULL, *curr = cap->specific_list;
+
+    acvp_cap_free_pl(cap->lms_modes);
+    acvp_cap_free_pl(cap->lmots_modes);
+    while (curr) {
+        prev = curr;
+        curr = curr->next;
+        free(prev);
+    }
+    free(cap);
+}
 /*
  * The application will invoke this to free the ACVP context
  * when the test session is finished.
@@ -834,6 +850,15 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx) {
                 }
                 free(cap_entry->cap.safe_primes_keyver_cap->mode);
                 free(cap_entry->cap.safe_primes_keyver_cap);
+                break;
+            case ACVP_LMS_KEYGEN_TYPE:
+                acvp_cap_free_lms(cap_entry->cap.lms_keygen_cap);
+                break;
+            case ACVP_LMS_SIGGEN_TYPE:
+                acvp_cap_free_lms(cap_entry->cap.lms_siggen_cap);
+                break;
+            case ACVP_LMS_SIGVER_TYPE:
+                acvp_cap_free_lms(cap_entry->cap.lms_sigver_cap);
                 break;
             case ACVP_KDF135_TPM_TYPE:
             default:
@@ -3037,6 +3062,8 @@ static ACVP_RESULT acvp_dispatch_vector_set(ACVP_CTX *ctx, JSON_Object *obj) {
             }
         }
     }
+
+    ACVP_LOG_ERR("Unsupported algorithm or mode requested");
     return ACVP_UNSUPPORTED_OP;
 }
 
@@ -3966,4 +3993,12 @@ ACVP_SUB_KAS acvp_get_kas_alg(ACVP_CIPHER cipher)
         return 0;
     }
     return (alg_tbl[cipher-1].alg.kas);
+}
+
+ACVP_SUB_LMS acvp_get_lms_alg(ACVP_CIPHER cipher)
+{
+    if ((cipher == ACVP_CIPHER_START) || (cipher >= ACVP_CIPHER_END)) {
+        return 0;
+    }
+    return (alg_tbl[cipher-1].alg.lms);
 }

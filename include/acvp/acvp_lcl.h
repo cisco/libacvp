@@ -200,6 +200,7 @@
 #define ACVP_REV_SAFE_PRIMES         ACVP_REV_STR_DEFAULT
 #define ACVP_REV_KDF_TLS12           ACVP_REV_STR_RFC7627
 #define ACVP_REV_KDF_TLS13           ACVP_REV_STR_RFC8446
+#define ACVP_REV_LMS                 ACVP_REV_STR_DEFAULT
 
 
 /********************************************************
@@ -332,6 +333,11 @@
 #define ACVP_ALG_SAFE_PRIMES_STR    "safePrimes"
 #define ACVP_ALG_SAFE_PRIMES_KEYGEN "keyGen"
 #define ACVP_ALG_SAFE_PRIMES_KEYVER "keyVer"
+
+#define ACVP_ALG_LMS "LMS"
+#define ACVP_ALG_LMS_KEYGEN "keyGen"
+#define ACVP_ALG_LMS_SIGGEN "sigGen"
+#define ACVP_ALG_LMS_SIGVER "sigVer"
 
 #define ACVP_ECDSA_EXTRA_BITS_STR "extra bits"
 #define ACVP_ECDSA_EXTRA_BITS_STR_LEN 10
@@ -856,6 +862,7 @@
 #define ACVP_KDA_Z_STR_MAX (ACVP_KDA_Z_BIT_MAX >> 2)
 #define ACVP_KDA_Z_BYTE_MAX (ACVP_KDA_Z_BIT_MAX >> 3)
 
+#define ACVP_LMS_TMP_MAX 65336 //arbitrary
 
 #define ACVP_CURL_BUF_MAX       (1024 * 1024 * 64) /**< 64 MB */
 #define ACVP_RETRY_TIME_MIN     5 /* seconds */
@@ -931,6 +938,7 @@ struct acvp_alg_handler_t {
         ACVP_SUB_HMAC     hmac;
         ACVP_SUB_HASH     hash;
         ACVP_SUB_KAS      kas;
+        ACVP_SUB_LMS      lms;
     } alg;
 };
 
@@ -963,6 +971,12 @@ struct acvp_function_info {
 struct acvp_alt_revision_info {
     ACVP_REVISION revision;
     const char *name;
+};
+
+/* A generic struct that can match an enum with a string */
+struct acvp_enum_string_pair {
+    int enum_value;
+    const char *string;
 };
 
 /*
@@ -1009,7 +1023,10 @@ typedef enum acvp_capability_type {
     ACVP_KDA_HKDF_TYPE,
     ACVP_KTS_IFC_TYPE,
     ACVP_SAFE_PRIMES_KEYGEN_TYPE,
-    ACVP_SAFE_PRIMES_KEYVER_TYPE
+    ACVP_SAFE_PRIMES_KEYVER_TYPE,
+    ACVP_LMS_KEYGEN_TYPE,
+    ACVP_LMS_SIGGEN_TYPE,
+    ACVP_LMS_SIGVER_TYPE
 } ACVP_CAP_TYPE;
 
 /*
@@ -1520,6 +1537,19 @@ typedef struct acvp_kts_ifc_capability_t {
     ACVP_SL_LIST *modulo;
 } ACVP_KTS_IFC_CAP;
 
+typedef struct acvp_lms_specific_capability_list {
+    ACVP_LMS_MODE lms_mode;
+    ACVP_LMOTS_MODE lmots_mode;
+    struct acvp_lms_specific_capability_list *next;
+} ACVP_LMS_SPECIFIC_LIST;
+
+typedef struct acvp_lms_capability_t {
+    ACVP_CIPHER cipher;
+    ACVP_PARAM_LIST *lms_modes;
+    ACVP_PARAM_LIST *lmots_modes;
+    ACVP_LMS_SPECIFIC_LIST *specific_list;
+} ACVP_LMS_CAP;
+
 typedef struct acvp_caps_list_t {
     ACVP_CIPHER cipher;
     ACVP_CAP_TYPE cap_type;
@@ -1561,6 +1591,9 @@ typedef struct acvp_caps_list_t {
         ACVP_KTS_IFC_CAP *kts_ifc_cap;
         ACVP_SAFE_PRIMES_CAP *safe_primes_keygen_cap;
         ACVP_SAFE_PRIMES_CAP *safe_primes_keyver_cap;
+        ACVP_LMS_CAP *lms_keygen_cap;
+        ACVP_LMS_CAP *lms_siggen_cap;
+        ACVP_LMS_CAP *lms_sigver_cap;
     } cap;
 
     int (*crypto_handler)(ACVP_TEST_CASE *test_case);
@@ -1884,6 +1917,8 @@ ACVP_RESULT acvp_kts_ifc_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
 ACVP_RESULT acvp_safe_primes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
+ACVP_RESULT acvp_lms_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
+
 /* ACVP build registration functions used internally */
 ACVP_RESULT acvp_build_registration_json(ACVP_CTX *ctx, JSON_Value **reg);
 
@@ -1980,6 +2015,10 @@ int acvp_lookup_str_list(ACVP_STRING_LIST **list, const char *string);
 int acvp_lookup_param_list(ACVP_PARAM_LIST *list, int value);
 const char* acvp_lookup_aux_function_alg_str(ACVP_CIPHER alg);
 ACVP_CIPHER acvp_lookup_aux_function_alg_tbl(const char *str);
+ACVP_LMS_MODE acvp_lookup_lms_mode(const char *str);
+const char *acvp_lookup_lms_mode_str(ACVP_LMS_MODE mode);
+ACVP_LMOTS_MODE acvp_lookup_lmots_mode(const char *str);
+const char *acvp_lookup_lmots_mode_str(ACVP_LMOTS_MODE mode);
 int acvp_is_domain_already_set(ACVP_JSON_DOMAIN_OBJ *domain);
 
 /* These functions are used for KDF108, but twostep uses KDF108 so we share them */

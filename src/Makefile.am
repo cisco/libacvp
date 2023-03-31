@@ -40,7 +40,8 @@ libacvp_la_SOURCES =  acvp.c \
                     acvp_kda.c \
                     acvp_kts_ifc.c \
                     acvp_safe_primes.c \
-                    acvp_ecdsa.c
+                    acvp_ecdsa.c \
+                    acvp_lms.c
 
 libacvp_la_LIBADD = $(SAFEC_LDFLAGS) $(LIBCURL_LDFLAGS)
 libacvp_includedir=$(includedir)/acvp

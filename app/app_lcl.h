@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Cisco Systems, Inc.
+ * Copyright (c) 2023, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -80,6 +80,7 @@ typedef struct app_config {
     int kas_ecc; int kas_ffc; int kas_ifc; int kda; int kts_ifc;
     int kdf;
     int safe_primes;
+    int lms;
     int testall; /* So the app can check whether the user indicated to test all possible algorithms */
 } APP_CONFIG;
 
@@ -141,6 +142,7 @@ int app_rsa_sigprim_handler(ACVP_TEST_CASE *test_case);
 int app_ecdsa_handler(ACVP_TEST_CASE *test_case);
 int app_drbg_handler(ACVP_TEST_CASE *test_case);
 int app_safe_primes_handler(ACVP_TEST_CASE *test_case);
+int app_lms_handler(ACVP_TEST_CASE *test_case);
 
 #if OPENSSL_VERSION_NUMBER >= 0x30000000L
 int app_aes_handler_gmac(ACVP_TEST_CASE *test_case);
