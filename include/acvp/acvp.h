@@ -4087,7 +4087,7 @@ ACVP_RESULT acvp_cap_lms_enable(ACVP_CTX *ctx,
  * @param cipher ACVP_CIPHER enum value identifying the crypto capability.
  * @param param ACVP_LMS_PARAM enum value identifying the algorithm parameter that is being
  *        specified.
- * @param mode the value corresponding to the parameter being set, at present only generation mode
+ * @param value the value corresponding to the parameter being set, at present only generation mode
  *        is supported.
  *
  * @return ACVP_RESULT

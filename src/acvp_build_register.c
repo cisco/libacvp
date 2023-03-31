@@ -4539,8 +4539,8 @@ static ACVP_RESULT acvp_build_safe_primes_register_cap(ACVP_CTX *ctx,
 }
 
 static ACVP_RESULT acvp_build_lms_register_cap(ACVP_CTX *ctx,
-                                                       JSON_Object *cap_obj,
-                                                       ACVP_CAPS_LIST *cap_entry) {
+                                               JSON_Object *cap_obj,
+                                               ACVP_CAPS_LIST *cap_entry) {
     JSON_Array *temp_arr = NULL;
     JSON_Object *temp_obj = NULL;
     JSON_Value *temp_val = NULL;
@@ -4563,7 +4563,7 @@ static ACVP_RESULT acvp_build_lms_register_cap(ACVP_CTX *ctx,
     json_object_set_string(cap_obj, "mode", mode);
 
     revision = acvp_lookup_cipher_revision(cap_entry->cipher);
-    if (revision == NULL) return ACVP_INVALID_ARG;
+    if (revision == NULL) { return ACVP_INVALID_ARG; }
     json_object_set_string(cap_obj, "revision", revision);
 
     if (cap_entry->prereq_vals) {
@@ -4602,7 +4602,7 @@ static ACVP_RESULT acvp_build_lms_register_cap(ACVP_CTX *ctx,
         list = lms_cap->lms_modes;
         while (list) {
             lms_str = acvp_lookup_lms_mode_str(list->param);
-            if (!lms_str) goto err;
+            if (!lms_str) { goto err; }
             json_array_append_string(temp_arr, lms_str);
             list = list->next;
         }
@@ -4614,7 +4614,7 @@ static ACVP_RESULT acvp_build_lms_register_cap(ACVP_CTX *ctx,
         list = lms_cap->lmots_modes;
         while (list) {
             lms_str = acvp_lookup_lmots_mode_str(list->param);
-            if (!lms_str) goto err;
+            if (!lms_str) { goto err; }
             json_array_append_string(temp_arr, lms_str);
             list = list->next;
         }

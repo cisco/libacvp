@@ -659,7 +659,7 @@ static int lms_mode_tbl_len = sizeof(lms_mode_tbl) / sizeof(struct acvp_enum_str
 ACVP_LMS_MODE acvp_lookup_lms_mode(const char *str) {
     int diff = 1, i = 0;
     for (i = 0; i < lms_mode_tbl_len; i++) {
-    strcmp_s(lms_mode_tbl[i].string, strnlen_s(lms_mode_tbl[i].string, ACVP_ALG_NAME_MAX), str, &diff);
+        strcmp_s(lms_mode_tbl[i].string, strnlen_s(lms_mode_tbl[i].string, ACVP_ALG_NAME_MAX), str, &diff);
         if (!diff) {
             return lms_mode_tbl[i].enum_value;
         }
@@ -701,7 +701,7 @@ static int lmots_mode_tbl_len = sizeof(lmots_mode_tbl) / sizeof(struct acvp_enum
 ACVP_LMOTS_MODE acvp_lookup_lmots_mode(const char *str) {
     int diff = 1, i = 0;
     for (i = 0; i < lmots_mode_tbl_len; i++) {
-    strcmp_s(lmots_mode_tbl[i].string, strnlen_s(lmots_mode_tbl[i].string, ACVP_ALG_NAME_MAX), str, &diff);
+        strcmp_s(lmots_mode_tbl[i].string, strnlen_s(lmots_mode_tbl[i].string, ACVP_ALG_NAME_MAX), str, &diff);
         if (!diff) {
             return lmots_mode_tbl[i].enum_value;
         }
