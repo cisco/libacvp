@@ -137,14 +137,14 @@ static ACVP_RESULT acvp_kas_ifc_ssc_val_output_tc(ACVP_KAS_IFC_TC *stc,
     if (stc->kas_role == ACVP_KAS_IFC_INITIATOR) {
         if (stc->iut_ct_z_len == stc->provided_ct_z_len) {
             memcmp_s(stc->iut_ct_z, stc->iut_ct_z_len, stc->provided_ct_z, stc->provided_ct_z_len, &diff);
-            rv += diff;
+            rv += abs(diff);
         } else {
             rv++;
         }
     } else if (stc->scheme != ACVP_KAS_IFC_KAS2) {
         if (stc->server_pt_z_len == stc->provided_pt_z_len) {
             memcmp_s(stc->server_pt_z, stc->server_pt_z_len, stc->provided_pt_z, stc->provided_pt_z_len, &diff);
-            rv += diff;
+            rv += abs(diff);
         } else {
             rv++;
         }
@@ -170,7 +170,7 @@ static ACVP_RESULT acvp_kas_ifc_ssc_val_output_tc(ACVP_KAS_IFC_TC *stc,
                             stc->iut_pt_z, stc->iut_pt_z_len);
             }
             memcmp_s(merge, len, stc->provided_kas2_z, stc->provided_kas2_z_len, &diff);
-            rv += diff;
+            rv += abs(diff);
         } else {
             rv++;
         }

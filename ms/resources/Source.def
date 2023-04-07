@@ -120,6 +120,7 @@ EXPORTS
   acvp_protocol_version
   acvp_mark_as_delete_only
   acvp_cancel_test_session
+  acvp_get_vector_set_count
   acvp_cap_kda_enable
   acvp_cap_kda_set_parm
   acvp_cap_kda_twostep_set_parm
@@ -144,3 +145,4 @@ EXPORTS
   acvp_get_kdf_alg
   acvp_get_drbg_alg
   acvp_get_kas_alg
+  acvp_get_kmac_alg
