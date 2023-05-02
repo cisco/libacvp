@@ -631,6 +631,8 @@ ACVP_CIPHER acvp_lookup_aux_function_alg_tbl(const char *str) {
     return 0;
 }
 
+#define ACVP_LMS_MODE_STR_MAX 64 /* arbitrary */
+
 static struct acvp_enum_string_pair lms_mode_tbl[] = {
     { ACVP_LMS_MODE_SHA256_M24_H5, "LMS_SHA256_M24_H5"},
     { ACVP_LMS_MODE_SHA256_M24_H10, "LMS_SHA256_M24_H10"},
@@ -659,7 +661,7 @@ static int lms_mode_tbl_len = sizeof(lms_mode_tbl) / sizeof(struct acvp_enum_str
 ACVP_LMS_MODE acvp_lookup_lms_mode(const char *str) {
     int diff = 1, i = 0;
     for (i = 0; i < lms_mode_tbl_len; i++) {
-        strcmp_s(lms_mode_tbl[i].string, strnlen_s(lms_mode_tbl[i].string, ACVP_ALG_NAME_MAX), str, &diff);
+        strcmp_s(lms_mode_tbl[i].string, strnlen_s(lms_mode_tbl[i].string, ACVP_LMS_MODE_STR_MAX), str, &diff);
         if (!diff) {
             return lms_mode_tbl[i].enum_value;
         }
@@ -701,7 +703,7 @@ static int lmots_mode_tbl_len = sizeof(lmots_mode_tbl) / sizeof(struct acvp_enum
 ACVP_LMOTS_MODE acvp_lookup_lmots_mode(const char *str) {
     int diff = 1, i = 0;
     for (i = 0; i < lmots_mode_tbl_len; i++) {
-        strcmp_s(lmots_mode_tbl[i].string, strnlen_s(lmots_mode_tbl[i].string, ACVP_ALG_NAME_MAX), str, &diff);
+        strcmp_s(lmots_mode_tbl[i].string, strnlen_s(lmots_mode_tbl[i].string, ACVP_LMS_MODE_STR_MAX), str, &diff);
         if (!diff) {
             return lmots_mode_tbl[i].enum_value;
         }

@@ -1,6 +1,6 @@
 /** @file */
 /*
- * Copyright (c) 2021, Cisco Systems, Inc.
+ * Copyright (c) 2023, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -430,7 +430,7 @@ Test(KAS_IFC_SSC_HANDLER, missing_scheme, .init = setup, .fini = teardown) {
 }
 
 /*
- * The key:"kaskRole" is missing.
+ * The key:"kasRole" is missing.
  */
 Test(KAS_IFC_SSC_HANDLER, missing_kasrole, .init = setup, .fini = teardown) {
     val = json_parse_file("json/kas_ifc/kas_ifc_ssc_17.json");

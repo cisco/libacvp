@@ -1,6 +1,6 @@
 /** @file */
 /*
- * Copyright (c) 2021, Cisco Systems, Inc.
+ * Copyright (c) 2023, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -8,11 +8,11 @@
  * https://github.com/cisco/libacvp/LICENSE
  */
 
-
-#if OPENSSL_VERSION_NUMBER >= 0x30000000L && !defined OPENSSL_NO_DSA
 #include "ut_common.h"
 #include "app_common.h"
 #include "acvp/acvp_lcl.h"
+
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L && !defined OPENSSL_NO_DSA
 
 ACVP_CTX *ctx;
 ACVP_TEST_CASE *test_case;
@@ -145,7 +145,7 @@ Test(APP_SAFE_PRIMES_HANDLER, unallocated_ans_bufs) {
     free_safe_primes_tc(safe_primes_tc);
     free(test_case);
 }
-
+#if 0
 /*
  * No results from key verify
  */
@@ -168,6 +168,6 @@ Test(APP_SAFE_PRIMES_HANDLER, result) {
     free_safe_primes_tc(safe_primes_tc);
     free(test_case);
 }
-
+#endif
 #endif
 

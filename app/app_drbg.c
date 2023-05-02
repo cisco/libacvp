@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Cisco Systems, Inc.
+ * Copyright (c) 2023, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -32,6 +32,11 @@ int app_drbg_handler(ACVP_TEST_CASE *test_case) {
     }
 
     tc = test_case->tc.drbg;
+    /* Todo: expand these checks and UTs for them */
+    if (!tc->drb || (tc->perso_string_len && !tc->perso_string)) {
+        printf("DRBG test case invalid\n");
+        goto err;
+    }
 
     alg = acvp_get_drbg_alg(tc->cipher);
 

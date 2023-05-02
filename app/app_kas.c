@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Cisco Systems, Inc.
+ * Copyright (c) 2023, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -981,6 +981,11 @@ int app_safe_primes_handler(ACVP_TEST_CASE *test_case) {
         goto err;
     }
 
+    if (!tc->x || !tc->y) {
+        printf("Safe primes x or y buffer missing\n");
+        goto err;
+    }
+
     switch (tc->dgm) {
     case ACVP_SAFE_PRIMES_MODP2048:
         group = "modp_2048";
@@ -1063,7 +1068,7 @@ int app_safe_primes_handler(ACVP_TEST_CASE *test_case) {
             printf("Error getting public key component in safe prime keygen test\n");
             goto err;
         }
-    } else {
+    } else if (tc->cipher == ACVP_SAFE_PRIMES_KEYVER) {
         x = BN_bin2bn(tc->x, tc->xlen, NULL);
         y = BN_bin2bn(tc->y, tc->ylen, NULL);
         if (!x || !y) {
@@ -1100,7 +1105,11 @@ int app_safe_primes_handler(ACVP_TEST_CASE *test_case) {
         if (EVP_PKEY_check(ver_ctx) == 1) {
             tc->result = 1;
         }
+    } else {
+        printf("Invalid cipher value for safe primes test case\n");
+        goto err;
     }
+
     rv = 0;
 err:
     if (x) BN_free(x);
