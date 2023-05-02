@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Cisco Systems, Inc.
+ * Copyright (c) 2023, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -56,7 +56,8 @@ int app_ecdsa_handler(ACVP_TEST_CASE *test_case) {
         return 1;
     }
     tc = test_case->tc.ecdsa;
-    if (!tc) {
+    /* Todo: expand these checks and UTs */
+    if (!tc || !tc->qx || !tc->qy) {
         printf("\nError: test case not found in ECDSA handler\n");
         return 1;
     }
