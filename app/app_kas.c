@@ -456,8 +456,27 @@ int app_kas_ifc_handler(ACVP_TEST_CASE *test_case) {
 
     tc = test_case->tc.kas_ifc;
 
-    /** Step 1: Convert all existing values into bignum */
+    if (tc->md != ACVP_NO_SHA) {
+        printf("Hash alg provided for KAS-IFC case but not supported\n");
+        goto err;
+    }
+
+    /** Step 1: Convert all existing values into bignum, null check needed values */
     if (tc->kas_role == ACVP_KAS_IFC_INITIATOR || tc->scheme == ACVP_KAS_IFC_KAS2) {
+
+        if (!tc->server_n || !tc->server_e || !tc->server_nlen || !tc->server_elen) {
+            printf("Missing server pub key params in KAS-IFC test case\n");
+            goto err;
+        }
+        if (!tc->iut_pt_z || !tc->iut_ct_z) {
+            printf("Missing buffer for IUT Z in KAS-IFC test case\n");
+            goto err;
+        }
+        if (tc->test_type == ACVP_KAS_IFC_TT_VAL && !tc->iut_pt_z_len) {
+            printf("Needed provided IUT PT Z for KAS-IFC test case, but is not provided\n");
+            goto err;
+        }
+
         server_n = BN_bin2bn(tc->server_n, tc->server_nlen, NULL);
         server_e = BN_bin2bn(tc->server_e, tc->server_elen, NULL);
         if (!server_e || !server_n) {
@@ -467,6 +486,10 @@ int app_kas_ifc_handler(ACVP_TEST_CASE *test_case) {
     }
 
     if (tc->kas_role == ACVP_KAS_IFC_RESPONDER || tc->scheme == ACVP_KAS_IFC_KAS2) {
+        if (!tc->server_ct_z || !tc->server_pt_z) {
+            printf("Missing buffer for server Z in KAS-IFC test case\n");
+            goto err;
+        }
         n = BN_bin2bn(tc->n, tc->nlen, NULL);
         e = BN_bin2bn(tc->e, tc->elen, NULL);
         p = BN_bin2bn(tc->p, tc->plen, NULL);

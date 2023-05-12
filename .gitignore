@@ -45,3 +45,9 @@
 
 # IDE files
 **/.vscode/
+
+# Output Directories
+**/.libs/
+
+# Misc
+*.gcov
