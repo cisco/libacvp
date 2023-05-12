@@ -97,6 +97,9 @@ Test(JsonSerializeToFilePrettyW, null_param) {
 
     rv = acvp_json_serialize_to_file_pretty_w(NULL, "test");
     cr_assert(rv == ACVP_JSON_ERR);
+    if (rv == ACVP_SUCCESS) {
+        remove("test");
+    }
 
     value = json_value_init_object();
     rv = acvp_json_serialize_to_file_pretty_w(value, NULL);
@@ -104,7 +107,10 @@ Test(JsonSerializeToFilePrettyW, null_param) {
 
     rv = acvp_json_serialize_to_file_pretty_w(value, "no_file");
     cr_assert(rv == ACVP_SUCCESS);
-    
+    if (rv == ACVP_SUCCESS) {
+        remove("no_file");
+    }
+
     json_value_free(value);
 }
 
@@ -114,6 +120,9 @@ Test(JsonSerializeToFilePrettyA, null_param) {
 
     rv = acvp_json_serialize_to_file_pretty_a(NULL, "test");
     cr_assert(rv == ACVP_SUCCESS);
+    if (rv == ACVP_SUCCESS) {
+        remove("test");
+    }
 
     value = json_value_init_object();
     rv = acvp_json_serialize_to_file_pretty_a(value, NULL);
@@ -121,7 +130,10 @@ Test(JsonSerializeToFilePrettyA, null_param) {
 
     rv = acvp_json_serialize_to_file_pretty_a(value, "no_file");
     cr_assert(rv == ACVP_SUCCESS);
-    
+    if (rv == ACVP_SUCCESS) {
+        remove("no_file");
+    }
+
     json_value_free(value);
 }
 
