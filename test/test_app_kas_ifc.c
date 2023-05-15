@@ -714,7 +714,7 @@ Test(APP_KAS_IFC_HANDLER, missing_buf_serv_pt_z) {
     char *iut_ct_z = NULL;
     char *iut_pt_z = NULL;
     char *server_ct_z = "aa";
-    char *server_n = NULL;x
+    char *server_n = NULL;
     char *server_e = NULL;
     char *p = "aa";
     char *q = "aa";
