@@ -942,6 +942,7 @@ enable_gcov
 with_criterion_dir
 enable_offline_ldl_check
 enable_lib_check
+enable_ssp
 enable_wrapper_library
 '
       ac_precious_vars='build_alias
@@ -1600,6 +1601,8 @@ Optional Features:
                           configure. This is ONLY recommended if you have
                           issues with detection and you know the library
                           exists
+  --disable-ssp           Turn off fstack-protector cflag; not all platforms
+                          support
   --enable-wrapper-library
                           Designed for use with offline builds, turns acvp_app
                           into a single API library for processing offline
@@ -4861,13 +4864,13 @@ if ${lt_cv_nm_interface+:} false; then :
 else
   lt_cv_nm_interface="BSD nm"
   echo "int some_variable = 0;" > conftest.$ac_ext
-  (eval echo "\"\$as_me:4864: $ac_compile\"" >&5)
+  (eval echo "\"\$as_me:4867: $ac_compile\"" >&5)
   (eval "$ac_compile" 2>conftest.err)
   cat conftest.err >&5
-  (eval echo "\"\$as_me:4867: $NM \\\"conftest.$ac_objext\\\"\"" >&5)
+  (eval echo "\"\$as_me:4870: $NM \\\"conftest.$ac_objext\\\"\"" >&5)
   (eval "$NM \"conftest.$ac_objext\"" 2>conftest.err > conftest.out)
   cat conftest.err >&5
-  (eval echo "\"\$as_me:4870: output\"" >&5)
+  (eval echo "\"\$as_me:4873: output\"" >&5)
   cat conftest.out >&5
   if $GREP 'External.*some_variable' conftest.out > /dev/null; then
     lt_cv_nm_interface="MS dumpbin"
@@ -6072,7 +6075,7 @@ ia64-*-hpux*)
   ;;
 *-*-irix6*)
   # Find out which ABI we are using.
-  echo '#line 6075 "configure"' > conftest.$ac_ext
+  echo '#line 6078 "configure"' > conftest.$ac_ext
   if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_compile\""; } >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -7601,11 +7604,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:7604: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:7607: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:7608: \$? = $ac_status" >&5
+   echo "$as_me:7611: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -7940,11 +7943,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:7943: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:7946: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:7947: \$? = $ac_status" >&5
+   echo "$as_me:7950: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -8045,11 +8048,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:8048: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:8051: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:8052: \$? = $ac_status" >&5
+   echo "$as_me:8055: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -8100,11 +8103,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:8103: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:8106: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:8107: \$? = $ac_status" >&5
+   echo "$as_me:8110: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -10470,7 +10473,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10473 "configure"
+#line 10476 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -10566,7 +10569,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10569 "configure"
+#line 10572 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -10797,11 +10800,6 @@ CC="$lt_save_CC"
 
 
 ##
-# Set the CFLAGS
-##
-CFLAGS="$CFLAGS -Wall -fstack-protector-all -D_FORTIFY_SOURCE=2"
-
-##
 # OSX doesn't need/support -z,noexecstack
 # only add if running on linux
 ##
@@ -10998,6 +10996,25 @@ else
 $as_echo "no" >&6; }
 fi
 
+# Disable SSP, in case a platform does not support it
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking disable ssp" >&5
+$as_echo_n "checking disable ssp... " >&6; }
+# Check whether --enable-ssp was given.
+if test "${enable_ssp+set}" = set; then :
+  enableval=$enable_ssp; disable_ssp="yes"
+else
+  disable_ssp="no"
+fi
+
+if test "x$disable_ssp" = "xyes"; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+else
+    CFLAGS="$CFLAGS -fstack-protector-all"
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
 # Enable a wrapper to turn acvp_app into a small library (Only for static offline builds)
 # Check whether --enable-wrapper-library was given.
 if test "${enable_wrapper_library+set}" = set; then :
@@ -11010,6 +11027,11 @@ fi
 ########################################################################################
 # End reading arguments. Begin testing presence of libs and setting certain make vars. #
 ########################################################################################
+
+##
+# Set the CFLAGS
+##
+CFLAGS="$CFLAGS -Wall -D_FORTIFY_SOURCE=2"
 
 # Hold onto the LIBS variable before AC_SEARCH_LIBS modifies it
 pre_libs="$LIBS"
