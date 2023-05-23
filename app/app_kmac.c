@@ -32,8 +32,21 @@ int app_kmac_handler(ACVP_TEST_CASE *test_case) {
     }
 
     tc = test_case->tc.kmac;
-    if (!tc) return rv;
-    if (!tc->key) return rv;
+    if (!tc) {
+        printf("Missing KMAC test case from library\n");
+        return rv;
+    }
+
+    if (!tc->key || !tc->msg || !tc->mac || !tc->mac_len) {
+        printf("Missing key/msg/mac/maclen in KMAC test case\n");
+        return rv;
+    }
+
+    if (tc->custom_len && !(tc->custom || tc->custom_hex)) {
+        printf("Missing customization buffer in KMAC test case\n");
+        return rv;
+    }
+
 
     alg = acvp_get_kmac_alg(tc->cipher);
     if (alg == 0) {
@@ -80,17 +93,17 @@ int app_kmac_handler(ACVP_TEST_CASE *test_case) {
 #define KMAC_BUF_MAX 8192
 
     if (!EVP_MAC_init(kmac_ctx, tc->key, tc->key_len, params)) {
-        printf("\nCrypto module error, EVP_MAC_init failed\n");
+        printf("Crypto module error, EVP_MAC_init failed\n");
         goto end;
     }
 
     if (!EVP_MAC_update(kmac_ctx, tc->msg, tc->msg_len)) {
-        printf("\nCrypto module error, EVP_MAC_update failed\n");
+        printf("Crypto module error, EVP_MAC_update failed\n");
         goto end;
     }
     /* Get output size */
     if (!EVP_MAC_final(kmac_ctx, NULL, &mac_out_len, 0)) {
-        printf("\nCrypto module error, EVP_MAC_final failed\n");
+        printf("Crypto module error, EVP_MAC_final failed\n");
         goto end;
     }
         
