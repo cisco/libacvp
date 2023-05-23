@@ -37,7 +37,8 @@ runtest_SOURCES += create_session.c \
       test_acvp_kts_ifc.c \
       test_acvp_kas_ffc.c \
       test_acvp_safe_primes.c \
-      test_acvp_kda.c 
+      test_acvp_kda.c \
+      test_acvp_kmac.c
 
 tmp_cflags += $(LIBCURL_CFLAGS)
 tmp_ldflags += $(LIBCURL_LDFLAGS)
@@ -58,7 +59,8 @@ runtest_SOURCES += app_common.c \
       test_app_rsa_sig.c \
       test_app_sha.c \
       test_app_safe_primes.c \
-      test_app_kda.c
+      test_app_kda.c \
+      test_app_kmac.c
 
 APP_LINK = ../app/acvp_app-app_utils.o \
            ../app/acvp_app-app_sha.o \
@@ -72,7 +74,8 @@ APP_LINK = ../app/acvp_app-app_utils.o \
            ../app/acvp_app-app_rsa.o \
            ../app/acvp_app-app_ecdsa.o \
            ../app/acvp_app-app_drbg.o \
-           ../app/acvp_app-app_kda.o
+           ../app/acvp_app-app_kda.o \
+           ../app/acvp_app-app_kmac.o
 
 tmp_cflags += $(SSL_CFLAGS) $(FOM_CFLAGS) -I../app
 tmp_ldflags += $(SSL_LDFLAGS) $(FOM_LDFLAGS)

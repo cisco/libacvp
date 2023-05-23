@@ -1,6 +1,6 @@
 /** @file */
 /*
- * Copyright (c) 2022, Cisco Systems, Inc.
+ * Copyright (c) 2023, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -243,7 +243,7 @@ ACVP_RESULT acvp_kmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     groups = json_object_get_array(obj, "testGroups");
     if (!groups) {
         ACVP_LOG_ERR("Failed to include testGroups. ");
-        rv = ACVP_MISSING_ARG;
+        rv = ACVP_TC_MISSING_DATA;
         goto err;
     }
     g_cnt = json_array_get_count(groups);
@@ -261,7 +261,7 @@ ACVP_RESULT acvp_kmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         tgId = json_object_get_number(groupobj, "tgId");
         if (!tgId) {
             ACVP_LOG_ERR("Missing tgid from server JSON groub obj");
-            rv = ACVP_MALFORMED_JSON;
+            rv = ACVP_TC_MISSING_DATA;
             goto err;
         }
         json_object_set_number(r_gobj, "tgId", tgId);
@@ -271,18 +271,28 @@ ACVP_RESULT acvp_kmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         type_str = json_object_get_string(groupobj, "testType");
         if (!type_str) {
             ACVP_LOG_ERR("Failed to include testType.");
-            rv = ACVP_MISSING_ARG;
+            rv = ACVP_TC_MISSING_DATA;
             goto err;
         }
         type = read_test_type(type_str);
         if (!type) {
             ACVP_LOG_ERR("Error parsing test type.");
-            rv = ACVP_INVALID_ARG;
+            rv = ACVP_TC_INVALID_DATA;
             goto err;
         }
 
         xof = json_object_get_boolean(groupobj, "xof");
+        if (xof < 0) {
+            ACVP_LOG_ERR("Server JSON missing 'xof'");
+            rv = ACVP_TC_MISSING_DATA;
+            goto err;
+        }
         hex_customization = json_object_get_boolean(groupobj, "hexCustomization");
+        if (hex_customization < 0) {
+            ACVP_LOG_ERR("Server JSON missing 'hexCustomization'");
+            rv = ACVP_TC_MISSING_DATA;
+            goto err;
+        }
 
         ACVP_LOG_VERBOSE("    Test group: %d", i);
         ACVP_LOG_VERBOSE("      testType: %s", type_str);
@@ -292,14 +302,14 @@ ACVP_RESULT acvp_kmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         tests = json_object_get_array(groupobj, "tests");
         if (!tests) {
             ACVP_LOG_ERR("Failed to include tests. ");
-            rv = ACVP_MISSING_ARG;
+            rv = ACVP_TC_MISSING_DATA;
             goto err;
         }
 
         t_cnt = json_array_get_count(tests);
         if (!t_cnt) {
             ACVP_LOG_ERR("Failed to include tests in array. ");
-            rv = ACVP_MISSING_ARG;
+            rv = ACVP_TC_MISSING_DATA;
             goto err;
         }
 
@@ -311,65 +321,65 @@ ACVP_RESULT acvp_kmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             tc_id = json_object_get_number(testobj, "tcId");
             if (!tc_id) {
                 ACVP_LOG_ERR("Failed to include tc_id. ");
-                rv = ACVP_MISSING_ARG;
+                rv = ACVP_TC_MISSING_DATA;
                 goto err;
             }
 
             msglen = json_object_get_number(testobj, "msgLen");
             if (msglen < 0) {
-                ACVP_LOG_ERR("Invalid or missing msgLen");
-                rv = ACVP_INVALID_ARG;
+                ACVP_LOG_ERR("Missing msgLen");
+                rv = ACVP_TC_MISSING_DATA;
                 goto err;
             }
             msg = json_object_get_string(testobj, "msg");
             if (!msg) {
                 ACVP_LOG_ERR("Failed to include msg.");
-                rv = ACVP_MISSING_ARG;
+                rv = ACVP_TC_MISSING_DATA;
                 goto err;
             }
             if ((int)strnlen_s(msg, ACVP_KMAC_MSG_STR_MAX) != msglen >> 2) {
                 ACVP_LOG_ERR("msgLen(%d) or msg length(%zu) incorrect",
                              msglen, strnlen_s(msg, ACVP_KMAC_MSG_STR_MAX) >> 2);
-                rv = ACVP_INVALID_ARG;
+                rv = ACVP_TC_INVALID_DATA;
                 goto err;
             }
 
             keylen = json_object_get_number(testobj, "keyLen");
             if (keylen <= 0) {
                 ACVP_LOG_ERR("Invalid or missing keyLen");
-                rv = ACVP_INVALID_ARG;
+                rv = ACVP_TC_MISSING_DATA;
                 goto err;
             }
             key = json_object_get_string(testobj, "key");
             if (!key) {
                 ACVP_LOG_ERR("Failed to include key.");
-                rv = ACVP_MISSING_ARG;
+                rv = ACVP_TC_MISSING_DATA;
                 goto err;
             }
             if ((int)strnlen_s(key, ACVP_KMAC_KEY_STR_MAX) != (keylen >> 2)) {
                 ACVP_LOG_ERR("keyLen(%d) or key length(%zu) incorrect",
                              keylen, strnlen_s(key, ACVP_KMAC_KEY_STR_MAX) >> 2);
-                rv = ACVP_INVALID_ARG;
+                rv = ACVP_TC_INVALID_DATA;
                 goto err;
             }
 
             maclen = json_object_get_number(testobj, "macLen");
             if (maclen <= 0) {
                 ACVP_LOG_ERR("Invalid or missing keyLen");
-                rv = ACVP_INVALID_ARG;
+                rv = ACVP_TC_MISSING_DATA;
                 goto err;
             }
             if (type == ACVP_KMAC_TEST_TYPE_MVT) {
                 mac = json_object_get_string(testobj, "mac");
                 if (!mac) {
                     ACVP_LOG_ERR("Failed to include mac in MVT test.");
-                    rv = ACVP_MISSING_ARG;
+                    rv = ACVP_TC_MISSING_DATA;
                     goto err;
                 }
                 if ((int)strnlen_s(mac, ACVP_KMAC_MAC_STR_MAX) << 2 != maclen) {
                     ACVP_LOG_ERR("macLen(%d) or mac length(%zu) incorrect",
                                 maclen, strnlen_s(mac, ACVP_KMAC_MAC_STR_MAX) << 2);
-                    rv = ACVP_INVALID_ARG;
+                    rv = ACVP_TC_INVALID_DATA;
                     goto err;
                 }
             }
@@ -378,7 +388,7 @@ ACVP_RESULT acvp_kmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 custom = json_object_get_string(testobj, "customizationHex");
                 if (!custom) {
                     ACVP_LOG_ERR("Failed to include customizationHex.");
-                    rv = ACVP_MISSING_ARG;
+                    rv = ACVP_TC_MISSING_DATA;
                     goto err;
                 }
                 if (strnlen_s(custom, ACVP_KMAC_CUSTOM_HEX_STR_MAX + 1) > ACVP_KMAC_CUSTOM_HEX_STR_MAX) {
@@ -388,7 +398,7 @@ ACVP_RESULT acvp_kmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 custom = json_object_get_string(testobj, "customization");
                 if (!custom) {
                     ACVP_LOG_ERR("Failed to include customization.");
-                    rv = ACVP_MISSING_ARG;
+                    rv = ACVP_TC_MISSING_DATA;
                     goto err;
                 }
                 if (strnlen_s(custom, ACVP_KMAC_CUSTOM_STR_MAX + 1) > ACVP_KMAC_CUSTOM_STR_MAX) {
