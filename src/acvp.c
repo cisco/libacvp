@@ -2119,6 +2119,10 @@ static ACVP_RESULT acvp_register(ACVP_CTX *ctx) {
      * which should be a list of vector set ID urls
      */
     if (ctx->use_json) {
+        if (ctx->is_sample) {
+            ACVP_LOG_WARN("Warning: sample flag set but using manual registration; flag will be ignored. Please ensure "
+                          "your manual registration indicates a sample session in JSON");
+        }
         ACVP_LOG_STATUS("Reading capabilities registration file...");
         tmp_json_from_file = json_parse_file(ctx->json_filename);
         if (!tmp_json_from_file) {
@@ -2485,6 +2489,11 @@ static ACVP_RESULT acvp_parse_test_session_register(ACVP_CTX *ctx) {
 
     ctx->session_url = calloc(ACVP_ATTR_URL_MAX + 1, sizeof(char));
     strcpy_s(ctx->session_url, ACVP_ATTR_URL_MAX + 1, test_session_url);
+
+    /* Update the isSample flag internally with what the NIST server claims (helps for manual registration since we do not parse that) */
+    if (json_object_has_value_of_type(obj, "isSample", JSONBoolean)) {
+        ctx->is_sample = json_object_get_boolean(obj, "isSample");
+    }
 
     /*
      * The accessToken needed for this specific test session.
