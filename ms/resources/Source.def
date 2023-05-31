@@ -102,9 +102,8 @@ EXPORTS
   acvp_oe_dependency_new
   acvp_oe_oe_new
   acvp_oe_oe_set_dependency
-  acvp_set_json_filename
+  acvp_set_registration_file
   acvp_get_current_registration
-  acvp_load_kat_filename
   acvp_upload_vectors_from_file
   acvp_run_vectors_from_file
   acvp_put_data_from_file

@@ -4656,18 +4656,14 @@ ACVP_RESULT acvp_build_registration_json(ACVP_CTX *ctx, JSON_Value **reg) {
     JSON_Value *val = NULL, *cap_val = NULL;
     JSON_Array *caps_arr = NULL;
     JSON_Object *cap_obj = NULL;
+    const char *name = NULL, *mode = NULL;
 
     if (!ctx) {
         ACVP_LOG_ERR("No ctx for build_test_session");
         return ACVP_NO_CTX;
     }
 
-  /*  val = json_value_init_object();
-    obj = json_value_get_object(val);
 
-
-    json_object_set_value(obj, "algorithms", json_value_init_array());
-    caps_arr = json_object_get_array(obj, "algorithms"); */
     val = json_value_init_array();
     caps_arr = json_value_get_array(val);
     /*
@@ -4682,6 +4678,14 @@ ACVP_RESULT acvp_build_registration_json(ACVP_CTX *ctx, JSON_Value **reg) {
              */
             cap_val = json_value_init_object();
             cap_obj = json_value_get_object(cap_val);
+            name = acvp_lookup_cipher_name(cap_entry->cipher);
+            if (name) {
+                ACVP_LOG_INFO("Building registration for %s", name);
+                mode = acvp_lookup_cipher_mode_str(cap_entry->cipher);
+                if (mode) {
+                    ACVP_LOG_INFO("    Mode: %s", mode);
+                }
+            }
 
             /*
              * Build up the capability JSON based on the cipher type

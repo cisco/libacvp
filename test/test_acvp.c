@@ -252,7 +252,7 @@ Test(SET_SESSION_PARAMS, null_params_2fa, .init = setup, .fini = teardown) {
 Test(SET_SESSION_PARAMS, set_input_json_good, .init = setup, .fini = teardown) {
     rv = acvp_mark_as_request_only(ctx, "test.json");
     cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_set_json_filename(ctx, filename);
+    rv = acvp_set_registration_file(ctx, filename);
     cr_assert(rv == ACVP_SUCCESS);
 }
 
@@ -260,10 +260,10 @@ Test(SET_SESSION_PARAMS, set_input_json_good, .init = setup, .fini = teardown) {
  * This test sets json filename - null params
  */
 Test(SET_SESSION_PARAMS, set_input_json_null_params, .init = setup, .fini = teardown) {
-    rv = acvp_set_json_filename(NULL, filename);
+    rv = acvp_set_registration_file(NULL, filename);
     cr_assert(rv == ACVP_NO_CTX);
 
-    rv = acvp_set_json_filename(ctx, NULL);
+    rv = acvp_set_registration_file(ctx, NULL);
     cr_assert(rv == ACVP_MISSING_ARG);
 }
 
@@ -673,22 +673,6 @@ Test(PROCESS_TESTS, run_vectors_from_file, .init = setup_full_ctx, .fini = teard
     cr_assert(rv == ACVP_MISSING_ARG);
 
     rv = acvp_run_vectors_from_file(ctx, "json/req.json", "json/rsp1.json");
-    cr_assert(rv == ACVP_SUCCESS);
-
-}
-
-/*
- * Test acvp_load_kat_filename
- */
-Test(PROCESS_TESTS, load_kat_filename, .init = setup_full_ctx, .fini = teardown) {
-
-    rv = acvp_load_kat_filename(NULL, "test");
-    cr_assert(rv == ACVP_NO_CTX);
-
-    rv = acvp_load_kat_filename(ctx, NULL);
-    cr_assert(rv == ACVP_MISSING_ARG);
-
-    rv = acvp_load_kat_filename(ctx, "json/aes/aes.json");
     cr_assert(rv == ACVP_SUCCESS);
 
 }
