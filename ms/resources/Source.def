@@ -145,3 +145,4 @@ EXPORTS
   acvp_get_drbg_alg
   acvp_get_kas_alg
   acvp_get_kmac_alg
+  acvp_sleep

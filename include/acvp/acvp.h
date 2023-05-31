@@ -4560,6 +4560,13 @@ ACVP_SUB_DRBG acvp_get_drbg_alg(ACVP_CIPHER cipher);
 ACVP_SUB_KAS acvp_get_kas_alg(ACVP_CIPHER cipher);
 ACVP_SUB_LMS acvp_get_lms_alg(ACVP_CIPHER cipher);
 
+/**
+ * @brief acvp_sleep() waits a given number of seconds before continuing processing. This function performs identically across platforms.
+ *
+ * @param seconds the number of seconds to wait
+ */
+void acvp_sleep(int seconds);
+
 /** @} */
 /** @internal ALL APIS SHOULD BE ADDED ABOVE THESE BLOCKS */
 
