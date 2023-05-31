@@ -4678,12 +4678,15 @@ ACVP_RESULT acvp_build_registration_json(ACVP_CTX *ctx, JSON_Value **reg) {
              */
             cap_val = json_value_init_object();
             cap_obj = json_value_get_object(cap_val);
-            name = acvp_lookup_cipher_name(cap_entry->cipher);
-            if (name) {
-                ACVP_LOG_INFO("Building registration for %s", name);
-                mode = acvp_lookup_cipher_mode_str(cap_entry->cipher);
-                if (mode) {
-                    ACVP_LOG_INFO("    Mode: %s", mode);
+
+            if (ctx->log_lvl >= ACVP_LOG_LVL_INFO) {
+                name = acvp_lookup_cipher_name(cap_entry->cipher);
+                if (name) {
+                    ACVP_LOG_INFO("Building registration for %s", name);
+                    mode = acvp_lookup_cipher_mode_str(cap_entry->cipher);
+                    if (mode) {
+                        ACVP_LOG_INFO("    Mode: %s", mode);
+                    }
                 }
             }
 

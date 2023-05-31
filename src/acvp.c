@@ -2774,14 +2774,7 @@ static ACVP_RESULT acvp_retry_handler(ACVP_CTX *ctx, int *retry_period, unsigned
         ACVP_LOG_STATUS("200 OK, waiting %u seconds and trying again...", *retry_period);
     }
 
-    #ifdef _WIN32
-    /*
-     * Windows uses milliseconds
-     */
-    Sleep(*retry_period * 1000);
-    #else
-    sleep(*retry_period);
-    #endif
+    acvp_sleep(*retry_period);
 
     /* ensure that all parameters are valid and that we do not wait longer than ACVP_MAX_WAIT_TIME */
     if (modifier < 1 || modifier > ACVP_RETRY_MODIFIER_MAX) {

@@ -233,11 +233,7 @@ int main(int argc, char **argv) {
         printf("* your configuration. Proceed at your own risk. Continuing in 5 seconds...        *\n");
         printf("***********************************************************************************\n");
         printf("\n");
-        #ifdef _WIN32
-            Sleep(5 * 1000);
-        #else
-            sleep(5);
-        #endif
+        acvp_sleep(5);
     }
 #endif
 
