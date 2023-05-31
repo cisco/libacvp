@@ -115,9 +115,6 @@ static void print_usage(int code) {
     printf("      --vector_upload <file>\n");
     printf("      -u <file>\n");
     printf("\n");
-    printf("To process kat vectors from a JSON file use:\n");
-    printf("      --kat <file>\n");
-    printf("\n");
     printf("Note: --resume_session and --get_results use the test session info file created automatically by the library as input\n");
     printf("\n");
     printf("To resume a previous test session that was interupted:\n");
@@ -237,7 +234,6 @@ static ko_longopt_t longopts[] = {
     { "lms", ko_no_argument, 327 },
     { "all_algs", ko_no_argument, 350 },
     { "manual_registration", ko_required_argument, 400 },
-    { "kat", ko_required_argument, 401 },
     { "fips_validation", ko_required_argument, 402 },
     { "vector_req", ko_required_argument, 403 },
     { "vector_rsp", ko_required_argument, 404 },
@@ -452,14 +448,6 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
                 return 1;
             }
             strcpy_s(cfg->reg_file, JSON_FILENAME_LENGTH + 1, opt.arg);
-            break;
-
-        case 401:
-            cfg->kat = 1;
-            if (!check_option_length(opt.arg, c, JSON_FILENAME_LENGTH)) {
-                return 1;
-            }
-            strcpy_s(cfg->kat_file, JSON_FILENAME_LENGTH + 1, opt.arg);
             break;
 
         case 402:

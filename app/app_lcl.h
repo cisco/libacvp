@@ -46,7 +46,6 @@ typedef struct app_config {
     int post;
     int put;
     int delete;
-    int kat;
     int empty_alg;
     int fips_validation;
     int get_expected;
@@ -65,7 +64,6 @@ typedef struct app_config {
     char post_filename[JSON_FILENAME_LENGTH + 1];
     char put_filename[JSON_FILENAME_LENGTH + 1];
     char delete_url[JSON_REQUEST_LENGTH + 1];
-    char kat_file[JSON_FILENAME_LENGTH + 1];
     char validation_metadata_file[JSON_FILENAME_LENGTH + 1];
     char save_file[JSON_FILENAME_LENGTH + 1];
 

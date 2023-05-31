@@ -4373,7 +4373,7 @@ ACVP_RESULT acvp_oe_oe_set_dependency(ACVP_CTX *ctx,
                                       unsigned int dependency_id);
 
 /**
- * @brief acvp_set_json_filename specifies JSON registration file to be used during registration.
+ * @brief acvp_set_registration_file specifies JSON registration file to be used during registration.
  *        This allows the app to skip the acvp_enable_* API calls
  *
  * @param ctx Pointer to ACVP_CTX that was previously created by calling acvp_create_test_session.
@@ -4381,7 +4381,7 @@ ACVP_RESULT acvp_oe_oe_set_dependency(ACVP_CTX *ctx,
  *
  * @return ACVP_RESULT
  */
-ACVP_RESULT acvp_set_json_filename(ACVP_CTX *ctx, const char *json_filename);
+ACVP_RESULT acvp_set_registration_file(ACVP_CTX *ctx, const char *json_filename);
 
 /**
  * @brief acvp_get_current_registration returns a string form of the currently registered set of capabilities. If a test
@@ -4393,17 +4393,6 @@ ACVP_RESULT acvp_set_json_filename(ACVP_CTX *ctx, const char *json_filename);
  * @return The string (char*) form of the current registration. The string must be later freed by the user.
  */
 char *acvp_get_current_registration(ACVP_CTX *ctx, int *len);
-
-/**
- * @brief acvp_load_kat_filename loads and processes JSON kat vector file This option will not
- *        communicate with the server at all.
- *
- * @param ctx Pointer to ACVP_CTX that was previously created by calling acvp_create_test_session.
- * @param kat_filename Name of the file that contains the JSON kat vectors
- *
- * @return ACVP_RESULT
- */
-ACVP_RESULT acvp_load_kat_filename(ACVP_CTX *ctx, const char *kat_filename);
 
 /**
  * @brief Uploads a set of vector set responses that were processed from an offline vector set JSON

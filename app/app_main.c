@@ -346,7 +346,7 @@ int main(int argc, char **argv) {
          * "acvp_enable_*" API calls... could reduce the
          * size of this file if you choose to use this capability.
          */
-        rv = acvp_set_json_filename(ctx, cfg.reg_file);
+        rv = acvp_set_registration_file(ctx, cfg.reg_file);
         if (rv != ACVP_SUCCESS) {
             printf("Failed to set json file within ACVP ctx (rv=%d)\n", rv);
             goto end;
@@ -411,11 +411,6 @@ int main(int argc, char **argv) {
         }
         if (reg) free(reg);
         goto end;
-    }
-
-    if (cfg.kat) {
-       rv = acvp_load_kat_filename(ctx, cfg.kat_file);
-       goto end;
     }
 
     if (cfg.vector_req && cfg.vector_rsp) {
