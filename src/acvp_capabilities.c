@@ -8541,7 +8541,7 @@ ACVP_RESULT acvp_cap_kts_ifc_set_param_string(ACVP_CTX *ctx,
 ACVP_RESULT acvp_cap_kts_ifc_set_scheme_string(ACVP_CTX *ctx,
                                                ACVP_CIPHER cipher,
                                                ACVP_KTS_IFC_SCHEME_TYPE scheme,
-                                               ACVP_KTS_IFC_PARAM param,
+                                               ACVP_KTS_IFC_SCHEME_PARAM param,
                                                char *value) {
     unsigned int len = strnlen_s(value, ACVP_CAPABILITY_STR_MAX + 1);
     ACVP_KTS_IFC_CAP *kts_ifc_cap = NULL;
@@ -8600,7 +8600,6 @@ ACVP_RESULT acvp_cap_kts_ifc_set_scheme_string(ACVP_CTX *ctx,
     case ACVP_KTS_IFC_ROLE:
     case ACVP_KTS_IFC_L:
     case ACVP_KTS_IFC_MAC_METHODS:
-    case ACVP_KTS_IFC_FIXEDPUBEXP:
     default:
         ACVP_LOG_ERR("Invalid param");
         return ACVP_INVALID_ARG;

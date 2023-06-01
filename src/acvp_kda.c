@@ -126,6 +126,7 @@ static ACVP_RESULT acvp_kda_onestep_init_tc(ACVP_CTX *ctx,
                                              ACVP_KDA_TEST_TYPE test_type) {
     ACVP_RESULT rv;
 
+    stc->cipher = ACVP_KDA_ONESTEP;
     stc->tc_id = tc_id;
     stc->type = test_type;
     stc->aux_function = aux_function;
@@ -319,6 +320,7 @@ static ACVP_RESULT acvp_kda_twostep_init_tc(ACVP_CTX *ctx,
                                              ACVP_KDA_TEST_TYPE test_type) {
     ACVP_RESULT rv;
 
+    stc->cipher = ACVP_KDA_TWOSTEP;
     stc->tc_id = tc_id;
     stc->type = test_type;
     stc->macFunction = mac_mode;
@@ -480,6 +482,7 @@ static ACVP_RESULT acvp_kda_hkdf_init_tc(ACVP_CTX *ctx,
                                              ACVP_KDA_TEST_TYPE test_type) {
     ACVP_RESULT rv;
 
+    stc->cipher = ACVP_KDA_HKDF;
     stc->tc_id = tc_id;
     stc->type = test_type;
     stc->hmacAlg = hmac_alg;
