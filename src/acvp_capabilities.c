@@ -1560,7 +1560,7 @@ static ACVP_RESULT acvp_validate_sym_cipher_domain_value(ACVP_CIPHER cipher, ACV
     case ACVP_AES_GCM:
         switch (parm) {
         case ACVP_SYM_CIPH_DOMAIN_IVLEN:
-            if (min >= 8 && max <= 1024) {
+            if (min >= 0 && max <= 1024) {
                 retval = ACVP_SUCCESS;
             }
             break;
@@ -5733,11 +5733,23 @@ ACVP_RESULT acvp_cap_kdf108_set_parm(ACVP_CTX *ctx,
             result = acvp_append_name_list(&mode_obj->mac_mode, ACVP_ALG_HMAC_SHA2_512);
             break;
         case ACVP_KDF108_MAC_MODE_HMAC_SHA512_224:
+            result = acvp_append_name_list(&mode_obj->mac_mode, ACVP_ALG_HMAC_SHA2_512_224);
+            break;
         case ACVP_KDF108_MAC_MODE_HMAC_SHA512_256:
+            result = acvp_append_name_list(&mode_obj->mac_mode, ACVP_ALG_HMAC_SHA2_512_256);
+            break;
         case ACVP_KDF108_MAC_MODE_HMAC_SHA3_224:
+            result = acvp_append_name_list(&mode_obj->mac_mode, ACVP_ALG_HMAC_SHA3_224);
+            break;
         case ACVP_KDF108_MAC_MODE_HMAC_SHA3_256:
+            result = acvp_append_name_list(&mode_obj->mac_mode, ACVP_ALG_HMAC_SHA3_256);
+            break;
         case ACVP_KDF108_MAC_MODE_HMAC_SHA3_384:
+            result = acvp_append_name_list(&mode_obj->mac_mode, ACVP_ALG_HMAC_SHA3_384);
+            break;
         case ACVP_KDF108_MAC_MODE_HMAC_SHA3_512:
+            result = acvp_append_name_list(&mode_obj->mac_mode, ACVP_ALG_HMAC_SHA3_512);
+            break;
         default:
             return ACVP_INVALID_ARG;
         }
