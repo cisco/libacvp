@@ -624,7 +624,8 @@ ACVP_RESULT acvp_rsa_keygen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
             json_object_set_number(r_tobj, "tcId", tc_id);
 
-            if (pub_exp_mode == ACVP_RSA_PUB_EXP_MODE_RANDOM) {
+            if (info_gen_by_server && 
+                pub_exp_mode == ACVP_RSA_PUB_EXP_MODE_RANDOM) {
                 e_str = json_object_get_string(testobj, "e");
                 if (!e_str) {
                     ACVP_LOG_ERR("Server JSON missing 'e'");
@@ -647,20 +648,22 @@ ACVP_RESULT acvp_rsa_keygen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             if (info_gen_by_server) {
                 unsigned int count = 0;
 
-                bitlens = json_object_get_array(testobj, "bitlens");
-                count = json_array_get_count(bitlens);
-                if (count != 4) {
-                    ACVP_LOG_ERR("Server JSON 'bitlens' list count is (%u). Expected (%u)",
-                                 count, 4);
-                    rv = ACVP_INVALID_ARG;
-                    json_value_free(r_tval);
-                    goto err;
-                }
+                if (rand_pq == ACVP_RSA_KEYGEN_B36) {
+                    bitlens = json_object_get_array(testobj, "bitlens");
+                    count = json_array_get_count(bitlens);
+                    if (count != 4) {
+                        ACVP_LOG_ERR("Server JSON 'bitlens' list count is (%u). Expected (%u)",
+                                    count, 4);
+                        rv = ACVP_INVALID_ARG;
+                        json_value_free(r_tval);
+                        goto err;
+                    }
 
-                bitlen1 = json_array_get_number(bitlens, 0);
-                bitlen2 = json_array_get_number(bitlens, 1);
-                bitlen3 = json_array_get_number(bitlens, 2);
-                bitlen4 = json_array_get_number(bitlens, 3);
+                    bitlen1 = json_array_get_number(bitlens, 0);
+                    bitlen2 = json_array_get_number(bitlens, 1);
+                    bitlen3 = json_array_get_number(bitlens, 2);
+                    bitlen4 = json_array_get_number(bitlens, 3);
+                }
 
                 if (rand_pq == ACVP_RSA_KEYGEN_B32 ||
                     rand_pq == ACVP_RSA_KEYGEN_B34 ||
@@ -681,51 +684,96 @@ ACVP_RESULT acvp_rsa_keygen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                         goto err;
                     }
                 }
+
+                /* for B.3.6, test cases also come with xP, xP1, xP2, xQ, xQ1, xQ2 */
+                if (rand_pq == ACVP_RSA_KEYGEN_B36) {
+                    xp_str = json_object_get_string(testobj, "xP");
+                    if (!xp_str) {
+                        ACVP_LOG_ERR("Server JSON missing 'xP'");
+                        rv = ACVP_MISSING_ARG;
+                        json_value_free(r_tval);
+                        goto err;
+                    }
+                    xp1_str = json_object_get_string(testobj, "xP1");
+                    if (!xp1_str) {
+                        ACVP_LOG_ERR("Server JSON missing 'xP1'");
+                        rv = ACVP_MISSING_ARG;
+                        json_value_free(r_tval);
+                        goto err;
+                    }
+                    xp2_str = json_object_get_string(testobj, "xP2");
+                    if (!xp2_str) {
+                        ACVP_LOG_ERR("Server JSON missing 'xP2'");
+                        rv = ACVP_MISSING_ARG;
+                        json_value_free(r_tval);
+                        goto err;
+                    }
+                    xq_str = json_object_get_string(testobj, "xQ");
+                    if (!xq_str) {
+                        ACVP_LOG_ERR("Server JSON missing 'xQ'");
+                        rv = ACVP_MISSING_ARG;
+                        json_value_free(r_tval);
+                        goto err;
+                    }
+                    xq1_str = json_object_get_string(testobj, "xQ1");
+                    if (!xq1_str) {
+                        ACVP_LOG_ERR("Server JSON missing 'xQ1'");
+                        rv = ACVP_MISSING_ARG;
+                        json_value_free(r_tval);
+                        goto err;
+                    }
+                    xq2_str = json_object_get_string(testobj, "xQ2");
+                    if (!xq2_str) {
+                        ACVP_LOG_ERR("Server JSON missing 'xQ2'");
+                        rv = ACVP_MISSING_ARG;
+                        json_value_free(r_tval);
+                        goto err;
+                    }
+                }
             }
 
-            /* for B.3.6, test cases also come with xP, xP1, xP2, xQ, xQ1, xQ2 */
-            if (rand_pq == ACVP_RSA_KEYGEN_B36) {
-                xp_str = json_object_get_string(testobj, "xP");
-                if (!xp_str) {
-                    ACVP_LOG_ERR("Server JSON missing 'xP'");
+            if (rand_pq == ACVP_RSA_KEYGEN_B33 && test_type == ACVP_RSA_TESTTYPE_KAT) {
+                // E
+                e_str = json_object_get_string(testobj, "e");
+                if (!e_str) {
+                    ACVP_LOG_ERR("Server JSON missing 'e'");
                     rv = ACVP_MISSING_ARG;
                     json_value_free(r_tval);
                     goto err;
                 }
-                xp1_str = json_object_get_string(testobj, "xP1");
-                if (!xp1_str) {
-                    ACVP_LOG_ERR("Server JSON missing 'xP1'");
+                if (strnlen_s(e_str, ACVP_RSA_EXP_LEN_MAX + 1)
+                    > ACVP_RSA_EXP_LEN_MAX) {
+                    ACVP_LOG_ERR("'e' too long, max allowed=(%d)",
+                                    ACVP_RSA_EXP_LEN_MAX);
+                    rv = ACVP_INVALID_ARG;
+                    json_value_free(r_tval);
+                    goto err;
+                }
+                p_str = json_object_get_string(testobj, "p");
+                if (!p_str) {
+                    ACVP_LOG_ERR("Server JSON missing 'p'");
                     rv = ACVP_MISSING_ARG;
                     json_value_free(r_tval);
                     goto err;
                 }
-                xp2_str = json_object_get_string(testobj, "xP2");
-                if (!xp2_str) {
-                    ACVP_LOG_ERR("Server JSON missing 'xP2'");
-                    rv = ACVP_MISSING_ARG;
+                if (strnlen_s(p_str, ACVP_RSA_EXP_LEN_MAX + 1)
+                    > ACVP_RSA_EXP_LEN_MAX) {
+                    ACVP_LOG_ERR("'p' too long, max allowed=(%d)",
+                                    ACVP_RSA_EXP_LEN_MAX);
+                    rv = ACVP_INVALID_ARG;
                     json_value_free(r_tval);
                     goto err;
                 }
-                xq_str = json_object_get_string(testobj, "xQ");
-                if (!xq_str) {
-                    ACVP_LOG_ERR("Server JSON missing 'xQ'");
-                    rv = ACVP_MISSING_ARG;
-                    json_value_free(r_tval);
-                    goto err;
-                }
-                xq1_str = json_object_get_string(testobj, "xQ1");
-                if (!xq1_str) {
-                    ACVP_LOG_ERR("Server JSON missing 'xQ1'");
-                    rv = ACVP_MISSING_ARG;
-                    json_value_free(r_tval);
-                    goto err;
-                }
-                xq2_str = json_object_get_string(testobj, "xQ2");
-                if (!xq2_str) {
-                    ACVP_LOG_ERR("Server JSON missing 'xQ2'");
-                    rv = ACVP_MISSING_ARG;
-                    json_value_free(r_tval);
-                    goto err;
+                q_str = json_object_get_string(testobj, "q");
+                if (q_str) { // optional!
+                    if (strnlen_s(p_str, ACVP_RSA_EXP_LEN_MAX + 1)
+                        > ACVP_RSA_EXP_LEN_MAX) {
+                        ACVP_LOG_ERR("'p' too long, max allowed=(%d)",
+                                        ACVP_RSA_EXP_LEN_MAX);
+                        rv = ACVP_INVALID_ARG;
+                        json_value_free(r_tval);
+                        goto err;
+                    }
                 }
             }
 
