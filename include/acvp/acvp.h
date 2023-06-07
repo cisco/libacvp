@@ -3025,7 +3025,7 @@ ACVP_RESULT acvp_cap_kts_ifc_set_param_string(ACVP_CTX *ctx,
 ACVP_RESULT acvp_cap_kts_ifc_set_scheme_string(ACVP_CTX *ctx,
                                                ACVP_CIPHER cipher,
                                                ACVP_KTS_IFC_SCHEME_TYPE scheme,
-                                               ACVP_KTS_IFC_PARAM param,
+                                               ACVP_KTS_IFC_SCHEME_PARAM param,
                                                char *value);
 
 /**
