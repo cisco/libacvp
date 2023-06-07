@@ -11,12 +11,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-#ifdef _WIN32
-#include <io.h>
-#include <Windows.h>
-#else
-#include <unistd.h>
-#endif
 #include <math.h>
 #include "acvp.h"
 #include "acvp_lcl.h"
