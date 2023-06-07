@@ -608,8 +608,7 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                     rv = ACVP_INVALID_ARG;
                     goto err;
                 }
-            }            
-            else {
+            } else {
                 msg = json_object_get_string(testobj, "msg");
                 if (!msg) {
                     ACVP_LOG_ERR("Server JSON missing 'msg'");
@@ -851,8 +850,7 @@ static ACVP_RESULT acvp_hash_init_tc(ACVP_CTX *ctx,
         stc->msg_len = msg_len;
         stc->exp_len = exp_len;
         stc->exp_method = exp_method;
-    }
-    else {
+    } else {
         stc->msg_len = (msg_len + 7) / 8;
         stc->xof_len = (xof_len + 7) / 8;
         stc->xof_bit_len = xof_len;
