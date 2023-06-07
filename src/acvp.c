@@ -3011,7 +3011,7 @@ static ACVP_RESULT acvp_dispatch_vector_set(ACVP_CTX *ctx, JSON_Object *obj) {
                  ACVP_ALG_NAME_MAX,
                  alg, &diff);
         if (!diff) {
-            if (mode == NULL) {
+            if (mode == NULL || alg_tbl[i].cipher == ACVP_KDF108) { // KDF108-KMAC has a mode!
                 rv = (alg_tbl[i].handler)(ctx, obj);
                 return rv;
             }
