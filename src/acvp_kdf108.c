@@ -51,33 +51,37 @@ static ACVP_RESULT acvp_kdf108_output_tc(ACVP_CTX *ctx,
         ACVP_LOG_ERR("hex conversion failure (key_out)");
         goto end;
     }
-    json_object_set_string(tc_rsp, "keyOut", tmp);
-
-    free(tmp);
-
-    tmp = calloc(ACVP_KDF108_FIXED_DATA_STR_MAX + 1, sizeof(char));
-    if (!tmp) {
-        ACVP_LOG_ERR("Unable to malloc");
-        return ACVP_MALLOC_FAIL;
+    if (stc->mode == ACVP_KDF108_MODE_KMAC) {
+        json_object_set_string(tc_rsp, "derivedKey", tmp);
     }
+    else {
+        json_object_set_string(tc_rsp, "keyOut", tmp);
+        free(tmp);
 
-    /*
-     * Length check
-     */
-    if (stc->fixed_data_len > ACVP_KDF108_FIXED_DATA_BYTE_MAX) {
-        ACVP_LOG_ERR("stc->fixed_data_len > ACVP_KDF108_FIXED_DATA_BYTE_MAX(%u)",
-                     ACVP_KDF108_FIXED_DATA_BYTE_MAX);
-        rv = ACVP_INVALID_ARG;
-        goto end;
-    }
+        tmp = calloc(ACVP_KDF108_FIXED_DATA_STR_MAX + 1, sizeof(char));
+        if (!tmp) {
+            ACVP_LOG_ERR("Unable to malloc");
+            return ACVP_MALLOC_FAIL;
+        }
 
-    rv = acvp_bin_to_hexstr(stc->fixed_data, stc->fixed_data_len,
-                            tmp, ACVP_KDF108_FIXED_DATA_STR_MAX);
-    if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_ERR("hex conversion failure (fixed_data)");
-        goto end;
+        /*
+        * Length check
+        */
+        if (stc->fixed_data_len > ACVP_KDF108_FIXED_DATA_BYTE_MAX) {
+            ACVP_LOG_ERR("stc->fixed_data_len > ACVP_KDF108_FIXED_DATA_BYTE_MAX(%u)",
+                        ACVP_KDF108_FIXED_DATA_BYTE_MAX);
+            rv = ACVP_INVALID_ARG;
+            goto end;
+        }
+
+        rv = acvp_bin_to_hexstr(stc->fixed_data, stc->fixed_data_len,
+                                tmp, ACVP_KDF108_FIXED_DATA_STR_MAX);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("hex conversion failure (fixed_data)");
+            goto end;
+        }
+        json_object_set_string(tc_rsp, "fixedData", tmp);
     }
-    json_object_set_string(tc_rsp, "fixedData", tmp);
 
 end:
     if (tmp) free(tmp);
@@ -92,50 +96,59 @@ static ACVP_RESULT acvp_kdf108_init_tc(ACVP_KDF108_TC *stc,
                                        ACVP_KDF108_FIXED_DATA_ORDER_VAL counter_location,
                                        const char *key_in,
                                        const char *iv,
+                                       const char *context,
+                                       const char *label,
                                        int key_in_len,
                                        int key_out_len,
                                        int iv_len,
+                                       int context_len,
+                                       int label_len,
                                        int counter_len,
                                        int deferred) {
     ACVP_RESULT rv;
 
     memzero_s(stc, sizeof(ACVP_KDF108_TC));
 
-    // Allocate space for the key_in (binary)
+    // Allocate space for the data
     stc->key_in = calloc(key_in_len, sizeof(unsigned char));
     if (!stc->key_in) { return ACVP_MALLOC_FAIL; }
 
-    // Convert key_in from hex string to binary
-    rv = acvp_hexstr_to_bin(key_in, stc->key_in, key_in_len, NULL);
-    if (rv != ACVP_SUCCESS) return rv;
-
-    if (iv != NULL) {
-        /*
-         * Feedback mode.
-         * Allocate space for the iv.
-         */
-        stc->iv = calloc(iv_len, sizeof(unsigned char));
-        if (!stc->iv) { return ACVP_MALLOC_FAIL; }
-
-        // Convert iv from hex string to binary
-        rv = acvp_hexstr_to_bin(iv, stc->iv, iv_len, NULL);
-        if (rv != ACVP_SUCCESS) return rv;
-    }
-
-    /*
-     * Allocate space for the key_out
-     * User supplies the data.
-     */
     stc->key_out = calloc(key_out_len, sizeof(unsigned char));
     if (!stc->key_out) { return ACVP_MALLOC_FAIL; }
 
-    /*
-     * Allocate space for the fixed_data.
-     * User supplies the data.
-     */
-    stc->fixed_data = calloc(ACVP_KDF108_FIXED_DATA_BYTE_MAX,
-                             sizeof(unsigned char));
-    if (!stc->fixed_data) { return ACVP_MALLOC_FAIL; }
+    // Convert data from hex string to binary
+    rv = acvp_hexstr_to_bin(key_in, stc->key_in, key_in_len, NULL);
+    if (rv != ACVP_SUCCESS) return rv;
+
+    if (kdf_mode == ACVP_KDF108_MODE_KMAC) {
+        // Convert context from hex string to binary
+        if (context != NULL) {
+            stc->context = calloc(ACVP_KDF108_CONTEXT_BYTE_MAX, sizeof(unsigned char));
+            if (!stc->context) { return ACVP_MALLOC_FAIL; }
+            rv = acvp_hexstr_to_bin(context, stc->context, context_len, NULL);
+            if (rv != ACVP_SUCCESS) return rv;
+        }
+        // Convert label from hex string to binary
+        if (label != NULL) {
+            stc->label = calloc(ACVP_KDF108_CONTEXT_BYTE_MAX, sizeof(unsigned char));
+            if (!stc->label) { return ACVP_MALLOC_FAIL; }
+            rv = acvp_hexstr_to_bin(label, stc->label, label_len, NULL);
+            if (rv != ACVP_SUCCESS) return rv;
+        }
+    }
+    else {
+        stc->fixed_data = calloc(ACVP_KDF108_FIXED_DATA_BYTE_MAX, sizeof(unsigned char));
+        if (!stc->fixed_data) { return ACVP_MALLOC_FAIL; }
+
+        stc->iv = calloc(iv_len, sizeof(unsigned char));
+        if (!stc->iv) { return ACVP_MALLOC_FAIL; }
+
+        if (iv != NULL) {
+            // Convert iv from hex string to binary
+            rv = acvp_hexstr_to_bin(iv, stc->iv, iv_len, NULL);
+            if (rv != ACVP_SUCCESS) return rv;
+        }
+    }
 
     stc->tc_id = tc_id;
     stc->cipher = ACVP_KDF108;
@@ -144,6 +157,9 @@ static ACVP_RESULT acvp_kdf108_init_tc(ACVP_KDF108_TC *stc,
     stc->counter_location = counter_location;
     stc->key_in_len = key_in_len;
     stc->key_out_len = key_out_len;
+    stc->iv_len = iv_len;
+    stc->context_len = context_len;
+    stc->label_len = label_len;
     stc->counter_len = counter_len;
     stc->deferred = deferred;
 
@@ -159,6 +175,8 @@ static ACVP_RESULT acvp_kdf108_release_tc(ACVP_KDF108_TC *stc) {
     if (stc->key_out) free(stc->key_out);
     if (stc->fixed_data) free(stc->fixed_data);
     if (stc->iv) free(stc->iv);
+    if (stc->context) free(stc->context);
+    if (stc->label) free(stc->label);
 
     memzero_s(stc, sizeof(ACVP_KDF108_TC));
     return ACVP_SUCCESS;
@@ -175,6 +193,9 @@ ACVP_KDF108_MODE read_mode(const char *str) {
 
     strcmp_s(ACVP_MODE_DPI, 25, str, &diff);
     if (!diff) return ACVP_KDF108_MODE_DPI;
+
+    strcmp_s(ACVP_MODE_KMAC, 4, str, &diff);
+    if (!diff) return ACVP_KDF108_MODE_KMAC;
 
     return 0;
 }
@@ -258,6 +279,16 @@ ACVP_KDF108_MAC_MODE_VAL read_mac_mode(const char *str) {
              str, &diff);
     if (!diff) return ACVP_KDF108_MAC_MODE_CMAC_TDES;
 
+    strcmp_s(ACVP_ALG_KMAC_128,
+             ACVP_ALG_NAME_MAX,
+             str, &diff);
+    if (!diff) return ACVP_KDF108_MAC_MODE_KMAC_128;
+
+    strcmp_s(ACVP_ALG_KMAC_256,
+             ACVP_ALG_NAME_MAX,
+             str, &diff);
+    if (!diff) return ACVP_KDF108_MAC_MODE_KMAC_256;
+
     return 0;
 }
 
@@ -316,9 +347,10 @@ ACVP_RESULT acvp_kdf108_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     ACVP_KDF108_MAC_MODE_VAL mac_mode = 0;
     ACVP_KDF108_FIXED_DATA_ORDER_VAL ctr_loc = 0;
     int key_out_bit_len = 0, key_out_len = 0, key_in_len = 0,
-        iv_len = 0, ctr_len = 0, deferred = 0;
+        iv_len = 0, ctr_len = 0, context_len = 0, label_len = 0, deferred = 0;
     const char *kdf_mode_str = NULL, *mac_mode_str = NULL, *key_in_str = NULL,
-               *iv_str = NULL, *ctr_loc_str = NULL;
+               *iv_str = NULL, *ctr_loc_str = NULL, *context_str = NULL,
+               *label_str = NULL;
 
     if (!ctx) {
         ACVP_LOG_ERR("No ctx for handler operation");
@@ -368,6 +400,16 @@ ACVP_RESULT acvp_kdf108_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         return rv;
     }
 
+    kdf_mode_str = json_object_get_string(obj, "mode");
+    if (kdf_mode_str) {
+        kdf_mode = read_mode(kdf_mode_str);
+        if (!kdf_mode) {
+            ACVP_LOG_ERR("Server JSON invalid kdfMode");
+            rv = ACVP_INVALID_ARG;
+            goto err;
+        }
+    }
+
     groups = json_object_get_array(obj, "testGroups");
     g_cnt = json_array_get_count(groups);
     for (i = 0; i < g_cnt; i++) {
@@ -391,63 +433,80 @@ ACVP_RESULT acvp_kdf108_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         json_object_set_value(r_gobj, "tests", json_value_init_array());
         r_tarr = json_object_get_array(r_gobj, "tests");
 
-        kdf_mode_str = json_object_get_string(groupobj, "kdfMode");
-        if (!kdf_mode_str) {
-            ACVP_LOG_ERR("Failed to include kdfMode");
-            rv = ACVP_MISSING_ARG;
-            goto err;
-        }
-        kdf_mode = read_mode(kdf_mode_str);
-        if (!kdf_mode) {
-            ACVP_LOG_ERR("Server JSON invalid kdfMode");
-            rv = ACVP_INVALID_ARG;
-            goto err;
-        }
-
-        mac_mode_str = json_object_get_string(groupobj, "macMode");
-        if (!mac_mode_str) {
-            ACVP_LOG_ERR("Server JSON missing macMode");
-            rv = ACVP_MISSING_ARG;
-            goto err;
-        }
-        mac_mode = read_mac_mode(mac_mode_str);
-        if (!mac_mode) {
-            ACVP_LOG_ERR("Server JSON invalid macMode");
-            rv = ACVP_INVALID_ARG;
-            goto err;
-        }
-
-        key_out_bit_len = json_object_get_number(groupobj, "keyOutLength");
-        if (!key_out_bit_len || key_out_bit_len > ACVP_KDF108_KEYOUT_BIT_MAX) {
-            ACVP_LOG_ERR("Server JSON invalid keyOutLength, (%d)", key_out_len);
-            rv = ACVP_INVALID_ARG;
-            goto err;
-        }
-        // Get the keyout byte length  (+1 for overflow bits)
-        key_out_len = (key_out_bit_len + 7) / 8;
-
-        ctr_len = json_object_get_number(groupobj, "counterLength");
-        if (kdf_mode == ACVP_KDF108_MODE_COUNTER) {
-            /* Only check during counter mode */
-            if (ctr_len != 8 && ctr_len != 16 &&
-                ctr_len != 24 && ctr_len != 32) {
-                ACVP_LOG_ERR("Server JSON invalid counterLength, (%d)", ctr_len);
+        /* Process testGroups header info */
+        if (kdf_mode == ACVP_KDF108_MODE_KMAC) {
+            mac_mode_str = json_object_get_string(groupobj, "macMode");
+            if (!mac_mode_str) {
+                ACVP_LOG_ERR("Server JSON missing macMode");
+                rv = ACVP_MISSING_ARG;
+                goto err;
+            }
+            mac_mode = read_mac_mode(mac_mode_str);
+            if (!mac_mode) {
+                ACVP_LOG_ERR("Server JSON invalid macMode");
                 rv = ACVP_INVALID_ARG;
                 goto err;
             }
         }
+        else {
+            kdf_mode_str = json_object_get_string(groupobj, "kdfMode");
+            if (!kdf_mode_str) {
+                ACVP_LOG_ERR("Failed to include kdfMode");
+                rv = ACVP_MISSING_ARG;
+                goto err;
+            }
+            kdf_mode = read_mode(kdf_mode_str);
+            if (!kdf_mode) {
+                ACVP_LOG_ERR("Server JSON invalid kdfMode");
+                rv = ACVP_INVALID_ARG;
+                goto err;
+            }
 
-        ctr_loc_str = json_object_get_string(groupobj, "counterLocation");
-        if (!ctr_loc_str) {
-            ACVP_LOG_ERR("Server JSON missing counterLocation");
-            rv = ACVP_MISSING_ARG;
-            goto err;
-        }
-        ctr_loc = read_ctr_location(ctr_loc_str);
-        if (!ctr_loc) {
-            ACVP_LOG_ERR("Server JSON invalid counterLocation.");
-            rv = ACVP_INVALID_ARG;
-            goto err;
+            mac_mode_str = json_object_get_string(groupobj, "macMode");
+            if (!mac_mode_str) {
+                ACVP_LOG_ERR("Server JSON missing macMode");
+                rv = ACVP_MISSING_ARG;
+                goto err;
+            }
+            mac_mode = read_mac_mode(mac_mode_str);
+            if (!mac_mode) {
+                ACVP_LOG_ERR("Server JSON invalid macMode");
+                rv = ACVP_INVALID_ARG;
+                goto err;
+            }
+
+            key_out_bit_len = json_object_get_number(groupobj, "keyOutLength");
+            if (!key_out_bit_len || key_out_bit_len > ACVP_KDF108_KEYOUT_BIT_MAX) {
+                ACVP_LOG_ERR("Server JSON invalid keyOutLength, (%d)", key_out_len);
+                rv = ACVP_INVALID_ARG;
+                goto err;
+            }
+            // Get the keyout byte length  (+1 for overflow bits)
+            key_out_len = (key_out_bit_len + 7) / 8;
+
+            ctr_len = json_object_get_number(groupobj, "counterLength");
+            if (kdf_mode == ACVP_KDF108_MODE_COUNTER) {
+                /* Only check during counter mode */
+                if (ctr_len != 8 && ctr_len != 16 &&
+                    ctr_len != 24 && ctr_len != 32) {
+                    ACVP_LOG_ERR("Server JSON invalid counterLength, (%d)", ctr_len);
+                    rv = ACVP_INVALID_ARG;
+                    goto err;
+                }
+            }
+
+            ctr_loc_str = json_object_get_string(groupobj, "counterLocation");
+            if (!ctr_loc_str) {
+                ACVP_LOG_ERR("Server JSON missing counterLocation");
+                rv = ACVP_MISSING_ARG;
+                goto err;
+            }
+            ctr_loc = read_ctr_location(ctr_loc_str);
+            if (!ctr_loc) {
+                ACVP_LOG_ERR("Server JSON invalid counterLocation.");
+                rv = ACVP_INVALID_ARG;
+                goto err;
+            }
         }
 
         /*
@@ -456,9 +515,11 @@ ACVP_RESULT acvp_kdf108_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         ACVP_LOG_VERBOSE("    Test group: %d", i);
         ACVP_LOG_VERBOSE("       kdfMode: %s", kdf_mode_str);
         ACVP_LOG_VERBOSE("       macMode: %s", mac_mode_str);
+        if (kdf_mode != ACVP_KDF108_MODE_KMAC) {
         ACVP_LOG_VERBOSE("     keyOutLen: %d", key_out_bit_len);
         ACVP_LOG_VERBOSE("    counterLen: %d", ctr_len);
         ACVP_LOG_VERBOSE("    counterLoc: %s", ctr_loc_str);
+        }
 
         tests = json_object_get_array(groupobj, "tests");
         t_cnt = json_array_get_count(tests);
@@ -469,48 +530,112 @@ ACVP_RESULT acvp_kdf108_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
             tc_id = json_object_get_number(testobj, "tcId");
 
-            key_in_str = json_object_get_string(testobj, "keyIn");
-            if (!key_in_str) {
-                ACVP_LOG_ERR("Server JSON missing keyIn");
-                rv = ACVP_MISSING_ARG;
-                goto err;
-            }
-
-            key_in_len = strnlen_s(key_in_str, ACVP_KDF108_KEYIN_STR_MAX + 1);
-            if (key_in_len > ACVP_KDF108_KEYIN_STR_MAX) {
-                ACVP_LOG_ERR("keyIn too long, max allowed=(%d)",
-                             ACVP_KDF108_KEYIN_STR_MAX);
-                rv = ACVP_INVALID_ARG;
-                goto err;
-            }
-            // Convert to byte length
-            key_in_len = key_in_len / 2;
-
-            if (kdf_mode == ACVP_KDF108_MODE_FEEDBACK) {
-                iv_str = json_object_get_string(testobj, "iv");
-                if (!iv_str) {
-                    ACVP_LOG_ERR("Server JSON missing iv");
+            if (kdf_mode == ACVP_KDF108_MODE_KMAC) {
+                key_in_str = json_object_get_string(testobj, "keyDerivationKey");
+                if (!key_in_str) {
+                    ACVP_LOG_ERR("Server JSON missing keyDerivationKey");
                     rv = ACVP_MISSING_ARG;
-                    goto err;
-               }
-
-                iv_len = strnlen_s(iv_str, ACVP_KDF108_IV_STR_MAX + 1);
-                if (iv_len > ACVP_KDF108_IV_STR_MAX) {
-                    ACVP_LOG_ERR("iv too long, max allowed=(%d)",
-                                 ACVP_KDF108_IV_STR_MAX);
-                    rv = ACVP_INVALID_ARG;
                     goto err;
                 }
 
+                key_in_len = strnlen_s(key_in_str, ACVP_KDF108_KEYIN_STR_MAX + 1);
+                if (key_in_len > ACVP_KDF108_KEYIN_STR_MAX) {
+                    ACVP_LOG_ERR("keyDerivationKey too long, max allowed=(%d)",
+                                ACVP_KDF108_KEYIN_STR_MAX);
+                    rv = ACVP_INVALID_ARG;
+                    goto err;
+                }
                 // Convert to byte length
-                iv_len = iv_len / 2;
-            }
+                key_in_len = key_in_len / 2;
 
-            deferred = json_object_get_boolean(testobj, "deferred");
-            if (deferred == -1 && ctr_loc == ACVP_KDF108_FIXED_DATA_ORDER_MIDDLE) {
-                ACVP_LOG_ERR("Server JSON missing deferred");
-                rv = ACVP_MISSING_ARG;
-                goto err;
+                context_str = json_object_get_string(testobj, "context");
+                if (!context_str) {
+                    ACVP_LOG_ERR("Server JSON missing context");
+                    rv = ACVP_MISSING_ARG;
+                    goto err;
+                }
+
+                context_len = strnlen_s(context_str, ACVP_KDF108_CONTEXT_STR_MAX + 1);
+                if (context_len > ACVP_KDF108_CONTEXT_STR_MAX) {
+                    ACVP_LOG_ERR("context too long, max allowed=(%d)",
+                                ACVP_KDF108_CONTEXT_STR_MAX);
+                    rv = ACVP_INVALID_ARG;
+                    goto err;
+                }
+                // Convert to byte length
+                context_len = context_len / 2;
+
+                label_str = json_object_get_string(testobj, "label");
+                if (!label_str) {
+                    ACVP_LOG_ERR("Server JSON missing label");
+                    rv = ACVP_MISSING_ARG;
+                    goto err;
+                }
+
+                label_len = strnlen_s(label_str, ACVP_KDF108_LABEL_STR_MAX + 1);
+                if (label_len > ACVP_KDF108_LABEL_STR_MAX) {
+                    ACVP_LOG_ERR("label too long, max allowed=(%d)",
+                                ACVP_KDF108_LABEL_STR_MAX);
+                    rv = ACVP_INVALID_ARG;
+                    goto err;
+                }
+                // Convert to byte length
+                label_len = label_len / 2;
+
+                key_out_bit_len = json_object_get_number(testobj, "derivedKeyLength");
+                if (!key_out_bit_len || key_out_bit_len > ACVP_KDF108_KEYOUT_BIT_MAX) {
+                    ACVP_LOG_ERR("Server JSON invalid derivedKeyLength, (%d)", key_out_len);
+                    rv = ACVP_INVALID_ARG;
+                    goto err;
+                }
+                // Get the keyout byte length  (+1 for overflow bits)
+                key_out_len = (key_out_bit_len + 7) / 8;
+
+            }
+            else {
+                key_in_str = json_object_get_string(testobj, "keyIn");
+                if (!key_in_str) {
+                    ACVP_LOG_ERR("Server JSON missing keyIn");
+                    rv = ACVP_MISSING_ARG;
+                    goto err;
+                }
+
+                key_in_len = strnlen_s(key_in_str, ACVP_KDF108_KEYIN_STR_MAX + 1);
+                if (key_in_len > ACVP_KDF108_KEYIN_STR_MAX) {
+                    ACVP_LOG_ERR("keyIn too long, max allowed=(%d)",
+                                ACVP_KDF108_KEYIN_STR_MAX);
+                    rv = ACVP_INVALID_ARG;
+                    goto err;
+                }
+                // Convert to byte length
+                key_in_len = key_in_len / 2;
+
+                if (kdf_mode == ACVP_KDF108_MODE_FEEDBACK) {
+                    iv_str = json_object_get_string(testobj, "iv");
+                    if (!iv_str) {
+                        ACVP_LOG_ERR("Server JSON missing iv");
+                        rv = ACVP_MISSING_ARG;
+                        goto err;
+                }
+
+                    iv_len = strnlen_s(iv_str, ACVP_KDF108_IV_STR_MAX + 1);
+                    if (iv_len > ACVP_KDF108_IV_STR_MAX) {
+                        ACVP_LOG_ERR("iv too long, max allowed=(%d)",
+                                    ACVP_KDF108_IV_STR_MAX);
+                        rv = ACVP_INVALID_ARG;
+                        goto err;
+                    }
+
+                    // Convert to byte length
+                    iv_len = iv_len / 2;
+                }
+
+                deferred = json_object_get_boolean(testobj, "deferred");
+                if (deferred == -1 && ctr_loc == ACVP_KDF108_FIXED_DATA_ORDER_MIDDLE) {
+                    ACVP_LOG_ERR("Server JSON missing deferred");
+                    rv = ACVP_MISSING_ARG;
+                    goto err;
+                }
             }
 
             /*
@@ -518,16 +643,24 @@ ACVP_RESULT acvp_kdf108_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
              */
             ACVP_LOG_VERBOSE("        Test case: %d", j);
             ACVP_LOG_VERBOSE("             tcId: %d", tc_id);
-            ACVP_LOG_VERBOSE("            keyIn: %s", key_in_str);
-            ACVP_LOG_VERBOSE("         deferred: %d", deferred);
+            if (kdf_mode == ACVP_KDF108_MODE_KMAC) {
+                ACVP_LOG_VERBOSE(" keyDerivationKey: %s", key_in_str);
+                ACVP_LOG_VERBOSE("          context: %s", context_str);
+                ACVP_LOG_VERBOSE("            label: %s", label_str);
+            }
+            else {
+                ACVP_LOG_VERBOSE("            keyIn: %s", key_in_str);
+                ACVP_LOG_VERBOSE("         deferred: %d", deferred);
+            }
 
             /*
              * Setup the test case data that will be passed down to
              * the crypto module.
              */
-            rv = acvp_kdf108_init_tc(&stc, tc_id, kdf_mode, mac_mode,
-                                     ctr_loc, key_in_str, iv_str, key_in_len,
-                                     key_out_len, iv_len, ctr_len, deferred);
+            rv = acvp_kdf108_init_tc(&stc, tc_id, kdf_mode, mac_mode, ctr_loc, 
+                                     key_in_str, iv_str, context_str, label_str,
+                                     key_in_len, key_out_len, iv_len, context_len, 
+                                     label_len, ctr_len, deferred);
             if (rv != ACVP_SUCCESS) {
                 acvp_kdf108_release_tc(&stc);
                 goto err;

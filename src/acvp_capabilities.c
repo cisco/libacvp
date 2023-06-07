@@ -774,6 +774,10 @@ static ACVP_RESULT acvp_validate_kdf108_param_value(ACVP_CTX *ctx, ACVP_KDF108_P
             retval = ACVP_SUCCESS;
         }
         break;
+    case ACVP_KDF108_DERIVATION_KEYLEN:
+    case ACVP_KDF108_CONTEXT_LEN:
+    case ACVP_KDF108_LABEL_LEN:
+    case ACVP_KDF108_DERIVED_KEYLEN:
     default:
         break;
     }
@@ -1993,6 +1997,7 @@ static ACVP_RESULT acvp_validate_prereq_val(ACVP_CIPHER cipher, ACVP_PREREQ_ALG 
         if (pre_req == ACVP_PREREQ_DRBG ||
             pre_req == ACVP_PREREQ_HMAC ||
             pre_req == ACVP_PREREQ_CMAC ||
+            pre_req == ACVP_PREREQ_KMAC ||
             pre_req == ACVP_PREREQ_KAS) {
             return ACVP_SUCCESS;
         }
@@ -5713,8 +5718,30 @@ ACVP_RESULT acvp_cap_kdf108_set_parm(ACVP_CTX *ctx,
             mode_obj->kdf_mode = ACVP_MODE_DPI;
         }
         break;
+    case ACVP_KDF108_MODE_KMAC:
+        mode_obj = &cap->cap.kdf108_cap->kmac_mode;
+        if (!mode_obj->kdf_mode) {
+            mode_obj->kdf_mode = ACVP_MODE_KMAC;
+        }
+        break;    
     default:
         return ACVP_INVALID_ARG;
+    }
+
+    // Enforce MAC algorithm exclusions
+    if (param == ACVP_KDF108_MAC_MODE) {
+        if (mode == ACVP_KDF108_MODE_KMAC) {
+            if ( (value != ACVP_KDF108_MAC_MODE_KMAC_128) && 
+                 (value != ACVP_KDF108_MAC_MODE_KMAC_256)) {
+                return ACVP_INVALID_ARG;
+            }
+        }
+        else {
+            if ( (value == ACVP_KDF108_MAC_MODE_KMAC_128) || 
+                 (value == ACVP_KDF108_MAC_MODE_KMAC_256)) {
+                return ACVP_INVALID_ARG;
+            }
+        }
     }
 
     /* only support two method types so just use whichever is available */
@@ -5749,11 +5776,29 @@ ACVP_RESULT acvp_cap_kdf108_set_parm(ACVP_CTX *ctx,
             result = acvp_append_name_list(&mode_obj->mac_mode, ACVP_ALG_HMAC_SHA2_512);
             break;
         case ACVP_KDF108_MAC_MODE_HMAC_SHA512_224:
+            result = acvp_append_name_list(&mode_obj->mac_mode, ACVP_ALG_HMAC_SHA2_512_224);
+            break;
         case ACVP_KDF108_MAC_MODE_HMAC_SHA512_256:
+            result = acvp_append_name_list(&mode_obj->mac_mode, ACVP_ALG_HMAC_SHA2_512_256);
+            break;
         case ACVP_KDF108_MAC_MODE_HMAC_SHA3_224:
+            result = acvp_append_name_list(&mode_obj->mac_mode, ACVP_ALG_HMAC_SHA3_224);
+            break;
         case ACVP_KDF108_MAC_MODE_HMAC_SHA3_256:
+            result = acvp_append_name_list(&mode_obj->mac_mode, ACVP_ALG_HMAC_SHA3_256);
+            break;
         case ACVP_KDF108_MAC_MODE_HMAC_SHA3_384:
+            result = acvp_append_name_list(&mode_obj->mac_mode, ACVP_ALG_HMAC_SHA3_384);
+            break;
         case ACVP_KDF108_MAC_MODE_HMAC_SHA3_512:
+            result = acvp_append_name_list(&mode_obj->mac_mode, ACVP_ALG_HMAC_SHA3_512);
+            break;
+        case ACVP_KDF108_MAC_MODE_KMAC_128:
+            result = acvp_append_name_list(&mode_obj->mac_mode, ACVP_ALG_KMAC_128);
+            break;
+        case ACVP_KDF108_MAC_MODE_KMAC_256:
+            result = acvp_append_name_list(&mode_obj->mac_mode, ACVP_ALG_KMAC_256);
+            break;
         default:
             return ACVP_INVALID_ARG;
         }
@@ -5802,6 +5847,10 @@ ACVP_RESULT acvp_cap_kdf108_set_parm(ACVP_CTX *ctx,
     case ACVP_KDF108_PARAM_MIN:
     case ACVP_KDF108_PARAM_MAX:
     case ACVP_KDF108_KDF_MODE:
+    case ACVP_KDF108_DERIVATION_KEYLEN: /**< KDF108-KMAC only */
+    case ACVP_KDF108_DERIVED_KEYLEN:    /**< KDF108-KMAC only */
+    case ACVP_KDF108_CONTEXT_LEN:       /**< KDF108-KMAC only */
+    case ACVP_KDF108_LABEL_LEN:         /**< KDF108-KMAC only */
     default:
         return ACVP_INVALID_ARG;
     }
@@ -6387,19 +6436,47 @@ ACVP_RESULT acvp_cap_kdf108_set_domain(ACVP_CTX *ctx,
     switch (mode) {
     case ACVP_KDF108_MODE_COUNTER:
         mode_obj = &cap_list->cap.kdf108_cap->counter_mode;
+        if (!mode_obj->kdf_mode) {
+            mode_obj->kdf_mode = ACVP_MODE_COUNTER;
+        }
         break;
     case ACVP_KDF108_MODE_FEEDBACK:
         mode_obj = &cap_list->cap.kdf108_cap->feedback_mode;
+        if (!mode_obj->kdf_mode) {
+            mode_obj->kdf_mode = ACVP_MODE_FEEDBACK;
+        }
         break;
     case ACVP_KDF108_MODE_DPI:
         mode_obj = &cap_list->cap.kdf108_cap->dpi_mode;
+        if (!mode_obj->kdf_mode) {
+            mode_obj->kdf_mode = ACVP_MODE_DPI;
+        }
+        break;
+    case ACVP_KDF108_MODE_KMAC:
+        mode_obj = &cap_list->cap.kdf108_cap->kmac_mode;
+        if (!mode_obj->kdf_mode) {
+            mode_obj->kdf_mode = ACVP_MODE_KMAC;
+        }
         break;
     default:
         return ACVP_INVALID_ARG;
     }
+
     switch (param) {
     case ACVP_KDF108_SUPPORTED_LEN:
         domain = &mode_obj->supported_lens;
+        break;
+    case ACVP_KDF108_DERIVATION_KEYLEN:
+        domain = &mode_obj->derivation_keylens;
+        break;
+    case ACVP_KDF108_DERIVED_KEYLEN:
+        domain = &mode_obj->derived_keylens;
+        break;
+    case ACVP_KDF108_CONTEXT_LEN:
+        domain = &mode_obj->context_lens;
+        break;
+    case ACVP_KDF108_LABEL_LEN:
+        domain = &mode_obj->label_lens;
         break;
     case ACVP_KDF108_KDF_MODE:
     case ACVP_KDF108_MAC_MODE:

@@ -523,7 +523,8 @@ typedef enum acvp_kdf135_srtp_param {
 typedef enum acvp_kdf108_mode {
     ACVP_KDF108_MODE_COUNTER = 1,
     ACVP_KDF108_MODE_FEEDBACK,
-    ACVP_KDF108_MODE_DPI
+    ACVP_KDF108_MODE_DPI,
+    ACVP_KDF108_MODE_KMAC
 } ACVP_KDF108_MODE;
 
 /** @enum ACVP_KDF108_MAC_MODE_VAL */
@@ -544,6 +545,8 @@ typedef enum acvp_kdf108_mac_mode_val {
     ACVP_KDF108_MAC_MODE_HMAC_SHA3_256,
     ACVP_KDF108_MAC_MODE_HMAC_SHA3_384,
     ACVP_KDF108_MAC_MODE_HMAC_SHA3_512,
+    ACVP_KDF108_MAC_MODE_KMAC_128,
+    ACVP_KDF108_MAC_MODE_KMAC_256,
     ACVP_KDF108_MAC_MODE_MAX
 } ACVP_KDF108_MAC_MODE_VAL;
 
@@ -798,6 +801,10 @@ typedef enum acvp_kdf108_param {
     ACVP_KDF108_COUNTER_LEN,
     ACVP_KDF108_SUPPORTS_EMPTY_IV,
     ACVP_KDF108_REQUIRES_EMPTY_IV,
+    ACVP_KDF108_DERIVATION_KEYLEN, /**< KDF108-KMAC only */
+    ACVP_KDF108_DERIVED_KEYLEN,    /**< KDF108-KMAC only */
+    ACVP_KDF108_CONTEXT_LEN,       /**< KDF108-KMAC only */
+    ACVP_KDF108_LABEL_LEN,         /**< KDF108-KMAC only */
     ACVP_KDF108_PARAM_MAX
 } ACVP_KDF108_PARM;
 
@@ -1305,13 +1312,17 @@ typedef struct acvp_kdf108_tc_t {
     ACVP_KDF108_MODE mode;
     ACVP_KDF108_MAC_MODE_VAL mac_mode;
     ACVP_KDF108_FIXED_DATA_ORDER_VAL counter_location;
-    unsigned char *key_in;
-    unsigned char *key_out;
+    unsigned char *key_in;      /**< KDF108-KMAC: KeyDerivationKey */
+    unsigned char *key_out;     /**< KDF108-KMAC: Generated Key (output) */
     unsigned char *fixed_data;
     unsigned char *iv;
+    unsigned char *context;     /**< KDF108-KMAC: Context */
+    unsigned char *label;       /**< KDF108-KMAC: Label */
     int key_in_len;             /**< Length of key_in (in bytes) */
     int key_out_len;            /**< Length of key_out (in bytes) */
     int iv_len;                 /**< Length of iv (in bytes) */
+    int context_len;            /**< Length of context (KMAC-only, in bytes) */
+    int label_len;              /**< Length of label (KMAC-only, in bytes) */
     int fixed_data_len;         /**< Length of fixed_data (in bytes).
                                      --- User supplied ---
                                      Must be <= ACVP_KDF108_FIXED_DATA_MAX */

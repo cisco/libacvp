@@ -77,6 +77,7 @@
 #define ACVP_REV_STR_SP800_56BR2 "Sp800-56Br2"
 #define ACVP_REV_STR_SP800_56CR1 "Sp800-56Cr1"
 #define ACVP_REV_STR_SP800_56CR2 "Sp800-56Cr2"
+#define ACVP_REV_STR_SP800_108R1 "Sp800-108r1"
 #define ACVP_REV_STR_RFC8446 "RFC8446"
 #define ACVP_REV_STR_RFC7627 "RFC7627"
 
@@ -363,6 +364,7 @@
 #define ACVP_MODE_COUNTER           "counter"
 #define ACVP_MODE_FEEDBACK          "feedback"
 #define ACVP_MODE_DPI               "double pipeline iteration"
+#define ACVP_MODE_KMAC              "KMAC"
 #define ACVP_KDF135_ALG_STR         "kdf-components"
 
 #define ACVP_AUTH_METHOD_DSA_STR "dsa"
@@ -686,6 +688,14 @@
 #define ACVP_KDF108_FIXED_DATA_BIT_MAX 512 /**< Arbitrary */
 #define ACVP_KDF108_FIXED_DATA_BYTE_MAX (ACVP_KDF108_FIXED_DATA_BIT_MAX >> 3)
 #define ACVP_KDF108_FIXED_DATA_STR_MAX (ACVP_KDF108_FIXED_DATA_BIT_MAX >> 2)
+
+#define ACVP_KDF108_CONTEXT_BIT_MAX 4096 /**< Based on supportedLengths */
+#define ACVP_KDF108_CONTEXT_BYTE_MAX (ACVP_KDF108_CONTEXT_BIT_MAX >> 3)
+#define ACVP_KDF108_CONTEXT_STR_MAX (ACVP_KDF108_CONTEXT_BIT_MAX >> 2)
+
+#define ACVP_KDF108_LABEL_BIT_MAX 4096 /**< Based on supportedLengths */
+#define ACVP_KDF108_LABEL_BYTE_MAX (ACVP_KDF108_LABEL_BIT_MAX >> 3)
+#define ACVP_KDF108_LABEL_STR_MAX (ACVP_KDF108_LABEL_BIT_MAX >> 2)
 /*
  * END KDF108
  */
@@ -1144,12 +1154,17 @@ typedef struct acvp_kdf108_mode_params {
     ACVP_SL_LIST *counter_lens;
     int empty_iv_support;
     int requires_empty_iv;
+    ACVP_JSON_DOMAIN_OBJ derivation_keylens;
+    ACVP_JSON_DOMAIN_OBJ derived_keylens;
+    ACVP_JSON_DOMAIN_OBJ context_lens;
+    ACVP_JSON_DOMAIN_OBJ label_lens;
 } ACVP_KDF108_MODE_PARAMS;
 
 typedef struct acvp_kdf108_capability {
     ACVP_KDF108_MODE_PARAMS counter_mode;
     ACVP_KDF108_MODE_PARAMS feedback_mode;
     ACVP_KDF108_MODE_PARAMS dpi_mode;
+    ACVP_KDF108_MODE_PARAMS kmac_mode;
 } ACVP_KDF108_CAP;
 
 typedef struct acvp_kdf135_ssh_capability {
