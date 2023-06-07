@@ -641,7 +641,8 @@ typedef enum acvp_hash_param {
     ACVP_HASH_IN_EMPTY,
     ACVP_HASH_OUT_BIT, /**< Used for ACVP_HASH_SHAKE_128, ACVP_HASH_SHAKE_256 */
     ACVP_HASH_OUT_LENGTH, /**< Used for ACVP_HASH_SHAKE_128, ACVP_HASH_SHAKE_256 */
-    ACVP_HASH_MESSAGE_LEN
+    ACVP_HASH_MESSAGE_LEN,
+    ACVP_HASH_LARGE_DATA
 } ACVP_HASH_PARM;
 
 /**
@@ -985,7 +986,8 @@ typedef enum acvp_hash_testtype {
     ACVP_HASH_TEST_TYPE_NONE = 0,
     ACVP_HASH_TEST_TYPE_AFT,
     ACVP_HASH_TEST_TYPE_MCT,
-    ACVP_HASH_TEST_TYPE_VOT
+    ACVP_HASH_TEST_TYPE_VOT,
+    ACVP_HASH_TEST_TYPE_LDT
 } ACVP_HASH_TESTTYPE;
 
 /** @enum ACVP_CMAC_TESTTYPE */
@@ -1073,6 +1075,12 @@ typedef enum acvp_xof_support_option {
     ACVP_XOF_SUPPORT_BOTH
 } ACVP_XOF_SUPPORT_OPTION;
 
+/** @enum ACVP_HASH_EXPANSION_METHOD */
+typedef enum acvp_hash_expansion_method {
+    ACVP_HASH_EXPANSION_NA = 0,
+    ACVP_HASH_EXPANSION_REPEATING
+} ACVP_HASH_EXPANSION_METHOD;
+
 /**
  * @struct ACVP_SYM_CIPHER_TC
  * @brief This struct holds data that represents a single test case for a symmetric cipher, such as
@@ -1131,7 +1139,8 @@ typedef struct acvp_sym_cipher_tc_t {
 typedef struct acvp_hash_tc_t {
     ACVP_CIPHER cipher;
     unsigned int tc_id;           /**< Test case id */
-    ACVP_HASH_TESTTYPE test_type; /**< KAT or MCT or VOT */
+    ACVP_HASH_TESTTYPE test_type; /**< KAT, MCT, VOT, or LDT */
+    ACVP_HASH_EXPANSION_METHOD exp_method;  /**< LDT Expansion Technique  */
     unsigned char *msg; /**< Message input */
     unsigned char *m1; /**< Mesage input #1
                             Provided when \ref ACVP_HASH_TC.test_type is MCT */
@@ -1148,6 +1157,8 @@ typedef struct acvp_hash_tc_t {
     unsigned int xof_bit_len; /**< XOF (extendable output format) length
                                    The expected length (in bits) of \ref ACVP_HASH_TC.md
                                    Only provided when \ref ACVP_HASH_TC.test_type is VOT */
+    unsigned long long int exp_len; /**< The final length (in bytes) of the expanded content
+                                         Only provided when \ref ACVP_HASH_TC.test_type is LDT */
     unsigned char *md; /**< The resulting digest calculated for the test case.
                             SUPPLIED BY USER */
     unsigned int md_len; /**< The length (in bytes) of \ref ACVP_HASH_TC.md

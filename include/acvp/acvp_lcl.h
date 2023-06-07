@@ -1128,6 +1128,7 @@ typedef struct acvp_hash_capability {
                       Only for ACVP_HASH_SHAKE_* */
     ACVP_JSON_DOMAIN_OBJ out_len; /**< Required for ACVP_HASH_SHAKE_* */
     ACVP_JSON_DOMAIN_OBJ msg_length;
+    ACVP_SL_LIST *large_lens;
 } ACVP_HASH_CAP;
 
 typedef struct acvp_kdf135_snmp_capability {

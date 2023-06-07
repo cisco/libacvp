@@ -92,6 +92,8 @@ static ACVP_RESULT acvp_lookup_prereqVals(JSON_Object *cap_obj, ACVP_CAPS_LIST *
 
 static ACVP_RESULT acvp_build_hash_register_cap(JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry) {
     JSON_Array *msg_array = NULL;
+    JSON_Array *temp_arr = NULL;
+    ACVP_SL_LIST *sl_list = NULL;
     JSON_Value *msg_val = NULL;
     JSON_Object *msg_obj = NULL;
     ACVP_HASH_CAP *hash_cap = cap_entry->cap.hash_cap;
@@ -147,6 +149,17 @@ static ACVP_RESULT acvp_build_hash_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
         json_object_set_number(msg_obj, "max", hash_cap->msg_length.max);
         json_object_set_number(msg_obj, "increment", hash_cap->msg_length.increment);
         json_array_append_value(msg_array, msg_val);
+
+        /* Set the supported large data lengths */
+        if (cap_entry->cap.hash_cap->large_lens) {
+            json_object_set_value(cap_obj, "performLargeDataTest", json_value_init_array());
+            temp_arr = json_object_get_array(cap_obj, "performLargeDataTest");
+            sl_list = cap_entry->cap.hash_cap->large_lens;
+            while (sl_list) {
+                json_array_append_number(temp_arr, sl_list->length);
+                sl_list = sl_list->next;
+            }
+        }
     }
 
     return ACVP_SUCCESS;

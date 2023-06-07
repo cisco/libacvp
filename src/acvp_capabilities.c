@@ -2944,6 +2944,10 @@ static ACVP_RESULT acvp_validate_hash_parm_value(ACVP_HASH_PARM parm, int value)
     case ACVP_HASH_OUT_BIT:
         retval = is_valid_tf_param(value);
         break;
+    case ACVP_HASH_LARGE_DATA:
+        if (value == 1 || value == 2 || value == 4 || value == 8)
+            retval = ACVP_SUCCESS;
+        break;
     case ACVP_HASH_OUT_LENGTH:
     case ACVP_HASH_MESSAGE_LEN:
     default:
@@ -2978,6 +2982,8 @@ ACVP_RESULT acvp_cap_hash_set_parm(ACVP_CTX *ctx,
     case ACVP_SUB_HASH_SHA3_512:
     case ACVP_SUB_HASH_SHAKE_128:
     case ACVP_SUB_HASH_SHAKE_256:
+        if (param == ACVP_HASH_LARGE_DATA) // No SHA3 or SHAKE
+            return ACVP_INVALID_ARG;
         break;
     case ACVP_SUB_HASH_SHA1:
     case ACVP_SUB_HASH_SHA2_224:
@@ -2986,6 +2992,9 @@ ACVP_RESULT acvp_cap_hash_set_parm(ACVP_CTX *ctx,
     case ACVP_SUB_HASH_SHA2_512:
     case ACVP_SUB_HASH_SHA2_512_224:
     case ACVP_SUB_HASH_SHA2_512_256:
+        if (param != ACVP_HASH_LARGE_DATA) // SHA1 & SHA2 only
+            return ACVP_INVALID_ARG;
+        break; // OK to proceed
     default:
         return ACVP_INVALID_ARG;
     }
@@ -3034,6 +3043,13 @@ ACVP_RESULT acvp_cap_hash_set_parm(ACVP_CTX *ctx,
 
         hash_cap->out_bit = value;
         break;
+    case ACVP_HASH_LARGE_DATA:
+        if (acvp_append_sl_list(&hash_cap->large_lens, value) != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Error adding LDT len to list");
+            return ACVP_MALLOC_FAIL;
+        }
+        break;
+
     case ACVP_HASH_OUT_LENGTH:
     case ACVP_HASH_MESSAGE_LEN:
     default:
