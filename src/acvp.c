@@ -568,6 +568,17 @@ static void acvp_cap_free_kdf108(ACVP_KDF108_CAP *cap) {
             acvp_cap_free_domain(&mode_obj->supported_lens);
         }
 
+        if (cap->kmac_mode.kdf_mode) {
+            mode_obj = &cap->kmac_mode;
+            if (mode_obj->mac_mode) {
+                acvp_cap_free_nl(mode_obj->mac_mode);
+            }
+            acvp_cap_free_domain(&mode_obj->derivation_keylens);
+            acvp_cap_free_domain(&mode_obj->derived_keylens);
+            acvp_cap_free_domain(&mode_obj->context_lens);
+            acvp_cap_free_domain(&mode_obj->label_lens);
+        }
+
         cap = NULL;
     }
 }

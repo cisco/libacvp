@@ -53,8 +53,7 @@ static ACVP_RESULT acvp_kdf108_output_tc(ACVP_CTX *ctx,
     }
     if (stc->mode == ACVP_KDF108_MODE_KMAC) {
         json_object_set_string(tc_rsp, "derivedKey", tmp);
-    }
-    else {
+    } else {
         json_object_set_string(tc_rsp, "keyOut", tmp);
         free(tmp);
 
@@ -135,8 +134,7 @@ static ACVP_RESULT acvp_kdf108_init_tc(ACVP_KDF108_TC *stc,
             rv = acvp_hexstr_to_bin(label, stc->label, label_len, NULL);
             if (rv != ACVP_SUCCESS) return rv;
         }
-    }
-    else {
+    } else {
         stc->fixed_data = calloc(ACVP_KDF108_FIXED_DATA_BYTE_MAX, sizeof(unsigned char));
         if (!stc->fixed_data) { return ACVP_MALLOC_FAIL; }
 
@@ -447,8 +445,7 @@ ACVP_RESULT acvp_kdf108_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 rv = ACVP_INVALID_ARG;
                 goto err;
             }
-        }
-        else {
+        } else {
             kdf_mode_str = json_object_get_string(groupobj, "kdfMode");
             if (!kdf_mode_str) {
                 ACVP_LOG_ERR("Failed to include kdfMode");
@@ -591,8 +588,7 @@ ACVP_RESULT acvp_kdf108_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 // Get the keyout byte length  (+1 for overflow bits)
                 key_out_len = (key_out_bit_len + 7) / 8;
 
-            }
-            else {
+            } else {
                 key_in_str = json_object_get_string(testobj, "keyIn");
                 if (!key_in_str) {
                     ACVP_LOG_ERR("Server JSON missing keyIn");
@@ -647,8 +643,7 @@ ACVP_RESULT acvp_kdf108_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 ACVP_LOG_VERBOSE(" keyDerivationKey: %s", key_in_str);
                 ACVP_LOG_VERBOSE("          context: %s", context_str);
                 ACVP_LOG_VERBOSE("            label: %s", label_str);
-            }
-            else {
+            } else {
                 ACVP_LOG_VERBOSE("            keyIn: %s", key_in_str);
                 ACVP_LOG_VERBOSE("         deferred: %d", deferred);
             }
