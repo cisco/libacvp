@@ -1560,7 +1560,7 @@ static ACVP_RESULT acvp_validate_sym_cipher_domain_value(ACVP_CIPHER cipher, ACV
     case ACVP_AES_GCM:
         switch (parm) {
         case ACVP_SYM_CIPH_DOMAIN_IVLEN:
-            if (min >= 8 && max <= 1024) {
+            if (min >= 0 && max <= 1024) {
                 retval = ACVP_SUCCESS;
             }
             break;
@@ -6555,7 +6555,6 @@ static ACVP_RESULT acvp_add_kas_ecc_prereq_val(ACVP_CTX *ctx, ACVP_KAS_ECC_CAP_M
                                                char *value) {
     ACVP_PREREQ_LIST *prereq_entry, *prereq_entry_2;
 
-    ACVP_LOG_INFO("KAS-ECC mode %d", mode);
     prereq_entry = calloc(1, sizeof(ACVP_PREREQ_LIST));
     if (!prereq_entry) {
         return ACVP_MALLOC_FAIL;
@@ -8529,7 +8528,7 @@ ACVP_RESULT acvp_cap_kts_ifc_set_param_string(ACVP_CTX *ctx,
 ACVP_RESULT acvp_cap_kts_ifc_set_scheme_string(ACVP_CTX *ctx,
                                                ACVP_CIPHER cipher,
                                                ACVP_KTS_IFC_SCHEME_TYPE scheme,
-                                               ACVP_KTS_IFC_PARAM param,
+                                               ACVP_KTS_IFC_SCHEME_PARAM param,
                                                char *value) {
     unsigned int len = strnlen_s(value, ACVP_CAPABILITY_STR_MAX + 1);
     ACVP_KTS_IFC_CAP *kts_ifc_cap = NULL;
@@ -8588,7 +8587,6 @@ ACVP_RESULT acvp_cap_kts_ifc_set_scheme_string(ACVP_CTX *ctx,
     case ACVP_KTS_IFC_ROLE:
     case ACVP_KTS_IFC_L:
     case ACVP_KTS_IFC_MAC_METHODS:
-    case ACVP_KTS_IFC_FIXEDPUBEXP:
     default:
         ACVP_LOG_ERR("Invalid param");
         return ACVP_INVALID_ARG;

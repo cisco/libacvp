@@ -927,7 +927,7 @@ static ACVP_RESULT acvp_build_drbg_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
     JSON_Array *capabilities_array = NULL;
     const char *mode_str = NULL;
 
-    if (!&cap_entry->cap.drbg_cap) {
+    if (!cap_entry->cap.drbg_cap) {
         return ACVP_NO_CAP;
     } else {
         cap = cap_entry->cap.drbg_cap;
