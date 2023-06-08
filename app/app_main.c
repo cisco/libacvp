@@ -1064,7 +1064,20 @@ static int enable_hash(ACVP_CTX *ctx) {
     rv = acvp_cap_hash_set_domain(ctx, ACVP_HASH_SHA1, ACVP_HASH_MESSAGE_LEN,
                                   0, 65536, 8);
     CHECK_ENABLE_CAP_RV(rv);
-
+#if 0
+    /*  TEST: 1) malloc buffer, concat full message, process with a single call;
+     *        2) oneshot function or a single call to update; never multiple calls to update
+     *        3) allowed for SHA1 and SHA2 (all), not SHA3 or SHAKE
+     */
+    rv = acvp_cap_hash_set_parm(ctx, ACVP_HASH_SHA1, ACVP_HASH_LARGE_DATA, 1);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_hash_set_parm(ctx, ACVP_HASH_SHA1, ACVP_HASH_LARGE_DATA, 2);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_hash_set_parm(ctx, ACVP_HASH_SHA1, ACVP_HASH_LARGE_DATA, 4);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_hash_set_parm(ctx, ACVP_HASH_SHA1, ACVP_HASH_LARGE_DATA, 8);
+    CHECK_ENABLE_CAP_RV(rv);
+#endif
     rv = acvp_cap_hash_enable(ctx, ACVP_HASH_SHA224, &app_sha_handler);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_hash_set_domain(ctx, ACVP_HASH_SHA224, ACVP_HASH_MESSAGE_LEN,
@@ -1614,6 +1627,28 @@ static int enable_kdf(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_kdf108_set_parm(ctx, ACVP_KDF108_MODE_FEEDBACK, ACVP_KDF108_FIXED_DATA_ORDER, ACVP_KDF108_FIXED_DATA_ORDER_BEFORE);
     CHECK_ENABLE_CAP_RV(rv);
+
+    /* KDF108 KMAC Mode */
+#if 0
+    /* Only valid for OpenSSL 3.1 */
+    /* Call sequence is very close to regular kdf108, with no creation of fixed data */
+    #if OPENSSL_VERSION_NUMBER >= 0x30100000L
+	rv = acvp_cap_set_prereq(ctx, ACVP_KDF108, ACVP_PREREQ_KMAC, value);
+	CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kdf108_set_parm(ctx, ACVP_KDF108_MODE_KMAC, ACVP_KDF108_MAC_MODE, ACVP_KDF108_MAC_MODE_KMAC_128);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kdf108_set_parm(ctx, ACVP_KDF108_MODE_KMAC, ACVP_KDF108_MAC_MODE, ACVP_KDF108_MAC_MODE_KMAC_256);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kdf108_set_domain(ctx, ACVP_KDF108_MODE_KMAC, ACVP_KDF108_DERIVATION_KEYLEN, 112, 4096, 8);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kdf108_set_domain(ctx, ACVP_KDF108_MODE_KMAC, ACVP_KDF108_DERIVED_KEYLEN, 112, 4096, 8);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kdf108_set_domain(ctx, ACVP_KDF108_MODE_KMAC, ACVP_KDF108_CONTEXT_LEN, 8, 4096, 8);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_kdf108_set_domain(ctx, ACVP_KDF108_MODE_KMAC, ACVP_KDF108_LABEL_LEN, 8, 4096, 8);
+    CHECK_ENABLE_CAP_RV(rv);
+    #endif
+#endif
 
     /* PBKDF */
     rv = acvp_cap_pbkdf_enable(ctx, &app_pbkdf_handler);
