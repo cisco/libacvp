@@ -11,12 +11,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-#ifdef _WIN32
-#include <io.h>
-#include <Windows.h>
-#else
-#include <unistd.h>
-#endif
 #include <math.h>
 #include "acvp.h"
 #include "acvp_lcl.h"
@@ -566,6 +560,17 @@ static void acvp_cap_free_kdf108(ACVP_KDF108_CAP *cap) {
                 acvp_cap_free_sl(mode_obj->counter_lens);
             }
             acvp_cap_free_domain(&mode_obj->supported_lens);
+        }
+
+        if (cap->kmac_mode.kdf_mode) {
+            mode_obj = &cap->kmac_mode;
+            if (mode_obj->mac_mode) {
+                acvp_cap_free_nl(mode_obj->mac_mode);
+            }
+            acvp_cap_free_domain(&mode_obj->derivation_keylens);
+            acvp_cap_free_domain(&mode_obj->derived_keylens);
+            acvp_cap_free_domain(&mode_obj->context_lens);
+            acvp_cap_free_domain(&mode_obj->label_lens);
         }
 
         cap = NULL;
@@ -3000,7 +3005,7 @@ static ACVP_RESULT acvp_dispatch_vector_set(ACVP_CTX *ctx, JSON_Object *obj) {
                  ACVP_ALG_NAME_MAX,
                  alg, &diff);
         if (!diff) {
-            if (mode == NULL) {
+            if (mode == NULL || alg_tbl[i].cipher == ACVP_KDF108) { // KDF108-KMAC has a mode!
                 rv = (alg_tbl[i].handler)(ctx, obj);
                 return rv;
             }

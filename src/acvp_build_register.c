@@ -92,6 +92,8 @@ static ACVP_RESULT acvp_lookup_prereqVals(JSON_Object *cap_obj, ACVP_CAPS_LIST *
 
 static ACVP_RESULT acvp_build_hash_register_cap(JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry) {
     JSON_Array *msg_array = NULL;
+    JSON_Array *temp_arr = NULL;
+    ACVP_SL_LIST *sl_list = NULL;
     JSON_Value *msg_val = NULL;
     JSON_Object *msg_obj = NULL;
     ACVP_HASH_CAP *hash_cap = cap_entry->cap.hash_cap;
@@ -147,6 +149,17 @@ static ACVP_RESULT acvp_build_hash_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
         json_object_set_number(msg_obj, "max", hash_cap->msg_length.max);
         json_object_set_number(msg_obj, "increment", hash_cap->msg_length.increment);
         json_array_append_value(msg_array, msg_val);
+
+        /* Set the supported large data lengths */
+        if (cap_entry->cap.hash_cap->large_lens) {
+            json_object_set_value(cap_obj, "performLargeDataTest", json_value_init_array());
+            temp_arr = json_object_get_array(cap_obj, "performLargeDataTest");
+            sl_list = cap_entry->cap.hash_cap->large_lens;
+            while (sl_list) {
+                json_array_append_number(temp_arr, sl_list->length);
+                sl_list = sl_list->next;
+            }
+        }
     }
 
     return ACVP_SUCCESS;
@@ -927,7 +940,7 @@ static ACVP_RESULT acvp_build_drbg_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
     JSON_Array *capabilities_array = NULL;
     const char *mode_str = NULL;
 
-    if (!&cap_entry->cap.drbg_cap) {
+    if (!cap_entry->cap.drbg_cap) {
         return ACVP_NO_CAP;
     } else {
         cap = cap_entry->cap.drbg_cap;
@@ -1662,6 +1675,83 @@ static ACVP_RESULT acvp_build_kdf108_register_cap(JSON_Object *cap_obj, ACVP_CAP
         acvp_build_kdf108_mode_register(&alg_specs_dpi_obj, &cap_entry->cap.kdf108_cap->dpi_mode);
         json_array_append_value(alg_specs_array, alg_specs_dpi_val);
     }
+
+    return ACVP_SUCCESS;
+}
+
+static ACVP_RESULT acvp_build_kdf108_kmac_register_cap(JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry) {
+    ACVP_RESULT result;
+    JSON_Array *tmp_arr = NULL;
+    JSON_Value *tmp_val = NULL;
+    JSON_Object *tmp_obj = NULL;
+    ACVP_NAME_LIST *nl_obj;
+    ACVP_KDF108_MODE_PARAMS *params;
+
+    /* is KMAC enabled? */
+    params = &cap_entry->cap.kdf108_cap->kmac_mode;
+    if (!params->kdf_mode) {
+        return ACVP_SUCCESS;
+    }
+
+    json_object_set_string(cap_obj, "algorithm", "KDF");
+    json_object_set_string(cap_obj, "mode", "KMAC");
+
+    /* Revision is diff from base kdf108.  Should it be new algorithm? */
+    json_object_set_string(cap_obj, "revision", ACVP_REV_STR_SP800_108R1);
+
+    result = acvp_lookup_prereqVals(cap_obj, cap_entry);
+    if (result != ACVP_SUCCESS) { return result; }
+
+    params = &cap_entry->cap.kdf108_cap->kmac_mode;
+
+    /* mac mode list */
+    json_object_set_value(cap_obj, "macMode", json_value_init_array());
+    tmp_arr = json_object_get_array(cap_obj, "macMode");
+    nl_obj = params->mac_mode;
+    while (nl_obj) {
+        json_array_append_string(tmp_arr, nl_obj->name);
+        nl_obj = nl_obj->next;
+    }
+
+    /* key derivation key length list */
+    json_object_set_value(cap_obj, "keyDerivationKeyLength", json_value_init_array());
+    tmp_arr = json_object_get_array(cap_obj, "keyDerivationKeyLength");
+    tmp_val = json_value_init_object();
+    tmp_obj = json_value_get_object(tmp_val);
+    json_object_set_number(tmp_obj, "min", params->derivation_keylens.min);
+    json_object_set_number(tmp_obj, "max", params->derivation_keylens.max);
+    json_object_set_number(tmp_obj, "increment", params->derivation_keylens.increment);
+    json_array_append_value(tmp_arr, tmp_val);
+
+    /* context length list */
+    json_object_set_value(cap_obj, "contextLength", json_value_init_array());
+    tmp_arr = json_object_get_array(cap_obj, "contextLength");
+    tmp_val = json_value_init_object();
+    tmp_obj = json_value_get_object(tmp_val);
+    json_object_set_number(tmp_obj, "min", params->context_lens.min);
+    json_object_set_number(tmp_obj, "max", params->context_lens.max);
+    json_object_set_number(tmp_obj, "increment", params->context_lens.increment);
+    json_array_append_value(tmp_arr, tmp_val);
+
+    /* label length list */
+    json_object_set_value(cap_obj, "labelLength", json_value_init_array());
+    tmp_arr = json_object_get_array(cap_obj, "labelLength");
+    tmp_val = json_value_init_object();
+    tmp_obj = json_value_get_object(tmp_val);
+    json_object_set_number(tmp_obj, "min", params->label_lens.min);
+    json_object_set_number(tmp_obj, "max", params->label_lens.max);
+    json_object_set_number(tmp_obj, "increment", params->label_lens.increment);
+    json_array_append_value(tmp_arr, tmp_val);
+
+    /* derived key length list */
+    json_object_set_value(cap_obj, "derivedKeyLength", json_value_init_array());
+    tmp_arr = json_object_get_array(cap_obj, "derivedKeyLength");
+    tmp_val = json_value_init_object();
+    tmp_obj = json_value_get_object(tmp_val);
+    json_object_set_number(tmp_obj, "min", params->derived_keylens.min);
+    json_object_set_number(tmp_obj, "max", params->derived_keylens.max);
+    json_object_set_number(tmp_obj, "increment", params->derived_keylens.increment);
+    json_array_append_value(tmp_arr, tmp_val);
 
     return ACVP_SUCCESS;
 }
@@ -4879,7 +4969,24 @@ ACVP_RESULT acvp_build_registration_json(ACVP_CTX *ctx, JSON_Value **reg) {
                 rv = acvp_build_kdf135_x963_register_cap(cap_obj, cap_entry);
                 break;
             case ACVP_KDF108:
+                /* If KMAC mode enabled, we need two registrations */
+                if (cap_entry->cap.kdf108_cap->kmac_mode.kdf_mode) {
+                    rv = acvp_build_kdf108_kmac_register_cap(cap_obj, cap_entry);
+                    if (rv != ACVP_SUCCESS) {
+                        break;
+                    }
+                    /* Another also enabled? */
+                    if (cap_entry->cap.kdf108_cap->counter_mode.kdf_mode || 
+                        cap_entry->cap.kdf108_cap->feedback_mode.kdf_mode ||
+                        cap_entry->cap.kdf108_cap->dpi_mode.kdf_mode) {
+                        json_array_append_value(caps_arr, cap_val);
+                        cap_val = json_value_init_object();
+                        cap_obj = json_value_get_object(cap_val);
                 rv = acvp_build_kdf108_register_cap(cap_obj, cap_entry);
+                    }
+                } else {
+                    rv = acvp_build_kdf108_register_cap(cap_obj, cap_entry);
+                }
                 break;
             case ACVP_PBKDF:
                 rv = acvp_build_pbkdf_register_cap(cap_obj, cap_entry);

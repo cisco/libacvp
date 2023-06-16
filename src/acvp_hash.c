@@ -32,6 +32,8 @@ static ACVP_RESULT acvp_hash_init_tc(ACVP_CTX *ctx,
                                      unsigned int msg_len,
                                      const char *msg,
                                      unsigned int xof_len,
+                                     unsigned long long int exp_len,  // LDT expected data length
+                                     ACVP_HASH_EXPANSION_METHOD exp_method,
                                      ACVP_CIPHER alg_id);
 
 static ACVP_RESULT acvp_hash_release_tc(ACVP_HASH_TC *stc);
@@ -382,6 +384,22 @@ static ACVP_HASH_TESTTYPE read_test_type(const char *tt_str) {
         return ACVP_HASH_TEST_TYPE_VOT;
     }
 
+    strcmp_s("LDT", 3, tt_str, &diff);
+    if (!diff) {
+        return ACVP_HASH_TEST_TYPE_LDT;
+    }
+
+    return 0;
+}
+
+static ACVP_HASH_EXPANSION_METHOD read_exp_method(const char *exp_str) {
+    int diff = 0;
+
+    strcmp_s("repeating", 9, exp_str, &diff);
+    if (!diff) {
+        return ACVP_HASH_EXPANSION_REPEATING;
+    }
+
     return 0;
 }
 
@@ -393,6 +411,7 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     JSON_Object *testobj = NULL;
     JSON_Array *groups;
     JSON_Array *tests;
+    JSON_Object *ldtobj = NULL;  // Inner object for LDTs
 
     JSON_Value *reg_arry_val = NULL;
     JSON_Object *reg_obj = NULL;
@@ -412,9 +431,11 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     JSON_Array *res_tarr = NULL; /* Response resultsArray */
     ACVP_RESULT rv = ACVP_SUCCESS;
     ACVP_CIPHER alg_id = 0;
+    ACVP_HASH_EXPANSION_METHOD exp_method = 0;
     char *json_result = NULL;
     const char *alg_str = NULL;
     const char *test_type_str, *msg = NULL;
+    const char *exp_method_str = NULL;
 
     if (!ctx) {
         ACVP_LOG_ERR("No ctx for handler operation");
@@ -470,6 +491,7 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
         ACVP_HASH_TESTTYPE test_type = 0;
         int tgId = 0;
         unsigned int min_xof_len = 0, max_xof_len = 0;
+        unsigned long long int exp_len = 0LL;
 
         groupval = json_array_get_value(groups, i);
         groupobj = json_value_get_object(groupval);
@@ -544,33 +566,77 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
             tc_id = json_object_get_number(testobj, "tcId");
 
-            msg = json_object_get_string(testobj, "msg");
-            if (!msg) {
-                ACVP_LOG_ERR("Server JSON missing 'msg'");
-                rv = ACVP_MISSING_ARG;
-                goto err;
-            }
-            if (alg_id != ACVP_HASH_SHAKE_128 && alg_id != ACVP_HASH_SHAKE_256) {
-                max_len = ACVP_HASH_MSG_STR_MAX;
-            } else {
-                max_len = ACVP_SHAKE_MSG_STR_MAX;
-            }
-            tmp_msg_len = strnlen_s(msg, max_len + 1);
-            if (tmp_msg_len > max_len) {
-                ACVP_LOG_ERR("'msg' too long, max allowed=(%d)", max_len);
-                rv = ACVP_INVALID_ARG;
-                goto err;
-            }
-            // Convert to bits
-            msglen = tmp_msg_len * 4;
-
-            if (test_type == ACVP_HASH_TEST_TYPE_VOT) {
-                xof_len = json_object_get_number(testobj, "outLen");
-                if (!(xof_len >= ACVP_HASH_XOF_MD_BIT_MIN &&
-                      xof_len <= ACVP_HASH_XOF_MD_BIT_MAX)) {
-                    ACVP_LOG_ERR("Server JSON invalid 'outLen'(%d)", xof_len);
+            // Based on test type: LDT vs AFT && VOT
+            if (test_type == ACVP_HASH_TEST_TYPE_LDT) {
+                if (alg_id < ACVP_HASH_SHA1 || alg_id > ACVP_HASH_SHA512_256) {
+                    ACVP_LOG_ERR("Server JSON invalid test type for non-SHA1 or SHA2)");
                     rv = ACVP_INVALID_ARG;
                     goto err;
+                }
+
+                ldtobj = json_object_get_object(testobj, "largeMsg");
+
+                msg = json_object_get_string(ldtobj, "content");
+                if (!msg) {
+                    ACVP_LOG_ERR("Server JSON missing 'content'");
+                    rv = ACVP_MISSING_ARG;
+                    goto err;
+                }
+                max_len = ACVP_HASH_MSG_STR_MAX;
+                tmp_msg_len = strnlen_s(msg, max_len + 1);
+                if (tmp_msg_len > max_len) {
+                    ACVP_LOG_ERR("'msg' too long, max allowed=(%d)", max_len);
+                    rv = ACVP_INVALID_ARG;
+                    goto err;
+                }
+                msglen = tmp_msg_len/2;  // tmp_msg_len is ASCII chars, we store hex bytes
+
+                max_len = json_object_get_number(ldtobj, "contentLength")/8;  // In bits; store as bytes
+                if (msglen != max_len) {
+                    ACVP_LOG_ERR("Length of content (%d) does not match stated length (%d)", tmp_msg_len, max_len);
+                    rv = ACVP_INVALID_ARG;
+                    goto err;
+                }
+
+                exp_len = json_object_get_number(ldtobj, "fullLength")/8;  // In bits; store as bytes
+                // Variable size, and large; no need to validate
+
+                exp_method_str = json_object_get_string(ldtobj, "expansionTechnique");
+                exp_method = read_exp_method(exp_method_str);
+                if (exp_method != ACVP_HASH_EXPANSION_REPEATING) {
+                    ACVP_LOG_ERR("Invalid LDT expansion technique (only 'repeating' is allowed for Hash/SHA).");
+                    rv = ACVP_INVALID_ARG;
+                    goto err;
+                }
+            } else {
+                msg = json_object_get_string(testobj, "msg");
+                if (!msg) {
+                    ACVP_LOG_ERR("Server JSON missing 'msg'");
+                    rv = ACVP_MISSING_ARG;
+                    goto err;
+                }
+                if (alg_id != ACVP_HASH_SHAKE_128 && alg_id != ACVP_HASH_SHAKE_256) {
+                    max_len = ACVP_HASH_MSG_STR_MAX;
+                } else {
+                    max_len = ACVP_SHAKE_MSG_STR_MAX;
+                }
+                tmp_msg_len = strnlen_s(msg, max_len + 1);
+                if (tmp_msg_len > max_len) {
+                    ACVP_LOG_ERR("'msg' too long, max allowed=(%d)", max_len);
+                    rv = ACVP_INVALID_ARG;
+                    goto err;
+                }
+                // Convert to bits
+                msglen = tmp_msg_len * 4;
+
+                if (test_type == ACVP_HASH_TEST_TYPE_VOT) {
+                    xof_len = json_object_get_number(testobj, "outLen");
+                    if (!(xof_len >= ACVP_HASH_XOF_MD_BIT_MIN &&
+                        xof_len <= ACVP_HASH_XOF_MD_BIT_MAX)) {
+                        ACVP_LOG_ERR("Server JSON invalid 'outLen'(%d)", xof_len);
+                        rv = ACVP_INVALID_ARG;
+                        goto err;
+                    }
                 }
             }
 
@@ -580,6 +646,9 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             ACVP_LOG_VERBOSE("              msg: %s", msg);
             if (test_type == ACVP_HASH_TEST_TYPE_VOT) {
                 ACVP_LOG_VERBOSE("    outLen: %d", xof_len);
+            }
+            if (test_type == ACVP_HASH_TEST_TYPE_LDT) {
+                ACVP_LOG_VERBOSE("       fullLength: %llu", exp_len);
             }
             ACVP_LOG_VERBOSE("         testtype: %s", test_type_str);
 
@@ -595,7 +664,8 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
              * Setup the test case data that will be passed down to
              * the crypto module.
              */
-            rv = acvp_hash_init_tc(ctx, &stc, tc_id, test_type, msglen, msg, xof_len,alg_id);
+            rv = acvp_hash_init_tc(ctx, &stc, tc_id, test_type, msglen, msg, 
+                                    xof_len, exp_len, exp_method, alg_id);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("Init for stc (test case) failed");
                 acvp_hash_release_tc(&stc);
@@ -714,6 +784,8 @@ static ACVP_RESULT acvp_hash_init_tc(ACVP_CTX *ctx,
                                      unsigned int msg_len,
                                      const char *msg,
                                      unsigned int xof_len,
+                                     unsigned long long int exp_len,  // LDT expected data length
+                                     ACVP_HASH_EXPANSION_METHOD exp_method,
                                      ACVP_CIPHER alg_id) {
     ACVP_RESULT rv;
 
@@ -725,7 +797,8 @@ static ACVP_RESULT acvp_hash_init_tc(ACVP_CTX *ctx,
     }
     if (!stc->msg) { return ACVP_MALLOC_FAIL; }
 
-    if (test_type == ACVP_HASH_TEST_TYPE_AFT) {
+    if (test_type == ACVP_HASH_TEST_TYPE_AFT ||
+        test_type == ACVP_HASH_TEST_TYPE_LDT) {
         /* AFT */
         stc->md = calloc(1, ACVP_HASH_MD_BYTE_MAX);
         if (!stc->md) { return ACVP_MALLOC_FAIL; }
@@ -771,11 +844,17 @@ static ACVP_RESULT acvp_hash_init_tc(ACVP_CTX *ctx,
     }
 
     stc->tc_id = tc_id;
-    stc->msg_len = (msg_len + 7) / 8;
-    stc->xof_len = (xof_len + 7) / 8;
-    stc->xof_bit_len = xof_len;
     stc->cipher = alg_id;
     stc->test_type = test_type;
+    if (stc->test_type == ACVP_HASH_TEST_TYPE_LDT) {
+        stc->msg_len = msg_len;
+        stc->exp_len = exp_len;
+        stc->exp_method = exp_method;
+    } else {
+        stc->msg_len = (msg_len + 7) / 8;
+        stc->xof_len = (xof_len + 7) / 8;
+        stc->xof_bit_len = xof_len;
+    }
 
     return ACVP_SUCCESS;
 }

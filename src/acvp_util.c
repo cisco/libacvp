@@ -17,6 +17,13 @@
 #include "acvp_lcl.h"
 #include "safe_lib.h"
 
+#ifdef _WIN32
+#include <io.h>
+#include <Windows.h>
+#else
+#include <unistd.h>
+#endif
+
 #ifdef USE_MURL
 #include "murl.h"
 #elif !defined ACVP_OFFLINE
@@ -1477,3 +1484,4 @@ void acvp_sleep(int seconds) {
     sleep(seconds);
 #endif
 }
+

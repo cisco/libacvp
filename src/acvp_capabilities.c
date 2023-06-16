@@ -774,6 +774,10 @@ static ACVP_RESULT acvp_validate_kdf108_param_value(ACVP_CTX *ctx, ACVP_KDF108_P
             retval = ACVP_SUCCESS;
         }
         break;
+    case ACVP_KDF108_DERIVATION_KEYLEN:
+    case ACVP_KDF108_CONTEXT_LEN:
+    case ACVP_KDF108_LABEL_LEN:
+    case ACVP_KDF108_DERIVED_KEYLEN:
     default:
         break;
     }
@@ -1560,7 +1564,7 @@ static ACVP_RESULT acvp_validate_sym_cipher_domain_value(ACVP_CIPHER cipher, ACV
     case ACVP_AES_GCM:
         switch (parm) {
         case ACVP_SYM_CIPH_DOMAIN_IVLEN:
-            if (min >= 8 && max <= 1024) {
+            if (min >= 0 && max <= 1024) {
                 retval = ACVP_SUCCESS;
             }
             break;
@@ -1993,6 +1997,7 @@ static ACVP_RESULT acvp_validate_prereq_val(ACVP_CIPHER cipher, ACVP_PREREQ_ALG 
         if (pre_req == ACVP_PREREQ_DRBG ||
             pre_req == ACVP_PREREQ_HMAC ||
             pre_req == ACVP_PREREQ_CMAC ||
+            pre_req == ACVP_PREREQ_KMAC ||
             pre_req == ACVP_PREREQ_KAS) {
             return ACVP_SUCCESS;
         }
@@ -2944,6 +2949,10 @@ static ACVP_RESULT acvp_validate_hash_parm_value(ACVP_HASH_PARM parm, int value)
     case ACVP_HASH_OUT_BIT:
         retval = is_valid_tf_param(value);
         break;
+    case ACVP_HASH_LARGE_DATA:
+        if (value == 1 || value == 2 || value == 4 || value == 8)
+            retval = ACVP_SUCCESS;
+        break;
     case ACVP_HASH_OUT_LENGTH:
     case ACVP_HASH_MESSAGE_LEN:
     default:
@@ -2978,6 +2987,8 @@ ACVP_RESULT acvp_cap_hash_set_parm(ACVP_CTX *ctx,
     case ACVP_SUB_HASH_SHA3_512:
     case ACVP_SUB_HASH_SHAKE_128:
     case ACVP_SUB_HASH_SHAKE_256:
+        if (param == ACVP_HASH_LARGE_DATA) // No SHA3 or SHAKE
+            return ACVP_INVALID_ARG;
         break;
     case ACVP_SUB_HASH_SHA1:
     case ACVP_SUB_HASH_SHA2_224:
@@ -2986,6 +2997,9 @@ ACVP_RESULT acvp_cap_hash_set_parm(ACVP_CTX *ctx,
     case ACVP_SUB_HASH_SHA2_512:
     case ACVP_SUB_HASH_SHA2_512_224:
     case ACVP_SUB_HASH_SHA2_512_256:
+        if (param != ACVP_HASH_LARGE_DATA) // SHA1 & SHA2 only
+            return ACVP_INVALID_ARG;
+        break; // OK to proceed
     default:
         return ACVP_INVALID_ARG;
     }
@@ -3034,6 +3048,13 @@ ACVP_RESULT acvp_cap_hash_set_parm(ACVP_CTX *ctx,
 
         hash_cap->out_bit = value;
         break;
+    case ACVP_HASH_LARGE_DATA:
+        if (acvp_append_sl_list(&hash_cap->large_lens, value) != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Error adding LDT len to list");
+            return ACVP_MALLOC_FAIL;
+        }
+        break;
+
     case ACVP_HASH_OUT_LENGTH:
     case ACVP_HASH_MESSAGE_LEN:
     default:
@@ -5697,8 +5718,30 @@ ACVP_RESULT acvp_cap_kdf108_set_parm(ACVP_CTX *ctx,
             mode_obj->kdf_mode = ACVP_MODE_DPI;
         }
         break;
+    case ACVP_KDF108_MODE_KMAC:
+        mode_obj = &cap->cap.kdf108_cap->kmac_mode;
+        if (!mode_obj->kdf_mode) {
+            mode_obj->kdf_mode = ACVP_MODE_KMAC;
+        }
+        break;    
     default:
         return ACVP_INVALID_ARG;
+    }
+
+    // Enforce MAC algorithm exclusions
+    if (param == ACVP_KDF108_MAC_MODE) {
+        if (mode == ACVP_KDF108_MODE_KMAC) {
+            if ( (value != ACVP_KDF108_MAC_MODE_KMAC_128) && 
+                 (value != ACVP_KDF108_MAC_MODE_KMAC_256)) {
+                return ACVP_INVALID_ARG;
+            }
+        }
+        else {
+            if ( (value == ACVP_KDF108_MAC_MODE_KMAC_128) || 
+                 (value == ACVP_KDF108_MAC_MODE_KMAC_256)) {
+                return ACVP_INVALID_ARG;
+            }
+        }
     }
 
     /* only support two method types so just use whichever is available */
@@ -5733,11 +5776,29 @@ ACVP_RESULT acvp_cap_kdf108_set_parm(ACVP_CTX *ctx,
             result = acvp_append_name_list(&mode_obj->mac_mode, ACVP_ALG_HMAC_SHA2_512);
             break;
         case ACVP_KDF108_MAC_MODE_HMAC_SHA512_224:
+            result = acvp_append_name_list(&mode_obj->mac_mode, ACVP_ALG_HMAC_SHA2_512_224);
+            break;
         case ACVP_KDF108_MAC_MODE_HMAC_SHA512_256:
+            result = acvp_append_name_list(&mode_obj->mac_mode, ACVP_ALG_HMAC_SHA2_512_256);
+            break;
         case ACVP_KDF108_MAC_MODE_HMAC_SHA3_224:
+            result = acvp_append_name_list(&mode_obj->mac_mode, ACVP_ALG_HMAC_SHA3_224);
+            break;
         case ACVP_KDF108_MAC_MODE_HMAC_SHA3_256:
+            result = acvp_append_name_list(&mode_obj->mac_mode, ACVP_ALG_HMAC_SHA3_256);
+            break;
         case ACVP_KDF108_MAC_MODE_HMAC_SHA3_384:
+            result = acvp_append_name_list(&mode_obj->mac_mode, ACVP_ALG_HMAC_SHA3_384);
+            break;
         case ACVP_KDF108_MAC_MODE_HMAC_SHA3_512:
+            result = acvp_append_name_list(&mode_obj->mac_mode, ACVP_ALG_HMAC_SHA3_512);
+            break;
+        case ACVP_KDF108_MAC_MODE_KMAC_128:
+            result = acvp_append_name_list(&mode_obj->mac_mode, ACVP_ALG_KMAC_128);
+            break;
+        case ACVP_KDF108_MAC_MODE_KMAC_256:
+            result = acvp_append_name_list(&mode_obj->mac_mode, ACVP_ALG_KMAC_256);
+            break;
         default:
             return ACVP_INVALID_ARG;
         }
@@ -5786,6 +5847,10 @@ ACVP_RESULT acvp_cap_kdf108_set_parm(ACVP_CTX *ctx,
     case ACVP_KDF108_PARAM_MIN:
     case ACVP_KDF108_PARAM_MAX:
     case ACVP_KDF108_KDF_MODE:
+    case ACVP_KDF108_DERIVATION_KEYLEN: /**< KDF108-KMAC only */
+    case ACVP_KDF108_DERIVED_KEYLEN:    /**< KDF108-KMAC only */
+    case ACVP_KDF108_CONTEXT_LEN:       /**< KDF108-KMAC only */
+    case ACVP_KDF108_LABEL_LEN:         /**< KDF108-KMAC only */
     default:
         return ACVP_INVALID_ARG;
     }
@@ -6371,19 +6436,47 @@ ACVP_RESULT acvp_cap_kdf108_set_domain(ACVP_CTX *ctx,
     switch (mode) {
     case ACVP_KDF108_MODE_COUNTER:
         mode_obj = &cap_list->cap.kdf108_cap->counter_mode;
+        if (!mode_obj->kdf_mode) {
+            mode_obj->kdf_mode = ACVP_MODE_COUNTER;
+        }
         break;
     case ACVP_KDF108_MODE_FEEDBACK:
         mode_obj = &cap_list->cap.kdf108_cap->feedback_mode;
+        if (!mode_obj->kdf_mode) {
+            mode_obj->kdf_mode = ACVP_MODE_FEEDBACK;
+        }
         break;
     case ACVP_KDF108_MODE_DPI:
         mode_obj = &cap_list->cap.kdf108_cap->dpi_mode;
+        if (!mode_obj->kdf_mode) {
+            mode_obj->kdf_mode = ACVP_MODE_DPI;
+        }
+        break;
+    case ACVP_KDF108_MODE_KMAC:
+        mode_obj = &cap_list->cap.kdf108_cap->kmac_mode;
+        if (!mode_obj->kdf_mode) {
+            mode_obj->kdf_mode = ACVP_MODE_KMAC;
+        }
         break;
     default:
         return ACVP_INVALID_ARG;
     }
+
     switch (param) {
     case ACVP_KDF108_SUPPORTED_LEN:
         domain = &mode_obj->supported_lens;
+        break;
+    case ACVP_KDF108_DERIVATION_KEYLEN:
+        domain = &mode_obj->derivation_keylens;
+        break;
+    case ACVP_KDF108_DERIVED_KEYLEN:
+        domain = &mode_obj->derived_keylens;
+        break;
+    case ACVP_KDF108_CONTEXT_LEN:
+        domain = &mode_obj->context_lens;
+        break;
+    case ACVP_KDF108_LABEL_LEN:
+        domain = &mode_obj->label_lens;
         break;
     case ACVP_KDF108_KDF_MODE:
     case ACVP_KDF108_MAC_MODE:
@@ -6555,7 +6648,6 @@ static ACVP_RESULT acvp_add_kas_ecc_prereq_val(ACVP_CTX *ctx, ACVP_KAS_ECC_CAP_M
                                                char *value) {
     ACVP_PREREQ_LIST *prereq_entry, *prereq_entry_2;
 
-    ACVP_LOG_INFO("KAS-ECC mode %d", mode);
     prereq_entry = calloc(1, sizeof(ACVP_PREREQ_LIST));
     if (!prereq_entry) {
         return ACVP_MALLOC_FAIL;
@@ -8529,7 +8621,7 @@ ACVP_RESULT acvp_cap_kts_ifc_set_param_string(ACVP_CTX *ctx,
 ACVP_RESULT acvp_cap_kts_ifc_set_scheme_string(ACVP_CTX *ctx,
                                                ACVP_CIPHER cipher,
                                                ACVP_KTS_IFC_SCHEME_TYPE scheme,
-                                               ACVP_KTS_IFC_PARAM param,
+                                               ACVP_KTS_IFC_SCHEME_PARAM param,
                                                char *value) {
     unsigned int len = strnlen_s(value, ACVP_CAPABILITY_STR_MAX + 1);
     ACVP_KTS_IFC_CAP *kts_ifc_cap = NULL;
@@ -8588,7 +8680,6 @@ ACVP_RESULT acvp_cap_kts_ifc_set_scheme_string(ACVP_CTX *ctx,
     case ACVP_KTS_IFC_ROLE:
     case ACVP_KTS_IFC_L:
     case ACVP_KTS_IFC_MAC_METHODS:
-    case ACVP_KTS_IFC_FIXEDPUBEXP:
     default:
         ACVP_LOG_ERR("Invalid param");
         return ACVP_INVALID_ARG;

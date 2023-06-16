@@ -523,7 +523,8 @@ typedef enum acvp_kdf135_srtp_param {
 typedef enum acvp_kdf108_mode {
     ACVP_KDF108_MODE_COUNTER = 1,
     ACVP_KDF108_MODE_FEEDBACK,
-    ACVP_KDF108_MODE_DPI
+    ACVP_KDF108_MODE_DPI,
+    ACVP_KDF108_MODE_KMAC
 } ACVP_KDF108_MODE;
 
 /** @enum ACVP_KDF108_MAC_MODE_VAL */
@@ -544,6 +545,8 @@ typedef enum acvp_kdf108_mac_mode_val {
     ACVP_KDF108_MAC_MODE_HMAC_SHA3_256,
     ACVP_KDF108_MAC_MODE_HMAC_SHA3_384,
     ACVP_KDF108_MAC_MODE_HMAC_SHA3_512,
+    ACVP_KDF108_MAC_MODE_KMAC_128,
+    ACVP_KDF108_MAC_MODE_KMAC_256,
     ACVP_KDF108_MAC_MODE_MAX
 } ACVP_KDF108_MAC_MODE_VAL;
 
@@ -641,7 +644,8 @@ typedef enum acvp_hash_param {
     ACVP_HASH_IN_EMPTY,
     ACVP_HASH_OUT_BIT, /**< Used for ACVP_HASH_SHAKE_128, ACVP_HASH_SHAKE_256 */
     ACVP_HASH_OUT_LENGTH, /**< Used for ACVP_HASH_SHAKE_128, ACVP_HASH_SHAKE_256 */
-    ACVP_HASH_MESSAGE_LEN
+    ACVP_HASH_MESSAGE_LEN,
+    ACVP_HASH_LARGE_DATA
 } ACVP_HASH_PARM;
 
 /**
@@ -797,6 +801,10 @@ typedef enum acvp_kdf108_param {
     ACVP_KDF108_COUNTER_LEN,
     ACVP_KDF108_SUPPORTS_EMPTY_IV,
     ACVP_KDF108_REQUIRES_EMPTY_IV,
+    ACVP_KDF108_DERIVATION_KEYLEN, /**< KDF108-KMAC only */
+    ACVP_KDF108_DERIVED_KEYLEN,    /**< KDF108-KMAC only */
+    ACVP_KDF108_CONTEXT_LEN,       /**< KDF108-KMAC only */
+    ACVP_KDF108_LABEL_LEN,         /**< KDF108-KMAC only */
     ACVP_KDF108_PARAM_MAX
 } ACVP_KDF108_PARM;
 
@@ -985,7 +993,8 @@ typedef enum acvp_hash_testtype {
     ACVP_HASH_TEST_TYPE_NONE = 0,
     ACVP_HASH_TEST_TYPE_AFT,
     ACVP_HASH_TEST_TYPE_MCT,
-    ACVP_HASH_TEST_TYPE_VOT
+    ACVP_HASH_TEST_TYPE_VOT,
+    ACVP_HASH_TEST_TYPE_LDT
 } ACVP_HASH_TESTTYPE;
 
 /** @enum ACVP_CMAC_TESTTYPE */
@@ -1073,6 +1082,12 @@ typedef enum acvp_xof_support_option {
     ACVP_XOF_SUPPORT_BOTH
 } ACVP_XOF_SUPPORT_OPTION;
 
+/** @enum ACVP_HASH_EXPANSION_METHOD */
+typedef enum acvp_hash_expansion_method {
+    ACVP_HASH_EXPANSION_NA = 0,
+    ACVP_HASH_EXPANSION_REPEATING
+} ACVP_HASH_EXPANSION_METHOD;
+
 /**
  * @struct ACVP_SYM_CIPHER_TC
  * @brief This struct holds data that represents a single test case for a symmetric cipher, such as
@@ -1131,7 +1146,8 @@ typedef struct acvp_sym_cipher_tc_t {
 typedef struct acvp_hash_tc_t {
     ACVP_CIPHER cipher;
     unsigned int tc_id;           /**< Test case id */
-    ACVP_HASH_TESTTYPE test_type; /**< KAT or MCT or VOT */
+    ACVP_HASH_TESTTYPE test_type; /**< KAT, MCT, VOT, or LDT */
+    ACVP_HASH_EXPANSION_METHOD exp_method;  /**< LDT Expansion Technique  */
     unsigned char *msg; /**< Message input */
     unsigned char *m1; /**< Mesage input #1
                             Provided when \ref ACVP_HASH_TC.test_type is MCT */
@@ -1148,6 +1164,8 @@ typedef struct acvp_hash_tc_t {
     unsigned int xof_bit_len; /**< XOF (extendable output format) length
                                    The expected length (in bits) of \ref ACVP_HASH_TC.md
                                    Only provided when \ref ACVP_HASH_TC.test_type is VOT */
+    unsigned long long int exp_len; /**< The final length (in bytes) of the expanded content
+                                         Only provided when \ref ACVP_HASH_TC.test_type is LDT */
     unsigned char *md; /**< The resulting digest calculated for the test case.
                             SUPPLIED BY USER */
     unsigned int md_len; /**< The length (in bytes) of \ref ACVP_HASH_TC.md
@@ -1294,13 +1312,17 @@ typedef struct acvp_kdf108_tc_t {
     ACVP_KDF108_MODE mode;
     ACVP_KDF108_MAC_MODE_VAL mac_mode;
     ACVP_KDF108_FIXED_DATA_ORDER_VAL counter_location;
-    unsigned char *key_in;
-    unsigned char *key_out;
+    unsigned char *key_in;      /**< KDF108-KMAC: KeyDerivationKey */
+    unsigned char *key_out;     /**< KDF108-KMAC: Generated Key (output) */
     unsigned char *fixed_data;
     unsigned char *iv;
+    unsigned char *context;     /**< KDF108-KMAC: Context */
+    unsigned char *label;       /**< KDF108-KMAC: Label */
     int key_in_len;             /**< Length of key_in (in bytes) */
     int key_out_len;            /**< Length of key_out (in bytes) */
     int iv_len;                 /**< Length of iv (in bytes) */
+    int context_len;            /**< Length of context (KMAC-only, in bytes) */
+    int label_len;              /**< Length of label (KMAC-only, in bytes) */
     int fixed_data_len;         /**< Length of fixed_data (in bytes).
                                      --- User supplied ---
                                      Must be <= ACVP_KDF108_FIXED_DATA_MAX */
@@ -3025,7 +3047,7 @@ ACVP_RESULT acvp_cap_kts_ifc_set_param_string(ACVP_CTX *ctx,
 ACVP_RESULT acvp_cap_kts_ifc_set_scheme_string(ACVP_CTX *ctx,
                                                ACVP_CIPHER cipher,
                                                ACVP_KTS_IFC_SCHEME_TYPE scheme,
-                                               ACVP_KTS_IFC_PARAM param,
+                                               ACVP_KTS_IFC_SCHEME_PARAM param,
                                                char *value);
 
 /**
