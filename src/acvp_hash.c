@@ -568,7 +568,7 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
             // Based on test type: LDT vs AFT && VOT
             if (test_type == ACVP_HASH_TEST_TYPE_LDT) {
-                if (alg_id < ACVP_HASH_SHA1 || alg_id > ACVP_HASH_SHA512_256) {
+                if (alg_id < ACVP_HASH_SHA1 || alg_id > ACVP_HASH_SHA3_512) {
                     ACVP_LOG_ERR("Server JSON invalid test type for non-SHA1 or SHA2)");
                     rv = ACVP_INVALID_ARG;
                     goto err;

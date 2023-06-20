@@ -10,6 +10,12 @@
 #include "app_lcl.h"
 #include <openssl/evp.h>
 
+#ifdef ACVPAPP_HASH_LDT_SUPPORT
+#include "safe_mem_lib.h"
+
+int app_sha_ldt_handler();
+#endif
+
 int app_sha_handler(ACVP_TEST_CASE *test_case) {
     ACVP_HASH_TC    *tc;
     const EVP_MD    *md;
@@ -88,8 +94,14 @@ int app_sha_handler(ACVP_TEST_CASE *test_case) {
         goto end;
     }
     md_ctx = EVP_MD_CTX_create();
-
-    if (tc->test_type == ACVP_HASH_TEST_TYPE_MCT && !sha3 && !shake) {
+    if (tc->test_type == ACVP_HASH_TEST_TYPE_LDT) {
+        #ifdef ACVPAPP_HASH_LDT_SUPPORT
+            rc = app_sha_ldt_handler(tc, md);
+        #else
+            printf("LDT not supported in this build of acvp_app\n");
+        #endif
+        goto end;
+    } else if (tc->test_type == ACVP_HASH_TEST_TYPE_MCT && !sha3 && !shake) {
         /* If Monte Carlo we need to be able to init and then update
          * one thousand times before we complete each iteration.
          * This style doesn't apply to sha3 MCT.
@@ -161,3 +173,54 @@ end:
     return rc;
 }
 
+/**
+ * 1) malloc buffer, concat full message, process with a single call;
+ * 2) oneshot function or a single call to update; never multiple calls to update
+ * 3) allowed for all SHA, not SHAKE
+ */
+#ifdef ACVPAPP_HASH_LDT_SUPPORT
+int app_sha_ldt_handler(ACVP_HASH_TC *tc, EVP_MD *md) {
+    unsigned char *large_data = NULL, *iter = NULL;
+    int numcopies = 0, i = 0, rv = 1;
+    EVP_MD_CTX *md_ctx = NULL;
+
+    printf("Performing hash large data test (This may take time...)\n");
+
+    large_data = calloc(tc->exp_len, sizeof(unsigned char));
+    if (!large_data) {
+        printf("Error: Unable to allocate memory for large data test (Needed %llu bytes)\n", tc->exp_len);
+        return 1;
+    }
+
+    /* We have to copy the message into the buffer many times. Assume concatenation as it is the only mode currently */
+    numcopies = tc->exp_len / tc->msg_len;
+    iter = large_data;
+    for (i = 0; i < numcopies; i++) {
+        memcpy_s(iter, tc->exp_len - (i * tc->msg_len), tc->msg, tc->msg_len);
+        iter += tc->msg_len;
+    }
+
+    md_ctx = EVP_MD_CTX_create();
+
+    if (!EVP_DigestInit_ex(md_ctx, md, NULL)) {
+        printf("\nCrypto module error, EVP_DigestInit_ex failed\n");
+        goto end;
+    }
+
+    /* Update MUST only be called once */
+    if (!EVP_DigestUpdate(md_ctx, large_data, tc->exp_len)) {
+        printf("\nCrypto module error, EVP_DigestUpdate failed\n");
+        goto end;
+    }
+    if (!EVP_DigestFinal(md_ctx, tc->md, &tc->md_len)) {
+        printf("\nCrypto module error, EVP_DigestFinal failed\n");
+        goto end;
+    }
+
+    rv = 0;
+end:
+    if (large_data) free(large_data);
+    return rv;
+}
+
+#endif
