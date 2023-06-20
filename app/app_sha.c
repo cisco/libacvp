@@ -220,6 +220,7 @@ int app_sha_ldt_handler(ACVP_HASH_TC *tc, EVP_MD *md) {
     rv = 0;
 end:
     if (large_data) free(large_data);
+    if (md_ctx) EVP_MD_CTX_destroy(md_ctx);
     return rv;
 }
 
