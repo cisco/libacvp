@@ -775,9 +775,17 @@ static ACVP_RESULT acvp_validate_kdf108_param_value(ACVP_CTX *ctx, ACVP_KDF108_P
         }
         break;
     case ACVP_KDF108_DERIVATION_KEYLEN:
+    case ACVP_KDF108_DERIVED_KEYLEN:
+        if (value >= 112 && value <= ACVP_KDF108_KEYIN_BIT_MAX && value % 8 == 0) {
+            retval = ACVP_SUCCESS;
+        }
+        break;
     case ACVP_KDF108_CONTEXT_LEN:
     case ACVP_KDF108_LABEL_LEN:
-    case ACVP_KDF108_DERIVED_KEYLEN:
+        if (value >= 8 && value <= ACVP_KDF108_KEYIN_BIT_MAX && value % 8 == 0) {
+            retval = ACVP_SUCCESS;
+        }
+        break;
     default:
         break;
     }
@@ -2981,14 +2989,11 @@ ACVP_RESULT acvp_cap_hash_set_parm(ACVP_CTX *ctx,
     }
 
     switch (alg) {
-    case ACVP_SUB_HASH_SHA3_224:
-    case ACVP_SUB_HASH_SHA3_256:
-    case ACVP_SUB_HASH_SHA3_384:
-    case ACVP_SUB_HASH_SHA3_512:
     case ACVP_SUB_HASH_SHAKE_128:
     case ACVP_SUB_HASH_SHAKE_256:
-        if (param == ACVP_HASH_LARGE_DATA) // No SHA3 or SHAKE
+        if (param == ACVP_HASH_LARGE_DATA) { // No SHAKE
             return ACVP_INVALID_ARG;
+        }
         break;
     case ACVP_SUB_HASH_SHA1:
     case ACVP_SUB_HASH_SHA2_224:
@@ -2997,9 +3002,15 @@ ACVP_RESULT acvp_cap_hash_set_parm(ACVP_CTX *ctx,
     case ACVP_SUB_HASH_SHA2_512:
     case ACVP_SUB_HASH_SHA2_512_224:
     case ACVP_SUB_HASH_SHA2_512_256:
-        if (param != ACVP_HASH_LARGE_DATA) // SHA1 & SHA2 only
+        if (param != ACVP_HASH_LARGE_DATA) {
             return ACVP_INVALID_ARG;
+        }
         break; // OK to proceed
+    case ACVP_SUB_HASH_SHA3_224:
+    case ACVP_SUB_HASH_SHA3_256:
+    case ACVP_SUB_HASH_SHA3_384:
+    case ACVP_SUB_HASH_SHA3_512:
+        break;
     default:
         return ACVP_INVALID_ARG;
     }
@@ -5844,13 +5855,33 @@ ACVP_RESULT acvp_cap_kdf108_set_parm(ACVP_CTX *ctx,
             return ACVP_MALLOC_FAIL;
         }
         break;
+    case ACVP_KDF108_DERIVATION_KEYLEN: /**< KDF108-KMAC only */
+        if (acvp_append_sl_list(&mode_obj->derivation_keylens.values, value) != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Error adding derivation key length for KDF108 to list");
+            return ACVP_MALLOC_FAIL;
+        }
+        break;
+    case ACVP_KDF108_DERIVED_KEYLEN:    /**< KDF108-KMAC only */
+        if (acvp_append_sl_list(&mode_obj->derived_keylens.values, value) != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Error adding derived key length for KDF108 to list");
+            return ACVP_MALLOC_FAIL;
+        }
+        break;
+    case ACVP_KDF108_CONTEXT_LEN:       /**< KDF108-KMAC only */
+        if (acvp_append_sl_list(&mode_obj->context_lens.values, value) != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Error adding context length for KDF108 to list");
+            return ACVP_MALLOC_FAIL;
+        }
+        break;
+    case ACVP_KDF108_LABEL_LEN:         /**< KDF108-KMAC only */
+        if (acvp_append_sl_list(&mode_obj->label_lens.values, value) != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Error adding label length for KDF108 to list");
+            return ACVP_MALLOC_FAIL;
+        }
+        break;
     case ACVP_KDF108_PARAM_MIN:
     case ACVP_KDF108_PARAM_MAX:
     case ACVP_KDF108_KDF_MODE:
-    case ACVP_KDF108_DERIVATION_KEYLEN: /**< KDF108-KMAC only */
-    case ACVP_KDF108_DERIVED_KEYLEN:    /**< KDF108-KMAC only */
-    case ACVP_KDF108_CONTEXT_LEN:       /**< KDF108-KMAC only */
-    case ACVP_KDF108_LABEL_LEN:         /**< KDF108-KMAC only */
     default:
         return ACVP_INVALID_ARG;
     }
@@ -6428,8 +6459,23 @@ ACVP_RESULT acvp_cap_kdf108_set_domain(ACVP_CTX *ctx,
         return ACVP_NO_CAP;
     }
 
-    if (!min || max > ACVP_KDF108_KEYIN_BIT_MAX) {
-        ACVP_LOG_ERR("min and/or max outside acceptable range");
+    if (validate_domain_range(min, max, increment) != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Invalid domain range given for KDF108 (min: %d, max: %d, increment: %d)", min, max, increment);
+        return ACVP_INVALID_ARG;
+    }
+
+    if (acvp_validate_kdf108_param_value(ctx, param, min) != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Given min value for KDF108 domain invalid (%d)", min);
+        return ACVP_INVALID_ARG;
+    }
+
+    if (acvp_validate_kdf108_param_value(ctx, param, max) != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Given max value for KDF108 domain invalid (%d)", max);
+        return ACVP_INVALID_ARG;
+    }
+
+    if (param != ACVP_KDF108_SUPPORTED_LEN && increment % 8 != 0) {
+        ACVP_LOG_ERR("Domain increments must be divisible into bytes for KDF108 (given: %d)", increment);
         return ACVP_INVALID_ARG;
     }
 

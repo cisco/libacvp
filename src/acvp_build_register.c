@@ -1685,6 +1685,7 @@ static ACVP_RESULT acvp_build_kdf108_kmac_register_cap(JSON_Object *cap_obj, ACV
     JSON_Value *tmp_val = NULL;
     JSON_Object *tmp_obj = NULL;
     ACVP_NAME_LIST *nl_obj;
+    ACVP_SL_LIST *list = NULL;
     ACVP_KDF108_MODE_PARAMS *params;
 
     /* is KMAC enabled? */
@@ -1722,6 +1723,11 @@ static ACVP_RESULT acvp_build_kdf108_kmac_register_cap(JSON_Object *cap_obj, ACV
     json_object_set_number(tmp_obj, "max", params->derivation_keylens.max);
     json_object_set_number(tmp_obj, "increment", params->derivation_keylens.increment);
     json_array_append_value(tmp_arr, tmp_val);
+    list = params->derivation_keylens.values;
+    while (list) {
+        json_array_append_number(tmp_arr, list->length);
+        list = list->next;
+    }
 
     /* context length list */
     json_object_set_value(cap_obj, "contextLength", json_value_init_array());
@@ -1732,6 +1738,11 @@ static ACVP_RESULT acvp_build_kdf108_kmac_register_cap(JSON_Object *cap_obj, ACV
     json_object_set_number(tmp_obj, "max", params->context_lens.max);
     json_object_set_number(tmp_obj, "increment", params->context_lens.increment);
     json_array_append_value(tmp_arr, tmp_val);
+    list = params->context_lens.values;
+    while (list) {
+        json_array_append_number(tmp_arr, list->length);
+        list = list->next;
+    }
 
     /* label length list */
     json_object_set_value(cap_obj, "labelLength", json_value_init_array());
@@ -1742,6 +1753,11 @@ static ACVP_RESULT acvp_build_kdf108_kmac_register_cap(JSON_Object *cap_obj, ACV
     json_object_set_number(tmp_obj, "max", params->label_lens.max);
     json_object_set_number(tmp_obj, "increment", params->label_lens.increment);
     json_array_append_value(tmp_arr, tmp_val);
+    list = params->label_lens.values;
+    while (list) {
+        json_array_append_number(tmp_arr, list->length);
+        list = list->next;
+    }
 
     /* derived key length list */
     json_object_set_value(cap_obj, "derivedKeyLength", json_value_init_array());
@@ -1752,6 +1768,11 @@ static ACVP_RESULT acvp_build_kdf108_kmac_register_cap(JSON_Object *cap_obj, ACV
     json_object_set_number(tmp_obj, "max", params->derived_keylens.max);
     json_object_set_number(tmp_obj, "increment", params->derived_keylens.increment);
     json_array_append_value(tmp_arr, tmp_val);
+    list = params->derived_keylens.values;
+    while (list) {
+        json_array_append_number(tmp_arr, list->length);
+        list = list->next;
+    }
 
     return ACVP_SUCCESS;
 }
