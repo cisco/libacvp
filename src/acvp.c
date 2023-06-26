@@ -1998,15 +1998,19 @@ ACVP_RESULT acvp_mark_as_request_only(ACVP_CTX *ctx, char *filename) {
     return ACVP_SUCCESS;
 }
 
-ACVP_RESULT acvp_mark_as_get_only(ACVP_CTX *ctx, char *string) {
+ACVP_RESULT acvp_mark_as_get_only(ACVP_CTX *ctx, char *string, const char *save_filename) {
+    int len = 0;
+
     if (!ctx) {
         return ACVP_NO_CTX;
     } 
     if (!string) {
         return ACVP_MISSING_ARG;
     }
-    if (strnlen_s(string, ACVP_REQUEST_STR_LEN_MAX + 1) > ACVP_REQUEST_STR_LEN_MAX) {
-         ACVP_LOG_ERR("Request string is suspiciously long...");
+
+    len = strnlen_s(string, ACVP_REQUEST_STR_LEN_MAX + 1);
+    if (len > ACVP_REQUEST_STR_LEN_MAX || len <= 0) {
+        ACVP_LOG_ERR("Request string is too long or empty");
         return ACVP_INVALID_ARG;
     }
 
@@ -2016,38 +2020,26 @@ ACVP_RESULT acvp_mark_as_get_only(ACVP_CTX *ctx, char *string) {
         return ACVP_MALLOC_FAIL;
     }
 
+    if (save_filename) {
+        len = strnlen_s(save_filename, ACVP_JSON_FILENAME_MAX + 1);
+        if (len > ACVP_JSON_FILENAME_MAX || len <= 0) {
+            ACVP_LOG_ERR("Provided save filename too long or empty");
+            return ACVP_INVALID_ARG;
+        }
+        if (ctx->save_filename) { free(ctx->save_filename); }
+        ctx->save_filename = calloc(len + 1, sizeof(char));
+        if (!ctx->save_filename) {
+            return ACVP_MALLOC_FAIL;
+        }
+        strncpy_s(ctx->save_filename, len + 1, save_filename, len);
+    }
+
     strcpy_s(ctx->get_string, ACVP_REQUEST_STR_LEN_MAX + 1, string);
     ctx->get = 1;
+
     return ACVP_SUCCESS;
 }
 
-ACVP_RESULT acvp_set_get_save_file(ACVP_CTX *ctx, char *filename) {
-    if (!ctx) {
-        ACVP_LOG_ERR("No CTX given");
-        return ACVP_NO_CTX;
-    } 
-    if (!filename) {
-        ACVP_LOG_ERR("No filename given");
-        return ACVP_MISSING_ARG;
-    }
-    if (!ctx->get) {
-        ACVP_LOG_ERR("Session must be marked as get only to set a get save file");
-        return ACVP_UNSUPPORTED_OP;
-    }
-    int filenameLen = 0;
-    filenameLen = strnlen_s(filename, ACVP_JSON_FILENAME_MAX + 1);
-    if (filenameLen > ACVP_JSON_FILENAME_MAX || filenameLen <= 0) {
-        ACVP_LOG_ERR("Provided filename invalid");
-        return ACVP_INVALID_ARG;
-    }
-    if (ctx->save_filename) { free(ctx->save_filename); }
-    ctx->save_filename = calloc(filenameLen + 1, sizeof(char));
-    if (!ctx->save_filename) {
-        return ACVP_MALLOC_FAIL;
-    }
-    strncpy_s(ctx->save_filename, filenameLen + 1, filename, filenameLen);
-    return ACVP_SUCCESS;
-}
 
 ACVP_RESULT acvp_mark_as_put_after_test(ACVP_CTX *ctx, char *filename) {
     if (!ctx) {

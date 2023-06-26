@@ -4285,23 +4285,11 @@ ACVP_RESULT acvp_mark_as_request_only(ACVP_CTX *ctx, char *filename);
  *
  * @param ctx Pointer to ACVP_CTX that was previously created by calling acvp_create_test_session.
  * @param string used for the get, such as '/acvp/v1/requests/383'
+ * @param save_filename an optional parameter that results in the GET output being saved to a file
  *
  * @return ACVP_RESULT
  */
-ACVP_RESULT acvp_mark_as_get_only(ACVP_CTX *ctx, char *string);
-
-/**
- * @brief acvp_set_get_save_file() indicates a file to save get requests to. This function will
- *        only work if acvp_mark_as_get_only() has already been successfully called. It will take a
- *        string parameter for the location to save the results from the GET request indicated in
- *        acvp_mark_as_get_only() to as a file.
- *
- * @param ctx Pointer to ACVP_CTX that was previously created by calling acvp_create_test_session.
- * @param filename location to save the GET results to (assumes data in JSON format)
- *
- * @return ACVP_RESULT
- */
-ACVP_RESULT acvp_set_get_save_file(ACVP_CTX *ctx, char *filename);
+ACVP_RESULT acvp_mark_as_get_only(ACVP_CTX *ctx, char *string, const char *save_filename);
 
 /**
  * @brief acvp_mark_as_post_only() marks the operation as a POST only. This function will take the

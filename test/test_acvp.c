@@ -487,10 +487,7 @@ Test(RUN, marked_as_get, .init = setup_full_ctx, .fini = teardown) {
     rv = acvp_set_2fa_callback(ctx, &dummy_totp);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_mark_as_get_only(ctx, "/acvp/v1/test");
-    cr_assert(rv == ACVP_SUCCESS);
-    
-    rv = acvp_set_get_save_file(ctx, "filename.json");
+    rv = acvp_mark_as_get_only(ctx, "/acvp/v1/test", "filename.json");
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_run(ctx, 0);
@@ -762,38 +759,27 @@ Test(PROCESS_TESTS, mark_as_request_only, .init = setup_full_ctx, .fini = teardo
  */
 Test(PROCESS_TESTS, mark_as_get_only, .init = setup_full_ctx, .fini = teardown) {
 
-    rv = acvp_mark_as_get_only(NULL, "test");
+    rv = acvp_mark_as_get_only(NULL, "test", NULL);
     cr_assert(rv == ACVP_NO_CTX);
 
-    rv = acvp_mark_as_get_only(ctx, NULL);
+    rv = acvp_mark_as_get_only(ctx, NULL, NULL);
     cr_assert(rv == ACVP_MISSING_ARG);
 
-    rv = acvp_mark_as_get_only(ctx, "test");
+    rv = acvp_mark_as_get_only(ctx, "test", NULL);
     cr_assert(rv == ACVP_SUCCESS);
+
+    rv = acvp_mark_as_get_only(ctx, "", NULL);
+    cr_assert(rv == ACVP_INVALID_ARG);
+
+    rv = acvp_mark_as_get_only(ctx, "testFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLong", NULL);
+    cr_assert(rv == ACVP_INVALID_ARG);
+
+    rv = acvp_mark_as_get_only(ctx, "test", "testFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLong");
+    cr_assert(rv == ACVP_INVALID_ARG);
+
+    rv = acvp_mark_as_get_only(ctx, "test", "");
+    cr_assert(rv == ACVP_INVALID_ARG);
 }
-
-/*
- * Test acvp_set_get_save_file
- */
- Test(PROCESS_TESTS, set_get_save_file, .init = setup_full_ctx, .fini = teardown) {
-    rv = acvp_set_get_save_file(ctx, "haventCalledGetOnly.json");
-    cr_assert(rv == ACVP_UNSUPPORTED_OP);
-
-    rv = acvp_mark_as_get_only(ctx, "test");
-    cr_assert(rv == ACVP_SUCCESS);
-
-    rv = acvp_set_get_save_file(NULL, "noCtx.json");
-    cr_assert(rv == ACVP_NO_CTX);
-
-    rv = acvp_set_get_save_file(ctx, NULL);
-    cr_assert(rv == ACVP_MISSING_ARG);
-
-    rv = acvp_set_get_save_file(ctx, "testFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLong");
-    cr_assert(rv == ACVP_INVALID_ARG);
-
-    rv = acvp_set_get_save_file(ctx, "");
-    cr_assert(rv == ACVP_INVALID_ARG);
- }
 
 /*
  * Test acvp_mark_as_delete_only

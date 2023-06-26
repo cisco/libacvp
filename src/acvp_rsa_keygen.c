@@ -648,7 +648,7 @@ ACVP_RESULT acvp_rsa_keygen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             if (info_gen_by_server) {
                 unsigned int count = 0;
 
-                if (rand_pq == ACVP_RSA_KEYGEN_B36) {
+                if (rand_pq >= ACVP_RSA_KEYGEN_B34) {
                     bitlens = json_object_get_array(testobj, "bitlens");
                     count = json_array_get_count(bitlens);
                     if (count != 4) {

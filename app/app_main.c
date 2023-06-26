@@ -307,15 +307,10 @@ int main(int argc, char **argv) {
     }
 
     if (cfg.get) {
-        rv = acvp_mark_as_get_only(ctx, cfg.get_string);
+        rv = acvp_mark_as_get_only(ctx, cfg.get_string, cfg.save_to ? cfg.save_file : NULL);
         if (rv != ACVP_SUCCESS) {
             printf("Failed to mark as get only.\n");
             goto end;
-        } else if (cfg.save_to) {
-            rv = acvp_set_get_save_file(ctx, cfg.save_file);
-            if (rv != ACVP_SUCCESS) {
-                printf("Failed to set save file for get request, continuing anyway...\n");
-            }
         }
     }
 
