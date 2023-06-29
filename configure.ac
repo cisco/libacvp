@@ -13,7 +13,7 @@
 #
 m4_define([libacvp_major_version], [1])
 m4_define([libacvp_minor_version], [5])
-m4_define([libacvp_micro_version], [3])
+m4_define([libacvp_micro_version], [4])
 AC_INIT([libacvp], [libacvp_major_version.libacvp_minor_version.libacvp_micro_version], [https://github.com/cisco/libacvp/issues])
 
 # Safety checks in case user overwritten --srcdir
@@ -39,11 +39,6 @@ AM_PROG_AR
 LT_INIT
 # We can add more checks in this section
 AC_CANONICAL_HOST
-
-##
-# Set the CFLAGS
-##
-CFLAGS="$CFLAGS -Wall -fstack-protector-all -D_FORTIFY_SOURCE=2"
 
 ##
 # OSX doesn't need/support -z,noexecstack
@@ -181,6 +176,19 @@ else
     AC_MSG_RESULT(no)
 fi
 
+# Disable SSP, in case a platform does not support it
+AC_MSG_CHECKING([disable ssp])
+AC_ARG_ENABLE(ssp,
+    [AS_HELP_STRING([--disable-ssp],[Turn off fstack-protector cflag; not all platforms support])],
+    [disable_ssp="yes"],
+    [disable_ssp="no"])
+if test "x$disable_ssp" = "xyes"; then
+    AC_MSG_RESULT(yes)
+else
+    CFLAGS="$CFLAGS -fstack-protector-all"
+    AC_MSG_RESULT(no)
+fi
+
 # Enable a wrapper to turn acvp_app into a small library (Only for static offline builds)
 AC_ARG_ENABLE([wrapper-library],
 [AS_HELP_STRING([--enable-wrapper-library],
@@ -191,6 +199,11 @@ AC_ARG_ENABLE([wrapper-library],
 ########################################################################################
 # End reading arguments. Begin testing presence of libs and setting certain make vars. #
 ########################################################################################
+
+##
+# Set the CFLAGS
+##
+CFLAGS="$CFLAGS -Wall -D_FORTIFY_SOURCE=2"
 
 # Hold onto the LIBS variable before AC_SEARCH_LIBS modifies it
 pre_libs="$LIBS"

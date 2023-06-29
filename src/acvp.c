@@ -1072,7 +1072,6 @@ ACVP_RESULT acvp_run_vectors_from_file(ACVP_CTX *ctx, const char *req_filename, 
         }
 
         json_value_free(file_val);
-        file_val = NULL;
         n++;
         obj = json_array_get_object(reg_array, n);
         vs_entry = vs_entry->next;
@@ -1451,7 +1450,6 @@ ACVP_RESULT acvp_get_expected_results(ACVP_CTX *ctx, const char *request_filenam
         } else {
             printf("%s,\n", ctx->curl_buf);
         }
-        vsid_url = NULL;
     }
     //append the final ']'
     rv = acvp_json_serialize_to_file_pretty_a(NULL, save_filename);
@@ -2121,6 +2119,10 @@ static ACVP_RESULT acvp_register(ACVP_CTX *ctx) {
      * which should be a list of vector set ID urls
      */
     if (ctx->use_json) {
+        if (ctx->is_sample) {
+            ACVP_LOG_WARN("Warning: sample flag set but using manual registration; flag will be ignored. Please ensure "
+                          "your manual registration indicates a sample session in JSON");
+        }
         ACVP_LOG_STATUS("Reading capabilities registration file...");
         tmp_json_from_file = json_parse_file(ctx->json_filename);
         if (!tmp_json_from_file) {
@@ -2487,6 +2489,11 @@ static ACVP_RESULT acvp_parse_test_session_register(ACVP_CTX *ctx) {
 
     ctx->session_url = calloc(ACVP_ATTR_URL_MAX + 1, sizeof(char));
     strcpy_s(ctx->session_url, ACVP_ATTR_URL_MAX + 1, test_session_url);
+
+    /* Update the isSample flag internally with what the NIST server claims (helps for manual registration since we do not parse that) */
+    if (json_object_has_value_of_type(obj, "isSample", JSONBoolean)) {
+        ctx->is_sample = json_object_get_boolean(obj, "isSample");
+    }
 
     /*
      * The accessToken needed for this specific test session.
@@ -3081,14 +3088,12 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
                     if (!acvp_lookup_str_list(&failedAlgList, alg)) {
                         rv = acvp_append_str_list(&failedAlgList, alg);
                         if (val2) json_value_free(val2);
-                        val2 = NULL;
                         if (rv != ACVP_SUCCESS) {
                             ACVP_LOG_ERR("Error appending failed algorithm name to list, skipping...");
                             continue;
                         }
                     } else {
                         if (val2) json_value_free(val2);
-                        val2 = NULL;
                     }
                 }
             }
