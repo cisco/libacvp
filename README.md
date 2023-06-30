@@ -18,13 +18,11 @@ file for details.
 
 
 ## Recent Changes
-The client library is compatible with the ACVP spec version 1.0, see https://github.com/usnistgov/ACVP
-however not all algorithms and options are supported. See the support list in the Supported Algorithms
-section below.
 
-Support for new algorithms and features is being added fairly regularly. Recent features also include the
-ability to cancel test sessions and more configure options to help various different build configurations
-and platforms.
+Libacvp has been updated to 2.0.0! The included acvp_app now supports OpenSSL 3.0. Various new
+algorithms are supported and tested on top of multiple other new features and improvements. Please
+see the release notes for more details.
+Support for OpenSSL 1.0.2 has been removed.
 
 
 # Overview
@@ -137,7 +135,7 @@ make install
 ```
 
 #### Building libacvp without the application code.
-Use the following ./configure comand line option and only the library will be built and installed.
+Use the following ./configure command line option and only the library will be built and installed.
 
 --disable-app
 
@@ -145,7 +143,7 @@ Note that this option is not useful when building for offline testing since the 
 Using this option, only a libcurl installation dir needs to be provided.
  
 #### Building acvp_app only without the library code
-Use the following ./configure comand line option and only the app will be built. Note that it depends
+Use the following ./configure command line option and only the app will be built. Note that it depends
 on libacvp having already been built. The libacvp directory can be provided using --with-libacvp-dir=
 Otherwise, it will look in the default build directory in the root folder for libacvp.
 
@@ -154,16 +152,20 @@ Otherwise, it will look in the default build directory in the root folder for li
 #### Other build options
 More info about all available configure options can be found by using ./configure --help. Some important
 ones include:
---enable-offline : Will link to all dependencies statically and remove the libcurl dependency. See "How
- to test offline" for more details. NOTE: Support for statically linking OpenSSL 3.X is not supported
- at this time. OpenSSL does not support static linking of the FIPS provider. Support for statically
- linking other dependencies will be added.
+--enable-offline : Removes the Curl dependency and builds a version of libacvp that can only work
+ offline. In current versions of libacvp, this does not affect if libraries are linked statically
+ or dynamically.
 --disable-kdf : Will disable kdf registration and processing in the application, in cases where the given
  crypto implementation does not support it (E.g. all OpenSSL prior to 3.0)
 --disable-lib-check : This will disable autoconf's attempts to automatically detect prerequisite libraries
  before building libacvp. This may be useful in some edge cases where the libraries exist but autoconf
  cannot detect them; however, it will give more cryptic error messages in the make stage if there are issues
+--enable-force-static-linking : This will force a build of acvp_app to attempt to link to every
+dependency library, including libc, statically.
 
+Libacvp will attempt to link a shared library for a given dependency if it exists, and will use a static library
+if a shared one is not found. Statically linking the OpenSSL FIPS provider is not supported at this time as OpenSSL
+does not support static building of the FIPS provider.
 
 #### Cross Compiling
 Requires options --build and --host.
@@ -180,7 +182,7 @@ Example with build and host information:
 ```
 All dependent libraries must have been built with the same cross compile.
 
-If using murl for cross compliles use the same CROSS_COMPILE and HOSTCC used with openssl, for example:
+If using murl for cross compiles use the same CROSS_COMPILE and HOSTCC used with openssl, for example:
 
 CROSS_COMPILE=arm-linux-gnueabihf-
 HOSTCC=gcc
@@ -193,10 +195,6 @@ compatible with Visual Studio 2017 and some older Windows 10 SDK versions.
 Prerequisites:
 This system assumes all dependency library paths have /include folders containing all the headers
 needed to properly link. This can be altered in the scripts if needed.
-
-For acvp_app, If you are using a FIPS Object Module with OpenSSL: you need a header in your 
-/include folder that maps FIPS functions to SSL ones (for example, fipssyms.h) which is sometimes
-not moved to the install path from the source path by default on Windows.
 
 For these steps, use the Visual Studio Command Prompt for your platform (x64, x86, x86_64, or 
 x64_86)
@@ -239,6 +237,27 @@ libacvp, though this can be different on some OS. The name, by default, is
 testSession_(ID number).json. The path and prefix can be controlled using ACV_SESSION_SAVE_PATH
 and ACV_SESSION_SAVE_PREFIX in your environment, respectively. 
 
+
+## FIPS and OpenSSL 3.X
+For OpenSSL 3.X, FIPS mode is determined by the acvp_app at runtime instead of
+build time. Acvp_app will attempt to utilize the OpenSSL FIPS provider by default; a runtime
+argument can be provided to not fetch FIPS crypto (CERTIFICATIONS MUST NOT BE PERFORMED THIS WAY).
+
+We cannot advise specifically how to configure OpenSSL 3.X as that will vary on a platform-specific
+basis. Generally, the OpenSSL config file must include the fipsmodule.cnf file, must explicitly
+include the fips section, and must explicitly activate the FIPS provider. When the FIPS provider is
+explicitly activated, the default provider is no longer implicitly activated and must also be
+explicitly activated in some cases. In our testing, offline sessions can be run without explicitly
+activating the default provider (since all the crypto tests seek the FIPS provider), but Curl (and
+thus any online sessions or requests) requires the default provider to be activated to function
+properly.
+
+acvp_app will perform a quick operation at startup using the FIPS provider to determine if FIPS
+crypto is working properly. If it fails, it will return an error; in this case please review your
+OpenSSL install, libacvp build steps, and especially your OpenSSL configuration before contacting
+the libacvp team.
+
+
 ### How to test offline
 1. Download vectors on network accessible device:
 `./app/acvp_app --<algs of choice or all_algs> --vector_req <filename1>`
@@ -253,15 +272,12 @@ you want to save your results to.
 `./app/acvp_app --all_algs --vector_upload <filename2>`
  - where `<filename2>` is the file containing the results of the tests.
 
-*Note:* The below does not yet apply to OpenSSL 3.X
 *Note:* If the target in Step 2 does not have the standard libraries used by
 libacvp you may configure and build a special app used only for Step 2. This
-can be done by using --enable-offline and --enable-static when running 
-./configure and do not use --with-libcurl-dir or --with-libmurl-dir which
-will  minimize the library dependencies. Note that openssl with FOM must also
-be built as static. For this case, OpenSSL MUST be built with the "no-dso" option,
-OR the configure option `--enable-offline-ldl-check` must be used to resolve the libdl
-dependency. Some specific versions of SSL may not be able to remove the libdl dependency.
+can be done by using --enable-offline when running ./configure which will help
+minimize library dependencies. By using --disable-shared at configure time,
+libacvp can be linked to acvp_app statically as well; acvp_app will link to other
+dependencies as described above under `other build options`.
 
 ## Testing
 Move to the test/ directory and see the README.md there. The tests depend upon
@@ -279,15 +295,12 @@ Any and all new API functions must also be added to ms\resources\source.def.
 
 ## FAQ
 
-`I get "unable to process test vectors" for certain algorithms when libacvp is built without a FOM. Why?`
-Some algorithms need to have internal mechanisms tested that are not available in the
-regular APIs for that algorithm. These cannot be tested at runtime and are only avaible to
-be tested when linked to a FOM for non-runtime testing. --all_algs attempts to run these
-algorithms as well, so for runtime testing without linking to a FOM, specify the algorithms
-you wish to run individually.
+`I get "unable to process test vectors" for certain algorithms. Why?`
+This usually indicates that you have requested to test certain algorithms or features within
+algorithms that cannot be tested with the given version of OpenSSL as built.
 
 `I get some sort of hard crash while processing vector sets - why?`
-It is probable that libacvp is linking to a different version of a library than the one
+It is probable that acvp_app is linking to a different version of a dependency than the one
 it was configured and built with. libacvp/acvp_app depend on library versions in enabling 
 or disabling certain features at build time, so please make sure libacvp and acvp_app are 
 built and run with the same versions of each library.
@@ -303,9 +316,11 @@ tests or waiting to generate tests. This period of time can vary wildly if the s
 intense load, anywhere from a few seconds to a few days. If there is an issue and the connection
 is lost or the server experiences an error, the library output will indicate it.
 
-`I recieved a vector set from somewhere other than libacvp, such as a lab. How can I process it?`
+`I received a vector set from somewhere other than libacvp, such as a lab. How can I process it?`
 Libacvp expects vector set json files to have a specific formatting. It is possible to manually
 modify the JSON file to make it work though we do not officially support or endorse this process.
+We plan to add support for this usage soon.
+
 Moving your vector set into a json array, and putting this as the json object before the vector set
 should allow libacvp to process it using the offline testing process described above; you would
 also need to remove these entries from the output file.
@@ -325,7 +340,7 @@ try to submit via wherever you originally got the vector set from.
 
 ## Credits
 This package was initially written by John Foley of Cisco Systems.
-Contributers include (non-exhaustive):
+Contributors include (non-exhaustive):
 Barry Fussell (Cisco Systems)
 Andrew Karcher (Cisco Systems)
 
@@ -426,6 +441,9 @@ Andrew Karcher (Cisco Systems)
 | **EDDSA mode: keyVer** |  N  |  N  |  N  |
 | **EDDSA mode: sigGen** |  N  |  N  |  N  |
 | **EDDSA mode: sigVer** |  N  |  N  |  N  |
+| **LMS mode: keyGen** |  Y  |  N  |  N  |
+| **LMS mode: sigGen** |  Y  |  N  |  N  |
+| **LMS mode: sigVer** |  Y  |  N  |  N  |
 | **Key Agreement** | | |
 | **KAS ECC ephemeralUnified** |  Y  |  N  |  N  |
 | **KAS ECC SSC ephemeralUnified** |  Y  |  N  |  Y  |
@@ -456,10 +474,12 @@ Andrew Karcher (Cisco Systems)
 | **KTS IFC KTS-OAEP-Party_V-confirmation** |  N  |  N  |  N  |
 | **KDA HKDF** |  Y  |  N  |  Y  |
 | **KDA ONESTEP** |  Y  |  N  |  Y  |
+| **KDA TWOSTEP** |  Y  |  N  |  Y  |
 | **KDFs** | | |
 | **Counter KDF** |  Y  |  N  |  Y  |
-| **Feedback KDF** |  N  |  N  |  Y  |
-| **Double Pipeline Iterator KDF** |  N  |  N  |  N  |
+| **Feedback KDF** |  Y  |  N  |  Y  |
+| **Double Pipeline Iterator KDF** |  Y  |  N  |  N  |
+| **KMAC KDF** |  Y  |  N  |  N  |
 | **IKEv1** |  Y  |  N  |  N  |
 | **IKEv2** |  Y  |  N  |  N  |
 | **SNMP** |  Y  |  N  |  N  |
