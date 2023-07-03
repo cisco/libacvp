@@ -1,6 +1,6 @@
 /** @file */
 /*
- * Copyright (c) 2021, Cisco Systems, Inc.
+ * Copyright (c) 2023, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -11,12 +11,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-#ifdef _WIN32
-#include <io.h>
-#include <Windows.h>
-#else
-#include <unistd.h>
-#endif
 #include <math.h>
 #include "acvp.h"
 #include "acvp_lcl.h"
@@ -49,6 +43,8 @@ static void acvp_cap_free_sl(ACVP_SL_LIST *list);
 static void acvp_cap_free_nl(ACVP_NAME_LIST *list);
 
 static void acvp_cap_free_pl(ACVP_PARAM_LIST *list);
+
+static void acvp_cap_free_domain(ACVP_JSON_DOMAIN_OBJ *domain);
 
 static void acvp_cap_free_hash_pairs(ACVP_RSA_HASH_PAIR_LIST *list);
 
@@ -127,6 +123,8 @@ ACVP_ALG_HANDLER alg_tbl[ACVP_ALG_MAX] = {
     { ACVP_HMAC_SHA3_512,     &acvp_hmac_kat_handler,            ACVP_ALG_HMAC_SHA3_512,     NULL, ACVP_REV_HMAC_SHA3_512, {ACVP_SUB_HMAC_SHA3_512}},
     { ACVP_CMAC_AES,          &acvp_cmac_kat_handler,            ACVP_ALG_CMAC_AES,          NULL, ACVP_REV_CMAC_AES, {ACVP_SUB_CMAC_AES}},
     { ACVP_CMAC_TDES,         &acvp_cmac_kat_handler,            ACVP_ALG_CMAC_TDES,         NULL, ACVP_REV_CMAC_TDES, {ACVP_SUB_CMAC_TDES}},
+    { ACVP_KMAC_128,          &acvp_kmac_kat_handler,            ACVP_ALG_KMAC_128,          NULL, ACVP_REV_KMAC_128, {ACVP_SUB_KMAC_128}},
+    { ACVP_KMAC_256,          &acvp_kmac_kat_handler,            ACVP_ALG_KMAC_256,          NULL, ACVP_REV_KMAC_256, {ACVP_SUB_KMAC_256}},
     { ACVP_DSA_KEYGEN,        &acvp_dsa_kat_handler,             ACVP_ALG_DSA,               ACVP_ALG_DSA_KEYGEN, ACVP_REV_DSA, {ACVP_SUB_DSA_KEYGEN}},
     { ACVP_DSA_PQGGEN,        &acvp_dsa_kat_handler,             ACVP_ALG_DSA,               ACVP_ALG_DSA_PQGGEN, ACVP_REV_DSA, {ACVP_SUB_DSA_PQGGEN}},
     { ACVP_DSA_PQGVER,        &acvp_dsa_kat_handler,             ACVP_ALG_DSA,               ACVP_ALG_DSA_PQGVER, ACVP_REV_DSA, {ACVP_SUB_DSA_PQGVER}},
@@ -146,6 +144,7 @@ ACVP_ALG_HANDLER alg_tbl[ACVP_ALG_MAX] = {
     { ACVP_KDF135_SRTP,       &acvp_kdf135_srtp_kat_handler,     ACVP_KDF135_ALG_STR,        ACVP_ALG_KDF135_SRTP, ACVP_REV_KDF135_SRTP, {ACVP_SUB_KDF_SRTP}},
     { ACVP_KDF135_IKEV2,      &acvp_kdf135_ikev2_kat_handler,    ACVP_KDF135_ALG_STR,        ACVP_ALG_KDF135_IKEV2, ACVP_REV_KDF135_IKEV2, {ACVP_SUB_KDF_IKEV2}},
     { ACVP_KDF135_IKEV1,      &acvp_kdf135_ikev1_kat_handler,    ACVP_KDF135_ALG_STR,        ACVP_ALG_KDF135_IKEV1, ACVP_REV_KDF135_IKEV1, {ACVP_SUB_KDF_IKEV1}},
+    { ACVP_KDF135_X942,       &acvp_kdf135_x942_kat_handler,     ACVP_KDF135_ALG_STR,        ACVP_ALG_KDF135_X942, ACVP_REV_KDF135_X942, {ACVP_SUB_KDF_X942}},
     { ACVP_KDF135_X963,       &acvp_kdf135_x963_kat_handler,     ACVP_KDF135_ALG_STR,        ACVP_ALG_KDF135_X963, ACVP_REV_KDF135_X963, {ACVP_SUB_KDF_X963}},
     { ACVP_KDF108,            &acvp_kdf108_kat_handler,          ACVP_ALG_KDF108,            NULL, ACVP_REV_KDF108, {ACVP_SUB_KDF_108}},
     { ACVP_PBKDF,             &acvp_pbkdf_kat_handler,           ACVP_ALG_PBKDF,             NULL, ACVP_REV_PBKDF, {ACVP_SUB_KDF_PBKDF}},
@@ -160,10 +159,14 @@ ACVP_ALG_HANDLER alg_tbl[ACVP_ALG_MAX] = {
     { ACVP_KAS_FFC_SSC,       &acvp_kas_ffc_ssc_kat_handler,     ACVP_ALG_KAS_FFC_SSC,       ACVP_ALG_KAS_FFC_COMP, ACVP_REV_KAS_FFC_SSC, {ACVP_SUB_KAS_FFC_SSC}},
     { ACVP_KAS_IFC_SSC,       &acvp_kas_ifc_ssc_kat_handler,     ACVP_ALG_KAS_IFC_SSC,       ACVP_ALG_KAS_IFC_COMP, ACVP_REV_KAS_IFC_SSC, {ACVP_SUB_KAS_IFC_SSC}},
     { ACVP_KDA_ONESTEP,       &acvp_kda_onestep_kat_handler,     ACVP_ALG_KDA_ALG_STR,       ACVP_ALG_KDA_ONESTEP, ACVP_REV_KDA_ONESTEP, {ACVP_SUB_KDA_ONESTEP}},
+    { ACVP_KDA_TWOSTEP,       &acvp_kda_twostep_kat_handler,     ACVP_ALG_KDA_ALG_STR,       ACVP_ALG_KDA_TWOSTEP, ACVP_REV_KDA_TWOSTEP, {ACVP_SUB_KDA_TWOSTEP}},
     { ACVP_KDA_HKDF,          &acvp_kda_hkdf_kat_handler,        ACVP_ALG_KDA_ALG_STR,       ACVP_ALG_KDA_HKDF, ACVP_REV_KDA_HKDF, {ACVP_SUB_KDA_HKDF}},
     { ACVP_KTS_IFC,           &acvp_kts_ifc_kat_handler,         ACVP_ALG_KTS_IFC,           ACVP_ALG_KTS_IFC_COMP, ACVP_REV_KTS_IFC, {ACVP_SUB_KTS_IFC}},
     { ACVP_SAFE_PRIMES_KEYGEN, &acvp_safe_primes_kat_handler,    ACVP_ALG_SAFE_PRIMES_STR,   ACVP_ALG_SAFE_PRIMES_KEYGEN, ACVP_REV_SAFE_PRIMES, {ACVP_SUB_SAFE_PRIMES_KEYGEN}},
-    { ACVP_SAFE_PRIMES_KEYVER, &acvp_safe_primes_kat_handler,    ACVP_ALG_SAFE_PRIMES_STR,   ACVP_ALG_SAFE_PRIMES_KEYVER, ACVP_REV_SAFE_PRIMES, {ACVP_SUB_SAFE_PRIMES_KEYVER}}
+    { ACVP_SAFE_PRIMES_KEYVER, &acvp_safe_primes_kat_handler,    ACVP_ALG_SAFE_PRIMES_STR,   ACVP_ALG_SAFE_PRIMES_KEYVER, ACVP_REV_SAFE_PRIMES, {ACVP_SUB_SAFE_PRIMES_KEYVER}},
+    { ACVP_LMS_KEYGEN,        &acvp_lms_kat_handler,             ACVP_ALG_LMS,               ACVP_ALG_LMS_KEYGEN, ACVP_REV_LMS, {ACVP_SUB_LMS_KEYGEN}},
+    { ACVP_LMS_SIGGEN,        &acvp_lms_kat_handler,             ACVP_ALG_LMS,               ACVP_ALG_LMS_SIGGEN, ACVP_REV_LMS, {ACVP_SUB_LMS_SIGGEN}},
+    { ACVP_LMS_SIGVER,        &acvp_lms_kat_handler,             ACVP_ALG_LMS,               ACVP_ALG_LMS_SIGVER, ACVP_REV_LMS, {ACVP_SUB_LMS_SIGVER}}
 };
 
 /*
@@ -171,14 +174,13 @@ ACVP_ALG_HANDLER alg_tbl[ACVP_ALG_MAX] = {
  * a new context to be used for the test session.
  */
 ACVP_RESULT acvp_create_test_session(ACVP_CTX **ctx,
-                                     ACVP_RESULT (*progress_cb)(char *msg),
+                                     ACVP_RESULT (*progress_cb)(char *msg, ACVP_LOG_LVL level),
                                      ACVP_LOG_LVL level) {
     if (!ctx) {
         return ACVP_INVALID_ARG;
     }
     if (*ctx) {
-        printf("ERROR: Cannot initialize non-null ctx; clear ctx & set to NULL first\n");
-        return ACVP_DUPLICATE_CTX;
+        return ACVP_CTX_NOT_EMPTY;
     }
     *ctx = calloc(1, sizeof(ACVP_CTX));
     if (!*ctx) {
@@ -189,7 +191,10 @@ ACVP_RESULT acvp_create_test_session(ACVP_CTX **ctx,
         (*ctx)->test_progress_cb = progress_cb;
     }
 
-    (*ctx)->debug = level;
+    (*ctx)->log_lvl= level;
+    if (level >= ACVP_LOG_LVL_DEBUG) {
+        (*ctx)->debug = 1;
+    }
 
     return ACVP_SUCCESS;
 }
@@ -474,29 +479,33 @@ static void acvp_free_drbg_struct(ACVP_CAPS_LIST *cap_list) {
     ACVP_DRBG_CAP *drbg_cap = cap_list->cap.drbg_cap;
 
     if (drbg_cap) {
-        ACVP_DRBG_CAP_MODE_LIST *mode_list = drbg_cap->drbg_cap_mode_list;
-        ACVP_DRBG_CAP_MODE_LIST *next_mode_list;
+        ACVP_DRBG_MODE_LIST *mode_list = drbg_cap->drbg_cap_mode;
+        ACVP_DRBG_MODE_LIST *next_mode_list;
+        ACVP_DRBG_GROUP_LIST *group_list;
+        ACVP_DRBG_GROUP_LIST *next_group_list;
         ACVP_PREREQ_LIST *current_pre_req_vals;
         ACVP_PREREQ_LIST *next_pre_req_vals;
 
-        if (mode_list) {
-            do {
-                //Top of list
-                current_pre_req_vals = mode_list->cap_mode.prereq_vals;
-                /*
-                 * Delete all pre_req
-                 */
-                if (current_pre_req_vals) {
-                    do {
-                        next_pre_req_vals = current_pre_req_vals->next;
-                        free(current_pre_req_vals);
-                        current_pre_req_vals = next_pre_req_vals;
-                    } while (current_pre_req_vals);
+        current_pre_req_vals = drbg_cap->prereq_vals;
+        while (current_pre_req_vals) {
+            next_pre_req_vals = current_pre_req_vals->next;
+            free(current_pre_req_vals);
+            current_pre_req_vals = next_pre_req_vals;
+        }
+
+        while (mode_list) {
+            group_list = mode_list->groups;
+            while (group_list) {
+                next_group_list = group_list->next;
+                if (group_list->group) {
+                    free(group_list->group);
                 }
-                next_mode_list = mode_list->next;
-                free(mode_list);
-                mode_list = next_mode_list;
-            } while (mode_list);
+                free(group_list);
+                group_list = next_group_list;
+            }
+            next_mode_list = mode_list->next;
+            free(mode_list);
+            mode_list = next_mode_list;
         }
         free(drbg_cap);
         drbg_cap = NULL;
@@ -507,8 +516,7 @@ static void acvp_free_drbg_struct(ACVP_CAPS_LIST *cap_list) {
 /*
  * Free Internal memory for KDF108 Cap struct
  */
-static void acvp_cap_free_kdf108(ACVP_CAPS_LIST *cap_list) {
-    ACVP_KDF108_CAP *cap = cap_list->cap.kdf108_cap;
+static void acvp_cap_free_kdf108(ACVP_KDF108_CAP *cap) {
     ACVP_KDF108_MODE_PARAMS *mode_obj = NULL;
 
     if (cap) {
@@ -523,6 +531,7 @@ static void acvp_cap_free_kdf108(ACVP_CAPS_LIST *cap_list) {
             if (mode_obj->counter_lens) {
                 acvp_cap_free_sl(mode_obj->counter_lens);
             }
+            acvp_cap_free_domain(&mode_obj->supported_lens);
         }
 
         if (cap->feedback_mode.kdf_mode) {
@@ -536,6 +545,7 @@ static void acvp_cap_free_kdf108(ACVP_CAPS_LIST *cap_list) {
             if (mode_obj->counter_lens) {
                 acvp_cap_free_sl(mode_obj->counter_lens);
             }
+            acvp_cap_free_domain(&mode_obj->supported_lens);
         }
 
         if (cap->dpi_mode.kdf_mode) {
@@ -549,11 +559,21 @@ static void acvp_cap_free_kdf108(ACVP_CAPS_LIST *cap_list) {
             if (mode_obj->counter_lens) {
                 acvp_cap_free_sl(mode_obj->counter_lens);
             }
+            acvp_cap_free_domain(&mode_obj->supported_lens);
         }
 
-        free(cap);
+        if (cap->kmac_mode.kdf_mode) {
+            mode_obj = &cap->kmac_mode;
+            if (mode_obj->mac_mode) {
+                acvp_cap_free_nl(mode_obj->mac_mode);
+            }
+            acvp_cap_free_domain(&mode_obj->derivation_keylens);
+            acvp_cap_free_domain(&mode_obj->derived_keylens);
+            acvp_cap_free_domain(&mode_obj->context_lens);
+            acvp_cap_free_domain(&mode_obj->label_lens);
+        }
+
         cap = NULL;
-        cap_list->cap.kdf108_cap = NULL;
     }
 }
 
@@ -570,6 +590,19 @@ static void acvp_cap_free_kts_ifc_schemes(ACVP_CAPS_LIST *cap_entry) {
         current_scheme = current_scheme->next;
     }
     free(cap_entry->cap.kts_ifc_cap->schemes);
+}
+
+static void acvp_cap_free_lms(ACVP_LMS_CAP *cap) {
+    ACVP_LMS_SPECIFIC_LIST *prev = NULL, *curr = cap->specific_list;
+
+    acvp_cap_free_pl(cap->lms_modes);
+    acvp_cap_free_pl(cap->lmots_modes);
+    while (curr) {
+        prev = curr;
+        curr = curr->next;
+        free(prev);
+    }
+    free(cap);
 }
 /*
  * The application will invoke this to free the ACVP context
@@ -636,18 +669,29 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx) {
                 free(cap_entry->cap.sym_cap);
                 break;
             case ACVP_HASH_TYPE:
+                acvp_cap_free_sl(cap_entry->cap.hash_cap->large_lens);
                 free(cap_entry->cap.hash_cap);
                 break;
             case ACVP_DRBG_TYPE:
                 acvp_free_drbg_struct(cap_entry);
                 break;
             case ACVP_HMAC_TYPE:
+                acvp_cap_free_domain(&cap_entry->cap.hmac_cap->key_len);
+                acvp_cap_free_domain(&cap_entry->cap.hmac_cap->mac_len);
                 free(cap_entry->cap.hmac_cap);
                 break;
             case ACVP_CMAC_TYPE:
                 acvp_cap_free_sl(cap_entry->cap.cmac_cap->key_len);
                 acvp_cap_free_sl(cap_entry->cap.cmac_cap->keying_option);
+                acvp_cap_free_domain(&cap_entry->cap.cmac_cap->msg_len);
+                acvp_cap_free_domain(&cap_entry->cap.cmac_cap->mac_len);
                 free(cap_entry->cap.cmac_cap);
+                break;
+            case ACVP_KMAC_TYPE:
+                acvp_cap_free_domain(&cap_entry->cap.kmac_cap->key_len);
+                acvp_cap_free_domain(&cap_entry->cap.kmac_cap->msg_len);
+                acvp_cap_free_domain(&cap_entry->cap.kmac_cap->mac_len);
+                free(cap_entry->cap.kmac_cap);
                 break;
             case ACVP_DSA_TYPE:
                 acvp_cap_free_dsa_attrs(cap_entry);
@@ -682,6 +726,17 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx) {
                 acvp_cap_free_nl(cap_entry->cap.kda_onestep_cap->mac_salt_methods);
                 free(cap_entry->cap.kda_onestep_cap);
                 break;
+            case ACVP_KDA_TWOSTEP_TYPE:
+                if (cap_entry->cap.kda_twostep_cap->literal_pattern_candidate) {
+                    free(cap_entry->cap.kda_twostep_cap->literal_pattern_candidate);
+                }
+                acvp_cap_free_nl(cap_entry->cap.kda_twostep_cap->mac_salt_methods);
+                acvp_cap_free_pl(cap_entry->cap.kda_twostep_cap->patterns);
+                acvp_cap_free_pl(cap_entry->cap.kda_twostep_cap->encodings);
+                acvp_cap_free_domain(&cap_entry->cap.kda_twostep_cap->aux_secret_len);
+                acvp_cap_free_kdf108(&cap_entry->cap.kda_twostep_cap->kdf_params);
+                free(cap_entry->cap.kda_twostep_cap);
+                break;
             case ACVP_KDA_HKDF_TYPE:
                 if (cap_entry->cap.kda_hkdf_cap->literal_pattern_candidate) {
                     free(cap_entry->cap.kda_hkdf_cap->literal_pattern_candidate);
@@ -690,6 +745,7 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx) {
                 acvp_cap_free_pl(cap_entry->cap.kda_hkdf_cap->encodings);
                 acvp_cap_free_nl(cap_entry->cap.kda_hkdf_cap->hmac_algs);
                 acvp_cap_free_nl(cap_entry->cap.kda_hkdf_cap->mac_salt_methods);
+                acvp_cap_free_domain(&cap_entry->cap.kda_hkdf_cap->aux_secret_len);
                 free(cap_entry->cap.kda_hkdf_cap);
                 break;
             case ACVP_KTS_IFC_TYPE:
@@ -739,7 +795,8 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx) {
                 free(cap_entry->cap.kdf135_srtp_cap);
                 break;
             case ACVP_KDF108_TYPE:
-                acvp_cap_free_kdf108(cap_entry);
+                acvp_cap_free_kdf108(cap_entry->cap.kdf108_cap);
+                free(cap_entry->cap.kdf108_cap);
                 break;
             case ACVP_KDF135_SNMP_TYPE:
                 acvp_cap_free_sl(cap_entry->cap.kdf135_snmp_cap->pass_lens);
@@ -751,11 +808,20 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx) {
                 break;
             case ACVP_KDF135_IKEV2_TYPE:
                 acvp_cap_free_nl(cap_entry->cap.kdf135_ikev2_cap->hash_algs);
+                acvp_cap_free_domain(&cap_entry->cap.kdf135_ikev2_cap->init_nonce_len_domain);
+                acvp_cap_free_domain(&cap_entry->cap.kdf135_ikev2_cap->respond_nonce_len_domain);
+                acvp_cap_free_domain(&cap_entry->cap.kdf135_ikev2_cap->dh_secret_len);
+                acvp_cap_free_domain(&cap_entry->cap.kdf135_ikev2_cap->key_material_len);
                 free(cap_entry->cap.kdf135_ikev2_cap);
                 break;
             case ACVP_KDF135_IKEV1_TYPE:
                 acvp_cap_free_nl(cap_entry->cap.kdf135_ikev1_cap->hash_algs);
                 free(cap_entry->cap.kdf135_ikev1_cap);
+                break;
+            case ACVP_KDF135_X942_TYPE:
+                acvp_cap_free_nl(cap_entry->cap.kdf135_x942_cap->hash_algs);
+                acvp_cap_free_nl(cap_entry->cap.kdf135_x942_cap->oids);
+                free(cap_entry->cap.kdf135_x942_cap);
                 break;
             case ACVP_KDF135_X963_TYPE:
                 acvp_cap_free_nl(cap_entry->cap.kdf135_x963_cap->hash_algs);
@@ -790,6 +856,15 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx) {
                 }
                 free(cap_entry->cap.safe_primes_keyver_cap->mode);
                 free(cap_entry->cap.safe_primes_keyver_cap);
+                break;
+            case ACVP_LMS_KEYGEN_TYPE:
+                acvp_cap_free_lms(cap_entry->cap.lms_keygen_cap);
+                break;
+            case ACVP_LMS_SIGGEN_TYPE:
+                acvp_cap_free_lms(cap_entry->cap.lms_siggen_cap);
+                break;
+            case ACVP_LMS_SIGVER_TYPE:
+                acvp_cap_free_lms(cap_entry->cap.lms_sigver_cap);
                 break;
             case ACVP_KDF135_TPM_TYPE:
             default:
@@ -856,6 +931,14 @@ static void acvp_cap_free_nl(ACVP_NAME_LIST *list) {
     }
 }
 
+static void acvp_cap_free_domain(ACVP_JSON_DOMAIN_OBJ *domain) {
+    if (!domain) {
+        return;
+    }
+    acvp_cap_free_sl(domain->values);
+    return;
+}
+
 static void acvp_cap_free_hash_pairs(ACVP_RSA_HASH_PAIR_LIST *list) {
     ACVP_RSA_HASH_PAIR_LIST *top = list;
     ACVP_RSA_HASH_PAIR_LIST *tmp;
@@ -868,58 +951,25 @@ static void acvp_cap_free_hash_pairs(ACVP_RSA_HASH_PAIR_LIST *list) {
     }
 }
 
-static void acvp_list_failing_algorithms(ACVP_CTX *ctx, ACVP_STRING_LIST **list) {
+static void acvp_list_failing_algorithms(ACVP_CTX *ctx, ACVP_STRING_LIST **list, ACVP_STRING_LIST **modes) {
     if (!list || *list == NULL) {
         return;
     }
     ACVP_STRING_LIST *iterator = *list;
-    if (!iterator || !iterator->string) {
+    ACVP_STRING_LIST *mode_iterator = *modes;
+    if (!iterator || !iterator->string || !mode_iterator || !mode_iterator->string) {
         return;
     }
     ACVP_LOG_STATUS("Failing algorithms:");
-    while (iterator && iterator->string) {
-        ACVP_LOG_STATUS("    %s", iterator->string);
+    while (iterator && iterator->string && mode_iterator && mode_iterator->string) {
+        if (strnlen_s(mode_iterator->string, ACVP_ALG_MODE_MAX) < 1) {
+            ACVP_LOG_STATUS("    %s", iterator->string);
+        } else {
+            ACVP_LOG_STATUS("    %s, Mode: %s", iterator->string, mode_iterator->string);
+        }
         iterator = iterator->next;
+        mode_iterator = mode_iterator->next;
     }
-}
-
-/*
- * Allows application to load JSON kat vector file within context
- * to be read in and used for vector testing
- */
-ACVP_RESULT acvp_load_kat_filename(ACVP_CTX *ctx, const char *kat_filename) {
-    JSON_Object *obj = NULL;
-    JSON_Value *val = NULL;
-    ACVP_RESULT rv = ACVP_SUCCESS;
-    JSON_Array *reg_array;
-
-    if (!ctx) {
-        return ACVP_NO_CTX;
-    }
-    if (!kat_filename) {
-        ACVP_LOG_ERR("Must provide value for JSON filename");
-        return ACVP_MISSING_ARG;
-    }
-
-    if (strnlen_s(kat_filename, ACVP_JSON_FILENAME_MAX + 1) > ACVP_JSON_FILENAME_MAX) {
-        ACVP_LOG_ERR("Provided kat_filename length > max(%d)", ACVP_JSON_FILENAME_MAX);
-        return ACVP_INVALID_ARG;
-    }
-
-    val = json_parse_file(kat_filename);
-
-    reg_array = json_value_get_array(val);
-    obj = json_array_get_object(reg_array, 1);
-    if (!obj) {
-        ACVP_LOG_ERR("JSON obj parse error");
-        json_value_free(val);
-        return ACVP_INVALID_ARG;
-    }
-
-    /* Process the kat vector(s) */
-    rv  = acvp_dispatch_vector_set(ctx, obj);
-    json_value_free(val);
-    return rv;
 }
 
 /*
@@ -1235,7 +1285,7 @@ ACVP_RESULT acvp_upload_vectors_from_file(ACVP_CTX *ctx, const char *rsp_filenam
         ctx->kat_resp = vec_array_val;
 
         json_result = json_serialize_to_string_pretty(ctx->kat_resp, NULL);
-        if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
+        if (ctx->log_lvl == ACVP_LOG_LVL_VERBOSE) {
             printf("\n\n%s\n\n", json_result);
         } else {
             ACVP_LOG_INFO("\n\n%s\n\n", json_result);
@@ -1375,7 +1425,6 @@ ACVP_RESULT acvp_get_expected_results(ACVP_CTX *ctx, const char *request_filenam
     }
 
     ACVP_LOG_STATUS("Beginning output of expected results...");
-    ACVP_LOG_NEWLINE;
 
     if (save_filename) {
         //write the session URL and JWT to the file first
@@ -1700,7 +1749,7 @@ end:
  * Allows application to set JSON filename within context
  * to be read in during registration
  */
-ACVP_RESULT acvp_set_json_filename(ACVP_CTX *ctx, const char *json_filename) {
+ACVP_RESULT acvp_set_registration_file(ACVP_CTX *ctx, const char *json_filename) {
     if (!ctx) {
         return ACVP_NO_CTX;
     }
@@ -1729,6 +1778,36 @@ ACVP_RESULT acvp_set_json_filename(ACVP_CTX *ctx, const char *json_filename) {
     ctx->use_json = 1;
 
     return ACVP_SUCCESS;
+}
+
+/*
+ * This will return a string form of the current registration, regardless of whether the session
+ * has already been started
+ */
+char *acvp_get_current_registration(ACVP_CTX *ctx, int *len) {
+    char *registration = NULL;
+    int length = 0;
+    JSON_Value *reg = NULL;
+    if (!ctx) {
+        return NULL;
+    }
+
+    /* If we have a registration saved already, use that. Otherwise, build it and return it */
+    if (ctx->registration) {
+        reg = ctx->registration;
+    } else {
+        if (acvp_build_registration_json(ctx, &reg) != ACVP_SUCCESS) {
+            return NULL;
+        }
+    }
+    registration = json_serialize_to_string_pretty(reg, &length);
+    if (len) *len = length;
+
+    /* free the JSON_Value if built on the fly */
+    if (!ctx->registration) {
+        json_value_free(reg);
+    }
+    return registration;
 }
 
 /*
@@ -1917,15 +1996,19 @@ ACVP_RESULT acvp_mark_as_request_only(ACVP_CTX *ctx, char *filename) {
     return ACVP_SUCCESS;
 }
 
-ACVP_RESULT acvp_mark_as_get_only(ACVP_CTX *ctx, char *string) {
+ACVP_RESULT acvp_mark_as_get_only(ACVP_CTX *ctx, char *string, const char *save_filename) {
+    int len = 0;
+
     if (!ctx) {
         return ACVP_NO_CTX;
     } 
     if (!string) {
         return ACVP_MISSING_ARG;
     }
-    if (strnlen_s(string, ACVP_REQUEST_STR_LEN_MAX + 1) > ACVP_REQUEST_STR_LEN_MAX) {
-         ACVP_LOG_ERR("Request string is suspiciously long...");
+
+    len = strnlen_s(string, ACVP_REQUEST_STR_LEN_MAX + 1);
+    if (len > ACVP_REQUEST_STR_LEN_MAX || len <= 0) {
+        ACVP_LOG_ERR("Request string is too long or empty");
         return ACVP_INVALID_ARG;
     }
 
@@ -1935,38 +2018,26 @@ ACVP_RESULT acvp_mark_as_get_only(ACVP_CTX *ctx, char *string) {
         return ACVP_MALLOC_FAIL;
     }
 
+    if (save_filename) {
+        len = strnlen_s(save_filename, ACVP_JSON_FILENAME_MAX + 1);
+        if (len > ACVP_JSON_FILENAME_MAX || len <= 0) {
+            ACVP_LOG_ERR("Provided save filename too long or empty");
+            return ACVP_INVALID_ARG;
+        }
+        if (ctx->save_filename) { free(ctx->save_filename); }
+        ctx->save_filename = calloc(len + 1, sizeof(char));
+        if (!ctx->save_filename) {
+            return ACVP_MALLOC_FAIL;
+        }
+        strncpy_s(ctx->save_filename, len + 1, save_filename, len);
+    }
+
     strcpy_s(ctx->get_string, ACVP_REQUEST_STR_LEN_MAX + 1, string);
     ctx->get = 1;
+
     return ACVP_SUCCESS;
 }
 
-ACVP_RESULT acvp_set_get_save_file(ACVP_CTX *ctx, char *filename) {
-    if (!ctx) {
-        ACVP_LOG_ERR("No CTX given");
-        return ACVP_NO_CTX;
-    } 
-    if (!filename) {
-        ACVP_LOG_ERR("No filename given");
-        return ACVP_MISSING_ARG;
-    }
-    if (!ctx->get) {
-        ACVP_LOG_ERR("Session must be marked as get only to set a get save file");
-        return ACVP_UNSUPPORTED_OP;
-    }
-    int filenameLen = 0;
-    filenameLen = strnlen_s(filename, ACVP_JSON_FILENAME_MAX + 1);
-    if (filenameLen > ACVP_JSON_FILENAME_MAX || filenameLen <= 0) {
-        ACVP_LOG_ERR("Provided filename invalid");
-        return ACVP_INVALID_ARG;
-    }
-    if (ctx->save_filename) { free(ctx->save_filename); }
-    ctx->save_filename = calloc(filenameLen + 1, sizeof(char));
-    if (!ctx->save_filename) {
-        return ACVP_MALLOC_FAIL;
-    }
-    strncpy_s(ctx->save_filename, filenameLen + 1, filename, filenameLen);
-    return ACVP_SUCCESS;
-}
 
 ACVP_RESULT acvp_mark_as_put_after_test(ACVP_CTX *ctx, char *filename) {
     if (!ctx) {
@@ -2037,6 +2108,13 @@ ACVP_RESULT acvp_mark_as_delete_only(ACVP_CTX *ctx, char *request_url) {
     return ACVP_SUCCESS;
 }
 
+int acvp_get_vector_set_count(ACVP_CTX *ctx) {
+    if (!ctx) {
+        return -1;
+    }
+    return ctx->vs_count;
+}
+
 /*
  * This function builds the JSON login message that
  * will be sent to the ACVP server. If enabled,
@@ -2076,11 +2154,16 @@ static ACVP_RESULT acvp_build_login(ACVP_CTX *ctx, char **login, int *login_len,
         token = calloc(ACVP_TOTP_TOKEN_MAX + 1, sizeof(char));
         if (!token) return ACVP_MALLOC_FAIL;
 
-        ctx->totp_cb(&token, ACVP_TOTP_TOKEN_MAX);
+        rv = ctx->totp_cb(&token, ACVP_TOTP_TOKEN_MAX);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Error occured in application callback while generating TOTP");
+            rv = ACVP_TOTP_FAIL;
+            goto err;
+        }
         if (strnlen_s(token, ACVP_TOTP_TOKEN_MAX + 1) > ACVP_TOTP_TOKEN_MAX) {
             ACVP_LOG_ERR("totp cb generated a token that is too long");
             json_value_free(pw_val);
-            rv = ACVP_INVALID_ARG;
+            rv = ACVP_TOTP_FAIL;
             goto err;
         }
         json_object_set_string(pw_obj, "password", token);
@@ -2107,9 +2190,10 @@ err:
 static ACVP_RESULT acvp_register(ACVP_CTX *ctx) {
     ACVP_RESULT rv = ACVP_SUCCESS;
     char *reg = NULL;
-    int reg_len = 0;
-    JSON_Value *tmp_json_from_file = NULL;
+    int reg_len = 0, count = 0;
 
+    JSON_Value *tmp_json = NULL;
+    JSON_Array *tmp_arr = NULL;
     if (!ctx) {
         return ACVP_NO_CTX;
     }
@@ -2119,30 +2203,42 @@ static ACVP_RESULT acvp_register(ACVP_CTX *ctx) {
      * which should be a list of vector set ID urls
      */
     if (ctx->use_json) {
-        if (ctx->is_sample) {
-            ACVP_LOG_WARN("Warning: sample flag set but using manual registration; flag will be ignored. Please ensure "
-                          "your manual registration indicates a sample session in JSON");
-        }
         ACVP_LOG_STATUS("Reading capabilities registration file...");
-        tmp_json_from_file = json_parse_file(ctx->json_filename);
-        if (!tmp_json_from_file) {
+        tmp_json = json_parse_file(ctx->json_filename);
+        if (!tmp_json) {
             ACVP_LOG_ERR("Error reading capabilities file");
             rv = ACVP_JSON_ERR;
             goto end;
         }
-        reg = json_serialize_to_string_pretty(tmp_json_from_file, &reg_len);
-        if (!reg) {
-            ACVP_LOG_ERR("Error loading capabilities file");
+        /* Quickly sanity check format */
+        tmp_arr = json_value_get_array(tmp_json);
+        if (!tmp_arr) {
+            ACVP_LOG_ERR("Provided capabilities file in invalid format");
             rv = ACVP_JSON_ERR;
             goto end;
         }
-    } else {
-        ACVP_LOG_STATUS("Building registration of capabilities...");
-        rv = acvp_build_test_session(ctx, &reg, &reg_len);
-        if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("Unable to build register message");
+        count = json_array_get_count(tmp_arr);
+        if (count < 1 || count > ACVP_CAP_MAX) {
+            ACVP_LOG_ERR("Invalid number of capability objects in provided file! Min: 1, Max: %d", ACVP_CAP_MAX);
+            rv = ACVP_JSON_ERR;
             goto end;
         }
+        ctx->registration = tmp_json;
+    } else {
+        ACVP_LOG_STATUS("Building registration of capabilities...");
+        rv = acvp_build_registration_json(ctx, &tmp_json);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("Unable to build registration");
+            goto end;
+        } else {
+            ctx->registration = tmp_json;
+        }
+    }
+
+    rv = acvp_build_full_registration(ctx, &reg, &reg_len);
+    if (rv != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Error occurred building registration JSON: %d", rv);
+        goto end;
     }
 
     ACVP_LOG_STATUS("Sending registration of capabilities...");
@@ -2161,7 +2257,6 @@ static ACVP_RESULT acvp_register(ACVP_CTX *ctx) {
     }
 
 end:
-    if (tmp_json_from_file) json_value_free(tmp_json_from_file);
     if (reg) json_free_serialized_string(reg);
     return rv;
 }
@@ -2241,12 +2336,12 @@ static ACVP_RESULT acvp_parse_login(ACVP_CTX *ctx) {
     jwt = json_object_get_string(obj, "accessToken");
     if (!jwt) {
         ACVP_LOG_ERR("No access_token provided in registration response");
-        rv = ACVP_NO_TOKEN;
+        rv = ACVP_JWT_MISSING;
         goto end;
     } else {
         if (strnlen_s(jwt, ACVP_JWT_TOKEN_MAX + 1) > ACVP_JWT_TOKEN_MAX) {
             ACVP_LOG_ERR("access_token too large");
-            rv = ACVP_NO_TOKEN;
+            rv = ACVP_JWT_INVALID;
             goto end;
         }
 
@@ -2432,7 +2527,7 @@ ACVP_RESULT acvp_notify_large(ACVP_CTX *ctx,
          */
         if (strnlen_s(jwt, ACVP_JWT_TOKEN_MAX + 1) > ACVP_JWT_TOKEN_MAX) {
             ACVP_LOG_ERR("access_token too large");
-            rv = ACVP_NO_TOKEN;
+            rv = ACVP_JWT_INVALID;
             goto err;
         }
 
@@ -2490,11 +2585,6 @@ static ACVP_RESULT acvp_parse_test_session_register(ACVP_CTX *ctx) {
     ctx->session_url = calloc(ACVP_ATTR_URL_MAX + 1, sizeof(char));
     strcpy_s(ctx->session_url, ACVP_ATTR_URL_MAX + 1, test_session_url);
 
-    /* Update the isSample flag internally with what the NIST server claims (helps for manual registration since we do not parse that) */
-    if (json_object_has_value_of_type(obj, "isSample", JSONBoolean)) {
-        ctx->is_sample = json_object_get_boolean(obj, "isSample");
-    }
-
     /*
      * The accessToken needed for this specific test session.
      */
@@ -2505,7 +2595,7 @@ static ACVP_RESULT acvp_parse_test_session_register(ACVP_CTX *ctx) {
     }
     if (strnlen_s(access_token, ACVP_JWT_TOKEN_MAX + 1) > ACVP_JWT_TOKEN_MAX) {
         ACVP_LOG_ERR("access_token too large");
-        return ACVP_NO_TOKEN;
+        return ACVP_JWT_INVALID;
     }
     memzero_s(ctx->jwt_token, ACVP_JWT_TOKEN_MAX + 1);
     strcpy_s(ctx->jwt_token, ACVP_JWT_TOKEN_MAX + 1, access_token);
@@ -2680,14 +2770,7 @@ static ACVP_RESULT acvp_retry_handler(ACVP_CTX *ctx, int *retry_period, unsigned
         ACVP_LOG_STATUS("200 OK, waiting %u seconds and trying again...", *retry_period);
     }
 
-    #ifdef _WIN32
-    /*
-     * Windows uses milliseconds
-     */
-    Sleep(*retry_period * 1000);
-    #else
-    sleep(*retry_period);
-    #endif
+    acvp_sleep(*retry_period);
 
     /* ensure that all parameters are valid and that we do not wait longer than ACVP_MAX_WAIT_TIME */
     if (modifier < 1 || modifier > ACVP_RETRY_MODIFIER_MAX) {
@@ -2739,7 +2822,7 @@ static ACVP_RESULT acvp_login(ACVP_CTX *ctx, int refresh) {
      */
     rv = acvp_send_login(ctx, login, login_len);
     if (rv != ACVP_SUCCESS) {
-        ACVP_LOG_STATUS("Login Send Failed");
+        ACVP_LOG_ERR("Login Send Failed");
         goto end;
     }
 
@@ -2913,7 +2996,7 @@ static ACVP_RESULT acvp_dispatch_vector_set(ACVP_CTX *ctx, JSON_Object *obj) {
                  ACVP_ALG_NAME_MAX,
                  alg, &diff);
         if (!diff) {
-            if (mode == NULL) {
+            if (mode == NULL || alg_tbl[i].cipher == ACVP_KDF108) { // KDF108-KMAC has a mode!
                 rv = (alg_tbl[i].handler)(ctx, obj);
                 return rv;
             }
@@ -2929,6 +3012,8 @@ static ACVP_RESULT acvp_dispatch_vector_set(ACVP_CTX *ctx, JSON_Object *obj) {
             }
         }
     }
+
+    ACVP_LOG_ERR("Unsupported algorithm or mode requested");
     return ACVP_UNSUPPORTED_OP;
 }
 
@@ -2970,12 +3055,12 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
     int count = 0, i = 0, passed = 0;
     JSON_Array *results = NULL;
     JSON_Object *current = NULL;
-    const char *status = NULL;
-
+    const char *status = NULL, *alg = NULL, *mode = NULL;
     unsigned int time_waited_so_far = 0;
     int retry_interval = ACVP_RETRY_TIME;
     //Maintains a list of names of algorithms that have failed
     ACVP_STRING_LIST *failedAlgList = NULL;
+    ACVP_STRING_LIST *failedModeList = NULL;
     /*
      * Maintains a list of the vector set URLs we have already looked up,
      * so we don't redownload failed vector sets every time a retry is done
@@ -3080,18 +3165,33 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
                         ACVP_LOG_ERR("JSON parse error while reporting failed algorithms, skipping...");
                         continue;
                     }
-                    const char *alg = json_object_get_string(obj2, "algorithm");
+                    alg = json_object_get_string(obj2, "algorithm");
                     if (!alg) {
                         ACVP_LOG_ERR("JSON parse error while reporting failed algorithms, skipping...");
                         continue;
                     }
-                    if (!acvp_lookup_str_list(&failedAlgList, alg)) {
+                    //Some algorithms have the same names, but different modes. Need to differentiate.
+                    if (json_object_get_string(obj2, "mode")) {
+                        mode = json_object_get_string(obj2, "mode");
+                    }
+                    if (!acvp_lookup_str_list(&failedAlgList, alg) || !acvp_lookup_str_list(&failedModeList, mode)) {
                         rv = acvp_append_str_list(&failedAlgList, alg);
-                        if (val2) json_value_free(val2);
                         if (rv != ACVP_SUCCESS) {
                             ACVP_LOG_ERR("Error appending failed algorithm name to list, skipping...");
                             continue;
                         }
+                        if (mode) {
+                            rv = acvp_append_str_list(&failedModeList, mode);
+                        } else {
+                            //use empty node to keep mode and algorithm indexes aligned in lists
+                            rv = acvp_append_str_list(&failedModeList, "");
+                        }
+                        if (rv != ACVP_SUCCESS) {
+                            ACVP_LOG_ERR("Error appending failed mode name to list, skipping...");
+                            continue;
+                        }
+                        if (val2) json_value_free(val2);
+                        val2 = NULL;
                     } else {
                         if (val2) json_value_free(val2);
                     }
@@ -3115,13 +3215,13 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
                   */
                  ACVP_LOG_STATUS("Test session complete: some vectors failed, reporting results...");
                  ACVP_LOG_STATUS("Note: Use verbose-level logging to see results of each test case");
-                 acvp_list_failing_algorithms(ctx, &failedAlgList);
+                 acvp_list_failing_algorithms(ctx, &failedAlgList, &failedModeList);
              }
         } else {
               /*
              * If any tests are incomplete, retry, even if some have failed
              */
-            acvp_list_failing_algorithms(ctx, &failedAlgList);
+            acvp_list_failing_algorithms(ctx, &failedAlgList, &failedModeList);
             ACVP_LOG_STATUS("TestSession results incomplete...");
             if (acvp_retry_handler(ctx, &retry_interval, &time_waited_so_far, 1, ACVP_WAITING_FOR_RESULTS) != ACVP_KAT_DOWNLOAD_RETRY) {
                 ACVP_LOG_STATUS("Maximum wait time with server reached! (Max: %d seconds)", ACVP_MAX_WAIT_TIME);
@@ -3147,24 +3247,11 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
                 strcmp_s("error", 5, status, &diff);
             if (!diff) {
                 const char *vs_url = json_object_get_string(current, "vectorSetUrl");
-                if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
+                if (ctx->log_lvl == ACVP_LOG_LVL_VERBOSE) {
                     ACVP_LOG_STATUS("Getting details for failed Vector Set...");
                     rv = acvp_retrieve_vector_set_result(ctx, vs_url);
                     printf("\n%s\n", ctx->curl_buf);
                     if (rv != ACVP_SUCCESS) goto end;
-                }
-                /*
-                 * Get the sample results if the user had requested them.
-                 */
-                if (ctx->is_sample) {
-                    ACVP_LOG_STATUS("Getting expected results for failed Vector Set...");
-                    rv = acvp_retrieve_expected_result(ctx, vs_url);
-                    if (rv != ACVP_SUCCESS) {
-                        ACVP_LOG_ERR("Expected results retrieval failed %d...", rv);
-                        goto end;
-                    }
-                    /* always dump all of sample data */
-                    printf("\n%s\n", ctx->curl_buf);
                 }
             }
         }
@@ -3177,6 +3264,9 @@ end:
     if (val) json_value_free(val);
     if (failedAlgList) {
         acvp_free_str_list(&failedAlgList);
+    }
+    if (failedModeList) {
+        acvp_free_str_list(&failedModeList);
     }
     if (failedVsList) {
         acvp_free_str_list(&failedVsList);
@@ -3293,8 +3383,14 @@ end:
 
 #define TEST_SESSION "testSessions/"
 
+/**
+ * Creates a file with the test session info, which can be used to access the test session
+ * in the future.
+ *
+ * This function should not modify the ctx, only read it.
+ */
 static ACVP_RESULT acvp_write_session_info(ACVP_CTX *ctx) {
-    ACVP_RESULT rv = ACVP_SUCCESS;
+    ACVP_RESULT rv = ACVP_INTERNAL_ERR;
     JSON_Value *ts_val = NULL;
     JSON_Object *ts_obj = NULL;
     char *filename = NULL, *ptr = NULL, *path = NULL, *prefix = NULL;
@@ -3308,11 +3404,15 @@ static ACVP_RESULT acvp_write_session_info(ACVP_CTX *ctx) {
 
     ts_val = json_value_init_object();
     ts_obj = json_value_get_object(ts_val);
+    if (!ts_obj) {
+        goto end;
+    }
 
     json_object_set_string(ts_obj, "url", ctx->session_url);
     json_object_set_string(ts_obj, "jwt", ctx->jwt_token);
     json_object_set_boolean(ts_obj, "isSample", ctx->is_sample);
-    json_object_set_value(ts_obj, "registration", json_value_deep_copy(ctx->registration));
+    json_object_set_value(ts_obj, "registration", ctx->registration);
+
     /* pull test session ID out of URL */
     ptr = ctx->session_url;
     while(*ptr != 0) {
@@ -3324,7 +3424,7 @@ static ACVP_RESULT acvp_write_session_info(ACVP_CTX *ctx) {
     }
 
     ptr+= strnlen_s(TEST_SESSION, ACVP_ATTR_URL_MAX);
-    
+
     path = getenv("ACV_SESSION_SAVE_PATH");
     prefix = getenv("ACV_SESSION_SAVE_PREFIX");
 
@@ -3391,8 +3491,10 @@ static ACVP_RESULT acvp_write_session_info(ACVP_CTX *ctx) {
         goto end;
     }
 
+    rv = ACVP_SUCCESS;
 end:
     if (allocedPrefix && prefix) free(prefix);
+    if (ts_obj) json_object_soft_remove(ts_obj, "registration");
     if (ts_val) json_value_free(ts_val);
     free(filename);
     return rv;
@@ -3432,7 +3534,7 @@ ACVP_RESULT acvp_run(ACVP_CTX *ctx, int fips_validation) {
                 }
             }
         }
-        if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
+        if (ctx->log_lvl == ACVP_LOG_LVL_VERBOSE) {
             printf("\n\n%s\n\n", ctx->curl_buf);
         } else {
             ACVP_LOG_STATUS("GET Response:\n\n%s\n", ctx->curl_buf);
@@ -3464,7 +3566,7 @@ ACVP_RESULT acvp_run(ACVP_CTX *ctx, int fips_validation) {
                 }
             }
         }
-        if (ctx->debug == ACVP_LOG_LVL_VERBOSE) {
+        if (ctx->log_lvl == ACVP_LOG_LVL_VERBOSE) {
             printf("\n\n%s\n\n", ctx->curl_buf);
         } else {
             ACVP_LOG_STATUS("DELETE Response:\n\n%s\n", ctx->curl_buf);
@@ -3785,6 +3887,15 @@ ACVP_SUB_HMAC acvp_get_hmac_alg(ACVP_CIPHER cipher)
     return (alg_tbl[cipher-1].alg.hmac);
 }
 
+ACVP_SUB_KMAC acvp_get_kmac_alg(ACVP_CIPHER cipher)
+{
+    if ((cipher == ACVP_CIPHER_START) || (cipher >= ACVP_CIPHER_END)) {
+        return 0;
+    }
+    return (alg_tbl[cipher-1].alg.kmac);
+}
+
+
 ACVP_SUB_RSA acvp_get_rsa_alg(ACVP_CIPHER cipher)
 {
     if ((cipher == ACVP_CIPHER_START) || (cipher >= ACVP_CIPHER_END)) {
@@ -3831,4 +3942,12 @@ ACVP_SUB_KAS acvp_get_kas_alg(ACVP_CIPHER cipher)
         return 0;
     }
     return (alg_tbl[cipher-1].alg.kas);
+}
+
+ACVP_SUB_LMS acvp_get_lms_alg(ACVP_CIPHER cipher)
+{
+    if ((cipher == ACVP_CIPHER_START) || (cipher >= ACVP_CIPHER_END)) {
+        return 0;
+    }
+    return (alg_tbl[cipher-1].alg.lms);
 }

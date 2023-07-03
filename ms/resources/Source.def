@@ -45,16 +45,21 @@ EXPORTS
   acvp_cap_cmac_enable
   acvp_cap_cmac_set_parm
   acvp_cap_cmac_set_domain
+  acvp_cap_kmac_enable
+  acvp_cap_kmac_set_parm
+  acvp_cap_kmac_set_domain
   acvp_cap_kdf135_snmp_enable
   acvp_cap_kdf135_ssh_enable
   acvp_cap_kdf135_srtp_enable
   acvp_cap_kdf135_ikev2_enable
   acvp_cap_kdf135_ikev1_enable
+  acvp_cap_kdf135_x942_enable
   acvp_cap_kdf135_x963_enable
   acvp_cap_kdf108_enable
   acvp_cap_kdf135_ssh_set_parm
   acvp_cap_kdf135_srtp_set_parm
   acvp_cap_kdf108_set_parm
+  acvp_cap_kdf135_x942_set_parm
   acvp_cap_kdf135_x963_set_parm
   acvp_cap_kdf135_snmp_set_parm
   acvp_cap_kdf135_snmp_set_engid
@@ -64,6 +69,7 @@ EXPORTS
   acvp_cap_kdf135_ikev2_set_domain
   acvp_cap_kdf135_ikev1_set_domain
   acvp_cap_kdf108_set_domain
+  acvp_cap_kdf135_x942_set_domain
   acvp_cap_pbkdf_enable
   acvp_cap_pbkdf_set_domain
   acvp_cap_pbkdf_set_parm
@@ -71,6 +77,9 @@ EXPORTS
   acvp_cap_kdf_tls12_set_parm
   acvp_cap_kdf_tls13_enable
   acvp_cap_kdf_tls13_set_parm
+  acvp_cap_lms_enable
+  acvp_cap_lms_set_parm
+  acvp_cap_lms_set_mode_compatability_pair
   acvp_cap_set_prereq
   acvp_create_test_session
   acvp_free_test_session
@@ -82,7 +91,6 @@ EXPORTS
   acvp_mark_as_sample
   acvp_mark_as_request_only
   acvp_mark_as_get_only
-  acvp_set_get_save_file
   acvp_mark_as_post_only
   acvp_mark_as_put_after_test
   acvp_run
@@ -93,8 +101,8 @@ EXPORTS
   acvp_oe_dependency_new
   acvp_oe_oe_new
   acvp_oe_oe_set_dependency
-  acvp_set_json_filename
-  acvp_load_kat_filename
+  acvp_set_registration_file
+  acvp_get_current_registration
   acvp_upload_vectors_from_file
   acvp_run_vectors_from_file
   acvp_put_data_from_file
@@ -110,8 +118,11 @@ EXPORTS
   acvp_protocol_version
   acvp_mark_as_delete_only
   acvp_cancel_test_session
+  acvp_get_vector_set_count
   acvp_cap_kda_enable
   acvp_cap_kda_set_parm
+  acvp_cap_kda_twostep_set_parm
+  acvp_cap_kda_twostep_set_domain
   acvp_cap_kda_set_domain
   acvp_cap_kas_ifc_enable
   acvp_cap_kas_ifc_set_parm
@@ -132,3 +143,5 @@ EXPORTS
   acvp_get_kdf_alg
   acvp_get_drbg_alg
   acvp_get_kas_alg
+  acvp_get_kmac_alg
+  acvp_sleep

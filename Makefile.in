@@ -239,6 +239,7 @@ am__distuninstallcheck_listfiles = $(distuninstallcheck_listfiles) \
   | sed 's|^\./|$(prefix)/|' | grep -v '$(infodir)/dir$$'
 distcleancheck_listfiles = find . -type f -print
 ACLOCAL = @ACLOCAL@
+ADDL_LIB_DEPENDENCIES = @ADDL_LIB_DEPENDENCIES@
 AMTAR = @AMTAR@
 AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
 AR = @AR@
@@ -250,6 +251,7 @@ CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
 CLEANFILES = @CLEANFILES@
+COND_ALG_CFLAGS = @COND_ALG_CFLAGS@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
 CRITERION_CFLAGS = @CRITERION_CFLAGS@

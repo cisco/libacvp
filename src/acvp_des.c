@@ -779,7 +779,7 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             keyingOption = json_object_get_number(groupobj, "keyingOption");
             if (keyingOption > 2 || keyingOption < 1) {
                 ACVP_LOG_ERR("Server JSON invalid 'keyingOption', %d", keyingOption);
-                rv = ACVP_TC_DATA_INVALID;
+                rv = ACVP_TC_INVALID_DATA;
                 goto err;
             }
         }
@@ -991,13 +991,11 @@ ACVP_RESULT acvp_des_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 /* Process the current DES encrypt test vector... */
                 int t_rv = (cap->crypto_handler)(&tc);
                 if (t_rv) {
-                    if (rv != ACVP_CRYPTO_WRAP_FAIL) {
-                        ACVP_LOG_ERR("ERROR: crypto module failed the operation");
-                        json_value_free(r_tval);
-                        acvp_des_release_tc(&stc);
-                        rv = ACVP_CRYPTO_MODULE_FAIL;
-                        goto err;
-                    }
+                    ACVP_LOG_ERR("ERROR: crypto module failed the operation");
+                    json_value_free(r_tval);
+                    acvp_des_release_tc(&stc);
+                    rv = ACVP_CRYPTO_MODULE_FAIL;
+                    goto err;
                 }
 
                 /*

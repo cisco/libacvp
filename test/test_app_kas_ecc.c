@@ -1,6 +1,6 @@
 /** @file */
 /*
- * Copyright (c) 2019, Cisco Systems, Inc.
+ * Copyright (c) 2023, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -12,11 +12,11 @@
 // Created by edaw on 2019-01-07.
 //
 
-#ifdef ACVP_NO_RUNTIME
-
 #include "ut_common.h"
 #include "app_common.h"
 #include "acvp/acvp_lcl.h"
+
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
 
 ACVP_CTX *ctx;
 ACVP_TEST_CASE *test_case;
@@ -359,5 +359,5 @@ Test(APP_KAS_ECC_HANDLER, missing_piy) {
     free(test_case);
 }
 
-#endif // ACVP_NO_RUNTIME
+#endif
 

@@ -8,7 +8,7 @@
     "kdfMode" : "counter",
     "macMode" : "HMAC-SHA-1",
     "counterLocation" : "after fixed data",
-    "keyOutLength" : 513,
+    "keyOutLength" : 4097,
     "counterLength" : 8,
     "tests" : [ {
       "tcId" : 1,

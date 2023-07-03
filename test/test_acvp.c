@@ -34,8 +34,6 @@ static void setup_full_ctx(void) {
 
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_CBC, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
     cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_CBC, ACVP_SYM_CIPH_PARM_KO, ACVP_SYM_CIPH_KO_NA);
-    cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_CBC, ACVP_SYM_CIPH_PARM_IVGEN_SRC, ACVP_SYM_CIPH_IVGEN_SRC_NA);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_CBC, ACVP_SYM_CIPH_PARM_IVGEN_MODE, ACVP_SYM_CIPH_IVGEN_MODE_NA);
@@ -58,8 +56,6 @@ static void setup_full_ctx(void) {
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_GCM, ACVP_SYM_CIPH_PARM_DIR, ACVP_SYM_CIPH_DIR_BOTH);
-    cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_GCM, ACVP_SYM_CIPH_PARM_KO, ACVP_SYM_CIPH_KO_NA);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_GCM, ACVP_SYM_CIPH_PARM_IVGEN_SRC, ACVP_SYM_CIPH_IVGEN_SRC_INT);
     cr_assert(rv == ACVP_SUCCESS);
@@ -145,7 +141,7 @@ static void setup_full_ctx(void) {
     
     rv = acvp_cap_drbg_enable(ctx, ACVP_HASHDRBG, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1,  ACVP_DRBG_DER_FUNC_ENABLED, 0);
+    rv = acvp_cap_drbg_set_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1, 0, ACVP_DRBG_DER_FUNC_ENABLED, 0);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_HASHDRBG, ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -216,7 +212,7 @@ Test(CREATE_CTX, dup_ctx) {
     cr_assert(rv == ACVP_SUCCESS);
     
     rv = acvp_create_test_session(&ctx, &progress, ACVP_LOG_LVL_VERBOSE);
-    cr_assert(rv == ACVP_DUPLICATE_CTX);
+    cr_assert(rv == ACVP_CTX_NOT_EMPTY);
     
     teardown_ctx(&ctx);
 }
@@ -256,7 +252,7 @@ Test(SET_SESSION_PARAMS, null_params_2fa, .init = setup, .fini = teardown) {
 Test(SET_SESSION_PARAMS, set_input_json_good, .init = setup, .fini = teardown) {
     rv = acvp_mark_as_request_only(ctx, "test.json");
     cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_set_json_filename(ctx, filename);
+    rv = acvp_set_registration_file(ctx, filename);
     cr_assert(rv == ACVP_SUCCESS);
 }
 
@@ -264,10 +260,10 @@ Test(SET_SESSION_PARAMS, set_input_json_good, .init = setup, .fini = teardown) {
  * This test sets json filename - null params
  */
 Test(SET_SESSION_PARAMS, set_input_json_null_params, .init = setup, .fini = teardown) {
-    rv = acvp_set_json_filename(NULL, filename);
+    rv = acvp_set_registration_file(NULL, filename);
     cr_assert(rv == ACVP_NO_CTX);
 
-    rv = acvp_set_json_filename(ctx, NULL);
+    rv = acvp_set_registration_file(ctx, NULL);
     cr_assert(rv == ACVP_MISSING_ARG);
 }
 
@@ -491,10 +487,7 @@ Test(RUN, marked_as_get, .init = setup_full_ctx, .fini = teardown) {
     rv = acvp_set_2fa_callback(ctx, &dummy_totp);
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_mark_as_get_only(ctx, "/acvp/v1/test");
-    cr_assert(rv == ACVP_SUCCESS);
-    
-    rv = acvp_set_get_save_file(ctx, "filename.json");
+    rv = acvp_mark_as_get_only(ctx, "/acvp/v1/test", "filename.json");
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_run(ctx, 0);
@@ -537,7 +530,7 @@ Test(RUN, bad_totp_cb, .init = setup_full_ctx, .fini = teardown) {
     rv = acvp_set_2fa_callback(ctx, &dummy_totp_overflow);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_run(ctx, 0);
-    cr_assert(rv == ACVP_INVALID_ARG);
+    cr_assert(rv == ACVP_TOTP_FAIL);
 }
 
 /*
@@ -682,22 +675,6 @@ Test(PROCESS_TESTS, run_vectors_from_file, .init = setup_full_ctx, .fini = teard
 }
 
 /*
- * Test acvp_load_kat_filename
- */
-Test(PROCESS_TESTS, load_kat_filename, .init = setup_full_ctx, .fini = teardown) {
-
-    rv = acvp_load_kat_filename(NULL, "test");
-    cr_assert(rv == ACVP_NO_CTX);
-
-    rv = acvp_load_kat_filename(ctx, NULL);
-    cr_assert(rv == ACVP_MISSING_ARG);
-
-    rv = acvp_load_kat_filename(ctx, "json/aes/aes.json");
-    cr_assert(rv == ACVP_SUCCESS);
-
-}
-
-/*
  * Test acvp_upload_vectors_from_file
  */
 Test(PROCESS_TESTS, upload_vectors_from_file, .init = setup_full_ctx, .fini = teardown) {
@@ -782,38 +759,27 @@ Test(PROCESS_TESTS, mark_as_request_only, .init = setup_full_ctx, .fini = teardo
  */
 Test(PROCESS_TESTS, mark_as_get_only, .init = setup_full_ctx, .fini = teardown) {
 
-    rv = acvp_mark_as_get_only(NULL, "test");
+    rv = acvp_mark_as_get_only(NULL, "test", NULL);
     cr_assert(rv == ACVP_NO_CTX);
 
-    rv = acvp_mark_as_get_only(ctx, NULL);
+    rv = acvp_mark_as_get_only(ctx, NULL, NULL);
     cr_assert(rv == ACVP_MISSING_ARG);
 
-    rv = acvp_mark_as_get_only(ctx, "test");
+    rv = acvp_mark_as_get_only(ctx, "test", NULL);
     cr_assert(rv == ACVP_SUCCESS);
+
+    rv = acvp_mark_as_get_only(ctx, "", NULL);
+    cr_assert(rv == ACVP_INVALID_ARG);
+
+    rv = acvp_mark_as_get_only(ctx, "testFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLong", NULL);
+    cr_assert(rv == ACVP_INVALID_ARG);
+
+    rv = acvp_mark_as_get_only(ctx, "test", "testFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLong");
+    cr_assert(rv == ACVP_INVALID_ARG);
+
+    rv = acvp_mark_as_get_only(ctx, "test", "");
+    cr_assert(rv == ACVP_INVALID_ARG);
 }
-
-/*
- * Test acvp_set_get_save_file
- */
- Test(PROCESS_TESTS, set_get_save_file, .init = setup_full_ctx, .fini = teardown) {
-    rv = acvp_set_get_save_file(ctx, "haventCalledGetOnly.json");
-    cr_assert(rv == ACVP_UNSUPPORTED_OP);
-
-    rv = acvp_mark_as_get_only(ctx, "test");
-    cr_assert(rv == ACVP_SUCCESS);
-
-    rv = acvp_set_get_save_file(NULL, "noCtx.json");
-    cr_assert(rv == ACVP_NO_CTX);
-
-    rv = acvp_set_get_save_file(ctx, NULL);
-    cr_assert(rv == ACVP_MISSING_ARG);
-
-    rv = acvp_set_get_save_file(ctx, "testFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLong");
-    cr_assert(rv == ACVP_INVALID_ARG);
-
-    rv = acvp_set_get_save_file(ctx, "");
-    cr_assert(rv == ACVP_INVALID_ARG);
- }
 
 /*
  * Test acvp_mark_as_delete_only
@@ -834,6 +800,20 @@ Test(PROCESS_TESTS, mark_as_delete_only, .init = setup_full_ctx, .fini = teardow
 
     rv = acvp_mark_as_delete_only(ctx, "");
     cr_assert(rv == ACVP_INVALID_ARG);
+}
+
+/*
+ * Test acvp_get_vector_set_count
+ */
+Test(PROCESS_TESTS, get_vector_set_count, .init = setup_full_ctx, .fini = teardown) {
+    int count = 0;
+    count = acvp_get_vector_set_count(NULL);
+    cr_assert(count < 0);
+
+    count = acvp_get_vector_set_count(ctx);
+    cr_assert(count > 0);
+    cr_assert(count < 10000); /* An arbitrarily large number that should never be reached */
+
 }
 
 /*

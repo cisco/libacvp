@@ -76,23 +76,12 @@ static int Curl_ossl_init(void)
 {
     ENGINE_load_builtin_engines();
 
-#if OPENSSL_VERSION_NUMBER < 0x10101010L
-    /* Lets get nice error messages */
-    SSL_load_error_strings();
-
-    /* Init the global ciphers and digests */
-    if (!SSLeay_add_ssl_algorithms())
-        return 0;
-
-    OpenSSL_add_all_algorithms();
-#else 
    OPENSSL_init_crypto(OPENSSL_INIT_ADD_ALL_CIPHERS \
                         | OPENSSL_INIT_ADD_ALL_DIGESTS, NULL);
    if (!OPENSSL_init_ssl(OPENSSL_INIT_ENGINE_ALL_BUILTIN
                          | OPENSSL_INIT_LOAD_CONFIG, NULL))
         return 0;
 
-#endif
     return 1;
 }
 
@@ -1105,24 +1094,9 @@ void curl_slist_free_all(struct curl_slist *list)
 
 static void Curl_ossl_cleanup(void)
 {
-#if OPENSSL_VERSION_NUMBER < 0x10101010L
-    /* Free ciphers and digests lists */
-    EVP_cleanup();
-
-    /* Free engine list */
-    ENGINE_cleanup();
-
-    /* Free OpenSSL ex_data table */
-    CRYPTO_cleanup_all_ex_data();
-
-    /* Free OpenSSL error strings */
-    ERR_free_strings();
-#endif
-#if OPENSSL_VERSION_NUMBER < 0x10100000L
     /* Free thread local error state, destroying hash upon zero refcount */
     ERR_remove_thread_state(NULL);
     ERR_remove_state(0);
-#endif
 }
 
 void curl_easy_cleanup(CURL *curl)

@@ -93,7 +93,13 @@
     <ClCompile Include="..\..\src\acvp_kdf135_ssh.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\acvp_kdf135_x942.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\acvp_kdf135_x963.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\acvp_kmac.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\acvp_operating_env.c">

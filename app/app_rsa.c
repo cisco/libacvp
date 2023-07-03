@@ -7,119 +7,155 @@
  * https://github.com/cisco/libacvp/LICENSE
  */
 
+#include "app_lcl.h"
 
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
 #include <openssl/evp.h>
 #include <openssl/bn.h>
 #include <openssl/rsa.h>
-#include "app_lcl.h"
+#include <openssl/core_names.h>
+#include <openssl/param_build.h>
 #include "safe_lib.h"
-#ifdef ACVP_NO_RUNTIME
-#include "app_fips_lcl.h" /* All regular OpenSSL headers must come before here */
-#include <openssl/ossl_typ.h>
 
-BIGNUM *group_n = NULL;
-RSA *group_rsa = NULL;
 int rsa_current_tg = 0;
+BIGNUM *group_n = NULL;
+EVP_PKEY *group_pkey = NULL;
 
 void app_rsa_cleanup(void) {
-    if (group_rsa) RSA_free(group_rsa);
-    group_rsa = NULL;
+    if (group_pkey) EVP_PKEY_free(group_pkey);
+    group_pkey = NULL;
     if (group_n) BN_free(group_n);
     group_n = NULL;
 }
 
 int app_rsa_keygen_handler(ACVP_TEST_CASE *test_case) {
-    /*
-     * custom crypto module handler
-     * to be filled in -
-     * this handler assumes info gen by server
-     * and all the other params registered for
-     * in this example app.
-     */
-
     ACVP_RSA_KEYGEN_TC *tc = NULL;
     int rv = 1;
-    RSA *rsa = NULL;
-#if OPENSSL_VERSION_NUMBER <= 0x10100000L
-    BIGNUM *p = NULL, *q = NULL, *n = NULL, *d = NULL;
-#else
-    const BIGNUM *p1 = NULL, *q1 = NULL, *n1 = NULL, *d1 = NULL;
-#endif
-    BIGNUM *e = NULL;
+    /** storage for BN inputs */
+    BIGNUM *xp1 = NULL, *xp2 = NULL, *xp = NULL, *xq1 = NULL, *xq2 = NULL, *xq = NULL;
+    /** storage for output values before converting to binary */
+    BIGNUM *p = NULL, *q = NULL, *n = NULL, *d = NULL, *e = NULL;
+    EVP_PKEY *pkey = NULL;
+    EVP_PKEY_CTX *pkey_ctx = NULL;
+    OSSL_PARAM *params = NULL;
+    OSSL_PARAM_BLD *pkey_pbld = NULL;
 
     if (!test_case) {
         printf("Missing test_case\n");
         return 1;
     }
+
     tc = test_case->tc.rsa_keygen;
-
-    rsa = FIPS_rsa_new();
-    if (!rsa) {
-        printf("Rsa_new failure\n");
-        return 1;
-    }
-
-    e = FIPS_bn_new();
-    if (!e) {
-        printf("Failed to allocate BN for e\n");
-        goto err;
-    }
-    BN_bin2bn(tc->e, tc->e_len, e);
-    if (!tc->e_len) {
-        printf("Error converting e to BN\n");
+    e = BN_bin2bn(tc->e, tc->e_len, NULL);
+    xp = BN_bin2bn(tc->xp, tc->xp_len, NULL);
+    xp1 = BN_bin2bn(tc->xp1, tc->xp1_len, NULL);
+    xp2 = BN_bin2bn(tc->xp2, tc->xp2_len, NULL);
+    xq = BN_bin2bn(tc->xq, tc->xq_len, NULL);
+    xq1 = BN_bin2bn(tc->xq1, tc->xq1_len, NULL);
+    xq2 = BN_bin2bn(tc->xq2, tc->xq2_len, NULL);
+    if (!e || !xp || !xp1 || !xp2 || !xq || !xq1 || !xq2) {
+        printf("Error generating BN params from test case in RSA keygen\n");
         goto err;
     }
 
-    /*
-     * IMPORTANT: Placeholder! The RSA keygen vector
-     * sets will fail if this handler is left as is.
-     *
-     * Below, insert your own key generation API that
-     * supports specification of all of the params...
-     */
-    if (!FIPS_rsa_x931_generate_key_ex(rsa, tc->modulo, e, NULL)) {
-        printf("\nError: Issue with key generation\n");
+    pkey_pbld = OSSL_PARAM_BLD_new();
+    if (!pkey_pbld) {
+        printf("Error creating param_bld in RSA keygen\n");
+        goto err;
+    }
+    OSSL_PARAM_BLD_push_BN(pkey_pbld, OSSL_PKEY_PARAM_RSA_E, e);
+    OSSL_PARAM_BLD_push_uint(pkey_pbld, OSSL_PKEY_PARAM_RSA_BITS, tc->modulo);
+    OSSL_PARAM_BLD_push_BN(pkey_pbld, OSSL_PKEY_PARAM_RSA_TEST_XP, xp);
+    OSSL_PARAM_BLD_push_BN(pkey_pbld, OSSL_PKEY_PARAM_RSA_TEST_XP1, xp1);
+    OSSL_PARAM_BLD_push_BN(pkey_pbld, OSSL_PKEY_PARAM_RSA_TEST_XP2, xp2);
+    OSSL_PARAM_BLD_push_BN(pkey_pbld, OSSL_PKEY_PARAM_RSA_TEST_XQ, xq);
+    OSSL_PARAM_BLD_push_BN(pkey_pbld, OSSL_PKEY_PARAM_RSA_TEST_XQ1, xq1); 
+    OSSL_PARAM_BLD_push_BN(pkey_pbld, OSSL_PKEY_PARAM_RSA_TEST_XQ2, xq2);
+    params = OSSL_PARAM_BLD_to_param(pkey_pbld);
+    if (!params) {
+        printf("Error generating parameters for pkey generation in RSA keygen\n");
+    }
+
+    pkey_ctx = EVP_PKEY_CTX_new_from_name(NULL, "RSA", NULL);
+    if (!pkey_ctx) {
+        printf("Error initializing pkey ctx for RSA keygen\n");
+        goto err;
+    }
+    if (EVP_PKEY_keygen_init(pkey_ctx) != 1) {
+        printf("Error initializing pkey in RSA ctx\n");
+        goto err;
+    }
+    if (EVP_PKEY_CTX_set_params(pkey_ctx, params) != 1) {
+        printf("Error setting params for pkey generation in RSA keygen\n");
+        goto err;
+    }
+    EVP_PKEY_keygen(pkey_ctx, &pkey);
+    if (!pkey) {
+        printf("Error generating pkey in RSA keygen\n");
         goto err;
     }
 
-#if OPENSSL_VERSION_NUMBER <= 0x10100000L
-    p = rsa->p;
-    q = rsa->q;
-    n = rsa->n;
-    d = rsa->d;
-    tc->p_len = BN_bn2bin(p, tc->p);
-    tc->q_len = BN_bn2bin(q, tc->q);
-    tc->n_len = BN_bn2bin(n, tc->n);
-    tc->d_len = BN_bn2bin(d, tc->d);
-#else
-    RSA_get0_key(rsa, &n1, NULL, &d1);
-    RSA_get0_factors(rsa, &p1, &q1);
-
-    tc->p_len = BN_bn2bin(p1, tc->p);
-    tc->q_len = BN_bn2bin(q1, tc->q);
-    tc->n_len = BN_bn2bin(n1, tc->n);
-    tc->d_len = BN_bn2bin(d1, tc->d);
-#endif
+    if (EVP_PKEY_get_bn_param(pkey, "rsa-factor1", &p) == 1) {
+        tc->p_len = BN_bn2bin(p, tc->p);
+    } else {
+        printf("Error retreiving p from pkey in RSA keygen\n");
+        goto err;
+    }
+    if (EVP_PKEY_get_bn_param(pkey, "rsa-factor2", &q) == 1) {
+        tc->q_len = BN_bn2bin(q, tc->q);
+    } else {
+        printf("Error retreiving q from pkey in RSA keygen\n");
+        goto err;
+    }
+    if (EVP_PKEY_get_bn_param(pkey, "n", &n) == 1) {
+        tc->n_len = BN_bn2bin(n, tc->n);
+    } else {
+        printf("Error retreiving n from pkey in RSA keygen\n");
+        goto err;
+    }
+    if (EVP_PKEY_get_bn_param(pkey, "d", &d) == 1) {
+        tc->d_len = BN_bn2bin(d, tc->d);
+    } else {
+        printf("Error retreiving d from pkey in RSA keygen\n");
+        goto err;
+    }
+    if (EVP_PKEY_get_bn_param(pkey, "e", &e) == 1) {
+        tc->e_len = BN_bn2bin(e, tc->e);
+    } else {
+        printf("Error retreiving e from pkey in RSA keygen\n");
+        goto err;
+    }
 
     rv = 0;
 err:
-    if (rsa) FIPS_rsa_free(rsa);
+    if (p) BN_free(p);
+    if (q) BN_free(q);
+    if (n) BN_free(n);
+    if (d) BN_free(d);
     if (e) BN_free(e);
+    if (xp) BN_free(xp);
+    if (xp1) BN_free(xp1);
+    if (xp2) BN_free(xp2);
+    if (xq) BN_free(xq);
+    if (xq1) BN_free(xq1);
+    if (xq2) BN_free(xq2);
+    if (pkey) EVP_PKEY_free(pkey);
+    if (pkey_ctx) EVP_PKEY_CTX_free(pkey_ctx);
+    if (params) OSSL_PARAM_free(params);
+    if (pkey_pbld) OSSL_PARAM_BLD_free(pkey_pbld);
     return rv;
 }
 
-
 int app_rsa_sig_handler(ACVP_TEST_CASE *test_case) {
-    const EVP_MD *tc_md = NULL;
-    int siglen, pad_mode;
-    BIGNUM *bn_e = NULL, *e = NULL, *n = NULL;
-#if OPENSSL_VERSION_NUMBER >= 0x10100000L
-    BIGNUM  *tmp_e = NULL, *tmp_n = NULL;
-    const BIGNUM  *tmp_e1 = NULL, *tmp_n1 = NULL;
-#endif
-    ACVP_RSA_SIG_TC    *tc;
-    RSA *rsa = NULL;
+    EVP_MD_CTX *md_ctx = NULL;
+    EVP_PKEY *pkey = NULL;
+    EVP_PKEY_CTX *pkey_ctx = NULL;
+    OSSL_PARAM_BLD *pkey_pbld = NULL, *sig_pbld = NULL;
+    OSSL_PARAM *pkey_params = NULL, *sig_params = NULL;
+    const char *padding = NULL, *md = NULL;
     int salt_len = -1;
+    BIGNUM *bn_e = NULL, *e = NULL, *n = NULL;
+    ACVP_RSA_SIG_TC *tc;
 
     int rv = 1;
 
@@ -135,16 +171,6 @@ int app_rsa_sig_handler(ACVP_TEST_CASE *test_case) {
         goto err;
     }
 
-    /*
-     * Make an RSA object and set a new BN exponent to use to generate a key
-     */
-
-    rsa = FIPS_rsa_new();
-    if (!rsa) {
-        printf("\nError: Issue with RSA obj in RSA Sig\n");
-        goto err;
-    }
-
     bn_e = BN_new();
     if (!bn_e || !BN_set_word(bn_e, 0x10001)) {
         printf("\nError: Issue with exponent in RSA Sig\n");
@@ -156,20 +182,17 @@ int app_rsa_sig_handler(ACVP_TEST_CASE *test_case) {
         goto err;
     }
 
-    /*
-     * Set the pad mode and generate a key given the respective sigType
-     */
+    /* Set the padding mode and digest MD */
     switch (tc->sig_type) {
     case ACVP_RSA_SIG_TYPE_X931:
-        pad_mode = RSA_X931_PADDING;
-        salt_len = -2;
+        padding = "x931";
         break;
     case ACVP_RSA_SIG_TYPE_PKCS1PSS:
-        pad_mode = RSA_PKCS1_PSS_PADDING;
         salt_len = tc->salt_len;
+        padding = "pss";
         break;
     case ACVP_RSA_SIG_TYPE_PKCS1V15:
-        pad_mode = RSA_PKCS1_PADDING;
+        padding = "pkcs1";
         break;
     default:
         printf("\nError: sigType not supported\n");
@@ -177,36 +200,28 @@ int app_rsa_sig_handler(ACVP_TEST_CASE *test_case) {
         goto err;
     }
 
-    /*
-     * Set the message digest to the appropriate sha
-     */
     switch (tc->hash_alg) {
     case ACVP_SHA1:
-        tc_md = EVP_sha1();
+        md = "SHA-1";
         break;
     case ACVP_SHA224:
-        tc_md = EVP_sha224();
+        md = "SHA2-224";
         break;
     case ACVP_SHA256:
-        tc_md = EVP_sha256();
+        md = "SHA2-256";
         break;
     case ACVP_SHA384:
-        tc_md = EVP_sha384();
+        md = "SHA2-384";
         break;
     case ACVP_SHA512:
-        tc_md = EVP_sha512();
+        md = "SHA2-512";
         break;
- #if OPENSSL_VERSION_NUMBER >= 0x10101010L /* OpenSSL 1.1.1 or greater */
     case ACVP_SHA512_224:
-        tc_md = EVP_sha512_224();
+        md = "SHA2-512/224";
         break;
     case ACVP_SHA512_256:
-        tc_md = EVP_sha512_256();
+        md = "SHA2-512/256";
         break;
-#else
-    case ACVP_SHA512_224:
-    case ACVP_SHA512_256:
-#endif
     case ACVP_NO_SHA:
     case ACVP_SHA3_224:
     case ACVP_SHA3_256:
@@ -237,42 +252,88 @@ int app_rsa_sig_handler(ACVP_TEST_CASE *test_case) {
         }
         BN_bin2bn(tc->n, tc->n_len, n);
 
-#if OPENSSL_VERSION_NUMBER <= 0x10100000L
-        rsa->e = BN_dup(e);
-        rsa->n = BN_dup(n);
-#else
-        tmp_e = BN_dup(e);
-        tmp_n = BN_dup(n);
-        RSA_set0_key(rsa, tmp_n, tmp_e, NULL);
-#endif
+        pkey_pbld = OSSL_PARAM_BLD_new();
+        if (!pkey_pbld) {
+            printf("Error creating param_bld in RSA sigver\n");
+            goto err;
+        }
+        OSSL_PARAM_BLD_push_BN(pkey_pbld, OSSL_PKEY_PARAM_RSA_N, n);
+        OSSL_PARAM_BLD_push_BN(pkey_pbld, OSSL_PKEY_PARAM_RSA_E, e);
+        pkey_params = OSSL_PARAM_BLD_to_param(pkey_pbld);
+        if (!pkey_params) {
+            printf("Error building pkey params in RSA sigver\n");
+            goto err;
+        }
 
-        tc->ver_disposition = FIPS_rsa_verify(rsa, tc->msg, tc->msg_len, tc_md, 
-                                              pad_mode, salt_len, NULL, tc->signature, 
-                                              tc->sig_len);
+        pkey_ctx = EVP_PKEY_CTX_new_from_name(NULL, "RSA", NULL);
+        if (!pkey_ctx) {
+            printf("Error initializing pkey ctx for RSA sigver\n");
+            goto err;
+        }
+        if (EVP_PKEY_fromdata_init(pkey_ctx) != 1) {
+            printf("Error initializing pkey in RSA ctx\n");
+            goto err;
+        }
+        if (EVP_PKEY_fromdata(pkey_ctx, &pkey, EVP_PKEY_KEYPAIR, pkey_params) != 1) {
+            printf("Error generating pkey in RSA context\n");
+            goto err;
+        }
+
+        //now we have the pkey, setup the digest ctx
+        sig_pbld = OSSL_PARAM_BLD_new();
+        if (!sig_pbld) {
+            printf("Error creating param_bld in RSA sigver\n");
+            goto err;
+        }
+        OSSL_PARAM_BLD_push_utf8_string(sig_pbld, OSSL_SIGNATURE_PARAM_PAD_MODE, padding, 0);
+        OSSL_PARAM_BLD_push_utf8_string(sig_pbld, OSSL_SIGNATURE_PARAM_DIGEST, md, 0);
+        sig_params = OSSL_PARAM_BLD_to_param(sig_pbld);
+        if (!sig_params) {
+            printf("Error building sig params in RSA sigver\n");
+            goto err;
+        }
+
+        md_ctx = EVP_MD_CTX_new();
+        if (!md_ctx) {
+            printf("Error creating MD CTX in RSA sigver\n");
+            goto err;
+        }
+        EVP_DigestVerifyInit_ex(md_ctx, NULL, md, NULL, NULL, pkey, sig_params);
+        if (EVP_DigestVerify(md_ctx, tc->signature, tc->sig_len, tc->msg, tc->msg_len) == 1) {
+            tc->ver_disposition = 1;
+        }
     } else {
         if (rsa_current_tg != tc->tg_id) {
             rsa_current_tg = tc->tg_id;
 
-            /* Free the group objects before re-allocation */
-            if (group_rsa) RSA_free(group_rsa);
-            group_rsa = NULL;
+            if (group_pkey) EVP_PKEY_free(group_pkey);
+            group_pkey = NULL;
             if (group_n) BN_free(group_n);
             group_n = NULL;
 
-            group_rsa = RSA_new();
-
-            if (!FIPS_rsa_x931_generate_key_ex(group_rsa, tc->modulo, bn_e, NULL)) {
-                printf("\nError: Issue with keygen during siggen handling\n");
+            pkey_ctx = EVP_PKEY_CTX_new_from_name(NULL, "RSA", NULL);
+            if (!pkey_ctx) {
+                printf("Error initializing pkey ctx for RSA siggen\n");
                 goto err;
             }
-#if OPENSSL_VERSION_NUMBER <= 0x10100000L
-            e = BN_dup(group_rsa->e);
-            n = BN_dup(group_rsa->n);
-#else
-            RSA_get0_key(group_rsa, &tmp_n1, &tmp_e1, NULL);
-            e = BN_dup(tmp_e1);
-            n = BN_dup(tmp_n1);
-#endif
+            if (EVP_PKEY_keygen_init(pkey_ctx) != 1) {
+                printf("Error initializing pkey in RSA ctx\n");
+                goto err;
+            }
+            EVP_PKEY_CTX_set_rsa_keygen_bits(pkey_ctx, tc->modulo);
+
+            if (EVP_PKEY_keygen(pkey_ctx, &group_pkey) != 1) {
+                printf("Error generating pkey in RSA context\n");
+                goto err;
+            }
+            if (EVP_PKEY_get_bn_param(group_pkey, "e", &e) != 1) {
+                printf("Error retrieving e from generated pkey in RSA siggen\n");
+                goto err;
+            }
+            if (EVP_PKEY_get_bn_param(group_pkey, "n", &n) != 1) {
+                printf("Error retrieving n from generated pkey in RSA siggen\n");
+                goto err;
+            }
             group_n = BN_dup(n);
         } else {
             e = BN_dup(bn_e);
@@ -281,17 +342,31 @@ int app_rsa_sig_handler(ACVP_TEST_CASE *test_case) {
         tc->e_len = BN_bn2bin(e, tc->e);
         tc->n_len = BN_bn2bin(n, tc->n);
 
-        if (tc->msg && tc_md) {
-            siglen = RSA_size(group_rsa);
+        sig_pbld = OSSL_PARAM_BLD_new();
+        if (!sig_pbld) {
+            printf("Error creating param_bld in RSA siggen\n");
+            goto err;
+        }
+        OSSL_PARAM_BLD_push_utf8_string(sig_pbld, OSSL_SIGNATURE_PARAM_PAD_MODE, padding, 0);
+        OSSL_PARAM_BLD_push_utf8_string(sig_pbld, OSSL_SIGNATURE_PARAM_DIGEST, md, 0);
+        if (tc->sig_type == ACVP_RSA_SIG_TYPE_PKCS1PSS) {
+            OSSL_PARAM_BLD_push_int(sig_pbld, OSSL_SIGNATURE_PARAM_PSS_SALTLEN, salt_len);
+        }
+        sig_params = OSSL_PARAM_BLD_to_param(sig_pbld);
+        if (!sig_params) {
+            printf("Error building sig params in RSA siggen\n");
+            goto err;
+        }
 
-            if (!FIPS_rsa_sign(group_rsa, tc->msg, tc->msg_len, tc_md, 
-                               pad_mode, salt_len, NULL,
-                               tc->signature, (unsigned int *)&siglen)) {
-                printf("\nError: RSA Signature Generation fail\n");
-                goto err;
-            }
-
-            tc->sig_len = siglen;
+        md_ctx = EVP_MD_CTX_new();
+        if (!md_ctx) {
+            printf("Error creating MD CTX in RSA sigver\n");
+            goto err;
+        }
+        EVP_DigestSignInit_ex(md_ctx, NULL, md, NULL, NULL, group_pkey, sig_params);
+        if (EVP_DigestSign(md_ctx, tc->signature, (size_t *)&tc->sig_len, tc->msg, tc->msg_len) != 1) {
+            printf("Error while performing signature generation\n");
+            goto err;
         }
     }
 
@@ -299,14 +374,149 @@ int app_rsa_sig_handler(ACVP_TEST_CASE *test_case) {
     rv = 0;
 
 err:
+    if (md_ctx) EVP_MD_CTX_free(md_ctx);
+    if (pkey_ctx) EVP_PKEY_CTX_free(pkey_ctx);
+    if (pkey) EVP_PKEY_free(pkey);
+    if (pkey_pbld) OSSL_PARAM_BLD_free(pkey_pbld);
+    if (sig_pbld) OSSL_PARAM_BLD_free(sig_pbld);
+    if (pkey_params) OSSL_PARAM_free(pkey_params);
+    if (sig_params) OSSL_PARAM_free(sig_params);
     if (bn_e) BN_free(bn_e);
-    if (rsa) FIPS_rsa_free(rsa);
     if (e) BN_free(e);
     if (n) BN_free(n);
 
     return rv;
 }
+
+int app_rsa_decprim_handler(ACVP_TEST_CASE *test_case) {
+    if (!test_case) {
+        return -1;
+    }
+    return 1;
+}
+
+int app_rsa_sigprim_handler(ACVP_TEST_CASE *test_case) {
+    BIGNUM *e = NULL, *n = NULL, *d = NULL;
+    BIGNUM *p = NULL, *q = NULL, *dmp1 = NULL, *dmq1 = NULL, *iqmp = NULL;
+    EVP_PKEY *pkey = NULL;
+    EVP_PKEY_CTX *pkey_ctx = NULL;
+    EVP_PKEY_CTX *sign_ctx = NULL;
+    OSSL_PARAM_BLD *pbld = NULL;
+    OSSL_PARAM *params = NULL;
+    BN_CTX *bctx = NULL;
+    ACVP_RSA_PRIM_TC *tc;
+    int rv = 1;
+
+    tc = test_case->tc.rsa_prim;
+    tc->disposition = 1;
+
+    if (!tc->e || !tc->n) {
+        printf("Missing arguments e|n\n");
+        goto err;
+    }
+
+    e = BN_bin2bn(tc->e, tc->e_len, NULL);
+    n = BN_bin2bn(tc->n, tc->n_len, NULL);
+    if (!e || !n) {
+        printf("Failed to convert e/n to bignum in RSA sigprim\n");
+        goto err;
+    }
+
+    if (!tc->p || !tc->q || !tc->dmp1 || !tc->dmq1 || !tc->iqmp) {
+        printf("Missing TC CRT key components\n");
+        goto err;
+    }
+    p = BN_bin2bn(tc->p, tc->p_len, NULL);
+    q = BN_bin2bn(tc->q, tc->q_len, NULL);
+    dmp1 = BN_bin2bn(tc->dmp1, tc->dmp1_len, NULL);
+    dmq1 = BN_bin2bn(tc->dmq1, tc->dmq1_len, NULL);
+    iqmp = BN_bin2bn(tc->iqmp, tc->iqmp_len, NULL);
+    if (!p || !q || !dmp1 || !dmq1 || !iqmp) {
+        printf("Failed to convert CRT components to bignum in RSA sigprim\n");
+        goto err;
+    }
+    bctx = BN_CTX_new();
+    d = BN_dup(n);
+    if (!bctx || !d) {
+        printf("Error generating d in RSA sigprim\n");
+        goto err;
+    }
+    BN_sub(d, d, p);
+    BN_sub(d, d, q);
+    BN_add_word(d, 1);
+    BN_mod_inverse(d, e, d, bctx);
+
+    tc->sig_len = tc->modulo;
+
+    pbld = OSSL_PARAM_BLD_new();
+    if (!pbld) {
+        printf("Error creating param_bld in RSA sigprim\n");
+        goto err;
+    }
+
+    OSSL_PARAM_BLD_push_BN(pbld, OSSL_PKEY_PARAM_RSA_N, n);
+    OSSL_PARAM_BLD_push_BN(pbld, OSSL_PKEY_PARAM_RSA_E, e);
+    OSSL_PARAM_BLD_push_BN(pbld, OSSL_PKEY_PARAM_RSA_D, d);
+    OSSL_PARAM_BLD_push_BN(pbld, OSSL_PKEY_PARAM_RSA_FACTOR1, p);
+    OSSL_PARAM_BLD_push_BN(pbld, OSSL_PKEY_PARAM_RSA_FACTOR2, q);
+    OSSL_PARAM_BLD_push_BN(pbld, OSSL_PKEY_PARAM_RSA_EXPONENT1, dmp1);
+    OSSL_PARAM_BLD_push_BN(pbld, OSSL_PKEY_PARAM_RSA_EXPONENT2, dmq1);
+    OSSL_PARAM_BLD_push_BN(pbld, OSSL_PKEY_PARAM_RSA_COEFFICIENT1, iqmp);
+    params = OSSL_PARAM_BLD_to_param(pbld);
+
+    pkey_ctx = EVP_PKEY_CTX_new_from_name(NULL, "RSA", NULL);
+    if (!pkey_ctx) {
+        printf("Error creating PKEY_CTX in RSA\n");
+        goto err;
+    }
+    if (EVP_PKEY_fromdata_init(pkey_ctx) != 1) {
+        printf("Error initializing pkey in RSA ctx\n");
+        goto err;
+    }
+    if (EVP_PKEY_fromdata(pkey_ctx, &pkey, EVP_PKEY_KEYPAIR, params) != 1) {
+        printf("Error generating pkey in RSA context\n");
+        goto err;
+    }
+    sign_ctx = EVP_PKEY_CTX_new_from_pkey(NULL, pkey, NULL);
+    if (!sign_ctx) { 
+        printf("Error generating signing CTX from pkey in RSA\n");
+        goto err;
+    }
+
+    if (EVP_PKEY_sign_init(sign_ctx) != 1) {
+        printf("Error initializing signing function in RSA\n");
+        goto err;
+    }
+    if (EVP_PKEY_CTX_set_rsa_padding(sign_ctx, RSA_NO_PADDING) != 1) {
+        printf("Error setting padding in RSA context: %d\n", rv);
+        goto err;
+    }
+    if (EVP_PKEY_sign(sign_ctx, tc->signature, (size_t *)&tc->sig_len, tc->msg, tc->msg_len) != 1) {
+        tc->disposition = 0;
+    }
+
+    rv = 0;
+
+err:
+    if (e) BN_free(e);
+    if (n) BN_free(n);
+    if (d) BN_free(d);
+    if (p) BN_free(p);
+    if (q) BN_free(q);
+    if (dmp1) BN_free(dmp1);
+    if (dmq1) BN_free(dmq1);
+    if (iqmp) BN_free(iqmp);
+    if (pbld) OSSL_PARAM_BLD_free(pbld);
+    if (params) OSSL_PARAM_free(params);
+    if (sign_ctx) EVP_PKEY_CTX_free(sign_ctx);
+    if (pkey_ctx) EVP_PKEY_CTX_free(pkey_ctx);
+    if (pkey) EVP_PKEY_free(pkey);
+    if (bctx) BN_CTX_free(bctx);
+    return rv;
+}
+
 #else
+
 int app_rsa_keygen_handler(ACVP_TEST_CASE *test_case) {
     if (!test_case) {
         return -1;
@@ -314,485 +524,19 @@ int app_rsa_keygen_handler(ACVP_TEST_CASE *test_case) {
     return 1;
 }
 
-static const unsigned char sha1_bin[] = {
-  0x30, 0x21, 0x30, 0x09, 0x06, 0x05, 0x2b, 0x0e, 0x03, 0x02, 0x1a, 0x05,
-  0x00, 0x04, 0x14
-};
-
-static const unsigned char sha224_bin[] = {
-  0x30, 0x2d, 0x30, 0x0d, 0x06, 0x09, 0x60, 0x86, 0x48, 0x01, 0x65, 0x03,
-  0x04, 0x02, 0x04, 0x05, 0x00, 0x04, 0x1c
-};
-
-static const unsigned char sha256_bin[] = {
-  0x30, 0x31, 0x30, 0x0d, 0x06, 0x09, 0x60, 0x86, 0x48, 0x01, 0x65, 0x03,
-  0x04, 0x02, 0x01, 0x05, 0x00, 0x04, 0x20
-};
-
-static const unsigned char sha384_bin[] = {
-  0x30, 0x41, 0x30, 0x0d, 0x06, 0x09, 0x60, 0x86, 0x48, 0x01, 0x65, 0x03,
-  0x04, 0x02, 0x02, 0x05, 0x00, 0x04, 0x30
-};
-
-static const unsigned char sha512_bin[] = {
-  0x30, 0x51, 0x30, 0x0d, 0x06, 0x09, 0x60, 0x86, 0x48, 0x01, 0x65, 0x03,
-  0x04, 0x02, 0x03, 0x05, 0x00, 0x04, 0x40
-};
-
-static const unsigned char sha1_nn_bin[] = {
-  0x30, 0x1f, 0x30, 0x07, 0x06, 0x05, 0x2b, 0x0e, 0x03, 0x02, 0x1a, 0x04,
-  0x14
-};
-
-static const unsigned char sha224_nn_bin[] = {
-  0x30, 0x2b, 0x30, 0x0b, 0x06, 0x09, 0x60, 0x86, 0x48, 0x01, 0x65, 0x03,
-  0x04, 0x02, 0x04, 0x04, 0x1c
-};
-
-static const unsigned char sha256_nn_bin[] = {
-  0x30, 0x2f, 0x30, 0x0b, 0x06, 0x09, 0x60, 0x86, 0x48, 0x01, 0x65, 0x03,
-  0x04, 0x02, 0x01, 0x04, 0x20
-};
-
-static const unsigned char sha384_nn_bin[] = {
-  0x30, 0x3f, 0x30, 0x0b, 0x06, 0x09, 0x60, 0x86, 0x48, 0x01, 0x65, 0x03,
-  0x04, 0x02, 0x02, 0x04, 0x30
-};
-
-static const unsigned char sha512_nn_bin[] = {
-  0x30, 0x4f, 0x30, 0x0b, 0x06, 0x09, 0x60, 0x86, 0x48, 0x01, 0x65, 0x03,
-  0x04, 0x02, 0x03, 0x04, 0x40
-};
-
-
-static const unsigned char *digestinfo_encoding(int nid, unsigned int *len)
-	{
-	switch (nid)
-		{
-
-		case NID_sha1:
-		*len = sizeof(sha1_bin);
-		return sha1_bin;
-
-		case NID_sha224:
-		*len = sizeof(sha224_bin);
-		return sha224_bin;
-
-		case NID_sha256:
-		*len = sizeof(sha256_bin);
-		return sha256_bin;
-
-		case NID_sha384:
-		*len = sizeof(sha384_bin);
-		return sha384_bin;
-
-		case NID_sha512:
-		*len = sizeof(sha512_bin);
-		return sha512_bin;
-
-		default:
-		return NULL;
-
-		}
-	}
-
-static const unsigned char *digestinfo_nn_encoding(int nid, unsigned int *len)
-	{
-	switch (nid)
-		{
-
-		case NID_sha1:
-		*len = sizeof(sha1_nn_bin);
-		return sha1_nn_bin;
-
-		case NID_sha224:
-		*len = sizeof(sha224_nn_bin);
-		return sha224_nn_bin;
-
-		case NID_sha256:
-		*len = sizeof(sha256_nn_bin);
-		return sha256_nn_bin;
-
-		case NID_sha384:
-		*len = sizeof(sha384_nn_bin);
-		return sha384_nn_bin;
-
-		case NID_sha512:
-		*len = sizeof(sha512_nn_bin);
-		return sha512_nn_bin;
-
-		default:
-		return NULL;
-
-		}
-	}
-
 int app_rsa_sig_handler(ACVP_TEST_CASE *test_case) {
-    const EVP_MD *tc_md = NULL;
-    int pad_mode;
-    BIGNUM *bn_e = NULL, *e = NULL, *n = NULL;
-#if OPENSSL_VERSION_NUMBER >= 0x10100000L
-    BIGNUM  *tmp_e = NULL, *tmp_n = NULL;
-#endif
-    ACVP_RSA_SIG_TC    *tc;
-    RSA *rsa = NULL;
-    unsigned int salt_len = -1, md_len = 0;
-    int rv = 1, i;
-    unsigned char *s = NULL, *mdhash = NULL;
-    int md_type;
-    EVP_PKEY_CTX *pctx = NULL;
-    EVP_PKEY *pk = NULL;
-
     if (!test_case) {
-        printf("\nError: test case not found in RSA SigGen handler\n");
-        goto err;
+        return -1;
     }
-
-    tc = test_case->tc.rsa_sig;
-
-    if (!tc) {
-        printf("\nError: test case not found in RSA SigGen handler\n");
-        goto err;
-    }
-
-    /*
-     * Make an RSA object and set a new BN exponent to use to generate a key
-     */
-
-    rsa = RSA_new();
-    if (!rsa) {
-        printf("\nError: Issue with RSA obj in RSA Sig\n");
-        goto err;
-    }
-
-    bn_e = BN_new();
-    if (!bn_e || !BN_set_word(bn_e, 0x10001)) {
-        printf("\nError: Issue with exponent in RSA Sig\n");
-        goto err;
-    }
-
-    if (!tc->modulo) {
-        printf("\nError: Issue with modulo in RSA Sig\n");
-        goto err;
-    }
-
-    /*
-     * Set the pad mode and generate a key given the respective sigType
-     */
-    switch (tc->sig_type) {
-    case ACVP_RSA_SIG_TYPE_X931:
-        pad_mode = RSA_X931_PADDING;
-        salt_len = tc->salt_len;
-        break;
-    case ACVP_RSA_SIG_TYPE_PKCS1PSS:
-        pad_mode = RSA_PKCS1_PSS_PADDING;
-        salt_len = tc->salt_len;
-        break;
-    case ACVP_RSA_SIG_TYPE_PKCS1V15:
-        pad_mode = RSA_PKCS1_PADDING;
-        salt_len = tc->salt_len;
-        break;
-    default:
-        printf("\nError: sigType not supported\n");
-        rv = ACVP_INVALID_ARG;
-        goto err;
-    }
-
-    /*
-     * Set the message digest to the appropriate sha
-     */
-    switch (tc->hash_alg) {
-    case ACVP_SHA1:
-        tc_md = EVP_sha1();
-        break;
-    case ACVP_SHA224:
-        tc_md = EVP_sha224();
-        break;
-    case ACVP_SHA256:
-        tc_md = EVP_sha256();
-        break;
-    case ACVP_SHA384:
-        tc_md = EVP_sha384();
-        break;
-    case ACVP_SHA512:
-        tc_md = EVP_sha512();
-        break;
- #if OPENSSL_VERSION_NUMBER >= 0x10101010L /* OpenSSL 1.1.1 or greater */
-    case ACVP_SHA512_224:
-        tc_md = EVP_sha512_224();
-        break;
-    case ACVP_SHA512_256:
-        tc_md = EVP_sha512_256();
-        break;
-#else
-    case ACVP_SHA512_224:
-    case ACVP_SHA512_256:
-#endif
-    case ACVP_HASH_ALG_MAX:
-    default:
-        printf("\nError: hashAlg not supported for RSA SigGen\n");
-        goto err;
-    }
-
-    /*
-     * If we are verifying, set RSA to the given public key
-     * Else, generate a new key, retrieve and save values
-     */
-    if (tc->sig_mode == ACVP_RSA_SIGVER) {
-        e = BN_new();
-        if (!e) {
-            printf("\nBN alloc failure (e)\n");
-            goto err;
-        }
-        BN_bin2bn(tc->e, tc->e_len, e);
-
-        n = BN_new();
-        if (!n) {
-            printf("\nBN alloc failure (n)\n");
-            goto err;
-        }
-        BN_bin2bn(tc->n, tc->n_len, n);
-
-#if OPENSSL_VERSION_NUMBER <= 0x10100000L
-        rsa->e = BN_dup(e);
-        rsa->n = BN_dup(n);
-#else
-        tmp_e = BN_dup(e);
-        tmp_n = BN_dup(n);
-        RSA_set0_key(rsa, tmp_n, tmp_e, NULL);
-#endif
-
-        pk = EVP_PKEY_new();
-        if (pk == NULL)
-            goto err;
-
-        EVP_PKEY_set1_RSA(pk, rsa);
-
-        pctx = EVP_PKEY_CTX_new(pk, NULL);
-	s= OPENSSL_malloc(tc->sig_len);
-	if (s == NULL) {
-            goto err;
-        }
-	mdhash = OPENSSL_malloc(EVP_MD_size(tc_md)+1);
-	if (mdhash == NULL) {
-            goto err;
-        }
-        EVP_Digest(tc->msg, tc->msg_len, mdhash, &md_len, tc_md, NULL);
-        md_type = EVP_MD_nid(tc_md);
-        if (pad_mode == RSA_X931_PADDING) {
-            mdhash[md_len] = RSA_X931_hash_id(md_type);
-            if (mdhash[md_len] == -1) {
-                goto err;
-            }
-            md_len++;
-        }
-        EVP_PKEY_verify_init(pctx);
-        EVP_PKEY_CTX_set_rsa_padding(pctx, pad_mode);
-        if (pad_mode == RSA_PKCS1_PSS_PADDING) {
-            EVP_PKEY_CTX_set_rsa_pss_saltlen(pctx, salt_len);
-            EVP_PKEY_CTX_set_signature_md(pctx, tc_md);
-        }
-        if (pad_mode != RSA_PKCS1_PADDING) {
-            i = EVP_PKEY_verify(pctx, tc->signature, tc->sig_len, mdhash, md_len); 
-        } else {
-                unsigned int dlen;
-                const unsigned char *der = NULL;
-                int diff1, diff2;
-
-                i = RSA_public_decrypt(tc->sig_len, tc->signature, s,
-                                       rsa, pad_mode);
-                if (i <= 0) {
-                    i = 0;
-                    goto end;
-                }
-		der = digestinfo_encoding(md_type, &dlen);
-		
-		if (!der)
-			{
-			goto err;
-			}
-
-		/* Compare, DigestInfo length, DigestInfo header and finally
-		 * digest value itself
-		 */
-
-		/* If length mismatch try alternate encoding */
-		if (i != (int)(dlen + md_len))
-			der = digestinfo_nn_encoding(md_type, &dlen);
-
-                memcmp_s(der, dlen, s, dlen, &diff1);
-                memcmp_s(s + dlen, md_len, mdhash, md_len, &diff2);
-		if ((i != (int)(dlen + md_len)) || diff1
-			|| diff2)
-			{
-                        i = 0;
-			goto end;
-			}
-       }
-
-        tc->ver_disposition = ACVP_TEST_DISPOSITION_PASS;
-	if (i == 0) { 
-            tc->ver_disposition = ACVP_TEST_DISPOSITION_FAIL;
-        }
-
-    } else {
-        rv = 1;
-        goto err;
-    }
-end:
-    /* Success */
-    rv = 0;
-
-err:
-    if (mdhash) free(mdhash);
-    if (s) free(s);
-    if (pctx) EVP_PKEY_CTX_free(pctx);
-    if (pk) EVP_PKEY_free(pk);
-    if (bn_e) BN_free(bn_e);
-    if (rsa) RSA_free(rsa);
-    if (e) BN_free(e);
-    if (n) BN_free(n);
-
-    return rv;
-}
-#endif // ACVP_NO_RUNTIME
-
-int app_rsa_decprim_handler(ACVP_TEST_CASE *test_case) {
-    BIGNUM *e = NULL, *n1 = NULL, *ct = NULL;
-    const BIGNUM *n = NULL;
-    ACVP_RSA_PRIM_TC    *tc;
-    RSA *rsa = NULL;
-    int rv = 1, i;
-
-    tc = test_case->tc.rsa_prim;
-
-    rsa = RSA_new();
-    e = BN_new();
-    if (!e) {
-        printf("Failed to allocate BN for e\n");
-        goto err;
-    }
-
-    if (tc->modulo != 2048) {
-        printf("Error, modulo not 2048\n");
-        goto err;
-    }
-
-    if (!tc->cipher || !tc->cipher_len) {
-        printf("Error, invlalid cipher information\n");
-        goto err;
-    }
-
-    /* only support 0x10001 */
-    if (!BN_set_word(e, RSA_F4)) {
-        printf("Error converting e to BN\n");
-        goto err;
-    }
-
-    tc->e_len = BN_bn2bin(e, tc->e);
-
-    /* generate key pair, this can take a while to get one ct < pk-1 */
-    if (!RSA_generate_key_ex(rsa, tc->modulo, e, NULL)) {
-        printf("Error generating key\n");
-        goto err;
-    }
-#if OPENSSL_VERSION_NUMBER <= 0x10100000L
-    n = BN_dup(rsa->n);
-#else
-    RSA_get0_key(rsa, &n, NULL, NULL);
-#endif
-    tc->n_len = BN_bn2bin(n, tc->n);
-    ct = BN_bin2bn(tc->cipher, tc->cipher_len, NULL);
-
-/* get key and compare to cipherText, if 1 < ct < pk-1 is not true then fail. */
-
-    n1 = BN_dup(n);
-    BN_sub_word(n1, 1);
-    i = BN_cmp(ct, n1);
-    tc->disposition = 1;
-    if (i < 0) {
-        tc->pt_len = RSA_private_decrypt(tc->cipher_len, tc->cipher, tc->pt, rsa, RSA_NO_PADDING);
-        if (tc->pt_len == -1) {
-            printf("Error decrypting\n");
-            goto err;
-        }
-        if (tc->pass) tc->pass--;
-    } else {
-        tc->disposition = 0;
-        if (tc->fail) tc->fail--;
-    }
-
-    rv = 0;
-err:
-    if (e) BN_free(e);
-    if (ct) BN_free(ct);
-    if (n1) BN_free(n1);
-    if (rsa) RSA_free(rsa);
-    return rv;
+    return 1;
 }
 
 int app_rsa_sigprim_handler(ACVP_TEST_CASE *test_case) {
-    BIGNUM *e = NULL, *n = NULL, *d = NULL;
-#if OPENSSL_VERSION_NUMBER >= 0x10100000L
-    BIGNUM  *tmp_e = NULL, *tmp_n = NULL, *tmp_d = NULL;
-#endif
-    ACVP_RSA_PRIM_TC    *tc;
-    RSA *rsa = NULL;
-    int rv = 1;
-
-    tc = test_case->tc.rsa_prim;
-
-    if (tc->key_format != ACVP_RSA_PRIM_KEYFORMAT_STANDARD) {
-        printf("Key Format must be standard\n");
-        goto err;
+    if (!test_case) {
+        return -1;
     }
-
-    if (!tc->e || !tc->d || !tc->n) {
-        printf("Missing arguments e|d|n\n");
-        goto err;
-    }
-
-    rsa = RSA_new();
-    e = BN_bin2bn(tc->e, tc->e_len, NULL);
-    if (!e) {
-        printf("Failed to allocate BN for e\n");
-        goto err;
-    }
-
-    n = BN_bin2bn(tc->n, tc->n_len, NULL);
-    if (!n) {
-        printf("Failed to allocate BN for n\n");
-        goto err;
-    }
-    d = BN_bin2bn(tc->d, tc->d_len, NULL);
-    if (!d) {
-        printf("Failed to allocate BN for d\n");
-        goto err;
-    }
-
-#if OPENSSL_VERSION_NUMBER <= 0x10100000L
-    rsa->d = BN_dup(d);
-    rsa->n = BN_dup(n);
-    rsa->e = BN_dup(e);
-#else
-    tmp_d = BN_dup(d);
-    tmp_n = BN_dup(n);
-    tmp_e = BN_dup(e);
-    RSA_set0_key(rsa, tmp_n, tmp_e, tmp_d);
-#endif
-    tc->disposition = 1;
-    tc->sig_len = RSA_private_encrypt(tc->msg_len, tc->msg, tc->signature, rsa, RSA_NO_PADDING);
-    if (tc->sig_len == -1) {
-        tc->disposition = 0;
-    }
-    rv = 0;
-err:
-    if (e) BN_free(e);
-    if (n) BN_free(n);
-    if (d) BN_free(d);
-    if (rsa) RSA_free(rsa);
-    return rv;
+    return 1;
 }
 
-
+#endif
 

@@ -20,14 +20,14 @@ ACVP_CTX *ctx;
 Test(LogMsg, null_ctx) {
     ACVP_RESULT rv = ACVP_SUCCESS;
 
-    acvp_log_msg(NULL, ACVP_LOG_LVL_MAX, "test");
+    acvp_log_msg(NULL, ACVP_LOG_LVL_MAX, __func__, __LINE__, "test");
     cr_assert(rv == ACVP_SUCCESS);
 
     setup_empty_ctx(&ctx);
-    acvp_log_msg(ctx, ACVP_LOG_LVL_MAX+1, "test");
+    acvp_log_msg(ctx, ACVP_LOG_LVL_MAX+1, __func__, __LINE__, "test");
     cr_assert(rv == ACVP_SUCCESS);
 
-    acvp_log_msg(ctx, ACVP_LOG_LVL_MAX, NULL);
+    acvp_log_msg(ctx, ACVP_LOG_LVL_MAX, __func__, __LINE__, NULL);
     cr_assert(rv == ACVP_SUCCESS);
     
     acvp_cleanup(ctx);
@@ -97,6 +97,9 @@ Test(JsonSerializeToFilePrettyW, null_param) {
 
     rv = acvp_json_serialize_to_file_pretty_w(NULL, "test");
     cr_assert(rv == ACVP_JSON_ERR);
+    if (rv == ACVP_SUCCESS) {
+        remove("test");
+    }
 
     value = json_value_init_object();
     rv = acvp_json_serialize_to_file_pretty_w(value, NULL);
@@ -104,7 +107,10 @@ Test(JsonSerializeToFilePrettyW, null_param) {
 
     rv = acvp_json_serialize_to_file_pretty_w(value, "no_file");
     cr_assert(rv == ACVP_SUCCESS);
-    
+    if (rv == ACVP_SUCCESS) {
+        remove("no_file");
+    }
+
     json_value_free(value);
 }
 
@@ -114,6 +120,9 @@ Test(JsonSerializeToFilePrettyA, null_param) {
 
     rv = acvp_json_serialize_to_file_pretty_a(NULL, "test");
     cr_assert(rv == ACVP_SUCCESS);
+    if (rv == ACVP_SUCCESS) {
+        remove("test");
+    }
 
     value = json_value_init_object();
     rv = acvp_json_serialize_to_file_pretty_a(value, NULL);
@@ -121,7 +130,10 @@ Test(JsonSerializeToFilePrettyA, null_param) {
 
     rv = acvp_json_serialize_to_file_pretty_a(value, "no_file");
     cr_assert(rv == ACVP_SUCCESS);
-    
+    if (rv == ACVP_SUCCESS) {
+        remove("no_file");
+    }
+
     json_value_free(value);
 }
 
@@ -159,7 +171,7 @@ Test(LookupErrorString, null_ctx) {
     char *dup = "ctx already initialized";
     char *ukn = "Unknown error";
 
-    str = acvp_lookup_error_string(ACVP_DUPLICATE_CTX);
+    str = acvp_lookup_error_string(ACVP_CTX_NOT_EMPTY);
     cr_assert(!strncmp(str, dup, strlen(dup)));
 
     str = acvp_lookup_error_string(ACVP_RESULT_MAX);

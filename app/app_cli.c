@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Cisco Systems, Inc.
+ * Copyright (c) 2023, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -14,15 +14,9 @@
 #include "acvp/acvp.h"
 #include "safe_lib.h"
 
-#ifdef ACVP_NO_RUNTIME
-#include "app_fips_lcl.h"
-#endif
-
 #include <openssl/crypto.h>
+#include <openssl/evp.h>
 
-#define ANSI_COLOR_RED "\x1b[31m"
-#define ANSI_COLOR_YELLOW "\x1b[33m"
-#define ANSI_COLOR_RESET "\x1b[0m"
 #define ACVP_APP_HELP_MSG "Use acvp_app --help for more information."
 
 static void print_usage(int code) {
@@ -65,20 +59,17 @@ static void print_usage(int code) {
         printf("capabilities of the provided cryptographic library.\n\n");
     }
     printf("Algorithm Test Suites:\n");
-    printf("      --all_algs (or -a, Enable all of the suites below)\n");
+    printf("Note: not all suites are supported by all supported modules\n");
+    printf("      --all_algs (or -a, Enable all of the suites supported by the crypto module)\n");
     printf("      --aes\n");
     printf("      --tdes\n");
     printf("      --hash\n");
     printf("      --cmac\n");
     printf("      --hmac\n");
-#ifdef OPENSSL_KDF_SUPPORT
     printf("      --kdf\n");
-#endif
-#ifndef OPENSSL_NO_DSA
     printf("      --dsa\n");
     printf("      --kas_ffc\n");
     printf("      --safe_primes\n");
-#endif
     printf("      --rsa\n");
     printf("      --ecdsa\n");
     printf("      --drbg\n");
@@ -106,6 +97,9 @@ static void print_usage(int code) {
     printf("To register manually using a JSON file instead of application settings use:\n");
     printf("      --manual_registration <file>\n");
     printf("\n");
+    printf("To retreive and output the JSON form of the currently registered capabilities:\n");
+    printf("      --get_registration\n");
+    printf("\n");
     printf("To register and save the vectors to file:\n");
     printf("      --vector_req <file>\n");
     printf("      -r <file>\n");
@@ -120,9 +114,6 @@ static void print_usage(int code) {
     printf("To upload vector responses from file:\n");
     printf("      --vector_upload <file>\n");
     printf("      -u <file>\n");
-    printf("\n");
-    printf("To process kat vectors from a JSON file use:\n");
-    printf("      --kat <file>\n");
     printf("\n");
     printf("Note: --resume_session and --get_results use the test session info file created automatically by the library as input\n");
     printf("\n");
@@ -160,6 +151,11 @@ static void print_usage(int code) {
     printf("      --save_to <file>\n");
     printf("      -s <file>\n");
     printf("\n");
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+    printf("To disable FIPS mode for this run (Note, a warning will be issued):\n");
+    printf("      -disable_fips\n");
+    printf("\n");
+#endif
     printf("In addition some options are passed to acvp_app using\n");
     printf("environment variables.  The following variables can be set:\n\n");
     printf("    ACV_SERVER (when not set, defaults to %s)\n", DEFAULT_SERVER);
@@ -185,16 +181,18 @@ static void print_usage(int code) {
 
 static void print_version_info(void) {
     printf("\nACVP library version(protocol version): %s(%s)\n\n", acvp_version(), acvp_protocol_version());
-
-#ifdef ACVP_NO_RUNTIME
-    printf("        Runtime mode: no\n");
-    printf(" FIPS module version: %s\n", FIPS_module_version_text());
-#else
     printf("        Runtime mode: yes\n");
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
     if (FIPS_mode()) {
         printf("           FIPS mode: yes\n");
     } else {
         printf("           FIPS mode: no\n");
+    }
+#else
+    if (EVP_default_properties_is_fips_enabled(NULL)) {
+        printf("           FIPS by default: yes\n");
+    } else {
+        printf("           FIPS by default: no\n");
     }
 #endif
 
@@ -203,12 +201,7 @@ static void print_version_info(void) {
 #else
     printf("Compiled SSL version: not detected\n");
 #endif
-
-#if OPENSSL_VERSION_NUMBER < 0x10100000L
-    printf("  Linked SSL version: %s\n", SSLeay_version(SSLEAY_VERSION));
-#else
     printf("  Linked SSL version: %s\n", OpenSSL_version(OPENSSL_VERSION));
-#endif
 }
 
 static ko_longopt_t longopts[] = {
@@ -226,26 +219,21 @@ static ko_longopt_t longopts[] = {
     { "hash", ko_no_argument, 312 },
     { "cmac", ko_no_argument, 313 },
     { "hmac", ko_no_argument, 314 },
-#ifdef OPENSSL_KDF_SUPPORT
     { "kdf", ko_no_argument, 315 },
-#endif
-#ifndef OPENSSL_NO_DSA
     { "dsa", ko_no_argument, 316 },
-#endif
     { "rsa", ko_no_argument, 317 },
     { "drbg", ko_no_argument, 318 },
     { "ecdsa", ko_no_argument, 319 },
     { "kas_ecc", ko_no_argument, 320 },
-#ifndef OPENSSL_NO_DSA
     { "kas_ffc", ko_no_argument, 321 },
     { "safe_primes", ko_no_argument, 322 },
-#endif
     { "kas_ifc", ko_no_argument, 323 },
     { "kts_ifc", ko_no_argument, 324 },
     { "kda", ko_no_argument, 325 },
+    { "kmac", ko_no_argument, 326 },
+    { "lms", ko_no_argument, 327 },
     { "all_algs", ko_no_argument, 350 },
     { "manual_registration", ko_required_argument, 400 },
-    { "kat", ko_required_argument, 401 },
     { "fips_validation", ko_required_argument, 402 },
     { "vector_req", ko_required_argument, 403 },
     { "vector_rsp", ko_required_argument, 404 },
@@ -260,6 +248,12 @@ static ko_longopt_t longopts[] = {
     { "save_to", ko_required_argument, 413 },
     { "delete", ko_required_argument, 414 },
     { "cancel_session", ko_required_argument, 415 },
+    { "cost", ko_no_argument, 416 },
+    { "debug", ko_no_argument, 417 },
+    { "get_registration", ko_no_argument, 418 },
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+    { "disable_fips", ko_no_argument, 500 },
+#endif
     { NULL, 0, 0 }
 };
 
@@ -274,12 +268,10 @@ static void enable_all_algorithms(APP_CONFIG *cfg) {
     cfg->hash = 1;
     cfg->cmac = 1;
     cfg->hmac = 1;
-    /* These require the fom */
-#ifndef OPENSSL_NO_DSA
+    cfg->kmac = 1;
     cfg->dsa = 1;
     cfg->kas_ffc = 1;
     cfg->safe_primes = 1;
-#endif
     cfg->rsa = 1;
     cfg->drbg = 1;
     cfg->ecdsa = 1;
@@ -287,9 +279,8 @@ static void enable_all_algorithms(APP_CONFIG *cfg) {
     cfg->kas_ifc = 1;
     cfg->kda = 1;
     cfg->kts_ifc = 1;
-#ifdef OPENSSL_KDF_SUPPORT
     cfg->kdf = 1;
-#endif
+    cfg->lms = 1;
 }
 
 static const char* lookup_arg_name(int c) {
@@ -392,18 +383,14 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
             cfg->hmac = 1;
             cfg->empty_alg = 0;
             break;
-#ifdef OPENSSL_KDF_SUPPORT
         case 315:
             cfg->kdf = 1;
             cfg->empty_alg = 0;
             break;
-#endif
-#ifndef OPENSSL_NO_DSA
         case 316:
             cfg->dsa = 1;
             cfg->empty_alg = 0;
             break;
-#endif
         case 317:
             cfg->rsa = 1;
             cfg->empty_alg = 0;
@@ -420,7 +407,6 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
             cfg->kas_ecc = 1;
             cfg->empty_alg = 0;
             break;
-#ifndef OPENSSL_NO_DSA
         case 321:
             cfg->kas_ffc = 1;
             cfg->empty_alg = 0;
@@ -429,7 +415,6 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
             cfg->safe_primes = 1;
             cfg->empty_alg = 0;
             break;
-#endif
         case 323:
             cfg->kas_ifc = 1;
             cfg->empty_alg = 0;
@@ -442,10 +427,19 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
             cfg->kda = 1;
             cfg->empty_alg = 0;
             break;
+        case 326:
+            cfg->kmac = 1;
+            cfg->empty_alg = 0;
+            break;
+        case 327:
+            cfg->lms = 1;
+            cfg->empty_alg = 0;
+            break;
         case 'a':
         case 350:
             enable_all_algorithms(cfg);
             cfg->empty_alg = 0;
+            cfg->testall = 1;
             break;
 
         case 400:
@@ -454,14 +448,6 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
                 return 1;
             }
             strcpy_s(cfg->reg_file, JSON_FILENAME_LENGTH + 1, opt.arg);
-            break;
-
-        case 401:
-            cfg->kat = 1;
-            if (!check_option_length(opt.arg, c, JSON_FILENAME_LENGTH)) {
-                return 1;
-            }
-            strcpy_s(cfg->kat_file, JSON_FILENAME_LENGTH + 1, opt.arg);
             break;
 
         case 402:
@@ -580,6 +566,23 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
             strcpy_s(cfg->session_file, JSON_FILENAME_LENGTH + 1, opt.arg);
             break;
 
+        case 416:
+            cfg->get_cost = 1;
+            break;
+
+        case 417:
+            cfg->level = ACVP_LOG_LVL_DEBUG;
+            break;
+
+        case 418:
+            cfg->get_reg = 1;
+            break;
+
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+        case 500:
+            cfg->disable_fips = 1;
+            break;
+#endif
         case '?':
             printf(ANSI_COLOR_RED "unknown option: %s\n"ANSI_COLOR_RESET, *(argv + opt.ind - !(opt.pos > 0)));
             printf("%s\n", ACVP_APP_HELP_MSG);

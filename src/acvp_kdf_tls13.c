@@ -527,13 +527,6 @@ static ACVP_RESULT acvp_kdf_tls13_init_tc(ACVP_CTX *ctx,
             ACVP_LOG_ERR("Hex conversion failure (psk)");
             return rv;
         }
-    } else {
-        //either SHA256 or SHA384
-        if (hmac == ACVP_SHA256) {
-            stc->psk_len = 32;
-        } else {
-            stc->psk_len = 48;
-        }
     }
 
     stc->dhe = calloc(1, ACVP_KDF_TLS13_DATA_LEN_BYTE_MAX);
@@ -543,13 +536,6 @@ static ACVP_RESULT acvp_kdf_tls13_init_tc(ACVP_CTX *ctx,
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Hex conversion failure (s_hello_rand)");
             return rv;
-        }
-    } else {
-        //either SHA256 or SHA384
-        if (hmac == ACVP_SHA256) {
-            stc->dhe_len = 32;
-        } else {
-            stc->dhe_len = 48;
         }
     }
 

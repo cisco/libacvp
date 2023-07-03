@@ -21,7 +21,7 @@ int counter_set;
 int counter_fail;
 
 void teardown_ctx(ACVP_CTX **ctx);
-ACVP_RESULT progress(char *msg);
+ACVP_RESULT progress(char *msg, ACVP_LOG_LVL level);
 void setup_empty_ctx(ACVP_CTX **ctx);
 int dummy_handler_success(ACVP_TEST_CASE *test_case);
 int dummy_handler_failure(ACVP_TEST_CASE *test_case);

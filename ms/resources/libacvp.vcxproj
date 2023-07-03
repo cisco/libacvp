@@ -1,14 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
-    <ProjectConfiguration Include="shared_no_safec|Win32">
-      <Configuration>shared_no_safec</Configuration>
-      <Platform>Win32</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="shared_no_safec|x64">
-      <Configuration>shared_no_safec</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
     <ProjectConfiguration Include="shared|Win32">
       <Configuration>shared</Configuration>
       <Platform>Win32</Platform>
@@ -17,36 +9,12 @@
       <Configuration>shared</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
-    <ProjectConfiguration Include="static_no_safec|Win32">
-      <Configuration>static_no_safec</Configuration>
+    <ProjectConfiguration Include="offline|Win32">
+      <Configuration>offline</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
-    <ProjectConfiguration Include="static_no_safec|x64">
-      <Configuration>static_no_safec</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="static_offline_no_safec|Win32">
-      <Configuration>static_offline_no_safec</Configuration>
-      <Platform>Win32</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="static_offline_no_safec|x64">
-      <Configuration>static_offline_no_safec</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="static_offline|Win32">
-      <Configuration>static_offline</Configuration>
-      <Platform>Win32</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="static_offline|x64">
-      <Configuration>static_offline</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="static|Win32">
-      <Configuration>static</Configuration>
-      <Platform>Win32</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="static|x64">
-      <Configuration>static</Configuration>
+    <ProjectConfiguration Include="offline|x64">
+      <Configuration>offline</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
@@ -54,67 +22,27 @@
     <VCProjectVersion>16.0</VCProjectVersion>
     <ProjectGuid>{D96A91BF-B55A-42FF-8053-4519103AF513}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
-  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='static_offline|Win32'">
-    <PlatformToolset>v141</PlatformToolset>
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='offline|Win32'">
+    <PlatformToolset>v142</PlatformToolset>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
-  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='static_offline|x64'">
-    <PlatformToolset>v141</PlatformToolset>
-    <ConfigurationType>StaticLibrary</ConfigurationType>
-    <CharacterSet>Unicode</CharacterSet>
-  </PropertyGroup>
-  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='static|Win32'">
-    <PlatformToolset>v141</PlatformToolset>
-    <ConfigurationType>StaticLibrary</ConfigurationType>
-    <CharacterSet>Unicode</CharacterSet>
-  </PropertyGroup>
-  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='static|x64'">
-    <PlatformToolset>v141</PlatformToolset>
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='offline|x64'">
+    <PlatformToolset>v142</PlatformToolset>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='shared|x64'">
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='shared|Win32'">
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <CharacterSet>Unicode</CharacterSet>
-  </PropertyGroup>
-  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='shared_no_safec|x64'">
-    <PlatformToolset>v141</PlatformToolset>
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <CharacterSet>Unicode</CharacterSet>
-  </PropertyGroup>
-  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='shared_no_safec|Win32'">
-    <PlatformToolset>v141</PlatformToolset>
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <CharacterSet>Unicode</CharacterSet>
-  </PropertyGroup>
-  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='static_no_safec|x64'">
-    <PlatformToolset>v141</PlatformToolset>
-    <ConfigurationType>StaticLibrary</ConfigurationType>
-    <CharacterSet>Unicode</CharacterSet>
-  </PropertyGroup>
-  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='static_no_safec|Win32'">
-    <PlatformToolset>v141</PlatformToolset>
-    <ConfigurationType>StaticLibrary</ConfigurationType>
-    <CharacterSet>Unicode</CharacterSet>
-  </PropertyGroup>
-  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='static_offline_no_safec|Win32'">
-    <PlatformToolset>v141</PlatformToolset>
-    <ConfigurationType>StaticLibrary</ConfigurationType>
-    <CharacterSet>Unicode</CharacterSet>
-  </PropertyGroup>
-  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='static_offline_no_safec|x64'">
-    <PlatformToolset>v141</PlatformToolset>
-    <ConfigurationType>StaticLibrary</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
@@ -123,37 +51,12 @@
   <ImportGroup Label="Shared">
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='shared_no_safec|Win32'">
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
-    <OutDir>$(SolutionDir)\build\</OutDir>
-    <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86)</LibraryPath>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='shared_no_safec|x64'">
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
-    <OutDir>$(SolutionDir)\build\</OutDir>
-    <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64)</LibraryPath>
-  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='shared|Win32'">
     <OutDir>$(SolutionDir)\build\</OutDir>
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
     <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86)</LibraryPath>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='static|Win32'">
-    <OutDir>$(SolutionDir)\build\</OutDir>
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
-    <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86)</LibraryPath>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='static_no_safec|Win32'">
-    <OutDir>$(SolutionDir)\build\</OutDir>
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
-    <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86)</LibraryPath>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='static_offline|Win32'">
-    <OutDir>$(SolutionDir)\build\</OutDir>
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
-    <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86)</LibraryPath>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='static_offline_no_safec|Win32'">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='offline|Win32'">
     <OutDir>$(SolutionDir)\build\</OutDir>
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
     <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86)</LibraryPath>
@@ -163,29 +66,14 @@
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
     <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64)</LibraryPath>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='static|x64'">
-    <OutDir>$(SolutionDir)\build\</OutDir>
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
-    <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64)</LibraryPath>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='static_no_safec|x64'">
-    <OutDir>$(SolutionDir)\build\</OutDir>
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
-    <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64)</LibraryPath>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='static_offline|x64'">
-    <OutDir>$(SolutionDir)\build\</OutDir>
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
-    <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64)</LibraryPath>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='static_offline_no_safec|x64'">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='offline|x64'">
     <OutDir>$(SolutionDir)\build\</OutDir>
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
     <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='shared|Win32'">
     <Link>
-      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;libcurl.lib;safeclib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;libcurl.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>Source.def</ModuleDefinitionFile>
       <AdditionalLibraryDirectories>$(ACV_LIB_PATHS)</AdditionalLibraryDirectories>
     </Link>
@@ -198,192 +86,46 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='shared|x64'">
     <Link>
-      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;libcurl.lib;safeclib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;libcurl.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>Source.def</ModuleDefinitionFile>
-      <AdditionalLibraryDirectories>$(ACV_LIB_PATHS)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ACV_LIB_PATHS);$(ProjectDir)..\..\safe_c_stub\include</AdditionalLibraryDirectories>
     </Link>
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <DebugInformationFormat>None</DebugInformationFormat>
       <PreprocessorDefinitions>__STDC_WANT_SECURE_LIB__=0;_WINDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ACV_INC_PATHS)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ACV_INC_PATHS);$(ProjectDir)..\..\safe_c_stub\include</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='shared_no_safec|Win32'">
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='offline|Win32'">
     <Link>
-      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;libcurl.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>Source.def</ModuleDefinitionFile>
       <AdditionalLibraryDirectories>$(ACV_LIB_PATHS)</AdditionalLibraryDirectories>
     </Link>
     <ClCompile>
-      <PreprocessorDefinitions>__STDC_WANT_SECURE_LIB__=0;WIN32;_WINDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Optimization>Disabled</Optimization>
       <DebugInformationFormat>None</DebugInformationFormat>
+      <PreprocessorDefinitions>__STDC_WANT_SECURE_LIB__=0;ACVP_OFFLINE;_WINDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ACV_INC_PATHS)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='shared_no_safec|x64'">
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='offline|x64'">
     <Link>
-      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;libcurl.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>Source.def</ModuleDefinitionFile>
       <AdditionalLibraryDirectories>$(ACV_LIB_PATHS)</AdditionalLibraryDirectories>
     </Link>
     <ClCompile>
-      <PreprocessorDefinitions>__STDC_WANT_SECURE_LIB__=0;WIN32;_WINDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Optimization>Disabled</Optimization>
       <DebugInformationFormat>None</DebugInformationFormat>
-      <AdditionalIncludeDirectories>$(ACV_INC_PATHS)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>__STDC_WANT_SECURE_LIB__=0;ACVP_OFFLINE;_WINDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ACV_INC_PATHS);$(ProjectDir)..\..\safe_c_stub\include</AdditionalIncludeDirectories>
     </ClCompile>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='static|Win32'">
-    <Lib>
-      <AdditionalDependencies>$(ACV_STATIC_LIB_DEPENDENCIES);libcurl_a.lib;safeclib.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(ACV_LIB_PATHS)</AdditionalLibraryDirectories>
-    </Lib>
-    <Link>
-      <ModuleDefinitionFile>Source.def</ModuleDefinitionFile>
-    </Link>
-    <ClCompile>
-      <Optimization>Disabled</Optimization>
-      <DebugInformationFormat>None</DebugInformationFormat>
-      <PreprocessorDefinitions>__STDC_WANT_SECURE_LIB__=0;CURL_STATICLIB;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ACV_INC_PATHS)</AdditionalIncludeDirectories>
-    </ClCompile>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='static|x64'">
-    <Lib>
-      <AdditionalDependencies>$(ACV_STATIC_LIB_DEPENDENCIES);libcurl_a.lib;safeclib.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(ACV_LIB_PATHS)</AdditionalLibraryDirectories>
-    </Lib>
-    <Link>
-      <ModuleDefinitionFile>Source.def</ModuleDefinitionFile>
-    </Link>
-    <ClCompile>
-      <Optimization>Disabled</Optimization>
-      <DebugInformationFormat>None</DebugInformationFormat>
-      <PreprocessorDefinitions>__STDC_WANT_SECURE_LIB__=0;CURL_STATICLIB;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ACV_INC_PATHS)</AdditionalIncludeDirectories>
-    </ClCompile>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='static_no_safec|Win32'">
-    <Lib>
-      <AdditionalDependencies>$(ACV_STATIC_LIB_DEPENDENCIES);libcurl_a.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(ACV_LIB_PATHS)</AdditionalLibraryDirectories>
-    </Lib>
-    <Link>
-      <ModuleDefinitionFile>Source.def</ModuleDefinitionFile>
-    </Link>
-    <ClCompile>
-      <Optimization>Disabled</Optimization>
-      <DebugInformationFormat>None</DebugInformationFormat>
-      <PreprocessorDefinitions>__STDC_WANT_SECURE_LIB__=0;CURL_STATICLIB;WIN32;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ACV_INC_PATHS)</AdditionalIncludeDirectories>
-    </ClCompile>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='static_no_safec|x64'">
-    <Lib>
-      <AdditionalDependencies>$(ACV_STATIC_LIB_DEPENDENCIES);libcurl_a.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(ACV_LIB_PATHS)</AdditionalLibraryDirectories>
-    </Lib>
-    <Link>
-      <ModuleDefinitionFile>Source.def</ModuleDefinitionFile>
-    </Link>
-    <ClCompile>
-      <Optimization>Disabled</Optimization>
-      <DebugInformationFormat>None</DebugInformationFormat>
-      <PreprocessorDefinitions>__STDC_WANT_SECURE_LIB__=0;CURL_STATICLIB;WIN32;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ACV_INC_PATHS)</AdditionalIncludeDirectories>
-    </ClCompile>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='static_offline|Win32'">
-    <Lib>
-      <AdditionalDependencies>$(ACV_STATIC_LIB_DEPENDENCIES);safeclib.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(ACV_LIB_PATHS)</AdditionalLibraryDirectories>
-    </Lib>
-    <ClCompile>
-      <PreprocessorDefinitions>__STDC_WANT_SECURE_LIB__=0;CURL_STATICLIB;ACVP_OFFLINE</PreprocessorDefinitions>
-      <Optimization>Disabled</Optimization>
-      <DebugInformationFormat>None</DebugInformationFormat>
-      <AdditionalIncludeDirectories>$(ACV_INC_PATHS)</AdditionalIncludeDirectories>
-    </ClCompile>
-    <Link>
-      <ModuleDefinitionFile>Source.def</ModuleDefinitionFile>
-    </Link>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='static_offline|x64'">
-    <Lib>
-      <AdditionalDependencies>$(ACV_STATIC_LIB_DEPENDENCIES);safeclib.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(ACV_LIB_PATHS)</AdditionalLibraryDirectories>
-    </Lib>
-    <ClCompile>
-      <PreprocessorDefinitions>__STDC_WANT_SECURE_LIB__=0;CURL_STATICLIB;ACVP_OFFLINE</PreprocessorDefinitions>
-      <Optimization>Disabled</Optimization>
-      <DebugInformationFormat>None</DebugInformationFormat>
-      <AdditionalIncludeDirectories>$(ACV_INC_PATHS)</AdditionalIncludeDirectories>
-    </ClCompile>
-    <Link>
-      <ModuleDefinitionFile>Source.def</ModuleDefinitionFile>
-    </Link>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='static_offline_no_safec|Win32'">
-    <ClCompile>
-      <PreprocessorDefinitions>__STDC_WANT_SECURE_LIB__=0;CURL_STATICLIB;WIN32;ACVP_OFFLINE</PreprocessorDefinitions>
-      <Optimization>Disabled</Optimization>
-      <DebugInformationFormat>None</DebugInformationFormat>
-      <AdditionalIncludeDirectories>$(ACV_INC_PATHS)</AdditionalIncludeDirectories>
-    </ClCompile>
-    <Link>
-      <ModuleDefinitionFile>Source.def</ModuleDefinitionFile>
-    </Link>
-    <Lib>
-      <AdditionalDependencies>$(ACV_STATIC_LIB_DEPENDENCIES);</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(ACV_LIB_PATHS)</AdditionalLibraryDirectories>
-    </Lib>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='static_offline_no_safec|x64'">
-    <ClCompile>
-      <PreprocessorDefinitions>__STDC_WANT_SECURE_LIB__=0;CURL_STATICLIB;WIN32;ACVP_OFFLINE</PreprocessorDefinitions>
-      <Optimization>Disabled</Optimization>
-      <DebugInformationFormat>None</DebugInformationFormat>
-      <AdditionalIncludeDirectories>$(ACV_INC_PATHS)</AdditionalIncludeDirectories>
-    </ClCompile>
-    <Link>
-      <ModuleDefinitionFile>Source.def</ModuleDefinitionFile>
-    </Link>
-    <Lib>
-      <AdditionalDependencies>$(ACV_STATIC_LIB_DEPENDENCIES);</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(ACV_LIB_PATHS)</AdditionalLibraryDirectories>
-    </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\safe_c_stub\src\safe_mem_stub.c">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='static_offline_no_safec|Win32'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='shared_no_safec|Win32'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='static_no_safec|Win32'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='static_offline_no_safec|x64'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='shared_no_safec|x64'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='static_no_safec|x64'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='static_offline|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='static_offline|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='static|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='static|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='shared|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='shared|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\safe_c_stub\src\safe_str_stub.c">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='static_offline_no_safec|Win32'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='shared_no_safec|Win32'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='static_no_safec|Win32'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='static_offline_no_safec|x64'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='shared_no_safec|x64'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='static_no_safec|x64'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='static_offline|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='static_offline|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='static|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='static|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='shared|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='shared|x64'">true</ExcludedFromBuild>
-    </ClCompile>
+    <ClCompile Include="..\..\safe_c_stub\src\safe_mem_stub.c" />
+    <ClCompile Include="..\..\safe_c_stub\src\safe_str_stub.c" />
     <ClCompile Include="..\..\src\acvp.c" />
     <ClCompile Include="..\..\src\acvp_aes.c" />
     <ClCompile Include="..\..\src\acvp_build_register.c" />
@@ -410,7 +152,9 @@
     <ClCompile Include="..\..\src\acvp_kdf135_snmp.c" />
     <ClCompile Include="..\..\src\acvp_kdf135_srtp.c" />
     <ClCompile Include="..\..\src\acvp_kdf135_ssh.c" />
+    <ClCompile Include="..\..\src\acvp_kdf135_x942.c" />
     <ClCompile Include="..\..\src\acvp_kdf135_x963.c" />
+    <ClCompile Include="..\..\src\acvp_kmac.c" />
     <ClCompile Include="..\..\src\acvp_operating_env.c" />
     <ClCompile Include="..\..\src\acvp_rsa_keygen.c" />
     <ClCompile Include="..\..\src\acvp_rsa_sig.c" />
@@ -423,76 +167,11 @@
     <ClInclude Include="..\..\include\acvp\acvp.h" />
     <ClInclude Include="..\..\include\acvp\acvp_lcl.h" />
     <ClInclude Include="..\..\include\acvp\parson.h" />
-    <ClInclude Include="..\..\safe_c_stub\include\mem_primitives_lib.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='static_offline_no_safec|Win32'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='shared_no_safec|Win32'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='static_no_safec|Win32'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='static_offline_no_safec|x64'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='shared_no_safec|x64'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='static_no_safec|x64'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='shared|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='shared|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='static|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='static|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='static_offline|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='static_offline|x64'">true</ExcludedFromBuild>
-    </ClInclude>
-    <ClInclude Include="..\..\safe_c_stub\include\safe_lib.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='static_offline_no_safec|Win32'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='shared_no_safec|Win32'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='static_no_safec|Win32'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='static_offline_no_safec|x64'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='shared_no_safec|x64'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='static_no_safec|x64'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='shared|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='shared|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='static|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='static|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='static_offline|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='static_offline|x64'">true</ExcludedFromBuild>
-    </ClInclude>
-    <ClInclude Include="..\..\safe_c_stub\include\safe_lib_errno.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='static_offline_no_safec|Win32'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='shared_no_safec|Win32'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='static_no_safec|Win32'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='static_offline_no_safec|x64'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='shared_no_safec|x64'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='static_no_safec|x64'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='shared|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='shared|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='static|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='static|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='static_offline|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='static_offline|x64'">true</ExcludedFromBuild>
-    </ClInclude>
-    <ClInclude Include="..\..\safe_c_stub\include\safe_mem_lib.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='static_offline_no_safec|Win32'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='shared_no_safec|Win32'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='static_no_safec|Win32'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='static_offline_no_safec|x64'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='shared_no_safec|x64'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='static_no_safec|x64'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='shared|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='shared|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='static|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='static|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='static_offline|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='static_offline|x64'">true</ExcludedFromBuild>
-    </ClInclude>
-    <ClInclude Include="..\..\safe_c_stub\include\safe_str_lib.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='static_offline_no_safec|Win32'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='shared_no_safec|Win32'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='static_no_safec|Win32'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='static_offline_no_safec|x64'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='shared_no_safec|x64'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='static_no_safec|x64'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='shared|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='shared|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='static|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='static|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='static_offline|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='static_offline|x64'">true</ExcludedFromBuild>
-    </ClInclude>
+    <ClInclude Include="..\..\safe_c_stub\include\mem_primitives_lib.h" />
+    <ClInclude Include="..\..\safe_c_stub\include\safe_lib.h" />
+    <ClInclude Include="..\..\safe_c_stub\include\safe_lib_errno.h" />
+    <ClInclude Include="..\..\safe_c_stub\include\safe_mem_lib.h" />
+    <ClInclude Include="..\..\safe_c_stub\include\safe_str_lib.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Source.def" />

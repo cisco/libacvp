@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Cisco Systems, Inc.
+ * Copyright (c) 2023, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -11,348 +11,187 @@
 
 #include <stdlib.h>
 #include <openssl/rand.h>
-#include <openssl/err.h>
-#include "app_fips_lcl.h" /* All regular OpenSSL headers must come before here */
 #include "app_lcl.h"
 #include "safe_mem_lib.h"
-#ifdef ACVP_NO_RUNTIME
-
-typedef struct {
-    unsigned char *ent;
-    size_t entlen;
-    unsigned char *nonce;
-    size_t noncelen;
-} DRBG_TEST_ENT;
-
-static size_t drbg_test_entropy(DRBG_CTX *dctx,
-                                unsigned char **pout,
-                                int entropy,
-                                size_t min_len,
-                                size_t max_len) {
-    if (!dctx || !pout || !entropy) return 0;
-
-    DRBG_TEST_ENT *t = (DRBG_TEST_ENT *)FIPS_drbg_get_app_data(dctx);
-    if (!t) return 0;
-
-    if (t->entlen < min_len) printf("entropy data len %zu < min_len: %zu\n", t->entlen, min_len);
-    if (t->entlen > max_len) printf("entropy data len %zu > max_len: %zu\n", t->entlen, max_len);
-    *pout = (unsigned char *)t->ent;
-    return t->entlen;
-}
-
-static size_t drbg_test_nonce(DRBG_CTX *dctx,
-                              unsigned char **pout,
-                              int entropy,
-                              size_t min_len,
-                              size_t max_len) {
-    if (!dctx || !pout || !entropy) return 0;
-
-    DRBG_TEST_ENT *t = (DRBG_TEST_ENT *)FIPS_drbg_get_app_data(dctx);
-
-    if (t->noncelen < min_len) printf("nonce data len %zu < min_len: %zu\n", t->noncelen, min_len);
-    if (t->noncelen > max_len) printf("nonce data len %zu > max_len: %zu\n", t->noncelen, max_len);
-    *pout = (unsigned char *)t->nonce;
-    return t->noncelen;
-}
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+#include <openssl/core_names.h>
 
 int app_drbg_handler(ACVP_TEST_CASE *test_case) {
-    int result = 1;
-    ACVP_DRBG_TC    *tc;
-    unsigned int nid;
-    int der_func = 0;
-    unsigned int drbg_entropy_len;
-    int fips_rc;
+    int rv = 1, der_func = 0;
+    ACVP_DRBG_TC *tc;
     ACVP_SUB_DRBG alg;
-
-    unsigned char   *nonce = NULL;
+    EVP_RAND *rand = NULL;
+    EVP_RAND_CTX *rctx = NULL, *test = NULL;
+    OSSL_PARAM params[10] = { 0 };
+    const char *alg_name = NULL, *alg_str = NULL, *param_str = NULL;
+    char *tmp = NULL, *mac_name = NULL;
+    unsigned int strength = 512;
 
     if (!test_case) {
-        return result;
+        return rv;
     }
 
     tc = test_case->tc.drbg;
-    /*
-     * Init entropy length
-     */
-    drbg_entropy_len = tc->entropy_len;
+    /* Todo: expand these checks and UTs for them */
+    if (!tc->drb || (tc->perso_string_len && !tc->perso_string)) {
+        printf("DRBG test case invalid\n");
+        goto err;
+    }
 
     alg = acvp_get_drbg_alg(tc->cipher);
-    if (alg == 0) {
-        printf("Invalid cipher value\n");
-        return 1;
-    }
 
     switch (alg) {
     case ACVP_SUB_DRBG_HASH:
-        nonce = tc->nonce;
-        switch (tc->mode) {
-        case ACVP_DRBG_SHA_1:
-            nid = NID_sha1;
-            break;
-        case ACVP_DRBG_SHA_224:
-            nid = NID_sha224;
-            break;
-        case ACVP_DRBG_SHA_256:
-            nid = NID_sha256;
-            break;
-        case ACVP_DRBG_SHA_384:
-            nid = NID_sha384;
-            break;
-        case ACVP_DRBG_SHA_512:
-            nid = NID_sha512;
-            break;
-#if OPENSSL_VERSION_NUMBER >= 0x10101010L /* OpenSSL 1.1.1 or greater */
-        case ACVP_DRBG_SHA_512_224:
-            nid = NID_sha512_224;
-            break;
-        case ACVP_DRBG_SHA_512_256:
-            nid = NID_sha512_256;
-            break;
-#endif
-        case ACVP_DRBG_TDES:
-        case ACVP_DRBG_AES_128:
-        case ACVP_DRBG_AES_192:
-        case ACVP_DRBG_AES_256:
-#if OPENSSL_VERSION_NUMBER < 0x10101010L /* Not OpenSSL */
-        case ACVP_DRBG_SHA_512_224:
-        case ACVP_DRBG_SHA_512_256:
-#endif
-        default:
-            printf("%s: Unsupported algorithm/mode %d/%d (tc_id=%d)\n", __FUNCTION__, tc->tc_id,
-                   tc->cipher, tc->mode);
-            return result;
-
-            break;
-        }
+        alg_name = "HASH-DRBG";
+        param_str = OSSL_DRBG_PARAM_DIGEST;
         break;
-
     case ACVP_SUB_DRBG_HMAC:
-        nonce = tc->nonce;
-        switch (tc->mode) {
-        case ACVP_DRBG_SHA_1:
-            nid =   NID_hmacWithSHA1;
-            break;
-        case ACVP_DRBG_SHA_224:
-            nid =   NID_hmacWithSHA224;
-            break;
-        case ACVP_DRBG_SHA_256:
-            nid =   NID_hmacWithSHA256;
-            break;
-        case ACVP_DRBG_SHA_384:
-            nid =   NID_hmacWithSHA384;
-            break;
-        case ACVP_DRBG_SHA_512:
-            nid =   NID_hmacWithSHA512;
-            break;
-#if OPENSSL_VERSION_NUMBER >= 0x10101010L /* OpenSSL 1.1.1 or greater */
-        case ACVP_DRBG_SHA_512_224:
-            nid =   NID_hmacWithSHA512_224;
-            break;
-        case ACVP_DRBG_SHA_512_256:
-            nid =   NID_hmacWithSHA512_256;
-            break;
-#endif
-        case ACVP_DRBG_TDES:
-        case ACVP_DRBG_AES_128:
-        case ACVP_DRBG_AES_192:
-        case ACVP_DRBG_AES_256:
-#if OPENSSL_VERSION_NUMBER < 0x10101010L /* Not OpenSSL */
-        case ACVP_DRBG_SHA_512_224:
-        case ACVP_DRBG_SHA_512_256:
-#endif
-        default:
-            printf("%s: Unsupported algorithm/mode %d/%d (tc_id=%d)\n", __FUNCTION__, tc->tc_id,
-                   tc->cipher, tc->mode);
-            return result;
-
-            break;
-        }
+        alg_name = "HMAC-DRBG";
+        param_str = OSSL_DRBG_PARAM_DIGEST;
         break;
-
     case ACVP_SUB_DRBG_CTR:
-        /*
-         * DR function Only valid in CTR mode
-         * if not set nonce is ignored
-         */
-        if (tc->der_func_enabled) {
-            der_func = DRBG_FLAG_CTR_USE_DF;
-            nonce = tc->nonce;
-        } else {
-            /**
-             * Note 5: All DRBGs are tested at their maximum supported security
-             * strength so this is the minimum bit length of the entropy input that
-             * ACVP will accept.  The maximum supported security strength is also
-             * the default value for this input.  Longer entropy inputs are
-             * permitted, with the following exception: for ctrDRBG with no df, the
-             * bit length must equal the seed length.
-             *
-             * This will be enforced at registration time by the server. Also, with
-             * this mode, no nonce is used.
-             **/
-        }
-
-        switch (tc->mode) {
-        case ACVP_DRBG_AES_128:
-            nid = NID_aes_128_ctr;
-            break;
-        case ACVP_DRBG_AES_192:
-            nid = NID_aes_192_ctr;
-            break;
-        case ACVP_DRBG_AES_256:
-            nid = NID_aes_256_ctr;
-            break;
-        case ACVP_DRBG_TDES:
-        case ACVP_DRBG_SHA_1:
-        case ACVP_DRBG_SHA_224:
-        case ACVP_DRBG_SHA_256:
-        case ACVP_DRBG_SHA_384:
-        case ACVP_DRBG_SHA_512:
-        case ACVP_DRBG_SHA_512_224:
-        case ACVP_DRBG_SHA_512_256:
-        default:
-            printf("%s: Unsupported algorithm/mode %d/%d (tc_id=%d)\n", __FUNCTION__, tc->tc_id,
-                   tc->cipher, tc->mode);
-            return result;
-
-            break;
-        }
+        alg_name = "CTR-DRBG";
+        param_str = OSSL_DRBG_PARAM_CIPHER;
         break;
     default:
-        printf("%s: Unsupported algorithm %d (tc_id=%d)\n", __FUNCTION__, tc->tc_id,
-               tc->cipher);
-        return result;
+        printf("Invalid DRBG cipher value\n");
+        goto err;
+    }
 
+    switch (tc->mode) {
+    case ACVP_DRBG_SHA_1:
+        alg_str = "SHA-1";
         break;
+    case ACVP_DRBG_SHA_224:
+        alg_str = "SHA2-224";
+        break;
+    case ACVP_DRBG_SHA_256:
+        alg_str = "SHA2-256";
+        break;
+    case ACVP_DRBG_SHA_384:
+        alg_str = "SHA2-384";
+        break;
+    case ACVP_DRBG_SHA_512:
+        alg_str = "SHA2-512";
+        break;
+    case ACVP_DRBG_SHA_512_224:
+        alg_str = "SHA2-512/224";
+        break;
+    case ACVP_DRBG_SHA_512_256:
+        alg_str = "SHA2-512/256";
+        break;
+    case ACVP_DRBG_AES_128:
+        alg_str = "AES-128-CTR";
+        break;
+    case ACVP_DRBG_AES_192:
+        alg_str = "AES-192-CTR";
+        break;
+    case ACVP_DRBG_AES_256:
+        alg_str = "AES-256-CTR";
+        break;
+    case ACVP_DRBG_TDES:
+    default:
+        printf("Invalid mode given for DRBG\n");
+        goto err;
     }
 
-    if (!tc->pred_resist_enabled && tc->reseed && !tc->entropy_input_pr_0) {
-        printf("Missing entropy input needed for reseed\n");
-        return 1;
+    tmp = remove_str_const(alg_str);
+    if (!tmp) {
+        printf ("Unexpected error copying string in DRBG\n");
+        goto err;
     }
-    if (!drbg_entropy_len || !tc->entropy || !tc->entropy_input_pr_1 ||
-	!tc->entropy_input_pr_2) {
-        printf("Insufficient entropy for testing DRBG\n");
-        return 1;
-    }
-    if (!tc->drb) {
-        printf("Invalid output buffer for DRBG test\n");
-        return 1;
-    }
-    if (!tc->perso_string) {
-        printf("Missing persoString for DRBG test\n");
-        return 1;
-    }
+    der_func = tc->der_func_enabled;
 
-    DRBG_CTX *drbg_ctx = NULL;
-    DRBG_TEST_ENT entropy_nonce;
-    memzero_s(&entropy_nonce, sizeof(DRBG_TEST_ENT));
-    drbg_ctx = FIPS_drbg_new(nid, der_func | DRBG_FLAG_TEST);
-    if (!drbg_ctx) {
-        printf("ERROR: failed to create DRBG Context.\n");
-        return result;
+    /* NOTE ABOUT DRBG in 3.X:
+    * TEST-RAND is an "unapproved" algorithm that exists inside the FIPS module. It cannot be used with
+    * the property "fips=yes", which we use in the default library context. It has to be used with
+    * fips=no in order to run it. Do NOT run this outside of the context of testing in any situation.
+    */
+    rand = EVP_RAND_fetch(NULL, "TEST-RAND", "fips=no");
+
+    test = EVP_RAND_CTX_new(rand, NULL);
+    if (rand) EVP_RAND_free(rand);
+    if (!test) {
+        printf("Error creating test CTX in DRBG\n");
+        goto err;
     }
 
-    /*
-     * Set entropy and nonce
-     */
-    entropy_nonce.ent = tc->entropy;
-    entropy_nonce.entlen = drbg_entropy_len;
+    params[0] = OSSL_PARAM_construct_uint(OSSL_RAND_PARAM_STRENGTH, &strength);
+    params[1] = OSSL_PARAM_construct_end(); /* HMAC */
+    params[2] = OSSL_PARAM_construct_end(); /* der func */
+    params[3] = OSSL_PARAM_construct_end();
 
-    entropy_nonce.nonce = nonce;
-    entropy_nonce.noncelen = tc->nonce_len;
-
-    FIPS_drbg_set_app_data(drbg_ctx, &entropy_nonce);
-
-    fips_rc = FIPS_drbg_set_callbacks(drbg_ctx,
-                                      drbg_test_entropy,
-                                      0, 0,
-                                      drbg_test_nonce,
-                                      0);
-    if (!fips_rc) {
-        printf("ERROR: failed to Set callback DRBG ctx\n");
-        long l = 9;
-        char buf[2048]  = { 0 };
-        while ((l = ERR_get_error())) {
-            printf("ERROR:%s\n", ERR_error_string(l, buf));
-        }
-        goto end;
+    if (EVP_RAND_CTX_set_params(test, params) != 1) {
+        printf("Error setting test ctx params in DRBG\n");
+        goto err;
     }
 
-    fips_rc = FIPS_drbg_instantiate(drbg_ctx, (const unsigned char *)tc->perso_string,
-                                    (size_t)tc->perso_string_len);
-    if (!fips_rc) {
-        printf("ERROR: failed to instantiate DRBG ctx\n");
-        long l = 9;
-        char buf[2048]  = { 0 };
-        while ((l = ERR_get_error())) {
-            printf("ERROR:%s\n", ERR_error_string(l, buf));
-        }
-        goto end;
+    rand = EVP_RAND_fetch(NULL, alg_name, NULL);
+    rctx = EVP_RAND_CTX_new(rand, test);
+    if (!rctx) {
+        printf("Error creating DRBG ctx\n");
+        goto err;
+    }
+    strength = EVP_RAND_get_strength(rctx);
+    mac_name = remove_str_const("HMAC");
+    params[0] = OSSL_PARAM_construct_utf8_string(param_str, tmp, 0);
+    params[1] = OSSL_PARAM_construct_utf8_string(OSSL_DRBG_PARAM_MAC, mac_name, 0); //ignored if irrelevant
+    params[2] = OSSL_PARAM_construct_int(OSSL_DRBG_PARAM_USE_DF, &der_func);
+    if (EVP_RAND_CTX_set_params(rctx, params) != 1) {
+        printf("Error setting algorithm for DRBG\n");
+        goto err;
     }
 
-    /*
-     * Process predictive resistance flag
-     */
-    if (!tc->pred_resist_enabled && tc->reseed) {
-
-        entropy_nonce.ent = tc->entropy_input_pr_0;
-        entropy_nonce.entlen = drbg_entropy_len;
-
-        fips_rc =  FIPS_drbg_reseed(drbg_ctx, (const unsigned char *)tc->additional_input_0,
-                                      (size_t)(tc->additional_input_len));
-        if (!fips_rc) {
-            printf("ERROR: failed to generate drbg reseed\n");
-            long l;
-            while ((l = ERR_get_error())) {
-                printf("ERROR:%s\n", ERR_error_string(l, NULL));
-            }
-            goto end;
-        }
+    params[0] = OSSL_PARAM_construct_octet_string(OSSL_RAND_PARAM_TEST_ENTROPY, tc->entropy, tc->entropy_len);
+    params[1] = OSSL_PARAM_construct_octet_string(OSSL_RAND_PARAM_TEST_NONCE, tc->nonce, tc->nonce_len);
+    if (EVP_RAND_CTX_set_params(test, params) != 1) {
+        printf("Error setting initial entropy/nonce for DRBG\n");
+        goto err;
+    }
+    if (EVP_RAND_instantiate(rctx, strength, tc->pred_resist_enabled, tc->perso_string,
+                              tc->perso_string_len, NULL) != 1) {
+        printf("Error performing RAND instantiate\n");
+        goto err;
     }
 
-    entropy_nonce.ent = tc->entropy_input_pr_1;
-    entropy_nonce.entlen = tc->pr1_len;
-
-    fips_rc =  FIPS_drbg_generate(drbg_ctx, (unsigned char *)tc->drb,
-                                  (size_t)(tc->drb_len),
-                                  (int)tc->pred_resist_enabled,
-                                  (const unsigned char *)tc->additional_input_1,
-                                  (size_t)(tc->additional_input_len));
-    if (!fips_rc) {
-        printf("ERROR: failed to generate drbg gen1\n");
-        long l;
-        while ((l = ERR_get_error())) {
-            printf("ERROR:%s\n", ERR_error_string(l, NULL));
-        }
-        goto end;
+    params[0] = OSSL_PARAM_construct_octet_string(OSSL_RAND_PARAM_TEST_ENTROPY, tc->entropy_input_pr_1, tc->entropy_len);
+    if (EVP_RAND_CTX_set_params(test, params) != 1) {
+        printf("Error setting params for DRBG (1)\n");
+        goto err;
     }
 
-    entropy_nonce.ent = tc->entropy_input_pr_2;
-    entropy_nonce.entlen = tc->pr2_len;
+    if (EVP_RAND_generate(rctx, tc->drb, tc->drb_len, strength,
+                           tc->pred_resist_enabled,
+                           tc->additional_input_1, tc->additional_input_len) != 1) {
+        printf("Error performing rand generate (1)\n");
+        goto err;
+     }
 
-    fips_rc =  FIPS_drbg_generate(drbg_ctx, (unsigned char *)tc->drb,
-                                  (size_t)(tc->drb_len),
-                                  (int)tc->pred_resist_enabled,
-                                  (const unsigned char *)tc->additional_input_2,
-                                  (size_t)(tc->additional_input_len));
-    if (!fips_rc) {
-        printf("ERROR: failed to generate drbg gen2\n");
-        long l;
-        while ((l = ERR_get_error())) {
-            printf("ERROR:%s\n", ERR_error_string(l, NULL));
-        }
-        goto end;
+    params[0] = OSSL_PARAM_construct_octet_string(OSSL_RAND_PARAM_TEST_ENTROPY, tc->entropy_input_pr_2, tc->entropy_len);
+    if (EVP_RAND_CTX_set_params(test, params) != 1) {
+        printf("Error setting params for DRBG (2)\n");
+        goto err;
     }
 
-    result = 0;
+    if (EVP_RAND_generate(rctx, tc->drb, tc->drb_len, strength,
+                           tc->pred_resist_enabled,
+                           tc->additional_input_2, tc->additional_input_len) != 1) {
+        printf("Error performing rand generate (2)\n");
+        goto err;
+     }
 
-end:
-    FIPS_drbg_uninstantiate(drbg_ctx);
-    FIPS_drbg_free(drbg_ctx);
-
-    return result;
+    rv = 0;
+err:
+    if (test) EVP_RAND_CTX_free(test);
+    if (rctx) EVP_RAND_CTX_free(rctx);
+    if (rand) EVP_RAND_free(rand);
+    if (mac_name) free(mac_name);
+    if (tmp) free(tmp);
+    return rv;
 }
+
 #else
+
 int app_drbg_handler(ACVP_TEST_CASE *test_case) {
     if (!test_case) {
         return -1;
@@ -360,5 +199,5 @@ int app_drbg_handler(ACVP_TEST_CASE *test_case) {
     return 1;
 }
 
-#endif // ACVP_NO_RUNTIME
+#endif
 

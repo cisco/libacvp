@@ -1,6 +1,6 @@
 /** @file */
 /*
- * Copyright (c) 2021, Cisco Systems, Inc.
+ * Copyright (c) 2023, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -17,6 +17,13 @@
 #include "acvp_lcl.h"
 #include "safe_lib.h"
 
+#ifdef _WIN32
+#include <io.h>
+#include <Windows.h>
+#else
+#include <unistd.h>
+#endif
+
 #ifdef USE_MURL
 #include "murl.h"
 #elif !defined ACVP_OFFLINE
@@ -30,27 +37,35 @@ static int acvp_char_to_int(char ch);
 /*
  * Basic logging for libacvp
  */
-void acvp_log_msg(ACVP_CTX *ctx, ACVP_LOG_LVL level, const char *format, ...) {
+void acvp_log_msg(ACVP_CTX *ctx, ACVP_LOG_LVL level, const char *func, int line, const char *fmt, ...) {
     va_list arguments;
-    //One extra char for null terminator, one to check if output is truncated
-    char tmp[ACVP_LOG_MAX_MSG_LEN + 2];
+    int iter = 0, ret = 0;
+    //One extra char for null terminator
+    char tmp[ACVP_LOG_MAX_MSG_LEN + 1];
     tmp[ACVP_LOG_MAX_MSG_LEN] = '\0';
-    if (ctx && ctx->test_progress_cb && (ctx->debug >= level)) {
-        /*
-         * Pull the arguments from the stack and invoke
-         * the logger function
-         */
-        va_start(arguments, format);
-        vsnprintf(tmp, ACVP_LOG_MAX_MSG_LEN + 2, format, arguments);
-        //Check the last actual char - if its not \0, then we should indicate truncated output
-        if (tmp[ACVP_LOG_MAX_MSG_LEN] != '\0') {
-            memcpy_s(tmp + ACVP_LOG_MAX_MSG_LEN - ACVP_LOG_TRUNCATED_STR_LEN, 
+
+    if (!ctx) {
+        return;
+    }
+
+    if (ctx->debug) {
+        iter = snprintf(tmp, ACVP_LOG_MAX_MSG_LEN, "[%s:%d]: ", func, line);
+    }
+
+    if (ctx->test_progress_cb && (ctx->log_lvl >= level)) {
+        /*  Pull the arguments from the stack and invoke the logger function */
+        va_start(arguments, fmt);
+        ret = vsnprintf(tmp + iter, ACVP_LOG_MAX_MSG_LEN + 1 - iter, fmt, arguments);
+        if (ret < 0 || ret >= ACVP_LOG_MAX_MSG_LEN + 1 - iter) {
+            memcpy_s(tmp + ACVP_LOG_MAX_MSG_LEN - ACVP_LOG_TRUNCATED_STR_LEN,
                      ACVP_LOG_TRUNCATED_STR_LEN,
                      ACVP_LOG_TRUNCATED_STR, ACVP_LOG_TRUNCATED_STR_LEN);
             tmp[ACVP_LOG_MAX_MSG_LEN] = '\0';
-
+        } else {
+            iter += ret;
+            tmp[iter] = '\0';
         }
-        ctx->test_progress_cb(tmp);
+        ctx->test_progress_cb(tmp, level);
         va_end(arguments);
         fflush(stdout);
     }
@@ -62,7 +77,7 @@ void acvp_log_msg(ACVP_CTX *ctx, ACVP_LOG_LVL level, const char *format, ...) {
  */
 void acvp_log_newline(ACVP_CTX *ctx) {
      char tmp[] = "\n";
-     ctx->test_progress_cb(tmp);
+     ctx->test_progress_cb(tmp, ACVP_LOG_LVL_STATUS);
  }
 
 /*!
@@ -576,7 +591,7 @@ ACVP_EC_CURVE acvp_lookup_ec_curve(ACVP_CIPHER cipher, const char *name) {
     return 0;
 }
 
-static struct acvp_aux_function_info acvp_aux_function_tbl[] = {
+static struct acvp_function_info acvp_aux_function_tbl[] = {
     { ACVP_HASH_SHA224, ACVP_ALG_SHA224 },
     { ACVP_HASH_SHA256, ACVP_ALG_SHA256 },
     { ACVP_HASH_SHA384, ACVP_ALG_SHA384 },
@@ -596,9 +611,11 @@ static struct acvp_aux_function_info acvp_aux_function_tbl[] = {
     { ACVP_HMAC_SHA3_224, ACVP_ALG_HMAC_SHA3_224 },
     { ACVP_HMAC_SHA3_256, ACVP_ALG_HMAC_SHA3_256 },
     { ACVP_HMAC_SHA3_384, ACVP_ALG_HMAC_SHA3_384 },
-    { ACVP_HMAC_SHA3_512, ACVP_ALG_HMAC_SHA3_512 }
+    { ACVP_HMAC_SHA3_512, ACVP_ALG_HMAC_SHA3_512 },
+    { ACVP_KMAC_128, ACVP_ALG_KMAC_128 },
+    { ACVP_KMAC_256, ACVP_ALG_KMAC_256 }
 };
-static int acvp_aux_function_tbl_len = sizeof(acvp_aux_function_tbl) / sizeof(struct acvp_aux_function_info);
+static int acvp_aux_function_tbl_len = sizeof(acvp_aux_function_tbl) / sizeof(struct acvp_function_info);
 
 const char* acvp_lookup_aux_function_alg_str(ACVP_CIPHER alg) {
     int i = 0;
@@ -621,35 +638,94 @@ ACVP_CIPHER acvp_lookup_aux_function_alg_tbl(const char *str) {
     return 0;
 }
 
-const char* acvp_lookup_hmac_alg_str(ACVP_HMAC_ALG_VAL alg) {
-    switch(alg) {
-        case ACVP_HMAC_ALG_SHA1:
-            return ACVP_STR_SHA_1;
-        case ACVP_HMAC_ALG_SHA224:
-            return ACVP_STR_SHA2_224;
-        case ACVP_HMAC_ALG_SHA256:
-            return ACVP_STR_SHA2_256;
-        case ACVP_HMAC_ALG_SHA384:
-            return ACVP_STR_SHA2_384;
-        case ACVP_HMAC_ALG_SHA512:
-            return ACVP_STR_SHA2_512;
-        case ACVP_HMAC_ALG_SHA512_224:
-            return ACVP_STR_SHA2_512_224;
-        case ACVP_HMAC_ALG_SHA512_256:
-            return ACVP_STR_SHA2_512_256;
-        case ACVP_HMAC_ALG_SHA3_224:
-            return ACVP_STR_SHA3_224;
-        case ACVP_HMAC_ALG_SHA3_256:
-            return ACVP_STR_SHA3_256;
-        case ACVP_HMAC_ALG_SHA3_384:
-            return ACVP_STR_SHA3_384;
-        case ACVP_HMAC_ALG_SHA3_512:
-            return ACVP_STR_SHA3_512;
-        case ACVP_HMAC_ALG_MIN:
-        case ACVP_HMAC_ALG_MAX:
-        default:
-            return NULL;
+#define ACVP_LMS_MODE_STR_MAX 64 /* arbitrary */
+
+static struct acvp_enum_string_pair lms_mode_tbl[] = {
+    { ACVP_LMS_MODE_SHA256_M24_H5, "LMS_SHA256_M24_H5"},
+    { ACVP_LMS_MODE_SHA256_M24_H10, "LMS_SHA256_M24_H10"},
+    { ACVP_LMS_MODE_SHA256_M24_H15, "LMS_SHA256_M24_H15"},
+    { ACVP_LMS_MODE_SHA256_M24_H20, "LMS_SHA256_M24_H20"},
+    { ACVP_LMS_MODE_SHA256_M24_H25, "LMS_SHA256_M24_H25"},
+    { ACVP_LMS_MODE_SHA256_M32_H5, "LMS_SHA256_M32_H5"},
+    { ACVP_LMS_MODE_SHA256_M32_H10, "LMS_SHA256_M32_H10"},
+    { ACVP_LMS_MODE_SHA256_M32_H15, "LMS_SHA256_M32_H15"},
+    { ACVP_LMS_MODE_SHA256_M32_H20, "LMS_SHA256_M32_H20"},
+    { ACVP_LMS_MODE_SHA256_M32_H25, "LMS_SHA256_M32_H25"},
+    { ACVP_LMS_MODE_SHAKE_M24_H5, "LMS_SHAKE_M24_H5"},
+    { ACVP_LMS_MODE_SHAKE_M24_H10, "LMS_SHAKE_M24_H10"},
+    { ACVP_LMS_MODE_SHAKE_M24_H15, "LMS_SHAKE_M24_H15"},
+    { ACVP_LMS_MODE_SHAKE_M24_H20, "LMS_SHAKE_M24_H20"},
+    { ACVP_LMS_MODE_SHAKE_M24_H25, "LMS_SHAKE_M24_H25"},
+    { ACVP_LMS_MODE_SHAKE_M32_H5, "LMS_SHAKE_M32_H5"},
+    { ACVP_LMS_MODE_SHAKE_M32_H10, "LMS_SHAKE_M32_H10"},
+    { ACVP_LMS_MODE_SHAKE_M32_H15, "LMS_SHAKE_M32_H15"},
+    { ACVP_LMS_MODE_SHAKE_M32_H20, "LMS_SHAKE_M32_H20"},
+    { ACVP_LMS_MODE_SHAKE_M32_H25, "LMS_SHAKE_M32_H25"}
+};
+
+static int lms_mode_tbl_len = sizeof(lms_mode_tbl) / sizeof(struct acvp_enum_string_pair);
+
+ACVP_LMS_MODE acvp_lookup_lms_mode(const char *str) {
+    int diff = 1, i = 0;
+    for (i = 0; i < lms_mode_tbl_len; i++) {
+        strcmp_s(lms_mode_tbl[i].string, strnlen_s(lms_mode_tbl[i].string, ACVP_LMS_MODE_STR_MAX), str, &diff);
+        if (!diff) {
+            return lms_mode_tbl[i].enum_value;
+        }
     }
+    return 0;
+}
+
+const char *acvp_lookup_lms_mode_str(ACVP_LMS_MODE mode) {
+    int i = 0;
+    for (i = 0; i < lms_mode_tbl_len; i++) {
+        if (mode == lms_mode_tbl[i].enum_value) {
+            return lms_mode_tbl[i].string;
+        }
+    }
+    return NULL;
+}
+
+static struct acvp_enum_string_pair lmots_mode_tbl[] = {
+    { ACVP_LMOTS_MODE_SHA256_N24_W1, "LMOTS_SHA256_N24_W1" },
+    { ACVP_LMOTS_MODE_SHA256_N24_W2, "LMOTS_SHA256_N24_W2" },
+    { ACVP_LMOTS_MODE_SHA256_N24_W4, "LMOTS_SHA256_N24_W4" },
+    { ACVP_LMOTS_MODE_SHA256_N24_W8, "LMOTS_SHA256_N24_W8" },
+    { ACVP_LMOTS_MODE_SHA256_N32_W1, "LMOTS_SHA256_N32_W1" },
+    { ACVP_LMOTS_MODE_SHA256_N32_W2, "LMOTS_SHA256_N32_W2" },
+    { ACVP_LMOTS_MODE_SHA256_N32_W4, "LMOTS_SHA256_N32_W4" },
+    { ACVP_LMOTS_MODE_SHA256_N32_W8, "LMOTS_SHA256_N32_W8" },
+    { ACVP_LMOTS_MODE_SHAKE_N24_W1, "LMOTS_SHAKE_N24_W1" },
+    { ACVP_LMOTS_MODE_SHAKE_N24_W2, "LMOTS_SHAKE_N24_W2" },
+    { ACVP_LMOTS_MODE_SHAKE_N24_W4, "LMOTS_SHAKE_N24_W4" },
+    { ACVP_LMOTS_MODE_SHAKE_N24_W8, "LMOTS_SHAKE_N24_W8" },
+    { ACVP_LMOTS_MODE_SHAKE_N32_W1, "LMOTS_SHAKE_N32_W1" },
+    { ACVP_LMOTS_MODE_SHAKE_N32_W2, "LMOTS_SHAKE_N32_W2" },
+    { ACVP_LMOTS_MODE_SHAKE_N32_W4, "LMOTS_SHAKE_N32_W4" },
+    { ACVP_LMOTS_MODE_SHAKE_N32_W8, "LMOTS_SHAKE_N32_W8" }
+};
+
+static int lmots_mode_tbl_len = sizeof(lmots_mode_tbl) / sizeof(struct acvp_enum_string_pair);
+
+ACVP_LMOTS_MODE acvp_lookup_lmots_mode(const char *str) {
+    int diff = 1, i = 0;
+    for (i = 0; i < lmots_mode_tbl_len; i++) {
+        strcmp_s(lmots_mode_tbl[i].string, strnlen_s(lmots_mode_tbl[i].string, ACVP_LMS_MODE_STR_MAX), str, &diff);
+        if (!diff) {
+            return lmots_mode_tbl[i].enum_value;
+        }
+    }
+    return 0;
+}
+
+const char *acvp_lookup_lmots_mode_str(ACVP_LMOTS_MODE mode) {
+    int i = 0;
+    for (i = 0; i < lmots_mode_tbl_len; i++) {
+        if (mode == lmots_mode_tbl[i].enum_value) {
+            return lmots_mode_tbl[i].string;
+        }
+    }
+    return NULL;
 }
 
 /*
@@ -662,11 +738,11 @@ ACVP_RESULT acvp_bin_to_hexstr(const unsigned char *src, int src_len, char *dest
     unsigned char hex_chars[] = "0123456789ABCDEF";
 
     if (!src || !dest) {
-        return ACVP_MISSING_ARG;
+        return ACVP_CONVERT_DATA_ERR;
     }
 
     if ((src_len * 2) > dest_max) {
-        return ACVP_DATA_TOO_LARGE;
+        return ACVP_CONVERT_DATA_ERR;
     }
 
     for (i = 0, j = 0; i < src_len; i++, j += 2) {
@@ -752,38 +828,98 @@ static int acvp_char_to_int(char ch) {
     return ch_i;
 }
 
-/*
- * This function is used to locate the callback function that's needed
- * when a particular crypto operation is needed by libacvp.
- */
-ACVP_DRBG_CAP_MODE_LIST *acvp_locate_drbg_mode_entry(ACVP_CAPS_LIST *cap, ACVP_DRBG_MODE mode) {
-    ACVP_DRBG_CAP_MODE_LIST *cap_mode_list;
-    ACVP_DRBG_CAP_MODE *cap_mode;
-    ACVP_DRBG_CAP *drbg_cap;
+ACVP_DRBG_MODE_LIST *acvp_locate_drbg_mode_entry(ACVP_CAPS_LIST *cap, ACVP_DRBG_MODE mode) {
+    ACVP_DRBG_MODE_LIST *cap_mode = NULL;
+    ACVP_DRBG_CAP *drbg_cap = NULL;
 
     drbg_cap = cap->cap.drbg_cap;
 
-    /*
-     * No entires yet
-     */
-    cap_mode_list = drbg_cap->drbg_cap_mode_list;
-    if (!cap_mode_list) {
-        return NULL;
-    }
+    /* No entires yet */
+    cap_mode = drbg_cap->drbg_cap_mode;
 
-    cap_mode = &cap_mode_list->cap_mode;
-    if (!cap_mode) {
-        return NULL;
-    }
-
-    while (cap_mode_list) {
+    while (cap_mode) {
         if (cap_mode->mode == mode) {
-            return cap_mode_list;
+            return cap_mode;
         }
-        cap_mode_list = cap_mode_list->next;
-        cap_mode = &cap_mode_list->cap_mode;
+        cap_mode = cap_mode->next;
     }
     return NULL;
+}
+
+ACVP_DRBG_MODE_LIST *acvp_create_drbg_mode_entry(ACVP_CAPS_LIST *cap, ACVP_DRBG_MODE mode) {
+    ACVP_DRBG_MODE_LIST *entry = NULL, *list = NULL;
+
+    if (acvp_locate_drbg_mode_entry(cap, mode) != NULL) {
+        return NULL;
+    }
+
+    entry = calloc(1, sizeof(ACVP_DRBG_MODE_LIST));
+    if (!entry) {
+        return NULL;
+    }
+
+    entry->mode = mode;
+
+    list = cap->cap.drbg_cap->drbg_cap_mode;
+    if (!list) {
+        cap->cap.drbg_cap->drbg_cap_mode = entry;
+    } else {
+        while (list->next) {
+            list = list->next;
+        }
+        list->next = entry;
+    }
+
+    return entry;
+}
+
+ACVP_DRBG_CAP_GROUP *acvp_locate_drbg_group_entry(ACVP_DRBG_MODE_LIST *mode, int group) {
+    ACVP_DRBG_GROUP_LIST *list = NULL;
+
+    list = mode->groups;
+    while (list) {
+        if (group == list->id) {
+            return list->group;
+        }
+        list = list->next;
+    }
+
+    return NULL;
+}
+
+
+ACVP_DRBG_CAP_GROUP *acvp_create_drbg_group(ACVP_DRBG_MODE_LIST *mode, int group) {
+    ACVP_DRBG_GROUP_LIST *entry = NULL, *list = NULL;
+    ACVP_DRBG_CAP_GROUP *grp = NULL;
+
+    if (acvp_locate_drbg_group_entry(mode, group) != NULL) {
+        return NULL;
+    }
+
+    entry = calloc(1, sizeof(ACVP_DRBG_GROUP_LIST));
+    if (!entry) {
+        return NULL;
+    }
+    grp = calloc(1, sizeof(ACVP_DRBG_CAP_GROUP));
+    if (!grp) {
+        free(entry);
+        return NULL;
+    }
+
+    entry->id = group;
+    entry->group = grp;
+
+    list = mode->groups;
+    if (!list) {
+        mode->groups = entry;
+    } else {
+        while (list->next) {
+            list = list->next;
+        }
+        list->next = entry;
+    }
+
+    return grp;
 }
 
 /*
@@ -793,7 +929,6 @@ ACVP_DRBG_CAP_MODE_LIST *acvp_locate_drbg_mode_entry(ACVP_CAPS_LIST *cap, ACVP_D
  * returns ACVP_SUCCESS or ACVP_JSON_ERR
  */
 ACVP_RESULT acvp_create_array(JSON_Object **obj, JSON_Value **val, JSON_Array **arry) {
-    ACVP_RESULT result = ACVP_SUCCESS;
     JSON_Value *reg_arry_val = NULL;
     JSON_Object *reg_obj = NULL;
     JSON_Value *ver_val = NULL;
@@ -801,19 +936,31 @@ ACVP_RESULT acvp_create_array(JSON_Object **obj, JSON_Value **val, JSON_Array **
     JSON_Array *reg_arry = NULL;
 
     reg_arry_val = json_value_init_array();
+    if (!reg_arry_val) {
+        return ACVP_JSON_ERR;
+    }
+
     reg_obj = json_value_get_object(reg_arry_val);
     reg_arry = json_array((const JSON_Value *)reg_arry_val);
+    if (!reg_arry) {
+        return ACVP_JSON_ERR;
+    }
 
     ver_val = json_value_init_object();
     ver_obj = json_value_get_object(ver_val);
+    if (!ver_obj) {
+        return ACVP_JSON_ERR;
+    }
 
     json_object_set_string(ver_obj, "acvVersion", ACVP_VERSION);
-    json_array_append_value(reg_arry, ver_val);
+    if (json_array_append_value(reg_arry, ver_val) != JSONSuccess) {
+        return ACVP_JSON_ERR;
+    }
 
     *obj = reg_obj;
     *val = reg_arry_val;
     *arry = reg_arry;
-    return result;
+    return ACVP_SUCCESS;
 }
 
 /*
@@ -826,7 +973,6 @@ const char *acvp_lookup_error_string(ACVP_RESULT rv) {
         { ACVP_MALLOC_FAIL,        "Error allocating memory"                          },
         { ACVP_NO_CTX,             "No valid context found"                           },
         { ACVP_TRANSPORT_FAIL,     "Error using transport library"                    },
-        { ACVP_JSON_ERR,           "Error using JSON library"                         },
         { ACVP_NO_DATA,            "Trying to use data but none was found"            },
         { ACVP_UNSUPPORTED_OP,     "Unsupported operation"                            },
         { ACVP_CLEANUP_FAIL,       "Error cleaning up ACVP context"                   },
@@ -834,16 +980,20 @@ const char *acvp_lookup_error_string(ACVP_RESULT rv) {
         { ACVP_INVALID_ARG,        "Invalid argument"                                 },
         { ACVP_MISSING_ARG,        "Missing a required argument"                      },
         { ACVP_CRYPTO_MODULE_FAIL, "Error from crypto module processing a vector set" },
-        { ACVP_CRYPTO_TAG_FAIL,    "Error from crypto module processing a vector set" },
-        { ACVP_CRYPTO_WRAP_FAIL,   "Error from crypto module processing a vector set" },
-        { ACVP_NO_TOKEN,           "Error using JWT"                                  },
         { ACVP_NO_CAP,             "No matching capability found"                     },
         { ACVP_MALFORMED_JSON,     "Unable to process JSON"                           },
+        { ACVP_JSON_ERR,           "Error using JSON library"                         },
+        { ACVP_TC_MISSING_DATA,    "Provided test case is missing required data"      },
+        { ACVP_TC_INVALID_DATA,    "Provided test case has invalid data"              },
         { ACVP_DATA_TOO_LARGE,     "Data too large"                                   },
+        { ACVP_CONVERT_DATA_ERR,   "Failed converting data between hex/binary"        },
         { ACVP_DUP_CIPHER,         "Duplicate cipher, may have already registered"    },
-        { ACVP_TOTP_DECODE_FAIL,   "Failed to base64 decode TOTP seed"                },
-        { ACVP_TOTP_MISSING_SEED,  "Missing TOTP seed"                                },
-        { ACVP_DUPLICATE_CTX,      "ctx already initialized"                          }
+        { ACVP_TOTP_FAIL,          "Failed to base64 decode TOTP seed"                },
+        { ACVP_CTX_NOT_EMPTY,      "ctx already initialized"                          },
+        { ACVP_JWT_MISSING,        "Error using JWT"                                  },
+        { ACVP_JWT_EXPIRED,        "Provided JWT has expired"                         },
+        { ACVP_JWT_INVALID,        "Proivded JWT is not valid"                        },
+        { ACVP_INTERNAL_ERR,       "Unexpected error occured internally"              }
     };
 
     for (i = 0; i < ACVP_RESULT_MAX - 1; i++) {
@@ -920,16 +1070,24 @@ ACVP_RESULT acvp_setup_json_rsp_group(ACVP_CTX **ctx,
         json_value_free((*ctx)->kat_resp);
     }
     (*ctx)->kat_resp = *outer_arr_val;
+
     *r_vs_val = json_value_init_object();
     *r_vs = json_value_get_object(*r_vs_val);
+    if (!*r_vs) {
+        return ACVP_JSON_ERR;
+    } 
 
-    json_object_set_number(*r_vs, "vsId", (*ctx)->vs_id);
-    json_object_set_string(*r_vs, "algorithm", alg_str);
-    /*
-     * create an array of response test groups
-     */
+    if (json_object_set_number(*r_vs, "vsId", (*ctx)->vs_id) != JSONSuccess ||
+            json_object_set_string(*r_vs, "algorithm", alg_str) != JSONSuccess) {
+        return ACVP_JSON_ERR;
+    }
+
+    /* create an array of response test groups */
     json_object_set_value(*r_vs, "testGroups", json_value_init_array());
     (*groups_arr) = json_object_get_array(*r_vs, "testGroups");
+    if (!*groups_arr) {
+        return ACVP_JSON_ERR;
+    }
 
     return ACVP_SUCCESS;
 }
@@ -1018,6 +1176,41 @@ void acvp_free_str_list(ACVP_STRING_LIST **list) {
 }
 
 /**
+ * Simple utility function to add an entry to a SL list. if the list is NULL, it is created
+ * with the given entry being the first one.
+ */
+ACVP_RESULT acvp_append_sl_list(ACVP_SL_LIST **list, int length) {
+    ACVP_SL_LIST *current = NULL;
+    if (!list) {
+        return ACVP_NO_DATA;
+    }
+    
+    if (*list == NULL) {
+        *list = calloc(1, sizeof(ACVP_SL_LIST));
+        if (!*list) {
+            return ACVP_MALLOC_FAIL;
+        }
+        (*list)->length = length;
+        return ACVP_SUCCESS;
+    }
+    current = *list;
+    while (current) {
+        if (!current->next) {
+            current->next = calloc(1, sizeof(ACVP_SL_LIST));
+            if (!current->next) {
+                return ACVP_MALLOC_FAIL;
+            }
+            current->next->length = length;
+            return ACVP_SUCCESS;
+        }
+        current = current->next;
+    }
+
+    /* Code should never reach here */
+    return ACVP_UNSUPPORTED_OP;
+}
+
+/**
  * Simple utility function to add an entry to a param list. if the list is NULL, it is created
  * with the given entry being the first one.
  */
@@ -1049,7 +1242,7 @@ ACVP_RESULT acvp_append_param_list(ACVP_PARAM_LIST **list, int param) {
     }
 
     /* Code should never reach here */
-    return ACVP_UNSUPPORTED_OP;
+    return ACVP_INTERNAL_ERR;
 }
 
 /**
@@ -1282,5 +1475,13 @@ end:
     }
     json_free_serialized_string(serialized_string);
     return return_code;
+}
+
+void acvp_sleep(int seconds) {
+#ifdef _WIN32
+    Sleep(seconds * 1000);
+#else
+    sleep(seconds);
+#endif
 }
 

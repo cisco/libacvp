@@ -90,8 +90,7 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 noinst_PROGRAMS = runtest$(EXEEXT)
-@USE_LDL_CHECK_TRUE@am__append_1 = -ldl
-@LIB_NOT_SUPPORTED_FALSE@am__append_2 = create_session.c \
+@LIB_NOT_SUPPORTED_FALSE@am__append_1 = create_session.c \
 @LIB_NOT_SUPPORTED_FALSE@      test_acvp_utils.c \
 @LIB_NOT_SUPPORTED_FALSE@      test_acvp_drbg.c \
 @LIB_NOT_SUPPORTED_FALSE@      test_acvp_dsa.c \
@@ -124,11 +123,12 @@ noinst_PROGRAMS = runtest$(EXEEXT)
 @LIB_NOT_SUPPORTED_FALSE@      test_acvp_kts_ifc.c \
 @LIB_NOT_SUPPORTED_FALSE@      test_acvp_kas_ffc.c \
 @LIB_NOT_SUPPORTED_FALSE@      test_acvp_safe_primes.c \
-@LIB_NOT_SUPPORTED_FALSE@      test_acvp_kda.c 
+@LIB_NOT_SUPPORTED_FALSE@      test_acvp_kda.c \
+@LIB_NOT_SUPPORTED_FALSE@      test_acvp_kmac.c
 
-@LIB_NOT_SUPPORTED_FALSE@am__append_3 = $(LIBCURL_CFLAGS)
-@LIB_NOT_SUPPORTED_FALSE@am__append_4 = $(LIBCURL_LDFLAGS)
-@APP_NOT_SUPPORTED_FALSE@am__append_5 = app_common.c \
+@LIB_NOT_SUPPORTED_FALSE@am__append_2 = $(LIBCURL_CFLAGS)
+@LIB_NOT_SUPPORTED_FALSE@am__append_3 = $(LIBCURL_LDFLAGS)
+@APP_NOT_SUPPORTED_FALSE@am__append_4 = app_common.c \
 @APP_NOT_SUPPORTED_FALSE@      test_app_aes.c \
 @APP_NOT_SUPPORTED_FALSE@      test_app_cmac.c \
 @APP_NOT_SUPPORTED_FALSE@      test_app_des.c \
@@ -142,12 +142,13 @@ noinst_PROGRAMS = runtest$(EXEEXT)
 @APP_NOT_SUPPORTED_FALSE@      test_app_rsa_sig.c \
 @APP_NOT_SUPPORTED_FALSE@      test_app_sha.c \
 @APP_NOT_SUPPORTED_FALSE@      test_app_safe_primes.c \
-@APP_NOT_SUPPORTED_FALSE@      test_app_kda.c
+@APP_NOT_SUPPORTED_FALSE@      test_app_kda.c \
+@APP_NOT_SUPPORTED_FALSE@      test_app_kmac.c
 
-@APP_NOT_SUPPORTED_FALSE@am__append_6 = $(SSL_CFLAGS) $(FOM_CFLAGS) -I../app
-@APP_NOT_SUPPORTED_FALSE@am__append_7 = $(SSL_LDFLAGS) $(FOM_LDFLAGS)
-@APP_NOT_SUPPORTED_FALSE@@USE_FOM_TRUE@am__append_8 = $(FOM_OBJ_DIR)/fipscanister.o
-@APP_NOT_SUPPORTED_FALSE@am__append_9 = app_common.h
+@APP_NOT_SUPPORTED_FALSE@am__append_5 = $(SSL_CFLAGS) $(FOM_CFLAGS) -I../app
+@APP_NOT_SUPPORTED_FALSE@am__append_6 = $(SSL_LDFLAGS) $(FOM_LDFLAGS)
+@APP_NOT_SUPPORTED_FALSE@@USE_FOM_OBJ_TRUE@am__append_7 = $(FOM_OBJ_DIR)/fipscanister.o
+@APP_NOT_SUPPORTED_FALSE@am__append_8 = app_common.h
 subdir = test
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/libtool.m4 \
@@ -176,12 +177,12 @@ am__runtest_SOURCES_DIST = ut_common.c create_session.c \
 	test_acvp_transport.c test_acvp_operating_env.c \
 	test_acvp_ecdsa.c test_acvp_kas_ecc.c test_acvp_kas_ifc.c \
 	test_acvp_kts_ifc.c test_acvp_kas_ffc.c \
-	test_acvp_safe_primes.c test_acvp_kda.c app_common.c \
-	test_app_aes.c test_app_cmac.c test_app_des.c test_app_drbg.c \
-	test_app_ecdsa.c test_app_hmac.c test_app_kas_ecc.c \
-	test_app_kas_ffc.c test_app_kas_ifc.c test_app_rsa_keygen.c \
-	test_app_rsa_sig.c test_app_sha.c test_app_safe_primes.c \
-	test_app_kda.c
+	test_acvp_safe_primes.c test_acvp_kda.c test_acvp_kmac.c \
+	app_common.c test_app_aes.c test_app_cmac.c test_app_des.c \
+	test_app_drbg.c test_app_ecdsa.c test_app_hmac.c \
+	test_app_kas_ecc.c test_app_kas_ffc.c test_app_kas_ifc.c \
+	test_app_rsa_keygen.c test_app_rsa_sig.c test_app_sha.c \
+	test_app_safe_primes.c test_app_kda.c test_app_kmac.c
 @LIB_NOT_SUPPORTED_FALSE@am__objects_1 =  \
 @LIB_NOT_SUPPORTED_FALSE@	runtest-create_session.$(OBJEXT) \
 @LIB_NOT_SUPPORTED_FALSE@	runtest-test_acvp_utils.$(OBJEXT) \
@@ -216,7 +217,8 @@ am__runtest_SOURCES_DIST = ut_common.c create_session.c \
 @LIB_NOT_SUPPORTED_FALSE@	runtest-test_acvp_kts_ifc.$(OBJEXT) \
 @LIB_NOT_SUPPORTED_FALSE@	runtest-test_acvp_kas_ffc.$(OBJEXT) \
 @LIB_NOT_SUPPORTED_FALSE@	runtest-test_acvp_safe_primes.$(OBJEXT) \
-@LIB_NOT_SUPPORTED_FALSE@	runtest-test_acvp_kda.$(OBJEXT)
+@LIB_NOT_SUPPORTED_FALSE@	runtest-test_acvp_kda.$(OBJEXT) \
+@LIB_NOT_SUPPORTED_FALSE@	runtest-test_acvp_kmac.$(OBJEXT)
 @APP_NOT_SUPPORTED_FALSE@am__objects_2 = runtest-app_common.$(OBJEXT) \
 @APP_NOT_SUPPORTED_FALSE@	runtest-test_app_aes.$(OBJEXT) \
 @APP_NOT_SUPPORTED_FALSE@	runtest-test_app_cmac.$(OBJEXT) \
@@ -231,12 +233,13 @@ am__runtest_SOURCES_DIST = ut_common.c create_session.c \
 @APP_NOT_SUPPORTED_FALSE@	runtest-test_app_rsa_sig.$(OBJEXT) \
 @APP_NOT_SUPPORTED_FALSE@	runtest-test_app_sha.$(OBJEXT) \
 @APP_NOT_SUPPORTED_FALSE@	runtest-test_app_safe_primes.$(OBJEXT) \
-@APP_NOT_SUPPORTED_FALSE@	runtest-test_app_kda.$(OBJEXT)
+@APP_NOT_SUPPORTED_FALSE@	runtest-test_app_kda.$(OBJEXT) \
+@APP_NOT_SUPPORTED_FALSE@	runtest-test_app_kmac.$(OBJEXT)
 am_runtest_OBJECTS = runtest-ut_common.$(OBJEXT) $(am__objects_1) \
 	$(am__objects_2)
 runtest_OBJECTS = $(am_runtest_OBJECTS)
 @APP_NOT_SUPPORTED_FALSE@runtest_DEPENDENCIES = $(APP_LINK) \
-@APP_NOT_SUPPORTED_FALSE@	$(am__append_8)
+@APP_NOT_SUPPORTED_FALSE@	$(am__append_7)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
@@ -285,6 +288,7 @@ am__depfiles_remade = ./$(DEPDIR)/runtest-app_common.Po \
 	./$(DEPDIR)/runtest-test_acvp_kdf135_x963.Po \
 	./$(DEPDIR)/runtest-test_acvp_kdf_tls12.Po \
 	./$(DEPDIR)/runtest-test_acvp_kdf_tls13.Po \
+	./$(DEPDIR)/runtest-test_acvp_kmac.Po \
 	./$(DEPDIR)/runtest-test_acvp_kts_ifc.Po \
 	./$(DEPDIR)/runtest-test_acvp_operating_env.Po \
 	./$(DEPDIR)/runtest-test_acvp_pbkdf.Po \
@@ -304,6 +308,7 @@ am__depfiles_remade = ./$(DEPDIR)/runtest-app_common.Po \
 	./$(DEPDIR)/runtest-test_app_kas_ffc.Po \
 	./$(DEPDIR)/runtest-test_app_kas_ifc.Po \
 	./$(DEPDIR)/runtest-test_app_kda.Po \
+	./$(DEPDIR)/runtest-test_app_kmac.Po \
 	./$(DEPDIR)/runtest-test_app_rsa_keygen.Po \
 	./$(DEPDIR)/runtest-test_app_rsa_sig.Po \
 	./$(DEPDIR)/runtest-test_app_safe_primes.Po \
@@ -387,6 +392,7 @@ CTAGS = ctags
 am__DIST_COMMON = $(srcdir)/Makefile.in $(top_srcdir)/config/depcomp
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 ACLOCAL = @ACLOCAL@
+ADDL_LIB_DEPENDENCIES = @ADDL_LIB_DEPENDENCIES@
 AMTAR = @AMTAR@
 AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
 AR = @AR@
@@ -398,6 +404,7 @@ CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
 CLEANFILES = @CLEANFILES@
+COND_ALG_CFLAGS = @COND_ALG_CFLAGS@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
 CRITERION_CFLAGS = @CRITERION_CFLAGS@
@@ -516,12 +523,12 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-runtest_SOURCES = ut_common.c $(am__append_2) $(am__append_5)
+runtest_SOURCES = ut_common.c $(am__append_1) $(am__append_4)
 tmp_cflags = -g -O0 -Wall -DNO_SSL_DL $(SAFEC_CFLAGS) \
 	$(CRITERION_CFLAGS) $(LIBACVP_CFLAGS) -I../include \
-	$(am__append_3) $(am__append_6)
+	$(am__append_2) $(am__append_5)
 tmp_ldflags = $(CRITERION_LDFLAGS) $(SAFEC_LDFLAGS) $(LIBACVP_LDFLAGS) \
-	$(am__append_1) $(am__append_4) $(am__append_7)
+	$(am__append_3) $(am__append_6)
 @APP_NOT_SUPPORTED_FALSE@APP_LINK = ../app/acvp_app-app_utils.o \
 @APP_NOT_SUPPORTED_FALSE@           ../app/acvp_app-app_sha.o \
 @APP_NOT_SUPPORTED_FALSE@           ../app/acvp_app-app_hmac.o \
@@ -534,13 +541,14 @@ tmp_ldflags = $(CRITERION_LDFLAGS) $(SAFEC_LDFLAGS) $(LIBACVP_LDFLAGS) \
 @APP_NOT_SUPPORTED_FALSE@           ../app/acvp_app-app_rsa.o \
 @APP_NOT_SUPPORTED_FALSE@           ../app/acvp_app-app_ecdsa.o \
 @APP_NOT_SUPPORTED_FALSE@           ../app/acvp_app-app_drbg.o \
-@APP_NOT_SUPPORTED_FALSE@           ../app/acvp_app-app_kda.o
+@APP_NOT_SUPPORTED_FALSE@           ../app/acvp_app-app_kda.o \
+@APP_NOT_SUPPORTED_FALSE@           ../app/acvp_app-app_kmac.o
 
 runtest_CFLAGS = ${tmp_cflags}
 runtest_LDFLAGS = ${tmp_ldflags}
-@APP_NOT_SUPPORTED_FALSE@runtest_LDADD = $(APP_LINK) $(am__append_8)
+@APP_NOT_SUPPORTED_FALSE@runtest_LDADD = $(APP_LINK) $(am__append_7)
 runtestdir = 
-runtest_HEADERS = ut_common.h $(am__append_9)
+runtest_HEADERS = ut_common.h $(am__append_8)
 all: all-am
 
 .SUFFIXES:
@@ -620,6 +628,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtest-test_acvp_kdf135_x963.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtest-test_acvp_kdf_tls12.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtest-test_acvp_kdf_tls13.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtest-test_acvp_kmac.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtest-test_acvp_kts_ifc.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtest-test_acvp_operating_env.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtest-test_acvp_pbkdf.Po@am__quote@ # am--include-marker
@@ -639,6 +648,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtest-test_app_kas_ffc.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtest-test_app_kas_ifc.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtest-test_app_kda.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtest-test_app_kmac.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtest-test_app_rsa_keygen.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtest-test_app_rsa_sig.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtest-test_app_safe_primes.Po@am__quote@ # am--include-marker
@@ -1165,6 +1175,20 @@ runtest-test_acvp_kda.obj: test_acvp_kda.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o runtest-test_acvp_kda.obj `if test -f 'test_acvp_kda.c'; then $(CYGPATH_W) 'test_acvp_kda.c'; else $(CYGPATH_W) '$(srcdir)/test_acvp_kda.c'; fi`
 
+runtest-test_acvp_kmac.o: test_acvp_kmac.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT runtest-test_acvp_kmac.o -MD -MP -MF $(DEPDIR)/runtest-test_acvp_kmac.Tpo -c -o runtest-test_acvp_kmac.o `test -f 'test_acvp_kmac.c' || echo '$(srcdir)/'`test_acvp_kmac.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/runtest-test_acvp_kmac.Tpo $(DEPDIR)/runtest-test_acvp_kmac.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_acvp_kmac.c' object='runtest-test_acvp_kmac.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o runtest-test_acvp_kmac.o `test -f 'test_acvp_kmac.c' || echo '$(srcdir)/'`test_acvp_kmac.c
+
+runtest-test_acvp_kmac.obj: test_acvp_kmac.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT runtest-test_acvp_kmac.obj -MD -MP -MF $(DEPDIR)/runtest-test_acvp_kmac.Tpo -c -o runtest-test_acvp_kmac.obj `if test -f 'test_acvp_kmac.c'; then $(CYGPATH_W) 'test_acvp_kmac.c'; else $(CYGPATH_W) '$(srcdir)/test_acvp_kmac.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/runtest-test_acvp_kmac.Tpo $(DEPDIR)/runtest-test_acvp_kmac.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_acvp_kmac.c' object='runtest-test_acvp_kmac.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o runtest-test_acvp_kmac.obj `if test -f 'test_acvp_kmac.c'; then $(CYGPATH_W) 'test_acvp_kmac.c'; else $(CYGPATH_W) '$(srcdir)/test_acvp_kmac.c'; fi`
+
 runtest-app_common.o: app_common.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT runtest-app_common.o -MD -MP -MF $(DEPDIR)/runtest-app_common.Tpo -c -o runtest-app_common.o `test -f 'app_common.c' || echo '$(srcdir)/'`app_common.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/runtest-app_common.Tpo $(DEPDIR)/runtest-app_common.Po
@@ -1375,6 +1399,20 @@ runtest-test_app_kda.obj: test_app_kda.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o runtest-test_app_kda.obj `if test -f 'test_app_kda.c'; then $(CYGPATH_W) 'test_app_kda.c'; else $(CYGPATH_W) '$(srcdir)/test_app_kda.c'; fi`
 
+runtest-test_app_kmac.o: test_app_kmac.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT runtest-test_app_kmac.o -MD -MP -MF $(DEPDIR)/runtest-test_app_kmac.Tpo -c -o runtest-test_app_kmac.o `test -f 'test_app_kmac.c' || echo '$(srcdir)/'`test_app_kmac.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/runtest-test_app_kmac.Tpo $(DEPDIR)/runtest-test_app_kmac.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_app_kmac.c' object='runtest-test_app_kmac.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o runtest-test_app_kmac.o `test -f 'test_app_kmac.c' || echo '$(srcdir)/'`test_app_kmac.c
+
+runtest-test_app_kmac.obj: test_app_kmac.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT runtest-test_app_kmac.obj -MD -MP -MF $(DEPDIR)/runtest-test_app_kmac.Tpo -c -o runtest-test_app_kmac.obj `if test -f 'test_app_kmac.c'; then $(CYGPATH_W) 'test_app_kmac.c'; else $(CYGPATH_W) '$(srcdir)/test_app_kmac.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/runtest-test_app_kmac.Tpo $(DEPDIR)/runtest-test_app_kmac.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_app_kmac.c' object='runtest-test_app_kmac.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o runtest-test_app_kmac.obj `if test -f 'test_app_kmac.c'; then $(CYGPATH_W) 'test_app_kmac.c'; else $(CYGPATH_W) '$(srcdir)/test_app_kmac.c'; fi`
+
 mostlyclean-libtool:
 	-rm -f *.lo
 
@@ -1557,6 +1595,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/runtest-test_acvp_kdf135_x963.Po
 	-rm -f ./$(DEPDIR)/runtest-test_acvp_kdf_tls12.Po
 	-rm -f ./$(DEPDIR)/runtest-test_acvp_kdf_tls13.Po
+	-rm -f ./$(DEPDIR)/runtest-test_acvp_kmac.Po
 	-rm -f ./$(DEPDIR)/runtest-test_acvp_kts_ifc.Po
 	-rm -f ./$(DEPDIR)/runtest-test_acvp_operating_env.Po
 	-rm -f ./$(DEPDIR)/runtest-test_acvp_pbkdf.Po
@@ -1576,6 +1615,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/runtest-test_app_kas_ffc.Po
 	-rm -f ./$(DEPDIR)/runtest-test_app_kas_ifc.Po
 	-rm -f ./$(DEPDIR)/runtest-test_app_kda.Po
+	-rm -f ./$(DEPDIR)/runtest-test_app_kmac.Po
 	-rm -f ./$(DEPDIR)/runtest-test_app_rsa_keygen.Po
 	-rm -f ./$(DEPDIR)/runtest-test_app_rsa_sig.Po
 	-rm -f ./$(DEPDIR)/runtest-test_app_safe_primes.Po
@@ -1652,6 +1692,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/runtest-test_acvp_kdf135_x963.Po
 	-rm -f ./$(DEPDIR)/runtest-test_acvp_kdf_tls12.Po
 	-rm -f ./$(DEPDIR)/runtest-test_acvp_kdf_tls13.Po
+	-rm -f ./$(DEPDIR)/runtest-test_acvp_kmac.Po
 	-rm -f ./$(DEPDIR)/runtest-test_acvp_kts_ifc.Po
 	-rm -f ./$(DEPDIR)/runtest-test_acvp_operating_env.Po
 	-rm -f ./$(DEPDIR)/runtest-test_acvp_pbkdf.Po
@@ -1671,6 +1712,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/runtest-test_app_kas_ffc.Po
 	-rm -f ./$(DEPDIR)/runtest-test_app_kas_ifc.Po
 	-rm -f ./$(DEPDIR)/runtest-test_app_kda.Po
+	-rm -f ./$(DEPDIR)/runtest-test_app_kmac.Po
 	-rm -f ./$(DEPDIR)/runtest-test_app_rsa_keygen.Po
 	-rm -f ./$(DEPDIR)/runtest-test_app_rsa_sig.Po
 	-rm -f ./$(DEPDIR)/runtest-test_app_safe_primes.Po

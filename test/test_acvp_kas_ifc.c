@@ -1,6 +1,6 @@
 /** @file */
 /*
- * Copyright (c) 2021, Cisco Systems, Inc.
+ * Copyright (c) 2023, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -380,7 +380,7 @@ Test(KAS_IFC_SSC_HANDLER, missing_c, .init = setup, .fini = teardown) {
     json_value_free(val);
 }
 /*
- * The key:"z" is missing.
+ * The key:"z" is missing. NOTE: This only applies to test groups where a hash function is NOT provided
  */
 Test(KAS_IFC_SSC_HANDLER, missing_z, .init = setup, .fini = teardown) {
     val = json_parse_file("json/kas_ifc/kas_ifc_ssc_14.json");
@@ -394,6 +394,8 @@ Test(KAS_IFC_SSC_HANDLER, missing_z, .init = setup, .fini = teardown) {
     cr_assert(rv == ACVP_MISSING_ARG);
     json_value_free(val);
 }
+
+#if 0 /* hashZ is not required for KAS1 test. Re-enable when KAS2 tests are added if needed */
 /*
  * The key:"hashZ" is missing.
  */
@@ -409,6 +411,7 @@ Test(KAS_IFC_SSC_HANDLER, missing_hashz, .init = setup, .fini = teardown) {
     cr_assert(rv == ACVP_MISSING_ARG);
     json_value_free(val);
 }
+#endif
 
 /*
  * The key:"scheme" is missing.
@@ -427,7 +430,7 @@ Test(KAS_IFC_SSC_HANDLER, missing_scheme, .init = setup, .fini = teardown) {
 }
 
 /*
- * The key:"kaskRole" is missing.
+ * The key:"kasRole" is missing.
  */
 Test(KAS_IFC_SSC_HANDLER, missing_kasrole, .init = setup, .fini = teardown) {
     val = json_parse_file("json/kas_ifc/kas_ifc_ssc_17.json");
