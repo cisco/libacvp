@@ -1122,7 +1122,6 @@ ACVP_RESULT acvp_run_vectors_from_file(ACVP_CTX *ctx, const char *req_filename, 
         }
 
         json_value_free(file_val);
-        file_val = NULL;
         n++;
         obj = json_array_get_object(reg_array, n);
         vs_entry = vs_entry->next;
@@ -1500,7 +1499,6 @@ ACVP_RESULT acvp_get_expected_results(ACVP_CTX *ctx, const char *request_filenam
         } else {
             printf("%s,\n", ctx->curl_buf);
         }
-        vsid_url = NULL;
     }
     //append the final ']'
     rv = acvp_json_serialize_to_file_pretty_a(NULL, save_filename);
@@ -3196,7 +3194,6 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
                         val2 = NULL;
                     } else {
                         if (val2) json_value_free(val2);
-                        val2 = NULL;
                     }
                 }
             }
