@@ -636,9 +636,9 @@ ACVP_RESULT acvp_rsa_sigprim_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             goto err;
         }
 
-        mod = json_object_get_number(groupobj, "modulo");
+        mod = json_object_get_number(groupobj, "modulus");
         if (mod != 2048) {
-            ACVP_LOG_ERR("Server JSON invalid modulo");
+            ACVP_LOG_ERR("Server JSON invalid modulus");
             rv = ACVP_INVALID_ARG;
             goto err;
         }

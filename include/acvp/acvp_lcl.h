@@ -13,8 +13,8 @@
 #include "parson.h"
 
 #define ACVP_VERSION    "1.0"
-#define ACVP_LIBRARY_VERSION_NUMBER "2.0.0"
-#define ACVP_LIBRARY_VERSION    "libacvp_oss-2.0.0"
+#define ACVP_LIBRARY_VERSION_NUMBER "2.0.1"
+#define ACVP_LIBRARY_VERSION    "libacvp_oss-2.0.1"
 
 #ifndef ACVP_LOG_ERR
 #define ACVP_LOG_ERR(msg, ...) do { \
