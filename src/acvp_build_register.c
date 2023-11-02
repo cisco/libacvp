@@ -720,6 +720,7 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
     case ACVP_ECDSA_KEYVER:
     case ACVP_ECDSA_SIGGEN:
     case ACVP_ECDSA_SIGVER:
+    case ACVP_DET_ECDSA_SIGGEN:
     case ACVP_KDF135_SNMP:
     case ACVP_KDF135_SSH:
     case ACVP_KDF135_SRTP:
@@ -1337,12 +1338,7 @@ static ACVP_RESULT acvp_build_ecdsa_register_cap(ACVP_CTX *ctx, ACVP_CIPHER ciph
     int i = 0, diff = 0;
     ACVP_EC_CURVE track[ACVP_EC_CURVE_END + 1] = { 0 };
     ACVP_SUB_ECDSA alg;
-
-    json_object_set_string(cap_obj, "algorithm", "ECDSA");
-
-    revision = acvp_lookup_cipher_revision(cap_entry->cipher);
-    if (revision == NULL) return ACVP_INVALID_ARG;
-    json_object_set_string(cap_obj, "revision", revision);
+    ACVP_ECDSA_CAP *ecdsa_cap = NULL;
 
     alg = acvp_get_ecdsa_alg(cap_entry->cipher);
     if (alg == 0) {
@@ -1352,53 +1348,85 @@ static ACVP_RESULT acvp_build_ecdsa_register_cap(ACVP_CTX *ctx, ACVP_CIPHER ciph
 
     switch (alg) {
     case ACVP_SUB_ECDSA_KEYGEN:
+        ecdsa_cap = cap_entry->cap.ecdsa_keygen_cap;
+        json_object_set_string(cap_obj, "algorithm", "ECDSA");
         json_object_set_string(cap_obj, "mode", "keyGen");
         if (!cap_entry->cap.ecdsa_keygen_cap) {
             return ACVP_NO_CAP;
         }
-        current_curve = cap_entry->cap.ecdsa_keygen_cap->curves;
-        current_secret_mode = cap_entry->cap.ecdsa_keygen_cap->secret_gen_modes;
+        current_curve = ecdsa_cap->curves;
+        current_secret_mode = ecdsa_cap->secret_gen_modes;
         break;
     case ACVP_SUB_ECDSA_KEYVER:
+        ecdsa_cap = cap_entry->cap.ecdsa_keyver_cap;
+        json_object_set_string(cap_obj, "algorithm", "ECDSA");
         json_object_set_string(cap_obj, "mode", "keyVer");
         if (!cap_entry->cap.ecdsa_keyver_cap) {
             return ACVP_NO_CAP;
         }
-        current_curve = cap_entry->cap.ecdsa_keyver_cap->curves;
+        current_curve = ecdsa_cap->curves;
         break;
     case ACVP_SUB_ECDSA_SIGGEN:
+        ecdsa_cap = cap_entry->cap.ecdsa_siggen_cap;
+        json_object_set_string(cap_obj, "algorithm", "ECDSA");
         json_object_set_string(cap_obj, "mode", "sigGen");
         if (!cap_entry->cap.ecdsa_siggen_cap) {
             return ACVP_NO_CAP;
         }
-        if (cap_entry->cap.ecdsa_siggen_cap->component == ACVP_ECDSA_COMPONENT_MODE_YES) {
+        if (ecdsa_cap->component == ACVP_ECDSA_COMPONENT_MODE_YES) {
             json_object_set_boolean(cap_obj, "componentTest", 1);
         } else {
             json_object_set_boolean(cap_obj, "componentTest", 0);
         }
-        current_curve = cap_entry->cap.ecdsa_siggen_cap->curves;
+        current_curve = ecdsa_cap->curves;
         //add "universally" set hash algs here instead of later to be resliant to different combos of API calls
         while (current_curve) {
             for (i = 0; i < ACVP_HASH_ALG_MAX; i++) {
-                if (cap_entry->cap.ecdsa_siggen_cap->hash_algs[i]) {
+                if (ecdsa_cap->hash_algs[i]) {
                     current_curve->algs[i] = 1;
                 }
             }
             current_curve = current_curve->next;
         }
-        current_curve = cap_entry->cap.ecdsa_siggen_cap->curves;
+        current_curve = ecdsa_cap->curves;
         break;
-    case ACVP_SUB_ECDSA_SIGVER:
-        json_object_set_string(cap_obj, "mode", "sigVer");
-        if (!cap_entry->cap.ecdsa_sigver_cap) {
+    case ACVP_SUB_DET_ECDSA_SIGGEN:
+        ecdsa_cap = cap_entry->cap.det_ecdsa_siggen_cap;
+        json_object_set_string(cap_obj, "algorithm", "DetECDSA");
+        json_object_set_string(cap_obj, "mode", "sigGen");
+        if (!cap_entry->cap.det_ecdsa_siggen_cap) {
             return ACVP_NO_CAP;
         }
-        if (cap_entry->cap.ecdsa_sigver_cap->component == ACVP_ECDSA_COMPONENT_MODE_YES) {
+        if (ecdsa_cap->component == ACVP_ECDSA_COMPONENT_MODE_YES) {
             json_object_set_boolean(cap_obj, "componentTest", 1);
         } else {
             json_object_set_boolean(cap_obj, "componentTest", 0);
         }
-        current_curve = cap_entry->cap.ecdsa_sigver_cap->curves;
+        current_curve = ecdsa_cap->curves;
+        //add "universally" set hash algs here instead of later to be resliant to different combos of API calls
+        while (current_curve) {
+            for (i = 0; i < ACVP_HASH_ALG_MAX; i++) {
+                if (ecdsa_cap->hash_algs[i]) {
+                    current_curve->algs[i] = 1;
+                }
+            }
+            current_curve = current_curve->next;
+        }
+        current_curve = ecdsa_cap->curves;
+        break;
+    case ACVP_SUB_ECDSA_SIGVER:
+        ecdsa_cap = cap_entry->cap.ecdsa_sigver_cap;
+        json_object_set_string(cap_obj, "algorithm", "ECDSA");
+        json_object_set_string(cap_obj, "mode", "sigVer");
+        if (!cap_entry->cap.ecdsa_sigver_cap) {
+            return ACVP_NO_CAP;
+        }
+        if (ecdsa_cap->component == ACVP_ECDSA_COMPONENT_MODE_YES) {
+            json_object_set_boolean(cap_obj, "componentTest", 1);
+        } else {
+            json_object_set_boolean(cap_obj, "componentTest", 0);
+        }
+        current_curve = ecdsa_cap->curves;
         //add "universally" set hash algs here instead of later to be resliant to different combos of API calls
         while (current_curve) {
             for (i = 0; i < ACVP_HASH_ALG_MAX; i++) {
@@ -1414,6 +1442,15 @@ static ACVP_RESULT acvp_build_ecdsa_register_cap(ACVP_CTX *ctx, ACVP_CIPHER ciph
         return ACVP_INVALID_ARG;
         break;
     }
+
+    /* Do this step after we know which cap obj it is, avoid duplicate code */
+    if (ecdsa_cap->revision) {
+        revision = acvp_lookup_alt_revision_string(ecdsa_cap->revision);
+    } else {
+        revision = acvp_lookup_cipher_revision(cap_entry->cipher);
+    }
+    if (revision == NULL) return ACVP_INVALID_ARG;
+    json_object_set_string(cap_obj, "revision", revision);
 
     result = acvp_lookup_prereqVals(cap_obj, cap_entry);
     if (result != ACVP_SUCCESS) { return result; }
@@ -1458,7 +1495,7 @@ static ACVP_RESULT acvp_build_ecdsa_register_cap(ACVP_CTX *ctx, ACVP_CIPHER ciph
      * algs registered to them. If they have the same hash algs, we put them in the same object within
      * the capabilities array. If they have different hash algs, a new object is created.
      */
-    if (cipher == ACVP_ECDSA_SIGGEN || cipher == ACVP_ECDSA_SIGVER) {
+    if (cipher == ACVP_ECDSA_SIGGEN || cipher == ACVP_ECDSA_SIGVER || cipher == ACVP_DET_ECDSA_SIGGEN) {
         json_object_set_value(cap_obj, "capabilities", json_value_init_array());
         caps_arr = json_object_get_array(cap_obj, "capabilities");
 
@@ -4945,6 +4982,25 @@ ACVP_RESULT acvp_build_registration_json(ACVP_CTX *ctx, JSON_Value **reg) {
                     cap_entry->cap.ecdsa_siggen_cap->component = ACVP_ECDSA_COMPONENT_MODE_YES;
                     rv = acvp_build_ecdsa_register_cap(ctx, cap_entry->cipher, cap_obj, cap_entry);
                     cap_entry->cap.ecdsa_siggen_cap->component = ACVP_ECDSA_COMPONENT_MODE_BOTH;
+                } else {
+                    rv = acvp_build_ecdsa_register_cap(ctx, cap_entry->cipher, cap_obj, cap_entry);
+                }
+                break;
+            case ACVP_DET_ECDSA_SIGGEN:
+                /* If component_test = BOTH, we need two registrations */
+                if (cap_entry->cap.det_ecdsa_siggen_cap->component == ACVP_ECDSA_COMPONENT_MODE_BOTH) {
+                    cap_entry->cap.det_ecdsa_siggen_cap->component = ACVP_ECDSA_COMPONENT_MODE_NO;
+                    rv = acvp_build_ecdsa_register_cap(ctx, cap_entry->cipher, cap_obj, cap_entry);
+                    if (rv != ACVP_SUCCESS) {
+                        cap_entry->cap.det_ecdsa_siggen_cap->component = ACVP_ECDSA_COMPONENT_MODE_BOTH;
+                        break;
+                    }
+                    json_array_append_value(caps_arr, cap_val);
+                    cap_val = json_value_init_object();
+                    cap_obj = json_value_get_object(cap_val);
+                    cap_entry->cap.det_ecdsa_siggen_cap->component = ACVP_ECDSA_COMPONENT_MODE_YES;
+                    rv = acvp_build_ecdsa_register_cap(ctx, cap_entry->cipher, cap_obj, cap_entry);
+                    cap_entry->cap.det_ecdsa_siggen_cap->component = ACVP_ECDSA_COMPONENT_MODE_BOTH;
                 } else {
                     rv = acvp_build_ecdsa_register_cap(ctx, cap_entry->cipher, cap_obj, cap_entry);
                 }

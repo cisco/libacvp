@@ -80,7 +80,7 @@ int app_ecdsa_handler(ACVP_TEST_CASE *test_case) {
         goto err;
     }
 
-    if ((mode == ACVP_ECDSA_SIGGEN || mode == ACVP_ECDSA_SIGVER) && !tc->is_component) {
+    if ((mode == ACVP_ECDSA_SIGGEN || mode == ACVP_ECDSA_SIGVER || mode == ACVP_DET_ECDSA_SIGGEN)) {
         md = get_md_string_for_hash_alg(tc->hash_alg, NULL);
         if (!md) {
             printf("Error getting hash alg from test case for ECDSA\n");
@@ -146,7 +146,7 @@ int app_ecdsa_handler(ACVP_TEST_CASE *test_case) {
         OSSL_PARAM_BLD_push_octet_string(pkey_pbld, OSSL_PKEY_PARAM_PUB_KEY, pub_key, key_size);
         params = OSSL_PARAM_BLD_to_param(pkey_pbld);
         if (!params) {
-            printf("Error generating parameters for pkey generation in RSA keygen\n");
+            printf("Error generating parameters for pkey generation in ECDSA keygen\n");
         }
 
         pkey_ctx = EVP_PKEY_CTX_new_from_name(NULL, "EC", NULL);
@@ -159,6 +159,7 @@ int app_ecdsa_handler(ACVP_TEST_CASE *test_case) {
         }
         break;
     case ACVP_SUB_ECDSA_SIGGEN:
+    case ACVP_SUB_DET_ECDSA_SIGGEN:
         if (ecdsa_current_tg != tc->tg_id) {
             ecdsa_current_tg = tc->tg_id;
             /* First, generate key for every test group */
@@ -186,6 +187,7 @@ int app_ecdsa_handler(ACVP_TEST_CASE *test_case) {
                 goto err;
             }
         }
+
         /* Then, for each test case, generate a signature */
         if (!tc->is_component) {
             sig_ctx = EVP_MD_CTX_new();
@@ -197,6 +199,45 @@ int app_ecdsa_handler(ACVP_TEST_CASE *test_case) {
                 printf("Error initializing signing for ECDSA siggen\n");
                 goto err;
             }
+
+            if (alg == ACVP_SUB_DET_ECDSA_SIGGEN) {
+                if (pkey_pbld) OSSL_PARAM_BLD_free(pkey_pbld);
+                if (params) OSSL_PARAM_free(params);
+                pkey_pbld = NULL;
+                params = NULL;
+
+                pkey_pbld = OSSL_PARAM_BLD_new();
+                if (!pkey_pbld) {
+                    printf("Error creating param_bld in ECDSA keyver\n");
+                    goto err;
+                }
+
+                OSSL_PARAM_BLD_push_uint(pkey_pbld, OSSL_SIGNATURE_PARAM_NONCE_TYPE, 1);
+                params = OSSL_PARAM_BLD_to_param(pkey_pbld);
+                if (!params) {
+                    printf("Error generating parameters for pkey generation in DetECDSA siggen\n");
+                }
+
+                if (pkey_ctx) EVP_PKEY_CTX_free(pkey_ctx);
+                pkey_ctx = NULL;
+                if (EVP_DigestSignInit_ex(sig_ctx, &pkey_ctx, md, NULL, NULL, group_pkey, NULL) != 1) {
+                    printf("Error initializing signing for DetECDSA siggen\n");
+                    goto err;
+                }
+
+                if (!EVP_PKEY_CTX_set_params(pkey_ctx, params)) {
+                    printf("Error setting params for DetECDSA\n");
+                    goto err;
+                }
+
+                pkey_ctx = NULL; //freed with md ctx
+            } else {
+                if (EVP_DigestSignInit_ex(sig_ctx, NULL, md, NULL, NULL, group_pkey, NULL) != 1) {
+                    printf("Error initializing signing for ECDSA siggen\n");
+                    goto err;
+                }
+            }
+
             EVP_DigestSign(sig_ctx, NULL, &sig_len, tc->message, tc->msg_len);
             sig = calloc(sig_len, sizeof(char));
             if (!sig) {
