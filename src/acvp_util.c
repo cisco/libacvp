@@ -184,7 +184,8 @@ const char *acvp_lookup_cipher_revision(ACVP_CIPHER alg) {
  */
 static struct acvp_alt_revision_info alt_revision_tbl[] = {
     { ACVP_REVISION_SP800_56AR3, ACVP_REV_STR_SP800_56AR3 },
-    { ACVP_REVISION_SP800_56CR1, ACVP_REV_STR_SP800_56CR1 }
+    { ACVP_REVISION_SP800_56CR1, ACVP_REV_STR_SP800_56CR1 },
+    { ACVP_REVISION_FIPS186_4, ACVP_REV_STR_DEFAULT }
 };
 static int alt_revision_tbl_length =
     sizeof(alt_revision_tbl) / sizeof(struct acvp_alt_revision_info);

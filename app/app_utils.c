@@ -431,6 +431,12 @@ const char *get_md_string_for_hash_alg(ACVP_HASH_ALG alg, int *md_size) {
         size = 512;
         str = "SHA3-512";
         break;
+    case ACVP_SHAKE_128:
+        str = "SHAKE-128";
+        break;
+    case ACVP_SHAKE_256:
+        str = "SHAKE-256";
+        break;
     case ACVP_NO_SHA:
     case ACVP_HASH_ALG_MAX:
     default:

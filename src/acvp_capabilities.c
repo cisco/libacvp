@@ -251,6 +251,18 @@ static ACVP_RESULT acvp_cap_list_append(ACVP_CTX *ctx,
         }
         break;
 
+        case ACVP_DET_ECDSA_SIGGEN_TYPE:
+        if (cipher != ACVP_DET_ECDSA_SIGGEN) {
+            rv = ACVP_INVALID_ARG;
+            goto err;
+        }
+        cap_entry->cap.det_ecdsa_siggen_cap = calloc(1, sizeof(ACVP_ECDSA_CAP));
+        if (!cap_entry->cap.det_ecdsa_siggen_cap) {
+            rv = ACVP_MALLOC_FAIL;
+            goto err;
+        }
+        break;
+
     case ACVP_HASH_TYPE:
         cap_entry->cap.hash_cap = calloc(1, sizeof(ACVP_HASH_CAP));
         if (!cap_entry->cap.hash_cap) {
@@ -1032,6 +1044,7 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
         case ACVP_ECDSA_KEYVER:
         case ACVP_ECDSA_SIGGEN:
         case ACVP_ECDSA_SIGVER:
+        case ACVP_DET_ECDSA_SIGGEN:
         case ACVP_KDF135_SNMP:
         case ACVP_KDF135_SSH:
         case ACVP_KDF135_SRTP:
@@ -1148,6 +1161,7 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
         case ACVP_ECDSA_KEYVER:
         case ACVP_ECDSA_SIGGEN:
         case ACVP_ECDSA_SIGVER:
+        case ACVP_DET_ECDSA_SIGGEN:
         case ACVP_KDF135_SNMP:
         case ACVP_KDF135_SSH:
         case ACVP_KDF135_SRTP:
@@ -1264,6 +1278,7 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
         case ACVP_ECDSA_KEYVER:
         case ACVP_ECDSA_SIGGEN:
         case ACVP_ECDSA_SIGVER:
+        case ACVP_DET_ECDSA_SIGGEN:
         case ACVP_KDF135_SNMP:
         case ACVP_KDF135_SSH:
         case ACVP_KDF135_SRTP:
@@ -1386,6 +1401,7 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
         case ACVP_ECDSA_KEYVER:
         case ACVP_ECDSA_SIGGEN:
         case ACVP_ECDSA_SIGVER:
+        case ACVP_DET_ECDSA_SIGGEN:
         case ACVP_KDF135_SNMP:
         case ACVP_KDF135_SSH:
         case ACVP_KDF135_SRTP:
@@ -1499,6 +1515,7 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
         case ACVP_ECDSA_KEYVER:
         case ACVP_ECDSA_SIGGEN:
         case ACVP_ECDSA_SIGVER:
+        case ACVP_DET_ECDSA_SIGGEN:
         case ACVP_KDF135_SNMP:
         case ACVP_KDF135_SSH:
         case ACVP_KDF135_SRTP:
@@ -1825,6 +1842,7 @@ static ACVP_RESULT acvp_validate_sym_cipher_domain_value(ACVP_CIPHER cipher, ACV
     case ACVP_ECDSA_KEYVER:
     case ACVP_ECDSA_SIGGEN:
     case ACVP_ECDSA_SIGVER:
+    case ACVP_DET_ECDSA_SIGGEN:
     case ACVP_KDF135_SNMP:
     case ACVP_KDF135_SSH:
     case ACVP_KDF135_SRTP:
@@ -1975,6 +1993,7 @@ static ACVP_RESULT acvp_validate_prereq_val(ACVP_CIPHER cipher, ACVP_PREREQ_ALG 
     case ACVP_ECDSA_KEYVER:
     case ACVP_ECDSA_SIGGEN:
     case ACVP_ECDSA_SIGVER:
+    case ACVP_DET_ECDSA_SIGGEN:
         if (pre_req == ACVP_PREREQ_SHA ||
             pre_req == ACVP_PREREQ_DRBG) {
             return ACVP_SUCCESS;
@@ -2306,6 +2325,7 @@ ACVP_RESULT acvp_cap_sym_cipher_set_domain(ACVP_CTX *ctx,
     case ACVP_ECDSA_KEYVER:
     case ACVP_ECDSA_SIGGEN:
     case ACVP_ECDSA_SIGVER:
+    case ACVP_DET_ECDSA_SIGGEN:
     case ACVP_KDF135_SNMP:
     case ACVP_KDF135_SSH:
     case ACVP_KDF135_SRTP:
@@ -2520,6 +2540,7 @@ ACVP_RESULT acvp_cap_sym_cipher_set_parm(ACVP_CTX *ctx,
     case ACVP_ECDSA_KEYVER:
     case ACVP_ECDSA_SIGGEN:
     case ACVP_ECDSA_SIGVER:
+    case ACVP_DET_ECDSA_SIGGEN:
     case ACVP_KDF135_SNMP:
     case ACVP_KDF135_SSH:
     case ACVP_KDF135_SRTP:
@@ -2853,6 +2874,7 @@ ACVP_RESULT acvp_cap_sym_cipher_enable(ACVP_CTX *ctx,
     case ACVP_ECDSA_KEYVER:
     case ACVP_ECDSA_SIGGEN:
     case ACVP_ECDSA_SIGVER:
+    case ACVP_DET_ECDSA_SIGGEN:
     case ACVP_KDF135_SNMP:
     case ACVP_KDF135_SSH:
     case ACVP_KDF135_SRTP:
@@ -4994,11 +5016,14 @@ ACVP_RESULT acvp_cap_ecdsa_set_parm(ACVP_CTX *ctx,
     case ACVP_SUB_ECDSA_SIGVER:
         cap = cap_list->cap.ecdsa_sigver_cap;
         break;
+    case ACVP_SUB_DET_ECDSA_SIGGEN:
+        cap = cap_list->cap.det_ecdsa_siggen_cap;
+        break;
     default:
         return ACVP_INVALID_ARG;
     }
 
-    if (!value) {
+    if (value < 0) {
         return ACVP_MISSING_ARG;
     }
 
@@ -5041,7 +5066,7 @@ ACVP_RESULT acvp_cap_ecdsa_set_parm(ACVP_CTX *ctx,
         result = acvp_append_name_list(&cap->secret_gen_modes, string);
         break;
     case ACVP_ECDSA_HASH_ALG:
-        if (cipher != ACVP_ECDSA_SIGGEN && cipher != ACVP_ECDSA_SIGVER) {
+        if (cipher != ACVP_ECDSA_SIGGEN && cipher != ACVP_ECDSA_SIGVER && cipher != ACVP_DET_ECDSA_SIGGEN) {
             return ACVP_INVALID_ARG;
         }
 
@@ -5053,7 +5078,7 @@ ACVP_RESULT acvp_cap_ecdsa_set_parm(ACVP_CTX *ctx,
         cap->hash_algs[value] = 1;
         break;
     case ACVP_ECDSA_COMPONENT_TEST:
-        if (cipher == ACVP_ECDSA_SIGGEN || cipher == ACVP_ECDSA_SIGVER) {
+        if (cipher == ACVP_ECDSA_SIGGEN || cipher == ACVP_ECDSA_SIGVER || cipher == ACVP_DET_ECDSA_SIGGEN) {
             if (value >= ACVP_ECDSA_COMPONENT_MODE_NO && value <= ACVP_ECDSA_COMPONENT_MODE_BOTH) {
                 if (value == ACVP_ECDSA_COMPONENT_MODE_BOTH) {
                     /* This will generate two vector sets, one for and one not for component mode */
@@ -5068,6 +5093,17 @@ ACVP_RESULT acvp_cap_ecdsa_set_parm(ACVP_CTX *ctx,
             ACVP_LOG_ERR("ECDSA Component Tests only apply to siggen and sigver");
             return ACVP_INVALID_ARG;
         }
+        break;
+    case ACVP_ECDSA_REVISION:
+        if (cipher == ACVP_DET_ECDSA_SIGGEN) {
+            ACVP_LOG_ERR("Unable to set alternate revision for DetECDSA; not applicable at this time");
+            return ACVP_INVALID_ARG;
+        }
+        if (value != ACVP_REVISION_FIPS186_4) {
+            ACVP_LOG_ERR("Invalid ECDSA revision. Only revision FIPS 186-4 can be set for ECDSA. default is 186-5.");
+            return ACVP_INVALID_ARG;
+        }
+        cap->revision = value;
         break;
     default:
         return ACVP_INVALID_ARG;
@@ -5105,6 +5141,8 @@ ACVP_RESULT acvp_cap_ecdsa_set_curve_hash_alg(ACVP_CTX *ctx, ACVP_CIPHER cipher,
         ecdsa_cap = cap->cap.ecdsa_siggen_cap;
     } else if (cipher == ACVP_ECDSA_SIGVER) {
         ecdsa_cap = cap->cap.ecdsa_sigver_cap;
+    } else if (cipher == ACVP_DET_ECDSA_SIGGEN) {
+        ecdsa_cap = cap->cap.det_ecdsa_siggen_cap;
     } else {
         ACVP_LOG_ERR("Invalid 'cipher' argument for acvp_cap_ecdsa_set_curve_hash_alg");
         return ACVP_INVALID_ARG;
@@ -5157,6 +5195,9 @@ ACVP_RESULT acvp_cap_ecdsa_enable(ACVP_CTX *ctx,
         break;
     case ACVP_SUB_ECDSA_SIGVER:
         type = ACVP_ECDSA_SIGVER_TYPE;
+        break;
+    case ACVP_SUB_DET_ECDSA_SIGGEN:
+        type = ACVP_DET_ECDSA_SIGGEN_TYPE;
         break;
     default:
         ACVP_LOG_ERR("Invalid parameter 'cipher'");

@@ -1204,7 +1204,7 @@ Test(EnableCapECDSA, invalid_params_kg, .fini = teardown) {
     cr_assert(rv == ACVP_INVALID_ARG);
     rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_KEYGEN, ACVP_ECDSA_SECRET_GEN, 256);
     cr_assert(rv == ACVP_INVALID_ARG);
-    rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_KEYGEN, ACVP_ECDSA_SECRET_GEN, 0);
+    rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_KEYGEN, ACVP_ECDSA_SECRET_GEN, -1);
     cr_assert(rv == ACVP_MISSING_ARG);
 }
 

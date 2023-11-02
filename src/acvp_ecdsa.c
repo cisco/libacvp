@@ -60,7 +60,7 @@ static ACVP_RESULT acvp_ecdsa_output_tc(ACVP_CTX *ctx, ACVP_CIPHER cipher, ACVP_
     if (cipher == ACVP_ECDSA_KEYVER || cipher == ACVP_ECDSA_SIGVER) {
         json_object_set_boolean(tc_rsp, "testPassed", stc->ver_disposition);
     }
-    if (cipher == ACVP_ECDSA_SIGGEN) {
+    if (cipher == ACVP_ECDSA_SIGGEN || cipher == ACVP_DET_ECDSA_SIGGEN) {
         rv = acvp_bin_to_hexstr(stc->r, stc->r_len, tmp, ACVP_ECDSA_EXP_LEN_MAX);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("hex conversion failure (r)");
@@ -169,7 +169,7 @@ static ACVP_RESULT acvp_ecdsa_init_tc(ACVP_CTX *ctx,
             return rv;
         }
     }
-    if (cipher == ACVP_ECDSA_SIGVER || cipher == ACVP_ECDSA_SIGGEN) {
+    if (cipher == ACVP_ECDSA_SIGVER || cipher == ACVP_ECDSA_SIGGEN || cipher == ACVP_DET_ECDSA_SIGGEN) {
         if (!message) return ACVP_MISSING_ARG;
 
         rv = acvp_hexstr_to_bin(message, stc->message, ACVP_RSA_MSGLEN_MAX, &(stc->msg_len));
@@ -203,6 +203,11 @@ ACVP_RESULT acvp_ecdsa_keyver_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 ACVP_RESULT acvp_ecdsa_siggen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     return acvp_ecdsa_kat_handler_internal(ctx, obj, ACVP_ECDSA_SIGGEN);
 }
+
+ACVP_RESULT acvp_det_ecdsa_siggen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
+    return acvp_ecdsa_kat_handler_internal(ctx, obj, ACVP_DET_ECDSA_SIGGEN);
+}
+
 
 ACVP_RESULT acvp_ecdsa_sigver_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     return acvp_ecdsa_kat_handler_internal(ctx, obj, ACVP_ECDSA_SIGVER);
@@ -371,7 +376,7 @@ static ACVP_RESULT acvp_ecdsa_kat_handler_internal(ACVP_CTX *ctx, JSON_Object *o
                 rv = ACVP_INVALID_ARG;
                 goto err;
             }
-        } else if (alg_id == ACVP_ECDSA_SIGGEN || alg_id == ACVP_ECDSA_SIGVER) {
+        } else if (alg_id == ACVP_ECDSA_SIGGEN || alg_id == ACVP_ECDSA_SIGVER || alg_id == ACVP_DET_ECDSA_SIGGEN) {
             hash_alg_str = json_object_get_string(groupobj, "hashAlg");
             if (!hash_alg_str) {
                 ACVP_LOG_ERR("Server JSON missing 'hashAlg'");
@@ -380,7 +385,7 @@ static ACVP_RESULT acvp_ecdsa_kat_handler_internal(ACVP_CTX *ctx, JSON_Object *o
             }
 
             hash_alg = acvp_lookup_hash_alg(hash_alg_str);
-            if (!hash_alg || (alg_id == ACVP_ECDSA_SIGGEN && hash_alg == ACVP_SHA1)) {
+            if (!hash_alg || ((alg_id == ACVP_ECDSA_SIGGEN || alg_id == ACVP_DET_ECDSA_SIGGEN) && hash_alg == ACVP_SHA1)) {
                 ACVP_LOG_ERR("Server JSON invalid 'hashAlg'");
                 rv = ACVP_INVALID_ARG;
                 goto err;
@@ -423,7 +428,7 @@ static ACVP_RESULT acvp_ecdsa_kat_handler_internal(ACVP_CTX *ctx, JSON_Object *o
                     goto err;
                 }
             }
-            if (alg_id == ACVP_ECDSA_SIGGEN || alg_id == ACVP_ECDSA_SIGVER) {
+            if (alg_id == ACVP_ECDSA_SIGGEN || alg_id == ACVP_ECDSA_SIGVER || alg_id == ACVP_DET_ECDSA_SIGGEN) {
                 message = json_object_get_string(testobj, "message");
                 if (!message) {
                     ACVP_LOG_ERR("Server JSON missing 'message'");
@@ -482,7 +487,7 @@ static ACVP_RESULT acvp_ecdsa_kat_handler_internal(ACVP_CTX *ctx, JSON_Object *o
             /*
              * Output the test case results using JSON
              */
-            if (cipher == ACVP_ECDSA_SIGGEN) {
+            if (cipher == ACVP_ECDSA_SIGGEN || cipher == ACVP_DET_ECDSA_SIGGEN) {
                 char *tmp = calloc(ACVP_ECDSA_EXP_LEN_MAX + 1, sizeof(char));
                 rv = acvp_bin_to_hexstr(stc.qy, stc.qy_len, tmp, ACVP_ECDSA_EXP_LEN_MAX);
                 if (rv != ACVP_SUCCESS) {

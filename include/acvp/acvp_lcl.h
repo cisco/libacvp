@@ -72,6 +72,7 @@
 #define ACVP_REV_STR_DEFAULT "1.0"
 #define ACVP_REV_STR_2_0 "2.0"
 #define ACVP_REV_STR_FIPS186_4 "FIPS186-4"
+#define ACVP_REV_STR_FIPS186_5 "FIPS186-5"
 #define ACVP_REV_STR_SP800_56AR3 "Sp800-56Ar3"
 #define ACVP_REV_STR_SP800_56BR2 "Sp800-56Br2"
 #define ACVP_REV_STR_SP800_56CR1 "Sp800-56Cr1"
@@ -164,7 +165,7 @@
 #define ACVP_REV_RSA_PRIM            ACVP_REV_STR_DEFAULT
 
 /* ECDSA */
-#define ACVP_REV_ECDSA               ACVP_REV_STR_DEFAULT
+#define ACVP_REV_ECDSA               ACVP_REV_STR_FIPS186_5
 
 /* KAS_ECC */
 #define ACVP_REV_KAS_ECC             ACVP_REV_STR_DEFAULT
@@ -355,6 +356,7 @@
 
 #define ACVP_ALG_RSA                "RSA"
 #define ACVP_ALG_ECDSA              "ECDSA"
+#define ACVP_ALG_DET_ECDSA          "DetECDSA"
 
 #define ACVP_MODE_KEYGEN            "keyGen"
 #define ACVP_MODE_KEYVER            "keyVer"
@@ -1006,6 +1008,7 @@ typedef enum acvp_capability_type {
     ACVP_ECDSA_KEYVER_TYPE,
     ACVP_ECDSA_SIGGEN_TYPE,
     ACVP_ECDSA_SIGVER_TYPE,
+    ACVP_DET_ECDSA_SIGGEN_TYPE,
     ACVP_DSA_TYPE,
     ACVP_KDF135_SNMP_TYPE,
     ACVP_KDF135_SSH_TYPE,
@@ -1345,6 +1348,7 @@ typedef struct acvp_ecdsa_capability_t {
     //For backwards compatibility, this contains hash algs that will be used with ALL registered curves (HASH_ALG = array index)
     int hash_algs[ACVP_HASH_ALG_MAX + 1];
     ACVP_ECDSA_COMPONENT_MODE component;
+    ACVP_REVISION revision; /* Empty if default is used */
 } ACVP_ECDSA_CAP;
 
 typedef struct acvp_rsa_sig_capability_t {
@@ -1586,6 +1590,7 @@ typedef struct acvp_caps_list_t {
         ACVP_ECDSA_CAP *ecdsa_keyver_cap;
         ACVP_ECDSA_CAP *ecdsa_siggen_cap;
         ACVP_ECDSA_CAP *ecdsa_sigver_cap;
+        ACVP_ECDSA_CAP *det_ecdsa_siggen_cap;
         ACVP_KDF135_SNMP_CAP *kdf135_snmp_cap;
         ACVP_KDF135_SSH_CAP *kdf135_ssh_cap;
         ACVP_KDF135_SRTP_CAP *kdf135_srtp_cap;
@@ -1887,6 +1892,8 @@ ACVP_RESULT acvp_ecdsa_keyver_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 ACVP_RESULT acvp_ecdsa_siggen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
 ACVP_RESULT acvp_ecdsa_sigver_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
+
+ACVP_RESULT acvp_det_ecdsa_siggen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
 ACVP_RESULT acvp_kdf135_snmp_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
