@@ -133,8 +133,8 @@ ACVP_ALG_HANDLER alg_tbl[ACVP_ALG_MAX] = {
     { ACVP_RSA_KEYGEN,        &acvp_rsa_keygen_kat_handler,       ACVP_ALG_RSA,               ACVP_MODE_KEYGEN, ACVP_REV_RSA, {ACVP_SUB_RSA_KEYGEN}},
     { ACVP_RSA_SIGGEN,        &acvp_rsa_siggen_kat_handler,       ACVP_ALG_RSA,               ACVP_MODE_SIGGEN, ACVP_REV_RSA, {ACVP_SUB_RSA_SIGGEN}},
     { ACVP_RSA_SIGVER,        &acvp_rsa_sigver_kat_handler,       ACVP_ALG_RSA,               ACVP_MODE_SIGVER, ACVP_REV_RSA, {ACVP_SUB_RSA_SIGVER}},
-    { ACVP_RSA_DECPRIM,       &acvp_rsa_decprim_kat_handler,      ACVP_ALG_RSA,               ACVP_MODE_DECPRIM, ACVP_REV_RSA_PRIM, {ACVP_SUB_RSA_DECPRIM}},
-    { ACVP_RSA_SIGPRIM,       &acvp_rsa_sigprim_kat_handler,      ACVP_ALG_RSA,               ACVP_MODE_SIGPRIM, ACVP_REV_RSA_PRIM, {ACVP_SUB_RSA_SIGPRIM}},
+    { ACVP_RSA_DECPRIM,       &acvp_rsa_decprim_kat_handler,      ACVP_ALG_RSA,               ACVP_MODE_DECPRIM, ACVP_REV_RSA_DECPRIM, {ACVP_SUB_RSA_DECPRIM}},
+    { ACVP_RSA_SIGPRIM,       &acvp_rsa_sigprim_kat_handler,      ACVP_ALG_RSA,               ACVP_MODE_SIGPRIM, ACVP_REV_RSA_SIGPRIM, {ACVP_SUB_RSA_SIGPRIM}},
     { ACVP_ECDSA_KEYGEN,      &acvp_ecdsa_keygen_kat_handler,     ACVP_ALG_ECDSA,             ACVP_MODE_KEYGEN, ACVP_REV_ECDSA, {ACVP_SUB_ECDSA_KEYGEN}},
     { ACVP_ECDSA_KEYVER,      &acvp_ecdsa_keyver_kat_handler,     ACVP_ALG_ECDSA,             ACVP_MODE_KEYVER, ACVP_REV_ECDSA, {ACVP_SUB_ECDSA_KEYVER}},
     { ACVP_ECDSA_SIGGEN,      &acvp_ecdsa_siggen_kat_handler,     ACVP_ALG_ECDSA,             ACVP_MODE_SIGGEN, ACVP_REV_ECDSA, {ACVP_SUB_ECDSA_SIGGEN}},
@@ -771,6 +771,8 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx) {
                 if (cap_entry->cap.rsa_prim_cap->fixed_pub_exp) {
                     free(cap_entry->cap.rsa_prim_cap->fixed_pub_exp);
                 }
+                acvp_cap_free_sl(cap_entry->cap.rsa_prim_cap->modulo);
+                acvp_cap_free_pl(cap_entry->cap.rsa_prim_cap->key_formats);
                 free(cap_entry->cap.rsa_prim_cap);
                 break;
             case ACVP_ECDSA_KEYGEN_TYPE:

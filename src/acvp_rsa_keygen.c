@@ -328,20 +328,6 @@ static ACVP_RSA_TESTTYPE read_test_type(const char *str) {
     return 0;
 }
 
-static ACVP_RSA_PUB_EXP_MODE read_pub_exp_mode(const char *str){
-    int diff = 1;
-
-    strcmp_s(ACVP_RSA_PUB_EXP_MODE_FIXED_STR,
-             ACVP_RSA_PUB_EXP_MODE_FIXED_STR_LEN, str, &diff);
-    if (!diff) return ACVP_RSA_PUB_EXP_MODE_FIXED;
-
-    strcmp_s(ACVP_RSA_PUB_EXP_MODE_RANDOM_STR,
-             ACVP_RSA_PUB_EXP_MODE_RANDOM_STR_LEN, str, &diff);
-    if (!diff) return ACVP_RSA_PUB_EXP_MODE_RANDOM;
-
-    return 0;
-}
-
 static ACVP_RSA_KEY_FORMAT read_key_format(const char *str){
     int diff = 1;
 
@@ -509,7 +495,7 @@ ACVP_RESULT acvp_rsa_keygen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             rv = ACVP_MISSING_ARG;
             goto err;
         }
-        pub_exp_mode = read_pub_exp_mode(pub_exp_mode_str);
+        pub_exp_mode = acvp_lookup_rsa_pub_exp_mode(pub_exp_mode_str);
         if (!pub_exp_mode) {
             ACVP_LOG_ERR("Server JSON invalid 'pubExpMode'");
             rv = ACVP_INVALID_ARG;

@@ -185,7 +185,8 @@ const char *acvp_lookup_cipher_revision(ACVP_CIPHER alg) {
 static struct acvp_alt_revision_info alt_revision_tbl[] = {
     { ACVP_REVISION_SP800_56AR3, ACVP_REV_STR_SP800_56AR3 },
     { ACVP_REVISION_SP800_56CR1, ACVP_REV_STR_SP800_56CR1 },
-    { ACVP_REVISION_FIPS186_4, ACVP_REV_STR_DEFAULT }
+    { ACVP_REVISION_FIPS186_4, ACVP_REV_STR_1_0 },
+    { ACVP_REVISION_1_0, ACVP_REV_STR_1_0 }
 };
 static int alt_revision_tbl_length =
     sizeof(alt_revision_tbl) / sizeof(struct acvp_alt_revision_info);
@@ -202,6 +203,20 @@ const char *acvp_lookup_alt_revision_string(ACVP_REVISION rev) {
         }
     }
     return NULL;
+}
+
+/**
+ * This function returns the enum for a given alternative revision string, or 0 if not found
+ */
+ACVP_REVISION acvp_lookup_alt_revision(const char *str) {
+    int i = 0, diff = 1;
+    for (i = 0; i < alt_revision_tbl_length; i++) {
+        strcmp_s(alt_revision_tbl[i].name, ACVP_ALG_NAME_MAX, str, &diff);
+        if (!diff) {
+            return alt_revision_tbl[i].revision;
+        }
+    }
+    return 0;
 }
 
 /**
@@ -326,6 +341,20 @@ const char *acvp_lookup_rsa_randpq_name(int value) {
     default:
         return NULL;
     }
+}
+
+ACVP_RSA_PUB_EXP_MODE acvp_lookup_rsa_pub_exp_mode(const char *str) {
+    int diff = 1;
+
+    strcmp_s(ACVP_RSA_PUB_EXP_MODE_FIXED_STR,
+             ACVP_RSA_PUB_EXP_MODE_FIXED_STR_LEN, str, &diff);
+    if (!diff) return ACVP_RSA_PUB_EXP_MODE_FIXED;
+
+    strcmp_s(ACVP_RSA_PUB_EXP_MODE_RANDOM_STR,
+             ACVP_RSA_PUB_EXP_MODE_RANDOM_STR_LEN, str, &diff);
+    if (!diff) return ACVP_RSA_PUB_EXP_MODE_RANDOM;
+
+    return 0;
 }
 
 int acvp_lookup_rsa_randpq_index(const char *value) {
@@ -724,6 +753,24 @@ const char *acvp_lookup_lmots_mode_str(ACVP_LMOTS_MODE mode) {
     for (i = 0; i < lmots_mode_tbl_len; i++) {
         if (mode == lmots_mode_tbl[i].enum_value) {
             return lmots_mode_tbl[i].string;
+        }
+    }
+    return NULL;
+}
+
+/* This seems too small to dictate having its own table/function, but future expandability may be useful */
+static struct acvp_enum_string_pair rsa_key_format_tbl[] = {
+    { ACVP_RSA_KEY_FORMAT_STANDARD, "standard" },
+    { ACVP_RSA_KEY_FORMAT_CRT, "crt" }
+};
+
+static int rsa_key_format_tbl_len = sizeof(rsa_key_format_tbl) / sizeof(struct acvp_enum_string_pair);
+
+const char *acvp_lookup_rsa_format_str(ACVP_RSA_KEY_FORMAT format) {
+    int i = 0;
+    for (i = 0; i < rsa_key_format_tbl_len; i++) {
+        if (format == rsa_key_format_tbl[i].enum_value) {
+            return rsa_key_format_tbl[i].string;
         }
     }
     return NULL;
