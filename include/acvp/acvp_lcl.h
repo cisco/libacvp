@@ -863,7 +863,7 @@
 #define ACVP_KDA_DKM_STR_MAX (ACVP_KDA_DKM_BIT_MAX >> 2)
 #define ACVP_KDA_DKM_BYTE_MAX (ACVP_KDA_DKM_BIT_MAX >> 3)
 
-#define ACVP_KDA_FIXED_BIT_MAX 8192 //arbitrary
+#define ACVP_KDA_FIXED_BIT_MAX 65536 //arbitrary
 #define ACVP_KDA_FIXED_STR_MAX (ACVP_KDA_FIXED_BIT_MAX >> 2)
 #define ACVP_KDA_FIXED_BYTE_MAX (ACVP_KDA_FIXED_BIT_MAX >> 3)
 
@@ -871,7 +871,7 @@
 #define ACVP_KDA_SALT_STR_MAX (ACVP_KDA_SALT_BIT_MAX >> 2)
 #define ACVP_KDA_SALT_BYTE_MAX (ACVP_KDA_SALT_BIT_MAX >> 3)
 
-#define ACVP_KDA_Z_BIT_MAX 65336 //arbitrary, used spec example
+#define ACVP_KDA_Z_BIT_MAX 65536 //arbitrary, used spec example
 #define ACVP_KDA_Z_STR_MAX (ACVP_KDA_Z_BIT_MAX >> 2)
 #define ACVP_KDA_Z_BYTE_MAX (ACVP_KDA_Z_BIT_MAX >> 3)
 
