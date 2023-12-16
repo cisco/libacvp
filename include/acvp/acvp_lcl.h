@@ -2058,5 +2058,18 @@ ACVP_KDF108_MODE read_mode(const char *str);
 ACVP_RESULT acvp_json_serialize_to_file_pretty_a(const JSON_Value *value, const char *filename);
 ACVP_RESULT acvp_json_serialize_to_file_pretty_w(const JSON_Value *value, const char *filename);
 
+ACVP_RESULT acvp_digest(ACVP_HASH_ALG alg,
+                        const unsigned char *src,
+                        size_t src_len,
+                        unsigned char *dest,
+                        size_t dest_max,
+                        size_t *dest_len);
+
+ACVP_RESULT acvp_bin_to_hashstr(ACVP_HASH_ALG alg,
+                                const unsigned char *src,
+                                size_t src_len,
+                                char *dest,
+                                size_t dest_max);
+
 
 #endif

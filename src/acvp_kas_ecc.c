@@ -12,6 +12,8 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include <openssl/evp.h>
+
 #include "acvp.h"
 #include "acvp_lcl.h"
 #include "parson.h"
@@ -893,7 +895,19 @@ static ACVP_RESULT acvp_kas_ecc_output_ssc_tc(ACVP_CTX *ctx,
             ACVP_LOG_ERR("hex conversion failure (Z)");
             goto end;
         }
-        memcmp_s(stc->chash, ACVP_KAS_ECC_BYTE_MAX, stc->z, stc->zlen, &diff);
+        if (stc->md == ACVP_NO_SHA) {
+            memcmp_s(stc->chash, ACVP_KAS_ECC_BYTE_MAX, stc->z, stc->zlen, &diff);
+        } else {
+            unsigned char md[EVP_MAX_MD_SIZE] = {0};
+            
+            rv = acvp_digest(stc->md, stc->chash, stc->chashlen, md, sizeof(md), NULL);
+            if (rv != ACVP_SUCCESS) {
+                ACVP_LOG_ERR("digest failure (Z)");
+                goto end;
+            }
+
+            memcmp_s(md, sizeof(md), stc->z, stc->zlen, &diff);
+        }
         if (!diff) {
             json_object_set_boolean(tc_rsp, "testPassed", 1);
         } else {
@@ -926,7 +940,11 @@ static ACVP_RESULT acvp_kas_ecc_output_ssc_tc(ACVP_CTX *ctx,
         json_object_set_string(tc_rsp, "ephemeralPrivateIut", tmp);
 
         memzero_s(tmp, ACVP_KAS_ECC_STR_MAX);
-        rv = acvp_bin_to_hexstr(stc->chash, stc->chashlen, tmp, ACVP_KAS_ECC_STR_MAX);
+        if (stc->md == ACVP_NO_SHA) {
+            rv = acvp_bin_to_hexstr(stc->chash, stc->chashlen, tmp, ACVP_KAS_ECC_STR_MAX);
+        } else {
+            rv = acvp_bin_to_hashstr(stc->md, stc->chash, stc->chashlen, tmp, ACVP_KAS_ECC_STR_MAX);
+        }
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("hex conversion failure (Z)");
             goto end;

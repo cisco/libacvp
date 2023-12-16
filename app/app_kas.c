@@ -456,11 +456,6 @@ int app_kas_ifc_handler(ACVP_TEST_CASE *test_case) {
 
     tc = test_case->tc.kas_ifc;
 
-    if (tc->md != ACVP_NO_SHA) {
-        printf("Hash alg provided for KAS-IFC case but not supported\n");
-        goto err;
-    }
-
     /** Step 1: Convert all existing values into bignum, null check needed values */
     if (tc->kas_role == ACVP_KAS_IFC_INITIATOR || tc->scheme == ACVP_KAS_IFC_KAS2) {
 

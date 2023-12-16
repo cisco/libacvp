@@ -30,6 +30,8 @@
 #include <curl/curl.h>
 #endif
 
+#include <openssl/evp.h>
+
 extern ACVP_ALG_HANDLER alg_tbl[];
 
 static int acvp_char_to_int(char ch);
@@ -1533,3 +1535,53 @@ void acvp_sleep(int seconds) {
 #endif
 }
 
+ACVP_RESULT acvp_digest(ACVP_HASH_ALG alg,
+                        const unsigned char *src,
+                        size_t src_len,
+                        unsigned char *dest,
+                        size_t dest_max,
+                        size_t *dest_len) {
+    unsigned char md[EVP_MAX_MD_SIZE] = {0};
+    size_t md_len = 0;
+    const char *alg_name = NULL;
+    
+    alg_name = acvp_lookup_hash_alg_name(alg);
+    if (alg_name == NULL) {
+        return ACVP_INVALID_ARG;
+    }
+
+    if (EVP_Q_digest(NULL, alg_name, NULL, src, src_len, md, &md_len) == 0) {
+        return ACVP_INTERNAL_ERR;
+    }
+
+    if (memcpy_s(dest, dest_max, md, md_len) != EOK) {
+        return ACVP_MALLOC_FAIL;
+    }
+
+    if (dest_len != NULL) {
+        *dest_len = md_len;
+    }
+    return ACVP_SUCCESS;
+}
+
+ACVP_RESULT acvp_bin_to_hashstr(ACVP_HASH_ALG alg,
+                                const unsigned char *src,
+                                size_t src_len,
+                                char *dest,
+                                size_t dest_max) {
+    int rv = ACVP_SUCCESS;
+    unsigned char md[EVP_MAX_MD_SIZE] = {0};
+    size_t md_len = 0;
+    
+    rv = acvp_digest(alg, src, src_len, md, sizeof(md), &md_len);
+    if (rv != ACVP_SUCCESS) {
+        return rv;
+    }
+
+    rv = acvp_bin_to_hexstr(md, md_len, dest, dest_max);
+    if (rv != ACVP_SUCCESS) {
+        return rv;
+    }
+
+    return ACVP_SUCCESS;
+}

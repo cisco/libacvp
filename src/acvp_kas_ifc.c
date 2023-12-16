@@ -12,6 +12,8 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include <openssl/evp.h>
+
 #include "acvp.h"
 #include "acvp_lcl.h"
 #include "parson.h"
@@ -45,7 +47,11 @@ static ACVP_RESULT acvp_kas_ifc_ssc_output_tc(ACVP_CTX *ctx,
         }
         json_object_set_string(tc_rsp, "iutC", tmp);
 
-        rv = acvp_bin_to_hexstr(stc->iut_pt_z, stc->iut_pt_z_len, tmp, ACVP_KAS_IFC_STR_MAX);
+        if (stc->md == ACVP_NO_SHA) {
+            rv = acvp_bin_to_hexstr(stc->iut_pt_z, stc->iut_pt_z_len, tmp, ACVP_KAS_IFC_STR_MAX);
+        } else {
+            rv = acvp_bin_to_hashstr(stc->md, stc->iut_pt_z, stc->iut_pt_z_len, tmp, ACVP_KAS_IFC_STR_MAX);
+        }
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("hex conversion failure (iut_pt_z)");
             goto end;
@@ -70,7 +76,11 @@ static ACVP_RESULT acvp_kas_ifc_ssc_output_tc(ACVP_CTX *ctx,
             }
             json_object_set_string(tc_rsp, "iutC", tmp);
 
-            rv = acvp_bin_to_hexstr(stc->iut_pt_z, stc->iut_pt_z_len, tmp, ACVP_KAS_IFC_STR_MAX);
+            if (stc->md == ACVP_NO_SHA) {
+                rv = acvp_bin_to_hexstr(stc->iut_pt_z, stc->iut_pt_z_len, tmp, ACVP_KAS_IFC_STR_MAX);
+            } else {
+                rv = acvp_bin_to_hashstr(stc->md, stc->iut_pt_z, stc->iut_pt_z_len, tmp, ACVP_KAS_IFC_STR_MAX);
+            }
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("hex conversion failure (iut_pt_z)");
                 goto end;
@@ -81,7 +91,11 @@ static ACVP_RESULT acvp_kas_ifc_ssc_output_tc(ACVP_CTX *ctx,
                 json_object_set_string(tc_rsp, "iutHashZ", tmp);
             }
         } else {
-            rv = acvp_bin_to_hexstr(stc->server_pt_z, stc->server_pt_z_len, tmp, ACVP_KAS_IFC_STR_MAX);
+            if (stc->md == ACVP_NO_SHA) {
+                rv = acvp_bin_to_hexstr(stc->server_pt_z, stc->server_pt_z_len, tmp, ACVP_KAS_IFC_STR_MAX);
+            } else {
+                rv = acvp_bin_to_hashstr(stc->md, stc->server_pt_z, stc->server_pt_z_len, tmp, ACVP_KAS_IFC_STR_MAX);
+            }
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("hex conversion failure (server_pt_z)");
                 goto end;
@@ -112,13 +126,20 @@ static ACVP_RESULT acvp_kas_ifc_ssc_output_tc(ACVP_CTX *ctx,
             memcpy_s(merge + stc->server_pt_z_len, z_len - stc->server_pt_z_len,
                         stc->iut_pt_z, stc->iut_pt_z_len);
         }
-        rv = acvp_bin_to_hexstr((const unsigned char *)merge, z_len, tmp, ACVP_KAS_IFC_STR_MAX);
+        if (stc->md == ACVP_NO_SHA) {
+            rv = acvp_bin_to_hexstr((const unsigned char *)merge, z_len, tmp, ACVP_KAS_IFC_STR_MAX);
+        } else {
+            rv = acvp_bin_to_hashstr(stc->md, (const unsigned char *)merge, z_len, tmp, ACVP_KAS_IFC_STR_MAX);
+        }
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("hex conversion failure (KAS2 combined Z)");
             goto end;
         }
-        json_object_set_string(tc_rsp, "z", tmp);
-
+        if (stc->md == ACVP_NO_SHA) {
+            json_object_set_string(tc_rsp, "z", tmp);
+        } else {
+            json_object_set_string(tc_rsp, "hashZ", tmp);
+        }
     }
 
 end:
@@ -133,6 +154,8 @@ static ACVP_RESULT acvp_kas_ifc_ssc_val_output_tc(ACVP_KAS_IFC_TC *stc,
     rv = 0;
     int diff = 1, len = 0;
     unsigned char *merge = NULL;
+    unsigned char md[EVP_MAX_MD_SIZE] = {0};
+    size_t md_len = 0;
     /* For initiator tests, check the encapsulated Z. For responder tests, check the decapsulated Z. */
     if (stc->kas_role == ACVP_KAS_IFC_INITIATOR) {
         if (stc->iut_ct_z_len == stc->provided_ct_z_len) {
@@ -155,7 +178,8 @@ static ACVP_RESULT acvp_kas_ifc_ssc_val_output_tc(ACVP_KAS_IFC_TC *stc,
     if (stc->scheme == ACVP_KAS_IFC_KAS2) {
         len = stc->iut_pt_z_len + stc->server_pt_z_len;
 
-        if (len == stc->provided_kas2_z_len) {
+        /* provided_kas2_z may be from "z" or "hashZ" */
+        if (len == stc->provided_kas2_z_len || stc->md != ACVP_NO_SHA) {
             merge = calloc(len, sizeof(unsigned char));
             if (!merge) {
                 return ACVP_MALLOC_FAIL;
@@ -169,8 +193,19 @@ static ACVP_RESULT acvp_kas_ifc_ssc_val_output_tc(ACVP_KAS_IFC_TC *stc,
                 memcpy_s(merge + stc->server_pt_z_len, len - stc->server_pt_z_len,
                             stc->iut_pt_z, stc->iut_pt_z_len);
             }
-            memcmp_s(merge, len, stc->provided_kas2_z, stc->provided_kas2_z_len, &diff);
-            rv += abs(diff);
+
+            if (stc->md != ACVP_NO_SHA) {
+                rv = acvp_digest(stc->md, merge, len, md, sizeof(md), &md_len);
+                if (rv != ACVP_SUCCESS || md_len != stc->provided_kas2_z_len) {
+                    rv++;
+                } else {
+                    memcmp_s(md, md_len, stc->provided_kas2_z, stc->provided_kas2_z_len, &diff);
+                    rv += abs(diff);
+                }
+            } else {
+                memcmp_s(merge, len, stc->provided_kas2_z, stc->provided_kas2_z_len, &diff);
+                rv += abs(diff);
+            }
         } else {
             rv++;
         }
