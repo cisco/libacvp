@@ -222,11 +222,26 @@ int app_rsa_sig_handler(ACVP_TEST_CASE *test_case) {
     case ACVP_SHA512_256:
         md = "SHA2-512/256";
         break;
-    case ACVP_NO_SHA:
+#ifdef ACVP_FIPS186_5
+    case ACVP_SHA3_224:
+        md = "SHA3-224";
+        break;
+    case ACVP_SHA3_256:
+        md = "SHA3-256";
+        break;
+    case ACVP_SHA3_384:
+        md = "SHA3-384";
+        break;
+    case ACVP_SHA3_512:
+        md = "SHA3-512";
+        break;
+#else
     case ACVP_SHA3_224:
     case ACVP_SHA3_256:
     case ACVP_SHA3_384:
     case ACVP_SHA3_512:
+#endif
+    case ACVP_NO_SHA:
     case ACVP_HASH_ALG_MAX:
     default:
         printf("\nError: hashAlg not supported for RSA SigGen\n");
