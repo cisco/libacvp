@@ -158,13 +158,13 @@ int app_drbg_handler(ACVP_TEST_CASE *test_case) {
         params[0] = OSSL_PARAM_construct_octet_string(OSSL_RAND_PARAM_TEST_ENTROPY, tc->entropy_input_pr_0, tc->entropy_len);
         params[1] = OSSL_PARAM_construct_end();
         if (EVP_RAND_CTX_set_params(test, params) != 1) {
-            printf("Error setting params for DRBG (1)\n");
+            printf("Error setting reseed params for DRBG\n");
             goto err;
         }
 
         if (EVP_RAND_reseed(rctx, tc->pred_resist_enabled, NULL, 0,
                             tc->additional_input_0, tc->additional_input_len) != 1) {
-            printf("Error performing rand generate (1)\n");
+            printf("Error performing reseed DRBG\n");
             goto err;
         }
     }
