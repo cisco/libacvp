@@ -77,7 +77,7 @@ static ACVP_RESULT acvp_rsa_output_tc(ACVP_CTX *ctx, ACVP_RSA_KEYGEN_TC *stc, JS
     }
     json_object_set_string(tc_rsp, "e", (const char *)tmp);
 
-    if (stc->key_format == ACVP_RSA_KEY_FORMAT_CRT) {
+    if (stc->rand_pq == ACVP_RSA_KEYGEN_B36) {
         rv = acvp_bin_to_hexstr(stc->xp, stc->xp_len, tmp, ACVP_RSA_EXP_LEN_MAX);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("hex conversion failure (xp)");
@@ -142,14 +142,16 @@ static ACVP_RESULT acvp_rsa_output_tc(ACVP_CTX *ctx, ACVP_RSA_KEYGEN_TC *stc, JS
             }
             json_object_set_string(tc_rsp, "seed", (const char *)tmp);
             memzero_s(tmp, ACVP_RSA_EXP_LEN_MAX);
-
-            json_object_set_value(tc_rsp, "bitlens", json_value_init_array());
-            JSON_Array *bitlens_array = json_object_get_array(tc_rsp, "bitlens");
-            json_array_append_number(bitlens_array, stc->bitlen1);
-            json_array_append_number(bitlens_array, stc->bitlen2);
-            json_array_append_number(bitlens_array, stc->bitlen3);
-            json_array_append_number(bitlens_array, stc->bitlen4);
         }
+    }
+
+    if (!(stc->rand_pq == ACVP_RSA_KEYGEN_B33)) {
+        json_object_set_value(tc_rsp, "bitlens", json_value_init_array());
+        JSON_Array *bitlens_array = json_object_get_array(tc_rsp, "bitlens");
+        json_array_append_number(bitlens_array, stc->bitlen1);
+        json_array_append_number(bitlens_array, stc->bitlen2);
+        json_array_append_number(bitlens_array, stc->bitlen3);
+        json_array_append_number(bitlens_array, stc->bitlen4);
     }
 
 err:

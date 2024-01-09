@@ -86,6 +86,9 @@ static ACVP_RESULT acvp_hash_output_mct_tc(ACVP_CTX *ctx, ACVP_HASH_TC *stc, JSO
     }
 
     json_object_set_string(r_tobj, "md", tmp);
+    if (stc->cipher == ACVP_HASH_SHAKE_128 || stc->cipher == ACVP_HASH_SHAKE_256) {
+        json_object_set_number(r_tobj, "outLen", stc->md_len * 8);
+    }
 
 end:
     if (tmp) free(tmp);
@@ -770,6 +773,9 @@ static ACVP_RESULT acvp_hash_output_tc(ACVP_CTX *ctx, ACVP_HASH_TC *stc, JSON_Ob
         goto end;
     }
     json_object_set_string(tc_rsp, "md", tmp);
+    if (stc->cipher == ACVP_HASH_SHAKE_128 || stc->cipher == ACVP_HASH_SHAKE_256) {
+        json_object_set_number(tc_rsp, "outLen", stc->md_len * 8);
+    }
 
 end:
     if (tmp) free(tmp);
