@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Cisco Systems, Inc.
+ * Copyright (c) 2024, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -526,5 +526,29 @@ const char *get_string_from_oid(unsigned char *oid, int oid_len) {
     if (!diff) return "AES-256-WRAP";
 
     return NULL;
+}
+
+const char *get_ed_instance_param(ACVP_ED_CURVE curve, int is_prehash, int has_context) {
+    switch (curve) {
+    case ACVP_ED_CURVE_25519:
+        return is_prehash ? "Ed25519ph" : (has_context ? "Ed25519ctx" : "Ed25519");
+    case ACVP_ED_CURVE_448:
+        return is_prehash ? "Ed448ph" : "Ed448";
+    default:
+        return NULL;
+    }
+}
+
+const char *get_ed_curve_string(ACVP_ED_CURVE curve) {
+    switch (curve) {
+    case ACVP_ED_CURVE_25519:
+        return "ED25519";
+    case ACVP_ED_CURVE_448:
+        return "ED448";
+    case ACVP_ED_CURVE_START:
+    case ACVP_ED_CURVE_END:
+    default:
+        return NULL;
+    }
 }
 #endif

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, Cisco Systems, Inc.
+ * Copyright (c) 2024, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -47,6 +47,7 @@ static int enable_hmac(ACVP_CTX *ctx);
 static int enable_kmac(ACVP_CTX *ctx);
 static int enable_rsa(ACVP_CTX *ctx);
 static int enable_ecdsa(ACVP_CTX *ctx);
+static int enable_eddsa(ACVP_CTX *ctx);
 static int enable_drbg(ACVP_CTX *ctx);
 static int enable_kas_ecc(ACVP_CTX *ctx);
 static int enable_kas_ifc(ACVP_CTX *ctx);
@@ -189,6 +190,7 @@ static void app_cleanup(ACVP_CTX *ctx) {
 #endif
     app_rsa_cleanup();
     app_ecdsa_cleanup();
+    app_eddsa_cleanup();
 #endif
 }
 
@@ -357,6 +359,7 @@ int main(int argc, char **argv) {
         if (cfg.kdf) { if (enable_kdf(ctx)) goto end; }
         if (cfg.rsa) { if (enable_rsa(ctx)) goto end; }
         if (cfg.ecdsa) { if (enable_ecdsa(ctx)) goto end; }
+        if (cfg.eddsa) { if (enable_eddsa(ctx)) goto end; }
         if (cfg.drbg) { if (enable_drbg(ctx)) goto end; }
         if (cfg.kas_ecc) { if (enable_kas_ecc(ctx)) goto end; }
         if (cfg.kas_ifc) { if (enable_kas_ifc(ctx)) goto end; }
@@ -2675,7 +2678,7 @@ static int enable_rsa(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_rsa_keygen_set_parm(ctx, ACVP_RSA_PARM_INFO_GEN_BY_SERVER, 1);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_rsa_keygen_set_parm(ctx, ACVP_RSA_PARM_KEY_FORMAT, ACVP_RSA_KEY_FORMAT_CRT);
+    rv = acvp_cap_rsa_keygen_set_parm(ctx, ACVP_RSA_PARM_KEY_FORMAT, ACVP_RSA_KEY_FORMAT_STANDARD);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_rsa_keygen_set_parm(ctx, ACVP_RSA_PARM_PUB_EXP_MODE, ACVP_RSA_PUB_EXP_MODE_RANDOM);
     CHECK_ENABLE_CAP_RV(rv);
@@ -3237,6 +3240,51 @@ end:
     return rv;
 }
 #endif
+
+static int enable_eddsa(ACVP_CTX *ctx) {
+    ACVP_RESULT rv = ACVP_SUCCESS;
+
+    rv = acvp_cap_eddsa_enable(ctx, ACVP_EDDSA_KEYGEN, &app_eddsa_handler);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_eddsa_set_parm(ctx, ACVP_EDDSA_KEYGEN, ACVP_EDDSA_CURVE, ACVP_ED_CURVE_25519);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_eddsa_set_parm(ctx, ACVP_EDDSA_KEYGEN, ACVP_EDDSA_CURVE, ACVP_ED_CURVE_448);
+    CHECK_ENABLE_CAP_RV(rv);
+
+#if 0 //not currently implemented fully in OpenSSL
+    rv = acvp_cap_eddsa_enable(ctx, ACVP_EDDSA_KEYVER, &app_eddsa_handler);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_eddsa_set_parm(ctx, ACVP_EDDSA_KEYVER, ACVP_EDDSA_CURVE, ACVP_ED_CURVE_25519);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_eddsa_set_parm(ctx, ACVP_EDDSA_KEYVER, ACVP_EDDSA_CURVE, ACVP_ED_CURVE_448);
+    CHECK_ENABLE_CAP_RV(rv);
+#endif
+
+    rv = acvp_cap_eddsa_enable(ctx, ACVP_EDDSA_SIGGEN, &app_eddsa_handler);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_eddsa_set_parm(ctx, ACVP_EDDSA_SIGGEN, ACVP_EDDSA_CURVE, ACVP_ED_CURVE_25519);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_eddsa_set_parm(ctx, ACVP_EDDSA_SIGGEN, ACVP_EDDSA_CURVE, ACVP_ED_CURVE_448);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_eddsa_set_parm(ctx, ACVP_EDDSA_SIGGEN, ACVP_EDDSA_SUPPORTS_PREHASH, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_eddsa_set_parm(ctx, ACVP_EDDSA_SIGGEN, ACVP_EDDSA_SUPPORTS_PURE, 1);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    rv = acvp_cap_eddsa_enable(ctx, ACVP_EDDSA_SIGVER, &app_eddsa_handler);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_eddsa_set_parm(ctx, ACVP_EDDSA_SIGVER, ACVP_EDDSA_CURVE, ACVP_ED_CURVE_25519);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_eddsa_set_parm(ctx, ACVP_EDDSA_SIGVER, ACVP_EDDSA_CURVE, ACVP_ED_CURVE_448);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_eddsa_set_parm(ctx, ACVP_EDDSA_SIGVER, ACVP_EDDSA_SUPPORTS_PREHASH, 0);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_eddsa_set_parm(ctx, ACVP_EDDSA_SIGVER, ACVP_EDDSA_SUPPORTS_PURE, 1);
+    CHECK_ENABLE_CAP_RV(rv);
+
+end:
+        return rv;
+}
 
 #if OPENSSL_VERSION_NUMBER >= 0x30000000L
 static int enable_drbg(ACVP_CTX *ctx) {
@@ -3873,6 +3921,7 @@ ACVP_RESULT acvp_app_run_vector_test_file(const char *path, const char *output, 
     if (enable_dsa(ctx)) goto end;
     if (enable_rsa(ctx)) goto end;
     if (enable_ecdsa(ctx)) goto end;
+    if (enable_eddsa(ctx)) goto end;
     if (enable_drbg(ctx)) goto end;
     if (enable_kas_ecc(ctx)) goto end;
     if (enable_kas_ifc(ctx)) goto end;

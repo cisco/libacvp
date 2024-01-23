@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, Cisco Systems, Inc.
+ * Copyright (c) 2024, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -74,7 +74,7 @@ typedef struct app_config {
     int aes; int tdes;
     int hash; int cmac; int hmac; int kmac;
     int dsa; int rsa;
-    int drbg; int ecdsa;
+    int drbg; int ecdsa; int eddsa;
     int kas_ecc; int kas_ffc; int kas_ifc; int kda; int kts_ifc;
     int kdf;
     int safe_primes;
@@ -124,6 +124,7 @@ int app_kdf_tls13_handler(ACVP_TEST_CASE *test_case);
 void app_dsa_cleanup(void);
 void app_rsa_cleanup(void);
 void app_ecdsa_cleanup(void);
+void app_eddsa_cleanup(void);
 
 int app_dsa_handler(ACVP_TEST_CASE *test_case);
 int app_kas_ecc_handler(ACVP_TEST_CASE *test_case);
@@ -138,6 +139,7 @@ int app_rsa_sig_handler(ACVP_TEST_CASE *test_case);
 int app_rsa_decprim_handler(ACVP_TEST_CASE *test_case);
 int app_rsa_sigprim_handler(ACVP_TEST_CASE *test_case);
 int app_ecdsa_handler(ACVP_TEST_CASE *test_case);
+int app_eddsa_handler(ACVP_TEST_CASE *test_case);
 int app_drbg_handler(ACVP_TEST_CASE *test_case);
 int app_safe_primes_handler(ACVP_TEST_CASE *test_case);
 int app_lms_handler(ACVP_TEST_CASE *test_case);
@@ -146,6 +148,8 @@ int app_lms_handler(ACVP_TEST_CASE *test_case);
 int app_aes_handler_gmac(ACVP_TEST_CASE *test_case);
 ACVP_RESULT fips_sanity_check(void);
 const char *get_string_from_oid(unsigned char *oid, int oid_len);
+const char *get_ed_instance_param(ACVP_ED_CURVE curve, int is_prehash, int has_context);
+const char *get_ed_curve_string(ACVP_ED_CURVE curve);
 #endif
 
 #ifdef __cplusplus
