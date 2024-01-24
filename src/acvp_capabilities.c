@@ -5421,9 +5421,15 @@ ACVP_RESULT acvp_cap_eddsa_set_parm(ACVP_CTX *ctx,
                 current_curve = current_curve->next;
             }
             current_curve->next = calloc(1, sizeof(ACVP_PARAM_LIST));
+            if (!current_curve->next) {
+                return ACVP_MALLOC_FAIL;
+            }
             current_curve->next->param = value;
         } else {
             cap->curves = calloc(1, sizeof(ACVP_PARAM_LIST));
+            if (!cap->curves) {
+                return ACVP_MALLOC_FAIL;
+            }
             cap->curves->param = value;
         }
         break;

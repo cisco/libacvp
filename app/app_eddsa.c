@@ -136,6 +136,7 @@ int app_eddsa_handler(ACVP_TEST_CASE *test_case) {
         params = OSSL_PARAM_BLD_to_param(pkey_pbld);
         if (!params) {
             printf("Error generating parameters for pkey generation in EDDSA keyver\n");
+            goto err;
         }
 
         pkey_ctx = EVP_PKEY_CTX_new_from_name(NULL, curve, NULL);
@@ -243,6 +244,7 @@ int app_eddsa_handler(ACVP_TEST_CASE *test_case) {
         params = OSSL_PARAM_BLD_to_param(pkey_pbld);
         if (!params) {
             printf("Error generating parameters for pkey generation in EDDSA sigver\n");
+            goto err;
         }
 
         pkey_ctx = EVP_PKEY_CTX_new_from_name(NULL, curve, NULL);

@@ -456,6 +456,11 @@ static ACVP_RESULT acvp_eddsa_kat_handler_internal(ACVP_CTX *ctx, JSON_Object *o
             /* Output the test case results using JSON. et "q" at the GROUP level for siggen */
             if (cipher == ACVP_EDDSA_SIGGEN) {
                 char *tmp = calloc(ACVP_EDDSA_POINT_LEN_MAX + 1, sizeof(char));
+                if (!tmp) {
+                    ACVP_LOG_ERR("Failed to allocate outbut buffer for 'q' in EDDSA siggen");
+                    json_value_free(r_tval);
+                    goto err;
+                }
                 rv = acvp_bin_to_hexstr(stc.q, stc.q_len, tmp, ACVP_EDDSA_POINT_LEN_MAX);
                 if (rv != ACVP_SUCCESS) {
                     ACVP_LOG_ERR("hex conversion failure (q)");
