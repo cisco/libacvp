@@ -1,6 +1,6 @@
 /** @file */
 /*
- * Copyright (c) 2023, Cisco Systems, Inc.
+ * Copyright (c) 2024, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -618,6 +618,40 @@ ACVP_EC_CURVE acvp_lookup_ec_curve(ACVP_CIPHER cipher, const char *name) {
         }
     }
 
+    return 0;
+}
+
+#define ED_CURVE_NAME_MAX 8
+static struct acvp_enum_string_pair ed_curve_tbl[] = {
+    { ACVP_ED_CURVE_25519, "ED-25519" },
+    { ACVP_ED_CURVE_448, "ED-448" }
+};
+static int ed_curve_tbl_length =
+    sizeof(ed_curve_tbl) / sizeof(struct acvp_enum_string_pair);
+
+const char *acvp_lookup_ed_curve_name(ACVP_ED_CURVE id) {
+    int i = 0;
+
+    for (i = 0; i < ed_curve_tbl_length; i++) {
+        if (id == ed_curve_tbl[i].enum_value) {
+            return ed_curve_tbl[i].string;
+        }
+    }
+    return NULL;
+}
+
+ACVP_ED_CURVE acvp_lookup_ed_curve(const char *name) {
+    int i = 0;
+
+    for (i = 0; i < ed_curve_tbl_length; i++) {
+        int diff = 0;
+
+        strcmp_s(ed_curve_tbl[i].string, ED_CURVE_NAME_MAX, name, &diff);
+
+        if (!diff) {
+            return ed_curve_tbl[i].enum_value;
+        }
+    }
     return 0;
 }
 

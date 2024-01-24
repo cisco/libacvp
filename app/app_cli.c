@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, Cisco Systems, Inc.
+ * Copyright (c) 2024, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -72,6 +72,7 @@ static void print_usage(int code) {
     printf("      --safe_primes\n");
     printf("      --rsa\n");
     printf("      --ecdsa\n");
+    printf("      --eddsa\n");
     printf("      --drbg\n");
     printf("      --kas_ecc\n");
     printf("      --kas_ifc\n");
@@ -232,6 +233,7 @@ static ko_longopt_t longopts[] = {
     { "kda", ko_no_argument, 325 },
     { "kmac", ko_no_argument, 326 },
     { "lms", ko_no_argument, 327 },
+    { "eddsa", ko_no_argument, 328 },
     { "all_algs", ko_no_argument, 350 },
     { "manual_registration", ko_required_argument, 400 },
     { "fips_validation", ko_required_argument, 402 },
@@ -275,6 +277,7 @@ static void enable_all_algorithms(APP_CONFIG *cfg) {
     cfg->rsa = 1;
     cfg->drbg = 1;
     cfg->ecdsa = 1;
+    cfg->eddsa = 1;
     cfg->kas_ecc = 1;
     cfg->kas_ifc = 1;
     cfg->kda = 1;
@@ -433,6 +436,10 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
             break;
         case 327:
             cfg->lms = 1;
+            cfg->empty_alg = 0;
+            break;
+        case 328:
+            cfg->eddsa = 1;
             cfg->empty_alg = 0;
             break;
         case 'a':

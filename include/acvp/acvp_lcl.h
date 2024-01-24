@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Cisco Systems, Inc.
+ * Copyright (c) 2024, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -168,6 +168,9 @@
 
 /* ECDSA */
 #define ACVP_REV_ECDSA               ACVP_REV_STR_FIPS186_5
+
+/* EDDSA */
+#define ACVP_REV_EDDSA               ACVP_REV_STR_1_0
 
 /* KAS_ECC */
 #define ACVP_REV_KAS_ECC             ACVP_REV_STR_1_0
@@ -359,6 +362,7 @@
 #define ACVP_ALG_RSA                "RSA"
 #define ACVP_ALG_ECDSA              "ECDSA"
 #define ACVP_ALG_DET_ECDSA          "DetECDSA"
+#define ACVP_ALG_EDDSA              "EDDSA"
 
 #define ACVP_MODE_KEYGEN            "keyGen"
 #define ACVP_MODE_KEYVER            "keyVer"
@@ -389,6 +393,7 @@
 #define ACVP_TESTTYPE_STR_AFT "AFT"
 #define ACVP_TESTTYPE_STR_VOL "VOL"
 #define ACVP_TESTTYPE_STR_GDT "GDT"
+#define ACVP_TESTTYPE_STR_BFT "BFT"
 
 #define ACVP_DRBG_MODE_TDES          "TDES"
 #define ACVP_DRBG_MODE_AES_128       "AES-128"
@@ -793,6 +798,9 @@
 #define ACVP_ECDSA_EXP_LEN_MAX       512
 #define ACVP_ECDSA_MSGLEN_MAX 8192
 
+#define ACVP_EDDSA_MSG_LEN_MAX 8192 /* arbitrary */
+#define ACVP_EDDSA_POINT_LEN_MAX 8192 /* arbitrary */
+
 #define ACVP_KAS_IFC_BIT_MAX 4096*4
 #define ACVP_KAS_IFC_BYTE_MAX (ACVP_KAS_IFC_BIT_MAX >> 3)
 #define ACVP_KAS_IFC_STR_MAX (ACVP_KAS_IFC_BIT_MAX >> 2)
@@ -936,7 +944,7 @@ struct acvp_alg_handler_t {
     ACVP_RESULT (*handler) (ACVP_CTX *ctx, JSON_Object *obj);
 
     const char *name;
-    const char *mode; /** < Should be NULL unless using an asymmetric alg */
+    const char *mode;
     const char *revision;
     union {
         ACVP_SUB_AES      aes;
@@ -947,6 +955,7 @@ struct acvp_alg_handler_t {
         ACVP_SUB_DSA      dsa;
         ACVP_SUB_RSA      rsa;
         ACVP_SUB_ECDSA    ecdsa;
+        ACVP_SUB_EDDSA    eddsa;
         ACVP_SUB_DRBG     drbg;
         ACVP_SUB_HMAC     hmac;
         ACVP_SUB_HASH     hash;
@@ -1011,6 +1020,10 @@ typedef enum acvp_capability_type {
     ACVP_ECDSA_SIGGEN_TYPE,
     ACVP_ECDSA_SIGVER_TYPE,
     ACVP_DET_ECDSA_SIGGEN_TYPE,
+    ACVP_EDDSA_KEYGEN_TYPE,
+    ACVP_EDDSA_KEYVER_TYPE,
+    ACVP_EDDSA_SIGGEN_TYPE,
+    ACVP_EDDSA_SIGVER_TYPE,
     ACVP_DSA_TYPE,
     ACVP_KDF135_SNMP_TYPE,
     ACVP_KDF135_SSH_TYPE,
@@ -1354,6 +1367,12 @@ typedef struct acvp_ecdsa_capability_t {
     ACVP_REVISION revision; /* Empty if default is used */
 } ACVP_ECDSA_CAP;
 
+typedef struct acvp_eddsa_capability_t {
+    ACVP_PARAM_LIST *curves;
+    int supports_pure;
+    int supports_prehash;
+} ACVP_EDDSA_CAP;
+
 typedef struct acvp_rsa_sig_capability_t {
     const char *sig_type_str;
     unsigned int sig_type;
@@ -1362,7 +1381,6 @@ typedef struct acvp_rsa_sig_capability_t {
     ACVP_RSA_MODE_CAPS_LIST *mode_capabilities; //holds modRSASigGen (int) and hashSigGen (list)
     struct acvp_rsa_sig_capability_t *next;
 } ACVP_RSA_SIG_CAP;
-
 
 typedef struct acvp_dsa_attrs {
     unsigned int modulo;
@@ -1594,6 +1612,10 @@ typedef struct acvp_caps_list_t {
         ACVP_ECDSA_CAP *ecdsa_siggen_cap;
         ACVP_ECDSA_CAP *ecdsa_sigver_cap;
         ACVP_ECDSA_CAP *det_ecdsa_siggen_cap;
+        ACVP_EDDSA_CAP *eddsa_keygen_cap;
+        ACVP_EDDSA_CAP *eddsa_keyver_cap;
+        ACVP_EDDSA_CAP *eddsa_siggen_cap;
+        ACVP_EDDSA_CAP *eddsa_sigver_cap;
         ACVP_KDF135_SNMP_CAP *kdf135_snmp_cap;
         ACVP_KDF135_SSH_CAP *kdf135_ssh_cap;
         ACVP_KDF135_SRTP_CAP *kdf135_srtp_cap;
@@ -1898,6 +1920,14 @@ ACVP_RESULT acvp_ecdsa_sigver_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
 ACVP_RESULT acvp_det_ecdsa_siggen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
+ACVP_RESULT acvp_eddsa_keygen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
+
+ACVP_RESULT acvp_eddsa_keyver_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
+
+ACVP_RESULT acvp_eddsa_siggen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
+
+ACVP_RESULT acvp_eddsa_sigver_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
+
 ACVP_RESULT acvp_kdf135_snmp_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
 ACVP_RESULT acvp_kdf135_ssh_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
@@ -2007,6 +2037,8 @@ const char *acvp_lookup_hash_alg_name(ACVP_HASH_ALG id);
 
 ACVP_EC_CURVE acvp_lookup_ec_curve(ACVP_CIPHER cipher, const char *name);
 const char *acvp_lookup_ec_curve_name(ACVP_CIPHER cipher, ACVP_EC_CURVE id);
+const char *acvp_lookup_ed_curve_name(ACVP_ED_CURVE id);
+ACVP_ED_CURVE acvp_lookup_ed_curve(const char *name);
 
 ACVP_RESULT acvp_refresh(ACVP_CTX *ctx);
 

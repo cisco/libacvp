@@ -1,6 +1,6 @@
 /** @file */
 /*
- * Copyright (c) 2023, Cisco Systems, Inc.
+ * Copyright (c) 2024, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -140,6 +140,10 @@ ACVP_ALG_HANDLER alg_tbl[ACVP_ALG_MAX] = {
     { ACVP_ECDSA_SIGGEN,      &acvp_ecdsa_siggen_kat_handler,     ACVP_ALG_ECDSA,             ACVP_MODE_SIGGEN, ACVP_REV_ECDSA, {ACVP_SUB_ECDSA_SIGGEN}},
     { ACVP_ECDSA_SIGVER,      &acvp_ecdsa_sigver_kat_handler,     ACVP_ALG_ECDSA,             ACVP_MODE_SIGVER, ACVP_REV_ECDSA, {ACVP_SUB_ECDSA_SIGVER}},
     { ACVP_DET_ECDSA_SIGGEN,  &acvp_det_ecdsa_siggen_kat_handler, ACVP_ALG_DET_ECDSA,         ACVP_MODE_SIGGEN, ACVP_REV_ECDSA, {ACVP_SUB_DET_ECDSA_SIGGEN}},
+    { ACVP_EDDSA_KEYGEN,      &acvp_eddsa_keygen_kat_handler,     ACVP_ALG_EDDSA,             ACVP_MODE_KEYGEN, ACVP_REV_EDDSA, {ACVP_SUB_EDDSA_KEYGEN}},
+    { ACVP_EDDSA_KEYVER,      &acvp_eddsa_keyver_kat_handler,     ACVP_ALG_EDDSA,             ACVP_MODE_KEYVER, ACVP_REV_EDDSA, {ACVP_SUB_EDDSA_KEYVER}},
+    { ACVP_EDDSA_SIGGEN,      &acvp_eddsa_siggen_kat_handler,     ACVP_ALG_EDDSA,             ACVP_MODE_SIGGEN, ACVP_REV_EDDSA, {ACVP_SUB_EDDSA_SIGGEN}},
+    { ACVP_EDDSA_SIGVER,      &acvp_eddsa_sigver_kat_handler,     ACVP_ALG_EDDSA,             ACVP_MODE_SIGVER, ACVP_REV_EDDSA, {ACVP_SUB_EDDSA_SIGVER}},
     { ACVP_KDF135_SNMP,       &acvp_kdf135_snmp_kat_handler,      ACVP_KDF135_ALG_STR,        ACVP_ALG_KDF135_SNMP, ACVP_REV_KDF135_SNMP, {ACVP_SUB_KDF_SNMP}},
     { ACVP_KDF135_SSH,        &acvp_kdf135_ssh_kat_handler,       ACVP_KDF135_ALG_STR,        ACVP_ALG_KDF135_SSH, ACVP_REV_KDF135_SSH, {ACVP_SUB_KDF_SSH}},
     { ACVP_KDF135_SRTP,       &acvp_kdf135_srtp_kat_handler,      ACVP_KDF135_ALG_STR,        ACVP_ALG_KDF135_SRTP, ACVP_REV_KDF135_SRTP, {ACVP_SUB_KDF_SRTP}},
@@ -796,6 +800,22 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx) {
             case ACVP_DET_ECDSA_SIGGEN_TYPE:
                 acvp_cap_free_ec_alg_list(cap_entry->cap.det_ecdsa_siggen_cap->curves);
                 free(cap_entry->cap.det_ecdsa_siggen_cap);
+                break;
+            case ACVP_EDDSA_KEYGEN_TYPE:
+                acvp_cap_free_pl(cap_entry->cap.eddsa_keygen_cap->curves);
+                free(cap_entry->cap.eddsa_keygen_cap);
+                break;
+            case ACVP_EDDSA_KEYVER_TYPE:
+                acvp_cap_free_pl(cap_entry->cap.eddsa_keyver_cap->curves);
+                free(cap_entry->cap.eddsa_keyver_cap);
+                break;
+            case ACVP_EDDSA_SIGGEN_TYPE:
+                acvp_cap_free_pl(cap_entry->cap.eddsa_siggen_cap->curves);
+                free(cap_entry->cap.eddsa_siggen_cap);
+                break;
+            case ACVP_EDDSA_SIGVER_TYPE:
+                acvp_cap_free_pl(cap_entry->cap.eddsa_sigver_cap->curves);
+                free(cap_entry->cap.eddsa_sigver_cap);
                 break;
             case ACVP_KDF135_SRTP_TYPE:
                 acvp_cap_free_sl(cap_entry->cap.kdf135_srtp_cap->aes_keylens);
@@ -3925,6 +3945,14 @@ ACVP_SUB_ECDSA acvp_get_ecdsa_alg(ACVP_CIPHER cipher)
         return 0;
     }
     return (alg_tbl[cipher-1].alg.ecdsa);
+}
+
+ACVP_SUB_EDDSA acvp_get_eddsa_alg(ACVP_CIPHER cipher)
+{
+    if ((cipher == ACVP_CIPHER_START) || (cipher >= ACVP_CIPHER_END)) {
+        return 0;
+    }
+    return (alg_tbl[cipher-1].alg.eddsa);
 }
 
 ACVP_SUB_KDF acvp_get_kdf_alg(ACVP_CIPHER cipher)

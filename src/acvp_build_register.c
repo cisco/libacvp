@@ -1,6 +1,6 @@
 /** @file */
 /*
- * Copyright (c) 2023, Cisco Systems, Inc.
+ * Copyright (c) 2024, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -721,6 +721,10 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
     case ACVP_ECDSA_SIGGEN:
     case ACVP_ECDSA_SIGVER:
     case ACVP_DET_ECDSA_SIGGEN:
+    case ACVP_EDDSA_KEYGEN:
+    case ACVP_EDDSA_KEYVER:
+    case ACVP_EDDSA_SIGGEN:
+    case ACVP_EDDSA_SIGVER:
     case ACVP_KDF135_SNMP:
     case ACVP_KDF135_SSH:
     case ACVP_KDF135_SRTP:
@@ -1604,6 +1608,80 @@ static ACVP_RESULT acvp_build_ecdsa_register_cap(ACVP_CTX *ctx, ACVP_CIPHER ciph
             json_array_append_value(caps_arr, alg_caps_val);
             current_curve = current_curve->next;
         }
+    }
+
+    return ACVP_SUCCESS;
+}
+
+static ACVP_RESULT acvp_build_eddsa_register_cap(ACVP_CTX *ctx,JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry) {
+    JSON_Array *curves_arr = NULL;
+    ACVP_PARAM_LIST *current_curve = NULL;
+    JSON_Value *alg_caps_val = NULL;
+    const char *revision = NULL, *tmp = NULL;
+    ACVP_SUB_EDDSA alg;
+    ACVP_EDDSA_CAP *eddsa_cap = NULL;
+
+    alg = acvp_get_eddsa_alg(cap_entry->cipher);
+    if (alg == 0) {
+        ACVP_LOG_ERR("Invalid cipher value");
+        return 1;
+    }
+
+    json_object_set_string(cap_obj, "algorithm", "EDDSA");
+
+    revision = acvp_lookup_cipher_revision(cap_entry->cipher);
+    if (revision == NULL) return ACVP_INVALID_ARG;
+    json_object_set_string(cap_obj, "revision", revision);
+
+    switch (alg) {
+    case ACVP_SUB_EDDSA_KEYGEN:
+        json_object_set_string(cap_obj, "mode", "keyGen");
+        if (!cap_entry->cap.eddsa_keygen_cap) {
+            return ACVP_NO_CAP;
+        }
+        eddsa_cap = cap_entry->cap.eddsa_keygen_cap;
+        break;
+    case ACVP_SUB_EDDSA_KEYVER:
+        json_object_set_string(cap_obj, "mode", "keyVer");
+        if (!cap_entry->cap.eddsa_keyver_cap) {
+            return ACVP_NO_CAP;
+        }
+        eddsa_cap = cap_entry->cap.eddsa_keyver_cap;
+        break;
+    case ACVP_SUB_EDDSA_SIGGEN:
+        json_object_set_string(cap_obj, "mode", "sigGen");
+        if (!cap_entry->cap.eddsa_siggen_cap) {
+            return ACVP_NO_CAP;
+        }
+        eddsa_cap = cap_entry->cap.eddsa_siggen_cap;
+        break;
+    case ACVP_SUB_EDDSA_SIGVER:
+        json_object_set_string(cap_obj, "mode", "sigVer");
+        if (!cap_entry->cap.eddsa_sigver_cap) {
+            return ACVP_NO_CAP;
+        }
+        eddsa_cap = cap_entry->cap.eddsa_sigver_cap;
+        break;
+    default:
+        return ACVP_INVALID_ARG;
+    }
+    current_curve = eddsa_cap->curves;
+
+    json_object_set_value(cap_obj, "curve", json_value_init_array());
+    curves_arr = json_object_get_array(cap_obj, "curve");
+    while (current_curve) {
+        tmp = acvp_lookup_ed_curve_name(current_curve->param);
+        if (!tmp) {
+            if (alg_caps_val) json_value_free(alg_caps_val);
+            return ACVP_MISSING_ARG;
+        }
+        json_array_append_string(curves_arr, tmp);
+        current_curve = current_curve->next;
+    }
+
+    if (alg == ACVP_SUB_EDDSA_SIGGEN || alg == ACVP_SUB_EDDSA_SIGVER) {
+        json_object_set_boolean(cap_obj, "preHash", eddsa_cap->supports_prehash);
+        json_object_set_boolean(cap_obj, "pure", eddsa_cap->supports_pure);
     }
 
     return ACVP_SUCCESS;
@@ -5059,6 +5137,12 @@ ACVP_RESULT acvp_build_registration_json(ACVP_CTX *ctx, JSON_Value **reg) {
                 } else {
                     rv = acvp_build_ecdsa_register_cap(ctx, cap_entry->cipher, cap_obj, cap_entry);
                 }
+                break;
+            case ACVP_EDDSA_KEYGEN:
+            case ACVP_EDDSA_KEYVER:
+            case ACVP_EDDSA_SIGGEN:
+            case ACVP_EDDSA_SIGVER:
+                rv = acvp_build_eddsa_register_cap(ctx, cap_obj, cap_entry);
                 break;
             case ACVP_KDF135_SNMP:
                 rv = acvp_build_kdf135_snmp_register_cap(cap_obj, cap_entry);
