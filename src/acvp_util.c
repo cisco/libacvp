@@ -391,7 +391,11 @@ static struct acvp_drbg_mode_name_t drbg_mode_tbl[] = {
     { ACVP_DRBG_SHA_512,     ACVP_STR_SHA2_512       },
     { ACVP_DRBG_SHA_512_224, ACVP_STR_SHA2_512_224   },
     { ACVP_DRBG_SHA_512_256, ACVP_STR_SHA2_512_256   },
-    { ACVP_DRBG_TDES,        ACVP_DRBG_MODE_TDES },
+    { ACVP_DRBG_SHA3_224,    ACVP_STR_SHA3_224       },
+    { ACVP_DRBG_SHA3_256,    ACVP_STR_SHA3_256       },
+    { ACVP_DRBG_SHA3_384,    ACVP_STR_SHA3_384       },
+    { ACVP_DRBG_SHA3_512,    ACVP_STR_SHA3_512       },
+    { ACVP_DRBG_TDES,        ACVP_DRBG_MODE_TDES     },
     { ACVP_DRBG_AES_128,     ACVP_DRBG_MODE_AES_128  },
     { ACVP_DRBG_AES_192,     ACVP_DRBG_MODE_AES_192  },
     { ACVP_DRBG_AES_256,     ACVP_DRBG_MODE_AES_256  }

@@ -13,8 +13,8 @@
 #include "parson.h"
 
 #define ACVP_VERSION    "1.0"
-#define ACVP_LIBRARY_VERSION_NUMBER "2.0.0"
-#define ACVP_LIBRARY_VERSION    "libacvp_oss-2.0.0"
+#define ACVP_LIBRARY_VERSION_NUMBER "2.1.0"
+#define ACVP_LIBRARY_VERSION    "libacvp_oss-2.1.0"
 
 #ifndef ACVP_LOG_ERR
 #define ACVP_LOG_ERR(msg, ...) do { \
@@ -997,7 +997,7 @@ struct acvp_alt_revision_info {
 
 /* A generic struct that can match an enum with a string */
 struct acvp_enum_string_pair {
-    int enum_value;
+    unsigned int enum_value;
     const char *string;
 };
 

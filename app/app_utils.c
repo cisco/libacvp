@@ -375,6 +375,10 @@ const EVP_MD *get_md_for_hash_alg(ACVP_HASH_ALG alg) {
         return EVP_sha3_384();
     case ACVP_SHA3_512:
         return EVP_sha3_512();
+    case ACVP_SHAKE_128:
+        return EVP_shake128();
+    case ACVP_SHAKE_256:
+        return EVP_shake256();
     case ACVP_NO_SHA:
     case ACVP_HASH_ALG_MAX:
     default:
@@ -534,6 +538,8 @@ const char *get_ed_instance_param(ACVP_ED_CURVE curve, int is_prehash, int has_c
         return is_prehash ? "Ed25519ph" : (has_context ? "Ed25519ctx" : "Ed25519");
     case ACVP_ED_CURVE_448:
         return is_prehash ? "Ed448ph" : "Ed448";
+    case ACVP_ED_CURVE_START:
+    case ACVP_ED_CURVE_END:
     default:
         return NULL;
     }

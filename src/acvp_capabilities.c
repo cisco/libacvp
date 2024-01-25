@@ -3270,6 +3270,7 @@ ACVP_RESULT acvp_cap_hash_set_domain(ACVP_CTX *ctx,
     case ACVP_HASH_IN_BIT:
     case ACVP_HASH_IN_EMPTY:
     case ACVP_HASH_OUT_BIT:
+    case ACVP_HASH_LARGE_DATA:
     default:
         ACVP_LOG_ERR("Invalid 'parm'");
         return ACVP_INVALID_ARG;
@@ -4270,6 +4271,8 @@ ACVP_RESULT acvp_cap_rsa_keygen_set_parm(ACVP_CTX *ctx,
         ACVP_LOG_ERR("Use acvp_enable_rsa_keygen_mode() or acvp_enable_rsa_keygen_exp_parm() API to enable a new randPQ or exponent.");
         break;
     default:
+    case ACVP_RSA_PARM_REVISION:
+    case ACVP_RSA_PARM_MODULO:
         rv = ACVP_INVALID_ARG;
         break;
     }
@@ -4328,6 +4331,8 @@ ACVP_RESULT acvp_cap_rsa_sigver_set_parm(ACVP_CTX *ctx,
     case ACVP_RSA_PARM_KEY_FORMAT:
     case ACVP_RSA_PARM_RAND_PQ:
     case ACVP_RSA_PARM_INFO_GEN_BY_SERVER:
+    case ACVP_RSA_PARM_REVISION:
+    case ACVP_RSA_PARM_MODULO:
     default:
         return ACVP_INVALID_ARG;
 
@@ -4488,6 +4493,8 @@ ACVP_RESULT acvp_cap_rsa_keygen_set_exponent(ACVP_CTX *ctx,
     case ACVP_RSA_PARM_KEY_FORMAT:
     case ACVP_RSA_PARM_RAND_PQ:
     case ACVP_RSA_PARM_INFO_GEN_BY_SERVER:
+    case ACVP_RSA_PARM_REVISION:
+    case ACVP_RSA_PARM_MODULO:
     default:
         return ACVP_INVALID_ARG;
     }
@@ -4541,6 +4548,8 @@ ACVP_RESULT acvp_cap_rsa_sigver_set_exponent(ACVP_CTX *ctx,
     case ACVP_RSA_PARM_KEY_FORMAT:
     case ACVP_RSA_PARM_RAND_PQ:
     case ACVP_RSA_PARM_INFO_GEN_BY_SERVER:
+    case ACVP_RSA_PARM_REVISION:
+    case ACVP_RSA_PARM_MODULO:
     default:
         return ACVP_INVALID_ARG;
     }
@@ -5118,6 +5127,8 @@ ACVP_RESULT acvp_cap_rsa_prim_set_exponent(ACVP_CTX *ctx,
     case ACVP_RSA_PARM_KEY_FORMAT:
     case ACVP_RSA_PARM_RAND_PQ:
     case ACVP_RSA_PARM_INFO_GEN_BY_SERVER:
+    case ACVP_RSA_PARM_REVISION:
+    case ACVP_RSA_PARM_MODULO:
     default:
         return ACVP_INVALID_ARG;
     }
@@ -7012,8 +7023,7 @@ ACVP_RESULT acvp_cap_kdf_tls13_set_parm(ACVP_CTX *ctx,
 /*
  * Append a KAS-ECC pre req val to the capabilities
  */
-static ACVP_RESULT acvp_add_kas_ecc_prereq_val(ACVP_CTX *ctx, ACVP_KAS_ECC_CAP_MODE *kas_ecc_mode,
-                                               ACVP_KAS_ECC_MODE mode,
+static ACVP_RESULT acvp_add_kas_ecc_prereq_val(ACVP_KAS_ECC_CAP_MODE *kas_ecc_mode,
                                                ACVP_PREREQ_ALG pre_req,
                                                char *value) {
     ACVP_PREREQ_LIST *prereq_entry, *prereq_entry_2;
@@ -7095,7 +7105,7 @@ ACVP_RESULT acvp_cap_kas_ecc_set_prereq(ACVP_CTX *ctx,
     /*
      * Add the value to the cap
      */
-    return acvp_add_kas_ecc_prereq_val(ctx, kas_ecc_mode, mode, pre_req, value);
+    return acvp_add_kas_ecc_prereq_val(kas_ecc_mode, pre_req, value);
 }
 
 ACVP_RESULT acvp_cap_kas_ecc_enable(ACVP_CTX *ctx,
