@@ -194,23 +194,22 @@ int app_eddsa_handler(ACVP_TEST_CASE *test_case) {
             printf("Error initializing sign CTX for EDDSA siggen\n");
             goto err;
         }
+
+        pkey_pbld = OSSL_PARAM_BLD_new();
+        if (!pkey_pbld) {
+            printf("Error creating param_bld in EDDSA siggen\n");
+            goto err;
+        }
+        OSSL_PARAM_BLD_push_utf8_string(pkey_pbld, OSSL_SIGNATURE_PARAM_INSTANCE, instance, 0);
         if (tc->context) {
-            pkey_pbld = OSSL_PARAM_BLD_new();
-            if (!pkey_pbld) {
-                printf("Error creating param_bld in EDDSA keyver\n");
-                goto err;
-            }
-            OSSL_PARAM_BLD_push_utf8_string(pkey_pbld, OSSL_SIGNATURE_PARAM_INSTANCE, instance, 0);
             OSSL_PARAM_BLD_push_octet_string(pkey_pbld, OSSL_SIGNATURE_PARAM_CONTEXT_STRING, tc->context, tc->context_len);
-            params = OSSL_PARAM_BLD_to_param(pkey_pbld);
-            if (!params) {
-                printf("Error generating parameters for pkey generation in EDDSA siggen\n");
-            }
-            if (EVP_DigestSignInit_ex(sig_ctx, NULL, NULL, NULL, NULL, group_pkey, params) != 1) {
-                printf("Error initializing signing for EDDSA siggen\n");
-                goto err;
-            }
-        } else if (EVP_DigestSignInit_ex(sig_ctx, NULL, NULL, NULL, NULL, group_pkey, NULL) != 1) {
+        }
+        params = OSSL_PARAM_BLD_to_param(pkey_pbld);
+        if (!params) {
+            printf("Error generating parameters for pkey generation in EDDSA siggen\n");
+            goto err;
+        }
+        if (EVP_DigestSignInit_ex(sig_ctx, NULL, NULL, NULL, NULL, group_pkey, params) != 1) {
             printf("Error initializing signing for EDDSA siggen\n");
             goto err;
         }
@@ -261,13 +260,31 @@ int app_eddsa_handler(ACVP_TEST_CASE *test_case) {
             goto err;
         }
 
+        OSSL_PARAM_free(params);
+        OSSL_PARAM_BLD_free(pkey_pbld);
+
+        pkey_pbld = OSSL_PARAM_BLD_new();
+        if (!pkey_pbld) {
+            printf("Error creating param_bld in EDDSA sigver\n");
+            goto err;
+        }
+        OSSL_PARAM_BLD_push_utf8_string(pkey_pbld, OSSL_SIGNATURE_PARAM_INSTANCE, instance, 0);
+        if (tc->context) {
+            OSSL_PARAM_BLD_push_octet_string(pkey_pbld, OSSL_SIGNATURE_PARAM_CONTEXT_STRING, tc->context, tc->context_len);
+        }
+        params = OSSL_PARAM_BLD_to_param(pkey_pbld);
+        if (!params) {
+            printf("Error generating parameters for pkey generation in EDDSA sigver\n");
+            goto err;
+        }
+
         sig_ctx = EVP_MD_CTX_new();
         if (!sig_ctx) {
             printf("Error initializing sign CTX for EDDSA sigver\n");
             goto err;
         }
 
-        if (EVP_DigestVerifyInit_ex(sig_ctx, NULL, NULL, NULL, NULL, pkey, NULL) != 1) {
+        if (EVP_DigestVerifyInit_ex(sig_ctx, NULL, NULL, NULL, NULL, pkey, params) != 1) {
             printf("Error initializing signing for EDDSA sigver\n");
             goto err;
         }

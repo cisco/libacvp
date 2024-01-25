@@ -437,10 +437,10 @@ Andrew Karcher (Cisco Systems)
 | **DSA mode: sigGen** |  Y  |  N  |  Y  |
 | **DSA mode: pqgGen** |  Y  |  N  |  Y  |
 | **DSA mode: pqgVer** |  Y  |  N  |  Y  |
-| **EDDSA mode: keyGen** |  N  |  N  |  N  |
+| **EDDSA mode: keyGen** |  Y  |  N  |  Y  |
 | **EDDSA mode: keyVer** |  N  |  N  |  N  |
-| **EDDSA mode: sigGen** |  N  |  N  |  N  |
-| **EDDSA mode: sigVer** |  N  |  N  |  N  |
+| **EDDSA mode: sigGen** |  Y  |  N  |  Y  |
+| **EDDSA mode: sigVer** |  Y  |  N  |  Y  |
 | **LMS mode: keyGen** |  Y  |  N  |  N  |
 | **LMS mode: sigGen** |  Y  |  N  |  N  |
 | **LMS mode: sigVer** |  Y  |  N  |  N  |
