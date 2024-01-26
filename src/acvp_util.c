@@ -1038,7 +1038,7 @@ ACVP_RESULT acvp_create_array(JSON_Object **obj, JSON_Value **val, JSON_Array **
         return ACVP_JSON_ERR;
     }
 
-    json_object_set_string(ver_obj, "acvVersion", ACVP_VERSION);
+    json_object_set_string(ver_obj, "acvVersion", ACVP_PROTOCOL_VERSION);
     if (json_array_append_value(reg_arry, ver_val) != JSONSuccess) {
         return ACVP_JSON_ERR;
     }
