@@ -912,6 +912,18 @@ static const char *acvp_lookup_drbg_mode_string(ACVP_DRBG_MODE_LIST *drbg_cap_mo
     case ACVP_DRBG_SHA_512_256:
         mode_str = ACVP_STR_SHA2_512_256;
         break;
+    case ACVP_DRBG_SHA3_224:
+        mode_str = ACVP_STR_SHA3_224;
+        break;
+    case ACVP_DRBG_SHA3_256:
+        mode_str = ACVP_STR_SHA3_256;
+        break;
+    case ACVP_DRBG_SHA3_384:
+        mode_str = ACVP_STR_SHA3_384;
+        break;
+    case ACVP_DRBG_SHA3_512:
+        mode_str = ACVP_STR_SHA3_512;
+        break;
     case ACVP_DRBG_TDES:
         mode_str = ACVP_DRBG_MODE_TDES;
         break;

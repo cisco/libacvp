@@ -80,6 +80,18 @@ int app_drbg_handler(ACVP_TEST_CASE *test_case) {
     case ACVP_DRBG_SHA_512_256:
         alg_str = "SHA2-512/256";
         break;
+    case ACVP_DRBG_SHA3_224:
+        alg_str = "SHA3-224";
+        break;
+    case ACVP_DRBG_SHA3_256:
+        alg_str = "SHA3-256";
+        break;
+    case ACVP_DRBG_SHA3_384:
+        alg_str = "SHA3-384";
+        break;
+    case ACVP_DRBG_SHA3_512:
+        alg_str = "SHA3-512";
+        break;
     case ACVP_DRBG_AES_128:
         alg_str = "AES-128-CTR";
         break;

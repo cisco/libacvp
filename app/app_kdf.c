@@ -331,6 +331,8 @@ int app_kdf108_handler(ACVP_TEST_CASE *test_case) {
         mac = "CMAC";
         isHmac = 0;
         break;
+    case ACVP_KDF108_MAC_MODE_KMAC_128:
+    case ACVP_KDF108_MAC_MODE_KMAC_256:
     case ACVP_KDF108_MAC_MODE_MIN:
     case ACVP_KDF108_MAC_MODE_CMAC_TDES:
     case ACVP_KDF108_MAC_MODE_MAX:
