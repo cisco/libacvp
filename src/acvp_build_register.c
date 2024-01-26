@@ -5294,7 +5294,7 @@ static JSON_Value *acvp_version_json_value(void) {
     version_val = json_value_init_object();
     version_obj = json_value_get_object(version_val);
 
-    json_object_set_string(version_obj, "acvVersion", ACVP_VERSION);
+    json_object_set_string(version_obj, "acvVersion", ACVP_PROTOCOL_VERSION);
 
     return version_val;
 }

@@ -1300,7 +1300,7 @@ ACVP_RESULT acvp_upload_vectors_from_file(ACVP_CTX *ctx, const char *rsp_filenam
         ver_val = json_value_init_object();
         ver_obj = json_value_get_object(ver_val);
 
-        json_object_set_string(ver_obj, "acvVersion", ACVP_VERSION);
+        json_object_set_string(ver_obj, "acvVersion", ACVP_PROTOCOL_VERSION);
         json_array_append_value(vec_array, ver_val);
 
         json_result = json_serialize_to_string_pretty(vs_val, NULL);
@@ -2169,7 +2169,7 @@ static ACVP_RESULT acvp_build_login(ACVP_CTX *ctx, char **login, int *login_len,
     ver_val = json_value_init_object();
     ver_obj = json_value_get_object(ver_val);
 
-    json_object_set_string(ver_obj, "acvVersion", ACVP_VERSION);
+    json_object_set_string(ver_obj, "acvVersion", ACVP_PROTOCOL_VERSION);
     json_array_append_value(reg_arry, ver_val);
 
     if (ctx->totp_cb || refresh) {
@@ -2488,7 +2488,7 @@ ACVP_RESULT acvp_notify_large(ACVP_CTX *ctx,
     ver_val = json_value_init_object();
     ver_obj = json_value_get_object(ver_val);
 
-    json_object_set_string(ver_obj, "acvVersion", ACVP_VERSION);
+    json_object_set_string(ver_obj, "acvVersion", ACVP_PROTOCOL_VERSION);
     json_array_append_value(arr, ver_val);
 
     /*
@@ -3680,7 +3680,7 @@ const char *acvp_version(void) {
 }
 
 const char *acvp_protocol_version(void) {
-    return ACVP_VERSION;
+    return ACVP_PROTOCOL_VERSION;
 }
 
 ACVP_RESULT acvp_put_data_from_file(ACVP_CTX *ctx, const char *put_filename) {

@@ -12,10 +12,6 @@
 
 #include "parson.h"
 
-#define ACVP_VERSION    "1.0"
-#define ACVP_LIBRARY_VERSION_NUMBER "2.1.0"
-#define ACVP_LIBRARY_VERSION    "libacvp_oss-2.1.0"
-
 #ifndef ACVP_LOG_ERR
 #define ACVP_LOG_ERR(msg, ...) do { \
         acvp_log_msg(ctx, ACVP_LOG_LVL_ERR, __func__, __LINE__, msg, ##__VA_ARGS__); \

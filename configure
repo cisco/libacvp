@@ -10989,6 +10989,8 @@ else
 fi
 
     # If using SSL >= 3.0.0, FIPS is mananged at runtime
+else
+    with_fomdir=no
 fi
 
 # Offline mode

@@ -98,6 +98,8 @@ if test "x$disable_app" = "xno" ; then
         [fomdir="$withval"],
         [with_fomdir=no])
     # If using SSL >= 3.0.0, FIPS is mananged at runtime
+else
+    with_fomdir=no
 fi
 
 # Offline mode
