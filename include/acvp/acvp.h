@@ -727,13 +727,16 @@ typedef enum acvp_rsa_param {
     ACVP_RSA_PARM_RAND_PQ,
     ACVP_RSA_PARM_INFO_GEN_BY_SERVER,
     ACVP_RSA_PARM_REVISION,
-    ACVP_RSA_PARM_MODULO
+    ACVP_RSA_PARM_MODULO,
+    ACVP_RSA_PARM_MASK_FUNCTION
 } ACVP_RSA_PARM;
 
 /** @enum ACVP_RSA_PRIME_PARAM */
 typedef enum acvp_rsa_prime_param {
     ACVP_RSA_PRIME_HASH_ALG = 1,
     ACVP_RSA_PRIME_TEST,
+    ACVP_RSA_PRIME_PMOD8,
+    ACVP_RSA_PRIME_QMOD8,
 } ACVP_RSA_PRIME_PARAM;
 
 /** @enum ACVP_ECDSA_PARM */
@@ -919,17 +922,37 @@ typedef enum acvp_rsa_pub_exp_mode {
 /** @enum ACVP_RSA_PRIME_TEST_TYPE */
 typedef enum acvp_rsa_prime_test_type {
     ACVP_RSA_PRIME_TEST_TBLC2 = 1,
-    ACVP_RSA_PRIME_TEST_TBLC3
+    ACVP_RSA_PRIME_TEST_TBLC3,
+    /* FIPS 186-5 */
+    ACVP_RSA_PRIME_TEST_2POW100,
+    ACVP_RSA_PRIME_TEST_2POW_SEC_STR
 } ACVP_RSA_PRIME_TEST_TYPE;
 
 /** @enum ACVP_RSA_KEYGEN_MODE */
 typedef enum acvp_rsa_keygen_mode_t {
-    ACVP_RSA_KEYGEN_B32 = 1,
+    ACVP_RSA_KEYGEN_NONE = 0,
+    ACVP_RSA_KEYGEN_B32,
     ACVP_RSA_KEYGEN_B33,
     ACVP_RSA_KEYGEN_B34,
     ACVP_RSA_KEYGEN_B35,
-    ACVP_RSA_KEYGEN_B36
+    ACVP_RSA_KEYGEN_B36,
+    /* These generally match the above ones, but the terminology has changed for FIPS 186-5 */
+    ACVP_RSA_KEYGEN_PROVABLE,
+    ACVP_RSA_KEYGEN_PROBABLE,
+    ACVP_RSA_KEYGEN_PROV_W_PROV_AUX,
+    ACVP_RSA_KEYGEN_PROB_W_PROV_AUX,
+    ACVP_RSA_KEYGEN_PROB_W_PROB_AUX,
+    ACVP_RSA_KEYGEN_MAX
 } ACVP_RSA_KEYGEN_MODE;
+
+/** @enum ACVP_RSA_MASK_FUNCTION */
+typedef enum acvp_rsa_mask_function_t {
+    ACVP_RSA_MASK_FUNCTION_NONE = 0,
+    ACVP_RSA_MASK_FUNCTION_MGF1,
+    ACVP_RSA_MASK_FUNCTION_SHAKE_128,
+    ACVP_RSA_MASK_FUNCTION_SHAKE_256,
+    ACVP_RSA_MASK_FUNCTION_MAX
+} ACVP_RSA_MASK_FUNCTION;
 
 /** @enum ACVP_RSA_SIG_TYPE */
 typedef enum acvp_rsa_sig_type {
@@ -1613,6 +1636,7 @@ typedef struct acvp_rsa_keygen_tc_t {
     unsigned int tc_id;    /**< Test case id */
     ACVP_HASH_ALG hash_alg;
     ACVP_RSA_TESTTYPE test_type;
+    ACVP_REVISION revision;
     ACVP_RSA_PRIME_TEST_TYPE prime_test;
     char *prime_result;
     char *pub_exp;
@@ -1735,6 +1759,7 @@ typedef struct acvp_eddsa_tc_t {
 typedef struct acvp_rsa_sig_tc_t {
     unsigned int tc_id; /**< Test case id */
     int tg_id;          /**< needed to keep e,n state */
+    ACVP_REVISION revision;
     char *group_e;
     char *group_n;
     ACVP_HASH_ALG hash_alg;
@@ -3403,6 +3428,10 @@ ACVP_RESULT acvp_cap_rsa_keygen_set_parm(ACVP_CTX *ctx,
                                          ACVP_RSA_PARM param,
                                          int value);
 
+ACVP_RESULT acvp_cap_rsa_siggen_set_parm(ACVP_CTX *ctx,
+                                             ACVP_RSA_PARM param,
+                                             int value);
+
 ACVP_RESULT acvp_cap_rsa_sigver_set_parm(ACVP_CTX *ctx,
                                          ACVP_RSA_PARM param,
                                          int value);
@@ -3437,6 +3466,14 @@ ACVP_RESULT acvp_cap_rsa_sigver_set_mod_parm(ACVP_CTX *ctx,
                                              unsigned int mod,
                                              int hash_alg,
                                              int salt_len);
+
+ACVP_RESULT acvp_cap_rsa_siggen_set_mod_mask(ACVP_CTX *ctx,
+                                             unsigned int mod,
+                                             int value);
+
+ACVP_RESULT acvp_cap_rsa_sigver_set_mod_mask(ACVP_CTX *ctx,
+                                             unsigned int mod,
+                                             int value);
 
 ACVP_RESULT acvp_cap_ecdsa_set_parm(ACVP_CTX *ctx,
                                     ACVP_CIPHER cipher,

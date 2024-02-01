@@ -27,7 +27,7 @@ static ACVP_RESULT acvp_rsa_output_tc(ACVP_CTX *ctx, ACVP_RSA_KEYGEN_TC *stc, JS
     ACVP_RESULT rv = ACVP_SUCCESS;
     char *tmp = NULL;
 
-    if (stc->rand_pq == ACVP_RSA_KEYGEN_B33 && stc->test_type == ACVP_RSA_TESTTYPE_KAT) {
+    if ((stc->rand_pq == ACVP_RSA_KEYGEN_B33 || stc->rand_pq == ACVP_RSA_KEYGEN_PROBABLE) && stc->test_type == ACVP_RSA_TESTTYPE_KAT) {
         json_object_set_boolean(tc_rsp, "testPassed", stc->test_disposition);
         goto err;
     }
@@ -77,7 +77,7 @@ static ACVP_RESULT acvp_rsa_output_tc(ACVP_CTX *ctx, ACVP_RSA_KEYGEN_TC *stc, JS
     }
     json_object_set_string(tc_rsp, "e", (const char *)tmp);
 
-    if (stc->rand_pq == ACVP_RSA_KEYGEN_B36) {
+    if (stc->rand_pq == ACVP_RSA_KEYGEN_B36 || stc->rand_pq == ACVP_RSA_KEYGEN_PROB_W_PROB_AUX) {
         rv = acvp_bin_to_hexstr(stc->xp, stc->xp_len, tmp, ACVP_RSA_EXP_LEN_MAX);
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("hex conversion failure (xp)");
@@ -130,11 +130,14 @@ static ACVP_RESULT acvp_rsa_output_tc(ACVP_CTX *ctx, ACVP_RSA_KEYGEN_TC *stc, JS
     if (stc->info_gen_by_server) {
         if (stc->rand_pq == ACVP_RSA_KEYGEN_B33 ||
             stc->rand_pq == ACVP_RSA_KEYGEN_B35 ||
-            stc->rand_pq == ACVP_RSA_KEYGEN_B36) {
+            stc->rand_pq == ACVP_RSA_KEYGEN_B36 ||
+            stc->rand_pq == ACVP_RSA_KEYGEN_PROBABLE ||
+            stc->rand_pq == ACVP_RSA_KEYGEN_PROB_W_PROV_AUX ||
+            stc->rand_pq == ACVP_RSA_KEYGEN_PROB_W_PROB_AUX) {
             json_object_set_string(tc_rsp, "primeResult", (const char *)stc->prime_result);
         }
     } else {
-        if (!(stc->rand_pq == ACVP_RSA_KEYGEN_B33)) {
+        if (!(stc->rand_pq == ACVP_RSA_KEYGEN_B33 || stc->rand_pq == ACVP_RSA_KEYGEN_PROBABLE)) {
             rv = acvp_bin_to_hexstr(stc->seed, stc->seed_len, tmp, ACVP_RSA_SEEDLEN_MAX);
             if (rv != ACVP_SUCCESS) {
                 ACVP_LOG_ERR("hex conversion failure (seed)");
@@ -145,7 +148,7 @@ static ACVP_RESULT acvp_rsa_output_tc(ACVP_CTX *ctx, ACVP_RSA_KEYGEN_TC *stc, JS
         }
     }
 
-    if (!(stc->rand_pq == ACVP_RSA_KEYGEN_B33)) {
+    if (!(stc->rand_pq == ACVP_RSA_KEYGEN_B33 || stc->rand_pq == ACVP_RSA_KEYGEN_PROBABLE)) {
         json_object_set_value(tc_rsp, "bitlens", json_value_init_array());
         JSON_Array *bitlens_array = json_object_get_array(tc_rsp, "bitlens");
         json_array_append_number(bitlens_array, stc->bitlen1);
@@ -232,7 +235,7 @@ static ACVP_RESULT acvp_rsa_keygen_init_tc(ACVP_CTX *ctx,
     if (!stc->n) { return ACVP_MALLOC_FAIL; }
     stc->d = calloc(ACVP_RSA_EXP_BYTE_MAX, sizeof(unsigned char));
     if (!stc->d) { return ACVP_MALLOC_FAIL; }
-    if (rand_pq == ACVP_RSA_KEYGEN_B36 || !info_gen_by_server) {
+    if (rand_pq == ACVP_RSA_KEYGEN_B36 || rand_pq == ACVP_RSA_KEYGEN_PROB_W_PROB_AUX || !info_gen_by_server) {
         stc->xp = calloc(ACVP_RSA_EXP_BYTE_MAX, sizeof(unsigned char));
         if (!stc->xp) { return ACVP_MALLOC_FAIL; }
         stc->xp1 = calloc(ACVP_RSA_EXP_BYTE_MAX, sizeof(unsigned char));
@@ -246,7 +249,7 @@ static ACVP_RESULT acvp_rsa_keygen_init_tc(ACVP_CTX *ctx,
         stc->xq2 = calloc(ACVP_RSA_EXP_BYTE_MAX, sizeof(unsigned char));
         if (!stc->xq2) { return ACVP_MALLOC_FAIL; }
     }
-    if (rand_pq == ACVP_RSA_KEYGEN_B36) {
+    if (rand_pq == ACVP_RSA_KEYGEN_B36 || rand_pq == ACVP_RSA_KEYGEN_PROB_W_PROB_AUX) {
         rv = acvp_hexstr_to_bin(xp, stc->xp, ACVP_RSA_EXP_BYTE_MAX, &(stc->xp_len));
         if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("Hex conversion failure (xp)");
@@ -347,13 +350,21 @@ static ACVP_RSA_KEY_FORMAT read_key_format(const char *str){
 static ACVP_RSA_PRIME_TEST_TYPE read_prime_test_type(const char *str) {
     int diff = 1;
 
-    strcmp_s(ACVP_RSA_PRIME_TEST_TBLC2_STR,
-             ACVP_RSA_PRIME_TEST_TBLC2_STR_LEN, str, &diff);
+    strcmp_s(ACVP_RSA_PRIME_TEST_STR_TBLC2,
+             sizeof(ACVP_RSA_PRIME_TEST_STR_TBLC2) - 1, str, &diff);
     if (!diff) return ACVP_RSA_PRIME_TEST_TBLC2;
 
-    strcmp_s(ACVP_RSA_PRIME_TEST_TBLC3_STR,
-             ACVP_RSA_PRIME_TEST_TBLC3_STR_LEN, str, &diff);
+    strcmp_s(ACVP_RSA_PRIME_TEST_STR_TBLC3,
+             sizeof(ACVP_RSA_PRIME_TEST_STR_TBLC3) - 1, str, &diff);
     if (!diff) return ACVP_RSA_PRIME_TEST_TBLC3;
+
+    strcmp_s(ACVP_RSA_PRIME_TEST_STR_2POW100,
+             sizeof(ACVP_RSA_PRIME_TEST_STR_2POW100) - 1, str, &diff);
+    if (!diff) return ACVP_RSA_PRIME_TEST_2POW100;
+
+    strcmp_s(ACVP_RSA_PRIME_TEST_STR_2POW_SEC_STR,
+             sizeof(ACVP_RSA_PRIME_TEST_STR_2POW_SEC_STR) - 1, str, &diff);
+    if (!diff) return ACVP_RSA_PRIME_TEST_2POW_SEC_STR;
 
     return 0;
 }
@@ -541,7 +552,10 @@ ACVP_RESULT acvp_rsa_keygen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
         if (rand_pq == ACVP_RSA_KEYGEN_B33 ||
             rand_pq == ACVP_RSA_KEYGEN_B35 ||
-            rand_pq == ACVP_RSA_KEYGEN_B36) {
+            rand_pq == ACVP_RSA_KEYGEN_B36 ||
+            rand_pq == ACVP_RSA_KEYGEN_PROBABLE ||
+            rand_pq == ACVP_RSA_KEYGEN_PROB_W_PROV_AUX ||
+            rand_pq == ACVP_RSA_KEYGEN_PROB_W_PROB_AUX) {
             prime_test_str = json_object_get_string(groupobj, "primeTest");
             if (!prime_test_str) {
                 ACVP_LOG_ERR("Server JSON missing 'primeTest'");
@@ -571,7 +585,10 @@ ACVP_RESULT acvp_rsa_keygen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
         if (rand_pq == ACVP_RSA_KEYGEN_B32 ||
             rand_pq == ACVP_RSA_KEYGEN_B34 ||
-            rand_pq == ACVP_RSA_KEYGEN_B35) {
+            rand_pq == ACVP_RSA_KEYGEN_B35 ||
+            rand_pq == ACVP_RSA_KEYGEN_PROVABLE ||
+            rand_pq == ACVP_RSA_KEYGEN_PROV_W_PROV_AUX ||
+            rand_pq == ACVP_RSA_KEYGEN_PROB_W_PROV_AUX) {
             hash_alg_str = json_object_get_string(groupobj, "hashAlg");
             if (!hash_alg_str) {
                 ACVP_LOG_ERR("Server JSON missing 'hashAlg'");
@@ -636,7 +653,8 @@ ACVP_RESULT acvp_rsa_keygen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             if (info_gen_by_server) {
                 unsigned int count = 0;
 
-                if (rand_pq >= ACVP_RSA_KEYGEN_B34) {
+                if ((rand_pq >= ACVP_RSA_KEYGEN_B34 && rand_pq <= ACVP_RSA_KEYGEN_B36) ||
+                    (rand_pq >= ACVP_RSA_KEYGEN_PROV_W_PROV_AUX)) {
                     bitlens = json_object_get_array(testobj, "bitlens");
                     count = json_array_get_count(bitlens);
                     if (count != 4) {
@@ -655,7 +673,10 @@ ACVP_RESULT acvp_rsa_keygen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
                 if (rand_pq == ACVP_RSA_KEYGEN_B32 ||
                     rand_pq == ACVP_RSA_KEYGEN_B34 ||
-                    rand_pq == ACVP_RSA_KEYGEN_B35) {
+                    rand_pq == ACVP_RSA_KEYGEN_B35 ||
+                    rand_pq == ACVP_RSA_KEYGEN_PROVABLE ||
+                    rand_pq == ACVP_RSA_KEYGEN_PROV_W_PROV_AUX ||
+                    rand_pq == ACVP_RSA_KEYGEN_PROB_W_PROV_AUX) {
                     seed = json_object_get_string(testobj, "seed");
                     if (!seed) {
                         ACVP_LOG_ERR("Server JSON missing 'seed'");
@@ -674,7 +695,7 @@ ACVP_RESULT acvp_rsa_keygen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 }
 
                 /* for B.3.6, test cases also come with xP, xP1, xP2, xQ, xQ1, xQ2 */
-                if (rand_pq == ACVP_RSA_KEYGEN_B36) {
+                if (rand_pq == ACVP_RSA_KEYGEN_B36 || rand_pq == ACVP_RSA_KEYGEN_PROB_W_PROB_AUX) {
                     xp_str = json_object_get_string(testobj, "xP");
                     if (!xp_str) {
                         ACVP_LOG_ERR("Server JSON missing 'xP'");
@@ -720,7 +741,7 @@ ACVP_RESULT acvp_rsa_keygen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 }
             }
 
-            if (rand_pq == ACVP_RSA_KEYGEN_B33 && test_type == ACVP_RSA_TESTTYPE_KAT) {
+            if ((rand_pq == ACVP_RSA_KEYGEN_B33 || rand_pq == ACVP_RSA_KEYGEN_PROBABLE) && test_type == ACVP_RSA_TESTTYPE_KAT) {
                 // E
                 e_str = json_object_get_string(testobj, "e");
                 if (!e_str) {

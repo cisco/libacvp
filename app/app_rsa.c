@@ -154,6 +154,9 @@ int app_rsa_sig_handler(ACVP_TEST_CASE *test_case) {
     OSSL_PARAM *pkey_params = NULL, *sig_params = NULL;
     const char *padding = NULL, *md = NULL;
     int salt_len = -1;
+#ifdef ACVP_FIPS186_5
+    int use_pss = 0;
+#endif
     BIGNUM *bn_e = NULL, *e = NULL, *n = NULL;
     ACVP_RSA_SIG_TC *tc;
 
@@ -190,6 +193,9 @@ int app_rsa_sig_handler(ACVP_TEST_CASE *test_case) {
     case ACVP_RSA_SIG_TYPE_PKCS1PSS:
         salt_len = tc->salt_len;
         padding = "pss";
+#ifdef ACVP_FIPS186_5
+        use_pss = 1;
+#endif
         break;
     case ACVP_RSA_SIG_TYPE_PKCS1V15:
         padding = "pkcs1";
@@ -200,37 +206,8 @@ int app_rsa_sig_handler(ACVP_TEST_CASE *test_case) {
         goto err;
     }
 
-    switch (tc->hash_alg) {
-    case ACVP_SHA1:
-        md = "SHA-1";
-        break;
-    case ACVP_SHA224:
-        md = "SHA2-224";
-        break;
-    case ACVP_SHA256:
-        md = "SHA2-256";
-        break;
-    case ACVP_SHA384:
-        md = "SHA2-384";
-        break;
-    case ACVP_SHA512:
-        md = "SHA2-512";
-        break;
-    case ACVP_SHA512_224:
-        md = "SHA2-512/224";
-        break;
-    case ACVP_SHA512_256:
-        md = "SHA2-512/256";
-        break;
-    case ACVP_NO_SHA:
-    case ACVP_SHA3_224:
-    case ACVP_SHA3_256:
-    case ACVP_SHA3_384:
-    case ACVP_SHA3_512:
-    case ACVP_SHAKE_128:
-    case ACVP_SHAKE_256:
-    case ACVP_HASH_ALG_MAX:
-    default:
+    md = get_md_string_for_hash_alg(tc->hash_alg, NULL);
+    if (!md) {
         printf("\nError: hashAlg not supported for RSA SigGen\n");
         goto err;
     }
@@ -289,6 +266,11 @@ int app_rsa_sig_handler(ACVP_TEST_CASE *test_case) {
         }
         OSSL_PARAM_BLD_push_utf8_string(sig_pbld, OSSL_SIGNATURE_PARAM_PAD_MODE, padding, 0);
         OSSL_PARAM_BLD_push_utf8_string(sig_pbld, OSSL_SIGNATURE_PARAM_DIGEST, md, 0);
+#ifdef ACVP_FIPS186_5
+        if (use_pss) {
+            OSSL_PARAM_BLD_push_utf8_string(sig_pbld, OSSL_SIGNATURE_PARAM_MGF1_DIGEST, md, 0);
+        }
+#endif
         sig_params = OSSL_PARAM_BLD_to_param(sig_pbld);
         if (!sig_params) {
             printf("Error building sig params in RSA sigver\n");

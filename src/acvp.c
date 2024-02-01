@@ -285,8 +285,8 @@ static void acvp_cap_free_rsa_keygen_list(ACVP_CAPS_LIST *cap_list) {
         ACVP_RSA_MODE_CAPS_LIST *temp_mode_list;
 
         while (mode_list) {
-            acvp_cap_free_nl(mode_list->hash_algs);
-            acvp_cap_free_nl(mode_list->prime_tests);
+            acvp_cap_free_pl(mode_list->hash_algs);
+            acvp_cap_free_pl(mode_list->prime_tests);
 
             temp_mode_list = mode_list;
             mode_list = mode_list->next;
@@ -327,7 +327,7 @@ static void acvp_cap_free_rsa_sig_list(ACVP_CAPS_LIST *cap_list) {
         }
         while (mode_list) {
             acvp_cap_free_hash_pairs(mode_list->hash_pair);
-
+            acvp_cap_free_pl(mode_list->mask_functions);
             temp_mode_list = mode_list;
             mode_list = mode_list->next;
             free(temp_mode_list);

@@ -1094,10 +1094,11 @@ static ACVP_RESULT acvp_build_drbg_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
  * Builds the JSON object for RSA keygen primes
  */
 static ACVP_RESULT acvp_lookup_rsa_primes(JSON_Object *cap_obj, ACVP_RSA_KEYGEN_CAP *rsa_cap) {
+    ACVP_RESULT rv = ACVP_SUCCESS;
     JSON_Array *primes_array = NULL, *hash_array = NULL, *prime_test_array = NULL;
-
-    ACVP_RSA_MODE_CAPS_LIST *current_mode_cap;
-    ACVP_NAME_LIST *comp_name, *next_name;
+    const char *str = NULL;
+    ACVP_RSA_MODE_CAPS_LIST *current_mode_cap = NULL;
+    ACVP_PARAM_LIST *current_param = NULL;
 
     if (!rsa_cap) { return ACVP_INVALID_ARG; }
 
@@ -1117,49 +1118,81 @@ static ACVP_RESULT acvp_lookup_rsa_primes(JSON_Object *cap_obj, ACVP_RSA_KEYGEN_
         JSON_Object *obj = NULL;
         val = json_value_init_object();
         obj = json_value_get_object(val);
+        if (!val || !obj) {
+            return ACVP_MALLOC_FAIL;
+        }
 
         json_object_set_number(obj, "modulo", current_mode_cap->modulo);
 
         json_object_set_value(obj, "hashAlg", json_value_init_array());
         hash_array = json_object_get_array(obj, "hashAlg");
-        comp_name = current_mode_cap->hash_algs;
+        current_param = current_mode_cap->hash_algs;
 
-        while (comp_name) {
-            if (acvp_lookup_hash_alg(comp_name->name)) {
-                json_array_append_string(hash_array, comp_name->name);
+        while (current_param) {
+            str = acvp_lookup_hash_alg_name(current_param->param);
+            if (!str) {
+                rv = ACVP_INVALID_ARG;
+                json_value_free(val);
+                goto end;
             }
-            next_name = comp_name->next;
-            comp_name = next_name;
+            json_array_append_string(hash_array, str);
+
+            current_param = current_param->next;
         }
 
-        comp_name = current_mode_cap->prime_tests;
+        current_param = current_mode_cap->prime_tests;
 
-        if (comp_name) {
+        if (current_param) {
             json_object_set_value(obj, "primeTest", json_value_init_array());
             prime_test_array = json_object_get_array(obj, "primeTest");
 
-            while (comp_name) {
-                if (is_valid_prime_test(comp_name->name) == ACVP_SUCCESS) {
-                    json_array_append_string(prime_test_array, comp_name->name);
+            while (current_param) {
+                str = acvp_lookup_rsa_prime_test_name(current_param->param);
+                if (!str) {
+                    rv = ACVP_INVALID_ARG;
+                    json_value_free(val);
+                    goto end;
                 }
-                next_name = comp_name->next;
-                comp_name = next_name;
+                json_array_append_string(prime_test_array, str);
+                current_param = current_param->next;
             }
+        }
+
+        /* for FIPS 186-5 or presumably greater, include pMod8 and qMod8 */
+        if (rsa_cap->revision != ACVP_REVISION_FIPS186_4) {
+            json_object_set_number(obj, "pMod8", current_mode_cap->pMod8);
+            json_object_set_number(obj, "qMod8", current_mode_cap->qMod8);
         }
 
         json_array_append_value(primes_array, val);
         current_mode_cap = current_mode_cap->next;
     }
-    return ACVP_SUCCESS;
+
+end:
+    return rv;
 }
 
 static ACVP_RESULT acvp_build_rsa_keygen_register_cap(JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry) {
     ACVP_RESULT result;
+    ACVP_RSA_KEYGEN_CAP *keygen_cap = NULL;
     const char *revision = NULL;
 
     json_object_set_string(cap_obj, "algorithm", "RSA");
 
-    revision = acvp_lookup_cipher_revision(cap_entry->cipher);
+    /*
+     * Iterate through list of RSA modes and create registration object
+     * for each one, appending to the array as we go
+     */
+    keygen_cap = cap_entry->cap.rsa_keygen_cap;
+    if (!keygen_cap) {
+        return ACVP_NO_CAP;
+    }
+
+    if (keygen_cap->revision) {
+        revision = acvp_lookup_alt_revision_string(keygen_cap->revision);
+    } else {
+        revision = acvp_lookup_cipher_revision(cap_entry->cipher);
+    }
     if (revision == NULL) return ACVP_INVALID_ARG;
     json_object_set_string(cap_obj, "revision", revision);
 
@@ -1168,14 +1201,6 @@ static ACVP_RESULT acvp_build_rsa_keygen_register_cap(JSON_Object *cap_obj, ACVP
     result = acvp_lookup_prereqVals(cap_obj, cap_entry);
     if (result != ACVP_SUCCESS) { return result; }
 
-    /*
-     * Iterate through list of RSA modes and create registration object
-     * for each one, appending to the array as we go
-     */
-    ACVP_RSA_KEYGEN_CAP *keygen_cap = cap_entry->cap.rsa_keygen_cap;
-    if (!keygen_cap) {
-        return ACVP_NO_CAP;
-    }
 
     JSON_Array *alg_specs_array = NULL;
     JSON_Value *alg_specs_val = NULL;
@@ -1215,18 +1240,14 @@ static ACVP_RESULT acvp_build_rsa_keygen_register_cap(JSON_Object *cap_obj, ACVP
 
 static ACVP_RESULT acvp_build_rsa_sig_register_cap(JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry) {
     ACVP_RESULT result = ACVP_SUCCESS;
+    ACVP_PARAM_LIST *plist = NULL;
     ACVP_RSA_SIG_CAP *rsa_cap_mode = NULL;
-    JSON_Array *alg_specs_array = NULL, *sig_type_caps_array = NULL, *hash_pair_array = NULL;
+    JSON_Array *alg_specs_array = NULL, *sig_type_caps_array = NULL, *hash_pair_array = NULL, *mask_func_array = NULL;
     JSON_Value *alg_specs_val = NULL, *sig_type_val = NULL, *hash_pair_val = NULL;
     JSON_Object *alg_specs_obj = NULL, *sig_type_obj = NULL, *hash_pair_obj = NULL;
-    const char *revision = NULL;
-    int diff = 1;
+    const char *revision = NULL, *str = NULL;
 
     json_object_set_string(cap_obj, "algorithm", "RSA");
-
-    revision = acvp_lookup_cipher_revision(cap_entry->cipher);
-    if (revision == NULL) return ACVP_INVALID_ARG;
-    json_object_set_string(cap_obj, "revision", revision);
 
     if (cap_entry->cipher == ACVP_RSA_SIGGEN) {
         json_object_set_string(cap_obj, "mode", "sigGen");
@@ -1242,9 +1263,20 @@ static ACVP_RESULT acvp_build_rsa_sig_register_cap(JSON_Object *cap_obj, ACVP_CA
         if (!rsa_cap_mode) {
             return ACVP_MISSING_ARG;
         }
-        result = acvp_lookup_prereqVals(cap_obj, cap_entry);
-        if (result != ACVP_SUCCESS) { return result; }
+    }
 
+    if (rsa_cap_mode->revision) {
+        revision = acvp_lookup_alt_revision_string(rsa_cap_mode->revision);
+    } else {
+        revision = acvp_lookup_cipher_revision(cap_entry->cipher);
+    }
+    if (revision == NULL) return ACVP_INVALID_ARG;
+    json_object_set_string(cap_obj, "revision", revision);
+
+    result = acvp_lookup_prereqVals(cap_obj, cap_entry);
+    if (result != ACVP_SUCCESS) { return result; }
+
+    if (cap_entry->cipher == ACVP_RSA_SIGVER) {
         json_object_set_string(cap_obj, "pubExpMode",
                                rsa_cap_mode->pub_exp_mode == ACVP_RSA_PUB_EXP_MODE_FIXED ?
                                ACVP_RSA_PUB_EXP_MODE_FIXED_STR : ACVP_RSA_PUB_EXP_MODE_RANDOM_STR);
@@ -1259,7 +1291,12 @@ static ACVP_RESULT acvp_build_rsa_sig_register_cap(JSON_Object *cap_obj, ACVP_CA
     while (rsa_cap_mode) {
         alg_specs_val = json_value_init_object();
         alg_specs_obj = json_value_get_object(alg_specs_val);
-        json_object_set_string(alg_specs_obj, "sigType", rsa_cap_mode->sig_type_str);
+
+        str = acvp_lookup_rsa_sig_type_str(rsa_cap_mode->sig_type);
+        if (!str) {
+            return ACVP_INTERNAL_ERR;
+        }
+        json_object_set_string(alg_specs_obj, "sigType", str);
 
         json_object_set_value(alg_specs_obj, "properties", json_value_init_array());
         sig_type_caps_array = json_object_get_array(alg_specs_obj, "properties");
@@ -1271,6 +1308,21 @@ static ACVP_RESULT acvp_build_rsa_sig_register_cap(JSON_Object *cap_obj, ACVP_CA
             sig_type_obj = json_value_get_object(sig_type_val);
 
             json_object_set_number(sig_type_obj, "modulo", current_sig_type_cap->modulo);
+
+            if (rsa_cap_mode->revision != ACVP_REVISION_FIPS186_4 && rsa_cap_mode->sig_type == ACVP_RSA_SIG_TYPE_PKCS1PSS) {
+                json_object_set_value(sig_type_obj, "maskFunction", json_value_init_array());
+                mask_func_array = json_object_get_array(sig_type_obj, "maskFunction");
+                plist = current_sig_type_cap->mask_functions;
+                while (plist) {
+                    str = acvp_lookup_rsa_mask_func_str(plist->param);
+                    if (!str) {
+                        return ACVP_INTERNAL_ERR;
+                    }
+                    json_array_append_string(mask_func_array, str);
+                    plist = plist->next;
+                }
+            }
+
             json_object_set_value(sig_type_obj, "hashPair", json_value_init_array());
             hash_pair_array = json_object_get_array(sig_type_obj, "hashPair");
 
@@ -1278,12 +1330,15 @@ static ACVP_RESULT acvp_build_rsa_sig_register_cap(JSON_Object *cap_obj, ACVP_CA
             while (current_hash_pair) {
                 hash_pair_val = json_value_init_object();
                 hash_pair_obj = json_value_get_object(hash_pair_val);
-                if (!current_hash_pair->name) {
+                if (!current_hash_pair->alg) {
                     return ACVP_MISSING_ARG;
                 }
-                json_object_set_string(hash_pair_obj, "hashAlg", current_hash_pair->name);
-                strncmp_s(rsa_cap_mode->sig_type_str, ACVP_RSA_SIG_TYPE_LEN_MAX, "pss", 3, &diff);
-                if (!diff) {
+                str = acvp_lookup_hash_alg_name(current_hash_pair->alg);
+                if (!str) {
+                    return ACVP_INTERNAL_ERR;
+                }
+                json_object_set_string(hash_pair_obj, "hashAlg", str);
+                if (rsa_cap_mode->sig_type == ACVP_RSA_SIG_TYPE_PKCS1PSS) {
                     json_object_set_number(hash_pair_obj, "saltLen", current_hash_pair->salt);
                 }
 
