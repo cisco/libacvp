@@ -185,7 +185,7 @@ const char *acvp_lookup_cipher_revision(ACVP_CIPHER alg) {
 static struct acvp_alt_revision_info alt_revision_tbl[] = {
     { ACVP_REVISION_SP800_56AR3, ACVP_REV_STR_SP800_56AR3 },
     { ACVP_REVISION_SP800_56CR1, ACVP_REV_STR_SP800_56CR1 },
-    { ACVP_REVISION_FIPS186_4, ACVP_REV_STR_1_0 },
+    { ACVP_REVISION_FIPS186_4, ACVP_REV_STR_FIPS186_4 },
     { ACVP_REVISION_1_0, ACVP_REV_STR_1_0 }
 };
 static int alt_revision_tbl_length =
@@ -317,6 +317,34 @@ const char* acvp_lookup_cipher_mode_str(ACVP_CIPHER cipher) {
     return NULL;
 }
 
+const char *acvp_lookup_rsa_sig_type_str(ACVP_RSA_SIG_TYPE type) {
+    switch (type) {
+    case ACVP_RSA_SIG_TYPE_X931:
+        return ACVP_RSA_SIG_TYPE_X931_STR;
+    case ACVP_RSA_SIG_TYPE_PKCS1V15:
+        return ACVP_RSA_SIG_TYPE_PKCS1V15_STR;
+    case ACVP_RSA_SIG_TYPE_PKCS1PSS:
+        return ACVP_RSA_SIG_TYPE_PKCS1PSS_STR;
+    default:
+        return NULL;
+    }
+}
+
+const char *acvp_lookup_rsa_mask_func_str(ACVP_RSA_MASK_FUNCTION func) {
+    switch (func) {
+    case ACVP_RSA_MASK_FUNCTION_MGF1:
+        return ACVP_RSA_MASK_FUNC_STR_MGF1;
+    case ACVP_RSA_MASK_FUNCTION_SHAKE_128:
+        return ACVP_ALG_SHAKE_128;
+    case ACVP_RSA_MASK_FUNCTION_SHAKE_256:
+        return ACVP_ALG_SHAKE_256;
+    case ACVP_RSA_MASK_FUNCTION_NONE:
+    case ACVP_RSA_MASK_FUNCTION_MAX:
+    default:
+        return NULL;
+    }
+}
+
 /*
  * This method returns the string that corresponds to a randPQ
  * index value
@@ -324,20 +352,25 @@ const char* acvp_lookup_cipher_mode_str(ACVP_CIPHER cipher) {
 const char *acvp_lookup_rsa_randpq_name(int value) {
     switch (value) {
     case ACVP_RSA_KEYGEN_B32:
-        return "B.3.2"; // "provRP"
-
+        return ACVP_RSA_RANDPQ_STR_B32;
     case ACVP_RSA_KEYGEN_B33:
-        return "B.3.3"; // "probRP"
-
+        return ACVP_RSA_RANDPQ_STR_B33;
     case ACVP_RSA_KEYGEN_B34:
-        return "B.3.4"; // "provPC"
-
+        return ACVP_RSA_RANDPQ_STR_B34;
     case ACVP_RSA_KEYGEN_B35:
-        return "B.3.5"; // "bothPC"
-
+        return ACVP_RSA_RANDPQ_STR_B35;
     case ACVP_RSA_KEYGEN_B36:
-        return "B.3.6"; // "probPC"
-
+        return ACVP_RSA_RANDPQ_STR_B36;
+    case ACVP_RSA_KEYGEN_PROVABLE:
+        return ACVP_RSA_RANDPQ_STR_PROVABLE;
+    case ACVP_RSA_KEYGEN_PROBABLE:
+        return ACVP_RSA_RANDPQ_STR_PROBABLE;
+    case ACVP_RSA_KEYGEN_PROV_W_PROV_AUX:
+        return ACVP_RSA_RANDPQ_STR_PROV_W_PROV_AUX;
+    case ACVP_RSA_KEYGEN_PROB_W_PROV_AUX:
+        return ACVP_RSA_RANDPQ_STR_PROB_W_PROV_AUX;
+    case ACVP_RSA_KEYGEN_PROB_W_PROB_AUX:
+        return ACVP_RSA_RANDPQ_STR_PROB_W_PROB_AUX;
     default:
         return NULL;
     }
@@ -364,20 +397,35 @@ int acvp_lookup_rsa_randpq_index(const char *value) {
         return 0;
     }
 
-    strcmp_s("B.3.2", 5, value, &diff);
+    strcmp_s(ACVP_RSA_RANDPQ_STR_B32, sizeof(ACVP_RSA_RANDPQ_STR_B32) - 1, value, &diff);
     if (!diff) return ACVP_RSA_KEYGEN_B32;
 
-    strcmp_s("B.3.3", 5, value, &diff);
+    strcmp_s(ACVP_RSA_RANDPQ_STR_B33, sizeof(ACVP_RSA_RANDPQ_STR_B33) - 1, value, &diff);
     if (!diff) return ACVP_RSA_KEYGEN_B33;
 
-    strcmp_s("B.3.4", 5, value, &diff);
+    strcmp_s(ACVP_RSA_RANDPQ_STR_B34, sizeof(ACVP_RSA_RANDPQ_STR_B34) - 1, value, &diff);
     if (!diff) return ACVP_RSA_KEYGEN_B34;
 
-    strcmp_s("B.3.5", 5, value, &diff);
+    strcmp_s(ACVP_RSA_RANDPQ_STR_B35, sizeof(ACVP_RSA_RANDPQ_STR_B35) - 1, value, &diff);
     if (!diff) return ACVP_RSA_KEYGEN_B35;
 
-    strcmp_s("B.3.6", 5, value, &diff);
+    strcmp_s(ACVP_RSA_RANDPQ_STR_B36, sizeof(ACVP_RSA_RANDPQ_STR_B36) - 1, value, &diff);
     if (!diff) return ACVP_RSA_KEYGEN_B36;
+
+    strcmp_s(ACVP_RSA_RANDPQ_STR_PROVABLE, sizeof(ACVP_RSA_RANDPQ_STR_PROVABLE) - 1, value, &diff);
+    if (!diff) return ACVP_RSA_KEYGEN_PROVABLE;
+
+    strcmp_s(ACVP_RSA_RANDPQ_STR_PROBABLE, sizeof(ACVP_RSA_RANDPQ_STR_PROBABLE) - 1, value, &diff);
+    if (!diff) return ACVP_RSA_KEYGEN_PROBABLE;
+
+    strcmp_s(ACVP_RSA_RANDPQ_STR_PROV_W_PROV_AUX, sizeof(ACVP_RSA_RANDPQ_STR_PROV_W_PROV_AUX) - 1, value, &diff);
+    if (!diff) return ACVP_RSA_KEYGEN_PROV_W_PROV_AUX;
+
+    strcmp_s(ACVP_RSA_RANDPQ_STR_PROB_W_PROV_AUX, sizeof(ACVP_RSA_RANDPQ_STR_PROB_W_PROV_AUX) - 1, value, &diff);
+    if (!diff) return ACVP_RSA_KEYGEN_PROB_W_PROV_AUX;
+
+    strcmp_s(ACVP_RSA_RANDPQ_STR_PROB_W_PROB_AUX, sizeof(ACVP_RSA_RANDPQ_STR_PROB_W_PROB_AUX) - 1, value, &diff);
+    if (!diff) return ACVP_RSA_KEYGEN_PROB_W_PROB_AUX;
 
     return 0;
 }
@@ -504,11 +552,13 @@ const char *acvp_lookup_hash_alg_name(ACVP_HASH_ALG id) {
 const char *acvp_lookup_rsa_prime_test_name(ACVP_RSA_PRIME_TEST_TYPE type) {
     switch (type) {
     case ACVP_RSA_PRIME_TEST_TBLC2:
-        return ACVP_RSA_PRIME_TEST_TBLC2_STR;
-
+        return ACVP_RSA_PRIME_TEST_STR_TBLC2;
     case ACVP_RSA_PRIME_TEST_TBLC3:
-        return ACVP_RSA_PRIME_TEST_TBLC3_STR;
-
+        return ACVP_RSA_PRIME_TEST_STR_TBLC3;
+    case ACVP_RSA_PRIME_TEST_2POW100:
+        return ACVP_RSA_PRIME_TEST_STR_2POW100;
+    case ACVP_RSA_PRIME_TEST_2POW_SEC_STR:
+        return ACVP_RSA_PRIME_TEST_STR_2POW_SEC_STR;
     default:
         return NULL;
     }
@@ -520,10 +570,10 @@ ACVP_RESULT is_valid_prime_test(const char *value) {
 
     if (!value) { return ACVP_INVALID_ARG; }
 
-    strcmp_s(ACVP_RSA_PRIME_TEST_TBLC2_STR, 5, value, &diff);
+    strcmp_s(ACVP_RSA_PRIME_TEST_STR_TBLC2, sizeof(ACVP_RSA_PRIME_TEST_STR_TBLC2) - 1, value, &diff);
     if (!diff) return ACVP_SUCCESS;
 
-    strcmp_s(ACVP_RSA_PRIME_TEST_TBLC3_STR, 5, value, &diff);
+    strcmp_s(ACVP_RSA_PRIME_TEST_STR_TBLC3, sizeof(ACVP_RSA_PRIME_TEST_STR_TBLC3) - 1, value, &diff);
     if (!diff) return ACVP_SUCCESS;
 
     return ACVP_INVALID_ARG;

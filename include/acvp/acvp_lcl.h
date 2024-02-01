@@ -157,10 +157,9 @@
 #define ACVP_REV_DSA                 ACVP_REV_STR_1_0
 
 /* RSA */
-#define ACVP_REV_RSA                 ACVP_REV_STR_FIPS186_4
+#define ACVP_REV_RSA                 ACVP_REV_STR_FIPS186_5
 #define ACVP_REV_RSA_DECPRIM         ACVP_REV_STR_SP800_56BR2
 #define ACVP_REV_RSA_SIGPRIM         ACVP_REV_STR_2_0
-#define ACVP_REV_RSA_PRIM            ACVP_REV_STR_1_0
 
 /* ECDSA */
 #define ACVP_REV_ECDSA               ACVP_REV_STR_FIPS186_5
@@ -346,14 +345,16 @@
 #define ACVP_ECDSA_TESTING_CANDIDATES_STR "testing candidates"
 #define ACVP_ECDSA_TESTING_CANDIDATES_STR_LEN 18
 
-#define ACVP_RSA_PRIME_TEST_TBLC2_STR "tblC2"
-#define ACVP_RSA_PRIME_TEST_TBLC2_STR_LEN 5
-#define ACVP_RSA_PRIME_TEST_TBLC3_STR "tblC3"
-#define ACVP_RSA_PRIME_TEST_TBLC3_STR_LEN 5
+#define ACVP_RSA_PRIME_TEST_STR_TBLC2 "tblC2"
+#define ACVP_RSA_PRIME_TEST_STR_TBLC3 "tblC3"
+#define ACVP_RSA_PRIME_TEST_STR_2POW100 "2pow100"
+#define ACVP_RSA_PRIME_TEST_STR_2POW_SEC_STR "2powSecStr"
 
 #define ACVP_RSA_SIG_TYPE_X931_STR      "ansx9.31"
 #define ACVP_RSA_SIG_TYPE_PKCS1V15_STR  "pkcs1v1.5"
 #define ACVP_RSA_SIG_TYPE_PKCS1PSS_STR  "pss"
+
+#define ACVP_RSA_MASK_FUNC_STR_MGF1 "MGF1"
 
 #define ACVP_ALG_RSA                "RSA"
 #define ACVP_ALG_ECDSA              "ECDSA"
@@ -832,11 +833,19 @@
 #define ACVP_RSA_KEY_FORMAT_STD_STR_LEN 9
 #define ACVP_RSA_KEY_FORMAT_CRT_STR "crt"
 #define ACVP_RSA_KEY_FORMAT_CRT_STR_LEN 3
-#define ACVP_RSA_RANDPQ32_STR   "B.3.2"
-#define ACVP_RSA_RANDPQ33_STR   "B.3.3"
-#define ACVP_RSA_RANDPQ34_STR   "B.3.4"
-#define ACVP_RSA_RANDPQ35_STR   "B.3.5"
-#define ACVP_RSA_RANDPQ36_STR   "B.3.6"
+/* Rand PQ for FIPS186-4 */
+#define ACVP_RSA_RANDPQ_STR_B32   "B.3.2"
+#define ACVP_RSA_RANDPQ_STR_B33   "B.3.3"
+#define ACVP_RSA_RANDPQ_STR_B34   "B.3.4"
+#define ACVP_RSA_RANDPQ_STR_B35   "B.3.5"
+#define ACVP_RSA_RANDPQ_STR_B36   "B.3.6"
+/* RandPQ for FIPS186-5 */
+#define ACVP_RSA_RANDPQ_STR_PROVABLE "provable"
+#define ACVP_RSA_RANDPQ_STR_PROBABLE "probable"
+#define ACVP_RSA_RANDPQ_STR_PROV_W_PROV_AUX "provableWithProvableAux"
+#define ACVP_RSA_RANDPQ_STR_PROB_W_PROV_AUX "probableWithProvableAux"
+#define ACVP_RSA_RANDPQ_STR_PROB_W_PROB_AUX "probableWithProbableAux"
+
 #define ACVP_RSA_SIG_TYPE_LEN_MAX    9
 
 #define ACVP_RSA_EXP_BIT_MAX 4096 /**< 2048 bits max for n, 512 characters */
@@ -1312,6 +1321,7 @@ struct acvp_drbg_mode_name_t {
 };
 
 typedef struct acvp_rsa_hash_pair_list {
+    ACVP_HASH_ALG alg;
     const char *name;
     int salt;
     struct acvp_rsa_hash_pair_list *next;
@@ -1320,22 +1330,34 @@ typedef struct acvp_rsa_hash_pair_list {
 typedef struct acvp_rsa_mode_caps_list {
     unsigned int modulo; // 2048, 3072, 4096 -- defined as macros
     int salt;   // only valid for siggen mode
-    ACVP_NAME_LIST *hash_algs;
+    ACVP_PARAM_LIST *hash_algs;
     ACVP_RSA_HASH_PAIR_LIST *hash_pair;
-    ACVP_NAME_LIST *prime_tests;
+    ACVP_PARAM_LIST *prime_tests;
+    ACVP_PARAM_LIST *mask_functions; /* Only for PSS sig */
+    int pMod8;
+    int qMod8;
     struct acvp_rsa_mode_caps_list *next;
 } ACVP_RSA_MODE_CAPS_LIST;
 
 typedef struct acvp_rsa_keygen_capability_t {
+    ACVP_REVISION revision;
     int key_format_crt;                     // if false, key format is assumed to be standard
     ACVP_RSA_PUB_EXP_MODE pub_exp_mode;
     char *fixed_pub_exp;               // hex value of e
-    ACVP_RSA_KEYGEN_MODE rand_pq;      // as defined in FIPS186-4
-    const char *rand_pq_str;
+    ACVP_RSA_KEYGEN_MODE rand_pq;
     int info_gen_by_server;                  // boolean
     ACVP_RSA_MODE_CAPS_LIST *mode_capabilities;
     struct acvp_rsa_keygen_capability_t *next; // to support multiple randPQ values
 } ACVP_RSA_KEYGEN_CAP;
+
+typedef struct acvp_rsa_sig_capability_t {
+    ACVP_REVISION revision;
+    unsigned int sig_type;
+    int pub_exp_mode;                           // for sigVer only
+    char *fixed_pub_exp;                        // hex value of e
+    ACVP_RSA_MODE_CAPS_LIST *mode_capabilities; //holds modRSASigGen (int) and hashSigGen (list)
+    struct acvp_rsa_sig_capability_t *next;
+} ACVP_RSA_SIG_CAP;
 
 typedef struct acvp_rsa_prim_capability_t {
     ACVP_REVISION revision;                 // Empty if default is used
@@ -1368,15 +1390,6 @@ typedef struct acvp_eddsa_capability_t {
     int supports_pure;
     int supports_prehash;
 } ACVP_EDDSA_CAP;
-
-typedef struct acvp_rsa_sig_capability_t {
-    const char *sig_type_str;
-    unsigned int sig_type;
-    int pub_exp_mode;                           // for sigVer only
-    char *fixed_pub_exp;                        // hex value of e
-    ACVP_RSA_MODE_CAPS_LIST *mode_capabilities; //holds modRSASigGen (int) and hashSigGen (list)
-    struct acvp_rsa_sig_capability_t *next;
-} ACVP_RSA_SIG_CAP;
 
 typedef struct acvp_dsa_attrs {
     unsigned int modulo;
@@ -2014,6 +2027,8 @@ ACVP_DRBG_MODE_LIST *acvp_create_drbg_mode_entry(ACVP_CAPS_LIST *cap, ACVP_DRBG_
 ACVP_DRBG_CAP_GROUP *acvp_locate_drbg_group_entry(ACVP_DRBG_MODE_LIST *mode, int group);
 ACVP_DRBG_CAP_GROUP *acvp_create_drbg_group(ACVP_DRBG_MODE_LIST *mode, int group);
 
+const char *acvp_lookup_rsa_sig_type_str(ACVP_RSA_SIG_TYPE type);
+const char *acvp_lookup_rsa_mask_func_str(ACVP_RSA_MASK_FUNCTION func);
 const char *acvp_lookup_rsa_randpq_name(int value);
 ACVP_RSA_PUB_EXP_MODE acvp_lookup_rsa_pub_exp_mode(const char *str);
 
