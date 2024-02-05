@@ -347,7 +347,10 @@ int app_rsa_sig_handler(ACVP_TEST_CASE *test_case) {
             printf("Error creating MD CTX in RSA sigver\n");
             goto err;
         }
-        EVP_DigestSignInit_ex(md_ctx, NULL, md, NULL, NULL, group_pkey, sig_params);
+        if (EVP_DigestSignInit_ex(md_ctx, NULL, md, NULL, NULL, group_pkey, sig_params) != 1) {
+            printf("Error initializing sign ctx in RSA siggen\n");
+            goto err;
+        }
         if (EVP_DigestSign(md_ctx, tc->signature, (size_t *)&tc->sig_len, tc->msg, tc->msg_len) != 1) {
             printf("Error while performing signature generation\n");
             goto err;

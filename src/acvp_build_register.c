@@ -1683,7 +1683,6 @@ static ACVP_RESULT acvp_build_ecdsa_register_cap(ACVP_CTX *ctx, ACVP_CIPHER ciph
 static ACVP_RESULT acvp_build_eddsa_register_cap(ACVP_CTX *ctx,JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry) {
     JSON_Array *curves_arr = NULL;
     ACVP_PARAM_LIST *current_curve = NULL;
-    JSON_Value *alg_caps_val = NULL;
     const char *revision = NULL, *tmp = NULL;
     ACVP_SUB_EDDSA alg;
     ACVP_EDDSA_CAP *eddsa_cap = NULL;
@@ -1739,7 +1738,6 @@ static ACVP_RESULT acvp_build_eddsa_register_cap(ACVP_CTX *ctx,JSON_Object *cap_
     while (current_curve) {
         tmp = acvp_lookup_ed_curve_name(current_curve->param);
         if (!tmp) {
-            if (alg_caps_val) json_value_free(alg_caps_val);
             return ACVP_MISSING_ARG;
         }
         json_array_append_string(curves_arr, tmp);

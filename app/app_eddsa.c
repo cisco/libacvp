@@ -10,6 +10,8 @@
 #include "app_lcl.h"
 #include "safe_lib.h"
 
+#ifdef ACVP_FIPS186_5
+
 #include <openssl/evp.h>
 #include <openssl/param_build.h>
 #include <openssl/core_names.h>
@@ -313,7 +315,7 @@ err:
     return rv;
 }
 
-#if 0
+#else
 
 int app_eddsa_handler(ACVP_TEST_CASE *test_case) {
     if (!test_case) {
