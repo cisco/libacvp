@@ -190,7 +190,9 @@ static void app_cleanup(ACVP_CTX *ctx) {
 #endif
     app_rsa_cleanup();
     app_ecdsa_cleanup();
+#ifdef ACVP_FIPS186_5
     app_eddsa_cleanup();
+#endif
 #endif
 }
 
