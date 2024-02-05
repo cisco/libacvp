@@ -5479,8 +5479,8 @@ ACVP_RESULT acvp_cap_ecdsa_set_parm(ACVP_CTX *ctx,
             ACVP_LOG_ERR("Unable to set alternate revision for DetECDSA; not applicable at this time");
             return ACVP_INVALID_ARG;
         }
-        if (value != ACVP_REVISION_FIPS186_4) {
-            ACVP_LOG_ERR("Invalid ECDSA revision. Only revision FIPS 186-4 can be set for ECDSA. default is 186-5.");
+        if (value != ACVP_REVISION_1_0) {
+            ACVP_LOG_ERR("Invalid ECDSA revision. Only revision 1.0 (AKA FIPS 186-4) can be set for ECDSA. default is 186-5.");
             return ACVP_INVALID_ARG;
         }
         cap->revision = value;

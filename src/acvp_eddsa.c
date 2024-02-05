@@ -26,7 +26,7 @@ static ACVP_RESULT acvp_eddsa_kat_handler_internal(ACVP_CTX *ctx, JSON_Object *o
  * the JSON processing for a single test case.
  */
 static ACVP_RESULT acvp_eddsa_output_tc(ACVP_CTX *ctx, ACVP_CIPHER cipher, ACVP_EDDSA_TC *stc, JSON_Object *tc_rsp) {
-    ACVP_RESULT rv;
+    ACVP_RESULT rv = ACVP_SUCCESS;
     char *tmp = NULL;
 
     if (cipher == ACVP_EDDSA_SIGVER || cipher == ACVP_EDDSA_KEYVER) {

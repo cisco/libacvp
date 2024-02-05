@@ -202,6 +202,7 @@ int app_ecdsa_handler(ACVP_TEST_CASE *test_case) {
             }
 
             if (alg == ACVP_SUB_DET_ECDSA_SIGGEN) {
+#ifdef ACVP_FIPS186_5
                 if (pkey_pbld) OSSL_PARAM_BLD_free(pkey_pbld);
                 if (params) OSSL_PARAM_free(params);
                 pkey_pbld = NULL;
@@ -219,7 +220,7 @@ int app_ecdsa_handler(ACVP_TEST_CASE *test_case) {
                     printf("Error generating parameters for pkey generation in DetECDSA siggen\n");
                     goto err;
                 }
-
+#endif
                 if (pkey_ctx) EVP_PKEY_CTX_free(pkey_ctx);
                 pkey_ctx = NULL;
                 if (EVP_DigestSignInit_ex(sig_ctx, &pkey_ctx, md, NULL, NULL, group_pkey, NULL) != 1) {
