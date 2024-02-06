@@ -596,6 +596,8 @@ Test(EnableCapRSAkeyGen, proper_params, .fini = teardown) {
     setup_empty_ctx(&ctx);
     rv = acvp_cap_rsa_keygen_enable(ctx, ACVP_RSA_KEYGEN, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_rsa_keygen_set_parm(ctx, ACVP_RSA_PARM_REVISION, ACVP_REVISION_FIPS186_4);
+    cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_RSA_KEYGEN, ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_RSA_KEYGEN, ACVP_PREREQ_DRBG, cvalue);
@@ -609,6 +611,8 @@ Test(EnableCapRSAkeyGen, proper_params, .fini = teardown) {
 Test(EnableCapRSAkeyGen, proper_modes, .fini = teardown) {
     setup_empty_ctx(&ctx);
     rv = acvp_cap_rsa_keygen_enable(ctx, ACVP_RSA_KEYGEN, &dummy_handler_success);
+    cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_rsa_keygen_set_parm(ctx, ACVP_RSA_PARM_REVISION, ACVP_REVISION_FIPS186_4);
     cr_assert(rv == ACVP_SUCCESS);
     /* skip the other outer params for now */
     rv = acvp_cap_rsa_keygen_set_mode(ctx, ACVP_RSA_KEYGEN_B32);
@@ -626,6 +630,8 @@ Test(EnableCapRSAkeyGen, proper_modes, .fini = teardown) {
 Test(EnableCapRSAkeyGen, proper_modes_params, .fini = teardown) {
     setup_empty_ctx(&ctx);
     rv = acvp_cap_rsa_keygen_enable(ctx, ACVP_RSA_KEYGEN, &dummy_handler_success);
+    cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_rsa_keygen_set_parm(ctx, ACVP_RSA_PARM_REVISION, ACVP_REVISION_FIPS186_4);
     cr_assert(rv == ACVP_SUCCESS);
     /* skip the other outer params for now */
     
@@ -671,14 +677,16 @@ Test(EnableCapRSAkeyGen, invalid_params, .fini = teardown) {
     rv = acvp_cap_rsa_keygen_set_parm(ctx, ACVP_RSA_PARM_INFO_GEN_BY_SERVER, 3);
     cr_assert(rv == ACVP_INVALID_ARG);
     
-    /* should only accept true or false... 0 or 1 */
-    rv = acvp_cap_rsa_keygen_set_parm(ctx, ACVP_RSA_PARM_KEY_FORMAT_CRT, 2);
+    /* should only valid enum */
+    rv = acvp_cap_rsa_keygen_set_parm(ctx, ACVP_RSA_PARM_KEY_FORMAT, 99);
     cr_assert(rv == ACVP_INVALID_ARG);
 }
 
 Test(EnableCapRSAkeyGen, invalid_modes_params, .fini = teardown) {
     setup_empty_ctx(&ctx);
     rv = acvp_cap_rsa_keygen_enable(ctx, ACVP_RSA_KEYGEN, &dummy_handler_success);
+    cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_rsa_keygen_set_parm(ctx, ACVP_RSA_PARM_REVISION, ACVP_REVISION_FIPS186_4);
     cr_assert(rv == ACVP_SUCCESS);
     /* skip the other outer params for now */
     
@@ -699,6 +707,8 @@ Test(EnableCapRSAkeyGen, invalid_modes_params, .fini = teardown) {
 Test(EnableCapRSAkeyGen, cipher_param_mismatch, .fini = teardown) {
     setup_empty_ctx(&ctx);
     rv = acvp_cap_rsa_keygen_enable(ctx, ACVP_RSA_KEYGEN, &dummy_handler_success);
+    cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_rsa_keygen_set_parm(ctx, ACVP_RSA_PARM_REVISION, ACVP_REVISION_FIPS186_4);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_rsa_keygen_set_parm(ctx, ACVP_RSA_PARM_RAND_PQ, 128);
     cr_assert(rv == ACVP_INVALID_ARG);

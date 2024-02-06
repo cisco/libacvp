@@ -10,7 +10,7 @@
     "testGroups": [
         {
             "tgId": 1,
-            "modulo": 2048,
+            "modulus": 2048,
             "keyFormat": "standard",
             "testType": "AFT",
             "tests": [
