@@ -18,7 +18,7 @@
             "tcId": 1
           }
         ], 
-        "curve": "P-192", 
+        "curve": "P-384",
         "hashAlg": "SHA2-256"
       }
     ], 

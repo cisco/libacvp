@@ -9,7 +9,7 @@
     "testGroups": [
       {
         "tgId": 1,
-        "curve": "P-192",
+        "curve": "P-384",
         "tests": [
           {
             "tcId": 1,
@@ -19,7 +19,7 @@
         ]
       }, {
         "tgId": 2,
-        "curve": "P-192",
+        "curve": "P-384",
         "tests": [
           {
             "tcId": 1,

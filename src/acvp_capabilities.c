@@ -4663,7 +4663,7 @@ ACVP_RESULT acvp_cap_rsa_keygen_set_primes(ACVP_CTX *ctx,
 
     switch(param) {
     case ACVP_RSA_PRIME_HASH_ALG:
-        if (value > ACVP_NO_SHA && value < ACVP_HASH_ALG_MAX) {
+        if(acvp_lookup_hash_alg_name(value)) {
             result = acvp_append_param_list(&current_prime->hash_algs, value);
         } else {
             ACVP_LOG_ERR("Invalid 'value' for ACVP_RSA_HASH_ALG");

@@ -29,6 +29,8 @@ static void setup(void) {
      */
     rv = acvp_cap_rsa_prim_enable(ctx, ACVP_RSA_DECPRIM, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_rsa_prim_set_parm(ctx, ACVP_RSA_DECPRIM, ACVP_RSA_PARM_REVISION, ACVP_REVISION_1_0);
+    cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_RSA_DECPRIM, ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_RSA_DECPRIM, ACVP_PREREQ_DRBG, cvalue);
@@ -39,15 +41,17 @@ static void setup(void) {
      */
     rv = acvp_cap_rsa_prim_enable(ctx, ACVP_RSA_SIGPRIM, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_rsa_prim_set_parm(ctx, ACVP_RSA_SIGPRIM, ACVP_RSA_PARM_REVISION, ACVP_REVISION_1_0);
+    cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_RSA_SIGPRIM, ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_RSA_SIGPRIM, ACVP_PREREQ_DRBG, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_rsa_prim_set_parm(ctx, ACVP_RSA_PARM_KEY_FORMAT_CRT, 0);
+    rv = acvp_cap_rsa_prim_set_parm(ctx, ACVP_RSA_SIGPRIM, ACVP_RSA_PARM_KEY_FORMAT, ACVP_RSA_KEY_FORMAT_STANDARD);
     cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_rsa_prim_set_parm(ctx, ACVP_RSA_PARM_PUB_EXP_MODE, ACVP_RSA_PUB_EXP_MODE_FIXED);
+    rv = acvp_cap_rsa_prim_set_parm(ctx, ACVP_RSA_SIGPRIM, ACVP_RSA_PARM_PUB_EXP_MODE, ACVP_RSA_PUB_EXP_MODE_FIXED);
     cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_rsa_prim_set_exponent(ctx, ACVP_RSA_PARM_FIXED_PUB_EXP_VAL, expo_str);
+    rv = acvp_cap_rsa_prim_set_exponent(ctx, ACVP_RSA_SIGPRIM, ACVP_RSA_PARM_FIXED_PUB_EXP_VAL, expo_str);
     cr_assert(rv == ACVP_SUCCESS);
     free(expo_str);
 }
@@ -70,6 +74,8 @@ Test(RSA_PRIM_CAPABILITY, good) {
      */
     rv = acvp_cap_rsa_prim_enable(ctx, ACVP_RSA_DECPRIM, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_rsa_prim_set_parm(ctx, ACVP_RSA_DECPRIM, ACVP_RSA_PARM_REVISION, ACVP_REVISION_1_0);
+    cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_RSA_DECPRIM, ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_RSA_DECPRIM, ACVP_PREREQ_DRBG, cvalue);
@@ -80,15 +86,17 @@ Test(RSA_PRIM_CAPABILITY, good) {
      */
     rv = acvp_cap_rsa_prim_enable(ctx, ACVP_RSA_SIGPRIM, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_rsa_prim_set_parm(ctx, ACVP_RSA_SIGPRIM, ACVP_RSA_PARM_REVISION, ACVP_REVISION_1_0);
+    cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_RSA_SIGPRIM, ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_RSA_SIGPRIM, ACVP_PREREQ_DRBG, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_rsa_prim_set_parm(ctx, ACVP_RSA_PARM_KEY_FORMAT_CRT, 0);
+    rv = acvp_cap_rsa_prim_set_parm(ctx, ACVP_RSA_SIGPRIM, ACVP_RSA_PARM_KEY_FORMAT, ACVP_RSA_KEY_FORMAT_STANDARD);
     cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_rsa_prim_set_parm(ctx, ACVP_RSA_PARM_PUB_EXP_MODE, ACVP_RSA_PUB_EXP_MODE_FIXED);
+    rv = acvp_cap_rsa_prim_set_parm(ctx, ACVP_RSA_SIGPRIM, ACVP_RSA_PARM_PUB_EXP_MODE, ACVP_RSA_PUB_EXP_MODE_FIXED);
     cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_rsa_prim_set_exponent(ctx, ACVP_RSA_PARM_FIXED_PUB_EXP_VAL, expo_str);
+    rv = acvp_cap_rsa_prim_set_exponent(ctx, ACVP_RSA_SIGPRIM, ACVP_RSA_PARM_FIXED_PUB_EXP_VAL, expo_str);
     cr_assert(rv == ACVP_SUCCESS);
     free(expo_str);
     teardown();
@@ -200,6 +208,8 @@ Test(RSA_DECPRIM_API, error_paths) {
      * Enable Decryption Primitive
      */
     rv = acvp_cap_rsa_prim_enable(ctx, ACVP_RSA_DECPRIM, &dummy_handler_success);
+    cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_rsa_prim_set_parm(ctx, ACVP_RSA_DECPRIM, ACVP_RSA_PARM_REVISION, ACVP_REVISION_1_0);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_RSA_DECPRIM, ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
@@ -315,15 +325,17 @@ Test(RSA_SIGPRIM_API, error_paths) {
      */
     rv = acvp_cap_rsa_prim_enable(ctx, ACVP_RSA_SIGPRIM, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_rsa_prim_set_parm(ctx, ACVP_RSA_SIGPRIM, ACVP_RSA_PARM_REVISION, ACVP_REVISION_1_0);
+    cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_RSA_SIGPRIM, ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_RSA_SIGPRIM, ACVP_PREREQ_DRBG, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_rsa_prim_set_parm(ctx, ACVP_RSA_PARM_KEY_FORMAT_CRT, 0);
+    rv = acvp_cap_rsa_prim_set_parm(ctx, ACVP_RSA_SIGPRIM, ACVP_RSA_PARM_KEY_FORMAT, ACVP_RSA_KEY_FORMAT_STANDARD);
     cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_rsa_prim_set_parm(ctx, ACVP_RSA_PARM_PUB_EXP_MODE, ACVP_RSA_PUB_EXP_MODE_FIXED);
+    rv = acvp_cap_rsa_prim_set_parm(ctx, ACVP_RSA_SIGPRIM, ACVP_RSA_PARM_PUB_EXP_MODE, ACVP_RSA_PUB_EXP_MODE_FIXED);
     cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_rsa_prim_set_exponent(ctx, ACVP_RSA_PARM_FIXED_PUB_EXP_VAL, expo_str);
+    rv = acvp_cap_rsa_prim_set_exponent(ctx, ACVP_RSA_SIGPRIM, ACVP_RSA_PARM_FIXED_PUB_EXP_VAL, expo_str);
     cr_assert(rv == ACVP_SUCCESS);
 
     val = json_parse_file("json/rsa/rsa_sigprim1.json");

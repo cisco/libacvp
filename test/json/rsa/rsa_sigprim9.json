@@ -10,7 +10,7 @@
     "isSample": false,
     "testGroups": [
         {
-            "modulo": 2048,
+            "modulus": 2048,
             "keyFormat": "standard",
             "testType": "AFT",
             "tests": [
