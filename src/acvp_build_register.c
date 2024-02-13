@@ -1242,6 +1242,7 @@ static ACVP_RESULT acvp_build_rsa_sig_register_cap(JSON_Object *cap_obj, ACVP_CA
     ACVP_RESULT result = ACVP_SUCCESS;
     ACVP_PARAM_LIST *plist = NULL;
     ACVP_RSA_SIG_CAP *rsa_cap_mode = NULL;
+    ACVP_REVISION rev = ACVP_REVISION_DEFAULT;
     JSON_Array *alg_specs_array = NULL, *sig_type_caps_array = NULL, *hash_pair_array = NULL, *mask_func_array = NULL;
     JSON_Value *alg_specs_val = NULL, *sig_type_val = NULL, *hash_pair_val = NULL;
     JSON_Object *alg_specs_obj = NULL, *sig_type_obj = NULL, *hash_pair_obj = NULL;
@@ -1267,6 +1268,7 @@ static ACVP_RESULT acvp_build_rsa_sig_register_cap(JSON_Object *cap_obj, ACVP_CA
 
     if (rsa_cap_mode->revision) {
         revision = acvp_lookup_alt_revision_string(rsa_cap_mode->revision);
+        rev = rsa_cap_mode->revision; /* Since caps are stringed together, we want the first value */
     } else {
         revision = acvp_lookup_cipher_revision(cap_entry->cipher);
     }
@@ -1309,7 +1311,7 @@ static ACVP_RESULT acvp_build_rsa_sig_register_cap(JSON_Object *cap_obj, ACVP_CA
 
             json_object_set_number(sig_type_obj, "modulo", current_sig_type_cap->modulo);
 
-            if (rsa_cap_mode->revision != ACVP_REVISION_FIPS186_4 && rsa_cap_mode->sig_type == ACVP_RSA_SIG_TYPE_PKCS1PSS) {
+            if (rev != ACVP_REVISION_FIPS186_4 && rsa_cap_mode->sig_type == ACVP_RSA_SIG_TYPE_PKCS1PSS) {
                 json_object_set_value(sig_type_obj, "maskFunction", json_value_init_array());
                 mask_func_array = json_object_get_array(sig_type_obj, "maskFunction");
                 plist = current_sig_type_cap->mask_functions;
