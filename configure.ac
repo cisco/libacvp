@@ -184,13 +184,6 @@ AC_ARG_ENABLE([wrapper-library],
 [wraplib="$enableval"],
 [wrap_lib=false])
 
-# Enable large data test support (Hashing multiple GiB of data) for SHA in acvp_app
-AC_ARG_ENABLE([hash-ldt],
-[AS_HELP_STRING([--enable-hash-ldt],
-[Enables Large Data Testing for SHA in acvp_app])],
-[ldt_support="yes"],
-[ldt_support="no"])
-
 ########################################################################################
 # End reading arguments. Begin testing presence of libs and setting certain make vars. #
 ########################################################################################
@@ -332,10 +325,6 @@ fi
 if test "x$with_criterion" != "xno" ; then
     AC_SUBST([CRITERION_CFLAGS], "-I$criteriondir/include")
     AC_SUBST([CRITERION_LDFLAGS], "-L$criteriondir/lib -lcriterion")
-fi
-
-if test "x$ldt_support" = "xyes"; then
-    cond_alg_cflags="$cond_alg_cflags -DACVPAPP_HASH_LDT_SUPPORT"
 fi
 
 AM_CONDITIONAL([UNIT_TEST_SUPPORTED], [test "x$with_criteriondir" != "xno"])

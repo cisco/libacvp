@@ -947,7 +947,6 @@ with_criterion_dir
 enable_lib_check
 enable_ssp
 enable_wrapper_library
-enable_hash_ldt
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1620,7 +1619,6 @@ Optional Features:
                           Designed for use with offline builds, turns acvp_app
                           into a single API library for processing offline
                           tests
-  --enable-hash-ldt       Enables Large Data Testing for SHA in acvp_app
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -4968,13 +4966,13 @@ if ${lt_cv_nm_interface+:} false; then :
 else
   lt_cv_nm_interface="BSD nm"
   echo "int some_variable = 0;" > conftest.$ac_ext
-  (eval echo "\"\$as_me:4971: $ac_compile\"" >&5)
+  (eval echo "\"\$as_me:4969: $ac_compile\"" >&5)
   (eval "$ac_compile" 2>conftest.err)
   cat conftest.err >&5
-  (eval echo "\"\$as_me:4974: $NM \\\"conftest.$ac_objext\\\"\"" >&5)
+  (eval echo "\"\$as_me:4972: $NM \\\"conftest.$ac_objext\\\"\"" >&5)
   (eval "$NM \"conftest.$ac_objext\"" 2>conftest.err > conftest.out)
   cat conftest.err >&5
-  (eval echo "\"\$as_me:4977: output\"" >&5)
+  (eval echo "\"\$as_me:4975: output\"" >&5)
   cat conftest.out >&5
   if $GREP 'External.*some_variable' conftest.out > /dev/null; then
     lt_cv_nm_interface="MS dumpbin"
@@ -6179,7 +6177,7 @@ ia64-*-hpux*)
   ;;
 *-*-irix6*)
   # Find out which ABI we are using.
-  echo '#line 6182 "configure"' > conftest.$ac_ext
+  echo '#line 6180 "configure"' > conftest.$ac_ext
   if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_compile\""; } >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -7708,11 +7706,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:7711: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:7709: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:7715: \$? = $ac_status" >&5
+   echo "$as_me:7713: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -8047,11 +8045,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:8050: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:8048: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:8054: \$? = $ac_status" >&5
+   echo "$as_me:8052: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -8152,11 +8150,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:8155: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:8153: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:8159: \$? = $ac_status" >&5
+   echo "$as_me:8157: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -8207,11 +8205,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:8210: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:8208: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:8214: \$? = $ac_status" >&5
+   echo "$as_me:8212: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -10577,7 +10575,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10580 "configure"
+#line 10578 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -10673,7 +10671,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10676 "configure"
+#line 10674 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11117,15 +11115,6 @@ if test "${enable_wrapper_library+set}" = set; then :
   enableval=$enable_wrapper_library; wraplib="$enableval"
 else
   wrap_lib=false
-fi
-
-
-# Enable large data test support (Hashing multiple GiB of data) for SHA in acvp_app
-# Check whether --enable-hash-ldt was given.
-if test "${enable_hash_ldt+set}" = set; then :
-  enableval=$enable_hash_ldt; ldt_support="yes"
-else
-  ldt_support="no"
 fi
 
 
@@ -11700,10 +11689,6 @@ if test "x$with_criterion" != "xno" ; then
 
     CRITERION_LDFLAGS="-L$criteriondir/lib -lcriterion"
 
-fi
-
-if test "x$ldt_support" = "xyes"; then
-    cond_alg_cflags="$cond_alg_cflags -DACVPAPP_HASH_LDT_SUPPORT"
 fi
 
  if test "x$with_criteriondir" != "xno"; then
