@@ -2020,8 +2020,6 @@ static ACVP_RESULT acvp_build_kdf135_x942_register_cap(JSON_Object *cap_obj, ACV
     /* KDF type */
     json_object_set_value(cap_obj, "kdfType", json_value_init_array());
     tmp_arr = json_object_get_array(cap_obj, "kdfType");
-    tmp_val = json_value_init_object();
-    tmp_obj = json_value_get_object(tmp_val);
     switch (cap->type) {
     case ACVP_KDF_X942_KDF_TYPE_DER:
         json_array_append_string(tmp_arr, "DER");
