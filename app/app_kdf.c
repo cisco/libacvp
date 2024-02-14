@@ -332,7 +332,11 @@ int app_kdf108_handler(ACVP_TEST_CASE *test_case) {
         isHmac = 0;
         break;
     case ACVP_KDF108_MAC_MODE_KMAC_128:
+        mac = "KMAC128";
+        break;
     case ACVP_KDF108_MAC_MODE_KMAC_256:
+        mac = "KMAC256";
+        break;
     case ACVP_KDF108_MAC_MODE_MIN:
     case ACVP_KDF108_MAC_MODE_CMAC_TDES:
     case ACVP_KDF108_MAC_MODE_MAX:
@@ -341,12 +345,14 @@ int app_kdf108_handler(ACVP_TEST_CASE *test_case) {
         return 1;
     }
 
-    aname = calloc(256, sizeof(char)); //avoid const removal warnings
-    if (!aname) {
-        printf("Error allocating memory for KDF 108\n");
-        goto end;
+    if (alg) {
+        aname = calloc(256, sizeof(char)); //avoid const removal warnings
+        if (!aname) {
+            printf("Error allocating memory for KDF 108\n");
+            goto end;
+        }
+        strcpy_s(aname, 256, alg);
     }
-    strcpy_s(aname, 256, alg);
 
     fixed = calloc(fixed_len, sizeof(char)); //arbitrary length fixed info
     if (!fixed) {
@@ -371,23 +377,27 @@ int app_kdf108_handler(ACVP_TEST_CASE *test_case) {
     OSSL_PARAM_BLD_push_utf8_string(pbld, OSSL_KDF_PARAM_MAC, mac, 0);
     OSSL_PARAM_BLD_push_octet_string(pbld, OSSL_KDF_PARAM_KEY, stc->key_in, stc->key_in_len);
     OSSL_PARAM_BLD_push_octet_string(pbld, OSSL_KDF_PARAM_SEED, stc->iv, stc->iv_len);
-    OSSL_PARAM_BLD_push_octet_string(pbld, OSSL_KDF_PARAM_INFO, fixed, fixed_len);
+    if (stc->mac_mode == ACVP_KDF108_MAC_MODE_KMAC_128 || stc->mac_mode == ACVP_KDF108_MAC_MODE_KMAC_256) {
+        OSSL_PARAM_BLD_push_octet_string(pbld, OSSL_KDF_PARAM_INFO, stc->context, stc->context_len);
+        OSSL_PARAM_BLD_push_octet_string(pbld, OSSL_KDF_PARAM_SALT, stc->label, stc->label_len);
+    } else {
+        OSSL_PARAM_BLD_push_octet_string(pbld, OSSL_KDF_PARAM_INFO, fixed, fixed_len);
+    }
     OSSL_PARAM_BLD_push_int(pbld, OSSL_KDF_PARAM_KBKDF_USE_SEPARATOR, 0);
     OSSL_PARAM_BLD_push_int(pbld, OSSL_KDF_PARAM_KBKDF_USE_L, 0);
 
-    if (isHmac) {
-        OSSL_PARAM_BLD_push_utf8_string(pbld, OSSL_KDF_PARAM_DIGEST, aname, 0);
-    } else {
-        OSSL_PARAM_BLD_push_utf8_string(pbld, OSSL_KDF_PARAM_CIPHER, aname, 0);
+    if (aname) {
+        if (isHmac) {
+            OSSL_PARAM_BLD_push_utf8_string(pbld, OSSL_KDF_PARAM_DIGEST, aname, 0);
+        } else {
+            OSSL_PARAM_BLD_push_utf8_string(pbld, OSSL_KDF_PARAM_CIPHER, aname, 0);
+        }
     }
 
     if (stc->mode == ACVP_KDF108_MODE_COUNTER) {
         OSSL_PARAM_BLD_push_utf8_string(pbld, OSSL_KDF_PARAM_MODE, "COUNTER", 0);
     } else if (stc->mode == ACVP_KDF108_MODE_FEEDBACK) {
         OSSL_PARAM_BLD_push_utf8_string(pbld, OSSL_KDF_PARAM_MODE, "FEEDBACK", 0);
-    } else {
-        printf("Unsupported KDF108 mode given for kdf108\n");
-        goto end;
     }
 
     params = OSSL_PARAM_BLD_to_param(pbld);
@@ -398,7 +408,9 @@ int app_kdf108_handler(ACVP_TEST_CASE *test_case) {
 
     if (EVP_KDF_derive(kctx, stc->key_out, stc->key_out_len, params) != 1) {
         printf("Failure deriving key material in kdf108\n");
+        goto end;
     }
+
     rc = 0;
 end:
     if (aname) free(aname);
