@@ -268,6 +268,8 @@ int app_kda_onestep_handler(ACVP_TEST_CASE *test_case) {
 
     if (stc->aux_function == ACVP_KMAC_128) {
         mac = "KMAC128";
+    } else if (stc->aux_function == ACVP_KMAC_256) {
+        mac = "KMAC256";
     } else if (!stc->salt) {
         hashalg = acvp_get_hash_alg(stc->aux_function);
         if (hashalg == 0) {
