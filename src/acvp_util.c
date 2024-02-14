@@ -710,6 +710,7 @@ ACVP_ED_CURVE acvp_lookup_ed_curve(const char *name) {
 }
 
 static struct acvp_function_info acvp_aux_function_tbl[] = {
+    { ACVP_HASH_SHA1, ACVP_ALG_SHA1 },
     { ACVP_HASH_SHA224, ACVP_ALG_SHA224 },
     { ACVP_HASH_SHA256, ACVP_ALG_SHA256 },
     { ACVP_HASH_SHA384, ACVP_ALG_SHA384 },
