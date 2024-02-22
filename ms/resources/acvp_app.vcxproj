@@ -110,11 +110,13 @@
     <ClCompile Include="..\..\app\app_drbg.c" />
     <ClCompile Include="..\..\app\app_dsa.c" />
     <ClCompile Include="..\..\app\app_ecdsa.c" />
+    <ClCompile Include="..\..\app\app_eddsa.c" />
     <ClCompile Include="..\..\app\app_hmac.c" />
     <ClCompile Include="..\..\app\app_kas.c" />
     <ClCompile Include="..\..\app\app_kdf.c" />
     <ClCompile Include="..\..\app\app_kda.c" />
     <ClCompile Include="..\..\app\app_kmac.c" />
+    <ClCompile Include="..\..\app\app_lms.c" />
     <ClCompile Include="..\..\app\app_main.c" />
     <ClCompile Include="..\..\app\app_rsa.c" />
     <ClCompile Include="..\..\app\app_sha.c" />
