@@ -24,6 +24,8 @@ EXPORTS
   acvp_cap_rsa_keygen_enable
   acvp_cap_rsa_sig_enable
   acvp_cap_ecdsa_enable
+  acvp_cap_eddsa_enable
+  acvp_cap_eddsa_set_parm
   acvp_cap_rsa_keygen_set_parm
   acvp_cap_rsa_sigver_set_parm
   acvp_cap_rsa_keygen_set_mode
@@ -39,6 +41,9 @@ EXPORTS
   acvp_cap_rsa_prim_enable
   acvp_cap_rsa_prim_set_parm
   acvp_cap_rsa_prim_set_exponent
+  acvp_cap_rsa_siggen_set_parm
+  acvp_cap_rsa_siggen_set_mod_mask
+  acvp_cap_rsa_sigver_set_mod_mask
   acvp_cap_hmac_enable
   acvp_cap_hmac_set_parm
   acvp_cap_hmac_set_domain
@@ -144,4 +149,6 @@ EXPORTS
   acvp_get_drbg_alg
   acvp_get_kas_alg
   acvp_get_kmac_alg
+  acvp_get_eddsa_alg
+  acvp_get_lms_alg
   acvp_sleep
