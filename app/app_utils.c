@@ -637,7 +637,7 @@ end:
 #if 0 /* Will use in a future release */
 /* Converts a provider version string in the format MAJOR.MINOR.PATCH to an integer in the format (major * 1000000) + (minor * 10000) + patch */
 int provider_ver_str_to_int(const char *str) {
-    int major = 0, minor = 0, patch = 0, result = 0, rv = -1;
+    int major = 0, minor = 0, patch = 0, result = 0;
 
     if (!str) {
         return -1;
