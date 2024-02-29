@@ -10,9 +10,33 @@
 
 #include <openssl/evp.h>
 #include <openssl/hmac.h>
+#include <openssl/safestack.h>
+#include <openssl/core_names.h>
+#include <openssl/provider.h>
 #include "app_lcl.h"
 #include "safe_lib.h"
 
+#ifndef OPENSSL_VERSION_TEXT
+#define OPENSSL_VERSION_TEXT "not detected"
+#endif
+
+void print_version_info(int fips_active) {
+    const char *str = NULL;
+
+    printf("\n ACVP library version: %s\n", acvp_version());
+    printf("ACVP protocol version: %s\n\n", acvp_protocol_version());
+    printf(" Compiled SSL version: %s\n", OPENSSL_VERSION_TEXT);
+    printf("   Linked SSL version: %s\n\n", OpenSSL_version(OPENSSL_VERSION));
+
+    if (fips_active) {
+        printf("       FIPS requested: yes\n");
+        /* Get the FIPS provider version number */
+        str = get_provider_version("OpenSSL FIPS Provider");
+        printf("FIPS Provider Version: %s\n", str);
+    } else {
+        printf("       FIPS requested: no\n");
+    }
+}
 
 /* This is a public domain base64 implementation written by WEI Zhicheng. */
 enum { BASE64_OK = 0, BASE64_INVALID };
@@ -557,4 +581,87 @@ const char *get_ed_curve_string(ACVP_ED_CURVE curve) {
         return NULL;
     }
 }
+
+/*
+ * The following code was taken from OpenSSL and modified to meet libacvp's use case. The Apache
+ * License V2 can be found in the root of this project.
+ */
+DEFINE_STACK_OF(OSSL_PROVIDER)
+
+static int collect_providers(OSSL_PROVIDER *provider, void *stack) {
+    STACK_OF(OSSL_PROVIDER) *provider_stack = stack;
+    return sk_OSSL_PROVIDER_push(provider_stack, provider) > 0 ? 1 : 0;
+}
+
+const char *get_provider_version(const char *provider_name) {
+    STACK_OF(OSSL_PROVIDER) *providers = sk_OSSL_PROVIDER_new_null();
+    OSSL_PROVIDER *prov = NULL;
+    OSSL_PARAM params[3];
+    char *name = NULL, *version = NULL, *ret = NULL;
+    int i = 0, diff = 0;
+
+    if (providers == NULL) {
+        printf( "Error allocating space for list of active providers\n");
+        goto end;
+    }
+
+    if (OSSL_PROVIDER_do_all(NULL, &collect_providers, providers) != 1) {
+        printf( "Error collecting list of current active providers\n");
+        goto end;
+    }
+
+    for (i = 0; i < sk_OSSL_PROVIDER_num(providers); i++) {
+        prov = sk_OSSL_PROVIDER_value(providers, i);
+
+        /* Get names and versions for each provider, compare name against what we are looking for */
+        params[0] = OSSL_PARAM_construct_utf8_ptr(OSSL_PROV_PARAM_NAME, &name, 0);
+        params[1] = OSSL_PARAM_construct_utf8_ptr(OSSL_PROV_PARAM_VERSION, &version, 0);
+        params[2] = OSSL_PARAM_construct_end();
+        if (!OSSL_PROVIDER_get_params(prov, params)) {
+            printf("Error getting list of params for an active provider\n");
+            goto end;
+        } else {
+            strcmp_s(provider_name, strnlen_s(provider_name, PROVIDER_NAME_MAX_LEN), name, &diff);
+            if (!diff) {
+                ret = version;
+                break;
+            }
+        }
+    }
+end:
+    if (providers) sk_OSSL_PROVIDER_free(providers);
+    return ret;
+}
+/* End OpenSSL code */
+
+#if 0 /* Will use in a future release */
+/* Converts a provider version string in the format MAJOR.MINOR.PATCH to an integer in the format (major * 1000000) + (minor * 10000) + patch */
+int provider_ver_str_to_int(const char *str) {
+    int major = 0, minor = 0, patch = 0, result = 0, rv = -1;
+
+    if (!str) {
+        return -1;
+    }
+
+    result = sscanf(str, "%d.%d.%d", &major, &minor, &patch);
+
+    if (result != 3) { /* Check if the parsing was successful */
+        return -1;
+    }
+
+    /* Ensure that the version components are within a valid range */
+    if (major < 0 || major > 99) {
+        return -1;
+    }
+    if (minor < 0 || minor > 99) {
+        return -1;
+    }
+    if (patch < 0 || patch > 9999) {
+        return -1;
+    }
+
+    return (major * 1000000) + (minor * 10000) + patch;
+
+}
+#endif
 #endif
