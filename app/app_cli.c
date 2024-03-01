@@ -180,30 +180,7 @@ static void print_usage(int code) {
     printf("        ACV_OE_COMPILER\n\n");
 }
 
-static void print_version_info(void) {
-    printf("\nACVP library version(protocol version): %s(%s)\n\n", acvp_version(), acvp_protocol_version());
-    printf("        Runtime mode: yes\n");
-#if OPENSSL_VERSION_NUMBER < 0x30000000L
-    if (FIPS_mode()) {
-        printf("           FIPS mode: yes\n");
-    } else {
-        printf("           FIPS mode: no\n");
-    }
-#else
-    if (EVP_default_properties_is_fips_enabled(NULL)) {
-        printf("           FIPS by default: yes\n");
-    } else {
-        printf("           FIPS by default: no\n");
-    }
-#endif
 
-#ifdef OPENSSL_VERSION_TEXT
-    printf("Compiled SSL version: %s\n", OPENSSL_VERSION_TEXT);
-#else
-    printf("Compiled SSL version: not detected\n");
-#endif
-    printf("  Linked SSL version: %s\n", OpenSSL_version(OPENSSL_VERSION));
-}
 
 static ko_longopt_t longopts[] = {
     { "version", ko_no_argument, 301 },
@@ -312,7 +289,7 @@ static int check_option_length(const char *opt, int c, int maxAllowed) {
 
 int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
     ketopt_t opt = KETOPT_INIT;
-    int c = 0, diff = 0, len = 0;
+    int c = 0, diff = 0, len = 0, print_ver = 0;
 
     cfg->empty_alg = 1;
 
@@ -325,8 +302,9 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
         switch (c) {
         case 'v':
         case 301:
-            print_version_info();
-            return 1;
+            /* Print version info AFTER other args are read, so we can see module runtime info better */
+            print_ver = 1;
+            break;
         case 'h':
         case 302:
             if (opt.arg) {
@@ -612,6 +590,11 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
             printf(ANSI_COLOR_RED "unknown option: %s\n" ANSI_COLOR_RESET, argv[c]);
         }
         printf("%s\n", ACVP_APP_HELP_MSG);
+        return 1;
+    }
+
+    if (print_ver) {
+        print_version_info(cfg->disable_fips == 0);
         return 1;
     }
 

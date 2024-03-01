@@ -25,6 +25,7 @@ extern "C"
 #define JSON_FILENAME_LENGTH 128
 #define JSON_STRING_LENGTH 32
 #define JSON_REQUEST_LENGTH 128
+#define PROVIDER_NAME_MAX_LEN 64
 #define ALG_STR_MAX_LEN 256 /* arbitrary */
 extern char value[JSON_STRING_LENGTH];
 
@@ -83,6 +84,7 @@ typedef struct app_config {
 } APP_CONFIG;
 
 
+void print_version_info(int fips_active);
 int ingest_cli(APP_CONFIG *cfg, int argc, char **argv);
 int app_setup_two_factor_auth(ACVP_CTX *ctx);
 unsigned int swap_uint_endian(unsigned int i);
@@ -144,12 +146,14 @@ int app_drbg_handler(ACVP_TEST_CASE *test_case);
 int app_safe_primes_handler(ACVP_TEST_CASE *test_case);
 int app_lms_handler(ACVP_TEST_CASE *test_case);
 
-#if OPENSSL_VERSION_NUMBER >= 0x30000000L
 int app_aes_handler_gmac(ACVP_TEST_CASE *test_case);
 ACVP_RESULT fips_sanity_check(void);
 const char *get_string_from_oid(unsigned char *oid, int oid_len);
 const char *get_ed_instance_param(ACVP_ED_CURVE curve, int is_prehash, int has_context);
 const char *get_ed_curve_string(ACVP_ED_CURVE curve);
+const char *get_provider_version(const char *provider_name);
+#if 0 /* Will use in a future release */
+int provider_ver_str_to_int(const char *str);
 #endif
 
 #ifdef __cplusplus
