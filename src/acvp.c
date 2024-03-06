@@ -2790,11 +2790,11 @@ static ACVP_RESULT acvp_retry_handler(ACVP_CTX *ctx, int *retry_period, unsigned
         ACVP_LOG_WARN("retry_period not found, using max retry period!");
     }
     if (situation == ACVP_WAITING_FOR_TESTS) {
-        ACVP_LOG_STATUS("200 OK KAT values not ready, server requests we wait %u seconds and try again...", *retry_period);
+        ACVP_LOG_STATUS("Vector sets not yet ready, server requesting we wait %u seconds and try again...", *retry_period);
     } else if (situation == ACVP_WAITING_FOR_RESULTS) {
-        ACVP_LOG_STATUS("200 OK results not ready, waiting %u seconds and trying again...", *retry_period);
+        ACVP_LOG_STATUS("Test results not yet ready, waiting %u seconds and trying again...", *retry_period);
     } else {
-        ACVP_LOG_STATUS("200 OK, waiting %u seconds and trying again...", *retry_period);
+        ACVP_LOG_STATUS("Waiting %u seconds and trying again...", *retry_period);
     }
 
     acvp_sleep(*retry_period);

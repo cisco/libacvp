@@ -892,8 +892,8 @@
 
 #define ACVP_CURL_BUF_MAX       (1024 * 1024 * 64) /**< 64 MB */
 #define ACVP_RETRY_TIME_MIN     5 /* seconds */
-#define ACVP_RETRY_TIME_MAX     300 
-#define ACVP_MAX_WAIT_TIME      7200
+#define ACVP_RETRY_TIME_MAX     300 /* 5 minutes */
+#define ACVP_MAX_WAIT_TIME      10800 /* 3 hours */
 #define ACVP_RETRY_TIME         30
 #define ACVP_RETRY_MODIFIER_MAX 10
 #define ACVP_JWT_TOKEN_MAX      2048
