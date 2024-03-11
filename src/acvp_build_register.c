@@ -978,7 +978,22 @@ static ACVP_RESULT acvp_build_drbg_register_cap(JSON_Object *cap_obj, ACVP_CAPS_
 
     json_object_set_value(cap_obj, "predResistanceEnabled", json_value_init_array());
     array = json_object_get_array(cap_obj, "predResistanceEnabled");
-    json_array_append_boolean(array, cap->pred_resist_enabled);
+    switch (cap->pred_resist) {
+    case ACVP_DRBG_PRED_RESIST_NO:
+        json_array_append_boolean(array, 0);
+        break;
+    case ACVP_DRBG_PRED_RESIST_YES:
+        json_array_append_boolean(array, 1);
+        break;
+    case ACVP_DRBG_PRED_RESIST_BOTH:
+        json_array_append_boolean(array, 1);
+        json_array_append_boolean(array, 0);
+        break;
+    default:
+        return ACVP_INTERNAL_ERR;
+        break;
+    }
+
     json_object_set_boolean(cap_obj, "reseedImplemented", cap->reseed_implemented);
 
     json_object_set_value(cap_obj, "capabilities", json_value_init_array());

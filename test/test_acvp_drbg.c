@@ -33,7 +33,7 @@ static void setup(void) {
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_drbg_set_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1, 0,
-            ACVP_DRBG_PRED_RESIST_ENABLED, 1);
+            ACVP_DRBG_PRED_RESIST_ENABLED, ACVP_DRBG_PRED_RESIST_YES);
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_drbg_set_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1, 0,
@@ -75,7 +75,7 @@ static void setup(void) {
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224, 0,
-            ACVP_DRBG_PRED_RESIST_ENABLED, 1);
+            ACVP_DRBG_PRED_RESIST_ENABLED, ACVP_DRBG_PRED_RESIST_YES);
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224, 0,
@@ -129,7 +129,7 @@ static void setup(void) {
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_drbg_set_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128, 0,
-            ACVP_DRBG_PRED_RESIST_ENABLED, 1);
+            ACVP_DRBG_PRED_RESIST_ENABLED, ACVP_DRBG_PRED_RESIST_YES);
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_drbg_set_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128, 0,
@@ -156,7 +156,7 @@ static void setup_fail(void) {
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_drbg_set_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1, 0,
-            ACVP_DRBG_PRED_RESIST_ENABLED, 1);
+            ACVP_DRBG_PRED_RESIST_ENABLED, ACVP_DRBG_PRED_RESIST_YES);
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_drbg_set_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1, 0,
@@ -198,7 +198,7 @@ static void setup_fail(void) {
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224, 0,
-            ACVP_DRBG_PRED_RESIST_ENABLED, 1);
+            ACVP_DRBG_PRED_RESIST_ENABLED, ACVP_DRBG_PRED_RESIST_YES);
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224, 0,
@@ -252,7 +252,7 @@ static void setup_fail(void) {
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_drbg_set_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128, 0,
-            ACVP_DRBG_PRED_RESIST_ENABLED, 1);
+            ACVP_DRBG_PRED_RESIST_ENABLED, ACVP_DRBG_PRED_RESIST_YES);
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_drbg_set_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128, 0,
@@ -286,7 +286,7 @@ Test(DRBG_CAPABILITY, good) {
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_drbg_set_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1, 0,
-            ACVP_DRBG_PRED_RESIST_ENABLED, 1);
+            ACVP_DRBG_PRED_RESIST_ENABLED, ACVP_DRBG_PRED_RESIST_YES);
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_drbg_set_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1, 0,
@@ -328,7 +328,7 @@ Test(DRBG_CAPABILITY, good) {
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224, 0,
-            ACVP_DRBG_PRED_RESIST_ENABLED, 1);
+            ACVP_DRBG_PRED_RESIST_ENABLED, ACVP_DRBG_PRED_RESIST_YES);
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224, 0,
@@ -382,7 +382,7 @@ Test(DRBG_CAPABILITY, good) {
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_drbg_set_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128, 0,
-            ACVP_DRBG_PRED_RESIST_ENABLED, 1);
+            ACVP_DRBG_PRED_RESIST_ENABLED, ACVP_DRBG_PRED_RESIST_YES);
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_drbg_set_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128, 0,
