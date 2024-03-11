@@ -706,6 +706,15 @@ typedef enum acvp_drbg_mode {
     ACVP_DRBG_AES_256
 } ACVP_DRBG_MODE;
 
+/** @enum ACVP_PRED_RESIST_MODE
+ * disabled == 0 and enabled == 1 for backwards compatibility
+ */
+typedef enum acvp_drbg_pred_resist_mode {
+    ACVP_DRBG_PRED_RESIST_NO = 0,
+    ACVP_DRBG_PRED_RESIST_YES,
+    ACVP_DRBG_PRED_RESIST_BOTH
+} ACVP_DRBG_PRED_RESIST_MODE;
+
 /** @enum ACVP_DRBG_PARM */
 typedef enum acvp_drbg_param {
     ACVP_DRBG_DER_FUNC_ENABLED = 0,

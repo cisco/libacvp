@@ -1310,8 +1310,8 @@ typedef struct acvp_drbg_mode_list_t {
 typedef struct acvp_drbg_capability {
     ACVP_CIPHER cipher;
     ACVP_PREREQ_LIST *prereq_vals;
-    int pred_resist_enabled;    // boolean
-    int reseed_implemented;     // boolean
+    ACVP_DRBG_PRED_RESIST_MODE pred_resist;
+    int reseed_implemented; // boolean
     ACVP_DRBG_MODE_LIST *drbg_cap_mode;
 } ACVP_DRBG_CAP;
 

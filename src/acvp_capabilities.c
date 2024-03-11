@@ -3994,6 +3994,10 @@ static ACVP_RESULT acvp_validate_drbg_parm_value(ACVP_DRBG_PARM parm, int value)
     switch (parm) {
     case ACVP_DRBG_DER_FUNC_ENABLED:
     case ACVP_DRBG_PRED_RESIST_ENABLED:
+        if (value >= ACVP_DRBG_PRED_RESIST_NO && value <= ACVP_DRBG_PRED_RESIST_BOTH) {
+            retval = ACVP_SUCCESS;
+        }
+        break;
     case ACVP_DRBG_RESEED_ENABLED:
         retval = is_valid_tf_param(value);
         break;
@@ -4108,7 +4112,7 @@ ACVP_RESULT acvp_cap_drbg_set_parm(ACVP_CTX *ctx,
         grp->der_func_enabled = value;
         break;
     case ACVP_DRBG_PRED_RESIST_ENABLED:
-        cap_list->cap.drbg_cap->pred_resist_enabled = value;
+        cap_list->cap.drbg_cap->pred_resist = value;
         break;
     case ACVP_DRBG_RESEED_ENABLED:
         cap_list->cap.drbg_cap->reseed_implemented = value;
