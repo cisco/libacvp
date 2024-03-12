@@ -1773,6 +1773,7 @@ typedef struct acvp_rsa_sig_tc_t {
     char *group_n;
     ACVP_HASH_ALG hash_alg;
     ACVP_RSA_SIG_TYPE sig_type;
+    ACVP_RSA_MASK_FUNCTION mask;
     unsigned int modulo;
     unsigned char *e;
     int e_len;

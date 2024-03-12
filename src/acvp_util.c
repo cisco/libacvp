@@ -335,9 +335,9 @@ const char *acvp_lookup_rsa_mask_func_str(ACVP_RSA_MASK_FUNCTION func) {
     case ACVP_RSA_MASK_FUNCTION_MGF1:
         return ACVP_RSA_MASK_FUNC_STR_MGF1;
     case ACVP_RSA_MASK_FUNCTION_SHAKE_128:
-        return ACVP_ALG_SHAKE_128;
+        return ACVP_RSA_MASK_FUNC_STR_SHAKE128;
     case ACVP_RSA_MASK_FUNCTION_SHAKE_256:
-        return ACVP_ALG_SHAKE_256;
+        return ACVP_RSA_MASK_FUNCTION_SHAKE_256;
     case ACVP_RSA_MASK_FUNCTION_NONE:
     case ACVP_RSA_MASK_FUNCTION_MAX:
     default:

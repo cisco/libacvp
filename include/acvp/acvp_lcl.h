@@ -354,7 +354,9 @@
 #define ACVP_RSA_SIG_TYPE_PKCS1V15_STR  "pkcs1v1.5"
 #define ACVP_RSA_SIG_TYPE_PKCS1PSS_STR  "pss"
 
-#define ACVP_RSA_MASK_FUNC_STR_MGF1 "MGF1"
+#define ACVP_RSA_MASK_FUNC_STR_MGF1 "mgf1"
+#define ACVP_RSA_MASK_FUNC_STR_SHAKE128 "shake-128"
+#define ACVP_RSA_MASK_FUNC_STR_SHAKE256 "shake-256"
 
 #define ACVP_ALG_RSA                "RSA"
 #define ACVP_ALG_ECDSA              "ECDSA"
