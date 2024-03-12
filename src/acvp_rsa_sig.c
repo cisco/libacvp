@@ -71,6 +71,7 @@ static ACVP_RESULT acvp_rsa_sig_init_tc(ACVP_CTX *ctx,
                                         int tgId,
                                         unsigned int tc_id,
                                         ACVP_RSA_SIG_TYPE sig_type,
+                                        ACVP_RSA_MASK_FUNCTION mask,
                                         unsigned int mod,
                                         ACVP_HASH_ALG hash_alg,
                                         const char *e,
@@ -135,6 +136,7 @@ static ACVP_RESULT acvp_rsa_sig_init_tc(ACVP_CTX *ctx,
     stc->modulo = mod;
     stc->hash_alg = hash_alg;
     stc->sig_type = sig_type;
+    stc->mask = mask;
 
     return rv;
 
@@ -173,6 +175,18 @@ static ACVP_RSA_SIG_TYPE read_sig_type(const char *str) {
     return 0;
 }
 
+static ACVP_RSA_MASK_FUNCTION read_mask_function(const char *str) {
+    int diff = 1;
+    strcmp_s(ACVP_RSA_MASK_FUNC_STR_MGF1, sizeof(ACVP_RSA_MASK_FUNC_STR_MGF1) - 1, str, &diff);
+    if (!diff) return ACVP_RSA_MASK_FUNCTION_MGF1;
+    strcmp_s(ACVP_RSA_MASK_FUNC_STR_SHAKE128, sizeof(ACVP_RSA_MASK_FUNC_STR_SHAKE128) - 1, str, &diff);
+    if (!diff) return ACVP_RSA_MASK_FUNCTION_SHAKE_128;
+    strcmp_s(ACVP_RSA_MASK_FUNC_STR_SHAKE256, sizeof(ACVP_RSA_MASK_FUNC_STR_SHAKE256) - 1, str, &diff);
+    if (!diff) return ACVP_RSA_MASK_FUNCTION_SHAKE_256;
+
+    return 0;
+}
+
 static ACVP_RESULT acvp_rsa_sig_kat_handler_internal(ACVP_CTX *ctx, JSON_Object *obj, ACVP_CIPHER cipher) {
     unsigned int tc_id;
     JSON_Value *groupval;
@@ -188,6 +202,7 @@ static ACVP_RESULT acvp_rsa_sig_kat_handler_internal(ACVP_CTX *ctx, JSON_Object 
 
     int i, g_cnt;
     int j, t_cnt;
+    int old_rev = 0;
 
     JSON_Value *r_vs_val = NULL;
     JSON_Object *r_vs = NULL;
@@ -205,7 +220,7 @@ static ACVP_RESULT acvp_rsa_sig_kat_handler_internal(ACVP_CTX *ctx, JSON_Object 
     const char *msg,  *tmp_signature = NULL;
     char *signature = NULL;
     const char *e_str = NULL, *n_str = NULL;
-    const char *salt = NULL, *alg_str;
+    const char *salt = NULL, *alg_str = NULL, *rev_str = NULL;
     unsigned int salt_len = 0, json_msglen, json_siglen, p;
     ACVP_RESULT rv;
 
@@ -230,6 +245,15 @@ static ACVP_RESULT acvp_rsa_sig_kat_handler_internal(ACVP_CTX *ctx, JSON_Object 
     if (alg_id != cipher) {
         ACVP_LOG_ERR("Server JSON invalid 'algorithm' or 'mode'");
         return ACVP_INVALID_ARG;
+    }
+
+    rev_str = json_object_get_string(obj, "revision");
+    if (!rev_str) {
+        ACVP_LOG_ERR("Missing 'revision' from server json");
+        return ACVP_MISSING_ARG;
+    }
+    if (acvp_lookup_alt_revision(rev_str) == ACVP_REVISION_FIPS186_4) {
+        old_rev = 1;
     }
 
     tc.tc.rsa_sig = &stc;
@@ -270,7 +294,8 @@ static ACVP_RESULT acvp_rsa_sig_kat_handler_internal(ACVP_CTX *ctx, JSON_Object 
         int tgId = 0;
         ACVP_RSA_SIG_TYPE sig_type = 0;
         ACVP_HASH_ALG hash_alg = 0;
-        const char *sig_type_str = NULL, *hash_alg_str = NULL;
+        ACVP_RSA_MASK_FUNCTION mask = 0;
+        const char *sig_type_str = NULL, *hash_alg_str = NULL, *mask_str = NULL;
         groupval = json_array_get_value(groups, i);
         groupobj = json_value_get_object(groupval);
 
@@ -332,6 +357,22 @@ static ACVP_RESULT acvp_rsa_sig_kat_handler_internal(ACVP_CTX *ctx, JSON_Object 
         }
 
         salt_len = json_object_get_number(groupobj, "saltLen");
+
+        if (!old_rev && sig_type == ACVP_RSA_SIG_TYPE_PKCS1PSS) {
+            mask_str = json_object_get_string(groupobj, "maskFunction");
+            if (!mask_str) {
+                ACVP_LOG_ERR("Server JSON missing 'maskFunction'");
+                rv = ACVP_MISSING_ARG;
+                goto err;
+            }
+
+            mask = read_mask_function(mask_str);
+            if (!mask) {
+                ACVP_LOG_ERR("Server JSON invalid 'maskFunction'");
+                rv = ACVP_INVALID_ARG;
+                goto err;
+            }
+        }
 
         if (alg_id == ACVP_RSA_SIGVER) {
             e_str = json_object_get_string(groupobj, "e");
@@ -436,7 +477,7 @@ static ACVP_RESULT acvp_rsa_sig_kat_handler_internal(ACVP_CTX *ctx, JSON_Object 
             }
 
             rv = acvp_rsa_sig_init_tc(ctx, alg_id, &stc, tgId, tc_id,
-                                      sig_type, mod, hash_alg, e_str,
+                                      sig_type, mask, mod, hash_alg, e_str,
                                       n_str, msg, signature, salt, salt_len);
             free(signature);
 
