@@ -394,6 +394,9 @@ static ACVP_RESULT acvp_rsa_sig_kat_handler_internal(ACVP_CTX *ctx, JSON_Object 
         ACVP_LOG_VERBOSE("          sigType: %s", sig_type_str);
         ACVP_LOG_VERBOSE("           modulo: %d", mod);
         ACVP_LOG_VERBOSE("          hashAlg: %s", hash_alg_str);
+        if (mask_str) {
+            ACVP_LOG_VERBOSE("             mask: %s", mask_str);
+        }
 
         tests = json_object_get_array(groupobj, "tests");
         t_cnt = json_array_get_count(tests);
