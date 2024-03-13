@@ -337,7 +337,7 @@ const char *acvp_lookup_rsa_mask_func_str(ACVP_RSA_MASK_FUNCTION func) {
     case ACVP_RSA_MASK_FUNCTION_SHAKE_128:
         return ACVP_RSA_MASK_FUNC_STR_SHAKE128;
     case ACVP_RSA_MASK_FUNCTION_SHAKE_256:
-        return ACVP_RSA_MASK_FUNCTION_SHAKE_256;
+        return ACVP_RSA_MASK_FUNC_STR_SHAKE256;
     case ACVP_RSA_MASK_FUNCTION_NONE:
     case ACVP_RSA_MASK_FUNCTION_MAX:
     default:
@@ -494,7 +494,9 @@ static struct acvp_hash_alg_info hash_alg_tbl[] = {
     { ACVP_SHA3_224,   ACVP_STR_SHA3_224     },
     { ACVP_SHA3_256,   ACVP_STR_SHA3_256     },
     { ACVP_SHA3_384,   ACVP_STR_SHA3_384     },
-    { ACVP_SHA3_512,   ACVP_STR_SHA3_512     }
+    { ACVP_SHA3_512,   ACVP_STR_SHA3_512     },
+    { ACVP_SHAKE_128,  ACVP_ALG_SHAKE_128    },
+    { ACVP_SHAKE_256,  ACVP_ALG_SHAKE_256    }
 };
 static int hash_alg_tbl_length =
     sizeof(hash_alg_tbl) / sizeof(struct acvp_hash_alg_info);
