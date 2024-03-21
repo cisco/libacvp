@@ -4,7 +4,8 @@
   }, 
   {
     "vsId": 1173, 
-    "algorithm": "RSA", 
+    "algorithm": "RSA",
+    "revision": "FIPS186-4",
     "testGroups": [
       {
         "tests": [
