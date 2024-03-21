@@ -12,7 +12,7 @@
 
 #include "safe_mem_lib.h"
 
-int app_sha_ldt_handler();
+int app_sha_ldt_handler(ACVP_HASH_TC *tc, const EVP_MD *md);
 
 int app_sha_handler(ACVP_TEST_CASE *test_case) {
     ACVP_HASH_TC    *tc;
@@ -172,7 +172,7 @@ end:
  * 2) oneshot function or a single call to update; never multiple calls to update
  * 3) allowed for all SHA, not SHAKE
  */
-int app_sha_ldt_handler(ACVP_HASH_TC *tc, EVP_MD *md) {
+int app_sha_ldt_handler(ACVP_HASH_TC *tc, const EVP_MD *md) {
     unsigned char *large_data = NULL, *iter = NULL;
     int numcopies = 0, i = 0, rv = 1;
     EVP_MD_CTX *md_ctx = NULL;

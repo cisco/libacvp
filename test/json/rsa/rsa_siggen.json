@@ -29,8 +29,9 @@
         "hashAlg": "SHA2-256"
       }
     ], 
-    "algorithm": "RSA", 
+    "algorithm": "RSA",
     "vsId": 1163, 
-    "mode": "sigGen"
+    "mode": "sigGen",
+    "revision": "FIPS186-4"
   }
 ]
