@@ -139,22 +139,13 @@ int app_sha_handler(ACVP_TEST_CASE *test_case) {
             goto end;
         }
 
-        if (tc->test_type == ACVP_HASH_TEST_TYPE_VOT ||
-            (tc->test_type == ACVP_HASH_TEST_TYPE_MCT && shake)) {
-            /*
-             * Use the XOF oriented function.
-             * Skip past the other "EVP_DigestFinal".
-             */
+        if (shake) {
             if (!EVP_DigestFinalXOF(md_ctx, tc->md, tc->xof_len)) {
-                printf("\nCrypto module error, EVP_DigestFinal failed\n");
+                printf("\nCrypto module error, EVP_DigestFinalXOF failed\n");
                 goto end;
             }
             tc->md_len = tc->xof_len;
-            rc = 0;
-            goto end;
-        }
-
-        if (!EVP_DigestFinal(md_ctx, tc->md, &tc->md_len)) {
+        } else if (!EVP_DigestFinal(md_ctx, tc->md, &tc->md_len)) {
             printf("\nCrypto module error, EVP_DigestFinal failed\n");
             goto end;
         }
