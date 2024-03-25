@@ -632,7 +632,8 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 // Convert to bits
                 msglen = tmp_msg_len * 4;
 
-                if (test_type == ACVP_HASH_TEST_TYPE_VOT) {
+                if ((alg_id == ACVP_HASH_SHAKE_128 || alg_id == ACVP_HASH_SHAKE_256) &&
+                        test_type != ACVP_HASH_TEST_TYPE_MCT) {
                     xof_len = json_object_get_number(testobj, "outLen");
                     if (!(xof_len >= ACVP_HASH_XOF_MD_BIT_MIN &&
                         xof_len <= ACVP_HASH_XOF_MD_BIT_MAX)) {
@@ -647,7 +648,8 @@ ACVP_RESULT acvp_hash_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             ACVP_LOG_VERBOSE("             tcId: %d", tc_id);
             ACVP_LOG_VERBOSE("              len: %d", msglen);
             ACVP_LOG_VERBOSE("              msg: %s", msg);
-            if (test_type == ACVP_HASH_TEST_TYPE_VOT) {
+            if ((alg_id == ACVP_HASH_SHAKE_128 || alg_id == ACVP_HASH_SHAKE_256) &&
+                    test_type != ACVP_HASH_TEST_TYPE_MCT) {
                 ACVP_LOG_VERBOSE("    outLen: %d", xof_len);
             }
             if (test_type == ACVP_HASH_TEST_TYPE_LDT) {
@@ -852,14 +854,16 @@ static ACVP_RESULT acvp_hash_init_tc(ACVP_CTX *ctx,
     stc->tc_id = tc_id;
     stc->cipher = alg_id;
     stc->test_type = test_type;
+    if (alg_id == ACVP_HASH_SHAKE_128 || alg_id == ACVP_HASH_SHAKE_256) {
+        stc->xof_len = (xof_len + 7) / 8;
+        stc->xof_bit_len = xof_len;
+    }
     if (stc->test_type == ACVP_HASH_TEST_TYPE_LDT) {
         stc->msg_len = msg_len;
         stc->exp_len = exp_len;
         stc->exp_method = exp_method;
     } else {
         stc->msg_len = (msg_len + 7) / 8;
-        stc->xof_len = (xof_len + 7) / 8;
-        stc->xof_bit_len = xof_len;
     }
 
     return ACVP_SUCCESS;
