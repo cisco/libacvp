@@ -354,14 +354,16 @@ int app_kdf108_handler(ACVP_TEST_CASE *test_case) {
         strcpy_s(aname, 256, alg);
     }
 
-    fixed = calloc(fixed_len, sizeof(char)); //arbitrary length fixed info
-    if (!fixed) {
-        printf("Error allocating memory for KDF 108\n");
-        goto end;
+    if (stc->mac_mode != ACVP_KDF108_MAC_MODE_KMAC_128 && stc->mac_mode != ACVP_KDF108_MAC_MODE_KMAC_256) {
+        fixed = calloc(fixed_len, sizeof(char)); //arbitrary length fixed info
+        if (!fixed) {
+            printf("Error allocating memory for KDF 108\n");
+            goto end;
+        }
+        RAND_bytes(fixed, fixed_len);
+        memcpy_s(stc->fixed_data, ACVP_KDF108_FIXED_DATA_MAX, fixed, fixed_len);
+        stc->fixed_data_len = fixed_len;
     }
-    RAND_bytes(fixed, fixed_len);
-    memcpy_s(stc->fixed_data, ACVP_KDF108_FIXED_DATA_MAX, fixed, fixed_len);
-    stc->fixed_data_len = fixed_len;
 
     kdf = EVP_KDF_fetch(NULL, "KBKDF", NULL);
     kctx = EVP_KDF_CTX_new(kdf);
