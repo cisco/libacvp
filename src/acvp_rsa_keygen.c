@@ -577,7 +577,7 @@ ACVP_RESULT acvp_rsa_keygen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             rv = ACVP_MISSING_ARG;
             goto err;
         }
-        if (mod > 8192 || mod % 1024 != 0) {
+        if (mod > 8192 || mod < 2048 || mod % 1024 != 0) {
             ACVP_LOG_ERR("Server JSON invalid 'modulo', (%d)", mod);
             rv = ACVP_INVALID_ARG;
             goto err;
