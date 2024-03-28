@@ -850,7 +850,7 @@
 
 #define ACVP_RSA_SIG_TYPE_LEN_MAX    9
 
-#define ACVP_RSA_EXP_BIT_MAX 4096 /**< 2048 bits max for n, 512 characters */
+#define ACVP_RSA_EXP_BIT_MAX 8192
 #define ACVP_RSA_EXP_LEN_MAX (ACVP_RSA_EXP_BIT_MAX >> 2)
 #define ACVP_RSA_EXP_BYTE_MAX (ACVP_RSA_EXP_BIT_MAX >> 3)
 
