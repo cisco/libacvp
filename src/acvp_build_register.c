@@ -1430,22 +1430,11 @@ static ACVP_RESULT acvp_build_rsa_prim_register_cap(JSON_Object *cap_obj, ACVP_C
         }
     }
 
-    if (cap_entry->cipher == ACVP_RSA_SIGPRIM) {
-        json_object_set_string(cap_obj, "pubExpMode",
-                               prim_cap->pub_exp_mode == ACVP_RSA_PUB_EXP_MODE_FIXED ?
-                               ACVP_RSA_PUB_EXP_MODE_FIXED_STR : ACVP_RSA_PUB_EXP_MODE_RANDOM_STR);
-        if (prim_cap->pub_exp_mode == ACVP_RSA_PUB_EXP_MODE_FIXED) {
-            json_object_set_string(cap_obj, "fixedPubExp", (const char *)prim_cap->fixed_pub_exp);
-        }
-    } else if (!prim_cap->revision) {
-        /* Unclear why this is an array, but its how the server is doing it */
-        json_object_set_value(cap_obj, "pubExpMode", json_value_init_array());
-        arr = json_object_get_array(cap_obj, "pubExpMode");
-        json_array_append_string(arr, prim_cap->pub_exp_mode == ACVP_RSA_PUB_EXP_MODE_FIXED ?
-                               ACVP_RSA_PUB_EXP_MODE_FIXED_STR : ACVP_RSA_PUB_EXP_MODE_RANDOM_STR);
-        if (prim_cap->pub_exp_mode == ACVP_RSA_PUB_EXP_MODE_FIXED) {
-            json_object_set_string(cap_obj, "fixedPubExp", (const char *)prim_cap->fixed_pub_exp);
-        }
+    json_object_set_string(cap_obj, "pubExpMode",
+                           prim_cap->pub_exp_mode == ACVP_RSA_PUB_EXP_MODE_FIXED ?
+                           ACVP_RSA_PUB_EXP_MODE_FIXED_STR : ACVP_RSA_PUB_EXP_MODE_RANDOM_STR);
+    if (prim_cap->pub_exp_mode == ACVP_RSA_PUB_EXP_MODE_FIXED) {
+        json_object_set_string(cap_obj, "fixedPubExp", (const char *)prim_cap->fixed_pub_exp);
     }
 
     return ACVP_SUCCESS;
