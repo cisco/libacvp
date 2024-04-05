@@ -450,6 +450,11 @@ int app_rsa_decprim_handler(ACVP_TEST_CASE *test_case) {
         goto err;
     }
 
+    if (EVP_PKEY_CTX_set_rsa_padding(dec_ctx, RSA_NO_PADDING) != 1) {
+        printf("Error setting padding in RSA decprim\n");
+        goto err;
+    }
+
     tc->pt_len = RSA_BUF_MAX;
     if (EVP_PKEY_decrypt(dec_ctx, tc->pt, (size_t *)&tc->pt_len, tc->cipher, tc->cipher_len) == 1) {
         tc->disposition = 1;
