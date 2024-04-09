@@ -1029,6 +1029,8 @@ static ACVP_RESULT acvp_kas_ecc_ssc(ACVP_CTX *ctx,
                 case ACVP_SHA3_512:
                     break;
                 case ACVP_SHA1:
+                case ACVP_SHAKE_128:
+                case ACVP_SHAKE_256:
                 case ACVP_NO_SHA:
                 case ACVP_HASH_ALG_MAX:
                 default:

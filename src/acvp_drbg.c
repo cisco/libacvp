@@ -327,7 +327,7 @@ ACVP_RESULT acvp_drbg_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             ACVP_LOG_VERBOSE("        Test case: %d", j);
             ACVP_LOG_VERBOSE("             tcId: %d", tc_id);
             ACVP_LOG_VERBOSE("             entropyInput: %s", entropy);
-            ACVP_LOG_VERBOSE("             perso_string: %s", perso_string);
+            ACVP_LOG_VERBOSE("             persoString: %s", perso_string);
             ACVP_LOG_VERBOSE("             nonce: %s", nonce);
 
             /*

@@ -5,6 +5,7 @@
   {
     "vsId": 1163, 
     "algorithm": "myRSA", 
+    "revision": "FIPS186-4",
     "testGroups": [
       {
         "tgId": 1, 

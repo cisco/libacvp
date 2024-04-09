@@ -1,6 +1,6 @@
 /** @file */
 /*
- * Copyright (c) 2023, Cisco Systems, Inc.
+ * Copyright (c) 2024, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -184,7 +184,9 @@ const char *acvp_lookup_cipher_revision(ACVP_CIPHER alg) {
  */
 static struct acvp_alt_revision_info alt_revision_tbl[] = {
     { ACVP_REVISION_SP800_56AR3, ACVP_REV_STR_SP800_56AR3 },
-    { ACVP_REVISION_SP800_56CR1, ACVP_REV_STR_SP800_56CR1 }
+    { ACVP_REVISION_SP800_56CR1, ACVP_REV_STR_SP800_56CR1 },
+    { ACVP_REVISION_FIPS186_4, ACVP_REV_STR_FIPS186_4 },
+    { ACVP_REVISION_1_0, ACVP_REV_STR_1_0 }
 };
 static int alt_revision_tbl_length =
     sizeof(alt_revision_tbl) / sizeof(struct acvp_alt_revision_info);
@@ -201,6 +203,20 @@ const char *acvp_lookup_alt_revision_string(ACVP_REVISION rev) {
         }
     }
     return NULL;
+}
+
+/**
+ * This function returns the enum for a given alternative revision string, or 0 if not found
+ */
+ACVP_REVISION acvp_lookup_alt_revision(const char *str) {
+    int i = 0, diff = 1;
+    for (i = 0; i < alt_revision_tbl_length; i++) {
+        strcmp_s(alt_revision_tbl[i].name, ACVP_ALG_NAME_MAX, str, &diff);
+        if (!diff) {
+            return alt_revision_tbl[i].revision;
+        }
+    }
+    return 0;
 }
 
 /**
@@ -301,6 +317,34 @@ const char* acvp_lookup_cipher_mode_str(ACVP_CIPHER cipher) {
     return NULL;
 }
 
+const char *acvp_lookup_rsa_sig_type_str(ACVP_RSA_SIG_TYPE type) {
+    switch (type) {
+    case ACVP_RSA_SIG_TYPE_X931:
+        return ACVP_RSA_SIG_TYPE_X931_STR;
+    case ACVP_RSA_SIG_TYPE_PKCS1V15:
+        return ACVP_RSA_SIG_TYPE_PKCS1V15_STR;
+    case ACVP_RSA_SIG_TYPE_PKCS1PSS:
+        return ACVP_RSA_SIG_TYPE_PKCS1PSS_STR;
+    default:
+        return NULL;
+    }
+}
+
+const char *acvp_lookup_rsa_mask_func_str(ACVP_RSA_MASK_FUNCTION func) {
+    switch (func) {
+    case ACVP_RSA_MASK_FUNCTION_MGF1:
+        return ACVP_RSA_MASK_FUNC_STR_MGF1;
+    case ACVP_RSA_MASK_FUNCTION_SHAKE_128:
+        return ACVP_RSA_MASK_FUNC_STR_SHAKE128;
+    case ACVP_RSA_MASK_FUNCTION_SHAKE_256:
+        return ACVP_RSA_MASK_FUNC_STR_SHAKE256;
+    case ACVP_RSA_MASK_FUNCTION_NONE:
+    case ACVP_RSA_MASK_FUNCTION_MAX:
+    default:
+        return NULL;
+    }
+}
+
 /*
  * This method returns the string that corresponds to a randPQ
  * index value
@@ -308,23 +352,42 @@ const char* acvp_lookup_cipher_mode_str(ACVP_CIPHER cipher) {
 const char *acvp_lookup_rsa_randpq_name(int value) {
     switch (value) {
     case ACVP_RSA_KEYGEN_B32:
-        return "B.3.2"; // "provRP"
-
+        return ACVP_RSA_RANDPQ_STR_B32;
     case ACVP_RSA_KEYGEN_B33:
-        return "B.3.3"; // "probRP"
-
+        return ACVP_RSA_RANDPQ_STR_B33;
     case ACVP_RSA_KEYGEN_B34:
-        return "B.3.4"; // "provPC"
-
+        return ACVP_RSA_RANDPQ_STR_B34;
     case ACVP_RSA_KEYGEN_B35:
-        return "B.3.5"; // "bothPC"
-
+        return ACVP_RSA_RANDPQ_STR_B35;
     case ACVP_RSA_KEYGEN_B36:
-        return "B.3.6"; // "probPC"
-
+        return ACVP_RSA_RANDPQ_STR_B36;
+    case ACVP_RSA_KEYGEN_PROVABLE:
+        return ACVP_RSA_RANDPQ_STR_PROVABLE;
+    case ACVP_RSA_KEYGEN_PROBABLE:
+        return ACVP_RSA_RANDPQ_STR_PROBABLE;
+    case ACVP_RSA_KEYGEN_PROV_W_PROV_AUX:
+        return ACVP_RSA_RANDPQ_STR_PROV_W_PROV_AUX;
+    case ACVP_RSA_KEYGEN_PROB_W_PROV_AUX:
+        return ACVP_RSA_RANDPQ_STR_PROB_W_PROV_AUX;
+    case ACVP_RSA_KEYGEN_PROB_W_PROB_AUX:
+        return ACVP_RSA_RANDPQ_STR_PROB_W_PROB_AUX;
     default:
         return NULL;
     }
+}
+
+ACVP_RSA_PUB_EXP_MODE acvp_lookup_rsa_pub_exp_mode(const char *str) {
+    int diff = 1;
+
+    strcmp_s(ACVP_RSA_PUB_EXP_MODE_FIXED_STR,
+             ACVP_RSA_PUB_EXP_MODE_FIXED_STR_LEN, str, &diff);
+    if (!diff) return ACVP_RSA_PUB_EXP_MODE_FIXED;
+
+    strcmp_s(ACVP_RSA_PUB_EXP_MODE_RANDOM_STR,
+             ACVP_RSA_PUB_EXP_MODE_RANDOM_STR_LEN, str, &diff);
+    if (!diff) return ACVP_RSA_PUB_EXP_MODE_RANDOM;
+
+    return 0;
 }
 
 int acvp_lookup_rsa_randpq_index(const char *value) {
@@ -334,20 +397,35 @@ int acvp_lookup_rsa_randpq_index(const char *value) {
         return 0;
     }
 
-    strcmp_s("B.3.2", 5, value, &diff);
+    strcmp_s(ACVP_RSA_RANDPQ_STR_B32, sizeof(ACVP_RSA_RANDPQ_STR_B32) - 1, value, &diff);
     if (!diff) return ACVP_RSA_KEYGEN_B32;
 
-    strcmp_s("B.3.3", 5, value, &diff);
+    strcmp_s(ACVP_RSA_RANDPQ_STR_B33, sizeof(ACVP_RSA_RANDPQ_STR_B33) - 1, value, &diff);
     if (!diff) return ACVP_RSA_KEYGEN_B33;
 
-    strcmp_s("B.3.4", 5, value, &diff);
+    strcmp_s(ACVP_RSA_RANDPQ_STR_B34, sizeof(ACVP_RSA_RANDPQ_STR_B34) - 1, value, &diff);
     if (!diff) return ACVP_RSA_KEYGEN_B34;
 
-    strcmp_s("B.3.5", 5, value, &diff);
+    strcmp_s(ACVP_RSA_RANDPQ_STR_B35, sizeof(ACVP_RSA_RANDPQ_STR_B35) - 1, value, &diff);
     if (!diff) return ACVP_RSA_KEYGEN_B35;
 
-    strcmp_s("B.3.6", 5, value, &diff);
+    strcmp_s(ACVP_RSA_RANDPQ_STR_B36, sizeof(ACVP_RSA_RANDPQ_STR_B36) - 1, value, &diff);
     if (!diff) return ACVP_RSA_KEYGEN_B36;
+
+    strcmp_s(ACVP_RSA_RANDPQ_STR_PROVABLE, sizeof(ACVP_RSA_RANDPQ_STR_PROVABLE) - 1, value, &diff);
+    if (!diff) return ACVP_RSA_KEYGEN_PROVABLE;
+
+    strcmp_s(ACVP_RSA_RANDPQ_STR_PROBABLE, sizeof(ACVP_RSA_RANDPQ_STR_PROBABLE) - 1, value, &diff);
+    if (!diff) return ACVP_RSA_KEYGEN_PROBABLE;
+
+    strcmp_s(ACVP_RSA_RANDPQ_STR_PROV_W_PROV_AUX, sizeof(ACVP_RSA_RANDPQ_STR_PROV_W_PROV_AUX) - 1, value, &diff);
+    if (!diff) return ACVP_RSA_KEYGEN_PROV_W_PROV_AUX;
+
+    strcmp_s(ACVP_RSA_RANDPQ_STR_PROB_W_PROV_AUX, sizeof(ACVP_RSA_RANDPQ_STR_PROB_W_PROV_AUX) - 1, value, &diff);
+    if (!diff) return ACVP_RSA_KEYGEN_PROB_W_PROV_AUX;
+
+    strcmp_s(ACVP_RSA_RANDPQ_STR_PROB_W_PROB_AUX, sizeof(ACVP_RSA_RANDPQ_STR_PROB_W_PROB_AUX) - 1, value, &diff);
+    if (!diff) return ACVP_RSA_KEYGEN_PROB_W_PROB_AUX;
 
     return 0;
 }
@@ -361,7 +439,11 @@ static struct acvp_drbg_mode_name_t drbg_mode_tbl[] = {
     { ACVP_DRBG_SHA_512,     ACVP_STR_SHA2_512       },
     { ACVP_DRBG_SHA_512_224, ACVP_STR_SHA2_512_224   },
     { ACVP_DRBG_SHA_512_256, ACVP_STR_SHA2_512_256   },
-    { ACVP_DRBG_TDES,        ACVP_DRBG_MODE_TDES },
+    { ACVP_DRBG_SHA3_224,    ACVP_STR_SHA3_224       },
+    { ACVP_DRBG_SHA3_256,    ACVP_STR_SHA3_256       },
+    { ACVP_DRBG_SHA3_384,    ACVP_STR_SHA3_384       },
+    { ACVP_DRBG_SHA3_512,    ACVP_STR_SHA3_512       },
+    { ACVP_DRBG_TDES,        ACVP_DRBG_MODE_TDES     },
     { ACVP_DRBG_AES_128,     ACVP_DRBG_MODE_AES_128  },
     { ACVP_DRBG_AES_192,     ACVP_DRBG_MODE_AES_192  },
     { ACVP_DRBG_AES_256,     ACVP_DRBG_MODE_AES_256  }
@@ -412,7 +494,9 @@ static struct acvp_hash_alg_info hash_alg_tbl[] = {
     { ACVP_SHA3_224,   ACVP_STR_SHA3_224     },
     { ACVP_SHA3_256,   ACVP_STR_SHA3_256     },
     { ACVP_SHA3_384,   ACVP_STR_SHA3_384     },
-    { ACVP_SHA3_512,   ACVP_STR_SHA3_512     }
+    { ACVP_SHA3_512,   ACVP_STR_SHA3_512     },
+    { ACVP_SHAKE_128,  ACVP_ALG_SHAKE_128    },
+    { ACVP_SHAKE_256,  ACVP_ALG_SHAKE_256    }
 };
 static int hash_alg_tbl_length =
     sizeof(hash_alg_tbl) / sizeof(struct acvp_hash_alg_info);
@@ -470,11 +554,13 @@ const char *acvp_lookup_hash_alg_name(ACVP_HASH_ALG id) {
 const char *acvp_lookup_rsa_prime_test_name(ACVP_RSA_PRIME_TEST_TYPE type) {
     switch (type) {
     case ACVP_RSA_PRIME_TEST_TBLC2:
-        return ACVP_RSA_PRIME_TEST_TBLC2_STR;
-
+        return ACVP_RSA_PRIME_TEST_STR_TBLC2;
     case ACVP_RSA_PRIME_TEST_TBLC3:
-        return ACVP_RSA_PRIME_TEST_TBLC3_STR;
-
+        return ACVP_RSA_PRIME_TEST_STR_TBLC3;
+    case ACVP_RSA_PRIME_TEST_2POW100:
+        return ACVP_RSA_PRIME_TEST_STR_2POW100;
+    case ACVP_RSA_PRIME_TEST_2POW_SEC_STR:
+        return ACVP_RSA_PRIME_TEST_STR_2POW_SEC_STR;
     default:
         return NULL;
     }
@@ -486,10 +572,10 @@ ACVP_RESULT is_valid_prime_test(const char *value) {
 
     if (!value) { return ACVP_INVALID_ARG; }
 
-    strcmp_s(ACVP_RSA_PRIME_TEST_TBLC2_STR, 5, value, &diff);
+    strcmp_s(ACVP_RSA_PRIME_TEST_STR_TBLC2, sizeof(ACVP_RSA_PRIME_TEST_STR_TBLC2) - 1, value, &diff);
     if (!diff) return ACVP_SUCCESS;
 
-    strcmp_s(ACVP_RSA_PRIME_TEST_TBLC3_STR, 5, value, &diff);
+    strcmp_s(ACVP_RSA_PRIME_TEST_STR_TBLC3, sizeof(ACVP_RSA_PRIME_TEST_STR_TBLC3) - 1, value, &diff);
     if (!diff) return ACVP_SUCCESS;
 
     return ACVP_INVALID_ARG;
@@ -591,7 +677,42 @@ ACVP_EC_CURVE acvp_lookup_ec_curve(ACVP_CIPHER cipher, const char *name) {
     return 0;
 }
 
+#define ED_CURVE_NAME_MAX 8
+static struct acvp_enum_string_pair ed_curve_tbl[] = {
+    { ACVP_ED_CURVE_25519, "ED-25519" },
+    { ACVP_ED_CURVE_448, "ED-448" }
+};
+static int ed_curve_tbl_length =
+    sizeof(ed_curve_tbl) / sizeof(struct acvp_enum_string_pair);
+
+const char *acvp_lookup_ed_curve_name(ACVP_ED_CURVE id) {
+    int i = 0;
+
+    for (i = 0; i < ed_curve_tbl_length; i++) {
+        if (id == ed_curve_tbl[i].enum_value) {
+            return ed_curve_tbl[i].string;
+        }
+    }
+    return NULL;
+}
+
+ACVP_ED_CURVE acvp_lookup_ed_curve(const char *name) {
+    int i = 0;
+
+    for (i = 0; i < ed_curve_tbl_length; i++) {
+        int diff = 0;
+
+        strcmp_s(ed_curve_tbl[i].string, ED_CURVE_NAME_MAX, name, &diff);
+
+        if (!diff) {
+            return ed_curve_tbl[i].enum_value;
+        }
+    }
+    return 0;
+}
+
 static struct acvp_function_info acvp_aux_function_tbl[] = {
+    { ACVP_HASH_SHA1, ACVP_ALG_SHA1 },
     { ACVP_HASH_SHA224, ACVP_ALG_SHA224 },
     { ACVP_HASH_SHA256, ACVP_ALG_SHA256 },
     { ACVP_HASH_SHA384, ACVP_ALG_SHA384 },
@@ -723,6 +844,24 @@ const char *acvp_lookup_lmots_mode_str(ACVP_LMOTS_MODE mode) {
     for (i = 0; i < lmots_mode_tbl_len; i++) {
         if (mode == lmots_mode_tbl[i].enum_value) {
             return lmots_mode_tbl[i].string;
+        }
+    }
+    return NULL;
+}
+
+/* This seems too small to dictate having its own table/function, but future expandability may be useful */
+static struct acvp_enum_string_pair rsa_key_format_tbl[] = {
+    { ACVP_RSA_KEY_FORMAT_STANDARD, "standard" },
+    { ACVP_RSA_KEY_FORMAT_CRT, "crt" }
+};
+
+static int rsa_key_format_tbl_len = sizeof(rsa_key_format_tbl) / sizeof(struct acvp_enum_string_pair);
+
+const char *acvp_lookup_rsa_format_str(ACVP_RSA_KEY_FORMAT format) {
+    int i = 0;
+    for (i = 0; i < rsa_key_format_tbl_len; i++) {
+        if (format == rsa_key_format_tbl[i].enum_value) {
+            return rsa_key_format_tbl[i].string;
         }
     }
     return NULL;
@@ -952,7 +1091,7 @@ ACVP_RESULT acvp_create_array(JSON_Object **obj, JSON_Value **val, JSON_Array **
         return ACVP_JSON_ERR;
     }
 
-    json_object_set_string(ver_obj, "acvVersion", ACVP_VERSION);
+    json_object_set_string(ver_obj, "acvVersion", ACVP_PROTOCOL_VERSION);
     if (json_array_append_value(reg_arry, ver_val) != JSONSuccess) {
         return ACVP_JSON_ERR;
     }

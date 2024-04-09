@@ -53,8 +53,9 @@
         "testType": "aft"
       }
     ], 
-    "algorithm": "RSA", 
+    "algorithm": "RSA",
     "vsId": 1173, 
-    "mode": "sigVer"
+    "mode": "sigVer",
+    "revision": "FIPS186-4"
   }
 ]

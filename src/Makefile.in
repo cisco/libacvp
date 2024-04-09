@@ -145,7 +145,8 @@ am_libacvp_la_OBJECTS = acvp.lo acvp_build_register.lo \
 	acvp_kdf135_x942.lo acvp_kdf135_x963.lo acvp_kdf108.lo \
 	acvp_pbkdf.lo acvp_kdf_tls12.lo acvp_kdf_tls13.lo \
 	acvp_kas_ecc.lo acvp_kas_ffc.lo acvp_kas_ifc.lo acvp_kda.lo \
-	acvp_kts_ifc.lo acvp_safe_primes.lo acvp_ecdsa.lo acvp_lms.lo
+	acvp_kts_ifc.lo acvp_safe_primes.lo acvp_ecdsa.lo \
+	acvp_eddsa.lo acvp_lms.lo
 libacvp_la_OBJECTS = $(am_libacvp_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -171,10 +172,11 @@ am__depfiles_remade = ./$(DEPDIR)/acvp.Plo ./$(DEPDIR)/acvp_aes.Plo \
 	./$(DEPDIR)/acvp_capabilities.Plo ./$(DEPDIR)/acvp_cmac.Plo \
 	./$(DEPDIR)/acvp_des.Plo ./$(DEPDIR)/acvp_drbg.Plo \
 	./$(DEPDIR)/acvp_dsa.Plo ./$(DEPDIR)/acvp_ecdsa.Plo \
-	./$(DEPDIR)/acvp_hash.Plo ./$(DEPDIR)/acvp_hmac.Plo \
-	./$(DEPDIR)/acvp_kas_ecc.Plo ./$(DEPDIR)/acvp_kas_ffc.Plo \
-	./$(DEPDIR)/acvp_kas_ifc.Plo ./$(DEPDIR)/acvp_kda.Plo \
-	./$(DEPDIR)/acvp_kdf108.Plo ./$(DEPDIR)/acvp_kdf135_ikev1.Plo \
+	./$(DEPDIR)/acvp_eddsa.Plo ./$(DEPDIR)/acvp_hash.Plo \
+	./$(DEPDIR)/acvp_hmac.Plo ./$(DEPDIR)/acvp_kas_ecc.Plo \
+	./$(DEPDIR)/acvp_kas_ffc.Plo ./$(DEPDIR)/acvp_kas_ifc.Plo \
+	./$(DEPDIR)/acvp_kda.Plo ./$(DEPDIR)/acvp_kdf108.Plo \
+	./$(DEPDIR)/acvp_kdf135_ikev1.Plo \
 	./$(DEPDIR)/acvp_kdf135_ikev2.Plo \
 	./$(DEPDIR)/acvp_kdf135_snmp.Plo \
 	./$(DEPDIR)/acvp_kdf135_srtp.Plo \
@@ -408,6 +410,7 @@ libacvp_la_SOURCES = acvp.c \
                     acvp_kts_ifc.c \
                     acvp_safe_primes.c \
                     acvp_ecdsa.c \
+                    acvp_eddsa.c \
                     acvp_lms.c
 
 libacvp_la_LIBADD = $(SAFEC_LDFLAGS) $(LIBCURL_LDFLAGS)
@@ -503,6 +506,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/acvp_drbg.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/acvp_dsa.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/acvp_ecdsa.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/acvp_eddsa.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/acvp_hash.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/acvp_hmac.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/acvp_kas_ecc.Plo@am__quote@ # am--include-marker
@@ -727,6 +731,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/acvp_drbg.Plo
 	-rm -f ./$(DEPDIR)/acvp_dsa.Plo
 	-rm -f ./$(DEPDIR)/acvp_ecdsa.Plo
+	-rm -f ./$(DEPDIR)/acvp_eddsa.Plo
 	-rm -f ./$(DEPDIR)/acvp_hash.Plo
 	-rm -f ./$(DEPDIR)/acvp_hmac.Plo
 	-rm -f ./$(DEPDIR)/acvp_kas_ecc.Plo
@@ -809,6 +814,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/acvp_drbg.Plo
 	-rm -f ./$(DEPDIR)/acvp_dsa.Plo
 	-rm -f ./$(DEPDIR)/acvp_ecdsa.Plo
+	-rm -f ./$(DEPDIR)/acvp_eddsa.Plo
 	-rm -f ./$(DEPDIR)/acvp_hash.Plo
 	-rm -f ./$(DEPDIR)/acvp_hmac.Plo
 	-rm -f ./$(DEPDIR)/acvp_kas_ecc.Plo

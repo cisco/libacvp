@@ -402,7 +402,7 @@ static void add_drbg_details_good(void) {
                                      ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_drbg_set_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1, 0,
-                                   ACVP_DRBG_PRED_RESIST_ENABLED, 1);
+                                   ACVP_DRBG_PRED_RESIST_ENABLED, ACVP_DRBG_PRED_RESIST_YES);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_drbg_set_parm(ctx, ACVP_HASHDRBG, ACVP_DRBG_SHA_1, 0,
                                    ACVP_DRBG_RESEED_ENABLED, 1);
@@ -436,7 +436,7 @@ static void add_drbg_details_good(void) {
                                    ACVP_DRBG_DER_FUNC_ENABLED, 1);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224, 0,
-                                   ACVP_DRBG_PRED_RESIST_ENABLED, 1);
+                                   ACVP_DRBG_PRED_RESIST_ENABLED, ACVP_DRBG_PRED_RESIST_YES);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_drbg_set_parm(ctx, ACVP_HMACDRBG, ACVP_DRBG_SHA_224, 0,
                                    ACVP_DRBG_RESEED_ENABLED, 1);
@@ -480,7 +480,7 @@ static void add_drbg_details_good(void) {
                                    ACVP_DRBG_DER_FUNC_ENABLED, 1);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_drbg_set_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128, 0,
-                                   ACVP_DRBG_PRED_RESIST_ENABLED, 1);
+                                   ACVP_DRBG_PRED_RESIST_ENABLED, ACVP_DRBG_PRED_RESIST_YES);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_drbg_set_parm(ctx, ACVP_CTRDRBG, ACVP_DRBG_AES_128, 0,
                                    ACVP_DRBG_RESEED_ENABLED, 0);
@@ -739,6 +739,8 @@ static void add_rsa_details_good(void) {
 
     rv = acvp_cap_rsa_keygen_enable(ctx, ACVP_RSA_KEYGEN, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_rsa_keygen_set_parm(ctx, ACVP_RSA_PARM_REVISION, ACVP_REVISION_FIPS186_4);
+    cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_RSA_KEYGEN, ACVP_PREREQ_SHA, cvalue);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_set_prereq(ctx, ACVP_RSA_KEYGEN, ACVP_PREREQ_DRBG, cvalue);
@@ -747,7 +749,7 @@ static void add_rsa_details_good(void) {
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_rsa_keygen_set_parm(ctx, ACVP_RSA_PARM_INFO_GEN_BY_SERVER, 1);
     cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_rsa_keygen_set_parm(ctx, ACVP_RSA_PARM_KEY_FORMAT_CRT, 0);
+    rv = acvp_cap_rsa_keygen_set_parm(ctx, ACVP_RSA_PARM_KEY_FORMAT, ACVP_RSA_KEY_FORMAT_STANDARD);
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_rsa_keygen_set_exponent(ctx, ACVP_RSA_PARM_FIXED_PUB_EXP_VAL, expo_str);
@@ -771,7 +773,8 @@ static void add_rsa_details_good(void) {
      */
     rv = acvp_cap_rsa_sig_enable(ctx, ACVP_RSA_SIGGEN, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
-
+    rv = acvp_cap_rsa_siggen_set_parm(ctx, ACVP_RSA_PARM_REVISION, ACVP_REVISION_FIPS186_4);
+    cr_assert(rv == ACVP_SUCCESS);
     // RSA w/ sigType: X9.31
     rv = acvp_cap_rsa_siggen_set_type(ctx, ACVP_RSA_SIG_TYPE_X931);
     cr_assert(rv == ACVP_SUCCESS);
@@ -840,6 +843,8 @@ static void add_rsa_details_good(void) {
      * Enable sigver
      */
     rv = acvp_cap_rsa_sig_enable(ctx, ACVP_RSA_SIGVER, &dummy_handler_success);
+    cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_rsa_sigver_set_parm(ctx, ACVP_RSA_PARM_REVISION, ACVP_REVISION_FIPS186_4);
     cr_assert(rv == ACVP_SUCCESS);
 
     rv = acvp_cap_rsa_sigver_set_parm(ctx, ACVP_RSA_PARM_PUB_EXP_MODE, ACVP_RSA_PUB_EXP_MODE_FIXED);

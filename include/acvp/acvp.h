@@ -5,7 +5,7 @@
  */
 
 /*
- * Copyright (c) 2023, Cisco Systems, Inc.
+ * Copyright (c) 2024, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License"). You may not use
  * this file except in compliance with the License. You can obtain a copy
@@ -20,6 +20,23 @@
 extern "C"
 {
 #endif
+
+#define ACVP_PROTOCOL_VERSION_MAJOR 1
+#define ACVP_PROTOCOL_VERSION_MINOR 0
+
+#define ACVP_LIBRARY_VERSION_MAJOR 2
+#define ACVP_LIBRARY_VERSION_MINOR 1
+#define ACVP_LIBRARY_VERSION_PATCH 0
+
+#define xstr_2(x) #x
+#define xstr(x) xstr_2(x)
+/* e.g. 1.0 */
+#define ACVP_PROTOCOL_VERSION xstr(ACVP_PROTOCOL_VERSION_MAJOR) "." xstr(ACVP_PROTOCOL_VERSION_MINOR)
+/* e.g. 1.0.0 */
+#define ACVP_LIBRARY_VERSION_NUMBER xstr(ACVP_LIBRARY_VERSION_MAJOR) "." \
+        xstr(ACVP_LIBRARY_VERSION_MINOR) "." xstr(ACVP_LIBRARY_VERSION_PATCH)
+/* e.g. libacvp_oss-1.0.0 */
+#define ACVP_LIBRARY_VERSION    "libacvp_oss-" ACVP_LIBRARY_VERSION_NUMBER
 
 #define ACVP_TOTP_LENGTH 8
 #define ACVP_TOTP_TOKEN_MAX 128
@@ -209,6 +226,11 @@ typedef enum acvp_cipher {
     ACVP_ECDSA_KEYVER,
     ACVP_ECDSA_SIGGEN,
     ACVP_ECDSA_SIGVER,
+    ACVP_DET_ECDSA_SIGGEN,
+    ACVP_EDDSA_KEYGEN,
+    ACVP_EDDSA_KEYVER,
+    ACVP_EDDSA_SIGGEN,
+    ACVP_EDDSA_SIGVER,
     ACVP_KDF135_SNMP,
     ACVP_KDF135_SSH,
     ACVP_KDF135_SRTP,
@@ -357,8 +379,17 @@ typedef enum acvp_alg_type_ecdsa {
     ACVP_SUB_ECDSA_KEYGEN = ACVP_ECDSA_KEYGEN,
     ACVP_SUB_ECDSA_KEYVER,
     ACVP_SUB_ECDSA_SIGGEN,
-    ACVP_SUB_ECDSA_SIGVER
+    ACVP_SUB_ECDSA_SIGVER,
+    ACVP_SUB_DET_ECDSA_SIGGEN
 } ACVP_SUB_ECDSA;
+
+/** @enum ACVP_SUB_EDDSA */
+typedef enum acvp_alg_type_eddsa {
+    ACVP_SUB_EDDSA_KEYGEN = ACVP_EDDSA_KEYGEN,
+    ACVP_SUB_EDDSA_KEYVER,
+    ACVP_SUB_EDDSA_SIGGEN,
+    ACVP_SUB_EDDSA_SIGVER
+} ACVP_SUB_EDDSA;
 
 /** @enum ACVP_SUB_DRBG */
 typedef enum acvp_alg_type_drbg {
@@ -453,8 +484,10 @@ typedef enum acvp_conformance_t {
  */
 typedef enum acvp_revision_t {
     ACVP_REVISION_DEFAULT = 0,
+    ACVP_REVISION_1_0,
     ACVP_REVISION_SP800_56CR1,
     ACVP_REVISION_SP800_56AR3,
+    ACVP_REVISION_FIPS186_4,
     ACVP_REVISION_MAX
 } ACVP_REVISION;
 
@@ -475,7 +508,9 @@ typedef enum acvp_hash_alg {
     ACVP_SHA3_256 = 256,
     ACVP_SHA3_384 = 512,
     ACVP_SHA3_512 = 1024,
-    ACVP_HASH_ALG_MAX = 2048
+    ACVP_SHAKE_128 = 2048,
+    ACVP_SHAKE_256 = 4096,
+    ACVP_HASH_ALG_MAX = 8192
 } ACVP_HASH_ALG;
 
 /**
@@ -661,11 +696,24 @@ typedef enum acvp_drbg_mode {
     ACVP_DRBG_SHA_512,
     ACVP_DRBG_SHA_512_224,
     ACVP_DRBG_SHA_512_256,
+    ACVP_DRBG_SHA3_224,
+    ACVP_DRBG_SHA3_256,
+    ACVP_DRBG_SHA3_384,
+    ACVP_DRBG_SHA3_512,
     ACVP_DRBG_TDES,
     ACVP_DRBG_AES_128,
     ACVP_DRBG_AES_192,
     ACVP_DRBG_AES_256
 } ACVP_DRBG_MODE;
+
+/** @enum ACVP_PRED_RESIST_MODE
+ * disabled == 0 and enabled == 1 for backwards compatibility
+ */
+typedef enum acvp_drbg_pred_resist_mode {
+    ACVP_DRBG_PRED_RESIST_NO = 0,
+    ACVP_DRBG_PRED_RESIST_YES,
+    ACVP_DRBG_PRED_RESIST_BOTH
+} ACVP_DRBG_PRED_RESIST_MODE;
 
 /** @enum ACVP_DRBG_PARM */
 typedef enum acvp_drbg_param {
@@ -684,15 +732,20 @@ typedef enum acvp_drbg_param {
 typedef enum acvp_rsa_param {
     ACVP_RSA_PARM_PUB_EXP_MODE = 1,
     ACVP_RSA_PARM_FIXED_PUB_EXP_VAL,
-    ACVP_RSA_PARM_KEY_FORMAT_CRT,
+    ACVP_RSA_PARM_KEY_FORMAT,
     ACVP_RSA_PARM_RAND_PQ,
     ACVP_RSA_PARM_INFO_GEN_BY_SERVER,
+    ACVP_RSA_PARM_REVISION,
+    ACVP_RSA_PARM_MODULO,
+    ACVP_RSA_PARM_MASK_FUNCTION
 } ACVP_RSA_PARM;
 
 /** @enum ACVP_RSA_PRIME_PARAM */
 typedef enum acvp_rsa_prime_param {
     ACVP_RSA_PRIME_HASH_ALG = 1,
     ACVP_RSA_PRIME_TEST,
+    ACVP_RSA_PRIME_PMOD8,
+    ACVP_RSA_PRIME_QMOD8,
 } ACVP_RSA_PRIME_PARAM;
 
 /** @enum ACVP_ECDSA_PARM */
@@ -700,7 +753,8 @@ typedef enum acvp_ecdsa_param {
     ACVP_ECDSA_CURVE,
     ACVP_ECDSA_SECRET_GEN,
     ACVP_ECDSA_HASH_ALG,
-    ACVP_ECDSA_COMPONENT_TEST
+    ACVP_ECDSA_COMPONENT_TEST,
+    ACVP_ECDSA_REVISION
 } ACVP_ECDSA_PARM;
 
 /** @enum ACVP_ECDSA_SECRET_GEN_MODE */
@@ -730,12 +784,27 @@ typedef enum acvp_ec_curve {
     ACVP_EC_CURVE_END
 } ACVP_EC_CURVE;
 
+/** @enum ACVP_ED_CURVE */
+typedef enum acvp_ed_curve {
+    ACVP_ED_CURVE_START = 0,
+    ACVP_ED_CURVE_25519,
+    ACVP_ED_CURVE_448,
+    ACVP_ED_CURVE_END
+} ACVP_ED_CURVE;
+
 /** @enum ACVP_ECDSA_COMPONENT_MODE */
 typedef enum acvp_ecdsa_component_mode {
     ACVP_ECDSA_COMPONENT_MODE_NO,
     ACVP_ECDSA_COMPONENT_MODE_YES,
     ACVP_ECDSA_COMPONENT_MODE_BOTH
 } ACVP_ECDSA_COMPONENT_MODE;
+
+/** @enum ACVP_EDDSA_PARM */
+typedef enum acvp_eddsa_param {
+    ACVP_EDDSA_CURVE,
+    ACVP_EDDSA_SUPPORTS_PURE,
+    ACVP_EDDSA_SUPPORTS_PREHASH
+} ACVP_EDDSA_PARM;
 
 /** @enum ACVP_KDF135_IKEV2_PARM */
 typedef enum acvp_kdf135_ikev2_param {
@@ -862,17 +931,37 @@ typedef enum acvp_rsa_pub_exp_mode {
 /** @enum ACVP_RSA_PRIME_TEST_TYPE */
 typedef enum acvp_rsa_prime_test_type {
     ACVP_RSA_PRIME_TEST_TBLC2 = 1,
-    ACVP_RSA_PRIME_TEST_TBLC3
+    ACVP_RSA_PRIME_TEST_TBLC3,
+    /* FIPS 186-5 */
+    ACVP_RSA_PRIME_TEST_2POW100,
+    ACVP_RSA_PRIME_TEST_2POW_SEC_STR
 } ACVP_RSA_PRIME_TEST_TYPE;
 
 /** @enum ACVP_RSA_KEYGEN_MODE */
 typedef enum acvp_rsa_keygen_mode_t {
-    ACVP_RSA_KEYGEN_B32 = 1,
+    ACVP_RSA_KEYGEN_NONE = 0,
+    ACVP_RSA_KEYGEN_B32,
     ACVP_RSA_KEYGEN_B33,
     ACVP_RSA_KEYGEN_B34,
     ACVP_RSA_KEYGEN_B35,
-    ACVP_RSA_KEYGEN_B36
+    ACVP_RSA_KEYGEN_B36,
+    /* These generally match the above ones, but the terminology has changed for FIPS 186-5 */
+    ACVP_RSA_KEYGEN_PROVABLE,
+    ACVP_RSA_KEYGEN_PROBABLE,
+    ACVP_RSA_KEYGEN_PROV_W_PROV_AUX,
+    ACVP_RSA_KEYGEN_PROB_W_PROV_AUX,
+    ACVP_RSA_KEYGEN_PROB_W_PROB_AUX,
+    ACVP_RSA_KEYGEN_MAX
 } ACVP_RSA_KEYGEN_MODE;
+
+/** @enum ACVP_RSA_MASK_FUNCTION */
+typedef enum acvp_rsa_mask_function_t {
+    ACVP_RSA_MASK_FUNCTION_NONE = 0,
+    ACVP_RSA_MASK_FUNCTION_MGF1,
+    ACVP_RSA_MASK_FUNCTION_SHAKE_128,
+    ACVP_RSA_MASK_FUNCTION_SHAKE_256,
+    ACVP_RSA_MASK_FUNCTION_MAX
+} ACVP_RSA_MASK_FUNCTION;
 
 /** @enum ACVP_RSA_SIG_TYPE */
 typedef enum acvp_rsa_sig_type {
@@ -901,6 +990,7 @@ typedef enum acvp_rsa_prim_keyformat {
 typedef struct acvp_rsa_prim_tc_t {
     unsigned int tc_id;    /**< Test case id */
     unsigned char *cipher;
+    ACVP_RSA_PUB_EXP_MODE pub_exp_mode;
     int cipher_len;
     unsigned char *msg;
     int msg_len;
@@ -911,7 +1001,7 @@ typedef struct acvp_rsa_prim_tc_t {
     int modulo;
     unsigned int fail;
     unsigned int pass;
-    int key_format;
+    ACVP_RSA_KEY_FORMAT key_format;
     unsigned char *n;
     unsigned char *e;
     unsigned char *d;
@@ -1021,6 +1111,13 @@ typedef enum acvp_kdf_tls13_testtype {
     ACVP_KDF_TLS13_TEST_TYPE_NONE = 0,
     ACVP_KDF_TLS13_TEST_TYPE_AFT
 } ACVP_KDF_TLS13_TESTTYPE;
+
+/** @enum ACVP_EDDSA_TESTTYPE */
+typedef enum acvp_eddsa_testtype {
+    ACVP_EDDSA_TEST_TYPE_NONE = 0,
+    ACVP_EDDSA_TEST_TYPE_AFT,
+    ACVP_EDDSA_TEST_TYPE_BFT
+} ACVP_EDDSA_TESTTYPE;
 
 /** @enum ACVP_HMAC_PARM */
 typedef enum acvp_hmac_parameter {
@@ -1548,6 +1645,7 @@ typedef struct acvp_rsa_keygen_tc_t {
     unsigned int tc_id;    /**< Test case id */
     ACVP_HASH_ALG hash_alg;
     ACVP_RSA_TESTTYPE test_type;
+    ACVP_REVISION revision;
     ACVP_RSA_PRIME_TEST_TYPE prime_test;
     char *prime_result;
     char *pub_exp;
@@ -1634,6 +1732,34 @@ typedef struct acvp_ecdsa_tc_t {
 } ACVP_ECDSA_TC;
 
 /**
+ * @struct ACVP_EDDSA_TC
+ * @brief This struct holds data that represents a single test case for EDDSA testing. This data is
+ *        passed between libacvp and the crypto module.
+ */
+typedef struct acvp_eddsa_tc_t {
+    unsigned int tc_id;    /**< Test case id */
+    int tg_id;
+    ACVP_CIPHER cipher;
+    ACVP_ED_CURVE curve;
+    int use_prehash;
+
+    unsigned char *d; /**< Output for KeyGen */
+    unsigned char *q; /**< Output for KeyGen/SigGen, input for KeyVer/SigVer. Outputs at group level for SigGen */
+    unsigned char *message; /**< Input for SigGen/SigVer */
+    unsigned char *context; /**< Input (only sometimes) for SigGen */
+    unsigned char *signature; /**< Output for SigGen, input for SigVer */
+
+    int d_len;
+    int q_len;
+    int msg_len;
+    int context_len;
+    int signature_len;
+
+    ACVP_TEST_DISPOSITION ver_disposition; /**< Indicates pass/fail output for verification */
+
+} ACVP_EDDSA_TC;
+
+/**
  * @struct ACVP_RSA_SIG_TC
  * @brief This struct holds data that represents a single test case for RSA signature testing. Both
  *        siggen and sigver use this struct in their testing. This data is  passed between libacvp
@@ -1642,10 +1768,12 @@ typedef struct acvp_ecdsa_tc_t {
 typedef struct acvp_rsa_sig_tc_t {
     unsigned int tc_id; /**< Test case id */
     int tg_id;          /**< needed to keep e,n state */
+    ACVP_REVISION revision;
     char *group_e;
     char *group_n;
     ACVP_HASH_ALG hash_alg;
     ACVP_RSA_SIG_TYPE sig_type;
+    ACVP_RSA_MASK_FUNCTION mask;
     unsigned int modulo;
     unsigned char *e;
     int e_len;
@@ -2484,6 +2612,7 @@ typedef struct acvp_test_case_t {
         ACVP_RSA_SIG_TC *rsa_sig;
         ACVP_RSA_PRIM_TC *rsa_prim;
         ACVP_ECDSA_TC *ecdsa;
+        ACVP_EDDSA_TC *eddsa;
         ACVP_KDF135_SNMP_TC *kdf135_snmp;
         ACVP_KDF135_SSH_TC *kdf135_ssh;
         ACVP_KDF135_SRTP_TC *kdf135_srtp;
@@ -3287,6 +3416,10 @@ ACVP_RESULT acvp_cap_ecdsa_enable(ACVP_CTX *ctx,
                                   ACVP_CIPHER cipher,
                                   int (*crypto_handler)(ACVP_TEST_CASE *test_case));
 
+ACVP_RESULT acvp_cap_eddsa_enable(ACVP_CTX *ctx,
+                                  ACVP_CIPHER cipher,
+                                  int (*crypto_handler)(ACVP_TEST_CASE *test_case));
+
 /**
  * @brief acvp_cap_rsa_*_set_parm() allows an application to specify operational parameters to
  *        be used for a given RSA alg during a test session with the ACVP server. This function
@@ -3305,6 +3438,10 @@ ACVP_RESULT acvp_cap_rsa_keygen_set_parm(ACVP_CTX *ctx,
                                          ACVP_RSA_PARM param,
                                          int value);
 
+ACVP_RESULT acvp_cap_rsa_siggen_set_parm(ACVP_CTX *ctx,
+                                             ACVP_RSA_PARM param,
+                                             int value);
+
 ACVP_RESULT acvp_cap_rsa_sigver_set_parm(ACVP_CTX *ctx,
                                          ACVP_RSA_PARM param,
                                          int value);
@@ -3313,10 +3450,12 @@ ACVP_RESULT acvp_cap_rsa_keygen_set_mode(ACVP_CTX *ctx,
                                          ACVP_RSA_KEYGEN_MODE value);
 
 ACVP_RESULT acvp_cap_rsa_prim_set_parm(ACVP_CTX *ctx,
-                                       ACVP_RSA_PARM prim_type,
+                                       ACVP_CIPHER cipher,
+                                       ACVP_RSA_PARM param,
                                        int value);
 
 ACVP_RESULT acvp_cap_rsa_prim_set_exponent(ACVP_CTX *ctx,
+                                           ACVP_CIPHER cipher,
                                            ACVP_RSA_PARM param,
                                            char *value);
 
@@ -3338,6 +3477,14 @@ ACVP_RESULT acvp_cap_rsa_sigver_set_mod_parm(ACVP_CTX *ctx,
                                              int hash_alg,
                                              int salt_len);
 
+ACVP_RESULT acvp_cap_rsa_siggen_set_mod_mask(ACVP_CTX *ctx,
+                                             unsigned int mod,
+                                             int value);
+
+ACVP_RESULT acvp_cap_rsa_sigver_set_mod_mask(ACVP_CTX *ctx,
+                                             unsigned int mod,
+                                             int value);
+
 ACVP_RESULT acvp_cap_ecdsa_set_parm(ACVP_CTX *ctx,
                                     ACVP_CIPHER cipher,
                                     ACVP_ECDSA_PARM param,
@@ -3348,6 +3495,10 @@ ACVP_RESULT acvp_cap_ecdsa_set_curve_hash_alg(ACVP_CTX *ctx,
                                               ACVP_EC_CURVE curve,
                                               ACVP_HASH_ALG alg);
 
+ACVP_RESULT acvp_cap_eddsa_set_parm(ACVP_CTX *ctx,
+                                    ACVP_CIPHER cipher,
+                                    ACVP_EDDSA_PARM param,
+                                    int value);
 
 /**
  * @brief acvp_enable_rsa_bignum_parm() allows an application to specify BIGNUM operational
@@ -4563,6 +4714,7 @@ ACVP_SUB_AES acvp_get_aes_alg(ACVP_CIPHER cipher);
 ACVP_SUB_TDES acvp_get_tdes_alg(ACVP_CIPHER cipher);
 ACVP_SUB_HMAC acvp_get_hmac_alg(ACVP_CIPHER cipher);
 ACVP_SUB_ECDSA acvp_get_ecdsa_alg(ACVP_CIPHER cipher);
+ACVP_SUB_EDDSA acvp_get_eddsa_alg(ACVP_CIPHER cipher);
 ACVP_SUB_RSA acvp_get_rsa_alg(ACVP_CIPHER cipher);
 ACVP_SUB_DSA acvp_get_dsa_alg(ACVP_CIPHER cipher);
 ACVP_SUB_KDF acvp_get_kdf_alg(ACVP_CIPHER cipher);

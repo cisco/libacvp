@@ -6,6 +6,7 @@ tmp_sources = app_main.c \
               app_drbg.c \
               app_dsa.c \
               app_ecdsa.c \
+              app_eddsa.c \
               app_hmac.c \
               app_kas.c \
               app_kdf.c \

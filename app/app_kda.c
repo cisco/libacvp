@@ -268,6 +268,8 @@ int app_kda_onestep_handler(ACVP_TEST_CASE *test_case) {
 
     if (stc->aux_function == ACVP_KMAC_128) {
         mac = "KMAC128";
+    } else if (stc->aux_function == ACVP_KMAC_256) {
+        mac = "KMAC256";
     } else if (!stc->salt) {
         hashalg = acvp_get_hash_alg(stc->aux_function);
         if (hashalg == 0) {
@@ -469,6 +471,8 @@ int app_kda_twostep_handler(ACVP_TEST_CASE *test_case) {
     case ACVP_KDF108_MAC_MODE_HMAC_SHA3_512:
         alg = "SHA3-512";
         break;
+    case ACVP_KDF108_MAC_MODE_KMAC_128:
+    case ACVP_KDF108_MAC_MODE_KMAC_256:
     case ACVP_KDF108_MAC_MODE_CMAC_AES128:
     case ACVP_KDF108_MAC_MODE_CMAC_AES192:
     case ACVP_KDF108_MAC_MODE_CMAC_AES256:

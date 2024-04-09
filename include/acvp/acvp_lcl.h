@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Cisco Systems, Inc.
+ * Copyright (c) 2024, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -11,10 +11,6 @@
 #define acvp_lcl_h
 
 #include "parson.h"
-
-#define ACVP_VERSION    "1.0"
-#define ACVP_LIBRARY_VERSION_NUMBER "2.0.0"
-#define ACVP_LIBRARY_VERSION    "libacvp_oss-2.0.0"
 
 #ifndef ACVP_LOG_ERR
 #define ACVP_LOG_ERR(msg, ...) do { \
@@ -69,9 +65,10 @@
  * ******************************************************
  ********************************************************
  */
-#define ACVP_REV_STR_DEFAULT "1.0"
+#define ACVP_REV_STR_1_0 "1.0"
 #define ACVP_REV_STR_2_0 "2.0"
 #define ACVP_REV_STR_FIPS186_4 "FIPS186-4"
+#define ACVP_REV_STR_FIPS186_5 "FIPS186-5"
 #define ACVP_REV_STR_SP800_56AR3 "Sp800-56Ar3"
 #define ACVP_REV_STR_SP800_56BR2 "Sp800-56Br2"
 #define ACVP_REV_STR_SP800_56CR1 "Sp800-56Cr1"
@@ -81,98 +78,102 @@
 #define ACVP_REV_STR_RFC7627 "RFC7627"
 
 /* AES */
-#define ACVP_REV_AES_ECB             ACVP_REV_STR_DEFAULT
-#define ACVP_REV_AES_CBC             ACVP_REV_STR_DEFAULT
-#define ACVP_REV_AES_CBC_CS1         ACVP_REV_STR_DEFAULT
-#define ACVP_REV_AES_CBC_CS2         ACVP_REV_STR_DEFAULT
-#define ACVP_REV_AES_CBC_CS3         ACVP_REV_STR_DEFAULT
-#define ACVP_REV_AES_CFB1            ACVP_REV_STR_DEFAULT
-#define ACVP_REV_AES_CFB8            ACVP_REV_STR_DEFAULT
-#define ACVP_REV_AES_CFB128          ACVP_REV_STR_DEFAULT
-#define ACVP_REV_AES_OFB             ACVP_REV_STR_DEFAULT
-#define ACVP_REV_AES_CTR             ACVP_REV_STR_DEFAULT
-#define ACVP_REV_AES_GCM             ACVP_REV_STR_DEFAULT
-#define ACVP_REV_AES_GCM_SIV         ACVP_REV_STR_DEFAULT
-#define ACVP_REV_AES_CCM             ACVP_REV_STR_DEFAULT
+#define ACVP_REV_AES_ECB             ACVP_REV_STR_1_0
+#define ACVP_REV_AES_CBC             ACVP_REV_STR_1_0
+#define ACVP_REV_AES_CBC_CS1         ACVP_REV_STR_1_0
+#define ACVP_REV_AES_CBC_CS2         ACVP_REV_STR_1_0
+#define ACVP_REV_AES_CBC_CS3         ACVP_REV_STR_1_0
+#define ACVP_REV_AES_CFB1            ACVP_REV_STR_1_0
+#define ACVP_REV_AES_CFB8            ACVP_REV_STR_1_0
+#define ACVP_REV_AES_CFB128          ACVP_REV_STR_1_0
+#define ACVP_REV_AES_OFB             ACVP_REV_STR_1_0
+#define ACVP_REV_AES_CTR             ACVP_REV_STR_1_0
+#define ACVP_REV_AES_GCM             ACVP_REV_STR_1_0
+#define ACVP_REV_AES_GCM_SIV         ACVP_REV_STR_1_0
+#define ACVP_REV_AES_CCM             ACVP_REV_STR_1_0
 #define ACVP_REV_AES_XTS             ACVP_REV_STR_2_0
-#define ACVP_REV_AES_KW              ACVP_REV_STR_DEFAULT
-#define ACVP_REV_AES_KWP             ACVP_REV_STR_DEFAULT
-#define ACVP_REV_AES_GMAC            ACVP_REV_STR_DEFAULT
-#define ACVP_REV_AES_XPN             ACVP_REV_STR_DEFAULT
+#define ACVP_REV_AES_KW              ACVP_REV_STR_1_0
+#define ACVP_REV_AES_KWP             ACVP_REV_STR_1_0
+#define ACVP_REV_AES_GMAC            ACVP_REV_STR_1_0
+#define ACVP_REV_AES_XPN             ACVP_REV_STR_1_0
 
 /* TDES */
-#define ACVP_REV_TDES_OFB            ACVP_REV_STR_DEFAULT
-#define ACVP_REV_TDES_OFBI           ACVP_REV_STR_DEFAULT
-#define ACVP_REV_TDES_CFB1           ACVP_REV_STR_DEFAULT
-#define ACVP_REV_TDES_CFB8           ACVP_REV_STR_DEFAULT
-#define ACVP_REV_TDES_CFB64          ACVP_REV_STR_DEFAULT
-#define ACVP_REV_TDES_CFBP1          ACVP_REV_STR_DEFAULT
-#define ACVP_REV_TDES_CFBP8          ACVP_REV_STR_DEFAULT
-#define ACVP_REV_TDES_CFBP64         ACVP_REV_STR_DEFAULT
-#define ACVP_REV_TDES_ECB            ACVP_REV_STR_DEFAULT
-#define ACVP_REV_TDES_CBC            ACVP_REV_STR_DEFAULT
-#define ACVP_REV_TDES_CBCI           ACVP_REV_STR_DEFAULT
-#define ACVP_REV_TDES_CTR            ACVP_REV_STR_DEFAULT
-#define ACVP_REV_TDES_KW             ACVP_REV_STR_DEFAULT
+#define ACVP_REV_TDES_OFB            ACVP_REV_STR_1_0
+#define ACVP_REV_TDES_OFBI           ACVP_REV_STR_1_0
+#define ACVP_REV_TDES_CFB1           ACVP_REV_STR_1_0
+#define ACVP_REV_TDES_CFB8           ACVP_REV_STR_1_0
+#define ACVP_REV_TDES_CFB64          ACVP_REV_STR_1_0
+#define ACVP_REV_TDES_CFBP1          ACVP_REV_STR_1_0
+#define ACVP_REV_TDES_CFBP8          ACVP_REV_STR_1_0
+#define ACVP_REV_TDES_CFBP64         ACVP_REV_STR_1_0
+#define ACVP_REV_TDES_ECB            ACVP_REV_STR_1_0
+#define ACVP_REV_TDES_CBC            ACVP_REV_STR_1_0
+#define ACVP_REV_TDES_CBCI           ACVP_REV_STR_1_0
+#define ACVP_REV_TDES_CTR            ACVP_REV_STR_1_0
+#define ACVP_REV_TDES_KW             ACVP_REV_STR_1_0
 
 /* SHA */
-#define ACVP_REV_HASH_SHA1           ACVP_REV_STR_DEFAULT
-#define ACVP_REV_HASH_SHA224         ACVP_REV_STR_DEFAULT
-#define ACVP_REV_HASH_SHA256         ACVP_REV_STR_DEFAULT
-#define ACVP_REV_HASH_SHA384         ACVP_REV_STR_DEFAULT
-#define ACVP_REV_HASH_SHA512         ACVP_REV_STR_DEFAULT
-#define ACVP_REV_HASH_SHA512_224     ACVP_REV_STR_DEFAULT
-#define ACVP_REV_HASH_SHA512_256     ACVP_REV_STR_DEFAULT
+#define ACVP_REV_HASH_SHA1           ACVP_REV_STR_1_0
+#define ACVP_REV_HASH_SHA224         ACVP_REV_STR_1_0
+#define ACVP_REV_HASH_SHA256         ACVP_REV_STR_1_0
+#define ACVP_REV_HASH_SHA384         ACVP_REV_STR_1_0
+#define ACVP_REV_HASH_SHA512         ACVP_REV_STR_1_0
+#define ACVP_REV_HASH_SHA512_224     ACVP_REV_STR_1_0
+#define ACVP_REV_HASH_SHA512_256     ACVP_REV_STR_1_0
 #define ACVP_REV_HASH_SHA3_224       ACVP_REV_STR_2_0
 #define ACVP_REV_HASH_SHA3_256       ACVP_REV_STR_2_0
 #define ACVP_REV_HASH_SHA3_384       ACVP_REV_STR_2_0
 #define ACVP_REV_HASH_SHA3_512       ACVP_REV_STR_2_0
-#define ACVP_REV_HASH_SHAKE_128      ACVP_REV_STR_DEFAULT
-#define ACVP_REV_HASH_SHAKE_256      ACVP_REV_STR_DEFAULT
+#define ACVP_REV_HASH_SHAKE_128      ACVP_REV_STR_1_0
+#define ACVP_REV_HASH_SHAKE_256      ACVP_REV_STR_1_0
 
 /* DRBG */
-#define ACVP_REV_HASHDRBG            ACVP_REV_STR_DEFAULT
-#define ACVP_REV_HMACDRBG            ACVP_REV_STR_DEFAULT
-#define ACVP_REV_CTRDRBG             ACVP_REV_STR_DEFAULT
+#define ACVP_REV_HASHDRBG            ACVP_REV_STR_1_0
+#define ACVP_REV_HMACDRBG            ACVP_REV_STR_1_0
+#define ACVP_REV_CTRDRBG             ACVP_REV_STR_1_0
 
 /* HMAC */
-#define ACVP_REV_HMAC_SHA1           ACVP_REV_STR_DEFAULT
-#define ACVP_REV_HMAC_SHA2_224       ACVP_REV_STR_DEFAULT
-#define ACVP_REV_HMAC_SHA2_256       ACVP_REV_STR_DEFAULT
-#define ACVP_REV_HMAC_SHA2_384       ACVP_REV_STR_DEFAULT
-#define ACVP_REV_HMAC_SHA2_512       ACVP_REV_STR_DEFAULT
-#define ACVP_REV_HMAC_SHA2_512_224   ACVP_REV_STR_DEFAULT
-#define ACVP_REV_HMAC_SHA2_512_256   ACVP_REV_STR_DEFAULT
-#define ACVP_REV_HMAC_SHA3_224       ACVP_REV_STR_DEFAULT
-#define ACVP_REV_HMAC_SHA3_256       ACVP_REV_STR_DEFAULT
-#define ACVP_REV_HMAC_SHA3_384       ACVP_REV_STR_DEFAULT
-#define ACVP_REV_HMAC_SHA3_512       ACVP_REV_STR_DEFAULT
+#define ACVP_REV_HMAC_SHA1           ACVP_REV_STR_1_0
+#define ACVP_REV_HMAC_SHA2_224       ACVP_REV_STR_1_0
+#define ACVP_REV_HMAC_SHA2_256       ACVP_REV_STR_1_0
+#define ACVP_REV_HMAC_SHA2_384       ACVP_REV_STR_1_0
+#define ACVP_REV_HMAC_SHA2_512       ACVP_REV_STR_1_0
+#define ACVP_REV_HMAC_SHA2_512_224   ACVP_REV_STR_1_0
+#define ACVP_REV_HMAC_SHA2_512_256   ACVP_REV_STR_1_0
+#define ACVP_REV_HMAC_SHA3_224       ACVP_REV_STR_1_0
+#define ACVP_REV_HMAC_SHA3_256       ACVP_REV_STR_1_0
+#define ACVP_REV_HMAC_SHA3_384       ACVP_REV_STR_1_0
+#define ACVP_REV_HMAC_SHA3_512       ACVP_REV_STR_1_0
 
 /* CMAC */
-#define ACVP_REV_CMAC_AES            ACVP_REV_STR_DEFAULT
-#define ACVP_REV_CMAC_TDES           ACVP_REV_STR_DEFAULT
+#define ACVP_REV_CMAC_AES            ACVP_REV_STR_1_0
+#define ACVP_REV_CMAC_TDES           ACVP_REV_STR_1_0
 
 /* KMAC */
-#define ACVP_REV_KMAC_128            ACVP_REV_STR_DEFAULT
-#define ACVP_REV_KMAC_256            ACVP_REV_STR_DEFAULT
+#define ACVP_REV_KMAC_128            ACVP_REV_STR_1_0
+#define ACVP_REV_KMAC_256            ACVP_REV_STR_1_0
 
 /* DSA */
-#define ACVP_REV_DSA                 ACVP_REV_STR_DEFAULT
+#define ACVP_REV_DSA                 ACVP_REV_STR_1_0
 
 /* RSA */
-#define ACVP_REV_RSA                 ACVP_REV_STR_FIPS186_4
-#define ACVP_REV_RSA_PRIM            ACVP_REV_STR_DEFAULT
+#define ACVP_REV_RSA                 ACVP_REV_STR_FIPS186_5
+#define ACVP_REV_RSA_DECPRIM         ACVP_REV_STR_SP800_56BR2
+#define ACVP_REV_RSA_SIGPRIM         ACVP_REV_STR_2_0
 
 /* ECDSA */
-#define ACVP_REV_ECDSA               ACVP_REV_STR_DEFAULT
+#define ACVP_REV_ECDSA               ACVP_REV_STR_FIPS186_5
+
+/* EDDSA */
+#define ACVP_REV_EDDSA               ACVP_REV_STR_1_0
 
 /* KAS_ECC */
-#define ACVP_REV_KAS_ECC             ACVP_REV_STR_DEFAULT
+#define ACVP_REV_KAS_ECC             ACVP_REV_STR_1_0
 #define ACVP_REV_KAS_ECC_SSC         ACVP_REV_STR_SP800_56AR3
 
 
 /* KAS_FFC */
-#define ACVP_REV_KAS_FFC             ACVP_REV_STR_DEFAULT
+#define ACVP_REV_KAS_FFC             ACVP_REV_STR_1_0
 #define ACVP_REV_KAS_FFC_SSC         ACVP_REV_STR_SP800_56AR3
 
 /* KAS_IFC */
@@ -187,20 +188,20 @@
 #define ACVP_REV_KTS_IFC             ACVP_REV_STR_SP800_56BR2
 
 /* KDF */
-#define ACVP_REV_KDF135_SNMP         ACVP_REV_STR_DEFAULT
-#define ACVP_REV_KDF135_SSH          ACVP_REV_STR_DEFAULT
-#define ACVP_REV_KDF135_SRTP         ACVP_REV_STR_DEFAULT
-#define ACVP_REV_KDF135_IKEV2        ACVP_REV_STR_DEFAULT
-#define ACVP_REV_KDF135_IKEV1        ACVP_REV_STR_DEFAULT
-#define ACVP_REV_KDF135_TPM          ACVP_REV_STR_DEFAULT
-#define ACVP_REV_KDF135_X942         ACVP_REV_STR_DEFAULT
-#define ACVP_REV_KDF135_X963         ACVP_REV_STR_DEFAULT
-#define ACVP_REV_KDF108              ACVP_REV_STR_DEFAULT
-#define ACVP_REV_PBKDF               ACVP_REV_STR_DEFAULT
-#define ACVP_REV_SAFE_PRIMES         ACVP_REV_STR_DEFAULT
+#define ACVP_REV_KDF135_SNMP         ACVP_REV_STR_1_0
+#define ACVP_REV_KDF135_SSH          ACVP_REV_STR_1_0
+#define ACVP_REV_KDF135_SRTP         ACVP_REV_STR_1_0
+#define ACVP_REV_KDF135_IKEV2        ACVP_REV_STR_1_0
+#define ACVP_REV_KDF135_IKEV1        ACVP_REV_STR_1_0
+#define ACVP_REV_KDF135_TPM          ACVP_REV_STR_1_0
+#define ACVP_REV_KDF135_X942         ACVP_REV_STR_1_0
+#define ACVP_REV_KDF135_X963         ACVP_REV_STR_1_0
+#define ACVP_REV_KDF108              ACVP_REV_STR_1_0
+#define ACVP_REV_PBKDF               ACVP_REV_STR_1_0
+#define ACVP_REV_SAFE_PRIMES         ACVP_REV_STR_1_0
 #define ACVP_REV_KDF_TLS12           ACVP_REV_STR_RFC7627
 #define ACVP_REV_KDF_TLS13           ACVP_REV_STR_RFC8446
-#define ACVP_REV_LMS                 ACVP_REV_STR_DEFAULT
+#define ACVP_REV_LMS                 ACVP_REV_STR_1_0
 
 
 /********************************************************
@@ -344,17 +345,23 @@
 #define ACVP_ECDSA_TESTING_CANDIDATES_STR "testing candidates"
 #define ACVP_ECDSA_TESTING_CANDIDATES_STR_LEN 18
 
-#define ACVP_RSA_PRIME_TEST_TBLC2_STR "tblC2"
-#define ACVP_RSA_PRIME_TEST_TBLC2_STR_LEN 5
-#define ACVP_RSA_PRIME_TEST_TBLC3_STR "tblC3"
-#define ACVP_RSA_PRIME_TEST_TBLC3_STR_LEN 5
+#define ACVP_RSA_PRIME_TEST_STR_TBLC2 "tblC2"
+#define ACVP_RSA_PRIME_TEST_STR_TBLC3 "tblC3"
+#define ACVP_RSA_PRIME_TEST_STR_2POW100 "2pow100"
+#define ACVP_RSA_PRIME_TEST_STR_2POW_SEC_STR "2powSecStr"
 
 #define ACVP_RSA_SIG_TYPE_X931_STR      "ansx9.31"
 #define ACVP_RSA_SIG_TYPE_PKCS1V15_STR  "pkcs1v1.5"
 #define ACVP_RSA_SIG_TYPE_PKCS1PSS_STR  "pss"
 
+#define ACVP_RSA_MASK_FUNC_STR_MGF1 "mgf1"
+#define ACVP_RSA_MASK_FUNC_STR_SHAKE128 "shake-128"
+#define ACVP_RSA_MASK_FUNC_STR_SHAKE256 "shake-256"
+
 #define ACVP_ALG_RSA                "RSA"
 #define ACVP_ALG_ECDSA              "ECDSA"
+#define ACVP_ALG_DET_ECDSA          "DetECDSA"
+#define ACVP_ALG_EDDSA              "EDDSA"
 
 #define ACVP_MODE_KEYGEN            "keyGen"
 #define ACVP_MODE_KEYVER            "keyVer"
@@ -385,6 +392,7 @@
 #define ACVP_TESTTYPE_STR_AFT "AFT"
 #define ACVP_TESTTYPE_STR_VOL "VOL"
 #define ACVP_TESTTYPE_STR_GDT "GDT"
+#define ACVP_TESTTYPE_STR_BFT "BFT"
 
 #define ACVP_DRBG_MODE_TDES          "TDES"
 #define ACVP_DRBG_MODE_AES_128       "AES-128"
@@ -789,6 +797,9 @@
 #define ACVP_ECDSA_EXP_LEN_MAX       512
 #define ACVP_ECDSA_MSGLEN_MAX 8192
 
+#define ACVP_EDDSA_MSG_LEN_MAX 8192 /* arbitrary */
+#define ACVP_EDDSA_POINT_LEN_MAX 8192 /* arbitrary */
+
 #define ACVP_KAS_IFC_BIT_MAX 4096*4
 #define ACVP_KAS_IFC_BYTE_MAX (ACVP_KAS_IFC_BIT_MAX >> 3)
 #define ACVP_KAS_IFC_STR_MAX (ACVP_KAS_IFC_BIT_MAX >> 2)
@@ -824,14 +835,22 @@
 #define ACVP_RSA_KEY_FORMAT_STD_STR_LEN 9
 #define ACVP_RSA_KEY_FORMAT_CRT_STR "crt"
 #define ACVP_RSA_KEY_FORMAT_CRT_STR_LEN 3
-#define ACVP_RSA_RANDPQ32_STR   "B.3.2"
-#define ACVP_RSA_RANDPQ33_STR   "B.3.3"
-#define ACVP_RSA_RANDPQ34_STR   "B.3.4"
-#define ACVP_RSA_RANDPQ35_STR   "B.3.5"
-#define ACVP_RSA_RANDPQ36_STR   "B.3.6"
+/* Rand PQ for FIPS186-4 */
+#define ACVP_RSA_RANDPQ_STR_B32   "B.3.2"
+#define ACVP_RSA_RANDPQ_STR_B33   "B.3.3"
+#define ACVP_RSA_RANDPQ_STR_B34   "B.3.4"
+#define ACVP_RSA_RANDPQ_STR_B35   "B.3.5"
+#define ACVP_RSA_RANDPQ_STR_B36   "B.3.6"
+/* RandPQ for FIPS186-5 */
+#define ACVP_RSA_RANDPQ_STR_PROVABLE "provable"
+#define ACVP_RSA_RANDPQ_STR_PROBABLE "probable"
+#define ACVP_RSA_RANDPQ_STR_PROV_W_PROV_AUX "provableWithProvableAux"
+#define ACVP_RSA_RANDPQ_STR_PROB_W_PROV_AUX "probableWithProvableAux"
+#define ACVP_RSA_RANDPQ_STR_PROB_W_PROB_AUX "probableWithProbableAux"
+
 #define ACVP_RSA_SIG_TYPE_LEN_MAX    9
 
-#define ACVP_RSA_EXP_BIT_MAX 4096 /**< 2048 bits max for n, 512 characters */
+#define ACVP_RSA_EXP_BIT_MAX 8192
 #define ACVP_RSA_EXP_LEN_MAX (ACVP_RSA_EXP_BIT_MAX >> 2)
 #define ACVP_RSA_EXP_BYTE_MAX (ACVP_RSA_EXP_BIT_MAX >> 3)
 
@@ -859,7 +878,7 @@
 #define ACVP_KDA_DKM_STR_MAX (ACVP_KDA_DKM_BIT_MAX >> 2)
 #define ACVP_KDA_DKM_BYTE_MAX (ACVP_KDA_DKM_BIT_MAX >> 3)
 
-#define ACVP_KDA_FIXED_BIT_MAX 8192 //arbitrary
+#define ACVP_KDA_FIXED_BIT_MAX 65536 //arbitrary
 #define ACVP_KDA_FIXED_STR_MAX (ACVP_KDA_FIXED_BIT_MAX >> 2)
 #define ACVP_KDA_FIXED_BYTE_MAX (ACVP_KDA_FIXED_BIT_MAX >> 3)
 
@@ -867,7 +886,7 @@
 #define ACVP_KDA_SALT_STR_MAX (ACVP_KDA_SALT_BIT_MAX >> 2)
 #define ACVP_KDA_SALT_BYTE_MAX (ACVP_KDA_SALT_BIT_MAX >> 3)
 
-#define ACVP_KDA_Z_BIT_MAX 65336 //arbitrary, used spec example
+#define ACVP_KDA_Z_BIT_MAX 65536 //arbitrary, used spec example
 #define ACVP_KDA_Z_STR_MAX (ACVP_KDA_Z_BIT_MAX >> 2)
 #define ACVP_KDA_Z_BYTE_MAX (ACVP_KDA_Z_BIT_MAX >> 3)
 
@@ -875,8 +894,8 @@
 
 #define ACVP_CURL_BUF_MAX       (1024 * 1024 * 64) /**< 64 MB */
 #define ACVP_RETRY_TIME_MIN     5 /* seconds */
-#define ACVP_RETRY_TIME_MAX     300 
-#define ACVP_MAX_WAIT_TIME      7200
+#define ACVP_RETRY_TIME_MAX     300 /* 5 minutes */
+#define ACVP_MAX_WAIT_TIME      10800 /* 3 hours */
 #define ACVP_RETRY_TIME         30
 #define ACVP_RETRY_MODIFIER_MAX 10
 #define ACVP_JWT_TOKEN_MAX      2048
@@ -932,7 +951,7 @@ struct acvp_alg_handler_t {
     ACVP_RESULT (*handler) (ACVP_CTX *ctx, JSON_Object *obj);
 
     const char *name;
-    const char *mode; /** < Should be NULL unless using an asymmetric alg */
+    const char *mode;
     const char *revision;
     union {
         ACVP_SUB_AES      aes;
@@ -943,6 +962,7 @@ struct acvp_alg_handler_t {
         ACVP_SUB_DSA      dsa;
         ACVP_SUB_RSA      rsa;
         ACVP_SUB_ECDSA    ecdsa;
+        ACVP_SUB_EDDSA    eddsa;
         ACVP_SUB_DRBG     drbg;
         ACVP_SUB_HMAC     hmac;
         ACVP_SUB_HASH     hash;
@@ -984,7 +1004,7 @@ struct acvp_alt_revision_info {
 
 /* A generic struct that can match an enum with a string */
 struct acvp_enum_string_pair {
-    int enum_value;
+    unsigned int enum_value;
     const char *string;
 };
 
@@ -1006,6 +1026,11 @@ typedef enum acvp_capability_type {
     ACVP_ECDSA_KEYVER_TYPE,
     ACVP_ECDSA_SIGGEN_TYPE,
     ACVP_ECDSA_SIGVER_TYPE,
+    ACVP_DET_ECDSA_SIGGEN_TYPE,
+    ACVP_EDDSA_KEYGEN_TYPE,
+    ACVP_EDDSA_KEYVER_TYPE,
+    ACVP_EDDSA_SIGGEN_TYPE,
+    ACVP_EDDSA_SIGVER_TYPE,
     ACVP_DSA_TYPE,
     ACVP_KDF135_SNMP_TYPE,
     ACVP_KDF135_SSH_TYPE,
@@ -1287,8 +1312,8 @@ typedef struct acvp_drbg_mode_list_t {
 typedef struct acvp_drbg_capability {
     ACVP_CIPHER cipher;
     ACVP_PREREQ_LIST *prereq_vals;
-    int pred_resist_enabled;    // boolean
-    int reseed_implemented;     // boolean
+    ACVP_DRBG_PRED_RESIST_MODE pred_resist;
+    int reseed_implemented; // boolean
     ACVP_DRBG_MODE_LIST *drbg_cap_mode;
 } ACVP_DRBG_CAP;
 
@@ -1298,6 +1323,7 @@ struct acvp_drbg_mode_name_t {
 };
 
 typedef struct acvp_rsa_hash_pair_list {
+    ACVP_HASH_ALG alg;
     const char *name;
     int salt;
     struct acvp_rsa_hash_pair_list *next;
@@ -1306,31 +1332,44 @@ typedef struct acvp_rsa_hash_pair_list {
 typedef struct acvp_rsa_mode_caps_list {
     unsigned int modulo; // 2048, 3072, 4096 -- defined as macros
     int salt;   // only valid for siggen mode
-    ACVP_NAME_LIST *hash_algs;
+    ACVP_PARAM_LIST *hash_algs;
     ACVP_RSA_HASH_PAIR_LIST *hash_pair;
-    ACVP_NAME_LIST *prime_tests;
+    ACVP_PARAM_LIST *prime_tests;
+    ACVP_PARAM_LIST *mask_functions; /* Only for PSS sig */
+    int pMod8;
+    int qMod8;
     struct acvp_rsa_mode_caps_list *next;
 } ACVP_RSA_MODE_CAPS_LIST;
 
 typedef struct acvp_rsa_keygen_capability_t {
+    ACVP_REVISION revision;
     int key_format_crt;                     // if false, key format is assumed to be standard
     ACVP_RSA_PUB_EXP_MODE pub_exp_mode;
     char *fixed_pub_exp;               // hex value of e
-    ACVP_RSA_KEYGEN_MODE rand_pq;      // as defined in FIPS186-4
-    const char *rand_pq_str;
+    ACVP_RSA_KEYGEN_MODE rand_pq;
     int info_gen_by_server;                  // boolean
     ACVP_RSA_MODE_CAPS_LIST *mode_capabilities;
     struct acvp_rsa_keygen_capability_t *next; // to support multiple randPQ values
 } ACVP_RSA_KEYGEN_CAP;
 
+typedef struct acvp_rsa_sig_capability_t {
+    ACVP_REVISION revision;
+    unsigned int sig_type;
+    int pub_exp_mode;                           // for sigVer only
+    char *fixed_pub_exp;                        // hex value of e
+    ACVP_RSA_MODE_CAPS_LIST *mode_capabilities; //holds modRSASigGen (int) and hashSigGen (list)
+    struct acvp_rsa_sig_capability_t *next;
+} ACVP_RSA_SIG_CAP;
+
 typedef struct acvp_rsa_prim_capability_t {
+    ACVP_REVISION revision;                 // Empty if default is used
     unsigned int prim_type;
-    int key_format_crt;                     // if false, key format is assumed to be standard
+    ACVP_PARAM_LIST *key_formats;
     ACVP_RSA_PUB_EXP_MODE pub_exp_mode;
     char *fixed_pub_exp;               // hex value of e
     struct acvp_rsa_prim_capability_t *next; // to support multiple randPQ values
+    ACVP_SL_LIST *modulo;
 } ACVP_RSA_PRIM_CAP;
-
 
 typedef struct acvp_curve_hash_compatibility_list_t {
     ACVP_EC_CURVE curve;
@@ -1345,17 +1384,14 @@ typedef struct acvp_ecdsa_capability_t {
     //For backwards compatibility, this contains hash algs that will be used with ALL registered curves (HASH_ALG = array index)
     int hash_algs[ACVP_HASH_ALG_MAX + 1];
     ACVP_ECDSA_COMPONENT_MODE component;
+    ACVP_REVISION revision; /* Empty if default is used */
 } ACVP_ECDSA_CAP;
 
-typedef struct acvp_rsa_sig_capability_t {
-    const char *sig_type_str;
-    unsigned int sig_type;
-    int pub_exp_mode;                           // for sigVer only
-    char *fixed_pub_exp;                        // hex value of e
-    ACVP_RSA_MODE_CAPS_LIST *mode_capabilities; //holds modRSASigGen (int) and hashSigGen (list)
-    struct acvp_rsa_sig_capability_t *next;
-} ACVP_RSA_SIG_CAP;
-
+typedef struct acvp_eddsa_capability_t {
+    ACVP_PARAM_LIST *curves;
+    int supports_pure;
+    int supports_prehash;
+} ACVP_EDDSA_CAP;
 
 typedef struct acvp_dsa_attrs {
     unsigned int modulo;
@@ -1586,6 +1622,11 @@ typedef struct acvp_caps_list_t {
         ACVP_ECDSA_CAP *ecdsa_keyver_cap;
         ACVP_ECDSA_CAP *ecdsa_siggen_cap;
         ACVP_ECDSA_CAP *ecdsa_sigver_cap;
+        ACVP_ECDSA_CAP *det_ecdsa_siggen_cap;
+        ACVP_EDDSA_CAP *eddsa_keygen_cap;
+        ACVP_EDDSA_CAP *eddsa_keyver_cap;
+        ACVP_EDDSA_CAP *eddsa_siggen_cap;
+        ACVP_EDDSA_CAP *eddsa_sigver_cap;
         ACVP_KDF135_SNMP_CAP *kdf135_snmp_cap;
         ACVP_KDF135_SSH_CAP *kdf135_ssh_cap;
         ACVP_KDF135_SRTP_CAP *kdf135_srtp_cap;
@@ -1888,6 +1929,16 @@ ACVP_RESULT acvp_ecdsa_siggen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
 ACVP_RESULT acvp_ecdsa_sigver_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
+ACVP_RESULT acvp_det_ecdsa_siggen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
+
+ACVP_RESULT acvp_eddsa_keygen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
+
+ACVP_RESULT acvp_eddsa_keyver_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
+
+ACVP_RESULT acvp_eddsa_siggen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
+
+ACVP_RESULT acvp_eddsa_sigver_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
+
 ACVP_RESULT acvp_kdf135_snmp_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
 ACVP_RESULT acvp_kdf135_ssh_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
@@ -1969,6 +2020,7 @@ const char *acvp_lookup_cipher_mode_str(ACVP_CIPHER cipher);
 
 const char *acvp_lookup_cipher_revision(ACVP_CIPHER alg);
 const char *acvp_lookup_alt_revision_string(ACVP_REVISION rev);
+ACVP_REVISION acvp_lookup_alt_revision(const char *str);
 
 ACVP_DRBG_MODE acvp_lookup_drbg_mode_index(const char *mode);
 
@@ -1977,7 +2029,10 @@ ACVP_DRBG_MODE_LIST *acvp_create_drbg_mode_entry(ACVP_CAPS_LIST *cap, ACVP_DRBG_
 ACVP_DRBG_CAP_GROUP *acvp_locate_drbg_group_entry(ACVP_DRBG_MODE_LIST *mode, int group);
 ACVP_DRBG_CAP_GROUP *acvp_create_drbg_group(ACVP_DRBG_MODE_LIST *mode, int group);
 
+const char *acvp_lookup_rsa_sig_type_str(ACVP_RSA_SIG_TYPE type);
+const char *acvp_lookup_rsa_mask_func_str(ACVP_RSA_MASK_FUNCTION func);
 const char *acvp_lookup_rsa_randpq_name(int value);
+ACVP_RSA_PUB_EXP_MODE acvp_lookup_rsa_pub_exp_mode(const char *str);
 
 int acvp_lookup_rsa_randpq_index(const char *value);
 
@@ -1995,6 +2050,8 @@ const char *acvp_lookup_hash_alg_name(ACVP_HASH_ALG id);
 
 ACVP_EC_CURVE acvp_lookup_ec_curve(ACVP_CIPHER cipher, const char *name);
 const char *acvp_lookup_ec_curve_name(ACVP_CIPHER cipher, ACVP_EC_CURVE id);
+const char *acvp_lookup_ed_curve_name(ACVP_ED_CURVE id);
+ACVP_ED_CURVE acvp_lookup_ed_curve(const char *name);
 
 ACVP_RESULT acvp_refresh(ACVP_CTX *ctx);
 
@@ -2034,6 +2091,8 @@ ACVP_LMS_MODE acvp_lookup_lms_mode(const char *str);
 const char *acvp_lookup_lms_mode_str(ACVP_LMS_MODE mode);
 ACVP_LMOTS_MODE acvp_lookup_lmots_mode(const char *str);
 const char *acvp_lookup_lmots_mode_str(ACVP_LMOTS_MODE mode);
+const char *acvp_lookup_rsa_format_str(ACVP_RSA_KEY_FORMAT format);
+ACVP_RSA_PUB_EXP_MODE acvp_lookup_rsa_pub_exp_mode(const char *str);
 int acvp_is_domain_already_set(ACVP_JSON_DOMAIN_OBJ *domain);
 
 /* These functions are used for KDF108, but twostep uses KDF108 so we share them */

@@ -123,6 +123,8 @@ static void setup_full_ctx(void) {
     
     rv = acvp_cap_rsa_sig_enable(ctx, ACVP_RSA_SIGGEN, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
+    rv = acvp_cap_rsa_siggen_set_parm(ctx, ACVP_RSA_PARM_REVISION, ACVP_REVISION_FIPS186_4);
+    cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_rsa_siggen_set_type(ctx, ACVP_RSA_SIG_TYPE_X931);
     cr_assert(rv == ACVP_SUCCESS);
     rv = acvp_cap_rsa_siggen_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_X931, 2048, ACVP_SHA256, 0);

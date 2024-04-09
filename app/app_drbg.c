@@ -80,6 +80,18 @@ int app_drbg_handler(ACVP_TEST_CASE *test_case) {
     case ACVP_DRBG_SHA_512_256:
         alg_str = "SHA2-512/256";
         break;
+    case ACVP_DRBG_SHA3_224:
+        alg_str = "SHA3-224";
+        break;
+    case ACVP_DRBG_SHA3_256:
+        alg_str = "SHA3-256";
+        break;
+    case ACVP_DRBG_SHA3_384:
+        alg_str = "SHA3-384";
+        break;
+    case ACVP_DRBG_SHA3_512:
+        alg_str = "SHA3-512";
+        break;
     case ACVP_DRBG_AES_128:
         alg_str = "AES-128-CTR";
         break;
@@ -117,9 +129,7 @@ int app_drbg_handler(ACVP_TEST_CASE *test_case) {
     }
 
     params[0] = OSSL_PARAM_construct_uint(OSSL_RAND_PARAM_STRENGTH, &strength);
-    params[1] = OSSL_PARAM_construct_end(); /* HMAC */
-    params[2] = OSSL_PARAM_construct_end(); /* der func */
-    params[3] = OSSL_PARAM_construct_end();
+    params[1] = OSSL_PARAM_construct_end();
 
     if (EVP_RAND_CTX_set_params(test, params) != 1) {
         printf("Error setting test ctx params in DRBG\n");
@@ -137,6 +147,7 @@ int app_drbg_handler(ACVP_TEST_CASE *test_case) {
     params[0] = OSSL_PARAM_construct_utf8_string(param_str, tmp, 0);
     params[1] = OSSL_PARAM_construct_utf8_string(OSSL_DRBG_PARAM_MAC, mac_name, 0); //ignored if irrelevant
     params[2] = OSSL_PARAM_construct_int(OSSL_DRBG_PARAM_USE_DF, &der_func);
+    params[3] = OSSL_PARAM_construct_end();
     if (EVP_RAND_CTX_set_params(rctx, params) != 1) {
         printf("Error setting algorithm for DRBG\n");
         goto err;
@@ -144,6 +155,7 @@ int app_drbg_handler(ACVP_TEST_CASE *test_case) {
 
     params[0] = OSSL_PARAM_construct_octet_string(OSSL_RAND_PARAM_TEST_ENTROPY, tc->entropy, tc->entropy_len);
     params[1] = OSSL_PARAM_construct_octet_string(OSSL_RAND_PARAM_TEST_NONCE, tc->nonce, tc->nonce_len);
+    params[2] = OSSL_PARAM_construct_end();
     if (EVP_RAND_CTX_set_params(test, params) != 1) {
         printf("Error setting initial entropy/nonce for DRBG\n");
         goto err;
@@ -154,7 +166,23 @@ int app_drbg_handler(ACVP_TEST_CASE *test_case) {
         goto err;
     }
 
+    if (!tc->pred_resist_enabled && tc->reseed) {
+        params[0] = OSSL_PARAM_construct_octet_string(OSSL_RAND_PARAM_TEST_ENTROPY, tc->entropy_input_pr_0, tc->entropy_len);
+        params[1] = OSSL_PARAM_construct_end();
+        if (EVP_RAND_CTX_set_params(test, params) != 1) {
+            printf("Error setting reseed params for DRBG\n");
+            goto err;
+        }
+
+        if (EVP_RAND_reseed(rctx, tc->pred_resist_enabled, NULL, 0,
+                            tc->additional_input_0, tc->additional_input_len) != 1) {
+            printf("Error performing reseed DRBG\n");
+            goto err;
+        }
+    }
+
     params[0] = OSSL_PARAM_construct_octet_string(OSSL_RAND_PARAM_TEST_ENTROPY, tc->entropy_input_pr_1, tc->entropy_len);
+    params[1] = OSSL_PARAM_construct_end();
     if (EVP_RAND_CTX_set_params(test, params) != 1) {
         printf("Error setting params for DRBG (1)\n");
         goto err;
@@ -168,6 +196,7 @@ int app_drbg_handler(ACVP_TEST_CASE *test_case) {
      }
 
     params[0] = OSSL_PARAM_construct_octet_string(OSSL_RAND_PARAM_TEST_ENTROPY, tc->entropy_input_pr_2, tc->entropy_len);
+    params[1] = OSSL_PARAM_construct_end();
     if (EVP_RAND_CTX_set_params(test, params) != 1) {
         printf("Error setting params for DRBG (2)\n");
         goto err;

@@ -10,11 +10,9 @@
 #include "app_lcl.h"
 #include <openssl/evp.h>
 
-#ifdef ACVPAPP_HASH_LDT_SUPPORT
 #include "safe_mem_lib.h"
 
-int app_sha_ldt_handler();
-#endif
+int app_sha_ldt_handler(ACVP_HASH_TC *tc, const EVP_MD *md);
 
 int app_sha_handler(ACVP_TEST_CASE *test_case) {
     ACVP_HASH_TC    *tc;
@@ -95,11 +93,7 @@ int app_sha_handler(ACVP_TEST_CASE *test_case) {
     }
     md_ctx = EVP_MD_CTX_create();
     if (tc->test_type == ACVP_HASH_TEST_TYPE_LDT) {
-        #ifdef ACVPAPP_HASH_LDT_SUPPORT
-            rc = app_sha_ldt_handler(tc, md);
-        #else
-            printf("LDT not supported in this build of acvp_app\n");
-        #endif
+        rc = app_sha_ldt_handler(tc, md);
         goto end;
     } else if (tc->test_type == ACVP_HASH_TEST_TYPE_MCT && !sha3 && !shake) {
         /* If Monte Carlo we need to be able to init and then update
@@ -145,22 +139,13 @@ int app_sha_handler(ACVP_TEST_CASE *test_case) {
             goto end;
         }
 
-        if (tc->test_type == ACVP_HASH_TEST_TYPE_VOT ||
-            (tc->test_type == ACVP_HASH_TEST_TYPE_MCT && shake)) {
-            /*
-             * Use the XOF oriented function.
-             * Skip past the other "EVP_DigestFinal".
-             */
+        if (shake) {
             if (!EVP_DigestFinalXOF(md_ctx, tc->md, tc->xof_len)) {
-                printf("\nCrypto module error, EVP_DigestFinal failed\n");
+                printf("\nCrypto module error, EVP_DigestFinalXOF failed\n");
                 goto end;
             }
             tc->md_len = tc->xof_len;
-            rc = 0;
-            goto end;
-        }
-
-        if (!EVP_DigestFinal(md_ctx, tc->md, &tc->md_len)) {
+        } else if (!EVP_DigestFinal(md_ctx, tc->md, &tc->md_len)) {
             printf("\nCrypto module error, EVP_DigestFinal failed\n");
             goto end;
         }
@@ -178,8 +163,7 @@ end:
  * 2) oneshot function or a single call to update; never multiple calls to update
  * 3) allowed for all SHA, not SHAKE
  */
-#ifdef ACVPAPP_HASH_LDT_SUPPORT
-int app_sha_ldt_handler(ACVP_HASH_TC *tc, EVP_MD *md) {
+int app_sha_ldt_handler(ACVP_HASH_TC *tc, const EVP_MD *md) {
     unsigned char *large_data = NULL, *iter = NULL;
     int numcopies = 0, i = 0, rv = 1;
     EVP_MD_CTX *md_ctx = NULL;
@@ -223,5 +207,3 @@ end:
     if (md_ctx) EVP_MD_CTX_destroy(md_ctx);
     return rv;
 }
-
-#endif

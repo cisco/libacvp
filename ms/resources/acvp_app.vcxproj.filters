@@ -36,6 +36,9 @@
     <ClCompile Include="..\..\app\app_ecdsa.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\app\app_eddsa.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\app\app_hmac.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -49,6 +52,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\app\app_kmac.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\app_lms.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\app\app_main.c">

@@ -187,3 +187,46 @@ The process for building libacvp itself has not changed. On Windows platforms, s
 (deemed likely to be redundant or unused) have been removed. For users also intending to use the
 included acvp_app, please view the README for more details about how building and testing with
 OpenSSL 3.X has changed.
+
+
+---
+# Libacvp 2.1.0 Changes
+
+Further changes were required in libacvp 2.1.0 that are not backwards compatible with the libacvp
+2.0.0 API. those changes are described here.
+
+## RSA Primitive APIs
+
+We needed the ability to set parameters for both RSA decryption primitive AND signature primitive
+using the appropriate APIs for their new revisions. The old API version assumed you were using
+signature primitive.
+
+Before:
+```
+ACVP_RESULT acvp_cap_rsa_prim_set_parm(ACVP_CTX *ctx,
+                                       ACVP_RSA_PARM prim_type,
+                                       int value);
+```
+
+Libacvp 2.1.0:
+```
+ACVP_RESULT acvp_cap_rsa_prim_set_parm(ACVP_CTX *ctx,
+                                       ACVP_CIPHER cipher,
+                                       ACVP_RSA_PARM param,
+                                       int value);
+```
+
+Simply adding `ACVP_RSA_SIGPRIM` for cipher should make existing calls behave.
+
+## RSA Registration Logic Change
+
+For RSA registrations, the value `ACVP_RSA_PARM_KEY_FORMAT_CRT` has been replaced with
+`ACVP_RSA_PARM_KEY_FORMAT`. The expected value is no longer a 1 or a 0, but an enum from
+`ACVP_RSA_KEY_FORMAT`.
+
+
+## Test Case Structure Changes
+
+Several test cases have new fields which should not affect existing testing. For RSA primitive
+testing, an `int` field for `key_format` was replaced with an appropriate enum,
+`ACVP_RSA_KEY_FORMAT`.
