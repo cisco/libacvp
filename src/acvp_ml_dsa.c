@@ -34,6 +34,11 @@ static ACVP_RESULT acvp_ml_dsa_output_tc(ACVP_CTX *ctx, ACVP_CIPHER cipher, ACVP
     }
 
     tmp = calloc(ACVP_ML_DSA_TMP_BYTE_MAX + 1, sizeof(char));
+    if (!tmp) {
+        ACVP_LOG_ERR("Error allocating memory to output ML-DSA test case");
+        rv = ACVP_MALLOC_FAIL;
+        goto end;
+    }
 
     switch (mode) {
     case ACVP_SUB_ML_DSA_KEYGEN:
