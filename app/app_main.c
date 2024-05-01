@@ -58,6 +58,9 @@ static int enable_kdf(ACVP_CTX *ctx);
 #ifdef ACVPAPP_LMS_SUPPORT
 static int enable_lms(ACVP_CTX *ctx);
 #endif
+#ifdef ACVPAPP_ML_DSA_SUPPORT
+static int enable_ml_dsa(ACVP_CTX *ctx);
+#endif
 
 const char *server;
 int port;
@@ -380,6 +383,9 @@ int main(int argc, char **argv) {
 #endif
 #ifdef ACVPAPP_LMS_SUPPORT
         if (cfg.lms) { if (enable_lms(ctx)) goto end; }
+#endif
+#ifdef ACVPAPP_ML_DSA_SUPPORT
+        if (cfg.ml_dsa) { if (enable_ml_dsa(ctx)) goto end; }
 #endif
     }
 
@@ -4084,6 +4090,44 @@ static int enable_lms(ACVP_CTX *ctx) {
     rv = acvp_cap_lms_set_parm(ctx, ACVP_LMS_SIGGEN, ACVP_LMS_PARAM_LMOTS_MODE, ACVP_LMOTS_MODE_SHAKE_N32_W8);
     CHECK_ENABLE_CAP_RV(rv);
 #endif
+
+end:
+    return rv;
+}
+#endif
+
+#ifdef ACVPAPP_ML_DSA_SUPPORT
+static int enable_ml_dsa(ACVP_CTX *ctx) {
+    ACVP_RESULT rv = ACVP_SUCCESS;
+
+    rv = acvp_cap_ml_dsa_enable(ctx, ACVP_ML_DSA_KEYGEN, &app_ml_dsa_handler);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_ml_dsa_set_parm(ctx, ACVP_ML_DSA_KEYGEN, ACVP_ML_DSA_PARAM_PARAMETER_SET, ACVP_ML_DSA_PARAM_SET_ML_DSA_44);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_ml_dsa_set_parm(ctx, ACVP_ML_DSA_KEYGEN, ACVP_ML_DSA_PARAM_PARAMETER_SET, ACVP_ML_DSA_PARAM_SET_ML_DSA_65);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_ml_dsa_set_parm(ctx, ACVP_ML_DSA_KEYGEN, ACVP_ML_DSA_PARAM_PARAMETER_SET, ACVP_ML_DSA_PARAM_SET_ML_DSA_87);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    rv = acvp_cap_ml_dsa_enable(ctx, ACVP_ML_DSA_SIGGEN, &app_ml_dsa_handler);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_ml_dsa_set_parm(ctx, ACVP_ML_DSA_SIGGEN, ACVP_ML_DSA_PARAM_PARAMETER_SET, ACVP_ML_DSA_PARAM_SET_ML_DSA_44);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_ml_dsa_set_parm(ctx, ACVP_ML_DSA_SIGGEN, ACVP_ML_DSA_PARAM_PARAMETER_SET, ACVP_ML_DSA_PARAM_SET_ML_DSA_65);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_ml_dsa_set_parm(ctx, ACVP_ML_DSA_SIGGEN, ACVP_ML_DSA_PARAM_PARAMETER_SET, ACVP_ML_DSA_PARAM_SET_ML_DSA_87);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_ml_dsa_set_parm(ctx, ACVP_ML_DSA_SIGGEN, ACVP_ML_DSA_PARAM_DETERMINISTIC_MODE, ACVP_ML_DSA_DETERMINISTIC_BOTH);
+    CHECK_ENABLE_CAP_RV(rv);
+
+    rv = acvp_cap_ml_dsa_enable(ctx, ACVP_ML_DSA_SIGVER, &app_ml_dsa_handler);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_ml_dsa_set_parm(ctx, ACVP_ML_DSA_SIGVER, ACVP_ML_DSA_PARAM_PARAMETER_SET, ACVP_ML_DSA_PARAM_SET_ML_DSA_44);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_ml_dsa_set_parm(ctx, ACVP_ML_DSA_SIGVER, ACVP_ML_DSA_PARAM_PARAMETER_SET, ACVP_ML_DSA_PARAM_SET_ML_DSA_65);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_ml_dsa_set_parm(ctx, ACVP_ML_DSA_SIGVER, ACVP_ML_DSA_PARAM_PARAMETER_SET, ACVP_ML_DSA_PARAM_SET_ML_DSA_87);
+    CHECK_ENABLE_CAP_RV(rv);
 
 end:
     return rv;

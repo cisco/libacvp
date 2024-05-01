@@ -76,6 +76,7 @@
 #define ACVP_REV_STR_SP800_108R1 "Sp800-108r1"
 #define ACVP_REV_STR_RFC8446 "RFC8446"
 #define ACVP_REV_STR_RFC7627 "RFC7627"
+#define ACVP_REV_STR_FIPS204 "FIPS204"
 
 /* AES */
 #define ACVP_REV_AES_ECB             ACVP_REV_STR_1_0
@@ -201,8 +202,12 @@
 #define ACVP_REV_SAFE_PRIMES         ACVP_REV_STR_1_0
 #define ACVP_REV_KDF_TLS12           ACVP_REV_STR_RFC7627
 #define ACVP_REV_KDF_TLS13           ACVP_REV_STR_RFC8446
+
+/* LMS */
 #define ACVP_REV_LMS                 ACVP_REV_STR_1_0
 
+/* ML-DSA */
+#define ACVP_REV_ML_DSA              ACVP_REV_STR_FIPS204
 
 /********************************************************
  * ******************************************************
@@ -339,6 +344,11 @@
 #define ACVP_ALG_LMS_KEYGEN "keyGen"
 #define ACVP_ALG_LMS_SIGGEN "sigGen"
 #define ACVP_ALG_LMS_SIGVER "sigVer"
+
+#define ACVP_ALG_ML_DSA "ML-DSA"
+#define ACVP_ALG_ML_DSA_KEYGEN "keyGen"
+#define ACVP_ALG_ML_DSA_SIGGEN "sigGen"
+#define ACVP_ALG_ML_DSA_SIGVER "sigVer"
 
 #define ACVP_ECDSA_EXTRA_BITS_STR "extra bits"
 #define ACVP_ECDSA_EXTRA_BITS_STR_LEN 10
@@ -892,6 +902,10 @@
 
 #define ACVP_LMS_TMP_MAX 65336 //arbitrary
 
+#define ACVP_ML_DSA_TMP_BIT_MAX 65336 //arbitrary
+#define ACVP_ML_DSA_TMP_STR_MAX (ACVP_ML_DSA_TMP_BIT_MAX >> 2)
+#define ACVP_ML_DSA_TMP_BYTE_MAX (ACVP_ML_DSA_TMP_BIT_MAX >> 3)
+
 #define ACVP_CURL_BUF_MAX       (1024 * 1024 * 64) /**< 64 MB */
 #define ACVP_RETRY_TIME_MIN     5 /* seconds */
 #define ACVP_RETRY_TIME_MAX     300 /* 5 minutes */
@@ -968,6 +982,7 @@ struct acvp_alg_handler_t {
         ACVP_SUB_HASH     hash;
         ACVP_SUB_KAS      kas;
         ACVP_SUB_LMS      lms;
+        ACVP_SUB_ML_DSA   ml_dsa;
     } alg;
 };
 
@@ -1060,7 +1075,10 @@ typedef enum acvp_capability_type {
     ACVP_SAFE_PRIMES_KEYVER_TYPE,
     ACVP_LMS_KEYGEN_TYPE,
     ACVP_LMS_SIGGEN_TYPE,
-    ACVP_LMS_SIGVER_TYPE
+    ACVP_LMS_SIGVER_TYPE,
+    ACVP_ML_DSA_KEYGEN_TYPE,
+    ACVP_ML_DSA_SIGGEN_TYPE,
+    ACVP_ML_DSA_SIGVER_TYPE
 } ACVP_CAP_TYPE;
 
 /*
@@ -1601,6 +1619,12 @@ typedef struct acvp_lms_capability_t {
     ACVP_LMS_SPECIFIC_LIST *specific_list;
 } ACVP_LMS_CAP;
 
+typedef struct acvp_ml_dsa_capability_t {
+    ACVP_CIPHER cipher;
+    ACVP_PARAM_LIST *param_sets;
+    ACVP_ML_DSA_DETERMINISTIC_MODE deterministic; /* For siggen only */
+} ACVP_ML_DSA_CAP;
+
 typedef struct acvp_caps_list_t {
     ACVP_CIPHER cipher;
     ACVP_CAP_TYPE cap_type;
@@ -1650,6 +1674,9 @@ typedef struct acvp_caps_list_t {
         ACVP_LMS_CAP *lms_keygen_cap;
         ACVP_LMS_CAP *lms_siggen_cap;
         ACVP_LMS_CAP *lms_sigver_cap;
+        ACVP_ML_DSA_CAP *ml_dsa_keygen_cap;
+        ACVP_ML_DSA_CAP *ml_dsa_siggen_cap;
+        ACVP_ML_DSA_CAP *ml_dsa_sigver_cap;
     } cap;
 
     int (*crypto_handler)(ACVP_TEST_CASE *test_case);
@@ -1985,6 +2012,8 @@ ACVP_RESULT acvp_safe_primes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
 ACVP_RESULT acvp_lms_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
 
+ACVP_RESULT acvp_ml_dsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj);
+
 /* ACVP build registration functions used internally */
 ACVP_RESULT acvp_build_registration_json(ACVP_CTX *ctx, JSON_Value **reg);
 
@@ -2091,6 +2120,8 @@ ACVP_LMS_MODE acvp_lookup_lms_mode(const char *str);
 const char *acvp_lookup_lms_mode_str(ACVP_LMS_MODE mode);
 ACVP_LMOTS_MODE acvp_lookup_lmots_mode(const char *str);
 const char *acvp_lookup_lmots_mode_str(ACVP_LMOTS_MODE mode);
+ACVP_ML_DSA_PARAM_SET acvp_lookup_ml_dsa_param_set(const char *str);
+const char *acvp_lookup_ml_dsa_param_set_str(ACVP_ML_DSA_PARAM_SET param_set);
 const char *acvp_lookup_rsa_format_str(ACVP_RSA_KEY_FORMAT format);
 ACVP_RSA_PUB_EXP_MODE acvp_lookup_rsa_pub_exp_mode(const char *str);
 int acvp_is_domain_already_set(ACVP_JSON_DOMAIN_OBJ *domain);

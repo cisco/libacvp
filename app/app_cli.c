@@ -78,6 +78,12 @@ static void print_usage(int code) {
     printf("      --kas_ifc\n");
     printf("      --kda\n");
     printf("      --kts_ifc\n");
+#ifdef ACVPAPP_LMS_SUPPORT
+    printf("      --lms\n");
+#endif
+#ifdef ACVPAPP_ML_DSA_SUPPORT
+    printf("      --ml_dsa\n");
+#endif
     printf("\n");
 
     if (code >= ACVP_LOG_LVL_VERBOSE) {
@@ -211,6 +217,7 @@ static ko_longopt_t longopts[] = {
     { "kmac", ko_no_argument, 326 },
     { "lms", ko_no_argument, 327 },
     { "eddsa", ko_no_argument, 328 },
+    { "ml_dsa", ko_no_argument, 329 },
     { "all_algs", ko_no_argument, 350 },
     { "manual_registration", ko_required_argument, 400 },
     { "fips_validation", ko_required_argument, 402 },
@@ -261,6 +268,7 @@ static void enable_all_algorithms(APP_CONFIG *cfg) {
     cfg->kts_ifc = 1;
     cfg->kdf = 1;
     cfg->lms = 1;
+    cfg->ml_dsa = 1;
 }
 
 static const char* lookup_arg_name(int c) {
@@ -418,6 +426,10 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
             break;
         case 328:
             cfg->eddsa = 1;
+            cfg->empty_alg = 0;
+            break;
+        case 329:
+            cfg->ml_dsa = 1;
             cfg->empty_alg = 0;
             break;
         case 'a':
