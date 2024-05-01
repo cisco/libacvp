@@ -755,6 +755,9 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
     case ACVP_LMS_SIGGEN:
     case ACVP_LMS_SIGVER:
     case ACVP_LMS_KEYGEN:
+    case ACVP_ML_DSA_KEYGEN:
+    case ACVP_ML_DSA_SIGGEN:
+    case ACVP_ML_DSA_SIGVER:
     case ACVP_CIPHER_END:
         break;
     case ACVP_AES_GCM:

@@ -4002,7 +4002,7 @@ ACVP_SUB_LMS acvp_get_lms_alg(ACVP_CIPHER cipher)
     return (alg_tbl[cipher-1].alg.lms);
 }
 
-ACVP_SUB_LMS acvp_get_ml_dsa_alg(ACVP_CIPHER cipher)
+ACVP_SUB_ML_DSA acvp_get_ml_dsa_alg(ACVP_CIPHER cipher)
 {
     if ((cipher == ACVP_CIPHER_START) || (cipher >= ACVP_CIPHER_END)) {
         return 0;

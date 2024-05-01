@@ -4847,7 +4847,7 @@ ACVP_SUB_KDF acvp_get_kdf_alg(ACVP_CIPHER cipher);
 ACVP_SUB_DRBG acvp_get_drbg_alg(ACVP_CIPHER cipher);
 ACVP_SUB_KAS acvp_get_kas_alg(ACVP_CIPHER cipher);
 ACVP_SUB_LMS acvp_get_lms_alg(ACVP_CIPHER cipher);
-ACVP_SUB_LMS acvp_get_ml_dsa_alg(ACVP_CIPHER cipher);
+ACVP_SUB_ML_DSA acvp_get_ml_dsa_alg(ACVP_CIPHER cipher);
 
 /**
  * @brief acvp_sleep() waits a given number of seconds before continuing processing. This function performs identically across platforms.
