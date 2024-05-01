@@ -259,6 +259,9 @@ typedef enum acvp_cipher {
     ACVP_LMS_KEYGEN,
     ACVP_LMS_SIGGEN,
     ACVP_LMS_SIGVER,
+    ACVP_ML_DSA_KEYGEN,
+    ACVP_ML_DSA_SIGGEN,
+    ACVP_ML_DSA_SIGVER,
     ACVP_CIPHER_END
 } ACVP_CIPHER;
 
@@ -437,6 +440,13 @@ typedef enum acvp_alg_type_lms {
     ACVP_SUB_LMS_SIGGEN,
     ACVP_SUB_LMS_SIGVER
 } ACVP_SUB_LMS;
+
+/** @enum ACVP_SUB_ML_DSA */
+typedef enum acvp_alg_type_ml_dsa {
+    ACVP_SUB_ML_DSA_KEYGEN = ACVP_ML_DSA_KEYGEN,
+    ACVP_SUB_ML_DSA_SIGGEN,
+    ACVP_SUB_ML_DSA_SIGVER
+} ACVP_SUB_ML_DSA;
 
 #define CIPHER_TO_ALG(alg2) (alg_tbl[cipher].alg.alg2)
 
@@ -2559,6 +2569,7 @@ typedef enum acvp_lms_testtype {
     ACVP_LMS_TESTTYPE_NONE = 0,
     ACVP_LMS_TESTTYPE_AFT
 } ACVP_LMS_TESTTYPE;
+
 /**
  * @struct ACVP_LMS_TC
  * @brief This struct holds data that represents a single test case for LMS testing. This data is
@@ -2591,6 +2602,76 @@ typedef struct acvp_lms_tc_t {
     ACVP_TEST_DISPOSITION ver_disposition;
 
 } ACVP_LMS_TC;
+
+/** @enum ACVP_ML_DSA_PARAM */
+typedef enum acvp_ml_dsa_param {
+    ACVP_ML_DSA_PARAM_PARAMETER_SET = 1,
+    ACVP_ML_DSA_PARAM_DETERMINISTIC_MODE
+} ACVP_ML_DSA_PARAM;
+
+/**
+ * @enum ACVP_ML_DSA_PARAM_SET
+ * Note: naming may seem clunky, but matches existing naming conventions ("ML-DSA-44" refers to a
+ * very specific set of values in the FIPS doc)
+ */
+typedef enum acvp_ml_dsa_param_set {
+    ACVP_ML_DSA_PARAM_SET_NONE = 0,
+    ACVP_ML_DSA_PARAM_SET_ML_DSA_44,
+    ACVP_ML_DSA_PARAM_SET_ML_DSA_65,
+    ACVP_ML_DSA_PARAM_SET_ML_DSA_87,
+    ACVP_ML_DSA_PARAM_SET_MAX
+} ACVP_ML_DSA_PARAM_SET;
+
+/** @enum ACVP_ML_DSA_DETERMINISTIC_MODE */
+typedef enum acvp_ml_dsa_deterministic_mode {
+    ACVP_ML_DSA_DETERMINISTIC_NO = 0,
+    ACVP_ML_DSA_DETERMINISTIC_YES,
+    ACVP_ML_DSA_DETERMINISTIC_BOTH
+} ACVP_ML_DSA_DETERMINISTIC_MODE;
+
+/** enum ACVP_ML_DSA_TESTTYPE */
+typedef enum acvp_ml_dsa_testtype {
+    ACVP_ML_DSA_TESTTYPE_NONE = 0,
+    ACVP_ML_DSA_TESTTYPE_AFT,
+    ACVP_ML_DSA_TESTTYPE_GDT
+} ACVP_ML_DSA_TESTTYPE;
+
+
+/**
+ * @struct ACVP_ML_DSA_TC
+ * @brief This struct holds data that represents a single test case for ML-DSA testing. This data is
+ *        passed between libacvp and the crypto module.
+ */
+typedef struct acvp_ml_dsa_tc_t {
+    unsigned int tc_id;    /**< Test case id */
+    unsigned int tg_id; /**< Test group id */
+
+    ACVP_CIPHER cipher;
+    ACVP_ML_DSA_TESTTYPE type;
+
+    ACVP_ML_DSA_PARAM_SET param_set;
+
+    /* Both keys and sigs */
+    unsigned char *pub_key;
+    unsigned char *secret_key;
+    int pub_key_len;
+    int secret_key_len;
+
+    /* Keygen */
+    unsigned char *seed;
+    int seed_len;
+
+    /* Signature values */
+    unsigned char *rnd;
+    int rnd_len;
+    int is_deterministic;
+    unsigned char *msg;
+    unsigned char *sig;
+    int msg_len;
+    int sig_len;
+    ACVP_TEST_DISPOSITION ver_disposition;
+
+} ACVP_ML_DSA_TC;
 
 /**
  * @struct ACVP_TEST_CASE
@@ -2633,6 +2714,7 @@ typedef struct acvp_test_case_t {
         ACVP_KTS_IFC_TC *kts_ifc;
         ACVP_SAFE_PRIMES_TC *safe_primes;
         ACVP_LMS_TC *lms;
+        ACVP_ML_DSA_TC *ml_dsa;
     } tc; /**< the union abstracting the test case for passing to the user application */
 } ACVP_TEST_CASE;
 
@@ -4284,6 +4366,50 @@ ACVP_RESULT acvp_cap_lms_set_mode_compatability_pair(ACVP_CTX *ctx,
                                                      ACVP_CIPHER cipher,
                                                      ACVP_LMS_MODE lms_mode,
                                                      ACVP_LMOTS_MODE lmots_mode);
+
+/**
+ * @brief acvp_cap_ml_dsa_enable() should be used to enable ML-DSA capabilities. Specific modes and
+ *        parameters can use acvp_cap_ml_dsa_set_parm.
+ *
+ *        When the application enables a crypto capability, such as ML-DSA, it also needs to
+ *        specify a callback function that will be used by libacvp when that crypto capability is
+ *        needed during a test session.
+ *
+ * @param ctx Pointer to ACVP_CTX that was previously created by calling acvp_create_test_session.
+ * @param cipher ACVP_CIPHER enum value identifying the crypto capability.
+ * @param crypto_handler Address of function implemented by application that
+ *        is invoked by libacvp when the crypto capability is needed during a test session. This
+ *        crypto_handler function is expected to return 0 on success and 1 for failure.
+ *
+ * @return ACVP_RESULT
+ */
+ACVP_RESULT acvp_cap_ml_dsa_enable(ACVP_CTX *ctx,
+                                ACVP_CIPHER cipher,
+                                int (*crypto_handler)(ACVP_TEST_CASE *test_case));
+
+/**
+ * @brief acvp_cap_ml_dsa_set_parm() allows an application to specify operational
+ *        parameters to be used for a given ML-DSA alg during a test session with the ACVP
+ *        server. This function should be called to enable crypto capabilities for ML-DSA
+ *        capabilities that will be tested by the ACVP server. This includes KEYGEN and KEYVER.
+ *
+ *        This function may be called multiple times to specify more than one crypto parameter
+ *        value for the ML-DSA algorithm. The ACVP_CIPHER value passed to this function should
+ *        already have been setup by invoking acvp_cap_ml_dsa_enable().
+ *
+ * @param ctx Pointer to ACVP_CTX that was previously created by calling acvp_create_test_session.
+ * @param cipher ACVP_CIPHER enum value identifying the crypto capability.
+ * @param param ACVP_ML_DSA_PARAM enum value identifying the algorithm parameter that is being
+ *        specified.
+ * @param value the value corresponding to the parameter being set, at present only generation mode
+ *        is supported.
+ *
+ * @return ACVP_RESULT
+ */
+ACVP_RESULT acvp_cap_ml_dsa_set_parm(ACVP_CTX *ctx,
+                                  ACVP_CIPHER cipher,
+                                  ACVP_ML_DSA_PARAM param, int value);
+
 /**
  * @brief acvp_enable_prereq_cap() allows an application to specify a prerequisite for a cipher
  *        capability that was previously registered.
@@ -4721,6 +4847,7 @@ ACVP_SUB_KDF acvp_get_kdf_alg(ACVP_CIPHER cipher);
 ACVP_SUB_DRBG acvp_get_drbg_alg(ACVP_CIPHER cipher);
 ACVP_SUB_KAS acvp_get_kas_alg(ACVP_CIPHER cipher);
 ACVP_SUB_LMS acvp_get_lms_alg(ACVP_CIPHER cipher);
+ACVP_SUB_LMS acvp_get_ml_dsa_alg(ACVP_CIPHER cipher);
 
 /**
  * @brief acvp_sleep() waits a given number of seconds before continuing processing. This function performs identically across platforms.
