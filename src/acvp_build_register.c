@@ -758,6 +758,8 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
     case ACVP_ML_DSA_KEYGEN:
     case ACVP_ML_DSA_SIGGEN:
     case ACVP_ML_DSA_SIGVER:
+    case ACVP_ML_KEM_KEYGEN:
+    case ACVP_ML_KEM_XCAP:
     case ACVP_CIPHER_END:
         break;
     case ACVP_AES_GCM:
@@ -5071,6 +5073,102 @@ err:
     return ACVP_INTERNAL_ERR;
 }
 
+static ACVP_RESULT acvp_build_ml_kem_register_cap(ACVP_CTX *ctx,
+                                                  JSON_Object *cap_obj,
+                                                  ACVP_CAPS_LIST *cap_entry) {
+    JSON_Array *temp_arr = NULL;
+    ACVP_RESULT result;
+    const char *revision = NULL, *mode = NULL, *tmp_str = NULL;
+    ACVP_ML_KEM_CAP *ml_kem_cap = NULL;
+    ACVP_SUB_ML_KEM alg = 0;
+    ACVP_PARAM_LIST *pl = NULL;
+    if (!cap_entry) {
+        goto err;
+    }
+
+    json_object_set_string(cap_obj, "algorithm", acvp_lookup_cipher_name(cap_entry->cipher));
+
+    mode = acvp_lookup_cipher_mode_str(cap_entry->cipher);
+    if (!mode) {
+        goto err;
+    }
+    json_object_set_string(cap_obj, "mode", mode);
+
+    revision = acvp_lookup_cipher_revision(cap_entry->cipher);
+    if (revision == NULL) { return ACVP_INVALID_ARG; }
+    json_object_set_string(cap_obj, "revision", revision);
+
+    if (cap_entry->prereq_vals) {
+        result = acvp_lookup_prereqVals(cap_obj, cap_entry);
+        if (result != ACVP_SUCCESS) { return result; }
+    }
+
+    alg = acvp_get_ml_kem_alg(cap_entry->cipher);
+
+    switch (alg) {
+    case ACVP_SUB_ML_KEM_KEYGEN:
+        ml_kem_cap = cap_entry->cap.ml_kem_keygen_cap;
+        break;
+    case ACVP_SUB_ML_KEM_XCAP:
+        ml_kem_cap = cap_entry->cap.ml_kem_xcap_cap;
+        break;
+    default:
+        goto err;
+    }
+
+    if (!ml_kem_cap) {
+        return ACVP_NO_CAP;
+    }
+
+    if (ml_kem_cap->param_sets) {
+        json_object_set_value(cap_obj, "parameterSets", json_value_init_array());
+        temp_arr = json_object_get_array(cap_obj, "parameterSets");
+        pl = ml_kem_cap->param_sets;
+        while (pl) {
+            tmp_str = acvp_lookup_ml_kem_param_set_str(pl->param);
+            if (!tmp_str) {
+                goto err;
+            }
+            json_array_append_string(temp_arr, tmp_str);
+            pl = pl->next;
+        }
+    } else {
+        ACVP_LOG_ERR("Missing required parameter sets for ML-KEM registration");
+        goto err;
+    }
+
+    if (alg == ACVP_SUB_ML_KEM_XCAP) {
+        if (ml_kem_cap->functions) {
+            json_object_set_value(cap_obj, "functions", json_value_init_array());
+            temp_arr = json_object_get_array(cap_obj, "functions");
+            pl = ml_kem_cap->functions;
+            while (pl) {
+                switch(pl->param) {
+                case ACVP_ML_KEM_FUNCTION_ENCAPSULATE:
+                    json_array_append_string(temp_arr, "encapsulation");
+                    break;
+                case ACVP_ML_KEM_FUNCTION_DECAPSULATE:
+                    json_array_append_string(temp_arr, "decapsulation");
+                    break;
+                case ACVP_ML_KEM_FUNCTION_NONE:
+                case ACVP_ML_KEM_FUNCTION_MAX:
+                default:
+                    goto err;
+                }
+                pl = pl->next;
+            }
+        } else {
+            ACVP_LOG_ERR("Missing required functions for ML-KEM registration");
+            goto err;
+        }
+    }
+
+    return ACVP_SUCCESS;
+err:
+    ACVP_LOG_ERR("Error occured when building ML-KEM JSON");
+    return ACVP_INTERNAL_ERR;
+}
+
 /*
  * This function builds the JSON register message that
  * will be sent to the ACVP server to advertised the crypto
@@ -5407,6 +5505,10 @@ ACVP_RESULT acvp_build_registration_json(ACVP_CTX *ctx, JSON_Value **reg) {
             case ACVP_ML_DSA_SIGGEN:
             case ACVP_ML_DSA_SIGVER:
                 rv = acvp_build_ml_dsa_register_cap(ctx, cap_obj, cap_entry);
+                break;
+            case ACVP_ML_KEM_KEYGEN:
+            case ACVP_ML_KEM_XCAP:
+                rv = acvp_build_ml_kem_register_cap(ctx, cap_obj, cap_entry);
                 break;
             case ACVP_CIPHER_START:
             case ACVP_CIPHER_END:

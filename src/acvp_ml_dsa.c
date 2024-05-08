@@ -120,6 +120,7 @@ static ACVP_RESULT acvp_ml_dsa_init_tc(ACVP_CTX *ctx,
     stc->tg_id = tg_id;
     stc->cipher = cipher;
     stc->type = type;
+    stc->param_set = param_set;
     stc->is_deterministic = is_deterministic;
 
     stc->pub_key = calloc(ACVP_ML_DSA_TMP_BYTE_MAX, sizeof(unsigned char));
@@ -373,6 +374,9 @@ ACVP_RESULT acvp_ml_dsa_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
 
         ACVP_LOG_VERBOSE("           Test group: %d", i);
         ACVP_LOG_VERBOSE("            Test type: %s", type_str);
+        if (param_set_str) {
+            ACVP_LOG_VERBOSE("            param set: %s", param_set_str);
+        }
         if (pub_str) {
             ACVP_LOG_VERBOSE("                   pk: %s", pub_str);
         }

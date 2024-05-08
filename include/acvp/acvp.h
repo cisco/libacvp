@@ -262,6 +262,8 @@ typedef enum acvp_cipher {
     ACVP_ML_DSA_KEYGEN,
     ACVP_ML_DSA_SIGGEN,
     ACVP_ML_DSA_SIGVER,
+    ACVP_ML_KEM_KEYGEN,
+    ACVP_ML_KEM_XCAP,
     ACVP_CIPHER_END
 } ACVP_CIPHER;
 
@@ -447,6 +449,12 @@ typedef enum acvp_alg_type_ml_dsa {
     ACVP_SUB_ML_DSA_SIGGEN,
     ACVP_SUB_ML_DSA_SIGVER
 } ACVP_SUB_ML_DSA;
+
+/** @enum ACVP_SUB_ML_KEM */
+typedef enum acvp_alg_type_ml_kem {
+    ACVP_SUB_ML_KEM_KEYGEN = ACVP_ML_KEM_KEYGEN,
+    ACVP_SUB_ML_KEM_XCAP
+} ACVP_SUB_ML_KEM;
 
 #define CIPHER_TO_ALG(alg2) (alg_tbl[cipher].alg.alg2)
 
@@ -2673,6 +2681,77 @@ typedef struct acvp_ml_dsa_tc_t {
 
 } ACVP_ML_DSA_TC;
 
+/** @enum ACVP_ML_KEM_PARAM */
+typedef enum acvp_ml_kem_param {
+    ACVP_ML_KEM_PARAM_PARAMETER_SET = 1,
+    ACVP_ML_KEM_PARAM_FUNCTION
+} ACVP_ML_KEM_PARAM;
+
+/**
+ * @enum ACVP_ML_KEM_PARAM_SET
+ * Note: naming may seem clunky, but matches existing naming conventions ("ML-KEM-44" refers to a
+ * very specific set of values in the FIPS doc)
+ */
+typedef enum acvp_ml_kem_param_set {
+    ACVP_ML_KEM_PARAM_SET_NONE = 0,
+    ACVP_ML_KEM_PARAM_SET_ML_KEM_512,
+    ACVP_ML_KEM_PARAM_SET_ML_KEM_768,
+    ACVP_ML_KEM_PARAM_SET_ML_KEM_1024,
+    ACVP_ML_KEM_PARAM_SET_MAX
+} ACVP_ML_KEM_PARAM_SET;
+
+/** @enum ACVP_ML_KEM_FUNCTION */
+typedef enum acvp_ml_kem_deterministic_mode {
+    ACVP_ML_KEM_FUNCTION_NONE = 0,
+    ACVP_ML_KEM_FUNCTION_ENCAPSULATE,
+    ACVP_ML_KEM_FUNCTION_DECAPSULATE,
+    ACVP_ML_KEM_FUNCTION_MAX
+} ACVP_ML_KEM_FUNCTION;
+
+/** enum ACVP_ML_KEM_TESTTYPE */
+typedef enum acvp_ml_kem_testtype {
+    ACVP_ML_KEM_TESTTYPE_NONE = 0,
+    ACVP_ML_KEM_TESTTYPE_AFT,
+    ACVP_ML_KEM_TESTTYPE_VAL
+} ACVP_ML_KEM_TESTTYPE;
+
+
+/**
+ * @struct ACVP_ML_KEM_TC
+ * @brief This struct holds data that represents a single test case for ML-KEM testing. This data is
+ *        passed between libacvp and the crypto module.
+ */
+typedef struct acvp_ml_kem_tc_t {
+    unsigned int tc_id;    /**< Test case id */
+    unsigned int tg_id; /**< Test group id */
+
+    ACVP_CIPHER cipher;
+    ACVP_ML_KEM_TESTTYPE type;
+    ACVP_ML_KEM_PARAM_SET param_set;
+    ACVP_ML_KEM_FUNCTION function;
+
+    /* All modes*/
+    unsigned char *dk; /* Decap key */
+    unsigned char *ek; /* Encap key */
+    int dk_len;
+    int ek_len;
+
+    /* Keygen */
+    unsigned char *d; /* Seed */
+    unsigned char *z; /* Seed */
+    int d_len;
+    int z_len;
+
+    /* Encap/decap */
+    unsigned char *m; /* Random value */
+    unsigned char *c; /* Ciphertext */
+    unsigned char *k; /* Shared secret */
+    int m_len;
+    int c_len;
+    int k_len;
+
+} ACVP_ML_KEM_TC;
+
 /**
  * @struct ACVP_TEST_CASE
  * @brief This is the abstracted test case representation used for passing test case data to/from
@@ -2715,6 +2794,7 @@ typedef struct acvp_test_case_t {
         ACVP_SAFE_PRIMES_TC *safe_primes;
         ACVP_LMS_TC *lms;
         ACVP_ML_DSA_TC *ml_dsa;
+        ACVP_ML_KEM_TC *ml_kem;
     } tc; /**< the union abstracting the test case for passing to the user application */
 } ACVP_TEST_CASE;
 
@@ -4421,6 +4501,62 @@ ACVP_RESULT acvp_cap_ml_dsa_set_parm(ACVP_CTX *ctx,
  *
  * @return ACVP_RESULT
  */
+
+/**
+ * @brief acvp_cap_ml_kem_enable() should be used to enable ML-KEM capabilities. Specific modes and
+ *        parameters can use acvp_cap_ml_kem_set_parm.
+ *
+ *        When the application enables a crypto capability, such as ML-KEM, it also needs to
+ *        specify a callback function that will be used by libacvp when that crypto capability is
+ *        needed during a test session.
+ *
+ * @param ctx Pointer to ACVP_CTX that was previously created by calling acvp_create_test_session.
+ * @param cipher ACVP_CIPHER enum value identifying the crypto capability.
+ * @param crypto_handler Address of function implemented by application that
+ *        is invoked by libacvp when the crypto capability is needed during a test session. This
+ *        crypto_handler function is expected to return 0 on success and 1 for failure.
+ *
+ * @return ACVP_RESULT
+ */
+ACVP_RESULT acvp_cap_ml_kem_enable(ACVP_CTX *ctx,
+                                ACVP_CIPHER cipher,
+                                int (*crypto_handler)(ACVP_TEST_CASE *test_case));
+
+/**
+ * @brief acvp_cap_ml_kem_set_parm() allows an application to specify operational
+ *        parameters to be used for a given ML-KEM alg during a test session with the ACVP
+ *        server. This function should be called to enable crypto capabilities for ML-KEM
+ *        capabilities that will be tested by the ACVP server. This includes KEYGEN and KEYVER.
+ *
+ *        This function may be called multiple times to specify more than one crypto parameter
+ *        value for the ML-KEM algorithm. The ACVP_CIPHER value passed to this function should
+ *        already have been setup by invoking acvp_cap_ml_kem_enable().
+ *
+ * @param ctx Pointer to ACVP_CTX that was previously created by calling acvp_create_test_session.
+ * @param cipher ACVP_CIPHER enum value identifying the crypto capability.
+ * @param param ACVP_ML_KEM_PARAM enum value identifying the algorithm parameter that is being
+ *        specified.
+ * @param value the value corresponding to the parameter being set, at present only generation mode
+ *        is supported.
+ *
+ * @return ACVP_RESULT
+ */
+ACVP_RESULT acvp_cap_ml_kem_set_parm(ACVP_CTX *ctx,
+                                  ACVP_CIPHER cipher,
+                                  ACVP_ML_KEM_PARAM param, int value);
+
+/**
+ * @brief acvp_enable_prereq_cap() allows an application to specify a prerequisite for a cipher
+ *        capability that was previously registered.
+ *
+ * @param ctx Pointer to ACVP_CTX that was previously created by calling acvp_create_test_session.
+ * @param cipher ACVP_CIPHER enum value identifying the crypto capability that has a prerequisite
+ * @param pre_req_cap ACVP_PREREQ_ALG enum identifying the prerequisite
+ * @param value value for specified prerequisite
+ *
+ * @return ACVP_RESULT
+ */
+
 ACVP_RESULT acvp_cap_set_prereq(ACVP_CTX *ctx,
                                 ACVP_CIPHER cipher,
                                 ACVP_PREREQ_ALG pre_req_cap,
@@ -4848,6 +4984,7 @@ ACVP_SUB_DRBG acvp_get_drbg_alg(ACVP_CIPHER cipher);
 ACVP_SUB_KAS acvp_get_kas_alg(ACVP_CIPHER cipher);
 ACVP_SUB_LMS acvp_get_lms_alg(ACVP_CIPHER cipher);
 ACVP_SUB_ML_DSA acvp_get_ml_dsa_alg(ACVP_CIPHER cipher);
+ACVP_SUB_ML_KEM acvp_get_ml_kem_alg(ACVP_CIPHER cipher);
 
 /**
  * @brief acvp_sleep() waits a given number of seconds before continuing processing. This function performs identically across platforms.
