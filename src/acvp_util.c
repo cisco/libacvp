@@ -879,6 +879,36 @@ const char *acvp_lookup_ml_dsa_param_set_str(ACVP_ML_DSA_PARAM_SET param_set) {
     return NULL;
 }
 
+#define ACVP_ML_KEM_PARAM_SET_STR_MAX 11
+static struct acvp_enum_string_pair ml_kem_param_set_tbl[] = {
+    { ACVP_ML_KEM_PARAM_SET_ML_KEM_512, "ML-KEM-512"},
+    { ACVP_ML_KEM_PARAM_SET_ML_KEM_768, "ML-KEM-768"},
+    { ACVP_ML_KEM_PARAM_SET_ML_KEM_1024, "ML-KEM-1024"}
+};
+
+static int ml_kem_param_set_tbl_len = sizeof(ml_kem_param_set_tbl) / sizeof(struct acvp_enum_string_pair);
+
+ACVP_ML_KEM_PARAM_SET acvp_lookup_ml_kem_param_set(const char *str) {
+    int diff = 1, i = 0;
+    for (i = 0; i < ml_kem_param_set_tbl_len; i++) {
+        strcmp_s(ml_kem_param_set_tbl[i].string, strnlen_s(ml_kem_param_set_tbl[i].string, ACVP_ML_KEM_PARAM_SET_STR_MAX), str, &diff);
+        if (!diff) {
+            return ml_kem_param_set_tbl[i].enum_value;
+        }
+    }
+    return 0;
+}
+
+const char *acvp_lookup_ml_kem_param_set_str(ACVP_ML_KEM_PARAM_SET param_set) {
+    int i = 0;
+    for (i = 0; i < ml_kem_param_set_tbl_len; i++) {
+        if (param_set == ml_kem_param_set_tbl[i].enum_value) {
+            return ml_kem_param_set_tbl[i].string;
+        }
+    }
+    return NULL;
+}
+
 /* This seems too small to dictate having its own table/function, but future expandability may be useful */
 static struct acvp_enum_string_pair rsa_key_format_tbl[] = {
     { ACVP_RSA_KEY_FORMAT_STANDARD, "standard" },

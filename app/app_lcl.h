@@ -80,7 +80,7 @@ typedef struct app_config {
     int kdf;
     int safe_primes;
     int lms;
-    int ml_dsa;
+    int ml_dsa; int ml_kem;
     int testall; /* So the app can check whether the user indicated to test all possible algorithms */
 } APP_CONFIG;
 
@@ -147,6 +147,7 @@ int app_drbg_handler(ACVP_TEST_CASE *test_case);
 int app_safe_primes_handler(ACVP_TEST_CASE *test_case);
 int app_lms_handler(ACVP_TEST_CASE *test_case);
 int app_ml_dsa_handler(ACVP_TEST_CASE *test_case);
+int app_ml_kem_handler(ACVP_TEST_CASE *test_case);
 
 int app_aes_handler_gmac(ACVP_TEST_CASE *test_case);
 ACVP_RESULT fips_sanity_check(void);

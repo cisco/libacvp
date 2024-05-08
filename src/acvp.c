@@ -174,7 +174,9 @@ ACVP_ALG_HANDLER alg_tbl[ACVP_ALG_MAX] = {
     { ACVP_LMS_SIGVER,        &acvp_lms_kat_handler,              ACVP_ALG_LMS,               ACVP_ALG_LMS_SIGVER, ACVP_REV_LMS, {ACVP_SUB_LMS_SIGVER}},
     { ACVP_ML_DSA_KEYGEN,     &acvp_ml_dsa_kat_handler,           ACVP_ALG_ML_DSA,            ACVP_ALG_ML_DSA_KEYGEN, ACVP_REV_ML_DSA, {ACVP_SUB_ML_DSA_KEYGEN}},
     { ACVP_ML_DSA_SIGGEN,     &acvp_ml_dsa_kat_handler,           ACVP_ALG_ML_DSA,            ACVP_ALG_ML_DSA_SIGGEN, ACVP_REV_ML_DSA, {ACVP_SUB_ML_DSA_SIGGEN}},
-    { ACVP_ML_DSA_SIGVER,     &acvp_ml_dsa_kat_handler,           ACVP_ALG_ML_DSA,            ACVP_ALG_ML_DSA_SIGVER, ACVP_REV_ML_DSA, {ACVP_SUB_ML_DSA_SIGVER}}
+    { ACVP_ML_DSA_SIGVER,     &acvp_ml_dsa_kat_handler,           ACVP_ALG_ML_DSA,            ACVP_ALG_ML_DSA_SIGVER, ACVP_REV_ML_DSA, {ACVP_SUB_ML_DSA_SIGVER}},
+    { ACVP_ML_KEM_KEYGEN,     &acvp_ml_kem_kat_handler,           ACVP_ALG_ML_KEM,            ACVP_ALG_ML_KEM_KEYGEN, ACVP_REV_ML_KEM, {ACVP_SUB_ML_KEM_KEYGEN}},
+    { ACVP_ML_KEM_XCAP,       &acvp_ml_kem_kat_handler,           ACVP_ALG_ML_KEM,            ACVP_ALG_ML_KEM_XCAP, ACVP_REV_ML_KEM, {ACVP_SUB_ML_KEM_XCAP}}
 };
 
 /*
@@ -907,6 +909,16 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx) {
             case ACVP_ML_DSA_SIGVER_TYPE:
                 acvp_cap_free_pl(cap_entry->cap.ml_dsa_sigver_cap->param_sets);
                 free(cap_entry->cap.ml_dsa_sigver_cap);
+                break;
+            case ACVP_ML_KEM_KEYGEN_TYPE:
+                acvp_cap_free_pl(cap_entry->cap.ml_kem_keygen_cap->param_sets);
+                acvp_cap_free_pl(cap_entry->cap.ml_kem_keygen_cap->functions);
+                free(cap_entry->cap.ml_kem_keygen_cap);
+                break;
+            case ACVP_ML_KEM_XCAP_TYPE:
+                acvp_cap_free_pl(cap_entry->cap.ml_kem_xcap_cap->param_sets);
+                acvp_cap_free_pl(cap_entry->cap.ml_kem_xcap_cap->functions);
+                free(cap_entry->cap.ml_kem_xcap_cap);
                 break;
             case ACVP_KDF135_TPM_TYPE:
             default:
@@ -4008,4 +4020,12 @@ ACVP_SUB_ML_DSA acvp_get_ml_dsa_alg(ACVP_CIPHER cipher)
         return 0;
     }
     return (alg_tbl[cipher-1].alg.ml_dsa);
+}
+
+ACVP_SUB_ML_KEM acvp_get_ml_kem_alg(ACVP_CIPHER cipher)
+{
+    if ((cipher == ACVP_CIPHER_START) || (cipher >= ACVP_CIPHER_END)) {
+        return 0;
+    }
+    return (alg_tbl[cipher-1].alg.ml_kem);
 }
