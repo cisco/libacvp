@@ -473,6 +473,7 @@ static ACVP_RESULT acvp_rsa_sig_kat_handler_internal(ACVP_CTX *ctx, JSON_Object 
                     }
                     memcpy_s(signature + padding, mod/4, tmp_signature, json_siglen);
                 } else {
+                    padding = 0;
                     memcpy_s(signature, mod/4, tmp_signature, json_siglen);
                 }
 

@@ -86,7 +86,7 @@ static ACVP_RESULT acvp_kas_ffc_output_ssc_tc(ACVP_CTX *ctx,
         memzero_s(tmp, ACVP_KAS_FFC_STR_MAX);
         rv = acvp_bin_to_hexstr(stc->piut, stc->piutlen, tmp, ACVP_KAS_FFC_STR_MAX);
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("hex conversion failure (Z)");
+            ACVP_LOG_ERR("hex conversion failure (IUT Pub)");
             goto end;
         }
         json_object_set_string(tc_rsp, "ephemeralPublicIut", tmp);
@@ -825,7 +825,7 @@ static ACVP_RESULT acvp_kas_ffc_ssc(ACVP_CTX *ctx,
         for (j = 0; j < t_cnt; j++) {
             const char *eps = NULL, *z = NULL, *epri = NULL, *epui = NULL;
 
-            ACVP_LOG_VERBOSE("Found new KAS-FFC Component test vector...");
+            ACVP_LOG_VERBOSE("Found new KAS-FFC SSC test vector...");
             testval = json_array_get_value(tests, j);
             testobj = json_value_get_object(testval);
             tc_id = json_object_get_number(testobj, "tcId");
@@ -836,8 +836,7 @@ static ACVP_RESULT acvp_kas_ffc_ssc(ACVP_CTX *ctx,
                 rv = ACVP_MISSING_ARG;
                 goto err;
             }
-            if (strnlen_s(eps, ACVP_KAS_FFC_STR_MAX + 1)
-                > ACVP_KAS_FFC_STR_MAX) {
+            if (strnlen_s(eps, ACVP_KAS_FFC_STR_MAX + 1) > ACVP_KAS_FFC_STR_MAX) {
                 ACVP_LOG_ERR("ephemeralPublicServer too long, max allowed=(%d)",
                              ACVP_KAS_FFC_STR_MAX);
                 rv = ACVP_INVALID_ARG;

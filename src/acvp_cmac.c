@@ -323,6 +323,7 @@ ACVP_RESULT acvp_cmac_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
                 rv = ACVP_UNSUPPORTED_OP;
                 goto err;
             }
+            verify = 0;
         }
 
         msglen = json_object_get_number(groupobj, "msgLen") / 8;

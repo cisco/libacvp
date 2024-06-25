@@ -138,10 +138,10 @@ static ACVP_RESULT acvp_kdf108_init_tc(ACVP_KDF108_TC *stc,
         stc->fixed_data = calloc(ACVP_KDF108_FIXED_DATA_BYTE_MAX, sizeof(unsigned char));
         if (!stc->fixed_data) { return ACVP_MALLOC_FAIL; }
 
-        stc->iv = calloc(iv_len, sizeof(unsigned char));
-        if (!stc->iv) { return ACVP_MALLOC_FAIL; }
+        if (iv_len > 0 && iv != NULL) {
+		    stc->iv = calloc(iv_len, sizeof(unsigned char));
+		    if (!stc->iv) { return ACVP_MALLOC_FAIL; }
 
-        if (iv != NULL) {
             // Convert iv from hex string to binary
             rv = acvp_hexstr_to_bin(iv, stc->iv, iv_len, NULL);
             if (rv != ACVP_SUCCESS) return rv;

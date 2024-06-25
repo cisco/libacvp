@@ -1785,7 +1785,7 @@ ACVP_RESULT acvp_set_registration_file(ACVP_CTX *ctx, const char *json_filename)
         return ACVP_MISSING_ARG;
     }
     if (!ctx->vector_req) {
-        ACVP_LOG_ERR("The session must be request only to use a manual registraion");
+        ACVP_LOG_ERR("The session must be request only to use a manual registration");
         return ACVP_UNSUPPORTED_OP;
     }
 
@@ -2064,7 +2064,6 @@ ACVP_RESULT acvp_mark_as_get_only(ACVP_CTX *ctx, char *string, const char *save_
 
     return ACVP_SUCCESS;
 }
-
 
 ACVP_RESULT acvp_mark_as_put_after_test(ACVP_CTX *ctx, char *filename) {
     if (!ctx) {
@@ -2917,7 +2916,7 @@ static ACVP_RESULT acvp_process_vsid(ACVP_CTX *ctx, char *vsid_url, int count) {
         /*
          * Check if we received a retry response
          */
-        retry_period = json_object_get_number(obj, "retry");
+        retry_period = (int) json_object_get_number(obj, "retry");
         if (retry_period) {
             /*
              * Wait and try again to retrieve the VectorSet
@@ -3000,13 +2999,19 @@ end:
  */
 static ACVP_RESULT acvp_dispatch_vector_set(ACVP_CTX *ctx, JSON_Object *obj) {
     int i;
+    const char *err = json_object_get_string(obj, "error");
     const char *alg = json_object_get_string(obj, "algorithm");
     const char *mode = json_object_get_string(obj, "mode");
-    int vs_id = json_object_get_number(obj, "vsId");
+    int vs_id = (int) json_object_get_number(obj, "vsId");
     int diff = 1;
 
     ctx->vs_id = vs_id;
     ACVP_RESULT rv;
+
+    if (err) {
+        ACVP_LOG_ERR("ACVP Server error detected -- An algorithm may have been skipped during vector generation.  Please manually check the file.");
+        return ACVP_NO_DATA;
+    }
 
     if (!alg) {
         ACVP_LOG_ERR("JSON parse error: ACV algorithm not found");
@@ -3221,6 +3226,7 @@ static ACVP_RESULT acvp_get_result_test_session(ACVP_CTX *ctx, char *session_url
                         val2 = NULL;
                     } else {
                         if (val2) json_value_free(val2);
+                        val2 = NULL;
                     }
                 }
             }
