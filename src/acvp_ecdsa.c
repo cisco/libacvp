@@ -208,7 +208,6 @@ ACVP_RESULT acvp_det_ecdsa_siggen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     return acvp_ecdsa_kat_handler_internal(ctx, obj, ACVP_DET_ECDSA_SIGGEN);
 }
 
-
 ACVP_RESULT acvp_ecdsa_sigver_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
     return acvp_ecdsa_kat_handler_internal(ctx, obj, ACVP_ECDSA_SIGVER);
 }

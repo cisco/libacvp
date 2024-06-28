@@ -1850,13 +1850,52 @@ static ACVP_RESULT acvp_validate_sym_cipher_domain_value(ACVP_CIPHER cipher, ACV
             break;
         }
         break;
-    case ACVP_CIPHER_START:
     case ACVP_AES_ECB:
     case ACVP_AES_CBC:
-    case ACVP_AES_CFB1:
-    case ACVP_AES_CFB8:
     case ACVP_AES_CFB128:
     case ACVP_AES_OFB:
+        switch (parm) {
+        case ACVP_SYM_CIPH_DOMAIN_PTLEN:
+            if (min >= 0 && max <= 65536) {
+                retval = ACVP_SUCCESS;
+            }
+            break;
+        case ACVP_SYM_CIPH_DOMAIN_IVLEN:
+        case ACVP_SYM_CIPH_DOMAIN_AADLEN:
+        case ACVP_SYM_CIPH_DOMAIN_DULEN:
+        default:
+            break;
+        }
+        break;
+    case ACVP_AES_CFB1:
+        switch (parm) {
+        case ACVP_SYM_CIPH_DOMAIN_PTLEN:
+            if (min >= 0 && max <= 128) {
+                retval = ACVP_SUCCESS;
+            }
+            break;
+        case ACVP_SYM_CIPH_DOMAIN_IVLEN:
+        case ACVP_SYM_CIPH_DOMAIN_AADLEN:
+        case ACVP_SYM_CIPH_DOMAIN_DULEN:
+        default:
+            break;
+        }
+        break;
+    case ACVP_AES_CFB8:
+        switch (parm) {
+        case ACVP_SYM_CIPH_DOMAIN_PTLEN:
+            if (min >= 0 && max <= 256) {
+                retval = ACVP_SUCCESS;
+            }
+            break;
+        case ACVP_SYM_CIPH_DOMAIN_IVLEN:
+        case ACVP_SYM_CIPH_DOMAIN_AADLEN:
+        case ACVP_SYM_CIPH_DOMAIN_DULEN:
+        default:
+            break;
+        }
+        break;
+    case ACVP_CIPHER_START:
     case ACVP_TDES_ECB:
     case ACVP_TDES_CBC:
     case ACVP_TDES_CBCI:
