@@ -352,15 +352,15 @@ const char *acvp_lookup_rsa_mask_func_str(ACVP_RSA_MASK_FUNCTION func) {
 const char *acvp_lookup_rsa_randpq_name(int value) {
     switch (value) {
     case ACVP_RSA_KEYGEN_B32:
-        return ACVP_RSA_RANDPQ_STR_B32;
+        return ACVP_RSA_RANDPQ_STR_B32; // "provRP"
     case ACVP_RSA_KEYGEN_B33:
-        return ACVP_RSA_RANDPQ_STR_B33;
+        return ACVP_RSA_RANDPQ_STR_B33; // "probRP"
     case ACVP_RSA_KEYGEN_B34:
-        return ACVP_RSA_RANDPQ_STR_B34;
+        return ACVP_RSA_RANDPQ_STR_B34; // "provPC"
     case ACVP_RSA_KEYGEN_B35:
-        return ACVP_RSA_RANDPQ_STR_B35;
+        return ACVP_RSA_RANDPQ_STR_B35; // "bothPC"
     case ACVP_RSA_KEYGEN_B36:
-        return ACVP_RSA_RANDPQ_STR_B36;
+        return ACVP_RSA_RANDPQ_STR_B36; // "probPC"
     case ACVP_RSA_KEYGEN_PROVABLE:
         return ACVP_RSA_RANDPQ_STR_PROVABLE;
     case ACVP_RSA_KEYGEN_PROBABLE:

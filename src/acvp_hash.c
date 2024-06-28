@@ -302,7 +302,8 @@ static ACVP_RESULT acvp_hash_shake_mct(ACVP_CTX *ctx,
          * ***********
          */
         for (i = 0; i <= ACVP_HASH_MCT_INNER; i++) {
-            uint16_t rightmost_out_bits = 0;
+            uint8_t   rob[2] = {0};
+            uint16_t *rightmost_out_bits = (uint16_t*) &rob;
 
             if (i != 0) {
                 /*
@@ -341,13 +342,15 @@ static ACVP_RESULT acvp_hash_shake_mct(ACVP_CTX *ctx,
 
             /* Get the right-most 16bits and convert to an integer */
 #if ACVP_HOST_LITTLE_ENDIAN || defined(__WIN32) || defined(__APPLE__)
-            rightmost_out_bits = SWAP_16(*(uint16_t *)(stc->md + stc->md_len - 2));
+            rob[0] = stc->md[stc->md_len-1];
+            rob[1] = stc->md[stc->md_len-2];
 #else
-            rightmost_out_bits = *(uint16_t *)(stc->md + stc->md_len - 2);
+            rob[0] = stc->md[stc->md_len-2];
+            rob[1] = stc->md[stc->md_len-1];
 #endif
 
             /* Calculate the next expected outputLen */
-            stc->xof_len = min_xof_bytes + (rightmost_out_bits % range);
+            stc->xof_len = min_xof_bytes + ((*rightmost_out_bits) % range);
         }
 
         /*
