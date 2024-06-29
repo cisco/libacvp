@@ -1020,6 +1020,7 @@ ACVP_RESULT acvp_run_vectors_from_file(ACVP_CTX *ctx, const char *req_filename, 
     int vs_cnt = 0, isSample = 0;
     const char *jwt = NULL;
     char *json_result = NULL;
+    char url_buffer[128] = { 0 };  // for vsId from filename
 
     ACVP_LOG_STATUS("Beginning offline processing of vector sets...");
 
@@ -1056,7 +1057,9 @@ ACVP_RESULT acvp_run_vectors_from_file(ACVP_CTX *ctx, const char *req_filename, 
         strcpy_s(ctx->session_url, ACVP_ATTR_URL_MAX + 1, test_session_url);
     } else {
         ACVP_LOG_WARN("Missing session URL, results will not be POSTed to server");
+#ifndef ACVP_OFFLINE
         goto end;
+#endif
     }
 
     jwt = json_object_get_string(obj, "jwt");
@@ -1065,7 +1068,9 @@ ACVP_RESULT acvp_run_vectors_from_file(ACVP_CTX *ctx, const char *req_filename, 
         strcpy_s(ctx->jwt_token, ACVP_JWT_TOKEN_MAX + 1, jwt);
     } else {
         ACVP_LOG_WARN("Missing JWT, results will not be POSTed to server");
+#ifndef ACVP_OFFLINE
         goto end;
+#endif
     }
 
     isSample = json_object_get_boolean(obj, "isSample");
@@ -1089,6 +1094,20 @@ ACVP_RESULT acvp_run_vectors_from_file(ACVP_CTX *ctx, const char *req_filename, 
         if (rv != ACVP_SUCCESS) goto end;
         ACVP_LOG_INFO("Received vsid_url=%s", vsid_url);
     }
+    /* If no vsIds found, try to get it from the filename */
+    if (vs_cnt == 0) {
+        int vsid;
+        char* start = strstr(req_filename, "vs");
+        if (!start || (0 == (vsid = atoi(start+2)))) {
+            ACVP_LOG_WARN("No vsId in file or filename; cannot proceed");
+            goto end;
+        }
+        ACVP_LOG_STATUS("Retrieved vsId from filename...");
+        sprintf(url_buffer, "/acvp/v1/testSessions/123456/vectorSets/%d", vsid);
+        rv = acvp_append_vsid_url(ctx, url_buffer);
+        if (rv != ACVP_SUCCESS) goto end;
+        ACVP_LOG_INFO("Received vsid_url=%s", url_buffer);
+    }
 
     n++;        /* bump past the version or url, jwt, url sets */
     obj = json_array_get_object(reg_array, n);
@@ -1108,7 +1127,9 @@ ACVP_RESULT acvp_run_vectors_from_file(ACVP_CTX *ctx, const char *req_filename, 
         }
         /* Process the kat vector(s) */
         rv  = acvp_dispatch_vector_set(ctx, obj);
-        if (rv != ACVP_SUCCESS) {
+        if (rv == ACVP_NO_DATA)
+            goto skip_error;
+        else if (rv != ACVP_SUCCESS) {
             ACVP_LOG_ERR("KAT dispatch error");
             goto end;
         }
@@ -1149,12 +1170,150 @@ ACVP_RESULT acvp_run_vectors_from_file(ACVP_CTX *ctx, const char *req_filename, 
         }
 
         json_value_free(file_val);
+        file_val = NULL;
+skip_error:
         n++;
         obj = json_array_get_object(reg_array, n);
         vs_entry = vs_entry->next;
     }
     /* append the final ']' to make the JSON work */ 
     rv = acvp_json_serialize_to_file_pretty_a(NULL, rsp_filename);
+    ACVP_LOG_STATUS("Completed processing of vector sets. Responses saved in specified file.");
+end:
+    json_value_free(val);
+    return rv;
+}
+
+/*
+ * Allows application to load JSON vector file(req_filename) within context
+ * to be read in and used for vector testing. The results are
+ * then saved in a response file(rsp_filename).
+ */
+ACVP_RESULT acvp_run_vectors_from_file_offline(ACVP_CTX *ctx, const char *req_filename, const char *rsp_filename) {
+    JSON_Object *obj = NULL;
+    JSON_Value *val = NULL;
+    JSON_Array *reg_array;
+    JSON_Value *file_val = NULL;
+    JSON_Value *kat_val = NULL;
+    JSON_Array *kat_array;
+    JSON_Value *rsp_val = NULL;
+    ACVP_RESULT rv = ACVP_SUCCESS;
+    char *json_result = NULL;
+    int n = 0;
+
+    ACVP_LOG_STATUS("Beginning offline processing of vector sets...");
+
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+    if (!req_filename || !rsp_filename) {
+        ACVP_LOG_ERR("Must provide value for JSON filename");
+        return ACVP_MISSING_ARG;
+    }
+
+    if (strnlen_s(req_filename, ACVP_JSON_FILENAME_MAX + 1) > ACVP_JSON_FILENAME_MAX) {
+        ACVP_LOG_ERR("Provided req_filename length > max(%d)", ACVP_JSON_FILENAME_MAX);
+        return ACVP_INVALID_ARG;
+    }
+
+    val = json_parse_file(req_filename);
+    reg_array = json_value_get_array(val);
+
+    // What kind of file do we have?
+    if (reg_array) {
+        // Array of objects; optional header and 1..n algorithms
+        obj = json_array_get_object(reg_array, n);
+        if (!obj) {
+            ACVP_LOG_ERR("JSON obj parse error (array with no objects)");
+            goto end;
+        }
+        /* 
+        * If the file contains a header (an object *without* a "vsId"), we throw it away.  
+        * We are processing all the vsIds found in this file, and we don't care about any 
+        * session information (sessionId, jwt, etc).  By not relying on information in 
+        * the header (e.g. vsId), we make the file processor able to process both 
+        * libacvp-style and acvpproxy-style files.
+        */
+        while (((obj = json_array_get_object(reg_array, n)) != NULL) &&
+               (json_object_get_number(obj, "vsId") == 0)) {
+            n++;
+        }
+        if (!obj) {
+            ACVP_LOG_ERR("JSON obj parse error (no data)");
+            goto end;
+        }
+    }
+    else {
+        // No array, just a single algorithm
+        obj = json_value_get_object(val);
+    }
+
+    while (obj) {
+        /* Process the kat vector(s) */
+        rv  = acvp_dispatch_vector_set(ctx, obj);
+        if (rv == ACVP_NO_DATA)
+            goto skip_error;
+        else if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("KAT dispatch error");
+            goto end;
+        }
+        ACVP_LOG_STATUS("Writing vector set responses for vector set %d...", ctx->vs_id);
+
+        /* 
+         * Convert the JSON from a fully qualified to a value that can be 
+         * added to the file. Kind of klumsy, but it works.
+         */
+        kat_array = json_value_get_array(ctx->kat_resp);
+        kat_val = json_array_get_value(kat_array, 1);
+        if (!kat_val) {
+            ACVP_LOG_ERR("JSON val parse error");
+            goto end;
+        }
+        json_result = json_serialize_to_string_pretty(kat_val, NULL);
+        file_val = json_parse_string(json_result);
+        json_free_serialized_string(json_result);
+
+        /* Track first vector set with file count ( N>0 means there is a header ) */
+        if (n == 1) {
+            rsp_val = json_array_get_value(reg_array, 0);
+            /* start the file with the '[' and identifiers array */
+            rv = acvp_json_serialize_to_file_pretty_w(rsp_val, rsp_filename);
+            if (rv != ACVP_SUCCESS) {
+                ACVP_LOG_ERR("File write error");
+                json_value_free(file_val);
+                goto end;
+            }
+        } 
+        /* Append vector sets */
+        if (reg_array) // Array of many algorithms
+            rv = acvp_json_serialize_to_file_pretty_a(file_val, rsp_filename);
+        else           // Single algorithm, no "," prefix
+            rv = acvp_json_serialize_to_file_pretty_a_raw(file_val, rsp_filename);
+        if (rv != ACVP_SUCCESS) {
+            ACVP_LOG_ERR("File write error");
+            json_value_free(file_val);
+            goto end;
+        }
+
+        json_value_free(file_val);
+        file_val = NULL;
+skip_error:
+
+        // What kind of file do we have?
+        if (reg_array) {
+            // Array of algorithms; get the next
+            obj = json_array_get_object(reg_array, ++n);
+        }
+        else {
+            // One algorithm; mark NULL to exit the while() loop
+            obj = NULL;
+        }
+    }
+
+    /* append the final ']' to make the JSON work */ 
+    if (reg_array) {
+        rv = acvp_json_serialize_to_file_pretty_a(NULL, rsp_filename);
+    }
     ACVP_LOG_STATUS("Completed processing of vector sets. Responses saved in specified file.");
 end:
     json_value_free(val);

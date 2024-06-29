@@ -40,7 +40,6 @@
 
 #define SAFEC_STUB_UNUSED(x) (void)(x)
 
-
 /*
  * strcmp_s()
  *

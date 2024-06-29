@@ -37,6 +37,11 @@
 #include <stdint.h>
 #include "safe_lib_errno.h"
 
+/* Some environments (AIX) complain about this not being defined */
+#ifndef SIZE_MAX
+#   define SIZE_MAX (18446744073709551615UL)
+#endif
+
 /* Defining the RSIZE_MAX macro */
 #ifndef RSIZE_MAX
 #define RSIZE_MAX         SIZE_MAX/2
