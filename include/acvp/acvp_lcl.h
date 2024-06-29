@@ -57,7 +57,7 @@
 
 #define ACVP_ALG_MAX ACVP_CIPHER_END - 1  /* Used by alg_tbl[] */
 
-#define ACVP_CAP_MAX ACVP_ALG_MAX * 2 /* Arbitrary limit to the number of capability objects that
+#define ACVP_CAP_MAX ACVP_ALG_MAX * 3 /* Arbitrary limit to the number of capability objects that
                                          can be registered via file */
 
 /********************************************************
@@ -1881,6 +1881,8 @@ ACVP_RESULT acvp_transport_put(ACVP_CTX *ctx, const char *endpoint, const char *
 
 ACVP_RESULT acvp_transport_delete(ACVP_CTX *ctx, const char *endpoint);
 
+ACVP_RESULT acvp_retrieve_health_status(ACVP_CTX *ctx);
+
 ACVP_RESULT acvp_retrieve_vector_set(ACVP_CTX *ctx, char *vsid_url);
 
 ACVP_RESULT acvp_retrieve_vector_set_result(ACVP_CTX *ctx, const char *vsid_url);
@@ -2100,8 +2102,14 @@ ACVP_KDF108_MAC_MODE_VAL read_mac_mode(const char *str);
 ACVP_KDF108_FIXED_DATA_ORDER_VAL read_ctr_location(const char *str);
 ACVP_KDF108_MODE read_mode(const char *str);
 
+// Default behavior, always prepend "," to data to form a proper array entry
 ACVP_RESULT acvp_json_serialize_to_file_pretty_a(const JSON_Value *value, const char *filename);
-ACVP_RESULT acvp_json_serialize_to_file_pretty_w(const JSON_Value *value, const char *filename);
+// Specialized behavior; do not prefix "," to data b/c it is not going into an array
+ACVP_RESULT acvp_json_serialize_to_file_pretty_a_raw(const JSON_Value *value, const char *filename);
 
+// Default behavior, always prefix a "[" to mark the start of a new file
+ACVP_RESULT acvp_json_serialize_to_file_pretty_w(const JSON_Value *value, const char *filename);
+// Specialized behavior; do not prefix "[" but output this data without modification
+ACVP_RESULT acvp_json_serialize_to_file_pretty_w_raw(const JSON_Value *value, const char *filename);
 
 #endif
