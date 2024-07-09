@@ -1176,7 +1176,7 @@ static int enable_hash(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
 
 #if OPENSSL_VERSION_NUMBER >= 0x30000080L /* 3.0.8 or greater */
-    /* valid LDTincrements are 1, 2, 4, and 8 GiB */
+    /* valid LDT increments are 1, 2, 4, and 8 GiB */
     for (i = 1; i <= max_ldt_size; i *= 2) {
         rv = acvp_cap_hash_set_parm(ctx, ACVP_HASH_SHA3_224, ACVP_HASH_LARGE_DATA, i);
         CHECK_ENABLE_CAP_RV(rv);
