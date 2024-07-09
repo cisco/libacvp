@@ -81,7 +81,7 @@ static void print_usage(int code) {
     printf("\n");
 
     printf("      If running hash, a maximum size for large data testing (LDT) may be required on specific\n");
-    printf("      specific memory-limited platforms. This can be set (in GiB) using:\n");
+    printf("      memory-limited platforms. This can be set (in GiB) using:\n");
     printf("            --set_max_hash_size <GiB value>\n");
     printf("      Setting 0 will disable LDT and only use the typical hash message sizes in the KiB range.\n");
     printf("\n");
