@@ -1097,9 +1097,10 @@ ACVP_RESULT acvp_run_vectors_from_file(ACVP_CTX *ctx, const char *req_filename, 
     /* If no vsIds found, try to get it from the filename */
     if (vs_cnt == 0) {
         int vsid;
-        int len = strnlen_s(req_filename, ACVP_JSON_FILENAME_MAX);
         char* start = strstr(req_filename, "vs");
-        if (!start || (start >= len+2) || (0 == (vsid = atoi(start+2)))) {
+        if (!start || 
+            (acvpro_strnlen_s(start, ACVP_JSON_FILENAME_MAX) <= 2) || 
+            (0 == (vsid = atoi(start+2)))) {
             ACVP_LOG_WARN("No vsId in file or filename; cannot proceed");
             goto end;
         }
