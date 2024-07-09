@@ -1563,11 +1563,9 @@ ACVP_RESULT acvp_json_serialize_to_file_pretty_a_work(const JSON_Value *value, c
             fclose(fp);
             return ACVP_JSON_ERR;
         }
-        if (!first) {  // Do not add "," before this data
-        if (fputs(", ", fp) == EOF) {
+        if (!first && (fputs(", ", fp) == EOF)) {  // If first, do *not* add "," before this data
             return_code = ACVP_JSON_ERR;
             goto end;
-        }
         }
         if (fputs(serialized_string, fp) == EOF) {
             return_code = ACVP_JSON_ERR;
