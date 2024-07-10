@@ -1099,7 +1099,7 @@ ACVP_RESULT acvp_run_vectors_from_file(ACVP_CTX *ctx, const char *req_filename, 
         int vsid;
         char* start = strstr(req_filename, "vs");
         if (!start || 
-            (acvpro_strnlen_s(start, ACVP_JSON_FILENAME_MAX) <= 2) || 
+            (strnlen_s(start, ACVP_JSON_FILENAME_MAX) <= 2) || 
             (0 == (vsid = atoi(start+2)))) {
             ACVP_LOG_WARN("No vsId in file or filename; cannot proceed");
             goto end;
