@@ -26,7 +26,7 @@ extern "C"
 
 #define ACVP_LIBRARY_VERSION_MAJOR 2
 #define ACVP_LIBRARY_VERSION_MINOR 1
-#define ACVP_LIBRARY_VERSION_PATCH 0
+#define ACVP_LIBRARY_VERSION_PATCH 1
 
 #define xstr_2(x) #x
 #define xstr(x) xstr_2(x)
