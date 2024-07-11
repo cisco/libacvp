@@ -1034,7 +1034,6 @@ static ACVP_RESULT acvp_add_dsa_keygen_parm(ACVP_CTX *ctx,
     case ACVP_DSA_GENG:
     default:
         return ACVP_INVALID_ARG;
-
         break;
     }
 
@@ -1435,9 +1434,13 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
         break;
     case ACVP_SYM_CIPH_AADLEN:
         switch (cipher) {
+        case ACVP_AES_CCM:
+            if (value >= 0 && value <= 524288) {
+                retval = ACVP_SUCCESS;
+            }
+            break;
         case ACVP_AES_GCM:
         case ACVP_AES_GCM_SIV:
-        case ACVP_AES_CCM:
         case ACVP_AES_ECB:
         case ACVP_AES_CBC:
         case ACVP_AES_CFB1:
@@ -1912,13 +1915,52 @@ static ACVP_RESULT acvp_validate_sym_cipher_domain_value(ACVP_CIPHER cipher, ACV
             break;
         }
         break;
-    case ACVP_CIPHER_START:
     case ACVP_AES_ECB:
     case ACVP_AES_CBC:
-    case ACVP_AES_CFB1:
-    case ACVP_AES_CFB8:
     case ACVP_AES_CFB128:
     case ACVP_AES_OFB:
+        switch (parm) {
+        case ACVP_SYM_CIPH_DOMAIN_PTLEN:
+            if (min >= 0 && max <= 65536) {
+                retval = ACVP_SUCCESS;
+            }
+            break;
+        case ACVP_SYM_CIPH_DOMAIN_IVLEN:
+        case ACVP_SYM_CIPH_DOMAIN_AADLEN:
+        case ACVP_SYM_CIPH_DOMAIN_DULEN:
+        default:
+            break;
+        }
+        break;
+    case ACVP_AES_CFB1:
+        switch (parm) {
+        case ACVP_SYM_CIPH_DOMAIN_PTLEN:
+            if (min >= 0 && max <= 128) {
+                retval = ACVP_SUCCESS;
+            }
+            break;
+        case ACVP_SYM_CIPH_DOMAIN_IVLEN:
+        case ACVP_SYM_CIPH_DOMAIN_AADLEN:
+        case ACVP_SYM_CIPH_DOMAIN_DULEN:
+        default:
+            break;
+        }
+        break;
+    case ACVP_AES_CFB8:
+        switch (parm) {
+        case ACVP_SYM_CIPH_DOMAIN_PTLEN:
+            if (min >= 0 && max <= 256) {
+                retval = ACVP_SUCCESS;
+            }
+            break;
+        case ACVP_SYM_CIPH_DOMAIN_IVLEN:
+        case ACVP_SYM_CIPH_DOMAIN_AADLEN:
+        case ACVP_SYM_CIPH_DOMAIN_DULEN:
+        default:
+            break;
+        }
+        break;
+    case ACVP_CIPHER_START:
     case ACVP_TDES_ECB:
     case ACVP_TDES_CBC:
     case ACVP_TDES_CBCI:
@@ -2106,9 +2148,13 @@ static ACVP_RESULT acvp_validate_prereq_val(ACVP_CIPHER cipher, ACVP_PREREQ_ALG 
         }
         break;
     case ACVP_CMAC_AES:
+        if (pre_req == ACVP_PREREQ_SHA ||
+            pre_req == ACVP_PREREQ_AES) {
+            return ACVP_SUCCESS;
+        }
+        break;
     case ACVP_CMAC_TDES:
-        if (pre_req == ACVP_PREREQ_AES ||
-            pre_req == ACVP_PREREQ_SHA ||
+        if (pre_req == ACVP_PREREQ_SHA ||
             pre_req == ACVP_PREREQ_TDES) {
             return ACVP_SUCCESS;
         }
@@ -7785,7 +7831,6 @@ static ACVP_RESULT acvp_add_kas_ffc_prereq_val(ACVP_CTX *ctx, ACVP_KAS_FFC_CAP_M
                                                char *value) {
     ACVP_PREREQ_LIST *prereq_entry, *prereq_entry_2;
 
-    ACVP_LOG_INFO("KAS-FFC mode %d", mode);
     prereq_entry = calloc(1, sizeof(ACVP_PREREQ_LIST));
     if (!prereq_entry) {
         return ACVP_MALLOC_FAIL;
@@ -8852,7 +8897,7 @@ ACVP_RESULT acvp_cap_kda_twostep_set_parm(ACVP_CTX *ctx, ACVP_KDA_PARM param,
         break;
     case ACVP_KDA_TWOSTEP_COUNTER_LEN:
         if (value < 1 || value > ACVP_KDF108_KEYIN_BIT_MAX) {
-            printf("Invalid value provided for KDA twostep supported length");
+            ACVP_LOG_ERR("Invalid value provided for KDA twostep supported length");
             return ACVP_INVALID_ARG;
         }
         acvp_append_sl_list(&mode_obj->counter_lens, value);

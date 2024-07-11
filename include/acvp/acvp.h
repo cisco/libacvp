@@ -1064,7 +1064,6 @@ typedef enum acvp_sym_cipher_parameter {
     ACVP_SYM_CIPH_PARM_DULEN_MATCHES_PAYLOADLEN
 } ACVP_SYM_CIPH_PARM;
 
-
 /** @enum ACVP_SYM_CIPH_DOMAIN_PARM */
 typedef enum acvp_sym_cipher_domain_parameter {
     ACVP_SYM_CIPH_DOMAIN_IVLEN = 1,
@@ -1414,7 +1413,6 @@ typedef struct acvp_kdf135_x963_tc_t {
     unsigned char *shared_info;
     unsigned char *key_data;
 } ACVP_KDF135_X963_TC;
-
 
 /**
  * @struct ACVP_KDF108_TC
@@ -4840,6 +4838,19 @@ ACVP_RESULT acvp_upload_vectors_from_file(ACVP_CTX *ctx, const char *rsp_filenam
  * @return ACVP_RESULT
  */
 ACVP_RESULT acvp_run_vectors_from_file(ACVP_CTX *ctx, const char *req_filename, const char *rsp_filename);
+
+/**
+ * @brief Runs a set of tests from vector sets that were saved to a file and saves the results in a
+ *        different file.  This function attempts to be a "universal" parser for vector request files
+ *        from all sources (at least libacvp and acvpproxy).
+ *
+ * @param ctx Pointer to ACVP_CTX that was previously created by calling acvp_create_test_session.
+ * @param req_filename Name of the file that contains the unprocessed vector sets
+ * @param rsp_filename Name of the file to save vector set test results to
+ *
+ * @return ACVP_RESULT
+ */
+ACVP_RESULT acvp_run_vectors_from_file_offline(ACVP_CTX *ctx, const char *req_filename, const char *rsp_filename);
 
 /**
  * @brief performs an HTTP PUT on a given libacvp JSON file to the ACV server

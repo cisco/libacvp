@@ -57,8 +57,9 @@
 
 #define ACVP_ALG_MAX ACVP_CIPHER_END - 1  /* Used by alg_tbl[] */
 
-#define ACVP_CAP_MAX ACVP_ALG_MAX * 2 /* Arbitrary limit to the number of capability objects that
+#define ACVP_CAP_MAX ACVP_ALG_MAX * 3 /* Arbitrary limit to the number of capability objects that
                                          can be registered via file */
+
 /********************************************************
  * ******************************************************
  * REVISIONS
@@ -172,7 +173,6 @@
 /* KAS_ECC */
 #define ACVP_REV_KAS_ECC             ACVP_REV_STR_1_0
 #define ACVP_REV_KAS_ECC_SSC         ACVP_REV_STR_SP800_56AR3
-
 
 /* KAS_FFC */
 #define ACVP_REV_KAS_FFC             ACVP_REV_STR_1_0
@@ -786,7 +786,7 @@
 #define ACVP_CMAC_MSGLEN_MAX       524288
 #define ACVP_CMAC_MSGLEN_MIN       0
 #define ACVP_CMAC_MACLEN_MAX       128       /**< 512 bits, 128 characters */
-#define ACVP_CMAC_MACLEN_MIN       32
+#define ACVP_CMAC_MACLEN_MIN       1		/** >= 1 byte, per ACVP spec */
 #define ACVP_CMAC_KEY_MAX       64        /**< 256 bits, 64 characters */
 
 #define ACVP_KMAC_MSG_BIT_MAX 65536
@@ -924,14 +924,14 @@
 #define ACVP_MAX_WAIT_TIME      10800 /* 3 hours */
 #define ACVP_RETRY_TIME         30
 #define ACVP_RETRY_MODIFIER_MAX 10
-#define ACVP_JWT_TOKEN_MAX      2048
+#define ACVP_JWT_TOKEN_MAX      4096 /* arbitrary, but 2048 too low in some cases */
 #define ACVP_ATTR_URL_MAX       2083 /* MS IE's limit - arbitrary */
 
 #define ACVP_SESSION_PARAMS_STR_LEN_MAX 256
 #define ACVP_REQUEST_STR_LEN_MAX 128
 #define ACVP_OE_STR_MAX 256
 #define ACVP_PATH_SEGMENT_DEFAULT ""
-#define ACVP_JSON_FILENAME_MAX 128
+#define ACVP_JSON_FILENAME_MAX 1024
 
 /* 
  * This should NOT be made longer than ACVP_JSON_FILENAME_MAX - 15
@@ -1931,6 +1931,8 @@ ACVP_RESULT acvp_transport_put(ACVP_CTX *ctx, const char *endpoint, const char *
 
 ACVP_RESULT acvp_transport_delete(ACVP_CTX *ctx, const char *endpoint);
 
+ACVP_RESULT acvp_retrieve_health_status(ACVP_CTX *ctx);
+
 ACVP_RESULT acvp_retrieve_vector_set(ACVP_CTX *ctx, char *vsid_url);
 
 ACVP_RESULT acvp_retrieve_vector_set_result(ACVP_CTX *ctx, const char *vsid_url);
@@ -2158,8 +2160,14 @@ ACVP_KDF108_MAC_MODE_VAL read_mac_mode(const char *str);
 ACVP_KDF108_FIXED_DATA_ORDER_VAL read_ctr_location(const char *str);
 ACVP_KDF108_MODE read_mode(const char *str);
 
+// Default behavior, always prepend "," to data to form a proper array entry
 ACVP_RESULT acvp_json_serialize_to_file_pretty_a(const JSON_Value *value, const char *filename);
-ACVP_RESULT acvp_json_serialize_to_file_pretty_w(const JSON_Value *value, const char *filename);
+// Specialized behavior; do not prefix "," to data b/c it is not going into an array
+ACVP_RESULT acvp_json_serialize_to_file_pretty_a_raw(const JSON_Value *value, const char *filename);
 
+// Default behavior, always prefix a "[" to mark the start of a new file
+ACVP_RESULT acvp_json_serialize_to_file_pretty_w(const JSON_Value *value, const char *filename);
+// Specialized behavior; do not prefix "[" but output this data without modification
+ACVP_RESULT acvp_json_serialize_to_file_pretty_w_raw(const JSON_Value *value, const char *filename);
 
 #endif
