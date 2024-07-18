@@ -773,10 +773,10 @@ Test(PROCESS_TESTS, mark_as_get_only, .init = setup_full_ctx, .fini = teardown) 
     rv = acvp_mark_as_get_only(ctx, "", NULL);
     cr_assert(rv == ACVP_INVALID_ARG);
 
-    rv = acvp_mark_as_get_only(ctx, "testFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLong", NULL);
+    rv = acvp_mark_as_get_only(ctx, ACVP_TEST_STRING_TOO_LONG, NULL);
     cr_assert(rv == ACVP_INVALID_ARG);
 
-    rv = acvp_mark_as_get_only(ctx, "test", "testFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLong");
+    rv = acvp_mark_as_get_only(ctx, "test", ACVP_TEST_STRING_TOO_LONG);
     cr_assert(rv == ACVP_INVALID_ARG);
 
     rv = acvp_mark_as_get_only(ctx, "test", "");
@@ -797,7 +797,7 @@ Test(PROCESS_TESTS, mark_as_delete_only, .init = setup_full_ctx, .fini = teardow
     rv = acvp_mark_as_delete_only(ctx, "test");
     cr_assert(rv == ACVP_SUCCESS);
 
-    rv = acvp_mark_as_delete_only(ctx, "testFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLong");
+    rv = acvp_mark_as_delete_only(ctx, ACVP_TEST_STRING_TOO_LONG);
     cr_assert(rv == ACVP_INVALID_ARG);
 
     rv = acvp_mark_as_delete_only(ctx, "");
@@ -844,8 +844,8 @@ Test(PROCESS_TESTS, acvp_get_results_from_server, .init = setup_full_ctx, .fini 
     rv = acvp_get_results_from_server(ctx, NULL);
     cr_assert(rv == ACVP_MISSING_ARG);
 
-    rv = acvp_get_results_from_server(ctx, "testFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLong");
-    cr_assert(rv == ACVP_INVALID_ARG);
+    rv = acvp_get_results_from_server(ctx, ACVP_TEST_STRING_TOO_LONG);
+   cr_assert(rv == ACVP_INVALID_ARG);
 
     rv = acvp_get_results_from_server(ctx, "json/getResults.json");
     cr_assert(rv = ACVP_MALFORMED_JSON);
@@ -862,7 +862,7 @@ Test(PROCESS_TESTS, acvp_resume_test_session, .init = setup_full_ctx, .fini = te
     rv = acvp_resume_test_session(ctx, NULL, 0);
     cr_assert(rv == ACVP_MISSING_ARG);
 
-    rv = acvp_resume_test_session(ctx, "testFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLong", 0);
+    rv = acvp_resume_test_session(ctx, ACVP_TEST_STRING_TOO_LONG, 0);
     cr_assert(rv == ACVP_INVALID_ARG);
 
     rv = acvp_resume_test_session(ctx, "json/getResults.json", 1);
@@ -880,10 +880,10 @@ Test(PROCESS_TESTS, acvp_cancel_test_session, .init = setup_full_ctx, .fini = te
     rv = acvp_cancel_test_session(ctx, NULL, "test");
     cr_assert(rv == ACVP_MISSING_ARG);
 
-    rv = acvp_cancel_test_session(ctx, "testRequestUrlTooLongtestRequestUrlTooLongtestRequestUrlTooLongtestRequestUrlTooLongtestRequestUrlTooLongtestRequestUrlTooLongtestRequestUrlTooLongtestRequestUrlTooLongtestRequestUrlTooLong", NULL);
+    rv = acvp_cancel_test_session(ctx, ACVP_TEST_STRING_TOO_LONG, NULL);
     cr_assert(rv == ACVP_INVALID_ARG);
 
-    rv = acvp_cancel_test_session(ctx, "test", "testFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLong");
+    rv = acvp_cancel_test_session(ctx, "test", ACVP_TEST_STRING_TOO_LONG);
     cr_assert(rv == ACVP_INVALID_ARG);
 
     rv = acvp_cancel_test_session(ctx, "", "test");
@@ -912,10 +912,10 @@ Test(PROCESS_TESTS, acvp_get_expected_results, .init = setup_full_ctx, .fini = t
     rv = acvp_get_expected_results(ctx, NULL, NULL);
     cr_assert(rv == ACVP_MISSING_ARG);
 
-    rv = acvp_get_expected_results(ctx, "testFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLong", NULL);
+    rv = acvp_get_expected_results(ctx, ACVP_TEST_STRING_TOO_LONG, NULL);
     cr_assert(rv == ACVP_INVALID_ARG);
     rv = acvp_get_expected_results(ctx, "json/testSession_0.json", \
-                                        "testFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLongtestFileNameTooLong");
+                                        ACVP_TEST_STRING_TOO_LONG);
     cr_assert(rv == ACVP_INVALID_ARG);
 
     rv = acvp_get_expected_results(ctx, "json/getResults.json", NULL);
