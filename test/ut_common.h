@@ -28,3 +28,21 @@ int dummy_handler_failure(ACVP_TEST_CASE *test_case);
 JSON_Object *ut_get_obj_from_rsp (JSON_Value *arry_val);
 unsigned int base64_decode(const char *in, unsigned int inlen, unsigned char *out);
 unsigned int dummy_totp(char **token, int token_max);
+
+#define ACVP_TEST_STRING_TOO_LONG "TestStringTooLongTestStringTooLongTestStringTooLongTestStringTooLong"\
+                                  "TestStringTooLongTestStringTooLongTestStringTooLongTestStringTooLong"\
+                                  "TestStringTooLongTestStringTooLongTestStringTooLongTestStringTooLong"\
+                                  "TestStringTooLongTestStringTooLongTestStringTooLongTestStringTooLong"\
+                                  "TestStringTooLongTestStringTooLongTestStringTooLongTestStringTooLong"\
+                                  "TestStringTooLongTestStringTooLongTestStringTooLongTestStringTooLong"\
+                                  "TestStringTooLongTestStringTooLongTestStringTooLongTestStringTooLong"\
+                                  "TestStringTooLongTestStringTooLongTestStringTooLongTestStringTooLong"\
+                                  "TestStringTooLongTestStringTooLongTestStringTooLongTestStringTooLong"\
+                                  "TestStringTooLongTestStringTooLongTestStringTooLongTestStringTooLong"\
+                                  "TestStringTooLongTestStringTooLongTestStringTooLongTestStringTooLong"\
+                                  "TestStringTooLongTestStringTooLongTestStringTooLongTestStringTooLong"\
+                                  "TestStringTooLongTestStringTooLongTestStringTooLongTestStringTooLong"\
+                                  "TestStringTooLongTestStringTooLongTestStringTooLongTestStringTooLong"\
+                                  "TestStringTooLongTestStringTooLongTestStringTooLongTestStringTooLong"\
+                                  "TestStringTooLongTestStringTooLongTestStringTooLongTestStringTooLong"\
+                                  "TestStringTooLongTestStringTooLongTestStringTooLongTestStringTooLong"
