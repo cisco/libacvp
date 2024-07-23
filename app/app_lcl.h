@@ -68,6 +68,9 @@ typedef struct app_config {
     char validation_metadata_file[JSON_FILENAME_LENGTH + 1];
     char save_file[JSON_FILENAME_LENGTH + 1];
 
+    /* limit in GiB of hash tasting supported on the platform */
+    int max_ldt_size;
+
     /*
      * Algorithm Flags
      * 0 is off, 1 is on
