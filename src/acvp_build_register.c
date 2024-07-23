@@ -677,6 +677,8 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
     case ACVP_AES_KWP:
     case ACVP_AES_XTS:
     case ACVP_AES_XPN:
+    case ACVP_AES_FF1:
+    case ACVP_AES_FF3:
     case ACVP_HASH_SHA1:
     case ACVP_HASH_SHA224:
     case ACVP_HASH_SHA256:
@@ -799,14 +801,16 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
         }
     } else if (sym_cap->payload_len.min || sym_cap->payload_len.max ||
                 sym_cap->payload_len.increment) {
-        json_object_set_value(cap_obj, "payloadLen", json_value_init_array());
-        opts_arr = json_object_get_array(cap_obj, "payloadLen");
-        tmp_val = json_value_init_object();
-        tmp_obj = json_value_get_object(tmp_val);
-        json_object_set_number(tmp_obj, "max", sym_cap->payload_len.max);
-        json_object_set_number(tmp_obj, "min", sym_cap->payload_len.min);
-        json_object_set_number(tmp_obj, "increment", sym_cap->payload_len.increment);
-        json_array_append_value(opts_arr, tmp_val);
+        if (cap_entry->cipher != ACVP_AES_FF1 && cap_entry->cipher != ACVP_AES_FF3) {
+		    json_object_set_value(cap_obj, "payloadLen", json_value_init_array());
+		    opts_arr = json_object_get_array(cap_obj, "payloadLen");
+		    tmp_val = json_value_init_object();
+		    tmp_obj = json_value_get_object(tmp_val);
+		    json_object_set_number(tmp_obj, "max", sym_cap->payload_len.max);
+		    json_object_set_number(tmp_obj, "min", sym_cap->payload_len.min);
+		    json_object_set_number(tmp_obj, "increment", sym_cap->payload_len.increment);
+		    json_array_append_value(opts_arr, tmp_val);
+        }
     } else {
         //For most AES ciphers, we need payload lengths. If TDES, we do not. 
         ACVP_SUB_AES checkAes = acvp_get_aes_alg(cap_entry->cipher);
@@ -864,6 +868,28 @@ static ACVP_RESULT acvp_build_sym_cipher_register_cap(JSON_Object *cap_obj, ACVP
             json_object_set_number(tmp_obj, "increment", sym_cap->du_len.increment);
             json_array_append_value(opts_arr, tmp_val);
         }
+    }
+
+    if (cap_entry->cipher == ACVP_AES_FF1 || cap_entry->cipher == ACVP_AES_FF3) {
+        json_object_set_value(cap_obj, "capabilities", json_value_init_array());
+        opts_arr = json_object_get_array(cap_obj, "capabilities");
+        tmp_val = json_value_init_object();
+        tmp_obj = json_value_get_object(tmp_val);
+        json_object_set_number(tmp_obj, "maxLen", sym_cap->payload_len.max);
+        json_object_set_number(tmp_obj, "minLen", sym_cap->payload_len.min);
+        json_object_set_string(tmp_obj, "alphabet", sym_cap->alphabet);
+        json_object_set_number(tmp_obj, "radix", sym_cap->radix);
+        json_array_append_value(opts_arr, tmp_val);
+    }
+    if (cap_entry->cipher == ACVP_AES_FF1) {
+        json_object_set_value(cap_obj, "tweakLen", json_value_init_array());
+        opts_arr = json_object_get_array(cap_obj, "tweakLen");
+        tmp_val = json_value_init_object();
+        tmp_obj = json_value_get_object(tmp_val);
+        json_object_set_number(tmp_obj, "max", sym_cap->tweak_len.max);
+        json_object_set_number(tmp_obj, "min", sym_cap->tweak_len.min);
+        json_object_set_number(tmp_obj, "increment", sym_cap->tweak_len.increment);
+        json_array_append_value(opts_arr, tmp_val);
     }
 
     /*
@@ -5256,6 +5282,8 @@ ACVP_RESULT acvp_build_registration_json(ACVP_CTX *ctx, JSON_Value **reg) {
             case ACVP_AES_KW:
             case ACVP_AES_KWP:
             case ACVP_AES_XTS:
+            case ACVP_AES_FF1:
+            case ACVP_AES_FF3:
             case ACVP_TDES_ECB:
             case ACVP_TDES_CBC:
             case ACVP_TDES_CTR:
