@@ -849,6 +849,66 @@ const char *acvp_lookup_lmots_mode_str(ACVP_LMOTS_MODE mode) {
     return NULL;
 }
 
+#define ACVP_ML_DSA_PARAM_SET_STR_MAX 9
+static struct acvp_enum_string_pair ml_dsa_param_set_tbl[] = {
+    { ACVP_ML_DSA_PARAM_SET_ML_DSA_44, "ML-DSA-44"},
+    { ACVP_ML_DSA_PARAM_SET_ML_DSA_65, "ML-DSA-65"},
+    { ACVP_ML_DSA_PARAM_SET_ML_DSA_87, "ML-DSA-87"}
+};
+
+static int ml_dsa_param_set_tbl_len = sizeof(ml_dsa_param_set_tbl) / sizeof(struct acvp_enum_string_pair);
+
+ACVP_ML_DSA_PARAM_SET acvp_lookup_ml_dsa_param_set(const char *str) {
+    int diff = 1, i = 0;
+    for (i = 0; i < ml_dsa_param_set_tbl_len; i++) {
+        strcmp_s(ml_dsa_param_set_tbl[i].string, strnlen_s(ml_dsa_param_set_tbl[i].string, ACVP_ML_DSA_PARAM_SET_STR_MAX), str, &diff);
+        if (!diff) {
+            return ml_dsa_param_set_tbl[i].enum_value;
+        }
+    }
+    return 0;
+}
+
+const char *acvp_lookup_ml_dsa_param_set_str(ACVP_ML_DSA_PARAM_SET param_set) {
+    int i = 0;
+    for (i = 0; i < ml_dsa_param_set_tbl_len; i++) {
+        if (param_set == ml_dsa_param_set_tbl[i].enum_value) {
+            return ml_dsa_param_set_tbl[i].string;
+        }
+    }
+    return NULL;
+}
+
+#define ACVP_ML_KEM_PARAM_SET_STR_MAX 11
+static struct acvp_enum_string_pair ml_kem_param_set_tbl[] = {
+    { ACVP_ML_KEM_PARAM_SET_ML_KEM_512, "ML-KEM-512"},
+    { ACVP_ML_KEM_PARAM_SET_ML_KEM_768, "ML-KEM-768"},
+    { ACVP_ML_KEM_PARAM_SET_ML_KEM_1024, "ML-KEM-1024"}
+};
+
+static int ml_kem_param_set_tbl_len = sizeof(ml_kem_param_set_tbl) / sizeof(struct acvp_enum_string_pair);
+
+ACVP_ML_KEM_PARAM_SET acvp_lookup_ml_kem_param_set(const char *str) {
+    int diff = 1, i = 0;
+    for (i = 0; i < ml_kem_param_set_tbl_len; i++) {
+        strcmp_s(ml_kem_param_set_tbl[i].string, strnlen_s(ml_kem_param_set_tbl[i].string, ACVP_ML_KEM_PARAM_SET_STR_MAX), str, &diff);
+        if (!diff) {
+            return ml_kem_param_set_tbl[i].enum_value;
+        }
+    }
+    return 0;
+}
+
+const char *acvp_lookup_ml_kem_param_set_str(ACVP_ML_KEM_PARAM_SET param_set) {
+    int i = 0;
+    for (i = 0; i < ml_kem_param_set_tbl_len; i++) {
+        if (param_set == ml_kem_param_set_tbl[i].enum_value) {
+            return ml_kem_param_set_tbl[i].string;
+        }
+    }
+    return NULL;
+}
+
 /* This seems too small to dictate having its own table/function, but future expandability may be useful */
 static struct acvp_enum_string_pair rsa_key_format_tbl[] = {
     { ACVP_RSA_KEY_FORMAT_STANDARD, "standard" },
@@ -1539,7 +1599,7 @@ int acvp_is_domain_already_set(ACVP_JSON_DOMAIN_OBJ *domain) {
     return domain->min + domain->max + domain->increment;
 }
 
-ACVP_RESULT acvp_json_serialize_to_file_pretty_a(const JSON_Value *value, const char *filename) {
+ACVP_RESULT acvp_json_serialize_to_file_pretty_a_work(const JSON_Value *value, const char *filename, int first) {
     ACVP_RESULT return_code = ACVP_SUCCESS;
     FILE *fp = NULL;
     char *serialized_string = NULL; 
@@ -1563,7 +1623,7 @@ ACVP_RESULT acvp_json_serialize_to_file_pretty_a(const JSON_Value *value, const 
             fclose(fp);
             return ACVP_JSON_ERR;
         }
-        if (fputs(", ", fp) == EOF) {
+        if (!first && (fputs(", ", fp) == EOF)) {  // If first, do *not* add "," before this data
             return_code = ACVP_JSON_ERR;
             goto end;
         }
@@ -1579,7 +1639,18 @@ end:
     return return_code;
 }
 
-ACVP_RESULT acvp_json_serialize_to_file_pretty_w(const JSON_Value *value, const char *filename) {
+ACVP_RESULT acvp_json_serialize_to_file_pretty_a(const JSON_Value *value, const char *filename) {
+    return acvp_json_serialize_to_file_pretty_a_work(value, filename, 0);
+}
+
+ACVP_RESULT acvp_json_serialize_to_file_pretty_a_raw(const JSON_Value *value, const char *filename) {
+    return acvp_json_serialize_to_file_pretty_a_work(value, filename, 1);
+}
+
+static ACVP_RESULT acvp_json_serialize_to_file_pretty_w_work(
+        const JSON_Value *value, 
+        const char *filename, 
+        int leading_bracket) { 
     ACVP_RESULT return_code = ACVP_SUCCESS;
     FILE *fp = NULL;
     char *serialized_string = NULL;
@@ -1600,9 +1671,11 @@ ACVP_RESULT acvp_json_serialize_to_file_pretty_w(const JSON_Value *value, const 
         json_free_serialized_string(serialized_string);
         return ACVP_JSON_ERR;
     }
+    if (leading_bracket) {
     if (fputs("[ ", fp) == EOF) {
         return_code = ACVP_JSON_ERR;
         goto end;
+    }
     }
     if (fputs(serialized_string, fp) == EOF) {
         json_free_serialized_string(serialized_string);
@@ -1614,6 +1687,14 @@ end:
     }
     json_free_serialized_string(serialized_string);
     return return_code;
+}
+
+ACVP_RESULT acvp_json_serialize_to_file_pretty_w(const JSON_Value *value, const char *filename) {
+    return acvp_json_serialize_to_file_pretty_w_work(value, filename, 1);
+}
+
+ACVP_RESULT acvp_json_serialize_to_file_pretty_w_raw(const JSON_Value *value, const char *filename) {
+    return acvp_json_serialize_to_file_pretty_w_work(value, filename, 0);
 }
 
 void acvp_sleep(int seconds) {

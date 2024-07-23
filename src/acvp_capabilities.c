@@ -697,6 +697,46 @@ static ACVP_RESULT acvp_cap_list_append(ACVP_CTX *ctx,
         }
         break;
 
+    case ACVP_ML_DSA_KEYGEN_TYPE:
+        cap_entry->cap.ml_dsa_keygen_cap = calloc(1, sizeof(ACVP_ML_DSA_CAP));
+        if (!cap_entry->cap.ml_dsa_keygen_cap) {
+            rv = ACVP_MALLOC_FAIL;
+            goto err;
+        }
+        break;
+
+    case ACVP_ML_DSA_SIGGEN_TYPE:
+        cap_entry->cap.ml_dsa_siggen_cap = calloc(1, sizeof(ACVP_ML_DSA_CAP));
+        if (!cap_entry->cap.ml_dsa_siggen_cap) {
+            rv = ACVP_MALLOC_FAIL;
+            goto err;
+        }
+        break;
+
+    case ACVP_ML_DSA_SIGVER_TYPE:
+        cap_entry->cap.ml_dsa_sigver_cap = calloc(1, sizeof(ACVP_ML_DSA_CAP));
+        if (!cap_entry->cap.ml_dsa_sigver_cap) {
+            rv = ACVP_MALLOC_FAIL;
+            goto err;
+        }
+        break;
+
+    case ACVP_ML_KEM_KEYGEN_TYPE:
+        cap_entry->cap.ml_kem_keygen_cap = calloc(1, sizeof(ACVP_ML_KEM_CAP));
+        if (!cap_entry->cap.ml_kem_keygen_cap) {
+            rv = ACVP_MALLOC_FAIL;
+            goto err;
+        }
+        break;
+
+    case ACVP_ML_KEM_XCAP_TYPE:
+        cap_entry->cap.ml_kem_xcap_cap = calloc(1, sizeof(ACVP_ML_KEM_CAP));
+        if (!cap_entry->cap.ml_kem_xcap_cap) {
+            rv = ACVP_MALLOC_FAIL;
+            goto err;
+        }
+        break;
+
     case ACVP_KDF135_TPM_TYPE:
     default:
         ACVP_LOG_ERR("Invalid parameter 'type'");
@@ -1124,6 +1164,11 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
         case ACVP_LMS_SIGGEN:
         case ACVP_LMS_SIGVER:
         case ACVP_LMS_KEYGEN:
+        case ACVP_ML_DSA_KEYGEN:
+        case ACVP_ML_DSA_SIGGEN:
+        case ACVP_ML_DSA_SIGVER:
+        case ACVP_ML_KEM_KEYGEN:
+        case ACVP_ML_KEM_XCAP:
         case ACVP_CIPHER_END:
         default:
             break;
@@ -1245,6 +1290,11 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
         case ACVP_LMS_SIGGEN:
         case ACVP_LMS_SIGVER:
         case ACVP_LMS_KEYGEN:
+        case ACVP_ML_DSA_KEYGEN:
+        case ACVP_ML_DSA_SIGGEN:
+        case ACVP_ML_DSA_SIGVER:
+        case ACVP_ML_KEM_KEYGEN:
+        case ACVP_ML_KEM_XCAP:
         case ACVP_CIPHER_END:
         default:
             break;
@@ -1366,6 +1416,11 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
         case ACVP_LMS_SIGGEN:
         case ACVP_LMS_SIGVER:
         case ACVP_LMS_KEYGEN:
+        case ACVP_ML_DSA_KEYGEN:
+        case ACVP_ML_DSA_SIGGEN:
+        case ACVP_ML_DSA_SIGVER:
+        case ACVP_ML_KEM_KEYGEN:
+        case ACVP_ML_KEM_XCAP:
         case ACVP_CIPHER_END:
         default:
             break;
@@ -1497,6 +1552,11 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
         case ACVP_LMS_SIGGEN:
         case ACVP_LMS_SIGVER:
         case ACVP_LMS_KEYGEN:
+        case ACVP_ML_DSA_KEYGEN:
+        case ACVP_ML_DSA_SIGGEN:
+        case ACVP_ML_DSA_SIGVER:
+        case ACVP_ML_KEM_KEYGEN:
+        case ACVP_ML_KEM_XCAP:
         case ACVP_CIPHER_END:
         default:
             break;
@@ -1615,6 +1675,11 @@ static ACVP_RESULT acvp_validate_sym_cipher_parm_value(ACVP_CIPHER cipher, ACVP_
         case ACVP_LMS_SIGGEN:
         case ACVP_LMS_SIGVER:
         case ACVP_LMS_KEYGEN:
+        case ACVP_ML_DSA_KEYGEN:
+        case ACVP_ML_DSA_SIGGEN:
+        case ACVP_ML_DSA_SIGVER:
+        case ACVP_ML_KEM_KEYGEN:
+        case ACVP_ML_KEM_XCAP:
         case ACVP_CIPHER_END:
         default:
             if (value >= 0 && value <= 65536) {
@@ -1850,13 +1915,52 @@ static ACVP_RESULT acvp_validate_sym_cipher_domain_value(ACVP_CIPHER cipher, ACV
             break;
         }
         break;
-    case ACVP_CIPHER_START:
     case ACVP_AES_ECB:
     case ACVP_AES_CBC:
-    case ACVP_AES_CFB1:
-    case ACVP_AES_CFB8:
     case ACVP_AES_CFB128:
     case ACVP_AES_OFB:
+        switch (parm) {
+        case ACVP_SYM_CIPH_DOMAIN_PTLEN:
+            if (min >= 0 && max <= 65536) {
+                retval = ACVP_SUCCESS;
+            }
+            break;
+        case ACVP_SYM_CIPH_DOMAIN_IVLEN:
+        case ACVP_SYM_CIPH_DOMAIN_AADLEN:
+        case ACVP_SYM_CIPH_DOMAIN_DULEN:
+        default:
+            break;
+        }
+        break;
+    case ACVP_AES_CFB1:
+        switch (parm) {
+        case ACVP_SYM_CIPH_DOMAIN_PTLEN:
+            if (min >= 0 && max <= 128) {
+                retval = ACVP_SUCCESS;
+            }
+            break;
+        case ACVP_SYM_CIPH_DOMAIN_IVLEN:
+        case ACVP_SYM_CIPH_DOMAIN_AADLEN:
+        case ACVP_SYM_CIPH_DOMAIN_DULEN:
+        default:
+            break;
+        }
+        break;
+    case ACVP_AES_CFB8:
+        switch (parm) {
+        case ACVP_SYM_CIPH_DOMAIN_PTLEN:
+            if (min >= 0 && max <= 256) {
+                retval = ACVP_SUCCESS;
+            }
+            break;
+        case ACVP_SYM_CIPH_DOMAIN_IVLEN:
+        case ACVP_SYM_CIPH_DOMAIN_AADLEN:
+        case ACVP_SYM_CIPH_DOMAIN_DULEN:
+        default:
+            break;
+        }
+        break;
+    case ACVP_CIPHER_START:
     case ACVP_TDES_ECB:
     case ACVP_TDES_CBC:
     case ACVP_TDES_CBCI:
@@ -1946,6 +2050,11 @@ static ACVP_RESULT acvp_validate_sym_cipher_domain_value(ACVP_CIPHER cipher, ACV
     case ACVP_LMS_SIGGEN:
     case ACVP_LMS_SIGVER:
     case ACVP_LMS_KEYGEN:
+    case ACVP_ML_DSA_KEYGEN:
+    case ACVP_ML_DSA_SIGGEN:
+    case ACVP_ML_DSA_SIGVER:
+    case ACVP_ML_KEM_KEYGEN:
+    case ACVP_ML_KEM_XCAP:
     case ACVP_CIPHER_END:
     default:
         break;
@@ -2222,6 +2331,16 @@ static ACVP_RESULT acvp_validate_prereq_val(ACVP_CIPHER cipher, ACVP_PREREQ_ALG 
             return ACVP_SUCCESS;
         }
         break;
+    case ACVP_ML_DSA_KEYGEN:
+    case ACVP_ML_DSA_SIGGEN:
+    case ACVP_ML_DSA_SIGVER:
+    case ACVP_ML_KEM_KEYGEN:
+    case ACVP_ML_KEM_XCAP:
+        if (pre_req == ACVP_PREREQ_DRBG ||
+            pre_req == ACVP_PREREQ_SHA) {
+            return ACVP_SUCCESS;
+        }
+        break;
     case ACVP_CIPHER_START:
     case ACVP_TDES_CBCI:
     case ACVP_TDES_OFBI:
@@ -2441,6 +2560,11 @@ ACVP_RESULT acvp_cap_sym_cipher_set_domain(ACVP_CTX *ctx,
     case ACVP_LMS_SIGGEN:
     case ACVP_LMS_SIGVER:
     case ACVP_LMS_KEYGEN:
+    case ACVP_ML_DSA_KEYGEN:
+    case ACVP_ML_DSA_SIGGEN:
+    case ACVP_ML_DSA_SIGVER:
+    case ACVP_ML_KEM_KEYGEN:
+    case ACVP_ML_KEM_XCAP:
     case ACVP_CIPHER_END:
     default:
         return ACVP_INVALID_ARG;
@@ -2660,6 +2784,11 @@ ACVP_RESULT acvp_cap_sym_cipher_set_parm(ACVP_CTX *ctx,
     case ACVP_LMS_SIGGEN:
     case ACVP_LMS_SIGVER:
     case ACVP_LMS_KEYGEN:
+    case ACVP_ML_DSA_KEYGEN:
+    case ACVP_ML_DSA_SIGGEN:
+    case ACVP_ML_DSA_SIGVER:
+    case ACVP_ML_KEM_KEYGEN:
+    case ACVP_ML_KEM_XCAP:
     case ACVP_CIPHER_END:
     default:
         return ACVP_INVALID_ARG;
@@ -2998,6 +3127,11 @@ ACVP_RESULT acvp_cap_sym_cipher_enable(ACVP_CTX *ctx,
     case ACVP_LMS_SIGGEN:
     case ACVP_LMS_SIGVER:
     case ACVP_LMS_KEYGEN:
+    case ACVP_ML_DSA_KEYGEN:
+    case ACVP_ML_DSA_SIGGEN:
+    case ACVP_ML_DSA_SIGVER:
+    case ACVP_ML_KEM_KEYGEN:
+    case ACVP_ML_KEM_XCAP:
     case ACVP_CIPHER_END:
     default:
         return ACVP_INVALID_ARG;
@@ -9567,6 +9701,193 @@ ACVP_RESULT acvp_cap_lms_set_mode_compatability_pair(ACVP_CTX *ctx,
         }
         list->next->lms_mode = lms_mode;
         list->next->lmots_mode = lmots_mode;
+    }
+
+    return ACVP_SUCCESS;
+}
+
+ACVP_RESULT acvp_cap_ml_dsa_enable(ACVP_CTX *ctx,
+                                ACVP_CIPHER cipher,
+                                int (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
+    ACVP_RESULT result = ACVP_NO_CAP;
+    ACVP_SUB_ML_DSA alg;
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+    if (!crypto_handler) {
+        ACVP_LOG_ERR("NULL parameter 'crypto_handler'");
+        return ACVP_INVALID_ARG;
+    }
+
+    alg = acvp_get_ml_dsa_alg(cipher);
+    if (alg == 0) {
+        ACVP_LOG_ERR("Invalid cipher value");
+        return ACVP_INVALID_ARG;
+    }
+    switch (alg) {
+    case ACVP_SUB_ML_DSA_KEYGEN:
+        result = acvp_cap_list_append(ctx, ACVP_ML_DSA_KEYGEN_TYPE, cipher, crypto_handler);
+        break;
+    case ACVP_SUB_ML_DSA_SIGGEN:
+        result = acvp_cap_list_append(ctx, ACVP_ML_DSA_SIGGEN_TYPE, cipher, crypto_handler);
+        break;
+    case ACVP_SUB_ML_DSA_SIGVER:
+        result = acvp_cap_list_append(ctx, ACVP_ML_DSA_SIGVER_TYPE, cipher, crypto_handler);
+        break;
+    default:
+        ACVP_LOG_ERR("Invalid cipher provided to acvp_cap_ml_dsa_enable()");
+        break;
+    }
+
+    if (result != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Error occured while enabling ML-DSA algorithm. rv: %d", result);
+    }
+
+    return result;
+}
+
+ACVP_RESULT acvp_cap_ml_dsa_set_parm(ACVP_CTX *ctx,
+                                  ACVP_CIPHER cipher,
+                                  ACVP_ML_DSA_PARAM param, int value) {
+    ACVP_CAPS_LIST *cap;
+    ACVP_ML_DSA_CAP *ml_dsa_cap;
+    ACVP_SUB_ML_DSA alg;
+
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+
+    cap = acvp_locate_cap_entry(ctx, cipher);
+    if (!cap) {
+        return ACVP_NO_CAP;
+    }
+    alg = acvp_get_ml_dsa_alg(cipher);
+    switch (alg) {
+    case ACVP_SUB_ML_DSA_KEYGEN:
+        ml_dsa_cap = cap->cap.ml_dsa_keygen_cap;
+        break;
+    case ACVP_SUB_ML_DSA_SIGGEN:
+        ml_dsa_cap = cap->cap.ml_dsa_siggen_cap;
+        break;
+    case ACVP_SUB_ML_DSA_SIGVER:
+        ml_dsa_cap = cap->cap.ml_dsa_sigver_cap;
+        break;
+    default:
+        ACVP_LOG_ERR("Invalid cipher provided for setting ML-DSA paramater");
+        return ACVP_INVALID_ARG;
+    }
+
+    switch (param) {
+    case ACVP_ML_DSA_PARAM_PARAMETER_SET:
+        if (value <= ACVP_ML_DSA_PARAM_SET_NONE || value >= ACVP_ML_DSA_PARAM_SET_MAX) {
+            ACVP_LOG_ERR("Invalid ML-DSA paramter set provided");
+            return ACVP_INVALID_ARG;
+        }
+        return acvp_append_param_list(&ml_dsa_cap->param_sets, value);
+    case ACVP_ML_DSA_PARAM_DETERMINISTIC_MODE:
+        if (alg != ACVP_SUB_ML_DSA_SIGGEN) {
+            ACVP_LOG_ERR("Deterministic property for ML-DSA can only be set for siggen");
+            return ACVP_INVALID_ARG;
+        }
+        if (value < ACVP_ML_DSA_DETERMINISTIC_NO|| value > ACVP_ML_DSA_DETERMINISTIC_BOTH) {
+            ACVP_LOG_ERR("Invalid value provided for ML-DSA deterministic mode");
+            return ACVP_INVALID_ARG;
+        }
+        ml_dsa_cap->deterministic = value;
+        return ACVP_SUCCESS;
+    default:
+        ACVP_LOG_ERR("Invalid parameter provided for ML-DSA");
+        return ACVP_INVALID_ARG;
+    }
+
+    return ACVP_SUCCESS;
+}
+
+ACVP_RESULT acvp_cap_ml_kem_enable(ACVP_CTX *ctx,
+                                ACVP_CIPHER cipher,
+                                int (*crypto_handler)(ACVP_TEST_CASE *test_case)) {
+    ACVP_RESULT result = ACVP_NO_CAP;
+    ACVP_SUB_ML_KEM alg;
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+    if (!crypto_handler) {
+        ACVP_LOG_ERR("NULL parameter 'crypto_handler'");
+        return ACVP_INVALID_ARG;
+    }
+
+    alg = acvp_get_ml_kem_alg(cipher);
+    if (alg == 0) {
+        ACVP_LOG_ERR("Invalid cipher value");
+        return ACVP_INVALID_ARG;
+    }
+    switch (alg) {
+    case ACVP_SUB_ML_KEM_KEYGEN:
+        result = acvp_cap_list_append(ctx, ACVP_ML_KEM_KEYGEN_TYPE, cipher, crypto_handler);
+        break;
+    case ACVP_SUB_ML_KEM_XCAP:
+        result = acvp_cap_list_append(ctx, ACVP_ML_KEM_XCAP_TYPE, cipher, crypto_handler);
+        break;
+    default:
+        ACVP_LOG_ERR("Invalid cipher provided to acvp_cap_ml_kem_enable()");
+        break;
+    }
+
+    if (result != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Error occured while enabling ML-KEM algorithm. rv: %d", result);
+    }
+
+    return result;
+}
+
+ACVP_RESULT acvp_cap_ml_kem_set_parm(ACVP_CTX *ctx,
+                                  ACVP_CIPHER cipher,
+                                  ACVP_ML_KEM_PARAM param, int value) {
+    ACVP_CAPS_LIST *cap;
+    ACVP_ML_KEM_CAP *ml_kem_cap;
+    ACVP_SUB_ML_KEM alg;
+
+    if (!ctx) {
+        return ACVP_NO_CTX;
+    }
+
+    cap = acvp_locate_cap_entry(ctx, cipher);
+    if (!cap) {
+        return ACVP_NO_CAP;
+    }
+    alg = acvp_get_ml_kem_alg(cipher);
+    switch (alg) {
+    case ACVP_SUB_ML_KEM_KEYGEN:
+        ml_kem_cap = cap->cap.ml_kem_keygen_cap;
+        break;
+    case ACVP_SUB_ML_KEM_XCAP:
+        ml_kem_cap = cap->cap.ml_kem_xcap_cap;
+        break;
+    default:
+        ACVP_LOG_ERR("Invalid cipher provided for setting ML-KEM paramater");
+        return ACVP_INVALID_ARG;
+    }
+
+    switch (param) {
+    case ACVP_ML_KEM_PARAM_PARAMETER_SET:
+        if (value <= ACVP_ML_KEM_PARAM_SET_NONE || value >= ACVP_ML_KEM_PARAM_SET_MAX) {
+            ACVP_LOG_ERR("Invalid ML-KEM paramter set provided");
+            return ACVP_INVALID_ARG;
+        }
+        return acvp_append_param_list(&ml_kem_cap->param_sets, value);
+    case ACVP_ML_KEM_PARAM_FUNCTION:
+        if (alg != ACVP_SUB_ML_KEM_XCAP) {
+            ACVP_LOG_ERR("Function selection for ML-KEM is only for encap/decap");
+            return ACVP_INVALID_ARG;
+        }
+        if (value <= ACVP_ML_KEM_FUNCTION_NONE|| value >= ACVP_ML_KEM_FUNCTION_MAX) {
+            ACVP_LOG_ERR("Invalid function provided for ML-KEM encap/decap");
+            return ACVP_INVALID_ARG;
+        }
+        return acvp_append_param_list(&ml_kem_cap->functions, value);
+    default:
+        ACVP_LOG_ERR("Invalid parameter provided for ML-KEM");
+        return ACVP_INVALID_ARG;
     }
 
     return ACVP_SUCCESS;

@@ -57,6 +57,12 @@
     <ClCompile Include="..\..\app\app_lms.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\app\app_ml_dsa.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\app_ml_kem.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\app\app_main.c">
       <Filter>Source Files</Filter>
     </ClCompile>

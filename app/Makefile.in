@@ -148,12 +148,14 @@ am__DEPENDENCIES_1 =
 am__libacvp_app_la_SOURCES_DIST = app_main.c app_aes.c app_cli.c \
 	app_cmac.c app_des.c app_drbg.c app_dsa.c app_ecdsa.c \
 	app_eddsa.c app_hmac.c app_kas.c app_kdf.c app_kda.c \
-	app_kmac.c app_rsa.c app_sha.c app_lms.c app_utils.c \
-	app_fips_lcl.h app_fips_init_lcl.h app_lcl.h ketopt.h
+	app_kmac.c app_rsa.c app_sha.c app_lms.c app_ml_dsa.c \
+	app_ml_kem.c app_utils.c app_fips_lcl.h app_fips_init_lcl.h \
+	app_lcl.h ketopt.h
 am__objects_1 = app_main.lo app_aes.lo app_cli.lo app_cmac.lo \
 	app_des.lo app_drbg.lo app_dsa.lo app_ecdsa.lo app_eddsa.lo \
 	app_hmac.lo app_kas.lo app_kdf.lo app_kda.lo app_kmac.lo \
-	app_rsa.lo app_sha.lo app_lms.lo app_utils.lo
+	app_rsa.lo app_sha.lo app_lms.lo app_ml_dsa.lo app_ml_kem.lo \
+	app_utils.lo
 @BUILD_APP_AS_LIB_TRUE@am_libacvp_app_la_OBJECTS = $(am__objects_1)
 libacvp_app_la_OBJECTS = $(am_libacvp_app_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
@@ -164,8 +166,8 @@ am__v_lt_1 =
 am__acvp_app_SOURCES_DIST = app_main.c app_aes.c app_cli.c app_cmac.c \
 	app_des.c app_drbg.c app_dsa.c app_ecdsa.c app_eddsa.c \
 	app_hmac.c app_kas.c app_kdf.c app_kda.c app_kmac.c app_rsa.c \
-	app_sha.c app_lms.c app_utils.c app_fips_lcl.h \
-	app_fips_init_lcl.h app_lcl.h ketopt.h
+	app_sha.c app_lms.c app_ml_dsa.c app_ml_kem.c app_utils.c \
+	app_fips_lcl.h app_fips_init_lcl.h app_lcl.h ketopt.h
 am__objects_2 = acvp_app-app_main.$(OBJEXT) acvp_app-app_aes.$(OBJEXT) \
 	acvp_app-app_cli.$(OBJEXT) acvp_app-app_cmac.$(OBJEXT) \
 	acvp_app-app_des.$(OBJEXT) acvp_app-app_drbg.$(OBJEXT) \
@@ -174,7 +176,8 @@ am__objects_2 = acvp_app-app_main.$(OBJEXT) acvp_app-app_aes.$(OBJEXT) \
 	acvp_app-app_kas.$(OBJEXT) acvp_app-app_kdf.$(OBJEXT) \
 	acvp_app-app_kda.$(OBJEXT) acvp_app-app_kmac.$(OBJEXT) \
 	acvp_app-app_rsa.$(OBJEXT) acvp_app-app_sha.$(OBJEXT) \
-	acvp_app-app_lms.$(OBJEXT) acvp_app-app_utils.$(OBJEXT)
+	acvp_app-app_lms.$(OBJEXT) acvp_app-app_ml_dsa.$(OBJEXT) \
+	acvp_app-app_ml_kem.$(OBJEXT) acvp_app-app_utils.$(OBJEXT)
 @BUILD_APP_AS_LIB_FALSE@am_acvp_app_OBJECTS = $(am__objects_2)
 acvp_app_OBJECTS = $(am_acvp_app_OBJECTS)
 @BUILD_APP_AS_LIB_FALSE@acvp_app_DEPENDENCIES = $(am__DEPENDENCIES_1) \
@@ -212,6 +215,8 @@ am__depfiles_remade = ./$(DEPDIR)/acvp_app-app_aes.Po \
 	./$(DEPDIR)/acvp_app-app_kmac.Po \
 	./$(DEPDIR)/acvp_app-app_lms.Po \
 	./$(DEPDIR)/acvp_app-app_main.Po \
+	./$(DEPDIR)/acvp_app-app_ml_dsa.Po \
+	./$(DEPDIR)/acvp_app-app_ml_kem.Po \
 	./$(DEPDIR)/acvp_app-app_rsa.Po \
 	./$(DEPDIR)/acvp_app-app_sha.Po \
 	./$(DEPDIR)/acvp_app-app_utils.Po ./$(DEPDIR)/app_aes.Plo \
@@ -222,6 +227,7 @@ am__depfiles_remade = ./$(DEPDIR)/acvp_app-app_aes.Po \
 	./$(DEPDIR)/app_kas.Plo ./$(DEPDIR)/app_kda.Plo \
 	./$(DEPDIR)/app_kdf.Plo ./$(DEPDIR)/app_kmac.Plo \
 	./$(DEPDIR)/app_lms.Plo ./$(DEPDIR)/app_main.Plo \
+	./$(DEPDIR)/app_ml_dsa.Plo ./$(DEPDIR)/app_ml_kem.Plo \
 	./$(DEPDIR)/app_rsa.Plo ./$(DEPDIR)/app_sha.Plo \
 	./$(DEPDIR)/app_utils.Plo
 am__mv = mv -f
@@ -425,6 +431,8 @@ tmp_sources = app_main.c \
               app_rsa.c \
               app_sha.c \
               app_lms.c \
+              app_ml_dsa.c \
+              app_ml_kem.c \
               app_utils.c \
               app_fips_lcl.h \
               app_fips_init_lcl.h \
@@ -596,6 +604,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/acvp_app-app_kmac.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/acvp_app-app_lms.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/acvp_app-app_main.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/acvp_app-app_ml_dsa.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/acvp_app-app_ml_kem.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/acvp_app-app_rsa.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/acvp_app-app_sha.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/acvp_app-app_utils.Po@am__quote@ # am--include-marker
@@ -614,6 +624,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/app_kmac.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/app_lms.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/app_main.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/app_ml_dsa.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/app_ml_kem.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/app_rsa.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/app_sha.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/app_utils.Plo@am__quote@ # am--include-marker
@@ -886,6 +898,34 @@ acvp_app-app_lms.obj: app_lms.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -c -o acvp_app-app_lms.obj `if test -f 'app_lms.c'; then $(CYGPATH_W) 'app_lms.c'; else $(CYGPATH_W) '$(srcdir)/app_lms.c'; fi`
 
+acvp_app-app_ml_dsa.o: app_ml_dsa.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -MT acvp_app-app_ml_dsa.o -MD -MP -MF $(DEPDIR)/acvp_app-app_ml_dsa.Tpo -c -o acvp_app-app_ml_dsa.o `test -f 'app_ml_dsa.c' || echo '$(srcdir)/'`app_ml_dsa.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/acvp_app-app_ml_dsa.Tpo $(DEPDIR)/acvp_app-app_ml_dsa.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='app_ml_dsa.c' object='acvp_app-app_ml_dsa.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -c -o acvp_app-app_ml_dsa.o `test -f 'app_ml_dsa.c' || echo '$(srcdir)/'`app_ml_dsa.c
+
+acvp_app-app_ml_dsa.obj: app_ml_dsa.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -MT acvp_app-app_ml_dsa.obj -MD -MP -MF $(DEPDIR)/acvp_app-app_ml_dsa.Tpo -c -o acvp_app-app_ml_dsa.obj `if test -f 'app_ml_dsa.c'; then $(CYGPATH_W) 'app_ml_dsa.c'; else $(CYGPATH_W) '$(srcdir)/app_ml_dsa.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/acvp_app-app_ml_dsa.Tpo $(DEPDIR)/acvp_app-app_ml_dsa.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='app_ml_dsa.c' object='acvp_app-app_ml_dsa.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -c -o acvp_app-app_ml_dsa.obj `if test -f 'app_ml_dsa.c'; then $(CYGPATH_W) 'app_ml_dsa.c'; else $(CYGPATH_W) '$(srcdir)/app_ml_dsa.c'; fi`
+
+acvp_app-app_ml_kem.o: app_ml_kem.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -MT acvp_app-app_ml_kem.o -MD -MP -MF $(DEPDIR)/acvp_app-app_ml_kem.Tpo -c -o acvp_app-app_ml_kem.o `test -f 'app_ml_kem.c' || echo '$(srcdir)/'`app_ml_kem.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/acvp_app-app_ml_kem.Tpo $(DEPDIR)/acvp_app-app_ml_kem.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='app_ml_kem.c' object='acvp_app-app_ml_kem.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -c -o acvp_app-app_ml_kem.o `test -f 'app_ml_kem.c' || echo '$(srcdir)/'`app_ml_kem.c
+
+acvp_app-app_ml_kem.obj: app_ml_kem.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -MT acvp_app-app_ml_kem.obj -MD -MP -MF $(DEPDIR)/acvp_app-app_ml_kem.Tpo -c -o acvp_app-app_ml_kem.obj `if test -f 'app_ml_kem.c'; then $(CYGPATH_W) 'app_ml_kem.c'; else $(CYGPATH_W) '$(srcdir)/app_ml_kem.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/acvp_app-app_ml_kem.Tpo $(DEPDIR)/acvp_app-app_ml_kem.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='app_ml_kem.c' object='acvp_app-app_ml_kem.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -c -o acvp_app-app_ml_kem.obj `if test -f 'app_ml_kem.c'; then $(CYGPATH_W) 'app_ml_kem.c'; else $(CYGPATH_W) '$(srcdir)/app_ml_kem.c'; fi`
+
 acvp_app-app_utils.o: app_utils.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(acvp_app_CFLAGS) $(CFLAGS) -MT acvp_app-app_utils.o -MD -MP -MF $(DEPDIR)/acvp_app-app_utils.Tpo -c -o acvp_app-app_utils.o `test -f 'app_utils.c' || echo '$(srcdir)/'`app_utils.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/acvp_app-app_utils.Tpo $(DEPDIR)/acvp_app-app_utils.Po
@@ -1072,6 +1112,8 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/acvp_app-app_kmac.Po
 	-rm -f ./$(DEPDIR)/acvp_app-app_lms.Po
 	-rm -f ./$(DEPDIR)/acvp_app-app_main.Po
+	-rm -f ./$(DEPDIR)/acvp_app-app_ml_dsa.Po
+	-rm -f ./$(DEPDIR)/acvp_app-app_ml_kem.Po
 	-rm -f ./$(DEPDIR)/acvp_app-app_rsa.Po
 	-rm -f ./$(DEPDIR)/acvp_app-app_sha.Po
 	-rm -f ./$(DEPDIR)/acvp_app-app_utils.Po
@@ -1090,6 +1132,8 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/app_kmac.Plo
 	-rm -f ./$(DEPDIR)/app_lms.Plo
 	-rm -f ./$(DEPDIR)/app_main.Plo
+	-rm -f ./$(DEPDIR)/app_ml_dsa.Plo
+	-rm -f ./$(DEPDIR)/app_ml_kem.Plo
 	-rm -f ./$(DEPDIR)/app_rsa.Plo
 	-rm -f ./$(DEPDIR)/app_sha.Plo
 	-rm -f ./$(DEPDIR)/app_utils.Plo
@@ -1153,6 +1197,8 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/acvp_app-app_kmac.Po
 	-rm -f ./$(DEPDIR)/acvp_app-app_lms.Po
 	-rm -f ./$(DEPDIR)/acvp_app-app_main.Po
+	-rm -f ./$(DEPDIR)/acvp_app-app_ml_dsa.Po
+	-rm -f ./$(DEPDIR)/acvp_app-app_ml_kem.Po
 	-rm -f ./$(DEPDIR)/acvp_app-app_rsa.Po
 	-rm -f ./$(DEPDIR)/acvp_app-app_sha.Po
 	-rm -f ./$(DEPDIR)/acvp_app-app_utils.Po
@@ -1171,6 +1217,8 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/app_kmac.Plo
 	-rm -f ./$(DEPDIR)/app_lms.Plo
 	-rm -f ./$(DEPDIR)/app_main.Plo
+	-rm -f ./$(DEPDIR)/app_ml_dsa.Plo
+	-rm -f ./$(DEPDIR)/app_ml_kem.Plo
 	-rm -f ./$(DEPDIR)/app_rsa.Plo
 	-rm -f ./$(DEPDIR)/app_sha.Plo
 	-rm -f ./$(DEPDIR)/app_utils.Plo

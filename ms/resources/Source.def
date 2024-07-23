@@ -85,6 +85,10 @@ EXPORTS
   acvp_cap_lms_enable
   acvp_cap_lms_set_parm
   acvp_cap_lms_set_mode_compatability_pair
+  acvp_cap_ml_dsa_enable
+  acvp_cap_ml_dsa_set_parm
+  acvp_cap_ml_kem_enable
+  acvp_cap_ml_kem_set_parm
   acvp_cap_set_prereq
   acvp_create_test_session
   acvp_free_test_session
@@ -151,4 +155,6 @@ EXPORTS
   acvp_get_kmac_alg
   acvp_get_eddsa_alg
   acvp_get_lms_alg
+  acvp_get_ml_dsa_alg
+  acvp_get_ml_kem_alg
   acvp_sleep

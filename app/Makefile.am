@@ -15,6 +15,8 @@ tmp_sources = app_main.c \
               app_rsa.c \
               app_sha.c \
               app_lms.c \
+              app_ml_dsa.c \
+              app_ml_kem.c \
               app_utils.c \
               app_fips_lcl.h \
               app_fips_init_lcl.h \
