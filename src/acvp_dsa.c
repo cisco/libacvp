@@ -60,7 +60,6 @@ static ACVP_RESULT acvp_dsa_siggen_init_tc(ACVP_CTX *ctx,
 
     stc->tg_id = tg_id;
     stc->tc_id = tc_id;
-
     stc->l = l;
     stc->n = n;
     stc->sha = sha;
@@ -98,6 +97,8 @@ static ACVP_RESULT acvp_dsa_siggen_init_tc(ACVP_CTX *ctx,
 
 static ACVP_RESULT acvp_dsa_sigver_init_tc(ACVP_CTX *ctx,
                                            ACVP_DSA_TC *stc,
+                                           int tg_id,
+                                           unsigned int tc_id,
                                            int l,
                                            int n,
                                            ACVP_HASH_ALG sha,
@@ -110,6 +111,8 @@ static ACVP_RESULT acvp_dsa_sigver_init_tc(ACVP_CTX *ctx,
                                            const char *msg) {
     ACVP_RESULT rv;
 
+    stc->tg_id = tg_id;
+    stc->tc_id = tc_id;
     stc->l = l;
     stc->n = n;
     stc->sha = sha;
@@ -178,6 +181,8 @@ static ACVP_RESULT acvp_dsa_sigver_init_tc(ACVP_CTX *ctx,
 
 static ACVP_RESULT acvp_dsa_pqgver_init_tc(ACVP_CTX *ctx,
                                            ACVP_DSA_TC *stc,
+                                           int tg_id,
+                                           unsigned int tc_id,
                                            int l,
                                            int n,
                                            int c,
@@ -191,6 +196,8 @@ static ACVP_RESULT acvp_dsa_pqgver_init_tc(ACVP_CTX *ctx,
                                            unsigned int pqg) {
     ACVP_RESULT rv;
 
+    stc->tg_id = tg_id;
+    stc->tc_id = tc_id;
     stc->l = l;
     stc->n = n;
     stc->c = c;
@@ -261,16 +268,20 @@ static ACVP_RESULT acvp_dsa_pqgver_init_tc(ACVP_CTX *ctx,
 
 static ACVP_RESULT acvp_dsa_pqggen_init_tc(ACVP_CTX *ctx,
                                            ACVP_DSA_TC *stc,
-                                           unsigned int gpq,
-                                           const char *idx,
+                                           int tg_id,
+                                           unsigned int tc_id,
                                            int l,
                                            int n,
+                                           unsigned int gpq,
+                                           const char *idx,
                                            ACVP_HASH_ALG sha,
                                            const char *p,
                                            const char *q,
                                            const char *seed) {
     ACVP_RESULT rv;
 
+    stc->tg_id = tg_id;
+    stc->tc_id = tc_id;
     stc->l = l;
     stc->n = n;
     stc->sha = sha;
@@ -664,7 +675,8 @@ ACVP_RESULT acvp_dsa_pqggen_handler(ACVP_CTX *ctx,
                                     ACVP_TEST_CASE tc,
                                     ACVP_CAPS_LIST *cap,
                                     JSON_Array *r_tarr,
-                                    JSON_Object *groupobj) {
+                                    JSON_Object *groupobj,
+                                    int tg_id) {
     const char *idx = NULL;
     JSON_Array *tests;
     JSON_Value *testval;
@@ -817,7 +829,7 @@ ACVP_RESULT acvp_dsa_pqggen_handler(ACVP_CTX *ctx,
             r_tobj = json_value_get_object(r_tval);
             json_object_set_number(r_tobj, "tcId", tc_id);
 
-            rv = acvp_dsa_pqggen_init_tc(ctx, stc, gpq, idx, l, n, sha, p, q, seed);
+            rv = acvp_dsa_pqggen_init_tc(ctx, stc, tg_id, tc_id, l, n, gpq, idx, sha, p, q, seed);
             if (rv != ACVP_SUCCESS) {
                 acvp_dsa_release_tc(stc);
                 json_value_free(r_tval);
@@ -859,7 +871,7 @@ ACVP_RESULT acvp_dsa_pqggen_handler(ACVP_CTX *ctx,
             json_object_set_number(r_tobj, "tcId", tc_id);
 
             /* Process the current DSA test vector... */
-            rv = acvp_dsa_pqggen_init_tc(ctx, stc, gpq, idx, l, n, sha, p, q, seed);
+            rv = acvp_dsa_pqggen_init_tc(ctx, stc, tg_id, tc_id, l, n, gpq, idx, sha, p, q, seed);
             if (rv != ACVP_SUCCESS) {
                 acvp_dsa_release_tc(stc);
                 json_value_free(r_tval);
@@ -1071,7 +1083,8 @@ static ACVP_RESULT acvp_dsa_pqgver_handler(ACVP_CTX *ctx,
                                     ACVP_TEST_CASE tc,
                                     ACVP_CAPS_LIST *cap,
                                     JSON_Array *r_tarr,
-                                    JSON_Object *groupobj) {
+                                    JSON_Object *groupobj,
+                                    int tg_id) {
     const char *idx = NULL;
     const char *g = NULL, *pqmode = NULL, *gmode = NULL, *seed = NULL;
     JSON_Array *tests;
@@ -1230,7 +1243,7 @@ static ACVP_RESULT acvp_dsa_pqgver_handler(ACVP_CTX *ctx,
          * Setup the test case data that will be passed down to
          * the crypto module.
          */
-        rv = acvp_dsa_pqgver_init_tc(ctx, stc, l, n, c, idx, sha, p, q, g, h, seed, gpq);
+        rv = acvp_dsa_pqgver_init_tc(ctx, stc, tg_id, tc_id, l, n, c, idx, sha, p, q, g, h, seed, gpq);
         if (rv != ACVP_SUCCESS) {
             acvp_dsa_release_tc(stc);
             return rv;
@@ -1269,7 +1282,8 @@ static ACVP_RESULT acvp_dsa_sigver_handler(ACVP_CTX *ctx,
                                     ACVP_TEST_CASE tc,
                                     ACVP_CAPS_LIST *cap,
                                     JSON_Array *r_tarr,
-                                    JSON_Object *groupobj) {
+                                    JSON_Object *groupobj,
+                                    int tg_id) {
     const char *msg = NULL, *r = NULL, *s = NULL, *y = NULL, *g = NULL;
     JSON_Array *tests;
     JSON_Value *testval;
@@ -1391,7 +1405,7 @@ static ACVP_RESULT acvp_dsa_sigver_handler(ACVP_CTX *ctx,
          * Setup the test case data that will be passed down to
          * the crypto module.
          */
-        rv = acvp_dsa_sigver_init_tc(ctx, stc, l, n, sha, p, q, g, r, s, y, msg);
+        rv = acvp_dsa_sigver_init_tc(ctx, stc, tg_id, tc_id, l, n, sha, p, q, g, r, s, y, msg);
         if (rv != ACVP_SUCCESS) {
             acvp_dsa_release_tc(stc);
             return rv;
@@ -1519,7 +1533,7 @@ static ACVP_RESULT acvp_dsa_pqgver_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) 
 
         ACVP_LOG_VERBOSE("    Test group: %d", i);
 
-        rv = acvp_dsa_pqgver_handler(ctx, tc, cap, r_tarr, groupobj);
+        rv = acvp_dsa_pqgver_handler(ctx, tc, cap, r_tarr, groupobj, tgId);
         if (rv != ACVP_SUCCESS) {
             goto err;
         }
@@ -1640,7 +1654,7 @@ static ACVP_RESULT acvp_dsa_pqggen_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) 
 
         ACVP_LOG_VERBOSE("    Test group: %d", i);
 
-        rv = acvp_dsa_pqggen_handler(ctx, tc, cap, r_tarr, groupobj);
+        rv = acvp_dsa_pqggen_handler(ctx, tc, cap, r_tarr, groupobj, tgId);
         if (rv != ACVP_SUCCESS) {
             goto err;
         }
@@ -1988,7 +2002,7 @@ static ACVP_RESULT acvp_dsa_sigver_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) 
 
         ACVP_LOG_VERBOSE("    Test group: %d", i);
 
-        rv = acvp_dsa_sigver_handler(ctx, tc, cap, r_tarr, groupobj);
+        rv = acvp_dsa_sigver_handler(ctx, tc, cap, r_tarr, groupobj, tgId);
         if (rv != ACVP_SUCCESS) {
             goto err;
         }
