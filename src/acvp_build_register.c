@@ -1216,7 +1216,6 @@ static ACVP_RESULT acvp_build_rsa_keygen_register_cap(JSON_Object *cap_obj, ACVP
     result = acvp_lookup_prereqVals(cap_obj, cap_entry);
     if (result != ACVP_SUCCESS) { return result; }
 
-
     JSON_Array *alg_specs_array = NULL;
     JSON_Value *alg_specs_val = NULL;
     JSON_Object *alg_specs_obj = NULL;

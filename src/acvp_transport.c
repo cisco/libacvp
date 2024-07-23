@@ -923,7 +923,7 @@ ACVP_RESULT acvp_transport_get(ACVP_CTX *ctx,
             len += snprintf(full_url+len, rem_space, "%s", escaped_value);
             rem_space = max_url - len;
 
-            curl_free(escaped_value);
+            curl_free(escaped_value); escaped_value = NULL;
             if (param->next == NULL || rem_space <= 0) break;
             param = param->next;
         }
