@@ -26,6 +26,8 @@
 #define TLS12_BUF_MAX 4096 /* match library */
 #define TLS12_SEED_BUF_MAX (TLS12_BUF_MAX + TLS_EXT_MASTER_SECRET_CONST_SIZE)
 
+#define SNMP_EXPANDED_PASSWORD_SIZE 1048576
+#define SNMP_SHA1_SIZE 20
 
 /* For simplicty, define as non-const; the OSSL_PARAM functions don't use const */
 static char ssh_kdf_a[] = "A";
@@ -425,10 +427,62 @@ end:
 }
 
 int app_kdf135_snmp_handler(ACVP_TEST_CASE *test_case) {
+    ACVP_KDF135_SNMP_TC *tc = NULL;
+    int rc = 1;
+    char *expanded_password = NULL;
+    unsigned char derived_password[SNMP_SHA1_SIZE];
+    size_t chunk_size = 0;
+    EVP_MD_CTX *mctx = NULL;
+    const EVP_MD *md = EVP_sha1();
+
     if (!test_case) {
+        printf("Missing test case for snmp KDF.\n");
         return -1;
     }
-    return 1;
+
+    tc = test_case->tc.kdf135_snmp;
+    if (!tc) {
+        printf("Missing test case for snmp KDF.\n");
+        return -1;
+    }
+
+    // Expanded_password = the leftmost 1048576 bytes of the string of N repetitions of the password. 
+    expanded_password = (char *)malloc(SNMP_EXPANDED_PASSWORD_SIZE);
+    if (!expanded_password) {
+        printf("Failed to malloc expanded password for snmp KDF.\n");
+        goto end;
+    }
+    size_t i;
+    for (i = 0; i < SNMP_EXPANDED_PASSWORD_SIZE; i += tc->p_len) {
+        chunk_size = (SNMP_EXPANDED_PASSWORD_SIZE - i < tc->p_len) ? (SNMP_EXPANDED_PASSWORD_SIZE - i) : tc->p_len;
+        memcpy(expanded_password + i, tc->password, chunk_size);
+    }
+
+    // Derived_password = SHA-1 (Expanded_password). The Derived_password is the output of hashing the Expanded_password by SHA-1. 
+    mctx = EVP_MD_CTX_new();
+    if (!EVP_DigestInit_ex(mctx, md, NULL)
+        || !EVP_DigestUpdate(mctx, expanded_password, SNMP_EXPANDED_PASSWORD_SIZE)
+        || !EVP_DigestFinal(mctx, derived_password, NULL)) {
+        printf("Failed to generate the derived password for SNMP KDF.\n");
+        goto end;
+    }
+
+    // Shared_key = SHA-1(Derived_password || snmpEngineID || Derived_password). 
+    if (!EVP_DigestInit_ex(mctx, md, NULL)
+        || !EVP_DigestUpdate(mctx, derived_password, SNMP_SHA1_SIZE)
+        || !EVP_DigestUpdate(mctx, tc->engine_id, tc->engine_id_len)
+        || !EVP_DigestUpdate(mctx, derived_password, SNMP_SHA1_SIZE)
+        || !EVP_DigestFinal(mctx, tc->s_key, NULL)) {
+        printf("Failed to generate the shared key for SNMP KDF.\n");
+        goto end;
+    }
+    tc->skey_len = SNMP_SHA1_SIZE;
+
+    rc = 0;
+end:
+    if (expanded_password) free(expanded_password);
+    if (mctx) EVP_MD_CTX_free(mctx);
+    return rc;
 }
 
 int app_kdf135_ssh_handler(ACVP_TEST_CASE *test_case) {
