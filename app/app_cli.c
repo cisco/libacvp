@@ -80,6 +80,12 @@ static void print_usage(int code) {
     printf("      --ml_kem\n");
     printf("\n");
 
+    printf("      If running hash, a maximum size for large data testing (LDT) may be required on specific\n");
+    printf("      memory-limited platforms. This can be set (in GiB) using:\n");
+    printf("            --set_max_hash_size <GiB value>\n");
+    printf("      Setting 0 will disable LDT and only use the typical hash message sizes in the KiB range.\n");
+    printf("\n");
+
     if (code >= ACVP_LOG_LVL_VERBOSE) {
         printf("libacvp generates a file containing information that can be used for various tasks regarding\n");
         printf("a test session. By default, this is usually placed in the folder of the executable utilizing\n");
@@ -230,6 +236,7 @@ static ko_longopt_t longopts[] = {
     { "cost", ko_no_argument, 416 },
     { "debug", ko_no_argument, 417 },
     { "get_registration", ko_no_argument, 418 },
+    { "set_max_hash_size", ko_required_argument, 419 },
     { "disable_fips", ko_no_argument, 500 },
     { NULL, 0, 0 }
 };
@@ -237,6 +244,7 @@ static ko_longopt_t longopts[] = {
 
 static void default_config(APP_CONFIG *cfg) {
     cfg->level = ACVP_LOG_LVL_STATUS;
+    cfg->max_ldt_size = 8; /* Max in spec is 8 right now, do all by default */
 }
 
 static const char* lookup_arg_name(int c) {
@@ -265,7 +273,7 @@ static int check_option_length(const char *opt, int c, int maxAllowed) {
 
 int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
     ketopt_t opt = KETOPT_INIT;
-    int c = 0, diff = 0, len = 0, print_ver = 0;
+    int c = 0, diff = 0, len = 0, print_ver = 0, ldt_manually_set = 0;
 
     cfg->empty_alg = 1;
 
@@ -546,6 +554,20 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
             cfg->get_reg = 1;
             break;
 
+        case 419:
+            len = 0;
+            if (sscanf(opt.arg, "%d", &len) == 0) {
+                printf("Error reading in max hash size: invalid argument provided\n");
+                return 1;
+            }
+            if (len < 0 || len > 8) {
+                printf("Provided max LDT size invalid (must be > 0 and <= 8)\n");
+                return 1;
+            }
+            cfg->max_ldt_size = len;
+            ldt_manually_set = 1;
+            break;
+
         case 500:
             cfg->disable_fips = 1;
             break;
@@ -578,6 +600,11 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
     if (print_ver) {
         print_version_info(cfg);
         return 1;
+    }
+
+    if (ldt_manually_set && (!cfg->hash && !cfg->testall)) {
+        printf("Warning: max hash LDT size specified, but hash not enabled. Ignoring provided value...\n");
+        acvp_sleep(2);
     }
 
     //Many args do not need an alg specified. Todo: make cleaner

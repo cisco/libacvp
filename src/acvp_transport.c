@@ -715,6 +715,28 @@ ACVP_RESULT acvp_transport_post(ACVP_CTX *ctx,
 #endif
 }
 
+/*
+ * This is the top level function used within libacvp to retrieve
+ * the health status from the ACVP server.
+ */
+ACVP_RESULT acvp_retrieve_health_status(ACVP_CTX *ctx) {
+#ifdef ACVP_OFFLINE 
+    ACVP_LOG_ERR("Curl not linked, exiting function"); 
+    return ACVP_TRANSPORT_FAIL;
+#else
+    ACVP_RESULT rv = 0;
+    char url[ACVP_ATTR_URL_MAX + 1] = {0};
+
+    rv = sanity_check_ctx(ctx);
+    if (ACVP_SUCCESS != rv) return rv;
+
+    snprintf(url, ACVP_ATTR_URL_MAX,
+            "https://%s/health",
+            ctx->server_name);
+
+    return acvp_network_action(ctx, ACVP_NET_GET, url, NULL, 0);
+#endif
+}
 
 /*
  * This is the top level function used within libacvp to retrieve
@@ -923,7 +945,7 @@ ACVP_RESULT acvp_transport_get(ACVP_CTX *ctx,
             len += snprintf(full_url+len, rem_space, "%s", escaped_value);
             rem_space = max_url - len;
 
-            curl_free(escaped_value);
+            curl_free(escaped_value); escaped_value = NULL;
             if (param->next == NULL || rem_space <= 0) break;
             param = param->next;
         }

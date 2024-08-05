@@ -259,7 +259,7 @@ ACVP_RESULT acvp_safe_primes_kat_handler(ACVP_CTX *ctx, JSON_Object *obj) {
             rv = ACVP_MISSING_ARG;
             goto err;
         }
-        json_object_set_number(r_gobj, "tg_id", tg_id);
+        json_object_set_number(r_gobj, "tgId", tg_id);
         json_object_set_value(r_gobj, "tests", json_value_init_array());
         r_tarr = json_object_get_array(r_gobj, "tests");
 

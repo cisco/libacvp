@@ -449,6 +449,7 @@ end:
 
 static int enable_hash(ACVP_CTX *ctx) {
     ACVP_RESULT rv = ACVP_SUCCESS;
+    int i = 0;
 
     /* Enable SHA-1 and SHA-2 */
     rv = acvp_cap_hash_enable(ctx, ACVP_HASH_SHA1, &app_sha_handler);
@@ -545,39 +546,17 @@ static int enable_hash(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
 
     /* Run large data tests for SHA3 for 3.0.8 and greater */
-    if (fips_ver  >= OPENSSL_FIPS_308) {
-        rv = acvp_cap_hash_set_parm(ctx, ACVP_HASH_SHA3_224, ACVP_HASH_LARGE_DATA, 1);
-        CHECK_ENABLE_CAP_RV(rv);
-        rv = acvp_cap_hash_set_parm(ctx, ACVP_HASH_SHA3_224, ACVP_HASH_LARGE_DATA, 2);
-        CHECK_ENABLE_CAP_RV(rv);
-        rv = acvp_cap_hash_set_parm(ctx, ACVP_HASH_SHA3_224, ACVP_HASH_LARGE_DATA, 4);
-        CHECK_ENABLE_CAP_RV(rv);
-        rv = acvp_cap_hash_set_parm(ctx, ACVP_HASH_SHA3_224, ACVP_HASH_LARGE_DATA, 8);
-        CHECK_ENABLE_CAP_RV(rv);
-        rv = acvp_cap_hash_set_parm(ctx, ACVP_HASH_SHA3_256, ACVP_HASH_LARGE_DATA, 1);
-        CHECK_ENABLE_CAP_RV(rv);
-        rv = acvp_cap_hash_set_parm(ctx, ACVP_HASH_SHA3_256, ACVP_HASH_LARGE_DATA, 2);
-        CHECK_ENABLE_CAP_RV(rv);
-        rv = acvp_cap_hash_set_parm(ctx, ACVP_HASH_SHA3_256, ACVP_HASH_LARGE_DATA, 4);
-        CHECK_ENABLE_CAP_RV(rv);
-        rv = acvp_cap_hash_set_parm(ctx, ACVP_HASH_SHA3_256, ACVP_HASH_LARGE_DATA, 8);
-        CHECK_ENABLE_CAP_RV(rv);
-        rv = acvp_cap_hash_set_parm(ctx, ACVP_HASH_SHA3_384, ACVP_HASH_LARGE_DATA, 1);
-        CHECK_ENABLE_CAP_RV(rv);
-        rv = acvp_cap_hash_set_parm(ctx, ACVP_HASH_SHA3_384, ACVP_HASH_LARGE_DATA, 2);
-        CHECK_ENABLE_CAP_RV(rv);
-        rv = acvp_cap_hash_set_parm(ctx, ACVP_HASH_SHA3_384, ACVP_HASH_LARGE_DATA, 4);
-        CHECK_ENABLE_CAP_RV(rv);
-        rv = acvp_cap_hash_set_parm(ctx, ACVP_HASH_SHA3_384, ACVP_HASH_LARGE_DATA, 8);
-        CHECK_ENABLE_CAP_RV(rv);
-        rv = acvp_cap_hash_set_parm(ctx, ACVP_HASH_SHA3_512, ACVP_HASH_LARGE_DATA, 1);
-        CHECK_ENABLE_CAP_RV(rv);
-        rv = acvp_cap_hash_set_parm(ctx, ACVP_HASH_SHA3_512, ACVP_HASH_LARGE_DATA, 2);
-        CHECK_ENABLE_CAP_RV(rv);
-        rv = acvp_cap_hash_set_parm(ctx, ACVP_HASH_SHA3_512, ACVP_HASH_LARGE_DATA, 4);
-        CHECK_ENABLE_CAP_RV(rv);
-        rv = acvp_cap_hash_set_parm(ctx, ACVP_HASH_SHA3_512, ACVP_HASH_LARGE_DATA, 8);
-        CHECK_ENABLE_CAP_RV(rv);
+    if (fips_ver >= OPENSSL_FIPS_308) {
+        for (i = 1; i <= max_ldt_size; i *= 2) {
+            rv = acvp_cap_hash_set_parm(ctx, ACVP_HASH_SHA3_224, ACVP_HASH_LARGE_DATA, i);
+            CHECK_ENABLE_CAP_RV(rv);
+            rv = acvp_cap_hash_set_parm(ctx, ACVP_HASH_SHA3_256, ACVP_HASH_LARGE_DATA, i);
+            CHECK_ENABLE_CAP_RV(rv);
+            rv = acvp_cap_hash_set_parm(ctx, ACVP_HASH_SHA3_384, ACVP_HASH_LARGE_DATA, i);
+            CHECK_ENABLE_CAP_RV(rv);
+            rv = acvp_cap_hash_set_parm(ctx, ACVP_HASH_SHA3_512, ACVP_HASH_LARGE_DATA, i);
+            CHECK_ENABLE_CAP_RV(rv);
+        }
     }
 end:
     return rv;

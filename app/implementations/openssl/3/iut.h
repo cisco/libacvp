@@ -27,6 +27,7 @@
 #define FIPS_PROVIDER_LOOKUP_NAME "OpenSSL FIPS Provider"
 
 extern int fips_ver;
+extern int max_ldt_size;
 
 ACVP_RESULT fips_sanity_check(void);
 const char *get_string_from_oid(unsigned char *oid, int oid_len);

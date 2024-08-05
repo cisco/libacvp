@@ -826,7 +826,7 @@ Test(EnableCapAES, invalid_keylens, .fini = teardown) {
 
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_CFB1, ACVP_SYM_CIPH_KEYLEN, 333);
     cr_assert(rv == ACVP_INVALID_ARG);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_CFB1, ACVP_SYM_CIPH_KEYLEN, 333333);
+    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_CFB1, ACVP_SYM_CIPH_KEYLEN, 999999);
     cr_assert(rv == ACVP_INVALID_ARG);
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_CFB1, ACVP_SYM_CIPH_KEYLEN, 0);
     cr_assert(rv == ACVP_INVALID_ARG);
@@ -840,7 +840,7 @@ Test(EnableCapAES, invalid_param_lens, .fini = teardown) {
     setup_empty_ctx(&ctx);
     rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_CFB1, &dummy_handler_success);
     cr_assert(rv == ACVP_SUCCESS);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_CFB1, ACVP_SYM_CIPH_PTLEN, 333333);
+    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_CFB1, ACVP_SYM_CIPH_PTLEN, 999999);
     cr_assert(rv == ACVP_INVALID_ARG);
     
     rv = acvp_cap_sym_cipher_enable(ctx, ACVP_AES_CCM, &dummy_handler_success);
@@ -851,11 +851,11 @@ Test(EnableCapAES, invalid_param_lens, .fini = teardown) {
     cr_assert(rv == ACVP_INVALID_ARG);
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_CCM, ACVP_SYM_CIPH_IVLEN, 0);
     cr_assert(rv == ACVP_INVALID_ARG);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_CCM, ACVP_SYM_CIPH_IVLEN, 333333);
+    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_CCM, ACVP_SYM_CIPH_IVLEN, 999999);
     cr_assert(rv == ACVP_INVALID_ARG);
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_CCM, ACVP_SYM_CIPH_IVLEN, 0);
     cr_assert(rv == ACVP_INVALID_ARG);
-    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_CCM, ACVP_SYM_CIPH_AADLEN, 333333);
+    rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_CCM, ACVP_SYM_CIPH_AADLEN, 999999);
     cr_assert(rv == ACVP_INVALID_ARG);
     rv = acvp_cap_sym_cipher_set_parm(ctx, ACVP_AES_CCM, ACVP_SYM_CIPH_AADLEN, -333);
     cr_assert(rv == ACVP_INVALID_ARG);

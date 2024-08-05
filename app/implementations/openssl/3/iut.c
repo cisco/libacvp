@@ -22,6 +22,7 @@
 
 int fips_ver = 0;
 int dsa_disabled = 0;
+int max_ldt_size = 0;
 
 void iut_print_version(APP_CONFIG *cfg) {
     const char *str = NULL;
@@ -93,7 +94,7 @@ ACVP_RESULT iut_setup(APP_CONFIG *cfg) {
 
     /* Check if the provider has DSA disabled; other conditional algorithm flags can be checked here in the future if needed */
     //TODO
-
+    max_ldt_size = cfg->max_ldt_size;
     rv = ACVP_SUCCESS;
     return rv;
 }
