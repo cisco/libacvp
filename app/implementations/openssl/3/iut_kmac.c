@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022, Cisco Systems, Inc.
+ * Copyright (c) 2024, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -9,7 +9,6 @@
 
 #include "app_lcl.h"
 
-#if OPENSSL_VERSION_NUMBER >= 0x30000000L
 #include <openssl/evp.h>
 #include <openssl/core_names.h>
 #include <openssl/param_build.h>
@@ -28,6 +27,7 @@ int app_kmac_handler(ACVP_TEST_CASE *test_case) {
     ACVP_SUB_KMAC alg;
 
     if (!test_case) {
+        printf("Missing KMAC test case from library\n");
         return rv;
     }
 
@@ -147,13 +147,3 @@ end:
     if (mac_compare) free(mac_compare);
     return rv;
 }
-#else
-
-int app_kmac_handler(ACVP_TEST_CASE *test_case) {
-    if (!test_case) {
-        return -1;
-    }
-    return 1;
-}
-
-#endif

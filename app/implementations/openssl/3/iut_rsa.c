@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Cisco Systems, Inc.
+ * Copyright (c) 2024, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -8,8 +8,8 @@
  */
 
 #include "app_lcl.h"
+#include "implementations/openssl/3/iut.h"
 
-#if OPENSSL_VERSION_NUMBER >= 0x30000000L
 #include <openssl/evp.h>
 #include <openssl/bn.h>
 #include <openssl/rsa.h>
@@ -479,16 +479,6 @@ err:
     if (pkey) EVP_PKEY_free(pkey);
     return rv;
 }
-
-#else
-
-int app_rsa_decprim_handler(ACVP_TEST_CASE *test_case) {
-    if (!test_case) {
-        return -1;
-    }
-    return 1;
-}
-
 #endif
 
 int app_rsa_sigprim_handler(ACVP_TEST_CASE *test_case) {
@@ -642,29 +632,3 @@ err:
     if (bctx) BN_CTX_free(bctx);
     return rv;
 }
-
-#else
-
-int app_rsa_keygen_handler(ACVP_TEST_CASE *test_case) {
-    if (!test_case) {
-        return -1;
-    }
-    return 1;
-}
-
-int app_rsa_sig_handler(ACVP_TEST_CASE *test_case) {
-    if (!test_case) {
-        return -1;
-    }
-    return 1;
-}
-
-int app_rsa_sigprim_handler(ACVP_TEST_CASE *test_case) {
-    if (!test_case) {
-        return -1;
-    }
-    return 1;
-}
-
-#endif
-

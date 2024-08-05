@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Cisco Systems, Inc.
+ * Copyright (c) 2024, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -27,11 +27,7 @@ int app_des_handler(ACVP_TEST_CASE *test_case) {
     EVP_CIPHER_CTX *cipher_ctx;
     const EVP_CIPHER *cipher;
     unsigned char *iv = 0;
-#if OPENSSL_VERSION_NUMBER >= 0x30000000L
     unsigned char *ctx_iv = NULL;
-#else
-    const unsigned char *ctx_iv = NULL;
-#endif
     ACVP_SUB_TDES alg;
 
     if (!test_case) {
@@ -121,15 +117,11 @@ int app_des_handler(ACVP_TEST_CASE *test_case) {
      * one thousand times before we complete each iteration.
      */
     if (tc->test_type == ACVP_SYM_TEST_TYPE_MCT) {
-#if OPENSSL_VERSION_NUMBER >= 0x30000000L
         ctx_iv = calloc(8, sizeof(unsigned char));
         if (!ctx_iv) {
             printf("Error allocating memory for TDES test\n");
             goto err;
         }
-#else
-        ctx_iv = EVP_CIPHER_CTX_iv(cipher_ctx);
-#endif
 
 #define SYM_IV_BYTE_MAX 128
         if (tc->direction == ACVP_SYM_CIPH_DIR_ENCRYPT) {
@@ -138,9 +130,7 @@ int app_des_handler(ACVP_TEST_CASE *test_case) {
                 EVP_CIPHER_CTX_set_padding(cipher_ctx, 0);
             } else {
                 /* TDES needs the pre-operation IV returned */
-                #if OPENSSL_VERSION_NUMBER >= 0x30000000L
-                    EVP_CIPHER_CTX_get_updated_iv(cipher_ctx, (void *)ctx_iv, 8);
-                #endif
+                EVP_CIPHER_CTX_get_updated_iv(cipher_ctx, (void *)ctx_iv, 8);
                 memcpy_s(tc->iv_ret, SYM_IV_BYTE_MAX, ctx_iv, 8);
             }
             if (tc->cipher == ACVP_TDES_CFB1) {
@@ -150,9 +140,7 @@ int app_des_handler(ACVP_TEST_CASE *test_case) {
             EVP_Cipher(cipher_ctx, tc->ct, tc->pt, tc->pt_len);
             tc->ct_len = tc->pt_len;
             /* TDES needs the post-operation IV returned */
-            #if OPENSSL_VERSION_NUMBER >= 0x30000000L
-                EVP_CIPHER_CTX_get_updated_iv(cipher_ctx, (void *)ctx_iv, 8);
-            #endif
+            EVP_CIPHER_CTX_get_updated_iv(cipher_ctx, (void *)ctx_iv, 8);
             memcpy_s(tc->iv_ret_after, SYM_IV_BYTE_MAX, ctx_iv, 8);
         } else if (tc->direction == ACVP_SYM_CIPH_DIR_DECRYPT) {
             if (tc->mct_index == 0) {
@@ -160,9 +148,7 @@ int app_des_handler(ACVP_TEST_CASE *test_case) {
                 EVP_CIPHER_CTX_set_padding(cipher_ctx, 0);
             } else {
                 /* TDES needs the pre-operation IV returned */
-                #if OPENSSL_VERSION_NUMBER >= 0x30000000L
-                    EVP_CIPHER_CTX_get_updated_iv(cipher_ctx, (void *)ctx_iv, 8);
-                #endif
+                EVP_CIPHER_CTX_get_updated_iv(cipher_ctx, (void *)ctx_iv, 8);
                 memcpy_s(tc->iv_ret, SYM_IV_BYTE_MAX, ctx_iv, 8);
             }
             if (tc->cipher == ACVP_TDES_CFB1) {
@@ -171,9 +157,7 @@ int app_des_handler(ACVP_TEST_CASE *test_case) {
             EVP_Cipher(cipher_ctx, tc->pt, tc->ct, tc->ct_len);
             tc->pt_len = tc->ct_len;
             /* TDES needs the post-operation IV returned */
-            #if OPENSSL_VERSION_NUMBER >= 0x30000000L
-                EVP_CIPHER_CTX_get_updated_iv(cipher_ctx, (void *)ctx_iv, 8);
-            #endif
+            EVP_CIPHER_CTX_get_updated_iv(cipher_ctx, (void *)ctx_iv, 8);
             memcpy_s(tc->iv_ret_after, SYM_IV_BYTE_MAX, ctx_iv, 8);
         } else {
             printf("Unsupported direction\n");
@@ -208,14 +192,10 @@ int app_des_handler(ACVP_TEST_CASE *test_case) {
         EVP_CIPHER_CTX_free(glb_cipher_ctx);
         glb_cipher_ctx = NULL;
     }
-#if OPENSSL_VERSION_NUMBER >= 0x30000000L
     if (ctx_iv) free(ctx_iv);
-#endif
     return 0;
 err:
-#if OPENSSL_VERSION_NUMBER >= 0x30000000L
     if (ctx_iv) free(ctx_iv);
-#endif
     if (glb_cipher_ctx) EVP_CIPHER_CTX_free(glb_cipher_ctx);
     glb_cipher_ctx = NULL;
     return 1;

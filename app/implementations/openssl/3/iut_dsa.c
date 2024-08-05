@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Cisco Systems, Inc.
+ * Copyright (c) 2024, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -9,8 +9,9 @@
 
 
 #include "app_lcl.h"
+#include "implementations/openssl/3/iut.h"
 
-#if OPENSSL_VERSION_NUMBER >= 0x30000000L && !defined OPENSSL_NO_DSA
+#if !defined OPENSSL_NO_DSA
 #include <openssl/param_build.h>
 #include <openssl/core_names.h>
 #include <openssl/evp.h>

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Cisco Systems, Inc.
+ * Copyright (c) 2024, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -9,7 +9,6 @@
 
 #include "app_lcl.h"
 
-#if OPENSSL_VERSION_NUMBER >= 0x30000000L
 #include <openssl/evp.h>
 #include <openssl/hmac.h>
 #include <openssl/kdf.h>
@@ -17,6 +16,7 @@
 #include <openssl/param_build.h>
 #include "acvp/acvp.h"
 #include "safe_lib.h"
+#include "implementations/openssl/3/iut.h"
 
 static unsigned char *fixed_info_gen_concat(ACVP_KDA_PATTERN_CANDIDATE *fixedInfoPattern,
                                             unsigned char *literalCandidate,
@@ -517,31 +517,3 @@ end:
     if (kctx) EVP_KDF_CTX_free(kctx);
     return rc;
 }
-
-#else //SSL < 3.0
-
-int app_kda_hkdf_handler(ACVP_TEST_CASE *test_case) {
-    if (!test_case) {
-        return -1;
-    }
-    printf("No application support\n");
-    return 1;
-}
-
-int app_kda_onestep_handler(ACVP_TEST_CASE *test_case) {
-    if (!test_case) {
-        return -1;
-    }
-    printf("No application support\n");
-    return 1;
-}
-
-int app_kda_twostep_handler(ACVP_TEST_CASE *test_case) {
-    if (!test_case) {
-        return -1;
-    }
-    printf("No application support\n");
-    return 1;
-}
-
-#endif

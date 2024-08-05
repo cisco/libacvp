@@ -14,9 +14,6 @@
 #include "acvp/acvp.h"
 #include "safe_lib.h"
 
-#include <openssl/crypto.h>
-#include <openssl/evp.h>
-
 #define ACVP_APP_HELP_MSG "Use acvp_app --help for more information."
 
 static void print_usage(int code) {
@@ -78,13 +75,9 @@ static void print_usage(int code) {
     printf("      --kas_ifc\n");
     printf("      --kda\n");
     printf("      --kts_ifc\n");
-#ifdef ACVPAPP_LMS_SUPPORT
     printf("      --lms\n");
-#endif
-#ifdef ACVPAPP_ML_SUPPORT
     printf("      --ml_dsa\n");
     printf("      --ml_kem\n");
-#endif
     printf("\n");
 
     if (code >= ACVP_LOG_LVL_VERBOSE) {
@@ -159,11 +152,9 @@ static void print_usage(int code) {
     printf("      --save_to <file>\n");
     printf("      -s <file>\n");
     printf("\n");
-#if OPENSSL_VERSION_NUMBER >= 0x30000000L
-    printf("To disable FIPS mode for this run (Note, a warning will be issued):\n");
+    printf("To request disabling FIPS for this run (may not apply to all supported modules):\n");
     printf("      -disable_fips\n");
     printf("\n");
-#endif
     printf("In addition some options are passed to acvp_app using\n");
     printf("environment variables.  The following variables can be set:\n\n");
     printf("    ACV_SERVER (when not set, defaults to %s)\n", DEFAULT_SERVER);
@@ -239,39 +230,13 @@ static ko_longopt_t longopts[] = {
     { "cost", ko_no_argument, 416 },
     { "debug", ko_no_argument, 417 },
     { "get_registration", ko_no_argument, 418 },
-#if OPENSSL_VERSION_NUMBER >= 0x30000000L
     { "disable_fips", ko_no_argument, 500 },
-#endif
     { NULL, 0, 0 }
 };
 
 
 static void default_config(APP_CONFIG *cfg) {
     cfg->level = ACVP_LOG_LVL_STATUS;
-}
-
-static void enable_all_algorithms(APP_CONFIG *cfg) {
-    cfg->aes = 1;
-    cfg->tdes = 1;
-    cfg->hash = 1;
-    cfg->cmac = 1;
-    cfg->hmac = 1;
-    cfg->kmac = 1;
-    cfg->dsa = 1;
-    cfg->kas_ffc = 1;
-    cfg->safe_primes = 1;
-    cfg->rsa = 1;
-    cfg->drbg = 1;
-    cfg->ecdsa = 1;
-    cfg->eddsa = 1;
-    cfg->kas_ecc = 1;
-    cfg->kas_ifc = 1;
-    cfg->kda = 1;
-    cfg->kts_ifc = 1;
-    cfg->kdf = 1;
-    cfg->lms = 1;
-    cfg->ml_dsa = 1;
-    cfg->ml_kem = 1;
 }
 
 static const char* lookup_arg_name(int c) {
@@ -441,7 +406,6 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
             break;
         case 'a':
         case 350:
-            enable_all_algorithms(cfg);
             cfg->empty_alg = 0;
             cfg->testall = 1;
             break;
@@ -582,11 +546,10 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
             cfg->get_reg = 1;
             break;
 
-#if OPENSSL_VERSION_NUMBER >= 0x30000000L
         case 500:
             cfg->disable_fips = 1;
             break;
-#endif
+
         case '?':
             printf(ANSI_COLOR_RED "unknown option: %s\n"ANSI_COLOR_RESET, *(argv + opt.ind - !(opt.pos > 0)));
             printf("%s\n", ACVP_APP_HELP_MSG);
@@ -613,7 +576,7 @@ int ingest_cli(APP_CONFIG *cfg, int argc, char **argv) {
     }
 
     if (print_ver) {
-        print_version_info(cfg->disable_fips == 0);
+        print_version_info(cfg);
         return 1;
     }
 

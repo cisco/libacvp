@@ -908,7 +908,7 @@ typedef enum acvp_pbkdf_param {
 /** @enum ACVP_KDF_TLS12_PARM */
 typedef enum acvp_kdf_tls12_param {
     ACVP_KDF_TLS12_PARAM_MIN,
-    ACVP_KDF_TLS12_HASH_ALG /**< HMAC algorithms supported by TLS 1.2 imeplementation */
+    ACVP_KDF_TLS12_HASH_ALG /**< HMAC algorithms supported by TLS 1.2 implementation */
 } ACVP_KDF_TLS12_PARM;
 
 /** @enum ACVP_KDF_TLS13_RUN_MODE */
