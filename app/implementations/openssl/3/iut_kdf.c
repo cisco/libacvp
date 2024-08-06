@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Cisco Systems, Inc.
+ * Copyright (c) 2024, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -8,8 +8,8 @@
  */
 
 #include "app_lcl.h"
+#include "implementations/openssl/3/iut.h"
 
-#if OPENSSL_VERSION_NUMBER >= 0x30000000L
 #include <openssl/evp.h>
 #include <openssl/bn.h>
 #include <openssl/core_names.h>
@@ -1020,94 +1020,3 @@ err:
     if (kctx) EVP_KDF_CTX_free(kctx);
     return rv;
 }
-
-#else
-
-int app_kdf135_snmp_handler(ACVP_TEST_CASE *test_case) {
-    if (!test_case) {
-        return -1;
-    }
-    printf("No application support\n");
-    return 1;
-}
-
-int app_kdf135_ssh_handler(ACVP_TEST_CASE *test_case) {
-    if (!test_case) {
-        return -1;
-    }
-    printf("No application support\n");
-    return 1;
-}
-
-int app_kdf135_srtp_handler(ACVP_TEST_CASE *test_case) {
-    if (!test_case) {
-        return -1;
-    }
-    printf("No application support\n");
-    return 1;
-}
-
-int app_kdf135_ikev2_handler(ACVP_TEST_CASE *test_case) {
-    if (!test_case) {
-        return -1;
-    }
-    printf("No application support\n");
-    return 1;
-}
-int app_kdf108_handler(ACVP_TEST_CASE *test_case) {
-    if (!test_case) {
-        return -1;
-    }
-    printf("No application support\n");
-    return 1;
-}
-
-int app_kdf135_ikev1_handler(ACVP_TEST_CASE *test_case) {
-    if (!test_case) {
-        return -1;
-    }
-    printf("No application support\n");
-    return 1;
-}
-
-int app_kdf135_x942_handler(ACVP_TEST_CASE *test_case) {
-    if (!test_case) {
-        return -1;
-    }
-    printf("No application support\n");
-    return 1;
-}
-
-int app_kdf135_x963_handler(ACVP_TEST_CASE *test_case) {
-    if (!test_case) {
-        return -1;
-    }
-    printf("No application support\n");
-    return 1;
-}
-
-int app_pbkdf_handler(ACVP_TEST_CASE *test_case) {
-    if (!test_case) {
-        return -1;
-    }
-    printf("No application support\n");
-    return 1;
-}
-
-int app_kdf_tls12_handler(ACVP_TEST_CASE *test_case) {
-    if (!test_case) {
-        return -1;
-    }
-    printf("No application support\n");
-    return 1;
-}
-
-int app_kdf_tls13_handler(ACVP_TEST_CASE *test_case) {
-    if (!test_case) {
-        return -1;
-    }
-    printf("No application support\n");
-    return 1;
-}
-
-#endif

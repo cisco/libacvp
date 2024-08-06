@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, Cisco Systems, Inc.
+ * Copyright (c) 2024, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -13,7 +13,6 @@
 #include <openssl/rand.h>
 #include "app_lcl.h"
 #include "safe_mem_lib.h"
-#if OPENSSL_VERSION_NUMBER >= 0x30000000L
 #include <openssl/core_names.h>
 
 int app_drbg_handler(ACVP_TEST_CASE *test_case) {
@@ -218,15 +217,3 @@ err:
     if (tmp) free(tmp);
     return rv;
 }
-
-#else
-
-int app_drbg_handler(ACVP_TEST_CASE *test_case) {
-    if (!test_case) {
-        return -1;
-    }
-    return 1;
-}
-
-#endif
-

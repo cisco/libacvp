@@ -25,8 +25,8 @@ extern "C"
 #define ACVP_PROTOCOL_VERSION_MINOR 0
 
 #define ACVP_LIBRARY_VERSION_MAJOR 2
-#define ACVP_LIBRARY_VERSION_MINOR 1
-#define ACVP_LIBRARY_VERSION_PATCH 1
+#define ACVP_LIBRARY_VERSION_MINOR 2
+#define ACVP_LIBRARY_VERSION_PATCH 0
 
 #define xstr_2(x) #x
 #define xstr(x) xstr_2(x)
@@ -908,7 +908,7 @@ typedef enum acvp_pbkdf_param {
 /** @enum ACVP_KDF_TLS12_PARM */
 typedef enum acvp_kdf_tls12_param {
     ACVP_KDF_TLS12_PARAM_MIN,
-    ACVP_KDF_TLS12_HASH_ALG /**< HMAC algorithms supported by TLS 1.2 imeplementation */
+    ACVP_KDF_TLS12_HASH_ALG /**< HMAC algorithms supported by TLS 1.2 implementation */
 } ACVP_KDF_TLS12_PARM;
 
 /** @enum ACVP_KDF_TLS13_RUN_MODE */

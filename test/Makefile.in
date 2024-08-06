@@ -147,8 +147,7 @@ noinst_PROGRAMS = runtest$(EXEEXT)
 
 @APP_NOT_SUPPORTED_FALSE@am__append_5 = $(SSL_CFLAGS) $(FOM_CFLAGS) -I../app
 @APP_NOT_SUPPORTED_FALSE@am__append_6 = $(SSL_LDFLAGS) $(FOM_LDFLAGS)
-@APP_NOT_SUPPORTED_FALSE@@USE_FOM_OBJ_TRUE@am__append_7 = $(FOM_OBJ_DIR)/fipscanister.o
-@APP_NOT_SUPPORTED_FALSE@am__append_8 = app_common.h
+@APP_NOT_SUPPORTED_FALSE@am__append_7 = app_common.h
 subdir = test
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/libtool.m4 \
@@ -238,8 +237,7 @@ am__runtest_SOURCES_DIST = ut_common.c create_session.c \
 am_runtest_OBJECTS = runtest-ut_common.$(OBJEXT) $(am__objects_1) \
 	$(am__objects_2)
 runtest_OBJECTS = $(am_runtest_OBJECTS)
-@APP_NOT_SUPPORTED_FALSE@runtest_DEPENDENCIES = $(APP_LINK) \
-@APP_NOT_SUPPORTED_FALSE@	$(am__append_7)
+@APP_NOT_SUPPORTED_FALSE@runtest_DEPENDENCIES = $(APP_LINK)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
@@ -421,15 +419,14 @@ EGREP = @EGREP@
 ETAGS = @ETAGS@
 EXEEXT = @EXEEXT@
 FGREP = @FGREP@
-FOM_CFLAGS = @FOM_CFLAGS@
-FOM_LDFLAGS = @FOM_LDFLAGS@
-FOM_OBJ_DIR = @FOM_OBJ_DIR@
 GREP = @GREP@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
+IUT_CFLAGS = @IUT_CFLAGS@
+IUT_LDFLAGS = @IUT_LDFLAGS@
 LD = @LD@
 LDFLAGS = @LDFLAGS@
 LIBACVP_CFLAGS = @LIBACVP_CFLAGS@
@@ -464,10 +461,9 @@ SAFEC_CFLAGS = @SAFEC_CFLAGS@
 SAFEC_LDFLAGS = @SAFEC_LDFLAGS@
 SAFEC_STUB_DIR = @SAFEC_STUB_DIR@
 SED = @SED@
+SELECTED_IUT = @SELECTED_IUT@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
-SSL_CFLAGS = @SSL_CFLAGS@
-SSL_LDFLAGS = @SSL_LDFLAGS@
 STRIP = @STRIP@
 VERSION = @VERSION@
 abs_builddir = @abs_builddir@
@@ -547,9 +543,9 @@ tmp_ldflags = $(CRITERION_LDFLAGS) $(SAFEC_LDFLAGS) $(LIBACVP_LDFLAGS) \
 
 runtest_CFLAGS = ${tmp_cflags}
 runtest_LDFLAGS = ${tmp_ldflags}
-@APP_NOT_SUPPORTED_FALSE@runtest_LDADD = $(APP_LINK) $(am__append_7)
+@APP_NOT_SUPPORTED_FALSE@runtest_LDADD = $(APP_LINK)
 runtestdir = 
-runtest_HEADERS = ut_common.h $(am__append_8)
+runtest_HEADERS = ut_common.h $(am__append_7)
 all: all-am
 
 .SUFFIXES:

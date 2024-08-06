@@ -86,9 +86,6 @@ runtest_LDFLAGS = ${tmp_ldflags}
 
 if ! APP_NOT_SUPPORTED
 runtest_LDADD = $(APP_LINK)
-if USE_FOM_OBJ
-runtest_LDADD += $(FOM_OBJ_DIR)/fipscanister.o
-endif
 endif
 
 runtestdir=
