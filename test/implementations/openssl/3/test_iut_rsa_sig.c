@@ -1,6 +1,6 @@
 /** @file */
 /*
- * Copyright (c) 2019, Cisco Systems, Inc.
+ * Copyright (c) 2024, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -14,12 +14,13 @@
 
 #include "ut_common.h"
 #include "app_common.h"
+#include "iut_common.h"
 #include "acvp/acvp_lcl.h"
 
-ACVP_CTX *ctx;
-ACVP_TEST_CASE *test_case;
+static ACVP_CTX *ctx;
+static ACVP_TEST_CASE *test_case;
 ACVP_RSA_SIG_TC *rsa_sig_tc;
-ACVP_RESULT rv;
+static ACVP_RESULT rv;
 
 void free_rsa_sig_tc(ACVP_RSA_SIG_TC *stc) {
     if (stc->msg) { free(stc->msg); }

@@ -128,26 +128,45 @@ noinst_PROGRAMS = runtest$(EXEEXT)
 
 @LIB_NOT_SUPPORTED_FALSE@am__append_2 = $(LIBCURL_CFLAGS)
 @LIB_NOT_SUPPORTED_FALSE@am__append_3 = $(LIBCURL_LDFLAGS)
-@APP_NOT_SUPPORTED_FALSE@am__append_4 = app_common.c \
-@APP_NOT_SUPPORTED_FALSE@      test_app_aes.c \
-@APP_NOT_SUPPORTED_FALSE@      test_app_cmac.c \
-@APP_NOT_SUPPORTED_FALSE@      test_app_des.c \
-@APP_NOT_SUPPORTED_FALSE@      test_app_drbg.c \
-@APP_NOT_SUPPORTED_FALSE@      test_app_ecdsa.c \
-@APP_NOT_SUPPORTED_FALSE@      test_app_hmac.c \
-@APP_NOT_SUPPORTED_FALSE@      test_app_kas_ecc.c \
-@APP_NOT_SUPPORTED_FALSE@      test_app_kas_ffc.c \
-@APP_NOT_SUPPORTED_FALSE@      test_app_kas_ifc.c \
-@APP_NOT_SUPPORTED_FALSE@      test_app_rsa_keygen.c \
-@APP_NOT_SUPPORTED_FALSE@      test_app_rsa_sig.c \
-@APP_NOT_SUPPORTED_FALSE@      test_app_sha.c \
-@APP_NOT_SUPPORTED_FALSE@      test_app_safe_primes.c \
-@APP_NOT_SUPPORTED_FALSE@      test_app_kda.c \
-@APP_NOT_SUPPORTED_FALSE@      test_app_kmac.c
+@APP_NOT_SUPPORTED_FALSE@am__append_4 = app_common.c
+@APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@am__append_5 = implementations/openssl/3/test_iut_aes.c \
+@APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@                   implementations/openssl/3/test_iut_cmac.c \
+@APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@                   implementations/openssl/3/test_iut_des.c \
+@APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@                   implementations/openssl/3/test_iut_drbg.c \
+@APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@                   implementations/openssl/3/test_iut_ecdsa.c \
+@APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@                   implementations/openssl/3/test_iut_hmac.c \
+@APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@                   implementations/openssl/3/test_iut_kas_ecc.c \
+@APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@                   implementations/openssl/3/test_iut_kas_ffc.c \
+@APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@                   implementations/openssl/3/test_iut_kas_ifc.c \
+@APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@                   implementations/openssl/3/test_iut_rsa_keygen.c \
+@APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@                   implementations/openssl/3/test_iut_rsa_sig.c \
+@APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@                   implementations/openssl/3/test_iut_hash.c \
+@APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@                   implementations/openssl/3/test_iut_safe_primes.c \
+@APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@                   implementations/openssl/3/test_iut_kda.c \
+@APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@                   implementations/openssl/3/test_iut_kmac.c
 
-@APP_NOT_SUPPORTED_FALSE@am__append_5 = $(SSL_CFLAGS) $(FOM_CFLAGS) -I../app
-@APP_NOT_SUPPORTED_FALSE@am__append_6 = $(SSL_LDFLAGS) $(FOM_LDFLAGS)
-@APP_NOT_SUPPORTED_FALSE@am__append_7 = app_common.h
+@APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@am__append_6 = ../app/implementations/openssl/3/acvp_app-iut.o \
+@APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@            ../app/implementations/openssl/3/acvp_app-iut_utils.o \
+@APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@            ../app/implementations/openssl/3/registrations/acvp_app-fp_30X.o \
+@APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@            ../app/implementations/openssl/3/registrations/acvp_app-fp_312.o \
+@APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@            ../app/implementations/openssl/3/registrations/acvp_app-non_fips.o \
+@APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@            ../app/implementations/openssl/3/acvp_app-iut_hash.o \
+@APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@            ../app/implementations/openssl/3/acvp_app-iut_hmac.o \
+@APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@            ../app/implementations/openssl/3/acvp_app-iut_aes.o \
+@APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@            ../app/implementations/openssl/3/acvp_app-iut_des.o \
+@APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@            ../app/implementations/openssl/3/acvp_app-iut_cmac.o \
+@APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@            ../app/implementations/openssl/3/acvp_app-iut_kdf.o \
+@APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@            ../app/implementations/openssl/3/acvp_app-iut_dsa.o \
+@APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@            ../app/implementations/openssl/3/acvp_app-iut_kas.o \
+@APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@            ../app/implementations/openssl/3/acvp_app-iut_rsa.o \
+@APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@            ../app/implementations/openssl/3/acvp_app-iut_ecdsa.o \
+@APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@            ../app/implementations/openssl/3/acvp_app-iut_drbg.o \
+@APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@            ../app/implementations/openssl/3/acvp_app-iut_kda.o \
+@APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@            ../app/implementations/openssl/3/acvp_app-iut_kmac.o
+
+@APP_NOT_SUPPORTED_FALSE@am__append_7 = $(IUT_CFLAGS) -I../app
+@APP_NOT_SUPPORTED_FALSE@am__append_8 = $(IUT_LDFLAGS)
+@APP_NOT_SUPPORTED_FALSE@am__append_9 = app_common.h
 subdir = test
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/libtool.m4 \
@@ -177,11 +196,21 @@ am__runtest_SOURCES_DIST = ut_common.c create_session.c \
 	test_acvp_ecdsa.c test_acvp_kas_ecc.c test_acvp_kas_ifc.c \
 	test_acvp_kts_ifc.c test_acvp_kas_ffc.c \
 	test_acvp_safe_primes.c test_acvp_kda.c test_acvp_kmac.c \
-	app_common.c test_app_aes.c test_app_cmac.c test_app_des.c \
-	test_app_drbg.c test_app_ecdsa.c test_app_hmac.c \
-	test_app_kas_ecc.c test_app_kas_ffc.c test_app_kas_ifc.c \
-	test_app_rsa_keygen.c test_app_rsa_sig.c test_app_sha.c \
-	test_app_safe_primes.c test_app_kda.c test_app_kmac.c
+	app_common.c implementations/openssl/3/test_iut_aes.c \
+	implementations/openssl/3/test_iut_cmac.c \
+	implementations/openssl/3/test_iut_des.c \
+	implementations/openssl/3/test_iut_drbg.c \
+	implementations/openssl/3/test_iut_ecdsa.c \
+	implementations/openssl/3/test_iut_hmac.c \
+	implementations/openssl/3/test_iut_kas_ecc.c \
+	implementations/openssl/3/test_iut_kas_ffc.c \
+	implementations/openssl/3/test_iut_kas_ifc.c \
+	implementations/openssl/3/test_iut_rsa_keygen.c \
+	implementations/openssl/3/test_iut_rsa_sig.c \
+	implementations/openssl/3/test_iut_hash.c \
+	implementations/openssl/3/test_iut_safe_primes.c \
+	implementations/openssl/3/test_iut_kda.c \
+	implementations/openssl/3/test_iut_kmac.c
 @LIB_NOT_SUPPORTED_FALSE@am__objects_1 =  \
 @LIB_NOT_SUPPORTED_FALSE@	runtest-create_session.$(OBJEXT) \
 @LIB_NOT_SUPPORTED_FALSE@	runtest-test_acvp_utils.$(OBJEXT) \
@@ -218,24 +247,25 @@ am__runtest_SOURCES_DIST = ut_common.c create_session.c \
 @LIB_NOT_SUPPORTED_FALSE@	runtest-test_acvp_safe_primes.$(OBJEXT) \
 @LIB_NOT_SUPPORTED_FALSE@	runtest-test_acvp_kda.$(OBJEXT) \
 @LIB_NOT_SUPPORTED_FALSE@	runtest-test_acvp_kmac.$(OBJEXT)
-@APP_NOT_SUPPORTED_FALSE@am__objects_2 = runtest-app_common.$(OBJEXT) \
-@APP_NOT_SUPPORTED_FALSE@	runtest-test_app_aes.$(OBJEXT) \
-@APP_NOT_SUPPORTED_FALSE@	runtest-test_app_cmac.$(OBJEXT) \
-@APP_NOT_SUPPORTED_FALSE@	runtest-test_app_des.$(OBJEXT) \
-@APP_NOT_SUPPORTED_FALSE@	runtest-test_app_drbg.$(OBJEXT) \
-@APP_NOT_SUPPORTED_FALSE@	runtest-test_app_ecdsa.$(OBJEXT) \
-@APP_NOT_SUPPORTED_FALSE@	runtest-test_app_hmac.$(OBJEXT) \
-@APP_NOT_SUPPORTED_FALSE@	runtest-test_app_kas_ecc.$(OBJEXT) \
-@APP_NOT_SUPPORTED_FALSE@	runtest-test_app_kas_ffc.$(OBJEXT) \
-@APP_NOT_SUPPORTED_FALSE@	runtest-test_app_kas_ifc.$(OBJEXT) \
-@APP_NOT_SUPPORTED_FALSE@	runtest-test_app_rsa_keygen.$(OBJEXT) \
-@APP_NOT_SUPPORTED_FALSE@	runtest-test_app_rsa_sig.$(OBJEXT) \
-@APP_NOT_SUPPORTED_FALSE@	runtest-test_app_sha.$(OBJEXT) \
-@APP_NOT_SUPPORTED_FALSE@	runtest-test_app_safe_primes.$(OBJEXT) \
-@APP_NOT_SUPPORTED_FALSE@	runtest-test_app_kda.$(OBJEXT) \
-@APP_NOT_SUPPORTED_FALSE@	runtest-test_app_kmac.$(OBJEXT)
+@APP_NOT_SUPPORTED_FALSE@am__objects_2 = runtest-app_common.$(OBJEXT)
+am__dirstamp = $(am__leading_dot)dirstamp
+@APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@am__objects_3 = implementations/openssl/3/runtest-test_iut_aes.$(OBJEXT) \
+@APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@	implementations/openssl/3/runtest-test_iut_cmac.$(OBJEXT) \
+@APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@	implementations/openssl/3/runtest-test_iut_des.$(OBJEXT) \
+@APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@	implementations/openssl/3/runtest-test_iut_drbg.$(OBJEXT) \
+@APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@	implementations/openssl/3/runtest-test_iut_ecdsa.$(OBJEXT) \
+@APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@	implementations/openssl/3/runtest-test_iut_hmac.$(OBJEXT) \
+@APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@	implementations/openssl/3/runtest-test_iut_kas_ecc.$(OBJEXT) \
+@APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@	implementations/openssl/3/runtest-test_iut_kas_ffc.$(OBJEXT) \
+@APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@	implementations/openssl/3/runtest-test_iut_kas_ifc.$(OBJEXT) \
+@APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@	implementations/openssl/3/runtest-test_iut_rsa_keygen.$(OBJEXT) \
+@APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@	implementations/openssl/3/runtest-test_iut_rsa_sig.$(OBJEXT) \
+@APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@	implementations/openssl/3/runtest-test_iut_hash.$(OBJEXT) \
+@APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@	implementations/openssl/3/runtest-test_iut_safe_primes.$(OBJEXT) \
+@APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@	implementations/openssl/3/runtest-test_iut_kda.$(OBJEXT) \
+@APP_IUT_OPENSSL_3_TRUE@@APP_NOT_SUPPORTED_FALSE@	implementations/openssl/3/runtest-test_iut_kmac.$(OBJEXT)
 am_runtest_OBJECTS = runtest-ut_common.$(OBJEXT) $(am__objects_1) \
-	$(am__objects_2)
+	$(am__objects_2) $(am__objects_3)
 runtest_OBJECTS = $(am_runtest_OBJECTS)
 @APP_NOT_SUPPORTED_FALSE@runtest_DEPENDENCIES = $(APP_LINK)
 AM_V_lt = $(am__v_lt_@AM_V@)
@@ -296,22 +326,22 @@ am__depfiles_remade = ./$(DEPDIR)/runtest-app_common.Po \
 	./$(DEPDIR)/runtest-test_acvp_safe_primes.Po \
 	./$(DEPDIR)/runtest-test_acvp_transport.Po \
 	./$(DEPDIR)/runtest-test_acvp_utils.Po \
-	./$(DEPDIR)/runtest-test_app_aes.Po \
-	./$(DEPDIR)/runtest-test_app_cmac.Po \
-	./$(DEPDIR)/runtest-test_app_des.Po \
-	./$(DEPDIR)/runtest-test_app_drbg.Po \
-	./$(DEPDIR)/runtest-test_app_ecdsa.Po \
-	./$(DEPDIR)/runtest-test_app_hmac.Po \
-	./$(DEPDIR)/runtest-test_app_kas_ecc.Po \
-	./$(DEPDIR)/runtest-test_app_kas_ffc.Po \
-	./$(DEPDIR)/runtest-test_app_kas_ifc.Po \
-	./$(DEPDIR)/runtest-test_app_kda.Po \
-	./$(DEPDIR)/runtest-test_app_kmac.Po \
-	./$(DEPDIR)/runtest-test_app_rsa_keygen.Po \
-	./$(DEPDIR)/runtest-test_app_rsa_sig.Po \
-	./$(DEPDIR)/runtest-test_app_safe_primes.Po \
-	./$(DEPDIR)/runtest-test_app_sha.Po \
-	./$(DEPDIR)/runtest-ut_common.Po
+	./$(DEPDIR)/runtest-ut_common.Po \
+	implementations/openssl/3/$(DEPDIR)/runtest-test_iut_aes.Po \
+	implementations/openssl/3/$(DEPDIR)/runtest-test_iut_cmac.Po \
+	implementations/openssl/3/$(DEPDIR)/runtest-test_iut_des.Po \
+	implementations/openssl/3/$(DEPDIR)/runtest-test_iut_drbg.Po \
+	implementations/openssl/3/$(DEPDIR)/runtest-test_iut_ecdsa.Po \
+	implementations/openssl/3/$(DEPDIR)/runtest-test_iut_hash.Po \
+	implementations/openssl/3/$(DEPDIR)/runtest-test_iut_hmac.Po \
+	implementations/openssl/3/$(DEPDIR)/runtest-test_iut_kas_ecc.Po \
+	implementations/openssl/3/$(DEPDIR)/runtest-test_iut_kas_ffc.Po \
+	implementations/openssl/3/$(DEPDIR)/runtest-test_iut_kas_ifc.Po \
+	implementations/openssl/3/$(DEPDIR)/runtest-test_iut_kda.Po \
+	implementations/openssl/3/$(DEPDIR)/runtest-test_iut_kmac.Po \
+	implementations/openssl/3/$(DEPDIR)/runtest-test_iut_rsa_keygen.Po \
+	implementations/openssl/3/$(DEPDIR)/runtest-test_iut_rsa_sig.Po \
+	implementations/openssl/3/$(DEPDIR)/runtest-test_iut_safe_primes.Po
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -520,32 +550,24 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-runtest_SOURCES = ut_common.c $(am__append_1) $(am__append_4)
+runtest_SOURCES = ut_common.c $(am__append_1) $(am__append_4) \
+	$(am__append_5)
 tmp_cflags = -g -O0 -Wall -DNO_SSL_DL $(SAFEC_CFLAGS) \
 	$(CRITERION_CFLAGS) $(LIBACVP_CFLAGS) -I../include \
-	$(am__append_2) $(am__append_5)
+	$(am__append_2) $(am__append_7)
 tmp_ldflags = $(CRITERION_LDFLAGS) $(SAFEC_LDFLAGS) $(LIBACVP_LDFLAGS) \
-	$(am__append_3) $(am__append_6)
-@APP_NOT_SUPPORTED_FALSE@APP_LINK = ../app/acvp_app-app_utils.o \
-@APP_NOT_SUPPORTED_FALSE@           ../app/acvp_app-app_sha.o \
-@APP_NOT_SUPPORTED_FALSE@           ../app/acvp_app-app_hmac.o \
-@APP_NOT_SUPPORTED_FALSE@           ../app/acvp_app-app_aes.o \
-@APP_NOT_SUPPORTED_FALSE@           ../app/acvp_app-app_des.o \
-@APP_NOT_SUPPORTED_FALSE@           ../app/acvp_app-app_cmac.o \
-@APP_NOT_SUPPORTED_FALSE@           ../app/acvp_app-app_kdf.o \
-@APP_NOT_SUPPORTED_FALSE@           ../app/acvp_app-app_dsa.o \
-@APP_NOT_SUPPORTED_FALSE@           ../app/acvp_app-app_kas.o \
-@APP_NOT_SUPPORTED_FALSE@           ../app/acvp_app-app_rsa.o \
-@APP_NOT_SUPPORTED_FALSE@           ../app/acvp_app-app_ecdsa.o \
-@APP_NOT_SUPPORTED_FALSE@           ../app/acvp_app-app_drbg.o \
-@APP_NOT_SUPPORTED_FALSE@           ../app/acvp_app-app_kda.o \
-@APP_NOT_SUPPORTED_FALSE@           ../app/acvp_app-app_kmac.o
-
+	$(am__append_3) $(am__append_8)
+@APP_NOT_SUPPORTED_FALSE@APP_LINK = ../app/acvp_app-app_cli.o \
+@APP_NOT_SUPPORTED_FALSE@	../app/acvp_app-app_utils.o \
+@APP_NOT_SUPPORTED_FALSE@	../app/totp/acvp_app-hmac_sha256.o \
+@APP_NOT_SUPPORTED_FALSE@	../app/totp/acvp_app-sha256.o \
+@APP_NOT_SUPPORTED_FALSE@	../app/totp/acvp_app-totp.o \
+@APP_NOT_SUPPORTED_FALSE@	$(am__append_6)
 runtest_CFLAGS = ${tmp_cflags}
 runtest_LDFLAGS = ${tmp_ldflags}
 @APP_NOT_SUPPORTED_FALSE@runtest_LDADD = $(APP_LINK)
 runtestdir = 
-runtest_HEADERS = ut_common.h $(am__append_7)
+runtest_HEADERS = ut_common.h $(am__append_9)
 all: all-am
 
 .SUFFIXES:
@@ -588,6 +610,57 @@ clean-noinstPROGRAMS:
 	list=`for p in $$list; do echo "$$p"; done | sed 's/$(EXEEXT)$$//'`; \
 	echo " rm -f" $$list; \
 	rm -f $$list
+implementations/openssl/3/$(am__dirstamp):
+	@$(MKDIR_P) implementations/openssl/3
+	@: > implementations/openssl/3/$(am__dirstamp)
+implementations/openssl/3/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) implementations/openssl/3/$(DEPDIR)
+	@: > implementations/openssl/3/$(DEPDIR)/$(am__dirstamp)
+implementations/openssl/3/runtest-test_iut_aes.$(OBJEXT):  \
+	implementations/openssl/3/$(am__dirstamp) \
+	implementations/openssl/3/$(DEPDIR)/$(am__dirstamp)
+implementations/openssl/3/runtest-test_iut_cmac.$(OBJEXT):  \
+	implementations/openssl/3/$(am__dirstamp) \
+	implementations/openssl/3/$(DEPDIR)/$(am__dirstamp)
+implementations/openssl/3/runtest-test_iut_des.$(OBJEXT):  \
+	implementations/openssl/3/$(am__dirstamp) \
+	implementations/openssl/3/$(DEPDIR)/$(am__dirstamp)
+implementations/openssl/3/runtest-test_iut_drbg.$(OBJEXT):  \
+	implementations/openssl/3/$(am__dirstamp) \
+	implementations/openssl/3/$(DEPDIR)/$(am__dirstamp)
+implementations/openssl/3/runtest-test_iut_ecdsa.$(OBJEXT):  \
+	implementations/openssl/3/$(am__dirstamp) \
+	implementations/openssl/3/$(DEPDIR)/$(am__dirstamp)
+implementations/openssl/3/runtest-test_iut_hmac.$(OBJEXT):  \
+	implementations/openssl/3/$(am__dirstamp) \
+	implementations/openssl/3/$(DEPDIR)/$(am__dirstamp)
+implementations/openssl/3/runtest-test_iut_kas_ecc.$(OBJEXT):  \
+	implementations/openssl/3/$(am__dirstamp) \
+	implementations/openssl/3/$(DEPDIR)/$(am__dirstamp)
+implementations/openssl/3/runtest-test_iut_kas_ffc.$(OBJEXT):  \
+	implementations/openssl/3/$(am__dirstamp) \
+	implementations/openssl/3/$(DEPDIR)/$(am__dirstamp)
+implementations/openssl/3/runtest-test_iut_kas_ifc.$(OBJEXT):  \
+	implementations/openssl/3/$(am__dirstamp) \
+	implementations/openssl/3/$(DEPDIR)/$(am__dirstamp)
+implementations/openssl/3/runtest-test_iut_rsa_keygen.$(OBJEXT):  \
+	implementations/openssl/3/$(am__dirstamp) \
+	implementations/openssl/3/$(DEPDIR)/$(am__dirstamp)
+implementations/openssl/3/runtest-test_iut_rsa_sig.$(OBJEXT):  \
+	implementations/openssl/3/$(am__dirstamp) \
+	implementations/openssl/3/$(DEPDIR)/$(am__dirstamp)
+implementations/openssl/3/runtest-test_iut_hash.$(OBJEXT):  \
+	implementations/openssl/3/$(am__dirstamp) \
+	implementations/openssl/3/$(DEPDIR)/$(am__dirstamp)
+implementations/openssl/3/runtest-test_iut_safe_primes.$(OBJEXT):  \
+	implementations/openssl/3/$(am__dirstamp) \
+	implementations/openssl/3/$(DEPDIR)/$(am__dirstamp)
+implementations/openssl/3/runtest-test_iut_kda.$(OBJEXT):  \
+	implementations/openssl/3/$(am__dirstamp) \
+	implementations/openssl/3/$(DEPDIR)/$(am__dirstamp)
+implementations/openssl/3/runtest-test_iut_kmac.$(OBJEXT):  \
+	implementations/openssl/3/$(am__dirstamp) \
+	implementations/openssl/3/$(DEPDIR)/$(am__dirstamp)
 
 runtest$(EXEEXT): $(runtest_OBJECTS) $(runtest_DEPENDENCIES) $(EXTRA_runtest_DEPENDENCIES) 
 	@rm -f runtest$(EXEEXT)
@@ -595,6 +668,7 @@ runtest$(EXEEXT): $(runtest_OBJECTS) $(runtest_DEPENDENCIES) $(EXTRA_runtest_DEP
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
+	-rm -f implementations/openssl/3/*.$(OBJEXT)
 
 distclean-compile:
 	-rm -f *.tab.c
@@ -635,22 +709,22 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtest-test_acvp_safe_primes.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtest-test_acvp_transport.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtest-test_acvp_utils.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtest-test_app_aes.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtest-test_app_cmac.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtest-test_app_des.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtest-test_app_drbg.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtest-test_app_ecdsa.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtest-test_app_hmac.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtest-test_app_kas_ecc.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtest-test_app_kas_ffc.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtest-test_app_kas_ifc.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtest-test_app_kda.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtest-test_app_kmac.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtest-test_app_rsa_keygen.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtest-test_app_rsa_sig.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtest-test_app_safe_primes.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtest-test_app_sha.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtest-ut_common.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@implementations/openssl/3/$(DEPDIR)/runtest-test_iut_aes.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@implementations/openssl/3/$(DEPDIR)/runtest-test_iut_cmac.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@implementations/openssl/3/$(DEPDIR)/runtest-test_iut_des.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@implementations/openssl/3/$(DEPDIR)/runtest-test_iut_drbg.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@implementations/openssl/3/$(DEPDIR)/runtest-test_iut_ecdsa.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@implementations/openssl/3/$(DEPDIR)/runtest-test_iut_hash.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@implementations/openssl/3/$(DEPDIR)/runtest-test_iut_hmac.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@implementations/openssl/3/$(DEPDIR)/runtest-test_iut_kas_ecc.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@implementations/openssl/3/$(DEPDIR)/runtest-test_iut_kas_ffc.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@implementations/openssl/3/$(DEPDIR)/runtest-test_iut_kas_ifc.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@implementations/openssl/3/$(DEPDIR)/runtest-test_iut_kda.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@implementations/openssl/3/$(DEPDIR)/runtest-test_iut_kmac.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@implementations/openssl/3/$(DEPDIR)/runtest-test_iut_rsa_keygen.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@implementations/openssl/3/$(DEPDIR)/runtest-test_iut_rsa_sig.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@implementations/openssl/3/$(DEPDIR)/runtest-test_iut_safe_primes.Po@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
 	@$(MKDIR_P) $(@D)
@@ -1200,215 +1274,215 @@ runtest-app_common.obj: app_common.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o runtest-app_common.obj `if test -f 'app_common.c'; then $(CYGPATH_W) 'app_common.c'; else $(CYGPATH_W) '$(srcdir)/app_common.c'; fi`
 
-runtest-test_app_aes.o: test_app_aes.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT runtest-test_app_aes.o -MD -MP -MF $(DEPDIR)/runtest-test_app_aes.Tpo -c -o runtest-test_app_aes.o `test -f 'test_app_aes.c' || echo '$(srcdir)/'`test_app_aes.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/runtest-test_app_aes.Tpo $(DEPDIR)/runtest-test_app_aes.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_app_aes.c' object='runtest-test_app_aes.o' libtool=no @AMDEPBACKSLASH@
+implementations/openssl/3/runtest-test_iut_aes.o: implementations/openssl/3/test_iut_aes.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT implementations/openssl/3/runtest-test_iut_aes.o -MD -MP -MF implementations/openssl/3/$(DEPDIR)/runtest-test_iut_aes.Tpo -c -o implementations/openssl/3/runtest-test_iut_aes.o `test -f 'implementations/openssl/3/test_iut_aes.c' || echo '$(srcdir)/'`implementations/openssl/3/test_iut_aes.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) implementations/openssl/3/$(DEPDIR)/runtest-test_iut_aes.Tpo implementations/openssl/3/$(DEPDIR)/runtest-test_iut_aes.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='implementations/openssl/3/test_iut_aes.c' object='implementations/openssl/3/runtest-test_iut_aes.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o runtest-test_app_aes.o `test -f 'test_app_aes.c' || echo '$(srcdir)/'`test_app_aes.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o implementations/openssl/3/runtest-test_iut_aes.o `test -f 'implementations/openssl/3/test_iut_aes.c' || echo '$(srcdir)/'`implementations/openssl/3/test_iut_aes.c
 
-runtest-test_app_aes.obj: test_app_aes.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT runtest-test_app_aes.obj -MD -MP -MF $(DEPDIR)/runtest-test_app_aes.Tpo -c -o runtest-test_app_aes.obj `if test -f 'test_app_aes.c'; then $(CYGPATH_W) 'test_app_aes.c'; else $(CYGPATH_W) '$(srcdir)/test_app_aes.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/runtest-test_app_aes.Tpo $(DEPDIR)/runtest-test_app_aes.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_app_aes.c' object='runtest-test_app_aes.obj' libtool=no @AMDEPBACKSLASH@
+implementations/openssl/3/runtest-test_iut_aes.obj: implementations/openssl/3/test_iut_aes.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT implementations/openssl/3/runtest-test_iut_aes.obj -MD -MP -MF implementations/openssl/3/$(DEPDIR)/runtest-test_iut_aes.Tpo -c -o implementations/openssl/3/runtest-test_iut_aes.obj `if test -f 'implementations/openssl/3/test_iut_aes.c'; then $(CYGPATH_W) 'implementations/openssl/3/test_iut_aes.c'; else $(CYGPATH_W) '$(srcdir)/implementations/openssl/3/test_iut_aes.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) implementations/openssl/3/$(DEPDIR)/runtest-test_iut_aes.Tpo implementations/openssl/3/$(DEPDIR)/runtest-test_iut_aes.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='implementations/openssl/3/test_iut_aes.c' object='implementations/openssl/3/runtest-test_iut_aes.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o runtest-test_app_aes.obj `if test -f 'test_app_aes.c'; then $(CYGPATH_W) 'test_app_aes.c'; else $(CYGPATH_W) '$(srcdir)/test_app_aes.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o implementations/openssl/3/runtest-test_iut_aes.obj `if test -f 'implementations/openssl/3/test_iut_aes.c'; then $(CYGPATH_W) 'implementations/openssl/3/test_iut_aes.c'; else $(CYGPATH_W) '$(srcdir)/implementations/openssl/3/test_iut_aes.c'; fi`
 
-runtest-test_app_cmac.o: test_app_cmac.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT runtest-test_app_cmac.o -MD -MP -MF $(DEPDIR)/runtest-test_app_cmac.Tpo -c -o runtest-test_app_cmac.o `test -f 'test_app_cmac.c' || echo '$(srcdir)/'`test_app_cmac.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/runtest-test_app_cmac.Tpo $(DEPDIR)/runtest-test_app_cmac.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_app_cmac.c' object='runtest-test_app_cmac.o' libtool=no @AMDEPBACKSLASH@
+implementations/openssl/3/runtest-test_iut_cmac.o: implementations/openssl/3/test_iut_cmac.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT implementations/openssl/3/runtest-test_iut_cmac.o -MD -MP -MF implementations/openssl/3/$(DEPDIR)/runtest-test_iut_cmac.Tpo -c -o implementations/openssl/3/runtest-test_iut_cmac.o `test -f 'implementations/openssl/3/test_iut_cmac.c' || echo '$(srcdir)/'`implementations/openssl/3/test_iut_cmac.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) implementations/openssl/3/$(DEPDIR)/runtest-test_iut_cmac.Tpo implementations/openssl/3/$(DEPDIR)/runtest-test_iut_cmac.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='implementations/openssl/3/test_iut_cmac.c' object='implementations/openssl/3/runtest-test_iut_cmac.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o runtest-test_app_cmac.o `test -f 'test_app_cmac.c' || echo '$(srcdir)/'`test_app_cmac.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o implementations/openssl/3/runtest-test_iut_cmac.o `test -f 'implementations/openssl/3/test_iut_cmac.c' || echo '$(srcdir)/'`implementations/openssl/3/test_iut_cmac.c
 
-runtest-test_app_cmac.obj: test_app_cmac.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT runtest-test_app_cmac.obj -MD -MP -MF $(DEPDIR)/runtest-test_app_cmac.Tpo -c -o runtest-test_app_cmac.obj `if test -f 'test_app_cmac.c'; then $(CYGPATH_W) 'test_app_cmac.c'; else $(CYGPATH_W) '$(srcdir)/test_app_cmac.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/runtest-test_app_cmac.Tpo $(DEPDIR)/runtest-test_app_cmac.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_app_cmac.c' object='runtest-test_app_cmac.obj' libtool=no @AMDEPBACKSLASH@
+implementations/openssl/3/runtest-test_iut_cmac.obj: implementations/openssl/3/test_iut_cmac.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT implementations/openssl/3/runtest-test_iut_cmac.obj -MD -MP -MF implementations/openssl/3/$(DEPDIR)/runtest-test_iut_cmac.Tpo -c -o implementations/openssl/3/runtest-test_iut_cmac.obj `if test -f 'implementations/openssl/3/test_iut_cmac.c'; then $(CYGPATH_W) 'implementations/openssl/3/test_iut_cmac.c'; else $(CYGPATH_W) '$(srcdir)/implementations/openssl/3/test_iut_cmac.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) implementations/openssl/3/$(DEPDIR)/runtest-test_iut_cmac.Tpo implementations/openssl/3/$(DEPDIR)/runtest-test_iut_cmac.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='implementations/openssl/3/test_iut_cmac.c' object='implementations/openssl/3/runtest-test_iut_cmac.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o runtest-test_app_cmac.obj `if test -f 'test_app_cmac.c'; then $(CYGPATH_W) 'test_app_cmac.c'; else $(CYGPATH_W) '$(srcdir)/test_app_cmac.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o implementations/openssl/3/runtest-test_iut_cmac.obj `if test -f 'implementations/openssl/3/test_iut_cmac.c'; then $(CYGPATH_W) 'implementations/openssl/3/test_iut_cmac.c'; else $(CYGPATH_W) '$(srcdir)/implementations/openssl/3/test_iut_cmac.c'; fi`
 
-runtest-test_app_des.o: test_app_des.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT runtest-test_app_des.o -MD -MP -MF $(DEPDIR)/runtest-test_app_des.Tpo -c -o runtest-test_app_des.o `test -f 'test_app_des.c' || echo '$(srcdir)/'`test_app_des.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/runtest-test_app_des.Tpo $(DEPDIR)/runtest-test_app_des.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_app_des.c' object='runtest-test_app_des.o' libtool=no @AMDEPBACKSLASH@
+implementations/openssl/3/runtest-test_iut_des.o: implementations/openssl/3/test_iut_des.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT implementations/openssl/3/runtest-test_iut_des.o -MD -MP -MF implementations/openssl/3/$(DEPDIR)/runtest-test_iut_des.Tpo -c -o implementations/openssl/3/runtest-test_iut_des.o `test -f 'implementations/openssl/3/test_iut_des.c' || echo '$(srcdir)/'`implementations/openssl/3/test_iut_des.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) implementations/openssl/3/$(DEPDIR)/runtest-test_iut_des.Tpo implementations/openssl/3/$(DEPDIR)/runtest-test_iut_des.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='implementations/openssl/3/test_iut_des.c' object='implementations/openssl/3/runtest-test_iut_des.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o runtest-test_app_des.o `test -f 'test_app_des.c' || echo '$(srcdir)/'`test_app_des.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o implementations/openssl/3/runtest-test_iut_des.o `test -f 'implementations/openssl/3/test_iut_des.c' || echo '$(srcdir)/'`implementations/openssl/3/test_iut_des.c
 
-runtest-test_app_des.obj: test_app_des.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT runtest-test_app_des.obj -MD -MP -MF $(DEPDIR)/runtest-test_app_des.Tpo -c -o runtest-test_app_des.obj `if test -f 'test_app_des.c'; then $(CYGPATH_W) 'test_app_des.c'; else $(CYGPATH_W) '$(srcdir)/test_app_des.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/runtest-test_app_des.Tpo $(DEPDIR)/runtest-test_app_des.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_app_des.c' object='runtest-test_app_des.obj' libtool=no @AMDEPBACKSLASH@
+implementations/openssl/3/runtest-test_iut_des.obj: implementations/openssl/3/test_iut_des.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT implementations/openssl/3/runtest-test_iut_des.obj -MD -MP -MF implementations/openssl/3/$(DEPDIR)/runtest-test_iut_des.Tpo -c -o implementations/openssl/3/runtest-test_iut_des.obj `if test -f 'implementations/openssl/3/test_iut_des.c'; then $(CYGPATH_W) 'implementations/openssl/3/test_iut_des.c'; else $(CYGPATH_W) '$(srcdir)/implementations/openssl/3/test_iut_des.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) implementations/openssl/3/$(DEPDIR)/runtest-test_iut_des.Tpo implementations/openssl/3/$(DEPDIR)/runtest-test_iut_des.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='implementations/openssl/3/test_iut_des.c' object='implementations/openssl/3/runtest-test_iut_des.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o runtest-test_app_des.obj `if test -f 'test_app_des.c'; then $(CYGPATH_W) 'test_app_des.c'; else $(CYGPATH_W) '$(srcdir)/test_app_des.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o implementations/openssl/3/runtest-test_iut_des.obj `if test -f 'implementations/openssl/3/test_iut_des.c'; then $(CYGPATH_W) 'implementations/openssl/3/test_iut_des.c'; else $(CYGPATH_W) '$(srcdir)/implementations/openssl/3/test_iut_des.c'; fi`
 
-runtest-test_app_drbg.o: test_app_drbg.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT runtest-test_app_drbg.o -MD -MP -MF $(DEPDIR)/runtest-test_app_drbg.Tpo -c -o runtest-test_app_drbg.o `test -f 'test_app_drbg.c' || echo '$(srcdir)/'`test_app_drbg.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/runtest-test_app_drbg.Tpo $(DEPDIR)/runtest-test_app_drbg.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_app_drbg.c' object='runtest-test_app_drbg.o' libtool=no @AMDEPBACKSLASH@
+implementations/openssl/3/runtest-test_iut_drbg.o: implementations/openssl/3/test_iut_drbg.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT implementations/openssl/3/runtest-test_iut_drbg.o -MD -MP -MF implementations/openssl/3/$(DEPDIR)/runtest-test_iut_drbg.Tpo -c -o implementations/openssl/3/runtest-test_iut_drbg.o `test -f 'implementations/openssl/3/test_iut_drbg.c' || echo '$(srcdir)/'`implementations/openssl/3/test_iut_drbg.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) implementations/openssl/3/$(DEPDIR)/runtest-test_iut_drbg.Tpo implementations/openssl/3/$(DEPDIR)/runtest-test_iut_drbg.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='implementations/openssl/3/test_iut_drbg.c' object='implementations/openssl/3/runtest-test_iut_drbg.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o runtest-test_app_drbg.o `test -f 'test_app_drbg.c' || echo '$(srcdir)/'`test_app_drbg.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o implementations/openssl/3/runtest-test_iut_drbg.o `test -f 'implementations/openssl/3/test_iut_drbg.c' || echo '$(srcdir)/'`implementations/openssl/3/test_iut_drbg.c
 
-runtest-test_app_drbg.obj: test_app_drbg.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT runtest-test_app_drbg.obj -MD -MP -MF $(DEPDIR)/runtest-test_app_drbg.Tpo -c -o runtest-test_app_drbg.obj `if test -f 'test_app_drbg.c'; then $(CYGPATH_W) 'test_app_drbg.c'; else $(CYGPATH_W) '$(srcdir)/test_app_drbg.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/runtest-test_app_drbg.Tpo $(DEPDIR)/runtest-test_app_drbg.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_app_drbg.c' object='runtest-test_app_drbg.obj' libtool=no @AMDEPBACKSLASH@
+implementations/openssl/3/runtest-test_iut_drbg.obj: implementations/openssl/3/test_iut_drbg.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT implementations/openssl/3/runtest-test_iut_drbg.obj -MD -MP -MF implementations/openssl/3/$(DEPDIR)/runtest-test_iut_drbg.Tpo -c -o implementations/openssl/3/runtest-test_iut_drbg.obj `if test -f 'implementations/openssl/3/test_iut_drbg.c'; then $(CYGPATH_W) 'implementations/openssl/3/test_iut_drbg.c'; else $(CYGPATH_W) '$(srcdir)/implementations/openssl/3/test_iut_drbg.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) implementations/openssl/3/$(DEPDIR)/runtest-test_iut_drbg.Tpo implementations/openssl/3/$(DEPDIR)/runtest-test_iut_drbg.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='implementations/openssl/3/test_iut_drbg.c' object='implementations/openssl/3/runtest-test_iut_drbg.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o runtest-test_app_drbg.obj `if test -f 'test_app_drbg.c'; then $(CYGPATH_W) 'test_app_drbg.c'; else $(CYGPATH_W) '$(srcdir)/test_app_drbg.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o implementations/openssl/3/runtest-test_iut_drbg.obj `if test -f 'implementations/openssl/3/test_iut_drbg.c'; then $(CYGPATH_W) 'implementations/openssl/3/test_iut_drbg.c'; else $(CYGPATH_W) '$(srcdir)/implementations/openssl/3/test_iut_drbg.c'; fi`
 
-runtest-test_app_ecdsa.o: test_app_ecdsa.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT runtest-test_app_ecdsa.o -MD -MP -MF $(DEPDIR)/runtest-test_app_ecdsa.Tpo -c -o runtest-test_app_ecdsa.o `test -f 'test_app_ecdsa.c' || echo '$(srcdir)/'`test_app_ecdsa.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/runtest-test_app_ecdsa.Tpo $(DEPDIR)/runtest-test_app_ecdsa.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_app_ecdsa.c' object='runtest-test_app_ecdsa.o' libtool=no @AMDEPBACKSLASH@
+implementations/openssl/3/runtest-test_iut_ecdsa.o: implementations/openssl/3/test_iut_ecdsa.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT implementations/openssl/3/runtest-test_iut_ecdsa.o -MD -MP -MF implementations/openssl/3/$(DEPDIR)/runtest-test_iut_ecdsa.Tpo -c -o implementations/openssl/3/runtest-test_iut_ecdsa.o `test -f 'implementations/openssl/3/test_iut_ecdsa.c' || echo '$(srcdir)/'`implementations/openssl/3/test_iut_ecdsa.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) implementations/openssl/3/$(DEPDIR)/runtest-test_iut_ecdsa.Tpo implementations/openssl/3/$(DEPDIR)/runtest-test_iut_ecdsa.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='implementations/openssl/3/test_iut_ecdsa.c' object='implementations/openssl/3/runtest-test_iut_ecdsa.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o runtest-test_app_ecdsa.o `test -f 'test_app_ecdsa.c' || echo '$(srcdir)/'`test_app_ecdsa.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o implementations/openssl/3/runtest-test_iut_ecdsa.o `test -f 'implementations/openssl/3/test_iut_ecdsa.c' || echo '$(srcdir)/'`implementations/openssl/3/test_iut_ecdsa.c
 
-runtest-test_app_ecdsa.obj: test_app_ecdsa.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT runtest-test_app_ecdsa.obj -MD -MP -MF $(DEPDIR)/runtest-test_app_ecdsa.Tpo -c -o runtest-test_app_ecdsa.obj `if test -f 'test_app_ecdsa.c'; then $(CYGPATH_W) 'test_app_ecdsa.c'; else $(CYGPATH_W) '$(srcdir)/test_app_ecdsa.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/runtest-test_app_ecdsa.Tpo $(DEPDIR)/runtest-test_app_ecdsa.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_app_ecdsa.c' object='runtest-test_app_ecdsa.obj' libtool=no @AMDEPBACKSLASH@
+implementations/openssl/3/runtest-test_iut_ecdsa.obj: implementations/openssl/3/test_iut_ecdsa.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT implementations/openssl/3/runtest-test_iut_ecdsa.obj -MD -MP -MF implementations/openssl/3/$(DEPDIR)/runtest-test_iut_ecdsa.Tpo -c -o implementations/openssl/3/runtest-test_iut_ecdsa.obj `if test -f 'implementations/openssl/3/test_iut_ecdsa.c'; then $(CYGPATH_W) 'implementations/openssl/3/test_iut_ecdsa.c'; else $(CYGPATH_W) '$(srcdir)/implementations/openssl/3/test_iut_ecdsa.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) implementations/openssl/3/$(DEPDIR)/runtest-test_iut_ecdsa.Tpo implementations/openssl/3/$(DEPDIR)/runtest-test_iut_ecdsa.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='implementations/openssl/3/test_iut_ecdsa.c' object='implementations/openssl/3/runtest-test_iut_ecdsa.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o runtest-test_app_ecdsa.obj `if test -f 'test_app_ecdsa.c'; then $(CYGPATH_W) 'test_app_ecdsa.c'; else $(CYGPATH_W) '$(srcdir)/test_app_ecdsa.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o implementations/openssl/3/runtest-test_iut_ecdsa.obj `if test -f 'implementations/openssl/3/test_iut_ecdsa.c'; then $(CYGPATH_W) 'implementations/openssl/3/test_iut_ecdsa.c'; else $(CYGPATH_W) '$(srcdir)/implementations/openssl/3/test_iut_ecdsa.c'; fi`
 
-runtest-test_app_hmac.o: test_app_hmac.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT runtest-test_app_hmac.o -MD -MP -MF $(DEPDIR)/runtest-test_app_hmac.Tpo -c -o runtest-test_app_hmac.o `test -f 'test_app_hmac.c' || echo '$(srcdir)/'`test_app_hmac.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/runtest-test_app_hmac.Tpo $(DEPDIR)/runtest-test_app_hmac.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_app_hmac.c' object='runtest-test_app_hmac.o' libtool=no @AMDEPBACKSLASH@
+implementations/openssl/3/runtest-test_iut_hmac.o: implementations/openssl/3/test_iut_hmac.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT implementations/openssl/3/runtest-test_iut_hmac.o -MD -MP -MF implementations/openssl/3/$(DEPDIR)/runtest-test_iut_hmac.Tpo -c -o implementations/openssl/3/runtest-test_iut_hmac.o `test -f 'implementations/openssl/3/test_iut_hmac.c' || echo '$(srcdir)/'`implementations/openssl/3/test_iut_hmac.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) implementations/openssl/3/$(DEPDIR)/runtest-test_iut_hmac.Tpo implementations/openssl/3/$(DEPDIR)/runtest-test_iut_hmac.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='implementations/openssl/3/test_iut_hmac.c' object='implementations/openssl/3/runtest-test_iut_hmac.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o runtest-test_app_hmac.o `test -f 'test_app_hmac.c' || echo '$(srcdir)/'`test_app_hmac.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o implementations/openssl/3/runtest-test_iut_hmac.o `test -f 'implementations/openssl/3/test_iut_hmac.c' || echo '$(srcdir)/'`implementations/openssl/3/test_iut_hmac.c
 
-runtest-test_app_hmac.obj: test_app_hmac.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT runtest-test_app_hmac.obj -MD -MP -MF $(DEPDIR)/runtest-test_app_hmac.Tpo -c -o runtest-test_app_hmac.obj `if test -f 'test_app_hmac.c'; then $(CYGPATH_W) 'test_app_hmac.c'; else $(CYGPATH_W) '$(srcdir)/test_app_hmac.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/runtest-test_app_hmac.Tpo $(DEPDIR)/runtest-test_app_hmac.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_app_hmac.c' object='runtest-test_app_hmac.obj' libtool=no @AMDEPBACKSLASH@
+implementations/openssl/3/runtest-test_iut_hmac.obj: implementations/openssl/3/test_iut_hmac.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT implementations/openssl/3/runtest-test_iut_hmac.obj -MD -MP -MF implementations/openssl/3/$(DEPDIR)/runtest-test_iut_hmac.Tpo -c -o implementations/openssl/3/runtest-test_iut_hmac.obj `if test -f 'implementations/openssl/3/test_iut_hmac.c'; then $(CYGPATH_W) 'implementations/openssl/3/test_iut_hmac.c'; else $(CYGPATH_W) '$(srcdir)/implementations/openssl/3/test_iut_hmac.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) implementations/openssl/3/$(DEPDIR)/runtest-test_iut_hmac.Tpo implementations/openssl/3/$(DEPDIR)/runtest-test_iut_hmac.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='implementations/openssl/3/test_iut_hmac.c' object='implementations/openssl/3/runtest-test_iut_hmac.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o runtest-test_app_hmac.obj `if test -f 'test_app_hmac.c'; then $(CYGPATH_W) 'test_app_hmac.c'; else $(CYGPATH_W) '$(srcdir)/test_app_hmac.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o implementations/openssl/3/runtest-test_iut_hmac.obj `if test -f 'implementations/openssl/3/test_iut_hmac.c'; then $(CYGPATH_W) 'implementations/openssl/3/test_iut_hmac.c'; else $(CYGPATH_W) '$(srcdir)/implementations/openssl/3/test_iut_hmac.c'; fi`
 
-runtest-test_app_kas_ecc.o: test_app_kas_ecc.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT runtest-test_app_kas_ecc.o -MD -MP -MF $(DEPDIR)/runtest-test_app_kas_ecc.Tpo -c -o runtest-test_app_kas_ecc.o `test -f 'test_app_kas_ecc.c' || echo '$(srcdir)/'`test_app_kas_ecc.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/runtest-test_app_kas_ecc.Tpo $(DEPDIR)/runtest-test_app_kas_ecc.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_app_kas_ecc.c' object='runtest-test_app_kas_ecc.o' libtool=no @AMDEPBACKSLASH@
+implementations/openssl/3/runtest-test_iut_kas_ecc.o: implementations/openssl/3/test_iut_kas_ecc.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT implementations/openssl/3/runtest-test_iut_kas_ecc.o -MD -MP -MF implementations/openssl/3/$(DEPDIR)/runtest-test_iut_kas_ecc.Tpo -c -o implementations/openssl/3/runtest-test_iut_kas_ecc.o `test -f 'implementations/openssl/3/test_iut_kas_ecc.c' || echo '$(srcdir)/'`implementations/openssl/3/test_iut_kas_ecc.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) implementations/openssl/3/$(DEPDIR)/runtest-test_iut_kas_ecc.Tpo implementations/openssl/3/$(DEPDIR)/runtest-test_iut_kas_ecc.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='implementations/openssl/3/test_iut_kas_ecc.c' object='implementations/openssl/3/runtest-test_iut_kas_ecc.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o runtest-test_app_kas_ecc.o `test -f 'test_app_kas_ecc.c' || echo '$(srcdir)/'`test_app_kas_ecc.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o implementations/openssl/3/runtest-test_iut_kas_ecc.o `test -f 'implementations/openssl/3/test_iut_kas_ecc.c' || echo '$(srcdir)/'`implementations/openssl/3/test_iut_kas_ecc.c
 
-runtest-test_app_kas_ecc.obj: test_app_kas_ecc.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT runtest-test_app_kas_ecc.obj -MD -MP -MF $(DEPDIR)/runtest-test_app_kas_ecc.Tpo -c -o runtest-test_app_kas_ecc.obj `if test -f 'test_app_kas_ecc.c'; then $(CYGPATH_W) 'test_app_kas_ecc.c'; else $(CYGPATH_W) '$(srcdir)/test_app_kas_ecc.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/runtest-test_app_kas_ecc.Tpo $(DEPDIR)/runtest-test_app_kas_ecc.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_app_kas_ecc.c' object='runtest-test_app_kas_ecc.obj' libtool=no @AMDEPBACKSLASH@
+implementations/openssl/3/runtest-test_iut_kas_ecc.obj: implementations/openssl/3/test_iut_kas_ecc.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT implementations/openssl/3/runtest-test_iut_kas_ecc.obj -MD -MP -MF implementations/openssl/3/$(DEPDIR)/runtest-test_iut_kas_ecc.Tpo -c -o implementations/openssl/3/runtest-test_iut_kas_ecc.obj `if test -f 'implementations/openssl/3/test_iut_kas_ecc.c'; then $(CYGPATH_W) 'implementations/openssl/3/test_iut_kas_ecc.c'; else $(CYGPATH_W) '$(srcdir)/implementations/openssl/3/test_iut_kas_ecc.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) implementations/openssl/3/$(DEPDIR)/runtest-test_iut_kas_ecc.Tpo implementations/openssl/3/$(DEPDIR)/runtest-test_iut_kas_ecc.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='implementations/openssl/3/test_iut_kas_ecc.c' object='implementations/openssl/3/runtest-test_iut_kas_ecc.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o runtest-test_app_kas_ecc.obj `if test -f 'test_app_kas_ecc.c'; then $(CYGPATH_W) 'test_app_kas_ecc.c'; else $(CYGPATH_W) '$(srcdir)/test_app_kas_ecc.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o implementations/openssl/3/runtest-test_iut_kas_ecc.obj `if test -f 'implementations/openssl/3/test_iut_kas_ecc.c'; then $(CYGPATH_W) 'implementations/openssl/3/test_iut_kas_ecc.c'; else $(CYGPATH_W) '$(srcdir)/implementations/openssl/3/test_iut_kas_ecc.c'; fi`
 
-runtest-test_app_kas_ffc.o: test_app_kas_ffc.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT runtest-test_app_kas_ffc.o -MD -MP -MF $(DEPDIR)/runtest-test_app_kas_ffc.Tpo -c -o runtest-test_app_kas_ffc.o `test -f 'test_app_kas_ffc.c' || echo '$(srcdir)/'`test_app_kas_ffc.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/runtest-test_app_kas_ffc.Tpo $(DEPDIR)/runtest-test_app_kas_ffc.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_app_kas_ffc.c' object='runtest-test_app_kas_ffc.o' libtool=no @AMDEPBACKSLASH@
+implementations/openssl/3/runtest-test_iut_kas_ffc.o: implementations/openssl/3/test_iut_kas_ffc.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT implementations/openssl/3/runtest-test_iut_kas_ffc.o -MD -MP -MF implementations/openssl/3/$(DEPDIR)/runtest-test_iut_kas_ffc.Tpo -c -o implementations/openssl/3/runtest-test_iut_kas_ffc.o `test -f 'implementations/openssl/3/test_iut_kas_ffc.c' || echo '$(srcdir)/'`implementations/openssl/3/test_iut_kas_ffc.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) implementations/openssl/3/$(DEPDIR)/runtest-test_iut_kas_ffc.Tpo implementations/openssl/3/$(DEPDIR)/runtest-test_iut_kas_ffc.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='implementations/openssl/3/test_iut_kas_ffc.c' object='implementations/openssl/3/runtest-test_iut_kas_ffc.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o runtest-test_app_kas_ffc.o `test -f 'test_app_kas_ffc.c' || echo '$(srcdir)/'`test_app_kas_ffc.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o implementations/openssl/3/runtest-test_iut_kas_ffc.o `test -f 'implementations/openssl/3/test_iut_kas_ffc.c' || echo '$(srcdir)/'`implementations/openssl/3/test_iut_kas_ffc.c
 
-runtest-test_app_kas_ffc.obj: test_app_kas_ffc.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT runtest-test_app_kas_ffc.obj -MD -MP -MF $(DEPDIR)/runtest-test_app_kas_ffc.Tpo -c -o runtest-test_app_kas_ffc.obj `if test -f 'test_app_kas_ffc.c'; then $(CYGPATH_W) 'test_app_kas_ffc.c'; else $(CYGPATH_W) '$(srcdir)/test_app_kas_ffc.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/runtest-test_app_kas_ffc.Tpo $(DEPDIR)/runtest-test_app_kas_ffc.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_app_kas_ffc.c' object='runtest-test_app_kas_ffc.obj' libtool=no @AMDEPBACKSLASH@
+implementations/openssl/3/runtest-test_iut_kas_ffc.obj: implementations/openssl/3/test_iut_kas_ffc.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT implementations/openssl/3/runtest-test_iut_kas_ffc.obj -MD -MP -MF implementations/openssl/3/$(DEPDIR)/runtest-test_iut_kas_ffc.Tpo -c -o implementations/openssl/3/runtest-test_iut_kas_ffc.obj `if test -f 'implementations/openssl/3/test_iut_kas_ffc.c'; then $(CYGPATH_W) 'implementations/openssl/3/test_iut_kas_ffc.c'; else $(CYGPATH_W) '$(srcdir)/implementations/openssl/3/test_iut_kas_ffc.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) implementations/openssl/3/$(DEPDIR)/runtest-test_iut_kas_ffc.Tpo implementations/openssl/3/$(DEPDIR)/runtest-test_iut_kas_ffc.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='implementations/openssl/3/test_iut_kas_ffc.c' object='implementations/openssl/3/runtest-test_iut_kas_ffc.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o runtest-test_app_kas_ffc.obj `if test -f 'test_app_kas_ffc.c'; then $(CYGPATH_W) 'test_app_kas_ffc.c'; else $(CYGPATH_W) '$(srcdir)/test_app_kas_ffc.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o implementations/openssl/3/runtest-test_iut_kas_ffc.obj `if test -f 'implementations/openssl/3/test_iut_kas_ffc.c'; then $(CYGPATH_W) 'implementations/openssl/3/test_iut_kas_ffc.c'; else $(CYGPATH_W) '$(srcdir)/implementations/openssl/3/test_iut_kas_ffc.c'; fi`
 
-runtest-test_app_kas_ifc.o: test_app_kas_ifc.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT runtest-test_app_kas_ifc.o -MD -MP -MF $(DEPDIR)/runtest-test_app_kas_ifc.Tpo -c -o runtest-test_app_kas_ifc.o `test -f 'test_app_kas_ifc.c' || echo '$(srcdir)/'`test_app_kas_ifc.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/runtest-test_app_kas_ifc.Tpo $(DEPDIR)/runtest-test_app_kas_ifc.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_app_kas_ifc.c' object='runtest-test_app_kas_ifc.o' libtool=no @AMDEPBACKSLASH@
+implementations/openssl/3/runtest-test_iut_kas_ifc.o: implementations/openssl/3/test_iut_kas_ifc.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT implementations/openssl/3/runtest-test_iut_kas_ifc.o -MD -MP -MF implementations/openssl/3/$(DEPDIR)/runtest-test_iut_kas_ifc.Tpo -c -o implementations/openssl/3/runtest-test_iut_kas_ifc.o `test -f 'implementations/openssl/3/test_iut_kas_ifc.c' || echo '$(srcdir)/'`implementations/openssl/3/test_iut_kas_ifc.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) implementations/openssl/3/$(DEPDIR)/runtest-test_iut_kas_ifc.Tpo implementations/openssl/3/$(DEPDIR)/runtest-test_iut_kas_ifc.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='implementations/openssl/3/test_iut_kas_ifc.c' object='implementations/openssl/3/runtest-test_iut_kas_ifc.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o runtest-test_app_kas_ifc.o `test -f 'test_app_kas_ifc.c' || echo '$(srcdir)/'`test_app_kas_ifc.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o implementations/openssl/3/runtest-test_iut_kas_ifc.o `test -f 'implementations/openssl/3/test_iut_kas_ifc.c' || echo '$(srcdir)/'`implementations/openssl/3/test_iut_kas_ifc.c
 
-runtest-test_app_kas_ifc.obj: test_app_kas_ifc.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT runtest-test_app_kas_ifc.obj -MD -MP -MF $(DEPDIR)/runtest-test_app_kas_ifc.Tpo -c -o runtest-test_app_kas_ifc.obj `if test -f 'test_app_kas_ifc.c'; then $(CYGPATH_W) 'test_app_kas_ifc.c'; else $(CYGPATH_W) '$(srcdir)/test_app_kas_ifc.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/runtest-test_app_kas_ifc.Tpo $(DEPDIR)/runtest-test_app_kas_ifc.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_app_kas_ifc.c' object='runtest-test_app_kas_ifc.obj' libtool=no @AMDEPBACKSLASH@
+implementations/openssl/3/runtest-test_iut_kas_ifc.obj: implementations/openssl/3/test_iut_kas_ifc.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT implementations/openssl/3/runtest-test_iut_kas_ifc.obj -MD -MP -MF implementations/openssl/3/$(DEPDIR)/runtest-test_iut_kas_ifc.Tpo -c -o implementations/openssl/3/runtest-test_iut_kas_ifc.obj `if test -f 'implementations/openssl/3/test_iut_kas_ifc.c'; then $(CYGPATH_W) 'implementations/openssl/3/test_iut_kas_ifc.c'; else $(CYGPATH_W) '$(srcdir)/implementations/openssl/3/test_iut_kas_ifc.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) implementations/openssl/3/$(DEPDIR)/runtest-test_iut_kas_ifc.Tpo implementations/openssl/3/$(DEPDIR)/runtest-test_iut_kas_ifc.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='implementations/openssl/3/test_iut_kas_ifc.c' object='implementations/openssl/3/runtest-test_iut_kas_ifc.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o runtest-test_app_kas_ifc.obj `if test -f 'test_app_kas_ifc.c'; then $(CYGPATH_W) 'test_app_kas_ifc.c'; else $(CYGPATH_W) '$(srcdir)/test_app_kas_ifc.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o implementations/openssl/3/runtest-test_iut_kas_ifc.obj `if test -f 'implementations/openssl/3/test_iut_kas_ifc.c'; then $(CYGPATH_W) 'implementations/openssl/3/test_iut_kas_ifc.c'; else $(CYGPATH_W) '$(srcdir)/implementations/openssl/3/test_iut_kas_ifc.c'; fi`
 
-runtest-test_app_rsa_keygen.o: test_app_rsa_keygen.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT runtest-test_app_rsa_keygen.o -MD -MP -MF $(DEPDIR)/runtest-test_app_rsa_keygen.Tpo -c -o runtest-test_app_rsa_keygen.o `test -f 'test_app_rsa_keygen.c' || echo '$(srcdir)/'`test_app_rsa_keygen.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/runtest-test_app_rsa_keygen.Tpo $(DEPDIR)/runtest-test_app_rsa_keygen.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_app_rsa_keygen.c' object='runtest-test_app_rsa_keygen.o' libtool=no @AMDEPBACKSLASH@
+implementations/openssl/3/runtest-test_iut_rsa_keygen.o: implementations/openssl/3/test_iut_rsa_keygen.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT implementations/openssl/3/runtest-test_iut_rsa_keygen.o -MD -MP -MF implementations/openssl/3/$(DEPDIR)/runtest-test_iut_rsa_keygen.Tpo -c -o implementations/openssl/3/runtest-test_iut_rsa_keygen.o `test -f 'implementations/openssl/3/test_iut_rsa_keygen.c' || echo '$(srcdir)/'`implementations/openssl/3/test_iut_rsa_keygen.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) implementations/openssl/3/$(DEPDIR)/runtest-test_iut_rsa_keygen.Tpo implementations/openssl/3/$(DEPDIR)/runtest-test_iut_rsa_keygen.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='implementations/openssl/3/test_iut_rsa_keygen.c' object='implementations/openssl/3/runtest-test_iut_rsa_keygen.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o runtest-test_app_rsa_keygen.o `test -f 'test_app_rsa_keygen.c' || echo '$(srcdir)/'`test_app_rsa_keygen.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o implementations/openssl/3/runtest-test_iut_rsa_keygen.o `test -f 'implementations/openssl/3/test_iut_rsa_keygen.c' || echo '$(srcdir)/'`implementations/openssl/3/test_iut_rsa_keygen.c
 
-runtest-test_app_rsa_keygen.obj: test_app_rsa_keygen.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT runtest-test_app_rsa_keygen.obj -MD -MP -MF $(DEPDIR)/runtest-test_app_rsa_keygen.Tpo -c -o runtest-test_app_rsa_keygen.obj `if test -f 'test_app_rsa_keygen.c'; then $(CYGPATH_W) 'test_app_rsa_keygen.c'; else $(CYGPATH_W) '$(srcdir)/test_app_rsa_keygen.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/runtest-test_app_rsa_keygen.Tpo $(DEPDIR)/runtest-test_app_rsa_keygen.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_app_rsa_keygen.c' object='runtest-test_app_rsa_keygen.obj' libtool=no @AMDEPBACKSLASH@
+implementations/openssl/3/runtest-test_iut_rsa_keygen.obj: implementations/openssl/3/test_iut_rsa_keygen.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT implementations/openssl/3/runtest-test_iut_rsa_keygen.obj -MD -MP -MF implementations/openssl/3/$(DEPDIR)/runtest-test_iut_rsa_keygen.Tpo -c -o implementations/openssl/3/runtest-test_iut_rsa_keygen.obj `if test -f 'implementations/openssl/3/test_iut_rsa_keygen.c'; then $(CYGPATH_W) 'implementations/openssl/3/test_iut_rsa_keygen.c'; else $(CYGPATH_W) '$(srcdir)/implementations/openssl/3/test_iut_rsa_keygen.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) implementations/openssl/3/$(DEPDIR)/runtest-test_iut_rsa_keygen.Tpo implementations/openssl/3/$(DEPDIR)/runtest-test_iut_rsa_keygen.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='implementations/openssl/3/test_iut_rsa_keygen.c' object='implementations/openssl/3/runtest-test_iut_rsa_keygen.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o runtest-test_app_rsa_keygen.obj `if test -f 'test_app_rsa_keygen.c'; then $(CYGPATH_W) 'test_app_rsa_keygen.c'; else $(CYGPATH_W) '$(srcdir)/test_app_rsa_keygen.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o implementations/openssl/3/runtest-test_iut_rsa_keygen.obj `if test -f 'implementations/openssl/3/test_iut_rsa_keygen.c'; then $(CYGPATH_W) 'implementations/openssl/3/test_iut_rsa_keygen.c'; else $(CYGPATH_W) '$(srcdir)/implementations/openssl/3/test_iut_rsa_keygen.c'; fi`
 
-runtest-test_app_rsa_sig.o: test_app_rsa_sig.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT runtest-test_app_rsa_sig.o -MD -MP -MF $(DEPDIR)/runtest-test_app_rsa_sig.Tpo -c -o runtest-test_app_rsa_sig.o `test -f 'test_app_rsa_sig.c' || echo '$(srcdir)/'`test_app_rsa_sig.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/runtest-test_app_rsa_sig.Tpo $(DEPDIR)/runtest-test_app_rsa_sig.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_app_rsa_sig.c' object='runtest-test_app_rsa_sig.o' libtool=no @AMDEPBACKSLASH@
+implementations/openssl/3/runtest-test_iut_rsa_sig.o: implementations/openssl/3/test_iut_rsa_sig.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT implementations/openssl/3/runtest-test_iut_rsa_sig.o -MD -MP -MF implementations/openssl/3/$(DEPDIR)/runtest-test_iut_rsa_sig.Tpo -c -o implementations/openssl/3/runtest-test_iut_rsa_sig.o `test -f 'implementations/openssl/3/test_iut_rsa_sig.c' || echo '$(srcdir)/'`implementations/openssl/3/test_iut_rsa_sig.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) implementations/openssl/3/$(DEPDIR)/runtest-test_iut_rsa_sig.Tpo implementations/openssl/3/$(DEPDIR)/runtest-test_iut_rsa_sig.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='implementations/openssl/3/test_iut_rsa_sig.c' object='implementations/openssl/3/runtest-test_iut_rsa_sig.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o runtest-test_app_rsa_sig.o `test -f 'test_app_rsa_sig.c' || echo '$(srcdir)/'`test_app_rsa_sig.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o implementations/openssl/3/runtest-test_iut_rsa_sig.o `test -f 'implementations/openssl/3/test_iut_rsa_sig.c' || echo '$(srcdir)/'`implementations/openssl/3/test_iut_rsa_sig.c
 
-runtest-test_app_rsa_sig.obj: test_app_rsa_sig.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT runtest-test_app_rsa_sig.obj -MD -MP -MF $(DEPDIR)/runtest-test_app_rsa_sig.Tpo -c -o runtest-test_app_rsa_sig.obj `if test -f 'test_app_rsa_sig.c'; then $(CYGPATH_W) 'test_app_rsa_sig.c'; else $(CYGPATH_W) '$(srcdir)/test_app_rsa_sig.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/runtest-test_app_rsa_sig.Tpo $(DEPDIR)/runtest-test_app_rsa_sig.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_app_rsa_sig.c' object='runtest-test_app_rsa_sig.obj' libtool=no @AMDEPBACKSLASH@
+implementations/openssl/3/runtest-test_iut_rsa_sig.obj: implementations/openssl/3/test_iut_rsa_sig.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT implementations/openssl/3/runtest-test_iut_rsa_sig.obj -MD -MP -MF implementations/openssl/3/$(DEPDIR)/runtest-test_iut_rsa_sig.Tpo -c -o implementations/openssl/3/runtest-test_iut_rsa_sig.obj `if test -f 'implementations/openssl/3/test_iut_rsa_sig.c'; then $(CYGPATH_W) 'implementations/openssl/3/test_iut_rsa_sig.c'; else $(CYGPATH_W) '$(srcdir)/implementations/openssl/3/test_iut_rsa_sig.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) implementations/openssl/3/$(DEPDIR)/runtest-test_iut_rsa_sig.Tpo implementations/openssl/3/$(DEPDIR)/runtest-test_iut_rsa_sig.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='implementations/openssl/3/test_iut_rsa_sig.c' object='implementations/openssl/3/runtest-test_iut_rsa_sig.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o runtest-test_app_rsa_sig.obj `if test -f 'test_app_rsa_sig.c'; then $(CYGPATH_W) 'test_app_rsa_sig.c'; else $(CYGPATH_W) '$(srcdir)/test_app_rsa_sig.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o implementations/openssl/3/runtest-test_iut_rsa_sig.obj `if test -f 'implementations/openssl/3/test_iut_rsa_sig.c'; then $(CYGPATH_W) 'implementations/openssl/3/test_iut_rsa_sig.c'; else $(CYGPATH_W) '$(srcdir)/implementations/openssl/3/test_iut_rsa_sig.c'; fi`
 
-runtest-test_app_sha.o: test_app_sha.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT runtest-test_app_sha.o -MD -MP -MF $(DEPDIR)/runtest-test_app_sha.Tpo -c -o runtest-test_app_sha.o `test -f 'test_app_sha.c' || echo '$(srcdir)/'`test_app_sha.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/runtest-test_app_sha.Tpo $(DEPDIR)/runtest-test_app_sha.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_app_sha.c' object='runtest-test_app_sha.o' libtool=no @AMDEPBACKSLASH@
+implementations/openssl/3/runtest-test_iut_hash.o: implementations/openssl/3/test_iut_hash.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT implementations/openssl/3/runtest-test_iut_hash.o -MD -MP -MF implementations/openssl/3/$(DEPDIR)/runtest-test_iut_hash.Tpo -c -o implementations/openssl/3/runtest-test_iut_hash.o `test -f 'implementations/openssl/3/test_iut_hash.c' || echo '$(srcdir)/'`implementations/openssl/3/test_iut_hash.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) implementations/openssl/3/$(DEPDIR)/runtest-test_iut_hash.Tpo implementations/openssl/3/$(DEPDIR)/runtest-test_iut_hash.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='implementations/openssl/3/test_iut_hash.c' object='implementations/openssl/3/runtest-test_iut_hash.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o runtest-test_app_sha.o `test -f 'test_app_sha.c' || echo '$(srcdir)/'`test_app_sha.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o implementations/openssl/3/runtest-test_iut_hash.o `test -f 'implementations/openssl/3/test_iut_hash.c' || echo '$(srcdir)/'`implementations/openssl/3/test_iut_hash.c
 
-runtest-test_app_sha.obj: test_app_sha.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT runtest-test_app_sha.obj -MD -MP -MF $(DEPDIR)/runtest-test_app_sha.Tpo -c -o runtest-test_app_sha.obj `if test -f 'test_app_sha.c'; then $(CYGPATH_W) 'test_app_sha.c'; else $(CYGPATH_W) '$(srcdir)/test_app_sha.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/runtest-test_app_sha.Tpo $(DEPDIR)/runtest-test_app_sha.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_app_sha.c' object='runtest-test_app_sha.obj' libtool=no @AMDEPBACKSLASH@
+implementations/openssl/3/runtest-test_iut_hash.obj: implementations/openssl/3/test_iut_hash.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT implementations/openssl/3/runtest-test_iut_hash.obj -MD -MP -MF implementations/openssl/3/$(DEPDIR)/runtest-test_iut_hash.Tpo -c -o implementations/openssl/3/runtest-test_iut_hash.obj `if test -f 'implementations/openssl/3/test_iut_hash.c'; then $(CYGPATH_W) 'implementations/openssl/3/test_iut_hash.c'; else $(CYGPATH_W) '$(srcdir)/implementations/openssl/3/test_iut_hash.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) implementations/openssl/3/$(DEPDIR)/runtest-test_iut_hash.Tpo implementations/openssl/3/$(DEPDIR)/runtest-test_iut_hash.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='implementations/openssl/3/test_iut_hash.c' object='implementations/openssl/3/runtest-test_iut_hash.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o runtest-test_app_sha.obj `if test -f 'test_app_sha.c'; then $(CYGPATH_W) 'test_app_sha.c'; else $(CYGPATH_W) '$(srcdir)/test_app_sha.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o implementations/openssl/3/runtest-test_iut_hash.obj `if test -f 'implementations/openssl/3/test_iut_hash.c'; then $(CYGPATH_W) 'implementations/openssl/3/test_iut_hash.c'; else $(CYGPATH_W) '$(srcdir)/implementations/openssl/3/test_iut_hash.c'; fi`
 
-runtest-test_app_safe_primes.o: test_app_safe_primes.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT runtest-test_app_safe_primes.o -MD -MP -MF $(DEPDIR)/runtest-test_app_safe_primes.Tpo -c -o runtest-test_app_safe_primes.o `test -f 'test_app_safe_primes.c' || echo '$(srcdir)/'`test_app_safe_primes.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/runtest-test_app_safe_primes.Tpo $(DEPDIR)/runtest-test_app_safe_primes.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_app_safe_primes.c' object='runtest-test_app_safe_primes.o' libtool=no @AMDEPBACKSLASH@
+implementations/openssl/3/runtest-test_iut_safe_primes.o: implementations/openssl/3/test_iut_safe_primes.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT implementations/openssl/3/runtest-test_iut_safe_primes.o -MD -MP -MF implementations/openssl/3/$(DEPDIR)/runtest-test_iut_safe_primes.Tpo -c -o implementations/openssl/3/runtest-test_iut_safe_primes.o `test -f 'implementations/openssl/3/test_iut_safe_primes.c' || echo '$(srcdir)/'`implementations/openssl/3/test_iut_safe_primes.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) implementations/openssl/3/$(DEPDIR)/runtest-test_iut_safe_primes.Tpo implementations/openssl/3/$(DEPDIR)/runtest-test_iut_safe_primes.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='implementations/openssl/3/test_iut_safe_primes.c' object='implementations/openssl/3/runtest-test_iut_safe_primes.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o runtest-test_app_safe_primes.o `test -f 'test_app_safe_primes.c' || echo '$(srcdir)/'`test_app_safe_primes.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o implementations/openssl/3/runtest-test_iut_safe_primes.o `test -f 'implementations/openssl/3/test_iut_safe_primes.c' || echo '$(srcdir)/'`implementations/openssl/3/test_iut_safe_primes.c
 
-runtest-test_app_safe_primes.obj: test_app_safe_primes.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT runtest-test_app_safe_primes.obj -MD -MP -MF $(DEPDIR)/runtest-test_app_safe_primes.Tpo -c -o runtest-test_app_safe_primes.obj `if test -f 'test_app_safe_primes.c'; then $(CYGPATH_W) 'test_app_safe_primes.c'; else $(CYGPATH_W) '$(srcdir)/test_app_safe_primes.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/runtest-test_app_safe_primes.Tpo $(DEPDIR)/runtest-test_app_safe_primes.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_app_safe_primes.c' object='runtest-test_app_safe_primes.obj' libtool=no @AMDEPBACKSLASH@
+implementations/openssl/3/runtest-test_iut_safe_primes.obj: implementations/openssl/3/test_iut_safe_primes.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT implementations/openssl/3/runtest-test_iut_safe_primes.obj -MD -MP -MF implementations/openssl/3/$(DEPDIR)/runtest-test_iut_safe_primes.Tpo -c -o implementations/openssl/3/runtest-test_iut_safe_primes.obj `if test -f 'implementations/openssl/3/test_iut_safe_primes.c'; then $(CYGPATH_W) 'implementations/openssl/3/test_iut_safe_primes.c'; else $(CYGPATH_W) '$(srcdir)/implementations/openssl/3/test_iut_safe_primes.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) implementations/openssl/3/$(DEPDIR)/runtest-test_iut_safe_primes.Tpo implementations/openssl/3/$(DEPDIR)/runtest-test_iut_safe_primes.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='implementations/openssl/3/test_iut_safe_primes.c' object='implementations/openssl/3/runtest-test_iut_safe_primes.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o runtest-test_app_safe_primes.obj `if test -f 'test_app_safe_primes.c'; then $(CYGPATH_W) 'test_app_safe_primes.c'; else $(CYGPATH_W) '$(srcdir)/test_app_safe_primes.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o implementations/openssl/3/runtest-test_iut_safe_primes.obj `if test -f 'implementations/openssl/3/test_iut_safe_primes.c'; then $(CYGPATH_W) 'implementations/openssl/3/test_iut_safe_primes.c'; else $(CYGPATH_W) '$(srcdir)/implementations/openssl/3/test_iut_safe_primes.c'; fi`
 
-runtest-test_app_kda.o: test_app_kda.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT runtest-test_app_kda.o -MD -MP -MF $(DEPDIR)/runtest-test_app_kda.Tpo -c -o runtest-test_app_kda.o `test -f 'test_app_kda.c' || echo '$(srcdir)/'`test_app_kda.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/runtest-test_app_kda.Tpo $(DEPDIR)/runtest-test_app_kda.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_app_kda.c' object='runtest-test_app_kda.o' libtool=no @AMDEPBACKSLASH@
+implementations/openssl/3/runtest-test_iut_kda.o: implementations/openssl/3/test_iut_kda.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT implementations/openssl/3/runtest-test_iut_kda.o -MD -MP -MF implementations/openssl/3/$(DEPDIR)/runtest-test_iut_kda.Tpo -c -o implementations/openssl/3/runtest-test_iut_kda.o `test -f 'implementations/openssl/3/test_iut_kda.c' || echo '$(srcdir)/'`implementations/openssl/3/test_iut_kda.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) implementations/openssl/3/$(DEPDIR)/runtest-test_iut_kda.Tpo implementations/openssl/3/$(DEPDIR)/runtest-test_iut_kda.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='implementations/openssl/3/test_iut_kda.c' object='implementations/openssl/3/runtest-test_iut_kda.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o runtest-test_app_kda.o `test -f 'test_app_kda.c' || echo '$(srcdir)/'`test_app_kda.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o implementations/openssl/3/runtest-test_iut_kda.o `test -f 'implementations/openssl/3/test_iut_kda.c' || echo '$(srcdir)/'`implementations/openssl/3/test_iut_kda.c
 
-runtest-test_app_kda.obj: test_app_kda.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT runtest-test_app_kda.obj -MD -MP -MF $(DEPDIR)/runtest-test_app_kda.Tpo -c -o runtest-test_app_kda.obj `if test -f 'test_app_kda.c'; then $(CYGPATH_W) 'test_app_kda.c'; else $(CYGPATH_W) '$(srcdir)/test_app_kda.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/runtest-test_app_kda.Tpo $(DEPDIR)/runtest-test_app_kda.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_app_kda.c' object='runtest-test_app_kda.obj' libtool=no @AMDEPBACKSLASH@
+implementations/openssl/3/runtest-test_iut_kda.obj: implementations/openssl/3/test_iut_kda.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT implementations/openssl/3/runtest-test_iut_kda.obj -MD -MP -MF implementations/openssl/3/$(DEPDIR)/runtest-test_iut_kda.Tpo -c -o implementations/openssl/3/runtest-test_iut_kda.obj `if test -f 'implementations/openssl/3/test_iut_kda.c'; then $(CYGPATH_W) 'implementations/openssl/3/test_iut_kda.c'; else $(CYGPATH_W) '$(srcdir)/implementations/openssl/3/test_iut_kda.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) implementations/openssl/3/$(DEPDIR)/runtest-test_iut_kda.Tpo implementations/openssl/3/$(DEPDIR)/runtest-test_iut_kda.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='implementations/openssl/3/test_iut_kda.c' object='implementations/openssl/3/runtest-test_iut_kda.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o runtest-test_app_kda.obj `if test -f 'test_app_kda.c'; then $(CYGPATH_W) 'test_app_kda.c'; else $(CYGPATH_W) '$(srcdir)/test_app_kda.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o implementations/openssl/3/runtest-test_iut_kda.obj `if test -f 'implementations/openssl/3/test_iut_kda.c'; then $(CYGPATH_W) 'implementations/openssl/3/test_iut_kda.c'; else $(CYGPATH_W) '$(srcdir)/implementations/openssl/3/test_iut_kda.c'; fi`
 
-runtest-test_app_kmac.o: test_app_kmac.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT runtest-test_app_kmac.o -MD -MP -MF $(DEPDIR)/runtest-test_app_kmac.Tpo -c -o runtest-test_app_kmac.o `test -f 'test_app_kmac.c' || echo '$(srcdir)/'`test_app_kmac.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/runtest-test_app_kmac.Tpo $(DEPDIR)/runtest-test_app_kmac.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_app_kmac.c' object='runtest-test_app_kmac.o' libtool=no @AMDEPBACKSLASH@
+implementations/openssl/3/runtest-test_iut_kmac.o: implementations/openssl/3/test_iut_kmac.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT implementations/openssl/3/runtest-test_iut_kmac.o -MD -MP -MF implementations/openssl/3/$(DEPDIR)/runtest-test_iut_kmac.Tpo -c -o implementations/openssl/3/runtest-test_iut_kmac.o `test -f 'implementations/openssl/3/test_iut_kmac.c' || echo '$(srcdir)/'`implementations/openssl/3/test_iut_kmac.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) implementations/openssl/3/$(DEPDIR)/runtest-test_iut_kmac.Tpo implementations/openssl/3/$(DEPDIR)/runtest-test_iut_kmac.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='implementations/openssl/3/test_iut_kmac.c' object='implementations/openssl/3/runtest-test_iut_kmac.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o runtest-test_app_kmac.o `test -f 'test_app_kmac.c' || echo '$(srcdir)/'`test_app_kmac.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o implementations/openssl/3/runtest-test_iut_kmac.o `test -f 'implementations/openssl/3/test_iut_kmac.c' || echo '$(srcdir)/'`implementations/openssl/3/test_iut_kmac.c
 
-runtest-test_app_kmac.obj: test_app_kmac.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT runtest-test_app_kmac.obj -MD -MP -MF $(DEPDIR)/runtest-test_app_kmac.Tpo -c -o runtest-test_app_kmac.obj `if test -f 'test_app_kmac.c'; then $(CYGPATH_W) 'test_app_kmac.c'; else $(CYGPATH_W) '$(srcdir)/test_app_kmac.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/runtest-test_app_kmac.Tpo $(DEPDIR)/runtest-test_app_kmac.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_app_kmac.c' object='runtest-test_app_kmac.obj' libtool=no @AMDEPBACKSLASH@
+implementations/openssl/3/runtest-test_iut_kmac.obj: implementations/openssl/3/test_iut_kmac.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -MT implementations/openssl/3/runtest-test_iut_kmac.obj -MD -MP -MF implementations/openssl/3/$(DEPDIR)/runtest-test_iut_kmac.Tpo -c -o implementations/openssl/3/runtest-test_iut_kmac.obj `if test -f 'implementations/openssl/3/test_iut_kmac.c'; then $(CYGPATH_W) 'implementations/openssl/3/test_iut_kmac.c'; else $(CYGPATH_W) '$(srcdir)/implementations/openssl/3/test_iut_kmac.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) implementations/openssl/3/$(DEPDIR)/runtest-test_iut_kmac.Tpo implementations/openssl/3/$(DEPDIR)/runtest-test_iut_kmac.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='implementations/openssl/3/test_iut_kmac.c' object='implementations/openssl/3/runtest-test_iut_kmac.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o runtest-test_app_kmac.obj `if test -f 'test_app_kmac.c'; then $(CYGPATH_W) 'test_app_kmac.c'; else $(CYGPATH_W) '$(srcdir)/test_app_kmac.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(runtest_CFLAGS) $(CFLAGS) -c -o implementations/openssl/3/runtest-test_iut_kmac.obj `if test -f 'implementations/openssl/3/test_iut_kmac.c'; then $(CYGPATH_W) 'implementations/openssl/3/test_iut_kmac.c'; else $(CYGPATH_W) '$(srcdir)/implementations/openssl/3/test_iut_kmac.c'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -1555,6 +1629,8 @@ clean-generic:
 distclean-generic:
 	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
 	-test . = "$(srcdir)" || test -z "$(CONFIG_CLEAN_VPATH_FILES)" || rm -f $(CONFIG_CLEAN_VPATH_FILES)
+	-rm -f implementations/openssl/3/$(DEPDIR)/$(am__dirstamp)
+	-rm -f implementations/openssl/3/$(am__dirstamp)
 
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
@@ -1601,22 +1677,22 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/runtest-test_acvp_safe_primes.Po
 	-rm -f ./$(DEPDIR)/runtest-test_acvp_transport.Po
 	-rm -f ./$(DEPDIR)/runtest-test_acvp_utils.Po
-	-rm -f ./$(DEPDIR)/runtest-test_app_aes.Po
-	-rm -f ./$(DEPDIR)/runtest-test_app_cmac.Po
-	-rm -f ./$(DEPDIR)/runtest-test_app_des.Po
-	-rm -f ./$(DEPDIR)/runtest-test_app_drbg.Po
-	-rm -f ./$(DEPDIR)/runtest-test_app_ecdsa.Po
-	-rm -f ./$(DEPDIR)/runtest-test_app_hmac.Po
-	-rm -f ./$(DEPDIR)/runtest-test_app_kas_ecc.Po
-	-rm -f ./$(DEPDIR)/runtest-test_app_kas_ffc.Po
-	-rm -f ./$(DEPDIR)/runtest-test_app_kas_ifc.Po
-	-rm -f ./$(DEPDIR)/runtest-test_app_kda.Po
-	-rm -f ./$(DEPDIR)/runtest-test_app_kmac.Po
-	-rm -f ./$(DEPDIR)/runtest-test_app_rsa_keygen.Po
-	-rm -f ./$(DEPDIR)/runtest-test_app_rsa_sig.Po
-	-rm -f ./$(DEPDIR)/runtest-test_app_safe_primes.Po
-	-rm -f ./$(DEPDIR)/runtest-test_app_sha.Po
 	-rm -f ./$(DEPDIR)/runtest-ut_common.Po
+	-rm -f implementations/openssl/3/$(DEPDIR)/runtest-test_iut_aes.Po
+	-rm -f implementations/openssl/3/$(DEPDIR)/runtest-test_iut_cmac.Po
+	-rm -f implementations/openssl/3/$(DEPDIR)/runtest-test_iut_des.Po
+	-rm -f implementations/openssl/3/$(DEPDIR)/runtest-test_iut_drbg.Po
+	-rm -f implementations/openssl/3/$(DEPDIR)/runtest-test_iut_ecdsa.Po
+	-rm -f implementations/openssl/3/$(DEPDIR)/runtest-test_iut_hash.Po
+	-rm -f implementations/openssl/3/$(DEPDIR)/runtest-test_iut_hmac.Po
+	-rm -f implementations/openssl/3/$(DEPDIR)/runtest-test_iut_kas_ecc.Po
+	-rm -f implementations/openssl/3/$(DEPDIR)/runtest-test_iut_kas_ffc.Po
+	-rm -f implementations/openssl/3/$(DEPDIR)/runtest-test_iut_kas_ifc.Po
+	-rm -f implementations/openssl/3/$(DEPDIR)/runtest-test_iut_kda.Po
+	-rm -f implementations/openssl/3/$(DEPDIR)/runtest-test_iut_kmac.Po
+	-rm -f implementations/openssl/3/$(DEPDIR)/runtest-test_iut_rsa_keygen.Po
+	-rm -f implementations/openssl/3/$(DEPDIR)/runtest-test_iut_rsa_sig.Po
+	-rm -f implementations/openssl/3/$(DEPDIR)/runtest-test_iut_safe_primes.Po
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-tags
@@ -1698,22 +1774,22 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/runtest-test_acvp_safe_primes.Po
 	-rm -f ./$(DEPDIR)/runtest-test_acvp_transport.Po
 	-rm -f ./$(DEPDIR)/runtest-test_acvp_utils.Po
-	-rm -f ./$(DEPDIR)/runtest-test_app_aes.Po
-	-rm -f ./$(DEPDIR)/runtest-test_app_cmac.Po
-	-rm -f ./$(DEPDIR)/runtest-test_app_des.Po
-	-rm -f ./$(DEPDIR)/runtest-test_app_drbg.Po
-	-rm -f ./$(DEPDIR)/runtest-test_app_ecdsa.Po
-	-rm -f ./$(DEPDIR)/runtest-test_app_hmac.Po
-	-rm -f ./$(DEPDIR)/runtest-test_app_kas_ecc.Po
-	-rm -f ./$(DEPDIR)/runtest-test_app_kas_ffc.Po
-	-rm -f ./$(DEPDIR)/runtest-test_app_kas_ifc.Po
-	-rm -f ./$(DEPDIR)/runtest-test_app_kda.Po
-	-rm -f ./$(DEPDIR)/runtest-test_app_kmac.Po
-	-rm -f ./$(DEPDIR)/runtest-test_app_rsa_keygen.Po
-	-rm -f ./$(DEPDIR)/runtest-test_app_rsa_sig.Po
-	-rm -f ./$(DEPDIR)/runtest-test_app_safe_primes.Po
-	-rm -f ./$(DEPDIR)/runtest-test_app_sha.Po
 	-rm -f ./$(DEPDIR)/runtest-ut_common.Po
+	-rm -f implementations/openssl/3/$(DEPDIR)/runtest-test_iut_aes.Po
+	-rm -f implementations/openssl/3/$(DEPDIR)/runtest-test_iut_cmac.Po
+	-rm -f implementations/openssl/3/$(DEPDIR)/runtest-test_iut_des.Po
+	-rm -f implementations/openssl/3/$(DEPDIR)/runtest-test_iut_drbg.Po
+	-rm -f implementations/openssl/3/$(DEPDIR)/runtest-test_iut_ecdsa.Po
+	-rm -f implementations/openssl/3/$(DEPDIR)/runtest-test_iut_hash.Po
+	-rm -f implementations/openssl/3/$(DEPDIR)/runtest-test_iut_hmac.Po
+	-rm -f implementations/openssl/3/$(DEPDIR)/runtest-test_iut_kas_ecc.Po
+	-rm -f implementations/openssl/3/$(DEPDIR)/runtest-test_iut_kas_ffc.Po
+	-rm -f implementations/openssl/3/$(DEPDIR)/runtest-test_iut_kas_ifc.Po
+	-rm -f implementations/openssl/3/$(DEPDIR)/runtest-test_iut_kda.Po
+	-rm -f implementations/openssl/3/$(DEPDIR)/runtest-test_iut_kmac.Po
+	-rm -f implementations/openssl/3/$(DEPDIR)/runtest-test_iut_rsa_keygen.Po
+	-rm -f implementations/openssl/3/$(DEPDIR)/runtest-test_iut_rsa_sig.Po
+	-rm -f implementations/openssl/3/$(DEPDIR)/runtest-test_iut_safe_primes.Po
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 

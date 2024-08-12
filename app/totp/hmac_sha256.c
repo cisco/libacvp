@@ -47,8 +47,8 @@ size_t hmac_sha256(const void* key,
   size_t sz;
   int i;
 
-  memset_s (k, sizeof(k), 0, sizeof(k));
-  memset_s (k_ipad, sizeof(k_ipad), 0x36, sizeof(k_ipad));
+  memset_s(k, sizeof(k), 0, sizeof(k));
+  memset_s(k_ipad, sizeof(k_ipad), 0x36, sizeof(k_ipad));
   memset_s(k_opad, sizeof(k_opad), 0x5c, sizeof(k_opad));
 
   if (keylen > SHA256_BLOCK_SIZE) {

@@ -14,6 +14,9 @@
 #include "app_lcl.h"
 #include "safe_lib.h"
 
+//TODO: This shouldnt need to be set
+char value[JSON_STRING_LENGTH];
+
 void print_version_info(APP_CONFIG *cfg) {
     printf("\n ACVP library version: %s\n", acvp_version());
     printf("ACVP protocol version: %s\n\n", acvp_protocol_version());

@@ -1,6 +1,6 @@
 /** @file */
 /*
- * Copyright (c) 2023, Cisco Systems, Inc.
+ * Copyright (c) 2024, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -10,15 +10,14 @@
 
 #include "ut_common.h"
 #include "app_common.h"
+#include "iut_common.h"
 #include "acvp/acvp_lcl.h"
 #include "acvp/acvp.h"
 
-#if OPENSSL_VERSION_NUMBER >= 0x30000000L
-
-ACVP_CTX *ctx;
-ACVP_TEST_CASE *test_case;
+static ACVP_CTX *ctx;
+static ACVP_TEST_CASE *test_case;
 ACVP_KMAC_TC *kmac_tc;
-ACVP_RESULT rv;
+static ACVP_RESULT rv;
 
 int initialize_kmac_tc(ACVP_KMAC_TC *kmac_tc, int alg_id, ACVP_KMAC_TESTTYPE type,
                        int xof, int custom_is_hex, char *mac, int mac_len, char *msg, char *key,
@@ -231,5 +230,3 @@ Test(APP_KMAC_HANDLER, mem_not_allocated) {
     free(kmac_tc);
     free(test_case);
 }
-
-#endif

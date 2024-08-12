@@ -1,6 +1,6 @@
 /** @file */
 /*
- * Copyright (c) 2019, Cisco Systems, Inc.
+ * Copyright (c) 2024, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -11,7 +11,7 @@
 
 #include "ut_common.h"
 
-ACVP_CTX *ctx;
+static ACVP_CTX *ctx;
 
 Test(CreateSession, properly) {
     ACVP_RESULT rv;

@@ -1,6 +1,6 @@
 /** @file */
 /*
- * Copyright (c) 2021, Cisco Systems, Inc.
+ * Copyright (c) 2024, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -14,7 +14,7 @@
 
 char *vsid_url = "/acvp/v1/testSessions/0/vectorSets/0";
 ACVP_CTX *ctx = NULL;
-ACVP_RESULT rv;
+static ACVP_RESULT rv;
 char *reg = "{}";
 char *little_reg = "[{\"acvVersion\": \"0.5\"},{\"algorithms\": [{\"algorithm\": \"SHA-1\",\"inBit\": false,\n"
                    "                \"inEmpty\": true\n"
@@ -51,13 +51,13 @@ char *login_reg = "[\n"
                   "    }\n"
                   "]";
 
-char *server;
-int port;
-char *ca_chain_file;
-char *cert_file;
-char *key_file;
-char *path_segment;
-char *api_context;
+static char *server;
+static int port;
+static char *ca_chain_file;
+static char *cert_file;
+static char *key_file;
+static char *path_segment;
+static char *api_context;
 
 /*
  * Read the operational parameters from the various environment

@@ -45,40 +45,56 @@ tmp_ldflags += $(LIBCURL_LDFLAGS)
 endif
 
 if ! APP_NOT_SUPPORTED
-runtest_SOURCES += app_common.c \
-      test_app_aes.c \
-      test_app_cmac.c \
-      test_app_des.c \
-      test_app_drbg.c \
-      test_app_ecdsa.c \
-      test_app_hmac.c \
-      test_app_kas_ecc.c \
-      test_app_kas_ffc.c \
-      test_app_kas_ifc.c \
-      test_app_rsa_keygen.c \
-      test_app_rsa_sig.c \
-      test_app_sha.c \
-      test_app_safe_primes.c \
-      test_app_kda.c \
-      test_app_kmac.c
 
-APP_LINK = ../app/acvp_app-app_utils.o \
-           ../app/acvp_app-app_sha.o \
-           ../app/acvp_app-app_hmac.o \
-           ../app/acvp_app-app_aes.o \
-           ../app/acvp_app-app_des.o \
-           ../app/acvp_app-app_cmac.o \
-           ../app/acvp_app-app_kdf.o \
-           ../app/acvp_app-app_dsa.o \
-           ../app/acvp_app-app_kas.o \
-           ../app/acvp_app-app_rsa.o \
-           ../app/acvp_app-app_ecdsa.o \
-           ../app/acvp_app-app_drbg.o \
-           ../app/acvp_app-app_kda.o \
-           ../app/acvp_app-app_kmac.o
+APP_LINK = ../app/acvp_app-app_cli.o \
+           ../app/acvp_app-app_utils.o \
+           ../app/totp/acvp_app-hmac_sha256.o \
+           ../app/totp/acvp_app-sha256.o \
+           ../app/totp/acvp_app-totp.o
 
-tmp_cflags += $(SSL_CFLAGS) $(FOM_CFLAGS) -I../app
-tmp_ldflags += $(SSL_LDFLAGS) $(FOM_LDFLAGS)
+runtest_SOURCES += app_common.c
+
+if APP_IUT_OPENSSL_3
+runtest_SOURCES += implementations/openssl/3/test_iut_aes.c \
+                   implementations/openssl/3/test_iut_cmac.c \
+                   implementations/openssl/3/test_iut_des.c \
+                   implementations/openssl/3/test_iut_drbg.c \
+                   implementations/openssl/3/test_iut_ecdsa.c \
+                   implementations/openssl/3/test_iut_hmac.c \
+                   implementations/openssl/3/test_iut_kas_ecc.c \
+                   implementations/openssl/3/test_iut_kas_ffc.c \
+                   implementations/openssl/3/test_iut_kas_ifc.c \
+                   implementations/openssl/3/test_iut_rsa_keygen.c \
+                   implementations/openssl/3/test_iut_rsa_sig.c \
+                   implementations/openssl/3/test_iut_hash.c \
+                   implementations/openssl/3/test_iut_safe_primes.c \
+                   implementations/openssl/3/test_iut_kda.c \
+                   implementations/openssl/3/test_iut_kmac.c
+
+APP_LINK += ../app/implementations/openssl/3/acvp_app-iut.o \
+            ../app/implementations/openssl/3/acvp_app-iut_utils.o \
+            ../app/implementations/openssl/3/registrations/acvp_app-fp_30X.o \
+            ../app/implementations/openssl/3/registrations/acvp_app-fp_312.o \
+            ../app/implementations/openssl/3/registrations/acvp_app-non_fips.o \
+            ../app/implementations/openssl/3/acvp_app-iut_hash.o \
+            ../app/implementations/openssl/3/acvp_app-iut_hmac.o \
+            ../app/implementations/openssl/3/acvp_app-iut_aes.o \
+            ../app/implementations/openssl/3/acvp_app-iut_des.o \
+            ../app/implementations/openssl/3/acvp_app-iut_cmac.o \
+            ../app/implementations/openssl/3/acvp_app-iut_kdf.o \
+            ../app/implementations/openssl/3/acvp_app-iut_dsa.o \
+            ../app/implementations/openssl/3/acvp_app-iut_kas.o \
+            ../app/implementations/openssl/3/acvp_app-iut_rsa.o \
+            ../app/implementations/openssl/3/acvp_app-iut_ecdsa.o \
+            ../app/implementations/openssl/3/acvp_app-iut_drbg.o \
+            ../app/implementations/openssl/3/acvp_app-iut_kda.o \
+            ../app/implementations/openssl/3/acvp_app-iut_kmac.o
+
+endif
+
+
+tmp_cflags += $(IUT_CFLAGS) -I../app
+tmp_ldflags += $(IUT_LDFLAGS)
 endif
 
 runtest_CFLAGS = ${tmp_cflags}

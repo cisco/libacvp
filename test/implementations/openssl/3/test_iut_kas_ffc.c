@@ -1,6 +1,6 @@
 /** @file */
 /*
- * Copyright (c) 2023, Cisco Systems, Inc.
+ * Copyright (c) 2024, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -14,14 +14,15 @@
 
 #include "ut_common.h"
 #include "app_common.h"
+#include "iut_common.h"
 #include "acvp/acvp_lcl.h"
 
-ACVP_CTX *ctx;
-ACVP_TEST_CASE *test_case;
+static ACVP_CTX *ctx;
+static ACVP_TEST_CASE *test_case;
 ACVP_KAS_FFC_TC *kas_ffc_tc;
-ACVP_RESULT rv;
+static ACVP_RESULT rv;
 
-#if OPENSSL_VERSION_NUMBER >= 0x30000000L && !defined OPENSSL_NO_DSA
+#if !defined OPENSSL_NO_DSA
 
 void free_kas_ffc_tc(ACVP_KAS_FFC_TC *stc) {
     if (stc->piut) free(stc->piut);
