@@ -803,6 +803,7 @@ am__EXEEXT_TRUE
 LTLIBOBJS
 LIBOBJS
 COND_ALG_CFLAGS
+ADDL_LIB_DEPENDENCIES
 SELECTED_IUT
 SAFEC_LDFLAGS
 SAFEC_CFLAGS
@@ -826,7 +827,6 @@ APP_IUT_JENT_FALSE
 APP_IUT_JENT_TRUE
 IUT_LDFLAGS
 IUT_CFLAGS
-ADDL_LIB_DEPENDENCIES
 FORCE_STATIC_FALSE
 FORCE_STATIC_TRUE
 BUILDING_OFFLINE_FALSE
@@ -11342,6 +11342,9 @@ CC="$lt_save_CC"
 ##
 gcc_z_support=no
 case "${host_os}" in
+    darwin*)
+        allow_multiple=no
+        ;;
     linux*)
         gcc_z_support=yes
         ;;
@@ -11355,6 +11358,11 @@ fi
 ###########################################
 # Read in arguments and set internal vars #
 ###########################################
+
+lib_dependencies=""
+ssl_ver=""
+iut_cflags=""
+iut_ldflags=""
 
 # Option to disable app builds
 # Check whether --enable-app was given.
@@ -11544,7 +11552,7 @@ fi
 # This var should be set to indicate the crypto library being tested with a given build of acvp_app
 # This does not apply for --disable-app builds
 # Set default value here, change based on args below
-acvp_app_iut="";
+acvp_app_iut=""
 iut_specified=0;
 # SSL dir only used if building app too
 if test "x$disable_app" = "xno" ; then
@@ -11600,12 +11608,17 @@ if test "x$disable_lib_detection" = "xno"; then
     proj_temp_cppflags="$CPPFLAGS"
 
     # Be more lenient in library detection stage
-    LDFLAGS=" -Wl,--allow-multiple-definition $LDFLAGS"
+    if test "x$allow_multiple" != "xno"; then
+        LDFLAGS=" -Wl,--allow-multiple-definition $LDFLAGS"
+    fi
 
     if test "x$disable_app" = "xno" ; then
+        ##########################################################
+        # Begin checks for IUT. Only one of these should be done #
+        ##########################################################
+
         LDFLAGS="$LDFLAGS -L$iut_dir/lib"
         CPPFLAGS="-I$iut_dir/include"
-        lib_dependencies=""
         use_lib64="false"
 
         if test "x$acvp_app_iut" = "xopenssl"; then
@@ -11729,11 +11742,8 @@ then :
   lib_dependencies+="-lz "
 fi
 
-            ADDL_LIB_DEPENDENCIES="$lib_dependencies"
 
-
-            # Check what version of SSL is being linked. This is not needed directly, but may be used to help support
-            # harnesses for older or newer SSL versions
+            # Check what version of SSL is being linked.
             ac_fn_c_check_header_compile "$LINENO" "openssl/opensslv.h" "ac_cv_header_openssl_opensslv_h" "$ac_includes_default"
 if test "x$ac_cv_header_openssl_opensslv_h" = xyes
 then :
@@ -11768,7 +11778,7 @@ printf "%s\n" "$as_me: error: in \`$ac_pwd':" >&2;}
 as_fn_error $? "OpenSSL versions under 3 not currently supported
 See \`config.log' for more details" "$LINENO" 5; }
 else $as_nop
-  acvp_app_iut="openssl_3"
+  ssl_ver="3"
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
 
@@ -12034,6 +12044,9 @@ fi
 
 
         fi
+        ######################
+        # End checks for IUT #
+        ######################
     fi
 
     if test "x$disable_lib" = "xyes" ; then
@@ -12145,27 +12158,46 @@ fi
 
     fi
 
+    # Reset the flags variables to what they were before checking for libs, we want to manage these
     CPPFLAGS="$proj_temp_cppflags"
     LDFLAGS="$pre_ldflags"
     LIBS="$pre_libs"
 else
     #assume we are using openssl 3.X if lib check is disabled
     if test "x$acvp_app_iut" = "xopenssl"; then
-        acvp_app_iut = "openssl_3"
+        acvp_app_iut="openssl"
+        ssl_ver="3"
     fi
 fi
 
+# Regenerate the IUT name if using SSL, appending the version
+if test "x$acvp_app_iut" = "xopenssl"; then
+    acvp_app_iut="$acvp_app_iut"_"$ssl_ver"
+fi
+
+#########################################################################
+# Done checking for existance of libs. Set other appropriate make vars. #
+#########################################################################
+
 if test "x$disable_app" = "xno" ; then
-    IUT_CFLAGS="-I$iut_dir/include"
+    # Set any IUT specific flags not captured previously
+
+    # Set flags needed for all IUTs
+    iut_cflags="-I$iut_dir/include $iut_cflags"
 
     if test "x$use_lib64" = "xtrue" ; then
-        IUT_LDFLAGS="-L$iut_dir/lib64 $iut_lflag"
-
+        iut_ldflags="$iut_ldflags -L$iut_dir/lib64"
     else
-        IUT_LDFLAGS="-L$iut_dir/lib $iut_lflag"
-
+        iut_ldflags="$iut_ldflags -L$iut_dir/lib"
     fi
 
+    # Send the flags off to the automake files
+    IUT_CFLAGS="$iut_cflags"
+
+    IUT_LDFLAGS="$iut_ldflags $iut_lflag"
+
+
+    # Tell the automake files which IUT we are using. Only one of these should ever be enabled.
      if test "x$acvp_app_iut" = "xjent"; then
   APP_IUT_JENT_TRUE=
   APP_IUT_JENT_FALSE='#'
@@ -12174,7 +12206,7 @@ else
   APP_IUT_JENT_FALSE=
 fi
 
-     if test "x$acvp_app_iut" = "xopenssl"; then
+     if test "x$acvp_app_iut" = "xopenssl_1"; then
   APP_IUT_OPENSSL_1_TRUE=
   APP_IUT_OPENSSL_1_FALSE='#'
 else
@@ -12191,6 +12223,8 @@ else
 fi
 
 fi
+
+# Set the flags needed for curl/murl library
 if test "x$libcurldir" != "x" ; then
     LIBCURL_CFLAGS="-I$libcurldir/include"
 
@@ -12202,10 +12236,6 @@ elif test "x$usemurl" != "x" ; then
     LIBCURL_LDFLAGS="-L$libmurldir/lib -lcurl"
 
 fi
-
-#########################################################################
-# Done checking for existance of libs. Set other appropriate make vars. #
-#########################################################################
 
 # If given a libacvp_dir, use that when building things dependent on library, otherwise, use defaults
 if test "x$libacvpdir" != "x" ; then
@@ -12271,6 +12301,8 @@ SAFEC_LDFLAGS="$safecdir/lib/libsafe_lib.la"
 
 
 SELECTED_IUT="$acvp_app_iut"
+
+ADDL_LIB_DEPENDENCIES="$lib_dependencies"
 
 
 #At the end, SUBST any conditional algorithm cflags we have acquired

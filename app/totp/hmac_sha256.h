@@ -1,6 +1,10 @@
 /*
     hmac_sha256.h
     Originally written by https://github.com/h5p9sl
+    LIBACVP NOTE: Original code modified to include PR #7 at https://github.com/h5p9sl/hmac_sha256/pull/7.
+    Code also modified to use safeC memory calls.
+    This code is not thoroughly vetted and should NOT be used for any security purposes. It should ONLY be used for
+    TOTP generation for the already-secured ACVP protocol communications.
 */
 
 #ifndef _HMAC_SHA256_H_
