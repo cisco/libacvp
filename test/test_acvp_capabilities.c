@@ -11,9 +11,9 @@
 
 #include "ut_common.h"
 
-ACVP_CTX *ctx;
+static ACVP_CTX *ctx;
 char cvalue[] = "same";
-ACVP_RESULT rv;
+static ACVP_RESULT rv;
 
 static void teardown(void) {
     if (ctx) teardown_ctx(&ctx);

@@ -329,11 +329,14 @@ if test "x$disable_app" = "xno" ; then
     AC_SUBST([IUT_CFLAGS], "$iut_cflags")
     AC_SUBST([IUT_LDFLAGS], "$iut_ldflags $iut_lflag")
 
-    # Tell the automake files which IUT we are using. Only one of these should ever be enabled.
-    AM_CONDITIONAL([APP_IUT_JENT], [test "x$acvp_app_iut" = "xjent"])
-    AM_CONDITIONAL([APP_IUT_OPENSSL_1], [test "x$acvp_app_iut" = "xopenssl_1"])
-    AM_CONDITIONAL([APP_IUT_OPENSSL_3], [test "x$acvp_app_iut" = "xopenssl_3"])
 fi
+
+# Tell the automake files which IUT we are using. Only one of these should ever be enabled.
+# NOTE: These must called here even if not building the app for the sake of autoconf sanity
+#       AM_CONDITIONAL should never be...conditionally called
+AM_CONDITIONAL([APP_IUT_JENT], [test "x$acvp_app_iut" = "xjent"])
+AM_CONDITIONAL([APP_IUT_OPENSSL_1], [test "x$acvp_app_iut" = "xopenssl_1"])
+AM_CONDITIONAL([APP_IUT_OPENSSL_3], [test "x$acvp_app_iut" = "xopenssl_3"])
 
 # Set the flags needed for curl/murl library
 if test "x$libcurldir" != "x" ; then

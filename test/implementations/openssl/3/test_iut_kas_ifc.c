@@ -1,6 +1,6 @@
 /** @file */
 /*
- * Copyright (c) 2023, Cisco Systems, Inc.
+ * Copyright (c) 2024, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -14,16 +14,14 @@
 
 #include "ut_common.h"
 #include "app_common.h"
+#include "iut_common.h"
 #include "acvp/acvp_lcl.h"
-
-#if OPENSSL_VERSION_NUMBER >= 0x30000000L
 
 /* Note: currently tests KAS1 only, and only basic key formats */
 
-ACVP_CTX *ctx;
-ACVP_TEST_CASE *test_case;
+static ACVP_TEST_CASE *test_case;
 ACVP_KAS_IFC_TC *kas_ifc_tc;
-ACVP_RESULT rv;
+static ACVP_RESULT rv;
 
 void free_kas_ifc_tc(ACVP_KAS_IFC_TC *stc) {
     if (stc->server_n) free(stc->server_n);
@@ -744,6 +742,3 @@ Test(APP_KAS_IFC_HANDLER, missing_buf_serv_pt_z) {
     free_kas_ifc_tc(kas_ifc_tc);
     free(test_case);
 }
-
-#endif
-

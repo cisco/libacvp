@@ -1,6 +1,6 @@
 /** @file */
 /*
- * Copyright (c) 2023, Cisco Systems, Inc.
+ * Copyright (c) 2024, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -10,14 +10,13 @@
 
 #include "ut_common.h"
 #include "app_common.h"
+#include "iut_common.h"
 #include "acvp/acvp_lcl.h"
 
-#if OPENSSL_VERSION_NUMBER >= 0x30000000L
-
-ACVP_CTX *ctx;
-ACVP_TEST_CASE *test_case;
+static ACVP_CTX *ctx;
+static ACVP_TEST_CASE *test_case;
 ACVP_DRBG_TC *drbg_tc;
-ACVP_RESULT rv;
+static ACVP_RESULT rv;
 
 void free_drbg_tc(ACVP_DRBG_TC *stc) {
     if (stc->drb) free(stc->drb);
@@ -392,5 +391,3 @@ Test(APP_DRBG_HANDLER, no_perso) {
     free_drbg_tc(drbg_tc);
     free(test_case);
 }
-
-#endif

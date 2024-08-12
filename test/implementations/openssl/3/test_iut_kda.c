@@ -1,6 +1,6 @@
 /** @file */
 /*
- * Copyright (c) 2021, Cisco Systems, Inc.
+ * Copyright (c) 2024, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -10,13 +10,13 @@
 
 #include "ut_common.h"
 #include "app_common.h"
+#include "iut_common.h"
 #include "acvp/acvp_lcl.h"
 
-ACVP_CTX *ctx;
-ACVP_TEST_CASE *test_case;
+static ACVP_TEST_CASE *test_case;
 ACVP_KDA_HKDF_TC *kda_hkdf_tc;
 ACVP_KDA_ONESTEP_TC *kda_onestep_tc;
-ACVP_RESULT rv;
+static ACVP_RESULT rv;
 
 void free_kda_hkdf_tc(ACVP_KDA_HKDF_TC *stc) {
     if (stc->salt) free(stc->salt);

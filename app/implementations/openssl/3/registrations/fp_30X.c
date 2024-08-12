@@ -32,7 +32,6 @@ static int enable_hmac(ACVP_CTX *ctx);
 static int enable_kmac(ACVP_CTX *ctx);
 static int enable_rsa(ACVP_CTX *ctx);
 static int enable_ecdsa(ACVP_CTX *ctx);
-static int enable_eddsa(ACVP_CTX *ctx);
 static int enable_drbg(ACVP_CTX *ctx);
 static int enable_kas_ecc(ACVP_CTX *ctx);
 static int enable_kas_ifc(ACVP_CTX *ctx);
@@ -52,7 +51,6 @@ ACVP_RESULT register_capabilities_fp_30X(ACVP_CTX *ctx, APP_CONFIG *cfg) {
     if (cfg->kdf || cfg->testall) { if ((rv = enable_kdf(ctx))) goto end; }
     if (cfg->rsa || cfg->testall) { if ((rv = enable_rsa(ctx))) goto end; }
     if (cfg->ecdsa || cfg->testall) { if ((rv = enable_ecdsa(ctx))) goto end; }
-    if (cfg->eddsa || cfg->testall) { if ((rv = enable_eddsa(ctx))) goto end; }
     if (cfg->drbg || cfg->testall) { if ((rv = enable_drbg(ctx))) goto end; }
     if (cfg->kas_ecc || cfg->testall) { if ((rv = enable_kas_ecc(ctx))) goto end; }
     if (cfg->kas_ifc || cfg->testall) { if ((rv = enable_kas_ifc(ctx))) goto end; }
@@ -1816,34 +1814,6 @@ static int enable_ecdsa(ACVP_CTX *ctx) {
 
 end:
 
-    return rv;
-}
-
-static int enable_eddsa(ACVP_CTX *ctx) {
-    ACVP_RESULT rv = ACVP_SUCCESS;
-
-    rv = acvp_cap_eddsa_enable(ctx, ACVP_EDDSA_SIGGEN, &app_eddsa_handler);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_eddsa_set_parm(ctx, ACVP_EDDSA_SIGGEN, ACVP_EDDSA_CURVE, ACVP_ED_CURVE_25519);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_eddsa_set_parm(ctx, ACVP_EDDSA_SIGGEN, ACVP_EDDSA_CURVE, ACVP_ED_CURVE_448);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_eddsa_set_parm(ctx, ACVP_EDDSA_SIGGEN, ACVP_EDDSA_SUPPORTS_PREHASH, 1);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_eddsa_set_parm(ctx, ACVP_EDDSA_SIGGEN, ACVP_EDDSA_SUPPORTS_PURE, 1);
-    CHECK_ENABLE_CAP_RV(rv);
-
-    rv = acvp_cap_eddsa_enable(ctx, ACVP_EDDSA_SIGVER, &app_eddsa_handler);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_eddsa_set_parm(ctx, ACVP_EDDSA_SIGVER, ACVP_EDDSA_CURVE, ACVP_ED_CURVE_25519);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_eddsa_set_parm(ctx, ACVP_EDDSA_SIGVER, ACVP_EDDSA_CURVE, ACVP_ED_CURVE_448);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_eddsa_set_parm(ctx, ACVP_EDDSA_SIGVER, ACVP_EDDSA_SUPPORTS_PREHASH, 1);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_eddsa_set_parm(ctx, ACVP_EDDSA_SIGVER, ACVP_EDDSA_SUPPORTS_PURE, 1);
-    CHECK_ENABLE_CAP_RV(rv);
-end:
     return rv;
 }
 

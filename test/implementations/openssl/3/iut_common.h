@@ -8,12 +8,9 @@
  * https://github.com/cisco/libacvp/LICENSE
  */
 
-#ifndef ACVP_UT_APP_COMMON_H
-#define ACVP_UT_APP_COMMON_H
+#ifndef ACVP_UT_IUT_COMMON_H
+#define ACVP_UT_IUT_COMMON_H
 
-#include "app_lcl.h"
-
-ACVP_RESULT totp(char **token, int token_max);
-void dummy_call(void);
+#include "implementations/openssl/3/iut.h"
 
 #endif

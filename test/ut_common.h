@@ -1,6 +1,6 @@
 /** @file */
 /*
- * Copyright (c) 2019, Cisco Systems, Inc.
+ * Copyright (c) 2024, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -8,6 +8,8 @@
  * https://github.com/cisco/libacvp/LICENSE
  */
 
+#ifndef ACVP_UT_COMMON_H
+#define ACVP_UT_COMMON_H
 
 #include <string.h>
 #include <stdio.h>
@@ -17,8 +19,8 @@
 #include "safe_lib.h"
 #include "acvp/acvp.h"
 
-int counter_set;
-int counter_fail;
+extern int counter_set;
+extern int counter_fail;
 
 void teardown_ctx(ACVP_CTX **ctx);
 ACVP_RESULT progress(char *msg, ACVP_LOG_LVL level);
@@ -46,3 +48,5 @@ unsigned int dummy_totp(char **token, int token_max);
                                   "TestStringTooLongTestStringTooLongTestStringTooLongTestStringTooLong"\
                                   "TestStringTooLongTestStringTooLongTestStringTooLongTestStringTooLong"\
                                   "TestStringTooLongTestStringTooLongTestStringTooLongTestStringTooLong"
+
+#endif

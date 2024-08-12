@@ -1,6 +1,6 @@
 /** @file */
 /*
- * Copyright (c) 2020, Cisco Systems, Inc.
+ * Copyright (c) 2024, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -10,12 +10,13 @@
 
 #include "ut_common.h"
 #include "app_common.h"
+#include "iut_common.h"
 #include "acvp/acvp_lcl.h"
 
-ACVP_CTX *ctx;
-ACVP_TEST_CASE *test_case;
+static ACVP_CTX *ctx;
+static ACVP_TEST_CASE *test_case;
 ACVP_SYM_CIPHER_TC *aes_tc;
-ACVP_RESULT rv;
+static ACVP_RESULT rv;
 
 int initialize_aes_tc(ACVP_SYM_CIPHER_TC *aes_tc, int alg_id, char *pt, 
                       int pt_len, char *ct, int ct_len, char *key, int key_len, char *aad,

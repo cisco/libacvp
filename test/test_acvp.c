@@ -1,6 +1,6 @@
 /** @file */
 /*
- * Copyright (c) 2021, Cisco Systems, Inc.
+ * Copyright (c) 2024, Cisco Systems, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -12,15 +12,14 @@
 #include "ut_common.h"
 #include "acvp/acvp_lcl.h"
 
-ACVP_CTX *ctx;
+static ACVP_CTX *ctx;
 static char filename[] = "filename";
 static char cvalue[] = "same";
-char *test_server = "demo.acvts.nist.gov";
-char *api_context = "acvp/";
-char *path_segment = "acvp/v1/";
-char *uri = "login";
-int port = 443;
-ACVP_RESULT rv;
+static char *test_server = "demo.acvts.nist.gov";
+static char *api_context = "acvp/";
+static char *path_segment = "acvp/v1/";
+static int port = 443;
+static ACVP_RESULT rv;
 
 static void setup(void) {
     setup_empty_ctx(&ctx);

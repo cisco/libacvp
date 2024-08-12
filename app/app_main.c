@@ -43,9 +43,6 @@ char *key_file;
 const char *path_segment;
 const char *api_context;
 
-//TODO: This shouldnt need to be set
-char value[JSON_STRING_LENGTH];
-
 #define CHECK_ENABLE_CAP_RV(rv) \
     if (rv != ACVP_SUCCESS) { \
         printf("Failed to register capability with libacvp (rv=%d: %s)\n", rv, acvp_lookup_error_string(rv)); \
