@@ -66,7 +66,6 @@ int app_kda_twostep_handler(ACVP_TEST_CASE *test_case);
 int app_kts_ifc_handler(ACVP_TEST_CASE *test_case);
 int app_rsa_keygen_handler(ACVP_TEST_CASE *test_case);
 int app_rsa_sig_handler(ACVP_TEST_CASE *test_case);
-int app_rsa_decprim_handler(ACVP_TEST_CASE *test_case);
 int app_rsa_sigprim_handler(ACVP_TEST_CASE *test_case);
 int app_ecdsa_handler(ACVP_TEST_CASE *test_case);
 int app_eddsa_handler(ACVP_TEST_CASE *test_case);

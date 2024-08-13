@@ -1694,31 +1694,6 @@ static int enable_rsa(ACVP_CTX *ctx) {
     rv = acvp_cap_rsa_sigver_set_mod_parm(ctx, ACVP_RSA_SIG_TYPE_PKCS1PSS, 4096, ACVP_SHA512_256, 32);
     CHECK_ENABLE_CAP_RV(rv);
 
-#ifdef OPENSSL_RSA_PRIMITIVE
-    /* Enable Decryption Primitive */
-    rv = acvp_cap_rsa_prim_enable(ctx, ACVP_RSA_DECPRIM, &app_rsa_decprim_handler);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_set_prereq(ctx, ACVP_RSA_DECPRIM, ACVP_PREREQ_SHA, value);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_set_prereq(ctx, ACVP_RSA_DECPRIM, ACVP_PREREQ_DRBG, value);
-    CHECK_ENABLE_CAP_RV(rv);
-    /* Revision 1 should be testable if needed still */
-    //rv = acvp_cap_rsa_prim_set_parm(ctx, ACVP_RSA_DECPRIM, ACVP_RSA_PARM_REVISION, ACVP_REVISION_1_0);
-    //CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_rsa_prim_set_parm(ctx, ACVP_RSA_DECPRIM, ACVP_RSA_PARM_KEY_FORMAT, ACVP_RSA_KEY_FORMAT_CRT);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_rsa_prim_set_parm(ctx, ACVP_RSA_DECPRIM, ACVP_RSA_PARM_PUB_EXP_MODE, ACVP_RSA_PUB_EXP_MODE_FIXED);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_rsa_prim_set_parm(ctx, ACVP_RSA_DECPRIM, ACVP_RSA_PARM_MODULO, 2048);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_rsa_prim_set_parm(ctx, ACVP_RSA_DECPRIM, ACVP_RSA_PARM_MODULO, 3072);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_rsa_prim_set_parm(ctx, ACVP_RSA_DECPRIM, ACVP_RSA_PARM_MODULO, 4096);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_rsa_prim_set_exponent(ctx, ACVP_RSA_DECPRIM, ACVP_RSA_PARM_FIXED_PUB_EXP_VAL, expo_str);
-    CHECK_ENABLE_CAP_RV(rv);
-#endif
-
     /* Enable Signature Primitive */
     rv = acvp_cap_rsa_prim_enable(ctx, ACVP_RSA_SIGPRIM, &app_rsa_sigprim_handler);
     CHECK_ENABLE_CAP_RV(rv);
