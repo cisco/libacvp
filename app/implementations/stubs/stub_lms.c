@@ -23,4 +23,3 @@ int app_lms_handler(ACVP_TEST_CASE *test_case) {
     }
     return 1;
 }
-
