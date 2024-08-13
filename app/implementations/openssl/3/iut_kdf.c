@@ -49,27 +49,6 @@ static unsigned char tls13_prefix[] = "tls13 ";
 static char tls13_extract[] = "EXTRACT_ONLY";
 static char tls13_expand[] = "EXPAND_ONLY";
 
-int app_kdf135_srtp_handler(ACVP_TEST_CASE *test_case) {
-    if (!test_case) {
-        return -1;
-    }
-    return 1;
-}
-
-int app_kdf135_ikev2_handler(ACVP_TEST_CASE *test_case) {
-    if (!test_case) {
-        return -1;
-    }
-    return 1;
-}
-
-int app_kdf135_ikev1_handler(ACVP_TEST_CASE *test_case) {
-    if (!test_case) {
-        return -1;
-    }
-    return 1;
-}
-
 int app_kdf135_x942_handler(ACVP_TEST_CASE *test_case) {
     ACVP_KDF135_X942_TC *stc = NULL;
     int rc = 1, info_len = 0, iter = 0;
@@ -422,13 +401,6 @@ end:
     if (kdf) EVP_KDF_free(kdf);
     if (kctx) EVP_KDF_CTX_free(kctx);
     return rc;
-}
-
-int app_kdf135_snmp_handler(ACVP_TEST_CASE *test_case) {
-    if (!test_case) {
-        return -1;
-    }
-    return 1;
 }
 
 int app_kdf135_ssh_handler(ACVP_TEST_CASE *test_case) {
