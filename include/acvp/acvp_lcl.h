@@ -99,6 +99,8 @@
 #define ACVP_REV_AES_KWP             ACVP_REV_STR_1_0
 #define ACVP_REV_AES_GMAC            ACVP_REV_STR_1_0
 #define ACVP_REV_AES_XPN             ACVP_REV_STR_1_0
+#define ACVP_REV_AES_FF1             ACVP_REV_STR_1_0
+#define ACVP_REV_AES_FF3             ACVP_REV_STR_1_0
 
 /* TDES */
 #define ACVP_REV_TDES_OFB            ACVP_REV_STR_1_0
