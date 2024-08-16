@@ -678,6 +678,7 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx) {
                 acvp_cap_free_sl(cap_entry->cap.sym_cap->aadlen);
                 acvp_cap_free_sl(cap_entry->cap.sym_cap->taglen);
                 acvp_cap_free_sl(cap_entry->cap.sym_cap->tweak);
+                free(cap_entry->cap.sym_cap->alphabet);
                 free(cap_entry->cap.sym_cap);
                 break;
             case ACVP_HASH_TYPE:
