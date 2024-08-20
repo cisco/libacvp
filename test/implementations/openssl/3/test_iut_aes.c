@@ -13,7 +13,6 @@
 #include "iut_common.h"
 #include "acvp/acvp_lcl.h"
 
-static ACVP_CTX *ctx;
 static ACVP_TEST_CASE *test_case;
 ACVP_SYM_CIPHER_TC *aes_tc;
 static ACVP_RESULT rv;
@@ -29,7 +28,7 @@ int initialize_aes_tc(ACVP_SYM_CIPHER_TC *aes_tc, int alg_id, char *pt,
     if (ct) {
         rv = acvp_hexstr_to_bin(ct, aes_tc->ct, ACVP_SYM_CT_BYTE_MAX, NULL);
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("Hex converstion failure (ct)");
+            printf("Hex converstion failure (ct)\n");
             return 0;
         }
     }
@@ -39,7 +38,7 @@ int initialize_aes_tc(ACVP_SYM_CIPHER_TC *aes_tc, int alg_id, char *pt,
     if (pt) {
         rv = acvp_hexstr_to_bin(pt, aes_tc->pt, ACVP_SYM_PT_BYTE_MAX, NULL);
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("Hex converstion failure (pt)");
+            printf("Hex converstion failure (pt)\n");
             return 0;
         }
     }
@@ -50,7 +49,7 @@ int initialize_aes_tc(ACVP_SYM_CIPHER_TC *aes_tc, int alg_id, char *pt,
     if (key) {
         rv = acvp_hexstr_to_bin(key, aes_tc->key, ACVP_SYM_KEY_MAX_BYTES, NULL);
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("Hex converstion failure (key)");
+            printf("Hex converstion failure (key)\n");
             return 0;
         }
     }
@@ -61,7 +60,7 @@ int initialize_aes_tc(ACVP_SYM_CIPHER_TC *aes_tc, int alg_id, char *pt,
     if (aad) {
         rv = acvp_hexstr_to_bin(aad, aes_tc->aad, ACVP_SYM_AAD_BYTE_MAX, NULL);
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("Hex converstion failure (aad)");
+            printf("Hex converstion failure (aad)\n");
             return 0;
         }
     }
@@ -72,7 +71,7 @@ int initialize_aes_tc(ACVP_SYM_CIPHER_TC *aes_tc, int alg_id, char *pt,
     if (tag) {
         rv = acvp_hexstr_to_bin(tag, aes_tc->tag, ACVP_SYM_TAG_BYTE_MAX, NULL);
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("Hex converstion failure (tag)");
+            printf("Hex converstion failure (tag)\n");
             return 0;
         }
     }
@@ -83,7 +82,7 @@ int initialize_aes_tc(ACVP_SYM_CIPHER_TC *aes_tc, int alg_id, char *pt,
     if (iv) {
         rv = acvp_hexstr_to_bin(iv, aes_tc->iv, ACVP_SYM_IV_BYTE_MAX, NULL);
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("Hex converstion failure (iv)");
+            printf("Hex converstion failure (iv)\n");
             return 0;
         }
     }

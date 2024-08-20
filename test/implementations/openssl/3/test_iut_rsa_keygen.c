@@ -17,7 +17,6 @@
 #include "iut_common.h"
 #include "acvp/acvp_lcl.h"
 
-static ACVP_CTX *ctx;
 static ACVP_TEST_CASE *test_case;
 ACVP_RSA_KEYGEN_TC *rsa_tc;
 static ACVP_RESULT rv;
@@ -76,7 +75,7 @@ int initialize_rsa_tc(ACVP_RSA_KEYGEN_TC *stc,
         if (!stc->e) { goto err; }
         rv = acvp_hexstr_to_bin(e, stc->e, ACVP_RSA_EXP_BYTE_MAX, &(stc->e_len));
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("Hex conversion failure (e)");
+            printf("Hex conversion failure (e)\n");
             goto err;
         }
     }

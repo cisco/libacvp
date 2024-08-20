@@ -69,7 +69,13 @@ runtest_SOURCES += implementations/openssl/3/test_iut_aes.c \
                    implementations/openssl/3/test_iut_hash.c \
                    implementations/openssl/3/test_iut_safe_primes.c \
                    implementations/openssl/3/test_iut_kda.c \
-                   implementations/openssl/3/test_iut_kmac.c
+                   implementations/openssl/3/test_iut_kmac.c \
+                   implementations/openssl/3/test_iut_kdf_tls12.c \
+                   implementations/openssl/3/test_iut_kdf_tls13.c \
+                   implementations/openssl/3/test_iut_kdf108.c \
+                   implementations/openssl/3/test_iut_kdf135_ssh.c \
+                   implementations/openssl/3/test_iut_kts_ifc.c \
+                   implementations/openssl/3/test_iut_pbkdf.c
 
 APP_LINK += ../app/implementations/openssl/3/acvp_app-iut.o \
             ../app/implementations/openssl/3/acvp_app-iut_utils.o \

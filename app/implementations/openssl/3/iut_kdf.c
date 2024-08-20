@@ -250,6 +250,21 @@ int app_kdf108_handler(ACVP_TEST_CASE *test_case) {
         return -1;
     }
 
+    if (stc->counter_location != ACVP_KDF108_FIXED_DATA_ORDER_AFTER) {
+        printf("unsupported counter location in test case\n");
+        return -1;
+    }
+
+    if (!stc->iv || !stc->key_in) {
+        printf("Missing data in KDF108 test case\n");
+        return -1;
+    }
+
+    if (!stc->key_out || !stc->fixed_data) {
+        printf("Missing output buffers in KDF108 test case\n");
+        return -1;
+    }
+
     switch (stc->mac_mode) {
     case ACVP_KDF108_MAC_MODE_HMAC_SHA1:
         alg = "SHA-1";
@@ -421,6 +436,11 @@ int app_kdf135_ssh_handler(ACVP_TEST_CASE *test_case) {
         printf("Missing kdf135-ssh test case\n");
         return -1;
     }
+    if (!stc->cs_init_iv || !stc->sc_init_iv || !stc->cs_encrypt_key || !stc->sc_encrypt_key
+            || !stc->cs_integrity_key || !stc->sc_integrity_key) {
+        printf("Missing output buffer in KDF SSH test case\n");
+        return -1;
+    }
 
     alg = get_md_string_for_hash_alg(stc->sha_type, NULL);
     if (!alg) {
@@ -513,6 +533,25 @@ int app_pbkdf_handler(ACVP_TEST_CASE *test_case) {
         return -1;
     }
 
+    if (!stc->salt || !stc->password) {
+        printf("Missing input data required in PBKDF test case\n");
+        return -1;
+    }
+
+    /* Spec defined limits */
+    if (stc->iterationCount <= 0 || stc->iterationCount >= 10000000) {
+        printf("Invalid iteration count in PBKDF test case\n");
+        return -1;
+    } else if (stc->key_len < 14 || stc->key_len > 512) {
+        printf("Invalid output key len requested in PBKDF test case\n");
+        return -1;
+    }
+
+    if (!stc->key) {
+        printf("Missing output buffer for key in PBKDF test case\n");
+        return -1;
+    }
+
     alg = get_md_string_for_hash_alg(stc->hmac_type, NULL);
     if (!alg) {
         printf("Invalid hmac type given for PBKDF\n");
@@ -579,6 +618,16 @@ int app_kdf_tls12_handler(ACVP_TEST_CASE *test_case) {
     tc = test_case->tc.kdf_tls12;
     if (!tc) {
         printf("Missing TLS1.2 KDF test case\n");
+        return -1;
+    }
+
+    if (!tc->session_hash || !tc->pm_secret || !tc->s_rnd || !tc->c_rnd) {
+        printf("Missing needed data from TLS1.2 KDF test case\n");
+        return -1;
+    }
+
+    if (!tc->msecret || !tc->kblock) {
+        printf("Missing output buffers in TLS1.2 KDF test case\n");
         return -1;
     }
 
@@ -697,6 +746,11 @@ int app_kdf_tls13_handler(ACVP_TEST_CASE *test_case) {
     tc = test_case->tc.kdf_tls13;
     if (!tc) {
         printf("Error: No tc for TLS1.3 KDF\n");
+        return -1;
+    }
+
+    if (tc->running_mode <= ACVP_KDF_TLS13_RUN_MODE_MIN || tc->running_mode >= ACVP_KDF_TLS13_RUN_MODE_MAX) {
+        printf("Invalid running mode in TLS 1.3 KDF test case\n");
         return -1;
     }
 
