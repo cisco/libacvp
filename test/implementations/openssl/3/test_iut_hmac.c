@@ -17,7 +17,6 @@
 #include "iut_common.h"
 #include "acvp/acvp_lcl.h"
 
-static ACVP_CTX *ctx;
 static ACVP_TEST_CASE *test_case;
 ACVP_HMAC_TC *hmac_tc;
 static ACVP_RESULT rv;
@@ -35,7 +34,7 @@ int initialize_hmac_tc(ACVP_HMAC_TC *hmac_tc, int alg_id, char *msg, int msg_len
         if (!hmac_tc->msg) { return -1; }
         rv = acvp_hexstr_to_bin(msg, hmac_tc->msg, ACVP_HMAC_MSG_MAX, NULL);
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("Hex converstion failure (msg)");
+            printf("Hex converstion failure (msg)\n");
             return -1;
         }
     }
@@ -45,7 +44,7 @@ int initialize_hmac_tc(ACVP_HMAC_TC *hmac_tc, int alg_id, char *msg, int msg_len
         if (!hmac_tc->key) { return -1; }
         rv = acvp_hexstr_to_bin(msg, hmac_tc->key, ACVP_HMAC_KEY_BYTE_MAX, NULL);
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("Hex converstion failure (msg)");
+            printf("Hex converstion failure (msg)\n");
             return -1;
         }
     }

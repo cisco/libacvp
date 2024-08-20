@@ -15,7 +15,6 @@
 
 #if !defined OPENSSL_NO_DSA
 
-static ACVP_CTX *ctx;
 static ACVP_TEST_CASE *test_case;
 ACVP_SAFE_PRIMES_TC *safe_primes_tc;
 static ACVP_RESULT rv;
@@ -46,7 +45,7 @@ int initialize_safe_primes_tc(ACVP_SAFE_PRIMES_TC *stc,
         if (!stc->x) { goto err; }
         rv = acvp_hexstr_to_bin(x, stc->x, ACVP_SAFE_PRIMES_BYTE_MAX, &(stc->xlen));
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("Hex conversion failure (x)");
+            printf("Hex conversion failure (x)\n");
             goto err;
         }
     }
@@ -56,7 +55,7 @@ int initialize_safe_primes_tc(ACVP_SAFE_PRIMES_TC *stc,
         if (!stc->y) { goto err; }
         rv = acvp_hexstr_to_bin(y, stc->y, ACVP_SAFE_PRIMES_BYTE_MAX, &(stc->ylen));
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("Hex conversion failure (y)");
+            printf("Hex conversion failure (y)\n");
             goto err;
         }
     }

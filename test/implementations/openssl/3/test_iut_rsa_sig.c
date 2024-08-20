@@ -17,7 +17,6 @@
 #include "iut_common.h"
 #include "acvp/acvp_lcl.h"
 
-static ACVP_CTX *ctx;
 static ACVP_TEST_CASE *test_case;
 ACVP_RSA_SIG_TC *rsa_sig_tc;
 static ACVP_RESULT rv;
@@ -56,7 +55,7 @@ int initialize_rsa_sig_tc(ACVP_CIPHER cipher,
         if (!stc->msg) { goto err; }
         rv = acvp_hexstr_to_bin(msg, stc->msg, ACVP_RSA_MSGLEN_MAX, &(stc->msg_len));
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("Hex conversion failure (msg)");
+            printf("Hex conversion failure (msg)\n");
             goto err;
         }
     }
@@ -69,7 +68,7 @@ int initialize_rsa_sig_tc(ACVP_CIPHER cipher,
             if (!stc->e) { goto err; }
             rv = acvp_hexstr_to_bin(e, stc->e, ACVP_RSA_EXP_LEN_MAX, &(stc->e_len));
             if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("Hex conversion failure (e)");
+                printf("Hex conversion failure (e)\n");
                 goto err;
             }
         }
@@ -78,7 +77,7 @@ int initialize_rsa_sig_tc(ACVP_CIPHER cipher,
             if (!stc->n) { goto err; }
             rv = acvp_hexstr_to_bin(n, stc->n, ACVP_RSA_EXP_LEN_MAX, &(stc->n_len));
             if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("Hex conversion failure (n)");
+                printf("Hex conversion failure (n)\n");
                 goto err;
             }
         }
@@ -87,7 +86,7 @@ int initialize_rsa_sig_tc(ACVP_CIPHER cipher,
             if (!stc->signature) { goto err; }
             rv = acvp_hexstr_to_bin(signature, stc->signature, ACVP_RSA_SIGNATURE_MAX, &stc->sig_len);
             if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("Hex conversion failure (signature)");
+                printf("Hex conversion failure (signature)\n");
                 goto err;
             }
         }

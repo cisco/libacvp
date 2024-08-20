@@ -18,7 +18,6 @@
 #include "acvp/acvp_lcl.h"
 #include "acvp/acvp.h"
 
-static ACVP_CTX *ctx;
 static ACVP_TEST_CASE *test_case;
 ACVP_CMAC_TC *cmac_tc;
 static ACVP_RESULT rv;
@@ -40,7 +39,7 @@ int initialize_cmac_tc(ACVP_CMAC_TC *cmac_tc,
     
         rv = acvp_hexstr_to_bin(mac, cmac_tc->mac, ACVP_CMAC_MACLEN_MAX, (int *)&(cmac_tc->mac_len));
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("Hex converstion failure (mac)");
+            printf("Hex converstion failure (mac)\n");
             return rv;
         }
     }
@@ -50,7 +49,7 @@ int initialize_cmac_tc(ACVP_CMAC_TC *cmac_tc,
         if (!cmac_tc->msg) { return -1; }
         rv = acvp_hexstr_to_bin(msg, cmac_tc->msg, ACVP_CMAC_MSGLEN_MAX_STR, NULL);
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("Hex converstion failure (msg)");
+            printf("Hex converstion failure (msg)\n");
             return -1;
         }
     }
@@ -61,7 +60,7 @@ int initialize_cmac_tc(ACVP_CMAC_TC *cmac_tc,
             if (!cmac_tc->key) { return ACVP_MALLOC_FAIL; }
             rv = acvp_hexstr_to_bin(key, cmac_tc->key, ACVP_CMAC_KEY_MAX, (int *) &(cmac_tc->key_len));
             if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("Hex converstion failure (key)");
+                printf("Hex converstion failure (key)\n");
                 return rv;
             }
         }
@@ -71,7 +70,7 @@ int initialize_cmac_tc(ACVP_CMAC_TC *cmac_tc,
             if (!cmac_tc->key) { return ACVP_MALLOC_FAIL; }
             rv = acvp_hexstr_to_bin(key, cmac_tc->key, ACVP_CMAC_KEY_MAX, NULL);
             if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("Hex converstion failure (key1)");
+                printf("Hex converstion failure (key1)\n");
                 return rv;
             }
         }
@@ -80,7 +79,7 @@ int initialize_cmac_tc(ACVP_CMAC_TC *cmac_tc,
             if (!cmac_tc->key2) { return ACVP_MALLOC_FAIL; }
             rv = acvp_hexstr_to_bin(key2, cmac_tc->key2, ACVP_CMAC_KEY_MAX, NULL);
             if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("Hex converstion failure (key2)");
+                printf("Hex converstion failure (key2)\n");
                 return rv;
             }
         }
@@ -89,7 +88,7 @@ int initialize_cmac_tc(ACVP_CMAC_TC *cmac_tc,
             if (!cmac_tc->key3) { return ACVP_MALLOC_FAIL; }
             rv = acvp_hexstr_to_bin(key3, cmac_tc->key3, ACVP_CMAC_KEY_MAX, NULL);
             if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("Hex converstion failure (key3)");
+                printf("Hex converstion failure (key3)\n");
                 return rv;
             }
         }

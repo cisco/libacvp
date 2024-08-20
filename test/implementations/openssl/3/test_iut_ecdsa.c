@@ -17,7 +17,6 @@
 #include "iut_common.h"
 #include "acvp/acvp_lcl.h"
 
-static ACVP_CTX *ctx;
 static ACVP_TEST_CASE *test_case;
 ACVP_ECDSA_TC *ecdsa_tc;
 static ACVP_RESULT rv;
@@ -67,14 +66,14 @@ int initialize_ecdsa_tc(ACVP_CIPHER cipher,
         if (qx) {
             rv = acvp_hexstr_to_bin(qx, stc->qx, ACVP_RSA_EXP_LEN_MAX, &(stc->qx_len));
             if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("Hex conversion failure (qx)");
+                printf("Hex conversion failure (qx)\n");
                 goto err;
             }
         }
         if (qy) {
             rv = acvp_hexstr_to_bin(qy, stc->qy, ACVP_RSA_EXP_LEN_MAX, &(stc->qy_len));
             if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("Hex conversion failure (qy)");
+                printf("Hex conversion failure (qy)\n");
                 goto err;
             }
         }
@@ -83,14 +82,14 @@ int initialize_ecdsa_tc(ACVP_CIPHER cipher,
         if (r) {
             rv = acvp_hexstr_to_bin(r, stc->r, ACVP_RSA_EXP_LEN_MAX, &(stc->r_len));
             if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("Hex conversion failure (r)");
+                printf("Hex conversion failure (r)\n");
                 goto err;
             }
         }
         if (s) {
             rv = acvp_hexstr_to_bin(s, stc->s, ACVP_RSA_EXP_LEN_MAX, &(stc->s_len));
             if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("Hex conversion failure (s)");
+                printf("Hex conversion failure (s)\n");
                 goto err;
             }
         }
@@ -99,7 +98,7 @@ int initialize_ecdsa_tc(ACVP_CIPHER cipher,
         if (message) {
             rv = acvp_hexstr_to_bin(message, stc->message, ACVP_RSA_MSGLEN_MAX, &(stc->msg_len));
             if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("Hex conversion failure (message)");
+                printf("Hex conversion failure (message)\n");
                 goto err;
             }
         }
@@ -108,7 +107,7 @@ int initialize_ecdsa_tc(ACVP_CIPHER cipher,
     return 1;
     
 err:
-    ACVP_LOG_ERR("Failed to allocate buffer in ECDSA test case");
+    printf("Failed to allocate buffer in ECDSA test case\n");
     if (stc->qx) free(stc->qx);
     if (stc->qy) free(stc->qy);
     if (stc->r) free(stc->r);

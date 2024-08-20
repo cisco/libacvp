@@ -14,7 +14,6 @@
 #include "acvp/acvp_lcl.h"
 #include "acvp/acvp.h"
 
-static ACVP_CTX *ctx;
 static ACVP_TEST_CASE *test_case;
 ACVP_KMAC_TC *kmac_tc;
 static ACVP_RESULT rv;
@@ -32,7 +31,7 @@ int initialize_kmac_tc(ACVP_KMAC_TC *kmac_tc, int alg_id, ACVP_KMAC_TESTTYPE typ
         if (mac) {
             rv = acvp_hexstr_to_bin(mac, kmac_tc->mac, ACVP_KMAC_MAC_BYTE_MAX, &(kmac_tc->mac_len));
             if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("Hex converstion failure (mac)");
+                printf("Hex converstion failure (mac)\n");
                 return rv;
             }
         } else {
@@ -45,7 +44,7 @@ int initialize_kmac_tc(ACVP_KMAC_TC *kmac_tc, int alg_id, ACVP_KMAC_TESTTYPE typ
         if (!kmac_tc->msg) { return ACVP_MALLOC_FAIL; }
         rv = acvp_hexstr_to_bin(msg, kmac_tc->msg, ACVP_KMAC_MSG_BYTE_MAX, &(kmac_tc->msg_len));
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("Hex converstion failure (msg)");
+            printf("Hex converstion failure (msg)\n");
             return rv;
         }
     }
@@ -55,7 +54,7 @@ int initialize_kmac_tc(ACVP_KMAC_TC *kmac_tc, int alg_id, ACVP_KMAC_TESTTYPE typ
         if (!kmac_tc->key) { return ACVP_MALLOC_FAIL; }
         rv = acvp_hexstr_to_bin(key, kmac_tc->key, ACVP_KMAC_KEY_BYTE_MAX, (int *) &(kmac_tc->key_len));
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("Hex converstion failure (key)");
+            printf("Hex converstion failure (key)\n");
             return rv;
         }
     }
@@ -68,7 +67,7 @@ int initialize_kmac_tc(ACVP_KMAC_TC *kmac_tc, int alg_id, ACVP_KMAC_TESTTYPE typ
                 if (!kmac_tc->custom_hex) { return ACVP_MALLOC_FAIL; }
                 rv = acvp_hexstr_to_bin(custom, kmac_tc->custom_hex, ACVP_KMAC_CUSTOM_HEX_BYTE_MAX, (int *) &(kmac_tc->custom_len));
                 if (rv != ACVP_SUCCESS) {
-                    ACVP_LOG_ERR("Hex converstion failure (custom)");
+                    printf("Hex converstion failure (custom)\n");
                     return rv;
                 }
             } else {
@@ -78,7 +77,7 @@ int initialize_kmac_tc(ACVP_KMAC_TC *kmac_tc, int alg_id, ACVP_KMAC_TESTTYPE typ
             kmac_tc->custom = calloc(1, ACVP_KMAC_CUSTOM_STR_MAX + 1);
             if (!kmac_tc->custom) { return ACVP_MALLOC_FAIL; }
             if (strncpy_s(kmac_tc->custom, ACVP_KMAC_CUSTOM_STR_MAX + 1, custom, strnlen_s(custom, ACVP_KMAC_CUSTOM_STR_MAX))) {
-                ACVP_LOG_ERR("Error copying customization string for KMAC");
+                printf("Error copying customization string for KMAC\n");
                 return ACVP_INTERNAL_ERR;
             }
         } else {

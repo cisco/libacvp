@@ -812,6 +812,26 @@ int app_kts_ifc_handler(ACVP_TEST_CASE *test_case) {
         goto err;
     }
 
+    if (tc->modulo < 2048 || tc->modulo > 8192) {
+        printf("Invalid modulo in KTS-IFC test case\n");
+        goto err;
+    }
+
+    if (tc->llen <= 0 || tc->llen > 64) {
+        printf("Invalid output length in KTS-IFC test case\n");
+        goto err;
+    }
+
+    if (!tc->ct || !tc->pt) {
+        printf("Missing plaintext or ciphertext input or buffers in KTS-IFC test case\n");
+        goto err;
+    }
+
+    if (!tc->n || !tc->e) {
+        printf("Missing needed public key info in KTS-IFC test case\n");
+        goto err;
+    }
+
     md = get_md_string_for_hash_alg(tc->md, NULL);
     if (!md) {
         printf("Invalid hash alg for KTS-IFC\n");

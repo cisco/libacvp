@@ -13,7 +13,6 @@
 #include "iut_common.h"
 #include "acvp/acvp_lcl.h"
 
-static ACVP_CTX *ctx;
 static ACVP_TEST_CASE *test_case;
 ACVP_DRBG_TC *drbg_tc;
 static ACVP_RESULT rv;
@@ -89,7 +88,7 @@ int initialize_drbg_tc(ACVP_DRBG_TC *drbg_tc, int alg_id, int mode_id,
         rv = acvp_hexstr_to_bin(ad_in_0, drbg_tc->additional_input_0,
                                 ACVP_DRBG_ADDI_IN_BYTE_MAX, NULL);
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("Hex conversion failure (ad_in_0)");
+            printf("Hex conversion failure (ad_in_0)\n");
             goto err;
         }
     }
@@ -98,7 +97,7 @@ int initialize_drbg_tc(ACVP_DRBG_TC *drbg_tc, int alg_id, int mode_id,
         rv = acvp_hexstr_to_bin(ent_in_0, drbg_tc->entropy_input_pr_0,
                                 ACVP_DRBG_ENTPY_IN_BYTE_MAX, NULL);
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("Hex conversion failure (ent_in_0)");
+            printf("Hex conversion failure (ent_in_0)\n");
             goto err;
         }
     }
@@ -107,7 +106,7 @@ int initialize_drbg_tc(ACVP_DRBG_TC *drbg_tc, int alg_id, int mode_id,
         rv = acvp_hexstr_to_bin(ad_in_1, drbg_tc->additional_input_1,
                                 ACVP_DRBG_ADDI_IN_BYTE_MAX, NULL);
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("Hex conversion failure (ad_in_1)");
+            printf("Hex conversion failure (ad_in_1)\n");
             goto err;
         }
     }
@@ -116,7 +115,7 @@ int initialize_drbg_tc(ACVP_DRBG_TC *drbg_tc, int alg_id, int mode_id,
         rv = acvp_hexstr_to_bin(ent_in_1, drbg_tc->entropy_input_pr_1,
                                 ACVP_DRBG_ENTPY_IN_BYTE_MAX, NULL);
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("Hex conversion failure (ent_in_1)");
+            printf("Hex conversion failure (ent_in_1)\n");
             goto err;
         }
     }
@@ -125,7 +124,7 @@ int initialize_drbg_tc(ACVP_DRBG_TC *drbg_tc, int alg_id, int mode_id,
         rv = acvp_hexstr_to_bin(ad_in_2, drbg_tc->additional_input_2,
                                 ACVP_DRBG_ADDI_IN_BYTE_MAX, NULL);
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("Hex conversion failure (2nd additional_input_2)");
+            printf("Hex conversion failure (2nd additional_input_2)\n");
             goto err;
         }
     }
@@ -134,7 +133,7 @@ int initialize_drbg_tc(ACVP_DRBG_TC *drbg_tc, int alg_id, int mode_id,
         rv = acvp_hexstr_to_bin(ent_in_2, drbg_tc->entropy_input_pr_2,
                                 ACVP_DRBG_ENTPY_IN_BYTE_MAX, NULL);
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("Hex conversion failure (2nd entropy_input_pr_2)");
+            printf("Hex conversion failure (2nd entropy_input_pr_2)\n");
             goto err;
         }
     }
@@ -143,7 +142,7 @@ int initialize_drbg_tc(ACVP_DRBG_TC *drbg_tc, int alg_id, int mode_id,
         rv = acvp_hexstr_to_bin(ent, drbg_tc->entropy,
                                 ACVP_DRBG_ENTPY_IN_BYTE_MAX, NULL);
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("Hex conversion failure (ent)");
+            printf("Hex conversion failure (ent)\n");
             goto err;
         }
     }
@@ -152,7 +151,7 @@ int initialize_drbg_tc(ACVP_DRBG_TC *drbg_tc, int alg_id, int mode_id,
         rv = acvp_hexstr_to_bin(perso_string, drbg_tc->perso_string,
                                 ACVP_DRBG_PER_SO_BYTE_MAX, NULL);
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("Hex conversion failure (perso_string)");
+            printf("Hex conversion failure (perso_string)\n");
             goto err;
         }
     }
@@ -161,7 +160,7 @@ int initialize_drbg_tc(ACVP_DRBG_TC *drbg_tc, int alg_id, int mode_id,
         rv = acvp_hexstr_to_bin(nonce, drbg_tc->nonce,
                                 ACVP_DRBG_NONCE_BYTE_MAX, NULL);
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("Hex conversion failure (nonce)");
+            printf("Hex conversion failure (nonce)\n");
             goto err;
         }
     }

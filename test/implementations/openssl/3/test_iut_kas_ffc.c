@@ -17,7 +17,6 @@
 #include "iut_common.h"
 #include "acvp/acvp_lcl.h"
 
-static ACVP_CTX *ctx;
 static ACVP_TEST_CASE *test_case;
 ACVP_KAS_FFC_TC *kas_ffc_tc;
 static ACVP_RESULT rv;
@@ -59,7 +58,7 @@ int initialize_kas_ffc_tc(ACVP_KAS_FFC_TC *stc,
         if (!stc->p) { goto err; }
         rv = acvp_hexstr_to_bin(p, stc->p, ACVP_KAS_FFC_BYTE_MAX, &(stc->plen));
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("Hex conversion failure (p)");
+            printf("Hex conversion failure (p)\n");
             goto err;
         }
     }
@@ -69,7 +68,7 @@ int initialize_kas_ffc_tc(ACVP_KAS_FFC_TC *stc,
         if (!stc->q) { goto err; }
         rv = acvp_hexstr_to_bin(q, stc->q, ACVP_KAS_FFC_BYTE_MAX, &(stc->qlen));
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("Hex conversion failure (q)");
+            printf("Hex conversion failure (q)\n");
             goto err;
         }
     }
@@ -79,7 +78,7 @@ int initialize_kas_ffc_tc(ACVP_KAS_FFC_TC *stc,
         if (!stc->g) { goto err; }
         rv = acvp_hexstr_to_bin(g, stc->g, ACVP_KAS_FFC_BYTE_MAX, &(stc->glen));
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("Hex conversion failure (g)");
+            printf("Hex conversion failure (g)\n");
             goto err;
         }
     }
@@ -89,7 +88,7 @@ int initialize_kas_ffc_tc(ACVP_KAS_FFC_TC *stc,
         if (!stc->eps) { goto err; }
         rv = acvp_hexstr_to_bin(eps, stc->eps, ACVP_KAS_FFC_BYTE_MAX, &(stc->epslen));
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("Hex conversion failure (eps)");
+            printf("Hex conversion failure (eps)\n");
             goto err;
         }
     }
@@ -107,7 +106,7 @@ int initialize_kas_ffc_tc(ACVP_KAS_FFC_TC *stc,
             if (!stc->z) { goto err; }
             rv = acvp_hexstr_to_bin(z, stc->z, ACVP_KAS_FFC_BYTE_MAX, &(stc->zlen));
             if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("Hex conversion failure (z)");
+                printf("Hex conversion failure (z)\n");
                 goto err;
             }
         }
@@ -117,7 +116,7 @@ int initialize_kas_ffc_tc(ACVP_KAS_FFC_TC *stc,
             if (!stc->epri) { goto err; }
             rv = acvp_hexstr_to_bin(epri, stc->epri, ACVP_KAS_FFC_BYTE_MAX, &(stc->eprilen));
             if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("Hex conversion failure (epri)");
+                printf("Hex conversion failure (epri)\n");
                 goto err;
             }
         }
@@ -127,7 +126,7 @@ int initialize_kas_ffc_tc(ACVP_KAS_FFC_TC *stc,
             if (!stc->epui) { goto err; }
             rv = acvp_hexstr_to_bin(epui, stc->epui, ACVP_KAS_FFC_BYTE_MAX, &(stc->epuilen));
             if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("Hex conversion failure (epui)");
+                printf("Hex conversion failure (epui)\n");
                 goto err;
             }
         }

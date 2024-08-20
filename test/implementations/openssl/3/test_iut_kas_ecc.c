@@ -17,7 +17,6 @@
 #include "iut_common.h"
 #include "acvp/acvp_lcl.h"
 
-static ACVP_CTX *ctx;
 static ACVP_TEST_CASE *test_case;
 ACVP_KAS_ECC_TC *kas_ecc_tc;
 static ACVP_RESULT rv;
@@ -50,7 +49,7 @@ int initialize_kas_ecc_cdh_tc(ACVP_KAS_ECC_TC *stc,
         if (!stc->psx) { goto err; }
         rv = acvp_hexstr_to_bin(psx, stc->psx, ACVP_KAS_ECC_BYTE_MAX, &(stc->psxlen));
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("Hex conversion failure (psx)");
+            printf("Hex conversion failure (psx)\n");
             goto err;
         }
     }
@@ -60,7 +59,7 @@ int initialize_kas_ecc_cdh_tc(ACVP_KAS_ECC_TC *stc,
         if (!stc->psy) { goto err; }
         rv = acvp_hexstr_to_bin(psy, stc->psy, ACVP_KAS_ECC_BYTE_MAX, &(stc->psylen));
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("Hex conversion failure (psy)");
+            printf("Hex conversion failure (psy)\n");
             goto err;
         }
     }
@@ -109,7 +108,7 @@ int initialize_kas_ecc_comp_tc(ACVP_KAS_ECC_TC *stc,
         if (!stc->psx) { goto err; }
         rv = acvp_hexstr_to_bin(psx, stc->psx, ACVP_KAS_ECC_BYTE_MAX, &(stc->psxlen));
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("Hex conversion failure (psx)");
+            printf("Hex conversion failure (psx)\n");
             goto err;
         }
     }
@@ -119,7 +118,7 @@ int initialize_kas_ecc_comp_tc(ACVP_KAS_ECC_TC *stc,
         if (!stc->psy) { goto err; }
         rv = acvp_hexstr_to_bin(psy, stc->psy, ACVP_KAS_ECC_BYTE_MAX, &(stc->psylen));
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("Hex conversion failure (psy)");
+            printf("Hex conversion failure (psy)\n");
             goto err;
         }
     }
@@ -135,7 +134,7 @@ int initialize_kas_ecc_comp_tc(ACVP_KAS_ECC_TC *stc,
             if (!stc->pix) { goto err; }
             rv = acvp_hexstr_to_bin(pix, stc->pix, ACVP_KAS_ECC_BYTE_MAX, &(stc->pixlen));
             if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("Hex conversion failure (pix)");
+                printf("Hex conversion failure (pix)\n");
                 goto err;
             }
         }
@@ -145,7 +144,7 @@ int initialize_kas_ecc_comp_tc(ACVP_KAS_ECC_TC *stc,
             if (!stc->piy) { goto err; }
             rv = acvp_hexstr_to_bin(piy, stc->piy, ACVP_KAS_ECC_BYTE_MAX, &(stc->piylen));
             if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("Hex conversion failure (piy)");
+                printf("Hex conversion failure (piy)\n");
                 goto err;
             }
         }
@@ -155,7 +154,7 @@ int initialize_kas_ecc_comp_tc(ACVP_KAS_ECC_TC *stc,
             if (!stc->d) { goto err; }
             rv = acvp_hexstr_to_bin(d, stc->d, ACVP_KAS_ECC_BYTE_MAX, &(stc->dlen));
             if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("Hex conversion failure (d)");
+                printf("Hex conversion failure (d)\n");
                 goto err;
             }
         }
@@ -165,7 +164,7 @@ int initialize_kas_ecc_comp_tc(ACVP_KAS_ECC_TC *stc,
             if (!stc->z) { goto err; }
             rv = acvp_hexstr_to_bin(z, stc->z, ACVP_KAS_ECC_BYTE_MAX, &(stc->zlen));
             if (rv != ACVP_SUCCESS) {
-                ACVP_LOG_ERR("Hex conversion failure (z)");
+                printf("Hex conversion failure (z)\n");
                 goto err;
             }
         }

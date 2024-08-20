@@ -17,7 +17,6 @@
 #include "iut_common.h"
 #include "acvp/acvp_lcl.h"
 
-static ACVP_CTX *ctx;
 static ACVP_TEST_CASE *test_case;
 ACVP_HASH_TC *hash_tc;
 static ACVP_RESULT rv;
@@ -44,7 +43,7 @@ int initialize_sha_tc(ACVP_HASH_TC *hash_tc, int alg_id, char *msg, int msg_len,
         if (!hash_tc->msg) { return -1; }
         rv = acvp_hexstr_to_bin(msg, hash_tc->msg, ACVP_HASH_MSG_BYTE_MAX, NULL);
         if (rv != ACVP_SUCCESS) {
-            ACVP_LOG_ERR("Hex converstion failure (msg)");
+            printf("Hex converstion failure (msg)\n");
             return -1;
         }
     }
