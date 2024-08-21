@@ -275,6 +275,11 @@ int app_aes_keywrap_handler(ACVP_TEST_CASE *test_case) {
 
     tc = test_case->tc.symmetric;
 
+    if (!tc->pt || !tc->ct || (!tc->pt_len && !tc->ct_len)) {
+        printf("Missing payload or output buffer from AES KW test case\n");
+        return rv;
+    }
+
     /* Begin encrypt code section */
     cipher_ctx = EVP_CIPHER_CTX_new();
     if (!cipher_ctx) {

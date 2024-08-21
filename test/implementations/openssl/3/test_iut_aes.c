@@ -221,7 +221,7 @@ Test(APP_AES_AEAD_HANDLER, missing_dir) {
 }
 
 /*
- * Bad aadLen for encrypt AEAD - this behavior is undefined in SSL (?) - ensure it causes no issues with app
+ * Bad aadLen for encrypt AEAD
  */
  Test(APP_AES_AEAD_HANDLER, bad_aadlen) {
     char *payload = "7E0BDE80";
@@ -448,7 +448,7 @@ Test(APP_AES_HANDLER, missing_dir) {
 }
 
 /*
- * null payload - keywrap. Just ensure we handle gracefully.
+ * null payload - keywrap
  */
  Test(APP_AES_KW_HANDLER, bad_payload) {
     char *payload = NULL;
@@ -466,6 +466,7 @@ Test(APP_AES_HANDLER, missing_dir) {
     test_case->tc.symmetric = aes_tc;
 
     rv = app_aes_keywrap_handler(test_case);
+    cr_assert_neq(rv, 0);
 
     free_aes_tc(aes_tc);
     free(test_case);
