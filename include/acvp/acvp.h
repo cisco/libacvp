@@ -821,7 +821,8 @@ typedef enum acvp_ecdsa_component_mode {
 typedef enum acvp_eddsa_param {
     ACVP_EDDSA_CURVE,
     ACVP_EDDSA_SUPPORTS_PURE,
-    ACVP_EDDSA_SUPPORTS_PREHASH
+    ACVP_EDDSA_SUPPORTS_PREHASH,
+    ACVP_EDDSA_CONTEXT_LEN
 } ACVP_EDDSA_PARM;
 
 /** @enum ACVP_KDF135_IKEV2_PARM */
@@ -3659,6 +3660,13 @@ ACVP_RESULT acvp_cap_eddsa_set_parm(ACVP_CTX *ctx,
                                     ACVP_CIPHER cipher,
                                     ACVP_EDDSA_PARM param,
                                     int value);
+
+ACVP_RESULT acvp_cap_eddsa_set_domain(ACVP_CTX *ctx,
+                                      ACVP_CIPHER cipher,
+                                      ACVP_EDDSA_PARM param,
+                                      int min,
+                                      int max,
+                                      int increment);
 
 /**
  * @brief acvp_enable_rsa_bignum_parm() allows an application to specify BIGNUM operational

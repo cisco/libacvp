@@ -1691,11 +1691,14 @@ static ACVP_RESULT acvp_build_ecdsa_register_cap(ACVP_CTX *ctx, ACVP_CIPHER ciph
 }
 
 static ACVP_RESULT acvp_build_eddsa_register_cap(ACVP_CTX *ctx,JSON_Object *cap_obj, ACVP_CAPS_LIST *cap_entry) {
-    JSON_Array *curves_arr = NULL;
+    JSON_Array *curves_arr = NULL, *context_len_arr = NULL;
     ACVP_PARAM_LIST *current_curve = NULL;
+    ACVP_SL_LIST *list = NULL;
     const char *revision = NULL, *tmp = NULL;
     ACVP_SUB_EDDSA alg;
     ACVP_EDDSA_CAP *eddsa_cap = NULL;
+    JSON_Value *val = NULL;
+    JSON_Object *obj = NULL;
 
     alg = acvp_get_eddsa_alg(cap_entry->cipher);
     if (alg == 0) {
@@ -1757,6 +1760,23 @@ static ACVP_RESULT acvp_build_eddsa_register_cap(ACVP_CTX *ctx,JSON_Object *cap_
     if (alg == ACVP_SUB_EDDSA_SIGGEN || alg == ACVP_SUB_EDDSA_SIGVER) {
         json_object_set_boolean(cap_obj, "preHash", eddsa_cap->supports_prehash);
         json_object_set_boolean(cap_obj, "pure", eddsa_cap->supports_pure);
+    }
+
+    if (alg == ACVP_SUB_EDDSA_SIGGEN) {
+    /* key derivation key length list */
+        json_object_set_value(cap_obj, "contextLength", json_value_init_array());
+        context_len_arr = json_object_get_array(cap_obj, "contextLength");
+        val = json_value_init_object();
+        obj = json_value_get_object(val);
+        json_object_set_number(obj, "min", eddsa_cap->context_len.min);
+        json_object_set_number(obj, "max", eddsa_cap->context_len.max);
+        json_object_set_number(obj, "increment", eddsa_cap->context_len.increment);
+        json_array_append_value(context_len_arr, val);
+        list = eddsa_cap->context_len.values;
+        while (list) {
+            json_array_append_number(context_len_arr, list->length);
+            list = list->next;
+        }
     }
 
     return ACVP_SUCCESS;

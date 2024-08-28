@@ -20,6 +20,7 @@
 #define OPENSSL_FIPS_308 3000008
 #define OPENSSL_FIPS_309 3000009
 #define OPENSSL_FIPS_312 3010002
+#define OPENSSL_FIPS_DEV 3040000
 
 #define ENGID1 "800002B805123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456"
 #define ENGID2 "000002b87766554433221100"
@@ -67,6 +68,7 @@ int app_kts_ifc_handler(ACVP_TEST_CASE *test_case);
 int app_rsa_keygen_handler(ACVP_TEST_CASE *test_case);
 int app_rsa_sig_handler(ACVP_TEST_CASE *test_case);
 int app_rsa_sigprim_handler(ACVP_TEST_CASE *test_case);
+int app_rsa_decprim_handler(ACVP_TEST_CASE *test_case);
 int app_ecdsa_handler(ACVP_TEST_CASE *test_case);
 int app_eddsa_handler(ACVP_TEST_CASE *test_case);
 int app_drbg_handler(ACVP_TEST_CASE *test_case);
@@ -84,6 +86,7 @@ void app_eddsa_cleanup(void);
 ACVP_RESULT register_capabilities_fp_30X(ACVP_CTX *ctx, APP_CONFIG *cfg);
 ACVP_RESULT register_capabilities_fp_312(ACVP_CTX *ctx, APP_CONFIG *cfg);
 ACVP_RESULT register_capabilities_non_fips(ACVP_CTX *ctx, APP_CONFIG *cfg);
+ACVP_RESULT register_capabilities_fp_dev(ACVP_CTX *ctx, APP_CONFIG *cfg);
 
 #endif // ACVP_APP_IUT_H
 
