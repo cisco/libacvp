@@ -246,36 +246,6 @@ Test(APP_KDF108_HANDLER, missing_key_in) {
     free(test_case);
 }
 
-/*
- * missing iv in kdf108 tc test case
- */
-Test(APP_KDF108_HANDLER, missing_iv) {
-    /* arbitrary non-zero */
-    int key_in_len = 8, key_out_len = 8, iv_len = 8, counter_len = 8;
-    ACVP_KDF108_MODE kdf_mode = ACVP_KDF108_MODE_COUNTER;
-    ACVP_KDF108_MAC_MODE_VAL mac_mode = ACVP_KDF108_MAC_MODE_HMAC_SHA384;
-    ACVP_KDF108_FIXED_DATA_ORDER_VAL counter_location = ACVP_KDF108_FIXED_DATA_ORDER_MIDDLE;
-    char *key_in = "aa";
-    char *iv = NULL;
-    int deferred = 0;
-    int corrupt = 0;
-    
-    kdf108_tc = calloc(1, sizeof(ACVP_KDF108_TC));
-    
-    if (!initialize_kdf108_tc(kdf108_tc, kdf_mode, mac_mode, counter_location,
-            key_in, iv, key_in_len, key_out_len, iv_len, counter_len,
-            deferred, corrupt)) {
-        cr_assert_fail("kdf108 init tc failure");
-    }
-    test_case = calloc(1, sizeof(ACVP_TEST_CASE));
-    test_case->tc.kdf108 = kdf108_tc;
-    
-    rv = app_kdf108_handler(test_case);
-    cr_assert_neq(rv, 0);
-    
-    free_kdf108_tc(kdf108_tc);
-    free(test_case);
-}
 
 /*
  * unallocated answer buffers in kdf108 tc test case

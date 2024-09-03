@@ -7,6 +7,7 @@
  * https://github.com/cisco/libacvp/LICENSE
  */
 
+#include <openssl/err.h>
 #include <openssl/evp.h>
 #include <openssl/hmac.h>
 #include <openssl/core_names.h>
@@ -125,6 +126,7 @@ int app_hmac_handler(ACVP_TEST_CASE *test_case) {
     rc = 0;
 
 end:
+    ERR_print_errors_fp(stdout);
     if (hmac_ctx) EVP_MAC_CTX_free(hmac_ctx);
     if (mac) EVP_MAC_free(mac);
     if (pbld) OSSL_PARAM_BLD_free(pbld);

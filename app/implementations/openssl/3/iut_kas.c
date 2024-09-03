@@ -17,6 +17,7 @@
 #include <openssl/rand.h>
 #include <openssl/core_names.h>
 #include <openssl/param_build.h>
+#include <openssl/err.h>
 #include "safe_mem_lib.h"
 
 #define KAS_ECC_Z_MAX 512
@@ -190,6 +191,7 @@ err:
     if (ix) BN_free(ix);
     if (iy) BN_free(iy);
     if (ik) BN_free(ik);
+ERR_print_errors_fp(stdout);
     return rv;
 }
 
