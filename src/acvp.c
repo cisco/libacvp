@@ -808,18 +808,22 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx) {
                 break;
             case ACVP_EDDSA_KEYGEN_TYPE:
                 acvp_cap_free_pl(cap_entry->cap.eddsa_keygen_cap->curves);
+                acvp_cap_free_domain(&cap_entry->cap.eddsa_keygen_cap->context_len);
                 free(cap_entry->cap.eddsa_keygen_cap);
                 break;
             case ACVP_EDDSA_KEYVER_TYPE:
                 acvp_cap_free_pl(cap_entry->cap.eddsa_keyver_cap->curves);
+                acvp_cap_free_domain(&cap_entry->cap.eddsa_keyver_cap->context_len);
                 free(cap_entry->cap.eddsa_keyver_cap);
                 break;
             case ACVP_EDDSA_SIGGEN_TYPE:
                 acvp_cap_free_pl(cap_entry->cap.eddsa_siggen_cap->curves);
+                acvp_cap_free_domain(&cap_entry->cap.eddsa_siggen_cap->context_len);
                 free(cap_entry->cap.eddsa_siggen_cap);
                 break;
             case ACVP_EDDSA_SIGVER_TYPE:
                 acvp_cap_free_pl(cap_entry->cap.eddsa_sigver_cap->curves);
+                acvp_cap_free_domain(&cap_entry->cap.eddsa_sigver_cap->context_len);
                 free(cap_entry->cap.eddsa_sigver_cap);
                 break;
             case ACVP_KDF135_SRTP_TYPE:

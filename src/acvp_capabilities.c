@@ -4216,21 +4216,23 @@ ACVP_RESULT acvp_cap_drbg_set_parm(ACVP_CTX *ctx,
         return ACVP_NO_CAP;
     }
 
-    cap_mode = acvp_locate_drbg_mode_entry(cap_list, mode);
-    if (!cap_mode) {
-        cap_mode = acvp_create_drbg_mode_entry(cap_list, mode);
+    if (param != ACVP_DRBG_PRED_RESIST_ENABLED && param != ACVP_DRBG_RESEED_ENABLED) {
+        cap_mode = acvp_locate_drbg_mode_entry(cap_list, mode);
         if (!cap_mode) {
-            ACVP_LOG_ERR("Malloc Failed.");
-            return ACVP_MALLOC_FAIL;
+            cap_mode = acvp_create_drbg_mode_entry(cap_list, mode);
+            if (!cap_mode) {
+                ACVP_LOG_ERR("Malloc Failed.");
+                return ACVP_MALLOC_FAIL;
+            }
         }
-    }
 
-    grp = acvp_locate_drbg_group_entry(cap_mode, group);
-    if (!grp) {
-        grp = acvp_create_drbg_group(cap_mode, group);
+        grp = acvp_locate_drbg_group_entry(cap_mode, group);
         if (!grp) {
-            ACVP_LOG_ERR("Error creating group for DRBG capabilities");
-            return ACVP_MALLOC_FAIL;
+            grp = acvp_create_drbg_group(cap_mode, group);
+            if (!grp) {
+                ACVP_LOG_ERR("Error creating group for DRBG capabilities");
+                return ACVP_MALLOC_FAIL;
+            }
         }
     }
 
@@ -5817,6 +5819,77 @@ ACVP_RESULT acvp_cap_eddsa_set_parm(ACVP_CTX *ctx,
     case ACVP_EDDSA_SUPPORTS_PREHASH:
         cap->supports_prehash = value;
         break;
+    case ACVP_EDDSA_CONTEXT_LEN:
+        if (alg != ACVP_SUB_EDDSA_SIGGEN) {
+            ACVP_LOG_ERR("Context length can only be set for EDDSA signature generation");
+            return ACVP_INVALID_ARG;
+        }
+        if (value < 0 || value > ACVP_EDDSA_CONTEXT_LEN_MAX) {
+            ACVP_LOG_ERR("Invalid context length value provided for EDDSA (%d)", value);
+            return ACVP_INVALID_ARG;
+        }
+        result = acvp_append_sl_list(&cap->context_len.values, value);
+        break;
+    default:
+        return ACVP_INVALID_ARG;
+        break;
+    }
+
+    return result;
+}
+
+ACVP_RESULT acvp_cap_eddsa_set_domain(ACVP_CTX *ctx,
+                                      ACVP_CIPHER cipher,
+                                      ACVP_EDDSA_PARM param,
+                                      int min, int max, 
+                                      int increment) {
+    ACVP_CAPS_LIST *cap_list;
+    ACVP_EDDSA_CAP *cap;
+    ACVP_SUB_EDDSA alg;
+    ACVP_RESULT result = ACVP_SUCCESS;
+
+    cap_list = acvp_locate_cap_entry(ctx, cipher);
+    if (!cap_list) {
+        ACVP_LOG_ERR("Cap entry not found.");
+        return ACVP_NO_CAP;
+    }
+
+    alg = acvp_get_eddsa_alg(cipher);
+    if (alg == 0) {
+        ACVP_LOG_ERR("Invalid cipher value");
+        return ACVP_INVALID_ARG;
+    }
+
+    if (validate_domain_range(min, max, increment) != ACVP_SUCCESS) {
+        ACVP_LOG_ERR("Invalid domain range given for EDDSA (min: %d, max: %d, increment: %d)", min, max, increment);
+        return ACVP_INVALID_ARG;
+    }
+
+    switch (alg) {
+    case ACVP_SUB_EDDSA_SIGGEN:
+        cap = cap_list->cap.eddsa_siggen_cap;
+        break;
+    case ACVP_SUB_EDDSA_KEYGEN:
+    case ACVP_SUB_EDDSA_KEYVER:
+    case ACVP_SUB_EDDSA_SIGVER:
+    default:
+        ACVP_LOG_ERR("Invalid cipher for EDDSA capability domain registration");
+        return ACVP_INVALID_ARG;
+    }
+
+    switch (param) {
+    case ACVP_EDDSA_CONTEXT_LEN:
+        if (max > ACVP_EDDSA_CONTEXT_LEN_MAX) {
+            ACVP_LOG_ERR("Invalid max given for EDDSA context len domain (%d)", max);
+            return ACVP_INVALID_ARG;
+        }
+        cap->context_len.min = min;
+        cap->context_len.max = max;
+        cap->context_len.increment = increment;
+        break;
+    case ACVP_EDDSA_CURVE:
+    case ACVP_EDDSA_SUPPORTS_PURE:
+    case ACVP_EDDSA_SUPPORTS_PREHASH:
     default:
         return ACVP_INVALID_ARG;
         break;

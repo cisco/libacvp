@@ -817,6 +817,7 @@
 
 #define ACVP_EDDSA_MSG_LEN_MAX 8192 /* arbitrary */
 #define ACVP_EDDSA_POINT_LEN_MAX 8192 /* arbitrary */
+#define ACVP_EDDSA_CONTEXT_LEN_MAX 255
 
 #define ACVP_KAS_IFC_BIT_MAX 4096*4
 #define ACVP_KAS_IFC_BYTE_MAX (ACVP_KAS_IFC_BIT_MAX >> 3)
@@ -1424,6 +1425,7 @@ typedef struct acvp_eddsa_capability_t {
     ACVP_PARAM_LIST *curves;
     int supports_pure;
     int supports_prehash;
+    ACVP_JSON_DOMAIN_OBJ context_len;
 } ACVP_EDDSA_CAP;
 
 typedef struct acvp_dsa_attrs {

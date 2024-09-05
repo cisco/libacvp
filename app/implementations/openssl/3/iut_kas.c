@@ -10,6 +10,7 @@
 #include "app_lcl.h"
 #include "implementations/openssl/3/iut.h"
 
+#include<openssl/err.h>
 #include <openssl/evp.h>
 #include <openssl/bn.h>
 #include <openssl/ec.h>
@@ -27,8 +28,8 @@ int app_kas_ecc_handler(ACVP_TEST_CASE *test_case) {
     ACVP_KAS_ECC_TC *tc = NULL;
     int nid = NID_undef, s_key_size = 0, i_key_size = 0, rv = 1;
     size_t z_len = 0;
-    OSSL_PARAM_BLD *serv_pbld = NULL, *iut_pbld = NULL;
-    OSSL_PARAM *serv_params = NULL, *iut_params = NULL;
+    OSSL_PARAM_BLD *serv_pbld = NULL, *iut_pbld = NULL, *der_pbld = NULL;
+    OSSL_PARAM *serv_params = NULL, *iut_params = NULL, *der_params = NULL;
     EVP_PKEY_CTX *pkey_ctx = NULL, *der_ctx = NULL;
     EVP_PKEY *serv_pkey = NULL, *iut_pkey = NULL;
     char *s_pub_key = NULL, *i_pub_key = NULL;
@@ -61,7 +62,6 @@ int app_kas_ecc_handler(ACVP_TEST_CASE *test_case) {
     }
     OSSL_PARAM_BLD_push_utf8_string(serv_pbld, OSSL_PKEY_PARAM_GROUP_NAME, curve, 0);
     OSSL_PARAM_BLD_push_octet_string(serv_pbld, OSSL_PKEY_PARAM_PUB_KEY, s_pub_key, s_key_size);
-    OSSL_PARAM_BLD_push_int(serv_pbld, OSSL_PKEY_PARAM_USE_COFACTOR_ECDH, 1);
     serv_params = OSSL_PARAM_BLD_to_param(serv_pbld);
     if (!serv_params) {
         printf("Error generating params in KAS-ECC\n");
@@ -88,7 +88,6 @@ int app_kas_ecc_handler(ACVP_TEST_CASE *test_case) {
         goto err;
     }
     OSSL_PARAM_BLD_push_utf8_string(iut_pbld, OSSL_PKEY_PARAM_GROUP_NAME, curve, 0);
-    OSSL_PARAM_BLD_push_int(iut_pbld, OSSL_PKEY_PARAM_USE_COFACTOR_ECDH, 1);
     if (tc->test_type == ACVP_KAS_ECC_TT_VAL) {
         i_pub_key = ec_point_to_pub_key(tc->pix, tc->pixlen, tc->piy, tc->piylen, &i_key_size);
         if (!i_pub_key) {
@@ -153,6 +152,24 @@ int app_kas_ecc_handler(ACVP_TEST_CASE *test_case) {
         printf("Error initializing derive in KAS-ECC\n");
         goto err;
     }
+
+    /* Tell derive process to use cofactor */
+    der_pbld = OSSL_PARAM_BLD_new();
+    if (!der_pbld) {
+        printf("Error creating derive pbld in KAS-ECC\n");
+        goto err;
+    }
+    OSSL_PARAM_BLD_push_int(der_pbld, OSSL_EXCHANGE_PARAM_EC_ECDH_COFACTOR_MODE, 1);
+    der_params = OSSL_PARAM_BLD_to_param(der_pbld);
+    if (!der_params) {
+        printf("Error generating params in KAS-ECC\n");
+        goto err;
+    }
+    if (EVP_PKEY_CTX_set_params(der_ctx, der_params) != 1) {
+        printf("Error setting derive params in KAS-ECC\n");
+        goto err;
+    }
+
     if (EVP_PKEY_derive_set_peer(der_ctx, serv_pkey) != 1) {
         printf("Error setting peer key in KAS-ECC\n");
         goto err;
@@ -176,13 +193,16 @@ int app_kas_ecc_handler(ACVP_TEST_CASE *test_case) {
     }
     rv = 0;
 err:
+    ERR_print_errors_fp(stdout);
     if (s_pub_key) free(s_pub_key);
     if (i_pub_key) free(i_pub_key);
     if (z) free (z);
     if (serv_pbld) OSSL_PARAM_BLD_free(serv_pbld);
     if (iut_pbld) OSSL_PARAM_BLD_free(iut_pbld);
+    if (der_pbld) OSSL_PARAM_BLD_free(der_pbld);
     if (serv_params) OSSL_PARAM_free(serv_params);
     if (iut_params) OSSL_PARAM_free(iut_params);
+    if (der_params) OSSL_PARAM_free(der_params);
     if (pkey_ctx) EVP_PKEY_CTX_free(pkey_ctx);
     if (der_ctx) EVP_PKEY_CTX_free(der_ctx);
     if (serv_pkey) EVP_PKEY_free(serv_pkey);
@@ -817,7 +837,7 @@ int app_kts_ifc_handler(ACVP_TEST_CASE *test_case) {
         goto err;
     }
 
-    if (tc->llen <= 0 || tc->llen > 64) {
+    if (tc->llen <= 0 || tc->llen > 128) {
         printf("Invalid output length in KTS-IFC test case\n");
         goto err;
     }

@@ -9,13 +9,20 @@
 
 #include "app_lcl.h"
 #include "safe_lib.h"
-
-#ifdef ACVP_FIPS186_5
+#include "implementations/openssl/3/iut.h"
 
 #include <openssl/evp.h>
 #include <openssl/param_build.h>
 #include <openssl/core_names.h>
 #include <openssl/err.h>
+
+#ifndef OSSL_SIGNATURE_PARAM_INSTANCE
+#define OSSL_SIGNATURE_PARAM_INSTANCE "instance"
+#endif
+
+#ifndef OSSL_SIGNATURE_PARAM_CONTEXT_STRING 
+#define OSSL_SIGNATURE_PARAM_CONTEXT_STRING "context-string"
+#endif
 
 static unsigned char *eddsa_group_q = NULL;
 static size_t group_q_len = 0;
@@ -314,15 +321,3 @@ err:
     ERR_print_errors_fp(stdout);
     return rv;
 }
-
-#else
-
-int app_eddsa_handler(ACVP_TEST_CASE *test_case) {
-    if (!test_case) {
-        return -1;
-    }
-    return 1;
-}
-
-#endif
-

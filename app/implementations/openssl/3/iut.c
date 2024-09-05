@@ -103,11 +103,14 @@ ACVP_RESULT iut_register_capabilities(ACVP_CTX *ctx, APP_CONFIG *cfg) {
     if (!fips_ver) {
         return register_capabilities_non_fips(ctx, cfg);
     } else if (fips_ver <= OPENSSL_FIPS_309) {
+        printf("Registering capabilities for FP 3.0.X...\n");
         /* 3.0.X registrations are so nearly identical, we left them combined. */
         return register_capabilities_fp_30X(ctx, cfg);
-    } else if (fips_ver >= OPENSSL_FIPS_312) {
+    } else if (fips_ver <= OPENSSL_FIPS_312) {
+        printf("Registering capabilities for FP 3.1.2...\n");
         return register_capabilities_fp_312(ctx, cfg);
     } else {
-        return ACVP_INTERNAL_ERR;
+        printf("Registering capabilities for FP in development...\n");
+        return register_capabilities_fp_dev(ctx, cfg);
     }
 }

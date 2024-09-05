@@ -16,6 +16,7 @@ tmp_sources += implementations/openssl/3/iut.c \
                implementations/openssl/3/registrations/fp_30X.c \
                implementations/openssl/3/registrations/fp_312.c \
                implementations/openssl/3/registrations/non_fips.c \
+               implementations/openssl/3/registrations/fp_dev.c \
                implementations/openssl/3/iut_aes.c \
                implementations/openssl/3/iut_cmac.c \
                implementations/openssl/3/iut_des.c \

@@ -250,17 +250,17 @@ int app_kdf108_handler(ACVP_TEST_CASE *test_case) {
         return -1;
     }
 
-    if (stc->counter_location != ACVP_KDF108_FIXED_DATA_ORDER_AFTER) {
+    if (stc->counter_location < ACVP_KDF108_FIXED_DATA_ORDER_MIN || stc->counter_location > ACVP_KDF108_FIXED_DATA_ORDER_MAX) {
         printf("unsupported counter location in test case\n");
         return -1;
     }
 
-    if (!stc->iv || !stc->key_in) {
+    if (!stc->key_in) {
         printf("Missing data in KDF108 test case\n");
         return -1;
     }
 
-    if (!stc->key_out || !stc->fixed_data) {
+    if (!stc->key_out || (!stc->fixed_data && (stc->mac_mode != ACVP_KDF108_MAC_MODE_KMAC_128 && stc->mac_mode != ACVP_KDF108_MAC_MODE_KMAC_256))) {
         printf("Missing output buffers in KDF108 test case\n");
         return -1;
     }
