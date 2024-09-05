@@ -819,7 +819,7 @@ int app_kts_ifc_handler(ACVP_TEST_CASE *test_case) {
         goto err;
     }
 
-    if (tc->llen <= 0 || tc->llen > 64) {
+    if (tc->llen <= 0 || tc->llen > 128) {
         printf("Invalid output length in KTS-IFC test case\n");
         goto err;
     }
