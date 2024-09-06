@@ -99,6 +99,8 @@
 #define ACVP_REV_AES_KWP             ACVP_REV_STR_1_0
 #define ACVP_REV_AES_GMAC            ACVP_REV_STR_1_0
 #define ACVP_REV_AES_XPN             ACVP_REV_STR_1_0
+#define ACVP_REV_AES_FF1             ACVP_REV_STR_1_0
+#define ACVP_REV_AES_FF3             ACVP_REV_STR_1_0
 
 /* TDES */
 #define ACVP_REV_TDES_OFB            ACVP_REV_STR_1_0
@@ -240,6 +242,8 @@
 #define ACVP_ALG_AES_KWP             "ACVP-AES-KWP"
 #define ACVP_ALG_AES_GMAC            "ACVP-AES-GMAC"
 #define ACVP_ALG_AES_XPN             "ACVP-AES-XPN"
+#define ACVP_ALG_AES_FF1             "ACVP-AES-FF1"
+#define ACVP_ALG_AES_FF3             "ACVP-AES-FF3-1"
 #define ACVP_ALG_TDES_OFB            "ACVP-TDES-OFB"
 #define ACVP_ALG_TDES_OFBI           "ACVP-TDES-OFBI"
 #define ACVP_ALG_TDES_CFB1           "ACVP-TDES-CFB1"
@@ -514,6 +518,15 @@
 #define ACVP_AES_RFC3686_IVGEN_STR "ivGenMode"
 #define ACVP_RFC3686_STR "RFC3686"
 
+#define ACVP_AES_FPE_RADIX_MIN 2
+#define ACVP_AES_FPE_RADIX_MAX 64
+#define ACVP_AES_FPE_PT_BIT_MIN 16                              /**< 16 bits */
+#define ACVP_AES_FPE_PT_MIN (ACVP_AES_FPE_PT_BIT_MIN >> 2)      /**< 4 characters */
+#define ACVP_AES_FPE_PT_BYTE_MIN (ACVP_AES_FPE_PT_BIT_MIN >> 3) /**< 2 bytes */
+#define ACVP_AES_FPE_PT_BYTE_MAX 65535  /**< Arbitrary, 2^32 for FF1, based on radix for FF3 */
+#define ACVP_AES_FPE_TWEAK_MIN 0
+#define ACVP_AES_FPE_TWEAK_MAX 128
+#define ACVP_AES_FPE_TWEAK_INC 8
 
 /**
  * Accepted length ranges for DRBG.
@@ -1186,6 +1199,8 @@ typedef struct acvp_sym_cipher_capability {
     ACVP_JSON_DOMAIN_OBJ du_len;
 
     int kw_mode;
+    unsigned int radix;
+    char* alphabet;
 } ACVP_SYM_CIPHER_CAP;
 
 typedef struct acvp_hash_capability {

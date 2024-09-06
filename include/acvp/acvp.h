@@ -168,6 +168,8 @@ typedef enum acvp_cipher {
     ACVP_AES_KWP,
     ACVP_AES_GMAC,
     ACVP_AES_XPN,
+    ACVP_AES_FF1,
+    ACVP_AES_FF3,
     ACVP_TDES_ECB,
     ACVP_TDES_CBC,
     ACVP_TDES_CBCI,
@@ -297,7 +299,9 @@ typedef enum acvp_alg_type_aes {
     ACVP_SUB_AES_XPN,
     ACVP_SUB_AES_KW,
     ACVP_SUB_AES_KWP,
-    ACVP_SUB_AES_GMAC
+    ACVP_SUB_AES_GMAC,
+    ACVP_SUB_AES_FF1,
+    ACVP_SUB_AES_FF3
 } ACVP_SUB_AES;
 
 /** @enum ACVP_SUB_TDES */
@@ -1062,7 +1066,9 @@ typedef enum acvp_sym_cipher_parameter {
     ACVP_SYM_CIPH_PARM_IVGEN_SRC,
     ACVP_SYM_CIPH_PARM_SALT_SRC,
     ACVP_SYM_CIPH_PARM_CONFORMANCE,
-    ACVP_SYM_CIPH_PARM_DULEN_MATCHES_PAYLOADLEN
+    ACVP_SYM_CIPH_PARM_DULEN_MATCHES_PAYLOADLEN,
+    ACVP_SYM_CIPH_PARM_ALPHABET,
+    ACVP_SYM_CIPH_PARM_RADIX
 } ACVP_SYM_CIPH_PARM;
 
 /** @enum ACVP_SYM_CIPH_DOMAIN_PARM */
@@ -1070,7 +1076,8 @@ typedef enum acvp_sym_cipher_domain_parameter {
     ACVP_SYM_CIPH_DOMAIN_IVLEN = 1,
     ACVP_SYM_CIPH_DOMAIN_PTLEN,
     ACVP_SYM_CIPH_DOMAIN_AADLEN,
-    ACVP_SYM_CIPH_DOMAIN_DULEN
+    ACVP_SYM_CIPH_DOMAIN_DULEN,
+    ACVP_SYM_CIPH_DOMAIN_TWEAKLEN
 } ACVP_SYM_CIPH_DOMAIN_PARM;
 
 /** @enum ACVP_SYM_CIPH_TWEAK_MODE */
@@ -1251,6 +1258,10 @@ typedef struct acvp_sym_cipher_tc_t {
     unsigned int data_unit_len; /**< for AES-XTS rev 2.0, the amount of data that can be
                                  * processed at once may be lower than the total payload
                                  * size. By default it will = payloadLen. */
+    unsigned int radix;
+    unsigned int fpe_len;
+    char* fpe_in;
+    char* fpe_out;
 } ACVP_SYM_CIPHER_TC;
 
 /**
@@ -2856,6 +2867,31 @@ ACVP_RESULT acvp_cap_sym_cipher_set_parm(ACVP_CTX *ctx,
                                          ACVP_CIPHER cipher,
                                          ACVP_SYM_CIPH_PARM parm,
                                          int length);
+
+/**
+ * @brief acvp_cap_sym_cipher_set_parm_string() allows an application to specify character-based
+ *        operational parameters to be used for a given cipher during a test session with the ACVP
+ *        server.
+ *
+ *        This function should be called to enable crypto capabilities for symmetric ciphers that
+ *        will be tested by the ACVP server. This includes AES and 3DES.  
+ *
+ *        This function may be called multiple times to specify more than one crypto parameter
+ *        value for the cipher. The ACVP_CIPHER value passed to this function should already have
+ *        been setup by invoking acvp_enable_sym_cipher_cap() for that cipher earlier.
+ *
+ * @param ctx Pointer to ACVP_CTX that was previously created by calling acvp_create_test_session.
+ * @param cipher ACVP_CIPHER enum value identifying the crypto capability.
+ * @param parm ACVP_SYM_CIPH_PARM enum value identifying the algorithm parameter that is being
+ *        specified. An example would be the supported plaintext length of the algorithm.
+ * @param value A null-terminated character string containing the data for the parameter
+ *
+ * @return ACVP_RESULT
+ */
+ACVP_RESULT acvp_cap_sym_cipher_set_parm_string(ACVP_CTX *ctx,
+                                                ACVP_CIPHER cipher,
+                                                ACVP_SYM_CIPH_PARM parm,
+                                                char* value);
 
 /**
  * @brief acvp_cap_sym_cipher_set_domain allow an application to specify length-based operational

@@ -81,6 +81,8 @@ ACVP_ALG_HANDLER alg_tbl[ACVP_ALG_MAX] = {
     { ACVP_AES_KWP,           &acvp_aes_kat_handler,              ACVP_ALG_AES_KWP,           NULL, ACVP_REV_AES_KWP, {ACVP_SUB_AES_KWP}},
     { ACVP_AES_GMAC,          &acvp_aes_kat_handler,              ACVP_ALG_AES_GMAC,          NULL, ACVP_REV_AES_GMAC, {ACVP_SUB_AES_GMAC}},
     { ACVP_AES_XPN,           &acvp_aes_kat_handler,              ACVP_ALG_AES_XPN ,          NULL, ACVP_REV_AES_XPN, {ACVP_SUB_AES_XPN}},
+    { ACVP_AES_FF1,           &acvp_aes_kat_handler,             ACVP_ALG_AES_FF1,           NULL, ACVP_REV_AES_FF1, {ACVP_SUB_AES_FF1}},
+    { ACVP_AES_FF3,           &acvp_aes_kat_handler,             ACVP_ALG_AES_FF3,           NULL, ACVP_REV_AES_FF3, {ACVP_SUB_AES_FF3}},
     { ACVP_TDES_ECB,          &acvp_des_kat_handler,              ACVP_ALG_TDES_ECB,          NULL, ACVP_REV_TDES_ECB, {ACVP_SUB_TDES_ECB}},
     { ACVP_TDES_CBC,          &acvp_des_kat_handler,              ACVP_ALG_TDES_CBC,          NULL, ACVP_REV_TDES_CBC, {ACVP_SUB_TDES_CBC}},
     { ACVP_TDES_CBCI,         &acvp_des_kat_handler,              ACVP_ALG_TDES_CBCI,         NULL, ACVP_REV_TDES_CBCI, {ACVP_SUB_TDES_CBCI}},
@@ -676,6 +678,7 @@ ACVP_RESULT acvp_free_test_session(ACVP_CTX *ctx) {
                 acvp_cap_free_sl(cap_entry->cap.sym_cap->aadlen);
                 acvp_cap_free_sl(cap_entry->cap.sym_cap->taglen);
                 acvp_cap_free_sl(cap_entry->cap.sym_cap->tweak);
+                free(cap_entry->cap.sym_cap->alphabet);
                 free(cap_entry->cap.sym_cap);
                 break;
             case ACVP_HASH_TYPE:
