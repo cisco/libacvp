@@ -45,9 +45,11 @@
 
 # IDE files
 **/.vscode/
+*.swp
 
 # Output Directories
 **/.libs/
 
 # Misc
 *.gcov
+testSession*.json
