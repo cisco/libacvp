@@ -987,12 +987,12 @@ static void acvp_list_failing_algorithms(ACVP_CTX *ctx, ACVP_STRING_LIST **list,
     if (!iterator || !iterator->string || !mode_iterator || !mode_iterator->string) {
         return;
     }
-    ACVP_LOG_STATUS("Failing algorithms:");
+    ACVP_LOG_ERR("Failing algorithms:");
     while (iterator && iterator->string && mode_iterator && mode_iterator->string) {
         if (strnlen_s(mode_iterator->string, ACVP_ALG_MODE_MAX) < 1) {
-            ACVP_LOG_STATUS("    %s", iterator->string);
+            ACVP_LOG_ERR("    %s", iterator->string);
         } else {
-            ACVP_LOG_STATUS("    %s, Mode: %s", iterator->string, mode_iterator->string);
+            ACVP_LOG_ERR("    %s, Mode: %s", iterator->string, mode_iterator->string);
         }
         iterator = iterator->next;
         mode_iterator = mode_iterator->next;
