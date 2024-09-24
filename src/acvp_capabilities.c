@@ -4082,21 +4082,23 @@ ACVP_RESULT acvp_cap_drbg_set_parm(ACVP_CTX *ctx,
         return ACVP_NO_CAP;
     }
 
-    cap_mode = acvp_locate_drbg_mode_entry(cap_list, mode);
-    if (!cap_mode) {
-        cap_mode = acvp_create_drbg_mode_entry(cap_list, mode);
+    if (param != ACVP_DRBG_PRED_RESIST_ENABLED && param != ACVP_DRBG_RESEED_ENABLED) {
+        cap_mode = acvp_locate_drbg_mode_entry(cap_list, mode);
         if (!cap_mode) {
-            ACVP_LOG_ERR("Malloc Failed.");
-            return ACVP_MALLOC_FAIL;
+            cap_mode = acvp_create_drbg_mode_entry(cap_list, mode);
+            if (!cap_mode) {
+                ACVP_LOG_ERR("Malloc Failed.");
+                return ACVP_MALLOC_FAIL;
+            }
         }
-    }
 
-    grp = acvp_locate_drbg_group_entry(cap_mode, group);
-    if (!grp) {
-        grp = acvp_create_drbg_group(cap_mode, group);
+        grp = acvp_locate_drbg_group_entry(cap_mode, group);
         if (!grp) {
-            ACVP_LOG_ERR("Error creating group for DRBG capabilities");
-            return ACVP_MALLOC_FAIL;
+            grp = acvp_create_drbg_group(cap_mode, group);
+            if (!grp) {
+                ACVP_LOG_ERR("Error creating group for DRBG capabilities");
+                return ACVP_MALLOC_FAIL;
+            }
         }
     }
 
