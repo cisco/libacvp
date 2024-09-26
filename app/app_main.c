@@ -3093,6 +3093,7 @@ static int enable_ecdsa(ACVP_CTX *ctx) {
 #ifndef ACVP_FIPS186_5
     rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_KEYGEN, ACVP_ECDSA_REVISION, ACVP_REVISION_1_0);
     CHECK_ENABLE_CAP_RV(rv);
+#endif
     rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_KEYGEN, ACVP_ECDSA_CURVE, ACVP_EC_CURVE_K233);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_KEYGEN, ACVP_ECDSA_CURVE, ACVP_EC_CURVE_K283);
@@ -3109,7 +3110,6 @@ static int enable_ecdsa(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_KEYGEN, ACVP_ECDSA_CURVE, ACVP_EC_CURVE_B571);
     CHECK_ENABLE_CAP_RV(rv);
-#endif
     rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_KEYGEN, ACVP_ECDSA_CURVE, ACVP_EC_CURVE_P224);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_KEYGEN, ACVP_ECDSA_CURVE, ACVP_EC_CURVE_P256);
@@ -3131,6 +3131,13 @@ static int enable_ecdsa(ACVP_CTX *ctx) {
 #ifndef ACVP_FIPS186_5
     rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_KEYVER, ACVP_ECDSA_REVISION, ACVP_REVISION_1_0);
     CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_KEYVER, ACVP_ECDSA_CURVE, ACVP_EC_CURVE_B163);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_KEYVER, ACVP_ECDSA_CURVE, ACVP_EC_CURVE_K163);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_KEYVER, ACVP_ECDSA_CURVE, ACVP_EC_CURVE_P192);
+    CHECK_ENABLE_CAP_RV(rv);
+#endif
     rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_KEYVER, ACVP_ECDSA_CURVE, ACVP_EC_CURVE_K233);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_KEYVER, ACVP_ECDSA_CURVE, ACVP_EC_CURVE_K283);
@@ -3147,13 +3154,6 @@ static int enable_ecdsa(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_KEYVER, ACVP_ECDSA_CURVE, ACVP_EC_CURVE_B571);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_KEYVER, ACVP_ECDSA_CURVE, ACVP_EC_CURVE_B163);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_KEYVER, ACVP_ECDSA_CURVE, ACVP_EC_CURVE_K163);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_KEYVER, ACVP_ECDSA_CURVE, ACVP_EC_CURVE_P192);
-    CHECK_ENABLE_CAP_RV(rv);
-#endif
     rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_KEYVER, ACVP_ECDSA_CURVE, ACVP_EC_CURVE_P224);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_KEYVER, ACVP_ECDSA_CURVE, ACVP_EC_CURVE_P256);
@@ -3176,6 +3176,7 @@ static int enable_ecdsa(ACVP_CTX *ctx) {
 #ifndef ACVP_FIPS186_5
     rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_ECDSA_REVISION, ACVP_REVISION_1_0);
     CHECK_ENABLE_CAP_RV(rv);
+#endif
     rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_ECDSA_CURVE, ACVP_EC_CURVE_K233);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_ECDSA_CURVE, ACVP_EC_CURVE_K283);
@@ -3192,7 +3193,6 @@ static int enable_ecdsa(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_ECDSA_CURVE, ACVP_EC_CURVE_B571);
     CHECK_ENABLE_CAP_RV(rv);
-#endif
     rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_ECDSA_CURVE, ACVP_EC_CURVE_P224);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_ECDSA_CURVE, ACVP_EC_CURVE_P256);
@@ -3222,10 +3222,16 @@ static int enable_ecdsa(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_ECDSA_HASH_ALG, ACVP_SHA3_512);
     CHECK_ENABLE_CAP_RV(rv);
+#ifdef ACVP_FIPS186_5
+    rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_ECDSA_HASH_ALG, ACVP_SHAKE_128);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGGEN, ACVP_ECDSA_HASH_ALG, ACVP_SHAKE_256);
+    CHECK_ENABLE_CAP_RV(rv);
+#endif
 #endif
 
 #ifdef ACVP_FIPS186_5
-    /* Enable ECDSA sigGen... */
+    /* Enable detECDSA sigGen... */
     rv = acvp_cap_ecdsa_enable(ctx, ACVP_DET_ECDSA_SIGGEN, &app_ecdsa_handler);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_set_prereq(ctx, ACVP_DET_ECDSA_SIGGEN, ACVP_PREREQ_SHA, value);
@@ -3268,6 +3274,15 @@ static int enable_ecdsa(ACVP_CTX *ctx) {
 #ifndef ACVP_FIPS186_5
     rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_ECDSA_REVISION, ACVP_REVISION_1_0);
     CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_ECDSA_CURVE, ACVP_EC_CURVE_B163);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_ECDSA_CURVE, ACVP_EC_CURVE_K163);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_ECDSA_CURVE, ACVP_EC_CURVE_P192);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_ECDSA_HASH_ALG, ACVP_SHA1);
+    CHECK_ENABLE_CAP_RV(rv);
+#endif
     rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_ECDSA_CURVE, ACVP_EC_CURVE_K233);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_ECDSA_CURVE, ACVP_EC_CURVE_K283);
@@ -3284,15 +3299,6 @@ static int enable_ecdsa(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_ECDSA_CURVE, ACVP_EC_CURVE_B571);
     CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_ECDSA_CURVE, ACVP_EC_CURVE_B163);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_ECDSA_CURVE, ACVP_EC_CURVE_K163);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_ECDSA_CURVE, ACVP_EC_CURVE_P192);
-    CHECK_ENABLE_CAP_RV(rv);
-    rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_ECDSA_HASH_ALG, ACVP_SHA1);
-    CHECK_ENABLE_CAP_RV(rv);
-#endif
     rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_ECDSA_CURVE, ACVP_EC_CURVE_P224);
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_ECDSA_CURVE, ACVP_EC_CURVE_P256);
@@ -3322,6 +3328,12 @@ static int enable_ecdsa(ACVP_CTX *ctx) {
     CHECK_ENABLE_CAP_RV(rv);
     rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_ECDSA_HASH_ALG, ACVP_SHA3_512);
     CHECK_ENABLE_CAP_RV(rv);
+#ifdef ACVP_FIPS186_5
+    rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_ECDSA_HASH_ALG, ACVP_SHAKE_128);
+    CHECK_ENABLE_CAP_RV(rv);
+    rv = acvp_cap_ecdsa_set_parm(ctx, ACVP_ECDSA_SIGVER, ACVP_ECDSA_HASH_ALG, ACVP_SHAKE_256);
+    CHECK_ENABLE_CAP_RV(rv);
+#endif
 #endif
 
 end:
