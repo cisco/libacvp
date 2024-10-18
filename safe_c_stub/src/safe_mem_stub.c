@@ -62,7 +62,7 @@ errno_t memzero_s(void *dest, rsize_t dmax)
  *
  * Emulate subset of the functionality of memcpy_s() with memcpy()
  */
- #ifndef __WIN32
+#ifndef __WIN32
 errno_t memcpy_s (void *dest, rsize_t dmax, const void *src, rsize_t slen) {
     if (!src || !dest) return (ESNULLP);
     if (slen > dmax) return (ESLEMAX);
@@ -91,7 +91,7 @@ errno_t memcmp_s (const void *dest, rsize_t dmax, const void *src, rsize_t slen,
  *
  * Emulate memmove_s without constraint handling
  */
- #ifndef __WIN32
+#ifndef __WIN32
 errno_t memmove_s (void *dest, rsize_t dmax, const void *src, rsize_t smax)
 {
 
