@@ -194,6 +194,12 @@ if test "x$disable_app" = "xno" ; then
         [iut_dir="$withval"; iut_specified=$((iut_specified+1)); acvp_app_iut="jent"; iut_lflag="-ljitterentropy"],
         [])
 
+    AC_ARG_WITH([liboqs-dir],
+        [AS_HELP_STRING([--with-liboqs-dir],
+        [Path to liboqs install directory])],
+        [iut_dir="$withval"; iut_specified=$((iut_specified+1)); acvp_app_iut="liboqs"; iut_lflag="-loqs"],
+        [])
+
     if test $iut_specified -gt 1 ; then
         AC_MSG_FAILURE([Multiple testable implementations provided. Please only provide a path to one testable implementations])
     fi
@@ -269,6 +275,11 @@ if test "x$disable_lib_detection" = "xno"; then
             AC_SEARCH_LIBS([jent_entropy_init], [jitterentropy], [],
                         [AC_MSG_FAILURE([Cannot locate libjitterentropy])], ["$lib_dependencies"])
 
+        elif test "x$acvp_app_iut" = "xliboqs"; then
+            lib_dependencies+="-lcrypto "
+            AC_SEARCH_LIBS([OQS_version], [oqs], [],
+                        [AC_MSG_FAILURE([Cannot locate liboqs])], ["$lib_dependencies"])
+
         fi
         ######################
         # End checks for IUT #
@@ -337,6 +348,7 @@ fi
 AM_CONDITIONAL([APP_IUT_JENT], [test "x$acvp_app_iut" = "xjent"])
 AM_CONDITIONAL([APP_IUT_OPENSSL_1], [test "x$acvp_app_iut" = "xopenssl_1"])
 AM_CONDITIONAL([APP_IUT_OPENSSL_3], [test "x$acvp_app_iut" = "xopenssl_3"])
+AM_CONDITIONAL([APP_IUT_LIBOQS], [test "x$acvp_app_iut" = "xliboqs"])
 
 # Set the flags needed for curl/murl library
 if test "x$libcurldir" != "x" ; then

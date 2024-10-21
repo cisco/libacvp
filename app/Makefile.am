@@ -37,6 +37,13 @@ if APP_IUT_JENT
 tmp_sources += implementations/jitter_entropy/iut.c
 endif
 
+if APP_IUT_LIBOQS
+tmp_sources += implementations/liboqs/iut.c \
+               implementations/liboqs/iut.h \
+               implementations/liboqs/iut_ml_kem.c \
+               implementations/liboqs/iut_ml_dsa.c
+endif
+
 if !BUILD_APP_AS_LIB
 bin_PROGRAMS = acvp_app
 
