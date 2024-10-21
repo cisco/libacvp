@@ -819,6 +819,8 @@ LIBACVP_CFLAGS
 LIBACVP_LDFLAGS
 LIBCURL_LDFLAGS
 LIBCURL_CFLAGS
+APP_IUT_LIBOQS_FALSE
+APP_IUT_LIBOQS_TRUE
 APP_IUT_OPENSSL_3_FALSE
 APP_IUT_OPENSSL_3_TRUE
 APP_IUT_OPENSSL_1_FALSE
@@ -978,6 +980,7 @@ enable_ssp
 enable_wrapper_library
 with_ssl_dir
 with_jent_dir
+with_liboqs_dir
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1659,6 +1662,7 @@ Optional Packages:
   --with-criterion-dir    location of Criterion install folder
   --with-ssl-dir          location of OpenSSL install folder
   --with-jent-dir         Path to JENT install directory
+  --with-liboqs-dir       Path to liboqs install directory
 
 Some influential environment variables:
   CC          C compiler command
@@ -5525,13 +5529,13 @@ then :
 else $as_nop
   lt_cv_nm_interface="BSD nm"
   echo "int some_variable = 0;" > conftest.$ac_ext
-  (eval echo "\"\$as_me:5528: $ac_compile\"" >&5)
+  (eval echo "\"\$as_me:5532: $ac_compile\"" >&5)
   (eval "$ac_compile" 2>conftest.err)
   cat conftest.err >&5
-  (eval echo "\"\$as_me:5531: $NM \\\"conftest.$ac_objext\\\"\"" >&5)
+  (eval echo "\"\$as_me:5535: $NM \\\"conftest.$ac_objext\\\"\"" >&5)
   (eval "$NM \"conftest.$ac_objext\"" 2>conftest.err > conftest.out)
   cat conftest.err >&5
-  (eval echo "\"\$as_me:5534: output\"" >&5)
+  (eval echo "\"\$as_me:5538: output\"" >&5)
   cat conftest.out >&5
   if $GREP 'External.*some_variable' conftest.out > /dev/null; then
     lt_cv_nm_interface="MS dumpbin"
@@ -6781,7 +6785,7 @@ ia64-*-hpux*)
   ;;
 *-*-irix6*)
   # Find out which ABI we are using.
-  echo '#line 6784 "configure"' > conftest.$ac_ext
+  echo '#line 6788 "configure"' > conftest.$ac_ext
   if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_compile\""; } >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -8128,11 +8132,11 @@ else $as_nop
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:8131: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:8135: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:8135: \$? = $ac_status" >&5
+   echo "$as_me:8139: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -8468,11 +8472,11 @@ else $as_nop
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:8471: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:8475: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:8475: \$? = $ac_status" >&5
+   echo "$as_me:8479: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -8575,11 +8579,11 @@ else $as_nop
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:8578: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:8582: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:8582: \$? = $ac_status" >&5
+   echo "$as_me:8586: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -8631,11 +8635,11 @@ else $as_nop
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:8634: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:8638: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:8638: \$? = $ac_status" >&5
+   echo "$as_me:8642: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -11009,7 +11013,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11012 "configure"
+#line 11016 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11106,7 +11110,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11109 "configure"
+#line 11113 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11571,6 +11575,14 @@ fi
 if test ${with_jent_dir+y}
 then :
   withval=$with_jent_dir; iut_dir="$withval"; iut_specified=$((iut_specified+1)); acvp_app_iut="jent"; iut_lflag="-ljitterentropy"
+fi
+
+
+
+# Check whether --with-liboqs-dir was given.
+if test ${with_liboqs_dir+y}
+then :
+  withval=$with_liboqs_dir; iut_dir="$withval"; iut_specified=$((iut_specified+1)); acvp_app_iut="liboqs"; iut_lflag="-loqs"
 fi
 
 
@@ -12043,6 +12055,73 @@ See \`config.log' for more details" "$LINENO" 5; }
 fi
 
 
+        elif test "x$acvp_app_iut" = "xliboqs"; then
+            lib_dependencies+="-lcrypto "
+            { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for library containing OQS_version" >&5
+printf %s "checking for library containing OQS_version... " >&6; }
+if test ${ac_cv_search_OQS_version+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  ac_func_search_save_LIBS=$LIBS
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+char OQS_version ();
+int
+main (void)
+{
+return OQS_version ();
+  ;
+  return 0;
+}
+_ACEOF
+for ac_lib in '' oqs
+do
+  if test -z "$ac_lib"; then
+    ac_res="none required"
+  else
+    ac_res=-l$ac_lib
+    LIBS="-l$ac_lib "$lib_dependencies" $ac_func_search_save_LIBS"
+  fi
+  if ac_fn_c_try_link "$LINENO"
+then :
+  ac_cv_search_OQS_version=$ac_res
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext
+  if test ${ac_cv_search_OQS_version+y}
+then :
+  break
+fi
+done
+if test ${ac_cv_search_OQS_version+y}
+then :
+
+else $as_nop
+  ac_cv_search_OQS_version=no
+fi
+rm conftest.$ac_ext
+LIBS=$ac_func_search_save_LIBS
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_search_OQS_version" >&5
+printf "%s\n" "$ac_cv_search_OQS_version" >&6; }
+ac_res=$ac_cv_search_OQS_version
+if test "$ac_res" != no
+then :
+  test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
+
+else $as_nop
+  { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
+printf "%s\n" "$as_me: error: in \`$ac_pwd':" >&2;}
+as_fn_error $? "Cannot locate liboqs
+See \`config.log' for more details" "$LINENO" 5; }
+fi
+
+
         fi
         ######################
         # End checks for IUT #
@@ -12224,6 +12303,14 @@ fi
 else
   APP_IUT_OPENSSL_3_TRUE='#'
   APP_IUT_OPENSSL_3_FALSE=
+fi
+
+ if test "x$acvp_app_iut" = "xliboqs"; then
+  APP_IUT_LIBOQS_TRUE=
+  APP_IUT_LIBOQS_FALSE='#'
+else
+  APP_IUT_LIBOQS_TRUE='#'
+  APP_IUT_LIBOQS_FALSE=
 fi
 
 
@@ -12518,6 +12605,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${APP_IUT_OPENSSL_3_TRUE}" && test -z "${APP_IUT_OPENSSL_3_FALSE}"; then
   as_fn_error $? "conditional \"APP_IUT_OPENSSL_3\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${APP_IUT_LIBOQS_TRUE}" && test -z "${APP_IUT_LIBOQS_FALSE}"; then
+  as_fn_error $? "conditional \"APP_IUT_LIBOQS\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${UNIT_TEST_SUPPORTED_TRUE}" && test -z "${UNIT_TEST_SUPPORTED_FALSE}"; then
