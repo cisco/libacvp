@@ -22,6 +22,8 @@ static int rng_buf_pos = 0;
 void iut_ml_kem_cleanup(void) {
     if (rng_buffer) free(rng_buffer);
     rng_buffer = NULL;
+    rng_buf_pos = 0;
+    rng_buf_size = 0;
 }
 
 /**
@@ -148,6 +150,8 @@ int app_ml_kem_handler(ACVP_TEST_CASE *test_case) {
 end:
     if (rng_buffer) free(rng_buffer);
     rng_buffer = NULL;
+    rng_buf_pos = 0;
+    rng_buf_size = 0;
     if (kem) OQS_KEM_free(kem);
     return rv;
 }
