@@ -969,11 +969,11 @@ typedef enum acvp_rsa_keygen_mode_t {
     ACVP_RSA_KEYGEN_B35,
     ACVP_RSA_KEYGEN_B36,
     /* These generally match the above ones, but the terminology has changed for FIPS 186-5 */
-    ACVP_RSA_KEYGEN_PROVABLE,
-    ACVP_RSA_KEYGEN_PROBABLE,
-    ACVP_RSA_KEYGEN_PROV_W_PROV_AUX,
-    ACVP_RSA_KEYGEN_PROB_W_PROV_AUX,
-    ACVP_RSA_KEYGEN_PROB_W_PROB_AUX,
+    ACVP_RSA_KEYGEN_PROVABLE,         // B.3.2
+    ACVP_RSA_KEYGEN_PROBABLE,         // B.3.3
+    ACVP_RSA_KEYGEN_PROV_W_PROV_AUX,  // B.3.4
+    ACVP_RSA_KEYGEN_PROB_W_PROV_AUX,  // B.3.5
+    ACVP_RSA_KEYGEN_PROB_W_PROB_AUX,  // B.3.6
     ACVP_RSA_KEYGEN_MAX
 } ACVP_RSA_KEYGEN_MODE;
 
